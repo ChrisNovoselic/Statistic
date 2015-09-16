@@ -113,6 +113,7 @@ namespace trans_mc
                     //setUIControlConnectionSettings(i); //??? Перенос ДО цикла
 
                     m_arAdmin[i].SetDelegateWait(delegateStartWait, delegateStopWait, delegateEvent);
+                    //m_arAdmin[i].SetDelegateWait(new DelegateFunc (StartWait), new DelegateFunc(StopWait), delegateEvent);
                     m_arAdmin[i].SetDelegateReport(ErrorReport, WarningReport, ActionReport, ReportClear);
 
                     m_arAdmin[i].SetDelegateData(setDataGridViewAdmin, errorDataGridViewAdmin);

@@ -111,7 +111,8 @@ namespace Statistic
 
         private int Initialize(out string msgError)
         {
-            StartWait ();
+            //StartWait ();
+            delegateStartWait ();
 
             msgError = string.Empty;
             //MessageBox.Show((IWin32Window)null, @"FormMain::Initialize () - вХод...", @"Отладка!");
@@ -246,6 +247,7 @@ namespace Statistic
                         }
 
                         m_arPanelAdmin[i].SetDelegateWait(delegateStartWait, delegateStopWait, delegateEvent);
+                        //m_arPanelAdmin[i].SetDelegateWait(new DelegateFunc(StartWait), new DelegateFunc(StopWait), delegateEvent);
                         m_arPanelAdmin[i].SetDelegateReport(ErrorReport, WarningReport, ActionReport, ReportClear);
 
                         foreach (TEC t in m_arPanelAdmin[i].m_list_tec)
@@ -345,7 +347,7 @@ namespace Statistic
 
             DbSources.Sources().UnRegister(idListenerConfigDB);
 
-            StopWait();
+            delegateStopWait();
 
             return iRes;
         }
@@ -1358,7 +1360,8 @@ namespace Statistic
             if (tclTecViews.TabCount > 0)
                 if (MessageBox.Show(this, "Вы уверены, что хотите закрыть текущие вкладки?", "Подтверждение", MessageBoxButtons.YesNo, MessageBoxIcon.Question) == DialogResult.Yes)
                 {
-                    StartWait();
+                    //StartWait();
+                    delegateStartWait ();
 
                     //??? Закрывыаются все вкладки
                     // , но 8 строк ниже "админ"-ские закрываются СНОВА
@@ -1376,7 +1379,7 @@ namespace Statistic
 
                     formChangeMode.btnClearAll_Click(formChangeMode, new EventArgs());
 
-                    StopWait();
+                    delegateStopWait();
 
                     this.Focus();
                 }
@@ -1515,12 +1518,13 @@ namespace Statistic
 
             PanelTecView panelTecView = new PanelTecView(tec, ti, ci, null, ErrorReport, WarningReport, ActionReport, ReportClear);
             panelTecView.SetDelegate(delegateStartWait, delegateStopWait, delegateEvent);
+            //panelTecView.SetDelegate(new DelegateFunc(StartWait), new DelegateFunc (StopWait), delegateEvent);
             m_listStandardTabs.Add(panelTecView);
         }
 
         private void сменитьРежимToolStripMenuItem_Click()
         {
-            StartWait();
+            delegateStartWait();
 
             //StartWait();
             clearTabPages (true);
@@ -1635,7 +1639,7 @@ namespace Statistic
             else
                 ;
 
-            StopWait();
+            delegateStopWait();
 
             addTabPagesAdmin();
 
@@ -1850,7 +1854,8 @@ namespace Statistic
                     
                 if (dlgRes == DialogResult.Yes)
                 {
-                    StartWait();
+                    //StartWait();
+                    delegateStartWait ();
 
                     m_arPanelAdmin[(int)modeAdmin].Start();
 
@@ -1872,7 +1877,7 @@ namespace Statistic
 
                     m_arPanelAdmin[(int)modeAdmin].InitializeComboBoxTecComponent(mode);
 
-                    StopWait();
+                    delegateStopWait();
 
                     m_markPrevStatePanelAdmin.Set((int)modeAdmin, true);
                 }
