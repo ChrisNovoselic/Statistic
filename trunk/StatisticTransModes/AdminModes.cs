@@ -32,16 +32,6 @@ namespace StatisticTransModes
             return iRes;
         }
 
-        protected override void GetPPBRDatesRequest(DateTime date) {
-        }
-
-        protected override int GetPPBRDatesResponse(DataTable table, DateTime date)
-        {
-            int iRes = 0;
-
-            return iRes;
-        }
-
         public override void getCurRDGValues(HAdmin source)
         {
             base.getCurRDGValues (source);

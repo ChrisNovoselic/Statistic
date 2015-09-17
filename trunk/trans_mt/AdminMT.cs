@@ -22,6 +22,17 @@ namespace trans_mt
 
         public AdminMT () : base ()
         {
+        }
+
+        protected override void GetPPBRDatesRequest(DateTime date)
+        {
+        }
+
+        protected override int GetPPBRDatesResponse(DataTable table, DateTime date)
+        {
+            int iRes = 0;
+
+            return iRes;
         }        
 
         protected override void GetPPBRValuesRequest(TEC t, TECComponent comp, DateTime date, AdminTS.TYPE_FIELDS mode)

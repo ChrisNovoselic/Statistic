@@ -116,7 +116,7 @@ namespace StatisticCommon
         {
             foreach (Modes.BusinessLogic.IGenObject igo in m_MCTimeSlice.GenTree)
             {
-                Console.WriteLine(igo.Description + " [" + igo.GenObjType.Description + "]");
+                //Console.WriteLine(igo.Description + " [" + igo.GenObjType.Description + "]");
                 //ProcessParams(IGO);
                 ProcessChilds(igo, 1, idInnner);
             }
@@ -241,10 +241,10 @@ namespace StatisticCommon
 
                             foreach (PlanValueItem pvi in listPVI.OrderBy(RRR => RRR.DT))
                             {
-                                Console.WriteLine("    " + pvi.DT.SystemToLocalHqEx().ToString() + " " +
-                                                            pvi.Type.ToString() + " [" + m_listPFI[pvi.ObjFactor].Description + "] " +
-                                                            /*it.ObjName это id генерирующего объекта*/
-                                                            m_listPFI[pvi.ObjFactor].Name + " =" + pvi.Value.ToString());
+                                //Console.WriteLine("    " + pvi.DT.SystemToLocalHqEx().ToString() + " " +
+                                //                            pvi.Type.ToString() + " [" + m_listPFI[pvi.ObjFactor].Description + "] " +
+                                //                            /*it.ObjName это id генерирующего объекта*/
+                                //                            m_listPFI[pvi.ObjFactor].Name + " =" + pvi.Value.ToString());
 
                                 dateCurrent = pvi.DT.SystemToLocalHqEx();
 
@@ -324,7 +324,7 @@ namespace StatisticCommon
             {
                 if (!(IGOch.GenObjType.Id == 15))      //Оборудование типа ГОУ исключаем - по ним нет ни параметров, ни дочерних элементов
                 {
-                    Console.WriteLine(new System.String('-', Level) + IGOch.Description + " [" + IGOch.GenObjType.Description + "]  P:" + IGOch.VarParams.Count.ToString() + " Id:" + IGOch.Id.ToString() + " IdInner:" + IGOch.IdInner.ToString());
+                    //Console.WriteLine(new System.String('-', Level) + IGOch.Description + " [" + IGOch.GenObjType.Description + "]  P:" + IGOch.VarParams.Count.ToString() + " Id:" + IGOch.Id.ToString() + " IdInner:" + IGOch.IdInner.ToString());
                     //ProcessParams(IGOch);
                     if ((IGOch.GenObjType.Id == 3) && (IGOch.IdInner == idInner))
                     {
