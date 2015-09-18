@@ -458,7 +458,7 @@ namespace Statistic
         protected DataGridViewHours m_dgwHours;
         protected DataGridViewMins m_dgwMins;
 
-        private DataGridViewCellStyle dgvCellStyleError, dgvCellStyleWarning
+        public static DataGridViewCellStyle dgvCellStyleError, dgvCellStyleWarning
             , dgvCellStyleCommon;
 
         private ManualResetEvent m_evTimerCurrent;

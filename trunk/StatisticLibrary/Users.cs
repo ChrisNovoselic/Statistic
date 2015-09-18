@@ -47,6 +47,7 @@ namespace StatisticCommon
             , SOURCEDATA_SOTIASSO_3_MIN //Вкл\выкл пункт меню            
             , AUTO_LOADSAVE_USERPROFILE //Автоматическая загрузка/сохранение профиля
             //, AUTO_LOAD_ADMINVALUESDEFAULT //Автоматическая загрузка "рекомендаций" по умолчанию
+            , MENUITEM_VIEW_VALUES_SOTIASSO
             ,
         };
 

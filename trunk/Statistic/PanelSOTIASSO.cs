@@ -542,7 +542,10 @@ namespace Statistic
                 else
                     ;
             }
-
+            /// <summary>
+            /// Обработчик события - отобразить значения в разрезе минута-секунды
+            /// </summary>
+            /// <param name="obj">Объект, с данными для отображения</param>
             public void Parent_OnEvtValuesSecs(object obj)
             {
                 if (IsHandleCreated == true)
@@ -553,58 +556,101 @@ namespace Statistic
                 else
                     ;
             }
-
+            /// <summary>
+            /// Отобразить значения в разрезе час-минуты
+            /// </summary>
+            /// <param name="obj">Объект, с данными для отображения</param>
             private void onEvtValuesMins(object obj)
             {
-                TecView.valuesTEC [] valuesMins = obj as TecView.valuesTEC [];
+                TecView.valuesTEC [] valuesMins = (obj as object [])[0] as TecView.valuesTEC [];
+                decimal dcGTPKoeffAlarmPcur = (decimal)(obj as object[])[1];
+
                 DataGridViewGTP dgvGTP = this.Controls.Find (KEY_CONTROLS.DGV_GTP_VALUE.ToString (), true)[0] as DataGridViewGTP;
+                DataGridViewCellStyle cellStyle;
+                double diviation = -1F;
+                int cntDiviation = 0;
 
                 for (int i = 1; i < valuesMins.Length; i++)
                 {
                     //Значения
                     dgvGTP.Rows[i - 1].Cells[1].Value = valuesMins[i].valuesFact.ToString (@"F3");
+                    //УДГэ
+                    dgvGTP.Rows[i - 1].Cells[2].Value = valuesMins[i].valuesUDGe.ToString (@"F3");
                     //Отклонения
+                    // максимальное отклонение
+                    diviation = valuesMins[i].valuesUDGe / 100 * (double)dcGTPKoeffAlarmPcur;
+                    //Проверить наличие значения
                     if (valuesMins[i].valuesFact > 0)
-                        dgvGTP.Rows[i - 1].Cells[2].Value = (valuesMins[i].valuesFact - valuesMins[i].valuesUDGe).ToString(@"F3");
-                    else
-                        dgvGTP.Rows[i - 1].Cells[2].Value = valuesMins[i].valuesFact.ToString(@"F3");
-                }
-                                        
-            }
+                    {
+                        dgvGTP.Rows[i - 1].Cells[3].Value = (valuesMins[i].valuesFact - valuesMins[i].valuesUDGe).ToString(@"F3");
+                        //Определить цвет ячейки
+                        if (Math.Abs (valuesMins[i].valuesFact - valuesMins[i].valuesUDGe) > diviation)
+                        {
+                            //Увеличить счетчик случаев выхода за установленные границы
+                            cntDiviation ++;
 
+                            if (cntDiviation > 4)
+                                cellStyle = PanelTecViewBase.dgvCellStyleError;
+                            else
+                                cellStyle = PanelTecViewBase.dgvCellStyleWarning;
+                        }
+                        else
+                        {
+                            //Установить счетчик случаев выхода за установленные границы в исходное состояние
+                            cntDiviation = 0;
+                            
+                            cellStyle = PanelTecViewBase.dgvCellStyleCommon;
+                        }
+                        //Установить цвет ячейки
+                        dgvGTP.Rows[i - 1].Cells[3].Style = cellStyle;
+                    }
+                    else
+                        dgvGTP.Rows[i - 1].Cells[3].Value = 0.ToString(@"F3");
+                }                                        
+            }
+            /// <summary>
+            /// Отобразить значения в разрезе минута-секунды
+            /// </summary>
+            /// <param name="obj">Объект, с данными для отображения</param>
             private void onEvtValuesSecs(object obj)
             {
                 Dictionary<int, TecView.valuesTG> dictValuesTG = obj as Dictionary<int, TecView.valuesTG>;
                 DataGridViewTG dgvTG = this.Controls.Find(KEY_CONTROLS.DGV_TG_VALUE.ToString(), true)[0] as DataGridViewTG;
 
-                int i = -1;
-                bool bRowVisible = false;
+                int i = -1; //Индекс столбца
+                bool bRowVisible = false; //Признак видимости строки
                 for (int j = 0; j < 60; j++)
                 {
                     i = 0;
                     bRowVisible = false;
                     foreach (int id in dictValuesTG.Keys)
                     {
-                        i++;
+                        i++; // очередной столбец
+                        //Проверить наличие значения для ТГ за очередную секунду
                         if (!(dictValuesTG[id].m_powerSeconds[j] < 0))
-                        {
+                        {//Есть значение
+                            // отобразить
                             dgvTG.Rows[j].Cells[i].Value = dictValuesTG[id].m_powerSeconds[j].ToString(@"F3");
-
+                            //При необходимости установить признак видимости строки
                             if (bRowVisible == false)
                                 bRowVisible = true;
                             else
                                 ;
                         }
                         else
+                            //Нет значения - пустая строка
                             dgvTG.Rows[j].Cells[i].Value = string.Empty;
                     }
-
+                    //Установить признак видимости строки
+                    // в ~ от наличия значения в ней
                     dgvTG.Rows[j].Visible = bRowVisible;
                 }
 
             }
         }
-
+        /// <summary>
+        /// Класс - общий для графического представления значений СОТИАССО на вкладке
+        /// </summary>
         private class HZEdGraphControl : ZedGraph.ZedGraphControl
         {
             /// <summary>
@@ -623,7 +669,9 @@ namespace Statistic
             {
                 container.Add (this);
             }
-
+            /// <summary>
+            /// Инициализация собственных компонентов элемента управления
+            /// </summary>
             private void initializeComponent ()
             {
                 this.ScrollGrace = 0;
@@ -647,12 +695,24 @@ namespace Statistic
                 this.PointValueEvent += new ZedGraph.ZedGraphControl.PointValueHandler(this.onPointValueEvent);
                 this.DoubleClickEvent += new ZedGraph.ZedGraphControl.ZedMouseEventHandler(this.onDoubleClickEvent);
             }
-
+            /// <summary>
+            /// Обработчик события - отобразить значения точек
+            /// </summary>
+            /// <param name="sender">Объект, инициировавший событие - this</param>
+            /// <param name="pane">Контекст графического представления (полотна)</param>
+            /// <param name="curve">Коллекция точек для отображения на полотне</param>
+            /// <param name="iPt">Индекс точки в наборе точек для отображения</param>
+            /// <returns>Значение для отображения для точки с индексом</returns>
             private string onPointValueEvent(object sender, GraphPane pane, CurveItem curve, int iPt)
             {
                 return curve[iPt].Y.ToString("F2");
             }
-
+            /// <summary>
+            /// Обработчик события - двойной "щелчок" мыши
+            /// </summary>
+            /// <param name="sender">Объект, инициировавший событие - this</param>
+            /// <param name="e">Вргумент события</param>
+            /// <returns>Признак продолжения обработки события</returns>
             private bool onDoubleClickEvent(ZedGraphControl sender, MouseEventArgs e)
             {
                 FormMain.formGraphicsSettings.SetScale();
@@ -682,11 +742,12 @@ namespace Statistic
             {
                 container.Add (this);
             }
-
+            /// <summary>
+            /// Инициализация собственных компонентов элемента управления
+            /// </summary>
             private void initializeComponent ()
             {
             }
-
             ///// <summary>
             ///// Обработчик события - отобразить полученные значения
             ///// </summary>
@@ -716,7 +777,10 @@ namespace Statistic
         private class HZEdGraphControlTG : HZEdGraphControl
         {
         }
-
+        /// <summary>
+        /// Класс для отображения значений в табличном виде
+        ///  в разрезе час-минуты для ГТП
+        /// </summary>
         private class DataGridViewGTP : DataGridView
         {
             /// <summary>
@@ -735,18 +799,22 @@ namespace Statistic
             {
                 container.Add (this);
             }
-
+            /// <summary>
+            /// Инициализация собственных компонентов элемента управления 
+            /// </summary>
             private void initializeComponent ()
             {
                 this.Columns.AddRange (new DataGridViewColumn [] {
                         new DataGridViewTextBoxColumn ()
                         , new DataGridViewTextBoxColumn ()
                         , new DataGridViewTextBoxColumn ()
+                        , new DataGridViewTextBoxColumn ()
                     });
 
                 this.Columns[0].HeaderText = @"Мин.";
                 this.Columns[1].HeaderText = @"Значение";
-                this.Columns[2].HeaderText = @"Отклонение";
+                this.Columns[2].HeaderText = @"УДГэ";
+                this.Columns[3].HeaderText = @"Отклонение";
 
                 this.ReadOnly = true;
                 //this.ColumnHeadersVisible =
@@ -762,13 +830,17 @@ namespace Statistic
                 this.Columns[0].Frozen = true;
                 this.Columns[1].AutoSizeMode = DataGridViewAutoSizeColumnMode.Fill;
                 this.Columns[2].AutoSizeMode = DataGridViewAutoSizeColumnMode.Fill;
+                this.Columns[3].AutoSizeMode = DataGridViewAutoSizeColumnMode.Fill;
 
                 //Добавить строки по числу мин. в часе
                 for (int i = 0; i < 60; i ++)
                     this.Rows.Add (new object [] { i + 1 });
             }
         }
-
+        /// <summary>
+        /// Класс для отображения значений в табличном виде
+        ///  в разрезе минута-секунды для ТГ
+        /// </summary>
         private class DataGridViewTG : DataGridView
         {
             /// <summary>
@@ -787,7 +859,9 @@ namespace Statistic
             {
                 container.Add (this);
             }
-
+            /// <summary>
+            /// Инициализация собственных компонентов элемента управления
+            /// </summary>
             private void initializeComponent ()
             {
                 this.Columns.AddRange(new DataGridViewColumn[] {
@@ -921,7 +995,10 @@ namespace Statistic
             EvtValuesSecs += new DelegateObjectFunc(m_panelManagement.Parent_OnEvtValuesSecs);
             //EvtValuesMins += new DelegateObjectFunc((m_zGraph_GTP as HZEdGraph_GTP).Parent_OnEvtValuesMins); //???отображать значения будем в функции на панели
         }
-
+        /// <summary>
+        /// Установить значение даты/времени на дочерней панели с активными элементами управления
+        /// </summary>
+        /// <param name="val"></param>
         private void setDatetimeHour(DateTime val)
         {
             EvtSetDatetimeHour (val);
@@ -957,7 +1034,10 @@ namespace Statistic
             else
                 ;
         }
-
+        /// <summary>
+        /// Установить текущие дату/час для объекта обработки запросов к БД
+        /// </summary>
+        /// <param name="dtNew"></param>
         private void setCurrDateHour(DateTime dtNew)
         {
             m_tecView.m_curDate = dtNew;
@@ -1124,7 +1204,7 @@ namespace Statistic
             //Console.WriteLine (msg);
             //Logging.Logg ().Debug (msg, Logging.INDEX_MESSAGE.NOT_SET);
 
-            EvtValuesMins (m_tecView.m_valuesMins);
+            EvtValuesMins (new object [] { m_tecView.m_valuesMins, m_dcGTPKoeffAlarmPcur });
             EvtValuesSecs(m_tecView.m_dictValuesTG);
 
             drawGraphMins ();
