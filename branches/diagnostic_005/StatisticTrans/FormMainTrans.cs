@@ -25,6 +25,7 @@ namespace StatisticTrans
         /// Экземпляр класса
         /// </summary>
         ComponentTesting CT = new ComponentTesting();
+
         /// <summary>
         /// счетчик иттераций ошибок
         /// </summary>
@@ -933,13 +934,13 @@ namespace StatisticTrans
         }
 
         /// <summary>
-        /// Дата обновы
+        /// отчет об итерациях
         /// </summary>
         public void Test()
         {
             DateTime tm = DateTime.Now;
             string str1 = tm.ToString();
-            m_labelTime.Invoke(new Action(() => m_labelTime.Text = "Время последнего опроса: " + str1 + ";" + " Успешных итераций: " + CT.currentItter + " из " + CT.Itters + ""));
+            m_labelTime.Invoke(new Action(() => m_labelTime.Text = "Время последнего опроса: " + str1 + ";" + " Успешных итераций: " + CT.currentIter + " из " + CT.Iters + ""));
             m_labelTime.Invoke(new Action(() => m_labelTime.Update()));
         }
 
@@ -948,15 +949,17 @@ namespace StatisticTrans
         /// </summary>
         protected virtual void errorDataGridViewAdmin()
         {
-            if (CT.currentItter == CT.Itters)
-                CT.currentItter = 0;
-            if (CT.currentItter > 1)
-                CT.currentItter--;
+            if (CT.currentIter == CT.Iters)
+                CT.currentIter = 0;
+            if (CT.currentIter > 1)
+                CT.currentIter--;
+
+            CT.bflag = true;
 
             if ((m_bTransAuto == true || m_modeMashine == MODE_MASHINE.SERVICE) && (m_bEnabledUIControl == false))
             {
                 CT.ErrorComp(CT.nameComponent);
-
+             
                 IAsyncResult asyncRes;
                 if (IsHandleCreated/*InvokeRequired*/ == true)
                     asyncRes = this.BeginInvoke(new DelegateFunc(trans_auto_next));
@@ -998,8 +1001,10 @@ namespace StatisticTrans
             if ((m_bTransAuto == true || m_modeMashine == MODE_MASHINE.SERVICE) && (m_bEnabledUIControl == false))
             {
                 CT.NextDay = IsTomorrow();
-                CT.SetItter(comboBoxTECComponent.Items.Count);
-                CT.CounterItter(CT.Itters);
+                CT.IsNullItter(CT.currentIter, comboBoxTECComponent.Items.Count);
+                CT.SetIter(comboBoxTECComponent.Items.Count);
+                CT.CounterIter(CT.Iters);
+
                 Test();
 
                 IAsyncResult asyncRes;
@@ -1481,15 +1486,8 @@ namespace StatisticTrans
 
         private void saveRDGValues(object bCallback)
         {
-            try
-            {
+           
                 ((AdminTS)m_arAdmin[(int)(Int16)CONN_SETT_TYPE.DEST]).SaveRDGValues(((PARAMToSaveRDGValues)bCallback).listIndex, ((PARAMToSaveRDGValues)bCallback).date, ((PARAMToSaveRDGValues)bCallback).bCallback);
-            }
-
-            catch
-            {
-
-            }
         }
 
         protected virtual void SaveRDGValues(bool bCallback)
