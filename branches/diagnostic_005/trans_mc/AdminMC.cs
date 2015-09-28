@@ -8,12 +8,15 @@ using System.Data;
 using HClassLibrary;
 using StatisticCommon;
 using StatisticTransModes;
+using StatisticTrans;
 
 namespace trans_mc
 {
     public class AdminMC : AdminModes
     {
         string m_strMCServiceHost;
+
+        TransPBR tPBR = new TransPBR();
 
         protected enum StatesMachine
         {
@@ -27,7 +30,9 @@ namespace trans_mc
             m_strMCServiceHost = strMCServiceHost;
         }
 
-        protected override void GetPPBRDatesRequest(DateTime date) {
+        protected override void GetPPBRDatesRequest(DateTime date) 
+        {
+
         }
 
         protected override void GetPPBRValuesRequest(TEC t, TECComponent comp, DateTime date, AdminTS.TYPE_FIELDS mode)
@@ -42,14 +47,17 @@ namespace trans_mc
             {
                 query += comp.m_listMCentreId[i];
 
+                tPBR.CollectString(comp.m_listMCentreId.Count, comp.m_listMCentreId[i].ToString(), "MC");
+               
                 if ((i + 1) < comp.m_listMCentreId.Count) query += ","; else ;
             }
 
+           
             query += ";";
             query += date.ToOADate ().ToString ();
 
             DbMCSources.Sources().Request(m_IdListenerCurrent, query); //
-
+       
             Logging.Logg().Debug("AdminMC::GetPPBRValuesRequest (TEC, TECComponent, DateTime, AdminTS.TYPE_FIELDS) - вЫход...: query=" + query, Logging.INDEX_MESSAGE.NOT_SET);
         }
 
@@ -262,7 +270,7 @@ namespace trans_mc
                 ;
 
             Logging.Logg().Debug(@"AdminMC::StateResponse () - state=" + state.ToString() + @", result=" + result.ToString() + @" - вЫход...", Logging.INDEX_MESSAGE.NOT_SET);
-
+            tPBR.InsertData();
             return result;
         }
 
