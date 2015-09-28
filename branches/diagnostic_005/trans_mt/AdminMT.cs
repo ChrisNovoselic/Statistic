@@ -14,6 +14,7 @@ namespace trans_mt
 {
     public class AdminMT : AdminModes
     {
+        TransPBR tPBR = new TransPBR();
         protected enum StatesMachine
         {
             PPBRValues,
@@ -38,6 +39,7 @@ namespace trans_mt
                 + @" ORDER BY [Datetime], [PBR_NUMBER]"
                 ;
 
+            tPBR.GetComp(comp.m_listMTermId[0].ToString(),"MT");
             DbMCSources.Sources().Request(m_IdListenerCurrent, query);
 
             Logging.Logg().Debug("AdminMT::GetPPBRValuesRequest (TEC, TECComponent, DateTime, AdminTS.TYPE_FIELDS) - вЫход...: query=" + query, Logging.INDEX_MESSAGE.NOT_SET);
@@ -121,7 +123,6 @@ namespace trans_mt
 
                         if (PBRNumber > 0) {
                             m_curRDGValues[hour - 1].pbr_number = @"ПБР" + PBRNumber;
-
                             if (hour > 1) {
                                 if (m_curRDGValues[hour - 1].pbr < 0)
                                     m_curRDGValues[hour - 1].pbr = m_curRDGValues[hour - 2].pbr;
@@ -217,6 +218,7 @@ namespace trans_mt
                     ActionReport("Получение данных плана.");
                     if (indxTECComponents < allTECComponents.Count)
                         GetPPBRValuesRequest(allTECComponents[indxTECComponents].tec, allTECComponents[indxTECComponents], m_curDate.Date, AdminTS.TYPE_FIELDS.COUNT_TYPE_FIELDS);
+                        //transdataMT.GetPbrNumber(m_curRDGValues[h-1].pbr_number);
                     else
                         result = -1;
                     break;
@@ -296,7 +298,7 @@ namespace trans_mt
                 ;
 
             Logging.Logg().Debug(@"AdminMT::StateResponse () - state=" + state.ToString() + @", result=" + result.ToString() + @" - вЫход...", Logging.INDEX_MESSAGE.NOT_SET);
-
+            tPBR.InsertData();
             return result;
         }
 
