@@ -397,7 +397,7 @@ namespace StatisticCommon
         public void SetDelegateSaveComplete(DelegateFunc f) {            
             saveComplete = f;
 
-            Logging.Logg().Debug(@"HAdmin::SetDelegateSaveComplete () - saveComplete is set=" + saveComplete == null ? false.ToString() : true.ToString() + @" - вЫход", Logging.INDEX_MESSAGE.NOT_SET);
+            //Logging.Logg().Debug(@"HAdmin::SetDelegateSaveComplete () - saveComplete is set=" + (saveComplete == null ? false.ToString() : true.ToString()) + @" - вЫход", Logging.INDEX_MESSAGE.NOT_SET);
         }
 
         public void SetDelegateData(DelegateDateFunc s, DelegateFunc e) { readyData = s; errorData = e; }

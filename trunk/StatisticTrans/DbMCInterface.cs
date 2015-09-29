@@ -168,7 +168,7 @@ namespace StatisticCommon
 
             string [] args = ((string)query).Split (';');
 
-            Logging.Logg().Debug("DbMCInterface::GetData () - " + query + ")", Logging.INDEX_MESSAGE.NOT_SET);
+            //Logging.Logg().Debug("DbMCInterface::GetData () - " + query + "...", Logging.INDEX_MESSAGE.NOT_SET);
 
             switch (args[0])
             {

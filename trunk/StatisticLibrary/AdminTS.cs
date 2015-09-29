@@ -108,12 +108,15 @@ namespace StatisticCommon
         {
             Logging.Logg().Debug("AdminTS::SaveChanges () - вХод...", Logging.INDEX_MESSAGE.NOT_SET);
 
+            bool bResSemaDbAccess = false;
+            
             delegateStartWait();
 
             Logging.Logg().Debug("AdminTS::SaveChanges () - delegateStartWait() - Интервал ожидания для semaDBAccess=" + DbInterface.MAX_WATING, Logging.INDEX_MESSAGE.NOT_SET);
 
+            bResSemaDbAccess = semaDBAccess.WaitOne(DbInterface.MAX_WATING);
             //if (semaDBAccess.WaitOne(6666) == true) {
-            if (semaDBAccess.WaitOne(DbInterface.MAX_WATING) == true)
+            if (bResSemaDbAccess == true)
             //if (WaitHandle.WaitAll (new WaitHandle [] {semaState, semaDBAccess}, DbInterface.MAX_WATING) == true)
             //if ((semaState.WaitOne(DbInterface.MAX_WATING) == true) && (semaDBAccess.WaitOne(DbInterface.MAX_WATING) == true))
             {
@@ -147,14 +150,16 @@ namespace StatisticCommon
                     Run(@"AdminTS::SaveChanges ()");
                 }
 
-                Logging.Logg().Debug("AdminTS::SaveChanges () - semaDBAccess.WaitOne()=" + semaDBAccess.WaitOne(DbInterface.MAX_WATING).ToString(), Logging.INDEX_MESSAGE.NOT_SET);
+                bResSemaDbAccess = semaDBAccess.WaitOne(DbInterface.MAX_WATING);
+                //Logging.Logg().Debug("AdminTS::SaveChanges () - semaDBAccess.WaitOne()=" + bResSemaDbAccess.ToString(), Logging.INDEX_MESSAGE.NOT_SET);
 
                 try
                 {
                     semaDBAccess.Release(1);
                 }
-                catch
+                catch (Exception e)
                 {
+                    Logging.Logg().Exception(e, Logging.INDEX_MESSAGE.NOT_SET, @"AdminTS::SaveChanges () - semaDBAccess.Release(1)");
                 }
 
                 saving = false;
@@ -162,7 +167,7 @@ namespace StatisticCommon
                 if (! (saveComplete == null)) saveComplete(); else ;
             }
             else {
-                Logging.Logg().Debug("AdminTS::SaveChanges () - semaDBAccess.WaitOne()=false", Logging.INDEX_MESSAGE.NOT_SET);
+                Logging.Logg().Debug("AdminTS::SaveChanges () - semaDBAccess.WaitOne(" + DbInterface.MAX_WATING + @")=false", Logging.INDEX_MESSAGE.NOT_SET);
 
                 saveResult = Errors.NoAccess;
                 saving = true;
@@ -476,7 +481,7 @@ namespace StatisticCommon
             else {
                 lock (m_lockState)
                 {
-                    Logging.Logg().Debug("AdminTS::ExpRDGExcelValues () - semaDBAccess.WaitOne()=false", Logging.INDEX_MESSAGE.NOT_SET);
+                    Logging.Logg().Debug("AdminTS::ExpRDGExcelValues () - semaDBAccess.WaitOne(" + DbInterface.MAX_WATING + @")=false", Logging.INDEX_MESSAGE.NOT_SET);
                     
                     saveResult = Errors.NoAccess;
                     saving = true;
@@ -1428,13 +1433,13 @@ namespace StatisticCommon
                                    //@"' AND DATE_TIME <= '" + date.AddHours(1).ToString("yyyyMMdd HH:mm:ss") +
                                    //@"';";
 
-            Logging.Logg().Debug("AdminTS::SetPPBRRequest ()", Logging.INDEX_MESSAGE.NOT_SET);
+            //Logging.Logg().Debug("AdminTS::SetPPBRRequest ()", Logging.INDEX_MESSAGE.NOT_SET);
 
             if ((query[(int)DbTSQLInterface.QUERY_TYPE.UPDATE].Equals(string.Empty) == false) ||
                 (query[(int)DbTSQLInterface.QUERY_TYPE.INSERT].Equals(string.Empty) == false))
             {
-                Logging.Logg().Debug(@"AdminTS::setPPBRQuery () - INSERT: " + query[(int)DbTSQLInterface.QUERY_TYPE.INSERT], Logging.INDEX_MESSAGE.D_005);
-                Logging.Logg().Debug(@"AdminTS::setPPBRQuery () - UPDATE: " + query[(int)DbTSQLInterface.QUERY_TYPE.UPDATE], Logging.INDEX_MESSAGE.D_005);
+                //Logging.Logg().Debug(@"AdminTS::setPPBRQuery () - INSERT: " + query[(int)DbTSQLInterface.QUERY_TYPE.INSERT], Logging.INDEX_MESSAGE.D_005);
+                //Logging.Logg().Debug(@"AdminTS::setPPBRQuery () - UPDATE: " + query[(int)DbTSQLInterface.QUERY_TYPE.UPDATE], Logging.INDEX_MESSAGE.D_005);
                 //Logging.Logg().Debug(@"AdminTS::setPPBRQuery () - DELETE: " + resQuery[(int)DbTSQLInterface.QUERY_TYPE.DELETE], Logging.INDEX_MESSAGE.D_005);
 
                 Request(m_dictIdListeners[t.m_id][(int)CONN_SETT_TYPE.PBR], query[(int)DbTSQLInterface.QUERY_TYPE.UPDATE]
@@ -1442,7 +1447,8 @@ namespace StatisticCommon
                                                                             + query[(int)DbTSQLInterface.QUERY_TYPE.DELETE]);
             }
             else
-                Logging.Logg().Debug("AdminTS::SetPPBRRequest () - Empty", Logging.INDEX_MESSAGE.NOT_SET); //Запрос пуст
+                //Logging.Logg().Debug("AdminTS::SetPPBRRequest () - Empty", Logging.INDEX_MESSAGE.NOT_SET) //Запрос пуст
+                ;
         }
 
         protected virtual void ClearPPBRRequest(TEC t, TECComponent comp, DateTime date)
