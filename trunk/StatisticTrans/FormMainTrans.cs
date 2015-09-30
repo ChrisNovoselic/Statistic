@@ -38,7 +38,11 @@ namespace StatisticTrans
 
         protected static FileINI m_sFileINI;
 
-        protected System.Windows.Forms.Timer timerService;
+        protected
+            System.Windows.Forms.Timer
+            //System.Threading.Timer
+                timerService
+                ;
 
         protected HAdmin[] m_arAdmin;
         protected GroupBox[] m_arGroupBox;
@@ -480,6 +484,8 @@ namespace StatisticTrans
 
             i = (Int16)INDX_UICONTROLS.PORT;
             ((System.ComponentModel.ISupportInitialize)(m_arUIControls[(Int16)CONN_SETT_TYPE.DEST, i])).EndInit();
+
+            this.Deactivate += new EventHandler(onDeactivate);
         }
         
         protected void InitializeComponentTransDB()
@@ -1283,39 +1289,41 @@ namespace StatisticTrans
         private void timerService_Tick(object sender, EventArgs e)
         {
             if (!(m_modeMashine == MODE_MASHINE.TO_DATE))
-            switch (m_modeMashine) {
-                case MODE_MASHINE.SERVICE:
-                    if (timerService.Interval == ProgramBase.TIMER_START_INTERVAL)
-                    {
-                        //Первый запуск
-                        if (m_arg_interval == timerService.Interval) m_arg_interval++; else ; //??? случайное совпадение...
-                        timerService.Interval = m_arg_interval;
+                switch (m_modeMashine) {
+                    case MODE_MASHINE.SERVICE:
+                        if (timerService.Interval == ProgramBase.TIMER_START_INTERVAL)
+                        {
+                            //Первый запуск
+                            if (m_arg_interval == timerService.Interval) m_arg_interval++; else ; //??? случайное совпадение...
+                            timerService.Interval = m_arg_interval;
 
-                        FillComboBoxTECComponent();
-                        //
+                            FillComboBoxTECComponent();
+                            //
+                            //DateUpdate(m_arg_interval);
+                        }
+                        else
+                            ;
+
+                        dateTimePickerMain.Value = DateTime.Now;
+
                         //DateUpdate(m_arg_interval);
-                    }
-                    else
-                        ;
-
-                    dateTimePickerMain.Value = DateTime.Now;
-
-                    //DateUpdate(m_arg_interval);
-                    trans_auto_start();
-                    break;
-                case MODE_MASHINE.TO_DATE:
-                    if (timerService.Interval == ProgramBase.TIMER_START_INTERVAL)
-                    {
-                        //Первый запуск
-                        if (m_arg_interval == timerService.Interval) m_arg_interval++; else ; //??? случайное совпадение...
-                        timerService.Interval = m_arg_interval;
-                    }
-                    else
-                        выходToolStripMenuItem.PerformClick ();
-                    break;
-                default:
-                    break;
-            }
+                        trans_auto_start();
+                        break;
+                    //case MODE_MASHINE.TO_DATE:
+                    //    if (timerService.Interval == ProgramBase.TIMER_START_INTERVAL)
+                    //    {
+                    //        //Первый запуск
+                    //        if (m_arg_interval == timerService.Interval) m_arg_interval++; else ; //??? случайное совпадение...
+                    //        timerService.Interval = m_arg_interval;
+                    //    }
+                    //    else
+                    //        выходToolStripMenuItem.PerformClick ();
+                    //    break;
+                    default:
+                        break;
+                }
+            else
+                ;
         }
 
         //private void FormMain_Activated(object sender, EventArgs e)
@@ -1418,6 +1426,7 @@ namespace StatisticTrans
                     InitializeTimerService();
                     SendMessage(this.Handle, 0x112, 0xF020, 0);
                     timerService.Start();
+                    //timerService.Change (0, ;
                 }
                 else
                 {
@@ -1436,7 +1445,10 @@ namespace StatisticTrans
 
         private void InitializeTimerService () {
             if (timerService == null) {
-                timerService = new System.Windows.Forms.Timer(this.components);
+                timerService =
+                    new System.Windows.Forms.Timer()
+                    //new System.Threading.Timer(this.timerService_Tick)
+                    ;
                 timerService.Interval = ProgramBase.TIMER_START_INTERVAL; //Первый запуск
                 timerService.Tick += new System.EventHandler(this.timerService_Tick);
             }
@@ -1463,10 +1475,9 @@ namespace StatisticTrans
             {
                 ((AdminTS)m_arAdmin[(int)(Int16)CONN_SETT_TYPE.DEST]).SaveRDGValues(((PARAMToSaveRDGValues)bCallback).listIndex, ((PARAMToSaveRDGValues)bCallback).date, ((PARAMToSaveRDGValues)bCallback).bCallback);
             }
-
-            catch 
+            catch (Exception e)
             {
-                
+                Logging.Logg().Exception(e, Logging.INDEX_MESSAGE.NOT_SET, @"FormMainTrans::saveRDGValues () - ");                
             }
         }
 
@@ -1484,7 +1495,8 @@ namespace StatisticTrans
 
         private void развернутьToolStripMenuItem_Click(object sender, EventArgs e)
         {
-            if (notifyIconMain.Visible == true)
+            //if (notifyIconMain.Visible == true)
+            if (this.WindowState == FormWindowState.Minimized)
             {
                 this.WindowState = FormWindowState.Normal;
                 this.ShowInTaskbar = true;
@@ -1499,31 +1511,43 @@ namespace StatisticTrans
             buttonClose.PerformClick();
         }
 
-        private void FormMainTrans_Deactivate(object sender, EventArgs e)
+        private void onDeactivate(object sender, EventArgs ev)
         {
-        }
-
-        /// <summary>
-        /// Перехват нажатия на кнопку свернуть
-        /// </summary>
-        /// <param name="m"></param>
-        protected override void WndProc(ref Message m)
-        {
-            if (m.Msg == 0x112)
+            if (this.WindowState == FormWindowState.Minimized)
             {
-                if (m.WParam.ToInt32() == 0xF020)
-                {
-                    this.WindowState = FormWindowState.Minimized;
-                    this.ShowInTaskbar = false;
-                    notifyIconMain.Visible = true;
+                this.ShowInTaskbar = false;
+                notifyIconMain.Visible = true;
 
-                    return;
-                }
+                try { Application.DoEvents (); }
+                catch (Exception e) { Logging.Logg().Exception(e, Logging.INDEX_MESSAGE.NOT_SET, @"Application.DoEvents ()"); }
             }
             else
                 ;
 
-            base.WndProc(ref m);
+            //Logging.Logg().Debug(@"FormMainTrans::onDeactivate () - WindowState=" + WindowState, Logging.INDEX_MESSAGE.NOT_SET);
         }
+
+        ///// <summary>
+        ///// Перехват нажатия на кнопку свернуть
+        ///// </summary>
+        ///// <param name="m"></param>
+        //protected override void WndProc(ref Message m)
+        //{
+        //    if (m.Msg == 0x112)
+        //    {
+        //        if (m.WParam.ToInt32() == 0xF020)
+        //        {
+        //            this.WindowState = FormWindowState.Minimized;
+        //            this.ShowInTaskbar = false;
+        //            notifyIconMain.Visible = true;
+
+        //            return;
+        //        }
+        //    }
+        //    else
+        //        ;
+
+        //    base.WndProc(ref m);
+        //}
     }
 }

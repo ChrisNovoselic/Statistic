@@ -1668,13 +1668,22 @@ namespace StatisticCommon
             {
                 string strRes = string.Empty;
 
-                strRes = string.Join(m_chDelimeters[(int)INDEX_DELIMETER.PART].ToString()
+                DateTime? dtVal = null;
+
+                if (r["DATE_TIME"] is DateTime)
+                {
+                    dtVal = r["DATE_TIME"] as DateTime?;
+
+                    strRes = string.Join(m_chDelimeters[(int)INDEX_DELIMETER.PART].ToString()
                                         , new string[] {
-                                            ((DateTime)r["DATE_TIME"]).ToString (@"HH:mm:ss.fff")
+                                            ((DateTime)dtVal).ToString (@"HH:mm:ss.fff")
                                             , r["TYPE"].ToString ()
                                             , r["MESSAGE"].ToString()
                                         }
-                );
+                    );
+                }
+                else
+                    ;
 
                 return strRes;
             }

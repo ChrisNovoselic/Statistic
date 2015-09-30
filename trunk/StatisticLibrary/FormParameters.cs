@@ -73,7 +73,7 @@ namespace StatisticCommon
                                                             //Продолжение параметров...
                                                             , @"сек"
                                                             //Идентификаторы прилинкованных активных источников СОТИАССО
-                                                            , @"ном", @"ном", @"ном", @"ном", @"ном", @"ном"
+                                                            //, @"ном", @"ном", @"ном", @"ном", @"ном", @"ном"
                                                     };
         protected Dictionary<int, string> m_arParametrSetupDefault;
         public Dictionary<int, string> m_arParametrSetup;
