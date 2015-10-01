@@ -175,7 +175,7 @@ namespace trans_mt
                         Logging.Logg().Exception(e, Logging.INDEX_MESSAGE.NOT_SET, @"AdminMT::GetPPBRValuesResponse () - ...");
                     }
             }
-
+            tPBR.InsertData();
             return iRes;
         }
 
@@ -298,7 +298,7 @@ namespace trans_mt
                 ;
 
             Logging.Logg().Debug(@"AdminMT::StateResponse () - state=" + state.ToString() + @", result=" + result.ToString() + @" - вЫход...", Logging.INDEX_MESSAGE.NOT_SET);
-            tPBR.InsertData();
+            //tPBR.InsertData();
             return result;
         }
 
