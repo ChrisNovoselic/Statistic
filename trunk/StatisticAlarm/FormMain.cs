@@ -11,11 +11,11 @@ using StatisticCommon;
 
 namespace StatisticAlarm
 {
-    public partial class FormMain : Form //FormMainBaseWithStatusStrip
+    public partial class FormMainAlarm : Form //FormMainBaseWithStatusStrip
     {
         public static FormParameters formParameters;
 
-        public FormMain()
+        public FormMainAlarm()
         {
             InitializeComponent();
         }
@@ -36,7 +36,7 @@ namespace StatisticAlarm
         }
     }
 
-    partial class FormMain
+    partial class FormMainAlarm
     {
         PanelAlarmJournal m_panelMain;
         

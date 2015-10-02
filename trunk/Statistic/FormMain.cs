@@ -1222,6 +1222,8 @@ namespace Statistic
             Thread.CurrentThread.CurrentUICulture =
                 ProgramBase.ss_MainCultureInfo; //ru-Ru
 
+            Logging.Logg().Debug(@"FormMain_FormLoad () - !!!!!!!!!!!!!", Logging.INDEX_MESSAGE.NOT_SET);
+
             s_fileConnSett = new FIleConnSett(@"connsett.ini", FIleConnSett.MODE.FILE);
             //m_fileConnSett = new FIleConnSett(new string [] {@"connsett", Properties.Settings.Default.Properties[@"connsett"].ToString ()});
             //m_fileConnSett = new FIleConnSett(Properties.Settings.Default.Properties [@"connsett"].DefaultValue.ToString (), FIleConnSett.MODE.SETTINGS);
@@ -1277,6 +1279,8 @@ namespace Statistic
 
         private void FormMain_FormClosing(object sender, FormClosingEventArgs e)
         {
+            Logging.Logg().Debug(@"FormMain_FormClosing () - !!!!!!!!!!!!!", Logging.INDEX_MESSAGE.NOT_SET);
+
             if ((! (m_TCPServer == null)) || (! (m_arPanelAdmin == null)) || (! (m_timer == null)))
                 if (e.Cancel == false)
                     if (e.CloseReason == CloseReason.UserClosing)
@@ -2200,7 +2204,9 @@ namespace Statistic
 
         private void FormMain_Activated(object sender, EventArgs e)
         {
-            if (панельГрафическихToolStripMenuItem.Checked)
+            Logging.Logg().Debug(@"FormMain_Activated () - !!!!!!!!!!!!!", Logging.INDEX_MESSAGE.NOT_SET);
+            
+            if (панельГрафическихToolStripMenuItem.Checked == true)
             {
                 ShowWindow(formGraphicsSettings.Handle, SW_SHOWNOACTIVATE);
                 SetWindowPos(formGraphicsSettings.Handle.ToInt32(), HWND_TOP,
