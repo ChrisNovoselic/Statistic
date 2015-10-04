@@ -31,21 +31,6 @@ namespace TestFunc
                 //(test as HDbOracle).Query();                
                 //(test as HDbOracle).Close ();
                 //(test as HDbOracle).OutResult ();
-
-                test = new HOleDbOracleConnection();
-                int err = -1;
-                ConnectionSettings connSett = new ConnectionSettings(@"OraSOTIASSO-ORD", (test as HDbOracle).host, Int32.Parse((test as HDbOracle).port), (test as HDbOracle).dataSource, (test as HDbOracle).uid, (test as HDbOracle).pswd);
-                int iListenerId =  DbSources.Sources ().Register (connSett, false, @"СОТИАССО-Бийск-Oracle");
-                DbConnection dbConn = DbSources.Sources ().GetConnection (iListenerId, out err);
-
-                if (err == 0)
-                {
-                    (test as HDbOracle).query = @"SELECT SYSDATE FROM dual";
-                    DataTable res = DbTSQLInterface.Select(ref dbConn, (test as HDbOracle).query, null, null, out err);
-                }
-                else
-                    ;
-                DbSources.Sources().UnRegister(iListenerId);
             } catch (Exception e) {
                 Console.Write(e.Message + Environment.NewLine);
             }
