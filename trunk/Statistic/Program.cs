@@ -68,30 +68,6 @@ namespace Statistic
                     else
                         ;
 
-                    //mainForm.Show();
-                    //ToolStripItem [] items;
-                    //if (mainForm.tec == null)
-                    //{
-                    //    foreach (ToolStripItem item in mainForm.MainMenuStrip.Items)
-                    //    {
-                    //        if (item.Text.Contains ("Настройки")) {
-                    //            foreach (ToolStripMenuItem menuItem in ((ToolStripMenuItem)item).DropDownItems)
-                    //            {
-                    //                if (menuItem.Text.Contains("соединения"))
-                    //                    menuItem.PerformClick();
-                    //                else
-                    //                    ;
-                    //            }
-                    //        }
-                    //        else
-                    //            ;
-                    //    }
-                    //    //items = mainForm.MainMenuStrip.Items.Find("Настройки", false); // соединения
-                    //    //items[0].PerformClick();
-                    //}
-                    //else
-                    //    ;
-
                     ProgramBase.Exit();
                 }
                 else

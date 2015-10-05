@@ -40,11 +40,11 @@ namespace Statistic
             string strRes = string.Empty; //Строка - результат
             double valuesBaseCalculate = -1F; //Основная величина по которой производится расчет
 
-            double dblRel = 0.0
-                    , delta = -1.0
-                    , dbl2AbsPercentControl = -1.0
-                    ;
-            int iReverse = 0; //Признак направления отклонения (по умолчанию - нет)
+            double [] dblRel = new double [] { 0F, 0F }
+                 , dbl2AbsPercentControl = new double [] { -1F, 3F };
+            double delta = -1.0;
+            int iReverse = 0 //Признак направления отклонения (по умолчанию - нет)
+                , indxReason = -1;
             bool bAbs = false; //Признак абсолютного значения (по умолчанию - нет)
 
             if (values.valuesPBR == values.valuesPmax)
@@ -115,24 +115,42 @@ namespace Statistic
                     else
                         ;
 
-                    dbl2AbsPercentControl = valuesBaseCalculate / 100 * 2;
+                    dbl2AbsPercentControl [0] = valuesBaseCalculate / 100 * 2;
 
-                    if (dbl2AbsPercentControl < 1)
-                        dbl2AbsPercentControl = 1;
+                    if (dbl2AbsPercentControl[0] < 1)
+                        dbl2AbsPercentControl [0] = 1;
                     else
                         ;
 
                     if (valuesBaseCalculate > 1)
-                        dblRel = delta - dbl2AbsPercentControl;
+                        dblRel[0] = delta - dbl2AbsPercentControl[0];
                     else
                         ;
 
-                    if ((dblRel > 0) && (!(iReverse == 0)))
-                        err = 1;
-                    else
-                        err = 0;
+                    if (!(iReverse == 0))
+                    {
+                        for (indxReason = 0; indxReason < dblRel.Length; indxReason++)
+                            if (dblRel[indxReason] > 0)
+                                break;
+                            else
+                                ;
 
-                    strRes += @"; Откл=" + (dbl2AbsPercentControl + dblRel).ToString(@"F1") + @"(" + (((dbl2AbsPercentControl + dblRel) / valuesBaseCalculate) * 100).ToString(@"F1") + @"%)";
+                        if (indxReason < dblRel.Length)
+                            err =  1;
+                        else
+                        {
+                            indxReason = 0;
+                            err = 0;
+                        }
+                    }
+                    else
+                    {
+                        indxReason = 0;
+                        err = 0;                        
+                    }
+
+                    strRes += @"; Откл=" + (dbl2AbsPercentControl[indxReason] + dblRel[indxReason]).ToString(@"F1")
+                        + @"(" + (((dbl2AbsPercentControl[indxReason] + dblRel[indxReason]) / valuesBaseCalculate) * 100).ToString(@"F1") + @"%)";
                 }
                 else {
                     err = 0;

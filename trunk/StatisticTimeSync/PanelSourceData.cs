@@ -631,13 +631,13 @@ namespace StatisticTimeSync
                 ,
                 name = @"DB_CONFIG"
                 ,
-                server = @"10.105.1.107"
+                server = @"10.100.104.18"
                 ,
                 port = 1433
                 ,
                 dbName = @"techsite_cfg-2.X.X"
                 ,
-                userName = @"client1"
+                userName = @"client"
                 ,
                 password = @"client"
                 ,
