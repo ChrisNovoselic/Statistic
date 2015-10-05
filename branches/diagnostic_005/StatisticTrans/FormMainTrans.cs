@@ -951,6 +951,7 @@ namespace StatisticTrans
         {
             if (CT.currentIter == CT.Iters)
                 CT.currentIter = 0;
+            
             if (CT.currentIter > 1)
                 CT.currentIter--;
 
@@ -959,6 +960,9 @@ namespace StatisticTrans
             if ((m_bTransAuto == true || m_modeMashine == MODE_MASHINE.SERVICE) && (m_bEnabledUIControl == false))
             {
                 CT.ErrorComp(CT.nameComponent);
+                CT.currentIter = 0;
+
+
              
                 IAsyncResult asyncRes;
                 if (IsHandleCreated/*InvokeRequired*/ == true)
@@ -1002,6 +1006,7 @@ namespace StatisticTrans
             {
                 CT.NextDay = IsTomorrow();
                 CT.IsNullItter(CT.currentIter, comboBoxTECComponent.Items.Count);
+             
                 CT.SetIter(comboBoxTECComponent.Items.Count);
                 CT.CounterIter(CT.Iters);
 

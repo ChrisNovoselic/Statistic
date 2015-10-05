@@ -15,9 +15,9 @@ namespace trans_mc
     public class AdminMC : AdminModes
     {
         string m_strMCServiceHost;
-        string str = string.Empty;
 
-        TransPBR tPBR = new TransPBR();
+
+        //TransPBR tPBR = new TransPBR();
 
         protected enum StatesMachine
         {
@@ -50,18 +50,9 @@ namespace trans_mc
                 query += comp.m_listMCentreId[i];
 
                 if ((i + 1) < comp.m_listMCentreId.Count) query += ","; else ;
-
-                str += comp.m_listMCentreId[i].ToString();
-
-                if ((i + 1) < comp.m_listMCentreId.Count)
-                {
-                    
-                    if (i == 0) str += ","; else ;
-                }
             }
 
-            tPBR.GetComp(str, "MC");
-            str = null;
+            //tPBR.GetComp(str, "MC");
             query += ";";
             query += date.ToOADate().ToString();
 
@@ -151,7 +142,7 @@ namespace trans_mc
                 }
                 catch { }
             }
-            tPBR.InsertData();
+            //tPBR.InsertData();
             return iRes;
         }
 
