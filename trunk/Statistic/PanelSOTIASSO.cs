@@ -256,27 +256,6 @@ namespace Statistic
                 this.SuspendLayout();
 
                 //Создать дочерние элементы управления
-                // поле для ввода номера часа
-                ctrl = new NumericUpDown();
-                ctrl.Name = KEY_CONTROLS.NUD_CUR_HOUR.ToString ();
-                //(ctrl as NumericUpDown).Minimum = 1;
-                //(ctrl as NumericUpDown).Maximum = 24;
-                (ctrl as NumericUpDown).ReadOnly = true;
-                //(ctrl as NumericUpDown).Value = HAdmin.ToMoscowTimeZone ().Hour + 1;
-                (ctrl as NumericUpDown).ValueChanged += new EventHandler(onNumericUpDownCurHour_ValueChanged);
-                ctrl.Dock = DockStyle.Fill;
-                //Добавить к текущей панели поле для ввода номера часа
-                this.Controls.Add(ctrl, 0, 0);
-                this.SetColumnSpan(ctrl, 1); this.SetRowSpan(ctrl, 1);
-                // подпись для поля ввода номера часа
-                ctrl = new System.Windows.Forms.Label();
-                ctrl.Text = @"-й час";
-                (ctrl as System.Windows.Forms.Label).TextAlign = ContentAlignment.MiddleLeft;
-                ctrl.Dock = DockStyle.Fill;
-                //Добавить к текущей панели поле для ввода номера часа
-                this.Controls.Add(ctrl, 1, 0);
-                this.SetColumnSpan(ctrl, 1); this.SetRowSpan(ctrl, 1);
-
                 // календарь для установки текущих даты, номера часа
                 ctrl = new HDateTimePicker();
                 ctrl.Name = KEY_CONTROLS.DTP_CUR_DATE.ToString();
@@ -290,8 +269,29 @@ namespace Statistic
                 (ctrl as HDateTimePicker).ValueChanged += new EventHandler(onCurDatetime_ValueChanged);
                 ctrl.Dock = DockStyle.Fill;
                 //Добавить к текущей панели календарь
-                this.Controls.Add(ctrl, 2, 0);
+                this.Controls.Add(ctrl, 0, 0);
                 this.SetColumnSpan(ctrl, 2); this.SetRowSpan(ctrl, 1);
+
+                // поле для ввода номера часа
+                ctrl = new NumericUpDown();
+                ctrl.Name = KEY_CONTROLS.NUD_CUR_HOUR.ToString();
+                //(ctrl as NumericUpDown).Minimum = 1;
+                //(ctrl as NumericUpDown).Maximum = 24;
+                (ctrl as NumericUpDown).ReadOnly = true;
+                //(ctrl as NumericUpDown).Value = HAdmin.ToMoscowTimeZone ().Hour + 1;
+                (ctrl as NumericUpDown).ValueChanged += new EventHandler(onNumericUpDownCurHour_ValueChanged);
+                ctrl.Dock = DockStyle.Fill;
+                //Добавить к текущей панели поле для ввода номера часа
+                this.Controls.Add(ctrl, 2, 0);
+                this.SetColumnSpan(ctrl, 1); this.SetRowSpan(ctrl, 1);
+                // подпись для поля ввода номера часа
+                ctrl = new System.Windows.Forms.Label();
+                ctrl.Text = @"-й час";
+                (ctrl as System.Windows.Forms.Label).TextAlign = ContentAlignment.MiddleLeft;
+                ctrl.Dock = DockStyle.Fill;
+                //Добавить к текущей панели поле для ввода номера часа
+                this.Controls.Add(ctrl, 3, 0);
+                this.SetColumnSpan(ctrl, 1); this.SetRowSpan(ctrl, 1);
 
                 //// подпись текущего времени
                 //ctrl = new System.Windows.Forms.Label ();
