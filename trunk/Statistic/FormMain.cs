@@ -1094,7 +1094,7 @@ namespace Statistic
 
         private void clearTabPages(bool bAttachSelIndxChanged)
         {
-            Logging.Logg().Debug(@"FormMain::clearTabPages () - вХод...", Logging.INDEX_MESSAGE.NOT_SET);
+            //Logging.Logg().Debug(@"FormMain::clearTabPages () - вХод...", Logging.INDEX_MESSAGE.NOT_SET);
 
             activateTabPage(tclTecViews.SelectedIndex, false);
 
@@ -1137,7 +1137,7 @@ namespace Statistic
 
             //selectedTecViews.Clear();
 
-            Logging.Logg().Debug(@"FormMain::clearTabPages () - вЫход...", Logging.INDEX_MESSAGE.NOT_SET);
+            //Logging.Logg().Debug(@"FormMain::clearTabPages () - вЫход...", Logging.INDEX_MESSAGE.NOT_SET);
         }
 
         /// <summary>
@@ -1189,7 +1189,7 @@ namespace Statistic
             else
                 strMsgDebug = @"FormMain::activateTabPage () - indx=" + indx + @", active=" + active.ToString();
 
-            Logging.Logg().Debug(strMsgDebug + @" - вЫход...", Logging.INDEX_MESSAGE.NOT_SET);
+            Logging.Logg().Debug(strMsgDebug + @" - (вЫход)...", Logging.INDEX_MESSAGE.NOT_SET);
         }
 
         private void ActivateTabPage()
@@ -1222,7 +1222,7 @@ namespace Statistic
             Thread.CurrentThread.CurrentUICulture =
                 ProgramBase.ss_MainCultureInfo; //ru-Ru
 
-            Logging.Logg().Debug(@"FormMain_FormLoad () - !!!!!!!!!!!!!", Logging.INDEX_MESSAGE.NOT_SET);
+            //Logging.Logg().Debug(@"FormMain_FormLoad () - ...", Logging.INDEX_MESSAGE.NOT_SET);
 
             s_fileConnSett = new FIleConnSett(@"connsett.ini", FIleConnSett.MODE.FILE);
             //m_fileConnSett = new FIleConnSett(new string [] {@"connsett", Properties.Settings.Default.Properties[@"connsett"].ToString ()});
@@ -1279,7 +1279,7 @@ namespace Statistic
 
         private void FormMain_FormClosing(object sender, FormClosingEventArgs e)
         {
-            Logging.Logg().Debug(@"FormMain_FormClosing () - !!!!!!!!!!!!!", Logging.INDEX_MESSAGE.NOT_SET);
+            //Logging.Logg().Debug(@"FormMain_FormClosing () - ...", Logging.INDEX_MESSAGE.NOT_SET);
 
             if ((! (m_TCPServer == null)) || (! (m_arPanelAdmin == null)) || (! (m_timer == null)))
                 if (e.Cancel == false)
@@ -2204,7 +2204,7 @@ namespace Statistic
 
         private void FormMain_Activated(object sender, EventArgs e)
         {
-            Logging.Logg().Debug(@"FormMain_Activated () - !!!!!!!!!!!!!", Logging.INDEX_MESSAGE.NOT_SET);
+            Logging.Logg().Debug(@"FormMain_Activated () - ...", Logging.INDEX_MESSAGE.NOT_SET);
             
             if (панельГрафическихToolStripMenuItem.Checked == true)
             {

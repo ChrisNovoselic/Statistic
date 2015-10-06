@@ -106,13 +106,13 @@ namespace StatisticCommon
 
         public virtual Errors SaveChanges()
         {
-            Logging.Logg().Debug("AdminTS::SaveChanges () - вХод...", Logging.INDEX_MESSAGE.NOT_SET);
+            //Logging.Logg().Debug("AdminTS::SaveChanges () - вХод...", Logging.INDEX_MESSAGE.NOT_SET);
 
             bool bResSemaDbAccess = false;
             
             delegateStartWait();
 
-            Logging.Logg().Debug("AdminTS::SaveChanges () - delegateStartWait() - Интервал ожидания для semaDBAccess=" + DbInterface.MAX_WATING, Logging.INDEX_MESSAGE.NOT_SET);
+            //Logging.Logg().Debug("AdminTS::SaveChanges () - delegateStartWait() - Интервал ожидания для semaDBAccess=" + DbInterface.MAX_WATING, Logging.INDEX_MESSAGE.NOT_SET);
 
             bResSemaDbAccess = semaDBAccess.WaitOne(DbInterface.MAX_WATING);
             //if (semaDBAccess.WaitOne(6666) == true) {
@@ -129,7 +129,7 @@ namespace StatisticCommon
                     using_date = false;
                     m_curDate = m_prevDate;
 
-                    Logging.Logg().Debug("AdminTS::SaveChanges () - states.Clear()", Logging.INDEX_MESSAGE.NOT_SET);
+                    //Logging.Logg().Debug("AdminTS::SaveChanges () - states.Clear() - ...", Logging.INDEX_MESSAGE.NOT_SET);
 
                     AddState((int)StatesMachine.CurrentTime);
 
@@ -184,7 +184,7 @@ namespace StatisticCommon
 
             delegateStartWait();
 
-            Logging.Logg().Debug("AdminTS::ClearRDG () - delegateStartWait() - Интервал ожидания для semaDBAccess=" + DbInterface.MAX_WATING, Logging.INDEX_MESSAGE.NOT_SET);
+            //Logging.Logg().Debug("AdminTS::ClearRDG () - delegateStartWait() - Интервал ожидания для semaDBAccess=" + DbInterface.MAX_WATING, Logging.INDEX_MESSAGE.NOT_SET);
 
             //if (semaDBAccess.WaitOne(6666) == true) {
             if (semaDBAccess.WaitOne(DbInterface.MAX_WATING) == true)
@@ -197,7 +197,7 @@ namespace StatisticCommon
                     using_date = false;
                     m_curDate = m_prevDate;
 
-                    Logging.Logg().Debug("AdminTS::ClearRDG () - states.Clear()", Logging.INDEX_MESSAGE.NOT_SET);
+                    //Logging.Logg().Debug("AdminTS::ClearRDG () - states.Clear() - ...", Logging.INDEX_MESSAGE.NOT_SET);
 
                     AddState((int)StatesMachine.CurrentTime);
                     if (m_markSavedValues.IsMarked((int)INDEX_MARK_PPBRVALUES.ADMIN_AVALIABLE) == true)
@@ -220,7 +220,8 @@ namespace StatisticCommon
                 }
 
                 //Ожидание окончания записи
-                Logging.Logg().Debug("AdminTS::ClearRDG () - semaDBAccess.WaitOne()=" + semaDBAccess.WaitOne(DbInterface.MAX_WATING).ToString(), Logging.INDEX_MESSAGE.NOT_SET);
+                bool bSemaDBAccessWaitRes = semaDBAccess.WaitOne(DbInterface.MAX_WATING);
+                //Logging.Logg().Debug("AdminTS::ClearRDG () - semaDBAccess.WaitOne()=" + bSemaDBAccessWaitRes.ToString(), Logging.INDEX_MESSAGE.NOT_SET);
 
                 try
                 {
@@ -334,7 +335,7 @@ namespace StatisticCommon
 
                 indxTECComponents = indx;
 
-                Logging.Logg().Debug("AdminTS::GetCurrentTime () - states.Clear()", Logging.INDEX_MESSAGE.NOT_SET);
+                //Logging.Logg().Debug("AdminTS::GetCurrentTime () - states.Clear() - ...", Logging.INDEX_MESSAGE.NOT_SET);
 
                 AddState((int)StatesMachine.CurrentTime);
 
@@ -446,10 +447,11 @@ namespace StatisticCommon
         public virtual Errors ExpRDGExcelValues(int indx, DateTime date)
         {
             delegateStartWait();
-            Logging.Logg().Debug("AdminTS::ExpRDGExcelValues () - delegateStartWait() - Интервал ожидания для semaDBAccess=" + DbInterface.MAX_WATING, Logging.INDEX_MESSAGE.NOT_SET);
+            //Logging.Logg().Debug("AdminTS::ExpRDGExcelValues () - delegateStartWait() - Интервал ожидания для semaDBAccess=" + DbInterface.MAX_WATING, Logging.INDEX_MESSAGE.NOT_SET);
 
+            bool bSemaDBAccessWaitRes = semaDBAccess.WaitOne(DbInterface.MAX_WATING);
             //if (semaDBAccess.WaitOne(6666) == true) {
-            if (semaDBAccess.WaitOne(DbInterface.MAX_WATING) == true)
+            if (bSemaDBAccessWaitRes == true)
             {
                 lock (m_lockState)
                 {
@@ -467,7 +469,8 @@ namespace StatisticCommon
                     Run(@"AdminTS::ExpRDGExcelValues ()");
                 }
 
-                Logging.Logg().Debug("AdminTS::ExpRDGExcelValues () - semaDBAccess.WaitOne()=" + semaDBAccess.WaitOne(DbInterface.MAX_WATING).ToString(), Logging.INDEX_MESSAGE.NOT_SET);
+                bSemaDBAccessWaitRes = semaDBAccess.WaitOne(DbInterface.MAX_WATING);
+                //Logging.Logg().Debug("AdminTS::ExpRDGExcelValues () - semaDBAccess.WaitOne()=" + bSemaDBAccessWaitRes.ToString(), Logging.INDEX_MESSAGE.NOT_SET);
                 try
                 {
                     semaDBAccess.Release(1);
@@ -481,7 +484,7 @@ namespace StatisticCommon
             else {
                 lock (m_lockState)
                 {
-                    Logging.Logg().Debug("AdminTS::ExpRDGExcelValues () - semaDBAccess.WaitOne(" + DbInterface.MAX_WATING + @")=false", Logging.INDEX_MESSAGE.NOT_SET);
+                    Logging.Logg().Debug("AdminTS::ExpRDGExcelValues () - semaDBAccess.WaitOne(" + DbInterface.MAX_WATING + @")=" + bSemaDBAccessWaitRes.ToString (), Logging.INDEX_MESSAGE.NOT_SET);
                     
                     saveResult = Errors.NoAccess;
                     saving = true;
@@ -1205,7 +1208,7 @@ namespace StatisticCommon
         
         protected virtual void SetAdminValuesRequest(TEC t, TECComponent comp, DateTime date)
         {
-            Logging.Logg().Debug("AdminTS::SetAdminValuesRequest ()", Logging.INDEX_MESSAGE.NOT_SET);
+            //Logging.Logg().Debug("AdminTS::SetAdminValuesRequest () - ...", Logging.INDEX_MESSAGE.NOT_SET);
 
             string[] query = setAdminValuesQuery(t, comp, date);
 
@@ -1275,7 +1278,7 @@ namespace StatisticCommon
                 }
             }
 
-            Logging.Logg().Debug("AdminTS::ClearAdminValuesRequest ()", Logging.INDEX_MESSAGE.NOT_SET);
+            //Logging.Logg().Debug("AdminTS::ClearAdminValuesRequest () - ...", Logging.INDEX_MESSAGE.NOT_SET);
 
             //Request(m_indxDbInterfaceCommon, m_listenerIdCommon, requestUpdate + requestInsert + requestDelete);
             Request(m_dictIdListeners[t.m_id][(int)CONN_SETT_TYPE.ADMIN], query[(int)DbTSQLInterface.QUERY_TYPE.UPDATE] + query[(int)DbTSQLInterface.QUERY_TYPE.INSERT] + query[(int)DbTSQLInterface.QUERY_TYPE.DELETE]);
@@ -1334,10 +1337,9 @@ namespace StatisticCommon
                                             @", Pmin='" + m_curRDGValues[i].pmin.ToString("F3", CultureInfo.InvariantCulture) + "'" +
                                             @", Pmax='" + m_curRDGValues[i].pmax.ToString("F3", CultureInfo.InvariantCulture) + "'" +
                                             @" WHERE " +
-                                            @"DATE_TIME" + @" = '" + date.AddHours(i + 1).ToString("yyyyMMdd HH:mm:ss") +
-                                            @"'" +
-                                            @" AND ID_COMPONENT = " + comp.m_id +
-                                            @" AND " +
+                                            //@"DATE_TIME" + @" = '" + date.AddHours(i + 1).ToString("yyyyMMdd HH:mm:ss") + @"'" +
+                                            //@" AND ID_COMPONENT = " + comp.m_id +
+                                            //@" AND " +
                                             @"ID = " + m_arHaveDates[(int)CONN_SETT_TYPE.PBR, i] +
                                             @"; ";
                             }
@@ -1490,7 +1492,7 @@ namespace StatisticCommon
                 }
             }
 
-            Logging.Logg().Debug("ClearPPBRRequest", Logging.INDEX_MESSAGE.NOT_SET);
+            //Logging.Logg().Debug("ClearPPBRRequest () - ...", Logging.INDEX_MESSAGE.NOT_SET);
 
             //Request(m_indxDbInterfaceCommon, m_listenerIdCommon, requestUpdate + requestInsert + requestDelete);
             Request(m_dictIdListeners[t.m_id][(int)CONN_SETT_TYPE.PBR], query[(int)DbTSQLInterface.QUERY_TYPE.UPDATE] + query[(int)DbTSQLInterface.QUERY_TYPE.INSERT] + query[(int)DbTSQLInterface.QUERY_TYPE.DELETE]);
@@ -2331,7 +2333,7 @@ namespace StatisticCommon
                         m_curDate = m_prevDate;
                         using_date = false;
 
-                        Logging.Logg().Debug("AdminTS::SaveRDGValues () - states.Clear()", Logging.INDEX_MESSAGE.NOT_SET);
+                        //Logging.Logg().Debug("AdminTS::SaveRDGValues () - states.Clear() - ...", Logging.INDEX_MESSAGE.NOT_SET);
 
                         //AddState((int)StatesMachine.CurrentTime);
                         if (m_markQueries.IsMarked((int)CONN_SETT_TYPE.PBR) == true)

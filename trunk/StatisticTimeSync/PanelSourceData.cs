@@ -125,7 +125,6 @@ namespace StatisticTimeSync
                     
                     //IAsyncResult iar = BeginInvoke(new DelegateFunc(queryConnSett));
                 }
-
                 else
                 {
                     Activate(false);
@@ -140,7 +139,7 @@ namespace StatisticTimeSync
                 //m_arPanels[(int)num].m_labelDiff.Update();
                 //m_PanelGetDate.Invoke(new Action(() => m_PanelGetDate.queryConnSett()));
                 int i = (int)num;
-               queryConnSett();
+                queryConnSett();
             }
 
             /// <summary>
@@ -156,18 +155,16 @@ namespace StatisticTimeSync
             /// <summary>
             /// Запрос на связь с базой
             /// </summary>
-            public void queryConnSett()
+            private void queryConnSett()
             {
                 try
                 {
                     //int i = (int)num;
                     EvtAskedData(new EventArgsDataHost((int)ID_ASKED_DATAHOST.CONN_SETT, new object[] { this }));
                 }
-
-                catch
+                catch (Exception e)
                 {
-                    MessageBox.Show("ERROR");
-                    //Activate(false);
+                    Logging.Logg().Exception(e, Logging.INDEX_MESSAGE.NOT_SET, @"PanelSourceData.PanelGetDate::queryConnSett");
                 }
             }
 
@@ -190,10 +187,9 @@ namespace StatisticTimeSync
 
             }
 
-            public string GetSelectedSourceData()
+            public string GetNameShrSelectedSourceData()
             {
-               //return (string) m_comboBoxSourceData.Invoke(new Action(() => m_comboBoxSourceData.SelectedItem.ToString()));
-                return m_comboBoxSourceData.SelectedItem.ToString();
+                return (string)Invoke(new Func <string> (() => m_comboBoxSourceData.SelectedItem.ToString()));
             }
 
             public void OnEvtDataRecievedHost(EventArgsDataHost ev)
@@ -701,8 +697,9 @@ namespace StatisticTimeSync
                 switch (((EventArgsDataHost)ev).id)
                 {
                     case (int)PanelGetDate.ID_ASKED_DATAHOST.CONN_SETT:
+                        string nameShrSourceData = ((PanelGetDate)((EventArgsDataHost)ev).par[0]).GetNameShrSelectedSourceData();
                         int iListenerId = DbSources.Sources().Register(m_connSett, false, m_connSett.name)
-                            , id = Int32.Parse(m_tableSourceData.Select(@"NAME_SHR = '" + ((PanelGetDate)((EventArgsDataHost)ev).par[0]).GetSelectedSourceData() + @"'")[0][@"ID"].ToString())
+                            , id = Int32.Parse(m_tableSourceData.Select(@"NAME_SHR = '" + nameShrSourceData + @"'")[0][@"ID"].ToString())
                             , err = -1;
                         DataRow rowConnSett = ConnectionSettingsSource.GetConnectionSettings(TYPE_DATABASE_CFG.CFG_200, iListenerId, id, 501, out err).Rows[0];
                         ConnectionSettings connSett = new ConnectionSettings(rowConnSett, -1);
@@ -713,11 +710,9 @@ namespace StatisticTimeSync
                         break;
                 }
             }
-
-            catch
+            catch (Exception e)
             {
-                //MessageBox.Show("Нет связи с БД");
-                //Activate(false);
+                Logging.Logg().Exception(e, Logging.INDEX_MESSAGE.NOT_SET, @"PanelSourceData::onEvtQueryAskedData () - ...");
             }
         }
 
