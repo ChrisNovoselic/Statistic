@@ -536,7 +536,7 @@ namespace StatisticDiagnostic1
 
                 PaintCellActive(numberPanel, point.Y);
 
-                
+
             }
 
             /// <summary>
@@ -890,7 +890,7 @@ namespace StatisticDiagnostic1
                             m_arPanelsTEC[k].TECDataGridView.Rows[i].Cells[4].Value = massiveServ[d, 0];
                             m_arPanelsTEC[k].TECDataGridView.Refresh();
                             //m_arPanelsTEC[k].TECDataGridView.ClearSelection();
-                           m_arPanelsTEC[i].TECDataGridView.AutoResizeColumns();
+                            m_arPanelsTEC[i].TECDataGridView.AutoResizeColumns();
                         }
                     }
                 }
@@ -1480,6 +1480,10 @@ namespace StatisticDiagnostic1
                 m_arPanelsMODES[numP].ModesDataGridView.Rows[numR].Cells[0].Style.BackColor = System.Drawing.Color.Sienna;
             }
 
+            /// <summary>
+            /// 
+            /// </summary>
+            /// <returns></returns>
             public string CheckPBR()
             {
                 string etalon_pbr = string.Empty;
@@ -1488,7 +1492,7 @@ namespace StatisticDiagnostic1
                 {
                     if ((Convert.ToInt32(DateTime.Now.AddHours(-3).Hour)) % 2 == 0)
                     {
-                        etalon_pbr = "ПБР" + (Convert.ToInt32(DateTime.Now.AddHours(-3).Hour) + 1 );
+                        etalon_pbr = "ПБР" + (Convert.ToInt32(DateTime.Now.AddHours(-3).Hour) + 1);
                     }
 
                     else
@@ -1503,7 +1507,7 @@ namespace StatisticDiagnostic1
                 {
                     if ((Convert.ToInt32(DateTime.Now.AddHours(-3).Hour)) % 2 == 0)
                     {
-                        etalon_pbr = "ПБР" + (Convert.ToInt32(DateTime.Now.AddHours(-3).Hour) + 1 );
+                        etalon_pbr = "ПБР" + (Convert.ToInt32(DateTime.Now.AddHours(-3).Hour) + 1);
                     }
 
                     else
@@ -1651,14 +1655,11 @@ namespace StatisticDiagnostic1
             /// <summary>
             /// Функция заполнения ячеек грида Task верменем
             /// </summary>
-            public void ColumTimeTask()
+            public void ColumTimeTask(int i)
             {
                 string text = DateTime.Now.ToString();
 
-                for (int j = 0; j < TaskDataGridView.Rows.Count; j++)
-                {
-                    TaskDataGridView.Rows[j].Cells[3].Value = text.ToString();
-                }
+                TaskDataGridView.Rows[i].Cells[3].Value = text.ToString();
             }
 
             /// <summary>
@@ -1698,7 +1699,7 @@ namespace StatisticDiagnostic1
                     TaskDataGridView.Invoke(new Action(() => TaskDataGridView.Rows[counter].Cells[0].Value = DR[0][6]));
                     TaskDataGridView.Update();
 
-                    ColumTimeTask();
+                    ColumTimeTask(counter);
                 }
 
                 else
@@ -1726,14 +1727,14 @@ namespace StatisticDiagnostic1
                 {
                     string filterTask = null;
                     filterTask = "NAME_SHR ='";
-                    filterTask += TaskDataGridView.Rows[i].Cells[0].Value.ToString()+"'";
+                    filterTask += TaskDataGridView.Rows[i].Cells[0].Value.ToString() + "'";
 
                     DataRow[] dr = m_tableSourceData.Select(filterTask);
 
                     TaskDataGridView.Rows[i].Cells[0].Value = dr[0][6].ToString();
                     TaskDataGridView.Rows[i].Cells[1].Value = dr[0][1].ToString();
                     TaskDataGridView.Rows[i].Cells[2].Value = dr[1][1].ToString();
-                    ColumTimeTask();
+                    ColumTimeTask(i);
                 }
             }
         }
