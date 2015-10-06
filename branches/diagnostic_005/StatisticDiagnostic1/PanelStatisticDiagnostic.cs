@@ -1481,7 +1481,7 @@ namespace StatisticDiagnostic1
             }
 
             /// <summary>
-            /// 
+            /// нахождение эталоного пбр
             /// </summary>
             /// <returns></returns>
             public string CheckPBR()
