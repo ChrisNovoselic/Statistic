@@ -146,6 +146,7 @@ namespace StatisticDiagnostic1
         enum Units : int { Value = 12, Date };
         static DataTable tbModes = new DataTable();
         static DataTable m_tableSourceData;
+        static DataTable m_tableSourcePBR;
         public DataTable arraySourceDataTask = new DataTable();
         static DataTable arraySource = new DataTable();
         static DataTable array_GTP = new DataTable();
@@ -184,7 +185,8 @@ namespace StatisticDiagnostic1
         /// </summary>
         public void RefreshDataSource()
         {
-            collection_data();
+            PingSourceData();
+            Start();
         }
 
         /// <summary>
@@ -229,17 +231,12 @@ namespace StatisticDiagnostic1
         /// </summary>
         public class HDataSource : HHandlerDb
         {
-            PanelStatisticDiagnostic1 Parent;
             ConnectionSettings m_connSett;
 
             protected enum State
             {
-                Command
-            }
-
-            public HDataSource(PanelStatisticDiagnostic1 parent)
-            {
-                this.Parent = parent;
+                Command,
+                PBR
             }
 
             public HDataSource(ConnectionSettings connSett)
@@ -280,8 +277,9 @@ namespace StatisticDiagnostic1
                 switch (state)
                 {
                     case (int)State.Command:
-                        Request(m_dictIdListeners[0][0], @"Select * from Source_Diagnostic");
+                        Request(m_dictIdListeners[0][0], @"Select * from Diagnostic");
                         break;
+
                     default:
                         break;
                 }
@@ -305,6 +303,11 @@ namespace StatisticDiagnostic1
                     case (int)State.Command:
                         iRes = response(m_IdListenerCurrent, out error, out table);
                         break;
+
+                    case (int)State.PBR:
+                        iRes = response(m_IdListenerCurrent, out error, out table);
+                        break;
+
                     default:
                         break;
                 }
@@ -330,7 +333,9 @@ namespace StatisticDiagnostic1
                 {
                     case (int)State.Command:
                         EvtRecievedTable(table);
+                        //AddState((int)State.PBR);
                         break;
+
                     default:
                         break;
                 }
@@ -768,12 +773,10 @@ namespace StatisticDiagnostic1
                     if (m_arPanelsTEC[i].TECDataGridView.InvokeRequired)
                     {
                         m_arPanelsTEC[i].TECDataGridView.Invoke(new Action(() => m_arPanelsTEC[i].LabelTec.Text = str));
-                        //m_arPanelsTEC[i].TECDataGridView.Invoke(new Action(() => m_arPanelsTEC[i].TECDataGridView.Update()));
                     }
                     else
                     {
                         m_arPanelsTEC[i].LabelTec.Text = str;
-                        //m_arPanelsTEC[i].TECDataGridView.Update();
                     }
                 }
 
@@ -1066,8 +1069,8 @@ namespace StatisticDiagnostic1
                 this.ModesDataGridView.ColumnCount = 5;
                 this.ModesDataGridView.Columns[0].Name = "Источник данных";
                 this.ModesDataGridView.Columns[1].Name = "Крайнее время";
-                this.ModesDataGridView.Columns[3].Name = "Время проверки";
                 this.ModesDataGridView.Columns[2].Name = "Крайнее значение";
+                this.ModesDataGridView.Columns[3].Name = "Время проверки";
                 this.ModesDataGridView.Columns[4].Name = "Связь";
                 this.ModesDataGridView.Resize += new EventHandler(m_arPanelsMODES_Cell);
                 this.ModesDataGridView.CellClick += new DataGridViewCellEventHandler(m_arPanelsMODES_Cell);
@@ -1171,38 +1174,39 @@ namespace StatisticDiagnostic1
                     filter1 = @"ID_Value = '" + DR[d + 1][@"Component"] + "'";
 
                     dr = m_tableSourceData.Select(filter1);
+                    
 
                     AddRowsModes(i, 1);
                     tic++;
                     if (m_arPanelsMODES[i].ModesDataGridView.InvokeRequired)
                     {
-                        if (CheckPBR() == dr[0][1].ToString())
+                        if (CheckPBR() == dr[0][2].ToString())
                         {
                             PaintPbrTrue(i, tic);
                         }
                         else PaintPbrError(i, tic);
 
                         m_arPanelsMODES[i].ModesDataGridView.Invoke(new Action(() => m_arPanelsMODES[i].ModesDataGridView.Rows[tic].Cells[0].Value = dr[0][0]));
-                        m_arPanelsMODES[i].ModesDataGridView.Invoke(new Action(() => m_arPanelsMODES[i].ModesDataGridView.Rows[tic].Cells[2].Value = dr[0][1]));
-                        m_arPanelsMODES[i].ModesDataGridView.Invoke(new Action(() => m_arPanelsMODES[i].ModesDataGridView.Rows[tic].Cells[1].Value = dr[1][1]));
+                        m_arPanelsMODES[i].ModesDataGridView.Invoke(new Action(() => m_arPanelsMODES[i].ModesDataGridView.Rows[tic].Cells[2].Value = dr[1][1]));
+                        m_arPanelsMODES[i].ModesDataGridView.Invoke(new Action(() => m_arPanelsMODES[i].ModesDataGridView.Rows[tic].Cells[1].Value = dr[0][1]));
                     }
                     else
                     {
-                        if (CheckPBR() == dr[0][1].ToString())
+                        if (CheckPBR() == dr[0][2].ToString())
                         {
                             PaintPbrTrue(i, tic);
                         }
                         else PaintPbrError(i, tic);
 
                         m_arPanelsMODES[i].ModesDataGridView.Rows[tic].Cells[0].Value = dr[0][0];
-                        m_arPanelsMODES[i].ModesDataGridView.Rows[tic].Cells[2].Value = dr[0][1];
-                        m_arPanelsMODES[i].ModesDataGridView.Rows[tic].Cells[1].Value = dr[1][1];
+                        m_arPanelsMODES[i].ModesDataGridView.Rows[tic].Cells[2].Value = dr[1][1];
+                        m_arPanelsMODES[i].ModesDataGridView.Rows[tic].Cells[1].Value = dr[0][1];
                     }
                 }
             }
 
             /// <summary>
-            /// заполненеи панели данными
+            /// заполнение панели данными
             /// </summary>
             /// <param name="filter12"></param>
             /// <param name="i"></param>
@@ -1214,34 +1218,42 @@ namespace StatisticDiagnostic1
                     InsertDataMC(i, filter2);
                 }
 
-                DataRow[] DR;
-
-                DR = m_tableSourceData.Select(filter12);
-
-                for (int r = 0; r < m_tableSourceData.Select(filter12).Length; r++)
+                else
                 {
-                    if (m_arPanelsMODES[i].ModesDataGridView.InvokeRequired)
+                    DataRow[] DR;
+                    DataRow[] dr;
+
+                    dr = tbModes.Select(filter12);
+
+                    for (int r = 0; r < tbModes.Select(filter12).Length; r++)
                     {
-                        m_arPanelsMODES[i].ModesDataGridView.Invoke(new Action(() => m_arPanelsMODES[i].ModesDataGridView.Rows[r].Cells[0].Value = DR[r][0]));
-                        if (CheckPBR() == DR[0][1].ToString())
+                        string filterComp = "ID_Value = '" + dr[r][3].ToString()+"'";
+
+                        DR = m_tableSourceData.Select(filterComp);
+                        AddRowsModes(i, 1);
+                        if (m_arPanelsMODES[i].ModesDataGridView.InvokeRequired)
                         {
-                            PaintPbrTrue(i, r);
+                            m_arPanelsMODES[i].ModesDataGridView.Invoke(new Action(() => m_arPanelsMODES[i].ModesDataGridView.Rows[r].Cells[0].Value = DR[0][0]));
+                            if (CheckPBR() == DR[0][2].ToString())
+                            {
+                                PaintPbrTrue(i, r);
+                            }
+                            else PaintPbrError(i, r);
+                            m_arPanelsMODES[i].ModesDataGridView.Invoke(new Action(() => m_arPanelsMODES[i].ModesDataGridView.Rows[r].Cells[1].Value = DR[0][1]));
+                            m_arPanelsMODES[i].ModesDataGridView.Invoke(new Action(() => m_arPanelsMODES[i].ModesDataGridView.Rows[r].Cells[2].Value = DR[1][1]));
                         }
-                        else PaintPbrError(i, r);
-
-                        m_arPanelsMODES[i].ModesDataGridView.Invoke(new Action(() => m_arPanelsMODES[i].ModesDataGridView.Rows[r].Cells[2].Value = DR[r][1]));
-                    }
-                    else
-                    {
-                        m_arPanelsMODES[i].ModesDataGridView.Rows[r].Cells[0].Value = DR[r][0];
-                        if (CheckPBR() == DR[0][1].ToString())
+                        else
                         {
-                            PaintPbrTrue(i, r);
+                            m_arPanelsMODES[i].ModesDataGridView.Rows[r].Cells[0].Value = DR[0][0];
+                            if (CheckPBR() == DR[0][2].ToString())
+                            {
+                                PaintPbrTrue(i, r);
+                            }
+                            else PaintPbrError(i, r);
+                            m_arPanelsMODES[i].ModesDataGridView.Rows[r].Cells[1].Value = DR[0][1];
+                            m_arPanelsMODES[i].ModesDataGridView.Rows[r].Cells[2].Value = DR[1][1];
+
                         }
-                        else PaintPbrError(i, r);
-
-                        m_arPanelsMODES[i].ModesDataGridView.Rows[r].Cells[2].Value = DR[r][1];
-
                     }
                 }
             }
@@ -1254,11 +1266,15 @@ namespace StatisticDiagnostic1
             public void InsertExtremeDateModes(string filter13, int i)
             {
                 DataRow[] DR;
+                DataRow[] dr;
 
-                DR = m_tableSourceData.Select(filter13);
+                dr = tbModes.Select(filter13);
 
-                for (int r = 0; r < m_tableSourceData.Select(filter13).Length; r++)
+                for (int r = 0; r < tbModes.Select(filter13).Length; r++)
                 {
+                    string filterComp = "ID_COMPONENT = " + dr[r][0].ToString();
+                    DR = m_tableSourcePBR.Select(filterComp);
+
                     if (m_arPanelsMODES[i].ModesDataGridView.InvokeRequired)
                     {
                         m_arPanelsMODES[i].ModesDataGridView.Invoke(new Action(() => m_arPanelsMODES[i].ModesDataGridView.Rows[r].Cells[1].Value = DR[r][1]));
@@ -1283,8 +1299,8 @@ namespace StatisticDiagnostic1
 
                 for (int i = 0; i < m_arPanelsMODES.Length; i++)
                 {
-                    string filter12 = "ID_Units = " + (int)Units.Value + " and ID_EXT = " + Convert.ToInt32(stdDetails.ElementAt(i).ID);
-                    string filter13 = "ID_Units = " + (int)Units.Date + " and ID_EXT = " + Convert.ToInt32(stdDetails.ElementAt(i).ID);
+                    string filter12 = "ID = " + Convert.ToInt32(stdDetails.ElementAt(i).ID);
+                    string filter13 = "ID = " + Convert.ToInt32(stdDetails.ElementAt(i).ID);
 
                     //проверка на пустоту
                     while (m_tableSourceData == null)
@@ -1293,9 +1309,7 @@ namespace StatisticDiagnostic1
                     }
 
                     ClearGridsModes(i);
-                    AddRowsModes(i, m_tableSourceData.Select(filter12).Length);
                     InsertDataModes(filter12, i);
-                    InsertExtremeDateModes(filter13, i);
                 }
 
                 HeaderTextModes();
@@ -1922,9 +1936,9 @@ namespace StatisticDiagnostic1
 
             if ((err == 0) && (!(dbconn == null)))
             {
-                arraySourceDataTask = DbTSQLInterface.Select(ref dbconn, "SELECT * FROM TASK_LIST", null, null, out err);
-                arrayKeys_DataSheet = DbTSQLInterface.Select(ref dbconn, "SELECT * FROM Keys_Datasheet", null, null, out err);
-                tbModes = DbTSQLInterface.Select(ref dbconn, "SELECT * FROM Modes_List", null, null, out err);
+                arraySourceDataTask = DbTSQLInterface.Select(ref dbconn, "SELECT * FROM DIAGNOSTIC_TASK_SOURCES", null, null, out err);
+                arrayKeys_DataSheet = DbTSQLInterface.Select(ref dbconn, "SELECT * FROM DIAGNOSTIC_PARAM", null, null, out err);
+                tbModes = DbTSQLInterface.Select(ref dbconn, "SELECT * FROM DIAGNOSTIC_TASK_MODES", null, null, out err);
                 array_GTP = DbTSQLInterface.Select(ref dbconn, "SELECT * FROM GTP_LIST", null, null, out err);
                 arraySource = DbTSQLInterface.Select(ref dbconn, "SELECT * FROM SOURCE", null, null, out err);
                 arraySourceTEC = InitTEC_200.getListTEC(ref dbconn, false, out err);
@@ -1952,8 +1966,8 @@ namespace StatisticDiagnostic1
         /// </summary>
         public void start()
         {
-            StartModes();
             StartPanelTec();
+            StartModes();
             AddPanel();
         }
 
