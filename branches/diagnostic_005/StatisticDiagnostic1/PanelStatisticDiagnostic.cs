@@ -688,17 +688,17 @@ namespace StatisticDiagnostic1
                     {
                         if (m_arPanelsTEC[i].TECDataGridView.InvokeRequired)
                         {
-                            m_arPanelsTEC[i].TECDataGridView.Invoke(new Action(() => m_arPanelsTEC[i].TECDataGridView.Rows[r].Cells[0].Value = DR[r][0]));
-                            m_arPanelsTEC[i].TECDataGridView.Invoke(new Action(() => m_arPanelsTEC[i].TECDataGridView.Rows[r].Cells[2].Value = DR[r][1]));
-                            m_arPanelsTEC[i].TECDataGridView.Invoke(new Action(() => m_arPanelsTEC[i].TECDataGridView.Rows[r].Cells[5].Value = DR[r][6]));
+                            m_arPanelsTEC[i].TECDataGridView.Invoke(new Action(() => m_arPanelsTEC[i].TECDataGridView.Rows[r].Cells[0].Value = DR[r]["ID_Value"]));
+                            m_arPanelsTEC[i].TECDataGridView.Invoke(new Action(() => m_arPanelsTEC[i].TECDataGridView.Rows[r].Cells[2].Value = DR[r]["Value"]));
+                            m_arPanelsTEC[i].TECDataGridView.Invoke(new Action(() => m_arPanelsTEC[i].TECDataGridView.Rows[r].Cells[5].Value = DR[r]["NAME_SHR"]));
                             m_arPanelsTEC[i].TECDataGridView.Invoke(new Action(() => m_arPanelsTEC[i].TECDataGridView.Columns[5].Visible = false));
                             m_arPanelsTEC[i].TECDataGridView.Invoke(new Action(() => m_arPanelsTEC[i].TECDataGridView.AutoResizeColumns()));
                         }
                         else
                         {
-                            m_arPanelsTEC[i].TECDataGridView.Rows[r].Cells[0].Value = DR[r][0];
-                            m_arPanelsTEC[i].TECDataGridView.Rows[r].Cells[2].Value = DR[r][1];
-                            m_arPanelsTEC[i].TECDataGridView.Rows[r].Cells[5].Value = DR[r][6];
+                            m_arPanelsTEC[i].TECDataGridView.Rows[r].Cells[0].Value = DR[r]["ID_Value"];
+                            m_arPanelsTEC[i].TECDataGridView.Rows[r].Cells[2].Value = DR[r]["Value"];
+                            m_arPanelsTEC[i].TECDataGridView.Rows[r].Cells[5].Value = DR[r]["NAME_SHR"];
                             m_arPanelsTEC[i].TECDataGridView.Columns[5].Visible = false;
                             m_arPanelsTEC[i].TECDataGridView.AutoResizeColumns();
                         }
@@ -722,13 +722,11 @@ namespace StatisticDiagnostic1
                     {
                         if (m_arPanelsTEC[i].TECDataGridView.InvokeRequired)
                         {
-                            m_arPanelsTEC[i].TECDataGridView.Invoke(new Action(() => m_arPanelsTEC[i].TECDataGridView.Rows[r].Cells[1].Value = DR[r][1]));
-                            m_arPanelsTEC[i].TECDataGridView.Invoke(new Action(() => m_arPanelsTEC[i].TECDataGridView.AutoResizeColumns()));
+                            m_arPanelsTEC[i].TECDataGridView.Invoke(new Action(() => m_arPanelsTEC[i].TECDataGridView.Rows[r].Cells[1].Value = DR[r]["Value"]));
                         }
                         else
                         {
-                            m_arPanelsTEC[i].TECDataGridView.Rows[r].Cells[1].Value = DR[r][1];
-                            m_arPanelsTEC[i].TECDataGridView.AutoResizeColumns();
+                            m_arPanelsTEC[i].TECDataGridView.Rows[r].Cells[1].Value = DR[r]["Value"];
                         }
                     }
                 }
@@ -885,15 +883,11 @@ namespace StatisticDiagnostic1
                         {
                             m_arPanelsTEC[k].TECDataGridView.Invoke(new Action(() => m_arPanelsTEC[k].TECDataGridView.Rows[i].Cells[4].Value = massiveServ[d, 0]));
                             m_arPanelsTEC[k].TECDataGridView.Invoke(new Action(() => m_arPanelsTEC[k].TECDataGridView.Refresh()));
-                            //m_arPanelsTEC[k].TECDataGridView.Invoke(new Action(() => m_arPanelsTEC[k].TECDataGridView.ClearSelection()));
-                            m_arPanelsTEC[i].TECDataGridView.Invoke(new Action(() => m_arPanelsTEC[i].TECDataGridView.AutoResizeColumns()));
                         }
                         else
                         {
                             m_arPanelsTEC[k].TECDataGridView.Rows[i].Cells[4].Value = massiveServ[d, 0];
                             m_arPanelsTEC[k].TECDataGridView.Refresh();
-                            //m_arPanelsTEC[k].TECDataGridView.ClearSelection();
-                            m_arPanelsTEC[i].TECDataGridView.AutoResizeColumns();
                         }
                     }
                 }
