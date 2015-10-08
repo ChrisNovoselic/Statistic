@@ -1186,9 +1186,9 @@ namespace StatisticDiagnostic1
                         }
                         else PaintPbrError(i, tic);
 
-                        m_arPanelsMODES[i].ModesDataGridView.Invoke(new Action(() => m_arPanelsMODES[i].ModesDataGridView.Rows[tic].Cells[0].Value = dr[0][0]));
-                        m_arPanelsMODES[i].ModesDataGridView.Invoke(new Action(() => m_arPanelsMODES[i].ModesDataGridView.Rows[tic].Cells[2].Value = dr[1][1]));
-                        m_arPanelsMODES[i].ModesDataGridView.Invoke(new Action(() => m_arPanelsMODES[i].ModesDataGridView.Rows[tic].Cells[1].Value = dr[0][1]));
+                        m_arPanelsMODES[i].ModesDataGridView.Invoke(new Action(() => m_arPanelsMODES[i].ModesDataGridView.Rows[tic].Cells[0].Value = dr[0]["ID_Value"]));
+                        m_arPanelsMODES[i].ModesDataGridView.Invoke(new Action(() => m_arPanelsMODES[i].ModesDataGridView.Rows[tic].Cells[2].Value = dr[1]["Value"]));
+                        m_arPanelsMODES[i].ModesDataGridView.Invoke(new Action(() => m_arPanelsMODES[i].ModesDataGridView.Rows[tic].Cells[1].Value = dr[0]["Value"]));
                     }
                     else
                     {
@@ -1198,9 +1198,9 @@ namespace StatisticDiagnostic1
                         }
                         else PaintPbrError(i, tic);
 
-                        m_arPanelsMODES[i].ModesDataGridView.Rows[tic].Cells[0].Value = dr[0][0];
-                        m_arPanelsMODES[i].ModesDataGridView.Rows[tic].Cells[2].Value = dr[1][1];
-                        m_arPanelsMODES[i].ModesDataGridView.Rows[tic].Cells[1].Value = dr[0][1];
+                        m_arPanelsMODES[i].ModesDataGridView.Rows[tic].Cells[0].Value = dr[0]["ID_Value"];
+                        m_arPanelsMODES[i].ModesDataGridView.Rows[tic].Cells[2].Value = dr[1]["Value"];
+                        m_arPanelsMODES[i].ModesDataGridView.Rows[tic].Cells[1].Value = dr[0]["Value"];
                     }
                 }
             }
