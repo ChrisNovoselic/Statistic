@@ -1180,7 +1180,7 @@ namespace StatisticDiagnostic1
                     tic++;
                     if (m_arPanelsMODES[i].ModesDataGridView.InvokeRequired)
                     {
-                        if (CheckPBR() == dr[0][2].ToString())
+                        if (CheckPBR() == dr[0]["Value"].ToString())
                         {
                             PaintPbrTrue(i, tic);
                         }
@@ -1192,7 +1192,7 @@ namespace StatisticDiagnostic1
                     }
                     else
                     {
-                        if (CheckPBR() == dr[0][2].ToString())
+                        if (CheckPBR() == dr[0]["Value"].ToString())
                         {
                             PaintPbrTrue(i, tic);
                         }
@@ -1233,55 +1233,27 @@ namespace StatisticDiagnostic1
                         AddRowsModes(i, 1);
                         if (m_arPanelsMODES[i].ModesDataGridView.InvokeRequired)
                         {
-                            m_arPanelsMODES[i].ModesDataGridView.Invoke(new Action(() => m_arPanelsMODES[i].ModesDataGridView.Rows[r].Cells[0].Value = DR[0][0]));
-                            if (CheckPBR() == DR[0][2].ToString())
+                            m_arPanelsMODES[i].ModesDataGridView.Invoke(new Action(() => m_arPanelsMODES[i].ModesDataGridView.Rows[r].Cells[0].Value = DR[0]["ID_Value"]));
+                            if (CheckPBR() == DR[0]["Value"].ToString())
                             {
                                 PaintPbrTrue(i, r);
                             }
                             else PaintPbrError(i, r);
-                            m_arPanelsMODES[i].ModesDataGridView.Invoke(new Action(() => m_arPanelsMODES[i].ModesDataGridView.Rows[r].Cells[1].Value = DR[0][1]));
-                            m_arPanelsMODES[i].ModesDataGridView.Invoke(new Action(() => m_arPanelsMODES[i].ModesDataGridView.Rows[r].Cells[2].Value = DR[1][1]));
+                            m_arPanelsMODES[i].ModesDataGridView.Invoke(new Action(() => m_arPanelsMODES[i].ModesDataGridView.Rows[r].Cells[1].Value = DR[0]["Value"]));
+                            m_arPanelsMODES[i].ModesDataGridView.Invoke(new Action(() => m_arPanelsMODES[i].ModesDataGridView.Rows[r].Cells[2].Value = DR[1]["Value"]));
                         }
                         else
                         {
-                            m_arPanelsMODES[i].ModesDataGridView.Rows[r].Cells[0].Value = DR[0][0];
-                            if (CheckPBR() == DR[0][2].ToString())
+                            m_arPanelsMODES[i].ModesDataGridView.Rows[r].Cells[0].Value = DR[0]["ID_Value"];
+                            if (CheckPBR() == DR[0]["Value"].ToString())
                             {
                                 PaintPbrTrue(i, r);
                             }
                             else PaintPbrError(i, r);
-                            m_arPanelsMODES[i].ModesDataGridView.Rows[r].Cells[1].Value = DR[0][1];
-                            m_arPanelsMODES[i].ModesDataGridView.Rows[r].Cells[2].Value = DR[1][1];
+                            m_arPanelsMODES[i].ModesDataGridView.Rows[r].Cells[1].Value = DR[0]["Value"];
+                            m_arPanelsMODES[i].ModesDataGridView.Rows[r].Cells[2].Value = DR[1]["Value"];
 
                         }
-                    }
-                }
-            }
-
-            /// <summary>
-            /// заполненеи панели  датой/время
-            /// </summary>
-            /// <param name="filter12"></param>
-            /// <param name="i"></param>
-            public void InsertExtremeDateModes(string filter13, int i)
-            {
-                DataRow[] DR;
-                DataRow[] dr;
-
-                dr = tbModes.Select(filter13);
-
-                for (int r = 0; r < tbModes.Select(filter13).Length; r++)
-                {
-                    string filterComp = "ID_COMPONENT = " + dr[r][0].ToString();
-                    DR = m_tableSourcePBR.Select(filterComp);
-
-                    if (m_arPanelsMODES[i].ModesDataGridView.InvokeRequired)
-                    {
-                        m_arPanelsMODES[i].ModesDataGridView.Invoke(new Action(() => m_arPanelsMODES[i].ModesDataGridView.Rows[r].Cells[1].Value = DR[r][1]));
-                    }
-                    else
-                    {
-                        m_arPanelsMODES[i].ModesDataGridView.Rows[r].Cells[1].Value = DR[r][1];
                     }
                 }
             }
@@ -1300,7 +1272,6 @@ namespace StatisticDiagnostic1
                 for (int i = 0; i < m_arPanelsMODES.Length; i++)
                 {
                     string filter12 = "ID = " + Convert.ToInt32(stdDetails.ElementAt(i).ID);
-                    string filter13 = "ID = " + Convert.ToInt32(stdDetails.ElementAt(i).ID);
 
                     //проверка на пустоту
                     while (m_tableSourceData == null)
@@ -1502,7 +1473,7 @@ namespace StatisticDiagnostic1
             {
                 string etalon_pbr = string.Empty;
 
-                if ((Convert.ToInt32(DateTime.Now.AddHours(-3).Minute)) > 40)
+                if ((Convert.ToInt32(DateTime.Now.AddHours(-3).Minute)) > 42)
                 {
                     if ((Convert.ToInt32(DateTime.Now.AddHours(-3).Hour)) % 2 == 0)
                     {
