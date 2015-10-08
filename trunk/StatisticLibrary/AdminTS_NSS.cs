@@ -92,8 +92,6 @@ namespace StatisticCommon
 
             RDGStruct []curRDGValues = new RDGStruct [m_curRDGValues.Length];            
 
-            //curRDGValues = (RDGStruct[])m_curRDGValues.Clone();
-
             m_curRDGValues.CopyTo(curRDGValues, 0);
 
             for (int i = 0; i < m_curRDGValues.Length; i ++) {

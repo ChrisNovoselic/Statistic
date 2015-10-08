@@ -102,7 +102,7 @@ namespace StatisticCommon
 
         protected override void Initialize () {
             base.Initialize ();
-        }
+        }   
 
         public virtual Errors SaveChanges()
         {
@@ -1390,6 +1390,12 @@ namespace StatisticCommon
             return resQuery;
         }
 
+        /// <summary>
+        /// 
+        /// </summary>
+        /// <param name="t"></param>
+        /// <param name="comp"></param>
+        /// <param name="date"></param>
         protected /*virtual*/ void SetPPBRRequest(TEC t, TECComponent comp, DateTime date)
         {
             string[] query = setPPBRQuery(t, comp, date);
@@ -1645,6 +1651,7 @@ namespace StatisticCommon
                     strRep = @"Получение текущего времени сервера.";
                     GetCurrentTimeRequest();
                     break;
+
                 case (int)StatesMachine.PPBRValues:
                     strRep = @"Получение данных плана.";
                     if (indxTECComponents < allTECComponents.Count)
@@ -1652,6 +1659,7 @@ namespace StatisticCommon
                     else
                         ; //result = false;
                     break;
+
                 case (int)StatesMachine.AdminValues:
                     strRep = @"Получение административных данных.";
                     if ((indxTECComponents < allTECComponents.Count) && (m_markQueries.IsMarked ((int)CONN_SETT_TYPE.ADMIN) == true))
@@ -1661,18 +1669,22 @@ namespace StatisticCommon
 
                     //this.BeginInvoke(delegateCalendarSetDate, m_prevDatetime);
                     break;
+
                 case (int)StatesMachine.ImpRDGExcelValues:
                     strRep = @"Импорт РДГ из Excel.";
                     delegateImportForeignValuesRequuest();
                     break;
+
                 case (int)StatesMachine.ExpRDGExcelValues:
                     strRep = @"Экспорт РДГ в книгу Excel.";
                     delegateExportForeignValuesRequuest();
                     break;
+
                  case (int)StatesMachine.CSVValues:
                     strRep = @"Импорт из формата CSV.";
                     delegateImportForeignValuesRequuest();
                     break;
+
                 case (int)StatesMachine.PPBRDates:
                     if ((serverTime.Date > m_curDate.Date) && (m_ignore_date == false))
                     {
@@ -1693,6 +1705,7 @@ namespace StatisticCommon
                     strRep = @"Получение списка сохранённых часовых значений.";
                     GetPPBRDatesRequest(m_curDate);
                     break;
+
                 case (int)StatesMachine.AdminDates:
                     //int offset_days = (m_curDate.Date - serverTime.Date).Days;
                     //if (((offset_days > 0) && (m_ignore_date == false))

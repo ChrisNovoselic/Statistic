@@ -8,12 +8,16 @@ using System.Data;
 using HClassLibrary;
 using StatisticCommon;
 using StatisticTransModes;
+using StatisticTrans;
 
 namespace trans_mc
 {
     public class AdminMC : AdminModes
     {
         string m_strMCServiceHost;
+
+
+        //TransPBR tPBR = new TransPBR();
 
         protected enum StatesMachine
         {
@@ -22,12 +26,15 @@ namespace trans_mc
             PPBRDates,
         }
 
-        public AdminMC (string strMCServiceHost) : base ()
+        public AdminMC(string strMCServiceHost)
+            : base()
         {
             m_strMCServiceHost = strMCServiceHost;
         }
 
-        protected override void GetPPBRDatesRequest(DateTime date) {
+        protected override void GetPPBRDatesRequest(DateTime date)
+        {
+
         }
 
         protected override void GetPPBRValuesRequest(TEC t, TECComponent comp, DateTime date, AdminTS.TYPE_FIELDS mode)
@@ -45,8 +52,9 @@ namespace trans_mc
                 if ((i + 1) < comp.m_listMCentreId.Count) query += ","; else ;
             }
 
+            //tPBR.GetComp(str, "MC");
             query += ";";
-            query += date.ToOADate ().ToString ();
+            query += date.ToOADate().ToString();
 
             DbMCSources.Sources().Request(m_IdListenerCurrent, query); //
 
@@ -68,77 +76,78 @@ namespace trans_mc
                 offsetPBR = 2
                 , offset = 0;
 
-            for (i = 0; i < table.Rows.Count; i ++)
+            for (i = 0; i < table.Rows.Count; i++)
             {
                 try
+                {
+                    hour = ((DateTime)table.Rows[i]["DATE_PBR"]).Hour;
+                    if ((hour == 0) && (!(((DateTime)table.Rows[i]["DATE_PBR"]).Day == date.Day)))
+                        hour = 24;
+                    else
+                        if (hour == 0)
+                            continue;
+                        else
+                            ;
+
+                    hour += offset;
+
+                    m_curRDGValues[hour - 1].pbr_number = table.Rows[i][@"PBR_NUMBER"].ToString();
+
+                    //for (j = 0; j < 3 /*4 для SN???*/; j ++)
+                    //{
+                    j = 0;
+                    if (!(table.Rows[i][offsetPBR + j] is DBNull))
+                        m_curRDGValues[hour - 1].pbr = (double)table.Rows[i][offsetPBR + j];
+                    else
+                        m_curRDGValues[hour - 1].pbr = 0;
+                    //}
+
+                    j = 1;
+                    if (!(table.Rows[i][offsetPBR + j] is DBNull))
+                        m_curRDGValues[hour - 1].pmin = (double)table.Rows[i][offsetPBR + j];
+                    else
+                        m_curRDGValues[hour - 1].pmin = 0;
+
+                    j = 2;
+                    if (!(table.Rows[i][offsetPBR + j] is DBNull))
+                        m_curRDGValues[hour - 1].pmax = (double)table.Rows[i][offsetPBR + j];
+                    else
+                        m_curRDGValues[hour - 1].pmax = 0;
+
+                    m_curRDGValues[hour - 1].recomendation = 0;
+                    m_curRDGValues[hour - 1].deviationPercent = false;
+                    m_curRDGValues[hour - 1].deviation = 0;
+
+                    //Копирование при переходе лето-зима (-1)                        
+                    if ((m_curDate.Date.Equals(HAdmin.SeasonDateTime.Date) == true) && (hour == (HAdmin.SeasonDateTime.Hour - 0)))
                     {
-                        hour = ((DateTime)table.Rows[i]["DATE_PBR"]).Hour;
-                        if ((hour == 0) && (! (((DateTime)table.Rows[i]["DATE_PBR"]).Day == date.Day)))
-                            hour = 24;
-                        else
-                            if (hour == 0)
-                                continue;
-                            else
-                                ;
+                        m_curRDGValues[hour].pbr_number = m_curRDGValues[hour - 1].pbr_number;
+                        m_curRDGValues[hour].dtRecUpdate = m_curRDGValues[hour - 1].dtRecUpdate;
 
-                        hour += offset;
+                        m_curRDGValues[hour].pbr = m_curRDGValues[hour - 1].pbr;
 
-                        m_curRDGValues[hour - 1].pbr_number = table.Rows[i][@"PBR_NUMBER"].ToString();
+                        m_curRDGValues[hour].pmin = m_curRDGValues[hour - 1].pmin;
 
-                        //for (j = 0; j < 3 /*4 для SN???*/; j ++)
-                        //{
-                            j = 0;
-                            if (!(table.Rows[i][offsetPBR + j] is DBNull))
-                                m_curRDGValues[hour - 1].pbr = (double)table.Rows[i][offsetPBR + j];
-                            else
-                                m_curRDGValues[hour - 1].pbr = 0;
-                        //}
+                        m_curRDGValues[hour].pmax = m_curRDGValues[hour - 1].pmax;
 
-                        j = 1;
-                        if (!(table.Rows[i][offsetPBR + j] is DBNull))
-                            m_curRDGValues[hour - 1].pmin = (double)table.Rows[i][offsetPBR + j];
-                        else
-                            m_curRDGValues[hour - 1].pmin = 0;
+                        m_curRDGValues[hour].recomendation = m_curRDGValues[hour - 1].recomendation;
+                        m_curRDGValues[hour].deviationPercent = m_curRDGValues[hour - 1].deviationPercent;
+                        m_curRDGValues[hour].deviation = m_curRDGValues[hour - 1].deviation;
 
-                        j = 2;
-                        if (!(table.Rows[i][offsetPBR + j] is DBNull))
-                            m_curRDGValues[hour - 1].pmax = (double)table.Rows[i][offsetPBR + j];
-                        else
-                            m_curRDGValues[hour - 1].pmax = 0;
-
-                        m_curRDGValues[hour - 1].recomendation = 0;
-                        m_curRDGValues[hour - 1].deviationPercent = false;
-                        m_curRDGValues[hour - 1].deviation = 0;
-
-                        //Копирование при переходе лето-зима (-1)                        
-                        if ((m_curDate.Date.Equals(HAdmin.SeasonDateTime.Date) == true) && (hour == (HAdmin.SeasonDateTime.Hour - 0)))
-                        {
-                            m_curRDGValues[hour].pbr_number = m_curRDGValues[hour - 1].pbr_number;
-                            m_curRDGValues[hour].dtRecUpdate = m_curRDGValues[hour - 1].dtRecUpdate;
-
-                            m_curRDGValues[hour].pbr = m_curRDGValues[hour - 1].pbr;
-
-                            m_curRDGValues[hour].pmin = m_curRDGValues[hour - 1].pmin;
-
-                            m_curRDGValues[hour].pmax = m_curRDGValues[hour - 1].pmax;
-
-                            m_curRDGValues[hour].recomendation = m_curRDGValues[hour - 1].recomendation;
-                            m_curRDGValues[hour].deviationPercent = m_curRDGValues[hour - 1].deviationPercent;
-                            m_curRDGValues[hour].deviation = m_curRDGValues[hour - 1].deviation;
-
-                            offset ++;
-                        }
-                        else
-                        {
-                        }
+                        offset++;
                     }
-                    catch { }
+                    else
+                    {
+                    }
+                }
+                catch { }
             }
-
+            //tPBR.InsertData();
             return iRes;
         }
 
-        protected override bool InitDbInterfaces () {
+        protected override bool InitDbInterfaces()
+        {
             bool bRes = true;
             int i = -1;
 
@@ -192,7 +201,7 @@ namespace trans_mc
             }
 
             //Logging.Logg().Debug(@"AdminMC::StateRequest () - state=" + state.ToString() + @" - вЫход...", Logging.INDEX_MESSAGE.NOT_SET);
-
+        
             return result;
         }
 
@@ -257,12 +266,12 @@ namespace trans_mc
             }
 
             if (result == 0)
-                ReportClear (false);
+                ReportClear(false);
             else
                 ;
 
             //Logging.Logg().Debug(@"AdminMC::StateResponse () - state=" + state.ToString() + @", result=" + result.ToString() + @" - вЫход...", Logging.INDEX_MESSAGE.NOT_SET);
-
+            //tPBR.InsertData();
             return result;
         }
 
@@ -320,7 +329,7 @@ namespace trans_mc
             else
                 ;
 
-            if (! (errorData == null)) errorData(); else ;
+            if (!(errorData == null)) errorData(); else ;
 
             return reasonRes;
         }
@@ -329,14 +338,14 @@ namespace trans_mc
         {
         }
 
-        private bool InitIGO ()
+        private bool InitIGO()
         {
             bool bRes = false;
 
             string query = "InitIGO;";
 
             int i = -1;
-            for (i = 0; i < m_listModesId.Count; i ++)
+            for (i = 0; i < m_listModesId.Count; i++)
             {
                 query += m_listModesId[i];
 
@@ -346,7 +355,7 @@ namespace trans_mc
                     ;
             }
 
-            DbMCSources.Sources ().Request(m_IdListenerCurrent, query); //List IGO FROM Modfes-Centre
+            DbMCSources.Sources().Request(m_IdListenerCurrent, query); //List IGO FROM Modfes-Centre
 
             bRes = true;
             return bRes;

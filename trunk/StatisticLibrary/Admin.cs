@@ -109,6 +109,7 @@ namespace StatisticCommon
         public HMark m_markQueries; //CONN_SETT_TYPE.COUNT_CONN_SETT_TYPE
 
         protected volatile bool using_date;
+
         public bool m_ignore_date;
         /// <summary>
         /// Массив меток дат/времени, имеющихся в БД
@@ -122,11 +123,16 @@ namespace StatisticCommon
         protected int m_iHavePBR_Number;
 
         private static int m_iSeasonAction;
-        public static int SeasonAction {
-            get { return m_iSeasonAction; } set { m_iSeasonAction = value; }
+
+        public static int SeasonAction 
+        {
+            get { return m_iSeasonAction; } 
+
+            set { m_iSeasonAction = value; }
         }
 
         private static DateTime m_dtSeason;
+
         public static DateTime SeasonDateTime {
             get {
                 return m_dtSeason;
@@ -394,7 +400,8 @@ namespace StatisticCommon
         //        ;
         //}
 
-        public void SetDelegateSaveComplete(DelegateFunc f) {            
+        public void SetDelegateSaveComplete(DelegateFunc f) 
+        {            
             saveComplete = f;
 
             //Logging.Logg().Debug(@"HAdmin::SetDelegateSaveComplete () - saveComplete is set=" + (saveComplete == null ? false.ToString() : true.ToString()) + @" - вЫход", Logging.INDEX_MESSAGE.NOT_SET);
@@ -406,7 +413,6 @@ namespace StatisticCommon
 
         public void SetDelegateDatetime(DelegateDateFunc f) { setDatetime = f; }
  
-        //public virtual void ClearValues(int cnt = -1) {
         public override void ClearValues()
         {
             int cntHours = 24;
@@ -596,7 +602,8 @@ namespace StatisticCommon
             return modeRes;
         }
 
-        public virtual void CopyCurToPrevRDGValues() {
+        public virtual void CopyCurToPrevRDGValues() 
+        {
             if (!(m_prevRDGValues.Length == m_curRDGValues.Length))
             {
                 m_prevRDGValues = null;
@@ -607,7 +614,8 @@ namespace StatisticCommon
             }
         }
 
-        public virtual void getCurRDGValues (HAdmin source) {
+        public virtual void getCurRDGValues (HAdmin source) 
+        {
             if (!(m_curRDGValues.Length == source.m_curRDGValues.Length))
             {
                 m_prevRDGValues = null;
