@@ -35,7 +35,7 @@
             this.SuspendLayout();
             // 
             // panelMain
-            // 
+            //
             this.panelMain.ColumnStyles.Add(new System.Windows.Forms.ColumnStyle());
             this.panelMain.Dock = System.Windows.Forms.DockStyle.Fill;
             this.panelMain.Location = new System.Drawing.Point(0, 0);
@@ -50,7 +50,7 @@
             this.AutoScaleDimensions = new System.Drawing.SizeF(6F, 13F);
             this.AutoScaleMode = System.Windows.Forms.AutoScaleMode.Font;
             this.ClientSize = new System.Drawing.Size(1041, 600);
-            this.Controls.Add(this.panelMain);
+            this.Controls.Add(panelMain);
             this.Name = "FormDiagnostic";
             this.Text = "FormStatisticDiagnostic";
             this.Activated += new System.EventHandler(this.FormDiagnostic_Activate);

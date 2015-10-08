@@ -4,22 +4,23 @@ using System.Data;
 using System.Threading;
 using System.Drawing;
 using System.Text;
+using StatisticCommon;
 using System.Windows.Forms;
 using HClassLibrary;
 
 namespace StatisticDiagnostic1
 {
-    public partial class FormDiagnostic : Form
+    public partial class FormDiagnostic : FormMainBase
     {
         public FormDiagnostic()
         {
-            InitializeComponent();            
+            InitializeComponent();
+            panelMain.SetDelegate(delegateStartWait, delegateStopWait, delegateEvent);
         }
 
         public void FormDiagnostic_Load(object obj, EventArgs ev)
         {
-            Thread thread = new Thread(panelMain.start);
-            thread.Start();
+            panelMain.start();
         }
 
         public void FormDiagnostic_Close(object obj, EventArgs ev)

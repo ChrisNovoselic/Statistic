@@ -18,7 +18,7 @@ namespace StatisticDiagnostic1
 {
     public partial class PanelStatisticDiagnostic1
     {
-        protected override void initializeLayoutStyle(int cols = -1, int rows = -1)
+       protected override void initializeLayoutStyle(int cols = -1, int rows = -1)
         {
             initializeLayoutStyleEvenly(cols, rows);
         }
@@ -53,6 +53,7 @@ namespace StatisticDiagnostic1
             TEClabel = new System.Windows.Forms.Label();
             Modeslabel = new System.Windows.Forms.Label();
 
+
             this.TecTableLayoutPanel = new System.Windows.Forms.TableLayoutPanel();
             this.TecTableLayoutPanel.Dock = DockStyle.Fill;
             this.TecTableLayoutPanel.AutoSize = true;
@@ -65,7 +66,9 @@ namespace StatisticDiagnostic1
             this.TecTableLayoutPanel.RowCount = 2;
             this.TecTableLayoutPanel.RowStyles.Add(new System.Windows.Forms.RowStyle(System.Windows.Forms.SizeType.Percent, 50F));
             this.TecTableLayoutPanel.RowStyles.Add(new System.Windows.Forms.RowStyle(System.Windows.Forms.SizeType.Percent, 50F));
-
+            //
+            //ModesTableLayoutPanel
+            //
             this.ModesTableLayoutPanel = new System.Windows.Forms.TableLayoutPanel();
             this.ModesTableLayoutPanel.Dock = DockStyle.Fill;
             this.ModesTableLayoutPanel.CellBorderStyle = System.Windows.Forms.TableLayoutPanelCellBorderStyle.Single;
@@ -110,6 +113,7 @@ namespace StatisticDiagnostic1
             this.Tasklabel.Anchor = ((System.Windows.Forms.AnchorStyles)(((System.Windows.Forms.AnchorStyles.Bottom | System.Windows.Forms.AnchorStyles.Left))));
 
             this.Dock = DockStyle.Fill;
+            //this.Controls.Add(ParentTableLayoutPanel);
 
             this.ColumnCount = 1;
             this.ColumnStyles.Add(new System.Windows.Forms.ColumnStyle(System.Windows.Forms.SizeType.Percent, 50F));
@@ -153,7 +157,6 @@ namespace StatisticDiagnostic1
         static DataTable arraySourceTEC = new DataTable();
         static DataTable arrayKeys_DataSheet = new DataTable();
         static HDataSource m_DataSource;
-        protected static FileINI m_sFileINI;
 
         static System.Timers.Timer UpdateTimer;
         ConnectionSettings m_connSett;        
@@ -175,8 +178,10 @@ namespace StatisticDiagnostic1
         /// </summary>
         public void startUp()
         {
+            delegateStartWait();
             RefreshDataSource();
             GridsUpd();
+            delegateStopWait();
         }
 
         /// <summary>
@@ -193,13 +198,13 @@ namespace StatisticDiagnostic1
         /// </summary>
         public void GridsUpd()
         {
-            Thread thread = new Thread(tecdb.AddItemTec);
+            /*Thread thread = new Thread(tecdb.AddItemTec);
             thread.Start();
             Thread THREAD = new Thread(modesdb.AddItemModes);
             THREAD.Start();
-            taskdb.UpdateTaskGrid();
-            //tecdb.AddItemTec();
-            //modesdb.AddItemModes();
+            taskdb.UpdateTaskGrid();*/
+            tecdb.AddItemTec();
+            modesdb.AddItemModes();
         }
 
         /// <summary>
@@ -234,8 +239,7 @@ namespace StatisticDiagnostic1
 
             protected enum State
             {
-                Command,
-                PBR
+                Command
             }
 
             public HDataSource(ConnectionSettings connSett)
@@ -302,11 +306,6 @@ namespace StatisticDiagnostic1
                     case (int)State.Command:
                         iRes = response(m_IdListenerCurrent, out error, out table);
                         break;
-
-                    case (int)State.PBR:
-                        iRes = response(m_IdListenerCurrent, out error, out table);
-                        break;
-
                     default:
                         break;
                 }
@@ -332,7 +331,6 @@ namespace StatisticDiagnostic1
                 {
                     case (int)State.Command:
                         EvtRecievedTable(table);
-                        //AddState((int)State.PBR);
                         break;
 
                     default:
@@ -1735,7 +1733,6 @@ namespace StatisticDiagnostic1
         {
             initialize();
             container.Add(this);
-            //m_sFileINI = new FileINI(@"setup.ini", false);
             TimerUp();
         }
 
@@ -1745,29 +1742,7 @@ namespace StatisticDiagnostic1
         private void initialize()
         {
             InitializeComponent();
-            WaitFunc(1);
             collection_data();
-        }
-
-        /// <summary>
-        /// функция ожидания загрузки всех данных на форму
-        /// </summary>
-        public void WaitFunc(int i)
-        {
-            Thread th = new Thread(fw.StartWaitForm);
-
-            fw.StartPosition = FormStartPosition.CenterScreen;
-            switch (i)
-            {
-                case 1:
-                    th.Start();
-                    break;
-                case 2:
-                    fw.StopWaitForm();
-                    break;
-                default:
-                    break;
-            }
         }
 
         /*/// <summary>
@@ -1936,9 +1911,11 @@ namespace StatisticDiagnostic1
         /// </summary>
         public void start()
         {
+            delegateStartWait();
             StartPanelTec();
             StartModes();
             AddPanel();
+            delegateStopWait();
         }
 
         /// <summary>
@@ -1946,6 +1923,7 @@ namespace StatisticDiagnostic1
         /// </summary>
         public void collection_data()
         {
+            
             GetCurrentData();
             PingSourceData();
             Start();
@@ -1975,7 +1953,6 @@ namespace StatisticDiagnostic1
             AddPanelModes();
             AddPanelTEC();
             taskdb.GetDataTask(arraySourceDataTask);
-            WaitFunc(2);
         }
 
         /// <summary>
