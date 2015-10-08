@@ -180,7 +180,7 @@ namespace Statistic
         public static string StringToolTipEmpty = @"Уров=---.-; Откл=--(--%)";
     }
 
-    public abstract class PanelTecViewBase : PanelStatisticView
+    public abstract class PanelTecViewBase : PanelStatisticWithTableHourRows
     {
         protected static AdminTS.TYPE_FIELDS s_typeFields = AdminTS.TYPE_FIELDS.DYNAMIC;
 

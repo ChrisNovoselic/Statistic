@@ -1976,7 +1976,7 @@ namespace Statistic
             if (m_dictAddingTabs[(int)ID_ADDING_TAB.CUR_POWER].panel == null)
             {
                 m_dictAddingTabs[(int)ID_ADDING_TAB.CUR_POWER].panel = new PanelCurPower(m_arPanelAdmin[(int)FormChangeMode.MANAGER.DISP].m_list_tec, ErrorReport, WarningReport, ActionReport, ReportClear);
-                ((PanelStatisticView)m_dictAddingTabs[(int)ID_ADDING_TAB.CUR_POWER].panel).SetDelegate(null, null, delegateEvent);
+                ((PanelStatistic)m_dictAddingTabs[(int)ID_ADDING_TAB.CUR_POWER].panel).SetDelegate(null, null, delegateEvent);
             }
             else
                 ;
@@ -1990,7 +1990,7 @@ namespace Statistic
             if (m_dictAddingTabs[(int)ID_ADDING_TAB.TM_SN_POWER].panel == null)
             {
                 m_dictAddingTabs[(int)ID_ADDING_TAB.TM_SN_POWER].panel = new PanelTMSNPower(m_arPanelAdmin[(int)FormChangeMode.MANAGER.DISP].m_list_tec, ErrorReport, WarningReport, ActionReport, ReportClear);
-                ((PanelStatisticView)m_dictAddingTabs[(int)ID_ADDING_TAB.TM_SN_POWER].panel).SetDelegate(null, null, delegateEvent);
+                ((PanelStatistic)m_dictAddingTabs[(int)ID_ADDING_TAB.TM_SN_POWER].panel).SetDelegate(null, null, delegateEvent);
             }
             else
                 ;
@@ -2004,7 +2004,7 @@ namespace Statistic
             if (m_dictAddingTabs[(int)ID_ADDING_TAB.MONITOR_LAST_MINUTES].panel == null)
             {
                 m_dictAddingTabs[(int)ID_ADDING_TAB.MONITOR_LAST_MINUTES].panel = new PanelLastMinutes(m_arPanelAdmin[(int)FormChangeMode.MANAGER.DISP].m_list_tec, ErrorReport, WarningReport, ActionReport, ReportClear);
-                ((PanelStatisticView)m_dictAddingTabs[(int)ID_ADDING_TAB.MONITOR_LAST_MINUTES].panel).SetDelegate(null, null, delegateEvent);
+                ((PanelStatistic)m_dictAddingTabs[(int)ID_ADDING_TAB.MONITOR_LAST_MINUTES].panel).SetDelegate(null, null, delegateEvent);
             }
             else
                 ;

@@ -51,7 +51,7 @@ namespace Statistic
         #endregion
     }
 
-    public partial class PanelSobstvNyzhdy : PanelStatisticView
+    public partial class PanelSobstvNyzhdy : PanelStatisticWithTableHourRows
     {
         enum INDEX_LABEL : int
         {

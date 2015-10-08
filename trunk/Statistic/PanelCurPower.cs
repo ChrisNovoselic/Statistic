@@ -48,7 +48,7 @@ namespace Statistic
         #endregion
     }
 
-    public partial class PanelCurPower : PanelStatisticView
+    public partial class PanelCurPower : PanelStatisticWithTableHourRows
     {
         enum INDEX_LABEL : int { NAME,
                                 DATETIME_TM,

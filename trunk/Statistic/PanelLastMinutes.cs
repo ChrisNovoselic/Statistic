@@ -51,7 +51,7 @@ namespace Statistic
         #endregion
     }
 
-    public partial class PanelLastMinutes : PanelStatisticView
+    public partial class PanelLastMinutes : PanelStatisticWithTableHourRows
     {
         protected static AdminTS.TYPE_FIELDS s_typeFields = AdminTS.TYPE_FIELDS.DYNAMIC;
         

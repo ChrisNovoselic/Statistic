@@ -8,29 +8,34 @@ namespace StatisticTrans
     class ComponentTesting
     {
         /// <summary>
+        /// 
+        /// </summary>
+        public bool bflag = false;
+
+        /// <summary>
         /// Текущая иттерация
         /// </summary>
-        public int currentItter = 0;
+        public int currentIter = 0;
 
         /// <summary>
         /// Кол-во компонентов
         /// </summary>
-        public int Itters;
+        public int Iters;
 
         /// <summary>
         /// Ошибочные иттерации
         /// </summary>
-        public string[] amountItter;
+        public string[] amountIter;
 
         /// <summary>
         /// Имя компонента
         /// </summary>
-       public string nameComponent;
+        public string nameComponent;
 
         /// <summary>
         /// Строка состояния
         /// </summary>
-        public string Text;
+        //public string Text;
 
         /// <summary>
         /// Время нач. иттераций
@@ -38,9 +43,14 @@ namespace StatisticTrans
         string curentTime;
 
         /// <summary>
+        /// Счетчик нового дня
+        /// </summary>
+        public bool NextDay = false;
+
+        /// <summary>
         /// Кол-во ошибок
         /// </summary>
-        int ErrorItter = 0;
+        int ErrorIter = 0;
 
         /// <summary>
         /// Конструктор?
@@ -51,18 +61,35 @@ namespace StatisticTrans
         }
 
         /// <summary>
+        /// приведение к нулю при ошибке
+        /// </summary>
+        /// <param name="it"></param>
+        /// <param name="curIt"></param>
+        public void IsNullItter(int it, int curIt)
+        {
+            if (bflag == true)
+            {
+                if (curIt > it)
+                {
+                    currentIter = 0;
+                    bflag = false;
+                }
+            }
+        }
+
+        /// <summary>
         /// Счетчик иттераций
         /// </summary>
-        public void CounterItter()
+        public void CounterIter(int num)
         {
-            if (currentItter == 10)
+            if (currentIter == num)
             {
-                //currentItter = 0;
-                //currentItter++;
+                currentIter = 0;
+                currentIter++;
             }
 
             else
-                currentItter++;
+                currentIter++;
         }
 
         /// <summary>
@@ -77,11 +104,22 @@ namespace StatisticTrans
         /// <summary>
         /// Кол-во иттераций
         /// </summary>
-        public void SetItter(int i)
+        public void SetIter(int i)
         {
-            Itters = i;
+            if (NextDay == true)
+            {
+                Iters = i * 2;
+            }
+            else
+            {
+                Iters = i;
+            }
         }
 
+        /// <summary>
+        /// Имя текущего компонента
+        /// </summary>
+        /// <param name="x"></param>
         public void NameCurComponent(string x)
         {
             nameComponent = x;
@@ -93,8 +131,8 @@ namespace StatisticTrans
         /// <param name="x">имя компонента</param>
         public void ErrorComp(string name)
         {
-            ErrorItter++;
-            Next(name, ErrorItter);
+            ErrorIter++;
+            //Next(name, ErrorItter);
         }
 
         /// <summary>
@@ -104,7 +142,7 @@ namespace StatisticTrans
         /// <param name="z">номер массива</param>
         public void Next(string name, int z)
         {
-            amountItter.SetValue(name, z);
+            amountIter.SetValue(name, z);
         }
     }
 }

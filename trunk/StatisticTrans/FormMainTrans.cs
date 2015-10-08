@@ -1503,7 +1503,8 @@ namespace StatisticTrans
 
         private void saveRDGValues(object bCallback)
         {
-           
+            try
+            {
                 ((AdminTS)m_arAdmin[(int)(Int16)CONN_SETT_TYPE.DEST]).SaveRDGValues(((PARAMToSaveRDGValues)bCallback).listIndex, ((PARAMToSaveRDGValues)bCallback).date, ((PARAMToSaveRDGValues)bCallback).bCallback);
             }
             catch (Exception e)

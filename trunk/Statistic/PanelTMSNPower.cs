@@ -48,7 +48,7 @@ namespace Statistic
         #endregion
     }
 
-    public partial class PanelTMSNPower : PanelStatisticView
+    public partial class PanelTMSNPower : PanelStatisticWithTableHourRows
     {
         enum INDEX_LABEL : int
         {
