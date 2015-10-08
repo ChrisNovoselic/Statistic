@@ -16,9 +16,6 @@ namespace trans_mc
     {
         string m_strMCServiceHost;
 
-
-        //TransPBR tPBR = new TransPBR();
-
         protected enum StatesMachine
         {
             InitIGO,
@@ -52,7 +49,6 @@ namespace trans_mc
                 if ((i + 1) < comp.m_listMCentreId.Count) query += ","; else ;
             }
 
-            //tPBR.GetComp(str, "MC");
             query += ";";
             query += date.ToOADate().ToString();
 
@@ -271,7 +267,6 @@ namespace trans_mc
                 ;
 
             Logging.Logg().Debug(@"AdminMC::StateResponse () - state=" + state.ToString() + @", result=" + result.ToString() + @" - вЫход...", Logging.INDEX_MESSAGE.NOT_SET);
-            //tPBR.InsertData();
             return result;
         }
 

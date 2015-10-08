@@ -14,7 +14,6 @@ namespace trans_mt
 {
     public class AdminMT : AdminModes
     {
-        //TransPBR tPBR = new TransPBR();
         protected enum StatesMachine
         {
             PPBRValues,
@@ -39,7 +38,6 @@ namespace trans_mt
                 + @" ORDER BY [Datetime], [PBR_NUMBER]"
                 ;
 
-            //tPBR.GetComp(comp.m_listMTermId[0].ToString(),"MT");
             DbMCSources.Sources().Request(m_IdListenerCurrent, query);
 
             Logging.Logg().Debug("AdminMT::GetPPBRValuesRequest (TEC, TECComponent, DateTime, AdminTS.TYPE_FIELDS) - вЫход...: query=" + query, Logging.INDEX_MESSAGE.NOT_SET);
@@ -175,7 +173,7 @@ namespace trans_mt
                         Logging.Logg().Exception(e, Logging.INDEX_MESSAGE.NOT_SET, @"AdminMT::GetPPBRValuesResponse () - ...");
                     }
             }
-            //tPBR.InsertData();
+
             return iRes;
         }
 
@@ -298,7 +296,6 @@ namespace trans_mt
                 ;
 
             Logging.Logg().Debug(@"AdminMT::StateResponse () - state=" + state.ToString() + @", result=" + result.ToString() + @" - вЫход...", Logging.INDEX_MESSAGE.NOT_SET);
-            //tPBR.InsertData();
             return result;
         }
 

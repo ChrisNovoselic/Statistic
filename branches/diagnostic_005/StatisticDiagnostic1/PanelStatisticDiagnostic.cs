@@ -146,7 +146,6 @@ namespace StatisticDiagnostic1
         enum Units : int { Value = 12, Date };
         static DataTable tbModes = new DataTable();
         static DataTable m_tableSourceData;
-        static DataTable m_tableSourcePBR;
         public DataTable arraySourceDataTask = new DataTable();
         static DataTable arraySource = new DataTable();
         static DataTable array_GTP = new DataTable();
