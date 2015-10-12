@@ -18,7 +18,7 @@ namespace StatisticDiagnostic1
 {
     public partial class PanelStatisticDiagnostic1
     {
-       protected override void initializeLayoutStyle(int cols = -1, int rows = -1)
+        protected override void initializeLayoutStyle(int cols = -1, int rows = -1)
         {
             initializeLayoutStyleEvenly(cols, rows);
         }
@@ -159,7 +159,7 @@ namespace StatisticDiagnostic1
         static HDataSource m_DataSource;
 
         static System.Timers.Timer UpdateTimer;
-        ConnectionSettings m_connSett;        
+        ConnectionSettings m_connSett;
         Task taskdb = new Task();
         static Modes modesdb = new Modes();
         Tec tecdb = new Tec();
@@ -189,7 +189,6 @@ namespace StatisticDiagnostic1
         /// </summary>
         public void RefreshDataSource()
         {
-            PingSourceData();
             Start();
         }
 
@@ -628,14 +627,8 @@ namespace StatisticDiagnostic1
             /// </summary>
             public void MethodTEC()
             {
-                Thread thr = new Thread(TextColumnTec);
-                thr.Start();
-                Thread THR = new Thread(ColumTimeTEC);
-                THR.Start();
-                Thread thread = new Thread(CellsPingTEC);
-                thread.Start();
-                //TextColumnTec();
-                //ColumTimeTEC();
+                TextColumnTec();
+                ColumTimeTEC();
                 //CellsPingTEC();
             }
 
@@ -685,19 +678,21 @@ namespace StatisticDiagnostic1
                     {
                         if (m_arPanelsTEC[i].TECDataGridView.InvokeRequired)
                         {
-                            m_arPanelsTEC[i].TECDataGridView.Invoke(new Action(() => m_arPanelsTEC[i].TECDataGridView.Rows[r].Cells[0].Value = DR[r][0]));
-                            m_arPanelsTEC[i].TECDataGridView.Invoke(new Action(() => m_arPanelsTEC[i].TECDataGridView.Rows[r].Cells[2].Value = DR[r][1]));
-                            m_arPanelsTEC[i].TECDataGridView.Invoke(new Action(() => m_arPanelsTEC[i].TECDataGridView.Rows[r].Cells[5].Value = DR[r][6]));
+                            m_arPanelsTEC[i].TECDataGridView.Invoke(new Action(() => m_arPanelsTEC[i].TECDataGridView.Rows[r].Cells[0].Value = DR[r]["ID_Value"]));
+                            m_arPanelsTEC[i].TECDataGridView.Invoke(new Action(() => m_arPanelsTEC[i].TECDataGridView.Rows[r].Cells[2].Value = DR[r]["Value"]));
+                            m_arPanelsTEC[i].TECDataGridView.Invoke(new Action(() => m_arPanelsTEC[i].TECDataGridView.Rows[r].Cells[5].Value = DR[r]["NAME_SHR"]));
                             m_arPanelsTEC[i].TECDataGridView.Invoke(new Action(() => m_arPanelsTEC[i].TECDataGridView.Columns[5].Visible = false));
                             m_arPanelsTEC[i].TECDataGridView.Invoke(new Action(() => m_arPanelsTEC[i].TECDataGridView.AutoResizeColumns()));
+                            CellsPingTEC(filter12, i);
                         }
                         else
                         {
-                            m_arPanelsTEC[i].TECDataGridView.Rows[r].Cells[0].Value = DR[r][0];
-                            m_arPanelsTEC[i].TECDataGridView.Rows[r].Cells[2].Value = DR[r][1];
-                            m_arPanelsTEC[i].TECDataGridView.Rows[r].Cells[5].Value = DR[r][6];
+                            m_arPanelsTEC[i].TECDataGridView.Rows[r].Cells[0].Value = DR[r]["ID_Value"];
+                            m_arPanelsTEC[i].TECDataGridView.Rows[r].Cells[2].Value = DR[r]["Value"];
+                            m_arPanelsTEC[i].TECDataGridView.Rows[r].Cells[5].Value = DR[r]["NAME_SHR"];
                             m_arPanelsTEC[i].TECDataGridView.Columns[5].Visible = false;
                             m_arPanelsTEC[i].TECDataGridView.AutoResizeColumns();
+                            CellsPingTEC(filter12, i);
                         }
                     }
                 }
@@ -720,12 +715,10 @@ namespace StatisticDiagnostic1
                         if (m_arPanelsTEC[i].TECDataGridView.InvokeRequired)
                         {
                             m_arPanelsTEC[i].TECDataGridView.Invoke(new Action(() => m_arPanelsTEC[i].TECDataGridView.Rows[r].Cells[1].Value = DR[r][1]));
-                            m_arPanelsTEC[i].TECDataGridView.Invoke(new Action(() => m_arPanelsTEC[i].TECDataGridView.AutoResizeColumns()));
                         }
                         else
                         {
                             m_arPanelsTEC[i].TECDataGridView.Rows[r].Cells[1].Value = DR[r][1];
-                            m_arPanelsTEC[i].TECDataGridView.AutoResizeColumns();
                         }
                     }
                 }
@@ -853,45 +846,30 @@ namespace StatisticDiagnostic1
             /// Добавление результата пропинговки в грид
             /// </summary>
             /// <param name="x"></param>
-            public void CellsPingTEC()
+            public void CellsPingTEC(string f, int k)
             {
-                int d = 0;
+                DataRow[] dt;
+                dt = m_tableSourceData.Select(f);
 
-                for (int k = 0; k < m_arPanelsTEC.Length; k++)
+                for (int i = 0; i < m_arPanelsTEC[k].TECDataGridView.Rows.Count; i++)
                 {
-                    for (int i = 0; i < m_arPanelsTEC[k].TECDataGridView.Rows.Count; i++)
+                    if (m_arPanelsTEC[k].TECDataGridView.InvokeRequired)
                     {
-                        int s = -1;
-                        d++;
-                        string text1;
-                        string text2 = massiveServ[d, 1];
-
-                        do
+                        if (dt[i]["Link"].ToString() == "1")
                         {
-                            s++;
-                            text1 = arraySource.Rows[s][@"NAME_SHR"].ToString();
-                            if (s == 39)
-                            {
-                                s = 0;
-                            }
+                           m_arPanelsTEC[k].TECDataGridView.Invoke(new Action(() => m_arPanelsTEC[k].TECDataGridView.Rows[i].Cells[4].Value = "В сети"));
                         }
-
-                        while (text1 != text2);
-
-                        if (m_arPanelsTEC[k].TECDataGridView.InvokeRequired)
+                        else m_arPanelsTEC[k].TECDataGridView.Invoke(new Action(() => m_arPanelsTEC[k].TECDataGridView.Rows[i].Cells[4].Value = "Проблемы с подключением"));
+                        m_arPanelsTEC[i].TECDataGridView.Invoke(new Action(() => m_arPanelsTEC[i].TECDataGridView.AutoResizeColumns()));
+                    }
+                    else
+                    {
+                        if (dt[i]["Link"].ToString() == "1")
                         {
-                            m_arPanelsTEC[k].TECDataGridView.Invoke(new Action(() => m_arPanelsTEC[k].TECDataGridView.Rows[i].Cells[4].Value = massiveServ[d, 0]));
-                            m_arPanelsTEC[k].TECDataGridView.Invoke(new Action(() => m_arPanelsTEC[k].TECDataGridView.Refresh()));
-                            //m_arPanelsTEC[k].TECDataGridView.Invoke(new Action(() => m_arPanelsTEC[k].TECDataGridView.ClearSelection()));
-                            m_arPanelsTEC[i].TECDataGridView.Invoke(new Action(() => m_arPanelsTEC[i].TECDataGridView.AutoResizeColumns()));
+                            m_arPanelsTEC[k].TECDataGridView.Rows[i].Cells[4].Value = "В сети";
                         }
-                        else
-                        {
-                            m_arPanelsTEC[k].TECDataGridView.Rows[i].Cells[4].Value = massiveServ[d, 0];
-                            m_arPanelsTEC[k].TECDataGridView.Refresh();
-                            //m_arPanelsTEC[k].TECDataGridView.ClearSelection();
-                            m_arPanelsTEC[i].TECDataGridView.AutoResizeColumns();
-                        }
+                        else m_arPanelsTEC[k].TECDataGridView.Rows[i].Cells[4].Value = "Проблемы с подключением";
+                        m_arPanelsTEC[k].TECDataGridView.AutoResizeColumns();
                     }
                 }
             }
@@ -1228,27 +1206,33 @@ namespace StatisticDiagnostic1
 
                         DR = m_tableSourceData.Select(filterComp);
                         AddRowsModes(i, 1);
+
                         if (m_arPanelsMODES[i].ModesDataGridView.InvokeRequired)
                         {
                             m_arPanelsMODES[i].ModesDataGridView.Invoke(new Action(() => m_arPanelsMODES[i].ModesDataGridView.Rows[r].Cells[0].Value = DR[0]["ID_Value"]));
+
                             if (CheckPBR() == DR[0]["Value"].ToString())
                             {
                                 PaintPbrTrue(i, r);
                             }
                             else PaintPbrError(i, r);
+
                             m_arPanelsMODES[i].ModesDataGridView.Invoke(new Action(() => m_arPanelsMODES[i].ModesDataGridView.Rows[r].Cells[1].Value = DR[0]["Value"]));
                             m_arPanelsMODES[i].ModesDataGridView.Invoke(new Action(() => m_arPanelsMODES[i].ModesDataGridView.Rows[r].Cells[2].Value = DR[1]["Value"]));
                         }
                         else
                         {
                             m_arPanelsMODES[i].ModesDataGridView.Rows[r].Cells[0].Value = DR[0]["ID_Value"];
+
                             if (CheckPBR() == DR[0]["Value"].ToString())
                             {
                                 PaintPbrTrue(i, r);
                             }
                             else PaintPbrError(i, r);
+
                             m_arPanelsMODES[i].ModesDataGridView.Rows[r].Cells[1].Value = DR[0]["Value"];
                             m_arPanelsMODES[i].ModesDataGridView.Rows[r].Cells[2].Value = DR[1]["Value"];
+                            CellsPingMODES(filterComp, i, r);
 
                         }
                     }
@@ -1291,7 +1275,6 @@ namespace StatisticDiagnostic1
             {
                 TextColumnModes();
                 TimeModes();
-                CellsPingMODES();
             }
 
             /// <summary>
@@ -1359,34 +1342,30 @@ namespace StatisticDiagnostic1
             /// Добавление результата пропинговки в грид MODES
             /// </summary>
             /// <param name="x"></param>
-            public void CellsPingMODES()
+            public void CellsPingMODES(string f, int k, int r)
             {
-                for (int k = 0; k < m_arPanelsMODES.Length; k++)
+                DataRow[] DR;
+                DR = m_tableSourceData.Select(f);
+
+                if (m_arPanelsMODES[k].ModesDataGridView.InvokeRequired)
                 {
-                    for (int i = 0; i < m_arPanelsMODES[k].ModesDataGridView.Rows.Count; i++)
+                    if (DR[0]["Link"].ToString() == "1")
                     {
-                        string text1;
-                        int s = -1;
-                        string text2 = tbModes.Rows[k][@"DESCRIPTION"].ToString();
+                        m_arPanelsMODES[k].ModesDataGridView.Invoke(new Action(() => m_arPanelsMODES[k].ModesDataGridView.Rows[r].Cells[4].Value = "В сети"));
 
-                        do
-                        {
-                            s++;
-                            text1 = massiveServ[s, 1];
-                        }
-
-                        while (text1 != text2);
-
-                        if (m_arPanelsMODES[k].ModesDataGridView.InvokeRequired)
-                        {
-                            m_arPanelsMODES[k].ModesDataGridView.Invoke(new Action(() => m_arPanelsMODES[k].ModesDataGridView.Rows[i].Cells[4].Value = massiveServ[s, 0]));
-                        }
-
-                        else
-                        {
-                            m_arPanelsMODES[k].ModesDataGridView.Rows[i].Cells[4].Value = massiveServ[s, 0];
-                        }
                     }
+
+                    else m_arPanelsMODES[k].ModesDataGridView.Invoke(new Action(() => m_arPanelsMODES[k].ModesDataGridView.Rows[r].Cells[4].Value = "Проблема с соединением"));
+                }
+
+                else
+                {
+                    if (DR[0]["Link"].ToString() == "1")
+                    {
+                        m_arPanelsMODES[k].ModesDataGridView.Rows[r].Cells[4].Value = "В сети";
+                    }
+
+                    else m_arPanelsMODES[k].ModesDataGridView.Rows[r].Cells[4].Value = "Проблема с соединением";
                 }
             }
 
@@ -1923,9 +1902,7 @@ namespace StatisticDiagnostic1
         /// </summary>
         public void collection_data()
         {
-            
             GetCurrentData();
-            PingSourceData();
             Start();
         }
 
@@ -2045,76 +2022,6 @@ namespace StatisticDiagnostic1
         }
 
         /// <summary>
-        /// Пропинговка ИстД
-        /// </summary>
-        /// <param name="server"></param>
-        /// <returns></returns>
-        public string Ping(string server)
-        {
-            string str;
-            Ping pingsender = new Ping();
-
-            IPStatus status = IPStatus.Unknown;
-
-            try
-            {
-                status = pingsender.Send(server, 200).Status;
-
-                if (status == IPStatus.Success)
-                {
-                    return str = "В сети";
-                }
-
-                else
-                {
-                    return status.ToString();
-                }
-            }
-
-            catch
-            {
-                return str = "Проверка не удалась";
-            }
-        }
-
-        /// <summary>
-        /// Формирование списка ответов ip
-        /// </summary>
-        public void PingSourceData()
-        {
-            string server;
-            string strokavst;
-            massiveServ = new string[arraySource.Rows.Count, 2];
-            string[] massive = new string[arraySource.Rows.Count];
-
-            for (int s = 0; s < arraySource.Rows.Count; s++)
-            {
-                server = (string)arraySource.Rows[s][@"IP"];
-                strokavst = Ping(server);
-                massive.SetValue(strokavst, s);
-            }
-
-            for (int c = 0; c < 2; c++)
-            {
-                if (c == 0)
-                {
-                    for (int r = 0; r < arraySource.Rows.Count; r++)
-                    {
-                        massiveServ[r, c] = massive[r];
-                    }
-                }
-
-                else
-                {
-                    for (int r = 0; r < arraySource.Rows.Count; r++)
-                    {
-                        massiveServ[r, c] = (string)arraySource.Rows[r][@"NAME_SHR"];
-                    }
-                }
-            }
-        }
-
-        /// <summary>
         /// Создание списка ТМ
         /// </summary>
         public void CreateListTM(DataTable table)
@@ -2153,6 +2060,7 @@ namespace StatisticDiagnostic1
         public void MassiveSourceName()
         {
             massivetext = new object[arrayKeys_DataSheet.Rows.Count, 2];
+
             int r = 0, c = 0;
             for (c = 0; c < 2; c++)
             {
