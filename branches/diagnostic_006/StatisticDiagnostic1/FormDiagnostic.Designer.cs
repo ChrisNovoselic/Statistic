@@ -54,7 +54,7 @@
             this.Name = "FormDiagnostic";
             this.Text = "FormStatisticDiagnostic";
             this.Activated += new System.EventHandler(this.FormDiagnostic_Activate);
-            //this.Deactivate += new System.EventHandler(this.FormDiagnostic_Deactivate);
+            this.Deactivate += new System.EventHandler(this.FormDiagnostic_Deactivate);
             this.Load += new System.EventHandler(this.FormDiagnostic_Load);            
             this.ResumeLayout(false);
         }

@@ -444,7 +444,6 @@ namespace StatisticDiagnostic1
                 this.TECDataGridView.Resize += new EventHandler(TECDataGridView_Cell);
                 this.TECDataGridView.CellClick += new DataGridViewCellEventHandler(TECDataGridView_Cell);
                 this.TECDataGridView.CellParsing += new DataGridViewCellParsingEventHandler(TECDataGridView_Cell);
-
                 this.TECDataGridView.CellMouseClick += new DataGridViewCellMouseEventHandler(TECDataGridView_CellMouseClick);
                 this.TECDataGridView.CellMouseEnter += new DataGridViewCellEventHandler(TECDataGridView_CellMouseEnter);
                 //
@@ -678,7 +677,6 @@ namespace StatisticDiagnostic1
                         m_arPanelsTEC[i].TECDataGridView.Invoke(new Action(() => m_arPanelsTEC[i].TECDataGridView.Rows[r].Cells[1].Value = DR[t + 1]["Value"]));
                         m_arPanelsTEC[i].TECDataGridView.Invoke(new Action(() => m_arPanelsTEC[i].TECDataGridView.Rows[r].Cells[5].Value = DR[t]["NAME_SHR"]));
                         m_arPanelsTEC[i].TECDataGridView.Invoke(new Action(() => m_arPanelsTEC[i].TECDataGridView.Columns[5].Visible = false));
-                        m_arPanelsTEC[i].TECDataGridView.Invoke(new Action(() => m_arPanelsTEC[i].TECDataGridView.AutoResizeColumns()));
                         CellsPingTEC(filter, i);
                     }
 
@@ -689,7 +687,11 @@ namespace StatisticDiagnostic1
                         m_arPanelsTEC[i].TECDataGridView.Rows[r].Cells[5].Value = DR[t]["NAME_SHR"];
                         m_arPanelsTEC[i].TECDataGridView.Rows[r].Cells[1].Value = DR[t + 1]["Value"];
                         m_arPanelsTEC[i].TECDataGridView.Columns[5].Visible = false;
-                        m_arPanelsTEC[i].TECDataGridView.AutoResizeColumns();
+                        m_arPanelsTEC[i].TECDataGridView.Columns[0].Width = 43;
+                        m_arPanelsTEC[i].TECDataGridView.Columns[1].Width = 57;
+                        m_arPanelsTEC[i].TECDataGridView.Columns[2].Width = 35;
+                        m_arPanelsTEC[i].TECDataGridView.Columns[3].Width = 57;
+                        m_arPanelsTEC[i].TECDataGridView.Columns[4].Width = 35;
                         CellsPingTEC(filter, i);
                     }
                     t = t + 2;
@@ -808,7 +810,6 @@ namespace StatisticDiagnostic1
                             m_arPanelsTEC[k].TECDataGridView.Invoke(new Action(() => m_arPanelsTEC[k].TECDataGridView.Rows[i].Cells[4].Value = "В сети"));
                         }
                         else m_arPanelsTEC[k].TECDataGridView.Invoke(new Action(() => m_arPanelsTEC[k].TECDataGridView.Rows[i].Cells[4].Value = "Проблемы с подключением"));
-                        m_arPanelsTEC[i].TECDataGridView.Invoke(new Action(() => m_arPanelsTEC[i].TECDataGridView.AutoResizeColumns()));
                     }
                     else
                     {
@@ -1124,6 +1125,11 @@ namespace StatisticDiagnostic1
                         m_arPanelsMODES[i].ModesDataGridView.Rows[tic].Cells[0].Value = dr[0]["ID_Value"];
                         m_arPanelsMODES[i].ModesDataGridView.Rows[tic].Cells[2].Value = dr[1]["Value"];
                         m_arPanelsMODES[i].ModesDataGridView.Rows[tic].Cells[1].Value = dr[0]["Value"];
+                        m_arPanelsMODES[i].ModesDataGridView.Columns[0].Width = 25;
+                        m_arPanelsMODES[i].ModesDataGridView.Columns[1].Width = 20;
+                        m_arPanelsMODES[i].ModesDataGridView.Columns[2].Width = 35;
+                        m_arPanelsMODES[i].ModesDataGridView.Columns[3].Width = 35;
+                        m_arPanelsMODES[i].ModesDataGridView.Columns[4].Width = 40;
                         CellsPingMODES(filter1, i, tic);
                     }
                 }
@@ -1182,6 +1188,11 @@ namespace StatisticDiagnostic1
 
                             m_arPanelsMODES[i].ModesDataGridView.Rows[r].Cells[1].Value = DR[0]["Value"];
                             m_arPanelsMODES[i].ModesDataGridView.Rows[r].Cells[2].Value = DR[1]["Value"];
+                            m_arPanelsMODES[i].ModesDataGridView.Columns[0].Width = 25;
+                            m_arPanelsMODES[i].ModesDataGridView.Columns[1].Width = 20;
+                            m_arPanelsMODES[i].ModesDataGridView.Columns[2].Width = 35;
+                            m_arPanelsMODES[i].ModesDataGridView.Columns[3].Width = 35;
+                            m_arPanelsMODES[i].ModesDataGridView.Columns[4].Width = 40;
                             CellsPingMODES(filterComp, i, r);
 
                         }

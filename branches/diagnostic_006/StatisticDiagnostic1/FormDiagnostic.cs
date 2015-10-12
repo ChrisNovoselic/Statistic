@@ -34,10 +34,10 @@ namespace StatisticDiagnostic1
             panelMain.Activate(true);
         }
 
-        /*private void FormDiagnostic_Deactivate(object obj, EventArgs ev)
+        private void FormDiagnostic_Deactivate(object obj, EventArgs ev)
         {
             panelMain.Activate(false);
-        }*/
+        }
     }
 
 }
