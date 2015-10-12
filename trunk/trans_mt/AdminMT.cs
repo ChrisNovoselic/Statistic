@@ -25,16 +25,9 @@ namespace trans_mt
         {
         }
 
-        protected override void GetPPBRDatesRequest(DateTime date)
-        {
-        }
+        protected override void GetPPBRDatesRequest(DateTime date) { }
 
-        protected override int GetPPBRDatesResponse(DataTable table, DateTime date)
-        {
-            int iRes = 0;
-
-            return iRes;
-        }
+        protected override int GetPPBRDatesResponse(DataTable table, DateTime date) { int iRes = 0; return iRes; }
 
         protected override void GetPPBRValuesRequest(TEC t, TECComponent comp, DateTime date, AdminTS.TYPE_FIELDS mode)
         {
@@ -78,7 +71,7 @@ namespace trans_mt
                     //hourRows = table.Select(@"Datetime=#" + date.Date.AddHours(hour + 1 - ts.Hours).ToString(@"yyyyMMdd HH:00:00.000") + @"#");
                     hourRows = table.Select(@"Datetime=#" + date.Date.AddHours(hour - ts.Hours).ToString(@"yyyy-MM-dd HH:00:00.000") + @"#");
 
-                    //Присвоить исходные для чачса значения
+                    //Присвоить исходные для часа значения
                     //PBRNumber = -1;
                     arPBRNumber[0] =
                     arPBRNumber[1] =
@@ -337,7 +330,7 @@ namespace trans_mt
                 case (int)StatesMachine.PPBRValues:
                 case (int)StatesMachine.PPBRDates:
                     //bRes = GetResponse(m_indxDbInterfaceCurrent, m_listListenerIdCurrent[m_indxDbInterfaceCurrent], out error, out table/*, false*/);
-                    iRes = response(0, out error, out table/*, false*/);
+                    iRes = response(m_IdListenerCurrent, out error, out table/*, false*/);
                     break;
                 default:
                     break;

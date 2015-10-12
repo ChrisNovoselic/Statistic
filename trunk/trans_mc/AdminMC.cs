@@ -218,7 +218,7 @@ namespace trans_mc
                 case (int)StatesMachine.PPBRValues:
                 case (int)StatesMachine.PPBRDates:
                     //bRes = GetResponse(m_indxDbInterfaceCurrent, m_listListenerIdCurrent[m_indxDbInterfaceCurrent], out error, out table/*, false*/);
-                    iRes = response(0, out error, out table/*, false*/);
+                    iRes = response(m_IdListenerCurrent, out error, out table/*, false*/);
                     break;
                 default:
                     break;

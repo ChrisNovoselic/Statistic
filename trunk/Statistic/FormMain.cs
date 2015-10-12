@@ -405,7 +405,7 @@ namespace Statistic
             AdminAlarm.MSEC_ALARM_TIMERBEEP = Int32.Parse(formParameters.m_arParametrSetup[(int)FormParameters.PARAMETR_SETUP.ALARM_TIMER_BEEP]) * 1000;
             AdminAlarm.FNAME_ALARM_SYSTEMMEDIA_TIMERBEEP = formParameters.m_arParametrSetup[(int)FormParameters.PARAMETR_SETUP.ALARM_SYSTEMMEDIA_TIMERBEEP];
 
-            FormWait.s_secMaxShowing = PanelStatistic.POOL_TIME / 1;
+            //FormWait.s_secMaxShowing = PanelStatistic.POOL_TIME / 1;
 
             FormParameters.UpdateIdLinkTMSources();
         }
