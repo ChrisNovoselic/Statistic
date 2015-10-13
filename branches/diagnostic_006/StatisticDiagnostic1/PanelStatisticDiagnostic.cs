@@ -1616,9 +1616,9 @@ namespace StatisticDiagnostic1
                 {
                     counter++;
                     AddRowsTask(1);
-                    TaskDataGridView.Invoke(new Action(() => TaskDataGridView.Rows[counter].Cells[2].Value = DR[0][1]));
-                    TaskDataGridView.Invoke(new Action(() => TaskDataGridView.Rows[counter].Cells[1].Value = DR[0][1]));
-                    TaskDataGridView.Invoke(new Action(() => TaskDataGridView.Rows[counter].Cells[0].Value = DR[0][6]));
+                    TaskDataGridView.Invoke(new Action(() => TaskDataGridView.Rows[counter].Cells[2].Value = DR[0]["Value"]));
+                    TaskDataGridView.Invoke(new Action(() => TaskDataGridView.Rows[counter].Cells[1].Value = DR[1]["Value"]));
+                    TaskDataGridView.Invoke(new Action(() => TaskDataGridView.Rows[counter].Cells[0].Value = DR[0]["NAME_SHR"]));
                     TaskDataGridView.Update();
 
                     ColumTimeTask(counter);

@@ -69,7 +69,7 @@ namespace StatisticTrans
         {
             if (bflag == true)
             {
-                if (curIt > it)
+                if (curIt == it)
                 {
                     currentIter = 0;
                     bflag = false;
@@ -82,6 +82,11 @@ namespace StatisticTrans
         /// </summary>
         public void CounterIter(int num)
         {
+            if ((ErrorIter+currentIter) == Iters)
+            {
+                currentIter = 0;
+            }
+
             if (currentIter == num)
             {
                 currentIter = 0;
@@ -131,7 +136,7 @@ namespace StatisticTrans
         /// <param name="x">имя компонента</param>
         public void ErrorComp(string name)
         {
-            ErrorIter++;
+           
             //Next(name, ErrorItter);
         }
 
@@ -140,9 +145,13 @@ namespace StatisticTrans
         /// </summary>
         /// <param name="name">имя компонента</param>
         /// <param name="z">номер массива</param>
-        public void Next(string name, int z)
+        public void Error()
         {
-            amountIter.SetValue(name, z);
+            if (ErrorIter == Iters)
+            {
+                ErrorIter = 0;
+            }
+            ErrorIter++;
         }
     }
 }

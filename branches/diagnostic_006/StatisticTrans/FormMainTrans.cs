@@ -960,7 +960,7 @@ namespace StatisticTrans
             
             if (CT.currentIter > 1)
                 CT.currentIter--;
-
+            CT.Error();
             CT.bflag = true;
 
             if ((m_bTransAuto == true || m_modeMashine == MODE_MASHINE.SERVICE) && (m_bEnabledUIControl == false))
