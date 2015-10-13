@@ -3,12 +3,13 @@ using System.Collections.Generic;
 using System.Text;
 using System.Windows.Forms;
 //using System.ComponentModel;
+using System.Threading;
 using System.Data;
 using System.Globalization;
 
 namespace StatisticCommon
 {
-    public class DataGridViewBase : DataGridView
+    public abstract class DataGridViewBase : DataGridView
     {
         public DataGridViewBase()
             : base()
@@ -53,7 +54,9 @@ namespace StatisticCommon
             ColumnHeadersHeightSizeMode = System.Windows.Forms.DataGridViewColumnHeadersHeightSizeMode.AutoSize;
         }
 
-        public DataGridViewAdmin () {
+        public DataGridViewAdmin () : base () {
+            //Thread.CurrentThread.SetApartmentState(ApartmentState.STA);
+
             InitializeComponents ();
 
             CellClick += new System.Windows.Forms.DataGridViewCellEventHandler(this.dgwAdminTable_CellClick);

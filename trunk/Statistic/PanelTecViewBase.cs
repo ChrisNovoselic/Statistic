@@ -479,8 +479,12 @@ namespace Statistic
         public static DataGridViewCellStyle dgvCellStyleError, dgvCellStyleWarning
             , dgvCellStyleCommon;
 
-        private ManualResetEvent m_evTimerCurrent;
-        private System.Threading.Timer m_timerCurrent;
+        //private ManualResetEvent m_evTimerCurrent;
+        private
+            //System.Threading.Timer
+            System.Windows.Forms.Timer
+                m_timerCurrent
+                ;
         private DelegateObjectFunc delegateTickTime;
 
         public TecView m_tecView;
@@ -744,9 +748,13 @@ namespace Statistic
             //setTypeSourceData(TG.ID_TIME.MINUTES, ((ToolStripMenuItem)m_ZedGraphMins.ContextMenuStrip.Items[m_ZedGraphMins.ContextMenuStrip.Items.Count - 2]).Checked == true ? CONN_SETT_TYPE.DATA_ASKUE : CONN_SETT_TYPE.DATA_SOTIASSO);
             //setTypeSourceData(TG.ID_TIME.HOURS, ((ToolStripMenuItem)m_ZedGraphHours.ContextMenuStrip.Items[m_ZedGraphHours.ContextMenuStrip.Items.Count - 2]).Checked == true ? CONN_SETT_TYPE.DATA_ASKUE : CONN_SETT_TYPE.DATA_SOTIASSO);
 
-            m_evTimerCurrent = new ManualResetEvent(true);
-            //timerCurrent = new System.Threading.Timer(new TimerCallback(TimerCurrent_Tick), evTimerCurrent, 0, Timeout.Infinite);
-            m_timerCurrent = new System.Threading.Timer(new TimerCallback(TimerCurrent_Tick), m_evTimerCurrent, 0, 1000);
+            m_timerCurrent =
+                //new System.Threading.Timer(new TimerCallback(TimerCurrent_Tick), m_evTimerCurrent, 0, 1000)
+                new System.Windows.Forms.Timer ()
+                ;
+            m_timerCurrent.Interval = 1000;
+            m_timerCurrent.Tick += new EventHandler(TimerCurrent_Tick);
+            m_timerCurrent.Start ();
 
             //timerCurrent = new System.Windows.Forms.Timer ();
             //timerCurrent.Tick += TimerCurrent_Tick;
@@ -764,7 +772,7 @@ namespace Statistic
         {
             m_tecView.Stop ();
 
-            if (! (m_evTimerCurrent == null)) m_evTimerCurrent.Reset(); else ;
+            //if (! (m_evTimerCurrent == null)) m_evTimerCurrent.Reset(); else ;
             if (!(m_timerCurrent == null)) { m_timerCurrent.Dispose(); m_timerCurrent = null; } else ;
 
             m_tecView.ReportClear(true);
@@ -1180,14 +1188,17 @@ namespace Statistic
 
                     m_pnlQuickData.OnSizeChanged(null, EventArgs.Empty);
 
-                    m_timerCurrent.Change(0, 1000);
+                    //m_timerCurrent.Change(0, 1000);
+                    m_timerCurrent.Interval = 1000;
+                    m_timerCurrent.Start ();
                 }
                 else
                 {
                     m_tecView.ClearStates();
 
                     if (!(m_timerCurrent == null))
-                        m_timerCurrent.Change(System.Threading.Timeout.Infinite, System.Threading.Timeout.Infinite);
+                        //m_timerCurrent.Change(System.Threading.Timeout.Infinite, System.Threading.Timeout.Infinite);
+                        m_timerCurrent.Stop ();
                     else
                         ;
                 }
@@ -1234,14 +1245,18 @@ namespace Statistic
         /// Метод обратного вызова объекта 'timerCurrent'
         /// </summary>
         /// <param name="stateInfo">объкт синхронизации</param>
-        private void TimerCurrent_Tick(Object stateInfo)
+        //private void TimerCurrent_Tick(Object stateInfo)
+        private void TimerCurrent_Tick(object obj, EventArgs ev)
         {
             if ((m_tecView.currHour == true) && (Actived == true))
             {
                 m_tecView.serverTime = m_tecView.serverTime.AddSeconds(1);
 
-                if (IsHandleCreated/*InvokeRequired*/ == true)
-                    Invoke(delegateTickTime, m_tecView.serverTime);
+                if (IsHandleCreated == true)
+                    if (InvokeRequired == true)
+                        Invoke(delegateTickTime, m_tecView.serverTime);
+                    else
+                        TickTime(m_tecView.serverTime);
                 else
                     return;
 

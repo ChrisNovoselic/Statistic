@@ -79,8 +79,11 @@ namespace Statistic
         HStatisticUsers m_user;
         FormParametersTG m_formParametersTG;        
 
-        TcpServerAsync m_TCPServer;
-        System.Threading.Timer m_timerAppReset;
+        //TcpServerAsync m_TCPServer;
+        private
+            //System.Threading.Timer
+            System.Windows.Forms.Timer
+                m_timerAppReset;
 
         public FormMain()
         {
@@ -319,8 +322,14 @@ namespace Statistic
                         //createAddingTabs ();
 
                         stopTimerAppReset ();                        
-                        int msecTimerAppReset = Int32.Parse (formParameters.m_arParametrSetup[(int)FormParameters.PARAMETR_SETUP.APP_VERSION_QUERY_INTERVAL]);
-                        m_timerAppReset = new System.Threading.Timer(new TimerCallback(fTimerAppReset), null, msecTimerAppReset, msecTimerAppReset);
+                        //int msecTimerAppReset = Int32.Parse (formParameters.m_arParametrSetup[(int)FormParameters.PARAMETR_SETUP.APP_VERSION_QUERY_INTERVAL]);
+                        m_timerAppReset =
+                            //new System.Threading.Timer(new TimerCallback(fTimerAppReset), null, msecTimerAppReset, msecTimerAppReset)
+                            new System.Windows.Forms.Timer ();
+                            ;
+                        m_timerAppReset.Interval = ProgramBase.TIMER_START_INTERVAL;
+                        m_timerAppReset.Tick += new EventHandler(fTimerAppReset);
+                        m_timerAppReset.Start ();
 
                         if (m_bAutoActionTabs == true)
                             fileProfileLoadAddingTab();
@@ -356,7 +365,8 @@ namespace Statistic
 
         private void stopTimerAppReset () {
             if (! (m_timerAppReset == null)) {
-                m_timerAppReset.Change(System.Threading.Timeout.Infinite, System.Threading.Timeout.Infinite);
+                //m_timerAppReset.Change(System.Threading.Timeout.Infinite, System.Threading.Timeout.Infinite);
+                m_timerAppReset.Stop ();
                 m_timerAppReset.Dispose ();
                 m_timerAppReset = null;
             } else {
@@ -410,11 +420,18 @@ namespace Statistic
             FormParameters.UpdateIdLinkTMSources();
         }
 
-        private void fTimerAppReset(object obj)
+        //private void fTimerAppReset(object obj)
+        private void fTimerAppReset(object obj, EventArgs ev)
         {
             Thread.CurrentThread.CurrentCulture =
             Thread.CurrentThread.CurrentUICulture = 
                 ProgramBase.ss_MainCultureInfo;
+
+            if (m_timerAppReset.Interval == ProgramBase.TIMER_START_INTERVAL)
+                //При 1-ом запуске ожидать один интервал
+                m_timerAppReset.Interval = Int32.Parse(formParameters.m_arParametrSetup[(int)FormParameters.PARAMETR_SETUP.APP_VERSION_QUERY_INTERVAL]);
+            else
+                return;
 
             if (HStatisticUsers.IsAllowed((int)HStatisticUsers.ID_ALLOWED.APP_AUTO_RESET) == true)
             {
@@ -466,9 +483,13 @@ namespace Statistic
         private int m_iAlarmEventCounter;
         private int AlarmEventCounter { get { return m_iAlarmEventCounter; } set { m_iAlarmEventCounter = value; } }
         SoundPlayer m_sndAlarmEvent;
-        private System.Threading.Timer m_timerAlarmEvent;
+        private
+            //System.Threading.Timer
+            System.Windows.Forms.Timer
+                m_timerAlarmEvent;
 
-        private void timerAlarmEvent (object obj)
+        //private void timerAlarmEvent (object obj)
+        private void timerAlarmEvent(object obj, EventArgs ev)
         {            
             //System.Media.SystemSounds.Question.Play();
             if (m_sndAlarmEvent == null)
@@ -497,7 +518,8 @@ namespace Statistic
 
                 if (m_iAlarmEventCounter == 0)
                 {
-                    m_timerAlarmEvent.Change(System.Threading.Timeout.Infinite, System.Threading.Timeout.Infinite);
+                    //m_timerAlarmEvent.Change(System.Threading.Timeout.Infinite, System.Threading.Timeout.Infinite);
+                    m_timerAlarmEvent.Stop ();
                     m_timerAlarmEvent.Dispose();
                     m_timerAlarmEvent = null;
 
@@ -549,7 +571,12 @@ namespace Statistic
                     else
                         ;
 
-                    m_timerAlarmEvent = new System.Threading.Timer(new TimerCallback(timerAlarmEvent), null, 0, AdminAlarm.MSEC_ALARM_TIMERBEEP); //Int32.Parse(formParameters.m_arParametrSetup[(int)FormParameters.PARAMETR_SETUP.ALARM_TIMER_BEEP]) * 1000
+                    m_timerAlarmEvent =
+                        //new System.Threading.Timer(new TimerCallback(timerAlarmEvent), null, 0, AdminAlarm.MSEC_ALARM_TIMERBEEP) //Int32.Parse(formParameters.m_arParametrSetup[(int)FormParameters.PARAMETR_SETUP.ALARM_TIMER_BEEP]) * 1000
+                        new System.Windows.Forms.Timer ();
+                    m_timerAlarmEvent.Tick += new EventHandler(timerAlarmEvent);
+                    m_timerAlarmEvent.Interval = AdminAlarm.MSEC_ALARM_TIMERBEEP;
+                    m_timerAlarmEvent.Start ();
                     m_iAlarmEventCounter = 1;
                 }
                 else
@@ -854,7 +881,9 @@ namespace Statistic
             файлПрофильСохранитьToolStripMenuItem.Enabled =
                 ! файлПрофильАвтоЗагрузитьСохранитьToolStripMenuItem.Checked;
 
-            if ((!(m_timer == null)) && (! (m_timer.Interval == ProgramBase.TIMER_START_INTERVAL)))
+            if ((!(m_timer == null))
+                //&& (! (m_timer.Interval == ProgramBase.TIMER_START_INTERVAL))
+                )
             {
                 HMark markSett = new HMark ();
                 markSett.Set (0, файлПрофильАвтоЗагрузитьСохранитьToolStripMenuItem.Enabled);
@@ -1050,15 +1079,15 @@ namespace Statistic
             // , но 15 строк выше "админ"-ские закрываются СНОВА
             StopTabPages ();
 
-            if (! (m_TCPServer == null)) {
-                try {
-                    m_TCPServer.Stop ();
-                    m_TCPServer = null;
-                } catch (Exception e) {
-                    Logging.Logg().Exception(e, Logging.INDEX_MESSAGE.NOT_SET, @"FormMain::Stop (FormClosingEventArgs...) - m_TCPServer.Stop () - ...");
-                }
-            } else
-                ;
+            //if (! (m_TCPServer == null)) {
+            //    try {
+            //        m_TCPServer.Stop ();
+            //        m_TCPServer = null;
+            //    } catch (Exception e) {
+            //        Logging.Logg().Exception(e, Logging.INDEX_MESSAGE.NOT_SET, @"FormMain::Stop (FormClosingEventArgs...) - m_TCPServer.Stop () - ...");
+            //    }
+            //} else
+            //    ;
 
             stopTimerAppReset ();
         }
@@ -1281,7 +1310,11 @@ namespace Statistic
         {
             //Logging.Logg().Debug(@"FormMain_FormClosing () - ...", Logging.INDEX_MESSAGE.NOT_SET);
 
-            if ((! (m_TCPServer == null)) || (! (m_arPanelAdmin == null)) || (! (m_timer == null)))
+            if (
+                //(! (m_TCPServer == null)) ||
+                (! (m_arPanelAdmin == null))
+                || (! (m_timer == null))
+                )
                 if (e.Cancel == false)
                     if (e.CloseReason == CloseReason.UserClosing)
                         if (MessageBox.Show(this, "Вы уверены, что хотите закрыть приложение?", "", MessageBoxButtons.YesNo, MessageBoxIcon.Question) == DialogResult.No)
@@ -1902,15 +1935,15 @@ namespace Statistic
             switch (cmd.Split ('=') [0].Split (';')[0])
             {
                 case "INIT":
-                    m_TCPServer.Write(res, cmd.Substring(0, cmd.IndexOf("=") + 1) + "OK");
+                    //m_TCPServer.Write(res, cmd.Substring(0, cmd.IndexOf("=") + 1) + "OK");
                     break;
                 case "LOG_LOCK":
-                    m_TCPServer.Write(res, cmd.Substring(0, cmd.IndexOf("=") + 1) + "OK;" + Logging.Logg().Suspend());
+                    //m_TCPServer.Write(res, cmd.Substring(0, cmd.IndexOf("=") + 1) + "OK;" + Logging.Logg().Suspend());
                     break;
                 case "LOG_UNLOCK":
                     Logging.Logg ().Resume ();
 
-                    m_TCPServer.Write(res, cmd.Substring(0, cmd.IndexOf("=") + 1) + "OK");
+                    //m_TCPServer.Write(res, cmd.Substring(0, cmd.IndexOf("=") + 1) + "OK");
                     break;
                 case "TAB_VISIBLE":
                     int i = -1,
@@ -1925,7 +1958,7 @@ namespace Statistic
                     else
                         ;
 
-                    m_TCPServer.Write(res, cmd.Substring(0, cmd.IndexOf("=") + 1) + mes);
+                    //m_TCPServer.Write(res, cmd.Substring(0, cmd.IndexOf("=") + 1) + mes);
                     break;
                 case "DISONNECT":
                     break;
@@ -2204,8 +2237,8 @@ namespace Statistic
 
         private void FormMain_Activated(object sender, EventArgs e)
         {
-            Logging.Logg().Debug(@"FormMain_Activated () - ...", Logging.INDEX_MESSAGE.NOT_SET);
-            
+            Logging.Logg().Debug(@"FormMain::FormMain_Activated () - ...", Logging.INDEX_MESSAGE.NOT_SET);
+
             if (панельГрафическихToolStripMenuItem.Checked == true)
             {
                 ShowWindow(formGraphicsSettings.Handle, SW_SHOWNOACTIVATE);
@@ -2448,6 +2481,13 @@ namespace Statistic
         //        else
         //            return FormChangeMode.MANAGER.DISP;
         //    }
+        //}
+
+        //protected override void WndProc(ref Message m)
+        //{
+        //    base.WndProc(ref m);
+
+        //    Logging.Logg().Debug(@"FormMain::WndProc () - msg.ID=" + m.Msg + @", msg.Res=" + m.Result, Logging.INDEX_MESSAGE.NOT_SET);
         //}
     }
 }

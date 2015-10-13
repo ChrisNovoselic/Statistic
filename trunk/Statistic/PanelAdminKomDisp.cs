@@ -115,11 +115,15 @@ namespace Statistic
                 , new Rectangle (new Point (10, posY + 5 * (m_iSizeY + m_iMarginY) + offsetPosY - m_iMarginY), new Size (154, m_iSizeY)) //btnAlarmTGTurnOnOff
                 , new Rectangle (new Point (10, posY + 6 * (m_iSizeY + m_iMarginY) + offsetPosY - m_iMarginY), new Size (154, 6 * offsetPosY))
             };
-            
+
             this.btnImportCSV_PBRValues = new System.Windows.Forms.Button();
             this.btnImportCSV_AdminDefaultValues = new System.Windows.Forms.Button();
             //this.cbxImportCSV_AdminDefaultValues = new System.Windows.Forms.CheckBox();
             this.dgwAdminTable = new DataGridViewAdminKomDisp();
+            //Thread threadDGVAdmin = new Thread(() => this.dgwAdminTable = new DataGridViewAdminKomDisp()) { IsBackground = true };
+            //threadDGVAdmin.SetApartmentState (ApartmentState.STA);
+            //threadDGVAdmin.Start ();
+            //while (this.dgwAdminTable == null) ;
 
             this.m_cbxAlarm = new CheckBox();
             this.m_gbxDividerAlarm = new System.Windows.Forms.GroupBox();
