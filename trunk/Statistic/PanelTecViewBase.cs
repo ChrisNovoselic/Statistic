@@ -47,33 +47,23 @@ namespace Statistic
                 , indxReason = -1;
             bool bAbs = false; //Признак абсолютного значения (по умолчанию - нет)
 
-            if (values.valuesPBR == values.valuesPmax)
-            {
-                valuesBaseCalculate = values.valuesPBR;
+            //Проверить наличие внешней команды
+            if (values.valuesForeignCommand == true)
+            {//Есть внешняя команда
+                valuesBaseCalculate = values.valuesUDGe;
+                //Установить признак отклонения "вверх"
                 iReverse = 1;
+                //Установить признак абсолютного значения
+                bAbs = true;
             }
             else
-            {
-                //Вычисление "ВК"
-                //if (values.valuesUDGe[hour] == values.valuesPBR[hour])
-                //if (!(values.valuesREC[hour] == 0))
-                //10.11.2014 ВК редактируется ком./дисп.
-                //if (values.valuesREC == 0)
-                //    values.valuesForeignCommand = false;
-                //else
-                //    ;
-
-                //Проверить наличие внешней команды
-                if (values.valuesForeignCommand == true)
-                {//Есть внешняя команда
-                    valuesBaseCalculate = values.valuesUDGe;
-                    //Установить признак отклонения "вверх"
+            {//Нет внешней команды
+                if (values.valuesPBR == values.valuesPmax)
+                {
+                    valuesBaseCalculate = values.valuesPBR;
                     iReverse = 1;
-                    //Установить признак абсолютного значения
-                    bAbs = true;
                 }
                 else
-                {//Нет внешней команды
                     //Проверить признак использования ветви "Мощность минимальная"
                     if (bPmin == true)
                         //Использовать ветвь "Мощность минимальная"
@@ -84,11 +74,9 @@ namespace Statistic
                             iReverse = -1;
                         }
                         else
-                        {
-                        }
+                            ;
                     else
                         ;
-                }
             }
             //Проверить установлена ли величина-основание
             if (valuesBaseCalculate > 1) {
