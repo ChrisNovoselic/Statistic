@@ -158,7 +158,7 @@ namespace StatisticCommon
                         Logging.Logg ().Exception (e, Logging.INDEX_MESSAGE.NOT_SET, @"DataGridViewAdminKomDisp::CellValidate () - ...");
                     }
                     valid = double.TryParse((string)Rows[ev.RowIndex].Cells[(int)DESC_INDEX.RECOMENDATION].Value, out value);
-                    if ((valid == false) || (value == 0F) || (value > maxRecomendationValue))
+                    if ((valid == false) /*|| (value == 0F)*/ || (value > maxRecomendationValue))
                         fCmd = false;
                     else
                         ;
