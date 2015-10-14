@@ -756,9 +756,6 @@ namespace Statistic
             m_timerCurrent.Tick += new EventHandler(TimerCurrent_Tick);
             m_timerCurrent.Start ();
 
-            //timerCurrent = new System.Windows.Forms.Timer ();
-            //timerCurrent.Tick += TimerCurrent_Tick;
-
             //??? TecView::Start
             update = false;
             //setNowDate(true); //??? ...не требуется

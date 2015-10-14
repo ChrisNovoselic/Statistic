@@ -38,7 +38,10 @@ namespace Statistic
         List <StatisticCommon.TEC> m_listTEC;
 
         private ManualResetEvent m_evTimerCurrent;
-        private System.Threading.Timer m_timerCurrent;
+        private
+            System.Threading.Timer //Вариант №0
+            //System.Windows.Forms.Timer //Вариант №1
+                m_timerCurrent;
 
         private event DelegateObjectFunc EvtValuesMins;
         private event DelegateObjectFunc EvtValuesSecs;
@@ -897,7 +900,14 @@ namespace Statistic
             m_tecView.Start ();
 
             m_evTimerCurrent = new ManualResetEvent(true);
-            m_timerCurrent = new System.Threading.Timer(new TimerCallback(TimerCurrent_Tick), m_evTimerCurrent, PanelStatistic.POOL_TIME * 1000 - 1, System.Threading.Timeout.Infinite);
+            m_timerCurrent = new
+                System.Threading.Timer(new TimerCallback(TimerCurrent_Tick), m_evTimerCurrent, PanelStatistic.POOL_TIME * 1000 - 1, System.Threading.Timeout.Infinite)
+                //System.Windows.Forms.Timer ()
+                ;
+            //Вариант №1
+            //m_timerCurrent.Tick += new EventHandler (TimerCurrent_Tick);
+            //m_timerCurrent.Interval = ProgramBase.TIMER_START_INTERVAL;
+            //m_timerCurrent.Start ();
         }
         /// <summary>
         /// Переопределение наследуемой функции - останов объекта
@@ -962,9 +972,21 @@ namespace Statistic
             {
                 m_tecView.ReportClear(true);
             }
-
+            //??? Проверка текущий/не текущий час
             if (! (m_timerCurrent == null))
+                //Вариант №0
                 m_timerCurrent.Change(dueTime, System.Threading.Timeout.Infinite);
+                ////Вариант №1
+                //if (dueTime == System.Threading.Timeout.Infinite)
+                //    m_timerCurrent.Stop ();
+                //else
+                //    if (dueTime == 0)
+                //        if (m_timerCurrent.Enabled == false)
+                //            m_timerCurrent.Start ();
+                //        else
+                //            ;
+                //    else
+                //        ;
             else
                 ;
 
@@ -1008,14 +1030,28 @@ namespace Statistic
         /// </summary>
         /// <param name="obj">Параметр при вызове метода</param>
         private void TimerCurrent_Tick (object obj)
+        //private void TimerCurrent_Tick(object obj, EventArgs ev)
         {
             if (m_tecView.Actived == true)
             {
+                ////Вариант №1
+                //if (m_timerCurrent.Interval == ProgramBase.TIMER_START_INTERVAL)
+                //{
+                //    m_timerCurrent.Interval = PanelStatistic.POOL_TIME * 1000 - 1;
+
+                //    return ;
+                //}
+                //else
+                //    ;
+
                 if (m_tecView.currHour == true)
                 {
                     if ((m_tecView.adminValuesReceived == true) //Признак успешного выполнения операций для состояния 'TecView.AdminValues'
                         && ((m_tecView.lastMin > 60) && (m_tecView.serverTime.Minute > 1)))
                     {
+                        ////Вариант №1
+                        //m_timerCurrent.Stop ();
+
                         if (IsHandleCreated/*InvokeRequired*/ == true)
                             Invoke(delegateSetDatetimeHour, m_tecView.serverTime);
                         else
@@ -1025,6 +1061,7 @@ namespace Statistic
                     {
                         m_tecView.ChangeState();
 
+                        //Вариант №0
                         m_timerCurrent.Change(PanelStatistic.POOL_TIME * 1000 - 1, System.Threading.Timeout.Infinite);
                     }
                 }
@@ -1068,7 +1105,13 @@ namespace Statistic
                     m_tecView.currHour = true;
 
                     if (! (m_timerCurrent == null))
+                        //Вариант №0
                         m_timerCurrent.Change(0, System.Threading.Timeout.Infinite);
+                        ////Вариант №1
+                        //if (m_timerCurrent.Enabled == false)
+                        //    m_timerCurrent.Start ();
+                        //else
+                        //    ;
                     else
                         ;
                 }
@@ -1077,6 +1120,17 @@ namespace Statistic
                     m_tecView.currHour = false;
 
                     m_tecView.ChangeState ();
+
+                    if (! (m_timerCurrent == null))
+                        //Вариант №0
+                        m_timerCurrent.Change(0, System.Threading.Timeout.Infinite);
+                        ////Вариант №1
+                        //if (m_timerCurrent.Enabled == true)
+                        //    m_timerCurrent.Stop ();
+                        //else
+                        //    ;
+                    else
+                        ;
                 }
             else
                 ;
@@ -1166,7 +1220,10 @@ namespace Statistic
 
                     //???при 1-й активации некорректно повторный вызов
                     if (! (m_timerCurrent == null))
+                        //Вариант №0
                         m_timerCurrent.Change(0, System.Threading.Timeout.Infinite);
+                        ////Вариант №1
+                        //m_timerCurrent.Start ();
                     else
                         ;
                 }

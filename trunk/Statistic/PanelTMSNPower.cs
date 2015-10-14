@@ -232,7 +232,10 @@ namespace Statistic
             public TecView m_tecView;
 
             private ManualResetEvent m_evTimerCurrent;
-            private System.Threading.Timer m_timerCurrent;
+            private
+                System.Threading.Timer //Вариант №0
+                //System.Windows.Forms.Timer //Вариант №1
+                    m_timerCurrent;
 
             //private DelegateFunc delegateUpdateGUI;
 
@@ -341,7 +344,14 @@ namespace Statistic
 
                 m_evTimerCurrent = new ManualResetEvent(true);
                 //m_timerCurrent = new System.Threading.Timer(new TimerCallback(TimerCurrent_Tick), m_evTimerCurrent, PanelStatistic.POOL_TIME * 1000 - 1, PanelStatistic.POOL_TIME * 1000 - 1);
-                m_timerCurrent = new System.Threading.Timer(new TimerCallback(TimerCurrent_Tick), m_evTimerCurrent, PanelStatistic.POOL_TIME * 1000 - 1, System.Threading.Timeout.Infinite);
+                m_timerCurrent =
+                    new System.Threading.Timer(new TimerCallback(TimerCurrent_Tick), m_evTimerCurrent, PanelStatistic.POOL_TIME * 1000 - 1, System.Threading.Timeout.Infinite)
+                    //new System.Windows.Forms.Timer ()
+                    ;
+                ////Вариант №1
+                //m_timerCurrent.Tick += new EventHandler(TimerCurrent_Tick);
+                //m_timerCurrent.Interval = ProgramBase.TIMER_START_INTERVAL; // по этому признаку определим задержку выполнения итерации
+                //m_timerCurrent.Start ();
 
                 //isActive = false;
             }
@@ -351,7 +361,15 @@ namespace Statistic
                 m_tecView.Stop ();
 
                 if (!(m_evTimerCurrent == null)) m_evTimerCurrent.Reset(); else ;
-                if (!(m_timerCurrent == null)) m_timerCurrent.Dispose(); else ;
+                if (!(m_timerCurrent == null))
+                {
+                    ////Вариант №1
+                    //m_timerCurrent.Stop ();
+                    //Вариант №0
+                    m_timerCurrent.Change(System.Threading.Timeout.Infinite, System.Threading.Timeout.Infinite);
+                    m_timerCurrent.Dispose();
+                }
+                else ;
 
                 base.Stop ();
             }
@@ -372,7 +390,10 @@ namespace Statistic
 
                 if (Actived == true)
                 {
+                    //Вариант №0
                     m_timerCurrent.Change (0, System.Threading.Timeout.Infinite);
+                    ////Вариант №1
+                    //m_timerCurrent.Start ();
                 }
                 else
                 {
@@ -472,11 +493,24 @@ namespace Statistic
             }
 
             private void TimerCurrent_Tick(Object stateInfo)
+            //private void TimerCurrent_Tick(Object stateInfo, EventArgs ev)
             {
                 if (Actived == true)
                 {
+                    ////Вариант №1
+                    ////Задержка выполнения итерации
+                    //if (m_timerCurrent.Interval == ProgramBase.TIMER_START_INTERVAL)
+                    //{
+                    //    m_timerCurrent.Interval = PanelStatistic.POOL_TIME * 1000 - 1;
+
+                    //    return;
+                    //}
+                    //else
+                    //    ;
+
                     ChangeState();
 
+                    //Вариант №0
                     m_timerCurrent.Change (PanelStatistic.POOL_TIME * 1000 - 1, System.Threading.Timeout.Infinite);
                 }
                 else

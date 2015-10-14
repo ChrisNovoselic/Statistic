@@ -22,9 +22,15 @@ namespace StatisticCommon
     {
         abstract partial class PanelAnalyzer : PanelStatistic
         {
+            protected int MSEC_TIMERCHECKED_STANDARD = 66666
+                , MSEC_TIMERCHECKED_FORCE = 666;
+
             public event EventHandler EvtClose;
 
-            protected System.Threading.Timer m_timerChecked;
+            protected
+                System.Threading.Timer
+                //System.Windows.Forms.Timer
+                    m_timerChecked;
             protected bool m_bThreadTimerCheckedAllowed;
             protected LogParse m_LogParse;
 
@@ -110,7 +116,10 @@ namespace StatisticCommon
             protected abstract LogParse newLogParse ();
 
             protected abstract void procChecked(out bool[] arbActives, out int err);
-            protected abstract void ProcChecked(object obj);
+            protected abstract void ProcChecked(
+                object obj
+                //object obj, EventArgs ev
+                );
 
             /// <summary>
             /// Отключение от клиента (активного пользователя)
@@ -134,7 +143,14 @@ namespace StatisticCommon
             {
                 m_bThreadTimerCheckedAllowed = true;
 
-                m_timerChecked = new System.Threading.Timer(new TimerCallback(ProcChecked), null, 0, System.Threading.Timeout.Infinite);
+                m_timerChecked =
+                    new System.Threading.Timer(new TimerCallback(ProcChecked), null, 0, System.Threading.Timeout.Infinite)
+                    //new System.Windows.Forms.Timer()
+                    ;
+                ////Вариант №1
+                //m_timerChecked.Interval = MSEC_TIMERCHECKED_STANDARD;
+                //m_timerChecked.Tick += new EventHandler(ProcChecked);
+                //m_timerChecked.Start ();
             }
 
             public override void Stop()
@@ -143,9 +159,12 @@ namespace StatisticCommon
 
                 if (!(m_timerChecked == null))
                 {
+                    //Вариант №0
                     m_timerChecked.Change(System.Threading.Timeout.Infinite, System.Threading.Timeout.Infinite);
-                    m_timerChecked.Dispose();
-                    m_timerChecked = null;
+                    ////Вариант №1
+                    //m_timerChecked.Stop ();
+                    //m_timerChecked.Dispose();
+                    //m_timerChecked = null;
                 }
                 else
                     ;
@@ -360,7 +379,10 @@ namespace StatisticCommon
 
                 if (e.ColumnIndex == 0)
                 {
+                    //Вариант №0
                     m_timerChecked.Change(System.Threading.Timeout.Infinite, System.Threading.Timeout.Infinite);
+                    ////Вариант №1
+                    //m_timerChecked.Stop ();
 
                     dgvFilterActives.Rows[e.RowIndex].Cells[0].Value = !bool.Parse(dgvFilterActives.Rows[e.RowIndex].Cells[0].Value.ToString());
 
@@ -415,7 +437,11 @@ namespace StatisticCommon
 
                         FillDataGridViews(ref dgvClient, m_tableUsers, @"DESCRIPTION", err);
 
+                        //Вариант №0
                         m_timerChecked.Change(0, System.Threading.Timeout.Infinite);
+                        ////Вариант №1
+                        //m_timerChecked.Interval = MSEC_TIMERCHECKED_STANDARD;
+                        //m_timerChecked.Start ();
                     }
                     else
                         throw new Exception(@"PanalAnalyzer::dgvFilterActives_CellClick () - нет соединения с БД конфигурации");
@@ -434,8 +460,10 @@ namespace StatisticCommon
                     DbConnection connConfigDB = DbSources.Sources ().GetConnection (m_iListenerIdConfigDB, out err);
                     if ((!(connConfigDB == null)) && (err == 0))
                     {
-                        //Thread_ProcCheckedStop();
+                        //Вариант №0
                         m_timerChecked.Change(System.Threading.Timeout.Infinite, System.Threading.Timeout.Infinite);
+                        ////Вариант №1
+                        //m_timerChecked.Stop ();
 
                         dgvFilterRoles.Rows[e.RowIndex].Cells[0].Value = !bool.Parse(dgvFilterRoles.Rows[e.RowIndex].Cells[0].Value.ToString());
 
@@ -464,7 +492,11 @@ namespace StatisticCommon
                         HStatisticUsers.GetUsers(ref connConfigDB, where, c_list_sorted, out m_tableUsers, out err);
                         FillDataGridViews(ref dgvClient, m_tableUsers, @"DESCRIPTION", err);
 
+                        //Вариант №0
                         m_timerChecked.Change(0, System.Threading.Timeout.Infinite);
+                        ////Вариант №1
+                        //m_timerChecked.Interval = MSEC_TIMERCHECKED_STANDARD;
+                        //m_timerChecked.Start();
                     }
                     else
                         throw new Exception(@"PanelAnzlyzer::dgvFilterRoles_CellClick () - нет соединения с БД конфигурации...");
@@ -1103,6 +1135,7 @@ namespace StatisticCommon
             }
 
             protected override void ProcChecked(object obj)
+            //protected override void ProcChecked(object obj, EventArgs ev)
             {
                 int i = -1;
                 for (i = 0; (i < m_tableUsers.Rows.Count) && (m_bThreadTimerCheckedAllowed == true); i++)
@@ -1111,7 +1144,10 @@ namespace StatisticCommon
                     m_listTCPClientUsers[i].Connect(m_tableUsers.Rows[i][c_NameFieldToConnect].ToString() + ";" + i, 6666);
                 }
 
-                m_timerChecked.Change(66666, System.Threading.Timeout.Infinite);
+                //Вариант №0
+                m_timerChecked.Change(MSEC_TIMERCHECKED_STANDARD, System.Threading.Timeout.Infinite);
+                ////Вариант №1
+                //if (! (m_timerChecked.Interval == MSEC_TIMERCHECKED_STANDARD)) m_timerChecked.Interval = MSEC_TIMERCHECKED_STANDARD; else ;
             }
 
             public override void Stop()
@@ -1518,6 +1554,7 @@ namespace StatisticCommon
             }
 
             protected override void ProcChecked(object obj)
+            //protected override void ProcChecked(object obj, EventArgs ev)
             {
                 int err = -1
                     , i = -1
@@ -1530,12 +1567,15 @@ namespace StatisticCommon
                     for (i = 0; (i < m_tableUsers.Rows.Count) && (m_bThreadTimerCheckedAllowed == true) && (i < arbActives.Length); i++)
                         dgvClient.Rows[i].Cells[0].Value = arbActives[i];
 
-                    msecSleep = 66666;
+                    msecSleep = MSEC_TIMERCHECKED_STANDARD;
                 }
                 else
-                    msecSleep = 666; //Нет соединения с БД...
+                    msecSleep = MSEC_TIMERCHECKED_FORCE; //Нет соединения с БД...
 
+                //Вариант №0
                 m_timerChecked.Change(msecSleep, System.Threading.Timeout.Infinite);
+                ////Вариант №1
+                //if (! (m_timerChecked.Interval == msecSleep)) m_timerChecked.Interval = msecSleep; else ;
             }
 
             protected override void fillTypeMessage()

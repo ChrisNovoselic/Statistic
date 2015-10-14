@@ -577,6 +577,7 @@ namespace Statistic
                     m_timerAlarmEvent.Tick += new EventHandler(timerAlarmEvent);
                     m_timerAlarmEvent.Interval = AdminAlarm.MSEC_ALARM_TIMERBEEP;
                     m_timerAlarmEvent.Start ();
+
                     m_iAlarmEventCounter = 1;
                 }
                 else
@@ -2487,7 +2488,8 @@ namespace Statistic
         //{
         //    base.WndProc(ref m);
 
-        //    Logging.Logg().Debug(@"FormMain::WndProc () - msg.ID=" + m.Msg + @", msg.Res=" + m.Result, Logging.INDEX_MESSAGE.NOT_SET);
+        //    //Logging.Logg().Debug(@"FormMain::WndProc () - msg.ID=" + m.Msg + @", msg.Res=" + m.Result, Logging.INDEX_MESSAGE.NOT_SET);
+        //    Console.WriteLine(@"FormMain::WndProc () - msg.ID=" + m.Msg + @", msg.Res=" + m.Result);
         //}
     }
 }

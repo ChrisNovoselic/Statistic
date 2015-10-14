@@ -55,7 +55,10 @@ namespace StatisticCommon
         private object lockValue;
 
         private ManualResetEvent m_evTimerCurrent;
-        private System.Threading.Timer m_timerAlarm;
+        private
+            System.Threading.Timer
+            //System.Windows.Forms.Timer
+                m_timerAlarm;
         public static volatile int MSEC_ALARM_TIMERUPDATE = -1;
         public static volatile int MSEC_ALARM_EVENTRETRY = -1;
         public static volatile int MSEC_ALARM_TIMERBEEP = -1;
@@ -247,10 +250,22 @@ namespace StatisticCommon
                 //!!! сообщение об одном событии будет отображаться до тех пор, пока условия для него будут верны
                 //!!! т.к. при отображении сообщения последовательно выполняются: this.Activate(false) -> this.Activate(true)
                 if (m_iActiveCounter == 0)
+                {
+                    //Вариант №0
                     m_timerAlarm.Change(0, System.Threading.Timeout.Infinite);
+                    ////Вариант №1
+                    //m_timerAlarm.Interval = MSEC_ALARM_TIMERUPDATE;
+                    //m_timerAlarm.Start ();
+                }
                 else
                     if (m_iActiveCounter > 0)
+                    {
+                        //Вариант №0
                         m_timerAlarm.Change(MSEC_ALARM_TIMERUPDATE, System.Threading.Timeout.Infinite);
+                        ////Вариант №1
+                        //m_timerAlarm.Interval = ProgramBase.TIMER_START_INTERVAL; // по этому признаку определим задержку очередной итерации
+                        //m_timerAlarm.Start();
+                    }
                     else
                         ;
 
@@ -261,7 +276,10 @@ namespace StatisticCommon
                 //    ;
             }
             else
+                //Вариант №0
                 m_timerAlarm.Change(Timeout.Infinite, Timeout.Infinite);
+                ////Вариант №1
+                //m_timerAlarm.Stop ();
 
             foreach (TecView tv in m_listTecView)
             {
@@ -282,7 +300,11 @@ namespace StatisticCommon
             }
 
             //m_evTimerCurrent = new ManualResetEvent(true);
-            m_timerAlarm = new System.Threading.Timer(new TimerCallback(TimerAlarm_Tick), null, Timeout.Infinite, Timeout.Infinite);
+            m_timerAlarm =
+                new System.Threading.Timer(new TimerCallback(TimerAlarm_Tick), null, Timeout.Infinite, Timeout.Infinite)
+                //new System.Windows.Forms.Timer ()
+                ;
+            //m_timerAlarm.Tick += new EventHandler(TimerAlarm_Tick);
         }
 
         public void Stop()
@@ -309,9 +331,20 @@ namespace StatisticCommon
         }
 
         private void TimerAlarm_Tick(Object stateInfo)
+        //private void TimerAlarm_Tick(Object stateInfo, EventArgs ev)
         {
             lock (lockValue)
             {
+                ////Задержка выполнения итерации
+                //if (m_timerAlarm.Interval == ProgramBase.TIMER_START_INTERVAL)
+                //{
+                //    m_timerAlarm.Interval = MSEC_ALARM_TIMERUPDATE;
+
+                //    return;
+                //}
+                //else
+                //    ;
+
                 if (! (m_iActiveCounter < 0))
                 {
                     ChangeState();

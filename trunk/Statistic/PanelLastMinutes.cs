@@ -59,7 +59,10 @@ namespace Statistic
         private PanelDateTime m_panelDateTime;
 
         private ManualResetEvent m_evTimerCurrent;
-        private System.Threading.Timer m_timerCurrent;
+        private
+            System.Threading.Timer //Вариант №0
+            //System.Windows.Forms.Timer //Вариант №1
+                m_timerCurrent;
 
         enum INDEX_LABEL : int { NAME_TEC, NAME_COMPONENT, VALUE_COMPONENT, DATETIME, COUNT_INDEX_LABEL };
         static Color s_clrBakColorLabel = Color.FromArgb(212, 208, 200), s_clrBakColorLabelVal = Color.FromArgb(219, 223, 227);
@@ -140,19 +143,33 @@ namespace Statistic
                     ;
             }
 
-            //Милисекунды до первого запуска функции таймера
-            Int32 msecUpdate = -1;
-            //Милисекунды от начала часа
-            msecUpdate = DateTime.Now.Minute * 60 * 1000 + DateTime.Now.Second * 1000;
-            msecUpdate = 60 * 60 * 1000 - msecUpdate;
-            msecUpdate += 666666;
-
             m_evTimerCurrent = new ManualResetEvent(true);
-            m_timerCurrent = new System.Threading.Timer(new TimerCallback(TimerCurrent_Tick), m_evTimerCurrent, (Int64)msecUpdate, Timeout.Infinite);
+            m_timerCurrent = new
+                System.Threading.Timer(new TimerCallback(TimerCurrent_Tick), m_evTimerCurrent, getMSecUpdate (666666), Timeout.Infinite)
+                //System.Windows.Forms.Timer ()
+                ;
+            ////Вариант №1
+            //m_timerCurrent.Tick += new EventHandler(TimerCurrent_Tick);
+            //m_timerCurrent.Interval = ProgramBase.TIMER_START_INTERVAL;
+            //m_timerCurrent.Start ();
             //Для отладки
             //m_timerCurrent = new System.Threading.Timer(new TimerCallback(TimerCurrent_Tick), m_evTimerCurrent, 0, m_msecPeriodUpdate - 1);
 
             //setDatetimePicker(m_panelDateTime.m_dtprDate.Value - HAdmin.GetOffsetOfCurrentTimeZone());
+        }
+        /// <summary>
+        /// Милисекунды до первого запуска функции таймера
+        /// </summary>
+        /// <returns></returns>
+        private Int64 getMSecUpdate (Int64 shift)
+        {
+            Int64 iRes = -1;
+            //Милисекунды от начала часа
+            iRes = DateTime.Now.Minute * 60 * 1000 + DateTime.Now.Second * 1000;
+            iRes = 60 * 60 * 1000 - iRes;
+            iRes += shift;
+
+            return iRes;
         }
 
         public override void Stop()
@@ -240,17 +257,32 @@ namespace Statistic
             initTableHourRows ();
         }
 
-        private void TimerCurrent_Tick (object obj) {
+        private void TimerCurrent_Tick (object obj)
+        //private void TimerCurrent_Tick(object obj, EventArgs ev)
+        {
+            if (! (m_timerCurrent == null))
+                //Вариант №0
+                m_timerCurrent.Change(m_msecPeriodUpdate, System.Threading.Timeout.Infinite);
+                ////Вариант №1
+                //if (m_timerCurrent.Interval == ProgramBase.TIMER_START_INTERVAL)
+                //{
+                //    m_timerCurrent.Interval = (int)getMSecUpdate (666666);
+                    
+                //    return ;
+                //}
+                //else
+                //    if (! (m_timerCurrent.Interval == m_msecPeriodUpdate))
+                //        m_timerCurrent.Interval = m_msecPeriodUpdate;
+                //    else
+                //        ;
+            else
+                ;
+
             if (Actived == true)
                 if (IsHandleCreated/*InvokeRequired*/ == true)
                     this.BeginInvoke(new DelegateDateFunc(setDatetimePicker), HAdmin.ToMoscowTimeZone(DateTime.Now));
                 else
                     Logging.Logg().Error(@"PanelLastMinutes::TimerCurrent_Tick () - ... BeginInvoke (setDatetimePicker) - ...", Logging.INDEX_MESSAGE.D_001);
-            else
-                ;
-
-            if (! (m_timerCurrent == null))
-                m_timerCurrent.Change (m_msecPeriodUpdate, Timeout.Infinite);
             else
                 ;
         }

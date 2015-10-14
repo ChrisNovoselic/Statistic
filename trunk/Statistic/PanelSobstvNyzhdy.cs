@@ -255,7 +255,10 @@ namespace Statistic
             public TecView m_tecView;
 
             private ManualResetEvent m_evTimerCurrent;
-            private System.Threading.Timer m_timerCurrent;
+            private
+                System.Threading.Timer //Вариант №0
+                //System.Windows.Forms.Timer //Вариант №1
+                    m_timerCurrent;
 
             ZedGraphControl m_zedGraphHours;
 
@@ -358,7 +361,14 @@ namespace Statistic
                 m_tecView.Start();
 
                 m_evTimerCurrent = new ManualResetEvent(true);
-                m_timerCurrent = new System.Threading.Timer(new TimerCallback(TimerCurrent_Tick), m_evTimerCurrent, PanelStatistic.POOL_TIME * 1000 - 1, System.Threading.Timeout.Infinite);
+                m_timerCurrent = new
+                    System.Threading.Timer(new TimerCallback(TimerCurrent_Tick), m_evTimerCurrent, PanelStatistic.POOL_TIME * 1000 - 1, PanelStatistic.POOL_TIME * 1000 - 1)
+                    //System.Windows.Forms.Timer ()
+                    ;
+                //Вариант №1
+                //m_timerCurrent.Interval = ProgramBase.TIMER_START_INTERVAL; // для реализации задержки выполнения итерации
+                //m_timerCurrent.Tick += new EventHandler(TimerCurrent_Tick);
+                //m_timerCurrent.Start ();
 
                 //isActive = false;
             }
@@ -433,12 +443,21 @@ namespace Statistic
             }
 
             private void TimerCurrent_Tick(Object stateInfo)
+            //private void TimerCurrent_Tick(Object stateInfo, EventArgs ev)
             {
                 if (Actived == true)
                 {
-                    ChangeState();
+                    //Вариант №1
+                    //if (m_timerCurrent.Interval == ProgramBase.TIMER_START_INTERVAL)
+                    //{
+                    //    m_timerCurrent.Interval = PanelStatistic.POOL_TIME * 1000 - 1;
 
-                    m_timerCurrent.Change (PanelStatistic.POOL_TIME * 1000 - 1, System.Threading.Timeout.Infinite);
+                    //    return ;
+                    //}
+                    //else
+                    //    ;
+
+                    ChangeState();
                 }
                 else
                     ;

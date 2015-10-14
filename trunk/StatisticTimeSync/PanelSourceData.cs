@@ -583,7 +583,10 @@ namespace StatisticTimeSync
         }
 
         private object m_lockTimerGetDate;
-        private System.Threading.Timer m_timerGetDate;
+        private
+            //System.Threading.Timer
+            System.Windows.Forms.Timer
+                m_timerGetDate;
         private event DelegateObjectFunc EvtGetDate;
         private event DelegateDateFunc EvtEtalonDate;
 
@@ -721,16 +724,17 @@ namespace StatisticTimeSync
             EvtEtalonDate(date);
         }
 
-        private void fThreadGetDate(object obj)
+        //private void fThreadGetDate(object obj)
+        private void fThreadGetDate(object obj, EventArgs ev)
         {
             EvtGetDate(DateTime.UtcNow);
 
-            lock (m_lockTimerGetDate)
-            {
-                if (!(m_timerGetDate == null))
-                    m_timerGetDate.Change(1000, System.Threading.Timeout.Infinite);
-                else ;
-            }
+            //lock (m_lockTimerGetDate)
+            //{
+            //    if (!(m_timerGetDate == null))
+            //        m_timerGetDate.Change(1000, System.Threading.Timeout.Infinite);
+            //    else ;
+            //}
         }
 
         public override void Stop()
@@ -749,7 +753,8 @@ namespace StatisticTimeSync
         {
             if (!(m_timerGetDate == null))
             {
-                m_timerGetDate.Change(System.Threading.Timeout.Infinite, System.Threading.Timeout.Infinite);
+                //m_timerGetDate.Change(System.Threading.Timeout.Infinite, System.Threading.Timeout.Infinite);
+                m_timerGetDate.Stop ();
                 m_timerGetDate.Dispose();
                 m_timerGetDate = null;
             }
@@ -767,11 +772,19 @@ namespace StatisticTimeSync
                 if (activated == true)
                 {//Запустить поток
                     if (m_timerGetDate == null)
-                        m_timerGetDate = new System.Threading.Timer(fThreadGetDate);
+                    {
+                        m_timerGetDate = new
+                            //System.Threading.Timer(fThreadGetDate)
+                            System.Windows.Forms.Timer ()
+                            ;
+                        m_timerGetDate.Tick += new EventHandler(fThreadGetDate);
+                        m_timerGetDate.Interval = 1000;
+                    }
                     else
                         ;
 
-                    m_timerGetDate.Change(0, System.Threading.Timeout.Infinite);
+                    //m_timerGetDate.Change(0, System.Threading.Timeout.Infinite);
+                    m_timerGetDate.Start ();
                 }
                 else
                 {

@@ -139,10 +139,6 @@ namespace StatisticTrans
             //keyPar = @"Season Action"; valDefPar = @"-1";
             //m_fileINI.Add(keyPar, valDefPar);
 
-            //Ошибка для отладки
-            //System.Threading.Timer tm = null;
-            //tm.Dispose ();
-
             //Вариант №1
             keyPar = @"iapp"; valDefPar = id_app.ToString();
             m_sFileINI.AddMainPar(keyPar, valDefPar);
