@@ -51,7 +51,7 @@
             this.Load += new System.EventHandler(FormStatisticTimeSync_Load);
             this.Activated += new System.EventHandler(FormStatisticTimeSync_Activate);
             this.Deactivate += new System.EventHandler(FormStatisticTimeSync_Deactivate);
-            //this.backgroundWorker1.DoWork += new DoWorkEventHandler(backgroundWorker1_DoWork);
+
         }
 
         #endregion

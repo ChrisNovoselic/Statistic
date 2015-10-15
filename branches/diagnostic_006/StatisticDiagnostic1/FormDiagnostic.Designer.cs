@@ -1,4 +1,4 @@
-﻿namespace StatisticDiagnostic1
+﻿namespace StatisticDiagnostic
 {
     partial class FormDiagnostic
     {
@@ -22,7 +22,7 @@
 
         #region Код, автоматически созданный конструктором форм Windows
 
-        PanelStatisticDiagnostic1 panelMain;
+        PanelStatisticDiagnostic panelMain;
 
         /// <summary>
         /// Обязательный метод для поддержки конструктора - не изменяйте
@@ -30,33 +30,28 @@
         /// </summary>
         private void InitializeComponent()
         {
-            this.components = new System.ComponentModel.Container();
-            this.panelMain = new StatisticDiagnostic1.PanelStatisticDiagnostic1(this.components);
-            this.SuspendLayout();
-            // 
-            // panelMain
-            //
-            this.panelMain.ColumnStyles.Add(new System.Windows.Forms.ColumnStyle());
-            this.panelMain.Dock = System.Windows.Forms.DockStyle.Fill;
-            this.panelMain.Location = new System.Drawing.Point(0, 0);
-            this.panelMain.Name = "panelMain";
-            this.panelMain.RowStyles.Add(new System.Windows.Forms.RowStyle());
-            this.panelMain.Size = new System.Drawing.Size(1041, 600);
-            this.panelMain.TabIndex = 0;
             
+            this.panelMain = new PanelStatisticDiagnostic();
+           
+            this.SuspendLayout();
+
+            this.Controls.Add(panelMain);
+  
             // 
             // FormDiagnostic
             // 
             this.AutoScaleDimensions = new System.Drawing.SizeF(6F, 13F);
             this.AutoScaleMode = System.Windows.Forms.AutoScaleMode.Font;
             this.ClientSize = new System.Drawing.Size(1041, 600);
-            this.Controls.Add(panelMain);
             this.Name = "FormDiagnostic";
             this.Text = "FormStatisticDiagnostic";
+
+            this.ResumeLayout(false);
+
             this.Activated += new System.EventHandler(this.FormDiagnostic_Activate);
             this.Deactivate += new System.EventHandler(this.FormDiagnostic_Deactivate);
             this.Load += new System.EventHandler(this.FormDiagnostic_Load);            
-            this.ResumeLayout(false);
+          
         }
 
         #endregion      

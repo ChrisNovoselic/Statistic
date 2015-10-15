@@ -5,7 +5,7 @@ using System.Threading;
 using System.Windows.Forms;
 using HClassLibrary;
 
-namespace StatisticDiagnostic1
+namespace StatisticDiagnostic
 {
     static class Program
     {
@@ -18,7 +18,7 @@ namespace StatisticDiagnostic1
             /*Application.EnableVisualStyles();
             Application.SetCompatibleTextRenderingDefault(false);
             Application.Run(new FormDiagnostic());
-            PanelStatisticDiagnostic1 form = new PanelStatisticDiagnostic1();*/
+            PanelStatisticDiagnostic form = new PanelStatisticDiagnostic();*/
 
             /*Thread thread = new Thread(form.ThreadFunction);
             //Запускаем поток
