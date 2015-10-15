@@ -8,25 +8,18 @@ using StatisticCommon;
 using System.Windows.Forms;
 using HClassLibrary;
 
-namespace StatisticDiagnostic1
+namespace StatisticDiagnostic
 {
     public partial class FormDiagnostic : FormMainBase
     {
         public FormDiagnostic()
         {
             InitializeComponent();
-            panelMain.SetDelegate(delegateStartWait, delegateStopWait, delegateEvent);
         }
 
         public void FormDiagnostic_Load(object obj, EventArgs ev)
         {
-            panelMain.start();
-        }
-
-        public void FormDiagnostic_Close(object obj, EventArgs ev)
-        {
-            panelMain.Activate(false);
-            panelMain.Stop();
+            panelMain.Start();
         }
 
         private void FormDiagnostic_Activate(object obj, EventArgs ev)
@@ -34,10 +27,10 @@ namespace StatisticDiagnostic1
             panelMain.Activate(true);
         }
 
-        /*private void FormDiagnostic_Deactivate(object obj, EventArgs ev)
+        private void FormDiagnostic_Deactivate(object obj, EventArgs ev)
         {
             panelMain.Activate(false);
-        }*/
+        }
     }
 
 }

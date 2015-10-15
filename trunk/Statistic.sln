@@ -31,7 +31,7 @@ Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "TestFunc", "TestFunc\TestFu
 EndProject
 Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "StatisticAlarm", "StatisticAlarm\StatisticAlarm.csproj", "{205A2B13-F4AC-42AC-8BB7-5B02DE932019}"
 EndProject
-Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "StatisticDiagnostic1", "StatisticDiagnostic1\StatisticDiagnostic1.csproj", "{2F11223C-00CF-4D6C-B234-1B8FA95F8B2F}"
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "StatisticDiagnostic", "StatisticDiagnostic1\StatisticDiagnostic.csproj", "{2F11223C-00CF-4D6C-B234-1B8FA95F8B2F}"
 EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution

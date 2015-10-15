@@ -258,6 +258,10 @@
       <Project>{A4F24CAA-ACAA-4923-AA4F-CEF6CBA46291}</Project>
       <Name>HClassLibrary</Name>
     </ProjectReference>
+    <ProjectReference Include="..\StatisticDiagnostic1\StatisticDiagnostic.csproj">
+      <Project>{2F11223C-00CF-4D6C-B234-1B8FA95F8B2F}</Project>
+      <Name>StatisticDiagnostic</Name>
+    </ProjectReference>
     <ProjectReference Include="..\StatisticLibrary\StatisticCommon.csproj">
       <Project>{5D7C7433-8D2F-4C1A-8BD7-B30B7AE7079B}</Project>
       <Name>StatisticCommon</Name>

@@ -60,6 +60,7 @@ namespace Statistic
             m_dictAddingTabs.Add((int)ID_ADDING_TAB.MONITOR_LAST_MINUTES, new ADDING_TAB("мониторингПоследняяМинутаЧасToolStripMenuItem", "Мониторинг - последняя минута часа"));            
             m_dictAddingTabs.Add((int)ID_ADDING_TAB.SOBSTV_NYZHDY, new ADDING_TAB("собственныеНуждыToolStripMenuItem", "Собственные нужды"));
             m_dictAddingTabs.Add((int)ID_ADDING_TAB.DATETIMESYNC_SOURCE_DATA, new ADDING_TAB("рассинхронизацияДатаВремяСерверБДToolStripMenuItem", "Рассинхронизация даты/времени серверов БД"));
+            m_dictAddingTabs.Add((int)ID_ADDING_TAB.DIAGNOSTIC, new ADDING_TAB("ДиагностикаToolStripMenuItem", "Диагностика"));
             m_dictAddingTabs.Add((int)ID_ADDING_TAB.SOTIASSO, new ADDING_TAB("значенияСОТИАССОToolStripMenuItem", "Значения СОТИАССО"));
 
             this.настройкиToolStripMenuItem = new System.Windows.Forms.ToolStripMenuItem();
@@ -178,6 +179,7 @@ namespace Statistic
                 , m_dictAddingTabs[(int)ID_ADDING_TAB.MONITOR_LAST_MINUTES].menuItem
                 , m_dictAddingTabs[(int)ID_ADDING_TAB.SOBSTV_NYZHDY].menuItem
                 , m_dictAddingTabs[(int)ID_ADDING_TAB.DATETIMESYNC_SOURCE_DATA].menuItem
+                , m_dictAddingTabs[(int)ID_ADDING_TAB.DIAGNOSTIC].menuItem
                 , m_dictAddingTabs[(int)ID_ADDING_TAB.SOTIASSO].menuItem
             });
             this.видToolStripMenuItem.Name = "видToolStripMenuItem";
@@ -226,6 +228,10 @@ namespace Statistic
             // рассинхронизацияДатаВремяСерверБДToolStripMenuItem
             // 
             this.m_dictAddingTabs[(int)ID_ADDING_TAB.DATETIMESYNC_SOURCE_DATA].menuItem.CheckedChanged += new System.EventHandler(this.рассинхронизацияДатаВремяСерверБДToolStripMenuItem_CheckedChanged);
+            //
+            //ДиагностикаToolStripMenuItem_CheckedChanged
+            //
+            this.m_dictAddingTabs[(int)ID_ADDING_TAB.DIAGNOSTIC].menuItem.CheckedChanged += new System.EventHandler(this.ДиагностикаToolStripMenuItem_CheckedChanged);
             // 
             // значенияСОТИАССОToolStripMenuItem
             // 
@@ -383,7 +389,7 @@ namespace Statistic
             this.lblLabel.Name = "lblLabel";
             this.lblLabel.Size = new System.Drawing.Size(206, 17);
             this.lblLabel.TabIndex = 5;
-            this.lblLabel.Text = "ОАО \"Новосибирскэнерго\"";
+            this.lblLabel.Text = "ОА \"СибЭко\"";
             this.lblLabel.Visible = false;
             // 
             // FormMain
