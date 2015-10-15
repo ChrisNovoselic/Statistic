@@ -1,6 +1,7 @@
 ﻿using System;
 using System.Collections.Generic;
 using System.ComponentModel;
+using System.Data.Common;
 using System.Diagnostics;
 using System.Linq;
 using System.Text;
@@ -14,44 +15,66 @@ namespace StatisticAlarm
 {
     public partial class PanelAlarmJournal : PanelStatistic
     {
+        public enum MODE { SERVICE, ADMIN, VIEW };
         private event DelegateIntIntFunc EventConfirm;
-        
+
+        ConnectionSettings m_connSett;
         List<TEC> m_list_tec;
         AdminAlarm m_adminAlarm;
 
-        public PanelAlarmJournal(List <TEC> list_tec)
+        public PanelAlarmJournal(ConnectionSettings connSett, MODE mode)
         {
-            panelAlarmJournal(list_tec);
+            initialize(connSett);
         }
 
-        public PanelAlarmJournal(IContainer container, List<TEC> list_tec)
+        public PanelAlarmJournal(IContainer container, ConnectionSettings connSett, MODE mode)
         {
             container.Add(this);
 
-            panelAlarmJournal(list_tec);
+            initialize(connSett);
         }
 
-        private void panelAlarmJournal(List<TEC> list_tec)
+        private void initialize(ConnectionSettings connSett)
         {
             InitializeComponent();
 
-            m_list_tec = list_tec;
+            m_connSett = connSett;
 
-            if (this.m_cbxAlarm.Checked == true)
-            {
-                initAdminAlarm();
+            int err = -1
+                , iListenerId = DbSources.Sources().Register(m_connSett, false, @"CONFIG_DB");
 
-                m_adminAlarm.Start();
-            } else ;
+            m_list_tec = new InitTEC_200(iListenerId, true, false).tec;
+
+            DbSources.Sources().UnRegister(iListenerId);
+
+            //if (this.m_cbxAlarm.Checked == true)
+            //{
+            //    initAdminAlarm();
+
+            //    m_adminAlarm.Start();
+            //} else ;
         }
 
         public override void Start()
         {
             base.Start ();
+
+            if (m_adminAlarm == null) initAdminAlarm(); else ;
+
+            if (m_adminAlarm.IsStarted == false)
+                m_adminAlarm.Start();
+            else ;
         }
 
         public override void Stop()
         {
+            if (m_adminAlarm.IsStarted == true)
+            {
+                m_adminAlarm.Activate (false);
+                m_adminAlarm.Stop();
+            }
+            else ;
+
             base.Stop ();
         }
 
@@ -59,14 +82,17 @@ namespace StatisticAlarm
         {
             bool bRes = base.Activate (activate);
             
-            if (m_adminAlarm == null) initAdminAlarm(); else ;
-
-            if ((activate == true)
-                && (m_adminAlarm.IsStarted == false))
-                m_adminAlarm.Start();
-            else ;
-
-            m_adminAlarm.Activate(activate);
+            if (bRes == true)
+            {
+                if ((Find (INDEEX_CONTROL.CBX_WORK) as CheckBox).Checked == true)
+                {
+                    m_adminAlarm.Activate(activate);
+                }
+                else
+                    ;
+            }
+            else
+                ;
 
             return bRes;
         }
@@ -99,11 +125,16 @@ namespace StatisticAlarm
         private void OnAdminAlarm_EventRetry(TecView.EventRegEventArgs ev)
         {
         }
+
+        private Control Find (INDEEX_CONTROL indx)
+        {
+            return Controls.Find (indx.ToString (), true) [0];
+        }
     }
 
     partial class PanelAlarmJournal
     {
-        CheckBox m_cbxAlarm;
+        private enum INDEEX_CONTROL { DTP_CURRENT, CBX_WORK };
         
         /// <summary>
         /// Требуется переменная конструктора.
@@ -132,6 +163,23 @@ namespace StatisticAlarm
         private void InitializeComponent()
         {
             components = new System.ComponentModel.Container();
+            //this.CellBorderStyle = TableLayoutPanelCellBorderStyle.Single;
+
+            Control ctrl = null;
+
+            this.SuspendLayout();
+            
+            ctrl = new DateTimePicker ();
+            ctrl.Name = INDEEX_CONTROL.DTP_CURRENT.ToString();
+            this.Controls.Add(ctrl);
+            
+            ctrl = new CheckBox ();
+            ctrl.Name = INDEEX_CONTROL.CBX_WORK.ToString ();
+            ctrl.Text = @"Включить";
+            this.Controls.Add (ctrl);
+
+            this.ResumeLayout(false);
+            this.PerformLayout ();
         }
 
         #endregion
