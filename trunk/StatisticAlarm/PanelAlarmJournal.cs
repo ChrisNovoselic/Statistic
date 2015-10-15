@@ -68,12 +68,15 @@ namespace StatisticAlarm
 
         public override void Stop()
         {
-            if (m_adminAlarm.IsStarted == true)
-            {
-                m_adminAlarm.Activate (false);
-                m_adminAlarm.Stop();
-            }
-            else ;
+            if (! (m_adminAlarm == null))
+                if (m_adminAlarm.IsStarted == true)
+                {
+                    m_adminAlarm.Activate (false);
+                    m_adminAlarm.Stop();
+                }
+                else ;
+            else
+                ;
 
             base.Stop ();
         }
@@ -134,7 +137,7 @@ namespace StatisticAlarm
 
     partial class PanelAlarmJournal
     {
-        private enum INDEEX_CONTROL { DTP_CURRENT, CBX_WORK };
+        private enum INDEEX_CONTROL { MCLDR_CURRENT, NUD_HOUR_BEGIN, NUD_HOUR_END, LB_TECCOMPONENT, CBX_WORK };
         
         /// <summary>
         /// Требуется переменная конструктора.
@@ -169,8 +172,26 @@ namespace StatisticAlarm
 
             this.SuspendLayout();
             
-            ctrl = new DateTimePicker ();
-            ctrl.Name = INDEEX_CONTROL.DTP_CURRENT.ToString();
+            ctrl = new System.Windows.Forms.MonthCalendar ();
+            ctrl.Name = INDEEX_CONTROL.MCLDR_CURRENT.ToString();
+            this.Controls.Add(ctrl);
+
+            ctrl = new Label ();
+            ctrl.Text = @"c";
+            this.Controls.Add(ctrl);
+
+            ctrl = new NumericUpDown();
+            ctrl.Name = INDEEX_CONTROL.NUD_HOUR_BEGIN.ToString();
+            (ctrl as NumericUpDown).ReadOnly = true;
+            this.Controls.Add(ctrl);
+
+            ctrl = new Label();
+            ctrl.Text = @"до";
+            this.Controls.Add(ctrl);
+
+            ctrl = new NumericUpDown();
+            ctrl.Name = INDEEX_CONTROL.NUD_HOUR_END.ToString();
+            (ctrl as NumericUpDown).ReadOnly = true;
             this.Controls.Add(ctrl);
             
             ctrl = new CheckBox ();
