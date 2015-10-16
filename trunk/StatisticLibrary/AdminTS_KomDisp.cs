@@ -249,7 +249,7 @@ namespace StatisticCommon
                 ((ManualResetEvent)m_waitHandleState[(int)i]).Reset();
 
             foreach (TECComponent comp in allTECComponents)
-                if ((comp.m_id > 100) && (comp.m_id < 500))
+                if (comp.IsGTP == true) //ßâëÿåòñÿ ÃÒÏ
                 {
                     indxEv = WaitHandle.WaitAny(m_waitHandleState);
                     if (indxEv == 0)

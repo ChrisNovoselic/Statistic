@@ -693,7 +693,7 @@ namespace Statistic
                 int col = 0;
                 foreach (TECComponent g in m_tecView.m_tec.list_TECComponents)
                 {
-                    if ((g.m_id > 100) && (g.m_id < 500))
+                    if (g.IsGTP == true)
                     {
                         m_listDictLabelVal[indx].Add(g.m_id, HLabel.createLabel(0.ToString(@"F2"), PanelLastMinutes.s_arLabelStyles[(int)INDEX_LABEL.VALUE_COMPONENT]));
 

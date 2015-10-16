@@ -2023,7 +2023,10 @@ namespace Statistic
 
         private void оПрограммеToolStripMenuItem_Click(object sender, EventArgs e)
         {
-            new FormAbout().ShowDialog(this);
+            using (FormAbout formAbout = new FormAbout(this.Icon.ToBitmap() as Image))
+            {
+                formAbout.ShowDialog(this);
+            }
         }
 
         private void панельГрафическихToolStripMenuItem_CheckedChanged(object sender, EventArgs e)

@@ -1149,8 +1149,10 @@ namespace StatisticTrans
 
         private void оПрограммеToolStripMenuItem_Click(object sender, EventArgs e)
         {
-            FormAbout formAbout = new FormAbout();
-            formAbout.ShowDialog(this);
+            using (FormAbout formAbout = new FormAbout(this.Icon.ToBitmap () as Image))
+            {
+                formAbout.ShowDialog(this);
+            }
         }
 
         //protected override void ErrorReport (string msg) {

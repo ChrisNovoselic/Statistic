@@ -117,27 +117,4 @@
   <resheader name="writer">
     <value>System.Resources.ResXResourceWriter, System.Windows.Forms, Version=2.0.0.0, Culture=neutral, PublicKeyToken=b77a5c561934e089</value>
   </resheader>
-  <assembly alias="System.Drawing" name="System.Drawing, Version=2.0.0.0, Culture=neutral, PublicKeyToken=b03f5f7f11d50a3a" />
-  <data name="pictureBox1.Image" type="System.Drawing.Bitmap, System.Drawing" mimetype="application/x-microsoft.net.object.bytearray.base64">
-    <value>
-        iVBORw0KGgoAAAANSUhEUgAAADAAAAAwCAYAAABXAvmHAAAAAXNSR0IArs4c6QAAAARnQU1BAACxjwv8
-        YQUAAAAJcEhZcwAADrwAAA68AZW8ckkAAAPFSURBVGhD7ZZ/TIxxHMfPphj1DzUziy07qbSEqysqnCO1
-        rutShC2lxCb+IOMPWxpTxsYfTDb/WDaGIdNmZGhmjL+YRUoJ+bFyi9ixenu+3+f5Pvfct7t7Lqznsnu2
-        157n8zzf7+fer+e+9zynEzaMJqZFTIfRbEVURjE7p8NAf7/LIH8iNDQUUUkmRFsrEF1+AjN2XMHYsvOY
-        vvUMG+PfAvGpGTSwbuM5F5I21bAx/iUwJTwctrRU7DQY0GDNgXX3KWfwUlGECKVnr2Fz/EOg1mbDbSFw
-        R8ZyvIqOQqs+Et3btyF5/00xOEMQiNnTQJeWNFd7gUzhjrcmxOPtukL0NTbC8e495ZtAwYn7QwTiSw76
-        l8Bhsxk9Bw9g4KcDZBscHJT3hJN32lx+BwurrmFLbT2br73A3ZUZsF+6hN5jR+kSIvTWnaRCTKai/rEo
-        IHwLRMaUV8TmayuQoNej3Wig657wcrZePv68r4qGJ1v3l36M23yBSsTtbURk5EzWQxuBxNhYVKSkoDnX
-        SkO3zZ+Lrvw89FRXoef4cfncr95eKkC+iblVN+g3MGt9tbKXNgIPrRYaktAaPwdtORa8y7Oir6EBX+/d
-        w4ddlehYYYbjdYcskFrTRJdPcm6pstefCXyMceLuuho2oxEHCtfKy4VBnkZsGb3JzpJ/2I6fv7Cs+jKS
-        l2Zj0uQwZa/hCfDB+Xo47E5KpEHbkwzoOXIYnemL5PCdSxfD8ewpDU+2q0+6MCe/0l0fdYHxY9SDDlci
-        ODgYj8zLRAHDPDhetGDAbsf3plsUcsy2bvsP6PdcR0ziEne9vAt4C55pF2H1cCRWm0x4FRdDBchdJ08i
-        8hJjj02ykePmF5/E8MLbd3KYy9JheBbgA/GB+Zrgq8TZPJu8XNiePHUu3m3B+roHKD79EAv23RBfYMKT
-        x1h+yG0fAfcC7oL4IkDwRaLIko2yrExXLBaYDjXJfxmUL64VBSVu+wgMFfAUQE1AWfsiwTN1WgSCFuRD
-        l7CKEpK2ge4nJhdiQoj834fHVUD5wd4C+lL/iYQnWC83/ZwC/AC1gGo1wcOH+gyb76WHq4DigmpAtXps
-        qLhXCeARfh7fX8J1CQU5LwyZ8Dc1C0PeKey6N/jwBL6/hFOAH/CvaxaKD8ajHOPthkqMnADDm4Tymo/9
-        Rl6AoAzKjpXnCD72GzkBvn4eNTS0ErX5EtoJ8KiN52sJ7QT+tpYICGhWSwQENKslAgKa1RIBAc1qiYCA
-        ZrVEQECzWiIgoFktERDQrJb4jwRGKaLAaEQWGL3o8BuNiSOKD4wcUAAAAABJRU5ErkJggg==
-</value>
-  </data>
 </root>

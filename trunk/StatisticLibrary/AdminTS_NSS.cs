@@ -117,7 +117,7 @@ namespace StatisticCommon
                 foreach (TECComponent comp in allTECComponents)
                 {
                     if ((comp.tec.m_id == id) && //Принадлежит ТЭЦ
-                        (((comp.m_id > 100) && (comp.m_id < 500)) /*|| //Является ГТП
+                        ((comp.IsGTP == true) /*|| //Является ГТП
                         ((comp.m_id > 1000) && (comp.m_id < 10000))*/)) //Является ТГ
                     {                    
                         m_listTECComponentIndexDetail.Add(allTECComponents.IndexOf(comp));
@@ -131,7 +131,7 @@ namespace StatisticCommon
                 {
                     if ((comp.tec.m_id == id) && //Принадлежит ТЭЦ
                         (/*((comp.m_id > 100) && (comp.m_id < 500)) ||*/ //Является ГТП
-                        ((comp.m_id > 1000) && (comp.m_id < 10000)))) //Является ТГ
+                        (comp.IsTG == true))) //Является ТГ
                     {                    
                         m_listTECComponentIndexDetail.Add(allTECComponents.IndexOf(comp));
                     }

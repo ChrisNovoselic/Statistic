@@ -425,7 +425,7 @@ namespace Statistic
                         , dblTECComponentPower_TM = 0.0;
                 foreach (TECComponent g in m_tecView.m_tec.list_TECComponents)
                 {
-                    if ((g.m_id > 100) && (g.m_id < 500))
+                    if (g.IsGTP == true)
                     {
                         dblTECComponentPower_TM = 0.0;
 

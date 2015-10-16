@@ -121,7 +121,7 @@ namespace StatisticCommon
             {
                 for (k = 0; k < dest.Count; k++)
                 {
-                    if ((((dest[k].m_id > 1000) && (dest[k].m_id < 10000))) && (Int32.Parse (rows_tg[j][@"ID_TG"].ToString ()) == dest[k].m_id))
+                    if (((dest[k].IsTG == true)) && (Int32.Parse (rows_tg[j][@"ID_TG"].ToString ()) == dest[k].m_id))
                         break;
                     else
                         ;
@@ -129,10 +129,10 @@ namespace StatisticCommon
 
                 if (k < dest.Count) {
                     dest[indx].m_listTG.Add(dest[k].m_listTG[0]);
-                    if ((dest[indx].m_id > 100) && (dest[indx].m_id < 500))
+                    if (dest[indx].IsGTP == true)
                         dest[k].m_listTG[0].m_id_owner_gtp = dest[indx].m_id;
                     else
-                        if ((dest[indx].m_id > 500) && (dest[indx].m_id < 1000))
+                        if (dest[indx].IsPC == true)
                             dest[k].m_listTG[0].m_id_owner_pc = dest[indx].m_id;
                         else
                             ;

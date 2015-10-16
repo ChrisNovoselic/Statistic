@@ -126,5 +126,11 @@ namespace StatisticCommon
             m_listMCentreId =
             m_listMTermId = null;
         }
+
+        public bool IsGTP { get { return (m_id > 100) && (m_id < 500); } }
+
+        public bool IsPC { get { return (m_id > 500) && (m_id < 1000); } }
+
+        public bool IsTG { get { return (m_id > 1000) && (m_id < 10000); } }
     }
 }

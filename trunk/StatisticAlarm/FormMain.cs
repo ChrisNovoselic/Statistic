@@ -58,8 +58,7 @@ namespace StatisticAlarm
                         msg = @"Пользователю не разрешено использовать задачу"; 
                         break;
                     default:
-                        //Успех...
-                        m_panelAlarm.Start();
+                        //Успех... пост-инициализация
                         break;
                 }
             }
@@ -131,9 +130,9 @@ namespace StatisticAlarm
 
         private void fMenuItemAbout_Click(object obj, EventArgs ev)
         {
-            using (FormAbout formAbout = new FormAbout ())
+            using (FormAbout formAbout = new FormAbout(this.Icon.ToBitmap() as Image))
             {
-                formAbout.ShowDialog ();
+                formAbout.ShowDialog(this);
             }
         }
 
@@ -228,7 +227,7 @@ namespace StatisticAlarm
             (this.MainMenuStrip.Items[1] as ToolStripMenuItem).DropDownItems[0].Click += new EventHandler(fMenuItemDBConfig_Click);
             (this.MainMenuStrip.Items[2] as ToolStripMenuItem).Click += new EventHandler(fMenuItemAbout_Click);
 
-            m_panelAlarm = new PanelAlarmJournal(new ConnectionSettings(@"CONFIG_DB", @"10.100.104.18", 1433, @"techsite_cfg-2.X.X", @"client", @"client"), PanelAlarmJournal.MODE.SERVICE);
+            m_panelAlarm = new PanelAlarmJournal(PanelAlarmJournal.MODE.SERVICE);
 
             _panelMain = new Panel ();
             _panelMain.Location = new Point(0, this.MainMenuStrip.Height);

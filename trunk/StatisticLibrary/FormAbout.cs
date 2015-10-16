@@ -12,9 +12,11 @@ namespace StatisticCommon
 {
     public partial class FormAbout : Form
     {
-        public FormAbout()
+        public FormAbout(Image pic)
         {
             InitializeComponent();
+
+            this.pictureBox1.Image = pic;
 
             m_lblProductVersion.Text = ProgramBase.AppProductVersion; //Application.ProductVersion; //Properties.Resources.TradeMarkVersion;
 
