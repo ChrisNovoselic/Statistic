@@ -191,13 +191,13 @@ namespace StatisticDiagnostic
         /// </summary>
         public void GridsUpd()
         {
-            /*Thread thread = new Thread(tecdb.AddItemTec);
+            Thread thread = new Thread(tecdb.AddItemTec);
             thread.Start();
             Thread THREAD = new Thread(modesdb.AddItemModes);
-            THREAD.Start();*/
+            THREAD.Start();
             taskdb.UpdateTaskGrid();
-            tecdb.AddItemTec();
-            modesdb.AddItemModes();
+            //tecdb.AddItemTec();
+            //modesdb.AddItemModes();
         }
 
         /// <summary>
@@ -253,12 +253,9 @@ namespace StatisticDiagnostic
 
             public void Command()
             {
-                lock (m_lockState)
-                {
-                    ClearStates();
-                    AddState((int)State.Command);
-                    Run(@"Command");
-                }
+                ClearStates();
+                AddState((int)State.Command);
+                Run(@"Command");
             }
 
             /// <summary>
@@ -275,7 +272,6 @@ namespace StatisticDiagnostic
                     case (int)State.Command:
                         Request(m_dictIdListeners[0][0], @"Select * from Diagnostic");
                         break;
-
                     default:
                         break;
                 }
@@ -325,7 +321,6 @@ namespace StatisticDiagnostic
                     case (int)State.Command:
                         EvtRecievedTable(table);
                         break;
-
                     default:
                         break;
                 }
@@ -422,7 +417,6 @@ namespace StatisticDiagnostic
                 this.TECDataGridView.AutoSizeColumnsMode = DataGridViewAutoSizeColumnsMode.Fill;
                 this.TECDataGridView.AutoSizeRowsMode = DataGridViewAutoSizeRowsMode.DisplayedCellsExceptHeaders;
                 this.TECDataGridView.AllowUserToAddRows = false;
-                //this.TECDataGridView.AutoResizeColumns();
                 this.TECDataGridView.ClearSelection();
                 this.TECDataGridView.AllowUserToDeleteRows = false;
                 this.TECDataGridView.Dock = System.Windows.Forms.DockStyle.Fill;
@@ -507,10 +501,7 @@ namespace StatisticDiagnostic
                         m_arPanelsTEC[i].Focus();
                     }
                 }
-                else
-                {
-                    //stopTEC();
-                }
+                else ;
             }
 
             /// <summary>
@@ -525,6 +516,7 @@ namespace StatisticDiagnostic
                         m_arPanelsTEC[i].Dispose();
                     }
                 }
+                else ;
             }
 
             /// <summary>
@@ -697,7 +689,6 @@ namespace StatisticDiagnostic
                         CellsPingTEC(filter, i);
                         m_arPanelsTEC[i].TECDataGridView.Invoke(new Action(() => m_arPanelsTEC[i].TECDataGridView.Rows[r].Cells[3].Value = text.ToString()));
                         PaintigCells(i, r);
-
                     }
 
                     else
@@ -715,22 +706,6 @@ namespace StatisticDiagnostic
                 }
             }
 
-            /// <summary>
-            /// 
-            /// </summary>
-            /// <param name="i"></param>
-            private void ChangeHeight(int i)
-            {
-                if (m_arPanelsTEC[i].TECDataGridView.InvokeRequired)
-                {
-                    // меняем высоту таблицу по высоте всех строк
-                    m_arPanelsTEC[i].TECDataGridView.Invoke(new Action(() => m_arPanelsTEC[i].TECDataGridView.Height = m_arPanelsTEC[i].TECDataGridView.Rows.GetRowsHeight(DataGridViewElementStates.Visible) +
-                                       m_arPanelsTEC[i].TECDataGridView.ColumnHeadersHeight));
-                }
-                else
-                    m_arPanelsTEC[i].TECDataGridView.Height = m_arPanelsTEC[i].TECDataGridView.Rows.GetRowsHeight(DataGridViewElementStates.Visible) +
-                                           m_arPanelsTEC[i].TECDataGridView.ColumnHeadersHeight;
-            }
 
             /// <summary>
             /// Функция заполнения гридов
@@ -775,7 +750,6 @@ namespace StatisticDiagnostic
                         m_arPanelsTEC[i].LabelTec.Text = str;
                     }
                 }
-
             }
 
             /// <summary>
@@ -923,7 +897,6 @@ namespace StatisticDiagnostic
                 try
                 {
                     TECDataGridView.SelectedCells[0].Selected = false;
-                    //TECDataGridView.SelectionMode = DataGridViewSelectionMode.FullRowSelect;
                 }
                 catch { }
             }
@@ -1050,23 +1023,6 @@ namespace StatisticDiagnostic
             /// <summary>
             /// 
             /// </summary>
-            /// <param name="i"></param>
-            private void ChangeHeight(int i)
-            {
-                if (m_arPanelsMODES[i].ModesDataGridView.InvokeRequired)
-                {
-                    // меняем высоту таблицу по высоте всех строк
-                    m_arPanelsMODES[i].ModesDataGridView.Invoke(new Action(() => m_arPanelsMODES[i].ModesDataGridView.Height = m_arPanelsMODES[i].ModesDataGridView.Rows.GetRowsHeight(DataGridViewElementStates.Visible) +
-                                       m_arPanelsMODES[i].ModesDataGridView.ColumnHeadersHeight));
-                }
-                else
-                    m_arPanelsMODES[i].ModesDataGridView.Height = m_arPanelsMODES[i].ModesDataGridView.Rows.GetRowsHeight(DataGridViewElementStates.Visible) +
-                                           m_arPanelsMODES[i].ModesDataGridView.ColumnHeadersHeight;
-            }
-
-            /// <summary>
-            /// 
-            /// </summary>
             /// <param name="?"></param>
             public void ActivateMODES(bool activated)
             {
@@ -1074,10 +1030,7 @@ namespace StatisticDiagnostic
                 {
                     AddItemModes();
                 }
-                else
-                {
-                    //stopMODES();
-                }
+                else ;
             }
 
             /// <summary>
@@ -1130,7 +1083,6 @@ namespace StatisticDiagnostic
                             {
                                 AddRowsModes(i, 1);
                             }
-
                             TextColumnModes(i, filter12);
                         }
                     }
@@ -1149,12 +1101,10 @@ namespace StatisticDiagnostic
                             {
                                 AddRowsModes(i, 1);
                             }
-
                             TextColumnModes(i, filter12);
                         }
                     }
                 }
-
                 HeaderTextModes();
             }
 
@@ -1285,7 +1235,6 @@ namespace StatisticDiagnostic
                             m_arPanelsMODES[i].ModesDataGridView.Rows[r].Cells[3].Value = text.ToString();
 
                             CellsPingMODES(filterComp, i, r);
-
                         }
                     }
                 }
@@ -1313,7 +1262,6 @@ namespace StatisticDiagnostic
                     }
 
                     InsertDataModes(filter12, i);
-                    ChangeHeight(i);
                 }
             }
 
@@ -1413,7 +1361,7 @@ namespace StatisticDiagnostic
             }
 
             /// <summary>
-            /// 
+            /// снятие выделения ячейки
             /// </summary>
             /// <param name="sender"></param>
             /// <param name="e"></param>
