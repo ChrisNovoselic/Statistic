@@ -26,56 +26,68 @@ namespace StatisticAlarm
 
         private void FormMain_Load(object obj, EventArgs ev)
         {
-            delegateStartWait ();
-            
             string msg = string.Empty;
-            //bool bAbort = false;
+            bool bAbort = true;
 
-            s_fileConnSett = new FIleConnSett(@"connsett.ini", FIleConnSett.MODE.FILE);            
+            s_fileConnSett = new FIleConnSett(@"connsett.ini", FIleConnSett.MODE.FILE);
+
+            delegateStartWait();
 
             s_listFormConnectionSettings = new List<FormConnectionSettings>();
             s_listFormConnectionSettings.Add(new FormConnectionSettings(-1, s_fileConnSett.ReadSettingsFile, s_fileConnSett.SaveSettingsFile));
             s_listFormConnectionSettings.Add(null);
+
+            bAbort = Initialize(out msg);
+
+            delegateStopWait();
+
+            if (msg.Equals(string.Empty) == false)
+                Abort(msg, bAbort);
+            else
+                this.Activate();            
+        }
+
+        private bool Initialize(out string msgError)
+        {
+            bool bRes = true;
+            msgError = string.Empty;
+
             if (s_listFormConnectionSettings[(int)CONN_SETT_TYPE.CONFIG_DB].Ready == 0)
             {
-                _state = Initialize(out msg);
+                _state = InitializeConfigDB(out msgError);
                 switch (_state)
                 {
                     case -1:
-                        msg = @"Неизвестная причина";
+                        msgError = @"Неизвестная причина";
                         break;
-                    case -3: //Не найден пользователь
-                        //Остальные п.п. меню блокируются в 'сменитьРежимToolStripMenuItem_EnabledChanged'
-                        // этот п. блокируется только при конкретной ошибке "-3"
-                        (this.MainMenuStrip.Items[1] as ToolStripMenuItem).DropDownItems[0].Enabled = false;
+                    case -3: //@"Не найден пользователь@
                         break;
                     case -2:
                     case -5:
-                    case -4: //@"Необходимо изменить параметры соединения с БД"
-                        //Сообщение получено из 'Initialize'
+                    case -4: //@"Необходимо изменить параметры соединения с БД" - получено из 'Initialize'
+                        bRes = false;
                         break;
-                    case -6: //пользователю не разрешено использовать задачу
-                        msg = @"Пользователю не разрешено использовать задачу"; 
+                    case -6: //@"Пользователю не разрешено использовать задачу" - получено из 'Initialize'
                         break;
                     default:
                         //Успех... пост-инициализация
+                        s_iMainSourceData = Int32.Parse(formParameters.m_arParametrSetup[(int)FormParameters.PARAMETR_SETUP.MAIN_DATASOURCE]);
+
+                        m_panelAlarm.Start();
                         break;
                 }
             }
             else
             {//Файла с параметрами соединения нет совсем или считанные параметры соединения не валидны
-                msg = @"Необходимо изменить параметры соединения с БД конфигурации";
+                msgError = @"Необходимо изменить параметры соединения с БД конфигурации";
+
+                bRes = false;
             }
 
-            delegateStopWait();
-
-            if (msg.Equals(string.Empty) == false)
-                Abort(msg, /*bAbort*/ true);
-            else
-                this.Activate();            
+            return bRes;
         }
 
-        private int Initialize (out string msgError)
+        private int InitializeConfigDB (out string msgError)
         {
             int iRes = 0;
             msgError = string.Empty;
@@ -98,12 +110,14 @@ namespace StatisticAlarm
             }
 
             if (iRes == 0)
-                if (HStatisticUsers.IsAllowed ((int)HStatisticUsers.ID_ALLOWED.ALARM_KOMDISP) == true)
-                {//Успех...
-                    m_panelAlarm.Start ();
+                if (HStatisticUsers.IsAllowed((int)HStatisticUsers.ID_ALLOWED.ALARM_KOMDISP) == false)
+                {
+                    msgError = @"Пользователю не разрешено использовать задачу";
+                    iRes = -6;
                 }
                 else
-                    iRes = -6;
+                    //Успех...
+                    ;
             else
                 ;
 
@@ -169,7 +183,25 @@ namespace StatisticAlarm
 
         private void fMenuItemDBConfig_Click(object obj, EventArgs ev)
         {
-            s_listFormConnectionSettings[(int)CONN_SETT_TYPE.CONFIG_DB].ShowDialog ();
+            bool bAbort = false;
+            string msg = string.Empty; ;
+            DialogResult dlgRes = s_listFormConnectionSettings[(int)CONN_SETT_TYPE.CONFIG_DB].ShowDialog ();
+
+            if ((dlgRes == DialogResult.OK)
+                || (dlgRes == DialogResult.Yes))
+            {
+                //??? Остановить панель
+                m_panelAlarm.Stop();
+
+                bAbort = Initialize(out msg);
+            }
+            else
+                ;
+
+            if (msg.Equals(string.Empty) == false)
+                Abort(msg, bAbort);
+            else
+                this.Activate();
         }
     }
 

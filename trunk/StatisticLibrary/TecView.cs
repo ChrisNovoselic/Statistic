@@ -1742,14 +1742,21 @@ namespace StatisticCommon
 
         protected void GetCurrentTimeRequest()
         {
+            DbInterface.DB_TSQL_INTERFACE_TYPE typeDB = DbInterface.DB_TSQL_INTERFACE_TYPE.UNKNOWN;
+            int iListenerId = -1;
+
             if (IsCanUseTECComponents())
             {
-                GetCurrentTimeRequest(DbTSQLInterface.getTypeDB(allTECComponents[indxTECComponents].tec.connSetts[(int)CONN_SETT_TYPE.ADMIN].port),
-                                    m_dictIdListeners[allTECComponents[indxTECComponents].tec.m_id][(int)CONN_SETT_TYPE.ADMIN]);
+                typeDB = DbTSQLInterface.getTypeDB(allTECComponents[indxTECComponents].tec.connSetts[(int)CONN_SETT_TYPE.ADMIN].port);
+                iListenerId = m_dictIdListeners[allTECComponents[indxTECComponents].tec.m_id][(int)CONN_SETT_TYPE.ADMIN];
             }
             else
-                GetCurrentTimeRequest(DbTSQLInterface.getTypeDB(m_tec.connSetts[(int)CONN_SETT_TYPE.ADMIN].port),
-                                    m_dictIdListeners[m_tec.m_id][(int)CONN_SETT_TYPE.ADMIN]);
+            {
+                typeDB = DbTSQLInterface.getTypeDB(m_tec.connSetts[(int)CONN_SETT_TYPE.ADMIN].port);
+                iListenerId = m_dictIdListeners[m_tec.m_id][(int)CONN_SETT_TYPE.ADMIN];
+            }
+
+            GetCurrentTimeRequest(typeDB, iListenerId);
         }
 
         private int GetCurrentTimeAdminResponse(DataTable table)

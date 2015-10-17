@@ -19,9 +19,13 @@ namespace StatisticAlarm
         private MODE mode;
         private event DelegateIntIntFunc EventConfirm;
 
+        private event DelegateDateFunc EventDateChanged;
+
         private List<TEC> m_list_tec;
         private List <int> m_listIdTECComponents;
         private AdminAlarm m_adminAlarm;
+        private ViewAlarm m_viewAlarm;
+        private System.Windows.Forms.Timer m_timerView;
 
         public PanelAlarmJournal(MODE mode)
         {
@@ -52,6 +56,11 @@ namespace StatisticAlarm
                 , indx = -1;
 
             m_list_tec = new InitTEC_200(iListenerId, true, false).tec;
+            //m_adminAlarm = new AdminAlarm();
+            m_viewAlarm = new ViewAlarm(new ConnectionSettings(InitTECBase.getConnSettingsOfIdSource(TYPE_DATABASE_CFG.CFG_200, iListenerId, FormMainBase.s_iMainSourceData, -1, out err).Rows[0], 0));
+            startViewAlarm();
+            m_timerView = new Timer();            
+            m_timerView.Tick += new EventHandler(fTimerView_Tick);
 
             DbSources.Sources().UnRegister(iListenerId);
 
@@ -71,18 +80,71 @@ namespace StatisticAlarm
             (ctrl as CheckedListBox).ItemCheck += new ItemCheckEventHandler(fTECComponent_OnItemCheck);
             (ctrl as CheckedListBox).SelectedIndexChanged += new EventHandler(fTECComponent_OnSelectedIndexChanged);
             (ctrl as CheckedListBox).SelectedIndex = 0;
+            (ctrl as CheckedListBox).Enabled = false;
 
+            ctrl = Find(INDEEX_CONTROL.CBX_WORK) as CheckBox;
+            if ((ctrl as CheckBox).Checked == true)
+            {
+                startAdminAlarm();
+
+                m_timerView.Interval = 1;
+                m_timerView.Start();
+            }
+            else
+                ;
+
+            (ctrl as CheckBox).CheckedChanged += new EventHandler(cbxWork_OnCheckedChanged);
+
+            (Find (INDEEX_CONTROL.MCLDR_CURRENT) as MonthCalendar).DateChanged += new DateRangeEventHandler(mcldrCurrent_onDateChanged);
+        }
+
+        private void startAdminAlarm()
+        {
             if (m_adminAlarm == null) initAdminAlarm(); else ;
 
             if (m_adminAlarm.IsStarted == false)
-                m_adminAlarm.Start();
+            {
+                m_adminAlarm.Start();                
+                m_adminAlarm.Activate(true);
+            }
             else ;
-
-            (Find(INDEEX_CONTROL.CBX_WORK) as CheckBox).CheckedChanged += new EventHandler(cbxWork_OnCheckedChanged);
         }
 
-        public override void Stop()
+        private void startViewAlarm()
         {
+            if (m_adminAlarm == null) initViewAlarm(); else ;
+
+            if (m_adminAlarm.IsStarted == false)
+            {
+                m_adminAlarm.Start();
+                m_adminAlarm.Activate(true);
+            }
+            else ;
+        }
+
+        private void fTimerView_Tick(object obj, EventArgs ev)
+        {
+            m_timerView.Interval = PanelStatistic.POOL_TIME * 1000;
+        }
+
+        private void mcldrCurrent_onDateChanged(object obj, DateRangeEventArgs ev)
+        {
+            EventDateChanged(ev.Start.Date);
+        }
+
+        public override void Stop() 
+        {
+            //Остановить объект "обзор событий"
+            if (! (m_viewAlarm == null))
+                if (m_viewAlarm.IsStarted == true)
+                {
+                    m_viewAlarm.Activate(false);
+                    m_viewAlarm.Stop();
+                }
+                else ;
+            else
+                ;
+            //Остановить объект "регистрация событий"
             if (! (m_adminAlarm == null))
                 if (m_adminAlarm.IsStarted == true)
                 {
@@ -93,25 +155,34 @@ namespace StatisticAlarm
             else
                 ;
 
+            if (!(m_timerView == null))
+            {
+                m_timerView.Stop();
+                m_timerView.Dispose();
+                m_timerView = null;
+            }
+
             base.Stop ();
         }
 
         public override bool Activate(bool activate)
         {
             bool bRes = base.Activate (activate);
-            
+
             if (bRes == true)
             {
                 if ((Find (INDEEX_CONTROL.CBX_WORK) as CheckBox).Checked == true)
                 {
                     switch (mode)
                     {
-                        case MODE.SERVICE:
-                            m_adminAlarm.Activate(activate);
+                        case MODE.SERVICE:                            
+                            m_viewAlarm.Activate(activate);
                             break;
                         case MODE.ADMIN:
+                            m_viewAlarm.Activate(activate);
                             break;
                         case MODE.VIEW:
+                            m_viewAlarm.Activate(activate);
                             break;
                         default:
                             break;
@@ -150,6 +221,11 @@ namespace StatisticAlarm
             this.EventConfirm += new DelegateIntIntFunc(m_adminAlarm.OnEventConfirm);
         }
 
+        private void initViewAlarm()
+        {
+            this.EventDateChanged += new DelegateDateFunc(m_viewAlarm.OnEventDateChanged);
+        }
+
         private void OnAdminAlarm_EventAdd(TecView.EventRegEventArgs ev)
         {
             if (IsHandleCreated/*InvokeRequired*/ == true)
@@ -173,7 +249,7 @@ namespace StatisticAlarm
 
                 for (int i = 1; i < ctrl.Items.Count; i ++)
                     ctrl.SetItemCheckState (i, ev.NewValue);
-                
+
                 ctrl.ItemCheck += new ItemCheckEventHandler(fTECComponent_OnItemCheck);
             }
             else
@@ -184,7 +260,15 @@ namespace StatisticAlarm
         {
             CheckBox ctrl = obj as CheckBox;
 
-            m_adminAlarm.Activate(ctrl.Checked);            
+            m_adminAlarm.Activate(ctrl.Checked);
+
+            if (ctrl.Checked == true)
+            {
+                m_timerView.Interval = 1;
+                m_timerView.Start();
+            }
+            else
+                m_timerView.Stop();
         }
 
         private TECComponent findTECComponentOfID (int id)
@@ -371,6 +455,9 @@ namespace StatisticAlarm
             ctrl.Name = INDEEX_CONTROL.MCLDR_CURRENT.ToString();
             ctrl.Location = new System.Drawing.Point(posX, posY);
             ctrl.Anchor = (AnchorStyles)((AnchorStyles.Left | AnchorStyles.Top) | AnchorStyles.Right);
+            (ctrl as MonthCalendar).MaxSelectionCount = 1;
+            //(ctrl as MonthCalendar).ShowToday = false;
+            //(ctrl as MonthCalendar).ShowTodayCircle = false;
             panelManagement.Controls.Add(ctrl);
 
             ctrlRel = Find (INDEEX_CONTROL.MCLDR_CURRENT);            

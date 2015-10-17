@@ -163,6 +163,7 @@
     </Compile>
     <Compile Include="TecView.cs" />
     <Compile Include="Users.cs" />
+    <Compile Include="ViewAlarm.cs" />
   </ItemGroup>
   <ItemGroup>
     <EmbeddedResource Include="FormAbout.resx">
