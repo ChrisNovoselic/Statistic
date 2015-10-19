@@ -11,8 +11,16 @@ namespace StatisticCommon
 {
     public class ViewAlarm : HHandlerDb
     {
+        public event DelegateObjectFunc EvtGetData;
+        
         private enum StatesMachine { CurrentTime, ListEvents, InsertEvent, UpdateEventFixed, UpdateEventConfirm }
         private ConnectionSettings m_connSett;
+        private DateTime m_dtCurrent
+            , m_dtServer;
+        private int m_iHourBegin
+            , m_iHourEnd;
+
+        private int IdListener { get { return m_dictIdListeners[0][0]; } }
 
         public ViewAlarm(ConnectionSettings connSett)
             : base()
@@ -22,6 +30,10 @@ namespace StatisticCommon
 
         public override void Start()
         {
+            //ClearValues();
+
+            StartDbInterfaces();
+            
             base.Start();
         }
 
@@ -39,6 +51,7 @@ namespace StatisticCommon
         
         public override void StartDbInterfaces()
         {
+            m_dictIdListeners.Add (0, new int [] { -1 });
             m_dictIdListeners[0][0] = DbSources.Sources().Register(m_connSett, true, @"ViewAlarm");
         }
 
@@ -142,19 +155,26 @@ namespace StatisticCommon
 
         protected void GetCurrentTimeRequest()
         {
-            GetCurrentTimeRequest(DbTSQLInterface.getTypeDB(m_connSett.port), m_dictIdListeners[0][0]);
+            GetCurrentTimeRequest(DbTSQLInterface.getTypeDB(m_connSett.port), IdListener);
         }
 
         private void GetCurrentTimeResponse(DataTable tableRes)
         {
+            m_dtServer = (DateTime)tableRes.Rows[0][0];
         }
 
         private void GetListEventsRequest()
         {
+            Request(IdListener
+                , @"SELECT * FROM [dbo].[AlarmEvent] WHERE [DATETIME_REGISTRED] BETWEEN '"
+                    + m_dtCurrent.AddHours(m_iHourBegin).ToString(@"yyyyMMdd HH:mm") + @"' AND '"
+                    + m_dtCurrent.AddHours(m_iHourEnd).ToString(@"yyyyMMdd HH:mm") + @"'");
         }
 
         private void GetListEventsResponse(DataTable tableRes)
         {
+            Console.WriteLine (@"Событий за " + m_dtCurrent.ToShortDateString () + @" (" + m_iHourBegin + @"-" + m_iHourEnd + @" ч): " + tableRes.Rows.Count);
+            EvtGetData (tableRes);
         }
 
         private void GetInsertEventRequest()
@@ -169,8 +189,30 @@ namespace StatisticCommon
         {
         }
 
-        public void OnEventDateChanged(DateTime date)
+        public void OnEventDateChanged(object obj, DateRangeEventArgs ev)
         {
+            m_dtCurrent = ev.Start.Date; //End.Date - эквивалентно, при 'MaxSelectionCount = 1'
+
+            Refresh ();
+        }
+
+        public void Refresh ()
+        {
+            ClearStates ();
+
+            states.Add ((int)StatesMachine.CurrentTime);
+            states.Add ((int)StatesMachine.ListEvents);
+
+            Run (@"ViewAlarm::Refresh");
+        }
+
+        public void Refresh (DateTime dtCurrent, int iHourBegin, int iHourEnd)
+        {
+            m_dtCurrent = dtCurrent;
+            m_iHourBegin = iHourBegin;            
+            m_iHourEnd = iHourEnd;
+
+            Refresh ();
         }
     }
 }

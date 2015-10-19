@@ -12,41 +12,64 @@ using StatisticCommon;
 
 namespace StatisticAlarm
 {
+    /// <summary>
+    /// Класс главной формы приложения "Журнал событий сигнализаций"
+    /// </summary>
     public partial class FormMain : FormMainBaseWithStatusStrip
     {
+        /// <summary>
+        /// Состояние формы (признак выполнения очередной операции: 0 - без ошибок)
+        /// </summary>
         private int _state;
+        /// <summary>
+        /// Объект с параметрами приложения (из БД_конфигурации)
+        /// </summary>
         public static FormParameters formParameters;
-
+        /// <summary>
+        /// Конструктор - основной (без параметров)
+        /// </summary>
         public FormMain()
         {
-            _state =1;
+            //Установить состояние ("загружается")
+            _state = 1;
 
             InitializeComponent();
         }
-
+        /// <summary>
+        /// Обработчик события - загрузка формы завершена
+        /// </summary>
+        /// <param name="obj">Объект, инициировавший событие</param>
+        /// <param name="ev">Аргумент события</param>
         private void FormMain_Load(object obj, EventArgs ev)
         {
             string msg = string.Empty;
             bool bAbort = true;
-
+            //Создать объект - чтение зашифрованного файла с параметрами соединения
             s_fileConnSett = new FIleConnSett(@"connsett.ini", FIleConnSett.MODE.FILE);
-
+            //Отобразить окно для визуализации выполнения длительной операции
             delegateStartWait();
-
+            //Создать список форм для редактирования параметров соединения
             s_listFormConnectionSettings = new List<FormConnectionSettings>();
+            //Добавить элемент с параметрами соединения из объекта 'FIleConnSett' 
             s_listFormConnectionSettings.Add(new FormConnectionSettings(-1, s_fileConnSett.ReadSettingsFile, s_fileConnSett.SaveSettingsFile));
             s_listFormConnectionSettings.Add(null);
 
             bAbort = Initialize(out msg);
-
+            //Снять с отображения окно для визуализации выполнения длительной операции
             delegateStopWait();
 
             if (msg.Equals(string.Empty) == false)
+                //Прекратить/выдать сообщение об ошибке
                 Abort(msg, bAbort);
             else
+                //Продолжить выполнение приложения
                 this.Activate();            
         }
-
+        /// <summary>
+        /// Инициализация данных формы
+        /// </summary>
+        /// <param name="msgError">Сообщение об ошибке (при наличии)</param>
+        /// <returns>Признак выполнения функции</returns>
         private bool Initialize(out string msgError)
         {
             bool bRes = true;
@@ -71,6 +94,8 @@ namespace StatisticAlarm
                         break;
                     default:
                         //Успех... пост-инициализация
+                        formParameters = new FormParameters_DB(s_listFormConnectionSettings[(int)CONN_SETT_TYPE.CONFIG_DB].getConnSett());
+
                         s_iMainSourceData = Int32.Parse(formParameters.m_arParametrSetup[(int)FormParameters.PARAMETR_SETUP.MAIN_DATASOURCE]);
 
                         m_panelAlarm.Start();
@@ -86,17 +111,22 @@ namespace StatisticAlarm
 
             return bRes;
         }
-
+        /// <summary>
+        /// Инициализация параметров соединения с БД_конфигурации
+        /// </summary>
+        /// <param name="msgError">Сообщение об ошибке (при наличии)</param>
+        /// <returns>Признак выполнения функции</returns>
         private int InitializeConfigDB (out string msgError)
         {
             int iRes = 0;
             msgError = string.Empty;
-
+            //Идентификатор соединения с БД_конфигурации
             int idListenerConfigDB = DbSources.Sources().Register(s_listFormConnectionSettings[(int)CONN_SETT_TYPE.CONFIG_DB].getConnSett(), false, @"CONFIG_DB");
 
             //Проверить наличие пользователя в БД_конфигурации
             try
             {
+                //Создать И удалить объект с пользовательскими настройками (заполнить статические члены)
                 using (HStatisticUsers users = new HStatisticUsers(idListenerConfigDB)) { ; }
             }
             catch (Exception e)
@@ -120,12 +150,16 @@ namespace StatisticAlarm
                     ;
             else
                 ;
-
+            //Отменить регистрацию соединения с БД_конфигурации
             DbSources.Sources().UnRegister(idListenerConfigDB);
 
             return iRes;
         }
-
+        /// <summary>
+        /// Обработчик события - активация формы
+        /// </summary>
+        /// <param name="obj">Объект, инициировавший событие</param>
+        /// <param name="ev">Аргумент события</param>
         private void FormMain_Activated(object obj, EventArgs ev)
         {
             if (_state == 0)
@@ -133,7 +167,11 @@ namespace StatisticAlarm
             else
                 ;
         }
-
+        /// <summary>
+        /// ??? - обязательно - Обработчик события - деактивация формы
+        /// </summary>
+        /// <param name="obj">Объект, инициировавший событие</param>
+        /// <param name="ev">Аргумент события</param>
         private void FormMain_Deactivated(object obj, EventArgs ev)
         {
             if (_state == 0)
@@ -141,7 +179,11 @@ namespace StatisticAlarm
             else
                 ;
         }
-
+        /// <summary>
+        /// Обработчик события выбора п. главного меню "Помощь-О программе"
+        /// </summary>
+        /// <param name="obj">Объект, инициировавший событие</param>
+        /// <param name="ev">Аргумент события</param>
         private void fMenuItemAbout_Click(object obj, EventArgs ev)
         {
             using (FormAbout formAbout = new FormAbout(this.Icon.ToBitmap() as Image))
@@ -149,13 +191,21 @@ namespace StatisticAlarm
                 formAbout.ShowDialog(this);
             }
         }
-
+        /// <summary>
+        /// Обработчик события - перед закрытием формы
+        /// </summary>
+        /// <param name="obj">Объект, инициировавший событие</param>
+        /// <param name="ev">Аргумент события</param>
         private void FormMain_FormClosing(object obj, EventArgs ev)
         {
+            //Деактивировать панель
             m_panelAlarm.Activate (false);
+            //Остановить панель
             m_panelAlarm.Stop ();
         }
-
+        /// <summary>
+        /// ??? Функция при 1-м событии запуска таймера
+        /// </summary>
         protected override void timer_Start()
         {
             throw new NotImplementedException();
@@ -175,16 +225,25 @@ namespace StatisticAlarm
         {
             throw new NotImplementedException();
         }
-
+        /// <summary>
+        /// Обработчик события выбора п. главного меню "Файл-Выход"
+        /// </summary>
+        /// <param name="obj">Объект, инициировавший событие</param>
+        /// <param name="ev">Аргумент события</param>
         private void fMenuItemExit_Click (object obj, EventArgs ev)
         {
             Close ();
         }
-
+        /// <summary>
+        /// Обработчик события выбора п. главного меню "Настройка-БД_конфигурации"
+        /// </summary>
+        /// <param name="obj">Объект, инициировавший событие</param>
+        /// <param name="ev">Аргумент события</param>
         private void fMenuItemDBConfig_Click(object obj, EventArgs ev)
         {
             bool bAbort = false;
             string msg = string.Empty; ;
+            //Получить рез-т отображения окна с настройками параметров соединения
             DialogResult dlgRes = s_listFormConnectionSettings[(int)CONN_SETT_TYPE.CONFIG_DB].ShowDialog ();
 
             if ((dlgRes == DialogResult.OK)
@@ -197,10 +256,12 @@ namespace StatisticAlarm
             }
             else
                 ;
-
+            //Проверить наличие сообщения об ошибке
             if (msg.Equals(string.Empty) == false)
+                //Отобразить сообщение/завершить работу приложения (в ~ от 'bAbort')
                 Abort(msg, bAbort);
             else
+                //Продолжить работу
                 this.Activate();
         }
     }
@@ -241,10 +302,10 @@ namespace StatisticAlarm
 
             this.AutoScaleMode = System.Windows.Forms.AutoScaleMode.Font;
             this.Text = "FormStatisticAlarm";
-            this.MinimumSize = new Size (800, 600);
-            this.Icon = ((System.Drawing.Icon)(resources.GetObject(@"StatisticAlarm")));
+            this.MinimumSize = new Size (800, 600); // установить минимальный размер формы
+            this.Icon = ((System.Drawing.Icon)(resources.GetObject(@"StatisticAlarm"))); // назаначить пиктонграмму окна
             this.StartPosition = FormStartPosition.CenterScreen;
-
+            //Сформировать/добавить главное меню
             this.MainMenuStrip = new MenuStrip ();
             this.MainMenuStrip.Items.AddRange (
                 new ToolStripMenuItem [] {
@@ -258,9 +319,9 @@ namespace StatisticAlarm
             (this.MainMenuStrip.Items[1] as ToolStripMenuItem).DropDownItems.Add(new ToolStripMenuItem(@"БД конфигурации"));
             (this.MainMenuStrip.Items[1] as ToolStripMenuItem).DropDownItems[0].Click += new EventHandler(fMenuItemDBConfig_Click);
             (this.MainMenuStrip.Items[2] as ToolStripMenuItem).Click += new EventHandler(fMenuItemAbout_Click);
-
+            //Создать "рабочую" панель
             m_panelAlarm = new PanelAlarmJournal(PanelAlarmJournal.MODE.SERVICE);
-
+            //Создать панель для размещения "рабочих" панелей
             _panelMain = new Panel ();
             _panelMain.Location = new Point(0, this.MainMenuStrip.Height);
             _panelMain.Size = new System.Drawing.Size(this.ClientSize.Width, this.ClientSize.Height - this.MainMenuStrip.Height - this.m_statusStripMain.Height);
@@ -268,13 +329,13 @@ namespace StatisticAlarm
             _panelMain.Controls.Add (m_panelAlarm);
 
             this.SuspendLayout ();
-
+            //Добавить элементы управления
             this.Controls.Add(this.MainMenuStrip);
             this.Controls.Add (_panelMain);
-
+            //Возобновить формирование макета с дочерними элементами управления
             this.ResumeLayout (false);
             this.PerformLayout ();
-
+            //Добавить обработчики событий
             this.Load += new EventHandler(FormMain_Load);
             this.Activated += new EventHandler(FormMain_Activated);
             this.FormClosing += new FormClosingEventHandler(FormMain_FormClosing);
