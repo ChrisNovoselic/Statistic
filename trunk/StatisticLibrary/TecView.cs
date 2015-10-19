@@ -353,9 +353,22 @@ namespace StatisticCommon
 
         public class EventRegEventArgs : EventArgs
         {
+            public struct EventDetail
+            {
+                public int id;
+                public float value;
+                public DateTime last_changed_at;
+                public int id_tm;
+            }
+
+            public int Id { get { return m_id_tg < 0 ? m_id_gtp : m_id_tg; } }
+            
             public int m_id_gtp;
             public int m_id_tg;
+            public DateTime m_dtRegistred;
             public int m_situation;
+            public List <EventDetail> m_listEventDetail;
+            public string m_message;
 
             //public EventRegEventArgs() : base ()
             //{
@@ -364,11 +377,34 @@ namespace StatisticCommon
             //    m_situation = 0;
             //}
 
-            public EventRegEventArgs(int id_gtp, int id_tg, int s) : base ()
+            public EventRegEventArgs(int id_gtp, int id_tg, int s, List <EventDetail> listEventDetail) : base ()
             {
                 m_id_gtp = id_gtp;
                 m_id_tg = id_tg;
+                m_dtRegistred = DateTime.UtcNow;
                 m_situation = s;
+                m_listEventDetail = listEventDetail;
+
+                if (m_id_tg < 0)
+                {
+                    if (m_situation == 1)
+                        m_message = @"вверх";
+                    else
+                        if (m_situation == -1)
+                            m_message = @"вниз";
+                        else
+                            m_message = @"нет";
+                }
+                else
+                {
+                    if (m_situation == (int)TG.INDEX_TURNOnOff.ON) //TGTurnOnOff = ON
+                        m_message = @"вкл.";
+                    else
+                        if (m_situation == (int)TG.INDEX_TURNOnOff.OFF) //TGTurnOnOff = OFF
+                            m_message = @"выкл.";
+                        else
+                            m_message = @"нет";
+                }
             }
         }
 
@@ -455,16 +491,18 @@ namespace StatisticCommon
         public int SuccessThreadRDGValues(int curHour, int curMinute)
         {
             int iRes = (int)INDEX_WAITHANDLE_REASON.SUCCESS
-                , iDebug = -1; //-1 - нет отладки, 0 - раб./отладка, 1 - эмуляция
+                , iDebug = -1; //-1 - нет отладки, 0 - раб./отладка, 1 - имитирование
 
             double TGTURNONOFF_VALUE = -1F, NOT_VALUE = -2F
                 , power_TM = NOT_VALUE;
             TG.INDEX_TURNOnOff curTurnOnOff = TG.INDEX_TURNOnOff.UNKNOWN;
+            List <EventRegEventArgs.EventDetail> listEventDetail = new List<EventRegEventArgs.EventDetail> ();
 
-            if (!(iDebug < 0))
-                Console.WriteLine(@"curHour=" + curHour.ToString() + @"; curMinute=" + curMinute.ToString());
-            else
-                ;
+            ////Для отладки
+            //if (!(iDebug < 0))
+            //    Console.WriteLine(@"curHour=" + curHour.ToString() + @"; curMinute=" + curMinute.ToString());
+            //else
+            //    ;
 
             //if (((lastHour == 24) || (lastHourError == true)) || ((lastMin == 0) || (lastMinError == true)))
             if (((curHour == 24) || (m_markWarning.IsMarked((int)TecView.INDEX_WARNING.LAST_HOUR) == true))
@@ -478,10 +516,11 @@ namespace StatisticCommon
                 {
                     curTurnOnOff = TG.INDEX_TURNOnOff.UNKNOWN;
 
-                    if (!(iDebug < 0))
-                        Console.Write(tg.m_id_owner_gtp + @":" + tg.m_id + @"=" + m_dictValuesTG[tg.m_id].m_powerCurrent_TM);
-                    else
-                        ;
+                    ////Для отладки
+                    //if (!(iDebug < 0))
+                    //    Console.Write(tg.m_id_owner_gtp + @":" + tg.m_id + @"=" + m_dictValuesTG[tg.m_id].m_powerCurrent_TM);
+                    //else
+                    //    ;
 
                     if (m_dictValuesTG[tg.m_id].m_powerCurrent_TM < 1)
                         if (!(m_dictValuesTG[tg.m_id].m_powerCurrent_TM < 0))
@@ -489,14 +528,16 @@ namespace StatisticCommon
                         else
                             ;
                     else
-                    {//Больше ИЛИ равно 1.0
+                    {//Больше ИЛИ равно 1F
                         curTurnOnOff = TG.INDEX_TURNOnOff.ON;
 
                         if (power_TM == NOT_VALUE) power_TM = 0F; else ;
                         power_TM += m_dictValuesTG[tg.m_id].m_powerCurrent_TM;
                     }
 
-                    //Отладка - изменяем состояние
+                    listEventDetail.Add(new EventRegEventArgs.EventDetail() { id = tg.m_id, value = (float)m_dictValuesTG[tg.m_id].m_powerCurrent_TM, last_changed_at = m_dictValuesTG[tg.m_id].m_dtCurrent_TM, id_tm = -1 });
+
+                    //Имитирование - изменяем состояние
                     if (iDebug == 1)
                         if (!(tg.m_TurnOnOff == TG.INDEX_TURNOnOff.UNKNOWN))
                         {
@@ -518,10 +559,11 @@ namespace StatisticCommon
                                 else
                                     ;
 
-                            if (!(iDebug < 0))
-                                Console.Write(Environment.NewLine + @"Отладка:: " + tg.m_id_owner_gtp + @":" + tg.m_id + @"=" + m_dictValuesTG[tg.m_id].m_powerCurrent_TM + Environment.NewLine);
-                            else
-                                ;
+                            ////Для отладки
+                            //if (!(iDebug < 0))
+                            //    Console.Write(Environment.NewLine + @"Отладка:: " + tg.m_id_owner_gtp + @":" + tg.m_id + @"=" + m_dictValuesTG[tg.m_id].m_powerCurrent_TM + Environment.NewLine);
+                            //else
+                            //    ;
                         }
                         else
                             ;
@@ -536,7 +578,7 @@ namespace StatisticCommon
                     {
                         if (!(tg.m_TurnOnOff == curTurnOnOff))
                         {
-                            EventReg(this, new EventRegEventArgs(allTECComponents[indxTECComponents].m_id, tg.m_id, (int)curTurnOnOff));
+                            EventReg(this, new EventRegEventArgs(allTECComponents[indxTECComponents].m_id, tg.m_id, (int)curTurnOnOff, listEventDetail));
 
                             //Прекращаем текущий цикл...
                             //Признак досрочного прерывания цикла для сигн. "Текущая P"
@@ -548,33 +590,34 @@ namespace StatisticCommon
                             ; //EventUnReg...
                     }
 
-                    if (!(iDebug < 0))
-                        if ((allTECComponents[indxTECComponents].m_listTG.IndexOf(tg) + 1) < allTECComponents[indxTECComponents].m_listTG.Count)
-                            Console.Write(@", ");
-                        else
-                            ;
-                    else
-                        ;
+                    ////Для отладки
+                    //if (!(iDebug < 0))
+                    //    if ((allTECComponents[indxTECComponents].m_listTG.IndexOf(tg) + 1) < allTECComponents[indxTECComponents].m_listTG.Count)
+                    //        Console.Write(@", ");
+                    //    else
+                    //        ;
+                    //else
+                    //    ;
                 }
 
                 if (!(power_TM == TGTURNONOFF_VALUE))
                     if ((!(power_TM == NOT_VALUE)) && (!(power_TM < 1)))
                     {
-                        //Для отладки
-                        if (!(iDebug < 0))
-                        {
-                            EventReg(this, new EventRegEventArgs(allTECComponents[indxTECComponents].m_id, -1, -1)); //Меньше
-                            Console.WriteLine(@"; ::SuccessThreadRDGValues () - EventReg [ID=" + allTECComponents[indxTECComponents].m_id + @"] ...");
-                        }
-                        else
-                            ;
+                        ////Для отладки
+                        //if (!(iDebug < 0))
+                        //{
+                        //    EventReg(this, new EventRegEventArgs(allTECComponents[indxTECComponents].m_id, -1, -1)); //Меньше
+                        //    Console.WriteLine(@"; ::SuccessThreadRDGValues () - EventReg [ID=" + allTECComponents[indxTECComponents].m_id + @"] ...");
+                        //}
+                        //else
+                        //    ;
 
                         if (Math.Abs(power_TM - m_valuesHours[curHour].valuesUDGe) > m_valuesHours[curHour].valuesUDGe * ((double)allTECComponents[indxTECComponents].m_dcKoeffAlarmPcur / 100))
                             //EventReg(allTECComponents[indxTECComponents].m_id, -1);
                             if (power_TM < m_valuesHours[curHour].valuesUDGe)
-                                EventReg(this, new EventRegEventArgs(allTECComponents[indxTECComponents].m_id, -1, -1)); //Меньше
+                                EventReg(this, new EventRegEventArgs(allTECComponents[indxTECComponents].m_id, -1, -1, listEventDetail)); //Меньше
                             else
-                                EventReg(this, new EventRegEventArgs(allTECComponents[indxTECComponents].m_id, -1, 1)); //Больше
+                                EventReg(this, new EventRegEventArgs(allTECComponents[indxTECComponents].m_id, -1, 1, listEventDetail)); //Больше
                         else
                             ; //EventUnReg...
                     }
@@ -583,11 +626,13 @@ namespace StatisticCommon
                 else
                     iRes = -102; //(int)INDEX_WAITHANDLE_REASON.BREAK;
 
-                if (!(iDebug < 0))
-                    Console.WriteLine ();
-                else
-                    ;
+                ////Для отладки
+                //if (!(iDebug < 0))
+                //    Console.WriteLine ();
+                //else
+                //    ;
 
+                ////Отладка
                 //for (int i = 0; i < m_valuesHours.valuesFact.Length; i ++)
                 //    Console.WriteLine(@"valuesFact[" + i.ToString() + @"]=" + m_valuesHours.valuesFact[i]);
             }

@@ -96,6 +96,8 @@ namespace StatisticAlarm
                         //Успех... пост-инициализация
                         formParameters = new FormParameters_DB(s_listFormConnectionSettings[(int)CONN_SETT_TYPE.CONFIG_DB].getConnSett());
 
+                        updateParametersSetup ();
+
                         s_iMainSourceData = Int32.Parse(formParameters.m_arParametrSetup[(int)FormParameters.PARAMETR_SETUP.MAIN_DATASOURCE]);
 
                         m_panelAlarm.Start();
@@ -110,6 +112,43 @@ namespace StatisticAlarm
             }
 
             return bRes;
+        }
+
+        private void updateParametersSetup()
+        {
+            ////Параметры записи сообщений лог-а...
+            //Logging.UpdateMarkDebugLog();
+
+            //Параметры обновления "основной панели"...
+            PanelStatistic.POOL_TIME = Int32.Parse(FormMain.formParameters.m_arParametrSetup[(int)FormParameters.PARAMETR_SETUP.POLL_TIME]);
+            PanelStatistic.ERROR_DELAY = Int32.Parse(FormMain.formParameters.m_arParametrSetup[(int)FormParameters.PARAMETR_SETUP.ERROR_DELAY]);
+
+            //Параметры перехода на сезонное времяисчисление...
+            HAdmin.SeasonDateTime = DateTime.Parse(formParameters.m_arParametrSetup[(int)FormParameters.PARAMETR_SETUP.SEASON_DATETIME]);
+            HAdmin.SeasonAction = Int32.Parse(formParameters.m_arParametrSetup[(int)FormParameters.PARAMETR_SETUP.SEASON_ACTION]);
+
+            //Параметры обработки запросов к БД...
+            DbInterface.MAX_RETRY = Int32.Parse(formParameters.m_arParametrSetup[(int)FormParameters.PARAMETR_SETUP.MAX_ATTEMPT]);
+            DbInterface.MAX_WAIT_COUNT = Int32.Parse(formParameters.m_arParametrSetup[(int)FormParameters.PARAMETR_SETUP.WAITING_COUNT]);
+            DbInterface.WAIT_TIME_MS = Int32.Parse(formParameters.m_arParametrSetup[(int)FormParameters.PARAMETR_SETUP.WAITING_TIME]);
+
+            //Параметры валидности даты/времени получения данных СОТИАССО...
+            TecView.SEC_VALIDATE_TMVALUE = Int32.Parse(formParameters.m_arParametrSetup[(int)FormParameters.PARAMETR_SETUP.VALIDATE_TM_VALUE]);
+
+            //Параметрвы для ALARM...
+            AdminAlarm.MSEC_ALARM_TIMERUPDATE =
+                30
+                //Int32.Parse(formParameters.m_arParametrSetup[(int)FormParameters.PARAMETR_SETUP.ALARM_TIMER_UPDATE])
+                * 1000;
+            AdminAlarm.MSEC_ALARM_EVENTRETRY =
+                90
+                //Int32.Parse(formParameters.m_arParametrSetup[(int)FormParameters.PARAMETR_SETUP.ALARM_EVENT_RETRY])
+                * 1000;
+            AdminAlarm.MSEC_ALARM_TIMERBEEP = Int32.Parse(formParameters.m_arParametrSetup[(int)FormParameters.PARAMETR_SETUP.ALARM_TIMER_BEEP]) * 1000;
+            AdminAlarm.FNAME_ALARM_SYSTEMMEDIA_TIMERBEEP = formParameters.m_arParametrSetup[(int)FormParameters.PARAMETR_SETUP.ALARM_SYSTEMMEDIA_TIMERBEEP];
+
+            ////Обновить значения идентификаторов активных источников СОТИАССО
+            //FormParameters.UpdateIdLinkTMSources();
         }
         /// <summary>
         /// Инициализация параметров соединения с БД_конфигурации
@@ -270,7 +309,7 @@ namespace StatisticAlarm
     {
         PanelAlarmJournal m_panelAlarm;
         Panel _panelMain;
-        
+
         /// <summary>
         /// Требуется переменная конструктора.
         /// </summary>

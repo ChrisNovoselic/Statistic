@@ -409,39 +409,17 @@ namespace Statistic
 
         private void toEventGUIReg(TecView.EventRegEventArgs ev)
         {
-            string msg = string.Empty;
-
             //Деактивация m_adminAlarm
             m_adminAlarm.Activate(false);
 
             int id_evt = -1;
             if (ev.m_id_tg < 0)
-            {
                 id_evt = ev.m_id_gtp;
-
-                if (ev.m_situation == 1)
-                    msg = @"вверх";
-                else
-                    if (ev.m_situation == -1)
-                        msg = @"вниз";
-                    else
-                        msg = @"нет";
-            }
             else
-            {
                 id_evt = ev.m_id_tg;
 
-                if (ev.m_situation == (int)TG.INDEX_TURNOnOff.ON) //TGTurnOnOff = ON
-                    msg = @"вкл.";
-                else
-                    if (ev.m_situation == (int)TG.INDEX_TURNOnOff.OFF) //TGTurnOnOff = OFF
-                        msg = @"выкл.";
-                    else
-                        msg = @"нет";
-            }
-
             TECComponent tc = findTECComponent(id_evt);
-            msg = tc.tec.name_shr + @"::" +  tc.name_shr + Environment.NewLine + @"Информация: " + msg;
+            string msg = tc.tec.name_shr + @"::" +  tc.name_shr + Environment.NewLine + @"Информация: " + ev.m_message;
             EventGUIReg(msg);
         }
 

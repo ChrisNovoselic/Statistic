@@ -22,6 +22,8 @@ namespace StatisticCommon
 
         private int IdListener { get { return m_dictIdListeners[0][0]; } }
 
+        private TecView.EventRegEventArgs m_EventRegEventArg;
+
         public ViewAlarm(ConnectionSettings connSett)
             : base()
         {
@@ -179,6 +181,24 @@ namespace StatisticCommon
 
         private void GetInsertEventRequest()
         {
+            int id = m_EventRegEventArg.m_id_tg < 0 ? m_EventRegEventArg.m_id_gtp : m_EventRegEventArg.m_id_tg //ID_COMPONENT
+                , typeAlarm = (m_EventRegEventArg.m_id_tg < 0 ? 1 : 2) //TYPE
+                , id_user = 0; //ID_USER
+            double val = m_EventRegEventArg.m_id_tg < 0 ? -1 : m_EventRegEventArg.m_listEventDetail[0].value; //VALUE
+            string strDTRegistred = m_EventRegEventArg.m_dtRegistred.ToString(@"yyyyMMdd HH:mm:ss.ffffffff"); //DATETIME_REGISTRED
+            
+            string query = "INSERT INTO [techsite-2.X.X].[dbo].[AlarmEvent] ([ID_COMPONENT], [TYPE], [ID_USER], [VALUE], [DATETIME_REGISTRED], [DATETIME_FIXED], [DATETIME_CONFIRM], [INSERT_DATETIME], [MESSAGE]) VALUES"
+                + @"("
+                    + id + @", " //ID_COMPONENT
+                    + typeAlarm + @", " //TYPE
+                    + id_user + @", " //ID_USER
+                    + val + @", " //VALUE
+                    + strDTRegistred + @", " //DATETIME_REGISTRED
+                    + "NULL" + @", " //DATETIME_FIXED
+                    + "NULL" + @", " //DATETIME_CONFIRM
+                    + "GETDATE ()" + @", " //INSERT_DATETIME
+                    + @"'" + m_EventRegEventArg.m_message + @"'" //MESSAGE
+                + @")";
         }
 
         private void GetUpdateEventFixedRequest()
@@ -213,6 +233,18 @@ namespace StatisticCommon
             m_iHourEnd = iHourEnd;
 
             Refresh ();
+        }
+
+        public void Insert (TecView.EventRegEventArgs ev)
+        {
+            m_EventRegEventArg = ev;
+
+            ClearStates();
+
+            states.Add((int)StatesMachine.CurrentTime);
+            states.Add((int)StatesMachine.InsertEvent);
+
+            Run(@"ViewAlarm::Insert");
         }
     }
 }

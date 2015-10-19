@@ -39,10 +39,10 @@ namespace StatisticAlarm
         /// Список идентификаторов компонентов ТЭЦ (ГТП), отображающихся в списке 'Компоненты ТЭЦ'
         /// </summary>
         private List <int> m_listIdTECComponents;
-        ///// <summary>
-        ///// Объект проверки условий выполнения сигнализаций типов "Мощность ТГ", "ТГ вкл./откл."
-        ///// </summary>
-        //private AdminAlarm m_adminAlarm;
+        /// <summary>
+        /// Объект проверки условий выполнения сигнализаций типов "Мощность ГТП", "ТГ вкл./откл."
+        /// </summary>
+        private AdminAlarm m_adminAlarm;
         /// <summary>
         /// Объект чтения/записи списка событий в БД
         /// </summary>
@@ -101,7 +101,7 @@ namespace StatisticAlarm
             //Инициализация списка с ТЭЦ
             m_list_tec = new InitTEC_200(iListenerId, true, false).tec;
             ////Инициализация 
-            //initAdminAlarm ();
+            initAdminAlarm ();
             initViewAlarm(new ConnectionSettings(InitTECBase.getConnSettingsOfIdSource(TYPE_DATABASE_CFG.CFG_200, iListenerId, FormMainBase.s_iMainSourceData, -1, out err).Rows[0], 0));
             startViewAlarm();
             //Инициализировать таймер для обновления значений в таблице
@@ -128,8 +128,22 @@ namespace StatisticAlarm
             (ctrl as CheckedListBox).Enabled = false;
             //Запустить на выполнениие (при необходимости) таймер для обновления значений в таблице
             ctrl = Find(INDEEX_CONTROL.CBX_WORK) as CheckBox;
+            if (mode == MODE.SERVICE)
+                (ctrl as CheckBox).Checked = true;
+            else
+                if (mode == MODE.ADMIN)
+                    (ctrl as CheckBox).Checked = HStatisticUsers.IsAllowed((int)HStatisticUsers.ID_ALLOWED.AUTO_ALARM_KOMDISP);
+                else
+                    if (mode == MODE.VIEW)
+                        (ctrl as CheckBox).Checked =
+                        (ctrl as CheckBox).Enabled =
+                             false;
+                    else
+                        ;
             if ((ctrl as CheckBox).Checked == true)
             {
+                if (mode == MODE.SERVICE) startAdminAlarm (); else ;
+
                 m_timerView.Interval = 1;
                 m_timerView.Start();
             }
@@ -142,21 +156,21 @@ namespace StatisticAlarm
             //Назначить обработчик события при получении из БД списка событий (передать список для отображения)
             m_viewAlarm.EvtGetData += new DelegateObjectFunc((Find (INDEEX_CONTROL.DGV_EVENTS) as DataGridViewAlarmJournal).OnEvtGetData);
         }
-        ///// <summary>
-        ///// Запустить на выполнение объект регистрации выполнения условий сигнализаций
-        ///// </summary>
-        //private void startAdminAlarm()
-        //{
-        //    //Инициализировать (при необходимости) объект
-        //    if (m_adminAlarm == null) initAdminAlarm(); else ;
-        //    //Проверить состояние, позволяющее запуск на выполнение 
-        //    if (m_adminAlarm.IsStarted == false)
-        //    {
-        //        m_adminAlarm.Start(); // запустить на выполнение
-        //        m_adminAlarm.Activate(true); // активировать
-        //    }
-        //    else ;
-        //}
+        /// <summary>
+        /// Запустить на выполнение объект регистрации выполнения условий сигнализаций
+        /// </summary>
+        private void startAdminAlarm()
+        {
+            //Инициализировать (при необходимости) объект
+            if (m_adminAlarm == null) initAdminAlarm(); else ;
+            //Проверить состояние, позволяющее запуск на выполнение 
+            if (m_adminAlarm.IsStarted == false)
+            {
+                m_adminAlarm.Start(); // запустить на выполнение
+                m_adminAlarm.Activate(true); // активировать
+            }
+            else ;
+        }
         /// <summary>
         /// Запустить на выполнение объект чтения/записи/обновления списка событий в БД
         /// </summary>
@@ -179,8 +193,12 @@ namespace StatisticAlarm
         /// <param name="ev">Аргумент события</param>
         private void fTimerView_Tick(object obj, EventArgs ev)
         {
-            //Назначить интервал между вызовами
-            m_timerView.Interval = PanelStatistic.POOL_TIME * 1000;
+            m_viewAlarm.Refresh ();            
+            //Назначить (при необходимости) интервал между вызовами
+            if (! (m_timerView.Interval == PanelStatistic.POOL_TIME * 1000))
+                m_timerView.Interval = PanelStatistic.POOL_TIME * 1000;
+            else
+                ;
         }
         /// <summary>
         /// Остановить панель, и все связанные с ней объекты
@@ -275,19 +293,19 @@ namespace StatisticAlarm
 
             this.RowStyles.Add(new RowStyle(SizeType.AutoSize));
         }
-        ///// <summary>
-        ///// Инициализация объекта регистрации выполнения условий сигнализаций
-        ///// </summary>
-        //private void initAdminAlarm()
-        //{
-        //    m_adminAlarm = new AdminAlarm();
-        //    m_adminAlarm.InitTEC(m_list_tec);
+        /// <summary>
+        /// Инициализация объекта регистрации выполнения условий сигнализаций
+        /// </summary>
+        private void initAdminAlarm()
+        {
+            m_adminAlarm = new AdminAlarm();
+            m_adminAlarm.InitTEC(m_list_tec);
 
-        //    m_adminAlarm.EventAdd += new AdminAlarm.DelegateOnEventReg(OnAdminAlarm_EventAdd);
-        //    m_adminAlarm.EventRetry += new AdminAlarm.DelegateOnEventReg(OnAdminAlarm_EventRetry);
+            m_adminAlarm.EventAdd += new AdminAlarm.DelegateOnEventReg(OnAdminAlarm_EventAdd);
+            m_adminAlarm.EventRetry += new AdminAlarm.DelegateOnEventReg(OnAdminAlarm_EventRetry);
 
-        //    this.EventConfirm += new DelegateIntIntFunc(m_adminAlarm.OnEventConfirm);
-        //}
+            this.EventConfirm += new DelegateIntIntFunc(m_adminAlarm.OnEventConfirm);
+        }
         /// <summary>
         /// Инициализация объекта чтения/записи/обновления списка событий
         /// </summary>
@@ -299,8 +317,11 @@ namespace StatisticAlarm
         //???
         private void OnAdminAlarm_EventAdd(TecView.EventRegEventArgs ev)
         {
+            Console.WriteLine(@"PanelAlarmJournal::OnAdminAlarm_EventAdd () - ID=" + ev.Id + @", message=" + ev.m_message);
+            
             if (IsHandleCreated/*InvokeRequired*/ == true)
             {//...для this.BeginInvoke
+                m_viewAlarm.Insert (ev);
             }
             else
                 Logging.Logg().Error(@"PanelAlarm::OnAdminAlarm_EventAdd () - ... BeginInvoke (...) - ...", Logging.INDEX_MESSAGE.D_001);
@@ -341,8 +362,8 @@ namespace StatisticAlarm
         {
             CheckBox ctrl = obj as CheckBox;
 
-            ////??? - Активировать объект "регистрация событий"
-            //m_adminAlarm.Activate(ctrl.Checked);
+            //??? - Активировать объект "регистрация событий"
+            if (mode == MODE.SERVICE) m_adminAlarm.Activate(ctrl.Checked); else ;
             //??? - Активировать объект чтения/записи/обновления списка событий
             m_viewAlarm.Activate(ctrl.Checked);
             //Запустить/остановить таймер обновления значений в таблице
@@ -364,9 +385,7 @@ namespace StatisticAlarm
             foreach  (TEC tec in m_list_tec)
                 foreach (TECComponent comp in tec.list_TECComponents)
                     if ((comp.IsGTP == true) && (comp.m_id == id))
-                    {
                         return comp;
-                    }
                     else
                         ;
 
@@ -504,7 +523,9 @@ namespace StatisticAlarm
                 : base()
             {
                 InitializeComponent();
-
+                //Создать объект списка с идентификаторами событий
+                m_listIdRows = new List<long> ();
+                //Создать делегат передачи в текущий поток кода по обновлению значений в таблице
                 delegateOnGetData = new DelegateObjectFunc (onEvtGetData);
             }
             /// <summary>
@@ -574,6 +595,7 @@ namespace StatisticAlarm
                 int indxRow = -1;
                 //Очистить содержимое таблицы
                 Rows.Clear();
+                m_listIdRows.Clear ();
                 //Добавить строки
                 foreach (DataRow r in tableRes.Rows)
                 {
@@ -585,6 +607,7 @@ namespace StatisticAlarm
                         , r[@"DATETIME_FIXED"]
                         , r[@"DATETIME_CONFIRM"]
                     });
+                    m_listIdRows.Add ((long)r[@"ID"]);
                     //Установить доступность кнопки "Подтвердить"
                     (Rows[indxRow].Cells[this.Columns.Count - 1] as DataGridViewDisableButtonCell).Enabled = false;
                 }
