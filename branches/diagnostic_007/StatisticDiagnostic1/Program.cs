@@ -17,7 +17,7 @@ namespace StatisticDiagnostic
         {
             /*Application.EnableVisualStyles();
             Application.SetCompatibleTextRenderingDefault(false);
-            Application.Run(new FormDiagnostic());
+            Application.Run(new FormMain());
             PanelStatisticDiagnostic form = new PanelStatisticDiagnostic();*/
 
             /*Thread thread = new Thread(form.ThreadFunction);
@@ -40,12 +40,12 @@ namespace StatisticDiagnostic
                   iRes = -1;
               }
 
-              FormDiagnostic formMainD = null;
+              FormMain formMainD = null;
 
               if (iRes == 0)
               {
                   string strHeader = string.Empty;
-                  try { formMainD = new FormDiagnostic(); }
+                  try { formMainD = new FormMain(); }
                   catch (Exception e)
                   {
                       strHeader = "Ошибка запуска приложения";

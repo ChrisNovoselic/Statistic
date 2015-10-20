@@ -4,7 +4,7 @@ using System.Windows.Forms;
 
 namespace StatisticTimeSync
 {
-    partial class FormStatisticTimeSync
+    partial class FormMain
     {
         /// <summary>
         /// Требуется переменная конструктора.
@@ -64,7 +64,7 @@ namespace StatisticTimeSync
             //(this.MainMenuStrip.Items[2] as ToolStripMenuItem).Click += new EventHandler(fMenuItemAbout_Click);
 
             this.Location = new Point(0, this.MainMenuStrip.Height);
-            this.Size = new System.Drawing.Size(this.ClientSize.Width, this.ClientSize.Height - this.MainMenuStrip.Height /*- this.m_statusStripMain.Height*/);
+            this.Size = new System.Drawing.Size(this.ClientSize.Width, this.ClientSize.Height - this.MainMenuStrip.Height - this.m_statusStripMain.Height);
             this.Anchor = (AnchorStyles)(((AnchorStyles.Left | AnchorStyles.Top) | AnchorStyles.Right) | AnchorStyles.Bottom);
             this.Controls.Add(MainMenuStrip);
             this.ResumeLayout(false);

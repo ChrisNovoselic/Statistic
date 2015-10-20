@@ -6,16 +6,15 @@ using System.Drawing;
 using System.Linq;
 using System.Text;
 using System.Windows.Forms;
-using System.Threading;
 
 using StatisticCommon;
 using HClassLibrary;
 
-namespace StatisticTimeSync
+namespace StatisticDiagnostic
 {
-    public partial class FormStatisticTimeSync : FormMainBase
+    public partial class FormMain : FormMainBaseWithStatusStrip
     {
-        public static List<FormConnectionSettings> s_listFormConnectionSettings;
+       
         /// <summary>
         /// Объект с параметрами приложения (из БД_конфигурации)
         /// </summary>
@@ -25,18 +24,13 @@ namespace StatisticTimeSync
         /// </summary>
         private int _state;
 
-        public FormStatisticTimeSync()
+        public FormMain()
         {
             _state = 1;
-            InitializeComponent(); 
+            InitializeComponent();
         }
 
-        /// <summary>
-        /// Запуск старта панели
-        /// </summary>
-        /// <param name="obj"></param>
-        /// <param name="ev"></param>
-        private void FormStatisticTimeSync_Load(object obj, EventArgs ev)
+        public void FormDiagnostic_Load(object obj, EventArgs ev)
         {
             string msg = string.Empty;
             bool bAbort = true;
@@ -59,27 +53,20 @@ namespace StatisticTimeSync
                 Abort(msg, bAbort);
             else
                 //Продолжить выполнение приложения
-                this.Activate();        
+                this.Activate();
         }
 
-        /// <summary>
-        /// Активация формы
-        /// </summary>
-        /// <param name="obj"></param>
-        /// <param name="ev"></param>
-        private void FormStatisticTimeSync_Activate(object obj, EventArgs ev)
+        private void FormDiagnostic_Activate(object obj, EventArgs ev)
         {
-           m_panelMain.Activate(true);
+            if (_state == 0)
+                panelMain.Activate(true);
+            else
+                ;
         }
 
-        /// <summary>
-        /// Деактивация формы
-        /// </summary>
-        /// <param name="obj"></param>
-        /// <param name="ev"></param>
-        private void FormStatisticTimeSync_Deactivate(object obj, EventArgs ev)
+        private void FormDiagnostic_Deactivate(object obj, EventArgs ev)
         {
-           m_panelMain.Activate(false);  
+            panelMain.Activate(false);
         }
 
         /// <summary>
@@ -113,7 +100,7 @@ namespace StatisticTimeSync
                         updateParametersSetup();
                         s_iMainSourceData = Int32.Parse(formParameters.m_arParametrSetup[(int)FormParameters.PARAMETR_SETUP.MAIN_DATASOURCE]);
 
-                        m_panelMain.Start();
+                        panelMain.Start();
                         break;
                 }
             }
@@ -156,7 +143,7 @@ namespace StatisticTimeSync
             }
 
             if (iRes == 0)
-                if (HStatisticUsers.IsAllowed((int)HStatisticUsers.ID_ALLOWED.MENUITEM_SETTING_PARAMETERS_SYNC_DATETIME_DB) == false)
+                if (HStatisticUsers.IsAllowed((int)HStatisticUsers.ID_ALLOWED.MENUITEM_SETTING_PARAMETERS_DIAGNOSTIC) == false)
                 {
                     msgError = @"Пользователю не разрешено использовать задачу";
                     iRes = -6;
@@ -181,8 +168,8 @@ namespace StatisticTimeSync
             Logging.UpdateMarkDebugLog();
 
             //Параметры обновления "основной панели"...
-            PanelStatistic.POOL_TIME = Int32.Parse(FormStatisticTimeSync.formParameters.m_arParametrSetup[(int)FormParameters.PARAMETR_SETUP.POLL_TIME]);
-            PanelStatistic.ERROR_DELAY = Int32.Parse(FormStatisticTimeSync.formParameters.m_arParametrSetup[(int)FormParameters.PARAMETR_SETUP.ERROR_DELAY]);
+            PanelStatistic.POOL_TIME = Int32.Parse(FormMain.formParameters.m_arParametrSetup[(int)FormParameters.PARAMETR_SETUP.POLL_TIME]);
+            PanelStatistic.ERROR_DELAY = Int32.Parse(FormMain.formParameters.m_arParametrSetup[(int)FormParameters.PARAMETR_SETUP.ERROR_DELAY]);
 
             //Параметры перехода на сезонное времяисчисление...
             HAdmin.SeasonDateTime = DateTime.Parse(formParameters.m_arParametrSetup[(int)FormParameters.PARAMETR_SETUP.SEASON_DATETIME]);
@@ -232,7 +219,7 @@ namespace StatisticTimeSync
                 || (dlgRes == DialogResult.Yes))
             {
                 //??? Остановить панель
-                m_panelMain.Stop();
+                panelMain.Stop();
 
                 bAbort = initialize(out msg);
             }
@@ -258,6 +245,26 @@ namespace StatisticTimeSync
             {
                 formAbout.ShowDialog(this);
             }*/
+        }
+
+        protected override void UpdateActiveGui(int type)
+        {
+            throw new NotImplementedException();
+        }
+
+        protected override int UpdateStatusString()
+        {
+            throw new NotImplementedException();
+        }
+
+        protected override void timer_Start()
+        {
+            throw new NotImplementedException();
+        }
+
+        protected override void HideGraphicsSettings()
+        {
+            throw new NotImplementedException();
         }
     }
 }

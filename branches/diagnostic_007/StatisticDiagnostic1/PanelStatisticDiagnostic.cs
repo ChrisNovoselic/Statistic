@@ -152,7 +152,6 @@ namespace StatisticDiagnostic
         static HDataSource m_DataSource;
         static int iListernID;
         static System.Timers.Timer UpdateTimer;
-        ConnectionSettings m_connSett;
         Task taskdb = new Task();
         Modes modesdb = new Modes();
         Tec tecdb = new Tec();
@@ -182,7 +181,9 @@ namespace StatisticDiagnostic
         /// </summary>
         public void RefreshDataSource()
         {
-            GetCurrentData(iListernID);
+            iListernID = DbSources.Sources().Register(FormMain.s_listFormConnectionSettings[(int)CONN_SETT_TYPE.CONFIG_DB].getConnSett(), false, @"CONFIG_DB");
+            GetCurrentData();
+            DbSources.Sources().UnRegister(iListernID);
         }
 
         /// <summary>
@@ -1070,11 +1071,6 @@ namespace StatisticDiagnostic
                         m_arPanelsMODES[i] = new Modes();
                     }
 
-                    //проверка на пустоту
-                    while (m_tableSourceData == null)
-                    {
-
-                    }
 
                     if (Convert.ToInt32(stdDetails.ElementAt(i).ID) == 200)
                     {
@@ -1693,7 +1689,7 @@ namespace StatisticDiagnostic
         public PanelStatisticDiagnostic(IContainer container)
         {
             container.Add(this);
-          
+
             InitializeComponent();
         }
 
@@ -1714,11 +1710,9 @@ namespace StatisticDiagnostic
             base.Start();
 
             int err = -1; //Признак выполнения метода/функции
-
             //Зарегистрировать соединение/получить идентификатор соединения
-            iListernID = DbSources.Sources().Register(FormDiagnostic.s_listFormConnectionSettings[(int)CONN_SETT_TYPE.CONFIG_DB].getConnSett(), false, @"CONFIG_DB");
-               
-            GetCurrentData(iListernID);
+            iListernID = DbSources.Sources().Register(FormMain.s_listFormConnectionSettings[(int)CONN_SETT_TYPE.CONFIG_DB].getConnSett(), false, @"CONFIG_DB");
+            GetCurrentData();
             m_DataSource = new HDataSource(new ConnectionSettings(InitTECBase.getConnSettingsOfIdSource(TYPE_DATABASE_CFG.CFG_200, iListernID, FormMainBase.s_iMainSourceData, -1, out err).Rows[0], 0));
             m_DataSource.StartDbInterfaces();
             m_DataSource.Start();
@@ -1741,71 +1735,13 @@ namespace StatisticDiagnostic
         }
 
         /// <summary>
-        /// Остановка работы панели
-        /// </summary>
-        public override void Stop()
-        {
-            stop();
-
-            tecdb.stopTEC();
-            modesdb.stopMODES();
-
-            base.Stop();
-        }
-
-        /// <summary>
-        /// -
-        /// </summary>
-        private void stop()
-        {
-            if (!(UpdateTimer == null))
-            {
-                UpdateTimer.Enabled = false;
-                UpdateTimer.Dispose();
-                UpdateTimer = null;
-            }
-            else ;
-
-            if (!(m_DataSource == null))
-            {
-                m_DataSource.Stop();
-                m_DataSource = null;
-            }
-        }
-
-        /// <summary>
-        /// 
-        /// </summary>
-        /// <param name="activated"></param>
-        /// <returns></returns>
-        public override bool Activate(bool activated)
-        {
-            bool bRes = base.Activate(activated);
-
-            if (activated == true)
-            {
-                tecdb.ActivateTEC(activated);
-                modesdb.ActivateMODES(activated);
-            }
-
-            else
-            {
-                tecdb.ActivateTEC(activated);
-                modesdb.ActivateMODES(activated);
-            }
-
-            return bRes;
-        }
-
-        /// <summary>
         /// Функция взятия информации из конф.БД
         /// </summary>
-        public void GetCurrentData(int ListenerId)
+        public void GetCurrentData()
         {
             int err = -1;
-
             DbConnection dbconn = null;
-            dbconn = DbSources.Sources().GetConnection(ListenerId, out err);
+            dbconn = DbSources.Sources().GetConnection(iListernID, out err);
 
             if ((err == 0) && (!(dbconn == null)))
             {
@@ -1819,8 +1755,8 @@ namespace StatisticDiagnostic
             else
                 throw new Exception(@"Нет соединения с БД");
 
-            //MassiveSourceName();
             CreateListTM(arraySourceTEC);
+
         }
 
         /// <summary>
@@ -1929,6 +1865,63 @@ namespace StatisticDiagnostic
         }
 
         /// <summary>
+        /// Остановка работы панели
+        /// </summary>
+        public override void Stop()
+        {
+            stop();
+
+            tecdb.stopTEC();
+            modesdb.stopMODES();
+
+            base.Stop();
+        }
+
+        /// <summary>
+        /// -
+        /// </summary>
+        private void stop()
+        {
+            if (!(UpdateTimer == null))
+            {
+                UpdateTimer.Enabled = false;
+                UpdateTimer.Dispose();
+                UpdateTimer = null;
+            }
+            else ;
+
+            if (!(m_DataSource == null))
+            {
+                m_DataSource.Stop();
+                m_DataSource = null;
+            }
+        }
+
+        /// <summary>
+        /// 
+        /// </summary>
+        /// <param name="activated"></param>
+        /// <returns></returns>
+        public override bool Activate(bool activated)
+        {
+            bool bRes = base.Activate(activated);
+
+            if (activated == true)
+            {
+                tecdb.ActivateTEC(activated);
+                modesdb.ActivateMODES(activated);
+            }
+
+            else
+            {
+                tecdb.ActivateTEC(activated);
+                modesdb.ActivateMODES(activated);
+            }
+
+            return bRes;
+        }
+
+        /// <summary>
         /// Создание списка ТМ
         /// </summary>
         public void CreateListTM(DataTable table)
@@ -1961,34 +1954,6 @@ namespace StatisticDiagnostic
                 massTM.SetValue(arraySource.Rows[t][@"NAME_SHR"].ToString(), j, 1);
             }
         }
-
-        /// <summary>
-        /// Формирование списка источников
-        /// </summary>
-        /*public void MassiveSourceName()
-        {
-            massivetext = new object[arrayParam.Rows.Count, 2];
-
-            int r = 0, c = 0;
-            for (c = 0; c < 2; c++)
-            {
-                if (c == 0)
-                {
-                    for (r = 0; r < arrayParam.Rows.Count; r++)
-                    {
-                        massivetext.SetValue(arrayParam.Rows[r][c], r, c);
-                    }
-                }
-
-                else
-                {
-                    for (r = 0; r < arrayParam.Rows.Count; r++)
-                    {
-                        massivetext.SetValue(arrayParam.Rows[r][c], r, c);
-                    }
-                }
-            }
-        }*/
 
         /// <summary>
         /// Формирование строки запроса

@@ -91,11 +91,6 @@ namespace StatisticTimeSync
                     //Start
                     //Спросить параметры соединения
                     IAsyncResult iar = BeginInvoke(new DelegateFunc(queryConnSett));
-                    int i;
-
-                    i = m_comboBoxSourceData.SelectedIndex;
-
-                    int myIndex = Array.IndexOf(INDEX_SOURCE_GETDATE, i);
                 }
                 else
                 {
@@ -110,7 +105,6 @@ namespace StatisticTimeSync
             {
                 try
                 {
-                    //int i = (int)num;
                     EvtAskedData(new EventArgsDataHost((int)ID_ASKED_DATAHOST.CONN_SETT, new object[] { this }));
                 }
                 catch (Exception e)
@@ -128,14 +122,12 @@ namespace StatisticTimeSync
             }
 
             /// <summary>
-            /// Asyn func добавления значений в комбобокс
+            /// добавления значений в комбобокс
             /// </summary>
             /// <param name="desc"></param>
             public void AddSourceData(string desc)
             {
-                //m_comboBoxSourceData.Invoke(new Action(() => m_comboBoxSourceData.Items.Add(desc)));
                 m_comboBoxSourceData.Items.Add(desc);
-
             }
 
             public string GetNameShrSelectedSourceData()
@@ -557,7 +549,7 @@ namespace StatisticTimeSync
         {
             int err = -1; //Признак выполнения метода/функции
             //Зарегистрировать соединение/получить идентификатор соединения
-            iListenerId = DbSources.Sources().Register(FormStatisticTimeSync.s_listFormConnectionSettings[(int)CONN_SETT_TYPE.CONFIG_DB].getConnSett(), false, @"CONFIG_DB");
+            iListenerId = DbSources.Sources().Register(FormMain.s_listFormConnectionSettings[(int)CONN_SETT_TYPE.CONFIG_DB].getConnSett(), false, @"CONFIG_DB");
 
             m_tableSourceData = null;
 
@@ -635,7 +627,6 @@ namespace StatisticTimeSync
             EvtEtalonDate(date);
         }
 
-        //private void fThreadGetDate(object obj)
         private void fThreadGetDate(object obj, EventArgs ev)
         {
             EvtGetDate(DateTime.UtcNow);
