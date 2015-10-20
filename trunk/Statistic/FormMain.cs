@@ -445,22 +445,20 @@ namespace Statistic
             else
                 return;
 
-            if (HStatisticUsers.IsAllowed((int)HStatisticUsers.ID_ALLOWED.APP_AUTO_RESET) == true)
+            int err = -1;
+
+            formParameters.Update(out err);
+
+            if (err == 0)
             {
-                int err = -1;
+                //Динамическое обновление параметров...
+                updateParametersSetup();
 
-                formParameters.Update(out err);
-
-                if (err == 0)
-                {
-                    //Динамическое обновление параметров...
-                    updateParametersSetup();
-
+                if (HStatisticUsers.IsAllowed((int)HStatisticUsers.ID_ALLOWED.APP_AUTO_RESET) == true)
                     if (formParameters.m_arParametrSetup[(int)FormParameters.PARAMETR_SETUP.APP_VERSION].Equals(string.Empty) == false)
                         if (formParameters.m_arParametrSetup[(int)FormParameters.PARAMETR_SETUP.APP_VERSION].Equals(Application.ProductVersion/*StatisticCommon.Properties.Resources.TradeMarkVersion*/) == false)
                         {
                             if (IsHandleCreated/**/ == true)
-                            {
                                 if (InvokeRequired == true)
                                 {
                                     /*IAsyncResult iar = */
@@ -468,10 +466,7 @@ namespace Statistic
                                     //this.EndInvoke (iar);
                                 }
                                 else
-                                {
                                     update();
-                                }
-                            }
                             else
                                 ;
 
@@ -479,17 +474,15 @@ namespace Statistic
 
                         }
                         else
-                        {
-                        }
+                            ;
                     else
                         //При ошибке - восстанавливаем значение...
                         ; //formParameters.m_arParametrSetup[(int)FormParameters.PARAMETR_SETUP.APP_VERSION] = strPrevAppVersion;
-                }
                 else
-                    ; //DbSources.Sources().UnRegister(idListenerConfigDB);
+                    ;
             }
             else
-                ;
+                ; //DbSources.Sources().UnRegister(idListenerConfigDB);
         }
 
         private int m_iAlarmEventCounter;

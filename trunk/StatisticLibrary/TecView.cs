@@ -498,11 +498,11 @@ namespace StatisticCommon
             TG.INDEX_TURNOnOff curTurnOnOff = TG.INDEX_TURNOnOff.UNKNOWN;
             List <EventRegEventArgs.EventDetail> listEventDetail = new List<EventRegEventArgs.EventDetail> ();
 
-            ////Для отладки
-            //if (!(iDebug < 0))
-            //    Console.WriteLine(@"curHour=" + curHour.ToString() + @"; curMinute=" + curMinute.ToString());
-            //else
-            //    ;
+            //Для отладки
+            if (!(iDebug < 0))
+                Console.WriteLine(@"curHour=" + curHour.ToString() + @"; curMinute=" + curMinute.ToString());
+            else
+                ;
 
             //if (((lastHour == 24) || (lastHourError == true)) || ((lastMin == 0) || (lastMinError == true)))
             if (((curHour == 24) || (m_markWarning.IsMarked((int)TecView.INDEX_WARNING.LAST_HOUR) == true))
@@ -516,11 +516,11 @@ namespace StatisticCommon
                 {
                     curTurnOnOff = TG.INDEX_TURNOnOff.UNKNOWN;
 
-                    ////Для отладки
-                    //if (!(iDebug < 0))
-                    //    Console.Write(tg.m_id_owner_gtp + @":" + tg.m_id + @"=" + m_dictValuesTG[tg.m_id].m_powerCurrent_TM);
-                    //else
-                    //    ;
+                    //Для отладки
+                    if (!(iDebug < 0))
+                        Console.Write(tg.m_id_owner_gtp + @":" + tg.m_id + @"=" + m_dictValuesTG[tg.m_id].m_powerCurrent_TM);
+                    else
+                        ;
 
                     if (m_dictValuesTG[tg.m_id].m_powerCurrent_TM < 1)
                         if (!(m_dictValuesTG[tg.m_id].m_powerCurrent_TM < 0))
@@ -534,7 +534,7 @@ namespace StatisticCommon
                         if (power_TM == NOT_VALUE) power_TM = 0F; else ;
                         power_TM += m_dictValuesTG[tg.m_id].m_powerCurrent_TM;
                     }
-
+                    //??? неизвестный идентификатор источника значений СОТИАССО (id_tm = -1)
                     listEventDetail.Add(new EventRegEventArgs.EventDetail() { id = tg.m_id, value = (float)m_dictValuesTG[tg.m_id].m_powerCurrent_TM, last_changed_at = m_dictValuesTG[tg.m_id].m_dtCurrent_TM, id_tm = -1 });
 
                     //Имитирование - изменяем состояние
@@ -559,11 +559,11 @@ namespace StatisticCommon
                                 else
                                     ;
 
-                            ////Для отладки
-                            //if (!(iDebug < 0))
-                            //    Console.Write(Environment.NewLine + @"Отладка:: " + tg.m_id_owner_gtp + @":" + tg.m_id + @"=" + m_dictValuesTG[tg.m_id].m_powerCurrent_TM + Environment.NewLine);
-                            //else
-                            //    ;
+                            //Для отладки
+                            if (!(iDebug < 0))
+                                Console.Write(Environment.NewLine + @"Отладка:: " + tg.m_id_owner_gtp + @":" + tg.m_id + @"=" + m_dictValuesTG[tg.m_id].m_powerCurrent_TM + Environment.NewLine);
+                            else
+                                ;
                         }
                         else
                             ;
@@ -590,27 +590,27 @@ namespace StatisticCommon
                             ; //EventUnReg...
                     }
 
-                    ////Для отладки
-                    //if (!(iDebug < 0))
-                    //    if ((allTECComponents[indxTECComponents].m_listTG.IndexOf(tg) + 1) < allTECComponents[indxTECComponents].m_listTG.Count)
-                    //        Console.Write(@", ");
-                    //    else
-                    //        ;
-                    //else
-                    //    ;
+                    //Для отладки
+                    if (!(iDebug < 0))
+                        if ((allTECComponents[indxTECComponents].m_listTG.IndexOf(tg) + 1) < allTECComponents[indxTECComponents].m_listTG.Count)
+                            Console.Write(@", ");
+                        else
+                            ;
+                    else
+                        ;
                 }
 
                 if (!(power_TM == TGTURNONOFF_VALUE))
                     if ((!(power_TM == NOT_VALUE)) && (!(power_TM < 1)))
                     {
-                        ////Для отладки
-                        //if (!(iDebug < 0))
-                        //{
-                        //    EventReg(this, new EventRegEventArgs(allTECComponents[indxTECComponents].m_id, -1, -1)); //Меньше
-                        //    Console.WriteLine(@"; ::SuccessThreadRDGValues () - EventReg [ID=" + allTECComponents[indxTECComponents].m_id + @"] ...");
-                        //}
-                        //else
-                        //    ;
+                        //Для отладки
+                        if (!(iDebug < 0))
+                        {
+                            EventReg(this, new EventRegEventArgs(allTECComponents[indxTECComponents].m_id, -1, -1, listEventDetail)); //Меньше
+                            Console.WriteLine(@"; ::SuccessThreadRDGValues () - EventReg [ID=" + allTECComponents[indxTECComponents].m_id + @"] ...");
+                        }
+                        else
+                            ;
 
                         if (Math.Abs(power_TM - m_valuesHours[curHour].valuesUDGe) > m_valuesHours[curHour].valuesUDGe * ((double)allTECComponents[indxTECComponents].m_dcKoeffAlarmPcur / 100))
                             //EventReg(allTECComponents[indxTECComponents].m_id, -1);
@@ -626,11 +626,11 @@ namespace StatisticCommon
                 else
                     iRes = -102; //(int)INDEX_WAITHANDLE_REASON.BREAK;
 
-                ////Для отладки
-                //if (!(iDebug < 0))
-                //    Console.WriteLine ();
-                //else
-                //    ;
+                //Для отладки
+                if (!(iDebug < 0))
+                    Console.WriteLine();
+                else
+                    ;
 
                 ////Отладка
                 //for (int i = 0; i < m_valuesHours.valuesFact.Length; i ++)
