@@ -1,4 +1,8 @@
-﻿namespace StatisticTimeSync
+﻿using System;
+using System.Drawing;
+using System.Windows.Forms;
+
+namespace StatisticTimeSync
 {
     partial class FormStatisticTimeSync
     {
@@ -45,7 +49,24 @@
             this.ClientSize = new System.Drawing.Size(800, 600);
             this.Name = "FormStatisticTimeSync";
             this.Text = "StatisticTimeSync";
+            this.MainMenuStrip = new MenuStrip();
+            this.MainMenuStrip.Items.AddRange(
+              new ToolStripMenuItem[] {
+                    new ToolStripMenuItem (@"Файл")
+                    , new ToolStripMenuItem (@"Настройка")
+                    , new ToolStripMenuItem (@"О программе")
+                }
+          );
+            (this.MainMenuStrip.Items[0] as ToolStripMenuItem).DropDownItems.Add(new ToolStripMenuItem(@"Выход"));
+            (this.MainMenuStrip.Items[0] as ToolStripMenuItem).DropDownItems[0].Click += new EventHandler(fMenuItemExit_Click);
+            (this.MainMenuStrip.Items[1] as ToolStripMenuItem).DropDownItems.Add(new ToolStripMenuItem(@"БД конфигурации"));
+            (this.MainMenuStrip.Items[1] as ToolStripMenuItem).DropDownItems[0].Click += new EventHandler(fMenuItemDBConfig_Click);
+            //(this.MainMenuStrip.Items[2] as ToolStripMenuItem).Click += new EventHandler(fMenuItemAbout_Click);
 
+            this.Location = new Point(0, this.MainMenuStrip.Height);
+            this.Size = new System.Drawing.Size(this.ClientSize.Width, this.ClientSize.Height - this.MainMenuStrip.Height /*- this.m_statusStripMain.Height*/);
+            this.Anchor = (AnchorStyles)(((AnchorStyles.Left | AnchorStyles.Top) | AnchorStyles.Right) | AnchorStyles.Bottom);
+            this.Controls.Add(MainMenuStrip);
             this.ResumeLayout(false);
 
             this.Load += new System.EventHandler(FormStatisticTimeSync_Load);

@@ -91,6 +91,9 @@ namespace Statistic
         {
             InitializeComponent();
 
+            //List<FormConnectionSettings> s_listFormConnectionSettings = new List<FormConnectionSettings>();
+            //s_listFormConnectionSettings.
+
             ProgramBase.s_iMessageShowUnhandledException = 1;
 
             //??? как рез-т проверка на запуск нового экземпляра... см. 'Program.cs'
@@ -1347,7 +1350,9 @@ namespace Statistic
             this.Activate();
         }
 
-        public override void Close(bool bForce) { if (bForce == false) base.Close(bForce); else FormMain_FormClosing(this, new FormClosingEventArgs(CloseReason.ApplicationExitCall, true)); }
+        public override void Close(bool bForce) 
+        { if (bForce == false) base.Close(bForce); 
+        else FormMain_FormClosing(this, new FormClosingEventArgs(CloseReason.ApplicationExitCall, true)); }
 
         private void FormMain_FormClosing(object sender, FormClosingEventArgs e)
         {

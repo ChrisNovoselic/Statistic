@@ -139,7 +139,6 @@ namespace StatisticDiagnostic
 
     public partial class PanelStatisticDiagnostic : PanelStatistic
     {
-        //static object[,] massivetext;
         static object[,] massTM;
         static Modes[] m_arPanelsMODES;
         static Tec[] m_arPanelsTEC;
@@ -1714,8 +1713,7 @@ namespace StatisticDiagnostic
         {
             base.Start();
 
-            int err = -1 //Признак выполнения метода/функции
-               , indx = -1;
+            int err = -1; //Признак выполнения метода/функции
 
             //Зарегистрировать соединение/получить идентификатор соединения
             iListernID = DbSources.Sources().Register(FormDiagnostic.s_listFormConnectionSettings[(int)CONN_SETT_TYPE.CONFIG_DB].getConnSett(), false, @"CONFIG_DB");
