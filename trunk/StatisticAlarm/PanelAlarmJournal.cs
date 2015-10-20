@@ -17,7 +17,7 @@ namespace StatisticAlarm
     /// <summary>
     /// Класс панели для отображения с списка событий
     /// </summary>
-    public partial class PanelAlarmJournal : PanelStatistic
+    public partial class PanelAlarmJournal : PanelStatistic, IDataHost
     {
         /// <summary>
         /// Перечисление для режимов работы вкладки
@@ -152,9 +152,9 @@ namespace StatisticAlarm
             //Назначить обработчик событий при изменении признака "Включено/отключено"
             (ctrl as CheckBox).CheckedChanged += new EventHandler(cbxWork_OnCheckedChanged);
             //Назначить обработчик события изменение даты
-            (Find (INDEEX_CONTROL.MCLDR_CURRENT) as MonthCalendar).DateChanged += new DateRangeEventHandler(m_viewAlarm.OnEventDateChanged);
-            //Назначить обработчик события при получении из БД списка событий (передать список для отображения)
-            m_viewAlarm.EvtGetData += new DelegateObjectFunc((Find (INDEEX_CONTROL.DGV_EVENTS) as DataGridViewAlarmJournal).OnEvtGetData);
+            (Find (INDEEX_CONTROL.MCLDR_CURRENT) as MonthCalendar).DateChanged += new DateRangeEventHandler(onEventDateChanged);
+            ////Назначить обработчик события при получении из БД списка событий (передать список для отображения)
+            //m_viewAlarm.EvtGetData += new DelegateObjectFunc((Find (INDEEX_CONTROL.DGV_EVENTS) as DataGridViewAlarmJournal).OnEvtGetData);
         }
         /// <summary>
         /// Запустить на выполнение объект регистрации выполнения условий сигнализаций
@@ -193,7 +193,9 @@ namespace StatisticAlarm
         /// <param name="ev">Аргумент события</param>
         private void fTimerView_Tick(object obj, EventArgs ev)
         {
-            m_viewAlarm.Refresh ();            
+            //m_viewAlarm.Push(this, new object [] { new object [] { new object[] { ViewAlarm.StatesMachine.List, DatetimeCurrent, HourBegin, HourEnd }}});
+            //EvtDataAskedHost(new object[] { ViewAlarm.StatesMachine.List, DatetimeCurrent, HourBegin, HourEnd });
+            DataAskedHost(new object[] { ViewAlarm.StatesMachine.List, DatetimeCurrent, HourBegin, HourEnd });
             //Назначить (при необходимости) интервал между вызовами
             if (! (m_timerView.Interval == PanelStatistic.POOL_TIME * 1000))
                 m_timerView.Interval = PanelStatistic.POOL_TIME * 1000;
@@ -247,7 +249,8 @@ namespace StatisticAlarm
             //Проверить признак изменения стостояния базовой панели
             if (bRes == true)
             {//Только при изменении состояния базовой панели
-                if (activate == true)
+                if ((activate == true)
+                    && ((Find (INDEEX_CONTROL.CBX_WORK) as CheckBox).Checked == false))
                     // при активации обновить список событий
                     (Find (INDEEX_CONTROL.BTN_REFRESH) as Button).PerformClick ();
                 else
@@ -321,7 +324,8 @@ namespace StatisticAlarm
             
             if (IsHandleCreated/*InvokeRequired*/ == true)
             {//...для this.BeginInvoke
-                m_viewAlarm.Insert (ev);
+                //m_viewAlarm.Push(this, new object [] { new object [] { new object [] { ViewAlarm.StatesMachine.Insert, ev }}});
+                DataAskedHost(new object[] { ViewAlarm.StatesMachine.Insert, ev });
             }
             else
                 Logging.Logg().Error(@"PanelAlarm::OnAdminAlarm_EventAdd () - ... BeginInvoke (...) - ...", Logging.INDEX_MESSAGE.D_001);
@@ -480,6 +484,18 @@ namespace StatisticAlarm
             return Controls.Find (indx.ToString (), true) [0];
         }
         /// <summary>
+        /// Текущая (выбранная дата) в элементе управления 'MonthCalendar'
+        /// </summary>
+        private DateTime DatetimeCurrent { get { return (Find(INDEEX_CONTROL.MCLDR_CURRENT) as MonthCalendar).SelectionStart.Date; } }
+        /// <summary>
+        /// Текущий (установленный) индекс часа начала периода в указанные сутки
+        /// </summary>
+        private int HourBegin { get { return (int)(Find(INDEEX_CONTROL.NUD_HOUR_BEGIN) as NumericUpDown).Value; } }
+        /// <summary>
+        /// Текущий (установленный) индекс часа окончания периода в указанные сутки
+        /// </summary>
+        private int HourEnd { get { return (int)(Find(INDEEX_CONTROL.NUD_HOUR_END) as NumericUpDown).Value; } }
+        /// <summary>
         /// Обработчик события - нажатие на кнопку "Обновить"
         /// </summary>
         /// <param name="obj">Объект, инициировавший событие</param>
@@ -489,9 +505,48 @@ namespace StatisticAlarm
             //Инициировать запрос К БД_значений со списком событий
             // за указанную дату
             // в период указанных часов
-            m_viewAlarm.Refresh((Find(INDEEX_CONTROL.MCLDR_CURRENT) as MonthCalendar).SelectionStart.Date
-                , (int)(Find(INDEEX_CONTROL.NUD_HOUR_BEGIN) as NumericUpDown).Value
-                , (int)(Find(INDEEX_CONTROL.NUD_HOUR_END) as NumericUpDown).Value);
+            //m_viewAlarm.Push(this, new object[] { new object[] { new object[] { ViewAlarm.StatesMachine.List, DatetimeCurrent, HourBegin, HourEnd } } });
+            //DataAskedHost(new object[] { ViewAlarm.StatesMachine.List, DatetimeCurrent, HourBegin, HourEnd });
+            DataAskedHost(new object[] { ViewAlarm.StatesMachine.List, DatetimeCurrent, HourBegin, HourEnd });
+        }
+
+        private void onEventDateChanged(object obj, DateRangeEventArgs ev)
+        {
+            //End.Date - эквивалентно, при 'MaxSelectionCount = 1'
+            //m_viewAlarm.Push(this, new object[] { new object[] { new object[] { ViewAlarm.StatesMachine.List, DatetimeCurrent, HourBegin, HourEnd } } });
+            DataAskedHost(new object[] { ViewAlarm.StatesMachine.List, DatetimeCurrent, HourBegin, HourEnd });
+        }
+        /// <summary>
+        /// Событие запроса данных для плюг'ина из главной формы
+        /// </summary>
+        public event DelegateObjectFunc EvtDataAskedHost;
+        /// <summary>
+        /// Отиравить запрос на получение данных
+        /// </summary>
+        /// <param name="par">Аргумент с детализацией запрашиваемых данных</param>
+        public void DataAskedHost(object par)
+        {
+            m_viewAlarm.Push(this, new object[] { new object[] { par } });
+        }
+        /// <summary>
+        /// Обработчик события ответа от главной формы
+        /// </summary>
+        /// <param name="obj">объект класса 'EventArgsDataHost' с идентификатором/данными из главной формы</param>
+        public void OnEvtDataRecievedHost(object res)
+        {
+            ViewAlarm.StatesMachine state = (ViewAlarm.StatesMachine)(res as object[])[0];
+
+            switch (state)
+            {
+                case ViewAlarm.StatesMachine.List:
+                    (Find(INDEEX_CONTROL.DGV_EVENTS) as DataGridViewAlarmJournal).OnEvtGetData((res as object[])[1]);
+                    break;
+                case ViewAlarm.StatesMachine.Insert:
+                    //Получить идентификатор записи о событии сигнализации
+                    break;
+                default:
+                    break;
+            }
         }
 
         /// <summary>

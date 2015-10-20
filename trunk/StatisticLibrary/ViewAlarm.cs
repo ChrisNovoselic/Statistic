@@ -12,12 +12,14 @@ namespace StatisticCommon
 {
     public class ViewAlarm : HHandlerQueue
     {
-        private class ViewAlarmHandlerDb : HHandlerDb
+        public enum StatesMachine { Unknown = -1, List, Insert }
+
+        private class HandlerDb : HClassLibrary.HHandlerDb
         {
             /// <summary>
             /// Перечисление
             /// </summary>
-            private enum StatesMachine { CurrentTime, ListEvents, InsertEventMain, InsertEventDetail, UpdateEventFixed, UpdateEventConfirm }
+            public enum StatesMachine { CurrentTime, ListEvents, InsertEventMain, InsertEventDetail, UpdateEventFixed, UpdateEventConfirm }
             /// <summary>
             /// Параметры соединения с БД_значений
             /// </summary>
@@ -26,6 +28,48 @@ namespace StatisticCommon
             /// Идентификатор установленного, активного соединения с БД_значений
             /// </summary>
             private int IdListener { get { return m_dictIdListeners[0][0]; } }
+            
+            public enum INDEX_SYNC_STATECHECKRESPONSE { UNKNOWN = -1, RESPONSE, ERROR, WARNING
+                ,  COUNT_INDEX_SYNC_STATECHECKRESPONSE }
+            public AutoResetEvent [] m_arSyncStateCheckResponse;
+
+            DataTable m_tableResponse;
+            /// <summary>
+            /// Дата/время (дата) запроса списка событий
+            /// </summary>
+            private DateTime m_dtCurrent
+                /// <summary>
+                /// Дата/время сервера
+                /// </summary>
+                , m_dtServer;
+            /// <summary>
+            /// Индекс часа начала периода запроса списка событий в сутках
+            /// </summary>
+            private int m_iHourBegin
+                /// <summary>
+                /// Индекс часа окончания периода запроса списка событий в сутках
+                /// </summary>
+                , m_iHourEnd;
+            /// <summary>
+            /// Идентификатор записи в таблице БД_значений о событии сигнализации
+            /// </summary>        
+            private long m_idEventMain;
+            /// <summary>
+            /// Информация о событии сигнализации
+            /// </summary>
+            private TecView.EventRegEventArgs m_EventRegEventArg;
+
+            public HandlerDb(ConnectionSettings connSett)
+            {
+                m_connSett = connSett;
+
+                m_arSyncStateCheckResponse = new AutoResetEvent[(int)INDEX_SYNC_STATECHECKRESPONSE.COUNT_INDEX_SYNC_STATECHECKRESPONSE]
+                {
+                    new AutoResetEvent (false)
+                    , new AutoResetEvent (false)
+                    , new AutoResetEvent (false)
+                };
+            }
 
             public override void Start()
             {
@@ -118,14 +162,15 @@ namespace StatisticCommon
             protected override int StateResponse(int state, object obj)
             {
                 int iRes = 0;
+                bool bAnswer = true;
 
                 switch ((StatesMachine)state)
                 {
                     case StatesMachine.CurrentTime:
                         GetCurrentTimeResponse(obj as DataTable);
+                        bAnswer = false;
                         break;
                     case StatesMachine.ListEvents:
-                        GetListEventsResponse(obj as DataTable);
                         break;
                     case StatesMachine.InsertEventMain:
                         GetInsertEventMainResponse(obj as DataTable);
@@ -133,11 +178,22 @@ namespace StatisticCommon
                     case StatesMachine.InsertEventDetail:
                     case StatesMachine.UpdateEventFixed:
                     case StatesMachine.UpdateEventConfirm:
-                        ;
+                        // ответа не требуется
+                        bAnswer = false;
                         break;
                     default:
                         break;
                 }
+
+                if (bAnswer == true)
+                {
+                    //Сохранить ответ
+                    m_tableResponse = obj as DataTable;
+                    //Указать, что ответ готов
+                    m_arSyncStateCheckResponse[(int)INDEX_SYNC_STATECHECKRESPONSE.RESPONSE].Set();
+                }
+                else
+                    ;
 
                 //Logging.Logg().Debug(@"ViewAlarm::StateRequest () - state=" + ((StatesMachine)state).ToString() + @", result=" + bRes.ToString() + @" - вЫход...");
 
@@ -146,6 +202,8 @@ namespace StatisticCommon
 
             protected override HHandler.INDEX_WAITHANDLE_REASON StateErrors(int state, int req, int res)
             {
+                m_arSyncStateCheckResponse[(int)INDEX_SYNC_STATECHECKRESPONSE.ERROR].Set();
+                
                 Logging.Logg().Error(@"ViewAlarm::StateErrors () - state=" + ((StatesMachine)state).ToString() + @", req=" + req.ToString() + @", res=" + res.ToString(), Logging.INDEX_MESSAGE.NOT_SET);
 
                 return INDEX_WAITHANDLE_REASON.SUCCESS;
@@ -153,6 +211,8 @@ namespace StatisticCommon
 
             protected override void StateWarnings(int state, int req, int res)
             {
+                m_arSyncStateCheckResponse[(int)INDEX_SYNC_STATECHECKRESPONSE.WARNING].Set ();
+                
                 Logging.Logg().Warning(@"ViewAlarm::StateWarnings () - state=" + ((StatesMachine)state).ToString() + @", req=" + req.ToString() + @", res=" + res.ToString(), Logging.INDEX_MESSAGE.NOT_SET);
             }
 
@@ -160,6 +220,16 @@ namespace StatisticCommon
             {//??? - необязательное наличие - удалить из 'HHandlerDb'
                 m_idEventMain = -1;
                 m_EventRegEventArg = null;
+            }
+
+            public int Response(out bool error, out object table)
+            {
+                int iRes = 0;
+
+                error = false;
+                table = m_tableResponse;
+
+                return iRes;
             }
 
             protected void GetCurrentTimeRequest()
@@ -178,16 +248,7 @@ namespace StatisticCommon
                     , @"SELECT * FROM [dbo].[AlarmEvent] WHERE [DATETIME_REGISTRED] BETWEEN '"
                         + m_dtCurrent.AddHours(m_iHourBegin).ToString(@"yyyyMMdd HH:mm") + @"' AND '"
                         + m_dtCurrent.AddHours(m_iHourEnd).ToString(@"yyyyMMdd HH:mm") + @"'");
-            }
-            /// <summary>
-            /// Функция обработки результатов запроса
-            /// </summary>
-            /// <param name="tableRes">Таблица - результат запроса</param>
-            private void GetListEventsResponse(DataTable tableRes)
-            {
-                Console.WriteLine(@"Событий за " + m_dtCurrent.ToShortDateString() + @" (" + m_iHourBegin + @"-" + m_iHourEnd + @" ч): " + tableRes.Rows.Count);
-                EvtGetData(tableRes);
-            }
+            }            
             /// <summary>
             /// Сформировать содержимое запроса к БД и отправить для выполнения
             ///  , по сложивжейся традиции, несмотря на 'Get', тип возвращаемого значения 'void'
@@ -267,30 +328,23 @@ namespace StatisticCommon
             {
             }
 
-            public void OnEventDateChanged(object obj, DateRangeEventArgs ev)
-            {
-                m_dtCurrent = ev.Start.Date; //End.Date - эквивалентно, при 'MaxSelectionCount = 1'
-
-                Refresh();
-            }
-
-            public void Refresh()
-            {
-                ClearStates();
-
-                states.Add((int)StatesMachine.CurrentTime);
-                states.Add((int)StatesMachine.ListEvents);
-
-                Run(@"ViewAlarm::Refresh");
-            }
-
             public void Refresh(DateTime dtCurrent, int iHourBegin, int iHourEnd)
             {
                 m_dtCurrent = dtCurrent;
                 m_iHourBegin = iHourBegin;
                 m_iHourEnd = iHourEnd;
 
-                Refresh();
+                refresh ();
+            }
+
+            private void refresh()
+            {
+                ClearStates();
+
+                states.Add((int)StatesMachine.CurrentTime);
+                states.Add((int)StatesMachine.ListEvents);
+
+                Run(@"ViewAlarm.HHandlerDb::Refresh");
             }
 
             public void Insert(TecView.EventRegEventArgs ev)
@@ -309,35 +363,11 @@ namespace StatisticCommon
             }
         }
 
-        private ViewAlarmHandlerDb m_handlerDb;
-        /// <summary>
-        /// Событие для отправки списка событий сигнализаций клиентам
-        /// </summary>
-        public event DelegateObjectFunc EvtGetData;        
-        /// <summary>
-        /// Дата/время (дата) запроса списка событий
-        /// </summary>
-        private DateTime m_dtCurrent
-            /// <summary>
-            /// Дата/время сервера
-            /// </summary>
-            , m_dtServer;
-        /// <summary>
-        /// Индекс часа начала периода запроса списка событий в сутках
-        /// </summary>
-        private int m_iHourBegin
-            /// <summary>
-            /// Индекс часа окончания периода запроса списка событий в сутках
-            /// </summary>
-            , m_iHourEnd;
-        /// <summary>
-        /// Идентификатор записи в таблице БД_значений о событии сигнализации
-        /// </summary>        
-        private long m_idEventMain; 
-        /// <summary>
-        /// Информация о событии сигнализации
-        /// </summary>
-        private TecView.EventRegEventArgs m_EventRegEventArg;
+        private ViewAlarm.HandlerDb m_handlerDb;
+        ///// <summary>
+        ///// Событие для отправки списка событий сигнализаций клиентам
+        ///// </summary>
+        //public event DelegateObjectFunc EvtGetData;        
         /// <summary>
         /// Конструктор - основной (с параметрами)
         /// </summary>
@@ -345,7 +375,134 @@ namespace StatisticCommon
         public ViewAlarm(ConnectionSettings connSett)
             : base()
         {
-            m_connSett = connSett;
+            m_handlerDb = new ViewAlarm.HandlerDb (connSett);
+        }
+
+        public override void Start()
+        {
+            base.Start();
+
+            m_handlerDb.Start ();
+        }
+
+        public override void Stop()
+        {
+            m_handlerDb.Stop ();
+            
+            base.Stop();
+        }
+
+        private void GetInsertEventMainResponse(object obj)
+        {
+            long idEventMain = (long)(obj as DataTable).Rows[0][@"ID"];
+        }
+
+        /// <summary>
+        /// Функция обработки результатов запроса
+        /// </summary>
+        /// <param name="tableRes">Таблица - результат запроса</param>
+        private void GetListEventsResponse(DataTable tableRes)
+        {
+        }
+
+        protected override int StateCheckResponse(int state, out bool error, out object table)
+        {
+            int iRes = 0;
+            ViewAlarm.HandlerDb.INDEX_SYNC_STATECHECKRESPONSE indxSync = ViewAlarm.HandlerDb.INDEX_SYNC_STATECHECKRESPONSE.UNKNOWN;
+
+            error = false;
+            table = null;
+
+            switch ((StatesMachine)state)
+            {
+                case StatesMachine.List:
+                case StatesMachine.Insert:
+                    indxSync = (ViewAlarm.HandlerDb.INDEX_SYNC_STATECHECKRESPONSE)WaitHandle.WaitAny(m_handlerDb.m_arSyncStateCheckResponse);
+                    switch (indxSync)
+                    {
+                        case HandlerDb.INDEX_SYNC_STATECHECKRESPONSE.RESPONSE:
+                            iRes = m_handlerDb.Response (out error, out table);
+                            break;
+                        case HandlerDb.INDEX_SYNC_STATECHECKRESPONSE.ERROR:
+                            iRes = -1;
+                            error = true;
+                            break;
+                        case HandlerDb.INDEX_SYNC_STATECHECKRESPONSE.WARNING:
+                            iRes = 1;
+                            break;
+                        default:
+                            break;
+                    }
+                    break;
+                default:
+                    iRes = -1;
+                    break;
+            }
+
+            error = !(iRes == 0);
+
+            return iRes;
+        }
+
+        protected override int StateRequest(int state)
+        {
+            int iRes = 0;
+            ItemQueue itemQueue = Peek;
+
+            switch ((StatesMachine)state)
+            {
+                case StatesMachine.List:
+                    m_handlerDb.Refresh ((DateTime)itemQueue.Pars[0], (int)itemQueue.Pars[1], (int)itemQueue.Pars[2]);
+                    break;
+                case StatesMachine.Insert:
+                    ;
+                    break;
+                default:
+                    break;
+            }
+
+            //Logging.Logg().Debug(@"ViewAlarm::StateRequest () - state=" + ((StatesMachine)state).ToString() + @", result=" + bRes.ToString() + @" - вЫход...");
+
+            return iRes;
+        }
+
+        protected override int StateResponse(int state, object obj)
+        {
+            int iRes = 0;
+            ItemQueue itemQueue = Peek;
+
+            switch ((StatesMachine)state)
+            {
+                case StatesMachine.List:
+                    //EvtGetData(obj as DataTable);
+
+                    //GetListEventsResponse (obj as DataTable);
+                    Console.WriteLine(@"Событий за " + ((DateTime)itemQueue.Pars[0]).ToShortDateString() + @" (" + ((int)itemQueue.Pars[1]) + @"-" + ((int)itemQueue.Pars[2]) + @" ч): " + (obj as DataTable).Rows.Count);
+
+                    itemQueue.m_objRecieved.OnEvtDataRecievedHost (new object [] { (StatesMachine)state, obj });
+                    break;
+                case StatesMachine.Insert:
+                    ;
+                    break;
+                default:
+                    break;
+            }
+
+            //Logging.Logg().Debug(@"ViewAlarm::StateRequest () - state=" + ((StatesMachine)state).ToString() + @", result=" + bRes.ToString() + @" - вЫход...");
+
+            return iRes;
+        }
+
+        protected override HHandler.INDEX_WAITHANDLE_REASON StateErrors(int state, int req, int res)
+        {
+            Logging.Logg().Error(@"ViewAlarm::StateErrors () - state=" + ((StatesMachine)state).ToString() + @", req=" + req.ToString() + @", res=" + res.ToString(), Logging.INDEX_MESSAGE.NOT_SET);
+
+            return INDEX_WAITHANDLE_REASON.SUCCESS;
+        }
+
+        protected override void StateWarnings(int state, int req, int res)
+        {
+            Logging.Logg().Warning(@"ViewAlarm::StateWarnings () - state=" + ((StatesMachine)state).ToString() + @", req=" + req.ToString() + @", res=" + res.ToString(), Logging.INDEX_MESSAGE.NOT_SET);
         }
     }
 }

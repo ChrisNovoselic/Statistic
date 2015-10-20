@@ -440,10 +440,13 @@ namespace Statistic
                 ProgramBase.ss_MainCultureInfo;
 
             if (m_timerAppReset.Interval == ProgramBase.TIMER_START_INTERVAL)
+            {
                 //При 1-ом запуске ожидать один интервал
                 m_timerAppReset.Interval = Int32.Parse(formParameters.m_arParametrSetup[(int)FormParameters.PARAMETR_SETUP.APP_VERSION_QUERY_INTERVAL]);
-            else
                 return;
+            }
+            else
+                ;
 
             int err = -1;
 
