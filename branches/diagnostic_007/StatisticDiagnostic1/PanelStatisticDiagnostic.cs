@@ -139,7 +139,7 @@ namespace StatisticDiagnostic
 
     public partial class PanelStatisticDiagnostic : PanelStatistic
     {
-        static object[,] massivetext;
+        //static object[,] massivetext;
         static object[,] massTM;
         static Modes[] m_arPanelsMODES;
         static Tec[] m_arPanelsTEC;
@@ -151,7 +151,7 @@ namespace StatisticDiagnostic
         static DataTable arraySourceTEC = new DataTable();
         static DataTable arrayParam = new DataTable();
         static HDataSource m_DataSource;
-
+        static int iListernID;
         static System.Timers.Timer UpdateTimer;
         ConnectionSettings m_connSett;
         Task taskdb = new Task();
@@ -183,7 +183,7 @@ namespace StatisticDiagnostic
         /// </summary>
         public void RefreshDataSource()
         {
-            GetCurrentData();
+            GetCurrentData(iListernID);
         }
 
         /// <summary>
@@ -1071,6 +1071,12 @@ namespace StatisticDiagnostic
                         m_arPanelsMODES[i] = new Modes();
                     }
 
+                    //проверка на пустоту
+                    while (m_tableSourceData == null)
+                    {
+
+                    }
+
                     if (Convert.ToInt32(stdDetails.ElementAt(i).ID) == 200)
                     {
                         filter12 = "DESCRIPTION = 'Modes-Centre'";
@@ -1682,20 +1688,13 @@ namespace StatisticDiagnostic
         /// </summary>
         public PanelStatisticDiagnostic()
         {
-            initialize();
+            InitializeComponent();
         }
 
         public PanelStatisticDiagnostic(IContainer container)
         {
             container.Add(this);
-            initialize();
-        }
-
-        /// <summary>
-        /// Инициализация панели
-        /// </summary>
-        private void initialize()
-        {
+          
             InitializeComponent();
         }
 
@@ -1709,44 +1708,26 @@ namespace StatisticDiagnostic
         }
 
         /// <summary>
-        /// Коннект к БД. создание экземпляра ДБинтерфейса
-        /// </summary>
-        /// <param name="connSett"></param>
-        public void Start(ConnectionSettings connSett)
-        {
-            m_connSett = connSett;
-            m_DataSource = new HDataSource((ConnectionSettings)m_connSett);
-            m_DataSource.StartDbInterfaces();
-            m_DataSource.Start();
-            m_DataSource.Command();
-            m_DataSource.EvtRecievedTable += new DelegateObjectFunc(m_DataSource_EvtRecievedTable);
-        }
-
-        /// <summary>
         /// Создание строки коннекта
         /// </summary>
         public override void Start()
         {
             base.Start();
 
-            Start(new ConnectionSettings()
-            {
-                id = 665
-                ,
-                name = @"DB_CONFIG"
-                ,
-                server = @"10.105.1.107"
-                ,
-                port = 1433
-                ,
-                dbName = @"techsite-2.X.X"
-                ,
-                userName = @"client1"
-                ,
-                password = @"client"
-                ,
-                ignore = false
-            });
+            int err = -1 //Признак выполнения метода/функции
+               , indx = -1;
+
+            //Зарегистрировать соединение/получить идентификатор соединения
+            iListernID = DbSources.Sources().Register(FormDiagnostic.s_listFormConnectionSettings[(int)CONN_SETT_TYPE.CONFIG_DB].getConnSett(), false, @"CONFIG_DB");
+               
+            GetCurrentData(iListernID);
+            m_DataSource = new HDataSource(new ConnectionSettings(InitTECBase.getConnSettingsOfIdSource(TYPE_DATABASE_CFG.CFG_200, iListernID, FormMainBase.s_iMainSourceData, -1, out err).Rows[0], 0));
+            m_DataSource.StartDbInterfaces();
+            m_DataSource.Start();
+            m_DataSource.Command();
+            m_DataSource.EvtRecievedTable += new DelegateObjectFunc(m_DataSource_EvtRecievedTable);
+
+            DbSources.Sources().UnRegister(iListernID);
 
             start();
         }
@@ -1756,7 +1737,6 @@ namespace StatisticDiagnostic
         /// </summary>
         public void start()
         {
-            GetCurrentData();
             StartPanelTec();
             StartModes();
             AddPanel();
@@ -1822,29 +1802,8 @@ namespace StatisticDiagnostic
         /// <summary>
         /// Функция взятия информации из конф.БД
         /// </summary>
-        public void GetCurrentData()
+        public void GetCurrentData(int ListenerId)
         {
-            ConnectionSettings CS = new ConnectionSettings
-            {
-                id = 664
-                ,
-                name = @"DB_CONFIG"
-                ,
-                server = @"10.105.1.107"
-                ,
-                port = 1433
-                ,
-                dbName = @"techsite_cfg-2.X.X"
-                ,
-                userName = @"client1"
-                ,
-                password = @"client"
-                ,
-                ignore = false
-            };
-
-            int ListenerId = 0;
-            ListenerId = DbSources.Sources().Register(CS, false, CS.name);
             int err = -1;
 
             DbConnection dbconn = null;
@@ -1862,9 +1821,7 @@ namespace StatisticDiagnostic
             else
                 throw new Exception(@"Нет соединения с БД");
 
-            DbSources.Sources().UnRegister(ListenerId);
-
-            MassiveSourceName();
+            //MassiveSourceName();
             CreateListTM(arraySourceTEC);
         }
 
@@ -2010,7 +1967,7 @@ namespace StatisticDiagnostic
         /// <summary>
         /// Формирование списка источников
         /// </summary>
-        public void MassiveSourceName()
+        /*public void MassiveSourceName()
         {
             massivetext = new object[arrayParam.Rows.Count, 2];
 
@@ -2033,7 +1990,7 @@ namespace StatisticDiagnostic
                     }
                 }
             }
-        }
+        }*/
 
         /// <summary>
         /// Формирование строки запроса
@@ -2064,33 +2021,13 @@ namespace StatisticDiagnostic
         /// </summary>
         static void UpdateTecTM(string query)
         {
-            ConnectionSettings cs = new ConnectionSettings
-            {
-                id = 664
-                ,
-                name = @"DB_CONFIG"
-                ,
-                server = @"10.105.1.107"
-                ,
-                port = 1433
-                ,
-                dbName = @"techsite_cfg-2.X.X"
-                ,
-                userName = @"client1"
-                ,
-                password = @"client"
-                ,
-                ignore = false
-            };
-
             int err = -1;
-            int idListener = DbSources.Sources().Register(cs, false, cs.name);
 
-            DbConnection m_dbConn = DbSources.Sources().GetConnection(idListener, out err);
+            DbConnection m_dbConn = DbSources.Sources().GetConnection(iListernID, out err);
 
             DbTSQLInterface.ExecNonQuery(ref m_dbConn, query, null, null, out err);
 
-            DbSources.Sources().UnRegister(idListener);
+            DbSources.Sources().UnRegister(iListernID);
         }
     }
 }
