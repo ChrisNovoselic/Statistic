@@ -75,6 +75,7 @@ namespace StatisticCommon
             {
                 //ClearValues();
 
+                //??? почему раньше, чем вызов базового метода
                 StartDbInterfaces();
 
                 base.Start();
@@ -82,6 +83,8 @@ namespace StatisticCommon
 
             public override void Stop()
             {
+                m_arSyncStateCheckResponse[(int)INDEX_SYNC_STATECHECKRESPONSE.WARNING].Set ();
+                
                 base.Stop();
             }
 
@@ -396,13 +399,18 @@ namespace StatisticCommon
         {
             long idEventMain = (long)(obj as DataTable).Rows[0][@"ID"];
         }
-
         /// <summary>
         /// Функция обработки результатов запроса
         /// </summary>
         /// <param name="tableRes">Таблица - результат запроса</param>
         private void GetListEventsResponse(DataTable tableRes)
         {
+        }
+
+        public void OnEvtDataAskedHost_PanelAlarmJournal(object obj)
+        {
+            EventArgsDataHost ev = obj as EventArgsDataHost;
+            Push (ev.reciever, new object [] { ev.par as object [] });
         }
 
         protected override int StateCheckResponse(int state, out bool error, out object table)
@@ -478,8 +486,8 @@ namespace StatisticCommon
 
                     //GetListEventsResponse (obj as DataTable);
                     Console.WriteLine(@"Событий за " + ((DateTime)itemQueue.Pars[0]).ToShortDateString() + @" (" + ((int)itemQueue.Pars[1]) + @"-" + ((int)itemQueue.Pars[2]) + @" ч): " + (obj as DataTable).Rows.Count);
-
-                    itemQueue.m_objRecieved.OnEvtDataRecievedHost (new object [] { (StatesMachine)state, obj });
+                    //??? прямой вызов метода-обработчика..., ??? использование объекта, полученного в качестве параметра... - очень некрасиво, и, возможно - неправильно
+                    itemQueue.m_dataHostRecieved.OnEvtDataRecievedHost (new EventArgsDataHost (-1, new object [] { (StatesMachine)state, obj }));
                     break;
                 case StatesMachine.Insert:
                     ;

@@ -87,7 +87,7 @@ namespace StatisticAlarm
             this.mode = mode;            
         }
         /// <summary>
-        /// 
+        /// Запустить на выполнение 
         /// </summary>
         public override void Start()
         {            
@@ -106,6 +106,7 @@ namespace StatisticAlarm
             startViewAlarm();
             //Инициализировать таймер для обновления значений в таблице
             m_timerView = new Timer();            
+            m_timerView.Interval = 1;// таймер остановлен
             m_timerView.Tick += new EventHandler(fTimerView_Tick);
             //Отменить регистрацию соединения
             DbSources.Sources().UnRegister(iListenerId);
@@ -144,8 +145,7 @@ namespace StatisticAlarm
             {
                 if (mode == MODE.SERVICE) startAdminAlarm (); else ;
 
-                m_timerView.Interval = 1;
-                m_timerView.Start();
+                startTimerView ();
             }
             else
                 ;
@@ -155,6 +155,28 @@ namespace StatisticAlarm
             (Find (INDEEX_CONTROL.MCLDR_CURRENT) as MonthCalendar).DateChanged += new DateRangeEventHandler(onEventDateChanged);
             ////Назначить обработчик события при получении из БД списка событий (передать список для отображения)
             //m_viewAlarm.EvtGetData += new DelegateObjectFunc((Find (INDEEX_CONTROL.DGV_EVENTS) as DataGridViewAlarmJournal).OnEvtGetData);
+        }
+
+        private void startTimerView ()
+        {
+            if (m_timerView.Interval == 1)
+            {
+                m_timerView.Interval = 6;
+                m_timerView.Start();
+            }
+            else
+                ;
+        }
+
+        private void stopTimerView()
+        {
+            if (m_timerView.Interval > 1)
+            {
+                m_timerView.Stop();
+                m_timerView.Interval = 1;
+            }
+            else
+                ;
         }
         /// <summary>
         /// Запустить на выполнение объект регистрации выполнения условий сигнализаций
@@ -195,7 +217,8 @@ namespace StatisticAlarm
         {
             //m_viewAlarm.Push(this, new object [] { new object [] { new object[] { ViewAlarm.StatesMachine.List, DatetimeCurrent, HourBegin, HourEnd }}});
             //EvtDataAskedHost(new object[] { ViewAlarm.StatesMachine.List, DatetimeCurrent, HourBegin, HourEnd });
-            DataAskedHost(new object[] { ViewAlarm.StatesMachine.List, DatetimeCurrent, HourBegin, HourEnd });
+            //DataAskedHost(new object[] { ViewAlarm.StatesMachine.List, DatetimeCurrent, HourBegin, HourEnd });
+            DataAskedHost (new object [] { new object [] { ViewAlarm.StatesMachine.List, DatetimeCurrent, HourBegin, HourEnd }});
             //Назначить (при необходимости) интервал между вызовами
             if (! (m_timerView.Interval == PanelStatistic.POOL_TIME * 1000))
                 m_timerView.Interval = PanelStatistic.POOL_TIME * 1000;
@@ -230,7 +253,7 @@ namespace StatisticAlarm
             //Остановить таймер
             if (!(m_timerView == null))
             {
-                m_timerView.Stop();
+                stopTimerView ();
                 m_timerView.Dispose();
                 m_timerView = null;
             }
@@ -249,13 +272,19 @@ namespace StatisticAlarm
             //Проверить признак изменения стостояния базовой панели
             if (bRes == true)
             {//Только при изменении состояния базовой панели
-                if ((activate == true)
-                    && ((Find (INDEEX_CONTROL.CBX_WORK) as CheckBox).Checked == false))
-                    // при активации обновить список событий
-                    (Find (INDEEX_CONTROL.BTN_REFRESH) as Button).PerformClick ();
+                if (activate == true)
+                    //??? Проверить выполнение таймера                    
+                    if ((Find (INDEEX_CONTROL.CBX_WORK) as CheckBox).Checked == false)
+                        // обновить список событий
+                        (Find (INDEEX_CONTROL.BTN_REFRESH) as Button).PerformClick ();
+                    else
+                        if (IsDatetimeToday == true)
+                            startTimerView ();
+                        else
+                            ;
                 else
-                    ;
-                //???
+                    stopTimerView ();
+                //??? m_viewAlarm.Activate - не несет функциональности - таймер принадлежит панели
                 if ((Find (INDEEX_CONTROL.CBX_WORK) as CheckBox).Checked == true)
                 {
                     switch (mode)
@@ -315,7 +344,13 @@ namespace StatisticAlarm
         /// <param name="connSett">Объект с параметрами соединения с БД_конфигурации</param>
         private void initViewAlarm(ConnectionSettings connSett)
         {
-            if (m_viewAlarm == null) m_viewAlarm = new ViewAlarm(connSett); else ;
+            if (m_viewAlarm == null)
+            {
+                m_viewAlarm = new ViewAlarm(connSett);
+                EvtDataAskedHost += m_viewAlarm.OnEvtDataAskedHost_PanelAlarmJournal;
+            }
+            else
+                ;
         }
         //???
         private void OnAdminAlarm_EventAdd(TecView.EventRegEventArgs ev)
@@ -325,7 +360,8 @@ namespace StatisticAlarm
             if (IsHandleCreated/*InvokeRequired*/ == true)
             {//...для this.BeginInvoke
                 //m_viewAlarm.Push(this, new object [] { new object [] { new object [] { ViewAlarm.StatesMachine.Insert, ev }}});
-                DataAskedHost(new object[] { ViewAlarm.StatesMachine.Insert, ev });
+                //DataAskedHost(new object[] { ViewAlarm.StatesMachine.Insert, ev });
+                DataAskedHost(new object [] { new object[] { ViewAlarm.StatesMachine.Insert, ev }});
             }
             else
                 Logging.Logg().Error(@"PanelAlarm::OnAdminAlarm_EventAdd () - ... BeginInvoke (...) - ...", Logging.INDEX_MESSAGE.D_001);
@@ -371,13 +407,13 @@ namespace StatisticAlarm
             //??? - Активировать объект чтения/записи/обновления списка событий
             m_viewAlarm.Activate(ctrl.Checked);
             //Запустить/остановить таймер обновления значений в таблице
-            if (ctrl.Checked == true)
+            if ((ctrl.Checked == true)
+                && (IsDatetimeToday == true))
             {
-                m_timerView.Interval = 1;
-                m_timerView.Start();
+                startTimerView ();
             }
             else
-                m_timerView.Stop();
+                stopTimerView ();
         }
         /// <summary>
         /// Найти объект-'компонент ТЭЦ' по идентификатору в локальном списке компонентов ТЭЦ
@@ -507,14 +543,22 @@ namespace StatisticAlarm
             // в период указанных часов
             //m_viewAlarm.Push(this, new object[] { new object[] { new object[] { ViewAlarm.StatesMachine.List, DatetimeCurrent, HourBegin, HourEnd } } });
             //DataAskedHost(new object[] { ViewAlarm.StatesMachine.List, DatetimeCurrent, HourBegin, HourEnd });
-            DataAskedHost(new object[] { ViewAlarm.StatesMachine.List, DatetimeCurrent, HourBegin, HourEnd });
+            DataAskedHost(new object [] { new object[] { ViewAlarm.StatesMachine.List, DatetimeCurrent, HourBegin, HourEnd }});
         }
+
+        private bool IsDatetimeToday { get { return DatetimeCurrent.Equals (HAdmin.ToMoscowTimeZone ().Date) == true; } }
 
         private void onEventDateChanged(object obj, DateRangeEventArgs ev)
         {
+            if (IsDatetimeToday == true)
+                startTimerView ();
+            else
+                stopTimerView();
+                
             //End.Date - эквивалентно, при 'MaxSelectionCount = 1'
             //m_viewAlarm.Push(this, new object[] { new object[] { new object[] { ViewAlarm.StatesMachine.List, DatetimeCurrent, HourBegin, HourEnd } } });
-            DataAskedHost(new object[] { ViewAlarm.StatesMachine.List, DatetimeCurrent, HourBegin, HourEnd });
+            //DataAskedHost(new object[] { ViewAlarm.StatesMachine.List, DatetimeCurrent, HourBegin, HourEnd });
+            DataAskedHost(new object[] { new object [] { ViewAlarm.StatesMachine.List, DatetimeCurrent, HourBegin, HourEnd }});
         }
         /// <summary>
         /// Событие запроса данных для плюг'ина из главной формы
@@ -526,7 +570,10 @@ namespace StatisticAlarm
         /// <param name="par">Аргумент с детализацией запрашиваемых данных</param>
         public void DataAskedHost(object par)
         {
-            m_viewAlarm.Push(this, new object[] { new object[] { par } });
+            //??? почему так много вложенных массивов...
+            //m_viewAlarm.Push(this, new object[] { new object[] { par } });
+            //EvtDataAskedHost.BeginInvoke(new EventArgsDataHost(-1, new object[] { par }), new AsyncCallback(this.dataRecievedHost), new Random());
+            EvtDataAskedHost(new EventArgsDataHost(this, par as object []));
         }
         /// <summary>
         /// Обработчик события ответа от главной формы
@@ -534,12 +581,14 @@ namespace StatisticAlarm
         /// <param name="obj">объект класса 'EventArgsDataHost' с идентификатором/данными из главной формы</param>
         public void OnEvtDataRecievedHost(object res)
         {
-            ViewAlarm.StatesMachine state = (ViewAlarm.StatesMachine)(res as object[])[0];
+            EventArgsDataHost ev = res as EventArgsDataHost;
+            ViewAlarm.StatesMachine state = (ViewAlarm.StatesMachine)(ev.par as object[])[0];
 
             switch (state)
             {
                 case ViewAlarm.StatesMachine.List:
-                    (Find(INDEEX_CONTROL.DGV_EVENTS) as DataGridViewAlarmJournal).OnEvtGetData((res as object[])[1]);
+                    //??? Прямой вызов метода-обработчика
+                    (Find(INDEEX_CONTROL.DGV_EVENTS) as DataGridViewAlarmJournal).OnEvtGetData((ev.par as object[])[1]);
                     break;
                 case ViewAlarm.StatesMachine.Insert:
                     //Получить идентификатор записи о событии сигнализации
