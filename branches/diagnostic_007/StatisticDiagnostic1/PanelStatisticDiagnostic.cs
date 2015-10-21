@@ -150,11 +150,11 @@ namespace StatisticDiagnostic
         static DataTable arraySourceTEC = new DataTable();
         static DataTable arrayParam = new DataTable();
         static HDataSource m_DataSource;
-        static int iListernID;
         static System.Timers.Timer UpdateTimer;
         Task taskdb = new Task();
         Modes modesdb = new Modes();
         Tec tecdb = new Tec();
+        int iListernID;
 
         /// <summary>
         /// Класс для передачи данных в классы
@@ -170,10 +170,7 @@ namespace StatisticDiagnostic
         /// </summary>
         public void startUp()
         {
-            //delegateStartWait();
             RefreshDataSource();
-            GridsUpd();
-            //delegateStopWait();
         }
 
         /// <summary>
@@ -181,23 +178,7 @@ namespace StatisticDiagnostic
         /// </summary>
         public void RefreshDataSource()
         {
-            iListernID = DbSources.Sources().Register(FormMain.s_listFormConnectionSettings[(int)CONN_SETT_TYPE.CONFIG_DB].getConnSett(), false, @"CONFIG_DB");
-            GetCurrentData();
-            DbSources.Sources().UnRegister(iListernID);
-        }
-
-        /// <summary>
-        /// Обновление данных гридов
-        /// </summary>
-        public void GridsUpd()
-        {
-            Thread thread = new Thread(tecdb.AddItemTec);
-            thread.Start();
-            Thread THREAD = new Thread(modesdb.AddItemModes);
-            THREAD.Start();
-            taskdb.UpdateTaskGrid();
-            //tecdb.AddItemTec();
-            //modesdb.AddItemModes();
+            LoadData();
         }
 
         /// <summary>
@@ -430,7 +411,7 @@ namespace StatisticDiagnostic
                 this.TECDataGridView.Columns[2].Name = "Крайнее значение";
                 this.TECDataGridView.Columns[3].Name = "Время проверки";
                 this.TECDataGridView.Columns[4].Name = "Связь";
-                this.TECDataGridView.Columns[5].Name = "ТЭЦ";
+                this.TECDataGridView.Columns[5].Name = "Связь";
                 this.TECDataGridView.Columns[0].Width = 43;
                 this.TECDataGridView.Columns[1].Width = 57;
                 this.TECDataGridView.Columns[2].Width = 35;
@@ -494,7 +475,7 @@ namespace StatisticDiagnostic
             {
                 if (activated == true)
                 {
-                    AddItemTec();
+                    //AddItemTec();
 
                     for (int i = 0; i < m_arPanelsTEC.Length; i++)
                     {
@@ -715,12 +696,6 @@ namespace StatisticDiagnostic
                 for (int i = 0; i < m_arPanelsTEC.Length; i++)
                 {
                     string filter = "ID_EXT = " + Convert.ToInt32(arraySourceTEC.Rows[i][0]);
-
-                    //проверка на пустоту(ибо рано срабатывает)
-                    while (m_tableSourceData == null)
-                    {
-
-                    }
 
                     if (m_arPanelsTEC[i].TECDataGridView.RowCount < 1)
                     {
@@ -1028,7 +1003,7 @@ namespace StatisticDiagnostic
             {
                 if (activated == true)
                 {
-                    AddItemModes();
+                    //AddItemModes();
                 }
                 else ;
             }
@@ -1084,6 +1059,7 @@ namespace StatisticDiagnostic
                             {
                                 AddRowsModes(i, 1);
                             }
+
                             TextColumnModes(i, filter12);
                         }
                     }
@@ -1094,18 +1070,18 @@ namespace StatisticDiagnostic
 
                         dr = tbModes.Select(filter12);
 
-                        string filterdl = "ID_EXT = " + dr[0]["ID"] + " and ID_Units = 12";
-
-                        if (m_arPanelsMODES[i].ModesDataGridView.RowCount < m_tableSourceData.Select(filterdl).Count())
+                        if (m_arPanelsMODES[i].ModesDataGridView.RowCount < dr.Count())
                         {
-                            for (int t = 0; t < m_tableSourceData.Select(filterdl).Count(); t++)
+                            for (int t = 0; t < dr.Count(); t++)
                             {
                                 AddRowsModes(i, 1);
                             }
+
                             TextColumnModes(i, filter12);
                         }
                     }
                 }
+
                 HeaderTextModes();
             }
 
@@ -1255,12 +1231,6 @@ namespace StatisticDiagnostic
                 for (int i = 0; i < m_arPanelsMODES.Length; i++)
                 {
                     string filter12 = "ID = " + Convert.ToInt32(stdDetails.ElementAt(i).ID);
-
-                    //проверка на пустоту
-                    while (m_tableSourceData == null)
-                    {
-
-                    }
 
                     InsertDataModes(filter12, i);
                 }
@@ -1542,11 +1512,13 @@ namespace StatisticDiagnostic
                 this.TaskDataGridView.ColumnHeadersHeightSizeMode = System.Windows.Forms.DataGridViewColumnHeadersHeightSizeMode.AutoSize;
                 this.TaskDataGridView.Dock = DockStyle.Fill;
                 this.TaskDataGridView.Name = "TaskDataGridView";
-                this.TaskDataGridView.ColumnCount = 4;
+                this.TaskDataGridView.ColumnCount = 5;
                 this.TaskDataGridView.Columns[0].Name = "Имя задачи";
                 this.TaskDataGridView.Columns[1].Name = "Среднее время выполнения";
                 this.TaskDataGridView.Columns[3].Name = "Время проверки";
                 this.TaskDataGridView.Columns[2].Name = "Время выполнения задачи";
+                this.TaskDataGridView.Columns[4].Name = "Описание";
+                this.TaskDataGridView.Columns[4].Visible = false;
                 this.TaskDataGridView.AutoSizeColumnsMode = DataGridViewAutoSizeColumnsMode.Fill;
                 this.TaskDataGridView.RowHeadersVisible = false;
                 this.TaskDataGridView.TabIndex = 0;
@@ -1563,9 +1535,11 @@ namespace StatisticDiagnostic
 
         partial class Task
         {
+            enum Limit : int { min = 10, max = 20, minAVG = 1, maxAVG = 2 };
+
             /// <summary>
             /// Выборка из таблицы задачи
-            /// </summary>
+            /// </summary
             public void GetDataTask(DataTable table)
             {
                 for (int j = 0; j < table.Rows.Count; j++)
@@ -1622,15 +1596,17 @@ namespace StatisticDiagnostic
                 string curItem = TaskCheckedListBox.SelectedItem.ToString();
                 string filter_task = "NAME_SHR = '" + curItem + "'";
                 DataRow[] DR;
+
                 DR = m_tableSourceData.Select(filter_task);
 
                 if (TaskCheckedListBox.GetItemChecked(TaskCheckedListBox.SelectedIndex) == true)
                 {
                     counter++;
                     AddRowsTask(1);
-                    TaskDataGridView.Invoke(new Action(() => TaskDataGridView.Rows[counter].Cells[2].Value = DR[0]["Value"]));
-                    TaskDataGridView.Invoke(new Action(() => TaskDataGridView.Rows[counter].Cells[1].Value = DR[1]["Value"]));
+                    TaskDataGridView.Invoke(new Action(() => TaskDataGridView.Rows[counter].Cells[1].Value = DR[0]["Value"]));
+                    TaskDataGridView.Invoke(new Action(() => TaskDataGridView.Rows[counter].Cells[2].Value = DR[1]["Value"]));
                     TaskDataGridView.Invoke(new Action(() => TaskDataGridView.Rows[counter].Cells[0].Value = DR[0]["NAME_SHR"]));
+
                     TaskDataGridView.Update();
 
                     ColumTimeTask(counter);
@@ -1676,6 +1652,58 @@ namespace StatisticDiagnostic
                     ColumTimeTask(i);
                 }
             }
+
+            /// <summary>
+            /// 
+            /// </summary>
+            public void CheckBorderTime()
+            {
+                string nmshr = "ID_Value = 28";
+                DataRow[] dr = m_tableSourceData.Select(nmshr);
+                int lim;
+
+                for (int i = 0; i < dr.Count(); i++)
+                {
+                    int avgtime = Convert.ToInt32(dr[i]["Value"]);
+
+                    if (avgtime > (lim = (int)Limit.min))
+                    {
+                        if (avgtime > (lim = (int)Limit.max))
+                        {
+                            TaskDataGridView.Invoke(new Action(() => TaskDataGridView.Columns[4].Visible = true));
+                            WhatIsChecked(dr[i]["NAME_SHR"].ToString());
+                            //TaskDataGridView.Invoke(new Action(() => TaskDataGridView.Rows[].Cells[].Value = "";
+                        }
+                        else
+                            TaskDataGridView.Invoke(new Action(() => TaskDataGridView.Columns[4].Visible = true));
+                        //TaskDataGridView.Invoke(new Action(() => TaskDataGridView.Rows[].Cells[].Value = "" ));
+                    }
+                    else
+                        TaskDataGridView.Invoke(new Action(() => TaskDataGridView.Columns[4].Visible = false));
+                }
+            }
+
+            /// <summary>
+            /// 
+            /// </summary>
+            public void PntngRowsTask()
+            {
+                foreach (var item in TaskCheckedListBox.CheckedItems)
+                {
+
+                }
+
+            }
+
+            /// <summary>
+            /// 
+            /// </summary>
+            /// <param name="itemChecked"></param>
+            /// <returns></returns>
+            public bool WhatIsChecked(string itemChecked)
+            {
+                return TaskCheckedListBox.GetItemChecked(TaskCheckedListBox.Items.IndexOf(itemChecked));
+            }
         }
 
         /// <summary>
@@ -1697,9 +1725,25 @@ namespace StatisticDiagnostic
         /// обработка события
         /// </summary>
         /// <param name="table"></param>
-        static void m_DataSource_EvtRecievedTable(object table)
+        public void m_DataSource_EvtRecievedTable(object table)
         {
             m_tableSourceData = (DataTable)table;
+            fillGrid();
+            DbSources.Sources().UnRegister(iListernID);
+            AddPanel();
+        }
+
+        public void LoadData()
+        {
+            int err = -1; //Признак выполнения метода/функции
+            //Зарегистрировать соединение/получить идентификатор соединения
+            iListernID = DbSources.Sources().Register(FormMain.s_listFormConnectionSettings[(int)CONN_SETT_TYPE.CONFIG_DB].getConnSett(), false, @"CONFIG_DB");
+            GetCurrentData(iListernID);
+            m_DataSource = new HDataSource(new ConnectionSettings(InitTECBase.getConnSettingsOfIdSource(TYPE_DATABASE_CFG.CFG_200, iListernID, FormMainBase.s_iMainSourceData, -1, out err).Rows[0], 0));
+            m_DataSource.StartDbInterfaces();
+            m_DataSource.Start();
+            m_DataSource.Command();
+            m_DataSource.EvtRecievedTable += new DelegateObjectFunc(m_DataSource_EvtRecievedTable);
         }
 
         /// <summary>
@@ -1709,17 +1753,7 @@ namespace StatisticDiagnostic
         {
             base.Start();
 
-            int err = -1; //Признак выполнения метода/функции
-            //Зарегистрировать соединение/получить идентификатор соединения
-            iListernID = DbSources.Sources().Register(FormMain.s_listFormConnectionSettings[(int)CONN_SETT_TYPE.CONFIG_DB].getConnSett(), false, @"CONFIG_DB");
-            GetCurrentData();
-            m_DataSource = new HDataSource(new ConnectionSettings(InitTECBase.getConnSettingsOfIdSource(TYPE_DATABASE_CFG.CFG_200, iListernID, FormMainBase.s_iMainSourceData, -1, out err).Rows[0], 0));
-            m_DataSource.StartDbInterfaces();
-            m_DataSource.Start();
-            m_DataSource.Command();
-            m_DataSource.EvtRecievedTable += new DelegateObjectFunc(m_DataSource_EvtRecievedTable);
-
-            DbSources.Sources().UnRegister(iListernID);
+            LoadData();
 
             start();
         }
@@ -1731,13 +1765,19 @@ namespace StatisticDiagnostic
         {
             StartPanelTec();
             StartModes();
-            AddPanel();
+        }
+
+        private void fillGrid()
+        {
+            tecdb.AddItemTec();
+            modesdb.AddItemModes();
+            taskdb.UpdateTaskGrid();
         }
 
         /// <summary>
         /// Функция взятия информации из конф.БД
         /// </summary>
-        public void GetCurrentData()
+        public void GetCurrentData(int iListernID)
         {
             int err = -1;
             DbConnection dbconn = null;
@@ -1985,6 +2025,8 @@ namespace StatisticDiagnostic
         static void UpdateTecTM(string query)
         {
             int err = -1;
+
+            int iListernID = DbSources.Sources().Register(FormMain.s_listFormConnectionSettings[(int)CONN_SETT_TYPE.CONFIG_DB].getConnSett(), false, @"CONFIG_DB");
 
             DbConnection m_dbConn = DbSources.Sources().GetConnection(iListernID, out err);
 
