@@ -19,6 +19,9 @@ namespace Statistic
     /// </summary>
     public class PanelSOTIASSO : PanelStatistic
     {
+        /// <summary>
+        /// Перечисление - целочисленные идентификаторы дочерних элементов управления
+        /// </summary>
         private enum KEY_CONTROLS { UNKNOWN = -1
             , NUD_CUR_HOUR, DTP_CUR_DATE
             /*, LABEL_CUR_TIME*/, BTN_SET_NOWDATEHOUR
@@ -27,12 +30,22 @@ namespace Statistic
             , CLB_TG
             , DGV_TG_VALUE, ZGRAPH_TG
             , COUNT_KEY_CONTROLS }
-
+        /// <summary>
+        /// Объект с признаками обработки типов значений
+        /// , которые будут использоваться фактически (PBR, Admin, AIISKUE, SOTIASSO)
+        /// </summary>
         private HMark m_markQueries;
+        /// <summary>
+        /// Объект для обработки запросов/получения данных из/в БД
+        /// </summary>
         private TecView m_tecView;
 
         System.Windows.Forms.SplitContainer stctrMain
             , stctrView;
+        /// <summary>
+        /// Панели графической интерпретации значений СОТИАССО
+        /// 1) "час - по-минутно для выбранного ГТП", 2) "минута - по-секундно для выбранных ТГ"
+        /// </summary>
         ZedGraph.ZedGraphControl m_zGraph_GTP
             , m_zGraph_TG;
         List <StatisticCommon.TEC> m_listTEC;
@@ -42,17 +55,33 @@ namespace Statistic
             System.Threading.Timer //Вариант №0
             //System.Windows.Forms.Timer //Вариант №1
                 m_timerCurrent;
-
+        /// <summary>
+        /// Событие для инициирования процесса обновления значений СОТИАССО
+        ///  в субобласти табличного представления данных "час - по-минутно для выбранного ГТП"
+        /// </summary>
         private event DelegateObjectFunc EvtValuesMins;
+        /// <summary>
+        /// Событие для инициирования процесса обновления значений СОТИАССО
+        ///  в субобласти табличного представления данных "минута - по-секундно для выбранных ТГ"
+        /// </summary>
         private event DelegateObjectFunc EvtValuesSecs;
-
+        /// <summary>
+        /// Список индексов компонентов ТЭЦ (ТГ)
+        ///  для отображения в субобласти графической интерпретации значений СОТИАССО "минута - по-секундно"
+        /// </summary>
         private List <int> m_listIndexTGAdvised;
-
+        /// <summary>
+        /// Событие выбора даты
+        /// </summary>
         private event DelegateDateFunc EvtSetDatetimeHour;
+        /// <summary>
+        /// Делегат для установки даты на панели управляющих элементов управления
+        /// </summary>
         private DelegateDateFunc delegateSetDatetimeHour;
-
+        /// <summary>
+        /// Значение коэффициента (для проверки выполнения условий сигнализации "Текущая мощность ГТП")
+        /// </summary>
         private decimal m_dcGTPKoeffAlarmPcur;
-
         /// <summary>
         /// Панель для активных элементов управления
         /// </summary>
@@ -1160,7 +1189,7 @@ namespace Statistic
                 foreach (TECComponent tc in t.list_TECComponents)
                 {
                     //Определить тип компонента (по диапазону идентификатора)
-                    if ((tc.m_id > 100) && (tc.m_id < 500))
+                    if (tc.IsGTP == true)
                     {//Только ГТП
                         if (indxGTP == indx)
                         {
@@ -1179,6 +1208,7 @@ namespace Statistic
                     else
                         ; // не ГТП
 
+                    //Увеличить индекс компонента ТЭЦ локальный
                     indxTECComponent++;
                 }
                 //Проверить признак прекращения выполнения цикла
@@ -1190,7 +1220,7 @@ namespace Statistic
                 }
                 else
                     ;
-
+                //Увеличить индекс ТЭЦ
                 indxTEC ++;
             }
             //Инициализировать значение коэффициента для выполнения условия сигнализации
@@ -1232,14 +1262,17 @@ namespace Statistic
             else
                 ;
         }
-
+        /// <summary>
+        /// Обработчик события выбора ТГ в списке ТЭЦ-ТГ
+        /// </summary>
+        /// <param name="indx">Индекс выбранного компонента ТЭЦ (ТГ)</param>
         private void panelManagement_OnEvtTGItemChecked (int indx)
         {
             if (m_listIndexTGAdvised.IndexOf (indx) < 0)
                 m_listIndexTGAdvised.Add (indx);
             else
                 m_listIndexTGAdvised.Remove (indx);
-
+            //Обновить графическую интерпретацию "минута - по-секундно" значений СОТИАССО
             drawGraphMinDetail ();
         }
 
@@ -1491,7 +1524,10 @@ namespace Statistic
 
             m_zGraph_GTP.Invalidate();
         }
-
+        /// <summary>
+        /// Отобразить графическую интерпретацию значений СОТИАССО
+        ///  для указанных компонентов ТЭЦ (ТГ)
+        /// </summary>
         private void drawGraphMinDetail()
         {
             double[,] valsSecs = null;

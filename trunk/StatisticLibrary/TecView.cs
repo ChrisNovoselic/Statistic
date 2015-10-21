@@ -362,7 +362,9 @@ namespace StatisticCommon
                 m_arIdListeners[i] = -1;
             }
         }
-
+        /// <summary>
+        /// Класс для описания аргумента при возникновении события - сигнализация
+        /// </summary>
         public class EventRegEventArgs : EventArgs
         {
             public struct EventDetail

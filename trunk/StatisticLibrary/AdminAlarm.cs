@@ -11,39 +11,56 @@ namespace StatisticCommon
 {
     public class AdminAlarm
     {
+        /// <summary>
+        /// Перечисление - индексы для типов сигнализаций
+        /// </summary>
         public enum INDEX_TYPE_ALARM { CUR_POWER, TGTurnOnOff }
-        public enum INDEX_STATES_ALARM { QUEUEDED = -1, PROCESSED, CONFIRMED }
-
-        //private bool m_bDestGUIActivated;
-        //public bool DestGUIActivated { get { return m_bDestGUIActivated; } set { if (! (m_bDestGUIActivated == value)) OnChangedDestGUIActivated (value); else ; } }
-        //private void OnChangedDestGUIActivated(bool newVal) {
-        //    m_bDestGUIActivated = newVal;
-
-        //    if (m_bDestGUIActivated == true) {
-        //        //Передать все накопленные события "родителю"
-        //        foreach (KeyValuePair <int, int> cKey in m_dictAlarmObject.Keys) {
-        //            if (m_dictAlarmObject [cKey].state < INDEX_STATES_ALARM.PROCESSED) {
-        //                m_dictAlarmObject [cKey].state = INDEX_STATES_ALARM.PROCESSED;
-        //                EventAdd (m_dictAlarmObject [cKey].m_evReg);
-        //            }
-        //            else
-        //                ;
-        //        }
-        //    }
-        //    else
-        //        ;
-        //}
-
+        /// <summary>
+        /// Перечисление - индексы для состояний события сигнализации
+        /// </summary>
+        public enum INDEX_STATES_ALARM {
+            /// <summary>
+            /// Событие поставлено в очередь для оповещения
+            /// </summary>
+            QUEUEDED = -1
+            /// <summary>
+            /// Событие зафиксировано
+            /// </summary>
+            , PROCESSED
+            /// <summary>
+            /// Событие подтверждено
+            /// </summary>
+            , CONFIRMED
+        }
+        /// <summary>
+        /// Класс объекта события сигнализации
+        /// </summary>
         private class ALARM_OBJECT
         {
+            /// <summary>
+            /// Индекс типа сигнализации
+            /// </summary>
             public INDEX_TYPE_ALARM type; //{ get { return id_tg > 0 ? INDEX_TYPE_ALARM.CUR_POWER : INDEX_TYPE_ALARM.TGTurnOnOff; } }
+            /// <summary>
+            /// Признак подтверждения события сигнализации
+            /// </summary>
             public bool CONFIRM { get {
                     return dtConfirm.CompareTo (dtReg) > 0 ? true : false;
                 }
             }
 
             public TecView.EventRegEventArgs m_evReg;
-            public DateTime dtReg, dtConfirm;
+            /// <summary>
+            /// Дата/время регистрации
+            /// </summary>
+            public DateTime dtReg
+                /// <summary>
+                /// Дата/время подтверждения
+                /// </summary>
+                , dtConfirm;
+            /// <summary>
+            /// Текущее состояние события сигнализации
+            /// </summary>
             public INDEX_STATES_ALARM state;
 
             public ALARM_OBJECT(TecView.EventRegEventArgs ev) { m_evReg = ev; dtReg = dtConfirm = DateTime.Now; state = INDEX_STATES_ALARM.QUEUEDED; }
@@ -54,7 +71,6 @@ namespace StatisticCommon
 
         private object lockValue;
 
-        private ManualResetEvent m_evTimerCurrent;
         private
             System.Threading.Timer
             //System.Windows.Forms.Timer

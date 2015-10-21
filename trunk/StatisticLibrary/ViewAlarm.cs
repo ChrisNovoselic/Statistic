@@ -5,6 +5,7 @@ using System.Data;
 using System.Collections.Generic;
 using System.Threading;
 using System.Globalization; //CultureInfo
+using System.ComponentModel;
 
 using HClassLibrary;
 
@@ -12,8 +13,13 @@ namespace StatisticCommon
 {
     public class ViewAlarm : HHandlerQueue
     {
+        /// <summary>
+        /// Перечисление - индексы известных для обработки состояний
+        /// </summary>
         public enum StatesMachine { Unknown = -1, List, Insert, Update }
-
+        /// <summary>
+        /// Класс для получения данных из БД
+        /// </summary>
         private class HandlerDb : HClassLibrary.HHandlerDb
         {
             /// <summary>
@@ -191,7 +197,7 @@ namespace StatisticCommon
                 if (bAnswer == true)
                 {
                     //Сохранить ответ
-                    m_tableResponse = obj as DataTable;
+                    m_tableResponse = (obj as DataTable).Copy ();
                     //Указать, что ответ готов
                     m_arSyncStateCheckResponse[(int)INDEX_SYNC_STATECHECKRESPONSE.RESPONSE].Set();
                 }
@@ -368,12 +374,16 @@ namespace StatisticCommon
                 Run(@"ViewAlarm::Insert");
             }
         }
-
+        /// <summary>
+        /// Объект для получения данных из БД
+        /// </summary>
         private ViewAlarm.HandlerDb m_handlerDb;
         ///// <summary>
         ///// Событие для отправки списка событий сигнализаций клиентам
         ///// </summary>
-        //public event DelegateObjectFunc EvtGetData;        
+        //public event DelegateObjectFunc EvtGetData;
+
+        private BackgroundWorker m_threadListEventsResponse;
         /// <summary>
         /// Конструктор - основной (с параметрами)
         /// </summary>
@@ -382,6 +392,10 @@ namespace StatisticCommon
             : base()
         {
             m_handlerDb = new ViewAlarm.HandlerDb (connSett);
+
+            m_threadListEventsResponse = new BackgroundWorker ();
+            m_threadListEventsResponse.DoWork += new DoWorkEventHandler(fThreadListEventsResponse_DoWork);
+            m_threadListEventsResponse.RunWorkerCompleted += new RunWorkerCompletedEventHandler(fThreadListEventsResponse_RunWorkerCompleted);
         }
 
         public override void Start()
@@ -398,16 +412,31 @@ namespace StatisticCommon
             base.Stop();
         }
 
-        private void GetInsertEventMainResponse(object obj)
+        private void fThreadListEventsResponse_DoWork (object obj, DoWorkEventArgs ev)
         {
-            long idEventMain = (long)(obj as DataTable).Rows[0][@"ID"];
+        }
+
+        private void fThreadListEventsResponse_RunWorkerCompleted(object obj, RunWorkerCompletedEventArgs ev)
+        {
+            Console.WriteLine(@"ViewAlarm::fThreadListEventsResponse_RunWorkerCompleted () - Ok...");
+        }
+
+        private void GetInsertEventMainResponse(DataTable tableRes)
+        {
+            long idEventMain = (long)tableRes.Rows[0][@"ID"];
+            Console.WriteLine(@"Добавлена запись о событии сигнализации: Id=" + idEventMain);            
         }
         /// <summary>
         /// Функция обработки результатов запроса
         /// </summary>
         /// <param name="tableRes">Таблица - результат запроса</param>
-        private void GetListEventsResponse(DataTable tableRes)
+        private void GetListEventsResponse(ItemQueue itemQueue, DataTable tableRes)
         {
+            Console.WriteLine(@"Событий за " + ((DateTime)itemQueue.Pars[0]).ToShortDateString()
+                + @" (" + ((int)itemQueue.Pars[1]) + @"-" + ((int)itemQueue.Pars[2]) + @" ч): "
+                + tableRes.Rows.Count);
+
+            m_threadListEventsResponse.RunWorkerAsync(tableRes);
         }
 
         public void OnEvtDataAskedHost_PanelAlarmJournal(object obj)
@@ -485,19 +514,17 @@ namespace StatisticCommon
             switch ((StatesMachine)state)
             {
                 case StatesMachine.List:
-                    //EvtGetData(obj as DataTable);
-
-                    //GetListEventsResponse (obj as DataTable);
-                    Console.WriteLine(@"Событий за " + ((DateTime)itemQueue.Pars[0]).ToShortDateString() + @" (" + ((int)itemQueue.Pars[1]) + @"-" + ((int)itemQueue.Pars[2]) + @" ч): " + (obj as DataTable).Rows.Count);
-                    //??? прямой вызов метода-обработчика..., ??? использование объекта, полученного в качестве параметра... - очень некрасиво, и, возможно - неправильно
-                    itemQueue.m_dataHostRecieved.OnEvtDataRecievedHost (new EventArgsDataHost (-1, new object [] { (StatesMachine)state, obj }));
+                    GetListEventsResponse(itemQueue, obj as DataTable);
                     break;
                 case StatesMachine.Insert:
-                    ;
+                    GetInsertEventMainResponse (obj as DataTable);
                     break;
                 default:
                     break;
             }
+
+            //??? прямой вызов метода-обработчика..., ??? использование объекта, полученного в качестве параметра... - очень некрасиво, и, возможно - неправильно
+            itemQueue.m_dataHostRecieved.OnEvtDataRecievedHost(new EventArgsDataHost(-1, new object[] { (StatesMachine)state, obj }));
 
             //Logging.Logg().Debug(@"ViewAlarm::StateRequest () - state=" + ((StatesMachine)state).ToString() + @", result=" + bRes.ToString() + @" - вЫход...");
 

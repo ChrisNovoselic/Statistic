@@ -173,7 +173,7 @@ namespace StatisticAlarm
         {
             //Проверить выполнение таймера
             if ((m_timerView.Interval == 1)
-                && (m_timerView.Interval == 100)) //100 - значение по умолчанию
+                || (m_timerView.Interval == 100)) //100 - значение по умолчанию
             {
                 m_timerView.Interval = interval;
                 m_timerView.Start();

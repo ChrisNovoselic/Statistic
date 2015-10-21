@@ -440,7 +440,8 @@ namespace StatisticAlarm
         }
         
         private void activateTabPage (int indx, bool active)
-        {//Эмуляция, т.к. реальных вкладок нет
+        {            
+            m_panelAlarm.Activate (active);
         }
 
         private void OnPanelAlarmEventGUIReg(string text)
