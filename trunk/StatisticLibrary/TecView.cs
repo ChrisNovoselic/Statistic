@@ -42,23 +42,14 @@ namespace StatisticCommon
 
     public class TecView : HAdmin, StatisticCommon.ITecView
     {
+        /// <summary>
+        /// перечисление - индексы для типов панелей
+        /// </summary>
         public enum TYPE_PANEL { VIEW, CUR_POWER, LAST_MINUTES, ADMIN_ALARM, SOBSTV_NYZHDY, SOTIASSO, COUNT_TYPE_PANEL };
+        /// <summary>
+        /// Индекс типа панели в интересах которой выполняется текущий объект
+        /// </summary>
         TYPE_PANEL m_typePanel;
-
-        /* Из PanelTecViewBase....
-        protected enum StatesMachine
-        {
-            Init,
-            CurrentTime,
-            CurrentHours_Fact,
-            CurrentMins_Fact,
-            Current_TM,
-            LastMinutes_TM,
-            RetroHours,
-            RetroMins,
-            PBRValues,
-            AdminValues,
-        }*/
         
         protected enum StatesMachine
         {
@@ -93,9 +84,6 @@ namespace StatisticCommon
                             , updateGUI_TM_SN
                             , updateGUI_LastMinutes;
 
-        //private volatile string sensorsString_TM;
-        //private List<TG> m_listSensorId2TG;
-
         public double m_dblTotalPower_TM_SN;
         public DateTime m_dtLastChangedAt_TM_Gen;
         public DateTime m_dtLastChangedAt_TM_SN;
@@ -125,19 +113,43 @@ namespace StatisticCommon
         }
 
         public class valuesTG : Object {
-            public double[] m_powerSeconds; //для мгн./значений в течении минуты
-            public double[] m_powerMinutes; //для мин./значений в течении часа
-            public bool m_bPowerMinutesRecieved; //для мин./значений в течении часа
-            public DateTime m_dtCurrent_TM; //для даты/времени получения текущего значения ТМ
-            public double m_powerCurrent_TM; //для текущего значения ТМ
-            public double [] m_power_LastMinutesTM; //для 59-х мин каждого часа
+            /// <summary>
+            ///  для мгн./значений в течении минуты
+            /// </summary>
+            public double[] m_powerSeconds;
+            /// <summary>
+            ///  для мин./значений в течении часа
+            /// </summary>
+            public double[] m_powerMinutes;
+            /// <summary>
+            ///  для мин./значений в течении часа
+            /// </summary>
+            public bool m_bPowerMinutesRecieved;
+            /// <summary>
+            ///  для даты/времени получения текущего значения ТМ
+            /// </summary>
+            public DateTime m_dtCurrent_TM;
+            /// <summary>
+            ///  для текущего значения ТМ
+            /// </summary>
+            public double m_powerCurrent_TM; 
+            /// <summary>
+            ///  для 59-х мин каждого часа
+            /// </summary>
+            public double [] m_power_LastMinutesTM;
         }
 
         public class valuesTECComponent : values
         {
             //public volatile double[] valuesREC;
-            public double valuesISPER; //Признак ед.изм. 'valuesDIV'
-            public double valuesDIV; //Значение из БД
+            /// <summary>
+            /// Признак ед.изм. 'valuesDIV'
+            /// </summary>
+            public double valuesISPER;
+            /// <summary>
+            /// Значение из БД
+            /// </summary>
+            public double valuesDIV;
         }
 
         public class valuesTEC : values
@@ -487,20 +499,29 @@ namespace StatisticCommon
 
             Run(@"TecView::GetRDGValues ()");
         }
-
+        /// <summary>
+        /// Функция проверки выполнения условий сигнализаций (для одного ГТП)
+        /// </summary>
+        /// <param name="curHour">Текущий час</param>
+        /// <param name="curMinute">Текущий интервал (1-мин) - текущая минута указанного часа</param>
+        /// <returns>Признак выполнения функции</returns>
         public int SuccessThreadRDGValues(int curHour, int curMinute)
         {
+            //Признак выполнения функции
             int iRes = (int)INDEX_WAITHANDLE_REASON.SUCCESS
                 , iDebug = -1; //-1 - нет отладки, 0 - раб./отладка, 1 - имитирование
-
-            double TGTURNONOFF_VALUE = -1F, NOT_VALUE = -2F
+            //Константы
+            double TGTURNONOFF_VALUE = -1F //Значения для сигнализации "ТГ вкл./откл."
+                , NOT_VALUE = -2F //НЕТ значения
                 , power_TM = NOT_VALUE;
+            //Признак состояния для сигнализации "ТГ вкл./откл." - исходный
             TG.INDEX_TURNOnOff curTurnOnOff = TG.INDEX_TURNOnOff.UNKNOWN;
+            //Список объектов, детализирующих событие сигнализации
             List <EventRegEventArgs.EventDetail> listEventDetail = new List<EventRegEventArgs.EventDetail> ();
 
             //Для отладки
             if (!(iDebug < 0))
-                Console.WriteLine(@"curHour=" + curHour.ToString() + @"; curMinute=" + curMinute.ToString());
+                Console.WriteLine(@" - curHour=" + curHour.ToString() + @"; curMinute=" + curMinute.ToString());
             else
                 ;
 

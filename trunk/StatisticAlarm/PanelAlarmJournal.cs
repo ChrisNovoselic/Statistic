@@ -51,6 +51,8 @@ namespace StatisticAlarm
         /// Таймер для обновления содержимого таблицы со списком событий
         /// </summary>
         private System.Windows.Forms.Timer m_timerView;
+
+        public event DelegateStringFunc EventGUIReg;
         /// <summary>
         /// Ширина панели для размещения активных элементов управления
         /// </summary>
@@ -143,7 +145,13 @@ namespace StatisticAlarm
                         ;
             if ((ctrl as CheckBox).Checked == true)
             {
-                if (mode == MODE.SERVICE) startAdminAlarm (); else ;
+                if (mode == MODE.SERVICE)
+                {
+                    startAdminAlarm ();
+                    m_adminAlarm.Activate(true); // активировать
+                }
+                else
+                    ;
 
                 startTimerView ();
             }
@@ -155,13 +163,19 @@ namespace StatisticAlarm
             (Find (INDEEX_CONTROL.MCLDR_CURRENT) as MonthCalendar).DateChanged += new DateRangeEventHandler(onEventDateChanged);
             ////Назначить обработчик события при получении из БД списка событий (передать список для отображения)
             //m_viewAlarm.EvtGetData += new DelegateObjectFunc((Find (INDEEX_CONTROL.DGV_EVENTS) as DataGridViewAlarmJournal).OnEvtGetData);
+
+            ////Отладка
+            //EventGUIReg (@"раз-раз");
+            //EventGUIReg(@"два-два");
         }
 
-        private void startTimerView ()
+        private void startTimerView (int interval = 6)
         {
-            if (m_timerView.Interval == 1)
+            //Проверить выполнение таймера
+            if ((m_timerView.Interval == 1)
+                && (m_timerView.Interval == 100)) //100 - значение по умолчанию
             {
-                m_timerView.Interval = 6;
+                m_timerView.Interval = interval;
                 m_timerView.Start();
             }
             else
@@ -189,7 +203,6 @@ namespace StatisticAlarm
             if (m_adminAlarm.IsStarted == false)
             {
                 m_adminAlarm.Start(); // запустить на выполнение
-                m_adminAlarm.Activate(true); // активировать
             }
             else ;
         }
@@ -352,7 +365,10 @@ namespace StatisticAlarm
             else
                 ;
         }
-        //???
+        /// <summary>
+        /// Обработчик события - регистрация события сигнализации
+        /// </summary>
+        /// <param name="ev">Аргумент события</param>
         private void OnAdminAlarm_EventAdd(TecView.EventRegEventArgs ev)
         {
             Console.WriteLine(@"PanelAlarmJournal::OnAdminAlarm_EventAdd () - ID=" + ev.Id + @", message=" + ev.m_message);
@@ -366,8 +382,41 @@ namespace StatisticAlarm
             else
                 Logging.Logg().Error(@"PanelAlarm::OnAdminAlarm_EventAdd () - ... BeginInvoke (...) - ...", Logging.INDEX_MESSAGE.D_001);
         }
-        //???
+        /// <summary>
+        /// Обработчик события - повтор регистрации события сигнализации
+        /// </summary>
+        /// <param name="ev">Аргумент события</param>
         private void OnAdminAlarm_EventRetry(TecView.EventRegEventArgs ev)
+        {
+            if (IsHandleCreated/*InvokeRequired*/ == true)
+            {//...для this.BeginInvoke
+                DataAskedHost(new object[] { new object[] { ViewAlarm.StatesMachine.Update, ev } });
+            }
+            else
+                Logging.Logg().Error(@"PanelAlarm::OnAdminAlarm_EventRetry () - ... BeginInvoke (...) - ...", Logging.INDEX_MESSAGE.D_001);
+        }
+        /// <summary>
+        /// Обработчик события - регистрация события сигнализации из БД!!!
+        /// </summary>
+        /// <param name="ev">Аргумент события</param>
+        private void OnViewAlarm_EventAdd(TecView.EventRegEventArgs ev)
+        {
+            Console.WriteLine(@"PanelAlarmJournal::OnViewAlarm_EventAdd () - ID=" + ev.Id + @", message=" + ev.m_message);
+
+            if (IsHandleCreated/*InvokeRequired*/ == true)
+            {//...для this.BeginInvoke
+                //m_viewAlarm.Push(this, new object [] { new object [] { new object [] { ViewAlarm.StatesMachine.Insert, ev }}});
+                //DataAskedHost(new object[] { ViewAlarm.StatesMachine.Insert, ev });
+                DataAskedHost(new object[] { new object[] { ViewAlarm.StatesMachine.Insert, ev } });
+            }
+            else
+                Logging.Logg().Error(@"PanelAlarm::OnViewAlarm_EventAdd () - ... BeginInvoke (...) - ...", Logging.INDEX_MESSAGE.D_001);
+        }
+        /// <summary>
+        /// Обработчик события - повтор регистрации события сигнализации из БД!!!
+        /// </summary>
+        /// <param name="ev">Аргумент события</param>
+        private void OnViewAlarm_EventRetry(TecView.EventRegEventArgs ev)
         {
         }
         /// <summary>

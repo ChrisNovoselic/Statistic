@@ -12,7 +12,7 @@ namespace StatisticCommon
 {
     public class ViewAlarm : HHandlerQueue
     {
-        public enum StatesMachine { Unknown = -1, List, Insert }
+        public enum StatesMachine { Unknown = -1, List, Insert, Update }
 
         private class HandlerDb : HClassLibrary.HHandlerDb
         {
@@ -264,15 +264,18 @@ namespace StatisticCommon
                 double val = m_EventRegEventArg.m_id_tg < 0 ? -1 : m_EventRegEventArg.m_listEventDetail[0].value; //VALUE
                 string strDTRegistred = m_EventRegEventArg.m_dtRegistred.ToString(@"yyyyMMdd HH:mm:ss.fff"); //DATETIME_REGISTRED
                 //«апрос дл€ вставки записи о событии сигнализации
-                string query = "INSERT INTO [dbo].[AlarmEvent] ([ID_COMPONENT], [TYPE], [ID_USER], [VALUE], [DATETIME_REGISTRED], [DATETIME_FIXED], [DATETIME_CONFIRM], [INSERT_DATETIME], [MESSAGE]) VALUES"
+                string query = "INSERT INTO [dbo].[AlarmEvent] ([ID_COMPONENT],[TYPE],[VALUE],[DATETIME_REGISTRED],[ID_USER_REGISTRED],[DATETIME_FIXED],[ID_USER_FIXED],[DATETIME_CONFIRM],[ID_USER_CONFIRM],[CNT_RETRY],[INSERT_DATETIME],[MESSAGE]) VALUES"
                     + @" ("
                         + id + @", " //ID_COMPONENT
-                        + typeAlarm + @", " //TYPE
-                        + id_user + @", " //ID_USER
+                        + typeAlarm + @", " //TYPE                        
                         + val.ToString(@"F3", CultureInfo.InvariantCulture) + @", " //VALUE
                         + @"'" + strDTRegistred + @"', " //DATETIME_REGISTRED
+                        + id_user + @", " //ID_USER_REGISTRED
                         + "NULL" + @", " //DATETIME_FIXED
+                        + "NULL" + @", " //ID_USER_FIXED
                         + "NULL" + @", " //DATETIME_CONFIRM
+                        + "NULL" + @", " //ID_USER_CONFIRM
+                        + 0 + @", " //CNT_RETRY
                         + "GETDATE ()" + @", " //INSERT_DATETIME
                         + @"'" + m_EventRegEventArg.m_message + @"'" //MESSAGE
                     + @")";
@@ -282,9 +285,9 @@ namespace StatisticCommon
                 //«апрос на получение идентификатора вставленной записи
                 query += @"SELECT * FROM [dbo].[AlarmEvent] WHERE "
                     + @"[ID_COMPONENT]=" + id
-                    + @" AND [TYPE]=" + typeAlarm
-                    + @" AND [ID_USER]=" + id_user
-                    + @" AND [DATETIME_REGISTRED]='" + strDTRegistred + @"'";
+                    + @" AND [TYPE]=" + typeAlarm                    
+                    + @" AND [DATETIME_REGISTRED]='" + strDTRegistred + @"'"
+                    + @" AND [ID_USER_REGISTRED]=" + id_user;
                 query += @";";
 
                 Request(IdListener, query);
@@ -463,7 +466,7 @@ namespace StatisticCommon
                     m_handlerDb.Refresh ((DateTime)itemQueue.Pars[0], (int)itemQueue.Pars[1], (int)itemQueue.Pars[2]);
                     break;
                 case StatesMachine.Insert:
-                    ;
+                    m_handlerDb.Insert (itemQueue.Pars[0] as TecView.EventRegEventArgs);
                     break;
                 default:
                     break;

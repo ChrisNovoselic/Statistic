@@ -6,6 +6,9 @@ using System.Drawing;
 using System.Linq;
 using System.Text;
 using System.Windows.Forms;
+using System.Media; //...SoundPlayer
+using System.IO; //...File
+using System.Threading; //...Thread
 
 using HClassLibrary;
 using StatisticCommon;
@@ -62,8 +65,10 @@ namespace StatisticAlarm
                 //Прекратить/выдать сообщение об ошибке
                 Abort(msg, bAbort);
             else
+            {
                 //Продолжить выполнение приложения
-                this.Activate();            
+                this.Activate();
+            }
         }
         /// <summary>
         /// Инициализация данных формы
@@ -99,6 +104,10 @@ namespace StatisticAlarm
                         updateParametersSetup ();
 
                         s_iMainSourceData = Int32.Parse(formParameters.m_arParametrSetup[(int)FormParameters.PARAMETR_SETUP.MAIN_DATASOURCE]);
+
+                        m_formAlarmEvent = new MessageBoxAlarmEvent (this);
+                        m_panelAlarm.EventGUIReg += new DelegateStringFunc(OnPanelAlarmEventGUIReg);
+                        m_formAlarmEvent.EventActivateTabPage += new DelegateBoolFunc(activateTabPage);
 
                         m_panelAlarm.Start();
                         break;
@@ -303,6 +312,154 @@ namespace StatisticAlarm
                 //Продолжить работу
                 this.Activate();
         }
+
+        #region Код для отображения сообщения о событии сигнализации
+
+        private class MessageBoxAlarmEvent
+        {
+            public event DelegateBoolFunc EventActivateTabPage;
+            public event DelegateObjectFunc EventClose;
+            
+            private int m_iAlarmEventCounter;
+            private int AlarmEventCounter { get { return m_iAlarmEventCounter; } set { m_iAlarmEventCounter = value; } }
+            private SoundPlayer m_sndAlarmEvent;
+            private
+                //System.Threading.Timer
+                System.Windows.Forms.Timer
+                    m_timerAlarmEvent;
+            private Form _owner;
+
+            public MessageBoxAlarmEvent(Form owner)
+            {
+                _owner = owner;
+            }
+
+            //private void timerAlarmEvent (object obj)
+            private void timerAlarmEvent(object obj, EventArgs ev)
+            {
+                //System.Media.SystemSounds.Question.Play();
+                if (m_sndAlarmEvent == null)
+                    Console.Beep();
+                else
+                    m_sndAlarmEvent.Play();
+            }
+
+            private void messageBoxShow(object text)
+            {
+                ////Вариант №1
+                //MessageBox.Show((string)text, @"Сигнализация", MessageBoxButtons.OK, MessageBoxIcon.Information);
+                //Вариант №2
+                MessageBox.Show((string)text, @"Сигнализация", MessageBoxButtons.OK, MessageBoxIcon.Information, MessageBoxDefaultButton.Button1, MessageBoxOptions.ServiceNotification);
+
+                _owner.BeginInvoke(new DelegateFunc(messageBoxHide));
+            }
+
+            private void messageBoxHide()
+            {
+                //bool bContinue = false;
+
+                lock (this)
+                {
+                    m_iAlarmEventCounter--;
+
+                    if (m_iAlarmEventCounter == 0)
+                    {
+                        //m_timerAlarmEvent.Change(System.Threading.Timeout.Infinite, System.Threading.Timeout.Infinite);
+                        m_timerAlarmEvent.Stop();
+                        m_timerAlarmEvent.Dispose();
+                        m_timerAlarmEvent = null;
+
+                        if (!(m_sndAlarmEvent == null))
+                        {
+                            m_sndAlarmEvent.Stop();
+                            m_sndAlarmEvent.Dispose();
+                            m_sndAlarmEvent = null;
+                        }
+                        else
+                            ;
+
+                        //bContinue = true;
+
+                        //Активация текущей вкладки
+                        EventActivateTabPage (true);
+                    }
+                    else
+                        ;
+                }
+            }
+
+            public void PanelAdminKomDispEventGUIReg(string text)
+            {
+                //int selIndxTabPage = -1;
+                //string text = string.Empty;
+
+                lock (this)
+                {
+                    //selIndxTabPage = (int)(obj as object[])[0];
+                    //text = (string)(obj as object[])[1];
+
+                    if (m_timerAlarmEvent == null)
+                    {
+                        //Деактивация текущей вкладки
+                        EventActivateTabPage(false);
+
+                        string strPathSnd = Environment.GetEnvironmentVariable("windir") + @"\Media\" + AdminAlarm.FNAME_ALARM_SYSTEMMEDIA_TIMERBEEP;
+                        if (File.Exists(strPathSnd) == true)
+                            m_sndAlarmEvent = new SoundPlayer(strPathSnd);
+                        else
+                            ;
+
+                        m_timerAlarmEvent =
+                            //new System.Threading.Timer(new TimerCallback(timerAlarmEvent), null, 0, AdminAlarm.MSEC_ALARM_TIMERBEEP) //Int32.Parse(formParameters.m_arParametrSetup[(int)FormParameters.PARAMETR_SETUP.ALARM_TIMER_BEEP]) * 1000
+                            new System.Windows.Forms.Timer();
+                        m_timerAlarmEvent.Tick += new EventHandler(timerAlarmEvent);
+                        m_timerAlarmEvent.Interval = AdminAlarm.MSEC_ALARM_TIMERBEEP;
+                        m_timerAlarmEvent.Start();
+
+                        m_iAlarmEventCounter = 1;
+                    }
+                    else
+                        m_iAlarmEventCounter++;
+                }
+
+                //Поверх остальных окон
+                bool bPrevTopMost = _owner.TopMost;
+                _owner.TopMost = true;
+                //Диалоговое окно
+                new Thread(new ParameterizedThreadStart(messageBoxShow)).Start(text);
+                //Востановить значение по умолчанию
+                _owner.TopMost = bPrevTopMost;
+            }
+        }
+
+        MessageBoxAlarmEvent m_formAlarmEvent;
+
+        private void activateTabPage(bool active)
+        {
+            activateTabPage (-1, active);
+        }
+        
+        private void activateTabPage (int indx, bool active)
+        {//Эмуляция, т.к. реальных вкладок нет
+        }
+
+        private void OnPanelAlarmEventGUIReg(string text)
+        {
+            try
+            {
+                //panelAdminKomDispEventGUIReg(text);
+                if (IsHandleCreated/*InvokeRequired*/ == true)
+                    this.BeginInvoke(new DelegateStringFunc(m_formAlarmEvent.PanelAdminKomDispEventGUIReg), text);
+                else
+                    Logging.Logg().Error(@"FormMain::OnPanelAdminKomDispEventGUIReg () - ... BeginInvoke (panelAdminKomDispEventGUIReg) - ...", Logging.INDEX_MESSAGE.D_001);
+            }
+            catch (Exception e)
+            {
+                Logging.Logg().Exception(e, Logging.INDEX_MESSAGE.NOT_SET, @"FormMain::OnPanelAdminKomDispEventGUIReg (string) - text=" + text);
+            }
+        }
+
+        #endregion
     }
 
     partial class FormMain

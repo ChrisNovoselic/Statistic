@@ -59,9 +59,25 @@ namespace StatisticCommon
             System.Threading.Timer
             //System.Windows.Forms.Timer
                 m_timerAlarm;
+        /// <summary>
+        /// Интервал времени (милисекунды) между опросами по проверке выполнения условий сигнализаций
+        /// </summary>
         public static volatile int MSEC_ALARM_TIMERUPDATE = -1;
+        /// <summary>
+        /// Период времени (милисекунды) от даты/времени регистрации события сигнализации
+        ///  , в течение которого (только в случае подтверждения) выполнение условия сигнализации
+        ///  не является основанием для его регистрации с новым идентификатором.
+        ///  В противном случае (НЕподтверждения) пользователь оповещается повторно.
+        /// </summary>
         public static volatile int MSEC_ALARM_EVENTRETRY = -1;
+        /// <summary>
+        /// Интервал времени (милисекунды) при периодическом воспроизведении звукового файла
+        /// </summary>
         public static volatile int MSEC_ALARM_TIMERBEEP = -1;
+        /// <summary>
+        /// Строка - наименование (звукового) файла
+        ///  , воспроизводящегося при оповещении пользователя оо событии сигнализации
+        /// </summary>
         public static string FNAME_ALARM_SYSTEMMEDIA_TIMERBEEP = string.Empty;
         //private Int32 m_msecTimerUpdate;
         //private Int32 m_msecEventRetry;
@@ -70,7 +86,12 @@ namespace StatisticCommon
 
         protected void Initialize () {
         }
-
+        /// <summary>
+        /// Получить дату/время регистрации события сигнализации для ТГ
+        /// </summary>
+        /// <param name="id_comp">Составная часть ключа: идентификатор ГТП</param>
+        /// <param name="id_tg">Составная часть ключа: идентификатор ГТП</param>
+        /// <returns></returns>
         public DateTime TGAlarmDatetimeReg(int id_comp, int id_tg)
         {
             DateTime dtRes = DateTime.Now;
@@ -89,12 +110,16 @@ namespace StatisticCommon
         public delegate void DelegateOnEventReg(TecView.EventRegEventArgs e);
         public event DelegateOnEventReg EventAdd, EventRetry;
         public event DelegateIntFunc EventConfirm;
-
-        public void OnEventConfirm(int id, int id_tg)
+        /// <summary>
+        /// Обработчик события - событие сигнализации подтверждено (пользователем)
+        /// </summary>
+        /// <param name="id_comp">Часть составного ключа: идентификатор ГТП</param>
+        /// <param name="id_tg">Часть составного ключа: идентификатор ТГ</param>
+        public void OnEventConfirm(int id_comp, int id_tg)
         {
-            Logging.Logg().Debug(@"AdminAlarm::OnEventConfirm () - id=" + id.ToString() + @"; id_tg=" + id_tg.ToString(), Logging.INDEX_MESSAGE.NOT_SET);
+            Logging.Logg().Debug(@"AdminAlarm::OnEventConfirm () - id=" + id_comp.ToString() + @"; id_tg=" + id_tg.ToString(), Logging.INDEX_MESSAGE.NOT_SET);
 
-            KeyValuePair <int, int> cKey = new KeyValuePair <int, int> (id, id_tg);
+            KeyValuePair<int, int> cKey = new KeyValuePair<int, int>(id_comp, id_tg);
             if (m_dictAlarmObject.ContainsKey(cKey) == true)
             {
                 m_dictAlarmObject [cKey].dtConfirm = DateTime.Now;
@@ -106,51 +131,75 @@ namespace StatisticCommon
                     ;
             }
             else
-                Logging.Logg().Error(@"AdminAlarm::OnEventConfirm () - id=" + id.ToString() + @"; id_tg=" + id_tg.ToString() + @", НЕ НАЙДЕН!", Logging.INDEX_MESSAGE.NOT_SET);
+                Logging.Logg().Error(@"AdminAlarm::OnEventConfirm () - id=" + id_comp.ToString() + @"; id_tg=" + id_tg.ToString() + @", НЕ НАЙДЕН!", Logging.INDEX_MESSAGE.NOT_SET);
         }
-
+        /// <summary>
+        /// Обработчик события - регистрация события сигнализации от 'TecView'
+        /// </summary>
+        /// <param name="obj">Объект, зарегистрировавший событие сигнализации</param>
+        /// <param name="ev">Аргумент события сигнализации</param>
         private void OnAdminAlarm_EventReg(TecView obj, TecView.EventRegEventArgs ev)
         {
             ALARM_OBJECT alarmObj = null;
             KeyValuePair <int, int> cKey = new KeyValuePair <int, int> (ev.m_id_gtp, ev.m_id_tg);
-            if (m_dictAlarmObject.ContainsKey(cKey) == false)
-            {
-                alarmObj = new ALARM_OBJECT(ev);
-                m_dictAlarmObject.Add(cKey, alarmObj);
 
-                //if (m_bDestGUIActivated == true) {
-                    m_dictAlarmObject [cKey].state = INDEX_STATES_ALARM.PROCESSED;
-                    
-                    EventAdd(ev);
-                //} else ;
-            }
-            else {
-                bool bEventRetry = false;
-                if (m_dictAlarmObject[cKey].CONFIRM == false) {
-                    bEventRetry = true;
+            try
+            {
+                if (m_dictAlarmObject.ContainsKey(cKey) == false)
+                {//Только, если объект события сигнализации НЕ создан
+                    // создать объект события сигнализации
+                    alarmObj = new ALARM_OBJECT(ev);
+                    m_dictAlarmObject.Add(cKey, alarmObj);
+
+                    //if (m_bDestGUIActivated == true) {
+                        //Устновить состояние "в_процессе"
+                        m_dictAlarmObject [cKey].state = INDEX_STATES_ALARM.PROCESSED;
+                        //Сообщить для ГУИ о событии сигнализации
+                        EventAdd(ev);
+                    //} else ;
                 }
                 else {
-                    if ((m_dictAlarmObject[cKey].dtConfirm - m_dictAlarmObject[cKey].dtReg) > TimeSpan.FromMilliseconds (MSEC_ALARM_EVENTRETRY)) {
+                    //Только, если объект события сигнализации создан
+                    bool bEventRetry = false;
+                    //Проверить состояние
+                    if (m_dictAlarmObject[cKey].CONFIRM == false) {
+                        // если НЕ подтверждено - установить признак повторного оповещения для ГУИ
                         bEventRetry = true;
+                    }
+                    else {
+                        // если подтверждено - проверить период между датой/временем регистрации события сигнализации и датой/временем его подтверждения
+                        if ((m_dictAlarmObject[cKey].dtConfirm - m_dictAlarmObject[cKey].dtReg) > TimeSpan.FromMilliseconds (MSEC_ALARM_EVENTRETRY)) {
+                            // ??? если 
+                            bEventRetry = true;
+                        }
+                        else
+                            ;
+                    }
+
+                    if (bEventRetry == true) {
+                        m_dictAlarmObject[cKey].dtReg = DateTime.Now;
+
+                        //if (m_bDestGUIActivated == true) {
+                            if (m_dictAlarmObject [cKey].state < INDEX_STATES_ALARM.PROCESSED) m_dictAlarmObject [cKey].state = INDEX_STATES_ALARM.PROCESSED; else ;
+                            // повторить оповещение пользователя о событии сигнализации
+                            EventRetry(ev);
+                        //} else ;
                     }
                     else
                         ;
                 }
-
-                if (bEventRetry == true) {
-                    m_dictAlarmObject[cKey].dtReg = DateTime.Now;
-
-                    //if (m_bDestGUIActivated == true) {
-                        if (m_dictAlarmObject [cKey].state < INDEX_STATES_ALARM.PROCESSED) m_dictAlarmObject [cKey].state = INDEX_STATES_ALARM.PROCESSED; else ;
-
-                        EventRetry(ev);
-                    //} else ;
-                }
-                else
-                    ;
+            }
+            catch (Exception e)
+            {
+                Logging.Logg().Exception(e, Logging.INDEX_MESSAGE.NOT_SET, @"AdminAlarm::OnAdminAlarm_EventReg () - ...");
             }
         }
-
+        /// <summary>
+        /// Возвратить признак "подтверждено" для события сигнализации
+        /// </summary>
+        /// <param name="id_comp">Часть составного ключа: идентификатор ГТП</param>
+        /// <param name="id_tg">Часть составного ключа: идентификатор ТГ</param>
+        /// <returns>Результат: признак установлен/не_установлен)</returns>
         public bool Confirm (int id_comp, int id_tg) {
             bool bRes = false;
             KeyValuePair<int, int>  cKey = new KeyValuePair<int, int>(id_comp, id_tg);
