@@ -11,10 +11,21 @@ namespace StatisticCommon
     public class InitTECBase
     {
         protected TYPE_DATABASE_CFG m_typeDB_CFG { get { return this is InitTEC_200 ? TYPE_DATABASE_CFG.CFG_200 : this is InitTEC_190 ? TYPE_DATABASE_CFG.CFG_190 : TYPE_DATABASE_CFG.UNKNOWN; } }
-        
-        public List<TEC> tec;
+
+        public class ListTEC : List <TEC>
+        {
+            public ListTEC () : base ()
+            {
+            }
+
+            private void update ()
+            {
+            }
+        }
+
+        public ListTEC tec;
         protected /*static*/ DbConnection m_connConfigDB;
-        
+
         protected bool IsNameField(DataTable data, string nameField) { return data.Columns.IndexOf(nameField) > -1 ? true : false; }
 
         public static DataTable getListTEC(ref DbConnection connConfigDB, bool bIgnoreTECInUse, out int err)
@@ -169,7 +180,7 @@ namespace StatisticCommon
 
             int err = -1;
 
-            tec = new List<TEC>();
+            tec = new ListTEC ();
             //m_user = new Users(idListener);
             //Logging.Logg().Debug("InitTEC::InitTEC (3 параметра) - получение объекта MySqlConnection...");
 
@@ -321,7 +332,7 @@ namespace StatisticCommon
         {
             //Logging.Logg().Debug("InitTEC::InitTEC (4 параметра) - вход...");
 
-            tec = new List<TEC> ();
+            tec = new ListTEC ();
 
             int err = 0;
             // подключиться к бд, инициализировать глобальные переменные, выбрать режим работы
@@ -657,12 +668,12 @@ namespace StatisticCommon
         //Список ВСЕХ компонентов (ТЭЦ, ГТП, ЩУ, ТГ)
         public InitTEC_190(int idListener, bool bIgnoreTECInUse, bool bUseData)
         {   
-            tec = new List<TEC>();
+            tec = new ListTEC ();
         }
 
         public InitTEC_190(int idListener, Int16 indx, bool bIgnoreTECInUse, bool bUseData) //indx = {GTP или PC}
         {
-            tec = new List<TEC>();
+            tec = new ListTEC();
         }
     }
 }

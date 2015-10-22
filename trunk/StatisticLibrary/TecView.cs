@@ -391,6 +391,51 @@ namespace StatisticCommon
             //    m_situation = 0;
             //}
 
+            public static int GetSituation (string message)
+            {
+                int iRes = 0;
+
+                switch (message)
+                {
+                    case @"вверх":
+                    case @"вкл.":
+                        iRes = 1;
+                        break;
+                    case @"вниз":
+                    case @"выкл.":
+                        iRes = -1;
+                        break;
+                    default:
+                        break;
+                }
+
+                return iRes;
+            }
+
+            public static string GetMessage (int id_gtp, int id_tg, int situation)
+            {
+                string strRes = string.Empty;
+
+                if (id_tg < 0)
+                    if (situation == 1)
+                        strRes = @"вверх";
+                    else
+                        if (situation == -1)
+                            strRes = @"вниз";
+                        else
+                            strRes = @"нет";
+                else
+                    if (situation == (int)TG.INDEX_TURNOnOff.ON) //TGTurnOnOff = ON
+                        strRes = @"вкл.";
+                    else
+                        if (situation == (int)TG.INDEX_TURNOnOff.OFF) //TGTurnOnOff = OFF
+                            strRes = @"выкл.";
+                        else
+                            strRes = @"нет";
+
+                return strRes;
+            }
+
             public EventRegEventArgs(int id_gtp, int id_tg, int s, List <EventDetail> listEventDetail) : base ()
             {
                 m_id_gtp = id_gtp;
@@ -399,26 +444,7 @@ namespace StatisticCommon
                 m_situation = s;
                 m_listEventDetail = listEventDetail;
 
-                if (m_id_tg < 0)
-                {
-                    if (m_situation == 1)
-                        m_message = @"вверх";
-                    else
-                        if (m_situation == -1)
-                            m_message = @"вниз";
-                        else
-                            m_message = @"нет";
-                }
-                else
-                {
-                    if (m_situation == (int)TG.INDEX_TURNOnOff.ON) //TGTurnOnOff = ON
-                        m_message = @"вкл.";
-                    else
-                        if (m_situation == (int)TG.INDEX_TURNOnOff.OFF) //TGTurnOnOff = OFF
-                            m_message = @"выкл.";
-                        else
-                            m_message = @"нет";
-                }
+                m_message = GetMessage(m_id_gtp, m_id_tg, m_situation);
             }
         }
 
@@ -565,18 +591,20 @@ namespace StatisticCommon
                         if (!(tg.m_TurnOnOff == TG.INDEX_TURNOnOff.UNKNOWN))
                         {
                             if (curTurnOnOff == TG.INDEX_TURNOnOff.ON)
-                            {
+                            {// имитация - ТГ выкл.
+                                //Учесть мощность выключенного ТГ в значении для ГТП в целом
                                 power_TM -= m_dictValuesTG[tg.m_id].m_powerCurrent_TM;
-
+                                //Присвоить значение для "отладки" (< 1)
                                 m_dictValuesTG[tg.m_id].m_powerCurrent_TM = 0.666;
-
+                                //Изменить состояние
                                 curTurnOnOff = TG.INDEX_TURNOnOff.OFF;
                             }
                             else
                                 if (curTurnOnOff == TG.INDEX_TURNOnOff.OFF)
                                 {
+                                    //Присвоить значение для "отладки" (> 1)
                                     m_dictValuesTG[tg.m_id].m_powerCurrent_TM = 66.6;
-
+                                    //Изменить состояние
                                     curTurnOnOff = TG.INDEX_TURNOnOff.ON;
                                 }
                                 else
@@ -626,23 +654,28 @@ namespace StatisticCommon
                 if (!(power_TM == TGTURNONOFF_VALUE))
                     if ((!(power_TM == NOT_VALUE)) && (!(power_TM < 1)))
                     {
+                        int situation = 0;
+
                         //Для отладки
                         if (!(iDebug < 0))
                         {
-                            EventReg(this, new EventRegEventArgs(allTECComponents[indxTECComponents].m_id, -1, -1, listEventDetail)); //Меньше
+                            situation = HMath.GetRandomNumber () % 2 == 1 ? -1 : 1;
+                            EventReg(this, new EventRegEventArgs(allTECComponents[indxTECComponents].m_id, -1, situation, listEventDetail)); //Меньше
                             Console.WriteLine(@"; ::SuccessThreadRDGValues () - EventReg [ID=" + allTECComponents[indxTECComponents].m_id + @"] ...");
                         }
                         else
-                            ;
+                            if (Math.Abs(power_TM - m_valuesHours[curHour].valuesUDGe) > m_valuesHours[curHour].valuesUDGe * ((double)allTECComponents[indxTECComponents].m_dcKoeffAlarmPcur / 100))
+                            {
+                                //EventReg(allTECComponents[indxTECComponents].m_id, -1);
+                                if (power_TM < m_valuesHours[curHour].valuesUDGe)
+                                    situation = -1; //Меньше
+                                else
+                                    situation = 1; //Больше
 
-                        if (Math.Abs(power_TM - m_valuesHours[curHour].valuesUDGe) > m_valuesHours[curHour].valuesUDGe * ((double)allTECComponents[indxTECComponents].m_dcKoeffAlarmPcur / 100))
-                            //EventReg(allTECComponents[indxTECComponents].m_id, -1);
-                            if (power_TM < m_valuesHours[curHour].valuesUDGe)
-                                EventReg(this, new EventRegEventArgs(allTECComponents[indxTECComponents].m_id, -1, -1, listEventDetail)); //Меньше
+                                EventReg(this, new EventRegEventArgs(allTECComponents[indxTECComponents].m_id, -1, situation, listEventDetail));
+                            }
                             else
-                                EventReg(this, new EventRegEventArgs(allTECComponents[indxTECComponents].m_id, -1, 1, listEventDetail)); //Больше
-                        else
-                            ; //EventUnReg...
+                                ; //EventUnReg...
                     }
                     else
                         ; //Нет значений ИЛИ значения ограничены 1 МВт

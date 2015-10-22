@@ -17,6 +17,9 @@ namespace StatisticCommon
         /// Перечисление - индексы известных для обработки состояний
         /// </summary>
         public enum StatesMachine { Unknown = -1, List, Insert, Update }
+
+        public delegate void DelegateOnEventReg (EventRegEventArgs e);
+        public event DelegateOnEventReg EventAdd;
         /// <summary>
         /// Класс для получения данных из БД
         /// </summary>
@@ -171,6 +174,7 @@ namespace StatisticCommon
             protected override int StateResponse(int state, object obj)
             {
                 int iRes = 0;
+                DataTable tableRes = null;
                 bool bAnswer = true;
 
                 switch ((StatesMachine)state)
@@ -412,8 +416,33 @@ namespace StatisticCommon
             base.Stop();
         }
 
+        public class EventRegEventArgs
+        {
+            public int m_id_comp;
+            public DateTime m_dtRegistred;
+            public int m_situation;
+            public string m_message;
+            
+            public EventRegEventArgs (int id_comp, DateTime dtReg, int s, string mes)
+            {
+                m_id_comp = id_comp;
+                m_dtRegistred = dtReg;
+                m_situation = s;
+                m_message = mes;
+            }
+        }
+
         private void fThreadListEventsResponse_DoWork (object obj, DoWorkEventArgs ev)
         {
+            DataTable tableRes = ev.Argument as DataTable;
+            DataRow []rowsUnFixed = tableRes.Select (@"[DATETIME_FIXED] IS NULL", @"[DATETIME_REGISTRED]");
+            foreach (DataRow r in rowsUnFixed)
+                EventAdd (new EventRegEventArgs ((int)r[@"ID_COMPONENT"]
+                                                , (DateTime)r[@"DATETIME_REGISTRED"]
+                                                , TecView.EventRegEventArgs.GetSituation ((string)r[@"MESSAGE"])
+                                                , (string)r[@"MESSAGE"]));
+            
+            Console.WriteLine("\tнезарегистрированных: {0}", rowsUnFixed.Length);
         }
 
         private void fThreadListEventsResponse_RunWorkerCompleted(object obj, RunWorkerCompletedEventArgs ev)
@@ -510,21 +539,22 @@ namespace StatisticCommon
         {
             int iRes = 0;
             ItemQueue itemQueue = Peek;
+            DataTable tableRes = obj as DataTable;
 
             switch ((StatesMachine)state)
             {
                 case StatesMachine.List:
-                    GetListEventsResponse(itemQueue, obj as DataTable);
+                    GetListEventsResponse(itemQueue, tableRes);
                     break;
                 case StatesMachine.Insert:
-                    GetInsertEventMainResponse (obj as DataTable);
+                    GetInsertEventMainResponse (tableRes);
                     break;
                 default:
                     break;
             }
 
             //??? прямой вызов метода-обработчика..., ??? использование объекта, полученного в качестве параметра... - очень некрасиво, и, возможно - неправильно
-            itemQueue.m_dataHostRecieved.OnEvtDataRecievedHost(new EventArgsDataHost(-1, new object[] { (StatesMachine)state, obj }));
+            itemQueue.m_dataHostRecieved.OnEvtDataRecievedHost(new EventArgsDataHost(-1, new object[] { (StatesMachine)state, tableRes }));
 
             //Logging.Logg().Debug(@"ViewAlarm::StateRequest () - state=" + ((StatesMachine)state).ToString() + @", result=" + bRes.ToString() + @" - вЫход...");
 

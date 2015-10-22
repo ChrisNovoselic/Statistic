@@ -146,6 +146,7 @@
     <Compile Include="InitTEC.cs">
       <SubType>Code</SubType>
     </Compile>
+    <Compile Include="ObjectAlarm.cs" />
     <Compile Include="PanelStatistic.cs">
       <SubType>Component</SubType>
     </Compile>

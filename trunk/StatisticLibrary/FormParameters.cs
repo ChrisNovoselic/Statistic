@@ -283,6 +283,14 @@ namespace StatisticCommon
         public override void Update (out int err) {
             err = -1;
             int idListener = DbSources.Sources().Register(m_connSett, false, @"CONFIG_DB");
+
+            Update(idListener, out idListener);
+
+            DbSources.Sources().UnRegister(idListener);
+        }
+
+        public void Update(int idListener, out int err)
+        {
             m_dbConn = DbSources.Sources().GetConnection(idListener, out err);
 
             if (err == 0)
@@ -297,8 +305,6 @@ namespace StatisticCommon
             }
             else
                 ;
-
-            DbSources.Sources().UnRegister(idListener);
         }
 
         protected override void loadParam(bool bInit)

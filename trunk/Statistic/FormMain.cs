@@ -79,9 +79,7 @@ namespace Statistic
         private int m_prevSelectedIndex;
         public static FormGraphicsSettings formGraphicsSettings;
         public static FormParameters formParameters;
-        //public FormParametersTG parametersTGForm;
-        HStatisticUsers m_user;
-        FormParametersTG m_formParametersTG;
+        private FormParametersTG m_formParametersTG;
 
         //TcpServerAsync m_TCPServer;
         private
@@ -167,10 +165,10 @@ namespace Statistic
 
             if (iRes == 0)
             {
-                m_user = null;
                 try
                 {
-                    m_user = new HStatisticUsers(idListenerConfigDB);
+                    //Т.к. все используемые члены-данные СТАТИЧЕСКИЕ
+                    using (new HStatisticUsers(idListenerConfigDB)) { ; }
                 }
                 catch (Exception e)
                 {
@@ -448,13 +446,19 @@ namespace Statistic
             else
                 ;
 
-            int err = -1;
+            int err = -1
+                , idListenerConfigDB = DbSources.Sources().Register(s_listFormConnectionSettings[(int)CONN_SETT_TYPE.CONFIG_DB].getConnSett(), false, @"CONFIG_DB");
 
-            formParameters.Update(out err);
+            // прочитать актуальные значения из [setup]
+            (formParameters as FormParameters_DB).Update(idListenerConfigDB, out err);
+            // прочитать и обновить актуальные индивидуальные групповые (пользовательские) параметры
+            using (new HStatisticUsers(idListenerConfigDB)) { ; }
+
+            DbSources.Sources().UnRegister(idListenerConfigDB);
 
             if (err == 0)
             {
-                //Динамическое обновление параметров...
+                //Динамическое обновление - применение актуальных параметров
                 updateParametersSetup();
 
                 if (HStatisticUsers.IsAllowed((int)HStatisticUsers.ID_ALLOWED.APP_AUTO_RESET) == true)
