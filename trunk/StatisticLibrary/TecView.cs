@@ -10,37 +10,7 @@ using HClassLibrary;
 
 namespace StatisticCommon
 {
-    interface ITecView
-    {
-        bool Activate(bool active);
-        void ChangeState();
-        void ChangeState_SobstvNyzhdy();
-        void ClearValues();
-        void ClearValuesLastMinutesTM();
-        void CopyCurToPrevRDGValues();
-        int CountTG { get; }
-        event TecView.DelegateOnEventReg EventReg;
-        void getCurRDGValues(HAdmin source);
-        int GetIntervalOfTypeSourceData(TG.ID_TIME id_time);
-        void GetRDGValues(int mode, int indx, DateTime date);
-        void GetRetroHours();
-        void GetRetroMins();
-        void GetRetroMinTMGen();
-        void GetRetroValues();
-        void InitializeTECComponents();
-        void InitTEC(System.Collections.Generic.List<TEC> listTEC, HClassLibrary.HMark markQueries);
-        System.Collections.Generic.List<TG> listTG { get; }
-        int m_ID { get; }
-        TEC m_tec { get; }
-        void OnEventConfirm(int id_tg);
-        void Start();
-        void Stop();
-        int SuccessThreadRDGValues(int curHour, int curMinute);
-        bool WasChanged();
-        bool zedGraphHours_MouseUpEvent(int indx);
-    }
-
-    public class TecView : HAdmin, StatisticCommon.ITecView
+    public class TecView : HAdmin
     {
         /// <summary>
         /// перечисление - индексы для типов панелей
@@ -362,94 +332,6 @@ namespace StatisticCommon
                 m_arIdListeners[i] = -1;
             }
         }
-        /// <summary>
-        /// Класс для описания аргумента при возникновении события - сигнализация
-        /// </summary>
-        public class EventRegEventArgs : EventArgs
-        {
-            public struct EventDetail
-            {
-                public int id;
-                public float value;
-                public DateTime last_changed_at;
-                public int id_tm;
-            }
-
-            public int Id { get { return m_id_tg < 0 ? m_id_gtp : m_id_tg; } }
-            
-            public int m_id_gtp;
-            public int m_id_tg;
-            public DateTime m_dtRegistred;
-            public int m_situation;
-            public List <EventDetail> m_listEventDetail;
-            public string m_message;
-
-            //public EventRegEventArgs() : base ()
-            //{
-            //    m_id_gtp = -1;
-            //    m_id_tg = -1;
-            //    m_situation = 0;
-            //}
-
-            public static int GetSituation (string message)
-            {
-                int iRes = 0;
-
-                switch (message)
-                {
-                    case @"вверх":
-                    case @"вкл.":
-                        iRes = 1;
-                        break;
-                    case @"вниз":
-                    case @"выкл.":
-                        iRes = -1;
-                        break;
-                    default:
-                        break;
-                }
-
-                return iRes;
-            }
-
-            public static string GetMessage (int id_gtp, int id_tg, int situation)
-            {
-                string strRes = string.Empty;
-
-                if (id_tg < 0)
-                    if (situation == 1)
-                        strRes = @"вверх";
-                    else
-                        if (situation == -1)
-                            strRes = @"вниз";
-                        else
-                            strRes = @"нет";
-                else
-                    if (situation == (int)TG.INDEX_TURNOnOff.ON) //TGTurnOnOff = ON
-                        strRes = @"вкл.";
-                    else
-                        if (situation == (int)TG.INDEX_TURNOnOff.OFF) //TGTurnOnOff = OFF
-                            strRes = @"выкл.";
-                        else
-                            strRes = @"нет";
-
-                return strRes;
-            }
-
-            public EventRegEventArgs(int id_gtp, int id_tg, int s, List <EventDetail> listEventDetail) : base ()
-            {
-                m_id_gtp = id_gtp;
-                m_id_tg = id_tg;
-                m_dtRegistred = DateTime.UtcNow;
-                m_situation = s;
-                m_listEventDetail = listEventDetail;
-
-                m_message = GetMessage(m_id_gtp, m_id_tg, m_situation);
-            }
-        }
-
-        public delegate void DelegateOnEventReg (TecView sender, EventRegEventArgs e);
-        public event DelegateOnEventReg EventReg;
 
         public override void GetRDGValues(int mode, int indx, DateTime date)
         {
@@ -522,178 +404,25 @@ namespace StatisticCommon
             }
         }
 
+        public TECComponent TECComponentCurrent { get { return allTECComponents[indxTECComponents]; } }
+
         private void getRDGValues () {
             GetRDGValues((int)s_typeFields, indxTECComponents, DateTime.Now);
 
             Run(@"TecView::GetRDGValues ()");
         }
+
+        public delegate int EventAlarmRegistredHandler (int id, int hour, int min);
+        public event EventAlarmRegistredHandler EventAlarmDetect;
         /// <summary>
         /// Функция проверки выполнения условий сигнализаций (для одного ГТП)
         /// </summary>
         /// <param name="curHour">Текущий час</param>
         /// <param name="curMinute">Текущий интервал (1-мин) - текущая минута указанного часа</param>
         /// <returns>Признак выполнения функции</returns>
-        public int SuccessThreadRDGValues(int curHour, int curMinute)
+        public int AlarmEventDetect(int curHour, int curMinute)
         {
-            //Признак выполнения функции
-            int iRes = (int)INDEX_WAITHANDLE_REASON.SUCCESS
-                , iDebug = -1; //-1 - нет отладки, 0 - раб./отладка, 1 - имитирование
-            //Константы
-            double TGTURNONOFF_VALUE = -1F //Значения для сигнализации "ТГ вкл./откл."
-                , NOT_VALUE = -2F //НЕТ значения
-                , power_TM = NOT_VALUE;
-            //Признак состояния для сигнализации "ТГ вкл./откл." - исходный
-            TG.INDEX_TURNOnOff curTurnOnOff = TG.INDEX_TURNOnOff.UNKNOWN;
-            //Список объектов, детализирующих событие сигнализации
-            List <EventRegEventArgs.EventDetail> listEventDetail = new List<EventRegEventArgs.EventDetail> ();
-
-            //Для отладки
-            if (!(iDebug < 0))
-                Console.WriteLine(@" - curHour=" + curHour.ToString() + @"; curMinute=" + curMinute.ToString());
-            else
-                ;
-
-            //if (((lastHour == 24) || (lastHourError == true)) || ((lastMin == 0) || (lastMinError == true)))
-            if (((curHour == 24) || (m_markWarning.IsMarked((int)TecView.INDEX_WARNING.LAST_HOUR) == true))
-                || ((curMinute == 0) || (m_markWarning.IsMarked ((int)TecView.INDEX_WARNING.LAST_MIN) == true)))
-            {
-                Logging.Logg().Error(@"TecView::SuccessThreadRDGValues (" + m_tec.name_shr + @"[ID_COMPONENT=" + m_ID + @"])"
-                                    + @" - curHour=" + curHour + @"; curMinute=" + curMinute, Logging.INDEX_MESSAGE.NOT_SET);
-            }
-            else {            
-                foreach (TG tg in allTECComponents[indxTECComponents].m_listTG)
-                {
-                    curTurnOnOff = TG.INDEX_TURNOnOff.UNKNOWN;
-
-                    //Для отладки
-                    if (!(iDebug < 0))
-                        Console.Write(tg.m_id_owner_gtp + @":" + tg.m_id + @"=" + m_dictValuesTG[tg.m_id].m_powerCurrent_TM);
-                    else
-                        ;
-
-                    if (m_dictValuesTG[tg.m_id].m_powerCurrent_TM < 1)
-                        if (!(m_dictValuesTG[tg.m_id].m_powerCurrent_TM < 0))
-                            curTurnOnOff = TG.INDEX_TURNOnOff.OFF;
-                        else
-                            ;
-                    else
-                    {//Больше ИЛИ равно 1F
-                        curTurnOnOff = TG.INDEX_TURNOnOff.ON;
-
-                        if (power_TM == NOT_VALUE) power_TM = 0F; else ;
-                        power_TM += m_dictValuesTG[tg.m_id].m_powerCurrent_TM;
-                    }
-                    //??? неизвестный идентификатор источника значений СОТИАССО (id_tm = -1)
-                    listEventDetail.Add(new EventRegEventArgs.EventDetail() { id = tg.m_id, value = (float)m_dictValuesTG[tg.m_id].m_powerCurrent_TM, last_changed_at = m_dictValuesTG[tg.m_id].m_dtCurrent_TM, id_tm = -1 });
-
-                    //Имитирование - изменяем состояние
-                    if (iDebug == 1)
-                        if (!(tg.m_TurnOnOff == TG.INDEX_TURNOnOff.UNKNOWN))
-                        {
-                            if (curTurnOnOff == TG.INDEX_TURNOnOff.ON)
-                            {// имитация - ТГ выкл.
-                                //Учесть мощность выключенного ТГ в значении для ГТП в целом
-                                power_TM -= m_dictValuesTG[tg.m_id].m_powerCurrent_TM;
-                                //Присвоить значение для "отладки" (< 1)
-                                m_dictValuesTG[tg.m_id].m_powerCurrent_TM = 0.666;
-                                //Изменить состояние
-                                curTurnOnOff = TG.INDEX_TURNOnOff.OFF;
-                            }
-                            else
-                                if (curTurnOnOff == TG.INDEX_TURNOnOff.OFF)
-                                {
-                                    //Присвоить значение для "отладки" (> 1)
-                                    m_dictValuesTG[tg.m_id].m_powerCurrent_TM = 66.6;
-                                    //Изменить состояние
-                                    curTurnOnOff = TG.INDEX_TURNOnOff.ON;
-                                }
-                                else
-                                    ;
-
-                            //Для отладки
-                            if (!(iDebug < 0))
-                                Console.Write(Environment.NewLine + @"Отладка:: " + tg.m_id_owner_gtp + @":" + tg.m_id + @"=" + m_dictValuesTG[tg.m_id].m_powerCurrent_TM + Environment.NewLine);
-                            else
-                                ;
-                        }
-                        else
-                            ;
-                    else
-                        ;
-
-                    if (tg.m_TurnOnOff == TG.INDEX_TURNOnOff.UNKNOWN)
-                    {
-                        tg.m_TurnOnOff = curTurnOnOff;
-                    }
-                    else
-                    {
-                        if (!(tg.m_TurnOnOff == curTurnOnOff))
-                        {
-                            EventReg(this, new EventRegEventArgs(allTECComponents[indxTECComponents].m_id, tg.m_id, (int)curTurnOnOff, listEventDetail));
-
-                            //Прекращаем текущий цикл...
-                            //Признак досрочного прерывания цикла для сигн. "Текущая P"
-                            power_TM = TGTURNONOFF_VALUE;
-
-                            break;
-                        }
-                        else
-                            ; //EventUnReg...
-                    }
-
-                    //Для отладки
-                    if (!(iDebug < 0))
-                        if ((allTECComponents[indxTECComponents].m_listTG.IndexOf(tg) + 1) < allTECComponents[indxTECComponents].m_listTG.Count)
-                            Console.Write(@", ");
-                        else
-                            ;
-                    else
-                        ;
-                }
-
-                if (!(power_TM == TGTURNONOFF_VALUE))
-                    if ((!(power_TM == NOT_VALUE)) && (!(power_TM < 1)))
-                    {
-                        int situation = 0;
-
-                        //Для отладки
-                        if (!(iDebug < 0))
-                        {
-                            situation = HMath.GetRandomNumber () % 2 == 1 ? -1 : 1;
-                            EventReg(this, new EventRegEventArgs(allTECComponents[indxTECComponents].m_id, -1, situation, listEventDetail)); //Меньше
-                            Console.WriteLine(@"; ::SuccessThreadRDGValues () - EventReg [ID=" + allTECComponents[indxTECComponents].m_id + @"] ...");
-                        }
-                        else
-                            if (Math.Abs(power_TM - m_valuesHours[curHour].valuesUDGe) > m_valuesHours[curHour].valuesUDGe * ((double)allTECComponents[indxTECComponents].m_dcKoeffAlarmPcur / 100))
-                            {
-                                //EventReg(allTECComponents[indxTECComponents].m_id, -1);
-                                if (power_TM < m_valuesHours[curHour].valuesUDGe)
-                                    situation = -1; //Меньше
-                                else
-                                    situation = 1; //Больше
-
-                                EventReg(this, new EventRegEventArgs(allTECComponents[indxTECComponents].m_id, -1, situation, listEventDetail));
-                            }
-                            else
-                                ; //EventUnReg...
-                    }
-                    else
-                        ; //Нет значений ИЛИ значения ограничены 1 МВт
-                else
-                    iRes = -102; //(int)INDEX_WAITHANDLE_REASON.BREAK;
-
-                //Для отладки
-                if (!(iDebug < 0))
-                    Console.WriteLine();
-                else
-                    ;
-
-                ////Отладка
-                //for (int i = 0; i < m_valuesHours.valuesFact.Length; i ++)
-                //    Console.WriteLine(@"valuesFact[" + i.ToString() + @"]=" + m_valuesHours.valuesFact[i]);
-            }
-
-            return iRes;
+            return EventAlarmDetect(m_tec.m_id, curHour, curMinute);
         }
 
         private void threadGetRDGValues(object synch)

@@ -94,7 +94,6 @@
     <Compile Include="Admin.cs">
       <SubType>Code</SubType>
     </Compile>
-    <Compile Include="AdminAlarm.cs" />
     <Compile Include="AdminTS.cs">
       <SubType>Code</SubType>
     </Compile>
@@ -146,7 +145,6 @@
     <Compile Include="InitTEC.cs">
       <SubType>Code</SubType>
     </Compile>
-    <Compile Include="ObjectAlarm.cs" />
     <Compile Include="PanelStatistic.cs">
       <SubType>Component</SubType>
     </Compile>
@@ -164,7 +162,6 @@
     </Compile>
     <Compile Include="TecView.cs" />
     <Compile Include="Users.cs" />
-    <Compile Include="ViewAlarm.cs" />
   </ItemGroup>
   <ItemGroup>
     <EmbeddedResource Include="FormAbout.resx">

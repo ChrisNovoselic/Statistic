@@ -369,7 +369,7 @@ namespace StatisticAlarm
         /// Обработчик события - регистрация события сигнализации
         /// </summary>
         /// <param name="ev">Аргумент события</param>
-        private void OnAdminAlarm_EventAdd(TecView.EventRegEventArgs ev)
+        private void OnAdminAlarm_EventAdd(AdminAlarm.EventRegEventArgs ev)
         {
             Console.WriteLine(@"PanelAlarmJournal::OnAdminAlarm_EventAdd () - ID=" + ev.Id + @", message=" + ev.m_message);
             
@@ -386,7 +386,7 @@ namespace StatisticAlarm
         /// Обработчик события - повтор регистрации события сигнализации
         /// </summary>
         /// <param name="ev">Аргумент события</param>
-        private void OnAdminAlarm_EventRetry(TecView.EventRegEventArgs ev)
+        private void OnAdminAlarm_EventRetry(AdminAlarm.EventRegEventArgs ev)
         {
             if (IsHandleCreated/*InvokeRequired*/ == true)
             {//...для this.BeginInvoke
@@ -399,7 +399,7 @@ namespace StatisticAlarm
         /// Обработчик события - регистрация события сигнализации из БД!!!
         /// </summary>
         /// <param name="ev">Аргумент события</param>
-        private void OnViewAlarm_EventAdd(TecView.EventRegEventArgs ev)
+        private void OnViewAlarm_EventAdd(AdminAlarm.EventRegEventArgs ev)
         {
             Console.WriteLine(@"PanelAlarmJournal::OnViewAlarm_EventAdd () - ID=" + ev.Id + @", message=" + ev.m_message);
 
@@ -416,7 +416,7 @@ namespace StatisticAlarm
         /// Обработчик события - повтор регистрации события сигнализации из БД!!!
         /// </summary>
         /// <param name="ev">Аргумент события</param>
-        private void OnViewAlarm_EventRetry(TecView.EventRegEventArgs ev)
+        private void OnViewAlarm_EventRetry(ViewAlarm.EventRegEventArgs ev)
         {
         }
         /// <summary>

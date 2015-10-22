@@ -7,6 +7,7 @@ using HClassLibrary;
 
 namespace StatisticAlarm
 {
+    public enum INDEX_ACTION { ERROR = -1, NOTHING, ADD, RETRY }
     /// <summary>
     /// Перечисление - индексы для типов сигнализаций
     /// </summary>
@@ -56,7 +57,7 @@ namespace StatisticAlarm
                 }
             }
 
-            public StatisticCommon.TecView.EventRegEventArgs m_evReg;
+            public AdminAlarm.EventRegEventArgs m_evReg;
             /// <summary>
             /// Дата/время регистрации
             /// </summary>
@@ -70,7 +71,7 @@ namespace StatisticAlarm
             /// </summary>
             public INDEX_STATES_ALARM state;
 
-            public ALARM_OBJECT(StatisticCommon.TecView.EventRegEventArgs ev) { m_evReg = ev; dtReg = dtConfirm = DateTime.Now; state = INDEX_STATES_ALARM.QUEUEDED; }
+            public ALARM_OBJECT(AdminAlarm.EventRegEventArgs ev) { m_evReg = ev; dtReg = dtConfirm = DateTime.Now; state = INDEX_STATES_ALARM.QUEUEDED; }
         }
         /// <summary>
         /// Конструктор основной (без параметров)
@@ -188,9 +189,9 @@ namespace StatisticAlarm
         /// </summary>
         /// <param name="ev">Аргумент события</param>
         /// <returns>Результат регистрации (-1 - ошибка, 0 - ничего_не_делать, 1 - новый_объект, 2 - повторное_событие)</returns>
-        public INDEX_ACTION Registred(StatisticCommon.TecView.EventRegEventArgs ev)
+        public INDEX_ACTION Registred(AdminAlarm.EventRegEventArgs ev)
         {
-            int iRes = 0;
+            INDEX_ACTION iRes = INDEX_ACTION.NOTHING;
             ALARM_OBJECT alarmObj = find(ev.m_id_gtp, ev.m_id_tg);
 
             try
@@ -205,7 +206,7 @@ namespace StatisticAlarm
                     //Устновить состояние "в_процессе"
                     alarmObj.state = INDEX_STATES_ALARM.PROCESSED;
                     //Сообщить для ГУИ о событии сигнализации
-                    iRes = 1;
+                    iRes = INDEX_ACTION.ADD;
                     //} else ;
                 }
                 else
@@ -238,7 +239,7 @@ namespace StatisticAlarm
                         // если состояние "в очереди", то изменить состояние на "обрабатывается"
                         if (alarmObj.state < INDEX_STATES_ALARM.PROCESSED) alarmObj.state = INDEX_STATES_ALARM.PROCESSED; else ;
                         // повторить оповещение пользователя о событии сигнализации
-                        iRes = 2;
+                        iRes = INDEX_ACTION.RETRY;
                         //} else ;
                     }
                     else
@@ -247,7 +248,7 @@ namespace StatisticAlarm
             }
             catch (Exception e)
             {
-                iRes = -1;
+                iRes = INDEX_ACTION.ERROR;
                 Logging.Logg().Exception(e, Logging.INDEX_MESSAGE.NOT_SET, @"DictAlarmObject::Registred () - ...");
             }
 

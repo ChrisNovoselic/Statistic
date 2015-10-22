@@ -13,12 +13,27 @@ namespace StatisticAlarm
 {
     public class ViewAlarm : HHandlerQueue
     {
+        public class EventRegEventArgs
+        {
+            public int m_id_comp;
+            public DateTime m_dtRegistred;
+            public int m_situation;
+            public string m_message;
+
+            public EventRegEventArgs(int id_comp, DateTime dtReg, int s, string mes)
+            {
+                m_id_comp = id_comp;
+                m_dtRegistred = dtReg;
+                m_situation = s;
+                m_message = mes;
+            }
+        }
         /// <summary>
         /// Перечисление - индексы известных для обработки состояний
         /// </summary>
         public enum StatesMachine { Unknown = -1, List, Insert, Update }
 
-        public delegate void DelegateOnEventReg (EventRegEventArgs e);
+        public delegate void DelegateOnEventReg(StatisticAlarm.ViewAlarm.EventRegEventArgs e);
         public event DelegateOnEventReg EventAdd;
         /// <summary>
         /// Класс для получения данных из БД
@@ -66,7 +81,7 @@ namespace StatisticAlarm
             /// <summary>
             /// Информация о событии сигнализации
             /// </summary>
-            private TecView.EventRegEventArgs m_EventRegEventArg;
+            private AdminAlarm.EventRegEventArgs m_EventRegEventArg;
 
             public HandlerDb(ConnectionSettings connSett)
             {
@@ -312,7 +327,7 @@ namespace StatisticAlarm
             {
                 string query = @"INSERT INTO [dbo].[AlarmDetail] VALUES ";
 
-                foreach (TecView.EventRegEventArgs.EventDetail detail in m_EventRegEventArg.m_listEventDetail)
+                foreach (AdminAlarm.EventRegEventArgs.EventDetail detail in m_EventRegEventArg.m_listEventDetail)
                 {
                     if (detail.value > 0)
                     {
@@ -363,7 +378,7 @@ namespace StatisticAlarm
                 Run(@"ViewAlarm.HHandlerDb::Refresh");
             }
 
-            public void Insert(TecView.EventRegEventArgs ev)
+            public void Insert(AdminAlarm.EventRegEventArgs ev)
             {
                 ClearStates();
 
@@ -416,22 +431,6 @@ namespace StatisticAlarm
             base.Stop();
         }
 
-        public class EventRegEventArgs
-        {
-            public int m_id_comp;
-            public DateTime m_dtRegistred;
-            public int m_situation;
-            public string m_message;
-            
-            public EventRegEventArgs (int id_comp, DateTime dtReg, int s, string mes)
-            {
-                m_id_comp = id_comp;
-                m_dtRegistred = dtReg;
-                m_situation = s;
-                m_message = mes;
-            }
-        }
-
         private void fThreadListEventsResponse_DoWork (object obj, DoWorkEventArgs ev)
         {
             DataTable tableRes = ev.Argument as DataTable;
@@ -439,7 +438,7 @@ namespace StatisticAlarm
             foreach (DataRow r in rowsUnFixed)
                 EventAdd (new EventRegEventArgs ((int)r[@"ID_COMPONENT"]
                                                 , (DateTime)r[@"DATETIME_REGISTRED"]
-                                                , TecView.EventRegEventArgs.GetSituation ((string)r[@"MESSAGE"])
+                                                , AdminAlarm.EventRegEventArgs.GetSituation ((string)r[@"MESSAGE"])
                                                 , (string)r[@"MESSAGE"]));
             
             Console.WriteLine("\tнезарегистрированных: {0}", rowsUnFixed.Length);
@@ -524,7 +523,7 @@ namespace StatisticAlarm
                     m_handlerDb.Refresh ((DateTime)itemQueue.Pars[0], (int)itemQueue.Pars[1], (int)itemQueue.Pars[2]);
                     break;
                 case StatesMachine.Insert:
-                    m_handlerDb.Insert (itemQueue.Pars[0] as TecView.EventRegEventArgs);
+                    m_handlerDb.Insert (itemQueue.Pars[0] as AdminAlarm.EventRegEventArgs);
                     break;
                 default:
                     break;

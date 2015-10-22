@@ -12,6 +12,7 @@ using System.Drawing;
 
 using HClassLibrary;
 using StatisticCommon;
+using StatisticAlarm;
 
 namespace Statistic
 {
@@ -407,7 +408,7 @@ namespace Statistic
             m_adminAlarm.Activate(true);
         }
 
-        private void toEventGUIReg(TecView.EventRegEventArgs ev)
+        private void toEventGUIReg(AdminAlarm.EventRegEventArgs ev)
         {
             //Деактивация m_adminAlarm
             m_adminAlarm.Activate(false);
@@ -427,7 +428,7 @@ namespace Statistic
         {
         }
 
-        private void OnAdminAlarm_EventAdd(TecView.EventRegEventArgs ev)
+        private void OnAdminAlarm_EventAdd(AdminAlarm.EventRegEventArgs ev)
         {
             try
             {
@@ -453,7 +454,7 @@ namespace Statistic
             toEventGUIReg(ev);
         }
 
-        private void OnAdminAlarm_EventRetry(TecView.EventRegEventArgs ev)
+        private void OnAdminAlarm_EventRetry(AdminAlarm.EventRegEventArgs ev)
         {
             toEventGUIReg(ev);
         }
@@ -754,7 +755,7 @@ namespace Statistic
             //Найти ТГ для "подтверждения" сигнализации
             foreach (TG tg in m_admin.allTECComponents[m_admin.indxTECComponents].m_listTG) {
                 dt = m_adminAlarm.TGAlarmDatetimeReg (id_comp, tg.m_id);
-                if ((dt_find.CompareTo (dt) > 0) && (m_adminAlarm.Confirm (id_comp, tg.m_id)) == false) {
+                if ((dt_find.CompareTo (dt) > 0) && (m_adminAlarm.IsConfirmed (id_comp, tg.m_id)) == false) {
                     dt_find = dt;
                     tg_find = tg;
                 }
