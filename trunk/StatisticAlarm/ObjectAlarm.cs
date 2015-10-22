@@ -5,7 +5,7 @@ using System.Text;
 
 using HClassLibrary;
 
-namespace StatisticCommon
+namespace StatisticAlarm
 {
     /// <summary>
     /// Перечисление - индексы для типов сигнализаций
@@ -52,11 +52,11 @@ namespace StatisticCommon
             {
                 get
                 {
-                    return dtConfirm.CompareTo(dtReg) > 0 ? true : false;
+                    return dtConfirm.CompareTo(dtReg) > 0; //? true : false;
                 }
             }
 
-            public TecView.EventRegEventArgs m_evReg;
+            public StatisticCommon.TecView.EventRegEventArgs m_evReg;
             /// <summary>
             /// Дата/время регистрации
             /// </summary>
@@ -70,7 +70,7 @@ namespace StatisticCommon
             /// </summary>
             public INDEX_STATES_ALARM state;
 
-            public ALARM_OBJECT(TecView.EventRegEventArgs ev) { m_evReg = ev; dtReg = dtConfirm = DateTime.Now; state = INDEX_STATES_ALARM.QUEUEDED; }
+            public ALARM_OBJECT(StatisticCommon.TecView.EventRegEventArgs ev) { m_evReg = ev; dtReg = dtConfirm = DateTime.Now; state = INDEX_STATES_ALARM.QUEUEDED; }
         }
         /// <summary>
         /// Конструктор основной (без параметров)
@@ -188,7 +188,7 @@ namespace StatisticCommon
         /// </summary>
         /// <param name="ev">Аргумент события</param>
         /// <returns>Результат регистрации (-1 - ошибка, 0 - ничего_не_делать, 1 - новый_объект, 2 - повторное_событие)</returns>
-        public int Registred(TecView.EventRegEventArgs ev)
+        public INDEX_ACTION Registred(StatisticCommon.TecView.EventRegEventArgs ev)
         {
             int iRes = 0;
             ALARM_OBJECT alarmObj = find(ev.m_id_gtp, ev.m_id_tg);

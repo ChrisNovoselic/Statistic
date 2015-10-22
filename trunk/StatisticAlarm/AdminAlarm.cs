@@ -7,11 +7,11 @@ using System.Threading;
 
 using HClassLibrary;
 
-namespace StatisticCommon
+namespace StatisticAlarm
 {
     public class AdminAlarm
     {
-        List<TecView> m_listTecView;
+        List<StatisticCommon.TecView> m_listTecView;
         
         /// <summary>
         /// Объект для учета событий сигнализации и их состояний

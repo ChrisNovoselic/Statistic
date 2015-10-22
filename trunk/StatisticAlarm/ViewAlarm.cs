@@ -9,7 +9,7 @@ using System.ComponentModel;
 
 using HClassLibrary;
 
-namespace StatisticCommon
+namespace StatisticAlarm
 {
     public class ViewAlarm : HHandlerQueue
     {
