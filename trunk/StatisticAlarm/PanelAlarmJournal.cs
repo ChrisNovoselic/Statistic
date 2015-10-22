@@ -360,6 +360,8 @@ namespace StatisticAlarm
             if (m_viewAlarm == null)
             {
                 m_viewAlarm = new ViewAlarm(connSett);
+                m_viewAlarm.EventAdd += new ViewAlarm.DelegateOnEventReg(OnViewAlarm_EventAdd);
+
                 EvtDataAskedHost += m_viewAlarm.OnEvtDataAskedHost_PanelAlarmJournal;
             }
             else
@@ -399,15 +401,12 @@ namespace StatisticAlarm
         /// Обработчик события - регистрация события сигнализации из БД!!!
         /// </summary>
         /// <param name="ev">Аргумент события</param>
-        private void OnViewAlarm_EventAdd(AdminAlarm.EventRegEventArgs ev)
+        private void OnViewAlarm_EventAdd(ViewAlarm.EventRegEventArgs ev)
         {
-            Console.WriteLine(@"PanelAlarmJournal::OnViewAlarm_EventAdd () - ID=" + ev.Id + @", message=" + ev.m_message);
+            Console.WriteLine(@"PanelAlarmJournal::OnViewAlarm_EventAdd () - ID=" + ev.m_id_comp + @", message=" + ev.m_message);
 
             if (IsHandleCreated/*InvokeRequired*/ == true)
             {//...для this.BeginInvoke
-                //m_viewAlarm.Push(this, new object [] { new object [] { new object [] { ViewAlarm.StatesMachine.Insert, ev }}});
-                //DataAskedHost(new object[] { ViewAlarm.StatesMachine.Insert, ev });
-                DataAskedHost(new object[] { new object[] { ViewAlarm.StatesMachine.Insert, ev } });
             }
             else
                 Logging.Logg().Error(@"PanelAlarm::OnViewAlarm_EventAdd () - ... BeginInvoke (...) - ...", Logging.INDEX_MESSAGE.D_001);

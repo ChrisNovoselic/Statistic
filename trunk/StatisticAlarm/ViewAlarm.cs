@@ -202,8 +202,11 @@ namespace StatisticAlarm
                         break;
                     case StatesMachine.InsertEventMain:
                         GetInsertEventMainResponse(obj as DataTable);
+                        bAnswer = false;
                         break;
                     case StatesMachine.InsertEventDetail:
+                        bAnswer = true;
+                        break;
                     case StatesMachine.UpdateEventFixed:
                     case StatesMachine.UpdateEventConfirm:
                         // ответа не требуется
@@ -331,16 +334,21 @@ namespace StatisticAlarm
                 {
                     if (detail.value > 0)
                     {
-                        query += @"(";
+                        if (! (m_idEventMain < 0))
+                        {
+                            query += @"(";
 
-                        query += m_idEventMain + @", ";
-                        query += detail.id + @", ";
-                        query += detail.value.ToString(@"F3", CultureInfo.InvariantCulture) + @", ";
-                        query += @"'" + detail.last_changed_at.ToString(@"yyyyMMdd HH:mm:ss.fff") + @"', ";
-                        query += detail.id_tm + @", ";
-                        query += @"GETDATE()";
+                            query += m_idEventMain + @", ";
+                            query += detail.id + @", ";
+                            query += detail.value.ToString(@"F3", CultureInfo.InvariantCulture) + @", ";
+                            query += @"'" + detail.last_changed_at.ToString(@"yyyyMMdd HH:mm:ss.fff") + @"', ";
+                            query += detail.id_tm + @", ";
+                            query += @"GETDATE()";
 
-                        query += @"),";
+                            query += @"),";
+                        }
+                        else
+                            throw new Exception(@"ViewAlarm.HandlerDb::GetInsertEventDetailRequest () - idEventMain=" + m_idEventMain);
                     }
                     else
                         ;
@@ -370,27 +378,33 @@ namespace StatisticAlarm
 
             private void refresh()
             {
-                ClearStates();
+                lock (this)
+                {
+                    ClearValues();
+                    ClearStates();                    
 
-                states.Add((int)StatesMachine.CurrentTime);
-                states.Add((int)StatesMachine.ListEvents);
+                    states.Add((int)StatesMachine.CurrentTime);
+                    states.Add((int)StatesMachine.ListEvents);
 
-                Run(@"ViewAlarm.HHandlerDb::Refresh");
+                    Run(@"ViewAlarm.HHandlerDb::Refresh");
+                }
             }
 
             public void Insert(AdminAlarm.EventRegEventArgs ev)
             {
-                ClearStates();
+                lock (this)
+                {
+                    ClearValues();
+                    ClearStates();                    
 
-                ClearValues();
+                    m_EventRegEventArg = ev;
 
-                m_EventRegEventArg = ev;
+                    states.Add((int)StatesMachine.CurrentTime);
+                    states.Add((int)StatesMachine.InsertEventMain);
+                    states.Add((int)StatesMachine.InsertEventDetail);
 
-                states.Add((int)StatesMachine.CurrentTime);
-                states.Add((int)StatesMachine.InsertEventMain);
-                states.Add((int)StatesMachine.InsertEventDetail);
-
-                Run(@"ViewAlarm::Insert");
+                    Run(@"ViewAlarm::Insert");
+                }
             }
         }
         /// <summary>

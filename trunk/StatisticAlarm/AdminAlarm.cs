@@ -99,7 +99,7 @@ namespace StatisticAlarm
             }
         }
 
-        List<StatisticCommon.TecView> m_listTecView;
+        List<StatisticAlarm.TecViewAlarm> m_listTecView;
         
         /// <summary>
         /// Объект для учета событий сигнализации и их состояний
@@ -150,7 +150,7 @@ namespace StatisticAlarm
         }
 
         public delegate void DelegateOnEventReg(EventRegEventArgs e);
-        public event DelegateOnEventReg EventReg, EventAdd, EventRetry;
+        public event DelegateOnEventReg EventAdd, EventRetry;
         public event DelegateIntFunc EventConfirm;
         /// <summary>
         /// Обработчик события - событие сигнализации подтверждено (пользователем)
@@ -175,7 +175,7 @@ namespace StatisticAlarm
         /// </summary>
         /// <param name="obj">Объект, зарегистрировавший событие сигнализации</param>
         /// <param name="ev">Аргумент события сигнализации</param>
-        private void OnEventReg(EventRegEventArgs ev)
+        private void OnEventReg_TecView(EventRegEventArgs ev)
         {
             INDEX_ACTION iAction = m_dictAlarmObject.Registred (ev);
             if (iAction == INDEX_ACTION.ERROR)
@@ -206,7 +206,7 @@ namespace StatisticAlarm
 
         public void InitTEC(List<StatisticCommon.TEC> listTEC)
         {
-            m_listTecView = new List<StatisticCommon.TecView> ();
+            m_listTecView = new List<StatisticAlarm.TecViewAlarm> ();
 
             HMark markQueries = new HMark ();
             markQueries.Marked((int)StatisticCommon.CONN_SETT_TYPE.ADMIN);
@@ -220,10 +220,10 @@ namespace StatisticAlarm
             int DEBUG_ID_TEC = -1;
             foreach (StatisticCommon.TEC t in listTEC) {
                 if ((DEBUG_ID_TEC == -1) || (DEBUG_ID_TEC == t.m_id)) {
-                    m_listTecView.Add(new StatisticCommon.TecView(StatisticCommon.TecView.TYPE_PANEL.ADMIN_ALARM, -1, -1));
+                    m_listTecView.Add(new StatisticAlarm.TecViewAlarm(StatisticCommon.TecView.TYPE_PANEL.ADMIN_ALARM, -1, -1));
                     m_listTecView [m_listTecView.Count - 1].InitTEC (new List <StatisticCommon.TEC> { t }, markQueries);
-                    m_listTecView[m_listTecView.Count - 1].updateGUI_Fact = new IntDelegateIntIntFunc (m_listTecView[m_listTecView.Count - 1].AlarmEventDetect);
-                    m_listTecView[m_listTecView.Count - 1].EventAlarmDetect += new TecView.EventAlarmRegistredHandler(OnEventAlarmRegistred_TecView);
+                    m_listTecView[m_listTecView.Count - 1].updateGUI_Fact = new IntDelegateIntIntFunc (m_listTecView[m_listTecView.Count - 1].AlarmEventRegistred);
+                    m_listTecView[m_listTecView.Count - 1].EventReg += new AdminAlarm.DelegateOnEventReg (OnEventReg_TecView);
 
                     m_listTecView[m_listTecView.Count - 1].m_arTypeSourceData[(int)StatisticCommon.TG.ID_TIME.MINUTES] = StatisticCommon.CONN_SETT_TYPE.DATA_SOTIASSO;
                     m_listTecView[m_listTecView.Count - 1].m_arTypeSourceData[(int)StatisticCommon.TG.ID_TIME.HOURS] = StatisticCommon.CONN_SETT_TYPE.DATA_SOTIASSO;
@@ -242,11 +242,7 @@ namespace StatisticAlarm
             lockValue = new object ();
 
             m_iActiveCounter = -1; //Для отслеживания 1-й по счету "активации"
-            //m_bDestGUIActivated = false; //Активна ли вкладка (родитель) для отображения событий сигнализации
-
-            //m_msecTimerUpdate = msecTimerUpdate;
-            //m_msecEventRetry = msecEventRetry;
-            EventReg += new DelegateOnEventReg(OnEventReg); 
+            //m_bDestGUIActivated = false; //Активна ли вкладка (родитель) для отображения событий сигнализации 
         }
 
         public void Activate(bool active)
@@ -305,7 +301,7 @@ namespace StatisticAlarm
                 ////Вариант №1
                 //m_timerAlarm.Stop ();
 
-            foreach (TecView tv in m_listTecView)
+            foreach (TecViewAlarm tv in m_listTecView)
             {
                 tv.Activate(active);
             }
@@ -318,7 +314,7 @@ namespace StatisticAlarm
 
         public void Start()
         {
-            foreach (TecView tv in m_listTecView)
+            foreach (TecViewAlarm tv in m_listTecView)
             {
                 tv.Start (); //StartDbInterfaces (CONN_SETT_TYPE.COUNT_CONN_SETT_TYPE);
             }
@@ -333,7 +329,7 @@ namespace StatisticAlarm
 
         public void Stop()
         {
-            foreach (TecView tv in m_listTecView)
+            foreach (TecViewAlarm tv in m_listTecView)
             {
                 tv.Stop ();
             }
@@ -348,7 +344,7 @@ namespace StatisticAlarm
         }
 
         private void ChangeState () {
-            foreach (TecView tv in m_listTecView)
+            foreach (TecViewAlarm tv in m_listTecView)
             {
                 tv.ChangeState ();
             }
@@ -380,9 +376,9 @@ namespace StatisticAlarm
             }
         }
 
-        private TecView getTecView (int id)
+        private TecViewAlarm getTecView (int id)
         {
-            foreach (TecView tv in m_listTecView)
+            foreach (TecViewAlarm tv in m_listTecView)
                 if (tv.m_tec.m_id == id)
                     return tv;
                 else
@@ -391,175 +387,12 @@ namespace StatisticAlarm
             throw new Exception(@"AdminAlarm::getTecView (id_tec=" + id + @") - не найден объект 'TecView' ...");
         }
 
-        private int OnEventAlarmRegistred_TecView(int id_tec, int curHour, int curMinute)
-        {
-            TecView tecView = getTecView (id_tec);
-            
-            //Признак выполнения функции
-            int iRes = (int)HHandler.INDEX_WAITHANDLE_REASON.SUCCESS
-                , iDebug = -1; //-1 - нет отладки, 0 - раб./отладка, 1 - имитирование
-            //Константы
-            double TGTURNONOFF_VALUE = -1F //Значения для сигнализации "ТГ вкл./откл."
-                , NOT_VALUE = -2F //НЕТ значения
-                , power_TM = NOT_VALUE;
-            //Признак состояния для сигнализации "ТГ вкл./откл." - исходный
-            TG.INDEX_TURNOnOff curTurnOnOff = TG.INDEX_TURNOnOff.UNKNOWN;
-            //Список объектов, детализирующих событие сигнализации
-            List<StatisticAlarm.AdminAlarm.EventRegEventArgs.EventDetail> listEventDetail = new List<StatisticAlarm.AdminAlarm.EventRegEventArgs.EventDetail>();
+        //private int OnEventAlarmRegistred_TecView(int id_tec, int curHour, int curMinute)
+        //{
+        //    int iRes = -1;
+        //    TecView tecView = getTecView (id_tec);
 
-            //Для отладки
-            if (!(iDebug < 0))
-                Console.WriteLine(@" - curHour=" + curHour.ToString() + @"; curMinute=" + curMinute.ToString());
-            else
-                ;
-
-            //if (((lastHour == 24) || (lastHourError == true)) || ((lastMin == 0) || (lastMinError == true)))
-            if (((curHour == 24) || (tecView.m_markWarning.IsMarked((int)TecView.INDEX_WARNING.LAST_HOUR) == true))
-                || ((curMinute == 0) || (tecView.m_markWarning.IsMarked((int)TecView.INDEX_WARNING.LAST_MIN) == true)))
-            {
-                Logging.Logg().Error(@"TecView::SuccessThreadRDGValues (" + tecView.m_tec.name_shr + @"[ID_COMPONENT=" + tecView.m_ID + @"])"
-                                    + @" - curHour=" + curHour + @"; curMinute=" + curMinute, Logging.INDEX_MESSAGE.NOT_SET);
-            }
-            else
-            {
-                foreach (TG tg in tecView.allTECComponents[tecView.indxTECComponents].m_listTG)
-                {
-                    curTurnOnOff = TG.INDEX_TURNOnOff.UNKNOWN;
-
-                    //Для отладки
-                    if (!(iDebug < 0))
-                        Console.Write(tg.m_id_owner_gtp + @":" + tg.m_id + @"=" + tecView.m_dictValuesTG[tg.m_id].m_powerCurrent_TM);
-                    else
-                        ;
-
-                    if (tecView.m_dictValuesTG[tg.m_id].m_powerCurrent_TM < 1)
-                        if (!(tecView.m_dictValuesTG[tg.m_id].m_powerCurrent_TM < 0))
-                            curTurnOnOff = TG.INDEX_TURNOnOff.OFF;
-                        else
-                            ;
-                    else
-                    {//Больше ИЛИ равно 1F
-                        curTurnOnOff = TG.INDEX_TURNOnOff.ON;
-
-                        if (power_TM == NOT_VALUE) power_TM = 0F; else ;
-                        power_TM += tecView.m_dictValuesTG[tg.m_id].m_powerCurrent_TM;
-                    }
-                    //??? неизвестный идентификатор источника значений СОТИАССО (id_tm = -1)
-                    listEventDetail.Add(new StatisticAlarm.AdminAlarm.EventRegEventArgs.EventDetail()
-                    {
-                        id = tg.m_id
-                        , value = (float)tecView.m_dictValuesTG[tg.m_id].m_powerCurrent_TM
-                        , last_changed_at = tecView.m_dictValuesTG[tg.m_id].m_dtCurrent_TM, id_tm = -1
-                    });
-
-                    //Имитирование - изменяем состояние
-                    if (iDebug == 1)
-                        if (!(tg.m_TurnOnOff == TG.INDEX_TURNOnOff.UNKNOWN))
-                        {
-                            if (curTurnOnOff == TG.INDEX_TURNOnOff.ON)
-                            {// имитация - ТГ выкл.
-                                //Учесть мощность выключенного ТГ в значении для ГТП в целом
-                                power_TM -= tecView.m_dictValuesTG[tg.m_id].m_powerCurrent_TM;
-                                //Присвоить значение для "отладки" (< 1)
-                                tecView.m_dictValuesTG[tg.m_id].m_powerCurrent_TM = 0.666;
-                                //Изменить состояние
-                                curTurnOnOff = TG.INDEX_TURNOnOff.OFF;
-                            }
-                            else
-                                if (curTurnOnOff == TG.INDEX_TURNOnOff.OFF)
-                                {
-                                    //Присвоить значение для "отладки" (> 1)
-                                    tecView.m_dictValuesTG[tg.m_id].m_powerCurrent_TM = 66.6;
-                                    //Изменить состояние
-                                    curTurnOnOff = TG.INDEX_TURNOnOff.ON;
-                                }
-                                else
-                                    ;
-
-                            //Для отладки
-                            if (!(iDebug < 0))
-                                Console.Write(Environment.NewLine + @"Отладка:: " + tg.m_id_owner_gtp + @":" + tg.m_id + @"=" + tecView.m_dictValuesTG[tg.m_id].m_powerCurrent_TM + Environment.NewLine);
-                            else
-                                ;
-                        }
-                        else
-                            ;
-                    else
-                        ;
-
-                    if (tg.m_TurnOnOff == TG.INDEX_TURNOnOff.UNKNOWN)
-                    {
-                        tg.m_TurnOnOff = curTurnOnOff;
-                    }
-                    else
-                    {
-                        if (!(tg.m_TurnOnOff == curTurnOnOff))
-                        {
-                            EventReg(new EventRegEventArgs(tecView.TECComponentCurrent.m_id, tg.m_id, (int)curTurnOnOff, listEventDetail));
-
-                            //Прекращаем текущий цикл...
-                            //Признак досрочного прерывания цикла для сигн. "Текущая P"
-                            power_TM = TGTURNONOFF_VALUE;
-
-                            break;
-                        }
-                        else
-                            ; //EventUnReg...
-                    }
-
-                    //Для отладки
-                    if (!(iDebug < 0))
-                        if ((tecView.TECComponentCurrent.m_listTG.IndexOf(tg) + 1) < tecView.TECComponentCurrent.m_listTG.Count)
-                            Console.Write(@", ");
-                        else
-                            ;
-                    else
-                        ;
-                }
-
-                if (!(power_TM == TGTURNONOFF_VALUE))
-                    if ((!(power_TM == NOT_VALUE)) && (!(power_TM < 1)))
-                    {
-                        int situation = 0;
-
-                        //Для отладки
-                        if (!(iDebug < 0))
-                        {
-                            situation = HMath.GetRandomNumber() % 2 == 1 ? -1 : 1;
-                            EventReg(new AdminAlarm.EventRegEventArgs(tecView.TECComponentCurrent.m_id, -1, situation, listEventDetail)); //Меньше
-                            Console.WriteLine(@"; ::SuccessThreadRDGValues () - EventReg [ID=" + tecView.TECComponentCurrent.m_id + @"] ...");
-                        }
-                        else
-                            if (Math.Abs(power_TM - tecView.m_valuesHours[curHour].valuesUDGe) > tecView.m_valuesHours[curHour].valuesUDGe * ((double)tecView.TECComponentCurrent.m_dcKoeffAlarmPcur / 100))
-                            {
-                                //EventReg(allTECComponents[indxTECComponents].m_id, -1);
-                                if (power_TM < tecView.m_valuesHours[curHour].valuesUDGe)
-                                    situation = -1; //Меньше
-                                else
-                                    situation = 1; //Больше
-
-                                EventReg(new AdminAlarm.EventRegEventArgs(tecView.TECComponentCurrent.m_id, -1, situation, listEventDetail));
-                            }
-                            else
-                                ; //EventUnReg...
-                    }
-                    else
-                        ; //Нет значений ИЛИ значения ограничены 1 МВт
-                else
-                    iRes = -102; //(int)INDEX_WAITHANDLE_REASON.BREAK;
-
-                //Для отладки
-                if (!(iDebug < 0))
-                    Console.WriteLine();
-                else
-                    ;
-
-                ////Отладка
-                //for (int i = 0; i < m_valuesHours.valuesFact.Length; i ++)
-                //    Console.WriteLine(@"valuesFact[" + i.ToString() + @"]=" + m_valuesHours.valuesFact[i]);
-            }
-
-            return iRes;
-        }
+        //    return iRes;
+        //}
     }
 }

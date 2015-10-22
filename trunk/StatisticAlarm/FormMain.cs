@@ -142,7 +142,7 @@ namespace StatisticAlarm
             DbInterface.WAIT_TIME_MS = Int32.Parse(formParameters.m_arParametrSetup[(int)FormParameters.PARAMETR_SETUP.WAITING_TIME]);
 
             //Параметры валидности даты/времени получения данных СОТИАССО...
-            TecView.SEC_VALIDATE_TMVALUE = Int32.Parse(formParameters.m_arParametrSetup[(int)FormParameters.PARAMETR_SETUP.VALIDATE_TM_VALUE]);
+            TecViewAlarm.SEC_VALIDATE_TMVALUE = Int32.Parse(formParameters.m_arParametrSetup[(int)FormParameters.PARAMETR_SETUP.VALIDATE_TM_VALUE]);
 
             //Параметрвы для ALARM...
             AdminAlarm.MSEC_ALARM_TIMERUPDATE =

@@ -412,19 +412,6 @@ namespace StatisticCommon
             Run(@"TecView::GetRDGValues ()");
         }
 
-        public delegate int EventAlarmRegistredHandler (int id, int hour, int min);
-        public event EventAlarmRegistredHandler EventAlarmDetect;
-        /// <summary>
-        /// Функция проверки выполнения условий сигнализаций (для одного ГТП)
-        /// </summary>
-        /// <param name="curHour">Текущий час</param>
-        /// <param name="curMinute">Текущий интервал (1-мин) - текущая минута указанного часа</param>
-        /// <returns>Признак выполнения функции</returns>
-        public int AlarmEventDetect(int curHour, int curMinute)
-        {
-            return EventAlarmDetect(m_tec.m_id, curHour, curMinute);
-        }
-
         private void threadGetRDGValues(object synch)
         {
             int indxEv = -1;
