@@ -1082,7 +1082,7 @@ namespace Statistic
                                     ;
                             else
                             {
-                                if (i == (int)FormChangeMode.MANAGER.DISP) stopAdminAlarm(); else ;
+                                //if (i == (int)FormChangeMode.MANAGER.DISP) stopAdminAlarm(); else ;
 
                                 m_arPanelAdmin[i].Stop();
                                 m_arPanelAdmin[i] = null;
@@ -1096,7 +1096,8 @@ namespace Statistic
                     ;
             }
             else
-                stopAdminAlarm();
+                //stopAdminAlarm()
+                ;
 
             Stop();
 
@@ -1117,19 +1118,19 @@ namespace Statistic
             stopTimerAppReset();
         }
 
-        private void stopAdminAlarm()
-        {
-            if ((!(m_arPanelAdmin == null)) && (!(m_arPanelAdmin[(int)FormChangeMode.MANAGER.DISP] == null)) && (m_arPanelAdmin[(int)FormChangeMode.MANAGER.DISP] is PanelAdminKomDisp)
-            //if (i == (int)FormChangeMode.MANAGER.DISP)
-            && (PanelAdminKomDisp.ALARM_USE == true)
-            && (!(((PanelAdminKomDisp)m_arPanelAdmin[(int)FormChangeMode.MANAGER.DISP]).m_adminAlarm == null)))
-            {
-                ((PanelAdminKomDisp)m_arPanelAdmin[(int)FormChangeMode.MANAGER.DISP]).m_adminAlarm.Activate(false);
-                ((PanelAdminKomDisp)m_arPanelAdmin[(int)FormChangeMode.MANAGER.DISP]).m_adminAlarm.Stop();
-            }
-            else
-                ;
-        }
+        //private void stopAdminAlarm()
+        //{
+        //    if ((!(m_arPanelAdmin == null)) && (!(m_arPanelAdmin[(int)FormChangeMode.MANAGER.DISP] == null)) && (m_arPanelAdmin[(int)FormChangeMode.MANAGER.DISP] is PanelAdminKomDisp)
+        //    //if (i == (int)FormChangeMode.MANAGER.DISP)
+        //    && (PanelAdminKomDisp.ALARM_USE == true)
+        //    && (!(((PanelAdminKomDisp)m_arPanelAdmin[(int)FormChangeMode.MANAGER.DISP]).m_adminAlarm == null)))
+        //    {
+        //        ((PanelAdminKomDisp)m_arPanelAdmin[(int)FormChangeMode.MANAGER.DISP]).m_adminAlarm.Activate(false);
+        //        ((PanelAdminKomDisp)m_arPanelAdmin[(int)FormChangeMode.MANAGER.DISP]).m_adminAlarm.Stop();
+        //    }
+        //    else
+        //        ;
+        //}
 
         private void StopTabPages()
         {

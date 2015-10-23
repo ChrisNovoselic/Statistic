@@ -86,7 +86,7 @@ namespace StatisticAlarm
             //Инициализация визуальных компонентов
             InitializeComponent();
             //Запомнить режим работы панели
-            this.mode = mode;            
+            this.mode = mode;
         }
         /// <summary>
         /// Запустить на выполнение 
@@ -349,9 +349,6 @@ namespace StatisticAlarm
             m_adminAlarm = new AdminAlarm();
             m_adminAlarm.InitTEC(m_list_tec);
 
-            m_adminAlarm.EventAdd += new AdminAlarm.DelegateOnEventReg(OnAdminAlarm_EventAdd);
-            m_adminAlarm.EventRetry += new AdminAlarm.DelegateOnEventReg(OnAdminAlarm_EventRetry);
-
             this.EventConfirm += new DelegateIntIntFunc(m_adminAlarm.OnEventConfirm);
         }
         /// <summary>
@@ -363,50 +360,20 @@ namespace StatisticAlarm
             if (m_viewAlarm == null)
             {
                 m_viewAlarm = new ViewAlarm(connSett);
-                m_viewAlarm.EventAdd += new ViewAlarm.DelegateOnEventReg(OnViewAlarm_EventAdd);
+                m_viewAlarm.EventAdd += new AlarmNotifyEventHandler(OnViewAlarm_EventAdd);
 
                 EvtDataAskedHost += m_viewAlarm.OnEvtDataAskedHost_PanelAlarmJournal;
             }
             else
                 ;
-        }
-        /// <summary>
-        /// Обработчик события - регистрация события сигнализации
-        /// </summary>
-        /// <param name="ev">Аргумент события</param>
-        private void OnAdminAlarm_EventAdd(AdminAlarm.EventRegEventArgs ev)
-        {
-            Console.WriteLine(@"PanelAlarmJournal::OnAdminAlarm_EventAdd () - ID=" + ev.Id + @", message=" + ev.m_message);
-            
-            if (IsHandleCreated/*InvokeRequired*/ == true)
-            {//...для this.BeginInvoke
-                //m_viewAlarm.Push(this, new object [] { new object [] { new object [] { ViewAlarm.StatesMachine.Insert, ev }}});
-                //DataAskedHost(new object[] { ViewAlarm.StatesMachine.Insert, ev });
-                DataAskedHost(new object [] { new object[] { ViewAlarm.StatesMachine.Insert, ev }});
-            }
-            else
-                Logging.Logg().Error(@"PanelAlarm::OnAdminAlarm_EventAdd () - ... BeginInvoke (...) - ...", Logging.INDEX_MESSAGE.D_001);
-        }
-        /// <summary>
-        /// Обработчик события - повтор регистрации события сигнализации
-        /// </summary>
-        /// <param name="ev">Аргумент события</param>
-        private void OnAdminAlarm_EventRetry(AdminAlarm.EventRegEventArgs ev)
-        {
-            if (IsHandleCreated/*InvokeRequired*/ == true)
-            {//...для this.BeginInvoke
-                DataAskedHost(new object[] { new object[] { ViewAlarm.StatesMachine.Update, ev } });
-            }
-            else
-                Logging.Logg().Error(@"PanelAlarm::OnAdminAlarm_EventRetry () - ... BeginInvoke (...) - ...", Logging.INDEX_MESSAGE.D_001);
-        }
+        }        
         /// <summary>
         /// Обработчик события - регистрация события сигнализации из БД!!!
         /// </summary>
         /// <param name="ev">Аргумент события</param>
-        private void OnViewAlarm_EventAdd(ViewAlarm.EventRegEventArgs ev)
+        private void OnViewAlarm_EventAdd(AlarmNotifyEventArgs ev)
         {
-            Console.WriteLine(@"PanelAlarmJournal::OnViewAlarm_EventAdd () - ID=" + ev.m_id_comp + @", message=" + ev.m_message);
+            Console.WriteLine(@"PanelAlarmJournal::OnViewAlarm_EventAdd (id_gtp=" + ev.m_id_gtp + @", id_tg=" + ev.m_id_tg + @", message=" + ev.m_message + @") - ...");
 
             if (IsHandleCreated/*InvokeRequired*/ == true)
             {//...для this.BeginInvoke
@@ -418,7 +385,7 @@ namespace StatisticAlarm
         /// Обработчик события - повтор регистрации события сигнализации из БД!!!
         /// </summary>
         /// <param name="ev">Аргумент события</param>
-        private void OnViewAlarm_EventRetry(ViewAlarm.EventRegEventArgs ev)
+        private void OnViewAlarm_EventRetry(AlarmNotifyEventArgs ev)
         {
         }
         /// <summary>

@@ -30,6 +30,66 @@ namespace StatisticAlarm
         /// </summary>
         , CONFIRMED
     }
+
+    public delegate void AlarmNotifyEventHandler (AlarmNotifyEventArgs ev);
+    
+    public class AlarmNotifyEventArgs : EventArgs
+    {
+        public int m_id_gtp;
+        public int m_id_tg;
+        public int m_situation;
+        public string m_message;
+
+        public AlarmNotifyEventArgs()
+            : base()
+        {
+        }
+
+        public static int GetSituation(string message)
+        {
+            int iRes = 0;
+
+            switch (message)
+            {
+                case @"вверх":
+                case @"вкл.":
+                    iRes = 1;
+                    break;
+                case @"вниз":
+                case @"выкл.":
+                    iRes = -1;
+                    break;
+                default:
+                    break;
+            }
+
+            return iRes;
+        }
+
+        public static string GetMessage(int id_gtp, int id_tg, int situation)
+        {
+            string strRes = string.Empty;
+
+            if (id_tg < 0)
+                if (situation == 1)
+                    strRes = @"вверх";
+                else
+                    if (situation == -1)
+                        strRes = @"вниз";
+                    else
+                        strRes = @"нет";
+            else
+                if (situation == (int)StatisticCommon.TG.INDEX_TURNOnOff.ON) //TGTurnOnOff = ON
+                    strRes = @"вкл.";
+                else
+                    if (situation == (int)StatisticCommon.TG.INDEX_TURNOnOff.OFF) //TGTurnOnOff = OFF
+                        strRes = @"выкл.";
+                    else
+                        strRes = @"нет";
+
+            return strRes;
+        }
+    }
     /// <summary>
     /// Класс для учета событий сигнализации и их состояний
     /// </summary>
@@ -57,7 +117,7 @@ namespace StatisticAlarm
                 }
             }
 
-            public AdminAlarm.EventRegEventArgs m_evReg;
+            //public AdminAlarm.EventRegEventArgs m_evReg;
             /// <summary>
             /// Дата/время регистрации
             /// </summary>
@@ -71,7 +131,7 @@ namespace StatisticAlarm
             /// </summary>
             public INDEX_STATES_ALARM state;
 
-            public ALARM_OBJECT(AdminAlarm.EventRegEventArgs ev) { m_evReg = ev; dtReg = dtConfirm = DateTime.Now; state = INDEX_STATES_ALARM.QUEUEDED; }
+            public ALARM_OBJECT(TecViewAlarm.AlarmTecViewEventArgs ev) { /*m_evReg = ev; */dtReg = dtConfirm = ev.m_dtRegistred; state = INDEX_STATES_ALARM.QUEUEDED; }
         }
         /// <summary>
         /// Конструктор основной (без параметров)
@@ -189,7 +249,7 @@ namespace StatisticAlarm
         /// </summary>
         /// <param name="ev">Аргумент события</param>
         /// <returns>Результат регистрации (-1 - ошибка, 0 - ничего_не_делать, 1 - новый_объект, 2 - повторное_событие)</returns>
-        public INDEX_ACTION Registred(AdminAlarm.EventRegEventArgs ev)
+        public INDEX_ACTION Registred(TecViewAlarm.AlarmTecViewEventArgs ev)
         {
             INDEX_ACTION iRes = INDEX_ACTION.NOTHING;
             ALARM_OBJECT alarmObj = find(ev.m_id_gtp, ev.m_id_tg);

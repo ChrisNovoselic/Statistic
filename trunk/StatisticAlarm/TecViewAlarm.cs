@@ -12,7 +12,46 @@ namespace StatisticAlarm
 {
     public class TecViewAlarm : StatisticCommon.TecView
     {
-        public event AdminAlarm.DelegateOnEventReg EventReg;
+        /// <summary>
+        /// Класс для описания аргумента при возникновении события - сигнализация
+        /// </summary>
+        public class AlarmTecViewEventArgs : AlarmNotifyEventArgs
+        {
+            public struct EventDetail
+            {
+                public int id;
+                public float value;
+                public DateTime last_changed_at;
+                public int id_tm;
+            }
+
+            public int Id { get { return m_id_tg < 0 ? m_id_gtp : m_id_tg; } }
+
+            public DateTime m_dtRegistred;
+            public List<EventDetail> m_listEventDetail;
+
+            //public EventRegEventArgs() : base ()
+            //{
+            //    m_id_gtp = -1;
+            //    m_id_tg = -1;
+            //    m_situation = 0;
+            //}
+
+            public AlarmTecViewEventArgs(int id_gtp, int id_tg, int s, List<EventDetail> listEventDetail)
+                : base()
+            {
+                m_id_gtp = id_gtp;
+                m_id_tg = id_tg;
+                m_dtRegistred = DateTime.UtcNow;
+                m_situation = s;
+                m_listEventDetail = listEventDetail;
+
+                m_message = GetMessage(m_id_gtp, m_id_tg, m_situation);
+            }
+        }
+        
+        public delegate void AlarmTecViewEventHandler (AlarmTecViewEventArgs ev);
+        public event AlarmTecViewEventHandler EventReg;
 
         public TecViewAlarm(StatisticCommon.TecView.TYPE_PANEL typePanel, int indxTEC, int indx_comp)
             : base(typePanel, indxTEC, indx_comp)
@@ -27,7 +66,7 @@ namespace StatisticAlarm
         /// <param name="curHour">Текущий час</param>
         /// <param name="curMinute">Текущий интервал (1-мин) - текущая минута указанного часа</param>
         /// <returns>Признак выполнения функции</returns>
-        public int AlarmEventRegistred(int curHour, int curMinute)
+        public int AlarmRegistred(int curHour, int curMinute)
         {
             //return EventAlarmDetect(m_tec.m_id, curHour, curMinute);
 
@@ -41,7 +80,7 @@ namespace StatisticAlarm
             //Признак состояния для сигнализации "ТГ вкл./откл." - исходный
             StatisticCommon.TG.INDEX_TURNOnOff curTurnOnOff = StatisticCommon.TG.INDEX_TURNOnOff.UNKNOWN;
             //Список объектов, детализирующих событие сигнализации
-            List<StatisticAlarm.AdminAlarm.EventRegEventArgs.EventDetail> listEventDetail = new List<StatisticAlarm.AdminAlarm.EventRegEventArgs.EventDetail>();
+            List<TecViewAlarm.AlarmTecViewEventArgs.EventDetail> listEventDetail = new List<TecViewAlarm.AlarmTecViewEventArgs.EventDetail>();
 
             //Для отладки
             if (!(iDebug < 0))
@@ -81,14 +120,12 @@ namespace StatisticAlarm
                         power_TM += m_dictValuesTG[tg.m_id].m_powerCurrent_TM;
                     }
                     //??? неизвестный идентификатор источника значений СОТИАССО (id_tm = -1)
-                    listEventDetail.Add(new StatisticAlarm.AdminAlarm.EventRegEventArgs.EventDetail()
+                    listEventDetail.Add(new TecViewAlarm.AlarmTecViewEventArgs.EventDetail()
                     {
                         id = tg.m_id
-                        ,
-                        value = (float)m_dictValuesTG[tg.m_id].m_powerCurrent_TM
-                        ,
-                        last_changed_at = m_dictValuesTG[tg.m_id].m_dtCurrent_TM,
-                        id_tm = -1
+                        , value = (float)m_dictValuesTG[tg.m_id].m_powerCurrent_TM
+                        , last_changed_at = m_dictValuesTG[tg.m_id].m_dtCurrent_TM
+                        , id_tm = -1
                     });
 
                     //Имитирование - изменяем состояние
@@ -134,7 +171,7 @@ namespace StatisticAlarm
                     {
                         if (!(tg.m_TurnOnOff == curTurnOnOff))
                         {
-                            EventReg(new AdminAlarm.EventRegEventArgs(TECComponentCurrent.m_id, tg.m_id, (int)curTurnOnOff, listEventDetail));
+                            EventReg(new TecViewAlarm.AlarmTecViewEventArgs(TECComponentCurrent.m_id, tg.m_id, (int)curTurnOnOff, listEventDetail));
 
                             //Прекращаем текущий цикл...
                             //Признак досрочного прерывания цикла для сигн. "Текущая P"
@@ -165,7 +202,7 @@ namespace StatisticAlarm
                         if (!(iDebug < 0))
                         {
                             situation = HMath.GetRandomNumber() % 2 == 1 ? -1 : 1;
-                            EventReg(new AdminAlarm.EventRegEventArgs(TECComponentCurrent.m_id, -1, situation, listEventDetail)); //Меньше
+                            EventReg(new TecViewAlarm.AlarmTecViewEventArgs(TECComponentCurrent.m_id, -1, situation, listEventDetail)); //Меньше
                             Console.WriteLine(@"; ::AlarmEventRegistred () - EventReg [ID=" + TECComponentCurrent.m_id + @"] ...");
                         }
                         else
@@ -177,7 +214,7 @@ namespace StatisticAlarm
                                 else
                                     situation = 1; //Больше
 
-                                EventReg(new AdminAlarm.EventRegEventArgs(TECComponentCurrent.m_id, -1, situation, listEventDetail));
+                                EventReg(new TecViewAlarm.AlarmTecViewEventArgs(TECComponentCurrent.m_id, -1, situation, listEventDetail));
                             }
                             else
                                 ; //EventUnReg...
@@ -199,6 +236,27 @@ namespace StatisticAlarm
             }
 
             return iRes;
+        }
+
+        public void OnEventConfirm(int id_tg)
+        {
+            foreach (StatisticCommon.TECComponent tc in allTECComponents)
+            {
+                if (tc.m_id == id_tg)
+                {
+                    if (tc.m_listTG[0].m_TurnOnOff == StatisticCommon.TG.INDEX_TURNOnOff.ON)
+                        tc.m_listTG[0].m_TurnOnOff = StatisticCommon.TG.INDEX_TURNOnOff.OFF;
+                    else
+                        if (tc.m_listTG[0].m_TurnOnOff == StatisticCommon.TG.INDEX_TURNOnOff.OFF)
+                            tc.m_listTG[0].m_TurnOnOff = StatisticCommon.TG.INDEX_TURNOnOff.ON;
+                        else
+                            ;
+
+                    break;
+                }
+                else
+                    ;
+            }
         }
     }
 }

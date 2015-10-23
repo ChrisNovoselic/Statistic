@@ -383,27 +383,6 @@ namespace StatisticCommon
             AddState((int)StatesMachine.AdminValues);
         }
 
-        public void OnEventConfirm(int id_tg)
-        {
-            foreach (TECComponent tc in allTECComponents)
-            {
-                if (tc.m_id == id_tg)
-                {
-                    if (tc.m_listTG[0].m_TurnOnOff == TG.INDEX_TURNOnOff.ON)
-                        tc.m_listTG[0].m_TurnOnOff = TG.INDEX_TURNOnOff.OFF;
-                    else
-                        if (tc.m_listTG[0].m_TurnOnOff == TG.INDEX_TURNOnOff.OFF)
-                            tc.m_listTG[0].m_TurnOnOff = TG.INDEX_TURNOnOff.ON;
-                        else
-                            ;
-
-                    break;
-                }
-                else
-                    ;
-            }
-        }
-
         public TECComponent TECComponentCurrent { get { return allTECComponents[indxTECComponents]; } }
 
         private void getRDGValues () {

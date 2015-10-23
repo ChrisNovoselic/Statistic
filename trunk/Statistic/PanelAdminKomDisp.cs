@@ -79,7 +79,7 @@ namespace Statistic
         }
 
         public static bool ALARM_USE = true;
-        public AdminAlarm m_adminAlarm;
+        public ViewAlarm m_viewAlarm;
         private PanelLabelAlarm m_panelLabelAlarm;
 
         private enum INDEX_CONTROL_UI
@@ -311,25 +311,25 @@ namespace Statistic
         public override bool Activate(bool activate)
         {
             //Значит пользователь администратор
-            if (m_adminAlarm == null) initAdminAlarm(); else ;
+            //???
+            //initViewAlarm ()
 
             if ((activate == true)
-                && (m_adminAlarm.IsStarted == false))
-                m_adminAlarm.Start();
+                && (m_viewAlarm.IsStarted == false))
+                m_viewAlarm.Start();
             else ;
 
             return base.Activate (activate);
         }
 
-        private void initAdminAlarm()
+        private void initViewAlarm(ConnectionSettings connSett)
         {
-            m_adminAlarm = new AdminAlarm();
-            m_adminAlarm.InitTEC(m_admin.m_list_tec);
+            m_viewAlarm = new ViewAlarm(connSett);
 
-            m_adminAlarm.EventAdd += new AdminAlarm.DelegateOnEventReg(OnAdminAlarm_EventAdd);
-            m_adminAlarm.EventRetry += new AdminAlarm.DelegateOnEventReg(OnAdminAlarm_EventRetry);
+            m_viewAlarm.EventAdd += new AlarmNotifyEventHandler(OnAdminAlarm_EventAdd);
+            m_viewAlarm.EventRetry += new AlarmNotifyEventHandler(OnAdminAlarm_EventRetry);
 
-            this.EventConfirm += new DelegateIntIntFunc(m_adminAlarm.OnEventConfirm);
+            this.EventConfirm += new DelegateIntIntFunc(m_viewAlarm.OnEventConfirm);
         }
 
         /// <summary>
@@ -340,10 +340,10 @@ namespace Statistic
         {
             if (m_cbxAlarm.Checked == true)
             {
-                m_btnAlarmCurPower.Enabled = m_adminAlarm.IsEnabledButtonAlarm(id_comp, -1);
+                m_btnAlarmCurPower.Enabled = m_viewAlarm.IsEnabledButtonAlarm(id_comp, -1);
                 m_btnAlarmTGTurnOnOff.Enabled = false;
                 foreach (TG tg in m_admin.allTECComponents[m_admin.indxTECComponents].m_listTG)
-                    if (m_adminAlarm.IsEnabledButtonAlarm(id_comp, tg.m_id) == true)
+                    if (m_viewAlarm.IsEnabledButtonAlarm(id_comp, tg.m_id) == true)
                     {
                         m_btnAlarmTGTurnOnOff.Enabled = true;
 
@@ -364,9 +364,9 @@ namespace Statistic
         private void EnabledButtonAlarm(int id_comp, int id_tg)
         {
             if ((m_cbxAlarm.Checked == true) && (id_comp == m_admin.allTECComponents [m_admin.indxTECComponents].m_id)) {
-                m_btnAlarmCurPower.Enabled = m_adminAlarm.IsEnabledButtonAlarm(id_comp, -1);
+                m_btnAlarmCurPower.Enabled = m_viewAlarm.IsEnabledButtonAlarm(id_comp, -1);
                 if (!(id_tg < 0))
-                    m_btnAlarmTGTurnOnOff.Enabled = m_adminAlarm.IsEnabledButtonAlarm(id_comp, id_tg);
+                    m_btnAlarmTGTurnOnOff.Enabled = m_viewAlarm.IsEnabledButtonAlarm(id_comp, id_tg);
                 else
                     ; //m_btnAlarmTGTurnOnOff.Enabled = false;
             }
@@ -405,13 +405,13 @@ namespace Statistic
         //public event DelegateStringFunc EventGUIReg;
         public DelegateStringFunc EventGUIReg;
         public void EventGUIConfirm () {
-            m_adminAlarm.Activate(true);
+            m_viewAlarm.Activate(true);
         }
 
-        private void toEventGUIReg(AdminAlarm.EventRegEventArgs ev)
+        private void toEventGUIReg(StatisticAlarm.AlarmNotifyEventArgs ev)
         {
-            //Деактивация m_adminAlarm
-            m_adminAlarm.Activate(false);
+            //Деактивация m_viewAlarm
+            m_viewAlarm.Activate(false);
 
             int id_evt = -1;
             if (ev.m_id_tg < 0)
@@ -428,7 +428,7 @@ namespace Statistic
         {
         }
 
-        private void OnAdminAlarm_EventAdd(AdminAlarm.EventRegEventArgs ev)
+        private void OnAdminAlarm_EventAdd(AlarmNotifyEventArgs ev)
         {
             try
             {
@@ -454,7 +454,7 @@ namespace Statistic
             toEventGUIReg(ev);
         }
 
-        private void OnAdminAlarm_EventRetry(AdminAlarm.EventRegEventArgs ev)
+        private void OnAdminAlarm_EventRetry(AlarmNotifyEventArgs ev)
         {
             toEventGUIReg(ev);
         }
@@ -754,8 +754,8 @@ namespace Statistic
 
             //Найти ТГ для "подтверждения" сигнализации
             foreach (TG tg in m_admin.allTECComponents[m_admin.indxTECComponents].m_listTG) {
-                dt = m_adminAlarm.TGAlarmDatetimeReg (id_comp, tg.m_id);
-                if ((dt_find.CompareTo (dt) > 0) && (m_adminAlarm.IsConfirmed (id_comp, tg.m_id)) == false) {
+                dt = m_viewAlarm.TGAlarmDatetimeReg (id_comp, tg.m_id);
+                if ((dt_find.CompareTo (dt) > 0) && (m_viewAlarm.IsConfirmed (id_comp, tg.m_id)) == false) {
                     dt_find = dt;
                     tg_find = tg;
                 }
@@ -778,35 +778,12 @@ namespace Statistic
 
             if (PanelAdminKomDisp.ALARM_USE == true)
             {
-                if (m_adminAlarm == null)
-                {
-                    if (((CheckBox)sender).Checked == true)
-                    {
-                        initAdminAlarm();
-
-                        m_adminAlarm.Start();
-
-                        m_adminAlarm.Activate(true);
-                    }
-                    else
-                    {
-                        if (m_adminAlarm.IsStarted == false)
-                            m_adminAlarm.Start();
-                        else
-                            ;
-
-                        m_adminAlarm.Activate(false);
-                    }
-                }
+                if (m_viewAlarm.IsStarted == false)
+                    m_viewAlarm.Start();
                 else
-                {
-                    if (m_adminAlarm.IsStarted == false)
-                        m_adminAlarm.Start();
-                    else
-                        ;
+                    ;
 
-                    m_adminAlarm.Activate(((CheckBox)sender).Checked);
-                }
+                m_viewAlarm.Activate(((CheckBox)sender).Checked);
             }
             else ;
 

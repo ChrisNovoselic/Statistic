@@ -12,99 +12,7 @@ namespace StatisticAlarm
 {
     public class AdminAlarm
     {
-        /// <summary>
-        /// Класс для описания аргумента при возникновении события - сигнализация
-        /// </summary>
-        public class EventRegEventArgs : EventArgs
-        {
-            public struct EventDetail
-            {
-                public int id;
-                public float value;
-                public DateTime last_changed_at;
-                public int id_tm;
-            }
-
-            public int Id { get { return m_id_tg < 0 ? m_id_gtp : m_id_tg; } }
-
-            public int m_id_gtp;
-            public int m_id_tg;
-            public DateTime m_dtRegistred;
-            public int m_situation;
-            public List<EventDetail> m_listEventDetail;
-            public string m_message;
-
-            //public EventRegEventArgs() : base ()
-            //{
-            //    m_id_gtp = -1;
-            //    m_id_tg = -1;
-            //    m_situation = 0;
-            //}
-
-            public static int GetSituation(string message)
-            {
-                int iRes = 0;
-
-                switch (message)
-                {
-                    case @"вверх":
-                    case @"вкл.":
-                        iRes = 1;
-                        break;
-                    case @"вниз":
-                    case @"выкл.":
-                        iRes = -1;
-                        break;
-                    default:
-                        break;
-                }
-
-                return iRes;
-            }
-
-            public static string GetMessage(int id_gtp, int id_tg, int situation)
-            {
-                string strRes = string.Empty;
-
-                if (id_tg < 0)
-                    if (situation == 1)
-                        strRes = @"вверх";
-                    else
-                        if (situation == -1)
-                            strRes = @"вниз";
-                        else
-                            strRes = @"нет";
-                else
-                    if (situation == (int)StatisticCommon.TG.INDEX_TURNOnOff.ON) //TGTurnOnOff = ON
-                        strRes = @"вкл.";
-                    else
-                        if (situation == (int)StatisticCommon.TG.INDEX_TURNOnOff.OFF) //TGTurnOnOff = OFF
-                            strRes = @"выкл.";
-                        else
-                            strRes = @"нет";
-
-                return strRes;
-            }
-
-            public EventRegEventArgs(int id_gtp, int id_tg, int s, List<EventDetail> listEventDetail)
-                : base()
-            {
-                m_id_gtp = id_gtp;
-                m_id_tg = id_tg;
-                m_dtRegistred = DateTime.UtcNow;
-                m_situation = s;
-                m_listEventDetail = listEventDetail;
-
-                m_message = GetMessage(m_id_gtp, m_id_tg, m_situation);
-            }
-        }
-
         List<StatisticAlarm.TecViewAlarm> m_listTecView;
-        
-        /// <summary>
-        /// Объект для учета событий сигнализации и их состояний
-        /// </summary>
-        private DictAlarmObject m_dictAlarmObject;
 
         private object lockValue;
 
@@ -139,18 +47,13 @@ namespace StatisticAlarm
         protected void Initialize () {
         }
         /// <summary>
-        /// Получить дату/время регистрации события сигнализации для ТГ
+        /// Событие-ретранслятор для 
         /// </summary>
-        /// <param name="id_comp">Составная часть ключа: идентификатор ГТП</param>
-        /// <param name="id_tg">Составная часть ключа: идентификатор ГТП</param>
-        /// <returns></returns>
-        public DateTime TGAlarmDatetimeReg(int id_comp, int id_tg)
-        {
-            return m_dictAlarmObject.TGAlarmDatetimeReg(id_comp, id_tg);
-        }
-
-        public delegate void DelegateOnEventReg(EventRegEventArgs e);
-        public event DelegateOnEventReg EventAdd, EventRetry;
+        public event TecViewAlarm.AlarmTecViewEventHandler EventReg;
+        /// <summary>
+        /// Событие для отправки в 'TecView' - изменение состояния объекта ТГ (вкл./откл)
+        ///  после подтверждения!!! пользователем
+        /// </summary>
         public event DelegateIntFunc EventConfirm;
         /// <summary>
         /// Обработчик события - событие сигнализации подтверждено (пользователем)
@@ -161,47 +64,18 @@ namespace StatisticAlarm
         {
             Logging.Logg().Debug(@"AdminAlarm::OnEventConfirm () - id=" + id_comp.ToString() + @"; id_tg=" + id_tg.ToString(), Logging.INDEX_MESSAGE.NOT_SET);
 
-            if (! (m_dictAlarmObject.Confirmed (id_comp, id_tg) < 0))
-                if (!(id_tg < 0))
-                    //Изменить состояние ТГ (вкл./выкл.)
-                    EventConfirm(id_tg);
-                else
-                    ;
-            else
-                Logging.Logg().Error(@"AdminAlarm::OnEventConfirm () - id=" + id_comp.ToString() + @"; id_tg=" + id_tg.ToString() + @", НЕ НАЙДЕН!", Logging.INDEX_MESSAGE.NOT_SET);
+            //Изменить состояние ТГ (вкл./выкл.)
+            //??? событие отправляется всем 'TecView', даже тем, в составе корых этого ТГ нет
+            EventConfirm(id_tg);
         }
         /// <summary>
         /// Обработчик события - регистрация события сигнализации от 'TecView'
         /// </summary>
         /// <param name="obj">Объект, зарегистрировавший событие сигнализации</param>
         /// <param name="ev">Аргумент события сигнализации</param>
-        private void OnEventReg_TecView(EventRegEventArgs ev)
+        private void OnEventReg_TecView(TecViewAlarm.AlarmTecViewEventArgs ev)
         {
-            INDEX_ACTION iAction = m_dictAlarmObject.Registred (ev);
-            if (iAction == INDEX_ACTION.ERROR)
-                throw new Exception(@"AdminAlarm::OnAdminAlarm_EventReg () - ...");
-            else
-                if (iAction == INDEX_ACTION.ADD)
-                    EventAdd(ev);
-                else
-                    if (iAction == INDEX_ACTION.RETRY)
-                        EventRetry(ev);
-                    else
-                        ;
-        }
-        /// <summary>
-        /// Возвратить признак "подтверждено" для события сигнализации
-        /// </summary>
-        /// <param name="id_comp">Часть составного ключа: идентификатор ГТП</param>
-        /// <param name="id_tg">Часть составного ключа: идентификатор ТГ</param>
-        /// <returns>Результат: признак установлен/не_установлен)</returns>
-        public bool IsConfirmed (int id_comp, int id_tg) {
-            return m_dictAlarmObject.IsConfirmed (id_comp, id_tg);
-        }
-
-        public bool IsEnabledButtonAlarm(int id, int id_tg)
-        {
-            return ! m_dictAlarmObject.IsConfirmed(id, id_tg);
+            EventReg (ev);
         }
 
         public void InitTEC(List<StatisticCommon.TEC> listTEC)
@@ -222,8 +96,8 @@ namespace StatisticAlarm
                 if ((DEBUG_ID_TEC == -1) || (DEBUG_ID_TEC == t.m_id)) {
                     m_listTecView.Add(new StatisticAlarm.TecViewAlarm(StatisticCommon.TecView.TYPE_PANEL.ADMIN_ALARM, -1, -1));
                     m_listTecView [m_listTecView.Count - 1].InitTEC (new List <StatisticCommon.TEC> { t }, markQueries);
-                    m_listTecView[m_listTecView.Count - 1].updateGUI_Fact = new IntDelegateIntIntFunc (m_listTecView[m_listTecView.Count - 1].AlarmEventRegistred);
-                    m_listTecView[m_listTecView.Count - 1].EventReg += new AdminAlarm.DelegateOnEventReg (OnEventReg_TecView);
+                    m_listTecView[m_listTecView.Count - 1].updateGUI_Fact = new IntDelegateIntIntFunc (m_listTecView[m_listTecView.Count - 1].AlarmRegistred);
+                    m_listTecView[m_listTecView.Count - 1].EventReg += new TecViewAlarm.AlarmTecViewEventHandler (OnEventReg_TecView);
 
                     m_listTecView[m_listTecView.Count - 1].m_arTypeSourceData[(int)StatisticCommon.TG.ID_TIME.MINUTES] = StatisticCommon.CONN_SETT_TYPE.DATA_SOTIASSO;
                     m_listTecView[m_listTecView.Count - 1].m_arTypeSourceData[(int)StatisticCommon.TG.ID_TIME.HOURS] = StatisticCommon.CONN_SETT_TYPE.DATA_SOTIASSO;
@@ -237,8 +111,6 @@ namespace StatisticAlarm
 
         public AdminAlarm()
         {
-            m_dictAlarmObject = new DictAlarmObject ();
-
             lockValue = new object ();
 
             m_iActiveCounter = -1; //Для отслеживания 1-й по счету "активации"
@@ -376,16 +248,16 @@ namespace StatisticAlarm
             }
         }
 
-        private TecViewAlarm getTecView (int id)
-        {
-            foreach (TecViewAlarm tv in m_listTecView)
-                if (tv.m_tec.m_id == id)
-                    return tv;
-                else
-                    ;
+        //private TecViewAlarm getTecView (int id)
+        //{
+        //    foreach (TecViewAlarm tv in m_listTecView)
+        //        if (tv.m_tec.m_id == id)
+        //            return tv;
+        //        else
+        //            ;
 
-            throw new Exception(@"AdminAlarm::getTecView (id_tec=" + id + @") - не найден объект 'TecView' ...");
-        }
+        //    throw new Exception(@"AdminAlarm::getTecView (id_tec=" + id + @") - не найден объект 'TecView' ...");
+        //}
 
         //private int OnEventAlarmRegistred_TecView(int id_tec, int curHour, int curMinute)
         //{
