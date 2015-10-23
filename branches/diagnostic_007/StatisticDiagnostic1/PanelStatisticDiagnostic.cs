@@ -151,9 +151,9 @@ namespace StatisticDiagnostic
         static DataTable arrayParam = new DataTable();
         static HDataSource m_DataSource;
         static System.Timers.Timer UpdateTimer;
-        Task taskdb = new Task();
-        Modes modesdb = new Modes();
-        Tec tecdb = new Tec();
+        static Task taskdb = new Task();
+        static Modes modesdb = new Modes();
+        static Tec tecdb = new Tec();
         int iListernID;
 
         /// <summary>
@@ -170,15 +170,7 @@ namespace StatisticDiagnostic
         /// </summary>
         public void startUp()
         {
-            RefreshDataSource();
-        }
-
-        /// <summary>
-        /// Перегрузка информации из бд
-        /// </summary>
-        public void RefreshDataSource()
-        {
-            LoadData();
+ 
         }
 
         /// <summary>
@@ -191,7 +183,7 @@ namespace StatisticDiagnostic
             UpdateTimer.AutoReset = true;
             UpdateTimer.Elapsed += new ElapsedEventHandler(UpdateTimer_Elapsed);
             UpdateTimer.Interval = 67000;
-            //GC.KeepAlive(UpdateTimer);
+            GC.KeepAlive(UpdateTimer);
         }
 
         /// <summary>
@@ -234,9 +226,12 @@ namespace StatisticDiagnostic
 
             public void Command()
             {
-                ClearStates();
-                AddState((int)State.Command);
-                Run(@"Command");
+                lock (m_lockState)
+                {
+                    ClearStates();
+                    AddState((int)State.Command);
+                    Run(@"Command");
+                }
             }
 
             /// <summary>
@@ -411,7 +406,8 @@ namespace StatisticDiagnostic
                 this.TECDataGridView.Columns[2].Name = "Крайнее значение";
                 this.TECDataGridView.Columns[3].Name = "Время проверки";
                 this.TECDataGridView.Columns[4].Name = "Связь";
-                this.TECDataGridView.Columns[5].Name = "Связь";
+                this.TECDataGridView.Columns[5].Name = "TEC";
+                this.TECDataGridView.Columns[5].Visible = false;
                 this.TECDataGridView.Columns[0].Width = 43;
                 this.TECDataGridView.Columns[1].Width = 57;
                 this.TECDataGridView.Columns[2].Width = 35;
@@ -475,11 +471,12 @@ namespace StatisticDiagnostic
             {
                 if (activated == true)
                 {
-                    //AddItemTec();
-
-                    for (int i = 0; i < m_arPanelsTEC.Length; i++)
+                    if (!(m_arPanelsTEC == null))
                     {
-                        m_arPanelsTEC[i].Focus();
+                        for (int i = 0; i < m_arPanelsTEC.Length; i++)
+                        {
+                            m_arPanelsTEC[i].Focus();
+                        }
                     }
                 }
                 else ;
@@ -494,6 +491,19 @@ namespace StatisticDiagnostic
                 {
                     for (int i = 0; i < m_arPanelsTEC.Length; i++)
                     {
+                        if (TECDataGridView.InvokeRequired)
+                        {
+                            TECDataGridView.Invoke(new Action(() => m_arPanelsTEC[i].TECDataGridView.Dispose()));
+                        }
+                        else
+                        m_arPanelsTEC[i].TECDataGridView.Dispose();
+
+                        if (m_arPanelsTEC[i].InvokeRequired)
+                        {
+                            m_arPanelsTEC[i].Invoke(new Action(() => m_arPanelsTEC[i].Dispose()));
+
+                        }
+                        else
                         m_arPanelsTEC[i].Dispose();
                     }
                 }
@@ -666,7 +676,6 @@ namespace StatisticDiagnostic
                         m_arPanelsTEC[i].TECDataGridView.Invoke(new Action(() => m_arPanelsTEC[i].TECDataGridView.Rows[r].Cells[2].Value = DR[t]["Value"]));
                         m_arPanelsTEC[i].TECDataGridView.Invoke(new Action(() => m_arPanelsTEC[i].TECDataGridView.Rows[r].Cells[1].Value = DR[t + 1]["Value"]));
                         m_arPanelsTEC[i].TECDataGridView.Invoke(new Action(() => m_arPanelsTEC[i].TECDataGridView.Rows[r].Cells[5].Value = DR[t]["NAME_SHR"]));
-                        m_arPanelsTEC[i].TECDataGridView.Invoke(new Action(() => m_arPanelsTEC[i].TECDataGridView.Columns[5].Visible = false));
                         CellsPingTEC(filter, i);
                         m_arPanelsTEC[i].TECDataGridView.Invoke(new Action(() => m_arPanelsTEC[i].TECDataGridView.Rows[r].Cells[3].Value = text.ToString()));
                         PaintigCells(i, r);
@@ -677,7 +686,6 @@ namespace StatisticDiagnostic
                         m_arPanelsTEC[i].TECDataGridView.Rows[r].Cells[2].Value = DR[t]["Value"];
                         m_arPanelsTEC[i].TECDataGridView.Rows[r].Cells[5].Value = DR[t]["NAME_SHR"];
                         m_arPanelsTEC[i].TECDataGridView.Rows[r].Cells[1].Value = DR[t + 1]["Value"];
-                        m_arPanelsTEC[i].TECDataGridView.Columns[5].Visible = false;
 
                         m_arPanelsTEC[i].TECDataGridView.Rows[r].Cells[3].Value = text.ToString();
                         PaintigCells(i, r);
@@ -686,7 +694,6 @@ namespace StatisticDiagnostic
                     t = t + 2;
                 }
             }
-
 
             /// <summary>
             /// Функция заполнения гридов
@@ -1645,12 +1652,22 @@ namespace StatisticDiagnostic
                     filterTask += TaskDataGridView.Rows[i].Cells[0].Value.ToString() + "'";
 
                     DataRow[] dr = m_tableSourceData.Select(filterTask);
-
-                    TaskDataGridView.Rows[i].Cells[0].Value = dr[0]["NAME_SHR"].ToString();
-                    TaskDataGridView.Rows[i].Cells[1].Value = dr[0]["Value"].ToString();
-                    TaskDataGridView.Rows[i].Cells[2].Value = dr[1]["Value"].ToString();
-                    ColumTimeTask(i);
+                    if (TaskCheckedListBox.InvokeRequired)
+                    {
+                        TaskDataGridView.Invoke(new Action(() => TaskDataGridView.Rows[i].Cells[0].Value = dr[0]["NAME_SHR"].ToString()));
+                        TaskDataGridView.Invoke(new Action(() => TaskDataGridView.Rows[i].Cells[1].Value = dr[0]["Value"].ToString()));
+                        TaskDataGridView.Invoke(new Action(() => TaskDataGridView.Rows[i].Cells[2].Value = dr[1]["Value"].ToString()));
+                        ColumTimeTask(i);
+                    }
+                    else
+                    {
+                        TaskDataGridView.Rows[i].Cells[0].Value = dr[0]["NAME_SHR"].ToString();
+                        TaskDataGridView.Rows[i].Cells[1].Value = dr[0]["Value"].ToString();
+                        TaskDataGridView.Rows[i].Cells[2].Value = dr[1]["Value"].ToString();
+                        ColumTimeTask(i);
+                    }
                 }
+                //CheckBorderTime();
             }
 
             /// <summary>
@@ -1658,7 +1675,7 @@ namespace StatisticDiagnostic
             /// </summary>
             public void CheckBorderTime()
             {
-                string nmshr = "ID_Value = 28";
+                string nmshr = "ID_Value = '28' and ID_Units = 12";
                 DataRow[] dr = m_tableSourceData.Select(nmshr);
                 int lim;
 
@@ -1671,38 +1688,103 @@ namespace StatisticDiagnostic
                         if (avgtime > (lim = (int)Limit.max))
                         {
                             TaskDataGridView.Invoke(new Action(() => TaskDataGridView.Columns[4].Visible = true));
-                            WhatIsChecked(dr[i]["NAME_SHR"].ToString());
-                            //TaskDataGridView.Invoke(new Action(() => TaskDataGridView.Rows[].Cells[].Value = "";
+                            PntngRowsTask(ThatChecked(dr[i]["NAME_SHR"].ToString()), dr[i]["NAME_SHR"].ToString(), "max");
                         }
                         else
+                        {
                             TaskDataGridView.Invoke(new Action(() => TaskDataGridView.Columns[4].Visible = true));
-                        //TaskDataGridView.Invoke(new Action(() => TaskDataGridView.Rows[].Cells[].Value = "" ));
+                            PntngRowsTask(ThatChecked(dr[i]["NAME_SHR"].ToString()), dr[i]["NAME_SHR"].ToString(), "min");
+                        }
                     }
                     else
+                    {
+                        for (int j = 0; j < TaskDataGridView.RowCount; j++)
+                        {
+                            TaskDataGridView.Invoke(new Action(() => TaskDataGridView.Rows[j].DefaultCellStyle.BackColor = Color.White));
+                        }
                         TaskDataGridView.Invoke(new Action(() => TaskDataGridView.Columns[4].Visible = false));
+                    }
                 }
             }
 
             /// <summary>
             /// 
             /// </summary>
-            public void PntngRowsTask()
+            public void PntngRowsTask(bool bl, string name, string lim)
             {
-                foreach (var item in TaskCheckedListBox.CheckedItems)
+                if (lim == "max")
                 {
+                    if (bl == true)
+                    {
+                        for (int i = 0; i < TaskDataGridView.RowCount; i++)
+                        {
+                            if (TaskDataGridView.Rows[i].Cells[0].Value == name)
+                            {
+                                TaskDataGridView.Invoke(new Action(() => TaskDataGridView.Rows[i].Cells[4].Value = "Превышено время выполнения задачи"));
+                                TaskDataGridView.Invoke(new Action(() => TaskDataGridView.Rows[i].DefaultCellStyle.BackColor = Color.Yellow));
+                            }
+                        }
+                    }
 
+                    else
+                    {
+                        string nmshr = "NAME_SHR = '" + name + "'";
+                        DataRow[] dr = m_tableSourceData.Select(nmshr);
+                        if (TaskDataGridView.RowCount == 0)
+                        {
+                            AddRowsTask(1);
+                        }
+                        TaskDataGridView.Invoke(new Action(() => TaskDataGridView.Rows[0].Cells[0].Value = dr[0]["NAME_SHR"].ToString()));
+                        TaskDataGridView.Invoke(new Action(() => TaskDataGridView.Rows[0].Cells[1].Value = dr[0]["Value"].ToString()));
+                        TaskDataGridView.Invoke(new Action(() => TaskDataGridView.Rows[0].Cells[2].Value = dr[1]["Value"].ToString()));
+                        ColumTimeTask(0);
+                        TaskCheckedListBox.SelectedIndex = TaskCheckedListBox.Items.IndexOf(dr[0]["NAME_SHR"]);
+                        TaskDataGridView.Invoke(new Action(() => TaskDataGridView.Rows[0].DefaultCellStyle.BackColor = Color.Yellow));
+                        TaskDataGridView.Invoke(new Action(() => TaskDataGridView.Rows[0].Cells[4].Value = "Превышено время выполнения задачи"));
+                    }
                 }
 
+                else
+                {
+                    if (bl == true)
+                    {
+                        for (int i = 0; i < TaskDataGridView.RowCount; i++)
+                        {
+                            if (TaskDataGridView.Rows[i].Cells[0].Value == name)
+                            {
+                                TaskDataGridView.Invoke(new Action(() => TaskDataGridView.Rows[i].Cells[4].Value = "Внимание! Ошибка выполнения задачи"));
+                                TaskDataGridView.Invoke(new Action(() => TaskDataGridView.Rows[i].DefaultCellStyle.BackColor = Color.Red));
+                            }
+                        }
+                    }
+                    else
+                    {
+                        string nmshr = "NAME_SHR = '" + name + "'";
+                        DataRow[] dr = m_tableSourceData.Select(nmshr);
+                        if (TaskDataGridView.RowCount == 0)
+                        {
+                            AddRowsTask(1);
+                        }
+                        TaskDataGridView.Invoke(new Action(() => TaskDataGridView.Rows[0].Cells[0].Value = dr[0]["NAME_SHR"].ToString()));
+                        TaskDataGridView.Invoke(new Action(() => TaskDataGridView.Rows[0].Cells[1].Value = dr[0]["Value"].ToString()));
+                        TaskDataGridView.Invoke(new Action(() => TaskDataGridView.Rows[0].Cells[2].Value = dr[1]["Value"].ToString()));
+                        ColumTimeTask(0);
+                        TaskDataGridView.Invoke(new Action(() => TaskCheckedListBox.SelectedIndex = TaskCheckedListBox.Items.IndexOf(dr[0]["NAME_SHR"])));
+                        TaskDataGridView.Invoke(new Action(() => TaskDataGridView.Rows[0].DefaultCellStyle.BackColor = Color.Yellow));
+                        TaskDataGridView.Invoke(new Action(() => TaskDataGridView.Rows[0].Cells[4].Value = "Превышено время выполнения задачи"));
+                    }
+                }
             }
 
             /// <summary>
-            /// 
+            /// проверка на чек
             /// </summary>
             /// <param name="itemChecked"></param>
             /// <returns></returns>
-            public bool WhatIsChecked(string itemChecked)
+            public bool ThatChecked(string itemChecked)
             {
                 return TaskCheckedListBox.GetItemChecked(TaskCheckedListBox.Items.IndexOf(itemChecked));
+
             }
         }
 
@@ -1728,9 +1810,9 @@ namespace StatisticDiagnostic
         public void m_DataSource_EvtRecievedTable(object table)
         {
             m_tableSourceData = (DataTable)table;
+            start();
             fillGrid();
             DbSources.Sources().UnRegister(iListernID);
-            AddPanel();
         }
 
         public void LoadData()
@@ -1743,7 +1825,7 @@ namespace StatisticDiagnostic
             m_DataSource.StartDbInterfaces();
             m_DataSource.Start();
             m_DataSource.Command();
-            m_DataSource.EvtRecievedTable += new DelegateObjectFunc(m_DataSource_EvtRecievedTable);
+            m_DataSource.EvtRecievedTable += new DelegateObjectFunc(m_DataSource_EvtRecievedTable);          
         }
 
         /// <summary>
@@ -1752,19 +1834,19 @@ namespace StatisticDiagnostic
         public override void Start()
         {
             base.Start();
-
+            TimerUp();
             LoadData();
-
-            start();
         }
+
 
         /// <summary>
         /// вызов функций старта МОДЕС, ТЭЦ
         /// </summary>
-        public void start()
+        private void start()
         {
             StartPanelTec();
             StartModes();
+            taskdb.GetDataTask(arraySourceDataTask);
         }
 
         private void fillGrid()
@@ -1820,10 +1902,8 @@ namespace StatisticDiagnostic
         /// </summary>
         public void AddPanel()
         {
-            TimerUp();
             AddPanelModes();
             AddPanelTEC();
-            taskdb.GetDataTask(arraySourceDataTask);
         }
 
         /// <summary>
@@ -1952,11 +2032,7 @@ namespace StatisticDiagnostic
                 modesdb.ActivateMODES(activated);
             }
 
-            else
-            {
-                tecdb.ActivateTEC(activated);
-                modesdb.ActivateMODES(activated);
-            }
+            else ;
 
             return bRes;
         }
