@@ -13,19 +13,58 @@ namespace StatisticAlarm
 {
     public class ViewAlarm : HHandlerQueue
     {
+        /// <summary>
+        /// Класс для хранения значений о событии сигнализации
+        /// </summary>
         public class EventRegEventArgs
         {
-            public int m_id_comp;
-            public DateTime m_dtRegistred;
+            public int m_id_comp
+                , m_id_user_registred
+                , m_id_user_fixed
+                , m_id_user_confirm;
+            public DateTime? m_dtRegistred
+                , m_dtFixed
+                , m_dtConfirm;
             public int m_situation;
             public string m_message;
 
-            public EventRegEventArgs(int id_comp, DateTime dtReg, int s, string mes)
+            public EventRegEventArgs(DataRow rowEvt)
+            //public EventRegEventArgs(int id_comp
+            //                        , int idUsrReg, DateTime dtReg
+            //                        , int idUsrFix, DateTime dtFix
+            //                        , int idUsrConfirm, DateTime dtConfirm
+            //                        , int s, string mes)
             {
-                m_id_comp = id_comp;
-                m_dtRegistred = dtReg;
-                m_situation = s;
-                m_message = mes;
+                ////Вариант №1
+                //m_id_comp = id_comp;
+                //m_dtRegistred = dtReg;
+                //m_situation = s;
+                //m_message = mes;
+                //Вариант №2
+                m_id_comp = (int)rowEvt[@"ID_COMPONENT"];
+                //Регистрация события
+                m_id_user_registred = (int)rowEvt[@"ID_USER_REGISTRED"];
+                m_dtRegistred = (DateTime)rowEvt[@"DATETIME_REGISTRED"];
+                //Фиксация события
+                if (! (rowEvt[@"ID_USER_FIXED"] is System.DBNull))
+                    m_id_user_fixed = (int)rowEvt[@"ID_USER_FIXED"];
+                else
+                    m_id_user_fixed = -1;
+                if (!(rowEvt[@"DATETIME_FIXED"] is System.DBNull))
+                    m_dtFixed = (DateTime)rowEvt[@"DATETIME_FIXED"];
+                else
+                    m_dtFixed = null;
+                //Подтверждение события
+                if (!(rowEvt[@"ID_USER_CONFIRM"] is System.DBNull))
+                    m_id_user_confirm = (int)rowEvt[@"ID_USER_CONFIRM"];
+                else
+                    m_id_user_confirm = -1;
+                if (!(rowEvt[@"DATETIME_CONFIRM"] is System.DBNull))
+                    m_dtConfirm = (DateTime)rowEvt[@"DATETIME_CONFIRM"];
+                else
+                    m_dtConfirm = null;
+                m_situation = AdminAlarm.EventRegEventArgs.GetSituation((string)rowEvt[@"MESSAGE"]);
+                m_message = (string)rowEvt[@"MESSAGE"];
             }
         }
         /// <summary>
@@ -33,8 +72,11 @@ namespace StatisticAlarm
         /// </summary>
         public enum StatesMachine { Unknown = -1, List, Insert, Update }
 
+        private DictAlarmObject m_dicAlarmObject;
+
         public delegate void DelegateOnEventReg(StatisticAlarm.ViewAlarm.EventRegEventArgs e);
-        public event DelegateOnEventReg EventAdd;
+        public event DelegateOnEventReg EventAdd, EventRetry;
+        private event DelegateOnEventReg EventReg;
         /// <summary>
         /// Класс для получения данных из БД
         /// </summary>
@@ -189,37 +231,35 @@ namespace StatisticAlarm
             protected override int StateResponse(int state, object obj)
             {
                 int iRes = 0;
-                DataTable tableRes = null;
-                bool bAnswer = true;
 
                 switch ((StatesMachine)state)
                 {
                     case StatesMachine.CurrentTime:
                         GetCurrentTimeResponse(obj as DataTable);
-                        bAnswer = false;
                         break;
                     case StatesMachine.ListEvents:
                         break;
                     case StatesMachine.InsertEventMain:
                         GetInsertEventMainResponse(obj as DataTable);
-                        bAnswer = false;
                         break;
                     case StatesMachine.InsertEventDetail:
-                        bAnswer = true;
                         break;
                     case StatesMachine.UpdateEventFixed:
                     case StatesMachine.UpdateEventConfirm:
                         // ответа не требуется
-                        bAnswer = false;
                         break;
                     default:
                         break;
                 }
 
-                if (bAnswer == true)
+                if (isLastState (state) == true)
                 {
-                    //Сохранить ответ
-                    m_tableResponse = (obj as DataTable).Copy ();
+                    //Проверить необходимость сохранения результата запроса
+                    if (! (obj == null))
+                        //Сохранить результат в "выходную" переменную
+                        m_tableResponse = (obj as DataTable).Copy ();
+                    else
+                        ;
                     //Указать, что ответ готов
                     m_arSyncStateCheckResponse[(int)INDEX_SYNC_STATECHECKRESPONSE.RESPONSE].Set();
                 }
@@ -310,6 +350,7 @@ namespace StatisticAlarm
                 query += @";";
                 //??? Переход на новую строку
                 //query += "\r\n";
+                query += Environment.NewLine;
                 //Запрос на получение идентификатора вставленной записи
                 query += @"SELECT * FROM [dbo].[AlarmEvent] WHERE "
                     + @"[ID_COMPONENT]=" + id
@@ -448,25 +489,14 @@ namespace StatisticAlarm
         private void fThreadListEventsResponse_DoWork (object obj, DoWorkEventArgs ev)
         {
             DataTable tableRes = ev.Argument as DataTable;
-            DataRow []rowsUnFixed = tableRes.Select (@"[DATETIME_FIXED] IS NULL", @"[DATETIME_REGISTRED]");
-            foreach (DataRow r in rowsUnFixed)
-                EventAdd (new EventRegEventArgs ((int)r[@"ID_COMPONENT"]
-                                                , (DateTime)r[@"DATETIME_REGISTRED"]
-                                                , AdminAlarm.EventRegEventArgs.GetSituation ((string)r[@"MESSAGE"])
-                                                , (string)r[@"MESSAGE"]));
-            
-            Console.WriteLine("\tнезарегистрированных: {0}", rowsUnFixed.Length);
+            //DataRow []rowsUnFixed = tableRes.Select (@"[DATETIME_FIXED] IS NULL", @"[DATETIME_REGISTRED]");
+            foreach (DataRow r in tableRes.Rows)
+                EventReg(new EventRegEventArgs(r));
         }
 
         private void fThreadListEventsResponse_RunWorkerCompleted(object obj, RunWorkerCompletedEventArgs ev)
         {
             Console.WriteLine(@"ViewAlarm::fThreadListEventsResponse_RunWorkerCompleted () - Ok...");
-        }
-
-        private void GetInsertEventMainResponse(DataTable tableRes)
-        {
-            long idEventMain = (long)tableRes.Rows[0][@"ID"];
-            Console.WriteLine(@"Добавлена запись о событии сигнализации: Id=" + idEventMain);            
         }
         /// <summary>
         /// Функция обработки результатов запроса
@@ -480,10 +510,21 @@ namespace StatisticAlarm
 
             m_threadListEventsResponse.RunWorkerAsync(tableRes);
         }
-
+        /// <summary>
+        /// Обработчик события регистрации события
+        /// </summary>
+        /// <param name="ev">Аргумент события - описание события сигнализации</param>
+        private void OnEventReg (EventRegEventArgs ev)
+        {
+        }
+        /// <summary>
+        /// Обработчик события запроса данных для панели
+        /// </summary>
+        /// <param name="obj">Аргумент события</param>
         public void OnEvtDataAskedHost_PanelAlarmJournal(object obj)
         {
             EventArgsDataHost ev = obj as EventArgsDataHost;
+            //Поставить в очередь обработки
             Push (ev.reciever, new object [] { ev.par as object [] });
         }
 
@@ -560,7 +601,7 @@ namespace StatisticAlarm
                     GetListEventsResponse(itemQueue, tableRes);
                     break;
                 case StatesMachine.Insert:
-                    GetInsertEventMainResponse (tableRes);
+                    //Результата нет (рез-т вставленные записи)
                     break;
                 default:
                     break;

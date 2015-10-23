@@ -125,8 +125,11 @@ namespace StatisticAlarm
                     }
                     else
                         ;
+            //Назначить обработчик для события - изменение состояния переключателя элемента в списке компонентов ТЭЦ
             (ctrl as CheckedListBox).ItemCheck += new ItemCheckEventHandler(fTECComponent_OnItemCheck);
+            //Назначить обработчик для события - выбор элемента в списке компонентов ТЭЦ
             (ctrl as CheckedListBox).SelectedIndexChanged += new EventHandler(fTECComponent_OnSelectedIndexChanged);
+            //Выбрать 1-ый элемент ("Все компоненты")
             (ctrl as CheckedListBox).SelectedIndex = 0;
             (ctrl as CheckedListBox).Enabled = false;
             //Запустить на выполнениие (при необходимости) таймер для обновления значений в таблице
