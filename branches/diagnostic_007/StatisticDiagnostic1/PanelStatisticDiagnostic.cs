@@ -489,23 +489,23 @@ namespace StatisticDiagnostic
             {
                 if (!(m_arPanelsTEC == null))
                 {
-                    for (int i = 0; i < m_arPanelsTEC.Length; i++)
-                    {
-                        if (TECDataGridView.InvokeRequired)
-                        {
-                            TECDataGridView.Invoke(new Action(() => m_arPanelsTEC[i].TECDataGridView.Dispose()));
-                        }
-                        else
-                        m_arPanelsTEC[i].TECDataGridView.Dispose();
+                    //for (int i = 0; i < m_arPanelsTEC.Length; i++)
+                    //{
+                    //    if (TECDataGridView.InvokeRequired)
+                    //    {
+                    //        TECDataGridView.Invoke(new Action(() => m_arPanelsTEC[i].TECDataGridView.Dispose()));
+                    //    }
+                    //    else
+                    //        m_arPanelsTEC[i].TECDataGridView.Dispose();
 
-                        if (m_arPanelsTEC[i].InvokeRequired)
-                        {
-                            m_arPanelsTEC[i].Invoke(new Action(() => m_arPanelsTEC[i].Dispose()));
+                    //    if (m_arPanelsTEC[i].InvokeRequired)
+                    //    {
+                    //        m_arPanelsTEC[i].Invoke(new Action(() => m_arPanelsTEC[i].Dispose()));
 
-                        }
-                        else
-                        m_arPanelsTEC[i].Dispose();
-                    }
+                    //    }
+                    //    else
+                    //        m_arPanelsTEC[i].Dispose();
+                    //}
                 }
                 else ;
             }
@@ -869,16 +869,18 @@ namespace StatisticDiagnostic
             }
 
             /// <summary>
-            /// снятие выделения
+            /// Обработчик события - при "щелчке" по любой части ячейки
             /// </summary>
-            /// <param name="sender"></param>
-            /// <param name="e"></param>
-            /// <param name="k"></param>
+            /// <param name="sender">Объект, инициировавший событие - (???ячейка, скорее - 'DataGridView')</param>
+            /// <param name="e">Аогумент события</param>
             private void TECDataGridView_Cell(object sender, EventArgs e)
             {
                 try
                 {
-                    TECDataGridView.SelectedCells[0].Selected = false;
+                    if (TECDataGridView.SelectedCells.Count > 0)
+                        TECDataGridView.SelectedCells[0].Selected = false;
+                    else
+                        ;
                 }
                 catch { }
             }
@@ -1022,10 +1024,10 @@ namespace StatisticDiagnostic
             {
                 if (!(m_arPanelsMODES == null))
                 {
-                    for (int i = 0; i < m_arPanelsMODES.Length; i++)
-                    {
-                        m_arPanelsMODES[i].Dispose();
-                    }
+                    //for (int i = 0; i < m_arPanelsMODES.Length; i++)
+                    //{
+                    //    m_arPanelsMODES[i].Dispose();
+                    //}
                 }
             }
 
