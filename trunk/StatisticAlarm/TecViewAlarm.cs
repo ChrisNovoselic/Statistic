@@ -5,6 +5,7 @@ using System.Data;
 using System.Collections.Generic;
 using System.Threading;
 using System.Drawing; //Color
+using System.Globalization; //...CultureInfo
 
 using HClassLibrary;
 
@@ -17,25 +18,28 @@ namespace StatisticAlarm
         /// </summary>
         public class AlarmTecViewEventArgs : AlarmNotifyEventArgs
         {
+            /// <summary>
+            /// Структура для описания элемента при детализации
+            ///  случая выполнения условий сигнализаций
+            /// </summary>
             public struct EventDetail
             {
                 public int id;
                 public float value;
                 public DateTime last_changed_at;
                 public int id_tm;
+
+                public string ValuesToString()
+                {
+                    return @"value=" + value.ToString(@"F3", CultureInfo.InvariantCulture)
+                        + @", last_changed_at=" + last_changed_at.ToString(@"dd.MM.yyyy HH.mm.ss.fff");
+                }
             }
 
             public int Id { get { return m_id_tg < 0 ? m_id_gtp : m_id_tg; } }
 
             public DateTime m_dtRegistred;
             public List<EventDetail> m_listEventDetail;
-
-            //public EventRegEventArgs() : base ()
-            //{
-            //    m_id_gtp = -1;
-            //    m_id_tg = -1;
-            //    m_situation = 0;
-            //}
 
             public AlarmTecViewEventArgs(int id_gtp, int id_tg, int s, List<EventDetail> listEventDetail)
                 : base()
@@ -49,17 +53,27 @@ namespace StatisticAlarm
                 m_message = GetMessage(m_id_gtp, m_id_tg, m_situation);
             }
         }
-        
+        /// <summary>
+        /// Делегат - тип обработчика события 'EventReg'
+        ///  регистрации случая выполнения условия сигнализаций
+        /// </summary>
+        /// <param name="ev">Аргумент при возникновении события</param>        
         public delegate void AlarmTecViewEventHandler (AlarmTecViewEventArgs ev);
+        /// <summary>
+        /// Событие для регистрации случая выполнения условия сигнализаций
+        ///  в режиме "выполнения_приложения"
+        /// </summary>
         public event AlarmTecViewEventHandler EventReg;
-
+        /// <summary>
+        /// Конструктор - основной (параметры - базового класа)
+        /// </summary>
+        /// <param name="typePanel">Тип панели к которой принадлежит объект класс</param>
+        /// <param name="indxTEC">Индекс ТЭЦ в списке</param>
+        /// <param name="indx_comp">??? Индекс компонента</param>
         public TecViewAlarm(StatisticCommon.TecView.TYPE_PANEL typePanel, int indxTEC, int indx_comp)
             : base(typePanel, indxTEC, indx_comp)
         {
         }
-
-        //public delegate int EventAlarmRegistredHandler(int id, int hour, int min);
-        //public event EventAlarmRegistredHandler EventAlarmRegistred;
         /// <summary>
         /// Функция проверки выполнения условий сигнализаций (для одного ГТП)
         /// </summary>
@@ -72,7 +86,7 @@ namespace StatisticAlarm
 
             //Признак выполнения функции
             int iRes = (int)HHandler.INDEX_WAITHANDLE_REASON.SUCCESS
-                , iDebug = 1; //-1 - нет отладки, 0 - раб./отладка, 1 - имитирование
+                , iDebug = -1; //-1 - нет отладки, 0 - раб./отладка, 1 - имитирование
             //Константы
             double TGTURNONOFF_VALUE = -1F //Значения для сигнализации "ТГ вкл./откл."
                 , NOT_VALUE = -2F //НЕТ значения
@@ -82,11 +96,12 @@ namespace StatisticAlarm
             //Список объектов, детализирующих событие сигнализации
             List<TecViewAlarm.AlarmTecViewEventArgs.EventDetail> listEventDetail = new List<TecViewAlarm.AlarmTecViewEventArgs.EventDetail>();
 
-            //Для отладки
+            #region Код для отладки
             if (!(iDebug < 0))
                 Console.WriteLine(@" - curHour=" + curHour.ToString() + @"; curMinute=" + curMinute.ToString());
             else
                 ;
+            #endregion Окончание блока кода для отладки
 
             //if (((lastHour == 24) || (lastHourError == true)) || ((lastMin == 0) || (lastMinError == true)))
             if (((curHour == 24) || (m_markWarning.IsMarked((int)INDEX_WARNING.LAST_HOUR) == true))
@@ -101,14 +116,15 @@ namespace StatisticAlarm
                 {
                     curTurnOnOff = StatisticCommon.TG.INDEX_TURNOnOff.UNKNOWN;
 
-                    //Для отладки
+                    #region Код для отладки
                     if (!(iDebug < 0))
                         Console.Write(tg.m_id_owner_gtp + @":" + tg.m_id + @"=" + m_dictValuesTG[tg.m_id].m_powerCurrent_TM);
                     else
                         ;
+                    #endregion Окончание блока кода для отладки
 
-                    if (m_dictValuesTG[tg.m_id].m_powerCurrent_TM < 1)
-                        if (!(m_dictValuesTG[tg.m_id].m_powerCurrent_TM < 0))
+                    if (m_dictValuesTG[tg.m_id].m_powerCurrent_TM < 1F)
+                        if (!(m_dictValuesTG[tg.m_id].m_powerCurrent_TM < 0F))
                             curTurnOnOff = StatisticCommon.TG.INDEX_TURNOnOff.OFF;
                         else
                             ;
@@ -128,6 +144,7 @@ namespace StatisticAlarm
                         , id_tm = -1
                     });
 
+                    #region Код для отладки
                     //Имитирование - изменяем состояние
                     if (iDebug == 1)
                         if (!(tg.m_TurnOnOff == StatisticCommon.TG.INDEX_TURNOnOff.UNKNOWN))
@@ -152,38 +169,41 @@ namespace StatisticAlarm
                                 else
                                     ;
 
-                            //Для отладки
-                            if (!(iDebug < 0))
-                                Console.Write(Environment.NewLine + @"Отладка:: " + tg.m_id_owner_gtp + @":" + tg.m_id + @"=" + m_dictValuesTG[tg.m_id].m_powerCurrent_TM + Environment.NewLine);
-                            else
-                                ;
+                            Console.Write(Environment.NewLine + @"Отладка:: "
+                                + tg.m_id_owner_gtp + @":" + tg.m_id + @"="
+                                + m_dictValuesTG[tg.m_id].m_powerCurrent_TM
+                                + Environment.NewLine);                            
                         }
                         else
                             ;
                     else
                         ;
+                    #endregion Окончание блока кода для отладки
 
-                    if (tg.m_TurnOnOff == StatisticCommon.TG.INDEX_TURNOnOff.UNKNOWN)
-                    {
-                        tg.m_TurnOnOff = curTurnOnOff;
-                    }
-                    else
-                    {
-                        if (!(tg.m_TurnOnOff == curTurnOnOff))
-                        {
-                            EventReg(new TecViewAlarm.AlarmTecViewEventArgs(TECComponentCurrent.m_id, tg.m_id, (int)curTurnOnOff, listEventDetail));
-
-                            //Прекращаем текущий цикл...
-                            //Признак досрочного прерывания цикла для сигн. "Текущая P"
-                            power_TM = TGTURNONOFF_VALUE;
-
-                            break;
-                        }
+                    if (! (curTurnOnOff == StatisticCommon.TG.INDEX_TURNOnOff.UNKNOWN))
+                        if (tg.m_TurnOnOff == StatisticCommon.TG.INDEX_TURNOnOff.UNKNOWN)
+                            tg.m_TurnOnOff = curTurnOnOff;
                         else
-                            ; //EventUnReg...
-                    }
+                            if (!(tg.m_TurnOnOff == curTurnOnOff))
+                            {
+                                //
+                                EventReg(new TecViewAlarm.AlarmTecViewEventArgs(TECComponentCurrent.m_id, tg.m_id, (int)curTurnOnOff, listEventDetail));
 
-                    //Для отладки
+                                //Прекращаем текущий цикл...
+                                //Признак досрочного прерывания цикла для сигн. "Текущая P"
+                                power_TM = TGTURNONOFF_VALUE;
+
+                                break;
+                            }
+                            else
+                                ; //Состояние ТГ не изменилось
+                    else
+                        //Текущее состояние ТГ не удалось определить
+                        Logging.Logg().Error (@"TecViewAlarm::AlarmRegistred (id_tg=" + tg.m_id + @") - Detail: "
+                            + listEventDetail[listEventDetail.Count - 1].ToString ()
+                            , Logging.INDEX_MESSAGE.NOT_SET);
+
+                    #region Код для отладки
                     if (!(iDebug < 0))
                         if ((TECComponentCurrent.m_listTG.IndexOf(tg) + 1) < TECComponentCurrent.m_listTG.Count)
                             Console.Write(@", ");
@@ -191,6 +211,7 @@ namespace StatisticAlarm
                             ;
                     else
                         ;
+                    #endregion Окончание блока кода для отладки
                 }
 
                 if (!(power_TM == TGTURNONOFF_VALUE))
@@ -198,7 +219,7 @@ namespace StatisticAlarm
                     {
                         int situation = 0;
 
-                        //Для отладки
+                        #region Код для отладки
                         if (!(iDebug < 0))
                         {
                             situation = HMath.GetRandomNumber() % 2 == 1 ? -1 : 1;
@@ -206,6 +227,7 @@ namespace StatisticAlarm
                             Console.WriteLine(@"; ::AlarmEventRegistred () - EventReg [ID=" + TECComponentCurrent.m_id + @"] ...");
                         }
                         else
+                        #endregion Окончание блока кода для отладки
                             if (Math.Abs(power_TM - m_valuesHours[curHour].valuesUDGe) > m_valuesHours[curHour].valuesUDGe * ((double)TECComponentCurrent.m_dcKoeffAlarmPcur / 100))
                             {
                                 //EventReg(allTECComponents[indxTECComponents].m_id, -1);
@@ -224,7 +246,7 @@ namespace StatisticAlarm
                 else
                     iRes = -102; //(int)INDEX_WAITHANDLE_REASON.BREAK;
 
-                //Для отладки
+                #region Код для отладки
                 if (!(iDebug < 0))
                     Console.WriteLine();
                 else
@@ -233,30 +255,10 @@ namespace StatisticAlarm
                 ////Отладка
                 //for (int i = 0; i < m_valuesHours.valuesFact.Length; i ++)
                 //    Console.WriteLine(@"valuesFact[" + i.ToString() + @"]=" + m_valuesHours.valuesFact[i]);
+                #endregion Окончание блока кода для отладки
             }
 
             return iRes;
-        }
-
-        public void OnEventConfirm(int id_tg)
-        {
-            foreach (StatisticCommon.TECComponent tc in allTECComponents)
-            {
-                if (tc.m_id == id_tg)
-                {
-                    if (tc.m_listTG[0].m_TurnOnOff == StatisticCommon.TG.INDEX_TURNOnOff.ON)
-                        tc.m_listTG[0].m_TurnOnOff = StatisticCommon.TG.INDEX_TURNOnOff.OFF;
-                    else
-                        if (tc.m_listTG[0].m_TurnOnOff == StatisticCommon.TG.INDEX_TURNOnOff.OFF)
-                            tc.m_listTG[0].m_TurnOnOff = StatisticCommon.TG.INDEX_TURNOnOff.ON;
-                        else
-                            ;
-
-                    break;
-                }
-                else
-                    ;
-            }
         }
     }
 }

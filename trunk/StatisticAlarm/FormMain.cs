@@ -105,6 +105,10 @@ namespace StatisticAlarm
 
                         s_iMainSourceData = Int32.Parse(formParameters.m_arParametrSetup[(int)FormParameters.PARAMETR_SETUP.MAIN_DATASOURCE]);
 
+                        //Создать "рабочую" панель
+                        m_panelAlarm = new PanelAlarm(MODE.SERVICE);
+                        _panelMain.Controls.Add(m_panelAlarm);
+
                         m_formAlarmEvent = new MessageBoxAlarmEvent (this);
                         m_panelAlarm.EventGUIReg += new DelegateStringFunc(OnPanelAlarmEventGUIReg);
                         m_formAlarmEvent.EventActivateTabPage += new DelegateBoolFunc(activateTabPage);
@@ -465,7 +469,7 @@ namespace StatisticAlarm
 
     partial class FormMain
     {
-        PanelAlarmJournal m_panelAlarm;
+        PanelAlarm m_panelAlarm;
         Panel _panelMain;
 
         /// <summary>
@@ -515,9 +519,7 @@ namespace StatisticAlarm
             (this.MainMenuStrip.Items[0] as ToolStripMenuItem).DropDownItems[0].Click += new EventHandler(fMenuItemExit_Click);
             (this.MainMenuStrip.Items[1] as ToolStripMenuItem).DropDownItems.Add(new ToolStripMenuItem(@"БД конфигурации"));
             (this.MainMenuStrip.Items[1] as ToolStripMenuItem).DropDownItems[0].Click += new EventHandler(fMenuItemDBConfig_Click);
-            (this.MainMenuStrip.Items[2] as ToolStripMenuItem).Click += new EventHandler(fMenuItemAbout_Click);
-            //Создать "рабочую" панель
-            m_panelAlarm = new PanelAlarmJournal(PanelAlarmJournal.MODE.SERVICE);
+            (this.MainMenuStrip.Items[2] as ToolStripMenuItem).Click += new EventHandler(fMenuItemAbout_Click);            
             //Создать панель для размещения "рабочих" панелей
             _panelMain = new Panel ();
             _panelMain.Location = new Point(0, this.MainMenuStrip.Height);
@@ -535,6 +537,7 @@ namespace StatisticAlarm
             //Добавить обработчики событий
             this.Load += new EventHandler(FormMain_Load);
             this.Activated += new EventHandler(FormMain_Activated);
+            this.Deactivate += new EventHandler(FormMain_Deactivated);
             this.FormClosing += new FormClosingEventHandler(FormMain_FormClosing);
         }
 

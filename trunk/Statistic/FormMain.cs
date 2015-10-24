@@ -22,6 +22,7 @@ using HClassLibrary;
 using StatisticCommon;
 using StatisticDiagnostic;
 using StatisticTimeSync;
+using StatisticAlarm;
 
 namespace Statistic
 {
@@ -188,7 +189,7 @@ namespace Statistic
                 {
                     s_iMainSourceData = Int32.Parse(formParameters.m_arParametrSetup[(int)FormParameters.PARAMETR_SETUP.MAIN_DATASOURCE]);
 
-                    PanelAdminKomDisp.ALARM_USE = HStatisticUsers.IsAllowed((int)HStatisticUsers.ID_ALLOWED.ALARM_KOMDISP); //True;
+                    PanelAlarm.ALARM_USE = HStatisticUsers.IsAllowed((int)HStatisticUsers.ID_ALLOWED.ALARM_KOMDISP); //True;
                     //if (!(HStatisticUsers.allTEC == 0))
                     //    PanelAdminKomDisp.ALARM_USE = false;
                     //else ;
@@ -245,8 +246,8 @@ namespace Statistic
                         {
                             case (int)FormChangeMode.MANAGER.DISP:
                                 m_arPanelAdmin[i] = new PanelAdminKomDisp(idListenerConfigDB, markQueries);
-                                //((PanelAdminKomDisp)m_arPanelAdmin[i]).EventGUIReg += OnPanelAdminKomDispEventGUIReg;
-                                ((PanelAdminKomDisp)m_arPanelAdmin[i]).EventGUIReg = new DelegateStringFunc(OnPanelAdminKomDispEventGUIReg);
+                                ////((PanelAdminKomDisp)m_arPanelAdmin[i]).EventGUIReg += OnPanelAdminKomDispEventGUIReg;
+                                //((PanelAdminKomDisp)m_arPanelAdmin[i]).EventGUIReg = new DelegateStringFunc(OnPanelAdminKomDispEventGUIReg);
                                 break;
                             case (int)FormChangeMode.MANAGER.NSS:
                                 m_arPanelAdmin[i] = new PanelAdminNSS(idListenerConfigDB, markQueries);
@@ -549,8 +550,8 @@ namespace Statistic
                     //Активация текущей вкладки
                     activateTabPage(tclTecViews.SelectedIndex, true);
 
-                    //Продолжение работы ...
-                    ((PanelAdminKomDisp)m_arPanelAdmin[(int)(int)FormChangeMode.MANAGER.DISP]).EventGUIConfirm();
+                    ////Продолжение работы ...
+                    //((PanelAdminKomDisp)m_arPanelAdmin[(int)(int)FormChangeMode.MANAGER.DISP]).EventGUIConfirm();
                 }
                 else
                     ;

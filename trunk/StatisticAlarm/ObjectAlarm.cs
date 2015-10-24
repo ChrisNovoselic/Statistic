@@ -30,9 +30,14 @@ namespace StatisticAlarm
         /// </summary>
         , CONFIRMED
     }
-
+    /// <summary>
+    /// Тип функции - для обработки события оповещения панели о событии сигнализаций (новое/повтор)
+    /// </summary>
+    /// <param name="ev">Аргумент события оповещения</param>
     public delegate void AlarmNotifyEventHandler (AlarmNotifyEventArgs ev);
-    
+    /// <summary>
+    /// Класс для описания события оповещения
+    /// </summary>
     public class AlarmNotifyEventArgs : EventArgs
     {
         public int m_id_gtp;
@@ -245,7 +250,7 @@ namespace StatisticAlarm
             return bRes;
         }
         /// <summary>
-        /// Зарегистрировать событие
+        /// Зарегистрировать событие в режиме "выполнение_приложения"
         /// </summary>
         /// <param name="ev">Аргумент события</param>
         /// <returns>Результат регистрации (-1 - ошибка, 0 - ничего_не_делать, 1 - новый_объект, 2 - повторное_событие)</returns>
@@ -313,6 +318,17 @@ namespace StatisticAlarm
             }
 
             return iRes;
+        }
+        /// <summary>
+        /// Зарегистрировать событие от БД
+        /// </summary>
+        /// <param name="ev">Аргумент события</param>
+        /// <returns>Результат регистрации (см. пред. обработчик для 'TecViewAlarm.AlarmTecViewEventArgs')</returns>
+        public INDEX_ACTION Registred(AdminAlarm.AlarmDbEventArgs ev)
+        {
+            INDEX_ACTION indxRes = INDEX_ACTION.NOTHING;
+
+            return indxRes;
         }
     }
 }

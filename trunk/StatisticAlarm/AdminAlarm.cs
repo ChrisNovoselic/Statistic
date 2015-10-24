@@ -10,9 +10,9 @@ using StatisticCommon;
 
 namespace StatisticAlarm
 {
-    public class AdminAlarm
+    partial class AdminAlarm
     {
-        List<StatisticAlarm.TecViewAlarm> m_listTecView;
+        private List<StatisticAlarm.TecViewAlarm> m_listTecView;
 
         private object lockValue;
 
@@ -40,34 +40,7 @@ namespace StatisticAlarm
         /// Строка - наименование (звукового) файла
         ///  , воспроизводящегося при оповещении пользователя оо событии сигнализации
         /// </summary>
-        public static string FNAME_ALARM_SYSTEMMEDIA_TIMERBEEP = string.Empty;
-
-        private int m_iActiveCounter;
-
-        protected void Initialize () {
-        }
-        /// <summary>
-        /// Событие-ретранслятор для 
-        /// </summary>
-        public event TecViewAlarm.AlarmTecViewEventHandler EventReg;
-        /// <summary>
-        /// Событие для отправки в 'TecView' - изменение состояния объекта ТГ (вкл./откл)
-        ///  после подтверждения!!! пользователем
-        /// </summary>
-        public event DelegateIntFunc EventConfirm;
-        /// <summary>
-        /// Обработчик события - событие сигнализации подтверждено (пользователем)
-        /// </summary>
-        /// <param name="id_comp">Часть составного ключа: идентификатор ГТП</param>
-        /// <param name="id_tg">Часть составного ключа: идентификатор ТГ</param>
-        public void OnEventConfirm(int id_comp, int id_tg)
-        {
-            Logging.Logg().Debug(@"AdminAlarm::OnEventConfirm () - id=" + id_comp.ToString() + @"; id_tg=" + id_tg.ToString(), Logging.INDEX_MESSAGE.NOT_SET);
-
-            //Изменить состояние ТГ (вкл./выкл.)
-            //??? событие отправляется всем 'TecView', даже тем, в составе корых этого ТГ нет
-            EventConfirm(id_tg);
-        }
+        public static string FNAME_ALARM_SYSTEMMEDIA_TIMERBEEP = string.Empty;       
         /// <summary>
         /// Обработчик события - регистрация события сигнализации от 'TecView'
         /// </summary>
@@ -75,7 +48,31 @@ namespace StatisticAlarm
         /// <param name="ev">Аргумент события сигнализации</param>
         private void OnEventReg_TecView(TecViewAlarm.AlarmTecViewEventArgs ev)
         {
-            EventReg (ev);
+            INDEX_ACTION iAction = m_dictAlarmObject.Registred (ev);
+            if (iAction == INDEX_ACTION.ERROR)
+                throw new Exception(@"AdminAlarm::OnEventReg_TecView () - ...");
+            else
+                if (iAction == INDEX_ACTION.ADD)
+                    push (new object []
+                        {
+                            new object []
+                            {
+                                StatesMachine.Insert
+                                , ev
+                            }
+                        });
+                else
+                    if (iAction == INDEX_ACTION.RETRY)
+                        push(new object[]
+                        {
+                            new object []
+                            {
+                                StatesMachine.Fixed
+                                , ev
+                            }
+                        });
+                    else
+                        ;
         }
 
         public void InitTEC(List<StatisticCommon.TEC> listTEC)
@@ -103,116 +100,8 @@ namespace StatisticAlarm
                     m_listTecView[m_listTecView.Count - 1].m_arTypeSourceData[(int)StatisticCommon.TG.ID_TIME.HOURS] = StatisticCommon.CONN_SETT_TYPE.DATA_SOTIASSO;
 
                     m_listTecView[m_listTecView.Count - 1].m_bLastValue_TM_Gen = true;
-
-                    EventConfirm += m_listTecView[m_listTecView.Count - 1].OnEventConfirm;
                 } else ;
             }
-        }
-
-        public AdminAlarm()
-        {
-            lockValue = new object ();
-
-            m_iActiveCounter = -1; //Для отслеживания 1-й по счету "активации"
-            //m_bDestGUIActivated = false; //Активна ли вкладка (родитель) для отображения событий сигнализации 
-        }
-
-        public void Activate(bool active)
-        {
-            if (active == true)
-            {
-                if (m_iActiveCounter > 1)
-                    return;
-                else
-                    ;
-
-                m_iActiveCounter++;
-            }
-            else
-                if (m_iActiveCounter > 1)
-                    m_iActiveCounter--;
-                else
-                    ; //return;
-
-            //Int32 msecTimerUpdate = m_msecTimerUpdate;
-            if (active == true)
-            {
-                //Немедленный запуск ТОЛЬКО при 1-ой активации
-                //!!! если установить немедленный запуск всегда, ТО
-                //!!! сообщение об одном событии будет отображаться до тех пор, пока условия для него будут верны
-                //!!! т.к. при отображении сообщения последовательно выполняются: this.Activate(false) -> this.Activate(true)
-                if (m_iActiveCounter == 0)
-                {
-                    //Вариант №0
-                    m_timerAlarm.Change(0, System.Threading.Timeout.Infinite);
-                    ////Вариант №1
-                    //m_timerAlarm.Interval = MSEC_ALARM_TIMERUPDATE;
-                    //m_timerAlarm.Start ();
-                }
-                else
-                    if (m_iActiveCounter > 0)
-                    {
-                        //Вариант №0
-                        m_timerAlarm.Change(MSEC_ALARM_TIMERUPDATE, System.Threading.Timeout.Infinite);
-                        ////Вариант №1
-                        //m_timerAlarm.Interval = ProgramBase.TIMER_START_INTERVAL; // по этому признаку определим задержку очередной итерации
-                        //m_timerAlarm.Start();
-                    }
-                    else
-                        ;
-
-                ////Немедленный запуск ВСЕГДА
-                //if (!(m_iActiveCounter < 0))
-                //    m_timerAlarm.Change(0, System.Threading.Timeout.Infinite);
-                //else
-                //    ;
-            }
-            else
-                //Вариант №0
-                m_timerAlarm.Change(Timeout.Infinite, Timeout.Infinite);
-                ////Вариант №1
-                //m_timerAlarm.Stop ();
-
-            foreach (TecViewAlarm tv in m_listTecView)
-            {
-                tv.Activate(active);
-            }
-        }
-
-        public bool IsStarted
-        {
-            get { return ! (m_timerAlarm == null); }
-        }
-
-        public void Start()
-        {
-            foreach (TecViewAlarm tv in m_listTecView)
-            {
-                tv.Start (); //StartDbInterfaces (CONN_SETT_TYPE.COUNT_CONN_SETT_TYPE);
-            }
-
-            //m_evTimerCurrent = new ManualResetEvent(true);
-            m_timerAlarm =
-                new System.Threading.Timer(new TimerCallback(TimerAlarm_Tick), null, Timeout.Infinite, Timeout.Infinite)
-                //new System.Windows.Forms.Timer ()
-                ;
-            //m_timerAlarm.Tick += new EventHandler(TimerAlarm_Tick);
-        }
-
-        public void Stop()
-        {
-            foreach (TecViewAlarm tv in m_listTecView)
-            {
-                tv.Stop ();
-            }
-
-            if (! (m_timerAlarm == null))
-            {
-                m_timerAlarm.Dispose ();
-                m_timerAlarm = null;
-            }
-            else
-                ;
         }
 
         private void ChangeState () {
@@ -237,7 +126,7 @@ namespace StatisticAlarm
                 //else
                 //    ;
 
-                if (! (m_iActiveCounter < 0))
+                if (IsStarted == true)
                 {
                     ChangeState();
 
@@ -266,5 +155,32 @@ namespace StatisticAlarm
 
         //    return iRes;
         //}
+        /// <summary>
+        /// Изменить состояние ТГ (вкл./выкл.)
+        /// </summary>
+        /// <param name="id_tg">Идентификатор ТГ</param>
+        private void tgConfirm(int id_tg)
+        {
+            TECComponent tc = null;
+
+            foreach (TecView tv in m_listTecView)
+            {
+                tc = tv.FindTECComponent(id_tg);
+
+                if ((!(tc == null))
+                    && (tc.IsTG == true))
+                {
+                    if (tc.m_listTG[0].m_TurnOnOff == StatisticCommon.TG.INDEX_TURNOnOff.ON)
+                        tc.m_listTG[0].m_TurnOnOff = StatisticCommon.TG.INDEX_TURNOnOff.OFF;
+                    else
+                        if (tc.m_listTG[0].m_TurnOnOff == StatisticCommon.TG.INDEX_TURNOnOff.OFF)
+                            tc.m_listTG[0].m_TurnOnOff = StatisticCommon.TG.INDEX_TURNOnOff.ON;
+                        else
+                            ;
+                }
+                else
+                    ;
+            }
+        }
     }
 }

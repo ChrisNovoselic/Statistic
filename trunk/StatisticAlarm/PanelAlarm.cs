@@ -15,18 +15,15 @@ using StatisticCommon;
 namespace StatisticAlarm
 {
     /// <summary>
+    /// Перечисление для режимов работы вкладки
+    /// </summary>
+    public enum MODE { SERVICE, ADMIN, VIEW };
+    /// <summary>
     /// Класс панели для отображения с списка событий
     /// </summary>
-    public partial class PanelAlarmJournal : PanelStatistic, IDataHost
+    public partial class PanelAlarm : PanelStatistic, IDisposable
     {
-        /// <summary>
-        /// Перечисление для режимов работы вкладки
-        /// </summary>
-        public enum MODE { SERVICE, ADMIN, VIEW };
-        /// <summary>
-        /// Режим работы вкладки
-        /// </summary>
-        private MODE mode;
+        public static bool ALARM_USE = true;
         /// <summary>
         /// Событие подтверждения сигнализации
         /// </summary>
@@ -41,17 +38,18 @@ namespace StatisticAlarm
         private List <int> m_listIdTECComponents;
         /// <summary>
         /// Объект проверки условий выполнения сигнализаций типов "Мощность ГТП", "ТГ вкл./откл."
+        ///  , чтения/записи списка событий в БД
         /// </summary>
         private AdminAlarm m_adminAlarm;
         /// <summary>
-        /// Объект чтения/записи списка событий в БД
+        /// Событие изменения даты, начала и окончания для запроса списка событий сигнализаций
         /// </summary>
-        private ViewAlarm m_viewAlarm;
-        /// <summary>
-        /// Таймер для обновления содержимого таблицы со списком событий
-        /// </summary>
-        private System.Windows.Forms.Timer m_timerView;
+        private AdminAlarm.DatetimeCurrentEventHandler delegateDatetimeChanged;
 
+        private DelegateBoolFunc delegateWorkCheckedChanged;
+        /// <summary>
+        /// Событие для оповещения пользователя о событии сигнализаций (новое/повтор)
+        /// </summary>
         public event DelegateStringFunc EventGUIReg;
         /// <summary>
         /// Ширина панели для размещения активных элементов управления
@@ -61,7 +59,7 @@ namespace StatisticAlarm
         /// Конструктор - основной (с параметрами)
         /// </summary>
         /// <param name="mode">Режим работы панели</param>
-        public PanelAlarmJournal(MODE mode)
+        public PanelAlarm(MODE mode)
         {
             //Инициализация собственных значений
             initialize(mode);
@@ -71,7 +69,7 @@ namespace StatisticAlarm
         /// </summary>
         /// <param name="container">См. документацию на 'Control'</param>
         /// <param name="mode">Режим работы панели</param>
-        public PanelAlarmJournal(IContainer container, MODE mode)
+        public PanelAlarm(IContainer container, MODE mode)
         {
             container.Add(this);
             //Инициализация собственных значений
@@ -85,33 +83,30 @@ namespace StatisticAlarm
         {
             //Инициализация визуальных компонентов
             InitializeComponent();
-            //Запомнить режим работы панели
-            this.mode = mode;
-        }
-        /// <summary>
-        /// Запустить на выполнение 
-        /// </summary>
-        public override void Start()
-        {            
-            base.Start ();
-
-            Control ctrl = null;
+            
             int err = -1 //Признак выполнения метода/функции
                 //Зарегистрировать соединение/получить идентификатор соединения
                 , iListenerId = DbSources.Sources().Register(FormMain.s_listFormConnectionSettings[(int)CONN_SETT_TYPE.CONFIG_DB].getConnSett(), false, @"CONFIG_DB")
-                , indx = -1;
+                ;
+            bool bWorkChecked = HStatisticUsers.IsAllowed((int)HStatisticUsers.ID_ALLOWED.AUTO_ALARM_KOMDISP);
             //Инициализация списка с ТЭЦ
             m_list_tec = new InitTEC_200(iListenerId, true, false).tec;
-            ////Инициализация 
-            initAdminAlarm ();
-            initViewAlarm(new ConnectionSettings(InitTECBase.getConnSettingsOfIdSource(TYPE_DATABASE_CFG.CFG_200, iListenerId, FormMainBase.s_iMainSourceData, -1, out err).Rows[0], 0));
-            startViewAlarm();
-            //Инициализировать таймер для обновления значений в таблице
-            m_timerView = new Timer();            
-            m_timerView.Interval = 1;// таймер остановлен
-            m_timerView.Tick += new EventHandler(fTimerView_Tick);
+            //Инициализация
+            initAdminAlarm(new ConnectionSettings(InitTECBase.getConnSettingsOfIdSource(TYPE_DATABASE_CFG.CFG_200
+                    , iListenerId
+                    , FormMainBase.s_iMainSourceData
+                    , -1
+                    , out err).Rows[0], 0)
+                , mode
+                , bWorkChecked); 
             //Отменить регистрацию соединения
             DbSources.Sources().UnRegister(iListenerId);
+
+            delegateDatetimeChanged = new AdminAlarm.DatetimeCurrentEventHandler(m_adminAlarm.OnEventDatetimeChanged);
+            delegateWorkCheckedChanged = m_adminAlarm.OnWorkCheckedChanged;
+
+            Control ctrl = null;
+            int indx = -1;
             //Заполнить списки             
             m_listIdTECComponents = new List<int>();
             ctrl = Find(INDEEX_CONTROL.CLB_TECCOMPONENT);
@@ -138,143 +133,78 @@ namespace StatisticAlarm
                 (ctrl as CheckBox).Checked = true;
             else
                 if (mode == MODE.ADMIN)
-                    (ctrl as CheckBox).Checked = HStatisticUsers.IsAllowed((int)HStatisticUsers.ID_ALLOWED.AUTO_ALARM_KOMDISP);
+                    (ctrl as CheckBox).Checked = bWorkChecked;
                 else
                     if (mode == MODE.VIEW)
                         (ctrl as CheckBox).Checked =
                         (ctrl as CheckBox).Enabled =
                              false;
                     else
-                        ;
-            if ((ctrl as CheckBox).Checked == true)
-            {
-                if (mode == MODE.SERVICE)
-                {
-                    startAdminAlarm ();
-                    m_adminAlarm.Activate(true); // активировать
-                }
-                else
-                    ;
-
-                startTimerView ();
-            }
-            else
-                ;
+                        ;            
             //Назначить обработчик событий при изменении признака "Включено/отключено"
             (ctrl as CheckBox).CheckedChanged += new EventHandler(cbxWork_OnCheckedChanged);
             //Назначить обработчик события изменение даты
-            (Find (INDEEX_CONTROL.MCLDR_CURRENT) as MonthCalendar).DateChanged += new DateRangeEventHandler(onEventDateChanged);
+            (Find(INDEEX_CONTROL.MCLDR_CURRENT) as MonthCalendar).DateChanged += new DateRangeEventHandler(onEventDateChanged);
             ////Назначить обработчик события при получении из БД списка событий (передать список для отображения)
-            //m_viewAlarm.EvtGetData += new DelegateObjectFunc((Find (INDEEX_CONTROL.DGV_EVENTS) as DataGridViewAlarmJournal).OnEvtGetData);
+            m_adminAlarm.EvtGetDataMain += new DelegateObjectFunc((Find (INDEEX_CONTROL.DGV_EVENTS) as DataGridViewAlarmJournal).OnEvtGetData);
+            //m_adminAlarm.EvtGetDataDetail += new DelegateObjectFunc((Find(INDEEX_CONTROL.DGV_DETAIL) as DataGridViewAlarmDetail).OnEvtGetData);
+
+            //Старт в любом режиме с учетом '(ctrl as CheckBox).Checked'
+            // SERVICE - БД_значений-ДА, таймер-ДА/НЕТ, оповещение (список)-ДА/НЕТ, оповещение (сигнализация)-НЕТ
+            // ADMIN - БД_значений-ДА, таймер-ДА/НЕТ, оповещение (список)-ДА/НЕТ, оповещение (сигнализация)-ДА/НЕТ
+            // VIEW - БД_значений-ДА, таймер-ДА/НЕТ, оповещение (список)-ДА/НЕТ, оповещение (сигнализация)-НЕТ
+            startAdminAlarm();
+        }
+        /// <summary>
+        /// Запустить на выполнение 
+        /// </summary>
+        public override void Start()
+        {            
+            base.Start ();
 
             ////Отладка
             //EventGUIReg (@"раз-раз");
             //EventGUIReg(@"два-два");
         }
-
-        private void startTimerView (int interval = 6)
-        {
-            //Проверить выполнение таймера
-            if ((m_timerView.Interval == 1)
-                || (m_timerView.Interval == 100)) //100 - значение по умолчанию
-            {
-                m_timerView.Interval = interval;
-                m_timerView.Start();
-            }
-            else
-                ;
-        }
-
-        private void stopTimerView()
-        {
-            if (m_timerView.Interval > 1)
-            {
-                m_timerView.Stop();
-                m_timerView.Interval = 1;
-            }
-            else
-                ;
-        }
         /// <summary>
         /// Запустить на выполнение объект регистрации выполнения условий сигнализаций
+        ///  , чтения/записи/обновления списка событий в БД
         /// </summary>
         private void startAdminAlarm()
         {
             //Инициализировать (при необходимости) объект
-            if (m_adminAlarm == null) initAdminAlarm(); else ;
-            //Проверить состояние, позволяющее запуск на выполнение 
-            if (m_adminAlarm.IsStarted == false)
-            {
-                m_adminAlarm.Start(); // запустить на выполнение
-            }
-            else ;
-        }
-        /// <summary>
-        /// Запустить на выполнение объект чтения/записи/обновления списка событий в БД
-        /// </summary>
-        private void startViewAlarm()
-        {
-            if (! (m_viewAlarm == null))
-                if (m_viewAlarm.IsStarted == false)
-                {
-                    m_viewAlarm.Start();
-                    m_viewAlarm.Activate(true);
-                }
+            if (!(m_adminAlarm == null))
+                //Проверить состояние, позволяющее запуск на выполнение 
+                if (m_adminAlarm.IsStarted == false)
+                    m_adminAlarm.Start(); // запустить на выполнение
                 else ;
-            else
-                throw new Exception (@"PanelAlarmJournal::startViewAlarm () - ...");
-        }
-        /// <summary>
-        /// Метод обратного вызова для таймера обновления значений в таблице
-        /// </summary>
-        /// <param name="obj">Объект, инициировавший событие</param>
-        /// <param name="ev">Аргумент события</param>
-        private void fTimerView_Tick(object obj, EventArgs ev)
-        {
-            //m_viewAlarm.Push(this, new object [] { new object [] { new object[] { ViewAlarm.StatesMachine.List, DatetimeCurrent, HourBegin, HourEnd }}});
-            //EvtDataAskedHost(new object[] { ViewAlarm.StatesMachine.List, DatetimeCurrent, HourBegin, HourEnd });
-            //DataAskedHost(new object[] { ViewAlarm.StatesMachine.List, DatetimeCurrent, HourBegin, HourEnd });
-            DataAskedHost (new object [] { new object [] { ViewAlarm.StatesMachine.List, DatetimeCurrent, HourBegin, HourEnd }});
-            //Назначить (при необходимости) интервал между вызовами
-            if (! (m_timerView.Interval == PanelStatistic.POOL_TIME * 1000))
-                m_timerView.Interval = PanelStatistic.POOL_TIME * 1000;
-            else
-                ;
-        }
+            else ;
+        }     
         /// <summary>
         /// Остановить панель, и все связанные с ней объекты
         /// </summary>
         public override void Stop() 
         {
-            //Остановить объект "обзор событий"
-            if (! (m_viewAlarm == null))
-                if (m_viewAlarm.IsStarted == true)
+            //??? останавливать связанные объекты нельзя
+            // т.к. даже при закрытой вкладке должно присходить оповещение
+            // можно лишь прекратиить обновление таблицы со списком событий
+            // , но это, вероятно, уже выполнено при вызове Activate(false)
+            m_adminAlarm.Activate(false);
+            base.Stop ();
+        }
+
+        private void onDisposed(object obj, EventArgs ev)
+        {
+            //Остановить объект "обзор, регистрация событий"
+            if (!(m_adminAlarm == null))
+                if (m_adminAlarm.IsStarted == true)
                 {
-                    m_viewAlarm.Activate(false);
-                    m_viewAlarm.Stop();
+                    m_adminAlarm.Activate(false);
+                    m_adminAlarm.Stop();
                 }
                 else ;
             else
                 ;
-            ////Остановить объект "регистрация событий"
-            //if (! (m_adminAlarm == null))
-            //    if (m_adminAlarm.IsStarted == true)
-            //    {
-            //        m_adminAlarm.Activate (false);
-            //        m_adminAlarm.Stop();
-            //    }
-            //    else ;
-            //else
-            //    ;
-            //Остановить таймер
-            if (!(m_timerView == null))
-            {
-                stopTimerView ();
-                m_timerView.Dispose();
-                m_timerView = null;
-            }
-
-            base.Stop ();
         }
         /// <summary>
         /// Активировать/деактивировать панель
@@ -287,40 +217,8 @@ namespace StatisticAlarm
             bool bRes = base.Activate (activate);
             //Проверить признак изменения стостояния базовой панели
             if (bRes == true)
-            {//Только при изменении состояния базовой панели
-                if (activate == true)
-                    //??? Проверить выполнение таймера                    
-                    if ((Find (INDEEX_CONTROL.CBX_WORK) as CheckBox).Checked == false)
-                        // обновить список событий
-                        (Find (INDEEX_CONTROL.BTN_REFRESH) as Button).PerformClick ();
-                    else
-                        if (IsDatetimeToday == true)
-                            startTimerView ();
-                        else
-                            ;
-                else
-                    stopTimerView ();
-                //??? m_viewAlarm.Activate - не несет функциональности - таймер принадлежит панели
-                if ((Find (INDEEX_CONTROL.CBX_WORK) as CheckBox).Checked == true)
-                {
-                    switch (mode)
-                    {
-                        case MODE.SERVICE:                            
-                            m_viewAlarm.Activate(activate);
-                            break;
-                        case MODE.ADMIN:
-                            m_viewAlarm.Activate(activate);
-                            break;
-                        case MODE.VIEW:
-                            m_viewAlarm.Activate(activate);
-                            break;
-                        default:
-                            break;
-                    }
-                }
-                else
-                    ;
-            }
+                //Только при изменении состояния базовой панели
+                m_adminAlarm.Activate(activate);
             else
                 ;
 
@@ -344,36 +242,26 @@ namespace StatisticAlarm
         /// <summary>
         /// Инициализация объекта регистрации выполнения условий сигнализаций
         /// </summary>
-        private void initAdminAlarm()
+        private void initAdminAlarm(ConnectionSettings connSett, MODE mode, bool bWorkCheked)
         {
-            m_adminAlarm = new AdminAlarm();
+            m_adminAlarm = new AdminAlarm(connSett
+                , mode
+                , new AdminAlarm.DatetimeCurrentEventArgs(DateCurrent, HourBegin, HourEnd)
+                , bWorkCheked);
             m_adminAlarm.InitTEC(m_list_tec);
+
+            m_adminAlarm.EventAdd += new AlarmNotifyEventHandler(OnViewAlarm_EventAdd);
+            m_adminAlarm.EventRetry += new AlarmNotifyEventHandler(OnViewAlarm_EventRetry);
 
             this.EventConfirm += new DelegateIntIntFunc(m_adminAlarm.OnEventConfirm);
         }
-        /// <summary>
-        /// Инициализация объекта чтения/записи/обновления списка событий
-        /// </summary>
-        /// <param name="connSett">Объект с параметрами соединения с БД_конфигурации</param>
-        private void initViewAlarm(ConnectionSettings connSett)
-        {
-            if (m_viewAlarm == null)
-            {
-                m_viewAlarm = new ViewAlarm(connSett);
-                m_viewAlarm.EventAdd += new AlarmNotifyEventHandler(OnViewAlarm_EventAdd);
-
-                EvtDataAskedHost += m_viewAlarm.OnEvtDataAskedHost_PanelAlarmJournal;
-            }
-            else
-                ;
-        }        
         /// <summary>
         /// Обработчик события - регистрация события сигнализации из БД!!!
         /// </summary>
         /// <param name="ev">Аргумент события</param>
         private void OnViewAlarm_EventAdd(AlarmNotifyEventArgs ev)
         {
-            Console.WriteLine(@"PanelAlarmJournal::OnViewAlarm_EventAdd (id_gtp=" + ev.m_id_gtp + @", id_tg=" + ev.m_id_tg + @", message=" + ev.m_message + @") - ...");
+            Console.WriteLine(@"PanelAlarm::OnViewAlarm_EventAdd (id_gtp=" + ev.m_id_gtp + @", id_tg=" + ev.m_id_tg + @", message=" + ev.m_message + @") - ...");
 
             if (IsHandleCreated/*InvokeRequired*/ == true)
             {//...для this.BeginInvoke
@@ -412,33 +300,11 @@ namespace StatisticAlarm
                 ;
         }
         /// <summary>
-        /// Обработчик события изменение признака "Включено/отключено"
-        /// </summary>
-        /// <param name="obj">Объект, иницировавший событие</param>
-        /// <param name="ev">Аргумент события</param>
-        private void cbxWork_OnCheckedChanged (object obj, EventArgs ev)
-        {
-            CheckBox ctrl = obj as CheckBox;
-
-            //??? - Активировать объект "регистрация событий"
-            if (mode == MODE.SERVICE) m_adminAlarm.Activate(ctrl.Checked); else ;
-            //??? - Активировать объект чтения/записи/обновления списка событий
-            m_viewAlarm.Activate(ctrl.Checked);
-            //Запустить/остановить таймер обновления значений в таблице
-            if ((ctrl.Checked == true)
-                && (IsDatetimeToday == true))
-            {
-                startTimerView ();
-            }
-            else
-                stopTimerView ();
-        }
-        /// <summary>
         /// Найти объект-'компонент ТЭЦ' по идентификатору в локальном списке компонентов ТЭЦ
         /// </summary>
         /// <param name="id">Идентификатор для поиска</param>
         /// <returns>Объект-'компонент ТЭЦ'</returns>
-        private TECComponent findTECComponentOfID (int id)
+        private TECComponent findGTPOfID (int id)
         {
             foreach  (TEC tec in m_list_tec)
                 foreach (TECComponent comp in tec.list_TECComponents)
@@ -448,6 +314,21 @@ namespace StatisticAlarm
                         ;
 
             return null;
+        }
+        /// <summary>
+        /// Обработчик события изменение признака "Включено/отключено"
+        /// </summary>
+        /// <param name="obj">Объект, иницировавший событие</param>
+        /// <param name="ev">Аргумент события</param>
+        public void cbxWork_OnCheckedChanged(object obj, EventArgs ev)
+        {
+            CheckBox ctrl =
+                obj
+                //Find(INDEEX_CONTROL.CBX_WORK)
+                    as CheckBox;
+
+            //??? - Активировать объект регистрации/чтения/записи/обновления списка событий
+            delegateWorkCheckedChanged(ctrl.Checked);
         }
         /// <summary>
         /// Обработчик события - выбор элемента в списке компонентов ТЭЦ
@@ -479,7 +360,7 @@ namespace StatisticAlarm
         /// </summary>
         private void setNudnKoeffAlarmCurPowerValue()
         {
-            TECComponent comp = findTECComponentOfID (m_listIdTECComponents[(Find(INDEEX_CONTROL.CLB_TECCOMPONENT) as CheckedListBox).SelectedIndex - 1]);
+            TECComponent comp = findGTPOfID(m_listIdTECComponents[(Find(INDEEX_CONTROL.CLB_TECCOMPONENT) as CheckedListBox).SelectedIndex - 1]);
             setNudnKoeffAlarmCurPowerValue (comp.m_dcKoeffAlarmPcur);
         }
         /// <summary>
@@ -514,7 +395,7 @@ namespace StatisticAlarm
         /// <param name="ev">Аргумент события</param>
         private void NudnKoeffAlarmCurPower_ValueChanged(object obj, EventArgs ev)
         {
-            TECComponent comp = findTECComponentOfID(m_listIdTECComponents[(Find(INDEEX_CONTROL.CLB_TECCOMPONENT) as CheckedListBox).SelectedIndex - 1]);
+            TECComponent comp = findGTPOfID(m_listIdTECComponents[(Find(INDEEX_CONTROL.CLB_TECCOMPONENT) as CheckedListBox).SelectedIndex - 1]);
             //Запомнить установленное значение "времени выполнения"
             comp.m_dcKoeffAlarmPcur = (obj as NumericUpDown).Value;
 
@@ -540,7 +421,7 @@ namespace StatisticAlarm
         /// <summary>
         /// Текущая (выбранная дата) в элементе управления 'MonthCalendar'
         /// </summary>
-        private DateTime DatetimeCurrent { get { return (Find(INDEEX_CONTROL.MCLDR_CURRENT) as MonthCalendar).SelectionStart.Date; } }
+        private DateTime DateCurrent { get { return (Find(INDEEX_CONTROL.MCLDR_CURRENT) as MonthCalendar).SelectionStart.Date; } }
         /// <summary>
         /// Текущий (установленный) индекс часа начала периода в указанные сутки
         /// </summary>
@@ -559,89 +440,77 @@ namespace StatisticAlarm
             //Инициировать запрос К БД_значений со списком событий
             // за указанную дату
             // в период указанных часов
-            //m_viewAlarm.Push(this, new object[] { new object[] { new object[] { ViewAlarm.StatesMachine.List, DatetimeCurrent, HourBegin, HourEnd } } });
-            //DataAskedHost(new object[] { ViewAlarm.StatesMachine.List, DatetimeCurrent, HourBegin, HourEnd });
-            DataAskedHost(new object [] { new object[] { ViewAlarm.StatesMachine.List, DatetimeCurrent, HourBegin, HourEnd }});
+            delegateDatetimeChanged(new AdminAlarm.DatetimeCurrentEventArgs(DateCurrent, HourBegin, HourEnd));
         }
 
-        private bool IsDatetimeToday { get { return DatetimeCurrent.Equals (HAdmin.ToMoscowTimeZone ().Date) == true; } }
+        //private bool isActivateViewAlarm
+        //{
+        //    get
+        //    {
+        //        return ((Find(INDEEX_CONTROL.CBX_WORK) as CheckBox).Checked == true)
+        //            && (IsDatetimeToday == true);
+        //    }
+        //}
 
         private void onEventDateChanged(object obj, DateRangeEventArgs ev)
         {
-            if (IsDatetimeToday == true)
-                startTimerView ();
-            else
-                stopTimerView();
-                
-            //End.Date - эквивалентно, при 'MaxSelectionCount = 1'
-            //m_viewAlarm.Push(this, new object[] { new object[] { new object[] { ViewAlarm.StatesMachine.List, DatetimeCurrent, HourBegin, HourEnd } } });
-            //DataAskedHost(new object[] { ViewAlarm.StatesMachine.List, DatetimeCurrent, HourBegin, HourEnd });
-            DataAskedHost(new object[] { new object [] { ViewAlarm.StatesMachine.List, DatetimeCurrent, HourBegin, HourEnd }});
-        }
-        /// <summary>
-        /// Событие запроса данных для плюг'ина из главной формы
-        /// </summary>
-        public event DelegateObjectFunc EvtDataAskedHost;
-        /// <summary>
-        /// Отиравить запрос на получение данных
-        /// </summary>
-        /// <param name="par">Аргумент с детализацией запрашиваемых данных</param>
-        public void DataAskedHost(object par)
-        {
-            //??? почему так много вложенных массивов...
-            //m_viewAlarm.Push(this, new object[] { new object[] { par } });
-            //EvtDataAskedHost.BeginInvoke(new EventArgsDataHost(-1, new object[] { par }), new AsyncCallback(this.dataRecievedHost), new Random());
-            EvtDataAskedHost(new EventArgsDataHost(this, par as object []));
-        }
-        /// <summary>
-        /// Обработчик события ответа от главной формы
-        /// </summary>
-        /// <param name="obj">объект класса 'EventArgsDataHost' с идентификатором/данными из главной формы</param>
-        public void OnEvtDataRecievedHost(object res)
-        {
-            EventArgsDataHost ev = res as EventArgsDataHost;
-            ViewAlarm.StatesMachine state = (ViewAlarm.StatesMachine)(ev.par as object[])[0];
-
-            switch (state)
-            {
-                case ViewAlarm.StatesMachine.List:
-                    //??? Прямой вызов метода-обработчика
-                    (Find(INDEEX_CONTROL.DGV_EVENTS) as DataGridViewAlarmJournal).OnEvtGetData((ev.par as object[])[1]);
-                    break;
-                case ViewAlarm.StatesMachine.Insert:
-                    //Получить идентификатор записи о событии сигнализации
-                    break;
-                default:
-                    break;
-            }
+            delegateDatetimeChanged(new AdminAlarm.DatetimeCurrentEventArgs(DateCurrent, HourBegin, HourEnd));
         }
 
-        /// <summary>
-        /// Класс с таблицей отображения списка событий сигнализаций
-        /// </summary>
-        private class DataGridViewAlarmJournal : DataGridView
+        #region Код реализации интерфейса 'IDataHost'
+        ///// <summary>
+        ///// Событие запроса данных для плюг'ина из главной формы
+        ///// </summary>
+        //public event DelegateObjectFunc EvtDataAskedHost;
+        ///// <summary>
+        ///// Отиравить запрос на получение данных
+        ///// </summary>
+        ///// <param name="par">Аргумент с детализацией запрашиваемых данных</param>
+        //public void DataAskedHost(object par)
+        //{
+        //    //??? почему так много вложенных массивов...
+        //    //m_viewAlarm.Push(this, new object[] { new object[] { par } });
+        //    //EvtDataAskedHost.BeginInvoke(new EventArgsDataHost(-1, new object[] { par }), new AsyncCallback(this.dataRecievedHost), new Random());
+        //    EvtDataAskedHost(new EventArgsDataHost(this, par as object []));
+        //}
+        ///// <summary>
+        ///// Обработчик события ответа от главной формы
+        ///// </summary>
+        ///// <param name="obj">объект класса 'EventArgsDataHost' с идентификатором/данными из главной формы</param>
+        //public void OnEvtDataRecievedHost(object res)
+        //{
+        //    EventArgsDataHost ev = res as EventArgsDataHost;
+        //    ViewAlarm.StatesMachine state = (ViewAlarm.StatesMachine)(ev.par as object[])[0];
+
+        //    switch (state)
+        //    {
+        //        case ViewAlarm.StatesMachine.List:
+        //            //??? Прямой вызов метода-обработчика
+        //            (Find(INDEEX_CONTROL.DGV_EVENTS) as DataGridViewAlarmJournal).OnEvtGetData((ev.par as object[])[1]);
+        //            break;
+        //        case ViewAlarm.StatesMachine.Insert:
+        //            //Получить идентификатор записи о событии сигнализации
+        //            break;
+        //        default:
+        //            break;
+        //    }
+        //}
+        #endregion Код реализации интерфейса 'IDataHost'
+
+        private abstract class DataGridViewAlarmBase : DataGridView
         {
-            /// <summary>
-            /// Перечисление для индексов столбцов в таблице
-            /// </summary>
-            public enum iINDEX_COLUMN
-            {
-                TECCOMPONENT_NAMESHR, TYPE_ALARM, VALUE, DATETIME_REGISTRED, DATETIME_FIXED, DATETIME_CONFIRM,
-                BTN_CONFIRM
-                    , COUNT_INDEX_COLUMN
-            }
             /// <summary>
             /// Делегат обновления значений в таблице
             /// </summary>
-            private DelegateObjectFunc delegateOnGetData;
+            protected DelegateObjectFunc delegateOnGetData;
             /// <summary>
             /// Список идентификатор записей, отображаемых в таблице (поле [ID] в целевой таблице БД)
             /// </summary>
-            private List <long> m_listIdRows;
+            protected List<long> m_listIdRows;
             /// <summary>
             /// Конструктор - основной (без параметров)
             /// </summary>
-            public DataGridViewAlarmJournal()
+            public DataGridViewAlarmBase()
                 : base()
             {
                 InitializeComponent();
@@ -653,7 +522,53 @@ namespace StatisticAlarm
             /// <summary>
             /// Установить параметры визуализации
             /// </summary>
-            private void InitializeComponent()
+            protected abstract void InitializeComponent();
+            /// <summary>
+            /// Обработчик события "Получение данных для отображения"
+            /// </summary>
+            /// <param name="obj">Объект - таблица с данными для отображения</param>
+            public void OnEvtGetData (object obj)
+            {
+                //Перенести выполнение в текущий поток (для доступа к элементу управления)
+                Invoke(delegateOnGetData, obj);
+            }
+            /// <summary>
+            /// Отобразить полученные данные
+            /// </summary>
+            /// <param name="obj">Объект - таблица с данными для отображения</param>
+            protected virtual void onEvtGetData (object obj)
+            {
+                //Очистить содержимое таблицы
+                Rows.Clear();
+                m_listIdRows.Clear ();                
+            }
+        }
+        /// <summary>
+        /// Класс с таблицей отображения списка событий сигнализаций
+        /// </summary>
+        private class DataGridViewAlarmJournal : DataGridViewAlarmBase
+        {
+            /// <summary>
+            /// Перечисление для индексов столбцов в таблице
+            /// </summary>
+            private enum iINDEX_COLUMN
+            {
+                TECCOMPONENT_NAMESHR, TYPE_ALARM, VALUE, DATETIME_REGISTRED, DATETIME_FIXED, DATETIME_CONFIRM,
+                BTN_CONFIRM
+                    , COUNT_INDEX_COLUMN
+            }
+            /// <summary>
+            /// Конструктор - основной (без параметров)
+            /// </summary>
+            public DataGridViewAlarmJournal()
+                : base()
+            {
+                InitializeComponent();
+            }
+            /// <summary>
+            /// Установить параметры визуализации
+            /// </summary>
+            protected override void InitializeComponent()
             {
                 //Объект 'столбец' - для добавления в таблицу
                 DataGridViewColumn column = null;
@@ -699,25 +614,15 @@ namespace StatisticAlarm
                 this.ReadOnly = true; //Установить режим - 'только чтение'
             }
             /// <summary>
-            /// Обработчик события "Получение данных для отображения"
-            /// </summary>
-            /// <param name="obj">Объект - таблица с данными для отображения</param>
-            public void OnEvtGetData (object obj)
-            {
-                //Перенести выполнение в текущий поток (для доступа к элементу управления)
-                Invoke(delegateOnGetData, obj);
-            }
-            /// <summary>
             /// Отобразить полученные данные
             /// </summary>
             /// <param name="obj">Объект - таблица с данными для отображения</param>
-            private void onEvtGetData (object obj)
+            protected override void onEvtGetData (object obj)
             {
                 DataTable tableRes = obj as DataTable;
                 int indxRow = -1;
                 //Очистить содержимое таблицы
-                Rows.Clear();
-                m_listIdRows.Clear ();
+                base.onEvtGetData(obj);
                 //Добавить строки
                 foreach (DataRow r in tableRes.Rows)
                 {
@@ -731,13 +636,31 @@ namespace StatisticAlarm
                     });
                     m_listIdRows.Add ((long)r[@"ID"]);
                     //Установить доступность кнопки "Подтвердить"
-                    (Rows[indxRow].Cells[this.Columns.Count - 1] as DataGridViewDisableButtonCell).Enabled = false;
+                    (Rows[indxRow].Cells[this.Columns.Count - 1] as DataGridViewDisableButtonCell).Enabled = r[@"DATETIME_FIXED"] is DBNull;
                 }
+            }
+        }
+
+        private class DataGridViewAlarmDetail : DataGridViewAlarmBase
+        {
+            /// <summary>
+            /// Конструктор - основной (без параметров)
+            /// </summary>
+            public DataGridViewAlarmDetail()
+                : base()
+            {
+                InitializeComponent();
+            }
+            /// <summary>
+            /// Установить параметры визуализации
+            /// </summary>
+            protected override void InitializeComponent()
+            {
             }
         }
     }
 
-    partial class PanelAlarmJournal
+    partial class PanelAlarm
     {
         /// <summary>
         /// Перечисление идентификаторов дочерних элементов управления
@@ -745,7 +668,7 @@ namespace StatisticAlarm
         private enum INDEEX_CONTROL { UNKNOWN = -1
             ,MCLDR_CURRENT, NUD_HOUR_BEGIN, NUD_HOUR_END, BTN_REFRESH, CLB_TECCOMPONENT, NUD_KOEF
             , CBX_WORK
-            , DGV_EVENTS };
+            , DGV_EVENTS, DGV_DETAIL };
 
         /// <summary>
         /// Требуется переменная конструктора.
@@ -900,6 +823,8 @@ namespace StatisticAlarm
 
             this.ResumeLayout(false);
             this.PerformLayout();
+
+            this.Disposed += new EventHandler(onDisposed);
         }
 
         #endregion

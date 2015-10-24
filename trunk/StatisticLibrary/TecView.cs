@@ -681,11 +681,12 @@ namespace StatisticCommon
                         value = -1F;
 
                     //ќпрделить дата/врем€ дл€ "нормальных" (>= 1) значений
-                    if ((!(value < 1)) && (DateTime.TryParse(table.Rows[i]["last_changed_at"].ToString(), out dtLastChangedAt) == false))
+                    //if ((!(value < 1)) && (DateTime.TryParse(table.Rows[i]["last_changed_at"].ToString(), out dtLastChangedAt) == false))
+                    if ((!(value < 1)) && (table.Rows[i]["last_changed_at"].GetType() == typeof(DateTime)))
+                        dtLastChangedAt = (DateTime)table.Rows[i]["last_changed_at"];
+                    else
                         //Ќельз€ определить дата/врем€ дл€ "нормальных" (>= 1) значений
                         return -1;
-                    else
-                        ;
 
                     if (m_dtLastChangedAt_TM_Gen > dtLastChangedAt) {
                         m_dtLastChangedAt_TM_Gen = dtLastChangedAt;

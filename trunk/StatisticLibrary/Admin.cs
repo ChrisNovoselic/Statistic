@@ -6,32 +6,8 @@ using System.Threading;
 using HClassLibrary;
 
 namespace StatisticCommon
-{
-    interface IHAdmin
-    {
-        //void AbortThreadRDGValues(HClassLibrary.HHandler.INDEX_WAITHANDLE_REASON reason);
-        void ClearStates();
-        void ClearValues();
-        void CopyCurToPrevRDGValues();
-        TECComponent FindTECComponent(int id);
-        void getCurRDGValues(HAdmin source);
-        string GetFmtDatetime(int h);
-        int GetPBRNumber(int indx = -1);
-        void GetRDGValues(int mode, int indx, DateTime date);
-        int GetSeasonHourOffset(int h);
-        void InitTEC(System.Collections.Generic.List<TEC> listTEC, HClassLibrary.HMark markQueries);
-        void InitTEC(int idListener, FormChangeMode.MODE_TECCOMPONENT mode, HClassLibrary.TYPE_DATABASE_CFG typeCfg, HClassLibrary.HMark markQueries, bool bIgnoreTECInUse);
-        FormChangeMode.MODE_TECCOMPONENT modeTECComponent(int indx);
-        void RemoveTEC(int id_tec);
-        void ResetRDGExcelValues();
-        void SetDelegateData(HClassLibrary.DelegateDateFunc s, HClassLibrary.DelegateFunc e);
-        void SetDelegateDatetime(HClassLibrary.DelegateDateFunc f);
-        void SetDelegateSaveComplete(HClassLibrary.DelegateFunc f);
-        void StartDbInterfaces();
-        bool WasChanged();
-    }
-    
-    public abstract class HAdmin : HHandlerDb, StatisticCommon.IHAdmin
+{    
+    public abstract class HAdmin : HHandlerDb
     {
         public static int SEASON_BASE = 5;
         public enum seasonJumpE
@@ -89,7 +65,7 @@ namespace StatisticCommon
         /// <summary>
         /// Список объектов 'TEC'
         /// </summary>
-        public volatile List<StatisticCommon.TEC> m_list_tec;
+        public volatile StatisticCommon.InitTECBase.ListTEC m_list_tec;
         /// <summary>
         /// Список 
         /// </summary>
@@ -208,7 +184,7 @@ namespace StatisticCommon
         
         public virtual void InitTEC(List <StatisticCommon.TEC> listTEC, HMark markQueries)
         {
-            this.m_list_tec = new List<TEC> ();
+            this.m_list_tec = new InitTECBase.ListTEC ();
             foreach (TEC t in listTEC)
             {
                 //if ((HAdmin.DEBUG_ID_TEC == -1) || (HAdmin.DEBUG_ID_TEC == t.m_id))
@@ -250,7 +226,7 @@ namespace StatisticCommon
                             break;
                     }
             else
-                this.m_list_tec = new List <TEC> ();
+                this.m_list_tec = new InitTECBase.ListTEC ();
 
             initQueries(markQueries);
             initTEC();

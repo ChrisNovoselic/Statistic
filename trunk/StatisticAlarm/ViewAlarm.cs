@@ -8,11 +8,16 @@ using System.Globalization; //CultureInfo
 using System.ComponentModel;
 
 using HClassLibrary;
+using StatisticCommon;
 
 namespace StatisticAlarm
 {
-    public class ViewAlarm : HHandlerQueue
+    public partial class AdminAlarm : HHandlerQueue
     {
+        /// <summary>
+        /// Режим работы вкладки
+        /// </summary>
+        public MODE Mode;
         /// <summary>
         /// Класс для хранения значений о событии сигнализации
         /// </summary>
@@ -74,15 +79,46 @@ namespace StatisticAlarm
         /// <summary>
         /// Перечисление - индексы известных для обработки состояний
         /// </summary>
-        public enum StatesMachine { Unknown = -1, List, Insert, Update }
+        private enum StatesMachine { Unknown = -1, List, Insert, Fixed, Confirm }
         /// <summary>
         /// Объект для учета событий сигнализации и их состояний
         /// </summary>
         private DictAlarmObject m_dictAlarmObject;
-
+        /// <summary>
+        /// Тип функции - для обработки события регистрации события (случая) сигнализаций из БД
+        /// </summary>
+        /// <param name="ev">Аргумент ...</param>
         public delegate void AlarmDbEventHandler(AlarmDbEventArgs ev);
-        public event AlarmNotifyEventHandler EventAdd, EventRetry;
+        /// <summary>
+        /// События для оповещения панели
+        /// </summary>
+        public event AlarmNotifyEventHandler EventAdd
+            , EventRetry;
+        /// <summary>
+        /// Событие регистрации события (случая) сигнализаций из БД
+        /// </summary>
         private event AlarmDbEventHandler EventReg;
+        /// <summary>
+        /// Таймер для запроса актуального перечня событий сигнализаций
+        /// </summary>
+        private System.Threading.Timer m_timerView;
+
+        public delegate void DatetimeCurrentEventHandler(DatetimeCurrentEventArgs ev);
+        public class DatetimeCurrentEventArgs : EventArgs
+        {
+            public DateTime Date;
+            public int HourBegin
+                , HourEnd;
+
+            public DatetimeCurrentEventArgs(DateTime date, int iHourBegin, int iHourEnd)
+            {
+                this.Date = date;
+                this.HourBegin = iHourBegin;
+                this.HourEnd = iHourEnd;
+            }
+        }
+
+        private DatetimeCurrentEventArgs m_dtCurrent;
         /// <summary>
         /// Класс для получения данных из БД
         /// </summary>
@@ -457,23 +493,44 @@ namespace StatisticAlarm
         /// <summary>
         /// Объект для получения данных из БД
         /// </summary>
-        private ViewAlarm.HandlerDb m_handlerDb;
-        ///// <summary>
-        ///// Событие для отправки списка событий сигнализаций клиентам
-        ///// </summary>
-        //public event DelegateObjectFunc EvtGetData;
-
+        private AdminAlarm.HandlerDb m_handlerDb;
+        /// <summary>
+        /// Событие для отправки списка событий/детализации сигнализаций клиентам
+        /// </summary>
+        public event DelegateObjectFunc EvtGetDataMain
+            , EvtGetDataDetail;
+        /// <summary>
+        /// Объект потока для обработки рез-та запроса
+        ///  на получение списка событий сигнализаций
+        /// </summary>
         private BackgroundWorker m_threadListEventsResponse;
         /// <summary>
         /// Конструктор - основной (с параметрами)
         /// </summary>
         /// <param name="connSett">Параметры соединения с БД_значений</param>
-        public ViewAlarm(ConnectionSettings connSett)
+        /// <param name="mode">Режим работы объекта</param>
+        /// <param name="ev">Инициализация значений даты, часов начало, окончания запроса списка событий</param>
+        public AdminAlarm(ConnectionSettings connSett, MODE mode, DatetimeCurrentEventArgs ev, bool bWorkCheked)
             : base()
         {
-            m_dictAlarmObject = new DictAlarmObject();
+            Mode = mode;
+            m_dtCurrent = ev;
 
-            m_handlerDb = new ViewAlarm.HandlerDb (connSett);
+            lockValue = new object();
+
+            m_dictAlarmObject = new DictAlarmObject();
+            EventReg += new AlarmDbEventHandler(onEventReg);
+
+            m_handlerDb = new AdminAlarm.HandlerDb(connSett);
+
+            //Инициализировать таймер для оповещение_список/оповещение_сигнал
+            m_timerView = new System.Threading.Timer(new TimerCallback(fTimerView_Tick), null, Timeout.Infinite, Timeout.Infinite);
+
+            m_timerAlarm =
+                new System.Threading.Timer(new TimerCallback(TimerAlarm_Tick), null, Timeout.Infinite, Timeout.Infinite)
+                //new System.Windows.Forms.Timer ()
+                ;
+            //m_timerAlarm.Tick += new EventHandler(TimerAlarm_Tick);
 
             m_threadListEventsResponse = new BackgroundWorker ();
             m_threadListEventsResponse.DoWork += new DoWorkEventHandler(fThreadListEventsResponse_DoWork);
@@ -485,26 +542,152 @@ namespace StatisticAlarm
             base.Start();
 
             m_handlerDb.Start ();
+
+            if (Mode == MODE.SERVICE)
+                foreach (TecViewAlarm tv in m_listTecView)
+                    tv.Start(); //StartDbInterfaces (CONN_SETT_TYPE.COUNT_CONN_SETT_TYPE);
+            else ;
         }
 
         public override void Stop()
         {
             m_handlerDb.Stop ();
+
+            foreach (TecViewAlarm tv in m_listTecView)
+                tv.Stop ();
+
+            if (! (m_timerAlarm == null))
+            {
+                m_timerAlarm.Change(System.Threading.Timeout.Infinite, System.Threading.Timeout.Infinite);
+                m_timerAlarm.Dispose ();
+                m_timerAlarm = null;
+            }
+            else
+                ;
             
             base.Stop();
         }
 
+        public override bool Activate(bool active)
+        {
+            bool bRes = base.Activate(active);
+
+            if (bRes == true)
+                if (active == true)
+                {
+                    if (Mode == MODE.SERVICE)
+                    {
+                        foreach (TecViewAlarm tv in m_listTecView)
+                            tv.Activate(active);
+
+                        m_timerAlarm.Change(0, System.Threading.Timeout.Infinite);
+                    }
+                    else
+                        ;
+                }
+                else
+                    if (Mode == MODE.SERVICE)
+                        //Вариант №0
+                        m_timerAlarm.Change(Timeout.Infinite, Timeout.Infinite);
+                        ////Вариант №1
+                        //m_timerAlarm.Stop ();
+                    else
+                        ;
+            else
+                ;
+
+            return bRes;
+        }
+        /// <summary>
+        /// Обработчик события изменение признака "Включено/отключено"
+        /// </summary>
+        /// <param name="obj">Объект, иницировавший событие</param>
+        public void OnWorkCheckedChanged(bool bChecked)
+        {
+            //??? - Активировать объект чтения/записи/обновления списка событий
+            Activate(bChecked);
+        }
+
+        private void startTimerView(int interval = 6)
+        {
+            m_timerView.Change(0, System.Threading.Timeout.Infinite);
+        }
+
+        private void stopTimerView()
+        {
+            m_timerView.Change(System.Threading.Timeout.Infinite, System.Threading.Timeout.Infinite);
+        }
+        /// <summary>
+        /// Поставить в очередь обработки событие - запрос перечня событий сигнализаций из БД
+        /// </summary>
+        private void pushListEvents()
+        {
+            //Поставить в очередь обработки
+            push(new object [] //Перечень событий для обработки
+                    { new object [] //1-е событие
+                        {
+                            StatesMachine.List
+                            , m_dtCurrent.Date
+                            , m_dtCurrent.HourBegin
+                            , m_dtCurrent.HourEnd
+                        }
+                    });
+        }
+
+        private void push(object []pars)
+        {
+            //Поставить в очередь обработки
+            // null - получатель/отправитель
+            Push(null, new object[] //???
+                { pars });
+        }
+        /// <summary>
+        /// Метод обратного вызова для таймера обновления значений в таблице
+        /// </summary>
+        /// <param name="obj">Объект, инициировавший событие</param>
+        /// <param name="ev">Аргумент события</param>
+        private void fTimerView_Tick(object obj)
+        {
+            pushListEvents ();
+
+            m_timerView.Change(PanelStatistic.POOL_TIME, System.Threading.Timeout.Infinite);
+        }
+        /// <summary>
+        /// Обработчик события - изменение даты, номера часа начала и окончания
+        /// </summary>
+        /// <param name="ev"></param>
+        public void OnEventDatetimeChanged(DatetimeCurrentEventArgs ev)
+        {
+            m_dtCurrent = ev;
+
+            pushListEvents ();
+        }
+        /// <summary>
+        /// Потоковая функция обработки результата запроса списка событий сигнализаций
+        /// </summary>
+        /// <param name="obj">Объект, инициировавший событие (??? поток)</param>
+        /// <param name="ev">Аргумент события начала выполнения потока</param>
         private void fThreadListEventsResponse_DoWork (object obj, DoWorkEventArgs ev)
         {
             DataTable tableRes = ev.Argument as DataTable;
             //DataRow []rowsUnFixed = tableRes.Select (@"[DATETIME_FIXED] IS NULL", @"[DATETIME_REGISTRED]");
             foreach (DataRow r in tableRes.Rows)
                 EventReg(new AlarmDbEventArgs(r));
-        }
 
+            ev.Result = @"Ok";
+        }
+        /// <summary>
+        /// Обработчик события - завершения выполнения потоковой функции по обработке
+        ///  результатов запроса списка событий сигнализаций
+        /// </summary>
+        /// <param name="obj">Объект, инициировавший событие (??? поток)</param>
+        /// <param name="ev">Аргумент события окончанмя выполнения потоковой функции</param>
         private void fThreadListEventsResponse_RunWorkerCompleted(object obj, RunWorkerCompletedEventArgs ev)
         {
-            Console.WriteLine(@"ViewAlarm::fThreadListEventsResponse_RunWorkerCompleted () - Ok...");
+            if (ev.Error == null)
+                Console.WriteLine(@"ViewAlarm::fThreadListEventsResponse_RunWorkerCompleted () - " + ev.Result + @"...");
+            else
+                Logging.Logg().Exception(ev.Error, Logging.INDEX_MESSAGE.NOT_SET, @"ViewAlarm::fThreadListEventsResponse_DoWork () - ...");
         }
         /// <summary>
         /// Функция обработки результатов запроса
@@ -518,12 +701,15 @@ namespace StatisticAlarm
 
             m_threadListEventsResponse.RunWorkerAsync(tableRes);
         }
-
-        public void OnEventReg (TecViewAlarm.AlarmTecViewEventArgs ev)
+        /// <summary>
+        /// Обработчик события регистрации события из БД
+        /// </summary>
+        /// <param name="ev">Аргумент события - описание события сигнализации</param>
+        private void onEventReg(AlarmDbEventArgs ev)
         {
             INDEX_ACTION iAction = m_dictAlarmObject.Registred (ev);
             if (iAction == INDEX_ACTION.ERROR)
-                throw new Exception(@"ViewAlarm::OnEventReg (" + ev.GetType().Name + @") - ...");
+                throw new Exception(@"ViewAlarm::onEventReg () - ...");
             else
                 if (iAction == INDEX_ACTION.ADD)
                     EventAdd(ev);
@@ -534,18 +720,6 @@ namespace StatisticAlarm
                         ;
         }
         /// <summary>
-        /// Обработчик события регистрации события
-        /// </summary>
-        /// <param name="ev">Аргумент события - описание события сигнализации</param>
-        private void OnEventReg(AlarmDbEventArgs ev)
-        {
-        }
-        /// <summary>
-        /// Событие для 'AdminAlarm' - подтвердить изменение состояния ТГ (вкл./откл)
-        ///  для ретрансляции в 'TecViewAlarm'
-        /// </summary>
-        public event DelegateIntFunc EventConfirm;
-        /// <summary>
         /// Обработчик события - подтверждение события сигнализации от панели (пользователя)
         /// </summary>
         /// <param name="id_comp">Часть составного ключа: идентификатор ГТП</param>
@@ -554,13 +728,25 @@ namespace StatisticAlarm
         {
             Logging.Logg().Debug(@"ViewAlarm::OnEventConfirm () - id=" + id_comp.ToString() + @"; id_tg=" + id_tg.ToString(), Logging.INDEX_MESSAGE.NOT_SET);
 
-            if (! (m_dictAlarmObject.Confirmed (id_comp, id_tg) < 0))
+            if (!(m_dictAlarmObject.Confirmed(id_comp, id_tg) < 0))
+            {
+                push(new object[] //Перечень событий
+                    {
+                        new object [] //1-е событие
+                        {
+                            StatesMachine.Confirm
+                            , id_comp
+                            , id_tg
+                        }
+                    });
+
                 if (!(id_tg < 0))
-                    //Изменить состояние ТГ (вкл./выкл.)
-                    //??? событие отправляется всем 'TecView', даже тем, в составе которых этого ТГ нет
-                    EventConfirm(id_tg);
+                {
+                    tgConfirm(id_tg);
+                }
                 else
                     ;
+            }
             else
                 Logging.Logg().Error(@"ViewAlarm::OnEventConfirm () - id=" + id_comp.ToString() + @"; id_tg=" + id_tg.ToString() + @", НЕ НАЙДЕН!", Logging.INDEX_MESSAGE.NOT_SET);
         }
@@ -574,21 +760,6 @@ namespace StatisticAlarm
         {
             return m_dictAlarmObject.IsConfirmed(id_comp, id_tg);
         }
-
-        public bool IsEnabledButtonAlarm(int id, int id_tg)
-        {
-            return !m_dictAlarmObject.IsConfirmed(id, id_tg);
-        }
-        /// <summary>
-        /// Обработчик события запроса данных для панели
-        /// </summary>
-        /// <param name="obj">Аргумент события</param>
-        public void OnEvtDataAskedHost_PanelAlarmJournal(object obj)
-        {
-            EventArgsDataHost ev = obj as EventArgsDataHost;
-            //Поставить в очередь обработки
-            Push (ev.reciever, new object [] { ev.par as object [] });
-        }
         /// <summary>
         /// Получить дату/время регистрации события сигнализации для ТГ
         /// </summary>
@@ -599,10 +770,17 @@ namespace StatisticAlarm
         {
             return m_dictAlarmObject.TGAlarmDatetimeReg(id_comp, id_tg);
         }
+        /// <summary>
+        /// Получить результат запроса для события
+        /// </summary>
+        /// <param name="state">Идентификатор события</param>
+        /// <param name="error">Признак получения результата запроса</param>
+        /// <param name="table">Результат запроса - таблица ('DataTable')</param>
+        /// <returns>Признак выполнения операции</returns>
         protected override int StateCheckResponse(int state, out bool error, out object table)
         {
             int iRes = 0;
-            ViewAlarm.HandlerDb.INDEX_SYNC_STATECHECKRESPONSE indxSync = ViewAlarm.HandlerDb.INDEX_SYNC_STATECHECKRESPONSE.UNKNOWN;
+            HandlerDb.INDEX_SYNC_STATECHECKRESPONSE indxSync = HandlerDb.INDEX_SYNC_STATECHECKRESPONSE.UNKNOWN;
 
             error = false;
             table = null;
@@ -611,7 +789,7 @@ namespace StatisticAlarm
             {
                 case StatesMachine.List:
                 case StatesMachine.Insert:
-                    indxSync = (ViewAlarm.HandlerDb.INDEX_SYNC_STATECHECKRESPONSE)WaitHandle.WaitAny(m_handlerDb.m_arSyncStateCheckResponse);
+                    indxSync = (HandlerDb.INDEX_SYNC_STATECHECKRESPONSE)WaitHandle.WaitAny(m_handlerDb.m_arSyncStateCheckResponse);
                     switch (indxSync)
                     {
                         case HandlerDb.INDEX_SYNC_STATECHECKRESPONSE.RESPONSE:
@@ -637,7 +815,11 @@ namespace StatisticAlarm
 
             return iRes;
         }
-
+        /// <summary>
+        /// Отправить запрос для события
+        /// </summary>
+        /// <param name="state">Идентификатор состояния</param>
+        /// <returns>Результат отправления запроса</returns>
         protected override int StateRequest(int state)
         {
             int iRes = 0;
@@ -659,7 +841,12 @@ namespace StatisticAlarm
 
             return iRes;
         }
-
+        /// <summary>
+        /// Обработать результат запроса для состояния
+        /// </summary>
+        /// <param name="state">Идентификатор состояния</param>
+        /// <param name="obj">Результат выполнения запроса</param>
+        /// <returns>Признак обработки результата запроса</returns>
         protected override int StateResponse(int state, object obj)
         {
             int iRes = 0;
@@ -672,14 +859,18 @@ namespace StatisticAlarm
                     GetListEventsResponse(itemQueue, tableRes);
                     break;
                 case StatesMachine.Insert:
-                    //Результата нет (рез-т вставленные записи)
+                case StatesMachine.Fixed:
+                case StatesMachine.Confirm:
+                    //Результата нет (рез-т вставленные/обновленные записи)
                     break;
                 default:
                     break;
             }
 
+            //Вариант №1
             //??? прямой вызов метода-обработчика..., ??? использование объекта, полученного в качестве параметра... - очень некрасиво, и, возможно - неправильно
-            itemQueue.m_dataHostRecieved.OnEvtDataRecievedHost(new EventArgsDataHost(-1, new object[] { (StatesMachine)state, tableRes }));
+            // для отправителя/получателя результата панели
+            //itemQueue.m_dataHostRecieved.OnEvtDataRecievedHost(new EventArgsDataHost(-1, new object[] { (StatesMachine)state, tableRes }));
 
             //Logging.Logg().Debug(@"ViewAlarm::StateRequest () - state=" + ((StatesMachine)state).ToString() + @", result=" + bRes.ToString() + @" - вЫход...");
 

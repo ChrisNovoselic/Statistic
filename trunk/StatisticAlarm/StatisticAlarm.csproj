@@ -103,7 +103,7 @@
       <SubType>Form</SubType>
     </Compile>
     <Compile Include="ObjectAlarm.cs" />
-    <Compile Include="PanelAlarmJournal.cs">
+    <Compile Include="PanelAlarm.cs">
       <SubType>Component</SubType>
     </Compile>
     <Compile Include="Program.cs" />
