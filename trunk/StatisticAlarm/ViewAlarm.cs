@@ -26,34 +26,19 @@ namespace StatisticAlarm
             public int m_id_user_registred
                 , m_id_user_fixed
                 , m_id_user_confirm;
-            public DateTime? m_dtRegistred
-                , m_dtFixed
+            public DateTime? 
+                m_dtFixed
                 , m_dtConfirm;
 
             public AlarmDbEventArgs(DataRow rowEvt)
-            //public EventRegEventArgs(int id_comp
-            //                        , int idUsrReg, DateTime dtReg
-            //                        , int idUsrFix, DateTime dtFix
-            //                        , int idUsrConfirm, DateTime dtConfirm
-            //                        , int s, string mes)
+                : base((int)rowEvt[@"ID_COMPONENT"]
+                    , (DateTime)rowEvt[@"DATETIME_REGISTRED"]
+                    , (int)rowEvt[@"SITUATION"])
             {
-                ////Вариант №1
-                //m_id_comp = id_comp;
-                //m_dtRegistred = dtReg;
-                //m_situation = s;
-                //m_message = mes;
-                //Вариант №2
-                int id_comp = (int)rowEvt[@"ID_COMPONENT"];
-                if (id_comp > 100 && id_comp < 500)
-                    m_id_gtp = id_comp;
-                else
-                    if (id_comp > 1000 && id_comp < 1000)
-                        m_id_tg = id_comp;
-                    else
-                        ;
                 //Регистрация события
+                //m_id_comp, [ID_COMP]
                 m_id_user_registred = (int)rowEvt[@"ID_USER_REGISTRED"];
-                m_dtRegistred = (DateTime)rowEvt[@"DATETIME_REGISTRED"];
+                //m_dtRegistred, [DATETIME_REGISTRED]
                 //Фиксация события
                 if (! (rowEvt[@"ID_USER_FIXED"] is System.DBNull))
                     m_id_user_fixed = (int)rowEvt[@"ID_USER_FIXED"];
@@ -72,14 +57,14 @@ namespace StatisticAlarm
                     m_dtConfirm = (DateTime)rowEvt[@"DATETIME_CONFIRM"];
                 else
                     m_dtConfirm = null;
-                m_situation = AlarmNotifyEventArgs.GetSituation((string)rowEvt[@"MESSAGE"]);
-                m_message = (string)rowEvt[@"MESSAGE"];
+                //m_situation, [SUTUATION]
+                //m_message_shr, [SUTUATION]
             }
         }
         /// <summary>
         /// Перечисление - индексы известных для обработки состояний
         /// </summary>
-        private enum StatesMachine { Unknown = -1, List, Insert, Fixed, Confirm }
+        private enum StatesMachine { Unknown = -1, List, Notify, Detail, Insert, Fixed, Confirm }
         /// <summary>
         /// Объект для учета событий сигнализации и их состояний
         /// </summary>
@@ -98,6 +83,10 @@ namespace StatisticAlarm
         /// Событие регистрации события (случая) сигнализаций из БД
         /// </summary>
         private event AlarmDbEventHandler EventReg;
+        /// <summary>
+        /// Признак актуальности зарегистрированных событий сигнализаций из БД
+        /// </summary>
+        bool m_bAlarmDbEventUpdated;
         /// <summary>
         /// Таймер для запроса актуального перечня событий сигнализаций
         /// </summary>
@@ -368,15 +357,19 @@ namespace StatisticAlarm
             /// </summary>
             private void GetInsertEventMainRequest()
             {
-                int id = m_EventRegEventArg.m_id_tg < 0 ? m_EventRegEventArg.m_id_gtp : m_EventRegEventArg.m_id_tg //ID_COMPONENT
-                    , typeAlarm = (m_EventRegEventArg.m_id_tg < 0 ? 1 : 2) //TYPE
+                StatisticCommon.FormChangeMode.MODE_TECCOMPONENT mode = StatisticCommon.TECComponent.Mode(m_EventRegEventArg.m_id_comp);
+                int typeAlarm = (mode == FormChangeMode.MODE_TECCOMPONENT.GTP) ? 1 :
+                        (mode == FormChangeMode.MODE_TECCOMPONENT.TG) ? 2 :
+                            (int)FormChangeMode.MODE_TECCOMPONENT.UNKNOWN //TYPE
                     , id_user = 0; //ID_USER
-                double val = m_EventRegEventArg.m_id_tg < 0 ? -1 : m_EventRegEventArg.m_listEventDetail[0].value; //VALUE
-                string strDTRegistred = m_EventRegEventArg.m_dtRegistred.ToString(@"yyyyMMdd HH:mm:ss.fff"); //DATETIME_REGISTRED
+                double val = (mode == FormChangeMode.MODE_TECCOMPONENT.GTP) ? -1F :
+                    (mode == FormChangeMode.MODE_TECCOMPONENT.TG) ? m_EventRegEventArg.m_listEventDetail[0].value :
+                        -2F; //VALUE
+                string strDTRegistred = m_EventRegEventArg.m_dtRegistred.GetValueOrDefault().ToString(@"yyyyMMdd HH:mm:ss.fff"); //DATETIME_REGISTRED
                 //Запрос для вставки записи о событии сигнализации
-                string query = "INSERT INTO [dbo].[AlarmEvent] ([ID_COMPONENT],[TYPE],[VALUE],[DATETIME_REGISTRED],[ID_USER_REGISTRED],[DATETIME_FIXED],[ID_USER_FIXED],[DATETIME_CONFIRM],[ID_USER_CONFIRM],[CNT_RETRY],[INSERT_DATETIME],[MESSAGE]) VALUES"
+                string query = "INSERT INTO [dbo].[AlarmEvent] ([ID_COMPONENT],[TYPE],[VALUE],[DATETIME_REGISTRED],[ID_USER_REGISTRED],[DATETIME_FIXED],[ID_USER_FIXED],[DATETIME_CONFIRM],[ID_USER_CONFIRM],[CNT_RETRY],[INSERT_DATETIME],[SITUATION]) VALUES"
                     + @" ("
-                        + id + @", " //ID_COMPONENT
+                        + m_EventRegEventArg.m_id_comp + @", " //ID_COMPONENT
                         + typeAlarm + @", " //TYPE                        
                         + val.ToString(@"F3", CultureInfo.InvariantCulture) + @", " //VALUE
                         + @"'" + strDTRegistred + @"', " //DATETIME_REGISTRED
@@ -387,7 +380,7 @@ namespace StatisticAlarm
                         + "NULL" + @", " //ID_USER_CONFIRM
                         + 0 + @", " //CNT_RETRY
                         + "GETDATE ()" + @", " //INSERT_DATETIME
-                        + @"'" + m_EventRegEventArg.m_message + @"'" //MESSAGE
+                        + @"'" + m_EventRegEventArg.m_situation + @"'" //SITUATION
                     + @")";
                 query += @";";
                 //??? Переход на новую строку
@@ -395,7 +388,7 @@ namespace StatisticAlarm
                 query += Environment.NewLine;
                 //Запрос на получение идентификатора вставленной записи
                 query += @"SELECT * FROM [dbo].[AlarmEvent] WHERE "
-                    + @"[ID_COMPONENT]=" + id
+                    + @"[ID_COMPONENT]=" + m_EventRegEventArg.m_id_comp
                     + @" AND [TYPE]=" + typeAlarm                    
                     + @" AND [DATETIME_REGISTRED]='" + strDTRegistred + @"'"
                     + @" AND [ID_USER_REGISTRED]=" + id_user;
@@ -503,7 +496,7 @@ namespace StatisticAlarm
         /// Объект потока для обработки рез-та запроса
         ///  на получение списка событий сигнализаций
         /// </summary>
-        private BackgroundWorker m_threadListEventsResponse;
+        private BackgroundWorker m_threadNotifyResponse;
         /// <summary>
         /// Конструктор - основной (с параметрами)
         /// </summary>
@@ -521,6 +514,8 @@ namespace StatisticAlarm
             m_dictAlarmObject = new DictAlarmObject();
             EventReg += new AlarmDbEventHandler(onEventReg);
 
+            m_bAlarmDbEventUpdated = false;
+
             m_handlerDb = new AdminAlarm.HandlerDb(connSett);
 
             //Инициализировать таймер для оповещение_список/оповещение_сигнал
@@ -532,9 +527,9 @@ namespace StatisticAlarm
                 ;
             //m_timerAlarm.Tick += new EventHandler(TimerAlarm_Tick);
 
-            m_threadListEventsResponse = new BackgroundWorker ();
-            m_threadListEventsResponse.DoWork += new DoWorkEventHandler(fThreadListEventsResponse_DoWork);
-            m_threadListEventsResponse.RunWorkerCompleted += new RunWorkerCompletedEventHandler(fThreadListEventsResponse_RunWorkerCompleted);
+            m_threadNotifyResponse = new BackgroundWorker ();
+            m_threadNotifyResponse.DoWork += new DoWorkEventHandler(fThreadNotifyResponse_DoWork);
+            m_threadNotifyResponse.RunWorkerCompleted += new RunWorkerCompletedEventHandler(fThreadNotifyResponse_RunWorkerCompleted);
         }
 
         public override void Start()
@@ -544,27 +539,42 @@ namespace StatisticAlarm
             m_handlerDb.Start ();
 
             if (Mode == MODE.SERVICE)
+            {
                 foreach (TecViewAlarm tv in m_listTecView)
                     tv.Start(); //StartDbInterfaces (CONN_SETT_TYPE.COUNT_CONN_SETT_TYPE);
+            }
             else ;
+
+            OnWorkCheckedChanged(true);
         }
 
         public override void Stop()
         {
             m_handlerDb.Stop ();
 
+            activateAdminAlarm(false);
             foreach (TecViewAlarm tv in m_listTecView)
                 tv.Stop ();
 
             if (! (m_timerAlarm == null))
             {
-                m_timerAlarm.Change(System.Threading.Timeout.Infinite, System.Threading.Timeout.Infinite);
+                // таймер уже был остановлен в 'activateAdminAlarm'
                 m_timerAlarm.Dispose ();
                 m_timerAlarm = null;
             }
             else
                 ;
-            
+
+            activateViewAlarm(false);
+            if (! (m_timerView == null))
+            {
+                // таймер уже был остановлен в 'activateViewAlarm'
+                m_timerView.Dispose();
+                m_timerView = null;
+            }
+            else
+                ;
+
             base.Stop();
         }
 
@@ -575,28 +585,29 @@ namespace StatisticAlarm
             if (bRes == true)
                 if (active == true)
                 {
-                    if (Mode == MODE.SERVICE)
-                    {
-                        foreach (TecViewAlarm tv in m_listTecView)
-                            tv.Activate(active);
 
-                        m_timerAlarm.Change(0, System.Threading.Timeout.Infinite);
-                    }
-                    else
-                        ;
                 }
                 else
-                    if (Mode == MODE.SERVICE)
-                        //Вариант №0
-                        m_timerAlarm.Change(Timeout.Infinite, Timeout.Infinite);
-                        ////Вариант №1
-                        //m_timerAlarm.Stop ();
-                    else
-                        ;
+                    ;
             else
                 ;
 
             return bRes;
+        }
+
+        private void activateAdminAlarm(bool bChecked)
+        {
+            foreach (TecViewAlarm tv in m_listTecView)
+                tv.Activate(bChecked);
+
+            m_timerAlarm.Change(bChecked == true ? 0 : System.Threading.Timeout.Infinite, System.Threading.Timeout.Infinite);            
+        }
+
+        private void activateViewAlarm(bool bChecked)
+        {
+            m_timerView.Change(bChecked == true ? 0 : System.Threading.Timeout.Infinite, System.Threading.Timeout.Infinite);
+
+            m_bAlarmDbEventUpdated = bChecked;
         }
         /// <summary>
         /// Обработчик события изменение признака "Включено/отключено"
@@ -605,7 +616,12 @@ namespace StatisticAlarm
         public void OnWorkCheckedChanged(bool bChecked)
         {
             //??? - Активировать объект чтения/записи/обновления списка событий
-            Activate(bChecked);
+            if (Mode == MODE.SERVICE)
+                activateAdminAlarm(bChecked);
+            else
+                ;
+
+            activateViewAlarm(bChecked);
         }
 
         private void startTimerView(int interval = 6)
@@ -620,7 +636,7 @@ namespace StatisticAlarm
         /// <summary>
         /// Поставить в очередь обработки событие - запрос перечня событий сигнализаций из БД
         /// </summary>
-        private void pushListEvents()
+        private void pushList()
         {
             //Поставить в очередь обработки
             push(new object [] //Перечень событий для обработки
@@ -630,6 +646,24 @@ namespace StatisticAlarm
                             , m_dtCurrent.Date
                             , m_dtCurrent.HourBegin
                             , m_dtCurrent.HourEnd
+                        }
+                    });
+        }
+
+        /// <summary>
+        /// Поставить в очередь обработки событие - запрос перечня событий сигнализаций из БД - ткущих!!!
+        /// </summary>
+        private void pushNotify()
+        {
+            //DateTime dtNotify = HAdmin.ToMoscowTimeZone();
+            //Поставить в очередь обработки
+            push(new object[] //Перечень событий для обработки
+                    { new object [] //1-е событие
+                        {
+                            StatesMachine.Notify
+                            , HAdmin.ToMoscowTimeZone().Date //dtNotify.Date
+                            , 0
+                            , 24
                         }
                     });
         }
@@ -648,9 +682,16 @@ namespace StatisticAlarm
         /// <param name="ev">Аргумент события</param>
         private void fTimerView_Tick(object obj)
         {
-            pushListEvents ();
+            // поставить в очередь событие получения списка событий сигнализаций
+            //  за указанную дату/часы только, если дата текущая
+            if (isToday == true)                
+                pushList();
+            else
+                ;
+            // поставить в очередь событие получения списка текущих событий сигнализаций
+            pushNotify();
 
-            m_timerView.Change(PanelStatistic.POOL_TIME, System.Threading.Timeout.Infinite);
+            m_timerView.Change(PanelStatistic.POOL_TIME * 1000, System.Threading.Timeout.Infinite);
         }
         /// <summary>
         /// Обработчик события - изменение даты, номера часа начала и окончания
@@ -660,14 +701,25 @@ namespace StatisticAlarm
         {
             m_dtCurrent = ev;
 
-            pushListEvents ();
+            pushList ();
+            ////Проверить равенство установленной даты и текущей
+            //// в случае успеха - отодвинуть вызов потоковой функции таймера
+            //if (isToday == true)
+            //    m_timerView.Change(PanelStatistic.POOL_TIME, System.Threading.Timeout.Infinite);
+            //else
+            //    ;
         }
+        /// <summary>
+        /// Признак постановки в очередь обработки событий - запроса на получение списка собтий сигнализаций
+        ///  по заданной пользователем дате
+        /// </summary>
+        private bool isToday { get { return m_dtCurrent.Date.Equals(HAdmin.ToMoscowTimeZone ().Date); } }
         /// <summary>
         /// Потоковая функция обработки результата запроса списка событий сигнализаций
         /// </summary>
         /// <param name="obj">Объект, инициировавший событие (??? поток)</param>
         /// <param name="ev">Аргумент события начала выполнения потока</param>
-        private void fThreadListEventsResponse_DoWork (object obj, DoWorkEventArgs ev)
+        private void fThreadNotifyResponse_DoWork (object obj, DoWorkEventArgs ev)
         {
             DataTable tableRes = ev.Argument as DataTable;
             //DataRow []rowsUnFixed = tableRes.Select (@"[DATETIME_FIXED] IS NULL", @"[DATETIME_REGISTRED]");
@@ -682,15 +734,19 @@ namespace StatisticAlarm
         /// </summary>
         /// <param name="obj">Объект, инициировавший событие (??? поток)</param>
         /// <param name="ev">Аргумент события окончанмя выполнения потоковой функции</param>
-        private void fThreadListEventsResponse_RunWorkerCompleted(object obj, RunWorkerCompletedEventArgs ev)
+        private void fThreadNotifyResponse_RunWorkerCompleted(object obj, RunWorkerCompletedEventArgs ev)
         {
             if (ev.Error == null)
-                Console.WriteLine(@"ViewAlarm::fThreadListEventsResponse_RunWorkerCompleted () - " + ev.Result + @"...");
+            {
+                Console.WriteLine(@"ViewAlarm::fThreadNotifyResponse_RunWorkerCompleted () - " + ev.Result + @"...");
+
+                m_bAlarmDbEventUpdated = true;
+            }
             else
                 Logging.Logg().Exception(ev.Error, Logging.INDEX_MESSAGE.NOT_SET, @"ViewAlarm::fThreadListEventsResponse_DoWork () - ...");
         }
         /// <summary>
-        /// Функция обработки результатов запроса
+        /// Функция обработки результатов запроса по указанной дате/часам
         /// </summary>
         /// <param name="tableRes">Таблица - результат запроса</param>
         private void GetListEventsResponse(ItemQueue itemQueue, DataTable tableRes)
@@ -699,7 +755,23 @@ namespace StatisticAlarm
                 + @" (" + ((int)itemQueue.Pars[1]) + @"-" + ((int)itemQueue.Pars[2]) + @" ч): "
                 + tableRes.Rows.Count);
 
-            m_threadListEventsResponse.RunWorkerAsync(tableRes);
+            if (Actived == true)
+                EvtGetDataMain(tableRes);
+            else
+                ;
+        }
+        /// <summary>
+        /// Функция обработки результатов запроса текущих!!! событий сигнализаций
+        /// </summary>
+        /// <param name="tableRes">Таблица - результат запроса</param>
+        private void GetNotifyResponse(ItemQueue itemQueue, DataTable tableRes)
+        {
+            m_threadNotifyResponse.RunWorkerAsync(tableRes);
+        }
+
+        private void GetEventDetailResponse(ItemQueue itemQueue, DataTable tableRes)
+        {
+            EvtGetDataDetail(tableRes);
         }
         /// <summary>
         /// Обработчик события регистрации события из БД
@@ -711,44 +783,48 @@ namespace StatisticAlarm
             if (iAction == INDEX_ACTION.ERROR)
                 throw new Exception(@"ViewAlarm::onEventReg () - ...");
             else
-                if (iAction == INDEX_ACTION.ADD)
-                    EventAdd(ev);
-                else
-                    if (iAction == INDEX_ACTION.RETRY)
-                        EventRetry(ev);
+                //Проверить режим работы - оповещение только для 'ADMIN'
+                if ((Mode == MODE.ADMIN)
+                    || (Mode == MODE.SERVICE) //??? для отладки
+                    )
+                    if (iAction == INDEX_ACTION.NEW)
+                        EventAdd(ev);
                     else
-                        ;
+                        if (iAction == INDEX_ACTION.RETRY)
+                            EventRetry(ev);
+                        else
+                            ;
+                else
+                    ;
         }
         /// <summary>
         /// Обработчик события - подтверждение события сигнализации от панели (пользователя)
         /// </summary>
         /// <param name="id_comp">Часть составного ключа: идентификатор ГТП</param>
         /// <param name="id_tg">Часть составного ключа: идентификатор ТГ</param>
-        public void OnEventConfirm (int id_comp, int id_tg)
+        public void OnEventConfirm (AlarmNotifyEventArgs ev)
         {
-            Logging.Logg().Debug(@"ViewAlarm::OnEventConfirm () - id=" + id_comp.ToString() + @"; id_tg=" + id_tg.ToString(), Logging.INDEX_MESSAGE.NOT_SET);
+            Logging.Logg().Debug(@"ViewAlarm::OnEventConfirm (id=" + ev.m_id_comp.ToString() + @") - ...", Logging.INDEX_MESSAGE.NOT_SET);
 
-            if (!(m_dictAlarmObject.Confirmed(id_comp, id_tg) < 0))
+            if (!(m_dictAlarmObject.Confirmed(ev.m_id_comp, ev.m_dtRegistred.GetValueOrDefault()) < 0))
             {
                 push(new object[] //Перечень событий
                     {
                         new object [] //1-е событие
                         {
                             StatesMachine.Confirm
-                            , id_comp
-                            , id_tg
+                            , ev.m_id_comp
+                            , ev.m_dtRegistred
                         }
                     });
 
-                if (!(id_tg < 0))
-                {
-                    tgConfirm(id_tg);
-                }
+                if (StatisticCommon.TECComponent.Mode(ev.m_id_comp) == FormChangeMode.MODE_TECCOMPONENT.TG)
+                    tgConfirm(ev.m_id_comp);
                 else
                     ;
             }
             else
-                Logging.Logg().Error(@"ViewAlarm::OnEventConfirm () - id=" + id_comp.ToString() + @"; id_tg=" + id_tg.ToString() + @", НЕ НАЙДЕН!", Logging.INDEX_MESSAGE.NOT_SET);
+                Logging.Logg().Error(@"ViewAlarm::OnEventConfirm (id=" + ev.m_id_comp.ToString() + @") - НЕ НАЙДЕН!", Logging.INDEX_MESSAGE.NOT_SET);
         }
         /// <summary>
         /// Возвратить признак "подтверждено" для события сигнализации
@@ -756,9 +832,9 @@ namespace StatisticAlarm
         /// <param name="id_comp">Часть составного ключа: идентификатор ГТП</param>
         /// <param name="id_tg">Часть составного ключа: идентификатор ТГ</param>
         /// <returns>Результат: признак установлен/не_установлен)</returns>
-        public bool IsConfirmed(int id_comp, int id_tg)
+        public bool IsConfirmed(int id_comp, DateTime dtReg)
         {
-            return m_dictAlarmObject.IsConfirmed(id_comp, id_tg);
+            return m_dictAlarmObject.IsConfirmed(id_comp, dtReg);
         }
         /// <summary>
         /// Получить дату/время регистрации события сигнализации для ТГ
@@ -766,9 +842,9 @@ namespace StatisticAlarm
         /// <param name="id_comp">Составная часть ключа: идентификатор ГТП</param>
         /// <param name="id_tg">Составная часть ключа: идентификатор ГТП</param>
         /// <returns></returns>
-        public DateTime TGAlarmDatetimeReg(int id_comp, int id_tg)
+        public DateTime TGAlarmDatetimeReg(int id_comp, DateTime dtReg)
         {
-            return m_dictAlarmObject.TGAlarmDatetimeReg(id_comp, id_tg);
+            return m_dictAlarmObject.TGAlarmDatetimeReg(id_comp, dtReg);
         }
         /// <summary>
         /// Получить результат запроса для события
@@ -788,6 +864,7 @@ namespace StatisticAlarm
             switch ((StatesMachine)state)
             {
                 case StatesMachine.List:
+                case StatesMachine.Notify:
                 case StatesMachine.Insert:
                     indxSync = (HandlerDb.INDEX_SYNC_STATECHECKRESPONSE)WaitHandle.WaitAny(m_handlerDb.m_arSyncStateCheckResponse);
                     switch (indxSync)
@@ -828,6 +905,7 @@ namespace StatisticAlarm
             switch ((StatesMachine)state)
             {
                 case StatesMachine.List:
+                case StatesMachine.Notify:
                     m_handlerDb.Refresh ((DateTime)itemQueue.Pars[0], (int)itemQueue.Pars[1], (int)itemQueue.Pars[2]);
                     break;
                 case StatesMachine.Insert:
@@ -858,6 +936,12 @@ namespace StatisticAlarm
                 case StatesMachine.List:
                     GetListEventsResponse(itemQueue, tableRes);
                     break;
+                case StatesMachine.Notify:
+                    GetNotifyResponse(itemQueue, tableRes);
+                    break;
+                case StatesMachine.Detail:
+                    GetEventDetailResponse(itemQueue, tableRes);
+                    break;
                 case StatesMachine.Insert:
                 case StatesMachine.Fixed:
                 case StatesMachine.Confirm:
@@ -872,7 +956,7 @@ namespace StatisticAlarm
             // для отправителя/получателя результата панели
             //itemQueue.m_dataHostRecieved.OnEvtDataRecievedHost(new EventArgsDataHost(-1, new object[] { (StatesMachine)state, tableRes }));
 
-            //Logging.Logg().Debug(@"ViewAlarm::StateRequest () - state=" + ((StatesMachine)state).ToString() + @", result=" + bRes.ToString() + @" - вЫход...");
+            //Logging.Logg().Debug(@"ViewAlarm::StateResponse () - state=" + ((StatesMachine)state).ToString() + @", result=" + bRes.ToString() + @" - вЫход...");
 
             return iRes;
         }

@@ -7,7 +7,7 @@ using HClassLibrary;
 
 namespace StatisticAlarm
 {
-    public enum INDEX_ACTION { ERROR = -1, NOTHING, ADD, RETRY }
+    public enum INDEX_ACTION { ERROR = -1, NOTHING, NEW, RETRY }
     /// <summary>
     /// Перечисление - индексы для типов сигнализаций
     /// </summary>
@@ -40,14 +40,18 @@ namespace StatisticAlarm
     /// </summary>
     public class AlarmNotifyEventArgs : EventArgs
     {
-        public int m_id_gtp;
-        public int m_id_tg;
+        public int m_id_comp;
+        public DateTime? m_dtRegistred;        
         public int m_situation;
-        public string m_message;
+        public string m_message_shr;
 
-        public AlarmNotifyEventArgs()
+        public AlarmNotifyEventArgs(int id_comp, DateTime dtReg, int situation)
             : base()
         {
+            m_id_comp = id_comp;
+            m_dtRegistred = dtReg;
+            m_situation = situation;
+            m_message_shr = GetMessage(id_comp, situation);
         }
 
         public static int GetSituation(string message)
@@ -71,11 +75,12 @@ namespace StatisticAlarm
             return iRes;
         }
 
-        public static string GetMessage(int id_gtp, int id_tg, int situation)
+        public static string GetMessage(int id_comp, int situation)
         {
             string strRes = string.Empty;
+            StatisticCommon.FormChangeMode.MODE_TECCOMPONENT mode = StatisticCommon.TECComponent.Mode(id_comp);
 
-            if (id_tg < 0)
+            if (mode == StatisticCommon.FormChangeMode.MODE_TECCOMPONENT.GTP)
                 if (situation == 1)
                     strRes = @"вверх";
                 else
@@ -84,13 +89,16 @@ namespace StatisticAlarm
                     else
                         strRes = @"нет";
             else
-                if (situation == (int)StatisticCommon.TG.INDEX_TURNOnOff.ON) //TGTurnOnOff = ON
-                    strRes = @"вкл.";
-                else
-                    if (situation == (int)StatisticCommon.TG.INDEX_TURNOnOff.OFF) //TGTurnOnOff = OFF
-                        strRes = @"выкл.";
+                if (mode == StatisticCommon.FormChangeMode.MODE_TECCOMPONENT.TG)
+                    if (situation == (int)StatisticCommon.TG.INDEX_TURNOnOff.ON) //TGTurnOnOff = ON
+                        strRes = @"вкл.";
                     else
-                        strRes = @"нет";
+                        if (situation == (int)StatisticCommon.TG.INDEX_TURNOnOff.OFF) //TGTurnOnOff = OFF
+                            strRes = @"выкл.";
+                        else
+                            strRes = @"нет";
+                else
+                    ; // неизвестный тип компонента
 
             return strRes;
         }
@@ -100,7 +108,11 @@ namespace StatisticAlarm
     /// </summary>
     public class DictAlarmObject : object
     {
-        private Dictionary<KeyValuePair<int, int>, ALARM_OBJECT> _dictAlarmObject;
+        private
+            Dictionary<
+                KeyValuePair<int, DateTime>
+                //int
+                    , ALARM_OBJECT> _dictAlarmObject;
 
         /// <summary>
         /// Класс объекта события сигнализации
@@ -118,15 +130,13 @@ namespace StatisticAlarm
             {
                 get
                 {
-                    return dtConfirm.CompareTo(dtReg) > 0; //? true : false;
+                    return dtConfirm.GetValueOrDefault ().CompareTo(dtReg) > 0; //? true : false;
                 }
             }
-
-            //public AdminAlarm.EventRegEventArgs m_evReg;
             /// <summary>
             /// Дата/время регистрации
             /// </summary>
-            public DateTime dtReg
+            public DateTime? dtReg
                 /// <summary>
                 /// Дата/время подтверждения
                 /// </summary>
@@ -136,14 +146,28 @@ namespace StatisticAlarm
             /// </summary>
             public INDEX_STATES_ALARM state;
 
-            public ALARM_OBJECT(TecViewAlarm.AlarmTecViewEventArgs ev) { /*m_evReg = ev; */dtReg = dtConfirm = ev.m_dtRegistred; state = INDEX_STATES_ALARM.QUEUEDED; }
+            private ALARM_OBJECT() { state = INDEX_STATES_ALARM.QUEUEDED; }
+
+            public ALARM_OBJECT(TecViewAlarm.AlarmTecViewEventArgs ev) : this ()
+            {
+                dtReg = dtConfirm = ev.m_dtRegistred;                
+            }
+
+            public ALARM_OBJECT(AdminAlarm.AlarmDbEventArgs ev) : this ()
+            {
+                dtReg = dtConfirm = ev.m_dtRegistred;
+            }
         }
         /// <summary>
         /// Конструктор основной (без параметров)
         /// </summary>
         public DictAlarmObject()
         {
-            _dictAlarmObject = new Dictionary<KeyValuePair<int, int>, ALARM_OBJECT>();
+            _dictAlarmObject =
+                new Dictionary<
+                    KeyValuePair<int, DateTime>
+                    //int
+                        , ALARM_OBJECT>();
         }
         /// <summary>
         /// Найти объект сигнализации по указанным частям составного ключа
@@ -151,17 +175,18 @@ namespace StatisticAlarm
         /// <param name="id_comp">Составная часть ключа: идентификатор ГТП</param>
         /// <param name="id_tg">Составная часть ключа: идентификатор ТГ</param>
         /// <returns>Объект сигнализации</returns>
-        private ALARM_OBJECT find(int id_comp, int id_tg)
+        private ALARM_OBJECT find(int id_comp, DateTime dtReg)
         {
             ALARM_OBJECT objRes = null;
 
-            KeyValuePair<int, int> cKey = new KeyValuePair<int, int>(id_comp, id_tg);
+            KeyValuePair<int, DateTime> cKey = new KeyValuePair<int, DateTime>(id_comp, dtReg);
+            //int cKey = id_comp;
             if (_dictAlarmObject.ContainsKey(cKey) == true)
             {
                 objRes = _dictAlarmObject[cKey];
             }
             else
-                Logging.Logg().Error(@"DictAlarmObject::find (id=" + id_comp.ToString() + @", id_tg=" + id_tg.ToString() + @") - НЕ НАЙДЕН!", Logging.INDEX_MESSAGE.NOT_SET);
+                Logging.Logg().Error(@"DictAlarmObject::find (id_comp=" + id_comp.ToString() + @") - НЕ НАЙДЕН!", Logging.INDEX_MESSAGE.NOT_SET);
 
             return objRes;
         }
@@ -171,15 +196,13 @@ namespace StatisticAlarm
         /// <param name="id_comp">Составная часть ключа: идентификатор ГТП</param>
         /// <param name="id_tg">Составная часть ключа: идентификатор ТГ</param>
         /// <returns></returns>
-        public DateTime TGAlarmDatetimeReg(int id_comp, int id_tg)
+        public DateTime TGAlarmDatetimeReg(int id_comp, DateTime dtReg)
         {
             DateTime dtRes = DateTime.Now;
 
-            ALARM_OBJECT objAlarm = find(id_comp, id_tg);
+            ALARM_OBJECT objAlarm = find(id_comp, dtReg);
             if (!(objAlarm == null))
-            {
-                dtRes = objAlarm.dtReg;
-            }
+                dtRes = objAlarm.dtReg.GetValueOrDefault ();
             else
                 ;
 
@@ -220,11 +243,11 @@ namespace StatisticAlarm
         //    return iRes;
         //}
 
-        public int Confirmed(int id_gtp, int id_tg)
+        public int Confirmed(int id_comp, DateTime dtReg)
         {
             int iRes = -1;
 
-            ALARM_OBJECT objAlarm = find(id_gtp, id_tg);
+            ALARM_OBJECT objAlarm = find(id_comp, dtReg);
             if (!(objAlarm == null))
             {
                 objAlarm.dtConfirm = DateTime.Now;
@@ -238,10 +261,10 @@ namespace StatisticAlarm
             return iRes;
         }
 
-        public bool IsConfirmed(int id_gtp, int id_tg)
+        public bool IsConfirmed(int id_comp, DateTime dtReg)
         {
             bool bRes = false;
-            ALARM_OBJECT objAlarm = find(id_gtp, id_tg);
+            ALARM_OBJECT objAlarm = find(id_comp, dtReg);
             if (!(objAlarm == null))
                 bRes = objAlarm.CONFIRM;
             else
@@ -257,64 +280,48 @@ namespace StatisticAlarm
         public INDEX_ACTION Registred(TecViewAlarm.AlarmTecViewEventArgs ev)
         {
             INDEX_ACTION iRes = INDEX_ACTION.NOTHING;
-            ALARM_OBJECT alarmObj = find(ev.m_id_gtp, ev.m_id_tg);
+            ALARM_OBJECT alarmObj = find(ev.m_id_comp, ev.m_dtRegistred.GetValueOrDefault ());
 
-            try
+            lock (this)
             {
-                if (alarmObj == null)
-                {//Только, если объект события сигнализации НЕ создан
-                    // создать объект события сигнализации
-                    alarmObj = new ALARM_OBJECT(ev);
-                    _dictAlarmObject.Add(new KeyValuePair<int, int>(ev.m_id_gtp, ev.m_id_tg), alarmObj);
-
-                    //if (m_bDestGUIActivated == true) {
-                    //Устновить состояние "в_процессе"
-                    alarmObj.state = INDEX_STATES_ALARM.PROCESSED;
-                    //Сообщить для ГУИ о событии сигнализации
-                    iRes = INDEX_ACTION.ADD;
-                    //} else ;
-                }
-                else
+                try
                 {
-                    //Только, если объект события сигнализации создан
-                    bool bEventRetry = false;
-                    //Проверить состояние
-                    if (alarmObj.CONFIRM == false)
-                    {
-                        // если НЕ подтверждено - установить признак повторного оповещения для ГУИ
-                        bEventRetry = true;
+                    if (alarmObj == null)
+                    {//Только, если объект события сигнализации НЕ создан
+                        // создать объект события сигнализации
+                        alarmObj = new ALARM_OBJECT(ev);
+                        _dictAlarmObject.Add(new KeyValuePair<int, DateTime> (ev.m_id_comp, ev.m_dtRegistred.GetValueOrDefault ()), alarmObj);
+
+                        //Устновить состояние "в_процессе"
+                        alarmObj.state = INDEX_STATES_ALARM.PROCESSED;
+                        //Сообщить для сохранения в БД
+                        iRes = INDEX_ACTION.NEW;
                     }
                     else
-                    {
-                        // если подтверждено - проверить период между датой/временем регистрации события сигнализации и датой/временем его подтверждения
-                        if ((alarmObj.dtConfirm - alarmObj.dtReg) > TimeSpan.FromMilliseconds(AdminAlarm.MSEC_ALARM_EVENTRETRY))
-                        {
-                            // ??? если 
-                            bEventRetry = true;
-                        }
+                        //Только, если объект события сигнализации создан
+                        //Проверить состояние
+                        if (alarmObj.CONFIRM == true)
+                            // если подтверждено - проверить период между датой/временем регистрации события сигнализации и датой/временем его подтверждения
+                            if (! ((DateTime.UtcNow - alarmObj.dtConfirm) < TimeSpan.FromMilliseconds(AdminAlarm.MSEC_ALARM_EVENTRETRY)))
+                            {
+                                // ??? если 
+                                alarmObj.dtReg = ev.m_dtRegistred;
+
+                                // если состояние "в очереди", то изменить состояние на "обрабатывается"
+                                if (alarmObj.state < INDEX_STATES_ALARM.PROCESSED) alarmObj.state = INDEX_STATES_ALARM.PROCESSED; else ;
+                                // повторить оповещение пользователя о событии сигнализации
+                                iRes = INDEX_ACTION.NEW;
+                            }
+                            else
+                                ;
                         else
                             ;
-                    }
-
-                    if (bEventRetry == true)
-                    {
-                        alarmObj.dtReg = DateTime.Now;
-
-                        //if (m_bDestGUIActivated == true) {
-                        // если состояние "в очереди", то изменить состояние на "обрабатывается"
-                        if (alarmObj.state < INDEX_STATES_ALARM.PROCESSED) alarmObj.state = INDEX_STATES_ALARM.PROCESSED; else ;
-                        // повторить оповещение пользователя о событии сигнализации
-                        iRes = INDEX_ACTION.RETRY;
-                        //} else ;
-                    }
-                    else
-                        ;
                 }
-            }
-            catch (Exception e)
-            {
-                iRes = INDEX_ACTION.ERROR;
-                Logging.Logg().Exception(e, Logging.INDEX_MESSAGE.NOT_SET, @"DictAlarmObject::Registred () - ...");
+                catch (Exception e)
+                {
+                    iRes = INDEX_ACTION.ERROR;
+                    Logging.Logg().Exception(e, Logging.INDEX_MESSAGE.NOT_SET, @"DictAlarmObject::Registred (" + ev.GetType().Name + @") - ...");
+                }
             }
 
             return iRes;
@@ -326,9 +333,55 @@ namespace StatisticAlarm
         /// <returns>Результат регистрации (см. пред. обработчик для 'TecViewAlarm.AlarmTecViewEventArgs')</returns>
         public INDEX_ACTION Registred(AdminAlarm.AlarmDbEventArgs ev)
         {
-            INDEX_ACTION indxRes = INDEX_ACTION.NOTHING;
+            INDEX_ACTION iRes = INDEX_ACTION.NOTHING;
+            ALARM_OBJECT alarmObj = find(ev.m_id_comp, ev.m_dtRegistred.GetValueOrDefault ());
 
-            return indxRes;
+            lock (this)
+            {
+                try
+                {
+                    if (alarmObj == null)
+                    {//Только, если объект события сигнализации НЕ создан
+                        // создать объект события сигнализации
+                        alarmObj = new ALARM_OBJECT(ev);
+                        _dictAlarmObject.Add(new KeyValuePair<int, DateTime>(ev.m_id_comp, ev.m_dtRegistred.GetValueOrDefault()), alarmObj);
+
+                        //Устновить состояние "в_процессе"
+                        alarmObj.state = INDEX_STATES_ALARM.PROCESSED;
+                        //Сообщить для ГУИ о событии сигнализации
+                        iRes = INDEX_ACTION.NEW;
+                    }
+                    else
+                    {
+                        //Только, если объект события сигнализации создан
+                        //Проверить состояние
+                        if (alarmObj.CONFIRM == false)
+                        {
+                            // если НЕ подтверждено - проверить период между датой/временем регистрации события сигнализации и датой/временем его подтверждения
+                            if ((DateTime.UtcNow - alarmObj.dtReg) > TimeSpan.FromMilliseconds(AdminAlarm.MSEC_ALARM_TIMERUPDATE))
+                            {
+                                // установить признак повторного оповещения для ГУИ
+                                alarmObj.dtReg = DateTime.UtcNow;
+
+                                // если состояние "в очереди", то изменить состояние на "обрабатывается"
+                                if (alarmObj.state < INDEX_STATES_ALARM.PROCESSED) alarmObj.state = INDEX_STATES_ALARM.PROCESSED; else ;
+                                // повторить оповещение пользователя о событии сигнализации
+                                iRes = INDEX_ACTION.RETRY;
+                            }
+                            else
+                                ;
+                        }
+                        else
+                            ;
+                    }
+                }
+                catch (Exception e)
+                {
+                    Logging.Logg().Exception(e, Logging.INDEX_MESSAGE.NOT_SET, @"DictAlarmObject::Registred (" + ev.GetType().Name + @") - ...");
+                }
+            }
+
+            return iRes;
         }
     }
 }

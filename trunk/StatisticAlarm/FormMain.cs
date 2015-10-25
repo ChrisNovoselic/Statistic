@@ -250,10 +250,16 @@ namespace StatisticAlarm
         /// <param name="ev">Аргумент события</param>
         private void FormMain_FormClosing(object obj, EventArgs ev)
         {
-            //Деактивировать панель
-            m_panelAlarm.Activate (false);
-            //Остановить панель
-            m_panelAlarm.Stop ();
+            if (! (m_panelAlarm == null))
+            //if (!(_state < 0))
+            {
+                //Деактивировать панель
+                m_panelAlarm.Activate(false);
+                //Остановить панель
+                m_panelAlarm.Stop();
+            }
+            else
+                ;
         }
         /// <summary>
         /// ??? Функция при 1-м событии запуска таймера

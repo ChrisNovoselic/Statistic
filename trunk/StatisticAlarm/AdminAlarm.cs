@@ -52,7 +52,7 @@ namespace StatisticAlarm
             if (iAction == INDEX_ACTION.ERROR)
                 throw new Exception(@"AdminAlarm::OnEventReg_TecView () - ...");
             else
-                if (iAction == INDEX_ACTION.ADD)
+                if (iAction == INDEX_ACTION.NEW)
                     push (new object []
                         {
                             new object []
@@ -62,17 +62,7 @@ namespace StatisticAlarm
                             }
                         });
                 else
-                    if (iAction == INDEX_ACTION.RETRY)
-                        push(new object[]
-                        {
-                            new object []
-                            {
-                                StatesMachine.Fixed
-                                , ev
-                            }
-                        });
-                    else
-                        ;
+                    ; // неизвестное/необрабатываемое днйствие
         }
 
         public void InitTEC(List<StatisticCommon.TEC> listTEC)
@@ -88,16 +78,18 @@ namespace StatisticAlarm
             //markQueries.Marked((int)CONN_SETT_TYPE.DATA_SOTIASSO_1_MIN);
 
             //Отладка ???!!!
-            int DEBUG_ID_TEC = -1;
+            int indxTecView = -1
+                , DEBUG_ID_TEC = -1;
             foreach (StatisticCommon.TEC t in listTEC) {
                 if ((DEBUG_ID_TEC == -1) || (DEBUG_ID_TEC == t.m_id)) {
                     m_listTecView.Add(new StatisticAlarm.TecViewAlarm(StatisticCommon.TecView.TYPE_PANEL.ADMIN_ALARM, -1, -1));
-                    m_listTecView [m_listTecView.Count - 1].InitTEC (new List <StatisticCommon.TEC> { t }, markQueries);
-                    m_listTecView[m_listTecView.Count - 1].updateGUI_Fact = new IntDelegateIntIntFunc (m_listTecView[m_listTecView.Count - 1].AlarmRegistred);
-                    m_listTecView[m_listTecView.Count - 1].EventReg += new TecViewAlarm.AlarmTecViewEventHandler (OnEventReg_TecView);
+                    indxTecView = m_listTecView.Count - 1;
+                    m_listTecView[indxTecView].InitTEC(new List<StatisticCommon.TEC> { t }, markQueries);
+                    m_listTecView[indxTecView].updateGUI_Fact = new IntDelegateIntIntFunc(m_listTecView[indxTecView].AlarmRegistred);
+                    m_listTecView[indxTecView].EventReg += new TecViewAlarm.AlarmTecViewEventHandler(OnEventReg_TecView);
 
-                    m_listTecView[m_listTecView.Count - 1].m_arTypeSourceData[(int)StatisticCommon.TG.ID_TIME.MINUTES] = StatisticCommon.CONN_SETT_TYPE.DATA_SOTIASSO;
-                    m_listTecView[m_listTecView.Count - 1].m_arTypeSourceData[(int)StatisticCommon.TG.ID_TIME.HOURS] = StatisticCommon.CONN_SETT_TYPE.DATA_SOTIASSO;
+                    m_listTecView[indxTecView].m_arTypeSourceData[(int)StatisticCommon.TG.ID_TIME.MINUTES] = StatisticCommon.CONN_SETT_TYPE.DATA_SOTIASSO;
+                    m_listTecView[indxTecView].m_arTypeSourceData[(int)StatisticCommon.TG.ID_TIME.HOURS] = StatisticCommon.CONN_SETT_TYPE.DATA_SOTIASSO;
 
                     m_listTecView[m_listTecView.Count - 1].m_bLastValue_TM_Gen = true;
                 } else ;
@@ -106,9 +98,7 @@ namespace StatisticAlarm
 
         private void ChangeState () {
             foreach (TecViewAlarm tv in m_listTecView)
-            {
                 tv.ChangeState ();
-            }
         }
 
         private void TimerAlarm_Tick(Object stateInfo)
@@ -126,14 +116,17 @@ namespace StatisticAlarm
                 //else
                 //    ;
 
-                if (IsStarted == true)
-                {
-                    ChangeState();
-
-                    m_timerAlarm.Change (MSEC_ALARM_TIMERUPDATE, System.Threading.Timeout.Infinite);
-                }
+                if (m_bAlarmDbEventUpdated == false)
+                    m_timerAlarm.Change(PanelStatistic.POOL_TIME * 1000, System.Threading.Timeout.Infinite);
                 else
-                    ;
+                    if (IsStarted == true)
+                    {
+                        ChangeState();
+
+                        m_timerAlarm.Change (MSEC_ALARM_TIMERUPDATE, System.Threading.Timeout.Infinite);
+                    }
+                    else
+                        ;
             }
         }
 

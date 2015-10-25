@@ -40,6 +40,19 @@ namespace StatisticCommon
         {
             m_dcKoeffAlarmPcur = -1;
         }
+
+        public bool IsGTP { get { return (m_id > 100) && (m_id < 500); } }
+        public static FormChangeMode.MODE_TECCOMPONENT Mode(int id)
+        {
+            return ((id > 100) && (id < 500)) == true ? FormChangeMode.MODE_TECCOMPONENT.GTP :
+                ((id > 500) && (id < 1000)) == true ? FormChangeMode.MODE_TECCOMPONENT.PC :
+                    ((id > 1000) && (id < 10000)) == true ? FormChangeMode.MODE_TECCOMPONENT.TG :
+                        FormChangeMode.MODE_TECCOMPONENT.UNKNOWN;
+        }
+
+        public bool IsPC { get { return (m_id > 500) && (m_id < 1000); } }
+
+        public bool IsTG { get { return (m_id > 1000) && (m_id < 10000); } }
     }
     /// <summary>
     /// Êëàññ äëÿ îïèñàíèÿ êîìïîíåíòà ÒİÖ - ÒÃ
@@ -126,11 +139,5 @@ namespace StatisticCommon
             m_listMCentreId =
             m_listMTermId = null;
         }
-
-        public bool IsGTP { get { return (m_id > 100) && (m_id < 500); } }
-
-        public bool IsPC { get { return (m_id > 500) && (m_id < 1000); } }
-
-        public bool IsTG { get { return (m_id > 1000) && (m_id < 10000); } }
     }
 }

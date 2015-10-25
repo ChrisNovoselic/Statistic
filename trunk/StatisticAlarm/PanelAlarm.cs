@@ -27,7 +27,7 @@ namespace StatisticAlarm
         /// <summary>
         /// Событие подтверждения сигнализации
         /// </summary>
-        private event DelegateIntIntFunc EventConfirm;
+        private event AlarmNotifyEventHandler EventConfirm;
         /// <summary>
         /// Список объектов ТЭЦ
         /// </summary>
@@ -83,7 +83,7 @@ namespace StatisticAlarm
         {
             //Инициализация визуальных компонентов
             InitializeComponent();
-            
+
             int err = -1 //Признак выполнения метода/функции
                 //Зарегистрировать соединение/получить идентификатор соединения
                 , iListenerId = DbSources.Sources().Register(FormMain.s_listFormConnectionSettings[(int)CONN_SETT_TYPE.CONFIG_DB].getConnSett(), false, @"CONFIG_DB")
@@ -101,9 +101,11 @@ namespace StatisticAlarm
                 , bWorkChecked); 
             //Отменить регистрацию соединения
             DbSources.Sources().UnRegister(iListenerId);
-
+            //Назначить делегаты при изменении:
+            // даты, часов начала, окончания для запроса списка событий
             delegateDatetimeChanged = new AdminAlarm.DatetimeCurrentEventHandler(m_adminAlarm.OnEventDatetimeChanged);
-            delegateWorkCheckedChanged = m_adminAlarm.OnWorkCheckedChanged;
+            // признака вкл./выкл.
+            delegateWorkCheckedChanged = new DelegateBoolFunc(m_adminAlarm.OnWorkCheckedChanged);
 
             Control ctrl = null;
             int indx = -1;
@@ -253,7 +255,27 @@ namespace StatisticAlarm
             m_adminAlarm.EventAdd += new AlarmNotifyEventHandler(OnViewAlarm_EventAdd);
             m_adminAlarm.EventRetry += new AlarmNotifyEventHandler(OnViewAlarm_EventRetry);
 
-            this.EventConfirm += new DelegateIntIntFunc(m_adminAlarm.OnEventConfirm);
+            this.EventConfirm += new AlarmNotifyEventHandler(m_adminAlarm.OnEventConfirm);
+        }
+
+        private string GetEventGUIMessage(AlarmNotifyEventArgs ev)
+        {
+            string strRes = string.Empty;
+
+            foreach (TEC t in m_list_tec)
+                foreach (TECComponent tc in t.list_TECComponents)
+                    if (tc.m_id == ev.m_id_comp)
+                    {
+                        strRes += t.name_shr; strRes += @", ";
+                        strRes += tc.name_shr; strRes += Environment.NewLine;
+                        strRes += ev.m_dtRegistred.GetValueOrDefault().ToString(); strRes += Environment.NewLine;
+                        strRes += ev.m_message_shr; strRes += @".";
+                        break;
+                    }
+                    else
+                        ;
+
+            return strRes;
         }
         /// <summary>
         /// Обработчик события - регистрация события сигнализации из БД!!!
@@ -261,10 +283,13 @@ namespace StatisticAlarm
         /// <param name="ev">Аргумент события</param>
         private void OnViewAlarm_EventAdd(AlarmNotifyEventArgs ev)
         {
-            Console.WriteLine(@"PanelAlarm::OnViewAlarm_EventAdd (id_gtp=" + ev.m_id_gtp + @", id_tg=" + ev.m_id_tg + @", message=" + ev.m_message + @") - ...");
+            string message = GetEventGUIMessage(ev);
+
+            Console.WriteLine(@"PanelAlarm::OnViewAlarm_EventAdd (id_comp=" + ev.m_id_comp + @", message=" + ev.m_message_shr + @") - ...");
 
             if (IsHandleCreated/*InvokeRequired*/ == true)
             {//...для this.BeginInvoke
+                EventGUIReg(message);
             }
             else
                 Logging.Logg().Error(@"PanelAlarm::OnViewAlarm_EventAdd () - ... BeginInvoke (...) - ...", Logging.INDEX_MESSAGE.D_001);
@@ -275,6 +300,14 @@ namespace StatisticAlarm
         /// <param name="ev">Аргумент события</param>
         private void OnViewAlarm_EventRetry(AlarmNotifyEventArgs ev)
         {
+            Console.WriteLine(@"PanelAlarm::OnViewAlarm_EventRetry (id_comp=" + ev.m_id_comp + @", message=" + ev.m_message_shr + @") - ...");
+
+            if (IsHandleCreated/*InvokeRequired*/ == true)
+            {//...для this.BeginInvoke
+                EventGUIReg(GetEventGUIMessage(ev));
+            }
+            else
+                Logging.Logg().Error(@"PanelAlarm::OnViewAlarm_EventRetry () - ... BeginInvoke (...) - ...", Logging.INDEX_MESSAGE.D_001);
         }
         /// <summary>
         /// Обработчик события снятия признака "использовать компонент ТЭЦ" в списке "Компоненты ТЭЦ"
@@ -563,7 +596,6 @@ namespace StatisticAlarm
             public DataGridViewAlarmJournal()
                 : base()
             {
-                InitializeComponent();
             }
             /// <summary>
             /// Установить параметры визуализации
@@ -610,6 +642,8 @@ namespace StatisticAlarm
                 this.AllowUserToAddRows = false; //Запретить пользователю добавлять строки
                 this.AllowUserToDeleteRows = false; //Запретить пользователю удалять строки
                 this.AllowUserToResizeRows = false; //Запретить пользователю изменять высоту строки
+                this.MultiSelect = false;
+                this.SelectionMode = DataGridViewSelectionMode.FullRowSelect;
                 this.RowHeadersVisible = false; //Отменить отображение заголовков для строк
                 this.ReadOnly = true; //Установить режим - 'только чтение'
             }

@@ -36,21 +36,17 @@ namespace StatisticAlarm
                 }
             }
 
-            public int Id { get { return m_id_tg < 0 ? m_id_gtp : m_id_tg; } }
+            public int Id { get { return
+                //m_id_tg < 0 ? m_id_gtp : m_id_tg
+                m_id_comp
+                ; } }
 
-            public DateTime m_dtRegistred;
             public List<EventDetail> m_listEventDetail;
 
-            public AlarmTecViewEventArgs(int id_gtp, int id_tg, int s, List<EventDetail> listEventDetail)
-                : base()
+            public AlarmTecViewEventArgs(int id_comp, DateTime dtReg, int s, List<EventDetail> listEventDetail)
+                : base(id_comp, dtReg, s)
             {
-                m_id_gtp = id_gtp;
-                m_id_tg = id_tg;
-                m_dtRegistred = DateTime.UtcNow;
-                m_situation = s;
                 m_listEventDetail = listEventDetail;
-
-                m_message = GetMessage(m_id_gtp, m_id_tg, m_situation);
             }
         }
         /// <summary>
@@ -187,7 +183,7 @@ namespace StatisticAlarm
                             if (!(tg.m_TurnOnOff == curTurnOnOff))
                             {
                                 //
-                                EventReg(new TecViewAlarm.AlarmTecViewEventArgs(TECComponentCurrent.m_id, tg.m_id, (int)curTurnOnOff, listEventDetail));
+                                EventReg(new TecViewAlarm.AlarmTecViewEventArgs(tg.m_id, DateTime.UtcNow, (int)curTurnOnOff, listEventDetail));
 
                                 //Прекращаем текущий цикл...
                                 //Признак досрочного прерывания цикла для сигн. "Текущая P"
@@ -223,7 +219,7 @@ namespace StatisticAlarm
                         if (!(iDebug < 0))
                         {
                             situation = HMath.GetRandomNumber() % 2 == 1 ? -1 : 1;
-                            EventReg(new TecViewAlarm.AlarmTecViewEventArgs(TECComponentCurrent.m_id, -1, situation, listEventDetail)); //Меньше
+                            EventReg(new TecViewAlarm.AlarmTecViewEventArgs(TECComponentCurrent.m_id, DateTime.UtcNow, situation, listEventDetail)); //Меньше
                             Console.WriteLine(@"; ::AlarmEventRegistred () - EventReg [ID=" + TECComponentCurrent.m_id + @"] ...");
                         }
                         else
@@ -236,7 +232,7 @@ namespace StatisticAlarm
                                 else
                                     situation = 1; //Больше
 
-                                EventReg(new TecViewAlarm.AlarmTecViewEventArgs(TECComponentCurrent.m_id, -1, situation, listEventDetail));
+                                EventReg(new TecViewAlarm.AlarmTecViewEventArgs(TECComponentCurrent.m_id, DateTime.UtcNow, situation, listEventDetail));
                             }
                             else
                                 ; //EventUnReg...
