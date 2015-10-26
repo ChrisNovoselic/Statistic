@@ -64,7 +64,7 @@ namespace StatisticAlarm
         /// <summary>
         /// Перечисление - индексы известных для обработки состояний
         /// </summary>
-        private enum StatesMachine { Unknown = -1, List, Notify, Detail, Insert, Fixed, Confirm }
+        public enum StatesMachine { Unknown = -1, List, Notify, Detail, Insert, Fixed, Confirm }
         /// <summary>
         /// Объект для учета событий сигнализации и их состояний
         /// </summary>
@@ -150,11 +150,11 @@ namespace StatisticAlarm
             /// <summary>
             /// Идентификатор записи в таблице БД_значений о событии сигнализации
             /// </summary>        
-            private long m_idEventMain;
+            private object m_objIntermediateValue;
             /// <summary>
             /// Информация о событии сигнализации
             /// </summary>
-            private TecViewAlarm.AlarmTecViewEventArgs m_EventRegEventArg;
+            private object m_objArgument;
 
             public HandlerDb(ConnectionSettings connSett)
             {
@@ -210,11 +210,11 @@ namespace StatisticAlarm
                     case StatesMachine.CurrentTime:
                     case StatesMachine.ListEvents:
                     case StatesMachine.InsertEventMain:
-                        iRes = response(out error, out table);
-                        break;
-                    case StatesMachine.InsertEventDetail:
                     case StatesMachine.UpdateEventFixed:
                     case StatesMachine.UpdateEventConfirm:
+                        iRes = response(out error, out table);
+                        break;
+                    case StatesMachine.InsertEventDetail:                    
                         break;
                     default:
                         iRes = -1;
@@ -320,8 +320,8 @@ namespace StatisticAlarm
 
             public override void ClearValues()
             {//??? - необязательное наличие - удалить из 'HHandlerDb'
-                m_idEventMain = -1;
-                m_EventRegEventArg = null;
+                m_objIntermediateValue = null;
+                m_objArgument = null;
             }
 
             public int Response(out bool error, out object table)
@@ -357,20 +357,17 @@ namespace StatisticAlarm
             /// </summary>
             private void GetInsertEventMainRequest()
             {
-                StatisticCommon.FormChangeMode.MODE_TECCOMPONENT mode = StatisticCommon.TECComponent.Mode(m_EventRegEventArg.m_id_comp);
-                int typeAlarm = (mode == FormChangeMode.MODE_TECCOMPONENT.GTP) ? 1 :
-                        (mode == FormChangeMode.MODE_TECCOMPONENT.TG) ? 2 :
-                            (int)FormChangeMode.MODE_TECCOMPONENT.UNKNOWN //TYPE
-                    , id_user = 0; //ID_USER
-                double val = (mode == FormChangeMode.MODE_TECCOMPONENT.GTP) ? -1F :
-                    (mode == FormChangeMode.MODE_TECCOMPONENT.TG) ? m_EventRegEventArg.m_listEventDetail[0].value :
+                TecViewAlarm.AlarmTecViewEventArgs arg = m_objArgument as TecViewAlarm.AlarmTecViewEventArgs;
+                int id_user = 0; //ID_USER
+                double val = (arg.Mode == FormChangeMode.MODE_TECCOMPONENT.GTP) ? -1F :
+                    (arg.Mode == FormChangeMode.MODE_TECCOMPONENT.TG) ? arg.m_listEventDetail[0].value :
                         -2F; //VALUE
-                string strDTRegistred = m_EventRegEventArg.m_dtRegistred.GetValueOrDefault().ToString(@"yyyyMMdd HH:mm:ss.fff"); //DATETIME_REGISTRED
+                string strDTRegistred = arg.m_dtRegistred.GetValueOrDefault().ToString(@"yyyyMMdd HH:mm:ss.fff"); //DATETIME_REGISTRED
                 //Запрос для вставки записи о событии сигнализации
                 string query = "INSERT INTO [dbo].[AlarmEvent] ([ID_COMPONENT],[TYPE],[VALUE],[DATETIME_REGISTRED],[ID_USER_REGISTRED],[DATETIME_FIXED],[ID_USER_FIXED],[DATETIME_CONFIRM],[ID_USER_CONFIRM],[CNT_RETRY],[INSERT_DATETIME],[SITUATION]) VALUES"
                     + @" ("
-                        + m_EventRegEventArg.m_id_comp + @", " //ID_COMPONENT
-                        + typeAlarm + @", " //TYPE                        
+                        + arg.m_id_comp + @", " //ID_COMPONENT
+                        + (int)arg.type + @", " //TYPE                        
                         + val.ToString(@"F3", CultureInfo.InvariantCulture) + @", " //VALUE
                         + @"'" + strDTRegistred + @"', " //DATETIME_REGISTRED
                         + id_user + @", " //ID_USER_REGISTRED
@@ -380,7 +377,7 @@ namespace StatisticAlarm
                         + "NULL" + @", " //ID_USER_CONFIRM
                         + 0 + @", " //CNT_RETRY
                         + "GETDATE ()" + @", " //INSERT_DATETIME
-                        + @"'" + m_EventRegEventArg.m_situation + @"'" //SITUATION
+                        + @"'" + arg.m_situation + @"'" //SITUATION
                     + @")";
                 query += @";";
                 //??? Переход на новую строку
@@ -388,8 +385,8 @@ namespace StatisticAlarm
                 query += Environment.NewLine;
                 //Запрос на получение идентификатора вставленной записи
                 query += @"SELECT * FROM [dbo].[AlarmEvent] WHERE "
-                    + @"[ID_COMPONENT]=" + m_EventRegEventArg.m_id_comp
-                    + @" AND [TYPE]=" + typeAlarm                    
+                    + @"[ID_COMPONENT]=" + arg.m_id_comp
+                    + @" AND [TYPE]=" + (int)arg.type                    
                     + @" AND [DATETIME_REGISTRED]='" + strDTRegistred + @"'"
                     + @" AND [ID_USER_REGISTRED]=" + id_user;
                 query += @";";
@@ -399,22 +396,24 @@ namespace StatisticAlarm
 
             private void GetInsertEventMainResponse(object obj)
             {
-                m_idEventMain = (long)(obj as DataTable).Rows[0][@"ID"];
+                m_objIntermediateValue = (long)(obj as DataTable).Rows[0][@"ID"];
             }
 
             private void GetInsertEventDetailRequest()
             {
+                TecViewAlarm.AlarmTecViewEventArgs arg = m_objArgument as TecViewAlarm.AlarmTecViewEventArgs;
+                long id = (long)m_objIntermediateValue;
                 string query = @"INSERT INTO [dbo].[AlarmDetail] VALUES ";
 
-                foreach (TecViewAlarm.AlarmTecViewEventArgs.EventDetail detail in m_EventRegEventArg.m_listEventDetail)
+                foreach (TecViewAlarm.AlarmTecViewEventArgs.EventDetail detail in arg.m_listEventDetail)
                 {
                     if (detail.value > 0)
                     {
-                        if (! (m_idEventMain < 0))
+                        if (!(id < 0))
                         {
                             query += @"(";
 
-                            query += m_idEventMain + @", ";
+                            query += id + @", ";
                             query += detail.id + @", ";
                             query += detail.value.ToString(@"F3", CultureInfo.InvariantCulture) + @", ";
                             query += @"'" + detail.last_changed_at.ToString(@"yyyyMMdd HH:mm:ss.fff") + @"', ";
@@ -424,7 +423,7 @@ namespace StatisticAlarm
                             query += @"),";
                         }
                         else
-                            throw new Exception(@"ViewAlarm.HandlerDb::GetInsertEventDetailRequest () - idEventMain=" + m_idEventMain);
+                            throw new Exception(@"ViewAlarm.HandlerDb::GetInsertEventDetailRequest () - idEventMain=" + id);
                     }
                     else
                         ;
@@ -437,10 +436,36 @@ namespace StatisticAlarm
 
             private void GetUpdateEventFixedRequest()
             {
+                AlarmDbEventArgs arg = m_objArgument as AlarmDbEventArgs;
+                string query = string.Empty
+                    , where = @"WHERE [ID_COMPONENT]=" + arg.m_id_comp
+                        + @" AND [DATETIME_REGISTRED]='" + arg.m_dtRegistred.GetValueOrDefault().ToString (@"yyyyMMdd HH:mm:ss.fff") + @"'"
+                        + @" AND [TYPE]=" + (int)arg.type;
+
+                query = @"UPDATE [dbo].[AlarmEvent] SET [ID_USER_FIXED]=" + HUsers.Id + @", [DATETIME_FIXED]=GETUTCDATE() "
+                    + where;
+                query += @"; ";
+                query += Environment.NewLine;
+                query += @"SELECT * FROM [dbo].[AlarmEvent] "
+                    + where;
+
+                Request(IdListener, query);
             }
 
             private void GetUpdateEventConfirmRequest()
             {
+                long id = (long)m_objArgument;
+                string query = string.Empty
+                    , where = @"WHERE [ID]=" + id;
+
+                query = @"UPDATE [dbo].[AlarmEvent] SET [ID_USER_CONFIRM]=" + HUsers.Id + @", [DATETIME_CONFIRM]=GETUTCDATE() "
+                    + where;
+                query += @"; ";
+                query += Environment.NewLine;
+                query += @"SELECT * FROM [dbo].[AlarmEvent] "
+                    + where;
+
+                Request(IdListener, query);
             }
 
             public void Refresh(DateTime dtCurrent, int iHourBegin, int iHourEnd)
@@ -473,13 +498,45 @@ namespace StatisticAlarm
                     ClearValues();
                     ClearStates();                    
 
-                    m_EventRegEventArg = ev;
+                    m_objArgument = ev;
 
                     states.Add((int)StatesMachine.CurrentTime);
                     states.Add((int)StatesMachine.InsertEventMain);
                     states.Add((int)StatesMachine.InsertEventDetail);
 
                     Run(@"ViewAlarm::Insert");
+                }
+            }
+
+            public void Fixed(AlarmNotifyEventArgs ev)
+            {
+                lock (this)
+                {
+                    ClearValues();
+                    ClearStates();
+
+                    m_objArgument = ev;
+
+                    states.Add((int)StatesMachine.CurrentTime);
+                    states.Add((int)StatesMachine.UpdateEventFixed);
+
+                    Run(@"ViewAlarm::Fixed");
+                }
+            }
+
+            public void Confirm(object id)
+            {
+                lock (this)
+                {
+                    ClearValues();
+                    ClearStates();
+
+                    m_objArgument = id;
+
+                    states.Add((int)StatesMachine.CurrentTime);
+                    states.Add((int)StatesMachine.UpdateEventConfirm);
+
+                    Run(@"ViewAlarm::Fixed");
                 }
             }
         }
@@ -773,6 +830,40 @@ namespace StatisticAlarm
         {
             EvtGetDataDetail(tableRes);
         }
+
+        private void GetUpdateFixedResponse(ItemQueue itemQueue, DataTable tableRes)
+        {
+            DataRow r = tableRes.Rows [0];
+            m_dictAlarmObject.Fixed ((int)r[@"ID_COMPONENT"], (DateTime)r[@"DATETIME_REGISTRED"], (DateTime)r[@"DATETIME_FIXED"]);
+            itemQueue.m_dataHostRecieved.OnEvtDataRecievedHost(new EventArgsDataHost(-1, new object[] { StatesMachine.Fixed, (long)r[@"ID"], (DateTime)r[@"DATETIME_FIXED"] }));            
+        }
+
+        private void GetUpdateConfirmResponse(ItemQueue itemQueue, DataTable tableRes)
+        {
+            DataRow r = tableRes.Rows[0];
+            m_dictAlarmObject.Confirmed((int)r[@"ID_COMPONENT"], (DateTime)r[@"DATETIME_REGISTRED"], (DateTime)r[@"DATETIME_CONFIRM"]);
+            itemQueue.m_dataHostRecieved.OnEvtDataRecievedHost(new EventArgsDataHost(-1, new object[] { StatesMachine.Fixed, (long)r[@"ID"], (DateTime)r[@"DATETIME_CONFIRM"] }));
+        }
+
+        private string getEventGUIMessage(AlarmNotifyEventArgs ev)
+        {
+            string strRes = string.Empty;
+
+            foreach (TecView tv in m_listTecView)
+                foreach (TECComponent tc in tv.m_tec.list_TECComponents)
+                    if (tc.m_id == ev.m_id_comp)
+                    {
+                        strRes += tv.m_tec.name_shr; strRes += @", ";
+                        strRes += tc.name_shr; strRes += Environment.NewLine;
+                        strRes += ev.m_dtRegistred.GetValueOrDefault().ToString(); strRes += Environment.NewLine;
+                        strRes += ev.m_message_shr; strRes += @".";
+                        break;
+                    }
+                    else
+                        ;
+
+            return strRes;
+        }
         /// <summary>
         /// Обработчик события регистрации события из БД
         /// </summary>
@@ -785,8 +876,10 @@ namespace StatisticAlarm
             else
                 //Проверить режим работы - оповещение только для 'ADMIN'
                 if ((Mode == MODE.ADMIN)
-                    || (Mode == MODE.SERVICE) //??? для отладки
+                    //|| (Mode == MODE.SERVICE) //??? для отладки
                     )
+                {
+                    ev.m_messageGUI = getEventGUIMessage (ev);
                     if (iAction == INDEX_ACTION.NEW)
                         EventAdd(ev);
                     else
@@ -794,38 +887,39 @@ namespace StatisticAlarm
                             EventRetry(ev);
                         else
                             ;
+                }
                 else
                     ;
         }
-        /// <summary>
-        /// Обработчик события - подтверждение события сигнализации от панели (пользователя)
-        /// </summary>
-        /// <param name="id_comp">Часть составного ключа: идентификатор ГТП</param>
-        /// <param name="id_tg">Часть составного ключа: идентификатор ТГ</param>
-        public void OnEventConfirm (AlarmNotifyEventArgs ev)
-        {
-            Logging.Logg().Debug(@"ViewAlarm::OnEventConfirm (id=" + ev.m_id_comp.ToString() + @") - ...", Logging.INDEX_MESSAGE.NOT_SET);
+        ///// <summary>
+        ///// Обработчик события - подтверждение события сигнализации от панели (пользователя)
+        ///// </summary>
+        ///// <param name="id_comp">Часть составного ключа: идентификатор ГТП</param>
+        ///// <param name="id_tg">Часть составного ключа: идентификатор ТГ</param>
+        //public void OnEventConfirm (AlarmNotifyEventArgs ev)
+        //{
+        //    Logging.Logg().Debug(@"ViewAlarm::OnEventConfirm (id=" + ev.m_id_comp.ToString() + @") - ...", Logging.INDEX_MESSAGE.NOT_SET);
 
-            if (!(m_dictAlarmObject.Confirmed(ev.m_id_comp, ev.m_dtRegistred.GetValueOrDefault()) < 0))
-            {
-                push(new object[] //Перечень событий
-                    {
-                        new object [] //1-е событие
-                        {
-                            StatesMachine.Confirm
-                            , ev.m_id_comp
-                            , ev.m_dtRegistred
-                        }
-                    });
+        //    if (!(m_dictAlarmObject.Confirmed(ev.m_id_comp, ev.m_dtRegistred.GetValueOrDefault()) < 0))
+        //    {
+        //        push(new object[] //Перечень событий
+        //            {
+        //                new object [] //1-е событие
+        //                {
+        //                    StatesMachine.Confirm
+        //                    , ev.m_id_comp
+        //                    , ev.m_dtRegistred
+        //                }
+        //            });
 
-                if (StatisticCommon.TECComponent.Mode(ev.m_id_comp) == FormChangeMode.MODE_TECCOMPONENT.TG)
-                    tgConfirm(ev.m_id_comp);
-                else
-                    ;
-            }
-            else
-                Logging.Logg().Error(@"ViewAlarm::OnEventConfirm (id=" + ev.m_id_comp.ToString() + @") - НЕ НАЙДЕН!", Logging.INDEX_MESSAGE.NOT_SET);
-        }
+        //        if (StatisticCommon.TECComponent.Mode(ev.m_id_comp) == FormChangeMode.MODE_TECCOMPONENT.TG)
+        //            tgConfirm(ev.m_id_comp);
+        //        else
+        //            ;
+        //    }
+        //    else
+        //        Logging.Logg().Error(@"ViewAlarm::OnEventConfirm (id=" + ev.m_id_comp.ToString() + @") - НЕ НАЙДЕН!", Logging.INDEX_MESSAGE.NOT_SET);
+        //}
         /// <summary>
         /// Возвратить признак "подтверждено" для события сигнализации
         /// </summary>
@@ -866,6 +960,8 @@ namespace StatisticAlarm
                 case StatesMachine.List:
                 case StatesMachine.Notify:
                 case StatesMachine.Insert:
+                case StatesMachine.Fixed:
+                case StatesMachine.Confirm:
                     indxSync = (HandlerDb.INDEX_SYNC_STATECHECKRESPONSE)WaitHandle.WaitAny(m_handlerDb.m_arSyncStateCheckResponse);
                     switch (indxSync)
                     {
@@ -911,6 +1007,12 @@ namespace StatisticAlarm
                 case StatesMachine.Insert:
                     m_handlerDb.Insert(itemQueue.Pars[0] as TecViewAlarm.AlarmTecViewEventArgs);
                     break;
+                case StatesMachine.Fixed:
+                    m_handlerDb.Fixed(itemQueue.Pars[0] as AlarmNotifyEventArgs);
+                    break;
+                case StatesMachine.Confirm:
+                    m_handlerDb.Confirm((long)itemQueue.Pars[0]);
+                    break;
                 default:
                     break;
             }
@@ -942,9 +1044,14 @@ namespace StatisticAlarm
                 case StatesMachine.Detail:
                     GetEventDetailResponse(itemQueue, tableRes);
                     break;
-                case StatesMachine.Insert:
                 case StatesMachine.Fixed:
+                    GetUpdateFixedResponse(itemQueue, tableRes);
+                    break;
                 case StatesMachine.Confirm:
+                    GetUpdateConfirmResponse(itemQueue, tableRes);
+                    break;
+                case StatesMachine.Insert:
+                
                     //Результата нет (рез-т вставленные/обновленные записи)
                     break;
                 default:
@@ -971,6 +1078,11 @@ namespace StatisticAlarm
         protected override void StateWarnings(int state, int req, int res)
         {
             Logging.Logg().Warning(@"ViewAlarm::StateWarnings () - state=" + ((StatesMachine)state).ToString() + @", req=" + req.ToString() + @", res=" + res.ToString(), Logging.INDEX_MESSAGE.NOT_SET);
+        }
+
+        public void OnEvtDataAskedHost (object obj)
+        {
+            Push ((obj as EventArgsDataHost).reciever, new object [] { (obj as EventArgsDataHost).par });
         }
     }
 }

@@ -11,7 +11,7 @@ namespace StatisticAlarm
     /// <summary>
     /// Перечисление - индексы для типов сигнализаций
     /// </summary>
-    public enum INDEX_TYPE_ALARM { CUR_POWER, TGTurnOnOff }
+    public enum INDEX_TYPE_ALARM { UNKNOWN = -1, CUR_POWER = 1, TGTurnOnOff }
     /// <summary>
     /// Перечисление - индексы для состояний события сигнализации
     /// </summary>
@@ -20,11 +20,14 @@ namespace StatisticAlarm
         /// <summary>
         /// Событие поставлено в очередь для оповещения
         /// </summary>
-        QUEUEDED = -1
+        REGISTRING = -1
         /// <summary>
         /// Событие зафиксировано
         /// </summary>
-        , PROCESSED
+        , REGISTRED
+        , FIXING
+        , FIXED
+        , CONFIRMING
         /// <summary>
         /// Событие подтверждено
         /// </summary>
@@ -44,6 +47,16 @@ namespace StatisticAlarm
         public DateTime? m_dtRegistred;        
         public int m_situation;
         public string m_message_shr;
+        public string m_messageGUI;
+
+        public StatisticCommon.FormChangeMode.MODE_TECCOMPONENT Mode { get { return StatisticCommon.TECComponent.Mode(m_id_comp); } } 
+        /// <summary>
+        /// Индекс типа сигнализации
+        /// </summary>
+        public INDEX_TYPE_ALARM type { get { return Mode == StatisticCommon.FormChangeMode.MODE_TECCOMPONENT.GTP ? INDEX_TYPE_ALARM.CUR_POWER :
+            Mode == StatisticCommon.FormChangeMode.MODE_TECCOMPONENT.TG ? INDEX_TYPE_ALARM.TGTurnOnOff
+                : INDEX_TYPE_ALARM.UNKNOWN; }
+        }
 
         public AlarmNotifyEventArgs(int id_comp, DateTime dtReg, int situation)
             : base()
@@ -119,43 +132,112 @@ namespace StatisticAlarm
         /// </summary>
         private class ALARM_OBJECT
         {
-            /// <summary>
-            /// Индекс типа сигнализации
-            /// </summary>
-            public INDEX_TYPE_ALARM type; //{ get { return id_tg > 0 ? INDEX_TYPE_ALARM.CUR_POWER : INDEX_TYPE_ALARM.TGTurnOnOff; } }
-            /// <summary>
-            /// Признак подтверждения события сигнализации
-            /// </summary>
-            public bool CONFIRM
+            public DateTime m_dtRegistred { get { return _dtRegistred.GetValueOrDefault(); } }
+
+            public void Fixing()
+            {
+                _dtFixed = null;
+                _state = INDEX_STATES_ALARM.FIXING;
+            }
+
+            public void Fixed(DateTime? dt)
+            {
+                _dtFixed = dt;
+                _state = INDEX_STATES_ALARM.FIXED;
+            }
+
+            public bool FIXED
             {
                 get
                 {
-                    return dtConfirm.GetValueOrDefault ().CompareTo(dtReg) > 0; //? true : false;
+                    return !(_dtFixed == null); //? true : false;
+                }
+            }
+
+            public void Confirming ()
+            {
+                _dtConfirmed = null;
+                _state = INDEX_STATES_ALARM.CONFIRMING;
+            }
+
+            public void Confirmed(DateTime? dt)
+            {
+                _dtConfirmed = dt;
+                _state = INDEX_STATES_ALARM.CONFIRMED;
+            }
+            /// <summary>
+            /// Признак подтверждения события сигнализации
+            /// </summary>
+            public bool CONFIRMED
+            {
+                get
+                {
+                    return ! (_dtConfirmed == null); //? true : false;
+                }
+            }
+
+            public bool RETRY
+            {
+                get
+                {
+                    DateTime? dt;
+                    if (_dtFixed == null)
+                        dt = _dtRegistred;
+                    else
+                        dt = _dtFixed;
+
+                    return (! (_state == INDEX_STATES_ALARM.FIXING)) && ((DateTime.UtcNow - dt) > TimeSpan.FromMilliseconds(AdminAlarm.MSEC_ALARM_TIMERUPDATE));
+                }
+            }
+            
+            public bool HISTORY
+            {
+                get
+                {
+                    return (CONFIRMED == true) && (! ((DateTime.UtcNow - _dtConfirmed) < TimeSpan.FromMilliseconds(AdminAlarm.MSEC_ALARM_EVENTRETRY)));
                 }
             }
             /// <summary>
             /// Дата/время регистрации
             /// </summary>
-            public DateTime? dtReg
+            private DateTime? _dtRegistred
+                , _dtFixed
                 /// <summary>
                 /// Дата/время подтверждения
                 /// </summary>
-                , dtConfirm;
+                , _dtConfirmed;
             /// <summary>
             /// Текущее состояние события сигнализации
             /// </summary>
-            public INDEX_STATES_ALARM state;
+            private INDEX_STATES_ALARM _state;
+            //public INDEX_STATES_ALARM State { get { return _state; } }
 
-            private ALARM_OBJECT() { state = INDEX_STATES_ALARM.QUEUEDED; }
-
-            public ALARM_OBJECT(TecViewAlarm.AlarmTecViewEventArgs ev) : this ()
+            public void New(TecViewAlarm.AlarmTecViewEventArgs ev)
             {
-                dtReg = dtConfirm = ev.m_dtRegistred;                
+                init (ev.m_dtRegistred.GetValueOrDefault());
+                // если состояние "в очереди", то изменить состояние на "обрабатывается"
+                _state = INDEX_STATES_ALARM.REGISTRING;
             }
 
-            public ALARM_OBJECT(AdminAlarm.AlarmDbEventArgs ev) : this ()
+            private void init(DateTime dt)
             {
-                dtReg = dtConfirm = ev.m_dtRegistred;
+                _dtRegistred = dt;
+                _dtConfirmed =
+                _dtFixed =
+                    null;
+            }
+
+            private ALARM_OBJECT(INDEX_STATES_ALARM state) { _state = state; }
+
+            public ALARM_OBJECT(TecViewAlarm.AlarmTecViewEventArgs ev) : this (INDEX_STATES_ALARM.REGISTRING)
+            {
+                init(ev.m_dtRegistred.GetValueOrDefault());
+            }
+
+            public ALARM_OBJECT(AdminAlarm.AlarmDbEventArgs ev)
+                : this(INDEX_STATES_ALARM.REGISTRED)
+            {
+                init(ev.m_dtRegistred.GetValueOrDefault());
             }
         }
         /// <summary>
@@ -202,7 +284,7 @@ namespace StatisticAlarm
 
             ALARM_OBJECT objAlarm = find(id_comp, dtReg);
             if (!(objAlarm == null))
-                dtRes = objAlarm.dtReg.GetValueOrDefault ();
+                dtRes = objAlarm.m_dtRegistred;
             else
                 ;
 
@@ -242,16 +324,76 @@ namespace StatisticAlarm
 
         //    return iRes;
         //}
-
-        public int Confirmed(int id_comp, DateTime dtReg)
+        /// <summary>
+        /// Установить признак - событие сигнализаций "ожидание фиксации"
+        /// </summary>
+        /// <param name="id_comp">Часть составного ключа: идентификтор компонента ТЭЦ (ГТП, ТГ)</param>
+        /// <param name="dtReg">Часть составного ключа: дата/время регистрации события сигнализаций</param>
+        /// <returns>Результат выполнения операции</returns>
+        public int Fixing(int id_comp, DateTime dtReg)
         {
             int iRes = -1;
 
             ALARM_OBJECT objAlarm = find(id_comp, dtReg);
             if (!(objAlarm == null))
             {
-                objAlarm.dtConfirm = DateTime.Now;
-                objAlarm.state = INDEX_STATES_ALARM.CONFIRMED;
+                objAlarm.Fixing ();
+
+                iRes = 0;
+            }
+            else
+                ;
+
+            return iRes;
+        }
+
+        public int Fixed(int id_comp, DateTime dtReg, DateTime dtFixed)
+        {
+            int iRes = -1;
+
+            ALARM_OBJECT objAlarm = find(id_comp, dtReg);
+            if (!(objAlarm == null))
+            {
+                objAlarm.Fixed(dtFixed);
+
+                iRes = 0;
+            }
+            else
+                ;
+
+            return iRes;
+        }
+
+        public int Confirmed(int id_comp, DateTime dtReg, DateTime dtConfirmed)
+        {
+            int iRes = -1;
+
+            ALARM_OBJECT objAlarm = find(id_comp, dtReg);
+            if (!(objAlarm == null))
+            {
+                objAlarm.Confirmed(dtConfirmed);
+
+                iRes = 0;
+            }
+            else
+                ;
+
+            return iRes;
+        }
+        /// <summary>
+        /// Установить признак - событие сигнализаций "ожидается подтверждение"
+        /// </summary>
+        /// <param name="id_comp">Часть составного ключа: идентификтор компонента ТЭЦ (ГТП, ТГ)</param>
+        /// <param name="dtReg">Часть составного ключа: дата/время регистрации события сигнализаций</param>
+        /// <returns>Результат выполнения операции</returns>
+        public int Confirming(int id_comp, DateTime dtReg)
+        {
+            int iRes = -1;
+
+            ALARM_OBJECT objAlarm = find(id_comp, dtReg);
+            if (!(objAlarm == null))
+            {
+                objAlarm.Confirming ();
 
                 iRes = 0;
             }
@@ -266,7 +408,7 @@ namespace StatisticAlarm
             bool bRes = false;
             ALARM_OBJECT objAlarm = find(id_comp, dtReg);
             if (!(objAlarm == null))
-                bRes = objAlarm.CONFIRM;
+                bRes = objAlarm.CONFIRMED;
             else
                 bRes = false;
 
@@ -291,24 +433,18 @@ namespace StatisticAlarm
                         // создать объект события сигнализации
                         alarmObj = new ALARM_OBJECT(ev);
                         _dictAlarmObject.Add(new KeyValuePair<int, DateTime> (ev.m_id_comp, ev.m_dtRegistred.GetValueOrDefault ()), alarmObj);
-
-                        //Устновить состояние "в_процессе"
-                        alarmObj.state = INDEX_STATES_ALARM.PROCESSED;
                         //Сообщить для сохранения в БД
                         iRes = INDEX_ACTION.NEW;
                     }
                     else
                         //Только, если объект события сигнализации создан
                         //Проверить состояние
-                        if (alarmObj.CONFIRM == true)
+                        if (alarmObj.CONFIRMED == true)
                             // если подтверждено - проверить период между датой/временем регистрации события сигнализации и датой/временем его подтверждения
-                            if (! ((DateTime.UtcNow - alarmObj.dtConfirm) < TimeSpan.FromMilliseconds(AdminAlarm.MSEC_ALARM_EVENTRETRY)))
+                            if (alarmObj.HISTORY == true)
                             {
                                 // ??? если 
-                                alarmObj.dtReg = ev.m_dtRegistred;
-
-                                // если состояние "в очереди", то изменить состояние на "обрабатывается"
-                                if (alarmObj.state < INDEX_STATES_ALARM.PROCESSED) alarmObj.state = INDEX_STATES_ALARM.PROCESSED; else ;
+                                alarmObj.New (ev);
                                 // повторить оповещение пользователя о событии сигнализации
                                 iRes = INDEX_ACTION.NEW;
                             }
@@ -345,34 +481,31 @@ namespace StatisticAlarm
                         // создать объект события сигнализации
                         alarmObj = new ALARM_OBJECT(ev);
                         _dictAlarmObject.Add(new KeyValuePair<int, DateTime>(ev.m_id_comp, ev.m_dtRegistred.GetValueOrDefault()), alarmObj);
-
-                        //Устновить состояние "в_процессе"
-                        alarmObj.state = INDEX_STATES_ALARM.PROCESSED;
+                        // изменить состояние, присвоенное в конструкторе
+                        alarmObj.Fixing ();
                         //Сообщить для ГУИ о событии сигнализации
                         iRes = INDEX_ACTION.NEW;
                     }
                     else
                     {
+                        //alarmObj.Fixed (ev.m_dtFixed);
+                        //alarmObj.Confirmed(ev.m_dtConfirm);
+
                         //Только, если объект события сигнализации создан
                         //Проверить состояние
-                        if (alarmObj.CONFIRM == false)
-                        {
+                        if (alarmObj.CONFIRMED == false)
                             // если НЕ подтверждено - проверить период между датой/временем регистрации события сигнализации и датой/временем его подтверждения
-                            if ((DateTime.UtcNow - alarmObj.dtReg) > TimeSpan.FromMilliseconds(AdminAlarm.MSEC_ALARM_TIMERUPDATE))
+                            if (alarmObj.RETRY == true)
                             {
-                                // установить признак повторного оповещения для ГУИ
-                                alarmObj.dtReg = DateTime.UtcNow;
-
                                 // если состояние "в очереди", то изменить состояние на "обрабатывается"
-                                if (alarmObj.state < INDEX_STATES_ALARM.PROCESSED) alarmObj.state = INDEX_STATES_ALARM.PROCESSED; else ;
+                                alarmObj.Fixing ();
                                 // повторить оповещение пользователя о событии сигнализации
                                 iRes = INDEX_ACTION.RETRY;
                             }
                             else
                                 ;
-                        }
                         else
-                            ;
+                            ; // событие подтверждено
                     }
                 }
                 catch (Exception e)

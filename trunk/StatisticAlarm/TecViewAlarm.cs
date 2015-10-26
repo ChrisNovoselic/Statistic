@@ -120,10 +120,11 @@ namespace StatisticAlarm
                     #endregion Окончание блока кода для отладки
 
                     if (m_dictValuesTG[tg.m_id].m_powerCurrent_TM < 1F)
+                        //??? проверять ли значение на '< 0F'
                         if (!(m_dictValuesTG[tg.m_id].m_powerCurrent_TM < 0F))
                             curTurnOnOff = StatisticCommon.TG.INDEX_TURNOnOff.OFF;
                         else
-                            ;
+                            Console.WriteLine(@"Предупреждение (Value < 0): id_tg=" + tg.m_id + @", value=" + m_dictValuesTG[tg.m_id].m_powerCurrent_TM);
                     else
                     {//Больше ИЛИ равно 1F
                         curTurnOnOff = StatisticCommon.TG.INDEX_TURNOnOff.ON;
@@ -195,7 +196,7 @@ namespace StatisticAlarm
                                 ; //Состояние ТГ не изменилось
                     else
                         //Текущее состояние ТГ не удалось определить
-                        Logging.Logg().Error (@"TecViewAlarm::AlarmRegistred (id_tg=" + tg.m_id + @") - Detail: "
+                        Logging.Logg().Warning (@"TecViewAlarm::AlarmRegistred (id_tg=" + tg.m_id + @") - Detail: "
                             + listEventDetail[listEventDetail.Count - 1].ToString ()
                             , Logging.INDEX_MESSAGE.NOT_SET);
 

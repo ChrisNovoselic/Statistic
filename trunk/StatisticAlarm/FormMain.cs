@@ -110,8 +110,9 @@ namespace StatisticAlarm
                         _panelMain.Controls.Add(m_panelAlarm);
 
                         m_formAlarmEvent = new MessageBoxAlarmEvent (this);
-                        m_panelAlarm.EventGUIReg += new DelegateStringFunc(OnPanelAlarmEventGUIReg);
+                        m_panelAlarm.EventGUIReg += new AlarmNotifyEventHandler(OnPanelAlarmEventGUIReg);
                         m_formAlarmEvent.EventActivateTabPage += new DelegateBoolFunc(activateTabPage);
+                        m_formAlarmEvent.EventFixed += new DelegateObjectFunc(m_panelAlarm.OnEventFixed);
 
                         m_panelAlarm.Start();
                         break;
@@ -327,8 +328,10 @@ namespace StatisticAlarm
 
         private class MessageBoxAlarmEvent
         {
+            private Queue <AlarmNotifyEventArgs> _queueArgs;
+
             public event DelegateBoolFunc EventActivateTabPage;
-            public event DelegateObjectFunc EventClose;
+            public event DelegateObjectFunc EventFixed;
             
             private int m_iAlarmEventCounter;
             private int AlarmEventCounter { get { return m_iAlarmEventCounter; } set { m_iAlarmEventCounter = value; } }
@@ -342,6 +345,7 @@ namespace StatisticAlarm
             public MessageBoxAlarmEvent(Form owner)
             {
                 _owner = owner;
+                _queueArgs = new Queue<AlarmNotifyEventArgs> ();
             }
 
             //private void timerAlarmEvent (object obj)
@@ -395,10 +399,12 @@ namespace StatisticAlarm
                     }
                     else
                         ;
+
+                    EventFixed(_queueArgs.Dequeue());
                 }
             }
 
-            public void PanelAdminKomDispEventGUIReg(string text)
+            public void MessageBoxShow(object ev)
             {
                 //int selIndxTabPage = -1;
                 //string text = string.Empty;
@@ -430,13 +436,15 @@ namespace StatisticAlarm
                     }
                     else
                         m_iAlarmEventCounter++;
+
+                    _queueArgs.Enqueue (ev as AlarmNotifyEventArgs);
                 }
 
                 //Поверх остальных окон
                 bool bPrevTopMost = _owner.TopMost;
                 _owner.TopMost = true;
                 //Диалоговое окно
-                new Thread(new ParameterizedThreadStart(messageBoxShow)).Start(text);
+                new Thread(new ParameterizedThreadStart(messageBoxShow)).Start((ev as AlarmNotifyEventArgs).m_messageGUI);
                 //Востановить значение по умолчанию
                 _owner.TopMost = bPrevTopMost;
             }
@@ -454,19 +462,19 @@ namespace StatisticAlarm
             m_panelAlarm.Activate (active);
         }
 
-        private void OnPanelAlarmEventGUIReg(string text)
+        private void OnPanelAlarmEventGUIReg(AlarmNotifyEventArgs ev)
         {
             try
             {
                 //panelAdminKomDispEventGUIReg(text);
                 if (IsHandleCreated/*InvokeRequired*/ == true)
-                    this.BeginInvoke(new DelegateStringFunc(m_formAlarmEvent.PanelAdminKomDispEventGUIReg), text);
+                    this.BeginInvoke(new AlarmNotifyEventHandler(m_formAlarmEvent.MessageBoxShow), ev);
                 else
-                    Logging.Logg().Error(@"FormMain::OnPanelAdminKomDispEventGUIReg () - ... BeginInvoke (panelAdminKomDispEventGUIReg) - ...", Logging.INDEX_MESSAGE.D_001);
+                    Logging.Logg().Error(@"FormMain::OnPanelAlarmEventGUIReg () - ... BeginInvoke (m_formAlarmEvent.Show) - ...", Logging.INDEX_MESSAGE.D_001);
             }
             catch (Exception e)
             {
-                Logging.Logg().Exception(e, Logging.INDEX_MESSAGE.NOT_SET, @"FormMain::OnPanelAdminKomDispEventGUIReg (string) - text=" + text);
+                Logging.Logg().Exception(e, Logging.INDEX_MESSAGE.NOT_SET, @"FormMain::OnPanelAlarmEventGUIReg (string) - text=" + ev.m_message_shr);
             }
         }
 
