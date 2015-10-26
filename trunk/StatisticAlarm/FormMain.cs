@@ -516,7 +516,7 @@ namespace StatisticAlarm
             this.components = new System.ComponentModel.Container();
 
             this.AutoScaleMode = System.Windows.Forms.AutoScaleMode.Font;
-            this.Text = "FormStatisticAlarm";
+            this.Text = "Регистрация событий сигнализаций";
             this.MinimumSize = new Size (800, 600); // установить минимальный размер формы
             this.Icon = ((System.Drawing.Icon)(resources.GetObject(@"StatisticAlarm"))); // назаначить пиктонграмму окна
             this.StartPosition = FormStartPosition.CenterScreen;

@@ -125,12 +125,19 @@ namespace StatisticAlarm
             /// Идентификатор установленного, активного соединения с БД_значений
             /// </summary>
             private int IdListener { get { return m_dictIdListeners[0][0]; } }
-            
+            /// <summary>
+            /// Перечисление - индексы объектов синхронизации для обмена данными (результатом) обработки событий
+            /// </summary>
             public enum INDEX_SYNC_STATECHECKRESPONSE { UNKNOWN = -1, RESPONSE, ERROR, WARNING
                 ,  COUNT_INDEX_SYNC_STATECHECKRESPONSE }
+            /// <summary>
+            /// Объекты синхронизации для обмена данными (результатом) обработки событий
+            /// </summary>
             public AutoResetEvent [] m_arSyncStateCheckResponse;
-
-            DataTable m_tableResponse;
+            /// <summary>
+            /// Таблица для обмена данными (результатом) обработки событий
+            /// </summary>
+            private DataTable m_tableResponse;
             /// <summary>
             /// Дата/время (дата) запроса списка событий
             /// </summary>
@@ -812,8 +819,31 @@ namespace StatisticAlarm
                 + @" (" + ((int)itemQueue.Pars[1]) + @"-" + ((int)itemQueue.Pars[2]) + @" ч): "
                 + tableRes.Rows.Count);
 
+            List<PanelAlarm.ViewAlarmJournal> listRes = new List<PanelAlarm.ViewAlarmJournal>(tableRes.Rows.Count);
+            
+            foreach (DataRow r in tableRes.Rows)
+            {
+                listRes.Add (new PanelAlarm.ViewAlarmJournal ()
+                {
+                    m_id = (long)r[@"ID"]
+                    , m_id_component = (int)r[@"ID_COMPONENT"]
+                    , m_str_name_shr_component = getNameComponent((int)r[@"ID_COMPONENT"])
+                    , m_type = (INDEX_TYPE_ALARM)r[@"TYPE"]
+                    , m_str_name_shr_type = (INDEX_TYPE_ALARM)r[@"TYPE"] == INDEX_TYPE_ALARM.CUR_POWER ? @"Тек.мощн." :
+                        (INDEX_TYPE_ALARM)r[@"TYPE"] == INDEX_TYPE_ALARM.TGTurnOnOff ? @"ТГвкл/откл" : string.Empty
+                    , m_value = (float)r[@"VALUE"]                    
+                    , m_id_user_registred = (int)r[@"ID_USER_REGISTRED"]
+                    , m_dt_registred = (DateTime)r[@"DATETIME_REGISTRED"]
+                    , m_id_user_fixed = (int)r[@"ID_USER_FIXED"]
+                    , m_dt_fixed = (DateTime?)r[@"DATETIME_FIXED"]
+                    , m_id_user_confirmed = (int)r[@"ID_USER_CONFIRM"]
+                    , m_dt_confirmed = (DateTime?)r[@"DATETIME_CONFIRM"]
+                });
+            }
+
             if (Actived == true)
-                EvtGetDataMain(tableRes);
+                //EvtGetDataMain(tableRes);
+                EvtGetDataMain(listRes);
             else
                 ;
         }
@@ -847,16 +877,33 @@ namespace StatisticAlarm
 
         private string getEventGUIMessage(AlarmNotifyEventArgs ev)
         {
+            string strRes = getNameComponent (ev.m_id_comp);
+
+            if (strRes.Equals (string.Empty) == false)
+            {
+                strRes += Environment.NewLine;
+                strRes += ev.m_dtRegistred.GetValueOrDefault().ToString();
+                strRes += Environment.NewLine;
+                strRes += ev.m_message_shr;
+            }
+            else
+                ;
+
+            return strRes;
+        }
+
+        private string getNameComponent(int id_comp)
+        {
             string strRes = string.Empty;
 
             foreach (TecView tv in m_listTecView)
                 foreach (TECComponent tc in tv.m_tec.list_TECComponents)
-                    if (tc.m_id == ev.m_id_comp)
+                    if (tc.m_id == id_comp)
                     {
-                        strRes += tv.m_tec.name_shr; strRes += @", ";
-                        strRes += tc.name_shr; strRes += Environment.NewLine;
-                        strRes += ev.m_dtRegistred.GetValueOrDefault().ToString(); strRes += Environment.NewLine;
-                        strRes += ev.m_message_shr; strRes += @".";
+                        strRes += tv.m_tec.name_shr;
+                        strRes += @", ";
+                        strRes += tc.name_shr;
+                        
                         break;
                     }
                     else
@@ -1050,8 +1097,7 @@ namespace StatisticAlarm
                 case StatesMachine.Confirm:
                     GetUpdateConfirmResponse(itemQueue, tableRes);
                     break;
-                case StatesMachine.Insert:
-                
+                case StatesMachine.Insert:                
                     //Результата нет (рез-т вставленные/обновленные записи)
                     break;
                 default:
@@ -1079,7 +1125,11 @@ namespace StatisticAlarm
         {
             Logging.Logg().Warning(@"ViewAlarm::StateWarnings () - state=" + ((StatesMachine)state).ToString() + @", req=" + req.ToString() + @", res=" + res.ToString(), Logging.INDEX_MESSAGE.NOT_SET);
         }
-
+        /// <summary>
+        /// Обработчик запросов на получение данных от 'PanelAlarm'
+        ///  в котором реализован интерфейс 'IDataHost'
+        /// </summary>
+        /// <param name="obj"></param>
         public void OnEvtDataAskedHost (object obj)
         {
             Push ((obj as EventArgsDataHost).reciever, new object [] { (obj as EventArgsDataHost).par });

@@ -462,6 +462,24 @@ namespace StatisticAlarm
 
             return iRes;
         }
+
+        private bool isNotify (ALARM_OBJECT obj)
+        {
+            bool bRes = false;
+
+            if (obj.CONFIRMED == false)
+                if (obj.RETRY == true)
+                {
+                    obj.Fixing();
+                    bRes = true;
+                }
+                else
+                    ; // событие не требует оповещения
+            else
+                ; // событие подтверждено
+
+            return bRes;
+        }
         /// <summary>
         /// Зарегистрировать событие от БД
         /// </summary>
@@ -481,31 +499,20 @@ namespace StatisticAlarm
                         // создать объект события сигнализации
                         alarmObj = new ALARM_OBJECT(ev);
                         _dictAlarmObject.Add(new KeyValuePair<int, DateTime>(ev.m_id_comp, ev.m_dtRegistred.GetValueOrDefault()), alarmObj);
-                        // изменить состояние, присвоенное в конструкторе
-                        alarmObj.Fixing ();
-                        //Сообщить для ГУИ о событии сигнализации
-                        iRes = INDEX_ACTION.NEW;
+                        alarmObj.Fixed (ev.m_dtFixed);
+                        alarmObj.Confirmed(ev.m_dtConfirm);
+
+                        if (isNotify (alarmObj) == true)
+                            iRes = INDEX_ACTION.NEW;
+                        else
+                            ;
                     }
                     else
                     {
-                        //alarmObj.Fixed (ev.m_dtFixed);
-                        //alarmObj.Confirmed(ev.m_dtConfirm);
-
-                        //Только, если объект события сигнализации создан
-                        //Проверить состояние
-                        if (alarmObj.CONFIRMED == false)
-                            // если НЕ подтверждено - проверить период между датой/временем регистрации события сигнализации и датой/временем его подтверждения
-                            if (alarmObj.RETRY == true)
-                            {
-                                // если состояние "в очереди", то изменить состояние на "обрабатывается"
-                                alarmObj.Fixing ();
-                                // повторить оповещение пользователя о событии сигнализации
-                                iRes = INDEX_ACTION.RETRY;
-                            }
-                            else
-                                ;
+                        if (isNotify (alarmObj) == true)
+                            iRes = INDEX_ACTION.RETRY;
                         else
-                            ; // событие подтверждено
+                            ;
                     }
                 }
                 catch (Exception e)

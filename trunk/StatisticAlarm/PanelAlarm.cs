@@ -519,6 +519,8 @@ namespace StatisticAlarm
             /// </summary>
             protected virtual void InitializeComponent()
             {
+                this.Dock = DockStyle.Fill;
+
                 //Установить режим отображения загловков в столбцах
                 this.ColumnHeadersHeightSizeMode = DataGridViewColumnHeadersHeightSizeMode.AutoSize;
 
@@ -556,6 +558,22 @@ namespace StatisticAlarm
                 Rows.Clear();
                 m_listIdRows.Clear ();                
             }
+        }
+
+        public struct ViewAlarmJournal
+        {
+            public long m_id;
+            public int m_id_component;
+            public string m_str_name_shr_component;
+            public INDEX_TYPE_ALARM m_type;
+            public string m_str_name_shr_type;
+            public double m_value;            
+            public int m_id_user_registred;
+            public DateTime? m_dt_registred;
+            public int m_id_user_fixed;
+            public DateTime? m_dt_fixed;
+            public int m_id_user_confirmed;
+            public DateTime? m_dt_confirmed;
         }
         /// <summary>
         /// Класс с таблицей отображения списка событий сигнализаций
@@ -635,24 +653,41 @@ namespace StatisticAlarm
             /// <param name="obj">Объект - таблица с данными для отображения</param>
             protected override void onEvtGetData (object obj)
             {
-                DataTable tableRes = obj as DataTable;
                 int indxRow = -1;
                 //Очистить содержимое таблицы
                 base.onEvtGetData(obj);
                 //Добавить строки
-                foreach (DataRow r in tableRes.Rows)
+                ////Вариант №1
+                //DataTable tableRes = obj as DataTable;
+                //foreach (DataRow r in tableRes.Rows)
+                //{
+                //    indxRow = Rows.Add(new object[] {
+                //        r[@"ID_COMPONENT"]
+                //        , r[@"TYPE"]
+                //        , r[@"VALUE"]
+                //        , ((DateTime)r[@"DATETIME_REGISTRED"]).ToString (s_DateTimeFormat)
+                //        , (!(r[@"DATETIME_FIXED"] is DBNull)) ? ((DateTime)r[@"DATETIME_FIXED"]).ToString (s_DateTimeFormat) : string.Empty
+                //        , (!(r[@"DATETIME_CONFIRM"] is DBNull)) ? ((DateTime)r[@"DATETIME_CONFIRM"]).ToString (s_DateTimeFormat) : string.Empty
+                //    });
+                //    m_listIdRows.Add ((long)r[@"ID"]);
+                //    //Установить доступность кнопки "Подтвердить"
+                //    (Rows[indxRow].Cells[this.Columns.Count - 1] as DataGridViewDisableButtonCell).Enabled = isRecEnabled(tableRes.Rows.IndexOf (r));
+                //}
+                //Вариант №2
+                List<ViewAlarmJournal> listRes = obj as List<ViewAlarmJournal>;
+                foreach (ViewAlarmJournal r in listRes)
                 {
                     indxRow = Rows.Add(new object[] {
-                        r[@"ID_COMPONENT"]
-                        , r[@"TYPE"]
-                        , r[@"VALUE"]
-                        , ((DateTime)r[@"DATETIME_REGISTRED"]).ToString (s_DateTimeFormat)
-                        , (!(r[@"DATETIME_FIXED"] is DBNull)) ? ((DateTime)r[@"DATETIME_FIXED"]).ToString (s_DateTimeFormat) : string.Empty
-                        , (!(r[@"DATETIME_CONFIRM"] is DBNull)) ? ((DateTime)r[@"DATETIME_CONFIRM"]).ToString (s_DateTimeFormat) : string.Empty
+                        r.m_str_name_shr_component
+                        , r.m_str_name_shr_type
+                        , r.m_value
+                        , r.m_dt_registred.GetValueOrDefault().ToString (s_DateTimeFormat)
+                        , (!(r.m_dt_fixed == null)) ? r.m_dt_fixed.GetValueOrDefault().ToString (s_DateTimeFormat) : string.Empty
+                        , (!(r.m_dt_fixed == null)) ? r.m_dt_confirmed.GetValueOrDefault().ToString (s_DateTimeFormat) : string.Empty
                     });
-                    m_listIdRows.Add ((long)r[@"ID"]);
+                    m_listIdRows.Add(r.m_id);
                     //Установить доступность кнопки "Подтвердить"
-                    (Rows[indxRow].Cells[this.Columns.Count - 1] as DataGridViewDisableButtonCell).Enabled = isRecEnabled(tableRes.Rows.IndexOf (r));
+                    (Rows[indxRow].Cells[this.Columns.Count - 1] as DataGridViewDisableButtonCell).Enabled = isRecEnabled(listRes.IndexOf(r));
                 }
             }
             /// <summary>
@@ -701,21 +736,38 @@ namespace StatisticAlarm
             }
         }
 
+        public struct ViewAlarmDetail
+        {
+            public long m_id;
+            public int m_id_component;
+            public string m_str_name_shr_component;            
+            public DateTime? m_last_changed_at;
+            public double m_value;
+        }
+
         private class DataGridViewAlarmDetail : DataGridViewAlarmBase
         {
+            /// <summary>
+            /// Перечисление для индексов столбцов в таблице
+            /// </summary>
+            private enum iINDEX_COLUMN
+            {
+                TECCOMPONENT_NAMESHR, VALUE, LAST_CHANGED_AT
+                    , COUNT_INDEX_COLUMN
+            }
             /// <summary>
             /// Конструктор - основной (без параметров)
             /// </summary>
             public DataGridViewAlarmDetail()
                 : base()
             {
-                InitializeComponent();
             }
             /// <summary>
             /// Установить параметры визуализации
             /// </summary>
             protected override void InitializeComponent()
             {
+                base.InitializeComponent ();
             }
         }
     }
@@ -789,6 +841,18 @@ namespace StatisticAlarm
 
         #region Код, автоматически созданный конструктором компонентов
 
+        private class PanelView : HPanelCommon
+        {
+            public PanelView () : base (1, 8)
+            {
+                initializeLayoutStyleEvenly ();
+            }
+            
+            protected override void initializeLayoutStyle(int cols = -1, int rows = -1)
+            {
+                throw new NotImplementedException();
+            }
+        }
         /// <summary>
         /// Обязательный метод для поддержки конструктора - не изменяйте
         /// содержимое данного метода при помощи редактора кода.
@@ -915,11 +979,19 @@ namespace StatisticAlarm
             ctrl.Location = new System.Drawing.Point(posX = Margin.Horizontal, posY = ctrlRel.Location.Y + ctrlRel.Height + Margin.Vertical);            
             ctrl.Text = @"Включено";
             panelManagement.Controls.Add(ctrl);
-
+            ////Вариант №1
+            //ctrl = new DataGridViewAlarmJournal();
+            //ctrl.Name = INDEEX_CONTROL.DGV_EVENTS.ToString();            
+            //this.Controls.Add(ctrl, 1, 0);
+            //Вариант №2
+            PanelView panelView = new PanelView();
             ctrl = new DataGridViewAlarmJournal();
             ctrl.Name = INDEEX_CONTROL.DGV_EVENTS.ToString();
-            ctrl.Dock = DockStyle.Fill;
-            this.Controls.Add(ctrl, 1, 0);
+            panelView.Controls.Add(ctrl, 0, 0); panelView.SetColumnSpan(ctrl, 1); panelView.SetRowSpan(ctrl, 7);
+            ctrl = new DataGridViewAlarmDetail();
+            ctrl.Name = INDEEX_CONTROL.DGV_DETAIL.ToString();
+            panelView.Controls.Add(ctrl, 0, 7); panelView.SetColumnSpan(ctrl, 1); panelView.SetRowSpan(ctrl, 1);
+            this.Controls.Add(panelView, 1, 0);
 
             this.ResumeLayout(false);
             this.PerformLayout();
