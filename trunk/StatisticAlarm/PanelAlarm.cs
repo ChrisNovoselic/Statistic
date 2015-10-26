@@ -5,7 +5,7 @@ using System.Data.Common;
 using System.Diagnostics;
 using System.Linq;
 using System.Text;
-using System.Data;
+//using System.Data;
 
 using System.Windows.Forms; //..., CheckBox
 
@@ -45,7 +45,10 @@ namespace StatisticAlarm
         /// Событие изменения даты, начала и окончания для запроса списка событий сигнализаций
         /// </summary>
         private AdminAlarm.DatetimeCurrentEventHandler delegateDatetimeChanged;
-
+        /// <summary>
+        /// Делегат для обработки события установка/снятие признака "Включено"
+        ///  для всех режимов работы (SERVICE, ADMIN, VIEW)
+        /// </summary>
         private DelegateBoolFunc delegateWorkCheckedChanged;
         /// <summary>
         /// Событие для оповещения пользователя о событии сигнализаций (новое/повтор)
@@ -150,8 +153,9 @@ namespace StatisticAlarm
             ctrl = Find (INDEEX_CONTROL.DGV_EVENTS);
             //Назначить обработчик события при получении из БД списка событий (передать список для отображения)
             m_adminAlarm.EvtGetDataMain += new DelegateObjectFunc((ctrl as DataGridViewAlarmJournal).OnEvtGetData);
-            //m_adminAlarm.EvtGetDataDetail += new DelegateObjectFunc((Find(INDEEX_CONTROL.DGV_DETAIL) as DataGridViewAlarmDetail).OnEvtGetData);
-            (ctrl as DataGridViewAlarmJournal).EventConfirm += new DelegateObjectFunc(OnEventConfirm);
+            m_adminAlarm.EvtGetDataDetail += new DelegateObjectFunc((Find(INDEEX_CONTROL.DGV_DETAIL) as DataGridViewAlarmDetail).OnEvtGetData);
+            (ctrl as DataGridViewAlarmJournal).EventConfirmed += new DelegateObjectFunc(OnEventConfirm);
+            (ctrl as DataGridViewAlarmJournal).EventSelected += new DelegateObjectFunc (dgvJournal_OnSelectionChanged);
 
             //Старт в любом режиме с учетом '(ctrl as CheckBox).Checked'
             // SERVICE - БД_значений-ДА, таймер-ДА/НЕТ, оповещение (список)-ДА/НЕТ, оповещение (сигнализация)-НЕТ
@@ -289,7 +293,11 @@ namespace StatisticAlarm
             else
                 Logging.Logg().Error(@"PanelAlarm::OnViewAlarm_EventRetry () - ... BeginInvoke (...) - ...", Logging.INDEX_MESSAGE.D_001);
         }
-
+        /// <summary>
+        /// Обработчик события - снятие с отображения 'MessageBox'
+        ///  информации о событии сигнализаций
+        /// </summary>
+        /// <param name="obj">Аргумент события - описание события оповещения</param>
         public void OnEventFixed(object obj)
         {
             DataAskedHost (new object [] {
@@ -299,12 +307,29 @@ namespace StatisticAlarm
                 }
             });
         }
-
+        /// <summary>
+        /// Обработчик события - подтверждение события сигнализаций
+        /// </summary>
+        /// <param name="obj">Идентификатор события сигнализаций в БД</param>
         public void OnEventConfirm(object obj)
         {
             DataAskedHost(new object[] {
                 new object [] {
                     AdminAlarm.StatesMachine.Confirm
+                    , (long)obj
+                }
+            });
+        }
+        /// <summary>
+        /// Обработчик события изменения выбора строки в таблице
+        ///  со списком событий сигнализаций
+        /// </summary>
+        /// <param name="obj">Идентификатор события сигнализаций в БД</param>
+        public void dgvJournal_OnSelectionChanged(object obj)
+        {
+            DataAskedHost(new object[] {
+                new object [] {
+                    AdminAlarm.StatesMachine.Detail
                     , (long)obj
                 }
             });
@@ -580,7 +605,12 @@ namespace StatisticAlarm
         /// </summary>
         private class DataGridViewAlarmJournal : DataGridViewAlarmBase
         {
-            public event DelegateObjectFunc EventConfirm;
+            /// <summary>
+            /// Событие для инициирования процессса подтверждения события сигнализаций
+            /// </summary>
+            public event DelegateObjectFunc EventConfirmed
+                , EventSelected;
+            private MODE _mode { get { return (Parent.Parent as PanelAlarm).m_adminAlarm.Mode; } }
             /// <summary>
             /// Перечисление для индексов столбцов в таблице
             /// </summary>
@@ -640,11 +670,18 @@ namespace StatisticAlarm
                 base.InitializeComponent();
 
                 this.CellClick += new DataGridViewCellEventHandler(onCellClick);
+                this.SelectionChanged += new EventHandler(onSelectionChanged);
             }
-
+            /// <summary>
+            /// Возвратить признак доступности кнопки в столбце "Подтверждение"
+            /// </summary>
+            /// <param name="iRow">Индекс строки</param>
+            /// <returns></returns>
             private bool isRecEnabled (int iRow)
             {
+                //Кнопка доступна, если: 1) событие сигнализации "зафиксировано"
                 return (!this.Rows[iRow].Cells[(int)iINDEX_COLUMN.DATETIME_FIXED].Value.Equals(string.Empty))
+                    // 2) событие сигнализации ранее не "подтверждено"
                     && this.Rows[iRow].Cells[(int)iINDEX_COLUMN.DATETIME_CONFIRM].Value.Equals(string.Empty);
             }
             /// <summary>
@@ -677,6 +714,7 @@ namespace StatisticAlarm
                 List<ViewAlarmJournal> listRes = obj as List<ViewAlarmJournal>;
                 foreach (ViewAlarmJournal r in listRes)
                 {
+                    m_listIdRows.Add(r.m_id);
                     indxRow = Rows.Add(new object[] {
                         r.m_str_name_shr_component
                         , r.m_str_name_shr_type
@@ -684,8 +722,7 @@ namespace StatisticAlarm
                         , r.m_dt_registred.GetValueOrDefault().ToString (s_DateTimeFormat)
                         , (!(r.m_dt_fixed == null)) ? r.m_dt_fixed.GetValueOrDefault().ToString (s_DateTimeFormat) : string.Empty
                         , (!(r.m_dt_fixed == null)) ? r.m_dt_confirmed.GetValueOrDefault().ToString (s_DateTimeFormat) : string.Empty
-                    });
-                    m_listIdRows.Add(r.m_id);
+                    });                    
                     //Установить доступность кнопки "Подтвердить"
                     (Rows[indxRow].Cells[this.Columns.Count - 1] as DataGridViewDisableButtonCell).Enabled = isRecEnabled(listRes.IndexOf(r));
                 }
@@ -694,7 +731,7 @@ namespace StatisticAlarm
             /// Метод для обновления (дата/время фиксации/подтверждения) одной записи
             /// </summary>
             /// <param name="pars">Аргумент- массив с идентификатором события, датой/временем фиксации/подтверждения</param>
-            public void OnUpdate (object []pars)
+            public void UpdateRec (object []pars)
             {
                 int indxRow = m_listIdRows.IndexOf ((long)pars[1])
                     , indxCol = -1;
@@ -730,21 +767,39 @@ namespace StatisticAlarm
             {
                 if ((ev.ColumnIndex == (int)iINDEX_COLUMN.BTN_CONFIRM)
                     && ((this.Rows[ev.RowIndex].Cells[ev.ColumnIndex] as DataGridViewDisableButtonCell).Enabled == true))
-                    EventConfirm(m_listIdRows[ev.RowIndex] as object);
+                    EventConfirmed(m_listIdRows[ev.RowIndex] as object);
                 else
                     ; // остальные столбцы не требуют обработки
             }
+            /// <summary>
+            /// Обработчик события изменения выбора строки в таблице
+            /// </summary>
+            /// <param name="obj">Объект, инициировавший событие (??? this)</param>
+            /// <param name="ev">Аргумент события</param>
+            private void onSelectionChanged(object obj, EventArgs ev)
+            {
+                if (this.SelectedRows.Count > 0)
+                    EventSelected(m_listIdRows[this.SelectedRows[0].Index] as object);
+                else
+                    ;
+            }
         }
-
+        /// <summary>
+        /// Структура для передачи значений для отображения
+        ///  в таблицу детализации события сигнализации
+        /// </summary>
         public struct ViewAlarmDetail
         {
             public long m_id;
+            public long m_id_event;
             public int m_id_component;
             public string m_str_name_shr_component;            
             public DateTime? m_last_changed_at;
             public double m_value;
         }
-
+        /// <summary>
+        /// Класс для описания таблицы представления списка событий сигнализаций
+        /// </summary>
         private class DataGridViewAlarmDetail : DataGridViewAlarmBase
         {
             /// <summary>
@@ -767,7 +822,50 @@ namespace StatisticAlarm
             /// </summary>
             protected override void InitializeComponent()
             {
-                base.InitializeComponent ();
+                //Объект 'столбец' - для добавления в таблицу
+                DataGridViewColumn column = null;
+                //Массив строк для заголовков столбцов
+                string[] arHeaderText = { @"Компонент", @"Значение", @"Время значения" };
+                //Добавить столбцы в таблицу
+                for (int i = 0; i < (int)iINDEX_COLUMN.COUNT_INDEX_COLUMN; i++)
+                {
+                    switch ((iINDEX_COLUMN)i)
+                    {
+                        case iINDEX_COLUMN.TECCOMPONENT_NAMESHR:
+                        case iINDEX_COLUMN.VALUE:
+                        case iINDEX_COLUMN.LAST_CHANGED_AT:
+                            //Текстовое поле
+                            column = new DataGridViewTextBoxColumn();
+                            break;
+                        default:
+                            break;
+                    }
+                    //Установить текст заголовка столбца
+                    column.HeaderText = arHeaderText[i];
+                    //Установить режим отображения значений в столбце
+                    column.AutoSizeMode = DataGridViewAutoSizeColumnMode.Fill;
+                    //Добавить столбец
+                    this.Columns.Add(column);
+                }
+
+                base.InitializeComponent();
+            }
+
+            protected override void onEvtGetData(object obj)
+            {
+                int indxRow = -1;
+                //Очистить содержимое таблицы
+                base.onEvtGetData(obj);
+
+                List<ViewAlarmDetail> listRes = obj as List<ViewAlarmDetail>;
+                foreach (ViewAlarmDetail r in listRes)
+                {
+                    indxRow = Rows.Add(new object[] {
+                        r.m_str_name_shr_component
+                        , r.m_value
+                        , r.m_last_changed_at.GetValueOrDefault().ToString (s_DateTimeFormat)
+                    });
+                }
             }
         }
     }
@@ -831,7 +929,7 @@ namespace StatisticAlarm
                     (Find(INDEEX_CONTROL.DGV_EVENTS) as DataGridViewAlarmDetail).OnEvtGetData((ev.par as object[])[1]);
                     break;
                 case AdminAlarm.StatesMachine.Fixed:
-                    (Find(INDEEX_CONTROL.DGV_EVENTS) as DataGridViewAlarmJournal).OnUpdate(ev.par);
+                    (Find(INDEEX_CONTROL.DGV_EVENTS) as DataGridViewAlarmJournal).UpdateRec(ev.par);
                     break;
                 default:
                     break;

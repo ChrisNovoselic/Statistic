@@ -272,6 +272,22 @@ namespace StatisticAlarm
 
             return objRes;
         }
+
+        private ALARM_OBJECT find(int id_comp)
+        {
+            ALARM_OBJECT objRes = null;
+            SortedList <DateTime, ALARM_OBJECT> slistAlarms = new SortedList<DateTime, ALARM_OBJECT> ();
+            slistAlarms.
+
+            foreach (KeyValuePair <int, DateTime> kvp in _dictAlarmObject.Keys)
+                if (kvp.Key.Equals(id_comp) == true)
+                    slistAlarms.Add(kvp.Value, _dictAlarmObject[kvp]);
+                else
+                    ;
+            slistAlarms.FirstOrDefault<ALARM_OBJECT>(dt => );
+
+            return objRes;
+        }
         /// <summary>
         /// Получить дату/время регистрации события сигнализации для ТГ
         /// </summary>
@@ -422,7 +438,10 @@ namespace StatisticAlarm
         public INDEX_ACTION Registred(TecViewAlarm.AlarmTecViewEventArgs ev)
         {
             INDEX_ACTION iRes = INDEX_ACTION.NOTHING;
-            ALARM_OBJECT alarmObj = find(ev.m_id_comp, ev.m_dtRegistred.GetValueOrDefault ());
+            ALARM_OBJECT alarmObj =
+                //find(ev.m_id_comp, ev.m_dtRegistred.GetValueOrDefault())
+                find(ev.m_id_comp)
+                ;
 
             lock (this)
             {

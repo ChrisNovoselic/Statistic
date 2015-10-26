@@ -40,8 +40,15 @@ namespace StatisticCommon
         {
             m_dcKoeffAlarmPcur = -1;
         }
-
+        /// <summary>
+        /// Признак принадлежности компонента к группе ГТП
+        /// </summary>
         public bool IsGTP { get { return (m_id > 100) && (m_id < 500); } }
+        /// <summary>
+        /// Возвратить тип (режим) компонента по указанному идентификатору
+        /// </summary>
+        /// <param name="id">Идентификатор компонента</param>
+        /// <returns>Тип (режим) компонента</returns>
         public static FormChangeMode.MODE_TECCOMPONENT Mode(int id)
         {
             return ((id > 100) && (id < 500)) == true ? FormChangeMode.MODE_TECCOMPONENT.GTP :
@@ -49,9 +56,14 @@ namespace StatisticCommon
                     ((id > 1000) && (id < 10000)) == true ? FormChangeMode.MODE_TECCOMPONENT.TG :
                         FormChangeMode.MODE_TECCOMPONENT.UNKNOWN;
         }
-
+        /// <summary>
+        /// Признак принадлежности компонента к группе щиты управления
+        ///  (блочные, групповые)
+        /// </summary>
         public bool IsPC { get { return (m_id > 500) && (m_id < 1000); } }
-
+        /// <summary>
+        /// Признак принадлежности компонента к группе ТГ
+        /// </summary>
         public bool IsTG { get { return (m_id > 1000) && (m_id < 10000); } }
     }
     /// <summary>
