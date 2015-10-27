@@ -70,8 +70,6 @@ namespace Statistic
         private static ID_ADDING_TAB[,] m_arIdCustomTabs = new ID_ADDING_TAB[,] { { ID_ADDING_TAB.CUSTOM_2X2_1, ID_ADDING_TAB.CUSTOM_2X2_2, ID_ADDING_TAB.CUSTOM_2X2_3, ID_ADDING_TAB.CUSTOM_2X2_4 }
                                                                                 , { ID_ADDING_TAB.CUSTOM_2X3_1, ID_ADDING_TAB.CUSTOM_2X3_2, ID_ADDING_TAB.CUSTOM_2X3_3, ID_ADDING_TAB.CUSTOM_2X3_4 }
                                                                             };
-        //public AdminTS [] m_arAdmin;
-        //public Users m_user;
         public Passwords m_passwords;
         private FormPassword formPassword;
         private FormSetPassword formSetPassword;
@@ -197,6 +195,8 @@ namespace Statistic
                     //ИМгструмент администратора
                     параметрыToolStripMenuItem.Enabled =
                     администрированиеToolStripMenuItem.Enabled =
+                    рассинхронизацияДатаВремяСерверБДToolStripMenuItem.Enabled =
+                    ДиагностикаToolStripMenuItem.Enabled =
                         HStatisticUsers.RoleIsAdmin;
 
                     HMark markSett = new HMark(Int32.Parse(HStatisticUsers.GetAllowed((int)HStatisticUsers.ID_ALLOWED.AUTO_LOADSAVE_USERPROFILE)));
@@ -211,7 +211,7 @@ namespace Statistic
                     //мониторингПоследняяМинутаЧасToolStripMenuItem.Enabled =
                     //собственныеНуждыToolStripMenuItem.Enabled =
                     m_dictAddingTabs[(int)ID_ADDING_TAB.DATETIMESYNC_SOURCE_DATA].menuItem.Enabled = HStatisticUsers.IsAllowed((int)HStatisticUsers.ID_ALLOWED.MENUITEM_SETTING_PARAMETERS_SYNC_DATETIME_DB);
-                    //m_dictAddingTabs[(int)ID_ADDING_TAB.DIAGNOSTIC].menuItem.Enabled = HStatisticUsers.IsAllowed((int)HStatisticUsers.ID_ALLOWED.MENUITEM_SETTING_PARAMETERS_DIAGNOSTIC);
+                    m_dictAddingTabs[(int)ID_ADDING_TAB.DIAGNOSTIC].menuItem.Enabled = HStatisticUsers.IsAllowed((int)HStatisticUsers.ID_ALLOWED.MENUITEM_SETTING_PARAMETERS_DIAGNOSTIC);
                     m_dictAddingTabs[(int)ID_ADDING_TAB.SOTIASSO].menuItem.Enabled = HStatisticUsers.IsAllowed((int)HStatisticUsers.ID_ALLOWED.MENUITEM_VIEW_VALUES_SOTIASSO);
 
                     //ProgramBase.s_iAppID = Int32.Parse ((string)Properties.Settings.Default [@"AppID"]);
@@ -327,15 +327,15 @@ namespace Statistic
 
                         //createAddingTabs ();
 
-                        stopTimerAppReset ();                        
+                        stopTimerAppReset();
                         //int msecTimerAppReset = Int32.Parse (formParameters.m_arParametrSetup[(int)FormParameters.PARAMETR_SETUP.APP_VERSION_QUERY_INTERVAL]);
                         m_timerAppReset =
                             //new System.Threading.Timer(new TimerCallback(fTimerAppReset), null, msecTimerAppReset, msecTimerAppReset)
-                            new System.Windows.Forms.Timer ();
+                            new System.Windows.Forms.Timer();
                             ;
                         m_timerAppReset.Interval = ProgramBase.TIMER_START_INTERVAL;
                         m_timerAppReset.Tick += new EventHandler(fTimerAppReset);
-                        m_timerAppReset.Start ();
+                        m_timerAppReset.Start();
 
                         if (m_bAutoActionTabs == true)
                             fileProfileLoadAddingTab();
@@ -374,7 +374,7 @@ namespace Statistic
             if (!(m_timerAppReset == null))
             {
                 //m_timerAppReset.Change(System.Threading.Timeout.Infinite, System.Threading.Timeout.Infinite);
-                m_timerAppReset.Stop ();
+                m_timerAppReset.Stop();
                 m_timerAppReset.Dispose();
                 m_timerAppReset = null;
             }
@@ -500,7 +500,7 @@ namespace Statistic
 
         //private void timerAlarmEvent (object obj)
         private void timerAlarmEvent(object obj, EventArgs ev)
-        {            
+        {
             //System.Media.SystemSounds.Question.Play();
             if (m_sndAlarmEvent == null)
                 Console.Beep();
@@ -529,7 +529,7 @@ namespace Statistic
                 if (m_iAlarmEventCounter == 0)
                 {
                     //m_timerAlarmEvent.Change(System.Threading.Timeout.Infinite, System.Threading.Timeout.Infinite);
-                    m_timerAlarmEvent.Stop ();
+                    m_timerAlarmEvent.Stop();
                     m_timerAlarmEvent.Dispose();
                     m_timerAlarmEvent = null;
 
@@ -583,10 +583,10 @@ namespace Statistic
 
                     m_timerAlarmEvent =
                         //new System.Threading.Timer(new TimerCallback(timerAlarmEvent), null, 0, AdminAlarm.MSEC_ALARM_TIMERBEEP) //Int32.Parse(formParameters.m_arParametrSetup[(int)FormParameters.PARAMETR_SETUP.ALARM_TIMER_BEEP]) * 1000
-                        new System.Windows.Forms.Timer ();
+                        new System.Windows.Forms.Timer();
                     m_timerAlarmEvent.Tick += new EventHandler(timerAlarmEvent);
                     m_timerAlarmEvent.Interval = StatisticAlarm.AdminAlarm.MSEC_ALARM_TIMERBEEP;
-                    m_timerAlarmEvent.Start ();
+                    m_timerAlarmEvent.Start();
 
                     m_iAlarmEventCounter = 1;
                 }
@@ -635,7 +635,14 @@ namespace Statistic
                     formChangeMode.SetItemChecked(-1, false);
                 else
                     if (tclTecViews.TabPages[e.TabIndex].Controls[0] is PanelStatisticDiagnostic)
+                    {
                         m_dictAddingTabs[(int)ID_ADDING_TAB.DIAGNOSTIC].menuItem.Checked = false;
+
+                        ДиагностикаToolStripMenuItem.Checked = false;
+
+                        видSubToolStripMenuItem_CheckedChanged(m_dictAddingTabs[(int)ID_ADDING_TAB.DIAGNOSTIC].panel, "Диагностика"
+                         , new bool[] { ((ToolStripMenuItem)m_dictAddingTabs[(int)ID_ADDING_TAB.DIAGNOSTIC].menuItem).Checked, true });
+                    }
                     else
                     if (tclTecViews.TabPages[e.TabIndex].Controls[0] is PanelAdminNSS)
                         formChangeMode.SetItemChecked(-2, false);
@@ -671,6 +678,11 @@ namespace Statistic
                                                 //tclTecViews.TabPages.RemoveByKey(HTabCtrlEx.GetNameTab (e.TabHeaderText));
 
                                                 m_dictAddingTabs[(int)ID_ADDING_TAB.DATETIMESYNC_SOURCE_DATA].menuItem.Checked = false;
+                                                    рассинхронизацияДатаВремяСерверБДToolStripMenuItem.Checked = false;
+
+                                                                  видSubToolStripMenuItem_CheckedChanged(m_dictAddingTabs[(int)ID_ADDING_TAB.DATETIMESYNC_SOURCE_DATA].panel, "Дата/время серверов БД"
+                                                                   , new bool[] { ((ToolStripMenuItem)m_dictAddingTabs[(int)ID_ADDING_TAB.DATETIMESYNC_SOURCE_DATA].menuItem).Checked, true });
+
                                             }
                                             else
                                                 if (tclTecViews.TabPages[e.TabIndex].Controls[0] is PanelSOTIASSO)
@@ -1240,7 +1252,7 @@ namespace Statistic
                 //                            }
                 //                            else
                 //                                ;
-         
+
 
                 ((HPanelCommon)tclTecViews.TabPages[indx].Controls[0]).Activate(active);
             }
@@ -1334,7 +1346,9 @@ namespace Statistic
             this.Activate();
         }
 
-        public override void Close(bool bForce) { if (bForce == false) base.Close(bForce); else FormMain_FormClosing(this, new FormClosingEventArgs(CloseReason.ApplicationExitCall, true)); }
+        public override void Close(bool bForce) 
+        { if (bForce == false) base.Close(bForce); 
+        else FormMain_FormClosing(this, new FormClosingEventArgs(CloseReason.ApplicationExitCall, true)); }
 
         private void FormMain_FormClosing(object sender, FormClosingEventArgs e)
         {
@@ -1342,8 +1356,8 @@ namespace Statistic
 
             if (
                 //(! (m_TCPServer == null)) ||
-                (! (m_arPanelAdmin == null))
-                || (! (m_timer == null))
+                (!(m_arPanelAdmin == null))
+                || (!(m_timer == null))
                 )
                 if (e.Cancel == false)
                     if (e.CloseReason == CloseReason.UserClosing)
@@ -2096,7 +2110,6 @@ namespace Statistic
             }
             else
                 ;
-
             видSubToolStripMenuItem_CheckedChanged(m_dictAddingTabs[(int)ID_ADDING_TAB.DIAGNOSTIC].panel, "Диагностика"
                 , new bool[] { ((ToolStripMenuItem)sender).Checked, true });
         }
@@ -2112,11 +2125,6 @@ namespace Statistic
                 ;
 
             видSubToolStripMenuItem_CheckedChanged(m_dictAddingTabs[(int)ID_ADDING_TAB.SOBSTV_NYZHDY].panel
-                ////Вариант №1
-                //, @"Собственные нужды"
-                ////Вариант №2
-                //, m_dictAddingTabs[(int)ID_ADDING_TAB.SOBSTV_NYZHDY].menuItem.Text
-                //Вариант №3
                 , ((ToolStripMenuItem)sender).Text
                 , new bool[] { ((ToolStripMenuItem)sender).Checked, true });
         }
@@ -2405,6 +2413,58 @@ namespace Statistic
             изменитьПарольToolStripMenuItem_Click(sender, e, 0, Passwords.ID_ROLES.NSS);
         }
 
+        private void диагностикаToolStripMenuItem_Click(object sender, EventArgs e)
+        {
+            if (m_dictAddingTabs[(int)ID_ADDING_TAB.DIAGNOSTIC].panel == null)
+            {
+                m_dictAddingTabs[(int)ID_ADDING_TAB.DIAGNOSTIC].panel = new PanelStatisticDiagnostic();
+            }
+            else
+                ;
+            if (ДиагностикаToolStripMenuItem.Checked == true)
+            {
+                ((ToolStripMenuItem)sender).Checked = true;
+            }
+            else ((ToolStripMenuItem)sender).Checked = false;
+
+            видSubToolStripMenuItem_CheckedChanged(m_dictAddingTabs[(int)ID_ADDING_TAB.DIAGNOSTIC].panel, "Диагностика"
+                , new bool[] { ((ToolStripMenuItem)sender).Checked, true });
+        }
+
+        private void рассинхронизацияДатаВремяСерверБДToolStripMenuItem_Click(object sender, EventArgs e)
+        {
+            if (m_dictAddingTabs[(int)ID_ADDING_TAB.DATETIMESYNC_SOURCE_DATA].panel == null)
+                m_dictAddingTabs[(int)ID_ADDING_TAB.DATETIMESYNC_SOURCE_DATA].panel = new PanelSourceData();
+            else
+                ;
+            if (рассинхронизацияДатаВремяСерверБДToolStripMenuItem.Checked == true)
+            {
+                ((ToolStripMenuItem)sender).Checked = true;
+            }
+            else ((ToolStripMenuItem)sender).Checked = false;
+
+            видSubToolStripMenuItem_CheckedChanged(m_dictAddingTabs[(int)ID_ADDING_TAB.DATETIMESYNC_SOURCE_DATA].panel, "Дата/время серверов БД"
+                , new bool[] { ((ToolStripMenuItem)sender).Checked, true });
+        }
+
+        /// <summary>
+        /// 
+        /// </summary>
+        /// <param name="nameTab"></param>
+        /// <param name="obj"></param>
+        /// <param name="check"></param>
+        private void closeTabMenu(string nameTab, PanelStatistic obj, bool check)
+        {
+            bool bRes = tclTecViews.RemoveTabPage(nameTab);
+            if (check == true)
+            {
+                obj.Activate(false);
+                obj.Stop();
+            }
+            else
+                ;
+        }
+
         private void изменитьПарольКоммерческогоДиспетчераToolStripMenuItem_Click(object sender, EventArgs e)
         {
             изменитьПарольToolStripMenuItem_Click(sender, e, 0, Passwords.ID_ROLES.COM_DISP);
@@ -2442,7 +2502,6 @@ namespace Statistic
         private void menuStrip_MenuActivate(object sender, EventArgs e)
         {
             activateTabPage(tclTecViews.SelectedIndex, false);
-            //PanelStatisticDiagnostic.Tec.toolStripMenuItemActivate.Click += new EventHandler(toolStripMenuItemActivate_Click);
         }
 
         private ToolStripMenuItem getSelectedMenuItem(ToolStripMenuItem owner)
