@@ -627,11 +627,17 @@ namespace StatisticDiagnostic
                 {
                     if (m_arPanelsTEC[x].TECDataGridView.InvokeRequired)
                     {
-                        m_arPanelsTEC[x].TECDataGridView.Invoke(new Action(() => m_arPanelsTEC[x].TECDataGridView.Rows.Add()));
+                        if (m_arPanelsTEC[x].TECDataGridView.Rows.Count < countrow)
+                        {
+                            m_arPanelsTEC[x].TECDataGridView.Invoke(new Action(() => m_arPanelsTEC[x].TECDataGridView.Rows.Add()));
+                        }
                     }
                     else
                     {
-                        m_arPanelsTEC[x].TECDataGridView.Rows.Add();
+                        if (m_arPanelsTEC[x].TECDataGridView.Rows.Count < countrow)
+                        {
+                            m_arPanelsTEC[x].TECDataGridView.Rows.Add();
+                        }
                     }
                 }
             }
@@ -681,14 +687,11 @@ namespace StatisticDiagnostic
                 {
                     string filter = "ID_EXT = " + Convert.ToInt32(arraySourceTEC.Rows[i][0]);
 
-                    if (m_arPanelsTEC[i].TECDataGridView.RowCount < 1)
-                    {
-                        AddRowsTEC(i, m_tableSourceData.Select(filter).Length);
-                        TextColumnTec();
-                    }
-
+                    AddRowsTEC(i, m_tableSourceData.Select(filter).Length);
+                    TextColumnTec();
                     InsertDataTEC(filter, i);
                 }
+
                 HeaderGridTEC();
             }
 
@@ -883,7 +886,8 @@ namespace StatisticDiagnostic
                     {
                         if (m_arPanelsTEC[i].TECDataGridView.Rows.Count > 0)
                         {
-                            m_arPanelsTEC[i].TECDataGridView.Rows.RemoveAt(j);
+                            //m_arPanelsTEC[i].TECDataGridView.Rows.RemoveAt(j);
+                            m_arPanelsTEC[i].TECDataGridView.Rows.Clear();
                         }
                     }
                 }
@@ -1042,7 +1046,8 @@ namespace StatisticDiagnostic
                     {
                         if (m_arPanelsMODES[i].ModesDataGridView.Rows.Count > 0)
                         {
-                            m_arPanelsMODES[i].ModesDataGridView.Rows.RemoveAt(j); 
+                            //m_arPanelsMODES[i].ModesDataGridView.Rows.RemoveAt(j);
+                            m_arPanelsMODES[i].ModesDataGridView.Rows.Clear();
                         }
                     }
                 }
