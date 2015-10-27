@@ -14,7 +14,6 @@ namespace StatisticDiagnostic
 {
     public partial class FormMain : FormMainBaseWithStatusStrip
     {
-       
         /// <summary>
         /// Объект с параметрами приложения (из БД_конфигурации)
         /// </summary>
