@@ -964,6 +964,8 @@ namespace StatisticTrans
                 CT.ErrorComp(CT.nameComponent);
                 CT.currentIter = 0;
 
+
+             
                 IAsyncResult asyncRes;
                 if (IsHandleCreated/*InvokeRequired*/ == true)
                     asyncRes = this.BeginInvoke(new DelegateFunc(trans_auto_next));

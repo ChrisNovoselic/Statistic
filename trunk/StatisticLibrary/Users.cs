@@ -48,7 +48,8 @@ namespace StatisticCommon
             , AUTO_LOADSAVE_USERPROFILE //Автоматическая загрузка/сохранение профиля
             //, AUTO_LOAD_ADMINVALUESDEFAULT //Автоматическая загрузка "рекомендаций" по умолчанию
             , MENUITEM_VIEW_VALUES_SOTIASSO
-            ,MENUITEM_SETTING_PARAMETERS_DIAGNOSTIC
+                ,
+            MENUITEM_SETTING_PARAMETERS_DIAGNOSTIC
             ,
         };
 

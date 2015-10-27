@@ -29,12 +29,12 @@ namespace StatisticTimeSync
                 iRes = -1;
             }
 
-            FormMain formMain = null;
+            FormStatisticTimeSync formMain = null;
 
             if (iRes == 0)
             {
                 string strHeader = string.Empty;
-                try { formMain = new FormMain(); }
+                try { formMain = new FormStatisticTimeSync(); }
                 catch (Exception e)
                 {
                     strHeader = "Ошибка запуска приложения";
