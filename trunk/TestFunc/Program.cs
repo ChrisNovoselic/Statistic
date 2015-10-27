@@ -35,12 +35,32 @@ namespace TestFunc
                 //(test as HDbOracle).Close ();
                 //(test as HDbOracle).OutResult ();
 
-                test = new DbSources();
+                //test = new DbSources();
+
+                test = new GenericSorted();
             } catch (Exception e) {
                 Console.Write(e.Message + Environment.NewLine);
             }
 
             Console.Write(@"Для завершения работы нажмите любую клавишу..."); Console.ReadKey();
+        }
+
+        private class GenericSorted
+        {
+            public GenericSorted ()
+            {
+                DateTime dtRes;
+                List <DateTime> listDT = new List<DateTime> ();
+
+                listDT.Add (DateTime.Now);
+                listDT.Add(DateTime.Now.AddHours (-1));
+                listDT.Add(DateTime.Now.AddHours(1));
+
+                dtRes = listDT.FirstOrDefault ();
+
+                listDT.Sort ();
+                dtRes = listDT.LastOrDefault();
+            }
         }
 
         private class DbSources

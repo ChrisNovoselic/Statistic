@@ -233,7 +233,7 @@ namespace StatisticCommon
     /// <summary>
     /// Класс описания ТЭЦ
     /// </summary>
-    public class TEC : StatisticCommon.ITEC
+    public class TEC //: StatisticCommon.ITEC
     {
         /// <summary>
         /// Перечисление - индексы типов источников данных (общий-централизованный источник данных, индивидуальный для каждой ТЭЦ - не поддерживается)
@@ -393,14 +393,17 @@ namespace StatisticCommon
         /// <summary>
         /// Событие для запроса текущего идентификатора источника данных для СОТИАССО
         /// </summary>
-        public event IntDelegateIntFunc EventGetTECIdLinkSource;
+        public event EventHandler EventUpdate;
         /// <summary>
-        /// Обработчик события обновления текущего идентификатора источника данных в системе СОТИАССО
+        /// Обработчик события обновления параметров объекта - инициирует обновление
         /// </summary>
-        public void OnUpdateIdLinkSourceTM ()
+        public void PerformUpdate (int iListenerId)
         {
             //Установить по запросу текущий идентификатор источника данных в системе СОТИАССО
-            m_IdSOTIASSOLinkSourceTM = EventGetTECIdLinkSource(m_id);
+            if (! (EventUpdate == null))
+                EventUpdate(this, new InitTEC_200.TECListUpdateEventArgs () { m_iListenerId = iListenerId });
+            else
+                ;
         }
         /// <summary>
         /// Коструктор объекта (с параметрами)

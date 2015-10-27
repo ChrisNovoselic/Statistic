@@ -11,7 +11,7 @@ namespace StatisticCommon
     public class InitTECBase
     {
         protected TYPE_DATABASE_CFG m_typeDB_CFG { get { return this is InitTEC_200 ? TYPE_DATABASE_CFG.CFG_200 : this is InitTEC_190 ? TYPE_DATABASE_CFG.CFG_190 : TYPE_DATABASE_CFG.UNKNOWN; } }
-
+        
         public class ListTEC : List <TEC>
         {
             public ListTEC () : base ()
@@ -22,6 +22,16 @@ namespace StatisticCommon
             {
             }
         }
+
+        //protected InitTECBase ()
+        //{
+        //}
+
+        //public InitTECBase(int iListenerId)
+        //{
+        //    int err = -1;
+        //    m_connConfigDB = DbSources.Sources().GetConnection(iListenerId, out err);
+        //}
 
         public ListTEC tec;
         protected /*static*/ DbConnection m_connConfigDB;
@@ -52,6 +62,11 @@ namespace StatisticCommon
         protected DataTable getListTECComponent(string prefix, int id_tec, out int err)
         {
             return DbTSQLInterface.Select(ref m_connConfigDB, "SELECT * FROM " + prefix + "_LIST WHERE ID_TEC = " + id_tec.ToString() + @" AND ID!=0", null, null, out err);
+        }
+
+        protected static DataTable getListTECComponent(ref DbConnection connConfigDB, string prefix, int id_tec, out int err)
+        {
+            return DbTSQLInterface.Select(ref connConfigDB, "SELECT * FROM " + prefix + "_LIST WHERE ID_TEC = " + id_tec.ToString() + @" AND ID!=0", null, null, out err);
         }
 
         protected DataTable getListTG(string prefix, int id, out int err)
@@ -115,8 +130,6 @@ namespace StatisticCommon
 
     public class InitTEC_200 : InitTECBase
     {
-        //private Users m_user;        
-
         private DataTable getALL_PARAM_TG(int ver, out int err)
         {
             return DbTSQLInterface.Select(ref m_connConfigDB, @"SELECT * FROM [dbo].[ft_ALL_PARAM_TG_KKS] (" + ver + @")", null, null, out err);
@@ -216,7 +229,7 @@ namespace StatisticCommon
                                             bUseData));
 
                             int indx_tec = tec.Count - 1;
-                            FormParameters.EventUpdateIdLinkTMSources += tec[indx_tec].OnUpdateIdLinkSourceTM;
+                            EventTECListUpdate += tec[indx_tec].PerformUpdate;
 
                             tec[indx_tec].SetNamesField(list_tec.Rows[i]["ADMIN_DATETIME"].ToString(),
                                                 list_tec.Rows[i]["ADMIN_REC"].ToString(),
@@ -378,7 +391,7 @@ namespace StatisticCommon
                                         list_tec.Rows[i]["TABLE_NAME_PBR"].ToString(),
                                         bUseData));
 
-                        FormParameters.EventUpdateIdLinkTMSources += tec[i].OnUpdateIdLinkSourceTM;
+                        EventTECListUpdate += tec[i].PerformUpdate;
 
                         //List <string> listNamesField;
                         //listNamesField = new List<string> ();
@@ -660,6 +673,61 @@ namespace StatisticCommon
             */
 
             //Logging.Logg().Debug("InitTEC::InitTEC (4 параметра) - вЫход...");
+        }
+
+        /// <summary>
+        /// Событие для инициирования обновления параметров ТЭЦ для всех созданных списков (List <TEC>)
+        ///  при указании обработчика события для 'TEC.EventUpdate'
+        /// </summary>
+        public static event DelegateIntFunc EventTECListUpdate;
+
+        public class TECListUpdateEventArgs : EventArgs
+        {
+            public int m_iListenerId;
+        }
+
+        public static void PerformTECListUpdate (int iListenerId)
+        {
+            if (! (EventTECListUpdate == null))
+                EventTECListUpdate (iListenerId);
+            else
+                ;
+        }
+
+        public static void OnTECUpdate (object obj, EventArgs ev)
+        {
+            TEC tec = obj as TEC;
+            int iListenerId = (ev as TECListUpdateEventArgs).m_iListenerId
+                , err = -1;
+            DataTable tableRes;
+            DataRow []selRows;
+
+            DbConnection connConfigDB = DbSources.Sources ().GetConnection (iListenerId, out err);
+
+            tableRes = getListTEC(ref connConfigDB, true, out err);
+            //??? обновление параметров ТЭЦ (например: m_IdSOTIASSOLinkSourceTM)
+            //tec.Update (tableRes);
+
+            tableRes = getListTECComponent (ref connConfigDB, @"GTP", tec.m_id, out err);
+            // обновление параметров ГТП
+            if (tableRes.Columns.IndexOf("KoeffAlarmPcur") > 0)            
+                // поиск ГТП
+                foreach (TECComponent tc in tec.list_TECComponents)
+                    if (tc.IsGTP == true)
+                    {
+                        selRows = tableRes.Select (@"ID=" + tc.m_id);
+                        // проверить наличие значения
+                        if ((selRows.Length == 1)
+                            && (!(selRows[0]["KoeffAlarmPcur"] is System.DBNull)))
+                            // обновить значение коэффициента
+                            tc.m_dcKoeffAlarmPcur = Convert.ToInt32(selRows[0]["KoeffAlarmPcur"]);
+                        else
+                            ;
+                    }
+                    else
+                        ;
+            else
+                ;
         }
     }
 

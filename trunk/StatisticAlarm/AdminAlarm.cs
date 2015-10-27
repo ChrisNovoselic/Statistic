@@ -84,6 +84,7 @@ namespace StatisticAlarm
                 if ((DEBUG_ID_TEC == -1) || (DEBUG_ID_TEC == t.m_id)) {
                     m_listTecView.Add(new StatisticAlarm.TecViewAlarm(StatisticCommon.TecView.TYPE_PANEL.ADMIN_ALARM, -1, -1));
                     indxTecView = m_listTecView.Count - 1;
+                    t.EventUpdate += new EventHandler(StatisticCommon.InitTEC_200.OnTECUpdate);
                     m_listTecView[indxTecView].InitTEC(new List<StatisticCommon.TEC> { t }, markQueries);
                     m_listTecView[indxTecView].updateGUI_Fact = new IntDelegateIntIntFunc(m_listTecView[indxTecView].AlarmRegistred);
                     m_listTecView[indxTecView].EventReg += new TecViewAlarm.AlarmTecViewEventHandler(OnEventReg_TecView);
@@ -97,8 +98,13 @@ namespace StatisticAlarm
         }
 
         private void ChangeState () {
+            int iListenerId = DbSources.Sources().Register (FormMain.s_listFormConnectionSettings[(int)StatisticCommon.CONN_SETT_TYPE.CONFIG_DB].getConnSett (), false, @"CONFIG_DB");
             foreach (TecViewAlarm tv in m_listTecView)
+            {
+                tv.m_tec.PerformUpdate (iListenerId);
                 tv.ChangeState ();
+            }
+            DbSources.Sources().UnRegister (iListenerId);
         }
 
         private void TimerAlarm_Tick(Object stateInfo)

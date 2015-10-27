@@ -10,15 +10,6 @@ namespace StatisticCommon
 {
     public abstract partial class FormParameters : FormParametersBase
     {
-        public static void UpdateIdLinkTMSources ()
-        {
-            if (! (EventUpdateIdLinkTMSources == null))
-                EventUpdateIdLinkTMSources ();
-            else
-                ;
-        }
-        public static event DelegateFunc EventUpdateIdLinkTMSources;
-
         public enum PARAMETR_SETUP {    UNKNOWN = -1
                                         , POLL_TIME, ERROR_DELAY, MAX_ATTEMPT, WAITING_TIME, WAITING_COUNT,
                                         MAIN_DATASOURCE, MAIN_PRIORITY,
@@ -228,40 +219,6 @@ namespace StatisticCommon
     {
         private ConnectionSettings m_connSett;
         private DbConnection m_dbConn;
-
-        public int GetTECIdLinkSourceTM (int id)
-        {
-            int iRes = -1;
-            PARAMETR_SETUP param = PARAMETR_SETUP.UNKNOWN;
-
-            //switch (id)
-            //{
-            //    case 1:
-            //        param = PARAMETR_SETUP.ID_SOURCE_SOTIASSO_BTEC;
-            //        break;
-            //    case 2:
-            //        param = PARAMETR_SETUP.ID_SOURCE_SOTIASSO_TEC2;
-            //        break;
-            //    case 3:
-            //        param = PARAMETR_SETUP.ID_SOURCE_SOTIASSO_TEC3;
-            //        break;
-            //    case 4:
-            //        param = PARAMETR_SETUP.ID_SOURCE_SOTIASSO_TEC4;
-            //        break;
-            //    case 5:
-            //        param = PARAMETR_SETUP.ID_SOURCE_SOTIASSO_TEC5;
-            //        break;
-            //    case 6:
-            //        param = PARAMETR_SETUP.ID_SOURCE_SOTIASSO_BiTEC;
-            //        break;
-            //    default:
-            //        break;
-            //}
-
-            //iRes = Convert.ToInt32(m_arParametrSetup[(int)param]);
-
-            return iRes;
-        }
 
         //public FormParameters_DB(int idListener)
         public FormParameters_DB(ConnectionSettings connSett) : base ()

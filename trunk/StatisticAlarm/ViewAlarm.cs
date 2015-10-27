@@ -477,7 +477,7 @@ namespace StatisticAlarm
             /// </summary>
             private void GetUpdateEventFixedRequest()
             {
-                AlarmDbEventArgs arg = m_objArgument as AlarmDbEventArgs;
+                AlarmNotifyEventArgs arg = m_objArgument as AlarmNotifyEventArgs;
                 string query = string.Empty
                     , where = @"WHERE [ID_COMPONENT]=" + arg.m_id_comp
                         + @" AND [DATETIME_REGISTRED]='" + arg.m_dtRegistred.GetValueOrDefault().ToString (@"yyyyMMdd HH:mm:ss.fff") + @"'"
@@ -917,6 +917,7 @@ namespace StatisticAlarm
                         , m_dt_fixed = (!(r[@"DATETIME_FIXED"] is DBNull)) ? (DateTime?)r[@"DATETIME_FIXED"] : null
                         , m_id_user_confirmed = (!(r[@"ID_USER_CONFIRM"] is DBNull)) ? (int)r[@"ID_USER_CONFIRM"] : -1
                         , m_dt_confirmed = (!(r[@"DATETIME_CONFIRM"] is DBNull)) ? (DateTime?)r[@"DATETIME_CONFIRM"] : null
+                        , m_situation = (int)r[@"SITUATION"]
                     });
                 }
             }
@@ -926,10 +927,8 @@ namespace StatisticAlarm
             }
 
             if (Actived == true)
-                //EvtGetDataMain(tableRes);
                 EvtGetDataMain(listRes);
-            else
-                ;
+            else ;
         }
         /// <summary>
         /// Функция обработки результатов запроса текущих!!! событий сигнализаций
@@ -973,7 +972,7 @@ namespace StatisticAlarm
         {
             DataRow r = tableRes.Rows[0];
             m_dictAlarmObject.Confirmed((int)r[@"ID_COMPONENT"], (DateTime)r[@"DATETIME_REGISTRED"], (DateTime)r[@"DATETIME_CONFIRM"]);
-            itemQueue.m_dataHostRecieved.OnEvtDataRecievedHost(new EventArgsDataHost(-1, new object[] { StatesMachine.Fixed, (long)r[@"ID"], (DateTime)r[@"DATETIME_CONFIRM"] }));
+            itemQueue.m_dataHostRecieved.OnEvtDataRecievedHost(new EventArgsDataHost(-1, new object[] { StatesMachine.Confirm, (long)r[@"ID"], (DateTime)r[@"DATETIME_CONFIRM"] }));
         }
 
         private string getEventGUIMessage(AlarmNotifyEventArgs ev)

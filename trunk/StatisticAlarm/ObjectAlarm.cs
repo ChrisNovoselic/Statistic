@@ -276,15 +276,20 @@ namespace StatisticAlarm
         private ALARM_OBJECT find(int id_comp)
         {
             ALARM_OBJECT objRes = null;
-            SortedList <DateTime, ALARM_OBJECT> slistAlarms = new SortedList<DateTime, ALARM_OBJECT> ();
-            slistAlarms.
+            DateTime? partKey;
+            List <DateTime> listPartKeys = new List<DateTime> ();
 
-            foreach (KeyValuePair <int, DateTime> kvp in _dictAlarmObject.Keys)
-                if (kvp.Key.Equals(id_comp) == true)
-                    slistAlarms.Add(kvp.Value, _dictAlarmObject[kvp]);
+            foreach (KeyValuePair <int, DateTime> cKey in _dictAlarmObject.Keys)
+                if (cKey.Key.Equals(id_comp) == true)
+                    listPartKeys.Add(cKey.Value);
                 else
                     ;
-            slistAlarms.FirstOrDefault<ALARM_OBJECT>(dt => );
+
+            listPartKeys.Sort ();
+            partKey = listPartKeys.LastOrDefault ();
+
+            if (! (partKey == null))
+                objRes = _dictAlarmObject [new KeyValuePair<int,DateTime> (id_comp, partKey.GetValueOrDefault())];
 
             return objRes;
         }
@@ -438,15 +443,17 @@ namespace StatisticAlarm
         public INDEX_ACTION Registred(TecViewAlarm.AlarmTecViewEventArgs ev)
         {
             INDEX_ACTION iRes = INDEX_ACTION.NOTHING;
-            ALARM_OBJECT alarmObj =
-                //find(ev.m_id_comp, ev.m_dtRegistred.GetValueOrDefault())
-                find(ev.m_id_comp)
-                ;
+            ALARM_OBJECT alarmObj = null;
 
             lock (this)
             {
                 try
                 {
+                    alarmObj =
+                        //find(ev.m_id_comp, ev.m_dtRegistred.GetValueOrDefault())
+                        find(ev.m_id_comp)
+                        ;
+
                     if (alarmObj == null)
                     {//Только, если объект события сигнализации НЕ создан
                         // создать объект события сигнализации

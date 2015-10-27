@@ -148,7 +148,7 @@ namespace Statistic
 
                 Logging.DelegateGetINIParametersOfID = new StringDelegateIntFunc(GetINIParametersOfID);
 
-                updateParametersSetup();
+                updateParametersSetup();                
 
                 //Предустановленные в файле/БД конфигурации
                 HUsers.s_REGISTRATION_INI[(int)HUsers.INDEX_REGISTRATION.DOMAIN_NAME] = formParameters.m_arParametrSetup[(int)FormParameters.PARAMETR_SETUP.USERS_DOMAIN_NAME]; //string.Empty; //@"Отладчик";
@@ -262,8 +262,8 @@ namespace Statistic
 
                         foreach (TEC t in m_arPanelAdmin[i].m_list_tec)
                         {
-                            t.EventGetTECIdLinkSource += new IntDelegateIntFunc((formParameters as FormParameters_DB).GetTECIdLinkSourceTM);
-                            t.OnUpdateIdLinkSourceTM();
+                            t.EventUpdate += new EventHandler(InitTEC_200.OnTECUpdate);
+                            t.PerformUpdate(idListenerConfigDB);
                         }
                     }
 
@@ -425,10 +425,6 @@ namespace Statistic
             StatisticAlarm.AdminAlarm.MSEC_ALARM_EVENTRETRY = Int32.Parse(formParameters.m_arParametrSetup[(int)FormParameters.PARAMETR_SETUP.ALARM_EVENT_RETRY]) * 1000;
             StatisticAlarm.AdminAlarm.MSEC_ALARM_TIMERBEEP = Int32.Parse(formParameters.m_arParametrSetup[(int)FormParameters.PARAMETR_SETUP.ALARM_TIMER_BEEP]) * 1000;
             StatisticAlarm.AdminAlarm.FNAME_ALARM_SYSTEMMEDIA_TIMERBEEP = formParameters.m_arParametrSetup[(int)FormParameters.PARAMETR_SETUP.ALARM_SYSTEMMEDIA_TIMERBEEP];
-
-            //FormWait.s_secMaxShowing = PanelStatistic.POOL_TIME / 1;
-
-            FormParameters.UpdateIdLinkTMSources();
         }
 
         //private void fTimerAppReset(object obj)
@@ -454,13 +450,14 @@ namespace Statistic
             (formParameters as FormParameters_DB).Update(idListenerConfigDB, out err);
             // прочитать и обновить актуальные индивидуальные групповые (пользовательские) параметры
             using (new HStatisticUsers(idListenerConfigDB)) { ; }
+            //InitTEC_200.PerformTECListUpdate(idListenerConfigDB);
 
             DbSources.Sources().UnRegister(idListenerConfigDB);
 
             if (err == 0)
             {
                 //Динамическое обновление - применение актуальных параметров
-                updateParametersSetup();
+                updateParametersSetup();                
 
                 if (HStatisticUsers.IsAllowed((int)HStatisticUsers.ID_ALLOWED.APP_AUTO_RESET) == true)
                     if (formParameters.m_arParametrSetup[(int)FormParameters.PARAMETR_SETUP.APP_VERSION].Equals(string.Empty) == false)
