@@ -192,11 +192,11 @@ namespace Statistic
                     //    PanelAdminKomDisp.ALARM_USE = false;
                     //else ;
 
-                    //ИМгструмент администратора
+                    //Инструмент администратора
                     параметрыToolStripMenuItem.Enabled =
-                    администрированиеToolStripMenuItem.Enabled =
-                    рассинхронизацияДатаВремяСерверБДToolStripMenuItem.Enabled =
-                    ДиагностикаToolStripMenuItem.Enabled =
+                    администрированиеToolStripMenuItem.Enabled =                        
+                    m_dictAddingTabs[(int)ID_ADDING_TAB.DATETIMESYNC_SOURCE_DATA].menuItem.Enabled =
+                    m_dictAddingTabs[(int)ID_ADDING_TAB.DIAGNOSTIC].menuItem.Enabled =
                         HStatisticUsers.RoleIsAdmin;
 
                     HMark markSett = new HMark(Int32.Parse(HStatisticUsers.GetAllowed((int)HStatisticUsers.ID_ALLOWED.AUTO_LOADSAVE_USERPROFILE)));
@@ -210,8 +210,8 @@ namespace Statistic
                     //значенияТекущаяМощностьТЭЦгТЭЦснToolStripMenuItem.Enabled = 
                     //мониторингПоследняяМинутаЧасToolStripMenuItem.Enabled =
                     //собственныеНуждыToolStripMenuItem.Enabled =
-                    m_dictAddingTabs[(int)ID_ADDING_TAB.DATETIMESYNC_SOURCE_DATA].menuItem.Enabled = HStatisticUsers.IsAllowed((int)HStatisticUsers.ID_ALLOWED.MENUITEM_SETTING_PARAMETERS_SYNC_DATETIME_DB);
-                    m_dictAddingTabs[(int)ID_ADDING_TAB.DIAGNOSTIC].menuItem.Enabled = HStatisticUsers.IsAllowed((int)HStatisticUsers.ID_ALLOWED.MENUITEM_SETTING_PARAMETERS_DIAGNOSTIC);
+                    m_dictAddingTabs[(int)ID_ADDING_TAB.DATETIMESYNC_SOURCE_DATA].menuItem.Enabled &= HStatisticUsers.IsAllowed((int)HStatisticUsers.ID_ALLOWED.MENUITEM_SETTING_PARAMETERS_SYNC_DATETIME_DB);
+                    m_dictAddingTabs[(int)ID_ADDING_TAB.DIAGNOSTIC].menuItem.Enabled &= HStatisticUsers.IsAllowed((int)HStatisticUsers.ID_ALLOWED.MENUITEM_SETTING_PARAMETERS_DIAGNOSTIC);
                     m_dictAddingTabs[(int)ID_ADDING_TAB.SOTIASSO].menuItem.Enabled = HStatisticUsers.IsAllowed((int)HStatisticUsers.ID_ALLOWED.MENUITEM_VIEW_VALUES_SOTIASSO);
 
                     //ProgramBase.s_iAppID = Int32.Parse ((string)Properties.Settings.Default [@"AppID"]);
@@ -638,10 +638,10 @@ namespace Statistic
                     {
                         m_dictAddingTabs[(int)ID_ADDING_TAB.DIAGNOSTIC].menuItem.Checked = false;
 
-                        ДиагностикаToolStripMenuItem.Checked = false;
+                        //ДиагностикаToolStripMenuItem.Checked = false;
 
-                        видSubToolStripMenuItem_CheckedChanged(m_dictAddingTabs[(int)ID_ADDING_TAB.DIAGNOSTIC].panel, "Диагностика"
-                         , new bool[] { ((ToolStripMenuItem)m_dictAddingTabs[(int)ID_ADDING_TAB.DIAGNOSTIC].menuItem).Checked, true });
+                        //видSubToolStripMenuItem_CheckedChanged(m_dictAddingTabs[(int)ID_ADDING_TAB.DIAGNOSTIC].panel, "Диагностика"
+                        // , new bool[] { ((ToolStripMenuItem)m_dictAddingTabs[(int)ID_ADDING_TAB.DIAGNOSTIC].menuItem).Checked, true });
                     }
                     else
                     if (tclTecViews.TabPages[e.TabIndex].Controls[0] is PanelAdminNSS)
@@ -678,10 +678,11 @@ namespace Statistic
                                                 //tclTecViews.TabPages.RemoveByKey(HTabCtrlEx.GetNameTab (e.TabHeaderText));
 
                                                 m_dictAddingTabs[(int)ID_ADDING_TAB.DATETIMESYNC_SOURCE_DATA].menuItem.Checked = false;
-                                                    рассинхронизацияДатаВремяСерверБДToolStripMenuItem.Checked = false;
 
-                                                                  видSubToolStripMenuItem_CheckedChanged(m_dictAddingTabs[(int)ID_ADDING_TAB.DATETIMESYNC_SOURCE_DATA].panel, "Дата/время серверов БД"
-                                                                   , new bool[] { ((ToolStripMenuItem)m_dictAddingTabs[(int)ID_ADDING_TAB.DATETIMESYNC_SOURCE_DATA].menuItem).Checked, true });
+                                                //рассинхронизацияДатаВремяСерверБДToolStripMenuItem.Checked = false;
+
+                                                //видSubToolStripMenuItem_CheckedChanged(m_dictAddingTabs[(int)ID_ADDING_TAB.DATETIMESYNC_SOURCE_DATA].panel, "Дата/время серверов БД"
+                                                //    , new bool[] { ((ToolStripMenuItem)m_dictAddingTabs[(int)ID_ADDING_TAB.DATETIMESYNC_SOURCE_DATA].menuItem).Checked, true });
 
                                             }
                                             else
@@ -1347,8 +1348,12 @@ namespace Statistic
         }
 
         public override void Close(bool bForce) 
-        { if (bForce == false) base.Close(bForce); 
-        else FormMain_FormClosing(this, new FormClosingEventArgs(CloseReason.ApplicationExitCall, true)); }
+        {
+            if (bForce == false)
+                base.Close(bForce); 
+            else
+                FormMain_FormClosing(this, new FormClosingEventArgs(CloseReason.ApplicationExitCall, true));
+        }
 
         private void FormMain_FormClosing(object sender, FormClosingEventArgs e)
         {
@@ -2413,57 +2418,56 @@ namespace Statistic
             изменитьПарольToolStripMenuItem_Click(sender, e, 0, Passwords.ID_ROLES.NSS);
         }
 
-        private void диагностикаToolStripMenuItem_Click(object sender, EventArgs e)
-        {
-            if (m_dictAddingTabs[(int)ID_ADDING_TAB.DIAGNOSTIC].panel == null)
-            {
-                m_dictAddingTabs[(int)ID_ADDING_TAB.DIAGNOSTIC].panel = new PanelStatisticDiagnostic();
-            }
-            else
-                ;
-            if (ДиагностикаToolStripMenuItem.Checked == true)
-            {
-                ((ToolStripMenuItem)sender).Checked = true;
-            }
-            else ((ToolStripMenuItem)sender).Checked = false;
+        //private void диагностикаToolStripMenuItem_Click(object sender, EventArgs e)
+        //{
+        //    if (m_dictAddingTabs[(int)ID_ADDING_TAB.DIAGNOSTIC].panel == null)
+        //    {
+        //        m_dictAddingTabs[(int)ID_ADDING_TAB.DIAGNOSTIC].panel = new PanelStatisticDiagnostic();
+        //    }
+        //    else
+        //        ;
+        //    if (ДиагностикаToolStripMenuItem.Checked == true)
+        //    {
+        //        ((ToolStripMenuItem)sender).Checked = true;
+        //    }
+        //    else ((ToolStripMenuItem)sender).Checked = false;
 
-            видSubToolStripMenuItem_CheckedChanged(m_dictAddingTabs[(int)ID_ADDING_TAB.DIAGNOSTIC].panel, "Диагностика"
-                , new bool[] { ((ToolStripMenuItem)sender).Checked, true });
-        }
+        //    видSubToolStripMenuItem_CheckedChanged(m_dictAddingTabs[(int)ID_ADDING_TAB.DIAGNOSTIC].panel, "Диагностика"
+        //        , new bool[] { ((ToolStripMenuItem)sender).Checked, true });
+        //}
 
-        private void рассинхронизацияДатаВремяСерверБДToolStripMenuItem_Click(object sender, EventArgs e)
-        {
-            if (m_dictAddingTabs[(int)ID_ADDING_TAB.DATETIMESYNC_SOURCE_DATA].panel == null)
-                m_dictAddingTabs[(int)ID_ADDING_TAB.DATETIMESYNC_SOURCE_DATA].panel = new PanelSourceData();
-            else
-                ;
-            if (рассинхронизацияДатаВремяСерверБДToolStripMenuItem.Checked == true)
-            {
-                ((ToolStripMenuItem)sender).Checked = true;
-            }
-            else ((ToolStripMenuItem)sender).Checked = false;
+        //private void рассинхронизацияДатаВремяСерверБДToolStripMenuItem_Click(object sender, EventArgs e)
+        //{
+        //    if (m_dictAddingTabs[(int)ID_ADDING_TAB.DATETIMESYNC_SOURCE_DATA].panel == null)
+        //        m_dictAddingTabs[(int)ID_ADDING_TAB.DATETIMESYNC_SOURCE_DATA].panel = new PanelSourceData();
+        //    else
+        //        ;
+        //    if (рассинхронизацияДатаВремяСерверБДToolStripMenuItem.Checked == true)
+        //    {
+        //        ((ToolStripMenuItem)sender).Checked = true;
+        //    }
+        //    else ((ToolStripMenuItem)sender).Checked = false;
 
-            видSubToolStripMenuItem_CheckedChanged(m_dictAddingTabs[(int)ID_ADDING_TAB.DATETIMESYNC_SOURCE_DATA].panel, "Дата/время серверов БД"
-                , new bool[] { ((ToolStripMenuItem)sender).Checked, true });
-        }
-
-        /// <summary>
-        /// 
-        /// </summary>
-        /// <param name="nameTab"></param>
-        /// <param name="obj"></param>
-        /// <param name="check"></param>
-        private void closeTabMenu(string nameTab, PanelStatistic obj, bool check)
-        {
-            bool bRes = tclTecViews.RemoveTabPage(nameTab);
-            if (check == true)
-            {
-                obj.Activate(false);
-                obj.Stop();
-            }
-            else
-                ;
-        }
+        //    видSubToolStripMenuItem_CheckedChanged(m_dictAddingTabs[(int)ID_ADDING_TAB.DATETIMESYNC_SOURCE_DATA].panel, "Дата/время серверов БД"
+        //        , new bool[] { ((ToolStripMenuItem)sender).Checked, true });
+        //}
+        ///// <summary>
+        ///// Закрыть вкладку с указанным именем, объектом
+        ///// </summary>
+        ///// <param name="nameTab">Строка - заголовок вкладки</param>
+        ///// <param name="obj">Объект вкладки</param>
+        ///// <param name="check">Признак закрытия</param>
+        //private void closeTabMenu(string nameTab, PanelStatistic obj, bool check)
+        //{
+        //    bool bRes = tclTecViews.RemoveTabPage(nameTab);
+        //    if (check == true)
+        //    {
+        //        obj.Activate(false);
+        //        obj.Stop();
+        //    }
+        //    else
+        //        ;
+        //}
 
         private void изменитьПарольКоммерческогоДиспетчераToolStripMenuItem_Click(object sender, EventArgs e)
         {
