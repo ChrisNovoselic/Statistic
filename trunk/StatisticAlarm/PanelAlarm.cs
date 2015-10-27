@@ -58,52 +58,61 @@ namespace StatisticAlarm
         /// Ширина панели для размещения активных элементов управления
         /// </summary>
         private int _widthPanelManagement = 166;
+
+        public PanelAlarm(MODE mode)
+        {
+            //Зарегистрировать соединение/получить идентификатор соединения
+            int iListenerId = DbSources.Sources().Register(FormMain.s_listFormConnectionSettings[(int)CONN_SETT_TYPE.CONFIG_DB].getConnSett(), false, @"CONFIG_DB");
+
+            DbSources.Sources().UnRegister(iListenerId);
+        }
         /// <summary>
         /// Конструктор - основной (с параметрами)
         /// </summary>
         /// <param name="mode">Режим работы панели</param>
-        public PanelAlarm(MODE mode)
+        public PanelAlarm(int iListenerConfigDB, HMark markQueries, MODE mode)
         {
             //Инициализация собственных значений
-            initialize(mode);
+            initialize(iListenerConfigDB, markQueries, mode);
         }
         /// <summary>
         /// Конструктор - дополнительный (с параметрами)
         /// </summary>
         /// <param name="container">См. документацию на 'Control'</param>
         /// <param name="mode">Режим работы панели</param>
-        public PanelAlarm(IContainer container, MODE mode)
+        public PanelAlarm(IContainer container, int iListenerConfigDB, HMark markQueries, MODE mode)
         {
             container.Add(this);
             //Инициализация собственных значений
-            initialize(mode);
+            initialize(iListenerConfigDB, markQueries, mode);
         }
         /// <summary>
         /// Инициализация собственных параметров
         /// </summary>
         /// <param name="mode">Режим работы панели</param>
-        private void initialize(MODE mode)
+        private void initialize(int iListenerConfigDB, HMark markQueries, MODE mode)
         {
             //Инициализация визуальных компонентов
             InitializeComponent();
 
             int err = -1 //Признак выполнения метода/функции
-                //Зарегистрировать соединение/получить идентификатор соединения
-                , iListenerId = DbSources.Sources().Register(FormMain.s_listFormConnectionSettings[(int)CONN_SETT_TYPE.CONFIG_DB].getConnSett(), false, @"CONFIG_DB")
+                ////Зарегистрировать соединение/получить идентификатор соединения
+                //, iListenerId = DbSources.Sources().Register(FormMain.s_listFormConnectionSettings[(int)CONN_SETT_TYPE.CONFIG_DB].getConnSett(), false, @"CONFIG_DB")
                 ;
             bool bWorkChecked = HStatisticUsers.IsAllowed((int)HStatisticUsers.ID_ALLOWED.AUTO_ALARM_KOMDISP);
             //Инициализация списка с ТЭЦ
-            m_list_tec = new InitTEC_200(iListenerId, true, false).tec;
+            m_list_tec = new InitTEC_200(iListenerConfigDB, true, false).tec;
             //Инициализация
             initAdminAlarm(new ConnectionSettings(InitTECBase.getConnSettingsOfIdSource(TYPE_DATABASE_CFG.CFG_200
-                    , iListenerId
+                    , iListenerConfigDB
                     , FormMainBase.s_iMainSourceData
                     , -1
                     , out err).Rows[0], 0)
                 , mode
+                , markQueries
                 , bWorkChecked); 
-            //Отменить регистрацию соединения
-            DbSources.Sources().UnRegister(iListenerId);
+            ////Отменить регистрацию соединения
+            //DbSources.Sources().UnRegister(iListenerId);
             //Назначить делегаты при изменении:
             // даты, часов начала, окончания для запроса списка событий
             delegateDatetimeChanged = new AdminAlarm.DatetimeCurrentEventHandler(m_adminAlarm.OnEventDatetimeChanged);
@@ -174,6 +183,11 @@ namespace StatisticAlarm
             ////Отладка
             //EventGUIReg (@"раз-раз");
             //EventGUIReg(@"два-два");
+        }
+
+        public override void SetDelegateReport(DelegateStringFunc ferr, DelegateStringFunc fwar, DelegateStringFunc fact, DelegateBoolFunc fclr)
+        {
+            m_adminAlarm.SetDelegateReport(ferr, fwar, fact, fclr);
         }
         /// <summary>
         /// Запустить на выполнение объект регистрации выполнения условий сигнализаций
@@ -251,13 +265,13 @@ namespace StatisticAlarm
         /// <summary>
         /// Инициализация объекта регистрации выполнения условий сигнализаций
         /// </summary>
-        private void initAdminAlarm(ConnectionSettings connSett, MODE mode, bool bWorkCheked)
+        private void initAdminAlarm(ConnectionSettings connSett, MODE mode, HMark markQueries, bool bWorkCheked)
         {
             m_adminAlarm = new AdminAlarm(connSett
                 , mode
                 , new AdminAlarm.DatetimeCurrentEventArgs(DateCurrent, HourBegin, HourEnd)
                 , bWorkCheked);
-            m_adminAlarm.InitTEC(m_list_tec);
+            m_adminAlarm.InitTEC(m_list_tec, markQueries);
 
             m_adminAlarm.EventAdd += new AlarmNotifyEventHandler(OnViewAlarm_EventAdd);
             m_adminAlarm.EventRetry += new AlarmNotifyEventHandler(OnViewAlarm_EventRetry);

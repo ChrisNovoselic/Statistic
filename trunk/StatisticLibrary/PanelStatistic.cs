@@ -25,11 +25,15 @@ namespace StatisticCommon
         public static volatile int POOL_TIME = -1
             , ERROR_DELAY = -1;
 
-        public void SetDelegate(DelegateFunc dStart, DelegateFunc dStop, DelegateFunc dStatus)
+        public virtual void SetDelegateWait(DelegateFunc dStart, DelegateFunc dStop, DelegateFunc dStatus)
         {
             this.delegateStartWait = dStart;
             this.delegateStopWait = dStop;
             this.delegateEventUpdate = dStatus;
+        }
+
+        public virtual void SetDelegateReport(DelegateStringFunc ferr, DelegateStringFunc fwar, DelegateStringFunc fact, DelegateBoolFunc fclr)
+        {
         }
     }
 

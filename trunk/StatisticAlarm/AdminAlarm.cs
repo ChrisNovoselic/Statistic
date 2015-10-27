@@ -65,17 +65,22 @@ namespace StatisticAlarm
                     ; // неизвестное/необрабатываемое днйствие
         }
 
-        public void InitTEC(List<StatisticCommon.TEC> listTEC)
+        public void SetDelegateReport(DelegateStringFunc ferr, DelegateStringFunc fwar, DelegateStringFunc fact, DelegateBoolFunc fclr)
+        {
+            m_handlerDb.SetDelegateReport(ferr, fwar, fact, fclr);
+        }
+
+        public void InitTEC(List<StatisticCommon.TEC> listTEC, HMark markQueries)
         {
             m_listTecView = new List<StatisticAlarm.TecViewAlarm> ();
 
-            HMark markQueries = new HMark ();
-            markQueries.Marked((int)StatisticCommon.CONN_SETT_TYPE.ADMIN);
-            markQueries.Marked((int)StatisticCommon.CONN_SETT_TYPE.PBR);
-            markQueries.Marked((int)StatisticCommon.CONN_SETT_TYPE.DATA_AISKUE);
-            markQueries.Marked((int)StatisticCommon.CONN_SETT_TYPE.DATA_SOTIASSO);
-            //markQueries.Marked((int)CONN_SETT_TYPE.DATA_SOTIASSO_3_MIN);
-            //markQueries.Marked((int)CONN_SETT_TYPE.DATA_SOTIASSO_1_MIN);
+            //HMark markQueries = new HMark ();
+            //markQueries.Marked((int)StatisticCommon.CONN_SETT_TYPE.ADMIN);
+            //markQueries.Marked((int)StatisticCommon.CONN_SETT_TYPE.PBR);
+            //markQueries.Marked((int)StatisticCommon.CONN_SETT_TYPE.DATA_AISKUE);
+            //markQueries.Marked((int)StatisticCommon.CONN_SETT_TYPE.DATA_SOTIASSO);
+            ////markQueries.Marked((int)CONN_SETT_TYPE.DATA_SOTIASSO_3_MIN);
+            ////markQueries.Marked((int)CONN_SETT_TYPE.DATA_SOTIASSO_1_MIN);
 
             //Отладка ???!!!
             int indxTecView = -1
@@ -83,8 +88,7 @@ namespace StatisticAlarm
             foreach (StatisticCommon.TEC t in listTEC) {
                 if ((DEBUG_ID_TEC == -1) || (DEBUG_ID_TEC == t.m_id)) {
                     m_listTecView.Add(new StatisticAlarm.TecViewAlarm(StatisticCommon.TecView.TYPE_PANEL.ADMIN_ALARM, -1, -1));
-                    indxTecView = m_listTecView.Count - 1;
-                    t.EventUpdate += new EventHandler(StatisticCommon.InitTEC_200.OnTECUpdate);
+                    indxTecView = m_listTecView.Count - 1;                    
                     m_listTecView[indxTecView].InitTEC(new List<StatisticCommon.TEC> { t }, markQueries);
                     m_listTecView[indxTecView].updateGUI_Fact = new IntDelegateIntIntFunc(m_listTecView[indxTecView].AlarmRegistred);
                     m_listTecView[indxTecView].EventReg += new TecViewAlarm.AlarmTecViewEventHandler(OnEventReg_TecView);

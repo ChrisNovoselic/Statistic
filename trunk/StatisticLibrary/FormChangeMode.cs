@@ -43,9 +43,9 @@ namespace StatisticCommon
 
         //private ConnectionSettings m_connSet;
 
-        public static int [] ID_SPECIAL_TAB = { 10001, 10002 };
+        public static int [] ID_SPECIAL_TAB = { 10001, 10002, 10011 };
         public enum MODE_TECCOMPONENT : ushort { TEC, GTP, PC, TG, UNKNOWN };
-        public enum MANAGER : ushort { DISP, NSS, COUNT_MANAGER, UNKNOWN };
+        public enum MANAGER : ushort { DISP, NSS, ALARM, COUNT_MANAGER, UNKNOWN };
 
         private HMark m_modeTECComponent;
 

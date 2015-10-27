@@ -236,12 +236,14 @@ namespace Statistic
             InitializeComponents();
         }
 
-        public void SetDelegateWait(DelegateFunc fstart, DelegateFunc fstop, DelegateFunc fev)
+        public override void SetDelegateWait(DelegateFunc fstart, DelegateFunc fstop, DelegateFunc fev)
         {
+            base.SetDelegateWait(fstart, fstop, fev);
+
             m_admin.SetDelegateWait(fstart, fstop, fev);
         }
 
-        public void SetDelegateReport(DelegateStringFunc ferr, DelegateStringFunc fwar, DelegateStringFunc fact, DelegateBoolFunc fclr)
+        public override void SetDelegateReport(DelegateStringFunc ferr, DelegateStringFunc fwar, DelegateStringFunc fact, DelegateBoolFunc fclr)
         {
             m_admin.SetDelegateReport(ferr, fwar, fact, fclr);
         }

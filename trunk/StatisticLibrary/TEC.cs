@@ -436,7 +436,9 @@ namespace StatisticCommon
             connSetts = new ConnectionSettings[(int) CONN_SETT_TYPE.COUNT_CONN_SETT_TYPE];
 
             m_strNamesField = new List<string>((int)INDEX_NAME_FIELD.COUNT_INDEX_NAME_FIELD);
-            for (int i = 0; i < (int)INDEX_NAME_FIELD.COUNT_INDEX_NAME_FIELD; i++) m_strNamesField.Add(string.Empty);           
+            for (int i = 0; i < (int)INDEX_NAME_FIELD.COUNT_INDEX_NAME_FIELD; i++) m_strNamesField.Add(string.Empty);
+
+            EventUpdate += new EventHandler(StatisticCommon.InitTEC_200.OnTECUpdate);
         }
         /// <summary>
         /// Установить наименования полей таблиц при обращении к БД с запросами для получения
