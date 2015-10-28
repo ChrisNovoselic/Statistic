@@ -185,6 +185,7 @@ namespace StatisticDiagnostic
         static Task taskdb = new Task();
         static Modes modesdb = new Modes();
         static Tec tecdb = new Tec();
+
         ///// <summary>
         ///// Класс для обмена данными
         ///// </summary>
@@ -193,6 +194,7 @@ namespace StatisticDiagnostic
         //    public delegate void MyEvent(object data);
         //    public static MyEvent EventHandler;
         //}
+
         /// <summary>
         /// Таймер для update
         /// </summary>
@@ -519,7 +521,7 @@ namespace StatisticDiagnostic
             }
 
             /// <summary>
-            /// уничтожение панелей
+            /// очистка панелей
             /// </summary>
             public void stopTEC()
             {
@@ -909,7 +911,7 @@ namespace StatisticDiagnostic
             }
 
             /// <summary>
-            /// 
+            /// очищение строк грида
             /// </summary>
             private void ClearGrid()
             {
@@ -919,7 +921,6 @@ namespace StatisticDiagnostic
                     {
                         if (m_arPanelsTEC[i].TECDataGridView.Rows.Count > 0)
                         {
-                            //m_arPanelsTEC[i].TECDataGridView.Rows.RemoveAt(j);
                             m_arPanelsTEC[i].TECDataGridView.Rows.Clear();
                         }
                     }
@@ -1058,7 +1059,7 @@ namespace StatisticDiagnostic
             }
 
             /// <summary>
-            /// уничтожение панелей
+            /// очистка панелей
             /// </summary>
             public void stopMODES()
             {
@@ -1079,7 +1080,6 @@ namespace StatisticDiagnostic
                     {
                         if (m_arPanelsMODES[i].ModesDataGridView.Rows.Count > 0)
                         {
-                            //m_arPanelsMODES[i].ModesDataGridView.Rows.RemoveAt(j);
                             m_arPanelsMODES[i].ModesDataGridView.Rows.Clear();
                         }
                     }
@@ -1469,7 +1469,6 @@ namespace StatisticDiagnostic
         public partial class Task : HPanelCommon
         {
             public DataGridView TaskDataGridView = new DataGridView();
-            //public CheckedListBox TaskCheckedListBox = new CheckedListBox();
 
             public Task()
                 : base(-1, -1)
@@ -1718,6 +1717,7 @@ namespace StatisticDiagnostic
             m_tableSourceData = (DataTable)table;
             start();
         }
+
         /// <summary>
         /// Загрузить данные из БД
         /// </summary>
@@ -1725,7 +1725,7 @@ namespace StatisticDiagnostic
         {
             // зарегистрировать синхронное соединение с БД_конфигурации
             int iListernID = DbSources.Sources().Register(FormMain.s_listFormConnectionSettings[(int)CONN_SETT_TYPE.CONFIG_DB].getConnSett(), false, @"CONFIG_DB");
-            GetCurrentData(iListernID);
+            //GetCurrentData(iListernID);
             DbSources.Sources().UnRegister(iListernID);
             //??? почему старт объекта для получения данных ниже, чем вызов 'GetCurrentData'
             m_DataSource.Start();
@@ -1773,9 +1773,10 @@ namespace StatisticDiagnostic
             taskdb.AddItem();
         }
 
-        /// <summary>
+       /// <summary>
         /// Получить значения из БД_конфигурации
-        /// </summary>
+       /// </summary>
+       /// <param name="iListernID">индентификатор</param>
         public void GetCurrentData(int iListernID)
         {
             int err = -1;
@@ -1907,7 +1908,7 @@ namespace StatisticDiagnostic
         /// </summary>
         private void stop()
         {
-            if (!(UpdateTimer == null))
+            if (!(m_DataSource == null))
             {
                 UpdateTimer.Stop();
                 UpdateTimer = null;
@@ -1929,20 +1930,23 @@ namespace StatisticDiagnostic
 
             if (activated == true)
             {
-                //LoadData();
+                UpdateTimer.Start();
                 tecdb.ActivateTEC(activated);
                 modesdb.ActivateMODES(activated);
             }
 
             else
-            { }
+            {
+                UpdateTimer.Stop();
+            }
 
             return bRes;
         }
 
         /// <summary>
-        /// Создание списка ТМ
+        /// 
         /// </summary>
+        /// <param name="table"></param>
         public void CreateListTM(DataTable table)
         {
             massTM = new object[table.Rows.Count, 2];
