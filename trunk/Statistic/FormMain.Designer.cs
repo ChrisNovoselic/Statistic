@@ -164,6 +164,7 @@ namespace Statistic
             // 
             this.видToolStripMenuItem.DropDownItems.AddRange(new System.Windows.Forms.ToolStripItem[] {
                 this.панельГрафическихToolStripMenuItem
+                , new System.Windows.Forms.ToolStripSeparator()
                 , new System.Windows.Forms.ToolStripMenuItem (@"Объекты по выбору (2X2)", null, new System.Windows.Forms.ToolStripItem [] {
                     m_dictAddingTabs[(int)m_arIdCustomTabs[(int)INDEX_CUSTOM_TAB.TAB_2X2, 0]].menuItem
                     , m_dictAddingTabs[(int)m_arIdCustomTabs[(int)INDEX_CUSTOM_TAB.TAB_2X2, 1]].menuItem
@@ -176,6 +177,7 @@ namespace Statistic
                     , m_dictAddingTabs[(int)m_arIdCustomTabs[(int)INDEX_CUSTOM_TAB.TAB_2X3, 2]].menuItem
                     , m_dictAddingTabs[(int)m_arIdCustomTabs[(int)INDEX_CUSTOM_TAB.TAB_2X3, 3]].menuItem
                 })
+                , new System.Windows.Forms.ToolStripSeparator()
                 , m_dictAddingTabs[(int)ID_ADDING_TAB.CUR_POWER].menuItem
                 , m_dictAddingTabs[(int)ID_ADDING_TAB.TM_SN_POWER].menuItem
                 , m_dictAddingTabs[(int)ID_ADDING_TAB.MONITOR_LAST_MINUTES].menuItem
@@ -194,7 +196,7 @@ namespace Statistic
             this.панельГрафическихToolStripMenuItem.CheckOnClick = true;
             this.панельГрафическихToolStripMenuItem.Name = "панельГрафическихToolStripMenuItem";
             this.панельГрафическихToolStripMenuItem.Size = new System.Drawing.Size(243, 22);
-            this.панельГрафическихToolStripMenuItem.Text = "Панель графических параметров";
+            this.панельГрафическихToolStripMenuItem.Text = "Панель графических параметров...";
             this.панельГрафическихToolStripMenuItem.CheckedChanged += new System.EventHandler(this.панельГрафическихToolStripMenuItem_CheckedChanged);
             // 
             // выборОбъекты22ToolStripMenuItem
@@ -253,7 +255,7 @@ namespace Statistic
             // 
             this.сменитьРежимToolStripMenuItem.Name = "сменитьРежимToolStripMenuItem";
             this.сменитьРежимToolStripMenuItem.Size = new System.Drawing.Size(191, 22);
-            this.сменитьРежимToolStripMenuItem.Text = "Сменить режим";
+            this.сменитьРежимToolStripMenuItem.Text = "Сменить режим...";
             this.сменитьРежимToolStripMenuItem.Click += new System.EventHandler(this.сменитьРежимToolStripMenuItem_Click);
             this.сменитьРежимToolStripMenuItem.Enabled = false;
             this.сменитьРежимToolStripMenuItem.EnabledChanged += new System.EventHandler(сменитьРежимToolStripMenuItem_EnabledChanged);
@@ -262,14 +264,14 @@ namespace Statistic
             // 
             this.настройкиСоединенияБДКонфToolStripMenuItem.Name = "настройкиСоединенияБДКонфToolStripMenuItem";
             this.настройкиСоединенияБДКонфToolStripMenuItem.Size = new System.Drawing.Size(191, 22);
-            this.настройкиСоединенияБДКонфToolStripMenuItem.Text = "Настройки соединения БД конфигурации";
+            this.настройкиСоединенияБДКонфToolStripMenuItem.Text = "Настройки соединения БД конфигурации...";
             this.настройкиСоединенияБДКонфToolStripMenuItem.Click += new System.EventHandler(this.настройкиСоединенияБДКонфToolStripMenuItem_Click);
             // 
             // настройкиСоединенияБДИсточникToolStripMenuItem
             // 
             this.настройкиСоединенияБДИсточникToolStripMenuItem.Name = "настройкиСоединенияБДИсточникToolStripMenuItem";
             this.настройкиСоединенияБДИсточникToolStripMenuItem.Size = new System.Drawing.Size(191, 22);
-            this.настройкиСоединенияБДИсточникToolStripMenuItem.Text = "Настройки соединения БД источников данных";
+            this.настройкиСоединенияБДИсточникToolStripMenuItem.Text = "Настройки соединения БД источников данных...";
             this.настройкиСоединенияБДИсточникToolStripMenuItem.Click += new System.EventHandler(this.настройкиСоединенияБДИсточникToolStripMenuItem_Click);
             настройкиСоединенияБДИсточникToolStripMenuItem.Enabled = false;
             // 
@@ -277,26 +279,29 @@ namespace Statistic
             // 
             this.просмотрЖурналПрограммыToolStripMenuItem.Name = "просмотрЖурналПрограммыToolStripMenuItem";
             this.просмотрЖурналПрограммыToolStripMenuItem.Size = new System.Drawing.Size(191, 22);
-            this.просмотрЖурналПрограммыToolStripMenuItem.Text = "Просмотр журнала";
+            this.просмотрЖурналПрограммыToolStripMenuItem.Text = "Просмотр журнала...";
             this.просмотрЖурналПрограммыToolStripMenuItem.Click += new System.EventHandler(this.просмотрЖурналПрограммыToolStripMenuItem_Click);
             просмотрЖурналПрограммыToolStripMenuItem.Enabled = false;
             // 
             // администрированиеToolStripMenuItem
             // 
             this.администрированиеToolStripMenuItem.DropDownItems.AddRange(new System.Windows.Forms.ToolStripItem[] {
-            this.настройкиСоединенияБДКонфToolStripMenuItem,
-            
-            this.настройкиСоединенияБДИсточникToolStripMenuItem,
-            this.просмотрЖурналПрограммыToolStripMenuItem,
-            this.изменитьПарольДиспетчераToolStripMenuItem,
-            this.изменитьПарольАдминистратораToolStripMenuItem,
-            this.изменитьПарольНССToolStripMenuItem,
-            //this.ДиагностикаToolStripMenuItem,
-            this.m_dictAddingTabs[(int)ID_ADDING_TAB.DIAGNOSTIC].menuItem,
-            //this.рассинхронизацияДатаВремяСерверБДToolStripMenuItem,
-            this.m_dictAddingTabs[(int)ID_ADDING_TAB.DATETIMESYNC_SOURCE_DATA].menuItem,
-            this.изментьСоставТЭЦГТПЩУToolStripMenuItem,
-            this.изментьСоставПользовательToolStripMenuItem});
+                this.настройкиСоединенияБДКонфToolStripMenuItem,            
+                this.настройкиСоединенияБДИсточникToolStripMenuItem,
+                new System.Windows.Forms.ToolStripSeparator(),
+                this.m_dictAddingTabs[(int)ID_ADDING_TAB.DIAGNOSTIC].menuItem,
+                this.m_dictAddingTabs[(int)ID_ADDING_TAB.DATETIMESYNC_SOURCE_DATA].menuItem,
+                new System.Windows.Forms.ToolStripSeparator(),
+                this.просмотрЖурналПрограммыToolStripMenuItem,
+                new System.Windows.Forms.ToolStripSeparator(),
+                this.изменитьПарольДиспетчераToolStripMenuItem,
+                this.изменитьПарольАдминистратораToolStripMenuItem,
+                this.изменитьПарольНССToolStripMenuItem,
+                new System.Windows.Forms.ToolStripSeparator(),
+                this.изментьСоставТЭЦГТПЩУToolStripMenuItem,
+                this.изментьСоставПользовательToolStripMenuItem
+            });
+
             this.администрированиеToolStripMenuItem.Name = "администрированиеToolStripMenuItem";
             this.администрированиеToolStripMenuItem.Size = new System.Drawing.Size(191, 22);
             this.администрированиеToolStripMenuItem.Text = "Администрирование";
@@ -305,7 +310,7 @@ namespace Statistic
             // 
             this.изменитьПарольДиспетчераToolStripMenuItem.Name = "изменитьПарольДиспетчераToolStripMenuItem";
             this.изменитьПарольДиспетчераToolStripMenuItem.Size = new System.Drawing.Size(303, 22);
-            this.изменитьПарольДиспетчераToolStripMenuItem.Text = "Изменить пароль коммерческого диспетчера";
+            this.изменитьПарольДиспетчераToolStripMenuItem.Text = "Изменить пароль коммерческого диспетчера...";
             this.изменитьПарольДиспетчераToolStripMenuItem.Click += new System.EventHandler(this.изменитьПарольКоммерческогоДиспетчераToolStripMenuItem_Click);
             изменитьПарольДиспетчераToolStripMenuItem.Enabled = false;
             // 
@@ -313,7 +318,7 @@ namespace Statistic
             // 
             this.изменитьПарольАдминистратораToolStripMenuItem.Name = "изменитьПарольАдминистратораToolStripMenuItem";
             this.изменитьПарольАдминистратораToolStripMenuItem.Size = new System.Drawing.Size(303, 22);
-            this.изменитьПарольАдминистратораToolStripMenuItem.Text = "Изменить пароль администратора";
+            this.изменитьПарольАдминистратораToolStripMenuItem.Text = "Изменить пароль администратора...";
             this.изменитьПарольАдминистратораToolStripMenuItem.Click += new System.EventHandler(this.изменитьПарольАдминистратораToolStripMenuItem_Click);
             изменитьПарольАдминистратораToolStripMenuItem.Enabled = false;
             // 
@@ -321,7 +326,7 @@ namespace Statistic
             // 
             this.изменитьПарольНССToolStripMenuItem.Name = "изменитьПарольНССToolStripMenuItem";
             this.изменитьПарольНССToolStripMenuItem.Size = new System.Drawing.Size(303, 22);
-            this.изменитьПарольНССToolStripMenuItem.Text = "Изменить пароль начальника смены станции";
+            this.изменитьПарольНССToolStripMenuItem.Text = "Изменить пароль начальника смены станции...";
             this.изменитьПарольНССToolStripMenuItem.Click += new System.EventHandler(this.изменитьПарольНССToolStripMenuItem_Click);
             изменитьПарольНССToolStripMenuItem.Enabled = false;
             // 
@@ -329,7 +334,7 @@ namespace Statistic
             // 
             this.изментьСоставТЭЦГТПЩУToolStripMenuItem.Name = "изментьСоставТЭЦГТПЩУToolStripMenuItem";
             this.изментьСоставТЭЦГТПЩУToolStripMenuItem.Size = new System.Drawing.Size(303, 22);
-            this.изментьСоставТЭЦГТПЩУToolStripMenuItem.Text = "Изменть состав ТЭЦ (ГТП, ЩУ)";
+            this.изментьСоставТЭЦГТПЩУToolStripMenuItem.Text = "Изменть состав ТЭЦ (ГТП, ЩУ)...";
             this.изментьСоставТЭЦГТПЩУToolStripMenuItem.Click += new System.EventHandler(this.изментьСоставТЭЦГТПЩУToolStripMenuItem_Click);
             изментьСоставТЭЦГТПЩУToolStripMenuItem.Enabled = false;
             // 
@@ -337,7 +342,7 @@ namespace Statistic
             // 
             this.изментьСоставПользовательToolStripMenuItem.Name = "изментьСоставПользовательToolStripMenuItem";
             this.изментьСоставПользовательToolStripMenuItem.Size = new System.Drawing.Size(303, 22);
-            this.изментьСоставПользовательToolStripMenuItem.Text = "Изменть состав пользователей";
+            this.изментьСоставПользовательToolStripMenuItem.Text = "Изменть состав пользователей...";
             this.изментьСоставПользовательToolStripMenuItem.Click += new System.EventHandler(this.изментьСоставПользовательToolStripMenuItem_Click);
             изментьСоставПользовательToolStripMenuItem.Enabled = false;
             // 
@@ -355,7 +360,7 @@ namespace Statistic
             // 
             this.параметрыПриложенияToolStripMenuItem.Name = "параметрыПриложенияToolStripMenuItem";
             this.параметрыПриложенияToolStripMenuItem.Size = new System.Drawing.Size(196, 22);
-            this.параметрыПриложенияToolStripMenuItem.Text = "Параметры приложения";
+            this.параметрыПриложенияToolStripMenuItem.Text = "Параметры приложения...";
             this.параметрыПриложенияToolStripMenuItem.Click += new System.EventHandler(this.параметрыПриложенияToolStripMenuItem_Click);
             this.параметрыПриложенияToolStripMenuItem.Enabled = false;
             // 
@@ -363,7 +368,7 @@ namespace Statistic
             // 
             this.параметрыТГБийскToolStripMenuItem.Name = "параметрыТГБийскToolStripMenuItem";
             this.параметрыТГБийскToolStripMenuItem.Size = new System.Drawing.Size(196, 22);
-            this.параметрыТГБийскToolStripMenuItem.Text = "Параметры ТГ Бийск";
+            this.параметрыТГБийскToolStripMenuItem.Text = "Параметры ТГ Бийск...";
             this.параметрыТГБийскToolStripMenuItem.Visible = false;
             this.параметрыТГБийскToolStripMenuItem.Click += new System.EventHandler(this.параметрыТГБийскToolStripMenuItem_Click);
             // 

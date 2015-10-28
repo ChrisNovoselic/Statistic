@@ -290,7 +290,6 @@ namespace StatisticDiagnostic
             /// Делегат фун-ии 
             /// </summary>
             public event DelegateObjectFunc EvtRecievedTable;
-
             /// <summary>
             /// Обработка УСЕШНО полученного результата
             /// </summary>

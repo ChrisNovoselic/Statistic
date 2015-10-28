@@ -1979,7 +1979,7 @@ namespace Statistic
                             break;
                     }
 
-                    tclTecViews.AddTabPage(formChangeMode.getNameAdminValues(mode), -1, HTabCtrlEx.TYPE_TAB.FIXED);
+                    tclTecViews.AddTabPage(formChangeMode.getNameAdminValues(modeAdmin, mode), -1, HTabCtrlEx.TYPE_TAB.FIXED);
 
                     tclTecViews.TabPages[tclTecViews.TabCount - 1].Controls.Add(m_arPanelAdmin[(int)modeAdmin]);
 

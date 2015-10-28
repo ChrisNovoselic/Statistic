@@ -117,21 +117,17 @@ namespace StatisticCommon
                         ;
                 }
 
-                bChecked = false;
-                if (listIDsProfileCheckedIndices.IndexOf(ID_SPECIAL_TAB[(int)MANAGER.DISP]) > -1)
-                    bChecked = true;
-                else
-                    ;
-                m_listItems.Add(new Item(ID_SPECIAL_TAB[(int)MANAGER.DISP], getNameAdminValues(MODE_TECCOMPONENT.GTP), bChecked));
+                bChecked = listIDsProfileCheckedIndices.IndexOf(ID_SPECIAL_TAB[(int)MANAGER.DISP]) > -1;
+                m_listItems.Add(new Item(ID_SPECIAL_TAB[(int)MANAGER.DISP], getNameAdminValues(MANAGER.DISP, MODE_TECCOMPONENT.GTP), bChecked));
                 m_markTabAdminChecked.Set ((int)MANAGER.DISP, bChecked);
 
-                bChecked = false;
-                if (listIDsProfileCheckedIndices.IndexOf(ID_SPECIAL_TAB[(int)MANAGER.NSS]) > -1)
-                    bChecked = true;
-                else
-                    ;
-                m_listItems.Add(new Item(ID_SPECIAL_TAB[(int)MANAGER.NSS], getNameAdminValues(MODE_TECCOMPONENT.TG), bChecked));
+                bChecked = listIDsProfileCheckedIndices.IndexOf(ID_SPECIAL_TAB[(int)MANAGER.NSS]) > -1;
+                m_listItems.Add(new Item(ID_SPECIAL_TAB[(int)MANAGER.NSS], getNameAdminValues(MANAGER.NSS, MODE_TECCOMPONENT.TG), bChecked));
                 m_markTabAdminChecked.Set((int)MANAGER.NSS, bChecked);
+
+                bChecked = listIDsProfileCheckedIndices.IndexOf(ID_SPECIAL_TAB[(int)MANAGER.ALARM]) > -1;
+                m_listItems.Add(new Item(ID_SPECIAL_TAB[(int)MANAGER.ALARM], getNameAdminValues(MANAGER.ALARM, MODE_TECCOMPONENT.GTP), bChecked));
+                m_markTabAdminChecked.Set((int)MANAGER.ALARM, bChecked);
             }
             else {
             }
@@ -204,10 +200,11 @@ namespace StatisticCommon
             return nameModes[indx];
         }
 
-        public string getNameAdminValues (MODE_TECCOMPONENT mode) {
-            string[] arNameAdminValues = { "НСС", "Диспетчер", "НСС", "НСС" };
+        public string getNameAdminValues (MANAGER modeManager, MODE_TECCOMPONENT modeComponent) {
+            string[] arNameAdminValues = { "НСС" /*TEC*/, "Диспетчер" /*GTP*/, "НСС" /*PC*/, "НСС" /*TG*/ };
+            string prefix = ((modeManager == MANAGER.DISP) || (modeManager == MANAGER.NSS)) ? @"ПБР" : (modeManager == MANAGER.ALARM) ? @"Сигн." : @"Неизвестно";
 
-            return @"ПБР - " + arNameAdminValues[(int)mode];
+            return prefix + @" - " + arNameAdminValues[(int)modeComponent];
         }
 
         private void itemSetStates(Item item)
@@ -245,7 +242,11 @@ namespace StatisticCommon
                     if (item.id == ID_SPECIAL_TAB[(int)MANAGER.NSS])
                         idAllowed = (int)HStatisticUsers.ID_ALLOWED.TAB_PBR_NSS;
                     else
-                        ;
+                        if (item.id == ID_SPECIAL_TAB[(int)MANAGER.ALARM])
+                            idAllowed = (int)HStatisticUsers.ID_ALLOWED.ALARM_KOMDISP;
+                        else
+                            ;
+
 
                 bRes = !(idAllowed < 0);
                 if (bRes == true)
@@ -347,19 +348,15 @@ namespace StatisticCommon
                 item.bChecked = ! (clbMode.CheckedIndices.IndexOf(i) < 0);
 
                 if (item.id == ID_SPECIAL_TAB[(int)MANAGER.DISP])
-                {
                     m_markTabAdminChecked.Set((int)MANAGER.DISP, item.bChecked);
-                }
                 else
-                {
                     if (item.id == ID_SPECIAL_TAB[(int)MANAGER.NSS])
-                    {
                         m_markTabAdminChecked.Set((int)MANAGER.NSS, item.bChecked);
-                    }
                     else
-                    {
-                    }
-                }
+                        if (item.id == ID_SPECIAL_TAB[(int)MANAGER.ALARM])
+                            m_markTabAdminChecked.Set((int)MANAGER.ALARM, item.bChecked);
+                        else
+                            ;
             }
 
             try {
@@ -466,10 +463,13 @@ namespace StatisticCommon
                 switch (indxCheckedIndicies)
                 {
                     case -1: //KOM_DISP
-                        indx = clbMode.Items.IndexOf(getNameAdminValues(MODE_TECCOMPONENT.GTP));
+                        indx = clbMode.Items.IndexOf(getNameAdminValues(MANAGER.DISP, MODE_TECCOMPONENT.GTP));
                         break;
                     case -2: //NSS
-                        indx = clbMode.Items.IndexOf(getNameAdminValues(MODE_TECCOMPONENT.TEC)); //TG, PC - не имеет значения...
+                        indx = clbMode.Items.IndexOf(getNameAdminValues(MANAGER.NSS, MODE_TECCOMPONENT.TEC)); //TG, PC - не имеет значения...
+                        break;
+                    case -3: //Alarm
+                        indx = clbMode.Items.IndexOf(getNameAdminValues(MANAGER.ALARM, MODE_TECCOMPONENT.GTP)); //TG, PC - не имеет значения...
                         break;
                     default:
                         break;
