@@ -102,6 +102,7 @@
     <Compile Include="FormMain.cs">
       <SubType>Form</SubType>
     </Compile>
+    <Compile Include="MessageBoxAlarm.cs" />
     <Compile Include="ObjectAlarm.cs" />
     <Compile Include="PanelAlarm.cs">
       <SubType>Component</SubType>

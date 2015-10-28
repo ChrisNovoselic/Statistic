@@ -109,6 +109,10 @@ namespace StatisticAlarm
 
         private DatetimeCurrentEventArgs m_dtCurrent;
         /// <summary>
+        /// Признак вкл./выкл. объекта
+        /// </summary>
+        private bool m_bWorkChecked;
+        /// <summary>
         /// Класс для получения данных из БД
         /// </summary>
         private class HandlerDb : HClassLibrary.HHandlerDb
@@ -644,11 +648,12 @@ namespace StatisticAlarm
         /// <param name="connSett">Параметры соединения с БД_значений</param>
         /// <param name="mode">Режим работы объекта</param>
         /// <param name="ev">Инициализация значений даты, часов начало, окончания запроса списка событий</param>
-        public AdminAlarm(ConnectionSettings connSett, MODE mode, DatetimeCurrentEventArgs ev, bool bWorkCheked)
+        public AdminAlarm(ConnectionSettings connSett, MODE mode, DatetimeCurrentEventArgs ev, bool bWorkChecked)
             : base()
         {
             Mode = mode;
             m_dtCurrent = ev;
+            m_bWorkChecked = bWorkChecked;
 
             lockValue = new object();
 
@@ -680,13 +685,11 @@ namespace StatisticAlarm
             m_handlerDb.Start ();
 
             if (Mode == MODE.SERVICE)
-            {
                 foreach (TecViewAlarm tv in m_listTecView)
                     tv.Start(); //StartDbInterfaces (CONN_SETT_TYPE.COUNT_CONN_SETT_TYPE);
-            }
             else ;
 
-            OnWorkCheckedChanged(true);
+            OnWorkCheckedChanged(m_bWorkChecked);
         }
 
         public override void Stop()
@@ -725,9 +728,11 @@ namespace StatisticAlarm
 
             if (bRes == true)
                 if (active == true)
-                {
-
-                }
+                    if ((m_bWorkChecked == false)
+                        && (IsFirstActivated == true))
+                        pushList ();
+                    else
+                        ;
                 else
                     ;
             else
@@ -756,13 +761,15 @@ namespace StatisticAlarm
         /// <param name="obj">Объект, иницировавший событие</param>
         public void OnWorkCheckedChanged(bool bChecked)
         {
-            //??? - Активировать объект чтения/записи/обновления списка событий
-            if (Mode == MODE.SERVICE)
-                activateAdminAlarm(bChecked);
-            else
-                ;
+            //if (! (m_bWorkChecked == bChecked)) {
+                //??? - Активировать объект чтения/записи/обновления списка событий
+                if (Mode == MODE.SERVICE)
+                    activateAdminAlarm(bChecked);
+                else
+                    ;
 
-            activateViewAlarm(bChecked);
+                activateViewAlarm(bChecked);
+            //} else ;
         }
 
         private void startTimerView(int interval = 6)
@@ -792,7 +799,7 @@ namespace StatisticAlarm
         }
 
         /// <summary>
-        /// Поставить в очередь обработки событие - запрос перечня событий сигнализаций из БД - ткущих!!!
+        /// Поставить в очередь обработки событие - запрос перечня событий сигнализаций из БД - текущих (для оповещения)!!!
         /// </summary>
         private void pushNotify()
         {

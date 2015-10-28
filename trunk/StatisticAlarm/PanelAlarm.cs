@@ -23,11 +23,6 @@ namespace StatisticAlarm
     /// </summary>
     public partial class PanelAlarm : PanelStatistic, IDataHost, IDisposable
     {
-        public static bool ALARM_USE = true;
-        /// <summary>
-        /// Событие подтверждения сигнализации
-        /// </summary>
-        private event AlarmNotifyEventHandler EventConfirm;
         /// <summary>
         /// Список объектов ТЭЦ
         /// </summary>
@@ -140,7 +135,7 @@ namespace StatisticAlarm
             (ctrl as CheckedListBox).SelectedIndexChanged += new EventHandler(fTECComponent_OnSelectedIndexChanged);
             //Выбрать 1-ый элемент ("Все компоненты")
             (ctrl as CheckedListBox).SelectedIndex = 0;
-            (ctrl as CheckedListBox).Enabled = false;
+            (ctrl as CheckedListBox).Enabled = mode == MODE.ADMIN;
             //Запустить на выполнениие (при необходимости) таймер для обновления значений в таблице
             ctrl = Find(INDEEX_CONTROL.CBX_WORK) as CheckBox;
             if (mode == MODE.SERVICE)
@@ -286,12 +281,12 @@ namespace StatisticAlarm
         {
             Console.WriteLine(@"PanelAlarm::OnViewAlarm_EventAdd (id_comp=" + ev.m_id_comp + @", message=" + ev.m_message_shr + @") - ...");
 
-            if (IsHandleCreated/*InvokeRequired*/ == true)
-            {//...для this.BeginInvoke
+            //(IsHandleCreated/*InvokeRequired*/ == true)
+            //{//...для this.BeginInvoke
                 EventGUIReg(ev);
-            }
-            else
-                Logging.Logg().Error(@"PanelAlarm::OnViewAlarm_EventAdd () - ... BeginInvoke (...) - ...", Logging.INDEX_MESSAGE.D_001);
+            //}
+            //else
+            //    Logging.Logg().Error(@"PanelAlarm::OnViewAlarm_EventAdd () - ... BeginInvoke (...) - ...", Logging.INDEX_MESSAGE.D_001);
         }
         /// <summary>
         /// Обработчик события - повтор регистрации события сигнализации из БД!!!
@@ -478,7 +473,7 @@ namespace StatisticAlarm
             //Получить объект соединения с БД_конфигурации
             System.Data.Common.DbConnection dbConn = DbSources.Sources().GetConnection(idListenerConfigDB, out err);
             ////Сохранить установленное значение в БД_конфигурации
-            //DbTSQLInterface.ExecNonQuery(ref dbConn, @"UPDATE [dbo].[GTP_LIST] SET [KoeffAlarmPcur] = " + comp.m_dcKoeffAlarmPcur + @" WHERE [ID] = " + comp.m_id, null, null, out err);
+            DbTSQLInterface.ExecNonQuery(ref dbConn, @"UPDATE [dbo].[GTP_LIST] SET [KoeffAlarmPcur] = " + comp.m_dcKoeffAlarmPcur + @" WHERE [ID] = " + comp.m_id, null, null, out err);
             //Отменить регистрацию соединения
             DbSources.Sources().UnRegister(idListenerConfigDB);
         }
@@ -723,9 +718,14 @@ namespace StatisticAlarm
             private bool isRecEnabled (int iRow)
             {
                 //Кнопка доступна, если: 1) событие сигнализации "зафиксировано"
-                return ((!this.Rows[iRow].Cells[(int)iINDEX_COLUMN.DATETIME_FIXED].Value.Equals(string.Empty)) || (_mode == MODE.SERVICE))
+                ////Вариант №1
+                //return ((!this.Rows[iRow].Cells[(int)iINDEX_COLUMN.DATETIME_FIXED].Value.Equals(string.Empty)) || (_mode == MODE.SERVICE))
+                //    // 2) событие сигнализации ранее не "подтверждено"
+                //    && this.Rows[iRow].Cells[(int)iINDEX_COLUMN.DATETIME_CONFIRM].Value.Equals(string.Empty);
+                //Вариант №2
+                return ((!(m_dictView[(long)this.Rows[iRow].Cells[(int)iINDEX_COLUMN.ID_REC].Value].m_dt_fixed == null)) || (_mode == MODE.SERVICE))
                     // 2) событие сигнализации ранее не "подтверждено"
-                    && this.Rows[iRow].Cells[(int)iINDEX_COLUMN.DATETIME_CONFIRM].Value.Equals(string.Empty);
+                    && (m_dictView[(long)this.Rows[iRow].Cells[(int)iINDEX_COLUMN.ID_REC].Value].m_dt_confirmed == null);
             }
             /// <summary>
             /// Отобразить полученные данные
@@ -764,9 +764,9 @@ namespace StatisticAlarm
                         , r.m_str_name_shr_component
                         , r.m_str_name_shr_type
                         , r.m_value
-                        , r.m_dt_registred.GetValueOrDefault().ToString (s_DateTimeFormat)
-                        , (!(r.m_dt_fixed == null)) ? r.m_dt_fixed.GetValueOrDefault().ToString (s_DateTimeFormat) : string.Empty
-                        , (!(r.m_dt_fixed == null)) ? r.m_dt_confirmed.GetValueOrDefault().ToString (s_DateTimeFormat) : string.Empty
+                        , HAdmin.ToMoscowTimeZone (r.m_dt_registred.GetValueOrDefault()).ToString (s_DateTimeFormat)
+                        , (!(r.m_dt_fixed == null)) ? HAdmin.ToMoscowTimeZone (r.m_dt_fixed.GetValueOrDefault()).ToString (s_DateTimeFormat) : string.Empty
+                        , (!(r.m_dt_fixed == null)) ? HAdmin.ToMoscowTimeZone (r.m_dt_confirmed.GetValueOrDefault()).ToString (s_DateTimeFormat) : string.Empty
                     });                    
                     //Установить доступность кнопки "Подтвердить"
                     (Rows[indxRow].Cells[this.Columns.Count - 1] as DataGridViewDisableButtonCell).Enabled = isRecEnabled((listView as List<ViewAlarmJournal>).IndexOf(r));

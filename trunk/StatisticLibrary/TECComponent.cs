@@ -10,6 +10,10 @@ namespace StatisticCommon
     public class TECComponentBase
     {
         /// <summary>
+        /// Идентификаторы для типов компонента ТЭЦ
+        /// </summary>
+        public enum ID : int { GTP = 100, PC = 500, TG = 1000, MAX = 10000 }
+        /// <summary>
         /// Краткое наименовнаие компонента
         /// </summary>
         public string name_shr;
@@ -43,7 +47,7 @@ namespace StatisticCommon
         /// <summary>
         /// Признак принадлежности компонента к группе ГТП
         /// </summary>
-        public bool IsGTP { get { return (m_id > 100) && (m_id < 500); } }
+        public bool IsGTP { get { return (m_id > (int)ID.GTP) && (m_id < (int)ID.PC); } }
         /// <summary>
         /// Возвратить тип (режим) компонента по указанному идентификатору
         /// </summary>
@@ -51,20 +55,20 @@ namespace StatisticCommon
         /// <returns>Тип (режим) компонента</returns>
         public static FormChangeMode.MODE_TECCOMPONENT Mode(int id)
         {
-            return ((id > 100) && (id < 500)) == true ? FormChangeMode.MODE_TECCOMPONENT.GTP :
-                ((id > 500) && (id < 1000)) == true ? FormChangeMode.MODE_TECCOMPONENT.PC :
-                    ((id > 1000) && (id < 10000)) == true ? FormChangeMode.MODE_TECCOMPONENT.TG :
+            return ((id > (int)ID.GTP) && (id < (int)ID.PC)) == true ? FormChangeMode.MODE_TECCOMPONENT.GTP :
+                ((id > (int)ID.PC) && (id < (int)ID.TG)) == true ? FormChangeMode.MODE_TECCOMPONENT.PC :
+                    ((id > (int)ID.TG) && (id < (int)ID.MAX)) == true ? FormChangeMode.MODE_TECCOMPONENT.TG :
                         FormChangeMode.MODE_TECCOMPONENT.UNKNOWN;
         }
         /// <summary>
         /// Признак принадлежности компонента к группе щиты управления
         ///  (блочные, групповые)
         /// </summary>
-        public bool IsPC { get { return (m_id > 500) && (m_id < 1000); } }
+        public bool IsPC { get { return (m_id > (int)ID.PC) && (m_id < (int)ID.TG); } }
         /// <summary>
         /// Признак принадлежности компонента к группе ТГ
         /// </summary>
-        public bool IsTG { get { return (m_id > 1000) && (m_id < 10000); } }
+        public bool IsTG { get { return (m_id > (int)ID.TG) && (m_id < (int)ID.MAX); } }
     }
     /// <summary>
     /// Класс для описания компонента ТЭЦ - ТГ

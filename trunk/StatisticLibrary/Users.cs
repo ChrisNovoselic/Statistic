@@ -29,6 +29,7 @@ namespace StatisticCommon
             , MENUITEM_SETTING_ADMIN_DB_SOURCEDATA
             , MENUITEM_SETTING_ADMIN_STATEUSERS
             , MENUITEM_SETTING_ADMIN_PSW_KOMDISP_CHANGE
+            //----------10
             , MENUITEM_SETTING_ADMIN_PSW_ADMIN_CHANGE
             , MENUITEM_SETTING_ADMIN_PSW_NSS_CHANGE
             , MENUITEM_SETTING_ADMIN_TECCOMPONENT_CHANGE
@@ -39,6 +40,7 @@ namespace StatisticCommon
             , MENUCONTEXTITEM_TABLEHOURS_COLUMN_59MIN
             , MENUITEM_SETTINGS_PARAMETERS_APP
             , MENUITEM_SETTINGS_PARAMETERS_TGBIYSK
+            //--------------------20
             , APP_AUTO_RESET
             , SOURCEDATA_ASKUE_PLUS_SOTIASSO //Вкл\выкл пункт меню
             , MENUITEM_SETTING_PARAMETERS_SYNC_DATETIME_DB
@@ -48,7 +50,10 @@ namespace StatisticCommon
             , AUTO_LOADSAVE_USERPROFILE //Автоматическая загрузка/сохранение профиля
             //, AUTO_LOAD_ADMINVALUESDEFAULT //Автоматическая загрузка "рекомендаций" по умолчанию
             , MENUITEM_VIEW_VALUES_SOTIASSO
-            ,MENUITEM_SETTING_PARAMETERS_DIAGNOSTIC
+            , MENUITEM_SETTING_PARAMETERS_DIAGNOSTIC
+            , AUTO_TAB_ALARM
+            //------------------------------30
+            , AUTO_TAB_PBR_NSS
             ,
         };
 

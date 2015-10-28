@@ -349,8 +349,8 @@ namespace Statistic
                 //m_arControls [i] = m_arLabelEmpty [i];
             }
 
-            m_formChangeMode.OnMenuItemsClear += new DelegateFunc(OnMenuItemsClear);
-            m_formChangeMode.OnMenuItemAdd += new DelegateStringFunc (OnMenuItemAdd);
+            m_formChangeMode.EventMenuItemsClear += new DelegateFunc(OnMenuItemsClear);
+            m_formChangeMode.EventMenuItemAdd += new DelegateStringFunc (OnMenuItemAdd);
 
             initializeLayoutStyle ();
 

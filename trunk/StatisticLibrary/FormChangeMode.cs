@@ -12,11 +12,13 @@ namespace StatisticCommon
 {
     public partial class FormChangeMode : Form
     {
-        public event DelegateFunc OnMenuItemsClear;
-        public event DelegateStringFunc OnMenuItemAdd;
+        public event DelegateFunc EventMenuItemsClear;
+        public event DelegateStringFunc EventMenuItemAdd;
 
         public event DelegateFunc ev_сменитьРежим;
-
+        /// <summary>
+        /// Класс для описания элемента в списке компонентов ТЭЦ
+        /// </summary>
         public class Item
         {
             public int id;
@@ -35,16 +37,27 @@ namespace StatisticCommon
 
         public List<TEC> m_list_tec;
         public List<Item> m_listItems;
+        /// <summary>
+        /// Список элементов-перключателей для выбора типа режима
+        ///  (фильтр для отображения компонентов ТЭЦ)
+        /// </summary>
         private List <CheckBox> m_listCheckBoxTECComponent;
 
         public bool closing;
 
         public System.Windows.Forms.ContextMenuStrip m_MainFormContextMenuStripListTecViews;
 
-        //private ConnectionSettings m_connSet;
-
+        /// <summary>
+        /// Идентификаторы специальных вкладок
+        /// </summary>
         public static int [] ID_SPECIAL_TAB = { 10001, 10002, 10011 };
+        /// <summary>
+        /// Перечисление - тип режима
+        /// </summary>
         public enum MODE_TECCOMPONENT : ushort { TEC, GTP, PC, TG, UNKNOWN };
+        /// <summary>
+        /// Тип вкладки  из инструментария "администратор-диспетчер"
+        /// </summary>
         public enum MANAGER : ushort { DISP, NSS, ALARM, COUNT_MANAGER, UNKNOWN };
 
         private HMark m_modeTECComponent;
@@ -193,30 +206,43 @@ namespace StatisticCommon
 
             return arPREFIX_COMPONENT[indx];
         }
-
+        /// <summary>
+        /// Возвратить наименование режима компонентов ТЭЦ по индексу
+        /// </summary>
+        /// <param name="indx">Индекс режима</param>
+        /// <returns>Строка - наименование режима</returns>
         public static string getNameMode (Int16 indx) {
             string [] nameModes = {"ТЭЦ", "ГТП", "ЩУ", "Поблочно", "Неизвестно"};
 
             return nameModes[indx];
         }
-
+        /// <summary>
+        /// Возвратить наименование элемента списка (специальная вкладка)
+        /// </summary>
+        /// <param name="modeManager">Тип вкладки</param>
+        /// <param name="modeComponent">Режим компонентов ТЭЦ</param>
+        /// <returns>Строка - подпись для элемента списка</returns>
         public string getNameAdminValues (MANAGER modeManager, MODE_TECCOMPONENT modeComponent) {
             string[] arNameAdminValues = { "НСС" /*TEC*/, "Диспетчер" /*GTP*/, "НСС" /*PC*/, "НСС" /*TG*/ };
             string prefix = ((modeManager == MANAGER.DISP) || (modeManager == MANAGER.NSS)) ? @"ПБР" : (modeManager == MANAGER.ALARM) ? @"Сигн." : @"Неизвестно";
 
             return prefix + @" - " + arNameAdminValues[(int)modeComponent];
         }
-
+        /// <summary>
+        /// Установить состояние элемента списка с проверкой на принадлежность идентификатора диапазону
+        ///  соответствующего типа режима 
+        /// </summary>
+        /// <param name="item">Дополнительные характеристики элемента списка</param>
         private void itemSetStates(Item item)
         {
             //ТЭЦ
-            if (itemSetState(item, 0, 100, MODE_TECCOMPONENT.TEC) == false)
+            if (itemSetState(item, 0, (int)TECComponent.ID.GTP, MODE_TECCOMPONENT.TEC) == false)
                 //ГТП
-                if (itemSetState(item, 100, 500, MODE_TECCOMPONENT.GTP) == false)
+                if (itemSetState(item, (int)TECComponent.ID.GTP, (int)TECComponent.ID.PC, MODE_TECCOMPONENT.GTP) == false)
                     //ЩУ
-                    if (itemSetState(item, 500, 1000, MODE_TECCOMPONENT.PC) == false)
+                    if (itemSetState(item, (int)TECComponent.ID.PC, (int)TECComponent.ID.TG, MODE_TECCOMPONENT.PC) == false)
                         //ТГ
-                        if (itemSetState(item, 1000, 10000, MODE_TECCOMPONENT.TG) == false)
+                        if (itemSetState(item, (int)TECComponent.ID.TG, (int)TECComponent.ID.MAX, MODE_TECCOMPONENT.TG) == false)
                             //Специальные вкладки...
                             itemSetState(item);
                         else
@@ -228,7 +254,14 @@ namespace StatisticCommon
             else
                 ;
         }
-
+        /// <summary>
+        /// Установить состояние элемента списка по диапазону идентификаторов
+        /// </summary>
+        /// <param name="item">Дополнительные характеристики элемента списка</param>
+        /// <param name="idMinVal">Минимальное значение идентификатора компонента ТЭЦ, привлекаемое для обработки</param>
+        /// <param name="idMaxVal">Максимальное значение идентификатора компонента ТЭЦ, привлекаемое для обработки</param>
+        /// <param name="mode">Тип режима</param>
+        /// <returns>Признак выполнения функции</returns>
         private bool itemSetState(Item item, int idMinVal = -1, int idMaxVal = -1, MODE_TECCOMPONENT mode = MODE_TECCOMPONENT.UNKNOWN)
         {
             bool bRes = false;
@@ -271,7 +304,7 @@ namespace StatisticCommon
                         clbMode.Items.Add(item.name_shr);
                         //Контекстное меню - главная форма
                         if (!(m_MainFormContextMenuStripListTecViews == null)) m_MainFormContextMenuStripListTecViews.Items.Add(item.name_shr); else ;
-                        if (!(OnMenuItemAdd == null)) OnMenuItemAdd(item.id + @";" + item.name_shr);
+                        if (!(EventMenuItemAdd == null)) EventMenuItemAdd(item.id + @";" + item.name_shr);
 
                         clbMode.SetItemChecked(clbMode.Items.Count - 1, item.bChecked);
                         item.bVisibled = true;
@@ -290,7 +323,7 @@ namespace StatisticCommon
             //Контекстное меню - главная форма
             if (! (m_MainFormContextMenuStripListTecViews == null)) m_MainFormContextMenuStripListTecViews.Items.Clear(); else ;
             //Контекстное меню - главная форма
-            if (!(OnMenuItemsClear == null)) OnMenuItemsClear(); else ;
+            if (!(EventMenuItemsClear == null)) EventMenuItemsClear(); else ;
             
             if (!(m_listItems == null))
             {

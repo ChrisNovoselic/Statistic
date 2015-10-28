@@ -288,8 +288,17 @@ namespace StatisticAlarm
             listPartKeys.Sort ();
             partKey = listPartKeys.LastOrDefault ();
 
-            if (! (partKey == null))
-                objRes = _dictAlarmObject [new KeyValuePair<int,DateTime> (id_comp, partKey.GetValueOrDefault())];
+            try
+            {
+                if (! (partKey == null))
+                    objRes = _dictAlarmObject [new KeyValuePair<int,DateTime> (id_comp, partKey.GetValueOrDefault())];
+                else
+                    ;
+            }
+            catch (Exception e)
+            {
+                Logging.Logg ().Exception (e, Logging.INDEX_MESSAGE.NOT_SET, @"DictAlarmObject::find(id_comp=" + id_comp + @") - ...");
+            }
 
             return objRes;
         }
