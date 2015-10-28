@@ -11,23 +11,31 @@ using System.Drawing;
 using System.Windows.Forms; //TableLayoutPanel
 using System.Data; //DataTable
 using System.Data.Common; //DbConnection
+
 using HClassLibrary;
 using StatisticCommon;
 
 namespace StatisticDiagnostic
 {
+    /// <summary>
+    /// Класс для описания панели с информацией
+    ///  по дианостированию состояния ИС
+    /// </summary>
     public partial class PanelStatisticDiagnostic
     {
+        /// <summary>
+        /// Определить размеры ячеек макета панели
+        /// </summary>
+        /// <param name="cols">Количество столбцов в макете</param>
+        /// <param name="rows">Количество строк в макете</param>
         protected override void initializeLayoutStyle(int cols = -1, int rows = -1)
         {
             initializeLayoutStyleEvenly(cols, rows);
         }
-
         /// <summary>
-        /// Требуется переменная конструктора.
+        /// Требуется переменная конструктора
         /// </summary>
         private System.ComponentModel.IContainer components = null;
-
         /// <summary> 
         /// Освободить все используемые ресурсы.
         /// </summary>
@@ -133,13 +141,33 @@ namespace StatisticDiagnostic
 
         #endregion
 
+        /// <summary>
+        /// Подпись к вложенной панели с задачами
+        /// </summary>
         private System.Windows.Forms.Label Tasklabel;
+        /// <summary>
+        /// Подпись к вложенной панели с параметрами диагностирования источников данных для ТЭЦ
+        /// </summary>
         private System.Windows.Forms.Label TEClabel;
+        /// <summary>
+        /// Подпись к вложенной панели с параметрами диагностирования сервисов Модес
+        /// </summary>
         private System.Windows.Forms.Label Modeslabel;
+        /// <summary>
+        /// Панель для размещения групповых элементов интерфейса с пользователем
+        ///  с параметрами диагностирования источников данных для ТЭЦ
+        /// </summary>
         private System.Windows.Forms.TableLayoutPanel TecTableLayoutPanel;
+        /// <summary>
+        /// Панель для размещения групповых элементов интерфейса с пользователем
+        ///  с параметрами диагностирования сервисов Модес
+        /// </summary>
         private System.Windows.Forms.TableLayoutPanel ModesTableLayoutPanel;
     }
-
+    /// <summary>
+    /// Класс для описания панели с информацией
+    ///  по дианостированию состояния ИС
+    /// </summary>
     public partial class PanelStatisticDiagnostic : PanelStatistic
     {
         static object[,] massTM;
@@ -157,25 +185,14 @@ namespace StatisticDiagnostic
         static Task taskdb = new Task();
         static Modes modesdb = new Modes();
         static Tec tecdb = new Tec();
-        //int iListernID;
-
-        /// <summary>
-        /// Класс для передачи данных в классы
-        /// </summary>
-        public static class TransferData
-        {
-            public delegate void MyEvent(object data);
-            public static MyEvent EventHandler;
-        }
-
-        /// <summary>
-        /// запуск обновления
-        /// </summary>
-        public void startUp()
-        {
-            LoadData();
-        }
-
+        ///// <summary>
+        ///// Класс для обмена данными
+        ///// </summary>
+        //public static class TransferData
+        //{
+        //    public delegate void MyEvent(object data);
+        //    public static MyEvent EventHandler;
+        //}
         /// <summary>
         /// Таймер для update
         /// </summary>
@@ -196,7 +213,7 @@ namespace StatisticDiagnostic
         /// <param name="e"></param>
         public void UpdateTimer_Elapsed(object source, ElapsedEventArgs e)
         {
-            startUp();
+            LoadData();
         }
 
         /// <summary>
@@ -227,9 +244,10 @@ namespace StatisticDiagnostic
 
             public override void ClearValues()
             {
-
             }
-
+            /// <summary>
+            /// Добавить состояния в набор для обработки
+            /// </summary>
             public void Command()
             {
                 lock (m_lockState)
@@ -287,7 +305,7 @@ namespace StatisticDiagnostic
             }
 
             /// <summary>
-            /// Делегат фун-ии 
+            /// Событие - получение данных 
             /// </summary>
             public event DelegateObjectFunc EvtRecievedTable;
             /// <summary>
@@ -308,8 +326,9 @@ namespace StatisticDiagnostic
                     default:
                         break;
                 }
-
+                //Проверить признак крайнего в наборе состояний для обработки
                 if (isLastState (state) == true)
+                    //Удалить все сообщения в строке статуса
                     ReportClear (true);
                 else
                     ;
@@ -1679,31 +1698,36 @@ namespace StatisticDiagnostic
             InitializeComponent();
 
             int err = -1; //Признак выполнения метода/функции
-            //Зарегистрировать соединение/получить идентификатор соединения
+            // зарегистрировать соединение/получить идентификатор соединения
             int iListernID = DbSources.Sources().Register(FormMain.s_listFormConnectionSettings[(int)CONN_SETT_TYPE.CONFIG_DB].getConnSett(), false, @"CONFIG_DB");
             GetCurrentData(iListernID);
             m_DataSource = new HDataSource(new ConnectionSettings(InitTECBase.getConnSettingsOfIdSource(TYPE_DATABASE_CFG.CFG_200, iListernID, FormMainBase.s_iMainSourceData, -1, out err).Rows[0], 0));
+            // назначить обработчик события - получение данных
             m_DataSource.EvtRecievedTable += new DelegateObjectFunc(m_DataSource_EvtRecievedTable);
+            // отменить регистрацию соединения с БД-конфигурации
             DbSources.Sources().UnRegister(iListernID);
 
             return err;
         }
         /// <summary>
-        /// обработка события
+        /// Обработчик события - получение данных при запросе к БД
         /// </summary>
-        /// <param name="table"></param>
+        /// <param name="table">Результат выполнения запроса - таблица с данными</param>
         public void m_DataSource_EvtRecievedTable(object table)
         {
             m_tableSourceData = (DataTable)table;
             start();
-            //DbSources.Sources().UnRegister(iListernID);
         }
-
+        /// <summary>
+        /// Загрузить данные из БД
+        /// </summary>
         public void LoadData()
         {
+            // зарегистрировать синхронное соединение с БД_конфигурации
             int iListernID = DbSources.Sources().Register(FormMain.s_listFormConnectionSettings[(int)CONN_SETT_TYPE.CONFIG_DB].getConnSett(), false, @"CONFIG_DB");
             GetCurrentData(iListernID);
             DbSources.Sources().UnRegister(iListernID);
+            //??? почему старт объекта для получения данных ниже, чем вызов 'GetCurrentData'
             m_DataSource.Start();
             m_DataSource.StartDbInterfaces();
             m_DataSource.Command();            
@@ -1750,7 +1774,7 @@ namespace StatisticDiagnostic
         }
 
         /// <summary>
-        /// Функция взятия информации из конф.БД
+        /// Получить значения из БД_конфигурации
         /// </summary>
         public void GetCurrentData(int iListernID)
         {
