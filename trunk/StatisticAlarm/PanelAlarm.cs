@@ -59,13 +59,13 @@ namespace StatisticAlarm
         /// </summary>
         private int _widthPanelManagement = 166;
 
-        public PanelAlarm(MODE mode)
-        {
-            //Зарегистрировать соединение/получить идентификатор соединения
-            int iListenerId = DbSources.Sources().Register(FormMain.s_listFormConnectionSettings[(int)CONN_SETT_TYPE.CONFIG_DB].getConnSett(), false, @"CONFIG_DB");
+        //public PanelAlarm(MODE mode)
+        //{
+        //    //Зарегистрировать соединение/получить идентификатор соединения
+        //    int iListenerId = DbSources.Sources().Register(FormMain.s_listFormConnectionSettings[(int)CONN_SETT_TYPE.CONFIG_DB].getConnSett(), false, @"CONFIG_DB");
 
-            DbSources.Sources().UnRegister(iListenerId);
-        }
+        //    DbSources.Sources().UnRegister(iListenerId);
+        //}
         /// <summary>
         /// Конструктор - основной (с параметрами)
         /// </summary>

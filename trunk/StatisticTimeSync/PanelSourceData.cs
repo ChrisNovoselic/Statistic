@@ -538,6 +538,11 @@ namespace StatisticTimeSync
             m_lockTimerGetDate = new object();
         }
 
+        public override void SetDelegateReport(DelegateStringFunc ferr, DelegateStringFunc fwar, DelegateStringFunc fact, DelegateBoolFunc fclr)
+        {
+            throw new NotImplementedException();
+        }
+
         public override void Start()
         {
             base.Start();
@@ -554,8 +559,6 @@ namespace StatisticTimeSync
             m_tableSourceData = null;
 
             DbConnection dbConn = null;
-
-
             dbConn = DbSources.Sources().GetConnection(iListenerId, out err);
 
             if ((err == 0) && (!(dbConn == null)))
@@ -589,8 +592,6 @@ namespace StatisticTimeSync
                 throw new Exception(@"Нет соединения с БД");
 
             //DbSources.Sources().UnRegister(iListenerId);
-
-
 
             for (int i = 0; i < INDEX_SOURCE_GETDATE.Length; i++)
                 //m_arPanels[i].TurnOn(INDEX_SOURCE_GETDATE [i]);

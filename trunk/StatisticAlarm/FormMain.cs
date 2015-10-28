@@ -79,10 +79,11 @@ namespace StatisticAlarm
         {
             bool bRes = true;
             msgError = string.Empty;
+            int idListenerConfigDB = -1;
 
             if (s_listFormConnectionSettings[(int)CONN_SETT_TYPE.CONFIG_DB].Ready == 0)
             {
-                _state = InitializeConfigDB(out msgError);
+                _state = InitializeConfigDB(out msgError, out idListenerConfigDB);
                 switch (_state)
                 {
                     case -1:
@@ -106,7 +107,9 @@ namespace StatisticAlarm
                         s_iMainSourceData = Int32.Parse(formParameters.m_arParametrSetup[(int)FormParameters.PARAMETR_SETUP.MAIN_DATASOURCE]);
 
                         //Создать "рабочую" панель
-                        m_panelAlarm = new PanelAlarm(MODE.SERVICE);
+                        m_panelAlarm = new PanelAlarm(idListenerConfigDB
+                            , new HMark(new int [] {(int)CONN_SETT_TYPE.ADMIN, (int)CONN_SETT_TYPE.PBR, (int)CONN_SETT_TYPE.DATA_SOTIASSO, (int)CONN_SETT_TYPE.DATA_SOTIASSO})
+                            , MODE.SERVICE);
                         _panelMain.Controls.Add(m_panelAlarm);
 
                         m_formAlarmEvent = new MessageBoxAlarmEvent (this);
@@ -117,6 +120,8 @@ namespace StatisticAlarm
                         m_panelAlarm.Start();
                         break;
                 }
+                //Отменить регистрацию соединения с БД_конфигурации
+                DbSources.Sources().UnRegister(idListenerConfigDB);
             }
             else
             {//Файла с параметрами соединения нет совсем или считанные параметры соединения не валидны
@@ -169,18 +174,18 @@ namespace StatisticAlarm
         /// </summary>
         /// <param name="msgError">Сообщение об ошибке (при наличии)</param>
         /// <returns>Признак выполнения функции</returns>
-        private int InitializeConfigDB (out string msgError)
+        private int InitializeConfigDB (out string msgError, out int iListenerId)
         {
             int iRes = 0;
             msgError = string.Empty;
             //Идентификатор соединения с БД_конфигурации
-            int idListenerConfigDB = DbSources.Sources().Register(s_listFormConnectionSettings[(int)CONN_SETT_TYPE.CONFIG_DB].getConnSett(), false, @"CONFIG_DB");
+            iListenerId = DbSources.Sources().Register(s_listFormConnectionSettings[(int)CONN_SETT_TYPE.CONFIG_DB].getConnSett(), false, @"CONFIG_DB");
 
             //Проверить наличие пользователя в БД_конфигурации
             try
             {
                 //Создать И удалить объект с пользовательскими настройками (заполнить статические члены)
-                using (HStatisticUsers users = new HStatisticUsers(idListenerConfigDB)) { ; }
+                using (HStatisticUsers users = new HStatisticUsers(iListenerId)) { ; }
             }
             catch (Exception e)
             {
@@ -203,8 +208,8 @@ namespace StatisticAlarm
                     ;
             else
                 ;
-            //Отменить регистрацию соединения с БД_конфигурации
-            DbSources.Sources().UnRegister(idListenerConfigDB);
+            ////Отменить регистрацию соединения с БД_конфигурации
+            //DbSources.Sources().UnRegister(idListenerConfigDB);
 
             return iRes;
         }

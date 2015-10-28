@@ -52,9 +52,7 @@ namespace trans_mc
             string strTypeField = m_sFileINI.GetMainValueOfKey(@"РДГФорматТаблицаНазначение");
             int idListener = DbMCSources.Sources().Register(s_listFormConnectionSettings[(int)StatisticCommon.CONN_SETT_TYPE.CONFIG_DB].getConnSett(), false, @"CONFIG_DB");
 
-            HMark markQueries = new HMark();
-            markQueries.Marked((int)StatisticCommon.CONN_SETT_TYPE.ADMIN);
-            markQueries.Marked((int)StatisticCommon.CONN_SETT_TYPE.PBR);
+            HMark markQueries = new HMark(new int [] {(int)StatisticCommon.CONN_SETT_TYPE.ADMIN, (int)StatisticCommon.CONN_SETT_TYPE.PBR});
 
             for (i = 0; i < (Int16)CONN_SETT_TYPE.COUNT_CONN_SETT_TYPE; i++)
             {

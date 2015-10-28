@@ -65,6 +65,7 @@ namespace Statistic
 
         private Dictionary<int, Form> m_dictFormFloat;
         private PanelStatistic[] m_arPanelAdmin;
+        private PanelAdmin PanelKomDisp { get { return m_arPanelAdmin[(int)FormChangeMode.MANAGER.DISP] as PanelAdmin; } }
         private List<PanelTecViewBase> m_listStandardTabs;
         private Dictionary<int, ADDING_TAB> m_dictAddingTabs;
         private static ID_ADDING_TAB[,] m_arIdCustomTabs = new ID_ADDING_TAB[,] { { ID_ADDING_TAB.CUSTOM_2X2_1, ID_ADDING_TAB.CUSTOM_2X2_2, ID_ADDING_TAB.CUSTOM_2X2_3, ID_ADDING_TAB.CUSTOM_2X2_4 }
@@ -125,7 +126,7 @@ namespace Statistic
             int i = -1;
 
             m_prevSelectedIndex = 1; //??? = -1
-            m_markPrevStatePanelAdmin = new HMark();
+            m_markPrevStatePanelAdmin = new HMark(0);
 
             m_listStandardTabs = new List<PanelTecViewBase>();
 
@@ -236,9 +237,9 @@ namespace Statistic
                     //m_arAdmin = new AdminTS[(int)FormChangeMode.MANAGER.COUNT_MANAGER];
                     m_arPanelAdmin = new PanelStatistic[(int)FormChangeMode.MANAGER.COUNT_MANAGER];
 
-                    HMark markQueries = new HMark();
-                    markQueries.Marked((int)CONN_SETT_TYPE.ADMIN);
-                    markQueries.Marked((int)CONN_SETT_TYPE.PBR);
+                    HMark markQueries = new HMark(new int [] {(int)CONN_SETT_TYPE.ADMIN, (int)CONN_SETT_TYPE.PBR});
+                    //markQueries.Marked((int)CONN_SETT_TYPE.ADMIN);
+                    //markQueries.Marked((int)CONN_SETT_TYPE.PBR);
 
                     for (i = 0; i < (int)FormChangeMode.MANAGER.COUNT_MANAGER; i++)
                     {
@@ -253,7 +254,10 @@ namespace Statistic
                                 m_arPanelAdmin[i] = new PanelAdminNSS(idListenerConfigDB, markQueries);
                                 break;
                             case FormChangeMode.MANAGER.ALARM:
-                                m_arPanelAdmin[i] = new PanelAlarm(idListenerConfigDB, markQueries, MODE.ADMIN);
+                                m_arPanelAdmin[i] = new PanelAlarm(idListenerConfigDB
+                                    , new HMark(new int[] { (int)CONN_SETT_TYPE.ADMIN, (int)CONN_SETT_TYPE.PBR, (int)CONN_SETT_TYPE.DATA_AISKUE, (int)CONN_SETT_TYPE.DATA_SOTIASSO })
+                                    , MODE.ADMIN);
+                                break;
                             default:
                                 break;
                         }
@@ -301,7 +305,7 @@ namespace Statistic
                     else
                         ;
 
-                    formChangeMode = new FormChangeMode(m_arPanelAdmin[(int)FormChangeMode.MANAGER.DISP].m_list_tec, listIDs, this.ContextMenuStrip);
+                    formChangeMode = new FormChangeMode(PanelKomDisp.m_list_tec, listIDs, this.ContextMenuStrip);
                     formChangeMode.ev_сменитьРежим += сменитьРежимToolStripMenuItem_Click;
                     if (сменитьРежимToolStripMenuItem.Enabled == false) сменитьРежимToolStripMenuItem.Enabled = true; else ;
 
@@ -907,7 +911,7 @@ namespace Statistic
                 //&& (! (m_timer.Interval == ProgramBase.TIMER_START_INTERVAL))
                 )
             {
-                HMark markSett = new HMark();
+                HMark markSett = new HMark(0);
                 markSett.Set(0, файлПрофильАвтоЗагрузитьСохранитьToolStripMenuItem.Enabled);
                 markSett.Set(1, файлПрофильАвтоЗагрузитьСохранитьToolStripMenuItem.Checked);
 
@@ -1608,9 +1612,9 @@ namespace Statistic
             else
                 ;
 
-            PanelTecView panelTecView = new PanelTecView(tec, ti, ci, null, ErrorReport, WarningReport, ActionReport, ReportClear);
+            PanelTecView panelTecView = new PanelTecView(tec, ti, ci, null/*, ErrorReport, WarningReport, ActionReport, ReportClear*/);
             panelTecView.SetDelegateWait(delegateStartWait, delegateStopWait, delegateEvent);
-            //panelTecView.SetDelegate(new DelegateFunc(StartWait), new DelegateFunc (StopWait), delegateEvent);
+            panelTecView.SetDelegateReport(ErrorReport, WarningReport, ActionReport, ReportClear);
             m_listStandardTabs.Add(panelTecView);
         }
 
@@ -1727,7 +1731,7 @@ namespace Statistic
 
                 //m_formParametersTG = new FormParametersTG_FileINI(@"setup.ini");
                 m_formParametersTG = new FormParametersTG_DB(s_listFormConnectionSettings[(int)CONN_SETT_TYPE.CONFIG_DB].getConnSett()
-                    , m_arPanelAdmin[(int)FormChangeMode.MANAGER.DISP].m_list_tec);
+                    , PanelKomDisp.m_list_tec);
             }
             else
                 ;
@@ -1889,7 +1893,8 @@ namespace Statistic
         private void addTabPagesAdmin()
         {
             if ((formChangeMode.m_markTabAdminChecked.IsMarked((int)FormChangeMode.MANAGER.DISP) == true)
-                || (formChangeMode.m_markTabAdminChecked.IsMarked((int)FormChangeMode.MANAGER.NSS) == true))
+                || (formChangeMode.m_markTabAdminChecked.IsMarked((int)FormChangeMode.MANAGER.NSS) == true)
+                || (formChangeMode.m_markTabAdminChecked.IsMarked((int)FormChangeMode.MANAGER.ALARM) == true))
             {
                 int idListener = DbSources.Sources().Register(s_listFormConnectionSettings[(int)CONN_SETT_TYPE.CONFIG_DB].getConnSett(), false, @"CONFIG_DB");
 
@@ -1903,6 +1908,13 @@ namespace Statistic
                 if (formChangeMode.m_markTabAdminChecked.IsMarked((int)FormChangeMode.MANAGER.NSS) == true)
                 {
                     addTabPageAdmin(idListener, FormChangeMode.MANAGER.NSS);
+                }
+                else
+                    ;
+
+                if (formChangeMode.m_markTabAdminChecked.IsMarked((int)FormChangeMode.MANAGER.ALARM) == true)
+                {
+                    addTabPageAdmin(idListener, FormChangeMode.MANAGER.ALARM);
                 }
                 else
                     ;
@@ -1926,7 +1938,8 @@ namespace Statistic
 
                 if (m_markPrevStatePanelAdmin.IsMarked((int)modeAdmin) == false)
                 {
-                    if (modeAdmin == FormChangeMode.MANAGER.DISP)
+                    if ((modeAdmin == FormChangeMode.MANAGER.DISP)
+                        || (modeAdmin == FormChangeMode.MANAGER.ALARM))
                         idRolesPassword = Passwords.ID_ROLES.COM_DISP;
                     else
                         if (modeAdmin == FormChangeMode.MANAGER.NSS)
@@ -1944,8 +1957,7 @@ namespace Statistic
                     dlgRes = formPassword.ShowDialog(this);
                 }
                 else
-                {
-                }
+                    ;
 
                 if (dlgRes == DialogResult.Yes)
                 {
@@ -1957,6 +1969,7 @@ namespace Statistic
                     switch (modeAdmin)
                     {
                         case FormChangeMode.MANAGER.DISP:
+                        case FormChangeMode.MANAGER.ALARM:
                             mode = FormChangeMode.MODE_TECCOMPONENT.GTP;
                             break;
                         case FormChangeMode.MANAGER.NSS:
@@ -1970,7 +1983,17 @@ namespace Statistic
 
                     tclTecViews.TabPages[tclTecViews.TabCount - 1].Controls.Add(m_arPanelAdmin[(int)modeAdmin]);
 
-                    m_arPanelAdmin[(int)modeAdmin].InitializeComboBoxTecComponent(mode);
+                    switch (modeAdmin)
+                    {
+                        case FormChangeMode.MANAGER.DISP:
+                        case FormChangeMode.MANAGER.NSS:
+                            (m_arPanelAdmin[(int)modeAdmin] as PanelAdmin).InitializeComboBoxTecComponent(mode);
+                            break;
+                        case FormChangeMode.MANAGER.ALARM:                        
+                            break;
+                        default:
+                            break;
+                    }
 
                     delegateStopWait();
 
@@ -2066,8 +2089,9 @@ namespace Statistic
         {
             if (m_dictAddingTabs[(int)ID_ADDING_TAB.CUR_POWER].panel == null)
             {
-                m_dictAddingTabs[(int)ID_ADDING_TAB.CUR_POWER].panel = new PanelCurPower(m_arPanelAdmin[(int)FormChangeMode.MANAGER.DISP].m_list_tec, ErrorReport, WarningReport, ActionReport, ReportClear);
+                m_dictAddingTabs[(int)ID_ADDING_TAB.CUR_POWER].panel = new PanelCurPower(PanelKomDisp.m_list_tec);
                 ((PanelStatistic)m_dictAddingTabs[(int)ID_ADDING_TAB.CUR_POWER].panel).SetDelegateWait(null, null, delegateEvent);
+                m_dictAddingTabs[(int)ID_ADDING_TAB.CUR_POWER].panel.SetDelegateReport (ErrorReport, WarningReport, ActionReport, ReportClear);
             }
             else
                 ;
@@ -2080,8 +2104,9 @@ namespace Statistic
         {
             if (m_dictAddingTabs[(int)ID_ADDING_TAB.TM_SN_POWER].panel == null)
             {
-                m_dictAddingTabs[(int)ID_ADDING_TAB.TM_SN_POWER].panel = new PanelTMSNPower(m_arPanelAdmin[(int)FormChangeMode.MANAGER.DISP].m_list_tec, ErrorReport, WarningReport, ActionReport, ReportClear);
+                m_dictAddingTabs[(int)ID_ADDING_TAB.TM_SN_POWER].panel = new PanelTMSNPower(PanelKomDisp.m_list_tec);
                 ((PanelStatistic)m_dictAddingTabs[(int)ID_ADDING_TAB.TM_SN_POWER].panel).SetDelegateWait(null, null, delegateEvent);
+                ((PanelStatistic)m_dictAddingTabs[(int)ID_ADDING_TAB.TM_SN_POWER].panel).SetDelegateReport(ErrorReport, WarningReport, ActionReport, ReportClear);
             }
             else
                 ;
@@ -2094,8 +2119,9 @@ namespace Statistic
         {
             if (m_dictAddingTabs[(int)ID_ADDING_TAB.MONITOR_LAST_MINUTES].panel == null)
             {
-                m_dictAddingTabs[(int)ID_ADDING_TAB.MONITOR_LAST_MINUTES].panel = new PanelLastMinutes(m_arPanelAdmin[(int)FormChangeMode.MANAGER.DISP].m_list_tec, ErrorReport, WarningReport, ActionReport, ReportClear);
+                m_dictAddingTabs[(int)ID_ADDING_TAB.MONITOR_LAST_MINUTES].panel = new PanelLastMinutes(PanelKomDisp.m_list_tec);
                 ((PanelStatistic)m_dictAddingTabs[(int)ID_ADDING_TAB.MONITOR_LAST_MINUTES].panel).SetDelegateWait(null, null, delegateEvent);
+                ((PanelStatistic)m_dictAddingTabs[(int)ID_ADDING_TAB.MONITOR_LAST_MINUTES].panel).SetDelegateReport(ErrorReport, WarningReport, ActionReport, ReportClear);
             }
             else
                 ;
@@ -2109,6 +2135,7 @@ namespace Statistic
             if (m_dictAddingTabs[(int)ID_ADDING_TAB.DIAGNOSTIC].panel == null)
             {
                 m_dictAddingTabs[(int)ID_ADDING_TAB.DIAGNOSTIC].panel = new PanelStatisticDiagnostic();
+                m_dictAddingTabs[(int)ID_ADDING_TAB.DIAGNOSTIC].panel.SetDelegateReport (ErrorReport, WarningReport, ActionReport, ReportClear);
             }
             else
                 ;
@@ -2120,8 +2147,9 @@ namespace Statistic
         {
             if (m_dictAddingTabs[(int)ID_ADDING_TAB.SOBSTV_NYZHDY].panel == null)
             {
-                m_dictAddingTabs[(int)ID_ADDING_TAB.SOBSTV_NYZHDY].panel = new PanelSobstvNyzhdy(m_arPanelAdmin[(int)FormChangeMode.MANAGER.DISP].m_list_tec, ErrorReport, WarningReport, ActionReport, ReportClear);
+                m_dictAddingTabs[(int)ID_ADDING_TAB.SOBSTV_NYZHDY].panel = new PanelSobstvNyzhdy(PanelKomDisp.m_list_tec/*, ErrorReport, WarningReport, ActionReport, ReportClear*/);
                 ((PanelSobstvNyzhdy)m_dictAddingTabs[(int)ID_ADDING_TAB.SOBSTV_NYZHDY].panel).SetDelegateWait(null, null, delegateEvent);
+                ((PanelSobstvNyzhdy)m_dictAddingTabs[(int)ID_ADDING_TAB.SOBSTV_NYZHDY].panel).SetDelegateReport(ErrorReport, WarningReport, ActionReport, ReportClear);
             }
             else
                 ;
@@ -2183,7 +2211,8 @@ namespace Statistic
                 //&& (obj.Checked == true)
                 )
             {
-                m_dictAddingTabs[keyTab].panel = new PanelCustomTecView(formChangeMode, getPanelCustomTecViewSize(indx), ErrorReport, WarningReport, ActionReport, ReportClear);
+                m_dictAddingTabs[keyTab].panel = new PanelCustomTecView(formChangeMode, getPanelCustomTecViewSize(indx)/*, ErrorReport, WarningReport, ActionReport, ReportClear*/);
+                m_dictAddingTabs[keyTab].panel.SetDelegateReport(ErrorReport, WarningReport, ActionReport, ReportClear);
                 ((PanelCustomTecView)m_dictAddingTabs[keyTab].panel).EventContentChanged += new DelegateFunc(FormMain_PanelCustomTecView_EvtContentChanged);
             }
             else
@@ -2208,7 +2237,10 @@ namespace Statistic
         private void значенияСОТИАССОToolStripMenuItem_CheckedChanged(object sender, EventArgs e)
         {
             if (m_dictAddingTabs[(int)ID_ADDING_TAB.SOTIASSO].panel == null)
-                m_dictAddingTabs[(int)ID_ADDING_TAB.SOTIASSO].panel = new PanelSOTIASSO(m_arPanelAdmin[(int)FormChangeMode.MANAGER.DISP].m_list_tec, ErrorReport, WarningReport, ActionReport, ReportClear);
+            {
+                m_dictAddingTabs[(int)ID_ADDING_TAB.SOTIASSO].panel = new PanelSOTIASSO(PanelKomDisp.m_list_tec);
+                m_dictAddingTabs[(int)ID_ADDING_TAB.SOTIASSO].panel.SetDelegateReport(ErrorReport, WarningReport, ActionReport, ReportClear);
+            }
             else
                 ;
 

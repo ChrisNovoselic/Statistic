@@ -89,21 +89,20 @@ namespace Statistic
         /// <summary>
         /// Конструктор - основной (без параметров)
         /// </summary>
-        public PanelSOTIASSO(List<StatisticCommon.TEC> listTec, DelegateStringFunc fErrRep, DelegateStringFunc fWarRep, DelegateStringFunc fActRep, DelegateBoolFunc fRepClr)
+        public PanelSOTIASSO(List<StatisticCommon.TEC> listTec)
             : base()
         {
             m_listTEC = listTec;
             //Создать объект с признаками обработки тех типов значений
             // , которые будут использоваться фактически
-            m_markQueries = new HMark();
-            m_markQueries.Marked((int)CONN_SETT_TYPE.ADMIN); //Для получения даты/времени
-            m_markQueries.Marked((int)CONN_SETT_TYPE.PBR); //Для получения даты/времени
-            m_markQueries.Marked((int)CONN_SETT_TYPE.DATA_SOTIASSO);
+            m_markQueries = new HMark(new int [] {(int)CONN_SETT_TYPE.ADMIN, (int)CONN_SETT_TYPE.PBR, (int)CONN_SETT_TYPE.DATA_SOTIASSO});
+            //m_markQueries.Marked((int)CONN_SETT_TYPE.ADMIN); //Для получения даты/времени
+            //m_markQueries.Marked((int)CONN_SETT_TYPE.PBR); //Для получения даты/времени
+            //m_markQueries.Marked((int)CONN_SETT_TYPE.DATA_SOTIASSO);
             //Создать объект обработки запросов - установить первоначальные индексы для ТЭЦ, компонента
             m_tecView = new TecView(TecView.TYPE_PANEL.SOTIASSO, 0, 0);
             //Инициализировать список ТЭЦ для 'TecView' - указать ТЭЦ в соответствии с указанным ранее индексом (0)
-            m_tecView.InitTEC(new List<StatisticCommon.TEC>() { m_listTEC[0] }, m_markQueries);
-            m_tecView.SetDelegateReport(fErrRep, fWarRep, fActRep, fRepClr);
+            m_tecView.InitTEC(new List<StatisticCommon.TEC>() { m_listTEC[0] }, m_markQueries);            
             //Установить тип значений
             m_tecView.m_arTypeSourceData[(int)TG.ID_TIME.MINUTES] = CONN_SETT_TYPE.DATA_SOTIASSO_1_MIN;
             m_tecView.m_arTypeSourceData[(int)TG.ID_TIME.HOURS] = CONN_SETT_TYPE.DATA_SOTIASSO_1_MIN;
@@ -130,8 +129,8 @@ namespace Statistic
         /// Конструктор - вспомогательный (с параметрами)
         /// </summary>
         /// <param name="container">Владелец текущего объекта</param>
-        public PanelSOTIASSO(IContainer container, List<StatisticCommon.TEC> listTec, DelegateStringFunc fErrRep, DelegateStringFunc fWarRep, DelegateStringFunc fActRep, DelegateBoolFunc fRepClr)
-            : this(listTec, fErrRep, fWarRep, fActRep, fRepClr)
+        public PanelSOTIASSO(IContainer container, List<StatisticCommon.TEC> listTec/*, DelegateStringFunc fErrRep, DelegateStringFunc fWarRep, DelegateStringFunc fActRep, DelegateBoolFunc fRepClr*/)
+            : this(listTec)
         {
             container.Add (this);
         }
@@ -199,6 +198,11 @@ namespace Statistic
             this.ResumeLayout (false);
             //Принудительное применение логики макета
             this.PerformLayout();
+        }
+
+        public override void SetDelegateReport(DelegateStringFunc ferr, DelegateStringFunc fwar, DelegateStringFunc fact, DelegateBoolFunc fclr)
+        {
+            m_tecView.SetDelegateReport(ferr, fwar, fact, fclr);
         }
         /// <summary>
         /// Класс для размещения активных элементов управления

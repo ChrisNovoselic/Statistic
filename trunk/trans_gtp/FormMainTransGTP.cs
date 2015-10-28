@@ -105,7 +105,7 @@ namespace trans_gtp
 
             m_sFileINI.AddMainPar(@"ТЭЦПараметрыНазначение", @"{}");
 
-            HMark markQueries = new HMark();
+            HMark markQueries = new HMark(0);
             markQueries.Set((int)StatisticCommon.CONN_SETT_TYPE.PBR, ОпросППБРToolStripMenuItem.Checked);
             markQueries.Set((int)StatisticCommon.CONN_SETT_TYPE.ADMIN, ОпросАдминЗначенияToolStripMenuItem.Checked);
 

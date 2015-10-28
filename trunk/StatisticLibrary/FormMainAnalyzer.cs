@@ -139,6 +139,11 @@ namespace StatisticCommon
                 }
             }
 
+            public override void SetDelegateReport(DelegateStringFunc ferr, DelegateStringFunc fwar, DelegateStringFunc fact, DelegateBoolFunc fclr)
+            {
+                throw new NotImplementedException();
+            }
+
             public override void Start()
             {
                 m_bThreadTimerCheckedAllowed = true;

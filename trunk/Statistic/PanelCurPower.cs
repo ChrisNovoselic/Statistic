@@ -89,7 +89,7 @@ namespace Statistic
             initializeLayoutStyleEvenly ();
         }
 
-        public PanelCurPower(List<StatisticCommon.TEC> listTec, DelegateStringFunc fErrRep, DelegateStringFunc fWarRep, DelegateStringFunc fActRep, DelegateBoolFunc fRepClr)
+        public PanelCurPower(List<StatisticCommon.TEC> listTec/*, DelegateStringFunc fErrRep, DelegateStringFunc fWarRep, DelegateStringFunc fActRep, DelegateBoolFunc fRepClr*/)
         {
             InitializeComponent();
 
@@ -108,15 +108,24 @@ namespace Statistic
 
             for (int i = 0; i < listTec.Count; i++)
             {
-                ptcp = new PanelTecCurPower(listTec[i], fErrRep, fWarRep, fActRep, fRepClr);
+                ptcp = new PanelTecCurPower(listTec[i]/*, fErrRep, fWarRep, fActRep, fRepClr*/);
                 this.Controls.Add(ptcp, i % this.ColumnCount, i / this.ColumnCount);
             }            
         }
 
         public PanelCurPower(IContainer container, List<StatisticCommon.TEC> listTec, DelegateStringFunc fErrRep, DelegateStringFunc fWarRep, DelegateStringFunc fActRep, DelegateBoolFunc fRepClr)
-            : this(listTec, fErrRep, fWarRep, fActRep, fRepClr)
+            : this(listTec/*, fErrRep, fWarRep, fActRep, fRepClr*/)
         {
             container.Add(this);
+        }
+
+        public override void SetDelegateReport(DelegateStringFunc ferr, DelegateStringFunc fwar, DelegateStringFunc fact, DelegateBoolFunc fclr)
+        {
+            foreach (Control ptcp in this.Controls)
+                if (ptcp is PanelTecCurPower)
+                    (ptcp as PanelTecCurPower).SetDelegateReport(ferr, fwar, fact, fclr);
+                else
+                    ;
         }
 
         public override void Start () {
@@ -235,19 +244,19 @@ namespace Statistic
 
             //private DelegateFunc delegateUpdateGUI;
 
-            public PanelTecCurPower(StatisticCommon.TEC tec, DelegateStringFunc fErrRep, DelegateStringFunc fWarRep, DelegateStringFunc fActRep, DelegateBoolFunc fRepClr)
+            public PanelTecCurPower(StatisticCommon.TEC tec/*, DelegateStringFunc fErrRep, DelegateStringFunc fWarRep, DelegateStringFunc fActRep, DelegateBoolFunc fRepClr*/)
                 : base (-1, -1)
             {
                 InitializeComponent();
 
                 m_tecView = new TecView(TecView.TYPE_PANEL.CUR_POWER, -1, -1);
 
-                HMark markQueries = new HMark ();
+                HMark markQueries = new HMark(new int [] {(int)CONN_SETT_TYPE.ADMIN, (int)CONN_SETT_TYPE.DATA_SOTIASSO});
                 markQueries.Marked((int)CONN_SETT_TYPE.ADMIN); //Для получения даты/времени
                 markQueries.Marked ((int)CONN_SETT_TYPE.DATA_SOTIASSO);
 
                 m_tecView.InitTEC (new List <StatisticCommon.TEC> () { tec }, markQueries);
-                m_tecView.SetDelegateReport(fErrRep, fWarRep, fActRep, fRepClr);
+                //m_tecView.SetDelegateReport(fErrRep, fWarRep, fActRep, fRepClr);
 
                 m_tecView.updateGUI_TM_Gen = new DelegateFunc (showTMGenPower);
                 m_tecView.updateGUI_TM_SN = new DelegateFunc(showTMSNPower);
@@ -255,10 +264,15 @@ namespace Statistic
                 Initialize();
             }
 
-            public PanelTecCurPower(IContainer container, StatisticCommon.TEC tec, DelegateStringFunc fErrRep, DelegateStringFunc fWarRep, DelegateStringFunc fActRep, DelegateBoolFunc fRepClr)
-                : this(tec, fErrRep, fWarRep, fActRep, fRepClr)
+            public PanelTecCurPower(IContainer container, StatisticCommon.TEC tec/*, DelegateStringFunc fErrRep, DelegateStringFunc fWarRep, DelegateStringFunc fActRep, DelegateBoolFunc fRepClr*/)
+                : this(tec/*, fErrRep, fWarRep, fActRep, fRepClr*/)
             {
                 container.Add(this);
+            }
+
+            public void SetDelegateReport (DelegateStringFunc fErrRep, DelegateStringFunc fWarRep, DelegateStringFunc fActRep, DelegateBoolFunc fRepClr)
+            {
+                m_tecView.SetDelegateReport(fErrRep, fWarRep, fActRep, fRepClr);
             }
 
             private void Initialize()

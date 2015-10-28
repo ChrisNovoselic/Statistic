@@ -157,7 +157,7 @@ namespace StatisticDiagnostic
         static Task taskdb = new Task();
         static Modes modesdb = new Modes();
         static Tec tecdb = new Tec();
-        int iListernID;
+        //int iListernID;
 
         /// <summary>
         /// Класс для передачи данных в классы
@@ -218,7 +218,10 @@ namespace StatisticDiagnostic
 
             public override void StartDbInterfaces()
             {
-                m_dictIdListeners.Add(0, new int[] { -1 });
+                if (m_dictIdListeners.ContainsKey (0) == false)
+                    m_dictIdListeners.Add(0, new int[] { -1 });
+                else
+                    ;
                 register(0, 0, m_connSett, m_connSett.name);
             }
 
@@ -254,6 +257,9 @@ namespace StatisticDiagnostic
                     default:
                         break;
                 }
+
+                actionReport(@"Получение значений из БД - состояние: " + ((State)state).ToString());
+
                 return iRes;
             }
 
@@ -303,12 +309,21 @@ namespace StatisticDiagnostic
                     default:
                         break;
                 }
+
+                if (isLastState (state) == true)
+                    ReportClear (true);
+                else
+                    ;
+
                 return iRes;
             }
 
             protected override INDEX_WAITHANDLE_REASON StateErrors(int state, int req, int res)
             {
                 INDEX_WAITHANDLE_REASON iRes = INDEX_WAITHANDLE_REASON.SUCCESS;
+
+                errorReport (@"Получение значений из БД - состояние: " + ((State)state).ToString());
+
                 return iRes;
             }
 
@@ -1650,16 +1665,30 @@ namespace StatisticDiagnostic
         /// </summary>
         public PanelStatisticDiagnostic()
         {
-            InitializeComponent();
+            initialize ();
         }
 
         public PanelStatisticDiagnostic(IContainer container)
         {
             container.Add(this);
 
-            InitializeComponent();
+            initialize ();
         }
 
+        private int initialize  ()
+        {
+            InitializeComponent();
+
+            int err = -1; //Признак выполнения метода/функции
+            //Зарегистрировать соединение/получить идентификатор соединения
+            int iListernID = DbSources.Sources().Register(FormMain.s_listFormConnectionSettings[(int)CONN_SETT_TYPE.CONFIG_DB].getConnSett(), false, @"CONFIG_DB");
+            GetCurrentData(iListernID);
+            m_DataSource = new HDataSource(new ConnectionSettings(InitTECBase.getConnSettingsOfIdSource(TYPE_DATABASE_CFG.CFG_200, iListernID, FormMainBase.s_iMainSourceData, -1, out err).Rows[0], 0));
+            m_DataSource.EvtRecievedTable += new DelegateObjectFunc(m_DataSource_EvtRecievedTable);
+            DbSources.Sources().UnRegister(iListernID);
+
+            return err;
+        }
         /// <summary>
         /// обработка события
         /// </summary>
@@ -1673,24 +1702,32 @@ namespace StatisticDiagnostic
 
         public void LoadData()
         {
-            int err = -1; //Признак выполнения метода/функции
-            //Зарегистрировать соединение/получить идентификатор соединения
-            iListernID = DbSources.Sources().Register(FormMain.s_listFormConnectionSettings[(int)CONN_SETT_TYPE.CONFIG_DB].getConnSett(), false, @"CONFIG_DB");
+            int iListernID = DbSources.Sources().Register(FormMain.s_listFormConnectionSettings[(int)CONN_SETT_TYPE.CONFIG_DB].getConnSett(), false, @"CONFIG_DB");
             GetCurrentData(iListernID);
-            m_DataSource = new HDataSource(new ConnectionSettings(InitTECBase.getConnSettingsOfIdSource(TYPE_DATABASE_CFG.CFG_200, iListernID, FormMainBase.s_iMainSourceData, -1, out err).Rows[0], 0));
-            m_DataSource.StartDbInterfaces();
+            DbSources.Sources().UnRegister(iListernID);
             m_DataSource.Start();
-            m_DataSource.Command();
-            m_DataSource.EvtRecievedTable += new DelegateObjectFunc(m_DataSource_EvtRecievedTable);
+            m_DataSource.StartDbInterfaces();
+            m_DataSource.Command();            
         }
 
         /// <summary>
-        /// 
+        /// Создать панели для отображения диагностических параметров ТЭЦ, Модес
         /// </summary>
         private void CreatePanels()
         {
             tecdb.Create_PanelTEC();
             modesdb.Create_Modes();
+        }
+        /// <summary>
+        /// Назначить делегаты по отображению сообщений в строке статуса
+        /// </summary>
+        /// <param name="ferr">Делегат для отображения в строке статуса ошибки</param>
+        /// <param name="fwar">Делегат для отображения в строке статуса предупреждения</param>
+        /// <param name="fact">Делегат для отображения в строке статуса описания действия</param>
+        /// <param name="fclr">Делегат для удаления из строки статуса сообщений</param>
+        public override void SetDelegateReport(DelegateStringFunc ferr, DelegateStringFunc fwar, DelegateStringFunc fact, DelegateBoolFunc fclr)
+        {
+            m_DataSource.SetDelegateReport (ferr, fwar, fact, fclr);
         }
 
         /// <summary>
@@ -1735,7 +1772,6 @@ namespace StatisticDiagnostic
                 throw new Exception(@"Нет соединения с БД");
 
             CreateListTM(arraySourceTEC);
-
         }
 
         /// <summary>
@@ -1830,12 +1866,17 @@ namespace StatisticDiagnostic
         /// </summary>
         public override void Stop()
         {
-            stop();
+            if (Started == true)
+            {
+                stop();
 
-            tecdb.stopTEC();
-            modesdb.stopMODES();
+                tecdb.stopTEC();
+                modesdb.stopMODES();
 
-            base.Stop();
+                base.Stop();
+            }
+            else
+                ;
         }
 
         /// <summary>
@@ -1847,7 +1888,9 @@ namespace StatisticDiagnostic
             {
                 UpdateTimer.Stop();
                 UpdateTimer = null;
-                m_DataSource.StopDbInterfaces();
+
+                m_DataSource.StopDbInterfaces ();
+                m_DataSource.Stop();
             }
             else ;
         }

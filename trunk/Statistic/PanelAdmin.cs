@@ -188,9 +188,9 @@ namespace Statistic
             preInitialize (type);
             
             //Для установки типов соединения (оптимизация кол-ва соединений с БД)
-            HMark markQueries = new HMark ();
-            markQueries.Marked ((int)CONN_SETT_TYPE.ADMIN);
-            markQueries.Marked((int)CONN_SETT_TYPE.PBR);
+            HMark markQueries = new HMark(new int [] {(int)CONN_SETT_TYPE.ADMIN, (int)CONN_SETT_TYPE.PBR});
+            //markQueries.Marked ((int)CONN_SETT_TYPE.ADMIN);
+            //markQueries.Marked((int)CONN_SETT_TYPE.PBR);
 
             try { m_admin.InitTEC(tec, markQueries); }
             catch (Exception e)
@@ -488,7 +488,7 @@ namespace Statistic
         //    return current_str;
         //}
 
-        public bool MayToClose()
+        public override bool MayToClose()
         {
             DialogResult result;
             Errors resultSaving;

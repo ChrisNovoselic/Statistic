@@ -32,8 +32,11 @@ namespace StatisticCommon
             this.delegateEventUpdate = dStatus;
         }
 
-        public virtual void SetDelegateReport(DelegateStringFunc ferr, DelegateStringFunc fwar, DelegateStringFunc fact, DelegateBoolFunc fclr)
+        public abstract void SetDelegateReport(DelegateStringFunc ferr, DelegateStringFunc fwar, DelegateStringFunc fact, DelegateBoolFunc fclr);
+
+        public virtual bool MayToClose()
         {
+            return true;
         }
     }
 

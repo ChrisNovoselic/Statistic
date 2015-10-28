@@ -81,7 +81,7 @@ namespace StatisticCommon
         public AdminTS(bool[] arMarkSavePPBRValues)
             : base()
         {
-            m_markSavedValues = new HMark();
+            m_markSavedValues = new HMark(0);
 
             if (!(arMarkSavePPBRValues == null))
             {

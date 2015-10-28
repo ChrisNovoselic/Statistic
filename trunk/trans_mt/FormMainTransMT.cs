@@ -59,10 +59,10 @@ namespace trans_mt
             string strTypeField = m_sFileINI.GetMainValueOfKey(@"РДГФорматТаблицаНазначение");
             int idListener = -1;
 
-            HMark markQueries = new HMark();
-            markQueries.Marked((int)StatisticCommon.CONN_SETT_TYPE.ADMIN);
-            markQueries.Marked((int)StatisticCommon.CONN_SETT_TYPE.PBR);
-            markQueries.Marked((int)StatisticCommon.CONN_SETT_TYPE.MTERM);
+            HMark markQueries = new HMark(new int[] { (int)StatisticCommon.CONN_SETT_TYPE.ADMIN, (int)StatisticCommon.CONN_SETT_TYPE.PBR, (int)StatisticCommon.CONN_SETT_TYPE.MTERM });
+            //markQueries.Marked((int)StatisticCommon.CONN_SETT_TYPE.ADMIN);
+            //markQueries.Marked((int)StatisticCommon.CONN_SETT_TYPE.PBR);
+            //markQueries.Marked((int)StatisticCommon.CONN_SETT_TYPE.MTERM);
 
             for (i = 0; i < (Int16)CONN_SETT_TYPE.COUNT_CONN_SETT_TYPE; i++)
             {

@@ -79,14 +79,14 @@ namespace StatisticCommon
                 //else ;
             }
 
-            m_modeTECComponent = new HMark ();
+            m_modeTECComponent = new HMark (0);
 
             m_listCheckBoxTECComponent = new List <CheckBox> ()  { checkBoxTEC,
                                                                     checkBoxGTP,
                                                                     checkBoxPC,
                                                                     checkBoxTG };
 
-            m_markTabAdminChecked = new HMark ();
+            m_markTabAdminChecked = new HMark (0);
             m_listItems = new List<Item>();
 
             if (! (m_list_tec == null))

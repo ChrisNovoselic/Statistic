@@ -59,7 +59,7 @@ namespace Statistic
             m_formMain = fm;
 
             scale = false;
-            m_markSourceData = new HMark();
+            m_markSourceData = new HMark(0);
 
             bool bGroupBoxSourceData = false;
             CONN_SETT_TYPE cstGroupBoxSourceData = CONN_SETT_TYPE.ASKUE;

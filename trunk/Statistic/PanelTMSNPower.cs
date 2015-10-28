@@ -74,7 +74,7 @@ namespace Statistic
 
         public bool m_bIsActive;
 
-        public PanelTMSNPower(List<StatisticCommon.TEC> listTec, DelegateStringFunc fErrRep, DelegateStringFunc fWarRep, DelegateStringFunc fActRep, DelegateBoolFunc fRepClr)
+        public PanelTMSNPower(List<StatisticCommon.TEC> listTec/*, DelegateStringFunc fErrRep, DelegateStringFunc fWarRep, DelegateStringFunc fActRep, DelegateBoolFunc fRepClr*/)
         {
             InitializeComponent();
 
@@ -94,13 +94,13 @@ namespace Statistic
 
             for (i = 0; i < listTec.Count; i++)
             {
-                ptcp = new PanelTecTMSNPower(listTec[i], fErrRep, fWarRep, fActRep, fRepClr);
+                ptcp = new PanelTecTMSNPower(listTec[i]/*, fErrRep, fWarRep, fActRep, fRepClr*/);
                 this.Controls.Add(ptcp, i % this.ColumnCount, i / this.ColumnCount);
             }
         }
 
-        public PanelTMSNPower(IContainer container, List<StatisticCommon.TEC> listTec, DelegateStringFunc fErrRep, DelegateStringFunc fWarRep, DelegateStringFunc fActRep, DelegateBoolFunc fRepClr)
-            : this(listTec, fErrRep, fWarRep, fActRep, fRepClr)
+        public PanelTMSNPower(IContainer container, List<StatisticCommon.TEC> listTec/*, DelegateStringFunc fErrRep, DelegateStringFunc fWarRep, DelegateStringFunc fActRep, DelegateBoolFunc fRepClr*/)
+            : this(listTec/*, fErrRep, fWarRep, fActRep, fRepClr*/)
         {
             container.Add(this);
         }
@@ -112,6 +112,15 @@ namespace Statistic
             this.RowCount = rows / this.ColumnCount;
             
             initializeLayoutStyleEvenly();
+        }
+
+        public override void SetDelegateReport(DelegateStringFunc ferr, DelegateStringFunc fwar, DelegateStringFunc fact, DelegateBoolFunc fclr)
+        {
+            foreach (Control ptcp in this.Controls)
+                if (ptcp is PanelTecTMSNPower)
+                    (ptcp as PanelTecTMSNPower).SetDelegateReport(ferr, fwar, fact, fclr);
+                else
+                    ;
         }
 
         public override void Start()
@@ -239,19 +248,19 @@ namespace Statistic
 
             //private DelegateFunc delegateUpdateGUI;
 
-            public PanelTecTMSNPower(StatisticCommon.TEC tec, DelegateStringFunc fErrRep, DelegateStringFunc fWarRep, DelegateStringFunc fActRep, DelegateBoolFunc fRepClr)
+            public PanelTecTMSNPower(StatisticCommon.TEC tec/*, DelegateStringFunc fErrRep, DelegateStringFunc fWarRep, DelegateStringFunc fActRep, DelegateBoolFunc fRepClr*/)
                 : base (-1, -1)
             {
                 InitializeComponent();
 
                 m_tecView = new TecView(TecView.TYPE_PANEL.CUR_POWER, -1, -1);
 
-                HMark markQueries = new HMark();
-                markQueries.Marked((int)CONN_SETT_TYPE.ADMIN); //Для получения даты/времени
-                markQueries.Marked((int)CONN_SETT_TYPE.DATA_SOTIASSO);
+                HMark markQueries = new HMark(new int[] { (int)CONN_SETT_TYPE.ADMIN, (int)CONN_SETT_TYPE.DATA_SOTIASSO });
+                //markQueries.Marked((int)CONN_SETT_TYPE.ADMIN); //Для получения даты/времени
+                //markQueries.Marked((int)CONN_SETT_TYPE.DATA_SOTIASSO);
 
                 m_tecView.InitTEC (new List <TEC> () { tec }, markQueries);
-                m_tecView.SetDelegateReport(fErrRep, fWarRep, fActRep, fRepClr);
+                //m_tecView.SetDelegateReport(fErrRep, fWarRep, fActRep, fRepClr);
 
                 m_tecView.updateGUI_TM_Gen = new DelegateFunc(showTMGenPower);
                 m_tecView.updateGUI_TM_SN = new DelegateFunc(showTMSNPower);
@@ -259,8 +268,8 @@ namespace Statistic
                 Initialize();
             }
 
-            public PanelTecTMSNPower(IContainer container, StatisticCommon.TEC tec, DelegateStringFunc fErrRep, DelegateStringFunc fWarRep, DelegateStringFunc fActRep, DelegateBoolFunc fRepClr)
-                : this(tec, fErrRep, fWarRep, fActRep, fRepClr)
+            public PanelTecTMSNPower(IContainer container, StatisticCommon.TEC tec/*, DelegateStringFunc fErrRep, DelegateStringFunc fWarRep, DelegateStringFunc fActRep, DelegateBoolFunc fRepClr*/)
+                : this(tec/*, fErrRep, fWarRep, fActRep, fRepClr*/)
             {
                 container.Add(this);
             }
@@ -334,6 +343,11 @@ namespace Statistic
                     this.RowStyles.Add(new RowStyle(SizeType.Percent, 10));
 
                 //isActive = false;
+            }
+
+            public void SetDelegateReport(DelegateStringFunc fErrRep, DelegateStringFunc fWarRep, DelegateStringFunc fActRep, DelegateBoolFunc fRepClr)
+            {
+                m_tecView.SetDelegateReport(fErrRep, fWarRep, fActRep, fRepClr);
             }
 
             public override void Start()

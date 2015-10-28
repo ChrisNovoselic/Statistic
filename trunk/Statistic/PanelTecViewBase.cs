@@ -574,20 +574,20 @@ namespace Statistic
             this.ResumeLayout(false);
         }
 
-        public PanelTecViewBase(TEC tec, int indx_tec, int indx_comp, DelegateStringFunc fErrRep, DelegateStringFunc fWarRep, DelegateStringFunc fActRep, DelegateBoolFunc fRepClr)
+        public PanelTecViewBase(TEC tec, int indx_tec, int indx_comp/*, DelegateStringFunc fErrRep, DelegateStringFunc fWarRep, DelegateStringFunc fActRep, DelegateBoolFunc fRepClr*/)
         {
             //InitializeComponent();
 
             m_tecView = new TecView(TecView.TYPE_PANEL.VIEW, indx_tec, indx_comp);
 
-            HMark markQueries = new HMark();
-            markQueries.Marked((int)CONN_SETT_TYPE.ADMIN);
-            markQueries.Marked((int)CONN_SETT_TYPE.PBR);
-            markQueries.Marked((int)CONN_SETT_TYPE.DATA_AISKUE);
-            markQueries.Marked((int)CONN_SETT_TYPE.DATA_SOTIASSO);
+            HMark markQueries = new HMark(new int []{(int)CONN_SETT_TYPE.ADMIN, (int)CONN_SETT_TYPE.PBR, (int)CONN_SETT_TYPE.DATA_AISKUE, (int)CONN_SETT_TYPE.DATA_SOTIASSO});
+            //markQueries.Marked((int)CONN_SETT_TYPE.ADMIN);
+            //markQueries.Marked((int)CONN_SETT_TYPE.PBR);
+            //markQueries.Marked((int)CONN_SETT_TYPE.DATA_AISKUE);
+            //markQueries.Marked((int)CONN_SETT_TYPE.DATA_SOTIASSO);
 
             m_tecView.InitTEC(new List<StatisticCommon.TEC>() { tec }, markQueries);
-            m_tecView.SetDelegateReport(fErrRep, fWarRep, fActRep, fRepClr);
+            //m_tecView.SetDelegateReport(fErrRep, fWarRep, fActRep, fRepClr);
 
             m_tecView.setDatetimeView = new DelegateFunc(setNowDate);
 
@@ -633,6 +633,11 @@ namespace Statistic
             update = false;
 
             delegateTickTime = new DelegateObjectFunc(TickTime);
+        }
+
+        public override void SetDelegateReport(DelegateStringFunc ferr, DelegateStringFunc fwar, DelegateStringFunc fact, DelegateBoolFunc fclr)
+        {
+            m_tecView.SetDelegateReport(ferr, fwar, fact, fclr);
         }
 
         private void FillDefaultMins()
@@ -1937,7 +1942,7 @@ namespace Statistic
         private HMark enabledSourceData_ToolStripMenuItems()
         {
             //bool [] arRes = new bool [] {false, false};
-            HMark markRes = new HMark ();
+            HMark markRes = new HMark (0);
 
             if (FormMain.formGraphicsSettings.m_connSettType_SourceData == CONN_SETT_TYPE.COUNT_CONN_SETT_TYPE) {
                 //Пункты меню доступны для выбора

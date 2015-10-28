@@ -384,20 +384,20 @@ namespace Statistic
             return ptRes;
         }
 
-        public PanelCustomTecView(FormChangeMode formCM, Size sz, DelegateStringFunc fErrRep, DelegateStringFunc fWarRep, DelegateStringFunc fActRep, DelegateBoolFunc fREpClr)
+        public PanelCustomTecView(FormChangeMode formCM, Size sz/*, DelegateStringFunc fErrRep, DelegateStringFunc fWarRep, DelegateStringFunc fActRep, DelegateBoolFunc fREpClr*/)
         {
             m_formChangeMode = formCM;
 
             this.RowCount = sz.Height;
             this.ColumnCount = sz.Width;
 
-            SetDelegateReport (fErrRep, fWarRep, fActRep, fREpClr);
+            //SetDelegateReport (fErrRep, fWarRep, fActRep, fREpClr);
 
             InitializeComponent();
         }
 
-        public PanelCustomTecView(IContainer container, FormChangeMode formCM, Size sz, DelegateStringFunc fErrRep, DelegateStringFunc fWarRep, DelegateStringFunc fActRep, DelegateBoolFunc fRepClr)
-            : this(formCM, sz, fErrRep, fWarRep, fActRep, fRepClr)
+        public PanelCustomTecView(IContainer container, FormChangeMode formCM, Size sz/*, DelegateStringFunc fErrRep, DelegateStringFunc fWarRep, DelegateStringFunc fActRep, DelegateBoolFunc fRepClr*/)
+            : this(formCM, sz/*, fErrRep, fWarRep, fActRep, fRepClr*/)
         {
             container.Add(this);
         }
@@ -440,7 +440,7 @@ namespace Statistic
         protected void Clear () {
         }
 
-        public void SetDelegateReport (DelegateStringFunc fErrRep, DelegateStringFunc fWarRep, DelegateStringFunc fActRep, DelegateBoolFunc fRepClr) {
+        public override void SetDelegateReport (DelegateStringFunc fErrRep, DelegateStringFunc fWarRep, DelegateStringFunc fActRep, DelegateBoolFunc fRepClr) {
             m_fErrorReport = fErrRep;
             m_fWarningReport = fWarRep;
             m_fActionReport = fActRep;
@@ -565,7 +565,8 @@ namespace Statistic
                         , TECComponent_index = m_formChangeMode.GetTECComponentIndex (m_arLabelEmpty [indxLabel].m_listIdContextMenuItems [m_arLabelEmpty[indxLabel].ContextMenu.MenuItems.IndexOf (obj as MenuItem)]);
                     Point ptAddress = getAddress(indxLabel);
 
-                    PanelTecView panelTecView = new PanelTecView(m_formChangeMode.m_list_tec[tec_index], tec_index, TECComponent_index, m_arLabelEmpty[indxLabel], m_fErrorReport, m_fWarningReport, m_fActionReport, m_fReportClear);
+                    PanelTecView panelTecView = new PanelTecView(m_formChangeMode.m_list_tec[tec_index], tec_index, TECComponent_index, m_arLabelEmpty[indxLabel]/*, m_fErrorReport, m_fWarningReport, m_fActionReport, m_fReportClear*/);
+                    panelTecView.SetDelegateReport(m_fErrorReport, m_fWarningReport, m_fActionReport, m_fReportClear);
                     this.Controls.Add (panelTecView, ptAddress.Y, ptAddress.X);
                     this.Controls.SetChildIndex(panelTecView, indxLabel);
                     indxLabel = this.Controls.GetChildIndex(panelTecView);

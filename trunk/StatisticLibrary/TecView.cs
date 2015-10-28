@@ -205,7 +205,7 @@ namespace StatisticCommon
         protected override void Initialize () {
             base.Initialize ();
 
-            m_markWarning = new HMark ();
+            m_markWarning = new HMark (0);
 
             currHour = true;
             lastHour = 0;
