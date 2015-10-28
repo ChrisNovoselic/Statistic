@@ -467,7 +467,7 @@ namespace StatisticDiagnostic
             public Point point = new Point();
 
             /// <summary>
-            /// 
+            /// актвиация
             /// </summary>
             /// <param name="activated"></param>
             public void ActivateTEC(bool activated)
@@ -498,7 +498,7 @@ namespace StatisticDiagnostic
             }
 
             /// <summary>
-            /// 
+            /// выбор активного источника СОТИАССО
             /// </summary>
             /// <param name="nameTec"></param>
             /// <returns></returns>
@@ -876,7 +876,7 @@ namespace StatisticDiagnostic
             }
 
             /// <summary>
-            /// 
+            /// очистка гирда
             /// </summary>
             private void ClearGrid()
             {
@@ -1006,7 +1006,7 @@ namespace StatisticDiagnostic
         partial class Modes
         {
             /// <summary>
-            /// 
+            /// активация
             /// </summary>
             /// <param name="?"></param>
             public void ActivateMODES(bool activated)
@@ -1025,7 +1025,7 @@ namespace StatisticDiagnostic
             }
 
             /// <summary>
-            /// уничтожение панелей
+            /// очистка
             /// </summary>
             public void stopMODES()
             {
@@ -1542,7 +1542,7 @@ namespace StatisticDiagnostic
             enum Limit : int { lim1 = 10, lim2 = 60 };
 
             /// <summary>
-            /// 
+            /// заполнение грида
             /// </summary>
             public void AddItem()
             {
@@ -1577,7 +1577,7 @@ namespace StatisticDiagnostic
                         TaskDataGridView.Rows[i].Cells[0].Value = dr[0]["NAME_SHR"];
                     }
                 }
-                ErrorTime();
+                OverlimitTime();
             }
 
             /// <summary>
@@ -1609,9 +1609,9 @@ namespace StatisticDiagnostic
             }
 
             /// <summary>
-            /// 
+            /// выделение задержки выполенеия задачи
             /// </summary>
-            private void ErrorTime()
+            private void OverlimitTime()
             {
                 int lim;
                 int counter = TaskDataGridView.Rows.Count;
@@ -1685,7 +1685,7 @@ namespace StatisticDiagnostic
         }
 
         /// <summary>
-        /// 
+        /// создание 
         /// </summary>
         private void CreatePanels()
         {
@@ -1694,7 +1694,7 @@ namespace StatisticDiagnostic
         }
 
         /// <summary>
-        /// Создание строки коннекта
+        /// Старт проекта
         /// </summary>
         public override void Start()
         {
@@ -1704,7 +1704,7 @@ namespace StatisticDiagnostic
         }
 
         /// <summary>
-        /// вызов функций старта МОДЕС, ТЭЦ
+        /// вызов функций заполенния панелей
         /// </summary>
         private void start()
         {
@@ -1739,7 +1739,7 @@ namespace StatisticDiagnostic
         }
 
         /// <summary>
-        /// Вызов функций прикрепления панелей ТЭЦ и Модес(заполнение задач)
+        /// Вызов функций прикрепления панелей ТЭЦ и Модес
         /// </summary>
         public void AddPanel()
         {
@@ -1839,7 +1839,7 @@ namespace StatisticDiagnostic
         }
 
         /// <summary>
-        /// -
+        /// -остановка таймера и запроса
         /// </summary>
         private void stop()
         {
@@ -1853,7 +1853,7 @@ namespace StatisticDiagnostic
         }
 
         /// <summary>
-        /// 
+        /// функция активации панели
         /// </summary>
         /// <param name="activated"></param>
         /// <returns></returns>
