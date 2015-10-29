@@ -32,6 +32,7 @@ namespace StatisticAlarm
 
             public AlarmDbEventArgs(DataRow rowEvt)
                 : base((int)rowEvt[@"ID_COMPONENT"]
+                    , (float)rowEvt[@"value"]
                     , (DateTime)rowEvt[@"DATETIME_REGISTRED"]
                     , (int)rowEvt[@"SITUATION"])
             {
@@ -372,9 +373,11 @@ namespace StatisticAlarm
             private void GetListEventsRequest()
             {
                 Request(IdListener
-                    , @"SELECT * FROM [dbo].[AlarmEvent] WHERE [DATETIME_REGISTRED] BETWEEN '"
-                        + m_dtCurrent.AddHours(m_iHourBegin).ToString(@"yyyyMMdd HH:mm") + @"' AND '"
-                        + m_dtCurrent.AddHours(m_iHourEnd).ToString(@"yyyyMMdd HH:mm") + @"'");
+                    , @"SELECT * FROM [dbo].[AlarmEvent]"
+                        + @" WHERE [DATETIME_REGISTRED] BETWEEN '"
+                            + (m_dtCurrent.AddHours(m_iHourBegin) - HAdmin.GetUTCOffsetOfMoscowTimeZone()).ToString(@"yyyyMMdd HH:mm:ss") + @"' AND '"
+                            + (m_dtCurrent.AddHours(m_iHourEnd) - HAdmin.GetUTCOffsetOfMoscowTimeZone()).ToString(@"yyyyMMdd HH:mm:ss") + @"'"
+                        + @" ORDER BY [DATETIME_REGISTRED]");
             }
 
             private void GetEventDetailRequest()
@@ -729,7 +732,8 @@ namespace StatisticAlarm
             if (bRes == true)
                 if (active == true)
                     if ((m_bWorkChecked == false)
-                        && (IsFirstActivated == true))
+                        //&& (IsFirstActivated == true)
+                        )
                         pushList ();
                     else
                         ;
@@ -912,6 +916,7 @@ namespace StatisticAlarm
                     listRes.Add(new PanelAlarm.ViewAlarmJournal()
                     {
                         m_id = (long)r[@"ID"]
+                        , m_id_owner = getIdOwner((int)r[@"ID_COMPONENT"])
                         , m_id_component = (int)r[@"ID_COMPONENT"]
                         , m_str_name_shr_component = getNameComponent((int)r[@"ID_COMPONENT"])
                         , m_type = (INDEX_TYPE_ALARM)r[@"TYPE"]
@@ -955,6 +960,7 @@ namespace StatisticAlarm
                 listRes.Add(new PanelAlarm.ViewAlarmDetail()
                 {
                     m_id = (long)r[@"ID"]
+                    , m_id_owner = getIdOwner((int)r[@"ID_COMPONENT"])
                     , m_id_event = (long)r[@"ID_EVENT"]
                     , m_id_component = (int)r[@"ID_COMPONENT"]
                     , m_str_name_shr_component = getNameComponent((int)r[@"ID_COMPONENT"])
@@ -999,11 +1005,64 @@ namespace StatisticAlarm
             return strRes;
         }
 
+        private int getIdOwner(int id_comp)
+        {
+            int iRes = -1;
+            FormChangeMode.MODE_TECCOMPONENT mode = TECComponent.Mode (id_comp);
+            bool bContinue = true;
+
+            foreach (TecView tv in m_listTecView)
+            {
+                foreach (TECComponent tc in tv.m_tec.list_TECComponents)
+                {
+                    if (mode == FormChangeMode.MODE_TECCOMPONENT.GTP)
+                        if (tc.m_id == id_comp)
+                        {
+                            //iRes оставить безизменений
+                            bContinue = false;
+                            break;
+                        }
+                        else
+                            ;
+                    else
+                        if (mode == FormChangeMode.MODE_TECCOMPONENT.TG)
+                            if (tc.IsGTP == true)
+                                foreach (TG tg in tc.m_listTG)
+                                    if (tg.m_id == id_comp)
+                                    {
+                                        iRes = tc.m_id;
+                                        bContinue = false;
+                                        break;
+                                    }
+                                    else
+                                        ;
+                            else
+                                ;
+                        else
+                            ;
+
+                    if (bContinue == false)
+                        break;
+                    else
+                        ;
+                }
+
+                if (bContinue == false)
+                    break;
+                else
+                    ;
+            }
+
+            return iRes;
+        }
+
         private string getNameComponent(int id_comp)
         {
             string strRes = string.Empty;
+            bool bContinue = true;
 
             foreach (TecView tv in m_listTecView)
+            {
                 foreach (TECComponent tc in tv.m_tec.list_TECComponents)
                     if (tc.m_id == id_comp)
                     {
@@ -1011,10 +1070,17 @@ namespace StatisticAlarm
                         strRes += @", ";
                         strRes += tc.name_shr;
                         
+                        bContinue = false;
                         break;
                     }
                     else
                         ;
+
+                if (bContinue == false)
+                    break;
+                else
+                    ;
+            }
 
             return strRes;
         }

@@ -102,7 +102,7 @@ namespace StatisticCommon
             /// <summary>
             ///  для текущего значения ТМ
             /// </summary>
-            public double m_powerCurrent_TM; 
+            public float m_powerCurrent_TM; 
             /// <summary>
             ///  для 59-х мин каждого часа
             /// </summary>
@@ -644,7 +644,7 @@ namespace StatisticCommon
             int iRes = 0;
             int i = -1;
             string kks_name = string.Empty;
-            double value = -1;
+            float value = -1;
             DateTime dtLastChangedAt = m_dtLastChangedAt_TM_Gen
                 , dtServer = serverTime.Add(-HAdmin.GetUTCOffsetOfMoscowTimeZone());
             TG tgTmp;
@@ -673,7 +673,7 @@ namespace StatisticCommon
                         ;
 
                     if (!(table.Rows[i]["value"] is DBNull))
-                        if (double.TryParse(table.Rows[i]["value"].ToString(), out value) == false)
+                        if (float.TryParse(table.Rows[i]["value"].ToString(), out value) == false)
                             return -1;
                         else
                             ;
@@ -5071,7 +5071,7 @@ namespace StatisticCommon
                                     else
                                         ;
 
-                                    double.TryParse(r[@"VALUE"].ToString(), out m_dictValuesTG[tgTmp.m_id].m_powerCurrent_TM);                                    
+                                    float.TryParse(r[@"VALUE"].ToString(), out m_dictValuesTG[tgTmp.m_id].m_powerCurrent_TM);                                    
                                 }
                                 break;
                             case TEC.SOURCE_SOTIASSO.INSATANT_APP:
