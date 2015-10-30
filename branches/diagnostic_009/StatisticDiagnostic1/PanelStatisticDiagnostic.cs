@@ -711,6 +711,8 @@ namespace StatisticDiagnostic
                         CellsPingTEC(filter, i);
                         m_arPanelsTEC[i].TECDataGridView.Invoke(new Action(() => m_arPanelsTEC[i].TECDataGridView.Rows[r].Cells[3].Value = text.ToString()));
                         PaintigCells(i, r);
+                        TextColumnTec();
+                        AttachContextMenu(i, r);
                     }
 
                     else
@@ -721,6 +723,8 @@ namespace StatisticDiagnostic
 
                         m_arPanelsTEC[i].TECDataGridView.Rows[r].Cells[3].Value = text.ToString();
                         PaintigCells(i, r);
+                        AttachContextMenu(i, r);
+                        TextColumnTec();
                         CellsPingTEC(filter, i);
                     }
                     t = t + 2;
@@ -738,7 +742,7 @@ namespace StatisticDiagnostic
 
                     AddRowsTEC(i, m_tableSourceData.Select(filter).Length);
                     InsertDataTEC(filter, i);
-                    TextColumnTec();
+                    
                 }
 
                 HeaderGridTEC();
@@ -883,13 +887,39 @@ namespace StatisticDiagnostic
                 for (int i = 0; i < massTM.Length / 2; i++)
                 {
                     b = massTM[i, 1].ToString();
+                   
 
                     if (a == b)
                     {
                         PaintCellActive(x, y);
-
                         break;
                     }
+                }
+            }
+
+            /// <summary>
+            /// 
+            /// </summary>
+            /// <param name="x">индекс панели</param>
+            /// <param name="y">номер строки</param>
+            public void AttachContextMenu(int x, int y)
+            {
+                if (m_arPanelsTEC[x].TECDataGridView.Rows[y].Cells[0].Style.BackColor == System.Drawing.Color.DeepSkyBlue)
+                {
+                    m_arPanelsTEC[x].TECDataGridView.Rows[y].Cells[0].ContextMenuStrip = ContextmenuChangeState;
+                    ContextmenuChangeState.Items[0].Enabled = false;
+                    ContextmenuChangeState.Items[1].Enabled = true;
+                }
+                else
+                {
+
+                    if (!(m_arPanelsTEC[x].TECDataGridView.Rows[y].Cells[0].Value.ToString() == "АИИСКУЭ"))
+                    {
+                        m_arPanelsTEC[x].TECDataGridView.Rows[y].Cells[0].ContextMenuStrip = ContextmenuChangeState;
+                        ContextmenuChangeState.Items[1].Enabled = false;
+                        ContextmenuChangeState.Items[0].Enabled = true;
+                    }
+                    
                 }
             }
 
