@@ -34,9 +34,9 @@ namespace StatisticDiagnostic
         /// </summary>
         private void InitializeComponent()
         {
-            this.panelMain = new PanelStatisticDiagnostic();
+            //this.panelMain = new PanelStatisticDiagnostic();
             this.SuspendLayout();
-            this.Controls.Add(panelMain); 
+            //this.Controls.Add(panelMain); 
             // 
             // FormDiagnostic
             // 
@@ -57,7 +57,7 @@ namespace StatisticDiagnostic
             (this.MainMenuStrip.Items[0] as ToolStripMenuItem).DropDownItems[0].Click += new EventHandler(fMenuItemExit_Click);
             (this.MainMenuStrip.Items[1] as ToolStripMenuItem).DropDownItems.Add(new ToolStripMenuItem(@"БД конфигурации"));
             (this.MainMenuStrip.Items[1] as ToolStripMenuItem).DropDownItems[0].Click += new EventHandler(fMenuItemDBConfig_Click);
-            //(this.MainMenuStrip.Items[2] as ToolStripMenuItem).Click += new EventHandler(fMenuItemAbout_Click);
+            (this.MainMenuStrip.Items[2] as ToolStripMenuItem).Click += new EventHandler(fMenuItemAbout_Click);
 
             this.Location = new Point(0, this.MainMenuStrip.Height);
             this.Size = new System.Drawing.Size(this.ClientSize.Width, this.ClientSize.Height - this.MainMenuStrip.Height - this.m_statusStripMain.Height);
