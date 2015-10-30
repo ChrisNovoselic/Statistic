@@ -245,10 +245,10 @@ namespace StatisticTimeSync
         /// <param name="ev">Аргумент события</param>
         private void fMenuItemAbout_Click(object obj, EventArgs ev)
         {
-            /*using (FormAbout formAbout = new FormAbout(this.Icon.ToBitmap() as Image))
+            using (FormAbout formAbout = new FormAbout(this.Icon.ToBitmap() as Image))
             {
                 formAbout.ShowDialog(this);
-            }*/
+            }
         }
 
         protected override void UpdateActiveGui(int type)

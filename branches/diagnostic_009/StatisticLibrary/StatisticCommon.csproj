@@ -165,6 +165,7 @@
   <ItemGroup>
     <EmbeddedResource Include="FormAbout.resx">
       <DependentUpon>FormAbout.cs</DependentUpon>
+      <SubType>Designer</SubType>
     </EmbeddedResource>
     <EmbeddedResource Include="FormChangeMode.resx">
       <DependentUpon>FormChangeMode.cs</DependentUpon>
@@ -172,12 +173,15 @@
     </EmbeddedResource>
     <EmbeddedResource Include="FormMainAnalyzer.resx">
       <DependentUpon>FormMainAnalyzer.cs</DependentUpon>
+      <SubType>Designer</SubType>
     </EmbeddedResource>
     <EmbeddedResource Include="FormParameters.resx">
       <DependentUpon>FormParameters.cs</DependentUpon>
+      <SubType>Designer</SubType>
     </EmbeddedResource>
     <EmbeddedResource Include="FormParametersTG.resx">
       <DependentUpon>FormParametersTG.cs</DependentUpon>
+      <SubType>Designer</SubType>
     </EmbeddedResource>
     <EmbeddedResource Include="Properties\Resources.resx">
       <Generator>PublicResXFileCodeGenerator</Generator>

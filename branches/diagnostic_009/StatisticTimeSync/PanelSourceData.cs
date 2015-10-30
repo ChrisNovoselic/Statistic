@@ -327,6 +327,10 @@ namespace StatisticTimeSync
                 }
             }
 
+            /// <summary>
+            /// 
+            /// </summary>
+            /// <param name="indx"></param>
             public void TurnOn(int indx)
             {
                 if (m_checkBoxTurnOn.Checked == false)
@@ -346,6 +350,10 @@ namespace StatisticTimeSync
                 }
             }
 
+            /// <summary>
+            /// 
+            /// </summary>
+            /// <param name="indx"></param>
             public void TurnOff(int indx = -1)
             {
                 if (m_checkBoxTurnOn.Checked == true)
@@ -368,7 +376,7 @@ namespace StatisticTimeSync
             }
 
             /// <summary>
-            /// Async func выбора значений в комбобоксе
+            ///  проверка на чек
             /// </summary>
             /// <param name="indx"></param>
             public void Select(int indx)
@@ -377,7 +385,6 @@ namespace StatisticTimeSync
                 {
                     if (indx > 0)
                     {
-                        //m_comboBoxSourceData.Invoke(new Action(() => m_comboBoxSourceData.SelectedIndex = indx));
                         m_comboBoxSourceData.SelectedIndex = indx;
 
                         //m_comboBoxSourceData.SelectedIndex = indx;
