@@ -44,7 +44,7 @@ namespace StatisticAlarm
     public class AlarmNotifyEventArgs : EventArgs
     {
         public int m_id_comp;
-        public float m_value;
+        public double m_value;
         public DateTime? m_dtRegistred;        
         public int m_situation;
         public string m_message_shr;
@@ -59,10 +59,11 @@ namespace StatisticAlarm
                 : INDEX_TYPE_ALARM.UNKNOWN; }
         }
 
-        public AlarmNotifyEventArgs(int id_comp, float value, DateTime dtReg, int situation)
+        public AlarmNotifyEventArgs(int id_comp, double value, DateTime dtReg, int situation)
             : base()
         {
             m_id_comp = id_comp;
+            m_value = value;
             m_dtRegistred = dtReg;
             m_situation = situation;
             m_message_shr = GetMessage(id_comp, situation);

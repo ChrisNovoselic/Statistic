@@ -208,6 +208,7 @@ namespace StatisticAlarm
             {
                 m_dictIdListeners.Add(0, new int[] { -1 });
                 m_dictIdListeners[0][0] = DbSources.Sources().Register(m_connSett, true, @"ViewAlarm");
+                Console.WriteLine(@"AdminAlarm.HHandlerDb::StartDbInterfaces (active=true) - iListenerId=" + m_dictIdListeners[0][0]);
             }
 
             protected override int StateCheckResponse(int state, out bool error, out object table)
@@ -364,7 +365,10 @@ namespace StatisticAlarm
             /// <param name="tableRes"></param>
             private void GetCurrentTimeResponse(DataTable tableRes)
             {
-                m_dtServer = (DateTime)tableRes.Rows[0][0];
+                if (tableRes.Rows.Count == 1)
+                    m_dtServer = (DateTime)tableRes.Rows[0][0];
+                else
+                    Logging.Logg().Error(@"AdminAlarm.HandlerDb::GetCurrentTimeResponse () - таблица не содержит ни одной строки ...", Logging.INDEX_MESSAGE.NOT_SET);
             }
             /// <summary>
             /// Выполнить запрос для получения перечня событий сигнализаций
@@ -395,9 +399,12 @@ namespace StatisticAlarm
             {
                 TecViewAlarm.AlarmTecViewEventArgs arg = m_objArgument as TecViewAlarm.AlarmTecViewEventArgs;
                 int id_user = HUsers.Id; //ID_USER
-                double val = (arg.Mode == FormChangeMode.MODE_TECCOMPONENT.GTP) ? -1F :
-                    (arg.Mode == FormChangeMode.MODE_TECCOMPONENT.TG) ? arg.m_listEventDetail[0].value :
-                        -2F; //VALUE
+                double val =
+                    //(arg.Mode == FormChangeMode.MODE_TECCOMPONENT.GTP) ? -1F :
+                    //    (arg.Mode == FormChangeMode.MODE_TECCOMPONENT.TG) ? arg.m_listEventDetail[0].value :
+                    //        -2F
+                    arg.m_value
+                            ; //VALUE
                 string strDTRegistred = arg.m_dtRegistred.GetValueOrDefault().ToString(@"yyyyMMdd HH:mm:ss.fff"); //DATETIME_REGISTRED
                 //Запрос для вставки записи о событии сигнализации
                 string query = "INSERT INTO [dbo].[AlarmEvent] ([ID_COMPONENT],[TYPE],[VALUE],[DATETIME_REGISTRED],[ID_USER_REGISTRED],[DATETIME_FIXED],[ID_USER_FIXED],[DATETIME_CONFIRM],[ID_USER_CONFIRM],[CNT_RETRY],[INSERT_DATETIME],[SITUATION]) VALUES"

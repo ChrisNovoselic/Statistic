@@ -2576,6 +2576,7 @@ namespace StatisticCommon
                 m_curRDGValues[i].pmax = ((HAdmin)source).m_curRDGValues[i].pmax;
                 m_curRDGValues[i].pbr_number = ((HAdmin)source).m_curRDGValues[i].pbr_number;
                 m_curRDGValues[i].dtRecUpdate = ((HAdmin)source).m_curRDGValues[i].dtRecUpdate;
+                m_curRDGValues[i].fc = ((HAdmin)source).m_curRDGValues[i].fc;
                 m_curRDGValues[i].recomendation = ((HAdmin)source).m_curRDGValues[i].recomendation;
                 m_curRDGValues[i].deviationPercent = ((HAdmin)source).m_curRDGValues[i].deviationPercent;
                 m_curRDGValues[i].deviation = ((HAdmin)source).m_curRDGValues[i].deviation;

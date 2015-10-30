@@ -95,15 +95,17 @@ namespace StatisticAlarm
                 ////Зарегистрировать соединение/получить идентификатор соединения
                 //, iListenerId = DbSources.Sources().Register(FormMain.s_listFormConnectionSettings[(int)CONN_SETT_TYPE.CONFIG_DB].getConnSett(), false, @"CONFIG_DB")
                 ;
-            bool bWorkChecked = HStatisticUsers.IsAllowed((int)HStatisticUsers.ID_ALLOWED.AUTO_ALARM_KOMDISP);
+            bool bWorkChecked = (HStatisticUsers.IsAllowed((int)HStatisticUsers.ID_ALLOWED.AUTO_ALARM_KOMDISP)
+                || (mode == MODE.SERVICE)) && (! (mode == MODE.VIEW));
             //Инициализация списка с ТЭЦ
             m_list_tec = new InitTEC_200(iListenerConfigDB, true, false).tec;
             //Инициализация
-            initAdminAlarm(new ConnectionSettings(InitTECBase.getConnSettingsOfIdSource(TYPE_DATABASE_CFG.CFG_200
+            ConnectionSettings connSett = new ConnectionSettings(InitTECBase.getConnSettingsOfIdSource(TYPE_DATABASE_CFG.CFG_200
                     , iListenerConfigDB
                     , FormMainBase.s_iMainSourceData
                     , -1
-                    , out err).Rows[0], 0)
+                    , out err).Rows[0], -1);
+            initAdminAlarm(connSett
                 , mode
                 , markQueries
                 , bWorkChecked); 
@@ -139,18 +141,8 @@ namespace StatisticAlarm
             (ctrl as CheckedListBox).Enabled = true; //mode == MODE.ADMIN
             //Запустить на выполнениие (при необходимости) таймер для обновления значений в таблице
             ctrl = Find(INDEX_CONTROL.CBX_WORK) as CheckBox;
-            if (mode == MODE.SERVICE)
-                (ctrl as CheckBox).Checked = true;
-            else
-                if (mode == MODE.ADMIN)
-                    (ctrl as CheckBox).Checked = bWorkChecked;
-                else
-                    if (mode == MODE.VIEW)
-                        (ctrl as CheckBox).Checked =
-                        (ctrl as CheckBox).Enabled =
-                             false;
-                    else
-                        ;            
+            (ctrl as CheckBox).Checked = bWorkChecked;
+            (ctrl as CheckBox).Enabled = ! (mode == MODE.VIEW);
             //Назначить обработчик события изменение даты
             (Find(INDEX_CONTROL.MCLDR_CURRENT) as MonthCalendar).DateChanged += new DateRangeEventHandler(onEventDateChanged);
             //Назначить обработчик событий при изменении признака "Включено/отключено"
@@ -707,7 +699,6 @@ namespace StatisticAlarm
                 //Очистить содержимое таблицы
                 Rows.Clear();            
             }
-
             /// <summary>
             /// Обработчик события - применить фильтр для строк в таблице
             /// </summary>
@@ -722,7 +713,11 @@ namespace StatisticAlarm
                 else
                     ;
             }
-
+            /// <summary>
+            /// Установить фильтр для отображаемых значений
+            /// </summary>
+            /// <param name="indxFilter">Тип фильтра</param>
+            /// <param name="objFilter">Значения для фильтра указанного типа</param>
             public void SetFilter(INDEX_FILTER indxFilter, object objFilter)
             {
                 switch (indxFilter)
@@ -734,8 +729,28 @@ namespace StatisticAlarm
                         break;
                 }
             }
-        }
 
+            protected int indexOfIdRec(int indxColumn, long id)
+            {
+                int iRes = -1;
+
+                foreach (DataGridViewRow r in this.Rows)
+                {
+                    if ((long)r.Cells[indxColumn].Value == id)
+                    {
+                        iRes = this.Rows.IndexOf(r);
+                        break;
+                    }
+                    else
+                        ;
+                }
+
+                return iRes;
+            }
+        }
+        /// <summary>
+        /// Класс для описания события сигнализаций (для отображения в таблице)
+        /// </summary>
         public class ViewAlarmBase
         {
             public long m_id; //Идентификатор записи в ьаблице БД
@@ -744,7 +759,9 @@ namespace StatisticAlarm
             public float m_value;
             public string m_str_name_shr_component;
         }
-
+        /// <summary>
+        /// Класс для описания события сигнализаций (для отображения в таблице основной информации о событии)
+        /// </summary>
         public class ViewAlarmJournal : ViewAlarmBase
         {
             public INDEX_TYPE_ALARM m_type;
@@ -770,8 +787,13 @@ namespace StatisticAlarm
             /// </summary>
             public event DelegateObjectFunc EventConfirmed
                 , EventSelected;
-
+            /// <summary>
+            /// Событие фиксации зарегистрированного события (только в режиме 'SERVICE')
+            /// </summary>
             public event DelegateObjectFunc EventFixed;
+            /// <summary>
+            /// Режим работы "родительской" панели
+            /// </summary>
             private MODE _mode { get { return (Parent.Parent as PanelAlarm).m_adminAlarm.Mode; } }
             /// <summary>
             /// Перечисление для индексов столбцов в таблице
@@ -895,7 +917,7 @@ namespace StatisticAlarm
                         , r.m_value
                         , HAdmin.ToMoscowTimeZone (r.m_dt_registred.GetValueOrDefault()).ToString (s_DateTimeFormat)
                         , (!(r.m_dt_fixed == null)) ? HAdmin.ToMoscowTimeZone (r.m_dt_fixed.GetValueOrDefault()).ToString (s_DateTimeFormat) : string.Empty
-                        , (!(r.m_dt_fixed == null)) ? HAdmin.ToMoscowTimeZone (r.m_dt_confirmed.GetValueOrDefault()).ToString (s_DateTimeFormat) : string.Empty
+                        , (!(r.m_dt_confirmed == null)) ? HAdmin.ToMoscowTimeZone (r.m_dt_confirmed.GetValueOrDefault()).ToString (s_DateTimeFormat) : string.Empty
                     });                    
                     //Установить доступность кнопки "Подтвердить"
                     (Rows[indxRow].Cells[this.Columns.Count - 1] as DataGridViewDisableButtonCell).Enabled = isRecEnabled((listView as List<ViewAlarmJournal>).IndexOf(r));
@@ -905,7 +927,7 @@ namespace StatisticAlarm
 
                 this.SelectionChanged += new EventHandler(onSelectionChanged);
 
-                indxRow = indexOfIdRec(lPrevIdRecSelected);
+                indxRow = indexOfIdRec((int)iINDEX_COLUMN.ID_REC, lPrevIdRecSelected);
                 if (indxRow < 0)
                     if (Rows.Count > 0)
                         indxRow = 0;
@@ -1040,31 +1062,13 @@ namespace StatisticAlarm
 
                 return iRes;
             }
-
-            private int indexOfIdRec (long id)
-            {
-                int iRes = -1;
-
-                foreach (DataGridViewRow r in this.Rows)
-                {
-                    if ((long)r.Cells[(int)iINDEX_COLUMN.ID_REC].Value == id)
-                    {
-                        iRes = this.Rows.IndexOf(r);
-                        break;
-                    }
-                    else
-                        ;
-                }
-
-                return iRes;
-            }
             /// <summary>
             /// Метод для обновления (дата/время фиксации/подтверждения) одной записи
             /// </summary>
             /// <param name="pars">Аргумент- массив с идентификатором события, датой/временем фиксации/подтверждения</param>
             public void UpdateRec (object []pars)
             {
-                int indxRow = indexOfIdRec((long)pars[1])
+                int indxRow = indexOfIdRec((int)iINDEX_COLUMN.ID_REC, (long)pars[1])
                     , indxCol = -1;
                 
                 if (!(indxRow < 0))
@@ -1234,6 +1238,11 @@ namespace StatisticAlarm
             protected override void onEvtGetData(object obj)
             {
                 int indxRow = -1;
+                long lPrevIdRecSelected = -1L;
+                if (SelectedRows.Count > 0)
+                    lPrevIdRecSelected = (long)Rows[SelectedRows[0].Index].Cells[(int)iINDEX_COLUMN.ID_REC].Value;
+                else
+                    ;
                 //Очистить содержимое таблицы
                 base.onEvtGetData(obj);
                 m_dictView.Clear ();
@@ -1251,6 +1260,15 @@ namespace StatisticAlarm
 
                     Rows[indxRow].Visible = m_filter.isVisibled (r);
                 }
+
+                indxRow = indexOfIdRec ((int)iINDEX_COLUMN.ID_REC, lPrevIdRecSelected);
+                if (! (indxRow < 0))
+                {
+                    CurrentCell = Rows[indxRow].Cells[1];
+                    CurrentCell.Selected = true;
+                }    
+                else
+                    ;
             }
             /// <summary>
             /// Обработчик события - применить фильтр для строк в таблице

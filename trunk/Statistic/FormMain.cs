@@ -464,7 +464,7 @@ namespace Statistic
             // прочитать актуальные значения из [setup]
             (formParameters as FormParameters_DB).Update(idListenerConfigDB, out err);
             // прочитать и обновить актуальные индивидуальные групповые (пользовательские) параметры
-            using (new HStatisticUsers(idListenerConfigDB)) { ; }
+            HStatisticUsers.Update (idListenerConfigDB);
             InitTEC_200.PerformTECListUpdate(idListenerConfigDB);
 
             DbSources.Sources().UnRegister(idListenerConfigDB);

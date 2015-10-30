@@ -25,7 +25,7 @@ namespace StatisticAlarm
             public struct EventDetail
             {
                 public int id;
-                public float value;
+                public double value;
                 public DateTime last_changed_at;
                 public int id_tm;
 
@@ -43,7 +43,7 @@ namespace StatisticAlarm
 
             public List<EventDetail> m_listEventDetail;
 
-            public AlarmTecViewEventArgs(int id_comp, float value, DateTime dtReg, int s, List<EventDetail> listEventDetail)
+            public AlarmTecViewEventArgs(int id_comp, double value, DateTime dtReg, int s, List<EventDetail> listEventDetail)
                 : base(id_comp, value, dtReg, s)
             {
                 m_listEventDetail = listEventDetail;
@@ -82,9 +82,11 @@ namespace StatisticAlarm
 
             //Признак выполнения функции
             int iRes = (int)HHandler.INDEX_WAITHANDLE_REASON.SUCCESS
-                , iDebug = -1; //-1 - нет отладки, 0 - раб./отладка, 1 - имитирование
+                , iDebug = -1 //-1 - нет отладки, 0 - раб./отладка, 1 - имитирование
+                , cntTGTurnOn = 0
+                , cntPower_TMValues = 0; //Счетчик кол-ва значений тек./мощн. ТГ в общем значении мощности для ГТП
             //Константы
-            float TGTURNONOFF_VALUE = -1F //Значения для сигнализации "ТГ вкл./откл."
+            double TGTURNONOFF_VALUE = -1F //Значения для сигнализации "ТГ вкл./откл."
                 , NOT_VALUE = -2F //НЕТ значения
                 , power_TM = NOT_VALUE;
             //Признак состояния для сигнализации "ТГ вкл./откл." - исходный
@@ -124,22 +126,22 @@ namespace StatisticAlarm
                         if (!(m_dictValuesTG[tg.m_id].m_powerCurrent_TM < 0F))
                             curTurnOnOff = StatisticCommon.TG.INDEX_TURNOnOff.OFF;
                         else
-                            //Console.WriteLine(@"Предупреждение (Value < 0): id_tg=" + tg.m_id + @", value=" + m_dictValuesTG[tg.m_id].m_powerCurrent_TM);
-                            Logging.Logg().Warning(@"TecViewAlarm::AlarmRegistred (id_tg=" + tg.m_id + @") - "
-                                 + @"value=" + m_dictValuesTG[tg.m_id].m_powerCurrent_TM
-                                , Logging.INDEX_MESSAGE.NOT_SET);
+                            ; //??? неопределенное состояние ТГ
                     else
                     {//Больше ИЛИ равно 1F
                         curTurnOnOff = StatisticCommon.TG.INDEX_TURNOnOff.ON;
-
+                        // подготовить значение                        
                         if (power_TM == NOT_VALUE) power_TM = 0F; else ;
+                        // учесть в общем значении мощности ГТП, текущую мощность ТГ
                         power_TM += m_dictValuesTG[tg.m_id].m_powerCurrent_TM;
+                        // увеличить счетчик 
+                        cntPower_TMValues ++;
                     }
                     //??? неизвестный идентификатор источника значений СОТИАССО (id_tm = -1)
                     listEventDetail.Add(new TecViewAlarm.AlarmTecViewEventArgs.EventDetail()
                     {
                         id = tg.m_id
-                        , value = (float)m_dictValuesTG[tg.m_id].m_powerCurrent_TM
+                        , value = m_dictValuesTG[tg.m_id].m_powerCurrent_TM
                         , last_changed_at = m_dictValuesTG[tg.m_id].m_dtCurrent_TM
                         , id_tm = -1
                     });
@@ -203,6 +205,11 @@ namespace StatisticAlarm
                             + listEventDetail[listEventDetail.Count - 1].ValuesToString ()
                             , Logging.INDEX_MESSAGE.NOT_SET);
 
+                    if (tg.m_TurnOnOff == StatisticCommon.TG.INDEX_TURNOnOff.ON)
+                        cntTGTurnOn ++;
+                    else
+                        ;
+
                     #region Код для отладки
                     if (!(iDebug < 0))
                         if ((TECComponentCurrent.m_listTG.IndexOf(tg) + 1) < TECComponentCurrent.m_listTG.Count)
@@ -228,18 +235,28 @@ namespace StatisticAlarm
                         }
                         else
                         #endregion Окончание блока кода для отладки
-                            if (Math.Abs(power_TM - m_valuesHours[curHour].valuesUDGe) > m_valuesHours[curHour].valuesUDGe * ((double)TECComponentCurrent.m_dcKoeffAlarmPcur / 100))
+                        {
+                            if (cntTGTurnOn == cntPower_TMValues)
                             {
-                                //EventReg(allTECComponents[indxTECComponents].m_id, -1);
-                                if (power_TM < m_valuesHours[curHour].valuesUDGe)
-                                    situation = -1; //Меньше
-                                else
-                                    situation = 1; //Больше
+                                double absDiff = Math.Abs(power_TM - m_valuesHours[curHour].valuesUDGe)
+                                 , lim = m_valuesHours[curHour].valuesUDGe * ((double)TECComponentCurrent.m_dcKoeffAlarmPcur / 100);
+                                if (absDiff > lim)
+                                {
+                                    //EventReg(allTECComponents[indxTECComponents].m_id, -1);
+                                    if (power_TM < m_valuesHours[curHour].valuesUDGe)
+                                        situation = -1; //Меньше
+                                    else
+                                        situation = 1; //Больше
 
-                                EventReg(new TecViewAlarm.AlarmTecViewEventArgs(TECComponentCurrent.m_id, power_TM, DateTime.UtcNow, situation, listEventDetail));
+                                    EventReg(new TecViewAlarm.AlarmTecViewEventArgs(TECComponentCurrent.m_id, power_TM, DateTime.UtcNow, situation, listEventDetail));
+                                }
+                                else
+                                    ; //EventUnReg...
                             }
                             else
-                                ; //EventUnReg...
+                                // обработаны не все значения тек./мощности ТГ_в_работе из состава ГТП
+                                Logging.Logg().Warning(@"TecViewAlarm::AlarmRegistred (id=" + m_ID + @") - обработаны не все значения тек./мощности ТГ_в_работе из состава ГТП", Logging.INDEX_MESSAGE.NOT_SET);
+                        }
                     }
                     else
                         ; //Нет значений ИЛИ значения ограничены 1 МВт

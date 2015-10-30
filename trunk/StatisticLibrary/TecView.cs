@@ -102,7 +102,7 @@ namespace StatisticCommon
             /// <summary>
             ///  для текущего значения ТМ
             /// </summary>
-            public float m_powerCurrent_TM; 
+            public double m_powerCurrent_TM; 
             /// <summary>
             ///  для 59-х мин каждого часа
             /// </summary>
@@ -157,6 +157,10 @@ namespace StatisticCommon
         public volatile int m_indx_TEC;
         //public volatile int m_indx_TECComponent;
         public List <TECComponentBase> m_localTECComponents;
+        /// <summary>
+        /// Идентификатор объекта (ТЭЦ, ГТП, ЩУ, ТГ)
+        ///  , которому принадлежит текущий объект 'TecView'
+        /// </summary>
         public int m_ID { get { return indxTECComponents < 0 ? m_tec.m_id : m_tec.list_TECComponents[indxTECComponents].m_id; } }
         public volatile Dictionary<int, TecView.valuesTECComponent> [] m_dictValuesTECComponent;
         public volatile Dictionary<int, TecView.valuesTG>m_dictValuesTG;
@@ -718,11 +722,23 @@ namespace StatisticCommon
                             break;
                     }
 
-                    if ((!(value < 1)) && (!(m_dictValuesTG[tgTmp.m_id].m_powerCurrent_TM == value))) {
-                        m_dictValuesTG[tgTmp.m_id].m_dtCurrent_TM = HAdmin.ToMoscowTimeZone(dtLastChangedAt);
-                        m_dictValuesTG[tgTmp.m_id].m_powerCurrent_TM = value;
-                    }
-                    else ;
+                    if (!(m_dictValuesTG[tgTmp.m_id].m_powerCurrent_TM == value))
+                        // значения НЕ совпадают
+                        if (! (value < 0))
+                        {// больше ИЛИ = 0
+                            m_dictValuesTG[tgTmp.m_id].m_dtCurrent_TM = HAdmin.ToMoscowTimeZone(dtLastChangedAt);
+
+                            //if (!(value < 1))
+                            //    // больше ИЛИ = 1                                
+                            //    ;
+                            //else ; // меньше 1
+
+                            m_dictValuesTG[tgTmp.m_id].m_powerCurrent_TM = value;
+                        }
+                        else
+                            ; // меньше 0
+                    else
+                        ; // значения совпадают
                 }
 
                 if (! (m_dtLastChangedAt_TM_Gen == DateTime.MaxValue))
@@ -5071,7 +5087,7 @@ namespace StatisticCommon
                                     else
                                         ;
 
-                                    float.TryParse(r[@"VALUE"].ToString(), out m_dictValuesTG[tgTmp.m_id].m_powerCurrent_TM);                                    
+                                    double.TryParse(r[@"VALUE"].ToString(), out m_dictValuesTG[tgTmp.m_id].m_powerCurrent_TM);                                    
                                 }
                                 break;
                             case TEC.SOURCE_SOTIASSO.INSATANT_APP:
