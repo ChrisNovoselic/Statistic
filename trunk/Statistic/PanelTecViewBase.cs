@@ -6,7 +6,7 @@ using System.Windows.Forms;
 //using System.ComponentModel;
 using System.Data;
 //using System.Data.SqlClient;
-using System.Drawing;
+using System.Drawing; //Color..
 using System.Threading;
 using System.Globalization;
 
@@ -464,9 +464,6 @@ namespace Statistic
         protected DataGridViewHours m_dgwHours;
         protected DataGridViewMins m_dgwMins;
 
-        public static DataGridViewCellStyle dgvCellStyleError, dgvCellStyleWarning
-            , dgvCellStyleCommon;
-
         //private ManualResetEvent m_evTimerCurrent;
         private
             //System.Threading.Timer
@@ -601,15 +598,7 @@ namespace Statistic
                 ;
 
             foreach (TG tg in m_tecView.listTG)
-            {
                 m_pnlQuickData.addTGView(tg);
-            }
-
-            dgvCellStyleError = new DataGridViewCellStyle();
-            dgvCellStyleError.BackColor = Color.Red;
-            dgvCellStyleWarning = new DataGridViewCellStyle();
-            dgvCellStyleWarning.BackColor = Color.Yellow;
-            dgvCellStyleCommon = new DataGridViewCellStyle();
 
             if (tec.Type == TEC.TEC_TYPE.BIYSK)
                 ; //this.parameters = FormMain.papar;

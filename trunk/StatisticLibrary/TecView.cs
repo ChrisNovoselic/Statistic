@@ -460,7 +460,7 @@ namespace StatisticCommon
 
             AddState((int)TecView.StatesMachine.CurrentTimeAdmin); // без m_curDate = serverTime
             AddState((int)TecView.StatesMachine.CurrentMins_TM);
-            //AddState((int)TecView.StatesMachine.CurrentMinDetail_TM);
+            AddState((int)TecView.StatesMachine.CurrentMinDetail_TM);
 
             AddState((int)TecView.StatesMachine.PPBRValues);
             AddState((int)TecView.StatesMachine.AdminValues);
@@ -1747,6 +1747,8 @@ namespace StatisticCommon
         {
             lock (m_lockValue)
             {
+                currHour = false;
+
                 //Отладка ???
                 if (indxMin < 0)
                 {
@@ -1802,17 +1804,14 @@ namespace StatisticCommon
         {
             bool bRes = true;
 
-            if (
-                (!(indx < (serverTime.Minute - 1)))
+            if ((!(indx < (serverTime.Minute - 1)))
                 && (m_curDate.Hour.Equals(serverTime.Hour) == true)
                 && (m_curDate.Date.Equals(serverTime.Date) == true)
                 //&& (serverTime.Minute > 2)
                 )
                 bRes = false;
             else
-                ;
-
-            getRetroMinDetail(indx);
+                getRetroMinDetail(indx);
 
             return bRes;
         }
