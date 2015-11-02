@@ -83,7 +83,8 @@ namespace StatisticAlarm
             //Признак выполнения функции
             int iRes = (int)HHandler.INDEX_WAITHANDLE_REASON.SUCCESS
                 , iDebug = -1 //-1 - нет отладки, 0 - раб./отладка, 1 - имитирование
-                , cntTGTurnOn = 0
+                , cntTGTurnOn = 0 // кол-во вкл. ТГ
+                , cntTGTurnUnknown = allTECComponents[indxTECComponents].m_listTG.Count // кол-во ТГ с неизвестным состоянием
                 , cntPower_TMValues = 0; //Счетчик кол-ва значений тек./мощн. ТГ в общем значении мощности для ГТП
             //Константы
             double TGTURNONOFF_VALUE = -1F //Значения для сигнализации "ТГ вкл./откл."
@@ -205,8 +206,15 @@ namespace StatisticAlarm
                             + listEventDetail[listEventDetail.Count - 1].ValuesToString ()
                             , Logging.INDEX_MESSAGE.NOT_SET);
 
-                    if (tg.m_TurnOnOff == StatisticCommon.TG.INDEX_TURNOnOff.ON)
-                        cntTGTurnOn ++;
+                    if (! (tg.m_TurnOnOff == StatisticCommon.TG.INDEX_TURNOnOff.UNKNOWN))
+                    {
+                        cntTGTurnUnknown --;
+
+                        if (tg.m_TurnOnOff == StatisticCommon.TG.INDEX_TURNOnOff.ON)
+                            cntTGTurnOn ++;
+                        else
+                            ;
+                    }
                     else
                         ;
 
@@ -236,7 +244,8 @@ namespace StatisticAlarm
                         else
                         #endregion Окончание блока кода для отладки
                         {
-                            if (cntTGTurnOn == cntPower_TMValues)
+                            if ((cntTGTurnUnknown == 0) // кол-во ТГ с неизвестным состоянием = 0
+                                && (cntTGTurnOn == cntPower_TMValues)) // кол-во ТГ, учтенных для подсчета общего знач. тек./мощн. ГТП = кол-ву вкл. ТГ
                             {
                                 double absDiff = Math.Abs(power_TM - m_valuesHours[curHour].valuesUDGe)
                                  , lim = m_valuesHours[curHour].valuesUDGe * ((double)TECComponentCurrent.m_dcKoeffAlarmPcur / 100);

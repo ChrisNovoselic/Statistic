@@ -1030,7 +1030,12 @@ namespace StatisticAlarm
                 else
                     ; // нет изменений
             }
-
+            /// <summary>
+            /// Поиск индекса строки для указания ее в качестве выбранной
+            ///  , единственный критерий - выбранная строка не может имет признак "не отображать"
+            /// </summary>
+            /// <param name="indxRowNotVisible">Индекс строки, получившей признак "не отображать"</param>
+            /// <returns>Индекс строки (-1, если не найдена)</returns>
             private int findIndexRowToSelected (int indxRowNotVisible)
             {
                 int iRes = -1
@@ -1063,7 +1068,7 @@ namespace StatisticAlarm
                 return iRes;
             }
             /// <summary>
-            /// Метод для обновления (дата/время фиксации/подтверждения) одной записи
+            /// Метод для обновления значения (дата/время фиксации/подтверждения) одной записи
             /// </summary>
             /// <param name="pars">Аргумент- массив с идентификатором события, датой/временем фиксации/подтверждения</param>
             public void UpdateRec (object []pars)
@@ -1085,7 +1090,7 @@ namespace StatisticAlarm
                             break;
                     }
 
-                    this.Rows[indxRow].Cells[indxCol].Value = ((DateTime)pars[2]).ToString(s_DateTimeFormat);
+                    this.Rows[indxRow].Cells[indxCol].Value = HAdmin.ToMoscowTimeZone((DateTime)pars[2]).ToString(s_DateTimeFormat);
 
                     //Установить доступность кнопки "Подтвердить"
                     (Rows[indxRow].Cells[this.Columns.Count - 1] as DataGridViewDisableButtonCell).Enabled = isRecEnabled (indxRow);                        

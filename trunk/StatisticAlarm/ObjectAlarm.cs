@@ -124,6 +124,10 @@ namespace StatisticAlarm
     public class DictAlarmObject : object
     {
         /// <summary>
+        /// Период - глубина (в часах) хранения объектов с описанием событий сигнализаций
+        /// </summary>
+        public static int DEPTH_HOUR_OBJECTALRM = 6;
+        /// <summary>
         /// Словарь с составным ключом (идентификатор компонента + дата/врремя/регитсрации)
         ///  объектов событий сигнализаций
         /// </summary>
@@ -194,6 +198,16 @@ namespace StatisticAlarm
                 }
             }
             /// <summary>
+            /// Признак немедленного оповещения
+            /// </summary>
+            public bool IMMEDIATELY
+            {
+                get
+                {
+                    return (!(_state == INDEX_STATES_ALARM.FIXING)) && (_dtFixed == null);
+                }
+            }
+            /// <summary>
             /// Признак превышения интервала времени установленному в БД_конфигурации
             ///  между текущими датой/временем И датой/времени_регистрации ИЛИ крайней датой/времени_фиксации
             /// </summary>
@@ -210,7 +224,9 @@ namespace StatisticAlarm
                     return (! (_state == INDEX_STATES_ALARM.FIXING)) && ((DateTime.UtcNow - dt) > TimeSpan.FromMilliseconds(AdminAlarm.MSEC_ALARM_TIMERUPDATE));
                 }
             }
-            
+            /// <summary>
+            /// Признак устаревания объекта сигнализаций
+            /// </summary>
             public bool HISTORY
             {
                 get
@@ -467,6 +483,7 @@ namespace StatisticAlarm
         {
             INDEX_ACTION iRes = INDEX_ACTION.NOTHING;
             ALARM_OBJECT alarmObj = null;
+            List <KeyValuePair <int, DateTime>>listToRemoveKeys;
 
             lock (this)
             {
@@ -495,8 +512,22 @@ namespace StatisticAlarm
                             ;
 
                     if (iRes == INDEX_ACTION.NEW)
+                    {
+                        //Перед добавлением объекта очистить словарь от "устаревших" объектов
+                        //Подготовить список со сложными ключами для удалениями
+                        listToRemoveKeys = new List<KeyValuePair<int, DateTime>>();
+                        foreach (KeyValuePair<int, DateTime> cKey in _dictAlarmObject.Keys)
+                            //Проверить признак "устаревания"
+                            if ((cKey.Value - DateTime.UtcNow).TotalHours > DEPTH_HOUR_OBJECTALRM)
+                                listToRemoveKeys.Add(cKey);
+                            else
+                                ;
+                        //Удалить объекты со сложными ключами в списке
+                        foreach (KeyValuePair<int, DateTime> cKey in listToRemoveKeys)
+                            _dictAlarmObject.Remove(cKey);
                         // создать объект события сигнализации
                         _dictAlarmObject.Add(new KeyValuePair<int, DateTime>(ev.m_id_comp, ev.m_dtRegistred.GetValueOrDefault()), new ALARM_OBJECT(ev));
+                    }
                     else
                         ;
 
@@ -523,7 +554,8 @@ namespace StatisticAlarm
             //Проверить признак "подтвержден"
             if (obj.CONFIRMED == false)
                 //Проверить признак необходимости повторения оповещения
-                if (obj.RETRY == true)
+                if ((obj.IMMEDIATELY == true)
+                    || (obj.RETRY == true))
                 {
                     //Установить признак объекту: "находиться на оповещении"
                     obj.Fixing();

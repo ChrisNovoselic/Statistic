@@ -820,9 +820,9 @@ namespace StatisticAlarm
                     { new object [] //1-е событие
                         {
                             StatesMachine.Notify
-                            , HAdmin.ToMoscowTimeZone().Date //dtNotify.Date
-                            , 0
-                            , 24
+                            , HAdmin.ToMoscowTimeZone() //.Date //dtNotify.Date
+                            , -1 * DictAlarmObject.DEPTH_HOUR_OBJECTALRM
+                            , 0 //24
                         }
                     });
         }
