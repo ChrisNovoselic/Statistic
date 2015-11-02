@@ -125,6 +125,7 @@ namespace Statistic
 
             this.m_zGraph_GTP.MouseUpEvent += new ZedGraph.ZedGraphControl.ZedMouseEventHandler(this.zedGraphMins_MouseUpEvent);
 
+            //??? назначить обработчика для инициирования запроса по получению "минута по-секундно"
             DataGridViewGTP dgvGTP = this.Controls.Find(KEY_CONTROLS.DGV_GTP_VALUE.ToString(), true)[0] as DataGridViewGTP;
             dgvGTP.SelectionChanged += new EventHandler(panelManagement_dgvGTPOnSelectionChanged);
         }
@@ -655,8 +656,8 @@ namespace Statistic
                     dgvGTP.Rows[i - 1].Cells[3].Style = cellStyle;
                 }
 
-                //// инициировать запрос для получения "минута по-секундно"
-                //EvtMinSelectedChanged(dgvGTP.SelectedRows[0].Index);
+                dgvGTP.CurrentCell = dgvGTP.Rows[(int)(obj as object[])[2] - 1].Cells[0];
+                dgvGTP.CurrentCell.Selected = true;
             }
             /// <summary>
             /// Отобразить значения в разрезе минута-секунды
@@ -1114,7 +1115,7 @@ namespace Statistic
                 {
                     if ((m_tecView.adminValuesReceived == true) //Признак успешного выполнения операций для состояния 'TecView.AdminValues'
                         && ((m_tecView.lastMin > 60) && (m_tecView.serverTime.Minute > 1)))
-                    {
+                    {// переход на следующий час
                         ////Вариант №1
                         //m_timerCurrent.Stop ();
 
@@ -1128,7 +1129,10 @@ namespace Statistic
                         m_tecView.ChangeState();
 
                         //Вариант №0
-                        m_timerCurrent.Change(PanelStatistic.POOL_TIME * 1000 - 1, System.Threading.Timeout.Infinite);
+                        m_timerCurrent.Change(
+                            //PanelStatistic.POOL_TIME * 1000 - 1
+                            13666
+                            , System.Threading.Timeout.Infinite);
                     }
                 }
                 else
@@ -1335,6 +1339,12 @@ namespace Statistic
 
             if (! (hour < 0))
             {
+                //DataGridViewGTP dgvGTP = this.Controls.Find(KEY_CONTROLS.DGV_GTP_VALUE.ToString(), true)[0] as DataGridViewGTP;
+                //if (dgvGTP.SelectionChanged == null)
+                //    dgvGTP.SelectionChanged += new EventHandler(panelManagement_dgvGTPOnSelectionChanged);
+                //else
+                //    ;
+
                 // отобразить значение для "час по-минутно"
                 EvtValuesMins (new object [] { m_tecView.m_valuesMins, m_dcGTPKoeffAlarmPcur, min });
                 drawGraphMins();
@@ -1830,14 +1840,24 @@ namespace Statistic
         {
             //if (!(delegateStartWait == null)) delegateStartWait(); else ;
 
+            bool bPrevCurrHour = m_tecView.currHour;
+
             setCurrDateHour(CurrDateHour);
 
-            m_tecView.currHour = m_tecView.zedGraphMins_MouseUpEvent(indx);
+            m_tecView.currHour = ! (m_tecView.zedGraphMins_MouseUpEvent(indx));
+
+            //if (m_tecView.currHour == false)
+            //    (this.Controls.Find(KEY_CONTROLS.BTN_SET_NOWDATEHOUR.ToString(), true)[0] as System.Windows.Forms.Button).PerformClick();
+            //else
+            //    ;
 
             if (m_tecView.currHour == false)
-                (this.Controls.Find(KEY_CONTROLS.BTN_SET_NOWDATEHOUR.ToString(), true)[0] as System.Windows.Forms.Button).PerformClick();
+                m_timerCurrent.Change(System.Threading.Timeout.Infinite, System.Threading.Timeout.Infinite);
             else
-                ;
+                if (bPrevCurrHour == false)
+                    m_timerCurrent.Change(0, System.Threading.Timeout.Infinite);
+                else
+                    ;
 
             //if (!(delegateStopWait == null)) delegateStopWait(); else ;
         }
@@ -1886,14 +1906,20 @@ namespace Statistic
         private void panelManagement_dgvGTPOnSelectionChanged (object obj, EventArgs ev)
         //private void panelManagement_dgvGTPOnSelectionChanged(int indx)
         {
-            DataGridViewGTP dgvGTP = this.Controls.Find(KEY_CONTROLS.DGV_GTP_VALUE.ToString(), true)[0] as DataGridViewGTP;
+            DataGridViewGTP dgvGTP =
+                //this.Controls.Find(KEY_CONTROLS.DGV_GTP_VALUE.ToString(), true)[0] as DataGridViewGTP
+                obj as DataGridViewGTP
+                ;
             int indx = -1;
 
-            if (dgvGTP.SelectedRows.Count > 0)
-            {
-                indx = dgvGTP.SelectedRows[0].Index;
-                //updateMinDetail(indx + 1);
-            }
+            if (m_tecView.adminValuesReceived == true) //Признак успешного выполнения операций для состояния 'TecView.AdminValues'
+                if (dgvGTP.SelectedRows.Count > 0)
+                {
+                    indx = dgvGTP.SelectedRows[0].Index;
+                    updateMinDetail(indx + 1);
+                }
+                else
+                    ;
             else
                 ;
         }

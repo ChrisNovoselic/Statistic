@@ -1802,14 +1802,17 @@ namespace StatisticCommon
         {
             bool bRes = true;
 
-            if ((! (indx < (serverTime.Minute - 1)))
+            if (
+                (!(indx < (serverTime.Minute - 1)))
                 && (m_curDate.Hour.Equals(serverTime.Hour) == true)
                 && (m_curDate.Date.Equals(serverTime.Date) == true)
                 //&& (serverTime.Minute > 2)
                 )
                 bRes = false;
             else
-                getRetroMinDetail(indx);
+                ;
+
+            getRetroMinDetail(indx);
 
             return bRes;
         }
