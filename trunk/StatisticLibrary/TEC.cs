@@ -1563,7 +1563,7 @@ namespace StatisticCommon
             {
                 case INDEX_TYPE_SOURCE_DATA.COMMON:
                     //Общий источник для всех ТЭЦ
-                    query = @"SELECT [KKS_NAME] as KKS_NAME, [last_changed_at], [Current_Value_SOTIASSO] as value " +
+                    query = @"SELECT [KKS_NAME] as KKS_NAME, [last_changed_at], [Current_Value_SOTIASSO] as value, [ID_SOURCE] " +
                             @"FROM [dbo].[v_ALL_VALUE_SOTIASSO_KKS] " +
                             @"WHERE [ID_TEC]=" + m_id + @" " +
                             @"AND [KKS_NAME] IN (" + sensors + @")" + @" AND ID_SOURCE=" + QueryIdSOTIASSOLinkSource //m_IdSOTIASSOLinkSourceTM

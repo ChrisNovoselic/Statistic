@@ -144,7 +144,7 @@ namespace StatisticAlarm
                         id = tg.m_id
                         , value = m_dictValuesTG[tg.m_id].m_powerCurrent_TM
                         , last_changed_at = m_dictValuesTG[tg.m_id].m_dtCurrent_TM
-                        , id_tm = -1
+                        , id_tm = m_dictValuesTG[tg.m_id].m_id_TM
                     });
 
                     #region Код для отладки
@@ -190,7 +190,7 @@ namespace StatisticAlarm
                             if (!(tg.m_TurnOnOff == curTurnOnOff))
                             {
                                 //
-                                EventReg(new TecViewAlarm.AlarmTecViewEventArgs(tg.m_id, listEventDetail[0].value, DateTime.UtcNow, (int)curTurnOnOff, listEventDetail));
+                                EventReg(new TecViewAlarm.AlarmTecViewEventArgs(tg.m_id, listEventDetail[listEventDetail.Count - 1].value, DateTime.UtcNow, (int)curTurnOnOff, listEventDetail));
 
                                 //Прекращаем текущий цикл...
                                 //Признак досрочного прерывания цикла для сигн. "Текущая P"

@@ -102,7 +102,11 @@ namespace StatisticCommon
             /// <summary>
             ///  для текущего значения ТМ
             /// </summary>
-            public double m_powerCurrent_TM; 
+            public double m_powerCurrent_TM;
+            /// <summary>
+            /// Идентификатор источника значений СОТИАССО
+            /// </summary>
+            public int m_id_TM; 
             /// <summary>
             ///  для 59-х мин каждого часа
             /// </summary>
@@ -455,10 +459,8 @@ namespace StatisticCommon
             using_date = false;
 
             AddState((int)TecView.StatesMachine.CurrentTimeAdmin); // без m_curDate = serverTime
-            //AddState((int)TecView.StatesMachine.CurrentHours_Fact); //Только для определения сезона ???            
             AddState((int)TecView.StatesMachine.CurrentMins_TM);
-            AddState((int)TecView.StatesMachine.CurrentMinDetail_TM);
-            //AddState((int)TecView.StatesMachine.Hour_TM);
+            //AddState((int)TecView.StatesMachine.CurrentMinDetail_TM);
 
             AddState((int)TecView.StatesMachine.PPBRValues);
             AddState((int)TecView.StatesMachine.AdminValues);
@@ -646,7 +648,8 @@ namespace StatisticCommon
         private int GetCurrentTMGenResponse(DataTable table)
         {
             int iRes = 0;
-            int i = -1;
+            int i = -1
+                , id_tm = -1;
             string kks_name = string.Empty;
             float value = -1;
             DateTime dtLastChangedAt = m_dtLastChangedAt_TM_Gen
@@ -659,10 +662,11 @@ namespace StatisticCommon
                 {
                     m_dictValuesTG[tg.m_id].m_powerCurrent_TM = -1F;
                     m_dictValuesTG[tg.m_id].m_dtCurrent_TM = DateTime.MinValue;
+                    m_dictValuesTG[tg.m_id].m_id_TM = -1;
                 }
             }
 
-            iRes = CheckNameFieldsOfTable(table, new string[] { @"KKS_NAME", @"value", @"last_changed_at" }) == true ? 0 : -1;
+            iRes = CheckNameFieldsOfTable(table, new string[] { @"KKS_NAME", @"value", @"last_changed_at", @"ID_SOURCE" }) == true ? 0 : -1;
             if (iRes == 0)
             {
                 for (i = 0; i < table.Rows.Count; i++)
@@ -690,7 +694,13 @@ namespace StatisticCommon
                         //Нельзя определить дата/время для "нормальных" (>= 1) значений
                         return -1;
                     else
-                        dtLastChangedAt = (DateTime)table.Rows[i]["last_changed_at"];                        
+                        dtLastChangedAt = (DateTime)table.Rows[i]["last_changed_at"];
+
+                    if ((!(table.Rows[i]["ID_SOURCE"] is DBNull))
+                        && (table.Rows[i]["ID_SOURCE"].GetType () == typeof(int)))
+                        id_tm = (int)table.Rows[i]["ID_SOURCE"];                        
+                    else
+                        id_tm = -1;
 
                     if (m_dtLastChangedAt_TM_Gen > dtLastChangedAt) {
                         m_dtLastChangedAt_TM_Gen = dtLastChangedAt;
@@ -734,6 +744,7 @@ namespace StatisticCommon
                             //else ; // меньше 1
 
                             m_dictValuesTG[tgTmp.m_id].m_powerCurrent_TM = value;
+                            m_dictValuesTG[tgTmp.m_id].m_id_TM = id_tm;
                         }
                         else
                             ; // меньше 0
@@ -752,7 +763,7 @@ namespace StatisticCommon
                     ;
             }
             else
-                ;
+                Logging.Logg().Error(@"TecView::GetCurrentTMGenResponse () - не найден один их требуемых столбцов ...", Logging.INDEX_MESSAGE.NOT_SET);
 
             return iRes;
         }
@@ -1281,7 +1292,7 @@ namespace StatisticCommon
                     break;
                 case (int)StatesMachine.RetroMinDetail_TM:
                     iRes = GetMinDetailTMResponse(table as System.Data.DataTable);
-                    updateGUI_Fact (lastHour, lastMin);
+                    updateGUI_Fact (/*lastHour*/-1, lastMin); //-1 - признак отобразить только "минута по-секундно"
                     break;
                 case (int)StatesMachine.CurrentMins_TM:
                     ClearValuesMins();
@@ -1736,8 +1747,6 @@ namespace StatisticCommon
         {
             lock (m_lockValue)
             {
-                currHour = false;
-
                 //Отладка ???
                 if (indxMin < 0)
                 {
@@ -4686,8 +4695,10 @@ namespace StatisticCommon
         {
             //Logging.Logg().Debug(@"TecView::GetMinTMResponse (lastHour=" + lastHour + @", lastMin=" + lastMin + @") - Rows.Count=" + table.Rows.Count);
 
-            if (lastMin == 21)
-                return 0;
+            if ((lastMin == 61)
+                && (currHour == true))
+                //??? при этом 'lastMin' в функции НЕ используется
+                return 0;    
             else
                 ;
 
@@ -5037,6 +5048,7 @@ namespace StatisticCommon
                 {
                     m_dictValuesTG[tg.m_id].m_powerCurrent_TM = -1F;
                     m_dictValuesTG[tg.m_id].m_dtCurrent_TM = DateTime.MinValue;
+                    m_dictValuesTG[tg.m_id].m_id_TM = -1;
                 }
             }
 
