@@ -162,28 +162,26 @@ namespace StatisticAlarm
         /// Изменить состояние ТГ (вкл./выкл.)
         /// </summary>
         /// <param name="id_tg">Идентификатор ТГ</param>
-        private void tgConfirm(int id_tg)
+        private void tgConfirm(int id_tg, StatisticCommon.TG.INDEX_TURNOnOff state)
         {
             TECComponent tc = null;
 
-            foreach (TecView tv in m_listTecView)
-            {
-                tc = tv.FindTECComponent(id_tg);
-
-                if ((!(tc == null))
-                    && (tc.IsTG == true))
+            if (! (state == TG.INDEX_TURNOnOff.UNKNOWN))
+                foreach (TecView tv in m_listTecView)
                 {
-                    if (tc.m_listTG[0].m_TurnOnOff == StatisticCommon.TG.INDEX_TURNOnOff.ON)
-                        tc.m_listTG[0].m_TurnOnOff = StatisticCommon.TG.INDEX_TURNOnOff.OFF;
-                    else
-                        if (tc.m_listTG[0].m_TurnOnOff == StatisticCommon.TG.INDEX_TURNOnOff.OFF)
-                            tc.m_listTG[0].m_TurnOnOff = StatisticCommon.TG.INDEX_TURNOnOff.ON;
+                    tc = tv.FindTECComponent(id_tg);
+
+                    if ((!(tc == null))
+                        && (tc.IsTG == true))
+                        if (! (tc.m_listTG[0].m_TurnOnOff == state))
+                            tc.m_listTG[0].m_TurnOnOff = state;
                         else
                             ;
+                    else
+                        ;
                 }
-                else
-                    ;
-            }
+            else
+                Logging.Logg().Error(@"AdminAlarm::tgConfirm (id=" + id_tg + @") - попытка зафиксировать состояние ТГ как НЕИЗВЕСТНОЕ...", Logging.INDEX_MESSAGE.NOT_SET);
         }
     }
 }

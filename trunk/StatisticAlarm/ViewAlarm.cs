@@ -1147,26 +1147,26 @@ namespace StatisticAlarm
         //    else
         //        Logging.Logg().Error(@"ViewAlarm::OnEventConfirm (id=" + ev.m_id_comp.ToString() + @") - НЕ НАЙДЕН!", Logging.INDEX_MESSAGE.NOT_SET);
         //}
-        /// <summary>
-        /// Возвратить признак "подтверждено" для события сигнализации
-        /// </summary>
-        /// <param name="id_comp">Часть составного ключа: идентификатор ГТП</param>
-        /// <param name="id_tg">Часть составного ключа: идентификатор ТГ</param>
-        /// <returns>Результат: признак установлен/не_установлен)</returns>
-        public bool IsConfirmed(int id_comp, DateTime dtReg)
-        {
-            return m_dictAlarmObject.IsConfirmed(id_comp, dtReg);
-        }
-        /// <summary>
-        /// Получить дату/время регистрации события сигнализации для ТГ
-        /// </summary>
-        /// <param name="id_comp">Составная часть ключа: идентификатор ГТП</param>
-        /// <param name="id_tg">Составная часть ключа: идентификатор ГТП</param>
-        /// <returns></returns>
-        public DateTime TGAlarmDatetimeReg(int id_comp, DateTime dtReg)
-        {
-            return m_dictAlarmObject.TGAlarmDatetimeReg(id_comp, dtReg);
-        }
+        ///// <summary>
+        ///// Возвратить признак "подтверждено" для события сигнализации
+        ///// </summary>
+        ///// <param name="id_comp">Часть составного ключа: идентификатор ГТП</param>
+        ///// <param name="id_tg">Часть составного ключа: идентификатор ТГ</param>
+        ///// <returns>Результат: признак установлен/не_установлен)</returns>
+        //public bool IsConfirmed(int id_comp, DateTime dtReg)
+        //{
+        //    return m_dictAlarmObject.IsConfirmed(id_comp, dtReg);
+        //}
+        ///// <summary>
+        ///// Получить дату/время регистрации события сигнализации для ТГ
+        ///// </summary>
+        ///// <param name="id_comp">Составная часть ключа: идентификатор ГТП</param>
+        ///// <param name="id_tg">Составная часть ключа: идентификатор ГТП</param>
+        ///// <returns></returns>
+        //public DateTime TGAlarmDatetimeReg(int id_comp, DateTime dtReg)
+        //{
+        //    return m_dictAlarmObject.TGAlarmDatetimeReg(id_comp, dtReg);
+        //}
         /// <summary>
         /// Получить результат запроса для события
         /// </summary>
@@ -1239,6 +1239,11 @@ namespace StatisticAlarm
                     m_handlerDb.Insert(itemQueue.Pars[0] as TecViewAlarm.AlarmTecViewEventArgs);
                     break;
                 case StatesMachine.Fixed:
+                    AlarmNotifyEventArgs objNotify = itemQueue.Pars[0] as AlarmNotifyEventArgs;
+                    if (TECComponent.Mode(objNotify.m_id_comp) == FormChangeMode.MODE_TECCOMPONENT.TG)
+                        tgConfirm(objNotify.m_id_comp, (TG.INDEX_TURNOnOff)objNotify.m_situation);
+                    else
+                        ;
                     m_handlerDb.Fixed(itemQueue.Pars[0] as AlarmNotifyEventArgs);
                     break;
                 case StatesMachine.Confirm:
