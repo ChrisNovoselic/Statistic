@@ -1743,12 +1743,10 @@ namespace StatisticCommon
             }
         }
 
-        private void getRetroMinDetail(int indxMin)
+        public void GetRetroMinDetail(int indxMin)
         {
             lock (m_lockValue)
             {
-                currHour = false;
-
                 //Отладка ???
                 if (indxMin < 0)
                 {
@@ -1800,7 +1798,7 @@ namespace StatisticCommon
         /// </summary>
         /// <param name="indx">Индекс значения</param>
         /// <returns>Признак - является ли значение ретроспективным</returns>
-        public bool zedGraphMins_MouseUpEvent(int indx)
+        public bool IsIndexRetroValues(int indx)
         {
             bool bRes = true;
 
@@ -1811,7 +1809,7 @@ namespace StatisticCommon
                 )
                 bRes = false;
             else
-                getRetroMinDetail(indx);
+                ;
 
             return bRes;
         }

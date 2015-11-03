@@ -560,20 +560,23 @@ namespace StatisticCommon
         public FormChangeMode.MODE_TECCOMPONENT modeTECComponent(int indx)
         {
             FormChangeMode.MODE_TECCOMPONENT modeRes = FormChangeMode.MODE_TECCOMPONENT.UNKNOWN;
-
-            if ((allTECComponents[indx].m_id > 0) && (allTECComponents[indx].m_id < 100))
-                modeRes = FormChangeMode.MODE_TECCOMPONENT.TEC;
-            else
-                if ((allTECComponents[indx].m_id > 100) && (allTECComponents[indx].m_id < 500))
-                    modeRes = FormChangeMode.MODE_TECCOMPONENT.GTP;
-                else
-                    if ((allTECComponents[indx].m_id > 500) && (allTECComponents[indx].m_id < 1000))
-                        modeRes = FormChangeMode.MODE_TECCOMPONENT.PC;
-                    else
-                        if ((allTECComponents[indx].m_id > 1000) && (allTECComponents[indx].m_id < 10000))
-                            modeRes = FormChangeMode.MODE_TECCOMPONENT.TG;
-                        else
-                            ;
+            ////Вариант №1
+            //if ((allTECComponents[indx].m_id > 0) && (allTECComponents[indx].m_id < 100))
+            //    //???
+            //    modeRes = FormChangeMode.MODE_TECCOMPONENT.TEC;
+            //else
+            //    if (allTECComponents[indx].IsGTP == true)
+            //        modeRes = FormChangeMode.MODE_TECCOMPONENT.GTP;
+            //    else
+            //        if (allTECComponents[indx].IsPC == true)
+            //            modeRes = FormChangeMode.MODE_TECCOMPONENT.PC;
+            //        else
+            //            if (allTECComponents[indx].IsTG == true)
+            //                modeRes = FormChangeMode.MODE_TECCOMPONENT.TG;
+            //            else
+            //                ;
+            //Вариант №2
+            modeRes = TECComponent.Mode(allTECComponents[indx].m_id);
 
             return modeRes;
         }

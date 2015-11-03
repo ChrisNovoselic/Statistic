@@ -611,13 +611,14 @@ namespace Statistic
             {
                 TecView.valuesTEC[] valuesMins = (obj as object[])[0] as TecView.valuesTEC[];
                 decimal dcGTPKoeffAlarmPcur = (decimal)(obj as object[])[1];
+                int i = -1;
 
                 DataGridViewGTP dgvGTP = this.Controls.Find(KEY_CONTROLS.DGV_GTP_VALUE.ToString(), true)[0] as DataGridViewGTP;
                 DataGridViewCellStyle cellStyle;
                 double diviation = -1F;
                 int cntDiviation = 0;
 
-                for (int i = 1; i < valuesMins.Length; i++)
+                for (i = 1; i < valuesMins.Length; i++)
                 {
                     //Значения
                     dgvGTP.Rows[i - 1].Cells[1].Value = valuesMins[i].valuesFact.ToString(@"F3");
@@ -658,6 +659,9 @@ namespace Statistic
                     //Установить цвет ячейки
                     dgvGTP.Rows[i - 1].Cells[3].Style = cellStyle;
                 }
+                //Указать активную строку
+                i = (int)(obj as object[])[2] > 60 ? 60 : (int)(obj as object[])[2];
+                dgvGTP.SetCurrentCell (i - 1);
             }
             /// <summary>
             /// Отобразить значения в разрезе минута-секунды
@@ -890,6 +894,12 @@ namespace Statistic
                 for (int i = 0; i < 60; i++)
                     this.Rows.Add(new object[] { i + 1 });
             }
+
+            public void SetCurrentCell (int iRow, int iCol = 0)
+            {
+                this.CurrentCell = Rows[iRow].Cells[iCol];
+                this.CurrentCell.Selected = true;
+            }
         }
         /// <summary>
         /// Класс для отображения значений в табличном виде
@@ -1068,6 +1078,9 @@ namespace Statistic
             EvtValuesMins += new DelegateObjectFunc(m_panelManagement.Parent_OnEvtValuesMins);
             EvtValuesSecs += new DelegateObjectFunc(m_panelManagement.Parent_OnEvtValuesSecs);
             //EvtValuesMins += new DelegateObjectFunc((m_zGraph_GTP as HZEdGraph_GTP).Parent_OnEvtValuesMins); //???отображать значения будем в функции на панели
+
+            DataGridViewGTP dgvGTP = this.Controls.Find(KEY_CONTROLS.DGV_GTP_VALUE.ToString(), true)[0] as DataGridViewGTP;
+            dgvGTP.SelectionChanged += new EventHandler(panelManagement_dgvGTPOnSelectionChanged);
         }
         /// <summary>
         /// Установить значение даты/времени на дочерней панели с активными элементами управления
@@ -1321,7 +1334,7 @@ namespace Statistic
 
             if (!(hour < 0))
             {
-                EvtValuesMins(new object[] { m_tecView.m_valuesMins, m_dcGTPKoeffAlarmPcur });
+                EvtValuesMins(new object[] { m_tecView.m_valuesMins, m_dcGTPKoeffAlarmPcur, min });
                 drawGraphMins();
             }
             else
@@ -1784,50 +1797,102 @@ namespace Statistic
 
             m_zGraph_TG.Invalidate();
         }
-
+        /// <summary>
+        /// Перерисовать объекты с графическим представлением данных
+        ///  , в зависимости от типа графического представления (гистограмма, график)
+        /// </summary>
+        /// <param name="type"></param>
         public void UpdateGraphicsCurrent(int type)
         {
             drawGraphMins();
             drawGraphMinDetail();
         }
-
+        /// <summary>
+        /// Текущие дата/час, выбранные пользователем
+        /// </summary>
         private DateTime CurrDateHour
         {
             get { return m_panelManagement.GetCurrDateHour(); }
         }
-
+        /// <summary>
+        /// Обработчик события - освобождение кн. мыши над 'zedGraphMins'
+        /// </summary>
+        /// <param name="sender">Объект, инициировавший событие</param>
+        /// <param name="e">Аргумент события</param>
+        /// <returns>Признак дальнейшей обработки события</returns>
         private bool zedGraphMins_MouseUpEvent(ZedGraphControl sender, MouseEventArgs e)
         {
-            if (e.Button != MouseButtons.Left)
-                return true;
+            if (! (e.Button == MouseButtons.Left))
+                // только для левой кн.
+                return true; // обработать далее стандартным обработчиком
+            else
+                ;
 
             object obj;
             PointF p = new PointF(e.X, e.Y);
             bool found;
             int index;
-
+            //Сопоставдение точки отображаемому объекту
             found = sender.GraphPane.FindNearestObject(p, CreateGraphics(), out obj, out index);
 
-            if (!(obj is BarItem) && !(obj is LineItem))
-                return true;
+            if (
+                (!(obj is BarItem))
+                && !(obj is LineItem)
+                )
+                // только для гистограмм
+                return true; // обработать далее стандартным обработчиком
+            else
+                ;
 
             if ((!(m_tecView == null)) && (found == true))
             {
                 //if (!(delegateStartWait == null)) delegateStartWait(); else ;
 
-                setCurrDateHour(CurrDateHour);
-
-                bool bRetroValues = m_tecView.zedGraphMins_MouseUpEvent(index);
-
-                if (bRetroValues == true)
-                    ;
-                else
-                    (this.Controls.Find(KEY_CONTROLS.BTN_SET_NOWDATEHOUR.ToString(), true)[0] as System.Windows.Forms.Button).PerformClick();
+                //panelManagement_dgvGTPOnSelectionChanged (this.Controls.Find(KEY_CONTROLS.DGV_GTP_VALUE.ToString(), true)[0], new MinSelectedChangedEventArgs () { m_index = index });
+                (this.Controls.Find(KEY_CONTROLS.DGV_GTP_VALUE.ToString(), true)[0] as DataGridViewGTP).SetCurrentCell(index);
 
                 //if (!(delegateStopWait == null)) delegateStopWait(); else ;
             }
 
             return true;
+        }
+        /// <summary>
+        /// Обработчик события - изменение выбора строки в 'DataGridViewGTP'
+        /// </summary>
+        /// <param name="obj">Объект, инициировавший событие</param>
+        /// <param name="ev">Аргумент события</param>
+        private void panelManagement_dgvGTPOnSelectionChanged (object obj, EventArgs ev)
+        {
+            int index = -1;
+            DataGridViewGTP dgvGTP = obj as DataGridViewGTP;
+            //Проверить был ли отправлен/обработан запрос для основных "час по-минутно" данных
+            if (m_tecView.adminValuesReceived == true)
+                //Проверить есть выбранные строки
+                if (dgvGTP.SelectedRows.Count > 0)
+                {
+                    //Определить индекс выбранной строки (+1 для )
+                    index = dgvGTP.SelectedRows[0].Index + 1;
+                    //Проверить является выбранный 1-мин интервал (строка) ретроспективой
+                    if (m_tecView.IsIndexRetroValues(index) == true)
+                    {// для ретроспективных интервалов
+                        m_tecView.currHour = false;
+                        //Установить дату/час
+                        setCurrDateHour(CurrDateHour);
+                        //Инициировать запрос для получения ретроспективных значений за интервал
+                        m_tecView.GetRetroMinDetail(index);
+                    }
+                    else
+                        // для текущего интервала
+                        if (m_tecView.currHour == false)
+                            //Установить текущий интервал в соответствии с авктуальным датой/временем
+                            (this.Controls.Find(KEY_CONTROLS.BTN_SET_NOWDATEHOUR.ToString(), true)[0] as System.Windows.Forms.Button).PerformClick();
+                        else
+                            ;
+                }
+                else
+                    ;
+            else
+                ;
         }
     }
 }

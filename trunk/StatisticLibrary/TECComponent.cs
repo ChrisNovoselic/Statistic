@@ -55,7 +55,8 @@ namespace StatisticCommon
         /// <returns>Тип (режим) компонента</returns>
         public static FormChangeMode.MODE_TECCOMPONENT Mode(int id)
         {
-            return ((id > (int)ID.GTP) && (id < (int)ID.PC)) == true ? FormChangeMode.MODE_TECCOMPONENT.GTP :
+            return (id < (int)ID.GTP) == true ? FormChangeMode.MODE_TECCOMPONENT.TEC :
+                ((id > (int)ID.GTP) && (id < (int)ID.PC)) == true ? FormChangeMode.MODE_TECCOMPONENT.GTP :
                 ((id > (int)ID.PC) && (id < (int)ID.TG)) == true ? FormChangeMode.MODE_TECCOMPONENT.PC :
                     ((id > (int)ID.TG) && (id < (int)ID.MAX)) == true ? FormChangeMode.MODE_TECCOMPONENT.TG :
                         FormChangeMode.MODE_TECCOMPONENT.UNKNOWN;
