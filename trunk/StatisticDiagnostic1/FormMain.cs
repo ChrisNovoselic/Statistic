@@ -42,8 +42,13 @@ namespace StatisticDiagnostic
             //Добавить элемент с параметрами соединения из объекта 'FIleConnSett' 
             s_listFormConnectionSettings.Add(new FormConnectionSettings(-1, s_fileConnSett.ReadSettingsFile, s_fileConnSett.SaveSettingsFile));
             s_listFormConnectionSettings.Add(null);
-
+            
             bAbort = initialize(out msg);
+            this.panelMain = new PanelStatisticDiagnostic();
+            this.panelMain.SetDelegateReport(ErrorReport, WarningReport, ActionReport, ReportClear);
+            this.Controls.Add(panelMain);
+            this.panelMain.Start();
+          
             //Снять с отображения окно для визуализации выполнения длительной операции
             delegateStopWait();
 
@@ -98,8 +103,7 @@ namespace StatisticDiagnostic
                         formParameters = new FormParameters_DB(s_listFormConnectionSettings[(int)CONN_SETT_TYPE.CONFIG_DB].getConnSett());
                         updateParametersSetup();
                         s_iMainSourceData = Int32.Parse(formParameters.m_arParametrSetup[(int)FormParameters.PARAMETR_SETUP.MAIN_DATASOURCE]);
-
-                        panelMain.Start();
+                     
                         break;
                 }
             }
@@ -232,10 +236,10 @@ namespace StatisticDiagnostic
         /// <param name="ev">Аргумент события</param>
         private void fMenuItemAbout_Click(object obj, EventArgs ev)
         {
-            /*using (FormAbout formAbout = new FormAbout(this.Icon.ToBitmap() as Image))
+            using (FormAbout formAbout = new FormAbout(this.Icon.ToBitmap() as Image))
             {
                 formAbout.ShowDialog(this);
-            }*/
+            }
         }
 
         protected override void UpdateActiveGui(int type)
@@ -245,7 +249,43 @@ namespace StatisticDiagnostic
 
         protected override int UpdateStatusString()
         {
-            throw new NotImplementedException();
+            int have_msg = 0;
+
+             have_msg = (m_report.errored_state == true) ? -1 : (m_report.warninged_state == true) ? 1 : 0;
+
+                if (((!(have_msg == 0)) || (m_report.actioned_state == true)) )
+                {
+                    if (m_report.actioned_state == true)
+                    {
+                        m_lblDescMessage.Text = m_report.last_action;
+                        m_lblDateMessage.Text = m_report.last_time_action.ToString();
+                    }
+                    else
+                        ;
+
+                    if (have_msg == 1)
+                    {
+                        m_lblDescMessage.Text = m_report.last_warning;
+                        m_lblDateMessage.Text = m_report.last_time_warning.ToString();
+                    }
+                    else
+                        ;
+
+                    if (have_msg == -1)
+                    {
+                        m_lblDescMessage.Text = m_report.last_error;
+                        m_lblDateMessage.Text = m_report.last_time_error.ToString();
+                    }
+                    else
+                        ;
+                }
+                else
+                {
+                    m_lblDescMessage.Text = string.Empty;
+                    m_lblDateMessage.Text = string.Empty;
+                }
+           
+            return have_msg;
         }
 
         protected override void timer_Start()

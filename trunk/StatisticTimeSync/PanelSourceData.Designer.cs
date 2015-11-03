@@ -264,11 +264,9 @@ namespace StatisticTimeSync
                 col = (int)(indx / this.RowCount);
                 row = indx % (this.RowCount - 0);
                 if (row == 0) row = 1; else ;
-                //this.Invoke(new Action(() => this.Controls.Add(m_arPanels[i], col, row)));
                 this.Controls.Add(m_arPanels[i], col, row); 
             }
 
-            //this.Invoke(new Action(() => this.ResumeLayout()));
             this.ResumeLayout();
         }
 
