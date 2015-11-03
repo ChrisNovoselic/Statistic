@@ -582,15 +582,16 @@ namespace StatisticDiagnostic
             }
 
             /// <summary>
-            /// 
+            /// Изменение в массиве активного 
+            /// источника СОТИАССО
             /// </summary>
-            /// <param name="tm"></param>
-            /// <param name="nameTM"></param>
-            /// <param name="pos"></param>
+            /// <param name="tm">номер истчоника</param>
+            /// <param name="nameTM">имя источника</param>
+            /// <param name="pos">позиция в массиве</param>
             private void changenumSource(int tm, string nameTM, int pos)
             {
-                    m_arrayActiveSource.SetValue((tm), pos, 0);
-                    m_arrayActiveSource.SetValue(nameTM, pos, 1);
+                m_arrayActiveSource.SetValue((tm), pos, 0);
+                m_arrayActiveSource.SetValue(nameTM, pos, 1);
             }
 
             /// <summary>
@@ -957,6 +958,17 @@ namespace StatisticDiagnostic
                     }
                 }
             }
+
+            /// <summary>
+            /// 
+            /// </summary>
+            private void checkrelevancevalues()
+            {
+                for (int i = 0; i < m_arPanelsTEC.Length; i++)
+                {
+                    
+                }
+            }
         }
 
         /// <summary>
@@ -1048,10 +1060,10 @@ namespace StatisticDiagnostic
                 this.ModesDataGridView.Columns[3].Name = "Время проверки";
                 this.ModesDataGridView.Columns[4].Name = "Связь";
                 this.ModesDataGridView.Columns[0].Width = 20;
-                this.ModesDataGridView.Columns[1].Width = 20;
+                this.ModesDataGridView.Columns[1].Width = 15;
                 this.ModesDataGridView.Columns[2].Width = 30;
                 this.ModesDataGridView.Columns[3].Width = 30;
-                this.ModesDataGridView.Columns[4].Width = 35;
+                this.ModesDataGridView.Columns[4].Width = 25;
 
                 this.ModesDataGridView.CellValueChanged += new DataGridViewCellEventHandler(m_arPanelsMODES_Cell);
                 this.ModesDataGridView.CellClick += new DataGridViewCellEventHandler(m_arPanelsMODES_Cell);
@@ -1176,11 +1188,12 @@ namespace StatisticDiagnostic
             private void insertDataMC(int i, string filter)
             {
                 string m_filter1 = string.Empty;
+                string sortOrderBy = "Component ASC";
                 DataRow[] m_drIDModes;
                 int m_tic = -1;
                 DataRow[] m_drComponent;
 
-                m_drIDModes = m_tbModes.Select(filter);
+                m_drIDModes = m_tbModes.Select(filter, sortOrderBy);
 
                 for (int d = 0; d < m_tbModes.Select(filter).Length - 1; d++)
                 {
@@ -1247,8 +1260,8 @@ namespace StatisticDiagnostic
                 {
                     DataRow[] DR;
                     DataRow[] dr;
-
-                    dr = m_tbModes.Select(filter12);
+                    string sortOrderBy = "Component ASC";
+                    dr = m_tbModes.Select(filter12, sortOrderBy);
 
                     for (int r = 0; r < m_tbModes.Select(filter12).Length; r++)
                     {
@@ -1315,7 +1328,7 @@ namespace StatisticDiagnostic
                 }
 
                 headerText();
-                textColumn();
+                nameComponentGTP();
             }
 
             /// <summary>
@@ -1346,7 +1359,7 @@ namespace StatisticDiagnostic
             /// <summary>
             /// Функция подписи источников ПБР
             /// </summary>
-            private void textColumn()
+            private void nameComponentGTP()
             {
                 for (int k = 0; k < m_arPanelsMODES.Length; k++)
                 {
@@ -1695,7 +1708,7 @@ namespace StatisticDiagnostic
             private void overLimit()
             {
                 int m_lim;
-                int m_counter = TaskDataGridView.Rows.Count;
+                int m_counter = 0;
 
                 for (int i = 0; i < TaskDataGridView.Rows.Count; i++)
                 {
@@ -1710,20 +1723,48 @@ namespace StatisticDiagnostic
                         TaskDataGridView.Invoke(new Action(() => TaskDataGridView.Columns[4].Visible = true));
                         TaskDataGridView.Invoke(new Action(() => TaskDataGridView.Rows[i].DefaultCellStyle.BackColor = Color.Sienna));
                         TaskDataGridView.Invoke(new Action(() => TaskDataGridView.Rows[i].Cells[4].Value = "Превышено время выполнения задачи"));
+                        upselectrow(i);
                         m_counter--;
                     }
                     else
                     {
                         TaskDataGridView.Invoke(new Action(() => TaskDataGridView.Rows[i].DefaultCellStyle.BackColor = Color.White));
+                        m_counter++;
 
                         if (m_counter == TaskDataGridView.Rows.Count)
-                        {
                             TaskDataGridView.Invoke(new Action(() => TaskDataGridView.Columns[4].Visible = false));
-                        }
-                        else m_counter++;
+                        else ;
                     }
                 }
             }
+
+            /// <summary>
+            /// 
+            /// </summary>
+            /// <param name="row">индекс строки</param>
+            private void upselectrow(int indxrow)
+            {
+                if (TaskDataGridView.InvokeRequired)
+                {
+                    TaskDataGridView.Invoke(new Action(() => TaskDataGridView.Rows.Insert(0,1)));
+                    TaskDataGridView.Invoke(new Action(() => TaskDataGridView.Rows[0].DefaultCellStyle.BackColor = Color.Sienna));
+
+                    for (int i = 0; i < TaskDataGridView.Rows[indxrow + 1].Cells.Count; i++)
+                    {
+                        TaskDataGridView.Invoke(new Action(() => TaskDataGridView.Rows[0].Cells[i].Value = TaskDataGridView.Rows[indxrow+1].Cells[i].Value));
+                    }
+
+                    TaskDataGridView.Invoke(new Action(() => TaskDataGridView.Rows.RemoveAt(indxrow+1)));
+                    //TaskDataGridView.Invoke(new Action(() => TaskDataGridView.Rows.Insert(0, TaskDataGridView.Rows.AddCopy(indxrow)));
+
+                }
+                else
+                {
+                    TaskDataGridView.Rows.InsertCopy(indxrow, 0);
+                    TaskDataGridView.Rows.RemoveAt(indxrow);
+                }
+            }
+
         }
 
         /// <summary>
@@ -1735,7 +1776,7 @@ namespace StatisticDiagnostic
         }
 
         /// <summary>
-        /// 
+        /// constructor
         /// </summary>
         /// <param name="container"></param>
         public PanelStatisticDiagnostic(IContainer container)
@@ -1821,6 +1862,7 @@ namespace StatisticDiagnostic
         {
             base.Start();
             timerUp();
+            //старт дбинтерфейса
             dbStart();
         }
 
@@ -2016,7 +2058,7 @@ namespace StatisticDiagnostic
 
             for (int i = 0; i < table.Rows.Count; i++)
             {
-                m_arrayActiveSource.SetValue(table.Rows[i][23], i, 0);
+                m_arrayActiveSource.SetValue(table.Rows[i]["ID_LINK_SOURCE_DATA_TM"], i, 0);
             }
 
             int t = -1;
@@ -2078,7 +2120,7 @@ namespace StatisticDiagnostic
         /// <summary>
         /// 
         /// </summary>
-        public void ChangeActiveSourceName()
+        /*public void ChangeActiveSourceName()
         {
             int t = -1;
 
@@ -2086,17 +2128,18 @@ namespace StatisticDiagnostic
             {
                 t++;
                 int id = (int)m_arraySource.Rows[t][@"ID"];
+
                 do
                 {
                     if ((int)m_arrayActiveSource[i, 0] == 0)
                     {
                         break;
                     }
-
-                } while ((int)m_arrayActiveSource[i, 0] != id);
+                } 
+                while ((int)m_arrayActiveSource[i, 0] != id);
 
                 m_arrayActiveSource.SetValue(m_arraySource.Rows[t][@"NAME_SHR"].ToString(), i, 1);
             }
-        }
+        }*/
     }
 }
