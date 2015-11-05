@@ -196,7 +196,7 @@ namespace StatisticDiagnostic
             m_timerUpdate.Enabled = true;
             m_timerUpdate.AutoReset = true;
             m_timerUpdate.Elapsed += new ElapsedEventHandler(UpdateTimer_Elapsed);
-            m_timerUpdate.Interval = 33000;
+            m_timerUpdate.Interval = 23000;
             GC.KeepAlive(m_timerUpdate);
         }
 
@@ -745,6 +745,7 @@ namespace StatisticDiagnostic
                     addRowsTEC(i, m_tableSourceData.Select(filter).Length);
                     insertDataTEC(filter, i);
                 }
+                checkrelevancevalues();
             }
 
             /// <summary>
@@ -964,9 +965,14 @@ namespace StatisticDiagnostic
             /// </summary>
             private void checkrelevancevalues()
             {
+                string m_dtStart = DateTime.Now.ToString();
+
                 for (int i = 0; i < m_arPanelsTEC.Length; i++)
                 {
-                    
+                    for (int j = 0; j < m_arPanelsTEC[i].TECDataGridView.RowCount; j++)
+                    {
+                        string m_dtEnd = m_arPanelsTEC[i].TECDataGridView.Rows[j].Cells[3].Value.ToString();
+                     }
                 }
             }
         }
@@ -1746,15 +1752,15 @@ namespace StatisticDiagnostic
             {
                 if (TaskDataGridView.InvokeRequired)
                 {
-                    TaskDataGridView.Invoke(new Action(() => TaskDataGridView.Rows.Insert(0,1)));
+                    TaskDataGridView.Invoke(new Action(() => TaskDataGridView.Rows.Insert(0, 1)));
                     TaskDataGridView.Invoke(new Action(() => TaskDataGridView.Rows[0].DefaultCellStyle.BackColor = Color.Sienna));
 
                     for (int i = 0; i < TaskDataGridView.Rows[indxrow + 1].Cells.Count; i++)
                     {
-                        TaskDataGridView.Invoke(new Action(() => TaskDataGridView.Rows[0].Cells[i].Value = TaskDataGridView.Rows[indxrow+1].Cells[i].Value));
+                        TaskDataGridView.Invoke(new Action(() => TaskDataGridView.Rows[0].Cells[i].Value = TaskDataGridView.Rows[indxrow + 1].Cells[i].Value));
                     }
 
-                    TaskDataGridView.Invoke(new Action(() => TaskDataGridView.Rows.RemoveAt(indxrow+1)));
+                    TaskDataGridView.Invoke(new Action(() => TaskDataGridView.Rows.RemoveAt(indxrow + 1)));
                     //TaskDataGridView.Invoke(new Action(() => TaskDataGridView.Rows.Insert(0, TaskDataGridView.Rows.AddCopy(indxrow)));
 
                 }
