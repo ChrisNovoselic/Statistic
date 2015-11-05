@@ -449,60 +449,66 @@ namespace Statistic
             Thread.CurrentThread.CurrentUICulture =
                 ProgramBase.ss_MainCultureInfo;
 
-            if (m_timerAppReset.Interval == ProgramBase.TIMER_START_INTERVAL)
+            try
             {
-                //При 1-ом запуске ожидать один интервал
-                m_timerAppReset.Interval = Int32.Parse(formParameters.m_arParametrSetup[(int)FormParameters.PARAMETR_SETUP.APP_VERSION_QUERY_INTERVAL]);
-                return;
-            }
-            else
-                ;
-
-            int err = -1
-                , idListenerConfigDB = DbSources.Sources().Register(s_listFormConnectionSettings[(int)CONN_SETT_TYPE.CONFIG_DB].getConnSett(), false, @"CONFIG_DB");
-
-            // прочитать актуальные значения из [setup]
-            (formParameters as FormParameters_DB).Update(idListenerConfigDB, out err);
-            // прочитать и обновить актуальные индивидуальные групповые (пользовательские) параметры
-            HStatisticUsers.Update (idListenerConfigDB);
-            InitTEC_200.PerformTECListUpdate(idListenerConfigDB);
-
-            DbSources.Sources().UnRegister(idListenerConfigDB);
-
-            if (err == 0)
-            {
-                //Динамическое обновление - применение актуальных параметров
-                updateParametersSetup();                
-
-                if (HStatisticUsers.IsAllowed((int)HStatisticUsers.ID_ALLOWED.APP_AUTO_RESET) == true)
-                    if (formParameters.m_arParametrSetup[(int)FormParameters.PARAMETR_SETUP.APP_VERSION].Equals(string.Empty) == false)
-                        if (formParameters.m_arParametrSetup[(int)FormParameters.PARAMETR_SETUP.APP_VERSION].Equals(Application.ProductVersion/*StatisticCommon.Properties.Resources.TradeMarkVersion*/) == false)
-                        {
-                            if (IsHandleCreated/**/ == true)
-                                if (InvokeRequired == true)
-                                {
-                                    /*IAsyncResult iar = */
-                                    this.BeginInvoke(new DelegateFunc(update));
-                                    //this.EndInvoke (iar);
-                                }
-                                else
-                                    update();
-                            else
-                                ;
-
-                            //ProgramBase.AppRestart();
-
-                        }
-                        else
-                            ;
-                    else
-                        //При ошибке - восстанавливаем значение...
-                        ; //formParameters.m_arParametrSetup[(int)FormParameters.PARAMETR_SETUP.APP_VERSION] = strPrevAppVersion;
+                if (m_timerAppReset.Interval == ProgramBase.TIMER_START_INTERVAL)
+                {
+                    //При 1-ом запуске ожидать один интервал
+                    m_timerAppReset.Interval = Int32.Parse(formParameters.m_arParametrSetup[(int)FormParameters.PARAMETR_SETUP.APP_VERSION_QUERY_INTERVAL]);
+                    return;
+                }
                 else
                     ;
+
+                int err = -1
+                    , idListenerConfigDB = DbSources.Sources().Register(s_listFormConnectionSettings[(int)CONN_SETT_TYPE.CONFIG_DB].getConnSett(), false, @"CONFIG_DB");
+
+                // прочитать актуальные значения из [setup]
+                (formParameters as FormParameters_DB).Update(idListenerConfigDB, out err);
+                // прочитать и обновить актуальные индивидуальные групповые (пользовательские) параметры
+                HStatisticUsers.Update (idListenerConfigDB);
+                InitTEC_200.PerformTECListUpdate(idListenerConfigDB);
+
+                DbSources.Sources().UnRegister(idListenerConfigDB);
+
+                if (err == 0)
+                {
+                    //Динамическое обновление - применение актуальных параметров
+                    updateParametersSetup();                
+
+                    if (HStatisticUsers.IsAllowed((int)HStatisticUsers.ID_ALLOWED.APP_AUTO_RESET) == true)
+                        if (formParameters.m_arParametrSetup[(int)FormParameters.PARAMETR_SETUP.APP_VERSION].Equals(string.Empty) == false)
+                            if (formParameters.m_arParametrSetup[(int)FormParameters.PARAMETR_SETUP.APP_VERSION].Equals(Application.ProductVersion/*StatisticCommon.Properties.Resources.TradeMarkVersion*/) == false)
+                            {
+                                if (IsHandleCreated/**/ == true)
+                                    if (InvokeRequired == true)
+                                    {
+                                        /*IAsyncResult iar = */
+                                        this.BeginInvoke(new DelegateFunc(update));
+                                        //this.EndInvoke (iar);
+                                    }
+                                    else
+                                        update();
+                                else
+                                    ;
+
+                                //ProgramBase.AppRestart();
+
+                            }
+                            else
+                                ;
+                        else
+                            //При ошибке - восстанавливаем значение...
+                            ; //formParameters.m_arParametrSetup[(int)FormParameters.PARAMETR_SETUP.APP_VERSION] = strPrevAppVersion;
+                    else
+                        ;
+                }
+                else
+                    ; //DbSources.Sources().UnRegister(idListenerConfigDB);
             }
-            else
-                ; //DbSources.Sources().UnRegister(idListenerConfigDB);
+            catch (Exception e) {
+                Logging.Logg().Exception (e, Logging.INDEX_MESSAGE.NOT_SET, @"FormMain::fTimerAppReset () - ...");
+            }
         }
 
         private int m_iAlarmEventCounter;
