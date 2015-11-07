@@ -23,6 +23,7 @@ namespace StatisticAlarm
         /// </summary>
         public class AlarmDbEventArgs : AlarmNotifyEventArgs
         {
+            public long m_id;
             public int m_id_user_registred
                 , m_id_user_fixed
                 , m_id_user_confirm;
@@ -37,9 +38,8 @@ namespace StatisticAlarm
                     , (int)rowEvt[@"SITUATION"])
             {
                 //–егистраци€ событи€
-                //m_id_comp, [ID_COMP]
+                m_id = (long)rowEvt[@"ID"];
                 m_id_user_registred = (int)rowEvt[@"ID_USER_REGISTRED"];
-                //m_dtRegistred, [DATETIME_REGISTRED]
                 //‘иксаци€ событи€
                 if (! (rowEvt[@"ID_USER_FIXED"] is System.DBNull))
                     m_id_user_fixed = (int)rowEvt[@"ID_USER_FIXED"];
@@ -985,14 +985,22 @@ namespace StatisticAlarm
         {
             DataRow r = tableRes.Rows [0];
             m_dictAlarmObject.Fixed ((int)r[@"ID_COMPONENT"], (DateTime)r[@"DATETIME_REGISTRED"], (DateTime)r[@"DATETIME_FIXED"]);
-            itemQueue.m_dataHostRecieved.OnEvtDataRecievedHost(new EventArgsDataHost(-1, new object[] { StatesMachine.Fixed, (long)r[@"ID"], (DateTime)r[@"DATETIME_FIXED"] }));
+            //ѕроверить признак автоматической фиксации
+            if (!(itemQueue.m_dataHostRecieved == null))
+                itemQueue.m_dataHostRecieved.OnEvtDataRecievedHost(new EventArgsDataHost(-1, new object[] { StatesMachine.Fixed, (long)r[@"ID"], (DateTime)r[@"DATETIME_FIXED"] }));
+            else
+                ;
         }
 
         private void GetUpdateConfirmResponse(ItemQueue itemQueue, DataTable tableRes)
         {
             DataRow r = tableRes.Rows[0];
             m_dictAlarmObject.Confirmed((int)r[@"ID_COMPONENT"], (DateTime)r[@"DATETIME_REGISTRED"], (DateTime)r[@"DATETIME_CONFIRM"]);
-            itemQueue.m_dataHostRecieved.OnEvtDataRecievedHost(new EventArgsDataHost(-1, new object[] { StatesMachine.Confirm, (long)r[@"ID"], (DateTime)r[@"DATETIME_CONFIRM"] }));
+            //ѕроверить признак автоматического подтверждени€
+            if (!(itemQueue.m_dataHostRecieved == null))
+                itemQueue.m_dataHostRecieved.OnEvtDataRecievedHost(new EventArgsDataHost(-1, new object[] { StatesMachine.Confirm, (long)r[@"ID"], (DateTime)r[@"DATETIME_CONFIRM"] }));
+            else
+                ;
         }
 
         private string getEventGUIMessage(AlarmNotifyEventArgs ev)
@@ -1101,22 +1109,52 @@ namespace StatisticAlarm
             if (iAction == INDEX_ACTION.ERROR)
                 throw new Exception(@"ViewAlarm::onEventReg () - ...");
             else
-                //ѕроверить режим работы - оповещение только дл€ 'ADMIN'
-                if ((Mode == MODE.ADMIN)
-                    //|| (Mode == MODE.SERVICE) //??? дл€ отладки
-                    )
+                //ѕроверить режим работы
+                switch (Mode)
                 {
-                    ev.m_messageGUI = getEventGUIMessage (ev);
-                    if (iAction == INDEX_ACTION.NEW)
-                        EventAdd(ev);
-                    else
-                        if (iAction == INDEX_ACTION.RETRY)
-                            EventRetry(ev);
+                    // оповещение только дл€ 'ADMIN'
+                    case MODE.ADMIN:
+                    //case MODE.SERVICE: // дл€ отладки
+                        ev.m_messageGUI = getEventGUIMessage (ev);
+                        if (iAction == INDEX_ACTION.NEW)
+                            EventAdd(ev);
                         else
-                            ;
+                            if (iAction == INDEX_ACTION.RETRY)
+                                EventRetry(ev);
+                            else
+                                ;
+                        break;
+                    // автофиксаци€/подтверждение только дл€ 'SERVICE'
+                    case MODE.SERVICE:
+                        switch (iAction)
+                        {
+                            case INDEX_ACTION.AUTO_FIXING:
+                                Push(null, new object[] {
+                                    new object [] {
+                                        new object [] {
+                                            AdminAlarm.StatesMachine.Fixed
+                                            , ev as AlarmNotifyEventArgs
+                                        }
+                                    }
+                                });
+                                break;
+                            case INDEX_ACTION.AUTO_CONFIRMING:
+                                Push(null, new object[] {
+                                    new object[] {
+                                        new object [] {
+                                            AdminAlarm.StatesMachine.Confirm
+                                            , ev.m_id
+                                        }
+                                    }
+                                });
+                                break;
+                            default:
+                                break;
+                        }
+                        break;
+                    default:
+                        break;
                 }
-                else
-                    ;
         }
         ///// <summary>
         ///// ќбработчик событи€ - подтверждение событи€ сигнализации от панели (пользовател€)

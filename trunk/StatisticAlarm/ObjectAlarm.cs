@@ -7,7 +7,8 @@ using HClassLibrary;
 
 namespace StatisticAlarm
 {
-    public enum INDEX_ACTION { ERROR = -1, NOTHING, NEW, RETRY }
+    public enum INDEX_ACTION { ERROR = -1, NOTHING, NEW, RETRY
+        , AUTO_FIXING, AUTO_CONFIRMING }
     /// <summary>
     /// Перечисление - индексы для типов сигнализаций
     /// </summary>
@@ -156,9 +157,12 @@ namespace StatisticAlarm
             /// </summary>
             /// <param name="dt">Дата/время фиксации</param>
             public void Fixed(DateTime? dt)
-            {
+            {                
                 _dtFixed = dt;
-                _state = INDEX_STATES_ALARM.FIXED;
+                if (!(_dtFixed == null))
+                    _state = INDEX_STATES_ALARM.FIXED;
+                else
+                    ;
             }
             /// <summary>
             /// Признак объекта: находится ли он в состоянии "зафиксирован"
@@ -185,7 +189,10 @@ namespace StatisticAlarm
             public void Confirmed(DateTime? dt)
             {
                 _dtConfirmed = dt;
-                _state = INDEX_STATES_ALARM.CONFIRMED;
+                if (!(_dtConfirmed == null))
+                    _state = INDEX_STATES_ALARM.CONFIRMED;
+                else
+                    ;
             }
             /// <summary>
             /// Признак подтверждения события сигнализации
@@ -278,6 +285,31 @@ namespace StatisticAlarm
                 : this(INDEX_STATES_ALARM.REGISTRED)
             {
                 init(ev.m_dtRegistred.GetValueOrDefault());
+            }
+            /// <summary>
+            /// Возвратить признак необходимости опопвещения пользователя о событии сигнализаций
+            /// </summary>
+            /// <param name="obj">Объект события сигнализаций</param>
+            /// <returns>Признак необходимости опопвещения</returns>
+            public bool IsNotify()
+            {
+                bool bRes = false;
+                //Проверить признак "подтвержден"
+                if (CONFIRMED == false)
+                    //Проверить признак необходимости повторения оповещения
+                    if ((IMMEDIATELY == true)
+                        || (RETRY == true))
+                    {
+                        //Установить признак объекту: "находиться на оповещении"
+                        Fixing();
+                        bRes = true;
+                    }
+                    else
+                        ; // событие не требует оповещения
+                else
+                    ; // событие подтверждено
+
+                return bRes;
             }
         }
         /// <summary>
@@ -542,32 +574,7 @@ namespace StatisticAlarm
             }
 
             return iRes;
-        }
-        /// <summary>
-        /// Возвратить признак необходимости опопвещения пользователя о событии сигнализаций
-        /// </summary>
-        /// <param name="obj">Объект события сигнализаций</param>
-        /// <returns>Признак необходимости опопвещения</returns>
-        private bool isNotify (ALARM_OBJECT obj)
-        {
-            bool bRes = false;
-            //Проверить признак "подтвержден"
-            if (obj.CONFIRMED == false)
-                //Проверить признак необходимости повторения оповещения
-                if ((obj.IMMEDIATELY == true)
-                    || (obj.RETRY == true))
-                {
-                    //Установить признак объекту: "находиться на оповещении"
-                    obj.Fixing();
-                    bRes = true;
-                }
-                else
-                    ; // событие не требует оповещения
-            else
-                ; // событие подтверждено
-
-            return bRes;
-        }
+        }        
         /// <summary>
         /// Зарегистрировать событие от БД
         /// </summary>
@@ -590,17 +597,32 @@ namespace StatisticAlarm
                         alarmObj.Fixed (ev.m_dtFixed);
                         alarmObj.Confirmed(ev.m_dtConfirm);
 
-                        if (isNotify (alarmObj) == true)
+                        if (alarmObj.IsNotify() == true)
                             iRes = INDEX_ACTION.NEW;
                         else
                             ;
                     }
                     else
                     {
-                        if (isNotify (alarmObj) == true)
-                            iRes = INDEX_ACTION.RETRY;
+                        alarmObj.Fixed(ev.m_dtFixed);
+                        alarmObj.Confirmed(ev.m_dtConfirm);
+
+                        if ((alarmObj.CONFIRMED == false)
+                            && ((alarmObj.FIXED == true) && ((DateTime.UtcNow - ev.m_dtFixed.GetValueOrDefault ()).TotalMilliseconds > AdminAlarm.MSEC_ALARM_EVENTRETRY))
+                            )
+                            // если объект не подтвержден длительное время
+                            iRes = INDEX_ACTION.AUTO_CONFIRMING;
                         else
-                            ;
+                            if ((alarmObj.FIXED == false)
+                                && ((DateTime.UtcNow - ev.m_dtRegistred.GetValueOrDefault ()).TotalMilliseconds > AdminAlarm.MSEC_ALARM_EVENTRETRY)
+                                )
+                                // если объект не зафиксирован длительное время
+                                iRes = INDEX_ACTION.AUTO_FIXING;
+                            else                            
+                                if (alarmObj.IsNotify() == true)
+                                    iRes = INDEX_ACTION.RETRY;
+                                else
+                                    ;
                     }
                 }
                 catch (Exception e)

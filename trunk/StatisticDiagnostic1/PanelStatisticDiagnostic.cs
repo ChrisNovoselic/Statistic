@@ -1158,12 +1158,14 @@ namespace StatisticDiagnostic
             /// <summary>
             /// очистка панелей
             /// </summary>
-            public void Stop()
+            public override void Stop()
             {
                 if (!(m_arPanelsMODES == null))
                 {
                     clearGrid();
                 }
+
+                base.Stop();
             }
 
             /// <summary>

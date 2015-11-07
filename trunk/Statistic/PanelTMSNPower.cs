@@ -352,40 +352,56 @@ namespace Statistic
 
             public override void Start()
             {
-                base.Start ();
+                if (Started == false)
+                {
+                    base.Start();
 
-                m_tecView.Start();
+                    if (m_tecView.IsStarted == false)
+                        m_tecView.Start();
+                    else
+                        ;
 
-                m_evTimerCurrent = new ManualResetEvent(true);
-                //m_timerCurrent = new System.Threading.Timer(new TimerCallback(TimerCurrent_Tick), m_evTimerCurrent, PanelStatistic.POOL_TIME * 1000 - 1, PanelStatistic.POOL_TIME * 1000 - 1);
-                m_timerCurrent =
-                    new System.Threading.Timer(new TimerCallback(TimerCurrent_Tick), m_evTimerCurrent, PanelStatistic.POOL_TIME * 1000 - 1, System.Threading.Timeout.Infinite)
-                    //new System.Windows.Forms.Timer ()
+                    m_evTimerCurrent = new ManualResetEvent(true);
+                    //m_timerCurrent = new System.Threading.Timer(new TimerCallback(TimerCurrent_Tick), m_evTimerCurrent, PanelStatistic.POOL_TIME * 1000 - 1, PanelStatistic.POOL_TIME * 1000 - 1);
+                    m_timerCurrent =
+                        new System.Threading.Timer(new TimerCallback(TimerCurrent_Tick), m_evTimerCurrent, PanelStatistic.POOL_TIME * 1000 - 1, System.Threading.Timeout.Infinite)
+                        //new System.Windows.Forms.Timer ()
+                        ;
+                    ////Вариант №1
+                    //m_timerCurrent.Tick += new EventHandler(TimerCurrent_Tick);
+                    //m_timerCurrent.Interval = ProgramBase.TIMER_START_INTERVAL; // по этому признаку определим задержку выполнения итерации
+                    //m_timerCurrent.Start ();
+                }
+                else
                     ;
-                ////Вариант №1
-                //m_timerCurrent.Tick += new EventHandler(TimerCurrent_Tick);
-                //m_timerCurrent.Interval = ProgramBase.TIMER_START_INTERVAL; // по этому признаку определим задержку выполнения итерации
-                //m_timerCurrent.Start ();
-
-                //isActive = false;
             }
 
             public override void Stop()
             {
-                m_tecView.Stop ();
+                if (m_tecView.IsStarted == true)
+                    m_tecView.Stop();
+                else
+                    ;
 
-                if (!(m_evTimerCurrent == null)) m_evTimerCurrent.Reset(); else ;
-                if (!(m_timerCurrent == null))
+                if (Started == true)
                 {
-                    ////Вариант №1
-                    //m_timerCurrent.Stop ();
-                    //Вариант №0
-                    m_timerCurrent.Change(System.Threading.Timeout.Infinite, System.Threading.Timeout.Infinite);
-                    m_timerCurrent.Dispose();
-                }
-                else ;
+                    if (!(m_evTimerCurrent == null)) m_evTimerCurrent.Reset(); else ;
+                    if (!(m_timerCurrent == null))
+                    {
+                        ////Вариант №1
+                        //m_timerCurrent.Stop ();
+                        //Вариант №0
+                        m_timerCurrent.Change(System.Threading.Timeout.Infinite, System.Threading.Timeout.Infinite);
+                        m_timerCurrent.Dispose();
 
-                base.Stop ();
+                        m_timerCurrent = null;
+                    }
+                    else ;
+
+                    base.Stop();
+                }
+                else
+                    ;
             }
 
             private void ChangeState()
