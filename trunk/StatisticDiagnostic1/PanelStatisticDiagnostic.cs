@@ -240,6 +240,7 @@ namespace StatisticDiagnostic
             public override void ClearValues()
             {
             }
+
             /// <summary>
             /// Добавить состояния в набор для обработки
             /// </summary>
@@ -1383,9 +1384,9 @@ namespace StatisticDiagnostic
 
                 for (int i = 0; i < m_arPanelsMODES.Length; i++)
                 {
-                    string filter12 = "ID = " + Convert.ToInt32(m_enumModes.ElementAt(i).ID);
+                    string m_fltrID = "ID = " + Convert.ToInt32(m_enumModes.ElementAt(i).ID);
 
-                    insertDataModes(filter12, i);
+                    insertDataModes(m_fltrID, i);
                 }
 
                 headerText();
@@ -1540,7 +1541,7 @@ namespace StatisticDiagnostic
             {
                 string m_etalon_pbr = string.Empty;
 
-                if ((Convert.ToInt32(DateTime.Now.AddHours(-3).Minute)) > 43)
+                if ((Convert.ToInt32(DateTime.Now.AddHours(-3).Minute)) > 44)
                 {
                     if ((Convert.ToInt32(DateTime.Now.AddHours(-3).Hour)) % 2 == 0)
                     {
@@ -2132,7 +2133,7 @@ namespace StatisticDiagnostic
             if (!(m_DataSource == null))
             {
                 m_timerUpdate.Stop();
-                m_timerUpdate = null;
+                //m_timerUpdate = null;
 
                 m_DataSource.StopDbInterfaces();
                 m_DataSource.Stop();
