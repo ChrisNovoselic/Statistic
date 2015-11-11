@@ -26,6 +26,10 @@ namespace StatisticTimeSync
 
         public FormMain()
         {
+            System.ComponentModel.ComponentResourceManager resources = new System.ComponentModel.ComponentResourceManager(typeof(FormMain));
+            //this.notifyIconMain.Icon =
+            this.Icon = resources.GetObject(@"StatisticTimeSync") as System.Drawing.Icon;
+
             _state = 1;
             InitializeComponent(); 
         }

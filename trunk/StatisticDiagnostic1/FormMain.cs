@@ -25,6 +25,10 @@ namespace StatisticDiagnostic
 
         public FormMain()
         {
+            System.ComponentModel.ComponentResourceManager resources = new System.ComponentModel.ComponentResourceManager(typeof(FormMain));
+            //this.notifyIconMain.Icon =
+            this.Icon = resources.GetObject(@"StatisticDiagnostic") as System.Drawing.Icon;
+
             _state = 1;
             InitializeComponent();
         }
@@ -46,7 +50,13 @@ namespace StatisticDiagnostic
             bAbort = initialize(out msg);
             this.panelMain = new PanelStatisticDiagnostic();
             this.panelMain.SetDelegateReport(ErrorReport, WarningReport, ActionReport, ReportClear);
-            this.Controls.Add(panelMain);
+            //Создать панель для размещения "рабочих" панелей
+            Panel _panelMain = new Panel();
+            _panelMain.Location = new Point(0, this.MainMenuStrip.Height);
+            _panelMain.Size = new System.Drawing.Size(this.ClientSize.Width, this.ClientSize.Height - this.MainMenuStrip.Height - this.m_statusStripMain.Height);
+            _panelMain.Anchor = (AnchorStyles)(((AnchorStyles.Left | AnchorStyles.Top) | AnchorStyles.Right) | AnchorStyles.Bottom);
+            _panelMain.Controls.Add(this.panelMain);
+            this.Controls.Add(_panelMain);
             this.panelMain.Start();
           
             //Снять с отображения окно для визуализации выполнения длительной операции
