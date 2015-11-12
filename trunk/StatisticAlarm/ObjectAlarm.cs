@@ -539,7 +539,7 @@ namespace StatisticAlarm
                                 //Сообщить для сохранения в БД
                                 iRes = INDEX_ACTION.NEW;
                             else
-                                ;
+                                iRes = INDEX_ACTION.RETRY;
                         else
                             ;
 

@@ -65,7 +65,7 @@ namespace StatisticAlarm
         /// <summary>
         /// Перечисление - индексы известных для обработки состояний
         /// </summary>
-        public enum StatesMachine { Unknown = -1, List, Notify, Detail, Insert, Fixed, Confirm }
+        public enum StatesMachine { Unknown = -1, List, Notify, Detail, Insert, Retry, Fixed, Confirm }
         /// <summary>
         /// Объект для учета событий сигнализации и их состояний
         /// </summary>
@@ -121,7 +121,7 @@ namespace StatisticAlarm
             /// <summary>
             /// Перечисление
             /// </summary>
-            public enum StatesMachine { CurrentTime, ListEvents, EventDetail, InsertEventMain, InsertEventDetail, UpdateEventFixed, UpdateEventConfirm }
+            public enum StatesMachine { CurrentTime, ListEvents, EventDetail, InsertEventMain, InsertEventDetail, RetryEvent, UpdateEventFixed, UpdateEventConfirm }
             /// <summary>
             /// Параметры соединения с БД_значений
             /// </summary>
@@ -228,7 +228,8 @@ namespace StatisticAlarm
                     case StatesMachine.UpdateEventConfirm:
                         iRes = response(out error, out table);
                         break;
-                    case StatesMachine.InsertEventDetail:                    
+                    case StatesMachine.InsertEventDetail:
+                    case StatesMachine.RetryEvent:
                         break;
                     default:
                         iRes = -1;
@@ -257,6 +258,9 @@ namespace StatisticAlarm
                         break;
                     case StatesMachine.InsertEventDetail:
                         GetInsertEventDetailRequest();
+                        break;
+                    case StatesMachine.RetryEvent:
+                        GetRetryEventRequest();
                         break;
                     case StatesMachine.UpdateEventFixed:
                         GetUpdateEventFixedRequest();
@@ -295,6 +299,7 @@ namespace StatisticAlarm
                         break;
                     case StatesMachine.UpdateEventFixed:
                     case StatesMachine.UpdateEventConfirm:
+                    case StatesMachine.RetryEvent:
                         // ответа не требуется
                         break;
                     default:
@@ -485,6 +490,24 @@ namespace StatisticAlarm
 
                 Request(IdListener, query);
             }
+
+            private void GetRetryEventRequest()
+            {
+                AlarmNotifyEventArgs arg = m_objArgument as AlarmNotifyEventArgs;
+                string query = string.Empty
+                    , where = @"WHERE [ID_COMPONENT]=" + arg.m_id_comp
+                        + @" AND [DATETIME_REGISTRED]='" + arg.m_dtRegistred.GetValueOrDefault().ToString(@"yyyyMMdd HH:mm:ss.fff") + @"'"
+                        + @" AND [TYPE]=" + (int)arg.type;
+
+                query = @"UPDATE [dbo].[AlarmEvent] SET [ID_USER_FIXED]=NULL, [DATETIME_FIXED]=NULL "
+                    + where;
+                query += @"; ";
+                query += Environment.NewLine;
+                query += @"SELECT * FROM [dbo].[AlarmEvent] "
+                    + where;
+
+                Request(IdListener, query);
+            }
             /// <summary>
             /// Выполнить запрос по обновлению информации о событии сигнализаций
             ///  обновление даты/времени ФИКСАЦИИ события
@@ -595,6 +618,22 @@ namespace StatisticAlarm
                     states.Add((int)StatesMachine.InsertEventDetail);
 
                     Run(@"ViewAlarm::Insert");
+                }
+            }
+
+            public void Retry(TecViewAlarm.AlarmTecViewEventArgs ev)
+            {
+                lock (this)
+                {
+                    ClearValues();
+                    ClearStates();
+
+                    m_objArgument = ev;
+
+                    states.Add((int)StatesMachine.CurrentTime);
+                    states.Add((int)StatesMachine.RetryEvent);
+
+                    Run(@"ViewAlarm::Retry");
                 }
             }
             /// <summary>
@@ -1245,6 +1284,7 @@ namespace StatisticAlarm
                             break;
                     }
                     break;
+                case StatesMachine.Retry:
                 default:
                     iRes = -1;
                     break;
@@ -1275,6 +1315,9 @@ namespace StatisticAlarm
                     break;
                 case StatesMachine.Insert:
                     m_handlerDb.Insert(itemQueue.Pars[0] as TecViewAlarm.AlarmTecViewEventArgs);
+                    break;
+                case StatesMachine.Retry:
+                    m_handlerDb.Retry(itemQueue.Pars[0] as TecViewAlarm.AlarmTecViewEventArgs);
                     break;
                 case StatesMachine.Fixed:
                     AlarmNotifyEventArgs objNotify = itemQueue.Pars[0] as AlarmNotifyEventArgs;
@@ -1324,7 +1367,8 @@ namespace StatisticAlarm
                 case StatesMachine.Confirm:
                     GetUpdateConfirmResponse(itemQueue, tableRes);
                     break;
-                case StatesMachine.Insert:                
+                case StatesMachine.Insert:
+                case StatesMachine.Retry:
                     //Результата нет (рез-т вставленные/обновленные записи)
                     break;
                 default:

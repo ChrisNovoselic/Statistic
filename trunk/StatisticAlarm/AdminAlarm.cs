@@ -49,20 +49,33 @@ namespace StatisticAlarm
         private void OnEventReg_TecView(TecViewAlarm.AlarmTecViewEventArgs ev)
         {
             INDEX_ACTION iAction = m_dictAlarmObject.Registred (ev);
+            StatesMachine state = StatesMachine.Unknown;
             if (iAction == INDEX_ACTION.ERROR)
                 throw new Exception(@"AdminAlarm::OnEventReg_TecView () - ...");
             else
-                if (iAction == INDEX_ACTION.NEW)
-                    push (new object []
+            {
+                switch (iAction)
+                {
+                    case INDEX_ACTION.NEW:
+                        state = StatesMachine.Insert;
+                        break;
+                    case INDEX_ACTION.RETRY:
+                        state = StatesMachine.Retry;
+                        break;
+                    default: // неизвестное/необрабатываемое днйствие
+                        break;
+                }
+
+                push(new object[]
+                    {
+                        new object []
                         {
-                            new object []
-                            {
-                                StatesMachine.Insert
-                                , ev
-                            }
-                        });
-                else
-                    ; // неизвестное/необрабатываемое днйствие
+                            state
+                            , ev
+                        }
+                    }
+                );
+            }
         }
 
         public void SetDelegateReport(DelegateStringFunc ferr, DelegateStringFunc fwar, DelegateStringFunc fact, DelegateBoolFunc fclr)
