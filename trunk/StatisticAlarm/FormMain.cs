@@ -232,7 +232,18 @@ namespace StatisticAlarm
         private void FormMain_Deactivated(object obj, EventArgs ev)
         {
             if (_state == 0)
-                m_panelAlarm.Activate(false);
+                if (WindowState == FormWindowState.Minimized)
+                {
+                    this.ShowInTaskbar = false;
+                    notifyIconMain.Visible = true;
+
+                    m_panelAlarm.Activate(false);
+
+                    try { Application.DoEvents(); }
+                    catch (Exception e) { Logging.Logg().Exception(e, Logging.INDEX_MESSAGE.NOT_SET, @"Application.DoEvents ()"); }
+                }
+                else
+                    ;
             else
                 ;
         }
@@ -328,6 +339,28 @@ namespace StatisticAlarm
                 this.Activate();
         }
 
+        private void notifyIconMain_Click (object obj, EventArgs ev)
+        {
+            развернутьToolStripMenuItem.PerformClick();
+        }
+
+        private void развернутьToolStripMenuItem_Click(object obj, EventArgs ev)
+        {
+            if (this.WindowState == FormWindowState.Minimized)
+            {
+                this.WindowState = FormWindowState.Normal;
+                this.ShowInTaskbar = true;
+                notifyIconMain.Visible = false;
+            }
+            else
+                ;
+        }
+
+        private void закрытьToolStripMenuItem_Click(object obj, EventArgs ev)
+        {
+             this.MainMenuStrip.Items[0].PerformClick ();
+        }
+
         #region Код для отображения сообщения о событии сигнализации        
 
         MessageBoxAlarmEvent m_formAlarmEvent;
@@ -363,8 +396,13 @@ namespace StatisticAlarm
 
     partial class FormMain
     {
-        PanelAlarm m_panelAlarm;
-        Panel _panelMain;
+        private PanelAlarm m_panelAlarm;
+        private Panel _panelMain;
+
+        protected System.Windows.Forms.NotifyIcon notifyIconMain;
+        private System.Windows.Forms.ContextMenuStrip contextMenuStripNotifyIcon;
+        ToolStripMenuItem развернутьToolStripMenuItem
+             , закрытьToolStripMenuItem;
 
         /// <summary>
         /// Требуется переменная конструктора.
@@ -428,6 +466,38 @@ namespace StatisticAlarm
             //Возобновить формирование макета с дочерними элементами управления
             this.ResumeLayout (false);
             this.PerformLayout ();
+
+            // 
+            // развернутьToolStripMenuItem
+            // 
+            this.развернутьToolStripMenuItem = new ToolStripMenuItem ();
+            this.развернутьToolStripMenuItem.Name = "развернутьToolStripMenuItem";
+            this.развернутьToolStripMenuItem.Size = new System.Drawing.Size(152, 22);
+            this.развернутьToolStripMenuItem.Text = "Развернуть";
+            this.развернутьToolStripMenuItem.Click += new System.EventHandler(this.развернутьToolStripMenuItem_Click);
+            // 
+            // закрытьToolStripMenuItem
+            // 
+            this.закрытьToolStripMenuItem = new ToolStripMenuItem ();
+            this.закрытьToolStripMenuItem.Name = "закрытьToolStripMenuItem";
+            this.закрытьToolStripMenuItem.Size = new System.Drawing.Size(152, 22);
+            this.закрытьToolStripMenuItem.Text = "Закрыть";
+            this.закрытьToolStripMenuItem.Click += new System.EventHandler(this.закрытьToolStripMenuItem_Click);
+
+            this.contextMenuStripNotifyIcon = new System.Windows.Forms.ContextMenuStrip(this.components);
+            this.notifyIconMain = new System.Windows.Forms.NotifyIcon(this.components);
+            this.notifyIconMain.Icon = this.Icon;
+            notifyIconMain.Click += new EventHandler(notifyIconMain_Click);
+            // 
+            // contextMenuStripNotifyIcon
+            // 
+            this.contextMenuStripNotifyIcon.Items.AddRange(new System.Windows.Forms.ToolStripItem[] {
+            this.развернутьToolStripMenuItem,
+            new ToolStripSeparator (),
+            this.закрытьToolStripMenuItem});
+            this.contextMenuStripNotifyIcon.Name = "contextMenuStripNotifyIcon";
+            this.contextMenuStripNotifyIcon.Size = new System.Drawing.Size(153, 76);            
+
             //Добавить обработчики событий
             this.Load += new EventHandler(FormMain_Load);
             this.Activated += new EventHandler(FormMain_Activated);

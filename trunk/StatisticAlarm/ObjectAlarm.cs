@@ -136,14 +136,24 @@ namespace StatisticAlarm
             Dictionary<
                 KeyValuePair<int, DateTime>
                 //int
-                    , ALARM_OBJECT> _dictAlarmObject;
-
+                    , ALARM_OBJECT> _dictAlarmObject;        
         /// <summary>
         /// Класс объекта события сигнализации
         /// </summary>
         private class ALARM_OBJECT
         {
-            public DateTime m_dtRegistred { get { return _dtRegistred.GetValueOrDefault(); } }
+            /// <summary>
+            /// Счетчик кол-ва возникновений/повторения события
+            /// </summary>
+            private int _cnt
+            {
+                get
+                {
+                    return _listDTRegistred.Count;
+                }
+            }
+            
+            public DateTime m_dtRegistred { get { return _listDTRegistred[0]; } }
             /// <summary>
             /// Установить состояние объекта в "находится на оповещении"
             /// </summary>
@@ -204,16 +214,16 @@ namespace StatisticAlarm
                     return ! (_dtConfirmed == null); //? true : false;
                 }
             }
-            /// <summary>
-            /// Признак немедленного оповещения
-            /// </summary>
-            public bool IMMEDIATELY
-            {
-                get
-                {
-                    return (!(_state == INDEX_STATES_ALARM.FIXING)) && (_dtFixed == null);
-                }
-            }
+            ///// <summary>
+            ///// Признак немедленного оповещения
+            ///// </summary>
+            //public bool IMMEDIATELY
+            //{
+            //    get
+            //    {
+            //        return (!(_state == INDEX_STATES_ALARM.FIXING)) && (_dtFixed == null);
+            //    }
+            //}
             /// <summary>
             /// Признак превышения интервала времени установленному в БД_конфигурации
             ///  между текущими датой/временем И датой/времени_регистрации ИЛИ крайней датой/времени_фиксации
@@ -224,15 +234,15 @@ namespace StatisticAlarm
                 {
                     DateTime? dt;
                     if (_dtFixed == null)
-                        dt = _dtRegistred;
+                        dt = _listDTRegistred[_cnt - 1];
                     else
                         dt = _dtFixed;
 
-                    return (! (_state == INDEX_STATES_ALARM.FIXING)) && ((DateTime.UtcNow - dt) > TimeSpan.FromMilliseconds(AdminAlarm.MSEC_ALARM_TIMERUPDATE));
+                    return (!(_state == INDEX_STATES_ALARM.FIXING)) && ((DateTime.UtcNow - dt) > TimeSpan.FromMilliseconds(AdminAlarm.MSEC_ALARM_TIMERUPDATE));
                 }
             }
             /// <summary>
-            /// Признак устаревания объекта сигнализаций
+            /// Признак устаревания объекта сигнализаций (от момента подтверждения)
             /// </summary>
             public bool HISTORY
             {
@@ -244,11 +254,11 @@ namespace StatisticAlarm
             /// <summary>
             /// Дата/время регистрации
             /// </summary>
-            private DateTime? _dtRegistred
-                , _dtFixed
-                /// <summary>
-                /// Дата/время подтверждения
-                /// </summary>
+            private List <DateTime> _listDTRegistred;
+            /// <summary>
+            /// Дата/время фиксации/подтверждения
+            /// </summary>
+            private DateTime? _dtFixed
                 , _dtConfirmed;
             /// <summary>
             /// Текущее состояние события сигнализации
@@ -268,7 +278,8 @@ namespace StatisticAlarm
 
             private void init(DateTime dt)
             {
-                _dtRegistred = dt;
+                _listDTRegistred = new List<DateTime> ();
+                _listDTRegistred.Add (dt);
                 _dtConfirmed =
                 _dtFixed =
                     null;
@@ -294,22 +305,65 @@ namespace StatisticAlarm
             public bool IsNotify()
             {
                 bool bRes = false;
-                //Проверить признак "подтвержден"
-                if (CONFIRMED == false)
-                    //Проверить признак необходимости повторения оповещения
-                    if ((IMMEDIATELY == true)
-                        || (RETRY == true))
-                    {
-                        //Установить признак объекту: "находиться на оповещении"
-                        Fixing();
-                        bRes = true;
-                    }
-                    else
-                        ; // событие не требует оповещения
+                ////Вариант №1
+                ////Проверить признак "подтвержден"
+                //if (CONFIRMED == false)
+                //    //Проверить признак необходимости повторения оповещения
+                //    if ((IMMEDIATELY == true)
+                //        || (RETRY == true))
+                //        bRes = true;
+                //    else
+                //        ; // событие не требует оповещения
+                //else
+                //    ; // событие подтверждено
+
+                //Вариант №2
+                bRes = ! CONFIRMED && ! FIXED && ! (_state == INDEX_STATES_ALARM.FIXING);
+
+                //Установить признак объекту: "находиться на оповещении"
+                if (bRes == true)                    
+                    Fixing();
                 else
-                    ; // событие подтверждено
+                    ;
 
                 return bRes;
+            }
+
+            public DateTime Retry (DateTime dtRetry)
+            {
+                _listDTRegistred.Add (dtRetry);
+                
+                return _listDTRegistred[0];
+            }
+
+            public bool IsAutoConfirming ()
+            {
+                bool bRes = false;
+
+                if (! (_dtFixed == null))
+                {
+                    bRes = (CONFIRMED == false)
+                        && ((FIXED == true) && ((DateTime.UtcNow - _dtFixed.GetValueOrDefault ()).TotalMilliseconds > AdminAlarm.MSEC_ALARM_EVENTRETRY));
+                }
+                else
+                    ;
+
+                return bRes;
+            }
+
+            public bool IsAutoFixing ()
+            {
+                bool bRes = false;
+
+                if (_cnt > 0)
+                {
+                    bRes = (FIXED == false)
+                        && ((DateTime.UtcNow - _listDTRegistred[_cnt - 1]).TotalMilliseconds > (AdminAlarm.MSEC_ALARM_EVENTRETRY/* + _cnt * AdminAlarm.MSEC_ALARM_TIMERUPDATE*/));
+                }
+                else
+                    ;
+
+                return bRes;                                
             }
         }
         /// <summary>
@@ -511,7 +565,7 @@ namespace StatisticAlarm
         /// </summary>
         /// <param name="ev">Аргумент события</param>
         /// <returns>Результат регистрации (-1 - ошибка, 0 - ничего_не_делать, 1 - новый_объект, 2 - повторное_событие)</returns>
-        public INDEX_ACTION Registred(TecViewAlarm.AlarmTecViewEventArgs ev)
+        public INDEX_ACTION Registred(ref TecViewAlarm.AlarmTecViewEventArgs ev)
         {
             INDEX_ACTION iRes = INDEX_ACTION.NOTHING;
             ALARM_OBJECT alarmObj = null;
@@ -536,12 +590,18 @@ namespace StatisticAlarm
                         if (alarmObj.CONFIRMED == true)
                             // если подтверждено - проверить период между датой/временем регистрации события сигнализации и датой/временем его подтверждения
                             if (alarmObj.HISTORY == true)
-                                //Сообщить для сохранения в БД
+                                //Сообщить для сохранения в БД для регистрации нового события сигнализаций для этого же компонента ТЭЦ
                                 iRes = INDEX_ACTION.NEW;
                             else
-                                iRes = INDEX_ACTION.RETRY;
+                                ;
                         else
-                            ;
+                            if (alarmObj.RETRY == true)
+                            {
+                                ev.m_dtRegistred = alarmObj.Retry(ev.m_dtRegistred.GetValueOrDefault ());
+                                iRes = INDEX_ACTION.RETRY;
+                            }
+                            else
+                                ;
 
                     if (iRes == INDEX_ACTION.NEW)
                     {
@@ -580,7 +640,7 @@ namespace StatisticAlarm
         /// </summary>
         /// <param name="ev">Аргумент события</param>
         /// <returns>Результат регистрации (см. пред. обработчик для 'TecViewAlarm.AlarmTecViewEventArgs')</returns>
-        public INDEX_ACTION Registred(AdminAlarm.AlarmDbEventArgs ev)
+        public INDEX_ACTION Registred(AdminAlarm.AlarmDbEventArgs ev, MODE mode)
         {
             INDEX_ACTION iRes = INDEX_ACTION.NOTHING;
             ALARM_OBJECT alarmObj = find(ev.m_id_comp, ev.m_dtRegistred.GetValueOrDefault ());
@@ -597,8 +657,11 @@ namespace StatisticAlarm
                         alarmObj.Fixed (ev.m_dtFixed);
                         alarmObj.Confirmed(ev.m_dtConfirm);
 
-                        if (alarmObj.IsNotify() == true)
-                            iRes = INDEX_ACTION.NEW;
+                        if (mode == MODE.ADMIN)
+                            if (alarmObj.IsNotify() == true)
+                                iRes = INDEX_ACTION.NEW;
+                            else
+                                ;
                         else
                             ;
                     }
@@ -607,22 +670,24 @@ namespace StatisticAlarm
                         alarmObj.Fixed(ev.m_dtFixed);
                         alarmObj.Confirmed(ev.m_dtConfirm);
 
-                        if ((alarmObj.CONFIRMED == false)
-                            && ((alarmObj.FIXED == true) && ((DateTime.UtcNow - ev.m_dtFixed.GetValueOrDefault ()).TotalMilliseconds > AdminAlarm.MSEC_ALARM_EVENTRETRY))
-                            )
-                            // если объект не подтвержден длительное время
-                            iRes = INDEX_ACTION.AUTO_CONFIRMING;
+                        if (mode == MODE.SERVICE)
+                            if (alarmObj.IsAutoConfirming () == true)
+                                // если объект не подтвержден длительное время
+                                iRes = INDEX_ACTION.AUTO_CONFIRMING;
+                            else
+                                if (alarmObj.IsAutoFixing () == true)
+                                    // если объект не зафиксирован длительное время
+                                    iRes = INDEX_ACTION.AUTO_FIXING;
+                                else
+                                    ;
                         else
-                            if ((alarmObj.FIXED == false)
-                                && ((DateTime.UtcNow - ev.m_dtRegistred.GetValueOrDefault ()).TotalMilliseconds > AdminAlarm.MSEC_ALARM_EVENTRETRY)
-                                )
-                                // если объект не зафиксирован длительное время
-                                iRes = INDEX_ACTION.AUTO_FIXING;
-                            else                            
+                            if (mode == MODE.ADMIN)
                                 if (alarmObj.IsNotify() == true)
                                     iRes = INDEX_ACTION.RETRY;
                                 else
                                     ;
+                            else
+                                ; // при 'VIEW' ничего не делать
                     }
                 }
                 catch (Exception e)

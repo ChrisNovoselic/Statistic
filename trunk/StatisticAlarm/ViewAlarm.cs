@@ -1142,16 +1142,15 @@ namespace StatisticAlarm
         /// <param name="ev">Аргумент события - описание события сигнализации</param>
         private void onEventReg(AlarmDbEventArgs ev)
         {
-            INDEX_ACTION iAction = m_dictAlarmObject.Registred (ev);
+            INDEX_ACTION iAction = m_dictAlarmObject.Registred (ev, Mode);
             if (iAction == INDEX_ACTION.ERROR)
                 throw new Exception(@"ViewAlarm::onEventReg () - ...");
             else
-                //Проверить режим работы
-                switch (Mode)
+                switch (iAction)
                 {
                     // оповещение только для 'ADMIN'
-                    case MODE.ADMIN:
-                    //case MODE.SERVICE: // для отладки
+                    case INDEX_ACTION.NEW:
+                    case INDEX_ACTION.RETRY:
                         ev.m_messageGUI = getEventGUIMessage (ev);
                         if (iAction == INDEX_ACTION.NEW)
                             EventAdd(ev);
@@ -1161,33 +1160,25 @@ namespace StatisticAlarm
                             else
                                 ;
                         break;
-                    // автофиксация/подтверждение только для 'SERVICE'
-                    case MODE.SERVICE:
-                        switch (iAction)
-                        {
-                            case INDEX_ACTION.AUTO_FIXING:
-                                Push(null, new object[] {
-                                    new object [] {
-                                        new object [] {
-                                            AdminAlarm.StatesMachine.Fixed
-                                            , ev as AlarmNotifyEventArgs
-                                        }
-                                    }
-                                });
-                                break;
-                            case INDEX_ACTION.AUTO_CONFIRMING:
-                                Push(null, new object[] {
-                                    new object[] {
-                                        new object [] {
-                                            AdminAlarm.StatesMachine.Confirm
-                                            , ev.m_id
-                                        }
-                                    }
-                                });
-                                break;
-                            default:
-                                break;
-                        }
+                    case INDEX_ACTION.AUTO_FIXING: // автофиксация/подтверждение только для 'SERVICE'
+                        Push(null, new object[] {
+                            new object [] {
+                                new object [] {
+                                    AdminAlarm.StatesMachine.Fixed
+                                    , ev as AlarmNotifyEventArgs
+                                }
+                            }
+                        });
+                        break;
+                    case INDEX_ACTION.AUTO_CONFIRMING: // автофиксация/подтверждение только для 'SERVICE'
+                        Push(null, new object[] {
+                            new object[] {
+                                new object [] {
+                                    AdminAlarm.StatesMachine.Confirm
+                                    , ev.m_id
+                                }
+                            }
+                        });
                         break;
                     default:
                         break;
@@ -1363,7 +1354,7 @@ namespace StatisticAlarm
                     GetUpdateFixedResponse(itemQueue, tableRes);
                     break;
                 case StatesMachine.Retry: // происходит только в режиме 'SERVICE'
-                    GetRetryResponse(itemQueue, tableRes);
+                    //GetRetryResponse(itemQueue, tableRes);
                     break;
                 case StatesMachine.Confirm:
                     GetUpdateConfirmResponse(itemQueue, tableRes);

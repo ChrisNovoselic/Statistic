@@ -48,7 +48,7 @@ namespace StatisticAlarm
         /// <param name="ev">Аргумент события сигнализации</param>
         private void OnEventReg_TecView(TecViewAlarm.AlarmTecViewEventArgs ev)
         {
-            INDEX_ACTION iAction = m_dictAlarmObject.Registred (ev);
+            INDEX_ACTION iAction = m_dictAlarmObject.Registred (ref ev);
             StatesMachine state = StatesMachine.Unknown;
             if (iAction == INDEX_ACTION.ERROR)
                 throw new Exception(@"AdminAlarm::OnEventReg_TecView () - ...");
