@@ -1805,7 +1805,8 @@ namespace StatisticCommon
             if ((!(indx < (serverTime.Minute - 1)))
                 && (m_curDate.Hour.Equals(serverTime.Hour) == true)
                 && (m_curDate.Date.Equals(serverTime.Date) == true)
-                //&& (serverTime.Minute > 2)
+                // 1 - дл€ полож. разности, 2 - дл€ особенности Ѕƒ_значений: отставание при усреднении
+                && (serverTime.Minute > 2)
                 )
                 bRes = false;
             else

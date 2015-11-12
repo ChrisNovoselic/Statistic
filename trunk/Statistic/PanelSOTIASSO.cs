@@ -1098,30 +1098,13 @@ namespace Statistic
         //private void TimerCurrent_Tick(object obj, EventArgs ev)
         {
             if (m_tecView.Actived == true)
-            {
-                ////Вариант №1
-                //if (m_timerCurrent.Interval == ProgramBase.TIMER_START_INTERVAL)
-                //{
-                //    m_timerCurrent.Interval = PanelStatistic.POOL_TIME * 1000 - 1;
-
-                //    return ;
-                //}
-                //else
-                //    ;
-
                 if (m_tecView.currHour == true)
-                {
                     if ((m_tecView.adminValuesReceived == true) //Признак успешного выполнения операций для состояния 'TecView.AdminValues'
                         && ((m_tecView.lastMin > 60) && (m_tecView.serverTime.Minute > 1)))
-                    {
-                        ////Вариант №1
-                        //m_timerCurrent.Stop ();
-
                         if (IsHandleCreated/*InvokeRequired*/ == true)
                             Invoke(delegateSetDatetimeHour, m_tecView.serverTime);
                         else
                             return;
-                    }
                     else
                     {
                         m_tecView.ChangeState();
@@ -1129,10 +1112,8 @@ namespace Statistic
                         //Вариант №0
                         m_timerCurrent.Change(PanelStatistic.POOL_TIME * 1000 - 1, System.Threading.Timeout.Infinite);
                     }
-                }
                 else
                     ; //m_tecView.ChangeState();
-            }
             else
                 ;
         }
@@ -1161,7 +1142,7 @@ namespace Statistic
         private void panelManagement_OnEvtDatetimeHourChanged(DateTime dtNew)
         {
             setCurrDateHour(dtNew);
-
+            //Проверить наличие даты/времени полученного на сервере (хотя бы один раз)
             if (m_tecView.serverTime.Equals(DateTime.MinValue) == false)
                 if ((m_tecView.m_curDate.Date.Equals(m_tecView.serverTime.Date) == true)
                     && (m_tecView.lastHour.Equals(m_tecView.serverTime.Hour) == true))
@@ -1170,13 +1151,7 @@ namespace Statistic
                     m_tecView.currHour = true;
 
                     if (!(m_timerCurrent == null))
-                        //Вариант №0
                         m_timerCurrent.Change(0, System.Threading.Timeout.Infinite);
-                    ////Вариант №1
-                    //if (m_timerCurrent.Enabled == false)
-                    //    m_timerCurrent.Start ();
-                    //else
-                    //    ;
                     else
                         ;
                 }
@@ -1185,19 +1160,9 @@ namespace Statistic
                     m_tecView.currHour = false;
 
                     m_tecView.ChangeState();
-
-                    if (!(m_timerCurrent == null))
-                        //Вариант №0
-                        m_timerCurrent.Change(0, System.Threading.Timeout.Infinite);
-                    ////Вариант №1
-                    //if (m_timerCurrent.Enabled == true)
-                    //    m_timerCurrent.Stop ();
-                    //else
-                    //    ;
-                    else
-                        ;
                 }
             else
+                // не выполнен НИ один успешный запрос к БД_значений
                 ;
         }
         /// <summary>
@@ -1755,7 +1720,8 @@ namespace Statistic
             pane.Title.Text = @"СОТИАССО";
             pane.Title.Text += new string(' ', 29);
             pane.Title.Text += ((m_tecView.lastMin < 61) ? (CurrDateHour.Hour + 1) : (m_tecView.currHour == true ? CurrDateHour.Hour + 2 : CurrDateHour.Hour + 1)) + @"-й ч"
-                + @", " + ((m_tecView.lastMin < 61) ? m_tecView.lastMin : (m_tecView.currHour == true ? m_tecView.lastMin - 60 : 60)) + @"-я мин";
+                + @", " + ((m_tecView.lastMin < 61) ? (m_tecView.currHour == true ? m_tecView.lastMin : (m_tecView.lastMin - 1)) :
+                    (m_tecView.currHour == true ? m_tecView.lastMin - 60 : 60)) + @"-я мин";
 
             pane.XAxis.Scale.TextLabels = names;
             pane.XAxis.Scale.IsPreventLabelOverlap = false;

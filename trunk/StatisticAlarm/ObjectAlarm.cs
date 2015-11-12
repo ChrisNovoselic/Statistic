@@ -143,17 +143,19 @@ namespace StatisticAlarm
         private class ALARM_OBJECT
         {
             /// <summary>
+            /// Перечисление - индексы значений даты/времени регистрации/повторения события сигнализаций
+            /// </summary>
+            private enum INDEX_DATETIME_REGISTRED { FIRST, LAST, COUNT }
+            /// <summary>
             /// Счетчик кол-ва возникновений/повторения события
             /// </summary>
-            private int _cnt
-            {
-                get
-                {
-                    return _listDTRegistred.Count;
-                }
-            }
-            
-            public DateTime m_dtRegistred { get { return _listDTRegistred[0]; } }
+            private int _cnt;
+            /// <summary>
+            /// Дата/время первичной регистрации события (как в БД) сигнализаций
+            /// </summary>
+            public DateTime FirstDTRegistred { get { return _arDTRegistred[(int)INDEX_DATETIME_REGISTRED.FIRST]; } }
+
+            private DateTime _lastDTRegistred { get { return _arDTRegistred[_cnt == 1 ? (int)INDEX_DATETIME_REGISTRED.FIRST : (int)INDEX_DATETIME_REGISTRED.LAST]; } }
             /// <summary>
             /// Установить состояние объекта в "находится на оповещении"
             /// </summary>
@@ -167,10 +169,15 @@ namespace StatisticAlarm
             /// </summary>
             /// <param name="dt">Дата/время фиксации</param>
             public void Fixed(DateTime? dt)
-            {                
-                _dtFixed = dt;
-                if (!(_dtFixed == null))
-                    _state = INDEX_STATES_ALARM.FIXED;
+            {
+                if (!(_state == INDEX_STATES_ALARM.FIXING))
+                {
+                    _dtFixed = dt;
+                    if (!(_dtFixed == null))
+                        _state = INDEX_STATES_ALARM.FIXED;
+                    else
+                        ;
+                }
                 else
                     ;
             }
@@ -198,9 +205,14 @@ namespace StatisticAlarm
             /// <param name="dt"></param>
             public void Confirmed(DateTime? dt)
             {
-                _dtConfirmed = dt;
-                if (!(_dtConfirmed == null))
-                    _state = INDEX_STATES_ALARM.CONFIRMED;
+                if (!(_state == INDEX_STATES_ALARM.FIXING))
+                {
+                    _dtConfirmed = dt;
+                    if (!(_dtConfirmed == null))
+                        _state = INDEX_STATES_ALARM.CONFIRMED;
+                    else
+                        ;
+                }
                 else
                     ;
             }
@@ -234,7 +246,7 @@ namespace StatisticAlarm
                 {
                     DateTime? dt;
                     if (_dtFixed == null)
-                        dt = _listDTRegistred[_cnt - 1];
+                        dt = _lastDTRegistred;
                     else
                         dt = _dtFixed;
 
@@ -254,7 +266,7 @@ namespace StatisticAlarm
             /// <summary>
             /// Дата/время регистрации
             /// </summary>
-            private List <DateTime> _listDTRegistred;
+            private DateTime [] _arDTRegistred;
             /// <summary>
             /// Дата/время фиксации/подтверждения
             /// </summary>
@@ -278,14 +290,19 @@ namespace StatisticAlarm
 
             private void init(DateTime dt)
             {
-                _listDTRegistred = new List<DateTime> ();
-                _listDTRegistred.Add (dt);
+                _arDTRegistred[(int)INDEX_DATETIME_REGISTRED.FIRST] = dt;
+                _cnt = 1;
                 _dtConfirmed =
                 _dtFixed =
                     null;
             }
 
-            private ALARM_OBJECT(INDEX_STATES_ALARM state) { _state = state; }
+            private ALARM_OBJECT(INDEX_STATES_ALARM state)
+            {
+                _state = state;
+                _arDTRegistred = new DateTime[(int)INDEX_DATETIME_REGISTRED.COUNT];
+                _cnt = 0;
+            }
 
             public ALARM_OBJECT(TecViewAlarm.AlarmTecViewEventArgs ev) : this (INDEX_STATES_ALARM.REGISTRING)
             {
@@ -318,22 +335,25 @@ namespace StatisticAlarm
                 //    ; // событие подтверждено
 
                 //Вариант №2
-                bRes = ! CONFIRMED && ! FIXED && ! (_state == INDEX_STATES_ALARM.FIXING);
+                bRes = ! CONFIRMED
+                    && ! FIXED
+                    && ! (_state == INDEX_STATES_ALARM.FIXING);
 
-                //Установить признак объекту: "находиться на оповещении"
-                if (bRes == true)                    
-                    Fixing();
-                else
-                    ;
+                ////Установить признак объекту: "находиться на оповещении"                
+                //if (bRes == true)                    
+                //    Fixing();
+                //else
+                //    ;
 
                 return bRes;
             }
 
             public DateTime Retry (DateTime dtRetry)
             {
-                _listDTRegistred.Add (dtRetry);
-                
-                return _listDTRegistred[0];
+                _arDTRegistred[(int)INDEX_DATETIME_REGISTRED.LAST] = dtRetry;
+                _cnt++;
+
+                return FirstDTRegistred;
             }
 
             public bool IsAutoConfirming ()
@@ -358,7 +378,7 @@ namespace StatisticAlarm
                 if (_cnt > 0)
                 {
                     bRes = (FIXED == false)
-                        && ((DateTime.UtcNow - _listDTRegistred[_cnt - 1]).TotalMilliseconds > (AdminAlarm.MSEC_ALARM_EVENTRETRY/* + _cnt * AdminAlarm.MSEC_ALARM_TIMERUPDATE*/));
+                        && ((DateTime.UtcNow - _lastDTRegistred).TotalMilliseconds > (AdminAlarm.MSEC_ALARM_EVENTRETRY/* + _cnt * AdminAlarm.MSEC_ALARM_TIMERUPDATE*/));
                 }
                 else
                     ;
@@ -446,7 +466,7 @@ namespace StatisticAlarm
 
             ALARM_OBJECT objAlarm = find(id_comp, dtReg);
             if (!(objAlarm == null))
-                dtRes = objAlarm.m_dtRegistred;
+                dtRes = objAlarm.FirstDTRegistred;
             else
                 ;
 
@@ -659,7 +679,10 @@ namespace StatisticAlarm
 
                         if (mode == MODE.ADMIN)
                             if (alarmObj.IsNotify() == true)
+                            {
+                                alarmObj.Fixing();
                                 iRes = INDEX_ACTION.NEW;
+                            }
                             else
                                 ;
                         else
@@ -683,7 +706,10 @@ namespace StatisticAlarm
                         else
                             if (mode == MODE.ADMIN)
                                 if (alarmObj.IsNotify() == true)
+                                {
+                                    alarmObj.Fixing();
                                     iRes = INDEX_ACTION.RETRY;
+                                }
                                 else
                                     ;
                             else
