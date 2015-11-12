@@ -1004,8 +1004,8 @@ namespace StatisticDiagnostic
                 string m_dtNow = DateTime.Now.ToString();
                 string m_dt2Time;
 
-                int m_intNow = Convert.ToInt32(m_dtNow.Substring(1, 1));
-                int m_iDT = Convert.ToInt32(datetime.Substring(9, 1));
+                int m_intNow = Convert.ToInt32(m_dtNow.Substring(0, 2));
+                int m_iDT = Convert.ToInt32(datetime.Substring(8, 2));
 
                 if ((m_intNow - m_iDT) > 0)
                 {
@@ -1191,7 +1191,6 @@ namespace StatisticDiagnostic
             /// </summary>
             public void Create_Modes()
             {
-
                 /*var stdDetails = (from r in m_tbModes.AsEnumerable()
                                   select new
                                   {
@@ -1527,10 +1526,10 @@ namespace StatisticDiagnostic
             {
                 if (m_arPanelsMODES[numP].ModesDataGridView.InvokeRequired)
                 {
-                    m_arPanelsMODES[numP].ModesDataGridView.Invoke(new Action(() => m_arPanelsMODES[numP].ModesDataGridView.Rows[numR].Cells[1].Style.BackColor = System.Drawing.Color.Sienna));
+                    m_arPanelsMODES[numP].ModesDataGridView.Invoke(new Action(() => m_arPanelsMODES[numP].ModesDataGridView.Rows[numR].Cells[1].Style.BackColor = System.Drawing.Color.OrangeRed));
                 }
 
-                m_arPanelsMODES[numP].ModesDataGridView.Rows[numR].Cells[1].Style.BackColor = System.Drawing.Color.Sienna;
+                m_arPanelsMODES[numP].ModesDataGridView.Rows[numR].Cells[1].Style.BackColor = System.Drawing.Color.OrangeRed;
             }
 
             /// <summary>
@@ -1540,17 +1539,19 @@ namespace StatisticDiagnostic
             private string checkPBR()
             {
                 string m_etalon_pbr = string.Empty;
+                string m_DTMin = TimeZoneInfo.ConvertTimeBySystemTimeZoneId(DateTime.Now, TimeZoneInfo.Local.Id, "Russian Standard Time").ToString("mm");
+                string m_DTHour = TimeZoneInfo.ConvertTimeBySystemTimeZoneId(DateTime.Now, TimeZoneInfo.Local.Id, "Russian Standard Time").ToString("HH");
 
-                if ((Convert.ToInt32(DateTime.Now.AddHours(-3).Minute)) > 44)
+                if ((Convert.ToInt32(m_DTMin)) > 41)
                 {
-                    if ((Convert.ToInt32(DateTime.Now.AddHours(-3).Hour)) % 2 == 0)
+                    if ((Convert.ToInt32(m_DTHour)) % 2 == 0)
                     {
-                        m_etalon_pbr = "ПБР" + (Convert.ToInt32(DateTime.Now.AddHours(-3).Hour) + 1);
+                        m_etalon_pbr = "ПБР" + (Convert.ToInt32(m_DTHour) + 1);
                     }
 
                     else
                     {
-                        m_etalon_pbr = "ПБР" + ((Convert.ToInt32(DateTime.Now.AddHours(-3).Hour + 2)));
+                        m_etalon_pbr = "ПБР" + ((Convert.ToInt32(m_DTHour) + 2));
                     }
 
                     return m_etalon_pbr;
@@ -1558,14 +1559,14 @@ namespace StatisticDiagnostic
 
                 else
                 {
-                    if ((Convert.ToInt32(DateTime.Now.AddHours(-3).Hour)) % 2 == 0)
+                    if ((Convert.ToInt32(m_DTHour)) % 2 == 0)
                     {
-                        m_etalon_pbr = "ПБР" + (Convert.ToInt32(DateTime.Now.AddHours(-3).Hour) + 1);
+                        m_etalon_pbr = "ПБР" + (Convert.ToInt32(m_DTHour) + 1);
                     }
 
                     else
                     {
-                        m_etalon_pbr = "ПБР" + Convert.ToInt32(DateTime.Now.AddHours(-3).Hour);
+                        m_etalon_pbr = "ПБР" + Convert.ToInt32(m_DTHour);
 
                     }
                     return m_etalon_pbr;
@@ -1582,8 +1583,8 @@ namespace StatisticDiagnostic
             {
                 string m_dtNow = DateTime.Now.ToString();
                 string m_dt2Time;
-                int m_intNow = Convert.ToInt32(m_dtNow.Substring(1, 1));
-                int m_iDT = Convert.ToInt32(datetime.Substring(9, 1));
+                int m_intNow = Convert.ToInt32(m_dtNow.Substring(0,2));
+                int m_iDT = Convert.ToInt32(datetime.Substring(8, 2));
 
                 if ((m_intNow - m_iDT) > 0)
                 {
@@ -1770,8 +1771,8 @@ namespace StatisticDiagnostic
             {
                 string m_dtNow = DateTime.Now.ToString();
                 string m_dt2Time;
-                int m_intNow = Convert.ToInt32(m_dtNow.Substring(1, 1));
-                int m_iDT = Convert.ToInt32(datetime.Substring(9, 1));
+                int m_intNow = Convert.ToInt32(m_dtNow.Substring(0, 2));
+                int m_iDT = Convert.ToInt32(datetime.Substring(8, 2));
 
                 if ((m_intNow - m_iDT) > 0)
                 {
@@ -2237,30 +2238,5 @@ namespace StatisticDiagnostic
 
             DbSources.Sources().UnRegister(iListernID);
         }
-
-        /// <summary>
-        /// 
-        /// </summary>
-        /*public void ChangeActiveSourceName()
-        {
-            int t = -1;
-
-            for (int i = 0; i < m_arrayActiveSource.Length / 2; i++)
-            {
-                t++;
-                int id = (int)m_arraySource.Rows[t][@"ID"];
-
-                do
-                {
-                    if ((int)m_arrayActiveSource[i, 0] == 0)
-                    {
-                        break;
-                    }
-                } 
-                while ((int)m_arrayActiveSource[i, 0] != id);
-
-                m_arrayActiveSource.SetValue(m_arraySource.Rows[t][@"NAME_SHR"].ToString(), i, 1);
-            }
-        }*/
     }
 }
