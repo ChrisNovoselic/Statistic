@@ -974,23 +974,32 @@ namespace StatisticDiagnostic
             /// <param name="r">индекс строки</param>
             private void checkrelevancevalues(int i, int r)
             {
-                string m_ival;
-                string m_iDTnow = DateTime.Now.ToString().Substring(15, 1);
+                string m_DTnow = TimeZoneInfo.ConvertTimeBySystemTimeZoneId(DateTime.Now, TimeZoneInfo.Local.Id, "Russian Standard Time").ToString("HH:mm:ss.fff");
+                string m_DTHour = m_DTnow.Substring(0, 2);
+                string m_DTMin = m_DTnow.Substring(3, 2);
+                string m_ivalMin = m_arPanelsTEC[i].TECDataGridView.Rows[r].Cells[1].Value.ToString().Substring(3, 2);
+                string m_ivalHour = m_arPanelsTEC[i].TECDataGridView.Rows[r].Cells[1].Value.ToString().Substring(0, 2);
+                int minutes = Convert.ToInt32(m_ivalMin);
 
-                if (!(m_arPanelsTEC[i].TECDataGridView.Rows[r].Cells[0].Value.ToString() == "АИИСКУЭ") && m_arPanelsTEC[i].TECDataGridView.Rows[r].Cells[0].Style.BackColor == System.Drawing.Color.White)
+                if ((!(m_arPanelsTEC[i].TECDataGridView.Rows[r].Cells[0].Value.ToString() == "АИИСКУЭ")) && m_arPanelsTEC[i].TECDataGridView.Rows[r].Cells[0].Style.BackColor == System.Drawing.Color.Empty)
                 {
 
                 }
                 else
                 {
-                    m_ival = m_arPanelsTEC[i].TECDataGridView.Rows[r].Cells[1].Value.ToString().Substring(4, 1);
-
-                    if ((m_ival + 3) == m_iDTnow)
+                    if (!(m_DTHour.Equals(m_ivalHour)))
                     {
-                        m_arPanelsTEC[i].TECDataGridView.Rows[r].Cells[0].Style.BackColor = System.Drawing.Color.Sienna;
+                        m_arPanelsTEC[i].TECDataGridView.Rows[r].Cells[1].Style.BackColor = System.Drawing.Color.Sienna;
+                    }
+
+                    else
+                    {
+                        if (((Convert.ToInt32(m_DTMin)) - minutes) > 3)
+                        {
+                            m_arPanelsTEC[i].TECDataGridView.Rows[r].Cells[1].Style.BackColor = System.Drawing.Color.Sienna;
+                        }
                     }
                 }
-
             }
 
             /// <summary>
@@ -1540,17 +1549,19 @@ namespace StatisticDiagnostic
             private string checkPBR()
             {
                 string m_etalon_pbr = string.Empty;
+                string m_DTMin = TimeZoneInfo.ConvertTimeBySystemTimeZoneId(DateTime.Now, TimeZoneInfo.Local.Id, "Russian Standard Time").ToString("mm");
+                string m_DTHour = TimeZoneInfo.ConvertTimeBySystemTimeZoneId(DateTime.Now, TimeZoneInfo.Local.Id, "Russian Standard Time").ToString("HH");
 
-                if ((Convert.ToInt32(DateTime.Now.AddHours(-3).Minute)) > 44)
+                if ((Convert.ToInt32(m_DTMin)) > 44)
                 {
-                    if ((Convert.ToInt32(DateTime.Now.AddHours(-3).Hour)) % 2 == 0)
+                    if ((Convert.ToInt32(m_DTHour)) % 2 == 0)
                     {
-                        m_etalon_pbr = "ПБР" + (Convert.ToInt32(DateTime.Now.AddHours(-3).Hour) + 1);
+                        m_etalon_pbr = "ПБР" + (Convert.ToInt32(m_DTHour) + 1);
                     }
 
                     else
                     {
-                        m_etalon_pbr = "ПБР" + ((Convert.ToInt32(DateTime.Now.AddHours(-3).Hour + 2)));
+                        m_etalon_pbr = "ПБР" + ((Convert.ToInt32(m_DTHour) + 2));
                     }
 
                     return m_etalon_pbr;
@@ -1558,14 +1569,14 @@ namespace StatisticDiagnostic
 
                 else
                 {
-                    if ((Convert.ToInt32(DateTime.Now.AddHours(-3).Hour)) % 2 == 0)
+                    if ((Convert.ToInt32(m_DTHour)) % 2 == 0)
                     {
-                        m_etalon_pbr = "ПБР" + (Convert.ToInt32(DateTime.Now.AddHours(-3).Hour) + 1);
+                        m_etalon_pbr = "ПБР" + (Convert.ToInt32(m_DTHour) + 1);
                     }
 
                     else
                     {
-                        m_etalon_pbr = "ПБР" + Convert.ToInt32(DateTime.Now.AddHours(-3).Hour);
+                        m_etalon_pbr = "ПБР" + Convert.ToInt32(m_DTHour);
 
                     }
                     return m_etalon_pbr;
