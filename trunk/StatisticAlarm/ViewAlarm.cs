@@ -226,10 +226,10 @@ namespace StatisticAlarm
                     case StatesMachine.InsertEventMain:
                     case StatesMachine.UpdateEventFixed:
                     case StatesMachine.UpdateEventConfirm:
+                    case StatesMachine.RetryEvent:
                         iRes = response(out error, out table);
                         break;
-                    case StatesMachine.InsertEventDetail:
-                    case StatesMachine.RetryEvent:
+                    case StatesMachine.InsertEventDetail:                    
                         break;
                     default:
                         iRes = -1;
@@ -288,19 +288,17 @@ namespace StatisticAlarm
                 {
                     case StatesMachine.CurrentTime:
                         GetCurrentTimeResponse(obj as DataTable);
-                        break;
-                    case StatesMachine.ListEvents:
-                    case StatesMachine.EventDetail:
-                        break;
+                        break;                    
                     case StatesMachine.InsertEventMain:
                         GetInsertEventMainResponse(obj as DataTable);
                         break;
+                    case StatesMachine.ListEvents:
+                    case StatesMachine.EventDetail:
                     case StatesMachine.InsertEventDetail:
-                        break;
                     case StatesMachine.UpdateEventFixed:
                     case StatesMachine.UpdateEventConfirm:
-                    case StatesMachine.RetryEvent:
-                        // ответа не требуется
+                    case StatesMachine.RetryEvent:                    
+                        // обработки ответа не требуется
                         break;
                     default:
                         break;
@@ -653,7 +651,7 @@ namespace StatisticAlarm
                     states.Add((int)StatesMachine.CurrentTime);
                     states.Add((int)StatesMachine.UpdateEventFixed);
 
-                    Run(@"ViewAlarm::Fixed");
+                    Run(@"AdminAlarm::Fixed");
                 }
             }
             /// <summary>
@@ -1265,6 +1263,7 @@ namespace StatisticAlarm
                 case StatesMachine.Detail:
                 case StatesMachine.Notify:
                 case StatesMachine.Insert:
+                case StatesMachine.Retry:
                 case StatesMachine.Fixed:
                 case StatesMachine.Confirm:
                     indxSync = (HandlerDb.INDEX_SYNC_STATECHECKRESPONSE)WaitHandle.WaitAny(m_handlerDb.m_arSyncStateCheckResponse);
@@ -1284,7 +1283,6 @@ namespace StatisticAlarm
                             break;
                     }
                     break;
-                case StatesMachine.Retry:
                 default:
                     iRes = -1;
                     break;
@@ -1364,11 +1362,13 @@ namespace StatisticAlarm
                 case StatesMachine.Fixed:
                     GetUpdateFixedResponse(itemQueue, tableRes);
                     break;
+                case StatesMachine.Retry: // происходит только в режиме 'SERVICE'
+                    GetRetryResponse(itemQueue, tableRes);
+                    break;
                 case StatesMachine.Confirm:
                     GetUpdateConfirmResponse(itemQueue, tableRes);
                     break;
-                case StatesMachine.Insert:
-                case StatesMachine.Retry:
+                case StatesMachine.Insert:                
                     //Результата нет (рез-т вставленные/обновленные записи)
                     break;
                 default:
