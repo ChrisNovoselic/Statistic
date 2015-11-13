@@ -113,7 +113,7 @@ namespace trans_tg
                 }
                 catch (Exception e)
                 {
-                    Logging.Logg().Exception(e, Logging.INDEX_MESSAGE.NOT_SET, "FormMainTransTG::FormMainTransTG ()");
+                    Logging.Logg().Exception(e, "FormMainTransTG::FormMainTransTG ()", Logging.INDEX_MESSAGE.NOT_SET);
                     //ErrorReport("Ошибка соединения. Перехож в ожидание.");
                     //setUIControlConnectionSettings(i);
                     break;

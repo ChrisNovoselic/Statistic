@@ -247,7 +247,7 @@ namespace trans_mt
                 }
                 catch (Exception e)
                 {
-                    Logging.Logg().Exception(e, Logging.INDEX_MESSAGE.NOT_SET, @"AdminMT::GetPPBRValuesResponse () - ...");
+                    Logging.Logg().Exception(e, @"AdminMT::GetPPBRValuesResponse () - ...", Logging.INDEX_MESSAGE.NOT_SET);
                 }
             } // цикл-окончание по номеру часа 'hour'
 

@@ -543,7 +543,7 @@ namespace StatisticCommon
             }
             catch (Exception e)
             {
-                Logging.Logg().Exception(e, Logging.INDEX_MESSAGE.NOT_SET, @"TecView::ClearValuesLastMinutesTM ()- ...");
+                Logging.Logg().Exception(e, @"TecView::ClearValuesLastMinutesTM ()- ...", Logging.INDEX_MESSAGE.NOT_SET);
             }
 
             for (int i = 0; i < (m_valuesHours.Length + 1); i++)
@@ -757,7 +757,7 @@ namespace StatisticCommon
                     try { m_dtLastChangedAt_TM_Gen = HAdmin.ToMoscowTimeZone(m_dtLastChangedAt_TM_Gen); }
                     catch (Exception e)
                     {
-                        Logging.Logg().Exception(e, Logging.INDEX_MESSAGE.NOT_SET, @"TecView::GetCurrentTMGenResponse () - HAdmin.ToCurrentTimeZone () - ...");
+                        Logging.Logg().Exception(e, @"TecView::GetCurrentTMGenResponse () - HAdmin.ToCurrentTimeZone () - ...", Logging.INDEX_MESSAGE.NOT_SET);
                     }
                 else
                     ;
@@ -1601,7 +1601,7 @@ namespace StatisticCommon
                 }
                 catch (Exception excpt)
                 {
-                    Logging.Logg().Exception(excpt, Logging.INDEX_MESSAGE.NOT_SET, "TecView::GetCurrentTimeViewReponse () - (DateTime)table.Rows[0][0]");
+                    Logging.Logg().Exception(excpt, "TecView::GetCurrentTimeViewReponse () - (DateTime)table.Rows[0][0]", Logging.INDEX_MESSAGE.NOT_SET);
 
                     iRes = -1;
                 }
@@ -1743,32 +1743,6 @@ namespace StatisticCommon
             }
         }
 
-        public void GetRetroMinDetail(int indxMin)
-        {
-            lock (m_lockValue)
-            {
-                //Отладка ???
-                if (indxMin < 0)
-                {
-                    string strMes = @"TecView::getRetroMinDetail (indxMin = " + indxMin + @") - ...";
-                    //Logging.Logg().Error(strMes);
-                    //throw new Exception(strMes);
-                }
-                else ;
-                lastMin = indxMin + 1;
-
-                foreach (TECComponent comp in m_localTECComponents)
-                    foreach (TG tg in comp.m_listTG)
-                        clearTGValuesSecs (m_dictValuesTG[tg.m_id]);
-
-                ClearStates();
-
-                AddState((int)StatesMachine.RetroMinDetail_TM);
-
-                Run(@"TecView::getRetroMinDetail ()");
-            }
-        }
-
         public void GetRetroMins()
         {
             getRetroMins(lastHour);
@@ -1791,29 +1765,7 @@ namespace StatisticCommon
                 getRetroMins(indx);
 
             return bRes;
-        }
-        /// <summary>
-        /// Вызов из обработчика события - восстановление исходного состояния кнопки мыши, при нажатии ее над 'ZedGraph'-минуты
-        ///  только для 'PanelSOTIASSO' (час-в-минутах, минуты-в-секундах)
-        /// </summary>
-        /// <param name="indx">Индекс значения</param>
-        /// <returns>Признак - является ли значение ретроспективным</returns>
-        public bool IsIndexRetroValues(int indx)
-        {
-            bool bRes = true;
-
-            if ((!(indx < (serverTime.Minute - 1)))
-                && (m_curDate.Hour.Equals(serverTime.Hour) == true)
-                && (m_curDate.Date.Equals(serverTime.Date) == true)
-                // 1 - для полож. разности, 2 - для особенности БД_значений: отставание при усреднении
-                && (serverTime.Minute > 2)
-                )
-                bRes = false;
-            else
-                ;
-
-            return bRes;
-        }
+        }        
 
         private void initValuesMinLength()
         {
@@ -1910,7 +1862,7 @@ namespace StatisticCommon
             m_markWarning.UnMarked((int)INDEX_WARNING.CURR_MIN_TM_GEN);
         }
 
-        private void clearTGValuesSecs (valuesTG vals)
+        protected void clearTGValuesSecs (valuesTG vals)
         {
             //Выделить память (при необходимости) для мгнов. значений в течении мин
             if (vals.m_powerSeconds == null)
@@ -2134,7 +2086,7 @@ namespace StatisticCommon
                             else
                                 ;
                         }
-                        catch (Exception excpt) { Logging.Logg().Exception(excpt, Logging.INDEX_MESSAGE.NOT_SET, "catch - PanelTecViewBase.GetAdminValuesResponse () - ..."); }
+                        catch (Exception excpt) { Logging.Logg().Exception(excpt, "catch - PanelTecViewBase.GetAdminValuesResponse () - ...", Logging.INDEX_MESSAGE.NOT_SET); }
                     }
                     else
                     {
@@ -2304,7 +2256,7 @@ namespace StatisticCommon
                                 }
                                 catch (Exception e)
                                 {
-                                    Logging.Logg().Exception(e, Logging.INDEX_MESSAGE.NOT_SET, @"PanelTecViewBase::GetAdminValuesResponse () - ...");
+                                    Logging.Logg().Exception(e, @"PanelTecViewBase::GetAdminValuesResponse () - ...", Logging.INDEX_MESSAGE.NOT_SET);
                                 }
                                 //j++;
                             }
@@ -2323,7 +2275,7 @@ namespace StatisticCommon
                         }
                         catch (Exception e)
                         {
-                            Logging.Logg().Exception(e, Logging.INDEX_MESSAGE.NOT_SET, @"PanelTecViewBase::GetAdminValuesResponse () - ...");
+                            Logging.Logg().Exception(e, @"PanelTecViewBase::GetAdminValuesResponse () - ...", Logging.INDEX_MESSAGE.NOT_SET);
                         }
                     }
                     else
@@ -2654,7 +2606,7 @@ namespace StatisticCommon
                         }
                         catch (Exception e)
                         {
-                            Logging.Logg().Exception(e, Logging.INDEX_MESSAGE.NOT_SET, "PanelTecViewBase::GetAdminValueResponse ()...");
+                            Logging.Logg().Exception(e, "PanelTecViewBase::GetAdminValueResponse ()...", Logging.INDEX_MESSAGE.NOT_SET);
                         }
                     }
                     else
@@ -3234,7 +3186,7 @@ namespace StatisticCommon
                     }
                     catch (Exception e)
                     {
-                        Logging.Logg().Exception(e, Logging.INDEX_MESSAGE.NOT_SET, @"PanelTecViewBase::GetHoursResponse () - ...");
+                        Logging.Logg().Exception(e, @"PanelTecViewBase::GetHoursResponse () - ...", Logging.INDEX_MESSAGE.NOT_SET);
                     }
 
                     if (double.TryParse(r[@"VALUE0"].ToString(), out value) == false)
@@ -3912,7 +3864,7 @@ namespace StatisticCommon
                                 }
                                 catch (Exception e)
                                 {
-                                    Logging.Logg().Exception(e, Logging.INDEX_MESSAGE.NOT_SET, @"PanelTecViewBase::GetLastMinutesTMResponse () - ...");
+                                    Logging.Logg().Exception(e, @"PanelTecViewBase::GetLastMinutesTMResponse () - ...", Logging.INDEX_MESSAGE.NOT_SET);
 
                                     dtVal = DateTime.Now.Date;
                                 }
@@ -4168,7 +4120,7 @@ namespace StatisticCommon
                             }
                             catch (Exception e)
                             {
-                                Logging.Logg().Exception(e, Logging.INDEX_MESSAGE.NOT_SET, @"PanelTecViewBase::GetLastMinutesTMResponse () - ...");
+                                Logging.Logg().Exception(e, @"PanelTecViewBase::GetLastMinutesTMResponse () - ...", Logging.INDEX_MESSAGE.NOT_SET);
 
                                 dt = DateTime.Now.Date;
                             }
@@ -4677,7 +4629,7 @@ namespace StatisticCommon
             }
             catch (Exception e)
             {
-                Logging.Logg().Exception(e, Logging.INDEX_MESSAGE.NOT_SET, @"TecView::GetMinTMResponse () - ...");
+                Logging.Logg().Exception(e, @"TecView::GetMinTMResponse () - ...", Logging.INDEX_MESSAGE.NOT_SET);
             }
 
             ////???
@@ -4782,7 +4734,7 @@ namespace StatisticCommon
             }
             catch (Exception e)
             {
-                Logging.Logg().Exception(e, Logging.INDEX_MESSAGE.NOT_SET, @"TecView::GetMinTMResponse () - ...");
+                Logging.Logg().Exception(e, @"TecView::GetMinTMResponse () - ...", Logging.INDEX_MESSAGE.NOT_SET);
             }
 
             ////???

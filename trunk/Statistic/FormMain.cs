@@ -157,7 +157,7 @@ namespace Statistic
             }
             catch (Exception e)
             {
-                Logging.Logg().Exception(e, Logging.INDEX_MESSAGE.NOT_SET, @"FormMain::Initialize () ... загрузка предустановленных параметров ...");
+                Logging.Logg().Exception(e, @"FormMain::Initialize () ... загрузка предустановленных параметров ...", Logging.INDEX_MESSAGE.NOT_SET);
 
                 msgError = e.Message;
                 iRes = -5;
@@ -507,7 +507,7 @@ namespace Statistic
                     ; //DbSources.Sources().UnRegister(idListenerConfigDB);
             }
             catch (Exception e) {
-                Logging.Logg().Exception (e, Logging.INDEX_MESSAGE.NOT_SET, @"FormMain::fTimerAppReset () - ...");
+                Logging.Logg().Exception(e, @"FormMain::fTimerAppReset () - ...", Logging.INDEX_MESSAGE.NOT_SET);
             }
         }
 
@@ -645,7 +645,7 @@ namespace Statistic
             }
             catch (Exception e)
             {
-                Logging.Logg().Exception(e, Logging.INDEX_MESSAGE.NOT_SET, @"FormMain::OnPanelAlarmEventGUIReg (string) - text=" + ev.m_message_shr);
+                Logging.Logg().Exception(e, @"FormMain::OnPanelAlarmEventGUIReg (string) - text=" + ev.m_message_shr, Logging.INDEX_MESSAGE.NOT_SET);
             }
         }
 
@@ -1134,7 +1134,7 @@ namespace Statistic
             //        m_TCPServer.Stop ();
             //        m_TCPServer = null;
             //    } catch (Exception e) {
-            //        Logging.Logg().Exception(e, Logging.INDEX_MESSAGE.NOT_SET, @"FormMain::Stop (FormClosingEventArgs...) - m_TCPServer.Stop () - ...");
+            //        Logging.Logg().Exception(e, @"FormMain::Stop (FormClosingEventArgs...) - m_TCPServer.Stop () - ...", Logging.INDEX_MESSAGE.NOT_SET);
             //    }
             //} else
             //    ;

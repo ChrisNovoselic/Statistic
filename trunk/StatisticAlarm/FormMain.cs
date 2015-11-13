@@ -240,7 +240,7 @@ namespace StatisticAlarm
                     m_panelAlarm.Activate(false);
 
                     try { Application.DoEvents(); }
-                    catch (Exception e) { Logging.Logg().Exception(e, Logging.INDEX_MESSAGE.NOT_SET, @"Application.DoEvents ()"); }
+                    catch (Exception e) { Logging.Logg().Exception(e, @"Application.DoEvents ()", Logging.INDEX_MESSAGE.NOT_SET); }
                 }
                 else
                     ;
@@ -387,7 +387,7 @@ namespace StatisticAlarm
             }
             catch (Exception e)
             {
-                Logging.Logg().Exception(e, Logging.INDEX_MESSAGE.NOT_SET, @"FormMain::OnPanelAlarmEventGUIReg (string) - text=" + ev.m_message_shr);
+                Logging.Logg().Exception(e, @"FormMain::OnPanelAlarmEventGUIReg (string) - text=" + ev.m_message_shr, Logging.INDEX_MESSAGE.NOT_SET);
             }
         }
 

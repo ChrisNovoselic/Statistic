@@ -46,7 +46,7 @@ namespace StatisticAlarm
         /// </summary>
         /// <param name="obj">Объект, зарегистрировавший событие сигнализации</param>
         /// <param name="ev">Аргумент события сигнализации</param>
-        private void OnEventReg_TecView(TecViewAlarm.AlarmTecViewEventArgs ev)
+        private void onEventReg(TecViewAlarm.AlarmTecViewEventArgs ev)
         {
             INDEX_ACTION iAction = m_dictAlarmObject.Registred (ref ev);
             StatesMachine state = StatesMachine.Unknown;
@@ -104,7 +104,7 @@ namespace StatisticAlarm
                     indxTecView = m_listTecView.Count - 1;                    
                     m_listTecView[indxTecView].InitTEC(new List<StatisticCommon.TEC> { t }, markQueries);
                     m_listTecView[indxTecView].updateGUI_Fact = new IntDelegateIntIntFunc(m_listTecView[indxTecView].AlarmRegistred);
-                    m_listTecView[indxTecView].EventReg += new TecViewAlarm.AlarmTecViewEventHandler(OnEventReg_TecView);
+                    m_listTecView[indxTecView].EventReg += new TecViewAlarm.AlarmTecViewEventHandler(onEventReg);
 
                     m_listTecView[indxTecView].m_arTypeSourceData[(int)StatisticCommon.TG.ID_TIME.MINUTES] = StatisticCommon.CONN_SETT_TYPE.DATA_SOTIASSO;
                     m_listTecView[indxTecView].m_arTypeSourceData[(int)StatisticCommon.TG.ID_TIME.HOURS] = StatisticCommon.CONN_SETT_TYPE.DATA_SOTIASSO;
@@ -139,9 +139,7 @@ namespace StatisticAlarm
                 //else
                 //    ;
 
-                if (m_bAlarmDbEventUpdated == false)
-                    m_timerAlarm.Change(PanelStatistic.POOL_TIME * 1000, System.Threading.Timeout.Infinite);
-                else
+                if (m_mEvtAlarmDbEventUpdated.WaitOne (0) == true)
                     if (IsStarted == true)
                     {
                         ChangeState();
@@ -150,6 +148,9 @@ namespace StatisticAlarm
                     }
                     else
                         ;
+                else
+                    // повторять, ожидая обработки БД
+                    m_timerAlarm.Change(PanelStatistic.POOL_TIME * 1000, System.Threading.Timeout.Infinite);                    
             }
         }
 

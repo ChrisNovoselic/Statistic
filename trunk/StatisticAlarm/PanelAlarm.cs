@@ -523,6 +523,8 @@ namespace StatisticAlarm
         private void NudnKoeffAlarmCurPower_ValueChanged(object obj, EventArgs ev)
         {
             TECComponent comp = findGTPOfID(m_listIdTECComponents[(Find(INDEX_CONTROL.CLB_TECCOMPONENT) as CheckedListBox).SelectedIndex - 1]);
+            // для логгирования
+            decimal dcPrevKoeffAlarmPcur = comp.m_dcKoeffAlarmPcur;
             //Запомнить установленное значение "времени выполнения"
             comp.m_dcKoeffAlarmPcur = (obj as NumericUpDown).Value;
 
@@ -531,10 +533,13 @@ namespace StatisticAlarm
                 , idListenerConfigDB = DbSources.Sources().Register(FormMain.s_listFormConnectionSettings[(int)CONN_SETT_TYPE.CONFIG_DB].getConnSett(), false, @"CONFIG_DB");
             //Получить объект соединения с БД_конфигурации
             System.Data.Common.DbConnection dbConn = DbSources.Sources().GetConnection(idListenerConfigDB, out err);
-            ////Сохранить установленное значение в БД_конфигурации
+            //Сохранить установленное значение в БД_конфигурации
             DbTSQLInterface.ExecNonQuery(ref dbConn, @"UPDATE [dbo].[GTP_LIST] SET [KoeffAlarmPcur] = " + comp.m_dcKoeffAlarmPcur + @" WHERE [ID] = " + comp.m_id, null, null, out err);
             //Отменить регистрацию соединения
             DbSources.Sources().UnRegister(idListenerConfigDB);
+
+            Logging.Logg().Action(@"PanelAlarm::NudnKoeffAlarmCurPower_ValueChanged () - пред.=" + dcPrevKoeffAlarmPcur + @", текущ.=" + comp.m_dcKoeffAlarmPcur + @" ..."
+                , Logging.INDEX_MESSAGE.NOT_SET);
         }
         /// <summary>
         /// Найти дочерний элемент управления по идентификатору
@@ -687,7 +692,7 @@ namespace StatisticAlarm
                 }
                 catch (Exception e)
                 {
-                    Logging.Logg().Exception(e, Logging.INDEX_MESSAGE.NOT_SET, @"DataGridViewAlarmBase::OnEvtGetData () - Invoke (obj.Type=" + obj.GetType ().Name + @") ...");
+                    Logging.Logg().Exception(e, @"DataGridViewAlarmBase::OnEvtGetData () - Invoke (obj.Type=" + obj.GetType().Name + @") ...", Logging.INDEX_MESSAGE.NOT_SET);
                 }
             }
             /// <summary>

@@ -447,7 +447,7 @@ namespace Statistic
         //    }
         //    catch (Exception e)
         //    {
-        //        Logging.Logg().Exception(e, Logging.INDEX_MESSAGE.NOT_SET, @"PanelAdminKomDisp::OnAdminAlarm_EventAdd () - ...");
+        //        Logging.Logg().Exception(e, @"PanelAdminKomDisp::OnAdminAlarm_EventAdd () - ...", Logging.INDEX_MESSAGE.NOT_SET);
         //    }
 
         //    toEventGUIReg(ev);

@@ -54,7 +54,7 @@ namespace Statistic
                     {
                         strHeaderError = "Ошибка запуска приложения";
                         MessageBox.Show((IWin32Window)null, e.Message + Environment.NewLine + ProgramBase.MessageAppAbort, strHeaderError);
-                        Logging.Logg().Exception(e, Logging.INDEX_MESSAGE.NOT_SET, strHeaderError);
+                        Logging.Logg().Exception(e, strHeaderError, Logging.INDEX_MESSAGE.NOT_SET);
                     }
 
                     if (!(formMain == null))
@@ -63,7 +63,7 @@ namespace Statistic
                         {
                             strHeaderError = "Ошибка выполнения приложения";
                             MessageBox.Show((IWin32Window)null, e.Message + Environment.NewLine + ProgramBase.MessageAppAbort, strHeaderError);
-                            Logging.Logg().Exception(e, Logging.INDEX_MESSAGE.NOT_SET, strHeaderError);
+                            Logging.Logg().Exception(e, strHeaderError, Logging.INDEX_MESSAGE.NOT_SET);
                         }
                     else
                         ;

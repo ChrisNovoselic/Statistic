@@ -403,7 +403,7 @@ namespace StatisticCommon
                     ev_сменить–ежим();
             }
             catch (Exception e) {
-                Logging.Logg().Exception(e, Logging.INDEX_MESSAGE.NOT_SET, @"FormChangeMode::btnOk_Click () - ...");
+                Logging.Logg().Exception(e, @"FormChangeMode::btnOk_Click () - ...", Logging.INDEX_MESSAGE.NOT_SET);
             }
         }
 

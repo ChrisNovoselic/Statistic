@@ -159,7 +159,7 @@ namespace StatisticCommon
                 }
                 catch (Exception e)
                 {
-                    Logging.Logg().Exception(e, Logging.INDEX_MESSAGE.NOT_SET, @"AdminTS::SaveChanges () - semaDBAccess.Release(1)");
+                    Logging.Logg().Exception(e, @"AdminTS::SaveChanges () - semaDBAccess.Release(1)", Logging.INDEX_MESSAGE.NOT_SET);
                 }
 
                 saving = false;
@@ -552,7 +552,7 @@ namespace StatisticCommon
                     try { arTable[i].Columns.Remove("ID_COMPONENT"); }
                     catch (Exception e)
                     { //ArgumentException
-                        Logging.Logg().Exception(e, Logging.INDEX_MESSAGE.NOT_SET, "Remove(\"ID_COMPONENT\")");
+                        Logging.Logg().Exception(e, "Remove(\"ID_COMPONENT\")", Logging.INDEX_MESSAGE.NOT_SET);
                     }
                 else
                     ;
@@ -623,7 +623,7 @@ namespace StatisticCommon
             }
             catch (Exception e)
             {
-                Logging.Logg().Exception(e, Logging.INDEX_MESSAGE.NOT_SET, @"AdminTS::GetAdminValuesResponse () - ...");
+                Logging.Logg().Exception(e, @"AdminTS::GetAdminValuesResponse () - ...", Logging.INDEX_MESSAGE.NOT_SET);
             }
 
             offsetPBRNumber = m_tableValuesResponse.Columns.IndexOf("PBR_NUMBER");
@@ -814,7 +814,7 @@ namespace StatisticCommon
                     }
                     catch (Exception e)
                     {
-                        Logging.Logg().Exception(e, Logging.INDEX_MESSAGE.NOT_SET, @"AdminRS::GetAdminValuesResponse () - ... hour = " + hour);
+                        Logging.Logg().Exception(e, @"AdminRS::GetAdminValuesResponse () - ... hour = " + hour, Logging.INDEX_MESSAGE.NOT_SET);
                     }
                 }
 
@@ -1987,7 +1987,7 @@ namespace StatisticCommon
                     if (isLastState(state) == true)
                         try { semaDBAccess.Release(1); }
                         catch (Exception e) {
-                            Logging.Logg().Exception(e, Logging.INDEX_MESSAGE.NOT_SET, @"AdminTS::StateResponse () - semaDBAccess.Release(1) - StatesMachine.SavePPBRValues...");
+                            Logging.Logg().Exception(e, @"AdminTS::StateResponse () - semaDBAccess.Release(1) - StatesMachine.SavePPBRValues...", Logging.INDEX_MESSAGE.NOT_SET);
                         }
                     else
                         ;
@@ -2107,7 +2107,7 @@ namespace StatisticCommon
                         }
                         catch (Exception e)
                         {
-                            Logging.Logg().Exception(e, Logging.INDEX_MESSAGE.NOT_SET, "AdminTS::StateErrors () - semaDBAccess.Release(1)");
+                            Logging.Logg().Exception(e, "AdminTS::StateErrors () - semaDBAccess.Release(1)", Logging.INDEX_MESSAGE.NOT_SET);
                         }
                     }
                     else
@@ -2179,7 +2179,7 @@ namespace StatisticCommon
                     }
                     catch (Exception e)
                     {
-                        Logging.Logg().Exception(e, Logging.INDEX_MESSAGE.NOT_SET, "AdminTS::StateErrors () - semaDBAccess.Release(1)");
+                        Logging.Logg().Exception(e, "AdminTS::StateErrors () - semaDBAccess.Release(1)", Logging.INDEX_MESSAGE.NOT_SET);
                     }
 
                     reason += @" сохранённых часовых значений (PPBR)";
@@ -2203,7 +2203,7 @@ namespace StatisticCommon
                     }
                     catch (Exception e)
                     {
-                        Logging.Logg().Exception(e, Logging.INDEX_MESSAGE.NOT_SET, "AdminTS::StateErrors () - semaDBAccess.Release(1)");
+                        Logging.Logg().Exception(e, "AdminTS::StateErrors () - semaDBAccess.Release(1)", Logging.INDEX_MESSAGE.NOT_SET);
                     }
 
                     reason += @" сохранённых часовых значений (AdminValues)";
@@ -2218,7 +2218,7 @@ namespace StatisticCommon
                     }
                     catch (Exception e)
                     {
-                        Logging.Logg().Exception(e, Logging.INDEX_MESSAGE.NOT_SET, "AdminTS::StateErrors () - semaDBAccess.Release(1)");
+                        Logging.Logg().Exception(e, "AdminTS::StateErrors () - semaDBAccess.Release(1)", Logging.INDEX_MESSAGE.NOT_SET);
                     }
 
                     reason = @"сохранения административных данных";

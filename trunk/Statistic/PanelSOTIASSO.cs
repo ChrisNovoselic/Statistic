@@ -19,6 +19,95 @@ namespace Statistic
     /// </summary>
     public class PanelSOTIASSO : PanelStatistic
     {
+        private class TecViewSOTIASSO : TecView
+        {
+            public enum REASON_RETROVALUES { UNKNOWN = -1, DATE, HOUR, MINUTE, BEGIN_HOUR, COUNT }
+
+            public TecViewSOTIASSO(int indx_tec, int indx_comp)
+                : base(TecView.TYPE_PANEL.SOTIASSO, indx_tec, indx_comp)
+            {
+            }
+
+            public void GetRetroMinDetail(int indxMin)
+            {
+                lock (m_lockValue)
+                {
+                    //Отладка ???
+                    if (indxMin < 0)
+                    {
+                        string strMes = @"TecView::getRetroMinDetail (indxMin = " + indxMin + @") - ...";
+                        //Logging.Logg().Error(strMes);
+                        //throw new Exception(strMes);
+                    }
+                    else ;
+                    lastMin = indxMin + 1;
+
+                    foreach (TECComponent comp in m_localTECComponents)
+                        foreach (TG tg in comp.m_listTG)
+                            clearTGValuesSecs(m_dictValuesTG[tg.m_id]);
+
+                    ClearStates();
+
+                    AddState((int)StatesMachine.RetroMinDetail_TM);
+
+                    Run(@"TecView::getRetroMinDetail ()");
+                }
+            }
+            /// <summary>
+            /// Вызов из обработчика события - восстановление исходного состояния кнопки мыши, при нажатии ее над 'ZedGraph'-минуты
+            ///  только для 'PanelSOTIASSO' (час-в-минутах, минуты-в-секундах)
+            /// </summary>
+            /// <param name="indx">Индекс значения</param>
+            /// <returns>Признак - является ли значение ретроспективным</returns>
+            public HMark IsIndexRetroValues(int indx)
+            {
+                HMark markRes = new HMark(0);
+                string strRetro = string.Empty;                
+
+                markRes.Set((int)REASON_RETROVALUES.DATE, !(m_curDate.Date.Equals(serverTime.Date) == true));
+                if (markRes.IsMarked((int)REASON_RETROVALUES.DATE) == true)
+                    strRetro += @"дате+";
+                else
+                    ;
+
+                markRes.Set((int)REASON_RETROVALUES.HOUR, !(m_curDate.Hour.Equals(serverTime.Hour) == true));
+                if (markRes.IsMarked((int)REASON_RETROVALUES.HOUR) == true)
+                    strRetro += @"часу+";
+                else
+                    ;
+
+                markRes.Set((int)REASON_RETROVALUES.MINUTE, indx < (serverTime.Minute - 1));
+                if (markRes.IsMarked((int)REASON_RETROVALUES.MINUTE) == true)
+                    strRetro += @"минуте+";
+                else
+                    ;
+
+                markRes.Set((int)REASON_RETROVALUES.BEGIN_HOUR, !(serverTime.Minute > 2));
+                // 1 - для полож. разности, 2 - для особенности БД_значений: отставание при усреднении
+                if (markRes.IsMarked((int)REASON_RETROVALUES.BEGIN_HOUR) == true)
+                {
+                    strRetro = @"началу часа+";
+                }
+                else
+                    ;
+
+                if (strRetro.Equals(string.Empty) == false)
+                    strRetro = strRetro.Substring(0, strRetro.Length - 1);
+                else
+                    ;
+
+                if (! (markRes.Value == 0))
+                {
+                    Console.WriteLine(@"TecView::IsIndexRetroValues (indxMin=" + indx + @", Minute=" + serverTime.Minute + @") - по " + strRetro + @" = TRUE...");
+                    Logging.Logg().Debug(@"TecView::IsIndexRetroValues (indxMin=" + indx + @", Minute=" + serverTime.Minute + @") - по " + strRetro + @" = TRUE...", Logging.INDEX_MESSAGE.NOT_SET);
+                }
+                else
+                    ;
+
+                return markRes;
+            }
+        }
+        
         /// <summary>
         /// Перечисление - целочисленные идентификаторы дочерних элементов управления
         /// </summary>
@@ -47,7 +136,7 @@ namespace Statistic
         /// <summary>
         /// Объект для обработки запросов/получения данных из/в БД
         /// </summary>
-        private TecView m_tecView;
+        private TecViewSOTIASSO m_tecView;
 
         System.Windows.Forms.SplitContainer stctrMain
             , stctrView;
@@ -109,7 +198,7 @@ namespace Statistic
             //m_markQueries.Marked((int)CONN_SETT_TYPE.PBR); //Для получения даты/времени
             //m_markQueries.Marked((int)CONN_SETT_TYPE.DATA_SOTIASSO);
             //Создать объект обработки запросов - установить первоначальные индексы для ТЭЦ, компонента
-            m_tecView = new TecView(TecView.TYPE_PANEL.SOTIASSO, 0, 0);
+            m_tecView = new TecViewSOTIASSO(0, 0);
             //Инициализировать список ТЭЦ для 'TecView' - указать ТЭЦ в соответствии с указанным ранее индексом (0)
             m_tecView.InitTEC(new List<StatisticCommon.TEC>() { m_listTEC[0] }, m_markQueries);
             //Установить тип значений
@@ -1102,6 +1191,7 @@ namespace Statistic
                     if ((m_tecView.adminValuesReceived == true) //Признак успешного выполнения операций для состояния 'TecView.AdminValues'
                         && ((m_tecView.lastMin > 60) && (m_tecView.serverTime.Minute > 1)))
                         if (IsHandleCreated/*InvokeRequired*/ == true)
+                            // переход на следующий час
                             Invoke(delegateSetDatetimeHour, m_tecView.serverTime);
                         else
                             return;
@@ -1109,11 +1199,20 @@ namespace Statistic
                     {
                         m_tecView.ChangeState();
 
-                        //Вариант №0
                         m_timerCurrent.Change(PanelStatistic.POOL_TIME * 1000 - 1, System.Threading.Timeout.Infinite);
                     }
                 else
-                    ; //m_tecView.ChangeState();
+                {
+                    if ((m_tecView.adminValuesReceived == true) //Признак успешного выполнения операций для состояния 'TecView.AdminValues'
+                        && ((m_tecView.lastMin > 60) && (!(m_tecView.serverTime.Minute > 1))))
+                    {
+                        m_tecView.ChangeState();
+
+                        m_timerCurrent.Change(PanelStatistic.POOL_TIME * 1000 - 1, System.Threading.Timeout.Infinite);
+                    }
+                    else
+                        ;
+                }
             else
                 ;
         }
@@ -1839,14 +1938,24 @@ namespace Statistic
                     //Определить индекс выбранной строки (+1 для )
                     index = dgvGTP.SelectedRows[0].Index + 1;
                     //Проверить является выбранный 1-мин интервал (строка) ретроспективой
-                    if (m_tecView.IsIndexRetroValues(index) == true)
-                    {// для ретроспективных интервалов
-                        m_tecView.currHour = false;
-                        //Установить дату/час
-                        setCurrDateHour(CurrDateHour);
-                        //Инициировать запрос для получения ретроспективных значений за интервал
-                        m_tecView.GetRetroMinDetail(index);
-                    }
+                    HMark markRetro = m_tecView.IsIndexRetroValues(index);
+                    if (! (markRetro.Value == 0))
+                        // для ретроспективных интервалов
+                        if ((markRetro.IsMarked ((int)TecViewSOTIASSO.REASON_RETROVALUES.DATE) == true)
+                            || (markRetro.IsMarked ((int)TecViewSOTIASSO.REASON_RETROVALUES.HOUR) == true)
+                            || (markRetro.IsMarked ((int)TecViewSOTIASSO.REASON_RETROVALUES.MINUTE) == true))
+                        {
+                            m_tecView.currHour = false;
+                            //Установить дату/час
+                            setCurrDateHour(CurrDateHour);
+                            //Инициировать запрос для получения ретроспективных значений за интервал
+                            m_tecView.GetRetroMinDetail(index);
+                        }
+                        else
+                            if (markRetro.IsMarked ((int)TecViewSOTIASSO.REASON_RETROVALUES.BEGIN_HOUR) == true)
+                                m_tecView.currHour = false;
+                            else
+                                ;
                     else
                         // для текущего интервала
                         if (m_tecView.currHour == false)

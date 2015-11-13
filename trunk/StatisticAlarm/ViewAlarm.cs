@@ -19,6 +19,10 @@ namespace StatisticAlarm
         /// </summary>
         public MODE Mode;
         /// <summary>
+        /// Шаблон для сохранения/обновления даты/времени в БД
+        /// </summary>
+        private static string s_strDateTimeFormat = @"yyyyMMdd HH:mm:ss.fffffff";
+        /// <summary>
         /// Класс для хранения значений о событии сигнализации
         /// </summary>
         public class AlarmDbEventArgs : AlarmNotifyEventArgs
@@ -87,7 +91,7 @@ namespace StatisticAlarm
         /// <summary>
         /// Признак актуальности зарегистрированных событий сигнализаций из БД
         /// </summary>
-        bool m_bAlarmDbEventUpdated;
+        private ManualResetEvent m_mEvtAlarmDbEventUpdated;
         /// <summary>
         /// Таймер для запроса актуального перечня событий сигнализаций
         /// </summary>
@@ -408,7 +412,7 @@ namespace StatisticAlarm
                     //        -2F
                     arg.m_value
                             ; //VALUE
-                string strDTRegistred = arg.m_dtRegistred.GetValueOrDefault().ToString(@"yyyyMMdd HH:mm:ss.fff"); //DATETIME_REGISTRED
+                string strDTRegistred = arg.m_dtRegistred.GetValueOrDefault().ToString(s_strDateTimeFormat); //DATETIME_REGISTRED
                 //Запрос для вставки записи о событии сигнализации
                 string query = "INSERT INTO [dbo].[AlarmEvent] ([ID_COMPONENT],[TYPE],[VALUE],[DATETIME_REGISTRED],[ID_USER_REGISTRED],[DATETIME_FIXED],[ID_USER_FIXED],[DATETIME_CONFIRM],[ID_USER_CONFIRM],[CNT_RETRY],[INSERT_DATETIME],[SITUATION]) VALUES"
                     + @" ("
@@ -471,7 +475,7 @@ namespace StatisticAlarm
                             query += id + @", ";
                             query += detail.id + @", ";
                             query += detail.value.ToString(@"F3", CultureInfo.InvariantCulture) + @", ";
-                            query += @"'" + detail.last_changed_at.ToString(@"yyyyMMdd HH:mm:ss.fff") + @"', ";
+                            query += @"'" + detail.last_changed_at.ToString(s_strDateTimeFormat) + @"', ";
                             query += detail.id_tm + @", ";
                             query += @"GETDATE()";
 
@@ -494,7 +498,7 @@ namespace StatisticAlarm
                 AlarmNotifyEventArgs arg = m_objArgument as AlarmNotifyEventArgs;
                 string query = string.Empty
                     , where = @"WHERE [ID_COMPONENT]=" + arg.m_id_comp
-                        + @" AND [DATETIME_REGISTRED]='" + arg.m_dtRegistred.GetValueOrDefault().ToString(@"yyyyMMdd HH:mm:ss.fff") + @"'"
+                        + @" AND [DATETIME_REGISTRED]='" + arg.m_dtRegistred.GetValueOrDefault().ToString(s_strDateTimeFormat) + @"'"
                         + @" AND [TYPE]=" + (int)arg.type;
 
                 query = @"UPDATE [dbo].[AlarmEvent] SET [ID_USER_FIXED]=NULL, [DATETIME_FIXED]=NULL "
@@ -515,7 +519,7 @@ namespace StatisticAlarm
                 AlarmNotifyEventArgs arg = m_objArgument as AlarmNotifyEventArgs;
                 string query = string.Empty
                     , where = @"WHERE [ID_COMPONENT]=" + arg.m_id_comp
-                        + @" AND [DATETIME_REGISTRED]='" + arg.m_dtRegistred.GetValueOrDefault().ToString (@"yyyyMMdd HH:mm:ss.fff") + @"'"
+                        + @" AND [DATETIME_REGISTRED]='" + arg.m_dtRegistred.GetValueOrDefault().ToString (s_strDateTimeFormat) + @"'"
                         + @" AND [TYPE]=" + (int)arg.type;
 
                 query = @"UPDATE [dbo].[AlarmEvent] SET [ID_USER_FIXED]=" + HUsers.Id + @", [DATETIME_FIXED]=GETUTCDATE() "
@@ -707,7 +711,7 @@ namespace StatisticAlarm
             m_dictAlarmObject = new DictAlarmObject();
             EventReg += new AlarmDbEventHandler(onEventReg);
 
-            m_bAlarmDbEventUpdated = false;
+            m_mEvtAlarmDbEventUpdated = new ManualResetEvent (false);
 
             m_handlerDb = new AdminAlarm.HandlerDb(connSett);
 
@@ -799,9 +803,17 @@ namespace StatisticAlarm
 
         private void activateViewAlarm(bool bChecked)
         {
-            m_timerView.Change(bChecked == true ? 0 : System.Threading.Timeout.Infinite, System.Threading.Timeout.Infinite);
+            int due = 0;
 
-            m_bAlarmDbEventUpdated = bChecked;
+            if (bChecked == false)
+            {
+                due = System.Threading.Timeout.Infinite;
+                m_mEvtAlarmDbEventUpdated.Reset();
+            }
+            else
+                ;
+
+            m_timerView.Change(due, System.Threading.Timeout.Infinite);
         }
         /// <summary>
         /// Обработчик события изменение признака "Включено/отключено"
@@ -884,9 +896,10 @@ namespace StatisticAlarm
                 pushList();
             else
                 ;
+            m_mEvtAlarmDbEventUpdated.Reset ();
             // поставить в очередь событие получения списка текущих событий сигнализаций
             pushNotify();
-
+            // для очередного запуска
             m_timerView.Change(PanelStatistic.POOL_TIME * 1000, System.Threading.Timeout.Infinite);
         }
         /// <summary>
@@ -936,10 +949,10 @@ namespace StatisticAlarm
             {
                 Console.WriteLine(@"ViewAlarm::fThreadNotifyResponse_RunWorkerCompleted () - " + ev.Result + @"...");
 
-                m_bAlarmDbEventUpdated = true;
+                m_mEvtAlarmDbEventUpdated.Set ();
             }
             else
-                Logging.Logg().Exception(ev.Error, Logging.INDEX_MESSAGE.NOT_SET, @"ViewAlarm::fThreadListEventsResponse_DoWork () - ...");
+                Logging.Logg().Exception(ev.Error, @"ViewAlarm::fThreadListEventsResponse_DoWork () - ...", Logging.INDEX_MESSAGE.NOT_SET);
         }
         /// <summary>
         /// Функция обработки результатов запроса по указанной дате/часам
@@ -979,7 +992,7 @@ namespace StatisticAlarm
             }
             catch (Exception e)
             {
-                Logging.Logg().Exception(e, Logging.INDEX_MESSAGE.NOT_SET, @"AdminAlarm::GetListEventsResponse () - ...");
+                Logging.Logg().Exception(e, @"AdminAlarm::GetListEventsResponse () - ...", Logging.INDEX_MESSAGE.NOT_SET);
             }
 
             if (Actived == true)

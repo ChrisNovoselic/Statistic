@@ -59,7 +59,7 @@ namespace StatisticCommon
             }
             catch (Exception e)
             {
-                Logging.Logg().Exception(e, Logging.INDEX_MESSAGE.NOT_SET, "DbMCInterface::Connect ()");
+                Logging.Logg().Exception(e, "DbMCInterface::Connect ()", Logging.INDEX_MESSAGE.NOT_SET);
             }
 
             lock (lockConnectionSettings)
@@ -78,7 +78,7 @@ namespace StatisticCommon
             }
             catch (Exception e)
             {
-                Logging.Logg().Exception(e, Logging.INDEX_MESSAGE.NOT_SET, "Ошибка соединения с Modes-Centre (" + (string)m_connectionSettings + ")");
+                Logging.Logg().Exception(e, "Ошибка соединения с Modes-Centre (" + (string)m_connectionSettings + ")", Logging.INDEX_MESSAGE.NOT_SET);
             }
 
             bRes = 
@@ -222,7 +222,7 @@ namespace StatisticCommon
                             }
                             catch (Exception e)
                             {
-                                Logging.Logg().Exception(e, Logging.INDEX_MESSAGE.NOT_SET, @"DbMCInterface::GetData () - GetPlanValuesActual () ...");
+                                Logging.Logg().Exception(e, @"DbMCInterface::GetData () - GetPlanValuesActual () ...", Logging.INDEX_MESSAGE.NOT_SET);
                                 Console.WriteLine("    ОШИБКА получения значений!");
 
                                 needReconnect = true;

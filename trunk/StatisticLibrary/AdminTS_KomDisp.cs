@@ -351,8 +351,9 @@ namespace StatisticCommon
                             }
                         }
                         catch (Exception e) {
-                            Logging.Logg().Exception(e, Logging.INDEX_MESSAGE.NOT_SET
-                                , @"AdminTS_KomDisp::saveCSVValues () - GTP_ID=" + allTECComponents[indx].name_future + @"(" + hour + @")");
+                            Logging.Logg().Exception(e
+                                , @"AdminTS_KomDisp::saveCSVValues () - GTP_ID=" + allTECComponents[indx].name_future + @"(" + hour + @")"
+                                , Logging.INDEX_MESSAGE.NOT_SET);
 
                             errRes = Errors.ParseError;
                         }

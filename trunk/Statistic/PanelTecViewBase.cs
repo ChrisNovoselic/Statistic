@@ -834,7 +834,7 @@ namespace Statistic
                 }
                 catch (Exception e)
                 {
-                    Logging.Logg().Exception(e, Logging.INDEX_MESSAGE.NOT_SET, @"PanelTecViewBase::UpdateGUI_Fact () - ... ID = " + m_tecView.m_ID);
+                    Logging.Logg().Exception(e, @"PanelTecViewBase::UpdateGUI_Fact () - ... ID = " + m_tecView.m_ID, Logging.INDEX_MESSAGE.NOT_SET);
                 }
             }
         }
@@ -1258,7 +1258,7 @@ namespace Statistic
             //}
             //catch (Exception e)
             //{
-            //    Logging.Logg().Exception(e, Logging.INDEX_MESSAGE.NOT_SET, "Обращение к переменной 'timerCurrent'");
+            //    Logging.Logg().Exception(e, "Обращение к переменной 'timerCurrent'", Logging.INDEX_MESSAGE.NOT_SET);
             //}
         }
 
@@ -1474,7 +1474,7 @@ namespace Statistic
                                         ;
                                 }
                                 catch (Exception e) {
-                                    Logging.Logg().Exception(e, Logging.INDEX_MESSAGE.NOT_SET, @"PanelTecViewBase::DrawGraphMins (hour=" + hour + @") - ... m_tecView.lastMin(>0)=" + m_tecView.lastMin);
+                                    Logging.Logg().Exception(e, @"PanelTecViewBase::DrawGraphMins (hour=" + hour + @") - ... m_tecView.lastMin(>0)=" + m_tecView.lastMin, Logging.INDEX_MESSAGE.NOT_SET);
                                 }
                                 break;
                         }

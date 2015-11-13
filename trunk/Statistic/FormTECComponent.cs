@@ -144,7 +144,7 @@ namespace Statistic
                 {
                     m_semUIControl.Release(1);
                 }
-                catch (Exception e) { Logging.Logg().Exception(e, Logging.INDEX_MESSAGE.NOT_SET, "catch - StopThreadUIControl () - m_semUIControl.Release(1)"); }
+                catch (Exception e) { Logging.Logg().Exception(e, "catch - StopThreadUIControl () - m_semUIControl.Release(1)", Logging.INDEX_MESSAGE.NOT_SET); }
 
                 joined = m_threadUIControl.Join(1000);
                 if (!joined)
@@ -208,7 +208,7 @@ namespace Statistic
             }
 
             try { m_semUIControl.Release(1); }
-            catch (Exception e) { Logging.Logg().Exception(e, Logging.INDEX_MESSAGE.NOT_SET, "catch - FunctionThreadUIControl () - m_semUIControl.Release(1)"); }
+            catch (Exception e) { Logging.Logg().Exception(e, "catch - FunctionThreadUIControl () - m_semUIControl.Release(1)", Logging.INDEX_MESSAGE.NOT_SET); }
         }
 
         private Int32 getIdSelectedDataRow(INDEX_UICONTROL indx_list_dataRow, int selRow = -1)

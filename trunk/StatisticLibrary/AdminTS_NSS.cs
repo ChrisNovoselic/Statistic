@@ -549,7 +549,7 @@ namespace StatisticCommon
 
                             try { excelAppWorkcell.Value = curRDGValues[i].pbr - curRDGValues[i].recomendation; }
                             catch (Exception e) {
-                                Logging.Logg().Exception(e, Logging.INDEX_MESSAGE.NOT_SET, "excelAppWorkcell.set_Value () - ...");
+                                Logging.Logg().Exception(e, "excelAppWorkcell.set_Value () - ...", Logging.INDEX_MESSAGE.NOT_SET);
 
                                 i = 24;
                                 break;
@@ -562,7 +562,7 @@ namespace StatisticCommon
                                 try { excelAppWorkcell.Value = curRDGValues[24 - iTimeZoneOffset].pbr - curRDGValues[24 - iTimeZoneOffset].recomendation; }
                                 catch (Exception e)
                                 {
-                                    Logging.Logg().Exception(e, Logging.INDEX_MESSAGE.NOT_SET, "excelAppWorkcell.set_Value () - ...");
+                                    Logging.Logg().Exception(e, "excelAppWorkcell.set_Value () - ...", Logging.INDEX_MESSAGE.NOT_SET);
 
                                     i = 24;
                                     break;
@@ -634,7 +634,7 @@ namespace StatisticCommon
             {
                 try { m_tableRDGExcelValuesResponse = DbTSQLInterface.Select(path_rdg_excel + "\\" + nameFileRDGExcel (m_curDate.Date) + ".xls", strSelect, out err); }
                 catch (Exception e) {
-                    Logging.Logg().Exception(e, Logging.INDEX_MESSAGE.NOT_SET, @"AdminTS_NSS::ImpRDGExcelValuesRequest () - DbTSQLInterface.Select (" + strSelect + @") - ...");
+                    Logging.Logg().Exception(e, @"AdminTS_NSS::ImpRDGExcelValuesRequest () - DbTSQLInterface.Select (" + strSelect + @") - ...", Logging.INDEX_MESSAGE.NOT_SET);
                 }
 
                 if (! (m_tableRDGExcelValuesResponse ==  null)) {

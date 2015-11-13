@@ -30,7 +30,7 @@ namespace StatisticTransModes
             
             try { delegateStartWait(); }
             catch (Exception e) {
-                Logging.Logg().Exception(e, Logging.INDEX_MESSAGE.NOT_SET, @"AdminTS_Modes::SaveChanges () - delegateStartWait() - ...");
+                Logging.Logg().Exception(e, @"AdminTS_Modes::SaveChanges () - delegateStartWait() - ...", Logging.INDEX_MESSAGE.NOT_SET);
             }
 
             int msecWaitSemaDbAccess = DbInterface.MAX_RETRY * DbInterface.MAX_WAIT_COUNT * DbInterface.WAIT_TIME_MS;
@@ -71,7 +71,7 @@ namespace StatisticTransModes
                 }
                 catch (Exception e)
                 {
-                    Logging.Logg().Exception(e, Logging.INDEX_MESSAGE.NOT_SET, @"AdminTS_Modes::SaveChanges () - semaDBAccess.Release(1)");
+                    Logging.Logg().Exception(e, @"AdminTS_Modes::SaveChanges () - semaDBAccess.Release(1)", Logging.INDEX_MESSAGE.NOT_SET);
                 }
 
                 saving = false;
@@ -88,7 +88,7 @@ namespace StatisticTransModes
             try { delegateStopWait(); }
             catch (Exception e)
             {
-                Logging.Logg().Exception(e, Logging.INDEX_MESSAGE.NOT_SET, @"AdminTS_Modes::SaveChanges () - delegateStopWait() - ...");
+                Logging.Logg().Exception(e, @"AdminTS_Modes::SaveChanges () - delegateStopWait() - ...", Logging.INDEX_MESSAGE.NOT_SET);
             }
 
             return saveResult;

@@ -2,6 +2,7 @@
 using System.Collections.Generic;
 using System.Linq;
 using System.Text;
+using System.Globalization;
 
 using HClassLibrary;
 
@@ -170,16 +171,13 @@ namespace StatisticAlarm
             /// <param name="dt">Дата/время фиксации</param>
             public void Fixed(DateTime? dt)
             {
-                if (!(_state == INDEX_STATES_ALARM.FIXING))
-                {
+                //if (!(_state == INDEX_STATES_ALARM.FIXING)) {
                     _dtFixed = dt;
                     if (!(_dtFixed == null))
                         _state = INDEX_STATES_ALARM.FIXED;
                     else
                         ;
-                }
-                else
-                    ;
+                //} else ;
             }
             /// <summary>
             /// Признак объекта: находится ли он в состоянии "зафиксирован"
@@ -205,16 +203,13 @@ namespace StatisticAlarm
             /// <param name="dt"></param>
             public void Confirmed(DateTime? dt)
             {
-                if (!(_state == INDEX_STATES_ALARM.FIXING))
-                {
+                //if (!(_state == INDEX_STATES_ALARM.FIXING)) {
                     _dtConfirmed = dt;
                     if (!(_dtConfirmed == null))
                         _state = INDEX_STATES_ALARM.CONFIRMED;
                     else
                         ;
-                }
-                else
-                    ;
+                //} else ;
             }
             /// <summary>
             /// Признак подтверждения события сигнализации
@@ -244,13 +239,15 @@ namespace StatisticAlarm
             {
                 get
                 {
-                    DateTime? dt;
-                    if (_dtFixed == null)
-                        dt = _lastDTRegistred;
-                    else
-                        dt = _dtFixed;
+                    //DateTime? dt;
+                    //if (_dtFixed == null)
+                    //    dt = _lastDTRegistred;
+                    //else
+                    //    dt = _dtFixed;
 
-                    return (!(_state == INDEX_STATES_ALARM.FIXING)) && ((DateTime.UtcNow - dt) > TimeSpan.FromMilliseconds(AdminAlarm.MSEC_ALARM_TIMERUPDATE));
+                    return (!(_state == INDEX_STATES_ALARM.FIXING))
+                        //&& ((DateTime.UtcNow - dt) > TimeSpan.FromMilliseconds(AdminAlarm.MSEC_ALARM_TIMERUPDATE))
+                        ;
                 }
             }
             /// <summary>
@@ -306,12 +303,16 @@ namespace StatisticAlarm
 
             public ALARM_OBJECT(TecViewAlarm.AlarmTecViewEventArgs ev) : this (INDEX_STATES_ALARM.REGISTRING)
             {
+                Console.WriteLine(@"ALARM_OBJECT::ctor (id_comp=" + ev.m_id_comp + @", dtReg=" + ev.m_dtRegistred.GetValueOrDefault().ToString(@"dd.MM.yyyy HH:mm:ss.fffffff", CultureInfo.InvariantCulture) + @") - _state=" + _state.ToString() + @"...");
+                
                 init(ev.m_dtRegistred.GetValueOrDefault());
             }
 
             public ALARM_OBJECT(AdminAlarm.AlarmDbEventArgs ev)
                 : this(INDEX_STATES_ALARM.REGISTRED)
             {
+                Console.WriteLine(@"ALARM_OBJECT::ctor (id_comp=" + ev.m_id_comp + @", dtReg=" + ev.m_dtRegistred + @") - _state=" + _state.ToString() + @"...");
+
                 init(ev.m_dtRegistred.GetValueOrDefault());
             }
             /// <summary>
@@ -414,7 +415,9 @@ namespace StatisticAlarm
                 objRes = _dictAlarmObject[cKey];
             }
             else
-                Logging.Logg().Error(@"DictAlarmObject::find (id_comp=" + id_comp.ToString() + @") - НЕ НАЙДЕН!", Logging.INDEX_MESSAGE.NOT_SET);
+                Logging.Logg().Error(@"DictAlarmObject::find (id_comp=" + id_comp + @", dtReg=" + dtReg.ToString(@"dd.MM.yyyy HH:mm:ss.fffffff", CultureInfo.InvariantCulture) + @") - НЕ НАЙДЕН!", Logging.INDEX_MESSAGE.NOT_SET);
+
+            Console.WriteLine(@"DictAlarmObject::find (id_comp=" + id_comp + @", dtReg=" + dtReg.ToString(@"dd.MM.yyyy HH:mm:ss.fffffff", CultureInfo.InvariantCulture) + @") - " + (objRes == null ? @"НЕ НАЙДЕН!" : @"Ok..."));
 
             return objRes;
         }
@@ -446,7 +449,7 @@ namespace StatisticAlarm
                 }
                 catch (Exception e)
                 {
-                    Logging.Logg ().Exception (e, Logging.INDEX_MESSAGE.NOT_SET, @"DictAlarmObject::find(id_comp=" + id_comp + @") - ...");
+                    Logging.Logg().Exception(e, @"DictAlarmObject::find(id_comp=" + id_comp + @") - ...", Logging.INDEX_MESSAGE.NOT_SET);
                 }
             }
             else
@@ -649,7 +652,7 @@ namespace StatisticAlarm
                 catch (Exception e)
                 {
                     iRes = INDEX_ACTION.ERROR;
-                    Logging.Logg().Exception(e, Logging.INDEX_MESSAGE.NOT_SET, @"DictAlarmObject::Registred (" + ev.GetType().Name + @") - ...");
+                    Logging.Logg().Exception(e, @"DictAlarmObject::Registred (" + ev.GetType().Name + @") - ...", Logging.INDEX_MESSAGE.NOT_SET);
                 }
             }
 
@@ -718,7 +721,7 @@ namespace StatisticAlarm
                 }
                 catch (Exception e)
                 {
-                    Logging.Logg().Exception(e, Logging.INDEX_MESSAGE.NOT_SET, @"DictAlarmObject::Registred (" + ev.GetType().Name + @") - ...");
+                    Logging.Logg().Exception(e, @"DictAlarmObject::Registred (" + ev.GetType().Name + @") - ...", Logging.INDEX_MESSAGE.NOT_SET);
                 }
             }
 

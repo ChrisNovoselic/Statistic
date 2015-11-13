@@ -88,7 +88,7 @@ namespace trans_mt
                     }
                     catch (Exception e)
                     {
-                        Logging.Logg().Exception(e, Logging.INDEX_MESSAGE.NOT_SET, "FormMainTransMT::FormMainTransMT ()");
+                        Logging.Logg().Exception(e, "FormMainTransMT::FormMainTransMT ()", Logging.INDEX_MESSAGE.NOT_SET);
                         //ErrorReport("Ошибка соединения. Переход в ожидание.");
                         //setUIControlConnectionSettings(i);
                         break;

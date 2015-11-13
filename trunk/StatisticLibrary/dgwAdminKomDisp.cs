@@ -155,7 +155,7 @@ namespace StatisticCommon
                         fCmd = bool.Parse(Rows[ev.RowIndex].Cells[(int)DESC_INDEX.FOREIGN_CMD].Value.ToString());
                     }
                     catch (Exception e) {
-                        Logging.Logg ().Exception (e, Logging.INDEX_MESSAGE.NOT_SET, @"DataGridViewAdminKomDisp::CellValidate () - ...");
+                        Logging.Logg().Exception(e, @"DataGridViewAdminKomDisp::CellValidate () - ...", Logging.INDEX_MESSAGE.NOT_SET);
                     }
                     valid = double.TryParse((string)Rows[ev.RowIndex].Cells[(int)DESC_INDEX.RECOMENDATION].Value, out value);
                     if ((valid == false) /*|| (value == 0F)*/ || (value > maxRecomendationValue))

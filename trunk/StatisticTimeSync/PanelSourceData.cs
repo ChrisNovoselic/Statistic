@@ -109,7 +109,7 @@ namespace StatisticTimeSync
                 }
                 catch (Exception e)
                 {
-                    Logging.Logg().Exception(e, Logging.INDEX_MESSAGE.NOT_SET, @"PanelSourceData.PanelGetDate::queryConnSett");
+                    Logging.Logg().Exception(e, @"PanelSourceData.PanelGetDate::queryConnSett", Logging.INDEX_MESSAGE.NOT_SET);
                 }
             }
 
@@ -626,7 +626,7 @@ namespace StatisticTimeSync
             }
             catch (Exception e)
             {
-                Logging.Logg().Exception(e, Logging.INDEX_MESSAGE.NOT_SET, @"PanelSourceData::onEvtQueryAskedData () - ...");
+                Logging.Logg().Exception(e, @"PanelSourceData::onEvtQueryAskedData () - ...", Logging.INDEX_MESSAGE.NOT_SET);
             }
         }
 

@@ -22,7 +22,7 @@ namespace trans_tg
             try { formMain = new FormMainTransTG(); }
             catch (Exception e)
             {
-                Logging.Logg().Exception(e, Logging.INDEX_MESSAGE.NOT_SET, "!Ошибка! запуска приложения.");
+                Logging.Logg().Exception(e, "!Ошибка! запуска приложения.", Logging.INDEX_MESSAGE.NOT_SET);
             }
 
             if (!(formMain == null))

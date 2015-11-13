@@ -1505,7 +1505,7 @@ namespace StatisticTrans
             }
             catch (Exception e)
             {
-                Logging.Logg().Exception(e, Logging.INDEX_MESSAGE.NOT_SET, @"FormMainTrans::saveRDGValues () - ");                
+                Logging.Logg().Exception(e, @"FormMainTrans::saveRDGValues () - ", Logging.INDEX_MESSAGE.NOT_SET);
             }
         }
 
@@ -1547,7 +1547,7 @@ namespace StatisticTrans
                 notifyIconMain.Visible = true;
 
                 try { Application.DoEvents (); }
-                catch (Exception e) { Logging.Logg().Exception(e, Logging.INDEX_MESSAGE.NOT_SET, @"Application.DoEvents ()"); }
+                catch (Exception e) { Logging.Logg().Exception(e, @"Application.DoEvents ()", Logging.INDEX_MESSAGE.NOT_SET); }
             }
             else
                 ;
