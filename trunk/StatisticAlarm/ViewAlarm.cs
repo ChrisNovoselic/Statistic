@@ -37,7 +37,7 @@ namespace StatisticAlarm
 
             public AlarmDbEventArgs(DataRow rowEvt)
                 : base((int)rowEvt[@"ID_COMPONENT"]
-                    , (float)rowEvt[@"value"]
+                    , new AlarmNotifyEventArgs.EventReason () { value = (float)rowEvt[@"value"], UDGe = float.NaN, koeff = decimal.MinusOne }
                     , (DateTime)rowEvt[@"DATETIME_REGISTRED"]
                     , (int)rowEvt[@"SITUATION"])
             {
@@ -410,7 +410,7 @@ namespace StatisticAlarm
                     //(arg.Mode == FormChangeMode.MODE_TECCOMPONENT.GTP) ? -1F :
                     //    (arg.Mode == FormChangeMode.MODE_TECCOMPONENT.TG) ? arg.m_listEventDetail[0].value :
                     //        -2F
-                    arg.m_value
+                    arg.m_reason.value
                             ; //VALUE
                 string strDTRegistred = arg.m_dtRegistred.GetValueOrDefault().ToString(s_strDateTimeFormat); //DATETIME_REGISTRED
                 //«апрос дл€ вставки записи о событии сигнализации

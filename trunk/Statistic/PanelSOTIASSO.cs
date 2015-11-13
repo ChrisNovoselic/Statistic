@@ -1204,7 +1204,7 @@ namespace Statistic
                 else
                 {
                     if ((m_tecView.adminValuesReceived == true) //Признак успешного выполнения операций для состояния 'TecView.AdminValues'
-                        && ((m_tecView.lastMin > 60) && (!(m_tecView.serverTime.Minute > 1))))
+                        && ((!(m_tecView.lastMin < 59)) && (!(m_tecView.serverTime.Minute > 1))))
                     {
                         m_tecView.ChangeState();
 
@@ -1416,7 +1416,63 @@ namespace Statistic
             colChart = FormMain.formGraphicsSettings.COLOR(FormGraphicsSettings.INDEX_COLOR.BG_SOTIASSO);
             colP = FormMain.formGraphicsSettings.COLOR(FormGraphicsSettings.INDEX_COLOR.SOTIASSO);
         }
+        /// <summary>
+        /// Текст (часть) заголовка для графической субобласти "час по-минутно"
+        /// </summary>
+        private string textGraphMins
+        {
+            get
+            {
+                return CurrDateHour.ToShortDateString() + @", "
+                    + (CurrDateHour.Hour + 1) + @"-й ч";
+            }
+        }
+        /// <summary>
+        /// Текст (часть) заголовка для графической субобласти "минута по-секундно"
+        /// </summary>
+        private string textGraphMinDetail
+        {
+            get
+            {
+                string strRes = string.Empty
+                    , strHour = string.Empty
+                    , strMin = string.Empty;
 
+                bool bLastMin = ! (m_tecView.lastMin < 59) //61
+                    , bCurrHour = m_tecView.currHour;
+                //Подпись для номера часа
+                if (bLastMin == false)
+                    strHour += (CurrDateHour.Hour + 1);
+                else
+                    if (bCurrHour == true)
+                        strHour += (CurrDateHour.Hour + 2);
+                    else
+                        strHour += (CurrDateHour.Hour + 1);
+                strHour +=  @"-й ч";
+                //Подпись для номера минуты
+                if (bLastMin == false)
+                    if (bCurrHour == true)
+                        strMin += m_tecView.lastMin;
+                    else
+                        strMin += (m_tecView.lastMin - 1);
+                else
+                    if (bCurrHour == true)
+                        strMin += (m_tecView.lastMin - 58); //60
+                    else
+                        strMin += 60;
+                strMin += @"-я мин";
+                //Результирующая подпись
+                strRes = strHour + @", " + strMin;
+
+                return strRes;
+                //return ((m_tecView.lastMin < 61) ? (CurrDateHour.Hour + 1) : (m_tecView.currHour == true ? CurrDateHour.Hour + 2 : CurrDateHour.Hour + 1)) + @"-й ч"
+                //    + @", " + ((m_tecView.lastMin < 61) ? (m_tecView.currHour == true ? m_tecView.lastMin : (m_tecView.lastMin - 1)) :
+                //        (m_tecView.currHour == true ? m_tecView.lastMin - 60 : 60)) + @"-я мин";
+            }
+        }
+        /// <summary>
+        /// Обновить содержание в графической субобласти "час по-минутно"
+        /// </summary>
         private void drawGraphMins()
         {
             double[] valsMins = null
@@ -1585,11 +1641,7 @@ namespace Statistic
             pane.YAxis.Title.Text = "P, МВт";
             pane.Title.Text = @"СОТИАССО";
             pane.Title.Text += new string(' ', 29);
-            pane.Title.Text += CurrDateHour.ToShortDateString() + @", "
-                //+ ((m_tecView.lastMin > 60) ? m_tecView.m_curDate.Hour : (m_tecView.m_curDate.Hour + 1))
-                //+ (m_tecView.m_curDate.Hour + 1)
-                + (CurrDateHour.Hour + 1) + @"-й ч"
-                ;
+            pane.Title.Text += textGraphMins;
 
             pane.XAxis.Scale.TextLabels = names;
             pane.XAxis.Scale.IsPreventLabelOverlap = false;
@@ -1633,7 +1685,7 @@ namespace Statistic
         }
         /// <summary>
         /// Отобразить графическую интерпретацию значений СОТИАССО
-        ///  для указанных компонентов ТЭЦ (ТГ)
+        ///  для указанных компонентов ТЭЦ (ТГ) "минута по-секундно"
         /// </summary>
         private void drawGraphMinDetail()
         {
@@ -1818,9 +1870,7 @@ namespace Statistic
             pane.YAxis.Title.Text = "P, МВт";
             pane.Title.Text = @"СОТИАССО";
             pane.Title.Text += new string(' ', 29);
-            pane.Title.Text += ((m_tecView.lastMin < 61) ? (CurrDateHour.Hour + 1) : (m_tecView.currHour == true ? CurrDateHour.Hour + 2 : CurrDateHour.Hour + 1)) + @"-й ч"
-                + @", " + ((m_tecView.lastMin < 61) ? (m_tecView.currHour == true ? m_tecView.lastMin : (m_tecView.lastMin - 1)) :
-                    (m_tecView.currHour == true ? m_tecView.lastMin - 60 : 60)) + @"-я мин";
+            pane.Title.Text += textGraphMinDetail;;
 
             pane.XAxis.Scale.TextLabels = names;
             pane.XAxis.Scale.IsPreventLabelOverlap = false;

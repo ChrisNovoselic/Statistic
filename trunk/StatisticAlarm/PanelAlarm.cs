@@ -1120,7 +1120,7 @@ namespace StatisticAlarm
                     {
                         // очевидно, что событие не зафиксировано (только в режиме 'SERVICE')
                         EventFixed(new AlarmNotifyEventArgs(m_dictView[id].m_id_component
-                            , m_dictView[id].m_value
+                            , new AlarmNotifyEventArgs.EventReason () { value = m_dictView[id].m_value, UDGe = float.NaN, koeff = decimal.MinusOne }
                             , m_dictView[id].m_dt_registred.GetValueOrDefault()
                             , m_dictView[id].m_situation));
                     }
