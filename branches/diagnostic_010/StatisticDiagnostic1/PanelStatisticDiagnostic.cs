@@ -716,10 +716,11 @@ namespace StatisticDiagnostic
                         m_arPanelsTEC[i].TECDataGridView.Invoke(new Action(() => m_arPanelsTEC[i].TECDataGridView.Rows[r].Cells[1].Value = m_shortTime));
                         m_arPanelsTEC[i].TECDataGridView.Invoke(new Action(() => m_arPanelsTEC[i].TECDataGridView.Rows[r].Cells[5].Value = m_drTecSource[t]["NAME_SHR"]));
                         m_arPanelsTEC[i].TECDataGridView.Invoke(new Action(() => m_arPanelsTEC[i].TECDataGridView.Rows[r].Cells[3].Value = m_time.ToString()));
+
                         cellsPingTEC(filter, i);
                         paintigCells(i, r);
                         textColumnTec();
-                        checkrelevancevalues(i, r);
+                        checkrelevancevalues(DateTime.Parse(m_shortTime), i, r);
                     }
 
                     else
@@ -728,11 +729,11 @@ namespace StatisticDiagnostic
                         m_arPanelsTEC[i].TECDataGridView.Rows[r].Cells[5].Value = m_drTecSource[t]["NAME_SHR"];
                         m_arPanelsTEC[i].TECDataGridView.Rows[r].Cells[1].Value = m_shortTime;
                         m_arPanelsTEC[i].TECDataGridView.Rows[r].Cells[3].Value = m_time.ToString();
-                        paintigCells(i, r);
 
+                        paintigCells(i, r);
                         textColumnTec();
                         cellsPingTEC(filter, i);
-                        checkrelevancevalues(i, r);
+                        checkrelevancevalues(DateTime.Parse(m_shortTime), i, r);
                     }
                     t = t + 2;
                 }
@@ -967,30 +968,105 @@ namespace StatisticDiagnostic
             }
 
             /// <summary>
-            /// Проверка актуальности данных 
+            /// Проверка актуальности времени 
             /// СОТИАССО и АИИСКУЭ
             /// </summary>
             /// <param name="i">номер панели</param>
             /// <param name="r">индекс строки</param>
-            private void checkrelevancevalues(int i, int r)
+            private void checkrelevancevalues(DateTime time, int i, int r)
             {
-                string m_ival;
-                string m_iDTnow = DateTime.Now.ToString().Substring(15, 1);
+                string nameSource = m_arPanelsTEC[i].TECDataGridView.Rows[r].Cells[0].Value.ToString();
 
-                if (!(m_arPanelsTEC[i].TECDataGridView.Rows[r].Cells[0].Value.ToString() == "АИИСКУЭ") && m_arPanelsTEC[i].TECDataGridView.Rows[r].Cells[0].Style.BackColor == System.Drawing.Color.White)
+                if ((!(m_arPanelsTEC[i].TECDataGridView.Rows[r].Cells[0].Value.ToString() == "АИИСКУЭ")) && m_arPanelsTEC[i].TECDataGridView.Rows[r].Cells[0].Style.BackColor == System.Drawing.Color.Empty)
                 {
 
                 }
                 else
                 {
-                    m_ival = m_arPanelsTEC[i].TECDataGridView.Rows[r].Cells[1].Value.ToString().Substring(4, 1);
-
-                    if ((m_ival + 3) == m_iDTnow)
+                    if (m_arPanelsTEC[i].TECDataGridView.Rows[r].Cells[0].Value.ToString() == "АИИСКУЭ")
                     {
-                        m_arPanelsTEC[i].TECDataGridView.Rows[r].Cells[0].Style.BackColor = System.Drawing.Color.Sienna;
+                        paintValuesSource(selectInvalidValue(nameSource, time), i, r);
+                    }
+
+                    else
+                    {
+                        paintValuesSource(selectInvalidValue(nameSource, time), i, r);
                     }
                 }
+            }
 
+            /// <summary>
+            /// Проверка актуальности времени источника
+            /// </summary>
+            /// <param name="nameS">имя источника</param>
+            /// <param name="time">время источника</param>
+            /// <returns></returns>
+            private bool selectInvalidValue(string nameS, DateTime time)
+            {
+                TimeSpan ts = new TimeSpan(0, 0, 3, 0, 0);
+                DateTime m_DTnowAISKUE = TimeZoneInfo.ConvertTimeBySystemTimeZoneId(DateTime.Now, TimeZoneInfo.Local.Id, "Russian Standard Time");
+                DateTimeOffset m_DTnowSOTIASSO = DateTimeOffset.UtcNow;
+                bool bFL = true; ;
+
+                switch (nameS)
+                {
+                    case "АИИСКУЭ":
+
+                        if ((m_DTnowAISKUE - time) == ts)
+                        {
+                            bFL = true;
+
+                        }
+                        else
+                        {
+                            bFL = false;
+
+                        }
+                        break;
+
+                    case "СОТИАССО":
+
+                        if ((m_DTnowSOTIASSO - time) == ts)
+                        {
+                            bFL = true;
+
+                        }
+                        else
+                        {
+                            bFL = false;
+
+                        }
+                        break;
+
+                    case "СОТИАССО_0":
+
+                        if ((m_DTnowSOTIASSO - time) == ts)
+                        {
+                            bFL = true;
+
+                        }
+                        else
+                        {
+                            bFL = false;
+
+                        }
+                        break;
+                }
+                return bFL;
+            }
+
+            /// <summary>
+            /// Выделение времени источника
+            /// </summary>
+            /// <param name="bflag"></param>
+            /// <param name="i">номер панели</param>
+            /// <param name="r">номер строки</param>
+            private void paintValuesSource(bool bflag, int i, int r)
+            {
+                if (bflag == true)
+                    m_arPanelsTEC[i].TECDataGridView.Rows[r].Cells[1].Style.BackColor = System.Drawing.Color.Red;
+                else
+                    m_arPanelsTEC[i].TECDataGridView.Rows[r].Cells[1].Style.BackColor = System.Drawing.Color.White;
             }
 
             /// <summary>
@@ -1374,22 +1450,29 @@ namespace StatisticDiagnostic
             /// </summary>
             public void AddItem()
             {
-                var m_enumModes = (from r in m_tbModes.AsEnumerable()
-                                   orderby r.Field<int>("ID")
-                                   select new
-                                   {
-                                       ID = r.Field<int>("ID"),
-                                   }).Distinct();
-
-                for (int i = 0; i < m_arPanelsMODES.Length; i++)
+                try
                 {
-                    string m_fltrID = "ID = " + Convert.ToInt32(m_enumModes.ElementAt(i).ID);
+                    var m_enumModes = (from r in m_tbModes.AsEnumerable()
+                                       orderby r.Field<int>("ID")
+                                       select new
+                                       {
+                                           ID = r.Field<int>("ID"),
+                                       }).Distinct();
 
-                    insertDataModes(m_fltrID, i);
+                    for (int i = 0; i < m_arPanelsMODES.Length; i++)
+                    {
+                        string m_fltrID = "ID = " + Convert.ToInt32(m_enumModes.ElementAt(i).ID);
+
+                        insertDataModes(m_fltrID, i);
+                    }
+
+                    headerText();
+                    nameComponentGTP();
                 }
-
-                headerText();
-                nameComponentGTP();
+                catch (Exception e)
+                {
+                    MessageBox.Show(e.ToString());
+                }
             }
 
             /// <summary>
@@ -1583,7 +1666,7 @@ namespace StatisticDiagnostic
             {
                 string m_dtNow = DateTime.Now.ToString();
                 string m_dt2Time;
-                int m_intNow = Convert.ToInt32(m_dtNow.Substring(0,2));
+                int m_intNow = Convert.ToInt32(m_dtNow.Substring(0, 2));
                 int m_iDT = Convert.ToInt32(datetime.Substring(8, 2));
 
                 if ((m_intNow - m_iDT) > 0)
@@ -1724,41 +1807,50 @@ namespace StatisticDiagnostic
             /// </summary>
             public void AddItem()
             {
-                var m_enumIDtask = (from r in m_tableSourceData.AsEnumerable()
-                                    where r.Field<string>("ID_Value") == "28"
-                                    select new
-                                    {
-                                        NAME = r.Field<string>("NAME_SHR"),
-                                    }).Distinct();
-                if (TaskDataGridView.Rows.Count < Convert.ToInt32(m_enumIDtask.Count()))
+                try
                 {
-                    addRowsTask(Convert.ToInt32(m_enumIDtask.Count()));
+                    var m_enumIDtask = (from r in m_tableSourceData.AsEnumerable()
+                                        where r.Field<string>("ID_Value") == "28"
+                                        select new
+                                        {
+                                            NAME = r.Field<string>("NAME_SHR"),
+                                        }).Distinct();
+                    if (TaskDataGridView.Rows.Count < Convert.ToInt32(m_enumIDtask.Count()))
+                    {
+                        addRowsTask(Convert.ToInt32(m_enumIDtask.Count()));
+                    }
+
+                    for (int i = 0; i < Convert.ToInt32(m_enumIDtask.Count()); i++)
+                    {
+                        string filter = "NAME_SHR = '" + m_enumIDtask.ElementAt(i).NAME + "'";
+                        DataRow[] dr = m_tableSourceData.Select(filter);
+                        //ToDateTime(dr[0]["Value"].ToString());
+
+                        string time = formatTime(dr[1]["Value"].ToString());
+
+                        if (TaskDataGridView.InvokeRequired)
+                        {
+                            columTimeTask(i);
+                            TaskDataGridView.Invoke(new Action(() => TaskDataGridView.Rows[i].Cells[1].Value = dr[0]["Value"]));
+                            TaskDataGridView.Invoke(new Action(() => TaskDataGridView.Rows[i].Cells[2].Value = time));
+                            TaskDataGridView.Invoke(new Action(() => TaskDataGridView.Rows[i].Cells[0].Value = dr[0]["NAME_SHR"]));
+                        }
+                        else
+                        {
+                            columTimeTask(i);
+
+                            TaskDataGridView.Rows[i].Cells[1].Value = dr[0]["Value"];
+                            TaskDataGridView.Rows[i].Cells[2].Value = time;
+                            TaskDataGridView.Rows[i].Cells[0].Value = dr[0]["NAME_SHR"];
+                        }
+                    }
+                    overLimit();
+                }
+                catch (Exception e)
+                {
+                    MessageBox.Show("Ошибка заполнения субобласти Задачи" + e + "");
                 }
 
-                for (int i = 0; i < Convert.ToInt32(m_enumIDtask.Count()); i++)
-                {
-                    string filter = "NAME_SHR = '" + m_enumIDtask.ElementAt(i).NAME + "'";
-                    DataRow[] dr = m_tableSourceData.Select(filter);
-
-                    string time = formatTime(dr[1]["Value"].ToString());
-
-                    if (TaskDataGridView.InvokeRequired)
-                    {
-                        columTimeTask(i);
-                        TaskDataGridView.Invoke(new Action(() => TaskDataGridView.Rows[i].Cells[1].Value = dr[0]["Value"]));
-                        TaskDataGridView.Invoke(new Action(() => TaskDataGridView.Rows[i].Cells[2].Value = time));
-                        TaskDataGridView.Invoke(new Action(() => TaskDataGridView.Rows[i].Cells[0].Value = dr[0]["NAME_SHR"]));
-                    }
-                    else
-                    {
-                        columTimeTask(i);
-
-                        TaskDataGridView.Rows[i].Cells[1].Value = dr[0]["Value"];
-                        TaskDataGridView.Rows[i].Cells[2].Value = time;
-                        TaskDataGridView.Rows[i].Cells[0].Value = dr[0]["NAME_SHR"];
-                    }
-                }
-                overLimit();
             }
 
             /// <summary>
@@ -1793,6 +1885,15 @@ namespace StatisticDiagnostic
                 string m_timeNow = DateTime.Now.ToString("HH:mm:ss.fff");
 
                 TaskDataGridView.Rows[i].Cells[3].Value = m_timeNow;
+            }
+
+            /// <summary>
+            /// 
+            /// </summary>
+            /// <param name="value"></param>
+            private void ToDateTime(string value)
+            {
+                DateTime.Parse(value);
             }
 
             /// <summary>
