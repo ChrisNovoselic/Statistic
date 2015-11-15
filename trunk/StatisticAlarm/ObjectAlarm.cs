@@ -424,7 +424,7 @@ namespace StatisticAlarm
             else
                 Logging.Logg().Error(@"DictAlarmObject::find (id_comp=" + id_comp + @", dtReg=" + dtReg.ToString(@"dd.MM.yyyy HH:mm:ss.fffffff", CultureInfo.InvariantCulture) + @") - НЕ НАЙДЕН!", Logging.INDEX_MESSAGE.NOT_SET);
 
-            Console.WriteLine(@"DictAlarmObject::find (id_comp=" + id_comp + @", dtReg=" + dtReg.ToString(@"dd.MM.yyyy HH:mm:ss.fffffff", CultureInfo.InvariantCulture) + @") - " + (objRes == null ? @"НЕ НАЙДЕН!" : @"Ok..."));
+            //Console.WriteLine(@"DictAlarmObject::find (id_comp=" + id_comp + @", dtReg=" + dtReg.ToString(@"dd.MM.yyyy HH:mm:ss.fffffff", CultureInfo.InvariantCulture) + @") - " + (objRes == null ? @"НЕ НАЙДЕН!" : @"Ok..."));
 
             return objRes;
         }
