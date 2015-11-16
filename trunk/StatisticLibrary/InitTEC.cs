@@ -41,17 +41,15 @@ namespace StatisticCommon
         public static DataTable getListTEC(ref DbConnection connConfigDB, bool bIgnoreTECInUse, out int err)
         {
             string req = string.Empty;
-            req = "SELECT * FROM TEC_LIST";
+            req = "SELECT * FROM TEC_LIST ";
 
-            if (bIgnoreTECInUse == false) req += " WHERE INUSE=1"; else ;
+            if (bIgnoreTECInUse == false) req += "WHERE INUSE=1 "; else ;
             if (!(HStatisticUsers.allTEC == 0))
             {
-                if (bIgnoreTECInUse == false)
-                    req += @" AND ";
-                else
-                    ;
+                if (bIgnoreTECInUse == false) req += @"AND "; else ;
 
-                req += @"ID =" + HStatisticUsers.allTEC.ToString();
+                if (bIgnoreTECInUse == true) req += @"WHERE "; else ;
+                req += @"ID=" + HStatisticUsers.allTEC.ToString();
             }
             else
                 ;
