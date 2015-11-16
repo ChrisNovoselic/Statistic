@@ -1077,20 +1077,16 @@ namespace StatisticDiagnostic
             /// <returns></returns>
             private string formatTime(string datetime)
             {
-                string m_dtNow = DateTime.Now.ToString();
-                string m_dt2Time;
+                int m_dtNow = DateTime.Now.Day;
+                int m_dt2Time = DateTime.Parse(datetime).Day;
 
-                int m_intNow = Convert.ToInt32(m_dtNow.Substring(0, 2));
-                int m_iDT = Convert.ToInt32(datetime.Substring(8, 2));
+                //int m_intNow = Convert.ToInt32(m_dtNow.Substring(0, 2));
+                //int m_iDT = Convert.ToInt32(datetime.Substring(8, 2));
 
-                if ((m_intNow - m_iDT) > 0)
-                {
+                if ((m_dtNow - m_dt2Time)>0)
                     return DateTime.Parse(datetime).ToString("dd.MM.yy HH:mm:ss");
-                }
                 else
-                {
-                    return m_dt2Time = DateTime.Parse(datetime).ToString("HH:mm:ss.fff");
-                }
+                    return DateTime.Parse(datetime).ToString("HH:mm:ss.fff");
             }
         }
 
