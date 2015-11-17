@@ -187,15 +187,18 @@ namespace StatisticAlarm
 
                     if ((!(tc == null))
                         && (tc.IsTG == true))
-                        if (! (tc.m_listTG[0].m_TurnOnOff == state))
+                        if (!(tc.m_listTG[0].m_TurnOnOff == state))
+                        {
                             tc.m_listTG[0].m_TurnOnOff = state;
+                            Logging.Logg().Action(@"AdminAlarm::tgConfirm (id=" + id_tg + @") - ТГ состояние=" + state.ToString (), Logging.INDEX_MESSAGE.NOT_SET);
+                        }
                         else
-                            ;
+                            Logging.Logg().Warning(@"AdminAlarm::tgConfirm (id=" + id_tg + @") - попытка подтвердить ТО ЖЕ состояние ТГ...", Logging.INDEX_MESSAGE.NOT_SET);
                     else
                         ;
                 }
             else
-                Logging.Logg().Error(@"AdminAlarm::tgConfirm (id=" + id_tg + @") - попытка зафиксировать состояние ТГ как НЕИЗВЕСТНОЕ...", Logging.INDEX_MESSAGE.NOT_SET);
+                Logging.Logg().Error(@"AdminAlarm::tgConfirm (id=" + id_tg + @") - попытка подтвердить состояние ТГ как НЕИЗВЕСТНОЕ...", Logging.INDEX_MESSAGE.NOT_SET);
         }
     }
 }

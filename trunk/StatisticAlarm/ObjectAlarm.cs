@@ -5,11 +5,12 @@ using System.Text;
 using System.Globalization;
 
 using HClassLibrary;
+using StatisticCommon;
 
 namespace StatisticAlarm
 {
     public enum INDEX_ACTION { ERROR = -1, NOTHING, NEW, RETRY
-        , AUTO_FIXING, AUTO_CONFIRMING }
+        , AUTO_FIXING, AUTO_CONFIRMING, CONFIRMED_TG }
     /// <summary>
     /// Перечисление - индексы для типов сигнализаций
     /// </summary>
@@ -704,15 +705,21 @@ namespace StatisticAlarm
                         alarmObj.Confirmed(ev.m_dtConfirm);
 
                         if (mode == MODE.SERVICE)
-                            if (alarmObj.IsAutoConfirming () == true)
-                                // если объект не подтвержден длительное время
-                                iRes = INDEX_ACTION.AUTO_CONFIRMING;
-                            else
-                                if (alarmObj.IsAutoFixing () == true)
-                                    // если объект не зафиксирован длительное время
-                                    iRes = INDEX_ACTION.AUTO_FIXING;
+                            if (alarmObj.CONFIRMED == true)
+                                if (TECComponent.Mode(ev.m_id_comp) == FormChangeMode.MODE_TECCOMPONENT.TG)
+                                    iRes = INDEX_ACTION.CONFIRMED_TG;
                                 else
                                     ;
+                            else
+                                if (alarmObj.IsAutoConfirming () == true)
+                                    // если объект не подтвержден длительное время
+                                    iRes = INDEX_ACTION.AUTO_CONFIRMING;
+                                else
+                                    if (alarmObj.IsAutoFixing () == true)
+                                        // если объект не зафиксирован длительное время
+                                        iRes = INDEX_ACTION.AUTO_FIXING;
+                                    else
+                                        ;
                         else
                             if (mode == MODE.ADMIN)
                                 if (alarmObj.IsNotify() == true)

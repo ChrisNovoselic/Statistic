@@ -1188,10 +1188,13 @@ namespace StatisticAlarm
                             new object[] {
                                 new object [] {
                                     AdminAlarm.StatesMachine.Confirm
-                                    , ev.m_id
+                                    , new object [] { ev.m_id, ev.m_id_comp, ev.m_situation }
                                 }
                             }
                         });
+                        break;
+                    case INDEX_ACTION.CONFIRMED_TG:
+                        tgConfirm(ev.m_id_comp, (TG.INDEX_TURNOnOff)ev.m_situation);
                         break;
                     default:
                         break;
@@ -1321,16 +1324,18 @@ namespace StatisticAlarm
                 case StatesMachine.Retry:
                     m_handlerDb.Retry(itemQueue.Pars[0] as TecViewAlarm.AlarmTecViewEventArgs);
                     break;
-                case StatesMachine.Fixed:
-                    AlarmNotifyEventArgs objNotify = itemQueue.Pars[0] as AlarmNotifyEventArgs;
-                    if (TECComponent.Mode(objNotify.m_id_comp) == FormChangeMode.MODE_TECCOMPONENT.TG)
-                        tgConfirm(objNotify.m_id_comp, (TG.INDEX_TURNOnOff)objNotify.m_situation);
-                    else
-                        ;
+                case StatesMachine.Fixed:                    
                     m_handlerDb.Fixed(itemQueue.Pars[0] as AlarmNotifyEventArgs);
                     break;
                 case StatesMachine.Confirm:
-                    m_handlerDb.Confirm((long)itemQueue.Pars[0]);
+                    object[] pars = itemQueue.Pars[0] as object[];
+                    long id_rec = (long)(pars)[0];
+                    int id_comp = (int)(pars)[1];
+                    if (TECComponent.Mode(id_comp) == FormChangeMode.MODE_TECCOMPONENT.TG)
+                        tgConfirm(id_comp, (TG.INDEX_TURNOnOff)pars[2]);
+                    else
+                        ;
+                    m_handlerDb.Confirm(id_rec);
                     break;
                 default:
                     break;

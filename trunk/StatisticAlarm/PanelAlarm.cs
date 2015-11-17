@@ -334,7 +334,7 @@ namespace StatisticAlarm
             DataAskedHost(new object[] {
                 new object [] {
                     AdminAlarm.StatesMachine.Confirm
-                    , (long)obj
+                    , obj
                 }
             });
         }
@@ -1126,7 +1126,7 @@ namespace StatisticAlarm
                     }
                     else
                         // очевидно, что событие не подтверждено
-                        EventConfirmed(id as object);
+                        EventConfirmed(new object [] { id, m_dictView[id].m_id_component, m_dictView[id].m_situation });
                 }
                 else
                     ; // остальные столбцы не требуют обработки
