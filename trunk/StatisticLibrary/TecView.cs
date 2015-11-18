@@ -3205,7 +3205,7 @@ namespace StatisticCommon
                             break;
                     }
 
-                    //??? якобы для перехода через границу суток
+                    //??? для перехода через границу суток
                     dtNeeded = dt;
 
                     hour = (dt.Hour + dt.Minute / 30);
@@ -3226,32 +3226,26 @@ namespace StatisticCommon
                         else
                             ;
 
-                        if ((! (season == (int)HAdmin.seasonJumpE.None)) && (! (prev_season == season)))
-                        {
+                        if ((! (season == (int)HAdmin.seasonJumpE.None))
+                            && (! (prev_season == season)))
                             if (offset_season == 1)
-                            {//Ошибка ??? 2 перехода за сутки
-
-                            }
+                                //Ошибка ??? 2 перехода за сутки
+                                ;
                             else
-                            {
                                 if (prev_season == (int)HAdmin.seasonJumpE.None)
-                                {
                                     if (season == (int)HAdmin.seasonJumpE.SummerToWinter)
                                         offset_season = 1;
                                     else
                                         //prev_season == (int)HAdmin.seasonJumpE.WinterToSummer
                                         ; // offset_season = -1; ??? 26.10.2014 нет перехода зима-лето
-                                }
                                 else
                                     if (prev_season == (int)HAdmin.seasonJumpE.WinterToSummer)
                                         offset_season = 1;
                                     else
                                         //prev_season == (int)HAdmin.seasonJumpE.SummerToWinter
                                         ; // offset_season = -1; ??? 26.10.2014 нет перехода зима-лето
-                            }
-                        }
                         else
-                            ;
+                            ; // нет сезона ИЛИ пред./сезон РАВЕН текущ./сезону
                     //} else ;
 
                     //Отладка ???
@@ -3312,27 +3306,22 @@ namespace StatisticCommon
                 //Logging.Logg().Debug(@"TecView::GetHoursFactReuest () - hour=" + hour + @"; indxHalf=" + j + @"; halfVal=" + halfVal + @"; hourVal=" + hourVal);
 
                 if (j < 2)
-                {//Нет данных за один из получасов
-                    if (! (hour > serverTime.Hour)) {
+                    //Нет данных за один из получасов
+                    if (! (hour > serverTime.Hour))
                         break;
-                    }
                     else
-                    {//hour > m_curDate.Hour
+                        //hour > m_curDate.Hour
                         if (j == 0)
                             //1-ый получас
                             ; //break;
                         else
                             //2-ой получас
                             ;
-                    }
-                }
                 else
-                {
                     if (! (hourVal < 0))
                         m_valuesHours [hour].valuesFact += hourVal;
                     else
                         ; //Нет данных за час
-                }
             }
 
             if (hour == m_valuesHours.Length)
@@ -3964,17 +3953,14 @@ namespace StatisticCommon
             bool end = false;
             DateTime dt
                 , dtNeeded = DateTime.MinValue;
-            int season = 0, need_season = 0, max_season = 0;
-            bool jump = false;
-
-            /*Form2 f2 = new Form2();
-            f2.FillMinTable(table);*/
+            int season = 0, need_season = 0, max_season = 0;            
+            bool jump = false; // признак прехода между сезонами времяисчисления
 
             if (CheckNameFieldsOfTable(table, new string[] { @"ID", @"DATA_DATE", @"SEASON", @"VALUE0" }) == false)
                 iRes = -1;
             else
                 ;
-
+            //Признак проверки наличия необходимых полей в таблице-результате
             if (iRes == 0)
             {
                 lastMin = 0;
@@ -4014,7 +4000,6 @@ namespace StatisticCommon
                 {
                     //Ошибка - нет ни одной строки
                     if (currHour == true)
-                    {
                         if (!((m_curDate.Minute / 3) == 0))
                         {//Ошибка - номер 3-хмин > 1
                             m_markWarning.Marked((int)INDEX_WARNING.LAST_MIN);
@@ -4022,12 +4007,8 @@ namespace StatisticCommon
                         }
                         else
                             ; //Успех
-                    }
                     else
                         ;
-
-                    /*f2.FillMinValues(lastMin, selectedTime, m_tecView.m_valuesMins.valuesFact);
-                    f2.ShowDialog();*/
 
                     return 0;
                 }
@@ -4084,9 +4065,6 @@ namespace StatisticCommon
                             m_valuesMins[min].valuesFact = 0;
                             minuteVal = 0;
                         }
-
-                        /*MessageBox.Show("min " + min.ToString() + ", lastMin " + lastMin.ToString() + ", i " + i.ToString() +
-                                         ", table.Rows.Count " + table.Rows.Count.ToString());*/
 
                         //
                         jump = false;
@@ -4209,17 +4187,20 @@ namespace StatisticCommon
                                 //Установить признак увеличения индекса текущего 3-х мин интервала
                                 bMinInc = true;
                             else
-                                if (end == true)
-                                //Строк для обработки - нет
-                                    //Проверить наличие значения хотя бы для 1-го из ТГ
-                                    // И значение для интервала > 0
-                                    if ((j > 0) && ((minuteVal / 1000) > 1))
-                                        //Установить признак увеличения индекса текущего 3-х мин интервала
-                                        bMinInc = true;
-                                    else
-                                        ;
-                                else
-                                    ; //true, false, ???
+                                //Доработка 18.11.2015 г.
+                                // ОТМЕНА обработка ситуации, когда в БД отсутствуют значения ...
+                                //if (end == true)
+                                //    //Строк для обработки - нет
+                                //    //Проверить наличие значения хотя бы для 1-го из ТГ
+                                //    // И значение для интервала > 0
+                                //    if ((j > 0) && ((minuteVal / 1000) > 1))
+                                //        //Установить признак увеличения индекса текущего 3-х мин интервала
+                                //        bMinInc = true;
+                                //    else
+                                //        ;
+                                //else
+                                //    //true, false, ???
+                                    ;
                             //Проверить признак увеличения индекса текущего 3-х мин интервала
                             if (bMinInc == true)
                             {

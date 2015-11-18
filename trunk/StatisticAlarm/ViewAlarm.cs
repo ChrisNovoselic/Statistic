@@ -1193,9 +1193,9 @@ namespace StatisticAlarm
                             }
                         });
                         break;
-                    case INDEX_ACTION.CONFIRMED_TG:
-                        tgConfirm(ev.m_id_comp, (TG.INDEX_TURNOnOff)ev.m_situation);
-                        break;
+                    //case INDEX_ACTION.CONFIRMED_TG:
+                    //    tgConfirm(ev.m_id_comp, (TG.INDEX_TURNOnOff)ev.m_situation);
+                    //    break;
                     default:
                         break;
                 }
@@ -1324,18 +1324,24 @@ namespace StatisticAlarm
                 case StatesMachine.Retry:
                     m_handlerDb.Retry(itemQueue.Pars[0] as TecViewAlarm.AlarmTecViewEventArgs);
                     break;
-                case StatesMachine.Fixed:                    
-                    m_handlerDb.Fixed(itemQueue.Pars[0] as AlarmNotifyEventArgs);
+                case StatesMachine.Fixed:
+                    AlarmNotifyEventArgs ev = itemQueue.Pars[0] as AlarmNotifyEventArgs;
+                    if (TECComponent.Mode(ev.m_id_comp) == FormChangeMode.MODE_TECCOMPONENT.TG)
+                        tgConfirm(ev.m_id_comp, (TG.INDEX_TURNOnOff)ev.m_situation);
+                    else
+                        ;
+                    m_handlerDb.Fixed(ev);
                     break;
                 case StatesMachine.Confirm:
                     object[] pars = itemQueue.Pars[0] as object[];
-                    long id_rec = (long)(pars)[0];
-                    int id_comp = (int)(pars)[1];
-                    if (TECComponent.Mode(id_comp) == FormChangeMode.MODE_TECCOMPONENT.TG)
-                        tgConfirm(id_comp, (TG.INDEX_TURNOnOff)pars[2]);
-                    else
-                        ;
-                    m_handlerDb.Confirm(id_rec);
+                    //long id_rec = (long)(pars)[0];
+                    //int id_comp = (int)(pars)[1];
+                    //if (TECComponent.Mode(id_comp) == FormChangeMode.MODE_TECCOMPONENT.TG)
+                    //    tgConfirm(id_comp, (TG.INDEX_TURNOnOff)pars[2]);
+                    //else
+                    //    ;
+                    //m_handlerDb.Confirm(id_rec);
+                    m_handlerDb.Confirm((long)(pars)[0]);
                     break;
                 default:
                     break;

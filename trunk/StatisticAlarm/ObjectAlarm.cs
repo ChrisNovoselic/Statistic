@@ -10,7 +10,7 @@ using StatisticCommon;
 namespace StatisticAlarm
 {
     public enum INDEX_ACTION { ERROR = -1, NOTHING, NEW, RETRY
-        , AUTO_FIXING, AUTO_CONFIRMING, CONFIRMED_TG }
+        , AUTO_FIXING, AUTO_CONFIRMING/*, CONFIRMED_TG*/ }
     /// <summary>
     /// Перечисление - индексы для типов сигнализаций
     /// </summary>
@@ -154,7 +154,7 @@ namespace StatisticAlarm
             /// <summary>
             /// Перечисление - индексы значений даты/времени регистрации/повторения события сигнализаций
             /// </summary>
-            private enum INDEX_DATETIME_REGISTRED { FIRST, LAST, COUNT }
+            public enum INDEX_DATETIME_REGISTRED { FIRST, LAST, COUNT }
             /// <summary>
             /// Счетчик кол-ва возникновений/повторения события
             /// </summary>
@@ -380,14 +380,14 @@ namespace StatisticAlarm
                 return bRes;
             }
 
-            public bool IsAutoFixing ()
+            public bool IsAutoFixing (INDEX_DATETIME_REGISTRED indx)
             {
                 bool bRes = false;
 
                 if (_cnt > 0)
                 {
                     bRes = (FIXED == false)
-                        && ((DateTime.UtcNow - _lastDTRegistred).TotalMilliseconds > (AdminAlarm.MSEC_ALARM_EVENTRETRY/* + _cnt * AdminAlarm.MSEC_ALARM_TIMERUPDATE*/));
+                        && ((DateTime.UtcNow - _arDTRegistred[(int)indx]).TotalMilliseconds > (AdminAlarm.MSEC_ALARM_EVENTRETRY/* + _cnt * AdminAlarm.MSEC_ALARM_TIMERUPDATE*/));
                 }
                 else
                     ;
@@ -705,17 +705,19 @@ namespace StatisticAlarm
                         alarmObj.Confirmed(ev.m_dtConfirm);
 
                         if (mode == MODE.SERVICE)
-                            if (alarmObj.CONFIRMED == true)
-                                if (TECComponent.Mode(ev.m_id_comp) == FormChangeMode.MODE_TECCOMPONENT.TG)
-                                    iRes = INDEX_ACTION.CONFIRMED_TG;
-                                else
-                                    ;
-                            else
-                                if (alarmObj.IsAutoConfirming () == true)
+                            //if (alarmObj.CONFIRMED == true)
+                            //    if (TECComponent.Mode(ev.m_id_comp) == FormChangeMode.MODE_TECCOMPONENT.TG)
+                            //        iRes = INDEX_ACTION.CONFIRMED_TG;
+                            //    else
+                            //        ;
+                            //else
+                                if (alarmObj.IsAutoConfirming() == true)
                                     // если объект не подтвержден длительное время
                                     iRes = INDEX_ACTION.AUTO_CONFIRMING;
                                 else
-                                    if (alarmObj.IsAutoFixing () == true)
+                                    if ((alarmObj.IsAutoFixing(ALARM_OBJECT.INDEX_DATETIME_REGISTRED.LAST) == true)
+                                        || ((TECComponent.Mode(ev.m_id_comp) == FormChangeMode.MODE_TECCOMPONENT.TG)
+                                            && (alarmObj.IsAutoFixing(ALARM_OBJECT.INDEX_DATETIME_REGISTRED.FIRST) == true)))
                                         // если объект не зафиксирован длительное время
                                         iRes = INDEX_ACTION.AUTO_FIXING;
                                     else

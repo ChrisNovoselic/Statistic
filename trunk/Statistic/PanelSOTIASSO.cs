@@ -100,7 +100,7 @@ namespace Statistic
 
                 if (! (m_markRetroValues.Value == 0))
                 {
-                    Console.WriteLine(@"TecView::IsIndexRetroValues (indxMin=" + indx + @", Minute=" + serverTime.Minute + @") - по " + strRetro + @" = TRUE...");
+                    //Console.WriteLine(@"TecView::IsIndexRetroValues (indxMin=" + indx + @", Minute=" + serverTime.Minute + @") - по " + strRetro + @" = TRUE...");
                     Logging.Logg().Debug(@"TecView::IsIndexRetroValues (indxMin=" + indx + @", Minute=" + serverTime.Minute + @") - по " + strRetro + @" = TRUE...", Logging.INDEX_MESSAGE.NOT_SET);
                 }
                 else
