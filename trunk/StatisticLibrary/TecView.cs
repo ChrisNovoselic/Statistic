@@ -5190,7 +5190,12 @@ namespace StatisticCommon
             int interval = 1; //GetIntervalOfTypeSourceData(TG.ID_TIME.MINUTES);
 
             if (interval > 0)
-                Request(m_dictIdListeners[m_tec.m_id][(int)CONN_SETT_TYPE.DATA_SOTIASSO], m_tec.minTMDetailRequest(m_curDate, lh - GetSeasonHourOffset(lh), lm > 60 ? 60 : lm, m_tec.GetSensorsString(indxTECComponents, CONN_SETT_TYPE.DATA_SOTIASSO, TG.ID_TIME.MINUTES), interval));
+                Request(m_dictIdListeners[m_tec.m_id][(int)CONN_SETT_TYPE.DATA_SOTIASSO]
+                    , m_tec.minTMDetailRequest(m_curDate, lh - GetSeasonHourOffset(lh)
+                    //, lm > 60 ? 60 : lm
+                    , lm
+                    , m_tec.GetSensorsString(indxTECComponents, CONN_SETT_TYPE.DATA_SOTIASSO, TG.ID_TIME.MINUTES)
+                    , interval));
             else ;
         }
 
