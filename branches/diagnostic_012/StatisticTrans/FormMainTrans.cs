@@ -956,6 +956,7 @@ namespace StatisticTrans
             
             if (CT.currentIter > 1)
                 CT.currentIter--;
+
             CT.Error();
             CT.bflag = true;
 
@@ -1008,7 +1009,7 @@ namespace StatisticTrans
                 CT.IsNullItter(CT.currentIter, comboBoxTECComponent.Items.Count);
              
                 CT.SetIter(comboBoxTECComponent.Items.Count);
-                CT.CounterIter(CT.Iters);
+                CT.CounterIter();
 
                 Test();
 
