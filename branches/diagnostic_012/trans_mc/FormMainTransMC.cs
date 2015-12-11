@@ -26,7 +26,7 @@ namespace trans_mc
 
             m_dgwAdminTable.Size = new System.Drawing.Size(498, 391);
         }
-        
+
         protected override void Start()
         {
             int i = -1;
@@ -157,6 +157,7 @@ namespace trans_mc
 
         protected override void buttonSaveSourceSett_Click(object sender, EventArgs e)
         {
+            
         }
 
         protected override void comboBoxTECComponent_SelectedIndexChanged(object sender, EventArgs ev)

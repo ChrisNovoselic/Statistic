@@ -80,21 +80,37 @@ namespace StatisticTrans
         /// <summary>
         /// Счетчик иттераций
         /// </summary>
-        public void CounterIter(int num)
+        public void CounterIter()
         {
-            if ((ErrorIter+currentIter) == Iters)
+            if (NextDay == true)
             {
-                currentIter = 0;
-            }
+                if ((2*(ErrorIter + currentIter)) == Iters)
+                    currentIter = 0;
 
-            if (currentIter == num)
-            {
-                currentIter = 0;
-                currentIter++;
+                if ((2*currentIter) == Iters)
+                {
+                    currentIter = 0;
+                    currentIter++;
+                }
+
+                else
+                    currentIter++;
             }
 
             else
-                currentIter++;
+            {
+                if ((ErrorIter + currentIter) == Iters)
+                    currentIter = 0;
+
+                if (currentIter == Iters)
+                {
+                    currentIter = 0;
+                    currentIter++;
+                }
+
+                else
+                    currentIter++; 
+            }
         }
 
         /// <summary>

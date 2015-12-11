@@ -1004,7 +1004,7 @@ namespace StatisticDiagnostic
             /// <returns></returns>
             private bool selectInvalidValue(string nameS, DateTime time)
             {
-                TimeSpan ts = new TimeSpan(0, 0, 3, 0, 0);
+                int ts = 3;
                 DateTime m_DTnowAISKUE = TimeZoneInfo.ConvertTimeBySystemTimeZoneId(DateTime.Now, TimeZoneInfo.Local.Id, "Russian Standard Time");
                 DateTimeOffset m_DTnowSOTIASSO = DateTimeOffset.UtcNow;
                 bool bFL = true; ;
@@ -1013,7 +1013,7 @@ namespace StatisticDiagnostic
                 {
                     case "АИИСКУЭ":
 
-                        if ((m_DTnowAISKUE - time) == ts)
+                        if (((int)m_DTnowAISKUE.Minute - (int)time.Minute) > ts)
                         {
                             bFL = true;
 
@@ -1027,7 +1027,7 @@ namespace StatisticDiagnostic
 
                     case "СОТИАССО":
 
-                        if ((m_DTnowSOTIASSO - time) == ts)
+                        if (((int)(m_DTnowSOTIASSO.Minute) - (int)(time.Minute)) > ts)
                         {
                             bFL = true;
 
@@ -1041,7 +1041,7 @@ namespace StatisticDiagnostic
 
                     case "СОТИАССО_0":
 
-                        if ((m_DTnowSOTIASSO - time) == ts)
+                        if (((int)m_DTnowSOTIASSO.Minute - (int)time.Minute) > ts)
                         {
                             bFL = true;
 

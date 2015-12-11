@@ -5,6 +5,7 @@ using System.Windows.Forms;
 
 using HClassLibrary;
 using StatisticCommon;
+using StatisticTrans;
 
 namespace trans_mt
 {
@@ -16,7 +17,11 @@ namespace trans_mt
         [STAThread]
         static void Main()
         {
+            Logging.s_mode = Logging.LOG_MODE.FILE_EXE;
+
             ProgramBase.Start();
+
+            if (RunOneInstance.ChekRunProgramm("trans_mt")) return;
 
             FormMainTransMT formMain = null;
             try { formMain = new FormMainTransMT(); }
