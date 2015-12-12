@@ -289,7 +289,7 @@ namespace Statistic
 
             if (Actived == true)
                 if (IsHandleCreated/*InvokeRequired*/ == true)
-                    this.BeginInvoke(new DelegateDateFunc(setDatetimePicker), HAdmin.ToMoscowTimeZone(DateTime.Now));
+                    this.BeginInvoke(new DelegateDateFunc(setDatetimePicker), HDateTime.ToMoscowTimeZone(DateTime.Now));
                 else
                     Logging.Logg().Error(@"PanelLastMinutes::TimerCurrent_Tick () - ... BeginInvoke (setDatetimePicker) - ...", Logging.INDEX_MESSAGE.D_001);
             else
@@ -329,7 +329,7 @@ namespace Statistic
                 this.m_dtprDate = new DateTimePicker();
                 this.m_dtprDate.Dock = DockStyle.Fill;
                 //this.m_dtprDate.ValueChanged += new EventHandler(((PanelLastMinutes)Parent).OnDateTimeValueChanged);
-                m_dtprDate.Value = HAdmin.ToMoscowTimeZone (DateTime.Now);
+                m_dtprDate.Value = HDateTime.ToMoscowTimeZone (DateTime.Now);
                 this.m_dtprDate.ValueChanged += new EventHandler(OnDateTimeValueChanged);
 
                 this.m_btnUpdate = new Button ();
@@ -592,7 +592,7 @@ namespace Statistic
                
                 this.Dock = DockStyle.Fill;
                 this.BorderStyle = BorderStyle.None; //BorderStyle.FixedSingle
-                this.RowCount = ((HAdmin.ToMoscowTimeZone(DateTime.Now)).Date.Equals(HAdmin.SeasonDateTime.Date) ? 25 : 24) + COUNT_FIXED_ROWS;
+                this.RowCount = ((HDateTime.ToMoscowTimeZone(DateTime.Now)).Date.Equals(HAdmin.SeasonDateTime.Date) ? 25 : 24) + COUNT_FIXED_ROWS;
 
                 for (i = 0; i < this.RowCount; i++)
                 {

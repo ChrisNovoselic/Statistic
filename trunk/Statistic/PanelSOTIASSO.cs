@@ -400,7 +400,7 @@ namespace Statistic
                 (ctrl as HDateTimePicker).Format = DateTimePickerFormat.Custom;
                 //(ctrl as HDateTimePicker).FormatEx = HDateTimePicker.dtpCustomExtensions.dtpLongTime24Hour;
                 (ctrl as HDateTimePicker).CustomFormat = "dd MMM, yyyy";
-                //(ctrl as HDateTimePicker).Value = ((ctrl as HDateTimePicker).Value - HAdmin.GetUTCOffsetOfMoscowTimeZone()).AddHours (1);
+                //(ctrl as HDateTimePicker).Value = ((ctrl as HDateTimePicker).Value - HDateTime.GetUTCOffsetOfMoscowTimeZone()).AddHours (1);
                 //(ctrl as HDateTimePicker).TextChanged += new EventHandler(onDatetimeHour_TextChanged);
                 (ctrl as HDateTimePicker).ValueChanged += new EventHandler(onCurDatetime_ValueChanged);
                 ctrl.Dock = DockStyle.Fill;
@@ -414,7 +414,7 @@ namespace Statistic
                 //(ctrl as NumericUpDown).Minimum = 1;
                 //(ctrl as NumericUpDown).Maximum = 24;
                 (ctrl as NumericUpDown).ReadOnly = true;
-                //(ctrl as NumericUpDown).Value = HAdmin.ToMoscowTimeZone ().Hour + 1;
+                //(ctrl as NumericUpDown).Value = HDateTime.ToMoscowTimeZone ().Hour + 1;
                 (ctrl as NumericUpDown).ValueChanged += new EventHandler(onNumericUpDownCurHour_ValueChanged);
                 ctrl.Dock = DockStyle.Fill;
                 //Добавить к текущей панели поле для ввода номера часа
@@ -550,7 +550,7 @@ namespace Statistic
             /// <param name="ev">Аргумент события</param>
             public void Parent_OnHandleCreated(object obj, EventArgs ev)
             {
-                initDatetimeHourValue(HAdmin.ToMoscowTimeZone());
+                initDatetimeHourValue(HDateTime.ToMoscowTimeZone());
             }
 
             public void InitializeGTPList(List<string> listGTPNameShr)
@@ -662,7 +662,7 @@ namespace Statistic
 
             private void onSetNowHour_Click(object obj, EventArgs ev)
             {
-                initDatetimeHourValue(HAdmin.ToMoscowTimeZone());
+                initDatetimeHourValue(HDateTime.ToMoscowTimeZone());
             }
             /// <summary>
             /// Обработчик события - отобразить полученные значения
@@ -1223,7 +1223,7 @@ namespace Statistic
         {
             m_tecView.m_curDate = dtNew;
             m_tecView.lastHour =
-                dtNew.Hour// - 1; //- (int)HAdmin.GetUTCOffsetOfMoscowTimeZone().TotalHours //- 3
+                dtNew.Hour// - 1; //- (int)HDateTime.GetUTCOffsetOfMoscowTimeZone().TotalHours //- 3
                 ;
             if (m_tecView.lastHour < 0)
             {

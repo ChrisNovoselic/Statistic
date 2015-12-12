@@ -1546,7 +1546,7 @@ namespace StatisticCommon
                                 else
                                 {
                                     //Обрабатываем...
-                                    arbActives[i] = (HHandlerDb.ToMoscowTimeZone (DateTime.Now) - DateTime.Parse(rowsMaxDatetimeWR[0][@"MAX_DATETIME_WR"].ToString())).TotalSeconds < 66;
+                                    arbActives[i] = (HDateTime.ToMoscowTimeZone(DateTime.Now) - DateTime.Parse(rowsMaxDatetimeWR[0][@"MAX_DATETIME_WR"].ToString())).TotalSeconds < 66;
                                 }
                             }
                         }

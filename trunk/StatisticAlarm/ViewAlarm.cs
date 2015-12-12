@@ -386,8 +386,8 @@ namespace StatisticAlarm
                 Request(IdListener
                     , @"SELECT * FROM [dbo].[AlarmEvent]"
                         + @" WHERE [DATETIME_REGISTRED] BETWEEN '"
-                            + (m_dtCurrent.AddHours(m_iHourBegin) - HAdmin.GetUTCOffsetOfMoscowTimeZone()).ToString(@"yyyyMMdd HH:mm:ss") + @"' AND '"
-                            + (m_dtCurrent.AddHours(m_iHourEnd) - HAdmin.GetUTCOffsetOfMoscowTimeZone()).ToString(@"yyyyMMdd HH:mm:ss") + @"'"
+                            + (m_dtCurrent.AddHours(m_iHourBegin) - HDateTime.GetUTCOffsetOfMoscowTimeZone()).ToString(@"yyyyMMdd HH:mm:ss") + @"' AND '"
+                            + (m_dtCurrent.AddHours(m_iHourEnd) - HDateTime.GetUTCOffsetOfMoscowTimeZone()).ToString(@"yyyyMMdd HH:mm:ss") + @"'"
                         + @" ORDER BY [DATETIME_REGISTRED]");
             }
 
@@ -863,13 +863,13 @@ namespace StatisticAlarm
         /// </summary>
         private void pushNotify()
         {
-            //DateTime dtNotify = HAdmin.ToMoscowTimeZone();
+            //DateTime dtNotify = HDateTime.ToMoscowTimeZone();
             //ѕоставить в очередь обработки
             push(new object[] //ѕеречень событий дл€ обработки
                     { new object [] //1-е событие
                         {
                             StatesMachine.Notify
-                            , HAdmin.ToMoscowTimeZone() //.Date //dtNotify.Date
+                            , HDateTime.ToMoscowTimeZone() //.Date //dtNotify.Date
                             , -1 * DictAlarmObject.DEPTH_HOUR_OBJECTALRM
                             , 0 //24
                         }
@@ -922,7 +922,7 @@ namespace StatisticAlarm
         /// ѕризнак постановки в очередь обработки событий - запроса на получение списка собтий сигнализаций
         ///  по заданной пользователем дате
         /// </summary>
-        private bool isToday { get { return m_dtCurrent.Date.Equals(HAdmin.ToMoscowTimeZone ().Date); } }
+        private bool isToday { get { return m_dtCurrent.Date.Equals(HDateTime.ToMoscowTimeZone ().Date); } }
         /// <summary>
         /// ѕотокова€ функци€ обработки результата запроса списка событий сигнализаций
         /// </summary>
@@ -1060,7 +1060,7 @@ namespace StatisticAlarm
             if (strRes.Equals (string.Empty) == false)
             {
                 strRes += Environment.NewLine;
-                strRes += HAdmin.ToMoscowTimeZone (ev.m_dtRegistred.GetValueOrDefault()).ToString();
+                strRes += HDateTime.ToMoscowTimeZone (ev.m_dtRegistred.GetValueOrDefault()).ToString();
                 strRes += Environment.NewLine;
                 strRes += ev.m_message_shr;
             }

@@ -1589,7 +1589,7 @@ namespace StatisticCommon
             switch (m_arTypeSourceData[(int)CONN_SETT_TYPE.DATA_SOTIASSO - (int)CONN_SETT_TYPE.DATA_AISKUE])
             {
                 case INDEX_TYPE_SOURCE_DATA.COMMON:
-                    //dt -= HAdmin.GetUTCOffsetOfMoscowTimeZone();
+                    //dt -= HDateTime.GetUTCOffsetOfMoscowTimeZone();
 
                     if (TEC.s_SourceSOTIASSO == SOURCE_SOTIASSO.AVERAGE)
                         //Ваоиант №3.a (из усредненной таблицы)

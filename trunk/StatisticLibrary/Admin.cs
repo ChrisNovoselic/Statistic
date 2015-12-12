@@ -534,7 +534,7 @@ namespace StatisticCommon
             if (iHour < 0)
             {
                 if (m_ignore_date == true)
-                    iHour = HAdmin.ToMoscowTimeZone (DateTime.Now).Hour;
+                    iHour = HDateTime.ToMoscowTimeZone (DateTime.Now).Hour;
                 else
                     iHour = serverTime.Hour;
             }
