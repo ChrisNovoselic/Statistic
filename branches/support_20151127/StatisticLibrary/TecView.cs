@@ -653,7 +653,7 @@ namespace StatisticCommon
             string kks_name = string.Empty;
             float value = -1;
             DateTime dtLastChangedAt = m_dtLastChangedAt_TM_Gen
-                , dtServer = serverTime.Add(-HAdmin.GetUTCOffsetOfMoscowTimeZone());
+                , dtServer = serverTime.Add(-HDateTime.GetUTCOffsetOfMoscowTimeZone());
             TG tgTmp;
 
             foreach (TECComponent g in m_localTECComponents)
@@ -736,7 +736,7 @@ namespace StatisticCommon
                         // значения НЕ совпадают
                         if (! (value < 0))
                         {// больше ИЛИ = 0
-                            m_dictValuesTG[tgTmp.m_id].m_dtCurrent_TM = HAdmin.ToMoscowTimeZone(dtLastChangedAt);
+                            m_dictValuesTG[tgTmp.m_id].m_dtCurrent_TM = HDateTime.ToMoscowTimeZone(dtLastChangedAt);
 
                             //if (!(value < 1))
                             //    // больше ИЛИ = 1                                
@@ -754,7 +754,7 @@ namespace StatisticCommon
 
                 if (! (m_dtLastChangedAt_TM_Gen == DateTime.MaxValue))
                     //Преобразование из UTC в МСК ??? С 26.10.2014 г. в БД записи по МСК !!! Нет оставили "как есть"
-                    try { m_dtLastChangedAt_TM_Gen = HAdmin.ToMoscowTimeZone(m_dtLastChangedAt_TM_Gen); }
+                    try { m_dtLastChangedAt_TM_Gen = HDateTime.ToMoscowTimeZone(m_dtLastChangedAt_TM_Gen); }
                     catch (Exception e)
                     {
                         Logging.Logg().Exception(e, @"TecView::GetCurrentTMGenResponse () - HAdmin.ToCurrentTimeZone () - ...", Logging.INDEX_MESSAGE.NOT_SET);

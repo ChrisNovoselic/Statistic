@@ -684,7 +684,7 @@ namespace Statistic
 
         private void btnImportCSV_AdminValuesDefault_Click(object sender, EventArgs e)
         {
-            int days = (m_admin.m_curDate.Date - HAdmin.ToMoscowTimeZone(DateTime.Now).Date).Days;
+            int days = (m_admin.m_curDate.Date - HDateTime.ToMoscowTimeZone(DateTime.Now).Date).Days;
             if (days < 0)
             {
                 string strMsg = string.Format(@"¬ыбрана дата ретроспективных данных: {0}.", m_admin.m_curDate.Date.ToString(@"dd.MM.yyyy"));

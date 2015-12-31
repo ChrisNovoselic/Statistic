@@ -920,9 +920,9 @@ namespace StatisticAlarm
                         , r.m_str_name_shr_component
                         , r.m_str_name_shr_type
                         , r.m_value
-                        , HAdmin.ToMoscowTimeZone (r.m_dt_registred.GetValueOrDefault()).ToString (s_DateTimeFormat)
-                        , (!(r.m_dt_fixed == null)) ? HAdmin.ToMoscowTimeZone (r.m_dt_fixed.GetValueOrDefault()).ToString (s_DateTimeFormat) : string.Empty
-                        , (!(r.m_dt_confirmed == null)) ? HAdmin.ToMoscowTimeZone (r.m_dt_confirmed.GetValueOrDefault()).ToString (s_DateTimeFormat) : string.Empty
+                        , HDateTime.ToMoscowTimeZone (r.m_dt_registred.GetValueOrDefault()).ToString (s_DateTimeFormat)
+                        , (!(r.m_dt_fixed == null)) ? HDateTime.ToMoscowTimeZone (r.m_dt_fixed.GetValueOrDefault()).ToString (s_DateTimeFormat) : string.Empty
+                        , (!(r.m_dt_confirmed == null)) ? HDateTime.ToMoscowTimeZone (r.m_dt_confirmed.GetValueOrDefault()).ToString (s_DateTimeFormat) : string.Empty
                     });                    
                     //Установить доступность кнопки "Подтвердить"
                     (Rows[indxRow].Cells[this.Columns.Count - 1] as DataGridViewDisableButtonCell).Enabled = isRecEnabled((listView as List<ViewAlarmJournal>).IndexOf(r));
@@ -1095,7 +1095,7 @@ namespace StatisticAlarm
                             break;
                     }
 
-                    this.Rows[indxRow].Cells[indxCol].Value = HAdmin.ToMoscowTimeZone((DateTime)pars[2]).ToString(s_DateTimeFormat);
+                    this.Rows[indxRow].Cells[indxCol].Value = HDateTime.ToMoscowTimeZone((DateTime)pars[2]).ToString(s_DateTimeFormat);
 
                     //Установить доступность кнопки "Подтвердить"
                     (Rows[indxRow].Cells[this.Columns.Count - 1] as DataGridViewDisableButtonCell).Enabled = isRecEnabled (indxRow);                        

@@ -998,7 +998,7 @@ namespace Statistic
                     {
                     }
                 else
-                    if (m_tecView.serverTime.Date.Equals(HAdmin.ToMoscowTimeZone(DateTime.Now.Date)) == true)
+                    if (m_tecView.serverTime.Date.Equals(HDateTime.ToMoscowTimeZone(DateTime.Now.Date)) == true)
                         if ((i < (receivedHour + 1)) && (!(m_tecView.m_valuesHours[i].valuesUDGe == 0)) && (m_tecView.m_valuesHours[i].valuesFact > 0))
                         {
                             bDevVal = true;
@@ -1799,7 +1799,7 @@ namespace Statistic
                     if (m_tecView.currHour == true)
                         lh = m_tecView.lastHour;
                     else
-                        if (HAdmin.ToMoscowTimeZone(DateTime.Now).Date.Equals(m_tecView.serverTime.Date) == true)
+                        if (HDateTime.ToMoscowTimeZone(DateTime.Now).Date.Equals(m_tecView.serverTime.Date) == true)
                             lh = m_tecView.serverTime.Hour;
                         else
                             lh = 24;

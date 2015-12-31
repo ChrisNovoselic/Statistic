@@ -512,7 +512,7 @@ namespace Statistic
                         break;
                 }
 
-                //m_tecView.m_dtLastChangedAt_TM_Gen = HAdmin.ToMoscowTimeZone(m_tecView.m_dtLastChangedAt_TM_Gen);
+                //m_tecView.m_dtLastChangedAt_TM_Gen = HDateTime.ToMoscowTimeZone(m_tecView.m_dtLastChangedAt_TM_Gen);
 
                 if (TecView.ValidateDatetimeTMValue (m_tecView.serverTime, m_tecView.m_dtLastChangedAt_TM_Gen) == true)
                 {
@@ -521,7 +521,7 @@ namespace Statistic
                 }
                 else
                 {
-                    if (m_tecView.m_dtLastChangedAt_TM_Gen.Date.CompareTo (HAdmin.ToMoscowTimeZone (DateTime.Now).Date) == 0)
+                    if (m_tecView.m_dtLastChangedAt_TM_Gen.Date.CompareTo (HDateTime.ToMoscowTimeZone (DateTime.Now).Date) == 0)
                         m_arLabel[(int)INDEX_LABEL.DATETIME_TM].Text = m_tecView.m_dtLastChangedAt_TM_Gen.ToString(@"HH:mm:ss");
                     else
                         m_arLabel[(int)INDEX_LABEL.DATETIME_TM].Text = m_tecView.m_dtLastChangedAt_TM_Gen.ToString(@"dd.MM.yyyy HH:mm:ss");

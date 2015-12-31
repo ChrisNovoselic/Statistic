@@ -33,7 +33,7 @@ namespace trans_mt
         {
             string query = string.Empty;
             int i = -1;
-            TimeSpan ts = GetUTCOffsetOfMoscowTimeZone();
+            TimeSpan ts = HDateTime.GetUTCOffsetOfMoscowTimeZone();
 
             query += @"SELECT [objName], [idFactor], [PBR_NUMBER], [Datetime], [Value_MBT] as VALUE FROM [dbo].[v_ALL_PARAM_MODES_BIYSK]" +
                 @" WHERE [ID_Type_Data] = 3" +
@@ -58,7 +58,7 @@ namespace trans_mt
                 , iMaxPBRNumber = -1;
             //Номер ПБР для всех типов (P, Pmin, Pmax) значений
             int[] arPBRNumber = new int[3];
-            TimeSpan ts = GetUTCOffsetOfMoscowTimeZone();
+            TimeSpan ts = HDateTime.GetUTCOffsetOfMoscowTimeZone();
             DataRow[] hourRows;
 
             for (hour = 1; hour < 25; hour++)
