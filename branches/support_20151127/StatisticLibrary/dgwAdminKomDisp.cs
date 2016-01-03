@@ -138,7 +138,7 @@ namespace StatisticCommon
 
                             double prevPbr
                                 , Pbr = double.Parse(Rows[ev.RowIndex].Cells[(int)DESC_INDEX.PLAN].Value.ToString ());
-                            if (ev.RowIndex > 1)
+                            if (ev.RowIndex > 0)
                                 prevPbr = double.Parse(Rows[ev.RowIndex - 1].Cells[(int)DESC_INDEX.PLAN].Value.ToString());
                             else
                                 prevPbr = m_PBR_0;
