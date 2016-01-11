@@ -1605,9 +1605,7 @@ namespace StatisticDiagnostic
             private void paintPbrError(int numP, int numR)
             {
                 if (m_arPanelsMODES[numP].ModesDataGridView.InvokeRequired)
-                {
                     m_arPanelsMODES[numP].ModesDataGridView.Invoke(new Action(() => m_arPanelsMODES[numP].ModesDataGridView.Rows[numR].Cells[1].Style.BackColor = System.Drawing.Color.OrangeRed));
-                }
 
                 m_arPanelsMODES[numP].ModesDataGridView.Rows[numR].Cells[1].Style.BackColor = System.Drawing.Color.OrangeRed;
             }
