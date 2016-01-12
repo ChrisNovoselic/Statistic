@@ -4,6 +4,7 @@ using System.Windows.Forms;
 
 using HClassLibrary;
 using StatisticCommon;
+using StatisticTrans;
 
 namespace trans_mc
 {
@@ -19,19 +20,26 @@ namespace trans_mc
             //Logging.s_mode = Logging.LOG_MODE.DB;
             Logging.s_mode = Logging.LOG_MODE.FILE_EXE;
 
+            if (RunOneInstance.ChekRunProgramm("trans_mc"))
+            {
+                return;
+            }
+
             ProgramBase.Start();
 
             FormMainTransMC formMain = null;
-            try { formMain = new FormMainTransMC(); }
-            catch (Exception e)
+
+            if (formMain == null)
             {
-                Logging.Logg().Exception(e, "Ошибка запуска приложения.", Logging.INDEX_MESSAGE.NOT_SET);
+                try { formMain = new FormMainTransMC(); }
+                catch (Exception e)
+                {
+                    Logging.Logg().Exception(e, "Ошибка запуска приложения.", Logging.INDEX_MESSAGE.NOT_SET);
+                }
             }
 
             if (!(formMain == null))
                 Application.Run(formMain);
-            else
-                ;
 
             ProgramBase.Exit();
         }

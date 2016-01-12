@@ -16,6 +16,16 @@ namespace StatisticTrans
 {
     public abstract partial class FormMainTrans : FormMainBaseWithStatusStrip
     {
+        /// <summary>
+        /// 
+        /// </summary>
+        //public event EventHandler ExplandApp;
+
+        /// <summary>
+        /// 
+        /// </summary>
+        public delegate void ExplandApp();
+
         [DllImport("user32.dll")]
         static extern IntPtr SendMessage(IntPtr hWnd, int Msg, int wParam, int lParam);
 
@@ -673,7 +683,7 @@ namespace StatisticTrans
             m_arUIControls[(Int16)CONN_SETT_TYPE.SOURCE, i].TabIndex = 20;
             m_arUIControls[(Int16)CONN_SETT_TYPE.SOURCE, i].Text = text;
 
-            i =  (Int16)INDX_UICONTROLS.SERVER_IP;
+            i = (Int16)INDX_UICONTROLS.SERVER_IP;
             // 
             // tbxSourcePathExcel
             // 
@@ -784,7 +794,7 @@ namespace StatisticTrans
                             break;
                         case (Int16)INDX_UICONTROLS.PORT:
                             //if (m_arUIControlDB[i, j].Enabled == true)
-                                ((NumericUpDown)m_arUIControls[i, j]).Text = connSett.port.ToString();
+                            ((NumericUpDown)m_arUIControls[i, j]).Text = connSett.port.ToString();
                             //else
                             //    ;
                             break;
@@ -943,7 +953,7 @@ namespace StatisticTrans
             DateTime tm = DateTime.Now;
             string str1 = tm.ToString();
             m_labelTime.Invoke(new Action(() => m_labelTime.Text = "Время последнего опроса: " + str1 + ";" + " Успешных итераций: " + CT.currentIter + " из " + CT.Iters + ""));
-           m_labelTime.Invoke(new Action(() => m_labelTime.Update()));
+            m_labelTime.Invoke(new Action(() => m_labelTime.Update()));
         }
 
         /// <summary>
@@ -953,9 +963,10 @@ namespace StatisticTrans
         {
             if (CT.currentIter == CT.Iters)
                 CT.currentIter = 0;
-            
+
             if (CT.currentIter > 1)
                 CT.currentIter--;
+
             CT.Error();
             CT.bflag = true;
 
@@ -971,11 +982,10 @@ namespace StatisticTrans
                     Logging.Logg().Error(@"FormMainTrans::errorDataGridViewAdmin () - ... BeginInvoke (trans_auto_next) - ...", Logging.INDEX_MESSAGE.D_001);
             }
             else
-
             {
 
             }
-                ;
+            ;
         }
 
         protected abstract void updateDataGridViewAdmin(DateTime date);
@@ -1006,17 +1016,17 @@ namespace StatisticTrans
             {
                 CT.NextDay = IsTomorrow();
                 CT.IsNullItter(CT.currentIter, comboBoxTECComponent.Items.Count);
-             
+
                 CT.SetIter(comboBoxTECComponent.Items.Count);
-                CT.CounterIter(CT.Iters);
+                CT.CounterIter();
 
                 Test();
 
                 IAsyncResult asyncRes;
                 //if (IsHandleCreated/*InvokeRequired*/ == true)
-                    asyncRes = this.BeginInvoke(new DelegateFunc(trans_auto_next));
+                asyncRes = this.BeginInvoke(new DelegateFunc(trans_auto_next));
                 //else
-                    //Logging.Logg().Error(@"FormMainTrans::saveDataGridViewAdminComplete () - ... BeginInvoke (trans_auto_next) - ...");
+                //Logging.Logg().Error(@"FormMainTrans::saveDataGridViewAdminComplete () - ... BeginInvoke (trans_auto_next) - ...");
                 ////this.EndInvoke (asynchRes);
                 //////trans_auto_next ();
             }
@@ -1147,7 +1157,7 @@ namespace StatisticTrans
 
         private void оПрограммеToolStripMenuItem_Click(object sender, EventArgs e)
         {
-            using (FormAbout formAbout = new FormAbout(this.Icon.ToBitmap () as Image))
+            using (FormAbout formAbout = new FormAbout(this.Icon.ToBitmap() as Image))
             {
                 formAbout.ShowDialog(this);
             }
@@ -1271,7 +1281,7 @@ namespace StatisticTrans
                     {
                         dateTimePickerMain.Value = dateTimePickerMain.Value.AddDays(1);
                         comboBoxTECComponent.SelectedIndex = 0;
-                        
+
                         Test();
                         comboBoxTECComponent_SelectedIndexChanged(null, EventArgs.Empty);
                     }
@@ -1509,7 +1519,7 @@ namespace StatisticTrans
             }
         }
 
-        protected virtual void SaveRDGValues (bool bCallback)
+        protected virtual void SaveRDGValues(bool bCallback)
         {
             //((AdminTS)m_arAdmin[(int)(Int16)CONN_SETT_TYPE.DEST]).SaveRDGValues(m_listTECComponentIndex[comboBoxTECComponent.SelectedIndex], dateTimePickerMain.Value, bCallback);
             PARAMToSaveRDGValues paramToSaveRDGValues = new PARAMToSaveRDGValues(m_listTECComponentIndex[comboBoxTECComponent.SelectedIndex], dateTimePickerMain.Value, bCallback);
@@ -1519,6 +1529,29 @@ namespace StatisticTrans
         private void notifyIconMain_Click(object sender, EventArgs e)
         {
             развернутьToolStripMenuItem.PerformClick();
+        }
+
+        public static void RunExpland()
+        {
+           
+        } 
+        /// <summary>
+        /// Развертывает приложение из трея
+        /// </summary>
+        private void ExpandApplication()
+        {
+            if (this.WindowState == FormWindowState.Minimized && this.Enabled == false)
+            {
+                this.WindowState = FormWindowState.Normal;
+                this.Enabled = true;
+                this.ShowInTaskbar = true;
+            }
+            else
+            {
+                this.WindowState = FormWindowState.Minimized;
+                this.Enabled = false;
+                this.ShowInTaskbar = false;
+            }
         }
 
         private void развернутьToolStripMenuItem_Click(object sender, EventArgs e)
@@ -1546,7 +1579,7 @@ namespace StatisticTrans
                 this.ShowInTaskbar = false;
                 notifyIconMain.Visible = true;
 
-                try { Application.DoEvents (); }
+                try { Application.DoEvents(); }
                 catch (Exception e) { Logging.Logg().Exception(e, @"Application.DoEvents ()", Logging.INDEX_MESSAGE.NOT_SET); }
             }
             else
