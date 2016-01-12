@@ -1767,10 +1767,10 @@ namespace StatisticDiagnostic
                 this.TaskDataGridView.Name = "TaskDataGridView";
                 this.TaskDataGridView.ColumnCount = 5;
                 this.TaskDataGridView.Columns[0].Name = "Имя задачи";
-                this.TaskDataGridView.Columns[1].Name = "Среднее время выполнения";
+                this.TaskDataGridView.Columns[1].Name = "Среднее время выполнения, мин";
                 this.TaskDataGridView.Columns[3].Name = "Время проверки";
                 this.TaskDataGridView.Columns[2].Name = "Время выполнения задачи";
-                this.TaskDataGridView.Columns[4].Name = "Описание";
+                this.TaskDataGridView.Columns[4].Name = "Описание проблемы";
                 //this.TaskDataGridView.Columns[4].Visible = false;
                 this.TaskDataGridView.AutoSizeColumnsMode = DataGridViewAutoSizeColumnsMode.Fill;
                 this.TaskDataGridView.RowHeadersVisible = false;
@@ -1822,11 +1822,12 @@ namespace StatisticDiagnostic
                         //ToDateTime(dr[0]["Value"].ToString());
 
                         string time = formatTime(dr[1]["Value"].ToString());
+                        int value = formatValueTask(Convert.ToInt32(dr[0]["Value"]));
 
                         if (TaskDataGridView.InvokeRequired)
                         {
                             columTimeTask(i);
-                            TaskDataGridView.Invoke(new Action(() => TaskDataGridView.Rows[i].Cells[1].Value = dr[0]["Value"]));
+                            TaskDataGridView.Invoke(new Action(() => TaskDataGridView.Rows[i].Cells[1].Value = value));
                             TaskDataGridView.Invoke(new Action(() => TaskDataGridView.Rows[i].Cells[2].Value = time));
                             TaskDataGridView.Invoke(new Action(() => TaskDataGridView.Rows[i].Cells[0].Value = dr[0]["NAME_SHR"]));
                         }
@@ -1846,6 +1847,12 @@ namespace StatisticDiagnostic
                     MessageBox.Show("Ошибка заполнения субобласти Задачи" + e + "");
                 }
 
+            }
+
+
+            private int formatValueTask(int value)
+            {
+                return value / 100;
             }
 
             /// <summary>
@@ -1872,7 +1879,7 @@ namespace StatisticDiagnostic
             }
 
             /// <summary>
-            /// Функция заполенния ячеек грида временем
+            /// Функция заполенния ячеек грида временем опроса
             /// </summary>
             /// <param name="i">номер строки</param>
             private void columTimeTask(int i)
@@ -1916,7 +1923,7 @@ namespace StatisticDiagnostic
             private void overLimit()
             {
                 int m_lim;
-                int m_counter = 0;
+                int m_counter = 1;
 
                 for (int i = 0; i < TaskDataGridView.Rows.Count; i++)
                 {
@@ -1928,16 +1935,21 @@ namespace StatisticDiagnostic
 
                     if (Convert.ToInt32(TaskDataGridView.Rows[i].Cells[1].Value) > m_lim)
                     {
-                        TaskDataGridView.Invoke(new Action(() => TaskDataGridView.Columns[4].Visible = true));
-                        TaskDataGridView.Invoke(new Action(() => TaskDataGridView.Rows[i].DefaultCellStyle.BackColor = Color.Sienna));
-                        TaskDataGridView.Invoke(new Action(() => TaskDataGridView.Rows[i].Cells[4].Value = "Превышено время выполнения задачи"));
+                        if (TaskDataGridView.Columns[4].Visible == false)
+                        {
+                            TaskDataGridView.Invoke(new Action(() => TaskDataGridView.Columns[4].Visible = true));
+                            TaskDataGridView.Invoke(new Action(() => TaskDataGridView.Rows[i].Cells[4].Value = "Превышено время выполнения задачи"));
+                        }
+
+                        TaskDataGridView.Invoke(new Action(() => TaskDataGridView.Rows[i].InheritedStyle.BackColor = Color.Sienna));
+                        
                         upselectrow(i);
                         m_counter--;
                     }
                     else
                     {
                         TaskDataGridView.Invoke(new Action(() => TaskDataGridView.Rows[i].DefaultCellStyle.BackColor = Color.White));
-                        TaskDataGridView.Invoke(new Action(() => TaskDataGridView.Rows[i].Cells[4].Value = null));
+                        //TaskDataGridView.Invoke(new Action(() => TaskDataGridView.Rows[i].Cells[4].Value = null));
                         m_counter++;
 
                         if (m_counter == TaskDataGridView.Rows.Count)
