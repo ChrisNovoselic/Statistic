@@ -684,7 +684,7 @@ namespace Statistic
             DbConnection conn = DbSources.Sources ().GetConnection (m_idListener, out err);
 
             m_list_data[comboBoxMode.SelectedIndex].Rows.Add();
-            m_list_data[comboBoxMode.SelectedIndex].Rows[m_list_data[comboBoxMode.SelectedIndex].Rows.Count - 1]["ID"] = DbTSQLInterface.GetIdNext(ref conn, FormChangeMode.getPrefixMode(comboBoxMode.SelectedIndex) + "_LIST"); //getIdNext ((FormChangeMode.MODE_TECCOMPONENT)comboBoxMode.SelectedIndex);
+            m_list_data[comboBoxMode.SelectedIndex].Rows[m_list_data[comboBoxMode.SelectedIndex].Rows.Count - 1]["ID"] = DbTSQLInterface.GetIdNext(ref conn, FormChangeMode.getPrefixMode(comboBoxMode.SelectedIndex) + "_LIST", out err); //getIdNext ((FormChangeMode.MODE_TECCOMPONENT)comboBoxMode.SelectedIndex);
             m_list_data[comboBoxMode.SelectedIndex].Rows[m_list_data[comboBoxMode.SelectedIndex].Rows.Count - 1]["ID_TEC"] = getIdSelectedDataRow (INDEX_UICONTROL.DATAGRIDVIEW_TEC);
             m_list_data[comboBoxMode.SelectedIndex].Rows[m_list_data[comboBoxMode.SelectedIndex].Rows.Count - 1]["NAME_SHR"] = m_list_UIControl [(int)INDEX_UICONTROL.TEXTBOX_TECCOMPONENT_ADD].Text;
 

@@ -1060,7 +1060,7 @@ namespace StatisticAlarm
             if (strRes.Equals (string.Empty) == false)
             {
                 strRes += Environment.NewLine;
-                strRes += HDateTime.ToMoscowTimeZone (ev.m_dtRegistred.GetValueOrDefault()).ToString();
+                strRes += HDateTime.ToMoscowTimeZone(ev.m_dtRegistred.GetValueOrDefault()).ToString();
                 strRes += Environment.NewLine;
                 strRes += ev.m_message_shr;
             }
