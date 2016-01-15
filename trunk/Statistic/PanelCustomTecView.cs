@@ -29,40 +29,20 @@ namespace Statistic
 
             private int m_prevViewOrientation;
 
-            //public bool ContentEnabled {
-            //    get {
-            //        bool bRes = true;
-
-            //        if (m_propView == null)
-            //            bRes = false;
-            //        else
-            //            for (int i = 0; i < (int)INDEX_PROPERTIES_VIEW.COUNT_PROPERTIES_VIEW; i ++)
-            //            {
-            //                if (m_propView [i] < 0)
-            //                {
-            //                    bRes = false;
-            //                    break;
-            //                }
-            //                else
-            //                    ;
-            //            }
-
-            //        return bRes;
-            //    }
-            //}
-
             public HLabelCustomTecView()
             {
                 this.Dock = DockStyle.Fill;
                 this.Text = s_msg;
                 this.BorderStyle = BorderStyle.Fixed3D;
-                this.TextAlign = ContentAlignment.MiddleCenter;
+                this.TextAlign = ContentAlignment.MiddleCenter;                
 
                 m_listIdContextMenuItems = new List<int>();
 
                 m_propView = new int[(int)INDEX_PROPERTIES_VIEW.COUNT_PROPERTIES_VIEW] {0, 0, 0, 1, -1, 0, -1};
 
                 m_prevViewOrientation = m_propView[(int)INDEX_PROPERTIES_VIEW.ORIENTATION];
+
+                this.SizeChanged += new EventHandler (onSizeChanged);
             }
 
             private void OnMenuItem_Content(object obj, EventArgs ev)
@@ -133,7 +113,6 @@ namespace Statistic
                     savePrevViewOrientation ();
                 }
             }
-
             /// <summary>
             /// Запомнить предыдущее стостояние "ориентация сплиттера"
             /// </summary>
@@ -214,6 +193,67 @@ namespace Statistic
                 this.ContextMenu.MenuItems[ContextMenu.MenuItems.Count - 1].Click += fClear;
 
                 ContentMenuStateChange ();
+            }
+
+            private bool _state;
+            
+            private System.Drawing.Font _fontPrevious;
+
+            public void EnableContextMenuItem(int indx, bool bEnabled)
+            {
+                ContextMenu.MenuItems[indx].Enabled =
+                _state =
+                    bEnabled;
+                // доработка по просьбе Заказчика 15.01.2016 г.
+                //  увеличение читабельности (заметности) подписи
+                if (bEnabled == true)
+                {
+                    setFont();
+
+                    this.ForeColor = Color.Red;
+                }
+                else
+                // только при наличии предыдущего шрифта
+                    if (!(_fontPrevious == null))
+                    {
+                        this.Font = new Font(
+                            _fontPrevious.FontFamily
+                            , _fontPrevious.Size
+                            , _fontPrevious.Style
+                            , _fontPrevious.Unit
+                            , _fontPrevious.GdiCharSet
+                        );
+
+                        this.ForeColor = Color.Black;
+                    }
+                    else
+                        ;
+            }
+
+            private void setFont()
+            {                
+                _fontPrevious = this.Font;
+
+                Graphics g = this.CreateGraphics();
+                float sz = g.MeasureString(Text, _fontPrevious).Width;
+
+                this.Font = new System.Drawing.Font(
+                    _fontPrevious.FontFamily
+                    , sz //_fontPrevious.Size
+                    , _fontPrevious.Style
+                    , _fontPrevious.Unit
+                    , _fontPrevious.GdiCharSet
+                );
+            }
+
+            private void onSizeChanged(object obj, EventArgs ev)
+            {
+                if (_state == true)
+                {
+                    setFont();
+                }
+                else
+                    ;
             }
 
             private int getIdMenuItemChecked()
@@ -535,7 +575,7 @@ namespace Statistic
                 }
                 clearAddress(indxLabel);
 
-                m_arLabelEmpty[indxLabel].ContextMenu.MenuItems [m_indxContentMenuItem].Enabled = false;
+                EnableLabelContextMenuItem(indxLabel, false);
             }
             else {
                 if (((MenuItem)obj).Checked == true)
@@ -544,7 +584,7 @@ namespace Statistic
                     ((MenuItem)obj).Checked = false;
                     clearAddress(indxLabel);
 
-                    m_arLabelEmpty[indxLabel].ContextMenu.MenuItems [m_indxContentMenuItem].Enabled = false;
+                    EnableLabelContextMenuItem(indxLabel, false);  //.ContextMenu.MenuItems [m_indxContentMenuItem].Enabled = false;
                 }
                 else
                 {
@@ -573,11 +613,16 @@ namespace Statistic
                     ((PanelTecView)this.Controls [indxLabel]).Start ();
                     ((PanelTecView)this.Controls[indxLabel]).Activate(true);
 
-                    m_arLabelEmpty[indxLabel].ContextMenu.MenuItems [m_indxContentMenuItem].Enabled = true;
+                    EnableLabelContextMenuItem(indxLabel, true);
                 }
             }
 
             EventContentChanged ();
+        }
+
+        private void EnableLabelContextMenuItem(int indxLabel, bool bEnabled)
+        {
+            m_arLabelEmpty[indxLabel].EnableContextMenuItem(m_indxContentMenuItem, bEnabled);
         }
 
         private void clearAddress (int indx) {
