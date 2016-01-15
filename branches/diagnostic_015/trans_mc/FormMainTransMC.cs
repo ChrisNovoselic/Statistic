@@ -16,12 +16,48 @@ namespace trans_mc
 {
     public partial class FormMainTransMC : FormMainTransModes
     {
+        /// <summary>
+        /// 
+        /// </summary>
+        public void StopClose()
+        {
+            Stop();
+            Close();
+        }
+
+        /// <summary>
+        /// 
+        /// </summary>
+        public void RestoreAndActivate()
+        {
+            //ExpandApplication();
+            // Показать поверх остальных окон и сделать активным.
+            this.Activate();
+
+            if (this.WindowState == FormWindowState.Minimized)
+            {
+                MessageBox.Show("MAX");
+                this.WindowState = FormWindowState.Normal;
+                this.Enabled = true;
+                this.ShowInTaskbar = true;
+                notifyIconMain.Visible = false;
+            }
+            else
+            {
+                MessageBox.Show("MIN");
+                this.WindowState = FormWindowState.Normal;
+                this.Enabled = true;
+                this.ShowInTaskbar = true;
+                notifyIconMain.Visible = false;
+            }
+            this.Activate();
+        }
+
         public FormMainTransMC()
             : base((int)ProgramBase.ID_APP.TRANS_MODES_CENTRE_GUI)
         {
             this.notifyIconMain.Icon =
             this.Icon = trans_mc.Properties.Resources.statistic5;
-
             InitializeComponentTransSrc (@"Сервер Модес-Центр");
 
             m_dgwAdminTable.Size = new System.Drawing.Size(498, 391);
