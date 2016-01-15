@@ -7,6 +7,7 @@ using System.Runtime.InteropServices;
 using System.IO;
 using StatisticTrans;
 using HClassLibrary;
+using StatisticCommon;
 
 namespace StatisticTrans
 {
@@ -32,7 +33,7 @@ namespace StatisticTrans
         /// <summary>
         /// Событие - получение данных 
         /// </summary>
-        public static event DelegateBoolFunc EvtRecievedTable;
+        public static event DelegateBoolFunc EvtRecieved;
 
         /// <summary>
         /// Находит запущенную копию приложения и разворачивает окно
@@ -50,16 +51,17 @@ namespace StatisticTrans
                 try
                 {
                     Process[] procs = Process.GetProcessesByName(AppPath);
-                    MessageBox.Show("1111");
+                    MessageBox.Show(AppPath.ToString());
 
                     foreach (Process proc in procs)
-                        if (proc.Id != Process.GetCurrentProcess().Id)
+                        if (!(proc.Id == Process.GetCurrentProcess().Id))
                         {
+                            MessageBox.Show("WOW");
                             ShowWindow((int)proc.MainWindowHandle, 1);//нормально развернутое
                             //ShowWindow((int)proc.MainWindowHandle, 3);//максимально развернутое
                             SetForegroundWindow(proc.MainWindowHandle);
                             GetWindow((int)proc.MainWindowHandle,1);
-                            EvtRecievedTable(!applicationRun);
+                            EvtRecieved(!applicationRun);
                             break;
                         }
                 }
@@ -69,6 +71,7 @@ namespace StatisticTrans
          
             return !applicationRun;
         }
-
     }
 }
+
+    

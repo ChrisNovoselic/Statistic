@@ -122,7 +122,6 @@ namespace StatisticTrans
         }
 
         public FormMainTrans(int id_app, string[] par, string[] val)
-        //public FormMainTrans(int id_app, string []par, string [] val)
         {
             Thread.CurrentThread.CurrentCulture =
             Thread.CurrentThread.CurrentUICulture =
@@ -286,6 +285,9 @@ namespace StatisticTrans
             string msg_throw = string.Empty;
             string[] args = Environment.GetCommandLineArgs();
             int argc = args.Length;
+            this.WindowState = FormWindowState.Minimized;
+            this.ShowInTaskbar = false;
+            notifyIconMain.Visible = true;
 
             if (argc > 1)
             {
@@ -329,6 +331,20 @@ namespace StatisticTrans
                             int argt = m_arg_interval;
                             //TimeThread(argt);
                         }
+                        else if ((!(args[1].IndexOf("start") < 0)) && ((args[1][0] == '/')))
+                        {
+                            m_modeMashine = MODE_MASHINE.SERVICE;
+                            m_arg_interval = TIMER_SERVICE_MIN_INTERVAL;
+                            //ExpandApplication();
+                        }
+
+                        else if ((!(args[1].IndexOf("stop") < 0)) && ((args[1][0] == '/')))
+                        {
+                            MessageBox.Show("THIS IS THE END FROM");
+                            //Stop();
+                            //Close();
+                        }
+
                         else
                         {
                             msg_throw = "Ошибка распознавания аргументов командной строки";
@@ -336,11 +352,8 @@ namespace StatisticTrans
                         }
                 }
 
-                this.WindowState = FormWindowState.Minimized;
-                this.ShowInTaskbar = false;
-                notifyIconMain.Visible = true;
-                //развернутьToolStripMenuItem.Enabled = false;
 
+                //развернутьToolStripMenuItem.Enabled = false;
                 dateTimePickerMain.Value = m_arg_date.Date;
             }
             else
@@ -950,9 +963,7 @@ namespace StatisticTrans
         /// </summary>
         public void Test()
         {
-            DateTime tm = DateTime.Now;
-            string str1 = tm.ToString();
-            m_labelTime.Invoke(new Action(() => m_labelTime.Text = "Время последнего опроса: " + str1 + ";" + " Успешных итераций: " + CT.currentIter + " из " + CT.Iters + ""));
+            m_labelTime.Invoke(new Action(() => m_labelTime.Text = "Время последнего опроса: " + DateTime.Now.ToString() + ";" + " Успешных итераций: " + CT.currentIter + " из " + CT.Iters + ""));
             m_labelTime.Invoke(new Action(() => m_labelTime.Update()));
         }
 
@@ -1533,24 +1544,30 @@ namespace StatisticTrans
 
         public static void RunExpland()
         {
-           
-        } 
+
+        }
+
         /// <summary>
         /// Развертывает приложение из трея
         /// </summary>
-        private void ExpandApplication()
+        public void ExpandApplication()
         {
-            if (this.WindowState == FormWindowState.Minimized && this.Enabled == false)
+            if (this.WindowState == FormWindowState.Minimized)
             {
+                MessageBox.Show("EXPANDMAX");
                 this.WindowState = FormWindowState.Normal;
                 this.Enabled = true;
                 this.ShowInTaskbar = true;
+                notifyIconMain.Visible = false;
+                this.Activate();
             }
             else
             {
+                MessageBox.Show("EXPANDMIN");
                 this.WindowState = FormWindowState.Minimized;
                 this.Enabled = false;
                 this.ShowInTaskbar = false;
+                notifyIconMain.Visible = true;
             }
         }
 
