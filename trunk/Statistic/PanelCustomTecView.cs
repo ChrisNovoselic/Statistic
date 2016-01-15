@@ -34,7 +34,10 @@ namespace Statistic
                 this.Dock = DockStyle.Fill;
                 this.Text = s_msg;
                 this.BorderStyle = BorderStyle.Fixed3D;
-                this.TextAlign = ContentAlignment.MiddleCenter;                
+                this.TextAlign = ContentAlignment.MiddleCenter;
+                _fontDefault =
+                _fontActual =
+                    this.Font;
 
                 m_listIdContextMenuItems = new List<int>();
 
@@ -197,7 +200,8 @@ namespace Statistic
 
             private bool _state;
             
-            private System.Drawing.Font _fontPrevious;
+            private System.Drawing.Font _fontDefault
+                , _fontActual;
 
             public void EnableContextMenuItem(int indx, bool bEnabled)
             {
@@ -208,49 +212,43 @@ namespace Statistic
                 //  увеличение читабельности (заметности) подписи
                 if (bEnabled == true)
                 {
-                    setFont();
-
-                    this.ForeColor = Color.Red;
+                    setFont(_fontActual, Color.Red);
                 }
                 else
                 // только при наличии предыдущего шрифта
-                    if (!(_fontPrevious == null))
+                    if (!(_fontDefault == null))
                     {
-                        this.Font = new Font(
-                            _fontPrevious.FontFamily
-                            , _fontPrevious.Size
-                            , _fontPrevious.Style
-                            , _fontPrevious.Unit
-                            , _fontPrevious.GdiCharSet
-                        );
-
-                        this.ForeColor = Color.Black;
+                        setFont(_fontDefault, Color.Black);
                     }
                     else
                         ;
             }
 
-            private void setFont()
-            {                
-                _fontPrevious = this.Font;
-
-                Graphics g = this.CreateGraphics();
-                float sz = g.MeasureString(Text, _fontPrevious).Width;
+            private void setFont(Font font, Color color)
+            {
+                //Graphics g = this.CreateGraphics();
+                //float sz = g.MeasureString(Text, _fontPrevious).Width;
 
                 this.Font = new System.Drawing.Font(
-                    _fontPrevious.FontFamily
-                    , sz //_fontPrevious.Size
-                    , _fontPrevious.Style
-                    , _fontPrevious.Unit
-                    , _fontPrevious.GdiCharSet
+                    font.FontFamily
+                    , font.Size
+                    , font.Style
+                    , font.Unit
+                    , font.GdiCharSet
                 );
+
+                this.ForeColor = color;
             }
 
             private void onSizeChanged(object obj, EventArgs ev)
             {
                 if (_state == true)
                 {
-                    setFont();
+                    _fontActual = new Font(
+                        _fontActual.
+                    );
+                    
+                    setFont(_fontActual, Color.Red);
                 }
                 else
                     ;
