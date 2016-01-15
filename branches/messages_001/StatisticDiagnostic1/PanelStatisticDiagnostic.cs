@@ -1,19 +1,18 @@
-﻿using System.Collections;
+﻿using HClassLibrary;
+using StatisticCommon;
 using System;
-using System.Linq;
+using System.Collections;
 using System.ComponentModel;
-using System.Diagnostics;
-using System.Net.NetworkInformation;
-using System.Text;
-using System.Timers;
-using System.Threading;
-using System.Drawing;
-using System.Windows.Forms; //TableLayoutPanel
 using System.Data; //DataTable
 using System.Data.Common; //DbConnection
-
-using HClassLibrary;
-using StatisticCommon;
+using System.Diagnostics;
+using System.Drawing;
+using System.Linq;
+using System.Net.NetworkInformation;
+using System.Text;
+using System.Threading;
+using System.Timers;
+using System.Windows.Forms; //TableLayoutPanel
 
 namespace StatisticDiagnostic
 {

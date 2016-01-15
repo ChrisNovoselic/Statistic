@@ -23,6 +23,7 @@ using StatisticCommon;
 using StatisticDiagnostic;
 using StatisticTimeSync;
 using StatisticAlarm;
+using StatisticAnalyzer;
 
 namespace Statistic
 {
@@ -35,7 +36,7 @@ namespace Statistic
             DATETIMESYNC_SOURCE_DATA
                 , CUSTOM_2X2_2, CUSTOM_2X3_2, CUSTOM_2X2_3, CUSTOM_2X3_3, CUSTOM_2X2_4,
             CUSTOM_2X3_4
-                , SOTIASSO, DIAGNOSTIC
+                , SOTIASSO, DIAGNOSTIC, ANALYZER
         };
         private enum INDEX_CUSTOM_TAB { TAB_2X2, TAB_2X3 };
         private class ADDING_TAB
@@ -333,14 +334,14 @@ namespace Statistic
                     formGraphicsSettings = new FormGraphicsSettings(this, delegateUpdateActiveGui, delegateHideGraphicsSettings);
 
                     параметрыПриложенияToolStripMenuItem.Enabled = HStatisticUsers.RoleIsAdmin == true;
-
+                    
                     this.Text += @" - " + formParameters.m_arParametrSetup[(int)FormParameters.PARAMETR_SETUP.MAIN_PRIORITY];
 
                     TecView.SEC_VALIDATE_TMVALUE = Int32.Parse(formParameters.m_arParametrSetup[(int)FormParameters.PARAMETR_SETUP.VALIDATE_TM_VALUE]);
 
                     if (iRes == 0)
                     {
-                        Start(); //Старт 1-сек-го таймера для строки стостояния                        
+                        //Start(); //Старт 1-сек-го таймера для строки стостояния                        
 
                         stopTimerAppReset();
                         //int msecTimerAppReset = Int32.Parse (formParameters.m_arParametrSetup[(int)FormParameters.PARAMETR_SETUP.APP_VERSION_QUERY_INTERVAL]);
@@ -701,6 +702,9 @@ namespace Statistic
                                                         if (tclTecViews.TabPages[e.TabIndex].Controls[0] is PanelSOTIASSO)
                                                             m_dictAddingTabs[(int)ID_ADDING_TAB.SOTIASSO].menuItem.Checked = false;
                                                         else
+                                                            if (tclTecViews.TabPages[e.TabIndex].Controls[0] is PanelAnalyzer_DB)
+                                                                m_dictAddingTabs[(int)ID_ADDING_TAB.ANALYZER].menuItem.Checked = false;
+                                                            else
                                                             ;
         }
 
@@ -1511,22 +1515,6 @@ namespace Statistic
             настройкиСоединенияToolStripMenuItem_Click(sender, e, CONN_SETT_TYPE.LIST_SOURCE);
         }
 
-        private void просмотрЖурналПрограммыToolStripMenuItem_Click(object sender, EventArgs e)
-        {
-            activateTabPage(tclTecViews.SelectedIndex, false);
-
-            int idListener = DbSources.Sources().Register(s_listFormConnectionSettings[(int)CONN_SETT_TYPE.CONFIG_DB].getConnSett(), false, @"CONFIG_DB");
-            FormMainAnalyzer formAnalyzer = new FormMainAnalyzer_DB(idListener, formChangeMode.m_list_tec);
-            ////Вариант №1
-            //formAnalyzer.FormClosed += new FormClosedEventHandler(formAnalyzerCloused);
-            //new Thread(() => formAnalyzer.ShowDialog()).Start();
-
-            //Вариант №2
-            formAnalyzer.ShowDialog(this);
-            DbSources.Sources().UnRegister(idListener);
-            activateTabPage(); //по умолчанию текущая вкладка и 'true'
-        }
-
         ////Вариант №1
         //private void formAnalyzerCloused (object obj, FormClosedEventArgs ev)
         //{
@@ -1781,7 +1769,6 @@ namespace Statistic
 
             видToolStripMenuItem.Enabled =
             настройкиСоединенияБДИсточникToolStripMenuItem.Enabled =
-            просмотрЖурналПрограммыToolStripMenuItem.Enabled =
             изменитьПарольДиспетчераToolStripMenuItem.Enabled =
             изменитьПарольАдминистратораToolStripMenuItem.Enabled =
             изменитьПарольНССToolStripMenuItem.Enabled =
@@ -2161,6 +2148,21 @@ namespace Statistic
             видSubToolStripMenuItem_CheckedChanged(m_dictAddingTabs[(int)ID_ADDING_TAB.DIAGNOSTIC].panel, "Диагностика"
                 , new bool[] { ((ToolStripMenuItem)sender).Checked, true });
         }
+
+        private void ПросмотрЖурналаToolStripMenuItem_CheckedChanged(object sender, EventArgs e)
+        {
+            if (m_dictAddingTabs[(int)ID_ADDING_TAB.ANALYZER].panel == null)
+            {
+                int idListener = DbSources.Sources().Register(s_listFormConnectionSettings[(int)CONN_SETT_TYPE.CONFIG_DB].getConnSett(), false, @"CONFIG_DB");
+                m_dictAddingTabs[(int)ID_ADDING_TAB.ANALYZER].panel = new PanelAnalyzer_DB(idListener, PanelKomDisp.m_list_tec);
+                m_dictAddingTabs[(int)ID_ADDING_TAB.ANALYZER].panel.SetDelegateReport(ErrorReport, WarningReport, ActionReport, ReportClear);
+            }
+            else
+                ;
+            видSubToolStripMenuItem_CheckedChanged(m_dictAddingTabs[(int)ID_ADDING_TAB.ANALYZER].panel, "Журнал событий"
+                , new bool[] { ((ToolStripMenuItem)sender).Checked, true });
+        }
+       
 
         private void собственныеНуждыToolStripMenuItem_CheckedChanged(object sender, EventArgs e)
         {
