@@ -245,7 +245,11 @@ namespace Statistic
                 if (_state == true)
                 {
                     _fontActual = new Font(
-                        _fontActual.
+                        _fontActual.FontFamily
+                        , _fontActual.Size
+                        , _fontActual.Style
+                        , _fontActual.Unit
+                        , _fontActual.GdiCharSet
                     );
                     
                     setFont(_fontActual, Color.Red);
