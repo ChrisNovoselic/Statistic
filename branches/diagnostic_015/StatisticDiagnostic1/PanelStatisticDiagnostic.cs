@@ -304,6 +304,7 @@ namespace StatisticDiagnostic
             /// Событие - получение данных 
             /// </summary>
             public event DelegateObjectFunc EvtRecievedTable;
+
             /// <summary>
             /// Обработка УСЕШНО полученного результата
             /// </summary>
@@ -1794,7 +1795,7 @@ namespace StatisticDiagnostic
         /// </summary>
         partial class Task
         {
-            enum Limit : int { lim1 = 10, lim2 = 60 };
+            enum Limit : int { lim1 = 30, lim2 = 60 };
 
             /// <summary>
             /// Функция для заполнения 
@@ -1819,14 +1820,13 @@ namespace StatisticDiagnostic
                     {
                         string filter = "NAME_SHR = '" + m_enumIDtask.ElementAt(i).NAME + "'";
                         DataRow[] dr = m_tableSourceData.Select(filter);
-                        //ToDateTime(dr[0]["Value"].ToString());
 
                         string time = formatTime(dr[1]["Value"].ToString());
 
                         if (TaskDataGridView.InvokeRequired)
                         {
                             columTimeTask(i);
-                            TaskDataGridView.Invoke(new Action(() => TaskDataGridView.Rows[i].Cells[1].Value = dr[0]["Value"]));
+                            TaskDataGridView.Invoke(new Action(() => TaskDataGridView.Rows[i].Cells[1].Value = ToDateTime(Convert.ToInt32(dr[0]["Value"]))));
                             TaskDataGridView.Invoke(new Action(() => TaskDataGridView.Rows[i].Cells[2].Value = time));
                             TaskDataGridView.Invoke(new Action(() => TaskDataGridView.Rows[i].Cells[0].Value = dr[0]["NAME_SHR"]));
                         }
@@ -1886,9 +1886,11 @@ namespace StatisticDiagnostic
             /// 
             /// </summary>
             /// <param name="value"></param>
-            private void ToDateTime(string value)
+            private string ToDateTime(int value)
             {
-                DateTime.Parse(value);
+                double t;
+                t = (value * 0.01);
+                return Convert.ToString(t);
             }
 
             /// <summary>
@@ -1916,19 +1918,19 @@ namespace StatisticDiagnostic
             private void overLimit()
             {
                 int m_lim;
-                int m_counter = 0;
+                int m_counter = 1;
 
                 for (int i = 0; i < TaskDataGridView.Rows.Count; i++)
                 {
                     if (TaskDataGridView.Rows[i].Cells[0].Value.ToString() == "Усреднитель данных из СОТИАССО")
-                    {
                         m_lim = (int)Limit.lim2;
-                    }
                     else m_lim = (int)Limit.lim1;
 
-                    if (Convert.ToInt32(TaskDataGridView.Rows[i].Cells[1].Value) > m_lim)
+                    if (Convert.ToDouble(TaskDataGridView.Rows[i].Cells[1].Value) > m_lim)
                     {
-                        TaskDataGridView.Invoke(new Action(() => TaskDataGridView.Columns[4].Visible = true));
+                        if (TaskDataGridView.Columns[4].Visible == false)
+                            TaskDataGridView.Invoke(new Action(() => TaskDataGridView.Columns[4].Visible = true)); 
+
                         TaskDataGridView.Invoke(new Action(() => TaskDataGridView.Rows[i].DefaultCellStyle.BackColor = Color.Sienna));
                         TaskDataGridView.Invoke(new Action(() => TaskDataGridView.Rows[i].Cells[4].Value = "Превышено время выполнения задачи"));
                         upselectrow(i);
@@ -1937,7 +1939,7 @@ namespace StatisticDiagnostic
                     else
                     {
                         TaskDataGridView.Invoke(new Action(() => TaskDataGridView.Rows[i].DefaultCellStyle.BackColor = Color.White));
-                        TaskDataGridView.Invoke(new Action(() => TaskDataGridView.Rows[i].Cells[4].Value = null));
+                        //TaskDataGridView.Invoke(new Action(() => TaskDataGridView.Rows[i].Cells[4].Value = null));
                         m_counter++;
 
                         if (m_counter == TaskDataGridView.Rows.Count)
@@ -1966,7 +1968,6 @@ namespace StatisticDiagnostic
 
                     TaskDataGridView.Invoke(new Action(() => TaskDataGridView.Rows.RemoveAt(indxrow + 1)));
                     //TaskDataGridView.Invoke(new Action(() => TaskDataGridView.Rows.Insert(0, TaskDataGridView.Rows.AddCopy(indxrow)));
-
                 }
                 else
                 {
