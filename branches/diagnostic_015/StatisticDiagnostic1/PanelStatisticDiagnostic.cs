@@ -537,11 +537,6 @@ namespace StatisticDiagnostic
             enum TM { TM1 = 2, TM2 };
 
             /// <summary>
-            /// Номер стобца вызова контекстного меню
-            /// </summary>
-            private int ColumnIndex;
-
-            /// <summary>
             /// Номер строки вызова контекстного меню
             /// </summary>
             private int RowIndex;
@@ -563,9 +558,7 @@ namespace StatisticDiagnostic
                     if (!(m_arPanelsTEC == null))
                     {
                         for (int i = 0; i < m_arPanelsTEC.Length; i++)
-                        {
                             m_arPanelsTEC[i].Focus();
-                        }
                     }
                 }
                 else ;
@@ -577,9 +570,7 @@ namespace StatisticDiagnostic
             public void StopTEC()
             {
                 if (!(m_arPanelsTEC == null))
-                {
                     clearGrid();
-                }
                 else ;
             }
 
@@ -629,9 +620,8 @@ namespace StatisticDiagnostic
                 for (int i = 0; i < m_arPanelsTEC[numberPanel].TECDataGridView.Rows.Count; i++)
                 {
                     if (m_arPanelsTEC[numberPanel].TECDataGridView.Rows[i].Cells[0].Style.BackColor == System.Drawing.Color.DeepSkyBlue)
-                    {
                         paintCellDeactive(numberPanel, i);
-                    }
+                    else ;
                 }
 
                 paintCellActive(numberPanel, RowIndex);
@@ -664,9 +654,8 @@ namespace StatisticDiagnostic
                 for (int i = 0; i < 6; i++)
                 {
                     if (m_arPanelsTEC[i] == null)
-                    {
                         m_arPanelsTEC[i] = new Tec();
-                    }
+                    else ;
                 }
                 headerGridTEC();
             }
@@ -683,13 +672,9 @@ namespace StatisticDiagnostic
                     for (int i = 0; i < countrow / 2; i++)
                     {
                         if (m_arPanelsTEC[x].TECDataGridView.InvokeRequired)
-                        {
                             m_arPanelsTEC[x].TECDataGridView.Invoke(new Action(() => m_arPanelsTEC[x].TECDataGridView.Rows.Add()));
-                        }
                         else
-                        {
                             m_arPanelsTEC[x].TECDataGridView.Rows.Add();
-                        }
                     }
                 }
             }
@@ -765,13 +750,9 @@ namespace StatisticDiagnostic
                     string str = m_arraySourceTEC.Rows[i][@"NAME_SHR"].ToString();
 
                     if (m_arPanelsTEC[i].LabelTec.InvokeRequired)
-                    {
                         m_arPanelsTEC[i].LabelTec.Invoke(new Action(() => m_arPanelsTEC[i].LabelTec.Text = str));
-                    }
                     else
-                    {
                         m_arPanelsTEC[i].LabelTec.Text = str;
-                    }
                 }
             }
 
@@ -791,14 +772,9 @@ namespace StatisticDiagnostic
                         DataRow[] dr = m_arrayParam.Select(filter2);
 
                         if (m_arPanelsTEC[k].TECDataGridView.InvokeRequired)
-                        {
                             m_arPanelsTEC[k].TECDataGridView.Invoke(new Action(() => m_arPanelsTEC[k].TECDataGridView.Rows[j].Cells[0].Value = dr[0]["NAME_SHR"]));
-
-                        }
                         else
-                        {
                             m_arPanelsTEC[k].TECDataGridView.Rows[j].Cells[0].Value = dr[0]["NAME_SHR"];
-                        }
                     }
                 }
             }
@@ -855,13 +831,9 @@ namespace StatisticDiagnostic
             private void paintCellDeactive(int x, int y)
             {
                 if (m_arPanelsTEC[x].TECDataGridView.InvokeRequired)
-                {
                     m_arPanelsTEC[x].TECDataGridView.Invoke(new Action(() => m_arPanelsTEC[x].TECDataGridView.Rows[y].Cells[0].Style.BackColor = System.Drawing.Color.White));
-                }
                 else
-                {
                     m_arPanelsTEC[x].TECDataGridView.Rows[y].Cells[0].Style.BackColor = System.Drawing.Color.White;
-                }
             }
 
             /// <summary>
@@ -873,13 +845,9 @@ namespace StatisticDiagnostic
             private void paintCellActive(int x, int y)
             {
                 if (m_arPanelsTEC[x].TECDataGridView.InvokeRequired)
-                {
                     m_arPanelsTEC[x].TECDataGridView.Invoke(new Action(() => m_arPanelsTEC[x].TECDataGridView.Rows[y].Cells[0].Style.BackColor = System.Drawing.Color.DeepSkyBlue));
-                }
                 else
-                {
                     m_arPanelsTEC[x].TECDataGridView.Rows[y].Cells[0].Style.BackColor = System.Drawing.Color.DeepSkyBlue;
-                }
             }
 
             /// <summary>
@@ -895,7 +863,6 @@ namespace StatisticDiagnostic
                 for (int i = 0; i < m_arrayActiveSource.Length / 2; i++)
                 {
                     b = m_arrayActiveSource[i, 1].ToString();
-
 
                     if (a == b)
                     {
@@ -914,7 +881,6 @@ namespace StatisticDiagnostic
                 if (TECDataGridView.Rows[y].Cells[0].Style.BackColor == System.Drawing.Color.DeepSkyBlue)
                 {
                     TECDataGridView.Rows[y].Cells[0].ContextMenuStrip = ContextmenuChangeState;
-
                     toolStripMenuItemActivate.CheckState = CheckState.Checked;
                     toolStripMenuItemDeactivate.CheckState = CheckState.Unchecked;
                 }
@@ -924,7 +890,6 @@ namespace StatisticDiagnostic
                     if (!(TECDataGridView.Rows[y].Cells[0].Value.ToString() == "АИИСКУЭ"))
                     {
                         TECDataGridView.Rows[y].Cells[0].ContextMenuStrip = ContextmenuChangeState;
-
                         toolStripMenuItemActivate.CheckState = CheckState.Unchecked;
                         toolStripMenuItemDeactivate.CheckState = CheckState.Checked;
 
@@ -942,9 +907,7 @@ namespace StatisticDiagnostic
                 try
                 {
                     if (TECDataGridView.SelectedCells.Count > 0)
-                    {
                         TECDataGridView.SelectedCells[0].Selected = false;
-                    }
                     else
                         ;
                 }
@@ -961,9 +924,7 @@ namespace StatisticDiagnostic
                     for (int j = 0; j < m_arPanelsTEC[i].TECDataGridView.Rows.Count; j++)
                     {
                         if (m_arPanelsTEC[i].TECDataGridView.Rows.Count > 0)
-                        {
                             m_arPanelsTEC[i].TECDataGridView.Rows.Clear();
-                        }
                     }
                 }
             }
@@ -981,19 +942,13 @@ namespace StatisticDiagnostic
                 if ((!(m_arPanelsTEC[i].TECDataGridView.Rows[r].Cells[0].Value.ToString() == "АИИСКУЭ"))
                     && m_arPanelsTEC[i].TECDataGridView.Rows[r].Cells[0].Style.BackColor == System.Drawing.Color.Empty)
                 {
-
                 }
                 else
                 {
                     if (m_arPanelsTEC[i].TECDataGridView.Rows[r].Cells[0].Value.ToString() == "АИИСКУЭ")
-                    {
                         paintValuesSource(selectInvalidValue(nameSource, time), i, r);
-                    }
-
                     else
-                    {
                         paintValuesSource(selectInvalidValue(nameSource, time), i, r);
-                    }
                 }
             }
 
@@ -1015,43 +970,25 @@ namespace StatisticDiagnostic
                     case "АИИСКУЭ":
 
                         if (((int)m_DTnowAISKUE.Minute - (int)time.Minute) > ts)
-                        {
                             bFL = true;
-
-                        }
                         else
-                        {
                             bFL = false;
-
-                        }
                         break;
 
                     case "СОТИАССО":
 
                         if (((int)(m_DTnowSOTIASSO.Minute) - (int)(time.Minute)) > ts)
-                        {
                             bFL = true;
-
-                        }
                         else
-                        {
                             bFL = false;
-
-                        }
                         break;
 
                     case "СОТИАССО_0":
 
                         if (((int)m_DTnowSOTIASSO.Minute - (int)time.Minute) > ts)
-                        {
                             bFL = true;
-
-                        }
                         else
-                        {
                             bFL = false;
-
-                        }
                         break;
                 }
                 return bFL;
@@ -1081,9 +1018,6 @@ namespace StatisticDiagnostic
             {
                 int m_dtNow = DateTime.Now.Day;
                 int m_dt2Time = DateTime.Parse(datetime).Day;
-
-                //int m_intNow = Convert.ToInt32(m_dtNow.Substring(0, 2));
-                //int m_iDT = Convert.ToInt32(datetime.Substring(8, 2));
 
                 if ((m_dtNow - m_dt2Time) > 0)
                     return DateTime.Parse(datetime).ToString("dd.MM.yy HH:mm:ss");
@@ -1795,8 +1729,6 @@ namespace StatisticDiagnostic
         /// </summary>
         partial class Task
         {
-            enum Limit : int { lim1 = 30, lim2 = 60 };
-
             /// <summary>
             /// Функция для заполнения 
             /// грида информацией о задачах
@@ -1805,12 +1737,15 @@ namespace StatisticDiagnostic
             {
                 try
                 {
+                    DataRow[] drNameTask;
+
                     var m_enumIDtask = (from r in m_tableSourceData.AsEnumerable()
                                         where r.Field<string>("ID_Value") == "28"
                                         select new
                                         {
                                             NAME = r.Field<string>("NAME_SHR"),
                                         }).Distinct();
+
                     if (TaskDataGridView.Rows.Count < Convert.ToInt32(m_enumIDtask.Count()))
                     {
                         addRowsTask(Convert.ToInt32(m_enumIDtask.Count()));
@@ -1819,24 +1754,25 @@ namespace StatisticDiagnostic
                     for (int i = 0; i < Convert.ToInt32(m_enumIDtask.Count()); i++)
                     {
                         string filter = "NAME_SHR = '" + m_enumIDtask.ElementAt(i).NAME + "'";
-                        DataRow[] dr = m_tableSourceData.Select(filter);
 
-                        string time = formatTime(dr[1]["Value"].ToString());
+                        drNameTask = m_tableSourceData.Select(filter);
+
+                        string time = formatTime(drNameTask[1]["Value"].ToString());
 
                         if (TaskDataGridView.InvokeRequired)
                         {
                             columTimeTask(i);
-                            TaskDataGridView.Invoke(new Action(() => TaskDataGridView.Rows[i].Cells[1].Value = ToDateTime(Convert.ToInt32(dr[0]["Value"]))));
+                            TaskDataGridView.Invoke(new Action(() => TaskDataGridView.Rows[i].Cells[1].Value = ToDateTime(drNameTask[0]["Value"].ToString())));
                             TaskDataGridView.Invoke(new Action(() => TaskDataGridView.Rows[i].Cells[2].Value = time));
-                            TaskDataGridView.Invoke(new Action(() => TaskDataGridView.Rows[i].Cells[0].Value = dr[0]["NAME_SHR"]));
+                            TaskDataGridView.Invoke(new Action(() => TaskDataGridView.Rows[i].Cells[0].Value = drNameTask[0]["NAME_SHR"]));
                         }
                         else
                         {
                             columTimeTask(i);
 
-                            TaskDataGridView.Rows[i].Cells[1].Value = dr[0]["Value"];
+                            TaskDataGridView.Rows[i].Cells[1].Value = drNameTask[0]["Value"];
                             TaskDataGridView.Rows[i].Cells[2].Value = time;
-                            TaskDataGridView.Rows[i].Cells[0].Value = dr[0]["NAME_SHR"];
+                            TaskDataGridView.Rows[i].Cells[0].Value = drNameTask[0]["NAME_SHR"];
                         }
                     }
                     overLimit();
@@ -1862,13 +1798,9 @@ namespace StatisticDiagnostic
                 int m_iDT = Convert.ToInt32(datetime.Substring(8, 2));
 
                 if ((m_intNow - m_iDT) > 0)
-                {
                     return DateTime.Parse(datetime).ToString("dd.MM.yy HH:mm:ss");
-                }
                 else
-                {
                     return m_dt2Time = DateTime.Parse(datetime).ToString("HH:mm:ss.fff");
-                }
             }
 
             /// <summary>
@@ -1883,14 +1815,23 @@ namespace StatisticDiagnostic
             }
 
             /// <summary>
-            /// 
+            /// Преобразование времени выполнения задач
             /// </summary>
             /// <param name="value"></param>
-            private string ToDateTime(int value)
+            private string ToDateTime(string value)
             {
-                double t;
-                t = (value * 0.01);
-                return Convert.ToString(t);
+                if (value.Length < 4)
+                {
+                    int lnght = value.Length;
+
+                    for (int i = 4; i > lnght; i--)
+                    {
+                        value = value.Insert(0, "0");
+                    }
+                    value = value.Insert(2, ":");
+                }
+
+                return DateTime.ParseExact(value, "mm:ss", null).ToString("mm:ss");
             }
 
             /// <summary>
@@ -1902,13 +1843,9 @@ namespace StatisticDiagnostic
                 for (int x = 0; x < counter; x++)
                 {
                     if (TaskDataGridView.InvokeRequired)
-                    {
                         TaskDataGridView.Invoke(new Action(() => TaskDataGridView.Rows.Add()));
-                    }
                     else
-                    {
                         TaskDataGridView.Rows.Add();
-                    }
                 }
             }
 
@@ -1918,33 +1855,38 @@ namespace StatisticDiagnostic
             private void overLimit()
             {
                 int m_lim;
-                int m_counter = 1;
+                string filter1 = "ID_Value = '28'";
+                DataRow[] drTask = m_tableSourceData.Select(filter1);
+                int m_counter = drTask.Count() / 2;
 
-                for (int i = 0; i < TaskDataGridView.Rows.Count; i++)
+                for (int i = 0; i < drTask.Count() / 2; i++)
                 {
                     if (TaskDataGridView.Rows[i].Cells[0].Value.ToString() == "Усреднитель данных из СОТИАССО")
-                        m_lim = (int)Limit.lim2;
-                    else m_lim = (int)Limit.lim1;
+                        m_lim = 105;
+                    else m_lim = 45;
 
-                    if (Convert.ToDouble(TaskDataGridView.Rows[i].Cells[1].Value) > m_lim)
+                    if (Convert.ToInt32(drTask[i]["Value"].ToString()) > m_lim)
                     {
                         if (TaskDataGridView.Columns[4].Visible == false)
-                            TaskDataGridView.Invoke(new Action(() => TaskDataGridView.Columns[4].Visible = true)); 
+                            TaskDataGridView.Invoke(new Action(() => TaskDataGridView.Columns[4].Visible = true));
 
                         TaskDataGridView.Invoke(new Action(() => TaskDataGridView.Rows[i].DefaultCellStyle.BackColor = Color.Sienna));
                         TaskDataGridView.Invoke(new Action(() => TaskDataGridView.Rows[i].Cells[4].Value = "Превышено время выполнения задачи"));
                         upselectrow(i);
                         m_counter--;
+                        i++;
                     }
                     else
                     {
                         TaskDataGridView.Invoke(new Action(() => TaskDataGridView.Rows[i].DefaultCellStyle.BackColor = Color.White));
-                        //TaskDataGridView.Invoke(new Action(() => TaskDataGridView.Rows[i].Cells[4].Value = null));
-                        m_counter++;
+                        i++;
 
                         if (m_counter == TaskDataGridView.Rows.Count)
-                            TaskDataGridView.Invoke(new Action(() => TaskDataGridView.Columns[4].Visible = false));
-                        else ;
+                            if (TaskDataGridView.Columns[4].Visible == true)
+                                TaskDataGridView.Invoke(new Action(() => TaskDataGridView.Columns[4].Visible = false));
+                            else ;
+                        else
+                            m_counter++;
                     }
                 }
             }
@@ -1962,12 +1904,9 @@ namespace StatisticDiagnostic
                     TaskDataGridView.Invoke(new Action(() => TaskDataGridView.Rows[0].DefaultCellStyle.BackColor = Color.Sienna));
 
                     for (int i = 0; i < TaskDataGridView.Rows[indxrow + 1].Cells.Count; i++)
-                    {
                         TaskDataGridView.Invoke(new Action(() => TaskDataGridView.Rows[0].Cells[i].Value = TaskDataGridView.Rows[indxrow + 1].Cells[i].Value));
-                    }
 
                     TaskDataGridView.Invoke(new Action(() => TaskDataGridView.Rows.RemoveAt(indxrow + 1)));
-                    //TaskDataGridView.Invoke(new Action(() => TaskDataGridView.Rows.Insert(0, TaskDataGridView.Rows.AddCopy(indxrow)));
                 }
                 else
                 {
@@ -1992,7 +1931,6 @@ namespace StatisticDiagnostic
         public PanelStatisticDiagnostic(IContainer container)
         {
             container.Add(this);
-
             initialize();
         }
 
@@ -2034,7 +1972,6 @@ namespace StatisticDiagnostic
         {
             m_DataSource.Start();
             m_DataSource.StartDbInterfaces();
-
             m_DataSource.Command();
             m_DataSource.EvtRecievedTable += new DelegateObjectFunc(m_DataSource_EvtRecievedTable);
         }
@@ -2058,11 +1995,6 @@ namespace StatisticDiagnostic
         public override void SetDelegateReport(DelegateStringFunc ferr, DelegateStringFunc fwar, DelegateStringFunc fact, DelegateBoolFunc fclr)
         {
             m_DataSource.SetDelegateReport(ferr, fwar, fact, fclr);
-
-            /*foreach (Control ptcp in this.Controls)
-                if (ptcp is PanelStatisticDiagnostic)
-                    (ptcp as PanelStatisticDiagnostic).SetDelegateReport(ferr, fwar, fact, fclr);
-                else;*/
         }
 
         /// <summary>
@@ -2073,7 +2005,6 @@ namespace StatisticDiagnostic
         {
             base.Start();
             timerUp();
-
             dbStart();
         }
 
@@ -2231,8 +2162,6 @@ namespace StatisticDiagnostic
             if (!(m_DataSource == null))
             {
                 m_timerUpdate.Stop();
-                //m_timerUpdate = null;
-
                 m_DataSource.StopDbInterfaces();
                 m_DataSource.Stop();
             }
@@ -2249,18 +2178,11 @@ namespace StatisticDiagnostic
             bool bRes = base.Activate(activated);
 
             if (activated == true)
-            {
                 m_timerUpdate.Start();
-                //int iListernID = DbSources.Sources().Register(FormMain.s_listFormConnectionSettings[(int)CONN_SETT_TYPE.CONFIG_DB].getConnSett(), false, @"CONFIG_DB");
-                //getCurrentData();
-            }
-
             else
             {
                 if (!(m_timerUpdate == null))
-                {
                     m_timerUpdate.Stop();
-                }
             }
 
             return bRes;
@@ -2276,9 +2198,7 @@ namespace StatisticDiagnostic
             m_arrayActiveSource = new object[table.Rows.Count, 2];
 
             for (int i = 0; i < table.Rows.Count; i++)
-            {
                 m_arrayActiveSource.SetValue(table.Rows[i]["ID_LINK_SOURCE_DATA_TM"], i, 0);
-            }
 
             int t = -1;
             int id;
@@ -2291,9 +2211,7 @@ namespace StatisticDiagnostic
                     id = (int)m_arraySource.Rows[t][@"ID"];
 
                     if ((int)m_arrayActiveSource[j, 0] == 0)
-                    {
                         break;
-                    }
                 }
 
                 while ((int)m_arrayActiveSource[j, 0] != id);
@@ -2326,13 +2244,10 @@ namespace StatisticDiagnostic
         static void UpdateTecTM(string query)
         {
             int err = -1;
-
             int iListernID = DbSources.Sources().Register(FormMain.s_listFormConnectionSettings[(int)CONN_SETT_TYPE.CONFIG_DB].getConnSett(), false, @"CONFIG_DB");
 
             DbConnection m_dbConn = DbSources.Sources().GetConnection(iListernID, out err);
-
             DbTSQLInterface.ExecNonQuery(ref m_dbConn, query, null, null, out err);
-
             DbSources.Sources().UnRegister(iListernID);
         }
     }
