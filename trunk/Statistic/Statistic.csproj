@@ -265,6 +265,10 @@
       <Project>{205A2B13-F4AC-42AC-8BB7-5B02DE932019}</Project>
       <Name>StatisticAlarm</Name>
     </ProjectReference>
+    <ProjectReference Include="..\StatisticAnalyzer\StatisticAnalyzer.csproj">
+      <Project>{2133e9d0-7f92-4ce3-b768-a09a3864bb60}</Project>
+      <Name>StatisticAnalyzer</Name>
+    </ProjectReference>
     <ProjectReference Include="..\StatisticDiagnostic1\StatisticDiagnostic1.csproj">
       <Project>{2F11223C-00CF-4D6C-B234-1B8FA95F8B2F}</Project>
       <Name>StatisticDiagnostic1</Name>

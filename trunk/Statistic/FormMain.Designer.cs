@@ -61,13 +61,14 @@ namespace Statistic
             m_dictAddingTabs.Add((int)ID_ADDING_TAB.SOBSTV_NYZHDY, new ADDING_TAB("собственныеНуждыToolStripMenuItem", "Собственные нужды"));
             m_dictAddingTabs.Add((int)ID_ADDING_TAB.DATETIMESYNC_SOURCE_DATA, new ADDING_TAB("рассинхронизацияДатаВремяСерверБДToolStripMenuItem", "Рассинхронизация даты/времени серверов БД"));
             m_dictAddingTabs.Add((int)ID_ADDING_TAB.DIAGNOSTIC, new ADDING_TAB("ДиагностикаToolStripMenuItem", "Диагностика"));
+            m_dictAddingTabs.Add((int)ID_ADDING_TAB.ANALYZER, new ADDING_TAB("ПросмотрЖурналаToolStripMenuItem", "Журнала событий"));
             m_dictAddingTabs.Add((int)ID_ADDING_TAB.SOTIASSO, new ADDING_TAB("значенияСОТИАССОToolStripMenuItem", "Значения СОТИАССО"));
+
 
             this.настройкиToolStripMenuItem = new System.Windows.Forms.ToolStripMenuItem();
             this.сменитьРежимToolStripMenuItem = new System.Windows.Forms.ToolStripMenuItem();
             this.настройкиСоединенияБДКонфToolStripMenuItem = new System.Windows.Forms.ToolStripMenuItem();
             this.настройкиСоединенияБДИсточникToolStripMenuItem = new System.Windows.Forms.ToolStripMenuItem();
-            this.просмотрЖурналПрограммыToolStripMenuItem = new System.Windows.Forms.ToolStripMenuItem();
             this.администрированиеToolStripMenuItem = new System.Windows.Forms.ToolStripMenuItem();
             this.изменитьПарольДиспетчераToolStripMenuItem = new System.Windows.Forms.ToolStripMenuItem();
             this.изменитьПарольАдминистратораToolStripMenuItem = new System.Windows.Forms.ToolStripMenuItem();
@@ -236,6 +237,11 @@ namespace Statistic
             //ДиагностикаToolStripMenuItem_CheckedChanged
             //
             this.m_dictAddingTabs[(int)ID_ADDING_TAB.DIAGNOSTIC].menuItem.CheckedChanged += new System.EventHandler(this.ДиагностикаToolStripMenuItem_CheckedChanged);
+            //
+            //ПросмотрЖурналаToolStripMenuItem_CheckedChanged
+            //
+            this.m_dictAddingTabs[(int)ID_ADDING_TAB.ANALYZER].menuItem.CheckedChanged += new System.EventHandler(this.ПросмотрЖурналаToolStripMenuItem_CheckedChanged);
+            
             // 
             // значенияСОТИАССОToolStripMenuItem
             // 
@@ -275,14 +281,6 @@ namespace Statistic
             this.настройкиСоединенияБДИсточникToolStripMenuItem.Click += new System.EventHandler(this.настройкиСоединенияБДИсточникToolStripMenuItem_Click);
             настройкиСоединенияБДИсточникToolStripMenuItem.Enabled = false;
             // 
-            // администрированиеПользовательToolStripMenuItem
-            // 
-            this.просмотрЖурналПрограммыToolStripMenuItem.Name = "просмотрЖурналПрограммыToolStripMenuItem";
-            this.просмотрЖурналПрограммыToolStripMenuItem.Size = new System.Drawing.Size(191, 22);
-            this.просмотрЖурналПрограммыToolStripMenuItem.Text = "Просмотр журнала...";
-            this.просмотрЖурналПрограммыToolStripMenuItem.Click += new System.EventHandler(this.просмотрЖурналПрограммыToolStripMenuItem_Click);
-            просмотрЖурналПрограммыToolStripMenuItem.Enabled = false;
-            // 
             // администрированиеToolStripMenuItem
             // 
             this.администрированиеToolStripMenuItem.DropDownItems.AddRange(new System.Windows.Forms.ToolStripItem[] {
@@ -291,8 +289,7 @@ namespace Statistic
                 new System.Windows.Forms.ToolStripSeparator(),
                 this.m_dictAddingTabs[(int)ID_ADDING_TAB.DIAGNOSTIC].menuItem,
                 this.m_dictAddingTabs[(int)ID_ADDING_TAB.DATETIMESYNC_SOURCE_DATA].menuItem,
-                new System.Windows.Forms.ToolStripSeparator(),
-                this.просмотрЖурналПрограммыToolStripMenuItem,
+                this.m_dictAddingTabs[(int)ID_ADDING_TAB.ANALYZER].menuItem,
                 new System.Windows.Forms.ToolStripSeparator(),
                 this.изменитьПарольДиспетчераToolStripMenuItem,
                 this.изменитьПарольАдминистратораToolStripMenuItem,
@@ -450,7 +447,6 @@ namespace Statistic
         private HTabCtrlEx /*System.Windows.Forms.TabControl*/ tclTecViews;
         private System.Windows.Forms.ToolStripMenuItem настройкиСоединенияБДКонфToolStripMenuItem;
         private System.Windows.Forms.ToolStripMenuItem настройкиСоединенияБДИсточникToolStripMenuItem;
-        private System.Windows.Forms.ToolStripMenuItem просмотрЖурналПрограммыToolStripMenuItem;
         private System.Windows.Forms.ToolStripMenuItem администрированиеToolStripMenuItem;
         private System.Windows.Forms.ToolStripMenuItem изменитьПарольДиспетчераToolStripMenuItem;
         private System.Windows.Forms.ToolStripMenuItem изменитьПарольАдминистратораToolStripMenuItem;
