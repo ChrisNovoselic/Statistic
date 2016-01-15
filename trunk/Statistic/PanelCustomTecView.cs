@@ -226,9 +226,6 @@ namespace Statistic
 
             private void setFont(Font font, Color color)
             {
-                //Graphics g = this.CreateGraphics();
-                //float sz = g.MeasureString(Text, _fontPrevious).Width;
-
                 this.Font = new System.Drawing.Font(
                     font.FontFamily
                     , font.Size
@@ -239,14 +236,26 @@ namespace Statistic
 
                 this.ForeColor = color;
             }
-
+            /// <summary>
+            /// Обработчик события - изменение
+            /// </summary>
+            /// <param name="obj"></param>
+            /// <param name="ev"></param>
             private void onSizeChanged(object obj, EventArgs ev)
             {
                 if (_state == true)
                 {
+                    float sz = float.MinValue;
+                    
+                    //Graphics g = this.CreateGraphics();
+                    //float sz = g.MeasureString(Text, _fontActual).Width;
+
+                    sz = (float)(ClientSize.Height * 0.46);
+                    Console.WriteLine(@"Новый размер шрифта: " + sz);
+                    
                     _fontActual = new Font(
                         _fontActual.FontFamily
-                        , _fontActual.Size
+                        , sz //_fontActual.Size
                         , _fontActual.Style
                         , _fontActual.Unit
                         , _fontActual.GdiCharSet
