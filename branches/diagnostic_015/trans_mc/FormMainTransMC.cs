@@ -19,18 +19,9 @@ namespace trans_mc
         /// <summary>
         /// 
         /// </summary>
-        public void StopClose()
-        {
-            Stop();
-            Close();
-        }
-
-        /// <summary>
-        /// 
-        /// </summary>
         public void RestoreAndActivate()
         {
-            //ExpandApplication();
+            ExpandApplication();
             // Показать поверх остальных окон и сделать активным.
             this.Activate();
 

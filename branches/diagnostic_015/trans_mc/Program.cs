@@ -15,11 +15,7 @@ namespace trans_mc
     static class Program
     {
 
-        // Имя мьютекса
-        /* static readonly string MutexName = "{E42FC05F-0575-4EAB-8075-F2F542BDA909}";
-
-         // Промежуток времени, в течение которого подождать возможного закрытия уже работающей копии приложения.
-         static readonly TimeSpan Timeout = TimeSpan.FromMilliseconds(200);*/
+        static bool isFirstInstance;
 
         /// <summary>
         /// Главная точка входа для приложения.
@@ -32,23 +28,61 @@ namespace trans_mc
             Logging.s_mode = Logging.LOG_MODE.FILE_EXE;
 
             FormMainTransMC formMain = null;
+            SingleInstanceRun st;
             ProgramBase.Start();
-            SingleInstanceRun st = new SingleInstanceRun();
 
-            if (st.SingleInstance() == true)
+            if (args.Length > 0)
+                st = new SingleInstanceRun(args[0]);
+            else
+                st = new SingleInstanceRun();
+
+            if (true)
             {
-                
-            }
+                using (Mutex mutex = new Mutex(true, st.nameMutex, out isFirstInstance))
+                {
+                    if (!isFirstInstance && !mutex.WaitOne(0, false))
+                    {
+                        MessageBox.Show("DOUBLERUN!");
+                        string processName = Process.GetCurrentProcess().ProcessName;
+                        BringOldInstanceToFront(processName);
+                    }
+                    else
+                    {
+                        GC.Collect();
 
-            if (formMain == null)
-            {
-                try { formMain = new FormMainTransMC(); }
-                catch (Exception e) { Logging.Logg().Exception(e, "Ошибка запуска приложения.", Logging.INDEX_MESSAGE.NOT_SET); }
+                        if (formMain == null)
+                        {
+                            try { formMain = new FormMainTransMC(); }
+                            catch (Exception e)
+                            { Logging.Logg().Exception(e, "Ошибка запуска приложения.", Logging.INDEX_MESSAGE.NOT_SET); }
+                        }
+                        MessageBox.Show("PERVZAPUSK");
+                        Application.Run(formMain);
+                    }
+                }
             }
-
-            Application.Run(formMain);
 
             ProgramBase.Exit();
+        }
+
+        /// <summary>
+        /// 
+        /// </summary>
+        /// <param name="processName"></param>
+        private static void BringOldInstanceToFront(string processName)
+        {
+            Process[] RunningProcesses = Process.GetProcessesByName(processName);
+            if (RunningProcesses.Length > 0)
+            {
+                Process runningProcess = RunningProcesses[0];
+                if (runningProcess != null)
+                {
+                    //runningProcess.Handle
+                    IntPtr mainWindowHandle = runningProcess.Handle;
+                    NativeMethods.ShowWindowAsync(mainWindowHandle, 1);
+                    NativeMethods.ShowWindowAsync(mainWindowHandle, 9);
+                }
+            }
         }
     }
 }
