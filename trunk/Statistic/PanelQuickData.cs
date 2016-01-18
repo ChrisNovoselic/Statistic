@@ -33,12 +33,10 @@ namespace Statistic
         public Font[] GetFontHLabel()
         {
             string[] textOfMaxLengths = new string[(int)HLabel.TYPE_HLABEL.COUNT_TYPE_HLABEL] { string.Empty, string.Empty, string.Empty };
+            string strValue = string.Empty;
             SizeF[] szLabelOfMinSizes = new SizeF[(int)HLabel.TYPE_HLABEL.COUNT_TYPE_HLABEL]; //(float.MaxValue, float.MaxValue);
 
-            Font[] fonts = null;
-            float fSz = -1F,
-                fSzMin = -1F, fSzMax = -1F, fSzStep = float.MinValue;
-            SizeF sz;
+            Font[] arFontRes = null;
 
             Graphics g = this.CreateGraphics();
 
@@ -47,7 +45,9 @@ namespace Statistic
             for (i = (int)HLabel.TYPE_HLABEL.TG; i < (int)HLabel.TYPE_HLABEL.COUNT_TYPE_HLABEL; i++)
             {
                 textOfMaxLengths[i] = string.Empty;
-                szLabelOfMinSizes[i].Height = szLabelOfMinSizes[i].Width = float.MaxValue;
+                szLabelOfMinSizes[i].Height =
+                szLabelOfMinSizes[i].Width =
+                    float.MaxValue;
             }
 
             foreach (Control ctrl in this.Controls)
@@ -62,20 +62,25 @@ namespace Statistic
                             switch (indx)
                             {
                                 case (int)HLabel.TYPE_HLABEL.TG:
-                                    textOfMaxLengths[indx] = ctrl.Text;
+                                    strValue = ctrl.Text;
                                     break;
                                 case (int)HLabel.TYPE_HLABEL.TOTAL:
                                     if (ctrl.Text.LongCount(delegate(char ch) { return ch == '-'; }) > 1)
-                                        textOfMaxLengths[indx] = new string('8', ctrl.Text.Length + 3);
+                                        strValue = new string('8', ctrl.Text.Length + 3);
                                     else
-                                        textOfMaxLengths[indx] = ctrl.Text;
-                                    break;
+                                        strValue = ctrl.Text;
+                                    break;                                    
                                 case (int)HLabel.TYPE_HLABEL.TOTAL_ZOOM:
-                                    textOfMaxLengths[indx] = ctrl.Text;
+                                    strValue = ctrl.Text;
                                     break;
                                 default:
                                     break;
                             }
+
+                            if (textOfMaxLengths[indx].Length < strValue.Length)
+                                textOfMaxLengths[indx] = strValue;
+                            else
+                                ;
                         }
                         else
                             ;
@@ -95,41 +100,20 @@ namespace Statistic
 
             if (!(indx == (int)HLabel.TYPE_HLABEL.UNKNOWN))
             {
-                fonts = new Font[(int)HLabel.TYPE_HLABEL.COUNT_TYPE_HLABEL];
+                arFontRes = new Font[(int)HLabel.TYPE_HLABEL.COUNT_TYPE_HLABEL];
 
                 for (i = (int)HLabel.TYPE_HLABEL.TG; i < (int)HLabel.TYPE_HLABEL.COUNT_TYPE_HLABEL; i++)
-                {
-                    fSzMin = szLabelOfMinSizes[i].Height * 0.2F; fSzMax = szLabelOfMinSizes[i].Height * 0.8F; fSzStep = 0.5F;
-
                     if ((szLabelOfMinSizes[i].Height < float.MaxValue) && (szLabelOfMinSizes[i].Width < float.MaxValue))
                     {
-                        szLabelOfMinSizes[i].Height *= 0.86f;
-                        szLabelOfMinSizes[i].Width *= 0.86f;
-
-                        //ctrl.Height * 0.29F
-                        //for (fSz = fSzMin; fSz < fSzMax; fSz += fSzStep)
-                        for (fSz = fSzMax; fSz > fSzMin; fSz -= fSzStep)
-                        {
-                            fonts[i] = new System.Drawing.Font("Microsoft Sans Serif", fSz, System.Drawing.FontStyle.Regular, System.Drawing.GraphicsUnit.Point, ((byte)(204)));
-                            sz = g.MeasureString(textOfMaxLengths[i], fonts[i]);
-
-                            if ((!(sz.Height > szLabelOfMinSizes[i].Height)) && (!(sz.Width > szLabelOfMinSizes[i].Width)))
-                            {
-                                break;
-                            }
-                            else
-                            {
-                            }
-                        }
+                        arFontRes[i] = HLabel.FitFont(g, textOfMaxLengths[i], szLabelOfMinSizes[i]);
                     }
                     else
                         ;
-                }
             }
             else
                 ; //Logging.Logg ().Error (@"HPanelTableLayout::GetFontHLabel () - type=UNKNOWN");
 
-            return fonts;
+            return arFontRes;
         }
 
         /// <summary>

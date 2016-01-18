@@ -35,6 +35,8 @@ namespace Statistic
                 this.Text = s_msg;
                 this.BorderStyle = BorderStyle.Fixed3D;
                 this.TextAlign = ContentAlignment.MiddleCenter;
+                //this.AutoSize = false; // по умолчанию 'false'
+                this.SetAutoSizeMode(AutoSizeMode.GrowOnly);
                 _fontDefault =
                 _fontActual =
                     this.Font;
@@ -45,7 +47,7 @@ namespace Statistic
 
                 m_prevViewOrientation = m_propView[(int)INDEX_PROPERTIES_VIEW.ORIENTATION];
 
-                this.SizeChanged += new EventHandler (onSizeChanged);
+                //this.SizeChanged += new EventHandler (onSizeChanged);
             }
 
             private void OnMenuItem_Content(object obj, EventArgs ev)
@@ -236,36 +238,36 @@ namespace Statistic
 
                 this.ForeColor = color;
             }
-            /// <summary>
-            /// Обработчик события - изменение
-            /// </summary>
-            /// <param name="obj"></param>
-            /// <param name="ev"></param>
-            private void onSizeChanged(object obj, EventArgs ev)
-            {
-                if (_state == true)
-                {
-                    float sz = float.MinValue;
-                    
-                    //Graphics g = this.CreateGraphics();
-                    //float sz = g.MeasureString(Text, _fontActual).Width;
+            ///// <summary>
+            ///// Обработчик события - изменение
+            ///// </summary>
+            ///// <param name="obj">Объект, инициировавший событие (подпись)</param>
+            ///// <param name="ev">Аргумент события</param>
+            //private void onSizeChanged(object obj, EventArgs ev)
+            //{
+            //    if (_state == true)
+            //    {
+            //        float sz = float.MinValue;
 
-                    sz = (float)(ClientSize.Height * 0.46);
-                    Console.WriteLine(@"Новый размер шрифта: " + sz);
-                    
-                    _fontActual = new Font(
-                        _fontActual.FontFamily
-                        , sz //_fontActual.Size
-                        , _fontActual.Style
-                        , _fontActual.Unit
-                        , _fontActual.GdiCharSet
-                    );
-                    
-                    setFont(_fontActual, Color.Red);
-                }
-                else
-                    ;
-            }
+            //        //Graphics g = this.CreateGraphics();
+            //        //float sz = g.MeasureString(Text, _fontActual).Width;
+
+            //        sz = (float)(ClientSize.Height * 0.46);
+            //        Console.WriteLine(@"Новый размер шрифта: " + sz);
+
+            //        _fontActual = new Font(
+            //            _fontActual.FontFamily
+            //            , sz //_fontActual.Size
+            //            , _fontActual.Style
+            //            , _fontActual.Unit
+            //            , _fontActual.GdiCharSet
+            //        );
+
+            //        setFont(_fontActual, Color.Red);
+            //    }
+            //    else
+            //        ;
+            //}
 
             private int getIdMenuItemChecked()
             {
@@ -445,6 +447,8 @@ namespace Statistic
             //SetDelegateReport (fErrRep, fWarRep, fActRep, fREpClr);
 
             InitializeComponent();
+
+
         }
 
         public PanelCustomTecView(IContainer container, FormChangeMode formCM, Size sz/*, DelegateStringFunc fErrRep, DelegateStringFunc fWarRep, DelegateStringFunc fActRep, DelegateBoolFunc fRepClr*/)
@@ -524,6 +528,22 @@ namespace Statistic
             menuItemRes.Click += new EventHandler(MenuItem_OnClick);
 
             return menuItemRes;
+        }
+
+        /// <summary>
+        /// Обработчик события - изменение
+        /// </summary>
+        /// <param name="obj">Объект, инициировавший событие (панель)</param>
+        /// <param name="ev">Аргумент события</param>
+        private void onSizeChanged(object obj, EventArgs ev)
+        {
+            Graphics g = this.CreateGraphics();
+            Font fontLabel = null;
+
+            foreach (HLabelCustomTecView label in m_arLabelEmpty)
+            {
+                fontLabel = HLabel.FitFont(g, label.Text, new SizeF(12, 39));
+            }
         }
 
         private void OnMenuItemsClear  () {
