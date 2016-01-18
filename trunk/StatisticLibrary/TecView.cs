@@ -1412,7 +1412,9 @@ namespace StatisticCommon
                     break;
             }
 
-            if ((! (iRes < 0)) && (! (m_typePanel == TYPE_PANEL.ADMIN_ALARM)))
+            if ((! (iRes < 0))
+                && (! (m_typePanel == TYPE_PANEL.ADMIN_ALARM))
+                && (isLastState (state) == true))
                 ReportClear (false);
             else
                 Console.WriteLine(@"iRes=" + iRes + @"; StatesMachine=" + state.ToString ());
