@@ -335,6 +335,13 @@ namespace StatisticDiagnostic
                 return iRes;
             }
 
+            /// <summary>
+            /// 
+            /// </summary>
+            /// <param name="state"></param>
+            /// <param name="req"></param>
+            /// <param name="res"></param>
+            /// <returns></returns>
             protected override INDEX_WAITHANDLE_REASON StateErrors(int state, int req, int res)
             {
                 INDEX_WAITHANDLE_REASON iRes = INDEX_WAITHANDLE_REASON.SUCCESS;
@@ -344,6 +351,12 @@ namespace StatisticDiagnostic
                 return iRes;
             }
 
+            /// <summary>
+            /// 
+            /// </summary>
+            /// <param name="state"></param>
+            /// <param name="req"></param>
+            /// <param name="res"></param>
             protected override void StateWarnings(int state, int req, int res)
             {
                 throw new NotImplementedException();
@@ -495,7 +508,7 @@ namespace StatisticDiagnostic
             {
                 if ((e.Button == MouseButtons.Right) && (e.RowIndex > -1))
                 {
-                    if (TECDataGridView.Rows[e.RowIndex].Cells[5] != TECDataGridView.Rows[0].Cells[5])
+                    if (TECDataGridView.Rows[e.RowIndex].Cells[0].Value.ToString() != "АИИСКУЭ")
                     {
                         if
                         (TECDataGridView.Rows[e.RowIndex].Cells[e.ColumnIndex].Style.BackColor == System.Drawing.Color.DeepSkyBlue)
@@ -1823,9 +1836,8 @@ namespace StatisticDiagnostic
                     int lnght = value.Length;
 
                     for (int i = 4; i > lnght; i--)
-                    {
                         value = value.Insert(0, "0");
-                    }
+
                     value = value.Insert(2, ":");
                 }
 
