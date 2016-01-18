@@ -12,8 +12,21 @@ using StatisticTrans;
 
 namespace trans_mc
 {
+
     static class Program
     {
+
+        [DllImport("user32.dll")]
+        [return: MarshalAs(UnmanagedType.Bool)]
+        static extern bool SetForegroundWindow(IntPtr hWnd);
+
+        [DllImport("user32.dll", SetLastError = true)]
+        internal static extern int ShowWindow(int hwnd, int nCmdShow);
+
+        [DllImport("user32.dll", SetLastError = true)]
+        internal static extern int GetWindow(int hwnd, int nCmdShow);
+
+        static readonly string AppPath = Path.GetFileNameWithoutExtension(Application.ExecutablePath);
 
         static bool isFirstInstance;
 
@@ -32,33 +45,32 @@ namespace trans_mc
             ProgramBase.Start();
 
             if (args.Length > 0)
-                st = new SingleInstanceRun(args[0]);
+                st = new SingleInstanceRun(args);
             else
                 st = new SingleInstanceRun();
 
-            if (true)
+            using (Mutex mutex = new Mutex(true, st.nameMutex, out isFirstInstance))
             {
-                using (Mutex mutex = new Mutex(true, st.nameMutex, out isFirstInstance))
-                {
-                    if (!isFirstInstance && !mutex.WaitOne(0, false))
-                    {
-                        MessageBox.Show("DOUBLERUN!");
-                        string processName = Process.GetCurrentProcess().ProcessName;
-                        BringOldInstanceToFront(processName);
-                    }
-                    else
-                    {
-                        GC.Collect();
+                //st.CheckArgCmdLine(isFirstInstance);
 
-                        if (formMain == null)
-                        {
-                            try { formMain = new FormMainTransMC(); }
-                            catch (Exception e)
-                            { Logging.Logg().Exception(e, "Ошибка запуска приложения.", Logging.INDEX_MESSAGE.NOT_SET); }
-                        }
-                        MessageBox.Show("PERVZAPUSK");
-                        Application.Run(formMain);
+                if (!isFirstInstance && !mutex.WaitOne(0,false))
+                {
+
+                }
+                else
+                {
+                    GC.Collect();
+
+                    if (formMain == null)
+                    {
+                        try { formMain = new FormMainTransMC(); }
+                        catch (Exception e)
+                        { Logging.Logg().Exception(e, "Ошибка запуска приложения.", Logging.INDEX_MESSAGE.NOT_SET); }
                     }
+                    MessageBox.Show("PERVZAPUSK");
+                    Application.Run(formMain);
+
+                    MessageBox.Show("NO RUN - NO SHOW");
                 }
             }
 
@@ -77,10 +89,11 @@ namespace trans_mc
                 Process runningProcess = RunningProcesses[0];
                 if (runningProcess != null)
                 {
-                    //runningProcess.Handle
-                    IntPtr mainWindowHandle = runningProcess.Handle;
-                    NativeMethods.ShowWindowAsync(mainWindowHandle, 1);
-                    NativeMethods.ShowWindowAsync(mainWindowHandle, 9);
+                    ShowWindow((int)runningProcess.MainWindowHandle, 1);//нормально развернутое
+                    //ShowWindow((int)runningProcess.MainWindowHandle, 3);//максимально развернутое
+                    SetForegroundWindow(runningProcess.Handle);
+                    GetWindow((int)runningProcess.Handle, 1);
+
                 }
             }
         }

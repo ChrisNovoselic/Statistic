@@ -335,15 +335,10 @@ namespace StatisticTrans
                         {
                             m_modeMashine = MODE_MASHINE.SERVICE;
                             m_arg_interval = TIMER_SERVICE_MIN_INTERVAL;
-                            //ExpandApplication();
                         }
 
                         else if ((!(args[1].IndexOf("stop") < 0)) && ((args[1][0] == '/')))
-                        {
-                            MessageBox.Show("THIS IS THE END FROM");
-                            //Stop();
-                            //Close();
-                        }
+                            MessageBox.Show("CLOSE NULL");
 
                         else
                         {
