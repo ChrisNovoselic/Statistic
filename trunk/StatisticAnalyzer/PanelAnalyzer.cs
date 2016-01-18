@@ -68,9 +68,9 @@ namespace StatisticAnalyzer
             private System.Windows.Forms.Label labelStopCalendar;
             protected System.Windows.Forms.DateTimePicker StopCalendar;
             private System.Windows.Forms.Label labelRole;
-            protected System.Windows.Forms.CheckedListBox listRole;
+            protected System.Windows.Forms.DataGridView dvgRole;
             private System.Windows.Forms.Label labelUser;
-            protected System.Windows.Forms.CheckedListBox listUser;
+            protected System.Windows.Forms.DataGridView dvgUser;
             private System.Windows.Forms.Label labelMessage;
             protected System.Windows.Forms.DataGridView dgvMessage;
 
@@ -91,8 +91,8 @@ namespace StatisticAnalyzer
                 this.dgvMessage = new System.Windows.Forms.DataGridView();
                 this.StartCalendar = new DateTimePicker();
                 this.StopCalendar = new DateTimePicker();
-                this.listRole = new CheckedListBox();
-                this.listUser = new CheckedListBox();
+                this.dvgRole = new DataGridView();
+                this.dvgUser = new DataGridView();
 
                 this.labelFilterActives = new System.Windows.Forms.Label();
                 this.dgvFilterActives = new System.Windows.Forms.DataGridView();
@@ -616,7 +616,7 @@ namespace StatisticAnalyzer
                 this.labelMessage.Name = "labelMessage";
                 //this.labelFilterRoles.Size = new System.Drawing.Size(77, 13);
                 //this.labelMessage.TabIndex = 5;
-                this.labelMessage.Text = "Фильтр: роли";
+                this.labelMessage.Text = "Статистика сообщений";
 
                 // 
                 // dgvMessage
@@ -629,7 +629,6 @@ namespace StatisticAnalyzer
                 //this.dgvFilterTypeMessage.ColumnHeadersHeightSizeMode = System.Windows.Forms.DataGridViewColumnHeadersHeightSizeMode.AutoSize;
                 this.dgvMessage.ColumnHeadersVisible = false;
                 this.dgvMessage.Columns.AddRange(new System.Windows.Forms.DataGridViewColumn[] {
-                    new DataGridViewCheckBoxColumn (),
                     new DataGridViewTextBoxColumn (),
                     new DataGridViewTextBoxColumn ()});
                 //this.dgvFilterTypeMessage.Location = new System.Drawing.Point(6, 206);
@@ -676,12 +675,25 @@ namespace StatisticAnalyzer
                 // 
                 // listUser
                 //
-                this.listUser.Name = "listUser";
-                this.listUser.Dock = DockStyle.Fill;
-                this.listUser.CheckOnClick = true;
-                this.listUser.FormattingEnabled = true;
+                this.dvgUser.Name = "dvgUser";
+                this.dvgUser.Dock = DockStyle.Fill;
                 //this.listUser.TabIndex = 4;
-                this.listUser.ItemCheck += new System.Windows.Forms.ItemCheckEventHandler(listUser_ItemCheck); 
+
+                this.dvgUser.AllowUserToAddRows = false;
+                this.dvgUser.AllowUserToDeleteRows = false;
+                this.dvgUser.ColumnHeadersHeightSizeMode = System.Windows.Forms.DataGridViewColumnHeadersHeightSizeMode.AutoSize;
+                this.dvgUser.ColumnHeadersVisible = false;
+                this.dvgUser.Columns.AddRange(new System.Windows.Forms.DataGridViewColumn[] {
+                    new DataGridViewCheckBoxColumn (),
+                    new DataGridViewTextBoxColumn ()});
+                this.dvgUser.MultiSelect = false;
+                this.dvgUser.ReadOnly = true;
+                this.dvgUser.RowHeadersVisible = false;
+                this.dvgUser.RowTemplate.Height = 18;
+                this.dvgUser.RowTemplate.Resizable = System.Windows.Forms.DataGridViewTriState.False;
+                this.dvgUser.SelectionMode = System.Windows.Forms.DataGridViewSelectionMode.FullRowSelect;
+                //this.dgvFilterRoles.Size = new System.Drawing.Size(190, 111);
+                this.dvgUser.CellClick += new System.Windows.Forms.DataGridViewCellEventHandler(this.dgvUser_CellClick);
 
                 #endregion
 
@@ -698,15 +710,29 @@ namespace StatisticAnalyzer
                 //this.labelMessage.TabIndex = 5;
                 this.labelRole.Text = "Фильтр: роли";
 
+
                 // 
                 // listRole
                 //
-                this.listRole.Name = "listRole";
-                this.listRole.Dock = DockStyle.Fill;
-                this.listRole.CheckOnClick = true;
-                this.listRole.FormattingEnabled = true;
+                this.dvgRole.Name = "dvgRole";
+                this.dvgRole.Dock = DockStyle.Fill;
                 //this.listUser.TabIndex = 4;
-                this.listRole.ItemCheck += new System.Windows.Forms.ItemCheckEventHandler(listRole_ItemCheck);
+
+                this.dvgRole.AllowUserToAddRows = false;
+                this.dvgRole.AllowUserToDeleteRows = false;
+                this.dvgRole.ColumnHeadersHeightSizeMode = System.Windows.Forms.DataGridViewColumnHeadersHeightSizeMode.AutoSize;
+                this.dvgRole.ColumnHeadersVisible = false;
+                this.dvgRole.Columns.AddRange(new System.Windows.Forms.DataGridViewColumn[] {
+                    new DataGridViewCheckBoxColumn (),
+                    new DataGridViewTextBoxColumn ()});
+                this.dvgRole.MultiSelect = false;
+                this.dvgRole.ReadOnly = true;
+                this.dvgRole.RowHeadersVisible = false;
+                this.dvgRole.RowTemplate.Height = 18;
+                this.dvgRole.RowTemplate.Resizable = System.Windows.Forms.DataGridViewTriState.False;
+                this.dvgRole.SelectionMode = System.Windows.Forms.DataGridViewSelectionMode.FullRowSelect;
+                //this.dgvFilterRoles.Size = new System.Drawing.Size(190, 111);
+                this.dvgRole.CellClick += new System.Windows.Forms.DataGridViewCellEventHandler(this.dgvRole_CellClick);
 
                 #endregion
 
@@ -829,10 +855,10 @@ namespace StatisticAnalyzer
 
 
                 this.panelMessage.Controls.Add(this.labelRole, 0, 6); this.SetColumnSpan(this.labelRole, 1); this.SetRowSpan(this.labelRole, 1);
-                this.panelMessage.Controls.Add(this.listRole, 0, 7); this.SetColumnSpan(this.listRole, 1); this.SetRowSpan(this.listRole, 10);
+                this.panelMessage.Controls.Add(this.dvgRole, 0, 7); this.SetColumnSpan(this.dvgRole, 1); this.SetRowSpan(this.dvgRole, 10);
 
                 this.panelMessage.Controls.Add(this.labelUser, 0, 13); this.SetColumnSpan(this.labelUser, 1); this.SetRowSpan(this.labelUser, 1);
-                this.panelMessage.Controls.Add(this.listUser, 0, 14); this.SetColumnSpan(this.listUser, 1); this.SetRowSpan(this.listUser, 10);
+                this.panelMessage.Controls.Add(this.dvgUser, 0, 14); this.SetColumnSpan(this.dvgUser, 1); this.SetRowSpan(this.dvgUser, 10);
 
                 this.panelMessage.Controls.Add(this.labelMessage, 0, 24); this.SetColumnSpan(this.labelMessage, 1); this.SetRowSpan(this.labelMessage, 1);
                 this.panelMessage.Controls.Add(this.dgvMessage, 0, 25); this.SetColumnSpan(this.dgvMessage, 1); this.SetRowSpan(this.dgvMessage, 10);
@@ -842,11 +868,12 @@ namespace StatisticAnalyzer
 
                 #endregion
 
+                this.Controls.Add(this.groupMessage, 10, -1); this.SetColumnSpan(this.groupMessage, 3); this.SetRowSpan(this.groupMessage, 18);
+                this.Controls.Add(this.groupTabs, 0, 18); this.SetColumnSpan(this.groupTabs, 12); this.SetRowSpan(this.groupTabs, 6);
+                this.Controls.Add(this.groupUser, 0, 0); this.SetColumnSpan(this.groupUser, 9); this.SetRowSpan(this.groupUser, 18);
+
                 #endregion
 
-                this.Controls.Add(this.groupMessage, 10, -1); this.SetColumnSpan(this.groupMessage, 3); this.SetRowSpan(this.groupMessage, 24);
-                this.Controls.Add(this.groupTabs, 0, 18); this.SetColumnSpan(this.groupTabs, 9); this.SetRowSpan(this.groupTabs, 6);
-                this.Controls.Add(this.groupUser, 0, 0); this.SetColumnSpan(this.groupUser, 9); this.SetRowSpan(this.groupUser, 18);
 
                 ((System.ComponentModel.ISupportInitialize)(this.dgvFilterActives)).EndInit();
                 ((System.ComponentModel.ISupportInitialize)(this.dgvFilterRoles)).EndInit();
@@ -893,6 +920,8 @@ namespace StatisticAnalyzer
 
         protected DataTable m_tableUsers
                     , m_tableRoles;
+        protected DataTable m_tableUsers_stat
+                   , m_tableRoles_stat;
 
         //protected DbConnection m_connConfigDB;
         protected int m_iListenerIdConfigDB;
@@ -910,12 +939,15 @@ namespace StatisticAnalyzer
 
         protected enum INDEX_DELIMETER { PART, ROW };
         protected static string[] m_chDelimeters = { @"DELIMETER_PART", "DELIMETER_ROW" };
+        Int32[] mass_role = new Int32 [6];
+        bool bool_Role = false;
 
         public PanelAnalyzer(int idListener, List<StatisticCommon.TEC> tec)
             : base()
         {
             InitializeComponent();
 
+            
             m_arCheckBoxMode = new CheckBox[] { checkBoxTEC, checkBoxGTP, checkBoxPC, checkBoxTG };
 
             m_iListenerIdConfigDB = idListener;
@@ -947,25 +979,18 @@ namespace StatisticAnalyzer
                 FillDataGridViews(ref dgvFilterRoles, m_tableRoles, @"DESCRIPTION", err, true);
 
                 HStatisticUsers.GetRoles(ref connConfigDB, string.Empty, string.Empty, out m_tableRoles, out err);
-                FillCheckedListBox(ref listRole, m_tableRoles, @"DESCRIPTION", err, true);
-                
-
+                FillDataGridViews(ref dvgRole, m_tableRoles, @"DESCRIPTION", err, true);
+                  
                 HStatisticUsers.GetUsers(ref connConfigDB, string.Empty, c_list_sorted, out m_tableUsers, out err);
                 FillDataGridViews(ref dgvClient, m_tableUsers, @"DESCRIPTION", err);
 
-                HStatisticUsers.GetUsers(ref connConfigDB, string.Empty, c_list_sorted, out m_tableUsers, out err);
-                FillCheckedListBox(ref listUser, m_tableUsers, @"DESCRIPTION", err);
-
-
-                //HStatisticUsers.GetRoles(ref connConfigDB, string.Empty, string.Empty, out m_tableRoles, out err);
-                //FillDataGridViews(ref dgvFilterRoles, m_tableRoles, @"DESCRIPTION", err, true);
-
-                //HStatisticUsers.GetUsers(ref connConfigDB, string.Empty, c_list_sorted, out m_tableUsers, out err);
-                //FillDataGridViews(ref dgvClient, m_tableUsers, @"DESCRIPTION", err);
+                HStatisticUsers.GetUsers(ref connConfigDB, string.Empty, c_list_sorted, out m_tableUsers_stat, out err);
+                FillDataGridViews(ref dvgUser, m_tableUsers_stat, @"DESCRIPTION", err);
 
                 m_LogParse = newLogParse();
 
                 fillTypeMessage();
+                fillMessage();
 
                 if (!(m_LogParse == null))
                 {
@@ -999,6 +1024,8 @@ namespace StatisticAnalyzer
 
         protected abstract void fillTypeMessage();
 
+        protected abstract void fillMessage();
+
         protected void fillTypeMessage(string[] strTypeMessages)
         {
             dgvFilterTypeMessage.Rows.Add(strTypeMessages.Length);
@@ -1009,6 +1036,19 @@ namespace StatisticAnalyzer
                 dgvFilterTypeMessage.Rows[(int)i].Cells[2].Value = 0;
             }
         }
+
+
+        protected void fillMessage(string[] strMessages)
+        {
+            dgvMessage.Rows.Add(strMessages.Length);
+            for (int i = 0; i < strMessages.Length; i++)
+            {
+                //dgvMessage.Rows[(int)i].Cells[0].Value = true;
+                dgvMessage.Rows[(int)i].Cells[0].Value = strMessages[i];
+                dgvMessage.Rows[(int)i].Cells[1].Value = 0;
+            }
+        }
+
 
         public override void SetDelegateReport(DelegateStringFunc ferr, DelegateStringFunc fwar, DelegateStringFunc fact, DelegateBoolFunc fclr)
         {
@@ -1161,7 +1201,9 @@ namespace StatisticAnalyzer
 
                         //ctrl.Items[i].Cells[0].Value = bCheckedItem;
                         ctrl.Items.Add(src.Rows[i][nameField].ToString());
+                        ctrl.SetItemChecked(i, true);
                     }
+                    
                 }
                 else
                     ;
@@ -1900,18 +1942,69 @@ namespace StatisticAnalyzer
             }
         }
 
-        private void listUser_ItemCheck(object sender, ItemCheckEventArgs e)
+        private void dgvUser_CellClick(object sender, DataGridViewCellEventArgs e)
         {
             //if ((!(m_MainFormContextMenuStripListTecViews == null)) && (e.Index < m_MainFormContextMenuStripListTecViews.Items.Count))
             //    ((ToolStripMenuItem)m_MainFormContextMenuStripListTecViews.Items[e.Index]).CheckState = e.NewValue;
             //else ;
         }
 
-        private void listRole_ItemCheck(object sender, ItemCheckEventArgs e)
+
+
+
+        private void dgvRole_CellClick(object sender, DataGridViewCellEventArgs e)
         {
-            //if ((!(m_MainFormContextMenuStripListTecViews == null)) && (e.Index < m_MainFormContextMenuStripListTecViews.Items.Count))
-            //    ((ToolStripMenuItem)m_MainFormContextMenuStripListTecViews.Items[e.Index]).CheckState = e.NewValue;
-            //else ;
+            int i = -1, err = -1;
+            string where = string.Empty;
+
+            if (e.ColumnIndex == 0)
+            {
+                DbConnection connConfigDB = DbSources.Sources().GetConnection(m_iListenerIdConfigDB, out err);
+                if ((!(connConfigDB == null)) && (err == 0))
+                {
+                    //Вариант №0
+                    m_timerChecked.Change(System.Threading.Timeout.Infinite, System.Threading.Timeout.Infinite);
+                    ////Вариант №1
+                    //m_timerChecked.Stop ();
+
+                    dgvFilterRoles.Rows[e.RowIndex].Cells[0].Value = !bool.Parse(dgvFilterRoles.Rows[e.RowIndex].Cells[0].Value.ToString());
+
+                    for (i = 0; i < m_tableRoles.Rows.Count; i++)
+                    {
+                        if (bool.Parse(dgvFilterRoles.Rows[i].Cells[0].Value.ToString()) == false)
+                        {
+                            if (where.Equals(string.Empty) == true)
+                            {
+                                where = "ID_ROLE NOT IN (";
+                            }
+                            else
+                                where += ",";
+
+                            where += m_tableRoles.Rows[i]["ID"];
+                        }
+                        else
+                            ;
+                    }
+
+                    if (where.Equals(string.Empty) == false)
+                        where += ")";
+                    else
+                        ;
+
+                    HStatisticUsers.GetUsers(ref connConfigDB, where, c_list_sorted, out m_tableUsers_stat, out err);
+                    //FillDataGridViews(ref dgvUser, m_tableUsers_stat, @"DESCRIPTION", err);
+
+                    //Вариант №0
+                    m_timerChecked.Change(0, System.Threading.Timeout.Infinite);
+                    ////Вариант №1
+                    //m_timerChecked.Interval = MSEC_TIMERCHECKED_STANDARD;
+                    //m_timerChecked.Start();
+                }
+                else
+                    throw new Exception(@"PanelAnzlyzer::dgvFilterRoles_CellClick () - нет соединения с БД конфигурации...");
+            }
+            else
+                ;            
         }
 
     }
@@ -2058,6 +2151,11 @@ namespace StatisticAnalyzer
         protected override void fillTypeMessage()
         {
             fillTypeMessage(LogParse_File.DESC_LOGMESSAGE);
+        }
+
+        protected override void fillMessage()
+        {
+            fillMessage(LogParse_File.DESC_LOGMESSAGE);
         }
 
         public override void Start()
@@ -2528,6 +2626,11 @@ namespace StatisticAnalyzer
         protected override void fillTypeMessage()
         {
             fillTypeMessage(LogParse_DB.DESC_LOGMESSAGE);
+        }
+
+        protected override void fillMessage()
+        {
+            fillMessage(LogParse_DB.DESC_LOGMESSAGE);
         }
 
         protected override void dgvClient_SelectionChanged(object sender, EventArgs e)
