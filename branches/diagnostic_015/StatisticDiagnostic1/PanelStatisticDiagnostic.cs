@@ -682,7 +682,7 @@ namespace StatisticDiagnostic
             /// <summary>
             /// Функция заполнения данными элементов ТЭЦ
             /// </summary>
-            /// <param name="filter">филтр для обработки данных</param>
+            /// <param name="filter">фильтр для обработки данных</param>
             /// <param name="i">номер панели</param>
             private void insertDataTEC(string filter, int i)
             {
@@ -869,6 +869,8 @@ namespace StatisticDiagnostic
                         paintCellActive(x, y);
                         break;
                     }
+                    else
+                        paintCellDeactive(x, y);
                 }
             }
 
@@ -920,13 +922,9 @@ namespace StatisticDiagnostic
             private void clearGrid()
             {
                 for (int i = 0; i < m_arPanelsTEC.Length; i++)
-                {
                     for (int j = 0; j < m_arPanelsTEC[i].TECDataGridView.Rows.Count; j++)
-                    {
                         if (m_arPanelsTEC[i].TECDataGridView.Rows.Count > 0)
                             m_arPanelsTEC[i].TECDataGridView.Rows.Clear();
-                    }
-                }
             }
 
             /// <summary>
@@ -940,7 +938,7 @@ namespace StatisticDiagnostic
                 string nameSource = m_arPanelsTEC[i].TECDataGridView.Rows[r].Cells[0].Value.ToString();
 
                 if ((!(m_arPanelsTEC[i].TECDataGridView.Rows[r].Cells[0].Value.ToString() == "АИИСКУЭ"))
-                    && m_arPanelsTEC[i].TECDataGridView.Rows[r].Cells[0].Style.BackColor == System.Drawing.Color.Empty)
+                    && m_arPanelsTEC[i].TECDataGridView.Rows[r].Cells[0].Style.BackColor == System.Drawing.Color.White)
                 {
                 }
                 else
