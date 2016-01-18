@@ -1417,7 +1417,8 @@ namespace StatisticCommon
                 && (isLastState (state) == true))
                 ReportClear (false);
             else
-                Console.WriteLine(@"iRes=" + iRes + @"; StatesMachine=" + state.ToString ());
+                //Console.WriteLine(@"iRes=" + iRes + @"; StatesMachine=" + state.ToString ())
+                    ;
 
             //Logging.Logg().Debug(@"TecView::StateResponse () - TECname=" + m_tec.name_shr + @", state=" + state.ToString() + @", bRes=" + bRes.ToString() + @" - вЫход...");
 

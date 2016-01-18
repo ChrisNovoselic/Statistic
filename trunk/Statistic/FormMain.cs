@@ -809,8 +809,7 @@ namespace Statistic
             //Создать вспомогательное окно...
             FormMainFloat formFloat = null;
             //formFloat = new FormMainFloat(m_dictAddingTabs[(int)m_arIdCustomTabs[(int)indxTab, indxItem]].panel);
-            formFloat = new FormMainFloat(panel);
-            formFloat.Text = ev.TabHeaderText;
+            formFloat = new FormMainFloat(ev.TabHeaderText, panel, panel is PanelCustomTecView == false);
             //Назначить обработчики событий...
             formFloat.delegateFormClosing = FormMain_OnFormFloat_Closing;
             formFloat.delegateFormLoad = FormMain_OnFormFloat_Load;
@@ -1188,7 +1187,7 @@ namespace Statistic
             listToRemove.Clear();
             if (!(m_dictFormFloat == null))
                 foreach (KeyValuePair<int, Form> pair in m_dictFormFloat)
-                    if (pair.Key < 10000)
+                    if (pair.Key < (int)TECComponent.ID.MAX)
                         listToRemove.Add(pair.Key);
                     else
                         ;

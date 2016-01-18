@@ -205,6 +205,8 @@ namespace Statistic
             private System.Drawing.Font _fontDefault
                 , _fontActual;
 
+            Color _color { get { return _state == true ? Color.Red : Color.Black; } }
+
             public void EnableContextMenuItem(int indx, bool bEnabled)
             {
                 ContextMenu.MenuItems[indx].Enabled =
@@ -214,13 +216,13 @@ namespace Statistic
                 //  увеличение читабельности (заметности) подписи
                 if (bEnabled == true)
                 {
-                    setFont(_fontActual, Color.Red);
+                    FitFont();
                 }
                 else
                 // только при наличии предыдущего шрифта
                     if (!(_fontDefault == null))
                     {
-                        setFont(_fontDefault, Color.Black);
+                        setFont(_fontDefault, _color);
                     }
                     else
                         ;
@@ -238,36 +240,18 @@ namespace Statistic
 
                 this.ForeColor = color;
             }
-            ///// <summary>
-            ///// Обработчик события - изменение
-            ///// </summary>
-            ///// <param name="obj">Объект, инициировавший событие (подпись)</param>
-            ///// <param name="ev">Аргумент события</param>
-            //private void onSizeChanged(object obj, EventArgs ev)
-            //{
-            //    if (_state == true)
-            //    {
-            //        float sz = float.MinValue;
 
-            //        //Graphics g = this.CreateGraphics();
-            //        //float sz = g.MeasureString(Text, _fontActual).Width;
+            public void FitFont()
+            {
+                if (_state == true)
+                {
+                    _fontActual = HLabel.FitFont(this.CreateGraphics(), Text, ClientSize);
 
-            //        sz = (float)(ClientSize.Height * 0.46);
-            //        Console.WriteLine(@"Новый размер шрифта: " + sz);
-
-            //        _fontActual = new Font(
-            //            _fontActual.FontFamily
-            //            , sz //_fontActual.Size
-            //            , _fontActual.Style
-            //            , _fontActual.Unit
-            //            , _fontActual.GdiCharSet
-            //        );
-
-            //        setFont(_fontActual, Color.Red);
-            //    }
-            //    else
-            //        ;
-            //}
+                    setFont((!(_fontActual == null)) ? _fontActual : _fontDefault, _color);
+                }
+                else
+                    ;
+            }
 
             private int getIdMenuItemChecked()
             {
@@ -408,6 +392,8 @@ namespace Statistic
             initializeLayoutStyle ();
 
             this.Dock = DockStyle.Fill;
+
+            this.SizeChanged += new EventHandler(onSizeChanged);
         }
 
         #endregion
@@ -537,13 +523,8 @@ namespace Statistic
         /// <param name="ev">Аргумент события</param>
         private void onSizeChanged(object obj, EventArgs ev)
         {
-            Graphics g = this.CreateGraphics();
-            Font fontLabel = null;
-
             foreach (HLabelCustomTecView label in m_arLabelEmpty)
-            {
-                fontLabel = HLabel.FitFont(g, label.Text, new SizeF(12, 39));
-            }
+                label.FitFont();
         }
 
         private void OnMenuItemsClear  () {
