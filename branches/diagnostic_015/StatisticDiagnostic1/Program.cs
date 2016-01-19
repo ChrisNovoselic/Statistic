@@ -15,17 +15,6 @@ namespace StatisticDiagnostic
         [STAThread]
         static void Main()
         {
-            /*Application.EnableVisualStyles();
-            Application.SetCompatibleTextRenderingDefault(false);
-            Application.Run(new FormMain());
-            PanelStatisticDiagnostic form = new PanelStatisticDiagnostic();*/
-
-            /*Thread thread = new Thread(form.ThreadFunction);
-            //Запускаем поток
-            thread.Priority = ThreadPriority.Highest;
-            thread.Start();*/
-
-            
               int iRes = 0;
 
               //Logging.s_mode = Logging.LOG_MODE.UNKNOWN; //Если назначить неизвестный тип логирования - 1-е сообщения б. утеряны

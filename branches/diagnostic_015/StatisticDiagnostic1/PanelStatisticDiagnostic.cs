@@ -504,6 +504,11 @@ namespace StatisticDiagnostic
                 this.ResumeLayout(false);
             }
 
+            /// <summary>
+            /// 
+            /// </summary>
+            /// <param name="sender"></param>
+            /// <param name="e"></param>
             void TECDataGridView_CellMouseDown(object sender, DataGridViewCellMouseEventArgs e)
             {
                 if ((e.Button == MouseButtons.Right) && (e.RowIndex > -1))
@@ -515,11 +520,7 @@ namespace StatisticDiagnostic
                         {
                             RowIndex = e.RowIndex;
                             attachContextMenu(e.RowIndex);
-
                             this.TECDataGridView.Rows[point.X].Cells[e.ColumnIndex].ContextMenuStrip = ContextmenuChangeState;
-                            toolStripMenuItemActivate.CheckState = CheckState.Checked;
-                            toolStripMenuItemDeactivate.CheckState = CheckState.Unchecked;
-                            this.TECDataGridView.Rows[point.X].Cells[e.ColumnIndex].ContextMenuStrip = null;
                         }
 
                         else
@@ -527,8 +528,6 @@ namespace StatisticDiagnostic
                             RowIndex = e.RowIndex;
                             attachContextMenu(e.RowIndex);
                             this.TECDataGridView.Rows[point.X].Cells[e.ColumnIndex].ContextMenuStrip = ContextmenuChangeState;
-                            toolStripMenuItemActivate.CheckState = CheckState.Unchecked; ;
-                            toolStripMenuItemDeactivate.CheckState = CheckState.Checked;
                         }
                     }
                 }
@@ -907,7 +906,6 @@ namespace StatisticDiagnostic
                         TECDataGridView.Rows[y].Cells[0].ContextMenuStrip = ContextmenuChangeState;
                         toolStripMenuItemActivate.CheckState = CheckState.Unchecked;
                         toolStripMenuItemDeactivate.CheckState = CheckState.Checked;
-
                     }
                 }
             }
@@ -952,15 +950,9 @@ namespace StatisticDiagnostic
 
                 if ((!(m_arPanelsTEC[i].TECDataGridView.Rows[r].Cells[0].Value.ToString() == "АИИСКУЭ"))
                     && m_arPanelsTEC[i].TECDataGridView.Rows[r].Cells[0].Style.BackColor == System.Drawing.Color.White)
-                {
-                }
+                    paintValuesSource(false, i, r);
                 else
-                {
-                    if (m_arPanelsTEC[i].TECDataGridView.Rows[r].Cells[0].Value.ToString() == "АИИСКУЭ")
-                        paintValuesSource(selectInvalidValue(nameSource, time), i, r);
-                    else
-                        paintValuesSource(selectInvalidValue(nameSource, time), i, r);
-                }
+                    paintValuesSource(selectInvalidValue(nameSource, time), i, r);
             }
 
             /// <summary>
@@ -980,7 +972,7 @@ namespace StatisticDiagnostic
                 {
                     case "АИИСКУЭ":
 
-                        if (((int)m_DTnowAISKUE.Minute - (int)time.Minute) > ts)
+                        if ((Math.Abs((int)m_DTnowAISKUE.Minute - (int)time.Minute)) > ts)
                             bFL = true;
                         else
                             bFL = false;
@@ -988,7 +980,7 @@ namespace StatisticDiagnostic
 
                     case "СОТИАССО":
 
-                        if (((int)(m_DTnowSOTIASSO.Minute) - (int)(time.Minute)) > ts)
+                        if ((Math.Abs((int)m_DTnowSOTIASSO.Minute - (int)time.Minute)) > ts)
                             bFL = true;
                         else
                             bFL = false;
@@ -996,7 +988,7 @@ namespace StatisticDiagnostic
 
                     case "СОТИАССО_0":
 
-                        if (((int)m_DTnowSOTIASSO.Minute - (int)time.Minute) > ts)
+                        if ((Math.Abs((int)m_DTnowSOTIASSO.Minute - (int)time.Minute)) > ts)
                             bFL = true;
                         else
                             bFL = false;
@@ -1167,9 +1159,7 @@ namespace StatisticDiagnostic
                     if (!(m_arPanelsMODES == null))
                     {
                         for (int i = 0; i < m_arPanelsMODES.Length; i++)
-                        {
                             m_arPanelsMODES[i].Focus();
-                        }
                     }
                 }
                 else ;
@@ -1181,9 +1171,8 @@ namespace StatisticDiagnostic
             public override void Stop()
             {
                 if (!(m_arPanelsMODES == null))
-                {
                     clearGrid();
-                }
+                else ;
 
                 base.Stop();
             }
@@ -1198,9 +1187,7 @@ namespace StatisticDiagnostic
                     for (int j = 0; j < m_arPanelsMODES[i].ModesDataGridView.Rows.Count; j++)
                     {
                         if (m_arPanelsMODES[i].ModesDataGridView.Rows.Count > 0)
-                        {
                             m_arPanelsMODES[i].ModesDataGridView.Rows.Clear();
-                        }
                     }
                 }
             }
@@ -1210,20 +1197,12 @@ namespace StatisticDiagnostic
             /// </summary>
             public void Create_Modes()
             {
-                /*var stdDetails = (from r in m_tbModes.AsEnumerable()
-                                  select new
-                                  {
-                                      ID = r.Field<int>("ID"),
-                                  }).Distinct();*/
-
                 m_arPanelsMODES = new Modes[7];
 
                 for (int i = 0; i < 7; i++)
                 {
                     if (m_arPanelsMODES[i] == null)
-                    {
                         m_arPanelsMODES[i] = new Modes();
-                    }
                 }
             }
 
@@ -1237,13 +1216,9 @@ namespace StatisticDiagnostic
                 for (int x = 0; x < counter; x++)
                 {
                     if (m_arPanelsMODES[i].ModesDataGridView.InvokeRequired)
-                    {
                         m_arPanelsMODES[i].ModesDataGridView.Invoke(new Action(() => m_arPanelsMODES[i].ModesDataGridView.Rows.Add()));
-                    }
                     else
-                    {
                         m_arPanelsMODES[i].ModesDataGridView.Rows.Add();
-                    }
                 }
             }
 
@@ -2036,7 +2011,6 @@ namespace StatisticDiagnostic
         private void getCurrentData(int iListernID)
         {
             int err = -1;
-            //int iListernID = DbSources.Sources().Register(FormMain.s_listFormConnectionSettings[(int)CONN_SETT_TYPE.CONFIG_DB].getConnSett(), false, @"CONFIG_DB");
             DbConnection dbconn = null;
             dbconn = DbSources.Sources().GetConnection(iListernID, out err);
 
@@ -2053,8 +2027,6 @@ namespace StatisticDiagnostic
                 throw new Exception(@"Нет соединения с БД");
 
             createListActiveSource(m_arraySourceTEC);
-
-            //DbSources.Sources().UnRegister(iListernID);
         }
 
         /// <summary>
@@ -2096,7 +2068,6 @@ namespace StatisticDiagnostic
                 if (!(indx < this.RowCount))
                 {
                     //indx += (int)(indx / ModesTableLayoutPanel.RowCount);
-
                 }
                 //else ;
 
@@ -2139,9 +2110,7 @@ namespace StatisticDiagnostic
                 if (TecTableLayoutPanel.InvokeRequired)
                     TecTableLayoutPanel.Invoke(new Action(() => TecTableLayoutPanel.Controls.Add(m_arPanelsTEC[i], col, row)));
                 else
-                {
                     TecTableLayoutPanel.Controls.Add(m_arPanelsTEC[i], col, row);
-                }
             }
         }
 
@@ -2190,10 +2159,8 @@ namespace StatisticDiagnostic
             if (activated == true)
                 m_timerUpdate.Start();
             else
-            {
                 if (!(m_timerUpdate == null))
                     m_timerUpdate.Stop();
-            }
 
             return bRes;
         }
@@ -2240,9 +2207,7 @@ namespace StatisticDiagnostic
         static string StringQuery(int TM, int tec)
         {
             string query = string.Empty;
-
             query = "update TEC_LIST set  ID_LINK_SOURCE_DATA_TM = " + TM + " where ID =" + tec;
-
             return query;
         }
 
