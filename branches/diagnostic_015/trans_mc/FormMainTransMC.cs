@@ -16,6 +16,10 @@ namespace trans_mc
 {
     public partial class FormMainTransMC : FormMainTransModes
     {
+        public void CloseApp()
+        {
+            ShuttdownApp();
+        }
 
         public FormMainTransMC()
             : base((int)ProgramBase.ID_APP.TRANS_MODES_CENTRE_GUI)
