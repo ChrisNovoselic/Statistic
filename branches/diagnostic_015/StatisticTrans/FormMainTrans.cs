@@ -1542,6 +1542,36 @@ namespace StatisticTrans
 
         }
 
+        protected override void WndProc(ref Message message)
+        {
+            if (message.Msg == SingleInstance.WM_SHOWINSTANCE)
+            {
+                ShowWindow();
+            }
+            base.WndProc(ref message);
+        }
+
+        /// <summary>
+        /// 
+        /// </summary>
+        public void ShowWindow()
+        {
+
+            if (this.WindowState == FormWindowState.Minimized)
+            {
+                ExpandApplication();
+                MessageBox.Show("DR, SHOWME");
+                /*notifyIcon.Visible = false;
+                this.Show();
+                this.WindowState = FormWindowState.Normal;
+                minimizedToTray = false;*/
+            }
+            else
+            {
+                WinApi.ShowToFront(this.Handle);
+            }
+        }
+
         /// <summary>
         /// Развертывает приложение из трея
         /// </summary>
@@ -1564,6 +1594,15 @@ namespace StatisticTrans
                 this.ShowInTaskbar = false;
                 notifyIconMain.Visible = true;
             }
+        }
+
+        /// <summary>
+        /// функция завершения приложения
+        /// </summary>
+        public void ShuttdownApp()
+        {
+            Stop();
+            Close();
         }
 
         private void развернутьToolStripMenuItem_Click(object sender, EventArgs e)
