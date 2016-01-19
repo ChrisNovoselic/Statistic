@@ -21,8 +21,6 @@ namespace trans_mt
 
             ProgramBase.Start();
 
-            if (RunOneInstance.ChekRunProgramm("trans_mt")) return;
-
             FormMainTransMT formMain = null;
             try { formMain = new FormMainTransMT(); }
             catch (Exception e)
