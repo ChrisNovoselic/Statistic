@@ -33,11 +33,6 @@ namespace StatisticTrans
         public string nameComponent;
 
         /// <summary>
-        /// Строка состояния
-        /// </summary>
-        //public string Text;
-
-        /// <summary>
         /// Время нач. иттераций
         /// </summary>
         string curentTime;
@@ -152,7 +147,6 @@ namespace StatisticTrans
         /// <param name="x">имя компонента</param>
         public void ErrorComp(string name)
         {
-           
             //Next(name, ErrorItter);
         }
 
