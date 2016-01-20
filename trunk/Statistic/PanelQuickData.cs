@@ -105,7 +105,7 @@ namespace Statistic
                 for (i = (int)HLabel.TYPE_HLABEL.TG; i < (int)HLabel.TYPE_HLABEL.COUNT_TYPE_HLABEL; i++)
                     if ((szLabelOfMinSizes[i].Height < float.MaxValue) && (szLabelOfMinSizes[i].Width < float.MaxValue))
                     {
-                        arFontRes[i] = HLabel.FitFont(g, textOfMaxLengths[i], szLabelOfMinSizes[i]);
+                        arFontRes[i] = HLabel.FitFont(g, textOfMaxLengths[i], szLabelOfMinSizes[i], new SizeF (0.85F, 0.85F), 0.1F);
                     }
                     else
                         ;

@@ -24,11 +24,17 @@ namespace Statistic
             public int [] m_propView;
             public List<int> m_listIdContextMenuItems;
             private static string[] s_arContentMenuItems = { @"Таблица(мин)", @"Таблица(час)", @"График(мин)", @"График(час)", @"Ориентация", @"Оперативные значения", @"Таблица+Гистограмма" };
-
+            /// <summary>
+            /// Событие - инициирует измекнение структуры элемента управления
+            /// </summary>
             public event DelegateFunc EventRestruct;
-
+            /// <summary>
+            /// Значение признака ориентации размещения таблиц, графиков
+            /// </summary>
             private int m_prevViewOrientation;
-
+            /// <summary>
+            /// Конструктор - основной (без параметров)
+            /// </summary>
             public HLabelCustomTecView()
             {
                 this.Dock = DockStyle.Fill;
@@ -49,7 +55,11 @@ namespace Statistic
 
                 //this.SizeChanged += new EventHandler (onSizeChanged);
             }
-
+            /// <summary>
+            /// Обработчик события - выбор п. меню
+            /// </summary>
+            /// <param name="obj"></param>
+            /// <param name="ev"></param>
             private void OnMenuItem_Content(object obj, EventArgs ev)
             {
                 int indx = ((MenuItem)obj).Index;
@@ -65,7 +75,11 @@ namespace Statistic
 
                 ((PanelCustomTecView)Parent.Parent).EventContentChanged ();
             }
-
+            /// <summary>
+            /// Установить новое значение для свойства
+            /// </summary>
+            /// <param name="indx">Индекс свойства</param>
+            /// <param name="newVal">Новое значение свойства</param>
             private void setProperty (int indx, int newVal) {
                 m_propView [indx] = newVal;
 
@@ -126,7 +140,10 @@ namespace Statistic
                 //Блокировать возможность выбора "ориентация сплиттера"
                 m_propView[(int)INDEX_PROPERTIES_VIEW.ORIENTATION] = -1;
             }
-
+            /// <summary>
+            /// СОздать массив п. меню, управляющего содержанием элемента управления
+            /// </summary>
+            /// <returns></returns>
             private MenuItem[] createContentMenuItems()
             {
                 int indx = -1;
@@ -155,7 +172,9 @@ namespace Statistic
 
                 return arMenuItems;
             }
-
+            /// <summary>
+            /// Изменить состояние меню
+            /// </summary>
             private void ContentMenuStateChange () {
                 Menu.MenuItemCollection arMenuItems = ContextMenu.MenuItems[ContextMenu.MenuItems.Count - (COUNT_FIXED_CONTEXT_MENUITEM - INDEX_START_CONTEXT_MENUITEM)].MenuItems;
                 
@@ -184,7 +203,6 @@ namespace Statistic
                 }
                 
             }
-
             /// <summary>
             /// Добавить "постоянные" элементы в контекстное меню (Содержание, Очистить)
             /// </summary>
@@ -199,14 +217,25 @@ namespace Statistic
 
                 ContentMenuStateChange ();
             }
-
+            /// <summary>
+            /// Состояние элемента управления
+            ///  0/1 - нет/есть объекта отображения
+            /// </summary>
             private bool _state;
-            
+            /// <summary>
+            /// Шрифт для подписи элемента управления
+            /// </summary>
             private System.Drawing.Font _fontDefault
                 , _fontActual;
-
+            /// <summary>
+            /// Цвет шрифта для подписи элемента управления
+            /// </summary>
             Color _color { get { return _state == true ? Color.Red : Color.Black; } }
-
+            /// <summary>
+            /// Установить признак "Доступность" для п. меню
+            /// </summary>
+            /// <param name="indx">Индекс п. меню</param>
+            /// <param name="bEnabled">Признпк "Доступность"</param>
             public void EnableContextMenuItem(int indx, bool bEnabled)
             {
                 ContextMenu.MenuItems[indx].Enabled =
@@ -227,7 +256,11 @@ namespace Statistic
                     else
                         ;
             }
-
+            /// <summary>
+            /// Установить шрифт и цвет шрифта для подписи
+            /// </summary>
+            /// <param name="font">Устанавливаемый шрифт</param>
+            /// <param name="color">Устанавливаемый цвет шрифта</param>
             private void setFont(Font font, Color color)
             {
                 this.Font = new System.Drawing.Font(
@@ -240,31 +273,34 @@ namespace Statistic
 
                 this.ForeColor = color;
             }
-
+            /// <summary>
+            /// Применить актуальный размер шрифта
+            /// </summary>
             public void FitFont()
             {
                 if (_state == true)
                 {
-                    _fontActual = HLabel.FitFont(this.CreateGraphics(), Text, ClientSize);
+                    _fontActual = HLabel.FitFont(this.CreateGraphics(), Text, ClientSize, new SizeF(0.95F, 0.95F), 0.05F);
 
                     setFont((!(_fontActual == null)) ? _fontActual : _fontDefault, _color);
                 }
                 else
                     ;
             }
-
+            /// <summary>
+            /// Возвратить идентификатор п. меню с установленным признаком "Использовать"
+            /// </summary>
+            /// <returns>Идентификатор п. меню</returns>
             private int getIdMenuItemChecked()
             {
                 int iRes = -1;
-
+                // найти индекс п. меню
                 foreach (MenuItem mi in ContextMenu.MenuItems)
                 {
                     iRes = ContextMenu.MenuItems.IndexOf(mi);
                     if (iRes < (ContextMenu.MenuItems.Count - COUNT_FIXED_CONTEXT_MENUITEM))
                         if (mi.Checked == true)
-                        {
                             break;
-                        }
                         else
                             ;
                     else
@@ -272,13 +308,18 @@ namespace Statistic
                 }
 
                 if (!(iRes < (ContextMenu.MenuItems.Count - COUNT_FIXED_CONTEXT_MENUITEM)))
+                // идентификатор для этого п. меню нет
                     iRes = -1;
                 else
+                // присвоить значение идентификатора
                     iRes = m_listIdContextMenuItems [iRes];
 
                 return iRes;
             }
-
+            /// <summary>
+            /// Изменить содержимое ячейки для объекта отображения 
+            /// </summary>
+            /// <param name="arProp">Массив изменяемых парметров объекта отображения</param>
             public void LoadProfile(string []arProp)
             {
                 //Очистить
@@ -294,14 +335,18 @@ namespace Statistic
                 //Назначить объект
                 int indx = m_listIdContextMenuItems.IndexOf(Int32.Parse(arProp[1]));
                 if ((!(indx < 0)) && (indx < ContextMenu.MenuItems.Count - COUNT_FIXED_CONTEXT_MENUITEM)) {
+                    // инициировать операции по выбору п. меню
                     ContextMenu.MenuItems[m_listIdContextMenuItems.IndexOf(Int32.Parse(arProp[1]))].PerformClick();
-
+                    // изменить состояние п. меню
                     ContentMenuStateChange();
                 }
                 else
                     ; //??? Ошибка: не найден
             }
-
+            /// <summary>
+            /// Возвратить строку с закодированными настройками объекта отображения
+            /// </summary>
+            /// <returns></returns>
             public string SaveProfile()
             {
                 string strRes = string.Empty;
@@ -327,12 +372,10 @@ namespace Statistic
         int m_indxContentMenuItem;
         static int COUNT_FIXED_CONTEXT_MENUITEM = 3;
         static int INDEX_START_CONTEXT_MENUITEM = 1;
-
         /// <summary>
         /// Требуется переменная конструктора.
         /// </summary>
         private System.ComponentModel.IContainer components = null;
-
         /// <summary> 
         /// Освободить все используемые ресурсы.
         /// </summary>
