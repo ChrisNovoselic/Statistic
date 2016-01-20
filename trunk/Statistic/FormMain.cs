@@ -67,7 +67,7 @@ namespace Statistic
         private Dictionary<int, Form> m_dictFormFloat;
         private PanelStatistic[] m_arPanelAdmin;
         private PanelAdmin PanelKomDisp { get { return m_arPanelAdmin[(int)FormChangeMode.MANAGER.DISP] as PanelAdmin; } }
-        private List<PanelTecViewBase> m_listStandardTabs;
+        private ListPanelTecViewBase m_listStandardTabs;
         private Dictionary<int, ADDING_TAB> m_dictAddingTabs;
         private static ID_ADDING_TAB[,] m_arIdCustomTabs = new ID_ADDING_TAB[,] { { ID_ADDING_TAB.CUSTOM_2X2_1, ID_ADDING_TAB.CUSTOM_2X2_2, ID_ADDING_TAB.CUSTOM_2X2_3, ID_ADDING_TAB.CUSTOM_2X2_4 }
                                                                                 , { ID_ADDING_TAB.CUSTOM_2X3_1, ID_ADDING_TAB.CUSTOM_2X3_2, ID_ADDING_TAB.CUSTOM_2X3_3, ID_ADDING_TAB.CUSTOM_2X3_4 }
@@ -87,6 +87,26 @@ namespace Statistic
             //System.Threading.Timer
             System.Windows.Forms.Timer
                 m_timerAppReset;
+
+        private class ListPanelTecViewBase : List<PanelTecViewBase>
+        {
+            public int IndexOfID(int id)
+            {
+                int iRes = -1;
+
+                foreach (PanelTecViewBase panel in this)
+                    if (panel.m_ID == id)
+                    {
+                        iRes = this.IndexOf(panel);
+
+                        break;
+                    }
+                    else
+                        ;
+
+                return iRes;
+            }
+        }
 
         public FormMain()
         {
@@ -129,7 +149,7 @@ namespace Statistic
             m_prevSelectedIndex = 1; //??? = -1
             m_markPrevStatePanelAdmin = new HMark(0);
 
-            m_listStandardTabs = new List<PanelTecViewBase>();
+            m_listStandardTabs = new ListPanelTecViewBase ();
 
             int idListenerConfigDB = DbSources.Sources().Register(s_listFormConnectionSettings[(int)CONN_SETT_TYPE.CONFIG_DB].getConnSett(), false, @"CONFIG_DB");
             //MessageBox.Show((IWin32Window)null, @"FormMain::Initialize () - DbSources.Sources().Register (...)", @"Отладка!");
@@ -274,7 +294,7 @@ namespace Statistic
                     //if ((HStatisticUsers.IsAllowed ((int)HStatisticUsers.ID_ALLOWED.AUTO_TAB_PBR_KOMDISP) == true) && (PanelAdminKomDisp.ALARM_USE == true))
                     if (HStatisticUsers.IsAllowed((int)HStatisticUsers.ID_ALLOWED.AUTO_TAB_PBR_KOMDISP) == true)
                     {
-                        m_markPrevStatePanelAdmin.Set((int)FormChangeMode.MANAGER.DISP, true);
+                        //m_markPrevStatePanelAdmin.Set((int)FormChangeMode.MANAGER.DISP, true);
                         //listIDs.Add (FormChangeMode.ID_SPECIAL_TAB[(int)FormChangeMode.MANAGER.DISP]);
                         listIDs.Add(FormChangeMode.ID_SPECIAL_TAB[(int)FormChangeMode.MANAGER.DISP]);
                     }
@@ -283,7 +303,7 @@ namespace Statistic
 
                     if (HStatisticUsers.IsAllowed((int)HStatisticUsers.ID_ALLOWED.AUTO_TAB_PBR_NSS) == true)
                     {
-                        m_markPrevStatePanelAdmin.Set((int)FormChangeMode.MANAGER.NSS, true);
+                        //m_markPrevStatePanelAdmin.Set((int)FormChangeMode.MANAGER.NSS, true);
                         //listIDs.Add (FormChangeMode.ID_SPECIAL_TAB[(int)FormChangeMode.MANAGER.DISP]);
                         listIDs.Add(FormChangeMode.ID_SPECIAL_TAB[(int)FormChangeMode.MANAGER.NSS]);
                     }
@@ -292,7 +312,7 @@ namespace Statistic
 
                     if (HStatisticUsers.IsAllowed((int)HStatisticUsers.ID_ALLOWED.AUTO_TAB_ALARM) == true)
                     {
-                        m_markPrevStatePanelAdmin.Set((int)FormChangeMode.MANAGER.ALARM, true);
+                        //m_markPrevStatePanelAdmin.Set((int)FormChangeMode.MANAGER.ALARM, true);
                         //listIDs.Add (FormChangeMode.ID_SPECIAL_TAB[(int)FormChangeMode.MANAGER.DISP]);
                         listIDs.Add(FormChangeMode.ID_SPECIAL_TAB[(int)FormChangeMode.MANAGER.ALARM]);
                     }
@@ -1163,7 +1183,7 @@ namespace Statistic
         {
             if (!(m_listStandardTabs == null))
             {
-                clearTabPages(false);
+                clearTabPages(new List<int> (), false);
             }
             else
                 ;
@@ -1174,20 +1194,26 @@ namespace Statistic
                 if (!(tab.panel == null)) tab.panel.Stop(); else ;
             }
         }
-
-        private void clearTabPages(bool bAttachSelIndxChanged)
+        /// <summary>
+        /// Закрыть (очистить) все вкладки (стандартные + административные)
+        /// </summary>
+        /// <param name="bAttachSelIndxChanged">Признак присоединения оьработчика события по изменению выбранной вкладки</param>
+        private void clearTabPages(List<int>listTabKeep, bool bAttachSelIndxChanged)
         {
             //Logging.Logg().Debug(@"FormMain::clearTabPages () - вХод...", Logging.INDEX_MESSAGE.NOT_SET);
 
             activateTabPage(tclTecViews.SelectedIndex, false);
 
             int i = -1;
+            bool bToRemove = false;
             List<int> listToRemove = new List<int>();
 
             listToRemove.Clear();
             if (!(m_dictFormFloat == null))
                 foreach (KeyValuePair<int, Form> pair in m_dictFormFloat)
-                    if (pair.Key < (int)TECComponent.ID.MAX)
+                    // закрывать "плавающие" окна только со стандартными объектами отображения
+                    if ((pair.Key < (int)TECComponent.ID.MAX)
+                        && (listTabKeep.IndexOf (pair.Key) < 0))
                         listToRemove.Add(pair.Key);
                     else
                         ;
@@ -1200,8 +1226,29 @@ namespace Statistic
             listToRemove.Clear();
             foreach (TabPage tab in tclTecViews.TabPages)
             {
+                bToRemove = false;
+
                 if ((tab.Controls[0] is PanelTecViewBase)
-                    || ((tab.Controls[0] is PanelAdmin) || (tab.Controls[0] is PanelAlarm)))
+                    && (listTabKeep.IndexOf(((PanelTecViewBase)tab.Controls[0]).m_ID) < 0))
+                {
+                    bToRemove = true;
+                }
+                else
+                    if ((tab.Controls[0] is PanelAdminKomDisp)
+                        && (formChangeMode.m_markTabAdminChecked.IsMarked((int)FormChangeMode.MANAGER.DISP) == false))
+                        bToRemove = true;
+                    else
+                        if ((tab.Controls[0] is PanelAdminNSS)
+                            && (formChangeMode.m_markTabAdminChecked.IsMarked((int)FormChangeMode.MANAGER.NSS) == false))
+                            bToRemove = true;
+                        else
+                            if ((tab.Controls[0] is PanelAlarm)
+                                && (formChangeMode.m_markTabAdminChecked.IsMarked((int)FormChangeMode.MANAGER.ALARM) == false))
+                                bToRemove = true;
+                            else
+                                ;
+
+                if (bToRemove == true)
                 {
                     listToRemove.Add(tclTecViews.TabPages.IndexOf(tab));
                     ((PanelStatistic)tab.Controls[0]).Stop();
@@ -1606,6 +1653,36 @@ namespace Statistic
             else
                 ;
         }
+        /// <summary>
+        /// Структура для хранения параметров добавляемой панели
+        /// </summary>
+        private struct PANEL_TO_STANDARD_TAB
+        {
+            /// <summary>
+            /// Идентификатор объекта отображения
+            /// </summary>
+            public int id;
+            /// <summary>
+            /// Индекс пункта в списке всех доступных к отображению объектов
+            /// </summary>
+            public int indx_itemChangeMode;
+            /// <summary>
+            /// Индекс панели в списке всех доступных к добавлению на вкладке
+            /// </summary>
+            public int indx_tecView;
+            /// <summary>
+            /// Объект ТЭЦ для объекта отображения
+            /// </summary>
+            public TEC tec;
+            /// <summary>
+            /// Индекс ТЭЦ в списке ТЭЦ
+            /// </summary>
+            public int indxTEC;
+            /// <summary>
+            /// Индекс компонента ТЭЦ в списке компонентов ТЭЦ
+            /// </summary>
+            public int indxTECComponent;
+        }
 
         private void addPanelTecView(TEC tec, int ti, int ci)
         {
@@ -1624,56 +1701,86 @@ namespace Statistic
         {
             delegateStartWait();
 
-            //StartWait();
-            clearTabPages(true);
-
             Int16 parametrsTGBiysk = 0;
             int tecView_index = -1
                 , i = -1;
-            //List<int> list_tecView_index_visible = new List<int>();
-            //List<int> list_tecView_index_checked = new List<int>();
+            PANEL_TO_STANDARD_TAB? panel_tecView_ToAdding = null;
+            List<PANEL_TO_STANDARD_TAB> list_tecView_toAddinng = new List<PANEL_TO_STANDARD_TAB>();
+            List<int> list_id_toAdding = new List<int>();
+
             // отображаем вкладки ТЭЦ - аналог PanelCustomTecView::MenuItem_OnClick
             for (i = 0; i < formChangeMode.m_listItems.Count; i++) //или TECComponent_index.Count
             {
+                //Только если элемент в списке имеет признак видимости 'true' и имеет признак 'выбран'
                 if ((formChangeMode.m_listItems[i].bVisibled == true) && (formChangeMode.m_listItems[i].bChecked == true))
                 {
-                    if (formChangeMode.m_listItems[i].id > 10000)
+                    // не рассматривать не стандартные вкладки, наприммер 'ПБР-диспетчер', 'Сигн.-диспетчер', 'ПБР-НСС'
+                    if (formChangeMode.m_listItems[i].id > (int)TECComponent.ID.MAX)
                         continue;
                     else
                         ;
+                    // поиск панели для вкладки начать с обнуления объекта
+                    panel_tecView_ToAdding = null;
+                    //Найти индекс панели в списке для стандартных вкладок
+                    tecView_index = m_listStandardTabs.IndexOfID(formChangeMode.m_listItems[i].id);                    
 
-                    for (tecView_index = 0; tecView_index < m_listStandardTabs.Count; tecView_index++)
-                    {
-                        if ((m_listStandardTabs[tecView_index].m_ID == formChangeMode.m_listItems[i].id))
-                            break;
-                        else
-                            ;
-                    }
-
-                    if (!(tecView_index < m_listStandardTabs.Count))
+                    if (tecView_index < 0)
                     {//Не найден элемент - создаем, добавляем
                         foreach (StatisticCommon.TEC t in formChangeMode.m_list_tec)
                         {
                             if (t.m_id == formChangeMode.m_listItems[i].id)
                             {
+                                // добавить панель
                                 addPanelTecView(t, formChangeMode.m_list_tec.IndexOf(t), -1);
-
+                                // сохранить индекс добавленной панели
                                 tecView_index = m_listStandardTabs.Count - 1;
+                                panel_tecView_ToAdding = new PANEL_TO_STANDARD_TAB()
+                                {
+                                    id = t.m_id
+                                    ,
+                                    indx_itemChangeMode = i
+                                    ,
+                                    indx_tecView = m_listStandardTabs.Count - 1
+                                    ,
+                                    tec = t
+                                    ,
+                                    indxTEC = formChangeMode.m_list_tec.IndexOf(t)
+                                    ,
+                                    indxTECComponent = -1
+                                };
+                                list_tecView_toAddinng.Add(panel_tecView_ToAdding.GetValueOrDefault());
 
                                 break;
                             }
                             else
                                 ;
-
+                            // проверить наличие компонентов станции
                             if (t.list_TECComponents.Count > 0)
                             {
                                 foreach (TECComponent g in t.list_TECComponents)
                                 {
                                     if (g.m_id == formChangeMode.m_listItems[i].id)
                                     {
+                                        // добавить панель
                                         addPanelTecView(t, formChangeMode.m_list_tec.IndexOf(t), t.list_TECComponents.IndexOf(g));
-
+                                        // сохранить индекс добавленной панели
+                                        // и одновременно признак досрочного завершения внешнего цикла
                                         tecView_index = m_listStandardTabs.Count - 1;
+                                        panel_tecView_ToAdding = new PANEL_TO_STANDARD_TAB()
+                                        {
+                                            id = g.m_id
+                                            ,
+                                            indx_itemChangeMode = i
+                                            ,
+                                            indx_tecView = m_listStandardTabs.Count - 1
+                                            ,
+                                            tec = t
+                                            ,
+                                            indxTEC = formChangeMode.m_list_tec.IndexOf(t)
+                                            ,
+                                            indxTECComponent = t.list_TECComponents.IndexOf(g)
+                                        };
+                                        list_tecView_toAddinng.Add(panel_tecView_ToAdding.GetValueOrDefault());
 
                                         break;
                                     }
@@ -1683,37 +1790,72 @@ namespace Statistic
                             }
                             else
                                 ;
-
-                            if (tecView_index == (m_listStandardTabs.Count - 1))
+                            // проверка необходима, т.к. возможен досрочный (при добавлении панели в список) выход из вложенного массива
+                            if ((m_listStandardTabs.Count > 0)
+                                && (tecView_index == (m_listStandardTabs.Count - 1)))
                                 break;
                             else
                                 ;
                         }
                     }
                     else
-                        ;
-
-                    if (tecView_index < m_listStandardTabs.Count)
                     {
-                        //list_tecView_index_checked.Add(tecView_index);
+                        //Панель ранее уже была добавлена в список
+                        panel_tecView_ToAdding = new PANEL_TO_STANDARD_TAB()
+                        {
+                            id = m_listStandardTabs[tecView_index].m_ID
+                            ,
+                            indx_itemChangeMode = i
+                            ,
+                            indx_tecView = tecView_index
+                            ,
+                            tec = m_listStandardTabs[tecView_index].m_tecView.m_tec
+                            ,
+                            indxTEC = m_listStandardTabs[tecView_index].indx_TEC
+                            ,
+                            indxTECComponent = m_listStandardTabs[tecView_index].indx_TECComponent
+                        };
+                        list_tecView_toAddinng.Add(panel_tecView_ToAdding.GetValueOrDefault());
+                    }
 
-                        if ((m_listStandardTabs[tecView_index].m_tecView.m_tec.Type == StatisticCommon.TEC.TEC_TYPE.BIYSK)/* && (параметрыТГБийскToolStripMenuItem.Visible == false)*/)
-                            parametrsTGBiysk++;
-                        else
-                            ;
-
-                        tclTecViews.AddTabPage(formChangeMode.m_listItems[i].name_shr, m_listStandardTabs[tecView_index].m_ID, HTabCtrlEx.TYPE_TAB.FLOAT);
-
-                        tclTecViews.TabPages[tclTecViews.TabCount - 1].Controls.Add(m_listStandardTabs[tecView_index]);
-
-                        m_listStandardTabs[tecView_index].Start();
+                    //Перед добавлением вкладки проверить индекс добавляемой панели
+                    if (!(panel_tecView_ToAdding == null))
+                    {
+                        list_id_toAdding.Add(panel_tecView_ToAdding.GetValueOrDefault().id);                        
                     }
                     else
                         ;
                 }
                 else
+                    ; // элемент в списке имеет признак видимости 'false' или не имеет признак 'выбран'
+            }
+
+            clearTabPages(list_id_toAdding, true);
+
+            foreach (PANEL_TO_STANDARD_TAB panel_tecView in list_tecView_toAddinng)
+            {
+                // проверить признак объекта отображения принадлежности к Бийской ТЭЦ
+                // т.к. для Бийской ТЭЦ есть индивидуальные параметры, для настройки которых активируется/блокируется соответствующий п. меню
+                if ((m_listStandardTabs[panel_tecView.indx_tecView].m_tecView.m_tec.Type == StatisticCommon.TEC.TEC_TYPE.BIYSK)/* && (параметрыТГБийскToolStripMenuItem.Visible == false)*/)
+                    // установить признак активации/блокировки п./меню
+                    parametrsTGBiysk++;
+                else
+                    ;
+
+                if ((tclTecViews.IndexOfID(panel_tecView.id) < 0)
+                    && (m_dictFormFloat == null ? true : m_dictFormFloat.ContainsKey(panel_tecView.id) == false))
                 {
+                    // добавить вкладку
+                    tclTecViews.AddTabPage(formChangeMode.m_listItems[panel_tecView.indx_itemChangeMode].name_shr
+                        , m_listStandardTabs[panel_tecView.indx_tecView].m_ID
+                        , HTabCtrlEx.TYPE_TAB.FLOAT);
+                    // добавить к вкладке панель
+                    tclTecViews.TabPages[tclTecViews.TabCount - 1].Controls.Add(m_listStandardTabs[panel_tecView.indx_tecView]);
+                    // инициировать операции по инициализации панели
+                    m_listStandardTabs[panel_tecView.indx_tecView].Start();
                 }
+                else
+                    ;
             }
 
             //if (!(m_timer.Interval == ProgramBase.TIMER_START_INTERVAL))
@@ -1726,10 +1868,9 @@ namespace Statistic
             else
                 ;
 
-            bool bTGBiysk = parametrsTGBiysk > 0;
             if ((HStatisticUsers.allTEC == 0) || (HStatisticUsers.allTEC == 6))
             {
-                параметрыТГБийскToolStripMenuItem.Visible = bTGBiysk;
+                параметрыТГБийскToolStripMenuItem.Visible = parametrsTGBiysk > 0;
 
                 //m_formParametersTG = new FormParametersTG_FileINI(@"setup.ini");
                 m_formParametersTG = new FormParametersTG_DB(s_listFormConnectionSettings[(int)CONN_SETT_TYPE.CONFIG_DB].getConnSett()
@@ -1899,21 +2040,24 @@ namespace Statistic
             {
                 int idListener = DbSources.Sources().Register(s_listFormConnectionSettings[(int)CONN_SETT_TYPE.CONFIG_DB].getConnSett(), false, @"CONFIG_DB");
 
-                if (formChangeMode.m_markTabAdminChecked.IsMarked((int)FormChangeMode.MANAGER.DISP) == true)
+                if ((formChangeMode.m_markTabAdminChecked.IsMarked((int)FormChangeMode.MANAGER.DISP) == true)
+                    && (m_markPrevStatePanelAdmin.IsMarked ((int)FormChangeMode.MANAGER.DISP) == false))
                 {
                     addTabPageAdmin(idListener, FormChangeMode.MANAGER.DISP);
                 }
                 else
                     ;
 
-                if (formChangeMode.m_markTabAdminChecked.IsMarked((int)FormChangeMode.MANAGER.NSS) == true)
+                if ((formChangeMode.m_markTabAdminChecked.IsMarked((int)FormChangeMode.MANAGER.NSS) == true)
+                    && (m_markPrevStatePanelAdmin.IsMarked ((int)FormChangeMode.MANAGER.NSS) == false))
                 {
                     addTabPageAdmin(idListener, FormChangeMode.MANAGER.NSS);
                 }
                 else
                     ;
 
-                if (formChangeMode.m_markTabAdminChecked.IsMarked((int)FormChangeMode.MANAGER.ALARM) == true)
+                if ((formChangeMode.m_markTabAdminChecked.IsMarked((int)FormChangeMode.MANAGER.ALARM) == true)
+                    && (m_markPrevStatePanelAdmin.IsMarked ((int)FormChangeMode.MANAGER.ALARM) == false))
                 {
                     addTabPageAdmin(idListener, FormChangeMode.MANAGER.ALARM);
                 }
@@ -1940,8 +2084,14 @@ namespace Statistic
             {
                 Passwords.ID_ROLES idRolesPassword = Passwords.ID_ROLES.ADMIN;
                 DialogResult dlgRes = System.Windows.Forms.DialogResult.Yes;
+                bool bPasswordAsked = false;
 
-                if (m_markPrevStatePanelAdmin.IsMarked((int)modeAdmin) == false)
+                bPasswordAsked = modeAdmin == FormChangeMode.MANAGER.DISP ? ! HStatisticUsers.IsAllowed((int)HStatisticUsers.ID_ALLOWED.AUTO_TAB_PBR_KOMDISP) :
+                    modeAdmin == FormChangeMode.MANAGER.NSS ? ! HStatisticUsers.IsAllowed((int)HStatisticUsers.ID_ALLOWED.AUTO_TAB_PBR_NSS) :
+                    modeAdmin == FormChangeMode.MANAGER.ALARM ? ! HStatisticUsers.IsAllowed((int)HStatisticUsers.ID_ALLOWED.AUTO_TAB_ALARM) :
+                        false;
+
+                if (bPasswordAsked == true)
                 {
                     if ((modeAdmin == FormChangeMode.MANAGER.DISP)
                         || (modeAdmin == FormChangeMode.MANAGER.ALARM))
