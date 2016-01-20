@@ -46,7 +46,7 @@ namespace StatisticDiagnostic
             //Добавить элемент с параметрами соединения из объекта 'FIleConnSett' 
             s_listFormConnectionSettings.Add(new FormConnectionSettings(-1, s_fileConnSett.ReadSettingsFile, s_fileConnSett.SaveSettingsFile));
             s_listFormConnectionSettings.Add(null);
-            
+            Start();
             bAbort = initialize(out msg);
             this.panelMain = new PanelStatisticDiagnostic();
             this.panelMain.SetDelegateReport(ErrorReport, WarningReport, ActionReport, ReportClear);
@@ -300,7 +300,7 @@ namespace StatisticDiagnostic
 
         protected override void timer_Start()
         {
-            throw new NotImplementedException();
+            int i = -1;
         }
 
         protected override void HideGraphicsSettings()
