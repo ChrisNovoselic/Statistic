@@ -268,7 +268,6 @@ namespace StatisticDiagnostic
                 {
                     case (int)State.Command:
                         Request(m_dictIdListeners[0][0], @"Select * from Diagnostic");
-                        Logging.Logg().Debug(@"HDataSource::HDataSource () - ... вызвали Request...", Logging.INDEX_MESSAGE.NOT_SET);
                         break;
                     default:
                         break;
@@ -2134,13 +2133,10 @@ namespace StatisticDiagnostic
             {
                 m_timerUpdate.Start();
                 m_DataSource.Command();
-               // Logging.Logg().Debug(@"PanelStatisticDiagnostic::Activate () - " + activated, Logging.INDEX_MESSAGE.NOT_SET);
             }
             else
                 if (!(m_timerUpdate == null))
                     m_timerUpdate.Stop();
-
-            Logging.Logg().Debug(@"PanelStatisticDiagnostic::Activate () - " + activated, Logging.INDEX_MESSAGE.NOT_SET);
 
             return bRes;
         }
