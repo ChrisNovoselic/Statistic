@@ -196,7 +196,7 @@ namespace StatisticDiagnostic
             m_timerUpdate.Enabled = true;
             m_timerUpdate.AutoReset = true;
             m_timerUpdate.Elapsed += new ElapsedEventHandler(UpdateTimer_Elapsed);
-            m_timerUpdate.Interval = 33000;
+            m_timerUpdate.Interval = 23000;
             GC.KeepAlive(m_timerUpdate);
         }
 
@@ -208,6 +208,7 @@ namespace StatisticDiagnostic
         public void UpdateTimer_Elapsed(object source, ElapsedEventArgs e)
         {
             m_DataSource.Command();
+            MessageBox.Show("SLEEP&GO");
         }
 
         /// <summary>
@@ -267,6 +268,7 @@ namespace StatisticDiagnostic
                 {
                     case (int)State.Command:
                         Request(m_dictIdListeners[0][0], @"Select * from Diagnostic");
+                        Logging.Logg().Debug(@"HDataSource::HDataSource () - ... вызвали Request...", Logging.INDEX_MESSAGE.NOT_SET);
                         break;
                     default:
                         break;
@@ -1249,9 +1251,8 @@ namespace StatisticDiagnostic
 
 
                     if (m_arPanelsMODES[i].ModesDataGridView.Rows.Count < m_tbModes.Select(filter).Length - 1)
-                    {
                         addRowsModes(i, 1);
-                    }
+                    else ;
 
                     m_drComponent = m_tableSourceData.Select(m_filter1);
 
@@ -1262,10 +1263,9 @@ namespace StatisticDiagnostic
                     if (m_arPanelsMODES[i].ModesDataGridView.InvokeRequired)
                     {
                         if (checkPBR() == m_drComponent[0]["Value"].ToString())
-                        {
                             paintPbrTrue(i, m_tic);
-                        }
-                        else paintPbrError(i, m_tic);
+                        else 
+                            paintPbrError(i, m_tic);
 
 
                         m_arPanelsMODES[i].ModesDataGridView.Invoke(new Action(() => m_arPanelsMODES[i].ModesDataGridView.Rows[m_tic].Cells[5].Value = m_drComponent[0][5]));
@@ -1280,10 +1280,9 @@ namespace StatisticDiagnostic
                     else
                     {
                         if (checkPBR() == m_drComponent[0]["Value"].ToString())
-                        {
                             paintPbrTrue(i, m_tic);
-                        }
-                        else paintPbrError(i, m_tic);
+                        else 
+                            paintPbrError(i, m_tic);
 
                         m_arPanelsMODES[i].ModesDataGridView.Rows[m_tic].Cells[0].Value = m_drComponent[0]["ID_Value"];
                         m_arPanelsMODES[i].ModesDataGridView.Rows[m_tic].Cells[2].Value = m_time;
@@ -1322,9 +1321,8 @@ namespace StatisticDiagnostic
                         string filterComp = "ID_Value = '" + m_drComponentSource[r][3].ToString() + "'";
 
                         if (m_arPanelsMODES[i].ModesDataGridView.Rows.Count < m_tbModes.Select(filterSource).Length)
-                        {
                             addRowsModes(i, 1);
-                        }
+                        else ;
 
                         m_drSourceModes = m_tableSourceData.Select(filterComp);
                         string m_time = formatTime(m_drSourceModes[1]["Value"].ToString());
@@ -1332,9 +1330,7 @@ namespace StatisticDiagnostic
                         if (m_arPanelsMODES[i].ModesDataGridView.InvokeRequired)
                         {
                             if (checkPBR() == m_drSourceModes[0]["Value"].ToString())
-                            {
                                 paintPbrTrue(i, r);
-                            }
                             else paintPbrError(i, r);
 
                             m_arPanelsMODES[i].ModesDataGridView.Invoke(new Action(() => m_arPanelsMODES[i].ModesDataGridView.Rows[r].Cells[0].Value = m_drSourceModes[0]["ID_Value"]));
@@ -1347,10 +1343,9 @@ namespace StatisticDiagnostic
                         else
                         {
                             if (checkPBR() == m_drSourceModes[0]["Value"].ToString())
-                            {
                                 paintPbrTrue(i, r);
-                            }
-                            else paintPbrError(i, r);
+                            else 
+                                paintPbrError(i, r);
 
                             m_arPanelsMODES[i].ModesDataGridView.Rows[r].Cells[0].Value = m_drSourceModes[0]["ID_Value"];
                             m_arPanelsMODES[i].ModesDataGridView.Rows[r].Cells[1].Value = m_drSourceModes[0]["Value"];
@@ -1412,9 +1407,7 @@ namespace StatisticDiagnostic
                     if (m_arPanelsMODES[i].LabelModes.InvokeRequired)
                         m_arPanelsMODES[i].LabelModes.Invoke(new Action(() => m_arPanelsMODES[i].LabelModes.Text = m_nameshr));
                     else
-                    {
                         m_arPanelsMODES[i].LabelModes.Text = m_nameshr;
-                    }
                 }
             }
 
@@ -1434,9 +1427,7 @@ namespace StatisticDiagnostic
                                 if (m_arPanelsMODES[k].ModesDataGridView.InvokeRequired)
                                     m_arPanelsMODES[k].ModesDataGridView.Invoke(new Action(() => m_arPanelsMODES[k].ModesDataGridView.Rows[i].Cells[0].Value = m_array_GTP.Rows[j]["NAME_SHR"]));
                                 else
-                                {
                                     m_arPanelsMODES[k].ModesDataGridView.Rows[i].Cells[0].Value = m_array_GTP.Rows[j]["NAME_SHR"];
-                                }
                             }
                         }
                     }
@@ -1495,9 +1486,7 @@ namespace StatisticDiagnostic
                 try
                 {
                     if (ModesDataGridView.SelectedCells.Count > 0)
-                    {
                         ModesDataGridView.SelectedCells[0].Selected = false;
-                    }
                     else ;
                 }
                 catch { }
@@ -1511,10 +1500,8 @@ namespace StatisticDiagnostic
             private void paintPbrTrue(int numP, int numR)
             {
                 if (m_arPanelsMODES[numP].ModesDataGridView.InvokeRequired)
-                {
                     m_arPanelsMODES[numP].ModesDataGridView.Invoke(new Action(() => m_arPanelsMODES[numP].ModesDataGridView.Rows[numR].Cells[1].Style.BackColor = System.Drawing.Color.White));
-                }
-
+                else
                 m_arPanelsMODES[numP].ModesDataGridView.Rows[numR].Cells[1].Style.BackColor = System.Drawing.Color.White;
             }
 
@@ -1527,7 +1514,7 @@ namespace StatisticDiagnostic
             {
                 if (m_arPanelsMODES[numP].ModesDataGridView.InvokeRequired)
                     m_arPanelsMODES[numP].ModesDataGridView.Invoke(new Action(() => m_arPanelsMODES[numP].ModesDataGridView.Rows[numR].Cells[1].Style.BackColor = System.Drawing.Color.OrangeRed));
-
+                else
                 m_arPanelsMODES[numP].ModesDataGridView.Rows[numR].Cells[1].Style.BackColor = System.Drawing.Color.OrangeRed;
             }
 
@@ -1544,14 +1531,10 @@ namespace StatisticDiagnostic
                 if ((Convert.ToInt32(m_DTMin)) > 41)
                 {
                     if ((Convert.ToInt32(m_DTHour)) % 2 == 0)
-                    {
                         m_etalon_pbr = "ПБР" + (Convert.ToInt32(m_DTHour) + 1);
-                    }
 
                     else
-                    {
                         m_etalon_pbr = "ПБР" + ((Convert.ToInt32(m_DTHour) + 2));
-                    }
 
                     return m_etalon_pbr;
                 }
@@ -1559,15 +1542,11 @@ namespace StatisticDiagnostic
                 else
                 {
                     if ((Convert.ToInt32(m_DTHour)) % 2 == 0)
-                    {
                         m_etalon_pbr = "ПБР" + (Convert.ToInt32(m_DTHour) + 1);
-                    }
 
                     else
-                    {
                         m_etalon_pbr = "ПБР" + Convert.ToInt32(m_DTHour);
 
-                    }
                     return m_etalon_pbr;
                 }
             }
@@ -1586,13 +1565,9 @@ namespace StatisticDiagnostic
                 int m_iDT = Convert.ToInt32(datetime.Substring(8, 2));
 
                 if ((m_intNow - m_iDT) > 0)
-                {
                     return DateTime.Parse(datetime).ToString("dd.MM.yy HH:mm:ss");
-                }
                 else
-                {
                     return m_dt2Time = DateTime.Parse(datetime).ToString("HH:mm:ss.fff");
-                }
             }
         }
 
@@ -1733,9 +1708,8 @@ namespace StatisticDiagnostic
                                         }).Distinct();
 
                     if (TaskDataGridView.Rows.Count < Convert.ToInt32(m_enumIDtask.Count()))
-                    {
                         addRowsTask(Convert.ToInt32(m_enumIDtask.Count()));
-                    }
+                    else ;
 
                     for (int i = 0; i < Convert.ToInt32(m_enumIDtask.Count()); i++)
                     {
@@ -2157,10 +2131,16 @@ namespace StatisticDiagnostic
             bool bRes = base.Activate(activated);
 
             if (activated == true)
+            {
                 m_timerUpdate.Start();
+                m_DataSource.Command();
+               // Logging.Logg().Debug(@"PanelStatisticDiagnostic::Activate () - " + activated, Logging.INDEX_MESSAGE.NOT_SET);
+            }
             else
                 if (!(m_timerUpdate == null))
                     m_timerUpdate.Stop();
+
+            Logging.Logg().Debug(@"PanelStatisticDiagnostic::Activate () - " + activated, Logging.INDEX_MESSAGE.NOT_SET);
 
             return bRes;
         }
