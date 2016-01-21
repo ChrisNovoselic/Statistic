@@ -129,6 +129,12 @@
     <Compile Include="FormMainAnalyzer.designer.cs">
       <DependentUpon>FormMainAnalyzer.cs</DependentUpon>
     </Compile>
+    <Compile Include="FormMainStatistic.cs">
+      <SubType>Form</SubType>
+    </Compile>
+    <Compile Include="FormMainStatistic.Designer.cs">
+      <DependentUpon>FormMainStatistic.cs</DependentUpon>
+    </Compile>
     <Compile Include="FormParameters.cs">
       <SubType>Form</SubType>
     </Compile>
