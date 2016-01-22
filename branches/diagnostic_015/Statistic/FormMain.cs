@@ -1326,6 +1326,7 @@ namespace Statistic
             s_listFormConnectionSettings = new List<FormConnectionSettings>();
             s_listFormConnectionSettings.Add(new FormConnectionSettings(-1, s_fileConnSett.ReadSettingsFile, s_fileConnSett.SaveSettingsFile));
             s_listFormConnectionSettings.Add(null);
+
             if (s_listFormConnectionSettings[(int)CONN_SETT_TYPE.CONFIG_DB].Ready == 0)
             {
                 switch (Initialize(out msg))
