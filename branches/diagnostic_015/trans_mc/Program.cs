@@ -14,7 +14,7 @@ namespace trans_mc
         /// Главная точка входа для приложения.
         /// </summary>
         [STAThread]
-        static void Main(string[] args)
+        static void Main()
         {
             //Logging.s_mode = Logging.LOG_MODE.UNKNOWN; //Если назначить неизвестный тип логирования - 1-е сообщения б. утеряны
             //Logging.s_mode = Logging.LOG_MODE.DB;
@@ -22,38 +22,33 @@ namespace trans_mc
 
             FormMainTransMC formMain = null;
 
-            if (!SingleInstance.Start(args))
+            if (SingleInstance.Start())
             {
-                SingleInstance.restartInstance();
-            }
+                //SingleInstance.restartInstance();
+            }   
             else
             {
-                if (SingleInstance.runSingleInstance())
+                if (SingleInstance.stopbflg)
                 {
                     ProgramBase.Start();
 
-                    if (formMain == null)
-                    {
-                        try
-                        {
-                            formMain = new FormMainTransMC();
-                        }
-                        catch (Exception e)
-                        {
-                            Logging.Logg().Exception(e, "Ошибка запуска приложения.", Logging.INDEX_MESSAGE.NOT_SET);
-                        }
-                    }
+                    try
+                    { formMain = new FormMainTransMC(); }
+                    catch (Exception e)
+                    { Logging.Logg().Exception(e, "Ошибка запуска приложения.", Logging.INDEX_MESSAGE.NOT_SET); }
 
                     MessageBox.Show("PERVZAPUSK");
-                    Application.Run(formMain);
+                    try
+                    { Application.Run(formMain); }
+                    catch (Exception e)
+                    { Logging.Logg().Exception(e, "Ошибка выполнения приложения.", Logging.INDEX_MESSAGE.NOT_SET); }
+
                     SingleInstance.StopMtx();
 
                     ProgramBase.Exit();
                 }
                 else ;
             }
-
-
         }
     }
 }

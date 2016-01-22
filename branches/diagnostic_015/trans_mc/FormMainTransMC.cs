@@ -16,11 +16,6 @@ namespace trans_mc
 {
     public partial class FormMainTransMC : FormMainTransModes
     {
-        public void CloseApp()
-        {
-            ShuttdownApp();
-        }
-
         public FormMainTransMC()
             : base((int)ProgramBase.ID_APP.TRANS_MODES_CENTRE_GUI)
         {
@@ -35,7 +30,7 @@ namespace trans_mc
         {
             int i = -1;
 
-            CreateFormConnectionSettings("connsett_mc.ini", false);
+            EditFormConnectionSettings("connsett_mc.ini", false);
 
             m_sFileINI.AddMainPar(@"MCServiceHost", string.Empty);
             m_sFileINI.AddMainPar(@"ИгнорДатаВремя-ModesCentre", false.ToString());
