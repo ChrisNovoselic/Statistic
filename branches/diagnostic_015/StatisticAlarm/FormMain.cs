@@ -46,6 +46,7 @@ namespace StatisticAlarm
         {
             string msg = string.Empty;
             bool bAbort = true;
+
             //Создать объект - чтение зашифрованного файла с параметрами соединения
             s_fileConnSett = new FIleConnSett(@"connsett.ini", FIleConnSett.MODE.FILE);
             //Отобразить окно для визуализации выполнения длительной операции
