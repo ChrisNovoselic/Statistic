@@ -12,7 +12,7 @@ using HClassLibrary;
 
 namespace StatisticDiagnostic
 {
-    public partial class FormMain : FormMainBaseWithStatusStrip
+    public partial class FormMain : FormMainStatistic
     {
         /// <summary>
         /// Объект с параметрами приложения (из БД_конфигурации)
@@ -35,17 +35,21 @@ namespace StatisticDiagnostic
 
         public void FormDiagnostic_Load(object obj, EventArgs ev)
         {
-            string msg = string.Empty;
-            bool bAbort = true;
-            //Создать объект - чтение зашифрованного файла с параметрами соединения
-            s_fileConnSett = new FIleConnSett(@"connsett.ini", FIleConnSett.MODE.FILE);
             //Отобразить окно для визуализации выполнения длительной операции
             delegateStartWait();
+
+            string msg = string.Empty;
+            bool bAbort = true;
+
+            createfileConnSett(@"connsett.ini");
+            //Создать объект - чтение зашифрованного файла с параметрами соединения
+            /*s_fileConnSett = new FIleConnSett(@"connsett.ini", FIleConnSett.MODE.FILE);
             //Создать список форм для редактирования параметров соединения
             s_listFormConnectionSettings = new List<FormConnectionSettings>();
             //Добавить элемент с параметрами соединения из объекта 'FIleConnSett' 
             s_listFormConnectionSettings.Add(new FormConnectionSettings(-1, s_fileConnSett.ReadSettingsFile, s_fileConnSett.SaveSettingsFile));
-            s_listFormConnectionSettings.Add(null);
+            s_listFormConnectionSettings.Add(null);*/
+
             Start();
             bAbort = initialize(out msg);
             this.panelMain = new PanelStatisticDiagnostic();
@@ -252,12 +256,7 @@ namespace StatisticDiagnostic
             }
         }
 
-        protected override void UpdateActiveGui(int type)
-        {
-            throw new NotImplementedException();
-        }
-
-        protected override int UpdateStatusString()
+       /* protected override int UpdateStatusString()
         {
             int have_msg = 0;
 
@@ -297,15 +296,10 @@ namespace StatisticDiagnostic
            
             return have_msg;
         }
-
-        protected override void timer_Start()
+        */
+       /* protected override void timer_Start()
         {
-            int i = -1;
-        }
-
-        protected override void HideGraphicsSettings()
-        {
-            throw new NotImplementedException();
-        }
+            //int i = -1;
+        }*/
     }
 }

@@ -1,4 +1,4 @@
-﻿using System.Collections;
+﻿using System.Collections.Generic;
 using System;
 using System.Linq;
 using System.ComponentModel;
@@ -1263,7 +1263,7 @@ namespace StatisticDiagnostic
                     {
                         if (checkPBR() == m_drComponent[0]["Value"].ToString())
                             paintPbrTrue(i, m_tic);
-                        else 
+                        else
                             paintPbrError(i, m_tic);
 
 
@@ -1280,7 +1280,7 @@ namespace StatisticDiagnostic
                     {
                         if (checkPBR() == m_drComponent[0]["Value"].ToString())
                             paintPbrTrue(i, m_tic);
-                        else 
+                        else
                             paintPbrError(i, m_tic);
 
                         m_arPanelsMODES[i].ModesDataGridView.Rows[m_tic].Cells[0].Value = m_drComponent[0]["ID_Value"];
@@ -1343,7 +1343,7 @@ namespace StatisticDiagnostic
                         {
                             if (checkPBR() == m_drSourceModes[0]["Value"].ToString())
                                 paintPbrTrue(i, r);
-                            else 
+                            else
                                 paintPbrError(i, r);
 
                             m_arPanelsMODES[i].ModesDataGridView.Rows[r].Cells[0].Value = m_drSourceModes[0]["ID_Value"];
@@ -1501,7 +1501,7 @@ namespace StatisticDiagnostic
                 if (m_arPanelsMODES[numP].ModesDataGridView.InvokeRequired)
                     m_arPanelsMODES[numP].ModesDataGridView.Invoke(new Action(() => m_arPanelsMODES[numP].ModesDataGridView.Rows[numR].Cells[1].Style.BackColor = System.Drawing.Color.White));
                 else
-                m_arPanelsMODES[numP].ModesDataGridView.Rows[numR].Cells[1].Style.BackColor = System.Drawing.Color.White;
+                    m_arPanelsMODES[numP].ModesDataGridView.Rows[numR].Cells[1].Style.BackColor = System.Drawing.Color.White;
             }
 
             /// <summary>
@@ -1514,7 +1514,7 @@ namespace StatisticDiagnostic
                 if (m_arPanelsMODES[numP].ModesDataGridView.InvokeRequired)
                     m_arPanelsMODES[numP].ModesDataGridView.Invoke(new Action(() => m_arPanelsMODES[numP].ModesDataGridView.Rows[numR].Cells[1].Style.BackColor = System.Drawing.Color.OrangeRed));
                 else
-                m_arPanelsMODES[numP].ModesDataGridView.Rows[numR].Cells[1].Style.BackColor = System.Drawing.Color.OrangeRed;
+                    m_arPanelsMODES[numP].ModesDataGridView.Rows[numR].Cells[1].Style.BackColor = System.Drawing.Color.OrangeRed;
             }
 
             /// <summary>
@@ -1721,7 +1721,7 @@ namespace StatisticDiagnostic
                         if (TaskDataGridView.InvokeRequired)
                         {
                             columTimeTask(i);
-                            TaskDataGridView.Invoke(new Action(() => TaskDataGridView.Rows[i].Cells[1].Value = ToDateTime(drNameTask[0]["Value"].ToString())));
+                            TaskDataGridView.Invoke(new Action(() => TaskDataGridView.Rows[i].Cells[1].Value = ToDateTime(drNameTask[0]["Value"])));
                             TaskDataGridView.Invoke(new Action(() => TaskDataGridView.Rows[i].Cells[2].Value = time));
                             TaskDataGridView.Invoke(new Action(() => TaskDataGridView.Rows[i].Cells[0].Value = drNameTask[0]["NAME_SHR"]));
                         }
@@ -1777,19 +1777,11 @@ namespace StatisticDiagnostic
             /// Преобразование времени выполнения задач
             /// </summary>
             /// <param name="value"></param>
-            private string ToDateTime(string value)
-            {
-                if (value.Length < 4)
-                {
-                    int lnght = value.Length;
-
-                    for (int i = 4; i > lnght; i--)
-                        value = value.Insert(0, "0");
-
-                    value = value.Insert(2, ":");
-                }
-
-                return DateTime.ParseExact(value, "mm:ss", null).ToString("mm:ss");
+            private string ToDateTime(object m_strTime)
+            {           
+                TimeSpan time = TimeSpan.FromSeconds(Convert.ToDouble(m_strTime));
+                string parseStr = DateTime.Parse(Convert.ToString(time)).ToString("mm:ss");
+                return parseStr;
             }
 
             /// <summary>
