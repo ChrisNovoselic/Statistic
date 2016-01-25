@@ -51,7 +51,7 @@ namespace trans_gtp
         {
             int i = -1;
 
-            CreateFormConnectionSettings("connsett_gtp.ini", true);
+            EditFormConnectionSettings("connsett_gtp.ini", true);
 
             //Добавление необходимого кол-ва элементов настроек для соединения с БД конфигурации
             //if (m_formConnectionSettingsConfigDB.Count < 2)
