@@ -40,16 +40,7 @@ namespace StatisticDiagnostic
 
             string msg = string.Empty;
             bool bAbort = true;
-
             createfileConnSett(@"connsett.ini");
-            //Создать объект - чтение зашифрованного файла с параметрами соединения
-            /*s_fileConnSett = new FIleConnSett(@"connsett.ini", FIleConnSett.MODE.FILE);
-            //Создать список форм для редактирования параметров соединения
-            s_listFormConnectionSettings = new List<FormConnectionSettings>();
-            //Добавить элемент с параметрами соединения из объекта 'FIleConnSett' 
-            s_listFormConnectionSettings.Add(new FormConnectionSettings(-1, s_fileConnSett.ReadSettingsFile, s_fileConnSett.SaveSettingsFile));
-            s_listFormConnectionSettings.Add(null);*/
-
             Start();
             bAbort = initialize(out msg);
             this.panelMain = new PanelStatisticDiagnostic();
@@ -200,6 +191,9 @@ namespace StatisticDiagnostic
             //Параметры валидности даты/времени получения данных СОТИАССО...
             TecView.SEC_VALIDATE_TMVALUE = Int32.Parse(formParameters.m_arParametrSetup[(int)FormParameters.PARAMETR_SETUP.VALIDATE_TM_VALUE]);
 
+            PanelStatisticDiagnostic.UPDATE_TIME = Int32.Parse(formParameters.m_arParametrSetup[(int)FormParameters.PARAMETR_SETUP.DIAGNOSTIC_TIMER_UPDATE]);
+            PanelStatisticDiagnostic.VALIDATE_ASKUE_TM = Int32.Parse(formParameters.m_arParametrSetup[(int)FormParameters.PARAMETR_SETUP.VALIDATE_ASKUE_VALUE]);
+           
             //Параметрвы для ALARM...
         }
 
@@ -297,6 +291,7 @@ namespace StatisticDiagnostic
             return have_msg;
         }
         */
+
        /* protected override void timer_Start()
         {
             //int i = -1;
