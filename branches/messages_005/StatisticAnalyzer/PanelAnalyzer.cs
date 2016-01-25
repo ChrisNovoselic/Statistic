@@ -1015,7 +1015,7 @@ namespace StatisticAnalyzer
 
         protected int getListenerId()
         {
-            int m_idListenerLoggingDB; 
+            int idListenerLoggingDB; 
             int err = -1
                 , idMainDB = -1;
 
@@ -1025,13 +1025,12 @@ namespace StatisticAnalyzer
                 idMainDB = Int32.Parse(DbTSQLInterface.Select(ref connConfigDB, @"SELECT [VALUE] FROM [setup] WHERE [KEY]='" + @"Main DataSource" + @"'", null, null, out err).Rows[0][@"VALUE"].ToString());
                 DataTable tblConnSettMainDB = ConnectionSettingsSource.GetConnectionSettings(TYPE_DATABASE_CFG.CFG_200, ref connConfigDB, idMainDB, -1, out err);
                 ConnectionSettings connSettMainDB = new ConnectionSettings(tblConnSettMainDB.Rows[0], 1);
-                m_idListenerLoggingDB = DbSources.Sources().Register(connSettMainDB, false, @"MAIN_DB", false);
-
-                return m_idListenerLoggingDB;
+                idListenerLoggingDB = DbSources.Sources().Register(connSettMainDB, false, @"MAIN_DB", false);                
             }
             else
                 throw new Exception(@"PanelAnalyzer_DB::Start () - нет соединения с БД конфигурации...");
-            
+
+            return idListenerLoggingDB;            
         }
 
         /// <summary>
@@ -2031,7 +2030,7 @@ namespace StatisticAnalyzer
             public enum TYPE { UNKNOWN = -1, WITHOUT_CHECKBOX, WITH_CHECKBOX, COUNT }
 
             private TYPE _type;
-            protected int m_indxColumn;
+            //protected int m_indxColumn;
             
             protected DataTable m_table_stat;//таблица с количествами сообщений каждого типа
             
@@ -2108,12 +2107,14 @@ namespace StatisticAnalyzer
                 count_message.Name = "ColumnCount";
                 count_message.Width = 20;
 
-                m_indxColumn = this.Columns.Count - 1;
+                //m_indxColumn = this.Columns.Count - 1;
 
                 fillTypeMessage(TYPE_MESSAGE);//заполнение DataGridView типами сообщений
 
                 
             }
+
+            private int lastIndex { get { return this.ColumnCount - 1; } }
 
             /// <summary>
             /// Обновление списка со статистикой сообщений 
@@ -2186,7 +2187,7 @@ namespace StatisticAnalyzer
                 {
                     for (int i = 0; i < this.Rows.Count; i++)
                     {
-                        Check.Add((bool)this.Rows[i].Cells[m_indxColumn-2].Value);//добавление состояния CheckBox'а в список
+                        Check.Add((bool)this.Rows[i].Cells[lastIndex - 2].Value);//добавление состояния CheckBox'а в список
                     }
                 }
 
@@ -2213,13 +2214,13 @@ namespace StatisticAnalyzer
                             {
                                 if (Convert.ToInt32(src.Rows[b]["ID_LOGMSG"].ToString()) - 1 == i)
                                 {
-                                    this.Rows[i].Cells[m_indxColumn].Value = src.Rows[b][nameField].ToString();
+                                    this.Rows[i].Cells[lastIndex].Value = src.Rows[b][nameField].ToString();
                                     b++;
                                 }
                             }
                             else
                             {
-                                this.Rows[i].Cells[m_indxColumn].Value = "0";
+                                this.Rows[i].Cells[lastIndex].Value = "0";
                             }
                         }
                     }
@@ -2237,10 +2238,10 @@ namespace StatisticAnalyzer
                 for (int i = 0; i < strTypeMessages.Length; i++)
                 {
                     if(_type==TYPE.WITH_CHECKBOX)
-                        this.Rows[i].Cells[m_indxColumn - 2].Value = true;
+                        this.Rows[i].Cells[lastIndex - 2].Value = true;
 
-                    this.Rows[i].Cells[m_indxColumn - 1].Value = strTypeMessages[i];
-                    this.Rows[i].Cells[m_indxColumn].Value = 0;
+                    this.Rows[i].Cells[lastIndex - 1].Value = strTypeMessages[i];
+                    this.Rows[i].Cells[lastIndex].Value = 0;
                 }
             }
 
@@ -2252,7 +2253,7 @@ namespace StatisticAnalyzer
             {
                 for (int i = 0; i < strTypeMessages.Length; i++)
                 {
-                    this.Rows[i].Cells[m_indxColumn].Value = 0;
+                    this.Rows[i].Cells[lastIndex].Value = 0;
                 }
             }
         }
