@@ -38,6 +38,11 @@ namespace StatisticCommon
         /// </summary>
         public const int WM_CLOSE = 0x0010;
 
+        [DllImport("user32.dll")]
+        public static extern bool EnumWindows(EnumWindowsProcDel lpEnumFunc, IntPtr lParam);
+
+        public delegate bool EnumWindowsProcDel(IntPtr hWnd, IntPtr lParam);
+
         /// <summary>
         /// Определяет свернуто ли приложение
         /// </summary>
@@ -45,6 +50,12 @@ namespace StatisticCommon
         /// <returns></returns>
         [DllImport("user32.dll")]
         public static extern int IsIconic(IntPtr hWnd);
+
+        [DllImport("user32.dll", SetLastError = true)]
+        public static extern int GetWindowText(IntPtr hWnd, StringBuilder lpString, int nMaxCount);
+
+        [DllImport("user32.dll", SetLastError = true)]
+        public static extern int GetWindowTextLength(IntPtr hWnd);
 
         public const int HWND_BROADCAST = 0xffff;
         public const int SW_SHOWNORMAL = 1;

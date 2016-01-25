@@ -18,7 +18,6 @@ namespace StatisticCommon
         protected static FileINI m_sFileINI;
         protected static FIleConnSett m_sFileCS;
 
-
         public FormMainStatistic()
         {
             //InitializeComponent();            
@@ -83,11 +82,6 @@ namespace StatisticCommon
             m_sFileCS = new FIleConnSett(connSettFileName, FIleConnSett.MODE.FILE);
             s_listFormConnectionSettings = new List<FormConnectionSettings>();
             s_listFormConnectionSettings.Add(new FormConnectionSettings(-1, m_sFileCS.ReadSettingsFile, m_sFileCS.SaveSettingsFile));
-
-            /* if (s_listFormConnectionSettings[(int)StatisticCommon.CONN_SETT_TYPE.CONFIG_DB].Ready == 0)
-                 ;
-             else
-                 bShowFormConnSett = true;*/
         }
     }
 
@@ -98,9 +92,14 @@ namespace StatisticCommon
     {
         static public bool stopbflg = true;
         public static string mutexName = ProgramInfo.AssemblyGuid.ToString();
+        //static IntPtr
         static Mutex mtx;
         static string cmdCommnd = string.Empty;
 
+        /// <summary>
+        /// 
+        /// </summary>
+        /// <returns></returns>
         static public bool Start()
         {
             string[] args = Environment.GetCommandLineArgs();
@@ -111,7 +110,7 @@ namespace StatisticCommon
         }
 
         /// <summary>
-        /// 
+        /// проверка экземпляра на запуск
         /// </summary>
         /// <returns></returns>
         static private bool onlyInstance()
@@ -151,7 +150,7 @@ namespace StatisticCommon
         }
 
         /// <summary>
-        /// 
+        /// Обработка команды старт/стоп
         /// </summary>
         /// <returns></returns>
         static public bool execCmdLine()
@@ -214,17 +213,48 @@ namespace StatisticCommon
                     _process.MainModule.FileName == process.MainModule.FileName &&
                     _process.Handle != IntPtr.Zero)
                 {
-                    //Process.GetProcessById(_process.Id).CloseMainWindow();
                     //Process.GetProcessById(_process.Id);
-                    IntPtr hWnd2 = WinApi.HWND;
                     hWnd = _process.MainWindowHandle;
-                    
-                  IntPtr hWnd1 = WinApi.FindWindow(null, Process.GetProcessById(_process.Id).ProcessName.ToString());
-                  
+
+                    IntPtr hWnd1 = WinApi.FindWindow(null, Process.GetProcessById(_process.Id).ProcessName.ToString());
+                    Enum(Process.GetProcessById(_process.Id).ProcessName.ToString());
                     break;
                 }
             }
             return hWnd;
+        }
+
+       /// <summary>
+       /// 
+       /// </summary>
+       /// <param name="name"></param>
+        private static void Enum(string name)
+        {
+            List<IntPtr> ListHandles = new List<IntPtr>();
+
+            WinApi.EnumWindows((hWnd, lParam) =>
+            {
+                if (GetWindowText(hWnd).StartsWith(name))
+                {
+                    ListHandles.Add(hWnd);
+                }
+                return true;
+            }, IntPtr.Zero);
+
+            ListHandles.Count();
+        }
+
+        /// <summary>
+        /// 
+        /// </summary>
+        /// <param name="hWnd"></param>
+        /// <returns></returns>
+        private static string GetWindowText(IntPtr hWnd)
+        {
+            int len = WinApi.GetWindowTextLength(hWnd) + 1;
+            StringBuilder sb = new StringBuilder(len);
+            len = WinApi.GetWindowText(hWnd, sb, len);
+            return sb.ToString(0, len);
         }
 
         /// <summary>
@@ -233,18 +263,18 @@ namespace StatisticCommon
         private static void SwitchToCurrentInstance()
         {
             IntPtr hWnd = mainhwd();
-            //if (hWnd != IntPtr.Zero)
-            //{
+            if (hWnd != IntPtr.Zero)
+            {
                 // Restore window if minimised. Do not restore if already in
                 // normal or maximised window state, since we don't want to
                 // change the current state of the window.
-                //if (WinApi.IsIconic(hWnd) != 0)
+                if (WinApi.IsIconic(hWnd) != 0)
                     WinApi.ShowWindow(hWnd, WinApi.SW_RESTORE);
-                //else ;
+                else ;
 
                 // Set foreground window.
                 WinApi.SetForegroundWindow(hWnd);
-           // }
+            }
         }
     }
 }
