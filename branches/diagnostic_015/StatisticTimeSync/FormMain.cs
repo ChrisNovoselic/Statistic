@@ -43,10 +43,11 @@ namespace StatisticTimeSync
         {
             string msg = string.Empty;
             bool bAbort = true;
-            //Создать объект - чтение зашифрованного файла с параметрами соединения
-            s_fileConnSett = new FIleConnSett(@"connsett.ini", FIleConnSett.MODE.FILE);
             //Отобразить окно для визуализации выполнения длительной операции
             delegateStartWait();
+
+            //Создать объект - чтение зашифрованного файла с параметрами соединения
+            s_fileConnSett = new FIleConnSett(@"connsett.ini", FIleConnSett.MODE.FILE);
             //Создать список форм для редактирования параметров соединения
             s_listFormConnectionSettings = new List<FormConnectionSettings>();
             //Добавить элемент с параметрами соединения из объекта 'FIleConnSett' 

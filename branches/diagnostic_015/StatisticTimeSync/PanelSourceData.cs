@@ -598,7 +598,7 @@ namespace StatisticTimeSync
             else
                 throw new Exception(@"Нет соединения с БД");
 
-            //DbSources.Sources().UnRegister(iListenerId);
+           DbSources.Sources().UnRegister(iListenerId);
 
             for (int i = 0; i < INDEX_SOURCE_GETDATE.Length; i++)
                 //m_arPanels[i].TurnOn(INDEX_SOURCE_GETDATE [i]);
@@ -618,7 +618,7 @@ namespace StatisticTimeSync
                         DataRow rowConnSett = ConnectionSettingsSource.GetConnectionSettings(TYPE_DATABASE_CFG.CFG_200, iListenerId, id, 501, out err).Rows[0];
                         ConnectionSettings connSett = new ConnectionSettings(rowConnSett, -1);
                         ((PanelGetDate)((EventArgsDataHost)ev).par[0]).OnEvtDataRecievedHost(new EventArgsDataHost(((EventArgsDataHost)ev).id, new object[] { connSett }));
-                        //DbSources.Sources().UnRegister(iListenerId);
+                        DbSources.Sources().UnRegister(iListenerId);
                         break;
                     default:
                         break;
