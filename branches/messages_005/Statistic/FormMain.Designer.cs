@@ -61,7 +61,7 @@ namespace Statistic
             m_dictAddingTabs.Add((int)ID_ADDING_TAB.SOBSTV_NYZHDY, new ADDING_TAB("собственныеНуждыToolStripMenuItem", "Собственные нужды"));
             m_dictAddingTabs.Add((int)ID_ADDING_TAB.DATETIMESYNC_SOURCE_DATA, new ADDING_TAB("рассинхронизацияДатаВремяСерверБДToolStripMenuItem", "Рассинхронизация даты/времени серверов БД"));
             m_dictAddingTabs.Add((int)ID_ADDING_TAB.DIAGNOSTIC, new ADDING_TAB("ДиагностикаToolStripMenuItem", "Диагностика"));
-            m_dictAddingTabs.Add((int)ID_ADDING_TAB.ANALYZER, new ADDING_TAB("ПросмотрЖурналаToolStripMenuItem", "Журнала событий"));
+            m_dictAddingTabs.Add((int)ID_ADDING_TAB.ANALYZER, new ADDING_TAB("ПросмотрЖурналаToolStripMenuItem", "Журнал событий"));
             m_dictAddingTabs.Add((int)ID_ADDING_TAB.SOTIASSO, new ADDING_TAB("значенияСОТИАССОToolStripMenuItem", "Значения СОТИАССО"));
 
 
