@@ -99,8 +99,6 @@
       <DesignTime>True</DesignTime>
       <DependentUpon>Resources.resx</DependentUpon>
     </Compile>
-    <Compile Include="ProgramInfo.cs" />
-    <Compile Include="SingleInstance.cs" />
   </ItemGroup>
   <ItemGroup>
     <EmbeddedResource Include="FormMainTrans.resx">

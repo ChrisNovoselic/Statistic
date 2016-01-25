@@ -14,18 +14,8 @@ using StatisticCommon;
 
 namespace StatisticTrans
 {
-    public abstract partial class FormMainTrans : FormMainBaseWithStatusStrip
+    public abstract partial class FormMainTrans : FormMainStatistic
     {
-        /// <summary>
-        /// 
-        /// </summary>
-        //public event EventHandler ExplandApp;
-
-        /// <summary>
-        /// 
-        /// </summary>
-        public delegate void ExplandApp();
-
         [DllImport("user32.dll")]
         static extern IntPtr SendMessage(IntPtr hWnd, int Msg, int wParam, int lParam);
 
@@ -46,8 +36,6 @@ namespace StatisticTrans
         protected enum INDX_UICONTROLS { SERVER_IP, PORT, NAME_DATABASE, USER_ID, PASS, COUNT_INDX_UICONTROLS };
 
         protected System.Windows.Forms.Control[,] m_arUIControls;
-
-        protected static FileINI m_sFileINI;
 
         protected
             System.Windows.Forms.Timer
@@ -193,6 +181,7 @@ namespace StatisticTrans
 
             m_listID_TECNotUse = new List<int>();
             string[] arStrID_TECNotUse = m_sFileINI.GetMainValueOfKey(@"ID_TECNotUse").Split(',');
+
             foreach (string str in arStrID_TECNotUse)
             {
                 if (str.Equals(string.Empty) == false)
@@ -252,7 +241,6 @@ namespace StatisticTrans
             // m_lblDescError
             this.m_lblDescMessage.Size = new System.Drawing.Size(463, 17);
 
-            //this.notifyIconMain.ContextMenuStrip = this.contextMenuStripNotifyIcon;
             notifyIconMain.Click += new EventHandler(notifyIconMain_Click);
 
             //this.Deactivate += new EventHandler(FormMainTrans_Deactivate);
@@ -266,7 +254,7 @@ namespace StatisticTrans
             this.m_checkboxModeMashine.TextAlign = ContentAlignment.MiddleLeft;
             this.m_checkboxModeMashine.CheckedChanged += new EventHandler(m_checkboxModeMashine_CheckedChanged);
             this.Controls.Add(this.m_checkboxModeMashine);
-            //Пока переходить из режима в режимпользователь НЕ может (нестабильная работа trans_tg.exe) ???
+            //Пока переходить из режима в режим пользователь НЕ может (нестабильная работа trans_tg.exe) ???
             this.m_checkboxModeMashine.Enabled = false; ;
 
             //labelTime
@@ -285,6 +273,7 @@ namespace StatisticTrans
             string msg_throw = string.Empty;
             string[] args = Environment.GetCommandLineArgs();
             int argc = args.Length;
+
             this.WindowState = FormWindowState.Minimized;
             this.ShowInTaskbar = false;
             notifyIconMain.Visible = true;
@@ -657,8 +646,8 @@ namespace StatisticTrans
 
         protected abstract void buttonSaveSourceSett_Click(object sender, EventArgs e);
 
-        protected override void UpdateActiveGui(int type) { }
-        protected override void HideGraphicsSettings() { }
+        //protected override void UpdateActiveGui(int type) { }
+        //protected override void HideGraphicsSettings() { }
 
         protected void InitializeComponentTransSrc(string text)
         {
@@ -836,13 +825,12 @@ namespace StatisticTrans
         /// </summary>
         /// <param name="connSettFileName">наименование файла с параметрами соединения</param>
         /// <param name="bCheckAdminLength">признак проверки кол-ва параметров соединения по кол-ву объекьлв 'HAdmin'</param>
-        protected void CreateFormConnectionSettings(string connSettFileName, bool bCheckAdminLength)
+        protected void EditFormConnectionSettings(string connSettFileName, bool bCheckAdminLength)
         {
-            bool bShowFormConnSett = false;
+            createfileConnSett(connSettFileName);
+           
 
-            s_fileConnSett = new FIleConnSett(connSettFileName, FIleConnSett.MODE.FILE);
-            s_listFormConnectionSettings = new List<FormConnectionSettings>();
-            s_listFormConnectionSettings.Add(new FormConnectionSettings(-1, s_fileConnSett.ReadSettingsFile, s_fileConnSett.SaveSettingsFile));
+            bool bShowFormConnSett = false;
 
             if (s_listFormConnectionSettings[(int)StatisticCommon.CONN_SETT_TYPE.CONFIG_DB].Ready == 0)
                 ;
@@ -1367,11 +1355,6 @@ namespace StatisticTrans
                 ;
         }
 
-        //private void FormMain_Activated(object sender, EventArgs e)
-        //{
-        //    m_arAdmin[m_IndexDB].GetCurrentTime ();
-        //}
-
         protected virtual void buttonClear_Click(object sender, EventArgs e)
         {
             //m_IndexDB = только DEST
@@ -1525,6 +1508,30 @@ namespace StatisticTrans
             }
         }
 
+        /// <summary>
+        /// 
+        /// </summary>
+        /// <param name="m"></param>
+       /* protected override void WndProc(ref Message m)
+        {
+            switch (m.Msg)
+            {
+                case WinApi.SW_RESTORE: 
+                    MessageBox.Show("SW_RESTORE"); 
+
+                    break;
+                // The WM_ACTIVATEAPP message occurs when the application
+                // becomes the active application or becomes inactive.
+                case WinApi.WM_ACTIVATEAPP:
+                    //MessageBox.Show("WM_ACTIVATEAPP"); 
+                    break;
+                case WinApi.WM_CLOSE: 
+                    MessageBox.Show("WM_CLOSE"); 
+                    break;
+            }
+            base.WndProc(ref m);
+        }*/
+
         protected virtual void SaveRDGValues(bool bCallback)
         {
             //((AdminTS)m_arAdmin[(int)(Int16)CONN_SETT_TYPE.DEST]).SaveRDGValues(m_listTECComponentIndex[comboBoxTECComponent.SelectedIndex], dateTimePickerMain.Value, bCallback);
@@ -1535,74 +1542,6 @@ namespace StatisticTrans
         private void notifyIconMain_Click(object sender, EventArgs e)
         {
             развернутьToolStripMenuItem.PerformClick();
-        }
-
-        public static void RunExpland()
-        {
-
-        }
-
-        protected override void WndProc(ref Message message)
-        {
-            if (message.Msg == SingleInstance.WM_SHOWINSTANCE)
-            {
-                ShowWindow();
-            }
-            base.WndProc(ref message);
-        }
-
-        /// <summary>
-        /// 
-        /// </summary>
-        public void ShowWindow()
-        {
-
-            if (this.WindowState == FormWindowState.Minimized)
-            {
-                ExpandApplication();
-                MessageBox.Show("DR, SHOWME");
-                /*notifyIcon.Visible = false;
-                this.Show();
-                this.WindowState = FormWindowState.Normal;
-                minimizedToTray = false;*/
-            }
-            else
-            {
-                WinApi.ShowToFront(this.Handle);
-            }
-        }
-
-        /// <summary>
-        /// Развертывает приложение из трея
-        /// </summary>
-        public void ExpandApplication()
-        {
-            if (this.WindowState == FormWindowState.Minimized)
-            {
-                MessageBox.Show("EXPANDMAX");
-                this.WindowState = FormWindowState.Normal;
-                this.Enabled = true;
-                this.ShowInTaskbar = true;
-                notifyIconMain.Visible = false;
-                this.Activate();
-            }
-            else
-            {
-                MessageBox.Show("EXPANDMIN");
-                this.WindowState = FormWindowState.Minimized;
-                this.Enabled = false;
-                this.ShowInTaskbar = false;
-                notifyIconMain.Visible = true;
-            }
-        }
-
-        /// <summary>
-        /// функция завершения приложения
-        /// </summary>
-        public void ShuttdownApp()
-        {
-            Stop();
-            Close();
         }
 
         private void развернутьToolStripMenuItem_Click(object sender, EventArgs e)
@@ -1616,6 +1555,14 @@ namespace StatisticTrans
             }
             else
                 ;
+        }
+
+        public void ExplandApp()
+        {
+            this.WindowState = FormWindowState.Normal;
+            this.ShowInTaskbar = true;
+            notifyIconMain.Visible = false;
+            this.Show();
         }
 
         private void закрытьToolStripMenuItem_Click(object sender, EventArgs e)
