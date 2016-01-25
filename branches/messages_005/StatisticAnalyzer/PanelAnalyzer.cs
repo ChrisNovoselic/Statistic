@@ -71,9 +71,9 @@ namespace StatisticAnalyzer
             protected DataGridView_LogMessageCounter dgvMessage;
 
 
-            private void InitializeComponent(int iListenerId)
+            private void InitializeComponent()
             {
-                this.dgvMessage=new DataGridView_LogMessageCounter(iListenerId, false);
+                this.dgvMessage = new DataGridView_LogMessageCounter(DataGridView_LogMessageCounter.TYPE.WITHOUT_CHECKBOX);
                 this.groupUser = new System.Windows.Forms.GroupBox();
                 this.groupMessage = new System.Windows.Forms.GroupBox();
                 this.groupTabs = new System.Windows.Forms.GroupBox();
@@ -115,7 +115,7 @@ namespace StatisticAnalyzer
                 this.dgvDatetimeStart = new System.Windows.Forms.DataGridView();                
 
                 this.labelFilterTypeMessage = new System.Windows.Forms.Label();
-                this.dgvFilterTypeMessage = new DataGridView_LogMessageCounter(iListenerId, true);
+                this.dgvFilterTypeMessage = new DataGridView_LogMessageCounter(DataGridView_LogMessageCounter.TYPE.WITH_CHECKBOX);
 
                 this.buttonUpdate = new System.Windows.Forms.Button();
                 this.buttonClose = new System.Windows.Forms.Button();
@@ -916,7 +916,7 @@ namespace StatisticAnalyzer
             : base()
         {
 
-            InitializeComponent(idListener);
+            InitializeComponent();
 
             
             m_arCheckBoxMode = new CheckBox[] { checkBoxs[(int)FormChangeMode.MODE_TECCOMPONENT.TEC], checkBoxs[(int)FormChangeMode.MODE_TECCOMPONENT.GTP], checkBoxs[(int)FormChangeMode.MODE_TECCOMPONENT.PC], checkBoxs[(int)FormChangeMode.MODE_TECCOMPONENT.TG] };
@@ -974,7 +974,7 @@ namespace StatisticAnalyzer
 
                 get_users(m_tableUsers_stat, dgvUser, true);
                 //dgvFilterTypeMessage.UpdateCounter(DateTime.MinValue, DateTime.MaxValue, "");
-                dgvMessage.UpdateCounter(StartCalendar.Value.Date, StopCalendar.Value.Date, users);
+                dgvMessage.UpdateCounter(-1, StartCalendar.Value.Date, StopCalendar.Value.Date, users);
             }
         }
 
@@ -1237,7 +1237,7 @@ namespace StatisticAnalyzer
                 DateTime stop_date = start_date.AddDays(1);
                 check.Clear();
                 get_users(m_tableUsers, dgvClient, false);
-                dgvFilterTypeMessage.UpdateCounter(start_date, stop_date, users);
+                dgvFilterTypeMessage.UpdateCounter(-1, start_date, stop_date, users);
                 
             }
         }
@@ -1318,7 +1318,7 @@ namespace StatisticAnalyzer
             else
             {
                 get_users(m_tableUsers, dgvClient, false);
-                dgvFilterTypeMessage.UpdateCounter(DateTime.Today, DateTime.Today.AddDays(1), " ");
+                dgvFilterTypeMessage.UpdateCounter(-1, DateTime.Today, DateTime.Today.AddDays(1), " ");
             }
                 ;
         }
@@ -1918,7 +1918,7 @@ namespace StatisticAnalyzer
         {
             dgvUser.Rows[e.RowIndex].Cells[0].Value = !bool.Parse(dgvUser.Rows[e.RowIndex].Cells[0].Value.ToString());//фиксация положения
             get_users(m_tableUsers_stat, dgvUser, true);//получение списка выбранных пользователей
-            dgvMessage.UpdateCounter(StartCalendar.Value.Date, StopCalendar.Value.Date, users);//обновление списка со статистикой сообщений
+            dgvMessage.UpdateCounter(-1, StartCalendar.Value.Date, StopCalendar.Value.Date, users);//обновление списка со статистикой сообщений
         }
         
         /// <summary>
@@ -1960,7 +1960,7 @@ namespace StatisticAnalyzer
                     
                     FillDataGridViews(ref dgvUser, m_tableUsers_stat, @"DESCRIPTION", err, true);//Отображение пользователей в DataGridView
                     get_users(m_tableUsers_stat, dgvUser, true);//получение списка выбранных пользователей
-                    dgvMessage.UpdateCounter(StartCalendar.Value.Date, StopCalendar.Value.Date, users);//обновление списка со статистикой сообщений
+                    dgvMessage.UpdateCounter(-1, StartCalendar.Value.Date, StopCalendar.Value.Date, users);//обновление списка со статистикой сообщений
 
                     m_timerChecked.Change(0, System.Threading.Timeout.Infinite);//Старт таймера
                     
@@ -1977,7 +1977,7 @@ namespace StatisticAnalyzer
         private void startCalendar_ChangeValue(object sender, EventArgs e)
         {
             get_users(m_tableUsers_stat, dgvUser, true);//получение списка выбранных пользователей
-            dgvMessage.UpdateCounter(StartCalendar.Value.Date, StopCalendar.Value.Date, users);//обновление списка со статистикой сообщений
+            dgvMessage.UpdateCounter(-1, StartCalendar.Value.Date, StopCalendar.Value.Date, users);//обновление списка со статистикой сообщений
         }
 
         /// <summary>
@@ -1986,7 +1986,7 @@ namespace StatisticAnalyzer
         private void stopCalendar_ChangeValue(object sender, EventArgs e)
         {
             get_users(m_tableUsers_stat, dgvUser, true);//получение списка выбранных пользователей
-            dgvMessage.UpdateCounter(StartCalendar.Value.Date, StopCalendar.Value.Date, users);//обновление списка со статистикой сообщений
+            dgvMessage.UpdateCounter(-1, StartCalendar.Value.Date, StopCalendar.Value.Date, users);//обновление списка со статистикой сообщений
         }
 
         #endregion
@@ -2009,9 +2009,11 @@ namespace StatisticAnalyzer
 
         public class DataGridView_LogMessageCounter : DataGridView
         {
+            public enum TYPE { UNKNOWN = -1, WITH_CHECKBOX, WITHOUT_CHECKBOX, COUNT }
+
+            private TYPE _type;
+            
             protected DataTable m_table_stat;//таблица с количествами сообщений каждого типа
-            protected int m_iListenerIdConfigDB;
-            DbConnection connConfigDB;
             int parse;
             //Массив типов сообщений
             protected string[] TYPE_MESSAGE = { "Запуск", "Выход",
@@ -2079,16 +2081,14 @@ namespace StatisticAnalyzer
 
             }
 
-            public DataGridView_LogMessageCounter(int iListenerId, bool check_box)
+            public DataGridView_LogMessageCounter(TYPE type)
                 : base()
             {
-                m_iListenerIdConfigDB = iListenerId;
+                _type = type;
                 
-                InitializeComponent(check_box);//инициализация компонентов в зависимости от выбранного типа
+                InitializeComponent(_type == TYPE.WITH_CHECKBOX);//инициализация компонентов в зависимости от выбранного типа
                 fillTypeMessage(TYPE_MESSAGE);//заполнение DataGridView типами сообщений
             }
-
-
 
             /// <summary>
             /// Обновление списка со статистикой сообщений 
@@ -2096,32 +2096,16 @@ namespace StatisticAnalyzer
             /// <param name="beg">Начальная дата</param>
             /// <param name="end">Конечая дата</param>
             /// <param name="users">Список пользователей</param>
-            public void UpdateCounter(DateTime beg, DateTime end, string users)
+            public void UpdateCounter(object objSrcMessages, DateTime beg, DateTime end, string users)
             {
                 int err = -1;
-                int iListenerId = -1;
-                int idMainDB = -1;
                 int iRes = -1;
                 string where = string.Empty;
+                int iListenerId = (int)objSrcMessages;
 
                 if (users != "")
                 {
                     updateTypeMessage(TYPE_MESSAGE);//Обнуление счётчиков сообщений на панели статистики
-
-                    #region Получение iListenerId
-
-                    connConfigDB = DbSources.Sources().GetConnection(m_iListenerIdConfigDB, out err);
-                    if ((!(connConfigDB == null)) && (err == 0))
-                    {
-                        idMainDB = Int32.Parse(DbTSQLInterface.Select(ref connConfigDB, @"SELECT [VALUE] FROM [setup] WHERE [KEY]='" + @"Main DataSource" + @"'", null, null, out err).Rows[0][@"VALUE"].ToString());
-                        DataTable tblConnSettMainDB = ConnectionSettingsSource.GetConnectionSettings(TYPE_DATABASE_CFG.CFG_200, ref connConfigDB, idMainDB, -1, out err);
-                        ConnectionSettings connSettMainDB = new ConnectionSettings(tblConnSettMainDB.Rows[0], 1);
-                        iListenerId = DbSources.Sources().Register(connSettMainDB, false, @"MAIN_DB", false);
-                    }
-                    else
-                        throw new Exception(@"PanelAnalyzer_DB::Start () - нет соединения с БД конфигурации...");
-
-                    #endregion
 
                     #region Фомирование и выполнение запроса для получения количества сообщений разного типа
 
@@ -2194,6 +2178,8 @@ namespace StatisticAnalyzer
             /// <param name="checkDefault"></param>
             private void FillDataGridViewsMessage(DataTable src, string nameField, int run, bool checkDefault = false)
             {
+                int indxColumn = -1;
+                
                 if (run == 0)
                 {
                     if (src.Rows.Count > 0)
@@ -2205,14 +2191,10 @@ namespace StatisticAnalyzer
                             {
                                 if (Convert.ToInt32(src.Rows[b]["ID_LOGMSG"].ToString()) - 1 == i)
                                 {
-                                    if (this.Columns.Count == 2)//без CheckBox'а
+                                    indxColumn = this.Columns.Count - 1;
+                                    if (this.Columns.Count == (int)TYPE.WITH_CHECKBOX)//без CheckBox'а
                                     {
-                                        this.Rows[i].Cells[1].Value = src.Rows[b][nameField].ToString();
-                                        b++;
-                                    }
-                                    if (this.Columns.Count == 3)//с CheckBox'а
-                                    {
-                                        this.Rows[i].Cells[2].Value = src.Rows[b][nameField].ToString();
+                                        this.Rows[i].Cells[(int)TYPE.WITH_CHECKBOX].Value = src.Rows[b][nameField].ToString();
                                         b++;
                                     }
 
@@ -2780,7 +2762,7 @@ namespace StatisticAnalyzer
                     
                     getLogMsg(m_tableUsers.Rows[dgvClient.SelectedRows[0].Index], dgvClient.SelectedRows[0].Index);
 
-                    dgvMessage.UpdateCounter(DateTime.Today, DateTime.Today.AddDays(1), users);
+                    dgvMessage.UpdateCounter(-1, DateTime.Today, DateTime.Today.AddDays(1), users);
                     listTabVisible.Items.Clear();//очистка списка активных вкладок
                     fill_active_tabs(m_tableUsers.Rows[dgvClient.SelectedRows[0].Index][0].ToString());
 
