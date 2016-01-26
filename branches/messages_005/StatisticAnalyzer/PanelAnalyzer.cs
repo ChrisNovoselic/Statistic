@@ -2032,8 +2032,6 @@ namespace StatisticAnalyzer
             private TYPE _type;
             //protected int m_indxColumn;
             
-            protected DataTable m_table_stat;//таблица с количествами сообщений каждого типа
-            
             //Массив типов сообщений
             protected string[] TYPE_MESSAGE = { "Запуск", "Выход",
                                                     "Действие", "Отладка", "Исключение",
@@ -2075,15 +2073,14 @@ namespace StatisticAnalyzer
                 if (_type == TYPE.WITH_CHECKBOX)
                 {
                     this.Columns.Add(check_state);
-                    this.Columns.Add(type_message);
-                    this.Columns.Add(count_message);
                 }
-                if (_type == TYPE.WITHOUT_CHECKBOX)
+
+                if (_type == TYPE.WITH_CHECKBOX || _type == TYPE.WITHOUT_CHECKBOX)
                 {
                     this.Columns.Add(type_message);
                     this.Columns.Add(count_message);
                 }
-
+                
                 // 
                 // dataGridViewCheckBoxColumnTypeMessageUse
                 //
@@ -2111,7 +2108,6 @@ namespace StatisticAnalyzer
 
                 fillTypeMessage(TYPE_MESSAGE);//заполнение DataGridView типами сообщений
 
-                
             }
 
             private int lastIndex { get { return this.ColumnCount - 1; } }
@@ -2128,6 +2124,7 @@ namespace StatisticAnalyzer
                 int iRes = -1;
                 string where = string.Empty;
                 int iListenerId = (int)objSrcMessages;
+                DataTable table_statMessage;//таблица с количествами сообщений каждого типа
 
                 if (users != "")
                 {
@@ -2156,13 +2153,13 @@ namespace StatisticAnalyzer
 
                         DbConnection connLoggingDBn = DbSources.Sources().GetConnection(iListenerId, out iRes);
 
-                        m_table_stat = DbTSQLInterface.Select(ref connLoggingDBn, query, null, null, out iRes);
+                        table_statMessage = DbTSQLInterface.Select(ref connLoggingDBn, query, null, null, out iRes);
 
-                        if (m_table_stat.Rows.Count == 0)
+                        if (table_statMessage.Rows.Count == 0)
                         {
                             updateTypeMessage(TYPE_MESSAGE);//Обнуление счётчиков сообщений на панели статистики
                         }
-                        fillDataGridViewsMessage(m_table_stat, @"column1", 0, true);//Заполнение таблицы со счётчиками на панели статистики
+                        fillDataGridViewsMessage(table_statMessage, @"column1", 0, true);//Заполнение таблицы со счётчиками на панели статистики
 
                     }
                     else
@@ -2689,10 +2686,11 @@ namespace StatisticAnalyzer
         /// <returns>true-если есть</returns>
         static bool IsPunctuationContains(string input)
         {
+            bool bRes = false;
             foreach (char c in input)
                 if (Char.IsPunctuation(c))
-                    return true;
-            return false;
+                    bRes = true;
+            return bRes;
         }
 
         /// <summary>
@@ -2702,10 +2700,11 @@ namespace StatisticAnalyzer
         /// <returns>true-если есть</returns>
         static bool IsNumberContains(string input)
         {
+            bool bRes = false;
             foreach (char c in input)
                 if (Char.IsNumber(c))
-                    return true;
-            return false;
+                    bRes = true;
+            return bRes;
         }
 
         #region Обработчики событий
