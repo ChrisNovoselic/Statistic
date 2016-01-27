@@ -22,13 +22,13 @@ namespace StatisticDiagnostic
             //Logging.s_mode = Logging.LOG_MODE.DB;
             Logging.s_mode = Logging.LOG_MODE.FILE_EXE;
 
-            if (SingleInstance.Start())
+            if (FormMainStatistic.SingleInstance.Start())
             {
                
             }
             else
             {
-                if (SingleInstance.stopbflg)
+                if (FormMainStatistic.SingleInstance.stopbflg)
                 {
                     try { ProgramBase.Start(); }
                     catch (Exception e)
@@ -61,6 +61,7 @@ namespace StatisticDiagnostic
                             }
                         else ;
 
+                        FormMainStatistic.SingleInstance.StopMtx();
                         ProgramBase.Exit();
                     }
                     else;

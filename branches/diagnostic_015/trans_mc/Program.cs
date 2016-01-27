@@ -22,30 +22,24 @@ namespace trans_mc
             ProgramBase.Start();
             FormMainTransMC formMain = null;
 
-            if (SingleInstance.Start())
+            if (FormMainStatistic.SingleInstance.Start())
             {
-
             }   
             else
             {
-                if (SingleInstance.stopbflg)
+                if (FormMainStatistic.SingleInstance.stopbflg)
                 {
-
-
                     try
                     { formMain = new FormMainTransMC(); }
                     catch (Exception e)
                     { Logging.Logg().Exception(e, "Ошибка запуска приложения.", Logging.INDEX_MESSAGE.NOT_SET); }
 
-                    MessageBox.Show("PERVZAPUSK");
                     try
                     { Application.Run(formMain); }
                     catch (Exception e)
                     { Logging.Logg().Exception(e, "Ошибка выполнения приложения.", Logging.INDEX_MESSAGE.NOT_SET); }
 
-                    SingleInstance.StopMtx();
-
-
+                    FormMainStatistic.SingleInstance.StopMtx();
                 }
                 else ;
             }

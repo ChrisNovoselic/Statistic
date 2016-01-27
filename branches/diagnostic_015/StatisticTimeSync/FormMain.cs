@@ -212,6 +212,7 @@ namespace StatisticTimeSync
         {
             Close();
         }
+
         /// <summary>
         /// Обработчик события выбора п. главного меню "Настройка-БД_конфигурации"
         /// </summary>

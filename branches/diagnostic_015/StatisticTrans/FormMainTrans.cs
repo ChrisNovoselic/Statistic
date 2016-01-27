@@ -87,8 +87,6 @@ namespace StatisticTrans
                 {
                     if (m_arGroupBox[(Int16)i].BackColor == SystemColors.Info)
                         break;
-                    else
-                        ;
                 }
 
                 return (Int16)i;
@@ -665,8 +663,6 @@ namespace StatisticTrans
             {
                 if (!(m_arUIControls[(Int16)CONN_SETT_TYPE.SOURCE, i] == null))
                     this.groupBoxSource.Controls.Add(m_arUIControls[(Int16)CONN_SETT_TYPE.SOURCE, i]);
-                else
-                    ;
             }
 
             i = (Int16)INDX_UICONTROLS.SERVER_IP + (Int16)INDX_UICONTROLS.COUNT_INDX_UICONTROLS;
@@ -809,8 +805,6 @@ namespace StatisticTrans
                     }
                 }
             }
-            else
-                ;
         }
 
         protected abstract void setUIControlSourceState();
@@ -828,7 +822,7 @@ namespace StatisticTrans
         protected void EditFormConnectionSettings(string connSettFileName, bool bCheckAdminLength)
         {
             createfileConnSett(connSettFileName);
-           
+
 
             bool bShowFormConnSett = false;
 
@@ -855,8 +849,7 @@ namespace StatisticTrans
 
             if (bShowFormConnSett == true)
                 конфигурацияБДToolStripMenuItem.PerformClick();
-            else
-                ;
+
         }
 
         /// <summary>
@@ -1512,25 +1505,28 @@ namespace StatisticTrans
         /// 
         /// </summary>
         /// <param name="m"></param>
-       /* protected override void WndProc(ref Message m)
+        protected override void WndProc(ref Message m)
         {
             switch (m.Msg)
             {
-                case WinApi.SW_RESTORE: 
-                    MessageBox.Show("SW_RESTORE"); 
+                case WinApi.SW_RESTORE:
+                    //MessageBox.Show("SW_RESTORE");
+                    this.ShowInTaskbar = true;
+                    notifyIconMain.Visible = false;
 
                     break;
                 // The WM_ACTIVATEAPP message occurs when the application
                 // becomes the active application or becomes inactive.
                 case WinApi.WM_ACTIVATEAPP:
                     //MessageBox.Show("WM_ACTIVATEAPP"); 
+                    //(int)this.Handle;
                     break;
-                case WinApi.WM_CLOSE: 
-                    MessageBox.Show("WM_CLOSE"); 
+                case WinApi.WM_CLOSE:
+                    MessageBox.Show("WM_CLOSE");
                     break;
             }
             base.WndProc(ref m);
-        }*/
+        }
 
         protected virtual void SaveRDGValues(bool bCallback)
         {
