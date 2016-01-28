@@ -37,7 +37,7 @@ namespace StatisticAnalyzer
 
             if (! (m_panel == null))
             {
-                m_panel.EvtClose += new EventHandler(this.FormMainAnalyzer_OnEvtPanelClose);
+                //m_panel.EvtClose += new EventHandler(this.FormMainAnalyzer_OnEvtPanelClose);
 
                 InitializeComponent();
                 /*
