@@ -160,7 +160,6 @@
       <DesignTime>True</DesignTime>
       <DependentUpon>Resources.resx</DependentUpon>
     </Compile>
-    <Compile Include="SingleInstance.cs" />
     <Compile Include="TEC.cs">
       <SubType>Code</SubType>
     </Compile>

@@ -1,8 +1,6 @@
 ﻿using System;
 using System.Collections.Generic;
 using System.ComponentModel;
-using System.Data;
-using System.Drawing;
 using System.Linq;
 using System.Text;
 using System.Threading;
@@ -20,12 +18,19 @@ namespace StatisticCommon
 
         public FormMainStatistic()
         {
-            //InitializeComponent();            
+            if (SingleInstance.Start())
+            {
+                //SingleInstance.execCmdLine(string CmdStr);
+            }
+            else 
+            { 
+                //SingleInstance.execCmdLine(string CmdStr);
+            }
         }
 
         protected override void timer_Start()
         {
-
+            int i = -1;
         }
 
         protected override int UpdateStatusString()
@@ -89,7 +94,7 @@ namespace StatisticCommon
         }
 
         /// <summary>
-        /// 
+        /// класс обработки старт/стоп
         /// </summary>
         static public class SingleInstance
         {
@@ -97,7 +102,7 @@ namespace StatisticCommon
             public static string mutexName = ProgramInfo.AssemblyGuid.ToString();
             static Mutex mtx;
             static public IntPtr m_hndl;
-            static string cmdCommnd = string.Empty;
+            static string CmdStr = string.Empty;
 
             /// <summary>
             /// 
@@ -108,7 +113,6 @@ namespace StatisticCommon
                 string[] args = Environment.GetCommandLineArgs();
 
                 handlerCmd(args);
-
                 return execCmdLine();
             }
 
@@ -134,7 +138,7 @@ namespace StatisticCommon
             /// <summary>
             /// обработка CommandLine
             /// </summary>
-            /// <param name="cmdLine"></param>
+            /// <param name="cmdLine">командная строка</param>
             static private void handlerCmd(string[] cmdLine)
             {
                 if (cmdLine.Count() > 1)
@@ -142,9 +146,9 @@ namespace StatisticCommon
                     cmdLine = cmdLine[1].Split('/');
 
                     if ((!(cmdLine[1].IndexOf("start") < 0)))
-                        cmdCommnd = cmdLine[1];
+                        CmdStr = cmdLine[1];
                     else if ((!(cmdLine[1].IndexOf("stop") < 0)))
-                        cmdCommnd = cmdLine[1];
+                        CmdStr = cmdLine[1];
                 }
                 else ;
             }
@@ -155,7 +159,7 @@ namespace StatisticCommon
             /// <returns></returns>
             static public bool execCmdLine()
             {
-                switch (cmdCommnd)
+                switch (CmdStr)
                 {
                     case "start":
                         if (!onlyInstance())
@@ -186,7 +190,7 @@ namespace StatisticCommon
             }
 
             /// <summary>
-            /// Останвока работы формы
+            /// Остановка работы формы
             /// </summary>
             static private void stopApp()
             {
@@ -227,9 +231,9 @@ namespace StatisticCommon
             }
 
             /// <summary>
-            /// 
+            /// выборка всех запущенных приложений
             /// </summary>
-            /// <param name="name"></param>
+            /// <param name="id">ид процесса приложения</param>
             private static void Enum(int id)
             {
                 WinApi.EnumWindows((hWnd, lParam) =>
@@ -250,7 +254,7 @@ namespace StatisticCommon
             /// <summary>
             /// Получение заголовка окна
             /// </summary>
-            /// <param name="hWnd"></param>
+            /// <param name="hWnd">дескриптор приложения</param>
             /// <returns></returns>
             private static string GetWindowText(IntPtr hWnd)
             {
@@ -280,10 +284,10 @@ namespace StatisticCommon
             }
 
             /// <summary>
-            /// 
+            /// поиск нужного процесса
             /// </summary>
-            /// <param name="id"></param>
-            /// <param name="hwd"></param>
+            /// <param name="id">идентификатор приложения</param>
+            /// <param name="hwd">дескриптор окна</param>
             private static void FindCurProc(int id, IntPtr hwd)
             {
                 int _ProcessId;

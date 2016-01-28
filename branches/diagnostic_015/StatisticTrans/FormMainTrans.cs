@@ -1510,19 +1510,13 @@ namespace StatisticTrans
             switch (m.Msg)
             {
                 case WinApi.SW_RESTORE:
-                    //MessageBox.Show("SW_RESTORE");
+                    //this.WindowState = FormWindowState.Normal;
                     this.ShowInTaskbar = true;
                     notifyIconMain.Visible = false;
+                    break;
 
-                    break;
-                // The WM_ACTIVATEAPP message occurs when the application
-                // becomes the active application or becomes inactive.
-                case WinApi.WM_ACTIVATEAPP:
-                    //MessageBox.Show("WM_ACTIVATEAPP"); 
-                    //(int)this.Handle;
-                    break;
                 case WinApi.WM_CLOSE:
-                    MessageBox.Show("WM_CLOSE");
+                    //MessageBox.Show("WM_CLOSE");
                     break;
             }
             base.WndProc(ref m);

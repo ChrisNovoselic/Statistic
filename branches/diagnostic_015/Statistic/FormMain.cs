@@ -809,7 +809,7 @@ namespace Statistic
             //Создать вспомогательное окно...
             FormMainFloat formFloat = null;
             //formFloat = new FormMainFloat(m_dictAddingTabs[(int)m_arIdCustomTabs[(int)indxTab, indxItem]].panel);
-            formFloat = new FormMainFloat(panel);
+            //formFloat = new FormMainFloat(panel);
             formFloat.Text = ev.TabHeaderText;
             //Назначить обработчики событий...
             formFloat.delegateFormClosing = FormMain_OnFormFloat_Closing;
