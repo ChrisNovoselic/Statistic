@@ -262,12 +262,12 @@ namespace StatisticTimeSync
             throw new NotImplementedException();
         }
 
-        protected override int UpdateStatusString()
+        protected override void timer_Start()
         {
             throw new NotImplementedException();
         }
 
-        protected override void timer_Start()
+        protected override int UpdateStatusString()
         {
             throw new NotImplementedException();
         }

@@ -18,14 +18,7 @@ namespace StatisticCommon
 
         public FormMainStatistic()
         {
-            if (SingleInstance.Start())
-            {
-                //SingleInstance.execCmdLine(string CmdStr);
-            }
-            else 
-            { 
-                //SingleInstance.execCmdLine(string CmdStr);
-            }
+
         }
 
         protected override void timer_Start()

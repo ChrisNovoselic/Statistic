@@ -1182,39 +1182,7 @@ namespace StatisticTrans
 
             if ((!(m_arAdmin == null)) && (!(m_arAdmin[m_IndexDB] == null)))
             {
-                have_msg = (m_report.errored_state == true) ? -1 : (m_report.warninged_state == true) ? 1 : 0;
-
-                if (((!(have_msg == 0)) || (m_report.actioned_state == true)) && (m_arAdmin[m_IndexDB].IsStarted == true))
-                {
-                    if (m_report.actioned_state == true)
-                    {
-                        m_lblDescMessage.Text = m_report.last_action;
-                        m_lblDateMessage.Text = m_report.last_time_action.ToString();
-                    }
-                    else
-                        ;
-
-                    if (have_msg == 1)
-                    {
-                        m_lblDescMessage.Text = m_report.last_warning;
-                        m_lblDateMessage.Text = m_report.last_time_warning.ToString();
-                    }
-                    else
-                        ;
-
-                    if (have_msg == -1)
-                    {
-                        m_lblDescMessage.Text = m_report.last_error;
-                        m_lblDateMessage.Text = m_report.last_time_error.ToString();
-                    }
-                    else
-                        ;
-                }
-                else
-                {
-                    m_lblDescMessage.Text = string.Empty;
-                    m_lblDateMessage.Text = string.Empty;
-                }
+                base.UpdateStatusString();
             }
             else
                 ;
