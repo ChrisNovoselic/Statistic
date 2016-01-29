@@ -28,6 +28,7 @@ namespace StatisticDiagnostic
             System.ComponentModel.ComponentResourceManager resources = new System.ComponentModel.ComponentResourceManager(typeof(FormMain));
             //this.notifyIconMain.Icon =
             this.Icon = resources.GetObject(@"StatisticDiagnostic") as System.Drawing.Icon;
+     
 
             _state = 1;
             InitializeComponent();

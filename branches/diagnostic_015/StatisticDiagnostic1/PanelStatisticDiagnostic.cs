@@ -840,6 +840,25 @@ namespace StatisticDiagnostic
                 }
             }
 
+            private bool IsNUll( DataRow[] sourceDT, int i)
+            {
+                bool bflagNull = false;
+
+                for (int j = 0; j < sourceDT[i].ItemArray.Count(); j++)
+                {
+                    if (sourceDT[i][j].ToString() == "" || sourceDT[i + 1][j].ToString() == "")
+                    {
+
+                        bflagNull = false;
+                    }
+                    else
+                    {
+                        bflagNull = true;
+                    }
+                }
+                return bflagNull;
+            }
+
             /// <summary>
             /// Функция заполнения данными элементов ТЭЦ
             /// </summary>
@@ -850,34 +869,53 @@ namespace StatisticDiagnostic
                 DataRow[] m_drTecSource;
                 string m_time = DateTime.Now.ToString("HH:mm:ss.fff");
                 int t = 0;
+                string m_shortTime;
                 m_drTecSource = m_tableSourceData.Select(filter);
                 cellsPingTEC();
                 textColumnTec();
 
                 for (int r = 0; r < m_arPanelsTEC[i].TECDataGridView.Rows.Count; r++)
                 {
-                    string m_shortTime = formatTime(m_drTecSource[t + 1]["Value"].ToString());
-
-                    if (m_arPanelsTEC[i].TECDataGridView.InvokeRequired)
+                    if (IsNUll(m_drTecSource, t))
                     {
+                        m_shortTime = formatTime(m_drTecSource[t + 1]["Value"].ToString());
+
                         m_arPanelsTEC[i].TECDataGridView.Invoke(new Action(() => m_arPanelsTEC[i].TECDataGridView.Rows[r].Cells[2].Value = m_drTecSource[t]["Value"]));
                         m_arPanelsTEC[i].TECDataGridView.Invoke(new Action(() => m_arPanelsTEC[i].TECDataGridView.Rows[r].Cells[1].Value = m_shortTime));
                         m_arPanelsTEC[i].TECDataGridView.Invoke(new Action(() => m_arPanelsTEC[i].TECDataGridView.Rows[r].Cells[5].Value = m_drTecSource[t]["NAME_SHR"]));
                         m_arPanelsTEC[i].TECDataGridView.Invoke(new Action(() => m_arPanelsTEC[i].TECDataGridView.Rows[r].Cells[3].Value = m_time.ToString()));
-                        paintigCells(i, r);
+                        paintingCells(i, r);
                         checkrelevancevalues(DateTime.Parse(m_shortTime), i, r);
+                        t = t + 2;
                     }
-
                     else
                     {
-                        m_arPanelsTEC[i].TECDataGridView.Rows[r].Cells[1].Value = m_shortTime;
-                        m_arPanelsTEC[i].TECDataGridView.Rows[r].Cells[2].Value = m_drTecSource[t]["Value"];
-                        m_arPanelsTEC[i].TECDataGridView.Rows[r].Cells[3].Value = m_time.ToString();
-                        m_arPanelsTEC[i].TECDataGridView.Rows[r].Cells[5].Value = m_drTecSource[t]["NAME_SHR"];
-                        paintigCells(i, r);
-                        checkrelevancevalues(DateTime.Parse(m_shortTime), i, r);
+                        //m_drTecSource[t].ItemArray.SetValue(18, 1);
+                        //m_drTecSource[t+1].ItemArray.SetValue("Нет данных в БД",1);
+                        if (m_drTecSource[t]["Value"].ToString() == "")
+                            m_arPanelsTEC[i].TECDataGridView.Invoke(new Action(() => m_arPanelsTEC[i].TECDataGridView.Rows[r].Cells[2].Value = "Нет значения в БД"));
+                        if (m_drTecSource[t + 1]["Value"].ToString() == "")
+                            m_arPanelsTEC[i].TECDataGridView.Invoke(new Action(() => m_arPanelsTEC[i].TECDataGridView.Rows[r].Cells[1].Value = "Нет значения в БД"));
+
+                        m_arPanelsTEC[i].TECDataGridView.Invoke(new Action(() => m_arPanelsTEC[i].TECDataGridView.Rows[r].Cells[5].Value = m_drTecSource[t]["NAME_SHR"]));
+                        m_arPanelsTEC[i].TECDataGridView.Invoke(new Action(() => m_arPanelsTEC[i].TECDataGridView.Rows[r].Cells[3].Value = m_time.ToString()));
+                        paintingCells(i, r);
+                        t = t + 2;
                     }
-                    t = t + 2;
+
+                    // if (m_arPanelsTEC[i].TECDataGridView.InvokeRequired)
+                    //{
+                    //}
+                    //else
+                    //{
+                    // m_arPanelsTEC[i].TECDataGridView.Rows[r].Cells[1].Value = m_shortTime;
+                    //m_arPanelsTEC[i].TECDataGridView.Rows[r].Cells[2].Value = m_drTecSource[t]["Value"];
+                    // m_arPanelsTEC[i].TECDataGridView.Rows[r].Cells[3].Value = m_time.ToString();
+                    //m_arPanelsTEC[i].TECDataGridView.Rows[r].Cells[5].Value = m_drTecSource[t]["NAME_SHR"];
+                    //paintigCells(i, r);
+                    //checkrelevancevalues(DateTime.Parse(m_shortTime), i, r);
+                    //t = t + 2;
+                    //}
                 }
             }
 
@@ -892,7 +930,7 @@ namespace StatisticDiagnostic
 
                     addRowsTEC(i, m_tableSourceData.Select(filter).Length);
                     insertDataTEC(filter, i);
-                    // m_arPanelsTEC[i].TECDataGridView.Invoke(new Action(() => m_arPanelsTEC[i].TECDataGridView.Sort(m_arPanelsTEC[i].TECDataGridView.Columns[0], ListSortDirection.Ascending)));
+                    //m_arPanelsTEC[i].TECDataGridView.Invoke(new Action(() => m_arPanelsTEC[i].TECDataGridView.Sort(m_arPanelsTEC[i].TECDataGridView.Columns[0], ListSortDirection.Ascending)));
                 }
             }
 
@@ -1015,7 +1053,7 @@ namespace StatisticDiagnostic
             /// </summary>
             /// <param name="x">индекс панели</param>
             /// <param name="y">номер строки</param>
-            private void paintigCells(int x, int y)
+            private void paintingCells(int x, int y)
             {
                 string a = m_arPanelsTEC[x].TECDataGridView.Rows[y].Cells[5].Value.ToString();
                 string b;
@@ -1997,7 +2035,7 @@ namespace StatisticDiagnostic
                 int m_lim;
                 int m_check = 0;
                 DataRow[] drTask = m_tableSourceData.Select(@"ID_Value = '28'");
-                int m_counter = 0;
+                int m_counter = 1;
 
                 for (int i = 0; i < drTask.Count(); i++)
                 {
@@ -2057,9 +2095,15 @@ namespace StatisticDiagnostic
                         TaskDataGridView.Invoke(new Action(() => TaskDataGridView.Rows[0].Cells[i].Value = TaskDataGridView.Rows[indxrow + 1].Cells[i].Value));
 
                     if (TaskDataGridView.Rows[0].Cells[1].Value.ToString() == "Ошибка!")
-                        TaskDataGridView.Invoke(new Action(() => TaskDataGridView.Rows[0].DefaultCellStyle.BackColor = Color.Firebrick));
+                    {
+                        TaskDataGridView.Invoke(new Action(() => TaskDataGridView.Rows[0].Cells[1].Style.BackColor = Color.Firebrick));
+                        TaskDataGridView.Invoke(new Action(() => TaskDataGridView.Rows[0].Cells[4].Style.BackColor = Color.Firebrick));
+                    }
                     else
-                        TaskDataGridView.Invoke(new Action(() => TaskDataGridView.Rows[0].DefaultCellStyle.BackColor = Color.Sienna));
+                    {
+                        TaskDataGridView.Invoke(new Action(() => TaskDataGridView.Rows[0].Cells[1].Style.BackColor = Color.Sienna));
+                        TaskDataGridView.Invoke(new Action(() => TaskDataGridView.Rows[0].Cells[4].Style.BackColor = Color.Sienna));
+                    }
 
                     TaskDataGridView.Invoke(new Action(() => TaskDataGridView.Rows.RemoveAt(indxrow + 1)));
                 }
@@ -2169,15 +2213,36 @@ namespace StatisticDiagnostic
         /// </summary>
         private void start()
         {
-            m_tecdb.AddItemTec();
-            m_taskdb.AddItem();
-            m_modesdb.AddItem();
-            //Thread threadTEC = new Thread(new ThreadStart(m_tecdb.AddItemTec));
-            //Thread threadMODES = new Thread(new ThreadStart(m_modesdb.AddItem));
-            //Thread threadTASK = new Thread();
-            //threadTEC.Start();
-            //threadMODES.Start();
-
+            try
+            {
+                m_tecdb.AddItemTec();
+            }
+            catch (Exception e)
+            {
+                throw;
+            }
+            finally
+            {
+                try
+                {
+                    m_taskdb.AddItem();
+                }
+                catch (Exception e)
+                {
+                    throw;
+                }
+                finally
+                {
+                    try
+                    {
+                        m_modesdb.AddItem();
+                    }
+                    catch (Exception e)
+                    {
+                        throw;
+                    }
+                }
+            }
         }
 
         /// <summary>
