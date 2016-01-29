@@ -1182,7 +1182,7 @@ namespace StatisticTrans
 
             if ((!(m_arAdmin == null)) && (!(m_arAdmin[m_IndexDB] == null)))
             {
-                base.UpdateStatusString();
+                have_msg = base.UpdateStatusString();
             }
             else
                 ;
