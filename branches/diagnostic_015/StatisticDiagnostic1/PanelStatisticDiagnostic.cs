@@ -1167,7 +1167,7 @@ namespace StatisticDiagnostic
             private void paintValuesSource(bool bflag, int i, int r)
             {
                 if (bflag == true)
-                    m_arPanelsTEC[i].TECDataGridView.Rows[r].Cells[1].Style.BackColor = System.Drawing.Color.Red;
+                    m_arPanelsTEC[i].TECDataGridView.Rows[r].Cells[1].Style.BackColor = System.Drawing.Color.Firebrick;
                 else
                     m_arPanelsTEC[i].TECDataGridView.Rows[r].Cells[1].Style.BackColor = System.Drawing.Color.White;
             }
@@ -2020,9 +2020,7 @@ namespace StatisticDiagnostic
                         if (TaskDataGridView.Columns[4].Visible == false)
                             TaskDataGridView.Invoke(new Action(() => TaskDataGridView.Columns[4].Visible = true));
 
-                        TaskDataGridView.Invoke(new Action(() => TaskDataGridView.Rows[m_check].DefaultCellStyle.BackColor = Color.Sienna));
                         TaskDataGridView.Invoke(new Action(() => TaskDataGridView.Rows[m_check].Cells[4].Value = "Превышено время выполнения задачи"));
-
                         upselectrow(m_check);
                         m_counter--;
                     }
@@ -2054,10 +2052,14 @@ namespace StatisticDiagnostic
                 if (TaskDataGridView.InvokeRequired)
                 {
                     TaskDataGridView.Invoke(new Action(() => TaskDataGridView.Rows.Insert(0, 1)));
-                    TaskDataGridView.Invoke(new Action(() => TaskDataGridView.Rows[0].DefaultCellStyle.BackColor = Color.Sienna));
 
                     for (int i = 0; i < TaskDataGridView.Rows[indxrow + 1].Cells.Count; i++)
                         TaskDataGridView.Invoke(new Action(() => TaskDataGridView.Rows[0].Cells[i].Value = TaskDataGridView.Rows[indxrow + 1].Cells[i].Value));
+
+                    if (TaskDataGridView.Rows[0].Cells[1].Value.ToString() == "Ошибка!")
+                        TaskDataGridView.Invoke(new Action(() => TaskDataGridView.Rows[0].DefaultCellStyle.BackColor = Color.Firebrick));
+                    else
+                        TaskDataGridView.Invoke(new Action(() => TaskDataGridView.Rows[0].DefaultCellStyle.BackColor = Color.Sienna));
 
                     TaskDataGridView.Invoke(new Action(() => TaskDataGridView.Rows.RemoveAt(indxrow + 1)));
                 }
