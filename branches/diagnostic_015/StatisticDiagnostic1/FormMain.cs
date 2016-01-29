@@ -53,7 +53,7 @@ namespace StatisticDiagnostic
             _panelMain.Controls.Add(this.panelMain);
             this.Controls.Add(_panelMain);
             this.panelMain.Start();
-          
+
             //Снять с отображения окно для визуализации выполнения длительной операции
             delegateStopWait();
 
@@ -108,7 +108,7 @@ namespace StatisticDiagnostic
                         formParameters = new FormParameters_DB(s_listFormConnectionSettings[(int)CONN_SETT_TYPE.CONFIG_DB].getConnSett());
                         updateParametersSetup();
                         s_iMainSourceData = Int32.Parse(formParameters.m_arParametrSetup[(int)FormParameters.PARAMETR_SETUP.MAIN_DATASOURCE]);
-                     
+
                         break;
                 }
             }
@@ -193,7 +193,7 @@ namespace StatisticDiagnostic
 
             PanelStatisticDiagnostic.UPDATE_TIME = Int32.Parse(formParameters.m_arParametrSetup[(int)FormParameters.PARAMETR_SETUP.DIAGNOSTIC_TIMER_UPDATE]);
             PanelStatisticDiagnostic.VALIDATE_ASKUE_TM = Int32.Parse(formParameters.m_arParametrSetup[(int)FormParameters.PARAMETR_SETUP.VALIDATE_ASKUE_VALUE]);
-           
+
             //Параметрвы для ALARM...
         }
 
@@ -250,51 +250,19 @@ namespace StatisticDiagnostic
             }
         }
 
-       /* protected override int UpdateStatusString()
+        protected override int UpdateStatusString()
         {
             int have_msg = 0;
 
-             have_msg = (m_report.errored_state == true) ? -1 : (m_report.warninged_state == true) ? 1 : 0;
+            have_msg =  base.UpdateStatusString();
 
-                if (((!(have_msg == 0)) || (m_report.actioned_state == true)) )
-                {
-                    if (m_report.actioned_state == true)
-                    {
-                        m_lblDescMessage.Text = m_report.last_action;
-                        m_lblDateMessage.Text = m_report.last_time_action.ToString();
-                    }
-                    else
-                        ;
+            return  have_msg;
 
-                    if (have_msg == 1)
-                    {
-                        m_lblDescMessage.Text = m_report.last_warning;
-                        m_lblDateMessage.Text = m_report.last_time_warning.ToString();
-                    }
-                    else
-                        ;
-
-                    if (have_msg == -1)
-                    {
-                        m_lblDescMessage.Text = m_report.last_error;
-                        m_lblDateMessage.Text = m_report.last_time_error.ToString();
-                    }
-                    else
-                        ;
-                }
-                else
-                {
-                    m_lblDescMessage.Text = string.Empty;
-                    m_lblDateMessage.Text = string.Empty;
-                }
-           
-            return have_msg;
         }
-        */
 
-       /* protected override void timer_Start()
-        {
-            //int i = -1;
-        }*/
+        /* protected override void timer_Start()
+         {
+             //int i = -1;
+         }*/
     }
 }

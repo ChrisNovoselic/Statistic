@@ -25,7 +25,7 @@ namespace StatisticDiagnostic
         public PanelDiagnostic()
             : base(-1, -1)
         {
-            //initialize();
+            initialize();
         }
 
         public override void Start()
@@ -60,6 +60,9 @@ namespace StatisticDiagnostic
 
     public abstract partial class PanelDiagnostic
     {
+        private Label lblName;
+        private DataGridView dgvCommon;
+
         private void initialize()
         {
             InitializeComponent();
@@ -96,9 +99,55 @@ namespace StatisticDiagnostic
         /// </summary>
         private void InitializeComponent()
         {
-           
+            this.Controls.Add(lblName, 0, 0);
+            this.Controls.Add(dgvCommon, 0, 1);
+            this.RowStyles.Add(new System.Windows.Forms.RowStyle(System.Windows.Forms.SizeType.Absolute, 15F));
+            this.RowStyles.Add(new System.Windows.Forms.RowStyle(System.Windows.Forms.SizeType.Percent, 100.74641F));
+
+            this.dgvCommon = new DataGridView();
+            this.lblName = new Label();
+            this.CellBorderStyle = System.Windows.Forms.TableLayoutPanelCellBorderStyle.Single;
+            this.SuspendLayout();
+            this.dgvCommon.ColumnHeadersHeightSizeMode = System.Windows.Forms.DataGridViewColumnHeadersHeightSizeMode.AutoSize;
+            this.dgvCommon.AutoSizeColumnsMode = DataGridViewAutoSizeColumnsMode.Fill;
+            this.dgvCommon.AutoSizeRowsMode = DataGridViewAutoSizeRowsMode.DisplayedCellsExceptHeaders;
+            this.dgvCommon.AllowUserToAddRows = false;
+            this.dgvCommon.ClearSelection();
+            this.dgvCommon.AllowUserToDeleteRows = false;
+            this.dgvCommon.Dock = System.Windows.Forms.DockStyle.Fill;
+            this.dgvCommon.RowHeadersVisible = false;
+            this.dgvCommon.ReadOnly = true;
+            this.dgvCommon.CellValueChanged += dgvCommon_CellValueChanged;
+            this.dgvCommon.CellClick += dgvCommon_CellValueChanged;
+
+            //this.dgvCommon.ColumnCount = ;
+            //this.dgvCommon.RowCount = ;
+
+            this.lblName.AutoSize = true;
+            this.lblName.Name = "Label";
+            this.lblName.TabIndex = 0;
+            this.lblName.Text = "Unknow";
+            this.lblName.TextAlign = System.Drawing.ContentAlignment.TopCenter;
+            this.ResumeLayout(false);
         }
-  
+
+        /// <summary>
+        /// Обработчик события - при "щелчке" по любой части ячейки
+        /// </summary>
+        /// <param name="sender">Объект, инициировавший событие - (???ячейка, скорее - 'DataGridView')</param>
+        /// <param name="e">Аргумент события</param>
+        void dgvCommon_CellValueChanged(object sender, DataGridViewCellEventArgs e)
+        {
+            try
+            {
+                if (dgvCommon.SelectedCells.Count > 0)
+                    dgvCommon.SelectedCells[0].Selected = false;
+                else
+                    ;
+            }
+            catch { }
+        }
+
         #endregion
     }
 
@@ -769,7 +818,7 @@ namespace StatisticDiagnostic
                         m_arPanelsTEC[i] = new Tec();
                     else ;
                 }
-               SourceNameTEC();
+                SourceNameTEC();
             }
 
             /// <summary>
@@ -1912,8 +1961,16 @@ namespace StatisticDiagnostic
             /// <param name="value"></param>
             private string ToDateTime(object m_strTime)
             {
-                TimeSpan time = TimeSpan.FromSeconds(Convert.ToDouble(m_strTime));
-                string parseStr = DateTime.Parse(Convert.ToString(time)).ToString("mm:ss");
+                string parseStr;
+
+                if (m_strTime.ToString() != "")
+                {
+                    TimeSpan time = TimeSpan.FromSeconds(Convert.ToDouble(m_strTime));
+                    parseStr = DateTime.Parse(Convert.ToString(time)).ToString("mm:ss");
+                }
+                else
+                    parseStr = "Ошибка!";
+
                 return parseStr;
             }
 
@@ -1948,16 +2005,28 @@ namespace StatisticDiagnostic
                         m_lim = 105;
                     else m_lim = 45;
 
-                    if (Convert.ToInt32(drTask[i]["Value"].ToString()) > m_lim)
+                    if (drTask[i]["Value"].ToString() == "")
+                    {
+                        if (TaskDataGridView.Columns[4].Visible == false)
+                            TaskDataGridView.Invoke(new Action(() => TaskDataGridView.Columns[4].Visible = true));
+
+                        TaskDataGridView.Invoke(new Action(() => TaskDataGridView.Rows[m_check].Cells[4].Value = "Задача не выполняется"));
+                        upselectrow(m_check);
+                        m_counter--;
+                    }
+
+                    else if (Convert.ToInt32(drTask[i]["Value"].ToString()) > m_lim)
                     {
                         if (TaskDataGridView.Columns[4].Visible == false)
                             TaskDataGridView.Invoke(new Action(() => TaskDataGridView.Columns[4].Visible = true));
 
                         TaskDataGridView.Invoke(new Action(() => TaskDataGridView.Rows[m_check].DefaultCellStyle.BackColor = Color.Sienna));
                         TaskDataGridView.Invoke(new Action(() => TaskDataGridView.Rows[m_check].Cells[4].Value = "Превышено время выполнения задачи"));
+
                         upselectrow(m_check);
                         m_counter--;
                     }
+
                     else
                     {
                         TaskDataGridView.Invoke(new Action(() => TaskDataGridView.Rows[m_check].DefaultCellStyle.BackColor = Color.White));
