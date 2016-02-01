@@ -63,7 +63,7 @@ namespace Statistic
             m_dictAddingTabs.Add((int)ID_ADDING_TAB.DIAGNOSTIC, new ADDING_TAB("ДиагностикаToolStripMenuItem", "Диагностика"));
             m_dictAddingTabs.Add((int)ID_ADDING_TAB.ANALYZER, new ADDING_TAB("ПросмотрЖурналаToolStripMenuItem", "Журнал событий"));
             m_dictAddingTabs.Add((int)ID_ADDING_TAB.SOTIASSO, new ADDING_TAB("значенияСОТИАССОToolStripMenuItem", "Значения СОТИАССО"));
-
+            m_dictAddingTabs.Add((int)ID_ADDING_TAB.TEC_Component, new ADDING_TAB("СоставТЭЦToolStripMenuItem", "Изменить состав ТЭЦ"));
 
             this.настройкиToolStripMenuItem = new System.Windows.Forms.ToolStripMenuItem();
             this.сменитьРежимToolStripMenuItem = new System.Windows.Forms.ToolStripMenuItem();
@@ -241,6 +241,10 @@ namespace Statistic
             //ПросмотрЖурналаToolStripMenuItem_CheckedChanged
             //
             this.m_dictAddingTabs[(int)ID_ADDING_TAB.ANALYZER].menuItem.CheckedChanged += new System.EventHandler(this.ПросмотрЖурналаToolStripMenuItem_CheckedChanged);
+            //
+            //СоставТЭЦToolStripMenuItem_CheckedChanged
+            //
+            this.m_dictAddingTabs[(int)ID_ADDING_TAB.TEC_Component].menuItem.CheckedChanged += new System.EventHandler(this.СоставТЭЦToolStripMenuItem_CheckedChanged);
             
             // 
             // значенияСОТИАССОToolStripMenuItem
@@ -295,7 +299,7 @@ namespace Statistic
                 this.изменитьПарольАдминистратораToolStripMenuItem,
                 this.изменитьПарольНССToolStripMenuItem,
                 new System.Windows.Forms.ToolStripSeparator(),
-                this.изментьСоставТЭЦГТПЩУToolStripMenuItem,
+                this.m_dictAddingTabs[(int)ID_ADDING_TAB.TEC_Component].menuItem,
                 this.изментьСоставПользовательToolStripMenuItem
             });
 
@@ -326,14 +330,18 @@ namespace Statistic
             this.изменитьПарольНССToolStripMenuItem.Text = "Изменить пароль начальника смены станции...";
             this.изменитьПарольНССToolStripMenuItem.Click += new System.EventHandler(this.изменитьПарольНССToolStripMenuItem_Click);
             изменитьПарольНССToolStripMenuItem.Enabled = false;
+            
+            
             // 
             // изментьСоставТЭЦГТПЩУToolStripMenuItem
             // 
-            this.изментьСоставТЭЦГТПЩУToolStripMenuItem.Name = "изментьСоставТЭЦГТПЩУToolStripMenuItem";
-            this.изментьСоставТЭЦГТПЩУToolStripMenuItem.Size = new System.Drawing.Size(303, 22);
-            this.изментьСоставТЭЦГТПЩУToolStripMenuItem.Text = "Изменть состав ТЭЦ (ГТП, ЩУ)...";
-            this.изментьСоставТЭЦГТПЩУToolStripMenuItem.Click += new System.EventHandler(this.изментьСоставТЭЦГТПЩУToolStripMenuItem_Click);
-            изментьСоставТЭЦГТПЩУToolStripMenuItem.Enabled = false;
+            //this.изментьСоставТЭЦГТПЩУToolStripMenuItem.Name = "изментьСоставТЭЦГТПЩУToolStripMenuItem";
+            //this.изментьСоставТЭЦГТПЩУToolStripMenuItem.Size = new System.Drawing.Size(303, 22);
+            //this.изментьСоставТЭЦГТПЩУToolStripMenuItem.Text = "Изменть состав ТЭЦ (ГТП, ЩУ)...";
+            //this.изментьСоставТЭЦГТПЩУToolStripMenuItem.Click += new System.EventHandler(this.изментьСоставТЭЦГТПЩУToolStripMenuItem_Click);
+            //изментьСоставТЭЦГТПЩУToolStripMenuItem.Enabled = false;
+            
+            
             // 
             // изментьСоставПользовательToolStripMenuItem
             // 

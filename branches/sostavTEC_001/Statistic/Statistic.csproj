@@ -180,6 +180,9 @@
     <Compile Include="PanelSOTIASSO.cs">
       <SubType>Component</SubType>
     </Compile>
+    <Compile Include="PanelTECComponent.cs">
+      <SubType>Component</SubType>
+    </Compile>
     <Compile Include="PanelTecView.cs">
       <SubType>Component</SubType>
     </Compile>

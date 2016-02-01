@@ -36,7 +36,7 @@ namespace Statistic
             DATETIMESYNC_SOURCE_DATA
                 , CUSTOM_2X2_2, CUSTOM_2X3_2, CUSTOM_2X2_3, CUSTOM_2X3_3, CUSTOM_2X2_4,
             CUSTOM_2X3_4
-                , SOTIASSO, DIAGNOSTIC, ANALYZER
+                , SOTIASSO, DIAGNOSTIC, ANALYZER, TEC_Component
         };
         private enum INDEX_CUSTOM_TAB { TAB_2X2, TAB_2X3 };
         private class ADDING_TAB
@@ -724,6 +724,9 @@ namespace Statistic
                                                         else
                                                             if (tclTecViews.TabPages[e.TabIndex].Controls[0] is PanelAnalyzer_DB)
                                                                 m_dictAddingTabs[(int)ID_ADDING_TAB.ANALYZER].menuItem.Checked = false;
+                                                            else
+                                                                if (tclTecViews.TabPages[e.TabIndex].Controls[0] is PanelTECComponent)
+                                                                m_dictAddingTabs[(int)ID_ADDING_TAB.TEC_Component].menuItem.Checked = false;
                                                             else
                                                             ;
         }
@@ -2311,6 +2314,21 @@ namespace Statistic
             видSubToolStripMenuItem_CheckedChanged(m_dictAddingTabs[(int)ID_ADDING_TAB.ANALYZER].panel, "Журнал событий"
                 , new bool[] { ((ToolStripMenuItem)sender).Checked, true });
         }
+
+
+        private void СоставТЭЦToolStripMenuItem_CheckedChanged(object sender, EventArgs e)
+        {
+            if (m_dictAddingTabs[(int)ID_ADDING_TAB.TEC_Component].panel == null)
+            {
+                int idListener = DbSources.Sources().Register(s_listFormConnectionSettings[(int)CONN_SETT_TYPE.CONFIG_DB].getConnSett(), false, @"CONFIG_DB");
+                m_dictAddingTabs[(int)ID_ADDING_TAB.TEC_Component].panel = new PanelTECComponent(s_listFormConnectionSettings[(int)CONN_SETT_TYPE.CONFIG_DB].getConnSett(), PanelKomDisp.m_list_tec);
+                m_dictAddingTabs[(int)ID_ADDING_TAB.TEC_Component].panel.SetDelegateReport(ErrorReport, WarningReport, ActionReport, ReportClear);
+            }
+            else
+                ;
+            видSubToolStripMenuItem_CheckedChanged(m_dictAddingTabs[(int)ID_ADDING_TAB.TEC_Component].panel, "Состав ТЭЦ"
+                , new bool[] { ((ToolStripMenuItem)sender).Checked, true });
+        }
        
 
         private void собственныеНуждыToolStripMenuItem_CheckedChanged(object sender, EventArgs e)
@@ -2547,36 +2565,47 @@ namespace Statistic
                 ;
         }
 
-        private void изментьСоставТЭЦГТПЩУToolStripMenuItem_Click(object sender, EventArgs e)
-        {
-            int idListener = DbSources.Sources().Register(s_listFormConnectionSettings[(int)CONN_SETT_TYPE.CONFIG_DB].getConnSett(), false, @"CONFIG_DB");
-            formPassword.SetIdPass(idListener, 0, Passwords.ID_ROLES.ADMIN);
-            formPassword.ShowDialog(this);
-            DialogResult dlgRes = formPassword.DialogResult;
-            if (dlgRes == DialogResult.Yes)
-            {
-                FormTECComponent tecComponent = new FormTECComponent(s_listFormConnectionSettings[(int)CONN_SETT_TYPE.CONFIG_DB].getConnSett());
-                if (tecComponent.ShowDialog(this) == DialogResult.Yes)
-                {
-                    MessageBox.Show(this, "В БД конфигурации внесены изменения.\n\rНеобходим останов/запуск приложения.\n\r", "Внимание", MessageBoxButtons.OK, MessageBoxIcon.Stop);
-                    выходToolStripMenuItem.PerformClick();
-                    //Stop (new FormClosingEventArgs (CloseReason.UserClosing, true));
-                    //MainForm_FormClosing (this, new FormClosingEventArgs (CloseReason.UserClosing, true));
-                }
-                else
-                    ;
-            }
-            else
-                if (dlgRes == DialogResult.Abort)
-                {
-                    //Errors.NoAccess
-                    connectionSettings(CONN_SETT_TYPE.CONFIG_DB);
-                }
-                else
-                    ;
+        //private void изментьСоставТЭЦГТПЩУToolStripMenuItem_Click(object sender, EventArgs e)
+        //{
+        //    if (m_dictAddingTabs[(int)ID_ADDING_TAB.TEC_Component].panel == null)
+        //    {
+        //        int idListener = DbSources.Sources().Register(s_listFormConnectionSettings[(int)CONN_SETT_TYPE.CONFIG_DB].getConnSett(), false, @"CONFIG_DB");
+        //        m_dictAddingTabs[(int)ID_ADDING_TAB.TEC_Component].panel = new PanelTECComponent(s_listFormConnectionSettings[(int)CONN_SETT_TYPE.CONFIG_DB].getConnSett());
+        //        m_dictAddingTabs[(int)ID_ADDING_TAB.TEC_Component].panel.SetDelegateReport(ErrorReport, WarningReport, ActionReport, ReportClear);
+        //    }
+        //    else
+        //        ;
+        //    видSubToolStripMenuItem_CheckedChanged(m_dictAddingTabs[(int)ID_ADDING_TAB.TEC_Component].panel, "Состав ТЭЦ"
+        //        , new bool[] { ((ToolStripMenuItem)sender).Checked, true });
 
-            DbSources.Sources().UnRegister(idListener);
-        }
+        //    //int idListener = DbSources.Sources().Register(s_listFormConnectionSettings[(int)CONN_SETT_TYPE.CONFIG_DB].getConnSett(), false, @"CONFIG_DB");
+        //    //formPassword.SetIdPass(idListener, 0, Passwords.ID_ROLES.ADMIN);
+        //    //formPassword.ShowDialog(this);
+        //    //DialogResult dlgRes = formPassword.DialogResult;
+        //    //if (dlgRes == DialogResult.Yes)
+        //    //{
+        //    //    FormTECComponent tecComponent = new FormTECComponent(s_listFormConnectionSettings[(int)CONN_SETT_TYPE.CONFIG_DB].getConnSett());
+        //    //    if (tecComponent.ShowDialog(this) == DialogResult.Yes)
+        //    //    {
+        //    //        MessageBox.Show(this, "В БД конфигурации внесены изменения.\n\rНеобходим останов/запуск приложения.\n\r", "Внимание", MessageBoxButtons.OK, MessageBoxIcon.Stop);
+        //    //        выходToolStripMenuItem.PerformClick();
+        //    //        //Stop (new FormClosingEventArgs (CloseReason.UserClosing, true));
+        //    //        //MainForm_FormClosing (this, new FormClosingEventArgs (CloseReason.UserClosing, true));
+        //    //    }
+        //    //    else
+        //    //        ;
+        //    //}
+        //    //else
+        //    //    if (dlgRes == DialogResult.Abort)
+        //    //    {
+        //    //        //Errors.NoAccess
+        //    //        connectionSettings(CONN_SETT_TYPE.CONFIG_DB);
+        //    //    }
+        //    //    else
+        //    //        ;
+
+        //    //DbSources.Sources().UnRegister(idListener);
+        //}
 
         private void изментьСоставПользовательToolStripMenuItem_Click(object sender, EventArgs e)
         {
