@@ -1033,9 +1033,9 @@ namespace StatisticAnalyzer
         }
 
         /// <summary>
-        /// 
+        /// Метод для разбора строки с лог сообщениями
         /// </summary>
-        /// <returns></returns>
+        /// <returns>Возвращает строку</returns>
         protected abstract LogParse newLogParse();
 
         #region Объявление абстрактных методов
@@ -2092,6 +2092,9 @@ namespace StatisticAnalyzer
             /// </summary>
             public enum TYPE { UNKNOWN = -1, WITHOUT_CHECKBOX, WITH_CHECKBOX, COUNT }
 
+            /// <summary>
+            /// Тип экземпляра DataGridView
+            /// </summary>
             private TYPE _type;
             
             /// <summary>
