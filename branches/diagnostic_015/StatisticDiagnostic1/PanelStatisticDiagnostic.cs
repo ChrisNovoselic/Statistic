@@ -22,11 +22,19 @@ namespace StatisticDiagnostic
     /// </summary>
     public abstract partial class PanelDiagnostic : HPanelCommon
     {
-        public PanelDiagnostic()
+        public PanelDiagnostic(string nameLabel)
             : base(-1, -1)
         {
             initialize();
         }
+
+        public PanelDiagnostic(IContainer container)
+                : base(container, -1, -1)
+            {
+                container.Add(this);
+
+                initialize();
+            }
 
         public override void Start()
         {
@@ -56,6 +64,8 @@ namespace StatisticDiagnostic
         protected abstract void CellsPingAdd();
 
         protected abstract string FormatTime(string datetime);
+
+
     }
 
     public abstract partial class PanelDiagnostic
@@ -895,29 +905,29 @@ namespace StatisticDiagnostic
                     t = t + 2;
 
                     //m_drTecSource[t].ItemArray.SetValue(18, 1);
-                    //m_drTecSource[t+1].ItemArray.SetValue("Нет данных в БД",1);
-                    /* if (m_drTecSource[t]["Value"].ToString() == "")
-                         m_arPanelsTEC[i].TECDataGridView.Invoke(new Action(() => m_arPanelsTEC[i].TECDataGridView.Rows[r].Cells[2].Value = "Нет значения в БД"));
-                     if (m_drTecSource[t + 1]["Value"].ToString() == "")
-                         m_arPanelsTEC[i].TECDataGridView.Invoke(new Action(() => m_arPanelsTEC[i].TECDataGridView.Rows[r].Cells[1].Value = "Нет значения в БД"));
+                    //m_drTecSource[t + 1].ItemArray.SetValue("Нет данных в БД", 1);
+                    //if (m_drTecSource[t]["Value"].ToString() == "")
+                    //    m_arPanelsTEC[i].TECDataGridView.Invoke(new Action(() => m_arPanelsTEC[i].TECDataGridView.Rows[r].Cells[2].Value = "Нет значения в БД"));
+                    //if (m_drTecSource[t + 1]["Value"].ToString() == "")
+                    //    m_arPanelsTEC[i].TECDataGridView.Invoke(new Action(() => m_arPanelsTEC[i].TECDataGridView.Rows[r].Cells[1].Value = "Нет значения в БД"));
 
-                     m_arPanelsTEC[i].TECDataGridView.Invoke(new Action(() => m_arPanelsTEC[i].TECDataGridView.Rows[r].Cells[5].Value = m_drTecSource[t]["NAME_SHR"]));
-                     m_arPanelsTEC[i].TECDataGridView.Invoke(new Action(() => m_arPanelsTEC[i].TECDataGridView.Rows[r].Cells[3].Value = m_time.ToString()));
-                     paintingCells(i, r);
-                     t = t + 2;*/
+                    //m_arPanelsTEC[i].TECDataGridView.Invoke(new Action(() => m_arPanelsTEC[i].TECDataGridView.Rows[r].Cells[5].Value = m_drTecSource[t]["NAME_SHR"]));
+                    //m_arPanelsTEC[i].TECDataGridView.Invoke(new Action(() => m_arPanelsTEC[i].TECDataGridView.Rows[r].Cells[3].Value = m_time.ToString()));
+                    //paintingCells(i, r);
+                    //t = t + 2;
 
-                    // if (m_arPanelsTEC[i].TECDataGridView.InvokeRequired)
+                    //if (m_arPanelsTEC[i].TECDataGridView.InvokeRequired)
                     //{
                     //}
                     //else
                     //{
-                    // m_arPanelsTEC[i].TECDataGridView.Rows[r].Cells[1].Value = m_shortTime;
-                    //m_arPanelsTEC[i].TECDataGridView.Rows[r].Cells[2].Value = m_drTecSource[t]["Value"];
-                    // m_arPanelsTEC[i].TECDataGridView.Rows[r].Cells[3].Value = m_time.ToString();
-                    //m_arPanelsTEC[i].TECDataGridView.Rows[r].Cells[5].Value = m_drTecSource[t]["NAME_SHR"];
-                    //paintigCells(i, r);
-                    //checkrelevancevalues(DateTime.Parse(m_shortTime), i, r);
-                    //t = t + 2;
+                    //    m_arPanelsTEC[i].TECDataGridView.Rows[r].Cells[1].Value = m_shortTime;
+                    //    m_arPanelsTEC[i].TECDataGridView.Rows[r].Cells[2].Value = m_drTecSource[t]["Value"];
+                    //    m_arPanelsTEC[i].TECDataGridView.Rows[r].Cells[3].Value = m_time.ToString();
+                    //    m_arPanelsTEC[i].TECDataGridView.Rows[r].Cells[5].Value = m_drTecSource[t]["NAME_SHR"];
+                    //    paintigCells(i, r);
+                    //    checkrelevancevalues(DateTime.Parse(m_shortTime), i, r);
+                    //    t = t + 2;
                     //}
                 }
             }
@@ -2303,9 +2313,9 @@ namespace StatisticDiagnostic
             {
                 m_dtSourceTask = DbTSQLInterface.Select(ref dbconn, "SELECT * FROM DIAGNOSTIC_TASK_SOURCES", null, null, out err);
                 m_dtSourceModes = DbTSQLInterface.Select(ref dbconn, "SELECT * FROM DIAGNOSTIC_TASK_MODES", null, null, out err);
-                m_dtParam = DbTSQLInterface.Select(ref dbconn, "SELECT * FROM DIAGNOSTIC_PARAM", null, null, out err);
-                m_dtGTP = DbTSQLInterface.Select(ref dbconn, "SELECT * FROM GTP_LIST", null, null, out err);
                 m_arraySource = DbTSQLInterface.Select(ref dbconn, "SELECT * FROM SOURCE", null, null, out err);
+                m_dtGTP = DbTSQLInterface.Select(ref dbconn, "SELECT * FROM GTP_LIST", null, null, out err);
+                m_dtParam = DbTSQLInterface.Select(ref dbconn, "SELECT * FROM DIAGNOSTIC_PARAM", null, null, out err);
                 m_dtTECList = InitTEC_200.getListTEC(ref dbconn, false, out err);
             }
             else
