@@ -29,12 +29,12 @@ namespace StatisticDiagnostic
         }
 
         public PanelDiagnostic(IContainer container)
-                : base(container, -1, -1)
-            {
-                container.Add(this);
+            : base(container, -1, -1)
+        {
+            container.Add(this);
 
-                initialize();
-            }
+            initialize();
+        }
 
         public override void Start()
         {
@@ -57,7 +57,7 @@ namespace StatisticDiagnostic
 
         protected abstract void AddRows(int numP, int countRow);
 
-        protected abstract void ClearGriid();
+        protected abstract void ClearGrid();
 
         protected abstract void CreateForm();
 
@@ -273,9 +273,9 @@ namespace StatisticDiagnostic
             this.ColumnStyles.Add(new System.Windows.Forms.ColumnStyle(System.Windows.Forms.SizeType.Percent, 50F));
             this.RowCount = 6;
             this.RowStyles.Add(new System.Windows.Forms.RowStyle(System.Windows.Forms.SizeType.Percent, 5F));
-            this.RowStyles.Add(new System.Windows.Forms.RowStyle(System.Windows.Forms.SizeType.Percent, 75F));
+            this.RowStyles.Add(new System.Windows.Forms.RowStyle(System.Windows.Forms.SizeType.Percent, 70F));
             this.RowStyles.Add(new System.Windows.Forms.RowStyle(System.Windows.Forms.SizeType.Percent, 5F));
-            this.RowStyles.Add(new System.Windows.Forms.RowStyle(System.Windows.Forms.SizeType.Percent, 90F));
+            this.RowStyles.Add(new System.Windows.Forms.RowStyle(System.Windows.Forms.SizeType.Percent, 87F));
             this.RowStyles.Add(new System.Windows.Forms.RowStyle(System.Windows.Forms.SizeType.Percent, 5F));
             this.RowStyles.Add(new System.Windows.Forms.RowStyle(System.Windows.Forms.SizeType.Percent, 45F));
 
@@ -601,13 +601,14 @@ namespace StatisticDiagnostic
 
                 this.TECDataGridView.ColumnHeadersHeightSizeMode = System.Windows.Forms.DataGridViewColumnHeadersHeightSizeMode.AutoSize;
                 this.TECDataGridView.AutoSizeColumnsMode = DataGridViewAutoSizeColumnsMode.Fill;
-                this.TECDataGridView.AutoSizeRowsMode = DataGridViewAutoSizeRowsMode.DisplayedCellsExceptHeaders;
-                this.TECDataGridView.AllowUserToAddRows = false;
                 this.TECDataGridView.ClearSelection();
                 this.TECDataGridView.AllowUserToDeleteRows = false;
                 this.TECDataGridView.Dock = System.Windows.Forms.DockStyle.Fill;
                 this.TECDataGridView.RowHeadersVisible = false;
                 this.TECDataGridView.ReadOnly = true;
+                this.TECDataGridView.AutoResizeColumns(DataGridViewAutoSizeColumnsMode.Fill);
+                this.TECDataGridView.AutoSizeRowsMode = DataGridViewAutoSizeRowsMode.AllCellsExceptHeaders;
+                this.TECDataGridView.AllowUserToAddRows = false;
                 this.TECDataGridView.Name = "TECDataGridView";
                 this.TECDataGridView.TabIndex = 0;
                 this.TECDataGridView.ColumnCount = 6;
@@ -618,11 +619,11 @@ namespace StatisticDiagnostic
                 this.TECDataGridView.Columns[4].Name = "Связь";
                 this.TECDataGridView.Columns[5].Name = "TEC";
                 this.TECDataGridView.Columns[5].Visible = false;
-                this.TECDataGridView.Columns[0].Width = 43;
-                this.TECDataGridView.Columns[1].Width = 57;
-                this.TECDataGridView.Columns[2].Width = 35;
-                this.TECDataGridView.Columns[3].Width = 57;
-                this.TECDataGridView.Columns[4].Width = 35;
+                //this.TECDataGridView.Columns[0].Width = 43;
+                //this.TECDataGridView.Columns[1].Width = 57;
+                //this.TECDataGridView.Columns[2].Width = 35;
+                //this.TECDataGridView.Columns[3].Width = 57;
+                //this.TECDataGridView.Columns[4].Width = 35;
                 this.TECDataGridView.CellClick += new DataGridViewCellEventHandler(TECDataGridView_Cell);
                 this.TECDataGridView.CellValueChanged += new DataGridViewCellEventHandler(TECDataGridView_Cell);
                 this.TECDataGridView.CellMouseDown += new DataGridViewCellMouseEventHandler(TECDataGridView_CellMouseDown);
@@ -718,6 +719,12 @@ namespace StatisticDiagnostic
             /// координатов мышки
             /// </summary>
             private Point point = new Point();
+
+
+            private void ResizeGridView()
+            {
+                //m_arPanelsTEC[i].TECDataGridView.C
+            }
 
             /// <summary>
             /// Функция активации панелей ТЭЦ
@@ -904,8 +911,6 @@ namespace StatisticDiagnostic
 
                     t = t + 2;
 
-                    //m_drTecSource[t].ItemArray.SetValue(18, 1);
-                    //m_drTecSource[t + 1].ItemArray.SetValue("Нет данных в БД", 1);
                     //if (m_drTecSource[t]["Value"].ToString() == "")
                     //    m_arPanelsTEC[i].TECDataGridView.Invoke(new Action(() => m_arPanelsTEC[i].TECDataGridView.Rows[r].Cells[2].Value = "Нет значения в БД"));
                     //if (m_drTecSource[t + 1]["Value"].ToString() == "")
@@ -943,7 +948,6 @@ namespace StatisticDiagnostic
 
                     addRowsTEC(i, m_tableSourceData.Select(filter).Length);
                     insertDataTEC(filter, i, m_arPanelsTEC.Length);
-                    //m_arPanelsTEC[i].TECDataGridView.Invoke(new Action(() => m_arPanelsTEC[i].TECDataGridView.Sort(m_arPanelsTEC[i].TECDataGridView.Columns[0], ListSortDirection.Ascending)));
                 }
             }
 
@@ -1577,7 +1581,7 @@ namespace StatisticDiagnostic
                                 else paintPbrError(i, r);
                             }
                             else ;
-                     
+
                             m_arPanelsMODES[i].ModesDataGridView.Invoke(new Action(() => m_arPanelsMODES[i].ModesDataGridView.Rows[r].Cells[0].Value = m_drSourceModes[0]["ID_Value"]));
                             m_arPanelsMODES[i].ModesDataGridView.Invoke(new Action(() => m_arPanelsMODES[i].ModesDataGridView.Rows[r].Cells[1].Value = m_drSourceModes[0]["Value"]));
                             m_arPanelsMODES[i].ModesDataGridView.Invoke(new Action(() => m_arPanelsMODES[i].ModesDataGridView.Rows[r].Cells[2].Value = m_time));
@@ -1803,7 +1807,7 @@ namespace StatisticDiagnostic
             /// <returns>отформатированная дата</returns>
             private string formatTime(string datetime)
             {
-              DateTime result;
+                DateTime result;
                 string m_dt;
                 string m_dt2Time = DateTime.TryParse(datetime, out result).ToString();
 
