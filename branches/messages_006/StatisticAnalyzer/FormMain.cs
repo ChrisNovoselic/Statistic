@@ -18,20 +18,27 @@ using System.Windows.Forms;
 
 namespace StatisticAnalyzer
 {
-    public abstract partial class FormMainAnalyzer : Form //FormMainBase//: FormMainBaseWithStatusStrip
+    public abstract partial class FormMain : /*Form //FormMainBase//:*/ FormMainBaseWithStatusStrip
     {
 
-        public FormMainAnalyzer(int idListener, List<StatisticCommon.TEC> tec)
+        public FormMain(int idListener, List<StatisticCommon.TEC> tec)
         {
+            //Создать объект - чтение зашифрованного файла с параметрами соединения
+            s_fileConnSett = new FIleConnSett(@"connsett.ini", FIleConnSett.MODE.FILE);
+            s_listFormConnectionSettings = new List<FormConnectionSettings>();
+            //Добавить элемент с параметрами соединения из объекта 'FIleConnSett' 
+            s_listFormConnectionSettings.Add(new FormConnectionSettings(-1, s_fileConnSett.ReadSettingsFile, s_fileConnSett.SaveSettingsFile));
+            s_listFormConnectionSettings.Add(null);
+
             Thread.CurrentThread.CurrentCulture =
             Thread.CurrentThread.CurrentUICulture =
                 ProgramBase.ss_MainCultureInfo;
 
-            if (this is FormMainAnalyzer_TCPIP)
-                m_panel = new PanelAnalyzer_TCPIP(idListener, tec);
+            if (this is FormMain_TCPIP)
+                m_panel = new PanelAnalyzer_TCPIP(tec);
             else
-                if (this is FormMainAnalyzer_DB)
-                    m_panel = new PanelAnalyzer_DB(idListener, tec);
+                if (this is FormMain_DB)
+                    m_panel = new PanelAnalyzer_DB(tec);
                 else
                     ;
 
@@ -78,19 +85,61 @@ namespace StatisticAnalyzer
         */
     }
 
-    public class FormMainAnalyzer_TCPIP : FormMainAnalyzer
+    public class FormMain_TCPIP : FormMain
     {
-        public FormMainAnalyzer_TCPIP(int idListener, List<StatisticCommon.TEC> tec)
+        public FormMain_TCPIP(int idListener, List<StatisticCommon.TEC> tec)
             : base(idListener, tec)
         {
         }
+
+        protected override void timer_Start()
+        {
+            throw new NotImplementedException();
+        }
+
+        protected override int UpdateStatusString()
+        {
+            throw new NotImplementedException();
+        }
+
+        protected override void HideGraphicsSettings()
+        {
+            throw new NotImplementedException();
+        }
+
+        protected override void UpdateActiveGui(int type)
+        {
+            throw new NotImplementedException();
+        }
+
     }
 
-    public class FormMainAnalyzer_DB : FormMainAnalyzer
+    public class FormMain_DB : FormMain
     {
-        public FormMainAnalyzer_DB(int idListener, List<StatisticCommon.TEC> tec)
+        public FormMain_DB(int idListener, List<StatisticCommon.TEC> tec)
             : base(idListener, tec)
         {
         }
+
+        protected override void timer_Start()
+        {
+            throw new NotImplementedException();
+        }
+
+        protected override int UpdateStatusString()
+        {
+            throw new NotImplementedException();
+        }
+
+        protected override void HideGraphicsSettings()
+        {
+            throw new NotImplementedException();
+        }
+
+        protected override void UpdateActiveGui(int type)
+        {
+            throw new NotImplementedException();
+        }
+
     }
 }

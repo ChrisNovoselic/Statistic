@@ -2,7 +2,7 @@
 
 namespace StatisticAnalyzer
 {
-    partial class FormMainAnalyzer
+    partial class FormMain
     {        
         /// <summary>
         /// Требуется переменная конструктора.
@@ -32,7 +32,7 @@ namespace StatisticAnalyzer
         /// </summary>
         private void InitializeComponent()
         {
-            System.ComponentModel.ComponentResourceManager resources = new System.ComponentModel.ComponentResourceManager(typeof(FormMainAnalyzer));
+            System.ComponentModel.ComponentResourceManager resources = new System.ComponentModel.ComponentResourceManager(typeof(FormMain));
 
             this.SuspendLayout();
 
