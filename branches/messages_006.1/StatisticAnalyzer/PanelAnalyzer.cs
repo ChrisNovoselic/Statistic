@@ -71,10 +71,11 @@ namespace StatisticAnalyzer
             private System.Windows.Forms.Label labelMessage;
             protected DataGridView_LogMessageCounter dgvMessage;
 
+            protected abstract DataGridView_LogMessageCounter createLogMessageCounter(DataGridView_LogMessageCounter.TYPE type);
 
             private void InitializeComponent()
             {
-                this.dgvMessage = new DataGridView_LogMessageCounter(DataGridView_LogMessageCounter.TYPE.WITHOUT_CHECKBOX);
+                this.dgvMessage = createLogMessageCounter(DataGridView_LogMessageCounter.TYPE.WITHOUT_CHECKBOX);
                 this.groupUser = new System.Windows.Forms.GroupBox();
                 this.groupMessage = new System.Windows.Forms.GroupBox();
                 this.groupTabs = new System.Windows.Forms.GroupBox();
@@ -116,7 +117,7 @@ namespace StatisticAnalyzer
                 this.dgvDatetimeStart = new System.Windows.Forms.DataGridView();                
 
                 this.labelFilterTypeMessage = new System.Windows.Forms.Label();
-                this.dgvFilterTypeMessage = new DataGridView_LogMessageCounter(DataGridView_LogMessageCounter.TYPE.WITH_CHECKBOX);
+                this.dgvFilterTypeMessage = createLogMessageCounter(DataGridView_LogMessageCounter.TYPE.WITH_CHECKBOX);
 
                 this.buttonUpdate = new System.Windows.Forms.Button();
                 this.buttonClose = new System.Windows.Forms.Button();
@@ -945,6 +946,22 @@ namespace StatisticAnalyzer
         public PanelAnalyzer(/*int idListener,*/ List<StatisticCommon.TEC> tec)
             : base()
         {
+            // создание обязательно перед вызовом 'InitializeComponent'
+            // , чтобы заполнились статические переменные (типы, описания сообщений)
+            m_LogParse = newLogParse();
+
+            if (!(m_LogParse == null))
+            {
+                m_LogParse.Exit = LogParseExit;
+            }
+            else
+            {
+                string strErr = @"Не создан объект разбора сообщений (класс 'LogParse')...";
+                Logging.Logg().Error(strErr, Logging.INDEX_MESSAGE.NOT_SET);
+
+                throw new Exception(strErr);
+            }
+            
             InitializeComponent();
 
             m_arCheckBoxMode = new CheckBox[] { checkBoxs[(int)FormChangeMode.MODE_TECCOMPONENT.TEC], checkBoxs[(int)FormChangeMode.MODE_TECCOMPONENT.GTP], checkBoxs[(int)FormChangeMode.MODE_TECCOMPONENT.PC], checkBoxs[(int)FormChangeMode.MODE_TECCOMPONENT.TG] };
@@ -986,22 +1003,9 @@ namespace StatisticAnalyzer
                 //fillTypeMessage();
 
                 //fillMessage();
-
-                m_LogParse = newLogParse();
-
-                if (!(m_LogParse == null))
-                {
-                    m_LogParse.Exit = LogParseExit;
-
-                    Start();
-                }
-                else
-                {
-                    string strErr = @"Не создан объект разбора сообщений (класс 'LogParse')...";
-                    Logging.Logg().Error(strErr, Logging.INDEX_MESSAGE.NOT_SET);
-                    throw new Exception(strErr);
-                }
             }
+
+            Start();
 
             unregister_idListenerConfDB(idListener);
         }
@@ -1580,6 +1584,10 @@ namespace StatisticAnalyzer
             /// Массив с идентификаторами типов сообщений
             /// </summary>
             public static int[] s_IdTypeMessages;
+            /// <summary>
+            /// Массив типов сообщений
+            /// </summary>
+            public static string[] s_DESC_LOGMESSAGE;
 
             private Thread m_thread;
             protected DataTable m_tableLog;
@@ -2085,7 +2093,7 @@ namespace StatisticAnalyzer
 
         #endregion
 
-        public class DataGridView_LogMessageCounter : DataGridView
+        public abstract class DataGridView_LogMessageCounter : DataGridView
         {
             /// <summary>
             /// Перечисление типов DataGridView
@@ -2097,15 +2105,15 @@ namespace StatisticAnalyzer
             /// </summary>
             private TYPE _type;
             
-            /// <summary>
-            /// Массив типов сообщений
-            /// </summary>
-            protected string[] TYPE_MESSAGE = { "Запуск", "Выход",
-                                                    "Действие", "Отладка", "Исключение",
-                                                    "Исключение БД",
-                                                    "Ошибка",
-                                                    "Предупреждение",
-                                                    "Неопределенный тип" };
+            ///// <summary>
+            ///// Массив типов сообщений
+            ///// </summary>
+            //protected string[] TYPE_MESSAGE = { "Запуск", "Выход",
+            //                                        "Действие", "Отладка", "Исключение",
+            //                                        "Исключение БД",
+            //                                        "Ошибка",
+            //                                        "Предупреждение",
+            //                                        "Неопределенный тип" };
 
             private void InitializeComponent()
             {
@@ -2168,8 +2176,7 @@ namespace StatisticAnalyzer
                 count_message.Name = "ColumnCount";
                 count_message.Width = 20;
 
-                fillTypeMessage(TYPE_MESSAGE);//заполнение DataGridView типами сообщений
-
+                fillTypeMessage(LogParse.s_DESC_LOGMESSAGE);//заполнение DataGridView типами сообщений
             }
 
             /// <summary>
@@ -2192,7 +2199,7 @@ namespace StatisticAnalyzer
 
                 if (users != "")
                 {
-                    updateTypeMessage(TYPE_MESSAGE);//Обнуление счётчиков сообщений на панели статистики
+                    updateTypeMessage(LogParse.s_DESC_LOGMESSAGE);//Обнуление счётчиков сообщений на панели статистики
 
                     #region Фомирование и выполнение запроса для получения количества сообщений разного типа
 
@@ -2221,21 +2228,21 @@ namespace StatisticAnalyzer
 
                         if (table_statMessage.Rows.Count == 0)
                         {
-                            updateTypeMessage(TYPE_MESSAGE);//Обнуление счётчиков сообщений на панели статистики
+                            updateTypeMessage(LogParse.s_DESC_LOGMESSAGE);//Обнуление счётчиков сообщений на панели статистики
                         }
                         fillDataGridViewsMessage(table_statMessage, @"column1", 0, true);//Заполнение таблицы со счётчиками на панели статистики
 
                     }
                     else
                     {
-                        updateTypeMessage(TYPE_MESSAGE);//Обнуление счётчиков сообщений на панели статистики
+                        updateTypeMessage(LogParse.s_DESC_LOGMESSAGE);//Обнуление счётчиков сообщений на панели статистики
                     }
                     ;
 
                     #endregion
                 }
                 else
-                    updateTypeMessage(TYPE_MESSAGE);//Обнуление счётчиков сообщений на панели статистики
+                    updateTypeMessage(LogParse.s_DESC_LOGMESSAGE);//Обнуление счётчиков сообщений на панели статистики
             }
 
             /// <summary>
@@ -2320,6 +2327,19 @@ namespace StatisticAnalyzer
 
     public class PanelAnalyzer_DB : PanelAnalyzer
     {
+        public class DataGridView_LogMessageCounter_DB : DataGridView_LogMessageCounter
+        {
+            public DataGridView_LogMessageCounter_DB(DataGridView_LogMessageCounter.TYPE type)
+                : base(type)
+            {
+            }
+        }
+
+        protected override DataGridView_LogMessageCounter createLogMessageCounter(DataGridView_LogMessageCounter.TYPE type)
+        {
+            return new DataGridView_LogMessageCounter_DB(type);
+        }
+        
         protected DataTable m_tableTabs;
 
         //class HLogMsgSource {
@@ -2415,7 +2435,8 @@ namespace StatisticAnalyzer
         {
             err = 0;
             arbActives = null;
-            int i = -1;
+            int i = -1
+                , secDiff = -1;
 
             DbConnection connLoggingDB = DbSources.Sources().GetConnection(m_idListenerLoggingDB, out err);
             if (!(connLoggingDB == null) && (err == 0))
@@ -2442,7 +2463,10 @@ namespace StatisticAnalyzer
                             else
                             {
                                 //Обрабатываем...
-                                arbActives[i] = (HDateTime.ToMoscowTimeZone(DateTime.Now) - DateTime.Parse(rowsMaxDatetimeWR[0][@"MAX_DATETIME_WR"].ToString())).TotalSeconds < 66;
+                                secDiff = (int)(HDateTime.ToMoscowTimeZone(DateTime.Now) - DateTime.Parse(rowsMaxDatetimeWR[0][@"MAX_DATETIME_WR"].ToString())).TotalSeconds;
+                                arbActives[i] = secDiff < 66;
+
+                                //Debug.WriteLine(@"PanelAnalyzer_DB::procChecked () - индекс=" + i + @", разница_дата_время(сек)=" + secDiff);
                             }
                         }
                     }
@@ -2888,17 +2912,7 @@ namespace StatisticAnalyzer
             /// <summary>
             /// Список идентификаторов типов сообщений
             /// </summary>
-            public enum TYPE_LOGMESSAGE { START = LogParse.INDEX_START_MESSAGE, STOP, ACTION, DEBUG, EXCEPTION, EXCEPTION_DB, ERROR, WARNING, UNKNOWN, COUNT_TYPE_LOGMESSAGE };
-            
-            /// <summary>
-            /// Список типов сообщений
-            /// </summary>
-            public static string[] DESC_LOGMESSAGE = { "Запуск", "Выход",
-                                                    "Действие", "Отладка", "Исключение",
-                                                    "Исключение БД",
-                                                    "Ошибка",
-                                                    "Предупреждение",
-                                                    "Неопределенный тип" };
+            public enum TYPE_LOGMESSAGE { START = LogParse.INDEX_START_MESSAGE, STOP, ACTION, DEBUG, EXCEPTION, EXCEPTION_DB, ERROR, WARNING, UNKNOWN, COUNT };
 
             /// <summary>
             /// ID порльзователя
@@ -2911,10 +2925,16 @@ namespace StatisticAnalyzer
                 m_idUser = -1;
 
                 //ID типов сообщений
-                s_IdTypeMessages = new int[] {
-                        1, 2, 3, 4, 5, 6, 7, 8, 9
-                        , 10
-                    };
+                s_IdTypeMessages = new int[(int)TYPE_LOGMESSAGE.COUNT];
+                for (TYPE_LOGMESSAGE type = TYPE_LOGMESSAGE.START; type < TYPE_LOGMESSAGE.COUNT; type++)
+                    s_IdTypeMessages[(int)type] = (int)type;
+
+                s_DESC_LOGMESSAGE = new string[(int)TYPE_LOGMESSAGE.COUNT] { "Запуск", "Выход",
+                                                    "Действие", "Отладка", "Исключение",
+                                                    "Исключение БД",
+                                                    "Ошибка",
+                                                    "Предупреждение",
+                                                    "Неопределенный тип" };
             }
 
             /// <summary>
@@ -3023,6 +3043,19 @@ namespace StatisticAnalyzer
     {
         TcpClientAsync m_tcpClient;
         List<TcpClientAsync> m_listTCPClientUsers;
+
+        public class DataGridView_LogMessageCounter_TCPIP : DataGridView_LogMessageCounter
+        {
+            public DataGridView_LogMessageCounter_TCPIP(DataGridView_LogMessageCounter.TYPE type)
+                : base(type)
+            {
+            }
+        }
+
+        protected override DataGridView_LogMessageCounter createLogMessageCounter(DataGridView_LogMessageCounter.TYPE type)
+        {
+            return new DataGridView_LogMessageCounter_TCPIP(type);
+        }
 
         public PanelAnalyzer_TCPIP(List<StatisticCommon.TEC> tec)
             : base(tec)
@@ -3317,14 +3350,8 @@ namespace StatisticAnalyzer
                 ERROR, DEBUG,
                 DETAIL,
                 SEPARATOR, SEPARATOR_DATETIME,
-                UNKNOWN, COUNT_TYPE_LOGMESSAGE
+                UNKNOWN, COUNT
             };
-            public static string[] DESC_LOGMESSAGE = { "Запуск", "Выход",
-                                            "БД открыть", "БД закрыть", "БД исключение",
-                                            "Ошибка", "Отладка",
-                                            "Детализация",
-                                            "Раздел./сообщ.", "Раздел./дата/время",
-                                            "Неопределенный тип" };
 
             protected string[] SIGNATURE_LOGMESSAGE = { ProgramBase.MessageWellcome, ProgramBase.MessageExit,
                                                     DbTSQLInterface.MessageDbOpen, DbTSQLInterface.MessageDbClose, DbTSQLInterface.MessageDbException,
@@ -3335,15 +3362,16 @@ namespace StatisticAnalyzer
 
             public LogParse_File()
             {
-                s_IdTypeMessages = new int[] {
-                        0, 1
-                        , 2, 3, 4
-                        , 5, 6
-                        , 7
-                        , 8, 9
-                        , 10
-                        , 11
-                    };
+                s_IdTypeMessages = new int[(int)TYPE_LOGMESSAGE.COUNT];
+                for (TYPE_LOGMESSAGE type = TYPE_LOGMESSAGE.START; type < TYPE_LOGMESSAGE.COUNT; type ++)
+                    s_IdTypeMessages[(int)type] = (int)type;
+
+                s_DESC_LOGMESSAGE = new string[(int)TYPE_LOGMESSAGE.COUNT] { "Запуск", "Выход",
+                                            "БД открыть", "БД закрыть", "БД исключение",
+                                            "Ошибка", "Отладка",
+                                            "Детализация",
+                                            "Раздел./сообщ.", "Раздел./дата/время",
+                                            "Неопределенный тип" };
             }
 
             protected override void thread_Proc(object text)
