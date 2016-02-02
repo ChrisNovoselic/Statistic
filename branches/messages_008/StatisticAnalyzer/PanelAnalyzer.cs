@@ -2155,7 +2155,7 @@ namespace StatisticAnalyzer
                     {
                         //добавление идентификаторов пользователей к условиям выборки
                         where += "AND ID_USER in (" + users + ")";
-                        where += "group by([ID_LOGMSG])";
+                        where += "group by([ID_LOGMSG]) ORDER BY ID_LOGMSG";
                         query += where;
 
                         DbConnection connLoggingDBn = DbSources.Sources().GetConnection(iListenerId, out iRes);
@@ -2857,8 +2857,8 @@ namespace StatisticAnalyzer
 
                 //ID типов сообщений
                 s_IdTypeMessages = new int[] {
-                        0, 1, 2, 3, 4, 5, 6, 7, 8, 9
-                        //, 10
+                         1, 2, 3, 4, 5, 6, 7, 8, 9
+                        , 10
                     };
                 
                 
