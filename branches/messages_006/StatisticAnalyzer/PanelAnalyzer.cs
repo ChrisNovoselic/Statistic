@@ -61,20 +61,22 @@ namespace StatisticAnalyzer
             private TableLayoutPanel panelTabs;
 
             private System.Windows.Forms.Label labelStartCalendar;
-            protected System.Windows.Forms.DateTimePicker StartCalendar;
             private System.Windows.Forms.Label labelStopCalendar;
-            protected System.Windows.Forms.DateTimePicker StopCalendar;
             private System.Windows.Forms.Label labelRole;
-            protected System.Windows.Forms.DataGridView dgvRole;
             private System.Windows.Forms.Label labelUser;
-            protected System.Windows.Forms.DataGridView dgvUser;
             private System.Windows.Forms.Label labelMessage;
-            protected DataGridView_LogMessageCounter dgvMessage;
 
+            protected DataGridView_LogMessageCounter dgvMessage;
+            protected System.Windows.Forms.DataGridView dgvUser;
+            protected System.Windows.Forms.DataGridView dgvRole;
+            protected System.Windows.Forms.DateTimePicker StartCalendar;
+            protected System.Windows.Forms.DateTimePicker StopCalendar;
+
+            //protected abstract DataGridView_LogMessageCounter create_LogMessageCounter(DataGridView_LogMessageCounter.TYPE type);
 
             private void InitializeComponent()
             {
-                this.dgvMessage = new DataGridView_LogMessageCounter(DataGridView_LogMessageCounter.TYPE.WITHOUT_CHECKBOX);
+                this.dgvMessage = new DataGridView_LogMessageCounter (DataGridView_LogMessageCounter.TYPE.WITHOUT_CHECKBOX);
                 this.groupUser = new System.Windows.Forms.GroupBox();
                 this.groupMessage = new System.Windows.Forms.GroupBox();
                 this.groupTabs = new System.Windows.Forms.GroupBox();
@@ -194,12 +196,13 @@ namespace StatisticAnalyzer
                 // dataGridViewActivesTextBoxColumnDesc
                 // 
                 i = 1;
-                this.dgvFilterActives.Columns[i].Frozen = true;
+                //this.dgvFilterActives.Columns[i].Frozen = true;
                 this.dgvFilterActives.Columns[i].HeaderText = "Desc";
                 this.dgvFilterActives.Columns[i].Name = "dataGridViewActivesTextBoxColumnDesc";
                 this.dgvFilterActives.Columns[i].ReadOnly = true;
                 this.dgvFilterActives.Columns[i].Resizable = System.Windows.Forms.DataGridViewTriState.False;
                 this.dgvFilterActives.Columns[i].Width = 165;
+                this.dgvFilterActives.Columns[i].AutoSizeMode = DataGridViewAutoSizeColumnMode.Fill;
 
                 // 
                 // labelFilterRoles
@@ -290,12 +293,13 @@ namespace StatisticAnalyzer
                 // dataGridViewClientTextBoxColumnDesc
                 // 
                 i = 1;
-                this.dgvClient.Columns[i].Frozen = true;
+                //this.dgvClient.Columns[i].Frozen = true;
                 this.dgvClient.Columns[i].HeaderText = "Desc";
                 this.dgvClient.Columns[i].Name = "dataGridViewClientTextBoxColumnDesc";
                 this.dgvClient.Columns[i].ReadOnly = true;
                 this.dgvClient.Columns[i].Resizable = System.Windows.Forms.DataGridViewTriState.False;
                 this.dgvClient.Columns[i].Width = 145;
+                this.dgvClient.Columns[i].AutoSizeMode = DataGridViewAutoSizeColumnMode.Fill;
 
                 // 
                 // tabPageLogging
@@ -367,12 +371,13 @@ namespace StatisticAnalyzer
                 // dataGridViewTextBoxColumnDatetimeStartDesc
                 // 
                 i = 1;
-                this.dgvDatetimeStart.Columns[i].Frozen = true;
+                //this.dgvDatetimeStart.Columns[i].Frozen = true;
                 this.dgvDatetimeStart.Columns[i].HeaderText = "Desc";
                 this.dgvDatetimeStart.Columns[i].Name = "dataGridViewTextBoxColumnDatetimeStartDesc";
                 this.dgvDatetimeStart.Columns[i].ReadOnly = true;
                 this.dgvDatetimeStart.Columns[i].Resizable = System.Windows.Forms.DataGridViewTriState.False;
                 this.dgvDatetimeStart.Columns[i].Width = 145;
+                this.dgvDatetimeStart.Columns[i].AutoSizeMode = DataGridViewAutoSizeColumnMode.Fill;
                 // 
                 // labelFilterTypeMessage
                 // 
@@ -464,7 +469,8 @@ namespace StatisticAnalyzer
                 this.dgvLogMessage.SelectionMode = System.Windows.Forms.DataGridViewSelectionMode.FullRowSelect;
                 this.dgvLogMessage.Columns[0].Width = 85; this.dgvLogMessage.Columns[0].Resizable = System.Windows.Forms.DataGridViewTriState.False;
                 this.dgvLogMessage.Columns[1].Width = 30; this.dgvLogMessage.Columns[1].Resizable = System.Windows.Forms.DataGridViewTriState.False;
-                this.dgvLogMessage.Columns[2].Width = 254; this.dgvLogMessage.Columns[2].Resizable = System.Windows.Forms.DataGridViewTriState.False;                
+                this.dgvLogMessage.Columns[2].Width = 254; this.dgvLogMessage.Columns[2].Resizable = System.Windows.Forms.DataGridViewTriState.False;
+                this.dgvLogMessage.Columns[2].AutoSizeMode = DataGridViewAutoSizeColumnMode.Fill;
                 // 
                 // tabPageTabes
                 // 
@@ -888,6 +894,8 @@ namespace StatisticAnalyzer
 
         protected bool m_bThreadTimerCheckedAllowed;
 
+        
+
         /// <summary>
         /// Класс для работы с логом сообщений
         /// </summary>
@@ -942,9 +950,13 @@ namespace StatisticAnalyzer
         
         #endregion
 
+        static HDataSource m_DataSource;
+
         public PanelAnalyzer(/*int idListener,*/ List<StatisticCommon.TEC> tec)
             : base()
         {
+            m_LogParse = newLogParse();
+
             InitializeComponent();
 
             m_arCheckBoxMode = new CheckBox[] { checkBoxs[(int)FormChangeMode.MODE_TECCOMPONENT.TEC], checkBoxs[(int)FormChangeMode.MODE_TECCOMPONENT.GTP], checkBoxs[(int)FormChangeMode.MODE_TECCOMPONENT.PC], checkBoxs[(int)FormChangeMode.MODE_TECCOMPONENT.TG] };
@@ -965,6 +977,8 @@ namespace StatisticAnalyzer
             int idListener = register_idListenerConfDB(out err);
 
             DbConnection connConfigDB = DbSources.Sources().GetConnection(idListener,out err);
+
+            m_DataSource = new HDataSource(FormMainBaseWithStatusStrip.s_listFormConnectionSettings[(int)CONN_SETT_TYPE.CONFIG_DB].getConnSett());
 
             if ((!(connConfigDB == null)) && (err == 0))
             {
@@ -987,8 +1001,6 @@ namespace StatisticAnalyzer
 
                 //fillMessage();
 
-                m_LogParse = newLogParse();
-
                 if (!(m_LogParse == null))
                 {
                     m_LogParse.Exit = LogParseExit;
@@ -1005,7 +1017,7 @@ namespace StatisticAnalyzer
 
             unregister_idListenerConfDB(idListener);
         }
-
+        
         /// <summary>
         /// Регистрация ID
         /// </summary>
@@ -1097,8 +1109,7 @@ namespace StatisticAnalyzer
         /// <param name="fclr"></param>
         public override void SetDelegateReport(DelegateStringFunc ferr, DelegateStringFunc fwar, DelegateStringFunc fact, DelegateBoolFunc fclr)
         {
-            //m_DataSource.SetDelegateReport(ferr, fwar, fact, fclr);
-            //throw new NotImplementedException();
+            m_DataSource.SetDelegateReport(ferr, fwar, fact, fclr);
         }
 
         /// <summary>
@@ -1111,7 +1122,7 @@ namespace StatisticAnalyzer
             m_bThreadTimerCheckedAllowed = true;
 
             m_timerChecked =
-                new System.Threading.Timer(new TimerCallback(procChecked), null, 0, System.Threading.Timeout.Infinite)
+                new System.Threading.Timer(new TimerCallback(procChecked), null, 500, System.Threading.Timeout.Infinite)
                 //new System.Windows.Forms.Timer()
                 ;
             ////Вариант №1
@@ -1150,20 +1161,19 @@ namespace StatisticAnalyzer
         {
             bool bRes = base.Activate(activated);
 
-            //if (activated == true)
-            //{
-            //    //Start();
-            //    m_timerUpdate.Start();
-            //}
+            if (activated == true)
+            {
+                //Start();
+                m_timerChecked.Change(0, System.Threading.Timeout.Infinite);
+            }
 
-            //else
-            //{
-            //    //Stop();
-            //    if (!(m_timerUpdate == null))
-            //    {
-            //        m_timerUpdate.Stop();
-            //    }
-            //}
+            else
+            {
+                if (!(m_timerChecked == null))
+                {
+                    m_timerChecked.Change(System.Threading.Timeout.Infinite, System.Threading.Timeout.Infinite);
+                }
+            }
 
             return bRes;
         }
@@ -1290,49 +1300,59 @@ namespace StatisticAnalyzer
         /// </summary>
         void TabLoggingAppendText(object data)
         {
-            HTabLoggingAppendTextPars tlatPars = data as HTabLoggingAppendTextPars;
-            if (tlatPars.rows.Equals(string.Empty) == true)
+            try
             {
-                TabLoggingPositionText();
-                //textBoxLog.Focus();
-                //textBoxLog.AutoScrollOffset = new Point (0, 0);
+                m_DataSource.ActionReport("Получаем список сообщений");
+
+                HTabLoggingAppendTextPars tlatPars = data as HTabLoggingAppendTextPars;
+                if (tlatPars.rows.Equals(string.Empty) == true)
+                {
+                    TabLoggingPositionText();
+                    //textBoxLog.Focus();
+                    //textBoxLog.AutoScrollOffset = new Point (0, 0);
+                }
+                else
+                {
+                    //int[] arTypeLogMsgCounter = new int[dgvFilterTypeMessage.Rows.Count];
+                    List<int> listIdTypeMessages = LogParse.s_IdTypeMessages.ToList();//создание списка с идентификаторами типов сообщений
+
+                    //Получение массива состояний CheckBox'ов на DataGridView с типами сообщений
+                    bool[] arCheckedTypeMessages = new bool[dgvFilterTypeMessage.Rows.Count];
+                    List<bool> check = new List<bool>();
+                    dgvFilterTypeMessage.Checked(ref check);
+                    for (int i = 0; i < dgvFilterTypeMessage.Rows.Count; i++)
+                    {
+                        arCheckedTypeMessages[i] = check[i];
+                    }
+                    //Преобразование строки в массив строк с сообщениями
+                    string[] messages = tlatPars.rows.Split(new string[] { m_chDelimeters[(int)INDEX_DELIMETER.ROW] }, StringSplitOptions.None);
+                    string[] parts;
+                    int indxTypeMessage = -1;
+
+                    //Помещение массива строк с сообщениями в DataGridView с сообщениями
+                    foreach (string text in messages)
+                    {
+                        parts = text.Split(new string[] { m_chDelimeters[(int)INDEX_DELIMETER.PART] }, StringSplitOptions.None);
+                        indxTypeMessage = listIdTypeMessages.IndexOf(Int32.Parse(parts[1]));
+
+                        //Фильтрация сообщений в зависимости от включенных CheckBox'ов в DataGridView с типами сообщений
+                        if (arCheckedTypeMessages[indxTypeMessage] == true)
+                            dgvLogMessage.Rows.Add(parts);
+                        else
+                            ;
+                    }
+
+                    DateTime start_date = DateTime.Parse(dgvDatetimeStart.Rows[m_prevDatetimeRowIndex].Cells[1].Value.ToString());
+                    DateTime stop_date = start_date.AddDays(1);
+                    check.Clear();
+                    updateCounter(dgvFilterTypeMessage, start_date, stop_date, get_users(m_tableUsers, dgvClient, false));
+                }
+
+                m_DataSource.ClearStates();
             }
-            else
+            catch (Exception E)
             {
-                //int[] arTypeLogMsgCounter = new int[dgvFilterTypeMessage.Rows.Count];
-                List<int> listIdTypeMessages = LogParse.s_IdTypeMessages.ToList();//создание списка с идентификаторами типов сообщений
-                
-                //Получение массива состояний CheckBox'ов на DataGridView с типами сообщений
-                bool[] arCheckedTypeMessages = new bool[dgvFilterTypeMessage.Rows.Count];
-                List<bool> check=new List<bool>();
-                dgvFilterTypeMessage.Checked(ref check);
-                for (int i = 0; i < dgvFilterTypeMessage.Rows.Count; i++)
-                {
-                    arCheckedTypeMessages[i] = check[i];
-                }
-                //Преобразование строки в массив строк с сообщениями
-                string[] messages = tlatPars.rows.Split(new string[] { m_chDelimeters[(int)INDEX_DELIMETER.ROW] }, StringSplitOptions.None);
-                string[] parts;
-                int indxTypeMessage = -1;
-
-                //Помещение массива строк с сообщениями в DataGridView с сообщениями
-                foreach (string text in messages)
-                {
-                    parts = text.Split(new string[] { m_chDelimeters[(int)INDEX_DELIMETER.PART] }, StringSplitOptions.None);
-                    indxTypeMessage = listIdTypeMessages.IndexOf(Int32.Parse(parts[1]));
-
-                    //Фильтрация сообщений в зависимости от включенных CheckBox'ов в DataGridView с типами сообщений
-                    if (arCheckedTypeMessages[indxTypeMessage] == true)
-                        dgvLogMessage.Rows.Add(parts);
-                    else
-                        ;
-                }
-
-                DateTime start_date = DateTime.Parse(dgvDatetimeStart.Rows[m_prevDatetimeRowIndex].Cells[1].Value.ToString());
-                DateTime stop_date = start_date.AddDays(1);
-                check.Clear();
-                updateCounter(dgvFilterTypeMessage, start_date, stop_date, get_users(m_tableUsers,dgvClient,false));
-                
+                Logging.Logg().Exception(E, "PanelAnalyzer:TabLoggingAppendText () - ...", Logging.INDEX_MESSAGE.NOT_SET);
             }
         }
 
@@ -1463,7 +1483,16 @@ namespace StatisticAnalyzer
                         strRowsTodgvLogMessages = string.Empty;
                     }
                     else
-                        strRowsTodgvLogMessages += getTabLoggingTextRow(rows[i]) + m_chDelimeters[(int)INDEX_DELIMETER.ROW];
+
+                        try
+                        {
+                            strRowsTodgvLogMessages += getTabLoggingTextRow(rows[i]) + m_chDelimeters[(int)INDEX_DELIMETER.ROW];
+
+                        }
+                        catch (Exception e)
+                        {
+                            Logging.Logg().Exception(e, "PanelAnalyzer:filldgvLogMessages () - ...", Logging.INDEX_MESSAGE.NOT_SET);
+                        }
                 }
 
                 if (strRowsTodgvLogMessages.Length > m_chDelimeters[(int)INDEX_DELIMETER.ROW].Length)
@@ -1580,6 +1609,11 @@ namespace StatisticAnalyzer
             /// Массив с идентификаторами типов сообщений
             /// </summary>
             public static int[] s_IdTypeMessages;
+
+            /// <summary>
+            /// Список типов сообщений
+            /// </summary>
+            public static string[] s_DESC_LOGMESSAGE;
 
             private Thread m_thread;
             protected DataTable m_tableLog;
@@ -1961,6 +1995,8 @@ namespace StatisticAnalyzer
         /// <param name="multi_select">Выбирается много пользователей</param>
         protected string get_users(DataTable table_user, DataGridView dgv_user, bool multi_select)
         {
+            m_DataSource.ActionReport("Получаем список пользователей");
+
             int i = -1;
             string list_user = string.Empty;//Строка со списком выбранных пользователей
             string where = string.Empty;
@@ -1990,6 +2026,8 @@ namespace StatisticAnalyzer
             }
 
             #endregion
+
+            m_DataSource.ClearStates();
 
             return list_user;
 
@@ -2096,16 +2134,6 @@ namespace StatisticAnalyzer
             /// Тип экземпляра DataGridView
             /// </summary>
             private TYPE _type;
-            
-            /// <summary>
-            /// Массив типов сообщений
-            /// </summary>
-            protected string[] TYPE_MESSAGE = { "Запуск", "Выход",
-                                                    "Действие", "Отладка", "Исключение",
-                                                    "Исключение БД",
-                                                    "Ошибка",
-                                                    "Предупреждение",
-                                                    "Неопределенный тип" };
 
             private void InitializeComponent()
             {
@@ -2168,7 +2196,7 @@ namespace StatisticAnalyzer
                 count_message.Name = "ColumnCount";
                 count_message.Width = 20;
 
-                fillTypeMessage(TYPE_MESSAGE);//заполнение DataGridView типами сообщений
+                fillTypeMessage(LogParse.s_DESC_LOGMESSAGE);//заполнение DataGridView типами сообщений
 
             }
 
@@ -2185,6 +2213,8 @@ namespace StatisticAnalyzer
             /// <param name="users">Список пользователей</param>
             public void UpdateCounter(object objSrcMessages, DateTime beg, DateTime end, string users)
             {
+                m_DataSource.ActionReport("Обновление статистики сообщений");
+                
                 int iRes = -1;
                 string where = string.Empty;
                 int iListenerId = (int)objSrcMessages;
@@ -2192,11 +2222,11 @@ namespace StatisticAnalyzer
 
                 if (users != "")
                 {
-                    updateTypeMessage(TYPE_MESSAGE);//Обнуление счётчиков сообщений на панели статистики
+                    updateTypeMessage(LogParse.s_DESC_LOGMESSAGE);//Обнуление счётчиков сообщений на панели статистики
 
                     #region Фомирование и выполнение запроса для получения количества сообщений разного типа
 
-                    string query = @"SELECT ([ID_LOGMSG]),COUNT (*) FROM [dbo].[logging] where ";
+                    string query = @"SELECT ([ID_LOGMSG]),COUNT (*) as [COUNT] FROM [dbo].[logging] where ";
 
                     if (beg.Equals(DateTime.MaxValue) == false)
                     {
@@ -2221,21 +2251,23 @@ namespace StatisticAnalyzer
 
                         if (table_statMessage.Rows.Count == 0)
                         {
-                            updateTypeMessage(TYPE_MESSAGE);//Обнуление счётчиков сообщений на панели статистики
+                            updateTypeMessage(LogParse.s_DESC_LOGMESSAGE);//Обнуление счётчиков сообщений на панели статистики
                         }
-                        fillDataGridViewsMessage(table_statMessage, @"column1", 0, true);//Заполнение таблицы со счётчиками на панели статистики
+                        fillDataGridViewsMessage(table_statMessage, @"COUNT", 0, true);//Заполнение таблицы со счётчиками на панели статистики
 
                     }
                     else
                     {
-                        updateTypeMessage(TYPE_MESSAGE);//Обнуление счётчиков сообщений на панели статистики
+                        updateTypeMessage(LogParse.s_DESC_LOGMESSAGE);//Обнуление счётчиков сообщений на панели статистики
                     }
                     ;
 
                     #endregion
                 }
                 else
-                    updateTypeMessage(TYPE_MESSAGE);//Обнуление счётчиков сообщений на панели статистики
+                    updateTypeMessage(LogParse.s_DESC_LOGMESSAGE);//Обнуление счётчиков сообщений на панели статистики
+
+                m_DataSource.ClearStates();
             }
 
             /// <summary>
@@ -2316,11 +2348,153 @@ namespace StatisticAnalyzer
                 }
             }
         }
+
+        /// <summary>
+        /// Класс для обращения 
+        /// к БД (чтение значений параметров для отображения)
+        /// </summary>
+        public class HDataSource : HHandlerDb
+        {
+            ConnectionSettings m_connSett;
+
+            protected enum State
+            {
+                Command
+            }
+
+            public HDataSource(ConnectionSettings connSett)
+            {
+                m_connSett = connSett;
+            }
+
+            public override void StartDbInterfaces()
+            {
+                if (m_dictIdListeners.ContainsKey(0) == false)
+                    m_dictIdListeners.Add(0, new int[] { -1 });
+                else
+                    ;
+                register(0, 0, m_connSett, m_connSett.name);
+            }
+
+            public override void ClearValues()
+            {
+            }
+
+            /// <summary>
+            /// Добавить состояния в набор для обработки
+            /// </summary>
+            public void Command()
+            {
+                lock (m_lockState)
+                {
+                    ClearStates();
+                    AddState((int)State.Command);
+                    Run(@"Command");
+                }
+            }
+
+            /// <summary>
+            /// Запросить результат для события
+            /// </summary>
+            /// <param name="state">Событие запроса</param>
+            /// <returns>Признак отправления результата</returns>
+            protected override int StateRequest(int state)
+            {
+                int iRes = 0;
+
+                switch (state)
+                {
+                    case (int)State.Command:
+                        Request(m_dictIdListeners[0][0], @"Select * from Diagnostic");
+                        break;
+                    default:
+                        break;
+                }
+
+                actionReport(@"Получение значений из БД - состояние: " + ((State)state).ToString());
+
+                return iRes;
+            }
+
+            /// Получить результат обработки события
+            /// </summary>
+            /// <param name="state">Событие для получения результата</param>
+            /// <param name="error">Признак ошибки при получении результата</param>
+            /// <param name="outobj">Результат запроса</param>
+            /// <returns>Признак получения результата</returns>
+            protected override int StateCheckResponse(int state, out bool error, out object table)
+            {
+                int iRes = 0;
+                error = true;
+                table = null;
+
+                switch (state)
+                {
+                    case (int)State.Command:
+                        iRes = response(m_IdListenerCurrent, out error, out table);
+                        break;
+                    default:
+                        break;
+                }
+                return iRes;
+            }
+
+            /// <summary>
+            /// Событие - получение данных 
+            /// </summary>
+            public event DelegateObjectFunc EvtRecievedTable;
+            /// <summary>
+            /// Обработка УСЕШНО полученного результата
+            /// </summary>
+            /// <param name="state">Состояние для результата</param>
+            /// <param name="obj">Значение результата</param>
+            /// <returns>Признак обработки результата</returns>
+            protected override int StateResponse(int state, object table)
+            {
+                int iRes = 0;
+
+                switch (state)
+                {
+                    case (int)State.Command:
+                        EvtRecievedTable(table);
+
+                        break;
+                    default:
+                        break;
+                }
+
+                //Проверить признак крайнего в наборе состояний для обработки
+                if (isLastState(state) == true)
+                    //Удалить все сообщения в строке статуса
+                    ReportClear(true);
+                else
+                    ;
+
+                return iRes;
+            }
+
+            protected override INDEX_WAITHANDLE_REASON StateErrors(int state, int req, int res)
+            {
+                INDEX_WAITHANDLE_REASON iRes = INDEX_WAITHANDLE_REASON.SUCCESS;
+
+                errorReport(@"Получение значений из БД - состояние: " + ((State)state).ToString());
+
+                return iRes;
+            }
+
+            protected override void StateWarnings(int state, int req, int res)
+            {
+                throw new NotImplementedException();
+            }
+        }
+
     }
 
     public class PanelAnalyzer_DB : PanelAnalyzer
     {
         protected DataTable m_tableTabs;
+
+        static HDataSource m_DataSource;
 
         //class HLogMsgSource {
         //public
@@ -2334,12 +2508,7 @@ namespace StatisticAnalyzer
         /// Список ТЭЦ
         /// </summary>
         List<StatisticCommon.TEC> m_listTEC;
-
-        /// <summary>
-        /// Список компонентов ТЭЦ
-        /// </summary>
-        List<StatisticCommon.TECComponent> m_listTECComponent=new List<TECComponent>();
-
+        
         /// <summary>
         /// Идентификатор для получения лога из БД
         /// </summary>
@@ -2348,6 +2517,8 @@ namespace StatisticAnalyzer
         public PanelAnalyzer_DB(List<StatisticCommon.TEC> tec)
             : base(tec)
         {
+            m_DataSource = new HDataSource(FormMainBaseWithStatusStrip.s_listFormConnectionSettings[(int)CONN_SETT_TYPE.CONFIG_DB].getConnSett());
+
             m_listTEC = tec;
 
             checkBoxs[(int)FormChangeMode.MODE_TECCOMPONENT.GTP].CheckedChanged += new EventHandler(checkBox_click);
@@ -2413,6 +2584,8 @@ namespace StatisticAnalyzer
         /// <param name="err">Ошибка</param>
         protected override void procChecked(out bool[] arbActives, out int err)
         {
+            m_DataSource.ActionReport("Получаем список активных пользователей");
+
             err = 0;
             arbActives = null;
             int i = -1;
@@ -2464,7 +2637,6 @@ namespace StatisticAnalyzer
                 , i = -1
                 , msecSleep = System.Threading.Timeout.Infinite;
             bool[] arbActives;
-
             procChecked(out arbActives, out err);
 
             if (!(arbActives == null) && (err == 0))
@@ -2490,6 +2662,7 @@ namespace StatisticAnalyzer
         /// <param name="user">Пользователь для выборки</param>
         protected override void fill_active_tabs(string user)
         {
+            m_DataSource.ActionReport("Получаем активные вкладки пользователя");
             int err = -1;
             int idListener = -1;
             int iRes = -1;
@@ -2710,13 +2883,13 @@ namespace StatisticAnalyzer
             {
                 dtVal = r["DATE_TIME"] as DateTime?;
 
+
                 strRes = string.Join(m_chDelimeters[(int)INDEX_DELIMETER.PART].ToString()
                                     , new string[] {
                                             ((DateTime)dtVal).ToString (@"HH:mm:ss.fff")
                                             , r["TYPE"].ToString ()
                                             , r["MESSAGE"].ToString()
-                                        }
-                );
+                                        });
             }
             else
                 ;
@@ -2880,6 +3053,7 @@ namespace StatisticAnalyzer
 
         #endregion
 
+
         /// <summary>
         /// Класс для получения лог сообщений из БД
         /// </summary>
@@ -2891,16 +3065,6 @@ namespace StatisticAnalyzer
             public enum TYPE_LOGMESSAGE { START = LogParse.INDEX_START_MESSAGE, STOP, ACTION, DEBUG, EXCEPTION, EXCEPTION_DB, ERROR, WARNING, UNKNOWN, COUNT_TYPE_LOGMESSAGE };
             
             /// <summary>
-            /// Список типов сообщений
-            /// </summary>
-            public static string[] DESC_LOGMESSAGE = { "Запуск", "Выход",
-                                                    "Действие", "Отладка", "Исключение",
-                                                    "Исключение БД",
-                                                    "Ошибка",
-                                                    "Предупреждение",
-                                                    "Неопределенный тип" };
-
-            /// <summary>
             /// ID порльзователя
             /// </summary>
             private int m_idUser;
@@ -2908,6 +3072,12 @@ namespace StatisticAnalyzer
             public LogParse_DB()
                 : base()
             {
+                s_DESC_LOGMESSAGE = new string[] { "Запуск", "Выход",
+                                                    "Действие", "Отладка", "Исключение",
+                                                    "Исключение БД",
+                                                    "Ошибка",
+                                                    "Предупреждение",
+                                                    "Неопределенный тип" };
                 m_idUser = -1;
 
                 //ID типов сообщений
@@ -2915,6 +3085,8 @@ namespace StatisticAnalyzer
                         1, 2, 3, 4, 5, 6, 7, 8, 9
                         , 10
                     };
+                
+                
             }
 
             /// <summary>
@@ -2933,7 +3105,7 @@ namespace StatisticAnalyzer
                 m_idUser = Int32.Parse(text.Split(new string[] { strDelimeter }, StringSplitOptions.None)[1]);
 
                 string query = @"SELECT DATEPART (DD, [DATETIME_WR]) as DD, DATEPART (MM, [DATETIME_WR]) as MM, DATEPART (YYYY, [DATETIME_WR]) as [YYYY], COUNT(*) as CNT"
-                        + @" FROM [techsite-2.X.X].[dbo].[logging]"
+                        + @" FROM [dbo].[logging]"
                         + @" WHERE [ID_USER]=" + m_idUser
                         + @" GROUP BY DATEPART (DD, [DATETIME_WR]), DATEPART (MM, [DATETIME_WR]), DATEPART (YYYY, [DATETIME_WR])"
                         + @" ORDER BY [DD]";
