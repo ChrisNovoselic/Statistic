@@ -245,8 +245,6 @@ namespace StatisticTimeSync
             this.Dock = DockStyle.Fill;
             initializeLayoutStyle (3, 7);
 
-            //this.Invoke(new Action(() => this.Controls.Add(m_arPanels[0], 0, 0)));
-
             this.Controls.Add(m_arPanels[0], 0, 0);
 
             int indx = -1
