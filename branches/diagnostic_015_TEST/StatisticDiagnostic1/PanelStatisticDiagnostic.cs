@@ -236,13 +236,26 @@ namespace StatisticDiagnostic
             this.ModesTableLayoutPanel.RowCount = 2;
             this.ModesTableLayoutPanel.RowStyles.Add(new System.Windows.Forms.RowStyle(System.Windows.Forms.SizeType.Percent, 50F));
             this.ModesTableLayoutPanel.RowStyles.Add(new System.Windows.Forms.RowStyle(System.Windows.Forms.SizeType.Percent, 50F));
+            //
+            //TaskTableLayoutPanel
+            //
+            this.TaskTableLayoutPanel = new System.Windows.Forms.TableLayoutPanel();
+            this.TaskTableLayoutPanel.Dock = DockStyle.Fill;
+            this.TaskTableLayoutPanel.AutoSize = true;
+            this.TaskTableLayoutPanel.CellBorderStyle = System.Windows.Forms.TableLayoutPanelCellBorderStyle.Single;
+            this.TaskTableLayoutPanel.AutoSizeMode = System.Windows.Forms.AutoSizeMode.GrowAndShrink;
+            this.TaskTableLayoutPanel.ColumnCount = 1;
+            this.TaskTableLayoutPanel.ColumnStyles.Add(new System.Windows.Forms.ColumnStyle(System.Windows.Forms.SizeType.Percent, 50F));
+            this.TaskTableLayoutPanel.RowCount = 1;
+            this.TaskTableLayoutPanel.RowStyles.Add(new System.Windows.Forms.RowStyle(System.Windows.Forms.SizeType.Percent, 50F));
+            this.TaskTableLayoutPanel.Controls.Add(m_taskdb.TaskDataGridView, 0, 0);
 
             this.Controls.Add(TEClabel, 0, 0);
             this.Controls.Add(TecTableLayoutPanel, 0, 1);
             this.Controls.Add(Modeslabel, 0, 2);
             this.Controls.Add(ModesTableLayoutPanel, 0, 3);
             this.Controls.Add(Tasklabel, 0, 4);
-            this.Controls.Add(m_taskdb.TaskTableLayoutPanel, 0, 5);
+            this.Controls.Add(TaskTableLayoutPanel, 0, 5);
 
             this.Modeslabel.AutoSize = true;
             this.Modeslabel.Dock = System.Windows.Forms.DockStyle.Fill;
@@ -309,6 +322,11 @@ namespace StatisticDiagnostic
         ///  с параметрами диагностирования сервисов Модес
         /// </summary>
         private System.Windows.Forms.TableLayoutPanel ModesTableLayoutPanel;
+        /// <summary>
+        /// Панель для размещения групповых элементов интерфейса с пользователем
+        ///  с параметрами диагностирования сервисов Модес
+        /// </summary>
+        private System.Windows.Forms.TableLayoutPanel TaskTableLayoutPanel;
     }
 
     /// <summary>
@@ -606,7 +624,7 @@ namespace StatisticDiagnostic
                 this.TECDataGridView.Dock = System.Windows.Forms.DockStyle.Fill;
                 this.TECDataGridView.RowHeadersVisible = false;
                 this.TECDataGridView.ReadOnly = true;
-                this.TECDataGridView.AutoResizeColumns(DataGridViewAutoSizeColumnsMode.Fill);
+                //this.TECDataGridView.AutoResizeColumns(DataGridViewAutoSizeColumnsMode.Fill);
                 this.TECDataGridView.AutoSizeRowsMode = DataGridViewAutoSizeRowsMode.AllCellsExceptHeaders;
                 this.TECDataGridView.AllowUserToAddRows = false;
                 this.TECDataGridView.Name = "TECDataGridView";
@@ -657,10 +675,10 @@ namespace StatisticDiagnostic
                 //
                 this.LabelTec.AutoSize = true;
                 this.LabelTec.Name = "LabelTec";
-                this.LabelTec.TabIndex = 0;
+                this.LabelTec.TabIndex = 1;
                 this.LabelTec.Text = "Unknow_TEC";
-
-                this.LabelTec.TextAlign = System.Drawing.ContentAlignment.TopCenter;
+                this.LabelTec.Dock = System.Windows.Forms.DockStyle.Fill;
+                this.LabelTec.TextAlign = System.Drawing.ContentAlignment.MiddleCenter;
                 this.ContextmenuChangeState.ResumeLayout(false);
                 this.ResumeLayout(false);
             }
@@ -704,6 +722,7 @@ namespace StatisticDiagnostic
         /// </summary>
         partial class Tec
         {
+            //static PanelDiagnostic[] m_arPanelsTEC;
             /// <summary>
             /// Список номер истчоников СОТИАССО
             /// </summary>
@@ -826,9 +845,10 @@ namespace StatisticDiagnostic
             /// <summary>
             /// Создание панелей ТЭЦ
             /// </summary>
-            public void Create_PanelTEC()
+           public void Create_PanelTEC()
             {
                 m_arPanelsTEC = new Tec[m_dtTECList.Rows.Count];
+
 
                 for (int i = 0; i < 6; i++)
                 {
@@ -960,6 +980,10 @@ namespace StatisticDiagnostic
                 for (int i = 0; i < m_arPanelsTEC.Length; i++)
                 {
                     string str = m_dtTECList.Rows[i][@"NAME_SHR"].ToString();
+
+
+                    if (m_arPanelsTEC[i].LabelTec.InvokeRequired)
+                        m_arPanelsTEC[i].LabelTec.Invoke(new Action(() => m_arPanelsTEC[i].LabelTec.Text = str));
 
                     if (m_arPanelsTEC[i].LabelTec.InvokeRequired)
                         m_arPanelsTEC[i].LabelTec.Invoke(new Action(() => m_arPanelsTEC[i].LabelTec.Text = str));
@@ -1885,20 +1909,18 @@ namespace StatisticDiagnostic
             private void InitializeComponentTask()
             {
                 TaskDataGridView = new System.Windows.Forms.DataGridView();
-                TaskTableLayoutPanel = new System.Windows.Forms.TableLayoutPanel();
-
+                //TaskTableLayoutPanel = new System.Windows.Forms.TableLayoutPanel();
                 this.SuspendLayout();
 
-                this.TaskTableLayoutPanel.RowCount = 1;
-                this.TaskTableLayoutPanel.RowStyles.Add(new System.Windows.Forms.RowStyle(System.Windows.Forms.SizeType.Percent, 40F));
-                this.TaskTableLayoutPanel.ColumnCount = 1;
-                this.TaskTableLayoutPanel.ColumnStyles.Add(new System.Windows.Forms.ColumnStyle(System.Windows.Forms.SizeType.Percent, 25.74641F));
-                this.TaskTableLayoutPanel.ColumnStyles.Add(new System.Windows.Forms.ColumnStyle(System.Windows.Forms.SizeType.Percent, 77.25359F));
-                this.TaskTableLayoutPanel.Dock = DockStyle.Fill;
-                this.TaskDataGridView.ReadOnly = true;
-                this.TaskTableLayoutPanel.CellBorderStyle = System.Windows.Forms.TableLayoutPanelCellBorderStyle.Single;
-                this.TaskTableLayoutPanel.Name = "TaskTableLayoutPanel";
-                this.TaskTableLayoutPanel.Controls.Add(TaskDataGridView, 0, 0);
+                //this.TaskTableLayoutPanel.RowCount = 1;
+                //this.TaskTableLayoutPanel.RowStyles.Add(new System.Windows.Forms.RowStyle(System.Windows.Forms.SizeType.Percent, 40F));
+                //this.TaskTableLayoutPanel.ColumnCount = 1;
+                //this.TaskTableLayoutPanel.ColumnStyles.Add(new System.Windows.Forms.ColumnStyle(System.Windows.Forms.SizeType.Percent, 25.74641F));
+                //this.TaskTableLayoutPanel.Dock = DockStyle.Fill;
+                //this.TaskDataGridView.ReadOnly = true;
+                //this.TaskTableLayoutPanel.CellBorderStyle = System.Windows.Forms.TableLayoutPanelCellBorderStyle.Single;
+                //this.TaskTableLayoutPanel.Name = "TaskTableLayoutPanel";
+                //this.TaskTableLayoutPanel.Controls.Add(TaskDataGridView, 0, 0);
 
                 this.TaskDataGridView.ColumnHeadersHeightSizeMode = System.Windows.Forms.DataGridViewColumnHeadersHeightSizeMode.AutoSize;
                 this.TaskDataGridView.AutoSizeRowsMode = DataGridViewAutoSizeRowsMode.AllCellsExceptHeaders;
@@ -1912,18 +1934,14 @@ namespace StatisticDiagnostic
                 this.TaskDataGridView.Columns[3].Name = "Время проверки";
                 this.TaskDataGridView.Columns[2].Name = "Время выполнения задачи";
                 this.TaskDataGridView.Columns[4].Name = "Описание";
-                this.TaskDataGridView.AutoSizeColumnsMode = DataGridViewAutoSizeColumnsMode.Fill;
                 this.TaskDataGridView.RowHeadersVisible = false;
                 this.TaskDataGridView.TabIndex = 0;
                 this.TaskDataGridView.AllowUserToAddRows = false;
                 this.TaskDataGridView.ReadOnly = true;
 
                 this.TaskDataGridView.CellClick += TaskDataGridView_CellClick;
-
                 this.ResumeLayout();
-
             }
-
             #endregion;
 
             public System.Windows.Forms.TableLayoutPanel TaskTableLayoutPanel;
@@ -2236,7 +2254,7 @@ namespace StatisticDiagnostic
         /// <summary>
         /// Создать панели для отображения диагностических параметров ТЭЦ, Модес
         /// </summary>
-        private void createPanels()
+        public void createPanels()
         {
             m_tecdb.Create_PanelTEC();
             m_modesdb.Create_Modes();
