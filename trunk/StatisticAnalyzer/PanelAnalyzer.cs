@@ -25,78 +25,53 @@ namespace StatisticAnalyzer
     {
         #region Design
 
-            private System.Windows.Forms.Label labelFilterActives;
-            private System.Windows.Forms.DataGridView dgvFilterActives;
-
-            private System.Windows.Forms.Label labelFilterRoles;
-            private System.Windows.Forms.DataGridView dgvFilterRoles;
-
-            protected System.Windows.Forms.DataGridView dgvClient;
-
             private System.Windows.Forms.TabPage tabPageLogging;
-            private TableLayoutPanel panelTabPageLogging;
             private System.Windows.Forms.TabPage tabPageTabes;
             private TableLayoutPanel panelTabPageTabes;
-
-            private System.Windows.Forms.Label labelDatetimeStart;
-            protected System.Windows.Forms.DataGridView dgvDatetimeStart;
-
-            private System.Windows.Forms.Label labelFilterTypeMessage;
-            protected DataGridView_LogMessageCounter dgvFilterTypeMessage;
-        
-
-            private System.Windows.Forms.DataGridView dgvLogMessage;
+            private TableLayoutPanel panelTabPageLogging;
 
             protected System.Windows.Forms.CheckBox[] checkBoxs;
             protected System.Windows.Forms.ListBox listTabVisible;            
 
             private System.Windows.Forms.Button buttonUpdate;
-            private System.Windows.Forms.Button buttonClose;
-
-            private System.Windows.Forms.GroupBox groupUser;
-            private TableLayoutPanel panelUser;
-            private System.Windows.Forms.GroupBox groupMessage;
-            private TableLayoutPanel panelMessage;
-            private System.Windows.Forms.GroupBox groupTabs;
-            private TableLayoutPanel panelTabs;
-
-            private System.Windows.Forms.Label labelStartCalendar;
-            private System.Windows.Forms.Label labelStopCalendar;
-            private System.Windows.Forms.Label labelRole;
-            private System.Windows.Forms.Label labelUser;
-            private System.Windows.Forms.Label labelMessage;
-
+        
+            protected DataGridView_LogMessageCounter dgvFilterTypeMessage;
             protected DataGridView_LogMessageCounter dgvMessage;
             protected System.Windows.Forms.DataGridView dgvUser;
             protected System.Windows.Forms.DataGridView dgvRole;
             protected System.Windows.Forms.DateTimePicker StartCalendar;
             protected System.Windows.Forms.DateTimePicker StopCalendar;
+            protected System.Windows.Forms.DataGridView dgvClient;
+            protected System.Windows.Forms.DataGridView dgvDatetimeStart;
+            private System.Windows.Forms.DataGridView dgvLogMessage;
+            private System.Windows.Forms.DataGridView dgvFilterRoles;
+            private System.Windows.Forms.DataGridView dgvFilterActives;
 
             //protected abstract DataGridView_LogMessageCounter create_LogMessageCounter(DataGridView_LogMessageCounter.TYPE type);
 
             private void InitializeComponent()
             {
                 this.dgvMessage = new DataGridView_LogMessageCounter (DataGridView_LogMessageCounter.TYPE.WITHOUT_CHECKBOX);
-                this.groupUser = new System.Windows.Forms.GroupBox();
-                this.groupMessage = new System.Windows.Forms.GroupBox();
-                this.groupTabs = new System.Windows.Forms.GroupBox();
-                this.panelUser = new TableLayoutPanel ();   
-                this.panelMessage = new TableLayoutPanel ();   
-                this.panelTabs = new TableLayoutPanel ();
-                this.labelMessage = new Label();
-                this.labelStartCalendar = new Label();
-                this.labelStopCalendar = new Label();
-                this.labelRole = new Label();
-                this.labelUser = new Label();
+                System.Windows.Forms.GroupBox groupUser = new System.Windows.Forms.GroupBox();
+                System.Windows.Forms.GroupBox groupMessage = new System.Windows.Forms.GroupBox();
+                System.Windows.Forms.GroupBox groupTabs = new System.Windows.Forms.GroupBox();
+                TableLayoutPanel  panelUser = new TableLayoutPanel();
+                TableLayoutPanel  panelMessage = new TableLayoutPanel();
+                TableLayoutPanel  panelTabs = new TableLayoutPanel();
+                System.Windows.Forms.Label labelMessage = new Label();
+                System.Windows.Forms.Label labelStartCalendar = new Label();
+                System.Windows.Forms.Label labelStopCalendar = new Label();
+                System.Windows.Forms.Label labelRole = new Label();
+                System.Windows.Forms.Label labelUser = new Label();
                 this.StartCalendar = new DateTimePicker();
                 this.StopCalendar = new DateTimePicker();
                 this.dgvRole = new DataGridView();
                 this.dgvUser = new DataGridView();
 
-                this.labelFilterActives = new System.Windows.Forms.Label();
+                System.Windows.Forms.Label labelFilterActives = new System.Windows.Forms.Label();
                 this.dgvFilterActives = new System.Windows.Forms.DataGridView();
 
-                this.labelFilterRoles = new System.Windows.Forms.Label();
+                System.Windows.Forms.Label labelFilterRoles = new System.Windows.Forms.Label();
                 this.dgvFilterRoles = new System.Windows.Forms.DataGridView();
 
                 this.dgvClient = new System.Windows.Forms.DataGridView();
@@ -114,14 +89,13 @@ namespace StatisticAnalyzer
                 this.checkBoxs[(int)FormChangeMode.MODE_TECCOMPONENT.PC] = new CheckBox();
                 this.checkBoxs[(int)FormChangeMode.MODE_TECCOMPONENT.UNKNOWN] = new CheckBox();
 
-                this.labelDatetimeStart = new System.Windows.Forms.Label();
-                this.dgvDatetimeStart = new System.Windows.Forms.DataGridView();                
+                System.Windows.Forms.Label labelDatetimeStart = new System.Windows.Forms.Label();
+                this.dgvDatetimeStart = new System.Windows.Forms.DataGridView();
 
-                this.labelFilterTypeMessage = new System.Windows.Forms.Label();
+                System.Windows.Forms.Label labelFilterTypeMessage = new System.Windows.Forms.Label();
                 this.dgvFilterTypeMessage = new DataGridView_LogMessageCounter(DataGridView_LogMessageCounter.TYPE.WITH_CHECKBOX);
 
                 this.buttonUpdate = new System.Windows.Forms.Button();
-                this.buttonClose = new System.Windows.Forms.Button();
 
                 ((System.ComponentModel.ISupportInitialize)(this.dgvFilterActives)).BeginInit();
                 ((System.ComponentModel.ISupportInitialize)(this.dgvFilterRoles)).BeginInit();
@@ -142,24 +116,24 @@ namespace StatisticAnalyzer
                 // 
                 // groupUser
                 //
-                this.groupUser.Dock = DockStyle.Fill;
+                groupUser.Dock = DockStyle.Fill;
                 // 
                 // groupMessage
                 //
-                this.groupMessage.Dock = DockStyle.Fill;
+                groupMessage.Dock = DockStyle.Fill;
                 // 
                 // groupTabs
                 //
-                this.groupTabs.Dock = DockStyle.Fill;
+                groupTabs.Dock = DockStyle.Fill;
                 // 
                 // labelFilterActives
                 // 
-                this.labelFilterActives.AutoSize = true;
+                labelFilterActives.AutoSize = true;
                 //this.labelFilterActives.Location = new System.Drawing.Point(9, 12);
-                this.labelFilterActives.Name = "labelFilterActives";
+                labelFilterActives.Name = "labelFilterActives";
                 //this.labelFilterActives.Size = new System.Drawing.Size(111, 13);
-                this.labelFilterActives.TabIndex = 4;
-                this.labelFilterActives.Text = "Фильтр: активность";
+                labelFilterActives.TabIndex = 4;
+                labelFilterActives.Text = "Фильтр: активность";
                 // 
                 // dgvFilterActives
                 // 
@@ -207,13 +181,13 @@ namespace StatisticAnalyzer
                 // 
                 // labelFilterRoles
                 // 
-                this.labelFilterRoles.AutoSize = true;
+                labelFilterRoles.AutoSize = true;
                 //this.labelFilterRoles.Anchor = ((System.Windows.Forms.AnchorStyles)(System.Windows.Forms.AnchorStyles.Left | System.Windows.Forms.AnchorStyles.Top));
                 //this.labelFilterRoles.Location = new System.Drawing.Point(9, 50);
-                this.labelFilterRoles.Name = "labelFilterRoles";
+                labelFilterRoles.Name = "labelFilterRoles";
                 //this.labelFilterRoles.Size = new System.Drawing.Size(77, 13);
-                this.labelFilterRoles.TabIndex = 5;
-                this.labelFilterRoles.Text = "Фильтр: роли";
+                labelFilterRoles.TabIndex = 5;
+                labelFilterRoles.Text = "Фильтр: роли";
                 // 
                 // dgvFilterRoles
                 // 
@@ -321,21 +295,21 @@ namespace StatisticAnalyzer
                 for (i = 0; i < this.panelTabPageLogging.RowCount; i++)
                     this.panelTabPageLogging.RowStyles.Add(new RowStyle(SizeType.Percent, 100F / this.panelTabPageLogging.RowCount));
                 this.panelTabPageLogging.Dock = DockStyle.Fill;
-                this.panelTabPageLogging.Controls.Add(this.labelDatetimeStart, 0, 0); this.SetColumnSpan(this.labelDatetimeStart, 2);
+                this.panelTabPageLogging.Controls.Add(labelDatetimeStart, 0, 0); this.SetColumnSpan(labelDatetimeStart, 2);
                 this.panelTabPageLogging.Controls.Add(this.dgvDatetimeStart, 0, 1); this.SetColumnSpan(this.dgvDatetimeStart, 2); this.SetRowSpan(this.dgvDatetimeStart, 11);
-                this.panelTabPageLogging.Controls.Add(this.labelFilterTypeMessage, 0, 12); this.SetColumnSpan(this.labelFilterTypeMessage, 2);
+                this.panelTabPageLogging.Controls.Add(labelFilterTypeMessage, 0, 12); this.SetColumnSpan(labelFilterTypeMessage, 2);
                 this.panelTabPageLogging.Controls.Add(this.dgvFilterTypeMessage, 0, 13); this.SetColumnSpan(this.dgvFilterTypeMessage, 2); this.SetRowSpan(this.dgvFilterTypeMessage, 11);
                 this.panelTabPageLogging.Controls.Add(this.dgvLogMessage, 2, 0); this.SetColumnSpan(this.dgvLogMessage, 4); this.SetRowSpan(this.dgvLogMessage, 24);
 
                 // 
                 // labelDatetimeStart
                 // 
-                this.labelDatetimeStart.AutoSize = true;
+                labelDatetimeStart.AutoSize = true;
                 //this.labelDatetimeStart.Location = new System.Drawing.Point(3, 7);
-                this.labelDatetimeStart.Name = "labelDatetimeStart";
+                labelDatetimeStart.Name = "labelDatetimeStart";
                 //this.labelDatetimeStart.Size = new System.Drawing.Size(157, 13);
-                this.labelDatetimeStart.TabIndex = 11;
-                this.labelDatetimeStart.Text = "Фильтр: дата/время запуска";
+                labelDatetimeStart.TabIndex = 11;
+                labelDatetimeStart.Text = "Фильтр: дата/время запуска";
                 // 
                 // dgvDatetimeStart
                 // 
@@ -381,73 +355,16 @@ namespace StatisticAnalyzer
                 // 
                 // labelFilterTypeMessage
                 // 
-                this.labelFilterTypeMessage.AutoSize = true;
+                labelFilterTypeMessage.AutoSize = true;
                 //this.labelFilterTypeMessage.Location = new System.Drawing.Point(3, 190);
-                this.labelFilterTypeMessage.Name = "labelFilterTypeMessage";
+                labelFilterTypeMessage.Name = "labelFilterTypeMessage";
                 //this.labelFilterTypeMessage.Size = new System.Drawing.Size(130, 13);
-                this.labelFilterTypeMessage.TabIndex = 13;
-                this.labelFilterTypeMessage.Text = "Фильтр: тип сообщения";
-
-                #region dgvFilterTypeMessage
-                //// 
-                //// dgvFilterTypeMessage
-                //// 
-                //this.dgvFilterTypeMessage.AllowUserToAddRows = false;
-                //this.dgvFilterTypeMessage.AllowUserToDeleteRows = false;
-                //dgvFilterTypeMessage.ReadOnly = true;
-                //dgvFilterTypeMessage.Dock = DockStyle.Fill;
-                ////this.dgvFilterTypeMessage.Anchor = ((System.Windows.Forms.AnchorStyles)((System.Windows.Forms.AnchorStyles.Bottom | System.Windows.Forms.AnchorStyles.Left)));
-                ////this.dgvFilterTypeMessage.ColumnHeadersHeightSizeMode = System.Windows.Forms.DataGridViewColumnHeadersHeightSizeMode.AutoSize;
-                //this.dgvFilterTypeMessage.ColumnHeadersVisible = false;
-                //this.dgvFilterTypeMessage.Columns.AddRange(new System.Windows.Forms.DataGridViewColumn[] {
-                //    new DataGridViewCheckBoxColumn (),
-                //    new DataGridViewTextBoxColumn (),
-                //    new DataGridViewTextBoxColumn ()});
-                ////this.dgvFilterTypeMessage.Location = new System.Drawing.Point(6, 206);
-                //this.dgvFilterTypeMessage.MultiSelect = false;
-                //this.dgvFilterTypeMessage.Name = "dgvTypeMessage";
-                //this.dgvFilterTypeMessage.RowHeadersVisible = false;
-                //this.dgvFilterTypeMessage.RowTemplate.Height = 18;
-                //this.dgvFilterTypeMessage.RowTemplate.Resizable = System.Windows.Forms.DataGridViewTriState.False;
-                //this.dgvFilterTypeMessage.SelectionMode = System.Windows.Forms.DataGridViewSelectionMode.FullRowSelect;
-                ////this.dgvFilterTypeMessage.Size = new System.Drawing.Size(170, 92);
-                //this.dgvFilterTypeMessage.TabIndex = 14;
-                //// 
-                //// dataGridViewCheckBoxColumnTypeMessageUse
-                //// 
-                //i = 0;
-                //this.dgvFilterTypeMessage.Columns[i].Frozen = true;
-                ////this.dgvFilterTypeMessage.Columns[i].HeaderText = "Use";
-                //this.dgvFilterTypeMessage.Columns[i].Name = "dataGridViewCheckBoxColumnTypeMessageUse";
-                //this.dgvFilterTypeMessage.Columns[i].Resizable = System.Windows.Forms.DataGridViewTriState.False;
-                //this.dgvFilterTypeMessage.Columns[i].Width = 25;
-                //// 
-                //// dataGridViewTextBoxColumnTypeMessageDesc
-                //// 
-                //i = 1;
-                //this.dgvFilterTypeMessage.Columns[i].Frozen = true;
-                ////this.dgvFilterTypeMessage.Columns[i].HeaderText = "Desc";
-                //this.dgvFilterTypeMessage.Columns[i].Name = "dataGridViewTextBoxColumnTypeMessageDesc";
-                //this.dgvFilterTypeMessage.Columns[i].Resizable = System.Windows.Forms.DataGridViewTriState.False;
-                //this.dgvFilterTypeMessage.Columns[i].Width = 105;
-                //// 
-                //// dataGridViewTextBoxColumnCounter
-                //// 
-                //i = 2;
-                //this.dgvFilterTypeMessage.Columns[i].AutoSizeMode = DataGridViewAutoSizeColumnMode.Fill;
-                ////this.dgvFilterTypeMessage.Columns[i].Frozen = true;
-                //this.dgvFilterTypeMessage.Columns[i].HeaderText = "Count";
-                //this.dgvFilterTypeMessage.Columns[i].Name = "ColumnCount";
-                //this.dgvFilterTypeMessage.Columns[i].Width = 20;      
-                #endregion
+                labelFilterTypeMessage.TabIndex = 13;
+                labelFilterTypeMessage.Text = "Фильтр: тип сообщения";
 
                 // 
                 // dgvLogMessage
-                // 
-                //this.dgvLogMessage.Anchor = ((System.Windows.Forms.AnchorStyles)((((System.Windows.Forms.AnchorStyles.Top | System.Windows.Forms.AnchorStyles.Bottom)
-                //| System.Windows.Forms.AnchorStyles.Left)
-                //| System.Windows.Forms.AnchorStyles.Right)));
-                //this.dgvLogMessage.Location = new System.Drawing.Point(182, 6);
+                //                 
                 this.dgvLogMessage.Dock = DockStyle.Fill;
                 this.dgvLogMessage.MultiSelect = false;
                 this.dgvLogMessage.Name = "dgvLogMessage";
@@ -585,13 +502,13 @@ namespace StatisticAnalyzer
                 // 
                 // labelMessage
                 // 
-                this.labelMessage.AutoSize = true;
+                labelMessage.AutoSize = true;
                 //this.labelFilterRoles.Anchor = ((System.Windows.Forms.AnchorStyles)(System.Windows.Forms.AnchorStyles.Left | System.Windows.Forms.AnchorStyles.Top));
                 //this.labelFilterRoles.Location = new System.Drawing.Point(9, 50);
-                this.labelMessage.Name = "labelMessage";
+                labelMessage.Name = "labelMessage";
                 //this.labelFilterRoles.Size = new System.Drawing.Size(77, 13);
                 //this.labelMessage.TabIndex = 5;
-                this.labelMessage.Text = "Статистика сообщений";
+                labelMessage.Text = "Статистика сообщений";
                 
                 #endregion
 
@@ -600,13 +517,13 @@ namespace StatisticAnalyzer
                 // 
                 // labelUser
                 // 
-                this.labelUser.AutoSize = true;
+                labelUser.AutoSize = true;
                 //this.labelFilterRoles.Anchor = ((System.Windows.Forms.AnchorStyles)(System.Windows.Forms.AnchorStyles.Left | System.Windows.Forms.AnchorStyles.Top));
                 //this.labelFilterRoles.Location = new System.Drawing.Point(9, 50);
-                this.labelUser.Name = "labelUser";
+                labelUser.Name = "labelUser";
                 //this.labelFilterRoles.Size = new System.Drawing.Size(77, 13);
                 //this.labelMessage.TabIndex = 5;
-                this.labelUser.Text = "Фильтр: пользователи";
+                labelUser.Text = "Фильтр: пользователи";
 
                 // 
                 // dgvUser
@@ -649,13 +566,13 @@ namespace StatisticAnalyzer
                 // 
                 // labelRole
                 // 
-                this.labelRole.AutoSize = true;
+                labelRole.AutoSize = true;
                 //this.labelFilterRoles.Anchor = ((System.Windows.Forms.AnchorStyles)(System.Windows.Forms.AnchorStyles.Left | System.Windows.Forms.AnchorStyles.Top));
                 //this.labelFilterRoles.Location = new System.Drawing.Point(9, 50);
-                this.labelRole.Name = "labelRole";
+                labelRole.Name = "labelRole";
                 //this.labelFilterRoles.Size = new System.Drawing.Size(77, 13);
                 //this.labelMessage.TabIndex = 5;
-                this.labelRole.Text = "Фильтр: роли";
+                labelRole.Text = "Фильтр: роли";
 
 
                 // 
@@ -699,13 +616,13 @@ namespace StatisticAnalyzer
                 // 
                 // labelStartCalendar
                 // 
-                this.labelStartCalendar.AutoSize = true;
+                labelStartCalendar.AutoSize = true;
                 //this.labelFilterRoles.Anchor = ((System.Windows.Forms.AnchorStyles)(System.Windows.Forms.AnchorStyles.Left | System.Windows.Forms.AnchorStyles.Top));
                 //this.labelFilterRoles.Location = new System.Drawing.Point(9, 50);
-                this.labelStartCalendar.Name = "labelStartCalendar";
+                labelStartCalendar.Name = "labelStartCalendar";
                 //this.labelFilterRoles.Size = new System.Drawing.Size(77, 13);
                 //this.labelMessage.TabIndex = 5;
-                this.labelStartCalendar.Text = "Начало периода";
+                labelStartCalendar.Text = "Начало периода";
 
 
                 // 
@@ -723,13 +640,13 @@ namespace StatisticAnalyzer
                 // 
                 // labelStopCalendar
                 // 
-                this.labelStopCalendar.AutoSize = true;
+                labelStopCalendar.AutoSize = true;
                 //this.labelFilterRoles.Anchor = ((System.Windows.Forms.AnchorStyles)(System.Windows.Forms.AnchorStyles.Left | System.Windows.Forms.AnchorStyles.Top));
                 //this.labelFilterRoles.Location = new System.Drawing.Point(9, 50);
-                this.labelStopCalendar.Name = "labelStopCalendar";
+                labelStopCalendar.Name = "labelStopCalendar";
                 //this.labelFilterRoles.Size = new System.Drawing.Size(77, 13);
                 //this.labelMessage.TabIndex = 5;
-                this.labelStopCalendar.Text = "Окончание периода";
+                labelStopCalendar.Text = "Окончание периода";
 
                 // 
                 // StartCalendar
@@ -745,33 +662,33 @@ namespace StatisticAnalyzer
                 // 
                 // panelUser
                 //
-                this.panelUser.ColumnCount = 12; this.panelUser.RowCount = 24;
-                for (i = 0; i < this.panelUser.ColumnCount; i++)
-                    this.panelUser.ColumnStyles.Add(new ColumnStyle(SizeType.Percent, 100F / this.panelUser.ColumnCount));
-                for (i = 0; i < this.panelUser.RowCount; i++)
-                    this.panelUser.RowStyles.Add(new RowStyle(SizeType.Percent, 100F / this.panelUser.RowCount));
-                this.panelUser.Dock = DockStyle.Fill;
+                panelUser.ColumnCount = 12; panelUser.RowCount = 24;
+                for (i = 0; i < panelUser.ColumnCount; i++)
+                    panelUser.ColumnStyles.Add(new ColumnStyle(SizeType.Percent, 100F / panelUser.ColumnCount));
+                for (i = 0; i < panelUser.RowCount; i++)
+                    panelUser.RowStyles.Add(new RowStyle(SizeType.Percent, 100F / panelUser.RowCount));
+                panelUser.Dock = DockStyle.Fill;
 
-                this.panelUser.Controls.Add(this.labelFilterActives, 0, 0); this.panelUser.SetColumnSpan(this.labelFilterActives, 2);
-                this.panelUser.Controls.Add(this.dgvFilterActives, 0, 1); this.panelUser.SetColumnSpan(this.dgvFilterActives, 3); this.panelUser.SetRowSpan(this.dgvFilterActives, 3);
+                panelUser.Controls.Add(labelFilterActives, 0, 0); panelUser.SetColumnSpan(labelFilterActives, 2);
+                panelUser.Controls.Add(this.dgvFilterActives, 0, 1); panelUser.SetColumnSpan(this.dgvFilterActives, 3); panelUser.SetRowSpan(this.dgvFilterActives, 3);
 
-                this.panelUser.Controls.Add(this.labelFilterRoles, 0, 4); this.panelUser.SetColumnSpan(this.labelFilterRoles, 3);
-                this.panelUser.Controls.Add(this.dgvFilterRoles, 0, 5); this.panelUser.SetColumnSpan(this.dgvFilterRoles, 3); this.panelUser.SetRowSpan(this.dgvFilterRoles, 6);
+                panelUser.Controls.Add(labelFilterRoles, 0, 4); panelUser.SetColumnSpan(labelFilterRoles, 3);
+                panelUser.Controls.Add(this.dgvFilterRoles, 0, 5); panelUser.SetColumnSpan(this.dgvFilterRoles, 3); panelUser.SetRowSpan(this.dgvFilterRoles, 6);
 
-                this.panelUser.Controls.Add(this.dgvClient, 0, 11); this.panelUser.SetColumnSpan(this.dgvClient, 3); this.panelUser.SetRowSpan(this.dgvClient, 13);
+                panelUser.Controls.Add(this.dgvClient, 0, 11); panelUser.SetColumnSpan(this.dgvClient, 3); panelUser.SetRowSpan(this.dgvClient, 13);
                 
-                this.panelUser.Controls.Add(this.labelDatetimeStart, 3, 0); this.SetColumnSpan(this.labelDatetimeStart, 3);
-                this.panelUser.Controls.Add(this.dgvDatetimeStart, 3, 1); this.SetColumnSpan(this.dgvDatetimeStart, 3); this.SetRowSpan(this.dgvDatetimeStart, 11);
-                this.panelUser.Controls.Add(this.labelFilterTypeMessage, 3, 12); this.SetColumnSpan(this.labelFilterTypeMessage, 3);
-                this.panelUser.Controls.Add(this.dgvFilterTypeMessage, 3, 13); this.SetColumnSpan(this.dgvFilterTypeMessage, 3); this.SetRowSpan(this.dgvFilterTypeMessage, 9);
-                this.panelUser.Controls.Add(this.dgvLogMessage, 6, 0); this.SetColumnSpan(this.dgvLogMessage, 6); this.SetRowSpan(this.dgvLogMessage, 24);
+                panelUser.Controls.Add(labelDatetimeStart, 3, 0); this.SetColumnSpan(labelDatetimeStart, 3);
+                panelUser.Controls.Add(this.dgvDatetimeStart, 3, 1); this.SetColumnSpan(this.dgvDatetimeStart, 3); this.SetRowSpan(this.dgvDatetimeStart, 11);
+                panelUser.Controls.Add(labelFilterTypeMessage, 3, 12); this.SetColumnSpan(labelFilterTypeMessage, 3);
+                panelUser.Controls.Add(this.dgvFilterTypeMessage, 3, 13); this.SetColumnSpan(this.dgvFilterTypeMessage, 3); this.SetRowSpan(this.dgvFilterTypeMessage, 9);
+                panelUser.Controls.Add(this.dgvLogMessage, 6, 0); this.SetColumnSpan(this.dgvLogMessage, 6); this.SetRowSpan(this.dgvLogMessage, 24);
                 //this.panelUser.Controls.Add(this.buttonUpdate, 10, 23); this.SetColumnSpan(this.buttonUpdate, 2); this.SetRowSpan(this.buttonUpdate, 2);
 
-                this.panelUser.ResumeLayout(false);
-                this.panelUser.PerformLayout();
+                panelUser.ResumeLayout(false);
+                panelUser.PerformLayout();
 
-                this.groupUser.Controls.Add(this.panelUser);
-                this.groupUser.Text = "События";
+                groupUser.Controls.Add(panelUser);
+                groupUser.Text = "События";
 
 
                 #endregion
@@ -780,26 +697,26 @@ namespace StatisticAnalyzer
                 // 
                 // panelTabs
                 //
-                this.panelTabs.ColumnCount = 12; this.panelUser.RowCount = 12;
-                for (i = 0; i < this.panelTabs.ColumnCount; i++)
-                    this.panelTabs.ColumnStyles.Add(new ColumnStyle(SizeType.Percent, 100F / this.panelTabs.ColumnCount));
-                for (i = 0; i < this.panelTabs.RowCount; i++)
-                    this.panelTabs.RowStyles.Add(new RowStyle(SizeType.Percent, 100F / this.panelTabs.RowCount));
-                this.panelTabs.Dock = DockStyle.Fill;
+                panelTabs.ColumnCount = 12; panelUser.RowCount = 12;
+                for (i = 0; i < panelTabs.ColumnCount; i++)
+                    panelTabs.ColumnStyles.Add(new ColumnStyle(SizeType.Percent, 100F / panelTabs.ColumnCount));
+                for (i = 0; i < panelTabs.RowCount; i++)
+                    panelTabs.RowStyles.Add(new RowStyle(SizeType.Percent, 100F / panelTabs.RowCount));
+                panelTabs.Dock = DockStyle.Fill;
 
-                this.panelTabs.Controls.Add(this.checkBoxs[(int)FormChangeMode.MODE_TECCOMPONENT.UNKNOWN], 0, 8); this.SetRowSpan(this.checkBoxs[(int)FormChangeMode.MODE_TECCOMPONENT.UNKNOWN], 2);
-                this.panelTabs.Controls.Add(this.checkBoxs[(int)FormChangeMode.MODE_TECCOMPONENT.PC], 0,6); this.SetRowSpan(this.checkBoxs[(int)FormChangeMode.MODE_TECCOMPONENT.PC], 2);
-                this.panelTabs.Controls.Add(this.checkBoxs[(int)FormChangeMode.MODE_TECCOMPONENT.GTP], 0, 4); this.SetRowSpan(this.checkBoxs[(int)FormChangeMode.MODE_TECCOMPONENT.GTP], 2);
-                this.panelTabs.Controls.Add(this.checkBoxs[(int)FormChangeMode.MODE_TECCOMPONENT.TG], 0, 2); this.SetRowSpan(this.checkBoxs[(int)FormChangeMode.MODE_TECCOMPONENT.TG], 2);
-                this.panelTabs.Controls.Add(this.checkBoxs[(int)FormChangeMode.MODE_TECCOMPONENT.TEC], 0, 0); this.SetRowSpan(this.checkBoxs[(int)FormChangeMode.MODE_TECCOMPONENT.TEC], 2);
-                this.panelTabs.Controls.Add(this.listTabVisible, 2, 0); this.SetColumnSpan(this.listTabVisible, 10); this.SetRowSpan(this.listTabVisible, 12);
-                this.panelTabs.Controls.Add(this.buttonUpdate, 0, 10); this.SetColumnSpan(this.buttonUpdate, 2); this.SetRowSpan(this.buttonUpdate, 2);
+                panelTabs.Controls.Add(this.checkBoxs[(int)FormChangeMode.MODE_TECCOMPONENT.UNKNOWN], 0, 8); this.SetRowSpan(this.checkBoxs[(int)FormChangeMode.MODE_TECCOMPONENT.UNKNOWN], 2);
+                panelTabs.Controls.Add(this.checkBoxs[(int)FormChangeMode.MODE_TECCOMPONENT.PC], 0,6); this.SetRowSpan(this.checkBoxs[(int)FormChangeMode.MODE_TECCOMPONENT.PC], 2);
+                panelTabs.Controls.Add(this.checkBoxs[(int)FormChangeMode.MODE_TECCOMPONENT.GTP], 0, 4); this.SetRowSpan(this.checkBoxs[(int)FormChangeMode.MODE_TECCOMPONENT.GTP], 2);
+                panelTabs.Controls.Add(this.checkBoxs[(int)FormChangeMode.MODE_TECCOMPONENT.TG], 0, 2); this.SetRowSpan(this.checkBoxs[(int)FormChangeMode.MODE_TECCOMPONENT.TG], 2);
+                panelTabs.Controls.Add(this.checkBoxs[(int)FormChangeMode.MODE_TECCOMPONENT.TEC], 0, 0); this.SetRowSpan(this.checkBoxs[(int)FormChangeMode.MODE_TECCOMPONENT.TEC], 2);
+                panelTabs.Controls.Add(this.listTabVisible, 2, 0); this.SetColumnSpan(this.listTabVisible, 10); this.SetRowSpan(this.listTabVisible, 12);
+                panelTabs.Controls.Add(this.buttonUpdate, 0, 10); this.SetColumnSpan(this.buttonUpdate, 2); this.SetRowSpan(this.buttonUpdate, 2);
 
-                this.panelTabs.ResumeLayout(false);
-                this.panelTabs.PerformLayout();
+                panelTabs.ResumeLayout(false);
+                panelTabs.PerformLayout();
 
-                this.groupTabs.Controls.Add(this.panelTabs);
-                this.groupTabs.Text = "Отображаемые вкладки";
+                groupTabs.Controls.Add(panelTabs);
+                groupTabs.Text = "Отображаемые вкладки";
 
                 #endregion
 
@@ -807,44 +724,44 @@ namespace StatisticAnalyzer
                 // 
                 // panelMessage
                 //
-                this.panelMessage.ColumnCount = 1; this.panelMessage.RowCount = 36;
-                for (i = 0; i < this.panelMessage.ColumnCount; i++)
-                    this.panelMessage.ColumnStyles.Add(new ColumnStyle(SizeType.Percent, 100F / this.panelMessage.ColumnCount));
-                for (i = 0; i < this.panelMessage.RowCount; i++)
-                    this.panelMessage.RowStyles.Add(new RowStyle(SizeType.Percent, 100F / this.panelMessage.RowCount));
-                this.panelMessage.Dock = DockStyle.Fill;
+                panelMessage.ColumnCount = 1; panelMessage.RowCount = 36;
+                for (i = 0; i < panelMessage.ColumnCount; i++)
+                    panelMessage.ColumnStyles.Add(new ColumnStyle(SizeType.Percent, 100F / panelMessage.ColumnCount));
+                for (i = 0; i < panelMessage.RowCount; i++)
+                    panelMessage.RowStyles.Add(new RowStyle(SizeType.Percent, 100F / panelMessage.RowCount));
+                panelMessage.Dock = DockStyle.Fill;
 
-                this.panelMessage.Controls.Add(this.labelStartCalendar, 0, 0); this.SetColumnSpan(this.labelStartCalendar, 1); this.SetRowSpan(this.labelStartCalendar, 1);
-                this.panelMessage.Controls.Add(this.StartCalendar, 0, 1); this.SetColumnSpan(this.StartCalendar, 1); this.SetRowSpan(this.StartCalendar, 2);
+                panelMessage.Controls.Add(labelStartCalendar, 0, 0); this.SetColumnSpan(labelStartCalendar, 1); this.SetRowSpan(labelStartCalendar, 1);
+                panelMessage.Controls.Add(this.StartCalendar, 0, 1); this.SetColumnSpan(this.StartCalendar, 1); this.SetRowSpan(this.StartCalendar, 2);
 
-                this.panelMessage.Controls.Add(this.labelStopCalendar, 0, 3); this.SetColumnSpan(this.labelStopCalendar, 1); this.SetRowSpan(this.labelStopCalendar, 1);
-                this.panelMessage.Controls.Add(this.StopCalendar, 0, 4); this.SetColumnSpan(this.StopCalendar, 1); this.SetRowSpan(this.StopCalendar, 2);
+                panelMessage.Controls.Add(labelStopCalendar, 0, 3); this.SetColumnSpan(labelStopCalendar, 1); this.SetRowSpan(labelStopCalendar, 1);
+                panelMessage.Controls.Add(this.StopCalendar, 0, 4); this.SetColumnSpan(this.StopCalendar, 1); this.SetRowSpan(this.StopCalendar, 2);
 
 
-                this.panelMessage.Controls.Add(this.labelRole, 0, 6); this.SetColumnSpan(this.labelRole, 1); this.SetRowSpan(this.labelRole, 1);
-                this.panelMessage.Controls.Add(this.dgvRole, 0, 7); this.SetColumnSpan(this.dgvRole, 1); this.SetRowSpan(this.dgvRole, 7);
+                panelMessage.Controls.Add(labelRole, 0, 6); this.SetColumnSpan(labelRole, 1); this.SetRowSpan(labelRole, 1);
+                panelMessage.Controls.Add(this.dgvRole, 0, 7); this.SetColumnSpan(this.dgvRole, 1); this.SetRowSpan(this.dgvRole, 7);
 
-                this.panelMessage.Controls.Add(this.labelUser, 0, 14); this.SetColumnSpan(this.labelUser, 1); this.SetRowSpan(this.labelUser, 1);
-                this.panelMessage.Controls.Add(this.dgvUser, 0, 15); this.SetColumnSpan(this.dgvUser, 1); this.SetRowSpan(this.dgvUser, 12);
+                panelMessage.Controls.Add(labelUser, 0, 14); this.SetColumnSpan(labelUser, 1); this.SetRowSpan(labelUser, 1);
+                panelMessage.Controls.Add(this.dgvUser, 0, 15); this.SetColumnSpan(this.dgvUser, 1); this.SetRowSpan(this.dgvUser, 12);
 
-                this.panelMessage.Controls.Add(this.labelMessage, 0, 27); this.SetColumnSpan(this.labelMessage, 1); this.SetRowSpan(this.labelMessage, 1);
-                this.panelMessage.Controls.Add(this.dgvMessage, 0, 28); this.SetColumnSpan(this.dgvMessage, 1); this.SetRowSpan(this.dgvMessage, 8);
+                panelMessage.Controls.Add(labelMessage, 0, 27); this.SetColumnSpan(labelMessage, 1); this.SetRowSpan(labelMessage, 1);
+                panelMessage.Controls.Add(this.dgvMessage, 0, 28); this.SetColumnSpan(this.dgvMessage, 1); this.SetRowSpan(this.dgvMessage, 8);
 
-                this.panelMessage.ResumeLayout(false);
-                this.panelMessage.PerformLayout();
+                panelMessage.ResumeLayout(false);
+                panelMessage.PerformLayout();
                 //this.panelMessage.
 
-                this.groupMessage.Controls.Add(this.panelMessage);
-                this.groupMessage.Text = "Статистика";
+                groupMessage.Controls.Add(panelMessage);
+                groupMessage.Text = "Статистика";
 
                 #endregion
 
 
-                this.Controls.Add(this.groupMessage, 9, 0); this.SetColumnSpan(this.groupMessage, 3); this.SetRowSpan(this.groupMessage, 24);
+                this.Controls.Add(groupMessage, 9, 0); this.SetColumnSpan(groupMessage, 3); this.SetRowSpan(groupMessage, 24);
                 
-                this.Controls.Add(this.groupUser, 0, 0); this.SetColumnSpan(this.groupUser, 9); this.SetRowSpan(this.groupUser, 18);
+                this.Controls.Add(groupUser, 0, 0); this.SetColumnSpan(groupUser, 9); this.SetRowSpan(groupUser, 18);
 
-                this.Controls.Add(this.groupTabs, 0, 18); this.SetColumnSpan(this.groupTabs, 9); this.SetRowSpan(this.groupTabs, 6);
+                this.Controls.Add(groupTabs, 0, 18); this.SetColumnSpan(groupTabs, 9); this.SetRowSpan(groupTabs, 6);
 
                 ((System.ComponentModel.ISupportInitialize)(this.dgvFilterActives)).EndInit();
                 ((System.ComponentModel.ISupportInitialize)(this.dgvFilterRoles)).EndInit();
@@ -950,7 +867,10 @@ namespace StatisticAnalyzer
         
         #endregion
 
-        static HDataSource m_DataSource;
+        protected DelegateStringFunc delegateErrorReport;
+        protected DelegateStringFunc delegateWarningReport;
+        protected DelegateStringFunc delegateActionReport;
+        protected DelegateBoolFunc delegateReportClear;
 
         public PanelAnalyzer(/*int idListener,*/ List<StatisticCommon.TEC> tec)
             : base()
@@ -978,8 +898,6 @@ namespace StatisticAnalyzer
 
             DbConnection connConfigDB = DbSources.Sources().GetConnection(idListener,out err);
 
-            m_DataSource = new HDataSource(FormMainBaseWithStatusStrip.s_listFormConnectionSettings[(int)CONN_SETT_TYPE.CONFIG_DB].getConnSett());
-
             if ((!(connConfigDB == null)) && (err == 0))
             {
                 HStatisticUsers.GetRoles(ref connConfigDB, string.Empty, string.Empty, out m_tableRoles, out err);
@@ -994,13 +912,8 @@ namespace StatisticAnalyzer
                 m_tableUsers_unfiltered = m_tableUsers.Copy();
                 m_tableUsers_stat_unfiltered = m_tableUsers_stat.Copy();
 
-                //HStatisticUsers.GetUsers(ref connConfigDB, string.Empty, c_list_sorted, out m_tableUsers_stat, out err);
                 FillDataGridViews(ref dgvUser, m_tableUsers_stat, @"DESCRIPTION", err, true);
-
-                //fillTypeMessage();
-
-                //fillMessage();
-
+                
                 if (!(m_LogParse == null))
                 {
                     m_LogParse.Exit = LogParseExit;
@@ -1014,7 +927,6 @@ namespace StatisticAnalyzer
                     throw new Exception(strErr);
                 }
             }
-
             unregister_idListenerConfDB(idListener);
         }
         
@@ -1109,7 +1021,10 @@ namespace StatisticAnalyzer
         /// <param name="fclr"></param>
         public override void SetDelegateReport(DelegateStringFunc ferr, DelegateStringFunc fwar, DelegateStringFunc fact, DelegateBoolFunc fclr)
         {
-            m_DataSource.SetDelegateReport(ferr, fwar, fact, fclr);
+            delegateErrorReport = ferr;
+            delegateWarningReport = fwar;
+            delegateActionReport = fact;
+            delegateReportClear = fclr;
         }
 
         /// <summary>
@@ -1302,7 +1217,7 @@ namespace StatisticAnalyzer
         {
             try
             {
-                m_DataSource.ActionReport("Получаем список сообщений");
+                delegateActionReport("Получаем список сообщений");
 
                 HTabLoggingAppendTextPars tlatPars = data as HTabLoggingAppendTextPars;
                 if (tlatPars.rows.Equals(string.Empty) == true)
@@ -1348,7 +1263,7 @@ namespace StatisticAnalyzer
                     updateCounter(dgvFilterTypeMessage, start_date, stop_date, get_users(m_tableUsers, dgvClient, false));
                 }
 
-                m_DataSource.ClearStates();
+                delegateReportClear(true);
             }
             catch (Exception E)
             {
@@ -1995,7 +1910,7 @@ namespace StatisticAnalyzer
         /// <param name="multi_select">Выбирается много пользователей</param>
         protected string get_users(DataTable table_user, DataGridView dgv_user, bool multi_select)
         {
-            m_DataSource.ActionReport("Получаем список пользователей");
+            delegateActionReport("Получаем список пользователей");
 
             int i = -1;
             string list_user = string.Empty;//Строка со списком выбранных пользователей
@@ -2027,7 +1942,7 @@ namespace StatisticAnalyzer
 
             #endregion
 
-            m_DataSource.ClearStates();
+            delegateReportClear(true);
 
             return list_user;
 
@@ -2213,8 +2128,6 @@ namespace StatisticAnalyzer
             /// <param name="users">Список пользователей</param>
             public void UpdateCounter(object objSrcMessages, DateTime beg, DateTime end, string users)
             {
-                m_DataSource.ActionReport("Обновление статистики сообщений");
-                
                 int iRes = -1;
                 string where = string.Empty;
                 int iListenerId = (int)objSrcMessages;
@@ -2266,8 +2179,6 @@ namespace StatisticAnalyzer
                 }
                 else
                     updateTypeMessage(LogParse.s_DESC_LOGMESSAGE);//Обнуление счётчиков сообщений на панели статистики
-
-                m_DataSource.ClearStates();
             }
 
             /// <summary>
@@ -2348,153 +2259,11 @@ namespace StatisticAnalyzer
                 }
             }
         }
-
-        /// <summary>
-        /// Класс для обращения 
-        /// к БД (чтение значений параметров для отображения)
-        /// </summary>
-        public class HDataSource : HHandlerDb
-        {
-            ConnectionSettings m_connSett;
-
-            protected enum State
-            {
-                Command
-            }
-
-            public HDataSource(ConnectionSettings connSett)
-            {
-                m_connSett = connSett;
-            }
-
-            public override void StartDbInterfaces()
-            {
-                if (m_dictIdListeners.ContainsKey(0) == false)
-                    m_dictIdListeners.Add(0, new int[] { -1 });
-                else
-                    ;
-                register(0, 0, m_connSett, m_connSett.name);
-            }
-
-            public override void ClearValues()
-            {
-            }
-
-            /// <summary>
-            /// Добавить состояния в набор для обработки
-            /// </summary>
-            public void Command()
-            {
-                lock (m_lockState)
-                {
-                    ClearStates();
-                    AddState((int)State.Command);
-                    Run(@"Command");
-                }
-            }
-
-            /// <summary>
-            /// Запросить результат для события
-            /// </summary>
-            /// <param name="state">Событие запроса</param>
-            /// <returns>Признак отправления результата</returns>
-            protected override int StateRequest(int state)
-            {
-                int iRes = 0;
-
-                switch (state)
-                {
-                    case (int)State.Command:
-                        Request(m_dictIdListeners[0][0], @"Select * from Diagnostic");
-                        break;
-                    default:
-                        break;
-                }
-
-                actionReport(@"Получение значений из БД - состояние: " + ((State)state).ToString());
-
-                return iRes;
-            }
-
-            /// Получить результат обработки события
-            /// </summary>
-            /// <param name="state">Событие для получения результата</param>
-            /// <param name="error">Признак ошибки при получении результата</param>
-            /// <param name="outobj">Результат запроса</param>
-            /// <returns>Признак получения результата</returns>
-            protected override int StateCheckResponse(int state, out bool error, out object table)
-            {
-                int iRes = 0;
-                error = true;
-                table = null;
-
-                switch (state)
-                {
-                    case (int)State.Command:
-                        iRes = response(m_IdListenerCurrent, out error, out table);
-                        break;
-                    default:
-                        break;
-                }
-                return iRes;
-            }
-
-            /// <summary>
-            /// Событие - получение данных 
-            /// </summary>
-            public event DelegateObjectFunc EvtRecievedTable;
-            /// <summary>
-            /// Обработка УСЕШНО полученного результата
-            /// </summary>
-            /// <param name="state">Состояние для результата</param>
-            /// <param name="obj">Значение результата</param>
-            /// <returns>Признак обработки результата</returns>
-            protected override int StateResponse(int state, object table)
-            {
-                int iRes = 0;
-
-                switch (state)
-                {
-                    case (int)State.Command:
-                        EvtRecievedTable(table);
-
-                        break;
-                    default:
-                        break;
-                }
-
-                //Проверить признак крайнего в наборе состояний для обработки
-                if (isLastState(state) == true)
-                    //Удалить все сообщения в строке статуса
-                    ReportClear(true);
-                else
-                    ;
-
-                return iRes;
-            }
-
-            protected override INDEX_WAITHANDLE_REASON StateErrors(int state, int req, int res)
-            {
-                INDEX_WAITHANDLE_REASON iRes = INDEX_WAITHANDLE_REASON.SUCCESS;
-
-                errorReport(@"Получение значений из БД - состояние: " + ((State)state).ToString());
-
-                return iRes;
-            }
-
-            protected override void StateWarnings(int state, int req, int res)
-            {
-                throw new NotImplementedException();
-            }
-        }
-
     }
 
     public class PanelAnalyzer_DB : PanelAnalyzer
     {
         protected DataTable m_tableTabs;
-
-        static HDataSource m_DataSource;
 
         //class HLogMsgSource {
         //public
@@ -2517,8 +2286,6 @@ namespace StatisticAnalyzer
         public PanelAnalyzer_DB(List<StatisticCommon.TEC> tec)
             : base(tec)
         {
-            m_DataSource = new HDataSource(FormMainBaseWithStatusStrip.s_listFormConnectionSettings[(int)CONN_SETT_TYPE.CONFIG_DB].getConnSett());
-
             m_listTEC = tec;
 
             checkBoxs[(int)FormChangeMode.MODE_TECCOMPONENT.GTP].CheckedChanged += new EventHandler(checkBox_click);
@@ -2560,11 +2327,11 @@ namespace StatisticAnalyzer
             }
             else
                 throw new Exception(@"PanelAnalyzer_DB::Start () - нет соединения с БД конфигурации...");
+            
+            //dgvFilterTypeMessage.UpdateCounter(m_idListenerLoggingDB, DateTime.MinValue, DateTime.MaxValue, "");
+            
+            //dgvMessage.UpdateCounter(m_idListenerLoggingDB, StartCalendar.Value.Date, StopCalendar.Value.Date, get_users(m_tableUsers_stat, dgvUser, true));
 
-            dgvFilterTypeMessage.UpdateCounter(m_idListenerLoggingDB, DateTime.MinValue, DateTime.MaxValue, "");
-            
-            dgvMessage.UpdateCounter(m_idListenerLoggingDB, StartCalendar.Value.Date, StopCalendar.Value.Date, get_users(m_tableUsers_stat, dgvUser, true));
-            
         }
 
         /// <summary>
@@ -2584,7 +2351,7 @@ namespace StatisticAnalyzer
         /// <param name="err">Ошибка</param>
         protected override void procChecked(out bool[] arbActives, out int err)
         {
-            m_DataSource.ActionReport("Получаем список активных пользователей");
+            delegateActionReport("Получаем список активных пользователей");
 
             err = 0;
             arbActives = null;
@@ -2625,6 +2392,8 @@ namespace StatisticAnalyzer
             }
             else
                 err = -1; //Нет соединения с БД...
+
+            delegateReportClear(true);
         }
 
         /// <summary>
@@ -2662,7 +2431,7 @@ namespace StatisticAnalyzer
         /// <param name="user">Пользователь для выборки</param>
         protected override void fill_active_tabs(string user)
         {
-            m_DataSource.ActionReport("Получаем активные вкладки пользователя");
+            delegateActionReport("Получение активных вкладок пользователя");
             int err = -1;
             int idListener = -1;
             int iRes = -1;
@@ -2776,6 +2545,8 @@ namespace StatisticAnalyzer
             #endregion
 
             unregister_idListenerConfDB(idListener);
+
+            delegateReportClear(true);
         }
 
         /// <summary>
@@ -2930,7 +2701,11 @@ namespace StatisticAnalyzer
         /// <param name="users">Список пользователей</param>
         protected override void updateCounter(DataGridView_LogMessageCounter dgv, DateTime start_date, DateTime stop_date, string users)
         {
+            delegateActionReport("Обновление статистики сообщений");
+
             dgv.UpdateCounter(m_idListenerLoggingDB, start_date, stop_date, users);
+
+            delegateReportClear(true);
         }
 
         /// <summary>
@@ -3082,8 +2857,8 @@ namespace StatisticAnalyzer
 
                 //ID типов сообщений
                 s_IdTypeMessages = new int[] {
-                        1, 2, 3, 4, 5, 6, 7, 8, 9
-                        , 10
+                        0, 1, 2, 3, 4, 5, 6, 7, 8, 9
+                        //, 10
                     };
                 
                 
