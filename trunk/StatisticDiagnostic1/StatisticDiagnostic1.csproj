@@ -97,9 +97,6 @@
     </ProjectReference>
   </ItemGroup>
   <ItemGroup>
-    <None Include="Resources\StatisticAlarm.ico" />
-  </ItemGroup>
-  <ItemGroup>
     <None Include="Resources\StatisticDiagnostic.ico" />
   </ItemGroup>
   <Import Project="$(MSBuildToolsPath)\Microsoft.CSharp.targets" />

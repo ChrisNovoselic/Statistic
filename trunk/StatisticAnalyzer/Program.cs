@@ -24,7 +24,7 @@ namespace StatisticAnalyzer
             FormConnectionSettings formConnSett = new FormConnectionSettings(-1, fileConnSett.ReadSettingsFile, fileConnSett.SaveSettingsFile);
 
             int idListener = DbSources.Sources().Register(formConnSett.getConnSett(), false, @"CONFIG_DB");
-            Application.Run(new FormMainAnalyzer_DB(idListener, new InitTEC_200(idListener, true, false).tec));
+            Application.Run(new FormMain_DB(idListener, new InitTEC_200(idListener, true, false).tec));
             DbSources.Sources().UnRegister(idListener);
 
             ProgramBase.Exit ();
