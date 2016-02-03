@@ -57,6 +57,9 @@ namespace StatisticAnalyzer
             }
             else
                 ; //???Исключение
+
+            m_panel.SetDelegateReport(ErrorReport, WarningReport, ActionReport, ReportClear);
+
         }
 
         private void FormMainAnalyzer_OnEvtPanelClose(object sender, EventArgs e)
@@ -334,7 +337,37 @@ namespace StatisticAnalyzer
 
         protected override int UpdateStatusString()
         {
-            throw new NotImplementedException();
+            int have_msg = 0;
+            m_lblDescMessage.Text = m_lblDateMessage.Text = string.Empty;
+
+
+            if (m_report.actioned_state == true)
+            {
+                m_lblDateMessage.Text = m_report.last_time_action.ToString();
+                m_lblDescMessage.Text = m_report.last_action;
+            }
+            else
+                ;
+
+            if (m_report.warninged_state == true)
+            {
+                have_msg = 1;
+                m_lblDateMessage.Text = m_report.last_time_warning.ToString();
+                m_lblDescMessage.Text = m_report.last_warning;
+            }
+            else
+                ;
+
+            if (m_report.errored_state == true)
+            {
+                have_msg = -1;
+                m_lblDateMessage.Text = m_report.last_time_error.ToString();
+                m_lblDescMessage.Text = m_report.last_error;
+            }
+            else
+                ;
+
+            return have_msg;
         }
 
         protected override void HideGraphicsSettings()

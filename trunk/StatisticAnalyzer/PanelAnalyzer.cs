@@ -811,8 +811,6 @@ namespace StatisticAnalyzer
 
         protected bool m_bThreadTimerCheckedAllowed;
 
-        
-
         /// <summary>
         /// Класс для работы с логом сообщений
         /// </summary>
@@ -864,13 +862,28 @@ namespace StatisticAnalyzer
         /// Массив строк с разделителями на столбцы и строки
         /// </summary>
         protected static string[] m_chDelimeters = { @"DELIMETER_PART", "DELIMETER_ROW" };
-        
-        #endregion
 
+        /// <summary>
+        /// Делегат для передачи сообщения о ошибке
+        /// </summary>
         protected DelegateStringFunc delegateErrorReport;
+
+        /// <summary>
+        /// Делегат для передачи предупреждения
+        /// </summary>
         protected DelegateStringFunc delegateWarningReport;
+
+        /// <summary>
+        /// Делегат для передачи сообщения о выполняемом действии
+        /// </summary>
         protected DelegateStringFunc delegateActionReport;
+
+        /// <summary>
+        /// Делегат для передачи команды об очистке
+        /// </summary>
         protected DelegateBoolFunc delegateReportClear;
+
+        #endregion
 
         public PanelAnalyzer(/*int idListener,*/ List<StatisticCommon.TEC> tec)
             : base()
@@ -1013,12 +1026,12 @@ namespace StatisticAnalyzer
         #endregion
 
         /// <summary>
-        /// 
+        /// Метод для передачи сообщений на форму
         /// </summary>
-        /// <param name="ferr"></param>
-        /// <param name="fwar"></param>
-        /// <param name="fact"></param>
-        /// <param name="fclr"></param>
+        /// <param name="ferr">Делегат для передачи сообщения об ошибке</param>
+        /// <param name="fwar">Делегат для передачи предупреждения</param>
+        /// <param name="fact">Делегат для передачи сообщения о выполняемом действии</param>
+        /// <param name="fclr">Делегат для передачи комады об очистке строки статуса</param>
         public override void SetDelegateReport(DelegateStringFunc ferr, DelegateStringFunc fwar, DelegateStringFunc fact, DelegateBoolFunc fclr)
         {
             delegateErrorReport = ferr;
@@ -1742,68 +1755,8 @@ namespace StatisticAnalyzer
         /// </summary>
         private void dgvFilterActives_CellClick(object sender, DataGridViewCellEventArgs e)
         {
-            m_tableUsers = m_tableUsers_unfiltered.Copy();
-            int i = -1, err = -1;
-
-            if (e.ColumnIndex == 0)
-            {
-                m_timerChecked.Change(System.Threading.Timeout.Infinite, System.Threading.Timeout.Infinite);
-
-                dgvFilterActives.Rows[e.RowIndex].Cells[0].Value = !bool.Parse(dgvFilterActives.Rows[e.RowIndex].Cells[0].Value.ToString());
-
-                if (dgvFilterActives.Rows[0].Cells[0].Value == dgvFilterActives.Rows[1].Cells[0].Value)
-                    if (bool.Parse(dgvFilterActives.Rows[0].Cells[0].Value.ToString()) == true)
-                    //Отображать всех...
-                    {
-                    }
-                    else
-                    //Пустой список...
-                    {
-                        m_tableUsers.Clear();
-                    }
-                else
-                {
-                    bool[] arbActives;
-                    procChecked(out arbActives, out err);
-
-                    if ((!(arbActives == null)) && (err == 0))
-                    {
-                        List<int> listIndexToRemoveUsers = new List<int>();
-
-                        for (i = 0; (i < m_tableUsers.Rows.Count) && (i < arbActives.Length); i++)
-                        {
-                            if (((arbActives[i] == true) && (bool.Parse(dgvFilterActives.Rows[0].Cells[0].Value.ToString()) == false))
-                                || ((arbActives[i] == false) && (bool.Parse(dgvFilterActives.Rows[1].Cells[0].Value.ToString()) == false)))
-                            {
-                                listIndexToRemoveUsers.Add(i);
-                            }
-                            else
-                                ;
-                        }
-
-                        if (listIndexToRemoveUsers.Count > 0)
-                        {
-                            listIndexToRemoveUsers.Sort(delegate(int i1, int i2) { return i1 > i2 ? -1 : 1; });
-
-                            //Удалить обработанные сообщения
-                            foreach (int indx in listIndexToRemoveUsers)
-                                m_tableUsers.Rows.RemoveAt(indx);
-
-                            m_tableUsers.AcceptChanges();
-                        }
-                        else
-                            ;
-                    }
-                    else
-                        ;
-                }
-
-                FillDataGridViews(ref dgvClient, m_tableUsers, c_list_sorted, err);
-
-                m_timerChecked.Change(0, System.Threading.Timeout.Infinite);
-            }
-            else
-                ;
+            dgvFilterActives.Rows[e.RowIndex].Cells[0].Value = !bool.Parse(dgvFilterActives.Rows[e.RowIndex].Cells[0].Value.ToString());
+            get_FilteredUsers();
         }
 
         /// <summary>
@@ -1811,52 +1764,101 @@ namespace StatisticAnalyzer
         /// </summary>
         private void dgvFilterRoles_CellClick(object sender, DataGridViewCellEventArgs e)
         {
+            dgvFilterRoles.Rows[e.RowIndex].Cells[0].Value = !bool.Parse(dgvFilterRoles.Rows[e.RowIndex].Cells[0].Value.ToString());
+            get_FilteredUsers();
+        }
+
+        /// <summary>
+        /// Метод формирования списка пользователей согласно выбранным фильтрам
+        /// </summary>
+        private void get_FilteredUsers()
+        {
             m_tableUsers = m_tableUsers_unfiltered.Copy();
             int i = -1, err = 0;
 
             string where = string.Empty;
 
-            if (e.ColumnIndex == 0)
+            m_timerChecked.Change(System.Threading.Timeout.Infinite, System.Threading.Timeout.Infinite);
+
+            for (i = 0; i < m_tableRoles.Rows.Count; i++)
             {
-                m_timerChecked.Change(System.Threading.Timeout.Infinite, System.Threading.Timeout.Infinite);
-
-                dgvFilterRoles.Rows[e.RowIndex].Cells[0].Value = !bool.Parse(dgvFilterRoles.Rows[e.RowIndex].Cells[0].Value.ToString());
-
-                for (i = 0; i < m_tableRoles.Rows.Count; i++)
+                if (bool.Parse(dgvFilterRoles.Rows[i].Cells[0].Value.ToString()) == false)
                 {
-                    if (bool.Parse(dgvFilterRoles.Rows[i].Cells[0].Value.ToString()) == false)
+                    if (where.Equals(string.Empty) == true)
                     {
-                        if (where.Equals(string.Empty) == true)
+                        where = "ID_ROLE NOT IN (";
+                    }
+                    else
+                        where += ",";
+
+                    where += m_tableRoles.Rows[i]["ID"];
+                }
+                else
+                    ;
+            }
+
+            if (where.Equals(string.Empty) == false)
+                where += ")";
+            else
+                ;
+
+            m_tableUsers.Rows.Clear();
+
+            if (m_tableUsers_unfiltered.Select(where, c_list_sorted).Length != 0)
+                m_tableUsers = m_tableUsers_unfiltered.Select(where, c_list_sorted).CopyToDataTable();
+            else
+                m_tableUsers.Rows.Clear();
+
+            if (dgvFilterActives.Rows[0].Cells[0].Value == dgvFilterActives.Rows[1].Cells[0].Value)
+                if (bool.Parse(dgvFilterActives.Rows[0].Cells[0].Value.ToString()) == true)
+                //Отображать всех...
+                {
+                }
+                else
+                //Пустой список...
+                {
+                    m_tableUsers.Clear();
+                }
+            else
+            {
+                bool[] arbActives;
+                procChecked(out arbActives, out err);
+
+                if ((!(arbActives == null)) && (err == 0))
+                {
+                    List<int> listIndexToRemoveUsers = new List<int>();
+
+                    for (i = 0; (i < m_tableUsers.Rows.Count) && (i < arbActives.Length); i++)
+                    {
+                        if (((arbActives[i] == true) && (bool.Parse(dgvFilterActives.Rows[0].Cells[0].Value.ToString()) == false))
+                            || ((arbActives[i] == false) && (bool.Parse(dgvFilterActives.Rows[1].Cells[0].Value.ToString()) == false)))
                         {
-                            where = "ID_ROLE NOT IN (";
+                            listIndexToRemoveUsers.Add(i);
                         }
                         else
-                            where += ",";
+                            ;
+                    }
 
-                        where += m_tableRoles.Rows[i]["ID"];
+                    if (listIndexToRemoveUsers.Count > 0)
+                    {
+                        listIndexToRemoveUsers.Sort(delegate(int i1, int i2) { return i1 > i2 ? -1 : 1; });
+
+                        //Удалить обработанные сообщения
+                        foreach (int indx in listIndexToRemoveUsers)
+                            m_tableUsers.Rows.RemoveAt(indx);
+
+                        m_tableUsers.AcceptChanges();
                     }
                     else
                         ;
                 }
-
-                if (where.Equals(string.Empty) == false)
-                    where += ")";
                 else
                     ;
-
-                m_tableUsers.Rows.Clear();
-
-                if (m_tableUsers_unfiltered.Select(where, c_list_sorted).Length != 0)
-                    m_tableUsers = m_tableUsers_unfiltered.Select(where, c_list_sorted).CopyToDataTable();
-                else
-                    m_tableUsers.Rows.Clear();
-
-                FillDataGridViews(ref dgvClient, m_tableUsers, c_list_sorted, err);
-
-                m_timerChecked.Change(0, System.Threading.Timeout.Infinite);
             }
-            else
-                ;
+
+            FillDataGridViews(ref dgvClient, m_tableUsers, c_list_sorted, err);
+
+            m_timerChecked.Change(0, System.Threading.Timeout.Infinite);
         }
 
         /// <summary>
@@ -1955,7 +1957,9 @@ namespace StatisticAnalyzer
         {
             dgvUser.Rows[e.RowIndex].Cells[0].Value = !bool.Parse(dgvUser.Rows[e.RowIndex].Cells[0].Value.ToString());//фиксация положения
 
-            updateCounter(dgvMessage, StartCalendar.Value.Date, StopCalendar.Value.Date, get_users(m_tableUsers_stat, dgvUser, true));//обновление списка со статистикой сообщений
+
+
+            updateCounter(dgvMessage, HDateTime.ToMoscowTimeZone(StartCalendar.Value.Date), HDateTime.ToMoscowTimeZone(StopCalendar.Value.Date), get_users(m_tableUsers_stat, dgvUser, true));//обновление списка со статистикой сообщений
         }
         
         /// <summary>
@@ -1998,8 +2002,8 @@ namespace StatisticAnalyzer
                     m_tableUsers_stat.Rows.Clear();
 
                 FillDataGridViews(ref dgvUser, m_tableUsers_stat, c_list_sorted, err, true);//Отображение пользователей в DataGridView
-                
-                updateCounter(dgvMessage, StartCalendar.Value.Date, StopCalendar.Value.Date, get_users(m_tableUsers_stat, dgvUser, true));//обновление списка со статистикой сообщений
+
+                updateCounter(dgvMessage, HDateTime.ToMoscowTimeZone(StartCalendar.Value.Date), HDateTime.ToMoscowTimeZone(StopCalendar.Value.Date), get_users(m_tableUsers_stat, dgvUser, true));//обновление списка со статистикой сообщений
 
             }
         }
@@ -2009,7 +2013,7 @@ namespace StatisticAnalyzer
         /// </summary>
         private void startCalendar_ChangeValue(object sender, EventArgs e)
         {
-            updateCounter(dgvMessage, StartCalendar.Value.Date, StopCalendar.Value.Date, get_users(m_tableUsers_stat, dgvUser, true));//обновление списка со статистикой сообщений
+            updateCounter(dgvMessage, HDateTime.ToMoscowTimeZone(StartCalendar.Value.Date), HDateTime.ToMoscowTimeZone(StopCalendar.Value.Date), get_users(m_tableUsers_stat, dgvUser, true));//обновление списка со статистикой сообщений
         }
 
         /// <summary>
@@ -2017,7 +2021,7 @@ namespace StatisticAnalyzer
         /// </summary>
         private void stopCalendar_ChangeValue(object sender, EventArgs e)
         {
-            updateCounter(dgvMessage, StartCalendar.Value.Date, StopCalendar.Value.Date, get_users(m_tableUsers_stat, dgvUser, true));//обновление списка со статистикой сообщений
+            updateCounter(dgvMessage, HDateTime.ToMoscowTimeZone(StartCalendar.Value.Date), HDateTime.ToMoscowTimeZone(StopCalendar.Value.Date), get_users(m_tableUsers_stat, dgvUser, true));//обновление списка со статистикой сообщений
         }
 
         #endregion
@@ -2027,8 +2031,8 @@ namespace StatisticAnalyzer
         /// <summary>
         /// Абстрактный метод для получения из БД списка активных вкладок для выбранного пользователя
         /// </summary>
-        /// <param name="user">Пользователь для выборки</param>
-        protected abstract void fill_active_tabs(string user);
+        /// <param name="user">Идентификатор пользователя для выборки</param>
+        protected abstract void fill_active_tabs(int user);
 
         /// <summary>
         /// Заполнение ListBox активными вкладками
@@ -2429,7 +2433,7 @@ namespace StatisticAnalyzer
         /// Метод для получения из БД списка активных вкладок для выбранного пользователя
         /// </summary>
         /// <param name="user">Пользователь для выборки</param>
-        protected override void fill_active_tabs(string user)
+        protected override void fill_active_tabs(int user)
         {
             delegateActionReport("Получение активных вкладок пользователя");
             int err = -1;
@@ -2446,10 +2450,10 @@ namespace StatisticAnalyzer
 
             string query = @"SELECT [ID_EXT],[IS_ROLE],[ID_UNIT],[VALUE] FROM [techsite_cfg-2.X.X].[dbo].[profiles] where ";
 
-            if (user.Equals(string.Empty) == false)
+            if (user.Equals(null) == false)
             {
                 //Условие для поиска вкладок
-                where = "((ID_EXT = " + user + " and [IS_ROLE] =0) or (id_ext=(select [ID_ROLE] from dbo.[users] where id=" + user + ") and is_role=1)) AND ID_UNIT IN(" + (int)HStatisticUsers.ID_ALLOWED.PROFILE_SETTINGS_CHANGEMODE + ", " + (int)HStatisticUsers.ID_ALLOWED.PROFILE_VIEW_ADDINGTABS + ")";
+                where = "((ID_EXT = " + (int)user + " and [IS_ROLE] =0) or (id_ext=(select [ID_ROLE] from dbo.[users] where id=" + user + ") and is_role=1)) AND ID_UNIT IN(" + (int)HStatisticUsers.ID_ALLOWED.PROFILE_SETTINGS_CHANGEMODE + ", " + (int)HStatisticUsers.ID_ALLOWED.PROFILE_VIEW_ADDINGTABS + ")";
                 query += where;
 
                 m_tableTabs = DbTSQLInterface.Select(ref connConfigDB, query, null, null, out iRes);
@@ -2633,7 +2637,7 @@ namespace StatisticAnalyzer
         /// <param name="beg">Начало периода</param>
         /// <param name="end">Окончание периода</param>
         /// <param name="rows">Массив сообщений</param>
-        /// <returns></returns>
+        /// <returns>Возвращает количество строк в выборке</returns>
         protected override int selectLogMessage(string type, DateTime beg, DateTime end, ref DataRow[] rows)
         {
             return (m_LogParse as LogParse_DB).Select(m_idListenerLoggingDB, type, beg, end, ref rows);
@@ -2806,7 +2810,7 @@ namespace StatisticAnalyzer
                     
                     listTabVisible.Items.Clear();//очистка списка активных вкладок
                     
-                    fill_active_tabs(m_tableUsers.Rows[dgvClient.SelectedRows[0].Index][0].ToString());
+                    fill_active_tabs((int)m_tableUsers.Rows[dgvClient.SelectedRows[0].Index][0]);
 
                 }
                 else
@@ -2823,11 +2827,10 @@ namespace StatisticAnalyzer
         {
             listTabVisible.Items.Clear();
 
-            fill_active_tabs(m_tableUsers.Rows[dgvClient.SelectedRows[0].Index][0].ToString());
+            fill_active_tabs((int)m_tableUsers.Rows[dgvClient.SelectedRows[0].Index][0]);
         }
 
         #endregion
-
 
         /// <summary>
         /// Класс для получения лог сообщений из БД
@@ -2867,7 +2870,7 @@ namespace StatisticAnalyzer
             /// <summary>
             /// Потоковый метод опроса БД для выборки лог-сообщений
             /// </summary>
-            /// <param name="data"></param>
+            /// <param name="data">Объект с данными для разборки методом</param>
             protected override void thread_Proc(object data)
             {
                 int err = -1
@@ -2981,7 +2984,7 @@ namespace StatisticAnalyzer
             throw new NotImplementedException();
         }
 
-        protected override void fill_active_tabs(string user)
+        protected override void fill_active_tabs(int user)
         {
             throw new NotImplementedException();
         }
