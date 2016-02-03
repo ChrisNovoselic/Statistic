@@ -113,6 +113,7 @@ namespace StatisticTrans
             Thread.CurrentThread.CurrentUICulture =
                 ProgramBase.ss_MainCultureInfo; //ru-Ru
 
+
             InitializeComponent();
 
             m_report = new HReports();
@@ -325,7 +326,9 @@ namespace StatisticTrans
                         }
 
                         else if ((!(args[1].IndexOf("stop") < 0)) && ((args[1][0] == '/')))
-                            MessageBox.Show("CLOSE NULL");
+                        {
+
+                        }
 
                         else
                         {

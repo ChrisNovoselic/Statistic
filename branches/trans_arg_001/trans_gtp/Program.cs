@@ -17,19 +17,30 @@ namespace trans_gtp
         static void Main()
         {
             ProgramBase.Start();
-
-            FormMainTransGTP formMain = null;
-            try { formMain = new FormMainTransGTP(); }
-            catch (Exception e)
+            if (FormMainStatistic.SingleInstance.Start())
             {
-                Logging.Logg().Exception(e, "!Ошибка! запуска приложения.", Logging.INDEX_MESSAGE.NOT_SET);
+
             }
-
-            if (!(formMain == null))
-                Application.Run(formMain);
             else
-                ;
+            {
+                if (FormMainStatistic.SingleInstance.stopbflg)
+                {
+                    FormMainTransGTP formMain = null;
+                    try { formMain = new FormMainTransGTP(); }
+                    catch (Exception e)
+                    {
+                        Logging.Logg().Exception(e, "!Ошибка! запуска приложения.", Logging.INDEX_MESSAGE.NOT_SET);
+                    }
 
+                    if (!(formMain == null))
+                        Application.Run(formMain);
+                    else
+                        ;
+                }
+                else ;
+
+            }
+            FormMainStatistic.SingleInstance.StopMtx();
             ProgramBase.Exit();
         }
     }

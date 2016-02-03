@@ -15,11 +15,22 @@ namespace StatisticCommon
     {
         protected static FileINI m_sFileINI;
         protected static FIleConnSett m_sFileCS;
+        //protected static 
 
         public FormMainStatistic()
         {
-
+            //HCmd_Arg;
         }
+
+        public class HCmd_Arg
+        {
+            string[] args = Environment.GetCommandLineArgs();
+        }
+
+        //protected virtual HCmd_Arg Cmd
+        //{
+        //    //return new HCmd_Arg();
+        //}
 
         protected override void timer_Start()
         {
@@ -213,7 +224,7 @@ namespace StatisticCommon
                         m_hndl = _process.MainWindowHandle;
 
                         if (m_hndl == IntPtr.Zero)
-                            Enum(_process.Id);
+                            EnumID(_process.Id);
                
                         WinApi.GetWindowTextLength(m_hndl);
                  
@@ -227,7 +238,7 @@ namespace StatisticCommon
             /// выборка всех запущенных приложений
             /// </summary>
             /// <param name="id">ид процесса приложения</param>
-            private static void Enum(int id)
+            private static void EnumID(int id)
             {
                 WinApi.EnumWindows((hWnd, lParam) =>
                 {
