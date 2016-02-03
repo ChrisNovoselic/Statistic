@@ -49,7 +49,7 @@ namespace StatisticAnalyzer
             this.MinimumSize = new System.Drawing.Size(1000, 700);
 
             //this.FormBorderStyle = System.Windows.Forms.FormBorderStyle.FixedDialog;
-            //this.Icon = ((System.Drawing.Icon)(resources.GetObject("StatisticAnalyzer")));
+            this.Icon = ((System.Drawing.Icon)(resources.GetObject("$this.Icon")));
             this.MaximizeBox = true;
             this.Name = "FormMainAnalyzer";
             this.StartPosition = System.Windows.Forms.FormStartPosition.CenterParent;
