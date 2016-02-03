@@ -1179,10 +1179,10 @@ namespace StatisticDiagnostic
             /// </summary>
             /// <param name="time"></param>
             /// <param name="timeSource"></param>
-            private bool diffTime(DateTime time, DateTime timeSource)
+            private bool diffTime(DateTime timeEtalon, DateTime timeSource)
             {
                 TimeSpan VALIDATE_TM = TimeSpan.FromSeconds(VALIDATE_ASKUE_TM);
-                TimeSpan ts = time - (timeSource + VALIDATE_TM);
+                TimeSpan ts = timeEtalon - (timeSource + VALIDATE_TM);
                 TimeSpan validateTime = TimeSpan.FromSeconds(180);
 
                 if (ts > validateTime)
@@ -1818,7 +1818,7 @@ namespace StatisticDiagnostic
                 string m_DTMin = TimeZoneInfo.ConvertTimeBySystemTimeZoneId(DateTime.Now, TimeZoneInfo.Local.Id, "Russian Standard Time").ToString("mm");
                 string m_DTHour = TimeZoneInfo.ConvertTimeBySystemTimeZoneId(DateTime.Now, TimeZoneInfo.Local.Id, "Russian Standard Time").ToString("HH");
 
-                if ((Convert.ToInt32(m_DTMin)) > 41)
+                if ((Convert.ToInt32(m_DTMin)) > 42)
                 {
                     if ((Convert.ToInt32(m_DTHour)) % 2 == 0)
                         m_etalon_pbr = "ПБР" + (Convert.ToInt32(m_DTHour) + 1);
