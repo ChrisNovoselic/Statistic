@@ -343,10 +343,10 @@ namespace StatisticDiagnostic
         /// </summary>
         static DataTable m_tableSourceData;
         public DataTable m_dtSourceTask = new DataTable();
-        static DataTable m_arraySource = new DataTable();
+        static DataTable m_dtSource = new DataTable();
         static DataTable m_dtGTP = new DataTable();
         static DataTable m_dtTECList = new DataTable();
-        static DataTable m_dtParam = new DataTable();
+        static DataTable m_dtParamDiagnostic = new DataTable();
         /// <summary>
         /// экземпляр класса 
         /// для подклчения к бд
@@ -362,6 +362,7 @@ namespace StatisticDiagnostic
         /// </summary>
         public static volatile int UPDATE_TIME,
             VALIDATE_ASKUE_TM;
+        public static DataTable SERVER_TIME;
 
         /// <summary>
         /// Создание и настройка таймера 
@@ -385,7 +386,6 @@ namespace StatisticDiagnostic
         public void UpdateTimer_Elapsed(object source, ElapsedEventArgs e)
         {
             m_DataSource.Command();
-            //MessageBox.Show("SLEEP&GO");
         }
 
         /// <summary>
@@ -398,6 +398,7 @@ namespace StatisticDiagnostic
 
             protected enum State
             {
+                ServerTime,
                 Command
             }
 
@@ -421,14 +422,16 @@ namespace StatisticDiagnostic
 
             /// <summary>
             /// Добавить состояния в набор для обработки
+            /// данных 
             /// </summary>
             public void Command()
             {
                 lock (m_lockState)
                 {
                     ClearStates();
+                    AddState((int)State.ServerTime);
                     AddState((int)State.Command);
-                    Run(@"Command");
+                    Run(@"StatisticDiagnostic.HHandlerDb :: Command");
                 }
             }
 
@@ -443,14 +446,17 @@ namespace StatisticDiagnostic
 
                 switch (state)
                 {
+                    case (int)State.ServerTime:
+                        Request(m_dictIdListeners[0][0], @"SELECT GETDATE()");
+                        actionReport(@"Получение времени с сервера БД - состояние: " + ((State)state).ToString());
+                        break;
                     case (int)State.Command:
-                        Request(m_dictIdListeners[0][0], @"Select * from Diagnostic");
+                        Request(m_dictIdListeners[0][0], @"SELECT * FROM Diagnostic");
+                        actionReport(@"Получение значений из БД - состояние: " + ((State)state).ToString());
                         break;
                     default:
                         break;
                 }
-
-                actionReport(@"Получение значений из БД - состояние: " + ((State)state).ToString());
 
                 return iRes;
             }
@@ -469,6 +475,9 @@ namespace StatisticDiagnostic
 
                 switch (state)
                 {
+                    case (int)State.ServerTime:
+                        iRes = response(m_IdListenerCurrent, out error, out table);
+                        break;
                     case (int)State.Command:
                         iRes = response(m_IdListenerCurrent, out error, out table);
                         break;
@@ -495,6 +504,9 @@ namespace StatisticDiagnostic
 
                 switch (state)
                 {
+                    case (int)State.ServerTime:
+                        GetTimeServer((DataTable)table);
+                        break;
                     case (int)State.Command:
                         EvtRecievedTable(table);
                         break;
@@ -786,7 +798,7 @@ namespace StatisticDiagnostic
             private object selectionArraySource(string nameTec)
             {
                 string filter = "NAME_SHR = '" + nameTec + "'";
-                DataRow[] m_foundrow = m_arraySource.Select(filter);
+                DataRow[] m_foundrow = m_dtSource.Select(filter);
                 object a = m_foundrow[0]["ID"].ToString();
 
                 return a;
@@ -842,7 +854,7 @@ namespace StatisticDiagnostic
             {
                 m_arPanelsTEC = new Tec[m_dtTECList.Rows.Count];
 
-                for (int i = 0; i < 6; i++)
+                for (int i = 0; i < m_arPanelsTEC.Length; i++)
                 {
                     if (m_arPanelsTEC[i] == null)
                         m_arPanelsTEC[i] = new Tec();
@@ -916,7 +928,8 @@ namespace StatisticDiagnostic
                     m_arPanelsTEC[i].TECDataGridView.Invoke(new Action(() => m_arPanelsTEC[i].TECDataGridView.Rows[r].Cells[2].Value = m_drTecSource[t]["Value"]));
                     m_arPanelsTEC[i].TECDataGridView.Invoke(new Action(() => m_arPanelsTEC[i].TECDataGridView.Rows[r].Cells[1].Value = m_shortTime));
                     m_arPanelsTEC[i].TECDataGridView.Invoke(new Action(() => m_arPanelsTEC[i].TECDataGridView.Rows[r].Cells[5].Value = m_drTecSource[t]["NAME_SHR"]));
-                    m_arPanelsTEC[i].TECDataGridView.Invoke(new Action(() => m_arPanelsTEC[i].TECDataGridView.Rows[r].Cells[3].Value = DateTime.Now.ToString("HH:mm:ss.fff")));
+                    m_arPanelsTEC[i].TECDataGridView.Invoke(new Action(() => m_arPanelsTEC[i].TECDataGridView.Rows[r].Cells[3].Value = TimeZoneInfo.ConvertTimeBySystemTimeZoneId(DateTime.Now, TimeZoneInfo.Local.Id, "Russian Standard Time").ToString("hh:mm:ss:fff")));
+                        //DateTime.Now.ToString("HH:mm:ss.fff")));
                     paintingCells(i, r);
 
                     if (IsNUll(ref m_drTecSource, countElem))
@@ -996,7 +1009,7 @@ namespace StatisticDiagnostic
                     {
                         DataRow[] DR = m_tableSourceData.Select(filter1);
                         string filter2 = "ID = '" + DR[j]["ID_VALUE"] + "'";
-                        DataRow[] dr = m_dtParam.Select(filter2);
+                        DataRow[] dr = m_dtParamDiagnostic.Select(filter2);
 
                         if (m_arPanelsTEC[k].TECDataGridView.InvokeRequired)
                             m_arPanelsTEC[k].TECDataGridView.Invoke(new Action(() => m_arPanelsTEC[k].TECDataGridView.Rows[j].Cells[0].Value = dr[0]["NAME_SHR"]));
@@ -1198,7 +1211,8 @@ namespace StatisticDiagnostic
             /// <returns></returns>
             private bool selectInvalidValue(string nameS, DateTime time, int numberPanel)
             {
-                DateTime m_DTnowAISKUE = TimeZoneInfo.ConvertTimeBySystemTimeZoneId(DateTime.Now, TimeZoneInfo.Local.Id, "Russian Standard Time");
+                DateTime.Parse(SERVER_TIME.Rows[0][0].ToString());
+                //DateTime m_DTnowAISKUE = TimeZoneInfo.ConvertTimeBySystemTimeZoneId(, TimeZoneInfo.Local.Id, "Russian Standard Time");
                 DateTime m_DTnowSOTIASSO;
 
                 if ((numberPanel + 1) == 6)
@@ -1210,12 +1224,12 @@ namespace StatisticDiagnostic
 
                 switch (nameS)
                 {
-                    case "АИИСКУЭ":
-                        if (diffTime(m_DTnowAISKUE, time))
-                            bFL = true;
-                        else
-                            bFL = false;
-                        break;
+                    //case "АИИСКУЭ":
+                    //    if (diffTime(m_DTnowAISKUE, time))
+                    //        bFL = true;
+                    //    else
+                    //        bFL = false;
+                    //    break;
 
                     case "СОТИАССО":
                         if (diffTime(m_DTnowSOTIASSO, time))
@@ -1562,7 +1576,7 @@ namespace StatisticDiagnostic
                         m_arPanelsMODES[i].ModesDataGridView.Invoke(new Action(() => m_arPanelsMODES[i].ModesDataGridView.Rows[m_tic].Cells[0].Value = m_drComponent[0]["ID_Value"]));
                         m_arPanelsMODES[i].ModesDataGridView.Invoke(new Action(() => m_arPanelsMODES[i].ModesDataGridView.Rows[m_tic].Cells[2].Value = m_time));
                         m_arPanelsMODES[i].ModesDataGridView.Invoke(new Action(() => m_arPanelsMODES[i].ModesDataGridView.Rows[m_tic].Cells[1].Value = m_drComponent[0]["Value"]));
-                        m_arPanelsMODES[i].ModesDataGridView.Invoke(new Action(() => m_arPanelsMODES[i].ModesDataGridView.Rows[m_tic].Cells[3].Value = DateTime.Now.ToString("HH:mm:ss.fff")));
+                        m_arPanelsMODES[i].ModesDataGridView.Invoke(new Action(() => m_arPanelsMODES[i].ModesDataGridView.Rows[m_tic].Cells[3].Value = TimeZoneInfo.ConvertTimeBySystemTimeZoneId(DateTime.Now, TimeZoneInfo.Local.Id, "Russian Standard Time").ToString("hh:mm:ss:fff")));
 
                         cellsPing(m_filter1, i, m_tic);
                     }
@@ -1590,7 +1604,7 @@ namespace StatisticDiagnostic
             /// <param name="i">индекс панели</param>
             private void insertDataModes(string filterSource, int i)
             {
-                string m_textDateTime = DateTime.Now.ToString("HH:mm:ss.fff");
+                string m_textDateTime = TimeZoneInfo.ConvertTimeBySystemTimeZoneId(DateTime.Now, TimeZoneInfo.Local.Id, "Russian Standard Time").ToString("hh:mm:ss:fff");
 
                 if (m_dtSourceModes.Rows[i][@"NAME_SHR"].ToString() == "Modes-Centre")
                     insertDataMC(i, "DESCRIPTION = 'Modes-Centre'");
@@ -2258,13 +2272,23 @@ namespace StatisticDiagnostic
         }
 
         /// <summary>
+        /// 
+        /// </summary>
+        /// <param name="dtTime"></param>
+        public static void GetTimeServer(DataTable dtTime)
+        {
+            SERVER_TIME = dtTime;
+   
+        }
+
+        /// <summary>
         /// Загрузить данные из БД
         /// </summary>
         private void dbStart()
         {
             m_DataSource.Start();
             m_DataSource.StartDbInterfaces();
-            m_DataSource.Command();
+            m_DataSource.Command();   
             m_DataSource.EvtRecievedTable += new DelegateObjectFunc(m_DataSource_EvtRecievedTable);
         }
 
@@ -2352,9 +2376,9 @@ namespace StatisticDiagnostic
             {
                 m_dtSourceTask = DbTSQLInterface.Select(ref dbconn, "SELECT * FROM DIAGNOSTIC_TASK_SOURCES", null, null, out err);
                 m_dtSourceModes = DbTSQLInterface.Select(ref dbconn, "SELECT * FROM DIAGNOSTIC_TASK_MODES", null, null, out err);
-                m_arraySource = DbTSQLInterface.Select(ref dbconn, "SELECT * FROM SOURCE", null, null, out err);
+                m_dtSource = DbTSQLInterface.Select(ref dbconn, "SELECT * FROM SOURCE", null, null, out err);
                 m_dtGTP = DbTSQLInterface.Select(ref dbconn, "SELECT * FROM GTP_LIST", null, null, out err);
-                m_dtParam = DbTSQLInterface.Select(ref dbconn, "SELECT * FROM DIAGNOSTIC_PARAM", null, null, out err);
+                m_dtParamDiagnostic = DbTSQLInterface.Select(ref dbconn, "SELECT * FROM DIAGNOSTIC_PARAM", null, null, out err);
                 m_dtTECList = InitTEC_200.getListTEC(ref dbconn, false, out err);
             }
             else
@@ -2522,7 +2546,7 @@ namespace StatisticDiagnostic
                 do
                 {
                     t++;
-                    id = (int)m_arraySource.Rows[t][@"ID"];
+                    id = (int)m_dtSource.Rows[t][@"ID"];
 
                     if ((int)m_arrayActiveSource[j, 0] == 0)
                         break;
@@ -2530,7 +2554,7 @@ namespace StatisticDiagnostic
 
                 while ((int)m_arrayActiveSource[j, 0] != id);
 
-                m_arrayActiveSource.SetValue(m_arraySource.Rows[t][@"NAME_SHR"].ToString(), j, 1);
+                m_arrayActiveSource.SetValue(m_dtSource.Rows[t][@"NAME_SHR"].ToString(), j, 1);
             }
         }
 

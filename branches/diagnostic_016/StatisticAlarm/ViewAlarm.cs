@@ -314,7 +314,7 @@ namespace StatisticAlarm
                     //Проверить возможность сохранения результата запроса
                     if (! (obj == null))
                         //Сохранить результат в "выходную" переменную
-                        m_tableResponse = (obj as DataTable).Copy ();
+                        m_tableResponse = (obj as DataTable).Copy();
                     else
                         ;
                     //Указать, что ответ готов
