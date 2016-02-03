@@ -403,7 +403,7 @@ namespace StatisticCommon
                 //query = @"UPDATE [dbo].[setup] SET [VALUE] = '" + val + @"' WHERE [KEY]='" + key + @"'";
                 strRes = string.Format(@"UPDATE setup SET [VALUE]='{0}', [LAST_UPDATE]=GETDATE() WHERE [KEY]='{1}'", val, key);
             else
-                strRes = string.Format(@"INSERT INTO [setup] ([VALUE],[KEY],[LAST_UPADTE],[ID_UNIT]) VALUES ('{0}','{1}',GETDATE(),{2})", val, key, -1);
+                strRes = string.Format(@"INSERT INTO [setup] ([VALUE],[KEY],[LAST_UPDATE],[ID_UNIT]) VALUES ('{0}','{1}',GETDATE(),{2})", val, key, -1);
 
             return strRes;
         }
