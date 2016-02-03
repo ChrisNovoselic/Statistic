@@ -10,26 +10,43 @@ namespace StatisticCommon
 {
     public abstract partial class FormParameters : FormParametersBase
     {
-        public enum PARAMETR_SETUP {    UNKNOWN = -1
-                                        , POLL_TIME, ERROR_DELAY, MAX_ATTEMPT, WAITING_TIME, WAITING_COUNT,
-                                        MAIN_DATASOURCE, MAIN_PRIORITY,
-                                        /*ALARM_USE, */ ALARM_TIMER_UPDATE, ALARM_EVENT_RETRY, ALARM_TIMER_BEEP, ALARM_SYSTEMMEDIA_TIMERBEEP
-                                        , USERS_DOMAIN_NAME, USERS_ID_TEC, USERS_ID_ROLE                                    
-                                        , SEASON_DATETIME, SEASON_ACTION
-                                        //, GRINVICH_OFFSET_DATETIME
-                                        , APP_VERSION, APP_VERSION_QUERY_INTERVAL
-                                        , KOMDISP_FOLDER_CSV
-                                        //Логгирование
-                                        , MAINFORMBASE_CONTROLHANDLE_LOGERRORCREATE
-                                        , MAINFORMBASE_SETPBRQUERY_LOGPBRNUMBER, MAINFORMBASE_SETPBRQUERY_LOGQUERY
-                                        , TECVIEW_LOGRECOMENDATIONVAL, TECVIEW_GETCURRENTTMGEN_LOGWARNING
-                                        , PANELQUICKDATA_LOGDEVIATIONEVAL
-                                        //Продолжение параметров...
-                                        , VALIDATE_TM_VALUE
-                                        ////??? И где же универсальность
-                                        //, ID_SOURCE_SOTIASSO_BTEC, ID_SOURCE_SOTIASSO_TEC2, ID_SOURCE_SOTIASSO_TEC3, ID_SOURCE_SOTIASSO_TEC4, ID_SOURCE_SOTIASSO_TEC5, ID_SOURCE_SOTIASSO_BiTEC
-                                        , COUNT_PARAMETR_SETUP
-                                    };
+        public enum PARAMETR_SETUP
+        {
+            UNKNOWN = -1
+            , POLL_TIME, ERROR_DELAY, MAX_ATTEMPT, WAITING_TIME, WAITING_COUNT,
+            MAIN_DATASOURCE, MAIN_PRIORITY,
+            /*ALARM_USE, */
+            ALARM_TIMER_UPDATE, ALARM_EVENT_RETRY, ALARM_TIMER_BEEP,
+            ALARM_SYSTEMMEDIA_TIMERBEEP
+                , USERS_DOMAIN_NAME, USERS_ID_TEC,
+            USERS_ID_ROLE
+                , SEASON_DATETIME,
+            SEASON_ACTION
+                //, GRINVICH_OFFSET_DATETIME
+                , APP_VERSION,
+            APP_VERSION_QUERY_INTERVAL
+                ,
+            KOMDISP_FOLDER_CSV
+                //Логгирование
+                ,
+            MAINFORMBASE_CONTROLHANDLE_LOGERRORCREATE
+                , MAINFORMBASE_SETPBRQUERY_LOGPBRNUMBER,
+            MAINFORMBASE_SETPBRQUERY_LOGQUERY
+                , TECVIEW_LOGRECOMENDATIONVAL,
+            TECVIEW_GETCURRENTTMGEN_LOGWARNING
+                ,
+            PANELQUICKDATA_LOGDEVIATIONEVAL
+                //Продолжение параметров...
+                ,
+            VALIDATE_TM_VALUE
+                ,
+            VALIDATE_ASKUE_VALUE
+                 ,
+            DIAGNOSTIC_TIMER_UPDATE
+                ////??? И где же универсальность
+                //, ID_SOURCE_SOTIASSO_BTEC, ID_SOURCE_SOTIASSO_TEC2, ID_SOURCE_SOTIASSO_TEC3, ID_SOURCE_SOTIASSO_TEC4, ID_SOURCE_SOTIASSO_TEC5, ID_SOURCE_SOTIASSO_BiTEC
+                , COUNT_PARAMETR_SETUP
+        };
         protected static string[] NAME_PARAMETR_SETUP = { "Polling period", "Error delay", "Max attempts count", @"Waiting time", @"Waiting count"
                                                             , @"Main DataSource", @"Main Priority"
                                                             /*@"Alarm Use", */, @"Alarm Timer Update" , @"Alarm Event Retry", @"Alarm Timer Beep", @"Alarm SytemMedia FileNam"
@@ -45,6 +62,8 @@ namespace StatisticCommon
                                                             , @"ShowFactValues LogDevEVal"
                                                             //Продолжение параметров...
                                                             , @"Validate TM Value"
+                                                            ,@"Validate ASKUE Value"
+                                                             ,@"Diagnostic Timer Update" 
                                                             ////Идентификаторы прилинкованных активных источников СОТИАССО
                                                             //, @"ID_SOURCE_SOTIASSO_BTEC", @"ID_SOURCE_SOTIASSO_TEC2", @"ID_SOURCE_SOTIASSO_TEC3", @"ID_SOURCE_SOTIASSO_TEC4", @"ID_SOURCE_SOTIASSO_TEC5", @"ID_SOURCE_SOTIASSO_BiTEC"
                                                     };
@@ -63,23 +82,26 @@ namespace StatisticCommon
                                                             , @"стр-лог"
                                                             //Продолжение параметров...
                                                             , @"сек"
+                                                            ,@"сек"
+                                                             ,@"сек"
                                                             //Идентификаторы прилинкованных активных источников СОТИАССО
                                                             //, @"ном", @"ном", @"ном", @"ном", @"ном", @"ном"
                                                     };
         protected Dictionary<int, string> m_arParametrSetupDefault;
         public Dictionary<int, string> m_arParametrSetup;
 
-        public FormParameters() : base()
+        public FormParameters()
+            : base()
         {
             InitializeComponent();
 
-            m_arParametrSetup = new Dictionary<int,string> ();
-            m_arParametrSetup.Add ((int)PARAMETR_SETUP.POLL_TIME, @"30");
-            m_arParametrSetup.Add ((int)PARAMETR_SETUP.ERROR_DELAY, @"60");
-            m_arParametrSetup.Add ((int)PARAMETR_SETUP.MAX_ATTEMPT, @"3");
+            m_arParametrSetup = new Dictionary<int, string>();
+            m_arParametrSetup.Add((int)PARAMETR_SETUP.POLL_TIME, @"30");
+            m_arParametrSetup.Add((int)PARAMETR_SETUP.ERROR_DELAY, @"60");
+            m_arParametrSetup.Add((int)PARAMETR_SETUP.MAX_ATTEMPT, @"3");
             m_arParametrSetup.Add((int)PARAMETR_SETUP.WAITING_TIME, @"106");
             m_arParametrSetup.Add((int)PARAMETR_SETUP.WAITING_COUNT, @"39");
-            
+
             m_arParametrSetup.Add((int)PARAMETR_SETUP.MAIN_DATASOURCE, @"671");
             m_arParametrSetup.Add((int)PARAMETR_SETUP.MAIN_PRIORITY, @"Основной");
 
@@ -114,6 +136,8 @@ namespace StatisticCommon
             m_arParametrSetup.Add((int)PARAMETR_SETUP.PANELQUICKDATA_LOGDEVIATIONEVAL, @"False");
 
             m_arParametrSetup.Add((int)PARAMETR_SETUP.VALIDATE_TM_VALUE, @"86");
+            m_arParametrSetup.Add((int)PARAMETR_SETUP.VALIDATE_ASKUE_VALUE, @"86");
+            m_arParametrSetup.Add((int)PARAMETR_SETUP.DIAGNOSTIC_TIMER_UPDATE, @"30000");
 
             //m_arParametrSetup.Add((int)PARAMETR_SETUP.ID_SOURCE_SOTIASSO_BTEC, @"12");
             //m_arParametrSetup.Add((int)PARAMETR_SETUP.ID_SOURCE_SOTIASSO_TEC2, @"22");
@@ -134,7 +158,8 @@ namespace StatisticCommon
             mayClose = false;
         }
 
-        protected void setDataGUI (bool bInit) {
+        protected void setDataGUI(bool bInit)
+        {
             for (PARAMETR_SETUP i = PARAMETR_SETUP.POLL_TIME; i < PARAMETR_SETUP.COUNT_PARAMETR_SETUP; i++)
             {
                 if (bInit == true)
@@ -153,8 +178,9 @@ namespace StatisticCommon
         //protected override void btnOk_Click(object sender, EventArgs e)
         protected void btnOk_Click(object sender, EventArgs e)
         {
-            for (PARAMETR_SETUP i = PARAMETR_SETUP.POLL_TIME; i < PARAMETR_SETUP.COUNT_PARAMETR_SETUP; i ++) {
-                m_arParametrSetup[(int)i] = m_dgvData.Rows [(int)i + 0].Cells [1].Value.ToString ();
+            for (PARAMETR_SETUP i = PARAMETR_SETUP.POLL_TIME; i < PARAMETR_SETUP.COUNT_PARAMETR_SETUP; i++)
+            {
+                m_arParametrSetup[(int)i] = m_dgvData.Rows[(int)i + 0].Cells[1].Value.ToString();
             }
 
             saveParam();
@@ -177,7 +203,8 @@ namespace StatisticCommon
 
         private FileINI m_FileINI;
 
-        public FormParameters_FIleINI(string nameSetupFileINI) : base ()
+        public FormParameters_FIleINI(string nameSetupFileINI)
+            : base()
         {
             m_FileINI = new FileINI(nameSetupFileINI, false);
             //ProgramBase.s_iAppID = (int)ProgramBase.ID_APP.STATISTIC;
@@ -205,7 +232,7 @@ namespace StatisticCommon
                     ;
             }
 
-            setDataGUI (bInit);
+            setDataGUI(bInit);
         }
 
         protected override void saveParam()
@@ -221,7 +248,8 @@ namespace StatisticCommon
         private DbConnection m_dbConn;
 
         //public FormParameters_DB(int idListener)
-        public FormParameters_DB(ConnectionSettings connSett) : base ()
+        public FormParameters_DB(ConnectionSettings connSett)
+            : base()
         {
             m_connSett = connSett;
 
@@ -237,7 +265,8 @@ namespace StatisticCommon
             DbSources.Sources().UnRegister(idListener);
         }
 
-        public override void Update (out int err) {
+        public override void Update(out int err)
+        {
             err = -1;
             int idListener = DbSources.Sources().Register(m_connSett, false, @"CONFIG_DB");
 
@@ -272,7 +301,7 @@ namespace StatisticCommon
             //query = @"SELECT * FROM [dbo].[setup] WHERE [KEY]='" + key + @"'";
             query = string.Format(@"SELECT * FROM setup");
             DataTable table = DbTSQLInterface.Select(ref m_dbConn, query, null, null, out err);
-            DataRow []rowRes;
+            DataRow[] rowRes;
             if (err == (int)DbTSQLInterface.Error.NO_ERROR)
                 if (!(table == null))
                 {
@@ -281,13 +310,13 @@ namespace StatisticCommon
                     for (PARAMETR_SETUP i = PARAMETR_SETUP.POLL_TIME; i < PARAMETR_SETUP.COUNT_PARAMETR_SETUP; i++)
                     {
                         //strRead = readString(NAME_PARAMETR_SETUP[(int)i], strDefault, out err);
-                        rowRes = table.Select(@"KEY='" + NAME_PARAMETR_SETUP[(int)i].ToString () + @"'");
+                        rowRes = table.Select(@"KEY='" + NAME_PARAMETR_SETUP[(int)i].ToString() + @"'");
                         switch (rowRes.Length)
                         {
                             case 1:
                                 m_arParametrSetup[(int)i] =
                                 m_arParametrSetupDefault[(int)i] =
-                                    rowRes[0][@"VALUE"].ToString ().Trim ();
+                                    rowRes[0][@"VALUE"].ToString().Trim();
                                 break;
                             case 0:
                                 m_arParametrSetup[(int)i] = m_arParametrSetupDefault[(int)i];
@@ -295,11 +324,11 @@ namespace StatisticCommon
                                 break;
                             default:
                                 break;
-                        }                            
+                        }
                     }
 
-                    if (query.Equals (string.Empty) == false)
-                        DbTSQLInterface.ExecNonQuery (ref m_dbConn, query, null, null, out err);
+                    if (query.Equals(string.Empty) == false)
+                        DbTSQLInterface.ExecNonQuery(ref m_dbConn, query, null, null, out err);
                     else
                         ;
                 }
@@ -308,7 +337,7 @@ namespace StatisticCommon
             else
                 ;
 
-            setDataGUI (bInit);
+            setDataGUI(bInit);
         }
 
         protected override void saveParam()
@@ -332,29 +361,30 @@ namespace StatisticCommon
             DbSources.Sources().UnRegister(idListener);
         }
 
-        private string readString (string key, string valDef, out int err) {
-            return ReadString (ref m_dbConn, key, valDef, out err);
+        private string readString(string key, string valDef, out int err)
+        {
+            return ReadString(ref m_dbConn, key, valDef, out err);
         }
 
         public static string ReadString(ref DbConnection dbConn, int key, string valDef, out int err)
         {
-            return ReadString (ref dbConn, NAME_PARAMETR_SETUP [key], valDef, out err);
+            return ReadString(ref dbConn, NAME_PARAMETR_SETUP[key], valDef, out err);
         }
 
         public static string ReadString(ref DbConnection dbConn, string key, string valDef, out int err)
         {
             string strRes = valDef;
             err = -1;
-            DataTable table = null;            
+            DataTable table = null;
 
             string query = string.Empty;
             //query = @"SELECT * FROM [dbo].[setup] WHERE [KEY]='" + key + @"'";
-            query = string.Format (@"SELECT * FROM setup WHERE [KEY]='{0}'", key);
-            table = DbTSQLInterface.Select (ref dbConn, query, null, null, out err);
+            query = string.Format(@"SELECT * FROM setup WHERE [KEY]='{0}'", key);
+            table = DbTSQLInterface.Select(ref dbConn, query, null, null, out err);
             if (err == (int)DbTSQLInterface.Error.NO_ERROR)
-                if (! (table == null))
+                if (!(table == null))
                     if (table.Rows.Count == 1)
-                        strRes = table.Rows [0][@"Value"].ToString ().Trim ();
+                        strRes = table.Rows[0][@"Value"].ToString().Trim();
                     else
                         err = (int)DbTSQLInterface.Error.TABLE_ROWS_0;
                 else

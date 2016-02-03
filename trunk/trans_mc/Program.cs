@@ -1,7 +1,7 @@
 ﻿using System;
 using System.Collections.Generic;
 using System.Windows.Forms;
-
+using System.Security;
 using HClassLibrary;
 using StatisticCommon;
 using StatisticTrans;
@@ -19,29 +19,32 @@ namespace trans_mc
             //Logging.s_mode = Logging.LOG_MODE.UNKNOWN; //Если назначить неизвестный тип логирования - 1-е сообщения б. утеряны
             //Logging.s_mode = Logging.LOG_MODE.DB;
             Logging.s_mode = Logging.LOG_MODE.FILE_EXE;
-
-            if (RunOneInstance.ChekRunProgramm("trans_mc"))
-            {
-                return;
-            }
-
             ProgramBase.Start();
-
             FormMainTransMC formMain = null;
 
-            if (formMain == null)
+            if (FormMainStatistic.SingleInstance.Start())
             {
-                try { formMain = new FormMainTransMC(); }
-                catch (Exception e)
+            }   
+            else
+            {
+                if (FormMainStatistic.SingleInstance.stopbflg)
                 {
-                    Logging.Logg().Exception(e, "Ошибка запуска приложения.", Logging.INDEX_MESSAGE.NOT_SET);
+                    try
+                    { formMain = new FormMainTransMC(); }
+                    catch (Exception e)
+                    { Logging.Logg().Exception(e, "Ошибка запуска приложения.", Logging.INDEX_MESSAGE.NOT_SET); }
+
+                    try
+                    { Application.Run(formMain); }
+                    catch (Exception e)
+                    { Logging.Logg().Exception(e, "Ошибка выполнения приложения.", Logging.INDEX_MESSAGE.NOT_SET); }
+
+                    FormMainStatistic.SingleInstance.StopMtx();
                 }
+                else ;
             }
-
-            if (!(formMain == null))
-                Application.Run(formMain);
-
             ProgramBase.Exit();
         }
     }
 }
+

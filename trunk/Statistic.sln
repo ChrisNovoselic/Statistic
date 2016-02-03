@@ -1,6 +1,6 @@
 ﻿
-Microsoft Visual Studio Solution File, Format Version 11.00
-# Visual Studio 2010
+Microsoft Visual Studio Solution File, Format Version 12.00
+# Visual Studio Express 2012 for Windows Desktop
 Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "trans_tg", "trans_tg\trans_tg.csproj", "{C8C4165F-30C8-47E6-B15A-D3CB1431DE60}"
 EndProject
 Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "trans_gtp", "trans_gtp\trans_gtp.csproj", "{968B1F18-36AD-4188-A598-F54E9CDECE64}"

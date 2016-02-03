@@ -40,11 +40,11 @@ namespace StatisticDiagnostic
             // 
             // FormDiagnostic
             // 
+            this.Text = "Диагностика";
             this.AutoScaleDimensions = new System.Drawing.SizeF(6F, 13F);
             this.AutoScaleMode = System.Windows.Forms.AutoScaleMode.Font;
             this.ClientSize = new System.Drawing.Size(1041, 600);
             this.Name = "FormDiagnostic";
-            this.Text = "FormStatisticDiagnostic";
             this.MainMenuStrip = new MenuStrip();
             this.MainMenuStrip.Items.AddRange(
               new ToolStripMenuItem[] {

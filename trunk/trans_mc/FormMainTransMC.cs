@@ -21,7 +21,6 @@ namespace trans_mc
         {
             this.notifyIconMain.Icon =
             this.Icon = trans_mc.Properties.Resources.statistic5;
-
             InitializeComponentTransSrc (@"Сервер Модес-Центр");
 
             m_dgwAdminTable.Size = new System.Drawing.Size(498, 391);
@@ -31,7 +30,7 @@ namespace trans_mc
         {
             int i = -1;
 
-            CreateFormConnectionSettings("connsett_mc.ini", false);
+            EditFormConnectionSettings("connsett_mc.ini", false);
 
             m_sFileINI.AddMainPar(@"MCServiceHost", string.Empty);
             m_sFileINI.AddMainPar(@"ИгнорДатаВремя-ModesCentre", false.ToString());

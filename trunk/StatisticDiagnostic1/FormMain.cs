@@ -12,7 +12,7 @@ using HClassLibrary;
 
 namespace StatisticDiagnostic
 {
-    public partial class FormMain : FormMainBaseWithStatusStrip
+    public partial class FormMain : FormMainStatistic
     {
         /// <summary>
         /// Объект с параметрами приложения (из БД_конфигурации)
@@ -28,6 +28,7 @@ namespace StatisticDiagnostic
             System.ComponentModel.ComponentResourceManager resources = new System.ComponentModel.ComponentResourceManager(typeof(FormMain));
             //this.notifyIconMain.Icon =
             this.Icon = resources.GetObject(@"StatisticDiagnostic") as System.Drawing.Icon;
+     
 
             _state = 1;
             InitializeComponent();
@@ -35,18 +36,13 @@ namespace StatisticDiagnostic
 
         public void FormDiagnostic_Load(object obj, EventArgs ev)
         {
-            string msg = string.Empty;
-            bool bAbort = true;
-            //Создать объект - чтение зашифрованного файла с параметрами соединения
-            s_fileConnSett = new FIleConnSett(@"connsett.ini", FIleConnSett.MODE.FILE);
             //Отобразить окно для визуализации выполнения длительной операции
             delegateStartWait();
-            //Создать список форм для редактирования параметров соединения
-            s_listFormConnectionSettings = new List<FormConnectionSettings>();
-            //Добавить элемент с параметрами соединения из объекта 'FIleConnSett' 
-            s_listFormConnectionSettings.Add(new FormConnectionSettings(-1, s_fileConnSett.ReadSettingsFile, s_fileConnSett.SaveSettingsFile));
-            s_listFormConnectionSettings.Add(null);
-            
+
+            string msg = string.Empty;
+            bool bAbort = true;
+            createfileConnSett(@"connsett.ini");
+            Start();
             bAbort = initialize(out msg);
             this.panelMain = new PanelStatisticDiagnostic();
             this.panelMain.SetDelegateReport(ErrorReport, WarningReport, ActionReport, ReportClear);
@@ -58,7 +54,7 @@ namespace StatisticDiagnostic
             _panelMain.Controls.Add(this.panelMain);
             this.Controls.Add(_panelMain);
             this.panelMain.Start();
-          
+
             //Снять с отображения окно для визуализации выполнения длительной операции
             delegateStopWait();
 
@@ -113,7 +109,7 @@ namespace StatisticDiagnostic
                         formParameters = new FormParameters_DB(s_listFormConnectionSettings[(int)CONN_SETT_TYPE.CONFIG_DB].getConnSett());
                         updateParametersSetup();
                         s_iMainSourceData = Int32.Parse(formParameters.m_arParametrSetup[(int)FormParameters.PARAMETR_SETUP.MAIN_DATASOURCE]);
-                     
+
                         break;
                 }
             }
@@ -196,6 +192,9 @@ namespace StatisticDiagnostic
             //Параметры валидности даты/времени получения данных СОТИАССО...
             TecView.SEC_VALIDATE_TMVALUE = Int32.Parse(formParameters.m_arParametrSetup[(int)FormParameters.PARAMETR_SETUP.VALIDATE_TM_VALUE]);
 
+            PanelStatisticDiagnostic.UPDATE_TIME = Int32.Parse(formParameters.m_arParametrSetup[(int)FormParameters.PARAMETR_SETUP.DIAGNOSTIC_TIMER_UPDATE]);
+            PanelStatisticDiagnostic.VALIDATE_ASKUE_TM = Int32.Parse(formParameters.m_arParametrSetup[(int)FormParameters.PARAMETR_SETUP.VALIDATE_ASKUE_VALUE]);
+
             //Параметрвы для ALARM...
         }
 
@@ -252,60 +251,19 @@ namespace StatisticDiagnostic
             }
         }
 
-        protected override void UpdateActiveGui(int type)
-        {
-            throw new NotImplementedException();
-        }
-
         protected override int UpdateStatusString()
         {
             int have_msg = 0;
 
-             have_msg = (m_report.errored_state == true) ? -1 : (m_report.warninged_state == true) ? 1 : 0;
+            have_msg =  base.UpdateStatusString();
 
-                if (((!(have_msg == 0)) || (m_report.actioned_state == true)) )
-                {
-                    if (m_report.actioned_state == true)
-                    {
-                        m_lblDescMessage.Text = m_report.last_action;
-                        m_lblDateMessage.Text = m_report.last_time_action.ToString();
-                    }
-                    else
-                        ;
+            return  have_msg;
 
-                    if (have_msg == 1)
-                    {
-                        m_lblDescMessage.Text = m_report.last_warning;
-                        m_lblDateMessage.Text = m_report.last_time_warning.ToString();
-                    }
-                    else
-                        ;
-
-                    if (have_msg == -1)
-                    {
-                        m_lblDescMessage.Text = m_report.last_error;
-                        m_lblDateMessage.Text = m_report.last_time_error.ToString();
-                    }
-                    else
-                        ;
-                }
-                else
-                {
-                    m_lblDescMessage.Text = string.Empty;
-                    m_lblDateMessage.Text = string.Empty;
-                }
-           
-            return have_msg;
         }
 
-        protected override void timer_Start()
-        {
-            throw new NotImplementedException();
-        }
-
-        protected override void HideGraphicsSettings()
-        {
-            throw new NotImplementedException();
-        }
+        /* protected override void timer_Start()
+         {
+             //int i = -1;
+         }*/
     }
 }

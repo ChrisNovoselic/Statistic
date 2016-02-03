@@ -43,10 +43,11 @@ namespace StatisticTimeSync
         {
             string msg = string.Empty;
             bool bAbort = true;
-            //Создать объект - чтение зашифрованного файла с параметрами соединения
-            s_fileConnSett = new FIleConnSett(@"connsett.ini", FIleConnSett.MODE.FILE);
             //Отобразить окно для визуализации выполнения длительной операции
             delegateStartWait();
+
+            //Создать объект - чтение зашифрованного файла с параметрами соединения
+            s_fileConnSett = new FIleConnSett(@"connsett.ini", FIleConnSett.MODE.FILE);
             //Создать список форм для редактирования параметров соединения
             s_listFormConnectionSettings = new List<FormConnectionSettings>();
             //Добавить элемент с параметрами соединения из объекта 'FIleConnSett' 
@@ -211,6 +212,7 @@ namespace StatisticTimeSync
         {
             Close();
         }
+
         /// <summary>
         /// Обработчик события выбора п. главного меню "Настройка-БД_конфигурации"
         /// </summary>
@@ -260,12 +262,12 @@ namespace StatisticTimeSync
             throw new NotImplementedException();
         }
 
-        protected override int UpdateStatusString()
+        protected override void timer_Start()
         {
             throw new NotImplementedException();
         }
 
-        protected override void timer_Start()
+        protected override int UpdateStatusString()
         {
             throw new NotImplementedException();
         }

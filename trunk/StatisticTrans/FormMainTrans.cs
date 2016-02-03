@@ -14,18 +14,8 @@ using StatisticCommon;
 
 namespace StatisticTrans
 {
-    public abstract partial class FormMainTrans : FormMainBaseWithStatusStrip
+    public abstract partial class FormMainTrans : FormMainStatistic
     {
-        /// <summary>
-        /// 
-        /// </summary>
-        //public event EventHandler ExplandApp;
-
-        /// <summary>
-        /// 
-        /// </summary>
-        public delegate void ExplandApp();
-
         [DllImport("user32.dll")]
         static extern IntPtr SendMessage(IntPtr hWnd, int Msg, int wParam, int lParam);
 
@@ -46,8 +36,6 @@ namespace StatisticTrans
         protected enum INDX_UICONTROLS { SERVER_IP, PORT, NAME_DATABASE, USER_ID, PASS, COUNT_INDX_UICONTROLS };
 
         protected System.Windows.Forms.Control[,] m_arUIControls;
-
-        protected static FileINI m_sFileINI;
 
         protected
             System.Windows.Forms.Timer
@@ -99,8 +87,6 @@ namespace StatisticTrans
                 {
                     if (m_arGroupBox[(Int16)i].BackColor == SystemColors.Info)
                         break;
-                    else
-                        ;
                 }
 
                 return (Int16)i;
@@ -122,7 +108,6 @@ namespace StatisticTrans
         }
 
         public FormMainTrans(int id_app, string[] par, string[] val)
-        //public FormMainTrans(int id_app, string []par, string [] val)
         {
             Thread.CurrentThread.CurrentCulture =
             Thread.CurrentThread.CurrentUICulture =
@@ -194,6 +179,7 @@ namespace StatisticTrans
 
             m_listID_TECNotUse = new List<int>();
             string[] arStrID_TECNotUse = m_sFileINI.GetMainValueOfKey(@"ID_TECNotUse").Split(',');
+
             foreach (string str in arStrID_TECNotUse)
             {
                 if (str.Equals(string.Empty) == false)
@@ -253,7 +239,6 @@ namespace StatisticTrans
             // m_lblDescError
             this.m_lblDescMessage.Size = new System.Drawing.Size(463, 17);
 
-            //this.notifyIconMain.ContextMenuStrip = this.contextMenuStripNotifyIcon;
             notifyIconMain.Click += new EventHandler(notifyIconMain_Click);
 
             //this.Deactivate += new EventHandler(FormMainTrans_Deactivate);
@@ -267,7 +252,7 @@ namespace StatisticTrans
             this.m_checkboxModeMashine.TextAlign = ContentAlignment.MiddleLeft;
             this.m_checkboxModeMashine.CheckedChanged += new EventHandler(m_checkboxModeMashine_CheckedChanged);
             this.Controls.Add(this.m_checkboxModeMashine);
-            //Пока переходить из режима в режимпользователь НЕ может (нестабильная работа trans_tg.exe) ???
+            //Пока переходить из режима в режим пользователь НЕ может (нестабильная работа trans_tg.exe) ???
             this.m_checkboxModeMashine.Enabled = false; ;
 
             //labelTime
@@ -286,6 +271,10 @@ namespace StatisticTrans
             string msg_throw = string.Empty;
             string[] args = Environment.GetCommandLineArgs();
             int argc = args.Length;
+
+            this.WindowState = FormWindowState.Minimized;
+            this.ShowInTaskbar = false;
+            notifyIconMain.Visible = true;
 
             if (argc > 1)
             {
@@ -329,6 +318,15 @@ namespace StatisticTrans
                             int argt = m_arg_interval;
                             //TimeThread(argt);
                         }
+                        else if ((!(args[1].IndexOf("start") < 0)) && ((args[1][0] == '/')))
+                        {
+                            m_modeMashine = MODE_MASHINE.SERVICE;
+                            m_arg_interval = TIMER_SERVICE_MIN_INTERVAL;
+                        }
+
+                        else if ((!(args[1].IndexOf("stop") < 0)) && ((args[1][0] == '/')))
+                            MessageBox.Show("CLOSE NULL");
+
                         else
                         {
                             msg_throw = "Ошибка распознавания аргументов командной строки";
@@ -336,11 +334,8 @@ namespace StatisticTrans
                         }
                 }
 
-                this.WindowState = FormWindowState.Minimized;
-                this.ShowInTaskbar = false;
-                notifyIconMain.Visible = true;
-                //развернутьToolStripMenuItem.Enabled = false;
 
+                //развернутьToolStripMenuItem.Enabled = false;
                 dateTimePickerMain.Value = m_arg_date.Date;
             }
             else
@@ -649,8 +644,8 @@ namespace StatisticTrans
 
         protected abstract void buttonSaveSourceSett_Click(object sender, EventArgs e);
 
-        protected override void UpdateActiveGui(int type) { }
-        protected override void HideGraphicsSettings() { }
+        //protected override void UpdateActiveGui(int type) { }
+        //protected override void HideGraphicsSettings() { }
 
         protected void InitializeComponentTransSrc(string text)
         {
@@ -668,8 +663,6 @@ namespace StatisticTrans
             {
                 if (!(m_arUIControls[(Int16)CONN_SETT_TYPE.SOURCE, i] == null))
                     this.groupBoxSource.Controls.Add(m_arUIControls[(Int16)CONN_SETT_TYPE.SOURCE, i]);
-                else
-                    ;
             }
 
             i = (Int16)INDX_UICONTROLS.SERVER_IP + (Int16)INDX_UICONTROLS.COUNT_INDX_UICONTROLS;
@@ -812,8 +805,6 @@ namespace StatisticTrans
                     }
                 }
             }
-            else
-                ;
         }
 
         protected abstract void setUIControlSourceState();
@@ -828,13 +819,12 @@ namespace StatisticTrans
         /// </summary>
         /// <param name="connSettFileName">наименование файла с параметрами соединения</param>
         /// <param name="bCheckAdminLength">признак проверки кол-ва параметров соединения по кол-ву объекьлв 'HAdmin'</param>
-        protected void CreateFormConnectionSettings(string connSettFileName, bool bCheckAdminLength)
+        protected void EditFormConnectionSettings(string connSettFileName, bool bCheckAdminLength)
         {
-            bool bShowFormConnSett = false;
+            createfileConnSett(connSettFileName);
 
-            s_fileConnSett = new FIleConnSett(connSettFileName, FIleConnSett.MODE.FILE);
-            s_listFormConnectionSettings = new List<FormConnectionSettings>();
-            s_listFormConnectionSettings.Add(new FormConnectionSettings(-1, s_fileConnSett.ReadSettingsFile, s_fileConnSett.SaveSettingsFile));
+
+            bool bShowFormConnSett = false;
 
             if (s_listFormConnectionSettings[(int)StatisticCommon.CONN_SETT_TYPE.CONFIG_DB].Ready == 0)
                 ;
@@ -859,8 +849,7 @@ namespace StatisticTrans
 
             if (bShowFormConnSett == true)
                 конфигурацияБДToolStripMenuItem.PerformClick();
-            else
-                ;
+
         }
 
         /// <summary>
@@ -950,9 +939,7 @@ namespace StatisticTrans
         /// </summary>
         public void Test()
         {
-            DateTime tm = DateTime.Now;
-            string str1 = tm.ToString();
-            m_labelTime.Invoke(new Action(() => m_labelTime.Text = "Время последнего опроса: " + str1 + ";" + " Успешных итераций: " + CT.currentIter + " из " + CT.Iters + ""));
+            m_labelTime.Invoke(new Action(() => m_labelTime.Text = "Время последнего опроса: " + DateTime.Now.ToString() + ";" + " Успешных итераций: " + CT.currentIter + " из " + CT.Iters + ""));
             m_labelTime.Invoke(new Action(() => m_labelTime.Update()));
         }
 
@@ -1195,39 +1182,7 @@ namespace StatisticTrans
 
             if ((!(m_arAdmin == null)) && (!(m_arAdmin[m_IndexDB] == null)))
             {
-                have_msg = (m_report.errored_state == true) ? -1 : (m_report.warninged_state == true) ? 1 : 0;
-
-                if (((!(have_msg == 0)) || (m_report.actioned_state == true)) && (m_arAdmin[m_IndexDB].IsStarted == true))
-                {
-                    if (m_report.actioned_state == true)
-                    {
-                        m_lblDescMessage.Text = m_report.last_action;
-                        m_lblDateMessage.Text = m_report.last_time_action.ToString();
-                    }
-                    else
-                        ;
-
-                    if (have_msg == 1)
-                    {
-                        m_lblDescMessage.Text = m_report.last_warning;
-                        m_lblDateMessage.Text = m_report.last_time_warning.ToString();
-                    }
-                    else
-                        ;
-
-                    if (have_msg == -1)
-                    {
-                        m_lblDescMessage.Text = m_report.last_error;
-                        m_lblDateMessage.Text = m_report.last_time_error.ToString();
-                    }
-                    else
-                        ;
-                }
-                else
-                {
-                    m_lblDescMessage.Text = string.Empty;
-                    m_lblDateMessage.Text = string.Empty;
-                }
+                have_msg = base.UpdateStatusString();
             }
             else
                 ;
@@ -1360,11 +1315,6 @@ namespace StatisticTrans
             else
                 ;
         }
-
-        //private void FormMain_Activated(object sender, EventArgs e)
-        //{
-        //    m_arAdmin[m_IndexDB].GetCurrentTime ();
-        //}
 
         protected virtual void buttonClear_Click(object sender, EventArgs e)
         {
@@ -1519,6 +1469,27 @@ namespace StatisticTrans
             }
         }
 
+        /// <summary>
+        /// 
+        /// </summary>
+        /// <param name="m"></param>
+        protected override void WndProc(ref Message m)
+        {
+            switch (m.Msg)
+            {
+                case WinApi.SW_RESTORE:
+                    //this.WindowState = FormWindowState.Normal;
+                    this.ShowInTaskbar = true;
+                    notifyIconMain.Visible = false;
+                    break;
+
+                case WinApi.WM_CLOSE:
+                    //MessageBox.Show("WM_CLOSE");
+                    break;
+            }
+            base.WndProc(ref m);
+        }
+
         protected virtual void SaveRDGValues(bool bCallback)
         {
             //((AdminTS)m_arAdmin[(int)(Int16)CONN_SETT_TYPE.DEST]).SaveRDGValues(m_listTECComponentIndex[comboBoxTECComponent.SelectedIndex], dateTimePickerMain.Value, bCallback);
@@ -1529,29 +1500,6 @@ namespace StatisticTrans
         private void notifyIconMain_Click(object sender, EventArgs e)
         {
             развернутьToolStripMenuItem.PerformClick();
-        }
-
-        public static void RunExpland()
-        {
-           
-        } 
-        /// <summary>
-        /// Развертывает приложение из трея
-        /// </summary>
-        private void ExpandApplication()
-        {
-            if (this.WindowState == FormWindowState.Minimized && this.Enabled == false)
-            {
-                this.WindowState = FormWindowState.Normal;
-                this.Enabled = true;
-                this.ShowInTaskbar = true;
-            }
-            else
-            {
-                this.WindowState = FormWindowState.Minimized;
-                this.Enabled = false;
-                this.ShowInTaskbar = false;
-            }
         }
 
         private void развернутьToolStripMenuItem_Click(object sender, EventArgs e)
@@ -1565,6 +1513,14 @@ namespace StatisticTrans
             }
             else
                 ;
+        }
+
+        public void ExplandApp()
+        {
+            this.WindowState = FormWindowState.Normal;
+            this.ShowInTaskbar = true;
+            notifyIconMain.Visible = false;
+            this.Show();
         }
 
         private void закрытьToolStripMenuItem_Click(object sender, EventArgs e)

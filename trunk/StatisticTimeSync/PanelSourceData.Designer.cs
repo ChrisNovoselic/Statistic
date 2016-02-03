@@ -230,9 +230,6 @@ namespace StatisticTimeSync
             m_arPanels = new PanelGetDate[INDEX_SOURCE_GETDATE.Length];
             for (i = 0; i < m_arPanels.Length; i++)
                 m_arPanels [i] = new PanelGetDate ();
-
-           // m_arPanels = new PanelGetDate[INDEX_SOURCE_GETDATE.Length];
-            //Create_Panel();
             
             //Только для панели с эталонным серверои БД
            m_arPanels[0].DelegateEtalonGetDate = new HClassLibrary.DelegateDateFunc(recievedEtalonDate);
@@ -247,8 +244,6 @@ namespace StatisticTimeSync
 
             this.Dock = DockStyle.Fill;
             initializeLayoutStyle (3, 7);
-
-            //this.Invoke(new Action(() => this.Controls.Add(m_arPanels[0], 0, 0)));
 
             this.Controls.Add(m_arPanels[0], 0, 0);
 
@@ -266,7 +261,6 @@ namespace StatisticTimeSync
                 if (row == 0) row = 1; else ;
                 this.Controls.Add(m_arPanels[i], col, row); 
             }
-
             this.ResumeLayout();
         }
 

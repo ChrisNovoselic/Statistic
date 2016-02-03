@@ -82,6 +82,11 @@ namespace StatisticTimeSync
                 m_arDateTime = new DateTime[(int)INDEX_DATETME.INDEX_DATETME_COUNT] { DateTime.MinValue, DateTime.MinValue, DateTime.MinValue };
             }
 
+            /// <summary>
+            /// 
+            /// </summary>
+            /// <param name="obj"></param>
+            /// <param name="ev"></param>
             private void checkBoxTurnOn_CheckedChanged(object obj, EventArgs ev)
             {
                 this.m_comboBoxSourceData.Enabled = !m_checkBoxTurnOn.Checked;
@@ -93,9 +98,7 @@ namespace StatisticTimeSync
                     IAsyncResult iar = BeginInvoke(new DelegateFunc(queryConnSett));
                 }
                 else
-                {
                     Activate(false);
-                }
             }
 
             /// <summary>
@@ -113,6 +116,11 @@ namespace StatisticTimeSync
                 }
             }
 
+            /// <summary>
+            /// 
+            /// </summary>
+            /// <param name="obj"></param>
+            /// <param name="ev"></param>
             private void comboBoxSourceData_SelectedIndexChanged(object obj, EventArgs ev)
             {
                 if (m_comboBoxSourceData.SelectedIndex > 0)
@@ -130,11 +138,19 @@ namespace StatisticTimeSync
                 m_comboBoxSourceData.Items.Add(desc);
             }
 
+            /// <summary>
+            /// 
+            /// </summary>
+            /// <returns></returns>
             public string GetNameShrSelectedSourceData()
             {
                 return (string)Invoke(new Func<string>(() => m_comboBoxSourceData.SelectedItem.ToString()));
             }
 
+            /// <summary>
+            /// 
+            /// </summary>
+            /// <param name="ev"></param>
             public void OnEvtDataRecievedHost(EventArgsDataHost ev)
             {
                 switch (ev.id)
@@ -164,9 +180,7 @@ namespace StatisticTimeSync
                 //Если панель с ЭТАЛОНным сервером БД
                 if ((m_arDateTime[(int)INDEX_DATETME.SERVER].Equals(DateTime.MinValue) == false)
                     && (!(DelegateEtalonGetDate == null)))
-                {
                     DelegateEtalonGetDate(date);
-                }
                 else
                     ;
             }
@@ -257,14 +271,9 @@ namespace StatisticTimeSync
                 lock (m_lockGetDate)
                 {
                     if (!(m_getDate == null))
-                    {
                         m_getDate.GetDate();
-                    }
-
                     else
-                    {
-
-                    };
+                        ;
                 }
             }
 
@@ -277,6 +286,9 @@ namespace StatisticTimeSync
                 recievedEtalonDate(date);
             }
 
+            /// <summary>
+            /// 
+            /// </summary>
             public override void Stop()
             {
                 stop();
@@ -296,8 +308,7 @@ namespace StatisticTimeSync
                         m_getDate = null;
                     }
                     else
-                    {
-                    }
+                        ;
                 }
             }
 
@@ -312,8 +323,7 @@ namespace StatisticTimeSync
                         IAsyncResult iar = BeginInvoke(new DelegateFunc(queryConnSett));
                     }
                     else
-                    {
-                    }
+                        ;
                 }
                 else
                 {
@@ -341,8 +351,7 @@ namespace StatisticTimeSync
                         m_checkBoxTurnOn.Checked = true;
                     }
                     else
-                    {
-                    }
+                        ;
                 }
                 else
                 {
@@ -391,8 +400,7 @@ namespace StatisticTimeSync
                         //m_checkBoxTurnOn.Checked = true;
                     }
                     else
-                    {
-                    }
+                        ;
                 }
                 else
                 {
@@ -588,17 +596,15 @@ namespace StatisticTimeSync
                         }
                     }
                     else
-                    {
-                    }
+                        ;
                 }
                 else
-                {
-                }
+                    ;
             }
             else
                 throw new Exception(@"Нет соединения с БД");
 
-            //DbSources.Sources().UnRegister(iListenerId);
+           DbSources.Sources().UnRegister(iListenerId);
 
             for (int i = 0; i < INDEX_SOURCE_GETDATE.Length; i++)
                 //m_arPanels[i].TurnOn(INDEX_SOURCE_GETDATE [i]);
@@ -618,7 +624,7 @@ namespace StatisticTimeSync
                         DataRow rowConnSett = ConnectionSettingsSource.GetConnectionSettings(TYPE_DATABASE_CFG.CFG_200, iListenerId, id, 501, out err).Rows[0];
                         ConnectionSettings connSett = new ConnectionSettings(rowConnSett, -1);
                         ((PanelGetDate)((EventArgsDataHost)ev).par[0]).OnEvtDataRecievedHost(new EventArgsDataHost(((EventArgsDataHost)ev).id, new object[] { connSett }));
-                        //DbSources.Sources().UnRegister(iListenerId);
+                        DbSources.Sources().UnRegister(iListenerId);
                         break;
                     default:
                         break;
@@ -652,9 +658,7 @@ namespace StatisticTimeSync
             stop();
 
             for (int i = 0; i < INDEX_SOURCE_GETDATE.Length; i++)
-            {
                 m_arPanels[i].Stop();
-            }
 
             base.Stop();
         }
@@ -704,9 +708,7 @@ namespace StatisticTimeSync
             }
 
             for (int i = 0; i < m_arPanels.Length; i++)
-            {
                 m_arPanels[i].Activate(activated);
-            }
 
             return bRes;
         }
