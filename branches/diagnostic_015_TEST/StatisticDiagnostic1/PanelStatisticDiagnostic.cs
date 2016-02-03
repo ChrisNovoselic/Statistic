@@ -849,7 +849,6 @@ namespace StatisticDiagnostic
             {
                 m_arPanelsTEC = new Tec[m_dtTECList.Rows.Count];
 
-
                 for (int i = 0; i < 6; i++)
                 {
                     if (m_arPanelsTEC[i] == null)
@@ -913,7 +912,7 @@ namespace StatisticDiagnostic
                 int t = 0;
                 string m_shortTime;
                 m_drTecSource = m_tableSourceData.Select(filter);
-                cellsPingTEC();
+             
                 textColumnTec();
 
                 for (int r = 0; r < m_arPanelsTEC[i].TECDataGridView.Rows.Count; r++)
@@ -969,6 +968,7 @@ namespace StatisticDiagnostic
                     addRowsTEC(i, m_tableSourceData.Select(filter).Length);
                     insertDataTEC(filter, i, m_arPanelsTEC.Length);
                 }
+                cellsPingTEC();
             }
 
             /// <summary>
