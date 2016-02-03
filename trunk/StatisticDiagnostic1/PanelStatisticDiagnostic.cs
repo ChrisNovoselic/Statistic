@@ -636,11 +636,11 @@ namespace StatisticDiagnostic
                 this.TECDataGridView.Columns[4].Name = "Связь";
                 this.TECDataGridView.Columns[5].Name = "TEC";
                 this.TECDataGridView.Columns[5].Visible = false;
-                //this.TECDataGridView.Columns[0].Width = 43;
-                //this.TECDataGridView.Columns[1].Width = 57;
-                //this.TECDataGridView.Columns[2].Width = 35;
-                //this.TECDataGridView.Columns[3].Width = 57;
-                //this.TECDataGridView.Columns[4].Width = 35;
+                this.TECDataGridView.Columns[0].Width = 43;
+                this.TECDataGridView.Columns[1].Width = 57;
+                this.TECDataGridView.Columns[2].Width = 35;
+                this.TECDataGridView.Columns[3].Width = 57;
+                this.TECDataGridView.Columns[4].Width = 35;
                 this.TECDataGridView.CellClick += new DataGridViewCellEventHandler(TECDataGridView_Cell);
                 this.TECDataGridView.CellValueChanged += new DataGridViewCellEventHandler(TECDataGridView_Cell);
                 this.TECDataGridView.CellMouseDown += new DataGridViewCellMouseEventHandler(TECDataGridView_CellMouseDown);
@@ -737,12 +737,6 @@ namespace StatisticDiagnostic
             /// координатов мышки
             /// </summary>
             private Point point = new Point();
-
-
-            private void ResizeGridView()
-            {
-                //m_arPanelsTEC[i].TECDataGridView.C
-            }
 
             /// <summary>
             /// Функция активации панелей ТЭЦ
@@ -844,7 +838,7 @@ namespace StatisticDiagnostic
             /// <summary>
             /// Создание панелей ТЭЦ
             /// </summary>
-           public void Create_PanelTEC()
+            public void Create_PanelTEC()
             {
                 m_arPanelsTEC = new Tec[m_dtTECList.Rows.Count];
 
@@ -911,12 +905,14 @@ namespace StatisticDiagnostic
                 int t = 0;
                 string m_shortTime;
                 m_drTecSource = m_tableSourceData.Select(filter);
-             
+
                 textColumnTec();
 
                 for (int r = 0; r < m_arPanelsTEC[i].TECDataGridView.Rows.Count; r++)
                 {
-                    m_shortTime = formatTime(m_drTecSource[t + 1]["Value"].ToString());
+                    string nameSource = m_arPanelsTEC[i].TECDataGridView.Rows[r].Cells[0].Value.ToString();
+
+                    m_shortTime = formatTime(m_drTecSource[t + 1]["Value"].ToString(), i, nameSource);
                     m_arPanelsTEC[i].TECDataGridView.Invoke(new Action(() => m_arPanelsTEC[i].TECDataGridView.Rows[r].Cells[2].Value = m_drTecSource[t]["Value"]));
                     m_arPanelsTEC[i].TECDataGridView.Invoke(new Action(() => m_arPanelsTEC[i].TECDataGridView.Rows[r].Cells[1].Value = m_shortTime));
                     m_arPanelsTEC[i].TECDataGridView.Invoke(new Action(() => m_arPanelsTEC[i].TECDataGridView.Rows[r].Cells[5].Value = m_drTecSource[t]["NAME_SHR"]));
@@ -979,10 +975,6 @@ namespace StatisticDiagnostic
                 for (int i = 0; i < m_arPanelsTEC.Length; i++)
                 {
                     string str = m_dtTECList.Rows[i][@"NAME_SHR"].ToString();
-
-
-                    if (m_arPanelsTEC[i].LabelTec.InvokeRequired)
-                        m_arPanelsTEC[i].LabelTec.Invoke(new Action(() => m_arPanelsTEC[i].LabelTec.Text = str));
 
                     if (m_arPanelsTEC[i].LabelTec.InvokeRequired)
                         m_arPanelsTEC[i].LabelTec.Invoke(new Action(() => m_arPanelsTEC[i].LabelTec.Text = str));
@@ -1178,7 +1170,7 @@ namespace StatisticDiagnostic
                     && m_arPanelsTEC[i].TECDataGridView.Rows[r].Cells[0].Style.BackColor == System.Drawing.Color.Empty)
                     paintValuesSource(false, i, r);
                 else
-                    paintValuesSource(selectInvalidValue(nameSource, time), i, r);
+                    paintValuesSource(selectInvalidValue(nameSource, time, i), i, r);
             }
 
             /// <summary>
@@ -1186,10 +1178,10 @@ namespace StatisticDiagnostic
             /// </summary>
             /// <param name="time"></param>
             /// <param name="timeSource"></param>
-            private bool diffTime(DateTime time, DateTime timeSource)
+            private bool diffTime(DateTime timeEtalon, DateTime timeSource)
             {
                 TimeSpan VALIDATE_TM = TimeSpan.FromSeconds(VALIDATE_ASKUE_TM);
-                TimeSpan ts = time - (timeSource + VALIDATE_TM);
+                TimeSpan ts = timeEtalon - (timeSource + VALIDATE_TM);
                 TimeSpan validateTime = TimeSpan.FromSeconds(180);
 
                 if (ts > validateTime)
@@ -1204,10 +1196,16 @@ namespace StatisticDiagnostic
             /// <param name="nameS">имя источника</param>
             /// <param name="time">время источника</param>
             /// <returns></returns>
-            private bool selectInvalidValue(string nameS, DateTime time)
+            private bool selectInvalidValue(string nameS, DateTime time, int numberPanel)
             {
                 DateTime m_DTnowAISKUE = TimeZoneInfo.ConvertTimeBySystemTimeZoneId(DateTime.Now, TimeZoneInfo.Local.Id, "Russian Standard Time");
-                DateTime m_DTnowSOTIASSO = DateTime.UtcNow;
+                DateTime m_DTnowSOTIASSO;
+
+                if ((numberPanel + 1) == 6)
+                    m_DTnowSOTIASSO = DateTime.Now;
+                else
+                    m_DTnowSOTIASSO = DateTime.UtcNow;
+
                 bool bFL = true; ;
 
                 switch (nameS)
@@ -1256,21 +1254,41 @@ namespace StatisticDiagnostic
             /// </summary>
             /// <param name="datetime"></param>
             /// <returns></returns>
-            private string formatTime(string datetime)
+            private string formatTime(string datetime, int Npanel, string nameSource)
             {
                 DateTime result;
                 string m_dt;
                 string m_dt2Time = DateTime.TryParse(datetime, out result).ToString();
 
+                switch (nameSource)
+                {
+                    case "СОТИАССО":
+                        if ((Npanel + 1) == 6)
+                         result = result.AddHours(6.0);
+                        else
+                            ;
+                        break;
+                    case "СОТИАССО_0":
+                        if ((Npanel + 1) == 6)
+                            result = result.AddHours(6);
+                        else
+                            ;
+                        break;
+                    default:
+                        break;
+                }
+
                 if (m_dt2Time != "False")
                 {
                     if (Convert.ToInt32(result.Day - DateTime.Now.Day) > 0)
-                        return m_dt = DateTime.Parse(datetime).ToString("dd.MM.yy HH:mm:ss");
+                        return m_dt = result.ToString("dd.MM.yy HH:mm:ss");
+                    //DateTime.Parse(datetime).ToString("dd.MM.yy HH:mm:ss");
                     else
-                        return m_dt = DateTime.Parse(datetime).ToString("HH:mm:ss.fff");
+                        return m_dt = result.ToString("HH:mm:ss.fff");
+                    //DateTime.Parse(datetime)
                 }
                 else
-                    m_dt = datetime;
+                    m_dt = result.ToString();
 
                 return m_dt;
             }
@@ -1799,7 +1817,7 @@ namespace StatisticDiagnostic
                 string m_DTMin = TimeZoneInfo.ConvertTimeBySystemTimeZoneId(DateTime.Now, TimeZoneInfo.Local.Id, "Russian Standard Time").ToString("mm");
                 string m_DTHour = TimeZoneInfo.ConvertTimeBySystemTimeZoneId(DateTime.Now, TimeZoneInfo.Local.Id, "Russian Standard Time").ToString("HH");
 
-                if ((Convert.ToInt32(m_DTMin)) > 41)
+                if ((Convert.ToInt32(m_DTMin)) > 42)
                 {
                     if ((Convert.ToInt32(m_DTHour)) % 2 == 0)
                         m_etalon_pbr = "ПБР" + (Convert.ToInt32(m_DTHour) + 1);
@@ -2123,8 +2141,8 @@ namespace StatisticDiagnostic
                         if (TaskDataGridView.Columns[4].Visible == false)
                             TaskDataGridView.Invoke(new Action(() => TaskDataGridView.Columns[4].Visible = true));
 
-                        TaskDataGridView.Invoke(new Action(() => TaskDataGridView.Rows[m_check].Cells[4].Value = "Задача не выполняется"));
                         upselectrow(m_check);
+                        TaskDataGridView.Invoke(new Action(() => TaskDataGridView.Rows[m_check].Cells[4].Value = "Задача не выполняется"));
                         m_counter--;
                     }
 
