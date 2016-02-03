@@ -79,7 +79,7 @@
     <ApplicationManifest>Properties\app.manifest</ApplicationManifest>
   </PropertyGroup>
   <PropertyGroup>
-    <ApplicationIcon>Resources\StatisticAnalyzer.ico</ApplicationIcon>
+    <ApplicationIcon>StatisticAnalyzer.ico</ApplicationIcon>
   </PropertyGroup>
   <ItemGroup>
     <Reference Include="System" />
@@ -141,6 +141,7 @@
   </ItemGroup>
   <ItemGroup>
     <Content Include="Resources\StatisticAnalyzer.ico" />
+    <Content Include="StatisticAnalyzer.ico" />
   </ItemGroup>
   <Import Project="$(MSBuildToolsPath)\Microsoft.CSharp.targets" />
   <!-- To modify your build process, add your task inside one of the targets below and uncomment it. 
