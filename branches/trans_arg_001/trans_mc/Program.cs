@@ -20,15 +20,8 @@ namespace trans_mc
             //Logging.s_mode = Logging.LOG_MODE.DB;
             Logging.s_mode = Logging.LOG_MODE.FILE_EXE;
             ProgramBase.Start();
-            FormMainTransMC formMain = null;
 
-            if (FormMainStatistic.SingleInstance.Start())
-            {
-            }   
-            else
-            {
-                if (FormMainStatistic.SingleInstance.stopbflg)
-                {
+                    FormMainTransMC formMain = null;
                     try
                     { formMain = new FormMainTransMC(); }
                     catch (Exception e)
@@ -39,10 +32,8 @@ namespace trans_mc
                     catch (Exception e)
                     { Logging.Logg().Exception(e, "Ошибка выполнения приложения.", Logging.INDEX_MESSAGE.NOT_SET); }
 
-                    FormMainStatistic.SingleInstance.StopMtx();
-                }
-                else ;
-            }
+                    //FormMainStatistic.SingleInstance.StopMtx();
+
             ProgramBase.Exit();
         }
     }

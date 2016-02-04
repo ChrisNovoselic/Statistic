@@ -18,13 +18,8 @@ namespace StatisticTrans
     {
         [DllImport("user32.dll")]
         static extern IntPtr SendMessage(IntPtr hWnd, int Msg, int wParam, int lParam);
-
+        ComponentTesting CT;
         private const Int32 TIMER_SERVICE_MIN_INTERVAL = 66666;
-
-        /// <summary>
-        /// Экземпляр класса
-        /// </summary>
-        ComponentTesting CT = new ComponentTesting();
 
         /// <summary>
         /// счетчик иттераций ошибок
@@ -59,7 +54,7 @@ namespace StatisticTrans
 
         protected CheckBox m_checkboxModeMashine;
 
-        public Label m_labelTime;
+        public static Label m_labelTime;
 
         //protected HMark m_markQueries;
 
@@ -107,12 +102,20 @@ namespace StatisticTrans
             return m_sFileINI.GetMainValueOfKey(keyParam);
         }
 
+        /// <summary>
+        /// 
+        /// </summary>
+        /// <returns></returns>
+        protected override HCmd_Arg handlerCmd(string[] cmdLine)
+        {
+            return new HCmd_Arg(cmdLine);
+        }
+
         public FormMainTrans(int id_app, string[] par, string[] val)
         {
             Thread.CurrentThread.CurrentCulture =
             Thread.CurrentThread.CurrentUICulture =
-                ProgramBase.ss_MainCultureInfo; //ru-Ru
-
+                ProgramBase.ss_MainCultureInfo; //ru-Ru         
 
             InitializeComponent();
 
@@ -257,19 +260,21 @@ namespace StatisticTrans
             this.m_checkboxModeMashine.Enabled = false; ;
 
             //labelTime
-            this.m_labelTime = new Label();
-            this.m_labelTime.Name = "m_labelTime";
-            this.m_labelTime.Location = new System.Drawing.Point(150, 520);
-            this.m_labelTime.Size = new System.Drawing.Size(580, 15);
-            this.m_labelTime.Text = "";
-            this.Controls.Add(this.m_labelTime);
-            this.m_labelTime.Visible = true;
+            m_labelTime = new Label();
+            m_labelTime.Name = "m_labelTime";
+            m_labelTime.Location = new System.Drawing.Point(150, 520);
+            m_labelTime.Size = new System.Drawing.Size(580, 15);
+            m_labelTime.Text = "";
+            Controls.Add(m_labelTime);
+            m_labelTime.Visible = true;
 
             //Значения аргументов по умолчанию
             m_arg_date = DateTime.Now;
             m_arg_interval = TIMER_SERVICE_MIN_INTERVAL; //Милисекунды
-
             string msg_throw = string.Empty;
+
+            handlerCmd(Environment.GetCommandLineArgs());
+
             string[] args = Environment.GetCommandLineArgs();
             int argc = args.Length;
 
@@ -323,11 +328,12 @@ namespace StatisticTrans
                         {
                             m_modeMashine = MODE_MASHINE.SERVICE;
                             m_arg_interval = TIMER_SERVICE_MIN_INTERVAL;
+                            //FormMainStatistic.HCmd_Arg.execCmdLine();
                         }
 
                         else if ((!(args[1].IndexOf("stop") < 0)) && ((args[1][0] == '/')))
                         {
-
+                            //FormMainStatistic.HCmd_Arg.execCmdLine();
                         }
 
                         else
@@ -726,7 +732,7 @@ namespace StatisticTrans
             this.Size = new System.Drawing.Size(849, 514);
 
             this.m_checkboxModeMashine.Location = new System.Drawing.Point(13, 434);
-            this.m_labelTime.Location = new System.Drawing.Point(150, 437);
+            m_labelTime.Location = new System.Drawing.Point(150, 437);
         }
 
         protected List<int> m_listID_TECNotUse;
@@ -874,6 +880,8 @@ namespace StatisticTrans
             }
             else
                 ;
+
+            CT = new ComponentTesting(comboBoxTECComponent.Items.Count);
         }
 
         /// <summary>
@@ -937,33 +945,26 @@ namespace StatisticTrans
             }
         }
 
-        /// <summary>
-        /// отчет об итерациях
-        /// </summary>
-        public void Test()
-        {
-            m_labelTime.Invoke(new Action(() => m_labelTime.Text = "Время последнего опроса: " + DateTime.Now.ToString() + ";" + " Успешных итераций: " + CT.currentIter + " из " + CT.Iters + ""));
-            m_labelTime.Invoke(new Action(() => m_labelTime.Update()));
-        }
+        ///// <summary>
+        ///// отчет об итерациях
+        ///// </summary>
+        //private void CounterSuccessfulDownload()
+        //{
+        //    m_labelTime.Invoke(new Action(() => m_labelTime.Text = "Время последнего опроса: " + DateTime.Now.ToString() + ";" + " Успешных итераций: " + CT.currentIter + " из " + CT.GetNum() + ""));
+        //    m_labelTime.Invoke(new Action(() => m_labelTime.Update()));
+        //}
 
         /// <summary>
         /// При [авто]режиме переход к следующему элементу списка компонентов
         /// </summary>
         protected virtual void errorDataGridViewAdmin()
         {
-            if (CT.currentIter == CT.Iters)
-                CT.currentIter = 0;
-
-            if (CT.currentIter > 1)
-                CT.currentIter--;
-
-            CT.Error();
-            CT.bflag = true;
-
+            //CT.bflag = true;
+            CT.PopIter();
             if ((m_bTransAuto == true || m_modeMashine == MODE_MASHINE.SERVICE) && (m_bEnabledUIControl == false))
             {
-                CT.ErrorComp(CT.nameComponent);
-                CT.currentIter = 0;
+                //CT.ErrorComp(CT.nameComponent);
+                //CT.currentIter = 0;
 
                 IAsyncResult asyncRes;
                 if (IsHandleCreated/*InvokeRequired*/ == true)
@@ -971,11 +972,7 @@ namespace StatisticTrans
                 else
                     Logging.Logg().Error(@"FormMainTrans::errorDataGridViewAdmin () - ... BeginInvoke (trans_auto_next) - ...", Logging.INDEX_MESSAGE.D_001);
             }
-            else
-            {
-
-            }
-            ;
+            else ;
         }
 
         protected abstract void updateDataGridViewAdmin(DateTime date);
@@ -1005,12 +1002,9 @@ namespace StatisticTrans
             if ((m_bTransAuto == true || m_modeMashine == MODE_MASHINE.SERVICE) && (m_bEnabledUIControl == false))
             {
                 CT.NextDay = IsTomorrow();
-                CT.IsNullItter(CT.currentIter, comboBoxTECComponent.Items.Count);
 
-                CT.SetIter(comboBoxTECComponent.Items.Count);
-                CT.CounterIter();
-
-                Test();
+                if (comboBoxTECComponent.InvokeRequired)
+                    comboBoxTECComponent.Invoke(new Action(() => CT.PushIter((string)comboBoxTECComponent.Items[comboBoxTECComponent.SelectedIndex])));
 
                 IAsyncResult asyncRes;
                 //if (IsHandleCreated/*InvokeRequired*/ == true)
@@ -1176,7 +1170,7 @@ namespace StatisticTrans
         //}
 
         /// <summary>
-        /// 
+        /// Обновление статусной строки
         /// </summary>
         /// <returns></returns>
         protected override int UpdateStatusString()
@@ -1216,11 +1210,7 @@ namespace StatisticTrans
 
             if (comboBoxTECComponent.SelectedIndex + 1 < comboBoxTECComponent.Items.Count)
             {
-
-                //Test();
-                //counter
                 comboBoxTECComponent.SelectedIndex++;
-                CT.NameCurComponent((string)comboBoxTECComponent.Items[comboBoxTECComponent.SelectedIndex]);
                 //Обработчик отключен - вызов "программно"
                 comboBoxTECComponent_SelectedIndexChanged(null, EventArgs.Empty);
             }
@@ -1240,7 +1230,6 @@ namespace StatisticTrans
                         dateTimePickerMain.Value = dateTimePickerMain.Value.AddDays(1);
                         comboBoxTECComponent.SelectedIndex = 0;
 
-                        Test();
                         comboBoxTECComponent_SelectedIndexChanged(null, EventArgs.Empty);
                     }
                 }
@@ -1473,7 +1462,7 @@ namespace StatisticTrans
         }
 
         /// <summary>
-        /// 
+        /// Оброботчик сообщений формы
         /// </summary>
         /// <param name="m"></param>
         protected override void WndProc(ref Message m)
@@ -1505,6 +1494,11 @@ namespace StatisticTrans
             развернутьToolStripMenuItem.PerformClick();
         }
 
+        /// <summary>
+        /// обработчи события клика по иконке в трее
+        /// </summary>
+        /// <param name="sender"></param>
+        /// <param name="e"></param>
         private void развернутьToolStripMenuItem_Click(object sender, EventArgs e)
         {
             //if (notifyIconMain.Visible == true)
@@ -1518,6 +1512,9 @@ namespace StatisticTrans
                 ;
         }
 
+        /// <summary>
+        /// Развертывание из трея приложения
+        /// </summary>
         public void ExplandApp()
         {
             this.WindowState = FormWindowState.Normal;

@@ -385,7 +385,6 @@ namespace StatisticDiagnostic
         public void UpdateTimer_Elapsed(object source, ElapsedEventArgs e)
         {
             m_DataSource.Command();
-            //MessageBox.Show("SLEEP&GO");
         }
 
         /// <summary>

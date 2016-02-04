@@ -19,26 +19,18 @@ namespace trans_tg
             ProgramBase.Start();
 
             FormMainTransTG formMain = null;
-            if (FormMainStatistic.SingleInstance.Start())
+            if (FormMainStatistic.stopbflg)
             {
-            }
-            else
-            {
-                if (FormMainStatistic.SingleInstance.stopbflg)
+                try { formMain = new FormMainTransTG(); }
+                catch (Exception e)
                 {
-                    try { formMain = new FormMainTransTG(); }
-                    catch (Exception e)
-                    {
-                        Logging.Logg().Exception(e, "!Ошибка! запуска приложения.", Logging.INDEX_MESSAGE.NOT_SET);
-                    }
-
-                    if (!(formMain == null))
-                        Application.Run(formMain);
-                    else
-                        ;
+                    Logging.Logg().Exception(e, "!Ошибка! запуска приложения.", Logging.INDEX_MESSAGE.NOT_SET);
                 }
 
-                FormMainStatistic.SingleInstance.StopMtx();
+                if (!(formMain == null))
+                    Application.Run(formMain);
+                else
+                    ;
             }
 
             ProgramBase.Exit();

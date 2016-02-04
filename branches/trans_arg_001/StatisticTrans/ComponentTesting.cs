@@ -2,6 +2,7 @@
 using System.Collections.Generic;
 using System.Linq;
 using System.Text;
+using StatisticTrans;
 
 namespace StatisticTrans
 {
@@ -10,32 +11,22 @@ namespace StatisticTrans
         /// <summary>
         /// 
         /// </summary>
-        public bool bflag = false;
+        private bool bflag;
+
+        /// <summary>
+        /// 
+        /// </summary>
+        private int countIt=0;
 
         /// <summary>
         /// Текущая иттерация
         /// </summary>
-        public int currentIter = 0;
+        private int currentIter;
 
         /// <summary>
         /// Кол-во компонентов
         /// </summary>
-        public int Iters;
-
-        /// <summary>
-        /// Ошибочные иттерации
-        /// </summary>
-        public string[] amountIter;
-
-        /// <summary>
-        /// Имя компонента
-        /// </summary>
-        public string nameComponent;
-
-        /// <summary>
-        /// Время нач. иттераций
-        /// </summary>
-        string curentTime;
+        private string[] Iters;
 
         /// <summary>
         /// Счетчик нового дня
@@ -43,125 +34,66 @@ namespace StatisticTrans
         public bool NextDay = false;
 
         /// <summary>
-        /// Кол-во ошибок
+        /// Конструктор класса
         /// </summary>
-        int ErrorIter = 0;
-
-        /// <summary>
-        /// Конструктор?
-        /// </summary>
-        public ComponentTesting()
+        /// <param name="size">размер массива</param>
+        public ComponentTesting(int size)
         {
-
+            Iters = new string[size];
+            currentIter = 0;
         }
 
         /// <summary>
-        /// приведение к нулю при ошибке
+        /// 
         /// </summary>
-        /// <param name="it"></param>
-        /// <param name="curIt"></param>
-        public void IsNullItter(int it, int curIt)
+        public void PushIter(string nameElem)
         {
-            if (bflag == true)
+            if (GetNum() == countIt)
             {
-                if (curIt == it)
-                {
-                    currentIter = 0;
-                    bflag = false;
-                }
+                    ClearStck();
             }
-        }
-
-        /// <summary>
-        /// Счетчик иттераций
-        /// </summary>
-        public void CounterIter()
-        {
-            if (NextDay == true)
-            {
-                if ((2*(ErrorIter + currentIter)) == Iters)
-                    currentIter = 0;
-
-                if ((2*currentIter) == Iters)
-                {
-                    currentIter = 0;
-                    currentIter++;
-                }
-
-                else
-                    currentIter++;
-            }
-
             else
-            {
-                if ((ErrorIter + currentIter) == Iters)
-                    currentIter = 0;
-
-                if (currentIter == Iters)
-                {
-                    currentIter = 0;
-                    currentIter++;
-                }
-
-                else
-                    currentIter++; 
-            }
+                Iters[currentIter] = nameElem;
+            currentIter++;
+            countIt++;
+            CounterSuccessfulDownload();
         }
 
         /// <summary>
-        /// Время начала опроса
+        /// 
         /// </summary>
         /// <returns></returns>
-        public string DateStart()
+        private int GetNum()
         {
-            return curentTime = DateTime.Now.ToString();
+            return Iters.Length;
         }
 
         /// <summary>
-        /// Кол-во иттераций
+        /// 
         /// </summary>
-        public void SetIter(int i)
+        public void PopIter()
         {
-            if (NextDay == true)
-            {
-                Iters = i * 2;
-            }
-            else
-            {
-                Iters = i;
-            }
+            currentIter--;
+            CounterSuccessfulDownload();
+            countIt++;
         }
 
         /// <summary>
-        /// Имя текущего компонента
+        /// отчет об итерациях
         /// </summary>
-        /// <param name="x"></param>
-        public void NameCurComponent(string x)
+        private void CounterSuccessfulDownload()
         {
-            nameComponent = x;
+            FormMainTrans.m_labelTime.Invoke(new Action(() => FormMainTrans.m_labelTime.Text = "Время последнего опроса: " + DateTime.Now.ToString() + ";" + " Успешных итераций: " + currentIter + " из " + GetNum() + ""));
+            FormMainTrans.m_labelTime.Invoke(new Action(() => FormMainTrans.m_labelTime.Update()));
         }
 
         /// <summary>
-        /// Компонент на котором сбой
+        /// Очистка итераций
         /// </summary>
-        /// <param name="x">имя компонента</param>
-        public void ErrorComp(string name)
+        private void ClearStck()
         {
-            //Next(name, ErrorItter);
-        }
-
-        /// <summary>
-        /// Счетчик ошибок
-        /// </summary>
-        /// <param name="name">имя компонента</param>
-        /// <param name="z">номер массива</param>
-        public void Error()
-        {
-            if (ErrorIter == Iters)
-            {
-                ErrorIter = 0;
-            }
-            ErrorIter++;
+            currentIter = 0;
+            countIt = 0;
         }
     }
 }
