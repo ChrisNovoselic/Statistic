@@ -1101,7 +1101,7 @@ namespace StatisticCommon
             return iRes;
         }
 
-        protected virtual string [] setAdminValuesQuery(TEC t, TECComponent comp, DateTime date)
+        protected virtual string [] setAdminValuesQuery(StatisticCommon.TEC t, TECComponent comp, DateTime date)
         {
             string[] resQuery = new string[(int)DbTSQLInterface.QUERY_TYPE.COUNT_QUERY_TYPE] { string.Empty, string.Empty, string.Empty };
 
@@ -1123,7 +1123,7 @@ namespace StatisticCommon
                 // запись для этого часа имеется, модифицируем её
                 if (IsHaveDates(CONN_SETT_TYPE.ADMIN, i) == true)
                 {
-                    resQuery[(int)DbTSQLInterface.QUERY_TYPE.UPDATE] += @"UPDATE " + t.m_NameTableAdminValues +
+                    resQuery[(int)DbTSQLInterface.QUERY_TYPE.UPDATE] += @"UPDATE " + TEC.s_NameTableAdminValues +
                         @" SET " +
                         @"REC='" + m_curRDGValues[i].recomendation.ToString("F3", CultureInfo.InvariantCulture) +
                         @"', " + @"IS_PER=" + (m_curRDGValues[i].deviationPercent ? "1" : "0") +
@@ -1166,7 +1166,7 @@ namespace StatisticCommon
             // добавляем все записи, не найденные в базе
             if (! (query[(int)DbTSQLInterface.QUERY_TYPE.INSERT] == ""))
             {
-                query[(int)DbTSQLInterface.QUERY_TYPE.INSERT] = @"INSERT INTO " + t.m_NameTableAdminValues + " (DATE, " + @"REC" +
+                query[(int)DbTSQLInterface.QUERY_TYPE.INSERT] = @"INSERT INTO " + TEC.s_NameTableAdminValues + " (DATE, " + @"REC" +
                     @", " + "IS_PER" +
                     @", " + "DIVIAT" +
                     @", " + "ID_COMPONENT" +
@@ -1196,7 +1196,7 @@ namespace StatisticCommon
             for (int i = currentHour; i < 24; i++)
                 // запись для этого часа имеется, модифицируем её
                 if (IsHaveDates(CONN_SETT_TYPE.ADMIN, i) == true)
-                    query[(int)DbTSQLInterface.QUERY_TYPE.DELETE] += @"DELETE FROM " + t.m_NameTableAdminValues +
+                    query[(int)DbTSQLInterface.QUERY_TYPE.DELETE] += @"DELETE FROM " + TEC.s_NameTableAdminValues +
                         @" WHERE " +
                         @"DATE = '" + date.AddHours(i + 1).ToString("yyyyMMdd HH:mm:ss") +
                         @"'" +
@@ -1246,7 +1246,7 @@ namespace StatisticCommon
                     Logging.Logg().Debug(@"AdminTS::setPPBRQuery () - [ID_COMPONENT=" + comp.m_id + @"] Час=" + i + @"; БД=" + m_iHavePBR_Number + @"; Модес=" + pbr_number, Logging.INDEX_MESSAGE.D_002);
 
                     if (bUpdate == true) {
-                        resQuery[(int)DbTSQLInterface.QUERY_TYPE.UPDATE] += @"UPDATE [" + t.m_NameTableUsedPPBRvsPBR + @"]" +
+                        resQuery[(int)DbTSQLInterface.QUERY_TYPE.UPDATE] += @"UPDATE [" + TEC.s_NameTableUsedPPBRvsPBR + @"]" +
                                     " SET " +
                                     @"PBR_NUMBER='";
                         resQuery[(int)DbTSQLInterface.QUERY_TYPE.UPDATE] += m_curRDGValues[i].pbr_number;
@@ -1303,7 +1303,7 @@ namespace StatisticCommon
             // добавляем все записи, не найденные в базе
             if (query[(int)DbTSQLInterface.QUERY_TYPE.INSERT].Equals (string.Empty) == false)
             {
-                query[(int)DbTSQLInterface.QUERY_TYPE.INSERT] = @"INSERT INTO [" + t.m_NameTableUsedPPBRvsPBR + "] (DATE_TIME, WR_DATE_TIME, PBR_NUMBER, ID_COMPONENT, OWNER, PBR, Pmin, Pmax) VALUES" + query[(int)DbTSQLInterface.QUERY_TYPE.INSERT].Substring(0, query[(int)DbTSQLInterface.QUERY_TYPE.INSERT].Length - 1) + ";";
+                query[(int)DbTSQLInterface.QUERY_TYPE.INSERT] = @"INSERT INTO [" + TEC.s_NameTableUsedPPBRvsPBR + "] (DATE_TIME, WR_DATE_TIME, PBR_NUMBER, ID_COMPONENT, OWNER, PBR, Pmin, Pmax) VALUES" + query[(int)DbTSQLInterface.QUERY_TYPE.INSERT].Substring(0, query[(int)DbTSQLInterface.QUERY_TYPE.INSERT].Length - 1) + ";";
             }
             else
                 ;
@@ -1342,7 +1342,7 @@ namespace StatisticCommon
             for (int i = currentHour; i < 24; i++)
                 // запись для этого часа имеется, модифицируем её
                 if (IsHaveDates(CONN_SETT_TYPE.PBR, i) == true)
-                    query[(int)DbTSQLInterface.QUERY_TYPE.DELETE] += @"DELETE FROM [" + t.m_NameTableUsedPPBRvsPBR + @"]" +
+                    query[(int)DbTSQLInterface.QUERY_TYPE.DELETE] += @"DELETE FROM [" + TEC.s_NameTableUsedPPBRvsPBR + @"]" +
                         @" WHERE " +
                         @"DATE_TIME" + @" = '" + date.AddHours(i + 1).ToString("yyyyMMdd HH:mm:ss") +
                         @"'" +

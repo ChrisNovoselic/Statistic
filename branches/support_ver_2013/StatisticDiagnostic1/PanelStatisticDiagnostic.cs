@@ -2237,7 +2237,7 @@ namespace StatisticDiagnostic
             // зарегистрировать соединение/получить идентификатор соединения
             int iListernID = DbSources.Sources().Register(FormMain.s_listFormConnectionSettings[(int)CONN_SETT_TYPE.CONFIG_DB].getConnSett(), false, @"CONFIG_DB");
             // зарегистрировать синхронное соединение с БД_конфигурации
-            m_DataSource = new HDataSource(new ConnectionSettings(InitTECBase.getConnSettingsOfIdSource(TYPE_DATABASE_CFG.CFG_200, iListernID, FormMainBase.s_iMainSourceData, -1, out err).Rows[0], -1));
+            m_DataSource = new HDataSource(new ConnectionSettings(InitTECBase.getConnSettingsOfIdSource(iListernID, FormMainBase.s_iMainSourceData, -1, out err).Rows[0], -1));
             // назначить обработчик события - получение данных
             getCurrentData(iListernID);
             DbSources.Sources().UnRegister(iListernID);
@@ -2355,7 +2355,7 @@ namespace StatisticDiagnostic
                 m_arraySource = DbTSQLInterface.Select(ref dbconn, "SELECT * FROM SOURCE", null, null, out err);
                 m_dtGTP = DbTSQLInterface.Select(ref dbconn, "SELECT * FROM GTP_LIST", null, null, out err);
                 m_dtParam = DbTSQLInterface.Select(ref dbconn, "SELECT * FROM DIAGNOSTIC_PARAM", null, null, out err);
-                m_dtTECList = InitTEC_200.getListTEC(ref dbconn, false, out err);
+                m_dtTECList = InitTEC.getListTEC(ref dbconn, out err);
             }
             else
                 throw new Exception(@"Нет соединения с БД");

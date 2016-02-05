@@ -266,8 +266,8 @@ namespace StatisticCommon
         /// <summary>
         /// Массив наименований таблиц со значениями ПБР, административными значениями
         /// </summary>
-        public const string m_NameTableAdminValues = @"AdminValuesOfID"
-            , m_NameTableUsedPPBRvsPBR = @"PPBRvsPBROfID";
+        public static string s_NameTableAdminValues = @"AdminValuesOfID"
+            , s_NameTableUsedPPBRvsPBR = @"PPBRvsPBROfID";
         /// <summary>
         /// Список наименований полей
         /// </summary>
@@ -725,13 +725,13 @@ namespace StatisticCommon
                 strRes = @"SELECT " +
                     //m_arNameTableUsedPPBRvsPBR[(int)AdminTS.TYPE_FIELDS.DYNAMIC] + "." + m_strNamesField[(int)INDEX_NAME_FIELD.PBR_DATETIME] + " AS DATE_PBR" +
                     //@", " + selectPBR.Split (';')[0] + " AS PBR";
-                    @"[" + m_NameTableUsedPPBRvsPBR + "]." + "DATE_TIME" + " AS DATE_PBR" +
+                    @"[" + s_NameTableUsedPPBRvsPBR + "]." + "DATE_TIME" + " AS DATE_PBR" +
                     //@", " + "PBR" + " AS PBR";
                     @", " + selectPBR.Split(';')[0];
 
                 //if (m_strNamesField[(int)INDEX_NAME_FIELD.PBR_NUMBER].Length > 0)
                     //strRes += @", " + m_arNameTableUsedPPBRvsPBR[(int)mode] + "." + m_strNamesField[(int)INDEX_NAME_FIELD.PBR_NUMBER];
-                strRes += @", " + @"[" + m_NameTableUsedPPBRvsPBR + "]." + @"PBR_NUMBER";
+                strRes += @", " + @"[" + s_NameTableUsedPPBRvsPBR + "]." + @"PBR_NUMBER";
                 //else
                 //    ;
 
@@ -739,17 +739,17 @@ namespace StatisticCommon
                 strRes += @", " + "ID_COMPONENT";
 
                 strRes += @" " + @"FROM " +
-                    @"[" + m_NameTableUsedPPBRvsPBR + @"]" + 
+                    @"[" + s_NameTableUsedPPBRvsPBR + @"]" + 
                     //@" WHERE " + m_arNameTableUsedPPBRvsPBR[(int)AdminTS.TYPE_FIELDS.DYNAMIC] + "." + m_strNamesField[(int)INDEX_NAME_FIELD.PBR_DATETIME] + " >= '" + dt.ToString("yyyyMMdd HH:mm:ss") + @"'" +
                     //@" AND " + m_arNameTableUsedPPBRvsPBR[(int)AdminTS.TYPE_FIELDS.DYNAMIC] + "." + m_strNamesField[(int)INDEX_NAME_FIELD.PBR_DATETIME] + " <= '" + dt.AddDays(1).ToString("yyyyMMdd HH:mm:ss") + @"'" +
-                    @" WHERE " + @"[" + m_NameTableUsedPPBRvsPBR + "]." + "DATE_TIME" + " >= '" + dt.ToString("yyyyMMdd HH:mm:ss") + @"'" +
-                    @" AND " + @"[" + m_NameTableUsedPPBRvsPBR + "]." + "DATE_TIME" + " <= '" + dt.AddDays(1).ToString("yyyyMMdd HH:mm:ss") + @"'" +
+                    @" WHERE " + @"[" + s_NameTableUsedPPBRvsPBR + "]." + "DATE_TIME" + " >= '" + dt.ToString("yyyyMMdd HH:mm:ss") + @"'" +
+                    @" AND " + @"[" + s_NameTableUsedPPBRvsPBR + "]." + "DATE_TIME" + " <= '" + dt.AddDays(1).ToString("yyyyMMdd HH:mm:ss") + @"'" +
 
                     @" AND ID_COMPONENT IN (" + selectPBR.Split (';')[1] + ")" +
 
                     //@" AND MINUTE(" + m_arNameTableUsedPPBRvsPBR[(int)AdminTS.TYPE_FIELDS.DYNAMIC] + "." + m_strNamesField[(int)INDEX_NAME_FIELD.PBR_DATETIME] + ") = 0";
                     //@" AND MINUTE(" + m_arNameTableUsedPPBRvsPBR[(int)mode] + "." + "DATE_TIME" + ") = 0";
-                    @" AND DATEPART(n," + @"[" + m_NameTableUsedPPBRvsPBR + "]." + "DATE_TIME" + ") = 0";
+                    @" AND DATEPART(n," + @"[" + s_NameTableUsedPPBRvsPBR + "]." + "DATE_TIME" + ") = 0";
                 /*
                 if (selectPBR.Split(';')[1].Split (',').Length > 1)
                     strRes += @" GROUP BY DATE_PBR";
@@ -1378,20 +1378,20 @@ namespace StatisticCommon
             strRes = @"SELECT " +
                 //m_arNameTableAdminValues[(int)mode] + "." + m_strNamesField[(int)INDEX_NAME_FIELD.ADMIN_DATETIME] + " AS DATE_ADMIN, " +
                 //selectAdmin.Split (';') [0] +
-                m_NameTableAdminValues + "." + "DATE" + " AS DATE_ADMIN" +
+                s_NameTableAdminValues + "." + "DATE" + " AS DATE_ADMIN" +
                 ", " + selectAdmin.Split(';')[0] +
 
-                @" " + @"FROM " + m_NameTableAdminValues +
+                @" " + @"FROM " + s_NameTableAdminValues +
 
                 @" " + @"WHERE" +
                 @" " + @"ID_COMPONENT IN (" + selectAdmin.Split(';')[1] + ")" +
 
                 @" " + @"AND " +
                 //m_arNameTableAdminValues[(int)AdminTS.TYPE_FIELDS.DYNAMIC] + "." + m_strNamesField[(int)INDEX_NAME_FIELD.ADMIN_DATETIME] + " >= '" + dt.ToString("yyyyMMdd HH:mm:ss") + @"'" +
-                m_NameTableAdminValues + "." + "DATE" + " >= '" + dt.ToString("yyyyMMdd HH:mm:ss") + @"'" +
+                s_NameTableAdminValues + "." + "DATE" + " >= '" + dt.ToString("yyyyMMdd HH:mm:ss") + @"'" +
                 @" " + @"AND " +
                 //m_arNameTableAdminValues[(int)AdminTS.TYPE_FIELDS.DYNAMIC] + "." + m_strNamesField[(int)INDEX_NAME_FIELD.ADMIN_DATETIME] + " <= '" + dt.AddDays(1).ToString("yyyyMMdd HH:mm:ss") + @"'";
-                m_NameTableAdminValues + "." + "DATE" + " <= '" + dt.AddDays(1).ToString("yyyyMMdd HH:mm:ss") + @"'";
+                s_NameTableAdminValues + "." + "DATE" + " <= '" + dt.AddDays(1).ToString("yyyyMMdd HH:mm:ss") + @"'";
             /*
             strRes += @" " + @"UNION " +
                 @"SELECT " + strUsedAdminValues + "." + m_strNamesField[(int)INDEX_NAME_FIELD.ADMIN_DATETIME] + " AS DATE_ADMIN, " +
@@ -1618,7 +1618,7 @@ namespace StatisticCommon
         {
             string strRes = string.Empty;
 
-            strRes = @"SELECT DATE, ID, SEASON FROM " + m_NameTableAdminValues + " WHERE" +
+            strRes = @"SELECT DATE, ID, SEASON FROM " + s_NameTableAdminValues + " WHERE" +
                 @" ID_COMPONENT = " + comp.m_id +
                 @" AND DATE > '" + dt/*.AddHours(-1 * m_timezone_offset_msc)*/.ToString("yyyyMMdd HH:mm:ss") +
                 @"' AND DATE <= '" + dt.AddDays(1).ToString("yyyyMMdd HH:mm:ss") +
@@ -1639,7 +1639,7 @@ namespace StatisticCommon
             string strRes = string.Empty
                 , strNameFieldDateTime = m_strNamesField[(int)INDEX_NAME_FIELD.PBR_DATETIME];
 
-            strRes = @"SELECT " + @"[DATE_TIME]" + @", [ID], [PBR_NUMBER] FROM [" + m_NameTableUsedPPBRvsPBR + @"]" +
+            strRes = @"SELECT " + @"[DATE_TIME]" + @", [ID], [PBR_NUMBER] FROM [" + s_NameTableUsedPPBRvsPBR + @"]" +
                 @" WHERE" +
                 @" ID_COMPONENT = " + comp.m_id + "" +
                 @" AND " + @"DATE_TIME" + @" > '" + dt/*.AddHours(-1 * m_timezone_offset_msc)*/.ToString("yyyyMMdd HH:mm:ss") +

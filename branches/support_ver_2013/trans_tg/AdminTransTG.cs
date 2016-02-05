@@ -144,7 +144,7 @@ namespace trans_tg
         {
             string strRes = string.Empty;
 
-            strRes = @"SELECT DATE, ID FROM " + allTECComponents[indxTECComponents].tec.m_NameTableAdminValues + " WHERE" +
+            strRes = @"SELECT DATE, ID FROM " + TEC.s_NameTableAdminValues + " WHERE" +
                 @" ID_COMPONENT = " + comp.m_id +
                 @" AND DATE > '" + dt.AddHours(-1 * allTECComponents[indxTECComponents].tec.m_timezone_offset_msc).ToString("yyyyMMdd HH:mm:ss") +
                 @"' AND DATE <= '" + dt.AddDays(1).ToString("yyyyMMdd HH:mm:ss") +
@@ -158,7 +158,7 @@ namespace trans_tg
         {
             string strRes = string.Empty;
 
-            strRes = @"SELECT DATE_TIME, ID FROM " + @"[" + allTECComponents[indxTECComponents].tec.m_NameTableUsedPPBRvsPBR + @"]" +
+            strRes = @"SELECT DATE_TIME, ID FROM " + @"[" + TEC.s_NameTableUsedPPBRvsPBR + @"]" +
                 @" WHERE" +
                 @" ID_COMPONENT = " + comp.m_id + "" +
                 @" AND DATE_TIME > '" + dt.AddHours(-1 * allTECComponents[indxTECComponents].tec.m_timezone_offset_msc).ToString("yyyyMMdd HH:mm:ss") +
@@ -205,7 +205,7 @@ namespace trans_tg
                     // запись для этого часа имеется, модифицируем её
                     if (m_listTimezoneOffsetHaveDates[(int)CONN_SETT_TYPE.ADMIN][i] == true)
                     {
-                        resQuery[(int)DbTSQLInterface.QUERY_TYPE.UPDATE] += @"UPDATE " + t.m_NameTableAdminValues + " SET " +
+                        resQuery[(int)DbTSQLInterface.QUERY_TYPE.UPDATE] += @"UPDATE " + t.s_NameTableAdminValues + " SET " +
                             @"REC='" + m_listCurTimezoneOffsetRDGExcelValues[indx][i].recomendation.ToString("F2", CultureInfo.InvariantCulture) +
                             @"', " + @"IS_PER=" + (m_listCurTimezoneOffsetRDGExcelValues[indx][i].deviationPercent ? "1" : "0") +
                             @", " + "DIVIAT='" + m_listCurTimezoneOffsetRDGExcelValues[indx][i].deviation.ToString("F2", CultureInfo.InvariantCulture) +

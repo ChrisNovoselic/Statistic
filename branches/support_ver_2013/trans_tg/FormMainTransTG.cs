@@ -18,8 +18,8 @@ namespace trans_tg
     {
         public FormMainTransTG()
             : base((int)ProgramBase.ID_APP.TRANS_TG
-            , new string[] { @"ТипБДКфгНазначение" }
-            , new string[] { @"200" })
+            , new string[] { }
+            , new string[] { })
         {
             InitializeComponentTransSrc(@"Путь РДГ (Excel)");
 
@@ -71,25 +71,6 @@ namespace trans_tg
 
             EditFormConnectionSettings("connsett_tg.ini", true);
 
-            int iConfigDB = -1;
-            string keyTypeConfigDB = @"ТипБДКфгНазначение";
-            //FileINI fileINI = new FileINI(@"setup.ini");
-            //string sec = "Main (" + ProgramBase.AppName + ")";
-            iConfigDB = Int32.Parse(m_sFileINI.GetMainValueOfKey(keyTypeConfigDB));
-
-            TYPE_DATABASE_CFG iTypeConfigDB = TYPE_DATABASE_CFG.UNKNOWN;
-
-            for (TYPE_DATABASE_CFG t = TYPE_DATABASE_CFG.CFG_190; t < TYPE_DATABASE_CFG.UNKNOWN; t++)
-            {
-                if (t.ToString().Contains(iConfigDB.ToString()) == true)
-                {
-                    iTypeConfigDB = t;
-                    break;
-                }
-                else
-                    ;
-            }
-
             bool bIgnoreTECInUse = false;
 
             HMark markQueries = new HMark(new int[] { (int)StatisticCommon.CONN_SETT_TYPE.ADMIN, (int)StatisticCommon.CONN_SETT_TYPE.PBR });
@@ -108,7 +89,7 @@ namespace trans_tg
                         ;
 
                 try {
-                    ((AdminTS)m_arAdmin[i]).InitTEC(idListener, FormChangeMode.MODE_TECCOMPONENT.UNKNOWN, iTypeConfigDB, markQueries, bIgnoreTECInUse);
+                    ((AdminTS)m_arAdmin[i]).InitTEC(idListener, FormChangeMode.MODE_TECCOMPONENT.UNKNOWN, markQueries, bIgnoreTECInUse);
                     RemoveTEC(m_arAdmin[i]);
                 }
                 catch (Exception e)

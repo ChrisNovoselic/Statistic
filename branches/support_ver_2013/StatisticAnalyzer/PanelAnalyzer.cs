@@ -2323,7 +2323,7 @@ namespace StatisticAnalyzer
             if ((!(connConfigDB == null)) && (err == 0))
             {
                 idMainDB = Int32.Parse(DbTSQLInterface.Select(ref connConfigDB, @"SELECT [VALUE] FROM [setup] WHERE [KEY]='" + @"Main DataSource" + @"'", null, null, out err).Rows[0][@"VALUE"].ToString());
-                DataTable tblConnSettMainDB = ConnectionSettingsSource.GetConnectionSettings(TYPE_DATABASE_CFG.CFG_200, ref connConfigDB, idMainDB, -1, out err);
+                DataTable tblConnSettMainDB = ConnectionSettingsSource.GetConnectionSettings(ref connConfigDB, idMainDB, -1, out err);
                 ConnectionSettings connSettMainDB = new ConnectionSettings(tblConnSettMainDB.Rows[0], 1);
                 m_idListenerLoggingDB = DbSources.Sources().Register(connSettMainDB, false, @"MAIN_DB", false);
 
