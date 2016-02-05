@@ -203,6 +203,7 @@ namespace StatisticDiagnostic
             this.SuspendLayout();
 
             Tasklabel = new System.Windows.Forms.Label();
+            SizeBDlabel = new System.Windows.Forms.Label();
             TEClabel = new System.Windows.Forms.Label();
             Modeslabel = new System.Windows.Forms.Label();
             //
@@ -243,17 +244,34 @@ namespace StatisticDiagnostic
             this.TaskTableLayoutPanel.AutoSize = true;
             this.TaskTableLayoutPanel.CellBorderStyle = System.Windows.Forms.TableLayoutPanelCellBorderStyle.Single;
             this.TaskTableLayoutPanel.AutoSizeMode = System.Windows.Forms.AutoSizeMode.GrowAndShrink;
-            this.TaskTableLayoutPanel.ColumnCount = 1;
-            this.TaskTableLayoutPanel.ColumnStyles.Add(new System.Windows.Forms.ColumnStyle(System.Windows.Forms.SizeType.Percent, 50F));
+            this.TaskTableLayoutPanel.ColumnCount = 2;
+            this.TaskTableLayoutPanel.ColumnStyles.Add(new System.Windows.Forms.ColumnStyle(System.Windows.Forms.SizeType.Percent, 60F));
+            this.TaskTableLayoutPanel.ColumnStyles.Add(new System.Windows.Forms.ColumnStyle(System.Windows.Forms.SizeType.Percent, 40F));
             this.TaskTableLayoutPanel.RowCount = 1;
             this.TaskTableLayoutPanel.RowStyles.Add(new System.Windows.Forms.RowStyle(System.Windows.Forms.SizeType.Percent, 50F));
             this.TaskTableLayoutPanel.Controls.Add(m_taskdb.TaskDataGridView, 0, 0);
+            this.TaskTableLayoutPanel.Controls.Add(m_sizedb.SizeDbDataGridView, 1, 0);
+            //
+            //LabelTableLayoutPanel
+            //
+            this.LabelTableLayoutPanel = new System.Windows.Forms.TableLayoutPanel();
+            this.LabelTableLayoutPanel.Dock = DockStyle.Fill;
+            this.LabelTableLayoutPanel.AutoSize = true;
+            this.LabelTableLayoutPanel.CellBorderStyle = System.Windows.Forms.TableLayoutPanelCellBorderStyle.None;
+            this.LabelTableLayoutPanel.AutoSizeMode = System.Windows.Forms.AutoSizeMode.GrowOnly;
+            this.LabelTableLayoutPanel.ColumnCount = 2;
+            this.LabelTableLayoutPanel.ColumnStyles.Add(new System.Windows.Forms.ColumnStyle(System.Windows.Forms.SizeType.Percent, 60F));
+            this.LabelTableLayoutPanel.ColumnStyles.Add(new System.Windows.Forms.ColumnStyle(System.Windows.Forms.SizeType.Percent, 40F));
+            this.LabelTableLayoutPanel.RowCount = 1;
+            this.LabelTableLayoutPanel.RowStyles.Add(new System.Windows.Forms.RowStyle(System.Windows.Forms.SizeType.Percent, 100F));
+            this.LabelTableLayoutPanel.Controls.Add(Tasklabel, 0, 0);
+            this.LabelTableLayoutPanel.Controls.Add(SizeBDlabel, 1, 0);
 
             this.Controls.Add(TEClabel, 0, 0);
             this.Controls.Add(TecTableLayoutPanel, 0, 1);
             this.Controls.Add(Modeslabel, 0, 2);
             this.Controls.Add(ModesTableLayoutPanel, 0, 3);
-            this.Controls.Add(Tasklabel, 0, 4);
+            this.Controls.Add(LabelTableLayoutPanel, 0, 4);
             this.Controls.Add(TaskTableLayoutPanel, 0, 5);
 
             this.Modeslabel.AutoSize = true;
@@ -278,6 +296,14 @@ namespace StatisticDiagnostic
             this.Tasklabel.AutoSize = true;
             this.Tasklabel.Text = "Список задач";
             this.Tasklabel.Anchor = ((System.Windows.Forms.AnchorStyles)(((System.Windows.Forms.AnchorStyles.Bottom | System.Windows.Forms.AnchorStyles.Left))));
+
+            this.SizeBDlabel.Size = new System.Drawing.Size(10, 10);
+            this.SizeBDlabel.Dock = System.Windows.Forms.DockStyle.Fill;
+            this.SizeBDlabel.Name = "SizeBDlabel";
+            this.SizeBDlabel.TabIndex = 0;
+            this.SizeBDlabel.AutoSize = true;
+            this.SizeBDlabel.Text = "Информация БД";
+            this.SizeBDlabel.Anchor = ((System.Windows.Forms.AnchorStyles)(((System.Windows.Forms.AnchorStyles.Bottom | System.Windows.Forms.AnchorStyles.Left))));
 
             this.Dock = DockStyle.Fill;
 
@@ -312,6 +338,10 @@ namespace StatisticDiagnostic
         /// </summary>
         private System.Windows.Forms.Label Modeslabel;
         /// <summary>
+        /// Подпись к вложенной панели с параметрами Баз Данных
+        /// </summary>
+        private System.Windows.Forms.Label SizeBDlabel;
+        /// <summary>
         /// Панель для размещения групповых элементов интерфейса с пользователем
         ///  с параметрами диагностирования источников данных для ТЭЦ
         /// </summary>
@@ -326,6 +356,10 @@ namespace StatisticDiagnostic
         ///  с параметрами диагностирования сервисов Модес
         /// </summary>
         private System.Windows.Forms.TableLayoutPanel TaskTableLayoutPanel;
+        /// <summary>
+        /// Панель для размещения подписей для информационных окон
+        /// </summary>
+        private System.Windows.Forms.TableLayoutPanel LabelTableLayoutPanel;
     }
 
     /// <summary>
@@ -346,6 +380,7 @@ namespace StatisticDiagnostic
         static DataTable m_dtSource = new DataTable();
         static DataTable m_dtGTP = new DataTable();
         static DataTable m_dtTECList = new DataTable();
+        static DataTable m_dtSIZEDB = new DataTable();
         static DataTable m_dtParamDiagnostic = new DataTable();
         /// <summary>
         /// экземпляр класса 
@@ -355,6 +390,7 @@ namespace StatisticDiagnostic
         static System.Timers.Timer m_timerUpdate;
         static Task m_taskdb = new Task();
         static Modes m_modesdb = new Modes();
+        static SizeDb m_sizedb = new SizeDb();
         static Tec m_tecdb = new Tec();
 
         /// <summary>
@@ -929,11 +965,12 @@ namespace StatisticDiagnostic
                     m_arPanelsTEC[i].TECDataGridView.Invoke(new Action(() => m_arPanelsTEC[i].TECDataGridView.Rows[r].Cells[1].Value = m_shortTime));
                     m_arPanelsTEC[i].TECDataGridView.Invoke(new Action(() => m_arPanelsTEC[i].TECDataGridView.Rows[r].Cells[5].Value = m_drTecSource[t]["NAME_SHR"]));
                     m_arPanelsTEC[i].TECDataGridView.Invoke(new Action(() => m_arPanelsTEC[i].TECDataGridView.Rows[r].Cells[3].Value = TimeZoneInfo.ConvertTimeBySystemTimeZoneId(DateTime.Now, TimeZoneInfo.Local.Id, "Russian Standard Time").ToString("hh:mm:ss:fff")));
-                        //DateTime.Now.ToString("HH:mm:ss.fff")));
+                    //DateTime.Now.ToString("HH:mm:ss.fff")));
                     paintingCells(i, r);
 
                     if (IsNUll(ref m_drTecSource, countElem))
-                        checkrelevancevalues(DateTime.Parse(m_shortTime), i, r);
+                        ;
+                    //checkrelevancevalues(DateTime.Parse(m_shortTime), i, r);
                     else ;
 
                     t = t + 2;
@@ -1278,7 +1315,7 @@ namespace StatisticDiagnostic
                 {
                     case "СОТИАССО":
                         if ((Npanel + 1) == 6)
-                         result = result.AddHours(6.0);
+                            result = result.AddHours(6.0);
                         else
                             ;
                         break;
@@ -2054,7 +2091,7 @@ namespace StatisticDiagnostic
             }
 
             /// <summary>
-            /// 
+            /// Снятие выделения с ячеек
             /// </summary>
             /// <param name="sender"></param>
             /// <param name="e"></param>
@@ -2096,7 +2133,6 @@ namespace StatisticDiagnostic
             private void columTimeTask(int i)
             {
                 string m_timeNow = DateTime.Now.ToString("HH:mm:ss.fff");
-
                 TaskDataGridView.Rows[i].Cells[3].Value = m_timeNow;
             }
 
@@ -2115,7 +2151,6 @@ namespace StatisticDiagnostic
                 }
                 else
                     parseStr = "Ошибка!";
-
                 return parseStr;
             }
 
@@ -2223,6 +2258,164 @@ namespace StatisticDiagnostic
         }
 
         /// <summary>
+        /// Класс для описания элемента панели с информацией
+        /// отображения значений параметров диагностики 
+        /// размера баз данных
+        /// </summary>
+        partial class SizeDb : HPanelCommon
+        {
+            public DataGridView SizeDbDataGridView = new DataGridView();
+
+            public SizeDb()
+                : base(-1, -1)
+            {
+                initialize();
+            }
+
+            public SizeDb(IContainer container)
+                : base(container, -1, -1)
+            {
+                container.Add(this);
+
+                initialize();
+            }
+
+            private void initialize()
+            {
+                InitializeComponentSizeDb();
+            }
+
+            protected override void initializeLayoutStyle(int cols = -1, int rows = -1)
+            {
+                initializeLayoutStyleEvenly(cols, rows);
+            }
+
+            /// <summary>
+            /// Требуется переменная конструктора.
+            /// </summary>
+            private System.ComponentModel.IContainer components = null;
+
+            /// <summary> 
+            /// Освободить все используемые ресурсы.
+            /// </summary>
+            /// <param name="disposing">истинно, если управляемый ресурс должен быть удален; иначе ложно.</param>
+            protected override void Dispose(bool disposing)
+            {
+                if (disposing && (components != null))
+                {
+                    components.Dispose();
+                }
+                base.Dispose(disposing);
+            }
+
+            #region Код, автоматически созданный конструктором компонентов
+
+            /// <summary>
+            /// Обязательный метод для поддержки конструктора - не изменяйте
+            /// содержимое данного метода при помощи редактора кода.
+            /// </summary>
+            private void InitializeComponentSizeDb()
+            {
+                SizeDbDataGridView = new System.Windows.Forms.DataGridView();
+                this.SuspendLayout();
+
+                this.SizeDbDataGridView.ColumnHeadersHeightSizeMode = System.Windows.Forms.DataGridViewColumnHeadersHeightSizeMode.AutoSize;
+                this.SizeDbDataGridView.AutoSizeRowsMode = DataGridViewAutoSizeRowsMode.AllCellsExceptHeaders;
+                this.SizeDbDataGridView.AutoSizeColumnsMode = DataGridViewAutoSizeColumnsMode.Fill;
+                this.SizeDbDataGridView.Dock = DockStyle.Fill;
+                this.SizeDbDataGridView.ClearSelection();
+                this.SizeDbDataGridView.Name = "SizeDbDataGridView";
+                this.SizeDbDataGridView.ColumnCount = 3;
+                this.SizeDbDataGridView.Columns[0].Name = "Имя базы данных";
+                this.SizeDbDataGridView.Columns[1].Name = "Размер базы данных, МБ";
+                this.SizeDbDataGridView.Columns[2].Name = "Время проверки";
+                this.SizeDbDataGridView.RowHeadersVisible = false;
+                this.SizeDbDataGridView.TabIndex = 0;
+                this.SizeDbDataGridView.AllowUserToAddRows = false;
+                this.SizeDbDataGridView.ReadOnly = true;
+
+                //this.SizeDbDataGridView.CellClick += SizeDbDataGridView_CellClick;
+                this.ResumeLayout();
+            }
+            #endregion;
+        }
+
+        /// <summary>
+        /// 
+        /// </summary>
+        partial class SizeDb
+        {
+            /// <summary>
+            /// 
+            /// </summary>
+            private void LoadValues()
+            {
+                DataRow[] drSizeOF;
+
+                var m_enumIDEXTDB = (from r in m_dtSIZEDB.AsEnumerable()
+                                     select new
+                                     {
+                                         ID_EXT = r.Field<string>("ID_EXT"),
+                                     }).Distinct();
+
+
+
+                for (int j = 0; j < m_enumIDEXTDB.Count(); j++)
+                {
+                    string filter = "ID_EXT = '" + m_enumIDEXTDB.ElementAt(j).ID_EXT + "'";
+
+                    drSizeOF = m_tableSourceData.Select(filter);
+
+                    if (SizeDbDataGridView.RowCount > (m_enumIDEXTDB.Count() * 2))
+                    {
+                        AddRows(m_enumIDEXTDB.Count());
+                    }
+
+                    AddItem(drSizeOF);
+                }
+            }
+
+            private void AddItem(DataRow[] dt)
+            {
+                for (int i = 0; i < SizeDbDataGridView.RowCount; i++)
+                {
+                    //if (SizeDbDataGridView.InvokeRequired)
+                    //       {
+                    //           SizeDbDataGridView.Invoke(new Action(() => SizeDbDataGridView.Rows[i].Cells[1].Value = dt[i][]));
+                    //           SizeDbDataGridView.Invoke(new Action(() => SizeDbDataGridView.Rows[i].Cells[2].Value = dt[i][]));
+                    //           SizeDbDataGridView.Invoke(new Action(() => SizeDbDataGridView.Rows[i].Cells[0].Value = dt[i][]));
+                    //       }
+                    //       else
+                    //       {
+                    //           SizeDbDataGridView.Rows[i].Cells[1].Value = dt[i][];
+                    //           SizeDbDataGridView.Rows[i].Cells[2].Value = dt[i][];
+                    //           SizeDbDataGridView.Rows[i].Cells[0].Value = dt[i][];
+                    //       }
+                }
+            }
+
+            /// <summary>
+            /// Добавление строк в датагрид
+            /// </summary>
+            private void AddRows(int countRows)
+            {
+                for (int i = 0; i < countRows; i++)
+                {
+                    if (SizeDbDataGridView.InvokeRequired)
+                        SizeDbDataGridView.Invoke(new Action(() => SizeDbDataGridView.Rows.Add()));
+                    else
+                        SizeDbDataGridView.Rows.Add();
+                }
+            }
+
+
+            private void NameBD()
+            {
+ 
+            }
+        }
+
+        /// <summary>
         /// constructor
         /// </summary>
         public PanelStatisticDiagnostic()
@@ -2278,7 +2471,6 @@ namespace StatisticDiagnostic
         public static void GetTimeServer(DataTable dtTime)
         {
             SERVER_TIME = dtTime;
-   
         }
 
         /// <summary>
@@ -2288,7 +2480,7 @@ namespace StatisticDiagnostic
         {
             m_DataSource.Start();
             m_DataSource.StartDbInterfaces();
-            m_DataSource.Command();   
+            m_DataSource.Command();
             m_DataSource.EvtRecievedTable += new DelegateObjectFunc(m_DataSource_EvtRecievedTable);
         }
 
@@ -2378,6 +2570,7 @@ namespace StatisticDiagnostic
                 m_dtSourceModes = DbTSQLInterface.Select(ref dbconn, "SELECT * FROM DIAGNOSTIC_TASK_MODES", null, null, out err);
                 m_dtSource = DbTSQLInterface.Select(ref dbconn, "SELECT * FROM SOURCE", null, null, out err);
                 m_dtGTP = DbTSQLInterface.Select(ref dbconn, "SELECT * FROM GTP_LIST", null, null, out err);
+                m_dtSIZEDB = DbTSQLInterface.Select(ref dbconn, "SELECT * FROM DIAGNOSTIC_SIZEDB", null, null, out err);
                 m_dtParamDiagnostic = DbTSQLInterface.Select(ref dbconn, "SELECT * FROM DIAGNOSTIC_PARAM", null, null, out err);
                 m_dtTECList = InitTEC_200.getListTEC(ref dbconn, false, out err);
             }
