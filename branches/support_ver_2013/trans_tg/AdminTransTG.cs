@@ -118,7 +118,7 @@ namespace trans_tg
 
             if (IsCanUseTECComponents())
                 //Request(m_indxDbInterfaceCommon, m_listenerIdCommon, allTECComponents[indxTECComponents].tec.GetAdminDatesQuery(date));
-                Request(m_dictIdListeners[allTECComponents[indxTECComponents].tec.m_id][(int)StatisticCommon.CONN_SETT_TYPE.ADMIN], GetAdminDatesQuery(date, m_typeFields, allTECComponents[indxTECComponents]));
+                Request(m_dictIdListeners[allTECComponents[indxTECComponents].tec.m_id][(int)StatisticCommon.CONN_SETT_TYPE.ADMIN], GetAdminDatesQuery(date, allTECComponents[indxTECComponents]));
             else
                 ;
         }
@@ -140,57 +140,30 @@ namespace trans_tg
         }
 
         //Из 'TEC.cs'
-        private string GetAdminDatesQuery(DateTime dt, AdminTS.TYPE_FIELDS mode, TECComponent comp)
+        private string GetAdminDatesQuery(DateTime dt, TECComponent comp)
         {
             string strRes = string.Empty;
 
-            switch (mode)
-            {
-                case AdminTS.TYPE_FIELDS.STATIC:
-                    strRes = @"SELECT DATE, ID FROM " + allTECComponents[indxTECComponents].tec.m_arNameTableAdminValues[(int)mode] + " WHERE " +
-                          @"DATE > '" + dt.ToString("yyyyMMdd HH:mm:ss") +
-                          @"' AND DATE <= '" + dt.AddDays(1).ToString("yyyyMMdd HH:mm:ss") +
-                          @"' ORDER BY DATE ASC";
-                    break;
-                case AdminTS.TYPE_FIELDS.DYNAMIC:
-                    strRes = @"SELECT DATE, ID FROM " + allTECComponents[indxTECComponents].tec.m_arNameTableAdminValues[(int)mode] + " WHERE" +
-                            @" ID_COMPONENT = " + comp.m_id +
-                          @" AND DATE > '" + dt.AddHours(-1 * allTECComponents[indxTECComponents].tec.m_timezone_offset_msc).ToString("yyyyMMdd HH:mm:ss") +
-                          @"' AND DATE <= '" + dt.AddDays(1).ToString("yyyyMMdd HH:mm:ss") +
-                          @"' ORDER BY DATE ASC";
-                    break;
-                default:
-                    break;
-            }
+            strRes = @"SELECT DATE, ID FROM " + allTECComponents[indxTECComponents].tec.m_NameTableAdminValues + " WHERE" +
+                @" ID_COMPONENT = " + comp.m_id +
+                @" AND DATE > '" + dt.AddHours(-1 * allTECComponents[indxTECComponents].tec.m_timezone_offset_msc).ToString("yyyyMMdd HH:mm:ss") +
+                @"' AND DATE <= '" + dt.AddDays(1).ToString("yyyyMMdd HH:mm:ss") +
+                @"' ORDER BY DATE ASC";
 
             return strRes;
         }
 
         //Из 'TEC.cs'
-        private string GetPBRDatesQuery(DateTime dt, AdminTS.TYPE_FIELDS mode, TECComponent comp)
+        private string GetPBRDatesQuery(DateTime dt, TECComponent comp)
         {
             string strRes = string.Empty;
 
-            switch (mode)
-            {
-                case AdminTS.TYPE_FIELDS.STATIC:
-                    strRes = @"SELECT DATE_TIME, ID FROM " + allTECComponents[indxTECComponents].tec.m_arNameTableUsedPPBRvsPBR[(int)mode] +
-                            @" WHERE " +
-                            @"DATE_TIME > '" + dt.ToString("yyyyMMdd HH:mm:ss") +
-                            @"' AND DATE_TIME <= '" + dt.AddDays(1).ToString("yyyyMMdd HH:mm:ss") +
-                            @"' ORDER BY DATE_TIME ASC";
-                    break;
-                case AdminTS.TYPE_FIELDS.DYNAMIC:
-                    strRes = @"SELECT DATE_TIME, ID FROM " + @"[" + allTECComponents[indxTECComponents].tec.m_arNameTableUsedPPBRvsPBR[(int)mode] + @"]" +
-                            @" WHERE" +
-                            @" ID_COMPONENT = " + comp.m_id + "" +
-                            @" AND DATE_TIME > '" + dt.AddHours(-1 * allTECComponents[indxTECComponents].tec.m_timezone_offset_msc).ToString("yyyyMMdd HH:mm:ss") +
-                            @"' AND DATE_TIME <= '" + dt.AddDays(1).ToString("yyyyMMdd HH:mm:ss") +
-                            @"' ORDER BY DATE_TIME ASC";
-                    break;
-                default:
-                    break;
-            }
+            strRes = @"SELECT DATE_TIME, ID FROM " + @"[" + allTECComponents[indxTECComponents].tec.m_NameTableUsedPPBRvsPBR + @"]" +
+                @" WHERE" +
+                @" ID_COMPONENT = " + comp.m_id + "" +
+                @" AND DATE_TIME > '" + dt.AddHours(-1 * allTECComponents[indxTECComponents].tec.m_timezone_offset_msc).ToString("yyyyMMdd HH:mm:ss") +
+                @"' AND DATE_TIME <= '" + dt.AddDays(1).ToString("yyyyMMdd HH:mm:ss") +
+                @"' ORDER BY DATE_TIME ASC";
 
             return strRes;
         }
@@ -232,46 +205,28 @@ namespace trans_tg
                     // запись для этого часа имеется, модифицируем её
                     if (m_listTimezoneOffsetHaveDates[(int)CONN_SETT_TYPE.ADMIN][i] == true)
                     {
-                        switch (m_typeFields)
-                        {
-                            case AdminTS.TYPE_FIELDS.STATIC:
-                                break;
-                            case AdminTS.TYPE_FIELDS.DYNAMIC:
-                                resQuery[(int)DbTSQLInterface.QUERY_TYPE.UPDATE] += @"UPDATE " + t.m_arNameTableAdminValues[(int)m_typeFields] + " SET " +
-                                            @"REC='" + m_listCurTimezoneOffsetRDGExcelValues[indx][i].recomendation.ToString("F2", CultureInfo.InvariantCulture) +
-                                            @"', " + @"IS_PER=" + (m_listCurTimezoneOffsetRDGExcelValues[indx][i].deviationPercent ? "1" : "0") +
-                                            @", " + "DIVIAT='" + m_listCurTimezoneOffsetRDGExcelValues[indx][i].deviation.ToString("F2", CultureInfo.InvariantCulture) +
-                                            @"', " + "SEASON=" + (offset > 0 ? (SEASON_BASE + (int)HAdmin.seasonJumpE.WinterToSummer) : (SEASON_BASE + (int)HAdmin.seasonJumpE.SummerToWinter)) +
-                                            @", " + "FC=" + (m_curRDGValues[i].fc ? 1 : 0) +
-                                            @" WHERE" +
-                                            @" DATE = '" + date.AddHours((i + 1) + (-1 * t.m_timezone_offset_msc)).ToString("yyyyMMdd HH:mm:ss") +
-                                            @"'" +
-                                            @" AND ID_COMPONENT = " + comp.m_id + "; ";
-                                break;
-                            default:
-                                break;
-                        }
+                        resQuery[(int)DbTSQLInterface.QUERY_TYPE.UPDATE] += @"UPDATE " + t.m_NameTableAdminValues + " SET " +
+                            @"REC='" + m_listCurTimezoneOffsetRDGExcelValues[indx][i].recomendation.ToString("F2", CultureInfo.InvariantCulture) +
+                            @"', " + @"IS_PER=" + (m_listCurTimezoneOffsetRDGExcelValues[indx][i].deviationPercent ? "1" : "0") +
+                            @", " + "DIVIAT='" + m_listCurTimezoneOffsetRDGExcelValues[indx][i].deviation.ToString("F2", CultureInfo.InvariantCulture) +
+                            @"', " + "SEASON=" + (offset > 0 ? (SEASON_BASE + (int)HAdmin.seasonJumpE.WinterToSummer) : (SEASON_BASE + (int)HAdmin.seasonJumpE.SummerToWinter)) +
+                            @", " + "FC=" + (m_curRDGValues[i].fc ? 1 : 0) +
+                            @" WHERE" +
+                            @" DATE = '" + date.AddHours((i + 1) + (-1 * t.m_timezone_offset_msc)).ToString("yyyyMMdd HH:mm:ss") +
+                            @"'" +
+                            @" AND ID_COMPONENT = " + comp.m_id + "; ";
                     }
                     else
                     {
-                        // запись отсутствует, запоминаем значения
-                        switch (m_typeFields)
-                        {
-                            case AdminTS.TYPE_FIELDS.STATIC:
-                                break;
-                            case AdminTS.TYPE_FIELDS.DYNAMIC:
-                                resQuery[(int)DbTSQLInterface.QUERY_TYPE.INSERT] += @" ('" + date.AddHours((i + 1) + (-1 * t.m_timezone_offset_msc)).ToString("yyyyMMdd HH:mm:ss") +
-                                            @"', '" + m_listCurTimezoneOffsetRDGExcelValues[indx][i].recomendation.ToString("F2", CultureInfo.InvariantCulture) +
-                                            @"', " + (m_listCurTimezoneOffsetRDGExcelValues[indx][i].deviationPercent ? "1" : "0") +
-                                            @", '" + m_listCurTimezoneOffsetRDGExcelValues[indx][i].deviation.ToString("F2", CultureInfo.InvariantCulture) +
-                                            @"', " + (comp.m_id) +
-                                            @", " + (offset > 0 ? (SEASON_BASE + (int)HAdmin.seasonJumpE.WinterToSummer) : (SEASON_BASE + (int)HAdmin.seasonJumpE.SummerToWinter)) +
-                                            @", " + (m_curRDGValues[i].fc ? 1 : 0) +
-                                            @"),";
-                                break;
-                            default:
-                                break;
-                        }
+                        // запись отсутствует, запоминаем значения                        
+                        resQuery[(int)DbTSQLInterface.QUERY_TYPE.INSERT] += @" ('" + date.AddHours((i + 1) + (-1 * t.m_timezone_offset_msc)).ToString("yyyyMMdd HH:mm:ss") +
+                                @"', '" + m_listCurTimezoneOffsetRDGExcelValues[indx][i].recomendation.ToString("F2", CultureInfo.InvariantCulture) +
+                                @"', " + (m_listCurTimezoneOffsetRDGExcelValues[indx][i].deviationPercent ? "1" : "0") +
+                                @", '" + m_listCurTimezoneOffsetRDGExcelValues[indx][i].deviation.ToString("F2", CultureInfo.InvariantCulture) +
+                                @"', " + (comp.m_id) +
+                                @", " + (offset > 0 ? (SEASON_BASE + (int)HAdmin.seasonJumpE.WinterToSummer) : (SEASON_BASE + (int)HAdmin.seasonJumpE.SummerToWinter)) +
+                                @", " + (m_curRDGValues[i].fc ? 1 : 0) +
+                                @"),";                                
                     }
                 }
             }

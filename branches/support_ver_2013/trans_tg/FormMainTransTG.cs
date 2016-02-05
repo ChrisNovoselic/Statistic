@@ -214,7 +214,7 @@ namespace trans_tg
                                 //    ;
                                 break;
                             case (int)CONN_SETT_TYPE.DEST:
-                                ((AdminTS)m_arAdmin[m_IndexDB]).GetRDGValues((int)((AdminTS)m_arAdmin[(int)CONN_SETT_TYPE.DEST]).m_typeFields, m_listTECComponentIndex[comboBoxTECComponent.SelectedIndex], dateTimePickerMain.Value.Date);
+                                ((AdminTS)m_arAdmin[m_IndexDB]).GetRDGValues(m_listTECComponentIndex[comboBoxTECComponent.SelectedIndex], dateTimePickerMain.Value.Date);
                                 break;
                             default:
                                 break;
@@ -397,7 +397,7 @@ namespace trans_tg
             
             m_dgwAdminTable.ClearTables ();
 
-            ((AdminTS)m_arAdmin[(int)CONN_SETT_TYPE.DEST]).GetRDGValues((int)((AdminTS)m_arAdmin[(int)CONN_SETT_TYPE.DEST]).m_typeFields, m_listTECComponentIndex[comboBoxTECComponent.SelectedIndex], dateTimePickerMain.Value.Date);
+            ((AdminTS)m_arAdmin[(int)CONN_SETT_TYPE.DEST]).GetRDGValues(m_listTECComponentIndex[comboBoxTECComponent.SelectedIndex], dateTimePickerMain.Value.Date);
         }
 
         protected override void saveDataGridViewAdminComplete()

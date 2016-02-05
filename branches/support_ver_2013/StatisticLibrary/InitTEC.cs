@@ -10,8 +10,6 @@ namespace StatisticCommon
 {
     public class InitTECBase
     {
-        protected TYPE_DATABASE_CFG m_typeDB_CFG { get { return this is InitTEC_200 ? TYPE_DATABASE_CFG.CFG_200 : this is InitTEC_190 ? TYPE_DATABASE_CFG.CFG_190 : TYPE_DATABASE_CFG.UNKNOWN; } }
-        
         public class ListTEC : List <TEC>
         {
             public ListTEC () : base ()
@@ -38,9 +36,10 @@ namespace StatisticCommon
 
         protected bool IsNameField(DataTable data, string nameField) { return data.Columns.IndexOf(nameField) > -1 ? true : false; }
 
-        public static DataTable getListTEC(ref DbConnection connConfigDB, bool bIgnoreTECInUse, out int err)
+        public static DataTable getListTEC(ref DbConnection connConfigDB, out int err)
         {
             string req = string.Empty;
+            bool bIgnoreTECInUse = true;
             req = "SELECT * FROM TEC_LIST ";
 
             if (bIgnoreTECInUse == false) req += "WHERE INUSE=1 "; else ;
@@ -72,20 +71,20 @@ namespace StatisticCommon
             return DbTSQLInterface.Select(ref m_connConfigDB, "SELECT * FROM TG_LIST WHERE ID_" + prefix + " = " + id.ToString(), null, null, out err);
         }
 
-        public static DataTable getConnSettingsOfIdSource(TYPE_DATABASE_CFG typeDB_CFG, int idListener, int id_ext, int id_role, out int err)
+        public static DataTable getConnSettingsOfIdSource(int idListener, int id_ext, int id_role, out int err)
         {
             DbConnection conn = DbSources.Sources().GetConnection(idListener, out err);
-            return getConnSettingsOfIdSource(typeDB_CFG, ref conn, id_ext, id_role, out err);
+            return getConnSettingsOfIdSource(ref conn, id_ext, id_role, out err);
         }
 
-        public static DataTable getConnSettingsOfIdSource(TYPE_DATABASE_CFG typeDB_CFG, ref DbConnection conn, int id_ext, int id_role, out int err)
+        public static DataTable getConnSettingsOfIdSource(ref DbConnection conn, int id_ext, int id_role, out int err)
         {
-            return ConnectionSettingsSource.GetConnectionSettings(typeDB_CFG, ref conn, id_ext, id_role, out err);
+            return ConnectionSettingsSource.GetConnectionSettings(ref conn, id_ext, id_role, out err);
         }
 
         protected DataTable getConnSettingsOfIdSource(int id_ext, int id_role, out int err)
         {
-            return ConnectionSettingsSource.GetConnectionSettings(m_typeDB_CFG, ref m_connConfigDB, id_ext, id_role, out err);
+            return ConnectionSettingsSource.GetConnectionSettings(ref m_connConfigDB, id_ext, id_role, out err);
         }
 
         protected List<int> getMCentreId(DataTable data, int row)
@@ -126,7 +125,7 @@ namespace StatisticCommon
         }
     }
 
-    public class InitTEC_200 : InitTECBase
+    public class InitTEC : InitTECBase
     {
         private DataTable getALL_PARAM_TG(int ver, out int err)
         {
@@ -185,7 +184,7 @@ namespace StatisticCommon
         /// <param name="idListener"></param>
         /// <param name="bIgnoreTECInUse"></param>
         /// <param name="bUseData"></param>
-        public InitTEC_200(int idListener, bool bIgnoreTECInUse, bool bUseData)
+        public InitTEC(int idListener, bool bUseData)
         {
             //Logging.Logg().Debug("InitTEC::InitTEC (3 параметра) - вход...");
 
@@ -206,7 +205,7 @@ namespace StatisticCommon
             all_PARAM_TG = getALL_PARAM_TG (0, out err);
 
             //Использование статической функции
-            list_tec = getListTEC(ref m_connConfigDB, bIgnoreTECInUse, out err);
+            list_tec = getListTEC(ref m_connConfigDB, out err);
 
             if (err == 0) {
                 for (int i = 0; i < list_tec.Rows.Count; i++)
@@ -221,10 +220,8 @@ namespace StatisticCommon
                         //if ((HAdmin.DEBUG_ID_TEC == -1) || (HAdmin.DEBUG_ID_TEC == Convert.ToInt32 (list_tec.Rows[i]["ID"]))) {
                             //Создание объекта ТЭЦ
                             tec.Add(new TEC(Convert.ToInt32 (list_tec.Rows[i]["ID"]),
-                                            list_tec.Rows[i]["NAME_SHR"].ToString(), //"NAME_SHR"
-                                            list_tec.Rows[i]["TABLE_NAME_ADMIN"].ToString(),
-                                            list_tec.Rows[i]["TABLE_NAME_PBR"].ToString(),
-                                            bUseData));
+                                            list_tec.Rows[i]["NAME_SHR"].ToString() //"NAME_SHR"
+                                    ));
 
                             int indx_tec = tec.Count - 1;
                             EventTECListUpdate += tec[indx_tec].PerformUpdate;
@@ -339,7 +336,7 @@ namespace StatisticCommon
             //Logging.Logg().Debug("InitTEC::InitTEC (3 параметра) - вЫход...");
         }
 
-        public InitTEC_200(int idListener, Int16 indx, bool bIgnoreTECInUse, bool bUseData) //indx = {GTP или PC}
+        public InitTEC(int idListener, Int16 indx, bool bUseData) //indx = {GTP или PC}
         {
             //Logging.Logg().Debug("InitTEC::InitTEC (4 параметра) - вход...");
 
@@ -371,7 +368,7 @@ namespace StatisticCommon
             m_connConfigDB = DbSources.Sources().GetConnection(idListener, out err);
 
             //Использование статической функции
-            list_tec = getListTEC(ref m_connConfigDB, bIgnoreTECInUse, out err);
+            list_tec = getListTEC(ref m_connConfigDB, out err);
 
             allParamTG = getALL_PARAM_TG (0, out err);
 
@@ -384,10 +381,8 @@ namespace StatisticCommon
 
                         //Создание объекта ТЭЦ
                         tec.Add(new TEC(Convert.ToInt32 (list_tec.Rows[i]["ID"]),
-                                        list_tec.Rows[i]["NAME_SHR"].ToString(), //"NAME_SHR"
-                                        list_tec.Rows[i]["TABLE_NAME_ADMIN"].ToString(),
-                                        list_tec.Rows[i]["TABLE_NAME_PBR"].ToString(),
-                                        bUseData));
+                                        list_tec.Rows[i]["NAME_SHR"].ToString() //"NAME_SHR"
+                            ));
 
                         EventTECListUpdate += tec[i].PerformUpdate;
 
@@ -402,13 +397,13 @@ namespace StatisticCommon
                                             list_tec.Rows[i]["PPBRvsPBR"].ToString(),
                                             list_tec.Rows[i]["PBR_NUMBER"].ToString());
 
-                        tec[i].connSettings(ConnectionSettingsSource.GetConnectionSettings(m_typeDB_CFG, ref m_connConfigDB, Convert.ToInt32(list_tec.Rows[i]["ID_SOURCE_DATA"]), -1, out err), (int)CONN_SETT_TYPE.DATA_AISKUE);
-                        if (err == 0) tec[i].connSettings(ConnectionSettingsSource.GetConnectionSettings(m_typeDB_CFG, ref m_connConfigDB, Convert.ToInt32(list_tec.Rows[i]["ID_SOURCE_DATA_TM"]), -1, out err), (int)CONN_SETT_TYPE.DATA_SOTIASSO); else ;
+                        tec[i].connSettings(ConnectionSettingsSource.GetConnectionSettings(ref m_connConfigDB, Convert.ToInt32(list_tec.Rows[i]["ID_SOURCE_DATA"]), -1, out err), (int)CONN_SETT_TYPE.DATA_AISKUE);
+                        if (err == 0) tec[i].connSettings(ConnectionSettingsSource.GetConnectionSettings(ref m_connConfigDB, Convert.ToInt32(list_tec.Rows[i]["ID_SOURCE_DATA_TM"]), -1, out err), (int)CONN_SETT_TYPE.DATA_SOTIASSO); else ;
                         //if (err == 0) tec[i].connSettings(ConnectionSettingsSource.GetConnectionSettings(m_typeDB_CFG, ref m_connConfigDB, Convert.ToInt32(list_tec.Rows[i]["ID_SOURCE_DATA_TM"]), -1, out err), (int)CONN_SETT_TYPE.DATA_SOTIASSO_3_MIN); else ;
                         //if (err == 0) tec[i].connSettings(ConnectionSettingsSource.GetConnectionSettings(m_typeDB_CFG, ref m_connConfigDB, Convert.ToInt32(list_tec.Rows[i]["ID_SOURCE_DATA_TM"]), -1, out err), (int)CONN_SETT_TYPE.DATA_SOTIASSO_1_MIN); else ;
-                        if (err == 0) tec[i].connSettings(ConnectionSettingsSource.GetConnectionSettings(m_typeDB_CFG, ref m_connConfigDB, Convert.ToInt32(list_tec.Rows[i]["ID_SOURCE_ADMIN"]), -1, out err), (int)CONN_SETT_TYPE.ADMIN); else ;
-                        if (err == 0) tec[i].connSettings(ConnectionSettingsSource.GetConnectionSettings(m_typeDB_CFG, ref m_connConfigDB, Convert.ToInt32(list_tec.Rows[i]["ID_SOURCE_PBR"]), -1, out err), (int)CONN_SETT_TYPE.PBR); else ;
-                        if ((err == 0) && ((list_tec.Rows[i]["ID_SOURCE_MTERM"] is DBNull) == false)) tec[i].connSettings(ConnectionSettingsSource.GetConnectionSettings(m_typeDB_CFG, ref m_connConfigDB, Convert.ToInt32(list_tec.Rows[i]["ID_SOURCE_MTERM"]), -1, out err), (int)CONN_SETT_TYPE.MTERM); else ;
+                        if (err == 0) tec[i].connSettings(ConnectionSettingsSource.GetConnectionSettings(ref m_connConfigDB, Convert.ToInt32(list_tec.Rows[i]["ID_SOURCE_ADMIN"]), -1, out err), (int)CONN_SETT_TYPE.ADMIN); else ;
+                        if (err == 0) tec[i].connSettings(ConnectionSettingsSource.GetConnectionSettings(ref m_connConfigDB, Convert.ToInt32(list_tec.Rows[i]["ID_SOURCE_PBR"]), -1, out err), (int)CONN_SETT_TYPE.PBR); else ;
+                        if ((err == 0) && ((list_tec.Rows[i]["ID_SOURCE_MTERM"] is DBNull) == false)) tec[i].connSettings(ConnectionSettingsSource.GetConnectionSettings(ref m_connConfigDB, Convert.ToInt32(list_tec.Rows[i]["ID_SOURCE_MTERM"]), -1, out err), (int)CONN_SETT_TYPE.MTERM); else ;
 
                         tec[i].m_timezone_offset_msc = Convert.ToInt32 (list_tec.Rows[i]["TIMEZONE_OFFSET_MOSCOW"]);
                         tec[i].m_path_rdg_excel = list_tec.Rows[i]["PATH_RDG_EXCEL"].ToString();
@@ -702,7 +697,7 @@ namespace StatisticCommon
 
             DbConnection connConfigDB = DbSources.Sources ().GetConnection (iListenerId, out err);
 
-            tableRes = getListTEC(ref connConfigDB, true, out err);
+            tableRes = getListTEC(ref connConfigDB, out err);
             //??? обновление параметров ТЭЦ (например: m_IdSOTIASSOLinkSourceTM)
             //tec.Update (tableRes);
 
@@ -726,20 +721,6 @@ namespace StatisticCommon
                         ;
             else
                 ;
-        }
-    }
-
-    public class InitTEC_190 : InitTECBase
-    {
-        //Список ВСЕХ компонентов (ТЭЦ, ГТП, ЩУ, ТГ)
-        public InitTEC_190(int idListener, bool bIgnoreTECInUse, bool bUseData)
-        {   
-            tec = new ListTEC ();
-        }
-
-        public InitTEC_190(int idListener, Int16 indx, bool bIgnoreTECInUse, bool bUseData) //indx = {GTP или PC}
-        {
-            tec = new ListTEC();
         }
     }
 }

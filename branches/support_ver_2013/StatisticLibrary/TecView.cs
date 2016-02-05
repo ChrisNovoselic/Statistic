@@ -60,8 +60,6 @@ namespace StatisticCommon
         public static int SEC_VALIDATE_TMVALUE = -1;
         public double [] m_arValueCurrentTM_Gen;
 
-        private AdminTS.TYPE_FIELDS s_typeFields = AdminTS.TYPE_FIELDS.DYNAMIC;
-
         protected DataTable m_tablePPBRValuesResponse
                     //, m_tableRDGExcelValuesResponse
                     ;
@@ -341,7 +339,7 @@ namespace StatisticCommon
             }
         }
 
-        public override void GetRDGValues(int mode, int indx, DateTime date)
+        public override void GetRDGValues(int indx, DateTime date)
         {
             m_prevDate = m_curDate;
             m_curDate = date.Date;
@@ -394,7 +392,7 @@ namespace StatisticCommon
         public TECComponent TECComponentCurrent { get { return allTECComponents[indxTECComponents]; } }
 
         private void getRDGValues () {
-            GetRDGValues((int)s_typeFields, indxTECComponents, DateTime.Now);
+            GetRDGValues(indxTECComponents, DateTime.Now);
 
             Run(@"TecView::GetRDGValues ()");
         }
@@ -605,12 +603,12 @@ namespace StatisticCommon
 
             if (IsCanUseTECComponents() == true)
                 //Request(m_indxDbInterfaceCommon, m_listenerIdCommon, allTECComponents[indxTECComponents].tec.GetPBRDatesQuery(date));
-                Request (m_dictIdListeners[m_tec.m_id][(int)CONN_SETT_TYPE.ADMIN], m_tec.GetPBRDatesQuery(date, s_typeFields, allTECComponents[indxTECComponents]));
+                Request (m_dictIdListeners[m_tec.m_id][(int)CONN_SETT_TYPE.ADMIN], m_tec.GetPBRDatesQuery(date, allTECComponents[indxTECComponents]));
             else
                 ;
         }
 
-        protected override void GetPPBRValuesRequest(StatisticCommon.TEC t, TECComponent comp, DateTime date, AdminTS.TYPE_FIELDS mode)
+        protected override void GetPPBRValuesRequest(StatisticCommon.TEC t, TECComponent comp, DateTime date)
         {
         }
 
@@ -1190,7 +1188,7 @@ namespace StatisticCommon
                     break;
                 case (int)StatesMachine.AdminValues:
                     msg = @"административных данных";
-                    GetAdminValuesRequest(s_typeFields);
+                    GetAdminValuesRequest();
                     break;
                 default:
                     iRes = -1;
@@ -5267,15 +5265,15 @@ namespace StatisticCommon
             //m_admin.Request(tec.m_arIdListeners[(int)CONN_SETT_TYPE.PBR], tec.GetPBRValueQuery(indx_TECComponent, m_pnlQuickData.dtprDate.Value.Date, m_admin.m_typeFields));
             //m_tec.Request(CONN_SETT_TYPE.PBR, m_tec.GetPBRValueQuery(m_indx_TECComponent, m_pnlQuickData.dtprDate.Value.Date, s_typeFields));
             //m_tec.Request(CONN_SETT_TYPE.PBR, m_tec.GetPBRValueQuery(m_indx_TECComponent, selectedTime.Date, s_typeFields));
-            Request(m_dictIdListeners[m_tec.m_id][(int)CONN_SETT_TYPE.PBR], m_tec.GetPBRValueQuery(indxTECComponents, m_curDate.Date, s_typeFields));
+            Request(m_dictIdListeners[m_tec.m_id][(int)CONN_SETT_TYPE.PBR], m_tec.GetPBRValueQuery(indxTECComponents, m_curDate.Date));
         }
 
-        private void GetAdminValuesRequest(AdminTS.TYPE_FIELDS mode)
+        private void GetAdminValuesRequest()
         {
             //m_admin.Request(tec.m_arIdListeners[(int)CONN_SETT_TYPE.ADMIN], tec.GetAdminValueQuery(indx_TECComponent, m_pnlQuickData.dtprDate.Value.Date, mode));
             //m_tec.Request(CONN_SETT_TYPE.ADMIN, m_tec.GetAdminValueQuery(indx_TECComponent, m_pnlQuickData.dtprDate.Value.Date, mode));
             //m_tec.Request(CONN_SETT_TYPE.ADMIN, m_tec.GetAdminValueQuery(m_indx_TECComponent, selectedTime.Date, mode));
-            Request(m_dictIdListeners[m_tec.m_id][(int)CONN_SETT_TYPE.ADMIN], m_tec.GetAdminValueQuery(indxTECComponents, m_curDate.Date, mode));
+            Request(m_dictIdListeners[m_tec.m_id][(int)CONN_SETT_TYPE.ADMIN], m_tec.GetAdminValueQuery(indxTECComponents, m_curDate.Date));
         }
 
         protected override void InitializeSyncState()
