@@ -408,6 +408,8 @@ namespace StatisticDiagnostic
         public static volatile int UPDATE_TIME,
             VALIDATE_ASKUE_TM;
         public static DateTime SERVER_TIME;
+        static TimeSpan limTaskAvg = TimeSpan.FromSeconds(145);
+        static TimeSpan limTask = TimeSpan.FromSeconds(30);
 
         /// <summary>
         /// Создание и настройка таймера 
@@ -2162,7 +2164,7 @@ namespace StatisticDiagnostic
             /// </summary>
             private void overLimit()
             {
-                int m_lim;
+                TimeSpan m_lim;
                 int m_check = 0;
                 DataRow[] drTask = m_tableSourceData.Select(@"ID_Value = '28'");
                 int m_counter = 1;
@@ -2170,8 +2172,8 @@ namespace StatisticDiagnostic
                 for (int i = 0; i < drTask.Count(); i++)
                 {
                     if (TaskDataGridView.Rows[m_check].Cells[0].Value.ToString() == "Усреднитель данных из СОТИАССО")
-                        m_lim = 105;
-                    else m_lim = 45;
+                        m_lim = limTaskAvg;
+                    else m_lim = limTask;
 
                     if (drTask[i]["Value"].ToString() == "")
                     {
@@ -2183,7 +2185,7 @@ namespace StatisticDiagnostic
                         m_counter--;
                     }
 
-                    else if (Convert.ToInt32(drTask[i]["Value"].ToString()) > m_lim)
+                    else if (TimeSpan.FromSeconds(Convert.ToDouble(drTask[i]["Value"])) > m_lim)
                     {
                         if (TaskDataGridView.Columns[4].Visible == false)
                             TaskDataGridView.Invoke(new Action(() => TaskDataGridView.Columns[4].Visible = true));
