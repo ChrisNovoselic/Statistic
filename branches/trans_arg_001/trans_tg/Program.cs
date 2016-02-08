@@ -19,8 +19,7 @@ namespace trans_tg
             ProgramBase.Start();
 
             FormMainTransTG formMain = null;
-            if (FormMainStatistic.stopbflg)
-            {
+
                 try { formMain = new FormMainTransTG(); }
                 catch (Exception e)
                 {
@@ -31,7 +30,7 @@ namespace trans_tg
                     Application.Run(formMain);
                 else
                     ;
-            }
+            
 
             ProgramBase.Exit();
         }

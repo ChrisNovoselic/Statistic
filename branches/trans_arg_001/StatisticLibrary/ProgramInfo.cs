@@ -16,11 +16,27 @@ namespace StatisticCommon
         {
             get
             {
+                string nameGUID;
+
                 object[] attributes = Assembly.GetEntryAssembly().GetCustomAttributes(typeof(System.Runtime.InteropServices.GuidAttribute), false);
                 if (attributes.Length == 0)
                     return String.Empty;
 
-                return ((System.Runtime.InteropServices.GuidAttribute)attributes[0]).Value;
+                nameGUID = ((System.Runtime.InteropServices.GuidAttribute)attributes[0]).Value;
+
+                object[] attributesTitle = Assembly.GetEntryAssembly().GetCustomAttributes(typeof(AssemblyTitleAttribute), false);
+                if (attributes.Length > 0)
+                {
+                    AssemblyTitleAttribute titleAttribute = (AssemblyTitleAttribute)attributesTitle[0];
+                    if (titleAttribute.Title != "")
+                        nameGUID = nameGUID + " "+ titleAttribute.Title;
+                }
+                //return 
+                else
+                    nameGUID = nameGUID + " " +System.IO.Path.GetFileNameWithoutExtension(Assembly.GetEntryAssembly().CodeBase);
+
+                return nameGUID;
+                    //((System.Runtime.InteropServices.GuidAttribute)attributes[0]).Value;
             }
         }
 

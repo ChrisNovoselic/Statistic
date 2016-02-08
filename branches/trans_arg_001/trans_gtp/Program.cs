@@ -17,8 +17,7 @@ namespace trans_gtp
         static void Main()
         {
             ProgramBase.Start();
-            if (FormMainStatistic.stopbflg)
-            {
+
                 FormMainTransGTP formMain = null;
                 try { formMain = new FormMainTransGTP(); }
                 catch (Exception e)
@@ -30,8 +29,6 @@ namespace trans_gtp
                     Application.Run(formMain);
                 else
                     ;
-            }
-            else ;
 
             ProgramBase.Exit();
         }

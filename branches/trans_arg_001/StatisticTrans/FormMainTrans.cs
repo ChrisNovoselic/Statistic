@@ -1470,7 +1470,7 @@ namespace StatisticTrans
             switch (m.Msg)
             {
                 case WinApi.SW_RESTORE:
-                    //this.WindowState = FormWindowState.Normal;
+                    this.WindowState = FormWindowState.Normal;
                     this.ShowInTaskbar = true;
                     notifyIconMain.Visible = false;
                     break;

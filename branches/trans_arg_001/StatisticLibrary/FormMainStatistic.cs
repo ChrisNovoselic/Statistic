@@ -66,6 +66,7 @@ namespace StatisticCommon
                         if (!(SingleInstance.onlyInstance()))
                         {
                             SingleInstance.SwitchToCurrentInstance();
+                            SingleInstance.closeForm();                         
                         }
                         else ;
                         break;
@@ -73,15 +74,19 @@ namespace StatisticCommon
                         if (!(SingleInstance.onlyInstance()))
                         {
                             SingleInstance.stopApp();
+                            SingleInstance.closeForm();
                         }
                         else
                         {
-                            stopbflg = false;
+                            SingleInstance.closeForm();
                         }
                         break;
                     default:
                         if (!(SingleInstance.onlyInstance()))
-                            ;
+                        {
+                            SingleInstance.SwitchToCurrentInstance();
+                            SingleInstance.closeForm();
+                        }
                         else ;
                         break;
                 }
@@ -182,6 +187,7 @@ namespace StatisticCommon
         static public class SingleInstance
         {
             public static string mutexName = ProgramInfo.AssemblyGuid.ToString();
+                //AssemblyTitle.ToString();
             static Mutex mtx;
             static public IntPtr m_hndl;
 
@@ -191,12 +197,13 @@ namespace StatisticCommon
             /// <returns></returns>
             static public void Start(string[] args)
             {
-                if (!(onlyInstance()))
-                {
-                    new HCmd_Arg(args);
-                    closeForm();
-                }
-                else ;
+                //if (!(onlyInstance()))
+                //{
+                //    new HCmd_Arg(args);
+                //    //StopMtx();
+                //    closeForm();
+                //}
+                //else ;
             }
 
             /// <summary>
@@ -339,8 +346,8 @@ namespace StatisticCommon
                     // change the current state of the window.
                     if (WinApi.IsIconic(hWnd) != 0)
                         WinApi.ShowWindow(hWnd, WinApi.SW_RESTORE);
-                    else ;
-
+                    else 
+                        ;
                     // Set foreground window.
                     WinApi.SetForegroundWindow(hWnd);
                 }

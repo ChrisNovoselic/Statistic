@@ -23,8 +23,6 @@ namespace trans_mt
 
             FormMainTransMT formMain = null;
 
-                if (FormMainStatistic.stopbflg)
-                {
                     try { formMain = new FormMainTransMT(); }
                     catch (Exception e)
                     {
@@ -35,8 +33,7 @@ namespace trans_mt
                         Application.Run(formMain);
                     else
                         ;
-                    FormMainStatistic.SingleInstance.StopMtx();
-                }
+                    //FormMainStatistic.SingleInstance.StopMtx();
 
             ProgramBase.Exit();
         }
