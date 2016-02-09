@@ -16,7 +16,7 @@ namespace StatisticCommon
         protected static FileINI m_sFileINI;
         protected static FIleConnSett m_sFileCS;
         protected static HCmd_Arg m_Hcmd_arg;
-        static public bool stopbflg = true;
+        //static public bool stopbflg = true;
 
         public FormMainStatistic()
         {

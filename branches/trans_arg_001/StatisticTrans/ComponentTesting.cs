@@ -16,7 +16,7 @@ namespace StatisticTrans
         /// <summary>
         /// 
         /// </summary>
-        private int countIt=0;
+        private int countIt = 0;
 
         /// <summary>
         /// Текущая иттерация
@@ -49,11 +49,10 @@ namespace StatisticTrans
         public void PushIter(string nameElem)
         {
             if (GetNum() == countIt)
-            {
-                    ClearStck();
-            }
-            else
-                Iters[currentIter] = nameElem;
+                ClearStck();
+            else ;
+
+            Iters[currentIter] = nameElem;
             currentIter++;
             countIt++;
             CounterSuccessfulDownload();
