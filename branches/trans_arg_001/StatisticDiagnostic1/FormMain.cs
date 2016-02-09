@@ -18,6 +18,7 @@ namespace StatisticDiagnostic
         /// Объект с параметрами приложения (из БД_конфигурации)
         /// </summary>
         public static FormParameters formParameters;
+
         /// <summary>
         /// Состояние формы (признак выполнения очередной операции: 0 - без ошибок)
         /// </summary>
@@ -28,7 +29,6 @@ namespace StatisticDiagnostic
             System.ComponentModel.ComponentResourceManager resources = new System.ComponentModel.ComponentResourceManager(typeof(FormMain));
             //this.notifyIconMain.Icon =
             this.Icon = resources.GetObject(@"StatisticDiagnostic") as System.Drawing.Icon;
-     
 
             _state = 1;
             InitializeComponent();
@@ -66,6 +66,11 @@ namespace StatisticDiagnostic
                 this.Activate();
         }
 
+        /// <summary>
+        /// 
+        /// </summary>
+        /// <param name="obj"></param>
+        /// <param name="ev"></param>
         private void FormDiagnostic_Activate(object obj, EventArgs ev)
         {
             if (_state == 0)
@@ -74,9 +79,19 @@ namespace StatisticDiagnostic
                 ;
         }
 
+        /// <summary>
+        /// 
+        /// </summary>
+        /// <param name="obj"></param>
+        /// <param name="ev"></param>
         private void FormDiagnostic_Deactivate(object obj, EventArgs ev)
         {
             panelMain.Activate(false);
+        }
+
+        protected override FormMainStatistic.HCmd_Arg handlerCmd(string[] cmdLine)
+        {
+            return base.handlerCmd(cmdLine);
         }
 
         /// <summary>
@@ -86,6 +101,7 @@ namespace StatisticDiagnostic
         {
             bool bRes = true;
             msgError = string.Empty;
+            handlerCmd(Environment.GetCommandLineArgs());
 
             if (s_listFormConnectionSettings[(int)CONN_SETT_TYPE.CONFIG_DB].Ready == 0)
             {
@@ -207,6 +223,7 @@ namespace StatisticDiagnostic
         {
             Close();
         }
+
         /// <summary>
         /// Обработчик события выбора п. главного меню "Настройка-БД_конфигурации"
         /// </summary>

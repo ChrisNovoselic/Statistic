@@ -50,7 +50,13 @@ namespace StatisticCommon
         /// <returns></returns>
         [DllImport("user32.dll")]
         public static extern int IsIconic(IntPtr hWnd);
-
+        /// <summary>
+        /// Получает заголовок окна
+        /// </summary>
+        /// <param name="hWnd">дескриптор окна</param>
+        /// <param name="lpString"></param>
+        /// <param name="nMaxCount"></param>
+        /// <returns></returns>
         [DllImport("user32.dll", SetLastError = true)]
         public static extern int GetWindowText(IntPtr hWnd, StringBuilder lpString, int nMaxCount);
 

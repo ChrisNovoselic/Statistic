@@ -115,7 +115,9 @@ namespace StatisticTrans
         {
             Thread.CurrentThread.CurrentCulture =
             Thread.CurrentThread.CurrentUICulture =
-                ProgramBase.ss_MainCultureInfo; //ru-Ru         
+                ProgramBase.ss_MainCultureInfo; //ru-Ru   
+      
+            handlerCmd(Environment.GetCommandLineArgs());
 
             InitializeComponent();
 
@@ -272,8 +274,6 @@ namespace StatisticTrans
             m_arg_date = DateTime.Now;
             m_arg_interval = TIMER_SERVICE_MIN_INTERVAL; //Милисекунды
             string msg_throw = string.Empty;
-
-            handlerCmd(Environment.GetCommandLineArgs());
 
             string[] args = Environment.GetCommandLineArgs();
             int argc = args.Length;

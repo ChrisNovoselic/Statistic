@@ -244,7 +244,7 @@ namespace StatisticCommon
             }
 
             /// <summary>
-            /// Закрытие дублируещего окна
+            /// Закрытие дублирующего окна
             /// </summary>
             static public void closeForm()
             {
@@ -361,13 +361,11 @@ namespace StatisticCommon
             private static void FindCurProc(int id, IntPtr hwd)
             {
                 int _ProcessId;
-
                 WinApi.GetWindowThreadProcessId(hwd, out _ProcessId);
 
                 if (id == _ProcessId)
-                {
                     m_hndl = hwd;
-                }
+                else ;
             }
         }
     }

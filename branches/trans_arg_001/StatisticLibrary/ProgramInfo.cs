@@ -29,14 +29,14 @@ namespace StatisticCommon
                 {
                     AssemblyTitleAttribute titleAttribute = (AssemblyTitleAttribute)attributesTitle[0];
                     if (titleAttribute.Title != "")
-                        nameGUID = nameGUID + " "+ titleAttribute.Title;
+                        nameGUID = nameGUID + " " + titleAttribute.Title;
                 }
                 //return 
                 else
-                    nameGUID = nameGUID + " " +System.IO.Path.GetFileNameWithoutExtension(Assembly.GetEntryAssembly().CodeBase);
+                    nameGUID = nameGUID + " " + System.IO.Path.GetFileNameWithoutExtension(Assembly.GetEntryAssembly().CodeBase);
 
                 return nameGUID;
-                    //((System.Runtime.InteropServices.GuidAttribute)attributes[0]).Value;
+                //((System.Runtime.InteropServices.GuidAttribute)attributes[0]).Value;
             }
         }
 
