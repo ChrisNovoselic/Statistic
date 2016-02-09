@@ -20,7 +20,7 @@ namespace StatisticCommon
 
         public FormMainStatistic()
         {
-            SingleInstance.Start(Environment.GetCommandLineArgs());
+            //SingleInstance.Start(Environment.GetCommandLineArgs());
         }
 
         /// <summary>

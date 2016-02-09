@@ -21,18 +21,16 @@ namespace trans_mc
             Logging.s_mode = Logging.LOG_MODE.FILE_EXE;
             ProgramBase.Start();
 
-                    FormMainTransMC formMain = null;
-                    try
-                    { formMain = new FormMainTransMC(); }
-                    catch (Exception e)
-                    { Logging.Logg().Exception(e, "Ошибка запуска приложения.", Logging.INDEX_MESSAGE.NOT_SET); }
+            FormMainTransMC formMain = null;
+            try
+            { formMain = new FormMainTransMC(); }
+            catch (Exception e)
+            { Logging.Logg().Exception(e, "Ошибка запуска приложения.", Logging.INDEX_MESSAGE.NOT_SET); }
 
-                    try
-                    { Application.Run(formMain); }
-                    catch (Exception e)
-                    { Logging.Logg().Exception(e, "Ошибка выполнения приложения.", Logging.INDEX_MESSAGE.NOT_SET); }
-
-                    //FormMainStatistic.SingleInstance.StopMtx();
+            try
+            { Application.Run(formMain); }
+            catch (Exception e)
+            { Logging.Logg().Exception(e, "Ошибка выполнения приложения.", Logging.INDEX_MESSAGE.NOT_SET); }
 
             ProgramBase.Exit();
         }
