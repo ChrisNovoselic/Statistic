@@ -290,7 +290,7 @@ namespace StatisticDiagnostic
             this.TEClabel.Anchor = ((System.Windows.Forms.AnchorStyles)(((System.Windows.Forms.AnchorStyles.Bottom | System.Windows.Forms.AnchorStyles.Left))));
 
             this.Tasklabel.Size = new System.Drawing.Size(10, 10);
-            this.Tasklabel.Dock = System.Windows.Forms.DockStyle.Fill;
+            //this.Tasklabel.Dock = System.Windows.Forms.DockStyle.Fill;
             this.Tasklabel.Name = "Tasklabel";
             this.Tasklabel.TabIndex = 0;
             this.Tasklabel.AutoSize = true;
@@ -298,7 +298,7 @@ namespace StatisticDiagnostic
             this.Tasklabel.Anchor = ((System.Windows.Forms.AnchorStyles)(((System.Windows.Forms.AnchorStyles.Bottom | System.Windows.Forms.AnchorStyles.Left))));
 
             this.SizeBDlabel.Size = new System.Drawing.Size(10, 10);
-            this.SizeBDlabel.Dock = System.Windows.Forms.DockStyle.Fill;
+            //this.SizeBDlabel.Dock = System.Windows.Forms.DockStyle.Fill;
             this.SizeBDlabel.Name = "SizeBDlabel";
             this.SizeBDlabel.TabIndex = 0;
             this.SizeBDlabel.AutoSize = true;
@@ -1052,14 +1052,18 @@ namespace StatisticDiagnostic
             /// </summary>
             private void textColumnTec()
             {
+                string filter1;
+                string filter2;
+                DataRow[] DR;
+
                 for (int k = 0; k < m_dtTECList.Rows.Count; k++)
                 {
-                    string filter1 = "ID_Units = 12 and ID_EXT = '" + (k + 1) + "'";
+                    filter1 = "ID_Units = 12 and ID_EXT = '" + (k + 1) + "'";
 
                     for (int j = 0; j < m_arPanelsTEC[k].TECDataGridView.Rows.Count; j++)
                     {
-                        DataRow[] DR = m_tableSourceData.Select(filter1);
-                        string filter2 = "ID = '" + DR[j]["ID_VALUE"] + "'";
+                        DR = m_tableSourceData.Select(filter1);
+                        filter2 = "ID = '" + DR[j]["ID_VALUE"] + "'";
                         DataRow[] dr = m_dtParamDiagnostic.Select(filter2);
 
                         if (m_arPanelsTEC[k].TECDataGridView.InvokeRequired)
@@ -1078,9 +1082,10 @@ namespace StatisticDiagnostic
             /// <param name="k">номер панели</param>
             private void cellsPingTEC()
             {
+                DataRow[] dt;
                 for (int j = 0; j < m_arPanelsTEC.Count(); j++)
                 {
-                    DataRow[] dt = m_tableSourceData.Select(@"ID_EXT = " + Convert.ToInt32(m_dtTECList.Rows[j][0]));
+                    dt = m_tableSourceData.Select(@"ID_EXT = " + Convert.ToInt32(m_dtTECList.Rows[j][0]));
                     int t = 0;
 
                     for (int i = 0; i < m_arPanelsTEC[j].TECDataGridView.Rows.Count; i++)
@@ -1346,10 +1351,8 @@ namespace StatisticDiagnostic
                 {
                     if (Convert.ToInt32(result.Day - DateTime.Now.Day) > 0)
                         return m_dt = result.ToString("dd.MM.yy HH:mm:ss");
-                    //DateTime.Parse(datetime).ToString("dd.MM.yy HH:mm:ss");
                     else
                         return m_dt = result.ToString("HH:mm:ss.fff");
-                    //DateTime.Parse(datetime)
                 }
                 else
                     m_dt = result.ToString();
@@ -1526,9 +1529,9 @@ namespace StatisticDiagnostic
             /// </summary>
             public void Create_Modes()
             {
-                m_arPanelsMODES = new Modes[7];
+                m_arPanelsMODES = new Modes[m_dtTECList.Rows.Count+1];
 
-                for (int i = 0; i < 7; i++)
+                for (int i = 0; i < m_arPanelsMODES.Length; i++)
                 {
                     if (m_arPanelsMODES[i] == null)
                         m_arPanelsMODES[i] = new Modes();
@@ -1727,12 +1730,10 @@ namespace StatisticDiagnostic
 
                     for (int i = 0; i < m_arPanelsMODES.Length; i++)
                     {
-                        string m_fltrID = "ID = " + Convert.ToInt32(m_enumModes.ElementAt(i).ID);
-                        insertDataModes(m_fltrID, i);
+                        insertDataModes("ID = " + Convert.ToInt32(m_enumModes.ElementAt(i).ID), i);
                     }
 
                     SourceNameText();
-                    //nameComponentGTP();
                 }
                 catch (Exception e)
                 {
