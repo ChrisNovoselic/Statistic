@@ -263,7 +263,7 @@ namespace StatisticDiagnostic
             this.LabelTableLayoutPanel.ColumnStyles.Add(new System.Windows.Forms.ColumnStyle(System.Windows.Forms.SizeType.Percent, 60F));
             this.LabelTableLayoutPanel.ColumnStyles.Add(new System.Windows.Forms.ColumnStyle(System.Windows.Forms.SizeType.Percent, 40F));
             this.LabelTableLayoutPanel.RowCount = 1;
-            this.LabelTableLayoutPanel.RowStyles.Add(new System.Windows.Forms.RowStyle(System.Windows.Forms.SizeType.Percent, 100F));
+            this.LabelTableLayoutPanel.RowStyles.Add(new System.Windows.Forms.RowStyle(System.Windows.Forms.SizeType.Percent, 50F));
             this.LabelTableLayoutPanel.Controls.Add(Tasklabel, 0, 0);
             this.LabelTableLayoutPanel.Controls.Add(SizeBDlabel, 1, 0);
 
@@ -314,7 +314,7 @@ namespace StatisticDiagnostic
             this.RowStyles.Add(new System.Windows.Forms.RowStyle(System.Windows.Forms.SizeType.Percent, 70F));
             this.RowStyles.Add(new System.Windows.Forms.RowStyle(System.Windows.Forms.SizeType.Percent, 5F));
             this.RowStyles.Add(new System.Windows.Forms.RowStyle(System.Windows.Forms.SizeType.Percent, 87F));
-            this.RowStyles.Add(new System.Windows.Forms.RowStyle(System.Windows.Forms.SizeType.Percent, 5F));
+            this.RowStyles.Add(new System.Windows.Forms.RowStyle(System.Windows.Forms.SizeType.Percent, 7F));
             this.RowStyles.Add(new System.Windows.Forms.RowStyle(System.Windows.Forms.SizeType.Percent, 45F));
 
             createPanels();
@@ -407,7 +407,7 @@ namespace StatisticDiagnostic
         /// </summary>
         public static volatile int UPDATE_TIME,
             VALIDATE_ASKUE_TM;
-        public static DateTime SERVER_TIME;
+        public static DateTime SERVER_TIME;//серверное время
         static TimeSpan limTaskAvg = TimeSpan.FromSeconds(145);
         static TimeSpan limTask = TimeSpan.FromSeconds(30);
 
@@ -1991,7 +1991,12 @@ namespace StatisticDiagnostic
                 this.TaskDataGridView.Columns[1].Name = "Среднее время выполнения";
                 this.TaskDataGridView.Columns[3].Name = "Время проверки";
                 this.TaskDataGridView.Columns[2].Name = "Время выполнения задачи";
-                this.TaskDataGridView.Columns[4].Name = "Описание";
+                this.TaskDataGridView.Columns[4].Name = "Описание ошибки";
+                this.TaskDataGridView.Columns[0].Width = 25;
+                this.TaskDataGridView.Columns[1].Width = 12;
+                this.TaskDataGridView.Columns[3].Width = 5;
+                this.TaskDataGridView.Columns[2].Width = 15;
+                this.TaskDataGridView.Columns[4].Width = 27;
                 this.TaskDataGridView.RowHeadersVisible = false;
                 this.TaskDataGridView.TabIndex = 0;
                 this.TaskDataGridView.AllowUserToAddRows = false;
@@ -2495,7 +2500,7 @@ namespace StatisticDiagnostic
         }
 
         /// <summary>
-        /// 
+        /// Получение серверного времени
         /// </summary>
         /// <param name="dtTime"></param>
         public static void GetTimeServer(DateTime dtTime)
