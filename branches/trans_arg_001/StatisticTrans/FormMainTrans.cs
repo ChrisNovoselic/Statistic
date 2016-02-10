@@ -37,20 +37,20 @@ namespace StatisticTrans
             //System.Threading.Timer
                 timerService
                 ;
-
+        protected handlerCmd m_hCmd;
         protected HAdmin[] m_arAdmin;
         protected GroupBox[] m_arGroupBox;
 
         protected DataGridViewAdmin m_dgwAdminTable;
-
+        protected static string msg_throw;
         protected List<int> m_listTECComponentIndex;
 
-        protected DateTime m_arg_date;
-        protected Int32 m_arg_interval;
+        protected static DateTime m_arg_date;
+        protected static Int32 m_arg_interval;
 
         protected FormChangeMode.MODE_TECCOMPONENT m_modeTECComponent;
 
-        protected MODE_MASHINE m_modeMashine = MODE_MASHINE.INTERACTIVE;
+        protected static MODE_MASHINE m_modeMashine = MODE_MASHINE.INTERACTIVE;
 
         protected CheckBox m_checkboxModeMashine;
 
@@ -105,10 +105,82 @@ namespace StatisticTrans
         /// <summary>
         /// 
         /// </summary>
-        /// <returns></returns>
-        protected override HCmd_Arg handlerCmd(string[] cmdLine)
+        public class handlerCmd : HCmd_Arg
         {
-            return new HCmd_Arg(cmdLine);
+            /// <summary>
+            /// 
+            /// </summary>
+            /// <param name="args"></param>
+            public handlerCmd(string[] args)
+                : base(args)
+            {
+                RunCmd(args);
+            }
+
+            /// <summary>
+            /// 
+            /// </summary>
+            /// <param name="command"></param>
+            private void RunCmd(string[] command)
+            {
+                int argc = command.Length;
+
+                if (argc > 1)
+                {
+                    if ((!(argc == 2)))
+                        ;
+                    else
+                    {
+                        if ((!(command[1].IndexOf("date") < 0)) && ((command[1][0] == '/') && (!(command[1].IndexOf("=") < 0))))
+                        {
+                            m_modeMashine = MODE_MASHINE.TO_DATE;
+
+                            string date = command[1].Substring(command[1].IndexOf("=") + 1, command[1].Length - (command[1].IndexOf("=") + 1));
+                            if (date == "default")
+                                m_arg_date = DateTime.Now.AddDays(1);
+                            else
+                                if (date == "now")
+                                    ; //Уже присвоено значение
+                                else
+                                    m_arg_date = DateTime.Parse(date);
+                        }
+                        else
+                            if ((!(command[1].IndexOf("service") < 0)) && ((command[1][0] == '/') && (!(command[1].IndexOf("=") < 0))))
+                            {
+                                m_modeMashine = MODE_MASHINE.SERVICE;
+
+                                string interval = command[1].Substring(command[1].IndexOf("=") + 1, command[1].Length - (command[1].IndexOf("=") + 1));
+                                if (interval == "default")
+                                    ;
+                                else
+                                    m_arg_interval = Int32.Parse(interval);
+
+                                if (m_arg_interval < TIMER_SERVICE_MIN_INTERVAL)
+                                {
+                                    msg_throw = "Интервал задан меньше необходимого значения";
+                                    m_modeMashine = MODE_MASHINE.UNKNOWN;
+                                }
+                                else
+                                    ;
+                                int argt = m_arg_interval;
+                                //TimeThread(argt);
+                            }
+                            else if ((!(command[1].IndexOf("start") < 0)) && ((command[1][0] == '/')))
+                            {
+                                m_modeMashine = MODE_MASHINE.SERVICE;
+                                m_arg_interval = TIMER_SERVICE_MIN_INTERVAL;
+                            }
+
+                            else
+                            {
+                                msg_throw = "Ошибка распознавания аргументов командной строки";
+                                m_modeMashine = MODE_MASHINE.UNKNOWN;
+                            }
+                    }
+                }
+                else
+                    ;
+            }
         }
 
         public FormMainTrans(int id_app, string[] par, string[] val)
@@ -116,8 +188,6 @@ namespace StatisticTrans
             Thread.CurrentThread.CurrentCulture =
             Thread.CurrentThread.CurrentUICulture =
                 ProgramBase.ss_MainCultureInfo; //ru-Ru   
-      
-            handlerCmd(Environment.GetCommandLineArgs());
 
             InitializeComponent();
 
@@ -193,7 +263,6 @@ namespace StatisticTrans
                 else
                     ;
             }
-
             try
             {
                 string strChecked = string.Empty;
@@ -260,7 +329,6 @@ namespace StatisticTrans
             this.Controls.Add(this.m_checkboxModeMashine);
             //Пока переходить из режима в режим пользователь НЕ может (нестабильная работа trans_tg.exe) ???
             this.m_checkboxModeMashine.Enabled = false; ;
-
             //labelTime
             m_labelTime = new Label();
             m_labelTime.Name = "m_labelTime";
@@ -269,90 +337,18 @@ namespace StatisticTrans
             m_labelTime.Text = "";
             Controls.Add(m_labelTime);
             m_labelTime.Visible = true;
-
             //Значения аргументов по умолчанию
             m_arg_date = DateTime.Now;
             m_arg_interval = TIMER_SERVICE_MIN_INTERVAL; //Милисекунды
-            string msg_throw = string.Empty;
-
-            string[] args = Environment.GetCommandLineArgs();
-            int argc = args.Length;
 
             this.WindowState = FormWindowState.Minimized;
             this.ShowInTaskbar = false;
             notifyIconMain.Visible = true;
 
-            if (argc > 1)
-            {
-                if ((!(argc == 2)))
-                    ;
-                else
-                {
-                    if ((!(args[1].IndexOf("date") < 0)) && ((args[1][0] == '/') && (!(args[1].IndexOf("=") < 0))))
-                    {
-                        m_modeMashine = MODE_MASHINE.TO_DATE;
-
-                        string date = args[1].Substring(args[1].IndexOf("=") + 1, args[1].Length - (args[1].IndexOf("=") + 1));
-                        if (date == "default")
-                            m_arg_date = DateTime.Now.AddDays(1);
-                        else
-                            if (date == "now")
-                                ; //Уже присвоено значение
-                            else
-                                m_arg_date = DateTime.Parse(date);
-                    }
-                    else
-                        if ((!(args[1].IndexOf("service") < 0)) && ((args[1][0] == '/') && (!(args[1].IndexOf("=") < 0))))
-                        {
-                            m_modeMashine = MODE_MASHINE.SERVICE;
-
-                            string interval = args[1].Substring(args[1].IndexOf("=") + 1, args[1].Length - (args[1].IndexOf("=") + 1));
-                            if (interval == "default")
-                                ;
-                            else
-                                m_arg_interval = Int32.Parse(interval);
-
-                            if (m_arg_interval < TIMER_SERVICE_MIN_INTERVAL)
-                            {
-                                msg_throw = "Интервал задан меньше необходимого значения";
-                                m_modeMashine = MODE_MASHINE.UNKNOWN;
-                            }
-                            else
-                            {
-                            }
-
-                            int argt = m_arg_interval;
-                            //TimeThread(argt);
-                        }
-                        else if ((!(args[1].IndexOf("start") < 0)) && ((args[1][0] == '/')))
-                        {
-                            m_modeMashine = MODE_MASHINE.SERVICE;
-                            m_arg_interval = TIMER_SERVICE_MIN_INTERVAL;
-                            //FormMainStatistic.HCmd_Arg.execCmdLine();
-                        }
-
-                        else if ((!(args[1].IndexOf("stop") < 0)) && ((args[1][0] == '/')))
-                        {
-                            //FormMainStatistic.HCmd_Arg.execCmdLine();
-                        }
-
-                        else
-                        {
-                            msg_throw = "Ошибка распознавания аргументов командной строки";
-                            m_modeMashine = MODE_MASHINE.UNKNOWN;
-                        }
-                }
-
-
-                //развернутьToolStripMenuItem.Enabled = false;
-                dateTimePickerMain.Value = m_arg_date.Date;
-            }
-            else
-            {
-            }
+            m_hCmd = new handlerCmd(Environment.GetCommandLineArgs());
+            dateTimePickerMain.Value = m_arg_date.Date;
 
             m_arGroupBox = new GroupBox[(Int16)CONN_SETT_TYPE.COUNT_CONN_SETT_TYPE] { groupBoxSource, groupBoxDest };
-
             delegateEvent = new DelegateFunc(EventRaised);
 
             if (m_modeMashine == MODE_MASHINE.UNKNOWN)

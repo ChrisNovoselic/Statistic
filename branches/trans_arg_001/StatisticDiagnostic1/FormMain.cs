@@ -89,11 +89,6 @@ namespace StatisticDiagnostic
             panelMain.Activate(false);
         }
 
-        protected override FormMainStatistic.HCmd_Arg handlerCmd(string[] cmdLine)
-        {
-            return base.handlerCmd(cmdLine);
-        }
-
         /// <summary>
         /// Инициализация панели
         /// </summary>
@@ -101,7 +96,7 @@ namespace StatisticDiagnostic
         {
             bool bRes = true;
             msgError = string.Empty;
-            handlerCmd(Environment.GetCommandLineArgs());
+            //handlerCmd(Environment.GetCommandLineArgs());
 
             if (s_listFormConnectionSettings[(int)CONN_SETT_TYPE.CONFIG_DB].Ready == 0)
             {
@@ -125,14 +120,12 @@ namespace StatisticDiagnostic
                         formParameters = new FormParameters_DB(s_listFormConnectionSettings[(int)CONN_SETT_TYPE.CONFIG_DB].getConnSett());
                         updateParametersSetup();
                         s_iMainSourceData = Int32.Parse(formParameters.m_arParametrSetup[(int)FormParameters.PARAMETR_SETUP.MAIN_DATASOURCE]);
-
                         break;
                 }
             }
             else
             {//Файла с параметрами соединения нет совсем или считанные параметры соединения не валидны
                 msgError = @"Необходимо изменить параметры соединения с БД конфигурации";
-
                 bRes = false;
             }
 
@@ -272,10 +265,9 @@ namespace StatisticDiagnostic
         {
             int have_msg = 0;
 
-            have_msg =  base.UpdateStatusString();
+            have_msg = base.UpdateStatusString();
 
-            return  have_msg;
-
+            return have_msg;
         }
 
         /* protected override void timer_Start()

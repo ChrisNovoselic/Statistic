@@ -30,8 +30,6 @@ namespace trans_tg
                     Application.Run(formMain);
                 else
                     ;
-            
-
             ProgramBase.Exit();
         }
     }

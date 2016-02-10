@@ -11,16 +11,18 @@ using HClassLibrary;
 
 namespace StatisticCommon
 {
+    /// <summary>
+    /// 
+    /// </summary>
     public abstract partial class FormMainStatistic : FormMainBaseWithStatusStrip
     {
         protected static FileINI m_sFileINI;
         protected static FIleConnSett m_sFileCS;
-        protected static HCmd_Arg m_Hcmd_arg;
-        //static public bool stopbflg = true;
+        protected HCmd_Arg m_Hcmd_arg;
 
         public FormMainStatistic()
         {
-            //SingleInstance.Start(Environment.GetCommandLineArgs());
+            m_Hcmd_arg = new HCmd_Arg(Environment.GetCommandLineArgs());
         }
 
         /// <summary>
@@ -37,7 +39,7 @@ namespace StatisticCommon
             /// обработка CommandLine
             /// </summary>
             /// <param name="cmdLine">командная строка</param>
-            static private string handlerCmd(string[] cmdLine)
+            static private string handlerArgs(string[] cmdLine)
             {
                 if (cmdLine.Count() > 1)
                 {
@@ -60,13 +62,13 @@ namespace StatisticCommon
             /// <returns></returns>
             static public void execCmdLine(string[] CmdStr)
             {
-                switch (handlerCmd(CmdStr))
+                switch (handlerArgs(CmdStr))
                 {
                     case "start":
                         if (!(SingleInstance.onlyInstance()))
                         {
                             SingleInstance.SwitchToCurrentInstance();
-                            SingleInstance.closeForm();                         
+                            SingleInstance.closeForm();
                         }
                         else ;
                         break;
@@ -78,28 +80,17 @@ namespace StatisticCommon
                         }
                         else
                         {
+                            //SingleInstance.stopApp();
                             SingleInstance.closeForm();
                         }
                         break;
                     default:
-                        if (!(SingleInstance.onlyInstance()))
-                        {
-                            SingleInstance.SwitchToCurrentInstance();
-                            SingleInstance.closeForm();
-                        }
-                        else ;
+                        //if (!(SingleInstance.onlyInstance()))
+                        //;
+                        //else ;
                         break;
                 }
             }
-        }
-
-        /// <summary>
-        /// 
-        /// </summary>
-        /// <returns></returns>
-        protected virtual HCmd_Arg handlerCmd(string[] cmdLine)
-        {
-            return new HCmd_Arg(cmdLine);
         }
 
         /// <summary>
@@ -187,7 +178,7 @@ namespace StatisticCommon
         static public class SingleInstance
         {
             public static string mutexName = ProgramInfo.AssemblyGuid.ToString();
-                //AssemblyTitle.ToString();
+            //AssemblyTitle.ToString();
             static Mutex mtx;
             static public IntPtr m_hndl;
 
@@ -346,7 +337,7 @@ namespace StatisticCommon
                     // change the current state of the window.
                     if (WinApi.IsIconic(hWnd) != 0)
                         WinApi.ShowWindow(hWnd, WinApi.SW_RESTORE);
-                    else 
+                    else
                         ;
                     // Set foreground window.
                     WinApi.SetForegroundWindow(hWnd);
