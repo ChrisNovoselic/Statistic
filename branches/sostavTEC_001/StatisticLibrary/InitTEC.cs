@@ -100,7 +100,8 @@ namespace StatisticCommon
 
         protected List<int> getModesId(DataTable data, int row, string col)
         {
-            int i = -1;
+            int i = -1
+                , id = -1;
             List<int> listRes = new List<int>();
 
             if ((!(data.Columns.IndexOf(col) < 0)) && (!(data.Rows[row][col] is DBNull)))
@@ -108,7 +109,10 @@ namespace StatisticCommon
                 string[] ids = data.Rows[row][col].ToString().Split(',');
                 for (i = 0; i < ids.Length; i++)
                     if (ids[i].Length > 0)
-                        listRes.Add(Convert.ToInt32(ids[i]));
+                        if (Int32.TryParse(ids[i], out id) == true)
+                            listRes.Add(id);
+                        else
+                            listRes.Add(-1);
                     else
                         listRes.Add(-1);
             }
