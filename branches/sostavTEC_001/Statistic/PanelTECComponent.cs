@@ -258,6 +258,7 @@ namespace Statistic
                 TEC new_tec = new TEC(id_tec, name_shr, table_name_admin, table_name_pbr, true);//Создание новой ТЭЦ
 
                 m_list_TEC.Add(new_tec);//Добавление новой ТЭЦ в список ТЭЦ
+                m_list_TEC[m_list_TEC.Count - 1].m_listTG = new List<TG>();
 
                 treeView_TECComponent.Update_tree(m_list_TEC);//Обновление дерева
 
@@ -435,7 +436,6 @@ namespace Statistic
         /// </summary>
         private void del_Comp(object sender, ToolStripItemClickedEventArgs e)
         {
-                int err = -1;
                 if (e.ClickedItem.Text == (string)getNameMode(4))
                 {
                     if (m_sel_node_list[1].Equals(-1) == false & m_sel_node_list[3].Equals(-1) == true)//TG
@@ -454,6 +454,7 @@ namespace Statistic
                             }
 
                             m_list_TEC[m_sel_node_list[0] - 1].list_TECComponents.RemoveAt(id_stroki);
+                            
                             btnBreak.Enabled = true;
                             btnOK.Enabled = true;
                         }
@@ -477,6 +478,7 @@ namespace Statistic
                             }
 
                             m_list_TEC[m_sel_node_list[0] - 1].list_TECComponents.RemoveAt(id_stroki);
+                            
                             btnBreak.Enabled = true;
                             btnOK.Enabled = true;
                         }
@@ -486,6 +488,7 @@ namespace Statistic
                 }
 
                 treeView_TECComponent.SelectedNode.ContextMenuStrip.ItemClicked -= this.del_Comp;
+
                 treeView_TECComponent.Update_tree(m_list_TEC);
         }
 
@@ -494,77 +497,102 @@ namespace Statistic
         /// </summary>
         private void del_TG(object sender, ToolStripItemClickedEventArgs e)
         {
-            if (treeView_TECComponent.SelectedNode.Parent.Parent.Text == "ГТП")//Введение ТГ в состав ГТП
+            if (treeView_TECComponent.SelectedNode.Parent.Parent.Text == (string)FormChangeMode.getNameMode(1))//Выведение ТГ из состава ГТП
             {
-                int id_gtp = 0;
-
-                foreach (TreeNode t in treeView_TECComponent.SelectedNode.Parent.Parent.Nodes)
-                {
-                    if (e.ClickedItem.Text == t.Text)
-                    {
-                        List<int> id = get_m_id_list(t.Name);
-                        id_gtp = id[1];
-                    }
-                }
+                int id_gtp = -1;
 
                 m_table_TG_edited.Select("ID=" + m_sel_node_list[3])[0]["ID_GTP"] = id_gtp;//Изменение ID ГТП у ТГ в таблице
 
-                foreach (TECComponent tc in m_list_TEC[m_sel_node_list[0] - 1].list_TECComponents)
+                foreach (TG t in m_list_TEC[m_sel_node_list[0] - 1].m_listTG)//Перебор листа с ТГ ТЭЦ для изменения параметра
                 {
-                    if (tc.IsGTP == true & tc.m_id == id_gtp)//Является ли элемент ГТП и соответствует ли ID нашему
+                    if (t.m_id == m_sel_node_list[3])
                     {
-                        foreach (TG t in m_list_TEC[m_sel_node_list[0] - 1].m_listTG)//Перебор листа с ТГ для изменения параметра
+                        t.m_id_owner_gtp = id_gtp;
+                    }
+                }
+
+                foreach (TECComponent tc in m_list_TEC[m_sel_node_list[0] - 1].list_TECComponents)//Перебор листа с ТГ ГТП для удаления ТГ из списка
+                {
+                    if (tc.m_id == m_sel_node_list[1])
+                    {
+                        for (int i = 0; i < tc.m_listTG.Count; i++)
                         {
-                            if (t.m_id == m_sel_node_list[3])
+                            if (tc.m_listTG[i].m_id == m_sel_node_list[3])
                             {
-                                t.m_id_owner_gtp = id_gtp;
-                                tc.m_listTG.Add(t);//Добавление в лист компонентов ТЭЦ ТГ
+                                tc.m_listTG.RemoveAt(i);
                             }
                         }
                     }
                 }
-
-                treeView_TECComponent.Update_tree(m_list_TEC);
-                btnBreak.Enabled = true;
-                btnOK.Enabled = true;
             }
-            else
+
+            if (treeView_TECComponent.SelectedNode.Parent.Parent.Text == (string)FormChangeMode.getNameMode(2))//Выведение ТГ из состава ЩУ
             {
+                int id_pc = -1;
 
-                if (treeView_TECComponent.SelectedNode.Parent.Parent.Text == "ЩУ")//Введение ТГ в состав ЩУ
+                m_table_TG_edited.Select("ID=" + m_sel_node_list[3])[0]["ID_PC"] = id_pc;//Изменение ID ГТП у ТГ в таблице
+
+                foreach (TG t in m_list_TEC[m_sel_node_list[0] - 1].m_listTG)//Перебор листа с ТГ ТЭЦ для изменения параметра
                 {
-                    int id_pc = 0;
-
-                    foreach (TreeNode t in treeView_TECComponent.SelectedNode.Parent.Parent.Nodes)//Цикл для получения ID ЩУ в который помещать ТГ
+                    if (t.m_id == m_sel_node_list[3])
                     {
-                        if (e.ClickedItem.Text == t.Text)
+                        t.m_id_owner_pc = id_pc;
+                    }
+                }
+
+                foreach (TECComponent tc in m_list_TEC[m_sel_node_list[0] - 1].list_TECComponents)//Перебор листа с ТГ ЩУ для удаления ТГ из списка
+                {
+                    if (tc.m_id == m_sel_node_list[2])
+                    {
+                        for (int i = 0; i < tc.m_listTG.Count; i++)
                         {
-                            List<int> id = get_m_id_list(t.Name);
-                            id_pc = id[2];
+                            if (tc.m_listTG[i].m_id == m_sel_node_list[3])
+                            {
+                                tc.m_listTG.RemoveAt(i);
+                            }
                         }
                     }
-                    m_table_TG_edited.Select("ID=" + m_sel_node_list[3])[0]["ID_PC"] = id_pc;//Изменение ID ЩУ у ТГ в таблице
+                }
+            }
 
-                    foreach (TECComponent tc in m_list_TEC[m_sel_node_list[0] - 1].list_TECComponents)
+            if (treeView_TECComponent.SelectedNode.Parent.Text == (string)FormChangeMode.getNameMode(3))//Выведение ТГ из состава ТЭЦ
+            {
+                foreach (TG t in m_list_TEC[m_sel_node_list[0] - 1].m_listTG)//Перебор листа с ТГ для изменения параметра
+                {
+                    if (t.m_id == m_sel_node_list[3])
                     {
-                        if (tc.IsPC == true & tc.m_id == id_pc)//Является ли элемент ЩУ и соответствует ли ID нашему
+                        if (t.m_id_owner_pc != -1 || t.m_id_owner_gtp != -1)
                         {
-                            foreach (TG t in m_list_TEC[m_sel_node_list[0] - 1].m_listTG)//Перебор листа с ТГ для изменения параметра
+                            MessageBox.Show(treeView_TECComponent.SelectedNode.Text + " не выведен из состава ГТП или ЩУ");
+                        }
+                        else
+                        {
+                            m_table_TG_edited.Select("ID=" + m_sel_node_list[3])[0].Delete();//Удаление ТГ в таблице
+
+                            for (int i = 0; i < m_list_TEC[m_sel_node_list[0] - 1].m_listTG.Count; i++)
                             {
-                                if (t.m_id == m_sel_node_list[3])
+                                if (m_list_TEC[m_sel_node_list[0] - 1].m_listTG[i].m_id == m_sel_node_list[3])
                                 {
-                                    t.m_id_owner_pc = id_pc;
-                                    tc.m_listTG.Add(t);//Добавление в лист компонентов ТЭЦ ТГ
+                                    m_list_TEC[m_sel_node_list[0] - 1].m_listTG.RemoveAt(i);
+                                }
+                            }
+
+                            for (int i = 0; i < m_list_TEC[m_sel_node_list[0] - 1].list_TECComponents.Count;i++ )
+                            {
+                                if (m_list_TEC[m_sel_node_list[0] - 1].list_TECComponents[i].m_id == m_sel_node_list[3])
+                                {
+                                    m_list_TEC[m_sel_node_list[0] - 1].list_TECComponents.RemoveAt(i);
                                 }
                             }
                         }
                     }
-
-                    treeView_TECComponent.Update_tree(m_list_TEC);
-                    btnBreak.Enabled = true;
-                    btnOK.Enabled = true;
                 }
+                btnBreak.Enabled = true;
+                btnOK.Enabled = true;
             }
+
+            treeView_TECComponent.SelectedNode.ContextMenuStrip.ItemClicked -= del_TG;
+            treeView_TECComponent.Update_tree(m_list_TEC);
         }
 
         /// <summary>
@@ -749,7 +777,7 @@ namespace Statistic
 
                 #region Удаление из состава
 
-                if ((m_sel_node_list[1] > (int)TECComponent.ID.GTP & m_sel_node_list[1] < (int)TECComponent.ID.PC) || (m_sel_node_list[2] > (int)TECComponent.ID.PC & m_sel_node_list[2] < (int)TECComponent.ID.TG))//Выбран конкретный ЩУ или ГТП
+                if ((m_sel_node_list[1] > (int)TECComponent.ID.GTP & m_sel_node_list[1] < (int)TECComponent.ID.PC & m_sel_node_list[3] == -1) || (m_sel_node_list[2] > (int)TECComponent.ID.PC & m_sel_node_list[2] < (int)TECComponent.ID.TG & m_sel_node_list[3] == -1))//Выбран конкретный ЩУ или ГТП
                 {
                     #region Context delete PC,GTP
                     // 
@@ -1083,7 +1111,7 @@ namespace Statistic
                 {
                     table_audit.Rows[i]["DATETIME_WR"] = HDateTime.ToMoscowTimeZone(DateTime.Now);
                     table_audit.Rows[i]["ID_USER"] = HUsers.Id;
-                    table_audit.Rows[i]["REV"] = Get_LastRevision_Audit();
+                    table_audit.Rows[i]["REV"] = Get_LastRevision_Audit()+1;
                 }
 
                 Edit("audit", "ID", select_table_audit(), table_audit, out err);
