@@ -16,12 +16,17 @@ namespace StatisticCommon
     /// </summary>
     public abstract partial class FormMainStatistic : FormMainBaseWithStatusStrip
     {
-        protected static FileINI m_sFileINI;
-        protected static FIleConnSett m_sFileCS;
+        protected static FileINI m_sFileINI;//setup.ini
+        protected static FIleConnSett m_sFileCS;//connsett.ini
         protected HCmd_Arg m_Hcmd_arg;
+        static bool bflagOnlyInstance;//
 
+        /// <summary>
+        /// 
+        /// </summary>
         public FormMainStatistic()
         {
+            SingleInstance.Start();
             m_Hcmd_arg = new HCmd_Arg(Environment.GetCommandLineArgs());
         }
 
@@ -30,64 +35,87 @@ namespace StatisticCommon
         /// </summary>
         public class HCmd_Arg
         {
+            /// <summary>
+            /// значения командной строки
+            /// </summary>
+            static public string cmd;
+            /// <summary>
+            /// параметр командной строки
+            /// </summary>
+            static public string param;
+
             public HCmd_Arg(string[] args)
             {
-                execCmdLine(args);
+                handlerArgs(args);
+                if (!bflagOnlyInstance)
+                    execCmdLine(cmd);
+                else ;
             }
+
+            //public string Cmd
+            //{
+            //    get
+            //    {
+            //        return cmd;
+            //    }
+            //    set
+            //    {
+            //        cmd = handlerArgs();
+            //    }
+            //}
 
             /// <summary>
             /// обработка CommandLine
             /// </summary>
             /// <param name="cmdLine">командная строка</param>
-            static private string handlerArgs(string[] cmdLine)
+            static private void handlerArgs(string[] cmdLine)
             {
-                if (cmdLine.Count() > 1)
-                {
-                    cmdLine = cmdLine[1].Split('/');
+                string[] m_cmd = new string[cmdLine.Length];
 
-                    if ((!(cmdLine[1].IndexOf("start") < 0)))
-                        return cmdLine[1];
-                    else if ((!(cmdLine[1].IndexOf("stop") < 0)))
-                        return cmdLine[1];
-                    else
-                        return string.Empty;
+                m_cmd = cmdLine[1].Split('/', '=');
+
+                if (m_cmd.Length > 2)
+                {
+                    cmd = m_cmd[1];
+                    param = m_cmd[2];
                 }
                 else
-                    return string.Empty;
+                    cmd = m_cmd[1];
             }
 
             /// <summary>
             /// Обработка команды старт/стоп
             /// </summary>
             /// <returns></returns>
-            static public void execCmdLine(string[] CmdStr)
+            static public void execCmdLine(string CmdStr)
             {
-                switch (handlerArgs(CmdStr))
+                switch (CmdStr)
                 {
                     case "start":
-                        if (!(SingleInstance.onlyInstance()))
+                        if (!(bflagOnlyInstance))
                         {
                             SingleInstance.SwitchToCurrentInstance();
                             SingleInstance.closeForm();
                         }
-                        else ;
+                        else
+                            ;
                         break;
                     case "stop":
-                        if (!(SingleInstance.onlyInstance()))
+                        if (!(bflagOnlyInstance))
                         {
                             SingleInstance.stopApp();
                             SingleInstance.closeForm();
                         }
                         else
-                        {
-                            //SingleInstance.stopApp();
                             SingleInstance.closeForm();
-                        }
                         break;
                     default:
-                        //if (!(SingleInstance.onlyInstance()))
-                        //;
-                        //else ;
+                        if (!(bflagOnlyInstance))
+                        {
+                            SingleInstance.SwitchToCurrentInstance();
+                            SingleInstance.closeForm();
+                        }
+                        else ;
                         break;
                 }
             }
@@ -177,24 +205,18 @@ namespace StatisticCommon
         /// </summary>
         static public class SingleInstance
         {
-            public static string mutexName = ProgramInfo.AssemblyGuid.ToString();
+            private static string mutexName = ProgramInfo.AssemblyGuid.ToString();
             //AssemblyTitle.ToString();
             static Mutex mtx;
-            static public IntPtr m_hndl;
+            static private IntPtr m_hndl;
 
             /// <summary>
             /// 
             /// </summary>
             /// <returns></returns>
-            static public void Start(string[] args)
+            static public void Start()
             {
-                //if (!(onlyInstance()))
-                //{
-                //    new HCmd_Arg(args);
-                //    //StopMtx();
-                //    closeForm();
-                //}
-                //else ;
+                bflagOnlyInstance = onlyInstance();
             }
 
             /// <summary>
@@ -202,7 +224,7 @@ namespace StatisticCommon
             /// для его активации
             /// </summary>
             /// <param name="hWnd"></param>
-            public static void SendMsg(IntPtr hWnd)
+            private static void SendMsg(IntPtr hWnd)
             {
                 WinApi.SendMessage(hWnd, WinApi.SW_RESTORE, IntPtr.Zero, IntPtr.Zero);
             }
