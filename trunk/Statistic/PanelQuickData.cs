@@ -865,31 +865,39 @@ namespace Statistic
 
             if (tg_kksname.Length > 0)
             {
-                if (tg_val > 1)
-                {
+                if (!(tg_val < 0))
+                {// больше ИЛИ равно 0
                     bValidateDateTime = TecView.ValidateDatetimeTMValue(dt_srv, dt_val);
-                    text = tg_val.ToString("F2");
-                    if (bValidateDateTime == true)
-                        if (!(val < 0))
-                            val += tg_val;
+
+                    if (tg_val > 1)
+                    {// больше 1                        
+                        text = tg_val.ToString("F2");
+                        if (bValidateDateTime == true)
+                            if (!(val < 0))
+                                val += tg_val;
+                            else
+                                ;
                         else
-                            ;
+                            val = -1F;
+                    }
                     else
-                        val = -1F;
+                    {// в диапазоне [0; 1] включительно
+                        text = 0.ToString("F0");
+                    }
                 }
                 else
-                    if (!(tg_val < 0))
+                {// меньше 0
+                    // в зависимости от значения АИИС КУЭ
+                    if (!(tg_val_fact > 1))
+                    {// факт. меньше ИЛИ равно 1
                         text = 0.ToString("F0");
-                    else {
-                        if (! (tg_val_fact > 1)) {
-                            text = 0.ToString("F0");
-                            bValidateDateTime = true;
-                        }
-                        else
-                            text = textNotValue;
-
-                        //val = -1F;
+                        bValidateDateTime = true;
                     }
+                    else
+                        text = textNotValue;
+
+                    //val = -1F;
+                }
             }
             else
             {
