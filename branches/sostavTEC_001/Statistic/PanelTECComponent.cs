@@ -157,7 +157,8 @@ namespace Statistic
             m_table_TG_edited,
             m_table_GTP_edited,
             m_table_PC_edited,
-            m_table_TEC_edited;
+            m_table_TEC_edited,
+            m_table_audit;
 
         #endregion
 
@@ -165,6 +166,9 @@ namespace Statistic
             : base()
         {
             m_list_TEC = db_sostav.get_list_tec();
+
+            m_table_audit = db_sostav.select_table_audit();
+            m_table_audit.Columns.Add("Edit");
 
             InitializeComponent();
             treeView_TECComponent.Update_tree(m_list_TEC);
@@ -319,7 +323,7 @@ namespace Statistic
                             m_list_TEC[id_TEC].m_listTG.Add(new TG());
                             int indx = m_list_TEC[id_TEC].m_listTG.Count - 1;
 
-                            new_tg.InitTG(m_list_TEC[id_TEC].m_listTG[indx], m_table_TG_edited.Rows[m_table_TG_edited.Rows.Count - 1], db_sostav.get_allParamTG(out err), out err);
+                            new_tg.InitTG(m_list_TEC[id_TEC].m_listTG[indx], m_table_TG_edited.Rows[m_table_TG_edited.Rows.Count - 1], db_sostav.Get_allParamTG(out err), out err);
                             m_list_TEC[id_TEC].m_listTG[indx].name_shr = m_table_TG_edited.Rows[m_table_TG_edited.Rows.Count - 1]["NAME_SHR"].ToString();
                             m_list_TEC[id_TEC].m_listTG[indx].m_id = (int)m_table_TG_edited.Rows[m_table_TG_edited.Rows.Count - 1]["ID"];
                             m_list_TEC[id_TEC].m_listTG[indx].m_id_owner_gtp = -1;
@@ -501,7 +505,7 @@ namespace Statistic
             {
                 int id_gtp = -1;
 
-                m_table_TG_edited.Select("ID=" + m_sel_node_list[3])[0]["ID_GTP"] = id_gtp;//Изменение ID ГТП у ТГ в таблице
+                m_table_TG_edited.Select("ID=" + m_sel_node_list[3])[0]["ID_GTP"] = 0;//Изменение ID ГТП у ТГ в таблице
 
                 foreach (TG t in m_list_TEC[m_sel_node_list[0] - 1].m_listTG)//Перебор листа с ТГ ТЭЦ для изменения параметра
                 {
@@ -530,7 +534,7 @@ namespace Statistic
             {
                 int id_pc = -1;
 
-                m_table_TG_edited.Select("ID=" + m_sel_node_list[3])[0]["ID_PC"] = id_pc;//Изменение ID ГТП у ТГ в таблице
+                m_table_TG_edited.Select("ID=" + m_sel_node_list[3])[0]["ID_PC"] = 0;//Изменение ID ГТП у ТГ в таблице
 
                 foreach (TG t in m_list_TEC[m_sel_node_list[0] - 1].m_listTG)//Перебор листа с ТГ ТЭЦ для изменения параметра
                 {
@@ -884,8 +888,8 @@ namespace Statistic
                 db_sostav.Edit("PC_LIST", "ID_TEC,ID", m_table_PC_original, m_table_PC_edited, out err);
                 db_sostav.Edit("GTP_LIST", "ID", m_table_GTP_original, m_table_GTP_edited, out err);
                 db_sostav.Edit("TEC_LIST", "ID", m_table_TEC_original, m_table_TEC_edited, out err);
-
-                //fill_DataTable_ComponentsTEC();
+                db_sostav.Write_Audit(m_table_audit);
+                fill_DataTable_ComponentsTEC();
 
                 m_list_TEC = db_sostav.get_list_tec();
 
@@ -902,6 +906,7 @@ namespace Statistic
             reset_DataTable_ComponentsTEC();
 
             m_list_TEC = db_sostav.get_list_tec();
+            m_table_audit = db_sostav.select_table_audit();
 
             treeView_TECComponent.Update_tree(m_list_TEC);
             btnOK.Enabled = false;
@@ -1036,7 +1041,12 @@ namespace Statistic
             return table;
         }
         
-        public DataTable get_allParamTG(out int err)
+        /// <summary>
+        /// Получение параметров ТГ
+        /// </summary>
+        /// <param name="err"></param>
+        /// <returns>Возвращает таблицу с параметрами</returns>
+        public DataTable Get_allParamTG(out int err)
         {
             int idListener = register_idListenerMainDB(out err);
 
@@ -1069,6 +1079,8 @@ namespace Statistic
             unregister_idListenerMainDB(idListener);
         }
 
+        #region Audit
+
         /// <summary>
         /// Получение последней ревизии аудита
         /// </summary>
@@ -1085,7 +1097,7 @@ namespace Statistic
         /// Метод для получения из ДБ таблицы Audit
         /// </summary>
         /// <returns>Возвращает таблицу</returns>
-        private DataTable select_table_audit()
+        public DataTable select_table_audit()
         {
             int iRes = -1;
             int err = -1;
@@ -1121,6 +1133,8 @@ namespace Statistic
                 Logging.Logg().Exception(E, "Ошибка записи в таблицу audit PanelTECComponent : DB_Sostav_TEC : Write_Audit - ...", Logging.INDEX_MESSAGE.NOT_SET);
             }
         }
+
+        #endregion
 
         /// <summary>
         /// Регистрация ID
@@ -1194,7 +1208,7 @@ namespace Statistic
             else
                 Logging.Logg().Error(@"Ошибка....", Logging.INDEX_MESSAGE.NOT_SET);
 
-            cell_ID_Edit_ReadOnly();
+            //cell_ID_Edit_ReadOnly();
         }
 
         /// <summary>
@@ -1291,6 +1305,8 @@ namespace Statistic
         List<StatisticCommon.TECComponent> m_listTECComponent = new List<TECComponent>();
         private System.Windows.Forms.ContextMenuStrip contextMenu_TreeView;
 
+        List<string> m_open_node = new List<string>();
+
         private void InitializeComponent()
         {
             System.Windows.Forms.ToolStripMenuItem добавитьТЭЦToolStripMenuItem;
@@ -1323,18 +1339,54 @@ namespace Statistic
             this.ContextMenuStrip = contextMenu_TreeView;
             ContextMenuStrip.Items["добавитьТЭЦToolStripMenuItem"].Visible = true;
         }
-        
+
+        private void checked_node(TreeNodeCollection node, int i, bool set_check=false)
+        {
+            if (set_check == false)
+            {
+                foreach (TreeNode n in node)
+                {
+                    if (n.IsExpanded == true)
+                    {
+                        m_open_node.Add(n.Name);
+                        if (n.FirstNode != null)
+                            checked_node(n.Nodes,i);
+                    }
+                }
+            }
+            if (set_check == true)
+            {
+                foreach (TreeNode n in node)
+                {
+                    if (m_open_node.Count > 0 & i < m_open_node.Count)
+
+                    if (m_open_node[i]==n.Name)
+                    {
+                        n.Expand();
+                        i++;
+                        if (n.FirstNode != null)
+                            checked_node(n.Nodes,i,true);
+                        
+                    }
+                    
+                }
+            }
+        }
+
         /// <summary>
         /// Заполнение TreeView компонентами
         /// </summary>
         public void Update_tree(List<StatisticCommon.TEC> tec)
         {
+            int list_id = 0;
             m_listTEC = new List<TEC>(tec);
-
+            m_open_node.Clear();
+            checked_node(this.Nodes,0);
             this.Nodes.Clear();
             int tec_indx = -1;
 
             if (!(m_listTEC == null))
+
                 foreach (StatisticCommon.TEC t in m_listTEC)
                 {
                     string path = null;
@@ -1362,7 +1414,9 @@ namespace Statistic
                         this.Nodes[tec_indx].Nodes[(int)FormChangeMode.MODE_TECCOMPONENT.PC - 1].Name = path + ':' + Convert.ToString((int)TECComponent.ID.PC);
 
                         this.Nodes[tec_indx].Nodes[(int)FormChangeMode.MODE_TECCOMPONENT.GTP - 1].Nodes.Add(not_add);
+                        this.Nodes[tec_indx].Nodes[(int)FormChangeMode.MODE_TECCOMPONENT.GTP - 1].Nodes[0].Name = path + ':' + "0";
                         this.Nodes[tec_indx].Nodes[(int)FormChangeMode.MODE_TECCOMPONENT.PC - 1].Nodes.Add(not_add);
+                        this.Nodes[tec_indx].Nodes[(int)FormChangeMode.MODE_TECCOMPONENT.PC - 1].Nodes[0].Name = path + ':' + "0";
 
                         int gtp_node_null_indx = -1;
 
@@ -1459,6 +1513,16 @@ namespace Statistic
                         }
                     }
                 }
+            list_id = 0;
+            checked_node(this.Nodes, list_id,true);
+            foreach (TreeNode n in this.Nodes)
+            {
+                if (n.IsExpanded == true)
+                {
+                    this.SelectedNode = n;
+                    break;
+                }
+            }
         }
 
     }
