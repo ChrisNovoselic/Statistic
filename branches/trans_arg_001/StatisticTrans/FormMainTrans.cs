@@ -165,14 +165,17 @@ namespace StatisticTrans
             }
         }
 
+        /// <summary>
+        /// 
+        /// </summary>
+        /// <param name="id_app"></param>
+        /// <param name="par"></param>
+        /// <param name="val"></param>
         public FormMainTrans(int id_app, string[] par, string[] val)
         {
             Thread.CurrentThread.CurrentCulture =
             Thread.CurrentThread.CurrentUICulture =
-                ProgramBase.ss_MainCultureInfo; //ru-Ru   
-
-            //экземпляр класса обработки командной строки
-            m_hCmd = new handlerCmd(Environment.GetCommandLineArgs());
+                ProgramBase.ss_MainCultureInfo; //ru-Ru 
 
             InitializeComponent();
 
@@ -322,16 +325,18 @@ namespace StatisticTrans
             m_labelTime.Text = "";
             Controls.Add(m_labelTime);
             m_labelTime.Visible = true;
+
+
             //Значения аргументов по умолчанию
             m_arg_date = DateTime.Now;
             m_arg_interval = TIMER_SERVICE_MIN_INTERVAL; //Милисекунды
 
+            //экземпляр класса обработки командной строки
+            createHCmdArg(Environment.GetCommandLineArgs());
+
             this.WindowState = FormWindowState.Minimized;
             this.ShowInTaskbar = false;
             notifyIconMain.Visible = true;
-
-
-
             dateTimePickerMain.Value = m_arg_date.Date;
 
             m_arGroupBox = new GroupBox[(Int16)CONN_SETT_TYPE.COUNT_CONN_SETT_TYPE] { groupBoxSource, groupBoxDest };
@@ -344,6 +349,11 @@ namespace StatisticTrans
                     enabledUIControl(false);
                 else
                     enabledUIControl(true);
+        }
+
+        protected override HCmd_Arg createHCmdArg(string[] args)
+        {
+            return new handlerCmd(args);
         }
 
         private void InitializeComponentTrans()
@@ -812,7 +822,7 @@ namespace StatisticTrans
         /// <param name="bCheckAdminLength">признак проверки кол-ва параметров соединения по кол-ву объекьлв 'HAdmin'</param>
         protected void EditFormConnectionSettings(string connSettFileName, bool bCheckAdminLength)
         {
-            createfileConnSett(connSettFileName);
+            CreatefileConnSett(connSettFileName);
 
 
             bool bShowFormConnSett = false;

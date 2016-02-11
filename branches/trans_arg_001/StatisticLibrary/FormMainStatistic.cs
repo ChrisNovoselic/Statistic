@@ -21,13 +21,18 @@ namespace StatisticCommon
         protected HCmd_Arg m_Hcmd_arg;
         static bool bflagOnlyInstance;//
 
+        protected virtual HCmd_Arg createHCmdArg(string []args)
+        {
+            return new HCmd_Arg(args);
+        }
+
         /// <summary>
         /// 
         /// </summary>
         public FormMainStatistic()
         {
             SingleInstance.Start();
-            m_Hcmd_arg = new HCmd_Arg(Environment.GetCommandLineArgs());
+            createHCmdArg(Environment.GetCommandLineArgs());
         }
 
         /// <summary>
@@ -92,7 +97,7 @@ namespace StatisticCommon
                         if (!(bflagOnlyInstance))
                         {
                             SingleInstance.SwitchToCurrentInstance();
-                            SingleInstance.closeForm();
+                            SingleInstance.CloseForm();
                         }
                         else
                             ;
@@ -100,17 +105,17 @@ namespace StatisticCommon
                     case "stop":
                         if (!(bflagOnlyInstance))
                         {
-                            SingleInstance.stopApp();
-                            SingleInstance.closeForm();
+                            SingleInstance.StopApp();
+                            SingleInstance.CloseForm();
                         }
                         else
-                            SingleInstance.closeForm();
+                            SingleInstance.CloseForm();
                         break;
                     default:
                         if (!(bflagOnlyInstance))
                         {
                             SingleInstance.SwitchToCurrentInstance();
-                            SingleInstance.closeForm();
+                            SingleInstance.CloseForm();
                         }
                         else ;
                         break;
@@ -179,7 +184,7 @@ namespace StatisticCommon
         /// создание ConnSett
         /// </summary>
         /// <param name="connSettFileName"></param>
-        public void createfileConnSett(string connSettFileName)
+        public void CreatefileConnSett(string connSettFileName)
         {
             m_sFileCS = new FIleConnSett(connSettFileName, FIleConnSett.MODE.FILE);
             s_listFormConnectionSettings = new List<FormConnectionSettings>();
@@ -203,7 +208,6 @@ namespace StatisticCommon
         static public class SingleInstance
         {
             private static string mutexName = ProgramInfo.AssemblyGuid.ToString();
-            //AssemblyTitle.ToString();
             static Mutex mtx;
             static private IntPtr m_hndl;
 
@@ -221,7 +225,7 @@ namespace StatisticCommon
             /// для его активации
             /// </summary>
             /// <param name="hWnd"></param>
-            private static void SendMsg(IntPtr hWnd)
+            private static void sendMsg(IntPtr hWnd)
             {
                 WinApi.SendMessage(hWnd, WinApi.SW_RESTORE, IntPtr.Zero, IntPtr.Zero);
             }
@@ -248,7 +252,7 @@ namespace StatisticCommon
             /// <summary>
             /// Остановка работы формы
             /// </summary>
-            static public void stopApp()
+            static public void StopApp()
             {
                 WinApi.SendMessage(mainhwd(), WinApi.WM_CLOSE, IntPtr.Zero, IntPtr.Zero);
             }
@@ -256,7 +260,7 @@ namespace StatisticCommon
             /// <summary>
             /// Закрытие дублирующего окна
             /// </summary>
-            static public void closeForm()
+            static public void CloseForm()
             {
                 Process process = Process.GetCurrentProcess();
                 Process[] processes = Process.GetProcessesByName(process.ProcessName);
@@ -300,7 +304,7 @@ namespace StatisticCommon
                         m_hndl = _process.MainWindowHandle;
 
                         if (m_hndl == IntPtr.Zero)
-                            EnumID(_process.Id);
+                            enumID(_process.Id);
 
                         WinApi.GetWindowTextLength(m_hndl);
                         break;
@@ -313,7 +317,7 @@ namespace StatisticCommon
             /// выборка всех запущенных приложений
             /// </summary>
             /// <param name="id">ид процесса приложения</param>
-            private static void EnumID(int id)
+            private static void enumID(int id)
             {
                 WinApi.EnumWindows((hWnd, lParam) =>
                 {
@@ -321,7 +325,7 @@ namespace StatisticCommon
                     {
                         if (WinApi.IsIconic(hWnd) != 0 &&
                             WinApi.GetPlacement(hWnd).showCmd.ToString() == "Minimized")
-                            FindCurProc(id, hWnd);
+                            findCurProc(id, hWnd);
                         else ;
                     }
                     return true;
@@ -333,7 +337,7 @@ namespace StatisticCommon
             /// </summary>
             /// <param name="hWnd">дескриптор приложения</param>
             /// <returns></returns>
-            private static string GetWindowText(IntPtr hWnd)
+            private static string getWindowText(IntPtr hWnd)
             {
                 int len = WinApi.GetWindowTextLength(hWnd) + 1;
                 StringBuilder sb = new StringBuilder(len);
@@ -347,7 +351,7 @@ namespace StatisticCommon
             public static void SwitchToCurrentInstance()
             {
                 IntPtr hWnd = mainhwd();
-                SendMsg(hWnd);
+                sendMsg(hWnd);
 
                 if (hWnd != IntPtr.Zero)
                 {
@@ -368,7 +372,7 @@ namespace StatisticCommon
             /// </summary>
             /// <param name="id">идентификатор приложения</param>
             /// <param name="hwd">дескриптор окна</param>
-            private static void FindCurProc(int id, IntPtr hwd)
+            private static void findCurProc(int id, IntPtr hwd)
             {
                 int _ProcessId;
                 WinApi.GetWindowThreadProcessId(hwd, out _ProcessId);

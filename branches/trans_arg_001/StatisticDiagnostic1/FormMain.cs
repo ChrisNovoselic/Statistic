@@ -41,7 +41,7 @@ namespace StatisticDiagnostic
 
             string msg = string.Empty;
             bool bAbort = true;
-            createfileConnSett(@"connsett.ini");
+            CreatefileConnSett(@"connsett.ini");
             Start();
             bAbort = initialize(out msg);
             this.panelMain = new PanelStatisticDiagnostic();
