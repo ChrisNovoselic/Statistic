@@ -918,19 +918,33 @@ namespace Statistic
         /// </summary>
         private void buttonOK_click(object sender, MouseEventArgs e)
         {
-                int err = -1;
+            int err = -1;
+            string[] warning;
+            DataTable[] mass_table = new DataTable[4];
+            
+            mass_table[0] = m_table_TG_edited;
+            mass_table[1] = m_table_PC_edited;
+            mass_table[2] = m_table_GTP_edited;
+            mass_table[3] = m_table_TEC_edited;
+
+            if (validate_saving(mass_table, out warning) == false)
+            {
                 db_sostav.Edit("TG_LIST", "ID", m_table_TG_original, m_table_TG_edited, out err);
                 db_sostav.Edit("PC_LIST", "ID_TEC,ID", m_table_PC_original, m_table_PC_edited, out err);
                 db_sostav.Edit("GTP_LIST", "ID", m_table_GTP_original, m_table_GTP_edited, out err);
                 db_sostav.Edit("TEC_LIST", "ID", m_table_TEC_original, m_table_TEC_edited, out err);
-                db_sostav.Write_Audit(m_table_audit);
+
                 fill_DataTable_ComponentsTEC();
-
                 m_list_TEC = db_sostav.get_list_tec();
-
                 treeView_TECComponent.Update_tree(m_list_TEC);
                 btnOK.Enabled = false;
                 btnBreak.Enabled = false;
+            }
+            else
+            {
+                MessageBox.Show(warning[0] + warning[1] + warning[2] + warning[3], "Внимание!", MessageBoxButtons.OK, MessageBoxIcon.Warning);
+            }
+            //db_sostav.Write_Audit(m_table_audit);
         }
 
         /// <summary>
@@ -1027,6 +1041,30 @@ namespace Statistic
         private void set_audit(string type_operation, int id_object, string new_value, string prev_value)
         {
 
+        }
+
+        private bool validate_saving(DataTable[] mass_table, out string[] warning)
+        {
+            bool have = false;
+            int indx = -1;
+            warning = new String[mass_table.Length];
+
+            foreach (DataTable table in mass_table)
+            {
+                indx++;
+                foreach (DataRow row in table.Rows)
+                {
+                    for (int i = 0; i < table.Columns.Count; i++)
+                    {
+                        if (Convert.ToString(row[i]) == "-1")
+                        {
+                            have = true;
+                            warning[indx] += "Для объекта " + row["NAME_SHR"] + " параметр " + table.Columns[i].ColumnName + " равен '-1'." + '\n';
+                        }
+                    }
+                }
+            }
+            return have;
         }
     }
 
