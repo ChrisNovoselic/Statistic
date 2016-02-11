@@ -143,9 +143,21 @@ namespace Statistic
         /// </summary>
         /// <param name="indx">Индекс режима</param>
         /// <returns>Строка - наименование режима</returns>
-        public static string getNameMode(Int16 indx)
+        protected static string getNameMode(Int16 indx)
         {
             string[] nameModes = { "Добавить ГТП", "Добавить ЩУ", "Добавить ТГ", "Ввести в состав", "Вывести из состава", "Добавить ТЭЦ"};
+
+            return nameModes[indx];
+        }
+
+        /// <summary>
+        /// Возвратить наименование операции
+        /// </summary>
+        /// <param name="indx">Индекс режима</param>
+        /// <returns>Строка - наименование режима</returns>
+        protected static string getNameOperation(Int16 indx)
+        {
+            string[] nameModes = { "Insert", "Delete", "Update" };
 
             return nameModes[indx];
         }
@@ -249,6 +261,11 @@ namespace Statistic
                 string table_name_pbr = "PPBRvsPBROfID";
                 m_table_TEC_edited.Rows.Add();
 
+                for (int i = 2; i < m_table_TEC_edited.Columns.Count; i++)
+                {
+                    m_table_TEC_edited.Rows[m_table_TEC_edited.Rows.Count - 1][i] = "-1";
+                }
+
                 m_table_TEC_edited.Rows[m_table_TEC_edited.Rows.Count - 1]["ID"] = id_tec;
                 m_table_TEC_edited.Rows[m_table_TEC_edited.Rows.Count - 1]["InUse"] = "1";
                 m_table_TEC_edited.Rows[m_table_TEC_edited.Rows.Count - 1]["NAME_SHR"] = name_shr;
@@ -283,6 +300,12 @@ namespace Statistic
                 {
                     m_table_GTP_edited.Rows.Add();
                     //Заполнение таблицы
+
+                    for (int i = 0; i < m_table_GTP_edited.Columns.Count; i++)
+                    {
+                        m_table_GTP_edited.Rows[m_table_GTP_edited.Rows.Count - 1][i] = "-1";
+                    }
+
                     m_table_GTP_edited.Rows[m_table_GTP_edited.Rows.Count - 1]["ID"] = DbTSQLInterface.GetIdNext(m_table_GTP_edited, out err).ToString();
                     m_table_GTP_edited.Rows[m_table_GTP_edited.Rows.Count - 1]["ID_TEC"] = m_sel_node_list[0].ToString();
                     m_table_GTP_edited.Rows[m_table_GTP_edited.Rows.Count - 1]["NAME_SHR"] = "Новая ГТП";
@@ -298,6 +321,12 @@ namespace Statistic
                     {
                         m_table_PC_edited.Rows.Add();
                         //Заполнение таблицы
+
+                        for (int i = 0; i < m_table_PC_edited.Columns.Count; i++)
+                        {
+                            m_table_PC_edited.Rows[m_table_PC_edited.Rows.Count - 1][i] = "-1";
+                        }
+
                         m_table_PC_edited.Rows[m_table_PC_edited.Rows.Count - 1]["ID"] = DbTSQLInterface.GetIdNext(m_table_PC_edited, out err).ToString();
                         m_table_PC_edited.Rows[m_table_PC_edited.Rows.Count - 1]["ID_TEC"] = m_sel_node_list[0].ToString();
                         m_table_PC_edited.Rows[m_table_PC_edited.Rows.Count - 1]["NAME_SHR"] = "Новый ЩУ";
@@ -313,10 +342,16 @@ namespace Statistic
                         if (e.ClickedItem.Text == (string)getNameMode(2))//Добавление нового ТГ
                         {
                             m_table_TG_edited.Rows.Add();
+
+                            for (int i = 0; i < m_table_TG_edited.Columns.Count; i++)
+                            {
+                                m_table_TG_edited.Rows[m_table_TG_edited.Rows.Count - 1][i] = "-1";
+                            }
+
                             m_table_TG_edited.Rows[m_table_TG_edited.Rows.Count - 1]["ID"] = DbTSQLInterface.GetIdNext(m_table_TG_edited, out err).ToString();
                             m_table_TG_edited.Rows[m_table_TG_edited.Rows.Count - 1]["ID_TEC"] = m_sel_node_list[0].ToString();
 
-                            m_table_TG_edited.Rows[m_table_TG_edited.Rows.Count - 1]["ID_GTP"] = "0";
+                            //m_table_TG_edited.Rows[m_table_TG_edited.Rows.Count - 1]["ID_GTP"] = "0";
                             m_table_TG_edited.Rows[m_table_TG_edited.Rows.Count - 1]["NAME_SHR"] = "Новый ТГ";
 
 
@@ -987,6 +1022,11 @@ namespace Statistic
                     }
                 }
             }
+        }
+
+        private void set_audit(string type_operation, int id_object, string new_value, string prev_value)
+        {
+
         }
     }
 
