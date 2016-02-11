@@ -54,7 +54,6 @@ namespace StatisticDiagnostic
                     }
                 else ;
 
-                //FormMainStatistic.SingleInstance.StopMtx();
                 ProgramBase.Exit();
             }
         }

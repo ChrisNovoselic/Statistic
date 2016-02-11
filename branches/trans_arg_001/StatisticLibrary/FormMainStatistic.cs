@@ -44,25 +44,19 @@ namespace StatisticCommon
             /// </summary>
             static public string param;
 
+            /// <summary>
+            /// 
+            /// </summary>
+            /// <param name="args"></param>
             public HCmd_Arg(string[] args)
             {
                 handlerArgs(args);
                 if (!bflagOnlyInstance)
                     execCmdLine(cmd);
-                else ;
+                else
+                    if (cmd == "stop")
+                        execCmdLine(cmd);
             }
-
-            //public string Cmd
-            //{
-            //    get
-            //    {
-            //        return cmd;
-            //    }
-            //    set
-            //    {
-            //        cmd = handlerArgs();
-            //    }
-            //}
 
             /// <summary>
             /// обработка CommandLine
@@ -72,15 +66,18 @@ namespace StatisticCommon
             {
                 string[] m_cmd = new string[cmdLine.Length];
 
-                m_cmd = cmdLine[1].Split('/', '=');
-
-                if (m_cmd.Length > 2)
+                if (m_cmd.Length > 1)
                 {
-                    cmd = m_cmd[1];
-                    param = m_cmd[2];
+                    m_cmd = cmdLine[1].Split('/', '=');
+
+                    if (m_cmd.Length > 2)
+                    {
+                        cmd = m_cmd[1];
+                        param = m_cmd[2];
+                    }
+                    else
+                        cmd = m_cmd[1];
                 }
-                else
-                    cmd = m_cmd[1];
             }
 
             /// <summary>

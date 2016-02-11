@@ -171,6 +171,7 @@ namespace StatisticTrans
             Thread.CurrentThread.CurrentUICulture =
                 ProgramBase.ss_MainCultureInfo; //ru-Ru   
 
+            //экземпляр класса обработки командной строки
             m_hCmd = new handlerCmd(Environment.GetCommandLineArgs());
 
             InitializeComponent();
