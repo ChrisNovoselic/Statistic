@@ -11,11 +11,6 @@ namespace StatisticTrans
         /// <summary>
         /// 
         /// </summary>
-        private bool bflag;
-
-        /// <summary>
-        /// 
-        /// </summary>
         private int countIt = 0;
 
         /// <summary>

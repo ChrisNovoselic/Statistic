@@ -18,9 +18,14 @@ namespace StatisticCommon
     {
         protected static FileINI m_sFileINI;//setup.ini
         protected static FIleConnSett m_sFileCS;//connsett.ini
-        protected HCmd_Arg m_Hcmd_arg;
+        //protected HCmd_Arg m_Hcmd_arg;
         static bool bflagOnlyInstance;//
 
+        /// <summary>
+        /// 
+        /// </summary>
+        /// <param name="args"></param>
+        /// <returns></returns>
         protected virtual HCmd_Arg createHCmdArg(string []args)
         {
             return new HCmd_Arg(args);
@@ -61,6 +66,7 @@ namespace StatisticCommon
                 else
                     if (cmd == "stop")
                         execCmdLine(cmd);
+                    else ;
             }
 
             /// <summary>
@@ -99,8 +105,6 @@ namespace StatisticCommon
                             SingleInstance.SwitchToCurrentInstance();
                             SingleInstance.CloseForm();
                         }
-                        else
-                            ;
                         break;
                     case "stop":
                         if (!(bflagOnlyInstance))
@@ -117,7 +121,6 @@ namespace StatisticCommon
                             SingleInstance.SwitchToCurrentInstance();
                             SingleInstance.CloseForm();
                         }
-                        else ;
                         break;
                 }
             }
@@ -258,7 +261,7 @@ namespace StatisticCommon
             }
 
             /// <summary>
-            /// Закрытие дублирующего окна
+            /// Закрытие окна
             /// </summary>
             static public void CloseForm()
             {

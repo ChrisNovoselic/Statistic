@@ -118,7 +118,7 @@ namespace StatisticTrans
             }
 
             /// <summary>
-            /// запуск "своих" команд
+            /// обработка "своих" команд
             /// </summary>
             /// <param name="command"></param>
             private void RunCmd()
@@ -326,13 +326,12 @@ namespace StatisticTrans
             Controls.Add(m_labelTime);
             m_labelTime.Visible = true;
 
-
             //Значения аргументов по умолчанию
             m_arg_date = DateTime.Now;
             m_arg_interval = TIMER_SERVICE_MIN_INTERVAL; //Милисекунды
 
             //экземпляр класса обработки командной строки
-            createHCmdArg(Environment.GetCommandLineArgs());
+            //createHCmdArg(Environment.GetCommandLineArgs());
 
             this.WindowState = FormWindowState.Minimized;
             this.ShowInTaskbar = false;
