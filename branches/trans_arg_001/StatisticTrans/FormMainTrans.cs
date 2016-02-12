@@ -350,6 +350,11 @@ namespace StatisticTrans
                     enabledUIControl(true);
         }
 
+        /// <summary>
+        /// 
+        /// </summary>
+        /// <param name="args"></param>
+        /// <returns></returns>
         protected override HCmd_Arg createHCmdArg(string[] args)
         {
             return new handlerCmd(args);
@@ -872,7 +877,6 @@ namespace StatisticTrans
             else
                 ;
 
-            CT = new ComponentTesting(comboBoxTECComponent.Items.Count);
         }
 
         /// <summary>
@@ -950,7 +954,6 @@ namespace StatisticTrans
         /// </summary>
         protected virtual void errorDataGridViewAdmin()
         {
-            //CT.bflag = true;
             CT.PopIter();
             if ((m_bTransAuto == true || m_modeMashine == MODE_MASHINE.SERVICE) && (m_bEnabledUIControl == false))
             {
@@ -996,6 +999,8 @@ namespace StatisticTrans
 
                 if (comboBoxTECComponent.InvokeRequired)
                     comboBoxTECComponent.Invoke(new Action(() => CT.PushIter((string)comboBoxTECComponent.Items[comboBoxTECComponent.SelectedIndex])));
+                else
+                    CT.PushIter((string)comboBoxTECComponent.Items[comboBoxTECComponent.SelectedIndex]);
 
                 IAsyncResult asyncRes;
                 //if (IsHandleCreated/*InvokeRequired*/ == true)
@@ -1213,14 +1218,12 @@ namespace StatisticTrans
                     if (IsTomorrow() == false)
                     {
                         dateTimePickerMain.Value = DateTime.Now;
-
                         //enabledUIControl(true);
                     }
                     else
                     {
                         dateTimePickerMain.Value = dateTimePickerMain.Value.AddDays(1);
                         comboBoxTECComponent.SelectedIndex = 0;
-
                         comboBoxTECComponent_SelectedIndexChanged(null, EventArgs.Empty);
                     }
                 }
@@ -1246,16 +1249,16 @@ namespace StatisticTrans
             if (m_modeMashine == MODE_MASHINE.TO_DATE)
             {
                 FillComboBoxTECComponent();
-
                 trans_auto_start();
-
-                //return;
             }
             else
                 if (m_modeMashine == MODE_MASHINE.SERVICE)
                     m_checkboxModeMashine.Checked = true;
                 else
+                {
                     FillComboBoxTECComponent();
+                    CT = new ComponentTesting(comboBoxTECComponent.Items.Count);
+                }
         }
 
         private void timerService_Tick(object sender, EventArgs e)
@@ -1271,7 +1274,7 @@ namespace StatisticTrans
                             timerService.Interval = m_arg_interval;
 
                             FillComboBoxTECComponent();
-                            //
+                            CT = new ComponentTesting(comboBoxTECComponent.Items.Count);
                             //DateUpdate(m_arg_interval);
                         }
                         else
@@ -1346,7 +1349,6 @@ namespace StatisticTrans
         private void dateTimePickerMain_Changed(object sender, EventArgs e)
         {
             initTableHourRows();
-
             comboBoxTECComponent_SelectedIndexChanged(null, EventArgs.Empty);
         }
 
@@ -1368,9 +1370,7 @@ namespace StatisticTrans
             {
                 //Взять значения "с окна" в таблицу
                 getDataGridViewAdmin((int)(Int16)CONN_SETT_TYPE.DEST);
-
                 //ClearTables();
-
                 DateTime time = DateTime.Now;
                 m_labelTime.Text = "Последний экспорт данных в " + time;
                 SaveRDGValues(true);
@@ -1390,7 +1390,6 @@ namespace StatisticTrans
 
                     enabledUIControl(false);
                     m_dgwAdminTable.Enabled = false;
-
                     InitializeTimerService();
                     SendMessage(this.Handle, 0x112, 0xF020, 0);
                     timerService.Start();

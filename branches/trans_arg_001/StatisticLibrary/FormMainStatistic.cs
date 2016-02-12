@@ -19,7 +19,7 @@ namespace StatisticCommon
         protected static FileINI m_sFileINI;//setup.ini
         protected static FIleConnSett m_sFileCS;//connsett.ini
         //protected HCmd_Arg m_Hcmd_arg;
-        static bool bflagOnlyInstance;//
+        static bool bflagOnlyInstance;//флаг дубликата
 
         /// <summary>
         /// 
@@ -32,7 +32,7 @@ namespace StatisticCommon
         }
 
         /// <summary>
-        /// 
+        /// Контруктор класса
         /// </summary>
         public FormMainStatistic()
         {

@@ -6,6 +6,9 @@ using StatisticTrans;
 
 namespace StatisticTrans
 {
+    /// <summary>
+    /// 
+    /// </summary>
     class ComponentTesting
     {
         /// <summary>
@@ -39,13 +42,12 @@ namespace StatisticTrans
         }
 
         /// <summary>
-        /// 
+        /// Успешные итерации
         /// </summary>
         public void PushIter(string nameElem)
         {
             if (GetNum() == countIt)
                 ClearStck();
-            else ;
 
             Iters[currentIter] = nameElem;
             currentIter++;
@@ -54,7 +56,7 @@ namespace StatisticTrans
         }
 
         /// <summary>
-        /// 
+        /// Кол-во итераций
         /// </summary>
         /// <returns></returns>
         private int GetNum()
@@ -63,10 +65,11 @@ namespace StatisticTrans
         }
 
         /// <summary>
-        /// 
+        /// Уменьшение счетчика итераций
         /// </summary>
         public void PopIter()
         {
+            ErrorIter();
             currentIter--;
             CounterSuccessfulDownload();
             countIt++;
@@ -77,7 +80,8 @@ namespace StatisticTrans
         /// </summary>
         private void CounterSuccessfulDownload()
         {
-            FormMainTrans.m_labelTime.Invoke(new Action(() => FormMainTrans.m_labelTime.Text = "Время последнего опроса: " + DateTime.Now.ToString() + ";" + " Успешных итераций: " + currentIter + " из " + GetNum() + ""));
+            FormMainTrans.m_labelTime.Invoke(new Action(() => FormMainTrans.m_labelTime.Text = "Время последнего опроса: " 
+                + DateTime.Now.ToString() + ";" + " Успешных итераций: " + currentIter + " из " + GetNum() + ";"));
             FormMainTrans.m_labelTime.Invoke(new Action(() => FormMainTrans.m_labelTime.Update()));
         }
 
@@ -88,6 +92,17 @@ namespace StatisticTrans
         {
             currentIter = 0;
             countIt = 0;
+        }
+
+        /// <summary>
+        /// 
+        /// </summary>
+        private void ErrorIter()
+        {
+            FormMainTrans.m_labelTime.Invoke(new Action(() => FormMainTrans.m_labelTime.Text = "Время последнего опроса: "
+               + DateTime.Now.ToString() + ";" + " Успешных итераций: " + currentIter + " из " + GetNum() + ";"
+               + "Ошибка на компоненте: "+Iters[currentIter].ToString()+"."));
+            FormMainTrans.m_labelTime.Invoke(new Action(() => FormMainTrans.m_labelTime.Update()));
         }
     }
 }

@@ -10,7 +10,7 @@ namespace StatisticCommon
     static public class ProgramInfo
     {
         /// <summary>
-        /// 
+        /// Создание GUID для приложения
         /// </summary>
         /// <returns></returns>
         static public string NewGuid()
@@ -48,6 +48,9 @@ namespace StatisticCommon
             }
         }
 
+        /// <summary>
+        /// Получение имени запускаемого файла
+        /// </summary>
         static public string AssemblyTitle
         {
             get
