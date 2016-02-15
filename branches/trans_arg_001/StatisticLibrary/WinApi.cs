@@ -97,7 +97,7 @@ namespace StatisticCommon
         [DllImport("user32")]
         public static extern bool SendMessage(IntPtr hWnd, int Msg, IntPtr wParam, IntPtr lParam);
         /// <summary>
-        /// Получение ид потока, котоырй создал окно
+        /// Получение ид потока, который создал окно
         /// </summary>
         /// <param name="hWnd">дескриптор окна</param>
         /// <param name="lpdwProcessId">номер ид</param>
@@ -134,7 +134,11 @@ namespace StatisticCommon
         /// <returns></returns>
         [DllImport("user32.dll", SetLastError = true)]
         public static extern bool IsWindowVisible(IntPtr hWnd);
-
+        /// <summary>
+        /// 
+        /// </summary>
+        /// <param name="hwnd"></param>
+        /// <returns></returns>
         public static WINDOWPLACEMENT GetPlacement(IntPtr hwnd)
         {
             WINDOWPLACEMENT placement = new WINDOWPLACEMENT();

@@ -2081,7 +2081,6 @@ namespace StatisticDiagnostic
             private void columTimeTask(int i)
             {
                 string m_timeNow = DateTime.Now.ToString("HH:mm:ss.fff");
-
                 TaskDataGridView.Rows[i].Cells[3].Value = m_timeNow;
             }
 
@@ -2139,9 +2138,9 @@ namespace StatisticDiagnostic
                     {
                         if (TaskDataGridView.Columns[4].Visible == false)
                             TaskDataGridView.Invoke(new Action(() => TaskDataGridView.Columns[4].Visible = true));
-
-                        upselectrow(m_check);
+                        else ;                   
                         TaskDataGridView.Invoke(new Action(() => TaskDataGridView.Rows[m_check].Cells[4].Value = "Задача не выполняется"));
+                        upselectrow(m_check);
                         m_counter--;
                     }
 
