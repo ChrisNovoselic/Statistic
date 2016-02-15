@@ -20,9 +20,9 @@ namespace StatisticCommon
         }
 
         /// <summary>
-        /// Создает уникальный идентификатор
+        /// создвет имя мьютекса по пути запускаемого приложения
         /// </summary>
-        static public string AssemblyGuid
+        static public string NameMtx
         {
             get
             {

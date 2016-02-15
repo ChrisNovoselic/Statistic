@@ -34,6 +34,7 @@ namespace StatisticCommon
         /// </summary>
         public FormMainStatistic()
         {
+            //string str = Environment.CommandLine;
             createHCmdArg(Environment.GetCommandLineArgs());
         }
 
@@ -100,23 +101,23 @@ namespace StatisticCommon
                         if (!(SingleInstance.onlyInstance))
                         {
                             SingleInstance.SwitchToCurrentInstance();
-                            SingleInstance.CloseForm();
+                            SingleInstance.InterruptReApp();
                         }
                         break;
                     case "stop":
                         if (!(SingleInstance.onlyInstance))
                         {
                             SingleInstance.StopApp();
-                            SingleInstance.CloseForm();
+                            SingleInstance.InterruptReApp();
                         }
                         else
-                            SingleInstance.CloseForm();
+                            SingleInstance.InterruptReApp();
                         break;
                     default:
                         if (!(SingleInstance.onlyInstance))
                         {
                             SingleInstance.SwitchToCurrentInstance();
-                            SingleInstance.CloseForm();
+                            SingleInstance.InterruptReApp();
                         }
                         break;
                 }
@@ -214,9 +215,8 @@ namespace StatisticCommon
         /// </summary>
         static public class SingleInstance
         {
-            static private string mtxName = ProgramInfo.AssemblyGuid.ToString();
+            static private string mtxName = ProgramInfo.NameMtx.ToString();
             static Mutex m_mtx;
-            //static private IntPtr m_hWnd;
 
             /// <summary>
             /// 
@@ -250,7 +250,7 @@ namespace StatisticCommon
             }
 
             /// <summary>
-            /// Остановка работы формы
+            /// Остановка работы основного приложения
             /// </summary>
             static public void StopApp()
             {
@@ -258,9 +258,9 @@ namespace StatisticCommon
             }
 
             /// <summary>
-            /// Закрытие окна
+            /// Прерывание запуска дублирующего приложения
             /// </summary>
-            static public void CloseForm()
+            static public void InterruptReApp()
             {
                 Environment.Exit(0);
 
@@ -274,7 +274,7 @@ namespace StatisticCommon
                 //        _process.Handle != IntPtr.Zero)
                 //    {
                 //        m_hWnd = _process.MainWindowHandle;
-                  
+
                 //      //if (m_hWnd == IntPtr.Zero)
                 //      //    m_hWnd = enumID(_process.Id);
                 //      //else ;
@@ -291,7 +291,7 @@ namespace StatisticCommon
             {
                 get
                 {
-                    IntPtr m_hWnd  = IntPtr.Zero;
+                    IntPtr m_hWnd = IntPtr.Zero;
                     Process process = Process.GetCurrentProcess();
                     Process[] processes = Process.GetProcessesByName(process.ProcessName);
                     foreach (Process _process in processes)
@@ -308,7 +308,7 @@ namespace StatisticCommon
                             m_hWnd = _process.MainWindowHandle;
 
                             if (m_hWnd == IntPtr.Zero)
-                               m_hWnd = enumID(_process.Id);
+                                m_hWnd = enumID(_process.Id);
                             else ;
                             break;
                         }
@@ -324,13 +324,15 @@ namespace StatisticCommon
             static private IntPtr enumID(int id)
             {
                 IntPtr hwnd = IntPtr.Zero;
+                bool flg = true;
                 WinApi.EnumWindows((hWnd, lParam) =>
                 {
                     if (WinApi.IsWindowVisible(hWnd) && (WinApi.GetWindowTextLength(hWnd) != 0))
                     {
                         if (WinApi.IsIconic(hWnd) != 0 &&
-                            WinApi.GetPlacement(hWnd).showCmd == WinApi.ShowWindowCommands.Minimized)
-                           hwnd = findCurProc(id, hWnd);
+                            WinApi.GetPlacement(hWnd).showCmd == WinApi.ShowWindowCommands.Minimized
+                            && flg)
+                            hwnd = findCurProc(id, hWnd, out flg);
                         else ;
                     }
                     return true;
@@ -379,15 +381,22 @@ namespace StatisticCommon
             /// </summary>
             /// <param name="id">идентификатор приложения</param>
             /// <param name="hwd">дескриптор окна</param>
-            static private IntPtr findCurProc(int id, IntPtr hwd)
+            /// <returns>дескриптор окна</returns>
+            static private IntPtr findCurProc(int id, IntPtr hwd, out bool flg)
             {
                 int _ProcessId;
                 WinApi.GetWindowThreadProcessId(hwd, out _ProcessId);
 
                 if (id == _ProcessId)
-                   return hwd;
-                else 
+                {
+                    flg = false;
+                    return hwd;
+                }
+                else
+                {
+                    flg = true;
                     return IntPtr.Zero;
+                }
             }
         }
     }
