@@ -368,6 +368,9 @@ namespace StatisticDiagnostic
     /// </summary>
     public partial class PanelStatisticDiagnostic : PanelStatistic
     {
+        /// <summary>
+        /// список активных источников
+        /// </summary>
         static object[,] m_arrayActiveSource;
         static Modes[] m_arPanelsMODES;
         static Tec[] m_arPanelsTEC;
@@ -441,17 +444,20 @@ namespace StatisticDiagnostic
         /// </summary>
         public class HDataSource : HHandlerDb
         {
-            ConnectionSettings m_connSett;
+            ConnectionSettings []m_connSett;
 
             protected enum State
             {
                 ServerTime,
-                Command
+                Command,
+                UpdateSource
             }
 
             public HDataSource(ConnectionSettings connSett)
             {
-                m_connSett = connSett;
+                m_connSett = new ConnectionSettings[2]; //??? why number
+                m_connSett[(int)CONN_SETT_TYPE.LIST_SOURCE] = connSett;
+                m_connSett[(int)CONN_SETT_TYPE.CONFIG_DB] = FormMain.s_listFormConnectionSettings[(int)CONN_SETT_TYPE.CONFIG_DB].getConnSett();
             }
 
             /// <summary>
@@ -460,10 +466,11 @@ namespace StatisticDiagnostic
             public override void StartDbInterfaces()
             {
                 if (m_dictIdListeners.ContainsKey(0) == false)
-                    m_dictIdListeners.Add(0, new int[] { -1 });
+                    m_dictIdListeners.Add(0, new int[] { -1, -1 });
                 else
                     ;
-                register(0, 0, m_connSett, m_connSett.name);
+                register(0, 0, m_connSett[(int)CONN_SETT_TYPE.LIST_SOURCE], m_connSett[(int)CONN_SETT_TYPE.LIST_SOURCE].name);
+                register(0, 1, m_connSett[(int)CONN_SETT_TYPE.CONFIG_DB], m_connSett[(int)CONN_SETT_TYPE.CONFIG_DB].name);
             }
 
             public override void ClearValues()
@@ -479,6 +486,7 @@ namespace StatisticDiagnostic
                 lock (m_lockState)
                 {
                     ClearStates();
+                    AddState((int)State.UpdateSource);
                     AddState((int)State.ServerTime);
                     AddState((int)State.Command);
                     Run(@"StatisticDiagnostic.HHandlerDb :: Command");
@@ -503,6 +511,10 @@ namespace StatisticDiagnostic
                     case (int)State.Command:
                         Request(m_dictIdListeners[0][0], @"SELECT * FROM Diagnostic");
                         actionReport(@"Получение значений из БД - состояние: " + ((State)state).ToString());
+                        break;
+                    case (int)State.UpdateSource:
+                        Request(m_dictIdListeners[0][1], @"SELECT * FROM TEC_LIST");
+                        actionReport(@"Обновление списка активных источников - состояние: " + ((State)state).ToString());
                         break;
                     default:
                         break;
@@ -531,6 +543,9 @@ namespace StatisticDiagnostic
                     case (int)State.Command:
                         iRes = response(m_IdListenerCurrent, out error, out table);
                         break;
+                    case (int)State.UpdateSource:
+                        iRes = response(m_IdListenerCurrent, out error, out table);
+                        break;
                     default:
                         break;
                 }
@@ -541,6 +556,11 @@ namespace StatisticDiagnostic
             /// Событие - получение данных 
             /// </summary>
             public event DelegateObjectFunc EvtRecievedTable;
+            /// <summary>
+            /// 
+            /// </summary>
+            public event DelegateObjectFunc EvtRecievedActiveSource;
+
 
             /// <summary>
             /// Обработка УСЕШНО полученного результата
@@ -559,6 +579,9 @@ namespace StatisticDiagnostic
                         break;
                     case (int)State.Command:
                         EvtRecievedTable(table);
+                        break;
+                    case (int)State.UpdateSource:
+                        EvtRecievedActiveSource(table);
                         break;
                     default:
                         break;
@@ -868,7 +891,7 @@ namespace StatisticDiagnostic
 
                 int numberPanel = (t / 10) - 1;
 
-                UpdateTecTM(StringQuery(t, numberPanel + 1));
+                updateTecTM(stringQuery(t, numberPanel + 1));
 
                 for (int i = 0; i < m_arPanelsTEC[numberPanel].TECDataGridView.Rows.Count; i++)
                 {
@@ -894,7 +917,7 @@ namespace StatisticDiagnostic
                 int m_numberPanel = ((Convert.ToInt32(selectionArraySource(a))) / 10) - 1;
 
                 paintCellDeactive(m_numberPanel, RowIndex);
-                UpdateTecTM(StringQuery(c, m_numberPanel + 1));
+                updateTecTM(stringQuery(c, m_numberPanel + 1));
             }
 
             /// <summary>
@@ -2500,6 +2523,15 @@ namespace StatisticDiagnostic
         }
 
         /// <summary>
+        /// Обработчик события - получение данных при запросе к БД
+        /// </summary>
+        /// <param name="table">Результат выполнения запроса - таблица с данными</param>
+        public void m_DataSource_EvtRecievedActiveSource(object table)
+        {
+            createListActiveSource((DataTable)table);
+        }
+
+        /// <summary>
         /// Получение серверного времени
         /// </summary>
         /// <param name="dtTime"></param>
@@ -2515,7 +2547,7 @@ namespace StatisticDiagnostic
         {
             m_DataSource.Start();
             m_DataSource.StartDbInterfaces();
-            //m_DataSource.Command();
+            m_DataSource.EvtRecievedActiveSource += new DelegateObjectFunc(m_DataSource_EvtRecievedActiveSource);
             m_DataSource.EvtRecievedTable += new DelegateObjectFunc(m_DataSource_EvtRecievedTable);
         }
 
@@ -2592,8 +2624,7 @@ namespace StatisticDiagnostic
             }
             else
                 throw new Exception(@"Нет соединения с БД");
-
-            createListActiveSource(m_dtTECList);
+            //createListActiveSource(m_dtTECList);
         }
 
         /// <summary>
@@ -2774,7 +2805,7 @@ namespace StatisticDiagnostic
         /// <param name="TM">новый параметр</param>
         /// <param name="tec">тэц</param>
         /// <returns>строка запроса</returns>
-        static string StringQuery(int TM, int tec)
+        static private string stringQuery(int TM, int tec)
         {
             string query = string.Empty;
             query = "update TEC_LIST set  ID_LINK_SOURCE_DATA_TM = " + TM + " where ID =" + tec;
@@ -2786,7 +2817,7 @@ namespace StatisticDiagnostic
         /// источника СОТИАССО в таблице TEC_LIST
         /// </summary>
         /// <param name="query">строка запроса</param>
-        static void UpdateTecTM(string query)
+        static void updateTecTM(string query)
         {
             int err = -1;
             int iListernID = DbSources.Sources().Register(FormMain.s_listFormConnectionSettings[(int)CONN_SETT_TYPE.CONFIG_DB].getConnSett(), false, @"CONFIG_DB");
