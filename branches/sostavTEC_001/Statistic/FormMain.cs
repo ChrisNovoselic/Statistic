@@ -81,6 +81,7 @@ namespace Statistic
         public static FormGraphicsSettings formGraphicsSettings;
         public static FormParameters formParameters;
         private FormParametersTG m_formParametersTG;
+        private static int m_iGO_Version;
 
         //TcpServerAsync m_TCPServer;
         private
@@ -175,6 +176,7 @@ namespace Statistic
                 HUsers.s_REGISTRATION_INI[(int)HUsers.INDEX_REGISTRATION.ID] = 0; //Неизвестный пользователь
                 HUsers.s_REGISTRATION_INI[(int)HUsers.INDEX_REGISTRATION.ID_TEC] = Int32.Parse(formParameters.m_arParametrSetup[(int)FormParameters.PARAMETR_SETUP.USERS_ID_TEC]); //5
                 HUsers.s_REGISTRATION_INI[(int)HUsers.INDEX_REGISTRATION.ROLE] = Int32.Parse(formParameters.m_arParametrSetup[(int)FormParameters.PARAMETR_SETUP.USERS_ID_ROLE]); //2;
+                m_iGO_Version = Convert.ToInt32(formParameters.m_arParametrSetup[(int)FormParameters.PARAMETR_SETUP.IGO_VERSION]);
             }
             catch (Exception e)
             {
@@ -419,7 +421,7 @@ namespace Statistic
         }
         }
 
-        private void update()
+        private void appReset()
         {
             stopTimerAppReset();
             activateTabPage(tclTecViews.SelectedIndex, false);
@@ -499,17 +501,18 @@ namespace Statistic
 
                     if (HStatisticUsers.IsAllowed((int)HStatisticUsers.ID_ALLOWED.APP_AUTO_RESET) == true)
                         if (formParameters.m_arParametrSetup[(int)FormParameters.PARAMETR_SETUP.APP_VERSION].Equals(string.Empty) == false)
+                        {
                             if (formParameters.m_arParametrSetup[(int)FormParameters.PARAMETR_SETUP.APP_VERSION].Equals(Application.ProductVersion/*StatisticCommon.Properties.Resources.TradeMarkVersion*/) == false)
                             {
                                 if (IsHandleCreated/**/ == true)
                                     if (InvokeRequired == true)
                                     {
                                         /*IAsyncResult iar = */
-                                        this.BeginInvoke(new DelegateFunc(update));
+                                        this.BeginInvoke(new DelegateFunc(appReset));
                                         //this.EndInvoke (iar);
                                     }
                                     else
-                                        update();
+                                        appReset();
                                 else
                                     ;
 
@@ -517,7 +520,25 @@ namespace Statistic
 
                             }
                             else
-                                ;
+                                if (formParameters.m_arParametrSetup[(int)FormParameters.PARAMETR_SETUP.IGO_VERSION].Trim().Equals(Convert.ToString(m_iGO_Version)) == false)
+                                {
+                                    if (IsHandleCreated/**/ == true)
+                                        if (InvokeRequired == true)
+                                        {
+                                            /*IAsyncResult iar = */
+                                            this.BeginInvoke(new DelegateFunc(appReset));
+                                            //this.EndInvoke (iar);
+                                        }
+                                        else
+                                            appReset();
+                                    else
+                                        ;
+
+                                    //ProgramBase.AppRestart();
+                                }
+                                else
+                                    ;
+                        }
                         else
                             //При ошибке - восстанавливаем значение...
                             ; //formParameters.m_arParametrSetup[(int)FormParameters.PARAMETR_SETUP.APP_VERSION] = strPrevAppVersion;

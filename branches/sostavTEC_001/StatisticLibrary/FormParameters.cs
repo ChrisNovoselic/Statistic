@@ -28,6 +28,7 @@ namespace StatisticCommon
                                         , VALIDATE_TM_VALUE
                                         ////??? И где же универсальность
                                         //, ID_SOURCE_SOTIASSO_BTEC, ID_SOURCE_SOTIASSO_TEC2, ID_SOURCE_SOTIASSO_TEC3, ID_SOURCE_SOTIASSO_TEC4, ID_SOURCE_SOTIASSO_TEC5, ID_SOURCE_SOTIASSO_BiTEC
+                                        ,IGO_VERSION
                                         , COUNT_PARAMETR_SETUP
                                     };
         protected static string[] NAME_PARAMETR_SETUP = { "Polling period", "Error delay", "Max attempts count", @"Waiting time", @"Waiting count"
@@ -47,6 +48,7 @@ namespace StatisticCommon
                                                             , @"Validate TM Value"
                                                             ////Идентификаторы прилинкованных активных источников СОТИАССО
                                                             //, @"ID_SOURCE_SOTIASSO_BTEC", @"ID_SOURCE_SOTIASSO_TEC2", @"ID_SOURCE_SOTIASSO_TEC3", @"ID_SOURCE_SOTIASSO_TEC4", @"ID_SOURCE_SOTIASSO_TEC5", @"ID_SOURCE_SOTIASSO_BiTEC"
+                                                            ,@"IGO Version"
                                                     };
         protected static string[] NAMESI_PARAMETR_SETUP = { "сек", "сек", "ед.", @"мсек", @"мсек",
                                                             @"ном", @"стр",
@@ -65,6 +67,7 @@ namespace StatisticCommon
                                                             , @"сек"
                                                             //Идентификаторы прилинкованных активных источников СОТИАССО
                                                             //, @"ном", @"ном", @"ном", @"ном", @"ном", @"ном"
+                                                            ,@"ном"
                                                     };
         protected Dictionary<int, string> m_arParametrSetupDefault;
         public Dictionary<int, string> m_arParametrSetup;
@@ -169,6 +172,11 @@ namespace StatisticCommon
                 m_arParametrSetup[(int)i] = m_arParametrSetupDefault[(int)i];
             }
         }
+
+        public abstract void SaveParamKey(string column, string value);
+
+        public abstract void IncIGOVersion();
+
     }
 
     public partial class FormParameters_FIleINI : FormParameters
@@ -212,6 +220,15 @@ namespace StatisticCommon
         {
             for (PARAMETR_SETUP i = PARAMETR_SETUP.POLL_TIME; i < PARAMETR_SETUP.COUNT_PARAMETR_SETUP; i++)
                 m_FileINI.WriteString(NAME_SECTION_MAIN, NAME_PARAMETR_SETUP[(int)i], m_arParametrSetup[(int)i]);
+        }
+        public override void SaveParamKey(string column, string value)
+        {
+            throw new NotImplementedException();
+        }
+
+        public override void IncIGOVersion()
+        {
+            throw new NotImplementedException();
         }
     }
 
@@ -323,6 +340,30 @@ namespace StatisticCommon
                     query += getWriteStringRequest(NAME_PARAMETR_SETUP[(int)i], m_arParametrSetup[(int)i], false) + @";";
             else
                 ;
+
+            if (query.Equals(string.Empty) == false)
+                DbTSQLInterface.ExecNonQuery(ref m_dbConn, query, null, null, out err);
+            else
+                ;
+
+            DbSources.Sources().UnRegister(idListener);
+        }
+
+        public override void IncIGOVersion()
+        {
+            int version = Convert.ToInt32(m_arParametrSetup[(int)FormParameters.PARAMETR_SETUP.IGO_VERSION].Trim());
+            version++;
+            SaveParamKey("IGO Version",version.ToString());
+        }
+
+        public override void SaveParamKey(string column, string value)
+        {
+            int err = -1;
+            int idListener = DbSources.Sources().Register(m_connSett, false, @"CONFIG_DB");
+            string query = string.Empty;
+            m_dbConn = DbSources.Sources().GetConnection(idListener, out err);
+
+            query += getWriteStringRequest(column, value, false) + @";";
 
             if (query.Equals(string.Empty) == false)
                 DbTSQLInterface.ExecNonQuery(ref m_dbConn, query, null, null, out err);
