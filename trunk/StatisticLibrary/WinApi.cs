@@ -37,7 +37,12 @@ namespace StatisticCommon
         /// Служит для закрытия приложения от имени TaskManager
         /// </summary>
         public const int WM_CLOSE = 0x0010;
-
+        /// <summary>
+        /// Перечисление всех окон
+        /// </summary>
+        /// <param name="lpEnumFunc"></param>
+        /// <param name="lParam"></param>
+        /// <returns></returns>
         [DllImport("user32.dll")]
         public static extern bool EnumWindows(EnumWindowsProcDel lpEnumFunc, IntPtr lParam);
 
@@ -50,13 +55,30 @@ namespace StatisticCommon
         /// <returns></returns>
         [DllImport("user32.dll")]
         public static extern int IsIconic(IntPtr hWnd);
-
+        /// <summary>
+        /// Получает заголовок окна
+        /// </summary>
+        /// <param name="hWnd">дескриптор окна</param>
+        /// <param name="lpString"></param>
+        /// <param name="nMaxCount"></param>
+        /// <returns></returns>
         [DllImport("user32.dll", SetLastError = true)]
         public static extern int GetWindowText(IntPtr hWnd, StringBuilder lpString, int nMaxCount);
-
+        /// <summary>
+        /// получает размер заголовка окна
+        /// </summary>
+        /// <param name="hWnd"></param>
+        /// <returns></returns>
         [DllImport("user32.dll", SetLastError = true)]
         public static extern int GetWindowTextLength(IntPtr hWnd);
-
+        /// <summary>
+        /// Поиск дочерних окон
+        /// </summary>
+        /// <param name="parentHandle">имя родителя</param>
+        /// <param name="childAfter"></param>
+        /// <param name="lclassName"></param>
+        /// <param name="windowTitle"></param>
+        /// <returns></returns>
         [DllImport("user32.dll", SetLastError = true, CharSet = CharSet.Auto)]
         public static extern IntPtr FindWindowEx(IntPtr parentHandle, IntPtr childAfter, string lclassName, string windowTitle);
 
@@ -64,13 +86,24 @@ namespace StatisticCommon
         public const int SW_SHOWNORMAL = 1;
         public const int SW_SHOWUNTRAY = 3;
         public const int SW_RESTORE = 9;
-
+        /// <summary>
+        /// Посылает сообщение оконной функции указанного окна
+        /// </summary>
+        /// <param name="hWnd">дескриптор окна</param>
+        /// <param name="Msg">сообщение</param>
+        /// <param name="wParam"></param>
+        /// <param name="lParam"></param>
+        /// <returns></returns>
         [DllImport("user32")]
         public static extern bool SendMessage(IntPtr hWnd, int Msg, IntPtr wParam, IntPtr lParam);
-
+        /// <summary>
+        /// Получение ид потока, который создал окно
+        /// </summary>
+        /// <param name="hWnd">дескриптор окна</param>
+        /// <param name="lpdwProcessId">номер ид</param>
+        /// <returns></returns>
         [DllImport("user32.dll", SetLastError = true)]
         public static extern int GetWindowThreadProcessId(IntPtr hWnd, out int lpdwProcessId); 
-
         /// <summary>
         /// Найти дескриптор окна
         /// </summary>
@@ -79,16 +112,33 @@ namespace StatisticCommon
         /// <returns></returns>
         [DllImport("user32.dll", CharSet = CharSet.Unicode)]
         public static extern IntPtr FindWindow(string ClassName, string WindowName);
-
+        /// <summary>
+        /// Разворачивает окно
+        /// </summary>
+        /// <param name="hWnd">дескриптор окна</param>
+        /// <param name="nCmdShow"></param>
+        /// <returns></returns>
         [DllImportAttribute("user32.dll")]
         public static extern bool ShowWindow(IntPtr hWnd, int nCmdShow);
-
+        /// <summary>
+        /// Выводит поверх всех окон приложение
+        /// </summary>
+        /// <param name="hWnd"></param>
+        /// <returns></returns>
         [DllImport("user32.dll")]
         public static extern int SetForegroundWindow(IntPtr hWnd);
-
+        /// <summary>
+        /// Проверка видимости окна
+        /// </summary>
+        /// <param name="hWnd"></param>
+        /// <returns></returns>
         [DllImport("user32.dll", SetLastError = true)]
         public static extern bool IsWindowVisible(IntPtr hWnd);
-
+        /// <summary>
+        /// 
+        /// </summary>
+        /// <param name="hwnd"></param>
+        /// <returns></returns>
         public static WINDOWPLACEMENT GetPlacement(IntPtr hwnd)
         {
             WINDOWPLACEMENT placement = new WINDOWPLACEMENT();
@@ -96,11 +146,15 @@ namespace StatisticCommon
             GetWindowPlacement(hwnd, ref placement);
             return placement;
         }
-
+        /// <summary>
+        /// Получает данные о состоянии окна (WindowState)
+        /// </summary>
+        /// <param name="hWnd">дескриптор окна</param>
+        /// <param name="lpwndpl">состояние окна</param>
+        /// <returns></returns>
         [DllImport("user32.dll", SetLastError = true)]
         [return: MarshalAs(UnmanagedType.Bool)]
-        public static extern bool GetWindowPlacement(
-            IntPtr hWnd, ref WINDOWPLACEMENT lpwndpl);
+        public static extern bool GetWindowPlacement(IntPtr hWnd, ref WINDOWPLACEMENT lpwndpl);
 
         [Serializable]
         [StructLayout(LayoutKind.Sequential)]

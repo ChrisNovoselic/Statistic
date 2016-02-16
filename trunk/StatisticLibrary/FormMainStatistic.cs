@@ -11,21 +11,130 @@ using HClassLibrary;
 
 namespace StatisticCommon
 {
+    /// <summary>
+    /// 
+    /// </summary>
     public abstract partial class FormMainStatistic : FormMainBaseWithStatusStrip
     {
-        protected static FileINI m_sFileINI;
-        protected static FIleConnSett m_sFileCS;
+        protected static FileINI m_sFileINI;//setup.ini
+        protected static FIleConnSett m_sFileCS;//connsett.ini
 
-        public FormMainStatistic()
+        /// <summary>
+        /// вызов класса работы с командной строкой
+        /// </summary>
+        /// <param name="args">параметры командной строки</param>
+        /// <returns>класс</returns>
+        protected virtual HCmd_Arg createHCmdArg(string[] args)
         {
-
+            return new HCmd_Arg(args);
         }
 
+        /// <summary>
+        /// Контруктор класса
+        /// </summary>
+        public FormMainStatistic()
+        {
+            //string str = Environment.CommandLine;
+            createHCmdArg(Environment.GetCommandLineArgs());
+        }
+
+        /// <summary>
+        /// Класс обработки камандной строки
+        /// </summary>
+        public class HCmd_Arg
+        {
+            /// <summary>
+            /// значения командной строки
+            /// </summary>
+            static public string cmd;
+            /// <summary>
+            /// параметр командной строки
+            /// </summary>
+            static public string param;
+
+            /// <summary>
+            /// Основной конструктор класса
+            /// </summary>
+            /// <param name="args">параметры командной строки</param>
+            public HCmd_Arg(string[] args)
+            {
+                handlerArgs(args);
+                if (!SingleInstance.IsOnlyInstance)
+                    execCmdLine(cmd);
+                else
+                    if (cmd == "stop")
+                        execCmdLine(cmd);
+                    else ;
+            }
+
+            /// <summary>
+            /// обработка CommandLine
+            /// </summary>
+            /// <param name="cmdLine">командная строка</param>
+            static private void handlerArgs(string[] cmdLine)
+            {
+                string[] m_cmd = new string[cmdLine.Length];
+
+                if (m_cmd.Length > 1)
+                {
+                    m_cmd = cmdLine[1].Split('/', '=');
+
+                    if (m_cmd.Length > 2)
+                    {
+                        cmd = m_cmd[1];
+                        param = m_cmd[2];
+                    }
+                    else
+                        cmd = m_cmd[1];
+                }
+            }
+
+            /// <summary>
+            /// Обработка команды старт/стоп
+            /// </summary>
+            /// <param name="CmdStr">команда приложению</param>
+            static public void execCmdLine(string CmdStr)
+            {
+                switch (CmdStr)
+                {
+                    case "start":
+                        if (!(SingleInstance.IsOnlyInstance))
+                        {
+                            SingleInstance.SwitchToCurrentInstance();
+                            SingleInstance.InterruptReApp();
+                        }
+                        break;
+                    case "stop":
+                        if (!(SingleInstance.IsOnlyInstance))
+                        {
+                            SingleInstance.StopApp();
+                            SingleInstance.InterruptReApp();
+                        }
+                        else
+                            SingleInstance.InterruptReApp();
+                        break;
+                    default:
+                        if (!(SingleInstance.IsOnlyInstance))
+                        {
+                            SingleInstance.SwitchToCurrentInstance();
+                            SingleInstance.InterruptReApp();
+                        }
+                        break;
+                }
+            }
+        }
+
+        /// <summary>
+        /// 
+        /// </summary>
         protected override void timer_Start()
         {
             int i = -1;
         }
-
+        /// <summary>
+        /// 
+        /// </summary>
+        /// <returns></returns>
         protected override int UpdateStatusString()
         {
             int have_msg = 0;
@@ -78,8 +187,8 @@ namespace StatisticCommon
         /// <summary>
         /// создание ConnSett
         /// </summary>
-        /// <param name="connSettFileName"></param>
-        public void createfileConnSett(string connSettFileName)
+        /// <param name="connSettFileName">connsett.ini</param>
+        public void CreatefileConnSett(string connSettFileName)
         {
             m_sFileCS = new FIleConnSett(connSettFileName, FIleConnSett.MODE.FILE);
             s_listFormConnectionSettings = new List<FormConnectionSettings>();
@@ -87,181 +196,155 @@ namespace StatisticCommon
         }
 
         /// <summary>
-        /// класс обработки старт/стоп
+        /// класс исключений
         /// </summary>
-        static public class SingleInstance
+        public class SingleException : Exception
         {
-            static public bool stopbflg = true;
-            public static string mutexName = ProgramInfo.AssemblyGuid.ToString();
-            static Mutex mtx;
-            static public IntPtr m_hndl;
-            static string CmdStr = string.Empty;
-
             /// <summary>
             /// 
             /// </summary>
-            /// <returns></returns>
-            static public bool Start()
+            /// <param name="msg"></param>
+            public SingleException(string msg)
+                : base(msg)
             {
-                string[] args = Environment.GetCommandLineArgs();
+            }
+        }
 
-                handlerCmd(args);
-                return execCmdLine();
+        /// <summary>
+        /// класс по работе с запущенным приложением
+        /// </summary>
+        static public class SingleInstance
+        {
+            static private string m_mtxName = ProgramInfo.NameMtx.ToString();
+            static Mutex m_mtx;
+
+            /// <summary>
+            /// Проверка на повторный запуск
+            /// </summary>
+            static public bool IsOnlyInstance
+            {
+                get
+                {
+                    bool onlyInstance;
+                    m_mtx = new Mutex(true, m_mtxName, out onlyInstance);
+                    return onlyInstance;
+                }
             }
 
             /// <summary>
-            /// проверка экземпляра на запуск
+            /// Отправка сообщения приложению
+            /// для его активации
             /// </summary>
-            /// <returns></returns>
-            static private bool onlyInstance()
+            /// <param name="hWnd">дескриптор окна</param>
+            static private void sendMsg(IntPtr hWnd)
             {
-                bool onlyInstance = false;
-                mtx = new Mutex(true, mutexName, out onlyInstance);
-                return onlyInstance;
+                WinApi.SendMessage(hWnd, WinApi.SW_RESTORE, IntPtr.Zero, IntPtr.Zero);
             }
 
             /// <summary>
             /// освобождение мьютекса
             /// </summary>
-            static public void StopMtx()
+            static public void ReleaseMtx()
             {
-                mtx.ReleaseMutex();
+                m_mtx.ReleaseMutex();
             }
 
             /// <summary>
-            /// обработка CommandLine
+            /// Остановка работы основного приложения
             /// </summary>
-            /// <param name="cmdLine">командная строка</param>
-            static private void handlerCmd(string[] cmdLine)
+            static public void StopApp()
             {
-                if (cmdLine.Count() > 1)
-                {
-                    cmdLine = cmdLine[1].Split('/');
-
-                    if ((!(cmdLine[1].IndexOf("start") < 0)))
-                        CmdStr = cmdLine[1];
-                    else if ((!(cmdLine[1].IndexOf("stop") < 0)))
-                        CmdStr = cmdLine[1];
-                }
-                else ;
+                WinApi.SendMessage(mainhWnd, WinApi.WM_CLOSE, IntPtr.Zero, IntPtr.Zero);
             }
 
             /// <summary>
-            /// Обработка команды старт/стоп
+            /// Прерывание запуска дублирующего приложения
             /// </summary>
-            /// <returns></returns>
-            static public bool execCmdLine()
+            static public void InterruptReApp()
             {
-                switch (CmdStr)
-                {
-                    case "start":
-                        if (!onlyInstance())
-                        {
-                            WinApi.SendMessage(mainhwd(), WinApi.SW_RESTORE, IntPtr.Zero, IntPtr.Zero);
-                            SwitchToCurrentInstance(mainhwd());
-                            return true;
-                        }
-                        else return false;
-
-                    case "stop":
-                        if (!onlyInstance())
-                        {
-                            stopApp();
-                            return true;
-                        }
-                        else
-                        {
-                            stopbflg = false;
-                            return false;
-                        }
-
-                    default:
-                        if (!onlyInstance())
-                            return true;
-                        else return false;
-                }
-            }
-
-            /// <summary>
-            /// Остановка работы формы
-            /// </summary>
-            static private void stopApp()
-            {
-                WinApi.SendMessage(mainhwd(), WinApi.WM_CLOSE, IntPtr.Zero, IntPtr.Zero);
+                Environment.Exit(0);
             }
 
             /// <summary>
             /// поиск дескриптора по процессу
             /// </summary>
             /// <returns>дескриптор окна</returns>
-            static public IntPtr mainhwd()
+            static public IntPtr mainhWnd
             {
-                Process process = Process.GetCurrentProcess();
-                Process[] proc = Process.GetProcesses();
-                Process[] processes = Process.GetProcessesByName(process.ProcessName);
-                foreach (Process _process in processes)
+                get
                 {
-                    // Get the first instance that is not this instance, has the
-                    // same process name and was started from the same file name
-                    // and location. Also check that the process has a valid
-                    // window handle in this session to filter out other user's
-                    // processes.
-                    if (_process.Id != process.Id &&
-                        _process.MainModule.FileName == process.MainModule.FileName &&
-                        _process.Handle != IntPtr.Zero)
+                    IntPtr m_hWnd = IntPtr.Zero;
+                    Process process = Process.GetCurrentProcess();
+                    Process[] processes = Process.GetProcessesByName(process.ProcessName);
+                    foreach (Process _process in processes)
                     {
-                        m_hndl = _process.MainWindowHandle;
+                        // Get the first instance that is not this instance, has the
+                        // same process name and was started from the same file name
+                        // and location. Also check that the process has a valid
+                        // window handle in this session to filter out other user's
+                        // processes.
+                        if (_process.Id != process.Id &&
+                            _process.MainModule.FileName == process.MainModule.FileName &&
+                            _process.Handle != IntPtr.Zero)
+                        {
+                            m_hWnd = _process.MainWindowHandle;
 
-                        if (m_hndl == IntPtr.Zero)
-                            Enum(_process.Id);
-               
-                        WinApi.GetWindowTextLength(m_hndl);
-                 
-                        break;
+                            if (m_hWnd == IntPtr.Zero)
+                                m_hWnd = enumID(_process.Id);
+                            else ;
+                            break;
+                        }
                     }
+                    return m_hWnd;
                 }
-                return m_hndl;
             }
 
             /// <summary>
             /// выборка всех запущенных приложений
             /// </summary>
             /// <param name="id">ид процесса приложения</param>
-            private static void Enum(int id)
+            /// <returns>дескриптор окна</returns>
+            static private IntPtr enumID(int id)
             {
+                IntPtr hwnd = IntPtr.Zero;
+                bool flg = true;
                 WinApi.EnumWindows((hWnd, lParam) =>
                 {
                     if (WinApi.IsWindowVisible(hWnd) && (WinApi.GetWindowTextLength(hWnd) != 0))
                     {
-                        if (WinApi.IsIconic(hWnd) != 0 && 
-                            WinApi.GetPlacement(hWnd).showCmd.ToString() == "Minimized")
-                        {
-                           FindCurProc(id,hWnd);
-                        }
+                        if (WinApi.IsIconic(hWnd) != 0 &&
+                            WinApi.GetPlacement(hWnd).showCmd == WinApi.ShowWindowCommands.Minimized
+                            && flg)
+                            hwnd = findCurProc(id, hWnd, out flg);
                         else ;
                     }
                     return true;
                 }, IntPtr.Zero);
+
+                return hwnd;
             }
 
-            /// <summary>
-            /// Получение заголовка окна
-            /// </summary>
-            /// <param name="hWnd">дескриптор приложения</param>
-            /// <returns></returns>
-            private static string GetWindowText(IntPtr hWnd)
-            {
-                int len = WinApi.GetWindowTextLength(hWnd) + 1;
-                StringBuilder sb = new StringBuilder(len);
-                len = WinApi.GetWindowText(hWnd, sb, len);
-                return sb.ToString(0, len);
-            }
+            ///// <summary>
+            ///// Получение заголовка окна
+            ///// </summary>
+            ///// <param name="hWnd">дескриптор приложения</param>
+            ///// <returns>заголовок окна</returns>
+            //private static string getWindowText(IntPtr hWnd)
+            //{
+            //    int len = WinApi.GetWindowTextLength(hWnd) + 1;
+            //    StringBuilder sb = new StringBuilder(len);
+            //    len = WinApi.GetWindowText(hWnd, sb, len);
+            //    return sb.ToString(0, len);
+            //}
 
             /// <summary>
             /// Активация окна
             /// </summary>
-            private static void SwitchToCurrentInstance(IntPtr hWnd)
+            static public void SwitchToCurrentInstance()
             {
+                IntPtr hWnd = mainhWnd;
+                sendMsg(hWnd);
+
                 if (hWnd != IntPtr.Zero)
                 {
                     // Restore window if minimised. Do not restore if already in
@@ -269,8 +352,8 @@ namespace StatisticCommon
                     // change the current state of the window.
                     if (WinApi.IsIconic(hWnd) != 0)
                         WinApi.ShowWindow(hWnd, WinApi.SW_RESTORE);
-                    else ;
-
+                    else
+                        ;
                     // Set foreground window.
                     WinApi.SetForegroundWindow(hWnd);
                 }
@@ -281,16 +364,24 @@ namespace StatisticCommon
             /// </summary>
             /// <param name="id">идентификатор приложения</param>
             /// <param name="hwd">дескриптор окна</param>
-            private static void FindCurProc(int id, IntPtr hwd)
+            ///  <param name="flg">флаг остановки посика хандлера</param>
+            /// <returns>дескриптор окна</returns>
+            static private IntPtr findCurProc(int id, IntPtr hwd, out bool flg)
             {
                 int _ProcessId;
-
                 WinApi.GetWindowThreadProcessId(hwd, out _ProcessId);
 
                 if (id == _ProcessId)
-                    m_hndl = hwd;
+                {
+                    flg = false;
+                    return hwd;
+                }
+                else
+                {
+                    flg = true;
+                    return IntPtr.Zero;
+                }
             }
         }
     }
-  
 }

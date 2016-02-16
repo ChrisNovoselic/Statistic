@@ -18,6 +18,7 @@ namespace StatisticDiagnostic
         /// Объект с параметрами приложения (из БД_конфигурации)
         /// </summary>
         public static FormParameters formParameters;
+
         /// <summary>
         /// Состояние формы (признак выполнения очередной операции: 0 - без ошибок)
         /// </summary>
@@ -28,7 +29,6 @@ namespace StatisticDiagnostic
             System.ComponentModel.ComponentResourceManager resources = new System.ComponentModel.ComponentResourceManager(typeof(FormMain));
             //this.notifyIconMain.Icon =
             this.Icon = resources.GetObject(@"StatisticDiagnostic") as System.Drawing.Icon;
-     
 
             _state = 1;
             InitializeComponent();
@@ -41,7 +41,7 @@ namespace StatisticDiagnostic
 
             string msg = string.Empty;
             bool bAbort = true;
-            createfileConnSett(@"connsett.ini");
+            CreatefileConnSett(@"connsett.ini");
             Start();
             bAbort = initialize(out msg);
             this.panelMain = new PanelStatisticDiagnostic();
@@ -66,6 +66,11 @@ namespace StatisticDiagnostic
                 this.Activate();
         }
 
+        /// <summary>
+        /// 
+        /// </summary>
+        /// <param name="obj"></param>
+        /// <param name="ev"></param>
         private void FormDiagnostic_Activate(object obj, EventArgs ev)
         {
             if (_state == 0)
@@ -74,6 +79,11 @@ namespace StatisticDiagnostic
                 ;
         }
 
+        /// <summary>
+        /// 
+        /// </summary>
+        /// <param name="obj"></param>
+        /// <param name="ev"></param>
         private void FormDiagnostic_Deactivate(object obj, EventArgs ev)
         {
             panelMain.Activate(false);
@@ -86,6 +96,7 @@ namespace StatisticDiagnostic
         {
             bool bRes = true;
             msgError = string.Empty;
+            //handlerCmd(Environment.GetCommandLineArgs());
 
             if (s_listFormConnectionSettings[(int)CONN_SETT_TYPE.CONFIG_DB].Ready == 0)
             {
@@ -109,14 +120,12 @@ namespace StatisticDiagnostic
                         formParameters = new FormParameters_DB(s_listFormConnectionSettings[(int)CONN_SETT_TYPE.CONFIG_DB].getConnSett());
                         updateParametersSetup();
                         s_iMainSourceData = Int32.Parse(formParameters.m_arParametrSetup[(int)FormParameters.PARAMETR_SETUP.MAIN_DATASOURCE]);
-
                         break;
                 }
             }
             else
             {//Файла с параметрами соединения нет совсем или считанные параметры соединения не валидны
                 msgError = @"Необходимо изменить параметры соединения с БД конфигурации";
-
                 bRes = false;
             }
 
@@ -207,6 +216,7 @@ namespace StatisticDiagnostic
         {
             Close();
         }
+
         /// <summary>
         /// Обработчик события выбора п. главного меню "Настройка-БД_конфигурации"
         /// </summary>
@@ -255,10 +265,9 @@ namespace StatisticDiagnostic
         {
             int have_msg = 0;
 
-            have_msg =  base.UpdateStatusString();
+            have_msg = base.UpdateStatusString();
 
-            return  have_msg;
-
+            return have_msg;
         }
 
         /* protected override void timer_Start()

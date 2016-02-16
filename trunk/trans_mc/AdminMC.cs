@@ -322,12 +322,8 @@ namespace trans_mc
             }
 
             if (bClear)
-            {
                 ClearValues();
-                //ClearTables();
-            }
-            else
-                ;
+
 
             if (!(errorData == null)) errorData(); else ;
 

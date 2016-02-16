@@ -10,20 +10,47 @@ namespace StatisticCommon
     static public class ProgramInfo
     {
         /// <summary>
-        /// Создает уникальный идентификатор
+        /// Создание GUID для приложения
         /// </summary>
-        static public string AssemblyGuid
+        /// <returns></returns>
+        static public string NewGuid()
+        {
+            Guid guid = Guid.NewGuid();
+            return guid.ToString();
+        }
+
+        /// <summary>
+        /// создвет имя мьютекса по пути запускаемого приложения
+        /// </summary>
+        static public string NameMtx
         {
             get
             {
-                object[] attributes = Assembly.GetEntryAssembly().GetCustomAttributes(typeof(System.Runtime.InteropServices.GuidAttribute), false);
-                if (attributes.Length == 0)
-                    return String.Empty;
+                string nameGUID;
 
-                return ((System.Runtime.InteropServices.GuidAttribute)attributes[0]).Value;
+                //object[] attributes = Assembly.GetEntryAssembly().GetCustomAttributes((typeof(System.Runtime.InteropServices.GuidAttribute)), false);
+                //if (attributes.Length == 0)
+                //    return String.Empty;
+
+                //nameGUID = ((System.Runtime.InteropServices.GuidAttribute)attributes[0]).Value;
+
+                object[] attributesTitle = Assembly.GetEntryAssembly().GetCustomAttributes(typeof(AssemblyTitleAttribute), false);
+                //if (attributesTitle.Length > 0)
+                //{
+                //    AssemblyTitleAttribute titleAttribute = (AssemblyTitleAttribute)attributesTitle[0];
+                //    if (titleAttribute.Title != "")
+                //        nameGUID = nameGUID + " " + titleAttribute.Title;
+                //}
+                //else
+                    nameGUID = Assembly.GetEntryAssembly().CodeBase;
+
+                return nameGUID;
             }
         }
 
+        /// <summary>
+        /// Получение имени запускаемого файла
+        /// </summary>
         static public string AssemblyTitle
         {
             get
