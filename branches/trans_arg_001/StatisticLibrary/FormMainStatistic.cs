@@ -59,7 +59,7 @@ namespace StatisticCommon
             public HCmd_Arg(string[] args)
             {
                 handlerArgs(args);
-                if (!SingleInstance.onlyInstance)
+                if (!SingleInstance.IsOnlyInstance)
                     execCmdLine(cmd);
                 else
                     if (cmd == "stop")
@@ -98,14 +98,14 @@ namespace StatisticCommon
                 switch (CmdStr)
                 {
                     case "start":
-                        if (!(SingleInstance.onlyInstance))
+                        if (!(SingleInstance.IsOnlyInstance))
                         {
                             SingleInstance.SwitchToCurrentInstance();
                             SingleInstance.InterruptReApp();
                         }
                         break;
                     case "stop":
-                        if (!(SingleInstance.onlyInstance))
+                        if (!(SingleInstance.IsOnlyInstance))
                         {
                             SingleInstance.StopApp();
                             SingleInstance.InterruptReApp();
@@ -114,7 +114,7 @@ namespace StatisticCommon
                             SingleInstance.InterruptReApp();
                         break;
                     default:
-                        if (!(SingleInstance.onlyInstance))
+                        if (!(SingleInstance.IsOnlyInstance))
                         {
                             SingleInstance.SwitchToCurrentInstance();
                             SingleInstance.InterruptReApp();
@@ -187,7 +187,7 @@ namespace StatisticCommon
         /// <summary>
         /// создание ConnSett
         /// </summary>
-        /// <param name="connSettFileName"></param>
+        /// <param name="connSettFileName">connsett.ini</param>
         public void CreatefileConnSett(string connSettFileName)
         {
             m_sFileCS = new FIleConnSett(connSettFileName, FIleConnSett.MODE.FILE);
@@ -215,18 +215,18 @@ namespace StatisticCommon
         /// </summary>
         static public class SingleInstance
         {
-            static private string mtxName = ProgramInfo.NameMtx.ToString();
+            static private string m_mtxName = ProgramInfo.NameMtx.ToString();
             static Mutex m_mtx;
 
             /// <summary>
-            /// 
+            /// Проверка на повторный запуск
             /// </summary>
-            static public bool onlyInstance
+            static public bool IsOnlyInstance
             {
                 get
                 {
                     bool onlyInstance;
-                    m_mtx = new Mutex(true, mtxName, out onlyInstance);
+                    m_mtx = new Mutex(true, m_mtxName, out onlyInstance);
                     return onlyInstance;
                 }
             }
@@ -263,24 +263,6 @@ namespace StatisticCommon
             static public void InterruptReApp()
             {
                 Environment.Exit(0);
-
-                //IntPtr m_hWnd = IntPtr.Zero;
-                //Process process = Process.GetCurrentProcess();
-                //Process[] processes = Process.GetProcessesByName(process.ProcessName);
-                //foreach (Process _process in processes)
-                //{
-                //    if (_process.Id == process.Id &&
-                //        _process.MainModule.FileName == process.MainModule.FileName &&
-                //        _process.Handle != IntPtr.Zero)
-                //    {
-                //        m_hWnd = _process.MainWindowHandle;
-
-                //      //if (m_hWnd == IntPtr.Zero)
-                //      //    m_hWnd = enumID(_process.Id);
-                //      //else ;
-                //        break;
-                //    }
-                //}
             }
 
             /// <summary>
@@ -321,6 +303,7 @@ namespace StatisticCommon
             /// выборка всех запущенных приложений
             /// </summary>
             /// <param name="id">ид процесса приложения</param>
+            /// <returns>дескриптор окна</returns>
             static private IntPtr enumID(int id)
             {
                 IntPtr hwnd = IntPtr.Zero;
@@ -381,6 +364,7 @@ namespace StatisticCommon
             /// </summary>
             /// <param name="id">идентификатор приложения</param>
             /// <param name="hwd">дескриптор окна</param>
+            ///  <param name="flg">флаг остановки посика хандлера</param>
             /// <returns>дескриптор окна</returns>
             static private IntPtr findCurProc(int id, IntPtr hwd, out bool flg)
             {
