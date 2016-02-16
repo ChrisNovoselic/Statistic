@@ -353,6 +353,7 @@ namespace StatisticCommon
         {
             int version = Convert.ToInt32(m_arParametrSetup[(int)FormParameters.PARAMETR_SETUP.IGO_VERSION].Trim());
             version++;
+            m_arParametrSetup[(int)FormParameters.PARAMETR_SETUP.IGO_VERSION] = version.ToString();
             SaveParamKey("IGO Version",version.ToString());
         }
 

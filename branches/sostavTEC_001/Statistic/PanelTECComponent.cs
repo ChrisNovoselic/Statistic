@@ -514,10 +514,14 @@ namespace Statistic
 
             if (validate_saving(m_arr_editTable, out warning) == false)
             {
-                db_sostav.Edit("TG_LIST", "ID", m_arr_originalTable[(int)FormChangeMode.MODE_TECCOMPONENT.TG], m_arr_editTable[(int)FormChangeMode.MODE_TECCOMPONENT.TG], out err);
-                db_sostav.Edit("PC_LIST", "ID_TEC,ID", m_arr_originalTable[(int)FormChangeMode.MODE_TECCOMPONENT.PC], m_arr_editTable[(int)FormChangeMode.MODE_TECCOMPONENT.PC], out err);
-                db_sostav.Edit("GTP_LIST", "ID", m_arr_originalTable[(int)FormChangeMode.MODE_TECCOMPONENT.GTP], m_arr_editTable[(int)FormChangeMode.MODE_TECCOMPONENT.GTP], out err);
-                db_sostav.Edit("TEC_LIST", "ID", m_arr_originalTable[(int)FormChangeMode.MODE_TECCOMPONENT.TEC], m_arr_editTable[(int)FormChangeMode.MODE_TECCOMPONENT.TEC], out err);
+                for (int i = (int)FormChangeMode.MODE_TECCOMPONENT.TEC; i < (int)FormChangeMode.MODE_TECCOMPONENT.UNKNOWN; i++)
+                {
+                    if (i == (int)FormChangeMode.MODE_TECCOMPONENT.PC)
+                        db_sostav.Edit(FormChangeMode.getPrefixMode((short)i) + "_LIST", "ID_TEC,ID", m_arr_originalTable[i], m_arr_editTable[i], out err);
+                    else
+                        db_sostav.Edit(FormChangeMode.getPrefixMode((short)i) + "_LIST", "ID", m_arr_originalTable[i], m_arr_editTable[i], out err);
+
+                }
 
                 fill_DataTable_ComponentsTEC();
                 treeView_TECComponent.Update_tree();
@@ -525,7 +529,7 @@ namespace Statistic
                 btnBreak.Enabled = false;
 
                 if (err == 0)
-                    FormMain.formParameters.IncIGOVersion();
+                    FormMain.formParameters.IncIGOVersion();//Повышение версии состава ТЭЦ
             }
             else
             {
