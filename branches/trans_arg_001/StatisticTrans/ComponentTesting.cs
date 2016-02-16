@@ -12,7 +12,7 @@ namespace StatisticTrans
     class ComponentTesting
     {
         /// <summary>
-        /// 
+        /// Кол-во пройденных итераций
         /// </summary>
         private int countIt = 0;
 
@@ -44,6 +44,7 @@ namespace StatisticTrans
         /// <summary>
         /// Успешные итерации
         /// </summary>
+        /// <param name="nameElem">имя опрашеваемого компонента</param>
         public void PushIter(string nameElem)
         {
             if (GetNum() == countIt)
@@ -58,7 +59,7 @@ namespace StatisticTrans
         /// <summary>
         /// Кол-во итераций
         /// </summary>
-        /// <returns></returns>
+        /// <returns>кол-во итераций</returns>
         private int GetNum()
         {
             return Iters.Length;
@@ -80,7 +81,7 @@ namespace StatisticTrans
         /// </summary>
         private void CounterSuccessfulDownload()
         {
-            FormMainTrans.m_labelTime.Invoke(new Action(() => FormMainTrans.m_labelTime.Text = "Время последнего опроса: " 
+            FormMainTrans.m_labelTime.Invoke(new Action(() => FormMainTrans.m_labelTime.Text = "Время последнего опроса: "
                 + DateTime.Now.ToString() + ";" + " Успешных итераций: " + currentIter + " из " + GetNum() + ";"));
             FormMainTrans.m_labelTime.Invoke(new Action(() => FormMainTrans.m_labelTime.Update()));
         }
@@ -101,7 +102,7 @@ namespace StatisticTrans
         {
             FormMainTrans.m_labelTime.Invoke(new Action(() => FormMainTrans.m_labelTime.Text = "Время последнего опроса: "
                + DateTime.Now.ToString() + ";" + " Успешных итераций: " + currentIter + " из " + GetNum() + ";"
-               + "Ошибка на компоненте: "+Iters[currentIter].ToString()+"."));
+               + "Ошибка на компоненте: " + Iters[currentIter].ToString() + "."));
             FormMainTrans.m_labelTime.Invoke(new Action(() => FormMainTrans.m_labelTime.Update()));
         }
     }
