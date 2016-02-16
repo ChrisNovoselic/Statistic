@@ -35,17 +35,17 @@ namespace trans_mc
             m_sFileINI.AddMainPar(@"MCServiceHost", string.Empty);
             m_sFileINI.AddMainPar(@"ИгнорДатаВремя-ModesCentre", false.ToString());
 
-            TYPE_DATABASE_CFG typeConfigDB = TYPE_DATABASE_CFG.UNKNOWN;
-            for (TYPE_DATABASE_CFG t = TYPE_DATABASE_CFG.CFG_190; t < TYPE_DATABASE_CFG.UNKNOWN; t++)
-            {
-                if (t.ToString().Contains(m_sFileINI.GetMainValueOfKey(@"ТипБДКфгНазначение")) == true)
-                {
-                    typeConfigDB = t;
-                    break;
-                }
-                else
-                    ;
-            }
+            //TYPE_DATABASE_CFG typeConfigDB = TYPE_DATABASE_CFG.UNKNOWN;
+            //for (TYPE_DATABASE_CFG t = TYPE_DATABASE_CFG.CFG_190; t < TYPE_DATABASE_CFG.UNKNOWN; t++)
+            //{
+            //    if (t.ToString().Contains(m_sFileINI.GetMainValueOfKey(@"ТипБДКфгНазначение")) == true)
+            //    {
+            //        typeConfigDB = t;
+            //        break;
+            //    }
+            //    else
+            //        ;
+            //}
 
             bool bIgnoreTECInUse = false;
             string strTypeField = m_sFileINI.GetMainValueOfKey(@"РДГФорматТаблицаНазначение");
@@ -68,7 +68,7 @@ namespace trans_mc
                 }
                 try
                 {
-                    m_arAdmin[i].InitTEC(idListener, m_modeTECComponent, typeConfigDB, markQueries, bIgnoreTECInUse);
+                    m_arAdmin[i].InitTEC(idListener, m_modeTECComponent, /*typeConfigDB, */markQueries, bIgnoreTECInUse);
                     RemoveTEC(m_arAdmin[i]);
                 }
                 catch (Exception e)

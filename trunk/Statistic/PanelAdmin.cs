@@ -167,7 +167,7 @@ namespace Statistic
         {
             preInitialize (type);
 
-            try { m_admin.InitTEC(idListener, FormChangeMode.MODE_TECCOMPONENT.UNKNOWN, TYPE_DATABASE_CFG.CFG_200, markQueries, false); }
+            try { m_admin.InitTEC(idListener, FormChangeMode.MODE_TECCOMPONENT.UNKNOWN, /*TYPE_DATABASE_CFG.CFG_200, */markQueries, false); }
             catch (Exception e)
             {
                 Logging.Logg().Exception(e, "PanelAdmin::Initialize () - m_admin.InitTEC ()...", Logging.INDEX_MESSAGE.NOT_SET);

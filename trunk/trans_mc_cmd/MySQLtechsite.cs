@@ -96,16 +96,16 @@ namespace trans_mc_cmd
             m_idListener = DbSources.Sources().Register(connSett, false, @"CONFIG_DB");
             m_connection = DbSources.Sources ().GetConnection (m_idListener, out iRes);
 
-            TYPE_DATABASE_CFG typeConfigDB = TYPE_DATABASE_CFG.UNKNOWN;
-            for (TYPE_DATABASE_CFG t = TYPE_DATABASE_CFG.CFG_190; t < TYPE_DATABASE_CFG.UNKNOWN; t ++) {
-                if (t.ToString().Contains(iConfigDB.ToString()) == true)
-                {
-                    typeConfigDB = t;
-                    break;
-                }
-                else
-                    ;
-            }
+            //TYPE_DATABASE_CFG typeConfigDB = TYPE_DATABASE_CFG.UNKNOWN;
+            //for (TYPE_DATABASE_CFG t = TYPE_DATABASE_CFG.CFG_190; t < TYPE_DATABASE_CFG.UNKNOWN; t ++) {
+            //    if (t.ToString().Contains(iConfigDB.ToString()) == true)
+            //    {
+            //        typeConfigDB = t;
+            //        break;
+            //    }
+            //    else
+            //        ;
+            //}
 
             if (iRes == 0)
             {
@@ -115,7 +115,7 @@ namespace trans_mc_cmd
                 //markQueries.Marked ((int)StatisticCommon.CONN_SETT_TYPE.ADMIN);
                 //markQueries.Marked((int)StatisticCommon.CONN_SETT_TYPE.PBR);
 
-                m_admin.InitTEC(m_idListener, FormChangeMode.MODE_TECCOMPONENT.GTP, typeConfigDB, markQueries, true);
+                m_admin.InitTEC(m_idListener, FormChangeMode.MODE_TECCOMPONENT.GTP, /*typeConfigDB, */markQueries, true);
                 m_listIndexTECComponent = m_admin.GetListIndexTECComponent(FormChangeMode.MODE_TECCOMPONENT.GTP);
 
                 m_listIdMCTECComponent = new List<int>();

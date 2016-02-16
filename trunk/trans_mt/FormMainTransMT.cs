@@ -39,21 +39,21 @@ namespace trans_mt
             int[] arConfigDB = new int[(Int16)CONN_SETT_TYPE.COUNT_CONN_SETT_TYPE];
             string[] arKeyTypeConfigDB = new string[(Int16)CONN_SETT_TYPE.COUNT_CONN_SETT_TYPE] { @"ТипБДКфгИсточник", @"ТипБДКфгНазначение" };
 
-            TYPE_DATABASE_CFG[] arTypeConfigDB = new TYPE_DATABASE_CFG[(Int16)CONN_SETT_TYPE.COUNT_CONN_SETT_TYPE] { TYPE_DATABASE_CFG.UNKNOWN, TYPE_DATABASE_CFG.UNKNOWN };
-            for (i = 0; i < (Int16)CONN_SETT_TYPE.COUNT_CONN_SETT_TYPE; i++)
-            {
-                arConfigDB[i] = Int32.Parse(m_sFileINI.GetMainValueOfKey(arKeyTypeConfigDB[i]));
-                for (TYPE_DATABASE_CFG t = TYPE_DATABASE_CFG.CFG_190; t < TYPE_DATABASE_CFG.UNKNOWN; t++)
-                {
-                    if (t.ToString().Contains(arConfigDB[i].ToString()) == true)
-                    {
-                        arTypeConfigDB[i] = t;
-                        break;
-                    }
-                    else
-                        ;
-                }
-            }
+            //TYPE_DATABASE_CFG[] arTypeConfigDB = new TYPE_DATABASE_CFG[(Int16)CONN_SETT_TYPE.COUNT_CONN_SETT_TYPE] { TYPE_DATABASE_CFG.UNKNOWN, TYPE_DATABASE_CFG.UNKNOWN };
+            //for (i = 0; i < (Int16)CONN_SETT_TYPE.COUNT_CONN_SETT_TYPE; i++)
+            //{
+            //    arConfigDB[i] = Int32.Parse(m_sFileINI.GetMainValueOfKey(arKeyTypeConfigDB[i]));
+            //    for (TYPE_DATABASE_CFG t = TYPE_DATABASE_CFG.CFG_190; t < TYPE_DATABASE_CFG.UNKNOWN; t++)
+            //    {
+            //        if (t.ToString().Contains(arConfigDB[i].ToString()) == true)
+            //        {
+            //            arTypeConfigDB[i] = t;
+            //            break;
+            //        }
+            //        else
+            //            ;
+            //    }
+            //}
 
             bool bIgnoreTECInUse = false;
             string strTypeField = m_sFileINI.GetMainValueOfKey(@"РДГФорматТаблицаНазначение");
@@ -83,7 +83,7 @@ namespace trans_mt
                     }
                     try
                     {
-                        m_arAdmin[i].InitTEC(idListener, m_modeTECComponent, arTypeConfigDB [i], markQueries, bIgnoreTECInUse);
+                        m_arAdmin[i].InitTEC(idListener, m_modeTECComponent, /*arTypeConfigDB [i], */markQueries, bIgnoreTECInUse);
                         RemoveTEC(m_arAdmin[i]);
                     }
                     catch (Exception e)

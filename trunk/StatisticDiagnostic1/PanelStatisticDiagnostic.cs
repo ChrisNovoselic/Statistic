@@ -458,6 +458,7 @@ namespace StatisticDiagnostic
                 m_connSett = new ConnectionSettings[2]; //??? why number
                 m_connSett[(int)CONN_SETT_TYPE.LIST_SOURCE] = connSett;
                 m_connSett[(int)CONN_SETT_TYPE.CONFIG_DB] = FormMain.s_listFormConnectionSettings[(int)CONN_SETT_TYPE.CONFIG_DB].getConnSett();
+                m_connSett[(int)CONN_SETT_TYPE.CONFIG_DB].id = ConnectionSettings.UN_ENUMERABLE_ID - 6;
             }
 
             /// <summary>
@@ -469,8 +470,8 @@ namespace StatisticDiagnostic
                     m_dictIdListeners.Add(0, new int[] { -1, -1 });
                 else
                     ;
-                register(0, 0, m_connSett[(int)CONN_SETT_TYPE.LIST_SOURCE], m_connSett[(int)CONN_SETT_TYPE.LIST_SOURCE].name);
-                register(0, 1, m_connSett[(int)CONN_SETT_TYPE.CONFIG_DB], m_connSett[(int)CONN_SETT_TYPE.CONFIG_DB].name);
+                register(0, (int)CONN_SETT_TYPE.LIST_SOURCE, m_connSett[(int)CONN_SETT_TYPE.LIST_SOURCE], m_connSett[(int)CONN_SETT_TYPE.LIST_SOURCE].name);
+                register(0, (int)CONN_SETT_TYPE.CONFIG_DB, m_connSett[(int)CONN_SETT_TYPE.CONFIG_DB], m_connSett[(int)CONN_SETT_TYPE.CONFIG_DB].name);
             }
 
             public override void ClearValues()
@@ -505,15 +506,15 @@ namespace StatisticDiagnostic
                 switch (state)
                 {
                     case (int)State.ServerTime:
-                        Request(m_dictIdListeners[0][0], @"SELECT GETDATE()");
+                        Request(m_dictIdListeners[0][(int)CONN_SETT_TYPE.LIST_SOURCE], @"SELECT GETDATE()");
                         actionReport(@"Получение времени с сервера БД - состояние: " + ((State)state).ToString());
                         break;
                     case (int)State.Command:
-                        Request(m_dictIdListeners[0][0], @"SELECT * FROM Diagnostic");
+                        Request(m_dictIdListeners[0][(int)CONN_SETT_TYPE.LIST_SOURCE], @"SELECT * FROM Diagnostic");
                         actionReport(@"Получение значений из БД - состояние: " + ((State)state).ToString());
                         break;
                     case (int)State.UpdateSource:
-                        Request(m_dictIdListeners[0][1], @"SELECT * FROM TEC_LIST");
+                        Request(m_dictIdListeners[0][(int)CONN_SETT_TYPE.CONFIG_DB], @"SELECT * FROM TEC_LIST");
                         actionReport(@"Обновление списка активных источников - состояние: " + ((State)state).ToString());
                         break;
                     default:
@@ -2502,7 +2503,7 @@ namespace StatisticDiagnostic
             // зарегистрировать соединение/получить идентификатор соединения
             int iListernID = DbSources.Sources().Register(FormMain.s_listFormConnectionSettings[(int)CONN_SETT_TYPE.CONFIG_DB].getConnSett(), false, @"CONFIG_DB");
             // зарегистрировать синхронное соединение с БД_конфигурации
-            m_DataSource = new HDataSource(new ConnectionSettings(InitTECBase.getConnSettingsOfIdSource(TYPE_DATABASE_CFG.CFG_200, iListernID, FormMainBase.s_iMainSourceData, -1, out err).Rows[0], -1));
+            m_DataSource = new HDataSource(new ConnectionSettings(InitTECBase.getConnSettingsOfIdSource(iListernID, FormMainBase.s_iMainSourceData, -1, out err).Rows[0], -1));
             // назначить обработчик события - получение данных
             getCurrentData(iListernID);
             DbSources.Sources().UnRegister(iListernID);

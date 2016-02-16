@@ -100,8 +100,7 @@ namespace StatisticAlarm
             //Инициализация списка с ТЭЦ
             m_list_tec = new InitTEC_200(iListenerConfigDB, true, false).tec;
             //Инициализация
-            ConnectionSettings connSett = new ConnectionSettings(InitTECBase.getConnSettingsOfIdSource(TYPE_DATABASE_CFG.CFG_200
-                    , iListenerConfigDB
+            ConnectionSettings connSett = new ConnectionSettings(InitTECBase.getConnSettingsOfIdSource(iListenerConfigDB
                     , FormMainBase.s_iMainSourceData
                     , -1
                     , out err).Rows[0], -1);

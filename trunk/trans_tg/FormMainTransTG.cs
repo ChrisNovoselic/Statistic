@@ -77,18 +77,18 @@ namespace trans_tg
             //string sec = "Main (" + ProgramBase.AppName + ")";
             iConfigDB = Int32.Parse(m_sFileINI.GetMainValueOfKey(keyTypeConfigDB));
 
-            TYPE_DATABASE_CFG iTypeConfigDB = TYPE_DATABASE_CFG.UNKNOWN;
+            //TYPE_DATABASE_CFG iTypeConfigDB = TYPE_DATABASE_CFG.UNKNOWN;
 
-            for (TYPE_DATABASE_CFG t = TYPE_DATABASE_CFG.CFG_190; t < TYPE_DATABASE_CFG.UNKNOWN; t++)
-            {
-                if (t.ToString().Contains(iConfigDB.ToString()) == true)
-                {
-                    iTypeConfigDB = t;
-                    break;
-                }
-                else
-                    ;
-            }
+            //for (TYPE_DATABASE_CFG t = TYPE_DATABASE_CFG.CFG_190; t < TYPE_DATABASE_CFG.UNKNOWN; t++)
+            //{
+            //    if (t.ToString().Contains(iConfigDB.ToString()) == true)
+            //    {
+            //        iTypeConfigDB = t;
+            //        break;
+            //    }
+            //    else
+            //        ;
+            //}
 
             bool bIgnoreTECInUse = false;
 
@@ -108,7 +108,7 @@ namespace trans_tg
                         ;
 
                 try {
-                    ((AdminTS)m_arAdmin[i]).InitTEC(idListener, FormChangeMode.MODE_TECCOMPONENT.UNKNOWN, iTypeConfigDB, markQueries, bIgnoreTECInUse);
+                    ((AdminTS)m_arAdmin[i]).InitTEC(idListener, FormChangeMode.MODE_TECCOMPONENT.UNKNOWN, /*iTypeConfigDB, */markQueries, bIgnoreTECInUse);
                     RemoveTEC(m_arAdmin[i]);
                 }
                 catch (Exception e)

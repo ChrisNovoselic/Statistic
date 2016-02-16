@@ -77,21 +77,21 @@ namespace trans_gtp
             int[] arConfigDB = new int[(Int16)CONN_SETT_TYPE.COUNT_CONN_SETT_TYPE];
             string[] arKeyTypeConfigDB = new string[(Int16)CONN_SETT_TYPE.COUNT_CONN_SETT_TYPE] { @"ТипБДКфгИсточник", @"ТипБДКфгНазначение" };
 
-            TYPE_DATABASE_CFG[] arTypeConfigDB = new TYPE_DATABASE_CFG[(Int16)CONN_SETT_TYPE.COUNT_CONN_SETT_TYPE] { TYPE_DATABASE_CFG.UNKNOWN, TYPE_DATABASE_CFG.UNKNOWN };
-            for (i = 0; i < (Int16)CONN_SETT_TYPE.COUNT_CONN_SETT_TYPE; i++)
-            {
-                arConfigDB[i] = Int32.Parse(m_sFileINI.GetMainValueOfKey(arKeyTypeConfigDB[i]));
-                for (TYPE_DATABASE_CFG t = TYPE_DATABASE_CFG.CFG_190; t < TYPE_DATABASE_CFG.UNKNOWN; t++)
-                {
-                    if (t.ToString().Contains(arConfigDB[i].ToString()) == true)
-                    {
-                        arTypeConfigDB[i] = t;
-                        break;
-                    }
-                    else
-                        ;
-                }
-            }
+            //TYPE_DATABASE_CFG[] arTypeConfigDB = new TYPE_DATABASE_CFG[(Int16)CONN_SETT_TYPE.COUNT_CONN_SETT_TYPE] { TYPE_DATABASE_CFG.UNKNOWN, TYPE_DATABASE_CFG.UNKNOWN };
+            //for (i = 0; i < (Int16)CONN_SETT_TYPE.COUNT_CONN_SETT_TYPE; i++)
+            //{
+            //    arConfigDB[i] = Int32.Parse(m_sFileINI.GetMainValueOfKey(arKeyTypeConfigDB[i]));
+            //    for (TYPE_DATABASE_CFG t = TYPE_DATABASE_CFG.CFG_190; t < TYPE_DATABASE_CFG.UNKNOWN; t++)
+            //    {
+            //        if (t.ToString().Contains(arConfigDB[i].ToString()) == true)
+            //        {
+            //            arTypeConfigDB[i] = t;
+            //            break;
+            //        }
+            //        else
+            //            ;
+            //    }
+            //}
 
             string[] arStrTypeField = new string[(Int16)CONN_SETT_TYPE.COUNT_CONN_SETT_TYPE];
             arStrTypeField[(int)CONN_SETT_TYPE.SOURCE] = m_sFileINI.GetMainValueOfKey(@"РДГФорматТаблицаИсточник");
@@ -123,7 +123,7 @@ namespace trans_gtp
                 try
                 {
                     //((AdminTS_KomDisp)m_arAdmin[i]).InitTEC(m_formConnectionSettingsConfigDB.getConnSett((Int16)CONN_SETT_TYPE.DEST), m_modeTECComponent, true, false);
-                    m_arAdmin[i].InitTEC(idListener, m_modeTECComponent, arTypeConfigDB[i], markQueries, true);
+                    m_arAdmin[i].InitTEC(idListener, m_modeTECComponent, /*arTypeConfigDB[i], */markQueries, true);
                     RemoveTEC(m_arAdmin[i]);
                 }
                 catch (Exception e)
@@ -149,7 +149,9 @@ namespace trans_gtp
                 //} else {
                 //}
 
-                if ((i == (int)CONN_SETT_TYPE.DEST) && (arTypeConfigDB[(int)CONN_SETT_TYPE.DEST] == TYPE_DATABASE_CFG.CFG_190))
+                if ((i == (int)CONN_SETT_TYPE.DEST)
+                    /*&& (arTypeConfigDB[(int)CONN_SETT_TYPE.DEST] == TYPE_DATABASE_CFG.CFG_190)*/
+                    )
                 {
                     string strTECParametersDest = m_sFileINI.GetMainValueOfKey(@"ТЭЦПараметрыНазначение");
                     if (strTECParametersDest.Equals (string.Empty) == false) {
