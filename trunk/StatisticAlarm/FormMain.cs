@@ -32,6 +32,7 @@ namespace StatisticAlarm
         /// </summary>
         public FormMain()
         {
+            using (HCmd_Arg cmdArg = new HCmd_Arg(Environment.GetCommandLineArgs())) ;
             //Установить состояние ("загружается")
             _state = 1;
 

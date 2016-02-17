@@ -37,7 +37,7 @@ namespace trans_mc
 
         }
 
-        protected override void GetPPBRValuesRequest(TEC t, TECComponent comp, DateTime date, AdminTS.TYPE_FIELDS mode)
+        protected override void GetPPBRValuesRequest(TEC t, TECComponent comp, DateTime date/*, AdminTS.TYPE_FIELDS mode*/)
         {
             string query = "PPBR";
             int i = -1;
@@ -183,7 +183,7 @@ namespace trans_mc
                     break;
                 case (int)StatesMachine.PPBRValues:
                     ActionReport("Получение данных плана.");
-                    GetPPBRValuesRequest(allTECComponents[indxTECComponents].tec, allTECComponents[indxTECComponents], m_curDate.Date, AdminTS.TYPE_FIELDS.COUNT_TYPE_FIELDS);
+                    GetPPBRValuesRequest(allTECComponents[indxTECComponents].tec, allTECComponents[indxTECComponents], m_curDate.Date/*, AdminTS.TYPE_FIELDS.COUNT_TYPE_FIELDS*/);
                     break;
                 case (int)StatesMachine.PPBRDates:
                     if ((serverTime.Date > m_curDate.Date) && (m_ignore_date == false))
@@ -357,7 +357,7 @@ namespace trans_mc
             return bRes;
         }
 
-        public override void GetRDGValues(int /*TYPE_FIELDS*/ mode, int indx, DateTime date)
+        public override void GetRDGValues(/*int TYPE_FIELDS mode,*/ int indx, DateTime date)
         {
             delegateStartWait();
             lock (m_lockState)

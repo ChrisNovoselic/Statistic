@@ -409,13 +409,13 @@ namespace StatisticCommon
                 ;
         }
 
-        public abstract void GetRDGValues(int /*TYPE_FIELDS*/ mode, int indx, DateTime date);
+        public abstract void GetRDGValues(/*int /*TYPE_FIELDS mode,*/ int indx, DateTime date);
 
         protected abstract void GetPPBRDatesRequest(DateTime date);
 
         protected abstract int GetPPBRDatesResponse(DataTable table, DateTime date);
 
-        protected abstract void GetPPBRValuesRequest(TEC t, TECComponent comp, DateTime date, AdminTS.TYPE_FIELDS mode);
+        protected abstract void GetPPBRValuesRequest(TEC t, TECComponent comp, DateTime date/*, AdminTS.TYPE_FIELDS mode*/);
 
         protected abstract int GetPPBRValuesResponse(DataTable table, DateTime date);        
 

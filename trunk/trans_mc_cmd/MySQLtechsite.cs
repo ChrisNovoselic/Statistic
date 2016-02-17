@@ -136,7 +136,7 @@ namespace trans_mc_cmd
 
                     m_idListener = DbSources.Sources().Register(m_admin.allTECComponents[m_listIndexTECComponent[0]].tec.connSetts[(int)StatisticCommon.CONN_SETT_TYPE.PBR], false, @"PBR");
                     m_connection = DbSources.Sources().GetConnection (m_idListener, out iRes);
-                    m_strTableNamePPBR = m_admin.allTECComponents[m_listIndexTECComponent[0]].tec.m_arNameTableUsedPPBRvsPBR[(int)AdminTS.TYPE_FIELDS.STATIC];
+                    m_strTableNamePPBR = m_admin.allTECComponents[m_listIndexTECComponent[0]].tec.m_strNameTableUsedPPBRvsPBR/*[(int)AdminTS.TYPE_FIELDS.STATIC]*/;
                 }
                 else
                 {

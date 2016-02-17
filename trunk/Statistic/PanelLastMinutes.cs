@@ -53,7 +53,7 @@ namespace Statistic
 
     public partial class PanelLastMinutes : PanelStatisticWithTableHourRows
     {
-        protected static AdminTS.TYPE_FIELDS s_typeFields = AdminTS.TYPE_FIELDS.DYNAMIC;
+        //protected static AdminTS.TYPE_FIELDS s_typeFields = AdminTS.TYPE_FIELDS.DYNAMIC;
         
         //private List <Label> m_listLabelDateTime;
         private PanelDateTime m_panelDateTime;

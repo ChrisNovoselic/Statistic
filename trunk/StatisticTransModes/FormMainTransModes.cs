@@ -17,8 +17,8 @@ namespace StatisticTransModes
     {
         public FormMainTransModes(int id_app)
             : base(id_app
-                    , new string[] { @"ИгнорДатаВремя-techsite", @"РДГФорматТаблицаНазначение", @"ТипБДКфгНазначение" }
-                    , new string[] { false.ToString(), AdminTS.TYPE_FIELDS.DYNAMIC.ToString(), @"200" })
+                    , new string[] { @"ИгнорДатаВремя-techsite"/*, @"РДГФорматТаблицаНазначение", @"ТипБДКфгНазначение"*/ }
+                    , new string[] { false.ToString()/*, AdminTS.TYPE_FIELDS.DYNAMIC.ToString(), @"200"*/ })
         {
             InitializeComponentTransModes();
 
@@ -121,10 +121,10 @@ namespace StatisticTransModes
                     switch (m_IndexDB)
                     {
                         case (Int16)CONN_SETT_TYPE.SOURCE:
-                            m_arAdmin[m_IndexDB].GetRDGValues(-1, m_listTECComponentIndex[comboBoxTECComponent.SelectedIndex], dateTimePickerMain.Value.Date);
+                            m_arAdmin[m_IndexDB].GetRDGValues(/*-1,*/ m_listTECComponentIndex[comboBoxTECComponent.SelectedIndex], dateTimePickerMain.Value.Date);
                             break;
                         case (Int16)CONN_SETT_TYPE.DEST:
-                            m_arAdmin[m_IndexDB].GetRDGValues((int)((AdminTS)m_arAdmin[m_IndexDB]).m_typeFields, m_listTECComponentIndex[comboBoxTECComponent.SelectedIndex], dateTimePickerMain.Value.Date);
+                            m_arAdmin[m_IndexDB].GetRDGValues(/*(int)((AdminTS)m_arAdmin[m_IndexDB]).m_typeFields,*/ m_listTECComponentIndex[comboBoxTECComponent.SelectedIndex], dateTimePickerMain.Value.Date);
                             break;
                         default:
                             break;

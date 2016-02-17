@@ -29,7 +29,7 @@ namespace trans_mt
 
         protected override int GetPPBRDatesResponse(DataTable table, DateTime date) { int iRes = 0; return iRes; }
 
-        protected override void GetPPBRValuesRequest(TEC t, TECComponent comp, DateTime date, AdminTS.TYPE_FIELDS mode)
+        protected override void GetPPBRValuesRequest(TEC t, TECComponent comp, DateTime date/*, AdminTS.TYPE_FIELDS mode*/)
         {
             string query = string.Empty;
             int i = -1;
@@ -294,7 +294,7 @@ namespace trans_mt
                 case (int)StatesMachine.PPBRValues:
                     ActionReport("Получение данных плана.");
                     if (indxTECComponents < allTECComponents.Count)
-                        GetPPBRValuesRequest(allTECComponents[indxTECComponents].tec, allTECComponents[indxTECComponents], m_curDate.Date, AdminTS.TYPE_FIELDS.COUNT_TYPE_FIELDS);
+                        GetPPBRValuesRequest(allTECComponents[indxTECComponents].tec, allTECComponents[indxTECComponents], m_curDate.Date/*, AdminTS.TYPE_FIELDS.COUNT_TYPE_FIELDS*/);
                     else
                         result = -1;
                     break;
@@ -438,7 +438,7 @@ namespace trans_mt
         {
         }
 
-        public override void GetRDGValues(int /*TYPE_FIELDS*/ mode, int indx, DateTime date)
+        public override void GetRDGValues(/*int /*TYPE_FIELDS mode,*/ int indx, DateTime date)
         {
             delegateStartWait();
             lock (m_lockState)

@@ -56,7 +56,7 @@ namespace trans_mt
             //}
 
             bool bIgnoreTECInUse = false;
-            string strTypeField = m_sFileINI.GetMainValueOfKey(@"РДГФорматТаблицаНазначение");
+            //string strTypeField = m_sFileINI.GetMainValueOfKey(@"РДГФорматТаблицаНазначение");
             int idListener = -1;
 
             HMark markQueries = new HMark(new int[] { (int)StatisticCommon.CONN_SETT_TYPE.ADMIN, (int)StatisticCommon.CONN_SETT_TYPE.PBR, (int)StatisticCommon.CONN_SETT_TYPE.MTERM });
@@ -99,12 +99,12 @@ namespace trans_mt
                             m_arAdmin[i].m_ignore_date = bool.Parse(m_sFileINI.GetMainValueOfKey(@"ИгнорДатаВремя-ModesTerminale"));
                             break;
                         case (Int16)CONN_SETT_TYPE.DEST:
-                            if (strTypeField.Equals(AdminTS.TYPE_FIELDS.DYNAMIC.ToString()) == true)
-                                ((AdminTS)m_arAdmin[i]).m_typeFields = AdminTS.TYPE_FIELDS.DYNAMIC;
-                            else if (strTypeField.Equals(AdminTS.TYPE_FIELDS.STATIC.ToString()) == true)
-                                ((AdminTS)m_arAdmin[i]).m_typeFields = AdminTS.TYPE_FIELDS.STATIC;
-                            else
-                                ;
+                            //if (strTypeField.Equals(AdminTS.TYPE_FIELDS.DYNAMIC.ToString()) == true)
+                            //    ((AdminTS)m_arAdmin[i]).m_typeFields = AdminTS.TYPE_FIELDS.DYNAMIC;
+                            //else if (strTypeField.Equals(AdminTS.TYPE_FIELDS.STATIC.ToString()) == true)
+                            //    ((AdminTS)m_arAdmin[i]).m_typeFields = AdminTS.TYPE_FIELDS.STATIC;
+                            //else
+                            //    ;
                             m_arAdmin[i].m_ignore_date = bool.Parse(m_sFileINI.GetMainValueOfKey(@"ИгнорДатаВремя-techsite"));
                             break;
                         default:

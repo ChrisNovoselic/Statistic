@@ -2608,12 +2608,9 @@ namespace StatisticAnalyzer
         }
 
         /// <summary>
-        /// 
+        /// Разорвть соединение с БД
         /// </summary>
-        protected override void disconnect()
-        {
-            
-        }
+        protected override void disconnect() { }
 
         /// <summary>
         /// Старт разбора лог-сообщений
@@ -3045,7 +3042,7 @@ namespace StatisticAnalyzer
                         {
                             mode = Convert.ToInt32(recParameters[1]);
 
-                            //BeginInvoke(new DelegateIntFunc(SetModeVisibleTabs), mode);
+                            //BeginInvoke(new DelegateIntFunc(SetModeVisibleTabs)/*, mode*/);
 
                             if (recParameters.Length > 2)
                             {

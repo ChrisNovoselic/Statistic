@@ -295,7 +295,7 @@ namespace StatisticCommon
                 ;
 
             //Обновить значения на вкладке
-            GetRDGValues (m_typeFields, prevIndxTECComponents);
+            GetRDGValues (/*m_typeFields,*/ prevIndxTECComponents);
         }
 
         private Errors saveCSVValues (int indx, object pbr_number) {

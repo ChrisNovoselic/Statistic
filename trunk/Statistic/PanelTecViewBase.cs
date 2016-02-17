@@ -170,7 +170,7 @@ namespace Statistic
 
     public abstract class PanelTecViewBase : PanelStatisticWithTableHourRows
     {
-        protected static AdminTS.TYPE_FIELDS s_typeFields = AdminTS.TYPE_FIELDS.DYNAMIC;
+        //protected static AdminTS.TYPE_FIELDS s_typeFields = AdminTS.TYPE_FIELDS.DYNAMIC;
 
         protected abstract class HZedGraphControl : ZedGraph.ZedGraphControl
         {

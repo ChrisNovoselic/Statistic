@@ -1,6 +1,8 @@
 using System;
 using System.Collections.Generic;
 using System.Text;
+using System.Data;
+using System.Data.Common;
 
 namespace StatisticCommon
 {
@@ -123,6 +125,22 @@ namespace StatisticCommon
                 -1;
             m_TurnOnOff = INDEX_TURNOnOff.UNKNOWN; //Неизвестное состояние
         }
+
+
+        public void InitTG(TG dest, DataRow row_tg, DataTable allParamTG, out int err)
+        {
+            err = -1;
+            
+            dest.name_shr = row_tg["NAME_SHR"].ToString();
+            dest.m_id = Convert.ToInt32(row_tg["ID"]);
+            dest.m_id_owner_gtp = Convert.ToInt32(row_tg["ID_GTP"]);
+
+            //DataRow[] rows_tg = allParamTG.Select(@"ID_TG=" + dest.m_id);
+            //dest.m_strKKS_NAME_TM = rows_tg[0][@"KKS_NAME"].ToString();
+            //dest.m_arIds_fact[(int)TG.ID_TIME.MINUTES] = Int32.Parse(rows_tg[0][@"ID_IN_ASKUE_3"].ToString());
+            //dest.m_arIds_fact[(int)TG.ID_TIME.HOURS] = Int32.Parse(rows_tg[0][@"ID_IN_ASKUE_30"].ToString());
+        }
+
     }
     /// <summary>
     /// Класс для описания компонента ТЭЦ (ГТП, Б(Гр)ЩУ)

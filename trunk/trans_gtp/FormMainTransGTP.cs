@@ -10,8 +10,8 @@ namespace trans_gtp
     {
         public FormMainTransGTP()
             : base((int)ProgramBase.ID_APP.TRANS_GTP
-                    , new string[] { @"ИгнорДатаВремя-techsite", @"ТипБДКфгНазначение", @"РДГФорматТаблицаНазначение" }
-                    , new string[] { @"False", @"200", @"DYNAMIC" })
+                    , new string[] { @"ИгнорДатаВремя-techsite"/*, @"ТипБДКфгНазначение", @"РДГФорматТаблицаНазначение"*/ }
+                    , new string[] { @"False"/*, @"200", @"DYNAMIC"*/ })
         {
             InitializeComponentTransDB();
 
@@ -65,8 +65,8 @@ namespace trans_gtp
             //else
             //    ;
 
-            m_sFileINI.AddMainPar(@"ТипБДКфгИсточник", @"190");
-            m_sFileINI.AddMainPar(@"РДГФорматТаблицаИсточник", @"STATIC");
+            //m_sFileINI.AddMainPar(@"ТипБДКфгИсточник", @"190");
+            //m_sFileINI.AddMainPar(@"РДГФорматТаблицаИсточник", @"STATIC");
 
             ////Для переназначения идентификаторов источников данных БийскТЭЦ
             //m_fileINI.Add(@"ID_БДНазначение_ASKUE", @"6,");
@@ -74,8 +74,8 @@ namespace trans_gtp
             //m_fileINI.Add(@"ID_БДНазначение_PPBR_PBR", @"6,103");
             //m_fileINI.Add(@"ID_БДНазначение_PPBR_ADMIN", @"6,");
 
-            int[] arConfigDB = new int[(Int16)CONN_SETT_TYPE.COUNT_CONN_SETT_TYPE];
-            string[] arKeyTypeConfigDB = new string[(Int16)CONN_SETT_TYPE.COUNT_CONN_SETT_TYPE] { @"ТипБДКфгИсточник", @"ТипБДКфгНазначение" };
+            //int[] arConfigDB = new int[(Int16)CONN_SETT_TYPE.COUNT_CONN_SETT_TYPE];
+            //string[] arKeyTypeConfigDB = new string[(Int16)CONN_SETT_TYPE.COUNT_CONN_SETT_TYPE] { @"ТипБДКфгИсточник", @"ТипБДКфгНазначение" };
 
             //TYPE_DATABASE_CFG[] arTypeConfigDB = new TYPE_DATABASE_CFG[(Int16)CONN_SETT_TYPE.COUNT_CONN_SETT_TYPE] { TYPE_DATABASE_CFG.UNKNOWN, TYPE_DATABASE_CFG.UNKNOWN };
             //for (i = 0; i < (Int16)CONN_SETT_TYPE.COUNT_CONN_SETT_TYPE; i++)
@@ -93,9 +93,9 @@ namespace trans_gtp
             //    }
             //}
 
-            string[] arStrTypeField = new string[(Int16)CONN_SETT_TYPE.COUNT_CONN_SETT_TYPE];
-            arStrTypeField[(int)CONN_SETT_TYPE.SOURCE] = m_sFileINI.GetMainValueOfKey(@"РДГФорматТаблицаИсточник");
-            arStrTypeField[(int)CONN_SETT_TYPE.DEST] = m_sFileINI.GetMainValueOfKey(@"РДГФорматТаблицаНазначение");
+            //string[] arStrTypeField = new string[(Int16)CONN_SETT_TYPE.COUNT_CONN_SETT_TYPE];
+            //arStrTypeField[(int)CONN_SETT_TYPE.SOURCE] = m_sFileINI.GetMainValueOfKey(@"РДГФорматТаблицаИсточник");
+            //arStrTypeField[(int)CONN_SETT_TYPE.DEST] = m_sFileINI.GetMainValueOfKey(@"РДГФорматТаблицаНазначение");
 
             bool bIgnoreDateTime = false;
             if (Boolean.TryParse(m_sFileINI.GetMainValueOfKey(@"ИгнорДатаВремя-techsite"), out bIgnoreDateTime) == false)
@@ -155,48 +155,52 @@ namespace trans_gtp
                 {
                     string strTECParametersDest = m_sFileINI.GetMainValueOfKey(@"ТЭЦПараметрыНазначение");
                     if (strTECParametersDest.Equals (string.Empty) == false) {
-                    //if ((HAdmin.DEBUG_ID_TEC == -1) || (HAdmin.DEBUG_ID_TEC == Convert.ToInt32 (list_tec.Rows[i]["ID"]))) {
-                        int err = -1
-                            , indx = -1
-                            , indx_tec = -1;
+                        ////if ((HAdmin.DEBUG_ID_TEC == -1) || (HAdmin.DEBUG_ID_TEC == Convert.ToInt32 (list_tec.Rows[i]["ID"]))) {
+                        //    int err = -1
+                        //        , indx = -1
+                        //        , indx_tec = -1;
 
-                        foreach (TEC t in m_arAdmin[(int)CONN_SETT_TYPE.DEST].m_list_tec)
-                            if (t.m_id == 6) //Идентификатор БиТЭЦ
-                            {
-                                indx_tec = m_arAdmin[(int)CONN_SETT_TYPE.DEST].m_list_tec.IndexOf(t);
-                                break;
-                            }
-                            else
-                                ;
+                        //    foreach (TEC t in m_arAdmin[(int)CONN_SETT_TYPE.DEST].m_list_tec)
+                        //        if (t.m_id == 6) //Идентификатор БиТЭЦ
+                        //        {
+                        //            indx_tec = m_arAdmin[(int)CONN_SETT_TYPE.DEST].m_list_tec.IndexOf(t);
+                        //            break;
+                        //        }
+                        //        else
+                        //            ;
 
-                        if (! (indx_tec < 0))
-                        {
-                            m_arAdmin[(int)CONN_SETT_TYPE.DEST].m_list_tec[indx_tec].m_arNameTableAdminValues[(int)((AdminTS)m_arAdmin[(int)CONN_SETT_TYPE.DEST]).m_typeFields] = @"";
-                            m_arAdmin[(int)CONN_SETT_TYPE.DEST].m_list_tec[indx_tec].m_arNameTableUsedPPBRvsPBR[(int)((AdminTS)m_arAdmin[(int)CONN_SETT_TYPE.DEST]).m_typeFields] = @"BiPPBRvsPBR"; //???
+                        //    if (!(indx_tec < 0))
+                        //    {
+                        //        m_arAdmin[(int)CONN_SETT_TYPE.DEST].m_list_tec[indx_tec].m_arNameTableAdminValues[(int)((AdminTS)m_arAdmin[(int)CONN_SETT_TYPE.DEST]).m_typeFields] = @"";
+                        //        m_arAdmin[(int)CONN_SETT_TYPE.DEST].m_list_tec[indx_tec].m_arNameTableUsedPPBRvsPBR[(int)((AdminTS)m_arAdmin[(int)CONN_SETT_TYPE.DEST]).m_typeFields] = @"BiPPBRvsPBR"; //???
 
-                            m_arAdmin[(int)CONN_SETT_TYPE.DEST].m_list_tec[indx_tec].SetNamesField(@"", //ADMIN_DATETIME
-                                                @"", //ADMIN_REC
-                                                @"", //ADMIN_IS_PER
-                                                @"", //ADMIN_DIVIAT
-                                                @"Date_time", //PBR_DATETIME
-                                                @"PBR", //PPBRvsPBR
-                                                @"PBR_number");
+                        //        m_arAdmin[(int)CONN_SETT_TYPE.DEST].m_list_tec[indx_tec].SetNamesField(@"", //ADMIN_DATETIME
+                        //                            @"", //ADMIN_REC
+                        //                            @"", //ADMIN_IS_PER
+                        //                            @"", //ADMIN_DIVIAT
+                        //                            @"Date_time", //PBR_DATETIME
+                        //                            @"PBR", //PPBRvsPBR
+                        //                            @"PBR_number");
 
-                            m_arAdmin[(int)CONN_SETT_TYPE.DEST].m_list_tec[indx_tec].connSettings(ConnectionSettingsSource.GetConnectionSettings(TYPE_DATABASE_CFG.CFG_190, idListener, 103, -1, out err), (int)StatisticCommon.CONN_SETT_TYPE.PBR);
-                        } else ;
-                    } else ;
+                        //        m_arAdmin[(int)CONN_SETT_TYPE.DEST].m_list_tec[indx_tec].connSettings(ConnectionSettingsSource.GetConnectionSettings(TYPE_DATABASE_CFG.CFG_190, idListener, 103, -1, out err), (int)StatisticCommon.CONN_SETT_TYPE.PBR);
+                        //    }
+                        //    else ;
+                        ////}
+                        ////else ;
+                    }
+                    else ;
                 }
                 else {
                 }
 
-                for (AdminTS.TYPE_FIELDS tf = AdminTS.TYPE_FIELDS.STATIC; i < (int)AdminTS.TYPE_FIELDS.COUNT_TYPE_FIELDS; tf++)
-                    if (arStrTypeField[i].Equals(tf.ToString()) == true)
-                    {
-                        ((AdminTS)m_arAdmin[i]).m_typeFields = tf;
-                        break;
-                    }
-                    else
-                        ;
+                //for (AdminTS.TYPE_FIELDS tf = AdminTS.TYPE_FIELDS.STATIC; i < (int)AdminTS.TYPE_FIELDS.COUNT_TYPE_FIELDS; tf++)
+                //    if (arStrTypeField[i].Equals(tf.ToString()) == true)
+                //    {
+                //        ((AdminTS)m_arAdmin[i]).m_typeFields = tf;
+                //        break;
+                //    }
+                //    else
+                //        ;
 
                 m_arAdmin[i].m_ignore_date = bIgnoreDateTime;
                 //m_arAdmin[i].m_ignore_connsett_data = true; //-> в конструктор
@@ -318,7 +322,7 @@ namespace trans_gtp
                 switch (m_modeTECComponent)
                 {
                     case FormChangeMode.MODE_TECCOMPONENT.GTP:
-                        ((AdminTS)m_arAdmin[indexDB]).GetRDGValues((int)((AdminTS)m_arAdmin[indexDB]).m_typeFields, m_listTECComponentIndex[comboBoxTECComponent.SelectedIndex], dateTimePickerMain.Value.Date);
+                        ((AdminTS)m_arAdmin[indexDB]).GetRDGValues(/*(int)((AdminTS)m_arAdmin[indexDB]).m_typeFields,*/ m_listTECComponentIndex[comboBoxTECComponent.SelectedIndex], dateTimePickerMain.Value.Date);
                         break;
                     case FormChangeMode.MODE_TECCOMPONENT.TG:
                         break;

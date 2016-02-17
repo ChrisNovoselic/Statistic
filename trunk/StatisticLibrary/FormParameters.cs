@@ -10,43 +10,28 @@ namespace StatisticCommon
 {
     public abstract partial class FormParameters : FormParametersBase
     {
-        public enum PARAMETR_SETUP
-        {
-            UNKNOWN = -1
-            , POLL_TIME, ERROR_DELAY, MAX_ATTEMPT, WAITING_TIME, WAITING_COUNT,
-            MAIN_DATASOURCE, MAIN_PRIORITY,
-            /*ALARM_USE, */
-            ALARM_TIMER_UPDATE, ALARM_EVENT_RETRY, ALARM_TIMER_BEEP,
-            ALARM_SYSTEMMEDIA_TIMERBEEP
-                , USERS_DOMAIN_NAME, USERS_ID_TEC,
-            USERS_ID_ROLE
-                , SEASON_DATETIME,
-            SEASON_ACTION
-                //, GRINVICH_OFFSET_DATETIME
-                , APP_VERSION,
-            APP_VERSION_QUERY_INTERVAL
-                ,
-            KOMDISP_FOLDER_CSV
-                //Логгирование
-                ,
-            MAINFORMBASE_CONTROLHANDLE_LOGERRORCREATE
-                , MAINFORMBASE_SETPBRQUERY_LOGPBRNUMBER,
-            MAINFORMBASE_SETPBRQUERY_LOGQUERY
-                , TECVIEW_LOGRECOMENDATIONVAL,
-            TECVIEW_GETCURRENTTMGEN_LOGWARNING
-                ,
-            PANELQUICKDATA_LOGDEVIATIONEVAL
-                //Продолжение параметров...
-                ,
-            VALIDATE_TM_VALUE
-                ,
-            VALIDATE_ASKUE_VALUE
-                 ,
-            DIAGNOSTIC_TIMER_UPDATE
-                ////??? И где же универсальность
-                //, ID_SOURCE_SOTIASSO_BTEC, ID_SOURCE_SOTIASSO_TEC2, ID_SOURCE_SOTIASSO_TEC3, ID_SOURCE_SOTIASSO_TEC4, ID_SOURCE_SOTIASSO_TEC5, ID_SOURCE_SOTIASSO_BiTEC
-                , COUNT_PARAMETR_SETUP
-        };
+        public enum PARAMETR_SETUP {    UNKNOWN = -1
+                                        , POLL_TIME, ERROR_DELAY, MAX_ATTEMPT, WAITING_TIME, WAITING_COUNT,
+                                        MAIN_DATASOURCE, MAIN_PRIORITY,
+                                        /*ALARM_USE, */ ALARM_TIMER_UPDATE, ALARM_EVENT_RETRY, ALARM_TIMER_BEEP, ALARM_SYSTEMMEDIA_TIMERBEEP
+                                        , USERS_DOMAIN_NAME, USERS_ID_TEC, USERS_ID_ROLE                                    
+                                        , SEASON_DATETIME, SEASON_ACTION
+                                        //, GRINVICH_OFFSET_DATETIME
+                                        , APP_VERSION, APP_VERSION_QUERY_INTERVAL
+                                        , KOMDISP_FOLDER_CSV
+                                        //Логгирование
+                                        , MAINFORMBASE_CONTROLHANDLE_LOGERRORCREATE
+                                        , MAINFORMBASE_SETPBRQUERY_LOGPBRNUMBER, MAINFORMBASE_SETPBRQUERY_LOGQUERY
+                                        , TECVIEW_LOGRECOMENDATIONVAL, TECVIEW_GETCURRENTTMGEN_LOGWARNING
+                                        , PANELQUICKDATA_LOGDEVIATIONEVAL
+                                        //Продолжение параметров...
+                                        , VALIDATE_TM_VALUE , VALIDATE_ASKUE_VALUE
+                                        , DIAGNOSTIC_TIMER_UPDATE
+                                        ////??? И где же универсальность
+                                        //, ID_SOURCE_SOTIASSO_BTEC, ID_SOURCE_SOTIASSO_TEC2, ID_SOURCE_SOTIASSO_TEC3, ID_SOURCE_SOTIASSO_TEC4, ID_SOURCE_SOTIASSO_TEC5, ID_SOURCE_SOTIASSO_BiTEC
+                                        , IGO_VERSION
+                                        , COUNT_PARAMETR_SETUP
+                                    };
         protected static string[] NAME_PARAMETR_SETUP = { "Polling period", "Error delay", "Max attempts count", @"Waiting time", @"Waiting count"
                                                             , @"Main DataSource", @"Main Priority"
                                                             /*@"Alarm Use", */, @"Alarm Timer Update" , @"Alarm Event Retry", @"Alarm Timer Beep", @"Alarm SytemMedia FileNam"
@@ -66,6 +51,7 @@ namespace StatisticCommon
                                                              ,@"Diagnostic Timer Update" 
                                                             ////Идентификаторы прилинкованных активных источников СОТИАССО
                                                             //, @"ID_SOURCE_SOTIASSO_BTEC", @"ID_SOURCE_SOTIASSO_TEC2", @"ID_SOURCE_SOTIASSO_TEC3", @"ID_SOURCE_SOTIASSO_TEC4", @"ID_SOURCE_SOTIASSO_TEC5", @"ID_SOURCE_SOTIASSO_BiTEC"
+                                                            ,@"IGO Version"
                                                     };
         protected static string[] NAMESI_PARAMETR_SETUP = { "сек", "сек", "ед.", @"мсек", @"мсек",
                                                             @"ном", @"стр",
@@ -86,6 +72,7 @@ namespace StatisticCommon
                                                              ,@"сек"
                                                             //Идентификаторы прилинкованных активных источников СОТИАССО
                                                             //, @"ном", @"ном", @"ном", @"ном", @"ном", @"ном"
+                                                            ,@"ном"
                                                     };
         protected Dictionary<int, string> m_arParametrSetupDefault;
         public Dictionary<int, string> m_arParametrSetup;
@@ -195,6 +182,11 @@ namespace StatisticCommon
                 m_arParametrSetup[(int)i] = m_arParametrSetupDefault[(int)i];
             }
         }
+
+        public abstract void SaveParamKey(string column, string value);
+
+        public abstract void IncIGOVersion();
+
     }
 
     public partial class FormParameters_FIleINI : FormParameters
@@ -239,6 +231,15 @@ namespace StatisticCommon
         {
             for (PARAMETR_SETUP i = PARAMETR_SETUP.POLL_TIME; i < PARAMETR_SETUP.COUNT_PARAMETR_SETUP; i++)
                 m_FileINI.WriteString(NAME_SECTION_MAIN, NAME_PARAMETR_SETUP[(int)i], m_arParametrSetup[(int)i]);
+        }
+        public override void SaveParamKey(string column, string value)
+        {
+            throw new NotImplementedException();
+        }
+
+        public override void IncIGOVersion()
+        {
+            throw new NotImplementedException();
         }
     }
 
@@ -361,9 +362,33 @@ namespace StatisticCommon
             DbSources.Sources().UnRegister(idListener);
         }
 
-        private string readString(string key, string valDef, out int err)
+        public override void IncIGOVersion()
         {
-            return ReadString(ref m_dbConn, key, valDef, out err);
+            int version = Convert.ToInt32(m_arParametrSetup[(int)FormParameters.PARAMETR_SETUP.IGO_VERSION].Trim());
+            version++;
+            m_arParametrSetup[(int)FormParameters.PARAMETR_SETUP.IGO_VERSION] = version.ToString();
+            SaveParamKey("IGO Version",version.ToString());
+        }
+
+        public override void SaveParamKey(string column, string value)
+        {
+            int err = -1;
+            int idListener = DbSources.Sources().Register(m_connSett, false, @"CONFIG_DB");
+            string query = string.Empty;
+            m_dbConn = DbSources.Sources().GetConnection(idListener, out err);
+
+            query += getWriteStringRequest(column, value, false) + @";";
+
+            if (query.Equals(string.Empty) == false)
+                DbTSQLInterface.ExecNonQuery(ref m_dbConn, query, null, null, out err);
+            else
+                ;
+
+            DbSources.Sources().UnRegister(idListener);
+        }
+
+        private string readString (string key, string valDef, out int err) {
+            return ReadString (ref m_dbConn, key, valDef, out err);
         }
 
         public static string ReadString(ref DbConnection dbConn, int key, string valDef, out int err)

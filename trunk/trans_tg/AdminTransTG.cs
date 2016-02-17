@@ -118,7 +118,7 @@ namespace trans_tg
 
             if (IsCanUseTECComponents())
                 //Request(m_indxDbInterfaceCommon, m_listenerIdCommon, allTECComponents[indxTECComponents].tec.GetAdminDatesQuery(date));
-                Request(m_dictIdListeners[allTECComponents[indxTECComponents].tec.m_id][(int)StatisticCommon.CONN_SETT_TYPE.ADMIN], GetAdminDatesQuery(date, m_typeFields, allTECComponents[indxTECComponents]));
+                Request(m_dictIdListeners[allTECComponents[indxTECComponents].tec.m_id][(int)StatisticCommon.CONN_SETT_TYPE.ADMIN], GetAdminDatesQuery(date/*, m_typeFields*/, allTECComponents[indxTECComponents]));
             else
                 ;
         }
@@ -134,63 +134,63 @@ namespace trans_tg
 
             if (IsCanUseTECComponents () == true)
                 //Request(m_indxDbInterfaceCommon, m_listenerIdCommon, allTECComponents[indxTECComponents].tec.GetPBRDatesQuery(date));
-                Request(m_dictIdListeners[allTECComponents[indxTECComponents].tec.m_id][(int)StatisticCommon.CONN_SETT_TYPE.ADMIN], GetPBRDatesQuery(date, m_typeFields, allTECComponents[indxTECComponents]));
+                Request(m_dictIdListeners[allTECComponents[indxTECComponents].tec.m_id][(int)StatisticCommon.CONN_SETT_TYPE.ADMIN], GetPBRDatesQuery(date/*, m_typeFields*/, allTECComponents[indxTECComponents]));
             else
                 ;
         }
 
         //Из 'TEC.cs'
-        private string GetAdminDatesQuery(DateTime dt, AdminTS.TYPE_FIELDS mode, TECComponent comp)
+        private string GetAdminDatesQuery(DateTime dt/*, AdminTS.TYPE_FIELDS mode*/, TECComponent comp)
         {
             string strRes = string.Empty;
 
-            switch (mode)
-            {
-                case AdminTS.TYPE_FIELDS.STATIC:
-                    strRes = @"SELECT DATE, ID FROM " + allTECComponents[indxTECComponents].tec.m_arNameTableAdminValues[(int)mode] + " WHERE " +
-                          @"DATE > '" + dt.ToString("yyyyMMdd HH:mm:ss") +
-                          @"' AND DATE <= '" + dt.AddDays(1).ToString("yyyyMMdd HH:mm:ss") +
-                          @"' ORDER BY DATE ASC";
-                    break;
-                case AdminTS.TYPE_FIELDS.DYNAMIC:
-                    strRes = @"SELECT DATE, ID FROM " + allTECComponents[indxTECComponents].tec.m_arNameTableAdminValues[(int)mode] + " WHERE" +
+            //switch (mode)
+            //{
+            //    case AdminTS.TYPE_FIELDS.STATIC:
+            //        strRes = @"SELECT DATE, ID FROM " + allTECComponents[indxTECComponents].tec.m_arNameTableAdminValues[(int)mode] + " WHERE " +
+            //              @"DATE > '" + dt.ToString("yyyyMMdd HH:mm:ss") +
+            //              @"' AND DATE <= '" + dt.AddDays(1).ToString("yyyyMMdd HH:mm:ss") +
+            //              @"' ORDER BY DATE ASC";
+            //        break;
+            //    case AdminTS.TYPE_FIELDS.DYNAMIC:
+                    strRes = @"SELECT DATE, ID FROM " + allTECComponents[indxTECComponents].tec.m_strNameTableAdminValues/*[(int)mode]*/ + " WHERE" +
                             @" ID_COMPONENT = " + comp.m_id +
                           @" AND DATE > '" + dt.AddHours(-1 * allTECComponents[indxTECComponents].tec.m_timezone_offset_msc).ToString("yyyyMMdd HH:mm:ss") +
                           @"' AND DATE <= '" + dt.AddDays(1).ToString("yyyyMMdd HH:mm:ss") +
                           @"' ORDER BY DATE ASC";
-                    break;
-                default:
-                    break;
-            }
+            //        break;
+            //    default:
+            //        break;
+            //}
 
             return strRes;
         }
 
         //Из 'TEC.cs'
-        private string GetPBRDatesQuery(DateTime dt, AdminTS.TYPE_FIELDS mode, TECComponent comp)
+        private string GetPBRDatesQuery(DateTime dt/*, AdminTS.TYPE_FIELDS mode*/, TECComponent comp)
         {
             string strRes = string.Empty;
 
-            switch (mode)
-            {
-                case AdminTS.TYPE_FIELDS.STATIC:
-                    strRes = @"SELECT DATE_TIME, ID FROM " + allTECComponents[indxTECComponents].tec.m_arNameTableUsedPPBRvsPBR[(int)mode] +
-                            @" WHERE " +
-                            @"DATE_TIME > '" + dt.ToString("yyyyMMdd HH:mm:ss") +
-                            @"' AND DATE_TIME <= '" + dt.AddDays(1).ToString("yyyyMMdd HH:mm:ss") +
-                            @"' ORDER BY DATE_TIME ASC";
-                    break;
-                case AdminTS.TYPE_FIELDS.DYNAMIC:
-                    strRes = @"SELECT DATE_TIME, ID FROM " + @"[" + allTECComponents[indxTECComponents].tec.m_arNameTableUsedPPBRvsPBR[(int)mode] + @"]" +
+            //switch (mode)
+            //{
+            //    case AdminTS.TYPE_FIELDS.STATIC:
+            //        strRes = @"SELECT DATE_TIME, ID FROM " + allTECComponents[indxTECComponents].tec.m_arNameTableUsedPPBRvsPBR[(int)mode] +
+            //                @" WHERE " +
+            //                @"DATE_TIME > '" + dt.ToString("yyyyMMdd HH:mm:ss") +
+            //                @"' AND DATE_TIME <= '" + dt.AddDays(1).ToString("yyyyMMdd HH:mm:ss") +
+            //                @"' ORDER BY DATE_TIME ASC";
+            //        break;
+            //    case AdminTS.TYPE_FIELDS.DYNAMIC:
+                    strRes = @"SELECT DATE_TIME, ID FROM " + @"[" + allTECComponents[indxTECComponents].tec.m_strNameTableUsedPPBRvsPBR/*[(int)mode]*/ + @"]" +
                             @" WHERE" +
                             @" ID_COMPONENT = " + comp.m_id + "" +
                             @" AND DATE_TIME > '" + dt.AddHours(-1 * allTECComponents[indxTECComponents].tec.m_timezone_offset_msc).ToString("yyyyMMdd HH:mm:ss") +
                             @"' AND DATE_TIME <= '" + dt.AddDays(1).ToString("yyyyMMdd HH:mm:ss") +
                             @"' ORDER BY DATE_TIME ASC";
-                    break;
-                default:
-                    break;
-            }
+            //        break;
+            //    default:
+            //        break;
+            //}
 
             return strRes;
         }
@@ -232,12 +232,12 @@ namespace trans_tg
                     // запись для этого часа имеется, модифицируем её
                     if (m_listTimezoneOffsetHaveDates[(int)CONN_SETT_TYPE.ADMIN][i] == true)
                     {
-                        switch (m_typeFields)
-                        {
-                            case AdminTS.TYPE_FIELDS.STATIC:
-                                break;
-                            case AdminTS.TYPE_FIELDS.DYNAMIC:
-                                resQuery[(int)DbTSQLInterface.QUERY_TYPE.UPDATE] += @"UPDATE " + t.m_arNameTableAdminValues[(int)m_typeFields] + " SET " +
+                        //switch (m_typeFields)
+                        //{
+                        //    case AdminTS.TYPE_FIELDS.STATIC:
+                        //        break;
+                        //    case AdminTS.TYPE_FIELDS.DYNAMIC:
+                                resQuery[(int)DbTSQLInterface.QUERY_TYPE.UPDATE] += @"UPDATE " + t.m_strNameTableAdminValues/*[(int)m_typeFields]*/ + " SET " +
                                             @"REC='" + m_listCurTimezoneOffsetRDGExcelValues[indx][i].recomendation.ToString("F2", CultureInfo.InvariantCulture) +
                                             @"', " + @"IS_PER=" + (m_listCurTimezoneOffsetRDGExcelValues[indx][i].deviationPercent ? "1" : "0") +
                                             @", " + "DIVIAT='" + m_listCurTimezoneOffsetRDGExcelValues[indx][i].deviation.ToString("F2", CultureInfo.InvariantCulture) +
@@ -247,19 +247,19 @@ namespace trans_tg
                                             @" DATE = '" + date.AddHours((i + 1) + (-1 * t.m_timezone_offset_msc)).ToString("yyyyMMdd HH:mm:ss") +
                                             @"'" +
                                             @" AND ID_COMPONENT = " + comp.m_id + "; ";
-                                break;
-                            default:
-                                break;
-                        }
+                        //        break;
+                        //    default:
+                        //        break;
+                        //}
                     }
                     else
                     {
                         // запись отсутствует, запоминаем значения
-                        switch (m_typeFields)
-                        {
-                            case AdminTS.TYPE_FIELDS.STATIC:
-                                break;
-                            case AdminTS.TYPE_FIELDS.DYNAMIC:
+                        //switch (m_typeFields)
+                        //{
+                        //    case AdminTS.TYPE_FIELDS.STATIC:
+                        //        break;
+                        //    case AdminTS.TYPE_FIELDS.DYNAMIC:
                                 resQuery[(int)DbTSQLInterface.QUERY_TYPE.INSERT] += @" ('" + date.AddHours((i + 1) + (-1 * t.m_timezone_offset_msc)).ToString("yyyyMMdd HH:mm:ss") +
                                             @"', '" + m_listCurTimezoneOffsetRDGExcelValues[indx][i].recomendation.ToString("F2", CultureInfo.InvariantCulture) +
                                             @"', " + (m_listCurTimezoneOffsetRDGExcelValues[indx][i].deviationPercent ? "1" : "0") +
@@ -268,10 +268,10 @@ namespace trans_tg
                                             @", " + (offset > 0 ? (SEASON_BASE + (int)HAdmin.seasonJumpE.WinterToSummer) : (SEASON_BASE + (int)HAdmin.seasonJumpE.SummerToWinter)) +
                                             @", " + (m_curRDGValues[i].fc ? 1 : 0) +
                                             @"),";
-                                break;
-                            default:
-                                break;
-                        }
+                        //        break;
+                        //    default:
+                        //        break;
+                        //}
                     }
                 }
             }
@@ -301,12 +301,12 @@ namespace trans_tg
                     // запись для этого часа имеется, модифицируем её
                     if (m_listTimezoneOffsetHaveDates[(int)CONN_SETT_TYPE.PBR][i])
                     {
-                        switch (m_typeFields)
-                        {
-                            case AdminTS.TYPE_FIELDS.STATIC:
-                                break;
-                            case AdminTS.TYPE_FIELDS.DYNAMIC:
-                                resQuery[(int)DbTSQLInterface.QUERY_TYPE.UPDATE] += @"UPDATE " + @"[" + t.m_arNameTableUsedPPBRvsPBR[(int)m_typeFields] + @"]" +
+                        //switch (m_typeFields)
+                        //{
+                        //    case AdminTS.TYPE_FIELDS.STATIC:
+                        //        break;
+                        //    case AdminTS.TYPE_FIELDS.DYNAMIC:
+                                resQuery[(int)DbTSQLInterface.QUERY_TYPE.UPDATE] += @"UPDATE " + @"[" + t.m_strNameTableUsedPPBRvsPBR/*[(int)m_typeFields]*/ + @"]" +
                                             " SET " +
                                             @"PBR='" + m_listCurTimezoneOffsetRDGExcelValues[indx][i].pbr.ToString("F2", CultureInfo.InvariantCulture) + "'" +
                                             @", Pmin='" + m_listCurTimezoneOffsetRDGExcelValues[indx][i].pmin.ToString("F2", CultureInfo.InvariantCulture) + "'" +
@@ -315,19 +315,19 @@ namespace trans_tg
                                             t.m_strNamesField [(int)TEC.INDEX_NAME_FIELD.PBR_DATETIME] + @" = '" + date.AddHours((i + 1) + (-1 * t.m_timezone_offset_msc)).ToString("yyyyMMdd HH:mm:ss") +
                                             @"'" +
                                             @" AND ID_COMPONENT = " + comp.m_id + "; ";
-                                break;
-                            default:
-                                break;
-                        }
+                        //        break;
+                        //    default:
+                        //        break;
+                        //}
                     }
                     else
                     {
                         // запись отсутствует, запоминаем значения
-                        switch (m_typeFields)
-                        {
-                            case AdminTS.TYPE_FIELDS.STATIC:
-                                break;
-                            case AdminTS.TYPE_FIELDS.DYNAMIC:
+                        //switch (m_typeFields)
+                        //{
+                        //    case AdminTS.TYPE_FIELDS.STATIC:
+                        //        break;
+                        //    case AdminTS.TYPE_FIELDS.DYNAMIC:
                                 resQuery[(int)DbTSQLInterface.QUERY_TYPE.INSERT] += @" ('" + date.AddHours((i + 1) + (-1 * t.m_timezone_offset_msc)).ToString("yyyyMMdd HH:mm:ss") +
                                             @"', '" + serverTime.ToString("yyyyMMdd HH:mm:ss") +
                                             @"', '" + GetPBRNumber((i + 0) + (-1 * t.m_timezone_offset_msc)) +
@@ -337,10 +337,10 @@ namespace trans_tg
                                             @", '" + m_listCurTimezoneOffsetRDGExcelValues[indx][i].pmin.ToString("F1", CultureInfo.InvariantCulture) + "'" +
                                             @", '" + m_listCurTimezoneOffsetRDGExcelValues[indx][i].pmax.ToString("F1", CultureInfo.InvariantCulture) + "'" +
                                             @"),";
-                                break;
-                            default:
-                                break;
-                        }
+                        //        break;
+                        //    default:
+                        //        break;
+                        //}
                     }
                 }
             }

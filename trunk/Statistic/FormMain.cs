@@ -36,7 +36,7 @@ namespace Statistic
             DATETIMESYNC_SOURCE_DATA
                 , CUSTOM_2X2_2, CUSTOM_2X3_2, CUSTOM_2X2_3, CUSTOM_2X3_3, CUSTOM_2X2_4,
             CUSTOM_2X3_4
-                , SOTIASSO, DIAGNOSTIC, ANALYZER
+                , SOTIASSO, DIAGNOSTIC, ANALYZER, TEC_Component
         };
         private enum INDEX_CUSTOM_TAB { TAB_2X2, TAB_2X3 };
         private class ADDING_TAB
@@ -81,6 +81,7 @@ namespace Statistic
         public static FormGraphicsSettings formGraphicsSettings;
         public static FormParameters formParameters;
         private FormParametersTG m_formParametersTG;
+        private static int m_iGO_Version;
 
         //TcpServerAsync m_TCPServer;
         private
@@ -175,6 +176,7 @@ namespace Statistic
                 HUsers.s_REGISTRATION_INI[(int)HUsers.INDEX_REGISTRATION.ID] = 0; //Неизвестный пользователь
                 HUsers.s_REGISTRATION_INI[(int)HUsers.INDEX_REGISTRATION.ID_TEC] = Int32.Parse(formParameters.m_arParametrSetup[(int)FormParameters.PARAMETR_SETUP.USERS_ID_TEC]); //5
                 HUsers.s_REGISTRATION_INI[(int)HUsers.INDEX_REGISTRATION.ROLE] = Int32.Parse(formParameters.m_arParametrSetup[(int)FormParameters.PARAMETR_SETUP.USERS_ID_ROLE]); //2;
+                m_iGO_Version = Convert.ToInt32(formParameters.m_arParametrSetup[(int)FormParameters.PARAMETR_SETUP.IGO_VERSION]);
             }
             catch (Exception e)
             {
@@ -419,7 +421,7 @@ namespace Statistic
         }
         }
 
-        private void update()
+        private void appReset()
         {
             stopTimerAppReset();
             activateTabPage(tclTecViews.SelectedIndex, false);
@@ -503,17 +505,18 @@ namespace Statistic
 
                     if (HStatisticUsers.IsAllowed((int)HStatisticUsers.ID_ALLOWED.APP_AUTO_RESET) == true)
                         if (formParameters.m_arParametrSetup[(int)FormParameters.PARAMETR_SETUP.APP_VERSION].Equals(string.Empty) == false)
+                        {
                             if (formParameters.m_arParametrSetup[(int)FormParameters.PARAMETR_SETUP.APP_VERSION].Equals(Application.ProductVersion/*StatisticCommon.Properties.Resources.TradeMarkVersion*/) == false)
                             {
                                 if (IsHandleCreated/**/ == true)
                                     if (InvokeRequired == true)
                                     {
                                         /*IAsyncResult iar = */
-                                        this.BeginInvoke(new DelegateFunc(update));
+                                        this.BeginInvoke(new DelegateFunc(appReset));
                                         //this.EndInvoke (iar);
                                     }
                                     else
-                                        update();
+                                        appReset();
                                 else
                                     ;
 
@@ -521,7 +524,25 @@ namespace Statistic
 
                             }
                             else
-                                ;
+                                if (formParameters.m_arParametrSetup[(int)FormParameters.PARAMETR_SETUP.IGO_VERSION].Trim().Equals(Convert.ToString(m_iGO_Version)) == false)
+                                {
+                                    if (IsHandleCreated/**/ == true)
+                                        if (InvokeRequired == true)
+                                        {
+                                            /*IAsyncResult iar = */
+                                            this.BeginInvoke(new DelegateFunc(appReset));
+                                            //this.EndInvoke (iar);
+                                        }
+                                        else
+                                            appReset();
+                                    else
+                                        ;
+
+                                    //ProgramBase.AppRestart();
+                                }
+                                else
+                                    ;
+                        }
                         else
                             //При ошибке - восстанавливаем значение...
                             ; //formParameters.m_arParametrSetup[(int)FormParameters.PARAMETR_SETUP.APP_VERSION] = strPrevAppVersion;
@@ -728,6 +749,9 @@ namespace Statistic
                                                         else
                                                             if (tclTecViews.TabPages[e.TabIndex].Controls[0] is PanelAnalyzer_DB)
                                                                 m_dictAddingTabs[(int)ID_ADDING_TAB.ANALYZER].menuItem.Checked = false;
+                                                            else
+                                                                if (tclTecViews.TabPages[e.TabIndex].Controls[0] is PanelTECComponent)
+                                                                m_dictAddingTabs[(int)ID_ADDING_TAB.TEC_Component].menuItem.Checked = false;
                                                             else
                                                             ;
         }
@@ -2316,6 +2340,21 @@ namespace Statistic
             видSubToolStripMenuItem_CheckedChanged(m_dictAddingTabs[(int)ID_ADDING_TAB.ANALYZER].panel, "Журнал событий"
                 , new bool[] { ((ToolStripMenuItem)sender).Checked, true });
         }
+
+
+        private void СоставТЭЦToolStripMenuItem_CheckedChanged(object sender, EventArgs e)
+        {
+            if (m_dictAddingTabs[(int)ID_ADDING_TAB.TEC_Component].panel == null)
+            {
+                int idListener = DbSources.Sources().Register(s_listFormConnectionSettings[(int)CONN_SETT_TYPE.CONFIG_DB].getConnSett(), false, @"CONFIG_DB");
+                m_dictAddingTabs[(int)ID_ADDING_TAB.TEC_Component].panel = new PanelTECComponent(PanelKomDisp.m_list_tec);
+                m_dictAddingTabs[(int)ID_ADDING_TAB.TEC_Component].panel.SetDelegateReport(ErrorReport, WarningReport, ActionReport, ReportClear);
+            }
+            else
+                ;
+            видSubToolStripMenuItem_CheckedChanged(m_dictAddingTabs[(int)ID_ADDING_TAB.TEC_Component].panel, "Состав ТЭЦ"
+                , new bool[] { ((ToolStripMenuItem)sender).Checked, true });
+        }
        
 
         private void собственныеНуждыToolStripMenuItem_CheckedChanged(object sender, EventArgs e)
@@ -2474,20 +2513,16 @@ namespace Statistic
         protected override void UpdateActiveGui(int type)
         {
             if ((!(tclTecViews.SelectedIndex < 0)) && (tclTecViews.SelectedIndex < tclTecViews.TabCount))
-                if (tclTecViews.TabPages[tclTecViews.SelectedIndex].Controls[0] is PanelTecView)
-                    //selectedTecViews[tclTecViews.SelectedIndex].UpdateGraphicsCurrent();
-                    ((PanelTecView)tclTecViews.TabPages[tclTecViews.SelectedIndex].Controls[0]).UpdateGraphicsCurrent(type);
+                if (tclTecViews.TabPages[tclTecViews.SelectedIndex].Controls[0] is PanelTecViewBase)
+                    ((PanelTecViewBase)tclTecViews.TabPages[tclTecViews.SelectedIndex].Controls[0]).UpdateGraphicsCurrent(type);
                 else
-                    if (tclTecViews.TabPages[tclTecViews.SelectedIndex].Controls[0] is PanelSobstvNyzhdy)
-                        ((PanelSobstvNyzhdy)tclTecViews.TabPages[tclTecViews.SelectedIndex].Controls[0]).UpdateGraphicsCurrent(type);
-                    else
-                        if (tclTecViews.TabPages[tclTecViews.SelectedIndex].Controls[0] is PanelCustomTecView)
-                            ((PanelCustomTecView)tclTecViews.TabPages[tclTecViews.SelectedIndex].Controls[0]).UpdateGraphicsCurrent(type);
-                        else
-                            if (tclTecViews.TabPages[tclTecViews.SelectedIndex].Controls[0] is PanelSOTIASSO)
-                                ((PanelSOTIASSO)tclTecViews.TabPages[tclTecViews.SelectedIndex].Controls[0]).UpdateGraphicsCurrent(type);
-                            else
-                                ;
+                    ;
+            else
+                ;
+
+            if (!(m_dictFormFloat == null))
+                foreach (KeyValuePair<int, Form> pair in m_dictFormFloat)
+                    (pair.Value as FormMainFloat).UpdateGraphicsCurrent(type);
             else
                 ;
         }
@@ -2552,36 +2587,47 @@ namespace Statistic
                 ;
         }
 
-        private void изментьСоставТЭЦГТПЩУToolStripMenuItem_Click(object sender, EventArgs e)
-        {
-            int idListener = DbSources.Sources().Register(s_listFormConnectionSettings[(int)CONN_SETT_TYPE.CONFIG_DB].getConnSett(), false, @"CONFIG_DB");
-            formPassword.SetIdPass(idListener, 0, Passwords.ID_ROLES.ADMIN);
-            formPassword.ShowDialog(this);
-            DialogResult dlgRes = formPassword.DialogResult;
-            if (dlgRes == DialogResult.Yes)
-            {
-                FormTECComponent tecComponent = new FormTECComponent(s_listFormConnectionSettings[(int)CONN_SETT_TYPE.CONFIG_DB].getConnSett());
-                if (tecComponent.ShowDialog(this) == DialogResult.Yes)
-                {
-                    MessageBox.Show(this, "В БД конфигурации внесены изменения.\n\rНеобходим останов/запуск приложения.\n\r", "Внимание", MessageBoxButtons.OK, MessageBoxIcon.Stop);
-                    выходToolStripMenuItem.PerformClick();
-                    //Stop (new FormClosingEventArgs (CloseReason.UserClosing, true));
-                    //MainForm_FormClosing (this, new FormClosingEventArgs (CloseReason.UserClosing, true));
-                }
-                else
-                    ;
-            }
-            else
-                if (dlgRes == DialogResult.Abort)
-                {
-                    //Errors.NoAccess
-                    connectionSettings(CONN_SETT_TYPE.CONFIG_DB);
-                }
-                else
-                    ;
+        //private void изментьСоставТЭЦГТПЩУToolStripMenuItem_Click(object sender, EventArgs e)
+        //{
+        //    if (m_dictAddingTabs[(int)ID_ADDING_TAB.TEC_Component].panel == null)
+        //    {
+        //        int idListener = DbSources.Sources().Register(s_listFormConnectionSettings[(int)CONN_SETT_TYPE.CONFIG_DB].getConnSett(), false, @"CONFIG_DB");
+        //        m_dictAddingTabs[(int)ID_ADDING_TAB.TEC_Component].panel = new PanelTECComponent(s_listFormConnectionSettings[(int)CONN_SETT_TYPE.CONFIG_DB].getConnSett());
+        //        m_dictAddingTabs[(int)ID_ADDING_TAB.TEC_Component].panel.SetDelegateReport(ErrorReport, WarningReport, ActionReport, ReportClear);
+        //    }
+        //    else
+        //        ;
+        //    видSubToolStripMenuItem_CheckedChanged(m_dictAddingTabs[(int)ID_ADDING_TAB.TEC_Component].panel, "Состав ТЭЦ"
+        //        , new bool[] { ((ToolStripMenuItem)sender).Checked, true });
 
-            DbSources.Sources().UnRegister(idListener);
-        }
+        //    //int idListener = DbSources.Sources().Register(s_listFormConnectionSettings[(int)CONN_SETT_TYPE.CONFIG_DB].getConnSett(), false, @"CONFIG_DB");
+        //    //formPassword.SetIdPass(idListener, 0, Passwords.ID_ROLES.ADMIN);
+        //    //formPassword.ShowDialog(this);
+        //    //DialogResult dlgRes = formPassword.DialogResult;
+        //    //if (dlgRes == DialogResult.Yes)
+        //    //{
+        //    //    FormTECComponent tecComponent = new FormTECComponent(s_listFormConnectionSettings[(int)CONN_SETT_TYPE.CONFIG_DB].getConnSett());
+        //    //    if (tecComponent.ShowDialog(this) == DialogResult.Yes)
+        //    //    {
+        //    //        MessageBox.Show(this, "В БД конфигурации внесены изменения.\n\rНеобходим останов/запуск приложения.\n\r", "Внимание", MessageBoxButtons.OK, MessageBoxIcon.Stop);
+        //    //        выходToolStripMenuItem.PerformClick();
+        //    //        //Stop (new FormClosingEventArgs (CloseReason.UserClosing, true));
+        //    //        //MainForm_FormClosing (this, new FormClosingEventArgs (CloseReason.UserClosing, true));
+        //    //    }
+        //    //    else
+        //    //        ;
+        //    //}
+        //    //else
+        //    //    if (dlgRes == DialogResult.Abort)
+        //    //    {
+        //    //        //Errors.NoAccess
+        //    //        connectionSettings(CONN_SETT_TYPE.CONFIG_DB);
+        //    //    }
+        //    //    else
+        //    //        ;
+
+        //    //DbSources.Sources().UnRegister(idListener);
+        //}
 
         private void изментьСоставПользовательToolStripMenuItem_Click(object sender, EventArgs e)
         {
@@ -2815,5 +2861,32 @@ namespace Statistic
         //    //Logging.Logg().Debug(@"FormMain::WndProc () - msg.ID=" + m.Msg + @", msg.Res=" + m.Result, Logging.INDEX_MESSAGE.NOT_SET);
         //    Console.WriteLine(@"FormMain::WndProc () - msg.ID=" + m.Msg + @", msg.Res=" + m.Result);
         //}
+        /// <summary>
+        /// Класс для обеспечения немедленного обновления дочерних панелей
+        ///  при изменении масштаба отображения (по двойному нажатию на панели)
+        /// </summary>
+        private class FormMainFloat : FormMainFloatBase
+        {
+            public FormMainFloat(string text, Panel panel, bool bLabel)
+                : base(text, panel, bLabel)
+            {
+            }
+            /// <summary>
+            /// Обновить текущее отображение в ~ от типа изменения
+            /// </summary>
+            /// <param name="type">Тип изменения параметров отображения</param>
+            public void UpdateGraphicsCurrent(int type)
+            {
+                Panel panel = GetPanel();
+
+                if (panel is PanelTecViewBase)
+                    (panel as PanelTecViewBase).UpdateGraphicsCurrent(type);
+                else
+                    if (panel is PanelCustomTecView)
+                        (panel as PanelCustomTecView).UpdateGraphicsCurrent(type);
+                    else
+                        ;
+            }
+        }
     }
 }

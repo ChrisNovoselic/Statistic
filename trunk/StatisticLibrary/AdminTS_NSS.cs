@@ -153,7 +153,7 @@ namespace StatisticCommon
                 {
                     indxEv = WaitHandle.WaitAny (m_waitHandleState);
                     if (indxEv == 0)
-                        base.GetRDGValues(m_typeFields, indx);
+                        base.GetRDGValues(/*m_typeFields,*/ indx);
                     else
                         break;
                 }
@@ -162,7 +162,7 @@ namespace StatisticCommon
             //m_bSavePPBRValues = true;
         }
 
-        public override void GetRDGValues(TYPE_FIELDS mode, int id)
+        public override void GetRDGValues(/*TYPE_FIELDS mode,*/ int id)
         {
             //delegateStartWait ();
             fillListIndexTECComponent(id);
@@ -185,7 +185,7 @@ namespace StatisticCommon
                 {
                     indxEv = WaitHandle.WaitAny(m_waitHandleState);
                     if (indxEv == 0)
-                        base.GetRDGValues((int)m_typeFields, indx, (DateTime)date);
+                        base.GetRDGValues(/*(int)m_typeFields,*/ indx, (DateTime)date);
                     else
                         break;
                 }
@@ -194,7 +194,7 @@ namespace StatisticCommon
             //m_bSavePPBRValues = true;
         }
 
-        public override void GetRDGValues(int /*TYPE_FIELDS*/ mode, int id, DateTime date)
+        public override void GetRDGValues(/*int /*TYPE_FIELDS mode,*/ int id, DateTime date)
         {
             //delegateStartWait ();
             fillListIndexTECComponent (id);
@@ -217,7 +217,7 @@ namespace StatisticCommon
                     indxEv = WaitHandle.WaitAny(m_waitHandleState);
                     if (indxEv == 0)
                         if (modeTECComponent(indx) == FormChangeMode.MODE_TECCOMPONENT.GTP)
-                            base.GetRDGValues((int)m_typeFields, indx, (DateTime)date);
+                            base.GetRDGValues(/*(int)m_typeFields,*/ indx, (DateTime)date);
                         else
                             if (modeTECComponent(indx) == FormChangeMode.MODE_TECCOMPONENT.TG)
                                 base.ImpRDGExcelValues(indx, (DateTime)date);

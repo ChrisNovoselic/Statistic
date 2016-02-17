@@ -16,7 +16,7 @@ namespace Statistic
 {
     public class PanelAdmin : PanelStatisticWithTableHourRows
     {
-        protected static AdminTS.TYPE_FIELDS s_typeFields = AdminTS.TYPE_FIELDS.DYNAMIC;
+        //protected static AdminTS.TYPE_FIELDS s_typeFields = AdminTS.TYPE_FIELDS.DYNAMIC;
 
         protected Panel m_panelManagement, m_panelRDGValues;
 
@@ -231,7 +231,7 @@ namespace Statistic
             m_admin.SetDelegateData(this.setDataGridViewAdmin, null);
             m_admin.SetDelegateDatetime(this.CalendarSetDate);
 
-            m_admin.m_typeFields = s_typeFields;
+            //m_admin.m_typeFields = s_typeFields;
 
             InitializeComponents();
         }
@@ -372,7 +372,7 @@ namespace Statistic
 
                 initTableHourRows();
 
-                m_admin.GetRDGValues((int)m_admin.m_typeFields, m_listTECComponentIndex[comboBoxTecComponent.SelectedIndex], mcldrDate.SelectionStart);
+                m_admin.GetRDGValues(/*(int)m_admin.m_typeFields,*/ m_listTECComponentIndex[comboBoxTecComponent.SelectedIndex], mcldrDate.SelectionStart);
             }
             else
                 ;
@@ -431,7 +431,7 @@ namespace Statistic
             if (bRequery == true) {
                 ClearTables();
 
-                m_admin.GetRDGValues((int)m_admin.m_typeFields, m_listTECComponentIndex[comboBoxTecComponent.SelectedIndex], mcldrDate.SelectionStart);
+                m_admin.GetRDGValues(/*(int)m_admin.m_typeFields,*/ m_listTECComponentIndex[comboBoxTecComponent.SelectedIndex], mcldrDate.SelectionStart);
             }
             else
                 ;
@@ -446,7 +446,7 @@ namespace Statistic
             {
                 ClearTables();
 
-                m_admin.GetRDGValues((int)m_admin.m_typeFields, m_listTECComponentIndex[comboBoxTecComponent.SelectedIndex], mcldrDate.SelectionStart);
+                m_admin.GetRDGValues(/*(int)m_admin.m_typeFields,*/ m_listTECComponentIndex[comboBoxTecComponent.SelectedIndex], mcldrDate.SelectionStart);
             }
             else
             {
@@ -461,7 +461,7 @@ namespace Statistic
         {
             ClearTables();
 
-            m_admin.GetRDGValues((int)m_admin.m_typeFields, m_listTECComponentIndex[comboBoxTecComponent.SelectedIndex], mcldrDate.SelectionStart);
+            m_admin.GetRDGValues(/*(int)m_admin.m_typeFields,*/ m_listTECComponentIndex[comboBoxTecComponent.SelectedIndex], mcldrDate.SelectionStart);
         }
 
         //private string SetNumberSeparator(string current_str)

@@ -37,7 +37,7 @@ namespace StatisticTrans
             //System.Threading.Timer
                 timerService
                 ;
-        protected handlerCmd m_hCmd;
+        //protected handlerCmd m_hCmd;
         protected HAdmin[] m_arAdmin;
         protected GroupBox[] m_arGroupBox;
 
@@ -70,7 +70,9 @@ namespace StatisticTrans
                 return m_modeMashine == MODE_MASHINE.TO_DATE ? true : false;
             }
         }
-
+        /// <summary>
+        /// Признак включения/блокировки элементов управления на форме
+        /// </summary>
         protected bool m_bEnabledUIControl = true;
 
         protected Int16 m_IndexDB
@@ -87,9 +89,7 @@ namespace StatisticTrans
                 return (Int16)i;
             }
 
-            set
-            {
-            }
+            //set;
         }
 
         //private string GetINIParametersOfID(int param)
@@ -108,9 +108,9 @@ namespace StatisticTrans
         public class handlerCmd : HCmd_Arg
         {
             /// <summary>
-            /// 
+            /// Конструктор - основной (с параметрами)
             /// </summary>
-            /// <param name="args"></param>
+            /// <param name="args">Массив аргументов командной строки</param>
             public handlerCmd(string[] args)
                 : base(args)
             {
@@ -166,11 +166,11 @@ namespace StatisticTrans
         }
 
         /// <summary>
-        /// 
+        /// Конструктор - основной (с параметрами)
         /// </summary>
-        /// <param name="id_app"></param>
-        /// <param name="par"></param>
-        /// <param name="val"></param>
+        /// <param name="id_app">Идентификатор приложения из файла конфигурации</param>
+        /// <param name="par">Наименования-ключи параметров для файла конфигурации</param>
+        /// <param name="val">Значения для параметров в файле конфигурации</param>
         public FormMainTrans(int id_app, string[] par, string[] val)
         {
             Thread.CurrentThread.CurrentCulture =
@@ -333,9 +333,6 @@ namespace StatisticTrans
             //экземпляр класса обработки командной строки
             //createHCmdArg(Environment.GetCommandLineArgs());
 
-            this.WindowState = FormWindowState.Minimized;
-            this.ShowInTaskbar = false;
-            notifyIconMain.Visible = true;
             dateTimePickerMain.Value = m_arg_date.Date;
 
             m_arGroupBox = new GroupBox[(Int16)CONN_SETT_TYPE.COUNT_CONN_SETT_TYPE] { groupBoxSource, groupBoxDest };
@@ -347,14 +344,25 @@ namespace StatisticTrans
                 if (m_modeMashine == MODE_MASHINE.TO_DATE)
                     enabledUIControl(false);
                 else
+                {
                     enabledUIControl(true);
+
+                    if (m_modeMashine == MODE_MASHINE.SERVICE)
+                    {
+                        this.WindowState = FormWindowState.Minimized;
+                        this.ShowInTaskbar = false;
+                        this.notifyIconMain.Visible = true;
+                    }
+                    else
+                        ;
+                }
         }
 
         /// <summary>
-        /// 
+        /// Создание объекта-обработчика аргументов командной строки
         /// </summary>
-        /// <param name="args"></param>
-        /// <returns></returns>
+        /// <param name="args">Массив аргументов командной строки</param>
+        /// <returns>Объект-обработчик аргументов командной строки</returns>
         protected override HCmd_Arg createHCmdArg(string[] args)
         {
             return new handlerCmd(args);
@@ -945,7 +953,7 @@ namespace StatisticTrans
         ///// </summary>
         //private void CounterSuccessfulDownload()
         //{
-        //    m_labelTime.Invoke(new Action(() => m_labelTime.Text = "Время последнего опроса: " + DateTime.Now.ToString() + ";" + " Успешных итераций: " + CT.currentIter + " из " + CT.GetNum() + ""));
+        //    m_labelTime.Invoke(new Action(() => m_labelTime.Text = "Время крайнего опроса: " + DateTime.Now.ToString() + ";" + " Успешных итераций: " + CT.currentIter + " из " + CT.GetNum() + ""));
         //    m_labelTime.Invoke(new Action(() => m_labelTime.Update()));
         //}
 
@@ -1249,6 +1257,7 @@ namespace StatisticTrans
             if (m_modeMashine == MODE_MASHINE.TO_DATE)
             {
                 FillComboBoxTECComponent();
+                CT = new ComponentTesting(comboBoxTECComponent.Items.Count);
                 trans_auto_start();
             }
             else
