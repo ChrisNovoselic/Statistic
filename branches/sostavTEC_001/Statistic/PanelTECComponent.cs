@@ -128,8 +128,16 @@ namespace Statistic
         DelegateStringFunc delegateActionReport;
         DelegateBoolFunc delegateReportClear;
 
-        TG new_tg = new TG();
-        
+        /// <summary>
+        /// Идентификаторы колонок
+        /// </summary>
+        public enum ID_COL : int { ID = 0, ID_TEC = 1, ID_PC, ID_GTP, NAME_SHR, InUse }
+
+        /// <summary>
+        /// Наименования колонок
+        /// </summary>
+        public static string[] m_ColName = {"ID","ID_TEC","ID_PC","ID_GTP","NAME_SHR", "InUse"};
+
         DB_Sostav_TEC db_sostav = new DB_Sostav_TEC();
 
         /// <summary>
@@ -148,16 +156,6 @@ namespace Statistic
 
         protected DataTable[] m_arr_editTable = new DataTable[4];
 
-        //protected DataTable m_arr_originalTable[(int)FormChangeMode.MODE_TECCOMPONENT.TG],
-        //    m_arr_originalTable[(int)FormChangeMode.MODE_TECCOMPONENT.GTP],
-        //    m_arr_originalTable[(int)FormChangeMode.MODE_TECCOMPONENT.PC],
-        //    m_arr_originalTable[(int)FormChangeMode.MODE_TECCOMPONENT.TEC],
-        //    m_arr_editTable[(int)FormChangeMode.MODE_TECCOMPONENT.TG],
-        //    m_table_GTP_edited,
-        //    m_arr_editTable[(int)FormChangeMode.MODE_TECCOMPONENT.PC],
-        //    m_arr_editTable[(int)FormChangeMode.MODE_TECCOMPONENT.TGm_arr_editTable[(int)FormChangeMode.MODE_TECCOMPONENT.TEC],
-        //    m_table_audit;
-
         #endregion
 
         public PanelTECComponent(List<StatisticCommon.TEC> tec)
@@ -167,8 +165,8 @@ namespace Statistic
             
             fill_DataTable_ComponentsTEC();
             
-            treeView_TECComponent.GetID += new TreeView_TECComponent.intGetID(this.GetNextID);
-            treeView_TECComponent.EditNode += new TreeView_TECComponent.EditNodeEventHandler(this.get_operation_tree);
+            treeView_TECComponent.GetID += new TreeView_TECComponent.intGetIDEventHandler(this.getNextID);
+            treeView_TECComponent.EditNode += new TreeView_TECComponent.EditNodeEventHandler(this.get_TypeOperationTree);
             treeView_TECComponent.Report += new TreeView_TECComponent.ReportEventHandler(this.tree_report);
         }
 
@@ -248,7 +246,7 @@ namespace Statistic
         /// <summary>
         /// Обработчик получения данных от TreeView
         /// </summary>
-        private void get_operation_tree(object sender, TreeView_TECComponent.EditNodeEventArgs e)
+        private void get_TypeOperationTree(object sender, TreeView_TECComponent.EditNodeEventArgs e)
         {
             if (e.m_Operation == TreeView_TECComponent.ID_Operation.Select)
             {
@@ -279,12 +277,14 @@ namespace Statistic
             if (list_id.id_tg.Equals(-1) == false)
             {
                 m_arr_editTable[(int)FormChangeMode.MODE_TECCOMPONENT.TG].Rows.Remove(m_arr_editTable[(int)FormChangeMode.MODE_TECCOMPONENT.TG].Select("ID=" + list_id.id_tg)[0]);
+                
                 iRes = 1;
             }
 
             if (list_id.id_tg.Equals(-1) == true & list_id.id_pc.Equals(-1) == false)
             {
                 m_arr_editTable[(int)FormChangeMode.MODE_TECCOMPONENT.PC].Rows.Remove(m_arr_editTable[(int)FormChangeMode.MODE_TECCOMPONENT.PC].Select("ID=" + list_id.id_pc)[0]);
+                
                 iRes = 1;
             }
 
@@ -298,6 +298,7 @@ namespace Statistic
             if (list_id.id_pc.Equals(-1) == true & list_id.id_tg.Equals(-1) == true & list_id.id_gtp.Equals(-1) == true & list_id.id_tec.Equals(-1) == false)
             {
                 m_arr_editTable[(int)FormChangeMode.MODE_TECCOMPONENT.TEC].Rows.Remove(m_arr_editTable[(int)FormChangeMode.MODE_TECCOMPONENT.TEC].Select("ID=" + list_id.id_tec)[0]);
+                
                 iRes = 1;
             }
             if (iRes == 1)
@@ -320,18 +321,18 @@ namespace Statistic
             {
                 if (type == FormChangeMode.getNameMode((int)FormChangeMode.MODE_TECCOMPONENT.GTP))
                 {
-                    m_arr_editTable[(int)FormChangeMode.MODE_TECCOMPONENT.TG].Select("ID=" + list_id.id_tg)[0]["ID_GTP"] = list_id.id_gtp;
+                    m_arr_editTable[(int)FormChangeMode.MODE_TECCOMPONENT.TG].Select(m_ColName[(int)ID_COL.ID] + "=" + list_id.id_tg)[0][m_ColName[(int)ID_COL.ID_GTP]] = list_id.id_gtp;
                     iRes = 1;
                 }
-                if (type == FormChangeMode.getNameMode(2))
+                if (type == FormChangeMode.getNameMode((int)FormChangeMode.MODE_TECCOMPONENT.PC))
                 {
                     if (list_id.id_pc== -1)
                     {
-                        m_arr_editTable[(int)FormChangeMode.MODE_TECCOMPONENT.TG].Select("ID=" + list_id.id_tg)[0]["ID_PC"] = 0;
+                        m_arr_editTable[(int)FormChangeMode.MODE_TECCOMPONENT.TG].Select(m_ColName[(int)ID_COL.ID] + "=" + list_id.id_tg)[0][m_ColName[(int)ID_COL.ID_PC]] = 0;
                     }
                     else
                     {
-                        m_arr_editTable[(int)FormChangeMode.MODE_TECCOMPONENT.TG].Select("ID=" + list_id.id_tg)[0]["ID_PC"] = list_id.id_pc;
+                        m_arr_editTable[(int)FormChangeMode.MODE_TECCOMPONENT.TG].Select(m_ColName[(int)ID_COL.ID] + "=" + list_id.id_tg)[0][m_ColName[(int)ID_COL.ID_PC]] = list_id.id_pc;
                     }
                     iRes = 1;
                 }
@@ -357,22 +358,22 @@ namespace Statistic
 
                 for (int i = 0; i < m_arr_editTable[(int)FormChangeMode.MODE_TECCOMPONENT.TG].Columns.Count; i++)
                 {
-                    if (m_arr_editTable[(int)FormChangeMode.MODE_TECCOMPONENT.TG].Columns[i].ColumnName == "NAME_SHR")
+                    if (m_arr_editTable[(int)FormChangeMode.MODE_TECCOMPONENT.TG].Columns[i].ColumnName == m_ColName[(int)ID_COL.NAME_SHR])
                     {
-                        obj[i] = TreeView_TECComponent.Mass_NewVal_Comp((int)FormChangeMode.MODE_TECCOMPONENT.TG);
+                        obj[i] = TreeView_TECComponent.getNewValComp((int)FormChangeMode.MODE_TECCOMPONENT.TG);
                     }
                     else
-                        if (m_arr_editTable[(int)FormChangeMode.MODE_TECCOMPONENT.TG].Columns[i].ColumnName == "ID_PC")
+                        if (m_arr_editTable[(int)FormChangeMode.MODE_TECCOMPONENT.TG].Columns[i].ColumnName == m_ColName[(int)ID_COL.ID_PC])
                         {
                             obj[i] = 0;
                         }
                         else
-                            if (m_arr_editTable[(int)FormChangeMode.MODE_TECCOMPONENT.TG].Columns[i].ColumnName == "ID")
+                            if (m_arr_editTable[(int)FormChangeMode.MODE_TECCOMPONENT.TG].Columns[i].ColumnName == m_ColName[(int)ID_COL.ID])
                             {
                                 obj[i] = list_id.id_tg;
                             }
                             else
-                                if (m_arr_editTable[(int)FormChangeMode.MODE_TECCOMPONENT.TG].Columns[i].ColumnName == "ID_TEC")
+                                if (m_arr_editTable[(int)FormChangeMode.MODE_TECCOMPONENT.TG].Columns[i].ColumnName == m_ColName[(int)ID_COL.ID_TEC])
                                 {
                                     obj[i] = list_id.id_tec;
                                 }
@@ -390,17 +391,17 @@ namespace Statistic
 
                 for (int i = 0; i < m_arr_editTable[(int)FormChangeMode.MODE_TECCOMPONENT.PC].Columns.Count; i++)
                 {
-                    if (m_arr_editTable[(int)FormChangeMode.MODE_TECCOMPONENT.PC].Columns[i].ColumnName == "NAME_SHR")
+                    if (m_arr_editTable[(int)FormChangeMode.MODE_TECCOMPONENT.PC].Columns[i].ColumnName == m_ColName[(int)ID_COL.NAME_SHR])
                     {
-                        obj[i] = "Новый ЩУ";
+                        obj[i] = TreeView_TECComponent.getNewValComp((int)FormChangeMode.MODE_TECCOMPONENT.PC);
                     }
                     else
-                        if (m_arr_editTable[(int)FormChangeMode.MODE_TECCOMPONENT.PC].Columns[i].ColumnName == "ID_TEC")
+                        if (m_arr_editTable[(int)FormChangeMode.MODE_TECCOMPONENT.PC].Columns[i].ColumnName == m_ColName[(int)ID_COL.ID_TEC])
                         {
                             obj[i] = list_id.id_tec;
                         }
                         else
-                            if (m_arr_editTable[(int)FormChangeMode.MODE_TECCOMPONENT.PC].Columns[i].ColumnName == "ID")
+                            if (m_arr_editTable[(int)FormChangeMode.MODE_TECCOMPONENT.PC].Columns[i].ColumnName == m_ColName[(int)ID_COL.ID])
                             {
                                 obj[i] = list_id.id_pc;
                             }
@@ -418,17 +419,17 @@ namespace Statistic
 
                 for (int i = 0; i < m_arr_editTable[(int)FormChangeMode.MODE_TECCOMPONENT.GTP].Columns.Count; i++)
                 {
-                    if (m_arr_editTable[(int)FormChangeMode.MODE_TECCOMPONENT.GTP].Columns[i].ColumnName == "NAME_SHR")
+                    if (m_arr_editTable[(int)FormChangeMode.MODE_TECCOMPONENT.GTP].Columns[i].ColumnName == m_ColName[(int)ID_COL.NAME_SHR])
                     {
-                        obj[i] = "Новая ГТП";
+                        obj[i] = TreeView_TECComponent.getNewValComp((int)FormChangeMode.MODE_TECCOMPONENT.GTP);
                     }
                     else
-                        if (m_arr_editTable[(int)FormChangeMode.MODE_TECCOMPONENT.GTP].Columns[i].ColumnName == "ID_TEC")
+                        if (m_arr_editTable[(int)FormChangeMode.MODE_TECCOMPONENT.GTP].Columns[i].ColumnName == m_ColName[(int)ID_COL.ID_TEC])
                         {
                             obj[i] = list_id.id_tec;
                         }
                         else
-                            if (m_arr_editTable[(int)FormChangeMode.MODE_TECCOMPONENT.GTP].Columns[i].ColumnName == "ID")
+                            if (m_arr_editTable[(int)FormChangeMode.MODE_TECCOMPONENT.GTP].Columns[i].ColumnName == m_ColName[(int)ID_COL.ID])
                             {
                                 obj[i] = list_id.id_gtp;
                             }
@@ -448,17 +449,17 @@ namespace Statistic
 
                 for (int i = 0; i < m_arr_editTable[(int)FormChangeMode.MODE_TECCOMPONENT.TEC].Columns.Count; i++)
                 {
-                    if (m_arr_editTable[(int)FormChangeMode.MODE_TECCOMPONENT.TEC].Columns[i].ColumnName == "NAME_SHR")
+                    if (m_arr_editTable[(int)FormChangeMode.MODE_TECCOMPONENT.TEC].Columns[i].ColumnName == m_ColName[(int)ID_COL.NAME_SHR])
                     {
-                        obj[i] = "Новая ТЭЦ";
+                        obj[i] = TreeView_TECComponent.getNewValComp((int)FormChangeMode.MODE_TECCOMPONENT.TEC);
                     }
                     else
-                        if (m_arr_editTable[(int)FormChangeMode.MODE_TECCOMPONENT.TEC].Columns[i].ColumnName == "ID")
+                        if (m_arr_editTable[(int)FormChangeMode.MODE_TECCOMPONENT.TEC].Columns[i].ColumnName == m_ColName[(int)ID_COL.ID])
                         {
                             obj[i] = list_id.id_tec;
                         }
                         else
-                            if (m_arr_editTable[(int)FormChangeMode.MODE_TECCOMPONENT.TEC].Columns[i].ColumnName == "InUse")
+                            if (m_arr_editTable[(int)FormChangeMode.MODE_TECCOMPONENT.TEC].Columns[i].ColumnName == m_ColName[(int)ID_COL.InUse])
                             {
                                 obj[i] = 0;
                             }
@@ -517,9 +518,9 @@ namespace Statistic
                 for (int i = (int)FormChangeMode.MODE_TECCOMPONENT.TEC; i < (int)FormChangeMode.MODE_TECCOMPONENT.UNKNOWN; i++)
                 {
                     if (i == (int)FormChangeMode.MODE_TECCOMPONENT.PC)
-                        db_sostav.Edit(FormChangeMode.getPrefixMode((short)i) + "_LIST", "ID_TEC,ID", m_arr_originalTable[i], m_arr_editTable[i], out err);
+                        db_sostav.Edit(FormChangeMode.getPrefixMode((short)i) + "_LIST", m_ColName[(int)ID_COL.ID_TEC]+","+m_ColName[(int)ID_COL.ID], m_arr_originalTable[i], m_arr_editTable[i], out err);
                     else
-                        db_sostav.Edit(FormChangeMode.getPrefixMode((short)i) + "_LIST", "ID", m_arr_originalTable[i], m_arr_editTable[i], out err);
+                        db_sostav.Edit(FormChangeMode.getPrefixMode((short)i) + "_LIST", m_ColName[(int)ID_COL.ID], m_arr_originalTable[i], m_arr_editTable[i], out err);
 
                 }
 
@@ -558,25 +559,25 @@ namespace Statistic
         private void dgvProp_EndCellEdit(object sender, DataGridView_Prop.DataGridView_Prop_ValuesCellValueChangedEventArgs e)
         {
             delegateReportClear(true);
-            if (e.m_IdComp < (int)TECComponentBase.ID.GTP & e.m_IdComp > 0)
+            if (e.IdComp < (int)TECComponentBase.ID.GTP & e.IdComp > 0)
             {
-                edit_table(e.m_IdComp, e.m_Header_name, e.m_Value, m_arr_editTable[(int)FormChangeMode.MODE_TECCOMPONENT.TEC]);
+                edit_table(e.IdComp, e.Header_name, e.Value, m_arr_editTable[(int)FormChangeMode.MODE_TECCOMPONENT.TEC]);
             }
-            if (e.m_IdComp > (int)TECComponentBase.ID.GTP & e.m_IdComp < (int)TECComponentBase.ID.PC)
+            if (e.IdComp > (int)TECComponentBase.ID.GTP & e.IdComp < (int)TECComponentBase.ID.PC)
             {
-                edit_table(e.m_IdComp, e.m_Header_name, e.m_Value, m_arr_editTable[(int)FormChangeMode.MODE_TECCOMPONENT.GTP]);
+                edit_table(e.IdComp, e.Header_name, e.Value, m_arr_editTable[(int)FormChangeMode.MODE_TECCOMPONENT.GTP]);
             }
-            if (e.m_IdComp > (int)TECComponentBase.ID.PC & e.m_IdComp < (int)TECComponentBase.ID.TG)
+            if (e.IdComp > (int)TECComponentBase.ID.PC & e.IdComp < (int)TECComponentBase.ID.TG)
             {
-                edit_table(e.m_IdComp, e.m_Header_name, e.m_Value, m_arr_editTable[(int)FormChangeMode.MODE_TECCOMPONENT.PC]);
+                edit_table(e.IdComp, e.Header_name, e.Value, m_arr_editTable[(int)FormChangeMode.MODE_TECCOMPONENT.PC]);
             }
-            if (e.m_IdComp > (int)TECComponentBase.ID.TG & e.m_IdComp < (int)TECComponentBase.ID.MAX)
+            if (e.IdComp > (int)TECComponentBase.ID.TG & e.IdComp < (int)TECComponentBase.ID.MAX)
             {
-                edit_table(e.m_IdComp, e.m_Header_name, e.m_Value, m_arr_editTable[(int)FormChangeMode.MODE_TECCOMPONENT.TG]);
+                edit_table(e.IdComp, e.Header_name, e.Value, m_arr_editTable[(int)FormChangeMode.MODE_TECCOMPONENT.TG]);
             }
-            if (e.m_Header_name == "NAME_SHR")
+            if (e.Header_name == m_ColName[(int)ID_COL.NAME_SHR])
             {
-                treeView_TECComponent.Rename_Node(e.m_IdComp, e.m_Value);
+                treeView_TECComponent.Rename_Node(e.IdComp, e.Value);
             }
         }
 
@@ -591,7 +592,7 @@ namespace Statistic
         {
             for (int i = 0; i < table_edit.Rows.Count; i++)
             {
-                if ((int)table_edit.Rows[i]["ID"] == id_comp)
+                if ((int)table_edit.Rows[i][m_ColName[(int)ID_COL.ID]] == id_comp)
                 {
                     for (int b = 0; b < table_edit.Columns.Count; b++)
                     {
@@ -632,7 +633,7 @@ namespace Statistic
                         if (Convert.ToString(row[i]) == "-1")
                         {
                             have = true;
-                            warning[indx] += "Для объекта " + row["NAME_SHR"] + " параметр " + table.Columns[i].ColumnName + " равен '-1'." + '\n';
+                            warning[indx] += "Для объекта " + row[m_ColName[(int)ID_COL.NAME_SHR]] + " параметр " + table.Columns[i].ColumnName + " равен '-1'." + '\n';
                         }
                     }
                 }
@@ -644,7 +645,7 @@ namespace Statistic
         /// Обработчик для получения следующего идентификатора
         /// </summary>
         /// <returns>Возвращает идентификатор</returns>
-        private int GetNextID(object sender, TreeView_TECComponent.GetIDEventArgs e)
+        private int getNextID(object sender, TreeView_TECComponent.GetIDEventArgs e)
         {
             int ID = 0;
             int err = 0;
@@ -950,7 +951,7 @@ namespace Statistic
             int n_row = -1;
             for (int i = 0; i < this.Rows.Count; i++)
             {
-                if (this.Rows[i].HeaderCell.Value.ToString() == "ID")
+                if (this.Rows[i].HeaderCell.Value.ToString() == PanelTECComponent.m_ColName[(int)PanelTECComponent.ID_COL.ID])
                 {
                     n_row=(int)this.Rows[i].Cells[0].Value;
                 }
@@ -963,8 +964,7 @@ namespace Statistic
                                     ));
             }
             else
-            {
-            }
+                ;
         }
 
         /// <summary>
@@ -975,33 +975,33 @@ namespace Statistic
             /// <summary>
             /// ID компонента
             /// </summary>
-            public int m_IdComp;
+            public int IdComp;
 
             /// <summary>
             /// Имя изменяемого параметра
             /// </summary>
-            public string m_Header_name;
+            public string Header_name;
 
             /// <summary>
             /// Значение изменяемого параметра
             /// </summary>
-            public string m_Value;
+            public string Value;
 
             public DataGridView_Prop_ValuesCellValueChangedEventArgs()
                 : base()
             {
-                m_IdComp = -1;
-                m_Header_name = string.Empty;
-                m_Value = string.Empty;
+                IdComp = -1;
+                Header_name = string.Empty;
+                Value = string.Empty;
 
             }
 
             public DataGridView_Prop_ValuesCellValueChangedEventArgs(int id_comp, string header_name, string value)
                 : this()
             {
-                m_IdComp = id_comp;
-                m_Header_name = header_name;
-                m_Value = value;
+                IdComp = id_comp;
+                Header_name = header_name;
+                Value = value;
             }
         }
 
@@ -1057,7 +1057,18 @@ namespace Statistic
             return nameModes[indx];
         }
 
+        /// <summary>
+        /// Для возвращения имена по умолчанию для компонентов
+        /// </summary>
+        /// <param name="indx">Идентификатор типа компонента</param>
+        /// <returns>Имя по умолчанию</returns>
+        public static string getNewValComp(int indx)
+        {
+            String[] arPREFIX_COMPONENT = { "Новая ТЭЦ", "Новая ГТП", "Новый ЩУ", "Новая ТГ" };
 
+            return arPREFIX_COMPONENT[indx];
+        }
+        
         /// <summary>
         /// Идентификаторы для типов компонента ТЭЦ
         /// </summary>
@@ -1075,11 +1086,8 @@ namespace Statistic
             return nameModes[indx];
         }
 
+        public static string s_not_add = "Не введенные в состав";
 
-        public static string not_add = "Не введенные в состав";
-
-        List<StatisticCommon.TG> m_listTG = new List<TG>();
-        List<StatisticCommon.TECComponent> m_listTECComponent = new List<TECComponent>();
         private System.Windows.Forms.ContextMenuStrip contextMenu_TreeView;
 
         List<string> m_open_node = new List<string>();
@@ -1108,7 +1116,6 @@ namespace Statistic
             добавитьТЭЦToolStripMenuItem.Text = "Добавить ТЭЦ";
             #endregion
 
-            //this.ContextMenuStrip.ItemClicked += new ToolStripItemClickedEventHandler(this.add_New_TEC);
         }
 
         public TreeView_TECComponent(bool contextEnable=true)
@@ -1132,18 +1139,6 @@ namespace Statistic
             this.ContextMenuStrip.ItemClicked += new ToolStripItemClickedEventHandler(this.add_New_TEC);
         }
 
-        /// <summary>
-        /// Для возвращения имена по умолчанию для компонентов
-        /// </summary>
-        /// <param name="indx">Идентификатор типа компонента</param>
-        /// <returns>Имя по умолчанию</returns>
-        public static string Mass_NewVal_Comp(int indx)
-        {
-            String[] arPREFIX_COMPONENT = { "Новая ТЭЦ", "Новая ГТП", "Новый ЩУ", "Новая ТГ" };
-
-            return arPREFIX_COMPONENT[indx];
-        }
-        
         /// <summary>
         /// Метод для сохранения открытых элементов дерева при обновлении
         /// </summary>
@@ -1223,9 +1218,9 @@ namespace Statistic
                         this.Nodes[tec_indx].Nodes[(int)FormChangeMode.MODE_TECCOMPONENT.TG - 1].Name = path + ':' + Convert.ToString((int)TECComponent.ID.TG);
                         this.Nodes[tec_indx].Nodes[(int)FormChangeMode.MODE_TECCOMPONENT.PC - 1].Name = path + ':' + Convert.ToString((int)TECComponent.ID.PC);
 
-                        this.Nodes[tec_indx].Nodes[(int)FormChangeMode.MODE_TECCOMPONENT.GTP - 1].Nodes.Add(not_add);
+                        this.Nodes[tec_indx].Nodes[(int)FormChangeMode.MODE_TECCOMPONENT.GTP - 1].Nodes.Add(s_not_add);
                         this.Nodes[tec_indx].Nodes[(int)FormChangeMode.MODE_TECCOMPONENT.GTP - 1].Nodes[0].Name = path + ':' + "0";
-                        this.Nodes[tec_indx].Nodes[(int)FormChangeMode.MODE_TECCOMPONENT.PC - 1].Nodes.Add(not_add);
+                        this.Nodes[tec_indx].Nodes[(int)FormChangeMode.MODE_TECCOMPONENT.PC - 1].Nodes.Add(s_not_add);
                         this.Nodes[tec_indx].Nodes[(int)FormChangeMode.MODE_TECCOMPONENT.PC - 1].Nodes[0].Name = path + ':' + "0";
 
                         int gtp_node_null_indx = -1;
@@ -1357,7 +1352,7 @@ namespace Statistic
                 if (m_selNode_idComp.id_tg != -1)//выбран ли элемент ТГ
                 {
                     #region Не введенные
-                    if (this.SelectedNode.Parent.Text == TreeView_TECComponent.not_add)
+                    if (this.SelectedNode.Parent.Text == TreeView_TECComponent.s_not_add)
                     {
                         #region Context add TG from PC or GTP
                         // 
@@ -1392,7 +1387,7 @@ namespace Statistic
 
                     #region Введенные в состав
 
-                    if (this.SelectedNode.Parent.Text != TreeView_TECComponent.not_add)
+                    if (this.SelectedNode.Parent.Text != TreeView_TECComponent.s_not_add)
                     {
                         if (m_selNode_idComp.id_tg > (int)TECComponent.ID.TG)
                         {
@@ -1508,7 +1503,7 @@ namespace Statistic
                     this.SelectedNode.ContextMenuStrip = contextMenu_TreeNode;
                 }
 
-                if (this.SelectedNode.Text == not_add)//Выбран "Не введенные в состав"
+                if (this.SelectedNode.Text == s_not_add)//Выбран "Не введенные в состав"
                 {
                     this.SelectedNode.ContextMenuStrip = contextMenu_TreeNode;
                 }
@@ -1553,7 +1548,7 @@ namespace Statistic
             int id_newTEC = 0;
             if (e.ClickedItem.Text == (string)getNameMode((int)ID_Menu.AddTEC))
             {
-                this.Nodes.Add(Mass_NewVal_Comp((int)FormChangeMode.MODE_TECCOMPONENT.TEC));
+                this.Nodes.Add(getNewValComp((int)FormChangeMode.MODE_TECCOMPONENT.TEC));
                 id_newTEC = GetID(this, new GetIDEventArgs(0));
                 Nodes[Nodes.Count - 1].Name = Convert.ToString(id_newTEC);
 
@@ -1603,12 +1598,12 @@ namespace Statistic
                         {
                             tec.Nodes.Add(FormChangeMode.getNameMode((int)FormChangeMode.MODE_TECCOMPONENT.GTP));
                             tec.Nodes[tec.Nodes.Count - 1].Name = tec.Name + ':' + (int)TECComponent.ID.GTP;
-                            tec.Nodes[tec.Nodes.Count - 1].Nodes.Add(not_add);
+                            tec.Nodes[tec.Nodes.Count - 1].Nodes.Add(s_not_add);
                             tec.Nodes[tec.Nodes.Count - 1].Nodes[0].Name = tec.Name + ':' + "0";
 
                             tec.Nodes.Add(FormChangeMode.getNameMode((int)FormChangeMode.MODE_TECCOMPONENT.PC));
                             tec.Nodes[tec.Nodes.Count - 1].Name = tec.Name + ':' + (int)TECComponent.ID.PC;
-                            tec.Nodes[tec.Nodes.Count - 1].Nodes.Add(not_add);
+                            tec.Nodes[tec.Nodes.Count - 1].Nodes.Add(s_not_add);
                             tec.Nodes[tec.Nodes.Count - 1].Nodes[0].Name = tec.Name + ':' + "0";
                             tec.Nodes.Add(FormChangeMode.getNameMode((int)FormChangeMode.MODE_TECCOMPONENT.TG));
                             tec.Nodes[tec.Nodes.Count - 1].Name = tec.Name + ':' + (int)TECComponent.ID.TG;
@@ -1618,7 +1613,7 @@ namespace Statistic
 
                             if (com.Text == FormChangeMode.getNameMode(1))
                             {
-                                com.Nodes.Add(Mass_NewVal_Comp((int)FormChangeMode.MODE_TECCOMPONENT.GTP));
+                                com.Nodes.Add(getNewValComp((int)FormChangeMode.MODE_TECCOMPONENT.GTP));
                                 com.Nodes[com.Nodes.Count - 1].Name = Convert.ToString(tec.Name + ':' + id_newGTP);
                             }
                         }
@@ -1652,11 +1647,11 @@ namespace Statistic
                             {
                                 tec.Nodes.Add(FormChangeMode.getNameMode((int)FormChangeMode.MODE_TECCOMPONENT.GTP));
                                 tec.Nodes[tec.Nodes.Count - 1].Name = tec.Name + ':' + (int)TECComponent.ID.GTP;
-                                tec.Nodes[tec.Nodes.Count - 1].Nodes.Add(not_add);
+                                tec.Nodes[tec.Nodes.Count - 1].Nodes.Add(s_not_add);
                                 tec.Nodes[tec.Nodes.Count - 1].Nodes[0].Name = tec.Name + ':' + "0";
                                 tec.Nodes.Add(FormChangeMode.getNameMode((int)FormChangeMode.MODE_TECCOMPONENT.PC));
                                 tec.Nodes[tec.Nodes.Count - 1].Name = tec.Name + ':' + (int)TECComponent.ID.PC;
-                                tec.Nodes[tec.Nodes.Count - 1].Nodes.Add(not_add);
+                                tec.Nodes[tec.Nodes.Count - 1].Nodes.Add(s_not_add);
                                 tec.Nodes[tec.Nodes.Count - 1].Nodes[0].Name = tec.Name + ':' + "0";
                                 tec.Nodes.Add(FormChangeMode.getNameMode((int)FormChangeMode.MODE_TECCOMPONENT.TG));
                                 tec.Nodes[tec.Nodes.Count - 1].Name = tec.Name + ':' + (int)TECComponent.ID.TG;
@@ -1665,7 +1660,7 @@ namespace Statistic
                             {
                                 if (n.Text == FormChangeMode.getNameMode(2))
                                 {
-                                    n.Nodes.Add(Mass_NewVal_Comp((int)FormChangeMode.MODE_TECCOMPONENT.PC));
+                                    n.Nodes.Add(getNewValComp((int)FormChangeMode.MODE_TECCOMPONENT.PC));
                                     n.Nodes[n.Nodes.Count - 1].Name = Convert.ToString(tec.Name + ':' + id_newPC);
                                 }
                             }
@@ -1701,11 +1696,11 @@ namespace Statistic
                                 {
                                     tec.Nodes.Add(FormChangeMode.getNameMode((int)FormChangeMode.MODE_TECCOMPONENT.GTP));
                                     tec.Nodes[tec.Nodes.Count - 1].Name = tec.Name + ':' + (int)TECComponent.ID.GTP;
-                                    tec.Nodes[tec.Nodes.Count - 1].Nodes.Add(not_add);
+                                    tec.Nodes[tec.Nodes.Count - 1].Nodes.Add(s_not_add);
                                     tec.Nodes[tec.Nodes.Count - 1].Nodes[0].Name = tec.Name + ':' + "0";
                                     tec.Nodes.Add(FormChangeMode.getNameMode((int)FormChangeMode.MODE_TECCOMPONENT.PC));
                                     tec.Nodes[tec.Nodes.Count - 1].Name = tec.Name + ':' + (int)TECComponent.ID.PC;
-                                    tec.Nodes[tec.Nodes.Count - 1].Nodes.Add(not_add);
+                                    tec.Nodes[tec.Nodes.Count - 1].Nodes.Add(s_not_add);
                                     tec.Nodes[tec.Nodes.Count - 1].Nodes[0].Name = tec.Name + ':' + "0";
                                     tec.Nodes.Add(FormChangeMode.getNameMode((int)FormChangeMode.MODE_TECCOMPONENT.TG));
                                     tec.Nodes[tec.Nodes.Count - 1].Name = tec.Name + ':' + (int)TECComponent.ID.TG;
@@ -1714,7 +1709,7 @@ namespace Statistic
                                 {
                                     if (n.Text == FormChangeMode.getNameMode(3))
                                     {
-                                        n.Nodes.Add(Mass_NewVal_Comp((int)FormChangeMode.MODE_TECCOMPONENT.TG));
+                                        n.Nodes.Add(getNewValComp((int)FormChangeMode.MODE_TECCOMPONENT.TG));
                                         n.Nodes[n.Nodes.Count - 1].Name = Convert.ToString(n.Parent.Name + ':' + id_newTG);
 
                                         foreach (TreeNode comp in tec.Nodes)
@@ -1722,15 +1717,15 @@ namespace Statistic
                                             if (comp.Text == FormChangeMode.getNameMode(1))
                                             {
                                                 if (comp.Nodes.Count == 0)
-                                                    comp.Nodes.Add(not_add);
-                                                comp.Nodes[0].Nodes.Add(Mass_NewVal_Comp((int)FormChangeMode.MODE_TECCOMPONENT.TG));
+                                                    comp.Nodes.Add(s_not_add);
+                                                comp.Nodes[0].Nodes.Add(getNewValComp((int)FormChangeMode.MODE_TECCOMPONENT.TG));
                                                 comp.Nodes[0].Nodes[comp.Nodes[0].Nodes.Count - 1].Name = n.Parent.Name + ':' + id_newTG;
                                             }
                                             if (comp.Text == FormChangeMode.getNameMode(2))
                                             {
                                                 if (comp.Nodes.Count == 0)
-                                                    comp.Nodes.Add(not_add);
-                                                comp.Nodes[0].Nodes.Add(Mass_NewVal_Comp((int)FormChangeMode.MODE_TECCOMPONENT.TG));
+                                                    comp.Nodes.Add(s_not_add);
+                                                comp.Nodes[0].Nodes.Add(getNewValComp((int)FormChangeMode.MODE_TECCOMPONENT.TG));
                                                 comp.Nodes[0].Nodes[comp.Nodes[0].Nodes.Count - 1].Name = n.Parent.Name + ':' + id_newTG;
                                             }
                                         }
@@ -1791,15 +1786,16 @@ namespace Statistic
             {
                 int id_gtp = 0;
 
-                foreach (TreeNode t in SelectedNode.Parent.Parent.Nodes)
+                foreach (TreeNode t in SelectedNode.Parent.Parent.Nodes)//Перебор для нахождения необходимой ГТП
                 {
                     if (e.ClickedItem.Text == t.Text)
                     {
                         ID_Comp id = get_m_id_list(t.Name);
-                        id_gtp = id.id_gtp;
+                        id_gtp = id.id_gtp;//Получаем идентификатор этой ГТП
                     }
                 }
 
+                //Перебор нод для нахождения нужной гтп
                 foreach (TreeNode tec in Nodes)
                 {
                     if (Convert.ToInt32(tec.Name) == m_selNode_idComp.id_tec)
@@ -1810,16 +1806,16 @@ namespace Statistic
                             {
                                 foreach (TreeNode gtp in n.Nodes)
                                 {
-                                    if (get_m_id_list(gtp.Name).id_gtp == id_gtp)
+                                    if (get_m_id_list(gtp.Name).id_gtp == id_gtp)//ГТП найдена
                                     {
                                         string obj = (string)FormChangeMode.getNameMode(1);
                                         
-                                        gtp.Nodes.Add(SelectedNode.Text);
-                                        gtp.Nodes[gtp.Nodes.Count - 1].Name = gtp.Name + ':' +m_selNode_idComp.id_tg;
+                                        gtp.Nodes.Add(SelectedNode.Text);//Вводим в ее состав ТГ
+                                        gtp.Nodes[gtp.Nodes.Count - 1].Name = gtp.Name + ':' +m_selNode_idComp.id_tg;//Задаем Имя-Путь
 
-                                        EditNode(this, new EditNodeEventArgs(get_m_id_list(gtp.Nodes[gtp.Nodes.Count - 1].Name), ID_Operation.Update, obj));
+                                        EditNode(this, new EditNodeEventArgs(get_m_id_list(gtp.Nodes[gtp.Nodes.Count - 1].Name), ID_Operation.Update, obj));//Инициализируем событие об обновлении
 
-                                        SelectedNode.Remove();
+                                        SelectedNode.Remove();//Удаляем ТГ из нераспределенных
                                     }
                                 }
                             }
@@ -1833,15 +1829,16 @@ namespace Statistic
                 {
                     int id_pc = 0;
 
-                    foreach (TreeNode t in SelectedNode.Parent.Parent.Nodes)
+                    foreach (TreeNode t in SelectedNode.Parent.Parent.Nodes)//Перебор для нахождения необходимого ЩУ
                     {
                         if (e.ClickedItem.Text == t.Text)
                         {
                             ID_Comp id = get_m_id_list(t.Name);
-                            id_pc = id.id_pc;
+                            id_pc = id.id_pc;//Получаем идентификатор этого ЩУ
                         }
                     }
 
+                    //Перебор нод для нахождения нужного ЩУ
                     foreach (TreeNode tec in Nodes)
                     {
                         if (Convert.ToInt32(tec.Name) == m_selNode_idComp.id_tec)
@@ -1852,16 +1849,16 @@ namespace Statistic
                                 {
                                     foreach (TreeNode pc in n.Nodes)
                                     {
-                                        if (get_m_id_list(pc.Name).id_pc == id_pc)
+                                        if (get_m_id_list(pc.Name).id_pc == id_pc)//ЩУ найден
                                         {
                                             string obj = (string)FormChangeMode.getNameMode(2);
-                                            
-                                            pc.Nodes.Add(SelectedNode.Text);
-                                            pc.Nodes[pc.Nodes.Count - 1].Name = pc.Name + ':' + m_selNode_idComp.id_tg;
 
-                                            EditNode(this, new EditNodeEventArgs(get_m_id_list(pc.Nodes[pc.Nodes.Count - 1].Name), ID_Operation.Update, obj));
+                                            pc.Nodes.Add(SelectedNode.Text);//Вводим в его состав ТГ
+                                            pc.Nodes[pc.Nodes.Count - 1].Name = pc.Name + ':' + m_selNode_idComp.id_tg;//Задаем Имя-Путь
 
-                                            SelectedNode.Remove();
+                                            EditNode(this, new EditNodeEventArgs(get_m_id_list(pc.Nodes[pc.Nodes.Count - 1].Name), ID_Operation.Update, obj));//Инициализируем событие об обновлении
+
+                                            SelectedNode.Remove();//Удаляем ТГ из нераспределенных
                                         }
                                     }
                                 }
@@ -1879,38 +1876,19 @@ namespace Statistic
         {
             Report(this, new ReportEventArgs(string.Empty, string.Empty, string.Empty, true));
 
-            if (e.ClickedItem.Text == (string)getNameMode(4))
+            if (e.ClickedItem.Text == (string)getNameMode((int)ID_Menu.DelTo))//Проверка что было нажато Выведение из состава
             {
-                if (m_selNode_idComp.id_gtp.Equals(-1) == false & m_selNode_idComp.id_tg.Equals(-1) == true)//TG
+                if (SelectedNode.FirstNode == null)//Если дочерних элементов нет
                 {
-                    if (SelectedNode.FirstNode == null)
-                    {
-                        EditNode(this, new EditNodeEventArgs(m_selNode_idComp, ID_Operation.Delete));
+                    EditNode(this, new EditNodeEventArgs(m_selNode_idComp, ID_Operation.Delete));//Инициализируем событие на удаление
 
-                        SelectedNode.Remove();
-
-                    }
-                    else
-                    {
-                        m_warningReport = "Имеются не выведенные из состава компоненты в " + SelectedNode.Text;
-                        Report(this, new ReportEventArgs(string.Empty, string.Empty, m_warningReport, false));
-                        //MessageBox.Show("Имеются не выведенные из состава компоненты в " + SelectedNode.Text, "Внимание!", MessageBoxButtons.OK, MessageBoxIcon.Warning);
-                    }
+                    SelectedNode.Remove();//То удаляем компонент
                 }
-                if (m_selNode_idComp.id_pc.Equals(-1) == false & m_selNode_idComp.id_tg.Equals(-1) == true)//PC
+                else
                 {
-                    if (SelectedNode.FirstNode == null)
-                    {
-                        EditNode(this, new EditNodeEventArgs(m_selNode_idComp, ID_Operation.Delete));
-
-                        SelectedNode.Remove();
-                    }
-                    else
-                    {
-                        m_warningReport = "Имеются не выведенные из состава компоненты в " + SelectedNode.Text;
-                        Report(this, new ReportEventArgs(string.Empty, string.Empty, m_warningReport, false));
-                        //MessageBox.Show("Имеются не выведенные из состава компоненты в " + SelectedNode.Text, "Внимание!", MessageBoxButtons.OK, MessageBoxIcon.Warning);
-                    }
+                    m_warningReport = "Имеются не выведенные из состава компоненты в " + SelectedNode.Text;
+                    Report(this, new ReportEventArgs(string.Empty, string.Empty, m_warningReport, false));
+                    //MessageBox.Show("Имеются не выведенные из состава компоненты в " + SelectedNode.Text, "Внимание!", MessageBoxButtons.OK, MessageBoxIcon.Warning);
                 }
             }
         }
@@ -1922,9 +1900,9 @@ namespace Statistic
         {
             Report(this, new ReportEventArgs(string.Empty, string.Empty, string.Empty, true));
 
-            if (SelectedNode.Parent.Parent.Text == (string)FormChangeMode.getNameMode(1))//Выведение ТГ из состава ГТП
+            if (SelectedNode.Parent.Parent.Text == (string)FormChangeMode.getNameMode((int)FormChangeMode.MODE_TECCOMPONENT.GTP))//Выведение ТГ из состава ГТП
             {
-                string obj = (string)FormChangeMode.getNameMode(1);
+                string obj = (string)FormChangeMode.getNameMode((int)FormChangeMode.MODE_TECCOMPONENT.GTP);
                 SelectedNode.Parent.Parent.Nodes[0].Nodes.Add(SelectedNode.Text);
                 SelectedNode.Parent.Parent.Nodes[0].Nodes[SelectedNode.Parent.Parent.Nodes[0].Nodes.Count - 1].Name = Convert.ToString(m_selNode_idComp.id_tec) + ':' + m_selNode_idComp.id_tg;
 
@@ -1933,9 +1911,9 @@ namespace Statistic
                 SelectedNode.Remove();                    
             }
 
-            if (SelectedNode.Parent.Parent.Text == (string)FormChangeMode.getNameMode(2))//Выведение ТГ из состава ЩУ
+            if (SelectedNode.Parent.Parent.Text == (string)FormChangeMode.getNameMode((int)FormChangeMode.MODE_TECCOMPONENT.PC))//Выведение ТГ из состава ЩУ
             {
-                string obj = (string)FormChangeMode.getNameMode(2);
+                string obj = (string)FormChangeMode.getNameMode((int)FormChangeMode.MODE_TECCOMPONENT.PC);
                 SelectedNode.Parent.Parent.Nodes[0].Nodes.Add(SelectedNode.Text);
                 SelectedNode.Parent.Parent.Nodes[0].Nodes[SelectedNode.Parent.Parent.Nodes[0].Nodes.Count - 1].Name = Convert.ToString(m_selNode_idComp.id_tec) + ':' + m_selNode_idComp.id_tg;
 
@@ -1945,26 +1923,26 @@ namespace Statistic
                 SelectedNode.Remove();
             }
 
-            if (SelectedNode.Parent.Text == (string)FormChangeMode.getNameMode(3))//Выведение ТГ из состава ТЭЦ
+            if (SelectedNode.Parent.Text == (string)FormChangeMode.getNameMode((int)FormChangeMode.MODE_TECCOMPONENT.TG))//Выведение ТГ из состава ТЭЦ
             {
                 bool not_delete = false;
                 string warning = string.Empty;
 
-                foreach (TreeNode tec in Nodes)
+                foreach (TreeNode tec in Nodes)//перебор компонентов для нахождения нужного ТГ
                 {
                     if (Convert.ToInt32(tec.Name) == m_selNode_idComp.id_tec)
                     {
                         foreach (TreeNode tc in tec.Nodes)
                         {
-                            if (tc.Text == FormChangeMode.getNameMode(1) || tc.Text == FormChangeMode.getNameMode(2))
+                            if (tc.Text == FormChangeMode.getNameMode((int)FormChangeMode.MODE_TECCOMPONENT.GTP) || tc.Text == FormChangeMode.getNameMode((int)FormChangeMode.MODE_TECCOMPONENT.PC))
                             {
                                 foreach (TreeNode comp in tc.Nodes)
                                 {
-                                    if (comp.Text != not_add)
+                                    if (comp.Text != s_not_add)
                                     {
                                         foreach (TreeNode tg in comp.Nodes)
                                         {
-                                            if (get_m_id_list(tg.Name).id_tg == m_selNode_idComp.id_tg)
+                                            if (get_m_id_list(tg.Name).id_tg == m_selNode_idComp.id_tg)//Если есть среди компонентов нужный ТГ
                                             {
                                                 not_delete = true;
                                                 warning += SelectedNode.Text +" входит в состав " + comp.Text + "." + '\n';
@@ -1975,21 +1953,20 @@ namespace Statistic
                             }
                         }
                     }
-
                 }
-                if (not_delete == false)
+                if (not_delete == false)//Если не входит в состав какого либо компонента
                 {
-                    foreach (TreeNode tec in Nodes)
+                    foreach (TreeNode tec in Nodes)//Перебирайем компоненты чтоб удалить из нераспределенных
                     {
                         if (Convert.ToInt32(tec.Name) == m_selNode_idComp.id_tec)
                         {
                             foreach (TreeNode tc in tec.Nodes)
                             {
-                                if (tc.Text == FormChangeMode.getNameMode(1) || tc.Text == FormChangeMode.getNameMode(2))
+                                if (tc.Text == FormChangeMode.getNameMode((int)FormChangeMode.MODE_TECCOMPONENT.GTP) || tc.Text == FormChangeMode.getNameMode((int)FormChangeMode.MODE_TECCOMPONENT.PC))
                                 {
                                     foreach (TreeNode comp in tc.Nodes)
                                     {
-                                        if (comp.Text == not_add)
+                                        if (comp.Text == s_not_add)
                                         {
                                             foreach (TreeNode tg in comp.Nodes)
                                             {
@@ -2006,11 +1983,11 @@ namespace Statistic
                     }
 
                     EditNode(this, new EditNodeEventArgs(m_selNode_idComp, ID_Operation.Delete));
-                    SelectedNode.Remove();
+                    SelectedNode.Remove();//Удаляем из поблочно
                 }
                 else
                 {
-                    m_warningReport = warning + '\n' + "Выведение из состава ТЭЦ не возможно!";
+                    m_warningReport = "Выведение из состава ТЭЦ не возможно!"+warning;
                     Report(this, new ReportEventArgs(string.Empty, string.Empty, m_warningReport, false));
                     //MessageBox.Show(warning + '\n' + "Выведение из состава ТЭЦ не возможно!", "Выведение из состава ТЭЦ не возможно!", MessageBoxButtons.OK, MessageBoxIcon.Warning);
                 }
@@ -2111,6 +2088,7 @@ namespace Statistic
             return id_comp;
         }
 
+
         /// <summary>
         /// Класс для описания аргумента события - изменения компонента
         /// </summary>
@@ -2149,6 +2127,7 @@ namespace Statistic
         /// </summary>
         public event EditNodeEventHandler EditNode;
 
+
         /// <summary>
         /// Класс для описания аргумента события - получение ID компонента
         /// </summary>
@@ -2168,12 +2147,13 @@ namespace Statistic
         /// <summary>
         /// Тип делегата для обработки события - получение ID компонента
         /// </summary>
-        public delegate int intGetID(object obj, GetIDEventArgs e);
+        public delegate int intGetIDEventHandler(object obj, GetIDEventArgs e);
 
         /// <summary>
         /// Событие - получение ID компонента
         /// </summary>
-        public intGetID GetID;
+        public intGetIDEventHandler GetID;
+
 
         /// <summary>
         /// Класс для описания аргумента события - получение репорта
