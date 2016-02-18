@@ -36,7 +36,7 @@ namespace Statistic
             DATETIMESYNC_SOURCE_DATA
                 , CUSTOM_2X2_2, CUSTOM_2X3_2, CUSTOM_2X2_3, CUSTOM_2X3_3, CUSTOM_2X2_4,
             CUSTOM_2X3_4
-                , SOTIASSO, DIAGNOSTIC, ANALYZER, TEC_Component
+                , SOTIASSO, DIAGNOSTIC, ANALYZER, TEC_Component, USERS
         };
         private enum INDEX_CUSTOM_TAB { TAB_2X2, TAB_2X3 };
         private class ADDING_TAB
@@ -725,7 +725,7 @@ namespace Statistic
                         else
                             if (tclTecViews.TabPages[e.TabIndex].Controls[0] is PanelStatisticDiagnostic)
                                 m_dictAddingTabs[(int)ID_ADDING_TAB.DIAGNOSTIC].menuItem.Checked = false;
-                            else                        
+                            else
                                 if (tclTecViews.TabPages[e.TabIndex].Controls[0] is PanelCurPower)
                                     m_dictAddingTabs[(int)ID_ADDING_TAB.CUR_POWER].menuItem.Checked = false;
                                 else
@@ -751,9 +751,12 @@ namespace Statistic
                                                                 m_dictAddingTabs[(int)ID_ADDING_TAB.ANALYZER].menuItem.Checked = false;
                                                             else
                                                                 if (tclTecViews.TabPages[e.TabIndex].Controls[0] is PanelTECComponent)
-                                                                m_dictAddingTabs[(int)ID_ADDING_TAB.TEC_Component].menuItem.Checked = false;
-                                                            else
-                                                            ;
+                                                                    m_dictAddingTabs[(int)ID_ADDING_TAB.TEC_Component].menuItem.Checked = false;
+                                                                else
+                                                                    if (tclTecViews.TabPages[e.TabIndex].Controls[0] is PanelUser)
+                                                                        m_dictAddingTabs[(int)ID_ADDING_TAB.USERS].menuItem.Checked = false;
+                                                                    else
+                                                                        ;
         }
 
         void delegateOnFloatTab(object sender, HTabCtrlExEventArgs e)
@@ -1942,7 +1945,6 @@ namespace Statistic
             изменитьПарольАдминистратораToolStripMenuItem.Enabled =
             изменитьПарольНССToolStripMenuItem.Enabled =
             изментьСоставТЭЦГТПЩУToolStripMenuItem.Enabled =
-            изментьСоставПользовательToolStripMenuItem.Enabled =
             параметрыToolStripMenuItem.Enabled =
                 item.Enabled;
         }
@@ -2341,7 +2343,6 @@ namespace Statistic
                 , new bool[] { ((ToolStripMenuItem)sender).Checked, true });
         }
 
-
         private void СоставТЭЦToolStripMenuItem_CheckedChanged(object sender, EventArgs e)
         {
             if (m_dictAddingTabs[(int)ID_ADDING_TAB.TEC_Component].panel == null)
@@ -2356,7 +2357,6 @@ namespace Statistic
                 , new bool[] { ((ToolStripMenuItem)sender).Checked, true });
         }
        
-
         private void собственныеНуждыToolStripMenuItem_CheckedChanged(object sender, EventArgs e)
         {
             if (m_dictAddingTabs[(int)ID_ADDING_TAB.SOBSTV_NYZHDY].panel == null)
@@ -2512,11 +2512,18 @@ namespace Statistic
 
         protected override void UpdateActiveGui(int type)
         {
+            Control ctrl = tclTecViews.TabPages[tclTecViews.SelectedIndex].Controls[0];
+
             if ((!(tclTecViews.SelectedIndex < 0)) && (tclTecViews.SelectedIndex < tclTecViews.TabCount))
-                if (tclTecViews.TabPages[tclTecViews.SelectedIndex].Controls[0] is PanelTecViewBase)
-                    ((PanelTecViewBase)tclTecViews.TabPages[tclTecViews.SelectedIndex].Controls[0]).UpdateGraphicsCurrent(type);
+            {
+                if (ctrl is PanelTecViewBase)
+                    ((PanelTecViewBase)ctrl).UpdateGraphicsCurrent(type);
                 else
-                    ;
+                    if (ctrl is PanelCustomTecView)
+                        ((PanelCustomTecView)ctrl).UpdateGraphicsCurrent(type);
+                    else
+                        ;
+            }
             else
                 ;
 
@@ -2629,38 +2636,17 @@ namespace Statistic
         //    //DbSources.Sources().UnRegister(idListener);
         //}
 
-        private void изментьСоставПользовательToolStripMenuItem_Click(object sender, EventArgs e)
+        private void изментьСоставПользовательToolStripMenuItem_CheckedChanged(object sender, EventArgs e)
         {
-            int idListener = DbSources.Sources().Register(s_listFormConnectionSettings[(int)CONN_SETT_TYPE.CONFIG_DB].getConnSett(), false, @"CONFIG_DB");
-            formPassword.SetIdPass(idListener, 0, Passwords.ID_ROLES.ADMIN);
-            formPassword.ShowDialog(this);
-            DialogResult dlgRes = formPassword.DialogResult;
-            if (dlgRes == DialogResult.Yes)
+            if (m_dictAddingTabs[(int)ID_ADDING_TAB.USERS].panel == null)
             {
-                FormUser formUser = new FormUser(idListener);
-
-                if (formUser.ShowDialog(this) == DialogResult.Yes)
-                {
-                    MessageBox.Show(this, "В БД конфигурации внесены изменения.\n\rНеобходим перезапуск приложения.\n\r", "Внимание", MessageBoxButtons.OK, MessageBoxIcon.Stop);
-                    выходToolStripMenuItem.PerformClick();
-                    //Stop (new FormClosingEventArgs (CloseReason.UserClosing, true));
-                    //MainForm_FormClosing (this, new FormClosingEventArgs (CloseReason.UserClosing, true));
-                }
-                else
-                    ;
-
-                DbSources.Sources().UnRegister(idListener);
+                m_dictAddingTabs[(int)ID_ADDING_TAB.USERS].panel = new PanelUser();
+                m_dictAddingTabs[(int)ID_ADDING_TAB.USERS].panel.SetDelegateReport(ErrorReport, WarningReport, ActionReport, ReportClear);
             }
             else
-                if (dlgRes == DialogResult.Abort)
-                {
-                    //Errors.NoAccess
-                    connectionSettings(CONN_SETT_TYPE.CONFIG_DB);
-                }
-                else
-                    ;
-
-            DbSources.Sources().UnRegister(idListener);
+                ;
+            видSubToolStripMenuItem_CheckedChanged(m_dictAddingTabs[(int)ID_ADDING_TAB.USERS].panel, "Пользователи"
+                , new bool[] { ((ToolStripMenuItem)sender).Checked, true });
         }
 
         private void изменитьПарольНССToolStripMenuItem_Click(object sender, EventArgs e)

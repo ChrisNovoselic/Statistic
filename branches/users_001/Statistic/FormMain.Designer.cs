@@ -64,6 +64,7 @@ namespace Statistic
             m_dictAddingTabs.Add((int)ID_ADDING_TAB.ANALYZER, new ADDING_TAB("ПросмотрЖурналаToolStripMenuItem", "Журнал событий"));
             m_dictAddingTabs.Add((int)ID_ADDING_TAB.SOTIASSO, new ADDING_TAB("значенияСОТИАССОToolStripMenuItem", "Значения СОТИАССО"));
             m_dictAddingTabs.Add((int)ID_ADDING_TAB.TEC_Component, new ADDING_TAB("СоставТЭЦToolStripMenuItem", "Изменить состав ТЭЦ"));
+            m_dictAddingTabs.Add((int)ID_ADDING_TAB.USERS, new ADDING_TAB("изментьСоставПользовательToolStripMenuItem", "Изменить состав пользователей"));
 
             this.настройкиToolStripMenuItem = new System.Windows.Forms.ToolStripMenuItem();
             this.сменитьРежимToolStripMenuItem = new System.Windows.Forms.ToolStripMenuItem();
@@ -76,7 +77,6 @@ namespace Statistic
             //this.ДиагностикаToolStripMenuItem = new System.Windows.Forms.ToolStripMenuItem();
             this.изменитьПарольНССToolStripMenuItem = new System.Windows.Forms.ToolStripMenuItem();
             this.изментьСоставТЭЦГТПЩУToolStripMenuItem = new System.Windows.Forms.ToolStripMenuItem();
-            this.изментьСоставПользовательToolStripMenuItem = new System.Windows.Forms.ToolStripMenuItem();
             this.параметрыToolStripMenuItem = new System.Windows.Forms.ToolStripMenuItem();
             this.параметрыПриложенияToolStripMenuItem = new System.Windows.Forms.ToolStripMenuItem();
             this.параметрыТГБийскToolStripMenuItem = new System.Windows.Forms.ToolStripMenuItem();
@@ -245,6 +245,10 @@ namespace Statistic
             //СоставТЭЦToolStripMenuItem_CheckedChanged
             //
             this.m_dictAddingTabs[(int)ID_ADDING_TAB.TEC_Component].menuItem.CheckedChanged += new System.EventHandler(this.СоставТЭЦToolStripMenuItem_CheckedChanged);
+            //
+            //изментьСоставПользовательStripMenuItem_CheckedChanged
+            //
+            this.m_dictAddingTabs[(int)ID_ADDING_TAB.USERS].menuItem.CheckedChanged += new System.EventHandler(this.изментьСоставПользовательToolStripMenuItem_CheckedChanged);
             
             // 
             // значенияСОТИАССОToolStripMenuItem
@@ -300,7 +304,7 @@ namespace Statistic
                 this.изменитьПарольНССToolStripMenuItem,
                 new System.Windows.Forms.ToolStripSeparator(),
                 this.m_dictAddingTabs[(int)ID_ADDING_TAB.TEC_Component].menuItem,
-                this.изментьСоставПользовательToolStripMenuItem
+                this.m_dictAddingTabs[(int)ID_ADDING_TAB.USERS].menuItem
             });
 
             this.администрированиеToolStripMenuItem.Name = "администрированиеToolStripMenuItem";
@@ -341,15 +345,6 @@ namespace Statistic
             //this.изментьСоставТЭЦГТПЩУToolStripMenuItem.Click += new System.EventHandler(this.изментьСоставТЭЦГТПЩУToolStripMenuItem_Click);
             //изментьСоставТЭЦГТПЩУToolStripMenuItem.Enabled = false;
             
-            
-            // 
-            // изментьСоставПользовательToolStripMenuItem
-            // 
-            this.изментьСоставПользовательToolStripMenuItem.Name = "изментьСоставПользовательToolStripMenuItem";
-            this.изментьСоставПользовательToolStripMenuItem.Size = new System.Drawing.Size(303, 22);
-            this.изментьСоставПользовательToolStripMenuItem.Text = "Изменть состав пользователей...";
-            this.изментьСоставПользовательToolStripMenuItem.Click += new System.EventHandler(this.изментьСоставПользовательToolStripMenuItem_Click);
-            изментьСоставПользовательToolStripMenuItem.Enabled = false;
             // 
             // параметрыToolStripMenuItem
             // 
@@ -459,8 +454,7 @@ namespace Statistic
         private System.Windows.Forms.ToolStripMenuItem изменитьПарольДиспетчераToolStripMenuItem;
         private System.Windows.Forms.ToolStripMenuItem изменитьПарольАдминистратораToolStripMenuItem;
         private System.Windows.Forms.ToolStripMenuItem изменитьПарольНССToolStripMenuItem;
-        private System.Windows.Forms.ToolStripMenuItem изментьСоставТЭЦГТПЩУToolStripMenuItem;        
-        private System.Windows.Forms.ToolStripMenuItem изментьСоставПользовательToolStripMenuItem;
+        private System.Windows.Forms.ToolStripMenuItem изментьСоставТЭЦГТПЩУToolStripMenuItem;
         private System.Windows.Forms.ToolStripMenuItem оПрограммеToolStripMenuItem;
         private System.Windows.Forms.Label lblLabel;
         private System.Windows.Forms.ToolStripMenuItem видToolStripMenuItem;
