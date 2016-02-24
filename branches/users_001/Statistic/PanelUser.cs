@@ -94,29 +94,29 @@ namespace Statistic
         TreeView_Users.ID_Comp m_list_id;
         DataTable table_TEC = new DataTable();
 
-        DataTable[] m_arr_origTable = new DataTable[(int)ID_Table.Unknow];
+        DataTable[] m_arr_origTable;
 
-        DataTable[] m_arr_editTable = new DataTable[(int)ID_Table.Unknow];
+        DataTable[] m_arr_editTable;
 
         TreeView_Users.Type_Comp m_type_sel_node;
 
         /// <summary>
         /// Идентификаторы для типов компонента ТЭЦ
         /// </summary>
-        public enum ID_Table : int { Role = 0, User, Profiles, Unknow }
+        public enum ID_Table : int { Unknown = -1, Role, User, Profiles, Count }
 
-        DB_Sostav_TEC db_sostav = new DB_Sostav_TEC();
+        private DB_Sostav_TEC db_sostav = new DB_Sostav_TEC();
 
         /// <summary>
         /// Возвратить наименование компонента 
         /// </summary>
         /// <param name="indx">Индекс </param>
         /// <returns>Строка - наименование</returns>
-        protected static string getNameMode(Int16 indx)
+        protected static string getNameMode(ID_Table id)
         {
             string[] nameModes = { "roles", "users", "profiles" };
 
-            return nameModes[indx];
+            return nameModes[(int)id];
         }
 
 
@@ -126,6 +126,10 @@ namespace Statistic
             : base()
         {
 
+            m_arr_origTable = new DataTable[(int)ID_Table.Count];
+            m_arr_editTable = new DataTable[(int)ID_Table.Count];
+            db_sostav = new DB_Sostav_TEC();
+            
             InitializeComponent();
 
             m_AllUnits = HUsers.GetTableProfileUnits;
@@ -138,6 +142,7 @@ namespace Statistic
             dgvProfile.EventCellValueChanged += new StatisticCommon.DataGridView_Prop_Text_Check.DataGridView_Prop_ValuesCellValueChangedEventHandler(this.dgvProfile_EndCellEdit);
 
             fillDataTable();
+            resetDataTable();
 
             treeView_Users.Update_tree(m_arr_editTable[(int)ID_Table.User], m_arr_editTable[(int)ID_Table.Role]);
 
@@ -177,14 +182,11 @@ namespace Statistic
 
             HStatisticUsers.GetUsers(ref connConfigDB, @"", @"DESCRIPTION", out m_arr_origTable[(int)ID_Table.User], out err);
             m_arr_origTable[(int)ID_Table.User].DefaultView.Sort = "ID";
-            m_arr_editTable[(int)ID_Table.User] = m_arr_origTable[(int)ID_Table.User].Copy();
 
             HStatisticUsers.GetRoles(ref connConfigDB, @"", @"DESCRIPTION", out m_arr_origTable[(int)ID_Table.Role], out err);
             m_arr_origTable[(int)ID_Table.Role].DefaultView.Sort = "ID";
-            m_arr_editTable[(int)ID_Table.Role] = m_arr_origTable[(int)ID_Table.Role].Copy();
 
             m_arr_origTable[(int)ID_Table.Profiles] = User.GetTableAllProfile(connConfigDB);
-            m_arr_editTable[(int)ID_Table.Profiles] = m_arr_origTable[(int)ID_Table.Profiles].Copy();
 
             unregister_idListenerConfDB(idListener);
         }
@@ -194,9 +196,8 @@ namespace Statistic
         /// </summary>
         private void resetDataTable()
         {
-            m_arr_editTable[(int)ID_Table.User] = m_arr_origTable[(int)ID_Table.User].Copy();
-            m_arr_editTable[(int)ID_Table.Role] = m_arr_origTable[(int)ID_Table.Role].Copy();
-            m_arr_editTable[(int)ID_Table.Profiles] = m_arr_origTable[(int)ID_Table.Profiles].Copy();
+            for (ID_Table i = ID_Table.Unknown + 1; i < ID_Table.Count; i++)
+                m_arr_editTable[(int)i] = m_arr_origTable[(int)i].Copy();
         }
 
         /// <summary>
@@ -622,22 +623,30 @@ namespace Statistic
             delegateReportClear(true);
             int err = -1;
             string[] warning;
+            string keys = string.Empty;
 
             if (validate_saving(m_arr_editTable, out warning) == false)
             {
-                for (int i = (int)ID_Table.Role; i < (int)ID_Table.Unknow; i++)
+                for (ID_Table i = ID_Table.Unknown + 1; i < ID_Table.Count; i++)
                 {
-                    if (i == (int)ID_Table.Role)
-                        db_sostav.Edit(getNameMode((int)ID_Table.Role), "ID", m_arr_origTable[i], m_arr_editTable[i], out err);
-                    else
-                        if(i == (int)ID_Table.User)
-                            db_sostav.Edit(getNameMode((int)ID_Table.User), "ID", m_arr_origTable[i], m_arr_editTable[i], out err);
-                        else
-                            db_sostav.Edit(getNameMode((int)ID_Table.Profiles), "ID_EXT,IS_ROLE,ID_UNIT", m_arr_origTable[i], m_arr_editTable[i], out err);
+                    switch (i)
+                    {
+                        case ID_Table.Role:
+                        case ID_Table.User:
+                            keys = @"ID";
+                            break;
+                        case ID_Table.Profiles:
+                            keys = "ID_EXT,IS_ROLE,ID_UNIT";
+                            break;
+                        default:
+                            break;
+                    }
 
+                    db_sostav.Edit(getNameMode(i), keys, m_arr_origTable[(int)i], m_arr_editTable[(int)i], out err);
                 }
 
                 fillDataTable();
+                resetDataTable();
                 treeView_Users.Update_tree(m_arr_editTable[(int)ID_Table.User], m_arr_editTable[(int)ID_Table.Role]);
                 btnOK.Enabled = false;
                 btnBreak.Enabled = false;
