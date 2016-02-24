@@ -848,7 +848,7 @@ namespace StatisticCommon
         public intGetID GetID;
 
         /// <summary>
-        /// Класс для описания аргумента события - получение репорта
+        /// Класс для описания аргумента события - передачи сообщения для строки состояния
         /// </summary>
         public class ReportEventArgs : EventArgs
         {
