@@ -32,6 +32,7 @@ namespace StatisticCommon
             this.AllowUserToAddRows = false;
             this.ColumnHeadersHeightSizeMode = System.Windows.Forms.DataGridViewColumnHeadersHeightSizeMode.AutoSize;
             //this.AutoSizeRowsMode = DataGridViewAutoSizeRowsMode.AllCells;
+            //this.SelectionMode = DataGridViewSelectionMode.FullRowSelect;
             this.MultiSelect = false;
             this.RowHeadersWidth = 250;
         }
@@ -41,7 +42,7 @@ namespace StatisticCommon
         {
             InitializeComponent();//инициализация компонентов
 
-            this.CellEndEdit += new DataGridViewCellEventHandler(this.cell_EndEdit);
+            this.CellValueChanged += new DataGridViewCellEventHandler (this.cell_EndEdit);
         }
 
         /// <summary>
@@ -84,7 +85,7 @@ namespace StatisticCommon
         /// <summary>
         /// Обработчик события окончания изменения ячейки
         /// </summary>
-        private void cell_EndEdit(object sender, DataGridViewCellEventArgs e)
+        protected void cell_EndEdit(object sender, DataGridViewCellEventArgs e)
         {
             int n_row = -1;
             for (int i = 0; i < this.Rows.Count; i++)
@@ -157,7 +158,7 @@ namespace StatisticCommon
 
     }
 
-    public class DataGridView_Prop_ComboBoxCell : DataGridView_Prop
+    public class DataGridView_Prop_ComboBoxCell : StatisticCommon.DataGridView_Prop
     {
         enum INDEX_TABLE { user, role, tec }
         /// <summary>
@@ -166,6 +167,7 @@ namespace StatisticCommon
         /// <param name="id_list">Лист с идентификаторами компонентов</param>
         public override void Update_dgv(int id_component, DataTable[] tables)
         {
+            this.CellValueChanged -= cell_EndEdit;
             this.Rows.Clear();
             DataRow[] rowsSel = tables[(int)INDEX_TABLE.user].Select(@"ID=" + id_component);
 
@@ -178,6 +180,7 @@ namespace StatisticCommon
                         DataGridViewComboBoxCell combo = new DataGridViewComboBoxCell();
                         combo.AutoComplete = true;
                         row.Cells.Add(combo);
+                        //combo.Items.Clear();
                         this.Rows.Add(row);
                         ArrayList roles = new ArrayList();
                         foreach (DataRow row_role in tables[(int)INDEX_TABLE.role].Rows)
@@ -197,14 +200,15 @@ namespace StatisticCommon
                             DataGridViewComboBoxCell combo = new DataGridViewComboBoxCell();
                             combo.AutoComplete = true;
                             row.Cells.Add(combo);
+                            //combo.Items.Clear();
                             this.Rows.Add(row);
-                            ArrayList roles = new ArrayList();
+                            ArrayList TEC = new ArrayList();
                             foreach (DataRow row_tec in tables[(int)INDEX_TABLE.tec].Rows)
                             {
-                                roles.Add(new role(row_tec["DESCRIPTION"].ToString(), row_tec["ID"].ToString()));
+                                TEC.Add(new role(row_tec["DESCRIPTION"].ToString(), row_tec["ID"].ToString()));
                             }
-                            roles.Add(new role("Все ТЭЦ", "0"));
-                            combo.DataSource = roles;
+                            TEC.Add(new role("Все ТЭЦ", "0"));
+                            combo.DataSource = TEC;
                             combo.DisplayMember = "NameRole";
                             combo.ValueMember = "IdRole";
                             this.Rows[Rows.Count - 1].HeaderCell.Value = "ID_TEC";
@@ -220,6 +224,7 @@ namespace StatisticCommon
             else
                 Logging.Logg().Error(@"Ошибка....", Logging.INDEX_MESSAGE.NOT_SET);
 
+            this.CellValueChanged += cell_EndEdit;
             //cell_ID_Edit_ReadOnly();
         }
 
@@ -256,12 +261,12 @@ namespace StatisticCommon
 
     }
 
-    public class DataGridView_Prop_Text_Check : DataGridView_Prop
+    public class DataGridView_Prop_Text_Check : StatisticCommon.DataGridView_Prop
     {
         enum INDEX_TABLE { user, role, tec }
 
         public DataGridView_Prop_Text_Check(DataTable tables)
-            :base()
+            : base()
         {
             create_dgv(tables);
             this.RowHeadersWidth = 500;
@@ -273,6 +278,7 @@ namespace StatisticCommon
         /// <param name="id_list">Лист с идентификаторами компонентов</param>
         private void create_dgv(DataTable tables)
         {
+            this.CellValueChanged -= cell_EndEdit;
             this.Rows.Clear();
 
             foreach (DataRow r in tables.Rows)
@@ -288,21 +294,23 @@ namespace StatisticCommon
                     this.Rows[this.Rows.Count - 1].HeaderCell.Value = r["DESCRIPTION"].ToString().Trim();
                 }
                 else
-                    {
-                        this.Rows.Add();
-                        this.Rows[this.Rows.Count - 1].HeaderCell.Value = r["DESCRIPTION"].ToString().Trim();
-                        this.Rows[this.Rows.Count - 1].Cells[0].Value = "";
-                    }
+                {
+                    this.Rows.Add();
+                    this.Rows[this.Rows.Count - 1].HeaderCell.Value = r["DESCRIPTION"].ToString().Trim();
+                    this.Rows[this.Rows.Count - 1].Cells[0].Value = "";
+                }
             }
+            this.CellValueChanged += cell_EndEdit;
         }
 
         public override void Update_dgv(int id_component, DataTable[] tables)
         {
+            this.CellValueChanged -= cell_EndEdit;
             for (int i = 0; i < this.Rows.Count; i++)
             {
                 if (this.Rows[i].Cells[0] is DataGridViewCheckBoxCell)
                 {
-                    if(Convert.ToInt32(tables[0].Rows[i]["VALUE"])==0)
+                    if (Convert.ToInt32(tables[0].Rows[i]["VALUE"]) == 0)
                         this.Rows[i].Cells[0].Value = false;
                     else
                         this.Rows[i].Cells[0].Value = true;
@@ -310,6 +318,7 @@ namespace StatisticCommon
                 else
                     this.Rows[i].Cells[0].Value = tables[0].Rows[i]["VALUE"];
             }
+            this.CellValueChanged += cell_EndEdit;
         }
 
     }
@@ -317,6 +326,11 @@ namespace StatisticCommon
     public class TreeView_Users : TreeView
     {
         #region Переменные
+
+        /// <summary>
+        /// Идентификаторы для типов объектов
+        /// </summary>
+        public enum ID_OBJ : int { Role = 0, User };
 
         string m_warningReport;
 
@@ -349,13 +363,41 @@ namespace StatisticCommon
             return nameModes[indx];
         }
 
+        /// <summary>
+        /// Идентификаторы для типов компонента ТЭЦ
+        /// </summary>
+        public enum ID_Menu : int { AddRole = 0, AddUser, Delete}
+
+
         List<string> m_open_node = new List<string>();
 
         #endregion
 
+        private System.Windows.Forms.ContextMenuStrip contextMenu_TreeView;
+
         private void InitializeComponent()
         {
             this.Dock = DockStyle.Fill;
+
+            System.Windows.Forms.ToolStripMenuItem добавитьРольToolStripMenuItem;
+
+            contextMenu_TreeView = new System.Windows.Forms.ContextMenuStrip();
+            добавитьРольToolStripMenuItem = new System.Windows.Forms.ToolStripMenuItem();
+            this.ContextMenuStrip = contextMenu_TreeView;
+
+            #region Context add TEC
+            // 
+            // contextMenu_TreeView
+            // 
+            this.contextMenu_TreeView.Items.AddRange(new System.Windows.Forms.ToolStripItem[] {
+            добавитьРольToolStripMenuItem});
+            this.contextMenu_TreeView.Name = "contextMenu_TreeView";
+            // 
+            // добавитьТЭЦToolStripMenuItem
+            // 
+            добавитьРольToolStripMenuItem.Name = "добавитьРольToolStripMenuItem";
+            добавитьРольToolStripMenuItem.Text = "Добавить роль";
+            #endregion
         }
 
         public TreeView_Users()
@@ -363,9 +405,36 @@ namespace StatisticCommon
         {
             InitializeComponent();
 
+            this.NodeMouseClick += new TreeNodeMouseClickEventHandler(this.tree_NodeClick);
+            this.ContextMenuStrip.ItemClicked += new ToolStripItemClickedEventHandler(this.add_New_Role);
+
             this.AfterSelect += new TreeViewEventHandler(this.tree_NodeSelect);
         }
 
+        /// <summary>
+        /// Возвратить наименование компонента контекстного меню
+        /// </summary>
+        /// <param name="indx">Индекс режима</param>
+        /// <returns>Строка - наименование режима</returns>
+        protected static string getNameMode(int indx)
+        {
+            string[] nameModes = { "Добавить роль", "Добавить пользователя", "Удалить"};
+
+            return nameModes[indx];
+        }
+
+        /// <summary>
+        /// Для возвращения имена по умолчанию для компонентов
+        /// </summary>
+        /// <param name="indx">Идентификатор типа компонента</param>
+        /// <returns>Имя по умолчанию</returns>
+        public static string Mass_NewVal_Comp(int indx)
+        {
+            String[] arPREFIX_COMPONENT = { "Новая роль", "Новый пользователь"};
+
+            return arPREFIX_COMPONENT[indx];
+        }
+        
         /// <summary>
         /// Метод для сохранения открытых элементов дерева при обновлении
         /// </summary>
@@ -408,6 +477,9 @@ namespace StatisticCommon
         /// </summary>
         public void Update_tree(DataTable table_users, DataTable table_role)
         {
+            checked_node(this.Nodes, 0, false);
+
+            this.Nodes.Clear();
             int num_node = 0;
             foreach (DataRow r in table_role.Rows)
             {
@@ -419,6 +491,16 @@ namespace StatisticCommon
                 {
                     Nodes[num_node].Nodes.Add(r_u["DESCRIPTION"].ToString());
                     Nodes[num_node].Nodes[Nodes[num_node].Nodes.Count - 1].Name = Nodes[num_node].Name + ":" + r_u["ID"].ToString();
+                }
+            }
+
+            checked_node(this.Nodes, 0, true);
+
+            foreach (TreeNode n in this.Nodes)
+            {
+                if (n.IsExpanded == true)
+                {
+                    this.SelectedNode = n;
                 }
             }
         }
@@ -439,10 +521,40 @@ namespace StatisticCommon
             if (EditNode != null)
             EditNode(this, new EditNodeEventArgs(m_selNode_id, ID_Operation.Select, idComp));
         }
-        
-        public void Rename_Node(int id_comp, string name)
+
+        /// <summary>
+        /// Метод для переименования ноды
+        /// </summary>
+        /// <param name="id_comp"></param>
+        /// <param name="name"></param>
+        public void Rename_Node(ID_Comp id_comp, string name)
         {
-            
+            if (id_comp.id_user.Equals(-1) == true & id_comp.id_role.Equals(-1) == false)
+            {
+                foreach (TreeNode n in this.Nodes)
+                {
+                    if (get_m_id_list(n.Name).id_role == id_comp.id_role)
+                    {
+                        n.Text = name;
+                    }
+                }
+            }
+            if (id_comp.id_user.Equals(-1) == false)
+            {
+                foreach (TreeNode n in this.Nodes)
+                {
+                    if (get_m_id_list(n.Name).id_role == id_comp.id_role)
+                    {
+                        foreach (TreeNode u in n.Nodes)
+                        {
+                            if (get_m_id_list(u.Name).id_user == id_comp.id_user)
+                            {
+                                u.Text = name;
+                            }
+                        }
+                    }
+                }
+            }
         }
 
         /// <summary>
@@ -476,7 +588,191 @@ namespace StatisticCommon
             return id_comp;
         }
 
+        /// <summary>
+        /// Обработчик добавления новой роли
+        /// </summary>
+        private void add_New_Role(object sender, ToolStripItemClickedEventArgs e)
+        {
+            if(Report!=null)
+                Report(this, new ReportEventArgs(string.Empty, string.Empty, string.Empty, true));
 
+            int id_newRole = 0;
+            if (e.ClickedItem.Text == (string)getNameMode((int)ID_Menu.AddRole))
+            {
+                this.Nodes.Add(Mass_NewVal_Comp((int)ID_OBJ.Role));
+                
+                if(GetID != null)
+                    id_newRole = GetID(this, new GetIDEventArgs(m_selNode_id, (int)ID_OBJ.Role));
+
+                Nodes[Nodes.Count - 1].Name = Convert.ToString(id_newRole);
+
+                ID_Comp id = new ID_Comp();
+
+                id.id_role = -1;
+                id.id_user = -1;
+
+                id.id_role = id_newRole;
+
+                if(EditNode != null)
+                    EditNode(this, new EditNodeEventArgs(id, ID_Operation.Insert, id.id_role));
+            }
+        }
+
+        /// <summary>
+        /// Обработчик добавления нового пользователя
+        /// </summary>
+        private void add_New_User(object sender, ToolStripItemClickedEventArgs e)
+        {
+            if (Report != null)
+                Report(this, new ReportEventArgs(string.Empty, string.Empty, string.Empty, true));
+
+            if (e.ClickedItem.Text == (string)getNameMode((int)ID_Menu.AddUser))//Добавление нового пользователя
+            {
+                int id_newUser = 0;
+
+                ID_Comp id = new ID_Comp();
+
+                id.id_role = -1;
+                id.id_user = -1;
+
+                if (GetID != null)
+                    id_newUser = GetID(this, new GetIDEventArgs(m_selNode_id,(int)ID_OBJ.User));
+
+                id.id_role = m_selNode_id.id_role;
+                id.id_user = id_newUser;
+
+                if (EditNode != null)
+                    EditNode(this, new EditNodeEventArgs(id, ID_Operation.Insert, id.id_user));
+
+                foreach (TreeNode role in Nodes)
+                {
+                    if (Convert.ToInt32(role.Name) == m_selNode_id.id_role)
+                    {
+                            role.Nodes.Add(Mass_NewVal_Comp((int)ID_OBJ.User));
+                            role.Nodes[role.Nodes.Count - 1].Name = Convert.ToString(id.id_role) + ":" + Convert.ToString(id_newUser);
+                    }
+                }
+            }
+            else
+            {
+                if (e.ClickedItem.Text == (string)getNameMode((int)ID_Menu.Delete))//Удаление роли
+                {
+                    bool del = false;
+
+
+                    if (SelectedNode.FirstNode == null)
+                        {
+                            del = true;
+                        }
+                    if (del == true)
+                    {
+                        if (EditNode != null)
+                            EditNode(this, new EditNodeEventArgs(m_selNode_id, ID_Operation.Delete, m_selNode_id.id_role));
+
+                        SelectedNode.Remove();
+                    }
+                    else
+                    {
+                        m_warningReport = "У роли " + SelectedNode.Text + " имеются пользователи!";
+                        if (Report != null)
+                            Report(this, new ReportEventArgs(string.Empty, string.Empty, m_warningReport, false));
+                        //MessageBox.Show("Имеются не выведенные из состава компоненты в " + SelectedNode.Text,"Внимание!",MessageBoxButtons.OK,MessageBoxIcon.Warning);
+                    }
+                }
+            }
+        }
+
+        /// <summary>
+        /// Обработчик удаления пользователя
+        /// </summary>
+        private void del_user(object sender, ToolStripItemClickedEventArgs e)
+        {
+            if (Report != null)
+                Report(this, new ReportEventArgs(string.Empty, string.Empty, string.Empty, true));
+
+            if (e.ClickedItem.Text == (string)getNameMode((int)ID_Menu.Delete))//Удаление роли
+            {
+                if (EditNode != null)
+                    EditNode(this, new EditNodeEventArgs(m_selNode_id, ID_Operation.Delete, m_selNode_id.id_user));
+
+                SelectedNode.Remove();
+            }
+        }
+
+        /// <summary>
+        /// Обработчик события нажатия на элемент в TreeView
+        /// </summary>
+        private void tree_NodeClick(object sender, TreeNodeMouseClickEventArgs e)
+        {
+            System.Windows.Forms.ContextMenuStrip contextMenu_TreeNode = new System.Windows.Forms.ContextMenuStrip();
+
+            System.Windows.Forms.ToolStripMenuItem УдалитьToolStripMenuItem = new System.Windows.Forms.ToolStripMenuItem();
+            System.Windows.Forms.ToolStripMenuItem добавитьПользователяToolStripMenuItem = new System.Windows.Forms.ToolStripMenuItem();
+
+            #region Нажатие правой кнопкой мыши
+
+            if (e.Button == System.Windows.Forms.MouseButtons.Right)
+            {
+                this.SelectedNode = e.Node;//Выбор компонента при нажатии на него правой кнопкой мыши
+                
+                #region Добавление компонентов
+
+                if (m_selNode_id.id_user != -1)//выбран ли элемент пользователь
+                {
+                            #region Context delete TG
+                            // 
+                            // contextMenu_TreeNode
+                            // 
+                            contextMenu_TreeNode.Items.AddRange(new System.Windows.Forms.ToolStripItem[] {
+                                УдалитьToolStripMenuItem});
+                            contextMenu_TreeNode.Name = "contextMenu_TreeNode";
+                            // 
+                            // УдалитьToolStripMenuItem
+                            //
+                            УдалитьToolStripMenuItem.Name = "УдалитьToolStripMenuItem";
+                            УдалитьToolStripMenuItem.Text = "Удалить";
+                            #endregion
+
+                            this.SelectedNode.ContextMenuStrip = contextMenu_TreeNode;
+                            this.SelectedNode.ContextMenuStrip.ItemClicked += new ToolStripItemClickedEventHandler(this.del_user);
+                }
+
+                if (m_selNode_id.id_user == -1 & m_selNode_id.id_role != -1)//Выбрана ли роль
+                {
+                    #region Добавление в ТЭЦ компонентов
+
+                    #region Context TEC
+                    // 
+                    // contextMenu_TreeView_TEC
+                    // 
+                    contextMenu_TreeNode.Items.AddRange(new System.Windows.Forms.ToolStripItem[] {
+                    добавитьПользователяToolStripMenuItem,
+                    УдалитьToolStripMenuItem});
+                    contextMenu_TreeNode.Name = "contextMenu_TreeNode";
+                    // 
+                    // добавитьПользователяToolStripMenuItem
+                    // 
+                    добавитьПользователяToolStripMenuItem.Name = "добавитьПользователяToolStripMenuItem";
+                    добавитьПользователяToolStripMenuItem.Text = "Добавить пользователя";
+                    // 
+                    // УдалитьToolStripMenuItem
+                    // 
+                    УдалитьToolStripMenuItem.Name = "УдалитьToolStripMenuItem";
+                    УдалитьToolStripMenuItem.Text = "Удалить";
+                    #endregion
+
+                    this.SelectedNode.ContextMenuStrip = contextMenu_TreeNode;
+
+                    this.SelectedNode.ContextMenuStrip.ItemClicked += new ToolStripItemClickedEventHandler(this.add_New_User);
+
+                    #endregion
+                }
+
+                #endregion
+            }
+
+            #endregion
+        }
 
         /// <summary>
         /// Класс для описания аргумента события - изменения компонента
@@ -519,21 +815,25 @@ namespace StatisticCommon
         /// </summary>
         public event EditNodeEventHandler EditNode;
 
-
-
         /// <summary>
         /// Класс для описания аргумента события - получение ID компонента
         /// </summary>
         public class GetIDEventArgs : EventArgs
         {
             /// <summary>
+            /// Список ID компонента
+            /// </summary>
+            public ID_Comp PathComp;
+
+            /// <summary>
             /// ID компонента
             /// </summary>
-            public int m_IdComp;
-            
-            public GetIDEventArgs(int id_comp)
+            public int IdComp;
+
+            public GetIDEventArgs(ID_Comp path, int id_comp)
             {
-                m_IdComp = id_comp;
+                PathComp = path;
+                IdComp = id_comp;
             }
         }
 
@@ -546,8 +846,6 @@ namespace StatisticCommon
         /// Событие - получение ID компонента
         /// </summary>
         public intGetID GetID;
-
-
 
         /// <summary>
         /// Класс для описания аргумента события - получение репорта

@@ -22,12 +22,13 @@ namespace Statistic
 {
     public class PanelUser : PanelStatistic
     {
-
         #region Дизайн
 
         private TreeView_Users treeView_Users;
         private DataGridView_Prop_ComboBoxCell dgvProp;
         private DataGridView_Prop_Text_Check dgvProfile;
+        private Button btnOK;
+        private Button btnBreak;
 
         protected override void initializeLayoutStyle(int cols = -1, int rows = -1)
         {
@@ -40,15 +41,32 @@ namespace Statistic
            
             this.treeView_Users = new TreeView_Users();
             this.dgvProp = new StatisticCommon.DataGridView_Prop_ComboBoxCell();
+            this.btnOK = new Button();
+            this.btnBreak = new Button();
             this.SuspendLayout();
 
             treeView_Users.Dock = DockStyle.Fill;
             dgvProp.Dock = DockStyle.Fill;
 
+            btnOK.Dock = DockStyle.Fill;
+            //OK.AutoSize = true;
+            btnOK.Text = "Применить";
+            btnOK.MouseClick += new MouseEventHandler(this.buttonOK_click);
+            btnOK.Enabled = false;
+
+            btnBreak.Dock = DockStyle.Fill;
+            //Break.AutoSize = true;
+            btnBreak.Text = "Отмена";
+            btnBreak.MouseClick += new MouseEventHandler(this.buttonBreak_click);
+            btnBreak.Enabled = false;
+
             initializeLayoutStyle(20, 20);
             
             this.Controls.Add(this.treeView_Users, 0, 0); this.SetColumnSpan(this.treeView_Users, 7); this.SetRowSpan(this.treeView_Users, 20);
             this.Controls.Add(this.dgvProp, 7, 0); this.SetColumnSpan(this.dgvProp, 13); this.SetRowSpan(this.dgvProp, 6);
+            this.Controls.Add(this.btnOK, 12, 19); this.SetColumnSpan(this.btnOK, 4); this.SetRowSpan(this.btnOK, 1);
+            this.Controls.Add(this.btnBreak, 16, 19); this.SetColumnSpan(this.btnBreak, 4); this.SetRowSpan(this.btnBreak, 1);
+
 
             this.Name = "PanelUser";
 
@@ -73,6 +91,7 @@ namespace Statistic
         DelegateBoolFunc delegateReportClear;
 
         int m_sel_comp;
+        TreeView_Users.ID_Comp m_list_id;
         DataTable table_TEC = new DataTable();
 
         DataTable[] m_arr_origTable = new DataTable[(int)ID_Table.Unknow];
@@ -86,15 +105,26 @@ namespace Statistic
         /// </summary>
         public enum ID_Table : int { Role = 0, User, Profiles, Unknow }
 
+        DB_Sostav_TEC db_sostav = new DB_Sostav_TEC();
+
+        /// <summary>
+        /// Возвратить наименование компонента 
+        /// </summary>
+        /// <param name="indx">Индекс </param>
+        /// <returns>Строка - наименование</returns>
+        protected static string getNameMode(Int16 indx)
+        {
+            string[] nameModes = { "roles", "users", "profiles" };
+
+            return nameModes[indx];
+        }
+
+
         #endregion
 
         public PanelUser()
             : base()
         {
-            int idListener;
-            DbConnection connConfigDB;
-
-            int err = -1;
 
             InitializeComponent();
 
@@ -103,17 +133,40 @@ namespace Statistic
             dgvProfile.Dock = DockStyle.Fill;
             this.Controls.Add(this.dgvProfile, 7, 6); this.SetColumnSpan(this.dgvProfile, 13); this.SetRowSpan(this.dgvProfile, 13);
 
-            treeView_Users.EditNode += new TreeView_Users.EditNodeEventHandler(this.treeViewSelectNode);
-            dgvProp.EventCellValueChanged += new StatisticCommon.DataGridView_Prop.DataGridView_Prop_ValuesCellValueChangedEventHandler(this.dgvProp_EndCellEdit);
+            dgvProp.EventCellValueChanged += new StatisticCommon.DataGridView_Prop_ComboBoxCell.DataGridView_Prop_ValuesCellValueChangedEventHandler(this.dgvProp_EndCellEdit);
 
             dgvProfile.EventCellValueChanged += new StatisticCommon.DataGridView_Prop_Text_Check.DataGridView_Prop_ValuesCellValueChangedEventHandler(this.dgvProfile_EndCellEdit);
 
+            fillDataTable();
+
+            treeView_Users.Update_tree(m_arr_editTable[(int)ID_Table.User], m_arr_editTable[(int)ID_Table.Role]);
+
+            treeView_Users.GetID += new TreeView_Users.intGetID(this.GetNextID);
+            treeView_Users.EditNode += new TreeView_Users.EditNodeEventHandler(this.get_operation_tree);
+            treeView_Users.Report += new TreeView_Users.ReportEventHandler(this.tree_report);
+            
+        }
+
+        /// <summary>
+        /// Получение таблиц
+        /// </summary>
+        private void fillDataTable()
+        {
+            int idListener;
+            DbConnection connConfigDB;
+
+            int err = -1;
+
             idListener = register_idListenerConfDB(out err);
             connConfigDB = DbSources.Sources().GetConnection(idListener, out err);
-            DataColumn[] columns = { new DataColumn("ID"), new DataColumn("DESCRIPTION") };
-            table_TEC.Columns.AddRange(columns);
+            if (table_TEC.Columns.Count == 0)
+            {
+                DataColumn[] columns = { new DataColumn("ID"), new DataColumn("DESCRIPTION") };
+                table_TEC.Columns.AddRange(columns);
+            }
 
             m_list_TEC = new InitTEC_200(idListener, true, false).tec;
+            table_TEC.Rows.Clear();
 
             foreach (TEC t in m_list_TEC)
             {
@@ -134,9 +187,54 @@ namespace Statistic
             m_arr_editTable[(int)ID_Table.Profiles] = m_arr_origTable[(int)ID_Table.Profiles].Copy();
 
             unregister_idListenerConfDB(idListener);
+        }
 
-            treeView_Users.Update_tree(m_arr_editTable[(int)ID_Table.User], m_arr_editTable[(int)ID_Table.Role]);
-            
+        /// <summary>
+        /// Сброс таблиц
+        /// </summary>
+        private void resetDataTable()
+        {
+            m_arr_editTable[(int)ID_Table.User] = m_arr_origTable[(int)ID_Table.User].Copy();
+            m_arr_editTable[(int)ID_Table.Role] = m_arr_origTable[(int)ID_Table.Role].Copy();
+            m_arr_editTable[(int)ID_Table.Profiles] = m_arr_origTable[(int)ID_Table.Profiles].Copy();
+        }
+
+        /// <summary>
+        /// Получение таблицы профайла
+        /// </summary>
+        /// <param name="tableAllProfiles">Таблица со всеми профайлами</param>
+        /// <param name="id_role">ИД роли</param>
+        /// <param name="id_user">ИД пользователя</param>
+        /// <param name="bIsRole">Это роль</param>
+        /// <returns>Возвращает таблицу</returns>
+        private DataTable getProfileTable(DataTable tableAllProfiles, int id_role, int id_user, bool bIsRole)
+        {
+            DataTable profileTable = new DataTable();
+            profileTable.Columns.Add("ID");
+            profileTable.Columns.Add("VALUE");
+            profileTable.Columns.Add("ID_UNIT");
+            DbConnection connConfigDB;
+            int idListener
+                , err;
+            Dictionary<int, User.UNIT_VALUE> profile = null;
+
+            idListener = register_idListenerConfDB(out err);
+            connConfigDB = DbSources.Sources().GetConnection(idListener, out err);
+
+            profile = User.GetDictProfileItem(connConfigDB, id_role, id_user, bIsRole, tableAllProfiles);
+
+            unregister_idListenerConfDB(idListener);
+
+            for (int i = 0; i < profile.Count; i++)
+            {
+                object[] obj = new object[3];
+                obj[0] = i + 1;
+                obj[1] = profile[i + 1].m_value;
+                obj[2] = profile[i + 1].m_idType;
+                profileTable.Rows.Add(obj);
+            }
+
+            return profileTable;
         }
 
         /// <summary>
@@ -181,6 +279,21 @@ namespace Statistic
         }
 
         /// <summary>
+        /// Обработчик события получения сообщения от TreeView
+        /// </summary>
+        private void tree_report(object sender, TreeView_Users.ReportEventArgs e)
+        {
+            if (e.Action != string.Empty)
+                delegateActionReport(e.Action);
+            if (e.Warning != string.Empty)
+                delegateWarningReport(e.Warning);
+            if (e.Error != string.Empty)
+                delegateErrorReport(e.Error);
+            if (e.Clear != false)
+                delegateReportClear(e.Clear);
+        }
+
+        /// <summary>
         /// Регистрация ID
         /// </summary>
         /// <param name="err">Ошибка в процессе регистрации</param>
@@ -205,62 +318,266 @@ namespace Statistic
             DbSources.Sources().UnRegister(idListener);
         }
 
-        protected void treeViewSelectNode(object sender, TreeView_Users.EditNodeEventArgs e)
+        /// <summary>
+        /// Обработчик получения данных от TreeView
+        /// </summary>
+        private void get_operation_tree(object sender, TreeView_Users.EditNodeEventArgs e)
         {
+            if (e.Operation == TreeView_Users.ID_Operation.Select)
+            {
+                select(e.PathComp, e.IdComp);
+            }
+            if (e.Operation == TreeView_Users.ID_Operation.Delete)
+            {
+                delete(e.PathComp);
+            }
+            if (e.Operation == TreeView_Users.ID_Operation.Insert)
+            {
+                insert(e.PathComp);
+            }
+            if (e.Operation == TreeView_Users.ID_Operation.Update)
+            {
+                update(e.PathComp, e.Value);
+            }
+        }
 
+        /// <summary>
+        /// Метод удаления компонента из таблицы
+        /// </summary>
+        /// <param name="list_id">Список идентификаторов объекта</param>
+        private void delete(TreeView_Users.ID_Comp list_id)
+        {
+            int iRes = 0;
+
+            if (list_id.id_user.Equals(-1) == false)
+            {
+                m_arr_editTable[(int)ID_Table.User].Rows.Remove(m_arr_editTable[(int)ID_Table.User].Select("ID=" + list_id.id_user)[0]);
+                iRes = 1;
+            }
+
+            if (list_id.id_user.Equals(-1) == true & list_id.id_role.Equals(-1) == false)
+            {
+                m_arr_editTable[(int)ID_Table.Role].Rows.Remove(m_arr_editTable[(int)ID_Table.Role].Select("ID=" + list_id.id_role)[0]);
+                foreach (DataRow r in m_arr_editTable[(int)ID_Table.Profiles].Select("ID_EXT=" + list_id.id_role + "and IS_ROLE = 1"))
+                {
+                    m_arr_editTable[(int)ID_Table.Profiles].Rows.Remove(r);
+                }
+                
+
+                iRes = 1;
+            }
+
+            if (iRes == 1)
+            {
+                btnOK.Enabled = true;
+                btnBreak.Enabled = true;
+            }
+        }
+
+        /// <summary>
+        /// Метод обновления связей компонента
+        /// </summary>
+        /// <param name="list_id">Идентификаторы компонента</param>
+        /// <param name="obj">Тип изменяемого объекта ИД=1</param>
+        private void update(TreeView_Users.ID_Comp list_id, string type_op)
+        {
+            string type = type_op;
+            int iRes = 0;
+            if (list_id.id_user.Equals(-1) == false)
+            {
+                if (iRes == 1)
+                {
+                    btnOK.Enabled = true;
+                    btnBreak.Enabled = true;
+                }
+            }
+        }
+
+        /// <summary>
+        /// Метод добавления нового компонента
+        /// </summary>
+        /// <param name="list_id">Идентификатор нового компонента</param>
+        /// <param name="obj"></param>
+        private void insert(TreeView_Users.ID_Comp list_id)
+        {
+            int iRes = 0;
+            if (list_id.id_user.Equals(-1) == false)//Добавление нового пользователя
+            {
+                object[] obj = new object[m_arr_editTable[(int)ID_Table.User].Columns.Count];
+
+                for (int i = 0; i < m_arr_editTable[(int)ID_Table.User].Columns.Count; i++)
+                {
+                    if (m_arr_editTable[(int)ID_Table.User].Columns[i].ColumnName == "ID")
+                    {
+                        obj[i] = list_id.id_user;
+                    }
+                    else
+                        if (m_arr_editTable[(int)ID_Table.User].Columns[i].ColumnName == "ID_ROLE")
+                        {
+                            obj[i] = list_id.id_role;
+                        }
+                        else
+                            if (m_arr_editTable[(int)ID_Table.User].Columns[i].ColumnName == "IP")
+                            {
+                                obj[i] = "255.255.255.255";
+                            }
+                            else
+                                if (m_arr_editTable[(int)ID_Table.User].Columns[i].ColumnName == "DESCRIPTION")
+                                {
+                                    obj[i] = TreeView_Users.Mass_NewVal_Comp((int)ID_Table.User);
+                                }
+                                else
+                                    if (m_arr_editTable[(int)ID_Table.User].Columns[i].ColumnName == "ID_TEC")
+                                    {
+                                        obj[i] = 0;
+                                    }
+                                    else
+                                        obj[i] = -1;
+                }
+
+                m_arr_editTable[(int)ID_Table.User].Rows.Add(obj);
+                iRes = 1;
+            }
+
+            if (list_id.id_user.Equals(-1) == true & list_id.id_role.Equals(-1) == false)//Добавление новой роли
+            {
+                object[] obj_role = new object[m_arr_editTable[(int)ID_Table.Role].Columns.Count];
+                object[] obj_prof = new object[m_arr_editTable[(int)ID_Table.Profiles].Columns.Count];
+
+                for (int i = 0; i < m_arr_editTable[(int)ID_Table.Role].Columns.Count; i++)
+                {
+                    if (m_arr_editTable[(int)ID_Table.Role].Columns[i].ColumnName == "ID")
+                    {
+                        obj_role[i] = list_id.id_role;
+                    }
+                    else
+                        if (m_arr_editTable[(int)ID_Table.Role].Columns[i].ColumnName == "DESCRIPTION")
+                        {
+                            obj_role[i] = TreeView_Users.Mass_NewVal_Comp((int)ID_Table.Role);
+                        }
+                }
+
+                m_arr_editTable[(int)ID_Table.Role].Rows.Add(obj_role);
+
+                for (int i = 0; i < m_AllUnits.Rows.Count; i++)
+                {
+                    obj_prof[0] = list_id.id_role;
+                    obj_prof[1] = "1";
+                    obj_prof[2] = i+1;
+                    obj_prof[3] = "0";
+                    m_arr_editTable[(int)ID_Table.Profiles].Rows.Add(obj_prof);
+                }
+                
+                iRes = 1;
+            }
+            
+            if (iRes == 1)
+            {
+                btnOK.Enabled = true;
+                btnBreak.Enabled = true;
+            }
+        }
+
+        /// <summary>
+        /// Обработчик события выбора элемента в TreeView
+        /// </summary>
+        private void select(TreeView_Users.ID_Comp list_id, int IdComp)
+        {
             DataTable[] massTable = new DataTable[1];
-            m_type_sel_node = e.PathComp.type;
             DataTable[] tables = new DataTable[3];
             bool bIsRole = false;
-            m_sel_comp = e.IdComp;
+            m_sel_comp = IdComp;
+            m_list_id = list_id;
 
-            if(e.PathComp.type==TreeView_Users.Type_Comp.User)
+            if (list_id.id_user.Equals(-1) == false)
             {
                 tables[0] = m_arr_editTable[(int)TreeView_Users.Type_Comp.User];
                 tables[1] = m_arr_editTable[(int)TreeView_Users.Type_Comp.Role];
                 tables[2] = table_TEC;
-                dgvProp.Update_dgv(e.IdComp, tables);
+                dgvProp.Update_dgv(list_id.id_user, tables);
                 bIsRole = false;
+                m_type_sel_node = TreeView_Users.Type_Comp.User;
+                
+            }
+
+            if (list_id.id_user.Equals(-1) == true & list_id.id_role.Equals(-1) == false)
+            {
+                tables[0] = m_arr_editTable[(int)TreeView_Users.Type_Comp.Role];
+                dgvProp.Update_dgv(list_id.id_role, tables);
+                bIsRole = true;
+                m_type_sel_node = TreeView_Users.Type_Comp.Role;
+            }
+
+            massTable[0] = getProfileTable(m_arr_editTable[(int)ID_Table.Profiles], list_id.id_role, list_id.id_user, bIsRole);
+            dgvProfile.Update_dgv(IdComp, massTable);
+        }
+
+        /// <summary>
+        /// Обработчик события окончания изменения ячейки свойств
+        /// </summary>
+        private void dgvProp_EndCellEdit(object sender, DataGridView_Prop_ComboBoxCell.DataGridView_Prop_ValuesCellValueChangedEventArgs e)
+        {
+            delegateReportClear(true);
+
+            if (m_type_sel_node == TreeView_Users.Type_Comp.Role)
+            {
+                edit_table(e.m_IdComp, e.m_Header_name, e.m_Value, m_arr_editTable[(int)ID_Table.Role], m_list_id);
+            }
+            if (m_type_sel_node == TreeView_Users.Type_Comp.User)
+            {
+                edit_table(e.m_IdComp, e.m_Header_name, e.m_Value, m_arr_editTable[(int)ID_Table.User], m_list_id);
+            }
+        }
+
+        /// <summary>
+        /// Обработчик события окончания изменения ячейки профайла
+        /// </summary>
+        private void dgvProfile_EndCellEdit(object sender, DataGridView_Prop_Text_Check.DataGridView_Prop_ValuesCellValueChangedEventArgs e)
+        {
+            delegateReportClear(true);
+            int iRes = 0;
+
+            string id = m_AllUnits.Select(@"DESCRIPTION='" + e.m_Header_name + @"'")[0]["ID"].ToString();
+
+            DataRow[] rows = m_arr_editTable[(int)ID_Table.Profiles].Select("ID_UNIT=" + id + " and ID_EXT=" + m_sel_comp.ToString() + " and IS_ROLE=" + Convert.ToInt32(!Convert.ToBoolean((int)m_type_sel_node)));
+
+            if (rows.Length != 0)
+            {
+                foreach (DataRow r in rows)
+                {
+                    if (e.m_Value == "True")
+                        r["VALUE"] = 1;
+                    else
+                        if (e.m_Value == "False")
+                            r["VALUE"] = 0;
+                        else
+                            r["VALUE"] = e.m_Value;
+
+                    iRes = 1;
+
+                    break;
+                }
             }
             else
             {
-                tables[0] = m_arr_editTable[(int)TreeView_Users.Type_Comp.Role];
-                dgvProp.Update_dgv(e.IdComp, tables);
-                bIsRole = true;
+                object[] obj = { m_sel_comp.ToString(), Convert.ToInt32(!Convert.ToBoolean((int)m_type_sel_node)), id, e.m_Value };
+                if (e.m_Value == "True")
+                    obj[3] = 1;
+                else
+                    if (e.m_Value == "False")
+                        obj[3] = 0;
+                    else
+                        obj[3] = e.m_Value;
+
+                m_arr_editTable[(int)ID_Table.Profiles].Rows.Add(obj);
+                iRes = 1;
             }
 
-            massTable[0] = getProfileTable(m_arr_editTable[(int)ID_Table.Profiles], e.PathComp.id_role, e.PathComp.id_user, bIsRole);
-            dgvProfile.Update_dgv(e.IdComp, massTable);
-        }
-
-        private DataTable getProfileTable(DataTable tableAllProfiles, int id_role, int id_user, bool bIsRole)
-        {
-            DataTable profileTable = new DataTable();
-            profileTable.Columns.Add("ID");
-            profileTable.Columns.Add("VALUE");
-            profileTable.Columns.Add("ID_UNIT");
-            DbConnection connConfigDB;
-            int idListener
-                , err;
-            Dictionary<int, User.UNIT_VALUE> profile = null;
-
-            idListener = register_idListenerConfDB(out err);
-            connConfigDB = DbSources.Sources().GetConnection(idListener, out err);
-
-            profile = User.GetDictProfileItem(connConfigDB, id_role, id_user, bIsRole, tableAllProfiles);
-
-            unregister_idListenerConfDB(idListener);
-
-            for (int i = 0; i < profile.Count; i++)
+            if (iRes == 1)
             {
-                object[] obj = new object[3];
-                obj[0] = i + 1;
-                obj[1] = profile[i + 1].m_value;
-                obj[2] = profile[i + 1].m_idType;
-                profileTable.Rows.Add(obj);
+                btnOK.Enabled = true;
+                btnBreak.Enabled = true;
             }
-
-            return profileTable;
         }
 
         /// <summary>
@@ -270,7 +587,7 @@ namespace Statistic
         /// <param name="header">Заголовок изменяемой ячейки</param>
         /// <param name="value">Новое значение изменяемой ячейки</param>
         /// <param name="table_edit">Таблицу в которую поместить изменения</param>
-        private void edit_table(int id_comp, string header, string value, DataTable table_edit)
+        private void edit_table(int id_comp, string header, string value, DataTable table_edit, TreeView_Users.ID_Comp list_id)
         {
             for (int i = 0; i < table_edit.Rows.Count; i++)
             {
@@ -284,8 +601,12 @@ namespace Statistic
                             {
                                 table_edit.Rows[i][b] = value;
 
-                                //btnOK.Enabled = true;
-                                //btnBreak.Enabled = true;
+                                if (header == "DESCRIPTION")
+                                {
+                                    treeView_Users.Rename_Node(list_id, value);
+                                }
+                                btnOK.Enabled = true;
+                                btnBreak.Enabled = true;
                             }
                         }
                     }
@@ -294,43 +615,105 @@ namespace Statistic
         }
 
         /// <summary>
-        /// Обработчик события окончания изменения ячейки
+        /// Обработчик события кнопки "Применить"
         /// </summary>
-        private void dgvProp_EndCellEdit(object sender, DataGridView_Prop_ComboBoxCell.DataGridView_Prop_ValuesCellValueChangedEventArgs e)
+        private void buttonOK_click(object sender, MouseEventArgs e)
         {
             delegateReportClear(true);
-            if (m_type_sel_node == TreeView_Users.Type_Comp.Role)
+            int err = -1;
+            string[] warning;
+
+            if (validate_saving(m_arr_editTable, out warning) == false)
             {
-                edit_table(e.m_IdComp, e.m_Header_name, e.m_Value, m_arr_editTable[(int)ID_Table.Role]);
+                for (int i = (int)ID_Table.Role; i < (int)ID_Table.Unknow; i++)
+                {
+                    if (i == (int)ID_Table.Role)
+                        db_sostav.Edit(getNameMode((int)ID_Table.Role), "ID", m_arr_origTable[i], m_arr_editTable[i], out err);
+                    else
+                        if(i == (int)ID_Table.User)
+                            db_sostav.Edit(getNameMode((int)ID_Table.User), "ID", m_arr_origTable[i], m_arr_editTable[i], out err);
+                        else
+                            db_sostav.Edit(getNameMode((int)ID_Table.Profiles), "ID_EXT,IS_ROLE,ID_UNIT", m_arr_origTable[i], m_arr_editTable[i], out err);
+
+                }
+
+                fillDataTable();
+                treeView_Users.Update_tree(m_arr_editTable[(int)ID_Table.User], m_arr_editTable[(int)ID_Table.Role]);
+                btnOK.Enabled = false;
+                btnBreak.Enabled = false;
+
             }
-            if (m_type_sel_node == TreeView_Users.Type_Comp.User)
+            else
             {
-                edit_table(e.m_IdComp, e.m_Header_name, e.m_Value, m_arr_editTable[(int)ID_Table.User]);
+                delegateWarningReport(warning[(int)ID_Table.Role] + warning[(int)ID_Table.User] + warning[(int)ID_Table.Profiles]);
+                //MessageBox.Show(warning[0] + warning[1] + warning[2] + warning[3], "Внимание!", MessageBoxButtons.OK, MessageBoxIcon.Warning);
             }
+            //db_sostav.Write_Audit(m_table_audit);
         }
 
-        private void dgvProfile_EndCellEdit(object sender, DataGridView_Prop_Text_Check.DataGridView_Prop_ValuesCellValueChangedEventArgs e)
+        /// <summary>
+        /// Обработчик события кнопки "Отмена"
+        /// </summary>
+        private void buttonBreak_click(object sender, MouseEventArgs e)
         {
             delegateReportClear(true);
+            resetDataTable();
 
-            foreach (DataRow r in m_arr_editTable[(int)ID_Table.Profiles].Rows)
+            treeView_Users.Update_tree(m_arr_editTable[(int)ID_Table.User], m_arr_editTable[(int)ID_Table.Role]);
+            btnOK.Enabled = false;
+            btnBreak.Enabled = false;
+        }
+
+        /// <summary>
+        /// Проверка критичных параметров перед сохранением
+        /// </summary>
+        /// <param name="mass_table">Таблица для проверки</param>
+        /// <param name="warning">Строка с описанием ошибки</param>
+        /// <returns>Возвращает переменную показывающую наличие не введенных параметров</returns>
+        private bool validate_saving(DataTable[] mass_table, out string[] warning)
+        {
+            bool have = false;
+            int indx = -1;
+            warning = new String[mass_table.Length];
+
+            foreach (DataTable table in mass_table)
             {
-                string id = m_AllUnits.Select(@"DESCRIPTION='" + e.m_Header_name+@"'")[0]["ID"].ToString();
-                if (r["ID_UNIT"].ToString() == id)
-                    if(r["ID_EXT"].ToString() == m_sel_comp.ToString())
-                        if (Convert.ToBoolean(Convert.ToInt32(r["IS_ROLE"])) == !Convert.ToBoolean((int)m_type_sel_node))
+                indx++;
+                foreach (DataRow row in table.Rows)
+                {
+                    for (int i = 0; i < table.Columns.Count; i++)
+                    {
+                        if (Convert.ToString(row[i]) == "-1")
                         {
-                            if(e.m_Value=="True")
-                                r["VALUE"] = 1;
-                            else
-                                if(e.m_Value=="False")
-                                    r["VALUE"] = 0;
-                                else
-                                    r["VALUE"] = e.m_Value;
+                            have = true;
+                            warning[indx] += "Для пользователя " + row["DESCRIPTION"] + " параметр " + table.Columns[i].ColumnName + " равен '-1'." + '\n';
                         }
+                    }
+                }
             }
+            return have;
         }
 
+        /// <summary>
+        /// Обработчик для получения следующего идентификатора
+        /// </summary>
+        /// <returns>Возвращает идентификатор</returns>
+        private int GetNextID(object sender, TreeView_Users.GetIDEventArgs e)
+        {
+            int ID = 0;
+            int err = 0;
+
+            if (e.IdComp == (int)ID_Table.Role)
+            {
+                ID = DbTSQLInterface.GetIdNext(m_arr_editTable[(int)ID_Table.Role], out err);
+            }
+            if (e.IdComp == (int)ID_Table.User)
+            {
+                ID = DbTSQLInterface.GetIdNext(m_arr_editTable[(int)ID_Table.User], out err);
+            }
+
+            return ID;
+        }
     }
 
     public class User
@@ -482,10 +865,16 @@ namespace Statistic
             }
         }
 
+        /// <summary>
+        /// Метод для получения таблицы со всеми профайлами
+        /// </summary>
+        /// <param name="dbConn"></param>
+        /// <returns></returns>
         public static DataTable GetTableAllProfile(DbConnection dbConn) 
         {
             return Profile.GetAllProfile(dbConn);
         }
+
         /// <summary>
         /// Метод для получения словаря со значениями прав доступа
         /// </summary>
