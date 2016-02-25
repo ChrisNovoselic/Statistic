@@ -1291,13 +1291,14 @@ namespace StatisticDiagnostic
             /// <returns></returns>
             private bool selectInvalidValue(string nameS, DateTime time, int numberPanel)
             {
-                DateTime m_DTnowAISKUE = TimeZoneInfo.ConvertTimeBySystemTimeZoneId(SERVER_TIME, TimeZoneInfo.Local.Id, "Russian Standard Time");
+                DateTime m_DTnowAISKUE = SERVER_TIME;
+                TimeZoneInfo m_tzInfo = TimeZoneInfo.FindSystemTimeZoneById("Russian Standard Time");
                 DateTime m_DTnowSOTIASSO;
 
                 if ((numberPanel + 1) == 6)
                     m_DTnowSOTIASSO = TimeZoneInfo.ConvertTime(SERVER_TIME, TimeZoneInfo.Local);
                 else
-                    m_DTnowSOTIASSO = TimeZoneInfo.ConvertTimeToUtc(SERVER_TIME);
+                    m_DTnowSOTIASSO = TimeZoneInfo.ConvertTimeToUtc(SERVER_TIME, m_tzInfo);
 
                 bool bFL = true; ;
 
