@@ -441,6 +441,8 @@ namespace StatisticCommon
                 AddState((int)StatesMachine.InitSensors);
             else ;
 
+            //using_date = false;
+
             //AddState((int)TecView.StatesMachine.CurrentHours_Fact); //Только для определения сезона ???            
             AddState((int)TecView.StatesMachine.CurrentHours_TM_SN_PSUM);
             AddState((int)TecView.StatesMachine.LastValue_TM_SN);

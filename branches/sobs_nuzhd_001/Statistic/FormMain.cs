@@ -48,7 +48,7 @@ namespace Statistic
             {
                 menuItem = new System.Windows.Forms.ToolStripMenuItem();
                 menuItem.CheckOnClick = true;
-                menuItem.Size = new System.Drawing.Size(243, 22);
+                menuItem.Size = new System.Drawing.Size(280, 22);
                 menuItem.Name = name;
                 menuItem.Text = text;
                 panel = null;

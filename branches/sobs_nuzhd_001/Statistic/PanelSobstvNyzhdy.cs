@@ -88,7 +88,7 @@ namespace Statistic
             initializeLayoutStyle(listTec.Count / 2
                 , listTec.Count);
 
-            for (i = 0; i < listTec.Count; i++)
+            for (i = 1; i < 2; i++)
             {
                 ptcp = new PanelTecSobstvNyzhdy(listTec[i]/*, fErrRep, fWarRep, fActRep, fRepClr*/);
                 this.Controls.Add(ptcp, i % this.ColumnCount, i / this.ColumnCount);
@@ -257,7 +257,9 @@ namespace Statistic
         private partial class PanelTecSobstvNyzhdy : HPanelCommon
         {
             System.Windows.Forms.Label[] m_arLabel;
+            System.Windows.Forms.DateTimePicker dtCurrDate;
             Dictionary<int, System.Windows.Forms.Label> m_dictLabelVal;
+            DateTime m_datetime;
 
             //bool isActive;
 
@@ -288,6 +290,8 @@ namespace Statistic
                 m_tecView.updateGUI_TM_SN = new DelegateFunc(showTMSNPower);
 
                 Initialize();
+
+                dtCurrDate.Value = DateTime.Now.Date;
             }
 
             public PanelTecSobstvNyzhdy(IContainer container, StatisticCommon.TEC tec/*, DelegateStringFunc fErrRep, DelegateStringFunc fWarRep, DelegateStringFunc fActRep, DelegateBoolFunc fRepClr*/)
@@ -306,13 +310,16 @@ namespace Statistic
                 int i = -1;
 
                 m_dictLabelVal = new Dictionary<int, System.Windows.Forms.Label>();
+                dtCurrDate = new DateTimePicker();
                 m_arLabel = new System.Windows.Forms.Label[(int)INDEX_LABEL.VALUE_TM_SN + 1];
 
                 this.Dock = DockStyle.Fill;
                 //Свойства колонок
-                this.ColumnCount = 2;
-                this.ColumnStyles.Add(new ColumnStyle(SizeType.Percent, 50));
-                this.ColumnStyles.Add(new ColumnStyle(SizeType.Percent, 50));
+                this.ColumnCount = 4;
+                this.ColumnStyles.Add(new ColumnStyle(SizeType.Percent, 25));
+                this.ColumnStyles.Add(new ColumnStyle(SizeType.Percent, 25));
+                this.ColumnStyles.Add(new ColumnStyle(SizeType.Percent, 25));
+                this.ColumnStyles.Add(new ColumnStyle(SizeType.Percent, 25));
 
                 //Видимая граница для отладки
                 this.BorderStyle = BorderStyle.FixedSingle; //BorderStyle.None;
@@ -327,8 +334,9 @@ namespace Statistic
                 //    m_arLabel[i].TextChanged += new EventHandler(PanelTecCurPower_TextChangedValue);
                 //else
                 //    ;
-                this.Controls.Add(m_arLabel[i], 0, i);
-                this.SetRowSpan(m_arLabel[i], COUNT_FIXED_ROWS);
+                //this.Controls.Add(m_arLabel[i], 0, i);
+                //this.SetRowSpan(m_arLabel[i], COUNT_FIXED_ROWS);
+                this.Controls.Add(m_arLabel[i], 0, i); this.SetRowSpan(m_arLabel[i], COUNT_FIXED_ROWS); this.SetColumnSpan(m_arLabel[i], 2);
 
                 //Наименование ТЭЦ, Дата/время, Значение для всех ГТП/ТГ
                 for (i = (int)INDEX_LABEL.DATETIME_TM_SN; i < (int)INDEX_LABEL.VALUE_TM_SN + 1; i++)
@@ -346,8 +354,12 @@ namespace Statistic
                     }
                     m_arLabel[i] = HLabel.createLabel(cntnt, PanelSobstvNyzhdy.s_arLabelStyles[i]);
 
-                    this.Controls.Add(m_arLabel[i], 1, i / 2);
+                    this.Controls.Add(m_arLabel[i], 1*i+1, 1); this.SetRowSpan(m_arLabel[i], 1); this.SetColumnSpan(m_arLabel[i], 1);
                 }
+
+                this.Controls.Add(dtCurrDate, 2, 0); this.SetRowSpan(dtCurrDate, 1); this.SetColumnSpan(dtCurrDate, 2);
+                
+                //dtCurrDate.ValueChanged += new EventHandler(dtCurrDate_ChangeValue);
 
                 this.RowCount = COUNT_FIXED_ROWS;
 
@@ -397,9 +409,18 @@ namespace Statistic
                 base.Stop ();
             }
 
+            private void dtCurrDate_ChangeValue(object sender, EventArgs e)
+            {
+            }
+
             private void ChangeState()
             {
-                m_tecView.m_curDate = DateTime.Now;
+                if (dtCurrDate.Value.Date != DateTime.Now.Date)
+                    m_tecView.currHour = false;
+                else
+                    m_tecView.currHour = true;
+
+                m_tecView.m_curDate = dtCurrDate.Value.Date; //DateTime.Now;
 
                 m_tecView.ChangeState ();
             }
@@ -475,6 +496,8 @@ namespace Statistic
                 }
                 else
                     ;
+
+
             }
 
             private bool zedGraphHours_MouseUpEvent(ZedGraphControl sender, MouseEventArgs e)
@@ -540,6 +563,7 @@ namespace Statistic
                 double minimum = double.MaxValue, minimum_scale;
                 double maximum = 0, maximum_scale;
                 bool noValues = true;
+                TecView.valuesTEC[] valTEC = m_tecView.m_valuesHours;
                 for (int i = 0; i < itemscount; i++)
                 {
                     
@@ -553,8 +577,8 @@ namespace Statistic
                     }
                     else
                         names[i] = (i + 1).ToString();
-                    
-                    valuesTMSNPsum[i] = m_tecView.m_valuesHours[i].valuesTMSNPsum;
+
+                    valuesTMSNPsum[i] = valTEC[i].valuesTMSNPsum;
 
                     if ((minimum > valuesTMSNPsum[i]) && (! (valuesTMSNPsum[i] == 0)))
                         minimum = valuesTMSNPsum[i];
@@ -630,7 +654,7 @@ namespace Statistic
                 pane.XAxis.Title.Text = "";
                 pane.YAxis.Title.Text = "";
                 //pane.Title.Text = "Мощность на " + m_pnlQuickData.dtprDate.Value.ToShortDateString();
-                pane.Title.Text = "Собственные нужды на " + DateTime.Now.ToShortDateString();
+                pane.Title.Text = "Собственные нужды на " + dtCurrDate.Value.ToShortDateString();
 
                 pane.XAxis.Scale.TextLabels = names;
                 pane.XAxis.Scale.IsPreventLabelOverlap = false;
