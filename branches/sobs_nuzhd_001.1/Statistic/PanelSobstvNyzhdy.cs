@@ -416,13 +416,26 @@ namespace Statistic
             private void ChangeState()
             {
                 if (dtCurrDate.Value.Date != DateTime.Now.Date)
-                    m_tecView.currHour = false;
+                {
+                    if (m_tecView.currHour == true)
+                    {
+                        m_tecView.currHour = false;
+
+                        m_tecView.ChangeState();
+                    }
+                    else
+                        ;
+                }
                 else
+                {
                     m_tecView.currHour = true;
+
+                    m_tecView.ChangeState();
+                }
 
                 m_tecView.m_curDate = dtCurrDate.Value.Date; //DateTime.Now;
 
-                m_tecView.ChangeState ();
+                
             }
 
             public override bool Activate(bool active)
