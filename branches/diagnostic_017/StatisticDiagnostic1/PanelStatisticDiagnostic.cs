@@ -444,7 +444,7 @@ namespace StatisticDiagnostic
         /// </summary>
         public class HDataSource : HHandlerDb
         {
-            ConnectionSettings []m_connSett;
+            ConnectionSettings[] m_connSett;
 
             protected enum State
             {
@@ -1374,7 +1374,7 @@ namespace StatisticDiagnostic
 
                 if (m_dt2Time != "False")
                 {
-                    if (Convert.ToInt32(result.Day - DateTime.Now.Day) > 0)
+                    if (Convert.ToInt32(result.Day - DateTime.Now.Day) < 0)
                         return m_dt = result.ToString("dd.MM.yy HH:mm:ss");
                     else
                         return m_dt = result.ToString("HH:mm:ss.fff");
@@ -1554,7 +1554,7 @@ namespace StatisticDiagnostic
             /// </summary>
             public void Create_Modes()
             {
-                m_arPanelsMODES = new Modes[m_dtTECList.Rows.Count+1];
+                m_arPanelsMODES = new Modes[m_dtTECList.Rows.Count + 1];
 
                 for (int i = 0; i < m_arPanelsMODES.Length; i++)
                 {
@@ -1933,7 +1933,7 @@ namespace StatisticDiagnostic
 
                 if (m_dt2Time != "False")
                 {
-                    if (Convert.ToInt32(result.Day - DateTime.Now.Day) > 0)
+                    if (Convert.ToInt32(result.Day - DateTime.Now.Day) < 0)
                         return m_dt = DateTime.Parse(datetime).ToString("dd.MM.yy HH:mm:ss");
                     else
                         return m_dt = DateTime.Parse(datetime).ToString("HH:mm:ss.fff");
@@ -2059,6 +2059,18 @@ namespace StatisticDiagnostic
             }
 
             /// <summary>
+            /// очистка панелей
+            /// </summary>
+            public override void Stop()
+            {
+                if (!(TaskDataGridView == null))
+                    TaskDataGridView.Rows.Clear();
+                else ;
+
+                base.Stop();
+            }
+
+            /// <summary>
             /// Функция для заполнения 
             /// грида информацией о задачах
             /// </summary>
@@ -2095,7 +2107,6 @@ namespace StatisticDiagnostic
                         else
                         {
                             columTimeTask(i);
-
                             TaskDataGridView.Rows[i].Cells[1].Value = drNameTask[0]["Value"];
                             TaskDataGridView.Rows[i].Cells[2].Value = formatTime(drNameTask[1]["Value"].ToString());
                             TaskDataGridView.Rows[i].Cells[0].Value = drNameTask[0]["NAME_SHR"];
@@ -2107,7 +2118,6 @@ namespace StatisticDiagnostic
                 {
                     MessageBox.Show("Ошибка заполнения субобласти Задачи" + e + "");
                 }
-
             }
 
             /// <summary>
@@ -2135,15 +2145,21 @@ namespace StatisticDiagnostic
             /// <returns>форматированная дата</returns>
             private string formatTime(string datetime)
             {
-                string m_dtNow = DateTime.Now.ToString();
-                string m_dt2Time;
-                int m_intNow = Convert.ToInt32(m_dtNow.Substring(0, 2));
-                int m_iDT = Convert.ToInt32(datetime.Substring(8, 2));
+                DateTime result;
+                string m_dt;
+                string m_dt2Time = DateTime.TryParse(datetime, out result).ToString();
 
-                if ((m_intNow - m_iDT) > 0)
-                    return DateTime.Parse(datetime).ToString("dd.MM.yy HH:mm:ss");
+                if (m_dt2Time != "False")
+                {
+                    if (Convert.ToInt32(result.Day - DateTime.Now.Day) < 0)
+                        return m_dt = DateTime.Parse(datetime).ToString("dd.MM.yy HH:mm:ss");
+                    else
+                        return m_dt = DateTime.Parse(datetime).ToString("HH:mm:ss.fff");
+                }
                 else
-                    return m_dt2Time = DateTime.Parse(datetime).ToString("HH:mm:ss.fff");
+                    m_dt = datetime;
+
+                return m_dt;
             }
 
             /// <summary>
@@ -2160,7 +2176,8 @@ namespace StatisticDiagnostic
             /// <summary>
             /// Преобразование времени выполнения задач
             /// </summary>
-            /// <param name="value"></param>
+            /// <param name="m_strTime">значение ячейки</param>
+            /// <returns>возврат даты или ошибки</returns>
             private string ToDateTime(object m_strTime)
             {
                 string parseStr;
@@ -2191,6 +2208,19 @@ namespace StatisticDiagnostic
             }
 
             /// <summary>
+            ///  Проверка работоспособности задач
+            /// </summary>
+            /// <param name="dtime">время задачи</param>
+            /// <returns></returns>
+            private bool interruptTask(string dtime)
+            {
+                if ((DateTime.Parse(SERVER_TIME.ToString()) - DateTime.Parse(dtime)).TotalHours > 1.0)
+                    return true;
+                else
+                    return false;
+            }
+
+            /// <summary>
             /// выделение строки с превышением лимита выполенния задачи
             /// </summary>
             private void overLimit()
@@ -2210,34 +2240,43 @@ namespace StatisticDiagnostic
                     {
                         if (TaskDataGridView.Columns[4].Visible == false)
                             TaskDataGridView.Invoke(new Action(() => TaskDataGridView.Columns[4].Visible = true));
-                        else ;                   
+                        else ;
                         TaskDataGridView.Invoke(new Action(() => TaskDataGridView.Rows[m_check].Cells[4].Value = "Задача не выполняется"));
                         upselectrow(m_check);
                         m_counter--;
                     }
-
-                    else if (TimeSpan.FromSeconds(Convert.ToDouble(drTask[i]["Value"])) > m_lim)
-                    {
-                        if (TaskDataGridView.Columns[4].Visible == false)
-                            TaskDataGridView.Invoke(new Action(() => TaskDataGridView.Columns[4].Visible = true));
-
-                        TaskDataGridView.Invoke(new Action(() => TaskDataGridView.Rows[m_check].Cells[4].Value = "Превышено время выполнения задачи"));
-                        upselectrow(m_check);
-                        m_counter--;
-                    }
-
                     else
-                    {
-                        TaskDataGridView.Invoke(new Action(() => TaskDataGridView.Rows[m_check].DefaultCellStyle.BackColor = Color.White));
-                        TaskDataGridView.Invoke(new Action(() => TaskDataGridView.Rows[m_check].Cells[4].Value = ""));
-
-                        if (m_counter == TaskDataGridView.Rows.Count)
-                            if (TaskDataGridView.Columns[4].Visible == true)
-                                TaskDataGridView.Invoke(new Action(() => TaskDataGridView.Columns[4].Visible = false));
+                        if (interruptTask(drTask[i + 1]["Value"].ToString()))
+                        {
+                            if (TaskDataGridView.Columns[4].Visible == false)
+                                TaskDataGridView.Invoke(new Action(() => TaskDataGridView.Columns[4].Visible = true));
                             else ;
+                            TaskDataGridView.Invoke(new Action(() => TaskDataGridView.Rows[m_check].Cells[4].Value = "Задача не выполняется"));
+                            upselectrow(m_check);
+                            m_counter--;
+                        }
                         else
-                            m_counter++;
-                    }
+                            if (TimeSpan.FromSeconds(Convert.ToDouble(drTask[i]["Value"])) > m_lim)
+                            {
+                                if (TaskDataGridView.Columns[4].Visible == false)
+                                    TaskDataGridView.Invoke(new Action(() => TaskDataGridView.Columns[4].Visible = true));
+
+                                TaskDataGridView.Invoke(new Action(() => TaskDataGridView.Rows[m_check].Cells[4].Value = "Превышено время выполнения задачи"));
+                                upselectrow(m_check);
+                                m_counter--;
+                            }
+                            else
+                            {
+                                TaskDataGridView.Invoke(new Action(() => TaskDataGridView.Rows[m_check].DefaultCellStyle.BackColor = Color.White));
+                                TaskDataGridView.Invoke(new Action(() => TaskDataGridView.Rows[m_check].Cells[4].Value = ""));
+
+                                if (m_counter == TaskDataGridView.Rows.Count)
+                                    if (TaskDataGridView.Columns[4].Visible == true)
+                                        TaskDataGridView.Invoke(new Action(() => TaskDataGridView.Columns[4].Visible = false));
+                                    else ;
+                                else
+                                    m_counter++;
+                            }
                     m_check++;
                     i++;
                 }
@@ -2257,7 +2296,7 @@ namespace StatisticDiagnostic
                     for (int i = 0; i < TaskDataGridView.Rows[indxrow + 1].Cells.Count; i++)
                         TaskDataGridView.Invoke(new Action(() => TaskDataGridView.Rows[0].Cells[i].Value = TaskDataGridView.Rows[indxrow + 1].Cells[i].Value));
 
-                    if (TaskDataGridView.Rows[0].Cells[1].Value.ToString() == "Ошибка!")
+                    if (TaskDataGridView.Rows[0].Cells[4].Value.ToString() == "Задача не выполняется")
                     {
                         TaskDataGridView.Invoke(new Action(() => TaskDataGridView.Rows[0].DefaultCellStyle.BackColor = Color.Firebrick));
                         TaskDataGridView.Invoke(new Action(() => TaskDataGridView.Rows[0].DefaultCellStyle.BackColor = Color.Firebrick));
@@ -2438,6 +2477,31 @@ namespace StatisticDiagnostic
             }
 
             /// <summary>
+            /// Форматирование даты
+            /// “HH:mm:ss.fff”
+            /// </summary>
+            /// <param name="datetime">дата</param>
+            /// <returns>форматированная дата</returns>
+            private string formatTime(string datetime)
+            {
+                DateTime result;
+                string m_dt;
+                string m_dt2Time = DateTime.TryParse(datetime, out result).ToString();
+
+                if (m_dt2Time != "False")
+                {
+                    if (Convert.ToInt32(result.Day - DateTime.Now.Day) < 0)
+                        return m_dt = DateTime.Parse(datetime).ToString("dd.MM.yy HH:mm:ss");
+                    else
+                        return m_dt = DateTime.Parse(datetime).ToString("HH:mm:ss.fff");
+                }
+                else
+                    m_dt = datetime;
+
+                return m_dt;
+            }
+
+            /// <summary>
             /// Поименование источников информации
             /// </summary>
             /// <param name="drMain"></param>
@@ -2526,6 +2590,7 @@ namespace StatisticDiagnostic
 
         /// <summary>
         /// Обработчик события - получение данных при запросе к БД
+        /// получение списка активных источников
         /// </summary>
         /// <param name="table">Результат выполнения запроса - таблица с данными</param>
         public void m_DataSource_EvtRecievedActiveSource(object table)
@@ -2725,6 +2790,7 @@ namespace StatisticDiagnostic
 
                 m_tecdb.StopTEC();
                 m_modesdb.Stop();
+                m_taskdb.Stop();
 
                 base.Stop();
             }
