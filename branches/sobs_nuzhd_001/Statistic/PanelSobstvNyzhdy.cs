@@ -88,7 +88,7 @@ namespace Statistic
             initializeLayoutStyle(listTec.Count / 2
                 , listTec.Count);
 
-            for (i = 1; i < 2; i++)
+            for (i = 0; i < listTec.Count; i++)
             {
                 ptcp = new PanelTecSobstvNyzhdy(listTec[i]/*, fErrRep, fWarRep, fActRep, fRepClr*/);
                 this.Controls.Add(ptcp, i % this.ColumnCount, i / this.ColumnCount);
@@ -188,7 +188,7 @@ namespace Statistic
             {
                 if (ctrl is PanelTecSobstvNyzhdy)
                 {
-                    ((PanelTecSobstvNyzhdy)ctrl).drawGraphHours();
+                    ((PanelTecSobstvNyzhdy)ctrl).DrawGraphHours();
                 }
                 else
                     ;
@@ -259,7 +259,6 @@ namespace Statistic
             System.Windows.Forms.Label[] m_arLabel;
             System.Windows.Forms.DateTimePicker dtCurrDate;
             Dictionary<int, System.Windows.Forms.Label> m_dictLabelVal;
-            DateTime m_datetime;
 
             //bool isActive;
 
@@ -269,7 +268,9 @@ namespace Statistic
             private
                 System.Threading.Timer //Вариант №0
                 //System.Windows.Forms.Timer //Вариант №1
-                    m_timerCurrent;
+                    m_timerCurrent,
+                    startChangeValue;
+
 
             ZedGraphControl m_zedGraphHours;
 
@@ -291,7 +292,7 @@ namespace Statistic
 
                 Initialize();
 
-                dtCurrDate.Value = DateTime.Now.Date;
+                dtCurrDate.Value = DateTime.Now;
             }
 
             public PanelTecSobstvNyzhdy(IContainer container, StatisticCommon.TEC tec/*, DelegateStringFunc fErrRep, DelegateStringFunc fWarRep, DelegateStringFunc fActRep, DelegateBoolFunc fRepClr*/)
@@ -359,7 +360,7 @@ namespace Statistic
 
                 this.Controls.Add(dtCurrDate, 2, 0); this.SetRowSpan(dtCurrDate, 1); this.SetColumnSpan(dtCurrDate, 2);
                 
-                //dtCurrDate.ValueChanged += new EventHandler(dtCurrDate_ChangeValue);
+                dtCurrDate.ValueChanged += new EventHandler(dtCurrDate_ChangeValue);
 
                 this.RowCount = COUNT_FIXED_ROWS;
 
@@ -391,6 +392,8 @@ namespace Statistic
                     System.Threading.Timer(new TimerCallback(TimerCurrent_Tick), m_evTimerCurrent, PanelStatistic.POOL_TIME * 1000 - 1, PanelStatistic.POOL_TIME * 1000 - 1)
                     //System.Windows.Forms.Timer ()
                     ;
+                startChangeValue = new 
+                    System.Threading.Timer(new TimerCallback(startChangeValue_Tick), null, System.Threading.Timeout.Infinite, System.Threading.Timeout.Infinite);
                 //Вариант №1
                 //m_timerCurrent.Interval = ProgramBase.TIMER_START_INTERVAL; // для реализации задержки выполнения итерации
                 //m_timerCurrent.Tick += new EventHandler(TimerCurrent_Tick);
@@ -411,16 +414,50 @@ namespace Statistic
 
             private void dtCurrDate_ChangeValue(object sender, EventArgs e)
             {
+                if (HDateTime.ToMoscowTimeZone(dtCurrDate.Value.Date) == HDateTime.ToMoscowTimeZone(DateTime.Now.Date))
+                    setCurrDateHour(HDateTime.ToMoscowTimeZone(DateTime.Now));
+                else
+                    setCurrDateHour(HDateTime.ToMoscowTimeZone(dtCurrDate.Value.Date));
+                
+
+                if ((m_tecView.m_curDate.Date.Equals(HDateTime.ToMoscowTimeZone(DateTime.Now).Date) == true)
+                    && (m_tecView.lastHour.Equals(HDateTime.ToMoscowTimeZone(DateTime.Now).Hour) == true))
+                {
+                    m_tecView.adminValuesReceived = false; //Чтобы не выполнилась ветвь - переход к след./часу
+                    m_tecView.currHour = true;
+                    if(m_timerCurrent!=null)
+                        m_timerCurrent.Change(0, System.Threading.Timeout.Infinite);
+                }
+                else
+                {
+                    ChangeState();
+                    m_tecView.currHour = false;
+                }
+            }
+            
+            /// <summary>
+            /// Установить текущие дату/час для объекта обработки запросов к БД
+            /// </summary>
+            /// <param name="dtNew"></param>
+            private void setCurrDateHour(DateTime dtNew)
+            {
+                m_tecView.m_curDate = dtNew;
+                m_tecView.lastHour =
+                    dtNew.Hour// - 1; //- (int)HDateTime.GetUTCOffsetOfMoscowTimeZone().TotalHours //- 3
+                    ;
+                if (m_tecView.lastHour < 0)
+                {
+                    m_tecView.m_curDate = m_tecView.m_curDate.AddDays(-1);
+                    m_tecView.lastHour += 24;
+                }
+                else
+                    ;
             }
 
             private void ChangeState()
             {
-                if (dtCurrDate.Value.Date != DateTime.Now.Date)
-                    m_tecView.currHour = false;
-                else
-                    m_tecView.currHour = true;
-
-                m_tecView.m_curDate = dtCurrDate.Value.Date; //DateTime.Now;
+                
+               // m_tecView.m_curDate = dtCurrDate.Value.Date; //DateTime.Now;
 
                 m_tecView.ChangeState ();
             }
@@ -477,56 +514,92 @@ namespace Statistic
                 return 0;
             }
 
+            private void startChangeValue_Tick(Object stateInfo)
+            {
+                dtCurrDate_ChangeValue(null, null);
+                startChangeValue.Change(System.Threading.Timeout.Infinite, System.Threading.Timeout.Infinite);
+            }
+
             private void TimerCurrent_Tick(Object stateInfo)
             //private void TimerCurrent_Tick(Object stateInfo, EventArgs ev)
             {
+                //if (Actived == true)
+                //{
+                //    //Вариант №1
+                //    //if (m_timerCurrent.Interval == ProgramBase.TIMER_START_INTERVAL)
+                //    //{
+                //    //    m_timerCurrent.Interval = PanelStatistic.POOL_TIME * 1000 - 1;
+
+                //    //    return ;
+                //    //}
+                //    //else
+                //    //    ;
+
+                //    dtCurrDate_ChangeValue(null, null);
+                //}
+                //else
+                //    ;
+
+
                 if (Actived == true)
                 {
-                    //Вариант №1
-                    //if (m_timerCurrent.Interval == ProgramBase.TIMER_START_INTERVAL)
-                    //{
-                    //    m_timerCurrent.Interval = PanelStatistic.POOL_TIME * 1000 - 1;
-
-                    //    return ;
-                    //}
-                    //else
-                    //    ;
-
-                    ChangeState();
+                    if (m_tecView.currHour == true)
+                    {
+                        m_timerCurrent.Change(PanelStatistic.POOL_TIME * 1000 - 1, System.Threading.Timeout.Infinite);
+                        setCurrDateHour(HDateTime.ToMoscowTimeZone(DateTime.Now));
+                        ChangeState();
+                        Debug.Print(m_arLabel[0] + " обновление");
+                    }
+                    else                        
+                        ;
                 }
                 else
                     ;
-
-
             }
 
             private bool zedGraphHours_MouseUpEvent(ZedGraphControl sender, MouseEventArgs e)
             {
-                //if (e.Button != MouseButtons.Left)
-                //    return true;
-                //else
-                //    ;
+                if (e.Button != MouseButtons.Left)
+                    return true;
+                else
+                    ;
 
-                //object obj;
-                //PointF p = new PointF(e.X, e.Y);
-                //bool found;
-                //int index;
+                object obj;
+                PointF p = new PointF(e.X, e.Y);
+                bool found;
+                int index;
 
-                //found = sender.GraphPane.FindNearestObject(p, CreateGraphics(), out obj, out index);
+                found = sender.GraphPane.FindNearestObject(p, CreateGraphics(), out obj, out index);
+                
+                if (!(obj is BarItem) && !(obj is LineItem))
+                    return true;
+                else
+                    ;
 
-                //if (!(obj is BarItem) && !(obj is LineItem))
-                //    return true;
-                //else
-                //    ;
+                if (found == true)
+                {
+                    //delegateStartWait();
 
-                //if (found == true)
-                //{
-                //    //delegateStartWait();
+                    bool bRetroHour = true;//m_tecView.zedGraphHours_MouseUpEvent(index);
 
-                //    bool bRetroHour = m_tecView.zedGraphHours_MouseUpEvent(index);
 
-                //    //delegateStopWait();
-                //}
+                    if (bRetroHour == true)
+                    {
+                        m_tecView.currHour = false;
+                        DateTime dt = new DateTime(dtCurrDate.Value.Year, dtCurrDate.Value.Month, dtCurrDate.Value.Day, index, 59, 0);
+
+                        m_arLabel[(int)INDEX_LABEL.DATETIME_TM_SN].Text = dt.ToString(@"HH:mm:ss");
+                        setTextToLabelVal(m_arLabel[(int)INDEX_LABEL.VALUE_TM_SN], m_tecView.m_valuesHours[index].valuesTMSNPsum);
+                        foreach (System.Windows.Forms.Label l in m_arLabel)
+                        {
+                            l.Refresh();
+                        }
+                        Debug.Print(m_arLabel[0] + " ретро");
+                        startChangeValue.Change(10000, System.Threading.Timeout.Infinite);
+                    }                   
+
+                    //delegateStopWait();
+                }
 
                 return true;
             }
@@ -540,15 +613,12 @@ namespace Statistic
             {
                 FormMain.formGraphicsSettings.SetScale();
 
+                dtCurrDate_ChangeValue(null, null);
+
                 return true;
             }
 
-            public void drawGraphHours()
-            {
-                DrawGraphHours ();
-            }
-
-            private void DrawGraphHours()
+            public void DrawGraphHours()
             {
                 GraphPane pane = m_zedGraphHours.GraphPane;
 
@@ -560,10 +630,12 @@ namespace Statistic
 
                 double[] valuesTMSNPsum = new double[itemscount];
 
+                TecView.valuesTEC[] valuesHours = new TecView.valuesTEC[m_tecView.m_valuesHours.Length];
+                m_tecView.m_valuesHours.CopyTo(valuesHours, 0);
+
                 double minimum = double.MaxValue, minimum_scale;
                 double maximum = 0, maximum_scale;
                 bool noValues = true;
-                TecView.valuesTEC[] valTEC = m_tecView.m_valuesHours;
                 for (int i = 0; i < itemscount; i++)
                 {
                     
@@ -578,18 +650,24 @@ namespace Statistic
                     else
                         names[i] = (i + 1).ToString();
 
-                    valuesTMSNPsum[i] = valTEC[i].valuesTMSNPsum;
+                    valuesTMSNPsum[i] = valuesHours[i].valuesTMSNPsum;
 
-                    if ((minimum > valuesTMSNPsum[i]) && (! (valuesTMSNPsum[i] == 0)))
-                        minimum = valuesTMSNPsum[i];
-                    else
-                        ;
+                    if (valuesTMSNPsum[i] != 0)
+                    {
+                        noValues = false;
 
-                    //noValues = false; //???
-                    noValues = ! (valuesTMSNPsum[i] == 0);
-
-                    if (maximum < valuesTMSNPsum[i])
-                        maximum = valuesTMSNPsum[i];
+                        if (minimum > valuesTMSNPsum[i])
+                        {
+                            minimum = valuesTMSNPsum[i];
+                        }
+                        else
+                            ; 
+                        
+                        if (maximum < valuesTMSNPsum[i])
+                            maximum = valuesTMSNPsum[i];
+                        else
+                            ;
+                    }
                     else
                         ;
                 }
