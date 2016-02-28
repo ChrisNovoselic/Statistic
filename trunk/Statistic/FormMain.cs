@@ -51,6 +51,7 @@ namespace Statistic
                 menuItem.Size = new System.Drawing.Size(243, 22);
                 menuItem.Name = name;
                 menuItem.Text = text;
+                menuItem.Enabled = false;
                 panel = null;
             }
         };
@@ -211,27 +212,22 @@ namespace Statistic
                 {
                     s_iMainSourceData = Int32.Parse(formParameters.m_arParametrSetup[(int)FormParameters.PARAMETR_SETUP.MAIN_DATASOURCE]);
 
-                    //Инструмент администратора
-                    параметрыToolStripMenuItem.Enabled =
-                    администрированиеToolStripMenuItem.Enabled =                        
-                    m_dictAddingTabs[(int)ID_ADDING_TAB.DATETIMESYNC_SOURCE_DATA].menuItem.Enabled =
-                    m_dictAddingTabs[(int)ID_ADDING_TAB.DIAGNOSTIC].menuItem.Enabled =
-                        HStatisticUsers.RoleIsAdmin;
-
                     HMark markSett = new HMark(Int32.Parse(HStatisticUsers.GetAllowed((int)HStatisticUsers.ID_ALLOWED.AUTO_LOADSAVE_USERPROFILE)));
                     файлПрофильАвтоЗагрузитьСохранитьToolStripMenuItem.Enabled = markSett.IsMarked(0);
                     файлПрофильАвтоЗагрузитьСохранитьToolStripMenuItem.Checked = markSett.IsMarked(1);
 
-                    //панельГрафическихToolStripMenuItem.Enabled =
-                    //выборОбъекты22ToolStripMenuItem.Enabled = 
-                    //выборОбъекты23ToolStripMenuItem.Enabled = 
-                    //значенияТекущаяМощностьГТПгТЭЦснToolStripMenuItem.Enabled = 
-                    //значенияТекущаяМощностьТЭЦгТЭЦснToolStripMenuItem.Enabled = 
-                    //мониторингПоследняяМинутаЧасToolStripMenuItem.Enabled =
-                    //собственныеНуждыToolStripMenuItem.Enabled =
+                    //Инструмент администратора - доступ по роли
+                    параметрыToolStripMenuItem.Enabled =
+                    администрированиеToolStripMenuItem.Enabled =                        
+                    m_dictAddingTabs[(int)ID_ADDING_TAB.DATETIMESYNC_SOURCE_DATA].menuItem.Enabled =
+                    m_dictAddingTabs[(int)ID_ADDING_TAB.DIAGNOSTIC].menuItem.Enabled =
+                    m_dictAddingTabs[(int)ID_ADDING_TAB.ANALYZER].menuItem.Enabled =
+                    m_dictAddingTabs[(int)ID_ADDING_TAB.TEC_Component].menuItem.Enabled =
+                    m_dictAddingTabs[(int)ID_ADDING_TAB.USERS].menuItem.Enabled =
+                        HStatisticUsers.RoleIsAdmin;
+                    //Инструмент администратора - проверка дополнительных настроек [profiles]
                     m_dictAddingTabs[(int)ID_ADDING_TAB.DATETIMESYNC_SOURCE_DATA].menuItem.Enabled &= HStatisticUsers.IsAllowed((int)HStatisticUsers.ID_ALLOWED.MENUITEM_SETTING_PARAMETERS_SYNC_DATETIME_DB);
                     m_dictAddingTabs[(int)ID_ADDING_TAB.DIAGNOSTIC].menuItem.Enabled &= HStatisticUsers.IsAllowed((int)HStatisticUsers.ID_ALLOWED.MENUITEM_SETTING_PARAMETERS_DIAGNOSTIC);
-                    m_dictAddingTabs[(int)ID_ADDING_TAB.SOTIASSO].menuItem.Enabled = HStatisticUsers.IsAllowed((int)HStatisticUsers.ID_ALLOWED.MENUITEM_VIEW_VALUES_SOTIASSO);
 
                     //ProgramBase.s_iAppID = Int32.Parse ((string)Properties.Settings.Default [@"AppID"]);
                     ProgramBase.s_iAppID = Int32.Parse((string)Properties.Resources.AppID);
@@ -1233,6 +1229,8 @@ namespace Statistic
         {
             //Logging.Logg().Debug(@"FormMain::clearTabPages () - вХод...", Logging.INDEX_MESSAGE.NOT_SET);
 
+            FormChangeMode.MANAGER indxManager = FormChangeMode.MANAGER.UNKNOWN;
+
             activateTabPage(tclTecViews.SelectedIndex, false);
 
             int i = -1;
@@ -1265,19 +1263,26 @@ namespace Statistic
                     bToRemove = true;
                 }
                 else
-                    if ((tab.Controls[0] is PanelAdminKomDisp)
-                        && (formChangeMode.m_markTabAdminChecked.IsMarked((int)FormChangeMode.MANAGER.DISP) == false))
-                        bToRemove = true;
-                    else
-                        if ((tab.Controls[0] is PanelAdminNSS)
-                            && (formChangeMode.m_markTabAdminChecked.IsMarked((int)FormChangeMode.MANAGER.NSS) == false))
+                {
+                    bToRemove = !bAttachSelIndxChanged;
+
+                    if (bToRemove == false)
+                    {
+                        indxManager = tab.Controls[0] is PanelAdminKomDisp ? FormChangeMode.MANAGER.DISP :
+                            tab.Controls[0] is PanelAdminNSS ? FormChangeMode.MANAGER.NSS :
+                            tab.Controls[0] is PanelAlarm ? FormChangeMode.MANAGER.ALARM :
+                                FormChangeMode.MANAGER.UNKNOWN;
+
+                        if ((!(indxManager == FormChangeMode.MANAGER.UNKNOWN))
+                            && (formChangeMode.m_markTabAdminChecked.IsMarked((int)indxManager) == false))
                             bToRemove = true;
                         else
-                            if ((tab.Controls[0] is PanelAlarm)
-                                && (formChangeMode.m_markTabAdminChecked.IsMarked((int)FormChangeMode.MANAGER.ALARM) == false))
-                                bToRemove = true;
-                            else
-                                ;
+                            ;
+                    }
+                    else
+                        ;
+                }
+                //??? могут быть и др. типы вкладок
 
                 if (bToRemove == true)
                 {
@@ -1418,7 +1423,8 @@ namespace Statistic
                     case -3: //Не найден пользователь
                         //Остальные п.п. меню блокируются в 'сменитьРежимToolStripMenuItem_EnabledChanged'
                         // этот п. блокируется только при конкретной ошибке "-3"
-                        this.настройкиСоединенияБДКонфToolStripMenuItem.Enabled = false;
+                        this.настройкиСоединенияБДКонфToolStripMenuItem.Enabled =
+                             false;
                         break;
                     case -2:
                     case -5:
@@ -1512,14 +1518,14 @@ namespace Statistic
 
                 base.Stop();
 
-                int i = -1;
-                if (!(m_arPanelAdmin == null))
-                    for (i = 0; i < (int)FormChangeMode.MANAGER.COUNT_MANAGER; i++)
-                    {
-                        if (!(m_arPanelAdmin[i] == null)) m_arPanelAdmin[i].Stop(); else ;
-                    }
-                else
-                    ;
+                //int i = -1;
+                //if (!(m_arPanelAdmin == null))
+                //    for (i = 0; i < (int)FormChangeMode.MANAGER.COUNT_MANAGER; i++)
+                //    {
+                //        if (!(m_arPanelAdmin[i] == null)) m_arPanelAdmin[i].Stop(); else ;
+                //    }
+                //else
+                //    ;
 
                 string msg = string.Empty;
                 iRes = Initialize(out msg);
@@ -1562,9 +1568,9 @@ namespace Statistic
                     else
                         ;
 
-                    m_arPanelAdmin[(int)FormChangeMode.MANAGER.DISP].Stop();
-                    m_arPanelAdmin[(int)FormChangeMode.MANAGER.NSS].Stop();
-                    m_arPanelAdmin[(int)FormChangeMode.MANAGER.ALARM].Stop();
+                    //m_arPanelAdmin[(int)FormChangeMode.MANAGER.DISP].Stop();
+                    //m_arPanelAdmin[(int)FormChangeMode.MANAGER.NSS].Stop();
+                    //m_arPanelAdmin[(int)FormChangeMode.MANAGER.ALARM].Stop();
                     m_markPrevStatePanelAdmin.UnMarked();
 
                     formChangeMode.btnClearAll_Click(formChangeMode, new EventArgs());
@@ -1937,16 +1943,43 @@ namespace Statistic
 
         private void сменитьРежимToolStripMenuItem_EnabledChanged(object sender, EventArgs e)
         {
-            ToolStripMenuItem item = (ToolStripMenuItem)sender;
+            bool bPrevEnabled = видToolStripMenuItem.Enabled // предцдущее состояние по одному из (например, 1-му в списке) п.п. меню
+                , bCurEnabled = (sender as ToolStripMenuItem).Enabled;
 
-            видToolStripMenuItem.Enabled =
-            настройкиСоединенияБДИсточникToolStripMenuItem.Enabled =
-            изменитьПарольДиспетчераToolStripMenuItem.Enabled =
-            изменитьПарольАдминистратораToolStripMenuItem.Enabled =
-            изменитьПарольНССToolStripMenuItem.Enabled =
-            изментьСоставТЭЦГТПЩУToolStripMenuItem.Enabled =
-            параметрыToolStripMenuItem.Enabled =
-                item.Enabled;
+            if (!(bCurEnabled == bPrevEnabled))
+            {
+                видToolStripMenuItem.Enabled =
+                настройкиСоединенияБДИсточникToolStripMenuItem.Enabled =
+                изменитьПарольДиспетчераToolStripMenuItem.Enabled =
+                изменитьПарольАдминистратораToolStripMenuItem.Enabled =
+                изменитьПарольНССToolStripMenuItem.Enabled =
+                параметрыToolStripMenuItem.Enabled =
+                    bCurEnabled;
+                // разрешить использование дочерних п.п.
+                if (bCurEnabled == true)
+                {
+                    m_dictAddingTabs[(int)ID_ADDING_TAB.CUSTOM_2X2_1].menuItem.Enabled =
+                    m_dictAddingTabs[(int)ID_ADDING_TAB.CUSTOM_2X2_2].menuItem.Enabled =
+                    m_dictAddingTabs[(int)ID_ADDING_TAB.CUSTOM_2X2_3].menuItem.Enabled =
+                    m_dictAddingTabs[(int)ID_ADDING_TAB.CUSTOM_2X2_4].menuItem.Enabled =
+                    m_dictAddingTabs[(int)ID_ADDING_TAB.CUSTOM_2X3_1].menuItem.Enabled =
+                    m_dictAddingTabs[(int)ID_ADDING_TAB.CUSTOM_2X3_2].menuItem.Enabled =
+                    m_dictAddingTabs[(int)ID_ADDING_TAB.CUSTOM_2X3_3].menuItem.Enabled =
+                    m_dictAddingTabs[(int)ID_ADDING_TAB.CUSTOM_2X3_4].menuItem.Enabled =                        
+                    m_dictAddingTabs[(int)ID_ADDING_TAB.CUR_POWER].menuItem.Enabled =
+                    m_dictAddingTabs[(int)ID_ADDING_TAB.TM_SN_POWER].menuItem.Enabled =
+                    m_dictAddingTabs[(int)ID_ADDING_TAB.MONITOR_LAST_MINUTES].menuItem.Enabled =
+                    m_dictAddingTabs[(int)ID_ADDING_TAB.SOBSTV_NYZHDY].menuItem.Enabled =
+                    m_dictAddingTabs[(int)ID_ADDING_TAB.SOTIASSO].menuItem.Enabled =
+                        bCurEnabled;
+
+                    m_dictAddingTabs[(int)ID_ADDING_TAB.SOTIASSO].menuItem.Enabled &= HStatisticUsers.IsAllowed((int)HStatisticUsers.ID_ALLOWED.MENUITEM_VIEW_VALUES_SOTIASSO);
+                }
+                else
+                    ;
+            }
+            else
+                ; // нет изменений
         }
 
         private void tclTecViews_SelectedIndexChanged(object sender, EventArgs e)
@@ -2514,16 +2547,21 @@ namespace Statistic
         {
             Control ctrl = tclTecViews.TabPages[tclTecViews.SelectedIndex].Controls[0];
 
-            if ((!(tclTecViews.SelectedIndex < 0)) && (tclTecViews.SelectedIndex < tclTecViews.TabCount))
-            {
+            if ((!(tclTecViews.SelectedIndex < 0))
+                && (tclTecViews.SelectedIndex < tclTecViews.TabCount))
                 if (ctrl is PanelTecViewBase)
                     ((PanelTecViewBase)ctrl).UpdateGraphicsCurrent(type);
                 else
                     if (ctrl is PanelCustomTecView)
                         ((PanelCustomTecView)ctrl).UpdateGraphicsCurrent(type);
                     else
-                        ;
-            }
+                        if (ctrl is PanelSobstvNyzhdy)
+                            ((PanelSobstvNyzhdy)ctrl).UpdateGraphicsCurrent(type);
+                        else
+                            if (ctrl is PanelSOTIASSO)
+                                ((PanelSOTIASSO)ctrl).UpdateGraphicsCurrent(type);
+                            else
+                                ;
             else
                 ;
 

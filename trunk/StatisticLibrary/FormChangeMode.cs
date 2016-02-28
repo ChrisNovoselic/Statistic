@@ -132,15 +132,15 @@ namespace StatisticCommon
 
                 bChecked = listIDsProfileCheckedIndices.IndexOf(ID_SPECIAL_TAB[(int)MANAGER.DISP]) > -1;
                 m_listItems.Add(new Item(ID_SPECIAL_TAB[(int)MANAGER.DISP], getNameAdminValues(MANAGER.DISP, MODE_TECCOMPONENT.GTP), bChecked));
-                m_markTabAdminChecked.Set ((int)MANAGER.DISP, bChecked);
+                //m_markTabAdminChecked.Set ((int)MANAGER.DISP, bChecked);
 
                 bChecked = listIDsProfileCheckedIndices.IndexOf(ID_SPECIAL_TAB[(int)MANAGER.NSS]) > -1;
                 m_listItems.Add(new Item(ID_SPECIAL_TAB[(int)MANAGER.NSS], getNameAdminValues(MANAGER.NSS, MODE_TECCOMPONENT.TG), bChecked));
-                m_markTabAdminChecked.Set((int)MANAGER.NSS, bChecked);
+                //m_markTabAdminChecked.Set((int)MANAGER.NSS, bChecked);
 
                 bChecked = listIDsProfileCheckedIndices.IndexOf(ID_SPECIAL_TAB[(int)MANAGER.ALARM]) > -1;
                 m_listItems.Add(new Item(ID_SPECIAL_TAB[(int)MANAGER.ALARM], getNameAdminValues(MANAGER.ALARM, MODE_TECCOMPONENT.GTP), bChecked));
-                m_markTabAdminChecked.Set((int)MANAGER.ALARM, bChecked);
+                //m_markTabAdminChecked.Set((int)MANAGER.ALARM, bChecked);
             }
             else {
             }

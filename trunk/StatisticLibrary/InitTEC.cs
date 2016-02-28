@@ -43,16 +43,28 @@ namespace StatisticCommon
             string req = string.Empty;
             req = "SELECT * FROM TEC_LIST ";
 
-            if (bIgnoreTECInUse == false) req += "WHERE INUSE=1 "; else ;
+            if (bIgnoreTECInUse == false)
+                req += "WHERE INUSE=1 ";
+            else
+                ;
+
+            if (bIgnoreTECInUse == true)
+                // условие еще не добавлено - добавл€ем
+                    req += @"WHERE ";
+                else
+                    if (bIgnoreTECInUse == false)
+                    // условие уже добавлено
+                        req += @"AND ";
+                    else
+                        ;
+
             if (!(HStatisticUsers.allTEC == 0))
             {
-                if (bIgnoreTECInUse == false) req += @"AND "; else ;
-
-                if (bIgnoreTECInUse == true) req += @"WHERE "; else ;
                 req += @"ID=" + HStatisticUsers.allTEC.ToString();
             }
             else
-                ;
+            //??? ограничение (временное) дл€ Ћ 
+                req += @"ID>0 AND NOT (ID>10)";
 
             return DbTSQLInterface.Select(ref connConfigDB, req, null, null, out err);
         }

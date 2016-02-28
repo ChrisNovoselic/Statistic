@@ -37,7 +37,7 @@ namespace Statistic
 
         private void InitializeComponent()
         {
-            System.ComponentModel.ComponentResourceManager resources = new System.ComponentModel.ComponentResourceManager(typeof(FormUser));
+            //System.ComponentModel.ComponentResourceManager resources = new System.ComponentModel.ComponentResourceManager(typeof(FormUser));
            
             this.treeView_Users = new TreeView_Users();
             this.dgvProp = new StatisticCommon.DataGridView_Prop_ComboBoxCell();

@@ -58,11 +58,9 @@ namespace Statistic
         /// the contents of this method with the code editor.
         /// </summary>
         private void InitializeComponent()
-        {
-            
-        
+        {        
             this.components = new System.ComponentModel.Container();
-            System.ComponentModel.ComponentResourceManager resources = new System.ComponentModel.ComponentResourceManager(typeof(FormTECComponent));
+            //System.ComponentModel.ComponentResourceManager resources = new System.ComponentModel.ComponentResourceManager(typeof(FormTECComponent));
             dgvProp = new DataGridView_Prop();
             btnOK = new Button();
             btnBreak = new Button();

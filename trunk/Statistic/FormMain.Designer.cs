@@ -76,7 +76,7 @@ namespace Statistic
             //this.рассинхронизацияДатаВремяСерверБДToolStripMenuItem = new System.Windows.Forms.ToolStripMenuItem();
             //this.ДиагностикаToolStripMenuItem = new System.Windows.Forms.ToolStripMenuItem();
             this.изменитьПарольНССToolStripMenuItem = new System.Windows.Forms.ToolStripMenuItem();
-            this.изментьСоставТЭЦГТПЩУToolStripMenuItem = new System.Windows.Forms.ToolStripMenuItem();
+            //this.изментьСоставТЭЦГТПЩУToolStripMenuItem = new System.Windows.Forms.ToolStripMenuItem();
             this.параметрыToolStripMenuItem = new System.Windows.Forms.ToolStripMenuItem();
             this.параметрыПриложенияToolStripMenuItem = new System.Windows.Forms.ToolStripMenuItem();
             this.параметрыТГБийскToolStripMenuItem = new System.Windows.Forms.ToolStripMenuItem();
@@ -454,7 +454,7 @@ namespace Statistic
         private System.Windows.Forms.ToolStripMenuItem изменитьПарольДиспетчераToolStripMenuItem;
         private System.Windows.Forms.ToolStripMenuItem изменитьПарольАдминистратораToolStripMenuItem;
         private System.Windows.Forms.ToolStripMenuItem изменитьПарольНССToolStripMenuItem;
-        private System.Windows.Forms.ToolStripMenuItem изментьСоставТЭЦГТПЩУToolStripMenuItem;
+        //private System.Windows.Forms.ToolStripMenuItem изментьСоставТЭЦГТПЩУToolStripMenuItem;
         private System.Windows.Forms.ToolStripMenuItem оПрограммеToolStripMenuItem;
         private System.Windows.Forms.Label lblLabel;
         private System.Windows.Forms.ToolStripMenuItem видToolStripMenuItem;
