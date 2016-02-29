@@ -174,12 +174,19 @@ namespace Statistic
 
         protected abstract class HZedGraphControl : ZedGraph.ZedGraphControl
         {
-            public enum INDEX_CONTEXTMENU_ITEM { SHOW_VALUES, SEPARATOR_1
-                                                , COPY, SAVE, TO_EXCEL, SEPARATOR_2
-                                                , SETTINGS_PRINT, PRINT, SEPARATOR_3
-                                                , AISKUE_PLUS_SOTIASSO, AISKUE, SOTIASSO_3_MIN, SOTIASSO_1_MIN
-                                                , COUNT };
-            
+            public enum INDEX_CONTEXTMENU_ITEM
+            {
+                SHOW_VALUES,
+                SEPARATOR_1
+                    , COPY, SAVE, TO_EXCEL,
+                SEPARATOR_2
+                    , SETTINGS_PRINT, PRINT,
+                SEPARATOR_3
+                    , AISKUE_PLUS_SOTIASSO, AISKUE, SOTIASSO_3_MIN,
+                SOTIASSO_1_MIN
+                    , COUNT
+            };
+
             // контекстные меню
             protected class HContextMenuStripZedGraph : System.Windows.Forms.ContextMenuStrip
             {
@@ -210,13 +217,13 @@ namespace Statistic
                     });
                     this.Name = "contextMenuStripMins";
                     this.Size = new System.Drawing.Size(198, 148);
-                    
+
                     int indx = -1;
                     // 
                     // показывать«начени€ToolStripMenuItemMins
                     // 
-                    indx = (int)INDEX_CONTEXTMENU_ITEM.SHOW_VALUES;;
-                    this.Items [indx].Name = "показывать«начени€ToolStripMenuItem";
+                    indx = (int)INDEX_CONTEXTMENU_ITEM.SHOW_VALUES; ;
+                    this.Items[indx].Name = "показывать«начени€ToolStripMenuItem";
                     this.Items[indx].Size = new System.Drawing.Size(197, 22);
                     this.Items[indx].Text = "ѕоказывать значени€";
                     ((ToolStripMenuItem)this.Items[indx]).Checked = true;
@@ -302,10 +309,11 @@ namespace Statistic
 
             private object m_lockValue;
 
-            public string SourceDataText {
+            public string SourceDataText
+            {
                 get
                 {
-                    for (HZedGraphControl.INDEX_CONTEXTMENU_ITEM indx = INDEX_CONTEXTMENU_ITEM.AISKUE_PLUS_SOTIASSO; indx < HZedGraphControl.INDEX_CONTEXTMENU_ITEM.COUNT; indx ++)
+                    for (HZedGraphControl.INDEX_CONTEXTMENU_ITEM indx = INDEX_CONTEXTMENU_ITEM.AISKUE_PLUS_SOTIASSO; indx < HZedGraphControl.INDEX_CONTEXTMENU_ITEM.COUNT; indx++)
                         if (((ToolStripMenuItem)ContextMenuStrip.Items[(int)indx]).Checked == true)
                             return ((ToolStripMenuItem)ContextMenuStrip.Items[(int)indx]).Text;
                         else
@@ -318,7 +326,7 @@ namespace Statistic
             public HZedGraphControl(object lockVal)
             {
                 this.ContextMenuStrip = new HContextMenuStripZedGraph();
-                
+
                 InitializeComponent();
 
                 m_lockValue = lockVal;
@@ -350,13 +358,14 @@ namespace Statistic
                 this.IsEnableVZoom = false;
                 this.IsShowPointValues = true;
 
-                InitializeEventHandler ();
+                InitializeEventHandler();
 
                 this.PointValueEvent += new ZedGraph.ZedGraphControl.PointValueHandler(this.OnPointValueEvent);
                 this.DoubleClickEvent += new ZedGraph.ZedGraphControl.ZedMouseEventHandler(this.OnDoubleClickEvent);
             }
 
-            private void InitializeEventHandler() {
+            private void InitializeEventHandler()
+            {
                 ((HContextMenuStripZedGraph)this.ContextMenuStrip).Items[(int)INDEX_CONTEXTMENU_ITEM.SHOW_VALUES].Click += new System.EventHandler(показывать«начени€ToolStripMenuItem_Click);
                 ((HContextMenuStripZedGraph)this.ContextMenuStrip).Items[(int)INDEX_CONTEXTMENU_ITEM.COPY].Click += new System.EventHandler(копироватьToolStripMenuItem_Click);
                 ((HContextMenuStripZedGraph)this.ContextMenuStrip).Items[(int)INDEX_CONTEXTMENU_ITEM.SAVE].Click += new System.EventHandler(сохранитьToolStripMenuItem_Click);
@@ -366,8 +375,8 @@ namespace Statistic
 
             public void InitializeEventHandler(EventHandler fToExcel, EventHandler fSourceData)
             {
-                ((HContextMenuStripZedGraph)this.ContextMenuStrip).Items[(int)INDEX_CONTEXTMENU_ITEM.TO_EXCEL] .Click += new System.EventHandler(fToExcel);
-                for (int i = (int)INDEX_CONTEXTMENU_ITEM.AISKUE_PLUS_SOTIASSO; i < this.ContextMenuStrip.Items.Count; i ++)
+                ((HContextMenuStripZedGraph)this.ContextMenuStrip).Items[(int)INDEX_CONTEXTMENU_ITEM.TO_EXCEL].Click += new System.EventHandler(fToExcel);
+                for (int i = (int)INDEX_CONTEXTMENU_ITEM.AISKUE_PLUS_SOTIASSO; i < this.ContextMenuStrip.Items.Count; i++)
                     ((HContextMenuStripZedGraph)this.ContextMenuStrip).Items[i].Click += new System.EventHandler(fSourceData);
             }
 

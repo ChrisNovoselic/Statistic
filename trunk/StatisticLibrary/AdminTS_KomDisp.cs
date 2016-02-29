@@ -98,20 +98,20 @@ namespace StatisticCommon
                     //strCSVNameFileTemp = strPPBRCSVNameFile;
                     string strCSVNameFileTemp = Path.GetFileNameWithoutExtension(m_fullPathCSVValues);
 
-                    strCSVNameFileTemp = strCSVNameFileTemp.Replace("(", string.Empty);
-                    strCSVNameFileTemp = strCSVNameFileTemp.Replace(")", string.Empty);
-                    strCSVNameFileTemp = strCSVNameFileTemp.Replace(".", string.Empty);
-                    strCSVNameFileTemp = strCSVNameFileTemp.Replace(" ", string.Empty);
-                    strCSVNameFileTemp = Path.GetDirectoryName(m_fullPathCSVValues) + @"\" +
-                                            strCSVNameFileTemp + @"_копия" +
-                                            Path.GetExtension(m_fullPathCSVValues);
+                    //strCSVNameFileTemp = strCSVNameFileTemp.Replace("(", string.Empty);
+                    //strCSVNameFileTemp = strCSVNameFileTemp.Replace(")", string.Empty);
+                    //strCSVNameFileTemp = strCSVNameFileTemp.Replace(".", string.Empty);
+                    //strCSVNameFileTemp = strCSVNameFileTemp.Replace(" ", string.Empty);
+                    //strCSVNameFileTemp = Path.GetDirectoryName(m_fullPathCSVValues) + @"\" +
+                    //                        strCSVNameFileTemp + @"_копия" +
+                    //                        Path.GetExtension(m_fullPathCSVValues);
 
                     ////при аргументе = каталог размещения наборов
                     //strPPBRCSVNameFile = m_PPBRCSVDirectory + strPPBRCSVNameFile + strCSVExt;
                     //strCSVNameFileTemp = m_PPBRCSVDirectory + strCSVNameFileTemp + strCSVExt;
 
                     //File.Copy(strPPBRCSVNameFile, strCSVNameFileTemp, true);
-                    File.Copy(m_fullPathCSVValues, strCSVNameFileTemp, true);
+                    //File.Copy(m_fullPathCSVValues, strCSVNameFileTemp, true);
 
                     ////Для en-US заменить разделитель ',' в CSV-файле на '.'
                     //StreamReader sr = new StreamReader(strCSVNameFileTemp, System.Text.Encoding.Default);
@@ -120,7 +120,7 @@ namespace StatisticCommon
                     //StreamWriter sw = new StreamWriter(strCSVNameFileTemp);
                     //sw.Write(cont); sw.Flush(); sw.Close(); sw.Dispose();
 
-                    if (!(m_tableValuesResponse == null)) m_tableValuesResponse.Clear(); else ;
+                    //if (!(m_tableValuesResponse == null)) m_tableValuesResponse.Clear(); else ;
 
                     if ((IsCanUseTECComponents() == true) && (strCSVNameFileTemp.Length > 0))
                         //m_tableValuesResponse = DbTSQLInterface.Select(@"CSV_DATASOURCE=" + Path.GetDirectoryName(strCSVNameFileTemp),
@@ -132,8 +132,8 @@ namespace StatisticCommon
                         //                                                        //allTECComponents[indxTECComponents].name_future +
                         //                                                        //@"'"
                         //                                                        , out err);
-                        m_tableValuesResponse = DbTSQLInterface.CSVImport(Path.GetDirectoryName(strCSVNameFileTemp)
-                                                                            + @"\" + Path.GetFileName(strCSVNameFileTemp)
+                        m_tableValuesResponse = DbTSQLInterface.CSVImport(/*Path.GetDirectoryName(strCSVNameFileTemp)
+                                                                            + @"\" + Path.GetFileName(strCSVNameFileTemp)*/m_fullPathCSVValues
                                                                             , @"*"
                                                                             , out err);
                     else
@@ -143,7 +143,7 @@ namespace StatisticCommon
                     //Logging.Logg().Send("Admin.cs - GetPPBRCSVValuesRequest () - ...", false, false, false);
                     //Logging.Logg().LogUnlock();
 
-                    File.Delete(strCSVNameFileTemp);
+                    //File.Delete(strCSVNameFileTemp);
                 }
                 else
                     err = -2; //Файл не существует (очень НЕвероятно, т.к. выбран с помощью диалогового окна)

@@ -432,18 +432,22 @@ namespace StatisticCommon
             }
         }
 
-        public void ChangeState_SobstvNyzhdy () {
-            ClearStates();
+        public void ChangeState_SobstvNyzhdy () 
+        {
+                ClearStates();
 
-            ClearValues();
+                ClearValues();
 
-            if (m_tec.m_bSensorsStrings == false)
-                AddState((int)StatesMachine.InitSensors);
-            else ;
+                if (m_tec.m_bSensorsStrings == false)
+                    AddState((int)StatesMachine.InitSensors);
+                else ;
 
-            //AddState((int)TecView.StatesMachine.CurrentHours_Fact); //Только для определения сезона ???            
-            AddState((int)TecView.StatesMachine.CurrentHours_TM_SN_PSUM);
-            AddState((int)TecView.StatesMachine.LastValue_TM_SN);
+                //using_date = false;
+
+                //AddState((int)TecView.StatesMachine.CurrentHours_Fact); //Только для определения сезона ???
+                //AddState((int)TecView.StatesMachine.CurrentTimeView);
+                AddState((int)TecView.StatesMachine.CurrentHours_TM_SN_PSUM);
+                AddState((int)TecView.StatesMachine.LastValue_TM_SN);
         }
 
         public void ChangeState_SOTIASSO()
@@ -1299,12 +1303,12 @@ namespace StatisticCommon
                     iRes = GetMinsTMResponse(table as System.Data.DataTable);
                     break;
                 case (int)StatesMachine.CurrentHours_TM_SN_PSUM:
-                    iRes = GetHoursTMSNPsumResponse(table as System.Data.DataTable);
-                    if (iRes == 0)
-                    {
-                    }
-                    else
-                        ;
+                        iRes = GetHoursTMSNPsumResponse(table as System.Data.DataTable);
+                        if (iRes == 0)
+                        {
+                        }
+                        else
+                            ;
                     break;
                 case (int)StatesMachine.LastValue_TM_Gen:
                     iRes = GetCurrentTMGenResponse(table as System.Data.DataTable);
