@@ -310,14 +310,16 @@ namespace Statistic
                 dtCurrDate = new DateTimePicker();
                 m_arLabel = new System.Windows.Forms.Label[(int)INDEX_LABEL.VALUE_TM_SN + 1];
                 dgvSNHour = new DataGridView();
-
+                
                 this.Dock = DockStyle.Fill;
+                dtCurrDate.Dock = DockStyle.Fill;
                 dgvSNHour.Dock = DockStyle.Fill;
                 dgvSNHour.Columns.Add("Hour", "Час");
                 dgvSNHour.Columns["Hour"].Width = 45;
                 dgvSNHour.Columns.Add("Value", "Значение");
-                dgvSNHour.Columns["Value"].AutoSizeMode = DataGridViewAutoSizeColumnMode.AllCells;
+                dgvSNHour.Columns["Value"].AutoSizeMode = DataGridViewAutoSizeColumnMode.Fill;
                 dgvSNHour.RowHeadersVisible = false;
+                dgvSNHour.AllowUserToAddRows = false;
 
 
                 //Свойства колонок
@@ -600,7 +602,7 @@ namespace Statistic
                     if (bRetroHour == true)
                     {
                         m_tecView.currHour = false;
-                        DateTime dt = new DateTime(dtCurrDate.Value.Year, dtCurrDate.Value.Month, dtCurrDate.Value.Day, index, 59, 0);
+                        DateTime dt = new DateTime(dtCurrDate.Value.Year, dtCurrDate.Value.Month, dtCurrDate.Value.Day, index+1, 0, 0);
 
                         m_arLabel[(int)INDEX_LABEL.DATETIME_TM_SN].Text = dt.ToString(@"HH:mm:ss");
                         setTextToLabelVal(m_arLabel[(int)INDEX_LABEL.VALUE_TM_SN], m_tecView.m_valuesHours[index].valuesTMSNPsum);
@@ -631,25 +633,27 @@ namespace Statistic
                         index = dgvSNHour.SelectedRows[0].Index;
 
                         //delegateStartWait();
-
-                        bool bRetroHour = true;//m_tecView.zedGraphHours_MouseUpEvent(index);
-
-
-                        if (bRetroHour == true)
+                        if (index != dgvSNHour.Rows.Count - 1)
                         {
-                            m_tecView.currHour = false;
-                            DateTime dt = new DateTime(dtCurrDate.Value.Year, dtCurrDate.Value.Month, dtCurrDate.Value.Day, index, 59, 0);
+                            bool bRetroHour = true;//m_tecView.zedGraphHours_MouseUpEvent(index);
 
-                            m_arLabel[(int)INDEX_LABEL.DATETIME_TM_SN].Text = dt.ToString(@"HH:mm:ss");
-                            setTextToLabelVal(m_arLabel[(int)INDEX_LABEL.VALUE_TM_SN], m_tecView.m_valuesHours[index].valuesTMSNPsum);
-                            
-                            foreach (System.Windows.Forms.Label l in m_arLabel)
+
+                            if (bRetroHour == true)
                             {
-                                l.Refresh();
+                                m_tecView.currHour = false;
+                                DateTime dt = new DateTime(dtCurrDate.Value.Year, dtCurrDate.Value.Month, dtCurrDate.Value.Day, index+1, 0, 0);
+
+                                m_arLabel[(int)INDEX_LABEL.DATETIME_TM_SN].Text = dt.ToString(@"HH:mm:ss");
+                                setTextToLabelVal(m_arLabel[(int)INDEX_LABEL.VALUE_TM_SN], m_tecView.m_valuesHours[index].valuesTMSNPsum);
+
+                                foreach (System.Windows.Forms.Label l in m_arLabel)
+                                {
+                                    l.Refresh();
+                                }
+                                dgvSNHour.Refresh();
+                                Debug.Print(m_arLabel[0] + " ретро");
+                                startChangeValue.Change(10000, System.Threading.Timeout.Infinite);
                             }
-                            dgvSNHour.Refresh();
-                            Debug.Print(m_arLabel[0] + " ретро");
-                            startChangeValue.Change(10000, System.Threading.Timeout.Infinite);
                         }
                     }
             }
@@ -687,53 +691,69 @@ namespace Statistic
                 double minimum = double.MaxValue, minimum_scale;
                 double maximum = 0, maximum_scale;
                 bool noValues = true;
-                for (int i = 0; i < itemscount; i++)
+                double summ = 0;
+                int index_last_not_null = 0;
+                for (int i = 0; i < itemscount+1; i++)
                 {
-                    object[] hourValue = new object[2];
-                    double val;
-                    if (HAdmin.SeasonDateTime.Date == m_tecView.m_curDate.Date)
+                    if (i != itemscount)
                     {
-                        int offset = m_tecView.GetSeasonHourOffset(i + 1);
-                        names[i] = (i + 1 - offset).ToString();
-                        if (HAdmin.SeasonDateTime.Hour == i)
-                            names[i] += "*";
-                        else
-                            ;
-                    }
-                    else
-                        names[i] = (i + 1).ToString();
-
-                    valuesTMSNPsum[i] = valuesHours[i].valuesTMSNPsum;
-                    hourValue[0] = i+1;
-                    val = Convert.ToDouble(valuesTMSNPsum[i]);
-                    if (val > 1)
-                    {
-                        hourValue[1] = val.ToString(@"F2");
-                    }
-                    else
-                        hourValue[1] = 0.ToString(@"F0");
-
-                    dgvSNHour.Rows.Add(hourValue);
-
-                    if (valuesTMSNPsum[i] != 0)
-                    {
-                        noValues = false;
-
-                        if (minimum > valuesTMSNPsum[i])
+                        object[] hourValue = new object[2];
+                        double val;
+                        if (HAdmin.SeasonDateTime.Date == m_tecView.m_curDate.Date)
                         {
-                            minimum = valuesTMSNPsum[i];
+                            int offset = m_tecView.GetSeasonHourOffset(i + 1);
+                            names[i] = (i + 1 - offset).ToString();
+                            if (HAdmin.SeasonDateTime.Hour == i)
+                                names[i] += "*";
+                            else
+                                ;
+                        }
+                        else
+                            names[i] = (i + 1).ToString();
+
+                        valuesTMSNPsum[i] = valuesHours[i].valuesTMSNPsum;
+                        hourValue[0] = i + 1;
+                        val = Convert.ToDouble(valuesTMSNPsum[i]);
+                        summ = summ + val;
+
+                        if (val > 1)
+                        {
+                            hourValue[1] = val.ToString(@"F2");
+                        }
+                        else
+                            hourValue[1] = 0.ToString(@"F0");
+
+                        dgvSNHour.Rows.Add(hourValue);
+
+                        if (valuesTMSNPsum[i] != 0)
+                        {
+                            noValues = false;
+
+                            if (minimum > valuesTMSNPsum[i])
+                            {
+                                minimum = valuesTMSNPsum[i];
+                            }
+                            else
+                                ;
+
+                            if (maximum < valuesTMSNPsum[i])
+                                maximum = valuesTMSNPsum[i];
+                            else
+                                ;
+                            index_last_not_null = i;
                         }
                         else
                             ;
-
-                        if (maximum < valuesTMSNPsum[i])
-                            maximum = valuesTMSNPsum[i];
-                        else
-                            ;
                     }
                     else
-                        ;
+                    {
+                        object[] hourValue = new object[2];
+                        hourValue[0] = "Сумма";
+                        hourValue[1] = summ.ToString(@"F2");
+                        dgvSNHour.Rows.Add(hourValue);
+                    }
                 }
+                dgvSNHour.FirstDisplayedScrollingRowIndex = index_last_not_null;
 
                 if (!(FormMain.formGraphicsSettings.scale == true))
                     minimum = 0;
@@ -848,6 +868,7 @@ namespace Statistic
                     this.Controls.Add(dgvSNHour, 0, COUNT_FIXED_ROWS);
                     this.SetColumnSpan(dgvSNHour, 2);
                     ((ToolStripMenuItem)sender).Checked = true;
+                    
                 }
                 else
                 {
