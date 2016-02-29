@@ -5,7 +5,9 @@ using System.IO;
 using System.Threading;
 using System.Data;
 
+
 using HClassLibrary;
+using GemBox.Spreadsheet;
 
 namespace StatisticCommon
 {
@@ -98,20 +100,20 @@ namespace StatisticCommon
                     //strCSVNameFileTemp = strPPBRCSVNameFile;
                     string strCSVNameFileTemp = Path.GetFileNameWithoutExtension(m_fullPathCSVValues);
 
-                    strCSVNameFileTemp = strCSVNameFileTemp.Replace("(", string.Empty);
-                    strCSVNameFileTemp = strCSVNameFileTemp.Replace(")", string.Empty);
-                    strCSVNameFileTemp = strCSVNameFileTemp.Replace(".", string.Empty);
-                    strCSVNameFileTemp = strCSVNameFileTemp.Replace(" ", string.Empty);
-                    strCSVNameFileTemp = Path.GetDirectoryName(m_fullPathCSVValues) + @"\" +
-                                            strCSVNameFileTemp + @"_копия" +
-                                            Path.GetExtension(m_fullPathCSVValues);
+                    //strCSVNameFileTemp = strCSVNameFileTemp.Replace("(", string.Empty);
+                    //strCSVNameFileTemp = strCSVNameFileTemp.Replace(")", string.Empty);
+                    //strCSVNameFileTemp = strCSVNameFileTemp.Replace(".", string.Empty);
+                    //strCSVNameFileTemp = strCSVNameFileTemp.Replace(" ", string.Empty);
+                    //strCSVNameFileTemp = Path.GetDirectoryName(m_fullPathCSVValues) + @"\" +
+                    //                        strCSVNameFileTemp + @"_копия" +
+                    //                        Path.GetExtension(m_fullPathCSVValues);
 
                     ////при аргументе = каталог размещения наборов
                     //strPPBRCSVNameFile = m_PPBRCSVDirectory + strPPBRCSVNameFile + strCSVExt;
                     //strCSVNameFileTemp = m_PPBRCSVDirectory + strCSVNameFileTemp + strCSVExt;
 
                     //File.Copy(strPPBRCSVNameFile, strCSVNameFileTemp, true);
-                    File.Copy(m_fullPathCSVValues, strCSVNameFileTemp, true);
+                    //File.Copy(m_fullPathCSVValues, strCSVNameFileTemp, true);
 
                     ////Для en-US заменить разделитель ',' в CSV-файле на '.'
                     //StreamReader sr = new StreamReader(strCSVNameFileTemp, System.Text.Encoding.Default);
@@ -120,7 +122,7 @@ namespace StatisticCommon
                     //StreamWriter sw = new StreamWriter(strCSVNameFileTemp);
                     //sw.Write(cont); sw.Flush(); sw.Close(); sw.Dispose();
 
-                    if (!(m_tableValuesResponse == null)) m_tableValuesResponse.Clear(); else ;
+                    //if (!(m_tableValuesResponse == null)) m_tableValuesResponse.Clear(); else ;
 
                     if ((IsCanUseTECComponents() == true) && (strCSVNameFileTemp.Length > 0))
                         //m_tableValuesResponse = DbTSQLInterface.Select(@"CSV_DATASOURCE=" + Path.GetDirectoryName(strCSVNameFileTemp),
@@ -132,8 +134,8 @@ namespace StatisticCommon
                         //                                                        //allTECComponents[indxTECComponents].name_future +
                         //                                                        //@"'"
                         //                                                        , out err);
-                        m_tableValuesResponse = DbTSQLInterface.CSVImport(Path.GetDirectoryName(strCSVNameFileTemp)
-                                                                            + @"\" + Path.GetFileName(strCSVNameFileTemp)
+                        m_tableValuesResponse = CSVImport(/*Path.GetDirectoryName(strCSVNameFileTemp)
+                                                                            + @"\" + Path.GetFileName(strCSVNameFileTemp)*/m_fullPathCSVValues
                                                                             , @"*"
                                                                             , out err);
                     else
@@ -143,7 +145,7 @@ namespace StatisticCommon
                     //Logging.Logg().Send("Admin.cs - GetPPBRCSVValuesRequest () - ...", false, false, false);
                     //Logging.Logg().LogUnlock();
 
-                    File.Delete(strCSVNameFileTemp);
+                    //File.Delete(strCSVNameFileTemp);
                 }
                 else
                     err = -2; //Файл не существует (очень НЕвероятно, т.к. выбран с помощью диалогового окна)
@@ -160,6 +162,54 @@ namespace StatisticCommon
             else
                 ;
         }
+
+
+        /// <summary>
+        /// Импорт содержания текстового файла с разделителем в таблицу
+        /// </summary>
+        /// <param name="path">путь к файлу</param>
+        /// <param name="fields">наименования полей таблицы (не используется)</param>
+        /// <param name="er"></param>
+        /// <returns></returns>
+        public static DataTable CSVImport(string path, string fields, out int er)
+        {
+            er = 0;
+
+            DataTable dataTableRes = new DataTable();
+
+            //Открыть поток чтения файла...
+            try
+            {
+                ExcelFile ef = new ExcelFile();
+                ef.LoadCsv(path, ';');
+                for (int i = 0; i < ef.Worksheets[0].Rows[0].Cells.LastColumnIndex; i++)
+                {
+                    if (ef.Worksheets[0].Rows[0].Cells[i].Value != null)
+                        dataTableRes.Columns.Add(ef.Worksheets[0].Rows[0].Cells[i].Value.ToString());
+                    else
+                        break;
+                }
+                for (int r = 1; r < ef.Worksheets[0].Rows.Count; r++)
+                {
+                    object[] obj = new object[dataTableRes.Columns.Count];
+                    for (int i = 0; i < dataTableRes.Columns.Count; i++)
+                    {
+                        if (ef.Worksheets[0].Rows[r].Cells[i].Value == null)
+                            obj[i] = string.Empty;
+                        else
+                            obj[i] = ef.Worksheets[0].Rows[r].Cells[i].Value.ToString();
+                    }
+                    dataTableRes.Rows.Add(obj);
+                }
+            }
+            catch (Exception e)
+            {
+                er = -1;
+            }
+
+            return dataTableRes;
+        }
+
 
         private void ImpCSVValuesRequest()
         {
