@@ -285,6 +285,9 @@ namespace Statistic
                 dgvSNHour.MultiSelect = false;
                 dgvSNHour.SelectionMode = DataGridViewSelectionMode.FullRowSelect;
                 dgvSNHour.ReadOnly = true;
+                dgvSNHour.AllowUserToResizeRows = false;
+                dgvSNHour.AllowUserToResizeColumns = false;
+                dgvSNHour.AllowUserToDeleteRows = false;
 
                 this.m_zedGraphHours.InitializeEventHandler(this.эксельToolStripMenuItemHours_Click, null);
 
