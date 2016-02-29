@@ -633,15 +633,23 @@ namespace Statistic
                         index = dgvSNHour.SelectedRows[0].Index;
 
                         //delegateStartWait();
-                        if (index != dgvSNHour.Rows.Count - 1)
+                        if (index <= dgvSNHour.Rows.Count - 2)
                         {
                             bool bRetroHour = true;//m_tecView.zedGraphHours_MouseUpEvent(index);
 
 
                             if (bRetroHour == true)
                             {
+                                DateTime dt;
                                 m_tecView.currHour = false;
-                                DateTime dt = new DateTime(dtCurrDate.Value.Year, dtCurrDate.Value.Month, dtCurrDate.Value.Day, index+1, 0, 0);
+                                if (index == dgvSNHour.Rows.Count - 2)
+                                {
+                                    dt = new DateTime(dtCurrDate.Value.Year, dtCurrDate.Value.Month, dtCurrDate.Value.Day, 0, 0, 0);
+                                }
+                                else
+                                {
+                                    dt = new DateTime(dtCurrDate.Value.Year, dtCurrDate.Value.Month, dtCurrDate.Value.Day, index + 1, 0, 0);
+                                }
 
                                 m_arLabel[(int)INDEX_LABEL.DATETIME_TM_SN].Text = dt.ToString(@"HH:mm:ss");
                                 setTextToLabelVal(m_arLabel[(int)INDEX_LABEL.VALUE_TM_SN], m_tecView.m_valuesHours[index].valuesTMSNPsum);
