@@ -2,12 +2,14 @@
 using System.Collections.Generic;
 using System.ComponentModel;
 using System.Diagnostics;
+using System.IO;
 using System.Linq;
 using System.Text;
 using System.Windows.Forms;
 using System.Drawing;
 using System.Threading;
 using System.Data;
+using System.Globalization;
 
 using ZedGraph;
 using GemBox.Spreadsheet;
@@ -224,31 +226,14 @@ namespace Statistic
             private void InitializeComponent()
             {
                 components = new System.ComponentModel.Container();
-
-                this.m_zedGraphHours = new ZedGraphControl();
-                this.m_zedGraphHours.Dock = System.Windows.Forms.DockStyle.Fill;
-                //this.m_zedGraphHours.Location = arPlacement[(int)CONTROLS.m_zedGraphHours].pt;
-                this.m_zedGraphHours.Name = "zedGraphHour";
-                this.m_zedGraphHours.ScrollGrace = 0;
-                this.m_zedGraphHours.ScrollMaxX = 0;
-                this.m_zedGraphHours.ScrollMaxY = 0;
-                this.m_zedGraphHours.ScrollMaxY2 = 0;
-                this.m_zedGraphHours.ScrollMinX = 0;
-                this.m_zedGraphHours.ScrollMinY = 0;
-                this.m_zedGraphHours.ScrollMinY2 = 0;
-                //this.m_zedGraphHours.Size = arPlacement[(int)CONTROLS.m_zedGraphHours].sz;
-                this.m_zedGraphHours.TabIndex = 0;
-                this.m_zedGraphHours.IsEnableHEdit = false;
-                this.m_zedGraphHours.IsEnableHPan = false;
-                this.m_zedGraphHours.IsEnableHZoom = false;
-                this.m_zedGraphHours.IsEnableSelection = false;
-                this.m_zedGraphHours.IsEnableVEdit = false;
-                this.m_zedGraphHours.IsEnableVPan = false;
-                this.m_zedGraphHours.IsEnableVZoom = false;
-                this.m_zedGraphHours.IsShowPointValues = true;
+                this.m_zedGraphHours = new HZedGraphControlSNHours(m_tecView.m_lockValue);
+                
                 this.m_zedGraphHours.MouseUpEvent += new ZedGraph.ZedGraphControl.ZedMouseEventHandler(this.zedGraphHours_MouseUpEvent);
                 this.m_zedGraphHours.PointValueEvent += new ZedGraph.ZedGraphControl.PointValueHandler(this.zedGraphHours_PointValueEvent);
                 this.m_zedGraphHours.DoubleClickEvent += new ZedGraph.ZedGraphControl.ZedMouseEventHandler(this.zedGraphHours_DoubleClickEvent);
+                this.m_zedGraphHours.ContextMenuStrip.Items[(int)StatisticCommon.HZedGraphControl.INDEX_CONTEXTMENU_ITEM.VISIBLE_TABLE].Click += new System.EventHandler(отобразитьВТаблицеToolStripMenuItem_Click);
+                //this.m_zedGraphHours.InitializeEventHandler(this.эксельToolStripMenuItemHours_Click, this.sourceDataHours_Click);
+
             }
 
             #endregion
@@ -259,11 +244,12 @@ namespace Statistic
             System.Windows.Forms.Label[] m_arLabel;
             System.Windows.Forms.DateTimePicker dtCurrDate;
             Dictionary<int, System.Windows.Forms.Label> m_dictLabelVal;
+            DataGridView dgvSNHour;
 
             //bool isActive;
 
             public TecView m_tecView;
-
+            public int indx_TECComponent { get { return m_tecView.indxTECComponents; } }
             private ManualResetEvent m_evTimerCurrent;
             private
                 System.Threading.Timer //Вариант №0
@@ -272,27 +258,37 @@ namespace Statistic
                     startChangeValue;
 
 
-            ZedGraphControl m_zedGraphHours;
+            StatisticCommon.HZedGraphControl m_zedGraphHours;
 
             public PanelTecSobstvNyzhdy(StatisticCommon.TEC tec/*, DelegateStringFunc fErrRep, DelegateStringFunc fWarRep, DelegateStringFunc fActRep, DelegateBoolFunc fRepClr*/)
                 : base (-1, -1)
             {
+                m_tecView = new TecView(TecView.TYPE_PANEL.SOBSTV_NYZHDY, -1, -1);
+                
                 InitializeComponent();
 
-                m_tecView = new TecView(TecView.TYPE_PANEL.SOBSTV_NYZHDY, -1, -1);
-
                 HMark markQueries = new HMark(new int[] { (int)CONN_SETT_TYPE.DATA_AISKUE, (int)CONN_SETT_TYPE.DATA_SOTIASSO });
-                //markQueries.Marked((int)CONN_SETT_TYPE.DATA_AISKUE); //Только для определения сезона ???
-                //markQueries.Marked((int)CONN_SETT_TYPE.DATA_SOTIASSO);
 
                 m_tecView.InitTEC (new List <TEC> () { tec }, markQueries);
-                //m_tecView.SetDelegateReport(fErrRep, fWarRep, fActRep, fRepClr);
 
                 m_tecView.updateGUI_TM_SN = new DelegateFunc(showTMSNPower);
 
                 Initialize();
 
                 dtCurrDate.Value = DateTime.Now;
+
+                for (int i = (int)StatisticCommon.HZedGraphControl.INDEX_CONTEXTMENU_ITEM.AISKUE_PLUS_SOTIASSO; i < (int)StatisticCommon.HZedGraphControl.INDEX_CONTEXTMENU_ITEM.VISIBLE_TABLE; i++)
+                {
+                    m_zedGraphHours.ContextMenuStrip.Items[i].Visible = false;
+                }
+
+                dgvSNHour.MultiSelect = false;
+                dgvSNHour.SelectionMode = DataGridViewSelectionMode.FullRowSelect;
+                dgvSNHour.ReadOnly = true;
+
+                this.m_zedGraphHours.InitializeEventHandler(this.эксельToolStripMenuItemHours_Click, this.sourceDataHours_Click);
+
+                dgvSNHour.MouseUp += new MouseEventHandler(this.dgvSNHour_SelectionChanged);
             }
 
             public PanelTecSobstvNyzhdy(IContainer container, StatisticCommon.TEC tec/*, DelegateStringFunc fErrRep, DelegateStringFunc fWarRep, DelegateStringFunc fActRep, DelegateBoolFunc fRepClr*/)
@@ -313,14 +309,25 @@ namespace Statistic
                 m_dictLabelVal = new Dictionary<int, System.Windows.Forms.Label>();
                 dtCurrDate = new DateTimePicker();
                 m_arLabel = new System.Windows.Forms.Label[(int)INDEX_LABEL.VALUE_TM_SN + 1];
+                dgvSNHour = new DataGridView();
 
                 this.Dock = DockStyle.Fill;
+                dgvSNHour.Dock = DockStyle.Fill;
+                dgvSNHour.Columns.Add("Hour", "Час");
+                dgvSNHour.Columns["Hour"].Width = 45;
+                dgvSNHour.Columns.Add("Value", "Значение");
+                dgvSNHour.Columns["Value"].AutoSizeMode = DataGridViewAutoSizeColumnMode.AllCells;
+                dgvSNHour.RowHeadersVisible = false;
+
+
                 //Свойства колонок
-                this.ColumnCount = 4;
-                this.ColumnStyles.Add(new ColumnStyle(SizeType.Percent, 25));
-                this.ColumnStyles.Add(new ColumnStyle(SizeType.Percent, 25));
-                this.ColumnStyles.Add(new ColumnStyle(SizeType.Percent, 25));
-                this.ColumnStyles.Add(new ColumnStyle(SizeType.Percent, 25));
+                this.ColumnCount = 6;
+                this.ColumnStyles.Add(new ColumnStyle(SizeType.Percent, 17));
+                this.ColumnStyles.Add(new ColumnStyle(SizeType.Percent, 17));
+                this.ColumnStyles.Add(new ColumnStyle(SizeType.Percent, 17));
+                this.ColumnStyles.Add(new ColumnStyle(SizeType.Percent, 17));
+                this.ColumnStyles.Add(new ColumnStyle(SizeType.Percent, 17)); 
+                this.ColumnStyles.Add(new ColumnStyle(SizeType.Percent, 17));
 
                 //Видимая граница для отладки
                 this.BorderStyle = BorderStyle.FixedSingle; //BorderStyle.None;
@@ -337,7 +344,9 @@ namespace Statistic
                 //    ;
                 //this.Controls.Add(m_arLabel[i], 0, i);
                 //this.SetRowSpan(m_arLabel[i], COUNT_FIXED_ROWS);
-                this.Controls.Add(m_arLabel[i], 0, i); this.SetRowSpan(m_arLabel[i], COUNT_FIXED_ROWS); this.SetColumnSpan(m_arLabel[i], 2);
+                this.Controls.Add(m_arLabel[i], 0, i); 
+                this.SetRowSpan(m_arLabel[i], COUNT_FIXED_ROWS); 
+                this.SetColumnSpan(m_arLabel[i], 3);
 
                 //Наименование ТЭЦ, Дата/время, Значение для всех ГТП/ТГ
                 for (i = (int)INDEX_LABEL.DATETIME_TM_SN; i < (int)INDEX_LABEL.VALUE_TM_SN + 1; i++)
@@ -354,11 +363,16 @@ namespace Statistic
                             break;
                     }
                     m_arLabel[i] = HLabel.createLabel(cntnt, PanelSobstvNyzhdy.s_arLabelStyles[i]);
-
-                    this.Controls.Add(m_arLabel[i], 1*i+1, 1); this.SetRowSpan(m_arLabel[i], 1); this.SetColumnSpan(m_arLabel[i], 1);
                 }
+                this.Controls.Add(m_arLabel[(int)INDEX_LABEL.DATETIME_TM_SN], 3, 1);
+                this.SetRowSpan(m_arLabel[(int)INDEX_LABEL.DATETIME_TM_SN], 1);
+                this.SetColumnSpan(m_arLabel[(int)INDEX_LABEL.DATETIME_TM_SN], 2);
 
-                this.Controls.Add(dtCurrDate, 2, 0); this.SetRowSpan(dtCurrDate, 1); this.SetColumnSpan(dtCurrDate, 2);
+                this.Controls.Add(m_arLabel[(int)INDEX_LABEL.VALUE_TM_SN], 5, 1);
+                this.SetRowSpan(m_arLabel[(int)INDEX_LABEL.VALUE_TM_SN], 1);
+                this.SetColumnSpan(m_arLabel[(int)INDEX_LABEL.VALUE_TM_SN], 1);
+
+                this.Controls.Add(dtCurrDate, 3, 0); this.SetRowSpan(dtCurrDate, 1); this.SetColumnSpan(dtCurrDate, 3);
                 
                 dtCurrDate.ValueChanged += new EventHandler(dtCurrDate_ChangeValue);
 
@@ -590,10 +604,13 @@ namespace Statistic
 
                         m_arLabel[(int)INDEX_LABEL.DATETIME_TM_SN].Text = dt.ToString(@"HH:mm:ss");
                         setTextToLabelVal(m_arLabel[(int)INDEX_LABEL.VALUE_TM_SN], m_tecView.m_valuesHours[index].valuesTMSNPsum);
+
+                        dgvSNHour.Rows[index].Selected = true;
                         foreach (System.Windows.Forms.Label l in m_arLabel)
                         {
                             l.Refresh();
                         }
+                        dgvSNHour.Refresh();
                         Debug.Print(m_arLabel[0] + " ретро");
                         startChangeValue.Change(10000, System.Threading.Timeout.Infinite);
                     }                   
@@ -602,6 +619,39 @@ namespace Statistic
                 }
 
                 return true;
+            }
+
+            private void dgvSNHour_SelectionChanged(object sender, MouseEventArgs e)
+            {
+                int index;
+                if (e.Button == System.Windows.Forms.MouseButtons.Left)
+
+                    if (dgvSNHour.SelectedRows.Count == 1)
+                    {
+                        index = dgvSNHour.SelectedRows[0].Index;
+
+                        //delegateStartWait();
+
+                        bool bRetroHour = true;//m_tecView.zedGraphHours_MouseUpEvent(index);
+
+
+                        if (bRetroHour == true)
+                        {
+                            m_tecView.currHour = false;
+                            DateTime dt = new DateTime(dtCurrDate.Value.Year, dtCurrDate.Value.Month, dtCurrDate.Value.Day, index, 59, 0);
+
+                            m_arLabel[(int)INDEX_LABEL.DATETIME_TM_SN].Text = dt.ToString(@"HH:mm:ss");
+                            setTextToLabelVal(m_arLabel[(int)INDEX_LABEL.VALUE_TM_SN], m_tecView.m_valuesHours[index].valuesTMSNPsum);
+                            
+                            foreach (System.Windows.Forms.Label l in m_arLabel)
+                            {
+                                l.Refresh();
+                            }
+                            dgvSNHour.Refresh();
+                            Debug.Print(m_arLabel[0] + " ретро");
+                            startChangeValue.Change(10000, System.Threading.Timeout.Infinite);
+                        }
+                    }
             }
 
             private string zedGraphHours_PointValueEvent(object sender, GraphPane pane, CurveItem curve, int iPt)
@@ -622,6 +672,7 @@ namespace Statistic
             {
                 GraphPane pane = m_zedGraphHours.GraphPane;
 
+                dgvSNHour.Rows.Clear();
                 pane.CurveList.Clear();
 
                 int itemscount = m_tecView.m_valuesHours.Length;
@@ -638,8 +689,10 @@ namespace Statistic
                 bool noValues = true;
                 for (int i = 0; i < itemscount; i++)
                 {
-                    
-                    if (HAdmin.SeasonDateTime.Date == m_tecView.m_curDate.Date) {
+                    object[] hourValue = new object[2];
+                    double val;
+                    if (HAdmin.SeasonDateTime.Date == m_tecView.m_curDate.Date)
+                    {
                         int offset = m_tecView.GetSeasonHourOffset(i + 1);
                         names[i] = (i + 1 - offset).ToString();
                         if (HAdmin.SeasonDateTime.Hour == i)
@@ -651,6 +704,16 @@ namespace Statistic
                         names[i] = (i + 1).ToString();
 
                     valuesTMSNPsum[i] = valuesHours[i].valuesTMSNPsum;
+                    hourValue[0] = i+1;
+                    val = Convert.ToDouble(valuesTMSNPsum[i]);
+                    if (val > 1)
+                    {
+                        hourValue[1] = val.ToString(@"F2");
+                    }
+                    else
+                        hourValue[1] = 0.ToString(@"F0");
+
+                    dgvSNHour.Rows.Add(hourValue);
 
                     if (valuesTMSNPsum[i] != 0)
                     {
@@ -661,8 +724,8 @@ namespace Statistic
                             minimum = valuesTMSNPsum[i];
                         }
                         else
-                            ; 
-                        
+                            ;
+
                         if (maximum < valuesTMSNPsum[i])
                             maximum = valuesTMSNPsum[i];
                         else
@@ -773,6 +836,317 @@ namespace Statistic
                 m_zedGraphHours.AxisChange();
 
                 m_zedGraphHours.Invalidate();
+            }
+
+            private void отобразитьВТаблицеToolStripMenuItem_Click(object sender, EventArgs e)
+            {
+                if (((ToolStripMenuItem)sender).Checked == false)
+                {
+                    this.Controls.Remove(m_zedGraphHours);
+                    this.Controls.Add(m_zedGraphHours, 2, COUNT_FIXED_ROWS);
+                    this.SetColumnSpan(m_zedGraphHours, this.ColumnCount - 2);
+                    this.Controls.Add(dgvSNHour, 0, COUNT_FIXED_ROWS);
+                    this.SetColumnSpan(dgvSNHour, 2);
+                    ((ToolStripMenuItem)sender).Checked = true;
+                }
+                else
+                {
+                    this.Controls.Remove(m_zedGraphHours);
+                    this.Controls.Remove(dgvSNHour);
+                    this.Controls.Add(m_zedGraphHours, 0, COUNT_FIXED_ROWS);
+                    this.SetColumnSpan(m_zedGraphHours, this.ColumnCount);
+                    ((ToolStripMenuItem)sender).Checked = false;
+                }
+            }
+
+            private void эксельToolStripMenuItemHours_Click(object sender, EventArgs e)
+            {
+                lock (m_tecView.m_lockValue)
+                {
+                    SaveFileDialog sf = new SaveFileDialog();
+                    sf.CheckPathExists = true;
+                    sf.DefaultExt = ".xls";
+                    sf.Filter = "Файл Microsoft Excel (.xls) | *.xls";
+                    if (sf.ShowDialog() == DialogResult.OK)
+                    {
+                        string strSheetName = "Часовые_знач";
+                        //int indxItemMenuStrip = -1;
+                        //if (m_tecView.m_arTypeSourceData[(int)TG.ID_TIME.HOURS] == CONN_SETT_TYPE.DATA_ASKUE)
+                        //    indxItemMenuStrip = m_ZedGraphHours.ContextMenuStrip.Items.Count - 2;
+                        //else
+                        //    if (m_tecView.m_arTypeSourceData[(int)TG.ID_TIME.HOURS] == CONN_SETT_TYPE.DATA_SOTIASSO)
+                        //        indxItemMenuStrip = m_ZedGraphHours.ContextMenuStrip.Items.Count - 1;
+                        //    else
+                        //        ;
+
+                        //if (! (indxItemMenuStrip < 0))
+                        //    strSheetName += @" (" + m_ZedGraphHours.ContextMenuStrip.Items[indxItemMenuStrip].Text + @")";
+                        //else
+                        //    ;
+
+                        ExcelFile ef = new ExcelFile();
+                        ef.Worksheets.Add(strSheetName);
+                        ExcelWorksheet ws = ef.Worksheets[0];
+                        if (indx_TECComponent < 0)
+                        {
+                            ws.Cells[0, 0].Value = "Собственные нужды " + m_tecView.m_tec.name_shr;
+                            if (m_tecView.m_tec.list_TECComponents.Count != 1)
+                                foreach (TECComponent g in m_tecView.m_tec.list_TECComponents)
+                                    ws.Cells[0, 0].Value += ", " + g.name_shr;
+                        }
+                        else
+                        {
+                            ws.Cells[0, 0].Value = "Собственные нужды " + m_tecView.m_tec.name_shr + ", " + m_tecView.m_tec.list_TECComponents[indx_TECComponent].name_shr;
+                        }
+
+                        ws.Cells[1, 0].Value = "Мощность на " + m_arLabel[(int)INDEX_LABEL.DATETIME_TM_SN].Text;
+
+                        ws.Cells[2, 0].Value = "Час";
+                        ws.Cells[2, 1].Value = "Факт";
+
+                        bool valid;
+                        double res_double;
+                        int res_int;
+
+                        for (int i = 0; i < dgvSNHour.Rows.Count-1; i++)
+                        {
+                            valid = int.TryParse(dgvSNHour.Rows[i].Cells[0].Value.ToString(), out res_int);
+                            if (valid)
+                                ws.Cells[3 + i, 0].Value = res_int;
+                            else
+                                ws.Cells[3 + i, 0].Value = dgvSNHour.Rows[i].Cells[0].Value;
+
+                            valid = double.TryParse(dgvSNHour.Rows[i].Cells[1].Value.ToString(), out res_double);
+                            if (valid)
+                                ws.Cells[3 + i, 1].Value = res_double;
+                            else
+                                ws.Cells[3 + i, 1].Value = dgvSNHour.Rows[i].Cells[1].Value;
+                        }
+
+                        int tryes = 5;
+                        while (tryes > 0)
+                        {
+                            try
+                            {
+                                ef.SaveXls(sf.FileName);
+                                break;
+                            }
+                            catch
+                            {
+                                FileInfo fi = new FileInfo(sf.FileName);
+                                sf.FileName = fi.DirectoryName + "\\Copy " + fi.Name;
+                            }
+                            tryes--;
+                            if (tryes == 0)
+                                MessageBox.Show(this, "Не удалось сохранить файл.\nВозможно нет доступа, либо файл занят другим приложением.", "Ошибка", MessageBoxButtons.OK, MessageBoxIcon.Error);
+                        }
+                    }
+                }
+            }
+
+            protected void sourceDataHours_Click(object sender, EventArgs e)
+            {
+                sourceData_Click(m_zedGraphHours.ContextMenuStrip, (ToolStripMenuItem)sender, TG.ID_TIME.HOURS);
+            }
+
+            private void sourceData_Click(ContextMenuStrip cms, ToolStripMenuItem sender, TG.ID_TIME indx_time)
+            {
+                CONN_SETT_TYPE prevTypeSourceData = m_tecView.m_arTypeSourceData[(int)indx_time]
+                    , curTypeSourceData = prevTypeSourceData;
+
+                if (sender.Checked == false)
+                {
+                    HZedGraphControl.INDEX_CONTEXTMENU_ITEM indx
+                        , indxChecked = HZedGraphControl.INDEX_CONTEXTMENU_ITEM.COUNT;
+                    for (indx = HZedGraphControl.INDEX_CONTEXTMENU_ITEM.AISKUE_PLUS_SOTIASSO; indx < HZedGraphControl.INDEX_CONTEXTMENU_ITEM.COUNT; indx++)
+                        if (sender.Equals(cms.Items[(int)indx]) == true)
+                        {
+                            indxChecked = indx;
+                            ((ToolStripMenuItem)cms.Items[(int)indxChecked]).Checked = true;
+
+                            break;
+                        }
+                        else
+                            ;
+
+                    if (!(indxChecked == HZedGraphControl.INDEX_CONTEXTMENU_ITEM.COUNT))
+                    {
+                        for (indx = HZedGraphControl.INDEX_CONTEXTMENU_ITEM.AISKUE_PLUS_SOTIASSO; indx < HZedGraphControl.INDEX_CONTEXTMENU_ITEM.COUNT; indx++)
+                            if (!(indx == indxChecked))
+                                ((ToolStripMenuItem)cms.Items[(int)indx]).Checked = false;
+                            else
+                                ;
+
+                        switch (indxChecked)
+                        {
+                            case HZedGraphControl.INDEX_CONTEXTMENU_ITEM.AISKUE_PLUS_SOTIASSO:
+                                curTypeSourceData = CONN_SETT_TYPE.DATA_AISKUE_PLUS_SOTIASSO;
+                                break;
+                            case HZedGraphControl.INDEX_CONTEXTMENU_ITEM.AISKUE:
+                                curTypeSourceData = CONN_SETT_TYPE.DATA_AISKUE;
+                                break;
+                            case HZedGraphControl.INDEX_CONTEXTMENU_ITEM.SOTIASSO_3_MIN:
+                                curTypeSourceData = CONN_SETT_TYPE.DATA_SOTIASSO_3_MIN;
+                                break;
+                            case HZedGraphControl.INDEX_CONTEXTMENU_ITEM.SOTIASSO_1_MIN:
+                                curTypeSourceData = CONN_SETT_TYPE.DATA_SOTIASSO_1_MIN;
+                                break;
+                            default:
+                                indx = HZedGraphControl.INDEX_CONTEXTMENU_ITEM.COUNT;
+                                break;
+                        }
+
+                        m_tecView.m_arTypeSourceData[(int)indx_time] = curTypeSourceData;
+
+
+                        if (indx_time == TG.ID_TIME.MINUTES)
+                        {
+                            bool bInitTableMinRows = true;
+
+                            switch (prevTypeSourceData)
+                            {
+                                case CONN_SETT_TYPE.DATA_AISKUE_PLUS_SOTIASSO:
+                                    switch (m_tecView.m_arTypeSourceData[(int)indx_time])
+                                    {
+                                        //case CONN_SETT_TYPE.DATA_ASKUE_PLUS_SOTIASSO:
+                                        //    break;
+                                        case CONN_SETT_TYPE.DATA_AISKUE:
+                                            bInitTableMinRows = false;
+                                            break;
+                                        case CONN_SETT_TYPE.DATA_SOTIASSO_3_MIN:
+                                            bInitTableMinRows = false;
+                                            break;
+                                        case CONN_SETT_TYPE.DATA_SOTIASSO_1_MIN:
+                                            //bInitTableMinRows = true;
+                                            break;
+                                        default:
+                                            break;
+                                    }
+                                    break;
+                                case CONN_SETT_TYPE.DATA_AISKUE:
+                                    switch (m_tecView.m_arTypeSourceData[(int)indx_time])
+                                    {
+                                        case CONN_SETT_TYPE.DATA_AISKUE_PLUS_SOTIASSO:
+                                            bInitTableMinRows = false;
+                                            break;
+                                        //case CONN_SETT_TYPE.DATA_ASKUE:
+                                        //    break;
+                                        case CONN_SETT_TYPE.DATA_SOTIASSO_3_MIN:
+                                            bInitTableMinRows = false;
+                                            break;
+                                        case CONN_SETT_TYPE.DATA_SOTIASSO_1_MIN:
+                                            //bInitTableMinRows = true;
+                                            break;
+                                        default:
+                                            break;
+                                    }
+                                    break;
+                                case CONN_SETT_TYPE.DATA_SOTIASSO_3_MIN:
+                                    switch (m_tecView.m_arTypeSourceData[(int)indx_time])
+                                    {
+                                        case CONN_SETT_TYPE.DATA_AISKUE_PLUS_SOTIASSO:
+                                            bInitTableMinRows = false;
+                                            break;
+                                        case CONN_SETT_TYPE.DATA_AISKUE:
+                                            bInitTableMinRows = false;
+                                            break;
+                                        //case CONN_SETT_TYPE.DATA_SOTIASSO_3_MIN:
+                                        //    break;
+                                        case CONN_SETT_TYPE.DATA_SOTIASSO_1_MIN:
+                                            //bInitTableMinRows = true;
+                                            break;
+                                        default:
+                                            break;
+                                    }
+                                    break;
+                                case CONN_SETT_TYPE.DATA_SOTIASSO_1_MIN:
+                                    switch (m_tecView.m_arTypeSourceData[(int)indx_time])
+                                    {
+                                        case CONN_SETT_TYPE.DATA_AISKUE_PLUS_SOTIASSO:
+                                            //bInitTableMinRows = true;
+                                            break;
+                                        case CONN_SETT_TYPE.DATA_AISKUE:
+                                            //bInitTableMinRows = true;
+                                            break;
+                                        case CONN_SETT_TYPE.DATA_SOTIASSO_3_MIN:
+                                            //bInitTableMinRows = true;
+                                            break;
+                                        //case CONN_SETT_TYPE.DATA_SOTIASSO_1_MIN:
+                                        //    break;
+                                        default:
+                                            break;
+                                    }
+                                    break;
+                                default:
+                                    break;
+                            }
+
+                            //if (bInitTableMinRows == true)
+                            //    initTableMinRows();
+                            //else
+                            //    ;
+                        }
+                        else
+                            ;
+
+                        if (m_tecView.currHour == true)
+                            if (m_tecView.currHour == true)
+                                ChangeState();
+                            else
+                                m_tecView.GetRetroValues();
+                        else
+                        {//m_tecView.currHour == false
+                            if (indx_time == TG.ID_TIME.MINUTES)
+                                m_tecView.GetRetroMins();
+                            else
+                                m_tecView.GetRetroHours();
+                        }
+                    }
+                    else
+                        ; //Не найден ни ОДИН выделенный пункт контестного меню
+                }
+                else
+                    ; //Изменений нет
+
+                //if (enabledSourceData_ToolStripMenuItems () == true) {
+                //    NewDateRefresh ();
+                //}
+                //else
+                //    ;
+            }
+
+        }
+
+        protected class HZedGraphControlSNHours : StatisticCommon.HZedGraphControl
+        {
+            public HZedGraphControlSNHours(object obj)
+                : base(obj)
+            {
+                InitializeComponent();
+            }
+
+            private void InitializeComponent()
+            {
+                this.Dock = System.Windows.Forms.DockStyle.Fill;
+                //this.m_zedGraphHours.Location = arPlacement[(int)CONTROLS.m_zedGraphHours].pt;
+                this.Name = "zedGraphSNHour";
+                this.ScrollGrace = 0;
+                this.ScrollMaxX = 0;
+                this.ScrollMaxY = 0;
+                this.ScrollMaxY2 = 0;
+                this.ScrollMinX = 0;
+                this.ScrollMinY = 0;
+                this.ScrollMinY2 = 0;
+                //this.m_zedGraphHours.Size = arPlacement[(int)CONTROLS.m_zedGraphHours].sz;
+                this.TabIndex = 0;
+                this.IsEnableHEdit = false;
+                this.IsEnableHPan = false;
+                this.IsEnableHZoom = false;
+                this.IsEnableSelection = false;
+                this.IsEnableVEdit = false;
+                this.IsEnableVPan = false;
+                this.IsEnableVZoom = false;
+                this.IsShowPointValues = true;
             }
         }
     }
