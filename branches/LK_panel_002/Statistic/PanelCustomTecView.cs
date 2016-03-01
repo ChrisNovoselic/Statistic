@@ -21,13 +21,14 @@ namespace Statistic
         public class HLabelCustomTecView : Label {
             public static string s_msg = @"Добавить выбором пункта контекстного меню...";
             public enum INDEX_PROPERTIES_VIEW { TABLE_MINS, TABLE_HOURS, GRAPH_MINS, GRAPH_HOURS, ORIENTATION, QUICK_PANEL, TABLE_AND_GRAPH, COUNT_PROPERTIES_VIEW };
-            public int [] m_propView;
+            private int [] m_propView;
+            public static int[] s_propViewDefault = { 0, 0, 0, 1, -1, 0, -1 };
             public List<int> m_listIdContextMenuItems;
             private static string[] s_arContentMenuItems = { @"Таблица(мин)", @"Таблица(час)", @"График(мин)", @"График(час)", @"Ориентация", @"Оперативные значения", @"Таблица+Гистограмма" };
             /// <summary>
             /// Событие - инициирует измекнение структуры элемента управления
             /// </summary>
-            public event DelegateFunc EventRestruct;
+            public event DelegateObjectFunc EventRestruct;
             /// <summary>
             /// Значение признака ориентации размещения таблиц, графиков
             /// </summary>
@@ -49,7 +50,8 @@ namespace Statistic
 
                 m_listIdContextMenuItems = new List<int>();
 
-                m_propView = new int[(int)INDEX_PROPERTIES_VIEW.COUNT_PROPERTIES_VIEW] {0, 0, 0, 1, -1, 0, -1};
+                m_propView = new int[s_propViewDefault.Length];
+                s_propViewDefault.CopyTo(m_propView, 0);
 
                 m_prevViewOrientation = m_propView[(int)INDEX_PROPERTIES_VIEW.ORIENTATION];
 
@@ -69,7 +71,7 @@ namespace Statistic
                 else
                     setProperty((int)INDEX_PROPERTIES_VIEW.ORIENTATION, indx);
 
-                EventRestruct ();
+                EventRestruct (m_propView);
 
                 ContentMenuStateChange ();
 

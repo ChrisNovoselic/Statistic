@@ -1724,12 +1724,18 @@ namespace Statistic
 
         private void addPanelTecView(TEC tec, int ti, int ci)
         {
+            PanelTecViewBase panelTecView = null;
+
             if (tec.m_bSensorsStrings == false)
                 tec.InitSensorsTEC();
             else
                 ;
 
-            PanelTecView panelTecView = new PanelTecView(tec, ti, ci, null/*, ErrorReport, WarningReport, ActionReport, ReportClear*/);
+            if (! (tec.m_id > 10))
+                panelTecView = new PanelTecView(tec, ti, ci, null/*, ErrorReport, WarningReport, ActionReport, ReportClear*/);
+            else
+                panelTecView = new PanelTecViewLK(tec, ti, ci);
+
             panelTecView.SetDelegateWait(delegateStartWait, delegateStopWait, delegateEvent);
             panelTecView.SetDelegateReport(ErrorReport, WarningReport, ActionReport, ReportClear);
             m_listStandardTabs.Add(panelTecView);

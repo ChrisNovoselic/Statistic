@@ -15,7 +15,7 @@ namespace StatisticCommon
         /// <summary>
         /// перечисление - индексы для типов панелей
         /// </summary>
-        public enum TYPE_PANEL { VIEW, CUR_POWER, LAST_MINUTES, ADMIN_ALARM, SOBSTV_NYZHDY, SOTIASSO, COUNT_TYPE_PANEL };
+        public enum TYPE_PANEL { VIEW, CUR_POWER, LAST_MINUTES, ADMIN_ALARM, SOBSTV_NYZHDY, SOTIASSO, LK, COUNT_TYPE_PANEL };
         /// <summary>
         /// Индекс типа панели в интересах которой выполняется текущий объект
         /// </summary>
