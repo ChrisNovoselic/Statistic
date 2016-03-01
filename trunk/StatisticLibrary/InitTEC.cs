@@ -64,7 +64,9 @@ namespace StatisticCommon
             }
             else
             //??? ограничение (временное) для ЛК
-                req += @"ID>0 AND NOT (ID>10)";
+                req += @"ID>0"
+                //req += @"ID>0 AND NOT (ID>10)"
+                ;
 
             return DbTSQLInterface.Select(ref connConfigDB, req, null, null, out err);
         }
