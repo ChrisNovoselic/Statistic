@@ -54,7 +54,8 @@ namespace StatisticCommon
             , AUTO_TAB_ALARM
             //------------------------------30
             , AUTO_TAB_PBR_NSS
-            ,
+            , TAB_LK_ADMIN
+            , AUTO_TAB_LK
         };
 
         public HStatisticUsers(int iListenerId)

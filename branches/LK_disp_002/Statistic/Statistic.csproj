@@ -150,6 +150,9 @@
     <Compile Include="PanelAdminKomDisp.cs">
       <SubType>Component</SubType>
     </Compile>
+    <Compile Include="PanelAdminLK.cs">
+      <SubType>Component</SubType>
+    </Compile>
     <Compile Include="PanelAdminNSS.cs">
       <SubType>Component</SubType>
     </Compile>
