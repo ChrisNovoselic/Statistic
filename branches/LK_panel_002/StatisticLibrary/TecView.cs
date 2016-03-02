@@ -279,17 +279,8 @@ namespace StatisticCommon
                 }
             }
             else
-            {
                 foreach (TG tg in m_tec.list_TECComponents[indxTECComponents].m_listTG)
-                {
-                    //tg_ids.Add(tg.m_id); //Добавить без проверки
-
-                    ////positionYValue = 19;
-                    ////addTGView(ref tg.name_shr, ref positionXName, ref positionYName, ref positionXValue, ref positionYValue);
-                    //m_pnlQuickData.addTGView(ref tg.name_shr);
-
                     foreach (TECComponent c in m_tec.list_TECComponents)
-                    {
                         if (tg.m_id == c.m_id) {
                             m_localTECComponents.Add(c);
 
@@ -297,9 +288,6 @@ namespace StatisticCommon
                         }
                         else
                             ;
-                    }
-                }
-            }
 
             initDictValuesTECComponent (24 + 1);
         }

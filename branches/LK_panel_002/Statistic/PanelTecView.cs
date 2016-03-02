@@ -18,7 +18,7 @@ using StatisticCommon;
 
 namespace Statistic
 {
-    public class PanelTecView : PanelTecViewBase
+    public class PanelTecView : PanelTecViewStandard
     {
         PanelCustomTecView.HLabelCustomTecView m_label;
 
@@ -69,7 +69,7 @@ namespace Statistic
                 this.stctrViewPanel2.Panel2.Controls.Add(this.m_ZedGraphHours);
                 this.stctrView.Panel2.Controls.Add(this.stctrViewPanel2);
 
-                this.Controls.Add(m_pnlQuickData, 0, 1);
+                this.Controls.Add(PanelQuickData, 0, 1);
             }
 
             this.m_ZedGraphMins.MouseUpEvent += new ZedGraph.ZedGraphControl.ZedMouseEventHandler(this.zedGraphMins_MouseUpEvent);
@@ -213,9 +213,9 @@ namespace Statistic
             }
 
             if (propView[(int)PanelCustomTecView.HLabelCustomTecView.INDEX_PROPERTIES_VIEW.QUICK_PANEL] == 1) {                    
-                this.Controls.Add(m_pnlQuickData, 0, iRow);
-                m_pnlQuickData.ShowFactValues();
-                m_pnlQuickData.ShowTMValues ();
+                this.Controls.Add(PanelQuickData, 0, iRow);
+                PanelQuickData.ShowFactValues();
+                PanelQuickData.ShowTMValues();
             }
             else {
             }
@@ -276,7 +276,7 @@ namespace Statistic
                     //if (m_tecView.m_valuesHours.addonValues && hour == m_tecView.m_valuesHours.hourAddon)
                     //    ws.Cells[1, 0].Value = "Мощность на " + (hour + 1).ToString() + "* час " + m_pnlQuickData.dtprDate.Value.ToShortDateString();
                     //else
-                        ws.Cells[1, 0].Value = "Мощность на " + (hour + 1).ToString() + " час " + m_pnlQuickData.dtprDate.Value.ToShortDateString();
+                        ws.Cells[1, 0].Value = "Мощность на " + (hour + 1).ToString() + " час " + _pnlQuickData.dtprDate.Value.ToShortDateString();
 
                     ws.Cells[2, 0].Value = "Минута";
                     ws.Cells[2, 1].Value = "Факт";
@@ -393,7 +393,7 @@ namespace Statistic
                         ws.Cells[0, 0].Value = m_tecView.m_tec.name_shr + ", " + m_tecView.m_tec.list_TECComponents[indx_TECComponent].name_shr;
                     }
 
-                    ws.Cells[1, 0].Value = "Мощность на " + m_pnlQuickData.dtprDate.Value.ToShortDateString();
+                    ws.Cells[1, 0].Value = "Мощность на " + _pnlQuickData.dtprDate.Value.ToShortDateString();
 
                     ws.Cells[2, 0].Value = "Час";
                     ws.Cells[2, 1].Value = "Факт";
@@ -502,7 +502,7 @@ namespace Statistic
                     m_tecView.recalcAver = true;
                     m_tecView.lastMin = index + 2;
                     m_tecView.GetRetroMinTMGen ();
-                    m_pnlQuickData.ShowFactValues();
+                    _pnlQuickData.ShowFactValues();
                     //m_tecView.recalcAver = true;
                     //???Отработка запроса происходит при восстановленном значении...
                     //m_tecView.lastMin = prevLastMin;

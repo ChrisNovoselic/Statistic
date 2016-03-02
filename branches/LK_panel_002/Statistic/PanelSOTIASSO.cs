@@ -727,15 +727,15 @@ namespace Statistic
                             cntDiviation++;
 
                             if (cntDiviation > 4)
-                                cellStyle = PanelTecViewBase.dgvCellStyleError;
+                                cellStyle = PanelTecViewStandard.dgvCellStyleError;
                             else
-                                cellStyle = PanelTecViewBase.dgvCellStyleWarning;
+                                cellStyle = PanelTecViewStandard.dgvCellStyleWarning;
                         }
                         else
                         {
                             //Установить счетчик случаев выхода за установленные границы в исходное состояние
                             cntDiviation = 0;
-                            cellStyle = PanelTecViewBase.dgvCellStyleCommon;
+                            cellStyle = PanelTecViewStandard.dgvCellStyleCommon;
                         }                        
                     }
                     else
@@ -743,7 +743,7 @@ namespace Statistic
                         dgvGTP.Rows[i - 1].Cells[3].Value = 0.ToString(@"F3");
                         //Установить счетчик случаев выхода за установленные границы в исходное состояние
                         cntDiviation = 0;
-                        cellStyle = PanelTecViewBase.dgvCellStyleCommon;
+                        cellStyle = PanelTecViewStandard.dgvCellStyleCommon;
                     }
                     //Установить цвет ячейки
                     dgvGTP.Rows[i - 1].Cells[3].Style = cellStyle;

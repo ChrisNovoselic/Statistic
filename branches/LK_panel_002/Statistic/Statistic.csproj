@@ -196,6 +196,9 @@
     <Compile Include="PanelSobstvNyzhdy.cs">
       <SubType>Component</SubType>
     </Compile>
+    <Compile Include="PanelTecViewStandard.cs">
+      <SubType>Component</SubType>
+    </Compile>
     <EmbeddedResource Include="FormGraphicsSettings.resx">
       <DependentUpon>FormGraphicsSettings.cs</DependentUpon>
       <SubType>Designer</SubType>

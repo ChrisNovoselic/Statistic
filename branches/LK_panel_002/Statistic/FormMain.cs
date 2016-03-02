@@ -707,7 +707,7 @@ namespace Statistic
             //    else
             //        ;
 
-            if (tclTecViews.TabPages[e.TabIndex].Controls[0] is PanelTecViewBase)
+            if (tclTecViews.TabPages[e.TabIndex].Controls[0] is PanelTecViewStandard)
                 formChangeMode.SetItemChecked(e.TabHeaderText, false);
             else
                 if (tclTecViews.TabPages[e.TabIndex].Controls[0] is PanelAdminKomDisp)
@@ -880,9 +880,9 @@ namespace Statistic
             }
             else
             {
-                if (panel is PanelTecViewBase)
+                if (panel is PanelTecViewStandard)
                 {
-                    key = (panel as PanelTecViewBase).m_ID;
+                    key = (panel as PanelTecViewStandard).m_ID;
                 }
                 else
                 {
@@ -1257,8 +1257,8 @@ namespace Statistic
             {
                 bToRemove = false;
 
-                if ((tab.Controls[0] is PanelTecViewBase)
-                    && (listTabKeep.IndexOf(((PanelTecViewBase)tab.Controls[0]).m_ID) < 0))
+                if ((tab.Controls[0] is PanelTecViewStandard)
+                    && (listTabKeep.IndexOf(((PanelTecViewStandard)tab.Controls[0]).m_ID) < 0))
                 {
                     bToRemove = true;
                 }
@@ -1734,7 +1734,7 @@ namespace Statistic
             if (! (tec.m_id > 10))
                 panelTecView = new PanelTecView(tec, ti, ci, null/*, ErrorReport, WarningReport, ActionReport, ReportClear*/);
             else
-                panelTecView = new PanelTecViewLK(tec, ti, ci);
+                panelTecView = new PanelLKView(tec, ti, ci);
 
             panelTecView.SetDelegateWait(delegateStartWait, delegateStopWait, delegateEvent);
             panelTecView.SetDelegateReport(ErrorReport, WarningReport, ActionReport, ReportClear);
@@ -2004,15 +2004,15 @@ namespace Statistic
         {
             int have_msg = 0;
             m_lblDescMessage.Text = m_lblDateMessage.Text = string.Empty;
-            PanelTecViewBase selTecView = null;
+            PanelTecViewStandard selTecView = null;
 
             //for (int i = 0; i < selectedTecViews.Count; i++)
             //if ((selectedTecViews.Count > 0) /*&& (! (m_prevSelectedIndex < 0))*/)
             if ((!(m_prevSelectedIndex < 0)) && (m_prevSelectedIndex < tclTecViews.TabCount))
             {
-                if ((tclTecViews.TabPages[m_prevSelectedIndex].Controls.Count > 0) && (tclTecViews.TabPages[m_prevSelectedIndex].Controls[0] is PanelTecViewBase))
+                if ((tclTecViews.TabPages[m_prevSelectedIndex].Controls.Count > 0) && (tclTecViews.TabPages[m_prevSelectedIndex].Controls[0] is PanelTecViewStandard))
                 {
-                    selTecView = (PanelTecViewBase)tclTecViews.TabPages[m_prevSelectedIndex].Controls[0];
+                    selTecView = (PanelTecViewStandard)tclTecViews.TabPages[m_prevSelectedIndex].Controls[0];
 
                     if (!(selTecView == null) && ((!(selTecView.m_tecView.m_tec.connSetts[(int)CONN_SETT_TYPE.DATA_AISKUE] == null))
                         && (!(selTecView.m_tecView.m_tec.connSetts[(int)CONN_SETT_TYPE.DATA_SOTIASSO] == null))))
@@ -2555,8 +2555,8 @@ namespace Statistic
 
             if ((!(tclTecViews.SelectedIndex < 0))
                 && (tclTecViews.SelectedIndex < tclTecViews.TabCount))
-                if (ctrl is PanelTecViewBase)
-                    ((PanelTecViewBase)ctrl).UpdateGraphicsCurrent(type);
+                if (ctrl is PanelTecViewStandard)
+                    ((PanelTecViewStandard)ctrl).UpdateGraphicsCurrent(type);
                 else
                     if (ctrl is PanelCustomTecView)
                         ((PanelCustomTecView)ctrl).UpdateGraphicsCurrent(type);
@@ -2620,7 +2620,7 @@ namespace Statistic
         {
             if (s_listFormConnectionSettings[(int)CONN_SETT_TYPE.CONFIG_DB].Ready == 0)
             {
-                foreach (PanelTecViewBase tv in m_listStandardTabs)
+                foreach (PanelTecViewStandard tv in m_listStandardTabs)
                     if (tv.m_tecView.m_tec.Type == StatisticCommon.TEC.TEC_TYPE.BIYSK)
                     {
                         if (!(m_formParametersTG == null))
@@ -2909,8 +2909,8 @@ namespace Statistic
             {
                 Panel panel = GetPanel();
 
-                if (panel is PanelTecViewBase)
-                    (panel as PanelTecViewBase).UpdateGraphicsCurrent(type);
+                if (panel is PanelTecViewStandard)
+                    (panel as PanelTecViewStandard).UpdateGraphicsCurrent(type);
                 else
                     if (panel is PanelCustomTecView)
                         (panel as PanelCustomTecView).UpdateGraphicsCurrent(type);
