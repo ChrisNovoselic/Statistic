@@ -20,6 +20,8 @@ namespace Statistic
 {
     public abstract partial  class PanelTecViewBase : PanelStatisticWithTableHourRows
     {
+        protected PanelCustomTecView.HLabelCustomTecView m_label;
+
         //protected static AdminTS.TYPE_FIELDS s_typeFields = AdminTS.TYPE_FIELDS.DYNAMIC;
 
         protected abstract class HZedGraphControl : ZedGraph.ZedGraphControl
@@ -313,7 +315,7 @@ namespace Statistic
             }
         }
 
-        protected PanelQuickData _pnlQuickData;
+        protected HPanelQuickData _pnlQuickData;
 
         protected System.Windows.Forms.SplitContainer stctrView;
         protected System.Windows.Forms.SplitContainer stctrViewPanel1, stctrViewPanel2;
@@ -652,6 +654,163 @@ namespace Statistic
                     ;
 
             FillDefaultMins ();
+        }
+
+        protected void OnEventRestruct(object pars)
+        {
+            int[] propView = pars as int[];
+
+            this.Controls.Clear();
+            this.RowStyles.Clear();
+            stctrView.Panel1.Controls.Clear();
+            stctrView.Panel2.Controls.Clear();
+            this.stctrViewPanel1.Panel1.Controls.Clear();
+            this.stctrViewPanel2.Panel1.Controls.Clear();
+
+            int iRow = 0;
+            int iPercTotal = 100;
+            int[] arPercRows = { 5, 71 };
+
+            if (!(m_label == null))
+            {
+                this.Controls.Add(m_label, 0, iRow);
+                iPercTotal -= arPercRows[iRow];
+                this.RowStyles.Add(new RowStyle(SizeType.Percent, arPercRows[iRow++]));
+            }
+            else
+                ;
+
+            if (propView[(int)PanelCustomTecView.HLabelCustomTecView.INDEX_PROPERTIES_VIEW.ORIENTATION] < 0)
+            {
+                //Отобразить ТОЛЬКО один элемент
+                bool bVisible = true;
+                if (propView[(int)PanelCustomTecView.HLabelCustomTecView.INDEX_PROPERTIES_VIEW.TABLE_MINS] == 1)
+                    this.Controls.Add(m_dgwMins, 0, iRow);
+                else
+                    if (propView[(int)PanelCustomTecView.HLabelCustomTecView.INDEX_PROPERTIES_VIEW.TABLE_HOURS] == 1)
+                        this.Controls.Add(m_dgwHours, 0, iRow);
+                    else
+                        if (propView[(int)PanelCustomTecView.HLabelCustomTecView.INDEX_PROPERTIES_VIEW.GRAPH_MINS] == 1)
+                            this.Controls.Add(m_ZedGraphMins, 0, iRow);
+                        else
+                            if (propView[(int)PanelCustomTecView.HLabelCustomTecView.INDEX_PROPERTIES_VIEW.GRAPH_HOURS] == 1)
+                                this.Controls.Add(m_ZedGraphHours, 0, iRow);
+                            else
+                                bVisible = false;
+
+                if (bVisible == true)
+                {
+                    iPercTotal -= arPercRows[iRow];
+                    this.RowStyles.Add(new RowStyle(SizeType.Percent, arPercRows[iRow++]));
+                }
+                else
+                    ;
+            }
+            else
+            { //Отобразить ДВА или ЧЕТЫРЕ элемента
+                if ((propView[(int)PanelCustomTecView.HLabelCustomTecView.INDEX_PROPERTIES_VIEW.TABLE_MINS] == 1) && (propView[(int)PanelCustomTecView.HLabelCustomTecView.INDEX_PROPERTIES_VIEW.TABLE_HOURS] == 1) &&
+                    (propView[(int)PanelCustomTecView.HLabelCustomTecView.INDEX_PROPERTIES_VIEW.GRAPH_MINS] == 1) && (propView[(int)PanelCustomTecView.HLabelCustomTecView.INDEX_PROPERTIES_VIEW.GRAPH_HOURS] == 1))
+                { //Отобразить 4 элемента (таблица(мин) + таблица(час) + график(мин) + график(час))
+                }
+                else
+                { //Отобразить ДВА элемента
+                    if (propView[(int)PanelCustomTecView.HLabelCustomTecView.INDEX_PROPERTIES_VIEW.ORIENTATION] == 0)
+                    {
+                        stctrView.Orientation = Orientation.Vertical;
+
+                        stctrView.SplitterDistance = stctrView.Width / 2;
+                    }
+                    else
+                    {
+                        stctrView.Orientation = Orientation.Horizontal;
+
+                        stctrView.SplitterDistance = stctrView.Height / 2;
+                    }
+
+                    if ((propView[(int)PanelCustomTecView.HLabelCustomTecView.INDEX_PROPERTIES_VIEW.TABLE_MINS] == 1) && (propView[(int)PanelCustomTecView.HLabelCustomTecView.INDEX_PROPERTIES_VIEW.TABLE_HOURS] == 1) &&
+                        (propView[(int)PanelCustomTecView.HLabelCustomTecView.INDEX_PROPERTIES_VIEW.GRAPH_MINS] == 0) && (propView[(int)PanelCustomTecView.HLabelCustomTecView.INDEX_PROPERTIES_VIEW.GRAPH_HOURS] == 0))
+                    { //Отобразить 2 элемента (таблица(мин) + таблица(час))
+                        stctrView.Panel1.Controls.Add(m_dgwMins);
+                        stctrView.Panel2.Controls.Add(m_dgwHours);
+                    }
+                    else
+                    {
+                        if ((propView[(int)PanelCustomTecView.HLabelCustomTecView.INDEX_PROPERTIES_VIEW.TABLE_MINS] == 0) && (propView[(int)PanelCustomTecView.HLabelCustomTecView.INDEX_PROPERTIES_VIEW.TABLE_HOURS] == 0) &&
+                            (propView[(int)PanelCustomTecView.HLabelCustomTecView.INDEX_PROPERTIES_VIEW.GRAPH_MINS] == 1) && (propView[(int)PanelCustomTecView.HLabelCustomTecView.INDEX_PROPERTIES_VIEW.GRAPH_HOURS] == 1))
+                        { //Отобразить 2 элемента (график(мин) + график(час))
+                            stctrView.Panel1.Controls.Add(m_ZedGraphMins);
+                            stctrView.Panel2.Controls.Add(m_ZedGraphHours);
+                        }
+                        else
+                        {
+                            if ((propView[(int)PanelCustomTecView.HLabelCustomTecView.INDEX_PROPERTIES_VIEW.TABLE_MINS] == 1) && (propView[(int)PanelCustomTecView.HLabelCustomTecView.INDEX_PROPERTIES_VIEW.TABLE_HOURS] == 0) &&
+                                (propView[(int)PanelCustomTecView.HLabelCustomTecView.INDEX_PROPERTIES_VIEW.GRAPH_MINS] == 1) && (propView[(int)PanelCustomTecView.HLabelCustomTecView.INDEX_PROPERTIES_VIEW.GRAPH_HOURS] == 0))
+                            { //Отобразить 2 элемента (таблица(мин) + график(мин))
+                                stctrView.Panel1.Controls.Add(m_dgwMins);
+                                stctrView.Panel2.Controls.Add(m_ZedGraphMins);
+                            }
+                            else
+                            {
+                                if ((propView[(int)PanelCustomTecView.HLabelCustomTecView.INDEX_PROPERTIES_VIEW.TABLE_MINS] == 0) && (propView[(int)PanelCustomTecView.HLabelCustomTecView.INDEX_PROPERTIES_VIEW.TABLE_HOURS] == 1) &&
+                                    (propView[(int)PanelCustomTecView.HLabelCustomTecView.INDEX_PROPERTIES_VIEW.GRAPH_MINS] == 0) && (propView[(int)PanelCustomTecView.HLabelCustomTecView.INDEX_PROPERTIES_VIEW.GRAPH_HOURS] == 1))
+                                { //Отобразить 2 элемента (таблица(час) + график(час))
+                                    stctrView.Panel1.Controls.Add(m_dgwHours);
+                                    stctrView.Panel2.Controls.Add(m_ZedGraphHours);
+                                }
+                                else
+                                {
+                                    if ((propView[(int)PanelCustomTecView.HLabelCustomTecView.INDEX_PROPERTIES_VIEW.TABLE_MINS] == 0) && (propView[(int)PanelCustomTecView.HLabelCustomTecView.INDEX_PROPERTIES_VIEW.TABLE_HOURS] == 1) &&
+                                        (propView[(int)PanelCustomTecView.HLabelCustomTecView.INDEX_PROPERTIES_VIEW.GRAPH_MINS] == 1) && (propView[(int)PanelCustomTecView.HLabelCustomTecView.INDEX_PROPERTIES_VIEW.GRAPH_HOURS] == 0))
+                                    { //Отобразить 2 элемента (таблица(час) + график(час))
+                                        stctrView.Panel1.Controls.Add(m_dgwHours);
+                                        stctrView.Panel2.Controls.Add(m_ZedGraphMins);
+                                    }
+                                    else
+                                    {
+                                        if ((propView[(int)PanelCustomTecView.HLabelCustomTecView.INDEX_PROPERTIES_VIEW.TABLE_MINS] == 1) && (propView[(int)PanelCustomTecView.HLabelCustomTecView.INDEX_PROPERTIES_VIEW.TABLE_HOURS] == 0) &&
+                                            (propView[(int)PanelCustomTecView.HLabelCustomTecView.INDEX_PROPERTIES_VIEW.GRAPH_MINS] == 0) && (propView[(int)PanelCustomTecView.HLabelCustomTecView.INDEX_PROPERTIES_VIEW.GRAPH_HOURS] == 1))
+                                        { //Отобразить 2 элемента (таблица(час) + график(час))
+                                            stctrView.Panel1.Controls.Add(m_dgwMins);
+                                            stctrView.Panel2.Controls.Add(m_ZedGraphHours);
+                                        }
+                                        else
+                                        {
+                                        }
+                                    }
+                                }
+                            }
+                        }
+                    }
+
+                    this.Controls.Add(this.stctrView, 0, iRow);
+                    iPercTotal -= arPercRows[iRow];
+                    this.RowStyles.Add(new RowStyle(SizeType.Percent, arPercRows[iRow++]));
+                }
+
+                switch (propView[(int)PanelCustomTecView.HLabelCustomTecView.INDEX_PROPERTIES_VIEW.TABLE_AND_GRAPH])
+                {
+                    case -1: //Таблица и график с аналогичными интервалами НЕ МОГУТ быть размещены в одном 'SplitContainer'
+                        break;
+                    case 0:
+                        break;
+                    case 1:
+                        break;
+                    default:
+                        break;
+                }
+            }
+
+            if (propView[(int)PanelCustomTecView.HLabelCustomTecView.INDEX_PROPERTIES_VIEW.QUICK_PANEL] == 1)
+            {
+                this.Controls.Add(_pnlQuickData, 0, iRow);
+                _pnlQuickData.ShowFactValues();
+                _pnlQuickData.ShowTMValues();
+            }
+            else
+            {
+            }
+
+            this.RowStyles.Add(new RowStyle(SizeType.Percent, iPercTotal));
         }
 
         private void updateGUI_TM_Gen()

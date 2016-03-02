@@ -23,6 +23,11 @@ namespace Statistic
         protected override void InitializeComponent()
         {
             base.InitializeComponent();
+
+            OnEventRestruct(
+                //PanelCustomTecView.HLabelCustomTecView.s_propViewDefault
+                new int[] { 0, 1, 0, 1, 0, 1, -1 } //отобразить часовые таблицу/гистограмму/панель с оперативными данными
+                );
         }
 
         private class TecViewLK : TecView
@@ -35,7 +40,7 @@ namespace Statistic
         /// <summary>
         /// Класс для размещения активных элементов управления
         /// </summary>
-        private class PanelQuickDataLK : PanelQuickData
+        private class PanelQuickDataLK : HPanelQuickData
         {
             public PanelQuickDataLK()
                 : base (/*-1, -1*/)

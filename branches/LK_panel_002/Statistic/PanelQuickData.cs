@@ -182,7 +182,7 @@ namespace Statistic
             #endregion
         }
 
-        protected abstract class PanelQuickData : HPanelTableLayout
+        protected abstract class HPanelQuickData : HPanelTableLayout
         {
             public System.Windows.Forms.Button btnSetNow;
             public DateTimePicker dtprDate;
@@ -195,7 +195,7 @@ namespace Statistic
             public abstract void ShowFactValues();            
             public abstract void ShowTMValues();
 
-            public PanelQuickData ()
+            public HPanelQuickData ()
             {
                 InitializeComponent ();
             }
@@ -208,7 +208,7 @@ namespace Statistic
             }
         }
 
-        protected partial class PanelQuickDataStandard : PanelQuickData
+        protected partial class PanelQuickDataStandard : HPanelQuickData
         {
             private enum INDEX_CONTEXTMENUITEM { FORECASTEE, TM };
 
@@ -844,7 +844,7 @@ namespace Statistic
             }
         }
 
-        partial class PanelQuickDataStandard : PanelQuickData
+        partial class PanelQuickDataStandard : HPanelQuickData
         {
             /// <summary>
             /// Класс для хранения информации о местоположении элемента управления
