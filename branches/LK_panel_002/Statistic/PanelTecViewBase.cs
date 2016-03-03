@@ -667,18 +667,24 @@ namespace Statistic
             this.stctrViewPanel1.Panel1.Controls.Clear();
             this.stctrViewPanel2.Panel1.Controls.Clear();
 
-            int iRow = 0;
-            int iPercTotal = 100;
-            int[] arPercRows = { 5, 71 };
+            int iRow = 0
+                , iPercTotal = 100
+                , iPercItem = -1;
+            int[] arPercRows = { 5, 71 }; // 5 - для подписи, 71 - для таблиц/гистограмм, остальное - панель оперативных данных
+            bool bUseLabel = !(m_label == null);
 
-            if (!(m_label == null))
-            {
+            if (bUseLabel == true)
+            {// только для панелей с подписью
                 this.Controls.Add(m_label, 0, iRow);
-                iPercTotal -= arPercRows[iRow];
+                iPercItem = arPercRows[iRow];
+                iPercTotal -= iPercItem;
                 this.RowStyles.Add(new RowStyle(SizeType.Percent, arPercRows[iRow++]));
             }
             else
                 ;
+            //// инкрементировать индекс в массиве для перехода к соедующему элементу
+            //// , не ~ от того используется ли 'm_label'
+            //iRow++;
 
             if (propView[(int)PanelCustomTecView.HLabelCustomTecView.INDEX_PROPERTIES_VIEW.ORIENTATION] < 0)
             {
@@ -700,8 +706,10 @@ namespace Statistic
 
                 if (bVisible == true)
                 {
-                    iPercTotal -= arPercRows[iRow];
-                    this.RowStyles.Add(new RowStyle(SizeType.Percent, arPercRows[iRow++]));
+                    iPercItem = bUseLabel == true ? arPercRows[iRow] : arPercRows[iRow] + arPercRows[iRow + 1];
+                    iPercTotal -= iPercItem;
+                    this.RowStyles.Add(new RowStyle(SizeType.Percent, iPercItem));
+                    iRow++;
                 }
                 else
                     ;
@@ -783,8 +791,10 @@ namespace Statistic
                     }
 
                     this.Controls.Add(this.stctrView, 0, iRow);
-                    iPercTotal -= arPercRows[iRow];
-                    this.RowStyles.Add(new RowStyle(SizeType.Percent, arPercRows[iRow++]));
+                    iPercItem = bUseLabel == true ? arPercRows[iRow] : arPercRows[iRow] + arPercRows[iRow + 1];
+                    iPercTotal -= iPercItem;
+                    this.RowStyles.Add(new RowStyle(SizeType.Percent, iPercItem));
+                    iRow++;
                 }
 
                 switch (propView[(int)PanelCustomTecView.HLabelCustomTecView.INDEX_PROPERTIES_VIEW.TABLE_AND_GRAPH])
