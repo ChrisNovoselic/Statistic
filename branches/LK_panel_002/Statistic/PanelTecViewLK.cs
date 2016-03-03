@@ -45,6 +45,22 @@ namespace Statistic
             public PanelQuickDataLK()
                 : base (/*-1, -1*/)
             {
+                InitializeComponent();
+            }
+
+            private void InitializeComponent()
+            {
+                this.Dock = DockStyle.Fill;
+
+                this.RowCount = 12;
+
+                for (int i = 0; i < this.RowCount + 1; i++)
+                    this.RowStyles.Add(new RowStyle(SizeType.Percent, (float)Math.Round((float)100 / this.RowCount, 1)));
+
+                this.ColumnCount = 12;
+
+                for (int i = 0; i < this.ColumnCount + 1; i++)
+                    this.ColumnStyles.Add(new ColumnStyle(SizeType.Percent, (float)Math.Round((float)100 / this.ColumnCount, 1)));
             }
 
             //protected override void initializeLayoutStyle(int cols = -1, int rows = -1)
@@ -122,7 +138,7 @@ namespace Statistic
 
         protected override void initTableHourRows()
         {
-            throw new NotImplementedException();
+            //Ничего не делаем, т.к. составные элементы самостоятельно настраивают кол-во строк в таблицах
         }
 
         protected override void initializeLayoutStyle(int cols = -1, int rows = -1)
