@@ -2257,11 +2257,11 @@ namespace Statistic
                         switch (modeAdmin)
                         {
                             case FormChangeMode.MANAGER.DISP:
+                            case FormChangeMode.MANAGER.LK:
                             case FormChangeMode.MANAGER.ALARM:
                                 mode = FormChangeMode.MODE_TECCOMPONENT.GTP;
                                 break;
                             case FormChangeMode.MANAGER.NSS:
-                            case FormChangeMode.MANAGER.LK:
                                 mode = FormChangeMode.MODE_TECCOMPONENT.TEC; //PC или TG не важно
                                 break;
                             default:

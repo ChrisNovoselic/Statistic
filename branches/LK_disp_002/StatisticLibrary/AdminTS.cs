@@ -380,6 +380,7 @@ namespace StatisticCommon
             }
         }
 
+
         public override void GetRDGValues(/*int /*TYPE_FIELDS mode,*/ int indx, DateTime date)
         {
             //Запретить запись ПБР-значений

@@ -214,7 +214,7 @@ namespace StatisticCommon
             initTEC();
         }
 
-        private void initTEC()
+        protected virtual void initTEC()
         {
             //comboBoxTecComponent.Items.Clear ();
             allTECComponents.Clear();

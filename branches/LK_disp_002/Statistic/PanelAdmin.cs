@@ -220,6 +220,10 @@ namespace Statistic
                     //Возможность редактирования значений ПБР: НЕ изменяема, разрешена
                     m_admin = new AdminTS_NSS(new bool[] { false, true });
                     break;
+                case FormChangeMode.MANAGER.LK:
+                    //Возможность редактирования значений ПБР: НЕ изменяема, разрешена
+                    m_admin = new AdminTS_LK(new bool[] { false, true });
+                    break;
                 default:
                     break;
             }
@@ -378,8 +382,9 @@ namespace Statistic
                 ;
         }
 
-        public virtual void InitializeComboBoxTecComponent (FormChangeMode.MODE_TECCOMPONENT mode) {
-            m_listTECComponentIndex = m_admin.GetListIndexTECComponent (mode);
+        public virtual void InitializeComboBoxTecComponent (FormChangeMode.MODE_TECCOMPONENT mode) 
+        {
+            m_listTECComponentIndex = m_admin.GetListIndexTECComponent(mode);
 
             //m_admin.m_typeFields = AdminTS.TYPE_FIELDS.DYNAMIC;
 
