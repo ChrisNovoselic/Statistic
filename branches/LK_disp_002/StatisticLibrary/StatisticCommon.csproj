@@ -102,7 +102,6 @@
     <Compile Include="AdminTS_KomDisp.cs">
       <SubType>Code</SubType>
     </Compile>
-    <Compile Include="AdminTS_LK.cs" />
     <Compile Include="AdminTS_NSS.cs">
       <SubType>Code</SubType>
     </Compile>

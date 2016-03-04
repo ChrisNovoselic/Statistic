@@ -4,11 +4,12 @@ using System.Data;
 using System.Collections.Generic;
 using System.Threading;
 
-using Excel = Microsoft.Office.Interop.Excel;
+//using Excel = Microsoft.Office.Interop.Excel;
 
 using HClassLibrary;
+using StatisticCommon;
 
-namespace StatisticCommon
+namespace Statistic
 {
     public class AdminTS_LK : AdminTS
     {
@@ -498,184 +499,7 @@ namespace StatisticCommon
 
         protected void /*bool*/ ExpRDGExcelValuesRequest()
         {
-            //bool bRes = true;
-            Boolean bMidnightValues = false;
-            int err = 0,
-                i = -1,
-                rowOffsetData = 2,
-                rowOffsetNextDay = 0,
-                iMidnightValues = 0,
-                iTimeZoneOffset = allTECComponents[m_listTECComponentIndexDetail[0/*любой из индексов, т.к. они принадлежат одной ТЭЦ*/]].tec.m_timezone_offset_msc;
-            string path_rdg_excel = allTECComponents[m_listTECComponentIndexDetail[0/*любой из индексов, т.к. они принадлежат одной ТЭЦ*/]].tec.m_path_rdg_excel,
-                strUpdate = string.Empty;
-            TECComponentBase comp;
-
-            if ((IsCanUseTECComponents() == true) && (path_rdg_excel.Length > 0))
-            {
-                Excel.Application excelApp = new Excel.Application();
-                Excel.Workbook excelAppWorkbook;
-                Excel.Worksheet excelAppWorksheet;
-                Excel.Range excelAppCellA1, excelAppWorkcell;
-
-                excelApp.Visible = false;
-
-                Boolean bPrevExcelAppDisplayAlerts = excelApp.DisplayAlerts;
-                excelApp.DisplayAlerts = false;
-
-                string nameExcelBook = nameFileRDGExcel(m_curDate.Date) + ".xls",
-                        pathExcelBook = path_rdg_excel + "\\" + nameExcelBook;
-
-                i = 0;
-                while (File.Exists(pathExcelBook) == false)
-                {
-                    i--;
-
-                    nameExcelBook = nameFileRDGExcel(m_curDate.Date.AddDays(i)) + ".xls";
-                    pathExcelBook = path_rdg_excel + "\\" + nameExcelBook;
-                }
-
-                excelApp.Workbooks.Open(pathExcelBook,
-                                        Type.Missing,
-                                        false,
-                                        Type.Missing,
-                                        Type.Missing,
-                                        "lk",
-                                        true);
-
-                if (i < 0)
-                {//Файл искали - необходимо созлать нпа сегодняшний день
-                    nameExcelBook = nameFileRDGExcel(m_curDate.Date) + ".xls";
-                    pathExcelBook = path_rdg_excel + "\\" + nameExcelBook;
-
-                    excelApp.Workbooks[1].SaveAs(pathExcelBook, Type.Missing, Type.Missing, "lk", false, false);
-                }
-                else
-                    ;
-
-                excelAppWorkbook = excelApp.Workbooks[1];
-                excelAppWorksheet = (Excel.Worksheet)excelAppWorkbook.Worksheets[1];
-                excelAppCellA1 = excelAppWorksheet.get_Range("A1", Type.Missing);
-
-                for (i = 0; i < 24; i++)
-                {
-                    strUpdate = string.Empty;
-
-                    if ((i + iTimeZoneOffset) < 24)
-                    {
-                    }
-                    else
-                    {
-                        if (rowOffsetNextDay == 0)
-                        {
-                            //Проверить существование книги
-                            nameExcelBook = nameFileRDGExcel(m_curDate.Date.AddDays(1)) + ".xls";
-                            pathExcelBook = path_rdg_excel + "\\" + nameExcelBook;
-
-                            if (File.Exists(pathExcelBook) == false)
-                                excelApp.Workbooks[1].SaveAs(pathExcelBook, Type.Missing, Type.Missing, "lk", false, false);
-                            else
-                            {
-                                excelApp.Windows[1].Close(true, excelApp.Workbooks[1].FullName, false);
-
-                                excelApp.Workbooks.Open(pathExcelBook,
-                                                        Type.Missing,
-                                                        false,
-                                                        Type.Missing,
-                                                        Type.Missing,
-                                                        "lk",
-                                                        true);
-
-                                excelAppWorkbook = excelApp.Workbooks[1];
-                                excelAppWorksheet = (Excel.Worksheet)excelAppWorkbook.Worksheets[1];
-                                excelAppCellA1 = excelAppWorksheet.get_Range("A1", Type.Missing);
-                            }
-
-                            rowOffsetNextDay = 24;
-                        }
-                        else
-                            ;
-                    }
-
-                    foreach (RDGStruct[] curRDGValues in m_listCurRDGValues)
-                    {
-                        indxTECComponents = m_listTECComponentIndexDetail[m_listCurRDGValues.IndexOf(curRDGValues)];
-                        comp = null;
-
-                        //strUpdate += @"'A";
-                        //strUpdate += @"A";
-                        if (modeTECComponent(m_listTECComponentIndexDetail[m_listCurRDGValues.IndexOf(curRDGValues)]) == FormChangeMode.MODE_TECCOMPONENT.GTP)
-                        {
-                            //strUpdate += allTECComponents[indxTECComponents].m_indx_col_rdg_excel;
-                            comp = allTECComponents[indxTECComponents];
-                        }
-                        else
-                            if (modeTECComponent(m_listTECComponentIndexDetail[m_listCurRDGValues.IndexOf(curRDGValues)]) == FormChangeMode.MODE_TECCOMPONENT.TG)
-                            {
-                                //strUpdate += allTECComponents[indxTECComponents].TG [0].m_indx_col_rdg_excel;
-                                comp = allTECComponents[indxTECComponents].m_listTG[0];
-                            }
-                            else ;
-
-                        //strUpdate += @"'='" + (curRDGValues[i].pbr - curRDGValues[i].recomendation) + @"', ";
-                        //strUpdate += @"='" + (curRDGValues[i].pbr - curRDGValues[i].recomendation) + @"', ";
-
-                        if (!(comp == null))
-                        {
-                            excelAppWorkcell = excelAppCellA1.get_Offset(rowOffsetData + i + iTimeZoneOffset - rowOffsetNextDay, comp.m_indx_col_rdg_excel - 1);
-
-                            try { excelAppWorkcell.Value = curRDGValues[i].pbr - curRDGValues[i].recomendation; }
-                            catch (Exception e)
-                            {
-                                Logging.Logg().Exception(e, "excelAppWorkcell.set_Value () - ...", Logging.INDEX_MESSAGE.NOT_SET);
-
-                                i = 24;
-                                break;
-                            }
-
-                            if (!(rowOffsetNextDay == 0) && (bMidnightValues == false))
-                            {//Выполняется ОДИН раз (bMidnightValues - флаг) для всех компонентов
-                                excelAppWorkcell = excelAppCellA1.get_Offset(rowOffsetData - 1, comp.m_indx_col_rdg_excel - 1);
-
-                                try { excelAppWorkcell.Value = curRDGValues[24 - iTimeZoneOffset].pbr - curRDGValues[24 - iTimeZoneOffset].recomendation; }
-                                catch (Exception e)
-                                {
-                                    Logging.Logg().Exception(e, "excelAppWorkcell.set_Value () - ...", Logging.INDEX_MESSAGE.NOT_SET);
-
-                                    i = 24;
-                                    break;
-                                }
-                            }
-                            else
-                                ;
-                        }
-                        else
-                            ;
-                    }
-
-                    if (!(rowOffsetNextDay == 0) && (bMidnightValues == false))
-                    {//Выполняется ОДИН раз (bMidnightValues - флаг) для всех компонентов
-                        bMidnightValues = true;
-                    }
-                    else
-                        ;
-
-                    //strUpdate = strUpdate.Substring (0, strUpdate.Length - 2);
-
-                    //strUpdate = @"UPDATE [Лист1$] SET " + strUpdate + @" WHERE A" + (i + 2) + "='" + ((i.ToString ().Length < 2) ? @"0" + i.ToString () : i.ToString ()) + @"'";
-                    //strUpdate = @"UPDATE [Лист1$] SET " + strUpdate + @" WHERE 1='" + ((i.ToString().Length < 2) ? @"0" + i.ToString() : i.ToString()) + @"'";
-                }
-
-                excelApp.Windows[1].Close(true, pathExcelBook, false);
-
-                excelApp.DisplayAlerts = bPrevExcelAppDisplayAlerts;
-                excelApp.Quit();
-
-                //base.ExpRDGExcelValuesRequest();
-            }
-            else
-                ;
-
-            //return bRes;
+            
         }
 
         protected override void InitializeSyncState()
