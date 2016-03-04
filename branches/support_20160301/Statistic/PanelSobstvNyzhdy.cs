@@ -676,7 +676,7 @@ namespace Statistic
 
             private bool zedGraphHours_DoubleClickEvent(ZedGraphControl sender, MouseEventArgs e)
             {
-                FormMain.formGraphicsSettings.SetScale();
+                m_zedGraphHours.SetScale();
 
                 //dtCurrDate_ChangeValue(null, null);
 

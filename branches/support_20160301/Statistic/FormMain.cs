@@ -130,6 +130,7 @@ namespace Statistic
 
             tclTecViews.EventHTabCtrlExClose += delegateOnCloseTab;
             tclTecViews.EventHTabCtrlExFloat += delegateOnFloatTab;
+           
         }
 
         private string GetINIParametersOfID(int id)
