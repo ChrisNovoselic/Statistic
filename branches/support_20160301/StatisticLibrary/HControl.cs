@@ -901,6 +901,11 @@ namespace StatisticCommon
                 , COUNT
         };
 
+        public delegate void DelegateSetScale();
+
+        DelegateSetScale delSetScale;
+        
+        
         // контекстные меню
         protected class HContextMenuStripZedGraph : System.Windows.Forms.ContextMenuStrip
         {
@@ -1159,6 +1164,9 @@ namespace StatisticCommon
             return true;
         }
 
+        private void setScale()
+        {
+        }
     }
 
 

@@ -616,8 +616,8 @@ namespace Statistic
                             l.Refresh();
                         }
                         dgvSNHour.Refresh();
-                        Debug.Print(m_arLabel[0] + " ретро");
-                        startChangeValue.Change(10000, System.Threading.Timeout.Infinite);
+                        //Debug.Print(m_arLabel[0] + " ретро");
+                        //startChangeValue.Change(10000, System.Threading.Timeout.Infinite);
                     }                   
 
                     //delegateStopWait();
@@ -662,8 +662,8 @@ namespace Statistic
                                     l.Refresh();
                                 }
                                 dgvSNHour.Refresh();
-                                Debug.Print(m_arLabel[0] + " ретро");
-                                startChangeValue.Change(10000, System.Threading.Timeout.Infinite);
+                                //Debug.Print(m_arLabel[0] + " ретро");
+                                //startChangeValue.Change(10000, System.Threading.Timeout.Infinite);
                             }
                         }
                     }
@@ -678,7 +678,7 @@ namespace Statistic
             {
                 FormMain.formGraphicsSettings.SetScale();
 
-                dtCurrDate_ChangeValue(null, null);
+                //dtCurrDate_ChangeValue(null, null);
 
                 return true;
             }
