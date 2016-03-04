@@ -315,6 +315,8 @@ namespace Statistic
             }
         }
 
+        protected int[] m_arPercRows = null; // [0] - для подписи, [1] - для таблиц/гистограмм, остальное - панель оперативных данных
+        
         protected HPanelQuickData _pnlQuickData;
 
         protected System.Windows.Forms.SplitContainer stctrView;
@@ -656,6 +658,8 @@ namespace Statistic
             FillDefaultMins ();
         }
 
+        private int getHeightItem (bool bUseLabel, int iRow) { return bUseLabel == true ? m_arPercRows[iRow] : m_arPercRows[iRow] + m_arPercRows[iRow + 1]; }
+
         protected void OnEventRestruct(object pars)
         {
             int[] propView = pars as int[];
@@ -669,16 +673,15 @@ namespace Statistic
 
             int iRow = 0
                 , iPercTotal = 100
-                , iPercItem = -1;
-            int[] arPercRows = { 5, 71 }; // 5 - для подписи, 71 - для таблиц/гистограмм, остальное - панель оперативных данных
+                , iPercItem = -1;            
             bool bUseLabel = !(m_label == null);
 
             if (bUseLabel == true)
             {// только для панелей с подписью
                 this.Controls.Add(m_label, 0, iRow);
-                iPercItem = arPercRows[iRow];
+                iPercItem = m_arPercRows[iRow];
                 iPercTotal -= iPercItem;
-                this.RowStyles.Add(new RowStyle(SizeType.Percent, arPercRows[iRow++]));
+                this.RowStyles.Add(new RowStyle(SizeType.Percent, m_arPercRows[iRow++]));
             }
             else
                 ;
@@ -706,7 +709,7 @@ namespace Statistic
 
                 if (bVisible == true)
                 {
-                    iPercItem = bUseLabel == true ? arPercRows[iRow] : arPercRows[iRow] + arPercRows[iRow + 1];
+                    iPercItem = getHeightItem (bUseLabel, iRow);
                     iPercTotal -= iPercItem;
                     this.RowStyles.Add(new RowStyle(SizeType.Percent, iPercItem));
                     iRow++;
@@ -791,7 +794,7 @@ namespace Statistic
                     }
 
                     this.Controls.Add(this.stctrView, 0, iRow);
-                    iPercItem = bUseLabel == true ? arPercRows[iRow] : arPercRows[iRow] + arPercRows[iRow + 1];
+                    iPercItem = getHeightItem (bUseLabel, iRow);
                     iPercTotal -= iPercItem;
                     this.RowStyles.Add(new RowStyle(SizeType.Percent, iPercItem));
                     iRow++;

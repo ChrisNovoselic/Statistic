@@ -16,7 +16,9 @@ namespace Statistic
     {        
         public PanelLKView(StatisticCommon.TEC tec, int num_tec, int num_comp)
             : base(TecView.TYPE_PANEL.LK, tec, num_tec, num_comp)
-        {            
+        {
+            m_arPercRows = new int[] { 5, 78 };
+
             InitializeComponent ();
         }
 
@@ -50,17 +52,28 @@ namespace Statistic
 
             private void InitializeComponent()
             {
-                this.Dock = DockStyle.Fill;
+                COUNT_ROWS = 3;
 
-                this.RowCount = 12;
+                this.RowCount = COUNT_ROWS;
 
                 for (int i = 0; i < this.RowCount + 1; i++)
                     this.RowStyles.Add(new RowStyle(SizeType.Percent, (float)Math.Round((float)100 / this.RowCount, 1)));
 
-                this.ColumnCount = 12;
+                //
+                // btnSetNow
+                //
+                this.Controls.Add(this.btnSetNow, 0, 0);
+                // 
+                // dtprDate
+                // 
+                this.Controls.Add(this.dtprDate, 0, 1);
+                // 
+                // lblServerTime
+                // 
+                this.Controls.Add(this.lblServerTime, 0, 2);
 
-                for (int i = 0; i < this.ColumnCount + 1; i++)
-                    this.ColumnStyles.Add(new ColumnStyle(SizeType.Percent, (float)Math.Round((float)100 / this.ColumnCount, 1)));
+                //Ширина столбца группы "Элементы управления"
+                this.ColumnStyles.Add(new ColumnStyle(SizeType.Absolute, 100F));
             }
 
             //protected override void initializeLayoutStyle(int cols = -1, int rows = -1)
@@ -70,6 +83,14 @@ namespace Statistic
 
             public override void RestructControl()
             {
+                COUNT_LABEL = 0; COUNT_TG_IN_COLUMN = 3; COL_TG_START = 1;
+
+                bool bPowerFactZoom = false;
+                int cntCols = 0;
+
+                this.Controls.Add(m_panelEmpty, COL_TG_START + cntCols * COUNT_LABEL + (bPowerFactZoom == true ? 1 : 0), 0);
+                this.SetRowSpan(m_panelEmpty, COUNT_ROWS);
+                this.ColumnStyles.Add(new ColumnStyle(SizeType.AutoSize));
             }
 
             public override void AddTGView(TG tg)

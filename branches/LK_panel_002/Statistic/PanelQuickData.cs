@@ -184,9 +184,16 @@ namespace Statistic
 
         protected abstract class HPanelQuickData : HPanelTableLayout
         {
+            protected int COUNT_LABEL
+                    , COUNT_TG_IN_COLUMN
+                    , COL_TG_START
+                    , COUNT_ROWS = -1;
+
             public System.Windows.Forms.Button btnSetNow;
             public DateTimePicker dtprDate;
             public System.Windows.Forms.Label lblServerTime;
+
+            protected Panel m_panelEmpty;
 
             public abstract void RestructControl();
 
@@ -205,6 +212,50 @@ namespace Statistic
                 this.btnSetNow = new System.Windows.Forms.Button();
                 this.dtprDate = new System.Windows.Forms.DateTimePicker();
                 this.lblServerTime = new System.Windows.Forms.Label();
+
+                m_panelEmpty = new Panel();
+
+                this.SuspendLayout();
+                
+                //
+                // btnSetNow
+                //
+                //this.btnSetNow.Anchor = ((System.Windows.Forms.AnchorStyles)((System.Windows.Forms.AnchorStyles.Bottom | System.Windows.Forms.AnchorStyles.Left)));
+                this.btnSetNow.Dock = DockStyle.Fill;
+                //this.btnSetNow.Location = arPlacement[(int)CONTROLS.btnSetNow].pt;
+                this.btnSetNow.Name = "btnSetNow";
+                //this.btnSetNow.Size = arPlacement[(int)CONTROLS.btnSetNow].sz;
+                this.btnSetNow.TabIndex = 2;
+                this.btnSetNow.Text = "Текущий час";
+                this.btnSetNow.UseVisualStyleBackColor = true;
+
+                // 
+                // dtprDate
+                // 
+                //this.dtprDate.Anchor = ((System.Windows.Forms.AnchorStyles)((System.Windows.Forms.AnchorStyles.Bottom | System.Windows.Forms.AnchorStyles.Left)));
+                this.dtprDate.Dock = DockStyle.Fill;
+                //this.dtprDate.Location = arPlacement[(int)CONTROLS.dtprDate].pt;
+                this.dtprDate.Name = "dtprDate";
+                //this.dtprDate.Size = arPlacement[(int)CONTROLS.dtprDate].sz;
+                this.dtprDate.TabIndex = 4;
+
+                // 
+                // lblServerTime
+                // 
+                //this.lblServerTime.Anchor = ((System.Windows.Forms.AnchorStyles)((System.Windows.Forms.AnchorStyles.Bottom | System.Windows.Forms.AnchorStyles.Left)));
+                this.lblServerTime.Dock = DockStyle.Fill;
+                this.lblServerTime.AutoSize = false;
+                //this.lblServerTime.Location = arPlacement[(int)CONTROLS.lblServerTime].pt;
+                this.lblServerTime.Name = "lblServerTime";
+                //this.lblServerTime.Size = arPlacement[(int)CONTROLS.lblServerTime].sz;
+                this.lblServerTime.TabIndex = 5;
+                this.lblServerTime.Text = "--:--:--";
+                this.lblServerTime.BorderStyle = System.Windows.Forms.BorderStyle.Fixed3D;
+                this.lblServerTime.Font = new System.Drawing.Font("Microsoft Sans Serif", 10F, System.Drawing.FontStyle.Regular, System.Drawing.GraphicsUnit.Point, ((byte)(204)));
+                this.lblServerTime.TextAlign = ContentAlignment.MiddleCenter;
+
+                this.ResumeLayout(false);
+                //this.PerformLayout();
             }
         }
 
@@ -297,6 +348,8 @@ namespace Statistic
             /// </summary>
             private void InitializeComponent()
             {
+                COUNT_ROWS = 12;
+
                 m_tgLabels = new Dictionary<int, System.Windows.Forms.Label[]>();
 
                 components = new System.ComponentModel.Container();
@@ -325,41 +378,16 @@ namespace Statistic
                 //
                 // btnSetNow
                 //
-                //this.btnSetNow.Anchor = ((System.Windows.Forms.AnchorStyles)((System.Windows.Forms.AnchorStyles.Bottom | System.Windows.Forms.AnchorStyles.Left)));
-                this.btnSetNow.Dock = DockStyle.Fill;
-                //this.btnSetNow.Location = arPlacement[(int)CONTROLS.btnSetNow].pt;
-                this.btnSetNow.Name = "btnSetNow";
-                //this.btnSetNow.Size = arPlacement[(int)CONTROLS.btnSetNow].sz;
-                this.btnSetNow.TabIndex = 2;
-                this.btnSetNow.Text = "Текущий час";
-                this.btnSetNow.UseVisualStyleBackColor = true;
                 this.Controls.Add(this.btnSetNow, 0, 0);
                 this.SetRowSpan(this.btnSetNow, 3);
                 // 
                 // dtprDate
                 // 
-                //this.dtprDate.Anchor = ((System.Windows.Forms.AnchorStyles)((System.Windows.Forms.AnchorStyles.Bottom | System.Windows.Forms.AnchorStyles.Left)));
-                this.dtprDate.Dock = DockStyle.Fill;
-                //this.dtprDate.Location = arPlacement[(int)CONTROLS.dtprDate].pt;
-                this.dtprDate.Name = "dtprDate";
-                //this.dtprDate.Size = arPlacement[(int)CONTROLS.dtprDate].sz;
-                this.dtprDate.TabIndex = 4;
                 this.Controls.Add(this.dtprDate, 0, 3);
                 this.SetRowSpan(this.dtprDate, 3);
                 // 
                 // lblServerTime
                 // 
-                //this.lblServerTime.Anchor = ((System.Windows.Forms.AnchorStyles)((System.Windows.Forms.AnchorStyles.Bottom | System.Windows.Forms.AnchorStyles.Left)));
-                this.lblServerTime.Dock = DockStyle.Fill;
-                this.lblServerTime.AutoSize = false;
-                //this.lblServerTime.Location = arPlacement[(int)CONTROLS.lblServerTime].pt;
-                this.lblServerTime.Name = "lblServerTime";
-                //this.lblServerTime.Size = arPlacement[(int)CONTROLS.lblServerTime].sz;
-                this.lblServerTime.TabIndex = 5;
-                this.lblServerTime.Text = "--:--:--";
-                this.lblServerTime.BorderStyle = System.Windows.Forms.BorderStyle.Fixed3D;
-                this.lblServerTime.Font = new System.Drawing.Font("Microsoft Sans Serif", 10F, System.Drawing.FontStyle.Regular, System.Drawing.GraphicsUnit.Point, ((byte)(204)));
-                this.lblServerTime.TextAlign = ContentAlignment.MiddleCenter;
                 this.Controls.Add(this.lblServerTime, 0, 6);
                 this.SetRowSpan(this.lblServerTime, 3);
                 // 
@@ -390,6 +418,7 @@ namespace Statistic
                 string text = string.Empty;
                 //int row = -1, col = -1;
 
+                #region добавить поля для значений МОЩНОСТИ и их подписи
                 for (CONTROLS i = (CONTROLS)m_indxStartCommonPVal; i < CONTROLS.lblPBRrecVal + 1; i++)
                 {
                     //szFont = 6F;
@@ -477,7 +506,9 @@ namespace Statistic
                         else ;
                     }
                 }
+                #endregion
 
+                #region добавить поля для значений ЭНЕРГИИ и их подписи
                 for (CONTROLS i = (CONTROLS)m_indxStartCommonEVal; i < CONTROLS.lblDevEVal + 1; i++)
                 {
                     switch (i)
@@ -559,13 +590,12 @@ namespace Statistic
                             ;
                     }
                 }
+                #endregion
 
                 //Создание пассивного эл./упр. "надпись" для увеличенного дублирования знач. Pтек
                 m_lblPowerFactZoom = new HLabel(new Point(-1, -1), new Size(-1, -1), Color.LimeGreen, SystemColors.Control, 12F, ContentAlignment.MiddleCenter);
                 m_lblPowerFactZoom.m_type = HLabel.TYPE_HLABEL.TOTAL_ZOOM;
-                m_lblPowerFactZoom.Text = @"Pтек=----.--";
-
-                m_panelEmpty = new Panel();
+                m_lblPowerFactZoom.Text = @"Pтек=----.--";                
 
                 //OnSizeChanged(this, EventArgs.Empty);
             }
@@ -619,13 +649,7 @@ namespace Statistic
             private Dictionary<int, System.Windows.Forms.ToolTip[]> m_tgToolTips;
 
             private HLabel m_lblPowerFactZoom;            
-            private System.Windows.Forms.Label lblPBRNumber;
-            private Panel m_panelEmpty;
-
-            int COUNT_LABEL
-                    , COUNT_TG_IN_COLUMN
-                    , COL_TG_START
-                    , COUNT_ROWS = 12;
+            private System.Windows.Forms.Label lblPBRNumber;            
 
             public override void RestructControl()
             {
