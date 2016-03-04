@@ -372,6 +372,9 @@ namespace Statistic
         }
 
         int m_indxContentMenuItem;
+        /// <summary>
+        /// Количество фиксированных п.п.  контекстного меню
+        /// </summary>
         static int COUNT_FIXED_CONTEXT_MENUITEM = 3;
         static int INDEX_START_CONTEXT_MENUITEM = 1;
         /// <summary>
@@ -452,7 +455,7 @@ namespace Statistic
     public partial class PanelCustomTecView : PanelStatisticWithTableHourRows
     {
         public event DelegateFunc EventContentChanged;
-        
+
         private HLabelCustomTecView[] m_arLabelEmpty;
         //private Control[] m_arControls;
 
@@ -584,7 +587,10 @@ namespace Statistic
 
             m_indxContentMenuItem = INDEX_START_CONTEXT_MENUITEM;
         }
-
+        /// <summary>
+        /// Обработчик события - разместить на панели объект отображения
+        /// </summary>
+        /// <param name="item">Строка с параметрами (идентификатор, наименование) объекта отображения</param>
         private void OnMenuItemAdd (string item) {
             int indx = -1
                 , id = Int32.Parse (item.Split (';')[0]);
@@ -599,7 +605,11 @@ namespace Statistic
 
             m_indxContentMenuItem ++;
         }
-
+        /// <summary>
+        /// Обработчик событияе - ывбор п. контекстного меню
+        /// </summary>
+        /// <param name="obj">Объект, инициировавший событие (п. меню)</param>
+        /// <param name="ev">Аргумент события</param>
         private void MenuItem_OnClick(object obj, EventArgs ev)
         {
             int indxLabel = -1
@@ -676,14 +686,22 @@ namespace Statistic
 
             EventContentChanged ();
         }
-
+        /// <summary>
+        /// Включить/отключить п. контекстного меню
+        /// </summary>
+        /// <param name="indxLabel">Индекс панели</param>
+        /// <param name="bEnabled">Признак включения/отключения</param>
         private void EnableLabelContextMenuItem(int indxLabel, bool bEnabled)
         {
             m_arLabelEmpty[indxLabel].EnableContextMenuItem(m_indxContentMenuItem, bEnabled);
         }
-
+        /// <summary>
+        /// Очистить панель (снять с отображения объект) по указанному индексу
+        /// </summary>
+        /// <param name="indx">Индекс панели</param>
         private void clearAddress (int indx) {
             PanelTecView pnlTecView = null;
+            // найти панель по индексу
             foreach (Control panel in this.Controls)
             {
                 if ((panel is PanelTecView) && (this.Controls.IndexOf (panel) == indx)) {
@@ -694,7 +712,7 @@ namespace Statistic
                 else
                     ;
             }
-
+            // остановить панель, удалить
             if (! (pnlTecView == null)) {
                 pnlTecView.Activate(false);
                 pnlTecView.Stop();
@@ -705,13 +723,17 @@ namespace Statistic
             }
             else
                 ;
-
+            // добавить пустую панель
             Point ptAddress = getAddress (indx);
             m_arLabelEmpty[indx].Text = HLabelCustomTecView.s_msg;
             this.Controls.Add (m_arLabelEmpty [indx], ptAddress.Y, ptAddress.X);
             this.Controls.SetChildIndex(m_arLabelEmpty[indx], indx);
         }
-
+        /// <summary>
+        /// Разбор строки с настройками всех панелей (отображаемые объекты, состав отображаемой информации)
+        ///  для восстановления
+        /// </summary>
+        /// <param name="profile"></param>
         public void LoadProfile(string profile)
         {
             string[] arLabel = profile.Split(CHAR_DELIM_LABEL);
@@ -732,7 +754,11 @@ namespace Statistic
                                 m_arLabelEmpty[Int32.Parse(arProp [0])].LoadProfile (arProp);
             }
         }
-
+        /// <summary>
+        /// Возвратить строку с настройками всех панелей (отображаемые объекты, состав отображаемой информации)
+        ///  для их автоматического восстановления при очередном запуске на выполнение приложения
+        /// </summary>
+        /// <returns>Строка с настройками, подготовленная к записи в БД</returns>
         public string SaveProfile()
         {
             string strRes = string.Empty;
