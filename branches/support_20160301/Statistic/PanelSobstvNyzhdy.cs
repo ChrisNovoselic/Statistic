@@ -604,7 +604,7 @@ namespace Statistic
 
                     if (bRetroHour == true)
                     {
-                        m_tecView.currHour = false;
+                        //m_tecView.currHour = false;
                         DateTime dt = new DateTime(dtCurrDate.Value.Year, dtCurrDate.Value.Month, dtCurrDate.Value.Day, index+1, 0, 0);
 
                         m_arLabel[(int)INDEX_LABEL.DATETIME_TM_SN].Text = dt.ToString(@"HH:mm:ss");
@@ -644,7 +644,7 @@ namespace Statistic
                             if (bRetroHour == true)
                             {
                                 DateTime dt;
-                                m_tecView.currHour = false;
+                                //m_tecView.currHour = false;
                                 if (index == dgvSNHour.Rows.Count - 2)
                                 {
                                     dt = new DateTime(dtCurrDate.Value.Year, dtCurrDate.Value.Month, dtCurrDate.Value.Day, 0, 0, 0);
