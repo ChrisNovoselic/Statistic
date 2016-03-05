@@ -230,7 +230,7 @@ namespace Statistic
                 
                 this.m_zedGraphHours.MouseUpEvent += new ZedGraph.ZedGraphControl.ZedMouseEventHandler(this.zedGraphHours_MouseUpEvent);
                 this.m_zedGraphHours.PointValueEvent += new ZedGraph.ZedGraphControl.PointValueHandler(this.zedGraphHours_PointValueEvent);
-                this.m_zedGraphHours.DoubleClickEvent += new ZedGraph.ZedGraphControl.ZedMouseEventHandler(this.zedGraphHours_DoubleClickEvent);
+                //this.m_zedGraphHours.DoubleClickEvent += new ZedGraph.ZedGraphControl.ZedMouseEventHandler(this.zedGraphHours_DoubleClickEvent);
                 this.m_zedGraphHours.ContextMenuStrip.Items[(int)StatisticCommon.HZedGraphControl.INDEX_CONTEXTMENU_ITEM.VISIBLE_TABLE].Click += new System.EventHandler(отобразитьВТаблицеToolStripMenuItem_Click);
                 //this.m_zedGraphHours.InitializeEventHandler(this.эксельToolStripMenuItemHours_Click, this.sourceDataHours_Click);
 
@@ -576,6 +576,24 @@ namespace Statistic
                     ;
             }
 
+            private void updateLabelValues(int indx)
+            {
+                DateTime dt;
+                int hour = -1;
+
+                if (!(indx > (24 - 1)))
+                    hour = indx;
+                else
+                    hour = 0;
+                dt = new DateTime(dtCurrDate.Value.Year, dtCurrDate.Value.Month, dtCurrDate.Value.Day, hour, 0, 0);
+
+                m_arLabel[(int)INDEX_LABEL.DATETIME_TM_SN].Text = dt.ToString(@"HH:mm:ss");
+                setTextToLabelVal(m_arLabel[(int)INDEX_LABEL.VALUE_TM_SN], m_tecView.m_valuesHours[indx].valuesTMSNPsum);
+
+                foreach (System.Windows.Forms.Label l in m_arLabel)
+                    l.Refresh();
+            }
+
             private bool zedGraphHours_MouseUpEvent(ZedGraphControl sender, MouseEventArgs e)
             {
                 if (e.Button != MouseButtons.Left)
@@ -586,7 +604,7 @@ namespace Statistic
                 object obj;
                 PointF p = new PointF(e.X, e.Y);
                 bool found;
-                int index;
+                int index= -1;
 
                 found = sender.GraphPane.FindNearestObject(p, CreateGraphics(), out obj, out index);
                 
@@ -597,30 +615,9 @@ namespace Statistic
 
                 if (found == true)
                 {
-                    //delegateStartWait();
+                    updateLabelValues(index);
 
-                    bool bRetroHour = true;//m_tecView.zedGraphHours_MouseUpEvent(index);
-
-
-                    if (bRetroHour == true)
-                    {
-                        //m_tecView.currHour = false;
-                        DateTime dt = new DateTime(dtCurrDate.Value.Year, dtCurrDate.Value.Month, dtCurrDate.Value.Day, index+1, 0, 0);
-
-                        m_arLabel[(int)INDEX_LABEL.DATETIME_TM_SN].Text = dt.ToString(@"HH:mm:ss");
-                        setTextToLabelVal(m_arLabel[(int)INDEX_LABEL.VALUE_TM_SN], m_tecView.m_valuesHours[index].valuesTMSNPsum);
-
-                        dgvSNHour.Rows[index].Selected = true;
-                        foreach (System.Windows.Forms.Label l in m_arLabel)
-                        {
-                            l.Refresh();
-                        }
-                        dgvSNHour.Refresh();
-                        //Debug.Print(m_arLabel[0] + " ретро");
-                        //startChangeValue.Change(10000, System.Threading.Timeout.Infinite);
-                    }                   
-
-                    //delegateStopWait();
+                    dgvSNHour.Rows[index].Selected = true;
                 }
 
                 return true;
@@ -628,45 +625,13 @@ namespace Statistic
 
             private void dgvSNHour_SelectionChanged(object sender, MouseEventArgs e)
             {
-                int index;
                 if (e.Button == System.Windows.Forms.MouseButtons.Left)
-
                     if (dgvSNHour.SelectedRows.Count == 1)
-                    {
-                        index = dgvSNHour.SelectedRows[0].Index;
-
-                        //delegateStartWait();
-                        if (index <= dgvSNHour.Rows.Count - 2)
-                        {
-                            bool bRetroHour = true;//m_tecView.zedGraphHours_MouseUpEvent(index);
-
-
-                            if (bRetroHour == true)
-                            {
-                                DateTime dt;
-                                //m_tecView.currHour = false;
-                                if (index == dgvSNHour.Rows.Count - 2)
-                                {
-                                    dt = new DateTime(dtCurrDate.Value.Year, dtCurrDate.Value.Month, dtCurrDate.Value.Day, 0, 0, 0);
-                                }
-                                else
-                                {
-                                    dt = new DateTime(dtCurrDate.Value.Year, dtCurrDate.Value.Month, dtCurrDate.Value.Day, index + 1, 0, 0);
-                                }
-
-                                m_arLabel[(int)INDEX_LABEL.DATETIME_TM_SN].Text = dt.ToString(@"HH:mm:ss");
-                                setTextToLabelVal(m_arLabel[(int)INDEX_LABEL.VALUE_TM_SN], m_tecView.m_valuesHours[index].valuesTMSNPsum);
-
-                                foreach (System.Windows.Forms.Label l in m_arLabel)
-                                {
-                                    l.Refresh();
-                                }
-                                dgvSNHour.Refresh();
-                                //Debug.Print(m_arLabel[0] + " ретро");
-                                //startChangeValue.Change(10000, System.Threading.Timeout.Infinite);
-                            }
-                        }
-                    }
+                        updateLabelValues(dgvSNHour.SelectedRows[0].Index);
+                    else
+                        ;
+                else
+                    ;
             }
 
             private string zedGraphHours_PointValueEvent(object sender, GraphPane pane, CurveItem curve, int iPt)
@@ -674,14 +639,14 @@ namespace Statistic
                 return curve[iPt].Y.ToString("f2");
             }
 
-            private bool zedGraphHours_DoubleClickEvent(ZedGraphControl sender, MouseEventArgs e)
-            {
-                m_zedGraphHours.SetScale();
+            //private bool zedGraphHours_DoubleClickEvent(ZedGraphControl sender, MouseEventArgs e)
+            //{
+            //    m_zedGraphHours.SetScale();
 
-                //dtCurrDate_ChangeValue(null, null);
+            //    //dtCurrDate_ChangeValue(null, null);
 
-                return true;
-            }
+            //    return true;
+            //}
 
             public void DrawGraphHours()
             {
@@ -980,7 +945,7 @@ namespace Statistic
         protected class HZedGraphControlSNHours : StatisticCommon.HZedGraphControl
         {
             public HZedGraphControlSNHours(object obj)
-                : base(obj)
+                : base(obj, FormMain.formGraphicsSettings.SetScale)
             {
                 InitializeComponent();
             }

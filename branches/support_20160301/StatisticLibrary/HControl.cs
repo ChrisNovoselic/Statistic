@@ -1047,13 +1047,15 @@ namespace StatisticCommon
             }
         }
 
-        public HZedGraphControl(object lockVal)
+        public HZedGraphControl(object lockVal, DelegateFunc fSetScale)
         {
             this.ContextMenuStrip = new HContextMenuStripZedGraph();
 
             InitializeComponent();
 
             m_lockValue = lockVal;
+
+            delegateSetScale = fSetScale;
         }
 
         private void InitializeComponent()
@@ -1155,25 +1157,14 @@ namespace StatisticCommon
         private bool OnDoubleClickEvent(ZedGraphControl sender, MouseEventArgs e)
         {
             //FormMain.formGraphicsSettings.SetScale();
+            delegateSetScale();
 
             return true;
         }
-
-        public void SetScale()
-        {
-            if(delegateSetScale!=null)
-                delegateSetScale();
-        }
-
         /// <summary>
-        /// Тип делегата для обработки события - изменение значения в ячейке
+        /// Делегат - изменение способа масштабированиягстограммы
         /// </summary>
-        public delegate void SetScaleEventHandler();
-
-        /// <summary>
-        /// Событие - изменение значения ячейки
-        /// </summary>
-        public SetScaleEventHandler delegateSetScale;
+        public DelegateFunc delegateSetScale;
     }
 
 
