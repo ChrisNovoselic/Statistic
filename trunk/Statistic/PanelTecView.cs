@@ -18,10 +18,8 @@ using StatisticCommon;
 
 namespace Statistic
 {
-    public class PanelTecView : PanelTecViewBase
+    public class PanelTecView : PanelTecViewStandard
     {
-        PanelCustomTecView.HLabelCustomTecView m_label;
-
         public PanelTecView(StatisticCommon.TEC tec, int num_tec, int num_comp, PanelCustomTecView.HLabelCustomTecView label/*, DelegateStringFunc fErrRep, DelegateStringFunc fWarRep, DelegateStringFunc fActRep, DelegateBoolFunc fRepClr*/)
             : base(tec, num_tec, num_comp/*, fErrRep, fWarRep, fActRep, fRepClr*/)
         {
@@ -46,9 +44,9 @@ namespace Statistic
                 else
                     ;
 
-                m_label.EventRestruct += new DelegateFunc(OnEventRestruct);
+                m_label.EventRestruct += new DelegateObjectFunc(OnEventRestruct);
 
-                OnEventRestruct ();
+                OnEventRestruct(PanelCustomTecView.HLabelCustomTecView.s_propViewDefault);
             }
             else
             {
@@ -69,7 +67,7 @@ namespace Statistic
                 this.stctrViewPanel2.Panel2.Controls.Add(this.m_ZedGraphHours);
                 this.stctrView.Panel2.Controls.Add(this.stctrViewPanel2);
 
-                this.Controls.Add(m_pnlQuickData, 0, 1);
+                this.Controls.Add(PanelQuickData, 0, 1);
             }
 
             this.m_ZedGraphMins.MouseUpEvent += new ZedGraph.ZedGraphControl.ZedMouseEventHandler(this.zedGraphMins_MouseUpEvent);
@@ -77,148 +75,6 @@ namespace Statistic
 
             this.m_ZedGraphMins.InitializeEventHandler(this.эксельToolStripMenuItemMins_Click, this.sourceDataMins_Click);
             this.m_ZedGraphHours.InitializeEventHandler(this.эксельToolStripMenuItemHours_Click, this.sourceDataHours_Click);
-        }
-
-        private void OnEventRestruct () {
-            this.Controls.Clear ();
-            this.RowStyles.Clear ();
-            stctrView.Panel1.Controls.Clear ();
-            stctrView.Panel2.Controls.Clear();
-            this.stctrViewPanel1.Panel1.Controls.Clear ();
-            this.stctrViewPanel2.Panel1.Controls.Clear();
-
-            int iRow = 0;
-            int iPercTotal = 100;
-            int[] arPercRows = { 5, 71 };
-
-            this.Controls.Add(m_label, 0, iRow);
-            iPercTotal -= arPercRows[iRow];
-            this.RowStyles.Add(new RowStyle(SizeType.Percent, arPercRows[iRow++]));
-
-            if (m_label.m_propView[(int)PanelCustomTecView.HLabelCustomTecView.INDEX_PROPERTIES_VIEW.ORIENTATION] < 0) {
-                //Отобразить ТОЛЬКО один элемент
-                bool bVisible = true;
-                if (m_label.m_propView[(int)PanelCustomTecView.HLabelCustomTecView.INDEX_PROPERTIES_VIEW.TABLE_MINS] == 1)
-                    this.Controls.Add(m_dgwMins, 0, iRow);
-                else
-                    if (m_label.m_propView[(int)PanelCustomTecView.HLabelCustomTecView.INDEX_PROPERTIES_VIEW.TABLE_HOURS] == 1)
-                        this.Controls.Add(m_dgwHours, 0, iRow);
-                    else
-                        if (m_label.m_propView[(int)PanelCustomTecView.HLabelCustomTecView.INDEX_PROPERTIES_VIEW.GRAPH_MINS] == 1)
-                            this.Controls.Add(m_ZedGraphMins, 0, iRow);
-                        else
-                            if (m_label.m_propView[(int)PanelCustomTecView.HLabelCustomTecView.INDEX_PROPERTIES_VIEW.GRAPH_HOURS] == 1)
-                                this.Controls.Add(m_ZedGraphHours, 0, iRow);
-                            else
-                                bVisible = false;
-
-                if (bVisible == true) {
-                    iPercTotal -= arPercRows [iRow];
-                    this.RowStyles.Add(new RowStyle(SizeType.Percent, arPercRows[iRow ++]));
-                }
-                else
-                    ;
-            }
-            else
-            { //Отобразить ДВА или ЧЕТЫРЕ элемента
-                if ((m_label.m_propView[(int)PanelCustomTecView.HLabelCustomTecView.INDEX_PROPERTIES_VIEW.TABLE_MINS] == 1) && (m_label.m_propView[(int)PanelCustomTecView.HLabelCustomTecView.INDEX_PROPERTIES_VIEW.TABLE_HOURS] == 1) &&
-                    (m_label.m_propView[(int)PanelCustomTecView.HLabelCustomTecView.INDEX_PROPERTIES_VIEW.GRAPH_MINS] == 1) && (m_label.m_propView[(int)PanelCustomTecView.HLabelCustomTecView.INDEX_PROPERTIES_VIEW.GRAPH_HOURS] == 1))
-                { //Отобразить 4 элемента (таблица(мин) + таблица(час) + график(мин) + график(час))
-                }
-                else
-                { //Отобразить ДВА элемента
-                    if (m_label.m_propView[(int)PanelCustomTecView.HLabelCustomTecView.INDEX_PROPERTIES_VIEW.ORIENTATION] == 0) {
-                        stctrView.Orientation = Orientation.Vertical;
-
-                        stctrView.SplitterDistance = stctrView.Width / 2;
-                    }
-                    else {
-                        stctrView.Orientation = Orientation.Horizontal;
-
-                        stctrView.SplitterDistance = stctrView.Height / 2;
-                    }
-
-                    if ((m_label.m_propView[(int)PanelCustomTecView.HLabelCustomTecView.INDEX_PROPERTIES_VIEW.TABLE_MINS] == 1) && (m_label.m_propView[(int)PanelCustomTecView.HLabelCustomTecView.INDEX_PROPERTIES_VIEW.TABLE_HOURS] == 1) &&
-                        (m_label.m_propView[(int)PanelCustomTecView.HLabelCustomTecView.INDEX_PROPERTIES_VIEW.GRAPH_MINS] == 0) && (m_label.m_propView[(int)PanelCustomTecView.HLabelCustomTecView.INDEX_PROPERTIES_VIEW.GRAPH_HOURS] == 0))
-                    { //Отобразить 2 элемента (таблица(мин) + таблица(час))
-                        stctrView.Panel1.Controls.Add(m_dgwMins);
-                        stctrView.Panel2.Controls.Add(m_dgwHours);                            
-                    }
-                    else {
-                        if ((m_label.m_propView[(int)PanelCustomTecView.HLabelCustomTecView.INDEX_PROPERTIES_VIEW.TABLE_MINS] == 0) && (m_label.m_propView[(int)PanelCustomTecView.HLabelCustomTecView.INDEX_PROPERTIES_VIEW.TABLE_HOURS] == 0) &&
-                            (m_label.m_propView[(int)PanelCustomTecView.HLabelCustomTecView.INDEX_PROPERTIES_VIEW.GRAPH_MINS] == 1) && (m_label.m_propView[(int)PanelCustomTecView.HLabelCustomTecView.INDEX_PROPERTIES_VIEW.GRAPH_HOURS] == 1))
-                        { //Отобразить 2 элемента (график(мин) + график(час))
-                            stctrView.Panel1.Controls.Add(m_ZedGraphMins);
-                            stctrView.Panel2.Controls.Add(m_ZedGraphHours);
-                        }
-                        else
-                        {
-                            if ((m_label.m_propView[(int)PanelCustomTecView.HLabelCustomTecView.INDEX_PROPERTIES_VIEW.TABLE_MINS] == 1) && (m_label.m_propView[(int)PanelCustomTecView.HLabelCustomTecView.INDEX_PROPERTIES_VIEW.TABLE_HOURS] == 0) &&
-                                (m_label.m_propView[(int)PanelCustomTecView.HLabelCustomTecView.INDEX_PROPERTIES_VIEW.GRAPH_MINS] == 1) && (m_label.m_propView[(int)PanelCustomTecView.HLabelCustomTecView.INDEX_PROPERTIES_VIEW.GRAPH_HOURS] == 0))
-                            { //Отобразить 2 элемента (таблица(мин) + график(мин))
-                                stctrView.Panel1.Controls.Add(m_dgwMins);
-                                stctrView.Panel2.Controls.Add(m_ZedGraphMins);
-                            }
-                            else
-                            {
-                                if ((m_label.m_propView[(int)PanelCustomTecView.HLabelCustomTecView.INDEX_PROPERTIES_VIEW.TABLE_MINS] == 0) && (m_label.m_propView[(int)PanelCustomTecView.HLabelCustomTecView.INDEX_PROPERTIES_VIEW.TABLE_HOURS] == 1) &&
-                                    (m_label.m_propView[(int)PanelCustomTecView.HLabelCustomTecView.INDEX_PROPERTIES_VIEW.GRAPH_MINS] == 0) && (m_label.m_propView[(int)PanelCustomTecView.HLabelCustomTecView.INDEX_PROPERTIES_VIEW.GRAPH_HOURS] == 1))
-                                { //Отобразить 2 элемента (таблица(час) + график(час))
-                                    stctrView.Panel1.Controls.Add(m_dgwHours);
-                                    stctrView.Panel2.Controls.Add(m_ZedGraphHours);
-                                }
-                                else
-                                {
-                                    if ((m_label.m_propView[(int)PanelCustomTecView.HLabelCustomTecView.INDEX_PROPERTIES_VIEW.TABLE_MINS] == 0) && (m_label.m_propView[(int)PanelCustomTecView.HLabelCustomTecView.INDEX_PROPERTIES_VIEW.TABLE_HOURS] == 1) &&
-                                        (m_label.m_propView[(int)PanelCustomTecView.HLabelCustomTecView.INDEX_PROPERTIES_VIEW.GRAPH_MINS] == 1) && (m_label.m_propView[(int)PanelCustomTecView.HLabelCustomTecView.INDEX_PROPERTIES_VIEW.GRAPH_HOURS] == 0))
-                                    { //Отобразить 2 элемента (таблица(час) + график(час))
-                                        stctrView.Panel1.Controls.Add(m_dgwHours);
-                                        stctrView.Panel2.Controls.Add(m_ZedGraphMins);
-                                    }
-                                    else
-                                    {
-                                        if ((m_label.m_propView[(int)PanelCustomTecView.HLabelCustomTecView.INDEX_PROPERTIES_VIEW.TABLE_MINS] == 1) && (m_label.m_propView[(int)PanelCustomTecView.HLabelCustomTecView.INDEX_PROPERTIES_VIEW.TABLE_HOURS] == 0) &&
-                                            (m_label.m_propView[(int)PanelCustomTecView.HLabelCustomTecView.INDEX_PROPERTIES_VIEW.GRAPH_MINS] == 0) && (m_label.m_propView[(int)PanelCustomTecView.HLabelCustomTecView.INDEX_PROPERTIES_VIEW.GRAPH_HOURS] == 1))
-                                        { //Отобразить 2 элемента (таблица(час) + график(час))
-                                            stctrView.Panel1.Controls.Add(m_dgwMins);
-                                            stctrView.Panel2.Controls.Add(m_ZedGraphHours);
-                                        }
-                                        else
-                                        {
-                                        }
-                                    }
-                                }
-                            }
-                        }
-                    }
-
-                    this.Controls.Add(this.stctrView, 0, iRow);
-                    iPercTotal -= arPercRows[iRow];
-                    this.RowStyles.Add(new RowStyle(SizeType.Percent, arPercRows[iRow ++]));                        
-                }
-
-                switch (m_label.m_propView[(int)PanelCustomTecView.HLabelCustomTecView.INDEX_PROPERTIES_VIEW.TABLE_AND_GRAPH])
-                {
-                    case -1: //Таблица и график с аналогичными интервалами НЕ МОГУТ быть размещены в одном 'SplitContainer'
-                        break;
-                    case 0:
-                        break;
-                    case 1:
-                        break;
-                    default:
-                        break;
-                }
-            }
-
-            if (m_label.m_propView[(int)PanelCustomTecView.HLabelCustomTecView.INDEX_PROPERTIES_VIEW.QUICK_PANEL] == 1) {                    
-                this.Controls.Add(m_pnlQuickData, 0, iRow);
-                m_pnlQuickData.ShowFactValues();
-                m_pnlQuickData.ShowTMValues ();
-            }
-            else {
-            }
-
-            this.RowStyles.Add(new RowStyle(SizeType.Percent, iPercTotal));
         }
 
         private void эксельToolStripMenuItemMins_Click(object sender, EventArgs e)
@@ -274,7 +130,7 @@ namespace Statistic
                     //if (m_tecView.m_valuesHours.addonValues && hour == m_tecView.m_valuesHours.hourAddon)
                     //    ws.Cells[1, 0].Value = "Мощность на " + (hour + 1).ToString() + "* час " + m_pnlQuickData.dtprDate.Value.ToShortDateString();
                     //else
-                        ws.Cells[1, 0].Value = "Мощность на " + (hour + 1).ToString() + " час " + m_pnlQuickData.dtprDate.Value.ToShortDateString();
+                        ws.Cells[1, 0].Value = "Мощность на " + (hour + 1).ToString() + " час " + _pnlQuickData.dtprDate.Value.ToShortDateString();
 
                     ws.Cells[2, 0].Value = "Минута";
                     ws.Cells[2, 1].Value = "Факт";
@@ -391,7 +247,7 @@ namespace Statistic
                         ws.Cells[0, 0].Value = m_tecView.m_tec.name_shr + ", " + m_tecView.m_tec.list_TECComponents[indx_TECComponent].name_shr;
                     }
 
-                    ws.Cells[1, 0].Value = "Мощность на " + m_pnlQuickData.dtprDate.Value.ToShortDateString();
+                    ws.Cells[1, 0].Value = "Мощность на " + _pnlQuickData.dtprDate.Value.ToShortDateString();
 
                     ws.Cells[2, 0].Value = "Час";
                     ws.Cells[2, 1].Value = "Факт";
@@ -500,7 +356,7 @@ namespace Statistic
                     m_tecView.recalcAver = true;
                     m_tecView.lastMin = index + 2;
                     m_tecView.GetRetroMinTMGen ();
-                    m_pnlQuickData.ShowFactValues();
+                    _pnlQuickData.ShowFactValues();
                     //m_tecView.recalcAver = true;
                     //???Отработка запроса происходит при восстановленном значении...
                     //m_tecView.lastMin = prevLastMin;

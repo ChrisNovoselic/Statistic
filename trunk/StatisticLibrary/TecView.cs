@@ -15,7 +15,7 @@ namespace StatisticCommon
         /// <summary>
         /// перечисление - индексы для типов панелей
         /// </summary>
-        public enum TYPE_PANEL { VIEW, CUR_POWER, LAST_MINUTES, ADMIN_ALARM, SOBSTV_NYZHDY, SOTIASSO, COUNT_TYPE_PANEL };
+        public enum TYPE_PANEL { VIEW, CUR_POWER, LAST_MINUTES, ADMIN_ALARM, SOBSTV_NYZHDY, SOTIASSO, LK, COUNT_TYPE_PANEL };
         /// <summary>
         /// Индекс типа панели в интересах которой выполняется текущий объект
         /// </summary>
@@ -279,17 +279,8 @@ namespace StatisticCommon
                 }
             }
             else
-            {
                 foreach (TG tg in m_tec.list_TECComponents[indxTECComponents].m_listTG)
-                {
-                    //tg_ids.Add(tg.m_id); //Добавить без проверки
-
-                    ////positionYValue = 19;
-                    ////addTGView(ref tg.name_shr, ref positionXName, ref positionYName, ref positionXValue, ref positionYValue);
-                    //m_pnlQuickData.addTGView(ref tg.name_shr);
-
                     foreach (TECComponent c in m_tec.list_TECComponents)
-                    {
                         if (tg.m_id == c.m_id) {
                             m_localTECComponents.Add(c);
 
@@ -297,9 +288,6 @@ namespace StatisticCommon
                         }
                         else
                             ;
-                    }
-                }
-            }
 
             initDictValuesTECComponent (24 + 1);
         }

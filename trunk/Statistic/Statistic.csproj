@@ -181,6 +181,9 @@
     <Compile Include="PanelTecViewBase.cs">
       <SubType>Component</SubType>
     </Compile>
+    <Compile Include="PanelTecViewLK.cs">
+      <SubType>Component</SubType>
+    </Compile>
     <Compile Include="PanelTMSNPower.cs">
       <SubType>Component</SubType>
     </Compile>
@@ -195,6 +198,9 @@
       <DependentUpon>Resources.resx</DependentUpon>
     </Compile>
     <Compile Include="PanelSobstvNyzhdy.cs">
+      <SubType>Component</SubType>
+    </Compile>
+    <Compile Include="PanelTecViewStandard.cs">
       <SubType>Component</SubType>
     </Compile>
     <EmbeddedResource Include="FormGraphicsSettings.resx">

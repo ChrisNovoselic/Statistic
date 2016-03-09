@@ -758,55 +758,55 @@ namespace Statistic
             //    else
             //        ;
 
-            if (tclTecViews.TabPages[e.TabIndex].Controls[0] is PanelTecViewBase)
+            if (tclTecViews.TabPages[e.TabIndex].Controls[0] is PanelTecViewStandard)
                 formChangeMode.SetItemChecked(e.TabHeaderText, false);
             else
-                if (tclTecViews.TabPages[e.TabIndex].Controls[0] is PanelAdminKomDisp)
-                    formChangeMode.SetItemChecked(-1, false);
+                if (tclTecViews.TabPages[e.TabIndex].Controls[0] is PanelLKView)
+                    formChangeMode.SetItemChecked(e.TabHeaderText, false);
                 else
-                    if (tclTecViews.TabPages[e.TabIndex].Controls[0] is PanelAdminNSS)
-                        formChangeMode.SetItemChecked(-2, false);
+                    if (tclTecViews.TabPages[e.TabIndex].Controls[0] is PanelAdminKomDisp)
+                        formChangeMode.SetItemChecked(-1, false);
                     else
-                        if (tclTecViews.TabPages[e.TabIndex].Controls[0] is PanelAlarm)
-                            formChangeMode.SetItemChecked(-3, false);
+                        if (tclTecViews.TabPages[e.TabIndex].Controls[0] is PanelAdminNSS)
+                            formChangeMode.SetItemChecked(-2, false);
                         else
-                                if (tclTecViews.TabPages[e.TabIndex].Controls[0] is PanelAdminLK)
-                                    formChangeMode.SetItemChecked(-4, false);
-                        else
-                            if (tclTecViews.TabPages[e.TabIndex].Controls[0] is PanelStatisticDiagnostic)
-                                m_dictAddingTabs[(int)ID_ADDING_TAB.DIAGNOSTIC].menuItem.Checked = false;
+                            if (tclTecViews.TabPages[e.TabIndex].Controls[0] is PanelAlarm)
+                                formChangeMode.SetItemChecked(-3, false);
                             else
-                                if (tclTecViews.TabPages[e.TabIndex].Controls[0] is PanelCurPower)
-                                    m_dictAddingTabs[(int)ID_ADDING_TAB.CUR_POWER].menuItem.Checked = false;
+                                if (tclTecViews.TabPages[e.TabIndex].Controls[0] is PanelStatisticDiagnostic)
+                                    m_dictAddingTabs[(int)ID_ADDING_TAB.DIAGNOSTIC].menuItem.Checked = false;
                                 else
-                                    if (tclTecViews.TabPages[e.TabIndex].Controls[0] is PanelTMSNPower)
-                                        m_dictAddingTabs[(int)ID_ADDING_TAB.TM_SN_POWER].menuItem.Checked = false;
+                                    if (tclTecViews.TabPages[e.TabIndex].Controls[0] is PanelCurPower)
+                                        m_dictAddingTabs[(int)ID_ADDING_TAB.CUR_POWER].menuItem.Checked = false;
                                     else
-                                        if (tclTecViews.TabPages[e.TabIndex].Controls[0] is PanelLastMinutes)
-                                            m_dictAddingTabs[(int)ID_ADDING_TAB.MONITOR_LAST_MINUTES].menuItem.Checked = false;
+                                        if (tclTecViews.TabPages[e.TabIndex].Controls[0] is PanelTMSNPower)
+                                            m_dictAddingTabs[(int)ID_ADDING_TAB.TM_SN_POWER].menuItem.Checked = false;
                                         else
-                                            if (tclTecViews.TabPages[e.TabIndex].Controls[0] is PanelSobstvNyzhdy)
-                                                m_dictAddingTabs[(int)ID_ADDING_TAB.SOBSTV_NYZHDY].menuItem.Checked = false;
+                                            if (tclTecViews.TabPages[e.TabIndex].Controls[0] is PanelLastMinutes)
+                                                m_dictAddingTabs[(int)ID_ADDING_TAB.MONITOR_LAST_MINUTES].menuItem.Checked = false;
                                             else
-                                                if (tclTecViews.TabPages[e.TabIndex].Controls[0] is PanelCustomTecView)
-                                                    m_dictAddingTabs[e.Id].menuItem.Checked = false;
+                                                if (tclTecViews.TabPages[e.TabIndex].Controls[0] is PanelSobstvNyzhdy)
+                                                    m_dictAddingTabs[(int)ID_ADDING_TAB.SOBSTV_NYZHDY].menuItem.Checked = false;
                                                 else
-                                                    if (tclTecViews.TabPages[e.TabIndex].Controls[0] is PanelSourceData)
-                                                        m_dictAddingTabs[(int)ID_ADDING_TAB.DATETIMESYNC_SOURCE_DATA].menuItem.Checked = false;
+                                                    if (tclTecViews.TabPages[e.TabIndex].Controls[0] is PanelCustomTecView)
+                                                        m_dictAddingTabs[e.Id].menuItem.Checked = false;
                                                     else
-                                                        if (tclTecViews.TabPages[e.TabIndex].Controls[0] is PanelSOTIASSO)
-                                                            m_dictAddingTabs[(int)ID_ADDING_TAB.SOTIASSO].menuItem.Checked = false;
+                                                        if (tclTecViews.TabPages[e.TabIndex].Controls[0] is PanelSourceData)
+                                                            m_dictAddingTabs[(int)ID_ADDING_TAB.DATETIMESYNC_SOURCE_DATA].menuItem.Checked = false;
                                                         else
-                                                            if (tclTecViews.TabPages[e.TabIndex].Controls[0] is PanelAnalyzer_DB)
-                                                                m_dictAddingTabs[(int)ID_ADDING_TAB.ANALYZER].menuItem.Checked = false;
+                                                            if (tclTecViews.TabPages[e.TabIndex].Controls[0] is PanelSOTIASSO)
+                                                                m_dictAddingTabs[(int)ID_ADDING_TAB.SOTIASSO].menuItem.Checked = false;
                                                             else
-                                                                if (tclTecViews.TabPages[e.TabIndex].Controls[0] is PanelTECComponent)
-                                                                    m_dictAddingTabs[(int)ID_ADDING_TAB.TEC_Component].menuItem.Checked = false;
+                                                                if (tclTecViews.TabPages[e.TabIndex].Controls[0] is PanelAnalyzer_DB)
+                                                                    m_dictAddingTabs[(int)ID_ADDING_TAB.ANALYZER].menuItem.Checked = false;
                                                                 else
-                                                                    if (tclTecViews.TabPages[e.TabIndex].Controls[0] is PanelUser)
-                                                                        m_dictAddingTabs[(int)ID_ADDING_TAB.USERS].menuItem.Checked = false;
+                                                                    if (tclTecViews.TabPages[e.TabIndex].Controls[0] is PanelTECComponent)
+                                                                        m_dictAddingTabs[(int)ID_ADDING_TAB.TEC_Component].menuItem.Checked = false;
                                                                     else
-                                                                        ;
+                                                                        if (tclTecViews.TabPages[e.TabIndex].Controls[0] is PanelUser)
+                                                                            m_dictAddingTabs[(int)ID_ADDING_TAB.USERS].menuItem.Checked = false;
+                                                                        else
+                                                                            ;
         }
 
         void delegateOnFloatTab(object sender, HTabCtrlExEventArgs e)
@@ -934,9 +934,9 @@ namespace Statistic
             }
             else
             {
-                if (panel is PanelTecViewBase)
+                if (panel is PanelTecViewStandard)
                 {
-                    key = (panel as PanelTecViewBase).m_ID;
+                    key = (panel as PanelTecViewStandard).m_ID;
                 }
                 else
                 {
@@ -1311,7 +1311,7 @@ namespace Statistic
             {
                 bToRemove = false;
 
-                if ((tab.Controls[0] is PanelTecViewBase)
+                if (((tab.Controls[0] is PanelTecViewStandard) || (tab.Controls[0] is PanelLKView))
                     && (listTabKeep.IndexOf(((PanelTecViewBase)tab.Controls[0]).m_ID) < 0))
                 {
                     bToRemove = true;
@@ -1779,12 +1779,18 @@ namespace Statistic
 
         private void addPanelTecView(TEC tec, int ti, int ci)
         {
+            PanelTecViewBase panelTecView = null;
+
             if (tec.m_bSensorsStrings == false)
                 tec.InitSensorsTEC();
             else
                 ;
 
-            PanelTecView panelTecView = new PanelTecView(tec, ti, ci, null/*, ErrorReport, WarningReport, ActionReport, ReportClear*/);
+            if (! (tec.m_id > 10))
+                panelTecView = new PanelTecView(tec, ti, ci, null/*, ErrorReport, WarningReport, ActionReport, ReportClear*/);
+            else
+                panelTecView = new PanelLKView(tec, ti, ci);
+
             panelTecView.SetDelegateWait(delegateStartWait, delegateStopWait, delegateEvent);
             panelTecView.SetDelegateReport(ErrorReport, WarningReport, ActionReport, ReportClear);
             m_listStandardTabs.Add(panelTecView);
@@ -2053,15 +2059,15 @@ namespace Statistic
         {
             int have_msg = 0;
             m_lblDescMessage.Text = m_lblDateMessage.Text = string.Empty;
-            PanelTecViewBase selTecView = null;
+            PanelTecViewStandard selTecView = null;
 
             //for (int i = 0; i < selectedTecViews.Count; i++)
             //if ((selectedTecViews.Count > 0) /*&& (! (m_prevSelectedIndex < 0))*/)
             if ((!(m_prevSelectedIndex < 0)) && (m_prevSelectedIndex < tclTecViews.TabCount))
             {
-                if ((tclTecViews.TabPages[m_prevSelectedIndex].Controls.Count > 0) && (tclTecViews.TabPages[m_prevSelectedIndex].Controls[0] is PanelTecViewBase))
+                if ((tclTecViews.TabPages[m_prevSelectedIndex].Controls.Count > 0) && (tclTecViews.TabPages[m_prevSelectedIndex].Controls[0] is PanelTecViewStandard))
                 {
-                    selTecView = (PanelTecViewBase)tclTecViews.TabPages[m_prevSelectedIndex].Controls[0];
+                    selTecView = (PanelTecViewStandard)tclTecViews.TabPages[m_prevSelectedIndex].Controls[0];
 
                     if (!(selTecView == null) && ((!(selTecView.m_tecView.m_tec.connSetts[(int)CONN_SETT_TYPE.DATA_AISKUE] == null))
                         && (!(selTecView.m_tecView.m_tec.connSetts[(int)CONN_SETT_TYPE.DATA_SOTIASSO] == null))))
@@ -2624,8 +2630,8 @@ namespace Statistic
 
             if ((!(tclTecViews.SelectedIndex < 0))
                 && (tclTecViews.SelectedIndex < tclTecViews.TabCount))
-                if (ctrl is PanelTecViewBase)
-                    ((PanelTecViewBase)ctrl).UpdateGraphicsCurrent(type);
+                if (ctrl is PanelTecViewStandard)
+                    ((PanelTecViewStandard)ctrl).UpdateGraphicsCurrent(type);
                 else
                     if (ctrl is PanelCustomTecView)
                         ((PanelCustomTecView)ctrl).UpdateGraphicsCurrent(type);
@@ -2689,7 +2695,7 @@ namespace Statistic
         {
             if (s_listFormConnectionSettings[(int)CONN_SETT_TYPE.CONFIG_DB].Ready == 0)
             {
-                foreach (PanelTecViewBase tv in m_listStandardTabs)
+                foreach (PanelTecViewStandard tv in m_listStandardTabs)
                     if (tv.m_tecView.m_tec.Type == StatisticCommon.TEC.TEC_TYPE.BIYSK)
                     {
                         if (!(m_formParametersTG == null))
@@ -2978,8 +2984,8 @@ namespace Statistic
             {
                 Panel panel = GetPanel();
 
-                if (panel is PanelTecViewBase)
-                    (panel as PanelTecViewBase).UpdateGraphicsCurrent(type);
+                if (panel is PanelTecViewStandard)
+                    (panel as PanelTecViewStandard).UpdateGraphicsCurrent(type);
                 else
                     if (panel is PanelCustomTecView)
                         (panel as PanelCustomTecView).UpdateGraphicsCurrent(type);
