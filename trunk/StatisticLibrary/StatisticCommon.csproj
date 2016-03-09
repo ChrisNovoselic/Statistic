@@ -167,6 +167,7 @@
     </Compile>
     <Compile Include="TecView.cs" />
     <Compile Include="Users.cs" />
+    <Compile Include="AdminTS_TG.cs" />
   </ItemGroup>
   <ItemGroup>
     <EmbeddedResource Include="FormAbout.resx">

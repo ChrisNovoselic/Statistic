@@ -268,6 +268,9 @@ namespace Statistic
                                 ////((PanelAdminKomDisp)m_arPanelAdmin[i]).EventGUIReg += OnPanelAdminKomDispEventGUIReg;
                                 //((PanelAdminKomDisp)m_arPanelAdmin[i]).EventGUIReg = new DelegateStringFunc(OnPanelAdminKomDispEventGUIReg);
                                 break;
+                            case FormChangeMode.MANAGER.LK:
+                                m_arPanelAdmin[i] = new PanelAdminLK(idListenerConfigDB, markQueries);
+                                break;
                             case FormChangeMode.MANAGER.NSS:
                                 m_arPanelAdmin[i] = new PanelAdminNSS(idListenerConfigDB, markQueries);
                                 break;
@@ -314,6 +317,15 @@ namespace Statistic
                         //m_markPrevStatePanelAdmin.Set((int)FormChangeMode.MANAGER.ALARM, true);
                         //listIDs.Add (FormChangeMode.ID_SPECIAL_TAB[(int)FormChangeMode.MANAGER.DISP]);
                         listIDs.Add(FormChangeMode.ID_SPECIAL_TAB[(int)FormChangeMode.MANAGER.ALARM]);
+                    }
+                    else
+                        ;
+
+                    if (HStatisticUsers.IsAllowed((int)HStatisticUsers.ID_ALLOWED.AUTO_TAB_LK) == true)
+                    {
+                        //m_markPrevStatePanelAdmin.Set((int)FormChangeMode.MANAGER.ALARM, true);
+                        //listIDs.Add (FormChangeMode.ID_SPECIAL_TAB[(int)FormChangeMode.MANAGER.DISP]);
+                        listIDs.Add(FormChangeMode.ID_SPECIAL_TAB[(int)FormChangeMode.MANAGER.LK]);
                     }
                     else
                         ;
@@ -667,6 +679,44 @@ namespace Statistic
             this.TopMost = bPrevTopMost;
         }
 
+        private void panelAdminLKDispEventGUIReg(string text)
+        {
+            lock (this)
+            {
+                if (m_timerAlarmEvent == null)
+                {
+                    //Деактивация текущей вкладки
+                    activateTabPage(tclTecViews.SelectedIndex, false);
+
+                    string strPathSnd = Environment.GetEnvironmentVariable("windir") + @"\Media\" + StatisticAlarm.AdminAlarm.FNAME_ALARM_SYSTEMMEDIA_TIMERBEEP;
+                    if (File.Exists(strPathSnd) == true)
+                        m_sndAlarmEvent = new SoundPlayer(strPathSnd);
+                    else
+                        ;
+
+                    m_timerAlarmEvent =
+                        //new System.Threading.Timer(new TimerCallback(timerAlarmEvent), null, 0, AdminAlarm.MSEC_ALARM_TIMERBEEP) //Int32.Parse(formParameters.m_arParametrSetup[(int)FormParameters.PARAMETR_SETUP.ALARM_TIMER_BEEP]) * 1000
+                        new System.Windows.Forms.Timer();
+                    m_timerAlarmEvent.Tick += new EventHandler(timerAlarmEvent);
+                    m_timerAlarmEvent.Interval = StatisticAlarm.AdminAlarm.MSEC_ALARM_TIMERBEEP;
+                    m_timerAlarmEvent.Start();
+
+                    m_iAlarmEventCounter = 1;
+                }
+                else
+                    m_iAlarmEventCounter++;
+            }
+
+            //Поверх остальных окон
+            bool bPrevTopMost = this.TopMost;
+            this.TopMost = true;
+            //Диалоговое окно
+            new Thread(new ParameterizedThreadStart(messageBoxShow)).Start(text);
+            //Востановить значение по умолчанию
+            this.TopMost = bPrevTopMost;
+        }
+
+
         #region Код для отображения сообщения о событии сигнализации
 
         MessageBoxAlarmEvent m_formAlarmEvent;
@@ -719,6 +769,9 @@ namespace Statistic
                     else
                         if (tclTecViews.TabPages[e.TabIndex].Controls[0] is PanelAlarm)
                             formChangeMode.SetItemChecked(-3, false);
+                        else
+                                if (tclTecViews.TabPages[e.TabIndex].Controls[0] is PanelAdminLK)
+                                    formChangeMode.SetItemChecked(-4, false);
                         else
                             if (tclTecViews.TabPages[e.TabIndex].Controls[0] is PanelStatisticDiagnostic)
                                 m_dictAddingTabs[(int)ID_ADDING_TAB.DIAGNOSTIC].menuItem.Checked = false;
@@ -1272,6 +1325,7 @@ namespace Statistic
                         indxManager = tab.Controls[0] is PanelAdminKomDisp ? FormChangeMode.MANAGER.DISP :
                             tab.Controls[0] is PanelAdminNSS ? FormChangeMode.MANAGER.NSS :
                             tab.Controls[0] is PanelAlarm ? FormChangeMode.MANAGER.ALARM :
+                            tab.Controls[0] is PanelAdminLK ? FormChangeMode.MANAGER.LK :
                                 FormChangeMode.MANAGER.UNKNOWN;
 
                         if ((!(indxManager == FormChangeMode.MANAGER.UNKNOWN))
@@ -2101,7 +2155,8 @@ namespace Statistic
         {
             if ((formChangeMode.m_markTabAdminChecked.IsMarked((int)FormChangeMode.MANAGER.DISP) == true)
                 || (formChangeMode.m_markTabAdminChecked.IsMarked((int)FormChangeMode.MANAGER.NSS) == true)
-                || (formChangeMode.m_markTabAdminChecked.IsMarked((int)FormChangeMode.MANAGER.ALARM) == true))
+                || (formChangeMode.m_markTabAdminChecked.IsMarked((int)FormChangeMode.MANAGER.ALARM) == true)
+                || (formChangeMode.m_markTabAdminChecked.IsMarked((int)FormChangeMode.MANAGER.LK) == true))
             {
                 int idListener = DbSources.Sources().Register(s_listFormConnectionSettings[(int)CONN_SETT_TYPE.CONFIG_DB].getConnSett(), false, @"CONFIG_DB");
 
@@ -2129,6 +2184,14 @@ namespace Statistic
                 else
                     ;
 
+                if ((formChangeMode.m_markTabAdminChecked.IsMarked((int)FormChangeMode.MANAGER.LK) == true)
+                    && (m_markPrevStatePanelAdmin.IsMarked ((int)FormChangeMode.MANAGER.LK) == false))
+                {
+                    addTabPageAdmin(idListener, FormChangeMode.MANAGER.LK);
+                }
+                else
+                    ;
+
                 DbSources.Sources().UnRegister(idListener);
             }
             else
@@ -2143,6 +2206,7 @@ namespace Statistic
         /// <param name="modeAdmin">Тип добавляемой вкладки</param>
         private void addTabPageAdmin(int idListener, FormChangeMode.MANAGER modeAdmin)
         {
+            int iRes = 0;
             StatisticCommon.FormChangeMode.MODE_TECCOMPONENT mode = FormChangeMode.MODE_TECCOMPONENT.UNKNOWN;
 
             if (HStatisticUsers.RoleIsDisp == true)
@@ -2154,6 +2218,7 @@ namespace Statistic
                 bPasswordAsked = modeAdmin == FormChangeMode.MANAGER.DISP ? ! HStatisticUsers.IsAllowed((int)HStatisticUsers.ID_ALLOWED.AUTO_TAB_PBR_KOMDISP) :
                     modeAdmin == FormChangeMode.MANAGER.NSS ? ! HStatisticUsers.IsAllowed((int)HStatisticUsers.ID_ALLOWED.AUTO_TAB_PBR_NSS) :
                     modeAdmin == FormChangeMode.MANAGER.ALARM ? ! HStatisticUsers.IsAllowed((int)HStatisticUsers.ID_ALLOWED.AUTO_TAB_ALARM) :
+                    modeAdmin == FormChangeMode.MANAGER.LK ? ! HStatisticUsers.IsAllowed((int)HStatisticUsers.ID_ALLOWED.AUTO_TAB_LK) :
                         false;
 
                 if (bPasswordAsked == true)
@@ -2165,11 +2230,13 @@ namespace Statistic
                         if (modeAdmin == FormChangeMode.MANAGER.NSS)
                             idRolesPassword = Passwords.ID_ROLES.NSS;
                         else
-                            ;
+                            if (modeAdmin == FormChangeMode.MANAGER.LK)
+                                idRolesPassword = Passwords.ID_ROLES.NSS;
+                            else
+                                ;
 
                     if (idRolesPassword == Passwords.ID_ROLES.ADMIN)
-                        //??? Ошибка
-                        return;
+                        iRes = -1;
                     else
                         ;
 
@@ -2179,48 +2246,55 @@ namespace Statistic
                 else
                     ;
 
-                if (dlgRes == DialogResult.Yes)
+                if (iRes == 0)
                 {
-                    //StartWait();
-                    delegateStartWait();
-
-                    m_arPanelAdmin[(int)modeAdmin].Start();
-
-                    switch (modeAdmin)
+                    if (dlgRes == DialogResult.Yes)
                     {
-                        case FormChangeMode.MANAGER.DISP:
-                        case FormChangeMode.MANAGER.ALARM:
-                            mode = FormChangeMode.MODE_TECCOMPONENT.GTP;
-                            break;
-                        case FormChangeMode.MANAGER.NSS:
-                            mode = FormChangeMode.MODE_TECCOMPONENT.TEC; //PC или TG не важно
-                            break;
-                        default:
-                            break;
+                        //StartWait();
+                        delegateStartWait();
+
+                        m_arPanelAdmin[(int)modeAdmin].Start();
+
+                        switch (modeAdmin)
+                        {
+                            case FormChangeMode.MANAGER.DISP:
+                            case FormChangeMode.MANAGER.LK:
+                            case FormChangeMode.MANAGER.ALARM:
+                                mode = FormChangeMode.MODE_TECCOMPONENT.GTP;
+                                break;
+                            case FormChangeMode.MANAGER.NSS:
+                                mode = FormChangeMode.MODE_TECCOMPONENT.TEC; //PC или TG не важно
+                                break;
+                            default:
+                                break;
+                        }
+
+                        tclTecViews.AddTabPage(formChangeMode.getNameAdminValues(modeAdmin, mode), -1, HTabCtrlEx.TYPE_TAB.FIXED);
+
+                        tclTecViews.TabPages[tclTecViews.TabCount - 1].Controls.Add(m_arPanelAdmin[(int)modeAdmin]);
+
+                        switch (modeAdmin)
+                        {
+                            case FormChangeMode.MANAGER.DISP:
+                            case FormChangeMode.MANAGER.NSS:
+                            case FormChangeMode.MANAGER.LK:
+                                (m_arPanelAdmin[(int)modeAdmin] as PanelAdmin).InitializeComboBoxTecComponent(mode);
+                                break;
+                            case FormChangeMode.MANAGER.ALARM:
+                                break;
+                            default:
+                                break;
+                        }
+
+                        delegateStopWait();
+
+                        m_markPrevStatePanelAdmin.Set((int)modeAdmin, true);
                     }
-
-                    tclTecViews.AddTabPage(formChangeMode.getNameAdminValues(modeAdmin, mode), -1, HTabCtrlEx.TYPE_TAB.FIXED);
-
-                    tclTecViews.TabPages[tclTecViews.TabCount - 1].Controls.Add(m_arPanelAdmin[(int)modeAdmin]);
-
-                    switch (modeAdmin)
-                    {
-                        case FormChangeMode.MANAGER.DISP:
-                        case FormChangeMode.MANAGER.NSS:
-                            (m_arPanelAdmin[(int)modeAdmin] as PanelAdmin).InitializeComboBoxTecComponent(mode);
-                            break;
-                        case FormChangeMode.MANAGER.ALARM:                        
-                            break;
-                        default:
-                            break;
-                    }
-
-                    delegateStopWait();
-
-                    m_markPrevStatePanelAdmin.Set((int)modeAdmin, true);
+                    else
+                        ;
                 }
                 else
-                    ;
+                    Logging.Logg().Error("FormMain : addTabPageAdmin - пароль администратора указан в качестве пароля для вкладки", Logging.INDEX_MESSAGE.NOT_SET);
             }
             else
                 ; //Не требуется отображать вкладку 'panelAdmin'

@@ -202,8 +202,8 @@ namespace trans_tg
                             case (int)CONN_SETT_TYPE.SOURCE:
                                 m_arAdmin[(int)CONN_SETT_TYPE.SOURCE].ResetRDGExcelValues();
 
-                                ((AdminTS_NSS)m_arAdmin[(int)CONN_SETT_TYPE.SOURCE]).fillListIndexTECComponent(m_listTECComponentIndex[comboBoxTECComponent.SelectedIndex]);
-                                ((AdminTS_NSS)m_arAdmin[(int)CONN_SETT_TYPE.DEST]).fillListIndexTECComponent(m_listTECComponentIndex[comboBoxTECComponent.SelectedIndex]);
+                                ((AdminTS_NSS)m_arAdmin[(int)CONN_SETT_TYPE.SOURCE]).FillListIndexTECComponent(m_listTECComponentIndex[comboBoxTECComponent.SelectedIndex]);
+                                ((AdminTS_NSS)m_arAdmin[(int)CONN_SETT_TYPE.DEST]).FillListIndexTECComponent(m_listTECComponentIndex[comboBoxTECComponent.SelectedIndex]);
                                 int countComp = ((AdminTS_NSS)m_arAdmin[(int)CONN_SETT_TYPE.SOURCE]).m_listTECComponentIndexDetail.Count;
 
                                 //if (m_arAdmin[(Int16)CONN_SETT_TYPE.DEST].allTECComponents[m_listTECComponentIndex[comboBoxTECComponent.SelectedIndex]].tec.m_path_rdg_excel.Length > 0)

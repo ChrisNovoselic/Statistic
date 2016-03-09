@@ -129,6 +129,7 @@
     </Reference>
   </ItemGroup>
   <ItemGroup>
+    <Compile Include="AdminTS_LK.cs" />
     <Compile Include="dgwTables.cs">
       <SubType>Component</SubType>
     </Compile>
@@ -148,6 +149,9 @@
       <SubType>Component</SubType>
     </Compile>
     <Compile Include="PanelAdminKomDisp.cs">
+      <SubType>Component</SubType>
+    </Compile>
+    <Compile Include="PanelAdminLK.cs">
       <SubType>Component</SubType>
     </Compile>
     <Compile Include="PanelAdminNSS.cs">
