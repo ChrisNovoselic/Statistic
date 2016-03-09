@@ -323,13 +323,15 @@ namespace Statistic
                 }
             }
 
-            public HZedGraphControl(object lockVal)
+            public HZedGraphControl(object lockVal, DelegateFunc fSetScale)
             {
                 this.ContextMenuStrip = new HContextMenuStripZedGraph();
 
                 InitializeComponent();
 
                 m_lockValue = lockVal;
+
+                delegateSetScale = fSetScale;
             }
 
             private void InitializeComponent()
@@ -424,15 +426,20 @@ namespace Statistic
 
             private bool OnDoubleClickEvent(ZedGraphControl sender, MouseEventArgs e)
             {
-                FormMain.formGraphicsSettings.SetScale();
+                //FormMain.formGraphicsSettings.SetScale();
+                delegateSetScale();
 
                 return true;
             }
+            /// <summary>
+            /// ƒелегат - изменение способа масштабировани€гстограммы
+            /// </summary>
+            public DelegateFunc delegateSetScale;
         }
 
         protected class HZedGraphControlHours : HZedGraphControl
         {
-            public HZedGraphControlHours(object obj) : base(obj) { InitializeComponent(); }
+            public HZedGraphControlHours(object obj) : base(obj, FormMain.formGraphicsSettings.SetScale) { InitializeComponent(); }
 
             private void InitializeComponent()
             {
@@ -442,7 +449,7 @@ namespace Statistic
 
         protected class HZedGraphControlMins : HZedGraphControl
         {
-            public HZedGraphControlMins(object obj) : base(obj) { InitializeComponent(); }
+            public HZedGraphControlMins(object obj) : base(obj, FormMain.formGraphicsSettings.SetScale) { InitializeComponent(); }
 
             private void InitializeComponent()
             {

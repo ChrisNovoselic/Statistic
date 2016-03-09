@@ -38,35 +38,41 @@ namespace StatisticCommon
 
         protected bool IsNameField(DataTable data, string nameField) { return data.Columns.IndexOf(nameField) > -1 ? true : false; }
 
-        public static DataTable getListTEC(ref DbConnection connConfigDB, bool bIgnoreTECInUse, out int err)
+        public static string getQueryListTEC(bool bIgnoreTECInUse)
         {
-            string req = string.Empty;
-            req = "SELECT * FROM TEC_LIST ";
+            string strRes = "SELECT * FROM TEC_LIST ";
 
             if (bIgnoreTECInUse == false)
-                req += "WHERE INUSE=1 ";
+                strRes += "WHERE INUSE=1 ";
             else
                 ;
 
             if (bIgnoreTECInUse == true)
-                // условие еще не добавлено - добавляем
-                    req += @"WHERE ";
+            // условие еще не добавлено - добавляем
+                strRes += @"WHERE ";
+            else
+                if (bIgnoreTECInUse == false)
+                // условие уже добавлено
+                    strRes += @"AND ";
                 else
-                    if (bIgnoreTECInUse == false)
-                    // условие уже добавлено
-                        req += @"AND ";
-                    else
-                        ;
+                    ;
 
             if (!(HStatisticUsers.allTEC == 0))
             {
-                req += @"ID=" + HStatisticUsers.allTEC.ToString();
+                strRes += @"ID=" + HStatisticUsers.allTEC.ToString();
             }
             else
             //??? ограничение (временное) для ЛК
-                req += @"ID>0"
+                strRes += @"ID>0"
                 //req += @"ID>0 AND NOT (ID>10)"
                 ;
+
+            return strRes;
+        }
+
+        public static DataTable getListTEC(ref DbConnection connConfigDB, bool bIgnoreTECInUse, out int err)
+        {
+            string req = getQueryListTEC(bIgnoreTECInUse);
 
             return DbTSQLInterface.Select(ref connConfigDB, req, null, null, out err);
         }

@@ -900,7 +900,7 @@ namespace StatisticCommon
                 ,VISIBLE_TABLE
                 , COUNT
         };
-
+                
         // контекстные меню
         protected class HContextMenuStripZedGraph : System.Windows.Forms.ContextMenuStrip
         {
@@ -1047,13 +1047,15 @@ namespace StatisticCommon
             }
         }
 
-        public HZedGraphControl(object lockVal)
+        public HZedGraphControl(object lockVal, DelegateFunc fSetScale)
         {
             this.ContextMenuStrip = new HContextMenuStripZedGraph();
 
             InitializeComponent();
 
             m_lockValue = lockVal;
+
+            delegateSetScale = fSetScale;
         }
 
         private void InitializeComponent()
@@ -1155,10 +1157,14 @@ namespace StatisticCommon
         private bool OnDoubleClickEvent(ZedGraphControl sender, MouseEventArgs e)
         {
             //FormMain.formGraphicsSettings.SetScale();
+            delegateSetScale();
 
             return true;
         }
-
+        /// <summary>
+        /// Делегат - изменение способа масштабированиягстограммы
+        /// </summary>
+        public DelegateFunc delegateSetScale;
     }
 
 

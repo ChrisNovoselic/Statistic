@@ -506,7 +506,7 @@ namespace StatisticDiagnostic
                 switch (state)
                 {
                     case (int)State.ServerTime:
-                        Request(m_dictIdListeners[0][(int)CONN_SETT_TYPE.LIST_SOURCE], @"SELECT GETDATE()");
+                        GetCurrentTimeRequest (DbInterface.DB_TSQL_INTERFACE_TYPE.MSSQL, m_dictIdListeners[0][(int)CONN_SETT_TYPE.LIST_SOURCE]);
                         actionReport(@"Получение времени с сервера БД - состояние: " + ((State)state).ToString());
                         break;
                     case (int)State.Command:
@@ -514,7 +514,7 @@ namespace StatisticDiagnostic
                         actionReport(@"Получение значений из БД - состояние: " + ((State)state).ToString());
                         break;
                     case (int)State.UpdateSource:
-                        Request(m_dictIdListeners[0][(int)CONN_SETT_TYPE.CONFIG_DB], @"SELECT * FROM TEC_LIST");
+                        Request(m_dictIdListeners[0][(int)CONN_SETT_TYPE.CONFIG_DB], InitTECBase.getQueryListTEC(false));
                         actionReport(@"Обновление списка активных источников - состояние: " + ((State)state).ToString());
                         break;
                     default:
@@ -2485,20 +2485,20 @@ namespace StatisticDiagnostic
             private string formatTime(string datetime)
             {
                 DateTime result;
-                string m_dt;
-                string m_dt2Time = DateTime.TryParse(datetime, out result).ToString();
+                string strDTRes = string.Empty;
+                bool bDTRes = DateTime.TryParse(datetime, out result);
 
-                if (m_dt2Time != "False")
+                if (bDTRes != false)
                 {
                     if (Convert.ToInt32(result.Day - DateTime.Now.Day) < 0)
-                        return m_dt = DateTime.Parse(datetime).ToString("dd.MM.yy HH:mm:ss");
+                        strDTRes = DateTime.Parse(datetime).ToString("dd.MM.yy HH:mm:ss");
                     else
-                        return m_dt = DateTime.Parse(datetime).ToString("HH:mm:ss.fff");
+                        strDTRes = DateTime.Parse(datetime).ToString("HH:mm:ss.fff");
                 }
                 else
-                    m_dt = datetime;
+                    strDTRes = datetime;
 
-                return m_dt;
+                return strDTRes;
             }
 
             /// <summary>
