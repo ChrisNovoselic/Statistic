@@ -55,6 +55,9 @@ namespace Statistic
 
     public partial class PanelSobstvNyzhdy : PanelStatisticWithTableHourRows
     {
+        /// <summary>
+        /// Индексы Label'ов
+        /// </summary>
         enum INDEX_LABEL : int
         {
             NAME,
@@ -62,15 +65,30 @@ namespace Statistic
             VALUE_TM_SN,
             COUNT_INDEX_LABEL
         };
+
+        /// <summary>
+        /// Количество строк
+        /// </summary>
         const int COUNT_FIXED_ROWS = (int)INDEX_LABEL.VALUE_TM_SN - 0;
 
+        /// <summary>
+        /// Цвета Label'ов
+        /// </summary>
         static Color s_clrBackColorLabel = Color.FromArgb(212, 208, 200), s_clrBackColorLabelVal_TM = Color.FromArgb(219, 223, 227), s_clrBackColorLabelVal_TM_SN = Color.FromArgb(219, 223, 247);
+        
+        /// <summary>
+        /// Стили Label'ов
+        /// </summary>
         static HLabelStyles[] s_arLabelStyles = { new HLabelStyles(Color.Black, s_clrBackColorLabel, 15F, ContentAlignment.MiddleCenter),
                                                 new HLabelStyles(Color.Black, s_clrBackColorLabelVal_TM_SN, 11F, ContentAlignment.MiddleCenter),
                                                 new HLabelStyles(Color.Black, s_clrBackColorLabelVal_TM_SN, 11F, ContentAlignment.MiddleCenter)};
 
         enum StatesMachine : int { Init_TM, Current_TM_Gen, Current_TM_SN };
 
+        /// <summary>
+        /// Конструктор-основной
+        /// </summary>
+        /// <param name="listTec">Лист ТЭЦ</param>
         public PanelSobstvNyzhdy(List<StatisticCommon.TEC> listTec/*, DelegateStringFunc fErrRep, DelegateStringFunc fWarRep, DelegateStringFunc fActRep, DelegateBoolFunc fRepClr*/)
         {
             InitializeComponent();
@@ -97,12 +115,22 @@ namespace Statistic
             }
         }
 
+        /// <summary>
+        /// Конструктор
+        /// </summary>
+        /// <param name="container"></param>
+        /// <param name="listTec">Лист ТЭЦ</param>
         public PanelSobstvNyzhdy(IContainer container, List<StatisticCommon.TEC> listTec/*, DelegateStringFunc fErrRep, DelegateStringFunc fWarRep, DelegateStringFunc fActRep, DelegateBoolFunc fREpClr*/)
             : this(listTec/*, fErrRep, fWarRep, fActRep, fREpClr*/)
         {
             container.Add(this);
         }
 
+        /// <summary>
+        /// Инициализация стиля слоя
+        /// </summary>
+        /// <param name="cols">Кол-во колоной</param>
+        /// <param name="rows">Кол-во строк</param>
         protected override void initializeLayoutStyle(int cols = -1, int rows = -1)
         {
             this.ColumnCount = cols;
@@ -112,6 +140,13 @@ namespace Statistic
             initializeLayoutStyleEvenly ();
         }
 
+        /// <summary>
+        /// Метод задания делегатов для передачии сообщения
+        /// </summary>
+        /// <param name="ferr">Делегат ошибки</param>
+        /// <param name="fwar">Делегат предупреждения</param>
+        /// <param name="fact">Делегат выполняемого действия</param>
+        /// <param name="fclr">Делегат очистки строки</param>
         public override void SetDelegateReport(DelegateStringFunc ferr, DelegateStringFunc fwar, DelegateStringFunc fact, DelegateBoolFunc fclr)
         {
             foreach (Control ptcp in this.Controls)
@@ -121,6 +156,9 @@ namespace Statistic
                     ;
         }
 
+        /// <summary>
+        /// Старт опроса
+        /// </summary>
         public override void Start()
         {
             base.Start();
@@ -136,6 +174,9 @@ namespace Statistic
             }
         }
 
+        /// <summary>
+        /// Остановка опроса
+        /// </summary>
         public override void Stop()
         {
             foreach (Control ctrl in this.Controls)
@@ -151,11 +192,11 @@ namespace Statistic
             base.Stop();
         }
 
-        protected override void initTableHourRows()
-        {
-            //Ничего не делаем (на данный момент), т.к. собственные нужды отображаем только тек./сутки
-        }
-
+        /// <summary>
+        /// Активация панели
+        /// </summary>
+        /// <param name="active">Установка состояния панели</param>
+        /// <returns>Возвращает состояние после выполнения операции</returns>
         public override bool Activate(bool active)
         {
             bool bRes = base.Activate(active);
@@ -184,6 +225,10 @@ namespace Statistic
             return bRes;
         }
 
+        /// <summary>
+        /// Метод ререрисовки графика
+        /// </summary>
+        /// <param name="type"></param>
         public void UpdateGraphicsCurrent(int type)
         {
             foreach (Control ctrl in this.Controls)
@@ -195,6 +240,11 @@ namespace Statistic
                 else
                     ;
             }
+        }
+
+        protected override void initTableHourRows()
+        {
+            throw new NotImplementedException();
         }
 
         partial class PanelTecSobstvNyzhdy
@@ -249,8 +299,16 @@ namespace Statistic
             //bool isActive;
 
             public TecView m_tecView;
+
+            /// <summary>
+            /// Текущий индекс компонента из списка 'allTECComponents' (для сохранения между вызовами функций)
+            /// </summary>
             public int indx_TECComponent { get { return m_tecView.indxTECComponents; } }
             private ManualResetEvent m_evTimerCurrent;
+
+            /// <summary>
+            /// Таймер для опроса
+            /// </summary>
             private
                 System.Threading.Timer //Вариант №0
                 //System.Windows.Forms.Timer //Вариант №1
@@ -258,8 +316,15 @@ namespace Statistic
                     startChangeValue;
 
 
+            /// <summary>
+            /// Экземплят графика
+            /// </summary>
             StatisticCommon.HZedGraphControl m_zedGraphHours;
 
+            /// <summary>
+            /// Коструктор-основной
+            /// </summary>
+            /// <param name="tec">Лист ТЭЦ</param>
             public PanelTecSobstvNyzhdy(StatisticCommon.TEC tec/*, DelegateStringFunc fErrRep, DelegateStringFunc fWarRep, DelegateStringFunc fActRep, DelegateBoolFunc fRepClr*/)
                 : base (-1, -1)
             {
@@ -294,17 +359,30 @@ namespace Statistic
                 dgvSNHour.MouseUp += new MouseEventHandler(this.dgvSNHour_SelectionChanged);
             }
 
+            /// <summary>
+            /// Конструктор
+            /// </summary>
+            /// <param name="container"></param>
+            /// <param name="tec">Лист ТЭЦ</param>
             public PanelTecSobstvNyzhdy(IContainer container, StatisticCommon.TEC tec/*, DelegateStringFunc fErrRep, DelegateStringFunc fWarRep, DelegateStringFunc fActRep, DelegateBoolFunc fRepClr*/)
-                : this(tec/*, fErrRep, fWarRep, fActRep, fRepClr*/)
+                : this(tec)
             {
                 container.Add(this);
             }
 
+            /// <summary>
+            /// Инициализация стиля слоя
+            /// </summary>
+            /// <param name="cols">Кол-во колоной</param>
+            /// <param name="rows">Кол-во строк</param>
             protected override void initializeLayoutStyle(int cols = -1, int rows = -1)
             {
                 throw new NotImplementedException();
             }
 
+            /// <summary>
+            /// Инициализация компонентов
+            /// </summary>
             private void Initialize()
             {
                 int i = -1;
@@ -395,11 +473,21 @@ namespace Statistic
                 //isActive = false;
             }
 
+            /// <summary>
+            /// Метод задания делегатов для передачии сообщения
+            /// </summary>
+            /// <param name="fErrRep">Делегат ошибки</param>
+            /// <param name="fWarRep">Делегат предупреждения</param>
+            /// <param name="fActRep">Делегат выполняемого действия</param>
+            /// <param name="fRepClr">Делегат очистки строки</param>
             public void SetDelegateReport(DelegateStringFunc fErrRep, DelegateStringFunc fWarRep, DelegateStringFunc fActRep, DelegateBoolFunc fRepClr)
             {
                 m_tecView.SetDelegateReport(fErrRep, fWarRep, fActRep, fRepClr);
             }
 
+            /// <summary>
+            /// Старт опроса
+            /// </summary>
             public override void Start()
             {
                 base.Start ();
@@ -421,6 +509,9 @@ namespace Statistic
                 //isActive = false;
             }
 
+            /// <summary>
+            /// Остановка опроса
+            /// </summary>
             public override void Stop()
             {
                 m_tecView.Stop ();
@@ -431,6 +522,11 @@ namespace Statistic
                 base.Stop ();
             }
 
+            /// <summary>
+            /// Обработчик события выбора даты
+            /// </summary>
+            /// <param name="sender"></param>
+            /// <param name="e"></param>
             private void dtCurrDate_ChangeValue(object sender, EventArgs e)
             {
                 if (HDateTime.ToMoscowTimeZone(dtCurrDate.Value.Date) == HDateTime.ToMoscowTimeZone(DateTime.Now.Date))
@@ -455,9 +551,9 @@ namespace Statistic
             }
             
             /// <summary>
-            /// Установить текущие дату/час для объекта обработки запросов к БД
+            /// Установить дату/час для объекта обработки запросов к БД
             /// </summary>
-            /// <param name="dtNew"></param>
+            /// <param name="dtNew">Дата/час</param>
             private void setCurrDateHour(DateTime dtNew)
             {
                 m_tecView.m_curDate = dtNew;
@@ -473,14 +569,19 @@ namespace Statistic
                     ;
             }
 
+            /// <summary>
+            /// Установка состояния для текущей панели
+            /// </summary>
             private void ChangeState()
             {
-                
-               // m_tecView.m_curDate = dtCurrDate.Value.Date; //DateTime.Now;
-
                 m_tecView.ChangeState ();
             }
 
+            /// <summary>
+            /// Активация панели
+            /// </summary>
+            /// <param name="active">Устанавливаемое значение активности</param>
+            /// <returns>Значение после выполнения</returns>
             public override bool Activate(bool active)
             {
                 bool bRes = base.Activate (active);
@@ -502,6 +603,9 @@ namespace Statistic
                 return bRes;
             }
 
+            /// <summary>
+            /// Метод вызова отдельно потока для отображения значения за выьранный час в Label'е
+            /// </summary>
             private void showTMSNPower()
             {
                 if (IsHandleCreated/*InvokeRequired*/ == true)
@@ -510,6 +614,9 @@ namespace Statistic
                     Logging.Logg().Error(@"PanelTecSobstvNyzhdy::showTMSNPower () - ... BeginInvoke (ShowTMSNPower) - ...", Logging.INDEX_MESSAGE.D_001);
             }
 
+            /// <summary>
+            /// Метод для отображения выбранного часа и значения за этот час в Label'ах
+            /// </summary>
             private void ShowTMSNPower()
             {
                 setTextToLabelVal(m_arLabel[(int)INDEX_LABEL.VALUE_TM_SN], m_tecView.m_dblTotalPower_TM_SN);
@@ -520,6 +627,12 @@ namespace Statistic
                 DrawGraphHours();
             }
 
+            /// <summary>
+            /// Изменения текста Label'ов
+            /// </summary>
+            /// <param name="lblVal">Label</param>
+            /// <param name="val">Значение</param>
+            /// <returns></returns>
             private double setTextToLabelVal(System.Windows.Forms.Label lblVal, double val)
             {
                 if (val > 1)
@@ -533,33 +646,19 @@ namespace Statistic
                 return 0;
             }
 
+            /// <summary>
+            /// Обработчик таймера
+            /// </summary>
+            /// <param name="stateInfo"></param>
             private void startChangeValue_Tick(Object stateInfo)
             {
                 dtCurrDate_ChangeValue(null, null);
                 startChangeValue.Change(System.Threading.Timeout.Infinite, System.Threading.Timeout.Infinite);
             }
 
+            
             private void TimerCurrent_Tick(Object stateInfo)
-            //private void TimerCurrent_Tick(Object stateInfo, EventArgs ev)
             {
-                //if (Actived == true)
-                //{
-                //    //Вариант №1
-                //    //if (m_timerCurrent.Interval == ProgramBase.TIMER_START_INTERVAL)
-                //    //{
-                //    //    m_timerCurrent.Interval = PanelStatistic.POOL_TIME * 1000 - 1;
-
-                //    //    return ;
-                //    //}
-                //    //else
-                //    //    ;
-
-                //    dtCurrDate_ChangeValue(null, null);
-                //}
-                //else
-                //    ;
-
-
                 if (Actived == true)
                 {
                     if (m_tecView.currHour == true)
@@ -576,6 +675,12 @@ namespace Statistic
                     ;
             }
 
+            /// <summary>
+            /// Обработчик выбора значения на графике
+            /// </summary>
+            /// <param name="sender"></param>
+            /// <param name="e"></param>
+            /// <returns></returns>
             private bool zedGraphHours_MouseUpEvent(ZedGraphControl sender, MouseEventArgs e)
             {
                 if (e.Button != MouseButtons.Left)
@@ -626,6 +731,11 @@ namespace Statistic
                 return true;
             }
 
+            /// <summary>
+            /// Обработчик выбора строки
+            /// </summary>
+            /// <param name="sender"></param>
+            /// <param name="e"></param>
             private void dgvSNHour_SelectionChanged(object sender, MouseEventArgs e)
             {
                 int index;
@@ -674,15 +784,22 @@ namespace Statistic
                 return curve[iPt].Y.ToString("f2");
             }
 
+            /// <summary>
+            /// Обработчик двойного нажатия на графике
+            /// </summary>
+            /// <param name="sender"></param>
+            /// <param name="e"></param>
+            /// <returns></returns>
             private bool zedGraphHours_DoubleClickEvent(ZedGraphControl sender, MouseEventArgs e)
             {
                 FormMain.formGraphicsSettings.SetScale();
 
-                dtCurrDate_ChangeValue(null, null);
-
                 return true;
             }
 
+            /// <summary>
+            /// Метод для отрисовки графика
+            /// </summary>
             public void DrawGraphHours()
             {
                 GraphPane pane = m_zedGraphHours.GraphPane;
@@ -869,9 +986,14 @@ namespace Statistic
                 m_zedGraphHours.Invalidate();
             }
 
+            /// <summary>
+            /// Обработчик нажатия на пункт контекстного меню "Отобразить в таблице"
+            /// </summary>
+            /// <param name="sender"></param>
+            /// <param name="e"></param>
             private void отобразитьВТаблицеToolStripMenuItem_Click(object sender, EventArgs e)
             {
-                if (((ToolStripMenuItem)sender).Checked == false)
+                if (((ToolStripMenuItem)sender).Checked == false)//Если не активно то перерисовываем сначала вместе с таблицей
                 {
                     this.Controls.Remove(m_zedGraphHours);
                     this.Controls.Add(m_zedGraphHours, 2, COUNT_FIXED_ROWS);
@@ -881,7 +1003,7 @@ namespace Statistic
                     ((ToolStripMenuItem)sender).Checked = true;
                     
                 }
-                else
+                else//Если активно то перерисовываем сначала без таблицы
                 {
                     this.Controls.Remove(m_zedGraphHours);
                     this.Controls.Remove(dgvSNHour);
@@ -891,6 +1013,11 @@ namespace Statistic
                 }
             }
 
+            /// <summary>
+            /// Обработчик события нажатия на кнопку экспорта
+            /// </summary>
+            /// <param name="sender"></param>
+            /// <param name="e"></param>
             private void эксельToolStripMenuItemHours_Click(object sender, EventArgs e)
             {
                 lock (m_tecView.m_lockValue)
@@ -902,19 +1029,6 @@ namespace Statistic
                     if (sf.ShowDialog() == DialogResult.OK)
                     {
                         string strSheetName = "Часовые_знач";
-                        //int indxItemMenuStrip = -1;
-                        //if (m_tecView.m_arTypeSourceData[(int)TG.ID_TIME.HOURS] == CONN_SETT_TYPE.DATA_ASKUE)
-                        //    indxItemMenuStrip = m_ZedGraphHours.ContextMenuStrip.Items.Count - 2;
-                        //else
-                        //    if (m_tecView.m_arTypeSourceData[(int)TG.ID_TIME.HOURS] == CONN_SETT_TYPE.DATA_SOTIASSO)
-                        //        indxItemMenuStrip = m_ZedGraphHours.ContextMenuStrip.Items.Count - 1;
-                        //    else
-                        //        ;
-
-                        //if (! (indxItemMenuStrip < 0))
-                        //    strSheetName += @" (" + m_ZedGraphHours.ContextMenuStrip.Items[indxItemMenuStrip].Text + @")";
-                        //else
-                        //    ;
 
                         ExcelFile ef = new ExcelFile();
                         ef.Worksheets.Add(strSheetName);
@@ -979,12 +1093,19 @@ namespace Statistic
 
         protected class HZedGraphControlSNHours : StatisticCommon.HZedGraphControl
         {
+            /// <summary>
+            /// Конструктор
+            /// </summary>
+            /// <param name="obj"></param>
             public HZedGraphControlSNHours(object obj)
                 : base(obj)
             {
                 InitializeComponent();
             }
 
+            /// <summary>
+            /// Инициализация компонентов
+            /// </summary>
             private void InitializeComponent()
             {
                 this.Dock = System.Windows.Forms.DockStyle.Fill;

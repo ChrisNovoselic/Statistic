@@ -21,6 +21,9 @@ namespace Statistic
         private System.Windows.Forms.Button btnImportExcel;
         private System.Windows.Forms.Button btnExportExcel;
         
+        /// <summary>
+        /// Инициализация компонентов на форме
+        /// </summary>
         protected override void InitializeComponents()
         {
             base.InitializeComponents();
@@ -72,13 +75,22 @@ namespace Statistic
             this.ResumeLayout();
         }
 
+        /// <summary>
+        /// Конструктор класса
+        /// </summary>
+        /// <param name="idListener">ИД слушателя</param>
+        /// <param name="markQueries"></param>
         public PanelAdminLK(int idListener, HMark markQueries)
             : base(idListener, FormChangeMode.MANAGER.LK, markQueries)
         {
             m_admin.SetDelegateSaveComplete(null);
-
         }
 
+        /// <summary>
+        /// Метод получения ИД (m_id) родительской ГТП для ТГ
+        /// </summary>
+        /// <param name="indx_tg">ИД ТГ</param>
+        /// <returns>Возвращает ИД ГТП</returns>
         private int GetIndexGTPOwner(int indx_tg)
         {
             int iRes = -1
@@ -96,24 +108,28 @@ namespace Statistic
             return iRes;
         }
 
+        /// <summary>
+        /// Метод экспорта значений из DataGridView в список значений компонентов
+        /// </summary>
         protected override void getDataGridViewAdmin()
         {
             double value;
             bool valid;
 
-            foreach (int indx in ((AdminTS_LK)m_admin).m_listTECComponentIndexDetail)
+            
+            foreach (int indx in ((AdminTS_LK)m_admin).m_listTECComponentIndexDetail)//Перебор компонентов
             {
-                if (m_admin.modeTECComponent(indx) == FormChangeMode.MODE_TECCOMPONENT.TG)
+                if (m_admin.modeTECComponent(indx) == FormChangeMode.MODE_TECCOMPONENT.TG)//Если ТГ то
                 {
                     int indx_tg = ((AdminTS_LK)m_admin).m_listTECComponentIndexDetail.IndexOf(indx),
                         indx_gtp = GetIndexGTPOwner(indx_tg);
 
                     if ((!(indx_tg < 0)) && (!(indx_gtp < 0)))
-                        for (int i = 0; i < 24; i++)
+                        for (int i = 0; i < 24; i++)//Перебор часовых значений ТГ
                         {
-                            foreach (DataGridViewColumn col in dgwAdminTable.Columns)
-                                if (m_admin.GetNameTECComponent(indx) == col.HeaderText)
-                                    if (dgwAdminTable.Rows[i].Cells[col.Index].Value == null)
+                            foreach (DataGridViewColumn col in dgwAdminTable.Columns)//Перебор колонок DataGridView
+                                if (m_admin.GetNameTECComponent(indx) == col.HeaderText)//Если имя ТГ соответствует имени колонки то
+                                    if (dgwAdminTable.Rows[i].Cells[col.Index].Value == null)//Проверка на пустое поле и запись значения
                                         ((AdminTS_LK)m_admin).m_listCurRDGValues[indx_tg][i].pbr = Convert.ToDouble(0.ToString("F2"));
                                     else
                                         ((AdminTS_LK)m_admin).m_listCurRDGValues[indx_tg][i].pbr = Convert.ToDouble(dgwAdminTable.Rows[i].Cells[col.Index].Value); // '+ 1' за счет DateTime
@@ -125,12 +141,12 @@ namespace Statistic
                 }
                 else
                 {
-                    if (m_admin.modeTECComponent(indx) == FormChangeMode.MODE_TECCOMPONENT.GTP)
+                    if (m_admin.modeTECComponent(indx) == FormChangeMode.MODE_TECCOMPONENT.GTP)//Если ГТП то
                     {
                         int indx_gtp = ((AdminTS_LK)m_admin).m_listTECComponentIndexDetail.IndexOf(indx);
 
                         if (!(indx_gtp < 0))
-                            for (int i = 0; i < 24; i++)
+                            for (int i = 0; i < 24; i++)//Перебор часовых значений ГТП
                             {
                                 ((AdminTS_LK)m_admin).m_listCurRDGValues[indx_gtp][i].pbr = Convert.ToDouble(dgwAdminTable.Rows[i].Cells[(int)DataGridViewAdminLK.DESC_INDEX.PLAN].Value); // '+ 1' за счет DateTime
                                 ((AdminTS_LK)m_admin).m_listCurRDGValues[indx_gtp][i].pmin = Convert.ToDouble(dgwAdminTable.Rows[i].Cells[(int)DataGridViewAdminLK.DESC_INDEX.PLAN_T].Value);
@@ -154,6 +170,10 @@ namespace Statistic
             //m_admin.CopyCurRDGValues();
         }
 
+        /// <summary>
+        /// Метод вызова отдельного потока для добавления новой колонки
+        /// </summary>
+        /// <param name="date">Дата отображаемых значений</param>
         public override void setDataGridViewAdmin(DateTime date)
         {
             if (IsHandleCreated/*InvokeRequired*/ == true)
@@ -164,6 +184,10 @@ namespace Statistic
                 Logging.Logg().Error(@"PanelTecCurPower::setDataGridViewAdmin () - ... BeginInvoke (addTextBoxColumn) - ...", Logging.INDEX_MESSAGE.D_001);
         }
 
+        /// <summary>
+        /// Метод добавления колонок в DataGridView
+        /// </summary>
+        /// <param name="date">Дата отображаемых значений</param>
         private void addTextBoxColumn(DateTime date)
         {
             int indx = ((AdminTS_LK)m_admin).indxTECComponents;
@@ -242,12 +266,21 @@ namespace Statistic
             ((AdminTS_LK)m_admin).m_semaIndxTECComponents.Release();
         }
 
+        /// <summary>
+        /// Метод для очистки таблиц
+        /// </summary>
         public override void ClearTables()
         {
-            ((DataGridViewAdminLK)this.dgwAdminTable).ClearTables();
-            ((AdminTS_LK)m_admin).m_listPrevRDGValues.Clear();
+            ((DataGridViewAdminLK)this.dgwAdminTable).ClearTables();//Очистка DataGridView  
+            
+            if(((AdminTS_LK)m_admin).m_listPrevRDGValues!=null)
+                ((AdminTS_LK)m_admin).m_listPrevRDGValues.Clear();//Очистка списка предыдущих значений
         }
 
+        /// <summary>
+        /// Заполнение ComboBox значениями ГТП
+        /// </summary>
+        /// <param name="mode">Переменная типа отображаемых значений</param>
         public override void InitializeComboBoxTecComponent(FormChangeMode.MODE_TECCOMPONENT mode)
         {
             base.InitializeComboBoxTecComponent(mode);
@@ -266,6 +299,11 @@ namespace Statistic
             else ;
         }
 
+        /// <summary>
+        /// Метод активации панели
+        /// </summary>
+        /// <param name="active">Флаг активности панели</param>
+        /// <returns>Возвращает текущее состояние активности</returns>
         public override bool Activate(bool active)
         {
             bool bRes = false;
@@ -282,6 +320,9 @@ namespace Statistic
             return bRes;
         }
 
+        /// <summary>
+        /// Метод остановки панели
+        /// </summary>
         public override void Stop()
         {
             ClearTables ();
@@ -289,6 +330,10 @@ namespace Statistic
             base.Stop ();
         }
         
+        /// <summary>
+        /// Метод для активации отображения кнопок импорта и экспорта
+        /// </summary>
+        /// <param name="id_tec">ID ТЭЦ</param>
         private void visibleControlRDGExcel(int id_tec)
         {
             bool bImpExpButtonVisible = false;
@@ -302,6 +347,11 @@ namespace Statistic
             //btnExportExcel.Visible = 
         }
 
+        /// <summary>
+        /// Обработчик события нажатия на кнопку импорта из Excel
+        /// </summary>
+        /// <param name="sender"></param>
+        /// <param name="e"></param>
         private void btnImportExcel_Click(object sender, EventArgs e)
         {
             //ClearTables();
@@ -333,6 +383,11 @@ namespace Statistic
             }
         }
 
+        /// <summary>
+        /// Обработчик события нажатия на кнопку экспорта в Excel
+        /// </summary>
+        /// <param name="sender"></param>
+        /// <param name="e"></param>
         private void btnExportExcel_Click(object sender, EventArgs e)
         {
             //FolderBrowserDialog exportFolder = new FolderBrowserDialog();
@@ -359,36 +414,45 @@ namespace Statistic
 
     public class DataGridViewAdminLK : DataGridViewAdmin
     {
+        /// <summary>
+        /// Идентификаторы колонок
+        /// </summary>
         public enum DESC_INDEX : ushort { DATE_HOUR, PLAN, PLAN_T, DEVIATION_TYPE, DEVIATION, TO_ALL, COUNT_COLUMN };
+
+        /// <summary>
+        /// Массив имен колонок
+        /// </summary>
         private static string[] arDescStringIndex = { "DateHour", "Plan", @"PLAN_T", "DEVIATION_TYPE", "DEVIATION", "TO_ALL" };
+
+        /// <summary>
+        /// Массив заголовков колонок
+        /// </summary>
         private static string[] arDescRusStringIndex = { "Дата, час", "План", @"План t", "Отклонение в процентах", "Величина максимального отклонения", "Дозаполнить" };
+
+        /// <summary>
+        /// Массив значений по умолчанию
+        /// </summary>
         private static string[] arDefaultValueIndex = { string.Empty, string.Empty, string.Empty, false.ToString(), string.Empty };
 
-       private enum ID_TYPE : ushort { ID, ID_OWNER, COUNT_ID_TYPE };
+
+        private enum ID_TYPE : ushort { ID, ID_OWNER, COUNT_ID_TYPE };
 
         private List <int []> m_listIds;
 
         DataGridViewCellStyle dgvCellStyleError,
                              dgvCellStyleGTP;
 
+        /// <summary>
+        /// Конструктор
+        /// </summary>
         public DataGridViewAdminLK()
         {
             m_listIds = new List<int[]>();
-
-            dgvCellStyleError = new DataGridViewCellStyle();
-            dgvCellStyleError.BackColor = Color.Red;
-
-            dgvCellStyleGTP = new DataGridViewCellStyle();
-            dgvCellStyleGTP.BackColor = Color.Yellow;
-
-            //this.Anchor |= (System.Windows.Forms.AnchorStyles)(System.Windows.Forms.AnchorStyles.Right);
-            this.Dock = DockStyle.Fill;
-
-            this.CellValueChanged +=new DataGridViewCellEventHandler(DataGridViewAdminLK_CellValueChanged);
-
-            this.HorizontalScrollBar.Visible = true;
         }
         
+        /// <summary>
+        /// Инициализация компонентов DataGridView
+        /// </summary>
         protected override void InitializeComponents () 
         {
             base.InitializeComponents ();
@@ -420,8 +484,26 @@ namespace Statistic
                 Columns[col].ReadOnly = true;
                 Columns[col].SortMode = System.Windows.Forms.DataGridViewColumnSortMode.NotSortable;
             }
+
+
+            dgvCellStyleError = new DataGridViewCellStyle();
+            dgvCellStyleError.BackColor = Color.Red;
+
+            dgvCellStyleGTP = new DataGridViewCellStyle();
+            dgvCellStyleGTP.BackColor = Color.Yellow;
+
+            this.Dock = DockStyle.Fill;
+
+            this.CellValueChanged += new DataGridViewCellEventHandler(DataGridViewAdminLK_CellValueChanged);
+
+            this.HorizontalScrollBar.Visible = true;
         }
 
+        /// <summary>
+        /// Обработчик события выбора ячейки
+        /// </summary>
+        /// <param name="sender"></param>
+        /// <param name="e"></param>
         public void DataGridViewAdminLK_CellValueChanged(object sender, DataGridViewCellEventArgs e)
         {
                 if ((m_listIds.Count == Columns.Count - 4) && (Columns[e.ColumnIndex].ReadOnly == false) && (e.ColumnIndex > 0) && (e.ColumnIndex < Columns.Count - 3))
@@ -469,12 +551,17 @@ namespace Statistic
                     ;
         }
         
+        /// <summary>
+        /// Метод проверки введенного значения в ячейку
+        /// </summary>
+        /// <param name="sender"></param>
+        /// <param name="e"></param>
         protected override void dgwAdminTable_CellValidated(object sender, DataGridViewCellEventArgs e)
         {
             double value;
             bool valid;
 
-            if ((e.ColumnIndex > 0) && (e.ColumnIndex < Columns.Count - 3) /*&& (e.ColumnIndex != (int)DESC_INDEX.PLAN_T)*/)
+            if ((e.ColumnIndex > 0) && (e.ColumnIndex < Columns.Count - 3))
             {
                 valid = double.TryParse((string)Rows[e.RowIndex].Cells[e.ColumnIndex].Value, out value);
                 if ((valid == false) || (value > DataGridViewAdmin.maxRecomendationValue))
@@ -492,6 +579,11 @@ namespace Statistic
                 ;
         }
 
+        /// <summary>
+        /// Обработчик события нажатия на кнопку в ячейке 
+        /// </summary>
+        /// <param name="sender"></param>
+        /// <param name="e"></param>
         protected override void dgwAdminTable_CellClick(object sender, DataGridViewCellEventArgs e)
         {
             if ((this.Columns[e.ColumnIndex].Name == arDescStringIndex[(int)DESC_INDEX.TO_ALL]) && (!(e.RowIndex < 0))) // кнопка применение для всех
@@ -516,6 +608,13 @@ namespace Statistic
                 ;
         }
 
+        /// <summary>
+        /// Метод для добавления новой колонки в таблицу
+        /// </summary>
+        /// <param name="name">Имя колонки</param>
+        /// <param name="id">m_id компонента</param>
+        /// <param name="id_owner">m_id компонента-родителя</param>
+        /// <param name="date">Дата выбранного значения</param>
         public void addTextBoxColumn(string name, int id, int id_owner, DateTime date)
         {
             if (id > (int)FormChangeMode.MODE_TECCOMPONENT.TG)
@@ -543,6 +642,9 @@ namespace Statistic
             }
         }
 
+        /// <summary>
+        /// Метод очистки таблицы
+        /// </summary>
         public override void ClearTables () {
             int i = -1;
 
@@ -560,6 +662,11 @@ namespace Statistic
             }
         }
 
+        /// <summary>
+        /// Метод поиска компонента по m_id родителя
+        /// </summary>
+        /// <param name="i"></param>
+        /// <returns></returns>
         public int GetIdGTPOwner(int i)
         {
             int iRes = -1;
@@ -575,13 +682,27 @@ namespace Statistic
 
     public class Get_DataTable_From_Excel
     {
+        /// <summary>
+        /// Массив имен месяцев
+        /// </summary>
         public static string[] mounth = {"UNKNOWN","ЯНВАРЬ","ФЕВРАЛЬ","МАРТ","АПРЕЛЬ","МАЙ","ИЮНЬ","ИЮЛЬ","АВГУСТ","СЕНТЯБРЬ","ОКТЯБРЬ","НОЯБРЬ","ДЕКАБРЬ" };
+        
+        /// <summary>
+        /// Массив имен колонок
+        /// </summary>
         public static string[] col_name = { "Час", "Значение", "Температура" };
-        public enum INDEX_COLUMN : int {Time, Value, Temp }
-        public Get_DataTable_From_Excel()
-        {
-        }
 
+        /// <summary>
+        /// Индексы колонок
+        /// </summary>
+        public enum INDEX_COLUMN : int {Time, Value, Temp }
+
+        /// <summary>
+        /// Получение таблицы из Excel
+        /// </summary>
+        /// <param name="path">Путь к документу</param>
+        /// <param name="data">Дата для которой получить значения</param>
+        /// <returns>Таблица со значениями</returns>
         public static DataTable getDT(string path, DateTime data) 
         {
             DataTable dtExportCSV = new DataTable();
@@ -591,6 +712,12 @@ namespace Statistic
             return dtExportCSV;
         }
 
+        /// <summary>
+        /// Метод выборки значений из Excell
+        /// </summary>
+        /// <param name="path">Путь к документу</param>
+        /// <param name="date">Дата за которую необходимо получить значения</param>
+        /// <returns>Возвращает таблицу со значениями</returns>
         private static DataTable getCSV(string path, DateTime date)
         {
             DataTable dataTableRes = new DataTable();
@@ -598,42 +725,43 @@ namespace Statistic
             DataRow[] rows = new DataRow[25];
 
             for (int i = 0; i < col_name.Length; i++)
-                dataTableRes.Columns.Add(col_name[i]);
+                dataTableRes.Columns.Add(col_name[i]);//Добавление колонок в таблицу
 
-            //object[] column;
             //Открыть поток чтения файла...
             try
             {
                 ExcelFile excel = new ExcelFile();
-                excel.LoadXls(path);
-                name_worksheet = "Расчет " + mounth[date.Month];
-                foreach (ExcelWorksheet w in excel.Worksheets)
+                excel.LoadXls(path);//загружаем в созданный экземпляр документ Excel
+                name_worksheet = "Расчет " + mounth[date.Month];//Генерируем имя необходимого листа в зависимости от переданной даты
+                foreach (ExcelWorksheet w in excel.Worksheets)//Перебор листов
                 {
-                    if (w.Name.Equals(name_worksheet, StringComparison.InvariantCultureIgnoreCase))
+                    if (w.Name.Equals(name_worksheet, StringComparison.InvariantCultureIgnoreCase))//Если имя совпадает с сгенерируемым нами то
                     {
-                        foreach (ExcelRow r in w.Rows)
+                        foreach (ExcelRow r in w.Rows)//перебор строк документа
                         {
-                            if(r.Cells[0].Value!=null)
-                            if (r.Cells[0].Value.ToString() == date.Date.ToString())
-                            {
-                                for (int i = 0; i < 24; i++)
+                            if(r.Cells[0].Value!=null)//Если значение строки не пусто то
+                                if (r.Cells[0].Value.ToString() == date.Date.ToString())//Если дата в строке совпадает с переданной то
                                 {
-                                    object[] row = new object[3];
-                                    row[0] = i.ToString();
-                                    if (r.Cells[i + 2].Value == null)
-                                        row[1] = 0.ToString("F2");
-                                    else
-                                        row[1] = r.Cells[i + 2].Value.ToString().Trim();
+                                    for (int i = 0; i < 24; i++)//Перебор ячеек со значениями по часам
+                                    {
+                                        object[] row = new object[3];
+                                        row[0] = i.ToString();//Час
 
-                                    if (w.Rows[r.Index + 1].Cells[i + 2].Value == null)
-                                        row[2] = string.Empty;
-                                    else
-                                        row[2] = w.Rows[r.Index + 1].Cells[i + 2].Value.ToString().Trim();
+                                        if (r.Cells[i + 2].Value == null)//Если ячейка пуста то
+                                            row[1] = 0.ToString("F2");//0 в формате (0.00)
+                                        else
+                                            row[1] = r.Cells[i + 2].Value.ToString().Trim();//Значение ПБР
+
+                                        if (w.Rows[r.Index + 1].Cells[i + 2].Value == null)
+                                            row[2] = string.Empty;
+                                        else
+                                            row[2] = w.Rows[r.Index + 1].Cells[i + 2].Value.ToString().Trim();//Значение температуры
                                  
-                                    dataTableRes.Rows.Add(row);
+                                        dataTableRes.Rows.Add(row);//Добавляем строку в таблицу
+                                    }
                                 }
-                            }
-                            if (dataTableRes.Rows.Count >= 24) 
+
+                            if (dataTableRes.Rows.Count >= 24) //Если количестко строк стало равным ли больше 24 то прерываем перебор
                                 break;
                         }
                     }

@@ -13,17 +13,34 @@ namespace Statistic
 {
     public class AdminTS_LK : AdminTS_TG
     {
+        /// <summary>
+        /// Индекс компонентов типа ЛК в списке ТЦ
+        /// </summary>
         public static int Index_LK = 10;
 
+        /// <summary>
+        /// Семафор для формирования списка компонентов
+        /// </summary>
         public Semaphore m_semaIndxTECComponents;
 
+        /// <summary>
+        /// Список предыдущих значений RDG
+        /// </summary>
         public List<RDGStruct[]> m_listPrevRDGValues;
 
+        /// <summary>
+        /// Конструктор
+        /// </summary>
+        /// <param name="arMarkPPBRValues"></param>
         public AdminTS_LK(bool[] arMarkPPBRValues)
             : base(arMarkPPBRValues)
         {
         }
 
+        /// <summary>
+        /// Формирование списка компонентов в зависимости от выбранного в ComboBox
+        /// </summary>
+        /// <param name="id">ИД компонента в ComboBox</param>
         public override void FillListIndexTECComponent(int id)
         {
             lock (m_lockSuccessGetData)
@@ -56,6 +73,10 @@ namespace Statistic
             }
         }
 
+        /// <summary>
+        /// Метод создания потока получения значений без даты
+        /// </summary>
+        /// <param name="obj"></param>
         protected override void threadGetRDGValuesWithoutDate(object obj)
         {
             int indxEv = -1;
@@ -70,7 +91,8 @@ namespace Statistic
                 {
                     m_semaIndxTECComponents.WaitOne();
 
-                    base.GetRDGValues(/*m_typeFields,*/ indx);
+                    base.BaseGetRDGValue(/*m_typeFields,*/ indx, DateTime.MinValue);
+                    m_listPrevRDGValues = new List<RDGStruct[]>(m_listCurRDGValues);
                 }
                 else
                     break;
@@ -80,6 +102,10 @@ namespace Statistic
             //m_bSavePPBRValues = true;
         }
 
+        /// <summary>
+        /// Метод создания потока получения значений с датой
+        /// </summary>
+        /// <param name="obj"></param>
         protected override void threadGetRDGValuesWithDate(object date)
         {
             int indxEv = -1;
@@ -94,9 +120,10 @@ namespace Statistic
                 indxEv = WaitHandle.WaitAny(m_waitHandleState);
                 if (indxEv == 0)
                 {
-                    m_semaIndxTECComponents.WaitOne();
+                    m_semaIndxTECComponents.WaitOne();//Ожидание изменения состояния семафора
 
-                    base.GetRDGValues(/*(int)m_typeFields,*/ indx, (DateTime)date);
+                    base.BaseGetRDGValue(indx, (DateTime)date);
+
                     m_listPrevRDGValues = new List<RDGStruct[]>(m_listCurRDGValues);
                 }
                 else
@@ -107,6 +134,10 @@ namespace Statistic
             //m_bSavePPBRValues = true;
         }
 
+        /// <summary>
+        /// Метод проверки на измененные значения
+        /// </summary>
+        /// <returns>Было ли изменено</returns>
         public override bool WasChanged()
         {
             bool bRes = false;
@@ -132,31 +163,15 @@ namespace Statistic
                     else
                         ;
                 }
-
-                //for (int i = 0; i < 24; i++)
-                //{
-                //    if (m_prevRDGValues[i].pbr.Equals(m_curRDGValues[i].pbr) /*double.Parse(this.dgwAdminTable.Rows[i].Cells[(int)DataGridViewAdmin.DESC_INDEX.PLAN].Value.ToString())*/  == false)
-                //        return true;
-                //    else
-                //        ;
-                //    if (m_prevRDGValues[i].recomendation != m_curRDGValues[i].recomendation /*double.Parse(this.dgwAdminTable.Rows[i].Cells[(int)DataGridViewAdmin.DESC_INDEX.RECOMENDATION].Value.ToString())*/)
-                //        return true;
-                //    else
-                //        ;
-                //    if (m_prevRDGValues[i].deviationPercent != m_curRDGValues[i].deviationPercent /*bool.Parse(this.dgwAdminTable.Rows[i].Cells[(int)DataGridViewAdmin.DESC_INDEX.DEVIATION_TYPE].Value.ToString())*/)
-                //        return true;
-                //    else
-                //        ;
-                //    if (m_prevRDGValues[i].deviation != m_curRDGValues[i].deviation /*double.Parse(this.dgwAdminTable.Rows[i].Cells[(int)DataGridViewAdmin.DESC_INDEX.DEVIATION].Value.ToString())*/)
-                //        return true;
-                //    else
-                //        ;
-                //}
             }
 
             return bRes;
         }
 
+        /// <summary>
+        /// Сохранение внесенных изменений
+        /// </summary>
+        /// <returns>Ошибка выполнения</returns>
         public override Errors SaveChanges()
         {
             Errors errRes = Errors.NoError,
@@ -188,7 +203,7 @@ namespace Statistic
 
                         curRDGValues.CopyTo(m_curRDGValues, 0);
 
-                        bErr = base.SaveChanges();
+                        bErr = base.BaseSaveChanges();
                     }
                     else
                         break;
@@ -203,7 +218,7 @@ namespace Statistic
 
                             curRDGValues.CopyTo(m_curRDGValues, 0);
 
-                            bErr = base.SaveChanges();
+                            bErr = base.BaseSaveChanges();
                         }
                         else
                             break;
@@ -233,11 +248,14 @@ namespace Statistic
             return errRes;
         }
 
-        protected void /*bool*/ ExpRDGExcelValuesRequest()
-        {
+        //protected void /*bool*/ ExpRDGExcelValuesRequest()
+        //{
             
-        }
+        //}
 
+        /// <summary>
+        /// Инициализация синхронизации состояния
+        /// </summary>
         protected override void InitializeSyncState()
         {
             m_semaIndxTECComponents = new Semaphore(1, 1);
@@ -245,6 +263,9 @@ namespace Statistic
             base.InitializeSyncState();
         }
 
+        /// <summary>
+        /// Метод получения ТЭЦ компонентов
+        /// </summary>
         protected override void initTEC()
         {
             allTECComponents.Clear();
@@ -253,20 +274,23 @@ namespace Statistic
             {
                 //Logging.Logg().Debug("Admin::InitTEC () - формирование компонентов для ТЭЦ:" + t.name);
                 if (t.m_id > Index_LK)
-                if (t.list_TECComponents.Count > 0)
-                    foreach (TECComponent g in t.list_TECComponents)
+                    if (t.list_TECComponents.Count > 0)
+                        foreach (TECComponent g in t.list_TECComponents)
+                        {
+                            allTECComponents.Add(g);
+                        }
+                    else
                     {
-                        //comboBoxTecComponent.Items.Add(t.name + " - " + g.name);
-                        allTECComponents.Add(g);
+                        allTECComponents.Add(t.list_TECComponents[0]);
                     }
-                else
-                {
-                    //comboBoxTecComponent.Items.Add(t.name);
-                    allTECComponents.Add(t.list_TECComponents[0]);
-                }
             }
         }
 
+        /// <summary>
+        /// Получение m_id ТЭЦ которой пренадлежит компонент
+        /// </summary>
+        /// <param name="indx">ИД компонента</param>
+        /// <returns>Возвращает ИД ТЭЦ</returns>
         public int GetIdTECOwnerTECComponent(int indx = -1)
         {
             int iRes = -1;
