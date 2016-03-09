@@ -575,8 +575,6 @@ namespace Statistic
 
                 DataGridViewAdminLK_CellValueChanged (sender, e);
             }
-            else
-                ;
         }
 
         /// <summary>

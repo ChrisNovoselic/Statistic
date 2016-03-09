@@ -89,17 +89,9 @@ namespace Statistic
         /// Конструктор-основной
         /// </summary>
         /// <param name="listTec">Лист ТЭЦ</param>
-        public PanelSobstvNyzhdy(List<StatisticCommon.TEC> listTec/*, DelegateStringFunc fErrRep, DelegateStringFunc fWarRep, DelegateStringFunc fActRep, DelegateBoolFunc fRepClr*/)
+        public PanelSobstvNyzhdy(List<StatisticCommon.TEC> listTec)
         {
             InitializeComponent();
-
-            //this.Dock = DockStyle.Fill;
-
-            ////this.Location = new System.Drawing.Point(40, 58);
-            ////this.Name = "pnlView";
-            ////this.Size = new System.Drawing.Size(705, 747);
-
-            //this.BorderStyle = BorderStyle.None; //BorderStyle.FixedSingle;
 
             PanelTecSobstvNyzhdy ptcp;
 
@@ -110,8 +102,11 @@ namespace Statistic
 
             for (i = 0; i < listTec.Count; i++)
             {
-                ptcp = new PanelTecSobstvNyzhdy(listTec[i]/*, fErrRep, fWarRep, fActRep, fRepClr*/);
-                this.Controls.Add(ptcp, i % this.ColumnCount, i / this.ColumnCount);
+                if (listTec[i].m_id < AdminTS_LK.Index_LK)
+                {
+                    ptcp = new PanelTecSobstvNyzhdy(listTec[i]);
+                    this.Controls.Add(ptcp, i % this.ColumnCount, i / this.ColumnCount);
+                }
             }
         }
 
@@ -120,8 +115,8 @@ namespace Statistic
         /// </summary>
         /// <param name="container"></param>
         /// <param name="listTec">Лист ТЭЦ</param>
-        public PanelSobstvNyzhdy(IContainer container, List<StatisticCommon.TEC> listTec/*, DelegateStringFunc fErrRep, DelegateStringFunc fWarRep, DelegateStringFunc fActRep, DelegateBoolFunc fREpClr*/)
-            : this(listTec/*, fErrRep, fWarRep, fActRep, fREpClr*/)
+        public PanelSobstvNyzhdy(IContainer container, List<StatisticCommon.TEC> listTec)
+            : this(listTec)
         {
             container.Add(this);
         }
@@ -325,7 +320,7 @@ namespace Statistic
             /// Коструктор-основной
             /// </summary>
             /// <param name="tec">Лист ТЭЦ</param>
-            public PanelTecSobstvNyzhdy(StatisticCommon.TEC tec/*, DelegateStringFunc fErrRep, DelegateStringFunc fWarRep, DelegateStringFunc fActRep, DelegateBoolFunc fRepClr*/)
+            public PanelTecSobstvNyzhdy(StatisticCommon.TEC tec)
                 : base (-1, -1)
             {
                 m_tecView = new TecView(TecView.TYPE_PANEL.SOBSTV_NYZHDY, -1, -1);
@@ -364,7 +359,7 @@ namespace Statistic
             /// </summary>
             /// <param name="container"></param>
             /// <param name="tec">Лист ТЭЦ</param>
-            public PanelTecSobstvNyzhdy(IContainer container, StatisticCommon.TEC tec/*, DelegateStringFunc fErrRep, DelegateStringFunc fWarRep, DelegateStringFunc fActRep, DelegateBoolFunc fRepClr*/)
+            public PanelTecSobstvNyzhdy(IContainer container, StatisticCommon.TEC tec)
                 : this(tec)
             {
                 container.Add(this);
