@@ -4,6 +4,8 @@ using System.Text;
 using System.Data;
 using System.Data.Common;
 
+using HClassLibrary;
+
 namespace StatisticCommon
 {
     /// <summary>
@@ -79,10 +81,6 @@ namespace StatisticCommon
     public class TG : TECComponentBase
     {
         /// <summary>
-        /// Перечисление - идентификаторы периодов времени
-        /// </summary>
-        public enum ID_TIME : int { UNKNOWN = -1, MINUTES, HOURS, COUNT_ID_TIME };
-        /// <summary>
         /// Перечисление - индексы элементов интерфейса для отображения значений ТГ
         /// </summary>
         public enum INDEX_VALUE : int { FACT //факт.
@@ -117,7 +115,7 @@ namespace StatisticCommon
         /// </summary>
         public TG()
         {
-            m_arIds_fact = new int[(int)ID_TIME.COUNT_ID_TIME];
+            m_arIds_fact = new int[(int)HDateTime.INTERVAL.COUNT_ID_TIME];
 
             m_id_owner_gtp =
             m_id_owner_pc =

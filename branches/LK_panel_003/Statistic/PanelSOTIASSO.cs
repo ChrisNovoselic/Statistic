@@ -700,57 +700,9 @@ namespace Statistic
             {
                 TecView.valuesTEC[] valuesMins = (obj as object[])[0] as TecView.valuesTEC[];
                 decimal dcGTPKoeffAlarmPcur = (decimal)(obj as object[])[1];
-                int i = -1;
 
                 DataGridViewGTP dgvGTP = this.Controls.Find(KEY_CONTROLS.DGV_GTP_VALUE.ToString(), true)[0] as DataGridViewGTP;
-                DataGridViewCellStyle cellStyle;
-                double diviation = -1F;
-                int cntDiviation = 0;
-
-                for (i = 1; i < valuesMins.Length; i++)
-                {
-                    //Значения
-                    dgvGTP.Rows[i - 1].Cells[1].Value = valuesMins[i].valuesFact.ToString(@"F3");
-                    //УДГэ
-                    dgvGTP.Rows[i - 1].Cells[2].Value = valuesMins[i].valuesUDGe.ToString(@"F3");
-                    //Отклонения
-                    // максимальное отклонение
-                    diviation = valuesMins[i].valuesUDGe / 100 * (double)dcGTPKoeffAlarmPcur;
-                    //Проверить наличие значения
-                    if (valuesMins[i].valuesFact > 0)
-                    {
-                        dgvGTP.Rows[i - 1].Cells[3].Value = (valuesMins[i].valuesFact - valuesMins[i].valuesUDGe).ToString(@"F3");
-                        //Определить цвет ячейки
-                        if (Math.Abs(valuesMins[i].valuesFact - valuesMins[i].valuesUDGe) > diviation)
-                        {
-                            //Увеличить счетчик случаев выхода за установленные границы
-                            cntDiviation++;
-
-                            if (cntDiviation > 4)
-                                cellStyle = PanelTecViewStandard.dgvCellStyleError;
-                            else
-                                cellStyle = PanelTecViewStandard.dgvCellStyleWarning;
-                        }
-                        else
-                        {
-                            //Установить счетчик случаев выхода за установленные границы в исходное состояние
-                            cntDiviation = 0;
-                            cellStyle = PanelTecViewStandard.dgvCellStyleCommon;
-                        }                        
-                    }
-                    else
-                    {
-                        dgvGTP.Rows[i - 1].Cells[3].Value = 0.ToString(@"F3");
-                        //Установить счетчик случаев выхода за установленные границы в исходное состояние
-                        cntDiviation = 0;
-                        cellStyle = PanelTecViewStandard.dgvCellStyleCommon;
-                    }
-                    //Установить цвет ячейки
-                    dgvGTP.Rows[i - 1].Cells[3].Style = cellStyle;
-                }
-                //Указать активную строку
-                i = (int)(obj as object[])[2] > 60 ? 60 : (int)(obj as object[])[2];
-                dgvGTP.SetCurrentCell (i - 1);
+                dgvGTP.Fill(valuesMins, (int)(obj as object[])[2]);
             }
             /// <summary>
             /// Отобразить значения в разрезе минута-секунды
@@ -988,6 +940,61 @@ namespace Statistic
             {
                 this.CurrentCell = Rows[iRow].Cells[iCol];
                 this.CurrentCell.Selected = true;
+            }
+
+            public void Fill(TecView.valuesTEC []values, params int[]pars)
+            {
+                DataGridViewCellStyle cellStyle;
+                double diviation = -1F;
+                int cntDiviation = 0;
+                decimal dcKoeff = (decimal)pars[0]; //dcGTPKoeffAlarmPcur
+
+                int i = -1;
+
+                for (i = 1; i < values.Length; i++)
+                {
+                    //Значения
+                    Rows[i - 1].Cells[1].Value = values[i].valuesFact.ToString(@"F3");
+                    //УДГэ
+                    Rows[i - 1].Cells[2].Value = values[i].valuesUDGe.ToString(@"F3");
+                    //Отклонения
+                    // максимальное отклонение
+                    diviation = values[i].valuesUDGe / 100 * (double)dcKoeff;
+                    //Проверить наличие значения
+                    if (values[i].valuesFact > 0)
+                    {
+                        Rows[i - 1].Cells[3].Value = (values[i].valuesFact - values[i].valuesUDGe).ToString(@"F3");
+                        //Определить цвет ячейки
+                        if (Math.Abs(values[i].valuesFact - values[i].valuesUDGe) > diviation)
+                        {
+                            //Увеличить счетчик случаев выхода за установленные границы
+                            cntDiviation++;
+
+                            if (cntDiviation > 4)
+                                cellStyle = HDataGridViewTables.s_dgvCellStyleError;
+                            else
+                                cellStyle = HDataGridViewTables.s_dgvCellStyleWarning;
+                        }
+                        else
+                        {
+                            //Установить счетчик случаев выхода за установленные границы в исходное состояние
+                            cntDiviation = 0;
+                            cellStyle = HDataGridViewTables.s_dgvCellStyleCommon;
+                        }
+                    }
+                    else
+                    {
+                        Rows[i - 1].Cells[3].Value = 0.ToString(@"F3");
+                        //Установить счетчик случаев выхода за установленные границы в исходное состояние
+                        cntDiviation = 0;
+                        cellStyle = HDataGridViewTables.s_dgvCellStyleCommon;
+                    }
+                    //Установить цвет ячейки
+                    Rows[i - 1].Cells[3].Style = cellStyle;
+                }
+                //Указать активную строку
+                i = pars[0] > 60 ? 60 : pars[0];
+                SetCurrentCell(i - 1);
             }
         }
         /// <summary>

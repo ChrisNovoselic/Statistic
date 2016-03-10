@@ -1269,11 +1269,11 @@ namespace Statistic
             else
                 ;
 
-            foreach (ADDING_TAB tab in m_dictAddingTabs.Values)
-            {
-                tab.menuItem.Checked = false;
-                if (!(tab.panel == null)) tab.panel.Stop(); else ;
-            }
+            //foreach (ADDING_TAB tab in m_dictAddingTabs.Values)
+            //{
+            //    tab.menuItem.Checked = false;
+            //    if (!(tab.panel == null)) tab.panel.Stop(); else ;
+            //}
         }
         /// <summary>
         /// Закрыть (очистить) все вкладки (стандартные + административные)

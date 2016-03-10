@@ -15,21 +15,12 @@ namespace StatisticCommon
         protected DelegateFunc delegateStopWait;
         protected DelegateFunc delegateEventUpdate;
 
-        public static DataGridViewCellStyle dgvCellStyleError, dgvCellStyleWarning
-            , dgvCellStyleCommon;
-
         public PanelStatistic(int cCols = -1, int cRows = -1)
             : base(cCols, cRows)
         {
             Thread.CurrentThread.CurrentCulture =
             Thread.CurrentThread.CurrentUICulture =
                 ProgramBase.ss_MainCultureInfo;
-
-            dgvCellStyleError = new DataGridViewCellStyle();
-            dgvCellStyleError.BackColor = Color.Red;
-            dgvCellStyleWarning = new DataGridViewCellStyle();
-            dgvCellStyleWarning.BackColor = Color.Yellow;
-            dgvCellStyleCommon = new DataGridViewCellStyle();
         }        
 
         public static volatile int POOL_TIME = -1

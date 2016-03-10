@@ -339,36 +339,6 @@ namespace Statistic
             {
             }
         }
-        /// <summary>
-        /// Класс для отображения значений в табличном виде
-        ///  в разрезе час-минуты для ГТП
-        /// </summary>
-        private class DataGridViewLK : DataGridView
-        {
-            /// <summary>
-            /// Конструктор - основной (без параметров)
-            /// </summary>
-            public DataGridViewLK()
-                : base()
-            {
-                initializeComponent();
-            }
-            /// <summary>
-            /// Конструктор - вспомогательный (с параметрами)
-            /// </summary>
-            /// <param name="container">Владелец текущего объекта</param>
-            public DataGridViewLK(IContainer container)
-                : this()
-            {
-                container.Add(this);
-            }
-            /// <summary>
-            /// Инициализация собственных компонентов элемента управления 
-            /// </summary>
-            private void initializeComponent()
-            {
-            }
-        }
 
         private class ZedGraphControlLK : HZedGraphControl
         {
@@ -381,6 +351,16 @@ namespace Statistic
         public override void SetDelegateReport(DelegateStringFunc fErr, DelegateStringFunc fWar, DelegateStringFunc fAct, DelegateBoolFunc fClear)
         {
             m_tecView.SetDelegateReport(fErr, fWar, fAct, fClear);
+        }
+
+        protected override void createDataGridViewHours()
+        {
+            this.m_dgwHours = new DataGridViewLKHours();
+        }
+
+        protected override void createZedGraphControlHours(object objLock)
+        {
+            this.m_ZedGraphHours = new ZedGraphControlLK(objLock);
         }
 
         protected override void createPanelQuickData()

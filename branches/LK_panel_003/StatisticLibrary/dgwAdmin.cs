@@ -9,9 +9,9 @@ using System.Globalization;
 
 namespace StatisticCommon
 {
-    public abstract class DataGridViewBase : DataGridView
+    public abstract class HDataGridViewTables : DataGridView
     {
-        public DataGridViewBase()
+        public HDataGridViewTables()
             : base()
         {
         }
@@ -27,7 +27,7 @@ namespace StatisticCommon
         }
     }
     
-    public abstract class DataGridViewAdmin : DataGridViewBase
+    public abstract class DataGridViewAdmin : HDataGridViewTables
     {
         protected const double maxPlanValue = 1500;
         protected const double maxRecomendationValue = 1500;

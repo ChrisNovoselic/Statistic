@@ -289,16 +289,6 @@ namespace Statistic
             public DelegateFunc delegateSetScale;
         }
 
-        protected class HZedGraphControlHours : HZedGraphControl
-        {
-            public HZedGraphControlHours(object obj) : base(obj, FormMain.formGraphicsSettings.SetScale) { InitializeComponent(); }
-
-            private void InitializeComponent()
-            {
-                this.ContextMenuStrip.Items [(int)INDEX_CONTEXTMENU_ITEM.AISKUE].Text = @"АИСКУЭ";
-            }
-        }
-
         protected class HZedGraphControlMins : HZedGraphControl
         {
             public HZedGraphControlMins(object obj) : base(obj, FormMain.formGraphicsSettings.SetScale) { InitializeComponent(); }
@@ -331,7 +321,7 @@ namespace Statistic
         protected HZedGraphControl m_ZedGraphMins;
         protected HZedGraphControl m_ZedGraphHours;
 
-        protected DataGridViewHours m_dgwHours;
+        protected HDataGridViewHours m_dgwHours;
         protected DataGridViewMins m_dgwMins;
 
         //private ManualResetEvent m_evTimerCurrent;
@@ -356,7 +346,7 @@ namespace Statistic
         {
             //this.m_pnlQuickData = new PanelQuickData(); Выполнено в конструкторе
 
-            this.m_dgwHours = new DataGridViewHours();
+            createDataGridViewHours();
             this.m_dgwMins = new DataGridViewMins();
 
             ((System.ComponentModel.ISupportInitialize)(this.m_dgwHours)).BeginInit();
@@ -377,7 +367,7 @@ namespace Statistic
             ((System.ComponentModel.ISupportInitialize)(this.m_dgwMins)).EndInit();
 
             this.m_ZedGraphMins = new HZedGraphControlMins(m_tecView.m_lockValue);
-            this.m_ZedGraphHours = new HZedGraphControlHours(m_tecView.m_lockValue);
+            createZedGraphControlHours(m_tecView.m_lockValue);
 
             this.stctrViewPanel1 = new System.Windows.Forms.SplitContainer();
             this.stctrViewPanel2 = new System.Windows.Forms.SplitContainer();
@@ -440,6 +430,10 @@ namespace Statistic
 
             this.ResumeLayout(false);
         }
+
+        protected abstract void createDataGridViewHours();
+        
+        protected abstract void createZedGraphControlHours(object objLock);
 
         protected abstract void createPanelQuickData();
 
@@ -883,97 +877,10 @@ namespace Statistic
             }
         }
 
-        private void setFirstDisplayedScrollingRowIndex(DataGridView dgv, int lastIndx)
-        {//Вызов ТОЛЬКО для таблицы с ЧАСовыми значениями...
-            int iFirstDisplayedScrollingRowIndex = -1;
-
-            if (lastIndx < dgv.DisplayedRowCount(true))
-            {
-                iFirstDisplayedScrollingRowIndex = 0; 
-            }
-            else {
-                iFirstDisplayedScrollingRowIndex = lastIndx - dgv.DisplayedRowCount(true) + 1;
-
-                if (!(m_tecView.m_arTypeSourceData[(int)TG.ID_TIME.HOURS] == CONN_SETT_TYPE.DATA_AISKUE))
-                    //Если отображается еще один лишний час...
-                    iFirstDisplayedScrollingRowIndex ++;
-                else
-                    ;
-            }
-
-            dgv.FirstDisplayedScrollingRowIndex = iFirstDisplayedScrollingRowIndex;
-        }
-
         private void FillGridMins(int hour)
         {
-            double sumFact = 0, sumUDGe = 0, sumDiviation = 0;
-            int min = m_tecView.lastMin;
-
-            if (! (min == 0))
-                min--;
-            else
-                ;
-
-            for (int i = 0; i < m_tecView.m_valuesMins.Length - 1; i++)
-            {
-                //Ограничить отображение (для режима АИСКУЭ+СОТИАССО)
-                m_dgwMins.Rows[i].Cells[(int)DataGridViewTables.INDEX_COLUMNS.FACT].Value = m_tecView.m_valuesMins[i + 1].valuesFact.ToString("F2");
-                if (i < min)
-                {                    
-                    sumFact += m_tecView.m_valuesMins[i + 1].valuesFact;
-                }
-                else
-                    ;
-
-                m_dgwMins.Rows[i].Cells[(int)DataGridViewTables.INDEX_COLUMNS.PBR].Value = m_tecView.m_valuesMins[i].valuesPBR.ToString("F2");
-                m_dgwMins.Rows[i].Cells[(int)DataGridViewTables.INDEX_COLUMNS.PBRe].Value = m_tecView.m_valuesMins[i].valuesPBRe.ToString("F2");
-                m_dgwMins.Rows[i].Cells[(int)DataGridViewTables.INDEX_COLUMNS.UDGe].Value = m_tecView.m_valuesMins[i].valuesUDGe.ToString("F2");
-                sumUDGe += m_tecView.m_valuesMins[i].valuesUDGe;
-                if ((i < min) && (! (m_tecView.m_valuesMins[i].valuesUDGe == 0)))
-                {
-                    m_dgwMins.Rows[i].Cells[(int)DataGridViewTables.INDEX_COLUMNS.DEVIATION].Value =
-                        ((double)(m_tecView.m_valuesMins[i + 1].valuesFact - m_tecView.m_valuesMins[i].valuesUDGe)).ToString("F2");
-                    //if (Math.Abs(m_tecView.m_valuesMins.valuesFact[i + 1] - m_tecView.m_valuesMins.valuesUDGe[i]) > m_tecView.m_valuesMins.valuesDiviation[i]
-                    //    && m_tecView.m_valuesMins.valuesDiviation[i] != 0)
-                    //    m_dgwMins.Rows[i].Cells[5].Style = dgvCellStyleError;
-                    //else
-                    m_dgwMins.Rows[i].Cells[(int)DataGridViewTables.INDEX_COLUMNS.DEVIATION].Style = dgvCellStyleCommon;
-
-                    sumDiviation += m_tecView.m_valuesMins[i + 1].valuesFact - m_tecView.m_valuesMins[i].valuesUDGe;
-                }
-                else
-                {
-                    m_dgwMins.Rows[i].Cells[(int)DataGridViewTables.INDEX_COLUMNS.DEVIATION].Value = 0.ToString("F2");
-                    m_dgwMins.Rows[i].Cells[(int)DataGridViewTables.INDEX_COLUMNS.DEVIATION].Style = dgvCellStyleCommon;
-                }
-            }
-
-            int cnt = m_dgwMins.Rows.Count - 1;
-            if (! (min > 0))
-            {
-                m_dgwMins.Rows[cnt].Cells[(int)DataGridViewTables.INDEX_COLUMNS.FACT].Value = 0.ToString("F2");
-                m_dgwMins.Rows[cnt].Cells[(int)DataGridViewTables.INDEX_COLUMNS.UDGe].Value = 0.ToString("F2");
-                m_dgwMins.Rows[cnt].Cells[(int)DataGridViewTables.INDEX_COLUMNS.DEVIATION].Value = 0.ToString("F2");
-            }
-            else
-            {
-                if (min > cnt)
-                    min = cnt;
-                else
-                    ;
-
-                m_dgwMins.Rows[cnt].Cells[(int)DataGridViewTables.INDEX_COLUMNS.FACT].Value = (sumFact / min).ToString("F2");
-                m_dgwMins.Rows[cnt].Cells[(int)DataGridViewTables.INDEX_COLUMNS.UDGe].Value = m_tecView.m_valuesMins[0].valuesUDGe.ToString("F2");
-                m_dgwMins.Rows[cnt].Cells[(int)DataGridViewTables.INDEX_COLUMNS.DEVIATION].Value = (sumDiviation / min).ToString("F2");
-            }
-
-            ////Назначить крайней видимой строкой - строку с крайним полученным значением
-            //setFirstDisplayedScrollingRowIndex(m_dgwMins, m_tecView.lastMin);
-            //Назначить крайней видимой строкой - крайнюю строку
-            if (! (m_dgwMins.DisplayedRowCount(true) == 0))
-                m_dgwMins.FirstDisplayedScrollingRowIndex = m_dgwMins.RowCount - m_dgwMins.DisplayedRowCount(true) + 1;
-            else
-                m_dgwMins.FirstDisplayedScrollingRowIndex = 0;
+            m_dgwMins.Fill(m_tecView.m_valuesMins
+                , hour, m_tecView.lastMin);
 
             //Logging.Logg().Debug(@"PanelTecViewBase::FillGridMins () - ...");
         }
@@ -982,115 +889,14 @@ namespace Statistic
         {
             FillDefaultHours();
 
-            double sumFact = 0, sumUDGe = 0, sumDiviation = 0;
-            Hd2PercentControl d2PercentControl = new Hd2PercentControl();
-            int hour = m_tecView.lastHour;
-            int receivedHour = m_tecView.lastReceivedHour;
-            int itemscount = m_tecView.m_valuesHours.Length;
-            int warn = -1,
-                cntWarn = -1;
-            string strWarn = string.Empty;
-
-            DataGridViewCellStyle curCellStyle;
-            cntWarn = 0;
-            for (int i = 0; i < itemscount; i++)
-            {
-                bool bPmin = false;
-                if (m_tecView.m_tec.m_id == 5) bPmin = true; else ;
-                d2PercentControl.Calculate(m_tecView.m_valuesHours[i], bPmin, out warn);
-
-                if ((!(warn == 0)) &&
-                   (m_tecView.m_valuesHours[i + 0].valuesLastMinutesTM > 1))
-                    cntWarn++;
-                else
-                    cntWarn = 0;
-
-                if (! (cntWarn == 0))
-                {
-                    if (cntWarn > 3)
-                        curCellStyle = dgvCellStyleError;
-                    else
-                        curCellStyle = dgvCellStyleWarning;
-                }
-                else
-                    curCellStyle = dgvCellStyleCommon;
-                m_dgwHours.Rows[i + 0].Cells[(int)DataGridViewTables.INDEX_COLUMNS.LAST_MINUTES].Style = curCellStyle;
-
-                if (m_tecView.m_valuesHours[i + 0].valuesLastMinutesTM > 1)
-                {
-                    if (cntWarn > 0)
-                        strWarn = cntWarn + @":";
-                    else
-                        strWarn = string.Empty;
-
-                    m_dgwHours.Rows[i + 0].Cells[(int)DataGridViewTables.INDEX_COLUMNS.LAST_MINUTES].Value = strWarn + m_tecView.m_valuesHours[i + 0].valuesLastMinutesTM.ToString("F2");
-                }
-                else
-                    m_dgwHours.Rows[i + 0].Cells[(int)DataGridViewTables.INDEX_COLUMNS.LAST_MINUTES].Value = 0.ToString("F2");
-
-                bool bDevVal = false;
-                if (m_tecView.currHour == true)
-                    if ((i < (receivedHour + 1)) && ((!(m_tecView.m_valuesHours[i].valuesUDGe == 0)) && (m_tecView.m_valuesHours[i].valuesFact > 0)))
-                    {
-                        if ((m_tecView.m_arTypeSourceData[(int)TG.ID_TIME.HOURS] == CONN_SETT_TYPE.DATA_AISKUE)
-                            || (i < receivedHour))
-                            bDevVal = true;
-                        else
-                            ;
-                    }
-                    else
-                    {
-                    }
-                else
-                    if (m_tecView.serverTime.Date.Equals(HDateTime.ToMoscowTimeZone(DateTime.Now.Date)) == true)
-                        if ((i < (receivedHour + 1)) && (!(m_tecView.m_valuesHours[i].valuesUDGe == 0)) && (m_tecView.m_valuesHours[i].valuesFact > 0))
-                        {
-                            bDevVal = true;
-                        }
-                        else
-                        {
-                        }
-                    else
-                        if ((!(m_tecView.m_valuesHours[i].valuesUDGe == 0)) && (m_tecView.m_valuesHours[i].valuesFact > 0))
-                        {
-                            bDevVal = true;
-                        }
-                        else
-                        {
-                        }    
-
-                m_dgwHours.Rows[i].Cells[(int)DataGridViewTables.INDEX_COLUMNS.FACT].Value = m_tecView.m_valuesHours[i].valuesFact.ToString("F2");
-                if (bDevVal == true)
-                    sumFact += m_tecView.m_valuesHours[i].valuesFact;
-                else
-                    ;
-
-                m_dgwHours.Rows[i].Cells[(int)DataGridViewTables.INDEX_COLUMNS.PBR].Value = m_tecView.m_valuesHours[i].valuesPBR.ToString("F2");
-                m_dgwHours.Rows[i].Cells[(int)DataGridViewTables.INDEX_COLUMNS.PBRe].Value = m_tecView.m_valuesHours[i].valuesPBRe.ToString("F2");
-                m_dgwHours.Rows[i].Cells[(int)DataGridViewTables.INDEX_COLUMNS.UDGe].Value = m_tecView.m_valuesHours[i].valuesUDGe.ToString("F2");
-                sumUDGe += m_tecView.m_valuesHours[i].valuesUDGe;
-
-                if (bDevVal == true)
-                {
-                    m_dgwHours.Rows[i].Cells[(int)DataGridViewTables.INDEX_COLUMNS.DEVIATION].Value = ((double)(m_tecView.m_valuesHours[i].valuesFact - m_tecView.m_valuesHours[i].valuesUDGe)).ToString("F2");
-                    if ((Math.Round(Math.Abs(m_tecView.m_valuesHours[i].valuesFact - m_tecView.m_valuesHours[i].valuesUDGe), 2) > Math.Round(m_tecView.m_valuesHours[i].valuesDiviation, 2))
-                        && (!(m_tecView.m_valuesHours[i].valuesDiviation == 0)))
-                        m_dgwHours.Rows[i].Cells[(int)DataGridViewTables.INDEX_COLUMNS.DEVIATION].Style = dgvCellStyleError;
-                    else
-                        m_dgwHours.Rows[i].Cells[(int)DataGridViewTables.INDEX_COLUMNS.DEVIATION].Style = dgvCellStyleCommon;
-                    sumDiviation += Math.Abs(m_tecView.m_valuesHours[i].valuesFact - m_tecView.m_valuesHours[i].valuesUDGe);
-                }
-                else
-                {
-                    m_dgwHours.Rows[i].Cells[(int)DataGridViewTables.INDEX_COLUMNS.DEVIATION].Value = 0.ToString("F2");
-                    m_dgwHours.Rows[i].Cells[(int)DataGridViewTables.INDEX_COLUMNS.DEVIATION].Style = dgvCellStyleCommon;
-                }
-            }
-            m_dgwHours.Rows[itemscount].Cells[(int)DataGridViewTables.INDEX_COLUMNS.FACT].Value = sumFact.ToString("F2");
-            m_dgwHours.Rows[itemscount].Cells[(int)DataGridViewTables.INDEX_COLUMNS.UDGe].Value = sumUDGe.ToString("F2");
-            m_dgwHours.Rows[itemscount].Cells[(int)DataGridViewTables.INDEX_COLUMNS.DEVIATION].Value = sumDiviation.ToString("F2");
-
-            setFirstDisplayedScrollingRowIndex(m_dgwHours, m_tecView.lastHour);
+            m_dgwHours.Fill(m_tecView.m_valuesHours
+                , m_tecView.lastHour
+                , m_tecView.lastReceivedHour
+                , m_tecView.m_valuesHours.Length
+                , m_tecView.m_tec.m_id
+                , m_tecView.currHour
+                , m_tecView.m_arTypeSourceData[(int)TG.ID_TIME.HOURS] == CONN_SETT_TYPE.DATA_AISKUE
+                , m_tecView.serverTime.Date.Equals(HDateTime.ToMoscowTimeZone(DateTime.Now.Date)));
 
             //Logging.Logg().Debug(@"PanelTecViewBase::FillGridHours () - ...");
         }
