@@ -227,6 +227,13 @@ namespace Statistic
         }
 
         public abstract void Fill (TecView.valuesTEC []values, params object []pars);
+
+        public virtual void Fill(params object[] pars)
+        {
+            for (int i = 0; i < Rows.Count; i++)
+                for (int c = 0; c < Columns.Count; c++)
+                    Rows[i].Cells[c].Value = string.Empty;
+        }
     }
 
     public abstract class HDataGridViewStandard : HDataGridViewBase
@@ -379,7 +386,7 @@ namespace Statistic
             string strWarn = string.Empty;
             bool bPmin = (int)pars[3] == 5
                 , bCurrHour = (bool)pars[4] //m_tecView.currHour
-                , bIsTypeConnSettAISKUEHour = (bool)pars[5] //m_tecView.m_arTypeSourceData[(int)TG.ID_TIME.HOURS] == CONN_SETT_TYPE.DATA_AISKUE
+                , bIsTypeConnSettAISKUEHour = (bool)pars[5] //m_tecView.m_arTypeSourceData[(int)HDateTime.INTERVAL.HOURS] == CONN_SETT_TYPE.DATA_AISKUE
                 , bIsNowMoscowDate = (bool)pars[6]; //m_tecView.serverTime.Date.Equals(HDateTime.ToMoscowTimeZone(DateTime.Now.Date))
 
             DataGridViewCellStyle curCellStyle;
@@ -481,6 +488,53 @@ namespace Statistic
 
             setFirstDisplayedScrollingRowIndex(lastHour, !bIsTypeConnSettAISKUEHour);
         }
+
+        public override void Fill(params object []pars)
+        {
+            int count = (int)pars[1]
+                , hour = -1
+                , offset = -1
+                , i = -1, c = -1;
+            DateTime dtCurrent = (DateTime)pars[0];
+            bool bSeasonDate = (bool)pars[2];
+
+            Rows.Clear();
+
+            Rows.Add(count + 1);
+
+            for (i = 0; i < count; i++)
+            {
+                hour = i + 1;
+                if (bSeasonDate == true)
+                {
+                    offset = HAdmin.GetSeasonHourOffset(dtCurrent, hour);
+
+                    Rows[i].Cells[0].Value = (hour - offset).ToString();
+                    if ((hour - 1) == HAdmin.SeasonDateTime.Hour)
+                        Rows[i].Cells[0].Value += @"*";
+                    else
+                        ;
+                }
+                else
+                    Rows[i].Cells[0].Value = (hour).ToString();
+
+                for (c = 1; c < m_arColumns.Length; c ++)
+                    Rows[i].Cells[c].Value = 0.ToString("F2");
+            }
+
+            Rows[count].Cells[0].Value = "Сумма";
+            for (c = 1; c < m_arColumns.Length; c++)
+                switch ((INDEX_COLUMNS)c)
+                {
+                    case INDEX_COLUMNS.PBR:
+                    case INDEX_COLUMNS.PBRe:
+                        Rows[i].Cells[c].Value = @"-".ToString();
+                        break;
+                    default:
+                        Rows[i].Cells[c].Value = 0.ToString("F2");
+                        break;
+                }                
+        }
     }
     /// <summary>
     /// Класс для отображения значений в табличном виде
@@ -560,8 +614,6 @@ namespace Statistic
             RowsAdd();
         }
 
-        protected override void RowsAdd() { Rows.Add(21); }
-
         public override void Fill(TecView.valuesTEC []values, params object [] pars)
         {
             int hour = (int)pars[0]
@@ -633,6 +685,33 @@ namespace Statistic
                 FirstDisplayedScrollingRowIndex = RowCount - DisplayedRowCount(true) + 1;
             else
                 FirstDisplayedScrollingRowIndex = 0;
+        }
+
+        public override void Fill(params object[] pars)
+        {
+            int cnt = Rows.Count - 1
+                , diskretnost = 60 / cnt
+                , i = -1, c = -1;
+
+            for (i = 0; i < cnt; i++)
+            {
+                Rows[i].Cells[0].Value = ((i + 1) * diskretnost).ToString();
+                for (c = 1; c < Columns.Count; c ++)
+                    Rows[i].Cells[c].Value = 0.ToString("F2");
+            }
+
+            Rows[cnt].Cells[0].Value = "Итог";
+            for (c = 1; c < m_arColumns.Length; c++)
+                switch ((INDEX_COLUMNS)c)
+                {
+                    case INDEX_COLUMNS.PBR:
+                    case INDEX_COLUMNS.PBRe:
+                        Rows[i].Cells[c].Value = @"-";
+                        break;
+                    default:
+                        Rows[i].Cells[c].Value = 0.ToString("F2");
+                        break;
+                }
         }
     }
 }

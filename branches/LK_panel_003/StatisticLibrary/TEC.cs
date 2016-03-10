@@ -55,7 +55,7 @@ namespace StatisticCommon
         /// <param name="indxVal">Индекс элемента управления</param>
         /// <param name="id_type">Период времени</param>
         /// <returns>Объект ТГ</returns>
-        TG FindTGById(object id, TG.INDEX_VALUE indxVal, TG.ID_TIME id_time_type);
+        TG FindTGById(object id, TG.INDEX_VALUE indxVal, HDateTime.INTERVAL id_time_type);
         /// <summary>
         /// Возвратить содержание запроса для получения уже имеющихся административных значений
         ///  (меток даты/времени для этих значений)
@@ -113,7 +113,7 @@ namespace StatisticCommon
         /// <param name="connSettType">Тип соединения с БД</param>
         /// <param name="indxTime">Индекс интервала времени</param>
         /// <returns>Строка-перечисление с идентификаторами</returns>
-        string GetSensorsString(int indx, CONN_SETT_TYPE connSettType, TG.ID_TIME indxTime = TG.ID_TIME.UNKNOWN);
+        string GetSensorsString(int indx, CONN_SETT_TYPE connSettType, HDateTime.INTERVAL indxTime = HDateTime.INTERVAL.UNKNOWN);
         /// <summary>
         /// Возвратить содержание запроса для получения часовых значений АИИС КУЭ
         /// </summary>
@@ -333,7 +333,7 @@ namespace StatisticCommon
             get {
                 bool bRes = false;
                 if ((m_SensorsString_SOTIASSO.Equals (string.Empty) == false) && (! (m_SensorsStrings_ASKUE == null))) {
-                    if ((m_SensorsStrings_ASKUE[(int)TG.ID_TIME.HOURS].Equals(string.Empty) == false) && (m_SensorsStrings_ASKUE[(int)TG.ID_TIME.MINUTES].Equals(string.Empty) == false))
+                    if ((m_SensorsStrings_ASKUE[(int)HDateTime.INTERVAL.HOURS].Equals(string.Empty) == false) && (m_SensorsStrings_ASKUE[(int)HDateTime.INTERVAL.MINUTES].Equals(string.Empty) == false))
                         bRes = true;
                     else
                         ;
@@ -351,7 +351,7 @@ namespace StatisticCommon
         /// <param name="connSettType">Тип соединения с БД</param>
         /// <param name="indxTime">Индекс интервала времени</param>
         /// <returns>Строка-перечисление с идентификаторами</returns>
-        public string GetSensorsString (int indx, CONN_SETT_TYPE connSettType, TG.ID_TIME indxTime = TG.ID_TIME.UNKNOWN) {
+        public string GetSensorsString (int indx, CONN_SETT_TYPE connSettType, HDateTime.INTERVAL indxTime = HDateTime.INTERVAL.UNKNOWN) {
             string strRes = string.Empty;
 
             if (indx < 0) { // для ТЭЦ
@@ -366,7 +366,7 @@ namespace StatisticCommon
                         break;
                     default:
                         Logging.Logg().Error(@"TEC::GetSensorsString (CONN_SETT_TYPE=" + connSettType.ToString ()
-                                        + @"; TG.ID_TIME=" + indxTime.ToString() + @")", Logging.INDEX_MESSAGE.NOT_SET);
+                                        + @"; HDateTime.INTERVAL=" + indxTime.ToString() + @")", Logging.INDEX_MESSAGE.NOT_SET);
                         break;
                 }
             }
@@ -382,7 +382,7 @@ namespace StatisticCommon
                         break;
                     default:
                         Logging.Logg().Error(@"TEC::GetSensorsString (CONN_SETT_TYPE=" + connSettType.ToString()
-                                        + @"; TG.ID_TIME=" + indxTime.ToString() + @")", Logging.INDEX_MESSAGE.NOT_SET);
+                                        + @"; HDateTime.INTERVAL=" + indxTime.ToString() + @")", Logging.INDEX_MESSAGE.NOT_SET);
                         break;
                 }
             }
@@ -515,7 +515,7 @@ namespace StatisticCommon
         /// <param name="indxVal">Индекс элемента управления</param>
         /// <param name="id_type">Период времени</param>
         /// <returns>Объект ТГ</returns>
-        public TG FindTGById(object id, TG.INDEX_VALUE indxVal, TG.ID_TIME id_time_type)
+        public TG FindTGById(object id, TG.INDEX_VALUE indxVal, HDateTime.INTERVAL id_time_type)
         {
             int i = -1;
             
@@ -559,9 +559,9 @@ namespace StatisticCommon
                 m_listTG.Clear ();
 
             if (m_SensorsStrings_ASKUE == null)
-                m_SensorsStrings_ASKUE = new string [(int)TG.ID_TIME.COUNT_ID_TIME];
+                m_SensorsStrings_ASKUE = new string [(int)HDateTime.INTERVAL.COUNT_ID_TIME];
             else
-                m_SensorsStrings_ASKUE [(int)TG.ID_TIME.HOURS] = m_SensorsStrings_ASKUE [(int)TG.ID_TIME.MINUTES] = string.Empty;
+                m_SensorsStrings_ASKUE [(int)HDateTime.INTERVAL.HOURS] = m_SensorsStrings_ASKUE [(int)HDateTime.INTERVAL.MINUTES] = string.Empty;
 
             m_SensorsString_SOTIASSO = string.Empty;
             //Цикл по всем компонентам ТЭЦ
@@ -571,13 +571,13 @@ namespace StatisticCommon
                     //Только для ТГ
                     m_listTG.Add(list_TECComponents[i].m_listTG[0]);
                     //Формировать строку-перечисление с иджентификаторами для ТЭЦ в целом (АИИС КУЭ - час)
-                    m_SensorsStrings_ASKUE[(int)TG.ID_TIME.HOURS] = addSensor(m_SensorsStrings_ASKUE[(int)TG.ID_TIME.HOURS]
-                                                                    , list_TECComponents[i].m_listTG[0].m_arIds_fact[(int)TG.ID_TIME.HOURS]
+                    m_SensorsStrings_ASKUE[(int)HDateTime.INTERVAL.HOURS] = addSensor(m_SensorsStrings_ASKUE[(int)HDateTime.INTERVAL.HOURS]
+                                                                    , list_TECComponents[i].m_listTG[0].m_arIds_fact[(int)HDateTime.INTERVAL.HOURS]
                                                                     , type
                                                                     , m_arTypeSourceData[(int)CONN_SETT_TYPE.DATA_AISKUE - (int)CONN_SETT_TYPE.DATA_AISKUE]);
                     //Формировать строку-перечисление с иджентификаторами для ТЭЦ в целом (АИИС КУЭ - минуты)
-                    m_SensorsStrings_ASKUE[(int)TG.ID_TIME.MINUTES] = addSensor(m_SensorsStrings_ASKUE[(int)TG.ID_TIME.MINUTES]
-                                                                    , list_TECComponents[i].m_listTG[0].m_arIds_fact[(int)TG.ID_TIME.MINUTES]
+                    m_SensorsStrings_ASKUE[(int)HDateTime.INTERVAL.MINUTES] = addSensor(m_SensorsStrings_ASKUE[(int)HDateTime.INTERVAL.MINUTES]
+                                                                    , list_TECComponents[i].m_listTG[0].m_arIds_fact[(int)HDateTime.INTERVAL.MINUTES]
                                                                     , type
                                                                     , m_arTypeSourceData[(int)CONN_SETT_TYPE.DATA_AISKUE - (int)CONN_SETT_TYPE.DATA_AISKUE]);
                     //Формировать строку-перечисление с иджентификаторами для ТЭЦ в целом (СОТИАССО)
@@ -586,13 +586,13 @@ namespace StatisticCommon
                                                         , type
                                                         , m_arTypeSourceData[(int)CONN_SETT_TYPE.DATA_SOTIASSO - (int)CONN_SETT_TYPE.DATA_AISKUE]);
                     //Одновременно присвоить идентификаторы для ТГ  (АИИС КУЭ - час)
-                    list_TECComponents[i].m_SensorsStrings_ASKUE[(int)TG.ID_TIME.HOURS] = addSensor(list_TECComponents[i].m_SensorsStrings_ASKUE[(int)TG.ID_TIME.HOURS]
-                                                                                                , list_TECComponents[i].m_listTG[0].m_arIds_fact[(int)TG.ID_TIME.HOURS]
+                    list_TECComponents[i].m_SensorsStrings_ASKUE[(int)HDateTime.INTERVAL.HOURS] = addSensor(list_TECComponents[i].m_SensorsStrings_ASKUE[(int)HDateTime.INTERVAL.HOURS]
+                                                                                                , list_TECComponents[i].m_listTG[0].m_arIds_fact[(int)HDateTime.INTERVAL.HOURS]
                                                                                                 , type
                                                                                                 , m_arTypeSourceData[(int)CONN_SETT_TYPE.DATA_AISKUE - (int)CONN_SETT_TYPE.DATA_AISKUE]);
                     //Одновременно присвоить идентификаторы для ТГ  (АИИС КУЭ - минута)
-                    list_TECComponents[i].m_SensorsStrings_ASKUE[(int)TG.ID_TIME.MINUTES] = addSensor(list_TECComponents[i].m_SensorsStrings_ASKUE[(int)TG.ID_TIME.MINUTES]
-                                                                                                , list_TECComponents[i].m_listTG[0].m_arIds_fact[(int)TG.ID_TIME.MINUTES]
+                    list_TECComponents[i].m_SensorsStrings_ASKUE[(int)HDateTime.INTERVAL.MINUTES] = addSensor(list_TECComponents[i].m_SensorsStrings_ASKUE[(int)HDateTime.INTERVAL.MINUTES]
+                                                                                                , list_TECComponents[i].m_listTG[0].m_arIds_fact[(int)HDateTime.INTERVAL.MINUTES]
                                                                                                 , type
                                                                                                 , m_arTypeSourceData[(int)CONN_SETT_TYPE.DATA_AISKUE - (int)CONN_SETT_TYPE.DATA_AISKUE]);
                     //Одновременно присвоить идентификаторы для ТГ  (СОТИАССО)
@@ -606,13 +606,13 @@ namespace StatisticCommon
                     //Цикл по ТГ компонента
                     for (j = 0; j < list_TECComponents[i].m_listTG.Count; j++) {
                         //Формировать строку-перечисление с иджентификаторами для компонента ТЭЦ в целом (АИИС КУЭ - час)
-                        list_TECComponents[i].m_SensorsStrings_ASKUE[(int)TG.ID_TIME.HOURS] = addSensor(list_TECComponents[i].m_SensorsStrings_ASKUE[(int)TG.ID_TIME.HOURS]
-                                                                                                        , list_TECComponents[i].m_listTG[j].m_arIds_fact[(int)TG.ID_TIME.HOURS]
+                        list_TECComponents[i].m_SensorsStrings_ASKUE[(int)HDateTime.INTERVAL.HOURS] = addSensor(list_TECComponents[i].m_SensorsStrings_ASKUE[(int)HDateTime.INTERVAL.HOURS]
+                                                                                                        , list_TECComponents[i].m_listTG[j].m_arIds_fact[(int)HDateTime.INTERVAL.HOURS]
                                                                                                         , type
                                                                                                         , m_arTypeSourceData[(int)CONN_SETT_TYPE.DATA_AISKUE - (int)CONN_SETT_TYPE.DATA_AISKUE]);
                         //Формировать строку-перечисление с иджентификаторами для компонента ТЭЦ в целом (АИИС КУЭ - минута)
-                        list_TECComponents[i].m_SensorsStrings_ASKUE[(int)TG.ID_TIME.MINUTES] = addSensor(list_TECComponents[i].m_SensorsStrings_ASKUE[(int)TG.ID_TIME.MINUTES]
-                                                                                                        , list_TECComponents[i].m_listTG[j].m_arIds_fact[(int)TG.ID_TIME.MINUTES]
+                        list_TECComponents[i].m_SensorsStrings_ASKUE[(int)HDateTime.INTERVAL.MINUTES] = addSensor(list_TECComponents[i].m_SensorsStrings_ASKUE[(int)HDateTime.INTERVAL.MINUTES]
+                                                                                                        , list_TECComponents[i].m_listTG[j].m_arIds_fact[(int)HDateTime.INTERVAL.MINUTES]
                                                                                                         , type
                                                                                                         , m_arTypeSourceData[(int)CONN_SETT_TYPE.DATA_AISKUE - (int)CONN_SETT_TYPE.DATA_AISKUE]);
                         //Формировать строку-перечисление с иджентификаторами для компонента ТЭЦ в целом (АСОТИАССО)

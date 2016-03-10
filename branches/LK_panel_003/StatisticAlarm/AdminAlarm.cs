@@ -106,8 +106,8 @@ namespace StatisticAlarm
                     m_listTecView[indxTecView].updateGUI_Fact = new IntDelegateIntIntFunc(m_listTecView[indxTecView].AlarmRegistred);
                     m_listTecView[indxTecView].EventReg += new TecViewAlarm.AlarmTecViewEventHandler(onEventReg);
 
-                    m_listTecView[indxTecView].m_arTypeSourceData[(int)StatisticCommon.TG.ID_TIME.MINUTES] = StatisticCommon.CONN_SETT_TYPE.DATA_SOTIASSO;
-                    m_listTecView[indxTecView].m_arTypeSourceData[(int)StatisticCommon.TG.ID_TIME.HOURS] = StatisticCommon.CONN_SETT_TYPE.DATA_SOTIASSO;
+                    m_listTecView[indxTecView].m_arTypeSourceData[(int)HDateTime.INTERVAL.MINUTES] = StatisticCommon.CONN_SETT_TYPE.DATA_SOTIASSO;
+                    m_listTecView[indxTecView].m_arTypeSourceData[(int)HDateTime.INTERVAL.HOURS] = StatisticCommon.CONN_SETT_TYPE.DATA_SOTIASSO;
 
                     m_listTecView[m_listTecView.Count - 1].m_bLastValue_TM_Gen = true;
                 } else ;

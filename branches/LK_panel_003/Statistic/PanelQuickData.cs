@@ -1224,12 +1224,12 @@ namespace Statistic
                         if (m_parent.m_tecView.m_markWarning.IsMarked((int)TecView.INDEX_WARNING.LAST_MIN) == true)
                         {
                             string strErrMsg = @"По текущему ";
-                            if ((m_parent.m_tecView.m_arTypeSourceData[(int)TG.ID_TIME.MINUTES] == CONN_SETT_TYPE.DATA_AISKUE)
-                                || (m_parent.m_tecView.m_arTypeSourceData[(int)TG.ID_TIME.MINUTES] == CONN_SETT_TYPE.DATA_AISKUE_PLUS_SOTIASSO)
-                                || (m_parent.m_tecView.m_arTypeSourceData[(int)TG.ID_TIME.MINUTES] == CONN_SETT_TYPE.DATA_SOTIASSO_3_MIN))
+                            if ((m_parent.m_tecView.m_arTypeSourceData[(int)HDateTime.INTERVAL.MINUTES] == CONN_SETT_TYPE.DATA_AISKUE)
+                                || (m_parent.m_tecView.m_arTypeSourceData[(int)HDateTime.INTERVAL.MINUTES] == CONN_SETT_TYPE.DATA_AISKUE_PLUS_SOTIASSO)
+                                || (m_parent.m_tecView.m_arTypeSourceData[(int)HDateTime.INTERVAL.MINUTES] == CONN_SETT_TYPE.DATA_SOTIASSO_3_MIN))
                                 strErrMsg += @"3-минутному";
                             else
-                                if (m_parent.m_tecView.m_arTypeSourceData[(int)TG.ID_TIME.MINUTES] == CONN_SETT_TYPE.DATA_SOTIASSO_1_MIN)
+                                if (m_parent.m_tecView.m_arTypeSourceData[(int)HDateTime.INTERVAL.MINUTES] == CONN_SETT_TYPE.DATA_SOTIASSO_1_MIN)
                                     strErrMsg += @"1-минутному";
                                 else
                                     ;

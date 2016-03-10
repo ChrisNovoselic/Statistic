@@ -202,8 +202,8 @@ namespace Statistic
             //Инициализировать список ТЭЦ для 'TecView' - указать ТЭЦ в соответствии с указанным ранее индексом (0)
             m_tecView.InitTEC(new List<StatisticCommon.TEC>() { m_listTEC[0] }, m_markQueries);
             //Установить тип значений
-            m_tecView.m_arTypeSourceData[(int)TG.ID_TIME.MINUTES] = CONN_SETT_TYPE.DATA_SOTIASSO_1_MIN;
-            m_tecView.m_arTypeSourceData[(int)TG.ID_TIME.HOURS] = CONN_SETT_TYPE.DATA_SOTIASSO_1_MIN;
+            m_tecView.m_arTypeSourceData[(int)HDateTime.INTERVAL.MINUTES] = CONN_SETT_TYPE.DATA_SOTIASSO_1_MIN;
+            m_tecView.m_arTypeSourceData[(int)HDateTime.INTERVAL.HOURS] = CONN_SETT_TYPE.DATA_SOTIASSO_1_MIN;
             //Делегат для установки текущего времени на панели 'PanelManagement'
             //m_tecView.SetDelegateDatetime(...);
             //Делегат по окончанию обработки всех состояний 'TecView::ChangeState_SOTIASSO'
@@ -971,15 +971,15 @@ namespace Statistic
                             cntDiviation++;
 
                             if (cntDiviation > 4)
-                                cellStyle = HDataGridViewTables.s_dgvCellStyleError;
+                                cellStyle = HDataGridViewBase.s_dgvCellStyleError;
                             else
-                                cellStyle = HDataGridViewTables.s_dgvCellStyleWarning;
+                                cellStyle = HDataGridViewBase.s_dgvCellStyleWarning;
                         }
                         else
                         {
                             //Установить счетчик случаев выхода за установленные границы в исходное состояние
                             cntDiviation = 0;
-                            cellStyle = HDataGridViewTables.s_dgvCellStyleCommon;
+                            cellStyle = HDataGridViewBase.s_dgvCellStyleCommon;
                         }
                     }
                     else
@@ -987,7 +987,7 @@ namespace Statistic
                         Rows[i - 1].Cells[3].Value = 0.ToString(@"F3");
                         //Установить счетчик случаев выхода за установленные границы в исходное состояние
                         cntDiviation = 0;
-                        cellStyle = HDataGridViewTables.s_dgvCellStyleCommon;
+                        cellStyle = HDataGridViewBase.s_dgvCellStyleCommon;
                     }
                     //Установить цвет ячейки
                     Rows[i - 1].Cells[3].Style = cellStyle;
