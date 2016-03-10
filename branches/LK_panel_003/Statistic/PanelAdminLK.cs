@@ -245,7 +245,7 @@ namespace Statistic
         public override void ClearTables()
         {
             ((DataGridViewAdminLK)this.dgwAdminTable).ClearTables();
-            ((AdminTS_LK)m_admin).m_listPrevRDGValues.Clear();
+            if (!(((AdminTS_LK)m_admin).m_listPrevRDGValues == null)) ((AdminTS_LK)m_admin).m_listPrevRDGValues.Clear(); else ;
         }
 
         public override void InitializeComboBoxTecComponent(FormChangeMode.MODE_TECCOMPONENT mode)
