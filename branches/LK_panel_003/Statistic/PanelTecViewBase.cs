@@ -22,6 +22,8 @@ namespace Statistic
     {
         protected PanelCustomTecView.HLabelCustomTecView m_label;
 
+        protected uint SPLITTER_PERCENT_VERTICAL;
+
         //protected static AdminTS.TYPE_FIELDS s_typeFields = AdminTS.TYPE_FIELDS.DYNAMIC;
 
         protected abstract class HZedGraphControl : ZedGraph.ZedGraphControl
@@ -347,10 +349,13 @@ namespace Statistic
             //this.m_pnlQuickData = new PanelQuickData(); ¬ыполнено в конструкторе
 
             createDataGridViewHours();
-            this.m_dgwMins = new DataGridViewMins();
+            createDataGridViewMins();
 
             ((System.ComponentModel.ISupportInitialize)(this.m_dgwHours)).BeginInit();
-            ((System.ComponentModel.ISupportInitialize)(this.m_dgwMins)).BeginInit();
+            if (!(this.m_dgwMins == null))
+                ((System.ComponentModel.ISupportInitialize)(this.m_dgwMins)).BeginInit();
+            else
+                ;
 
             this._pnlQuickData.RestructControl();
             this.Dock = System.Windows.Forms.DockStyle.Fill;
@@ -364,7 +369,10 @@ namespace Statistic
             this._pnlQuickData.dtprDate.ValueChanged += new System.EventHandler(this.dtprDate_ValueChanged);
 
             ((System.ComponentModel.ISupportInitialize)(this.m_dgwHours)).EndInit();
-            ((System.ComponentModel.ISupportInitialize)(this.m_dgwMins)).EndInit();
+            if (!(this.m_dgwMins == null))
+                ((System.ComponentModel.ISupportInitialize)(this.m_dgwMins)).EndInit();
+            else
+                ;
 
             this.m_ZedGraphMins = new HZedGraphControlMins(m_tecView.m_lockValue);
             createZedGraphControlHours(m_tecView.m_lockValue);
@@ -432,6 +440,7 @@ namespace Statistic
         }
 
         protected abstract void createDataGridViewHours();
+        protected abstract void createDataGridViewMins();
         
         protected abstract void createZedGraphControlHours(object objLock);
 
@@ -440,6 +449,8 @@ namespace Statistic
         public PanelTecViewBase(TecView.TYPE_PANEL type, TEC tec, int indx_tec, int indx_comp/*, DelegateStringFunc fErrRep, DelegateStringFunc fWarRep, DelegateStringFunc fActRep, DelegateBoolFunc fRepClr*/)
         {
             //InitializeComponent();
+
+            SPLITTER_PERCENT_VERTICAL = 50;
 
             m_tecView = new TecView(type, indx_tec, indx_comp);
 
@@ -505,7 +516,10 @@ namespace Statistic
             
             m_tecView.Start();
             // значени€ по умолчанию
-            m_dgwMins.Fill();
+            if (!(m_dgwMins == null))
+                m_dgwMins.Fill();
+            else
+                ;
             m_dgwHours.Fill(m_tecView.m_curDate
                 , m_tecView.m_valuesHours.Length
                 , m_tecView.m_curDate.Date.CompareTo(HAdmin.SeasonDateTime.Date) == 0);
@@ -660,7 +674,7 @@ namespace Statistic
                     {
                         stctrView.Orientation = Orientation.Vertical;
 
-                        stctrView.SplitterDistance = stctrView.Width / 2;
+                        stctrView.SplitterDistance = stctrView.Width / (100 / (int)SPLITTER_PERCENT_VERTICAL);
                     }
                     else
                     {
@@ -809,8 +823,11 @@ namespace Statistic
 
         private void FillGridMins(int hour)
         {
-            m_dgwMins.Fill(m_tecView.m_valuesMins
-                , hour, m_tecView.lastMin);
+            if (!(m_dgwMins == null))
+                m_dgwMins.Fill(m_tecView.m_valuesMins
+                    , hour, m_tecView.lastMin);
+            else
+                ;
 
             //Logging.Logg().Debug(@"PanelTecViewBase::FillGridMins () - ...");
         }

@@ -1378,7 +1378,7 @@ namespace Statistic
             if (!(indx < 0))
             {
                 //strMsgDebug = @"FormMain::activateTabPage () - indx=" + indx + @", active=" + active.ToString() + @", type=" + tclTecViews.TabPages[indx].Controls[0].GetType().ToString();
-                strMsgDebug = @"FormMain::activateTabPage () - indx=" + indx + @", active=" + active.ToString() + @", name=" + tclTecViews.TabPages[indx].Text;
+                strMsgDebug = @"FormMain::activateTabPage () - indx=" + indx + @", active=" + active.ToString() + @", name=" + tclTecViews.TabPages[indx].Text.Trim();
 
                 //if (tclTecViews.TabPages[indx].Controls[0] is PanelTecViewBase)
                 //    ((PanelTecViewBase)tclTecViews.TabPages[indx].Controls[0]).Activate(active);
@@ -1786,7 +1786,7 @@ namespace Statistic
             else
                 ;
 
-            if (! (tec.m_id > 10))
+            if (! (tec.m_id > AdminTS_LK.Index_LK))
                 panelTecView = new PanelTecView(tec, ti, ci, null/*, ErrorReport, WarningReport, ActionReport, ReportClear*/);
             else
                 panelTecView = new PanelLKView(tec, ti, ci);
@@ -2630,8 +2630,13 @@ namespace Statistic
 
             if ((!(tclTecViews.SelectedIndex < 0))
                 && (tclTecViews.SelectedIndex < tclTecViews.TabCount))
-                if (ctrl is PanelTecViewStandard)
-                    ((PanelTecViewStandard)ctrl).UpdateGraphicsCurrent(type);
+                if ((ctrl is PanelTecViewStandard)
+                    //|| (ctrl is PanelCustomTecView)
+                    //|| (ctrl is PanelSobstvNyzhdy)
+                    //|| (ctrl is PanelSOTIASSO)
+                    //|| (ctrl is PanelLKView)
+                    )
+                    ((PanelTecViewBase)ctrl).UpdateGraphicsCurrent(type);
                 else
                     if (ctrl is PanelCustomTecView)
                         ((PanelCustomTecView)ctrl).UpdateGraphicsCurrent(type);
@@ -2642,7 +2647,10 @@ namespace Statistic
                             if (ctrl is PanelSOTIASSO)
                                 ((PanelSOTIASSO)ctrl).UpdateGraphicsCurrent(type);
                             else
-                                ;
+                                if (ctrl is PanelLKView)
+                                    ((PanelLKView)ctrl).UpdateGraphicsCurrent(type);
+                                else
+                                    ;
             else
                 ;
 

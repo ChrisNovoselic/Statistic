@@ -509,14 +509,14 @@ namespace Statistic
                 {
                     offset = HAdmin.GetSeasonHourOffset(dtCurrent, hour);
 
-                    Rows[i].Cells[0].Value = (hour - offset).ToString();
+                    Rows[i].Cells[(int)INDEX_COLUMNS.PART_TIME].Value = (hour - offset).ToString();
                     if ((hour - 1) == HAdmin.SeasonDateTime.Hour)
                         Rows[i].Cells[0].Value += @"*";
                     else
                         ;
                 }
                 else
-                    Rows[i].Cells[0].Value = (hour).ToString();
+                    Rows[i].Cells[(int)INDEX_COLUMNS.PART_TIME].Value = (hour).ToString();
 
                 for (c = 1; c < m_arColumns.Length; c ++)
                     Rows[i].Cells[c].Value = 0.ToString("F2");
@@ -529,184 +529,6 @@ namespace Statistic
                     case INDEX_COLUMNS.PBR:
                     case INDEX_COLUMNS.PBRe:
                         Rows[i].Cells[c].Value = @"-".ToString();
-                        break;
-                    default:
-                        Rows[i].Cells[c].Value = 0.ToString("F2");
-                        break;
-                }                
-        }
-    }
-    /// <summary>
-    /// Класс для отображения значений в табличном виде
-    ///  в разрезе час-минуты для ГТП
-    /// </summary>
-    public class DataGridViewLKHours : HDataGridViewBase
-    {
-        /// <summary>
-        /// Конструктор - основной (без параметров)
-        /// </summary>
-        public DataGridViewLKHours()
-            //: base(new int[] { 8, 15, 15, 15, 15, 15, 15 })
-            : base(
-                HDateTime.INTERVAL.HOURS
-                , new ColumnProperies[] { new ColumnProperies (27, 8, @"Час", @"Hour")
-                    , new ColumnProperies (47, 18, @"t час", @"FactHour")
-                    , new ColumnProperies (47, 18, @"P час", @"PBRHour")
-                    , new ColumnProperies (47, 18, @"P ф1", @"PBReHour")
-                    , new ColumnProperies (47, 18, @"P ф2", @"UDGeHour")
-                    , new ColumnProperies (42, 18, @"+/-", @"DeviationHour")
-            })
-        {
-            InitializeComponents ();
-
-            Name = "m_dgwTableHours";
-            RowHeadersVisible = false;
-            RowTemplate.Resizable = DataGridViewTriState.False;
-
-            RowsAdd ();
-        }
-        /// <summary>
-        /// Конструктор - вспомогательный (с параметрами)
-        /// </summary>
-        /// <param name="container">Владелец текущего объекта</param>
-        public DataGridViewLKHours(IContainer container)
-            : this()
-        {
-            container.Add(this);
-        }
-        /// <summary>
-        /// Инициализация собственных компонентов элемента управления 
-        /// </summary>
-        private void InitializeComponents()
-        {
-        }
-
-        public override void Fill(TecView.valuesTEC[] values, params object[] pars)
-        {
-            throw new NotImplementedException();
-        }
-    }
-
-    public class DataGridViewMins : HDataGridViewStandard
-    {
-        protected virtual void InitializeComponents()
-        {
-            
-        }
-
-        public DataGridViewMins()
-            //: base (new int [] {15, 16, 16, 16, 19, 16})
-            : base(HDateTime.INTERVAL.MINUTES
-                , new ColumnProperies[] { new ColumnProperies (50, 15, @"Мин.", @"Min")
-                    , new ColumnProperies (50, 16, @"Факт", @"FactMin")
-                    , new ColumnProperies (50, 16, @"ПБР", @"PBRMin")
-                    , new ColumnProperies (50, 16, @"ПБРэ", @"PBReMin")
-                    , new ColumnProperies (50, 19, @"УДГэ", @"UDGeMin")
-                    , new ColumnProperies (50, 16, @"+/-", @"DeviationMin")
-            })
-        {            
-            InitializeComponents();
-
-            Name = "m_dgwTableMins";
-            RowHeadersVisible = false;
-            RowTemplate.Resizable = DataGridViewTriState.False;
-
-            RowsAdd();
-        }
-
-        public override void Fill(TecView.valuesTEC []values, params object [] pars)
-        {
-            int hour = (int)pars[0]
-                , min = (int)pars[1]; //m_tecView.lastMin;
-            double sumFact = 0, sumUDGe = 0, sumDiviation = 0;
-
-            if (! (min == 0))
-                min--;
-            else
-                ;
-
-            for (int i = 0; i < values.Length - 1; i++)
-            {
-                //Ограничить отображение (для режима АИСКУЭ+СОТИАССО)
-                Rows[i].Cells[(int)DataGridViewStandardHours.INDEX_COLUMNS.FACT].Value = values[i + 1].valuesFact.ToString("F2");
-                if (i < min)
-                {                    
-                    sumFact += values[i + 1].valuesFact;
-                }
-                else
-                    ;
-
-                Rows[i].Cells[(int)DataGridViewStandardHours.INDEX_COLUMNS.PBR].Value = values[i].valuesPBR.ToString("F2");
-                Rows[i].Cells[(int)DataGridViewStandardHours.INDEX_COLUMNS.PBRe].Value = values[i].valuesPBRe.ToString("F2");
-                Rows[i].Cells[(int)DataGridViewStandardHours.INDEX_COLUMNS.UDGe].Value = values[i].valuesUDGe.ToString("F2");
-                sumUDGe += values[i].valuesUDGe;
-                if ((i < min) && (! (values[i].valuesUDGe == 0)))
-                {
-                    Rows[i].Cells[(int)DataGridViewStandardHours.INDEX_COLUMNS.DEVIATION].Value =
-                        ((double)(values[i + 1].valuesFact - values[i].valuesUDGe)).ToString("F2");
-                    //if (Math.Abs(values.valuesFact[i + 1] - values.valuesUDGe[i]) > values.valuesDiviation[i]
-                    //    && values.valuesDiviation[i] != 0)
-                    //    Rows[i].Cells[5].Style = dgvCellStyleError;
-                    //else
-                    Rows[i].Cells[(int)DataGridViewStandardHours.INDEX_COLUMNS.DEVIATION].Style = s_dgvCellStyleCommon;
-
-                    sumDiviation += values[i + 1].valuesFact - values[i].valuesUDGe;
-                }
-                else
-                {
-                    Rows[i].Cells[(int)DataGridViewStandardHours.INDEX_COLUMNS.DEVIATION].Value = 0.ToString("F2");
-                    Rows[i].Cells[(int)DataGridViewStandardHours.INDEX_COLUMNS.DEVIATION].Style = s_dgvCellStyleCommon;
-                }
-            }
-
-            int cnt = Rows.Count - 1;
-            if (! (min > 0))
-            {
-                Rows[cnt].Cells[(int)DataGridViewStandardHours.INDEX_COLUMNS.FACT].Value = 0.ToString("F2");
-                Rows[cnt].Cells[(int)DataGridViewStandardHours.INDEX_COLUMNS.UDGe].Value = 0.ToString("F2");
-                Rows[cnt].Cells[(int)DataGridViewStandardHours.INDEX_COLUMNS.DEVIATION].Value = 0.ToString("F2");
-            }
-            else
-            {
-                if (min > cnt)
-                    min = cnt;
-                else
-                    ;
-
-                Rows[cnt].Cells[(int)DataGridViewStandardHours.INDEX_COLUMNS.FACT].Value = (sumFact / min).ToString("F2");
-                Rows[cnt].Cells[(int)DataGridViewStandardHours.INDEX_COLUMNS.UDGe].Value = values[0].valuesUDGe.ToString("F2");
-                Rows[cnt].Cells[(int)DataGridViewStandardHours.INDEX_COLUMNS.DEVIATION].Value = (sumDiviation / min).ToString("F2");
-            }
-
-            ////Назначить крайней видимой строкой - строку с крайним полученным значением
-            //setFirstDisplayedScrollingRowIndex(m_dgwMins, m_tecView.lastMin);
-            //Назначить крайней видимой строкой - крайнюю строку
-            if (! (DisplayedRowCount(true) == 0))
-                FirstDisplayedScrollingRowIndex = RowCount - DisplayedRowCount(true) + 1;
-            else
-                FirstDisplayedScrollingRowIndex = 0;
-        }
-
-        public override void Fill(params object[] pars)
-        {
-            int cnt = Rows.Count - 1
-                , diskretnost = 60 / cnt
-                , i = -1, c = -1;
-
-            for (i = 0; i < cnt; i++)
-            {
-                Rows[i].Cells[0].Value = ((i + 1) * diskretnost).ToString();
-                for (c = 1; c < Columns.Count; c ++)
-                    Rows[i].Cells[c].Value = 0.ToString("F2");
-            }
-
-            Rows[cnt].Cells[0].Value = "Итог";
-            for (c = 1; c < m_arColumns.Length; c++)
-                switch ((INDEX_COLUMNS)c)
-                {
-                    case INDEX_COLUMNS.PBR:
-                    case INDEX_COLUMNS.PBRe:
-                        Rows[i].Cells[c].Value = @"-";
                         break;
                     default:
                         Rows[i].Cells[c].Value = 0.ToString("F2");

@@ -205,7 +205,7 @@ namespace Statistic
             public abstract void ShowFactValues();            
             public abstract void ShowTMValues();
 
-            protected PanelTecViewStandard m_parent { get { return (PanelTecViewStandard)Parent; } }
+            protected virtual PanelTecViewBase m_parent { get { return (PanelTecViewBase)Parent; } }
 
             public /*static*/ int /*s*/m_indxStartCommonFirstValueSeries
                 , /*s*/m_indxStartCommonSecondValueSeries;
@@ -392,6 +392,41 @@ namespace Statistic
                                 ;
                 else
                     ;
+            }
+
+            /// <summary>
+            /// Отобразить значение для элемента управления с условиями
+            /// </summary>
+            /// <param name="lbl">элемент управления, как ссылка</param>
+            /// <param name="val">значение для отображения</param>
+            protected static void showValue(ref System.Windows.Forms.Label lbl, double val, bool bPower, string adding)
+            {
+                if (!(lbl == null))
+                    if (val == double.NegativeInfinity)
+                        lbl.Text = adding;
+                    else
+                        if (bPower == true)
+                            if (val > 1)
+                                lbl.Text = val.ToString("F2") + adding;
+                            else
+                                lbl.Text = 0.ToString("F0");
+                        else
+                            lbl.Text = val.ToString("F2") + adding;
+                else
+                    ;
+            }
+
+            /// <summary>
+            /// Отобразить значение для элемента управления с условиями
+            /// </summary>
+            /// <param name="lbl">элемент управления</param>
+            /// <param name="val">значение для отображения</param>
+            protected static void showValue(System.Windows.Forms.Label lbl, double val)
+            {
+                if (val > 1)
+                    lbl.Text = val.ToString("F2");
+                else
+                    lbl.Text = 0.ToString("F0");
             }
         }
 
@@ -1016,41 +1051,6 @@ namespace Statistic
             }
 
             /// <summary>
-            /// Отобразить значение для элемента управления с условиями
-            /// </summary>
-            /// <param name="lbl">элемент управления, как ссылка</param>
-            /// <param name="val">значение для отображения</param>
-            private void showValue(ref System.Windows.Forms.Label lbl, double val, bool bPower, string adding)
-            {
-                if (!(lbl == null))
-                    if (val == double.NegativeInfinity)
-                        lbl.Text = adding;
-                    else
-                        if (bPower == true)
-                            if (val > 1)
-                                lbl.Text = val.ToString("F2") + adding;
-                            else
-                                lbl.Text = 0.ToString("F0");
-                        else
-                            lbl.Text = val.ToString("F2") + adding;
-                else
-                    ;
-            }
-
-            /// <summary>
-            /// Отобразить значение для элемента управления с условиями
-            /// </summary>
-            /// <param name="lbl">элемент управления</param>
-            /// <param name="val">значение для отображения</param>
-            private void showValue(System.Windows.Forms.Label lbl, double val)
-            {
-                if (val > 1)
-                    lbl.Text = val.ToString("F2");
-                else
-                    lbl.Text = 0.ToString("F0");
-            }
-
-            /// <summary>
             /// Отобразить фактические значение
             /// </summary>
             public override void ShowFactValues()
@@ -1072,25 +1072,7 @@ namespace Statistic
 
                     bPrevValueValidate = double.TryParse(m_arLabelCommon[(int)PanelQuickDataStandard.CONTROLS.lblCommonPVal_Fact - indxStartCommonPVal].Text, out prevValue);
 
-                    for (i = 0; i < m_parent.m_tecView.listTG.Count; i++)
-                    {
-                        if (m_parent.m_tecView.m_dictValuesTG[m_parent.m_tecView.listTG[i].m_id].m_bPowerMinutesRecieved == false)
-                            //Не учитывать ТГ, для которого НЕ было получено НИ одного значения
-                            continue;
-                        else
-                            ;
-
-                        if (!(m_parent.m_tecView.m_dictValuesTG[m_parent.m_tecView.listTG[i].m_id].m_powerMinutes[min] < 0))
-                            if (m_parent.m_tecView.m_dictValuesTG[m_parent.m_tecView.listTG[i].m_id].m_powerMinutes[min] > 1)
-                                value += m_parent.m_tecView.m_dictValuesTG[m_parent.m_tecView.listTG[i].m_id].m_powerMinutes[min];
-                            else ;
-                        else
-                        {
-                            //bMinValuesReceived = false;
-
-                            //break;
-                        }
-                    }
+                    value = m_parent.m_tecView.GetSummaFactValues();
 
                     //14.04.2015 ???
                     if ((bMinValuesReceived == true) && (value < 1F) && (bPrevValueValidate == true) && (!(prevValue < 1F)))

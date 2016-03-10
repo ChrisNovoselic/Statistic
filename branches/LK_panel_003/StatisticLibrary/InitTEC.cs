@@ -38,7 +38,7 @@ namespace StatisticCommon
 
         protected bool IsNameField(DataTable data, string nameField) { return data.Columns.IndexOf(nameField) > -1 ? true : false; }
 
-        public static string getQueryListTEC(bool bIgnoreTECInUse)
+        public static string getQueryListTEC(bool bIgnoreTECInUse, bool bOnlyTEC)
         {
             string strRes = "SELECT * FROM TEC_LIST ";
 
@@ -62,17 +62,18 @@ namespace StatisticCommon
                 strRes += @"ID=" + HStatisticUsers.allTEC.ToString();
             }
             else
-            //??? ограничение (временное) для ЛК
-                strRes += @"ID>0"
-                //req += @"ID>0 AND NOT (ID>10)"
-                ;
+                //??? ограничение (временное) для ЛК
+                if (bOnlyTEC == false)
+                    strRes += @"ID>0";
+                else
+                    strRes += @"ID>0 AND NOT (ID>10)";
 
             return strRes;
         }
 
-        public static DataTable getListTEC(ref DbConnection connConfigDB, bool bIgnoreTECInUse, out int err)
+        public static DataTable getListTEC(ref DbConnection connConfigDB, bool bIgnoreTECInUse, bool bOnlyTEC,out int err)
         {
-            string req = getQueryListTEC(bIgnoreTECInUse);
+            string req = getQueryListTEC(bIgnoreTECInUse, bOnlyTEC);
 
             return DbTSQLInterface.Select(ref connConfigDB, req, null, null, out err);
         }
@@ -230,7 +231,7 @@ namespace StatisticCommon
             all_PARAM_TG = getALL_PARAM_TG (0, out err);
 
             //Использование статической функции
-            list_tec = getListTEC(ref m_connConfigDB, bIgnoreTECInUse, out err);
+            list_tec = getListTEC(ref m_connConfigDB, bIgnoreTECInUse, false, out err);
 
             if (err == 0) {
                 for (int i = 0; i < list_tec.Rows.Count; i++)
@@ -395,7 +396,7 @@ namespace StatisticCommon
             m_connConfigDB = DbSources.Sources().GetConnection(idListener, out err);
 
             //Использование статической функции
-            list_tec = getListTEC(ref m_connConfigDB, bIgnoreTECInUse, out err);
+            list_tec = getListTEC(ref m_connConfigDB, bIgnoreTECInUse, false, out err);
 
             allParamTG = getALL_PARAM_TG (0, out err);
 
@@ -726,7 +727,7 @@ namespace StatisticCommon
 
             DbConnection connConfigDB = DbSources.Sources ().GetConnection (iListenerId, out err);
 
-            tableRes = getListTEC(ref connConfigDB, true, out err);
+            tableRes = getListTEC(ref connConfigDB, true, false, out err);
             //??? обновление параметров ТЭЦ (например: m_IdSOTIASSOLinkSourceTM)
             //tec.Update (tableRes);
 

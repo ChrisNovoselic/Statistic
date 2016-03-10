@@ -1,6 +1,7 @@
 using System;
 using System.Windows.Forms;
 using System.IO;
+using System.Diagnostics;
 using System.Data;
 using System.Collections.Generic;
 using System.Threading;
@@ -420,6 +421,37 @@ namespace StatisticCommon
             }
         }
 
+        public double GetSummaFactValues()
+        {
+            double dblRes = 0F;
+
+            int min = lastMin;
+
+            if (!(min == 0)) min--; else ;
+
+            for (int i = 0; i < listTG.Count; i++)
+            {
+                if (m_dictValuesTG[listTG[i].m_id].m_bPowerMinutesRecieved == false)
+                    //Не учитывать ТГ, для которого НЕ было получено НИ одного значения
+                    continue;
+                else
+                    ;
+
+                if (!(m_dictValuesTG[listTG[i].m_id].m_powerMinutes[min] < 0))
+                    if (m_dictValuesTG[listTG[i].m_id].m_powerMinutes[min] > 1)
+                        dblRes += m_dictValuesTG[listTG[i].m_id].m_powerMinutes[min];
+                    else ;
+                else
+                {
+                    //bMinValuesReceived = false;
+
+                    //break;
+                }
+            }
+
+            return dblRes;
+        }
+
         public void ChangeState_SobstvNyzhdy () 
         {
                 ClearStates();
@@ -460,6 +492,30 @@ namespace StatisticCommon
 
         private void ChangeState_AdminAlarm () {
             new Thread(new ParameterizedThreadStart(threadGetRDGValues)).Start();
+        }
+
+        public void ChangeState_LK()
+        {
+            ClearStates();
+
+            //ClearValues();
+
+            using_date = false;
+
+            if (m_tec.m_bSensorsStrings == true)
+                if (currHour == true)
+                    AddState((int)StatesMachine.CurrentTimeView);
+                else
+                    ;
+            else
+            {
+                AddState((int)StatesMachine.InitSensors);
+                AddState((int)StatesMachine.CurrentTimeView);
+            }
+
+            AddState((int)TecView.StatesMachine.Hours_Fact);
+            AddState((int)TecView.StatesMachine.PPBRValues);
+            AddState((int)TecView.StatesMachine.AdminValues);
         }
 
         public override bool Activate(bool active)
@@ -1547,6 +1603,9 @@ namespace StatisticCommon
                         break;
                     case TYPE_PANEL.SOTIASSO:
                         ChangeState_SOTIASSO();
+                        break;
+                    case TYPE_PANEL.LK:
+                        ChangeState_LK();
                         break;
                     default:
                         break;
@@ -3177,81 +3236,81 @@ namespace StatisticCommon
                         //}
                         //else
                         //{
-                        //}
-                    }
-                    catch (Exception e)
-                    {
-                        Logging.Logg().Exception(e, @"PanelTecViewBase::GetHoursResponse () - ...", Logging.INDEX_MESSAGE.NOT_SET);
-                    }
+                        //}                    
 
-                    if (double.TryParse(r[@"VALUE0"].ToString(), out value) == false)
-                        return -1;
-                    else
-                        ;
-
-                    switch (m_tec.Type)
-                    {
-                        case TEC.TEC_TYPE.COMMON:
-                            break;
-                        case TEC.TEC_TYPE.BIYSK:
-                            value *= 2;
-                            break;
-                        default:
-                            break;
-                    }
-
-                    //??? для перехода через границу суток
-                    dtNeeded = dt;
-
-                    hour = (dt.Hour + dt.Minute / 30);
-                    if (hour == 0)
-                        if (!(dt.Date == dtServer.Date))
-                            //hour = m_valuesHours.Length;
-                            hour = 24;
+                        if (double.TryParse(r[@"VALUE0"].ToString(), out value) == false)
+                            return -1;
                         else
                             ;
-                    else
-                        ;
 
-                    //if (!(prev_season == (int)HAdmin.seasonJumpE.None))
-                    //{
+                        switch (m_tec.Type)
+                        {
+                            case TEC.TEC_TYPE.COMMON:
+                                break;
+                            case TEC.TEC_TYPE.BIYSK:
+                                value *= 2;
+                                break;
+                            default:
+                                break;
+                        }
+
+                        //??? для перехода через границу суток
+                        dtNeeded = dt;
+
+                        hour = (dt.Hour + dt.Minute / 30);
+                        if (hour == 0)
+                            if (!(dt.Date == dtServer.Date))
+                                //hour = m_valuesHours.Length;
+                                hour = 24;
+                            else
+                                ;
+                        else
+                            ;
+
+                        //if (!(prev_season == (int)HAdmin.seasonJumpE.None))
+                        //{
+                            //Отладка ???
+                            if (season > DateTime.Now.Year)
+                                GetSeason(dt, season, out season);
+                            else
+                                ;
+
+                            if ((! (season == (int)HAdmin.seasonJumpE.None))
+                                && (! (prev_season == season)))
+                                if (offset_season == 1)
+                                    //Ошибка ??? 2 перехода за сутки
+                                    ;
+                                else
+                                    if (prev_season == (int)HAdmin.seasonJumpE.None)
+                                        if (season == (int)HAdmin.seasonJumpE.SummerToWinter)
+                                            offset_season = 1;
+                                        else
+                                            //prev_season == (int)HAdmin.seasonJumpE.WinterToSummer
+                                            ; // offset_season = -1; ??? 26.10.2014 нет перехода зима-лето
+                                    else
+                                        if (prev_season == (int)HAdmin.seasonJumpE.WinterToSummer)
+                                            offset_season = 1;
+                                        else
+                                            //prev_season == (int)HAdmin.seasonJumpE.SummerToWinter
+                                            ; // offset_season = -1; ??? 26.10.2014 нет перехода зима-лето
+                            else
+                                ; // нет сезона ИЛИ пред./сезон РАВЕН текущ./сезону
+                        //} else ;
+
                         //Отладка ???
                         if (season > DateTime.Now.Year)
                             GetSeason(dt, season, out season);
                         else
                             ;
 
-                        if ((! (season == (int)HAdmin.seasonJumpE.None))
-                            && (! (prev_season == season)))
-                            if (offset_season == 1)
-                                //Ошибка ??? 2 перехода за сутки
-                                ;
-                            else
-                                if (prev_season == (int)HAdmin.seasonJumpE.None)
-                                    if (season == (int)HAdmin.seasonJumpE.SummerToWinter)
-                                        offset_season = 1;
-                                    else
-                                        //prev_season == (int)HAdmin.seasonJumpE.WinterToSummer
-                                        ; // offset_season = -1; ??? 26.10.2014 нет перехода зима-лето
-                                else
-                                    if (prev_season == (int)HAdmin.seasonJumpE.WinterToSummer)
-                                        offset_season = 1;
-                                    else
-                                        //prev_season == (int)HAdmin.seasonJumpE.SummerToWinter
-                                        ; // offset_season = -1; ??? 26.10.2014 нет перехода зима-лето
-                        else
-                            ; // нет сезона ИЛИ пред./сезон РАВЕН текущ./сезону
-                    //} else ;
+                        prev_season = season;
 
-                    //Отладка ???
-                    if (season > DateTime.Now.Year)
-                        GetSeason(dt, season, out season);
-                    else
-                        ;
-
-                    prev_season = season;
-
-                    powerHourHalf[i, ((dt.Minute / 30) == 0) ? 1 : 0, hour - 1/* + offset_season*/] = (value / 2000);
+                        powerHourHalf[i, ((dt.Minute / 30) == 0) ? 1 : 0, (hour > 0) ? hour - 1/* + offset_season*/ : (24 - 1)] = (value / 2000);
+                    }
+                    catch (Exception e)
+                    {
+                        Logging.Logg().Exception(e, @"PanelTecViewBase::GetHoursResponse () - ...", Logging.INDEX_MESSAGE.NOT_SET);
+                    }
                 }
 
                 //??? якобы для перехода через границу суток
@@ -5121,6 +5180,8 @@ namespace StatisticCommon
             //m_tec.Request(CONN_SETT_TYPE.DATA_ASKUE, m_tec.hoursRequest(date, m_tec.GetSensorsString(indx_TEC, CONN_SETT_TYPE.DATA_ASKUE, HDateTime.INTERVAL.HOURS)));
             //m_tec.Request(CONN_SETT_TYPE.DATA_ASKUE, m_tec.hoursRequest(date, m_tec.GetSensorsString(m_indx_TECComponent, CONN_SETT_TYPE.DATA_ASKUE, HDateTime.INTERVAL.HOURS)));
             Request(m_dictIdListeners[m_tec.m_id][(int)CONN_SETT_TYPE.DATA_AISKUE], m_tec.hoursFactRequest(date, m_tec.GetSensorsString(indxTECComponents, CONN_SETT_TYPE.DATA_AISKUE, HDateTime.INTERVAL.HOURS)));
+
+            Debug.WriteLine(@"TecView::GetHoursFactRequest () - DATE=" + date.ToString());
         }
 
         private void GetHourTMRequest(DateTime date, int lh)
