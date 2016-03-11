@@ -86,6 +86,7 @@ namespace Statistic
             m_admin.SetDelegateSaveComplete(null);
         }
 
+
         /// <summary>
         /// Метод получения ИД (m_id) родительской ГТП для ТГ
         /// </summary>
@@ -127,14 +128,18 @@ namespace Statistic
                     if ((!(indx_tg < 0)) && (!(indx_gtp < 0)))
                         for (int i = 0; i < 24; i++)//Перебор часовых значений ТГ
                         {
-                            foreach (DataGridViewColumn col in dgwAdminTable.Columns)//Перебор колонок DataGridView
-                                if (m_admin.GetNameTECComponent(indx) == col.HeaderText)//Если имя ТГ соответствует имени колонки то
-                                    if (dgwAdminTable.Rows[i].Cells[col.Index].Value == null)//Проверка на пустое поле и запись значения
-                                        ((AdminTS_LK)m_admin).m_listCurRDGValues[indx_tg][i].pbr = Convert.ToDouble(0.ToString("F2"));
-                                    else
-                                        ((AdminTS_LK)m_admin).m_listCurRDGValues[indx_tg][i].pbr = Convert.ToDouble(dgwAdminTable.Rows[i].Cells[col.Index].Value); // '+ 1' за счет DateTime
-                            ((AdminTS_LK)m_admin).m_listCurRDGValues[indx_tg][i].pbr_number = "ППБР";
-                            AdminTS.m_sOwner_PBR = 0;
+                                foreach (DataGridViewColumn col in dgwAdminTable.Columns)//Перебор колонок DataGridView
+                                    if (m_admin.GetNameTECComponent(indx) == col.HeaderText)//Если имя ТГ соответствует имени колонки то
+                                        if (dgwAdminTable.Rows[i].Cells[col.Index].Value == null)//Проверка на пустое поле и запись значения
+                                        {
+                                            ((AdminTS_LK)m_admin).m_listCurRDGValues[indx_tg][i].pbr = Convert.ToDouble(0.ToString("F2"));
+                                        }
+                                        else
+                                        {
+                                            ((AdminTS_LK)m_admin).m_listCurRDGValues[indx_tg][i].pbr = Convert.ToDouble(dgwAdminTable.Rows[i].Cells[col.Index].Value); // '+ 1' за счет DateTime
+                                        }
+                                ((AdminTS_LK)m_admin).m_listCurRDGValues[indx_tg][i].pbr_number = "ППБР";
+                                //AdminTS.m_sOwner_PBR = 0;
                         }
                     else
                         ;
@@ -148,18 +153,18 @@ namespace Statistic
                         if (!(indx_gtp < 0))
                             for (int i = 0; i < 24; i++)//Перебор часовых значений ГТП
                             {
-                                ((AdminTS_LK)m_admin).m_listCurRDGValues[indx_gtp][i].pbr = Convert.ToDouble(dgwAdminTable.Rows[i].Cells[(int)DataGridViewAdminLK.DESC_INDEX.PLAN].Value); // '+ 1' за счет DateTime
-                                ((AdminTS_LK)m_admin).m_listCurRDGValues[indx_gtp][i].pmin = Convert.ToDouble(dgwAdminTable.Rows[i].Cells[(int)DataGridViewAdminLK.DESC_INDEX.PLAN_T].Value);
-                                
-                                if (!(this.dgwAdminTable.Rows[i].Cells[this.dgwAdminTable.Columns.Count - 3].Value == null))
-                                    ((AdminTS_LK)m_admin).m_listCurRDGValues[indx_gtp][i].deviationPercent = bool.Parse(this.dgwAdminTable.Rows[i].Cells[this.dgwAdminTable.Columns.Count - 3].Value.ToString());
-                                else
-                                    ((AdminTS_LK)m_admin).m_listCurRDGValues[indx_gtp][i].deviationPercent = false;
+                                    ((AdminTS_LK)m_admin).m_listCurRDGValues[indx_gtp][i].pbr = Convert.ToDouble(dgwAdminTable.Rows[i].Cells[(int)DataGridViewAdminLK.DESC_INDEX.PLAN].Value); // '+ 1' за счет DateTime
+                                    ((AdminTS_LK)m_admin).m_listCurRDGValues[indx_gtp][i].pmin = Convert.ToDouble(dgwAdminTable.Rows[i].Cells[(int)DataGridViewAdminLK.DESC_INDEX.PLAN_T].Value);
 
-                                valid = double.TryParse((string)this.dgwAdminTable.Rows[i].Cells[this.dgwAdminTable.Columns.Count - 2].Value, out value);
-                                ((AdminTS_LK)m_admin).m_listCurRDGValues[indx_gtp][i].deviation = value;
-                                ((AdminTS_LK)m_admin).m_listCurRDGValues[indx_gtp][i].pbr_number = "ППБР";
-                                AdminTS.m_sOwner_PBR = 0;
+                                    if (!(this.dgwAdminTable.Rows[i].Cells[this.dgwAdminTable.Columns.Count - 3].Value == null))
+                                        ((AdminTS_LK)m_admin).m_listCurRDGValues[indx_gtp][i].deviationPercent = bool.Parse(this.dgwAdminTable.Rows[i].Cells[this.dgwAdminTable.Columns.Count - 3].Value.ToString());
+                                    else
+                                        ((AdminTS_LK)m_admin).m_listCurRDGValues[indx_gtp][i].deviationPercent = false;
+
+                                    valid = double.TryParse((string)this.dgwAdminTable.Rows[i].Cells[this.dgwAdminTable.Columns.Count - 2].Value, out value);
+                                    ((AdminTS_LK)m_admin).m_listCurRDGValues[indx_gtp][i].deviation = value;
+                                    ((AdminTS_LK)m_admin).m_listCurRDGValues[indx_gtp][i].pbr_number = "ППБР";
+                                    //AdminTS.m_sOwner_PBR = 0;
                             }
                         else
                             ;
@@ -354,7 +359,7 @@ namespace Statistic
         /// <param name="e"></param>
         private void btnImportExcel_Click(object sender, EventArgs e)
         {
-            //ClearTables();
+            int err = -1;
 
             //m_admin.ImpRDGExcelValues(m_listTECComponentIndex[comboBoxTecComponent.SelectedIndex], mcldrDate.SelectionStart);
             DataTable import_csv = new DataTable();
@@ -367,7 +372,7 @@ namespace Statistic
 
             if (files.ShowDialog(FormMain.formParameters) == DialogResult.OK)
             {
-                import_csv = Get_DataTable_From_Excel.getDT(files.FileName, m_admin.m_curDate.Date);
+                import_csv = ((AdminTS_LK)m_admin).ImportExcel(files.FileName, out err);
             }
 
             //dgwAdminTable.Rows.Clear();
@@ -375,7 +380,7 @@ namespace Statistic
             {
                 for (int b = 0; b < import_csv.Columns.Count; b++)
                 {
-                    if (b != (int)Get_DataTable_From_Excel.INDEX_COLUMN.Time)
+                    if (b != (int)DataGridViewAdminLK.DESC_INDEX.DATE_HOUR)
                     {
                         dgwAdminTable.Rows[i].Cells[b].Value = (Convert.ToDouble(import_csv.Rows[i][b].ToString().Trim())).ToString("F2");
                     }
@@ -481,7 +486,7 @@ namespace Statistic
                 Columns[col].Frozen = false;
                 Columns[col].HeaderText = arDescRusStringIndex[col];
                 Columns[col].Name = arDescStringIndex[col];
-                Columns[col].ReadOnly = true;
+                Columns[col].ReadOnly = false;
                 Columns[col].SortMode = System.Windows.Forms.DataGridViewColumnSortMode.NotSortable;
             }
 
@@ -678,100 +683,4 @@ namespace Statistic
         }
     }
 
-    public class Get_DataTable_From_Excel
-    {
-        /// <summary>
-        /// Массив имен месяцев
-        /// </summary>
-        public static string[] mounth = {"UNKNOWN","ЯНВАРЬ","ФЕВРАЛЬ","МАРТ","АПРЕЛЬ","МАЙ","ИЮНЬ","ИЮЛЬ","АВГУСТ","СЕНТЯБРЬ","ОКТЯБРЬ","НОЯБРЬ","ДЕКАБРЬ" };
-        
-        /// <summary>
-        /// Массив имен колонок
-        /// </summary>
-        public static string[] col_name = { "Час", "Значение", "Температура" };
-
-        /// <summary>
-        /// Индексы колонок
-        /// </summary>
-        public enum INDEX_COLUMN : int {Time, Value, Temp }
-
-        /// <summary>
-        /// Получение таблицы из Excel
-        /// </summary>
-        /// <param name="path">Путь к документу</param>
-        /// <param name="data">Дата для которой получить значения</param>
-        /// <returns>Таблица со значениями</returns>
-        public static DataTable getDT(string path, DateTime data) 
-        {
-            DataTable dtExportCSV = new DataTable();
-
-            dtExportCSV = getCSV(path, data);
-
-            return dtExportCSV;
-        }
-
-        /// <summary>
-        /// Метод выборки значений из Excell
-        /// </summary>
-        /// <param name="path">Путь к документу</param>
-        /// <param name="date">Дата за которую необходимо получить значения</param>
-        /// <returns>Возвращает таблицу со значениями</returns>
-        private static DataTable getCSV(string path, DateTime date)
-        {
-            DataTable dataTableRes = new DataTable();
-            string name_worksheet = string.Empty;
-            DataRow[] rows = new DataRow[25];
-
-            for (int i = 0; i < col_name.Length; i++)
-                dataTableRes.Columns.Add(col_name[i]);//Добавление колонок в таблицу
-
-            //Открыть поток чтения файла...
-            try
-            {
-                ExcelFile excel = new ExcelFile();
-                excel.LoadXls(path);//загружаем в созданный экземпляр документ Excel
-                name_worksheet = "Расчет " + mounth[date.Month];//Генерируем имя необходимого листа в зависимости от переданной даты
-                foreach (ExcelWorksheet w in excel.Worksheets)//Перебор листов
-                {
-                    if (w.Name.Equals(name_worksheet, StringComparison.InvariantCultureIgnoreCase))//Если имя совпадает с сгенерируемым нами то
-                    {
-                        foreach (ExcelRow r in w.Rows)//перебор строк документа
-                        {
-                            if(r.Cells[0].Value!=null)//Если значение строки не пусто то
-                                if (r.Cells[0].Value.ToString() == date.Date.ToString())//Если дата в строке совпадает с переданной то
-                                {
-                                    for (int i = 0; i < 24; i++)//Перебор ячеек со значениями по часам
-                                    {
-                                        object[] row = new object[3];
-                                        row[0] = i.ToString();//Час
-
-                                        if (r.Cells[i + 2].Value == null)//Если ячейка пуста то
-                                            row[1] = 0.ToString("F2");//0 в формате (0.00)
-                                        else
-                                            row[1] = r.Cells[i + 2].Value.ToString().Trim();//Значение ПБР
-
-                                        if (w.Rows[r.Index + 1].Cells[i + 2].Value == null)
-                                            row[2] = string.Empty;
-                                        else
-                                            row[2] = w.Rows[r.Index + 1].Cells[i + 2].Value.ToString().Trim();//Значение температуры
-                                 
-                                        dataTableRes.Rows.Add(row);//Добавляем строку в таблицу
-                                    }
-                                }
-
-                            if (dataTableRes.Rows.Count >= 24) //Если количестко строк стало равным ли больше 24 то прерываем перебор
-                                break;
-                        }
-                    }
-                }
-
-            }
-            catch (Exception e)
-            {
-                Logging.Logg().Error("PanelAdminLK : getCSV - ошибка при открытии потока" + e.Message, Logging.INDEX_MESSAGE.NOT_SET);
-            }
-
-            return dataTableRes;
-        }
-    }
 }

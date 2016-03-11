@@ -46,6 +46,16 @@ namespace StatisticCommon
         protected DataTable m_tableValuesResponse,
                     m_tableRDGExcelValuesResponse;
 
+        /// <summary>
+        /// Идентификаторы часовых поясов(смещение)
+        /// </summary>
+        public enum INDEX_OFFSET : int { MOSCOW=0, NOVOSIBIRSK=3 }
+
+        /// <summary>
+        /// Смещение по часовому поясу
+        /// </summary>
+        public int m_Offset_to_moscow = 0;
+
         protected enum StatesMachine
         {
             CurrentTime,
@@ -500,9 +510,9 @@ namespace StatisticCommon
         protected override int GetPPBRValuesResponse(DataTable table, DateTime date)
         {
             int iRes = 0;
-
+            
             m_tableValuesResponse = table.Copy ();
-
+            
             return iRes;
         }
 
@@ -517,10 +527,11 @@ namespace StatisticCommon
             int[] arIndexTables = { 0, 1 },
                 arFieldsCount = { -1, -1 };
             bool bSeason = false;
-
             if (tableAdminValuesResponse == null)
                 tableAdminValuesResponse = new DataTable();
-            else ;
+            else
+                ;
+
 
             if (m_tableValuesResponse == null)
                 m_tableValuesResponse = new DataTable();
@@ -640,8 +651,8 @@ namespace StatisticCommon
                 {
                     try
                     {
-                        hour = ((DateTime)table.Rows[i]["DATE_PBR"]).Hour;
-                        day = ((DateTime)table.Rows[i]["DATE_PBR"]).Day;
+                        hour = ((DateTime)table.Rows[i]["DATE_PBR"]).AddHours(m_Offset_to_moscow).Hour;
+                        day = ((DateTime)table.Rows[i]["DATE_PBR"]).AddHours(m_Offset_to_moscow).Day;
 
                         if ((hour == 0) && (day != date.Day))
                             hour = 24;
@@ -702,8 +713,15 @@ namespace StatisticCommon
                             iDate = ((DateTime)table.Rows[i]["DATE_PBR"]);
                         }
 
-                        hour = iDate.Hour;
-                        day = iDate.Day;
+                        hour = iDate.AddHours(m_Offset_to_moscow).Hour;
+                        //hour = hour + m_Offset_to_moscow;
+                        day = iDate.AddHours(m_Offset_to_moscow).Day;
+
+                        if (hour == 24)
+                        {
+                            hour = 0;
+                            day ++;
+                        }
 
                         if ((hour == 0) && (!(day == date.Day)))
                             hour = 24;
@@ -916,7 +934,7 @@ namespace StatisticCommon
 
             if (IsCanUseTECComponents ())
                 //Request(m_indxDbInterfaceCommon, m_listenerIdCommon, allTECComponents[indxTECComponents].tec.GetAdminDatesQuery(date));
-                Request(m_dictIdListeners[allTECComponents[indxTECComponents].tec.m_id][(int)CONN_SETT_TYPE.ADMIN], allTECComponents[indxTECComponents].tec.GetAdminDatesQuery(date/*, m_typeFields*/, allTECComponents[indxTECComponents]));
+                Request(m_dictIdListeners[allTECComponents[indxTECComponents].tec.m_id][(int)CONN_SETT_TYPE.ADMIN], allTECComponents[indxTECComponents].tec.GetAdminDatesQuery(date.AddHours(-m_Offset_to_moscow)/*, m_typeFields*/, allTECComponents[indxTECComponents]));
             else
                 ;
         }
@@ -935,7 +953,7 @@ namespace StatisticCommon
             if (IsCanUseTECComponents () == true)
                 //Request(m_indxDbInterfaceCommon, m_listenerIdCommon, allTECComponents[indxTECComponents].tec.GetPBRDatesQuery(date));
                 Request(m_dictIdListeners[allTECComponents[indxTECComponents].tec.m_id][(int)CONN_SETT_TYPE.PBR],
-                        allTECComponents[indxTECComponents].tec.GetPBRDatesQuery(date/*, m_typeFields*/, allTECComponents[indxTECComponents]));
+                        allTECComponents[indxTECComponents].tec.GetPBRDatesQuery(date.AddHours(-m_Offset_to_moscow)/*, m_typeFields*/, allTECComponents[indxTECComponents]));
             else
                 ;
         }
@@ -957,6 +975,12 @@ namespace StatisticCommon
                     addingVal = -1;
                 else
                     ;
+
+            //Цикл необходим для учета смещения времени по часовому поясу
+            foreach (DataRow r in table.Rows)
+            {
+                r[0] = Convert.ToDateTime(r[0].ToString()).AddHours(m_Offset_to_moscow);
+            }
 
             //0 - [DATE_TIME]([DATE]), 1 - [ID]
             for (int i = 0, hour; i < table.Rows.Count; i++)
@@ -1119,6 +1143,7 @@ namespace StatisticCommon
                 , currentHour = -1;
 
             currentHour = getCurrentHour(date, CONN_SETT_TYPE.ADMIN);
+            //currentHour = currentHour - m_Offset_to_moscow;
             if (currentHour < 0)
                 //Недопустимая ситуация
                 return resQuery;
@@ -1170,7 +1195,7 @@ namespace StatisticCommon
                     //                    @"'),";
                     //        break;
                     //    case AdminTS.TYPE_FIELDS.DYNAMIC:
-                            resQuery[(int)DbTSQLInterface.QUERY_TYPE.INSERT] += @" ('" + date.AddHours(i + 1 - offset).ToString("yyyyMMdd HH:mm:ss") +
+                            resQuery[(int)DbTSQLInterface.QUERY_TYPE.INSERT] += @" ('" + date.AddHours(i + 1 - offset - m_Offset_to_moscow).ToString("yyyyMMdd HH:mm:ss") +
                                         @"', '" + m_curRDGValues[i].recomendation.ToString("F3", CultureInfo.InvariantCulture) +
                                         @"', " + (m_curRDGValues[i].deviationPercent ? "1" : "0") +
                                         @", '" + m_curRDGValues[i].deviation.ToString("F3", CultureInfo.InvariantCulture) +
@@ -1291,6 +1316,7 @@ namespace StatisticCommon
 
             date = date.Date;
             int currentHour = getCurrentHour (date, CONN_SETT_TYPE.PBR);
+            //currentHour = currentHour - m_Offset_to_moscow;
 
             for (int i = currentHour; i < 24; i++)
             {
@@ -1369,7 +1395,7 @@ namespace StatisticCommon
                             Logging.Logg().Debug(@"AdminTS::setPPBRQuery () - [ID_COMPONENT=" + comp.m_id + @"] Час=" + i + @"; БД=" + m_iHavePBR_Number + @"; Модес=" + strPBRNumber, Logging.INDEX_MESSAGE.D_002);
 
                             if (!(m_curRDGValues[i].pbr < 0))
-                                resQuery[(int)DbTSQLInterface.QUERY_TYPE.INSERT] += @" ('" + date.AddHours(i + 1).ToString("yyyyMMdd HH:mm:ss") +
+                                resQuery[(int)DbTSQLInterface.QUERY_TYPE.INSERT] += @" ('" + date.AddHours(i + 1 - m_Offset_to_moscow).ToString("yyyyMMdd HH:mm:ss") +
                                             @"', '" + serverTime.ToString("yyyyMMdd HH:mm:ss") + @"'" +
                                             //@", 'GETDATE()" +
                                             @", '" + strPBRNumber +
@@ -1649,14 +1675,14 @@ namespace StatisticCommon
                 case (int)StatesMachine.PPBRValues:
                     strRep = @"Получение данных плана.";
                     if (indxTECComponents < allTECComponents.Count)
-                        GetPPBRValuesRequest(allTECComponents[indxTECComponents].tec, allTECComponents[indxTECComponents], m_curDate.Date/*, m_typeFields*/);
+                        GetPPBRValuesRequest(allTECComponents[indxTECComponents].tec, allTECComponents[indxTECComponents], m_curDate.Date.AddHours(-m_Offset_to_moscow)/*, m_typeFields*/);
                     else
                         ; //result = false;
                     break;
                 case (int)StatesMachine.AdminValues:
                     strRep = @"Получение административных данных.";
                     if ((indxTECComponents < allTECComponents.Count) && (m_markQueries.IsMarked ((int)CONN_SETT_TYPE.ADMIN) == true))
-                        GetAdminValuesRequest(allTECComponents[indxTECComponents].tec, allTECComponents[indxTECComponents], m_curDate.Date/*, m_typeFields*/);
+                        GetAdminValuesRequest(allTECComponents[indxTECComponents].tec, allTECComponents[indxTECComponents], m_curDate.Date.AddHours(-m_Offset_to_moscow)/*, m_typeFields*/);
                     else
                         ; //result = false;
 
@@ -1896,8 +1922,11 @@ namespace StatisticCommon
                     break;
                 case (int)StatesMachine.AdminValues:
                     if (m_markQueries.IsMarked((int)CONN_SETT_TYPE.ADMIN) == true)
+                    {
                         result = GetAdminValuesResponse(table as System.Data.DataTable, m_curDate);
-                    else {
+                    }
+                    else
+                    {
                         table = null;
 
                         if (m_markQueries.IsMarked((int)CONN_SETT_TYPE.PBR) == true)

@@ -3,11 +3,14 @@ using System.IO;
 using System.Data;
 using System.Collections.Generic;
 using System.Threading;
+using System.Globalization;
 
+using GemBox.Spreadsheet;
 //using Excel = Microsoft.Office.Interop.Excel;
 
 using HClassLibrary;
 using StatisticCommon;
+
 
 namespace Statistic
 {
@@ -35,6 +38,7 @@ namespace Statistic
         public AdminTS_LK(bool[] arMarkPPBRValues)
             : base(arMarkPPBRValues)
         {
+            base.m_Offset_to_moscow = (int)INDEX_OFFSET.NOVOSIBIRSK;
         }
 
         /// <summary>
@@ -299,5 +303,148 @@ namespace Statistic
 
             return iRes;
         }
-    }
+
+        public DataTable ImportExcel(string path, out int err)
+        {
+            err = -1;
+            DataTable table_res = new DataTable();
+            table_res = Get_DataTable_From_Excel.getDT(path, m_curDate.Date, out err);
+
+            if (err > (int)Get_DataTable_From_Excel.INDEX_ERR.NOT_ERR)
+            {
+                warningReport(Get_DataTable_From_Excel.str_err[err]);
+            }
+            return table_res;
+        }
+
+        private class Get_DataTable_From_Excel
+        {
+            public enum INDEX_ERR : int { NOT_ERR, NOT_WORKSHEET, NOT_DATA }
+
+            public static string[] str_err = { "Ошибок нет", "Не найден лист с выбранным месяцем!", "Нет данных за выбранную дату!" };
+
+            /// <summary>
+            /// Массив имен месяцев
+            /// </summary>
+            public static string[] mounth = { "UNKNOWN", "ЯНВАРЬ", "ФЕВРАЛЬ", "МАРТ", "АПРЕЛЬ", "МАЙ", "ИЮНЬ", "ИЮЛЬ", "АВГУСТ", "СЕНТЯБРЬ", "ОКТЯБРЬ", "НОЯБРЬ", "ДЕКАБРЬ" };
+
+            /// <summary>
+            /// Массив имен колонок
+            /// </summary>
+            public static string[] col_name = { "Час", "Значение", "Температура" };
+
+            /// <summary>
+            /// Индексы колонок
+            /// </summary>
+            public enum INDEX_COLUMN : int { Time, Value, Temp }
+
+            /// <summary>
+            /// Получение таблицы из Excel
+            /// </summary>
+            /// <param name="path">Путь к документу</param>
+            /// <param name="data">Дата для которой получить значения</param>
+            /// <returns>Таблица со значениями</returns>
+            public static DataTable getDT(string path, DateTime data, out int err)
+            {
+                err = -1;
+                DataTable dtExportCSV = new DataTable();
+
+                dtExportCSV = getCSV(path, data, out err);
+
+                return dtExportCSV;
+            }
+
+            /// <summary>
+            /// Метод выборки значений из Excell
+            /// </summary>
+            /// <param name="path">Путь к документу</param>
+            /// <param name="date">Дата за которую необходимо получить значения</param>
+            /// <returns>Возвращает таблицу со значениями</returns>
+            private static DataTable getCSV(string path, DateTime date, out int err)
+            {
+                err = -1;
+                DataTable dataTableRes = new DataTable();
+                string name_worksheet = string.Empty;
+                DataRow[] rows = new DataRow[25];
+                int col_worksheet = 0;
+                bool start_work = false;
+
+                for (int i = 0; i < col_name.Length; i++)
+                    dataTableRes.Columns.Add(col_name[i]);//Добавление колонок в таблицу
+
+                //Открыть поток чтения файла...
+                try
+                {
+                    ExcelFile excel = new ExcelFile();
+                    excel.LoadXls(path);//загружаем в созданный экземпляр документ Excel
+                    name_worksheet = "Расчет " + mounth[date.Month];//Генерируем имя необходимого листа в зависимости от переданной даты
+
+                    foreach (ExcelWorksheet w in excel.Worksheets)//Перебор листов
+                    {
+                        if (w.Name.Equals(name_worksheet, StringComparison.InvariantCultureIgnoreCase))//Если имя совпадает с сгенерируемым нами то
+                        {
+                            start_work = true;
+                            foreach (ExcelRow r in w.Rows)//перебор строк документа
+                            {
+                                if (r.Cells[0].Value != null)//Если значение строки не пусто то
+                                    if (r.Cells[0].Value.ToString() == date.Date.ToString())//Если дата в строке совпадает с переданной то
+                                    {
+                                        for (int i = 0; i < 24; i++)//Перебор ячеек со значениями по часам
+                                        {
+                                            object[] row = new object[3];
+                                            row[0] = i.ToString();//Час
+
+                                            if (r.Cells[i + 2].Value == null)//Если ячейка пуста то
+                                                row[1] = 0.ToString("F2");//0 в формате (0.00)
+                                            else
+                                                row[1] = r.Cells[i + 2].Value.ToString().Trim();//Значение ПБР
+
+                                            if (w.Rows[r.Index + 1].Cells[i + 2].Value == null)
+                                                row[2] = string.Empty;
+                                            else
+                                                row[2] = w.Rows[r.Index + 1].Cells[i + 2].Value.ToString().Trim();//Значение температуры
+
+                                            dataTableRes.Rows.Add(row);//Добавляем строку в таблицу
+                                        }
+                                    }
+
+                                if (dataTableRes.Rows.Count >= 24) //Если количестко строк стало равным ли больше 24 то прерываем перебор
+                                {
+                                    //err = (int)INDEX_ERR.NOT_ERR;
+                                    break;
+                                }
+
+                            }
+                        }
+                        else
+                        {
+                            if (dataTableRes.Rows.Count == 0 && col_worksheet == excel.Worksheets.Count - 1 && start_work == true)
+                            {
+                                err = (int)INDEX_ERR.NOT_DATA;
+                                break;
+                            }
+                            else
+                            {
+                                if (dataTableRes.Rows.Count >= 24 && start_work == true)
+                                {
+                                    err = (int)INDEX_ERR.NOT_ERR;
+                                    break;
+                                }
+                                else
+                                    err = (int)INDEX_ERR.NOT_WORKSHEET;
+                            }
+                        }
+                        col_worksheet++;
+                    }
+
+                }
+                catch (Exception e)
+                {
+                    Logging.Logg().Error("PanelAdminLK : getCSV - ошибка при открытии потока" + e.Message, Logging.INDEX_MESSAGE.NOT_SET);
+                }
+
+                return dataTableRes;
+            }
+        }
+}
 }
