@@ -1697,7 +1697,7 @@ namespace StatisticCommon
             }
         }
 
-        public void GetRetroValues()
+        public virtual void GetRetroValues()
         {
             lock (m_lockValue)
             {

@@ -251,59 +251,6 @@ namespace Statistic
         private void InitializeComponents () {
             int i = -1;
 
-            //System.Windows.Forms.DataGridViewCellStyle dataGridViewCellStyle = new System.Windows.Forms.DataGridViewCellStyle();
-
-            //AllowUserToAddRows = false;
-            //AllowUserToDeleteRows = false;
-            //Anchor = ((System.Windows.Forms.AnchorStyles)(((System.Windows.Forms.AnchorStyles.Top | System.Windows.Forms.AnchorStyles.Bottom) |
-            //                                                System.Windows.Forms.AnchorStyles.Left)));
-
-            //dataGridViewCellStyle.Alignment = System.Windows.Forms.DataGridViewContentAlignment.MiddleCenter;
-            //dataGridViewCellStyle.BackColor = System.Drawing.SystemColors.Control;
-            //dataGridViewCellStyle.Font = new System.Drawing.Font("Microsoft Sans Serif", 8.25F, System.Drawing.FontStyle.Regular, System.Drawing.GraphicsUnit.Point, ((byte)(204)));
-            //dataGridViewCellStyle.ForeColor = System.Drawing.SystemColors.WindowText;
-            //dataGridViewCellStyle.SelectionBackColor = System.Drawing.SystemColors.Highlight;
-            //dataGridViewCellStyle.SelectionForeColor = System.Drawing.SystemColors.HighlightText;
-            //dataGridViewCellStyle.WrapMode = System.Windows.Forms.DataGridViewTriState.True;
-
-            //ColumnHeadersDefaultCellStyle = dataGridViewCellStyle;
-            //ColumnHeadersHeightSizeMode = System.Windows.Forms.DataGridViewColumnHeadersHeightSizeMode.AutoSize;
-
-            //for (i = 0; i < this.m_arColumns.Length; i++)
-            //{
-            //    this.m_arColumns[i].obj.HeaderText = m_arColumns[i].headerText;
-            //    this.m_arColumns[i].obj.Name = m_arColumns[i].name;
-            //    this.m_arColumns[i].obj.ReadOnly = true;
-            //    //this.m_arColumns[i].obj.Width = m_arColumns[i].width;
-            //    this.m_arColumns[i].obj.SortMode = System.Windows.Forms.DataGridViewColumnSortMode.NotSortable;
-            //}
-
-            //// 
-            //// dgwHours
-            //// 
-            //this.AllowUserToAddRows = false;
-            //this.AllowUserToDeleteRows = false;
-            ////this.dgwHours.AutoSizeColumnsMode = DataGridViewAutoSizeColumnsMode.Fill;
-            ////this.dgwHours.Anchor = ((System.Windows.Forms.AnchorStyles)(((System.Windows.Forms.AnchorStyles.Top | System.Windows.Forms.AnchorStyles.Bottom)
-            ////            | System.Windows.Forms.AnchorStyles.Left)));
-            //this.Dock = DockStyle.Fill;
-            //this.ColumnHeadersHeightSizeMode = System.Windows.Forms.DataGridViewColumnHeadersHeightSizeMode.AutoSize;
-            //this.Columns.AddRange(new System.Windows.Forms.DataGridViewColumn[] {
-            //this.m_arColumns[(int)INDEX_COLUMNS.PART_TIME].obj,
-            //this.m_arColumns[(int)INDEX_COLUMNS.FACT].obj,
-            //this.m_arColumns[(int)INDEX_COLUMNS.PBR].obj,
-            //this.m_arColumns[(int)INDEX_COLUMNS.PBRe].obj,
-            //this.m_arColumns[(int)INDEX_COLUMNS.UDGe].obj,
-            //this.m_arColumns[(int)INDEX_COLUMNS.DEVIATION].obj,
-            //this.m_arColumns[(int)INDEX_COLUMNS.LAST_MINUTES].obj});
-            ////this.dgwHours.Location = arPlacement[(int)CONTROLS.dgwHours].pt;
-            //this.Name = "dgwHour";
-            //this.ReadOnly = true;
-            //this.RowHeadersVisible = false;
-            ////this.dgwHours.Size = arPlacement[(int)CONTROLS.dgwHours].sz;
-            //this.TabIndex = 7;
-            //this.RowTemplate.Resizable = DataGridViewTriState.False;
-
             this.ContextMenuStrip = new ContextMenuStrip ();
             for (i = 0; i < m_arColumns.Length - 1; i++)
             {

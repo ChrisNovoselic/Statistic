@@ -91,10 +91,13 @@ namespace Statistic
                 , listTec.Count);
 
             for (i = 0; i < listTec.Count; i++)
-            {
-                ptcp = new PanelTecSobstvNyzhdy(listTec[i]/*, fErrRep, fWarRep, fActRep, fRepClr*/);
-                this.Controls.Add(ptcp, i % this.ColumnCount, i / this.ColumnCount);
-            }
+                if (! (listTec[i].m_id > 10))
+                {
+                    ptcp = new PanelTecSobstvNyzhdy(listTec[i]/*, fErrRep, fWarRep, fActRep, fRepClr*/);
+                    this.Controls.Add(ptcp, i % this.ColumnCount, i / this.ColumnCount);
+                }
+                else
+                    ;
         }
 
         public PanelSobstvNyzhdy(IContainer container, List<StatisticCommon.TEC> listTec/*, DelegateStringFunc fErrRep, DelegateStringFunc fWarRep, DelegateStringFunc fActRep, DelegateBoolFunc fREpClr*/)

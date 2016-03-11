@@ -512,7 +512,7 @@ namespace StatisticDiagnostic
                         actionReport(@"Получение значений из БД - состояние: " + ((State)state).ToString());
                         break;
                     case (int)State.UpdateSource:
-                        Request(m_dictIdListeners[0][(int)CONN_SETT_TYPE.CONFIG_DB], InitTECBase.getQueryListTEC(false, true));
+                        Request(m_dictIdListeners[0][(int)CONN_SETT_TYPE.CONFIG_DB], InitTECBase.getQueryListTEC(false, new int[] { 0, 10 }));
                         actionReport(@"Обновление списка активных источников - состояние: " + ((State)state).ToString());
                         break;
                     default:
@@ -2685,7 +2685,7 @@ namespace StatisticDiagnostic
                 m_dtGTP = DbTSQLInterface.Select(ref dbconn, "SELECT * FROM GTP_LIST", null, null, out err);
                 m_dtSIZEDB = DbTSQLInterface.Select(ref dbconn, "SELECT * FROM DIAGNOSTIC_SIZEDB", null, null, out err);
                 m_dtParamDiagnostic = DbTSQLInterface.Select(ref dbconn, "SELECT * FROM DIAGNOSTIC_PARAM", null, null, out err);
-                m_dtTECList = InitTEC_200.getListTEC(ref dbconn, false, true, out err);
+                m_dtTECList = InitTEC_200.getListTEC(ref dbconn, false, new int[] { 0, 10 }, out err);
             }
             else
                 throw new Exception(@"Нет соединения с БД");

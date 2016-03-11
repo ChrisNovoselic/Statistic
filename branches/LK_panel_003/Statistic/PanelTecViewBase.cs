@@ -575,8 +575,9 @@ namespace Statistic
 
         protected override void initTableHourRows()
         {
-            m_tecView.m_curDate = _pnlQuickData.dtprDate.Value.Date;
-            m_tecView.serverTime = m_tecView.m_curDate;
+            m_tecView.m_curDate = 
+            m_tecView.serverTime = 
+                _pnlQuickData.dtprDate.Value.Date;
 
             if (m_tecView.m_curDate.Date.Equals(HAdmin.SeasonDateTime.Date) == false)
             {
@@ -858,9 +859,15 @@ namespace Statistic
             
             //14.04.2015 ???
             if (m_tecView.currHour == true)
-                ChangeState();
+            {
+                //// выполнить ф-ю
+                //changeState();
+                // выполнить действия из ф-ии
+                m_tecView.m_curDate = _pnlQuickData.dtprDate.Value;
+                m_tecView.ChangeState();
+            }
             else
-                m_tecView.GetRetroValues ();
+                m_tecView.GetRetroValues();
 
             //delegateStopWait ();
             if (!(delegateStopWait == null)) delegateStopWait(); else ;
@@ -922,12 +929,12 @@ namespace Statistic
             NewDateRefresh();
         }
 
-        private void ChangeState()
-        {
-            m_tecView.m_curDate = _pnlQuickData.dtprDate.Value;
+        //private void changeState()
+        //{
+        //    m_tecView.m_curDate = _pnlQuickData.dtprDate.Value;
             
-            m_tecView.ChangeState ();
-        }
+        //    m_tecView.ChangeState ();
+        //}
 
         protected bool timerCurrentStarted
         {
@@ -1929,7 +1936,6 @@ namespace Statistic
                     }
 
                     m_tecView.m_arTypeSourceData[(int)indx_time] = curTypeSourceData;
-
 
                     if (indx_time == HDateTime.INTERVAL.MINUTES)
                     {

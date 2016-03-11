@@ -361,12 +361,13 @@ namespace Statistic
                 //: base(new int[] { 8, 15, 15, 15, 15, 15, 15 })
                 : base(
                     HDateTime.INTERVAL.HOURS
-                    , new ColumnProperies[] { new ColumnProperies (27, 8, @"Час", @"Hour")
-                    , new ColumnProperies (47, 18, @"t час", @"Temperature")
-                    , new ColumnProperies (47, 18, @"P час", @"PowerSum")
-                    , new ColumnProperies (47, 18, @"P ф1", @"PowerF1")
-                    , new ColumnProperies (47, 18, @"P ф2", @"PowerF2")
-                    , new ColumnProperies (42, 18, @"+/-", @"DeviationHour")
+                    , new ColumnProperies[] { new ColumnProperies (27, 10, @"Час", @"Hour")
+                    , new ColumnProperies (47, 15, @"t час", @"TemperaturePBR")
+                    , new ColumnProperies (47, 15, @"P час", @"PowerPBR")
+                    , new ColumnProperies (47, 15, @"t пл/ч", @"TemperatureFact")
+                    , new ColumnProperies (47, 15, @"P пл/ч", @"PowerFact")
+                    , new ColumnProperies (42, 15, @"t +/-", @"TemperatureDevHour")
+                    , new ColumnProperies (42, 15, @"P +/-", @"PowerDevHour")
             })
             {
                 InitializeComponents();
