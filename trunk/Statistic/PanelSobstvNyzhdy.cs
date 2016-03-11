@@ -91,10 +91,13 @@ namespace Statistic
                 , listTec.Count);
 
             for (i = 0; i < listTec.Count; i++)
-            {
-                ptcp = new PanelTecSobstvNyzhdy(listTec[i]/*, fErrRep, fWarRep, fActRep, fRepClr*/);
-                this.Controls.Add(ptcp, i % this.ColumnCount, i / this.ColumnCount);
-            }
+                if (! (listTec[i].m_id > 10))
+                {
+                    ptcp = new PanelTecSobstvNyzhdy(listTec[i]/*, fErrRep, fWarRep, fActRep, fRepClr*/);
+                    this.Controls.Add(ptcp, i % this.ColumnCount, i / this.ColumnCount);
+                }
+                else
+                    ;
         }
 
         public PanelSobstvNyzhdy(IContainer container, List<StatisticCommon.TEC> listTec/*, DelegateStringFunc fErrRep, DelegateStringFunc fWarRep, DelegateStringFunc fActRep, DelegateBoolFunc fREpClr*/)
@@ -868,10 +871,10 @@ namespace Statistic
                     {
                         string strSheetName = "Часовые_знач";
                         //int indxItemMenuStrip = -1;
-                        //if (m_tecView.m_arTypeSourceData[(int)TG.ID_TIME.HOURS] == CONN_SETT_TYPE.DATA_ASKUE)
+                        //if (m_tecView.m_arTypeSourceData[(int)HDateTime.INTERVAL.HOURS] == CONN_SETT_TYPE.DATA_ASKUE)
                         //    indxItemMenuStrip = m_ZedGraphHours.ContextMenuStrip.Items.Count - 2;
                         //else
-                        //    if (m_tecView.m_arTypeSourceData[(int)TG.ID_TIME.HOURS] == CONN_SETT_TYPE.DATA_SOTIASSO)
+                        //    if (m_tecView.m_arTypeSourceData[(int)HDateTime.INTERVAL.HOURS] == CONN_SETT_TYPE.DATA_SOTIASSO)
                         //        indxItemMenuStrip = m_ZedGraphHours.ContextMenuStrip.Items.Count - 1;
                         //    else
                         //        ;

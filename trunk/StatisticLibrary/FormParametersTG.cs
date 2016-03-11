@@ -35,24 +35,24 @@ namespace StatisticCommon
 
             //delegateParamsApply = delParApp;
 
-            if ((m_tg_id_default.Length / m_tg_id_default.Rank == COUNT_TG) && (m_tg_id_default.Rank == (int)TG.ID_TIME.COUNT_ID_TIME)) ;
+            if ((m_tg_id_default.Length / m_tg_id_default.Rank == COUNT_TG) && (m_tg_id_default.Rank == (int)HDateTime.INTERVAL.COUNT_ID_TIME)) ;
             else ;
 
-            m_tg_id = new int[(int)TG.ID_TIME.COUNT_ID_TIME, COUNT_TG];
-            for (int i = (int)TG.ID_TIME.MINUTES; i < (int)TG.ID_TIME.COUNT_ID_TIME; i++)
+            m_tg_id = new int[(int)HDateTime.INTERVAL.COUNT_ID_TIME, COUNT_TG];
+            for (int i = (int)HDateTime.INTERVAL.MINUTES; i < (int)HDateTime.INTERVAL.COUNT_ID_TIME; i++)
             {
                 for (int j = 0; j < COUNT_TG; j++)
                 {
                     m_tg_id[i, j] = m_tg_id_default[i, j];
                 }
             }
-            m_array_tbxTG = new System.Windows.Forms.TextBox[(int)TG.ID_TIME.COUNT_ID_TIME, COUNT_TG];
-            m_array_lblTG = new System.Windows.Forms.Label[(int)TG.ID_TIME.COUNT_ID_TIME, COUNT_TG];
+            m_array_tbxTG = new System.Windows.Forms.TextBox[(int)HDateTime.INTERVAL.COUNT_ID_TIME, COUNT_TG];
+            m_array_lblTG = new System.Windows.Forms.Label[(int)HDateTime.INTERVAL.COUNT_ID_TIME, COUNT_TG];
 
-            //m_array_lblTG[(int)TG.ID_TIME.MINUTES, 0] = new Label();
-            //m_array_tbxTG[(int)TG.ID_TIME.MINUTES, 0] = tbxTG1Mins;
+            //m_array_lblTG[(int)HDateTime.INTERVAL.MINUTES, 0] = new Label();
+            //m_array_tbxTG[(int)HDateTime.INTERVAL.MINUTES, 0] = tbxTG1Mins;
 
-            for (int i = (int)TG.ID_TIME.MINUTES; i < (int)TG.ID_TIME.COUNT_ID_TIME; i++)
+            for (int i = (int)HDateTime.INTERVAL.MINUTES; i < (int)HDateTime.INTERVAL.COUNT_ID_TIME; i++)
             {
                 for (int j = 0; j < COUNT_TG; j++)
                 {
@@ -81,7 +81,7 @@ namespace StatisticCommon
                 }
             }
 
-            int posY = m_array_tbxTG[(int)TG.ID_TIME.COUNT_ID_TIME - 1, COUNT_TG - 1].Location.Y + m_array_tbxTG[(int)TG.ID_TIME.COUNT_ID_TIME - 1, COUNT_TG - 1].Size.Height + (COUNT_TG + 1) * 2;
+            int posY = m_array_tbxTG[(int)HDateTime.INTERVAL.COUNT_ID_TIME - 1, COUNT_TG - 1].Location.Y + m_array_tbxTG[(int)HDateTime.INTERVAL.COUNT_ID_TIME - 1, COUNT_TG - 1].Size.Height + (COUNT_TG + 1) * 2;
             btnCancel.Location = new System.Drawing.Point(47, posY);
             btnOk.Location = new System.Drawing.Point(148, posY);
             btnReset.Location = new System.Drawing.Point(251, posY);
@@ -93,7 +93,7 @@ namespace StatisticCommon
 
         private void btnReset_Click(object sender, EventArgs e)
         {
-            for (int i = 0; i < (int)TG.ID_TIME.COUNT_ID_TIME; i++)
+            for (int i = 0; i < (int)HDateTime.INTERVAL.COUNT_ID_TIME; i++)
             {
                 for (int j = 0; j < COUNT_TG; j++)
                     m_tg_id[i, j] = m_tg_id_default[i, j];
@@ -113,7 +113,7 @@ namespace StatisticCommon
             base.buttonCancel_Click(sender, e);
         }
 
-        public int ParamsGetTgId(TG.ID_TIME id_time, int sensor)
+        public int ParamsGetTgId(HDateTime.INTERVAL id_time, int sensor)
         {
             return m_tg_id[(int)id_time, sensor];
         }
@@ -123,8 +123,8 @@ namespace StatisticCommon
             int tg_id;
             for (int i = 0; i < COUNT_TG; i++)
             {
-                if (int.TryParse(m_array_tbxTG[(int)TG.ID_TIME.MINUTES, i].Text, out tg_id)) m_tg_id[(int)TG.ID_TIME.MINUTES, i] = tg_id; else m_array_tbxTG[(int)TG.ID_TIME.MINUTES, i].Text = m_tg_id[(int)TG.ID_TIME.MINUTES, i].ToString();
-                if (int.TryParse(m_array_tbxTG[(int)TG.ID_TIME.HOURS, i].Text, out tg_id)) m_tg_id[(int)TG.ID_TIME.HOURS, i] = tg_id; else m_array_tbxTG[(int)TG.ID_TIME.HOURS, i].Text = m_tg_id[(int)TG.ID_TIME.HOURS, i].ToString();
+                if (int.TryParse(m_array_tbxTG[(int)HDateTime.INTERVAL.MINUTES, i].Text, out tg_id)) m_tg_id[(int)HDateTime.INTERVAL.MINUTES, i] = tg_id; else m_array_tbxTG[(int)HDateTime.INTERVAL.MINUTES, i].Text = m_tg_id[(int)HDateTime.INTERVAL.MINUTES, i].ToString();
+                if (int.TryParse(m_array_tbxTG[(int)HDateTime.INTERVAL.HOURS, i].Text, out tg_id)) m_tg_id[(int)HDateTime.INTERVAL.HOURS, i] = tg_id; else m_array_tbxTG[(int)HDateTime.INTERVAL.HOURS, i].Text = m_tg_id[(int)HDateTime.INTERVAL.HOURS, i].ToString();
             }
 
             saveParam();
@@ -145,10 +145,17 @@ namespace StatisticCommon
 
         protected override void loadParam(bool bInit)
         {
-            for (int i = 0; i < (int)TG.ID_TIME.COUNT_ID_TIME; i++)
+            try
             {
-                for (int j = 0; j < COUNT_TG; j++)
-                    m_array_tbxTG[i, j].Text = m_tg_id[i, j].ToString();
+                for (int i = 0; i < (int)HDateTime.INTERVAL.COUNT_ID_TIME; i++)
+                {
+                    for (int j = 0; j < COUNT_TG; j++)
+                        m_array_tbxTG[i, j].Text = m_tg_id[i, j].ToString();
+                }
+            }
+            catch (Exception e)
+            {
+                Logging.Logg().Exception(e, @"FormParametersTG::loadParam () - ...", Logging.INDEX_MESSAGE.NOT_SET);
             }
         }
     }
@@ -175,7 +182,7 @@ namespace StatisticCommon
             string[] key_values;
             int tg_id;
 
-            for (int i = 0; i < (int)TG.ID_TIME.COUNT_ID_TIME; i++)
+            for (int i = 0; i < (int)HDateTime.INTERVAL.COUNT_ID_TIME; i++)
             {
                 for (int j = 0; j < COUNT_TG; j++)
                 {
@@ -214,7 +221,7 @@ namespace StatisticCommon
 
         protected override void saveParam()
         {
-            for (int i = 0; i < (int)TG.ID_TIME.COUNT_ID_TIME; i++)
+            for (int i = 0; i < (int)HDateTime.INTERVAL.COUNT_ID_TIME; i++)
             {
                 for (int j = 0; j < COUNT_TG; j++)
                 {
@@ -293,7 +300,7 @@ namespace StatisticCommon
                 {
                     rowsRes = tblTGSensors.Select(getWhereParamTG(j + 1));
                     if (rowsRes.Length == 1)
-                        for (int i = (int)TG.ID_TIME.MINUTES; i < (int)TG.ID_TIME.COUNT_ID_TIME; i++)
+                        for (int i = (int)HDateTime.INTERVAL.MINUTES; i < (int)HDateTime.INTERVAL.COUNT_ID_TIME; i++)
                             if (int.TryParse(rowsRes[0][NAME_FIELDS_TIME[i]].ToString(), out tg_id) == true)
                                 m_tg_id[i, j] = tg_id;
                             else ;
@@ -318,7 +325,7 @@ namespace StatisticCommon
                         {
                             rowsRes = tblTGSensors.Select(getWhereParamTG(j + 1));
                             if (rowsRes.Length == 1) {
-                                for (int i = (int)TG.ID_TIME.MINUTES; i < (int)TG.ID_TIME.COUNT_ID_TIME; i++)
+                                for (int i = (int)HDateTime.INTERVAL.MINUTES; i < (int)HDateTime.INTERVAL.COUNT_ID_TIME; i++)
                                     if (int.TryParse(rowsRes[0][NAME_FIELDS_TIME[i]].ToString(), out tg_id) == true)
                                         m_tg_id_default[i, j] = tg_id;
                                     else ;
@@ -330,7 +337,7 @@ namespace StatisticCommon
                     } else {
                         for (j = 0; j < COUNT_TG; j++)
                         {
-                            for (int i = (int)TG.ID_TIME.MINUTES; i < (int)TG.ID_TIME.COUNT_ID_TIME; i++)
+                            for (int i = (int)HDateTime.INTERVAL.MINUTES; i < (int)HDateTime.INTERVAL.COUNT_ID_TIME; i++)
                             {
                                 m_tg_id_default [i, j] = m_tg_id [i, j];
                             }
@@ -368,8 +375,8 @@ namespace StatisticCommon
                 queryInsert += @"'" + SENSORS_NAME_PREFIX + (j + 1).ToString () + SENSORS_NAME_POSTFIX + @"'" + @",";
                 queryInsert += @"GETDATE(),";
                 queryInsert += m_tec.m_listTG [j].m_id + @",";
-                queryInsert += m_array_tbxTG[(int)TG.ID_TIME.MINUTES, j].Text + @",";
-                queryInsert += m_array_tbxTG[(int)TG.ID_TIME.HOURS, j].Text;
+                queryInsert += m_array_tbxTG[(int)HDateTime.INTERVAL.MINUTES, j].Text + @",";
+                queryInsert += m_array_tbxTG[(int)HDateTime.INTERVAL.HOURS, j].Text;
                 queryInsert += @"),";
             }
 

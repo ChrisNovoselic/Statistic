@@ -77,6 +77,11 @@ namespace Statistic
             this.m_ZedGraphHours.InitializeEventHandler(this.ýêñåëüToolStripMenuItemHours_Click, this.sourceDataHours_Click);
         }
 
+        protected override void createDataGridViewHours()
+        {
+            this.m_dgwHours = new DataGridViewStandardHours();
+        }
+
         private void ýêñåëüToolStripMenuItemMins_Click(object sender, EventArgs e)
         {
             lock (m_tecView.m_lockValue)
@@ -95,10 +100,10 @@ namespace Statistic
                 {
                     string strSheetName = "Ìèíóòíûå_çíà÷";
                     //int indxItemMenuStrip = -1;
-                    //if (m_tecView.m_arTypeSourceData[(int)TG.ID_TIME.MINUTES] == CONN_SETT_TYPE.DATA_ASKUE)
+                    //if (m_tecView.m_arTypeSourceData[(int)HDateTime.INTERVAL.MINUTES] == CONN_SETT_TYPE.DATA_ASKUE)
                     //    indxItemMenuStrip = m_ZedGraphHours.ContextMenuStrip.Items.Count - 2;
                     //else
-                    //    if (m_tecView.m_arTypeSourceData[(int)TG.ID_TIME.MINUTES] == CONN_SETT_TYPE.DATA_SOTIASSO)
+                    //    if (m_tecView.m_arTypeSourceData[(int)HDateTime.INTERVAL.MINUTES] == CONN_SETT_TYPE.DATA_SOTIASSO)
                     //        indxItemMenuStrip = m_ZedGraphHours.ContextMenuStrip.Items.Count - 1;
                     //    else
                     //        ;
@@ -215,10 +220,10 @@ namespace Statistic
                 {
                     string strSheetName = "×àñîâûå_çíà÷";
                     //int indxItemMenuStrip = -1;
-                    //if (m_tecView.m_arTypeSourceData[(int)TG.ID_TIME.HOURS] == CONN_SETT_TYPE.DATA_ASKUE)
+                    //if (m_tecView.m_arTypeSourceData[(int)HDateTime.INTERVAL.HOURS] == CONN_SETT_TYPE.DATA_ASKUE)
                     //    indxItemMenuStrip = m_ZedGraphHours.ContextMenuStrip.Items.Count - 2;
                     //else
-                    //    if (m_tecView.m_arTypeSourceData[(int)TG.ID_TIME.HOURS] == CONN_SETT_TYPE.DATA_SOTIASSO)
+                    //    if (m_tecView.m_arTypeSourceData[(int)HDateTime.INTERVAL.HOURS] == CONN_SETT_TYPE.DATA_SOTIASSO)
                     //        indxItemMenuStrip = m_ZedGraphHours.ContextMenuStrip.Items.Count - 1;
                     //    else
                     //        ;
@@ -362,7 +367,7 @@ namespace Statistic
                     //m_tecView.lastMin = prevLastMin;
 
                     if (m_tecView.currHour == false)
-                        setRetroTickTime(m_tecView.lastHour, (index + 1) * m_tecView.GetIntervalOfTypeSourceData(TG.ID_TIME.MINUTES));
+                        setRetroTickTime(m_tecView.lastHour, (index + 1) * m_tecView.GetIntervalOfTypeSourceData(HDateTime.INTERVAL.MINUTES));
                     else
                         ;
                 }

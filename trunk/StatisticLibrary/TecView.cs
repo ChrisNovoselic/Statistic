@@ -1,6 +1,7 @@
 using System;
 using System.Windows.Forms;
 using System.IO;
+using System.Diagnostics;
 using System.Data;
 using System.Collections.Generic;
 using System.Threading;
@@ -233,9 +234,9 @@ namespace StatisticCommon
             m_localTECComponents = new List<TECComponentBase>();
             //tgsName = new List<System.Windows.Forms.Label>();
 
-            m_arTypeSourceData = new CONN_SETT_TYPE [(int)TG.ID_TIME.COUNT_ID_TIME];
+            m_arTypeSourceData = new CONN_SETT_TYPE [(int)HDateTime.INTERVAL.COUNT_ID_TIME];
 
-            m_arValueCurrentTM_Gen = new double[(int)TG.ID_TIME.COUNT_ID_TIME] { -1F, -1F };
+            m_arValueCurrentTM_Gen = new double[(int)HDateTime.INTERVAL.COUNT_ID_TIME] { -1F, -1F };
 
             ClearStates();
         }
@@ -350,22 +351,22 @@ namespace StatisticCommon
                 ;
 
             //??? а где AISKUE+SOTIASSO
-            if (m_arTypeSourceData[(int)TG.ID_TIME.HOURS] == CONN_SETT_TYPE.DATA_AISKUE)
+            if (m_arTypeSourceData[(int)HDateTime.INTERVAL.HOURS] == CONN_SETT_TYPE.DATA_AISKUE)
                 AddState((int)StatesMachine.Hours_Fact);
             else
-                if ((m_arTypeSourceData[(int)TG.ID_TIME.HOURS] == CONN_SETT_TYPE.DATA_SOTIASSO_3_MIN)
-                    || (m_arTypeSourceData[(int)TG.ID_TIME.HOURS] == CONN_SETT_TYPE.DATA_SOTIASSO_1_MIN)
-                    || (m_arTypeSourceData[(int)TG.ID_TIME.HOURS] == CONN_SETT_TYPE.DATA_SOTIASSO))
+                if ((m_arTypeSourceData[(int)HDateTime.INTERVAL.HOURS] == CONN_SETT_TYPE.DATA_SOTIASSO_3_MIN)
+                    || (m_arTypeSourceData[(int)HDateTime.INTERVAL.HOURS] == CONN_SETT_TYPE.DATA_SOTIASSO_1_MIN)
+                    || (m_arTypeSourceData[(int)HDateTime.INTERVAL.HOURS] == CONN_SETT_TYPE.DATA_SOTIASSO))
                     AddState((int)StatesMachine.Hours_TM);
                 else
                     ;
 
-            if (m_arTypeSourceData[(int)TG.ID_TIME.MINUTES] == CONN_SETT_TYPE.DATA_AISKUE)
+            if (m_arTypeSourceData[(int)HDateTime.INTERVAL.MINUTES] == CONN_SETT_TYPE.DATA_AISKUE)
                 AddState((int)StatesMachine.CurrentMins_Fact);
             else
-                if ((m_arTypeSourceData[(int)TG.ID_TIME.MINUTES] == CONN_SETT_TYPE.DATA_SOTIASSO_3_MIN)
-                    || (m_arTypeSourceData[(int)TG.ID_TIME.MINUTES] == CONN_SETT_TYPE.DATA_SOTIASSO_1_MIN)
-                    || (m_arTypeSourceData[(int)TG.ID_TIME.MINUTES] == CONN_SETT_TYPE.DATA_SOTIASSO))
+                if ((m_arTypeSourceData[(int)HDateTime.INTERVAL.MINUTES] == CONN_SETT_TYPE.DATA_SOTIASSO_3_MIN)
+                    || (m_arTypeSourceData[(int)HDateTime.INTERVAL.MINUTES] == CONN_SETT_TYPE.DATA_SOTIASSO_1_MIN)
+                    || (m_arTypeSourceData[(int)HDateTime.INTERVAL.MINUTES] == CONN_SETT_TYPE.DATA_SOTIASSO))
                     AddState((int)StatesMachine.CurrentMins_TM);
                 else
                     ;
@@ -420,6 +421,37 @@ namespace StatisticCommon
             }
         }
 
+        public double GetSummaFactValues()
+        {
+            double dblRes = 0F;
+
+            int min = lastMin;
+
+            if (!(min == 0)) min--; else ;
+
+            for (int i = 0; i < listTG.Count; i++)
+            {
+                if (m_dictValuesTG[listTG[i].m_id].m_bPowerMinutesRecieved == false)
+                    //Не учитывать ТГ, для которого НЕ было получено НИ одного значения
+                    continue;
+                else
+                    ;
+
+                if (!(m_dictValuesTG[listTG[i].m_id].m_powerMinutes[min] < 0))
+                    if (m_dictValuesTG[listTG[i].m_id].m_powerMinutes[min] > 1)
+                        dblRes += m_dictValuesTG[listTG[i].m_id].m_powerMinutes[min];
+                    else ;
+                else
+                {
+                    //bMinValuesReceived = false;
+
+                    //break;
+                }
+            }
+
+            return dblRes;
+        }
+
         public void ChangeState_SobstvNyzhdy () 
         {
                 ClearStates();
@@ -460,6 +492,30 @@ namespace StatisticCommon
 
         private void ChangeState_AdminAlarm () {
             new Thread(new ParameterizedThreadStart(threadGetRDGValues)).Start();
+        }
+
+        public void ChangeState_LK()
+        {
+            ClearStates();
+
+            //ClearValues();
+
+            using_date = false;
+
+            if (m_tec.m_bSensorsStrings == true)
+                if (currHour == true)
+                    AddState((int)StatesMachine.CurrentTimeView);
+                else
+                    ;
+            else
+            {
+                AddState((int)StatesMachine.InitSensors);
+                AddState((int)StatesMachine.CurrentTimeView);
+            }
+
+            AddState((int)TecView.StatesMachine.Hours_Fact);
+            AddState((int)TecView.StatesMachine.PPBRValues);
+            AddState((int)TecView.StatesMachine.AdminValues);
         }
 
         public override bool Activate(bool active)
@@ -665,7 +721,7 @@ namespace StatisticCommon
                 {
                     kks_name = table.Rows[i]["KKS_NAME"].ToString();
 
-                    tgTmp = m_tec.FindTGById(kks_name, TG.INDEX_VALUE.TM, (TG.ID_TIME)(-1));
+                    tgTmp = m_tec.FindTGById(kks_name, TG.INDEX_VALUE.TM, (HDateTime.INTERVAL)(-1));
 
                     if (tgTmp == null)
                         return -1;
@@ -862,7 +918,7 @@ namespace StatisticCommon
 
         private string getNameInterval () {
             string strRes = string.Empty;
-            switch (m_arTypeSourceData[(int)TG.ID_TIME.MINUTES])
+            switch (m_arTypeSourceData[(int)HDateTime.INTERVAL.MINUTES])
             {
                 case CONN_SETT_TYPE.DATA_SOTIASSO_3_MIN:
                 case CONN_SETT_TYPE.DATA_AISKUE_PLUS_SOTIASSO:
@@ -1348,12 +1404,12 @@ namespace StatisticCommon
                 case (int)StatesMachine.RetroMins_Fact:
                 case (int)StatesMachine.RetroMins_TM:
                     ClearValuesMins();
-                    if ((m_arTypeSourceData[(int)TG.ID_TIME.MINUTES] == CONN_SETT_TYPE.DATA_AISKUE)
-                        || (m_arTypeSourceData[(int)TG.ID_TIME.MINUTES] == CONN_SETT_TYPE.DATA_AISKUE_PLUS_SOTIASSO))
+                    if ((m_arTypeSourceData[(int)HDateTime.INTERVAL.MINUTES] == CONN_SETT_TYPE.DATA_AISKUE)
+                        || (m_arTypeSourceData[(int)HDateTime.INTERVAL.MINUTES] == CONN_SETT_TYPE.DATA_AISKUE_PLUS_SOTIASSO))
                         iRes = GetMinsFactResponse(table as System.Data.DataTable);
                     else
-                        if ((m_arTypeSourceData[(int)TG.ID_TIME.MINUTES] == CONN_SETT_TYPE.DATA_SOTIASSO_3_MIN)
-                            || (m_arTypeSourceData[(int)TG.ID_TIME.MINUTES] == CONN_SETT_TYPE.DATA_SOTIASSO_1_MIN))
+                        if ((m_arTypeSourceData[(int)HDateTime.INTERVAL.MINUTES] == CONN_SETT_TYPE.DATA_SOTIASSO_3_MIN)
+                            || (m_arTypeSourceData[(int)HDateTime.INTERVAL.MINUTES] == CONN_SETT_TYPE.DATA_SOTIASSO_1_MIN))
                             iRes = GetMinsTMResponse(table as System.Data.DataTable);
                         else
                             ;
@@ -1469,7 +1525,7 @@ namespace StatisticCommon
             }
 
             //Часы...
-            if (m_arTypeSourceData[(int)TG.ID_TIME.HOURS] == CONN_SETT_TYPE.DATA_AISKUE_PLUS_SOTIASSO)
+            if (m_arTypeSourceData[(int)HDateTime.INTERVAL.HOURS] == CONN_SETT_TYPE.DATA_AISKUE_PLUS_SOTIASSO)
             {
                 AddState((int)StatesMachine.Hours_Fact);
                 if (currHour == true)
@@ -1478,16 +1534,16 @@ namespace StatisticCommon
                     ;
             }
             else
-                if (m_arTypeSourceData[(int)TG.ID_TIME.HOURS] == CONN_SETT_TYPE.DATA_AISKUE)
+                if (m_arTypeSourceData[(int)HDateTime.INTERVAL.HOURS] == CONN_SETT_TYPE.DATA_AISKUE)
                     AddState((int)StatesMachine.Hours_Fact);
                 else
-                    if ((m_arTypeSourceData[(int)TG.ID_TIME.HOURS] == CONN_SETT_TYPE.DATA_SOTIASSO_3_MIN)
-                        ||(m_arTypeSourceData[(int)TG.ID_TIME.HOURS] == CONN_SETT_TYPE.DATA_SOTIASSO_1_MIN))
+                    if ((m_arTypeSourceData[(int)HDateTime.INTERVAL.HOURS] == CONN_SETT_TYPE.DATA_SOTIASSO_3_MIN)
+                        ||(m_arTypeSourceData[(int)HDateTime.INTERVAL.HOURS] == CONN_SETT_TYPE.DATA_SOTIASSO_1_MIN))
                         AddState((int)StatesMachine.Hours_TM);
                     else
                         ;
             //Минуты...
-            if (m_arTypeSourceData[(int)TG.ID_TIME.MINUTES] == CONN_SETT_TYPE.DATA_AISKUE_PLUS_SOTIASSO)
+            if (m_arTypeSourceData[(int)HDateTime.INTERVAL.MINUTES] == CONN_SETT_TYPE.DATA_AISKUE_PLUS_SOTIASSO)
             {
                 AddState((int)StatesMachine.CurrentMins_Fact);
                 if (currHour == true)
@@ -1496,11 +1552,11 @@ namespace StatisticCommon
                     ;
             }
             else
-                if (m_arTypeSourceData[(int)TG.ID_TIME.MINUTES] == CONN_SETT_TYPE.DATA_AISKUE)
+                if (m_arTypeSourceData[(int)HDateTime.INTERVAL.MINUTES] == CONN_SETT_TYPE.DATA_AISKUE)
                     AddState((int)StatesMachine.CurrentMins_Fact);
                 else
-                    if ((m_arTypeSourceData[(int)TG.ID_TIME.MINUTES] == CONN_SETT_TYPE.DATA_SOTIASSO_3_MIN)
-                        || (m_arTypeSourceData[(int)TG.ID_TIME.MINUTES] == CONN_SETT_TYPE.DATA_SOTIASSO_1_MIN))
+                    if ((m_arTypeSourceData[(int)HDateTime.INTERVAL.MINUTES] == CONN_SETT_TYPE.DATA_SOTIASSO_3_MIN)
+                        || (m_arTypeSourceData[(int)HDateTime.INTERVAL.MINUTES] == CONN_SETT_TYPE.DATA_SOTIASSO_1_MIN))
                         AddState((int)StatesMachine.CurrentMins_TM);
                     else
                         ;
@@ -1547,6 +1603,9 @@ namespace StatisticCommon
                         break;
                     case TYPE_PANEL.SOTIASSO:
                         ChangeState_SOTIASSO();
+                        break;
+                    case TYPE_PANEL.LK:
+                        ChangeState_LK();
                         break;
                     default:
                         break;
@@ -1621,12 +1680,12 @@ namespace StatisticCommon
 
                 adminValuesReceived = false;
 
-                if ((m_arTypeSourceData[(int)TG.ID_TIME.HOURS] == CONN_SETT_TYPE.DATA_AISKUE)
-                    || (m_arTypeSourceData[(int)TG.ID_TIME.HOURS] == CONN_SETT_TYPE.DATA_AISKUE_PLUS_SOTIASSO))
+                if ((m_arTypeSourceData[(int)HDateTime.INTERVAL.HOURS] == CONN_SETT_TYPE.DATA_AISKUE)
+                    || (m_arTypeSourceData[(int)HDateTime.INTERVAL.HOURS] == CONN_SETT_TYPE.DATA_AISKUE_PLUS_SOTIASSO))
                     AddState((int)StatesMachine.Hours_Fact);
                 else
-                    if ((m_arTypeSourceData[(int)TG.ID_TIME.HOURS] == CONN_SETT_TYPE.DATA_SOTIASSO_3_MIN)
-                        || (m_arTypeSourceData[(int)TG.ID_TIME.HOURS] == CONN_SETT_TYPE.DATA_SOTIASSO_1_MIN))
+                    if ((m_arTypeSourceData[(int)HDateTime.INTERVAL.HOURS] == CONN_SETT_TYPE.DATA_SOTIASSO_3_MIN)
+                        || (m_arTypeSourceData[(int)HDateTime.INTERVAL.HOURS] == CONN_SETT_TYPE.DATA_SOTIASSO_1_MIN))
                         AddState((int)StatesMachine.Hours_TM);
                     else
                         ;
@@ -1638,7 +1697,7 @@ namespace StatisticCommon
             }
         }
 
-        public void GetRetroValues()
+        public virtual void GetRetroValues()
         {
             lock (m_lockValue)
             {
@@ -1649,23 +1708,23 @@ namespace StatisticCommon
                 adminValuesReceived = false;
 
                 //Часы...
-                if ((m_arTypeSourceData[(int)TG.ID_TIME.HOURS] == CONN_SETT_TYPE.DATA_AISKUE)
-                    || (m_arTypeSourceData[(int)TG.ID_TIME.HOURS] == CONN_SETT_TYPE.DATA_AISKUE_PLUS_SOTIASSO))
+                if ((m_arTypeSourceData[(int)HDateTime.INTERVAL.HOURS] == CONN_SETT_TYPE.DATA_AISKUE)
+                    || (m_arTypeSourceData[(int)HDateTime.INTERVAL.HOURS] == CONN_SETT_TYPE.DATA_AISKUE_PLUS_SOTIASSO))
                     AddState((int)StatesMachine.Hours_Fact);
                 else
-                    if ((m_arTypeSourceData[(int)TG.ID_TIME.HOURS] == CONN_SETT_TYPE.DATA_SOTIASSO_3_MIN)
-                        || (m_arTypeSourceData[(int)TG.ID_TIME.HOURS] == CONN_SETT_TYPE.DATA_SOTIASSO_1_MIN))
+                    if ((m_arTypeSourceData[(int)HDateTime.INTERVAL.HOURS] == CONN_SETT_TYPE.DATA_SOTIASSO_3_MIN)
+                        || (m_arTypeSourceData[(int)HDateTime.INTERVAL.HOURS] == CONN_SETT_TYPE.DATA_SOTIASSO_1_MIN))
                         AddState((int)StatesMachine.Hours_TM);
                     else
                         ;
 
                 //Минуты...
-                if ((m_arTypeSourceData[(int)TG.ID_TIME.MINUTES] == CONN_SETT_TYPE.DATA_AISKUE)
-                    || (m_arTypeSourceData[(int)TG.ID_TIME.MINUTES] == CONN_SETT_TYPE.DATA_AISKUE_PLUS_SOTIASSO))
+                if ((m_arTypeSourceData[(int)HDateTime.INTERVAL.MINUTES] == CONN_SETT_TYPE.DATA_AISKUE)
+                    || (m_arTypeSourceData[(int)HDateTime.INTERVAL.MINUTES] == CONN_SETT_TYPE.DATA_AISKUE_PLUS_SOTIASSO))
                     AddState((int)StatesMachine.RetroMins_Fact);
                 else
-                    if ((m_arTypeSourceData[(int)TG.ID_TIME.MINUTES] == CONN_SETT_TYPE.DATA_SOTIASSO_3_MIN)
-                        || (m_arTypeSourceData[(int)TG.ID_TIME.MINUTES] == CONN_SETT_TYPE.DATA_SOTIASSO_1_MIN))
+                    if ((m_arTypeSourceData[(int)HDateTime.INTERVAL.MINUTES] == CONN_SETT_TYPE.DATA_SOTIASSO_3_MIN)
+                        || (m_arTypeSourceData[(int)HDateTime.INTERVAL.MINUTES] == CONN_SETT_TYPE.DATA_SOTIASSO_1_MIN))
                         AddState((int)StatesMachine.RetroMins_TM);
                     else
                         ;
@@ -1719,12 +1778,12 @@ namespace StatisticCommon
 
                 adminValuesReceived = false;
 
-                if ((m_arTypeSourceData[(int)TG.ID_TIME.MINUTES] == CONN_SETT_TYPE.DATA_AISKUE)
-                    || (m_arTypeSourceData[(int)TG.ID_TIME.MINUTES] == CONN_SETT_TYPE.DATA_AISKUE_PLUS_SOTIASSO))
+                if ((m_arTypeSourceData[(int)HDateTime.INTERVAL.MINUTES] == CONN_SETT_TYPE.DATA_AISKUE)
+                    || (m_arTypeSourceData[(int)HDateTime.INTERVAL.MINUTES] == CONN_SETT_TYPE.DATA_AISKUE_PLUS_SOTIASSO))
                     AddState((int)StatesMachine.RetroMins_Fact);
                 else
-                    if ((m_arTypeSourceData[(int)TG.ID_TIME.MINUTES] == CONN_SETT_TYPE.DATA_SOTIASSO_3_MIN)
-                        || (m_arTypeSourceData[(int)TG.ID_TIME.MINUTES] == CONN_SETT_TYPE.DATA_SOTIASSO_1_MIN))
+                    if ((m_arTypeSourceData[(int)HDateTime.INTERVAL.MINUTES] == CONN_SETT_TYPE.DATA_SOTIASSO_3_MIN)
+                        || (m_arTypeSourceData[(int)HDateTime.INTERVAL.MINUTES] == CONN_SETT_TYPE.DATA_SOTIASSO_1_MIN))
                         AddState((int)StatesMachine.RetroMins_TM);
                     else
                         ;
@@ -1764,13 +1823,13 @@ namespace StatisticCommon
 
         private void initValuesMinLength()
         {
-            if ((m_arTypeSourceData[(int)TG.ID_TIME.MINUTES] == CONN_SETT_TYPE.DATA_AISKUE) && (! (m_valuesMins.Length == 21))
-                || (m_arTypeSourceData[(int)TG.ID_TIME.MINUTES] == CONN_SETT_TYPE.DATA_AISKUE_PLUS_SOTIASSO) && (! (m_valuesMins.Length == 21))
-                || (m_arTypeSourceData[(int)TG.ID_TIME.MINUTES] == CONN_SETT_TYPE.DATA_SOTIASSO_3_MIN) && (! (m_valuesMins.Length == 21))) {
+            if ((m_arTypeSourceData[(int)HDateTime.INTERVAL.MINUTES] == CONN_SETT_TYPE.DATA_AISKUE) && (! (m_valuesMins.Length == 21))
+                || (m_arTypeSourceData[(int)HDateTime.INTERVAL.MINUTES] == CONN_SETT_TYPE.DATA_AISKUE_PLUS_SOTIASSO) && (! (m_valuesMins.Length == 21))
+                || (m_arTypeSourceData[(int)HDateTime.INTERVAL.MINUTES] == CONN_SETT_TYPE.DATA_SOTIASSO_3_MIN) && (! (m_valuesMins.Length == 21))) {
                 m_valuesMins = null;
             }
             else
-                if ((m_arTypeSourceData[(int)TG.ID_TIME.MINUTES] == CONN_SETT_TYPE.DATA_SOTIASSO_1_MIN) && (! (m_valuesMins.Length == 61))) {
+                if ((m_arTypeSourceData[(int)HDateTime.INTERVAL.MINUTES] == CONN_SETT_TYPE.DATA_SOTIASSO_1_MIN) && (! (m_valuesMins.Length == 61))) {
                     m_valuesMins = null;
                 }
                 else
@@ -1779,7 +1838,7 @@ namespace StatisticCommon
             if (m_valuesMins == null) {
                 int cnt = -1;
                 
-                switch (m_arTypeSourceData[(int)TG.ID_TIME.MINUTES]) {
+                switch (m_arTypeSourceData[(int)HDateTime.INTERVAL.MINUTES]) {
                     case CONN_SETT_TYPE.DATA_SOTIASSO_1_MIN:
                         cnt = 61;
                         break;
@@ -1853,7 +1912,7 @@ namespace StatisticCommon
             m_markWarning.UnMarked((int)INDEX_WARNING.LAST_MIN);
 
             m_dtLastChangedAt_TM_Gen = DateTime.MaxValue;
-            m_arValueCurrentTM_Gen [(int)TG.ID_TIME.MINUTES] = -1F;
+            m_arValueCurrentTM_Gen [(int)HDateTime.INTERVAL.MINUTES] = -1F;
             m_markWarning.UnMarked((int)INDEX_WARNING.CURR_MIN_TM_GEN);
         }
 
@@ -1932,7 +1991,7 @@ namespace StatisticCommon
             m_markWarning.UnMarked((int)INDEX_WARNING.LAST_HOUR);
             m_markWarning.UnMarked((int)INDEX_WARNING.LAST_HOURHALF);
 
-            m_arValueCurrentTM_Gen[(int)TG.ID_TIME.HOURS] = -1F;
+            m_arValueCurrentTM_Gen[(int)HDateTime.INTERVAL.HOURS] = -1F;
         }
 
         private void ClearPBRValues()
@@ -3130,7 +3189,7 @@ namespace StatisticCommon
             //Цикл по ТГ 
             foreach (TG tg in listTG)
             {                
-                tgRows = table.Select(@"ID=" + tg.m_arIds_fact[(int)TG.ID_TIME.HOURS], @"DATA_DATE");
+                tgRows = table.Select(@"ID=" + tg.m_arIds_fact[(int)HDateTime.INTERVAL.HOURS], @"DATA_DATE");
 
                 hour = -1;
                 offset_season = 0;
@@ -3177,81 +3236,81 @@ namespace StatisticCommon
                         //}
                         //else
                         //{
-                        //}
-                    }
-                    catch (Exception e)
-                    {
-                        Logging.Logg().Exception(e, @"PanelTecViewBase::GetHoursResponse () - ...", Logging.INDEX_MESSAGE.NOT_SET);
-                    }
+                        //}                    
 
-                    if (double.TryParse(r[@"VALUE0"].ToString(), out value) == false)
-                        return -1;
-                    else
-                        ;
-
-                    switch (m_tec.Type)
-                    {
-                        case TEC.TEC_TYPE.COMMON:
-                            break;
-                        case TEC.TEC_TYPE.BIYSK:
-                            value *= 2;
-                            break;
-                        default:
-                            break;
-                    }
-
-                    //??? для перехода через границу суток
-                    dtNeeded = dt;
-
-                    hour = (dt.Hour + dt.Minute / 30);
-                    if (hour == 0)
-                        if (!(dt.Date == dtServer.Date))
-                            //hour = m_valuesHours.Length;
-                            hour = 24;
+                        if (double.TryParse(r[@"VALUE0"].ToString(), out value) == false)
+                            return -1;
                         else
                             ;
-                    else
-                        ;
 
-                    //if (!(prev_season == (int)HAdmin.seasonJumpE.None))
-                    //{
+                        switch (m_tec.Type)
+                        {
+                            case TEC.TEC_TYPE.COMMON:
+                                break;
+                            case TEC.TEC_TYPE.BIYSK:
+                                value *= 2;
+                                break;
+                            default:
+                                break;
+                        }
+
+                        //??? для перехода через границу суток
+                        dtNeeded = dt;
+
+                        hour = (dt.Hour + dt.Minute / 30);
+                        if (hour == 0)
+                            if (!(dt.Date == dtServer.Date))
+                                //hour = m_valuesHours.Length;
+                                hour = 24;
+                            else
+                                ;
+                        else
+                            ;
+
+                        //if (!(prev_season == (int)HAdmin.seasonJumpE.None))
+                        //{
+                            //Отладка ???
+                            if (season > DateTime.Now.Year)
+                                GetSeason(dt, season, out season);
+                            else
+                                ;
+
+                            if ((! (season == (int)HAdmin.seasonJumpE.None))
+                                && (! (prev_season == season)))
+                                if (offset_season == 1)
+                                    //Ошибка ??? 2 перехода за сутки
+                                    ;
+                                else
+                                    if (prev_season == (int)HAdmin.seasonJumpE.None)
+                                        if (season == (int)HAdmin.seasonJumpE.SummerToWinter)
+                                            offset_season = 1;
+                                        else
+                                            //prev_season == (int)HAdmin.seasonJumpE.WinterToSummer
+                                            ; // offset_season = -1; ??? 26.10.2014 нет перехода зима-лето
+                                    else
+                                        if (prev_season == (int)HAdmin.seasonJumpE.WinterToSummer)
+                                            offset_season = 1;
+                                        else
+                                            //prev_season == (int)HAdmin.seasonJumpE.SummerToWinter
+                                            ; // offset_season = -1; ??? 26.10.2014 нет перехода зима-лето
+                            else
+                                ; // нет сезона ИЛИ пред./сезон РАВЕН текущ./сезону
+                        //} else ;
+
                         //Отладка ???
                         if (season > DateTime.Now.Year)
                             GetSeason(dt, season, out season);
                         else
                             ;
 
-                        if ((! (season == (int)HAdmin.seasonJumpE.None))
-                            && (! (prev_season == season)))
-                            if (offset_season == 1)
-                                //Ошибка ??? 2 перехода за сутки
-                                ;
-                            else
-                                if (prev_season == (int)HAdmin.seasonJumpE.None)
-                                    if (season == (int)HAdmin.seasonJumpE.SummerToWinter)
-                                        offset_season = 1;
-                                    else
-                                        //prev_season == (int)HAdmin.seasonJumpE.WinterToSummer
-                                        ; // offset_season = -1; ??? 26.10.2014 нет перехода зима-лето
-                                else
-                                    if (prev_season == (int)HAdmin.seasonJumpE.WinterToSummer)
-                                        offset_season = 1;
-                                    else
-                                        //prev_season == (int)HAdmin.seasonJumpE.SummerToWinter
-                                        ; // offset_season = -1; ??? 26.10.2014 нет перехода зима-лето
-                        else
-                            ; // нет сезона ИЛИ пред./сезон РАВЕН текущ./сезону
-                    //} else ;
+                        prev_season = season;
 
-                    //Отладка ???
-                    if (season > DateTime.Now.Year)
-                        GetSeason(dt, season, out season);
-                    else
-                        ;
-
-                    prev_season = season;
-
-                    powerHourHalf[i, ((dt.Minute / 30) == 0) ? 1 : 0, hour - 1/* + offset_season*/] = (value / 2000);
+                        powerHourHalf[i, ((dt.Minute / 30) == 0) ? 1 : 0, (hour > 0) ? hour - 1/* + offset_season*/ : (24 - 1)] = (value / 2000);
+                    }
+                    catch (Exception e)
+                    {
+                        Logging.Logg().Exception(e, @"PanelTecViewBase::GetHoursResponse () - ...", Logging.INDEX_MESSAGE.NOT_SET);
+                    }
                 }
 
                 //??? якобы для перехода через границу суток
@@ -3447,7 +3506,7 @@ namespace StatisticCommon
                         case TEC.SOURCE_SOTIASSO.INSATANT_APP:
                             hour = lastHour;
 
-                            List<string> listSensors = new List<string>(m_tec.GetSensorsString(indxTECComponents, CONN_SETT_TYPE.DATA_SOTIASSO, TG.ID_TIME.MINUTES).Split(','));
+                            List<string> listSensors = new List<string>(m_tec.GetSensorsString(indxTECComponents, CONN_SETT_TYPE.DATA_SOTIASSO, HDateTime.INTERVAL.MINUTES).Split(','));
                             double[] valHours = new double[listSensors.Count + 1];
                             //60 мин * 60 сек = 1 час
                             valHours = avgInterval(table
@@ -3566,7 +3625,7 @@ namespace StatisticCommon
                     switch (TEC.s_SourceSOTIASSO)
                     {
                         case TEC.SOURCE_SOTIASSO.INSATANT_APP:
-                            List <string> listSensors = new List <string> (m_tec.GetSensorsString(indxTECComponents, CONN_SETT_TYPE.DATA_SOTIASSO, TG.ID_TIME.MINUTES).Split (','));
+                            List <string> listSensors = new List <string> (m_tec.GetSensorsString(indxTECComponents, CONN_SETT_TYPE.DATA_SOTIASSO, HDateTime.INTERVAL.MINUTES).Split (','));
                             double[] valHours = new double[listSensors.Count];
                             for (hour = 0; (hour < (m_valuesHours.Length + 0)) && (iRes == 0); hour ++)
                             {
@@ -3873,13 +3932,13 @@ namespace StatisticCommon
                     if (TEC.s_SourceSOTIASSO == TEC.SOURCE_SOTIASSO.INSATANT_APP)
                     {
                         dtVal = dtReq.Date.AddMinutes(59);
-                        List<string> listSensors = new List<string>(m_tec.GetSensorsString(indxTECComponents, CONN_SETT_TYPE.DATA_SOTIASSO, TG.ID_TIME.MINUTES).Split(','));
+                        List<string> listSensors = new List<string>(m_tec.GetSensorsString(indxTECComponents, CONN_SETT_TYPE.DATA_SOTIASSO, HDateTime.INTERVAL.MINUTES).Split(','));
                         int[] arIds = new int[listSensors.Count]
                             , arOwnerGTPIds = new int[listSensors.Count];
                         double[] valLastMins = new double[listSensors.Count + 1];
                         foreach (string strId in listSensors)
                         {
-                            TG tg = m_tec.FindTGById(Int32.Parse(strId), TG.INDEX_VALUE.TM, TG.ID_TIME.MINUTES);
+                            TG tg = m_tec.FindTGById(Int32.Parse(strId), TG.INDEX_VALUE.TM, HDateTime.INTERVAL.MINUTES);
                             if (tg == null)
                                 return -1;
                             else
@@ -4122,7 +4181,7 @@ namespace StatisticCommon
                             else
                                 ;
 
-                            tgTmp = m_tec.FindTGById(id, TG.INDEX_VALUE.FACT, (int)TG.ID_TIME.MINUTES);
+                            tgTmp = m_tec.FindTGById(id, TG.INDEX_VALUE.FACT, HDateTime.INTERVAL.MINUTES);
 
                             if (tgTmp == null) {
                                 //return -2;
@@ -4555,7 +4614,7 @@ namespace StatisticCommon
                                 int hour = lastHour - GetSeasonHourOffset(lastHour)
                                     ;                                
 
-                                List<string> listSensors = new List<string>(m_tec.GetSensorsString(indxTECComponents, CONN_SETT_TYPE.DATA_SOTIASSO, TG.ID_TIME.MINUTES).Split(','));
+                                List<string> listSensors = new List<string>(m_tec.GetSensorsString(indxTECComponents, CONN_SETT_TYPE.DATA_SOTIASSO, HDateTime.INTERVAL.MINUTES).Split(','));
                                 m_valuesMins[min].valuesFact = avgInterval(table
                                                                     , m_curDate.Date.AddHours(hour).AddSeconds(180 * (min - 1))
                                                                     , 180
@@ -4662,7 +4721,7 @@ namespace StatisticCommon
                             kks_name = r["KKS_NAME"].ToString();
 
                             if (dictTG.ContainsKey(kks_name) == false)
-                                tgTmp = m_tec.FindTGById(kks_name, TG.INDEX_VALUE.TM, (TG.ID_TIME)(-1));
+                                tgTmp = m_tec.FindTGById(kks_name, TG.INDEX_VALUE.TM, (HDateTime.INTERVAL)(-1));
                             else
                                 tgTmp = dictTG[kks_name];
 
@@ -4756,13 +4815,13 @@ namespace StatisticCommon
                             int [] arIds = null;
 
                             DateTime dtReq = m_curDate.Date.AddHours(lastHour);
-                            List<string> listSensors = new List<string>(m_tec.GetSensorsString(indxTECComponents, CONN_SETT_TYPE.DATA_SOTIASSO, TG.ID_TIME.MINUTES).Split(','));
+                            List<string> listSensors = new List<string>(m_tec.GetSensorsString(indxTECComponents, CONN_SETT_TYPE.DATA_SOTIASSO, HDateTime.INTERVAL.MINUTES).Split(','));
                             arIds = new int[listSensors.Count];
                             double[] valMins = new double[listSensors.Count + 1];
 
                             foreach (string strId in listSensors)
                             {
-                                TG tg = m_tec.FindTGById (strId, TG.INDEX_VALUE.TM, TG.ID_TIME.MINUTES);
+                                TG tg = m_tec.FindTGById (strId, TG.INDEX_VALUE.TM, HDateTime.INTERVAL.MINUTES);
                                 if (tg == null) {
                                     //return -4;
                                     iRes = -4;
@@ -4829,7 +4888,7 @@ namespace StatisticCommon
                                 tgTmp = null;
                                 if (dictTGRecievedValues.ContainsKey(kks_name) == false)
                                 {
-                                    tgTmp = m_tec.FindTGById(kks_name, TG.INDEX_VALUE.TM, (int)TG.ID_TIME.MINUTES);
+                                    tgTmp = m_tec.FindTGById(kks_name, TG.INDEX_VALUE.TM, HDateTime.INTERVAL.MINUTES);
 
                                     if (! (tgTmp == null))
                                         dictTGRecievedValues.Add(kks_name, tgTmp);
@@ -4930,7 +4989,7 @@ namespace StatisticCommon
 
             m_markWarning.Set((int)INDEX_WARNING.LAST_MIN, !(iRes == 0));
 
-            int interval = GetIntervalOfTypeSourceData (TG.ID_TIME.MINUTES);
+            int interval = GetIntervalOfTypeSourceData (HDateTime.INTERVAL.MINUTES);
 
             if (interval > 0)
                 if ((m_markWarning.IsMarked((int)INDEX_WARNING.LAST_MIN) == false) && (!(lastMin > ((m_curDate.Minute - 1) / interval))))
@@ -5004,7 +5063,7 @@ namespace StatisticCommon
                                     tgTmp = null;
                                     if (dictTGRecievedValues.ContainsKey(strIdTM) == false)
                                     {
-                                        tgTmp = m_tec.FindTGById(strIdTM, TG.INDEX_VALUE.TM, (int)TG.ID_TIME.MINUTES);
+                                        tgTmp = m_tec.FindTGById(strIdTM, TG.INDEX_VALUE.TM, HDateTime.INTERVAL.MINUTES);
 
                                         if (! (tgTmp == null))
                                             dictTGRecievedValues.Add(strIdTM, tgTmp);
@@ -5118,83 +5177,85 @@ namespace StatisticCommon
 
         private void GetHoursFactRequest(DateTime date)
         {
-            //m_tec.Request(CONN_SETT_TYPE.DATA_ASKUE, m_tec.hoursRequest(date, m_tec.GetSensorsString(indx_TEC, CONN_SETT_TYPE.DATA_ASKUE, TG.ID_TIME.HOURS)));
-            //m_tec.Request(CONN_SETT_TYPE.DATA_ASKUE, m_tec.hoursRequest(date, m_tec.GetSensorsString(m_indx_TECComponent, CONN_SETT_TYPE.DATA_ASKUE, TG.ID_TIME.HOURS)));
-            Request(m_dictIdListeners[m_tec.m_id][(int)CONN_SETT_TYPE.DATA_AISKUE], m_tec.hoursFactRequest(date, m_tec.GetSensorsString(indxTECComponents, CONN_SETT_TYPE.DATA_AISKUE, TG.ID_TIME.HOURS)));
+            //m_tec.Request(CONN_SETT_TYPE.DATA_ASKUE, m_tec.hoursRequest(date, m_tec.GetSensorsString(indx_TEC, CONN_SETT_TYPE.DATA_ASKUE, HDateTime.INTERVAL.HOURS)));
+            //m_tec.Request(CONN_SETT_TYPE.DATA_ASKUE, m_tec.hoursRequest(date, m_tec.GetSensorsString(m_indx_TECComponent, CONN_SETT_TYPE.DATA_ASKUE, HDateTime.INTERVAL.HOURS)));
+            Request(m_dictIdListeners[m_tec.m_id][(int)CONN_SETT_TYPE.DATA_AISKUE], m_tec.hoursFactRequest(date, m_tec.GetSensorsString(indxTECComponents, CONN_SETT_TYPE.DATA_AISKUE, HDateTime.INTERVAL.HOURS)));
+
+            Debug.WriteLine(@"TecView::GetHoursFactRequest () - DATE=" + date.ToString());
         }
 
         private void GetHourTMRequest(DateTime date, int lh)
         {
-            int interval = GetIntervalOfTypeSourceData(TG.ID_TIME.HOURS);
+            int interval = GetIntervalOfTypeSourceData(HDateTime.INTERVAL.HOURS);
 
             if (interval > 0)
-                Request(m_dictIdListeners[m_tec.m_id][(int)CONN_SETT_TYPE.DATA_SOTIASSO], m_tec.hourTMRequest(date, lh, m_tec.GetSensorsString(indxTECComponents, CONN_SETT_TYPE.DATA_SOTIASSO, TG.ID_TIME.HOURS), interval));
+                Request(m_dictIdListeners[m_tec.m_id][(int)CONN_SETT_TYPE.DATA_SOTIASSO], m_tec.hourTMRequest(date, lh, m_tec.GetSensorsString(indxTECComponents, CONN_SETT_TYPE.DATA_SOTIASSO, HDateTime.INTERVAL.HOURS), interval));
             else
                 ;
         }
 
         private void GetHoursTMRequest(DateTime date)
         {
-            int interval = GetIntervalOfTypeSourceData(TG.ID_TIME.HOURS);
+            int interval = GetIntervalOfTypeSourceData(HDateTime.INTERVAL.HOURS);
 
             if (interval > 0)
-                Request(m_dictIdListeners[m_tec.m_id][(int)CONN_SETT_TYPE.DATA_SOTIASSO], m_tec.hoursTMRequest(date, m_tec.GetSensorsString(indxTECComponents, CONN_SETT_TYPE.DATA_SOTIASSO, TG.ID_TIME.HOURS), interval));
+                Request(m_dictIdListeners[m_tec.m_id][(int)CONN_SETT_TYPE.DATA_SOTIASSO], m_tec.hoursTMRequest(date, m_tec.GetSensorsString(indxTECComponents, CONN_SETT_TYPE.DATA_SOTIASSO, HDateTime.INTERVAL.HOURS), interval));
             else
                 ;
         }
 
         private void GetMinsFactRequest(int hour)
         {
-            //tec.Request(CONN_SETT_TYPE.DATA_ASKUE, tec.minsRequest(selectedTime, hour, sensorsStrings_Fact[(int)TG.ID_TIME.MINUTES]));
-            //m_tec.Request(CONN_SETT_TYPE.DATA_ASKUE, m_tec.minsRequest(selectedTime, hour, m_tec.GetSensorsString(indx_TEC, CONN_SETT_TYPE.DATA_ASKUE, TG.ID_TIME.MINUTES)));
-            //m_tec.Request(CONN_SETT_TYPE.DATA_ASKUE, m_tec.minsRequest(selectedTime, hour, m_tec.GetSensorsString(m_indx_TECComponent, CONN_SETT_TYPE.DATA_ASKUE, TG.ID_TIME.MINUTES)));
+            //tec.Request(CONN_SETT_TYPE.DATA_ASKUE, tec.minsRequest(selectedTime, hour, sensorsStrings_Fact[(int)HDateTime.INTERVAL.MINUTES]));
+            //m_tec.Request(CONN_SETT_TYPE.DATA_ASKUE, m_tec.minsRequest(selectedTime, hour, m_tec.GetSensorsString(indx_TEC, CONN_SETT_TYPE.DATA_ASKUE, HDateTime.INTERVAL.MINUTES)));
+            //m_tec.Request(CONN_SETT_TYPE.DATA_ASKUE, m_tec.minsRequest(selectedTime, hour, m_tec.GetSensorsString(m_indx_TECComponent, CONN_SETT_TYPE.DATA_ASKUE, HDateTime.INTERVAL.MINUTES)));
             //26.10.2014 г.
-            Request(m_dictIdListeners[m_tec.m_id][(int)CONN_SETT_TYPE.DATA_AISKUE], m_tec.minsFactRequest(m_curDate, hour - GetSeasonHourOffset(hour), m_tec.GetSensorsString(indxTECComponents, CONN_SETT_TYPE.DATA_AISKUE, TG.ID_TIME.MINUTES)));
+            Request(m_dictIdListeners[m_tec.m_id][(int)CONN_SETT_TYPE.DATA_AISKUE], m_tec.minsFactRequest(m_curDate, hour - GetSeasonHourOffset(hour), m_tec.GetSensorsString(indxTECComponents, CONN_SETT_TYPE.DATA_AISKUE, HDateTime.INTERVAL.MINUTES)));
         }
 
         private void GetMinTMRequest(DateTime date, int lh, int lm)
         {
-            int interval = GetIntervalOfTypeSourceData(TG.ID_TIME.MINUTES);
+            int interval = GetIntervalOfTypeSourceData(HDateTime.INTERVAL.MINUTES);
 
             if (interval > 0)
-                Request(m_dictIdListeners[m_tec.m_id][(int)CONN_SETT_TYPE.DATA_SOTIASSO], m_tec.minTMRequest(m_curDate, lh - GetSeasonHourOffset(lh), lm, m_tec.GetSensorsString(indxTECComponents, CONN_SETT_TYPE.DATA_SOTIASSO, TG.ID_TIME.MINUTES), interval));
+                Request(m_dictIdListeners[m_tec.m_id][(int)CONN_SETT_TYPE.DATA_SOTIASSO], m_tec.minTMRequest(m_curDate, lh - GetSeasonHourOffset(lh), lm, m_tec.GetSensorsString(indxTECComponents, CONN_SETT_TYPE.DATA_SOTIASSO, HDateTime.INTERVAL.MINUTES), interval));
             else ;
         }
 
         private void GetMinDetailTMRequest(DateTime date, int lh, int lm)
         {
-            int interval = 1; //GetIntervalOfTypeSourceData(TG.ID_TIME.MINUTES);
+            int interval = 1; //GetIntervalOfTypeSourceData(HDateTime.INTERVAL.MINUTES);
 
             if (interval > 0)
                 Request(m_dictIdListeners[m_tec.m_id][(int)CONN_SETT_TYPE.DATA_SOTIASSO]
                     , m_tec.minTMDetailRequest(m_curDate, lh - GetSeasonHourOffset(lh)
                     //, lm > 60 ? 60 : lm
                     , lm
-                    , m_tec.GetSensorsString(indxTECComponents, CONN_SETT_TYPE.DATA_SOTIASSO, TG.ID_TIME.MINUTES)
+                    , m_tec.GetSensorsString(indxTECComponents, CONN_SETT_TYPE.DATA_SOTIASSO, HDateTime.INTERVAL.MINUTES)
                     , interval));
             else ;
         }
 
         private void GetMinTMGenRequest(DateTime date, int lh, int lm)
         {
-            int interval = GetIntervalOfTypeSourceData(TG.ID_TIME.MINUTES);
+            int interval = GetIntervalOfTypeSourceData(HDateTime.INTERVAL.MINUTES);
 
             if (interval > 0)
-                Request(m_dictIdListeners[m_tec.m_id][(int)CONN_SETT_TYPE.DATA_SOTIASSO], m_tec.minTMAverageRequest(m_curDate, lh - GetSeasonHourOffset(lh), lm, m_tec.GetSensorsString(indxTECComponents, CONN_SETT_TYPE.DATA_SOTIASSO, TG.ID_TIME.MINUTES), interval));
+                Request(m_dictIdListeners[m_tec.m_id][(int)CONN_SETT_TYPE.DATA_SOTIASSO], m_tec.minTMAverageRequest(m_curDate, lh - GetSeasonHourOffset(lh), lm, m_tec.GetSensorsString(indxTECComponents, CONN_SETT_TYPE.DATA_SOTIASSO, HDateTime.INTERVAL.MINUTES), interval));
             else ;
         }
 
-        public int GetIntervalOfTypeSourceData (TG.ID_TIME id_time) {
+        public int GetIntervalOfTypeSourceData (HDateTime.INTERVAL id_time) {
             int iRes = -1;
             switch (m_arTypeSourceData[(int)id_time])
             {
                 case CONN_SETT_TYPE.DATA_AISKUE:
                 case CONN_SETT_TYPE.DATA_AISKUE_PLUS_SOTIASSO:
-                    if (id_time == TG.ID_TIME.MINUTES)
+                    if (id_time == HDateTime.INTERVAL.MINUTES)
                         iRes = 3;
                     else
-                        if (id_time == TG.ID_TIME.HOURS)
-                            switch (m_arTypeSourceData[(int)TG.ID_TIME.MINUTES])
+                        if (id_time == HDateTime.INTERVAL.HOURS)
+                            switch (m_arTypeSourceData[(int)HDateTime.INTERVAL.MINUTES])
                             {
                                 case CONN_SETT_TYPE.DATA_AISKUE:
                                 case CONN_SETT_TYPE.DATA_AISKUE_PLUS_SOTIASSO:
@@ -5227,10 +5288,10 @@ namespace StatisticCommon
         
         private void GetMinsTMRequest(int hour)
         {
-            int interval = GetIntervalOfTypeSourceData(TG.ID_TIME.MINUTES);
+            int interval = GetIntervalOfTypeSourceData(HDateTime.INTERVAL.MINUTES);
 
             if (interval > 0)
-                Request(m_dictIdListeners[m_tec.m_id][(int)CONN_SETT_TYPE.DATA_SOTIASSO], m_tec.minsTMRequest(m_curDate, hour - GetSeasonHourOffset(hour), m_tec.GetSensorsString(indxTECComponents, CONN_SETT_TYPE.DATA_SOTIASSO, TG.ID_TIME.MINUTES), interval));
+                Request(m_dictIdListeners[m_tec.m_id][(int)CONN_SETT_TYPE.DATA_SOTIASSO], m_tec.minsTMRequest(m_curDate, hour - GetSeasonHourOffset(hour), m_tec.GetSensorsString(indxTECComponents, CONN_SETT_TYPE.DATA_SOTIASSO, HDateTime.INTERVAL.MINUTES), interval));
             else
                 Logging.Logg().Error(@"TecView::GetMinsTMRequest (hour=" + hour + @") - не выбран интервал для запроса...", Logging.INDEX_MESSAGE.NOT_SET);
         }

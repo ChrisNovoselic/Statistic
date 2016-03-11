@@ -1,18 +1,26 @@
 using System;
 using System.Collections.Generic;
 using System.Text;
+using System.Drawing;
 using System.Windows.Forms;
-//using System.ComponentModel;
+using System.ComponentModel;
 using System.Data;
 using System.Globalization;
 
+using HClassLibrary;
 using StatisticCommon;
 
 namespace Statistic
 {
-    public class DataGridViewTables : DataGridViewBase
+    public abstract class HDataGridViewBase : HDataGridViewTables
     {
-        protected class ColumnProperies {
+        HDateTime.INTERVAL m_IdInterval;
+
+        public static DataGridViewCellStyle s_dgvCellStyleError
+            , s_dgvCellStyleWarning
+            , s_dgvCellStyleCommon;
+        
+        public class ColumnProperies {
             public int minWidth;
             public int widthPerc;
             public string headerText;
@@ -29,13 +37,40 @@ namespace Statistic
             }
         };
 
-        public enum INDEX_COLUMNS : int { PART_TIME, FACT, PBR, PBRe, UDGe, DEVIATION, LAST_MINUTES, COUNT_INDEX_COLUMNS };
         protected ColumnProperies [] m_arColumns;
         //protected int m_iWIdthDefault;
 
+        protected void setFirstDisplayedScrollingRowIndex(int lastIndx, bool bScrollingRowIndex)
+        {//Вызов ТОЛЬКО для таблицы с ЧАСовыми значениями...
+            int iFirstDisplayedScrollingRowIndex = -1;
+
+            if (lastIndx < DisplayedRowCount(true))
+            {
+                iFirstDisplayedScrollingRowIndex = 0;
+            }
+            else
+            {
+                iFirstDisplayedScrollingRowIndex = lastIndx - DisplayedRowCount(true) + 1;
+
+                if (bScrollingRowIndex == true)
+                    //Если отображается еще один лишний час...
+                    iFirstDisplayedScrollingRowIndex++;
+                else
+                    ;
+            }
+
+            FirstDisplayedScrollingRowIndex = iFirstDisplayedScrollingRowIndex;
+        }
+
         //protected DataGridViewTables (int [] arWidthColiumns) {
-        protected DataGridViewTables(ColumnProperies[] arColuumns)
+        protected HDataGridViewBase(HDateTime.INTERVAL interval, ColumnProperies[] arColuumns)
         {
+            m_IdInterval = interval;
+
+            if (s_dgvCellStyleError == null) { s_dgvCellStyleError = new DataGridViewCellStyle(); s_dgvCellStyleError.BackColor = Color.Red; } else ;
+            if (s_dgvCellStyleWarning == null) { s_dgvCellStyleWarning = new DataGridViewCellStyle(); s_dgvCellStyleWarning.BackColor = Color.Yellow; } else ;
+            if (s_dgvCellStyleCommon == null) s_dgvCellStyleCommon = new DataGridViewCellStyle(); else ;
+
             //m_arColumns = new ColumnProperies[arWidthColiumns.Length];
             m_arColumns = new ColumnProperies[arColuumns.Length];
 
@@ -60,6 +95,8 @@ namespace Statistic
                 //m_arColumns[i].headerText = arColuumns[i].headerText;
                 //m_arColumns[i].name = arColuumns[i].name;
             }
+
+            InitializeComponents();
 
             this.ClientSizeChanged += new EventHandler(DataGridViewTables_ClientSizeChanged);
 
@@ -110,11 +147,9 @@ namespace Statistic
                 m_arColumns[i].obj.Width = width;
             }
         }
-    }
 
-    public class DataGridViewHours : DataGridViewTables
-    {
-        protected virtual void InitializeComponents () {
+        private void InitializeComponents()
+        {
             int i = -1;
 
             System.Windows.Forms.DataGridViewCellStyle dataGridViewCellStyle = new System.Windows.Forms.DataGridViewCellStyle();
@@ -145,30 +180,76 @@ namespace Statistic
             }
 
             // 
-            // dgwHours
+            // dgwMins
             // 
             this.AllowUserToAddRows = false;
             this.AllowUserToDeleteRows = false;
-            //this.dgwHours.AutoSizeColumnsMode = DataGridViewAutoSizeColumnsMode.Fill;
-            //this.dgwHours.Anchor = ((System.Windows.Forms.AnchorStyles)(((System.Windows.Forms.AnchorStyles.Top | System.Windows.Forms.AnchorStyles.Bottom)
+            //this.dgwMins.Anchor = ((System.Windows.Forms.AnchorStyles)(((System.Windows.Forms.AnchorStyles.Top | System.Windows.Forms.AnchorStyles.Bottom)
             //            | System.Windows.Forms.AnchorStyles.Left)));
             this.Dock = DockStyle.Fill;
             this.ColumnHeadersHeightSizeMode = System.Windows.Forms.DataGridViewColumnHeadersHeightSizeMode.AutoSize;
-            this.Columns.AddRange(new System.Windows.Forms.DataGridViewColumn[] {
-            this.m_arColumns[(int)INDEX_COLUMNS.PART_TIME].obj,
-            this.m_arColumns[(int)INDEX_COLUMNS.FACT].obj,
-            this.m_arColumns[(int)INDEX_COLUMNS.PBR].obj,
-            this.m_arColumns[(int)INDEX_COLUMNS.PBRe].obj,
-            this.m_arColumns[(int)INDEX_COLUMNS.UDGe].obj,
-            this.m_arColumns[(int)INDEX_COLUMNS.DEVIATION].obj,
-            this.m_arColumns[(int)INDEX_COLUMNS.LAST_MINUTES].obj});
-            //this.dgwHours.Location = arPlacement[(int)CONTROLS.dgwHours].pt;
-            this.Name = "dgwHour";
+            System.Windows.Forms.DataGridViewColumn[] arDataGridViewColumns = new DataGridViewColumn[m_arColumns.Length];
+            for (i = 0; i < m_arColumns.Length; i++)
+                arDataGridViewColumns[i] = this.m_arColumns[i].obj;
+            this.Columns.AddRange(
+                //new System.Windows.Forms.DataGridViewColumn[] {
+                //this.m_arColumns [(int)INDEX_COLUMNS.PART_TIME].obj,
+                //this.m_arColumns [(int)INDEX_COLUMNS.FACT].obj,
+                //this.m_arColumns [(int)INDEX_COLUMNS.PBR].obj,
+                //this.m_arColumns [(int)INDEX_COLUMNS.PBRe].obj,
+                //this.m_arColumns [(int)INDEX_COLUMNS.UDGe].obj,
+                //this.m_arColumns [(int)INDEX_COLUMNS.DEVIATION].obj
+                //}
+                arDataGridViewColumns
+            );
+            //this.dgwMins.Location = arPlacement[(int)CONTROLS.dgwMins].pt;
+            //this.Name = "dgwMin";
             this.ReadOnly = true;
             this.RowHeadersVisible = false;
-            //this.dgwHours.Size = arPlacement[(int)CONTROLS.dgwHours].sz;
-            this.TabIndex = 7;
+            //this.dgwMins.Size = arPlacement[(int)CONTROLS.dgwMins].sz;
+            this.TabIndex = 0;
             this.RowTemplate.Resizable = DataGridViewTriState.False;
+        }
+
+        protected void RowsAdd()
+        {
+            switch (m_IdInterval)
+            {
+                case HDateTime.INTERVAL.HOURS:
+                    Rows.Add(25);
+                    break;
+                case HDateTime.INTERVAL.MINUTES:
+                    Rows.Add(21);
+                    break;
+                default:
+                    throw new Exception(@"HDataGridViewBase::RowsAdd () - неизвестный тип интервала");
+            }
+        }
+
+        public abstract void Fill (TecView.valuesTEC []values, params object []pars);
+
+        public virtual void Fill(params object[] pars)
+        {
+            for (int i = 0; i < Rows.Count; i++)
+                for (int c = 0; c < Columns.Count; c++)
+                    Rows[i].Cells[c].Value = string.Empty;
+        }
+    }
+
+    public abstract class HDataGridViewStandard : HDataGridViewBase
+    {
+        public enum INDEX_COLUMNS : int { PART_TIME, FACT, PBR, PBRe, UDGe, DEVIATION, LAST_MINUTES, COUNT_INDEX_COLUMNS };
+
+        public HDataGridViewStandard(HDateTime.INTERVAL interval, ColumnProperies[] arColumns)
+            : base(interval, arColumns)
+        {
+        }
+    }
+
+    public class DataGridViewStandardHours : HDataGridViewStandard
+    {
+        private void InitializeComponents () {
+            int i = -1;
 
             this.ContextMenuStrip = new ContextMenuStrip ();
             for (i = 0; i < m_arColumns.Length - 1; i++)
@@ -219,15 +300,16 @@ namespace Statistic
         }
 
         //public DataGridViewHours() : base (new int [] {27, 47, 47, 47, 47, 42, 46})
-        public DataGridViewHours()
+        public DataGridViewStandardHours()
             //: base(new int[] { 8, 15, 15, 15, 15, 15, 15 })
-            : base(new ColumnProperies[] { new ColumnProperies (27, 8, @"Час", @"Hour")
-                                            , new ColumnProperies (47, 15, @"Факт", @"FactHour")
-                                            , new ColumnProperies (47, 15, @"ПБР", @"PBRHour")
-                                            , new ColumnProperies (47, 15, @"ПБРэ", @"PBReHour")
-                                            , new ColumnProperies (47, 15, @"УДГэ", @"UDGeHour")
-                                            , new ColumnProperies (42, 15, @"+/-", @"DeviationHour")
-                                            , new ColumnProperies (46, 15, @"59мин", @"")
+            : base(HDateTime.INTERVAL.HOURS
+                , new ColumnProperies[] { new ColumnProperies (27, 8, @"Час", @"Hour")
+                    , new ColumnProperies (47, 15, @"Факт", @"FactHour")
+                    , new ColumnProperies (47, 15, @"ПБР", @"PBRHour")
+                    , new ColumnProperies (47, 15, @"ПБРэ", @"PBReHour")
+                    , new ColumnProperies (47, 15, @"УДГэ", @"UDGeHour")
+                    , new ColumnProperies (42, 15, @"+/-", @"DeviationHour")
+                    , new ColumnProperies (46, 15, @"59мин", @"")
             })
         {
             InitializeComponents ();
@@ -239,83 +321,166 @@ namespace Statistic
             RowsAdd ();
         }
 
-        protected void RowsAdd () { Rows.Add(25); }
-    }
-
-    public class DataGridViewMins : DataGridViewTables
-    {
-        protected virtual void InitializeComponents()
+        public override void Fill(TecView.valuesTEC[] values, params object []pars)
         {
-            System.Windows.Forms.DataGridViewCellStyle dataGridViewCellStyle = new System.Windows.Forms.DataGridViewCellStyle();
+            double sumFact = 0, sumUDGe = 0, sumDiviation = 0;
+            Hd2PercentControl d2PercentControl = new Hd2PercentControl();
+            int lastHour = (int)pars[0]; //m_tecView.lastHour;
+            int receivedHour = (int)pars[1]; //m_tecView.lastReceivedHour;
+            int itemscount = (int)pars[2]; //m_tecView.m_valuesHours.Length;
+            int warn = -1,
+                cntWarn = -1;
+            string strWarn = string.Empty;
+            bool bPmin = (int)pars[3] == 5
+                , bCurrHour = (bool)pars[4] //m_tecView.currHour
+                , bIsTypeConnSettAISKUEHour = (bool)pars[5] //m_tecView.m_arTypeSourceData[(int)HDateTime.INTERVAL.HOURS] == CONN_SETT_TYPE.DATA_AISKUE
+                , bIsNowMoscowDate = (bool)pars[6]; //m_tecView.serverTime.Date.Equals(HDateTime.ToMoscowTimeZone(DateTime.Now.Date))
 
-            AllowUserToAddRows = false;
-            AllowUserToDeleteRows = false;
-            Anchor = ((System.Windows.Forms.AnchorStyles)(((System.Windows.Forms.AnchorStyles.Top | System.Windows.Forms.AnchorStyles.Bottom) |
-                                                            System.Windows.Forms.AnchorStyles.Left)));
+            DataGridViewCellStyle curCellStyle;
+            cntWarn = 0;
+            for (int i = 0; i < itemscount; i++)
+            {
+                d2PercentControl.Calculate(values[i], bPmin, out warn);
 
-            dataGridViewCellStyle.Alignment = System.Windows.Forms.DataGridViewContentAlignment.MiddleCenter;
-            dataGridViewCellStyle.BackColor = System.Drawing.SystemColors.Control;
-            dataGridViewCellStyle.Font = new System.Drawing.Font("Microsoft Sans Serif", 8.25F, System.Drawing.FontStyle.Regular, System.Drawing.GraphicsUnit.Point, ((byte)(204)));
-            dataGridViewCellStyle.ForeColor = System.Drawing.SystemColors.WindowText;
-            dataGridViewCellStyle.SelectionBackColor = System.Drawing.SystemColors.Highlight;
-            dataGridViewCellStyle.SelectionForeColor = System.Drawing.SystemColors.HighlightText;
-            dataGridViewCellStyle.WrapMode = System.Windows.Forms.DataGridViewTriState.True;
+                if ((!(warn == 0)) &&
+                   (values[i + 0].valuesLastMinutesTM > 1))
+                    cntWarn++;
+                else
+                    cntWarn = 0;
 
-            ColumnHeadersDefaultCellStyle = dataGridViewCellStyle;
-            ColumnHeadersHeightSizeMode = System.Windows.Forms.DataGridViewColumnHeadersHeightSizeMode.AutoSize;
+                if (!(cntWarn == 0))
+                {
+                    if (cntWarn > 3)
+                        curCellStyle = s_dgvCellStyleError;
+                    else
+                        curCellStyle = s_dgvCellStyleWarning;
+                }
+                else
+                    curCellStyle = s_dgvCellStyleCommon;
+                Rows[i + 0].Cells[(int)DataGridViewStandardHours.INDEX_COLUMNS.LAST_MINUTES].Style = curCellStyle;
 
-            for (int i = 0; i < this.m_arColumns.Length; i ++) {
-                this.m_arColumns[i].obj.HeaderText = m_arColumns[i].headerText;
-                this.m_arColumns[i].obj.Name = m_arColumns[i].name;
-                this.m_arColumns[i].obj.ReadOnly = true;
-                //this.m_arColumns[i].obj.Width = m_arColumns[i].width;
-                this.m_arColumns[i].obj.SortMode = System.Windows.Forms.DataGridViewColumnSortMode.NotSortable;
-            }            
+                if (values[i + 0].valuesLastMinutesTM > 1)
+                {
+                    if (cntWarn > 0)
+                        strWarn = cntWarn + @":";
+                    else
+                        strWarn = string.Empty;
 
-            // 
-            // dgwMins
-            // 
-            this.AllowUserToAddRows = false;
-            this.AllowUserToDeleteRows = false;
-            //this.dgwMins.Anchor = ((System.Windows.Forms.AnchorStyles)(((System.Windows.Forms.AnchorStyles.Top | System.Windows.Forms.AnchorStyles.Bottom)
-            //            | System.Windows.Forms.AnchorStyles.Left)));
-            this.Dock = DockStyle.Fill;
-            this.ColumnHeadersHeightSizeMode = System.Windows.Forms.DataGridViewColumnHeadersHeightSizeMode.AutoSize;
-            this.Columns.AddRange(new System.Windows.Forms.DataGridViewColumn[] {
-            this.m_arColumns [(int)INDEX_COLUMNS.PART_TIME].obj,
-            this.m_arColumns [(int)INDEX_COLUMNS.FACT].obj,
-            this.m_arColumns [(int)INDEX_COLUMNS.PBR].obj,
-            this.m_arColumns [(int)INDEX_COLUMNS.PBRe].obj,
-            this.m_arColumns [(int)INDEX_COLUMNS.UDGe].obj,
-            this.m_arColumns [(int)INDEX_COLUMNS.DEVIATION].obj});
-            //this.dgwMins.Location = arPlacement[(int)CONTROLS.dgwMins].pt;
-            this.Name = "dgwMin";
-            this.ReadOnly = true;
-            this.RowHeadersVisible = false;
-            //this.dgwMins.Size = arPlacement[(int)CONTROLS.dgwMins].sz;
-            this.TabIndex = 0;
-            this.RowTemplate.Resizable = DataGridViewTriState.False;
+                    Rows[i + 0].Cells[(int)DataGridViewStandardHours.INDEX_COLUMNS.LAST_MINUTES].Value = strWarn + values[i + 0].valuesLastMinutesTM.ToString("F2");
+                }
+                else
+                    Rows[i + 0].Cells[(int)DataGridViewStandardHours.INDEX_COLUMNS.LAST_MINUTES].Value = 0.ToString("F2");
+
+                bool bDevVal = false;
+                if (bCurrHour == true)
+                    if ((i < (receivedHour + 1)) && ((!(values[i].valuesUDGe == 0)) && (values[i].valuesFact > 0)))
+                    {
+                        if ((bIsTypeConnSettAISKUEHour == true)
+                            || (i < receivedHour))
+                            bDevVal = true;
+                        else
+                            ;
+                    }
+                    else
+                    {
+                    }
+                else
+                    if (bIsNowMoscowDate == true)
+                        if ((i < (receivedHour + 1)) && (!(values[i].valuesUDGe == 0)) && (values[i].valuesFact > 0))
+                        {
+                            bDevVal = true;
+                        }
+                        else
+                        {
+                        }
+                    else
+                        if ((!(values[i].valuesUDGe == 0)) && (values[i].valuesFact > 0))
+                        {
+                            bDevVal = true;
+                        }
+                        else
+                        {
+                        }
+
+                Rows[i].Cells[(int)DataGridViewStandardHours.INDEX_COLUMNS.FACT].Value = values[i].valuesFact.ToString("F2");
+                if (bDevVal == true)
+                    sumFact += values[i].valuesFact;
+                else
+                    ;
+
+                Rows[i].Cells[(int)DataGridViewStandardHours.INDEX_COLUMNS.PBR].Value = values[i].valuesPBR.ToString("F2");
+                Rows[i].Cells[(int)DataGridViewStandardHours.INDEX_COLUMNS.PBRe].Value = values[i].valuesPBRe.ToString("F2");
+                Rows[i].Cells[(int)DataGridViewStandardHours.INDEX_COLUMNS.UDGe].Value = values[i].valuesUDGe.ToString("F2");
+                sumUDGe += values[i].valuesUDGe;
+
+                if (bDevVal == true)
+                {
+                    Rows[i].Cells[(int)DataGridViewStandardHours.INDEX_COLUMNS.DEVIATION].Value = ((double)(values[i].valuesFact - values[i].valuesUDGe)).ToString("F2");
+                    if ((Math.Round(Math.Abs(values[i].valuesFact - values[i].valuesUDGe), 2) > Math.Round(values[i].valuesDiviation, 2))
+                        && (!(values[i].valuesDiviation == 0)))
+                        Rows[i].Cells[(int)DataGridViewStandardHours.INDEX_COLUMNS.DEVIATION].Style = s_dgvCellStyleError;
+                    else
+                        Rows[i].Cells[(int)DataGridViewStandardHours.INDEX_COLUMNS.DEVIATION].Style = s_dgvCellStyleCommon;
+                    sumDiviation += Math.Abs(values[i].valuesFact - values[i].valuesUDGe);
+                }
+                else
+                {
+                    Rows[i].Cells[(int)DataGridViewStandardHours.INDEX_COLUMNS.DEVIATION].Value = 0.ToString("F2");
+                    Rows[i].Cells[(int)DataGridViewStandardHours.INDEX_COLUMNS.DEVIATION].Style = s_dgvCellStyleCommon;
+                }
+            }
+            Rows[itemscount].Cells[(int)DataGridViewStandardHours.INDEX_COLUMNS.FACT].Value = sumFact.ToString("F2");
+            Rows[itemscount].Cells[(int)DataGridViewStandardHours.INDEX_COLUMNS.UDGe].Value = sumUDGe.ToString("F2");
+            Rows[itemscount].Cells[(int)DataGridViewStandardHours.INDEX_COLUMNS.DEVIATION].Value = sumDiviation.ToString("F2");
+
+            setFirstDisplayedScrollingRowIndex(lastHour, !bIsTypeConnSettAISKUEHour);
         }
 
-        public DataGridViewMins()
-            //: base (new int [] {15, 16, 16, 16, 19, 16})
-            : base(new ColumnProperies[] { new ColumnProperies (50, 15, @"Мин.", @"Min")
-                                            , new ColumnProperies (50, 16, @"Факт", @"FactMin")
-                                            , new ColumnProperies (50, 16, @"ПБР", @"PBRMin")
-                                            , new ColumnProperies (50, 16, @"ПБРэ", @"PBReMin")
-                                            , new ColumnProperies (50, 19, @"УДГэ", @"UDGeMin")
-                                            , new ColumnProperies (50, 16, @"+/-", @"DeviationMin")
-            })
-        {            
-            InitializeComponents();
+        public override void Fill(params object []pars)
+        {
+            int count = (int)pars[1]
+                , hour = -1
+                , offset = -1
+                , i = -1, c = -1;
+            DateTime dtCurrent = (DateTime)pars[0];
+            bool bSeasonDate = (bool)pars[2];
 
-            Name = "m_dgwTableMins";
-            RowHeadersVisible = false;
-            RowTemplate.Resizable = DataGridViewTriState.False;
+            Rows.Clear();
 
-            RowsAdd();
+            Rows.Add(count + 1);
+
+            for (i = 0; i < count; i++)
+            {
+                hour = i + 1;
+                if (bSeasonDate == true)
+                {
+                    offset = HAdmin.GetSeasonHourOffset(dtCurrent, hour);
+
+                    Rows[i].Cells[(int)INDEX_COLUMNS.PART_TIME].Value = (hour - offset).ToString();
+                    if ((hour - 1) == HAdmin.SeasonDateTime.Hour)
+                        Rows[i].Cells[0].Value += @"*";
+                    else
+                        ;
+                }
+                else
+                    Rows[i].Cells[(int)INDEX_COLUMNS.PART_TIME].Value = (hour).ToString();
+
+                for (c = 1; c < m_arColumns.Length; c ++)
+                    Rows[i].Cells[c].Value = 0.ToString("F2");
+            }
+
+            Rows[count].Cells[0].Value = "Сумма";
+            for (c = 1; c < m_arColumns.Length; c++)
+                switch ((INDEX_COLUMNS)c)
+                {
+                    case INDEX_COLUMNS.PBR:
+                    case INDEX_COLUMNS.PBRe:
+                        Rows[i].Cells[c].Value = @"-".ToString();
+                        break;
+                    default:
+                        Rows[i].Cells[c].Value = 0.ToString("F2");
+                        break;
+                }
         }
-
-        protected void RowsAdd() { Rows.Add(21); }
     }
 }

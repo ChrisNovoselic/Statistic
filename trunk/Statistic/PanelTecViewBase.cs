@@ -22,6 +22,8 @@ namespace Statistic
     {
         protected PanelCustomTecView.HLabelCustomTecView m_label;
 
+        protected uint SPLITTER_PERCENT_VERTICAL;
+
         //protected static AdminTS.TYPE_FIELDS s_typeFields = AdminTS.TYPE_FIELDS.DYNAMIC;
 
         protected abstract class HZedGraphControl : ZedGraph.ZedGraphControl
@@ -289,16 +291,6 @@ namespace Statistic
             public DelegateFunc delegateSetScale;
         }
 
-        protected class HZedGraphControlHours : HZedGraphControl
-        {
-            public HZedGraphControlHours(object obj) : base(obj, FormMain.formGraphicsSettings.SetScale) { InitializeComponent(); }
-
-            private void InitializeComponent()
-            {
-                this.ContextMenuStrip.Items [(int)INDEX_CONTEXTMENU_ITEM.AISKUE].Text = @"АИСКУЭ";
-            }
-        }
-
         protected class HZedGraphControlMins : HZedGraphControl
         {
             public HZedGraphControlMins(object obj) : base(obj, FormMain.formGraphicsSettings.SetScale) { InitializeComponent(); }
@@ -331,8 +323,8 @@ namespace Statistic
         protected HZedGraphControl m_ZedGraphMins;
         protected HZedGraphControl m_ZedGraphHours;
 
-        protected DataGridViewHours m_dgwHours;
-        protected DataGridViewMins m_dgwMins;
+        protected HDataGridViewBase m_dgwHours;
+        protected HDataGridViewBase m_dgwMins;
 
         //private ManualResetEvent m_evTimerCurrent;
         private
@@ -356,11 +348,14 @@ namespace Statistic
         {
             //this.m_pnlQuickData = new PanelQuickData(); Выполнено в конструкторе
 
-            this.m_dgwHours = new DataGridViewHours();
-            this.m_dgwMins = new DataGridViewMins();
+            createDataGridViewHours();
+            createDataGridViewMins();
 
             ((System.ComponentModel.ISupportInitialize)(this.m_dgwHours)).BeginInit();
-            ((System.ComponentModel.ISupportInitialize)(this.m_dgwMins)).BeginInit();
+            if (!(this.m_dgwMins == null))
+                ((System.ComponentModel.ISupportInitialize)(this.m_dgwMins)).BeginInit();
+            else
+                ;
 
             this._pnlQuickData.RestructControl();
             this.Dock = System.Windows.Forms.DockStyle.Fill;
@@ -374,10 +369,13 @@ namespace Statistic
             this._pnlQuickData.dtprDate.ValueChanged += new System.EventHandler(this.dtprDate_ValueChanged);
 
             ((System.ComponentModel.ISupportInitialize)(this.m_dgwHours)).EndInit();
-            ((System.ComponentModel.ISupportInitialize)(this.m_dgwMins)).EndInit();
+            if (!(this.m_dgwMins == null))
+                ((System.ComponentModel.ISupportInitialize)(this.m_dgwMins)).EndInit();
+            else
+                ;
 
             this.m_ZedGraphMins = new HZedGraphControlMins(m_tecView.m_lockValue);
-            this.m_ZedGraphHours = new HZedGraphControlHours(m_tecView.m_lockValue);
+            createZedGraphControlHours(m_tecView.m_lockValue);
 
             this.stctrViewPanel1 = new System.Windows.Forms.SplitContainer();
             this.stctrViewPanel2 = new System.Windows.Forms.SplitContainer();
@@ -441,11 +439,18 @@ namespace Statistic
             this.ResumeLayout(false);
         }
 
+        protected abstract void createDataGridViewHours();
+        protected abstract void createDataGridViewMins();
+        
+        protected abstract void createZedGraphControlHours(object objLock);
+
         protected abstract void createPanelQuickData();
 
         public PanelTecViewBase(TecView.TYPE_PANEL type, TEC tec, int indx_tec, int indx_comp/*, DelegateStringFunc fErrRep, DelegateStringFunc fWarRep, DelegateStringFunc fActRep, DelegateBoolFunc fRepClr*/)
         {
             //InitializeComponent();
+
+            SPLITTER_PERCENT_VERTICAL = 50;
 
             m_tecView = new TecView(type, indx_tec, indx_comp);
 
@@ -483,11 +488,11 @@ namespace Statistic
             // 3) в соответствии с п. 2 присвоить значения m_tecView.m_arTypeSourceData[...
             //if (FormMain.formGraphicsSettings.m_connSettType_SourceData == CONN_SETT_TYPE.COUNT_CONN_SETT_TYPE)
                 //08.12.2014 - значения по умолчанию - как и пункты меню
-                m_tecView.m_arTypeSourceData[(int)TG.ID_TIME.MINUTES] = 
-                m_tecView.m_arTypeSourceData[(int)TG.ID_TIME.HOURS] = CONN_SETT_TYPE.DATA_AISKUE;
+                m_tecView.m_arTypeSourceData[(int)HDateTime.INTERVAL.MINUTES] = 
+                m_tecView.m_arTypeSourceData[(int)HDateTime.INTERVAL.HOURS] = CONN_SETT_TYPE.DATA_AISKUE;
             //else
-            //    m_tecView.m_arTypeSourceData[(int)TG.ID_TIME.MINUTES] =
-            //        m_tecView.m_arTypeSourceData[(int)TG.ID_TIME.HOURS] = FormMain.formGraphicsSettings.m_connSettType_SourceData;
+            //    m_tecView.m_arTypeSourceData[(int)HDateTime.INTERVAL.MINUTES] =
+            //        m_tecView.m_arTypeSourceData[(int)HDateTime.INTERVAL.HOURS] = FormMain.formGraphicsSettings.m_connSettType_SourceData;
 
                 if ((!(_pnlQuickData.ContextMenuStrip == null))
                     && (_pnlQuickData.ContextMenuStrip.Items.Count > 1))
@@ -505,86 +510,19 @@ namespace Statistic
             m_tecView.SetDelegateReport(ferr, fwar, fact, fclr);
         }
 
-        private void FillDefaultMins()
-        {
-            int cnt = m_dgwMins.Rows.Count - 1
-                , diskretnost = 60 / cnt;
-
-            for (int i = 0; i < cnt; i++)
-            {
-                this.m_dgwMins.Rows[i].Cells[0].Value = ((i + 1) * diskretnost).ToString();
-                this.m_dgwMins.Rows[i].Cells[1].Value = 0.ToString("F2");
-                this.m_dgwMins.Rows[i].Cells[2].Value = 0.ToString("F2");
-                this.m_dgwMins.Rows[i].Cells[3].Value = 0.ToString("F2");
-                this.m_dgwMins.Rows[i].Cells[4].Value = 0.ToString("F2");
-                this.m_dgwMins.Rows[i].Cells[5].Value = 0.ToString("F2");
-            }
-            this.m_dgwMins.Rows[cnt].Cells[0].Value = "Итог";
-            this.m_dgwMins.Rows[cnt].Cells[1].Value = 0.ToString("F2");
-            this.m_dgwMins.Rows[cnt].Cells[2].Value = "-";
-            this.m_dgwMins.Rows[cnt].Cells[3].Value = "-";
-            this.m_dgwMins.Rows[cnt].Cells[4].Value = 0.ToString("F2");
-            this.m_dgwMins.Rows[cnt].Cells[5].Value = 0.ToString("F2");
-        }
-
-        private void FillDefaultHours()
-        {
-            int count
-                , hour;
-
-            this.m_dgwHours.Rows.Clear();
-
-            count = m_tecView.m_valuesHours.Length;
-
-            this.m_dgwHours.Rows.Add(count + 1);
-
-            int offset = 0;
-            bool bSeasobDate = false;
-            if (m_tecView.m_curDate.Date.CompareTo (HAdmin.SeasonDateTime.Date) == 0)
-                bSeasobDate = true;
-            else
-                ;                
-
-            for (int i = 0; i < count; i++)
-            {
-                hour = i + 1;                
-                if (bSeasobDate == true) {
-                    offset = m_tecView.GetSeasonHourOffset (hour);
-                    
-                    this.m_dgwHours.Rows[i].Cells[0].Value = (hour - offset).ToString();
-                    if ((hour - 1) == HAdmin.SeasonDateTime.Hour)
-                        this.m_dgwHours.Rows[i].Cells[0].Value += @"*";
-                    else
-                        ;
-                }
-                else
-                    this.m_dgwHours.Rows[i].Cells[0].Value = (hour).ToString();
-
-                this.m_dgwHours.Rows[i].Cells[1].Value = 0.ToString("F2");
-                this.m_dgwHours.Rows[i].Cells[2].Value = 0.ToString("F2");
-                this.m_dgwHours.Rows[i].Cells[3].Value = 0.ToString("F2");
-                this.m_dgwHours.Rows[i].Cells[4].Value = 0.ToString("F2");
-                this.m_dgwHours.Rows[i].Cells[5].Value = 0.ToString("F2");
-                this.m_dgwHours.Rows[i].Cells[6].Value = 0.ToString("F2");
-            }
-
-            this.m_dgwHours.Rows[count].Cells[0].Value = "Сумма";
-            this.m_dgwHours.Rows[count].Cells[1].Value = 0.ToString("F2");
-            this.m_dgwHours.Rows[count].Cells[2].Value = "-";
-            this.m_dgwHours.Rows[count].Cells[3].Value = "-";
-            this.m_dgwHours.Rows[count].Cells[4].Value = 0.ToString("F2");
-            this.m_dgwHours.Rows[count].Cells[5].Value = 0.ToString("F2");
-            this.m_dgwHours.Rows[count].Cells[6].Value = 0.ToString("F2");
-        }
-
         public override void Start()
         {
             base.Start ();
             
             m_tecView.Start();
-
-            FillDefaultMins();
-            FillDefaultHours();
+            // значения по умолчанию
+            if (!(m_dgwMins == null))
+                m_dgwMins.Fill();
+            else
+                ;
+            m_dgwHours.Fill(m_tecView.m_curDate
+                , m_tecView.m_valuesHours.Length
+                , m_tecView.m_curDate.Date.CompareTo(HAdmin.SeasonDateTime.Date) == 0);
 
             DaylightTime daylight = TimeZone.CurrentTimeZone.GetDaylightChanges(DateTime.Now.Year);
             int timezone_offset = m_tecView.m_tec.m_timezone_offset_msc;
@@ -603,8 +541,8 @@ namespace Statistic
             ////В зависимости от установленных признаков в контекстном меню
             //// , расположение пунктов меню постоянно: 1-ый, 2-ой снизу
             //// , если установлен один, то обязательно снят другой
-            //setTypeSourceData(TG.ID_TIME.MINUTES, ((ToolStripMenuItem)m_ZedGraphMins.ContextMenuStrip.Items[m_ZedGraphMins.ContextMenuStrip.Items.Count - 2]).Checked == true ? CONN_SETT_TYPE.DATA_ASKUE : CONN_SETT_TYPE.DATA_SOTIASSO);
-            //setTypeSourceData(TG.ID_TIME.HOURS, ((ToolStripMenuItem)m_ZedGraphHours.ContextMenuStrip.Items[m_ZedGraphHours.ContextMenuStrip.Items.Count - 2]).Checked == true ? CONN_SETT_TYPE.DATA_ASKUE : CONN_SETT_TYPE.DATA_SOTIASSO);
+            //setTypeSourceData(HDateTime.INTERVAL.MINUTES, ((ToolStripMenuItem)m_ZedGraphMins.ContextMenuStrip.Items[m_ZedGraphMins.ContextMenuStrip.Items.Count - 2]).Checked == true ? CONN_SETT_TYPE.DATA_ASKUE : CONN_SETT_TYPE.DATA_SOTIASSO);
+            //setTypeSourceData(HDateTime.INTERVAL.HOURS, ((ToolStripMenuItem)m_ZedGraphHours.ContextMenuStrip.Items[m_ZedGraphHours.ContextMenuStrip.Items.Count - 2]).Checked == true ? CONN_SETT_TYPE.DATA_ASKUE : CONN_SETT_TYPE.DATA_SOTIASSO);
 
             m_timerCurrent =
                 //new System.Threading.Timer(new TimerCallback(TimerCurrent_Tick), m_evTimerCurrent, 0, 1000)
@@ -637,8 +575,9 @@ namespace Statistic
 
         protected override void initTableHourRows()
         {
-            m_tecView.m_curDate = _pnlQuickData.dtprDate.Value.Date;
-            m_tecView.serverTime = m_tecView.m_curDate;
+            m_tecView.m_curDate = 
+            m_tecView.serverTime = 
+                _pnlQuickData.dtprDate.Value.Date;
 
             if (m_tecView.m_curDate.Date.Equals(HAdmin.SeasonDateTime.Date) == false)
             {
@@ -652,17 +591,17 @@ namespace Statistic
 
         protected void initTableMinRows()
         {
-            if ((m_tecView.m_arTypeSourceData [(int)TG.ID_TIME.MINUTES] == CONN_SETT_TYPE.DATA_AISKUE)
-                || (m_tecView.m_arTypeSourceData [(int)TG.ID_TIME.MINUTES] == CONN_SETT_TYPE.DATA_AISKUE_PLUS_SOTIASSO)
-                || (m_tecView.m_arTypeSourceData [(int)TG.ID_TIME.MINUTES] == CONN_SETT_TYPE.DATA_SOTIASSO_3_MIN))
+            if ((m_tecView.m_arTypeSourceData [(int)HDateTime.INTERVAL.MINUTES] == CONN_SETT_TYPE.DATA_AISKUE)
+                || (m_tecView.m_arTypeSourceData [(int)HDateTime.INTERVAL.MINUTES] == CONN_SETT_TYPE.DATA_AISKUE_PLUS_SOTIASSO)
+                || (m_tecView.m_arTypeSourceData [(int)HDateTime.INTERVAL.MINUTES] == CONN_SETT_TYPE.DATA_SOTIASSO_3_MIN))
                 m_dgwMins.InitRows (21, false);
             else
-                if (m_tecView.m_arTypeSourceData [(int)TG.ID_TIME.MINUTES] == CONN_SETT_TYPE.DATA_SOTIASSO_1_MIN)
+                if (m_tecView.m_arTypeSourceData [(int)HDateTime.INTERVAL.MINUTES] == CONN_SETT_TYPE.DATA_SOTIASSO_1_MIN)
                     m_dgwMins.InitRows (61, true);
                 else
                     ;
 
-            FillDefaultMins ();
+            m_dgwMins.Fill ();
         }
 
         private int getHeightItem (bool bUseLabel, int iRow) { return bUseLabel == true ? m_arPercRows[iRow] : m_arPercRows[iRow] + m_arPercRows[iRow + 1]; }
@@ -736,7 +675,7 @@ namespace Statistic
                     {
                         stctrView.Orientation = Orientation.Vertical;
 
-                        stctrView.SplitterDistance = stctrView.Width / 2;
+                        stctrView.SplitterDistance = stctrView.Width / (100 / (int)SPLITTER_PERCENT_VERTICAL);
                     }
                     else
                     {
@@ -883,214 +822,32 @@ namespace Statistic
             }
         }
 
-        private void setFirstDisplayedScrollingRowIndex(DataGridView dgv, int lastIndx)
-        {//Вызов ТОЛЬКО для таблицы с ЧАСовыми значениями...
-            int iFirstDisplayedScrollingRowIndex = -1;
-
-            if (lastIndx < dgv.DisplayedRowCount(true))
-            {
-                iFirstDisplayedScrollingRowIndex = 0; 
-            }
-            else {
-                iFirstDisplayedScrollingRowIndex = lastIndx - dgv.DisplayedRowCount(true) + 1;
-
-                if (!(m_tecView.m_arTypeSourceData[(int)TG.ID_TIME.HOURS] == CONN_SETT_TYPE.DATA_AISKUE))
-                    //Если отображается еще один лишний час...
-                    iFirstDisplayedScrollingRowIndex ++;
-                else
-                    ;
-            }
-
-            dgv.FirstDisplayedScrollingRowIndex = iFirstDisplayedScrollingRowIndex;
-        }
-
         private void FillGridMins(int hour)
         {
-            double sumFact = 0, sumUDGe = 0, sumDiviation = 0;
-            int min = m_tecView.lastMin;
-
-            if (! (min == 0))
-                min--;
+            if (!(m_dgwMins == null))
+                m_dgwMins.Fill(m_tecView.m_valuesMins
+                    , hour, m_tecView.lastMin);
             else
                 ;
-
-            for (int i = 0; i < m_tecView.m_valuesMins.Length - 1; i++)
-            {
-                //Ограничить отображение (для режима АИСКУЭ+СОТИАССО)
-                m_dgwMins.Rows[i].Cells[(int)DataGridViewTables.INDEX_COLUMNS.FACT].Value = m_tecView.m_valuesMins[i + 1].valuesFact.ToString("F2");
-                if (i < min)
-                {                    
-                    sumFact += m_tecView.m_valuesMins[i + 1].valuesFact;
-                }
-                else
-                    ;
-
-                m_dgwMins.Rows[i].Cells[(int)DataGridViewTables.INDEX_COLUMNS.PBR].Value = m_tecView.m_valuesMins[i].valuesPBR.ToString("F2");
-                m_dgwMins.Rows[i].Cells[(int)DataGridViewTables.INDEX_COLUMNS.PBRe].Value = m_tecView.m_valuesMins[i].valuesPBRe.ToString("F2");
-                m_dgwMins.Rows[i].Cells[(int)DataGridViewTables.INDEX_COLUMNS.UDGe].Value = m_tecView.m_valuesMins[i].valuesUDGe.ToString("F2");
-                sumUDGe += m_tecView.m_valuesMins[i].valuesUDGe;
-                if ((i < min) && (! (m_tecView.m_valuesMins[i].valuesUDGe == 0)))
-                {
-                    m_dgwMins.Rows[i].Cells[(int)DataGridViewTables.INDEX_COLUMNS.DEVIATION].Value =
-                        ((double)(m_tecView.m_valuesMins[i + 1].valuesFact - m_tecView.m_valuesMins[i].valuesUDGe)).ToString("F2");
-                    //if (Math.Abs(m_tecView.m_valuesMins.valuesFact[i + 1] - m_tecView.m_valuesMins.valuesUDGe[i]) > m_tecView.m_valuesMins.valuesDiviation[i]
-                    //    && m_tecView.m_valuesMins.valuesDiviation[i] != 0)
-                    //    m_dgwMins.Rows[i].Cells[5].Style = dgvCellStyleError;
-                    //else
-                    m_dgwMins.Rows[i].Cells[(int)DataGridViewTables.INDEX_COLUMNS.DEVIATION].Style = dgvCellStyleCommon;
-
-                    sumDiviation += m_tecView.m_valuesMins[i + 1].valuesFact - m_tecView.m_valuesMins[i].valuesUDGe;
-                }
-                else
-                {
-                    m_dgwMins.Rows[i].Cells[(int)DataGridViewTables.INDEX_COLUMNS.DEVIATION].Value = 0.ToString("F2");
-                    m_dgwMins.Rows[i].Cells[(int)DataGridViewTables.INDEX_COLUMNS.DEVIATION].Style = dgvCellStyleCommon;
-                }
-            }
-
-            int cnt = m_dgwMins.Rows.Count - 1;
-            if (! (min > 0))
-            {
-                m_dgwMins.Rows[cnt].Cells[(int)DataGridViewTables.INDEX_COLUMNS.FACT].Value = 0.ToString("F2");
-                m_dgwMins.Rows[cnt].Cells[(int)DataGridViewTables.INDEX_COLUMNS.UDGe].Value = 0.ToString("F2");
-                m_dgwMins.Rows[cnt].Cells[(int)DataGridViewTables.INDEX_COLUMNS.DEVIATION].Value = 0.ToString("F2");
-            }
-            else
-            {
-                if (min > cnt)
-                    min = cnt;
-                else
-                    ;
-
-                m_dgwMins.Rows[cnt].Cells[(int)DataGridViewTables.INDEX_COLUMNS.FACT].Value = (sumFact / min).ToString("F2");
-                m_dgwMins.Rows[cnt].Cells[(int)DataGridViewTables.INDEX_COLUMNS.UDGe].Value = m_tecView.m_valuesMins[0].valuesUDGe.ToString("F2");
-                m_dgwMins.Rows[cnt].Cells[(int)DataGridViewTables.INDEX_COLUMNS.DEVIATION].Value = (sumDiviation / min).ToString("F2");
-            }
-
-            ////Назначить крайней видимой строкой - строку с крайним полученным значением
-            //setFirstDisplayedScrollingRowIndex(m_dgwMins, m_tecView.lastMin);
-            //Назначить крайней видимой строкой - крайнюю строку
-            if (! (m_dgwMins.DisplayedRowCount(true) == 0))
-                m_dgwMins.FirstDisplayedScrollingRowIndex = m_dgwMins.RowCount - m_dgwMins.DisplayedRowCount(true) + 1;
-            else
-                m_dgwMins.FirstDisplayedScrollingRowIndex = 0;
 
             //Logging.Logg().Debug(@"PanelTecViewBase::FillGridMins () - ...");
         }
 
         private void FillGridHours()
         {
-            FillDefaultHours();
-
-            double sumFact = 0, sumUDGe = 0, sumDiviation = 0;
-            Hd2PercentControl d2PercentControl = new Hd2PercentControl();
-            int hour = m_tecView.lastHour;
-            int receivedHour = m_tecView.lastReceivedHour;
-            int itemscount = m_tecView.m_valuesHours.Length;
-            int warn = -1,
-                cntWarn = -1;
-            string strWarn = string.Empty;
-
-            DataGridViewCellStyle curCellStyle;
-            cntWarn = 0;
-            for (int i = 0; i < itemscount; i++)
-            {
-                bool bPmin = false;
-                if (m_tecView.m_tec.m_id == 5) bPmin = true; else ;
-                d2PercentControl.Calculate(m_tecView.m_valuesHours[i], bPmin, out warn);
-
-                if ((!(warn == 0)) &&
-                   (m_tecView.m_valuesHours[i + 0].valuesLastMinutesTM > 1))
-                    cntWarn++;
-                else
-                    cntWarn = 0;
-
-                if (! (cntWarn == 0))
-                {
-                    if (cntWarn > 3)
-                        curCellStyle = dgvCellStyleError;
-                    else
-                        curCellStyle = dgvCellStyleWarning;
-                }
-                else
-                    curCellStyle = dgvCellStyleCommon;
-                m_dgwHours.Rows[i + 0].Cells[(int)DataGridViewTables.INDEX_COLUMNS.LAST_MINUTES].Style = curCellStyle;
-
-                if (m_tecView.m_valuesHours[i + 0].valuesLastMinutesTM > 1)
-                {
-                    if (cntWarn > 0)
-                        strWarn = cntWarn + @":";
-                    else
-                        strWarn = string.Empty;
-
-                    m_dgwHours.Rows[i + 0].Cells[(int)DataGridViewTables.INDEX_COLUMNS.LAST_MINUTES].Value = strWarn + m_tecView.m_valuesHours[i + 0].valuesLastMinutesTM.ToString("F2");
-                }
-                else
-                    m_dgwHours.Rows[i + 0].Cells[(int)DataGridViewTables.INDEX_COLUMNS.LAST_MINUTES].Value = 0.ToString("F2");
-
-                bool bDevVal = false;
-                if (m_tecView.currHour == true)
-                    if ((i < (receivedHour + 1)) && ((!(m_tecView.m_valuesHours[i].valuesUDGe == 0)) && (m_tecView.m_valuesHours[i].valuesFact > 0)))
-                    {
-                        if ((m_tecView.m_arTypeSourceData[(int)TG.ID_TIME.HOURS] == CONN_SETT_TYPE.DATA_AISKUE)
-                            || (i < receivedHour))
-                            bDevVal = true;
-                        else
-                            ;
-                    }
-                    else
-                    {
-                    }
-                else
-                    if (m_tecView.serverTime.Date.Equals(HDateTime.ToMoscowTimeZone(DateTime.Now.Date)) == true)
-                        if ((i < (receivedHour + 1)) && (!(m_tecView.m_valuesHours[i].valuesUDGe == 0)) && (m_tecView.m_valuesHours[i].valuesFact > 0))
-                        {
-                            bDevVal = true;
-                        }
-                        else
-                        {
-                        }
-                    else
-                        if ((!(m_tecView.m_valuesHours[i].valuesUDGe == 0)) && (m_tecView.m_valuesHours[i].valuesFact > 0))
-                        {
-                            bDevVal = true;
-                        }
-                        else
-                        {
-                        }    
-
-                m_dgwHours.Rows[i].Cells[(int)DataGridViewTables.INDEX_COLUMNS.FACT].Value = m_tecView.m_valuesHours[i].valuesFact.ToString("F2");
-                if (bDevVal == true)
-                    sumFact += m_tecView.m_valuesHours[i].valuesFact;
-                else
-                    ;
-
-                m_dgwHours.Rows[i].Cells[(int)DataGridViewTables.INDEX_COLUMNS.PBR].Value = m_tecView.m_valuesHours[i].valuesPBR.ToString("F2");
-                m_dgwHours.Rows[i].Cells[(int)DataGridViewTables.INDEX_COLUMNS.PBRe].Value = m_tecView.m_valuesHours[i].valuesPBRe.ToString("F2");
-                m_dgwHours.Rows[i].Cells[(int)DataGridViewTables.INDEX_COLUMNS.UDGe].Value = m_tecView.m_valuesHours[i].valuesUDGe.ToString("F2");
-                sumUDGe += m_tecView.m_valuesHours[i].valuesUDGe;
-
-                if (bDevVal == true)
-                {
-                    m_dgwHours.Rows[i].Cells[(int)DataGridViewTables.INDEX_COLUMNS.DEVIATION].Value = ((double)(m_tecView.m_valuesHours[i].valuesFact - m_tecView.m_valuesHours[i].valuesUDGe)).ToString("F2");
-                    if ((Math.Round(Math.Abs(m_tecView.m_valuesHours[i].valuesFact - m_tecView.m_valuesHours[i].valuesUDGe), 2) > Math.Round(m_tecView.m_valuesHours[i].valuesDiviation, 2))
-                        && (!(m_tecView.m_valuesHours[i].valuesDiviation == 0)))
-                        m_dgwHours.Rows[i].Cells[(int)DataGridViewTables.INDEX_COLUMNS.DEVIATION].Style = dgvCellStyleError;
-                    else
-                        m_dgwHours.Rows[i].Cells[(int)DataGridViewTables.INDEX_COLUMNS.DEVIATION].Style = dgvCellStyleCommon;
-                    sumDiviation += Math.Abs(m_tecView.m_valuesHours[i].valuesFact - m_tecView.m_valuesHours[i].valuesUDGe);
-                }
-                else
-                {
-                    m_dgwHours.Rows[i].Cells[(int)DataGridViewTables.INDEX_COLUMNS.DEVIATION].Value = 0.ToString("F2");
-                    m_dgwHours.Rows[i].Cells[(int)DataGridViewTables.INDEX_COLUMNS.DEVIATION].Style = dgvCellStyleCommon;
-                }
-            }
-            m_dgwHours.Rows[itemscount].Cells[(int)DataGridViewTables.INDEX_COLUMNS.FACT].Value = sumFact.ToString("F2");
-            m_dgwHours.Rows[itemscount].Cells[(int)DataGridViewTables.INDEX_COLUMNS.UDGe].Value = sumUDGe.ToString("F2");
-            m_dgwHours.Rows[itemscount].Cells[(int)DataGridViewTables.INDEX_COLUMNS.DEVIATION].Value = sumDiviation.ToString("F2");
-
-            setFirstDisplayedScrollingRowIndex(m_dgwHours, m_tecView.lastHour);
+            // значения по умолчанию
+            m_dgwHours.Fill(m_tecView.m_curDate
+                , m_tecView.m_valuesHours.Length
+                , m_tecView.m_curDate.Date.CompareTo(HAdmin.SeasonDateTime.Date) == 0);
+            // реальные значения
+            m_dgwHours.Fill(m_tecView.m_valuesHours
+                , m_tecView.lastHour
+                , m_tecView.lastReceivedHour
+                , m_tecView.m_valuesHours.Length
+                , m_tecView.m_tec.m_id
+                , m_tecView.currHour
+                , m_tecView.m_arTypeSourceData[(int)HDateTime.INTERVAL.HOURS] == CONN_SETT_TYPE.DATA_AISKUE
+                , m_tecView.serverTime.Date.Equals(HDateTime.ToMoscowTimeZone(DateTime.Now.Date)));
 
             //Logging.Logg().Debug(@"PanelTecViewBase::FillGridHours () - ...");
         }
@@ -1102,9 +859,15 @@ namespace Statistic
             
             //14.04.2015 ???
             if (m_tecView.currHour == true)
-                ChangeState();
+            {
+                //// выполнить ф-ю
+                //changeState();
+                // выполнить действия из ф-ии
+                m_tecView.m_curDate = _pnlQuickData.dtprDate.Value;
+                m_tecView.ChangeState();
+            }
             else
-                m_tecView.GetRetroValues ();
+                m_tecView.GetRetroValues();
 
             //delegateStopWait ();
             if (!(delegateStopWait == null)) delegateStopWait(); else ;
@@ -1125,7 +888,7 @@ namespace Statistic
 
                 NewDateRefresh();
 
-                //setRetroTickTime(m_tecView.lastHour, (m_tecView.lastMin - 1) * m_tecView.GetIntervalOfTypeSourceData (TG.ID_TIME.MINUTES));
+                //setRetroTickTime(m_tecView.lastHour, (m_tecView.lastMin - 1) * m_tecView.GetIntervalOfTypeSourceData (HDateTime.INTERVAL.MINUTES));
                 setRetroTickTime(m_tecView.lastHour, 60);
             }
             else
@@ -1166,12 +929,12 @@ namespace Statistic
             NewDateRefresh();
         }
 
-        private void ChangeState()
-        {
-            m_tecView.m_curDate = _pnlQuickData.dtprDate.Value;
+        //private void changeState()
+        //{
+        //    m_tecView.m_curDate = _pnlQuickData.dtprDate.Value;
             
-            m_tecView.ChangeState ();
-        }
+        //    m_tecView.ChangeState ();
+        //}
 
         protected bool timerCurrentStarted
         {
@@ -1197,8 +960,8 @@ namespace Statistic
                     ////В зависимости от установленных признаков в контекстном меню
                     //// , расположение пунктов меню постоянно: 1-ый, 2-ой снизу
                     //// , если установлен один, то обязательно снят другой
-                    //setTypeSourceData(TG.ID_TIME.MINUTES, ((ToolStripMenuItem)m_ZedGraphMins.ContextMenuStrip.Items[m_ZedGraphMins.ContextMenuStrip.Items.Count - 2]).Checked == true ? CONN_SETT_TYPE.DATA_ASKUE : CONN_SETT_TYPE.DATA_SOTIASSO);
-                    //setTypeSourceData(TG.ID_TIME.HOURS, ((ToolStripMenuItem)m_ZedGraphHours.ContextMenuStrip.Items[m_ZedGraphHours.ContextMenuStrip.Items.Count - 2]).Checked == true ? CONN_SETT_TYPE.DATA_ASKUE : CONN_SETT_TYPE.DATA_SOTIASSO);
+                    //setTypeSourceData(HDateTime.INTERVAL.MINUTES, ((ToolStripMenuItem)m_ZedGraphMins.ContextMenuStrip.Items[m_ZedGraphMins.ContextMenuStrip.Items.Count - 2]).Checked == true ? CONN_SETT_TYPE.DATA_ASKUE : CONN_SETT_TYPE.DATA_SOTIASSO);
+                    //setTypeSourceData(HDateTime.INTERVAL.HOURS, ((ToolStripMenuItem)m_ZedGraphHours.ContextMenuStrip.Items[m_ZedGraphHours.ContextMenuStrip.Items.Count - 2]).Checked == true ? CONN_SETT_TYPE.DATA_ASKUE : CONN_SETT_TYPE.DATA_SOTIASSO);
 
                     HMark markSourceData = enabledSourceData_ToolStripMenuItems();
 
@@ -1467,7 +1230,7 @@ namespace Statistic
 
             Color colorChart = Color.Empty
                 , colorPCurve = Color.Empty;
-            getColorZEDGraph(TG.ID_TIME.MINUTES, out colorChart, out colorPCurve);
+            getColorZEDGraph(HDateTime.INTERVAL.MINUTES, out colorChart, out colorPCurve);
             pane.Chart.Fill = new Fill(colorChart);
 
             LineItem curve2 = pane.AddCurve("УДГэ", null, valuesUDGe, FormMain.formGraphicsSettings.COLOR(FormGraphicsSettings.INDEX_COLOR.UDG));
@@ -1477,7 +1240,7 @@ namespace Statistic
             switch (FormMain.formGraphicsSettings.m_graphTypes)
             {
                 case FormGraphicsSettings.GraphTypes.Bar:
-                    if ((! (m_tecView.m_arTypeSourceData[(int)TG.ID_TIME.MINUTES] == CONN_SETT_TYPE.DATA_AISKUE_PLUS_SOTIASSO))
+                    if ((! (m_tecView.m_arTypeSourceData[(int)HDateTime.INTERVAL.MINUTES] == CONN_SETT_TYPE.DATA_AISKUE_PLUS_SOTIASSO))
                         || (m_tecView.currHour == false))
                     {
                         //BarItem
@@ -1545,7 +1308,7 @@ namespace Statistic
                     PointPairList listValuesSOTIASSO = null
                         , listValuesAISKUE = null
                         , listValuesRec = null;
-                    if ((!(m_tecView.m_arTypeSourceData[(int)TG.ID_TIME.MINUTES] == CONN_SETT_TYPE.DATA_AISKUE_PLUS_SOTIASSO))
+                    if ((!(m_tecView.m_arTypeSourceData[(int)HDateTime.INTERVAL.MINUTES] == CONN_SETT_TYPE.DATA_AISKUE_PLUS_SOTIASSO))
                         || (m_tecView.currHour == false))
                     {
                         switch (m_tecView.lastMin)
@@ -1822,7 +1585,7 @@ namespace Statistic
 
             Color colorChart = Color.Empty
                 , colorPCurve = Color.Empty;
-            getColorZEDGraph(TG.ID_TIME.HOURS, out colorChart, out colorPCurve);
+            getColorZEDGraph(HDateTime.INTERVAL.HOURS, out colorChart, out colorPCurve);
 
             pane.Chart.Fill = new Fill(colorChart);
 
@@ -1835,7 +1598,7 @@ namespace Statistic
 
             if (FormMain.formGraphicsSettings.m_graphTypes == FormGraphicsSettings.GraphTypes.Bar)
             {
-                if (! (m_tecView.m_arTypeSourceData [(int)TG.ID_TIME.HOURS] == CONN_SETT_TYPE.DATA_AISKUE_PLUS_SOTIASSO))
+                if (! (m_tecView.m_arTypeSourceData [(int)HDateTime.INTERVAL.HOURS] == CONN_SETT_TYPE.DATA_AISKUE_PLUS_SOTIASSO))
                     //BarItem
                     pane.AddBar("Мощность", null, valuesFact, colorPCurve);
                 else {
@@ -1873,7 +1636,7 @@ namespace Statistic
             else
                 if (FormMain.formGraphicsSettings.m_graphTypes == FormGraphicsSettings.GraphTypes.Linear)
                 {
-                    if (! (m_tecView.m_arTypeSourceData [(int)TG.ID_TIME.HOURS] == CONN_SETT_TYPE.DATA_AISKUE_PLUS_SOTIASSO))
+                    if (! (m_tecView.m_arTypeSourceData [(int)HDateTime.INTERVAL.HOURS] == CONN_SETT_TYPE.DATA_AISKUE_PLUS_SOTIASSO))
                     {
                         double[] valuesFactLinear = new double[m_tecView.lastHour];
                         for (int i = 0; i < m_tecView.lastHour; i++)
@@ -1997,43 +1760,43 @@ namespace Statistic
             } else {
                 //Пункты меню НЕдоступны для выбора
                 //Принудительно установить источник данных
-                if (! (m_tecView.m_arTypeSourceData [(int)TG.ID_TIME.MINUTES] == FormMain.formGraphicsSettings.m_connSettType_SourceData))
+                if (! (m_tecView.m_arTypeSourceData [(int)HDateTime.INTERVAL.MINUTES] == FormMain.formGraphicsSettings.m_connSettType_SourceData))
                 {
-                    m_tecView.m_arTypeSourceData [(int)TG.ID_TIME.MINUTES] = FormMain.formGraphicsSettings.m_connSettType_SourceData;
+                    m_tecView.m_arTypeSourceData [(int)HDateTime.INTERVAL.MINUTES] = FormMain.formGraphicsSettings.m_connSettType_SourceData;
 
-                    //arRes [(int)TG.ID_TIME.MINUTES] = true;
-                    markRes.Marked ((int)TG.ID_TIME.MINUTES);
+                    //arRes [(int)HDateTime.INTERVAL.MINUTES] = true;
+                    markRes.Marked ((int)HDateTime.INTERVAL.MINUTES);
                 } else {
                 }
 
-                if (!(m_tecView.m_arTypeSourceData[(int)TG.ID_TIME.HOURS] == FormMain.formGraphicsSettings.m_connSettType_SourceData))
+                if (!(m_tecView.m_arTypeSourceData[(int)HDateTime.INTERVAL.HOURS] == FormMain.formGraphicsSettings.m_connSettType_SourceData))
                 {
-                    m_tecView.m_arTypeSourceData[(int)TG.ID_TIME.HOURS] = FormMain.formGraphicsSettings.m_connSettType_SourceData;
+                    m_tecView.m_arTypeSourceData[(int)HDateTime.INTERVAL.HOURS] = FormMain.formGraphicsSettings.m_connSettType_SourceData;
 
-                    //arRes[(int)TG.ID_TIME.HOURS] = true;
-                    markRes.Marked((int)TG.ID_TIME.HOURS);
+                    //arRes[(int)HDateTime.INTERVAL.HOURS] = true;
+                    markRes.Marked((int)HDateTime.INTERVAL.HOURS);
                 }
                 else
                 {
                 }
 
-                //if (arRes[(int)TG.ID_TIME.MINUTES] == true) {
-                if (markRes.IsMarked ((int)TG.ID_TIME.MINUTES) == true)
+                //if (arRes[(int)HDateTime.INTERVAL.MINUTES] == true) {
+                if (markRes.IsMarked ((int)HDateTime.INTERVAL.MINUTES) == true)
                 {
                     initTableMinRows ();
 
-                    enabledSourceData_ToolStripMenuItems (m_ZedGraphMins.ContextMenuStrip, m_tecView.m_arTypeSourceData[(int)TG.ID_TIME.MINUTES]);
+                    enabledSourceData_ToolStripMenuItems (m_ZedGraphMins.ContextMenuStrip, m_tecView.m_arTypeSourceData[(int)HDateTime.INTERVAL.MINUTES]);
                 }
                 else ;
 
-                //if (arRes[(int)TG.ID_TIME.HOURS] == true)
-                if (markRes.IsMarked ((int)TG.ID_TIME.HOURS) == true) {
-                    enabledSourceData_ToolStripMenuItems(m_ZedGraphHours.ContextMenuStrip, m_tecView.m_arTypeSourceData[(int)TG.ID_TIME.HOURS]);
+                //if (arRes[(int)HDateTime.INTERVAL.HOURS] == true)
+                if (markRes.IsMarked ((int)HDateTime.INTERVAL.HOURS) == true) {
+                    enabledSourceData_ToolStripMenuItems(m_ZedGraphHours.ContextMenuStrip, m_tecView.m_arTypeSourceData[(int)HDateTime.INTERVAL.HOURS]);
                 }
                 else ;
             }
 
-            //return arRes[(int)TG.ID_TIME.MINUTES] || arRes[(int)TG.ID_TIME.HOURS];
+            //return arRes[(int)HDateTime.INTERVAL.MINUTES] || arRes[(int)HDateTime.INTERVAL.HOURS];
             //return arRes;
             return markRes;
         }
@@ -2084,15 +1847,15 @@ namespace Statistic
             //if (markUpdate.IsMarked() == false)
             //    return;
             //else
-            if ((markUpdate.IsMarked((int)TG.ID_TIME.MINUTES) == true) && (markUpdate.IsMarked((int)TG.ID_TIME.HOURS) == false))
+            if ((markUpdate.IsMarked((int)HDateTime.INTERVAL.MINUTES) == true) && (markUpdate.IsMarked((int)HDateTime.INTERVAL.HOURS) == false))
                 //Изменение источника данных МИНУТЫ
                 m_tecView.GetRetroMins();
             else
-                if ((markUpdate.IsMarked((int)TG.ID_TIME.MINUTES) == false) && (markUpdate.IsMarked((int)TG.ID_TIME.HOURS) == true))
+                if ((markUpdate.IsMarked((int)HDateTime.INTERVAL.MINUTES) == false) && (markUpdate.IsMarked((int)HDateTime.INTERVAL.HOURS) == true))
                     //Изменение источника данных ЧАС
                     m_tecView.GetRetroHours();
                 else
-                    if ((markUpdate.IsMarked((int)TG.ID_TIME.MINUTES) == true) && (markUpdate.IsMarked((int)TG.ID_TIME.HOURS) == true))
+                    if ((markUpdate.IsMarked((int)HDateTime.INTERVAL.MINUTES) == true) && (markUpdate.IsMarked((int)HDateTime.INTERVAL.HOURS) == true))
                         //Изменение источника данных ЧАС, МИНУТЫ
                         m_tecView.GetRetroValues();
                     else
@@ -2127,7 +1890,7 @@ namespace Statistic
         {
         }
 
-        private void sourceData_Click(ContextMenuStrip cms, ToolStripMenuItem sender, TG.ID_TIME indx_time)
+        private void sourceData_Click(ContextMenuStrip cms, ToolStripMenuItem sender, HDateTime.INTERVAL indx_time)
         {
             CONN_SETT_TYPE prevTypeSourceData = m_tecView.m_arTypeSourceData[(int)indx_time]
                 , curTypeSourceData = prevTypeSourceData;
@@ -2174,8 +1937,7 @@ namespace Statistic
 
                     m_tecView.m_arTypeSourceData[(int)indx_time] = curTypeSourceData;
 
-
-                    if (indx_time == TG.ID_TIME.MINUTES)
+                    if (indx_time == HDateTime.INTERVAL.MINUTES)
                     {
                         bool bInitTableMinRows = true;
 
@@ -2269,7 +2031,7 @@ namespace Statistic
                         NewDateRefresh();
                     else
                     {//m_tecView.currHour == false
-                        if (indx_time == TG.ID_TIME.MINUTES)
+                        if (indx_time == HDateTime.INTERVAL.MINUTES)
                             m_tecView.GetRetroMins();
                         else
                             m_tecView.GetRetroHours();
@@ -2290,15 +2052,15 @@ namespace Statistic
 
         protected void sourceDataMins_Click(object sender, EventArgs e)
         {
-            sourceData_Click(m_ZedGraphMins.ContextMenuStrip, (ToolStripMenuItem)sender, TG.ID_TIME.MINUTES);
+            sourceData_Click(m_ZedGraphMins.ContextMenuStrip, (ToolStripMenuItem)sender, HDateTime.INTERVAL.MINUTES);
         }
 
         protected void sourceDataHours_Click(object sender, EventArgs e)
         {
-            sourceData_Click(m_ZedGraphHours.ContextMenuStrip, (ToolStripMenuItem)sender, TG.ID_TIME.HOURS);
+            sourceData_Click(m_ZedGraphHours.ContextMenuStrip, (ToolStripMenuItem)sender, HDateTime.INTERVAL.HOURS);
         }
 
-        private void getColorZEDGraph(TG.ID_TIME id_time, out Color colChart, out Color colP)
+        private void getColorZEDGraph(HDateTime.INTERVAL id_time, out Color colChart, out Color colP)
         {
             //Значения по умолчанию
             colChart = FormMain.formGraphicsSettings.COLOR(FormGraphicsSettings.INDEX_COLOR.BG_ASKUE);
