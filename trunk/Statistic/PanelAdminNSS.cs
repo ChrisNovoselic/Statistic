@@ -238,13 +238,17 @@ namespace Statistic
         private void visibleControlRDGExcel()
         {
             bool bImpExpButtonVisible = false;
-            if ((!(m_listTECComponentIndex == null)) && (m_listTECComponentIndex.Count > 0) && (!(comboBoxTecComponent.SelectedIndex < 0)) && (m_admin.IsRDGExcel(m_listTECComponentIndex[comboBoxTecComponent.SelectedIndex]) == true))
+            if ((!(m_listTECComponentIndex == null))
+                && (m_listTECComponentIndex.Count > 0)
+                && (!(comboBoxTecComponent.SelectedIndex < 0))
+                && (m_admin.IsRDGExcel(m_listTECComponentIndex[comboBoxTecComponent.SelectedIndex]) == true))
                 bImpExpButtonVisible = true;
             else
                 ;
 
             btnImportExcel.Visible =
-            btnExportExcel.Visible = bImpExpButtonVisible;
+            btnExportExcel.Visible =
+                bImpExpButtonVisible;
         }
 
         private void btnImportExcel_Click(object sender, EventArgs e)
