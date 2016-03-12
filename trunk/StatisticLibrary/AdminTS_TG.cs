@@ -161,6 +161,14 @@ namespace StatisticCommon
             //m_bSavePPBRValues = true;
         }
 
+        public void BaseGetRDGValue(int indx, DateTime date)
+        {
+            if(date!=DateTime.MinValue)
+                base.GetRDGValues(/*(int)m_typeFields,*/ indx, (DateTime)date);
+            else
+                base.GetRDGValues(/*(int)m_typeFields,*/ indx);
+        }
+
         public override void GetRDGValues(/*TYPE_FIELDS mode,*/ int id)
         {
             //delegateStartWait ();
@@ -357,6 +365,15 @@ namespace StatisticCommon
             m_listCurRDGValues.Add(curRDGValues);
 
             return iRes;
+        }
+
+        public Errors BaseSaveChanges()
+        {
+            Errors errRes = Errors.NoError;
+
+            errRes = base.SaveChanges();
+
+            return errRes;
         }
 
         public override Errors SaveChanges()

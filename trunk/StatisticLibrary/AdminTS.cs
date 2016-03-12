@@ -46,6 +46,16 @@ namespace StatisticCommon
         protected DataTable m_tableValuesResponse,
                     m_tableRDGExcelValuesResponse;
 
+        /// <summary>
+        /// Идентификаторы часовых поясов(смещение)
+        /// </summary>
+        public enum INDEX_OFFSET : int { MOSCOW=0, NOVOSIBIRSK=3 }
+
+        /// <summary>
+        /// Смещение по часовому поясу
+        /// </summary>
+        public int m_Offset_to_moscow = 0;
+
         protected enum StatesMachine
         {
             CurrentTime,
@@ -104,6 +114,10 @@ namespace StatisticCommon
             base.Initialize ();
         }   
 
+        /// <summary>
+        /// Сохранение изменений
+        /// </summary>
+        /// <returns>Возвращает ошибки</returns>
         public virtual Errors SaveChanges()
         {
             //Logging.Logg().Debug("AdminTS::SaveChanges () - вХод...", Logging.INDEX_MESSAGE.NOT_SET);
@@ -178,6 +192,10 @@ namespace StatisticCommon
             return saveResult;
         }
 
+        /// <summary>
+        /// Очистка административных значений и значений ПБР
+        /// </summary>
+        /// <returns>Возвращает ошибки</returns>
         protected virtual Errors ClearRDG()
         {
             Errors errClearResult;
@@ -242,6 +260,11 @@ namespace StatisticCommon
             return errClearResult;
         }
 
+        /// <summary>
+        /// Получение списка с индексами компонентов ТЭЦ
+        /// </summary>
+        /// <param name="mode">Модификатор типа компонентов</param>
+        /// <returns>Возвращает список идентификаторов</returns>
         public List <int>GetListIndexTECComponent (FormChangeMode.MODE_TECCOMPONENT mode) {
             List <int>listIndex = new List <int> ();
 
@@ -278,6 +301,11 @@ namespace StatisticCommon
             return listIndex;
         }
 
+        /// <summary>
+        /// Получение значений ПБР и административных при первом запуске
+        /// </summary>
+        /// <param name="active">Флаг активности</param>
+        /// <returns>Возвращает состояние после выполнения метода</returns>
         public override bool Activate(bool active)
         {
             bool bRes = base.Activate (active);
@@ -292,6 +320,11 @@ namespace StatisticCommon
             return bRes;
         }
 
+        /// <summary>
+        /// Есть ли путь для работы с Excel
+        /// </summary>
+        /// <param name="indx">Идентификатор ТЭЦ(ЛК)</param>
+        /// <returns>Возвращает флаг доступности</returns>
         public virtual bool IsRDGExcel (int indx) {
             bool bRes = false;
             if (allTECComponents[indx].tec.m_path_rdg_excel.Length > 0)
@@ -327,6 +360,10 @@ namespace StatisticCommon
             }
         }
 
+        /// <summary>
+        /// Постановка в очередь для возвращения времени
+        /// </summary>
+        /// <param name="indx">Индекс компонента</param>
         public void GetCurrentTime(int indx)
         {
             lock (m_lockState)
@@ -351,6 +388,10 @@ namespace StatisticCommon
             if (m_markSavedValues.IsMarked((int)INDEX_MARK_PPBRVALUES.PBR_ENABLED) == true) m_markSavedValues.UnMarked((int)INDEX_MARK_PPBRVALUES.PBR_AVALIABLE); else ;
         }
         
+        /// <summary>
+        /// Постановка в очередь получения административных и ПБР значений
+        /// </summary>
+        /// <param name="indx">Индекс компонента</param>
         public virtual void GetRDGValues (/*TYPE_FIELDS mode,*/ int indx) {
             //Запретить запись ПБР-значений
             protectSavedPPBRValues();
@@ -380,7 +421,11 @@ namespace StatisticCommon
             }
         }
 
-
+        /// <summary>
+        /// Постановка в очередь получения административных и ПБР значений
+        /// </summary>
+        /// <param name="indx">Индекс компонента</param>
+        /// <param name="date"></param>
         public override void GetRDGValues(/*int /*TYPE_FIELDS mode,*/ int indx, DateTime date)
         {
             //Запретить запись ПБР-значений
@@ -414,15 +459,32 @@ namespace StatisticCommon
             }
         }
 
+        /// <summary>
+        /// Получение и выполнение запроса для получения значений ППБР
+        /// </summary>
+        /// <param name="t">ТЭЦ</param>
+        /// <param name="comp">Компонент ТЭЦ</param>
+        /// <param name="date">Дата за которую необходимо получить значения</param>
         protected override void GetPPBRValuesRequest(TEC t, TECComponent comp, DateTime date/*, AdminTS.TYPE_FIELDS mode*/)
         {
             Request(m_dictIdListeners [t.m_id][(int)CONN_SETT_TYPE.PBR], t.GetPBRValueQuery(comp, date/*, mode*/));
         }
 
+        /// <summary>
+        /// Получение и выполнение запроса для получения административных значений
+        /// </summary>
+        /// <param name="t">ТЭЦ</param>
+        /// <param name="comp">Компонент ТЭЦ</param>
+        /// <param name="date">Дата за которую необходимо получить значения</param>
         private void GetAdminValuesRequest(TEC t, TECComponent comp, DateTime date/*, AdminTS.TYPE_FIELDS mode*/) {
             Request(m_dictIdListeners[t.m_id][(int)CONN_SETT_TYPE.ADMIN], t.GetAdminValueQuery(comp, date/*, mode*/));
         }
 
+        /// <summary>
+        /// Постановка в очередь получения значений из Excel
+        /// </summary>
+        /// <param name="indx">Индекс компонента</param>
+        /// <param name="date">Дата за которую необходимо получить значения</param>
         public virtual void ImpRDGExcelValues(int indx, DateTime date)
         {
             lock (m_lockState)
@@ -445,6 +507,12 @@ namespace StatisticCommon
             }
         }
 
+        /// <summary>
+        /// Постановка в очередь экспорта значений в Excel
+        /// </summary>
+        /// <param name="indx">Индекс компонента</param>
+        /// <param name="date">Дата за которую необходимо выгрузить значения</param>
+        /// <returns>Возвращает ошибки</returns>
         public virtual Errors ExpRDGExcelValues(int indx, DateTime date)
         {
             delegateStartWait();
@@ -497,15 +565,27 @@ namespace StatisticCommon
             return saveResult;
         }
 
+        /// <summary>
+        /// Получение значений ППБР
+        /// </summary>
+        /// <param name="table">Таблица с результатом запроса</param>
+        /// <param name="date">Дата</param>
+        /// <returns>Ошибка</returns>
         protected override int GetPPBRValuesResponse(DataTable table, DateTime date)
         {
             int iRes = 0;
-
+            
             m_tableValuesResponse = table.Copy ();
-
+            
             return iRes;
         }
 
+        /// <summary>
+        /// Получение административных значений и объединение таблиц административных и ППБР значений 
+        /// </summary>
+        /// <param name="tableAdminValuesResponse">Таблица с административными значениями</param>
+        /// <param name="date">Дата за которую происходит выборка</param>
+        /// <returns>Ошибка</returns>
         protected virtual int GetAdminValuesResponse(DataTable tableAdminValuesResponse, DateTime date)
         {
             DataTable table = null;
@@ -517,10 +597,11 @@ namespace StatisticCommon
             int[] arIndexTables = { 0, 1 },
                 arFieldsCount = { -1, -1 };
             bool bSeason = false;
-
             if (tableAdminValuesResponse == null)
                 tableAdminValuesResponse = new DataTable();
-            else ;
+            else
+                ;
+
 
             if (m_tableValuesResponse == null)
                 m_tableValuesResponse = new DataTable();
@@ -640,8 +721,8 @@ namespace StatisticCommon
                 {
                     try
                     {
-                        hour = ((DateTime)table.Rows[i]["DATE_PBR"]).Hour;
-                        day = ((DateTime)table.Rows[i]["DATE_PBR"]).Day;
+                        hour = ((DateTime)table.Rows[i]["DATE_PBR"]).AddHours(m_Offset_to_moscow).Hour;
+                        day = ((DateTime)table.Rows[i]["DATE_PBR"]).AddHours(m_Offset_to_moscow).Day;
 
                         if ((hour == 0) && (day != date.Day))
                             hour = 24;
@@ -702,8 +783,15 @@ namespace StatisticCommon
                             iDate = ((DateTime)table.Rows[i]["DATE_PBR"]);
                         }
 
-                        hour = iDate.Hour;
-                        day = iDate.Day;
+                        hour = iDate.AddHours(m_Offset_to_moscow).Hour;
+                        //hour = hour + m_Offset_to_moscow;
+                        day = iDate.AddHours(m_Offset_to_moscow).Day;
+
+                        if (hour == 24)
+                        {
+                            hour = 0;
+                            day ++;
+                        }
 
                         if ((hour == 0) && (!(day == date.Day)))
                             hour = 24;
@@ -853,6 +941,11 @@ namespace StatisticCommon
             return 0;
         }
 
+        /// <summary>
+        /// Установка значений при работе с Excel
+        /// </summary>
+        /// <param name="item">Возвращает структуру компонента с данными за час</param>
+        /// <param name="iRows">Идентификатор строки</param>
         protected void setRDGExcelValuesItem(out RDGStruct item, int iRows)
         {
             int j = -1;
@@ -883,6 +976,9 @@ namespace StatisticCommon
             }
         }
 
+        /// <summary>
+        /// Возвратить время
+        /// </summary>
         protected void GetCurrentTimeRequest()
         {
             if (IsCanUseTECComponents())
@@ -905,6 +1001,10 @@ namespace StatisticCommon
                 ;
         }
 
+        /// <summary>
+        /// Получение и выполнение запроса для получения административных данных
+        /// </summary>
+        /// <param name="date">Дата за которую проводится выборка</param>
         protected virtual void GetAdminDatesRequest(DateTime date)
         {
             if (m_curDate.Date > date.Date)
@@ -916,11 +1016,15 @@ namespace StatisticCommon
 
             if (IsCanUseTECComponents ())
                 //Request(m_indxDbInterfaceCommon, m_listenerIdCommon, allTECComponents[indxTECComponents].tec.GetAdminDatesQuery(date));
-                Request(m_dictIdListeners[allTECComponents[indxTECComponents].tec.m_id][(int)CONN_SETT_TYPE.ADMIN], allTECComponents[indxTECComponents].tec.GetAdminDatesQuery(date/*, m_typeFields*/, allTECComponents[indxTECComponents]));
+                Request(m_dictIdListeners[allTECComponents[indxTECComponents].tec.m_id][(int)CONN_SETT_TYPE.ADMIN], allTECComponents[indxTECComponents].tec.GetAdminDatesQuery(date.AddHours(-m_Offset_to_moscow)/*, m_typeFields*/, allTECComponents[indxTECComponents]));
             else
                 ;
         }
 
+        /// <summary>
+        /// Получение и выполнение запроса для получения административных данных
+        /// </summary>
+        /// <param name="date">Дата за которую проводится выборка</param>
         protected override void GetPPBRDatesRequest(DateTime date)
         {
             if (m_curDate.Date > date.Date)
@@ -935,16 +1039,26 @@ namespace StatisticCommon
             if (IsCanUseTECComponents () == true)
                 //Request(m_indxDbInterfaceCommon, m_listenerIdCommon, allTECComponents[indxTECComponents].tec.GetPBRDatesQuery(date));
                 Request(m_dictIdListeners[allTECComponents[indxTECComponents].tec.m_id][(int)CONN_SETT_TYPE.PBR],
-                        allTECComponents[indxTECComponents].tec.GetPBRDatesQuery(date/*, m_typeFields*/, allTECComponents[indxTECComponents]));
+                        allTECComponents[indxTECComponents].tec.GetPBRDatesQuery(date.AddHours(-m_Offset_to_moscow)/*, m_typeFields*/, allTECComponents[indxTECComponents]));
             else
                 ;
         }
 
+        /// <summary>
+        /// Очистка административных значений
+        /// </summary>
         private void ClearAdminDates()
         {
             ClearDates(CONN_SETT_TYPE.ADMIN);
         }
 
+        /// <summary>
+        /// Получение данных строк(идентификаторы строк)
+        /// </summary>
+        /// <param name="type">Тип данных(административные или ППБР)</param>
+        /// <param name="table">Таблица с данными</param>
+        /// <param name="date">Дата за которую производится выборка</param>
+        /// <returns>Ошибка</returns>
         protected virtual int GetDatesResponse(CONN_SETT_TYPE type, DataTable table, DateTime date)
         {
             int addingVal = -1;
@@ -957,6 +1071,12 @@ namespace StatisticCommon
                     addingVal = -1;
                 else
                     ;
+
+            //Цикл необходим для учета смещения времени по часовому поясу
+            foreach (DataRow r in table.Rows)
+            {
+                r[0] = Convert.ToDateTime(r[0].ToString()).AddHours(m_Offset_to_moscow);
+            }
 
             //0 - [DATE_TIME]([DATE]), 1 - [ID]
             for (int i = 0, hour; i < table.Rows.Count; i++)
@@ -1007,15 +1127,28 @@ namespace StatisticCommon
             return 0;
         }
 
+        /// <summary>
+        /// Получение административных данных(данные строк)
+        /// </summary>
+        /// <param name="table">Таблица с данными</param>
+        /// <param name="date">Дата за которую производится выборка</param>
+        /// <returns>Ошибка</returns>
         private int GetAdminDatesResponse(DataTable table, DateTime date)
         {
             return GetDatesResponse(CONN_SETT_TYPE.ADMIN, table, date);
         }
 
+        /// <summary>
+        /// Получение данных ППБР(данные строк)
+        /// </summary>
+        /// <param name="table">Таблица с данными</param>
+        /// <param name="date">Дата за которую производится выборка</param>
+        /// <returns>Ошибка</returns>
         protected override int GetPPBRDatesResponse(DataTable table, DateTime date)
         {
             return GetDatesResponse(CONN_SETT_TYPE.PBR, table, date);
         }
+
         /// <summary>
         /// Возвратить номер часа
         /// </summary>
@@ -1110,6 +1243,13 @@ namespace StatisticCommon
             return iRes;
         }
 
+        /// <summary>
+        /// Получение запросов для обновления, добавления административных значений
+        /// </summary>
+        /// <param name="t">ТЭЦ</param>
+        /// <param name="comp">Компонент ТЭЦ</param>
+        /// <param name="date">Дата</param>
+        /// <returns>Массив запросов</returns>
         protected virtual string [] setAdminValuesQuery(TEC t, TECComponent comp, DateTime date)
         {
             string[] resQuery = new string[(int)DbTSQLInterface.QUERY_TYPE.COUNT_QUERY_TYPE] { string.Empty, string.Empty, string.Empty };
@@ -1119,6 +1259,7 @@ namespace StatisticCommon
                 , currentHour = -1;
 
             currentHour = getCurrentHour(date, CONN_SETT_TYPE.ADMIN);
+            //currentHour = currentHour - m_Offset_to_moscow;
             if (currentHour < 0)
                 //Недопустимая ситуация
                 return resQuery;
@@ -1170,7 +1311,7 @@ namespace StatisticCommon
                     //                    @"'),";
                     //        break;
                     //    case AdminTS.TYPE_FIELDS.DYNAMIC:
-                            resQuery[(int)DbTSQLInterface.QUERY_TYPE.INSERT] += @" ('" + date.AddHours(i + 1 - offset).ToString("yyyyMMdd HH:mm:ss") +
+                            resQuery[(int)DbTSQLInterface.QUERY_TYPE.INSERT] += @" ('" + date.AddHours(i + 1 - offset - m_Offset_to_moscow).ToString("yyyyMMdd HH:mm:ss") +
                                         @"', '" + m_curRDGValues[i].recomendation.ToString("F3", CultureInfo.InvariantCulture) +
                                         @"', " + (m_curRDGValues[i].deviationPercent ? "1" : "0") +
                                         @", '" + m_curRDGValues[i].deviation.ToString("F3", CultureInfo.InvariantCulture) +
@@ -1207,6 +1348,12 @@ namespace StatisticCommon
             return resQuery;
         }
         
+        /// <summary>
+        /// Получение и выполнение запросов для обновления, добавления административных значений
+        /// </summary>
+        /// <param name="t">ТЭЦ</param>
+        /// <param name="comp">Компонент ТЭЦ</param>
+        /// <param name="date">Дата</param>
         protected virtual void SetAdminValuesRequest(TEC t, TECComponent comp, DateTime date)
         {
             //Logging.Logg().Debug("AdminTS::SetAdminValuesRequest () - ...", Logging.INDEX_MESSAGE.NOT_SET);
@@ -1240,6 +1387,12 @@ namespace StatisticCommon
             Request(m_dictIdListeners[t.m_id][(int)CONN_SETT_TYPE.ADMIN], query[(int)DbTSQLInterface.QUERY_TYPE.UPDATE] + query[(int)DbTSQLInterface.QUERY_TYPE.INSERT] + query[(int)DbTSQLInterface.QUERY_TYPE.DELETE]);
         }
 
+        /// <summary>
+        /// Получение и выполнение запроса для удаления административных значений
+        /// </summary>
+        /// <param name="t">ТЭЦ</param>
+        /// <param name="comp">Компонент ТЭЦ</param>
+        /// <param name="date">Дата</param>
         protected virtual void ClearAdminValuesRequest(TEC t, TECComponent comp, DateTime date)
         {
             string[] query = new string[(int)DbTSQLInterface.QUERY_TYPE.COUNT_QUERY_TYPE] { string.Empty, string.Empty, string.Empty };
@@ -1285,12 +1438,20 @@ namespace StatisticCommon
             Request(m_dictIdListeners[t.m_id][(int)CONN_SETT_TYPE.ADMIN], query[(int)DbTSQLInterface.QUERY_TYPE.UPDATE] + query[(int)DbTSQLInterface.QUERY_TYPE.INSERT] + query[(int)DbTSQLInterface.QUERY_TYPE.DELETE]);
         }
 
+        /// <summary>
+        /// Получение запросов на добавление и обновление заначений ППБР
+        /// </summary>
+        /// <param name="t">ТЭЦ</param>
+        /// <param name="comp">Компонент ТЭЦ</param>
+        /// <param name="date">Дата</param>
+        /// <returns>Массив запросов</returns>
         protected virtual string[] setPPBRQuery(TEC t, TECComponent comp, DateTime date)
         {
             string[] resQuery = new string[(int)DbTSQLInterface.QUERY_TYPE.COUNT_QUERY_TYPE] { string.Empty, string.Empty, string.Empty };
 
             date = date.Date;
             int currentHour = getCurrentHour (date, CONN_SETT_TYPE.PBR);
+            //currentHour = currentHour - m_Offset_to_moscow;
 
             for (int i = currentHour; i < 24; i++)
             {
@@ -1369,7 +1530,7 @@ namespace StatisticCommon
                             Logging.Logg().Debug(@"AdminTS::setPPBRQuery () - [ID_COMPONENT=" + comp.m_id + @"] Час=" + i + @"; БД=" + m_iHavePBR_Number + @"; Модес=" + strPBRNumber, Logging.INDEX_MESSAGE.D_002);
 
                             if (!(m_curRDGValues[i].pbr < 0))
-                                resQuery[(int)DbTSQLInterface.QUERY_TYPE.INSERT] += @" ('" + date.AddHours(i + 1).ToString("yyyyMMdd HH:mm:ss") +
+                                resQuery[(int)DbTSQLInterface.QUERY_TYPE.INSERT] += @" ('" + date.AddHours(i + 1 - m_Offset_to_moscow).ToString("yyyyMMdd HH:mm:ss") +
                                             @"', '" + serverTime.ToString("yyyyMMdd HH:mm:ss") + @"'" +
                                             //@", 'GETDATE()" +
                                             @", '" + strPBRNumber +
@@ -1391,6 +1552,12 @@ namespace StatisticCommon
             return resQuery;
         }
 
+        /// <summary>
+        /// Получение и выполнение запросов на добавление и обновление заначений ППБР
+        /// </summary>
+        /// <param name="t">ТЭЦ</param>
+        /// <param name="comp">Компонент ТЭЦ</param>
+        /// <param name="date">Дата</param>
         protected /*virtual*/ void SetPPBRRequest(TEC t, TECComponent comp, DateTime date)
         {
             string[] query = setPPBRQuery(t, comp, date);
@@ -1454,6 +1621,12 @@ namespace StatisticCommon
                 ;
         }
 
+        /// <summary>
+        /// Получение и выполнение запроса на удаление заначений ППБР
+        /// </summary>
+        /// <param name="t">ТЭЦ</param>
+        /// <param name="comp">Компонент ТЭЦ</param>
+        /// <param name="date">Дата</param>
         protected virtual void ClearPPBRRequest(TEC t, TECComponent comp, DateTime date)
         {
             string[] query = new string[(int)DbTSQLInterface.QUERY_TYPE.COUNT_QUERY_TYPE] { string.Empty, string.Empty, string.Empty };
@@ -1499,6 +1672,12 @@ namespace StatisticCommon
             Request(m_dictIdListeners[t.m_id][(int)CONN_SETT_TYPE.PBR], query[(int)DbTSQLInterface.QUERY_TYPE.UPDATE] + query[(int)DbTSQLInterface.QUERY_TYPE.INSERT] + query[(int)DbTSQLInterface.QUERY_TYPE.DELETE]);
         }
 
+        /// <summary>
+        /// Получение индекса компонента ТЭЦ
+        /// </summary>
+        /// <param name="idTEC">ИД ТЭЦ</param>
+        /// <param name="idComp">ИД компонента</param>
+        /// <returns>Возвращает индекс</returns>
         public int GetIndexTECComponent (int idTEC, int idComp) {
             int iRes = -1;
 
@@ -1603,6 +1782,9 @@ namespace StatisticCommon
             return bRes;
         }*/
 
+        /// <summary>
+        /// Старт интерфейса БД
+        /// </summary>
         public override void Start()
         {
             //if (threadIsWorking == true)
@@ -1622,6 +1804,9 @@ namespace StatisticCommon
             base.Start();
         }
 
+        /// <summary>
+        /// Остановка интерфейса БД
+        /// </summary>
         public override void Stop()
         {
             base.Stop();
@@ -1635,6 +1820,11 @@ namespace StatisticCommon
                 Logging.Logg().Error(@"AdminTS::Stop () - m_list_tec == null", Logging.INDEX_MESSAGE.NOT_SET);
         }
 
+        /// <summary>
+        /// Организация очереди на получение и выполнение запросов
+        /// </summary>
+        /// <param name="state">Идентификатор операции</param>
+        /// <returns>Ошибка</returns>
         protected override int StateRequest(int /*StatesMachine*/ state)
         {
             int result = 0;
@@ -1649,14 +1839,14 @@ namespace StatisticCommon
                 case (int)StatesMachine.PPBRValues:
                     strRep = @"Получение данных плана.";
                     if (indxTECComponents < allTECComponents.Count)
-                        GetPPBRValuesRequest(allTECComponents[indxTECComponents].tec, allTECComponents[indxTECComponents], m_curDate.Date/*, m_typeFields*/);
+                        GetPPBRValuesRequest(allTECComponents[indxTECComponents].tec, allTECComponents[indxTECComponents], m_curDate.Date.AddHours(-m_Offset_to_moscow)/*, m_typeFields*/);
                     else
                         ; //result = false;
                     break;
                 case (int)StatesMachine.AdminValues:
                     strRep = @"Получение административных данных.";
                     if ((indxTECComponents < allTECComponents.Count) && (m_markQueries.IsMarked ((int)CONN_SETT_TYPE.ADMIN) == true))
-                        GetAdminValuesRequest(allTECComponents[indxTECComponents].tec, allTECComponents[indxTECComponents], m_curDate.Date/*, m_typeFields*/);
+                        GetAdminValuesRequest(allTECComponents[indxTECComponents].tec, allTECComponents[indxTECComponents], m_curDate.Date.AddHours(-m_Offset_to_moscow)/*, m_typeFields*/);
                     else
                         ; //result = false;
 
@@ -1768,6 +1958,13 @@ namespace StatisticCommon
             return result;
         }
 
+        /// <summary>
+        /// Организация очереди на получение таблиц из результатов запросов
+        /// </summary>
+        /// <param name="state">Идентификатор операции</param>
+        /// <param name="error">Наличие ошибки</param>
+        /// <param name="table">Таблица с результатом запроса</param>
+        /// <returns>Ошибка</returns>
         protected override int StateCheckResponse(int /*StatesMachine*/ state, out bool error, out object table)
         {
             int iRes = -1;
@@ -1850,6 +2047,12 @@ namespace StatisticCommon
             return iRes;
         }
 
+        /// <summary>
+        /// Организация очереди на получение данных
+        /// </summary>
+        /// <param name="state">Идентификатор операции</param>
+        /// <param name="table">Таблица с результатом запроса</param>
+        /// <returns>Ошибка</returns>
         protected override int StateResponse(int /*StatesMachine*/ state, object table)
         {
             int result = -1;
@@ -1896,8 +2099,11 @@ namespace StatisticCommon
                     break;
                 case (int)StatesMachine.AdminValues:
                     if (m_markQueries.IsMarked((int)CONN_SETT_TYPE.ADMIN) == true)
+                    {
                         result = GetAdminValuesResponse(table as System.Data.DataTable, m_curDate);
-                    else {
+                    }
+                    else
+                    {
                         table = null;
 
                         if (m_markQueries.IsMarked((int)CONN_SETT_TYPE.PBR) == true)
@@ -2415,6 +2621,10 @@ namespace StatisticCommon
         //    }
         //}
 
+        /// <summary>
+        /// Удаление административных и ППБР значений
+        /// </summary>
+        /// <param name="date">Дата</param>
         public virtual void ClearRDGValues(DateTime date)
         {
             if (ClearRDG() == Errors.NoError)
@@ -2471,6 +2681,13 @@ namespace StatisticCommon
             }
         }
 
+        /// <summary>
+        /// Получение идентификатора компонента
+        /// </summary>
+        /// <param name="selfMode"></param>
+        /// <param name="ownerMode"></param>
+        /// <param name="indx">Индекс компонента</param>
+        /// <returns>Идентификатор компонента</returns>
         public int GetIdOwnerTECComponent(FormChangeMode.MODE_TECCOMPONENT selfMode, FormChangeMode.MODE_TECCOMPONENT ownerMode, int indx = -1)
         {
             if (indx < 0) indx = indxTECComponents; else ;
@@ -2500,11 +2717,21 @@ namespace StatisticCommon
             return -1;
         }
 
+        /// <summary>
+        /// Получение ИД родительского ЩУ
+        /// </summary>
+        /// <param name="indx">Индекс компонента</param>
+        /// <returns>ИД компонента</returns>
         public int GetIdPCOwnerTECComponent(int indx = -1)
         {
             return GetIdOwnerTECComponent(FormChangeMode.MODE_TECCOMPONENT.TG, FormChangeMode.MODE_TECCOMPONENT.PC, indx);
         }
 
+        /// <summary>
+        /// Получение ИД родительского ГТП
+        /// </summary>
+        /// <param name="indx">Индекс компонента</param>
+        /// <returns>ИД компонента</returns>
         public int GetIdGTPOwnerTECComponent(int indx = -1)
         {
             return GetIdOwnerTECComponent(FormChangeMode.MODE_TECCOMPONENT.TG, FormChangeMode.MODE_TECCOMPONENT.GTP, indx);
@@ -2585,6 +2812,9 @@ namespace StatisticCommon
         }
 
         //public override void ClearValues(int cnt = -1)
+        /// <summary>
+        /// Очистка административных и ППБР значений текущего компонента
+        /// </summary>
         public override void ClearValues()
         {
             //base.ClearValues (cnt);
@@ -2606,6 +2836,10 @@ namespace StatisticCommon
             //CopyCurToPrevRDGValues();
         }
 
+        /// <summary>
+        /// Проверка на наличие изменений
+        /// </summary>
+        /// <returns>Наличие изменений</returns>
         public override bool WasChanged()
         {
             for (int i = 0; i < m_curRDGValues.Length; i++)
