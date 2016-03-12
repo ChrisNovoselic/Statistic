@@ -265,18 +265,19 @@ namespace StatisticCommon
         /// </summary>
         /// <param name="mode">Модификатор типа компонентов</param>
         /// <returns>Возвращает список идентификаторов</returns>
-        public List <int>GetListIndexTECComponent (FormChangeMode.MODE_TECCOMPONENT mode) {
-            List <int>listIndex = new List <int> ();
+        public List <int>GetListIndexTECComponent (FormChangeMode.MODE_TECCOMPONENT mode, bool bLimitLK) {
+            List <int>listRes = new List <int> ();
 
-            int indx = -1;
+            int indx = -1
+                , iLimitIdTec = bLimitLK == true ? (int)TECComponent.ID.LK : (int)TECComponent.ID.GTP;
 
             switch (mode) {
                 case FormChangeMode.MODE_TECCOMPONENT.TEC:
-                    foreach (TECComponent comp in allTECComponents)
-                    {
+                    foreach (TECComponent comp in allTECComponents) {
                         indx = comp.tec.m_id;
-                        if (listIndex.IndexOf(indx) < 0)
-                            listIndex.Add(indx);
+                        if ((! (indx > iLimitIdTec))
+                            && (listRes.IndexOf(indx) < 0))
+                            listRes.Add(indx);
                         else
                             ;
                     }
@@ -286,10 +287,9 @@ namespace StatisticCommon
                 case FormChangeMode.MODE_TECCOMPONENT.TG:
                     foreach (TECComponent comp in allTECComponents) {
                         indx ++;
-                        if (mode == modeTECComponent (indx))
-                        {
-                            listIndex.Add (indx);
-                        }
+                        if ((!(comp.tec.m_id > iLimitIdTec))
+                            && (mode == modeTECComponent (indx)))
+                            listRes.Add(indx);
                         else
                             ;
                     }
@@ -298,7 +298,7 @@ namespace StatisticCommon
                     break;
             }
 
-            return listIndex;
+            return listRes;
         }
 
         /// <summary>

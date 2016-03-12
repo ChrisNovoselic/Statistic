@@ -11,16 +11,127 @@ using HClassLibrary;
 
 namespace StatisticCommon
 {
-    public class TecView : HAdmin
+    public class TecViewTMPower : TecView
     {
-        /// <summary>
-        /// перечисление - индексы для типов панелей
-        /// </summary>
-        public enum TYPE_PANEL { VIEW, CUR_POWER, LAST_MINUTES, ADMIN_ALARM, SOBSTV_NYZHDY, SOTIASSO, LK, COUNT_TYPE_PANEL };
-        /// <summary>
-        /// Индекс типа панели в интересах которой выполняется текущий объект
-        /// </summary>
-        TYPE_PANEL m_typePanel;
+        public TecViewTMPower()
+            : base(/*TecView.TYPE_PANEL.CUR_POWER, */-1, -1)
+        {
+        }
+
+        public override void ChangeState()
+        {
+            lock (m_lockState) { GetRDGValues(-1, DateTime.MinValue); }
+
+            base.ChangeState();
+        }
+
+        public override void GetRDGValues(int indx, DateTime date)
+        {
+            ClearStates();
+
+            if (m_tec.m_bSensorsStrings == false)
+                AddState((int)StatesMachine.InitSensors);
+            else ;
+
+            AddState((int)TecView.StatesMachine.CurrentTimeView);
+            AddState((int)TecView.StatesMachine.LastValue_TM_Gen);
+            AddState((int)TecView.StatesMachine.LastValue_TM_SN);
+        }
+    }
+
+    public class TecViewStandard : TecView
+    {
+        public TecViewStandard(int indx_tec, int indx_comp)
+            : base(indx_tec, indx_comp)
+        {
+        }
+
+        public override void ChangeState()
+        {
+            lock (m_lockState) { GetRDGValues(-1, DateTime.MinValue); }
+
+            base.ChangeState(); //Run
+        }
+
+        public override void GetRDGValues(int indx, DateTime date)
+        {
+            ClearStates();
+
+            adminValuesReceived = false;
+
+            if (m_tec.m_bSensorsStrings == true)
+            {
+                if (currHour == true)
+                {
+                    AddState((int)StatesMachine.CurrentTimeView);
+                }
+                else
+                {
+                    //selectedTime = m_pnlQuickData.dtprDate.Value.Date;
+                }
+            }
+            else
+            {
+                AddState((int)StatesMachine.InitSensors);
+                AddState((int)StatesMachine.CurrentTimeView);
+            }
+
+            //Часы...
+            if (m_arTypeSourceData[(int)HDateTime.INTERVAL.HOURS] == CONN_SETT_TYPE.DATA_AISKUE_PLUS_SOTIASSO)
+            {
+                AddState((int)StatesMachine.Hours_Fact);
+                if (currHour == true)
+                    AddState((int)StatesMachine.Hour_TM);
+                else
+                    ;
+            }
+            else
+                if (m_arTypeSourceData[(int)HDateTime.INTERVAL.HOURS] == CONN_SETT_TYPE.DATA_AISKUE)
+                    AddState((int)StatesMachine.Hours_Fact);
+                else
+                    if ((m_arTypeSourceData[(int)HDateTime.INTERVAL.HOURS] == CONN_SETT_TYPE.DATA_SOTIASSO_3_MIN)
+                        || (m_arTypeSourceData[(int)HDateTime.INTERVAL.HOURS] == CONN_SETT_TYPE.DATA_SOTIASSO_1_MIN))
+                        AddState((int)StatesMachine.Hours_TM);
+                    else
+                        ;
+            //Минуты...
+            if (m_arTypeSourceData[(int)HDateTime.INTERVAL.MINUTES] == CONN_SETT_TYPE.DATA_AISKUE_PLUS_SOTIASSO)
+            {
+                AddState((int)StatesMachine.CurrentMins_Fact);
+                if (currHour == true)
+                    AddState((int)StatesMachine.CurrentMin_TM);
+                else
+                    ;
+            }
+            else
+                if (m_arTypeSourceData[(int)HDateTime.INTERVAL.MINUTES] == CONN_SETT_TYPE.DATA_AISKUE)
+                    AddState((int)StatesMachine.CurrentMins_Fact);
+                else
+                    if ((m_arTypeSourceData[(int)HDateTime.INTERVAL.MINUTES] == CONN_SETT_TYPE.DATA_SOTIASSO_3_MIN)
+                        || (m_arTypeSourceData[(int)HDateTime.INTERVAL.MINUTES] == CONN_SETT_TYPE.DATA_SOTIASSO_1_MIN))
+                        AddState((int)StatesMachine.CurrentMins_TM);
+                    else
+                        ;
+            if (m_bLastValue_TM_Gen == true)
+                AddState((int)StatesMachine.LastValue_TM_Gen);
+            else
+                ;
+            AddState((int)StatesMachine.LastMinutes_TM);
+            AddState((int)StatesMachine.PPBRValues);
+            AddState((int)StatesMachine.AdminValues);
+        }
+    }
+
+    public abstract class TecView : HAdmin
+    {
+        ///// <summary>
+        ///// перечисление - индексы для типов панелей
+        ///// </summary>
+        //public enum TYPE_PANEL { VIEW, CUR_POWER, LAST_MINUTES, ADMIN_ALARM, SOBSTV_NYZHDY, SOTIASSO, LK, COUNT_TYPE_PANEL };
+        ///// <summary>
+        ///// Индекс типа панели в интересах которой выполняется текущий объект
+        ///// </summary>
+        //TYPE_PANEL m_typePanel;
         
         protected enum StatesMachine
         {
@@ -314,10 +425,10 @@ namespace StatisticCommon
         }
 
         //public TecView(bool[] arMarkSavePPBRValues, TYPE_PANEL type, int indx_tec, int indx_comp)
-        public TecView(TYPE_PANEL type, int indx_tec, int indx_comp)
+        public TecView(/*TYPE_PANEL type, */int indx_tec, int indx_comp)
             : base()
         {            
-            m_typePanel = type;
+            //m_typePanel = type;
 
             m_indx_TEC = indx_tec;
             indxTECComponents = indx_comp;
@@ -328,98 +439,9 @@ namespace StatisticCommon
             {
                 m_arIdListeners[i] = -1;
             }
-        }
-
-        public override void GetRDGValues(/*int mode,*/ int indx, DateTime date)
-        {
-            m_prevDate = m_curDate;
-            m_curDate = date.Date;
-
-            ClearStates();
-
-            adminValuesReceived = false;
-
-            if ((m_tec.m_bSensorsStrings == false))
-            {
-                AddState((int)StatesMachine.InitSensors);
-            }
-            else ;
-
-            if (currHour == true)
-                AddState((int)StatesMachine.CurrentTimeView);
-            else
-                ;
-
-            //??? а где AISKUE+SOTIASSO
-            if (m_arTypeSourceData[(int)HDateTime.INTERVAL.HOURS] == CONN_SETT_TYPE.DATA_AISKUE)
-                AddState((int)StatesMachine.Hours_Fact);
-            else
-                if ((m_arTypeSourceData[(int)HDateTime.INTERVAL.HOURS] == CONN_SETT_TYPE.DATA_SOTIASSO_3_MIN)
-                    || (m_arTypeSourceData[(int)HDateTime.INTERVAL.HOURS] == CONN_SETT_TYPE.DATA_SOTIASSO_1_MIN)
-                    || (m_arTypeSourceData[(int)HDateTime.INTERVAL.HOURS] == CONN_SETT_TYPE.DATA_SOTIASSO))
-                    AddState((int)StatesMachine.Hours_TM);
-                else
-                    ;
-
-            if (m_arTypeSourceData[(int)HDateTime.INTERVAL.MINUTES] == CONN_SETT_TYPE.DATA_AISKUE)
-                AddState((int)StatesMachine.CurrentMins_Fact);
-            else
-                if ((m_arTypeSourceData[(int)HDateTime.INTERVAL.MINUTES] == CONN_SETT_TYPE.DATA_SOTIASSO_3_MIN)
-                    || (m_arTypeSourceData[(int)HDateTime.INTERVAL.MINUTES] == CONN_SETT_TYPE.DATA_SOTIASSO_1_MIN)
-                    || (m_arTypeSourceData[(int)HDateTime.INTERVAL.MINUTES] == CONN_SETT_TYPE.DATA_SOTIASSO))
-                    AddState((int)StatesMachine.CurrentMins_TM);
-                else
-                    ;
-
-            if (m_bLastValue_TM_Gen == true)
-                AddState((int)StatesMachine.LastValue_TM_Gen);
-            else
-                ;
-
-            AddState((int)StatesMachine.PPBRValues);
-            AddState((int)StatesMachine.AdminValues);
-        }
+        }        
 
         public TECComponent TECComponentCurrent { get { return allTECComponents[indxTECComponents]; } }
-
-        private void getRDGValues () {
-            GetRDGValues(/*(int)s_typeFields,*/ indxTECComponents, DateTime.Now);
-
-            Run(@"TecView::GetRDGValues ()");
-        }
-
-        private void threadGetRDGValues(object synch)
-        {
-            int indxEv = -1;
-
-            //if (m_waitHandleState[(int)INDEX_WAITHANDLE_REASON.SUCCESS].WaitOne (0, true) == false)
-                ((AutoResetEvent)m_waitHandleState[(int)INDEX_WAITHANDLE_REASON.SUCCESS]).Set();
-            //else ;
-
-            for (INDEX_WAITHANDLE_REASON i = INDEX_WAITHANDLE_REASON.ERROR; i < INDEX_WAITHANDLE_REASON.COUNT_INDEX_WAITHANDLE_REASON; i ++)
-                ((ManualResetEvent)m_waitHandleState[(int)i]).Reset();
-
-            foreach (TECComponent tc in allTECComponents) {
-                if ((tc.m_id > 100) && (tc.m_id < 500)) {
-                    indxEv = WaitHandle.WaitAny(m_waitHandleState);
-                    if (indxEv == (int)INDEX_WAITHANDLE_REASON.BREAK)
-                        break;
-                    else
-                    {
-                        if (! (indxEv == (int)INDEX_WAITHANDLE_REASON.SUCCESS))
-                            ((ManualResetEvent)m_waitHandleState[indxEv]).Reset();
-                        else
-                            ;
-
-                        indxTECComponents = allTECComponents.IndexOf (tc);
-
-                        getRDGValues();
-                    }
-                }
-                else
-                    ; //Это не ГТП
-            }
-        }
 
         public double GetSummaFactValues()
         {
@@ -452,71 +474,71 @@ namespace StatisticCommon
             return dblRes;
         }
 
-        public void ChangeState_SobstvNyzhdy () 
-        {
-                ClearStates();
+        //public void ChangeState_SobstvNyzhdy () 
+        //{
+        //    ClearStates();
 
-                ClearValues();
+        //    ClearValues();
 
-                if (m_tec.m_bSensorsStrings == false)
-                    AddState((int)StatesMachine.InitSensors);
-                else ;
+        //    if (m_tec.m_bSensorsStrings == false)
+        //        AddState((int)StatesMachine.InitSensors);
+        //    else ;
 
-                //using_date = false;
+        //    //using_date = false;
 
-                //AddState((int)TecView.StatesMachine.CurrentHours_Fact); //Только для определения сезона ???
-                //AddState((int)TecView.StatesMachine.CurrentTimeView);
-                AddState((int)TecView.StatesMachine.CurrentHours_TM_SN_PSUM);
-                AddState((int)TecView.StatesMachine.LastValue_TM_SN);
-        }
+        //    //AddState((int)TecView.StatesMachine.CurrentHours_Fact); //Только для определения сезона ???
+        //    //AddState((int)TecView.StatesMachine.CurrentTimeView);
+        //    AddState((int)TecView.StatesMachine.CurrentHours_TM_SN_PSUM);
+        //    AddState((int)TecView.StatesMachine.LastValue_TM_SN);
+        //}
 
-        public void ChangeState_SOTIASSO()
-        {
-            ClearStates();
+        //public void ChangeState_SOTIASSO()
+        //{
+        //    ClearStates();
 
-            ClearValues();
+        //    ClearValues();
 
-            if (m_tec.m_bSensorsStrings == false)
-                AddState((int)StatesMachine.InitSensors);
-            else ;
+        //    if (m_tec.m_bSensorsStrings == false)
+        //        AddState((int)StatesMachine.InitSensors);
+        //    else ;
 
-            using_date = false;
+        //    using_date = false;
 
-            AddState((int)TecView.StatesMachine.CurrentTimeAdmin); // без m_curDate = serverTime
-            AddState((int)TecView.StatesMachine.CurrentMins_TM);
-            AddState((int)TecView.StatesMachine.CurrentMinDetail_TM);
+        //    AddState((int)TecView.StatesMachine.CurrentTimeAdmin); // без m_curDate = serverTime
+        //    AddState((int)TecView.StatesMachine.CurrentMins_TM);
+        //    AddState((int)TecView.StatesMachine.CurrentMinDetail_TM);
 
-            AddState((int)TecView.StatesMachine.PPBRValues);
-            AddState((int)TecView.StatesMachine.AdminValues);
-        }
+        //    AddState((int)TecView.StatesMachine.PPBRValues);
+        //    AddState((int)TecView.StatesMachine.AdminValues);
+        //}
 
-        private void ChangeState_AdminAlarm () {
-            new Thread(new ParameterizedThreadStart(threadGetRDGValues)).Start();
-        }
+        //private void ChangeState_AdminAlarm () {
+        //    new Thread(new ParameterizedThreadStart(threadGetRDGValues)).Start();
+        //}
 
-        public void ChangeState_LK()
-        {
-            ClearStates();
+        //public void ChangeState_LK()
+        //{
+        //    ClearStates();
 
-            //ClearValues();
+        //    //ClearValues();
 
-            using_date = false;
+        //    using_date = false;
 
-            if (m_tec.m_bSensorsStrings == true)
-                if (currHour == true)
-                    AddState((int)StatesMachine.CurrentTimeView);
-                else
-                    ;
-            else
-            {
-                AddState((int)StatesMachine.InitSensors);
-                AddState((int)StatesMachine.CurrentTimeView);
-            }
+        //    if (m_tec.m_bSensorsStrings == true)
+        //        if (currHour == true)
+        //            AddState((int)StatesMachine.CurrentTimeView);
+        //        else
+        //            ;
+        //    else
+        //    {
+        //        AddState((int)StatesMachine.InitSensors);
+        //        AddState((int)StatesMachine.CurrentTimeView);
+        //    }
 
-            AddState((int)TecView.StatesMachine.Hours_Fact);
-            AddState((int)TecView.StatesMachine.PPBRValues);
-            AddState((int)TecView.StatesMachine.AdminValues);
-        }
+        //    AddState((int)TecView.StatesMachine.Hours_Fact);
+        //    AddState((int)TecView.StatesMachine.PPBRValues);
+        //    AddState((int)TecView.StatesMachine.AdminValues);
+        //}
 
         public override bool Activate(bool active)
         {
@@ -1078,10 +1100,10 @@ namespace StatisticCommon
             else
                 msg += ". Ошибка " + reason + ".";
 
-            if (!(m_typePanel == TYPE_PANEL.ADMIN_ALARM))
+            //if (!(m_typePanel == TYPE_PANEL.ADMIN_ALARM))
+            //if (! (ErrorReport == null))
                 ErrorReport(msg);
-            else
-                ;
+            //else ;
 
             if (waiting.Equals (string.Empty) == true)
                 waiting = @"Время ожидания неизвестно";
@@ -1138,10 +1160,9 @@ namespace StatisticCommon
             else
                 ;
 
-            if (!(m_typePanel == TYPE_PANEL.ADMIN_ALARM))
+            //if (!(m_typePanel == TYPE_PANEL.ADMIN_ALARM))
                 WarningReport(msg);
-            else
-                ;
+            //else ;
 
             Logging.Logg().Warning(m_tec.name_shr + @"[ID_COMPONENT=" + m_ID + @"] - "
                                 + reason + @". " + waiting + @". ", Logging.INDEX_MESSAGE.NOT_SET);
@@ -1245,10 +1266,9 @@ namespace StatisticCommon
                     break;
             }
 
-            if (!(m_typePanel == TYPE_PANEL.ADMIN_ALARM))
+            //if (!(m_typePanel == TYPE_PANEL.ADMIN_ALARM))
                 ActionReport (@"Получение " + msg + @".");
-            else
-                ;
+            //else ;
 
             //Logging.Logg().Debug(@"TecView::StateRequest () - TECname=" + m_tec.name_shr + @", state=" + state.ToString() + @", result=" + bRes.ToString() + @" - вЫход...");
 
@@ -1461,7 +1481,7 @@ namespace StatisticCommon
             }
 
             if ((! (iRes < 0))
-                && (! (m_typePanel == TYPE_PANEL.ADMIN_ALARM))
+                //&& (! (m_typePanel == TYPE_PANEL.ADMIN_ALARM))
                 && (isLastState (state) == true))
                 ReportClear (false);
             else
@@ -1473,149 +1493,146 @@ namespace StatisticCommon
             return iRes;
         }
 
-        private void ChangeState_CurPower () {
-            ClearStates ();
+        //private void ChangeState_CurPower () {
+        //    ClearStates ();
 
-            if (m_tec.m_bSensorsStrings == false)
-                AddState((int)StatesMachine.InitSensors);
-            else ;
+        //    if (m_tec.m_bSensorsStrings == false)
+        //        AddState((int)StatesMachine.InitSensors);
+        //    else ;
 
-            AddState((int)TecView.StatesMachine.CurrentTimeView);
-            AddState((int)TecView.StatesMachine.LastValue_TM_Gen);
-            AddState((int)TecView.StatesMachine.LastValue_TM_SN);
-        }
+        //    AddState((int)TecView.StatesMachine.CurrentTimeView);
+        //    AddState((int)TecView.StatesMachine.LastValue_TM_Gen);
+        //    AddState((int)TecView.StatesMachine.LastValue_TM_SN);
+        //}
 
-        private void ChangeState_LastMinutes () {
-            ClearStates ();
+        //private void ChangeState_LastMinutes () {
+        //    ClearStates ();
 
-            ClearValues();
+        //    ClearValues();
 
-            if (m_tec.m_bSensorsStrings == false)
-                AddState((int)StatesMachine.InitSensors);
-            else ;
+        //    if (m_tec.m_bSensorsStrings == false)
+        //        AddState((int)StatesMachine.InitSensors);
+        //    else ;
 
-            adminValuesReceived = false;
+        //    adminValuesReceived = false;
             
-            AddState((int)StatesMachine.PPBRValues);
-            AddState((int)StatesMachine.AdminValues);
-            //AddState((int)StatesMachine.CurrentTimeView);
-            AddState((int)StatesMachine.LastMinutes_TM);
-        }
+        //    AddState((int)StatesMachine.PPBRValues);
+        //    AddState((int)StatesMachine.AdminValues);
+        //    //AddState((int)StatesMachine.CurrentTimeView);
+        //    AddState((int)StatesMachine.LastMinutes_TM);
+        //}
 
-        private void ChangeState_View () {
-            ClearStates ();
+        //private void ChangeState_View () {
+        //    ClearStates ();
 
-            adminValuesReceived = false;
+        //    adminValuesReceived = false;
 
-            if (m_tec.m_bSensorsStrings == true)
-            {
-                if (currHour == true)
-                {
-                    AddState((int)StatesMachine.CurrentTimeView);
-                }
-                else
-                {
-                    //selectedTime = m_pnlQuickData.dtprDate.Value.Date;
-                }
-            }
-            else
-            {
-                AddState((int)StatesMachine.InitSensors);
-                AddState((int)StatesMachine.CurrentTimeView);
-            }
+        //    if (m_tec.m_bSensorsStrings == true)
+        //    {
+        //        if (currHour == true)
+        //        {
+        //            AddState((int)StatesMachine.CurrentTimeView);
+        //        }
+        //        else
+        //        {
+        //            //selectedTime = m_pnlQuickData.dtprDate.Value.Date;
+        //        }
+        //    }
+        //    else
+        //    {
+        //        AddState((int)StatesMachine.InitSensors);
+        //        AddState((int)StatesMachine.CurrentTimeView);
+        //    }
 
-            //Часы...
-            if (m_arTypeSourceData[(int)HDateTime.INTERVAL.HOURS] == CONN_SETT_TYPE.DATA_AISKUE_PLUS_SOTIASSO)
-            {
-                AddState((int)StatesMachine.Hours_Fact);
-                if (currHour == true)
-                    AddState((int)StatesMachine.Hour_TM);
-                else
-                    ;
-            }
-            else
-                if (m_arTypeSourceData[(int)HDateTime.INTERVAL.HOURS] == CONN_SETT_TYPE.DATA_AISKUE)
-                    AddState((int)StatesMachine.Hours_Fact);
-                else
-                    if ((m_arTypeSourceData[(int)HDateTime.INTERVAL.HOURS] == CONN_SETT_TYPE.DATA_SOTIASSO_3_MIN)
-                        ||(m_arTypeSourceData[(int)HDateTime.INTERVAL.HOURS] == CONN_SETT_TYPE.DATA_SOTIASSO_1_MIN))
-                        AddState((int)StatesMachine.Hours_TM);
-                    else
-                        ;
-            //Минуты...
-            if (m_arTypeSourceData[(int)HDateTime.INTERVAL.MINUTES] == CONN_SETT_TYPE.DATA_AISKUE_PLUS_SOTIASSO)
-            {
-                AddState((int)StatesMachine.CurrentMins_Fact);
-                if (currHour == true)
-                    AddState((int)StatesMachine.CurrentMin_TM);
-                else
-                    ;
-            }
-            else
-                if (m_arTypeSourceData[(int)HDateTime.INTERVAL.MINUTES] == CONN_SETT_TYPE.DATA_AISKUE)
-                    AddState((int)StatesMachine.CurrentMins_Fact);
-                else
-                    if ((m_arTypeSourceData[(int)HDateTime.INTERVAL.MINUTES] == CONN_SETT_TYPE.DATA_SOTIASSO_3_MIN)
-                        || (m_arTypeSourceData[(int)HDateTime.INTERVAL.MINUTES] == CONN_SETT_TYPE.DATA_SOTIASSO_1_MIN))
-                        AddState((int)StatesMachine.CurrentMins_TM);
-                    else
-                        ;
-            if (m_bLastValue_TM_Gen == true)
-                AddState((int)StatesMachine.LastValue_TM_Gen);
-            else
-                ;
-            AddState((int)StatesMachine.LastMinutes_TM);
-            AddState((int)StatesMachine.PPBRValues);
-            AddState((int)StatesMachine.AdminValues);
-        }
+        //    //Часы...
+        //    if (m_arTypeSourceData[(int)HDateTime.INTERVAL.HOURS] == CONN_SETT_TYPE.DATA_AISKUE_PLUS_SOTIASSO)
+        //    {
+        //        AddState((int)StatesMachine.Hours_Fact);
+        //        if (currHour == true)
+        //            AddState((int)StatesMachine.Hour_TM);
+        //        else
+        //            ;
+        //    }
+        //    else
+        //        if (m_arTypeSourceData[(int)HDateTime.INTERVAL.HOURS] == CONN_SETT_TYPE.DATA_AISKUE)
+        //            AddState((int)StatesMachine.Hours_Fact);
+        //        else
+        //            if ((m_arTypeSourceData[(int)HDateTime.INTERVAL.HOURS] == CONN_SETT_TYPE.DATA_SOTIASSO_3_MIN)
+        //                ||(m_arTypeSourceData[(int)HDateTime.INTERVAL.HOURS] == CONN_SETT_TYPE.DATA_SOTIASSO_1_MIN))
+        //                AddState((int)StatesMachine.Hours_TM);
+        //            else
+        //                ;
+        //    //Минуты...
+        //    if (m_arTypeSourceData[(int)HDateTime.INTERVAL.MINUTES] == CONN_SETT_TYPE.DATA_AISKUE_PLUS_SOTIASSO)
+        //    {
+        //        AddState((int)StatesMachine.CurrentMins_Fact);
+        //        if (currHour == true)
+        //            AddState((int)StatesMachine.CurrentMin_TM);
+        //        else
+        //            ;
+        //    }
+        //    else
+        //        if (m_arTypeSourceData[(int)HDateTime.INTERVAL.MINUTES] == CONN_SETT_TYPE.DATA_AISKUE)
+        //            AddState((int)StatesMachine.CurrentMins_Fact);
+        //        else
+        //            if ((m_arTypeSourceData[(int)HDateTime.INTERVAL.MINUTES] == CONN_SETT_TYPE.DATA_SOTIASSO_3_MIN)
+        //                || (m_arTypeSourceData[(int)HDateTime.INTERVAL.MINUTES] == CONN_SETT_TYPE.DATA_SOTIASSO_1_MIN))
+        //                AddState((int)StatesMachine.CurrentMins_TM);
+        //            else
+        //                ;
+        //    if (m_bLastValue_TM_Gen == true)
+        //        AddState((int)StatesMachine.LastValue_TM_Gen);
+        //    else
+        //        ;
+        //    AddState((int)StatesMachine.LastMinutes_TM);
+        //    AddState((int)StatesMachine.PPBRValues);
+        //    AddState((int)StatesMachine.AdminValues);
+        //}
 
-        private void ChangeState_TMSNPower () {
-            ClearStates ();
+        //private void ChangeState_TMSNPower () {
+        //    ClearStates ();
 
-            if (m_tec.m_bSensorsStrings == false)
-                AddState((int)StatesMachine.InitSensors);
-            else ;
+        //    if (m_tec.m_bSensorsStrings == false)
+        //        AddState((int)StatesMachine.InitSensors);
+        //    else ;
 
-            AddState((int)StatesMachine.LastValue_TM_Gen);
-            AddState((int)StatesMachine.LastValue_TM_SN);
-        }
+        //    AddState((int)StatesMachine.LastValue_TM_Gen);
+        //    AddState((int)StatesMachine.LastValue_TM_SN);
+        //}
 
-        public void ChangeState()
+        public virtual void ChangeState()
         {
-            lock (m_lockState)
-            {
-                switch (m_typePanel)
-                {
-                    case TecView.TYPE_PANEL.VIEW:
-                        ChangeState_View ();
-                        break;
-                    case TecView.TYPE_PANEL.CUR_POWER:
-                        ChangeState_CurPower ();
-                        break;
-                    case TecView.TYPE_PANEL.LAST_MINUTES:
-                        ChangeState_LastMinutes ();
-                        break;
-                    case TecView.TYPE_PANEL.ADMIN_ALARM:
-                        ChangeState_AdminAlarm();
-                        break;
-                    case TecView.TYPE_PANEL.SOBSTV_NYZHDY:
-                        ChangeState_SobstvNyzhdy();
-                        break;
-                    case TYPE_PANEL.SOTIASSO:
-                        ChangeState_SOTIASSO();
-                        break;
-                    case TYPE_PANEL.LK:
-                        ChangeState_LK();
-                        break;
-                    default:
-                        break;
-                }
-            }
+            //lock (m_lockState) {
+                //switch (m_typePanel) {
+                    //case TecView.TYPE_PANEL.VIEW:
+                    //    ChangeState_View ();
+                    //    break;
+                    //case TecView.TYPE_PANEL.CUR_POWER:
+                    //    ChangeState_CurPower ();
+                    //    break;
+                    //case TecView.TYPE_PANEL.LAST_MINUTES:
+                    //    ChangeState_LastMinutes ();
+                    //    break;
+                    //case TecView.TYPE_PANEL.ADMIN_ALARM:
+                    //    ChangeState_AdminAlarm();
+                    //    break;
+                    //case TecView.TYPE_PANEL.SOBSTV_NYZHDY:
+                    //    ChangeState_SobstvNyzhdy();
+                    //    break;
+                    //case TYPE_PANEL.SOTIASSO:
+                    //    ChangeState_SOTIASSO();
+                    //    break;
+                    //case TYPE_PANEL.LK:
+                    //    ChangeState_LK();
+                    //    break;
+                //    default:
+                //        break;
+                //}
+            //}
 
-            if (!(m_typePanel == TecView.TYPE_PANEL.ADMIN_ALARM))
-                Run(@"TecView::ChangeState ()");
-            else
-                ;
+            //if (!(m_typePanel == TecView.TYPE_PANEL.ADMIN_ALARM))
+                Run(@"TecView::ChangeState () - ...");
+            //else ;
         }
 
         protected void GetCurrentTimeRequest()

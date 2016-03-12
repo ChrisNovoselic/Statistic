@@ -99,9 +99,9 @@ namespace Statistic
 
             initializeLayoutStyle(listTec.Count / 2
                 , listTec.Count);
-
+            // фильтр ТЭЦ-ЛК
             for (i = 0; i < listTec.Count; i++)
-                if (! (listTec[i].m_id > 10))
+                if (!(listTec[i].m_id > (int)TECComponent.ID.LK))
                 {
                     ptcp = new PanelTecSobstvNyzhdy(listTec[i]/*, fErrRep, fWarRep, fActRep, fRepClr*/);
                     this.Controls.Add(ptcp, i % this.ColumnCount, i / this.ColumnCount);
@@ -286,6 +286,39 @@ namespace Statistic
 
         private partial class PanelTecSobstvNyzhdy : HPanelCommon
         {
+            public class TecViewSobstvNyzhdy : TecView
+            {
+                public TecViewSobstvNyzhdy()
+                    : base(/*TecView.TYPE_PANEL.CUR_POWER, */-1, -1)
+                {
+                }
+
+                public override void ChangeState()
+                {
+                    lock (m_lockState) { GetRDGValues(-1, DateTime.MinValue); }
+
+                    base.ChangeState();
+                }
+
+                public override void GetRDGValues(int indx, DateTime date)
+                {
+                    ClearStates();
+
+                    ClearValues();
+
+                    if (m_tec.m_bSensorsStrings == false)
+                        AddState((int)StatesMachine.InitSensors);
+                    else ;
+
+                    //using_date = false;
+
+                    //AddState((int)TecView.StatesMachine.CurrentHours_Fact); //Только для определения сезона ???
+                    //AddState((int)TecView.StatesMachine.CurrentTimeView);
+                    AddState((int)TecView.StatesMachine.CurrentHours_TM_SN_PSUM);
+                    AddState((int)TecView.StatesMachine.LastValue_TM_SN);
+                }
+            }
+            
             System.Windows.Forms.Label[] m_arLabel;
             System.Windows.Forms.DateTimePicker dtCurrDate;
             Dictionary<int, System.Windows.Forms.Label> m_dictLabelVal;
@@ -293,7 +326,7 @@ namespace Statistic
 
             //bool isActive;
 
-            public TecView m_tecView;
+            public TecViewSobstvNyzhdy m_tecView;
 
             /// <summary>
             /// Текущий индекс компонента из списка 'allTECComponents' (для сохранения между вызовами функций)
@@ -323,8 +356,8 @@ namespace Statistic
             public PanelTecSobstvNyzhdy(StatisticCommon.TEC tec)
                 : base (-1, -1)
             {
-                m_tecView = new TecView(TecView.TYPE_PANEL.SOBSTV_NYZHDY, -1, -1);
-                
+                m_tecView = new TecViewSobstvNyzhdy();
+
                 InitializeComponent();
 
                 HMark markQueries = new HMark(new int[] { (int)CONN_SETT_TYPE.DATA_AISKUE, (int)CONN_SETT_TYPE.DATA_SOTIASSO });
@@ -540,7 +573,8 @@ namespace Statistic
                 }
                 else
                 {
-                    ChangeState();
+                    changeState();
+
                     m_tecView.currHour = false;
                 }
             }
@@ -567,7 +601,7 @@ namespace Statistic
             /// <summary>
             /// Установка состояния для текущей панели
             /// </summary>
-            private void ChangeState()
+            private void changeState()
             {
                 m_tecView.ChangeState ();
             }
@@ -587,13 +621,9 @@ namespace Statistic
                     ;
 
                 if (Actived == true)
-                {
-                    ChangeState();
-                }
+                    changeState();
                 else
-                {
                     m_tecView.ClearStates ();
-                }
 
                 return bRes;
             }
@@ -660,8 +690,9 @@ namespace Statistic
                     {
                         m_timerCurrent.Change(PanelStatistic.POOL_TIME * 1000 - 1, System.Threading.Timeout.Infinite);
                         setCurrDateHour(HDateTime.ToMoscowTimeZone(DateTime.Now));
-                        ChangeState();
-                        Debug.Print(m_arLabel[0] + " обновление");
+                        changeState();
+
+                        //Debug.Print(m_arLabel[0] + " обновление");
                     }
                     else                        
                         ;

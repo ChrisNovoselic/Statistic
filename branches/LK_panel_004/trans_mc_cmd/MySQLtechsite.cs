@@ -115,8 +115,8 @@ namespace trans_mc_cmd
                 //markQueries.Marked ((int)StatisticCommon.CONN_SETT_TYPE.ADMIN);
                 //markQueries.Marked((int)StatisticCommon.CONN_SETT_TYPE.PBR);
 
-                m_admin.InitTEC(m_idListener, FormChangeMode.MODE_TECCOMPONENT.GTP, /*typeConfigDB, */markQueries, true);
-                m_listIndexTECComponent = m_admin.GetListIndexTECComponent(FormChangeMode.MODE_TECCOMPONENT.GTP);
+                m_admin.InitTEC(m_idListener, FormChangeMode.MODE_TECCOMPONENT.GTP, /*typeConfigDB, */markQueries, true, new int [] { 0, (int)TECComponent.ID.LK });
+                m_listIndexTECComponent = m_admin.GetListIndexTECComponent(FormChangeMode.MODE_TECCOMPONENT.GTP, true);
 
                 m_listIdMCTECComponent = new List<int>();
 

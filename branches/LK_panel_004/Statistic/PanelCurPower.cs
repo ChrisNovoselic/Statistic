@@ -105,12 +105,15 @@ namespace Statistic
 
             initializeLayoutStyle(listTec.Count / 2
                                 , listTec.Count);
-
+            // фильтр ТЭЦ-ЛК
             for (int i = 0; i < listTec.Count; i++)
-            {
-                ptcp = new PanelTecCurPower(listTec[i]/*, fErrRep, fWarRep, fActRep, fRepClr*/);
-                this.Controls.Add(ptcp, i % this.ColumnCount, i / this.ColumnCount);
-            }            
+                if (!(listTec[i].m_id > (int)TECComponent.ID.LK))
+                {
+                    ptcp = new PanelTecCurPower(listTec[i]/*, fErrRep, fWarRep, fActRep, fRepClr*/);
+                    this.Controls.Add(ptcp, i % this.ColumnCount, i / this.ColumnCount);
+                }
+                else
+                    ;    
         }
 
         public PanelCurPower(IContainer container, List<StatisticCommon.TEC> listTec, DelegateStringFunc fErrRep, DelegateStringFunc fWarRep, DelegateStringFunc fActRep, DelegateBoolFunc fRepClr)
@@ -232,7 +235,7 @@ namespace Statistic
             Label[] m_arLabel;
             Dictionary<int, Label> m_dictLabelVal;
 
-            public TecView m_tecView;
+            public StatisticCommon.TecViewTMPower m_tecView;
 
             private object m_lockRep;
             private ManualResetEvent m_evTimerCurrent;
@@ -249,7 +252,7 @@ namespace Statistic
             {
                 InitializeComponent();
 
-                m_tecView = new TecView(TecView.TYPE_PANEL.CUR_POWER, -1, -1);
+                m_tecView = new TecViewTMPower();
 
                 HMark markQueries = new HMark(new int [] {(int)CONN_SETT_TYPE.ADMIN, (int)CONN_SETT_TYPE.DATA_SOTIASSO});
                 markQueries.Marked((int)CONN_SETT_TYPE.ADMIN); //Для получения даты/времени
@@ -437,7 +440,7 @@ namespace Statistic
                 m_tecView.m_curDate = dt;
             }
 
-            private void ChangeState()
+            private void changeState()
             {
                 m_tecView.ChangeState ();
             }

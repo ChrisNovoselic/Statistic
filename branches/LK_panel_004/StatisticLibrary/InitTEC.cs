@@ -216,10 +216,10 @@ namespace StatisticCommon
         /// <summary>
         /// Список ВСЕХ компонентов (ТЭЦ, ГТП, ЩУ, ТГ)
         /// </summary>
-        /// <param name="idListener"></param>
-        /// <param name="bIgnoreTECInUse"></param>
-        /// <param name="bUseData"></param>
-        public InitTEC_200(int idListener, bool bIgnoreTECInUse, bool bUseData)
+        /// <param name="idListener">Идентификатор установленного соединения с БД концигурации</param>
+        /// <param name="bIgnoreTECInUse">Признак использования поля [TEC_LIST].[InUse]</param>
+        /// <param name="bUseData">Признак возможности обращения к данным компонентов собираемого списка</param>
+        public InitTEC_200(int idListener, bool bIgnoreTECInUse, int [] arTECLimit, bool bUseData)
         {
             //Logging.Logg().Debug("InitTEC::InitTEC (3 параметра) - вход...");
 
@@ -240,7 +240,7 @@ namespace StatisticCommon
             all_PARAM_TG = getALL_PARAM_TG (0, out err);
 
             //Использование статической функции
-            list_tec = getListTEC(ref m_connConfigDB, bIgnoreTECInUse, new int[] { 0, (int)TECComponent.ID.GTP }, out err);
+            list_tec = getListTEC(ref m_connConfigDB, bIgnoreTECInUse, arTECLimit, out err);
 
             if (err == 0) {
                 for (int i = 0; i < list_tec.Rows.Count; i++)
@@ -373,7 +373,7 @@ namespace StatisticCommon
             //Logging.Logg().Debug("InitTEC::InitTEC (3 параметра) - вЫход...");
         }
 
-        public InitTEC_200(int idListener, Int16 indx, bool bIgnoreTECInUse, bool bUseData) //indx = {GTP или PC}
+        public InitTEC_200(int idListener, Int16 indx, bool bIgnoreTECInUse, int []arTECLimit, bool bUseData) //indx = {GTP или PC}
         {
             //Logging.Logg().Debug("InitTEC::InitTEC (4 параметра) - вход...");
 
@@ -405,7 +405,7 @@ namespace StatisticCommon
             m_connConfigDB = DbSources.Sources().GetConnection(idListener, out err);
 
             //Использование статической функции
-            list_tec = getListTEC(ref m_connConfigDB, bIgnoreTECInUse, new int[] { 0, (int)TECComponent.ID.GTP }, out err);
+            list_tec = getListTEC(ref m_connConfigDB, bIgnoreTECInUse, arTECLimit, out err);
 
             allParamTG = getALL_PARAM_TG (0, out err);
 

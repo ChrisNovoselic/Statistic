@@ -253,7 +253,7 @@ namespace Statistic
         {
             InitializeComponent();
 
-            this.ColumnCount = listTec.Count + 1;
+            this.ColumnCount = 1;
             this.RowCount = 1;
 
             float fPercentColDatetime = 8F;
@@ -261,13 +261,19 @@ namespace Statistic
             this.ColumnStyles.Add(new ColumnStyle(SizeType.Percent, fPercentColDatetime));
 
             int iCountSubColumns = 0;
-            
-            for (int i = 0; i < listTec.Count; i++)
-            {
-                this.Controls.Add(new PanelTecLastMinutes(listTec[i]/*, fErrRep, fWarRep, fActRep, fRepClr*/), i + 1, 0);
-                EventChangeDateTime += new DelegateObjectFunc(((PanelTecLastMinutes)this.Controls [i + 1]).OnEventChangeDateTime);
-                iCountSubColumns += ((PanelTecLastMinutes)this.Controls [i + 1]).CountTECComponent; //Слева столбец дата/время
-            }
+
+            for (int i = 0; i < listTec.Count; i ++)
+                // фильтр ТЭЦ-ЛК
+                if (!(listTec[i].m_id > (int)TECComponent.ID.LK))
+                {
+                    this.Controls.Add(new PanelTecLastMinutes(listTec[i]/*, fErrRep, fWarRep, fActRep, fRepClr*/), i + 1, 0);
+                    EventChangeDateTime += new DelegateObjectFunc(((PanelTecLastMinutes)this.Controls[i + 1]).OnEventChangeDateTime);
+                    iCountSubColumns += ((PanelTecLastMinutes)this.Controls[i + 1]).CountTECComponent; //Слева столбец дата/время
+
+                    this.ColumnCount++;
+                }
+                else
+                    ;
 
             initializeLayoutStyle(iCountSubColumns);
 
@@ -696,6 +702,39 @@ namespace Statistic
 
         public partial class PanelTecLastMinutes : HPanelCommon
         {
+            public class TecViewLastMinutes : TecView
+            {
+                public TecViewLastMinutes()
+                    : base(/*TecView.TYPE_PANEL.CUR_POWER, */-1, -1)
+                {
+                }
+
+                public override void ChangeState()
+                {
+                    lock (m_lockState) { GetRDGValues(-1, DateTime.MinValue); }
+
+                    base.ChangeState(); //Run
+                }
+
+                public override void GetRDGValues(int indx, DateTime date)
+                {
+                    ClearStates();
+
+                    ClearValues();
+
+                    if (m_tec.m_bSensorsStrings == false)
+                        AddState((int)StatesMachine.InitSensors);
+                    else ;
+
+                    adminValuesReceived = false;
+
+                    AddState((int)StatesMachine.PPBRValues);
+                    AddState((int)StatesMachine.AdminValues);
+                    //AddState((int)StatesMachine.CurrentTimeView);
+                    AddState((int)StatesMachine.LastMinutes_TM);
+                }
+            }
+            
             public int m_id_tec { get { return m_tecView.m_tec.m_id; } }
 
             List<TECComponentBase> m_list_TECComponents;
@@ -706,14 +745,14 @@ namespace Statistic
             private List <Dictionary<int, ToolTip>> m_listDictToolTip;
 
             //private Dictionary<int, TecView.valuesTECComponent> m_dictValuesHours;
-            TecView m_tecView;
+            TecViewLastMinutes m_tecView;
 
             public PanelTecLastMinutes(StatisticCommon.TEC tec/*, DelegateStringFunc fErrRep, DelegateStringFunc fWarRep, DelegateStringFunc fActRep, DelegateBoolFunc fRepClr*/)
                 : base (-1, -1)
             {
                 InitializeComponent();
 
-                m_tecView = new TecView(TecView.TYPE_PANEL.LAST_MINUTES, -1, -1);
+                m_tecView = new TecViewLastMinutes();
 
                 //Признаки для регистрации соединения с необходимыми источниками данных
                 HMark markQueries = new HMark(new int[] { (int)CONN_SETT_TYPE.ADMIN, (int)CONN_SETT_TYPE.PBR, (int)CONN_SETT_TYPE.DATA_SOTIASSO });
@@ -814,7 +853,7 @@ namespace Statistic
                 base.Stop ();
             }
 
-            private void ChangeState()
+            private void changeState()
             {
                 //m_tecView.m_curDate = ... получено при обработке события
                 //m_tecView.m_curDate = m_tecView.m_curDate.Add(-HAdmin.GetUTCOffsetOfCurrentTimeZone ());
@@ -855,7 +894,7 @@ namespace Statistic
 
                 initTableHourRows();
 
-                ChangeState ();
+                changeState ();
             }
 
             private void addRow(int indx)

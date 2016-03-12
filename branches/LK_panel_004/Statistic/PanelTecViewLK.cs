@@ -14,9 +14,10 @@ using StatisticCommon;
 namespace Statistic
 {
     class PanelLKView : PanelTecViewBase
-    {        
+    {
+        
         public PanelLKView(StatisticCommon.TEC tec, int num_tec, int num_comp)
-            : base(TecView.TYPE_PANEL.LK, tec, num_tec, num_comp)
+            : base(tec, num_tec, num_comp)
         {
             SPLITTER_PERCENT_VERTICAL = 30;
 
@@ -38,8 +39,39 @@ namespace Statistic
         private class TecViewLK : TecView
         {
             public TecViewLK (int indx_tec, int indx_comp)
-                : base (TYPE_PANEL.LK, indx_tec, indx_comp) 
+                : base (indx_tec, indx_comp) 
             {
+            }
+
+            public override void ChangeState()
+            {
+                lock (m_lockState) { GetRDGValues(-1, DateTime.MinValue); }
+
+                base.ChangeState(); //Run
+            }
+
+            public override void GetRDGValues(int indx, DateTime date)
+            {
+                ClearStates();
+
+                //ClearValues();
+
+                using_date = false;
+
+                if (m_tec.m_bSensorsStrings == true)
+                    if (currHour == true)
+                        AddState((int)StatesMachine.CurrentTimeView);
+                    else
+                        ;
+                else
+                {
+                    AddState((int)StatesMachine.InitSensors);
+                    AddState((int)StatesMachine.CurrentTimeView);
+                }
+
+                AddState((int)TecView.StatesMachine.Hours_Fact);
+                AddState((int)TecView.StatesMachine.PPBRValues);
+                AddState((int)TecView.StatesMachine.AdminValues);
             }
         }
         /// <summary>
@@ -476,6 +508,11 @@ namespace Statistic
         public override void SetDelegateReport(DelegateStringFunc fErr, DelegateStringFunc fWar, DelegateStringFunc fAct, DelegateBoolFunc fClear)
         {
             m_tecView.SetDelegateReport(fErr, fWar, fAct, fClear);
+        }
+
+        protected override void createTecView(int indx_tec, int indx_comp)
+        {
+            m_tecView = new TecViewLK(indx_tec, indx_comp);
         }
 
         protected override void createDataGridViewMins() { } // заглушка

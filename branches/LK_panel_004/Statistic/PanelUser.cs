@@ -170,7 +170,7 @@ namespace Statistic
                 table_TEC.Columns.AddRange(columns);
             }
 
-            m_list_TEC = new InitTEC_200(idListener, true, false).tec;
+            m_list_TEC = new InitTEC_200(idListener, true, new int [] { 0, (int)TECComponent.ID.GTP }, false).tec;
             table_TEC.Rows.Clear();
 
             foreach (TEC t in m_list_TEC)

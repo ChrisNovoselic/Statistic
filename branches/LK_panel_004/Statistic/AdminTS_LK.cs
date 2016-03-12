@@ -17,11 +17,6 @@ namespace Statistic
     public class AdminTS_LK : AdminTS_TG
     {
         /// <summary>
-        /// Индекс компонентов типа ЛК в списке ТЦ
-        /// </summary>
-        public static int Index_LK = 10;
-
-        /// <summary>
         /// Семафор для формирования списка компонентов
         /// </summary>
         public Semaphore m_semaIndxTECComponents;
@@ -54,7 +49,7 @@ namespace Statistic
                 //Сначала - ГТП
                 foreach (TECComponent comp in allTECComponents)
                 {
-                    if (comp.tec.m_id > Index_LK)
+                    if (comp.tec.m_id > (int)TECComponent.ID.LK)
                     {
                         if ((comp.m_id == GetIdTECComponent(id)) && //Принадлежит ТЭЦ
                             ((comp.IsGTP == true) /*|| //Является ГТП
@@ -275,19 +270,13 @@ namespace Statistic
             allTECComponents.Clear();
 
             foreach (StatisticCommon.TEC t in this.m_list_tec)
-            {
                 //Logging.Logg().Debug("Admin::InitTEC () - формирование компонентов для ТЭЦ:" + t.name);
-                if (t.m_id > Index_LK)
+                if (t.m_id > (int)TECComponent.ID.LK)
                     if (t.list_TECComponents.Count > 0)
                         foreach (TECComponent g in t.list_TECComponents)
-                        {
                             allTECComponents.Add(g);
-                        }
                     else
-                    {
                         allTECComponents.Add(t.list_TECComponents[0]);
-                    }
-            }
         }
 
         /// <summary>

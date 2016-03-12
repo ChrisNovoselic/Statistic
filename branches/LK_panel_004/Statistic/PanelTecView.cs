@@ -77,6 +77,11 @@ namespace Statistic
             this.m_ZedGraphHours.InitializeEventHandler(this.ýêñåëüToolStripMenuItemHours_Click, this.sourceDataHours_Click);
         }
 
+        protected override void createTecView(int indx_tec, int indx_comp)
+        {
+            m_tecView = new TecViewStandard(indx_tec, indx_comp);
+        }
+
         protected override void createDataGridViewHours()
         {
             this.m_dgwHours = new DataGridViewStandardHours();

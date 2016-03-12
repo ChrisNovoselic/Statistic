@@ -81,7 +81,7 @@ namespace Statistic
         /// <param name="idListener">ИД слушателя</param>
         /// <param name="markQueries"></param>
         public PanelAdminLK(int idListener, HMark markQueries)
-            : base(idListener, FormChangeMode.MANAGER.LK, markQueries)
+            : base(idListener, FormChangeMode.MANAGER.LK, markQueries, new int[] { (int)TECComponent.ID.LK, (int)TECComponent.ID.GTP })
         {
             m_admin.SetDelegateSaveComplete(null);
         }
@@ -114,9 +114,8 @@ namespace Statistic
         /// </summary>
         protected override void getDataGridViewAdmin()
         {
-            double value;
-            bool valid;
-
+            double value = -1F;
+            bool valid = false;
             
             foreach (int indx in ((AdminTS_LK)m_admin).m_listTECComponentIndexDetail)//Перебор компонентов
             {
@@ -128,16 +127,12 @@ namespace Statistic
                     if ((!(indx_tg < 0)) && (!(indx_gtp < 0)))
                         for (int i = 0; i < 24; i++)//Перебор часовых значений ТГ
                         {
-                                foreach (DataGridViewColumn col in dgwAdminTable.Columns)//Перебор колонок DataGridView
-                                    if (m_admin.GetNameTECComponent(indx) == col.HeaderText)//Если имя ТГ соответствует имени колонки то
-                                        if (dgwAdminTable.Rows[i].Cells[col.Index].Value == null)//Проверка на пустое поле и запись значения
-                                        {
-                                            ((AdminTS_LK)m_admin).m_listCurRDGValues[indx_tg][i].pbr = Convert.ToDouble(0.ToString("F2"));
-                                        }
-                                        else
-                                        {
-                                            ((AdminTS_LK)m_admin).m_listCurRDGValues[indx_tg][i].pbr = Convert.ToDouble(dgwAdminTable.Rows[i].Cells[col.Index].Value); // '+ 1' за счет DateTime
-                                        }
+                            foreach (DataGridViewColumn col in dgwAdminTable.Columns)//Перебор колонок DataGridView
+                                if (m_admin.GetNameTECComponent(indx) == col.HeaderText)//Если имя ТГ соответствует имени колонки то
+                                    if (dgwAdminTable.Rows[i].Cells[col.Index].Value == null)//Проверка на пустое поле и запись значения
+                                        ((AdminTS_LK)m_admin).m_listCurRDGValues[indx_tg][i].pbr = Convert.ToDouble(0.ToString("F2"));
+                                    else
+                                        ((AdminTS_LK)m_admin).m_listCurRDGValues[indx_tg][i].pbr = Convert.ToDouble(dgwAdminTable.Rows[i].Cells[col.Index].Value); // '+ 1' за счет DateTime
                                 ((AdminTS_LK)m_admin).m_listCurRDGValues[indx_tg][i].pbr_number = "ППБР";
                                 //AdminTS.m_sOwner_PBR = 0;
                         }
@@ -291,10 +286,7 @@ namespace Statistic
             base.InitializeComboBoxTecComponent(mode);
 
             for (int i = 0; i < m_listTECComponentIndex.Count; i++)
-            {
-
                 comboBoxTecComponent.Items.Add(m_admin.allTECComponents[m_listTECComponentIndex[i]].tec.name_shr + " - " + m_admin.GetNameTECComponent(m_listTECComponentIndex[i]));
-            }
 
             if (comboBoxTecComponent.Items.Count > 0)
             {

@@ -196,7 +196,7 @@ namespace StatisticCommon
             initTEC();
         }
 
-        public void InitTEC(int idListener, FormChangeMode.MODE_TECCOMPONENT mode, /*TYPE_DATABASE_CFG typeCfg, */HMark markQueries, bool bIgnoreTECInUse)
+        public void InitTEC(int idListener, FormChangeMode.MODE_TECCOMPONENT mode, /*TYPE_DATABASE_CFG typeCfg, */HMark markQueries, bool bIgnoreTECInUse, int [] arTECLimit)
         {
             //Logging.Logg().Debug("Admin::InitTEC () - вход...");
 
@@ -204,9 +204,9 @@ namespace StatisticCommon
 
             if (!(idListener < 0))
                 if (mode == FormChangeMode.MODE_TECCOMPONENT.UNKNOWN)
-                    this.m_list_tec = new InitTEC_200(idListener, bIgnoreTECInUse, false).tec;
+                    this.m_list_tec = new InitTEC_200(idListener, bIgnoreTECInUse, arTECLimit, false).tec;
                 else
-                    this.m_list_tec = new InitTEC_200(idListener, (short)mode, bIgnoreTECInUse, false).tec;
+                    this.m_list_tec = new InitTEC_200(idListener, (short)mode, bIgnoreTECInUse, arTECLimit, false).tec;
             else
                 this.m_list_tec = new InitTECBase.ListTEC ();
 

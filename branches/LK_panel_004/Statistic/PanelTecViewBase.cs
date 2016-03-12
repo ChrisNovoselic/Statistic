@@ -439,6 +439,8 @@ namespace Statistic
             this.ResumeLayout(false);
         }
 
+        protected abstract void createTecView(int indx_tec, int indx_comp);
+
         protected abstract void createDataGridViewHours();
         protected abstract void createDataGridViewMins();
         
@@ -446,13 +448,13 @@ namespace Statistic
 
         protected abstract void createPanelQuickData();
 
-        public PanelTecViewBase(TecView.TYPE_PANEL type, TEC tec, int indx_tec, int indx_comp/*, DelegateStringFunc fErrRep, DelegateStringFunc fWarRep, DelegateStringFunc fActRep, DelegateBoolFunc fRepClr*/)
+        public PanelTecViewBase(/*TecView.TYPE_PANEL type, */TEC tec, int indx_tec, int indx_comp/*, DelegateStringFunc fErrRep, DelegateStringFunc fWarRep, DelegateStringFunc fActRep, DelegateBoolFunc fRepClr*/)
         {
             //InitializeComponent();
 
             SPLITTER_PERCENT_VERTICAL = 50;
 
-            m_tecView = new TecView(type, indx_tec, indx_comp);
+            createTecView(indx_tec, indx_comp); //m_tecView = new TecView(type, indx_tec, indx_comp);
 
             HMark markQueries = new HMark(new int []{(int)CONN_SETT_TYPE.ADMIN, (int)CONN_SETT_TYPE.PBR, (int)CONN_SETT_TYPE.DATA_AISKUE, (int)CONN_SETT_TYPE.DATA_SOTIASSO});
             //markQueries.Marked((int)CONN_SETT_TYPE.ADMIN);

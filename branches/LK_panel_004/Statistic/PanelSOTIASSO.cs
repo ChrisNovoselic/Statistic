@@ -26,9 +26,36 @@ namespace Statistic
             public HMark m_markRetroValues;
 
             public TecViewSOTIASSO(int indx_tec, int indx_comp)
-                : base(TecView.TYPE_PANEL.SOTIASSO, indx_tec, indx_comp)
+                : base(/*TecView.TYPE_PANEL.SOTIASSO, */indx_tec, indx_comp)
             {
                 m_markRetroValues = new HMark(0);
+            }
+
+            public override void ChangeState()
+            {
+                lock (m_lockState) { GetRDGValues(-1, DateTime.MinValue); }
+
+                base.ChangeState(); //Run
+            }
+
+            public override void GetRDGValues(int indx, DateTime date)
+            {
+                ClearStates();
+
+                ClearValues();
+
+                if (m_tec.m_bSensorsStrings == false)
+                    AddState((int)StatesMachine.InitSensors);
+                else ;
+
+                using_date = false;
+
+                AddState((int)TecView.StatesMachine.CurrentTimeAdmin); // без m_curDate = serverTime
+                AddState((int)TecView.StatesMachine.CurrentMins_TM);
+                AddState((int)TecView.StatesMachine.CurrentMinDetail_TM);
+
+                AddState((int)TecView.StatesMachine.PPBRValues);
+                AddState((int)TecView.StatesMachine.AdminValues);
             }
 
             public void GetRetroMinDetail(int indxMin)
@@ -146,7 +173,7 @@ namespace Statistic
         /// </summary>
         ZedGraph.ZedGraphControl m_zGraph_GTP
             , m_zGraph_TG;
-        List<StatisticCommon.TEC> m_listTEC;
+        private List<StatisticCommon.TEC> m_listTEC;
 
         private ManualResetEvent m_evTimerCurrent;
         private
@@ -190,7 +217,14 @@ namespace Statistic
         public PanelSOTIASSO(List<StatisticCommon.TEC> listTec)
             : base()
         {
-            m_listTEC = listTec;
+            //m_listTEC = listTec;
+            // фильтр ТЭЦ-ЛК
+            m_listTEC = new List<TEC>();            
+            foreach (TEC tec in listTec)
+                if (!(tec.m_id > (int)TECComponent.ID.LK))
+                {
+                    m_listTEC.Add(tec);
+                }
             //Создать объект с признаками обработки тех типов значений
             // , которые будут использоваться фактически
             m_markQueries = new HMark(new int[] { (int)CONN_SETT_TYPE.ADMIN, (int)CONN_SETT_TYPE.PBR, (int)CONN_SETT_TYPE.DATA_SOTIASSO });

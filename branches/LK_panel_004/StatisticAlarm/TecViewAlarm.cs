@@ -8,6 +8,7 @@ using System.Drawing; //Color
 using System.Globalization; //...CultureInfo
 
 using HClassLibrary;
+using StatisticCommon;
 
 namespace StatisticAlarm
 {
@@ -66,9 +67,118 @@ namespace StatisticAlarm
         /// <param name="typePanel">Тип панели к которой принадлежит объект класс</param>
         /// <param name="indxTEC">Индекс ТЭЦ в списке</param>
         /// <param name="indx_comp">??? Индекс компонента</param>
-        public TecViewAlarm(StatisticCommon.TecView.TYPE_PANEL typePanel, int indxTEC, int indx_comp)
-            : base(typePanel, indxTEC, indx_comp)
+        public TecViewAlarm(/*StatisticCommon.TecView.TYPE_PANEL typePanel, */int indxTEC, int indx_comp)
+            : base(/*typePanel, */indxTEC, indx_comp)
         {
+        }
+
+        public override void ChangeState()
+        {
+            new Thread(new ParameterizedThreadStart(threadGetRDGValues)).Start();
+
+            //base.ChangeState(); //Run
+        }
+
+        /// <summary>
+        /// Поток запроса значений для 'TecViewAlarm'
+        /// </summary>
+        /// <param name="synch">Объект для синхронизации</param>
+        private void threadGetRDGValues(object synch)
+        {
+            int indxEv = -1;
+
+            //if (m_waitHandleState[(int)INDEX_WAITHANDLE_REASON.SUCCESS].WaitOne (0, true) == false)
+            ((AutoResetEvent)m_waitHandleState[(int)INDEX_WAITHANDLE_REASON.SUCCESS]).Set();
+            //else ;
+
+            for (INDEX_WAITHANDLE_REASON i = INDEX_WAITHANDLE_REASON.ERROR; i < INDEX_WAITHANDLE_REASON.COUNT_INDEX_WAITHANDLE_REASON; i++)
+                ((ManualResetEvent)m_waitHandleState[(int)i]).Reset();
+
+            foreach (TECComponent tc in allTECComponents)
+            {
+                if (tc.IsGTP == true)
+                {
+                    indxEv = WaitHandle.WaitAny(m_waitHandleState);
+                    if (indxEv == (int)INDEX_WAITHANDLE_REASON.BREAK)
+                        break;
+                    else
+                    {
+                        if (!(indxEv == (int)INDEX_WAITHANDLE_REASON.SUCCESS))
+                            ((ManualResetEvent)m_waitHandleState[indxEv]).Reset();
+                        else
+                            ;
+
+                        indxTECComponents = allTECComponents.IndexOf(tc);
+
+                        getRDGValues();
+                    }
+                }
+                else
+                    ; //Это не ГТП
+            }
+        }
+        /// <summary>
+        /// Запросить значения для 'TecViewAlarm'
+        /// </summary>
+        private void getRDGValues()
+        {
+            GetRDGValues(/*(int)s_typeFields,*/ indxTECComponents, DateTime.Now);
+
+            Run(@"TecView::GetRDGValues () - ...");
+        }
+        /// <summary>
+        /// Добавить состояния для запроса получения значений 'TecViewAlarm'
+        /// </summary>
+        /// <param name="indx">Индекс компонента</param>
+        /// <param name="date">Дата запрашиваемых значений</param>
+        public override void GetRDGValues(/*int mode,*/ int indx, DateTime date)
+        {
+            m_prevDate = m_curDate;
+            m_curDate = date.Date;
+
+            ClearStates();
+
+            adminValuesReceived = false;
+
+            if ((m_tec.m_bSensorsStrings == false))
+            {
+                AddState((int)StatesMachine.InitSensors);
+            }
+            else ;
+
+            if (currHour == true)
+                AddState((int)StatesMachine.CurrentTimeView);
+            else
+                ;
+
+            //??? а где AISKUE+SOTIASSO
+            if (m_arTypeSourceData[(int)HDateTime.INTERVAL.HOURS] == CONN_SETT_TYPE.DATA_AISKUE)
+                AddState((int)StatesMachine.Hours_Fact);
+            else
+                if ((m_arTypeSourceData[(int)HDateTime.INTERVAL.HOURS] == CONN_SETT_TYPE.DATA_SOTIASSO_3_MIN)
+                    || (m_arTypeSourceData[(int)HDateTime.INTERVAL.HOURS] == CONN_SETT_TYPE.DATA_SOTIASSO_1_MIN)
+                    || (m_arTypeSourceData[(int)HDateTime.INTERVAL.HOURS] == CONN_SETT_TYPE.DATA_SOTIASSO))
+                    AddState((int)StatesMachine.Hours_TM);
+                else
+                    ;
+
+            if (m_arTypeSourceData[(int)HDateTime.INTERVAL.MINUTES] == CONN_SETT_TYPE.DATA_AISKUE)
+                AddState((int)StatesMachine.CurrentMins_Fact);
+            else
+                if ((m_arTypeSourceData[(int)HDateTime.INTERVAL.MINUTES] == CONN_SETT_TYPE.DATA_SOTIASSO_3_MIN)
+                    || (m_arTypeSourceData[(int)HDateTime.INTERVAL.MINUTES] == CONN_SETT_TYPE.DATA_SOTIASSO_1_MIN)
+                    || (m_arTypeSourceData[(int)HDateTime.INTERVAL.MINUTES] == CONN_SETT_TYPE.DATA_SOTIASSO))
+                    AddState((int)StatesMachine.CurrentMins_TM);
+                else
+                    ;
+
+            if (m_bLastValue_TM_Gen == true)
+                AddState((int)StatesMachine.LastValue_TM_Gen);
+            else
+                ;
+
+            AddState((int)StatesMachine.PPBRValues);
+            AddState((int)StatesMachine.AdminValues);
         }
         /// <summary>
         /// Функция проверки выполнения условий сигнализаций (для одного ГТП)

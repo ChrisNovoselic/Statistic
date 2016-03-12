@@ -851,7 +851,7 @@ namespace StatisticAnalyzer
         /// <summary>
         /// Список ТЭЦ
         /// </summary>
-        List<StatisticCommon.TEC> m_listTEC;
+        protected List<StatisticCommon.TEC> m_listTEC;
         
         /// <summary>
         /// Индексы разделителей
@@ -2277,10 +2277,10 @@ namespace StatisticAnalyzer
         //}
         //HLogMsgSource m_logMsgSource;
         
-        /// <summary>
-        /// Список ТЭЦ
-        /// </summary>
-        List<StatisticCommon.TEC> m_listTEC;
+        ///// <summary>
+        ///// Список ТЭЦ
+        ///// </summary>
+        //List<StatisticCommon.TEC> m_listTEC;
         
         /// <summary>
         /// Идентификатор для получения лога из БД
