@@ -33,7 +33,7 @@ namespace Statistic
         public AdminTS_LK(bool[] arMarkPPBRValues)
             : base(arMarkPPBRValues)
         {
-            base.m_Offset_to_moscow = (int)INDEX_OFFSET.NOVOSIBIRSK;
+            _tsOffsetToMoscow = HDateTime.TS_NSK_OFFSET_OF_MOSCOWTIMEZONE;
         }
 
         /// <summary>
@@ -48,9 +48,7 @@ namespace Statistic
 
                 //Сначала - ГТП
                 foreach (TECComponent comp in allTECComponents)
-                {
                     if (comp.tec.m_id > (int)TECComponent.ID.LK)
-                    {
                         if ((comp.m_id == GetIdTECComponent(id)) && //Принадлежит ТЭЦ
                             ((comp.IsGTP == true) /*|| //Является ГТП
                         ((comp.m_id > 1000) && (comp.m_id < 10000))*/)) //Является ТГ
@@ -59,13 +57,13 @@ namespace Statistic
 
                             foreach (TG tg in comp.m_listTG)
                                 foreach (TECComponent comp_tg in allTECComponents)
-                                    if(comp_tg.m_id==tg.m_id)
+                                    if (comp_tg.m_id == tg.m_id)
                                         m_listTECComponentIndexDetail.Add(allTECComponents.IndexOf(comp_tg));
                         }
                         else
                             ;
-                    }
-                }
+                    else
+                        ;
 
                 m_listTECComponentIndexDetail.Sort();
                 m_listCurRDGValues.Clear();
@@ -435,5 +433,20 @@ namespace Statistic
                 return dataTableRes;
             }
         }
-}
+
+        protected override void /*bool*/ ImpRDGExcelValuesRequest()
+        {
+            throw new NotImplementedException();
+        }
+
+        protected override int ImpRDGExcelValuesResponse()
+        {
+            throw new NotImplementedException();
+        }
+
+        protected override void /*bool*/ ExpRDGExcelValuesRequest()
+        {
+            throw new NotImplementedException();
+        }
+    }
 }

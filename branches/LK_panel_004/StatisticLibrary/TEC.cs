@@ -762,17 +762,21 @@ namespace StatisticCommon
         /// <param name="dt">Дата/время - начальное для интервала, запрашиваемых данных</param>
         /// <param name="sen">Строка-перечисление идентификаторов</param>
         /// <returns>Строка запроса</returns>
-        private string minsFactCommonRequest (DateTime dt, string sen) {
+        private string minsFactCommonRequest (DateTime dt, string sen, TecView.ID_AISKUE_PARNUMBER idParNumber) {
+            // для 30-ти мин знач. смещение 1 час назад, чтобы гарантированно получить все значения
+            // при этом 30-ти мин знач. за текущий час не играют роли
+            int offsetHoursParNumber = idParNumber == TecView.ID_AISKUE_PARNUMBER.FACT_03 ? 0 : 1;
+
             return @"SELECT * FROM [dbo].[ft_get_value_askue](" + m_id + @"," +
-                                2 + @"," +
-                //usingDate.ToString("yyyy.MM.dd") + @"," +
-                                @"'" + dt.ToString("yyyyMMdd HH:00:00") + @"'" + @"," +
-                //usingDate.AddDays(1).ToString("yyyy.MM.dd") +
-                                @"'" + dt.AddHours(1).ToString("yyyyMMdd HH:00:00") + @"'" +
-                                @") WHERE [ID] IN (" +
-                                sen +
-                                @")" +
-                                @" ORDER BY DATA_DATE";
+                (int)idParNumber + @"," +
+            //usingDate.ToString("yyyy.MM.dd") + @"," +
+                @"'" + dt.AddHours(-offsetHoursParNumber).ToString("yyyyMMdd HH:00:00") + @"'" + @"," +
+            //usingDate.AddDays(1).ToString("yyyy.MM.dd") +
+                @"'" + dt.AddHours(1 - offsetHoursParNumber).ToString("yyyyMMdd HH:00:00") + @"'" +
+                @") WHERE [ID] IN (" +
+                sen +
+                @")" +
+                @" ORDER BY DATA_DATE";
         }
         /// <summary>
         /// Возвратить содержание запроса к источнику данных для получения 3-х мин значений в АИИС КУЭ
@@ -780,15 +784,16 @@ namespace StatisticCommon
         /// <param name="usingDate">Дата - начальная для интервала, запрашиваемых данных</param>
         /// <param name="hour">Час в сутках, запрашиваемых данных</param>
         /// <param name="sensors">Строка-перечисление идентификаторов</param>
+        /// <param name="idParNumber">Идентификатор типа значения (3-х, 30-ти мин)</param>
         /// <returns>Строка запроса</returns>
-        public string minsFactRequest(DateTime usingDate, int hour, string sensors)
+        public string minsFactRequest(DateTime usingDate, int hour, string sensors, TecView.ID_AISKUE_PARNUMBER idParNumber)
         {
             if (hour == 24)
                 hour = 23;
             else
                 ;
 
-            usingDate = usingDate.Date.AddHours(hour);
+            usingDate = usingDate./*Date.*/AddHours(hour);
             string request = string.Empty;
 
             switch (Type)
@@ -797,7 +802,7 @@ namespace StatisticCommon
                     switch (m_arTypeSourceData [(int)CONN_SETT_TYPE.DATA_AISKUE - (int)CONN_SETT_TYPE.DATA_AISKUE])
                     {
                         case INDEX_TYPE_SOURCE_DATA.COMMON:
-                            request = minsFactCommonRequest (usingDate, sensors);
+                            request = minsFactCommonRequest (usingDate, sensors, idParNumber);
                             break;
                         default:
                             break;
@@ -807,7 +812,7 @@ namespace StatisticCommon
                     switch (m_arTypeSourceData [(int)CONN_SETT_TYPE.DATA_AISKUE - (int)CONN_SETT_TYPE.DATA_AISKUE])
                     {
                         case INDEX_TYPE_SOURCE_DATA.COMMON:
-                            request = minsFactCommonRequest(usingDate, sensors);
+                            request = minsFactCommonRequest(usingDate, sensors, idParNumber);
                             break;
                         default:
                             break;
@@ -1041,8 +1046,8 @@ namespace StatisticCommon
         private string hoursFactCommonRequest (DateTime dt, string sen) {
             return @"SELECT * FROM [dbo].[ft_get_value_askue](" + m_id + @"," +
                                 12 + @"," +
-                                @"'" + dt.ToString("yyyyMMdd") + @"'" + @"," +
-                                @"'" + dt.AddDays(1).ToString("yyyyMMdd") + @"'" +
+                                @"'" + dt.ToString("yyyyMMdd HH:mm:00") + @"'" + @"," +
+                                @"'" + dt.AddDays(1).ToString("yyyyMMdd HH:mm:00") + @"'" +
                                 @") WHERE [ID] IN (" +
                                 sen +
                                 @")" +

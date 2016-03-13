@@ -53,6 +53,12 @@ namespace StatisticCommon
             public DateTime dtRecUpdate;
         }
 
+        protected TimeSpan _tsOffsetToMoscow;
+        /// <summary>
+        /// Смещение по часовому поясу
+        /// </summary>
+        public TimeSpan m_tsOffsetToMoscow { get { return _tsOffsetToMoscow; } }
+
         public volatile RDGStruct[] m_prevRDGValues;
         public RDGStruct[] m_curRDGValues;
 
@@ -370,7 +376,13 @@ namespace StatisticCommon
         //public void SetDelegateTECComponent(DelegateFunc f) { fillTECComponent = f; }
 
         public void SetDelegateDatetime(DelegateDateFunc f) { setDatetime = f; }
- 
+
+        //protected void actualizeTimezone(ref DataTable table, int indxCol)
+        //{
+        //    foreach (DataRow r in table.Rows)
+        //        r[indxCol] = Convert.ToDateTime(r[indxCol].ToString()).Add(m_tsOffsetToMoscow);
+        //}
+
         public override void ClearValues()
         {
             int cntHours = 24;

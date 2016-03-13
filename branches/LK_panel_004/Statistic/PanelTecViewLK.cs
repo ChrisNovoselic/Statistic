@@ -14,8 +14,7 @@ using StatisticCommon;
 namespace Statistic
 {
     class PanelLKView : PanelTecViewBase
-    {
-        
+    {        
         public PanelLKView(StatisticCommon.TEC tec, int num_tec, int num_comp)
             : base(tec, num_tec, num_comp)
         {
@@ -41,6 +40,8 @@ namespace Statistic
             public TecViewLK (int indx_tec, int indx_comp)
                 : base (indx_tec, indx_comp) 
             {
+                m_idAISKUEParNumber = ID_AISKUE_PARNUMBER.FACT_30;
+                _tsOffsetToMoscow = HDateTime.TS_NSK_OFFSET_OF_MOSCOWTIMEZONE;
             }
 
             public override void ChangeState()
@@ -70,8 +71,18 @@ namespace Statistic
                 }
 
                 AddState((int)TecView.StatesMachine.Hours_Fact);
+                AddState((int)TecView.StatesMachine.CurrentMins_Fact);
                 AddState((int)TecView.StatesMachine.PPBRValues);
                 AddState((int)TecView.StatesMachine.AdminValues);
+            }
+
+            public override double GetSummaFactValues(int hour)
+            {
+                double dblRes = -1F;
+
+                dblRes = m_valuesHours[hour].valuesFact;
+
+                return dblRes;
             }
         }
         /// <summary>
@@ -362,12 +373,122 @@ namespace Statistic
                 this.ColumnStyles.Add(new ColumnStyle(SizeType.AutoSize));
             }
 
+            private void showFactTGValue(int id_tg, double[] powerLastHourMinutes)
+            {
+                int min = -1
+                    , cntMinValues = 0;
+                double powerLastHour = 0F;
+
+                for (min = 10; min < powerLastHourMinutes.Length; min += 10)
+                    //Проверить возможность получения значения
+                    if (! (powerLastHourMinutes[min] < 0)) {
+                        powerLastHour += powerLastHourMinutes[min];
+
+                        cntMinValues++;
+                    }
+                    else
+                        ;
+
+                if (cntMinValues > 0)
+                    //Отобразить значение
+                    showValue(m_tgLabels[id_tg][(int)TG.INDEX_VALUE.FACT]
+                        , powerLastHour / cntMinValues, false);
+                else
+                    //Отобразить строку - отсутствие значения
+                    m_tgLabels[id_tg][(int)TG.INDEX_VALUE.FACT].Text = "---";
+
+                // установить цвет шрифта для значения
+                m_tgLabels[id_tg][(int)TG.INDEX_VALUE.FACT].ForeColor = getColorFactValues();
+            }
+
             public override void ShowFactValues()
             {
-                int indxStartCommonPVal = m_indxStartCommonFirstValueSeries;
-                double dblSum = m_parent.m_tecView.GetSummaFactValues();
+                int indxStartCommonPVal = m_indxStartCommonFirstValueSeries
+                    , lastHour = m_parent.m_tecView.lastHour > 0 ? m_parent.m_tecView.lastHour - 1 : 0;
+                double[] powerLastHourMinutes;
+                Color clrLabel = Color.Empty;
 
-                showValue(ref m_arLabelCommon[(int)PanelQuickDataLK.CONTROLS.lblPowerCurrentValue - indxStartCommonPVal], dblSum, true, string.Empty);
+                if (m_parent.m_tecView.IsHourValues(lastHour) == true)
+                {
+                    //Температура
+                    // текущее значение температуры (час)
+                    showValue(ref m_arLabelCommon[(int)PanelQuickDataLK.CONTROLS.lblTemperatureCurrentValue - indxStartCommonPVal]
+                        , double.NegativeInfinity
+                        , false
+                        , true
+                        , string.Empty);
+                    // плановое значение температуры (час)
+                    showValue(ref m_arLabelCommon[(int)PanelQuickDataLK.CONTROLS.lblTemperatureHourValue - indxStartCommonPVal]
+                        , m_parent.m_tecView.m_valuesHours[lastHour].valuesPmin
+                        , false
+                        , true
+                        , string.Empty);
+                    // плановое значение температуры (сутки)
+                    showValue(ref m_arLabelCommon[(int)PanelQuickDataLK.CONTROLS.lblTemperatureDateValue - indxStartCommonPVal]
+                        , double.NegativeInfinity
+                        , false
+                        , true
+                        , string.Empty);
+                    //Мощность
+                    // текущее значение мощности (час)
+                    showValue(ref m_arLabelCommon[(int)PanelQuickDataLK.CONTROLS.lblPowerCurrentValue - indxStartCommonPVal]
+                        , m_parent.m_tecView.GetSummaFactValues(lastHour)// * 1000
+                        , false
+                        , true
+                        , string.Empty);
+                    // плановое значение мощности (час)
+                    showValue(ref m_arLabelCommon[(int)PanelQuickDataLK.CONTROLS.lblPowerHourValue - indxStartCommonPVal]
+                        , m_parent.m_tecView.m_valuesHours[lastHour].valuesPBR// * 1000
+                        , false
+                        , true
+                        , string.Empty);
+                    // цвет шрифта для значений температуры, мощности
+                    if (m_parent.m_tecView.currHour == true)
+                    {
+                        clrLabel = getColorFactValues();
+                    }
+                    else
+                    {
+                        clrLabel = Color.Yellow;
+                    }
+                    m_arLabelCommon[(int)PanelQuickDataLK.CONTROLS.lblTemperatureCurrentValue - indxStartCommonPVal].ForeColor =
+                    m_arLabelCommon[(int)PanelQuickDataLK.CONTROLS.lblTemperatureHourValue - indxStartCommonPVal].ForeColor =
+                    m_arLabelCommon[(int)PanelQuickDataLK.CONTROLS.lblTemperatureDateValue - indxStartCommonPVal].ForeColor =
+                    m_arLabelCommon[(int)PanelQuickDataLK.CONTROLS.lblPowerCurrentValue - indxStartCommonPVal].ForeColor =
+                    m_arLabelCommon[(int)PanelQuickDataLK.CONTROLS.lblPowerHourValue - indxStartCommonPVal].ForeColor =
+                        clrLabel;
+                    // текущее значение мощности для компонентов-ТГ-фидеров (час)
+                    //ShowTGValue
+                    if (m_parent.indx_TECComponent < 0) // значит этот view будет суммарным для всех ГТП
+                    {
+                        foreach (TECComponent g in m_parent.m_tecView.m_localTECComponents)
+                            if (g.IsGTP == true)
+                            //Только ГТП
+                                foreach (TG tg in g.m_listTG) {
+                                //Цикл по списку с ТГ
+                                    powerLastHourMinutes = m_parent.m_tecView.m_dictValuesTG[tg.m_id].m_powerMinutes;
+                                    //Проверить возможность получения значения
+                                    if (!(powerLastHourMinutes == null))
+                                        showFactTGValue(tg.m_id, powerLastHourMinutes);
+                                    else
+                                        ;
+                                }
+                            else
+                                ;
+                    }
+                    else
+                        foreach (TECComponent comp in m_parent.m_tecView.m_localTECComponents) {
+                        //Цикл по списку ТГ в компоненте ТЭЦ (ГТП, ЩУ)
+                            powerLastHourMinutes = m_parent.m_tecView.m_dictValuesTG[comp.m_listTG[0].m_id].m_powerMinutes;
+                            //Проверить возможность получения значения
+                            if (!(powerLastHourMinutes == null))
+                                showFactTGValue (comp.m_listTG[0].m_id, powerLastHourMinutes);
+                            else
+                                ;
+                        }
+                }
+                else
+                    ;
             }
 
             /// <summary>
@@ -532,10 +653,10 @@ namespace Statistic
             this._pnlQuickData = new PanelQuickDataLK ();
         }
 
-        protected override void initTableHourRows()
-        {
-            //Ничего не делаем, т.к. составные элементы самостоятельно настраивают кол-во строк в таблицах
-        }
+        //protected override void initTableHourRows()
+        //{
+        //    //Ничего не делаем, т.к. составные элементы самостоятельно настраивают кол-во строк в таблицах
+        //}
 
         protected override void initializeLayoutStyle(int cols = -1, int rows = -1)
         {

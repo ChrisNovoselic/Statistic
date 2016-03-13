@@ -4,6 +4,7 @@ using System.Text;
 using System.IO;
 using System.Windows.Forms;
 //using System.ComponentModel;
+using System.Diagnostics;
 using System.Data;
 //using System.Data.SqlClient;
 using System.Drawing; //Color..
@@ -856,6 +857,8 @@ namespace Statistic
 
         protected void NewDateRefresh()
         {
+            Debug.WriteLine(@"PanelTecViewBase::NewDateRefresh () - m_tecView.currHour=" + m_tecView.currHour.ToString ());
+
             //delegateStartWait ();
             if (!(delegateStartWait == null)) delegateStartWait(); else ;
             
@@ -877,6 +880,8 @@ namespace Statistic
 
         private void dtprDate_ValueChanged(object sender, EventArgs e)
         {
+            Debug.WriteLine(@"PanelTecViewBase::dtprDate_ValueChanged () - DATE_pnlQuickData=" + _pnlQuickData.dtprDate.Value.ToString() + @", update=" + update);
+
             if (update == true)
             {
                 //—равниваем даты/врем€ ????
@@ -1001,16 +1006,6 @@ namespace Statistic
             return bRes;
         }
 
-        private void ShowValues(string caption)
-        {
-            /*MessageBox.Show(this, "state = " + state + "\naction = " + action + "\ndate = " + dtprDate.Value.ToString() +
-                            "\nnow_date = " + DateTime.Now.ToString() + "\ngmt0 = " + System.TimeZone.CurrentTimeZone.ToUniversalTime(DateTime.Now).ToString() +
-                            "\nselectedTime = " + selectedTime.ToString() + "lastHour = " + lastHour + "\nlastMin = " + lastMin + "\ncurrHour = " + currHour + 
-                            "\nadminValuesReceived = " + adminValuesReceived, caption, MessageBoxButtons.OK);*/
-
-            MessageBox.Show(this, "", caption, MessageBoxButtons.OK);
-        }
-
         protected void setRetroTickTime(int hour, int min)
         {
             DateTime dt = _pnlQuickData.dtprDate.Value.Date;
@@ -1026,7 +1021,7 @@ namespace Statistic
         /// <param name="dt">дата/врем€ дл€ отображени€</param>
         private void tickTime(object dt)
         {
-            _pnlQuickData.lblServerTime.Text = ((DateTime)dt).ToString("HH:mm:ss");
+            _pnlQuickData.lblServerTime.Text = ((DateTime)dt).Add(m_tecView.m_tsOffsetToMoscow).ToString("HH:mm:ss");
         }
 
         /// <summary>
@@ -1049,7 +1044,7 @@ namespace Statistic
                     return;
 
                 //if (!(((currValuesPeriod++) * 1000) < Int32.Parse(FormMain.formParameters.m_arParametrSetup[(int)FormParameters.PARAMETR_SETUP.POLL_TIME]) * 1000))
-                if (!(currValuesPeriod++ < POOL_TIME))
+                if (!(currValuesPeriod++ < POOL_TIME /* (m_tecView.m_idAISKUEParNumber == TecView.ID_AISKUE_PARNUMBER.FACT_03 ? 1 : 6)*/))
                 {
                     currValuesPeriod = 0;
                     NewDateRefresh();

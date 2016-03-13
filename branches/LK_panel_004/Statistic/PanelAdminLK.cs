@@ -98,13 +98,11 @@ namespace Statistic
                 , id_gtp_owner = ((DataGridViewAdminLK)dgwAdminTable).GetIdGTPOwner(indx_tg);
 
             foreach (int indx in ((AdminTS_LK)m_admin).m_listTECComponentIndexDetail)
-            {
                 if (m_admin.allTECComponents[indx].m_id == id_gtp_owner) {
                     return ((AdminTS_LK)m_admin).m_listTECComponentIndexDetail.IndexOf(indx);
                 }
                 else
                     ;
-            }
 
             return iRes;
         }
@@ -262,7 +260,7 @@ namespace Statistic
                 
             }
             m_admin.CopyCurToPrevRDGValues();
-            ((AdminTS_LK)m_admin).m_listPrevRDGValues.Add(m_admin.m_prevRDGValues);
+            //((AdminTS_LK)m_admin).m_listPrevRDGValues.Add(m_admin.m_prevRDGValues);
             ((AdminTS_LK)m_admin).m_semaIndxTECComponents.Release();
         }
 
@@ -273,8 +271,8 @@ namespace Statistic
         {
             ((DataGridViewAdminLK)this.dgwAdminTable).ClearTables();//Очистка DataGridView  
             
-            if(((AdminTS_LK)m_admin).m_listPrevRDGValues!=null)
-                ((AdminTS_LK)m_admin).m_listPrevRDGValues.Clear();//Очистка списка предыдущих значений
+            //if(((AdminTS_LK)m_admin).m_listPrevRDGValues!=null)
+            //    ((AdminTS_LK)m_admin).m_listPrevRDGValues.Clear();//Очистка списка предыдущих значений
         }
 
         /// <summary>

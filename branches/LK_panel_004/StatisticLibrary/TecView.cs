@@ -124,14 +124,14 @@ namespace StatisticCommon
 
     public abstract class TecView : HAdmin
     {
-        ///// <summary>
-        ///// перечисление - индексы для типов панелей
-        ///// </summary>
-        //public enum TYPE_PANEL { VIEW, CUR_POWER, LAST_MINUTES, ADMIN_ALARM, SOBSTV_NYZHDY, SOTIASSO, LK, COUNT_TYPE_PANEL };
-        ///// <summary>
-        ///// Индекс типа панели в интересах которой выполняется текущий объект
-        ///// </summary>
-        //TYPE_PANEL m_typePanel;
+        /// <summary>
+        /// Перечисление - Идентификаторы типов минутных АИИСКУЭ значений
+        /// </summary>
+        public enum ID_AISKUE_PARNUMBER : uint { FACT_03 = 2, FACT_30 = 12 };
+        /// <summary>
+        /// Индекс типа панели в интересах которой выполняется текущий объект
+        /// </summary>
+        public ID_AISKUE_PARNUMBER m_idAISKUEParNumber;
         
         protected enum StatesMachine
         {
@@ -154,8 +154,8 @@ namespace StatisticCommon
             RetroMins_Fact, //указанные сутки/час, АИСКУЭ
             RetroMin_TM_Gen, //указанные сутки/час, СОТИАССО - панель оперативной информации
             RetroMins_TM, //указанные сутки/час, СОТИАССО
-            AdminDates, //Получение списка сохранённых часовых значений
-            PPBRDates,
+            //AdminDates, //Получение списка сохранённых часовых значений
+            //PPBRDates,
             AdminValues, //Получение административных/ПБР значений
             PPBRValues,
         }
@@ -427,8 +427,8 @@ namespace StatisticCommon
         //public TecView(bool[] arMarkSavePPBRValues, TYPE_PANEL type, int indx_tec, int indx_comp)
         public TecView(/*TYPE_PANEL type, */int indx_tec, int indx_comp)
             : base()
-        {            
-            //m_typePanel = type;
+        {
+            m_idAISKUEParNumber = ID_AISKUE_PARNUMBER.FACT_03;
 
             m_indx_TEC = indx_tec;
             indxTECComponents = indx_comp;
@@ -442,8 +442,24 @@ namespace StatisticCommon
         }        
 
         public TECComponent TECComponentCurrent { get { return allTECComponents[indxTECComponents]; } }
-
-        public double GetSummaFactValues()
+        /// <summary>
+        /// Возвратить признак наличия значений за указанный час
+        /// </summary>
+        /// <param name="hour">Номер часа</param>
+        /// <returns>Признак наличия значений</returns>
+        public bool IsHourValues(int hour)
+        {
+            return (!(m_valuesHours == null))
+                && (hour < m_valuesHours.Length)
+                && (!(m_valuesHours[hour] == null));
+        }
+        /// <summary>
+        /// Расчитать суммарное значение мощности объекта отображения
+        ///  (за указанный/крайний час и крайний интервал интегрирования)
+        /// </summary>
+        /// <param name="hour">Номер часа</param>
+        /// <returns>Суммарное значение</returns>
+        public virtual double GetSummaFactValues(int hour = -1) //lastHour
         {
             double dblRes = 0F;
 
@@ -665,34 +681,22 @@ namespace StatisticCommon
         }
 
         protected override void GetPPBRDatesRequest(DateTime date)
-        {
-            if (m_curDate.Date > date.Date)
-            {
-                date = m_curDate.Date;
-            }
-            else
-                ;
-
-            if (IsCanUseTECComponents() == true)
-                //Request(m_indxDbInterfaceCommon, m_listenerIdCommon, allTECComponents[indxTECComponents].tec.GetPBRDatesQuery(date));
-                Request (m_dictIdListeners[m_tec.m_id][(int)CONN_SETT_TYPE.ADMIN], m_tec.GetPBRDatesQuery(date/*, s_typeFields*/, allTECComponents[indxTECComponents]));
-            else
-                ;
+        {//!!! не используется            
         }
 
         protected override void GetPPBRValuesRequest(StatisticCommon.TEC t, TECComponent comp, DateTime date/*, AdminTS.TYPE_FIELDS mode*/)
-        {
+        {//!!! не используется
         }
 
         protected override int GetPPBRDatesResponse(System.Data.DataTable table, DateTime date)
-        {
+        {//!!! не используется
             int iRes = 0;
 
             return iRes;
         }
 
         protected override int GetPPBRValuesResponse(System.Data.DataTable table, DateTime date)
-        {
+        {//!!! не используется
             int iRes = 0;
 
             return iRes;
@@ -723,7 +727,7 @@ namespace StatisticCommon
             string kks_name = string.Empty;
             float value = -1;
             DateTime dtLastChangedAt = m_dtLastChangedAt_TM_Gen
-                , dtServer = serverTime.Add(-HDateTime.GetUTCOffsetOfMoscowTimeZone());
+                , dtServer = serverTime.Add(-HDateTime.TS_MSK_OFFSET_OF_UTCTIMEZONE);
             TG tgTmp;
 
             foreach (TECComponent g in m_localTECComponents)
@@ -921,9 +925,9 @@ namespace StatisticCommon
                 case (int)StatesMachine.RetroMins_Fact:
                 case (int)StatesMachine.RetroMin_TM_Gen:
                 case (int)StatesMachine.RetroMins_TM:
-                case (int)StatesMachine.PPBRDates:
+                //case (int)StatesMachine.PPBRDates:
                 case (int)StatesMachine.PPBRValues:
-                case (int)StatesMachine.AdminDates:
+                //case (int)StatesMachine.AdminDates:
                 case (int)StatesMachine.AdminValues:
                     //bRes = Response(m_IdListenerCurrent, out error, out table);
                     iRes = response(out error, out table);
@@ -1058,26 +1062,26 @@ namespace StatisticCommon
                     reason += getNameInterval () + @"-минутных значений";
                     waiting = @"Переход в ожидание";
                     break;
-                case (int)StatesMachine.PPBRDates:
-                    if (request == 0)
-                    {
-                        reason = @"разбора";
-                    }
-                    else
-                    {
-                        reason = @"получения";
-                    }
+                //case (int)StatesMachine.PPBRDates:
+                //    if (request == 0)
+                //    {
+                //        reason = @"разбора";
+                //    }
+                //    else
+                //    {
+                //        reason = @"получения";
+                //    }
 
-                    reason += @" сохранённых часовых значений (PPBR)";
-                    waiting = @"Переход в ожидание";
-                    break;
+                //    reason += @" сохранённых часовых значений (PPBR)";
+                //    waiting = @"Переход в ожидание";
+                //    break;
                 case (int)StatesMachine.PPBRValues:
                     reason = @"данных плана";
                     //AbortThreadRDGValues(INDEX_WAITHANDLE_REASON.ERROR);
                     reasonRes = INDEX_WAITHANDLE_REASON.ERROR;
                     break;
-                case (int)StatesMachine.AdminDates:
-                    break;
+                //case (int)StatesMachine.AdminDates:
+                //    break;
                 case (int)StatesMachine.AdminValues:
                     reason = @"административных значений";
                     //AbortThreadRDGValues(INDEX_WAITHANDLE_REASON.ERROR);
@@ -1187,7 +1191,7 @@ namespace StatisticCommon
                     break;
                 case (int)StatesMachine.Hours_Fact:
                     msg = @"получасовых значений";
-                    GetHoursFactRequest(m_curDate.Date);
+                    GetHoursFactRequest(m_curDate.Date.Add(-m_tsOffsetToMoscow));
                     break;
                 case (int)StatesMachine.Hour_TM:
                     msg = @"усредн. за час телемеханики";
@@ -1247,16 +1251,16 @@ namespace StatisticCommon
                     msg = getNameInterval () + @"-минутных значений";
                     GetMinsTMRequest(lastHour);
                     break;
-                case (int)StatesMachine.PPBRDates:
-                    msg = @"списка сохранённых часовых значений";
-                    GetPPBRDatesRequest(m_curDate);
-                    break;
+                //case (int)StatesMachine.PPBRDates:
+                //    msg = @"списка сохранённых часовых значений";
+                //    GetPPBRDatesRequest(m_curDate);
+                //    break;
                 case (int)StatesMachine.PPBRValues:
                     msg = @"данных плана";
                     GetPPBRValuesRequest();
                     break;
-                case (int)StatesMachine.AdminDates:
-                    break;
+                //case (int)StatesMachine.AdminDates:
+                //    break;
                 case (int)StatesMachine.AdminValues:
                     msg = @"административных данных";
                     GetAdminValuesRequest(/*s_typeFields*/);
@@ -1441,15 +1445,15 @@ namespace StatisticCommon
                     //}
                     //else ;
                     break;
-                case (int)StatesMachine.PPBRDates:
-                    ClearPPBRDates();
-                    iRes = GetPPBRDatesResponse(table as System.Data.DataTable, m_curDate);
-                    if (iRes == 0)
-                    {
-                    }
-                    else
-                        ;
-                    break;
+                //case (int)StatesMachine.PPBRDates:
+                //    ClearPPBRDates();
+                //    iRes = GetPPBRDatesResponse(table as System.Data.DataTable, m_curDate);
+                //    if (iRes == 0)
+                //    {
+                //    }
+                //    else
+                //        ;
+                //    break;
                 case (int)StatesMachine.PPBRValues:
                     ClearPBRValues();
                     iRes = GetPPBRValuesResponse(table as System.Data.DataTable);
@@ -1459,8 +1463,8 @@ namespace StatisticCommon
                     else
                         ;
                     break;
-                case (int)StatesMachine.AdminDates:
-                    break;
+                //case (int)StatesMachine.AdminDates:
+                //    break;
                 case (int)StatesMachine.AdminValues:
                     ClearAdminValues();
                     iRes = GetAdminValuesResponse(table as System.Data.DataTable);
@@ -3138,7 +3142,7 @@ namespace StatisticCommon
             DateTime dt , dtNeeded, dtServer;
             dt = dtNeeded = DateTime.Now;
 
-            dtServer = serverTime;
+            dtServer = serverTime.Add(m_tsOffsetToMoscow);
             if ((currHour == true) && (dtServer.Minute < 2))
                 dtServer = dtServer.AddMinutes(-1 * (dtServer.Minute + 1));
             else
@@ -3217,6 +3221,7 @@ namespace StatisticCommon
                             return -1;
                         else
                             ;
+                        dt = dt.Add(m_tsOffsetToMoscow);
 
                         if (int.TryParse(r[@"SEASON"].ToString(), out season) == false)
                             return -1;
@@ -3378,7 +3383,7 @@ namespace StatisticCommon
 
                 if (j < 2)
                     //Нет данных за один из получасов
-                    if (! (hour > serverTime.Hour))
+                    if (! (hour > serverTime.Add(m_tsOffsetToMoscow).Hour))
                         break;
                     else
                         //hour > m_curDate.Hour
@@ -5227,7 +5232,13 @@ namespace StatisticCommon
             //m_tec.Request(CONN_SETT_TYPE.DATA_ASKUE, m_tec.minsRequest(selectedTime, hour, m_tec.GetSensorsString(indx_TEC, CONN_SETT_TYPE.DATA_ASKUE, HDateTime.INTERVAL.MINUTES)));
             //m_tec.Request(CONN_SETT_TYPE.DATA_ASKUE, m_tec.minsRequest(selectedTime, hour, m_tec.GetSensorsString(m_indx_TECComponent, CONN_SETT_TYPE.DATA_ASKUE, HDateTime.INTERVAL.MINUTES)));
             //26.10.2014 г.
-            Request(m_dictIdListeners[m_tec.m_id][(int)CONN_SETT_TYPE.DATA_AISKUE], m_tec.minsFactRequest(m_curDate, hour - GetSeasonHourOffset(hour), m_tec.GetSensorsString(indxTECComponents, CONN_SETT_TYPE.DATA_AISKUE, HDateTime.INTERVAL.MINUTES)));
+            Request(m_dictIdListeners[m_tec.m_id][(int)CONN_SETT_TYPE.DATA_AISKUE]
+                , m_tec.minsFactRequest(m_curDate.Date.Add(-m_tsOffsetToMoscow)
+                    , hour - GetSeasonHourOffset(hour)
+                    , m_tec.GetSensorsString(indxTECComponents, CONN_SETT_TYPE.DATA_AISKUE, HDateTime.INTERVAL.MINUTES)
+                    , m_idAISKUEParNumber
+                )
+            );
         }
 
         private void GetMinTMRequest(DateTime date, int lh, int lm)
@@ -5337,7 +5348,7 @@ namespace StatisticCommon
             //m_admin.Request(tec.m_arIdListeners[(int)CONN_SETT_TYPE.PBR], tec.GetPBRValueQuery(indx_TECComponent, m_pnlQuickData.dtprDate.Value.Date, m_admin.m_typeFields));
             //m_tec.Request(CONN_SETT_TYPE.PBR, m_tec.GetPBRValueQuery(m_indx_TECComponent, m_pnlQuickData.dtprDate.Value.Date, s_typeFields));
             //m_tec.Request(CONN_SETT_TYPE.PBR, m_tec.GetPBRValueQuery(m_indx_TECComponent, selectedTime.Date, s_typeFields));
-            Request(m_dictIdListeners[m_tec.m_id][(int)CONN_SETT_TYPE.PBR], m_tec.GetPBRValueQuery(indxTECComponents, m_curDate.Date/*, s_typeFields*/));
+            Request(m_dictIdListeners[m_tec.m_id][(int)CONN_SETT_TYPE.PBR], m_tec.GetPBRValueQuery(indxTECComponents, m_curDate.Date.Add(-m_tsOffsetToMoscow)/*, s_typeFields*/));
         }
 
         private void GetAdminValuesRequest(/*AdminTS.TYPE_FIELDS mode*/)
@@ -5345,7 +5356,7 @@ namespace StatisticCommon
             //m_admin.Request(tec.m_arIdListeners[(int)CONN_SETT_TYPE.ADMIN], tec.GetAdminValueQuery(indx_TECComponent, m_pnlQuickData.dtprDate.Value.Date/*, mode*/));
             //m_tec.Request(CONN_SETT_TYPE.ADMIN, m_tec.GetAdminValueQuery(indx_TECComponent, m_pnlQuickData.dtprDate.Value.Date/*, mode*/));
             //m_tec.Request(CONN_SETT_TYPE.ADMIN, m_tec.GetAdminValueQuery(m_indx_TECComponent, selectedTime.Date/*, mode*/));
-            Request(m_dictIdListeners[m_tec.m_id][(int)CONN_SETT_TYPE.ADMIN], m_tec.GetAdminValueQuery(indxTECComponents, m_curDate.Date/*, mode*/));
+            Request(m_dictIdListeners[m_tec.m_id][(int)CONN_SETT_TYPE.ADMIN], m_tec.GetAdminValueQuery(indxTECComponents, m_curDate.Date.Add(-m_tsOffsetToMoscow)/*, mode*/));
         }
 
         protected override void InitializeSyncState()

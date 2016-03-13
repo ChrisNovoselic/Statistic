@@ -277,7 +277,7 @@ namespace Statistic
         /// Установка значения даты/времени в элементе управления 'календарь' и
         /// выполнение функции, связанной с изменением значения даты/времени
         /// </summary>
-        /// <param name="dt"></param>
+        /// <param name="dt">Устанавливаемая дата</param>
         private void setDate(DateTime dt)
         {
             mcldrDate.SetDate(dt);

@@ -143,9 +143,9 @@ namespace Statistic
                 , yPos = -1
                 , yMargin = 19;
             // 
-            // rbtnSourceData_ASKUE_PLUS_SOTIASSO
+            // rbtnSourceData_AISKUE_PLUS_SOTIASSO
             // 
-            indx = (int)CONN_SETT_TYPE.ASKUE_PLUS_SOTIASSO; yPos = 16;
+            indx = (int)CONN_SETT_TYPE.AISKUE_PLUS_SOTIASSO; yPos = 16;
             this.m_arRadioButtonSourceData[(int)indx].AutoCheck = false;
             this.m_arRadioButtonSourceData[(int)indx].AutoSize = true;
             this.m_arRadioButtonSourceData[(int)indx].Location = new System.Drawing.Point(6, yPos);
@@ -158,7 +158,7 @@ namespace Statistic
             // 
             // rbtnSourceData_ASKUE
             // 
-            indx = (int)CONN_SETT_TYPE.ASKUE; yPos += yMargin;
+            indx = (int)CONN_SETT_TYPE.AISKUE_3_MIN; yPos += yMargin;
             this.m_arRadioButtonSourceData[(int)indx].AutoCheck = false;
             this.m_arRadioButtonSourceData[(int)indx].AutoSize = true;
             this.m_arRadioButtonSourceData[(int)indx].Checked = true;
