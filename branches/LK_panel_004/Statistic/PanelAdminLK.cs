@@ -260,7 +260,7 @@ namespace Statistic
                 
             }
             m_admin.CopyCurToPrevRDGValues();
-            //((AdminTS_LK)m_admin).m_listPrevRDGValues.Add(m_admin.m_prevRDGValues);
+            ((AdminTS_LK)m_admin).m_listPrevRDGValues.Add(m_admin.m_prevRDGValues);
             ((AdminTS_LK)m_admin).m_semaIndxTECComponents.Release();
         }
 
@@ -270,9 +270,9 @@ namespace Statistic
         public override void ClearTables()
         {
             ((DataGridViewAdminLK)this.dgwAdminTable).ClearTables();//Очистка DataGridView  
-            
-            //if(((AdminTS_LK)m_admin).m_listPrevRDGValues!=null)
-            //    ((AdminTS_LK)m_admin).m_listPrevRDGValues.Clear();//Очистка списка предыдущих значений
+
+            if (((AdminTS_LK)m_admin).m_listPrevRDGValues != null)
+                ((AdminTS_LK)m_admin).m_listPrevRDGValues.Clear();//Очистка списка предыдущих значений
         }
 
         /// <summary>
@@ -483,7 +483,6 @@ namespace Statistic
                 Columns[col].SortMode = System.Windows.Forms.DataGridViewColumnSortMode.NotSortable;
             }
 
-
             dgvCellStyleError = new DataGridViewCellStyle();
             dgvCellStyleError.BackColor = Color.Red;
 
@@ -504,49 +503,49 @@ namespace Statistic
         /// <param name="e"></param>
         public void DataGridViewAdminLK_CellValueChanged(object sender, DataGridViewCellEventArgs e)
         {
-                if ((m_listIds.Count == Columns.Count - 4) && (Columns[e.ColumnIndex].ReadOnly == false) && (e.ColumnIndex > 0) && (e.ColumnIndex < Columns.Count - 3))
+            if ((m_listIds.Count == Columns.Count - 4) && (Columns[e.ColumnIndex].ReadOnly == false) && (e.ColumnIndex > 0) && (e.ColumnIndex < Columns.Count - 3))
+            {
+                int id_gtp = m_listIds[e.ColumnIndex - 3][(int)ID_TYPE.ID_OWNER],
+                    col_gtp = -1;
+                List<int> list_col_tg = new List<int>();
+                foreach (int[] ids in m_listIds)
                 {
-                    int id_gtp = m_listIds[e.ColumnIndex - 3][(int)ID_TYPE.ID_OWNER],
-                        col_gtp = -1;
-                    List<int> list_col_tg = new List<int>();
-                    foreach (int[] ids in m_listIds)
-                    {
-                        //Поиск номера столбца ГТП (только ОДИН раз)
-                        if ((col_gtp < 0) && (id_gtp == ids[(int)ID_TYPE.ID]) && (ids[(int)ID_TYPE.ID_OWNER] < 0))
-                            col_gtp = m_listIds.IndexOf(ids) + 3; // '+ 1' за счт столбца "Дата, время"
-                        else
-                            ;
+                    //Поиск номера столбца ГТП (только ОДИН раз)
+                    if ((col_gtp < 0) && (id_gtp == ids[(int)ID_TYPE.ID]) && (ids[(int)ID_TYPE.ID_OWNER] < 0))
+                        col_gtp = m_listIds.IndexOf(ids) + 3; // '+ 1' за счт столбца "Дата, время"
+                    else
+                        ;
 
-                        //Все столбцы для ГТП с id_gtp == ...
-                        if (id_gtp == ids[(int)ID_TYPE.ID_OWNER])
-                            list_col_tg.Add(m_listIds.IndexOf(ids) + 3); // '+ 1' за счт столбца "Дата, время"
-                        else
-                            ;
-                    }
-
-                    if (list_col_tg.Count > 0)
-                    {
-                        double plan_gtp = 0.0;
-                        foreach (int col in list_col_tg)
-                        {
-                            plan_gtp += Convert.ToDouble(Rows[e.RowIndex].Cells[col].Value);
-                        }
-
-                        if (Convert.ToDouble(Rows[e.RowIndex].Cells[col_gtp].Value).Equals(plan_gtp) == false)
-                        {
-                            Rows[e.RowIndex].Cells[col_gtp].Style = dgvCellStyleError;
-                        }
-                        else
-                            if (Rows[e.RowIndex].Cells[col_gtp].Style.BackColor == dgvCellStyleError.BackColor)
-                                Rows[e.RowIndex].Cells[col_gtp].Style = dgvCellStyleGTP;
-                            else
-                                ;
-                    }
+                    //Все столбцы для ГТП с id_gtp == ...
+                    if (id_gtp == ids[(int)ID_TYPE.ID_OWNER])
+                        list_col_tg.Add(m_listIds.IndexOf(ids) + 3); // '+ 1' за счт столбца "Дата, время"
                     else
                         ;
                 }
+
+                if (list_col_tg.Count > 0)
+                {
+                    double plan_gtp = 0.0;
+                    foreach (int col in list_col_tg)
+                    {
+                        plan_gtp += Convert.ToDouble(Rows[e.RowIndex].Cells[col].Value);
+                    }
+
+                    if (Convert.ToDouble(Rows[e.RowIndex].Cells[col_gtp].Value).Equals(plan_gtp) == false)
+                    {
+                        Rows[e.RowIndex].Cells[col_gtp].Style = dgvCellStyleError;
+                    }
+                    else
+                        if (Rows[e.RowIndex].Cells[col_gtp].Style.BackColor == dgvCellStyleError.BackColor)
+                            Rows[e.RowIndex].Cells[col_gtp].Style = dgvCellStyleGTP;
+                        else
+                            ;
+                }
                 else
                     ;
+            }
+            else
+                ;
         }
         
         /// <summary>
