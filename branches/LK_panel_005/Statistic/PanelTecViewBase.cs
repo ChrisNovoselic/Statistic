@@ -41,8 +41,13 @@ namespace Statistic
                 SOTIASSO_1_MIN
                     , COUNT
             };
-
-            // контекстные меню
+            /// <summary>
+            /// Делегат - изменение способа масштабированиягстограммы
+            /// </summary>
+            public DelegateFunc delegateSetScale;
+            /// <summary>
+            /// Класс для контекстного меню
+            /// </summary>
             protected class HContextMenuStripZedGraph : System.Windows.Forms.ContextMenuStrip
             {
                 public HContextMenuStripZedGraph()
@@ -163,7 +168,9 @@ namespace Statistic
             }
 
             private object m_lockValue;
-
+            /// <summary>
+            /// Текст, поясняющий тип отображаемых данных
+            /// </summary>
             public string SourceDataText
             {
                 get
@@ -177,7 +184,11 @@ namespace Statistic
                     return string.Empty;
                 }
             }
-
+            /// <summary>
+            /// Конструктор - основной (с параметрами)
+            /// </summary>
+            /// <param name="lockVal">Объект синхронизации</param>
+            /// <param name="fSetScale">Делегат изменения настроек масштабирования</param>
             public HZedGraphControl(object lockVal, DelegateFunc fSetScale)
             {
                 this.ContextMenuStrip = new HContextMenuStripZedGraph();
@@ -220,7 +231,9 @@ namespace Statistic
                 this.PointValueEvent += new ZedGraph.ZedGraphControl.PointValueHandler(this.OnPointValueEvent);
                 this.DoubleClickEvent += new ZedGraph.ZedGraphControl.ZedMouseEventHandler(this.OnDoubleClickEvent);
             }
-
+            /// <summary>
+            /// Инициализация обработчиков собыьтй при выборе пунктов меню (стандартных)
+            /// </summary>
             private void InitializeEventHandler()
             {
                 ((HContextMenuStripZedGraph)this.ContextMenuStrip).Items[(int)INDEX_CONTEXTMENU_ITEM.SHOW_VALUES].Click += new System.EventHandler(показыватьЗначенияToolStripMenuItem_Click);
@@ -229,7 +242,11 @@ namespace Statistic
                 ((HContextMenuStripZedGraph)this.ContextMenuStrip).Items[(int)INDEX_CONTEXTMENU_ITEM.SETTINGS_PRINT].Click += new System.EventHandler(параметрыПечатиToolStripMenuItem_Click);
                 ((HContextMenuStripZedGraph)this.ContextMenuStrip).Items[(int)INDEX_CONTEXTMENU_ITEM.PRINT].Click += new System.EventHandler(распечататьToolStripMenuItem_Click);
             }
-
+            /// <summary>
+            /// Инициализация обработчиков собыьтй при выборе пунктов меню (экспорт в MS_Excel, изменение типа отображаемых данных)
+            /// </summary>
+            /// <param name="fToExcel">Делегат обработки события - экспорт в MS_Excel</param>
+            /// <param name="fSourceData">Делегат обработки события - изменение типа отображаемых данных</param>
             public void InitializeEventHandler(EventHandler fToExcel, EventHandler fSourceData)
             {
                 ((HContextMenuStripZedGraph)this.ContextMenuStrip).Items[(int)INDEX_CONTEXTMENU_ITEM.TO_EXCEL].Click += new System.EventHandler(fToExcel);
@@ -286,34 +303,34 @@ namespace Statistic
 
                 return true;
             }
-            /// <summary>
-            /// Делегат - изменение способа масштабированиягстограммы
-            /// </summary>
-            public DelegateFunc delegateSetScale;
-        }
 
-        protected class HZedGraphControlMins : HZedGraphControl
-        {
-            public HZedGraphControlMins(object obj) : base(obj, FormMain.formGraphicsSettings.SetScale) { InitializeComponent(); }
+            public abstract void Draw (TecView.valuesTEC []values, params object []pars);
 
-            private void InitializeComponent()
+            //protected void getColorZedGraph(HDateTime.INTERVAL id_time, out Color colChart, out Color colP)
+            //{
+            //    getColorZedGraph(m_tecView.m_arTypeSourceData[(int)id_time], out colChart, out colP);
+            //}
+
+            protected void getColorZedGraph(CONN_SETT_TYPE typeConnSett, out Color colChart, out Color colP)
             {
-                this.ContextMenuStrip.Items[(int)INDEX_CONTEXTMENU_ITEM.AISKUE].Text = @"АИСКУЭ";
+                //Значения по умолчанию
+                colChart = FormMain.formGraphicsSettings.COLOR(FormGraphicsSettings.INDEX_COLOR.BG_ASKUE);
+                colP = FormMain.formGraphicsSettings.COLOR(FormGraphicsSettings.INDEX_COLOR.ASKUE);
 
-                this.GraphPane.XAxis.ScaleFormatEvent += new Axis.ScaleFormatHandler(XScaleFormatEvent);
-            }
-
-            public string XScaleFormatEvent(GraphPane pane, Axis axis, double val, int index)
-            {
-                int diskretnost = -1;
-                if (pane.CurveList.Count > 0)
-                    diskretnost = 60 / pane.CurveList[0].Points.Count;
+                if ((typeConnSett == CONN_SETT_TYPE.DATA_AISKUE)
+                    || (typeConnSett == CONN_SETT_TYPE.DATA_AISKUE_PLUS_SOTIASSO))
+                    ; // ...по умолчанию 
                 else
-                    diskretnost = 60 / 20;
-
-                return ((val) * diskretnost).ToString();
+                    if ((typeConnSett == CONN_SETT_TYPE.DATA_SOTIASSO_3_MIN)
+                        || (typeConnSett == CONN_SETT_TYPE.DATA_SOTIASSO_1_MIN))
+                    {
+                        colChart = FormMain.formGraphicsSettings.COLOR(FormGraphicsSettings.INDEX_COLOR.BG_SOTIASSO);
+                        colP = FormMain.formGraphicsSettings.COLOR(FormGraphicsSettings.INDEX_COLOR.SOTIASSO);
+                    }
+                    else
+                        ;
             }
-        }
+        }        
 
         protected int[] m_arPercRows = null; // [0] - для подписи, [1] - для таблиц/гистограмм, остальное - панель оперативных данных
         
@@ -375,7 +392,7 @@ namespace Statistic
             else
                 ;
 
-            this.m_ZedGraphMins = new HZedGraphControlMins(m_tecView.m_lockValue);
+            createZedGraphControlMins(m_tecView.m_lockValue);
             createZedGraphControlHours(m_tecView.m_lockValue);
 
             this.stctrViewPanel1 = new System.Windows.Forms.SplitContainer();
@@ -446,6 +463,7 @@ namespace Statistic
         protected abstract void createDataGridViewMins();
         
         protected abstract void createZedGraphControlHours(object objLock);
+        protected abstract void createZedGraphControlMins(object objLock);
 
         protected abstract void createPanelQuickData();
 
@@ -1068,773 +1086,46 @@ namespace Statistic
 
         private void DrawGraphMins(int hour)
         {
-            if (!(hour < m_tecView.m_valuesHours.Length))
-                hour = m_tecView.m_valuesHours.Length - 1;
+            if (!(m_ZedGraphMins == null))
+            {
+                if (!(hour < m_tecView.m_valuesHours.Length))
+                    hour = m_tecView.m_valuesHours.Length - 1;
+                else
+                    ;
+
+                m_ZedGraphMins.Draw(m_tecView.m_valuesMins
+                    , new object[] {
+                        m_tecView.currHour
+                        , m_tecView.m_arTypeSourceData[(int)HDateTime.INTERVAL.MINUTES]
+                        , m_tecView.lastMin
+                        , m_tecView.m_curDate.Date.CompareTo(HAdmin.SeasonDateTime.Date) == 0
+                        , (IntDelegateIntFunc)m_tecView.GetSeasonHourOffset
+                        , hour
+                        , m_tecView.adminValuesReceived
+                        , m_tecView.recomendation
+                    }
+                );
+            }
             else
                 ;
-
-            GraphPane pane = m_ZedGraphMins.GraphPane;
-
-            pane.CurveList.Clear();
-
-            int itemscount = m_tecView.m_valuesMins.Length - 1
-                , diskretnost = 60 / itemscount;
-
-            string[] names = new string[itemscount];
-
-            double[] valuesRecommend = new double[itemscount];
-
-            double[] valuesUDGe = new double[itemscount];
-
-            double[] valuesFact = new double[itemscount];
-
-            for (int i = 0; i < itemscount; i++)
-            {
-                valuesFact[i] = m_tecView.m_valuesMins[i + 1].valuesFact;
-                valuesUDGe[i] = m_tecView.m_valuesMins[i + 1].valuesUDGe;
-            }
-
-            //double[] valuesPDiviation = new double[itemscount];
-
-            //double[] valuesODiviation = new double[itemscount];
-
-            double minimum = double.MaxValue, minimum_scale;
-            double maximum = 0, maximum_scale;
-            bool noValues = true;
-            int iName = -1;
-
-            for (int i = 0; i < itemscount; i++)
-            {
-                iName = ((i + 1) * diskretnost);
-                if (iName % 3 == 0)
-                    names[i] = iName.ToString();
-                else
-                    names[i] = string.Empty;
-                //valuesPDiviation[i] = m_valuesMins.valuesUDGe[i] + m_valuesMins.valuesDiviation[i];
-                //valuesODiviation[i] = m_valuesMins.valuesUDGe[i] - m_valuesMins.valuesDiviation[i];
-
-                if (m_tecView.currHour == true)
-                {
-                    if ((i < (m_tecView.lastMin - 1)) || (!(m_tecView.adminValuesReceived == true)))
-                        valuesRecommend[i] = 0;
-                    else
-                        valuesRecommend[i] = m_tecView.recomendation;
-                }
-                else
-                    ;
-
-                //if (minimum > valuesPDiviation[i] && valuesPDiviation[i] != 0)
-                //{
-                //    minimum = valuesPDiviation[i];
-                //    noValues = false;
-                //}
-                //else
-                //    ;
-
-                //if (minimum > valuesODiviation[i] && valuesODiviation[i] != 0)
-                //{
-                //    minimum = valuesODiviation[i];
-                //    noValues = false;
-                //}
-                //else
-                //    ;
-
-                if (m_tecView.currHour == true)
-                {
-                    if (minimum > valuesRecommend[i] && valuesRecommend[i] != 0)
-                    {
-                        minimum = valuesRecommend[i];
-                        noValues = false;
-                    }
-                }
-                else
-                    ;
-
-                if (minimum > valuesUDGe[i] && valuesUDGe[i] != 0)
-                {
-                    minimum = valuesUDGe[i];
-                    noValues = false;
-                }
-                else
-                    ;
-
-                if (minimum > valuesFact[i] && valuesFact[i] != 0)
-                {
-                    minimum = valuesFact[i];
-                    noValues = false;
-                }
-                else
-                    ;
-
-                //if (maximum < valuesPDiviation[i])
-                //    maximum = valuesPDiviation[i];
-                //else
-                //    ;
-
-                //if (maximum < valuesODiviation[i])
-                //    maximum = valuesODiviation[i];
-                //else
-                //    ;
-
-                if (m_tecView.currHour == true)
-                {
-                    if (maximum < valuesRecommend[i])
-                        maximum = valuesRecommend[i];
-                    else
-                        ;
-                }
-                else
-                    ;
-
-                if (maximum < valuesUDGe[i])
-                    maximum = valuesUDGe[i];
-                else
-                    ;
-
-                if (maximum < valuesFact[i])
-                    maximum = valuesFact[i];
-                else
-                    ;
-            }
-
-            if (!(FormMain.formGraphicsSettings.scale == true))
-                minimum = 0;
-            else
-                    ;
-
-            if (noValues)
-            {
-                minimum_scale = 0;
-                maximum_scale = 10;
-            }
-            else
-            {
-                if (minimum != maximum)
-                {
-                    minimum_scale = minimum - (maximum - minimum) * 0.2;
-                    if (minimum_scale < 0)
-                        minimum_scale = 0;
-                    else
-                        ;
-                    maximum_scale = maximum + (maximum - minimum) * 0.2;
-                }
-                else
-                {
-                    minimum_scale = minimum - minimum * 0.2;
-                    maximum_scale = maximum + maximum * 0.2;
-                }
-            }
-
-            Color colorChart = Color.Empty
-                , colorPCurve = Color.Empty;
-            getColorZEDGraph(HDateTime.INTERVAL.MINUTES, out colorChart, out colorPCurve);
-            pane.Chart.Fill = new Fill(colorChart);
-
-            LineItem curve2 = pane.AddCurve("УДГэ", null, valuesUDGe, FormMain.formGraphicsSettings.COLOR(FormGraphicsSettings.INDEX_COLOR.UDG));
-            //LineItem curve4 = pane.AddCurve("", null, valuesODiviation, graphSettings.divColor);
-            //LineItem curve3 = pane.AddCurve("Возможное отклонение", null, valuesPDiviation, graphSettings.divColor);
-
-            switch (FormMain.formGraphicsSettings.m_graphTypes)
-            {
-                case FormGraphicsSettings.GraphTypes.Bar:
-                    if ((! (m_tecView.m_arTypeSourceData[(int)HDateTime.INTERVAL.MINUTES] == CONN_SETT_TYPE.DATA_AISKUE_PLUS_SOTIASSO))
-                        || (m_tecView.currHour == false))
-                    {
-                        //BarItem
-                        pane.AddBar("Мощность", null, valuesFact, colorPCurve);
-                        //BarItem
-                        pane.AddBar("Рекомендуемая мощность", null, valuesRecommend, FormMain.formGraphicsSettings.COLOR(FormGraphicsSettings.INDEX_COLOR.REC));
-                    }
-                    else
-                    {
-                        bool order = false; //Порядок "накладывания" значений...
-                        double[] valuesSOTIASSO = null;
-                        switch (m_tecView.lastMin)
-                        {
-                            case 0:
-                                valuesSOTIASSO = new double[valuesFact.Length];
-                                valuesSOTIASSO[m_tecView.lastMin] = valuesFact[m_tecView.lastMin];
-                                valuesFact[m_tecView.lastMin] = 0F;
-                                //Порядок "накладывания" значений
-                                if (valuesRecommend[m_tecView.lastMin] > valuesSOTIASSO[m_tecView.lastMin])
-                                    order = true;
-                                else
-                                    ;
-                                break;
-                            case 21:
-                                //valuesFact - заполнен,
-                                //valuesRecommend = 0
-                                break;
-                            default:
-                                try
-                                {
-                                    valuesSOTIASSO = new double[valuesFact.Length];
-                                    valuesSOTIASSO[m_tecView.lastMin - 1] = valuesFact[m_tecView.lastMin - 1];
-                                    valuesFact[m_tecView.lastMin - 1] = 0F;
-                                    //Порядок "накладывания" значений
-                                    if (valuesRecommend[m_tecView.lastMin - 1] > valuesSOTIASSO[m_tecView.lastMin - 1])
-                                        order = true;
-                                    else
-                                        ;
-                                }
-                                catch (Exception e) {
-                                    Logging.Logg().Exception(e, @"PanelTecViewBase::DrawGraphMins (hour=" + hour + @") - ... m_tecView.lastMin(>0)=" + m_tecView.lastMin, Logging.INDEX_MESSAGE.NOT_SET);
-                                }
-                                break;
-                        }
-
-                        //BarItem
-                        pane.AddBar("Мощность(АИСКУЭ)", null, valuesFact, colorPCurve);
-                        if (order == true)
-                        {
-                            //BarItem
-                            pane.AddBar("Мощность(СОТИАССО)", null, valuesSOTIASSO, FormMain.formGraphicsSettings.COLOR(FormGraphicsSettings.INDEX_COLOR.SOTIASSO));
-                            //BarItem
-                            pane.AddBar("Рекомендуемая мощность", null, valuesRecommend, FormMain.formGraphicsSettings.COLOR(FormGraphicsSettings.INDEX_COLOR.REC));
-                        }
-                        else
-                        {
-                            //BarItem
-                            pane.AddBar("Рекомендуемая мощность", null, valuesRecommend, FormMain.formGraphicsSettings.COLOR(FormGraphicsSettings.INDEX_COLOR.REC));
-                            //BarItem                        
-                            pane.AddBar("Мощность(СОТИАССО)", null, valuesSOTIASSO, FormMain.formGraphicsSettings.COLOR(FormGraphicsSettings.INDEX_COLOR.SOTIASSO));                        
-                        }
-                    }
-                    break;
-                case FormGraphicsSettings.GraphTypes.Linear:
-                    PointPairList listValuesSOTIASSO = null
-                        , listValuesAISKUE = null
-                        , listValuesRec = null;
-                    if ((!(m_tecView.m_arTypeSourceData[(int)HDateTime.INTERVAL.MINUTES] == CONN_SETT_TYPE.DATA_AISKUE_PLUS_SOTIASSO))
-                        || (m_tecView.currHour == false))
-                    {
-                        switch (m_tecView.lastMin)
-                        {
-                            case 0:
-                                //LineItem
-                                listValuesRec = new PointPairList();
-                                if ((m_tecView.adminValuesReceived == true) && (m_tecView.currHour == true))
-                                    for (int i = 0; i < itemscount; i++)
-                                        listValuesRec.Add((double)(i + 1), valuesRecommend[i]);
-                                else
-                                    ;
-                                break;
-                            default:
-                                listValuesAISKUE = new PointPairList();
-                                for (int i = 0; i < m_tecView.lastMin - 1; i++)
-                                    listValuesAISKUE.Add((double)(i + 1), valuesFact[i]);
-
-                                listValuesRec = new PointPairList();
-                                if ((m_tecView.adminValuesReceived == true) && (m_tecView.currHour == true))
-                                    for (int i = m_tecView.lastMin - 1; i < itemscount; i++)
-                                        listValuesRec.Add((double)(i + 1), valuesRecommend[i]);
-                                else
-                                    ;
-                                break;
-                        }
-
-                        //LineItem
-                        pane.AddCurve("Мощность", listValuesAISKUE, colorPCurve);
-                        //LineItem
-                        pane.AddCurve("Рекомендуемая мощность", listValuesRec, FormMain.formGraphicsSettings.COLOR(FormGraphicsSettings.INDEX_COLOR.REC));
-                    }
-                    else
-                    {
-                        switch (m_tecView.lastMin)
-                        {
-                            case 0:
-                                if (valuesFact[m_tecView.lastMin] > 0)
-                                {
-                                    listValuesSOTIASSO = new PointPairList();
-                                    listValuesSOTIASSO.Add(1F, valuesFact[m_tecView.lastMin]);
-                                    if ((m_tecView.adminValuesReceived == true) && (m_tecView.currHour == true))
-                                        for (int i = 1; i < itemscount; i++)
-                                            listValuesRec.Add((double)(i + 1), valuesRecommend[i]);
-                                    else
-                                        ;
-                                }
-                                else
-                                    ;
-                                break;
-                            default:
-                                listValuesAISKUE = new PointPairList();
-                                for (int i = 0; i < m_tecView.lastMin - 1; i++)
-                                    listValuesAISKUE.Add((double)(i + 1), valuesFact[i]);
-                                if (valuesFact[m_tecView.lastMin - 1] > 0)
-                                {
-                                    listValuesSOTIASSO = new PointPairList();
-                                    listValuesSOTIASSO.Add((double)m_tecView.lastMin - 0, valuesFact[m_tecView.lastMin - 1]);
-
-                                    if ((m_tecView.adminValuesReceived == true) && (m_tecView.currHour == true))
-                                    {
-                                        listValuesRec = new PointPairList();
-                                        for (int i = m_tecView.lastMin - 0; i < itemscount; i++)
-                                            listValuesRec.Add((double)(i + 1), valuesRecommend[i]);
-                                    }
-                                    else
-                                        ;
-                                }
-                                else
-                                {
-                                    if ((m_tecView.adminValuesReceived == true) && (m_tecView.currHour == true))
-                                    {
-                                        listValuesRec = new PointPairList();
-                                        for (int i = m_tecView.lastMin - 1; i < itemscount; i++)
-                                            listValuesRec.Add((double)(i + 1), valuesRecommend[i]);
-                                    }
-                                    else
-                                        ;
-                                }
-                                break;
-                        }
-
-                        pane.AddCurve("Мощность(АИСКУЭ)", listValuesAISKUE, colorPCurve);
-                        pane.AddCurve("Мощность(СОТИАССО)", listValuesSOTIASSO, FormMain.formGraphicsSettings.COLOR(FormGraphicsSettings.INDEX_COLOR.SOTIASSO));
-                        pane.AddCurve("Рекомендуемая мощность", listValuesRec, FormMain.formGraphicsSettings.COLOR(FormGraphicsSettings.INDEX_COLOR.REC));
-                    }
-                    break;
-                default:
-                    break;
-            }
-
-            pane.BarSettings.Type = BarType.Overlay;
-
-            pane.XAxis.Type = AxisType.Linear;
-
-            pane.XAxis.Title.Text = "";
-            pane.YAxis.Title.Text = "";
-
-            //По просьбе НСС-машинистов ДОБАВИТЬ - источник данных 05.12.2014
-            //pane.Title.Text = @" (" + m_ZedGraphMins.SourceDataText + @")";
-            pane.Title.Text = m_ZedGraphMins.SourceDataText;
-            pane.Title.Text += new string(' ', 29);
-
-            if (HAdmin.SeasonDateTime.Date == m_tecView.m_curDate.Date) {
-                int offset = m_tecView.GetSeasonHourOffset(hour + 1);
-                pane.Title.Text += //"Средняя мощность на " + /*System.TimeZone.CurrentTimeZone.ToUniversalTime(*/dtprDate.Value/*)*/.ToShortDateString() + " " + 
-                                    (hour + 1 - offset).ToString();
-                if (HAdmin.SeasonDateTime.Hour == hour)
-                    pane.Title.Text += "*";
-                else
-                    ;
-
-                pane.Title.Text += @" час";
-            }
-            else
-                pane.Title.Text += //"Средняя мощность на " + /*System.TimeZone.CurrentTimeZone.ToUniversalTime(*/dtprDate.Value/*)*/.ToShortDateString() + " " + 
-                                    (hour + 1).ToString() + " час";
-
-            //По просьбе пользователей УБРАТЬ - источник данных
-            //pane.Title.Text += @" (" + m_ZedGraphMins.SourceDataText + @")";
-
-            pane.XAxis.Scale.Min = 0.5;
-            pane.XAxis.Scale.Max = pane.XAxis.Scale.Min + itemscount;
-            pane.XAxis.Scale.MinorStep = 1;
-            pane.XAxis.Scale.MajorStep = itemscount / 20;
-
-            pane.XAxis.Scale.TextLabels = names;
-            pane.XAxis.Scale.IsPreventLabelOverlap = false;
-
-            // Включаем отображение сетки напротив крупных рисок по оси X
-            pane.XAxis.MajorGrid.IsVisible = true;
-            // Задаем вид пунктирной линии для крупных рисок по оси X:
-            // Длина штрихов равна 10 пикселям, ... 
-            pane.XAxis.MajorGrid.DashOn = 10;
-            // затем 5 пикселей - пропуск
-            pane.XAxis.MajorGrid.DashOff = 5;
-            // толщина линий
-            pane.XAxis.MajorGrid.PenWidth = 0.1F;
-            pane.XAxis.MajorGrid.Color = FormMain.formGraphicsSettings.COLOR(FormGraphicsSettings.INDEX_COLOR.GRID);
-
-            // Включаем отображение сетки напротив крупных рисок по оси Y
-            pane.YAxis.MajorGrid.IsVisible = true;
-            // Аналогично задаем вид пунктирной линии для крупных рисок по оси Y
-            pane.YAxis.MajorGrid.DashOn = 10;
-            pane.YAxis.MajorGrid.DashOff = 5;
-            // толщина линий
-            pane.YAxis.MajorGrid.PenWidth = 0.1F;
-            pane.YAxis.MajorGrid.Color = FormMain.formGraphicsSettings.COLOR(FormGraphicsSettings.INDEX_COLOR.GRID);
-
-            // Включаем отображение сетки напротив мелких рисок по оси Y
-            pane.YAxis.MinorGrid.IsVisible = true;
-            // Длина штрихов равна одному пикселю, ... 
-            pane.YAxis.MinorGrid.DashOn = 1;
-            pane.YAxis.MinorGrid.DashOff = 2;
-            // толщина линий
-            pane.YAxis.MinorGrid.PenWidth = 0.1F;
-            pane.YAxis.MinorGrid.Color = FormMain.formGraphicsSettings.COLOR(FormGraphicsSettings.INDEX_COLOR.GRID);
-
-            // Устанавливаем интересующий нас интервал по оси Y
-            pane.YAxis.Scale.Min = minimum_scale;
-            pane.YAxis.Scale.Max = maximum_scale;
-
-            m_ZedGraphMins.AxisChange();
-
-            m_ZedGraphMins.Invalidate();
         }
 
         private void DrawGraphHours()
         {
-            GraphPane pane = m_ZedGraphHours.GraphPane;
-
-            pane.CurveList.Clear();
-
-            int itemscount = m_tecView.m_valuesHours.Length;
-
-            string[] names = new string[itemscount];
-
-            double[] valuesPDiviation = new double[itemscount];
-            double[] valuesODiviation = new double[itemscount];
-            double[] valuesUDGe = new double[itemscount];
-            double[] valuesFact = new double[itemscount];
-
-            double minimum = double.MaxValue, minimum_scale;
-            double maximum = 0, maximum_scale;
-            bool noValues = true;
-            for (int i = 0; i < itemscount; i++)
-            {
-                if (m_tecView.m_curDate.Date.CompareTo (HAdmin.SeasonDateTime.Date) == 0) {
-                    names[i] = (i + 1 - m_tecView.GetSeasonHourOffset(i + 1)).ToString();
-
-                    if ((i + 0) == HAdmin.SeasonDateTime.Hour)
-                        names[i] += @"*";
-                    else
-                        ;
+            m_ZedGraphHours.Draw(m_tecView.m_valuesHours
+                , new object [] {
+                    m_tecView.currHour
+                    , m_tecView.m_arTypeSourceData[(int)HDateTime.INTERVAL.HOURS]
+                    , m_tecView.lastHour
+                    , m_tecView.m_curDate.Date.CompareTo(HAdmin.SeasonDateTime.Date) == 0
+                    , (IntDelegateIntFunc)m_tecView.GetSeasonHourOffset                    
+                    , m_tecView.serverTime                    
+                    , _pnlQuickData.dtprDate.Value.ToShortDateString()
                 }
-                else
-                    names[i] = (i + 1).ToString();
-
-                valuesPDiviation[i] = m_tecView.m_valuesHours[i].valuesUDGe + m_tecView.m_valuesHours[i].valuesDiviation;
-                valuesODiviation[i] = m_tecView.m_valuesHours[i].valuesUDGe - m_tecView.m_valuesHours[i].valuesDiviation;
-                valuesUDGe[i] = m_tecView.m_valuesHours[i].valuesUDGe;
-                valuesFact[i] = m_tecView.m_valuesHours[i].valuesFact;
-
-                if ((minimum > valuesPDiviation[i]) && (! (valuesPDiviation[i] == 0)))
-                {
-                    minimum = valuesPDiviation[i];
-                    noValues = false;
-                }
-
-                if ((minimum > valuesODiviation[i]) && (! (valuesODiviation[i] == 0)))
-                {
-                    minimum = valuesODiviation[i];
-                    noValues = false;
-                }
-
-                if ((minimum > valuesUDGe[i]) && (! (valuesUDGe[i] == 0)))
-                {
-                    minimum = valuesUDGe[i];
-                    noValues = false;
-                }
-
-                if ((minimum > valuesFact[i]) && (! (valuesFact[i] == 0)))
-                {
-                    minimum = valuesFact[i];
-                    noValues = false;
-                }
-
-                if (maximum < valuesPDiviation[i])
-                    maximum = valuesPDiviation[i];
-                else
-                    ;
-
-                if (maximum < valuesODiviation[i])
-                    maximum = valuesODiviation[i];
-                else
-                    ;
-
-                if (maximum < valuesUDGe[i])
-                    maximum = valuesUDGe[i];
-                else
-                    ;
-
-                if (maximum < valuesFact[i])
-                    maximum = valuesFact[i];
-                else
-                    ;
-            }
-
-            if (!(FormMain.formGraphicsSettings.scale == true))
-                minimum = 0;
-            else
-                ;
-
-            if (noValues)
-            {
-                minimum_scale = 0;
-                maximum_scale = 10;
-            }
-            else
-            {
-                if (minimum != maximum)
-                {
-                    minimum_scale = minimum - (maximum - minimum) * 0.2;
-                    if (minimum_scale < 0)
-                        minimum_scale = 0;
-                    maximum_scale = maximum + (maximum - minimum) * 0.2;
-                }
-                else
-                {
-                    minimum_scale = minimum - minimum * 0.2;
-                    maximum_scale = maximum + maximum * 0.2;
-                }
-            }
-
-            Color colorChart = Color.Empty
-                , colorPCurve = Color.Empty;
-            getColorZEDGraph(HDateTime.INTERVAL.HOURS, out colorChart, out colorPCurve);
-
-            pane.Chart.Fill = new Fill(colorChart);
-
-            //LineItem
-            pane.AddCurve("УДГэ", null, valuesUDGe, FormMain.formGraphicsSettings.COLOR(FormGraphicsSettings.INDEX_COLOR.UDG));
-            //LineItem
-            pane.AddCurve("", null, valuesODiviation, FormMain.formGraphicsSettings.COLOR(FormGraphicsSettings.INDEX_COLOR.DIVIATION));
-            //LineItem
-            pane.AddCurve("Возможное отклонение", null, valuesPDiviation, FormMain.formGraphicsSettings.COLOR(FormGraphicsSettings.INDEX_COLOR.DIVIATION));
-
-            if (FormMain.formGraphicsSettings.m_graphTypes == FormGraphicsSettings.GraphTypes.Bar)
-            {
-                if (! (m_tecView.m_arTypeSourceData [(int)HDateTime.INTERVAL.HOURS] == CONN_SETT_TYPE.DATA_AISKUE_PLUS_SOTIASSO))
-                    //BarItem
-                    pane.AddBar("Мощность", null, valuesFact, colorPCurve);
-                else {
-                    int lh = -1;
-                    if (m_tecView.currHour == true)
-                        lh = m_tecView.lastHour;
-                    else
-                        if (HDateTime.ToMoscowTimeZone(DateTime.Now).Date.Equals(m_tecView.serverTime.Date) == true)
-                            lh = m_tecView.serverTime.Hour;
-                        else
-                            lh = 24;
-
-                    double [] valuesASKUE = new double [lh]
-                        , valuesSOTIASSO = new double[lh + 1];
-                    for (int i = 0; i < lh + 1; i ++)
-                    {
-                        if (i < lh - 0)
-                        {
-                            valuesASKUE[i] = valuesFact[i];
-                            valuesSOTIASSO [i] = 0;
-                        }
-                        else
-                        {
-                            if (i < valuesFact.Length)
-                                valuesSOTIASSO[i] = valuesFact[i];
-                            else
-                                ;
-                        }
-                    }
-
-                    pane.AddBar("Мощность(АИСКУЭ)", null, valuesASKUE, colorPCurve);
-                    pane.AddBar("Мощность(СОТИАССО)", null, valuesSOTIASSO, FormMain.formGraphicsSettings.COLOR(FormGraphicsSettings.INDEX_COLOR.SOTIASSO));
-                }
-            }
-            else
-                if (FormMain.formGraphicsSettings.m_graphTypes == FormGraphicsSettings.GraphTypes.Linear)
-                {
-                    if (! (m_tecView.m_arTypeSourceData [(int)HDateTime.INTERVAL.HOURS] == CONN_SETT_TYPE.DATA_AISKUE_PLUS_SOTIASSO))
-                    {
-                        double[] valuesFactLinear = new double[m_tecView.lastHour];
-                        for (int i = 0; i < m_tecView.lastHour; i++)
-                            valuesFactLinear[i] = valuesFact[i];
-
-                        //LineItem
-                        pane.AddCurve("Мощность", null, valuesFactLinear, colorPCurve);
-                    }
-                    else {
-                        PointPairList valuesASKUE = new PointPairList()
-                            , valuesSOTIASSO = new PointPairList();
-
-                        for (int i = 0; i < m_tecView.lastHour + 1; i++)
-                        {
-                            if (i < m_tecView.lastHour - 0)
-                            {
-                                valuesASKUE.Add((double)(i + 1), valuesFact[i]);
-                            }
-                            else
-                            {
-                                valuesSOTIASSO.Add((double)(i + 1), valuesFact[i]);
-                            }
-                        }
-
-                        //LineItem
-                        pane.AddCurve("Мощность(АИСКУЭ)", valuesASKUE, colorPCurve);
-                        //LineItem
-                        pane.AddCurve("Мощность(СОТИАССО)", valuesSOTIASSO, FormMain.formGraphicsSettings.COLOR(FormGraphicsSettings.INDEX_COLOR.SOTIASSO));
-                    }
-                }
-
-            //Для размещения в одной позиции ОДНого значения
-            pane.BarSettings.Type = BarType.Overlay;
-
-            //...из minutes
-            pane.XAxis.Scale.Min = 0.5;
-            pane.XAxis.Scale.Max = pane.XAxis.Scale.Min + itemscount;
-            pane.XAxis.Scale.MinorStep = 1;
-            pane.XAxis.Scale.MajorStep = 1; //itemscount / 20;
-
-            pane.XAxis.Type = AxisType.Linear; //...из minutes
-            //pane.XAxis.Type = AxisType.Text;
-            pane.XAxis.Title.Text = "";
-            pane.YAxis.Title.Text = "";
-            //По просьбе НСС-машинистов ДОБАВИТЬ - источник данных  05.12.2014
-            //pane.Title.Text = @"(" + m_ZedGraphHours.SourceDataText + @")";
-            pane.Title.Text = m_ZedGraphHours.SourceDataText;
-            pane.Title.Text += new string(' ', 29);
-            pane.Title.Text +=
-                //"Мощность " +
-                ////По просьбе пользователей УБРАТЬ - источник данных
-                ////@"(" + m_ZedGraphHours.SourceDataText  + @") " +
-                //@"на " +
-                _pnlQuickData.dtprDate.Value.ToShortDateString();
-
-            pane.XAxis.Scale.TextLabels = names;
-            pane.XAxis.Scale.IsPreventLabelOverlap = false;
-
-            // Включаем отображение сетки напротив крупных рисок по оси X
-            pane.XAxis.MajorGrid.IsVisible = true;
-            // Задаем вид пунктирной линии для крупных рисок по оси X:
-            // Длина штрихов равна 10 пикселям, ... 
-            pane.XAxis.MajorGrid.DashOn = 10;
-            // затем 5 пикселей - пропуск
-            pane.XAxis.MajorGrid.DashOff = 5;
-            // толщина линий
-            pane.XAxis.MajorGrid.PenWidth = 0.1F;
-            pane.XAxis.MajorGrid.Color = FormMain.formGraphicsSettings.COLOR(FormGraphicsSettings.INDEX_COLOR.GRID);
-
-            // Включаем отображение сетки напротив крупных рисок по оси Y
-            pane.YAxis.MajorGrid.IsVisible = true;
-            // Аналогично задаем вид пунктирной линии для крупных рисок по оси Y
-            pane.YAxis.MajorGrid.DashOn = 10;
-            pane.YAxis.MajorGrid.DashOff = 5;
-            // толщина линий
-            pane.YAxis.MajorGrid.PenWidth = 0.1F;
-            pane.YAxis.MajorGrid.Color = FormMain.formGraphicsSettings.COLOR(FormGraphicsSettings.INDEX_COLOR.GRID);
-
-            // Включаем отображение сетки напротив мелких рисок по оси Y
-            pane.YAxis.MinorGrid.IsVisible = true;
-            // Длина штрихов равна одному пикселю, ... 
-            pane.YAxis.MinorGrid.DashOn = 1;
-            pane.YAxis.MinorGrid.DashOff = 2;
-            // толщина линий
-            pane.YAxis.MinorGrid.PenWidth = 0.1F;
-            pane.YAxis.MinorGrid.Color = FormMain.formGraphicsSettings.COLOR(FormGraphicsSettings.INDEX_COLOR.GRID);
-
-            // Устанавливаем интересующий нас интервал по оси Y
-            pane.YAxis.Scale.Min = minimum_scale;
-            pane.YAxis.Scale.Max = maximum_scale;
-
-            m_ZedGraphHours.AxisChange();
-
-            m_ZedGraphHours.Invalidate();
+            );            
         }
 
-        //private bool enabledSourceData_ToolStripMenuItems () {
-        //private bool[] enabledSourceData_ToolStripMenuItems()
-        private HMark enabledSourceData_ToolStripMenuItems()
-        {
-            //bool [] arRes = new bool [] {false, false};
-            HMark markRes = new HMark (0);
-
-            if (FormMain.formGraphicsSettings.m_connSettType_SourceData == CONN_SETT_TYPE.COUNT_CONN_SETT_TYPE) {
-                //Пункты меню доступны для выбора
-                ((ToolStripMenuItem)m_ZedGraphMins.ContextMenuStrip.Items[(int)HZedGraphControl.INDEX_CONTEXTMENU_ITEM.AISKUE_PLUS_SOTIASSO]).Enabled =
-                ((ToolStripMenuItem)m_ZedGraphHours.ContextMenuStrip.Items[(int)HZedGraphControl.INDEX_CONTEXTMENU_ITEM.AISKUE_PLUS_SOTIASSO]).Enabled =
-                    HStatisticUsers.IsAllowed((int)HStatisticUsers.ID_ALLOWED.SOURCEDATA_ASKUE_PLUS_SOTIASSO);
-
-                ((ToolStripMenuItem)m_ZedGraphMins.ContextMenuStrip.Items[(int)HZedGraphControl.INDEX_CONTEXTMENU_ITEM.SOTIASSO_3_MIN]).Enabled =
-                ((ToolStripMenuItem)m_ZedGraphHours.ContextMenuStrip.Items[(int)HZedGraphControl.INDEX_CONTEXTMENU_ITEM.SOTIASSO_3_MIN]).Enabled =
-                    HStatisticUsers.IsAllowed((int)HStatisticUsers.ID_ALLOWED.SOURCEDATA_SOTIASSO_3_MIN);
-
-                ((ToolStripMenuItem)m_ZedGraphMins.ContextMenuStrip.Items[(int)HZedGraphControl.INDEX_CONTEXTMENU_ITEM.AISKUE]).Enabled =                 
-                ((ToolStripMenuItem)m_ZedGraphMins.ContextMenuStrip.Items[(int)HZedGraphControl.INDEX_CONTEXTMENU_ITEM.SOTIASSO_1_MIN]).Enabled =
-                ((ToolStripMenuItem)m_ZedGraphHours.ContextMenuStrip.Items[(int)HZedGraphControl.INDEX_CONTEXTMENU_ITEM.AISKUE]).Enabled =                
-                ((ToolStripMenuItem)m_ZedGraphHours.ContextMenuStrip.Items[(int)HZedGraphControl.INDEX_CONTEXTMENU_ITEM.SOTIASSO_1_MIN]).Enabled =
-                    true;
-
-                //оставить "как есть", но изменить источник данных при найденном НЕсоответствии
-            } else {
-                //Пункты меню НЕдоступны для выбора
-                //Принудительно установить источник данных
-                if (! (m_tecView.m_arTypeSourceData [(int)HDateTime.INTERVAL.MINUTES] == FormMain.formGraphicsSettings.m_connSettType_SourceData))
-                {
-                    m_tecView.m_arTypeSourceData [(int)HDateTime.INTERVAL.MINUTES] = FormMain.formGraphicsSettings.m_connSettType_SourceData;
-
-                    //arRes [(int)HDateTime.INTERVAL.MINUTES] = true;
-                    markRes.Marked ((int)HDateTime.INTERVAL.MINUTES);
-                } else {
-                }
-
-                if (!(m_tecView.m_arTypeSourceData[(int)HDateTime.INTERVAL.HOURS] == FormMain.formGraphicsSettings.m_connSettType_SourceData))
-                {
-                    m_tecView.m_arTypeSourceData[(int)HDateTime.INTERVAL.HOURS] = FormMain.formGraphicsSettings.m_connSettType_SourceData;
-
-                    //arRes[(int)HDateTime.INTERVAL.HOURS] = true;
-                    markRes.Marked((int)HDateTime.INTERVAL.HOURS);
-                }
-                else
-                {
-                }
-
-                //if (arRes[(int)HDateTime.INTERVAL.MINUTES] == true) {
-                if (markRes.IsMarked ((int)HDateTime.INTERVAL.MINUTES) == true)
-                {
-                    initTableMinRows ();
-
-                    enabledSourceData_ToolStripMenuItems (m_ZedGraphMins.ContextMenuStrip, m_tecView.m_arTypeSourceData[(int)HDateTime.INTERVAL.MINUTES]);
-                }
-                else ;
-
-                //if (arRes[(int)HDateTime.INTERVAL.HOURS] == true)
-                if (markRes.IsMarked ((int)HDateTime.INTERVAL.HOURS) == true) {
-                    enabledSourceData_ToolStripMenuItems(m_ZedGraphHours.ContextMenuStrip, m_tecView.m_arTypeSourceData[(int)HDateTime.INTERVAL.HOURS]);
-                }
-                else ;
-            }
-
-            //return arRes[(int)HDateTime.INTERVAL.MINUTES] || arRes[(int)HDateTime.INTERVAL.HOURS];
-            //return arRes;
-            return markRes;
-        }
-
-        private void enabledSourceData_ToolStripMenuItems (ContextMenuStrip menu, CONN_SETT_TYPE type)
-        {
-            int indx = -1;
-
-            //Временно активируем пункты контекстного меню
-            // для возможности изменить источник данных
-            // (пользователь его изменил принудительно)
-            for (indx = (int)HZedGraphControl.INDEX_CONTEXTMENU_ITEM.AISKUE_PLUS_SOTIASSO; indx < (int)HZedGraphControl.INDEX_CONTEXTMENU_ITEM.COUNT; indx++)
-                menu.Items[indx].Enabled =
-                    true;
-
-            switch (type)
-            {
-                case CONN_SETT_TYPE.DATA_AISKUE_PLUS_SOTIASSO:
-                    indx = (int)HZedGraphControl.INDEX_CONTEXTMENU_ITEM.AISKUE_PLUS_SOTIASSO;
-                    break;
-                case CONN_SETT_TYPE.DATA_AISKUE:
-                    indx = (int)HZedGraphControl.INDEX_CONTEXTMENU_ITEM.AISKUE;
-                    break;
-                case CONN_SETT_TYPE.DATA_SOTIASSO_3_MIN:
-                    indx = (int)HZedGraphControl.INDEX_CONTEXTMENU_ITEM.SOTIASSO_3_MIN;
-                    break;
-                case CONN_SETT_TYPE.DATA_SOTIASSO_1_MIN:
-                    indx = (int)HZedGraphControl.INDEX_CONTEXTMENU_ITEM.SOTIASSO_1_MIN;
-                    break;
-                default:
-                    break;
-            }
-
-            //Изменить источник данных
-            ((ToolStripMenuItem)menu.Items[indx]).PerformClick();
-
-            //Восстанавливаем "недоступность" пунктов контекстного меню
-            for (indx = (int)HZedGraphControl.INDEX_CONTEXTMENU_ITEM.AISKUE_PLUS_SOTIASSO; indx < (int)HZedGraphControl.INDEX_CONTEXTMENU_ITEM.COUNT; indx ++)
-                menu.Items[indx].Enabled =
-                    false;
-        }
+        protected abstract HMark enabledSourceData_ToolStripMenuItems();        
         /// <summary>
         /// Обновление компонентов вкладки с проверкой изменения источника данных
         /// </summary>
@@ -2055,26 +1346,6 @@ namespace Statistic
         protected void sourceDataHours_Click(object sender, EventArgs e)
         {
             sourceData_Click(m_ZedGraphHours.ContextMenuStrip, (ToolStripMenuItem)sender, HDateTime.INTERVAL.HOURS);
-        }
-
-        private void getColorZEDGraph(HDateTime.INTERVAL id_time, out Color colChart, out Color colP)
-        {
-            //Значения по умолчанию
-            colChart = FormMain.formGraphicsSettings.COLOR(FormGraphicsSettings.INDEX_COLOR.BG_ASKUE);
-            colP = FormMain.formGraphicsSettings.COLOR(FormGraphicsSettings.INDEX_COLOR.ASKUE);
-
-            if ((m_tecView.m_arTypeSourceData[(int)id_time] == CONN_SETT_TYPE.DATA_AISKUE)
-                || (m_tecView.m_arTypeSourceData[(int)id_time] == CONN_SETT_TYPE.DATA_AISKUE_PLUS_SOTIASSO))
-                ; // ...по умолчанию 
-            else
-                if ((m_tecView.m_arTypeSourceData[(int)id_time] == CONN_SETT_TYPE.DATA_SOTIASSO_3_MIN)
-                    || (m_tecView.m_arTypeSourceData[(int)id_time] == CONN_SETT_TYPE.DATA_SOTIASSO_1_MIN))
-                {
-                    colChart = FormMain.formGraphicsSettings.COLOR(FormGraphicsSettings.INDEX_COLOR.BG_SOTIASSO);
-                    colP = FormMain.formGraphicsSettings.COLOR(FormGraphicsSettings.INDEX_COLOR.SOTIASSO);
-                }
-                else
-                    ;
         }
     }
 }

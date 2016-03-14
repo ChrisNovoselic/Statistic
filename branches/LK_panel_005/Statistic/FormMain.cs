@@ -773,40 +773,43 @@ namespace Statistic
                             if (tclTecViews.TabPages[e.TabIndex].Controls[0] is PanelAlarm)
                                 formChangeMode.SetItemChecked(-3, false);
                             else
-                                if (tclTecViews.TabPages[e.TabIndex].Controls[0] is PanelStatisticDiagnostic)
-                                    m_dictAddingTabs[(int)ID_ADDING_TAB.DIAGNOSTIC].menuItem.Checked = false;
+                                if (tclTecViews.TabPages[e.TabIndex].Controls[0] is PanelAdminLK)
+                                    formChangeMode.SetItemChecked(-4, false);
                                 else
-                                    if (tclTecViews.TabPages[e.TabIndex].Controls[0] is PanelCurPower)
-                                        m_dictAddingTabs[(int)ID_ADDING_TAB.CUR_POWER].menuItem.Checked = false;
+                                    if (tclTecViews.TabPages[e.TabIndex].Controls[0] is PanelStatisticDiagnostic)
+                                        m_dictAddingTabs[(int)ID_ADDING_TAB.DIAGNOSTIC].menuItem.Checked = false;
                                     else
-                                        if (tclTecViews.TabPages[e.TabIndex].Controls[0] is PanelTMSNPower)
-                                            m_dictAddingTabs[(int)ID_ADDING_TAB.TM_SN_POWER].menuItem.Checked = false;
+                                        if (tclTecViews.TabPages[e.TabIndex].Controls[0] is PanelCurPower)
+                                            m_dictAddingTabs[(int)ID_ADDING_TAB.CUR_POWER].menuItem.Checked = false;
                                         else
-                                            if (tclTecViews.TabPages[e.TabIndex].Controls[0] is PanelLastMinutes)
-                                                m_dictAddingTabs[(int)ID_ADDING_TAB.MONITOR_LAST_MINUTES].menuItem.Checked = false;
+                                            if (tclTecViews.TabPages[e.TabIndex].Controls[0] is PanelTMSNPower)
+                                                m_dictAddingTabs[(int)ID_ADDING_TAB.TM_SN_POWER].menuItem.Checked = false;
                                             else
-                                                if (tclTecViews.TabPages[e.TabIndex].Controls[0] is PanelSobstvNyzhdy)
-                                                    m_dictAddingTabs[(int)ID_ADDING_TAB.SOBSTV_NYZHDY].menuItem.Checked = false;
+                                                if (tclTecViews.TabPages[e.TabIndex].Controls[0] is PanelLastMinutes)
+                                                    m_dictAddingTabs[(int)ID_ADDING_TAB.MONITOR_LAST_MINUTES].menuItem.Checked = false;
                                                 else
-                                                    if (tclTecViews.TabPages[e.TabIndex].Controls[0] is PanelCustomTecView)
-                                                        m_dictAddingTabs[e.Id].menuItem.Checked = false;
+                                                    if (tclTecViews.TabPages[e.TabIndex].Controls[0] is PanelSobstvNyzhdy)
+                                                        m_dictAddingTabs[(int)ID_ADDING_TAB.SOBSTV_NYZHDY].menuItem.Checked = false;
                                                     else
-                                                        if (tclTecViews.TabPages[e.TabIndex].Controls[0] is PanelSourceData)
-                                                            m_dictAddingTabs[(int)ID_ADDING_TAB.DATETIMESYNC_SOURCE_DATA].menuItem.Checked = false;
+                                                        if (tclTecViews.TabPages[e.TabIndex].Controls[0] is PanelCustomTecView)
+                                                            m_dictAddingTabs[e.Id].menuItem.Checked = false;
                                                         else
-                                                            if (tclTecViews.TabPages[e.TabIndex].Controls[0] is PanelSOTIASSO)
-                                                                m_dictAddingTabs[(int)ID_ADDING_TAB.SOTIASSO].menuItem.Checked = false;
+                                                            if (tclTecViews.TabPages[e.TabIndex].Controls[0] is PanelSourceData)
+                                                                m_dictAddingTabs[(int)ID_ADDING_TAB.DATETIMESYNC_SOURCE_DATA].menuItem.Checked = false;
                                                             else
-                                                                if (tclTecViews.TabPages[e.TabIndex].Controls[0] is PanelAnalyzer_DB)
-                                                                    m_dictAddingTabs[(int)ID_ADDING_TAB.ANALYZER].menuItem.Checked = false;
+                                                                if (tclTecViews.TabPages[e.TabIndex].Controls[0] is PanelSOTIASSO)
+                                                                    m_dictAddingTabs[(int)ID_ADDING_TAB.SOTIASSO].menuItem.Checked = false;
                                                                 else
-                                                                    if (tclTecViews.TabPages[e.TabIndex].Controls[0] is PanelTECComponent)
-                                                                        m_dictAddingTabs[(int)ID_ADDING_TAB.TEC_Component].menuItem.Checked = false;
+                                                                    if (tclTecViews.TabPages[e.TabIndex].Controls[0] is PanelAnalyzer_DB)
+                                                                        m_dictAddingTabs[(int)ID_ADDING_TAB.ANALYZER].menuItem.Checked = false;
                                                                     else
-                                                                        if (tclTecViews.TabPages[e.TabIndex].Controls[0] is PanelUser)
-                                                                            m_dictAddingTabs[(int)ID_ADDING_TAB.USERS].menuItem.Checked = false;
+                                                                        if (tclTecViews.TabPages[e.TabIndex].Controls[0] is PanelTECComponent)
+                                                                            m_dictAddingTabs[(int)ID_ADDING_TAB.TEC_Component].menuItem.Checked = false;
                                                                         else
-                                                                            ;
+                                                                            if (tclTecViews.TabPages[e.TabIndex].Controls[0] is PanelUser)
+                                                                                m_dictAddingTabs[(int)ID_ADDING_TAB.USERS].menuItem.Checked = false;
+                                                                            else
+                                                                                ;
         }
 
         void delegateOnFloatTab(object sender, HTabCtrlExEventArgs e)

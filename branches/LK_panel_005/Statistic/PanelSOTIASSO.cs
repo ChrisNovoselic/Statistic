@@ -293,7 +293,7 @@ namespace Statistic
             m_panelManagement.EvtGTPSelectionIndexChanged += new DelegateIntFunc(panelManagement_OnEvtGTPSelectionIndexChanged);
             m_panelManagement.EvtTGItemChecked += new DelegateIntFunc(panelManagement_OnEvtTGItemChecked);
             //m_panelManagement.EvtSetNowHour += new DelegateFunc(panelManagement_OnEvtSetNowHour);
-            m_zGraph_GTP = new HZEdGraphControlGTP(); // графическая панель для отображения значений ГТП
+            m_zGraph_GTP = new HZedGraphControlGTP(); // графическая панель для отображения значений ГТП
             m_zGraph_GTP.Name = KEY_CONTROLS.ZGRAPH_GTP.ToString();
             m_zGraph_TG = new HZEdGraphControlTG(); // графическая панель для отображения значений ТГ
             m_zGraph_TG.Name = KEY_CONTROLS.ZGRAPH_TG.ToString();
@@ -781,12 +781,12 @@ namespace Statistic
         /// <summary>
         /// Класс - общий для графического представления значений СОТИАССО на вкладке
         /// </summary>
-        private class HZEdGraphControl : ZedGraph.ZedGraphControl
+        private class HZedGraphControl : ZedGraph.ZedGraphControl
         {
             /// <summary>
             /// Конструктор - основной (без параметров)
             /// </summary>
-            public HZEdGraphControl()
+            public HZedGraphControl()
                 : base()
             {
                 initializeComponent();
@@ -795,7 +795,7 @@ namespace Statistic
             /// Конструктор - вспомогательный (с параметрами)
             /// </summary>
             /// <param name="container">Владелец объекта</param>
-            public HZEdGraphControl(IContainer container)
+            public HZedGraphControl(IContainer container)
                 : this()
             {
                 container.Add(this);
@@ -855,12 +855,12 @@ namespace Statistic
         /// Класс для отображения в графическом представлении
         ///  значений за укзанный (дата/номер часа) 1 час для выбранного ГТП
         /// </summary>
-        private class HZEdGraphControlGTP : HZEdGraphControl
+        private class HZedGraphControlGTP : HZedGraphControl
         {
             /// <summary>
             /// Конструктор - основной (без параметров)
             /// </summary>
-            public HZEdGraphControlGTP()
+            public HZedGraphControlGTP()
                 : base()
             {
                 initializeComponent();
@@ -869,7 +869,7 @@ namespace Statistic
             /// Конструктор - вспомогательный (с параметрами)
             /// </summary>
             /// <param name="container">Владелец объекта</param>
-            public HZEdGraphControlGTP(IContainer container)
+            public HZedGraphControlGTP(IContainer container)
                 : this()
             {
                 container.Add(this);
@@ -906,7 +906,7 @@ namespace Statistic
         /// Класс для отображения в графическом представлении
         ///  значений за указанную (дата/номер часа/номер минуты) 1 мин для выбранных ТГ, выбранного ГТП
         /// </summary>
-        private class HZEdGraphControlTG : HZEdGraphControl
+        private class HZEdGraphControlTG : HZedGraphControl
         {
         }
         /// <summary>

@@ -618,11 +618,264 @@ namespace Statistic
             }
         }
 
+        private class MainHours
+        {
+            public static bool IsMain(int hour) { return ((!(hour < 8)) && (!(hour > 12))) || ((!(hour < 17)) && (!(hour > 21))); }
+        }
+
         private class ZedGraphControlLK : HZedGraphControl
         {
             public ZedGraphControlLK(object lockVal)
                 : base(lockVal, FormMain.formGraphicsSettings.SetScale)
             {
+            }
+
+            public override void Draw(TecView.valuesTEC []values, params object[] pars)
+            {
+                bool currHour = (bool)pars[0]; //m_tecView.currHour
+                CONN_SETT_TYPE typeConnSett = (CONN_SETT_TYPE)pars[1]; //m_tecView.m_arTypeSourceData[(int)HDateTime.INTERVAL.HOURS]
+                int lastHour = (int)pars[2]; //m_tecView.lastHour
+                bool bCurDateSeason = (bool)pars[3]; //m_tecView.m_curDate.Date.CompareTo(HAdmin.SeasonDateTime.Date) == 0
+                IntDelegateIntFunc delegateSeasonHourOffset = new IntDelegateIntFunc((IntDelegateIntFunc)pars[4]); //m_tecView.GetSeasonHourOffset
+                DateTime serverTime = (DateTime)pars[5]; //m_tecView.serverTime                
+                string strTitle = (string)pars[6]; //_pnlQuickData.dtprDate.Value.ToShortDateString()
+
+                GraphPane.CurveList.Clear();
+
+                int itemscount = values.Length;
+                double y = -1F;
+
+                string[] names = new string[itemscount];
+
+                ZedGraph.PointPairList valuesPDiviation = new PointPairList()
+                    , valuesODiviation = new PointPairList()
+                    , valuesPlan = new PointPairList()
+                    , valuesMainFact = new PointPairList()
+                    , valuesRegularFact = new PointPairList();
+
+                double minimum = double.MaxValue, minimum_scale;
+                double maximum = 0, maximum_scale;
+                bool noValues = true;
+                for (int i = 0, h = 1; i < lastHour; i++, h ++)
+                {
+                    if (bCurDateSeason == true)
+                    {
+                        names[i] = (i + 1 - delegateSeasonHourOffset(i + 1)).ToString();
+
+                        if ((i + 0) == HAdmin.SeasonDateTime.Hour)
+                            names[i] += @"*";
+                        else
+                            ;
+                    }
+                    else
+                        names[i] = h.ToString();
+
+                    if (values[i].valuesPBR > 0)
+                    {
+                        valuesPDiviation.Add(h, values[i].valuesPBR + values[i].valuesDiviation);
+                        valuesPlan.Add(h, values[i].valuesPBR);
+                        valuesODiviation.Add(h, values[i].valuesPBR - values[i].valuesDiviation);
+                    }
+                    else
+                        ;
+
+                    if (MainHours.IsMain (h) == true)
+                        valuesMainFact.Add(h, values[i].valuesFact);
+                    else
+                        valuesRegularFact.Add(h, values[i].valuesFact);
+
+
+                    if (values[i].valuesPBR > 0)
+                    {
+                        if (minimum > valuesPDiviation[i].Y)
+                        {
+                            minimum = valuesPDiviation[i].Y;
+                            noValues = false;
+                        }
+                        else
+                            ;
+
+                        if (minimum > valuesODiviation[i].Y)
+                        {
+                            minimum = valuesODiviation[i].Y;
+                            noValues = false;
+                        }
+                        else
+                            ;
+
+                        if (minimum > valuesPlan[i].Y)
+                        {
+                            minimum = valuesPlan[i].Y;
+                            noValues = false;
+                        }
+                        else
+                            ;
+                    }
+                    else
+                        ;
+
+                    if ((minimum > values[i].valuesFact) && (!(values[i].valuesFact == 0)))
+                    {
+                        minimum = values[i].valuesFact;
+                        noValues = false;
+                    }
+                    else
+                        ;
+
+                    if (values[i].valuesPBR > 0)
+                    {
+                        if (maximum < valuesPDiviation[i].Y)
+                            maximum = valuesPDiviation[i].Y;
+                        else
+                            ;
+
+                        if (maximum < valuesODiviation[i].Y)
+                            maximum = valuesODiviation[i].Y;
+                        else
+                            ;
+
+                        if (maximum < valuesPlan[i].Y)
+                            maximum = valuesPlan[i].Y;
+                        else
+                            ;
+                    }
+                    else
+                        ;
+
+                    if (maximum < values[i].valuesFact)
+                        maximum = values[i].valuesFact;
+                    else
+                        ;
+                }
+
+                if (!(FormMain.formGraphicsSettings.scale == true))
+                    minimum = 0;
+                else
+                    ;
+
+                if (noValues)
+                {
+                    minimum_scale = 0;
+                    maximum_scale = 10;
+                }
+                else
+                {
+                    if (minimum != maximum)
+                    {
+                        minimum_scale = minimum - (maximum - minimum) * 0.2;
+                        if (minimum_scale < 0)
+                            minimum_scale = 0;
+                        maximum_scale = maximum + (maximum - minimum) * 0.2;
+                    }
+                    else
+                    {
+                        minimum_scale = minimum - minimum * 0.2;
+                        maximum_scale = maximum + maximum * 0.2;
+                    }
+                }
+
+                Color colorChart = Color.Empty
+                    , colorPCurve = Color.Empty;
+                getColorZedGraph(typeConnSett, out colorChart, out colorPCurve);
+
+                GraphPane.Chart.Fill = new Fill(colorChart);
+
+                //LineItem
+                GraphPane.AddCurve("УДГэ", valuesPlan, FormMain.formGraphicsSettings.COLOR(FormGraphicsSettings.INDEX_COLOR.UDG));
+                //LineItem
+                GraphPane.AddCurve("", valuesODiviation, FormMain.formGraphicsSettings.COLOR(FormGraphicsSettings.INDEX_COLOR.DIVIATION));
+                //LineItem
+                GraphPane.AddCurve("Возможное отклонение", valuesPDiviation, FormMain.formGraphicsSettings.COLOR(FormGraphicsSettings.INDEX_COLOR.DIVIATION));
+
+                if (FormMain.formGraphicsSettings.m_graphTypes == FormGraphicsSettings.GraphTypes.Bar)
+                {
+                    if (!(typeConnSett == CONN_SETT_TYPE.DATA_AISKUE_PLUS_SOTIASSO))
+                    {
+                        //BarItem
+                        GraphPane.AddBar("Мощность(контр.)", valuesMainFact, colorPCurve);
+                        GraphPane.AddBar("Мощность(рег.)", valuesRegularFact, Color.White);
+                    }
+                    else
+                        // других типов данных для ЛК не предусмотрено
+                        ;
+                }
+                else
+                    if (FormMain.formGraphicsSettings.m_graphTypes == FormGraphicsSettings.GraphTypes.Linear)
+                    {
+                        if (!(typeConnSett == CONN_SETT_TYPE.DATA_AISKUE_PLUS_SOTIASSO))
+                        {
+                            //LineItem
+                            GraphPane.AddCurve("Мощность", valuesMainFact, colorPCurve);
+                            GraphPane.AddCurve("Мощность", valuesRegularFact, Color.White);
+                        }
+                        else
+                            // других типов данных для ЛК не предусмотрено
+                            ;
+                    }
+
+                //Для размещения в одной позиции ОДНого значения
+                GraphPane.BarSettings.Type = BarType.Overlay;
+
+                //...из minutes
+                GraphPane.XAxis.Scale.Min = 0.5;
+                GraphPane.XAxis.Scale.Max = GraphPane.XAxis.Scale.Min + itemscount;
+                GraphPane.XAxis.Scale.MinorStep = 1;
+                GraphPane.XAxis.Scale.MajorStep = 1; //itemscount / 20;
+
+                GraphPane.XAxis.Type = AxisType.Linear; //...из minutes
+                //GraphPane.XAxis.Type = AxisType.Text;
+                GraphPane.XAxis.Title.Text = "";
+                GraphPane.YAxis.Title.Text = "";
+                //По просьбе НСС-машинистов ДОБАВИТЬ - источник данных  05.12.2014
+                //GraphPane.Title.Text = @"(" + m_ZedGraphHours.SourceDataText + @")";
+                GraphPane.Title.Text = SourceDataText;
+                GraphPane.Title.Text += new string(' ', 29);
+                GraphPane.Title.Text +=
+                    //"Мощность " +
+                    ////По просьбе пользователей УБРАТЬ - источник данных
+                    ////@"(" + m_ZedGraphHours.SourceDataText  + @") " +
+                    //@"на " +
+                    strTitle;
+
+                GraphPane.XAxis.Scale.TextLabels = names;
+                GraphPane.XAxis.Scale.IsPreventLabelOverlap = false;
+
+                // Включаем отображение сетки напротив крупных рисок по оси X
+                GraphPane.XAxis.MajorGrid.IsVisible = true;
+                // Задаем вид пунктирной линии для крупных рисок по оси X:
+                // Длина штрихов равна 10 пикселям, ... 
+                GraphPane.XAxis.MajorGrid.DashOn = 10;
+                // затем 5 пикселей - пропуск
+                GraphPane.XAxis.MajorGrid.DashOff = 5;
+                // толщина линий
+                GraphPane.XAxis.MajorGrid.PenWidth = 0.1F;
+                GraphPane.XAxis.MajorGrid.Color = FormMain.formGraphicsSettings.COLOR(FormGraphicsSettings.INDEX_COLOR.GRID);
+
+                // Включаем отображение сетки напротив крупных рисок по оси Y
+                GraphPane.YAxis.MajorGrid.IsVisible = true;
+                // Аналогично задаем вид пунктирной линии для крупных рисок по оси Y
+                GraphPane.YAxis.MajorGrid.DashOn = 10;
+                GraphPane.YAxis.MajorGrid.DashOff = 5;
+                // толщина линий
+                GraphPane.YAxis.MajorGrid.PenWidth = 0.1F;
+                GraphPane.YAxis.MajorGrid.Color = FormMain.formGraphicsSettings.COLOR(FormGraphicsSettings.INDEX_COLOR.GRID);
+
+                // Включаем отображение сетки напротив мелких рисок по оси Y
+                GraphPane.YAxis.MinorGrid.IsVisible = true;
+                // Длина штрихов равна одному пикселю, ... 
+                GraphPane.YAxis.MinorGrid.DashOn = 1;
+                GraphPane.YAxis.MinorGrid.DashOff = 2;
+                // толщина линий
+                GraphPane.YAxis.MinorGrid.PenWidth = 0.1F;
+                GraphPane.YAxis.MinorGrid.Color = FormMain.formGraphicsSettings.COLOR(FormGraphicsSettings.INDEX_COLOR.GRID);
+
+                // Устанавливаем интересующий нас интервал по оси Y
+                GraphPane.YAxis.Scale.Min = minimum_scale;
+                GraphPane.YAxis.Scale.Max = maximum_scale;
+
+                AxisChange();
+
+                Invalidate();
             }
         }
 
@@ -648,9 +901,21 @@ namespace Statistic
             this.m_ZedGraphHours = new ZedGraphControlLK(objLock);
         }
 
+        protected override void createZedGraphControlMins(object objLock)
+        {
+            // минутная гистограмма не требуется
+        }
+
         protected override void createPanelQuickData()
         {
             this._pnlQuickData = new PanelQuickDataLK ();
+        }
+
+        protected override HMark enabledSourceData_ToolStripMenuItems()
+        {
+            HMark markRes = new HMark(0);
+
+            return markRes;
         }
 
         //protected override void initTableHourRows()
