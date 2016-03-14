@@ -25,7 +25,9 @@ namespace Statistic
                 , COUNT_TYPE_UPDATEGUI };
 
         private enum CONN_SETT_TYPE {
-            ASKUE_PLUS_SOTIASSO, ASKUE, SOTIASSO_3_MIN, SOTIASSO_1_MIN
+            AISKUE_PLUS_SOTIASSO
+            , AISKUE_3_MIN//, AISKUE_30_MIN
+            , SOTIASSO_3_MIN, SOTIASSO_1_MIN
             , COSTUMIZE
                 , COUNT_CONN_SETT_TYPE
         };
@@ -62,7 +64,7 @@ namespace Statistic
             m_markSourceData = new HMark(0);
 
             bool bGroupBoxSourceData = false;
-            CONN_SETT_TYPE cstGroupBoxSourceData = CONN_SETT_TYPE.ASKUE;
+            CONN_SETT_TYPE cstGroupBoxSourceData = CONN_SETT_TYPE.AISKUE_3_MIN;
             //Проверка условия прав доступа к возможности смены источника данных
             if (HStatisticUsers.IsAllowed((int)HStatisticUsers.ID_ALLOWED.SOURCEDATA_CHANGED) == true)
             //if (m_formMain.m_users.IsAllowed(HStatisticUsers.ID_ALLOWED.SOURCEDATA_CHANGED) == true)
@@ -71,7 +73,7 @@ namespace Statistic
                 bGroupBoxSourceData = true;
                 cstGroupBoxSourceData = CONN_SETT_TYPE.COSTUMIZE;
 
-                m_arRadioButtonSourceData[(int)CONN_SETT_TYPE.ASKUE_PLUS_SOTIASSO].Enabled = HStatisticUsers.IsAllowed((int)HStatisticUsers.ID_ALLOWED.SOURCEDATA_ASKUE_PLUS_SOTIASSO);
+                m_arRadioButtonSourceData[(int)CONN_SETT_TYPE.AISKUE_PLUS_SOTIASSO].Enabled = HStatisticUsers.IsAllowed((int)HStatisticUsers.ID_ALLOWED.SOURCEDATA_ASKUE_PLUS_SOTIASSO);
                 m_arRadioButtonSourceData[(int)CONN_SETT_TYPE.SOTIASSO_3_MIN].Enabled = HStatisticUsers.IsAllowed((int)HStatisticUsers.ID_ALLOWED.SOURCEDATA_SOTIASSO_3_MIN);
             }
             else
@@ -96,16 +98,16 @@ namespace Statistic
 
         private void checkedSourceData()
         {
-            m_arRadioButtonSourceData[(int)CONN_SETT_TYPE.ASKUE_PLUS_SOTIASSO].Checked = m_markSourceData.IsMarked((int)(int)CONN_SETT_TYPE.ASKUE_PLUS_SOTIASSO);
-            m_arRadioButtonSourceData[(int)CONN_SETT_TYPE.ASKUE].Checked = m_markSourceData.IsMarked((int)(int)CONN_SETT_TYPE.ASKUE);
+            m_arRadioButtonSourceData[(int)CONN_SETT_TYPE.AISKUE_PLUS_SOTIASSO].Checked = m_markSourceData.IsMarked((int)(int)CONN_SETT_TYPE.AISKUE_PLUS_SOTIASSO);
+            m_arRadioButtonSourceData[(int)CONN_SETT_TYPE.AISKUE_3_MIN].Checked = m_markSourceData.IsMarked((int)(int)CONN_SETT_TYPE.AISKUE_3_MIN);
             m_arRadioButtonSourceData[(int)CONN_SETT_TYPE.SOTIASSO_3_MIN].Checked = m_markSourceData.IsMarked((int)(int)CONN_SETT_TYPE.SOTIASSO_3_MIN);
             m_arRadioButtonSourceData[(int)CONN_SETT_TYPE.SOTIASSO_1_MIN].Checked = m_markSourceData.IsMarked((int)(int)CONN_SETT_TYPE.SOTIASSO_1_MIN);
             m_arRadioButtonSourceData[(int)CONN_SETT_TYPE.COSTUMIZE].Checked = m_markSourceData.IsMarked((int)(int)CONN_SETT_TYPE.COSTUMIZE);
 
-            if (m_arRadioButtonSourceData[(int)CONN_SETT_TYPE.ASKUE_PLUS_SOTIASSO].Checked == true)
+            if (m_arRadioButtonSourceData[(int)CONN_SETT_TYPE.AISKUE_PLUS_SOTIASSO].Checked == true)
                 m_connSettType_SourceData = StatisticCommon.CONN_SETT_TYPE.DATA_AISKUE_PLUS_SOTIASSO;
             else
-                if (m_arRadioButtonSourceData[(int)CONN_SETT_TYPE.ASKUE].Checked == true)
+                if (m_arRadioButtonSourceData[(int)CONN_SETT_TYPE.AISKUE_3_MIN].Checked == true)
                     m_connSettType_SourceData = StatisticCommon.CONN_SETT_TYPE.DATA_AISKUE;
                 else
                     if (m_arRadioButtonSourceData[(int)CONN_SETT_TYPE.SOTIASSO_3_MIN].Checked == true)
@@ -184,12 +186,12 @@ namespace Statistic
 
         private void rbtnSourceData_ASKUEPLUSSOTIASSO_Click(object sender, EventArgs e)
         {
-            rbtnSourceData_Click(CONN_SETT_TYPE.ASKUE_PLUS_SOTIASSO);
+            rbtnSourceData_Click(CONN_SETT_TYPE.AISKUE_PLUS_SOTIASSO);
         }
 
         private void rbtnSourceData_ASKUE_Click(object sender, EventArgs e)
         {
-                rbtnSourceData_Click(CONN_SETT_TYPE.ASKUE);
+                rbtnSourceData_Click(CONN_SETT_TYPE.AISKUE_3_MIN);
         }
 
         private void rbtnSourceData_SOTIASSO3min_Click(object sender, EventArgs e)

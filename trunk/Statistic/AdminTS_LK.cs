@@ -17,11 +17,6 @@ namespace Statistic
     public class AdminTS_LK : AdminTS_TG
     {
         /// <summary>
-        /// Индекс компонентов типа ЛК в списке ТЦ
-        /// </summary>
-        public static int Index_LK = 10;
-
-        /// <summary>
         /// Семафор для формирования списка компонентов
         /// </summary>
         public Semaphore m_semaIndxTECComponents;
@@ -38,7 +33,7 @@ namespace Statistic
         public AdminTS_LK(bool[] arMarkPPBRValues)
             : base(arMarkPPBRValues)
         {
-            base.m_Offset_to_moscow = (int)INDEX_OFFSET.NOVOSIBIRSK;
+            _tsOffsetToMoscow = HDateTime.TS_NSK_OFFSET_OF_MOSCOWTIMEZONE;
         }
 
         /// <summary>
@@ -53,9 +48,7 @@ namespace Statistic
 
                 //Сначала - ГТП
                 foreach (TECComponent comp in allTECComponents)
-                {
-                    if (comp.tec.m_id > Index_LK)
-                    {
+                    if (comp.tec.m_id > (int)TECComponent.ID.LK)
                         if ((comp.m_id == GetIdTECComponent(id)) && //Принадлежит ТЭЦ
                             ((comp.IsGTP == true) /*|| //Является ГТП
                         ((comp.m_id > 1000) && (comp.m_id < 10000))*/)) //Является ТГ
@@ -64,13 +57,13 @@ namespace Statistic
 
                             foreach (TG tg in comp.m_listTG)
                                 foreach (TECComponent comp_tg in allTECComponents)
-                                    if(comp_tg.m_id==tg.m_id)
+                                    if (comp_tg.m_id == tg.m_id)
                                         m_listTECComponentIndexDetail.Add(allTECComponents.IndexOf(comp_tg));
                         }
                         else
                             ;
-                    }
-                }
+                    else
+                        ;
 
                 m_listTECComponentIndexDetail.Sort();
                 m_listCurRDGValues.Clear();
@@ -275,19 +268,13 @@ namespace Statistic
             allTECComponents.Clear();
 
             foreach (StatisticCommon.TEC t in this.m_list_tec)
-            {
                 //Logging.Logg().Debug("Admin::InitTEC () - формирование компонентов для ТЭЦ:" + t.name);
-                if (t.m_id > Index_LK)
+                if (t.m_id > (int)TECComponent.ID.LK)
                     if (t.list_TECComponents.Count > 0)
                         foreach (TECComponent g in t.list_TECComponents)
-                        {
                             allTECComponents.Add(g);
-                        }
                     else
-                    {
                         allTECComponents.Add(t.list_TECComponents[0]);
-                    }
-            }
         }
 
         /// <summary>
@@ -446,5 +433,20 @@ namespace Statistic
                 return dataTableRes;
             }
         }
-}
+
+        protected override void /*bool*/ ImpRDGExcelValuesRequest()
+        {
+            throw new NotImplementedException();
+        }
+
+        protected override int ImpRDGExcelValuesResponse()
+        {
+            throw new NotImplementedException();
+        }
+
+        protected override void /*bool*/ ExpRDGExcelValuesRequest()
+        {
+            throw new NotImplementedException();
+        }
+    }
 }

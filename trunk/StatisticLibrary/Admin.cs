@@ -53,6 +53,12 @@ namespace StatisticCommon
             public DateTime dtRecUpdate;
         }
 
+        protected TimeSpan _tsOffsetToMoscow;
+        /// <summary>
+        /// Смещение по часовому поясу
+        /// </summary>
+        public TimeSpan m_tsOffsetToMoscow { get { return _tsOffsetToMoscow; } }
+
         public volatile RDGStruct[] m_prevRDGValues;
         public RDGStruct[] m_curRDGValues;
 
@@ -196,7 +202,7 @@ namespace StatisticCommon
             initTEC();
         }
 
-        public void InitTEC(int idListener, FormChangeMode.MODE_TECCOMPONENT mode, /*TYPE_DATABASE_CFG typeCfg, */HMark markQueries, bool bIgnoreTECInUse)
+        public void InitTEC(int idListener, FormChangeMode.MODE_TECCOMPONENT mode, /*TYPE_DATABASE_CFG typeCfg, */HMark markQueries, bool bIgnoreTECInUse, int [] arTECLimit)
         {
             //Logging.Logg().Debug("Admin::InitTEC () - вход...");
 
@@ -204,9 +210,9 @@ namespace StatisticCommon
 
             if (!(idListener < 0))
                 if (mode == FormChangeMode.MODE_TECCOMPONENT.UNKNOWN)
-                    this.m_list_tec = new InitTEC_200(idListener, bIgnoreTECInUse, false).tec;
+                    this.m_list_tec = new InitTEC_200(idListener, bIgnoreTECInUse, arTECLimit, false).tec;
                 else
-                    this.m_list_tec = new InitTEC_200(idListener, (short)mode, bIgnoreTECInUse, false).tec;
+                    this.m_list_tec = new InitTEC_200(idListener, (short)mode, bIgnoreTECInUse, arTECLimit, false).tec;
             else
                 this.m_list_tec = new InitTECBase.ListTEC ();
 
@@ -370,7 +376,13 @@ namespace StatisticCommon
         //public void SetDelegateTECComponent(DelegateFunc f) { fillTECComponent = f; }
 
         public void SetDelegateDatetime(DelegateDateFunc f) { setDatetime = f; }
- 
+
+        //protected void actualizeTimezone(ref DataTable table, int indxCol)
+        //{
+        //    foreach (DataRow r in table.Rows)
+        //        r[indxCol] = Convert.ToDateTime(r[indxCol].ToString()).Add(m_tsOffsetToMoscow);
+        //}
+
         public override void ClearValues()
         {
             int cntHours = 24;

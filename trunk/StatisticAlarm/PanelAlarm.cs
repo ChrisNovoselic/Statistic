@@ -98,7 +98,7 @@ namespace StatisticAlarm
             bool bWorkChecked = (HStatisticUsers.IsAllowed((int)HStatisticUsers.ID_ALLOWED.AUTO_ALARM_KOMDISP)
                 || (mode == MODE.SERVICE)) && (! (mode == MODE.VIEW));
             //Инициализация списка с ТЭЦ
-            m_list_tec = new InitTEC_200(iListenerConfigDB, true, false).tec;
+            m_list_tec = new InitTEC_200(iListenerConfigDB, true, new int[] { 0, (int)TECComponent.ID.LK }, false).tec;
             //Инициализация
             ConnectionSettings connSett = new ConnectionSettings(InitTECBase.getConnSettingsOfIdSource(iListenerConfigDB
                     , FormMainBase.s_iMainSourceData

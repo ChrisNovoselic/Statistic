@@ -399,14 +399,18 @@ namespace Statistic
             /// </summary>
             /// <param name="lbl">элемент управления, как ссылка</param>
             /// <param name="val">значение для отображения</param>
-            protected static void showValue(ref System.Windows.Forms.Label lbl, double val, bool bPower, string adding)
+            /// <param name="bCheckVal">признак проверки значения</param>
+            /// <param name="bPower">признак отображения значения мощности</param>
+            /// <param name="adding">дополнительная для отображения строка</param>
+            protected static void showValue(ref System.Windows.Forms.Label lbl, double val, bool bCheckVal, bool bPower, string adding)
             {
                 if (!(lbl == null))
                     if (val == double.NegativeInfinity)
                         lbl.Text = adding;
                     else
                         if (bPower == true)
-                            if (val > 1)
+                            if ((val > 1)
+                                || (bCheckVal == false))
                                 lbl.Text = val.ToString("F2") + adding;
                             else
                                 lbl.Text = 0.ToString("F0");
@@ -421,12 +425,28 @@ namespace Statistic
             /// </summary>
             /// <param name="lbl">элемент управления</param>
             /// <param name="val">значение для отображения</param>
-            protected static void showValue(System.Windows.Forms.Label lbl, double val)
+            protected static void showValue(System.Windows.Forms.Label lbl, double val, bool bCheckVal)
             {
-                if (val > 1)
+                if ((val > 1)
+                    || (bCheckVal == false))
                     lbl.Text = val.ToString("F2");
                 else
                     lbl.Text = 0.ToString("F0");
+            }
+            /// <summary>
+            /// Возвратить цвет для отображения фактических значений
+            /// </summary>
+            /// <returns>Цвет для фактических значений</returns>
+            protected Color getColorFactValues()
+            {
+                //Определить цвет
+                if (m_parent.m_tecView.currHour == true)
+                    if (m_parent.m_tecView.m_markWarning.IsMarked((int)TecView.INDEX_WARNING.LAST_MIN) == true)
+                        return System.Drawing.Color.OrangeRed;
+                    else
+                        return System.Drawing.Color.LimeGreen;
+                else
+                    return System.Drawing.Color.OrangeRed;
             }
         }
 
@@ -1041,7 +1061,11 @@ namespace Statistic
                 else
                     ;
 
-                showValue(ref m_arLabelCommon[(int)PanelQuickDataStandard.CONTROLS.lblCommonPVal_TM - m_indxStartCommonFirstValueSeries], value_TM, true, string.Empty);
+                showValue(ref m_arLabelCommon[(int)PanelQuickDataStandard.CONTROLS.lblCommonPVal_TM - m_indxStartCommonFirstValueSeries]
+                    , value_TM
+                    , true
+                    , true
+                    , string.Empty);
                 Color frCol = Color.Empty;
                 if ((!(m_parent == null)) && (m_parent.m_tecView.currHour == true))
                     frCol = Color.Green;
@@ -1096,21 +1120,37 @@ namespace Statistic
                         else
                             ;
 
-                    showValue(ref m_arLabelCommon[(int)PanelQuickDataStandard.CONTROLS.lblCommonPVal_Fact - indxStartCommonPVal], value, true, string.Empty);
+                    showValue(ref m_arLabelCommon[(int)PanelQuickDataStandard.CONTROLS.lblCommonPVal_Fact - indxStartCommonPVal]
+                        , value
+                        , true
+                        , true
+                        , string.Empty);
                     //if (this.ContextMenuStrip.Items [(int)INDEX_CONTEXTMENU_ITEM_FUTURE_EE] = false)
                     //if ((!(Users.Role == (int)Users.ID_ROLES.KOM_DISP)) && (!(Users.Role == (int)Users.ID_ROLES.ADMIN)))
                     m_lblPowerFactZoom.Text = @"Pтек=" + value.ToString(@"F2");
                     //else ;
 
                     valueECur = value / 20;
-                    showValue(ref m_arLabelCommon[(int)PanelQuickDataStandard.CONTROLS.lblCurrentEVal - indxStartCommonPVal], valueECur, true, string.Empty);
+                    showValue(ref m_arLabelCommon[(int)PanelQuickDataStandard.CONTROLS.lblCurrentEVal - indxStartCommonPVal]
+                        , valueECur
+                        , true
+                        , true
+                        , string.Empty);
 
                     valueEFuture = valueECur * (20 - min - 0);
-                    showValue(ref m_arLabelCommon[(int)PanelQuickDataStandard.CONTROLS.lblHourEVal - indxStartCommonPVal], valueEBefore + valueECur + valueEFuture, true, string.Empty);
+                    showValue(ref m_arLabelCommon[(int)PanelQuickDataStandard.CONTROLS.lblHourEVal - indxStartCommonPVal]
+                        , valueEBefore + valueECur + valueEFuture
+                        , true
+                        , true
+                        , string.Empty);
 
                     if ((m_parent.m_tecView.adminValuesReceived == true) && (m_parent.m_tecView.currHour == true))
                     {
-                        showValue(ref m_arLabelCommon[(int)PanelQuickDataStandard.CONTROLS.lblPBRrecVal - indxStartCommonPVal], m_parent.m_tecView.recomendation, true, string.Empty);
+                        showValue(ref m_arLabelCommon[(int)PanelQuickDataStandard.CONTROLS.lblPBRrecVal - indxStartCommonPVal]
+                            , m_parent.m_tecView.recomendation
+                            , true
+                            , true
+                            , string.Empty);
                     }
                     else
                     {
@@ -1139,7 +1179,11 @@ namespace Statistic
                             for (i = 1; i < m_parent.m_tecView.lastMin; i++)
                                 summ += m_parent.m_tecView.m_valuesMins[i].valuesFact;
                             if (!(min == 0))
-                                showValue(ref m_arLabelCommon[(int)PanelQuickDataStandard.CONTROLS.lblAverPVal - indxStartCommonPVal], summ / min, true, string.Empty);
+                                showValue(ref m_arLabelCommon[(int)PanelQuickDataStandard.CONTROLS.lblAverPVal - indxStartCommonPVal]
+                                    , summ / min
+                                    , true
+                                    , true
+                                    , string.Empty);
                             else
                                 m_arLabelCommon[(int)PanelQuickDataStandard.CONTROLS.lblAverPVal - indxStartCommonPVal].Text = 0.ToString("F0");
                         }
@@ -1150,7 +1194,11 @@ namespace Statistic
                             //else
                             summ = m_parent.m_tecView.m_valuesHours[hour].valuesFact;
 
-                            showValue(ref m_arLabelCommon[(int)PanelQuickDataStandard.CONTROLS.lblAverPVal - indxStartCommonPVal], summ, true, string.Empty);
+                            showValue(ref m_arLabelCommon[(int)PanelQuickDataStandard.CONTROLS.lblAverPVal - indxStartCommonPVal]
+                                , summ
+                                , true
+                                , true
+                                , string.Empty);
                         }
 
                         //if (! ([lastHour] == 0))
@@ -1175,9 +1223,17 @@ namespace Statistic
                             bDevEVal = false;
 
                         if (bDevEVal == true)
-                            showValue(ref m_arLabelCommon[(int)PanelQuickDataStandard.CONTROLS.lblDevEVal - indxStartCommonPVal], dblDevEVal, false, @"%");
+                            showValue(ref m_arLabelCommon[(int)PanelQuickDataStandard.CONTROLS.lblDevEVal - indxStartCommonPVal]
+                                , dblDevEVal
+                                , true
+                                , false
+                                , @"%");
                         else
-                            showValue(ref m_arLabelCommon[(int)PanelQuickDataStandard.CONTROLS.lblDevEVal - indxStartCommonPVal], double.NegativeInfinity, false, @"---");
+                            showValue(ref m_arLabelCommon[(int)PanelQuickDataStandard.CONTROLS.lblDevEVal - indxStartCommonPVal]
+                                , double.NegativeInfinity
+                                , true
+                                , false
+                                , @"---");
                     }
 
                     if ((m_parent.m_tecView.currHour == true) && (min == 0))
@@ -1220,8 +1276,15 @@ namespace Statistic
                         }
                         else
                         {
-                            if (!(m_arLabelCommon[(int)PanelQuickDataStandard.CONTROLS.lblCurrentEVal - indxStartCommonPVal] == null)) m_arLabelCommon[(int)PanelQuickDataStandard.CONTROLS.lblCurrentEVal - indxStartCommonPVal].ForeColor = System.Drawing.Color.LimeGreen; else ;
-                            if (!(m_arLabelCommon[(int)PanelQuickDataStandard.CONTROLS.lblHourEVal - indxStartCommonPVal] == null)) m_arLabelCommon[(int)PanelQuickDataStandard.CONTROLS.lblHourEVal - indxStartCommonPVal].ForeColor = System.Drawing.Color.Yellow; else ;
+                            if (!(m_arLabelCommon[(int)PanelQuickDataStandard.CONTROLS.lblCurrentEVal - indxStartCommonPVal] == null))
+                                m_arLabelCommon[(int)PanelQuickDataStandard.CONTROLS.lblCurrentEVal - indxStartCommonPVal].ForeColor =
+                                    System.Drawing.Color.LimeGreen;
+                            else ;
+
+                            if (!(m_arLabelCommon[(int)PanelQuickDataStandard.CONTROLS.lblHourEVal - indxStartCommonPVal] == null))
+                                m_arLabelCommon[(int)PanelQuickDataStandard.CONTROLS.lblHourEVal - indxStartCommonPVal].ForeColor =
+                                    System.Drawing.Color.Yellow;
+                            else ;
                         }
                         //    }
                         //}
@@ -1248,7 +1311,7 @@ namespace Statistic
                     {
                         foreach (TECComponent g in m_parent.m_tecView.m_localTECComponents)
                         {
-                            if (g.m_id < 500)
+                            if (g.IsGTP == true)
                                 //Только ГТП
                                 foreach (TG tg in g.m_listTG)
                                 {//Цикл по списку с ТГ
@@ -1257,7 +1320,9 @@ namespace Statistic
                                         //Ошибка при запуске 'CustomTecView' с оперативной панелью (Исправлено: 13.05.2015)
                                         // не "успевает" new ???
                                         && (!(m_parent.m_tecView.m_dictValuesTG[tg.m_id].m_powerMinutes[min] < 0)))
-                                        showValue(m_tgLabels[tg.m_id][(int)TG.INDEX_VALUE.FACT], m_parent.m_tecView.m_dictValuesTG[tg.m_id].m_powerMinutes[min]);
+                                        showValue(m_tgLabels[tg.m_id][(int)TG.INDEX_VALUE.FACT]
+                                            , m_parent.m_tecView.m_dictValuesTG[tg.m_id].m_powerMinutes[min]
+                                            , true);
                                     else
                                     {
                                         m_tgLabels[tg.m_id][(int)TG.INDEX_VALUE.FACT].Text = "---";
@@ -1278,7 +1343,9 @@ namespace Statistic
                         {
                             if ((!(m_parent.m_tecView.m_dictValuesTG[comp.m_listTG[0].m_id].m_powerMinutes == null))
                                 && (!(m_parent.m_tecView.m_dictValuesTG[comp.m_listTG[0].m_id].m_powerMinutes[min] < 0)))
-                                showValue(m_tgLabels[comp.m_listTG[0].m_id][(int)TG.INDEX_VALUE.FACT], m_parent.m_tecView.m_dictValuesTG[comp.m_listTG[0].m_id].m_powerMinutes[min]);
+                                showValue(m_tgLabels[comp.m_listTG[0].m_id][(int)TG.INDEX_VALUE.FACT]
+                                    , m_parent.m_tecView.m_dictValuesTG[comp.m_listTG[0].m_id].m_powerMinutes[min]
+                                    , true);
                             else
                                 m_tgLabels[comp.m_listTG[0].m_id][(int)TG.INDEX_VALUE.FACT].Text = "---";
 
@@ -1292,19 +1359,7 @@ namespace Statistic
                 }
                 else
                     ;
-            }
-
-            private Color getColorFactValues()
-            {
-                //Определить цвет
-                if (m_parent.m_tecView.currHour == true)
-                    if (m_parent.m_tecView.m_markWarning.IsMarked((int)TecView.INDEX_WARNING.LAST_MIN) == true)
-                        return System.Drawing.Color.OrangeRed;
-                    else
-                        return System.Drawing.Color.LimeGreen;
-                else
-                    return System.Drawing.Color.OrangeRed;
-            }
+            }            
 
             private void OnItemClick(object obj, EventArgs ev)
             {

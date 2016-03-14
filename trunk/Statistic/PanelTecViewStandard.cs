@@ -158,7 +158,7 @@ namespace Statistic
         }
 
         public PanelTecViewStandard(TEC tec, int indx_tec, int indx_comp)
-            : base(TecView.TYPE_PANEL.VIEW, tec, indx_tec, indx_comp)
+            : base(/*TecView.TYPE_PANEL.VIEW, */tec, indx_tec, indx_comp)
         {
             m_arPercRows = new int [] { 5, 71 };
         }

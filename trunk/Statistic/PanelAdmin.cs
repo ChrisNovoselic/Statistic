@@ -163,11 +163,11 @@ namespace Statistic
             this.ResumeLayout();
         }
 
-        public PanelAdmin(int idListener, FormChangeMode.MANAGER type, HMark markQueries)
+        public PanelAdmin(int idListener, FormChangeMode.MANAGER type, HMark markQueries, int [] arTECLimit)
         {
             preInitialize (type);
 
-            try { m_admin.InitTEC(idListener, FormChangeMode.MODE_TECCOMPONENT.UNKNOWN, /*TYPE_DATABASE_CFG.CFG_200, */markQueries, false); }
+            try { m_admin.InitTEC(idListener, FormChangeMode.MODE_TECCOMPONENT.UNKNOWN, /*TYPE_DATABASE_CFG.CFG_200, */markQueries, false, arTECLimit); }
             catch (Exception e)
             {
                 Logging.Logg().Exception(e, "PanelAdmin::Initialize () - m_admin.InitTEC ()...", Logging.INDEX_MESSAGE.NOT_SET);
@@ -277,7 +277,7 @@ namespace Statistic
         /// Установка значения даты/времени в элементе управления 'календарь' и
         /// выполнение функции, связанной с изменением значения даты/времени
         /// </summary>
-        /// <param name="dt"></param>
+        /// <param name="dt">Устанавливаемая дата</param>
         private void setDate(DateTime dt)
         {
             mcldrDate.SetDate(dt);
@@ -384,7 +384,7 @@ namespace Statistic
 
         public virtual void InitializeComboBoxTecComponent (FormChangeMode.MODE_TECCOMPONENT mode) 
         {
-            m_listTECComponentIndex = m_admin.GetListIndexTECComponent(mode);
+            m_listTECComponentIndex = m_admin.GetListIndexTECComponent(mode, !(this is PanelAdminLK));
 
             //m_admin.m_typeFields = AdminTS.TYPE_FIELDS.DYNAMIC;
 

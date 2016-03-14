@@ -701,7 +701,7 @@ namespace Statistic
 
             int idListener = register_idListenerMainDB(out err);
 
-            List<TEC> TEC = new InitTEC_200(idListener, true, false).tec;
+            List<TEC> TEC = new InitTEC_200(idListener, true, new int [] { 0, (int)TECComponent.ID.GTP }, false).tec;
 
             foreach (StatisticCommon.TEC t in TEC)
             {

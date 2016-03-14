@@ -70,7 +70,7 @@ namespace Statistic
         }
 
         public PanelAdminNSS(int idListener, HMark markQueries)
-            : base(idListener, FormChangeMode.MANAGER.NSS, markQueries)
+            : base(idListener, FormChangeMode.MANAGER.NSS, markQueries, new int[] { 0, (int)TECComponent.ID.LK })
         {
             m_admin.SetDelegateSaveComplete(null);
         }

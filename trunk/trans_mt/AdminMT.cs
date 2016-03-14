@@ -33,12 +33,11 @@ namespace trans_mt
         {
             string query = string.Empty;
             int i = -1;
-            TimeSpan ts = HDateTime.GetUTCOffsetOfMoscowTimeZone();
 
             query += @"SELECT [objName], [idFactor], [PBR_NUMBER], [Datetime], [Value_MBT] as VALUE FROM [dbo].[v_ALL_PARAM_MODES_BIYSK]" +
                 @" WHERE [ID_Type_Data] = 3" +
                 @" AND [objName] = '" + comp.m_listMTermId[0] + @"'" +
-                @" AND [Datetime] > " + @"'" + date.Date.Add(-ts).ToString(@"yyyyMMdd HH:00:00.000") + @"'"
+                @" AND [Datetime] > " + @"'" + date.Date.Add(-HDateTime.TS_NSK_OFFSET_OF_MOSCOWTIMEZONE).ToString(@"yyyyMMdd HH:00:00.000") + @"'"
                 + @" AND [PBR_NUMBER] > 0"
                 + @" ORDER BY [Datetime], [PBR_NUMBER]"
                 ;
@@ -58,7 +57,6 @@ namespace trans_mt
                 , iMaxPBRNumber = -1;
             //Номер ПБР для всех типов (P, Pmin, Pmax) значений
             int[] arPBRNumber = new int[3];
-            TimeSpan ts = HDateTime.GetUTCOffsetOfMoscowTimeZone();
             DataRow[] hourRows;
 
             for (hour = 1; hour < 25; hour++)
@@ -69,7 +67,7 @@ namespace trans_mt
                     //hourRows = table.Select(@"Datetime='" + date.Date.AddHours(hour + 1 - ts.Hours).ToString(@"yyyyMMdd HH:00:00.000") + @"'");
                     //hourRows = table.Select(@"Datetime='" + date.Date.AddHours(hour + 1 - ts.Hours) + @"'");
                     //hourRows = table.Select(@"Datetime=#" + date.Date.AddHours(hour + 1 - ts.Hours).ToString(@"yyyyMMdd HH:00:00.000") + @"#");
-                    hourRows = table.Select(@"Datetime=#" + date.Date.AddHours(hour - ts.Hours).ToString(@"yyyy-MM-dd HH:00:00.000") + @"#");
+                    hourRows = table.Select(@"Datetime=#" + date.Date.AddHours(hour - HDateTime.TS_NSK_OFFSET_OF_MOSCOWTIMEZONE.Hours).ToString(@"yyyy-MM-dd HH:00:00.000") + @"#");
 
                     //Присвоить исходные для часа значения
                     //PBRNumber = -1;

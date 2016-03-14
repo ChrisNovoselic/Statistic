@@ -312,35 +312,39 @@ namespace StatisticTimeSync
                 }
             }
 
-            public void Activate(bool activated)
+            public override bool Activate(bool activated)
             {
-                if (activated == true)
-                {
-                    if (m_checkBoxTurnOn.Checked == true)
-                    {
-                        //Start
-                        //Спросить параметры соединения
-                        IAsyncResult iar = BeginInvoke(new DelegateFunc(queryConnSett));
-                    }
+                bool bRes = base.Activate(activated);
+
+                if (bRes == true)
+                    if (activated == true)
+                        if (m_checkBoxTurnOn.Checked == true)
+                        {
+                            //Start
+                            //Спросить параметры соединения
+                            IAsyncResult iar = BeginInvoke(new DelegateFunc(queryConnSett));
+                        }
+                        else
+                            ;
                     else
-                        ;
-                }
+                    {
+                        //Stop
+                        stop();
+
+                        //Признак деактивации
+                        recievedGetDate(DateTime.MinValue);
+                        recievedEtalonDate(DateTime.MinValue);
+                    }
                 else
-                {
-                    //Stop
-                    stop();
+                    ;
 
-                    //Признак деактивации
-                    recievedGetDate(DateTime.MinValue);
-                    recievedEtalonDate(DateTime.MinValue);
-
-                }
+                return bRes;
             }
 
             /// <summary>
-            /// 
+            /// Включить групповой элемент управления для опроса/сравнения установленной даты/времени источника данных
             /// </summary>
-            /// <param name="indx"></param>
+            /// <param name="indx">Индекс элемента управления</param>
             public void TurnOn(int indx)
             {
                 if (m_checkBoxTurnOn.Checked == false)

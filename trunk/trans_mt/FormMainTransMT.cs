@@ -83,7 +83,7 @@ namespace trans_mt
                     }
                     try
                     {
-                        m_arAdmin[i].InitTEC(idListener, m_modeTECComponent, /*arTypeConfigDB [i], */markQueries, bIgnoreTECInUse);
+                        m_arAdmin[i].InitTEC(idListener, m_modeTECComponent, /*arTypeConfigDB [i], */markQueries, bIgnoreTECInUse, new int[] { 0, (int)TECComponent.ID.LK });
                         RemoveTEC(m_arAdmin[i]);
                     }
                     catch (Exception e)

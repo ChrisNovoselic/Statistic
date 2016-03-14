@@ -39,6 +39,8 @@ namespace StatisticCommon
         {
             return true;
         }
+
+        //protected List<TEC> m_listTEC;
     }
 
     public abstract class PanelStatisticWithTableHourRows : PanelStatistic

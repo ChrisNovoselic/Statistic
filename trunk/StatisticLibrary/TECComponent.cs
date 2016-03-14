@@ -16,7 +16,7 @@ namespace StatisticCommon
         /// <summary>
         /// Идентификаторы для типов компонента ТЭЦ
         /// </summary>
-        public enum ID : int { GTP = 100, PC = 500, TG = 1000, MAX = 10000 }
+        public enum ID : int { LK = 10, GTP = 100, GTP_LK = 200, PC = 500, TG = 1000, MAX = 10000 }
         /// <summary>
         /// Краткое наименовнаие компонента
         /// </summary>

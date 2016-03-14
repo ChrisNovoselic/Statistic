@@ -123,7 +123,7 @@ namespace trans_gtp
                 try
                 {
                     //((AdminTS_KomDisp)m_arAdmin[i]).InitTEC(m_formConnectionSettingsConfigDB.getConnSett((Int16)CONN_SETT_TYPE.DEST), m_modeTECComponent, true, false);
-                    m_arAdmin[i].InitTEC(idListener, m_modeTECComponent, /*arTypeConfigDB[i], */markQueries, true);
+                    m_arAdmin[i].InitTEC(idListener, m_modeTECComponent, /*arTypeConfigDB[i], */markQueries, true, new int[] { 0, (int)TECComponent.ID.LK });
                     RemoveTEC(m_arAdmin[i]);
                 }
                 catch (Exception e)

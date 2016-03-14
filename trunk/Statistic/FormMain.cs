@@ -1786,10 +1786,10 @@ namespace Statistic
             else
                 ;
 
-            if (! (tec.m_id > AdminTS_LK.Index_LK))
-                panelTecView = new PanelTecView(tec, ti, ci, null/*, ErrorReport, WarningReport, ActionReport, ReportClear*/);
-            else
+            if (tec.m_id > (int)TECComponent.ID.LK)
                 panelTecView = new PanelLKView(tec, ti, ci);
+            else
+                panelTecView = new PanelTecView(tec, ti, ci, null/*, ErrorReport, WarningReport, ActionReport, ReportClear*/);
 
             panelTecView.SetDelegateWait(delegateStartWait, delegateStopWait, delegateEvent);
             panelTecView.SetDelegateReport(ErrorReport, WarningReport, ActionReport, ReportClear);
