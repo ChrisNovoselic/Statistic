@@ -394,6 +394,7 @@ namespace Statistic
 
             createZedGraphControlMins(m_tecView.m_lockValue);
             createZedGraphControlHours(m_tecView.m_lockValue);
+            this.m_ZedGraphHours.MouseUpEvent += new ZedGraph.ZedGraphControl.ZedMouseEventHandler(this.zedGraphHours_MouseUpEvent);
 
             this.stctrViewPanel1 = new System.Windows.Forms.SplitContainer();
             this.stctrViewPanel2 = new System.Windows.Forms.SplitContainer();
@@ -875,7 +876,7 @@ namespace Statistic
 
         protected void NewDateRefresh()
         {
-            Debug.WriteLine(@"PanelTecViewBase::NewDateRefresh () - m_tecView.currHour=" + m_tecView.currHour.ToString ());
+            //Debug.WriteLine(@"PanelTecViewBase::NewDateRefresh () - m_tecView.currHour=" + m_tecView.currHour.ToString ());
 
             //delegateStartWait ();
             if (!(delegateStartWait == null)) delegateStartWait(); else ;
@@ -898,7 +899,7 @@ namespace Statistic
 
         private void dtprDate_ValueChanged(object sender, EventArgs e)
         {
-            Debug.WriteLine(@"PanelTecViewBase::dtprDate_ValueChanged () - DATE_pnlQuickData=" + _pnlQuickData.dtprDate.Value.ToString() + @", update=" + update);
+            //Debug.WriteLine(@"PanelTecViewBase::dtprDate_ValueChanged () - DATE_pnlQuickData=" + _pnlQuickData.dtprDate.Value.ToString() + @", update=" + update);
 
             if (update == true)
             {
@@ -960,6 +961,45 @@ namespace Statistic
             
         //    m_tecView.ChangeState ();
         //}
+
+        protected bool zedGraphHours_MouseUpEvent(ZedGraphControl sender, MouseEventArgs e)
+        {
+            if (e.Button != MouseButtons.Left)
+                return true;
+
+            object obj;
+            PointF p = new PointF(e.X, e.Y);
+            bool found;
+            int index;
+
+            found = sender.GraphPane.FindNearestObject(p, CreateGraphics(), out obj, out index);
+
+            if (!(obj is BarItem) && !(obj is LineItem))
+                return true;
+
+            if ((!(m_tecView == null)) && (found == true))
+            {
+                if (!(delegateStartWait == null)) delegateStartWait(); else ;
+
+                bool bRetroHour = m_tecView.zedGraphHours_MouseUpEvent(index);
+
+                if (bRetroHour == true)
+                    setRetroTickTime(m_tecView.lastHour, 60);
+                else
+                {
+                    ////Вариань №1
+                    //setNowDate(false);
+
+                    //Вариань №2
+                    m_tecView.currHour = true;
+                    NewDateRefresh();
+                }
+
+                if (!(delegateStopWait == null)) delegateStopWait(); else ;
+            }
+
+            return true;
+        }
 
         protected bool timerCurrentStarted
         {
@@ -1039,7 +1079,7 @@ namespace Statistic
         /// <param name="dt">дата/время для отображения</param>
         private void tickTime(object dt)
         {
-            _pnlQuickData.lblServerTime.Text = ((DateTime)dt).Add(m_tecView.m_tsOffsetToMoscow).ToString("HH:mm:ss");
+            _pnlQuickData.lblServerTime.Text = ((DateTime)dt).ToString("HH:mm:ss");
         }
 
         /// <summary>
@@ -1057,7 +1097,7 @@ namespace Statistic
                     if (InvokeRequired == true)
                         Invoke(delegateTickTime, m_tecView.serverTime);
                     else
-                        tickTime(m_tecView.serverTime);
+                        tickTime(m_tecView.serverTime.Add(m_tecView.m_tsOffsetToMoscow));
                 else
                     return;
 

@@ -6,6 +6,7 @@ using System.Data;
 using System.IO;
 using System.Windows.Forms;     
 using System.Threading;
+using System.Diagnostics;
 
 using HClassLibrary;
 
@@ -765,7 +766,7 @@ namespace StatisticCommon
         private string minsFactCommonRequest (DateTime dt, string sen, TecView.ID_AISKUE_PARNUMBER idParNumber) {
             // для 30-ти мин знач. смещение 1 час назад, чтобы гарантированно получить все значения
             // при этом 30-ти мин знач. за текущий час не играют роли
-            int offsetHoursParNumber = idParNumber == TecView.ID_AISKUE_PARNUMBER.FACT_03 ? 0 : 1;
+            int offsetHoursParNumber = idParNumber == TecView.ID_AISKUE_PARNUMBER.FACT_03 ? 0 : 0;
 
             return @"SELECT * FROM [dbo].[ft_get_value_askue](" + m_id + @"," +
                 (int)idParNumber + @"," +
@@ -822,6 +823,8 @@ namespace StatisticCommon
                     request = string.Empty;
                     break;
             }
+
+            Debug.WriteLine(@"TEC::minsFactRequest () = " + request);
 
             return request;
         }
@@ -1089,6 +1092,8 @@ namespace StatisticCommon
                     request = string.Empty;
                     break;
             }
+
+            Debug.WriteLine(@"TEC::hoursFactRequest () = " + request);
 
             return request;
         }

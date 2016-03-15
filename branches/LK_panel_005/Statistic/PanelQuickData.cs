@@ -32,6 +32,93 @@ namespace Statistic
                 InitializeComponent();
             }
 
+            public Font GetFontHLabel(HLabel.TYPE_HLABEL typeLabel)
+            {
+                Font fontRes = null;
+
+                string textOfMaxLengths = string.Empty;
+                string strValue = string.Empty;
+                SizeF szLabelOfMinSizes = new SizeF (); //(float.MaxValue, float.MaxValue);
+
+                Graphics g = this.CreateGraphics();
+                    
+                textOfMaxLengths = string.Empty;
+                szLabelOfMinSizes.Height =
+                szLabelOfMinSizes.Width =
+                    float.MaxValue;
+
+                foreach (Control ctrl in this.Controls)
+                {
+                    if (ctrl is HClassLibrary.HLabel)
+                    {
+                        if (typeLabel == (ctrl as HLabel).m_type)
+                        {
+                            if (textOfMaxLengths.Length < ctrl.Text.Length)
+                            {
+                                switch (typeLabel)
+                                {
+                                    case HLabel.TYPE_HLABEL.TG:
+                                        if (ctrl.Text.LongCount(delegate(char ch) { return ch == '-'; }) > 1)
+                                            strValue = new string('8', (int)ctrl.Text.LongCount(delegate(char ch) { return ch == '-'; }));
+                                        else
+                                            strValue = ctrl.Text;
+                                        break;
+                                    case HLabel.TYPE_HLABEL.TOTAL:
+                                        if (ctrl.Text.LongCount(delegate(char ch) { return ch == '-'; }) > 1)
+                                            strValue = new string('8', ctrl.Text.Length + 3);
+                                        else
+                                            strValue = ctrl.Text;
+                                        break;
+                                    case HLabel.TYPE_HLABEL.TOTAL_ZOOM:
+                                        if (ctrl.Text.LongCount(delegate(char ch) { return ch == '-'; }) > 1)
+                                            strValue = new string('8', ctrl.Text.Length + 6);
+                                        else
+                                            strValue = ctrl.Text;
+                                        break;
+                                    default:
+                                        strValue = ctrl.Text;
+                                        break;
+                                }
+
+                                if (textOfMaxLengths.Length < strValue.Length)
+                                    textOfMaxLengths = strValue;
+                                else
+                                    ;
+                            }
+                            else
+                                ;
+
+                            if ((szLabelOfMinSizes.Height > ctrl.Height)
+                                || (szLabelOfMinSizes.Width > ctrl.Width))
+                            {
+                                szLabelOfMinSizes.Height = ctrl.Height;
+                                szLabelOfMinSizes.Width = ctrl.Width;
+                            }
+                            else
+                                ;
+                        }
+                        else
+                        {
+                            Logging.Logg().Error(@"HPanelTableLayout::GetFontHLabel () - type=UNKNOWN, ctrl.Text=" + ctrl.Text, Logging.INDEX_MESSAGE.NOT_SET);
+
+                            break;
+                        }
+                    }
+                    else
+                    {
+                    }
+                }
+
+                if ((szLabelOfMinSizes.Height < float.MaxValue) && (szLabelOfMinSizes.Width < float.MaxValue))
+                {
+                    fontRes = HLabel.FitFont(g, textOfMaxLengths, szLabelOfMinSizes, new SizeF(0.85F, 0.85F), 0.1F);
+                }
+                else
+                    ;
+
+                return fontRes;
+            }
+
             public Font[] GetFontHLabel()
             {
                 string[] textOfMaxLengths = new string[(int)HLabel.TYPE_HLABEL.COUNT_TYPE_HLABEL] { string.Empty, string.Empty, string.Empty };
@@ -64,7 +151,10 @@ namespace Statistic
                                 switch (indx)
                                 {
                                     case (int)HLabel.TYPE_HLABEL.TG:
-                                        strValue = ctrl.Text;
+                                        if (ctrl.Text.LongCount(delegate(char ch) { return ch == '-'; }) > 1)
+                                            strValue = new string('8', (int)ctrl.Text.LongCount(delegate(char ch) { return ch == '-'; }));
+                                        else
+                                            strValue = ctrl.Text;
                                         break;
                                     case (int)HLabel.TYPE_HLABEL.TOTAL:
                                         if (ctrl.Text.LongCount(delegate(char ch) { return ch == '-'; }) > 1)
@@ -73,9 +163,13 @@ namespace Statistic
                                             strValue = ctrl.Text;
                                         break;
                                     case (int)HLabel.TYPE_HLABEL.TOTAL_ZOOM:
-                                        strValue = ctrl.Text;
+                                        if (ctrl.Text.LongCount(delegate(char ch) { return ch == '-'; }) > 1)
+                                            strValue = new string('8', ctrl.Text.Length + 6);
+                                        else
+                                            strValue = ctrl.Text;
                                         break;
                                     default:
+                                        strValue = ctrl.Text;
                                         break;
                                 }
 
@@ -402,7 +496,7 @@ namespace Statistic
             /// <param name="bCheckVal">признак проверки значения</param>
             /// <param name="bPower">признак отображения значения мощности</param>
             /// <param name="adding">дополнительная для отображения строка</param>
-            protected static void showValue(ref System.Windows.Forms.Label lbl, double val, bool bCheckVal, bool bPower, string adding)
+            protected static void showValue(ref System.Windows.Forms.Label lbl, double val, int round, bool bCheckVal, bool bPower, string adding)
             {
                 if (!(lbl == null))
                     if (val == double.NegativeInfinity)
@@ -411,11 +505,11 @@ namespace Statistic
                         if (bPower == true)
                             if ((val > 1)
                                 || (bCheckVal == false))
-                                lbl.Text = val.ToString("F2") + adding;
+                                lbl.Text = val.ToString("F" + round.ToString ()) + adding;
                             else
                                 lbl.Text = 0.ToString("F0");
                         else
-                            lbl.Text = val.ToString("F2") + adding;
+                            lbl.Text = val.ToString("F" + round.ToString()) + adding;
                 else
                     ;
             }
@@ -425,11 +519,11 @@ namespace Statistic
             /// </summary>
             /// <param name="lbl">элемент управления</param>
             /// <param name="val">значение для отображения</param>
-            protected static void showValue(System.Windows.Forms.Label lbl, double val, bool bCheckVal)
+            protected static void showValue(System.Windows.Forms.Label lbl, double val, int round, bool bCheckVal)
             {
                 if ((val > 1)
                     || (bCheckVal == false))
-                    lbl.Text = val.ToString("F2");
+                    lbl.Text = Math.Round(val, round, MidpointRounding.ToEven).ToString("F" + round.ToString());
                 else
                     lbl.Text = 0.ToString("F0");
             }
@@ -903,6 +997,9 @@ namespace Statistic
                     this.SetRowSpan(m_lblPowerFactZoom, COUNT_ROWS);
                     this.ColumnStyles.Add(new ColumnStyle(SizeType.Absolute, 88 * 3));
 
+                    //Font fontLabelZoom = GetFontHLabel(HLabel.TYPE_HLABEL.TOTAL_ZOOM);
+                    //m_lblPowerFactZoom.Font = new Font (fontLabelZoom, FontStyle.Bold);
+
                     bPowerFactZoom = true;
                 }
                 else
@@ -1063,6 +1160,7 @@ namespace Statistic
 
                 showValue(ref m_arLabelCommon[(int)PanelQuickDataStandard.CONTROLS.lblCommonPVal_TM - m_indxStartCommonFirstValueSeries]
                     , value_TM
+                    , 2 //round
                     , true
                     , true
                     , string.Empty);
@@ -1122,6 +1220,7 @@ namespace Statistic
 
                     showValue(ref m_arLabelCommon[(int)PanelQuickDataStandard.CONTROLS.lblCommonPVal_Fact - indxStartCommonPVal]
                         , value
+                        , 2 //round
                         , true
                         , true
                         , string.Empty);
@@ -1133,6 +1232,7 @@ namespace Statistic
                     valueECur = value / 20;
                     showValue(ref m_arLabelCommon[(int)PanelQuickDataStandard.CONTROLS.lblCurrentEVal - indxStartCommonPVal]
                         , valueECur
+                        , 2 //round
                         , true
                         , true
                         , string.Empty);
@@ -1140,6 +1240,7 @@ namespace Statistic
                     valueEFuture = valueECur * (20 - min - 0);
                     showValue(ref m_arLabelCommon[(int)PanelQuickDataStandard.CONTROLS.lblHourEVal - indxStartCommonPVal]
                         , valueEBefore + valueECur + valueEFuture
+                        , 2 //round
                         , true
                         , true
                         , string.Empty);
@@ -1148,6 +1249,7 @@ namespace Statistic
                     {
                         showValue(ref m_arLabelCommon[(int)PanelQuickDataStandard.CONTROLS.lblPBRrecVal - indxStartCommonPVal]
                             , m_parent.m_tecView.recomendation
+                            , 2 //round
                             , true
                             , true
                             , string.Empty);
@@ -1181,6 +1283,7 @@ namespace Statistic
                             if (!(min == 0))
                                 showValue(ref m_arLabelCommon[(int)PanelQuickDataStandard.CONTROLS.lblAverPVal - indxStartCommonPVal]
                                     , summ / min
+                                    , 2 //round
                                     , true
                                     , true
                                     , string.Empty);
@@ -1196,6 +1299,7 @@ namespace Statistic
 
                             showValue(ref m_arLabelCommon[(int)PanelQuickDataStandard.CONTROLS.lblAverPVal - indxStartCommonPVal]
                                 , summ
+                                , 2 //round
                                 , true
                                 , true
                                 , string.Empty);
@@ -1225,12 +1329,14 @@ namespace Statistic
                         if (bDevEVal == true)
                             showValue(ref m_arLabelCommon[(int)PanelQuickDataStandard.CONTROLS.lblDevEVal - indxStartCommonPVal]
                                 , dblDevEVal
+                                , 2 //round
                                 , true
                                 , false
                                 , @"%");
                         else
                             showValue(ref m_arLabelCommon[(int)PanelQuickDataStandard.CONTROLS.lblDevEVal - indxStartCommonPVal]
                                 , double.NegativeInfinity
+                                , 2 //round
                                 , true
                                 , false
                                 , @"---");
@@ -1322,6 +1428,7 @@ namespace Statistic
                                         && (!(m_parent.m_tecView.m_dictValuesTG[tg.m_id].m_powerMinutes[min] < 0)))
                                         showValue(m_tgLabels[tg.m_id][(int)TG.INDEX_VALUE.FACT]
                                             , m_parent.m_tecView.m_dictValuesTG[tg.m_id].m_powerMinutes[min]
+                                            , 2 //round
                                             , true);
                                     else
                                     {
@@ -1345,6 +1452,7 @@ namespace Statistic
                                 && (!(m_parent.m_tecView.m_dictValuesTG[comp.m_listTG[0].m_id].m_powerMinutes[min] < 0)))
                                 showValue(m_tgLabels[comp.m_listTG[0].m_id][(int)TG.INDEX_VALUE.FACT]
                                     , m_parent.m_tecView.m_dictValuesTG[comp.m_listTG[0].m_id].m_powerMinutes[min]
+                                    , 2 //round
                                     , true);
                             else
                                 m_tgLabels[comp.m_listTG[0].m_id][(int)TG.INDEX_VALUE.FACT].Text = "---";

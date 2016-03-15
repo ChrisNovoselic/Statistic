@@ -5203,7 +5203,7 @@ namespace StatisticCommon
             //m_tec.Request(CONN_SETT_TYPE.DATA_ASKUE, m_tec.hoursRequest(date, m_tec.GetSensorsString(m_indx_TECComponent, CONN_SETT_TYPE.DATA_ASKUE, HDateTime.INTERVAL.HOURS)));
             Request(m_dictIdListeners[m_tec.m_id][(int)CONN_SETT_TYPE.DATA_AISKUE], m_tec.hoursFactRequest(date, m_tec.GetSensorsString(indxTECComponents, CONN_SETT_TYPE.DATA_AISKUE, HDateTime.INTERVAL.HOURS)));
 
-            Debug.WriteLine(@"TecView::GetHoursFactRequest () - DATE=" + date.ToString());
+            //Debug.WriteLine(@"TecView::GetHoursFactRequest () - DATE=" + date.ToString());
         }
 
         private void GetHourTMRequest(DateTime date, int lh)

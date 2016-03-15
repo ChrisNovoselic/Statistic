@@ -32,7 +32,7 @@ namespace Statistic
             OnEventRestruct(
                 //PanelCustomTecView.HLabelCustomTecView.s_propViewDefault
                 new int[] { 0, 1, 0, 1, 0, 1, -1 } //отобразить часовые таблицу/гистограмму/панель с оперативными данными
-                );
+                );            
         }
 
         private class TecViewLK : TecView
@@ -392,7 +392,7 @@ namespace Statistic
                 if (cntMinValues > 0)
                     //Отобразить значение
                     showValue(m_tgLabels[id_tg][(int)TG.INDEX_VALUE.FACT]
-                        , powerLastHour / cntMinValues, false);
+                        , powerLastHour / cntMinValues, 3, false);
                 else
                     //Отобразить строку - отсутствие значения
                     m_tgLabels[id_tg][(int)TG.INDEX_VALUE.FACT].Text = "---";
@@ -404,7 +404,7 @@ namespace Statistic
             public override void ShowFactValues()
             {
                 int indxStartCommonPVal = m_indxStartCommonFirstValueSeries
-                    , lastHour = m_parent.m_tecView.lastHour > 0 ? m_parent.m_tecView.lastHour - 1 : 0;
+                    , lastHour = m_parent.m_tecView.lastHour > 0 ? m_parent.m_tecView.lastHour - 0 : 0;
                 double[] powerLastHourMinutes;
                 Color clrLabel = Color.Empty;
 
@@ -414,31 +414,36 @@ namespace Statistic
                     // текущее значение температуры (час)
                     showValue(ref m_arLabelCommon[(int)PanelQuickDataLK.CONTROLS.lblTemperatureCurrentValue - indxStartCommonPVal]
                         , double.NegativeInfinity
+                        , 2 //round
                         , false
                         , true
                         , string.Empty);
                     // плановое значение температуры (час)
                     showValue(ref m_arLabelCommon[(int)PanelQuickDataLK.CONTROLS.lblTemperatureHourValue - indxStartCommonPVal]
                         , m_parent.m_tecView.m_valuesHours[lastHour].valuesPmin
+                        , 2 //round
                         , false
                         , true
                         , string.Empty);
                     // плановое значение температуры (сутки)
                     showValue(ref m_arLabelCommon[(int)PanelQuickDataLK.CONTROLS.lblTemperatureDateValue - indxStartCommonPVal]
                         , double.NegativeInfinity
+                        , 2 //round
                         , false
                         , true
                         , string.Empty);
                     //Мощность
                     // текущее значение мощности (час)
                     showValue(ref m_arLabelCommon[(int)PanelQuickDataLK.CONTROLS.lblPowerCurrentValue - indxStartCommonPVal]
-                        , m_parent.m_tecView.GetSummaFactValues(lastHour)// * 1000
+                        , m_parent.m_tecView.GetSummaFactValues(lastHour)
+                        , 3 //round
                         , false
                         , true
                         , string.Empty);
                     // плановое значение мощности (час)
                     showValue(ref m_arLabelCommon[(int)PanelQuickDataLK.CONTROLS.lblPowerHourValue - indxStartCommonPVal]
-                        , m_parent.m_tecView.m_valuesHours[lastHour].valuesPBR// * 1000
+                        , m_parent.m_tecView.m_valuesHours[lastHour].valuesPBR
+                        , 3 //round
                         , false
                         , true
                         , string.Empty);
@@ -613,14 +618,14 @@ namespace Statistic
                 cntWarn = 0;
                 for (int i = 0; i < itemscount; i++)
                 {
-                    Rows[i].Cells[(int)INDEX_COLUMNS.POWER_SUM].Value = values[i].valuesFact.ToString(@"F2");
+                    Rows[i].Cells[(int)INDEX_COLUMNS.POWER_SUM].Value = values[i].valuesFact.ToString(@"F3");
                 }
             }
         }
 
         private class MainHours
         {
-            public static bool IsMain(int hour) { return ((!(hour < 8)) && (!(hour > 12))) || ((!(hour < 17)) && (!(hour > 21))); }
+            public static bool IsMain(int hour) { return ((!(hour < 8)) && (!(hour > 12))) || ((!(hour < 16)) && (!(hour > 21))); }
         }
 
         private class ZedGraphControlLK : HZedGraphControl
@@ -647,20 +652,21 @@ namespace Statistic
 
                 string[] names = new string[itemscount];
 
-                ZedGraph.PointPairList valuesPDiviation = new PointPairList()
-                    , valuesODiviation = new PointPairList()
-                    , valuesPlan = new PointPairList()
-                    , valuesMainFact = new PointPairList()
-                    , valuesRegularFact = new PointPairList();
+                double []valuesPDiviation = new double[itemscount]
+                    , valuesODiviation = new double[itemscount]
+                    , valuesPlan = new double[itemscount]
+                    , valuesMainFact = new double[itemscount]
+                    , valuesRegularFact = new double[itemscount];
+                //ZedGraph.PointPairList 
 
                 double minimum = double.MaxValue, minimum_scale;
                 double maximum = 0, maximum_scale;
                 bool noValues = true;
-                for (int i = 0, h = 1; i < lastHour; i++, h ++)
+                for (int i = 0, h = 1; i < itemscount; i++, h++)
                 {
                     if (bCurDateSeason == true)
                     {
-                        names[i] = (i + 1 - delegateSeasonHourOffset(i + 1)).ToString();
+                        names[i] = (h - delegateSeasonHourOffset(h)).ToString();
 
                         if ((i + 0) == HAdmin.SeasonDateTime.Hour)
                             names[i] += @"*";
@@ -672,40 +678,45 @@ namespace Statistic
 
                     if (values[i].valuesPBR > 0)
                     {
-                        valuesPDiviation.Add(h, values[i].valuesPBR + values[i].valuesDiviation);
-                        valuesPlan.Add(h, values[i].valuesPBR);
-                        valuesODiviation.Add(h, values[i].valuesPBR - values[i].valuesDiviation);
+                        valuesPDiviation[i] = values[i].valuesPBR + values[i].valuesDiviation;
+                        valuesPlan[i] = values[i].valuesPBR;
+                        valuesODiviation[i] = values[i].valuesPBR - values[i].valuesDiviation;
                     }
                     else
                         ;
 
-                    if (MainHours.IsMain (h) == true)
-                        valuesMainFact.Add(h, values[i].valuesFact);
+                    if (MainHours.IsMain(h) == true)
+                    {
+                        valuesMainFact[i] = values[i].valuesFact;
+                        valuesRegularFact[i] =  0F;
+                    }
                     else
-                        valuesRegularFact.Add(h, values[i].valuesFact);
-
+                    {
+                        valuesMainFact[i] =  0F;
+                        valuesRegularFact[i] = values[i].valuesFact;
+                    }
 
                     if (values[i].valuesPBR > 0)
                     {
-                        if (minimum > valuesPDiviation[i].Y)
+                        if (minimum > valuesPDiviation[i])
                         {
-                            minimum = valuesPDiviation[i].Y;
+                            minimum = valuesPDiviation[i];
                             noValues = false;
                         }
                         else
                             ;
 
-                        if (minimum > valuesODiviation[i].Y)
+                        if (minimum > valuesODiviation[i])
                         {
-                            minimum = valuesODiviation[i].Y;
+                            minimum = valuesODiviation[i];
                             noValues = false;
                         }
                         else
                             ;
 
-                        if (minimum > valuesPlan[i].Y)
+                        if (minimum > valuesPlan[i])
                         {
-                            minimum = valuesPlan[i].Y;
+                            minimum = valuesPlan[i];
                             noValues = false;
                         }
                         else
@@ -724,18 +735,18 @@ namespace Statistic
 
                     if (values[i].valuesPBR > 0)
                     {
-                        if (maximum < valuesPDiviation[i].Y)
-                            maximum = valuesPDiviation[i].Y;
+                        if (maximum < valuesPDiviation[i])
+                            maximum = valuesPDiviation[i];
                         else
                             ;
 
-                        if (maximum < valuesODiviation[i].Y)
-                            maximum = valuesODiviation[i].Y;
+                        if (maximum < valuesODiviation[i])
+                            maximum = valuesODiviation[i];
                         else
                             ;
 
-                        if (maximum < valuesPlan[i].Y)
-                            maximum = valuesPlan[i].Y;
+                        if (maximum < valuesPlan[i])
+                            maximum = valuesPlan[i];
                         else
                             ;
                     }
@@ -781,19 +792,19 @@ namespace Statistic
                 GraphPane.Chart.Fill = new Fill(colorChart);
 
                 //LineItem
-                GraphPane.AddCurve("УДГэ", valuesPlan, FormMain.formGraphicsSettings.COLOR(FormGraphicsSettings.INDEX_COLOR.UDG));
+                GraphPane.AddCurve("P план", null, valuesPlan, FormMain.formGraphicsSettings.COLOR(FormGraphicsSettings.INDEX_COLOR.UDG));
                 //LineItem
-                GraphPane.AddCurve("", valuesODiviation, FormMain.formGraphicsSettings.COLOR(FormGraphicsSettings.INDEX_COLOR.DIVIATION));
+                GraphPane.AddCurve("", null, valuesODiviation, FormMain.formGraphicsSettings.COLOR(FormGraphicsSettings.INDEX_COLOR.DIVIATION));
                 //LineItem
-                GraphPane.AddCurve("Возможное отклонение", valuesPDiviation, FormMain.formGraphicsSettings.COLOR(FormGraphicsSettings.INDEX_COLOR.DIVIATION));
+                GraphPane.AddCurve("Возможное отклонение", null, valuesPDiviation, FormMain.formGraphicsSettings.COLOR(FormGraphicsSettings.INDEX_COLOR.DIVIATION));
 
                 if (FormMain.formGraphicsSettings.m_graphTypes == FormGraphicsSettings.GraphTypes.Bar)
                 {
                     if (!(typeConnSett == CONN_SETT_TYPE.DATA_AISKUE_PLUS_SOTIASSO))
                     {
                         //BarItem
-                        GraphPane.AddBar("Мощность(контр.)", valuesMainFact, colorPCurve);
-                        GraphPane.AddBar("Мощность(рег.)", valuesRegularFact, Color.White);
+                        GraphPane.AddBar("Мощность(контр.)", null, valuesMainFact, colorPCurve);
+                        GraphPane.AddBar("Мощность(рег.)", null, valuesRegularFact, Color.White);
                     }
                     else
                         // других типов данных для ЛК не предусмотрено
@@ -805,8 +816,8 @@ namespace Statistic
                         if (!(typeConnSett == CONN_SETT_TYPE.DATA_AISKUE_PLUS_SOTIASSO))
                         {
                             //LineItem
-                            GraphPane.AddCurve("Мощность", valuesMainFact, colorPCurve);
-                            GraphPane.AddCurve("Мощность", valuesRegularFact, Color.White);
+                            GraphPane.AddCurve("Мощность", null, valuesMainFact, colorPCurve);
+                            GraphPane.AddCurve("Мощность", null, valuesRegularFact, Color.White);
                         }
                         else
                             // других типов данных для ЛК не предусмотрено
@@ -879,10 +890,10 @@ namespace Statistic
             }
         }
 
-        public override void SetDelegateReport(DelegateStringFunc fErr, DelegateStringFunc fWar, DelegateStringFunc fAct, DelegateBoolFunc fClear)
-        {
-            m_tecView.SetDelegateReport(fErr, fWar, fAct, fClear);
-        }
+        //public override void SetDelegateReport(DelegateStringFunc fErr, DelegateStringFunc fWar, DelegateStringFunc fAct, DelegateBoolFunc fClear)
+        //{
+        //    m_tecView.SetDelegateReport(fErr, fWar, fAct, fClear);
+        //}
 
         protected override void createTecView(int indx_tec, int indx_comp)
         {
@@ -921,7 +932,7 @@ namespace Statistic
         //protected override void initTableHourRows()
         //{
         //    //Ничего не делаем, т.к. составные элементы самостоятельно настраивают кол-во строк в таблицах
-        //}
+        //}        
 
         protected override void initializeLayoutStyle(int cols = -1, int rows = -1)
         {
