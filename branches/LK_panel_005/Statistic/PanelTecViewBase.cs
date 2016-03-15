@@ -291,9 +291,9 @@ namespace Statistic
                 }
             }
 
-            private string OnPointValueEvent(object sender, GraphPane pane, CurveItem curve, int iPt)
+            protected virtual string OnPointValueEvent(object sender, GraphPane pane, CurveItem curve, int iPt)
             {
-                return curve[iPt].Y.ToString("f2");
+                return curve[iPt].Y.ToString("F2");
             }
 
             private bool OnDoubleClickEvent(ZedGraphControl sender, MouseEventArgs e)
@@ -1159,7 +1159,7 @@ namespace Statistic
                     , m_tecView.lastHour
                     , m_tecView.m_curDate.Date.CompareTo(HAdmin.SeasonDateTime.Date) == 0
                     , (IntDelegateIntFunc)m_tecView.GetSeasonHourOffset                    
-                    , m_tecView.serverTime                    
+                    , m_tecView.serverTime.Add (m_tecView.m_tsOffsetToMoscow)                    
                     , _pnlQuickData.dtprDate.Value.ToShortDateString()
                 }
             );            
