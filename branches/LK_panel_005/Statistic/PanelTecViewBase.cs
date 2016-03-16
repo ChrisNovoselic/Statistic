@@ -1102,7 +1102,7 @@ namespace Statistic
                     return;
 
                 //if (!(((currValuesPeriod++) * 1000) < Int32.Parse(FormMain.formParameters.m_arParametrSetup[(int)FormParameters.PARAMETR_SETUP.POLL_TIME]) * 1000))
-                if (!(currValuesPeriod++ < POOL_TIME /* (m_tecView.m_idAISKUEParNumber == TecView.ID_AISKUE_PARNUMBER.FACT_03 ? 1 : 6)*/))
+                if (!(currValuesPeriod++ < POOL_TIME * (m_tecView.m_idAISKUEParNumber == TecView.ID_AISKUE_PARNUMBER.FACT_03 ? 1 : 6)))
                 {
                     currValuesPeriod = 0;
                     NewDateRefresh();

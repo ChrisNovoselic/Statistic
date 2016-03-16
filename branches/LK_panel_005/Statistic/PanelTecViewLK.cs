@@ -708,6 +708,8 @@ namespace Statistic
 
                 regularHourCellStyle.BackColor = Color.White;
                 mainHourCellStyle.BackColor = Color.LimeGreen;
+                //// полужирный на основе 1-ой ячейки                
+                //mainHourCellStyle.Font = new System.Drawing.Font(RowsDefaultCellStyle.Font, FontStyle.Bold);
 
                 cntWarn = 0;
                 t_pbr = 0;
@@ -716,19 +718,24 @@ namespace Statistic
                     // номер часа
                     curCellStyle = (MainHours.IsMain(serverTime, i + 1) == true) ? mainHourCellStyle :
                         regularHourCellStyle;
-                    Rows[i].Cells[(int)INDEX_COLUMNS.PART_TIME].Style = curCellStyle;
+                    //Rows[i].Cells[(int)INDEX_COLUMNS.PART_TIME].Style = curCellStyle; // стиль определен для всей строки
+                    Rows[i].DefaultCellStyle = curCellStyle;
                     // факт
                     if (! (i > lh))
                     {                        
                         Rows[i].Cells[(int)INDEX_COLUMNS.TEMPERATURE_FACT].Value = (values[i].valuesLastMinutesTM).ToString(@"F2"); // температура
+                        //Rows[i].Cells[(int)INDEX_COLUMNS.TEMPERATURE_FACT].Style = curCellStyle; // стиль определен для всей строки
                         Rows[i].Cells[(int)INDEX_COLUMNS.POWER_FACT_SUM].Value = (values[i].valuesFact * 1000).ToString(@"F2"); // мощность
+                        //Rows[i].Cells[(int)INDEX_COLUMNS.POWER_FACT_SUM].Style = curCellStyle; // стиль определен для всей строки
                     }
                     else
                         ;
                     // план
                     Rows[i].Cells[(int)INDEX_COLUMNS.TEMPERATURE_PBR].Value = (values[i].valuesPmin).ToString(@"F2"); // температура
+                    //Rows[i].Cells[(int)INDEX_COLUMNS.TEMPERATURE_PBR].Style = curCellStyle; // стиль определен для всей строки
                     t_pbr += values[i].valuesPmin;
                     Rows[i].Cells[(int)INDEX_COLUMNS.POWER_PBR].Value = (values[i].valuesPBR).ToString(@"F2"); // мощность
+                    //Rows[i].Cells[(int)INDEX_COLUMNS.POWER_PBR].Style = curCellStyle; // стиль определен для всей строки
                     // мощность сети (максимальная из загруженных)
                     if ((values[i].valuesPBR > 0)
                         && (p_pbr < values[i].valuesPBR))
@@ -741,9 +748,9 @@ namespace Statistic
                         // - температура
                         if ((!(values[i].valuesLastMinutesTM == 0))
                             && (!(values[i].valuesPmin == 0)))
-                            Rows[i].Cells[(int)INDEX_COLUMNS.TEMPERATURE_DEVIATION].Value = (values[i].valuesPmin - values[i].valuesLastMinutesTM).ToString(@"F2");
+                            Rows[i].Cells[(int)INDEX_COLUMNS.TEMPERATURE_DEVIATION].Value = (values[i].valuesPmin - values[i].valuesLastMinutesTM).ToString(@"F2");                            
                         else
-                            Rows[i].Cells[(int)INDEX_COLUMNS.TEMPERATURE_DEVIATION].Value = @"-";
+                            Rows[i].Cells[(int)INDEX_COLUMNS.TEMPERATURE_DEVIATION].Value = @"-";                        
                         // - мощность
                         if ((values[i].valuesFact > 0)
                             && (values[i].valuesPBR > 0))
@@ -757,9 +764,12 @@ namespace Statistic
                         Rows[i].Cells[(int)INDEX_COLUMNS.TEMPERATURE_DEVIATION].Value =
                             @"-";
                     }
+                    //Rows[i].Cells[(int)INDEX_COLUMNS.TEMPERATURE_DEVIATION].Style = curCellStyle; // стиль определен для всей строки
+                    //Rows[i].Cells[(int)INDEX_COLUMNS.POWER_DEVIATION].Style = curCellStyle; // стиль определен для всей строки
                 }
 
                 t_pbr /= itemscount;
+                t_pbr = Math.Round(t_pbr, 0);
                 // план
                 Rows[i].Cells[(int)INDEX_COLUMNS.TEMPERATURE_PBR].Value = t_pbr.ToString(@"F2"); // температура
                 EventPBRDateValues(new PBRDateValuesEventArgs() { m_temperatureDate = t_pbr, m_powerDate = p_pbr });
