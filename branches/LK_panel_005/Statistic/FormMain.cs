@@ -2030,13 +2030,14 @@ namespace Statistic
                     m_dictAddingTabs[(int)ID_ADDING_TAB.CUSTOM_2X3_1].menuItem.Enabled =
                     m_dictAddingTabs[(int)ID_ADDING_TAB.CUSTOM_2X3_2].menuItem.Enabled =
                     m_dictAddingTabs[(int)ID_ADDING_TAB.CUSTOM_2X3_3].menuItem.Enabled =
-                    m_dictAddingTabs[(int)ID_ADDING_TAB.CUSTOM_2X3_4].menuItem.Enabled =                        
+                    m_dictAddingTabs[(int)ID_ADDING_TAB.CUSTOM_2X3_4].menuItem.Enabled =
+                        bCurEnabled;
                     m_dictAddingTabs[(int)ID_ADDING_TAB.CUR_POWER].menuItem.Enabled =
                     m_dictAddingTabs[(int)ID_ADDING_TAB.TM_SN_POWER].menuItem.Enabled =
                     m_dictAddingTabs[(int)ID_ADDING_TAB.MONITOR_LAST_MINUTES].menuItem.Enabled =
                     m_dictAddingTabs[(int)ID_ADDING_TAB.SOBSTV_NYZHDY].menuItem.Enabled =
                     m_dictAddingTabs[(int)ID_ADDING_TAB.SOTIASSO].menuItem.Enabled =
-                        bCurEnabled;
+                        bCurEnabled && (HStatisticUsers.allTEC < (int)TECComponent.ID.LK);
 
                     m_dictAddingTabs[(int)ID_ADDING_TAB.SOTIASSO].menuItem.Enabled &= HStatisticUsers.IsAllowed((int)HStatisticUsers.ID_ALLOWED.MENUITEM_VIEW_VALUES_SOTIASSO);
                 }

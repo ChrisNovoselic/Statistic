@@ -869,7 +869,7 @@ namespace Statistic
                 , m_tecView.m_tec.m_id
                 , m_tecView.currHour
                 , m_tecView.m_arTypeSourceData[(int)HDateTime.INTERVAL.HOURS] == CONN_SETT_TYPE.DATA_AISKUE
-                , m_tecView.serverTime.Date.Equals(HDateTime.ToMoscowTimeZone(DateTime.Now.Date)));
+                , m_tecView.serverTime);
 
             //Logging.Logg().Debug(@"PanelTecViewBase::FillGridHours () - ...");
         }

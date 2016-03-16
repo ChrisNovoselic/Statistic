@@ -784,8 +784,8 @@ namespace Statistic
                 //По просьбе НСС-машинистов ДОБАВИТЬ - источник данных 05.12.2014
                 //GraphPane.Title.Text = @" (" + m_ZedGraphMins.SourceDataText + @")";
                 GraphPane.Title.Text = SourceDataText;
+                // доп.нинформация (по номеру часу)
                 GraphPane.Title.Text += new string(' ', 29);
-
                 if (bCurDateSeason == true)
                 {
                     int offset = delegateSeasonHourOffset(hour + 1);

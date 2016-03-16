@@ -146,8 +146,8 @@ namespace Statistic
                         if (!(indx_gtp < 0))
                             for (int i = 0; i < 24; i++)//Перебор часовых значений ГТП
                             {
-                                    ((AdminTS_LK)m_admin).m_listCurRDGValues[indx_gtp][i].pbr = Convert.ToDouble(dgwAdminTable.Rows[i].Cells[(int)DataGridViewAdminLK.DESC_INDEX.PLAN].Value); // '+ 1' за счет DateTime
-                                    ((AdminTS_LK)m_admin).m_listCurRDGValues[indx_gtp][i].pmin = Convert.ToDouble(dgwAdminTable.Rows[i].Cells[(int)DataGridViewAdminLK.DESC_INDEX.PLAN_T].Value);
+                                    ((AdminTS_LK)m_admin).m_listCurRDGValues[indx_gtp][i].pbr = Convert.ToDouble(dgwAdminTable.Rows[i].Cells[(int)DataGridViewAdminLK.DESC_INDEX.PLAN_POWER].Value); // '+ 1' за счет DateTime
+                                    ((AdminTS_LK)m_admin).m_listCurRDGValues[indx_gtp][i].pmin = Convert.ToDouble(dgwAdminTable.Rows[i].Cells[(int)DataGridViewAdminLK.DESC_INDEX.PLAN_TEMPERATURE].Value);
 
                                     if (!(this.dgwAdminTable.Rows[i].Cells[this.dgwAdminTable.Columns.Count - 3].Value == null))
                                         ((AdminTS_LK)m_admin).m_listCurRDGValues[indx_gtp][i].deviationPercent = bool.Parse(this.dgwAdminTable.Rows[i].Cells[this.dgwAdminTable.Columns.Count - 3].Value.ToString());
@@ -217,12 +217,11 @@ namespace Statistic
                     }
                     catch (Exception e)
                     {
-                        Logging.Logg().Warning("PanelAdminLK : addTextBoxColumn - нет листа с суточными значениями(снова потерялся индекс)" + e.Message, Logging.INDEX_MESSAGE.NOT_SET);
+                        Logging.Logg().Warning("PanelAdminLK : addTextBoxColumn () - нет листа с суточными значениями(снова потерялся индекс)" + e.Message, Logging.INDEX_MESSAGE.NOT_SET);
                     }
 
-                    ev = new DataGridViewCellEventArgs(this.dgwAdminTable.Columns.Count - 4, i);
-
-                    ((DataGridViewAdminLK)this.dgwAdminTable).DataGridViewAdminLK_CellValueChanged(null, ev);
+                    ((DataGridViewAdminLK)this.dgwAdminTable).DataGridViewAdminLK_CellValueChanged(null
+                        , new DataGridViewCellEventArgs(this.dgwAdminTable.Columns.Count - 4, i));
 
                 }
                 
@@ -241,8 +240,8 @@ namespace Statistic
                         ;
                     try
                     {
-                        this.dgwAdminTable.Rows[i].Cells[(int)DataGridViewAdminLK.DESC_INDEX.PLAN].Value = ((AdminTS_LK)m_admin).m_listCurRDGValues[indx][i].pbr.ToString("F2");
-                        this.dgwAdminTable.Rows[i].Cells[(int)DataGridViewAdminLK.DESC_INDEX.PLAN_T].Value = ((AdminTS_LK)m_admin).m_listCurRDGValues[indx][i].pmin.ToString("F2");
+                        this.dgwAdminTable.Rows[i].Cells[(int)DataGridViewAdminLK.DESC_INDEX.PLAN_POWER].Value = ((AdminTS_LK)m_admin).m_listCurRDGValues[indx][i].pbr.ToString("F2");
+                        this.dgwAdminTable.Rows[i].Cells[(int)DataGridViewAdminLK.DESC_INDEX.PLAN_TEMPERATURE].Value = ((AdminTS_LK)m_admin).m_listCurRDGValues[indx][i].pmin.ToString("F2");
                         this.dgwAdminTable.Rows[i].Cells[dgwAdminTable.Columns.Count - 3].Value = (bool)(((AdminTS_LK)m_admin).m_listCurRDGValues[indx][i].deviationPercent);
                         this.dgwAdminTable.Rows[i].Cells[dgwAdminTable.Columns.Count - 2].Value = ((AdminTS_LK)m_admin).m_listCurRDGValues[indx][i].deviation.ToString("F2");
                     
@@ -251,7 +250,8 @@ namespace Statistic
                     {
                         Logging.Logg().Warning("PanelAdminLK : addTextBoxColumn - нет листа с суточными значениями(снова потерялся индекс)" + e.Message, Logging.INDEX_MESSAGE.NOT_SET);
                     }
-                        ev = new DataGridViewCellEventArgs(this.dgwAdminTable.Columns.Count - 4, i);
+    
+                    ev = new DataGridViewCellEventArgs(this.dgwAdminTable.Columns.Count - 4, i);
 
 
                     ((DataGridViewAdminLK)this.dgwAdminTable).DataGridViewAdminLK_CellValueChanged(null, ev);
@@ -415,17 +415,17 @@ namespace Statistic
         /// <summary>
         /// Идентификаторы колонок
         /// </summary>
-        public enum DESC_INDEX : ushort { DATE_HOUR, PLAN, PLAN_T, DEVIATION_TYPE, DEVIATION, TO_ALL, COUNT_COLUMN };
+        public enum DESC_INDEX : ushort { DATE_HOUR, PLAN_POWER, PLAN_TEMPERATURE, DEVIATION_TYPE, DEVIATION, TO_ALL, COUNT_COLUMN };
 
         /// <summary>
         /// Массив имен колонок
         /// </summary>
-        private static string[] arDescStringIndex = { "DateHour", "Plan", @"PLAN_T", "DEVIATION_TYPE", "DEVIATION", "TO_ALL" };
+        private static string[] arDescStringIndex = { "DateHour", "Plan_P", @"PLAN_T", "DEVIATION_TYPE", "DEVIATION", "TO_ALL" };
 
         /// <summary>
         /// Массив заголовков колонок
         /// </summary>
-        private static string[] arDescRusStringIndex = { "Дата, час", "План", @"План t", "Отклонение в процентах", "Величина максимального отклонения", "Дозаполнить" };
+        private static string[] arDescRusStringIndex = { "Дата, час", "План P", @"Прогн. t", "Отклонение в процентах", "Величина максимального отклонения", "Дозаполнить" };
 
         /// <summary>
         /// Массив значений по умолчанию
@@ -458,7 +458,7 @@ namespace Statistic
             int col = -1;
             Columns.AddRange(new DataGridViewColumn[(int)DESC_INDEX.COUNT_COLUMN] { new DataGridViewTextBoxColumn(), new DataGridViewTextBoxColumn(), new DataGridViewTextBoxColumn(), new DataGridViewCheckBoxColumn(), new DataGridViewTextBoxColumn(), new DataGridViewButtonColumn() });
             col = 0;
-            for (col = 0; col < (int)DESC_INDEX.PLAN; col++)
+            for (col = 0; col < (int)DESC_INDEX.PLAN_POWER; col++)
             {
                     Columns[col].Frozen = true;
                     Columns[col].HeaderText = arDescRusStringIndex[col];
@@ -466,7 +466,7 @@ namespace Statistic
                     Columns[col].ReadOnly = true;
                     Columns[col].SortMode = System.Windows.Forms.DataGridViewColumnSortMode.NotSortable;
             }
-            for (col = (int)DESC_INDEX.PLAN; col < (int)DESC_INDEX.DEVIATION_TYPE; col++)
+            for (col = (int)DESC_INDEX.PLAN_POWER; col < (int)DESC_INDEX.DEVIATION_TYPE; col++)
             {
                 Columns[col].Frozen = true;
                 Columns[col].HeaderText = arDescRusStringIndex[col];
@@ -503,7 +503,10 @@ namespace Statistic
         /// <param name="e"></param>
         public void DataGridViewAdminLK_CellValueChanged(object sender, DataGridViewCellEventArgs e)
         {
-            if ((m_listIds.Count == Columns.Count - 4) && (Columns[e.ColumnIndex].ReadOnly == false) && (e.ColumnIndex > 0) && (e.ColumnIndex < Columns.Count - 3))
+            if ((m_listIds.Count == Columns.Count - 4)
+                && (Columns[e.ColumnIndex].ReadOnly == false)
+                && (e.ColumnIndex > 0)
+                && (e.ColumnIndex < Columns.Count - 3))
             {
                 int id_gtp = m_listIds[e.ColumnIndex - 3][(int)ID_TYPE.ID_OWNER],
                     col_gtp = -1;

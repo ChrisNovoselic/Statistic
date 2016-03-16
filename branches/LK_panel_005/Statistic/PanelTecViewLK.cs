@@ -84,8 +84,46 @@ namespace Statistic
             public override double GetSummaFactValues(int hour)
             {
                 double dblRes = -1F;
+                double[] arTGRes = null;
+                uint[] arTGcounter = null;
+                int iter = m_idAISKUEParNumber == ID_AISKUE_PARNUMBER.FACT_03 ? 1 :
+                    m_idAISKUEParNumber == ID_AISKUE_PARNUMBER.FACT_30 ? 10 : -1;
 
-                dblRes = m_valuesHours[hour].valuesFact;
+                arTGRes = new double[listTG.Count];
+                arTGcounter = new uint[listTG.Count];
+
+                for (int t = 0; t < listTG.Count; t++)
+                {
+                    arTGRes[t] = -1F;
+                    arTGcounter[t] = 0;
+
+                    for (int j = 10; j < ((60 / 3) + 1); j += iter)
+                        if (!(m_dictValuesTG[listTG[t].m_id].m_powerMinutes[j] < 0))
+                        {
+                            if (arTGRes[t] < 0F)
+                                arTGRes[t] = 0F;
+                            else
+                                ;
+
+                            arTGRes[t] += m_dictValuesTG[listTG[t].m_id].m_powerMinutes[j];
+                            arTGcounter[t]++;
+                        }
+                        else
+                            ;
+
+                    if (!(arTGRes[t] < 0))
+                    {
+                        if (dblRes < 0F)
+                            dblRes = 0;
+                        else
+                            ;
+
+                        arTGRes[t] /= arTGcounter[t];
+                        dblRes += arTGRes[t];
+                    }
+                    else
+                        ;
+                }
 
                 return dblRes;
             }
@@ -179,10 +217,10 @@ namespace Statistic
                             text = @"t тек"; //@"P тек";
                             break;
                         case CONTROLS.lblTemperatureHour:
-                            text = @"t пл/ч";
+                            text = @"t пр/ч";
                             break;
                         case CONTROLS.lblTemperatureDate:
-                            text = @"t пл/сут";
+                            text = @"t пр/сут";
                             break;
                         default:
                             text = string.Empty;
@@ -403,7 +441,7 @@ namespace Statistic
                     , string.Empty);
                 // мощность
                 showValue(ref m_arLabelCommon[(int)PanelQuickDataLK.CONTROLS.lblPowerDateValue - m_indxStartCommonFirstValueSeries]
-                    , (double)ev.m_powerDate //> 0 ? (double)val : double.NegativeInfinity
+                    , (double)ev.m_powerDate > 0 ? (double)ev.m_powerDate : double.NegativeInfinity
                     , 2 //round
                     , false
                     , true
@@ -448,8 +486,10 @@ namespace Statistic
             public override void ShowFactValues()
             {
                 int indxStartCommonPVal = m_indxStartCommonFirstValueSeries
-                    , lastHour = m_parent.m_tecView.currHour == true ? m_parent.m_tecView.lastHour - 1 : m_parent.m_tecView.lastHour;
+                    , lastHour = m_parent.m_tecView.lastHour //m_parent.m_tecView.currHour == true ? m_parent.m_tecView.lastHour + 1 : m_parent.m_tecView.lastHour;
+                    ;
                 double[] powerLastHourMinutes;
+                double powerLastHour = -1F;
 
                 if (m_parent.m_tecView.IsHourValues(lastHour) == true)
                 {
@@ -472,12 +512,13 @@ namespace Statistic
                     
                     //Мощность
                     // текущее значение мощности (час)
+                    powerLastHour = m_parent.m_tecView.GetSummaFactValues(lastHour);
                     showValue(ref m_arLabelCommon[(int)PanelQuickDataLK.CONTROLS.lblPowerCurrentValue - indxStartCommonPVal]
-                        , m_parent.m_tecView.GetSummaFactValues(lastHour) * 1000
+                        , powerLastHour < 0 ? double.NegativeInfinity : powerLastHour * 1000
                         , 2 //round
                         , false
                         , true
-                        , string.Empty);
+                        , powerLastHour < 0 ? @"---" : string.Empty);
                     // плановое значение мощности (час)
                     showValue(ref m_arLabelCommon[(int)PanelQuickDataLK.CONTROLS.lblPowerHourValue - indxStartCommonPVal]
                         , m_parent.m_tecView.m_valuesHours[lastHour].valuesPBR > 0 ? m_parent.m_tecView.m_valuesHours[lastHour].valuesPBR : double.NegativeInfinity
@@ -564,7 +605,7 @@ namespace Statistic
                     , new ColumnProperies[] { new ColumnProperies (27, 10, @"Час", @"Hour")
                     , new ColumnProperies (47, 15, @"t час", @"TemperatureFact")
                     , new ColumnProperies (47, 15, @"P час", @"PowerFactSum")
-                    , new ColumnProperies (47, 15, @"t пл/ч", @"TemperaturePBR")
+                    , new ColumnProperies (47, 15, @"t пр/ч", @"TemperaturePBR")
                     , new ColumnProperies (47, 15, @"P пл/ч", @"PowerPBR")
                     , new ColumnProperies (42, 15, @"t +/-", @"TemperatureDevHour")
                     , new ColumnProperies (42, 15, @"P +/-", @"PowerDevHour")
@@ -616,7 +657,7 @@ namespace Statistic
 
                         Rows[i].Cells[(int)INDEX_COLUMNS.PART_TIME].Value = (hour - offset).ToString();
                         if ((hour - 1) == HAdmin.SeasonDateTime.Hour)
-                            Rows[i].Cells[0].Value += @"*";
+                            Rows[i].Cells[(int)INDEX_COLUMNS.PART_TIME].Value += @"*";
                         else
                             ;
                     }
@@ -649,23 +690,35 @@ namespace Statistic
                 int lastHour = (int)pars[0]; //m_tecView.lastHour;
                 int receivedHour = (int)pars[1]; //m_tecView.lastReceivedHour;
                 int itemscount = (int)pars[2]; //m_tecView.m_valuesHours.Length;
-
-                int i = -1
-                    , warn = -1, cntWarn = -1;
-                double t_pbr = -1F, p_pbr = -1F;
-                string strWarn = string.Empty;
                 bool bPmin = (int)pars[3] == 5
                     , bCurrHour = (bool)pars[4] //m_tecView.currHour
-                    , bIsTypeConnSettAISKUEHour = (bool)pars[5] //m_tecView.m_arTypeSourceData[(int)HDateTime.INTERVAL.HOURS] == CONN_SETT_TYPE.DATA_AISKUE
-                    , bIsNowMoscowDate = (bool)pars[6]; //m_tecView.serverTime.Date.Equals(HDateTime.ToMoscowTimeZone(DateTime.Now.Date))
+                    , bIsTypeConnSettAISKUEHour = (bool)pars[5]; //m_tecView.m_arTypeSourceData[(int)HDateTime.INTERVAL.HOURS] == CONN_SETT_TYPE.DATA_AISKUE
+                DateTime serverTime = (DateTime)pars[6]; //m_tecView.serverTime.Date.Equals(HDateTime.ToMoscowTimeZone(DateTime.Now.Date))
+
+                int i = -1
+                    , warn = -1, cntWarn = -1
+                    , lh = bCurrHour == true ? lastHour - 1 : lastHour;
+                double t_pbr = -1F, p_pbr = -1F;
+                string strWarn = string.Empty;
+                
 
                 DataGridViewCellStyle curCellStyle;
+                DataGridViewCellStyle regularHourCellStyle = new DataGridViewCellStyle()
+                    , mainHourCellStyle = new DataGridViewCellStyle();
+
+                regularHourCellStyle.BackColor = Color.White;
+                mainHourCellStyle.BackColor = Color.LimeGreen;
+
                 cntWarn = 0;
                 t_pbr = 0;
                 for (i = 0; i < itemscount; i++)
                 {
+                    // номер часа
+                    curCellStyle = (MainHours.IsMain(serverTime, i + 1) == true) ? mainHourCellStyle :
+                        regularHourCellStyle;
+                    Rows[i].Cells[(int)INDEX_COLUMNS.PART_TIME].Style = curCellStyle;
                     // факт
-                    if (i < lastHour)
+                    if (! (i > lh))
                     {                        
                         Rows[i].Cells[(int)INDEX_COLUMNS.TEMPERATURE_FACT].Value = (values[i].valuesLastMinutesTM).ToString(@"F2"); // температура
                         Rows[i].Cells[(int)INDEX_COLUMNS.POWER_FACT_SUM].Value = (values[i].valuesFact * 1000).ToString(@"F2"); // мощность
@@ -685,18 +738,18 @@ namespace Statistic
                     // разность
                     if (i < lastHour)
                     {
+                        // - температура
+                        if ((!(values[i].valuesLastMinutesTM == 0))
+                            && (!(values[i].valuesPmin == 0)))
+                            Rows[i].Cells[(int)INDEX_COLUMNS.TEMPERATURE_DEVIATION].Value = (values[i].valuesPmin - values[i].valuesLastMinutesTM).ToString(@"F2");
+                        else
+                            Rows[i].Cells[(int)INDEX_COLUMNS.TEMPERATURE_DEVIATION].Value = @"-";
                         // - мощность
                         if ((values[i].valuesFact > 0)
                             && (values[i].valuesPBR > 0))
                             Rows[i].Cells[(int)INDEX_COLUMNS.POWER_DEVIATION].Value = (values[i].valuesPBR - values[i].valuesFact * 1000).ToString(@"F2");
                         else
-                            Rows[i].Cells[(int)INDEX_COLUMNS.POWER_DEVIATION].Value = @"-";
-                        // - температура
-                        if ((!(values[i].valuesLastMinutesTM == 0))
-                            || (!(values[i].valuesPmin == 0)))
-                            Rows[i].Cells[(int)INDEX_COLUMNS.TEMPERATURE_DEVIATION].Value = (values[i].valuesPmin - values[i].valuesLastMinutesTM).ToString(@"F2");
-                        else
-                            Rows[i].Cells[(int)INDEX_COLUMNS.TEMPERATURE_DEVIATION].Value = @"-";
+                            Rows[i].Cells[(int)INDEX_COLUMNS.POWER_DEVIATION].Value = @"-";                        
                     }
                     else
                     {
@@ -1081,6 +1134,23 @@ namespace Statistic
                     ////@"(" + m_ZedGraphHours.SourceDataText  + @") " +
                     //@"на " +
                     strTitle;
+                // доп.нинформация (по номеру часу) - копия из 'HZedGraphControlStandardMins::Draw'
+                GraphPane.Title.Text += new string(' ', 29);
+                if (bCurDateSeason == true)
+                {
+                    int offset = delegateSeasonHourOffset(lastHour + 1);
+                    GraphPane.Title.Text += //"Средняя мощность на " + /*System.TimeZone.CurrentTimeZone.ToUniversalTime(*/dtprDate.Value/*)*/.ToShortDateString() + " " + 
+                        (lastHour + 1 - offset).ToString();
+                    if (HAdmin.SeasonDateTime.Hour == lastHour)
+                        GraphPane.Title.Text += "*";
+                    else
+                        ;
+
+                    GraphPane.Title.Text += @" час";
+                }
+                else
+                    GraphPane.Title.Text += //"Средняя мощность на " + /*System.TimeZone.CurrentTimeZone.ToUniversalTime(*/dtprDate.Value/*)*/.ToShortDateString() + " " + 
+                        (lastHour + 1).ToString() + " час";
 
                 GraphPane.XAxis.Scale.TextLabels = names;
                 GraphPane.XAxis.Scale.IsPreventLabelOverlap = false;
