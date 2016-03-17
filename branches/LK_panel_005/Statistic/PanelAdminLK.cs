@@ -16,7 +16,7 @@ using GemBox.Spreadsheet;
 
 namespace Statistic
 {
-    class PanelAdminLK : PanelAdmin
+    partial class PanelAdminLK : PanelAdmin
     {
         private System.Windows.Forms.Button btnImportExcel;
         private System.Windows.Forms.Button btnExportExcel;
@@ -415,17 +415,17 @@ namespace Statistic
         /// <summary>
         /// Идентификаторы колонок
         /// </summary>
-        public enum DESC_INDEX : ushort { DATE_HOUR, PLAN_POWER, PLAN_TEMPERATURE, DEVIATION_TYPE, DEVIATION, TO_ALL, COUNT_COLUMN };
+        public enum DESC_INDEX : ushort { DATE_HOUR, PLAN_TEMPERATURE, PLAN_POWER, DEVIATION_TYPE, DEVIATION, TO_ALL, COUNT_COLUMN };
 
         /// <summary>
         /// Массив имен колонок
         /// </summary>
-        private static string[] arDescStringIndex = { "DateHour", "Plan_P", @"PLAN_T", "DEVIATION_TYPE", "DEVIATION", "TO_ALL" };
+        private static string[] arDescStringIndex = { "DateHour", @"PLAN_T", "Plan_P", "DEVIATION_TYPE", "DEVIATION", "TO_ALL" };
 
         /// <summary>
         /// Массив заголовков колонок
         /// </summary>
-        private static string[] arDescRusStringIndex = { "Дата, час", "План P", @"Прогн. t", "Отклонение в процентах", "Величина максимального отклонения", "Дозаполнить" };
+        private static string[] arDescRusStringIndex = { "Дата, час", @"Прогн. t", "План P", "Отклонение в процентах", "Величина максимального отклонения", "Дозаполнить" };
 
         /// <summary>
         /// Массив значений по умолчанию

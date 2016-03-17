@@ -330,6 +330,11 @@ namespace Statistic
                     else
                         ;
             }
+        
+            public virtual bool FindNearestObject (PointF p, Graphics g, out object obj, out int index)
+            {
+                return GraphPane.FindNearestObject(p, g, out obj, out index);
+            }
         }        
 
         protected int[] m_arPercRows = null; // [0] - для подписи, [1] - для таблиц/гистограмм, остальное - панель оперативных данных
@@ -972,31 +977,36 @@ namespace Statistic
             bool found;
             int index;
 
-            found = sender.GraphPane.FindNearestObject(p, CreateGraphics(), out obj, out index);
+            found = m_ZedGraphHours.FindNearestObject(p, CreateGraphics(), out obj, out index);
 
-            if (!(obj is BarItem) && !(obj is LineItem))
-                return true;
-
-            if ((!(m_tecView == null)) && (found == true))
+            if (found == true)
             {
-                if (!(delegateStartWait == null)) delegateStartWait(); else ;
+                if (((obj as CurveItem).IsBar == false) && ((obj as CurveItem).IsLine == false))
+                    return true;
 
-                bool bRetroHour = m_tecView.zedGraphHours_MouseUpEvent(index);
-
-                if (bRetroHour == true)
-                    setRetroTickTime(m_tecView.lastHour, 60);
-                else
+                if (!(m_tecView == null))
                 {
-                    ////Вариань №1
-                    //setNowDate(false);
+                    if (!(delegateStartWait == null)) delegateStartWait(); else ;
 
-                    //Вариань №2
-                    m_tecView.currHour = true;
-                    NewDateRefresh();
+                    bool bRetroHour = m_tecView.zedGraphHours_MouseUpEvent(index);
+
+                    if (bRetroHour == true)
+                        setRetroTickTime(m_tecView.lastHour, 60);
+                    else
+                    {
+                        ////Вариань №1
+                        //setNowDate(false);
+
+                        //Вариань №2
+                        m_tecView.currHour = true;
+                        NewDateRefresh();
+                    }
+
+                    if (!(delegateStopWait == null)) delegateStopWait(); else ;
                 }
-
-                if (!(delegateStopWait == null)) delegateStopWait(); else ;
             }
+            else
+                ;
 
             return true;
         }

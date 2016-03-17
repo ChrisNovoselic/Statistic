@@ -14,7 +14,7 @@ using StatisticCommon;
 
 namespace Statistic
 {
-    public class PanelAdminNSS : PanelAdmin
+    public partial class PanelAdminNSS : PanelAdmin
     {
         private System.Windows.Forms.Button btnImportExcel;
         private System.Windows.Forms.Button btnExportExcel;

@@ -688,7 +688,7 @@ namespace Statistic
             {
                 double sumFact = 0, sumUDGe = 0, sumDiviation = 0;
                 int lastHour = (int)pars[0]; //m_tecView.lastHour;
-                int receivedHour = (int)pars[1]; //m_tecView.lastReceivedHour;
+                int lastReceivedHour = (int)pars[1]; //m_tecView.lastReceivedHour;
                 int itemscount = (int)pars[2]; //m_tecView.m_valuesHours.Length;
                 bool bPmin = (int)pars[3] == 5
                     , bCurrHour = (bool)pars[4] //m_tecView.currHour
@@ -697,7 +697,7 @@ namespace Statistic
 
                 int i = -1
                     , warn = -1, cntWarn = -1
-                    , lh = bCurrHour == true ? lastHour - 1 : lastHour;
+                    , lh = bCurrHour == true ? lastReceivedHour - 1 : lastReceivedHour;
                 double t_pbr = -1F, p_pbr = -1F;
                 string strWarn = string.Empty;
                 
@@ -721,15 +721,12 @@ namespace Statistic
                     //Rows[i].Cells[(int)INDEX_COLUMNS.PART_TIME].Style = curCellStyle; // стиль определен для всей строки
                     Rows[i].DefaultCellStyle = curCellStyle;
                     // факт
-                    if (! (i > lh))
-                    {                        
+                    if (!(i > lh)) {
                         Rows[i].Cells[(int)INDEX_COLUMNS.TEMPERATURE_FACT].Value = (values[i].valuesLastMinutesTM).ToString(@"F2"); // температура
                         //Rows[i].Cells[(int)INDEX_COLUMNS.TEMPERATURE_FACT].Style = curCellStyle; // стиль определен для всей строки
                         Rows[i].Cells[(int)INDEX_COLUMNS.POWER_FACT_SUM].Value = (values[i].valuesFact * 1000).ToString(@"F2"); // мощность
                         //Rows[i].Cells[(int)INDEX_COLUMNS.POWER_FACT_SUM].Style = curCellStyle; // стиль определен для всей строки
-                    }
-                    else
-                        ;
+                    } else ;
                     // план
                     Rows[i].Cells[(int)INDEX_COLUMNS.TEMPERATURE_PBR].Value = (values[i].valuesPmin).ToString(@"F2"); // температура
                     //Rows[i].Cells[(int)INDEX_COLUMNS.TEMPERATURE_PBR].Style = curCellStyle; // стиль определен для всей строки
@@ -908,21 +905,32 @@ namespace Statistic
                 int itemscount = values.Length
                     , iMainIntervalCount = MainHours.GetCountMainInterval (serverTime.Date)
                     , i = -1, h = -1
-                    , indxItemPlan = -1, indxHourPlan = -1;
+                    , indxItemMain = -1, indxHourMain = -1
+                    , iMainIntervalChanged = -1;
                 double y = -1F;
 
                 string[] names = new string[itemscount];
 
+                PointPairList[] valuesMainFact = null //new double[itemscount]
+                    , valuesRegularFact = null //new double[itemscount]
+                    ;
                 PointPairList [] valuesPlan = null //new PointPairList () //new double[itemscount]
                     , valuesPDiviation = null //new PointPairList () //new double[itemscount]
                     , valuesODiviation = null //new PointPairList () //new double[itemscount]
                     ;
-                double[] valuesMainFact = new double[itemscount]
-                    , valuesRegularFact = new double[itemscount]
-                    ;
+
                 // выделить память для
                 if (iMainIntervalCount > 0)
                 {
+                    valuesMainFact = new PointPairList[iMainIntervalCount];
+                    valuesRegularFact = new PointPairList[iMainIntervalCount + 1];
+
+                    for (i = 0; i < valuesMainFact.Length; i++)
+                        valuesMainFact[i] = new PointPairList();
+
+                    for (i = 0; i < valuesRegularFact.Length; i++)
+                        valuesRegularFact[i] = new PointPairList();
+                    
                     valuesPlan = new PointPairList[iMainIntervalCount];
                     valuesPDiviation = new PointPairList[iMainIntervalCount];
                     valuesODiviation = new PointPairList[iMainIntervalCount];
@@ -940,7 +948,7 @@ namespace Statistic
                 double minimum = double.MaxValue, minimum_scale;
                 double maximum = 0, maximum_scale;
                 bool noValues = true;
-                for (i = 0, h = 1, indxItemPlan = -1, indxHourPlan = -1; i < itemscount; i++, h++)
+                for (i = 0, h = 1, indxItemMain = 0, indxHourMain = -1, iMainIntervalChanged = 0; i < itemscount; i++, h++)
                 {
                     if (bCurDateSeason == true)
                     {
@@ -956,55 +964,63 @@ namespace Statistic
 
                     if (values[i].valuesPBR > 0)
                     {
-                        indxHourPlan++;
+                        indxHourMain++;
                         y = values[i].valuesPBR;
 
-                        indxItemPlan = MainHours.GetIndexItemInterval (serverTime.Date, h);
-                        if (!(indxItemPlan < 0))
+                        indxItemMain = MainHours.GetIndexItemInterval (serverTime.Date, h);
+                        if (!(indxItemMain < 0))
                         {
-                            valuesPlan[indxItemPlan].Add(h, y);
-                            valuesPDiviation[indxItemPlan].Add(h, y + values[i].valuesDiviation);
-                            valuesODiviation[indxItemPlan].Add(h, y - values[i].valuesDiviation);
+                            valuesPlan[indxItemMain].Add(h, y);
+                            valuesPDiviation[indxItemMain].Add(h, y + values[i].valuesDiviation);
+                            valuesODiviation[indxItemMain].Add(h, y - values[i].valuesDiviation);
                         }
                         else
                             Logging.Logg().Error(@"ZedGraphControlLK::Draw () - hour=" + h, Logging.INDEX_MESSAGE.NOT_SET);
                     }
                     else
-                        indxHourPlan = -1;
+                        indxHourMain = -1;
 
                     y = values[i].valuesFact * 1000;
                     if (MainHours.IsMain(serverTime.Date, h) == true)
                     {
-                        valuesMainFact[i] = y;
-                        valuesRegularFact[i] =  0F;
+                        if (iMainIntervalChanged % 2 == 0)
+                            iMainIntervalChanged++;
+                        else
+                            ;
+
+                        valuesMainFact[(int)(iMainIntervalChanged / 2)].Add(h, y);
                     }
                     else
                     {
-                        valuesMainFact[i] =  0F;
-                        valuesRegularFact[i] = y;
+                        if (iMainIntervalChanged % 2 == 1)
+                            iMainIntervalChanged++;
+                        else
+                            ;
+
+                        valuesRegularFact[(int)(iMainIntervalChanged / 2)].Add(h, y);
                     }
 
                     if (values[i].valuesPBR > 0)
                     {
-                        if (minimum > valuesPDiviation[indxItemPlan][indxHourPlan].Y)
+                        if (minimum > valuesPDiviation[indxItemMain][indxHourMain].Y)
                         {
-                            minimum = valuesPDiviation[indxItemPlan][indxHourPlan].Y;
+                            minimum = valuesPDiviation[indxItemMain][indxHourMain].Y;
                             noValues = false;
                         }
                         else
                             ;
 
-                        if (minimum > valuesODiviation[indxItemPlan][indxHourPlan].Y)
+                        if (minimum > valuesODiviation[indxItemMain][indxHourMain].Y)
                         {
-                            minimum = valuesODiviation[indxItemPlan][indxHourPlan].Y;
+                            minimum = valuesODiviation[indxItemMain][indxHourMain].Y;
                             noValues = false;
                         }
                         else
                             ;
 
-                        if (minimum > valuesPlan[indxItemPlan][indxHourPlan].Y)
+                        if (minimum > valuesPlan[indxItemMain][indxHourMain].Y)
                         {
-                            minimum = valuesPlan[indxItemPlan][indxHourPlan].Y;
+                            minimum = valuesPlan[indxItemMain][indxHourMain].Y;
                             noValues = false;
                         }
                         else
@@ -1023,18 +1039,18 @@ namespace Statistic
 
                     if (values[i].valuesPBR > 0)
                     {
-                        if (maximum < valuesPDiviation[indxItemPlan][indxHourPlan].Y)
-                            maximum = valuesPDiviation[indxItemPlan][indxHourPlan].Y;
+                        if (maximum < valuesPDiviation[indxItemMain][indxHourMain].Y)
+                            maximum = valuesPDiviation[indxItemMain][indxHourMain].Y;
                         else
                             ;
 
-                        if (maximum < valuesODiviation[indxItemPlan][indxHourPlan].Y)
-                            maximum = valuesODiviation[indxItemPlan][indxHourPlan].Y;
+                        if (maximum < valuesODiviation[indxItemMain][indxHourMain].Y)
+                            maximum = valuesODiviation[indxItemMain][indxHourMain].Y;
                         else
                             ;
 
-                        if (maximum < valuesPlan[indxItemPlan][indxHourPlan].Y)
-                            maximum = valuesPlan[indxItemPlan][indxHourPlan].Y;
+                        if (maximum < valuesPlan[indxItemMain][indxHourMain].Y)
+                            maximum = valuesPlan[indxItemMain][indxHourMain].Y;
                         else
                             ;
                     }
@@ -1079,7 +1095,7 @@ namespace Statistic
 
                 GraphPane.Chart.Fill = new Fill(colorChart);
 
-                //LineItem
+                //LineItem - план/отклонения
                 string strCurveNamePPlan = "P план"
                     , strCurveNameDeviation = "Возможное отклонение";
                 for (i = 0; i < iMainIntervalCount; i++)
@@ -1094,14 +1110,28 @@ namespace Statistic
                     strCurveNameDeviation =
                         string.Empty;
                 }
-
+                //Значения
+                string strCurveNameMain = "Мощность(контр.)"
+                    , strCurveNameReg = "Мощность(рег.)";
                 if (FormMain.formGraphicsSettings.m_graphTypes == FormGraphicsSettings.GraphTypes.Bar)
                 {
                     if (!(typeConnSett == CONN_SETT_TYPE.DATA_AISKUE_PLUS_SOTIASSO))
-                    {
-                        //BarItem
-                        GraphPane.AddBar("Мощность(контр.)", null, valuesMainFact, colorPCurve);
-                        GraphPane.AddBar("Мощность(рег.)", null, valuesRegularFact, Color.White);
+                    {//BarItem
+                        for (i = 0; i < valuesMainFact.Length; i++)
+                        {
+                            GraphPane.AddBar(strCurveNameMain, valuesMainFact[i], colorPCurve);
+                            // чтобы повторно не добавить подпись в легенду
+                            strCurveNameMain =
+                                string.Empty;
+                        }
+
+                        for (i = 0; i < valuesRegularFact.Length; i++)
+                        {
+                            GraphPane.AddBar(strCurveNameReg, valuesRegularFact[i], Color.White);
+                            // чтобы повторно не добавить подпись в легенду
+                            strCurveNameReg =
+                                string.Empty;
+                        }
                     }
                     else
                         // других типов данных для ЛК не предусмотрено
@@ -1111,10 +1141,22 @@ namespace Statistic
                     if (FormMain.formGraphicsSettings.m_graphTypes == FormGraphicsSettings.GraphTypes.Linear)
                     {
                         if (!(typeConnSett == CONN_SETT_TYPE.DATA_AISKUE_PLUS_SOTIASSO))
-                        {
-                            //LineItem
-                            GraphPane.AddCurve("Мощность", null, valuesMainFact, colorPCurve);
-                            GraphPane.AddCurve("Мощность", null, valuesRegularFact, Color.White);
+                        {//LineItem
+                            for (i = 0; i < valuesMainFact.Length; i++)
+                            {
+                                GraphPane.AddCurve(strCurveNameMain, valuesMainFact[i], colorPCurve);
+                                // чтобы повторно не добавить подпись в легенду
+                                strCurveNameMain =
+                                    string.Empty;
+                            }
+
+                            for (i = 0; i < valuesRegularFact.Length; i++)
+                            {
+                                GraphPane.AddCurve(strCurveNameReg, valuesRegularFact[i], Color.White);
+                                // чтобы повторно не добавить подпись в легенду
+                                strCurveNameReg =
+                                    string.Empty;
+                            }
                         }
                         else
                             // других типов данных для ЛК не предусмотрено
@@ -1203,9 +1245,25 @@ namespace Statistic
                 Invalidate();
             }
 
-            protected override string OnPointValueEvent(object sender, GraphPane pane, CurveItem curve, int iPt)
+            //protected override string OnPointValueEvent(object sender, GraphPane pane, CurveItem curve, int iPt)
+            //{
+            //    return curve[iPt].Y.ToString("F3");
+            //}
+
+            public override bool FindNearestObject(PointF p, Graphics g, out object obj, out int index)
             {
-                return curve[iPt].Y.ToString("F3");
+                bool bRes = false;
+
+                bRes = base.FindNearestObject(p, g, out obj, out index);
+
+                if (!(obj == null))
+                    //if ((obj as CurveItem).IsLine == true)
+                        index = (int)(obj as CurveItem).Points[index].X - 1;
+                    //else ;
+                else
+                    ;
+
+                return bRes;
             }
         }
 
