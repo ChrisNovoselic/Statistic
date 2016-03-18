@@ -1002,29 +1002,39 @@ namespace Statistic
 
                     if (values[i].valuesPBR > 0)
                     {
-                        if (minimum > valuesPDiviation[indxItemMain][indxHourMain].Y)
+                        if ((!(indxItemMain < 0))
+                            && (indxItemMain < iMainIntervalCount))
                         {
-                            minimum = valuesPDiviation[indxItemMain][indxHourMain].Y;
-                            noValues = false;
-                        }
-                        else
-                            ;
+                            if (minimum > valuesPDiviation[indxItemMain][indxHourMain].Y)
+                            {
+                                minimum = valuesPDiviation[indxItemMain][indxHourMain].Y;
+                                noValues = false;
+                            }
+                            else
+                                ;
 
-                        if (minimum > valuesODiviation[indxItemMain][indxHourMain].Y)
-                        {
-                            minimum = valuesODiviation[indxItemMain][indxHourMain].Y;
-                            noValues = false;
-                        }
-                        else
-                            ;
+                            if (minimum > valuesODiviation[indxItemMain][indxHourMain].Y)
+                            {
+                                minimum = valuesODiviation[indxItemMain][indxHourMain].Y;
+                                noValues = false;
+                            }
+                            else
+                                ;
 
-                        if (minimum > valuesPlan[indxItemMain][indxHourMain].Y)
-                        {
-                            minimum = valuesPlan[indxItemMain][indxHourMain].Y;
-                            noValues = false;
+                            if (minimum > valuesPlan[indxItemMain][indxHourMain].Y)
+                            {
+                                minimum = valuesPlan[indxItemMain][indxHourMain].Y;
+                                noValues = false;
+                            }
+                            else
+                                ;
                         }
                         else
-                            ;
+                        {
+                            Logging.Logg().Error(@"ZedGraphControlLK::Draw () - план мощности не совпадает с графиком контрольных часов...", Logging.INDEX_MESSAGE.NOT_SET);
+
+                            break;
+                        }
                     }
                     else
                         ;

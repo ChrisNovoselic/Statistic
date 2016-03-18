@@ -391,7 +391,7 @@ namespace Statistic
                                                 if (w.Rows[r.Index + 1].Cells[i + 2].Value == null)
                                                     row[(int)INDEX_COLUMN.Temperature] = string.Empty;
                                                 else
-                                                    row[2] = w.Rows[r.Index + 1].Cells[i + 2].Value.ToString().Trim();//Значение температуры
+                                                    row[(int)INDEX_COLUMN.Temperature] = w.Rows[r.Index + 1].Cells[i + 2].Value.ToString().Trim();//Значение температуры
 
                                                 dataTableRes.Rows.Add(row);//Добавляем строку в таблицу
                                             }
