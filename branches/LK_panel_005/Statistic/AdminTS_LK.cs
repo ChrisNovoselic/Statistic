@@ -320,12 +320,12 @@ namespace Statistic
                 /// <summary>
                 /// Массив имен колонок
                 /// </summary>
-                public static string []m_col_name = { "Час", "Значение", "Температура" };
+                public static string[] m_col_name = { "Час", "Температура", "Значение" };
 
                 /// <summary>
                 /// Индексы колонок
                 /// </summary>
-                public enum INDEX_COLUMN : int { Unknowun = -1, Time, Power, Temperature }
+                public enum INDEX_COLUMN : int { Unknowun = -1, Time, Temperature, Power }
 
                 /// <summary>
                 /// Получение таблицы из Excel
