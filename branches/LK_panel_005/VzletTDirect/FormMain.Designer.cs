@@ -2,7 +2,7 @@
 using System.Drawing;
 using System.Windows.Forms;
 
-namespace StatisticDiagnostic
+namespace StatisticVzletTDirect
 {
     partial class FormMain
     {
@@ -26,7 +26,7 @@ namespace StatisticDiagnostic
 
         #region Код, автоматически созданный конструктором форм Windows
 
-        PanelStatisticDiagnostic panelMain;
+        PanelVzletTDirect panelMain;
 
         /// <summary>
         /// Обязательный метод для поддержки конструктора - не изменяйте

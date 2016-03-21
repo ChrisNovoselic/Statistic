@@ -33,7 +33,7 @@ Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "StatisticAlarm", "Statistic
 EndProject
 Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "StatisticDiagnostic1", "StatisticDiagnostic1\StatisticDiagnostic1.csproj", "{2F11223C-00CF-4D6C-B234-1B8FA95F8B2F}"
 EndProject
-Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "VzletOutput", "VzletOutput\VzletOutput.csproj", "{9BD77B41-EB07-417F-96DA-3BF9A7CCF164}"
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "VzletTDirect", "VzletTDirect\VzletTDirect.csproj", "{9BD77B41-EB07-417F-96DA-3BF9A7CCF164}"
 EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution

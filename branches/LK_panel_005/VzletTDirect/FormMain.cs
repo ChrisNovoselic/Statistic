@@ -10,7 +10,7 @@ using System.Windows.Forms;
 using StatisticCommon;
 using HClassLibrary;
 
-namespace StatisticDiagnostic
+namespace StatisticVzletTDirect
 {
     public partial class FormMain : FormMainStatistic
     {
@@ -44,7 +44,7 @@ namespace StatisticDiagnostic
             CreatefileConnSett(@"connsett.ini");
             Start();
             bAbort = initialize(out msg);
-            this.panelMain = new PanelStatisticDiagnostic();
+            this.panelMain = new PanelVzletTDirect();
             this.panelMain.SetDelegateReport(ErrorReport, WarningReport, ActionReport, ReportClear);
             //Создать панель для размещения "рабочих" панелей
             Panel _panelMain = new Panel();
@@ -201,8 +201,8 @@ namespace StatisticDiagnostic
             //Параметры валидности даты/времени получения данных СОТИАССО...
             TecView.SEC_VALIDATE_TMVALUE = Int32.Parse(formParameters.m_arParametrSetup[(int)FormParameters.PARAMETR_SETUP.VALIDATE_TM_VALUE]);
 
-            PanelStatisticDiagnostic.UPDATE_TIME = Int32.Parse(formParameters.m_arParametrSetup[(int)FormParameters.PARAMETR_SETUP.DIAGNOSTIC_TIMER_UPDATE]);
-            PanelStatisticDiagnostic.VALIDATE_ASKUE_TM = Int32.Parse(formParameters.m_arParametrSetup[(int)FormParameters.PARAMETR_SETUP.VALIDATE_ASKUE_VALUE]);
+            //PanelVzletTDirect.UPDATE_TIME = Int32.Parse(formParameters.m_arParametrSetup[(int)FormParameters.PARAMETR_SETUP.DIAGNOSTIC_TIMER_UPDATE]);
+            //PanelVzletTDirect.VALIDATE_ASKUE_TM = Int32.Parse(formParameters.m_arParametrSetup[(int)FormParameters.PARAMETR_SETUP.VALIDATE_ASKUE_VALUE]);
 
             //Параметрвы для ALARM...
         }

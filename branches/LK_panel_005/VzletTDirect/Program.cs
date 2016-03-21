@@ -3,10 +3,11 @@ using System.Collections.Generic;
 using System.Linq;
 using System.Threading;
 using System.Windows.Forms;
+
 using HClassLibrary;
 using StatisticCommon;
 
-namespace StatisticDiagnostic
+namespace StatisticVzletTDirect
 {
     static class Program
     {

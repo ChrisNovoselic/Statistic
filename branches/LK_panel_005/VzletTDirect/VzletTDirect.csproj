@@ -56,7 +56,7 @@
     <Compile Include="FormMain.designer.cs">
       <DependentUpon>FormMain.cs</DependentUpon>
     </Compile>
-    <Compile Include="PanelVzletOutput.cs">
+    <Compile Include="PanelVzletTDirect.cs">
       <SubType>Component</SubType>
     </Compile>
     <Compile Include="Program.cs" />
