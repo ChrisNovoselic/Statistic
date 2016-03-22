@@ -824,7 +824,7 @@ namespace StatisticCommon
                     break;
             }
 
-            Debug.WriteLine(@"TEC::minsFactRequest () = " + request);
+            //Debug.WriteLine(@"TEC::minsFactRequest () = " + request);
 
             return request;
         }

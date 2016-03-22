@@ -942,7 +942,7 @@ namespace Statistic
             if (received == true)
             {
                 update = false;
-                _pnlQuickData.dtprDate.Value = m_tecView.m_curDate;
+                _pnlQuickData.dtprDate.Value = m_tecView.m_curDate.Add(m_tecView.m_tsOffsetToMoscow);
             }
             else
             {
@@ -1080,7 +1080,13 @@ namespace Statistic
             dt = dt.AddHours(hour);
             dt = dt.AddMinutes(min);
 
-            tickTime(dt);
+            if (IsHandleCreated == true)
+                if (InvokeRequired == true)
+                    Invoke(delegateTickTime, dt);
+                else
+                    tickTime(dt/*.Add(m_tecView.m_tsOffsetToMoscow)*/);
+            else
+                return;
         }
 
         /// <summary>
