@@ -71,7 +71,7 @@ namespace Statistic
             }
 
             this.m_ZedGraphMins.MouseUpEvent += new ZedGraph.ZedGraphControl.ZedMouseEventHandler(this.zedGraphMins_MouseUpEvent);
-            this.m_ZedGraphHours.MouseUpEvent += new ZedGraph.ZedGraphControl.ZedMouseEventHandler(this.zedGraphHours_MouseUpEvent);
+            // для zedGraphHours обработчик добавлен в базовом классе
 
             this.m_ZedGraphMins.InitializeEventHandler(this.эксельToolStripMenuItemMins_Click, this.sourceDataMins_Click);
             this.m_ZedGraphHours.InitializeEventHandler(this.эксельToolStripMenuItemHours_Click, this.sourceDataHours_Click);
@@ -379,44 +379,6 @@ namespace Statistic
             }
             else
                 ;
-
-            return true;
-        }
-
-        private bool zedGraphHours_MouseUpEvent(ZedGraphControl sender, MouseEventArgs e)
-        {
-            if (e.Button != MouseButtons.Left)
-                return true;
-
-            object obj;
-            PointF p = new PointF(e.X, e.Y);
-            bool found;
-            int index;
-
-            found = sender.GraphPane.FindNearestObject(p, CreateGraphics(), out obj, out index);
-
-            if (!(obj is BarItem) && !(obj is LineItem))
-                return true;
-
-            if ((! (m_tecView == null)) && (found == true))
-            {
-                if (!(delegateStartWait == null)) delegateStartWait(); else ;
-
-                bool bRetroHour = m_tecView.zedGraphHours_MouseUpEvent(index);
-
-                if (bRetroHour == true)
-                    setRetroTickTime(m_tecView.lastHour, 60);
-                else {
-                    ////Вариань №1
-                    //setNowDate(false);
-
-                    //Вариань №2
-                    m_tecView.currHour = true;
-                    NewDateRefresh();
-                }
-
-                if (!(delegateStopWait == null)) delegateStopWait(); else ;
-            }
 
             return true;
         }

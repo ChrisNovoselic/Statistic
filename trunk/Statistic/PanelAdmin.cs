@@ -222,7 +222,7 @@ namespace Statistic
                     break;
                 case FormChangeMode.MANAGER.LK:
                     //Возможность редактирования значений ПБР: НЕ изменяема, разрешена
-                    m_admin = new AdminTS_LK(new bool[] { false, true });
+                    m_admin = new PanelAdminLK.AdminTS_LK(new bool[] { false, true });
                     break;
                 default:
                     break;

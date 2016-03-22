@@ -13,7 +13,7 @@ namespace StatisticCommon
     public class HStatisticUsers : HUsers
     {
         //Идентификаторы из БД
-        public enum ID_ROLES { UNKNOWN, KOM_DISP = 1, ADMIN, USER, NSS = 101, MAJOR_MASHINIST, MASHINIST, SOURCE_DATA = 501,
+        public enum ID_ROLES { UNKNOWN, KOM_DISP = 1, ADMIN, USER, NSS = 101, MAJOR_MASHINIST, MASHINIST, LK_DISP = 201, SOURCE_DATA = 501,
                             COUNT_ID_ROLES = 7};
 
         //Идентификаторы из БД
@@ -84,7 +84,7 @@ namespace StatisticCommon
         {
             get
             {
-                return ((Role == ID_ROLES.ADMIN) || (Role == ID_ROLES.KOM_DISP) || (Role == ID_ROLES.NSS));
+                return ((Role == ID_ROLES.ADMIN) || (Role == ID_ROLES.KOM_DISP) || (Role == ID_ROLES.NSS) ||  (Role == ID_ROLES.LK_DISP));
             }
         }
 

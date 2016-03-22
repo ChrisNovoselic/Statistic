@@ -773,40 +773,43 @@ namespace Statistic
                             if (tclTecViews.TabPages[e.TabIndex].Controls[0] is PanelAlarm)
                                 formChangeMode.SetItemChecked(-3, false);
                             else
-                                if (tclTecViews.TabPages[e.TabIndex].Controls[0] is PanelStatisticDiagnostic)
-                                    m_dictAddingTabs[(int)ID_ADDING_TAB.DIAGNOSTIC].menuItem.Checked = false;
+                                if (tclTecViews.TabPages[e.TabIndex].Controls[0] is PanelAdminLK)
+                                    formChangeMode.SetItemChecked(-4, false);
                                 else
-                                    if (tclTecViews.TabPages[e.TabIndex].Controls[0] is PanelCurPower)
-                                        m_dictAddingTabs[(int)ID_ADDING_TAB.CUR_POWER].menuItem.Checked = false;
+                                    if (tclTecViews.TabPages[e.TabIndex].Controls[0] is PanelStatisticDiagnostic)
+                                        m_dictAddingTabs[(int)ID_ADDING_TAB.DIAGNOSTIC].menuItem.Checked = false;
                                     else
-                                        if (tclTecViews.TabPages[e.TabIndex].Controls[0] is PanelTMSNPower)
-                                            m_dictAddingTabs[(int)ID_ADDING_TAB.TM_SN_POWER].menuItem.Checked = false;
+                                        if (tclTecViews.TabPages[e.TabIndex].Controls[0] is PanelCurPower)
+                                            m_dictAddingTabs[(int)ID_ADDING_TAB.CUR_POWER].menuItem.Checked = false;
                                         else
-                                            if (tclTecViews.TabPages[e.TabIndex].Controls[0] is PanelLastMinutes)
-                                                m_dictAddingTabs[(int)ID_ADDING_TAB.MONITOR_LAST_MINUTES].menuItem.Checked = false;
+                                            if (tclTecViews.TabPages[e.TabIndex].Controls[0] is PanelTMSNPower)
+                                                m_dictAddingTabs[(int)ID_ADDING_TAB.TM_SN_POWER].menuItem.Checked = false;
                                             else
-                                                if (tclTecViews.TabPages[e.TabIndex].Controls[0] is PanelSobstvNyzhdy)
-                                                    m_dictAddingTabs[(int)ID_ADDING_TAB.SOBSTV_NYZHDY].menuItem.Checked = false;
+                                                if (tclTecViews.TabPages[e.TabIndex].Controls[0] is PanelLastMinutes)
+                                                    m_dictAddingTabs[(int)ID_ADDING_TAB.MONITOR_LAST_MINUTES].menuItem.Checked = false;
                                                 else
-                                                    if (tclTecViews.TabPages[e.TabIndex].Controls[0] is PanelCustomTecView)
-                                                        m_dictAddingTabs[e.Id].menuItem.Checked = false;
+                                                    if (tclTecViews.TabPages[e.TabIndex].Controls[0] is PanelSobstvNyzhdy)
+                                                        m_dictAddingTabs[(int)ID_ADDING_TAB.SOBSTV_NYZHDY].menuItem.Checked = false;
                                                     else
-                                                        if (tclTecViews.TabPages[e.TabIndex].Controls[0] is PanelSourceData)
-                                                            m_dictAddingTabs[(int)ID_ADDING_TAB.DATETIMESYNC_SOURCE_DATA].menuItem.Checked = false;
+                                                        if (tclTecViews.TabPages[e.TabIndex].Controls[0] is PanelCustomTecView)
+                                                            m_dictAddingTabs[e.Id].menuItem.Checked = false;
                                                         else
-                                                            if (tclTecViews.TabPages[e.TabIndex].Controls[0] is PanelSOTIASSO)
-                                                                m_dictAddingTabs[(int)ID_ADDING_TAB.SOTIASSO].menuItem.Checked = false;
+                                                            if (tclTecViews.TabPages[e.TabIndex].Controls[0] is PanelSourceData)
+                                                                m_dictAddingTabs[(int)ID_ADDING_TAB.DATETIMESYNC_SOURCE_DATA].menuItem.Checked = false;
                                                             else
-                                                                if (tclTecViews.TabPages[e.TabIndex].Controls[0] is PanelAnalyzer_DB)
-                                                                    m_dictAddingTabs[(int)ID_ADDING_TAB.ANALYZER].menuItem.Checked = false;
+                                                                if (tclTecViews.TabPages[e.TabIndex].Controls[0] is PanelSOTIASSO)
+                                                                    m_dictAddingTabs[(int)ID_ADDING_TAB.SOTIASSO].menuItem.Checked = false;
                                                                 else
-                                                                    if (tclTecViews.TabPages[e.TabIndex].Controls[0] is PanelTECComponent)
-                                                                        m_dictAddingTabs[(int)ID_ADDING_TAB.TEC_Component].menuItem.Checked = false;
+                                                                    if (tclTecViews.TabPages[e.TabIndex].Controls[0] is PanelAnalyzer_DB)
+                                                                        m_dictAddingTabs[(int)ID_ADDING_TAB.ANALYZER].menuItem.Checked = false;
                                                                     else
-                                                                        if (tclTecViews.TabPages[e.TabIndex].Controls[0] is PanelUser)
-                                                                            m_dictAddingTabs[(int)ID_ADDING_TAB.USERS].menuItem.Checked = false;
+                                                                        if (tclTecViews.TabPages[e.TabIndex].Controls[0] is PanelTECComponent)
+                                                                            m_dictAddingTabs[(int)ID_ADDING_TAB.TEC_Component].menuItem.Checked = false;
                                                                         else
-                                                                            ;
+                                                                            if (tclTecViews.TabPages[e.TabIndex].Controls[0] is PanelUser)
+                                                                                m_dictAddingTabs[(int)ID_ADDING_TAB.USERS].menuItem.Checked = false;
+                                                                            else
+                                                                                ;
         }
 
         void delegateOnFloatTab(object sender, HTabCtrlExEventArgs e)
@@ -1727,7 +1730,7 @@ namespace Statistic
                     else
                     {
                         if (idListener < 0) idListener = DbSources.Sources().Register(s_listFormConnectionSettings[(int)CONN_SETT_TYPE.CONFIG_DB].getConnSett(), false, @"CONFIG_DB"); else ;
-                        formPassword.SetIdPass(idListener, 0, Passwords.ID_ROLES.ADMIN);
+                        formPassword.SetIdPass(idListener, 0, Passwords.INDEX_ROLES.ADMIN);
                         DialogResult dlgRes = formPassword.ShowDialog(this);
                         if ((dlgRes == DialogResult.Yes) || (dlgRes == DialogResult.Abort))
                             bShowFormConnectionSettings = true;
@@ -2014,6 +2017,7 @@ namespace Statistic
                 изменитьПарольДиспетчераToolStripMenuItem.Enabled =
                 изменитьПарольАдминистратораToolStripMenuItem.Enabled =
                 изменитьПарольНССToolStripMenuItem.Enabled =
+                изменитьПарольЛКДиспетчераToolStripMenuItem.Enabled =
                 параметрыToolStripMenuItem.Enabled =
                     bCurEnabled;
                 // разрешить использование дочерних п.п.
@@ -2026,13 +2030,14 @@ namespace Statistic
                     m_dictAddingTabs[(int)ID_ADDING_TAB.CUSTOM_2X3_1].menuItem.Enabled =
                     m_dictAddingTabs[(int)ID_ADDING_TAB.CUSTOM_2X3_2].menuItem.Enabled =
                     m_dictAddingTabs[(int)ID_ADDING_TAB.CUSTOM_2X3_3].menuItem.Enabled =
-                    m_dictAddingTabs[(int)ID_ADDING_TAB.CUSTOM_2X3_4].menuItem.Enabled =                        
+                    m_dictAddingTabs[(int)ID_ADDING_TAB.CUSTOM_2X3_4].menuItem.Enabled =
+                        bCurEnabled;
                     m_dictAddingTabs[(int)ID_ADDING_TAB.CUR_POWER].menuItem.Enabled =
                     m_dictAddingTabs[(int)ID_ADDING_TAB.TM_SN_POWER].menuItem.Enabled =
                     m_dictAddingTabs[(int)ID_ADDING_TAB.MONITOR_LAST_MINUTES].menuItem.Enabled =
                     m_dictAddingTabs[(int)ID_ADDING_TAB.SOBSTV_NYZHDY].menuItem.Enabled =
                     m_dictAddingTabs[(int)ID_ADDING_TAB.SOTIASSO].menuItem.Enabled =
-                        bCurEnabled;
+                        bCurEnabled && (HStatisticUsers.allTEC < (int)TECComponent.ID.LK);
 
                     m_dictAddingTabs[(int)ID_ADDING_TAB.SOTIASSO].menuItem.Enabled &= HStatisticUsers.IsAllowed((int)HStatisticUsers.ID_ALLOWED.MENUITEM_VIEW_VALUES_SOTIASSO);
                 }
@@ -2217,7 +2222,7 @@ namespace Statistic
 
             if (HStatisticUsers.RoleIsDisp == true)
             {
-                Passwords.ID_ROLES idRolesPassword = Passwords.ID_ROLES.ADMIN;
+                Passwords.INDEX_ROLES indxRolesPassword = Passwords.INDEX_ROLES.ADMIN;
                 DialogResult dlgRes = System.Windows.Forms.DialogResult.Yes;
                 bool bPasswordAsked = false;
 
@@ -2231,22 +2236,22 @@ namespace Statistic
                 {
                     if ((modeAdmin == FormChangeMode.MANAGER.DISP)
                         || (modeAdmin == FormChangeMode.MANAGER.ALARM))
-                        idRolesPassword = Passwords.ID_ROLES.COM_DISP;
+                        indxRolesPassword = Passwords.INDEX_ROLES.COM_DISP;
                     else
                         if (modeAdmin == FormChangeMode.MANAGER.NSS)
-                            idRolesPassword = Passwords.ID_ROLES.NSS;
+                            indxRolesPassword = Passwords.INDEX_ROLES.NSS;
                         else
                             if (modeAdmin == FormChangeMode.MANAGER.LK)
-                                idRolesPassword = Passwords.ID_ROLES.NSS;
+                                indxRolesPassword = Passwords.INDEX_ROLES.LK_DISP;
                             else
                                 ;
 
-                    if (idRolesPassword == Passwords.ID_ROLES.ADMIN)
+                    if (indxRolesPassword == Passwords.INDEX_ROLES.ADMIN)
                         iRes = -1;
                     else
                         ;
 
-                    formPassword.SetIdPass(idListener, 0, idRolesPassword);
+                    formPassword.SetIdPass(idListener, 0, indxRolesPassword);
                     dlgRes = formPassword.ShowDialog(this);
                 }
                 else
@@ -2735,7 +2740,7 @@ namespace Statistic
         //        , new bool[] { ((ToolStripMenuItem)sender).Checked, true });
 
         //    //int idListener = DbSources.Sources().Register(s_listFormConnectionSettings[(int)CONN_SETT_TYPE.CONFIG_DB].getConnSett(), false, @"CONFIG_DB");
-        //    //formPassword.SetIdPass(idListener, 0, Passwords.ID_ROLES.ADMIN);
+        //    //formPassword.SetIdPass(idListener, 0, Passwords.INDEX_ROLES.ADMIN);
         //    //formPassword.ShowDialog(this);
         //    //DialogResult dlgRes = formPassword.DialogResult;
         //    //if (dlgRes == DialogResult.Yes)
@@ -2778,7 +2783,12 @@ namespace Statistic
 
         private void изменитьПарольНССToolStripMenuItem_Click(object sender, EventArgs e)
         {
-            изменитьПарольToolStripMenuItem_Click(sender, e, 0, Passwords.ID_ROLES.NSS);
+            изменитьПарольToolStripMenuItem_Click(sender, e, 0, Passwords.INDEX_ROLES.NSS);
+        }
+
+        private void изменитьПарольЛКДиспетчераToolStripMenuItem_Click(object sender, EventArgs e)
+        {
+            изменитьПарольToolStripMenuItem_Click(sender, e, 0, Passwords.INDEX_ROLES.LK_DISP);
         }
 
         //private void диагностикаToolStripMenuItem_Click(object sender, EventArgs e)
@@ -2834,20 +2844,20 @@ namespace Statistic
 
         private void изменитьПарольКоммерческогоДиспетчераToolStripMenuItem_Click(object sender, EventArgs e)
         {
-            изменитьПарольToolStripMenuItem_Click(sender, e, 0, Passwords.ID_ROLES.COM_DISP);
+            изменитьПарольToolStripMenuItem_Click(sender, e, 0, Passwords.INDEX_ROLES.COM_DISP);
         }
 
         private void изменитьПарольАдминистратораToolStripMenuItem_Click(object sender, EventArgs e)
         {
-            изменитьПарольToolStripMenuItem_Click(sender, e, 0, Passwords.ID_ROLES.ADMIN);
+            изменитьПарольToolStripMenuItem_Click(sender, e, 0, Passwords.INDEX_ROLES.ADMIN);
         }
 
-        private void изменитьПарольToolStripMenuItem_Click(object sender, EventArgs e, int id_ext, Passwords.ID_ROLES id_role)
+        private void изменитьПарольToolStripMenuItem_Click(object sender, EventArgs e, int id_ext, Passwords.INDEX_ROLES indx_role)
         {
             if (s_listFormConnectionSettings[(int)CONN_SETT_TYPE.CONFIG_DB].Ready == 0)
             {
                 int idListener = DbSources.Sources().Register(s_listFormConnectionSettings[(int)CONN_SETT_TYPE.CONFIG_DB].getConnSett(), false, @"CONFIG_DB");
-                formPassword.SetIdPass(idListener, id_ext, id_role);
+                formPassword.SetIdPass(idListener, id_ext, indx_role);
                 DialogResult dlgRes = formPassword.ShowDialog(this);
                 if (dlgRes == DialogResult.Yes)
                 {

@@ -156,6 +156,8 @@ namespace StatisticCommon
             RetroMins_TM, //указанные сутки/час, СОТИАССО
             //AdminDates, //Получение списка сохранённых часовых значений
             //PPBRDates,
+            HoursTMTemperatureValues, //Температура окружающей среды
+            //CurrentTemperatureValues, //Температура окружающей среды
             AdminValues, //Получение административных/ПБР значений
             PPBRValues,
         }
@@ -450,7 +452,7 @@ namespace StatisticCommon
         public bool IsHourValues(int hour)
         {
             return (!(m_valuesHours == null))
-                && (hour < m_valuesHours.Length)
+                && ((hour < m_valuesHours.Length) && (!(hour < 0)))
                 && (!(m_valuesHours[hour] == null));
         }
         /// <summary>
@@ -925,6 +927,8 @@ namespace StatisticCommon
                 case (int)StatesMachine.RetroMins_Fact:
                 case (int)StatesMachine.RetroMin_TM_Gen:
                 case (int)StatesMachine.RetroMins_TM:
+                case (int)StatesMachine.HoursTMTemperatureValues:
+                //case (int)StatesMachine.CurrentTemperatureValues:
                 //case (int)StatesMachine.PPBRDates:
                 case (int)StatesMachine.PPBRValues:
                 //case (int)StatesMachine.AdminDates:
@@ -968,16 +972,16 @@ namespace StatisticCommon
                     waiting = string.Empty,
                     msg = string.Empty;
 
-            switch (state)
+            switch ((StatesMachine)state)
             {
-                case (int)StatesMachine.InitSensors:
+                case StatesMachine.InitSensors:
                     reason = @"получения идентификаторов датчиков";
                     waiting = @"Переход в ожидание";
                     //AbortThreadRDGValues(INDEX_WAITHANDLE_REASON.ERROR);
                     reasonRes = INDEX_WAITHANDLE_REASON.ERROR;
                     break;
-                case (int)StatesMachine.CurrentTimeAdmin:
-                case (int)StatesMachine.CurrentTimeView:
+                case StatesMachine.CurrentTimeAdmin:
+                case StatesMachine.CurrentTimeView:
                     if (request == 0)
                     {
                         reason = @"разбора";
@@ -991,78 +995,78 @@ namespace StatisticCommon
                     waiting = @"Переход в ожидание";
 
                     break;
-                case (int)StatesMachine.Hours_Fact:
+                case StatesMachine.Hours_Fact:
                     reason = @"получасовых значений";
                     waiting = @"Ожидание " + PanelStatistic.POOL_TIME.ToString() + " секунд";
                     //AbortThreadRDGValues(INDEX_WAITHANDLE_REASON.ERROR);
                     reasonRes = INDEX_WAITHANDLE_REASON.ERROR;
                     break;
-                case (int)StatesMachine.Hour_TM:
+                case StatesMachine.Hour_TM:
                     reason = @"усредн. за час телемеханики";
                     waiting = @"Ожидание " + PanelStatistic.POOL_TIME.ToString() + " секунд";
                     break;
-                case (int)StatesMachine.Hours_TM:
+                case StatesMachine.Hours_TM:
                     reason = @"часовых значений";
                     waiting = @"Ожидание " + PanelStatistic.POOL_TIME.ToString() + " секунд";
                     //AbortThreadRDGValues(INDEX_WAITHANDLE_REASON.ERROR);
                     reasonRes = INDEX_WAITHANDLE_REASON.ERROR;
                     break;
-                case (int)StatesMachine.CurrentMins_Fact:
+                case StatesMachine.CurrentMins_Fact:
                     reason = @"3-х минутных значений";
                     waiting = @"Ожидание " + PanelStatistic.POOL_TIME.ToString() + " секунд";
                     //AbortThreadRDGValues(INDEX_WAITHANDLE_REASON.ERROR);
                     reasonRes = INDEX_WAITHANDLE_REASON.ERROR;
                     break;
-                case (int)StatesMachine.CurrentMin_TM:
+                case StatesMachine.CurrentMin_TM:
                     reason = @"усредн. за интервал телемеханики";
                     waiting = @"Ожидание " + PanelStatistic.POOL_TIME.ToString() + " секунд";
                     break;
-                case (int)StatesMachine.CurrentMinDetail_TM:
-                case (int)StatesMachine.RetroMinDetail_TM:
+                case StatesMachine.CurrentMinDetail_TM:
+                case StatesMachine.RetroMinDetail_TM:
                     reason = @"мгновенные за интервал телемеханики";
                     waiting = @"Ожидание " + PanelStatistic.POOL_TIME.ToString() + " секунд";
                     break;
-                case (int)StatesMachine.CurrentMins_TM:
+                case StatesMachine.CurrentMins_TM:
                     reason += getNameInterval () + @"-минутных значений";
                     waiting = @"Ожидание " + PanelStatistic.POOL_TIME.ToString() + " секунд";
                     //AbortThreadRDGValues(INDEX_WAITHANDLE_REASON.ERROR);
                     reasonRes = INDEX_WAITHANDLE_REASON.ERROR;
                     break;
-                case (int)StatesMachine.CurrentHours_TM_SN_PSUM:
+                case StatesMachine.CurrentHours_TM_SN_PSUM:
                     reason = @"часовых значений (собств. нужды)";
                     waiting = @"Ожидание " + PanelStatistic.POOL_TIME.ToString() + " секунд";
                     break;
-                case (int)StatesMachine.LastValue_TM_Gen:
+                case StatesMachine.LastValue_TM_Gen:
                     reason = @"текущих значений (генерация)";
                     waiting = @"Ожидание " + PanelStatistic.POOL_TIME.ToString() + " секунд";
                     //AbortThreadRDGValues(INDEX_WAITHANDLE_REASON.ERROR);
                     reasonRes = INDEX_WAITHANDLE_REASON.ERROR;
                     break;
-                case (int)StatesMachine.LastValue_TM_SN:
+                case StatesMachine.LastValue_TM_SN:
                     reason = @"текущих значений (собств. нужды)";
                     waiting = @"Ожидание " + PanelStatistic.POOL_TIME.ToString() + " секунд";
                     break;
-                case (int)StatesMachine.LastMinutes_TM:
+                case StatesMachine.LastMinutes_TM:
                     reason = @"текущих значений 59 мин.";
                     waiting = @"Ожидание " + PanelStatistic.POOL_TIME.ToString() + " секунд";
                     break;
-                //case (int)StatesMachine.RetroHours:
+                //case StatesMachine.RetroHours:
                 //    reason = @"получасовых значений";
                 //    waiting = @"Переход в ожидание";
                 //    break;
-                case (int)StatesMachine.RetroMins_Fact:
+                case StatesMachine.RetroMins_Fact:
                     reason = @"3-х минутных значений";
                     waiting = @"Переход в ожидание";
                     break;
-                case (int)StatesMachine.RetroMin_TM_Gen:                    
+                case StatesMachine.RetroMin_TM_Gen:                    
                     reason += getNameInterval () + @"-минутных значений";
                     waiting = @"Переход в ожидание";
                     break;
-                case (int)StatesMachine.RetroMins_TM:                    
+                case StatesMachine.RetroMins_TM:                    
                     reason += getNameInterval () + @"-минутных значений";
                     waiting = @"Переход в ожидание";
                     break;
-                //case (int)StatesMachine.PPBRDates:
+                //case StatesMachine.PPBRDates:
                 //    if (request == 0)
                 //    {
                 //        reason = @"разбора";
@@ -1075,14 +1079,22 @@ namespace StatisticCommon
                 //    reason += @" сохранённых часовых значений (PPBR)";
                 //    waiting = @"Переход в ожидание";
                 //    break;
-                case (int)StatesMachine.PPBRValues:
+                case StatesMachine.HoursTMTemperatureValues:
+                    reason += @"по-часовой температуры окр.воздуха";
+                    waiting = @"Переход в ожидание";
+                    break;
+                //case StatesMachine.CurrentTemperatureValues:
+                //    reason += @"текущей температуры окр.воздуха";
+                //    waiting = @"Переход в ожидание";
+                //    break;
+                case StatesMachine.PPBRValues:
                     reason = @"данных плана";
                     //AbortThreadRDGValues(INDEX_WAITHANDLE_REASON.ERROR);
                     reasonRes = INDEX_WAITHANDLE_REASON.ERROR;
                     break;
-                //case (int)StatesMachine.AdminDates:
+                //case StatesMachine.AdminDates:
                 //    break;
-                case (int)StatesMachine.AdminValues:
+                case StatesMachine.AdminValues:
                     reason = @"административных значений";
                     //AbortThreadRDGValues(INDEX_WAITHANDLE_REASON.ERROR);
                     reasonRes = INDEX_WAITHANDLE_REASON.ERROR;
@@ -1126,9 +1138,9 @@ namespace StatisticCommon
                     waiting = string.Empty,
                     msg = string.Empty;
 
-            switch (state)
+            switch ((StatesMachine)state)
             {
-                case (int)StatesMachine.Hours_Fact:
+                case StatesMachine.Hours_Fact:
                     if (m_markWarning.IsMarked ((int)INDEX_WARNING.LAST_HOUR) == true)
                         reason = @"По текущему часу значений не найдено";
                     else
@@ -1137,19 +1149,25 @@ namespace StatisticCommon
                         else
                             ;
                     break;
-                case (int)StatesMachine.CurrentMins_Fact:
-                case (int)StatesMachine.CurrentMins_TM:
+                case StatesMachine.CurrentMins_Fact:
+                case StatesMachine.CurrentMins_TM:
                     if (m_markWarning.IsMarked ((int)INDEX_WARNING.LAST_MIN) == true)
                         reason = @"По текущему минутному интервалу значений не найдено";
                     else
                         ;
                     break;
-                case (int)StatesMachine.LastValue_TM_Gen:
+                case StatesMachine.LastValue_TM_Gen:
                     reason = @"Нет значений СОТИАССО (генерация) по одному из ТГ или значения устарели";
                     break;
-                case (int)StatesMachine.RetroMin_TM_Gen:
+                case StatesMachine.RetroMin_TM_Gen:
                     reason = @"Нет значений СОТИАССО (генерация) ни по одному из ТГ";
                     break;
+                case StatesMachine.HoursTMTemperatureValues:
+                    reason += @"Нет некоторых часовых значений температуры окр.воздуха";
+                    break;
+                //case StatesMachine.CurrentTemperatureValues:
+                //    reason += @"Текущее значение температуры окр.воздуха не найдено";
+                //    break;
                 default:
                     break;
             }
@@ -1178,90 +1196,99 @@ namespace StatisticCommon
 
             string msg = string.Empty;
 
-            switch (state)
+            switch ((StatesMachine)state)
             {
-                case (int)StatesMachine.InitSensors:
+                case StatesMachine.InitSensors:
                     msg = @"идентификаторов датчиков";
                     //Запрос не требуется...
                     break;
-                case (int)StatesMachine.CurrentTimeAdmin:
-                case (int)StatesMachine.CurrentTimeView:
+                case StatesMachine.CurrentTimeAdmin:
+                case StatesMachine.CurrentTimeView:
                     msg = @"текущего времени сервера";
                     GetCurrentTimeRequest();
                     break;
-                case (int)StatesMachine.Hours_Fact:
+                case StatesMachine.Hours_Fact:
                     msg = @"получасовых значений";
                     GetHoursFactRequest(m_curDate.Date.Add(-m_tsOffsetToMoscow));
                     break;
-                case (int)StatesMachine.Hour_TM:
+                case StatesMachine.Hour_TM:
                     msg = @"усредн. за час телемеханики";
                     GetHourTMRequest(m_curDate.Date, lastHour);
                     break;
-                case (int)StatesMachine.Hours_TM:
+                case StatesMachine.Hours_TM:
                     msg = @"часовых значений";
                     GetHoursTMRequest(m_curDate.Date);
                     break;
-                case (int)StatesMachine.CurrentMins_Fact:
+                case StatesMachine.CurrentMins_Fact:
                     msg = @"трёхминутных значений";
                     GetMinsFactRequest(lastHour);
                     break;
-                case (int)StatesMachine.CurrentMin_TM:
+                case StatesMachine.CurrentMin_TM:
                     msg = @"усредн. за интервал телемеханики";
                     GetMinTMRequest(m_curDate.Date, lastHour, lastMin);
                     break;
-                case (int)StatesMachine.CurrentMinDetail_TM:
-                case (int)StatesMachine.RetroMinDetail_TM:
+                case StatesMachine.CurrentMinDetail_TM:
+                case StatesMachine.RetroMinDetail_TM:
                     msg = @"усредн. за интервал телемеханики";
                     GetMinDetailTMRequest(m_curDate.Date, lastHour, lastMin);
                     break;
-                case (int)StatesMachine.CurrentMins_TM:
+                case StatesMachine.CurrentMins_TM:
                     msg = getNameInterval() + @"-минутных значений";
                     GetMinsTMRequest(lastHour);
                     break;
-                case (int)StatesMachine.CurrentHours_TM_SN_PSUM:
+                case StatesMachine.CurrentHours_TM_SN_PSUM:
                     msg = @"часовых значений (собств. нужды)";
                     GetHoursTMSNPsumRequest();
                     break;
-                case (int)StatesMachine.LastValue_TM_Gen:
+                case StatesMachine.LastValue_TM_Gen:
                     msg = @"текущих значений (генерация)";
                     GetCurrentTMGenRequest ();
                     break;
-                case (int)StatesMachine.LastValue_TM_SN:
+                case StatesMachine.LastValue_TM_SN:
                     msg = @"текущих значений (собств. нужды)";
                     GetCurrentTMSNRequest();
                     break;
-                case (int)StatesMachine.LastMinutes_TM:
+                case StatesMachine.LastMinutes_TM:
                     msg = @"текущих значений 59 мин";
                     GetLastMinutesTMRequest();
                     break;
-                //case (int)StatesMachine.RetroHours:
+                //case StatesMachine.RetroHours:
                 //    msg = @"получасовых значений";
                 //    adminValuesReceived = false;
                 //    GetHoursRequest(m_curDate.Date);
                 //    break;
-                case (int)StatesMachine.RetroMins_Fact:
+                case StatesMachine.RetroMins_Fact:
                     msg = @"трёхминутных значений";
                     GetMinsFactRequest(lastHour);
                     break;
-                case (int)StatesMachine.RetroMin_TM_Gen:
+                case StatesMachine.RetroMin_TM_Gen:
                     msg = @"M-минутнго значения";
                     GetMinTMGenRequest(m_curDate.Date, lastHour, lastMin - 1);
                     break;
-                case (int)StatesMachine.RetroMins_TM:
+                case StatesMachine.RetroMins_TM:
                     msg = getNameInterval () + @"-минутных значений";
                     GetMinsTMRequest(lastHour);
                     break;
-                //case (int)StatesMachine.PPBRDates:
+                case StatesMachine.HoursTMTemperatureValues:
+                    msg = @"по-часовой температуры окр.воздуха";
+                    // привести к UTC, а затем к требуемому часовому поясу
+                    GetHoursTMTemperatureRequest(m_curDate.Date);
+                    break;
+                //case StatesMachine.CurrentTemperatureValues:
+                //    msg = @"текущей температуры окр.воздуха";
+                //    GetCurrentTemperatureRequest();
+                //    break;
+                //case StatesMachine.PPBRDates:
                 //    msg = @"списка сохранённых часовых значений";
                 //    GetPPBRDatesRequest(m_curDate);
                 //    break;
-                case (int)StatesMachine.PPBRValues:
+                case StatesMachine.PPBRValues:
                     msg = @"данных плана";
                     GetPPBRValuesRequest();
                     break;
-                //case (int)StatesMachine.AdminDates:
+                //case StatesMachine.AdminDates:
                 //    break;
-                case (int)StatesMachine.AdminValues:
+                case StatesMachine.AdminValues:
                     msg = @"административных данных";
                     GetAdminValuesRequest(/*s_typeFields*/);
                     break;
@@ -1283,9 +1310,9 @@ namespace StatisticCommon
         {
             int iRes = 0;
 
-            switch (state)
+            switch ((StatesMachine)state)
             {
-                case (int)StatesMachine.InitSensors:
+                case StatesMachine.InitSensors:
                     switch (m_tec.Type)
                         {
                             case StatisticCommon.TEC.TEC_TYPE.COMMON:
@@ -1301,7 +1328,7 @@ namespace StatisticCommon
                         else
                             ;
                     break;
-                case (int)StatesMachine.CurrentTimeAdmin:
+                case StatesMachine.CurrentTimeAdmin:
                     iRes = GetCurrentTimeAdminResponse(table as System.Data.DataTable);
                     if (iRes == 0)
                     {
@@ -1317,7 +1344,7 @@ namespace StatisticCommon
                     else
                         ;
                     break;
-                case (int)StatesMachine.CurrentTimeView:
+                case StatesMachine.CurrentTimeView:
                     iRes = GetCurrentTimeViewResponse(table as System.Data.DataTable);
                     if (iRes == 0)
                     {
@@ -1329,7 +1356,7 @@ namespace StatisticCommon
                     else
                         ;
                     break;
-                case (int)StatesMachine.Hours_Fact:
+                case StatesMachine.Hours_Fact:
                     ClearValuesHours ();
                     //GenerateHoursTable(seasonJumpE.SummerToWinter, 3, table);
                     iRes = GetHoursFactResponse(table as System.Data.DataTable);
@@ -1339,14 +1366,14 @@ namespace StatisticCommon
                     else
                         ;
                     break;
-                case (int)StatesMachine.Hour_TM:
+                case StatesMachine.Hour_TM:
                     iRes = GetHourTMResponse(table as System.Data.DataTable);
                     break;
-                case (int)StatesMachine.Hours_TM:
+                case StatesMachine.Hours_TM:
                     ClearValuesHours();
                     iRes = GetHoursTMResponse(table as System.Data.DataTable);
                     break;
-                case (int)StatesMachine.CurrentMins_Fact:
+                case StatesMachine.CurrentMins_Fact:
                     ClearValuesMins();
                     iRes = GetMinsFactResponse(table as System.Data.DataTable);
                     if (iRes == 0)
@@ -1356,21 +1383,21 @@ namespace StatisticCommon
                     else
                         ;
                     break;
-                case (int)StatesMachine.CurrentMin_TM:
+                case StatesMachine.CurrentMin_TM:
                     iRes = GetMinTMResponse(table as System.Data.DataTable);
                     break;
-                case (int)StatesMachine.CurrentMinDetail_TM:
+                case StatesMachine.CurrentMinDetail_TM:
                     iRes = GetMinDetailTMResponse(table as System.Data.DataTable);
                     break;
-                case (int)StatesMachine.RetroMinDetail_TM:
+                case StatesMachine.RetroMinDetail_TM:
                     iRes = GetMinDetailTMResponse(table as System.Data.DataTable);
                     updateGUI_Fact (/*lastHour*/-1, lastMin); //-1 - признак отобразить только "минута по-секундно"
                     break;
-                case (int)StatesMachine.CurrentMins_TM:
+                case StatesMachine.CurrentMins_TM:
                     ClearValuesMins();
                     iRes = GetMinsTMResponse(table as System.Data.DataTable);
                     break;
-                case (int)StatesMachine.CurrentHours_TM_SN_PSUM:
+                case StatesMachine.CurrentHours_TM_SN_PSUM:
                         iRes = GetHoursTMSNPsumResponse(table as System.Data.DataTable);
                         if (iRes == 0)
                         {
@@ -1378,7 +1405,7 @@ namespace StatisticCommon
                         else
                             ;
                     break;
-                case (int)StatesMachine.LastValue_TM_Gen:
+                case StatesMachine.LastValue_TM_Gen:
                     iRes = GetCurrentTMGenResponse(table as System.Data.DataTable);
                     if (! (iRes < 0))
                     {
@@ -1387,7 +1414,7 @@ namespace StatisticCommon
                     else
                         ;
                     break;
-                case (int)StatesMachine.LastValue_TM_SN:
+                case StatesMachine.LastValue_TM_SN:
                     iRes = GetCurrentTMSNResponse(table as System.Data.DataTable);
                     if (iRes == 0)
                     {
@@ -1396,7 +1423,7 @@ namespace StatisticCommon
                     else
                         ;
                     break;
-                case (int)StatesMachine.LastMinutes_TM:
+                case StatesMachine.LastMinutes_TM:
                     ClearValuesLastMinutesTM ();
                     iRes = GetLastMinutesTMResponse(table as System.Data.DataTable, m_curDate);
                     if (iRes == 0)
@@ -1409,7 +1436,7 @@ namespace StatisticCommon
                     else
                         ;
                     break;
-                //case (int)StatesMachine.RetroHours:
+                //case StatesMachine.RetroHours:
                 //    ClearValues();
                 //    bRes = GetHoursResponse(table);
                 //    if (bRes == true)
@@ -1418,15 +1445,15 @@ namespace StatisticCommon
                 //    else
                 //        ;
                 //    break;
-                case (int)StatesMachine.RetroMin_TM_Gen:
+                case StatesMachine.RetroMin_TM_Gen:
                     iRes = GetMinTMGenResponse(table as System.Data.DataTable);
                     //14.04.2015 ???
                     //if (iRes == 0)
                         updateGUI_TM_Gen ();
                     //else ;
                     break;
-                case (int)StatesMachine.RetroMins_Fact:
-                case (int)StatesMachine.RetroMins_TM:
+                case StatesMachine.RetroMins_Fact:
+                case StatesMachine.RetroMins_TM:
                     ClearValuesMins();
                     if ((m_arTypeSourceData[(int)HDateTime.INTERVAL.MINUTES] == CONN_SETT_TYPE.DATA_AISKUE)
                         || (m_arTypeSourceData[(int)HDateTime.INTERVAL.MINUTES] == CONN_SETT_TYPE.DATA_AISKUE_PLUS_SOTIASSO))
@@ -1445,7 +1472,13 @@ namespace StatisticCommon
                     //}
                     //else ;
                     break;
-                //case (int)StatesMachine.PPBRDates:
+                case StatesMachine.HoursTMTemperatureValues:
+                    iRes = GetHoursTMTemperatureResponse(table as System.Data.DataTable);
+                    break;
+                //case StatesMachine.CurrentTemperatureValues:
+                //    GetCurrentTemperatureResponse();
+                //    break;
+                //case StatesMachine.PPBRDates:
                 //    ClearPPBRDates();
                 //    iRes = GetPPBRDatesResponse(table as System.Data.DataTable, m_curDate);
                 //    if (iRes == 0)
@@ -1454,7 +1487,7 @@ namespace StatisticCommon
                 //    else
                 //        ;
                 //    break;
-                case (int)StatesMachine.PPBRValues:
+                case StatesMachine.PPBRValues:
                     ClearPBRValues();
                     iRes = GetPPBRValuesResponse(table as System.Data.DataTable);
                     if (iRes == 0)
@@ -1463,9 +1496,9 @@ namespace StatisticCommon
                     else
                         ;
                     break;
-                //case (int)StatesMachine.AdminDates:
+                //case StatesMachine.AdminDates:
                 //    break;
-                case (int)StatesMachine.AdminValues:
+                case StatesMachine.AdminValues:
                     ClearAdminValues();
                     iRes = GetAdminValuesResponse(table as System.Data.DataTable);
                     if (iRes == 0)
@@ -1831,8 +1864,8 @@ namespace StatisticCommon
         public bool zedGraphHours_MouseUpEvent (int indx) {
             bool bRes = true;
 
-            if ((indx == serverTime.Hour)
-                && (m_curDate.Date.Equals (serverTime.Date) == true)
+            if ((indx == serverTime.Add(m_tsOffsetToMoscow).Hour)
+                && (m_curDate.Date.Equals(serverTime.Add(m_tsOffsetToMoscow).Date) == true)
                 && (serverTime.Minute > 2)
                 )
                 bRes = false;
@@ -2075,9 +2108,9 @@ namespace StatisticCommon
 
         private int GetAdminValuesResponse(DataTable table_in)
         {
-            DateTime date = m_curDate //m_pnlQuickData.dtprDate.Value.Date
+            DateTime date = m_curDate.Add (m_tsOffsetToMoscow) //m_pnlQuickData.dtprDate.Value.Date
                     , dtPBR;
-            int hour;
+            int hour = -1, day = -1;
             bool bSeason = false;
 
             double currPBRe;
@@ -2094,6 +2127,12 @@ namespace StatisticCommon
             else
                 ;
 
+            for (i = 0; i < m_tablePPBRValuesResponse.Rows.Count; i++)
+                m_tablePPBRValuesResponse.Rows[i][@"DATE_PBR"] = ((DateTime)m_tablePPBRValuesResponse.Rows[i][@"DATE_PBR"]).Add(m_tsOffsetToMoscow);
+            
+            for (i = 0; i < table_in.Rows.Count; i++)                
+                table_in.Rows[i][@"DATE_ADMIN"] = ((DateTime)table_in.Rows[i][@"DATE_ADMIN"]).Add(m_tsOffsetToMoscow);
+
             //switch (tec.Type) {
             //    case TEC.TEC_TYPE.COMMON:
             //        offsetPrev = -1;
@@ -2105,7 +2144,7 @@ namespace StatisticCommon
                 offsetPlan = /*offsetUDG + 3 * tec.list_TECComponents.Count +*/ 1; //ID_COMPONENT
                 offsetLayout = -1;
 
-                m_tablePPBRValuesResponse = restruct_table_pbrValues(m_tablePPBRValuesResponse, m_tec.list_TECComponents, indxTECComponents);
+                m_tablePPBRValuesResponse = restruct_table_pbrValues(m_tablePPBRValuesResponse, m_tec.list_TECComponents, indxTECComponents, m_tsOffsetToMoscow);
                 offsetLayout = (!(m_tablePPBRValuesResponse.Columns.IndexOf("PBR_NUMBER") < 0)) ? (offsetPlan + m_localTECComponents.Count * 3) : m_tablePPBRValuesResponse.Columns.Count;
 
                 DataTable tableAdminValuesResponse = null;
@@ -2114,7 +2153,7 @@ namespace StatisticCommon
                     tableAdminValuesResponse = table_in.Copy();
                 else
                     ;
-                table_in = restruct_table_adminValues(table_in, m_tec.list_TECComponents, indxTECComponents);
+                table_in = restruct_table_adminValues(table_in, m_tec.list_TECComponents, indxTECComponents, m_tsOffsetToMoscow);
 
                 // поиск в таблице записи по предыдущим суткам (мало ли, вдруг нету)
                 for (i = 0; i < m_tablePPBRValuesResponse.Rows.Count && offsetPrev < 0; i++)
@@ -2123,7 +2162,8 @@ namespace StatisticCommon
                     {
                         try
                         {
-                            dtPBR = (DateTime)m_tablePPBRValuesResponse.Rows[i]["DATE_PBR"];
+                            //m_tablePPBRValuesResponse.Rows[i]["DATE_PBR"] = ((DateTime)m_tablePPBRValuesResponse.Rows[i]["DATE_PBR"]).Add (m_tsOffsetToMoscow);
+                            dtPBR = ((DateTime)m_tablePPBRValuesResponse.Rows[i]["DATE_PBR"])/*.Add (m_tsOffsetToMoscow)*/;
 
                             hour = dtPBR.Hour;
                             if ((hour == 0) && (dtPBR.Day == date.Day))
@@ -2167,8 +2207,13 @@ namespace StatisticCommon
                     {
                         try
                         {
+                            //table_in.Rows[i]["DATE_ADMIN"] = ((DateTime)table_in.Rows[i]["DATE_ADMIN"]).Add(m_tsOffsetToMoscow);
                             hour = ((DateTime)table_in.Rows[i]["DATE_ADMIN"]).Hour;
-                            if (hour == 0 && ((DateTime)table_in.Rows[i]["DATE_ADMIN"]).Day == date.Day)
+                            hour += 0//(int)m_tsOffsetToMoscow.TotalHours
+                                ;
+
+                            day = ((DateTime)table_in.Rows[i]["DATE_ADMIN"])/*.Add(m_tsOffsetToMoscow)*/.Day;
+                            if (hour == 0 && day == date.Day)
                             {
                                 offsetPrev = i;
                             }
@@ -2193,7 +2238,8 @@ namespace StatisticCommon
                     {//значение ПБР даты/времени в этой записи ЕСТЬ
                         try
                         {
-                            dtPBR = (DateTime)m_tablePPBRValuesResponse.Rows[i]["DATE_PBR"];
+                            //m_tablePPBRValuesResponse.Rows[i]["DATE_PBR"] = ((DateTime)m_tablePPBRValuesResponse.Rows[i]["DATE_PBR"]).Add(m_tsOffsetToMoscow);
+                            dtPBR = ((DateTime)m_tablePPBRValuesResponse.Rows[i]["DATE_PBR"])/*.Add (m_tsOffsetToMoscow)*/;
 
                             hour = dtPBR.Hour;
                             if (hour == 0 && ((DateTime)m_tablePPBRValuesResponse.Rows[i]["DATE_PBR"]).Day != date.Day)
@@ -2867,7 +2913,7 @@ namespace StatisticCommon
                                 + @") [" + hour + @", " + lastMin + @"]", Logging.INDEX_MESSAGE.D_003);
         }
 
-        public static DataTable restruct_table_pbrValues(DataTable table_in, List<TECComponent> listTECComp, int num_comp)
+        public static DataTable restruct_table_pbrValues(DataTable table_in, List<TECComponent> listTECComp, int num_comp, TimeSpan tsOffsetToMoscow)
         {
             DataTable table_in_restruct = new DataTable();
             List<DataColumn> cols_data = new List<DataColumn>();
@@ -3006,10 +3052,13 @@ namespace StatisticCommon
             else
                 table_in_restruct = table_in;
 
+            //for (i = 0; i < table_in_restruct.Rows.Count; i++)
+            //    table_in_restruct.Rows[i][nameFieldDate] = ((DateTime)table_in_restruct.Rows[i][nameFieldDate]).Add(tsOffsetToMoscow);
+
             return table_in_restruct;
         }
 
-        public static DataTable restruct_table_adminValues(DataTable table_in, List<TECComponent> listTECComp, int num_comp)
+        public static DataTable restruct_table_adminValues(DataTable table_in, List<TECComponent> listTECComp, int num_comp, TimeSpan tsOffsetToMoscow)
         {
             DataTable table_in_restruct = new DataTable();
             List<DataColumn> cols_data = new List<DataColumn>();
@@ -3128,6 +3177,9 @@ namespace StatisticCommon
             }
             else
                 table_in_restruct = table_in;
+
+            //for (i = 0; i < table_in_restruct.Rows.Count; i++)
+            //    table_in_restruct.Rows[i][nameFieldDate] = ((DateTime)table_in_restruct.Rows[i][nameFieldDate]).Add(tsOffsetToMoscow);
 
             return table_in_restruct;
         }
@@ -5203,7 +5255,7 @@ namespace StatisticCommon
             //m_tec.Request(CONN_SETT_TYPE.DATA_ASKUE, m_tec.hoursRequest(date, m_tec.GetSensorsString(m_indx_TECComponent, CONN_SETT_TYPE.DATA_ASKUE, HDateTime.INTERVAL.HOURS)));
             Request(m_dictIdListeners[m_tec.m_id][(int)CONN_SETT_TYPE.DATA_AISKUE], m_tec.hoursFactRequest(date, m_tec.GetSensorsString(indxTECComponents, CONN_SETT_TYPE.DATA_AISKUE, HDateTime.INTERVAL.HOURS)));
 
-            Debug.WriteLine(@"TecView::GetHoursFactRequest () - DATE=" + date.ToString());
+            //Debug.WriteLine(@"TecView::GetHoursFactRequest () - DATE=" + date.ToString());
         }
 
         private void GetHourTMRequest(DateTime date, int lh)
@@ -5323,6 +5375,40 @@ namespace StatisticCommon
             else
                 Logging.Logg().Error(@"TecView::GetMinsTMRequest (hour=" + hour + @") - не выбран интервал для запроса...", Logging.INDEX_MESSAGE.NOT_SET);
         }
+
+        private void GetHoursTMTemperatureRequest(DateTime dt)
+        {
+            TimeSpan tsOffset = HDateTime.TS_MSK_OFFSET_OF_UTCTIMEZONE + m_tsOffsetToMoscow;
+            DateTime dtReq = dt.Date.Add(-tsOffset);
+
+            string strQuery = @"SELECT AVG([VALUE]) as [VALUE], DATEPART(HH, DATEADD (HH, " + (int)tsOffset.TotalHours + @", [last_changed_at])) as [HOUR]"
+                + @" FROM [techsite-2.X.X].[dbo].[ALL_PARAM_SOTIASSO_KKS]"
+                + @" WHERE [KKS_NAME] = 'T2#temperature_V'"
+                    + @" AND NOT [last_changed_at] < '" + dtReq.ToString(@"yyyyMMdd HH:00:00")
+                        + @"' AND [last_changed_at] < '" + dtReq.AddDays(1).ToString(@"yyyyMMdd HH:00:00") + @"'"
+                + @" GROUP BY DATEPART(HH, DATEADD (HH, " + (int)tsOffset.TotalHours + @", [last_changed_at]))"
+                + @" ORDER BY [HOUR]";
+
+            Request(m_dictIdListeners[m_tec.m_id][(int)CONN_SETT_TYPE.DATA_SOTIASSO], strQuery);
+        }
+
+        //private void GetCurrentTemperatureRequest()
+        //{
+        //}
+
+        private int GetHoursTMTemperatureResponse(DataTable table)
+        {
+            int iRes = 0;
+
+            foreach (DataRow r in table.Rows)
+                m_valuesHours[(int)r[@"HOUR"]].valuesLastMinutesTM = (double)r[@"VALUE"];
+
+            return iRes;
+        }
+
+        //private void GetCurrentTemperatureResponse()
+        //{
+        //}
 
         private void GetHoursTMSNPsumRequest()
         {

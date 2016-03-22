@@ -76,6 +76,7 @@ namespace Statistic
             //this.рассинхронизацияДатаВремяСерверБДToolStripMenuItem = new System.Windows.Forms.ToolStripMenuItem();
             //this.ДиагностикаToolStripMenuItem = new System.Windows.Forms.ToolStripMenuItem();
             this.изменитьПарольНССToolStripMenuItem = new System.Windows.Forms.ToolStripMenuItem();
+            this.изменитьПарольЛКДиспетчераToolStripMenuItem = new System.Windows.Forms.ToolStripMenuItem();
             //this.изментьСоставТЭЦГТПЩУToolStripMenuItem = new System.Windows.Forms.ToolStripMenuItem();
             this.параметрыToolStripMenuItem = new System.Windows.Forms.ToolStripMenuItem();
             this.параметрыПриложенияToolStripMenuItem = new System.Windows.Forms.ToolStripMenuItem();
@@ -302,6 +303,7 @@ namespace Statistic
                 this.изменитьПарольДиспетчераToolStripMenuItem,
                 this.изменитьПарольАдминистратораToolStripMenuItem,
                 this.изменитьПарольНССToolStripMenuItem,
+                this.изменитьПарольЛКДиспетчераToolStripMenuItem,
                 new System.Windows.Forms.ToolStripSeparator(),
                 this.m_dictAddingTabs[(int)ID_ADDING_TAB.TEC_Component].menuItem,
                 this.m_dictAddingTabs[(int)ID_ADDING_TAB.USERS].menuItem
@@ -334,7 +336,14 @@ namespace Statistic
             this.изменитьПарольНССToolStripMenuItem.Text = "Изменить пароль начальника смены станции...";
             this.изменитьПарольНССToolStripMenuItem.Click += new System.EventHandler(this.изменитьПарольНССToolStripMenuItem_Click);
             изменитьПарольНССToolStripMenuItem.Enabled = false;
-            
+            // 
+            // toolStripMenuItemИзменитьПарольЛКДиспетчера
+            // 
+            this.изменитьПарольЛКДиспетчераToolStripMenuItem.Name = "изменитьПарольЛКДиспетчераToolStripMenuItem";
+            this.изменитьПарольЛКДиспетчераToolStripMenuItem.Size = new System.Drawing.Size(303, 22);
+            this.изменитьПарольЛКДиспетчераToolStripMenuItem.Text = "Изменить пароль ЛК-диспетчера...";
+            this.изменитьПарольЛКДиспетчераToolStripMenuItem.Click += new System.EventHandler(this.изменитьПарольЛКДиспетчераToolStripMenuItem_Click);
+            изменитьПарольЛКДиспетчераToolStripMenuItem.Enabled = false;            
             
             // 
             // изментьСоставТЭЦГТПЩУToolStripMenuItem
@@ -454,6 +463,7 @@ namespace Statistic
         private System.Windows.Forms.ToolStripMenuItem изменитьПарольДиспетчераToolStripMenuItem;
         private System.Windows.Forms.ToolStripMenuItem изменитьПарольАдминистратораToolStripMenuItem;
         private System.Windows.Forms.ToolStripMenuItem изменитьПарольНССToolStripMenuItem;
+        private System.Windows.Forms.ToolStripMenuItem изменитьПарольЛКДиспетчераToolStripMenuItem;
         //private System.Windows.Forms.ToolStripMenuItem изментьСоставТЭЦГТПЩУToolStripMenuItem;
         private System.Windows.Forms.ToolStripMenuItem оПрограммеToolStripMenuItem;
         private System.Windows.Forms.Label lblLabel;

@@ -21,6 +21,9 @@ namespace StatisticTrans
         /// </summary>
         private int currentIter;
 
+        private int commonSuccessIter
+            , commonTotalIter;
+
         /// <summary>
         /// Кол-во компонентов
         /// </summary>
@@ -38,7 +41,10 @@ namespace StatisticTrans
         public ComponentTesting(int size)
         {
             Iters = new string[size];
-            currentIter = 0;
+            currentIter =
+            commonSuccessIter =
+            commonTotalIter =
+                0;
         }
 
         /// <summary>
@@ -52,8 +58,10 @@ namespace StatisticTrans
 
             Iters[currentIter] = nameElem;
             currentIter++;
+            commonSuccessIter++;
+            commonTotalIter++;
             countIt++;
-            CounterSuccessfulDownload();
+            reportIter(getTextReportSuccessIter ());
         }
 
         /// <summary>
@@ -70,20 +78,30 @@ namespace StatisticTrans
         /// </summary>
         public void PopIter()
         {
-            ErrorIter();
+            reportIter(getTextReportErrorIter ());
             currentIter--;
-            CounterSuccessfulDownload();
+            commonSuccessIter--;
+            reportIter(getTextReportSuccessIter());
             countIt++;
         }
 
-        /// <summary>
-        /// отчет об итерациях
-        /// </summary>
-        private void CounterSuccessfulDownload()
+        private void reportIter(string text)
         {
-            FormMainTrans.m_labelTime.Invoke(new Action(() => FormMainTrans.m_labelTime.Text = "Время крайнего опроса: "
-                + DateTime.Now.ToString() + ";" + " Успешных итераций: " + currentIter + " из " + GetNum() + ";"));
+            FormMainTrans.m_labelTime.Invoke(new Action(() => FormMainTrans.m_labelTime.Text = text));
             FormMainTrans.m_labelTime.Invoke(new Action(() => FormMainTrans.m_labelTime.Update()));
+        }
+
+        /// <summary>
+        /// отчет об успешных итерациях
+        /// </summary>
+        private string getTextReportSuccessIter()
+        {
+            return "Время крайнего опроса: "
+                + DateTime.Now.ToString() + ";"
+                + " Успешных итераций: " + currentIter
+                    + "(" + commonSuccessIter + @")"
+                + " из " + GetNum()
+                    + @"(" + commonTotalIter + @")";
         }
 
         /// <summary>
@@ -96,14 +114,12 @@ namespace StatisticTrans
         }
 
         /// <summary>
-        /// 
+        /// отчет об ошибочных итерациях
         /// </summary>
-        private void ErrorIter()
+        private string getTextReportErrorIter()
         {
-            FormMainTrans.m_labelTime.Invoke(new Action(() => FormMainTrans.m_labelTime.Text = "Время крайнего опроса: "
-               + DateTime.Now.ToString() + ";" + " Успешных итераций: " + currentIter + " из " + GetNum() + ";"
-               + "Ошибка на компоненте: " + Iters[currentIter].ToString() + "."));
-            FormMainTrans.m_labelTime.Invoke(new Action(() => FormMainTrans.m_labelTime.Update()));
+            return getTextReportSuccessIter ()
+               + "; Ошибка на компоненте: " + Iters[currentIter].ToString();
         }
     }
 }

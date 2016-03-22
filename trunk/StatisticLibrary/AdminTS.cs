@@ -1279,19 +1279,19 @@ namespace StatisticCommon
                     //        break;
                     //    case AdminTS.TYPE_FIELDS.DYNAMIC:
                             resQuery[(int)DbTSQLInterface.QUERY_TYPE.UPDATE] += @"UPDATE " + t.m_strNameTableAdminValues/*[(int)m_typeFields]*/ +
-                                        @" SET " +
-                                        @"REC='" + m_curRDGValues[i].recomendation.ToString("F3", CultureInfo.InvariantCulture) +
-                                        @"', " + @"IS_PER=" + (m_curRDGValues[i].deviationPercent ? "1" : "0") +
-                                        @", " + "DIVIAT='" + m_curRDGValues[i].deviation.ToString("F3", CultureInfo.InvariantCulture) +
-                                        @"', " + "SEASON=" + (offset > 0 ? (SEASON_BASE + (int)HAdmin.seasonJumpE.WinterToSummer) : (SEASON_BASE + (int)HAdmin.seasonJumpE.SummerToWinter)) +
-                                        @", " + "FC=" + (m_curRDGValues[i].fc ? 1 : 0) +
-                                        @" WHERE " +
-                                        //@"DATE = '" + date.AddHours(i + 1 - offset).ToString("yyyyMMdd HH:mm:ss") +
-                                        //@"'" +
-                                        //@" AND ID_COMPONENT = " + comp.m_id +
-                                        //@" AND " +
-                                        @"ID = " + m_arHaveDates[(int)CONN_SETT_TYPE.ADMIN, i] +
-                                        @"; ";
+                                @" SET " +
+                                @"REC='" + m_curRDGValues[i].recomendation.ToString("F3", CultureInfo.InvariantCulture) +
+                                @"', " + @"IS_PER=" + (m_curRDGValues[i].deviationPercent ? "1" : "0") +
+                                @", " + "DIVIAT='" + m_curRDGValues[i].deviation.ToString("F3", CultureInfo.InvariantCulture) +
+                                @"', " + "SEASON=" + (offset > 0 ? (SEASON_BASE + (int)HAdmin.seasonJumpE.WinterToSummer) : (SEASON_BASE + (int)HAdmin.seasonJumpE.SummerToWinter)) +
+                                @", " + "FC=" + (m_curRDGValues[i].fc ? 1 : 0) +
+                                @" WHERE " +
+                                //@"DATE = '" + date.AddHours(i + 1 - offset).ToString("yyyyMMdd HH:mm:ss") +
+                                //@"'" +
+                                //@" AND ID_COMPONENT = " + comp.m_id +
+                                //@" AND " +
+                                @"ID = " + m_arHaveDates[(int)CONN_SETT_TYPE.ADMIN, i] +
+                                @"; ";
                     //        break;
                     //    default:
                     //        break;
@@ -1311,13 +1311,13 @@ namespace StatisticCommon
                     //        break;
                     //    case AdminTS.TYPE_FIELDS.DYNAMIC:
                             resQuery[(int)DbTSQLInterface.QUERY_TYPE.INSERT] += @" ('" + date.AddHours(i + 1 - offset - m_tsOffsetToMoscow.Hours).ToString("yyyyMMdd HH:mm:ss") +
-                                        @"', '" + m_curRDGValues[i].recomendation.ToString("F3", CultureInfo.InvariantCulture) +
-                                        @"', " + (m_curRDGValues[i].deviationPercent ? "1" : "0") +
-                                        @", '" + m_curRDGValues[i].deviation.ToString("F3", CultureInfo.InvariantCulture) +
-                                        @"', " + (comp.m_id) +
-                                        @", " + (offset > 0 ? (SEASON_BASE + (int)HAdmin.seasonJumpE.WinterToSummer) : (SEASON_BASE + (int)HAdmin.seasonJumpE.SummerToWinter)) +
-                                        @", " + (m_curRDGValues[i].fc ? 1 : 0) +
-                                        @"),";
+                                @"', '" + m_curRDGValues[i].recomendation.ToString("F3", CultureInfo.InvariantCulture) +
+                                @"', " + (m_curRDGValues[i].deviationPercent ? "1" : "0") +
+                                @", '" + m_curRDGValues[i].deviation.ToString("F3", CultureInfo.InvariantCulture) +
+                                @"', " + (comp.m_id) +
+                                @", " + (offset > 0 ? (SEASON_BASE + (int)HAdmin.seasonJumpE.WinterToSummer) : (SEASON_BASE + (int)HAdmin.seasonJumpE.SummerToWinter)) +
+                                @", " + (m_curRDGValues[i].fc ? 1 : 0) +
+                                @"),";
                     //        break;
                     //    default:
                     //        break;
@@ -1369,12 +1369,12 @@ namespace StatisticCommon
                 //        break;
                 //    case AdminTS.TYPE_FIELDS.DYNAMIC:
                         query[(int)DbTSQLInterface.QUERY_TYPE.INSERT] = @"INSERT INTO " + t.m_strNameTableAdminValues/*[(int)m_typeFields]*/ + " (DATE, " + @"REC" +
-                                @", " + "IS_PER" +
-                                @", " + "DIVIAT" +
-                                @", " + "ID_COMPONENT" +
-                                @", " + "SEASON" +
-                                @", " + "FC" +
-                                @") VALUES" + query[(int)DbTSQLInterface.QUERY_TYPE.INSERT].Substring(0, query[(int)DbTSQLInterface.QUERY_TYPE.INSERT].Length - 1) + ";";
+                            @", " + "IS_PER" +
+                            @", " + "DIVIAT" +
+                            @", " + "ID_COMPONENT" +
+                            @", " + "SEASON" +
+                            @", " + "FC" +
+                            @") VALUES" + query[(int)DbTSQLInterface.QUERY_TYPE.INSERT].Substring(0, query[(int)DbTSQLInterface.QUERY_TYPE.INSERT].Length - 1) + ";";
                 //        break;
                 //    default:
                 //        break;
@@ -1417,10 +1417,10 @@ namespace StatisticCommon
                     //        break;
                     //    case AdminTS.TYPE_FIELDS.DYNAMIC:
                             query[(int)DbTSQLInterface.QUERY_TYPE.DELETE] += @"DELETE FROM " + t.m_strNameTableAdminValues/*[(int)m_typeFields]*/ +
-                                        @" WHERE " +
-                                        @"DATE = '" + date.AddHours(i + 1).ToString("yyyyMMdd HH:mm:ss") +
-                                        @"'" +
-                                        @" AND ID_COMPONENT = " + comp.m_id + "; ";
+                                @" WHERE " +
+                                @"DATE = '" + date.AddHours(i + 1).ToString("yyyyMMdd HH:mm:ss") +
+                                @"'" +
+                                @" AND ID_COMPONENT = " + comp.m_id + "; ";
                     //        break;
                     //    default:
                     //        break;
@@ -1488,21 +1488,21 @@ namespace StatisticCommon
 
                             if (bUpdate == true) {
                                 resQuery[(int)DbTSQLInterface.QUERY_TYPE.UPDATE] += @"UPDATE [" + t.m_strNameTableUsedPPBRvsPBR/*[(int)m_typeFields]*/ + @"]" +
-                                            " SET " +
-                                            @"PBR_NUMBER='";
+                                    " SET " +
+                                    @"PBR_NUMBER='";
                                 resQuery[(int)DbTSQLInterface.QUERY_TYPE.UPDATE] += m_curRDGValues[i].pbr_number;
                                 resQuery[(int)DbTSQLInterface.QUERY_TYPE.UPDATE] += "'" +
-                                            @", WR_DATE_TIME='" + serverTime.ToString("yyyyMMdd HH:mm:ss") + @"'" +
-                                            @", OWNER=" + m_sOwner_PBR +
-                                            @", PBR='" + m_curRDGValues[i].pbr.ToString("F3", CultureInfo.InvariantCulture) + "'" +
-                                            @", Pmin='" + m_curRDGValues[i].pmin.ToString("F3", CultureInfo.InvariantCulture) + "'" +
-                                            @", Pmax='" + m_curRDGValues[i].pmax.ToString("F3", CultureInfo.InvariantCulture) + "'" +
-                                            @" WHERE " +
-                                            //@"DATE_TIME" + @" = '" + date.AddHours(i + 1).ToString("yyyyMMdd HH:mm:ss") + @"'" +
-                                            //@" AND ID_COMPONENT = " + comp.m_id +
-                                            //@" AND " +
-                                            @"ID = " + m_arHaveDates[(int)CONN_SETT_TYPE.PBR, i] +
-                                            @"; ";
+                                    @", WR_DATE_TIME='" + serverTime.ToString("yyyyMMdd HH:mm:ss") + @"'" +
+                                    @", OWNER=" + m_sOwner_PBR +
+                                    @", PBR='" + m_curRDGValues[i].pbr.ToString("F3", CultureInfo.InvariantCulture) + "'" +
+                                    @", Pmin='" + m_curRDGValues[i].pmin.ToString("F3", CultureInfo.InvariantCulture) + "'" +
+                                    @", Pmax='" + m_curRDGValues[i].pmax.ToString("F3", CultureInfo.InvariantCulture) + "'" +
+                                    @" WHERE " +
+                                    //@"DATE_TIME" + @" = '" + date.AddHours(i + 1).ToString("yyyyMMdd HH:mm:ss") + @"'" +
+                                    //@" AND ID_COMPONENT = " + comp.m_id +
+                                    //@" AND " +
+                                    @"ID = " + m_arHaveDates[(int)CONN_SETT_TYPE.PBR, i] +
+                                    @"; ";
                             }
                             else
                                 ;
@@ -1530,15 +1530,15 @@ namespace StatisticCommon
 
                             if (!(m_curRDGValues[i].pbr < 0))
                                 resQuery[(int)DbTSQLInterface.QUERY_TYPE.INSERT] += @" ('" + date.AddHours(i + 1 - m_tsOffsetToMoscow.Hours).ToString("yyyyMMdd HH:mm:ss") +
-                                            @"', '" + serverTime.ToString("yyyyMMdd HH:mm:ss") + @"'" +
-                                            //@", 'GETDATE()" +
-                                            @", '" + strPBRNumber +
-                                            @"', " + comp.m_id +
-                                            @", '" + m_sOwner_PBR + "'" +
-                                            @", '" + m_curRDGValues[i].pbr.ToString("F3", CultureInfo.InvariantCulture) + "'" +
-                                            @", '" + m_curRDGValues[i].pmin.ToString("F3", CultureInfo.InvariantCulture) + "'" +
-                                            @", '" + m_curRDGValues[i].pmax.ToString("F3", CultureInfo.InvariantCulture) + "'" +
-                                            @"),";
+                                    @"', '" + serverTime.ToString("yyyyMMdd HH:mm:ss") + @"'" +
+                                    //@", 'GETDATE()" +
+                                    @", '" + strPBRNumber +
+                                    @"', " + comp.m_id +
+                                    @", '" + m_sOwner_PBR + "'" +
+                                    @", '" + m_curRDGValues[i].pbr.ToString("F3", CultureInfo.InvariantCulture) + "'" +
+                                    @", '" + m_curRDGValues[i].pmin.ToString("F3", CultureInfo.InvariantCulture) + "'" +
+                                    @", '" + m_curRDGValues[i].pmax.ToString("F3", CultureInfo.InvariantCulture) + "'" +
+                                    @"),";
                             else
                                 ; //Нельзя записывать значения "-1"
                     //        break;
@@ -1651,10 +1651,10 @@ namespace StatisticCommon
                     //        break;
                     //    case AdminTS.TYPE_FIELDS.DYNAMIC:
                             query[(int)DbTSQLInterface.QUERY_TYPE.DELETE] += @"DELETE FROM [" + t.m_strNameTableUsedPPBRvsPBR/*[(int)m_typeFields]*/ + @"]" +
-                                        @" WHERE " +
-                                        @"DATE_TIME" + @" = '" + date.AddHours(i + 1).ToString("yyyyMMdd HH:mm:ss") +
-                                        @"'" +
-                                        @" AND ID_COMPONENT = " + comp.m_id + "; ";
+                                @" WHERE " +
+                                @"DATE_TIME" + @" = '" + date.AddHours(i + 1).ToString("yyyyMMdd HH:mm:ss") +
+                                @"'" +
+                                @" AND ID_COMPONENT = " + comp.m_id + "; ";
                     //        break;
                     //    default:
                     //        break;

@@ -333,8 +333,8 @@ namespace Statistic
             string strWarn = string.Empty;
             bool bPmin = (int)pars[3] == 5
                 , bCurrHour = (bool)pars[4] //m_tecView.currHour
-                , bIsTypeConnSettAISKUEHour = (bool)pars[5] //m_tecView.m_arTypeSourceData[(int)HDateTime.INTERVAL.HOURS] == CONN_SETT_TYPE.DATA_AISKUE
-                , bIsNowMoscowDate = (bool)pars[6]; //m_tecView.serverTime.Date.Equals(HDateTime.ToMoscowTimeZone(DateTime.Now.Date))
+                , bIsTypeConnSettAISKUEHour = (bool)pars[5]; //m_tecView.m_arTypeSourceData[(int)HDateTime.INTERVAL.HOURS] == CONN_SETT_TYPE.DATA_AISKUE
+            DateTime serverTime = (DateTime)pars[6]; //m_tecView.serverTime
 
             DataGridViewCellStyle curCellStyle;
             cntWarn = 0;
@@ -385,7 +385,7 @@ namespace Statistic
                     {
                     }
                 else
-                    if (bIsNowMoscowDate == true)
+                    if (serverTime.Date.Equals(HDateTime.ToMoscowTimeZone(DateTime.Now.Date)) == true)
                         if ((i < (receivedHour + 1)) && (!(values[i].valuesUDGe == 0)) && (values[i].valuesFact > 0))
                         {
                             bDevVal = true;
