@@ -404,7 +404,7 @@ namespace Statistic
         {
             components = new System.ComponentModel.Container();
 
-            PanelTecView [] arPanelTecViewTable = new PanelTecView [this.RowCount * this.ColumnCount];
+            PanelTecViewBase [] arPanelTecViewTable = new PanelTecViewBase [this.RowCount * this.ColumnCount];
 
             m_arLabelEmpty = new HLabelCustomTecView[this.RowCount * this.ColumnCount];
             //m_arControls = new Controls[this.RowCount * this.ColumnCount];
@@ -497,14 +497,14 @@ namespace Statistic
             
             foreach (Control panel in this.Controls)
             {
-                if (panel is PanelTecView) ((PanelTecView)panel).Start(); else ;
+                if (panel is PanelTecViewBase) ((PanelTecViewBase)panel).Start(); else ;
             }
         }
 
         public override void Stop () {
             foreach (Control panel in this.Controls)
             {
-                if (panel is PanelTecView) ((PanelTecView)panel).Stop(); else ;
+                if (panel is PanelTecViewBase) ((PanelTecViewBase)panel).Stop(); else ;
             }
 
             base.Stop ();
@@ -515,7 +515,7 @@ namespace Statistic
             
             foreach (Control panel in this.Controls)
             {
-                if (panel is PanelTecView) ((PanelTecView)panel).Activate(active); else ;
+                if (panel is PanelTecViewBase) ((PanelTecViewBase)panel).Activate(active); else ;
             }
 
             return bRes;
@@ -536,8 +536,8 @@ namespace Statistic
             m_fReportClear = fRepClr;
 
             foreach (var child in Controls) {
-                if (child is PanelTecView) {
-                    (child as PanelTecView).m_tecView.SetDelegateReport(fErrRep, fWarRep, fActRep, fRepClr);
+                if (child is PanelTecViewBase) {
+                    (child as PanelTecViewBase).m_tecView.SetDelegateReport(fErrRep, fWarRep, fActRep, fRepClr);
                 } else {
                 }
             }
@@ -547,9 +547,9 @@ namespace Statistic
         {
             foreach (Control ctrl in this.Controls)
             {
-                if (ctrl is PanelTecView)
+                if (ctrl is PanelTecViewBase)
                 {
-                    ((PanelTecView)ctrl).UpdateGraphicsCurrent (type);
+                    ((PanelTecViewBase)ctrl).UpdateGraphicsCurrent (type);
                 }
                 else
                     ;
@@ -672,13 +672,18 @@ namespace Statistic
                         , TECComponent_index = m_formChangeMode.GetTECComponentIndex (m_arLabelEmpty [indxLabel].m_listIdContextMenuItems [m_arLabelEmpty[indxLabel].ContextMenu.MenuItems.IndexOf (obj as MenuItem)]);
                     Point ptAddress = getAddress(indxLabel);
 
-                    PanelTecView panelTecView = new PanelTecView(m_formChangeMode.m_list_tec[tec_index], tec_index, TECComponent_index, m_arLabelEmpty[indxLabel]/*, m_fErrorReport, m_fWarningReport, m_fActionReport, m_fReportClear*/);
+                    PanelTecViewBase panelTecView = null;
+                    if (m_formChangeMode.m_list_tec[tec_index].m_id > (int)TECComponent.ID.LK)
+                        panelTecView = new PanelLKView(m_formChangeMode.m_list_tec[tec_index], tec_index, TECComponent_index, m_arLabelEmpty[indxLabel]);
+                    else
+                        panelTecView = new PanelTecView(m_formChangeMode.m_list_tec[tec_index], tec_index, TECComponent_index, m_arLabelEmpty[indxLabel]);
+                    //= new PanelTecView(m_formChangeMode.m_list_tec[tec_index], tec_index, TECComponent_index, m_arLabelEmpty[indxLabel]/*, m_fErrorReport, m_fWarningReport, m_fActionReport, m_fReportClear*/);
                     panelTecView.SetDelegateReport(m_fErrorReport, m_fWarningReport, m_fActionReport, m_fReportClear);
                     this.Controls.Add (panelTecView, ptAddress.Y, ptAddress.X);
                     this.Controls.SetChildIndex(panelTecView, indxLabel);
                     indxLabel = this.Controls.GetChildIndex(panelTecView);
-                    ((PanelTecView)this.Controls [indxLabel]).Start ();
-                    ((PanelTecView)this.Controls[indxLabel]).Activate(true);
+                    ((PanelTecViewBase)this.Controls [indxLabel]).Start ();
+                    ((PanelTecViewBase)this.Controls[indxLabel]).Activate(true);
 
                     EnableLabelContextMenuItem(indxLabel, true);
                 }
@@ -700,12 +705,12 @@ namespace Statistic
         /// </summary>
         /// <param name="indx">Индекс панели</param>
         private void clearAddress (int indx) {
-            PanelTecView pnlTecView = null;
+            PanelTecViewBase pnlTecView = null;
             // найти панель по индексу
             foreach (Control panel in this.Controls)
             {
-                if ((panel is PanelTecView) && (this.Controls.IndexOf (panel) == indx)) {
-                    pnlTecView = (PanelTecView)panel;
+                if ((panel is PanelTecViewBase) && (this.Controls.IndexOf (panel) == indx)) {
+                    pnlTecView = (PanelTecViewBase)panel;
 
                     break;
                 }

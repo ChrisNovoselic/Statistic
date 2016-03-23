@@ -1093,7 +1093,7 @@ namespace StatisticCommon
                     break;
             }
 
-            Debug.WriteLine(@"TEC::hoursFactRequest () = " + request);
+            //Debug.WriteLine(@"TEC::hoursFactRequest () = " + request);
 
             return request;
         }

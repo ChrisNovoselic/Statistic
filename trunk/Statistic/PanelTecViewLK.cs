@@ -14,10 +14,12 @@ using StatisticCommon;
 namespace Statistic
 {
     class PanelLKView : PanelTecViewBase
-    {        
-        public PanelLKView(StatisticCommon.TEC tec, int num_tec, int num_comp)
+    {
+        public PanelLKView(StatisticCommon.TEC tec, int num_tec, int num_comp, PanelCustomTecView.HLabelCustomTecView label = null)
             : base(tec, num_tec, num_comp)
         {
+            m_label = label;
+            
             SPLITTER_PERCENT_VERTICAL = 30;
 
             m_arPercRows = new int[] { 5, 78 };
@@ -799,18 +801,36 @@ namespace Statistic
                     switch (m + 1)
                     {
                         case 1:
+                            listRanges = new List<RANGE_HOURS>(new RANGE_HOURS[] { new RANGE_HOURS() { Begin = 8, End = 12 }, new RANGE_HOURS() { Begin = 16, End = 21 } });
+                            break;
                         case 2:
                         case 3:
+                            listRanges = new List<RANGE_HOURS>(new RANGE_HOURS[] { new RANGE_HOURS() { Begin = 8, End = 12 }, new RANGE_HOURS() { Begin = 17, End = 21 } });
+                            break;
                         case 4:
+                            listRanges = new List<RANGE_HOURS>(new RANGE_HOURS[] { new RANGE_HOURS() { Begin = 8, End = 12 }, new RANGE_HOURS() { Begin = 18, End = 21 } });
+                            break;
                         case 5:
+                            listRanges = new List<RANGE_HOURS>(new RANGE_HOURS[] { new RANGE_HOURS() { Begin = 8, End = 13 }, new RANGE_HOURS() { Begin = 19, End = 21 } });
+                            break;
                         case 6:
+                            listRanges = new List<RANGE_HOURS>(new RANGE_HOURS[] { new RANGE_HOURS() { Begin = 8, End = 17 }, new RANGE_HOURS() { Begin = 19, End = 21 } });
+                            break;
                         case 7:
                         case 8:
+                            listRanges = new List<RANGE_HOURS>(new RANGE_HOURS[] { new RANGE_HOURS() { Begin = 9, End = 21 }});
+                            break;
                         case 9:
+                            listRanges = new List<RANGE_HOURS>(new RANGE_HOURS[] { new RANGE_HOURS() { Begin = 8, End = 12 }, new RANGE_HOURS() { Begin = 16, End = 21 } });
+                            break;
                         case 10:
+                            listRanges = new List<RANGE_HOURS>(new RANGE_HOURS[] { new RANGE_HOURS() { Begin = 8, End = 11 }, new RANGE_HOURS() { Begin = 16, End = 21 } });
+                            break;
                         case 11:
+                            listRanges = new List<RANGE_HOURS>(new RANGE_HOURS[] { new RANGE_HOURS() { Begin = 8, End = 11 }, new RANGE_HOURS() { Begin = 15, End = 21 } });
+                            break;
                         case 12:
-                            listRanges = new List<RANGE_HOURS>(new RANGE_HOURS[] { new RANGE_HOURS() { Begin = 8, End = 12 }, new RANGE_HOURS() { Begin = 17, End = 21 } });
+                            listRanges = new List<RANGE_HOURS>(new RANGE_HOURS[] { new RANGE_HOURS() { Begin = 8, End = 12 }, new RANGE_HOURS() { Begin = 15, End = 21 } });
                             break;
                         default:
                             throw new Exception (@"MainHours::Initialize () - неизвестный номер месяца...");
