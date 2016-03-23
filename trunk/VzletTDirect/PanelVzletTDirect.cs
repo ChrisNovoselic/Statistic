@@ -57,7 +57,7 @@ namespace StatisticVzletTDirect
             components = new System.ComponentModel.Container();
 
             this.SuspendLayout();
-            
+
             this.ResumeLayout();
             this.PerformLayout();
         }
@@ -108,7 +108,7 @@ namespace StatisticVzletTDirect
         /// </summary>
         /// <param name="table">Результат выполнения запроса - таблица с данными</param>
         public void m_DataSource_EvtRecievedTable(object table)
-        {            
+        {
         }
 
         /// <summary>
