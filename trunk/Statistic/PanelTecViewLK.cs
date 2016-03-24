@@ -477,7 +477,7 @@ namespace Statistic
                         , powerLastHour * 1000 / cntMinValues, 2, false);
                 else
                     //Отобразить строку - отсутствие значения
-                    m_tgLabels[id_tg][(int)TG.INDEX_VALUE.FACT].Text = "---";
+                    m_tgLabels[id_tg][(int)TG.INDEX_VALUE.FACT].Text = "--.--";
 
                 // установить цвет шрифта для значения
                 m_tgLabels[id_tg][(int)TG.INDEX_VALUE.FACT].ForeColor =
