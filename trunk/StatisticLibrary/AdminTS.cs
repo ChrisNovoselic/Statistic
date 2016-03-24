@@ -259,11 +259,13 @@ namespace StatisticCommon
         /// Получение списка с индексами компонентов ТЭЦ
         /// </summary>
         /// <param name="mode">Модификатор типа компонентов</param>
+        /// <param name="bLimitLK">Признак учета лимита ЛК при формировании списка</param>
         /// <returns>Возвращает список идентификаторов</returns>
         public List <int>GetListIndexTECComponent (FormChangeMode.MODE_TECCOMPONENT mode, bool bLimitLK) {
             List <int>listRes = new List <int> ();
 
             int indx = -1
+                // повторный учет - 1-ый при вызове 'HAdmin::InitTEC'
                 , iLimitIdTec = bLimitLK == true ? (int)TECComponent.ID.LK : (int)TECComponent.ID.GTP;
 
             switch (mode) {

@@ -1247,8 +1247,6 @@ namespace StatisticTrans
 
         protected override void timer_Start()
         {
-            m_listTECComponentIndex = ((AdminTS)m_arAdmin[(Int16)CONN_SETT_TYPE.DEST]).GetListIndexTECComponent(m_modeTECComponent, true);
-
             string keyPar = @"Season DateTime";
             HAdmin.SeasonDateTime = DateTime.Parse(m_sFileINI.GetMainValueOfKey(keyPar));
             keyPar = @"Season Action";

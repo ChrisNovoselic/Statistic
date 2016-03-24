@@ -5,6 +5,7 @@ using System.Text;
 using System.ComponentModel;
 using System.Windows.Forms;
 using System.Drawing;
+using System.Diagnostics;
 
 using ZedGraph;
 
@@ -688,7 +689,7 @@ namespace Statistic
 
             public override void Fill(TecView.valuesTEC[] values, params object[] pars)
             {
-                double sumFact = 0, sumUDGe = 0, sumDiviation = 0;
+                //double sumFact = 0, sumUDGe = 0, sumDiviation = 0;
                 int lastHour = (int)pars[0]; //m_tecView.lastHour;
                 int lastReceivedHour = (int)pars[1]; //m_tecView.lastReceivedHour;
                 int itemscount = (int)pars[2]; //m_tecView.m_valuesHours.Length;
@@ -698,11 +699,16 @@ namespace Statistic
                 DateTime serverTime = (DateTime)pars[6]; //m_tecView.serverTime.Date.Equals(HDateTime.ToMoscowTimeZone(DateTime.Now.Date))
 
                 int i = -1
-                    , warn = -1, cntWarn = -1
-                    , lh = bCurrHour == true ? lastReceivedHour - 1 : lastReceivedHour;
+                    //, warn = -1, cntWarn = -1
+                    , lh = bCurrHour == true ? lastReceivedHour - 1 :
+                        serverTime.Date.Equals(DateTime.Now.Date) == true ? lastReceivedHour - 1 :
+                            itemscount;
                 double t_pbr = -1F, p_pbr = -1F;
                 string strWarn = string.Empty;
-                
+
+                Debug.WriteLine(@"DataGridViewLKHours::Fill () - serverTime=" + serverTime.ToString()
+                    + @"; lastHour=" + lastHour
+                    + @"; lastReceivedHour=" + lastReceivedHour);
 
                 DataGridViewCellStyle curCellStyle;
                 DataGridViewCellStyle regularHourCellStyle = new DataGridViewCellStyle()
@@ -713,7 +719,7 @@ namespace Statistic
                 //// полужирный на основе 1-ой ячейки                
                 //mainHourCellStyle.Font = new System.Drawing.Font(RowsDefaultCellStyle.Font, FontStyle.Bold);
 
-                cntWarn = 0;
+                //cntWarn = 0;
                 t_pbr = 0;
                 for (i = 0; i < itemscount; i++)
                 {
@@ -742,11 +748,11 @@ namespace Statistic
                     else
                         ;
                     // разность
-                    if (i < lastHour)
+                    if (!(i > lh))
                     {
                         // - температура
                         if ((!(values[i].valuesLastMinutesTM == 0))
-                            && (!(values[i].valuesPmin == 0)))
+                            || (!(values[i].valuesPmin == 0)))
                             Rows[i].Cells[(int)INDEX_COLUMNS.TEMPERATURE_DEVIATION].Value = (values[i].valuesPmin - values[i].valuesLastMinutesTM).ToString(@"F2");                            
                         else
                             Rows[i].Cells[(int)INDEX_COLUMNS.TEMPERATURE_DEVIATION].Value = @"-";                        

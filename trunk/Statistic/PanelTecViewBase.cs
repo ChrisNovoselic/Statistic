@@ -567,14 +567,15 @@ namespace Statistic
                 , m_tecView.m_curDate.Date.CompareTo(HAdmin.SeasonDateTime.Date) == 0);
 
             DaylightTime daylight = TimeZone.CurrentTimeZone.GetDaylightChanges(DateTime.Now.Year);
-            int timezone_offset = m_tecView.m_tec.m_timezone_offset_msc;
+            TimeSpan timezone_offset = TimeSpan.FromHours (m_tecView.m_tec.m_timezone_offset_msc);
+            timezone_offset = timezone_offset.Add(m_tecView.m_tsOffsetToMoscow);
             if (TimeZone.IsDaylightSavingTime(DateTime.Now, daylight))
-                timezone_offset++;
+                timezone_offset = timezone_offset.Add(TimeSpan.FromHours(1));
             else
                 ;
 
             //Âðåìÿ ä.á. ÌÑÊ ???
-            _pnlQuickData.dtprDate.Value = TimeZone.CurrentTimeZone.ToUniversalTime(DateTime.Now).AddHours(timezone_offset);
+            _pnlQuickData.dtprDate.Value = TimeZone.CurrentTimeZone.ToUniversalTime(DateTime.Now).Add(timezone_offset);
 
             //initTableMinRows ();
             initTableHourRows ();            
@@ -957,7 +958,7 @@ namespace Statistic
             if (received == true)
             {
                 update = false;
-                _pnlQuickData.dtprDate.Value = m_tecView.m_curDate.Add(m_tecView.m_tsOffsetToMoscow);
+                _pnlQuickData.dtprDate.Value = m_tecView.m_curDate/*.Add(m_tecView.m_tsOffsetToMoscow)*/;
             }
             else
             {
@@ -1128,7 +1129,7 @@ namespace Statistic
                     if (InvokeRequired == true)
                         Invoke(delegateTickTime, m_tecView.serverTime);
                     else
-                        tickTime(m_tecView.serverTime.Add(m_tecView.m_tsOffsetToMoscow));
+                        tickTime(m_tecView.serverTime/*.Add(m_tecView.m_tsOffsetToMoscow)*/);
                 else
                     return;
 

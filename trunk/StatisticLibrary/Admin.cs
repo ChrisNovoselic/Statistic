@@ -603,7 +603,7 @@ namespace StatisticCommon
         {
             if (table.Rows.Count == 1)
             {
-                serverTime = (DateTime)table.Rows[0][0];
+                serverTime = ((DateTime)table.Rows[0][0]).Add(m_tsOffsetToMoscow);
             }
             else
             {

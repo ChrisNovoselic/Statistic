@@ -1704,7 +1704,7 @@ namespace StatisticCommon
             {
                 try
                 {
-                    m_curDate = (DateTime)table.Rows[0][0];
+                    m_curDate = ((DateTime)table.Rows[0][0]).Add(m_tsOffsetToMoscow);
                     serverTime = m_curDate;
                 }
                 catch (Exception excpt)
@@ -3194,7 +3194,7 @@ namespace StatisticCommon
             DateTime dt , dtNeeded, dtServer;
             dt = dtNeeded = DateTime.Now;
 
-            dtServer = serverTime.Add(m_tsOffsetToMoscow);
+            dtServer = serverTime/*.Add(m_tsOffsetToMoscow)*/;
             if ((currHour == true) && (dtServer.Minute < 2))
                 dtServer = dtServer.AddMinutes(-1 * (dtServer.Minute + 1));
             else
@@ -3435,7 +3435,7 @@ namespace StatisticCommon
 
                 if (j < 2)
                     //Нет данных за один из получасов
-                    if (! (hour > serverTime.Add(m_tsOffsetToMoscow).Hour))
+                    if (!(hour > serverTime/*.Add(m_tsOffsetToMoscow)*/.Hour))
                         break;
                     else
                         //hour > m_curDate.Hour

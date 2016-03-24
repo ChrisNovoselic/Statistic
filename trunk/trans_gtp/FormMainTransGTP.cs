@@ -339,6 +339,13 @@ namespace trans_gtp
                 ;
         }
 
+        protected override void timer_Start()
+        {
+            m_listTECComponentIndex = ((AdminTS)m_arAdmin[(Int16)CONN_SETT_TYPE.DEST]).GetListIndexTECComponent(m_modeTECComponent, false);
+
+            base.timer_Start();
+        }
+
         protected override void buttonSaveSourceSett_Click(object sender, EventArgs e) 
         {
 
