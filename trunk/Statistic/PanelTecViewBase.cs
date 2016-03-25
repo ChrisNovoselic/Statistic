@@ -460,7 +460,21 @@ namespace Statistic
             this.stctrView.Panel2.ResumeLayout(false);
             this.stctrView.ResumeLayout(false);
 
-            this.ResumeLayout(false);            
+            this.ResumeLayout(false);
+
+            if (!(m_label == null))
+            {
+                m_label.Text = m_tecView.m_tec.name_shr;
+                if (!(indx_TECComponent < 0))
+                    m_label.Text += @" - " + m_tecView.m_tec.list_TECComponents[indx_TECComponent].name_shr;
+                else
+                    ;
+
+                m_label.EventRestruct += new DelegateObjectFunc(OnEventRestruct);
+                //m_label.PerformRestruct (
+            }
+            else
+                ;
         }
 
         protected abstract void createTecView(int indx_tec, int indx_comp);

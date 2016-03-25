@@ -37,20 +37,8 @@ namespace Statistic
             base.InitializeComponent ();
 
             if (!(m_label == null))
-            {
-                m_label.Text = m_tecView.m_tec.name_shr;
-                if (!(indx_TECComponent < 0))
-                    m_label.Text += @" - " + m_tecView.m_tec.list_TECComponents[indx_TECComponent].name_shr;
-                else
-                    ;
-
-                m_label.EventRestruct += new DelegateObjectFunc(OnEventRestruct);
-                m_label.PerformRestruct(PanelCustomTecView.HLabelCustomTecView.s_propViewDefault);
-            }
+                m_label.PerformRestruct();
             else
-                ;
-
-            if (m_label == null)
             {
                 this.RowStyles.Add(new RowStyle(SizeType.Percent, 84));
                 this.RowStyles.Add(new RowStyle(SizeType.Percent, 16));
@@ -71,8 +59,6 @@ namespace Statistic
 
                 this.Controls.Add(PanelQuickData, 0, 1);
             }
-            else
-                ;
 
             this.m_ZedGraphMins.MouseUpEvent += new ZedGraph.ZedGraphControl.ZedMouseEventHandler(this.zedGraphMins_MouseUpEvent);
             // для zedGraphHours обработчик добавлен в базовом классе

@@ -35,6 +35,11 @@ namespace Statistic
             /// <param name="obj">Аргумент события</param>
             public void PerformRestruct(object obj) { EventRestruct(obj); }
             /// <summary>
+            /// Метод инициирующий возникновение события из-вне
+            /// </summary>
+            /// <param name="obj">Аргумент события</param>
+            public void PerformRestruct() { EventRestruct(m_propView); }
+            /// <summary>
             /// Значение признака ориентации размещения таблиц, графиков
             /// </summary>
             private int m_prevViewOrientation;
