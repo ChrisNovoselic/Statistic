@@ -409,6 +409,9 @@ namespace StatisticDiagnostic
         public static volatile int UPDATE_TIME,
             VALIDATE_ASKUE_TM;
         public static DateTime SERVER_TIME;//серверное время
+        /// <summary>
+        /// крайняя граница времени выполения задач
+        /// </summary>
         static TimeSpan limTaskAvg = TimeSpan.FromSeconds(145);
         static TimeSpan limTask = TimeSpan.FromSeconds(30);
 
@@ -453,7 +456,7 @@ namespace StatisticDiagnostic
 
             public HDataSource(ConnectionSettings connSett)
             {
-                m_connSett = new ConnectionSettings[2]; //??? why number
+                m_connSett = new ConnectionSettings[2];//??? why number
                 m_connSett[(int)CONN_SETT_TYPE.LIST_SOURCE] = connSett;
                 m_connSett[(int)CONN_SETT_TYPE.CONFIG_DB] = FormMain.s_listFormConnectionSettings[(int)CONN_SETT_TYPE.CONFIG_DB].getConnSett();
                 m_connSett[(int)CONN_SETT_TYPE.CONFIG_DB].id = ConnectionSettings.UN_ENUMERABLE_ID - 6;
@@ -885,9 +888,7 @@ namespace StatisticDiagnostic
             private void toolStripMenuItemActivate_Click(object sender, EventArgs e)
             {
                 string a = TECDataGridView.Rows[RowIndex].Cells[5].Value.ToString();
-
                 int t = Convert.ToInt32(selectionArraySource(a));
-
                 int numberPanel = (t / 10) - 1;
 
                 updateTecTM(stringQuery(t, numberPanel + 1));
@@ -1327,7 +1328,7 @@ namespace StatisticDiagnostic
             }
 
             /// <summary>
-            /// Выделение времени источника
+            /// Выделение значения источника
             /// </summary>
             /// <param name="bflag"></param>
             /// <param name="i">номер панели</param>
@@ -1335,9 +1336,9 @@ namespace StatisticDiagnostic
             private void paintValuesSource(bool bflag, int i, int r)
             {
                 if (bflag == true)
-                    m_arPanelsTEC[i].TECDataGridView.Rows[r].Cells[1].Style.BackColor = System.Drawing.Color.Firebrick;
+                    m_arPanelsTEC[i].TECDataGridView.Rows[r].Cells[2].Style.BackColor = System.Drawing.Color.Firebrick;                   
                 else
-                    m_arPanelsTEC[i].TECDataGridView.Rows[r].Cells[1].Style.BackColor = System.Drawing.Color.Empty;
+                    m_arPanelsTEC[i].TECDataGridView.Rows[r].Cells[2].Style.BackColor = System.Drawing.Color.Empty;
             }
 
             /// <summary>
