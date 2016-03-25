@@ -120,7 +120,10 @@ namespace StatisticVzletTDirect
         /// <param name="fclr">Делегат для удаления из строки статуса сообщений</param>
         public override void SetDelegateReport(DelegateStringFunc ferr, DelegateStringFunc fwar, DelegateStringFunc fact, DelegateBoolFunc fclr)
         {
-            m_DataSource.SetDelegateReport(ferr, fwar, fact, fclr);
+            if (!(m_DataSource == null))
+                m_DataSource.SetDelegateReport(ferr, fwar, fact, fclr);
+            else
+                throw new Exception(@"PanelVzletTDirect::SetDelegateReport () - целевой объект не создан...");
         }
 
         /// <summary>

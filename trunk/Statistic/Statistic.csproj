@@ -277,6 +277,10 @@
       <Project>{8A0AA5BC-3486-466C-A9F9-ED438A096E41}</Project>
       <Name>StatisticTimeSync</Name>
     </ProjectReference>
+    <ProjectReference Include="..\VzletTDirect\VzletTDirect.csproj">
+      <Project>{9bd77b41-eb07-417f-96da-3bf9a7ccf164}</Project>
+      <Name>VzletTDirect</Name>
+    </ProjectReference>
   </ItemGroup>
   <ItemGroup>
     <PublishFile Include="connsett.ini">
