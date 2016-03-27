@@ -948,16 +948,16 @@ namespace Statistic
                     ;
 
                 // выделить память для
+                // регулярных часов - безусловно
+                valuesRegularFact = new PointPairList[iMainIntervalCount + 1];
+                for (i = 0; i < valuesRegularFact.Length; i++)
+                    valuesRegularFact[i] = new PointPairList();
+                // для остальных при необходимости
                 if (iMainIntervalCount > 0)
                 {
                     valuesMainFact = new PointPairList[iMainIntervalCount];
-                    valuesRegularFact = new PointPairList[iMainIntervalCount + 1];
-
                     for (i = 0; i < valuesMainFact.Length; i++)
-                        valuesMainFact[i] = new PointPairList();
-
-                    for (i = 0; i < valuesRegularFact.Length; i++)
-                        valuesRegularFact[i] = new PointPairList();
+                        valuesMainFact[i] = new PointPairList();                    
                     
                     valuesPlan = new PointPairList[iMainIntervalCount];
                     valuesPDiviation = new PointPairList[iMainIntervalCount];
@@ -1155,13 +1155,16 @@ namespace Statistic
                 {
                     if (!(typeConnSett == CONN_SETT_TYPE.DATA_AISKUE_PLUS_SOTIASSO))
                     {//BarItem
-                        for (i = 0; i < valuesMainFact.Length; i++)
-                        {
-                            GraphPane.AddBar(strCurveNameMain, valuesMainFact[i], colorPCurve);
-                            // чтобы повторно не добавить подпись в легенду
-                            strCurveNameMain =
-                                string.Empty;
-                        }
+                        if (!(valuesMainFact == null))
+                            for (i = 0; i < valuesMainFact.Length; i++)
+                            {
+                                GraphPane.AddBar(strCurveNameMain, valuesMainFact[i], colorPCurve);
+                                // чтобы повторно не добавить подпись в легенду
+                                strCurveNameMain =
+                                    string.Empty;
+                            }
+                        else
+                            ; // отображать контольные часы не требуется
 
                         for (i = 0; i < valuesRegularFact.Length; i++)
                         {
@@ -1180,13 +1183,16 @@ namespace Statistic
                     {
                         if (!(typeConnSett == CONN_SETT_TYPE.DATA_AISKUE_PLUS_SOTIASSO))
                         {//LineItem
-                            for (i = 0; i < valuesMainFact.Length; i++)
-                            {
-                                GraphPane.AddCurve(strCurveNameMain, valuesMainFact[i], colorPCurve);
-                                // чтобы повторно не добавить подпись в легенду
-                                strCurveNameMain =
-                                    string.Empty;
-                            }
+                            if (!(valuesMainFact == null))
+                                for (i = 0; i < valuesMainFact.Length; i++)
+                                {
+                                    GraphPane.AddCurve(strCurveNameMain, valuesMainFact[i], colorPCurve);
+                                    // чтобы повторно не добавить подпись в легенду
+                                    strCurveNameMain =
+                                        string.Empty;
+                                }
+                            else
+                                ; // отображать контольные часы не требуется
 
                             for (i = 0; i < valuesRegularFact.Length; i++)
                             {

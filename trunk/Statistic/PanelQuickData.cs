@@ -315,6 +315,13 @@ namespace Statistic
                 InitializeComponent ();
             }
 
+            public HPanelQuickData(IContainer container)
+            {
+                container.Add(this);
+
+                InitializeComponent();
+            }
+
             private void InitializeComponent ()
             {
                 /*SZ_COLUMN_LABEL = 48F;*/ SZ_COLUMN_LABEL_VALUE = 88F;
@@ -1025,12 +1032,13 @@ namespace Statistic
             //    }
             //};
 
-            public PanelQuickDataStandard()
+            public PanelQuickDataStandard() : base ()
             {
                 InitializeComponent();
             }
 
             public PanelQuickDataStandard(IContainer container)
+                : base(container)
             {
                 container.Add(this);
 
