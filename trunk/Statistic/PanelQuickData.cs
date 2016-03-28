@@ -642,7 +642,7 @@ namespace Statistic
             private void InitializeComponent()
             {
                 COUNT_ROWS = 12;
-                SZ_COLUMN_LABEL = 40F;
+                SZ_COLUMN_LABEL = 48F;
 
                 m_indxStartCommonFirstValueSeries = (int)CONTROLS.lblCommonP;
                 m_indxStartCommonSecondValueSeries = (int)CONTROLS.lblCurrentE;
