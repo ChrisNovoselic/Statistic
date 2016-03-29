@@ -2591,7 +2591,7 @@ namespace Statistic
         {
             if (m_dictAddingTabs[(int)ID_ADDING_TAB.VZLET_TDIRECT].panel == null)
             {
-                m_dictAddingTabs[(int)ID_ADDING_TAB.VZLET_TDIRECT].panel = new PanelVzletTDirect();
+                m_dictAddingTabs[(int)ID_ADDING_TAB.VZLET_TDIRECT].panel = new PanelVzletTDirect(PanelKomDisp.m_list_tec);
                 m_dictAddingTabs[(int)ID_ADDING_TAB.VZLET_TDIRECT].panel.SetDelegateReport(ErrorReport, WarningReport, ActionReport, ReportClear);
             }
             else

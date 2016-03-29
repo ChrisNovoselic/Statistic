@@ -535,7 +535,7 @@ namespace StatisticTimeSync
         private System.Windows.Forms.Timer m_timerGetDate;
         private event DelegateObjectFunc EvtGetDate;
         private event DelegateDateFunc EvtEtalonDate;
-        int iListenerId;
+        //int iListenerId;
         private DataTable m_tableSourceData;
 
         public PanelSourceData()
@@ -573,7 +573,7 @@ namespace StatisticTimeSync
         {
             int err = -1; //Признак выполнения метода/функции
             //Зарегистрировать соединение/получить идентификатор соединения
-            iListenerId = DbSources.Sources().Register(FormMain.s_listFormConnectionSettings[(int)CONN_SETT_TYPE.CONFIG_DB].getConnSett(), false, @"CONFIG_DB");
+            int iListenerId = DbSources.Sources().Register(FormMain.s_listFormConnectionSettings[(int)CONN_SETT_TYPE.CONFIG_DB].getConnSett(), false, @"CONFIG_DB");
 
             m_tableSourceData = null;
 
@@ -610,22 +610,31 @@ namespace StatisticTimeSync
 
            DbSources.Sources().UnRegister(iListenerId);
 
-            for (int i = 0; i < INDEX_SOURCE_GETDATE.Length; i++)
-                //m_arPanels[i].TurnOn(INDEX_SOURCE_GETDATE [i]);
-                m_arPanels[i].Select(INDEX_SOURCE_GETDATE[i]);
+           for (int i = 0; i < INDEX_SOURCE_GETDATE.Length; i++)
+           {
+               m_arPanels[i].Start();
+               //m_arPanels[i].TurnOn(INDEX_SOURCE_GETDATE [i]);
+               m_arPanels[i].Select(INDEX_SOURCE_GETDATE[i]);
+           }
         }
 
         private void onEvtQueryAskedData(object ev)
         {
+            int iListenerId = -1
+                , id = -1
+                , err = -1;
+            string nameShrSourceData = string.Empty;
+            DataRow rowConnSett;
+
             try
             {
                 switch (((EventArgsDataHost)ev).id)
                 {
                     case (int)PanelGetDate.ID_ASKED_DATAHOST.CONN_SETT:
-                        string nameShrSourceData = ((PanelGetDate)((EventArgsDataHost)ev).par[0]).GetNameShrSelectedSourceData();
-                        int id = Int32.Parse(m_tableSourceData.Select(@"NAME_SHR = '" + nameShrSourceData + @"'")[0][@"ID"].ToString())
-                            , err = -1;
-                        DataRow rowConnSett = ConnectionSettingsSource.GetConnectionSettings(/*TYPE_DATABASE_CFG.CFG_200,*/ iListenerId, id, 501, out err).Rows[0];
+                        iListenerId = DbSources.Sources().Register(FormMain.s_listFormConnectionSettings[(int)CONN_SETT_TYPE.CONFIG_DB].getConnSett(), false, @"CONFIG_DB");
+                        nameShrSourceData = ((PanelGetDate)((EventArgsDataHost)ev).par[0]).GetNameShrSelectedSourceData();
+                        id = Int32.Parse(m_tableSourceData.Select(@"NAME_SHR = '" + nameShrSourceData + @"'")[0][@"ID"].ToString());
+                        rowConnSett = ConnectionSettingsSource.GetConnectionSettings(/*TYPE_DATABASE_CFG.CFG_200,*/ iListenerId, id, 501, out err).Rows[0];
                         ConnectionSettings connSett = new ConnectionSettings(rowConnSett, -1);
                         ((PanelGetDate)((EventArgsDataHost)ev).par[0]).OnEvtDataRecievedHost(new EventArgsDataHost(((EventArgsDataHost)ev).id, new object[] { connSett }));
                         DbSources.Sources().UnRegister(iListenerId);

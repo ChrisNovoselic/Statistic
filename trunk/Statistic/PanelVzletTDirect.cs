@@ -18,6 +18,39 @@ using System.Collections.Generic;
 
 namespace Statistic
 {
+    partial class PanelVzletTDirect
+    {
+        /// <summary>
+        /// Требуется переменная конструктора.
+        /// </summary>
+        private System.ComponentModel.IContainer components = null;
+
+        /// <summary> 
+        /// Освободить все используемые ресурсы.
+        /// </summary>
+        /// <param name="disposing">истинно, если управляемый ресурс должен быть удален; иначе ложно.</param>
+        protected override void Dispose(bool disposing)
+        {
+            if (disposing && (components != null))
+            {
+                components.Dispose();
+            }
+            base.Dispose(disposing);
+        }
+
+        #region Код, автоматически созданный конструктором компонентов
+
+        /// <summary>
+        /// Обязательный метод для поддержки конструктора - не изменяйте
+        /// содержимое данного метода при помощи редактора кода.
+        /// </summary>
+        private void InitializeComponent()
+        {
+            components = new System.ComponentModel.Container();
+        }
+
+        #endregion
+    }
     /// <summary>
     /// Класс для описания панели с информацией
     ///  по дианостированию состояния ИС
@@ -25,6 +58,40 @@ namespace Statistic
     public partial class PanelVzletTDirect : PanelStatistic
     {
         private List<PanelTecVzletTDirect> m_listPanelTecVzletTDirect;
+        /// <summary>
+        /// Конструктор-основной
+        /// </summary>
+        /// <param name="listTec">Лист ТЭЦ</param>
+        public PanelVzletTDirect(List<StatisticCommon.TEC> listTec) : base ()
+        {
+            InitializeComponent();
+
+            PanelTecVzletTDirect ptvtd;
+
+            int i = -1;
+
+            initializeLayoutStyle(listTec.Count / 2
+                , listTec.Count);
+            // фильтр ТЭЦ-ЛК
+            for (i = 0; i < listTec.Count; i++)
+                if (!(listTec[i].m_id > (int)TECComponent.ID.LK))
+                {
+                    ptvtd = new PanelTecVzletTDirect(listTec[i], i, -1);
+                    this.Controls.Add(ptvtd, i % this.ColumnCount, i / this.ColumnCount);
+                }
+                else
+                    ;
+        }
+        /// <summary>
+        /// Конструктор
+        /// </summary>
+        /// <param name="container"></param>
+        /// <param name="listTec">Лист ТЭЦ</param>
+        public PanelVzletTDirect(IContainer container, List<StatisticCommon.TEC> listTec)
+            : this(listTec)
+        {
+            container.Add(this);
+        }
         /// <summary>
         /// Определить размеры ячеек макета панели
         /// </summary>
@@ -43,8 +110,11 @@ namespace Statistic
         /// <param name="fclr">Делегат для удаления из строки статуса сообщений</param>
         public override void SetDelegateReport(DelegateStringFunc ferr, DelegateStringFunc fwar, DelegateStringFunc fact, DelegateBoolFunc fclr)
         {
-            foreach (PanelTecVzletTDirect panel in m_listPanelTecVzletTDirect)
-                panel.SetDelegateReport(ferr, fwar, fact, fclr);
+            if ((!(m_listPanelTecVzletTDirect == null)))
+                foreach (PanelTecVzletTDirect panel in m_listPanelTecVzletTDirect)
+                    panel.SetDelegateReport(ferr, fwar, fact, fclr);
+            else
+                ;
         }
 
         public partial class PanelTecVzletTDirect : PanelTecViewBase
@@ -150,7 +220,6 @@ namespace Statistic
             }
 
             #endregion
-
         }
 
         /// <summary>
@@ -159,32 +228,36 @@ namespace Statistic
         /// </summary>
         public partial class PanelTecVzletTDirect : PanelTecViewBase
         {
-            private class DataSource : HAdmin
+            private class DataSource : TecView
             {
-                protected override int StateCheckResponse(int state, out bool error, out object outobj)
+                public DataSource(int indx_tec, int indx_comp = -1) : base (indx_tec, indx_comp)
                 {
-                    throw new NotImplementedException();
                 }
 
-                protected override int StateRequest(int state)
-                {
-                    throw new NotImplementedException();
-                }
+                //protected override int StateCheckResponse(int state, out bool error, out object outobj)
+                //{
+                //    throw new NotImplementedException();
+                //}
 
-                protected override int StateResponse(int state, object obj)
-                {
-                    throw new NotImplementedException();
-                }
+                //protected override int StateRequest(int state)
+                //{
+                //    throw new NotImplementedException();
+                //}
 
-                protected override void StateWarnings(int state, int req, int res)
-                {
-                    throw new NotImplementedException();
-                }
+                //protected override int StateResponse(int state, object obj)
+                //{
+                //    throw new NotImplementedException();
+                //}
 
-                protected override HHandler.INDEX_WAITHANDLE_REASON StateErrors(int state, int req, int res)
-                {
-                    throw new NotImplementedException();
-                }
+                //protected override void StateWarnings(int state, int req, int res)
+                //{
+                //    throw new NotImplementedException();
+                //}
+
+                //protected override HHandler.INDEX_WAITHANDLE_REASON StateErrors(int state, int req, int res)
+                //{
+                //    throw new NotImplementedException();
+                //}
 
                 protected override void GetPPBRDatesRequest(DateTime date)
                 {
@@ -217,7 +290,6 @@ namespace Statistic
                 }
             }
 
-            HAdmin m_DataSource;
             /// <summary>
             /// constructor
             /// </summary>
@@ -250,7 +322,7 @@ namespace Statistic
 
             protected override void createTecView(int indx_tec, int indx_comp)
             {
-                m_DataSource = new DataSource();
+                m_tecView = new DataSource(indx_tec, indx_comp);
             }
             /// <summary>
             /// Обработчик события - получение данных при запросе к БД
@@ -268,8 +340,8 @@ namespace Statistic
             /// <param name="fclr">Делегат для удаления из строки статуса сообщений</param>
             public override void SetDelegateReport(DelegateStringFunc ferr, DelegateStringFunc fwar, DelegateStringFunc fact, DelegateBoolFunc fclr)
             {
-                if (!(m_DataSource == null))
-                    m_DataSource.SetDelegateReport(ferr, fwar, fact, fclr);
+                if (!(m_tecView == null))
+                    m_tecView.SetDelegateReport(ferr, fwar, fact, fclr);
                 else
                     throw new Exception(@"PanelVzletTDirect::SetDelegateReport () - целевой объект не создан...");
             }

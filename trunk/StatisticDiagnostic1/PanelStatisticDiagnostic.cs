@@ -563,7 +563,6 @@ namespace StatisticDiagnostic
             /// </summary>
             public event DelegateObjectFunc EvtRecievedActiveSource;
 
-
             /// <summary>
             /// Обработка УСЕШНО полученного результата
             /// </summary>
