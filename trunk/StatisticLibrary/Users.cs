@@ -54,8 +54,9 @@ namespace StatisticCommon
             , AUTO_TAB_ALARM
             //------------------------------30
             , AUTO_TAB_PBR_NSS
-            , TAB_LK_ADMIN
-            , AUTO_TAB_LK
+            , TAB_LK_ADMIN // доступ к стандартной вкладке регламентируется идентификатором ЛК
+            , AUTO_TAB_LK_ADMIN
+            , MENUITEM_VIEW_VZLET_TDIRECT
         };
 
         public HStatisticUsers(int iListenerId)

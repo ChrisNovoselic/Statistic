@@ -63,6 +63,7 @@ namespace Statistic
             m_dictAddingTabs.Add((int)ID_ADDING_TAB.DIAGNOSTIC, new ADDING_TAB("ДиагностикаToolStripMenuItem", "Диагностика"));
             m_dictAddingTabs.Add((int)ID_ADDING_TAB.ANALYZER, new ADDING_TAB("ПросмотрЖурналаToolStripMenuItem", "Журнал событий"));
             m_dictAddingTabs.Add((int)ID_ADDING_TAB.SOTIASSO, new ADDING_TAB("значенияСОТИАССОToolStripMenuItem", "Значения СОТИАССО"));
+            m_dictAddingTabs.Add((int)ID_ADDING_TAB.VZLET_TDIRECT, new ADDING_TAB("значенияВзлетТпрямаяToolStripMenuItem", "Расчет теплосети"));
             m_dictAddingTabs.Add((int)ID_ADDING_TAB.TEC_Component, new ADDING_TAB("СоставТЭЦToolStripMenuItem", "Изменить состав ТЭЦ"));
             m_dictAddingTabs.Add((int)ID_ADDING_TAB.USERS, new ADDING_TAB("изментьСоставПользовательToolStripMenuItem", "Изменить состав пользователей"));
 
@@ -184,9 +185,8 @@ namespace Statistic
                 , m_dictAddingTabs[(int)ID_ADDING_TAB.TM_SN_POWER].menuItem
                 , m_dictAddingTabs[(int)ID_ADDING_TAB.MONITOR_LAST_MINUTES].menuItem
                 , m_dictAddingTabs[(int)ID_ADDING_TAB.SOBSTV_NYZHDY].menuItem
-                //, m_dictAddingTabs[(int)ID_ADDING_TAB.DIAGNOSTIC].menuItem
-                //, m_dictAddingTabs[(int)ID_ADDING_TAB.DATETIMESYNC_SOURCE_DATA].menuItem
                 , m_dictAddingTabs[(int)ID_ADDING_TAB.SOTIASSO].menuItem
+                , m_dictAddingTabs[(int)ID_ADDING_TAB.VZLET_TDIRECT].menuItem
             });
             this.видToolStripMenuItem.Name = "видToolStripMenuItem";
             this.видToolStripMenuItem.Size = new System.Drawing.Size(38, 20);
@@ -255,6 +255,11 @@ namespace Statistic
             // значенияСОТИАССОToolStripMenuItem
             // 
             this.m_dictAddingTabs[(int)ID_ADDING_TAB.SOTIASSO].menuItem.CheckedChanged += new System.EventHandler(this.значенияСОТИАССОToolStripMenuItem_CheckedChanged);
+            // 
+            // значенияВзлетТпрямаяToolStripMenuItem
+            // 
+            this.m_dictAddingTabs[(int)ID_ADDING_TAB.VZLET_TDIRECT].menuItem.CheckedChanged += new System.EventHandler(this.значенияВзлетТпрямаяToolStripMenuItem_CheckedChanged);
+
             // 
             // настройкиToolStripMenuItem
             // 

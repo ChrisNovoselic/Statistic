@@ -53,7 +53,7 @@ namespace Statistic
         #endregion
     }
 
-    public partial class PanelSobstvNyzhdy : PanelStatisticWithTableHourRows
+    public partial class PanelSobstvNyzhdy : PanelStatistic //WithTableHourRows
     {
         /// <summary>
         /// Индексы Label'ов
@@ -237,10 +237,10 @@ namespace Statistic
             }
         }
 
-        protected override void initTableHourRows()
-        {
-            throw new NotImplementedException();
-        }
+        //protected override void initTableHourRows()
+        //{
+        //    throw new NotImplementedException();
+        //}
 
         partial class PanelTecSobstvNyzhdy
         {

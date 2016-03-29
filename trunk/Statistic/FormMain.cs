@@ -37,6 +37,7 @@ namespace Statistic
                 , CUSTOM_2X2_2, CUSTOM_2X3_2, CUSTOM_2X2_3, CUSTOM_2X3_3, CUSTOM_2X2_4,
             CUSTOM_2X3_4
                 , SOTIASSO, DIAGNOSTIC, ANALYZER, TEC_Component, USERS
+                , VZLET_TDIRECT
         };
         private enum INDEX_CUSTOM_TAB { TAB_2X2, TAB_2X3 };
         private class ADDING_TAB
@@ -321,7 +322,7 @@ namespace Statistic
                     else
                         ;
 
-                    if (HStatisticUsers.IsAllowed((int)HStatisticUsers.ID_ALLOWED.AUTO_TAB_LK) == true)
+                    if (HStatisticUsers.IsAllowed((int)HStatisticUsers.ID_ALLOWED.AUTO_TAB_LK_ADMIN) == true)
                     {
                         //m_markPrevStatePanelAdmin.Set((int)FormChangeMode.MANAGER.ALARM, true);
                         //listIDs.Add (FormChangeMode.ID_SPECIAL_TAB[(int)FormChangeMode.MANAGER.DISP]);
@@ -800,16 +801,19 @@ namespace Statistic
                                                                 if (tclTecViews.TabPages[e.TabIndex].Controls[0] is PanelSOTIASSO)
                                                                     m_dictAddingTabs[(int)ID_ADDING_TAB.SOTIASSO].menuItem.Checked = false;
                                                                 else
-                                                                    if (tclTecViews.TabPages[e.TabIndex].Controls[0] is PanelAnalyzer_DB)
-                                                                        m_dictAddingTabs[(int)ID_ADDING_TAB.ANALYZER].menuItem.Checked = false;
+                                                                    if (tclTecViews.TabPages[e.TabIndex].Controls[0] is PanelVzletTDirect)
+                                                                        m_dictAddingTabs[(int)ID_ADDING_TAB.VZLET_TDIRECT].menuItem.Checked = false;
                                                                     else
-                                                                        if (tclTecViews.TabPages[e.TabIndex].Controls[0] is PanelTECComponent)
-                                                                            m_dictAddingTabs[(int)ID_ADDING_TAB.TEC_Component].menuItem.Checked = false;
+                                                                        if (tclTecViews.TabPages[e.TabIndex].Controls[0] is PanelAnalyzer)
+                                                                            m_dictAddingTabs[(int)ID_ADDING_TAB.ANALYZER].menuItem.Checked = false;
                                                                         else
-                                                                            if (tclTecViews.TabPages[e.TabIndex].Controls[0] is PanelUser)
-                                                                                m_dictAddingTabs[(int)ID_ADDING_TAB.USERS].menuItem.Checked = false;
+                                                                            if (tclTecViews.TabPages[e.TabIndex].Controls[0] is PanelTECComponent)
+                                                                                m_dictAddingTabs[(int)ID_ADDING_TAB.TEC_Component].menuItem.Checked = false;
                                                                             else
-                                                                                ;
+                                                                                if (tclTecViews.TabPages[e.TabIndex].Controls[0] is PanelUser)
+                                                                                    m_dictAddingTabs[(int)ID_ADDING_TAB.USERS].menuItem.Checked = false;
+                                                                                else
+                                                                                    ;
         }
 
         void delegateOnFloatTab(object sender, HTabCtrlExEventArgs e)
@@ -2037,9 +2041,11 @@ namespace Statistic
                     m_dictAddingTabs[(int)ID_ADDING_TAB.MONITOR_LAST_MINUTES].menuItem.Enabled =
                     m_dictAddingTabs[(int)ID_ADDING_TAB.SOBSTV_NYZHDY].menuItem.Enabled =
                     m_dictAddingTabs[(int)ID_ADDING_TAB.SOTIASSO].menuItem.Enabled =
+                    m_dictAddingTabs[(int)ID_ADDING_TAB.VZLET_TDIRECT].menuItem.Enabled =
                         bCurEnabled && (HStatisticUsers.allTEC < (int)TECComponent.ID.LK);
 
                     m_dictAddingTabs[(int)ID_ADDING_TAB.SOTIASSO].menuItem.Enabled &= HStatisticUsers.IsAllowed((int)HStatisticUsers.ID_ALLOWED.MENUITEM_VIEW_VALUES_SOTIASSO);
+                    m_dictAddingTabs[(int)ID_ADDING_TAB.VZLET_TDIRECT].menuItem.Enabled &= HStatisticUsers.IsAllowed((int)HStatisticUsers.ID_ALLOWED.MENUITEM_VIEW_VZLET_TDIRECT);
                 }
                 else
                     ;
@@ -2229,7 +2235,7 @@ namespace Statistic
                 bPasswordAsked = modeAdmin == FormChangeMode.MANAGER.DISP ? ! HStatisticUsers.IsAllowed((int)HStatisticUsers.ID_ALLOWED.AUTO_TAB_PBR_KOMDISP) :
                     modeAdmin == FormChangeMode.MANAGER.NSS ? ! HStatisticUsers.IsAllowed((int)HStatisticUsers.ID_ALLOWED.AUTO_TAB_PBR_NSS) :
                     modeAdmin == FormChangeMode.MANAGER.ALARM ? ! HStatisticUsers.IsAllowed((int)HStatisticUsers.ID_ALLOWED.AUTO_TAB_ALARM) :
-                    modeAdmin == FormChangeMode.MANAGER.LK ? ! HStatisticUsers.IsAllowed((int)HStatisticUsers.ID_ALLOWED.AUTO_TAB_LK) :
+                    modeAdmin == FormChangeMode.MANAGER.LK ? ! HStatisticUsers.IsAllowed((int)HStatisticUsers.ID_ALLOWED.AUTO_TAB_LK_ADMIN) :
                         false;
 
                 if (bPasswordAsked == true)
@@ -2578,6 +2584,20 @@ namespace Statistic
                 ;
 
             видSubToolStripMenuItem_CheckedChanged(m_dictAddingTabs[(int)ID_ADDING_TAB.SOTIASSO].panel, "Значения СОТИАССО"
+                , new bool[] { ((ToolStripMenuItem)sender).Checked, true });
+        }
+
+        private void значенияВзлетТпрямаяToolStripMenuItem_CheckedChanged(object sender, EventArgs e)
+        {
+            if (m_dictAddingTabs[(int)ID_ADDING_TAB.VZLET_TDIRECT].panel == null)
+            {
+                m_dictAddingTabs[(int)ID_ADDING_TAB.VZLET_TDIRECT].panel = new PanelVzletTDirect();
+                m_dictAddingTabs[(int)ID_ADDING_TAB.VZLET_TDIRECT].panel.SetDelegateReport(ErrorReport, WarningReport, ActionReport, ReportClear);
+            }
+            else
+                ;
+
+            видSubToolStripMenuItem_CheckedChanged(m_dictAddingTabs[(int)ID_ADDING_TAB.VZLET_TDIRECT].panel, "Расчет теплосети"
                 , new bool[] { ((ToolStripMenuItem)sender).Checked, true });
         }
 

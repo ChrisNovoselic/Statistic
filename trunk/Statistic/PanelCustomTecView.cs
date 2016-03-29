@@ -462,7 +462,7 @@ namespace Statistic
         }
     }
 
-    public partial class PanelCustomTecView : PanelStatisticWithTableHourRows
+    public partial class PanelCustomTecView : PanelStatistic
     {
         public event DelegateFunc EventContentChanged;
 
@@ -531,10 +531,10 @@ namespace Statistic
             return bRes;
         }
 
-        protected override void initTableHourRows()
-        {
-            //Ничего не делаем, т.к. составные элементы самостоятельно настраивают кол-во строк в таблицах
-        }
+        //protected override void initTableHourRows()
+        //{
+        //    //Ничего не делаем, т.к. составные элементы самостоятельно настраивают кол-во строк в таблицах
+        //}
 
         protected void Clear () {
         }
