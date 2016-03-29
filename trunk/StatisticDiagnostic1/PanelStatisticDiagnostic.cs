@@ -600,12 +600,13 @@ namespace StatisticDiagnostic
             }
 
             /// <summary>
-            /// 
+            /// Функция обратного вызова при возникновения ситуации "ошибка"
+            ///  при обработке списка состояний
             /// </summary>
-            /// <param name="state"></param>
-            /// <param name="req"></param>
-            /// <param name="res"></param>
-            /// <returns></returns>
+            /// <param name="state">Состояние при котором возникла ситуация</param>
+            /// <param name="req">Признак результата выполнения запроса</param>
+            /// <param name="res">Признак возвращения результата при запросе</param>
+            /// <returns>Индекс массива объектов синхронизации</returns>
             protected override INDEX_WAITHANDLE_REASON StateErrors(int state, int req, int res)
             {
                 INDEX_WAITHANDLE_REASON iRes = INDEX_WAITHANDLE_REASON.SUCCESS;
@@ -616,11 +617,12 @@ namespace StatisticDiagnostic
             }
 
             /// <summary>
-            /// 
+            /// Функция обратного вызова при возникновения ситуации "предупреждение"
+            ///  при обработке списка состояний
             /// </summary>
-            /// <param name="state"></param>
-            /// <param name="req"></param>
-            /// <param name="res"></param>
+            /// <param name="state">Состояние при котором возникла ситуация</param>
+            /// <param name="req">Признак результата выполнения запроса</param>
+            /// <param name="res">Признак возвращения результата при запросе</param>
             protected override void StateWarnings(int state, int req, int res)
             {
                 throw new NotImplementedException();
@@ -2581,7 +2583,7 @@ namespace StatisticDiagnostic
         /// Обработчик события - получение данных при запросе к БД
         /// </summary>
         /// <param name="table">Результат выполнения запроса - таблица с данными</param>
-        public void m_DataSource_EvtRecievedTable(object table)
+        private void dataSource_OnEvtRecievedTable(object table)
         {
             m_tableSourceData = (DataTable)table;
             start();
@@ -2592,7 +2594,7 @@ namespace StatisticDiagnostic
         /// получение списка активных источников
         /// </summary>
         /// <param name="table">Результат выполнения запроса - таблица с данными</param>
-        public void m_DataSource_EvtRecievedActiveSource(object table)
+        private void dataSource_OnEvtRecievedActiveSource(object table)
         {
             createListActiveSource((DataTable)table);
         }
@@ -2613,14 +2615,14 @@ namespace StatisticDiagnostic
         {
             m_DataSource.Start();
             m_DataSource.StartDbInterfaces();
-            m_DataSource.EvtRecievedActiveSource += new DelegateObjectFunc(m_DataSource_EvtRecievedActiveSource);
-            m_DataSource.EvtRecievedTable += new DelegateObjectFunc(m_DataSource_EvtRecievedTable);
+            m_DataSource.EvtRecievedActiveSource += new DelegateObjectFunc(dataSource_OnEvtRecievedActiveSource);
+            m_DataSource.EvtRecievedTable += new DelegateObjectFunc(dataSource_OnEvtRecievedTable);
         }
 
         /// <summary>
         /// Создать панели для отображения диагностических параметров ТЭЦ, Модес
         /// </summary>
-        public void createPanels()
+        private void createPanels()
         {
             m_tecdb.Create_PanelTEC();
             m_modesdb.Create_Modes();

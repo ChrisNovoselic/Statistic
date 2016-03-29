@@ -19,8 +19,9 @@ namespace Statistic
         public static DataGridViewCellStyle s_dgvCellStyleError
             , s_dgvCellStyleWarning
             , s_dgvCellStyleCommon;
-        
-        public class ColumnProperies {
+
+        public class ColumnProperies
+        {
             public int minWidth;
             public int widthPerc;
             public string headerText;
@@ -37,7 +38,7 @@ namespace Statistic
             }
         };
 
-        protected ColumnProperies [] m_arColumns;
+        protected ColumnProperies[] m_arColumns;
         //protected int m_iWIdthDefault;
 
         protected void setFirstDisplayedScrollingRowIndex(int lastIndx, bool bScrollingRowIndex)
@@ -226,7 +227,7 @@ namespace Statistic
             }
         }
 
-        public abstract void Fill (TecView.valuesTEC []values, params object []pars);
+        public abstract void Fill(TecView.valuesTEC[] values, params object[] pars);
 
         public virtual void Fill(params object[] pars)
         {

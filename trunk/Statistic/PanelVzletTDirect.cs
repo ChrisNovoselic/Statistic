@@ -1,6 +1,4 @@
-﻿using HClassLibrary;
-using StatisticCommon;
-using System;
+﻿using System;
 using System.Collections;
 using System.ComponentModel;
 using System.Data; //DataTable
@@ -14,14 +12,80 @@ using System.Threading;
 using System.Timers;
 using System.Windows.Forms; //TableLayoutPanel
 
-namespace StatisticVzletTDirect
+using HClassLibrary;
+using StatisticCommon;
+
+namespace Statistic
 {
     /// <summary>
     /// Класс для описания панели с информацией
     ///  по дианостированию состояния ИС
     /// </summary>
-    public partial class PanelVzletTDirect
+    public partial class PanelVzletTDirect : PanelTecViewBase
     {
+        private class DataGridViewVzletTDirectHours : HDataGridViewBase
+        {
+            public DataGridViewVzletTDirectHours(HDateTime.INTERVAL interval, ColumnProperies[] arColumns)
+                : base(interval, arColumns)
+            {
+            }
+
+            public override void Fill(TecView.valuesTEC[] values, params object[] pars)
+            {
+                throw new NotImplementedException();
+            }
+        }
+
+        private class ZedGraphControlVzletTDirect : HZedGraphControl
+        {
+            public ZedGraphControlVzletTDirect(object lockVal)
+                : base(lockVal, FormMain.formGraphicsSettings.SetScale)
+            {
+            }
+
+            public override void Draw(TecView.valuesTEC[] values, params object[] pars)
+            {
+            }
+        }
+        /// <summary>
+        /// Класс для размещения активных элементов управления
+        /// </summary>
+        private class PanelQuickDataVzletTDirect : HPanelQuickData
+        {
+            public PanelQuickDataVzletTDirect()
+                : base(/*-1, -1*/)
+            {
+                InitializeComponent();
+            }
+
+            private void InitializeComponent()
+            {
+                COUNT_ROWS = 3;
+
+                SZ_COLUMN_LABEL = 58F;
+            }
+
+            protected override TableLayoutPanelCellPosition getPositionCell(int indx)
+            {
+                throw new NotImplementedException();
+            }
+
+            public override void RestructControl()
+            {
+                throw new NotImplementedException();
+            }
+
+            public override void ShowFactValues()
+            {
+                throw new NotImplementedException();
+            }
+
+            public override void ShowTMValues()
+            {
+                throw new NotImplementedException();
+            }
+        }
+        
         /// <summary>
         /// Определить размеры ячеек макета панели
         /// </summary>
@@ -70,27 +134,83 @@ namespace StatisticVzletTDirect
     /// Класс для описания панели с информацией
     ///  по дианостированию состояния ИС
     /// </summary>
-    public partial class PanelVzletTDirect : PanelStatistic
+    public partial class PanelVzletTDirect : PanelTecViewBase
     {
+        private class DataSource : HAdmin
+        {
+            protected override int StateCheckResponse(int state, out bool error, out object outobj)
+            {
+                throw new NotImplementedException();
+            }
+
+            protected override int StateRequest(int state)
+            {
+                throw new NotImplementedException();
+            }
+
+            protected override int StateResponse(int state, object obj)
+            {
+                throw new NotImplementedException();
+            }
+
+            protected override void StateWarnings(int state, int req, int res)
+            {
+                throw new NotImplementedException();
+            }
+
+            protected override HHandler.INDEX_WAITHANDLE_REASON StateErrors(int state, int req, int res)
+            {
+                throw new NotImplementedException();
+            }
+
+            protected override void GetPPBRDatesRequest(DateTime date)
+            {
+                throw new NotImplementedException();
+            }
+
+            protected override int GetPPBRDatesResponse(DataTable table, DateTime date)
+            {
+                throw new NotImplementedException();
+            }
+
+            protected override void GetPPBRValuesRequest(TEC t, TECComponent comp, DateTime date)
+            {
+                throw new NotImplementedException();
+            }
+
+            protected override int GetPPBRValuesResponse(DataTable table, DateTime date)
+            {
+                throw new NotImplementedException();
+            }
+
+            public override void GetRDGValues(int indx, DateTime date)
+            {
+                throw new NotImplementedException();
+            }
+
+            public override bool WasChanged()
+            {
+                throw new NotImplementedException();
+            }
+        }
+
         HAdmin m_DataSource;
         /// <summary>
         /// constructor
         /// </summary>
-        public PanelVzletTDirect()
+        public PanelVzletTDirect(TEC tec, int indx_tec, int indx_comp) : base (tec, indx_tec, indx_comp)
         {
             initialize();
         }
-
         /// <summary>
         /// constructor
         /// </summary>
         /// <param name="container"></param>
-        public PanelVzletTDirect(IContainer container)
+        public PanelVzletTDirect(IContainer container, TEC tec, int indx_tec, int indx_comp) : base (tec, indx_tec, indx_comp)
         {
             container.Add(this);
             initialize();
         }
-
         /// <summary>
         /// Инициализация подключения к БД
         /// и компонентов панели.
@@ -103,14 +223,17 @@ namespace StatisticVzletTDirect
             return iRes;
         }
 
+        protected override void createTecView(int indx_tec, int indx_comp)
+        {
+            m_DataSource = new DataSource();
+        }
         /// <summary>
         /// Обработчик события - получение данных при запросе к БД
         /// </summary>
         /// <param name="table">Результат выполнения запроса - таблица с данными</param>
-        public void m_DataSource_EvtRecievedTable(object table)
+        public void DataSource_EvtRecievedTable(object table)
         {
         }
-
         /// <summary>
         /// Назначить делегаты по отображению сообщений в строке статуса
         /// </summary>
@@ -125,7 +248,6 @@ namespace StatisticVzletTDirect
             else
                 throw new Exception(@"PanelVzletTDirect::SetDelegateReport () - целевой объект не создан...");
         }
-
         /// <summary>
         /// Фукнция вызова старта программы
         /// (создание таймера и получения данных)
@@ -134,7 +256,6 @@ namespace StatisticVzletTDirect
         {
             base.Start();
         }
-
         /// <summary>
         /// Вызов функций для заполнения 
         /// элементов панели данными
@@ -142,7 +263,6 @@ namespace StatisticVzletTDirect
         private void start()
         {
         }
-
         /// <summary>
         /// Остановка работы панели
         /// </summary>
@@ -157,7 +277,6 @@ namespace StatisticVzletTDirect
             else
                 ;
         }
-
         /// <summary>
         /// Остановка работы таймера
         /// и обработки запроса к БД
@@ -165,7 +284,6 @@ namespace StatisticVzletTDirect
         private void stop()
         {
         }
-
         /// <summary>
         /// Функция активация Вкладки
         /// </summary>
@@ -182,6 +300,36 @@ namespace StatisticVzletTDirect
                 ;
 
             return bRes;
+        }
+
+        protected override void createPanelQuickData()
+        {
+            throw new NotImplementedException();
+        }
+
+        protected override void createDataGridViewHours()
+        {
+            throw new NotImplementedException();
+        }
+
+        protected override void createDataGridViewMins()
+        {
+            throw new NotImplementedException();
+        }
+
+        protected override void createZedGraphControlHours(object objLock)
+        {
+            throw new NotImplementedException();
+        }
+
+        protected override void createZedGraphControlMins(object objLock)
+        {
+            throw new NotImplementedException();
+        }
+
+        protected override HMark enabledSourceData_ToolStripMenuItems()
+        {
+            throw new NotImplementedException();
         }
     }
 }
