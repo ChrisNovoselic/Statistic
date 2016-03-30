@@ -374,6 +374,8 @@ namespace Statistic
 
                 this.ResumeLayout(false);
                 //this.PerformLayout();
+
+                m_tgLabels = new Dictionary<int, System.Windows.Forms.Label[]>();
             }
 
             //public void addTGView(ref string name_shr, /*ref float val,*/ ref int positionXName, ref int positionYName, ref int positionXValue, ref int positionYValue)
@@ -646,9 +648,7 @@ namespace Statistic
 
                 m_indxStartCommonFirstValueSeries = (int)CONTROLS.lblCommonP;
                 m_indxStartCommonSecondValueSeries = (int)CONTROLS.lblCurrentE;
-                m_iCountCommonLabels = (int)CONTROLS.lblDevEVal - (int)CONTROLS.lblCommonP + 1;
-
-                m_tgLabels = new Dictionary<int, System.Windows.Forms.Label[]>();
+                m_iCountCommonLabels = (int)CONTROLS.lblDevEVal - (int)CONTROLS.lblCommonP + 1;                
 
                 components = new System.ComponentModel.Container();
 

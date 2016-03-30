@@ -53,7 +53,7 @@ namespace Statistic
         #endregion
     }
 
-    public partial class PanelSobstvNyzhdy : PanelStatistic //WithTableHourRows
+    public partial class PanelSobstvNyzhdy : PanelContainerStatistic //WithTableHourRows
     {
         /// <summary>
         /// Индексы Label'ов
@@ -90,6 +90,7 @@ namespace Statistic
         /// </summary>
         /// <param name="listTec">Лист ТЭЦ</param>
         public PanelSobstvNyzhdy(List<StatisticCommon.TEC> listTec)
+            : base(typeof(PanelTecSobstvNyzhdy))
         {
             InitializeComponent();
 
@@ -119,105 +120,6 @@ namespace Statistic
             : this(listTec)
         {
             container.Add(this);
-        }
-
-        /// <summary>
-        /// Инициализация стиля слоя
-        /// </summary>
-        /// <param name="cols">Кол-во колоной</param>
-        /// <param name="rows">Кол-во строк</param>
-        protected override void initializeLayoutStyle(int cols = -1, int rows = -1)
-        {
-            this.ColumnCount = cols;
-            if (this.ColumnCount == 0) this.ColumnCount++; else ;
-            this.RowCount = rows / this.ColumnCount;
-
-            initializeLayoutStyleEvenly ();
-        }
-
-        /// <summary>
-        /// Метод задания делегатов для передачии сообщения
-        /// </summary>
-        /// <param name="ferr">Делегат ошибки</param>
-        /// <param name="fwar">Делегат предупреждения</param>
-        /// <param name="fact">Делегат выполняемого действия</param>
-        /// <param name="fclr">Делегат очистки строки</param>
-        public override void SetDelegateReport(DelegateStringFunc ferr, DelegateStringFunc fwar, DelegateStringFunc fact, DelegateBoolFunc fclr)
-        {
-            foreach (Control ptcp in this.Controls)
-                if (ptcp is PanelTecSobstvNyzhdy)
-                    (ptcp as PanelTecSobstvNyzhdy).SetDelegateReport(ferr, fwar, fact, fclr);
-                else
-                    ;
-        }
-
-        /// <summary>
-        /// Старт опроса
-        /// </summary>
-        public override void Start()
-        {
-            base.Start();
-            
-            foreach (Control ctrl in this.Controls)
-            {
-                if (ctrl is PanelTecSobstvNyzhdy)
-                {
-                    ((PanelTecSobstvNyzhdy)ctrl).Start();
-                }
-                else
-                    ;
-            }
-        }
-
-        /// <summary>
-        /// Остановка опроса
-        /// </summary>
-        public override void Stop()
-        {
-            foreach (Control ctrl in this.Controls)
-            {
-                if (ctrl is PanelTecSobstvNyzhdy)
-                {
-                    ((PanelTecSobstvNyzhdy)ctrl).Stop();
-                }
-                else
-                    ;
-            }
-
-            base.Stop();
-        }
-
-        /// <summary>
-        /// Активация панели
-        /// </summary>
-        /// <param name="active">Установка состояния панели</param>
-        /// <returns>Возвращает состояние после выполнения операции</returns>
-        public override bool Activate(bool active)
-        {
-            bool bRes = base.Activate(active);
-
-            if (bRes == false)
-                return bRes;
-            else
-                ;
-
-            //TypeConverter conv;
-            //dynamic dynObj = null;
-            Type typeChildren; //PanelTecCurPower
-            typeChildren = typeof(PanelTecSobstvNyzhdy);
-
-            int i = 0;
-            foreach (Control ctrl in this.Controls)
-            {
-                if (ctrl.GetType().Equals(typeChildren) == true)
-                {
-                    ((PanelTecSobstvNyzhdy)ctrl).Activate(active);
-                }
-                else
-                    ;
-            }
-
-            return bRes;
         }
 
         /// <summary>
@@ -284,7 +186,7 @@ namespace Statistic
             #endregion
         }
 
-        private partial class PanelTecSobstvNyzhdy : HPanelCommon
+        private partial class PanelTecSobstvNyzhdy : PanelStatistic //HPanelCommon
         {
             public class TecViewSobstvNyzhdy : TecView
             {
@@ -508,7 +410,7 @@ namespace Statistic
             /// <param name="fWarRep">Делегат предупреждения</param>
             /// <param name="fActRep">Делегат выполняемого действия</param>
             /// <param name="fRepClr">Делегат очистки строки</param>
-            public void SetDelegateReport(DelegateStringFunc fErrRep, DelegateStringFunc fWarRep, DelegateStringFunc fActRep, DelegateBoolFunc fRepClr)
+            public override void SetDelegateReport(DelegateStringFunc fErrRep, DelegateStringFunc fWarRep, DelegateStringFunc fActRep, DelegateBoolFunc fRepClr)
             {
                 m_tecView.SetDelegateReport(fErrRep, fWarRep, fActRep, fRepClr);
             }

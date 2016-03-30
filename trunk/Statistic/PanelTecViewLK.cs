@@ -154,8 +154,6 @@ namespace Statistic
                 m_indxStartCommonSecondValueSeries = (int)CONTROLS.lblPowerCurrent;
                 m_iCountCommonLabels = (int)CONTROLS.lblPowerDateValue - (int)CONTROLS.lblTemperatureCurrent + 1;
 
-                m_tgLabels = new Dictionary<int, System.Windows.Forms.Label[]>();
-
                 // количество и параметры строк макета панели
                 this.RowCount = COUNT_ROWS;
                 for (int i = 0; i < this.RowCount + 1; i++)
@@ -916,6 +914,7 @@ namespace Statistic
             public ZedGraphControlLK(object lockVal)
                 : base(lockVal, FormMain.formGraphicsSettings.SetScale)
             {
+                InitializeComponent();
             }
 
             public override void Draw(TecView.valuesTEC []values, params object[] pars)
@@ -1300,7 +1299,8 @@ namespace Statistic
 
                 bRes = base.FindNearestObject(p, g, out obj, out index);
 
-                if (!(obj == null))
+                if ((!(obj == null))
+                    && ((obj is CurveItem) == true))
                     //if ((obj as CurveItem).IsLine == true)
                         index = (int)(obj as CurveItem).Points[index].X - 1;
                     //else ;
@@ -1308,6 +1308,13 @@ namespace Statistic
                     ;
 
                 return bRes;
+            }
+
+            private void InitializeComponent()
+            {
+                this.ContextMenuStrip.Items[(int)INDEX_CONTEXTMENU_ITEM.AISKUE].Text = @"АИСКУЭ";
+                //// только для минут
+                //this.GraphPane.XAxis.ScaleFormatEvent += new Axis.ScaleFormatHandler(XScaleFormatEvent);
             }
         }
 

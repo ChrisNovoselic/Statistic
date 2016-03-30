@@ -994,7 +994,8 @@ namespace Statistic
 
             found = m_ZedGraphHours.FindNearestObject(p, CreateGraphics(), out obj, out index);
 
-            if (found == true)
+            if ((found == true)
+                && ((!(obj == null)) && (obj is CurveItem)))
             {
                 if (((obj as CurveItem).IsBar == false) && ((obj as CurveItem).IsLine == false))
                     return true;

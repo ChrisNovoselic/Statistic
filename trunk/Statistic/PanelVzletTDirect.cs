@@ -55,14 +55,14 @@ namespace Statistic
     /// Класс для описания панели с информацией
     ///  по дианостированию состояния ИС
     /// </summary>
-    public partial class PanelVzletTDirect : PanelStatistic
+    public partial class PanelVzletTDirect : PanelContainerStatistic
     {
-        private List<PanelTecVzletTDirect> m_listPanelTecVzletTDirect;
         /// <summary>
         /// Конструктор-основной
         /// </summary>
         /// <param name="listTec">Лист ТЭЦ</param>
-        public PanelVzletTDirect(List<StatisticCommon.TEC> listTec) : base ()
+        public PanelVzletTDirect(List<StatisticCommon.TEC> listTec)
+            : base(typeof(PanelTecVzletTDirect))
         {
             InitializeComponent();
 
@@ -91,30 +91,6 @@ namespace Statistic
             : this(listTec)
         {
             container.Add(this);
-        }
-        /// <summary>
-        /// Определить размеры ячеек макета панели
-        /// </summary>
-        /// <param name="cols">Количество столбцов в макете</param>
-        /// <param name="rows">Количество строк в макете</param>
-        protected override void initializeLayoutStyle(int cols = -1, int rows = -1)
-        {
-            initializeLayoutStyleEvenly(cols, rows);
-        }
-        /// <summary>
-        /// Назначить делегаты по отображению сообщений в строке статуса
-        /// </summary>
-        /// <param name="ferr">Делегат для отображения в строке статуса ошибки</param>
-        /// <param name="fwar">Делегат для отображения в строке статуса предупреждения</param>
-        /// <param name="fact">Делегат для отображения в строке статуса описания действия</param>
-        /// <param name="fclr">Делегат для удаления из строки статуса сообщений</param>
-        public override void SetDelegateReport(DelegateStringFunc ferr, DelegateStringFunc fwar, DelegateStringFunc fact, DelegateBoolFunc fclr)
-        {
-            if ((!(m_listPanelTecVzletTDirect == null)))
-                foreach (PanelTecVzletTDirect panel in m_listPanelTecVzletTDirect)
-                    panel.SetDelegateReport(ferr, fwar, fact, fclr);
-            else
-                ;
         }
 
         public partial class PanelTecVzletTDirect : PanelTecViewBase
@@ -151,11 +127,11 @@ namespace Statistic
                 public PanelQuickDataVzletTDirect()
                     : base(/*-1, -1*/)
                 {
-                    InitializeComponent();
+                    InitializeComponents();
                 }
 
-                private void InitializeComponent()
-                {
+                private void InitializeComponents()
+                {                    
                     COUNT_ROWS = 3;
 
                     SZ_COLUMN_LABEL = 58F;
@@ -168,17 +144,17 @@ namespace Statistic
 
                 public override void RestructControl()
                 {
-                    throw new NotImplementedException();
+                    ;
                 }
 
                 public override void ShowFactValues()
                 {
-                    throw new NotImplementedException();
+                    ;
                 }
 
                 public override void ShowTMValues()
                 {
-                    throw new NotImplementedException();
+                    ;
                 }
             }        
             /// <summary>
@@ -213,10 +189,19 @@ namespace Statistic
             {
                 components = new System.ComponentModel.Container();
 
+                int[] arProp = new int[] { 0, 1, 0, 1, 0, 1, -1 }; //отобразить часовые таблицу/гистограмму/панель с оперативными данными
+
+                base.InitializeComponent();
+
                 this.SuspendLayout();
 
                 this.ResumeLayout();
                 this.PerformLayout();
+
+                if (!(m_label == null))
+                    m_label.PerformRestruct(arProp);
+                else
+                    OnEventRestruct(arProp);
             }
 
             #endregion
@@ -289,7 +274,6 @@ namespace Statistic
                     throw new NotImplementedException();
                 }
             }
-
             /// <summary>
             /// constructor
             /// </summary>
@@ -316,6 +300,12 @@ namespace Statistic
             private int initialize()
             {
                 int iRes = 0;
+
+                SPLITTER_PERCENT_VERTICAL = 35;
+
+                m_arPercRows = new int[] { 5, 78 };
+
+                InitializeComponent();
 
                 return iRes;
             }
@@ -401,20 +391,26 @@ namespace Statistic
 
             protected override void createPanelQuickData()
             {
-                throw new NotImplementedException();
+                _pnlQuickData = new PanelQuickDataVzletTDirect();
             }
 
             protected override void createDataGridViewHours()
             {
                 m_dgwHours = new DataGridViewVzletTDirectHours(HDateTime.INTERVAL.HOURS, new HDataGridViewBase.ColumnProperies[]
-                    {
+                    {//??? в сумме ширина = 310, проценты = 98, 
+                        new HDataGridViewBase.ColumnProperies (27, 8, @"Час", @"Hour")
+                        , new HDataGridViewBase.ColumnProperies (47, 18, @"Факт", @"FactHour")
+                        , new HDataGridViewBase.ColumnProperies (47, 18, @"План", @"PBRHour")
+                        , new HDataGridViewBase.ColumnProperies (47, 18, @"Рек.", @"RecHour")
+                        , new HDataGridViewBase.ColumnProperies (47, 18, @"УДГэ", @"UDGeHour")
+                        , new HDataGridViewBase.ColumnProperies (47, 18, @"+/-", @"DeviationHour")
                     }
                 );
             }
 
             protected override void createDataGridViewMins()
             {
-                throw new NotImplementedException();
+                ; // не требуется
             }
 
             protected override void createZedGraphControlHours(object objLock)
@@ -424,12 +420,13 @@ namespace Statistic
 
             protected override void createZedGraphControlMins(object objLock)
             {
-                throw new NotImplementedException();
+                ; // не требуется
             }
 
             protected override HMark enabledSourceData_ToolStripMenuItems()
             {
-                throw new NotImplementedException();
+                ; // не требуется, разнотипные источники данных отсутствуют
+                return new HMark(0);
             }
         }
     }
