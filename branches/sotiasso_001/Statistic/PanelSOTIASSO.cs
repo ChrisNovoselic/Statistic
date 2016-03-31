@@ -5,6 +5,7 @@ using System.Windows.Forms;
 using System.ComponentModel; //IContainer
 using System.Threading; //ManualResetEvent
 using System.Drawing; //Color
+using System.Data;
 
 using ZedGraph;
 
@@ -248,7 +249,7 @@ namespace Statistic
             //Создать, разместить дочерние элементы управления
             initializeComponent();
             //Назначить обработчики события - создание дескриптора панели
-            this.HandleCreated += new EventHandler(OnHandleCreated);
+            //this.HandleCreated += new EventHandler(OnHandleCreated);
             // сообщить дочернему элементу, что дескриптор родительской панели создан
             this.HandleCreated += new EventHandler(m_panelManagement.Parent_OnHandleCreated);
 
@@ -599,6 +600,25 @@ namespace Statistic
                     ;
             }
 
+            /// <summary>
+            /// Заполнение ComboBox данными на основе formChangeMode
+            /// </summary>
+            /// <param name="listGTPNameShr">Таблица с данными из formChangeMode</param>
+            public void InitializeGTPList(DataTable listGTPNameShr)
+            {
+                ComboBox cbxGTP = (this.Controls.Find(KEY_CONTROLS.CB_GTP.ToString(), true))[0] as ComboBox;
+
+                cbxGTP.DataSource = listGTPNameShr;
+                cbxGTP.DisplayMember = "Name";
+                cbxGTP.ValueMember = "ID";
+
+                if (cbxGTP.Items.Count > 0)
+                    cbxGTP.SelectedIndex = 0;
+                else
+                    ;
+            }
+
+
             public void InitializeKoeffAlarmPcur(decimal koeff)
             {
                 System.Windows.Forms.Label lblKoeff =
@@ -686,7 +706,7 @@ namespace Statistic
             /// <param name="ev">Аргумент события</param>
             private void onGTP_SelectionIndexChanged(object obj, EventArgs ev)
             {
-                EvtGTPSelectionIndexChanged(((this.Controls.Find(KEY_CONTROLS.CB_GTP.ToString(), true))[0] as ComboBox).SelectedIndex);
+                EvtGTPSelectionIndexChanged(Convert.ToInt32(((this.Controls.Find(KEY_CONTROLS.CB_GTP.ToString(), true))[0] as ComboBox).SelectedValue));
             }
 
             private void onTG_ItemCheck(object obj, ItemCheckEventArgs ev)
@@ -1196,12 +1216,18 @@ namespace Statistic
             List<string> listGTPNameShr = new List<string>();
             //Сформировать список строк - наименований ГТП
             foreach (TEC t in m_listTEC)
+            {
                 foreach (TECComponent tc in t.list_TECComponents)
+                {
                     if ((tc.m_id > 100) && (tc.m_id < 500))
+                    {
                         //Наименование ТЭЦ + наименование ГТП
                         listGTPNameShr.Add(t.name_shr + @" " + tc.name_shr);
+                    }
                     else
                         ;
+                }
+            }
             //Добавить строки на дочернюю панель
             m_panelManagement.InitializeGTPList(listGTPNameShr);
 
@@ -1212,6 +1238,34 @@ namespace Statistic
             DataGridViewGTP dgvGTP = this.Controls.Find(KEY_CONTROLS.DGV_GTP_VALUE.ToString(), true)[0] as DataGridViewGTP;
             dgvGTP.SelectionChanged += new EventHandler(panelManagement_dgvGTPOnSelectionChanged);
         }
+        /// <summary>
+        /// Обработчик события - создание дескриптора панели
+        /// </summary>
+        /// <param name="obj">Объект, инициировавший событие</param>      
+        public void ChangeMode(object obj)
+        {
+            DataTable table = new DataTable();
+            table.Columns.Add("Name");
+            table.Columns.Add("ID");
+
+            List<FormChangeMode.Item> list_item = (List<FormChangeMode.Item>)obj;
+
+            foreach (FormChangeMode.Item item in list_item)
+            {
+                table.Rows.Add(item.name_shr,item.id);
+            }
+
+            //Добавить строки на дочернюю панель
+            m_panelManagement.InitializeGTPList(table);
+
+            EvtValuesMins += new DelegateObjectFunc(m_panelManagement.Parent_OnEvtValuesMins);
+            EvtValuesSecs += new DelegateObjectFunc(m_panelManagement.Parent_OnEvtValuesSecs);
+            //EvtValuesMins += new DelegateObjectFunc((m_zGraph_GTP as HZEdGraph_GTP).Parent_OnEvtValuesMins); //???отображать значения будем в функции на панели
+
+            DataGridViewGTP dgvGTP = this.Controls.Find(KEY_CONTROLS.DGV_GTP_VALUE.ToString(), true)[0] as DataGridViewGTP;
+            dgvGTP.SelectionChanged += new EventHandler(panelManagement_dgvGTPOnSelectionChanged);
+        }
+
         /// <summary>
         /// Установить значение даты/времени на дочерней панели с активными элементами управления
         /// </summary>
@@ -1304,10 +1358,11 @@ namespace Statistic
                 // не выполнен НИ один успешный запрос к БД_значений
                 ;
         }
+
         /// <summary>
         /// Обработчик события - выбор компонента ТЭЦ (ГТП) на панели с управляющими элементами
         /// </summary>
-        /// <param name="indx"></param>
+        /// <param name="m_id"></param>
         private void panelManagement_OnEvtGTPSelectionIndexChanged(int indx)
         {
             //Передать информацию 'PanelManagement' для заполнения списка ТГ
@@ -1320,6 +1375,7 @@ namespace Statistic
             indxTEC =
             indxGTP =
                 0;
+            #region
             foreach (TEC t in m_listTEC)
             {
                 //В каждой ТЭЦ индекс локальный - обнулить
@@ -1363,47 +1419,105 @@ namespace Statistic
                 //Увеличить индекс ТЭЦ
                 indxTEC++;
             }
-            //Инициализировать значение коэффициента для выполнения условия сигнализации
-            // по мгновенному значению ГТП
-            m_panelManagement.InitializeKoeffAlarmPcur(m_dcGTPKoeffAlarmPcur);
-            //Инициализировать элементами список с наименованиями ТГ            
-            m_panelManagement.InitializeTGList(listTGNameShr);
-            //Очистить список с отмеченными ТГ для отображения
-            m_listIndexTGAdvised.Clear();
-            //Проверить актуальность объекта обработки запросов
-            if (!(m_tecView == null))
-                //Проверить наличие изменений при новом выборе компонента ТЭЦ
-                if ((!(m_tecView.m_indx_TEC == indxTEC))
-                    || (!(m_tecView.indxTECComponents == indxTECComponent)))
-                {//Только, если есть изменения
-                    //Деактивация/останов объекта обработки запросов
-                    m_tecView.Activate(false);
-                    m_tecView.Stop();
 
-                    //m_tecView = null;
+            #endregion
 
-                    //Инициализация объекта обработки запросов еовым компонентом
-                    m_tecView.InitTEC(m_listTEC[indxTEC], indxTECComponent, m_markQueries);
-                    //Запуск/активация объекта обработки запросов
-                    m_tecView.Start();
-                    m_tecView.Activate(true);
+            #region
+            //foreach (TEC t in m_listTEC)
+            //{
+            //    if (t.m_id == indx)
+            //    {
+            //        indxTEC = m_listTEC.IndexOf(t);
+            //        indxTECComponent = -1;
 
-                    //???при 1-й активации некорректно повторный вызов
-                    if (!(m_timerCurrent == null))
-                        ////Вариант №0
-                        //m_timerCurrent.Change(0, System.Threading.Timeout.Infinite);
-                        ////Вариант №1
-                        //m_timerCurrent.Start ();
-                        //Вариант №2
-                        m_tecView.ChangeState();
+            //        DataTable table=new DataTable();
+            //        table.Columns.Add("koeff");
+            //        foreach (TG tg in t.m_listTG)
+            //            listTGNameShr.Add(tg.name_shr);
+            //        foreach (TECComponent tc in t.list_TECComponents)
+            //        {
+            //            if (tc.IsGTP == true)
+            //            {
+            //                table.Rows.Add(tc.m_dcKoeffAlarmPcur);
+            //            }
+            //        }
+
+            //        res:
+            //            for (int b = 0; b < table.Rows.Count-1; b++)
+            //            {
+            //                if(Convert.ToDecimal(table.Rows[b][0])<=Convert.ToDecimal(table.Rows[b+1][0]))
+            //                {
+            //                    table.Rows.RemoveAt(b+1);
+            //                    goto res;
+            //                }
+            //            }
+
+            //        m_dcGTPKoeffAlarmPcur = Convert.ToDecimal(table.Rows[0][0]);
+            //        break;
+            //    }
+            //    else
+            //    {
+            //        foreach (TECComponent tc in t.list_TECComponents)
+            //        {
+            //            if (tc.m_id == indx)
+            //            {
+            //                indxTECComponent = t.list_TECComponents.IndexOf(tc);
+            //                indxTEC = m_listTEC.IndexOf(t);
+
+            //                foreach (TG tg in tc.m_listTG)
+            //                    listTGNameShr.Add(tg.name_shr);
+            //                m_dcGTPKoeffAlarmPcur = tc.m_dcKoeffAlarmPcur;
+            //                break;
+            //            }
+            //        }
+            //    }
+            //}
+            #endregion
+            
+            
+
+                //Инициализировать значение коэффициента для выполнения условия сигнализации
+                // по мгновенному значению ГТП
+                m_panelManagement.InitializeKoeffAlarmPcur(m_dcGTPKoeffAlarmPcur);
+                //Инициализировать элементами список с наименованиями ТГ            
+                m_panelManagement.InitializeTGList(listTGNameShr);
+                //Очистить список с отмеченными ТГ для отображения
+                m_listIndexTGAdvised.Clear();
+                //Проверить актуальность объекта обработки запросов
+                if (!(m_tecView == null))
+                    //Проверить наличие изменений при новом выборе компонента ТЭЦ
+                    if ((!(m_tecView.m_indx_TEC == indxTEC))
+                        || (!(m_tecView.indxTECComponents == indxTECComponent)))
+                    {//Только, если есть изменения
+                        //Деактивация/останов объекта обработки запросов
+                        m_tecView.Activate(false);
+                        m_tecView.Stop();
+
+                        //m_tecView = null;
+
+                        //Инициализация объекта обработки запросов еовым компонентом
+                        m_tecView.InitTEC(m_listTEC[indxTEC], indxTECComponent, m_markQueries);
+                        //Запуск/активация объекта обработки запросов
+                        m_tecView.Start();
+                        m_tecView.Activate(true);
+
+                        //???при 1-й активации некорректно повторный вызов
+                        if (!(m_timerCurrent == null))
+                            ////Вариант №0
+                            //m_timerCurrent.Change(0, System.Threading.Timeout.Infinite);
+                            ////Вариант №1
+                            //m_timerCurrent.Start ();
+                            //Вариант №2
+                            m_tecView.ChangeState();
+                        else
+                            ;
+                    }
                     else
                         ;
-                }
                 else
                     ;
-            else
-                ;
         }
+
         /// <summary>
         /// Обработчик события выбора ТГ в списке ТЭЦ-ТГ
         /// </summary>

@@ -14,6 +14,7 @@ namespace StatisticCommon
     {
         public event DelegateFunc EventMenuItemsClear;
         public event DelegateStringFunc EventMenuItemAdd;
+        public event DelegateObjectFunc EventChangeMode;
 
         public event DelegateFunc ev_сменитьРежим;
         /// <summary>
@@ -37,6 +38,7 @@ namespace StatisticCommon
 
         public List<TEC> m_list_tec;
         public List<Item> m_listItems;
+        private List<Item> m_list_change_items;
         /// <summary>
         /// Список элементов-перключателей для выбора типа режима
         ///  (фильтр для отображения компонентов ТЭЦ)
@@ -101,6 +103,7 @@ namespace StatisticCommon
 
             m_markTabAdminChecked = new HMark (0);
             m_listItems = new List<Item>();
+            m_list_change_items = new List<Item>();
 
             if (! (m_list_tec == null))
             {
@@ -315,7 +318,41 @@ namespace StatisticCommon
                     {
                         clbMode.Items.Add(item.name_shr);
                         //Контекстное меню - главная форма
-                        if (!(m_MainFormContextMenuStripListTecViews == null)) m_MainFormContextMenuStripListTecViews.Items.Add(item.name_shr); else ;
+                        if (!(m_MainFormContextMenuStripListTecViews == null))
+                        {
+                            m_MainFormContextMenuStripListTecViews.Items.Add(item.name_shr);
+                            if ((item.id >= (int)TECComponent.ID.GTP_LK & item.id < (int)TECComponent.ID.PC) || (item.id >= (int)TECComponent.ID.LK & item.id < (int)TECComponent.ID.GTP))
+                            {
+                            }
+                            else
+                            {
+                                foreach (TEC t in m_list_tec)
+                                {
+                                    if(t.m_id==item.id)
+                                        m_list_change_items.Add(item);
+                                    else
+                                        foreach (TECComponent tc in t.list_TECComponents)
+                                        {
+                                            if (tc.m_id == item.id)
+                                                if (tc.tec.m_id >= (int)TECComponent.ID.LK & tc.tec.m_id < (int)TECComponent.ID.GTP)
+                                                {
+                                                }
+                                                else
+                                                {
+                                                    if (tc.IsGTP == true)
+                                                    {
+                                                        m_list_change_items.Add(item);
+                                                    }
+                                                    if (tc.IsPC == true)
+                                                    {
+                                                        m_list_change_items.Add(item);
+                                                    }
+                                                }
+                                        }
+                                }
+                            }
+                        }
+                        else ;
                         if (!(EventMenuItemAdd == null)) EventMenuItemAdd(item.id + @";" + item.name_shr);
 
                         clbMode.SetItemChecked(clbMode.Items.Count - 1, item.bChecked);
@@ -333,7 +370,11 @@ namespace StatisticCommon
         private void FillListBoxTab()
         {
             //Контекстное меню - главная форма
-            if (! (m_MainFormContextMenuStripListTecViews == null)) m_MainFormContextMenuStripListTecViews.Items.Clear(); else ;
+            if (!(m_MainFormContextMenuStripListTecViews == null))
+            {
+                m_MainFormContextMenuStripListTecViews.Items.Clear();
+            }
+            else ;
             //Контекстное меню - главная форма
             if (!(EventMenuItemsClear == null)) EventMenuItemsClear(); else ;
             
@@ -651,10 +692,21 @@ namespace StatisticCommon
 
         private void checkBox_CheckedChanged(object sender, EventArgs e)
         {
+            m_list_change_items.Clear();
             //m_modeTECComponent.Marked (m_listCheckBoxTECComponent.IndexOf ((CheckBox)sender));
             m_modeTECComponent.Set(m_listCheckBoxTECComponent.IndexOf((CheckBox)sender), ((CheckBox)sender).Checked);
 
             FillListBoxTab();
+
+            CallEventChangeMode();
+        }
+
+        public void CallEventChangeMode()
+        {
+            if (EventChangeMode != null)
+            {
+                EventChangeMode(m_list_change_items);
+            }
         }
 
         public string getIdsOfCheckedIndicies ()
