@@ -608,14 +608,18 @@ namespace Statistic
             {
                 ComboBox cbxGTP = (this.Controls.Find(KEY_CONTROLS.CB_GTP.ToString(), true))[0] as ComboBox;
 
-                cbxGTP.DataSource = listGTPNameShr;
+                BindingSource bs = new BindingSource();
+                bs.DataSource = listGTPNameShr;
+                cbxGTP.DataSource = bs.DataSource;
                 cbxGTP.DisplayMember = "Name";
                 cbxGTP.ValueMember = "ID";
+                cbxGTP.BindingContext = new BindingContext();
 
                 if (cbxGTP.Items.Count > 0)
+                {
                     cbxGTP.SelectedIndex = 0;
-                else
-                    ;
+                    onGTP_SelectionIndexChanged(cbxGTP, new EventArgs());
+                }
             }
 
 
@@ -1376,102 +1380,109 @@ namespace Statistic
             indxGTP =
                 0;
             #region
-            foreach (TEC t in m_listTEC)
-            {
-                //В каждой ТЭЦ индекс локальный - обнулить
-                indxTECComponent = 0;
-                //Цикл для поиска выбранного пользователем компонента ТЭЦ (ГТП)
-                // заполнения списка наименований подчиненных (ТГ) элементов
-                foreach (TECComponent tc in t.list_TECComponents)
-                {
-                    //Определить тип компонента (по диапазону идентификатора)
-                    if (tc.IsGTP == true)
-                    {//Только ГТП
-                        if (indxGTP == indx)
-                        {
-                            foreach (TG tg in tc.m_listTG)
-                                listTGNameShr.Add(/*tc.name_shr + @" " + */tg.name_shr);
+            //foreach (TEC t in m_listTEC)
+            //{
+            //    //В каждой ТЭЦ индекс локальный - обнулить
+            //    indxTECComponent = 0;
+            //    //Цикл для поиска выбранного пользователем компонента ТЭЦ (ГТП)
+            //    // заполнения списка наименований подчиненных (ТГ) элементов
+            //    foreach (TECComponent tc in t.list_TECComponents)
+            //    {
+            //        //Определить тип компонента (по диапазону идентификатора)
+            //        if (tc.IsGTP == true)
+            //        {//Только ГТП
+            //            if (indxGTP == indx)
+            //            {
+            //                foreach (TG tg in tc.m_listTG)
+            //                    listTGNameShr.Add(/*tc.name_shr + @" " + */tg.name_shr);
 
-                            m_dcGTPKoeffAlarmPcur = tc.m_dcKoeffAlarmPcur;
-                            indxGTP = -1; //Признак завершения внешнего цикла
-                            break;
-                        }
-                        else
-                            ;
-                        //Увеличить индекс ГТП сквозной
-                        indxGTP++;
-                    }
-                    else
-                        ; // не ГТП
+            //                m_dcGTPKoeffAlarmPcur = tc.m_dcKoeffAlarmPcur;
+            //                indxGTP = -1; //Признак завершения внешнего цикла
+            //                break;
+            //            }
+            //            else
+            //                ;
+            //            //Увеличить индекс ГТП сквозной
+            //            indxGTP++;
+            //        }
+            //        else
+            //            ; // не ГТП
 
-                    //Увеличить индекс компонента ТЭЦ локальный
-                    indxTECComponent++;
-                }
-                //Проверить признак прекращения выполнения цикла
-                if (indxGTP < 0)
-                {
-                    indxGTP = indx; //Возвратить найденное значение
-                    // прекратить выполнение цикла
-                    break;
-                }
-                else
-                    ;
-                //Увеличить индекс ТЭЦ
-                indxTEC++;
-            }
+            //        //Увеличить индекс компонента ТЭЦ локальный
+            //        indxTECComponent++;
+            //    }
+            //    //Проверить признак прекращения выполнения цикла
+            //    if (indxGTP < 0)
+            //    {
+            //        indxGTP = indx; //Возвратить найденное значение
+            //        // прекратить выполнение цикла
+            //        break;
+            //    }
+            //    else
+            //        ;
+            //    //Увеличить индекс ТЭЦ
+            //    indxTEC++;
+            //}
 
             #endregion
 
             #region
-            //foreach (TEC t in m_listTEC)
-            //{
-            //    if (t.m_id == indx)
-            //    {
-            //        indxTEC = m_listTEC.IndexOf(t);
-            //        indxTECComponent = -1;
+            foreach (TEC t in m_listTEC)
+            {
+                if(t.m_listTG==null)
+                    t.InitSensorsTEC();
+                if (t.m_id == indx)
+                {
+                    indxTEC = m_listTEC.IndexOf(t);
+                    indxTECComponent = -1;
 
-            //        DataTable table=new DataTable();
-            //        table.Columns.Add("koeff");
-            //        foreach (TG tg in t.m_listTG)
-            //            listTGNameShr.Add(tg.name_shr);
-            //        foreach (TECComponent tc in t.list_TECComponents)
-            //        {
-            //            if (tc.IsGTP == true)
-            //            {
-            //                table.Rows.Add(tc.m_dcKoeffAlarmPcur);
-            //            }
-            //        }
+                    DataTable table = new DataTable();
+                    table.Columns.Add("koeff");
+                    foreach (TG tg in t.m_listTG)
+                        listTGNameShr.Add(tg.name_shr);
+                    foreach (TECComponent tc in t.list_TECComponents)
+                    {
+                        if (tc.IsGTP == true)
+                        {
+                            table.Rows.Add(tc.m_dcKoeffAlarmPcur);
+                        }
+                    }
 
-            //        res:
-            //            for (int b = 0; b < table.Rows.Count-1; b++)
-            //            {
-            //                if(Convert.ToDecimal(table.Rows[b][0])<=Convert.ToDecimal(table.Rows[b+1][0]))
-            //                {
-            //                    table.Rows.RemoveAt(b+1);
-            //                    goto res;
-            //                }
-            //            }
+                res:
+                    for (int b = 0; b < table.Rows.Count - 1; b++)
+                    {
+                        if (Convert.ToDecimal(table.Rows[b][0]) <= Convert.ToDecimal(table.Rows[b + 1][0]))
+                        {
+                            table.Rows.RemoveAt(b + 1);
+                            goto res;
+                        }
+                        else
+                        {
+                            table.Rows.RemoveAt(b);
+                            goto res;
+                        }
+                    }
 
-            //        m_dcGTPKoeffAlarmPcur = Convert.ToDecimal(table.Rows[0][0]);
-            //        break;
-            //    }
-            //    else
-            //    {
-            //        foreach (TECComponent tc in t.list_TECComponents)
-            //        {
-            //            if (tc.m_id == indx)
-            //            {
-            //                indxTECComponent = t.list_TECComponents.IndexOf(tc);
-            //                indxTEC = m_listTEC.IndexOf(t);
+                    m_dcGTPKoeffAlarmPcur = Convert.ToDecimal(table.Rows[0][0]);
+                    break;
+                }
+                else
+                {
+                    foreach (TECComponent tc in t.list_TECComponents)
+                    {
+                        if (tc.m_id == indx)
+                        {
+                            indxTECComponent = t.list_TECComponents.IndexOf(tc);
+                            indxTEC = m_listTEC.IndexOf(t);
 
-            //                foreach (TG tg in tc.m_listTG)
-            //                    listTGNameShr.Add(tg.name_shr);
-            //                m_dcGTPKoeffAlarmPcur = tc.m_dcKoeffAlarmPcur;
-            //                break;
-            //            }
-            //        }
-            //    }
-            //}
+                            foreach (TG tg in tc.m_listTG)
+                                listTGNameShr.Add(tg.name_shr);
+                            m_dcGTPKoeffAlarmPcur = tc.m_dcKoeffAlarmPcur;
+                            break;
+                        }
+                    }
+                }
+            }
             #endregion
             
             
@@ -1494,9 +1505,12 @@ namespace Statistic
                         m_tecView.Stop();
 
                         //m_tecView = null;
-
-                        //Инициализация объекта обработки запросов еовым компонентом
                         m_tecView.InitTEC(m_listTEC[indxTEC], indxTECComponent, m_markQueries);
+                        //Инициализация объекта обработки запросов еовым компонентом
+                        if (indxTECComponent == -1)
+                        {
+                            m_tecView.InitializeTECTG();
+                        }
                         //Запуск/активация объекта обработки запросов
                         m_tecView.Start();
                         m_tecView.Activate(true);
