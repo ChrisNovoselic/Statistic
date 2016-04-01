@@ -301,7 +301,6 @@ namespace StatisticTrans
             this.m_lblDateMessage.Size = new System.Drawing.Size(166, 17);
             // m_lblDescError
             this.m_lblDescMessage.Size = new System.Drawing.Size(463, 17);
-
             notifyIconMain.Click += new EventHandler(notifyIconMain_Click);
 
             //this.Deactivate += new EventHandler(FormMainTrans_Deactivate);
@@ -346,7 +345,7 @@ namespace StatisticTrans
                 else
                 {
                     enabledUIControl(true);
-
+                }
                     if (m_modeMashine == MODE_MASHINE.SERVICE)
                     {
                         this.WindowState = FormWindowState.Minimized;
@@ -355,7 +354,13 @@ namespace StatisticTrans
                     }
                     else
                         ;
-                }
+                    if (m_modeMashine == MODE_MASHINE.INTERACTIVE)
+                    {
+                        this.WindowState = FormWindowState.Minimized;
+                        this.ShowInTaskbar = false;
+                        this.notifyIconMain.Visible = true;
+                    }
+                
         }
 
         /// <summary>
