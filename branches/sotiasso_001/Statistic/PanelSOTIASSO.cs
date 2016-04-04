@@ -1472,13 +1472,55 @@ namespace Statistic
                     {
                         if (tc.m_id == indx)
                         {
-                            indxTECComponent = t.list_TECComponents.IndexOf(tc);
-                            indxTEC = m_listTEC.IndexOf(t);
+                            if (tc.IsGTP == true)
+                            {
+                                indxTECComponent = t.list_TECComponents.IndexOf(tc);
+                                indxTEC = m_listTEC.IndexOf(t);
 
-                            foreach (TG tg in tc.m_listTG)
-                                listTGNameShr.Add(tg.name_shr);
-                            m_dcGTPKoeffAlarmPcur = tc.m_dcKoeffAlarmPcur;
-                            break;
+                                foreach (TG tg in tc.m_listTG)
+                                    listTGNameShr.Add(tg.name_shr);
+                                m_dcGTPKoeffAlarmPcur = tc.m_dcKoeffAlarmPcur;
+                                break;
+                            }
+                            else
+                            {
+                                if (tc.IsPC == true)
+                                {
+                                    indxTECComponent = t.list_TECComponents.IndexOf(tc);
+                                    indxTEC = m_listTEC.IndexOf(t);
+
+                                    foreach (TG tg in tc.m_listTG)
+                                        listTGNameShr.Add(tg.name_shr);
+
+                                    DataTable table = new DataTable();
+                                    table.Columns.Add("koeff");
+
+                                    foreach (TECComponent tcc in t.list_TECComponents)
+                                    {
+                                        if (tcc.IsGTP == true && tcc.tec.m_id == tc.tec.m_id)
+                                        {
+                                            table.Rows.Add(tcc.m_dcKoeffAlarmPcur);
+                                        }
+                                    }
+
+                                res:
+                                    for (int b = 0; b < table.Rows.Count - 1; b++)
+                                    {
+                                        if (Convert.ToDecimal(table.Rows[b][0]) <= Convert.ToDecimal(table.Rows[b + 1][0]))
+                                        {
+                                            table.Rows.RemoveAt(b + 1);
+                                            goto res;
+                                        }
+                                        else
+                                        {
+                                            table.Rows.RemoveAt(b);
+                                            goto res;
+                                        }
+                                    }
+
+                                    break;
+                                }
+                            }
                         }
                     }
                 }
