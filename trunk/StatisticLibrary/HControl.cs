@@ -372,6 +372,7 @@ namespace StatisticCommon
 
 
         List<string> m_open_node = new List<string>();
+        string selected_user = string.Empty;
 
         #endregion
 
@@ -400,6 +401,8 @@ namespace StatisticCommon
             добавитьРольToolStripMenuItem.Name = "добавитьРольToolStripMenuItem";
             добавитьРольToolStripMenuItem.Text = "Добавить роль";
             #endregion
+
+            this.HideSelection = false;
         }
 
         public TreeView_Users()
@@ -447,6 +450,10 @@ namespace StatisticCommon
         {
             if (set_check == false)
             {
+                if (this.SelectedNode != null)
+                {
+                    selected_user = this.SelectedNode.Text;
+                }
                 foreach (TreeNode n in node)
                 {
                     if (n.IsExpanded == true)
@@ -469,6 +476,11 @@ namespace StatisticCommon
                         i++;
                         if (n.FirstNode != null)
                             checked_node(n.Nodes,i,true);
+                    }
+
+                    if (n.Text == selected_user)
+                    {
+                        this.SelectedNode = n;
                     }
                 }
             }
@@ -498,13 +510,13 @@ namespace StatisticCommon
 
             checked_node(this.Nodes, 0, true);
 
-            foreach (TreeNode n in this.Nodes)
-            {
-                if (n.IsExpanded == true)
-                {
-                    this.SelectedNode = n;
-                }
-            }
+            //foreach (TreeNode n in this.Nodes)
+            //{
+            //    if (n.IsExpanded == true)
+            //    {
+            //        this.SelectedNode = n;
+            //    }
+            //}
         }
 
         /// <summary>

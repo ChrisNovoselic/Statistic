@@ -309,7 +309,7 @@ namespace Statistic
 
             protected Dictionary<int, System.Windows.Forms.Label[]> m_tgLabels;
             protected Dictionary<int, System.Windows.Forms.ToolTip[]> m_tgToolTips;
-
+            
             public HPanelQuickData ()
             {
                 InitializeComponent ();
@@ -376,6 +376,7 @@ namespace Statistic
                 //this.PerformLayout();
 
                 m_tgLabels = new Dictionary<int, System.Windows.Forms.Label[]>();
+                m_tgToolTips = new Dictionary<int, ToolTip[]>();
             }
 
             //public void addTGView(ref string name_shr, /*ref float val,*/ ref int positionXName, ref int positionYName, ref int positionXValue, ref int positionYValue)
@@ -383,6 +384,7 @@ namespace Statistic
             {
                 int cnt = -1;
                 m_tgLabels.Add(tg.m_id, new Label[(int)TG.INDEX_VALUE.COUNT_INDEX_VALUE]);
+                m_tgToolTips.Add(tg.m_id, new ToolTip[(int)TG.INDEX_VALUE.COUNT_INDEX_VALUE]);
                 cnt = m_tgLabels.Count;
 
                 m_tgLabels[tg.m_id][(int)TG.INDEX_VALUE.LABEL_DESC] = HLabel.createLabel(tg.name_shr,
@@ -398,11 +400,14 @@ namespace Statistic
                 hlblValue.m_type = HLabel.TYPE_HLABEL.TG;
                 //m_tgToolTips[tg.m_id][(int)TG.INDEX_VALUE.FACT].SetToolTip(hlblValue, tg.name_shr + @"[" + tg.m_SensorsStrings_ASKUE[0] + @"]: " + (tg.m_TurnOnOff == TG.INDEX_TURNOnOff.ON ? @"вкл." : @"выкл."));
                 m_tgLabels[tg.m_id][(int)TG.INDEX_VALUE.FACT] = (Label)hlblValue;
+                m_tgToolTips[tg.m_id][(int)TG.INDEX_VALUE.FACT] = new ToolTip();
 
                 hlblValue = new HLabel(new HLabelStyles(new Point(-1, -1), new Size(-1, -1), Color.Green, Color.Black, 13F, ContentAlignment.MiddleCenter));
                 hlblValue.Text = @"---.--"; //name_shr + @"_TM";
                 hlblValue.m_type = HLabel.TYPE_HLABEL.TG;
                 m_tgLabels[tg.m_id][(int)TG.INDEX_VALUE.TM] = (Label)hlblValue;
+
+                m_tgToolTips[tg.m_id][(int)TG.INDEX_VALUE.TM] = new ToolTip();
             }
 
             protected void createLabel(int indx, string strLabelText, Color clrLabelFore, Color clrLabelBackground, float fSzLabelFont, ContentAlignment alignLabel)
@@ -536,6 +541,7 @@ namespace Statistic
                 else
                     lbl.Text = 0.ToString("F0");
             }
+
             /// <summary>
             /// Возвратить цвет для отображения фактических значений
             /// </summary>
@@ -1053,10 +1059,11 @@ namespace Statistic
                                                 , m_parent.m_tecView.m_dictValuesTG[tg.m_id].m_powerCurrent_TM
                                                 , m_parent.m_tecView.m_dictValuesTG[tg.m_id].m_dtCurrent_TM
                                                 , m_parent.m_tecView.serverTime
+                                                ,m_tgToolTips[tg.m_id][(int)TG.INDEX_VALUE.TM]
                                                 , ref val);
             }
 
-            private void showTMValue(ref Label lbl, string tg_kksname, double tg_val_fact, double tg_val, DateTime dt_val, DateTime dt_srv, ref double val)
+            private void showTMValue(ref Label lbl, string tg_kksname, double tg_val_fact, double tg_val, DateTime dt_val, DateTime dt_srv, ToolTip toolTip, ref double val)
             {
                 string text = string.Empty
                     , textNotValue = @"---";
@@ -1115,6 +1122,7 @@ namespace Statistic
                         lbl.ForeColor = Color.Green;
 
                 lbl.Text = text;
+                toolTip.SetToolTip(lbl, dt_val.ToString("dd.MM.yyyy HH:mm:ss"));
             }
 
             /// <summary>

@@ -7,6 +7,8 @@ using System.Data;
 
 using HClassLibrary;
 
+using GemBox.Spreadsheet;
+
 namespace StatisticCommon
 {
     public class AdminTS_KomDisp : AdminTS
@@ -95,55 +97,44 @@ namespace StatisticCommon
             {
                 if (File.Exists(m_fullPathCSVValues) == true)
                 {
-                    //strCSVNameFileTemp = strPPBRCSVNameFile;
                     string strCSVNameFileTemp = Path.GetFileNameWithoutExtension(m_fullPathCSVValues);
 
-                    //strCSVNameFileTemp = strCSVNameFileTemp.Replace("(", string.Empty);
-                    //strCSVNameFileTemp = strCSVNameFileTemp.Replace(")", string.Empty);
-                    //strCSVNameFileTemp = strCSVNameFileTemp.Replace(".", string.Empty);
-                    //strCSVNameFileTemp = strCSVNameFileTemp.Replace(" ", string.Empty);
-                    //strCSVNameFileTemp = Path.GetDirectoryName(m_fullPathCSVValues) + @"\" +
-                    //                        strCSVNameFileTemp + @"_копия" +
-                    //                        Path.GetExtension(m_fullPathCSVValues);
-
-                    ////при аргументе = каталог размещения наборов
-                    //strPPBRCSVNameFile = m_PPBRCSVDirectory + strPPBRCSVNameFile + strCSVExt;
-                    //strCSVNameFileTemp = m_PPBRCSVDirectory + strCSVNameFileTemp + strCSVExt;
-
-                    //File.Copy(strPPBRCSVNameFile, strCSVNameFileTemp, true);
-                    //File.Copy(m_fullPathCSVValues, strCSVNameFileTemp, true);
-
-                    ////Для en-US заменить разделитель ',' в CSV-файле на '.'
-                    //StreamReader sr = new StreamReader(strCSVNameFileTemp, System.Text.Encoding.Default);
-                    //string cont = sr.ReadToEnd().Replace(',', '.');
-                    //sr.Close(); sr.Dispose();
-                    //StreamWriter sw = new StreamWriter(strCSVNameFileTemp);
-                    //sw.Write(cont); sw.Flush(); sw.Close(); sw.Dispose();
-
-                    //if (!(m_tableValuesResponse == null)) m_tableValuesResponse.Clear(); else ;
-
                     if ((IsCanUseTECComponents() == true) && (strCSVNameFileTemp.Length > 0))
-                        //m_tableValuesResponse = DbTSQLInterface.Select(@"CSV_DATASOURCE=" + Path.GetDirectoryName(strCSVNameFileTemp),
-                        //                                                        @"SELECT * FROM ["
-                        //                                                        //+ @"Sheet1$"
-                        //                                                        + Path.GetFileName (strCSVNameFileTemp)
-                        //                                                        + @"]"
-                        //                                                        //+ @" WHERE GTP_ID='" +
-                        //                                                        //allTECComponents[indxTECComponents].name_future +
-                        //                                                        //@"'"
-                        //                                                        , out err);
-                        m_tableValuesResponse = DbTSQLInterface.CSVImport(/*Path.GetDirectoryName(strCSVNameFileTemp)
-                                                                            + @"\" + Path.GetFileName(strCSVNameFileTemp)*/m_fullPathCSVValues
-                                                                            , @"*"
-                                                                            , out err);
+                    {
+                        //m_tableValuesResponse = DbTSQLInterface.CSVImport(m_fullPathCSVValues
+                        //                                                    , @"*"
+                        //                                                    , out err);
+
+                        ExcelFile excel = new ExcelFile();
+                        excel.LoadCsv(m_fullPathCSVValues, ';');
+                        ExcelWorksheet w = excel.Worksheets[0];
+                        m_tableValuesResponse = new DataTable();
+                        foreach (ExcelRow r in w.Rows)
+                        {
+                            if (r.Index != 0)
+                            {
+                                m_tableValuesResponse.Rows.Add(new object[] { r.Cells[0].Value, r.Cells[1].Value, r.Cells[2].Value, r.Cells[3].Value, r.Cells[4].Value, r.Cells[5].Value, r.Cells[6].Value });
+                                for (int i = 1; i < 24; i++)
+                                {
+                                    m_tableValuesResponse.Rows.Add(new object[] { r.Cells[0].Value, r.Cells[1].Value, i, r.Cells[3].Value, r.Cells[4].Value, r.Cells[5].Value, r.Cells[6].Value });
+                                }
+                            }
+                            else
+                            {
+                                foreach (ExcelCell c in r.Cells)
+                                {
+                                    if (c.Value != null && c.Value.ToString() != "")
+                                    {
+                                        m_tableValuesResponse.Columns.Add(c.Value.ToString());
+                                    }
+                                }
+                            }
+                        }
+                        err = 0;
+
+                    }
                     else
                         ;
-
-                    //Logging.Logg ().LogLock ();
-                    //Logging.Logg().Send("Admin.cs - GetPPBRCSVValuesRequest () - ...", false, false, false);
-                    //Logging.Logg().LogUnlock();
-
-                    //File.Delete(strCSVNameFileTemp);
                 }
                 else
                     err = -2; //Файл не существует (очень НЕвероятно, т.к. выбран с помощью диалогового окна)

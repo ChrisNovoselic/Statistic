@@ -2579,6 +2579,8 @@ namespace Statistic
             {
                 m_dictAddingTabs[(int)ID_ADDING_TAB.SOTIASSO].panel = new PanelSOTIASSO(PanelKomDisp.m_list_tec);
                 m_dictAddingTabs[(int)ID_ADDING_TAB.SOTIASSO].panel.SetDelegateReport(ErrorReport, WarningReport, ActionReport, ReportClear);
+                formChangeMode.EventChangeMode += ((PanelSOTIASSO)(m_dictAddingTabs[(int)ID_ADDING_TAB.SOTIASSO].panel)).ChangeMode;
+                formChangeMode.CallEventChangeMode();
             }
             else
                 ;
