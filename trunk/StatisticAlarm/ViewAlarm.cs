@@ -1037,7 +1037,7 @@ namespace StatisticAlarm
             m_dictAlarmObject.Fixed ((int)r[@"ID_COMPONENT"], (DateTime)r[@"DATETIME_REGISTRED"], (DateTime)r[@"DATETIME_FIXED"]);
             //ѕроверить признак автоматической фиксации
             if (!(itemQueue.m_dataHostRecieved == null))
-                itemQueue.m_dataHostRecieved.OnEvtDataRecievedHost(new EventArgsDataHost(-1, new object[] { StatesMachine.Fixed, (long)r[@"ID"], (DateTime)r[@"DATETIME_FIXED"] }));
+                itemQueue.m_dataHostRecieved.OnEvtDataRecievedHost(new EventArgsDataHost(-1, -1, new object[] { StatesMachine.Fixed, (long)r[@"ID"], (DateTime)r[@"DATETIME_FIXED"] }));
             else
                 ;
         }
@@ -1048,7 +1048,7 @@ namespace StatisticAlarm
             m_dictAlarmObject.Confirmed((int)r[@"ID_COMPONENT"], (DateTime)r[@"DATETIME_REGISTRED"], (DateTime)r[@"DATETIME_CONFIRM"]);
             //ѕроверить признак автоматического подтверждени€
             if (!(itemQueue.m_dataHostRecieved == null))
-                itemQueue.m_dataHostRecieved.OnEvtDataRecievedHost(new EventArgsDataHost(-1, new object[] { StatesMachine.Confirm, (long)r[@"ID"], (DateTime)r[@"DATETIME_CONFIRM"] }));
+                itemQueue.m_dataHostRecieved.OnEvtDataRecievedHost(new EventArgsDataHost(-1, -1, new object[] { StatesMachine.Confirm, (long)r[@"ID"], (DateTime)r[@"DATETIME_CONFIRM"] }));
             else
                 ;
         }

@@ -108,7 +108,7 @@ namespace StatisticTimeSync
             {
                 try
                 {
-                    EvtAskedData(new EventArgsDataHost((int)ID_ASKED_DATAHOST.CONN_SETT, new object[] { this }));
+                    EvtAskedData(new EventArgsDataHost(-1, (int)ID_ASKED_DATAHOST.CONN_SETT, new object[] { this }));
                 }
                 catch (Exception e)
                 {
@@ -153,7 +153,7 @@ namespace StatisticTimeSync
             /// <param name="ev"></param>
             public void OnEvtDataRecievedHost(EventArgsDataHost ev)
             {
-                switch (ev.id)
+                switch (ev.id_detail)
                 {
                     case (int)ID_ASKED_DATAHOST.CONN_SETT:
                         //Установить соедиение
@@ -628,7 +628,7 @@ namespace StatisticTimeSync
 
             try
             {
-                switch (((EventArgsDataHost)ev).id)
+                switch (((EventArgsDataHost)ev).id_detail)
                 {
                     case (int)PanelGetDate.ID_ASKED_DATAHOST.CONN_SETT:
                         iListenerId = DbSources.Sources().Register(FormMain.s_listFormConnectionSettings[(int)CONN_SETT_TYPE.CONFIG_DB].getConnSett(), false, @"CONFIG_DB");
@@ -636,7 +636,7 @@ namespace StatisticTimeSync
                         id = Int32.Parse(m_tableSourceData.Select(@"NAME_SHR = '" + nameShrSourceData + @"'")[0][@"ID"].ToString());
                         rowConnSett = ConnectionSettingsSource.GetConnectionSettings(/*TYPE_DATABASE_CFG.CFG_200,*/ iListenerId, id, 501, out err).Rows[0];
                         ConnectionSettings connSett = new ConnectionSettings(rowConnSett, -1);
-                        ((PanelGetDate)((EventArgsDataHost)ev).par[0]).OnEvtDataRecievedHost(new EventArgsDataHost(((EventArgsDataHost)ev).id, new object[] { connSett }));
+                        ((PanelGetDate)((EventArgsDataHost)ev).par[0]).OnEvtDataRecievedHost(new EventArgsDataHost(-1, ((EventArgsDataHost)ev).id_detail, new object[] { connSett }));
                         DbSources.Sources().UnRegister(iListenerId);
                         break;
                     default:
