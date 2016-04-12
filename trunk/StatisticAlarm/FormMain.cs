@@ -32,11 +32,66 @@ namespace StatisticAlarm
         /// </summary>
         public FormMain()
         {
-            using (HCmd_Arg cmdArg = new HCmd_Arg(Environment.GetCommandLineArgs())) ;
+            using (handlerCmd cmdArg = new handlerCmd(Environment.GetCommandLineArgs()));
             //Установить состояние ("загружается")
             _state = 1;
 
             InitializeComponent();
+
+            if (handlerCmd.s_bMinimize)
+            {
+                Message msgWProc = new Message();
+                msgWProc.Msg = 0x112;
+                msgWProc.WParam = (IntPtr)(0xF020);
+                WndProc(ref msgWProc);
+            }
+            else
+                ;
+        }
+        /// <summary>
+        /// Класс обработки "своих" команд
+        /// </summary>
+        private class handlerCmd : HCmd_Arg
+        {
+            public static bool s_bMinimize = false;
+            /// <summary>
+            /// Конструктор - основной (с параметрами)
+            /// </summary>
+            /// <param name="args">Массив аргументов командной строки</param>
+            public handlerCmd(string[] args)
+                : base(args)
+            { RunCmd(); }
+
+
+            /// <summary>
+            /// обработка "своих" команд
+            /// </summary>
+            /// <param name="command"></param>
+            private void RunCmd()
+            {
+                string strArgMinimize = "minimize";
+
+                s_bMinimize = (cmd.Equals (strArgMinimize) == true); //|| (param.Equals (strArgMinimize) == true);
+            }
+        }
+        // Перехват нажатия на кнопку свернуть
+        protected override void WndProc(ref Message m)
+        {
+            if (m.Msg == 0x112)
+            {
+                if (m.WParam.ToInt32() == 0xF020)
+                {
+                    this.WindowState = FormWindowState.Minimized;
+                    this.ShowInTaskbar = false;
+                    this.notifyIconMain.Visible = true;
+
+                    return;
+                }
+            }
+            else
+                ;
+
+            base.WndProc(ref m);
         }
         /// <summary>
         /// Обработчик события - загрузка формы завершена
@@ -67,8 +122,8 @@ namespace StatisticAlarm
                 Abort(msg, bAbort);
             else
             {
-                //Продолжить выполнение приложения
-                this.Activate();
+                ////Продолжить выполнение приложения
+                //this.Activate();
             }
         }
         /// <summary>
