@@ -710,7 +710,9 @@ namespace Statistic
             /// <param name="ev">Аргумент события</param>
             private void onGTP_SelectionIndexChanged(object obj, EventArgs ev)
             {
-                EvtGTPSelectionIndexChanged(Convert.ToInt32(((this.Controls.Find(KEY_CONTROLS.CB_GTP.ToString(), true))[0] as ComboBox).SelectedValue));
+                if(this.Actived==true)
+                    EvtGTPSelectionIndexChanged(Convert.ToInt32(((this.Controls.Find(KEY_CONTROLS.CB_GTP.ToString(), true))[0] as ComboBox).SelectedValue));
+
             }
 
             private void onTG_ItemCheck(object obj, ItemCheckEventArgs ev)
@@ -1527,8 +1529,6 @@ namespace Statistic
             }
             #endregion
             
-            
-
                 //Инициализировать значение коэффициента для выполнения условия сигнализации
                 // по мгновенному значению ГТП
                 m_panelManagement.InitializeKoeffAlarmPcur(m_dcGTPKoeffAlarmPcur);
@@ -1543,8 +1543,8 @@ namespace Statistic
                         || (!(m_tecView.indxTECComponents == indxTECComponent)))
                     {//Только, если есть изменения
                         //Деактивация/останов объекта обработки запросов
-                        m_tecView.Activate(false);
-                        m_tecView.Stop();
+                            m_tecView.Activate(false);
+                            m_tecView.Stop();
 
                         //m_tecView = null;
                         m_tecView.InitTEC(m_listTEC[indxTEC], indxTECComponent, m_markQueries);
@@ -1554,9 +1554,8 @@ namespace Statistic
                             m_tecView.InitializeTECTG();
                         }
                         //Запуск/активация объекта обработки запросов
-                        m_tecView.Start();
-                        m_tecView.Activate(true);
-
+                            m_tecView.Start();
+                            m_tecView.Activate(true);
                         //???при 1-й активации некорректно повторный вызов
                         if (!(m_timerCurrent == null))
                             ////Вариант №0
