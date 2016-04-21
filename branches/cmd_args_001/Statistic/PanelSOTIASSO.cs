@@ -175,6 +175,7 @@ namespace Statistic
         ZedGraph.ZedGraphControl m_zGraph_GTP
             , m_zGraph_TG;
         private List<StatisticCommon.TEC> m_listTEC;
+        private List<TECComponentBase> m_TG_Comp;
 
         private ManualResetEvent m_evTimerCurrent;
         private
@@ -614,12 +615,6 @@ namespace Statistic
                 cbxGTP.DisplayMember = "Name";
                 cbxGTP.ValueMember = "ID";
                 cbxGTP.BindingContext = new BindingContext();
-
-                if (cbxGTP.Items.Count > 0)
-                {
-                    cbxGTP.SelectedIndex = 0;
-                    onGTP_SelectionIndexChanged(cbxGTP, new EventArgs());
-                }
             }
 
 
@@ -632,9 +627,15 @@ namespace Statistic
                 lblKoeff.Text += koeff.ToString();
             }
 
-            public void InitializeTGList(List<string> listTGNameShr)
+            public void InitializeTGList(List<TECComponentBase> listTG)
             {
                 CheckedListBox clbTG = (this.Controls.Find(KEY_CONTROLS.CLB_TG.ToString(), true))[0] as CheckedListBox;
+                List<string> listTGNameShr = new List<string>();
+
+                foreach (TECComponentBase tc in listTG)
+                {
+                    listTGNameShr.Add(tc.name_shr);
+                }
 
                 clbTG.Items.Clear();
                 clbTG.Items.AddRange(listTGNameShr.ToArray());
@@ -1206,6 +1207,10 @@ namespace Statistic
             else
                 ;
 
+            ComboBox cbxGTP = (this.Controls.Find(KEY_CONTROLS.CB_GTP.ToString(), true))[0] as ComboBox;
+            cbxGTP.SelectedIndex = -1;
+            cbxGTP.SelectedIndex = 0;
+
             return bRes;
         }
         /// <summary>
@@ -1268,6 +1273,7 @@ namespace Statistic
 
             DataGridViewGTP dgvGTP = this.Controls.Find(KEY_CONTROLS.DGV_GTP_VALUE.ToString(), true)[0] as DataGridViewGTP;
             dgvGTP.SelectionChanged += new EventHandler(panelManagement_dgvGTPOnSelectionChanged);
+
         }
 
         /// <summary>
@@ -1372,11 +1378,12 @@ namespace Statistic
             if (this.Actived == true)
             {
                 //Передать информацию 'PanelManagement' для заполнения списка ТГ
-                List<string> listTGNameShr = new List<string>();
+                //List<string> listTGNameShr = new List<string>();
                 int indxTEC = -1 //Индекс ТЭЦ в списке из БД конфигурации
                     , indxGTP = -1 //Индекс ГТП сквозной
                     , indxTECComponent = -1 //Индекс компонента ТЭЦ (ГТП) - локальный в пределах ТЭЦ
                     ;
+                m_TG_Comp = new List<TECComponentBase>();
 
                 indxTEC =
                 indxGTP =
@@ -1441,7 +1448,7 @@ namespace Statistic
                         DataTable table = new DataTable();
                         table.Columns.Add("koeff");
                         foreach (TG tg in t.m_listTG)
-                            listTGNameShr.Add(tg.name_shr);
+                            m_TG_Comp.Add(tg);
                         foreach (TECComponent tc in t.list_TECComponents)
                         {
                             if (tc.IsGTP == true)
@@ -1480,7 +1487,7 @@ namespace Statistic
                                     indxTEC = m_listTEC.IndexOf(t);
 
                                     foreach (TG tg in tc.m_listTG)
-                                        listTGNameShr.Add(tg.name_shr);
+                                        m_TG_Comp.Add(tg);
                                     m_dcGTPKoeffAlarmPcur = tc.m_dcKoeffAlarmPcur;
                                     break;
                                 }
@@ -1492,7 +1499,7 @@ namespace Statistic
                                         indxTEC = m_listTEC.IndexOf(t);
 
                                         foreach (TG tg in tc.m_listTG)
-                                            listTGNameShr.Add(tg.name_shr);
+                                            m_TG_Comp.Add(tg);
 
                                         DataTable table = new DataTable();
                                         table.Columns.Add("koeff");
@@ -1533,7 +1540,7 @@ namespace Statistic
                 // по мгновенному значению ГТП
                 m_panelManagement.InitializeKoeffAlarmPcur(m_dcGTPKoeffAlarmPcur);
                 //Инициализировать элементами список с наименованиями ТГ            
-                m_panelManagement.InitializeTGList(listTGNameShr);
+                m_panelManagement.InitializeTGList(m_TG_Comp);
                 //Очистить список с отмеченными ТГ для отображения
                 m_listIndexTGAdvised.Clear();
                 //Проверить актуальность объекта обработки запросов
@@ -1547,12 +1554,8 @@ namespace Statistic
                         m_tecView.Stop();
 
                         //m_tecView = null;
-                        m_tecView.InitTEC(m_listTEC[indxTEC], indxTECComponent, m_markQueries);
-                        //Инициализация объекта обработки запросов еовым компонентом
-                        if (indxTECComponent == -1)
-                        {
-                            m_tecView.InitializeTECTG();
-                        }
+                        m_tecView.ReInitTEC(m_listTEC[indxTEC], indxTEC, indxTECComponent, m_markQueries);
+
                         //Запуск/активация объекта обработки запросов
                         m_tecView.Start();
                         m_tecView.Activate(true);
@@ -1913,7 +1916,7 @@ namespace Statistic
                 , maximum_scale;
             bool noValues = false;
 
-            tgcount = m_tecView.m_localTECComponents.Count;
+            tgcount = m_TG_Comp.Count;
             itemscount = 60;
 
             names = new string[itemscount];
@@ -1937,7 +1940,7 @@ namespace Statistic
                 {
                     if (!(m_listIndexTGAdvised.IndexOf(j) < 0))
                     {
-                        valsSecs[j, i] = m_tecView.m_dictValuesTG[m_tecView.m_localTECComponents[j].m_id].m_powerSeconds[i];
+                        valsSecs[j, i] = m_tecView.m_dictValuesTG[m_TG_Comp[j].m_id].m_powerSeconds[i];
                         if (valsSecs[j, i] < 0)
                             valsSecs[j, i] = 0;
                         else
@@ -2060,7 +2063,7 @@ namespace Statistic
                     //}
                     colorPCurve = Color.FromArgb(r, g, b);
                     //LineItem
-                    pane.AddCurve(m_tecView.m_localTECComponents[j].name_shr, ppl[j], colorPCurve);
+                    pane.AddCurve(m_TG_Comp[j].name_shr, ppl[j], colorPCurve);
                 }
                 else
                     ;

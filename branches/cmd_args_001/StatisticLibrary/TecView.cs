@@ -406,34 +406,6 @@ namespace StatisticCommon
             initDictValuesTECComponent (24 + 1);
         }
 
-        /// <summary>
-        /// Метод для получения всех ТГ
-        /// (вызывать в случае когда indxTECComponents < 0)
-        /// </summary>
-        public void InitializeTECTG()
-        {
-            //int positionXName = 515, positionXValue = 504, positionYName = 6, positionYValue = 19;
-            //countTG = 0;
-            List<int> tg_ids = new List<int>(); //Временный список идентификаторов ТГ
-
-            //07.09.2015 Для новой возможности (PanelSOSTIASSO) - реинициализации во время выполнения
-            m_localTECComponents.Clear();
-            m_dictValuesTG.Clear();
-
-            if (indxTECComponents < 0) // значит этот view будет суммарным для всех ГТП
-            {
-                foreach (TG tg in m_tec.m_listTG)
-                    foreach (TECComponent c in m_tec.list_TECComponents)
-                        if (tg.m_id == c.m_id) {
-                            m_localTECComponents.Add(c);
-
-                            initDictValuesTG(c);
-                        }
-                        else
-                            ;
-            }
-        }
-
         private void initDictValuesTECComponent(int cnt)
         {
             m_dictValuesTECComponent = new Dictionary<int, valuesTECComponent>[cnt];
@@ -621,9 +593,10 @@ namespace StatisticCommon
             InitializeTECComponents ();
         }
 
-        public void InitTEC(StatisticCommon.TEC tec, int indx, HMark markQueries)
+        public void ReInitTEC(StatisticCommon.TEC tec, int indx_TEC, int indx_components, HMark markQueries)
         {
-            indxTECComponents = indx;
+            m_indx_TEC = indx_TEC;
+            indxTECComponents = indx_components;
 
             InitTEC (new List<TEC> () { tec }, markQueries);
         }
@@ -2362,12 +2335,10 @@ namespace StatisticCommon
                                                 ; //Ошибка....
                                             else
                                                 ;
-
                                             if (!(row_in[0]["FC_" + id.ToString()] is System.DBNull))
                                                 m_dictValuesTECComponent[hour - 0][id].valuesForeignCommand = (byte)row_in[0]["FC_" + id.ToString()] == 1;
                                             else
-                                                m_dictValuesTECComponent[hour - 0][id].valuesForeignCommand = false;
-
+                                                    m_dictValuesTECComponent[hour - 0][id].valuesForeignCommand = false;
                                             //if (!(row_in[0][offsetUDG + j * 3] is System.DBNull))
                                             if (!(row_in[0]["REC_" + id.ToString ()] is System.DBNull))
                                                 //if ((offsetLayout < m_tablePPBRValuesResponse.Columns.Count) && (!(table_in.Rows[i][offsetUDG + j * 3] is System.DBNull)))
