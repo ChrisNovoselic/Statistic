@@ -162,15 +162,61 @@ namespace StatisticCommon
         /// </summary>
         public TEC tec;
         /// <summary>
-        /// Конструктор - основной (без параметров)
+        /// Конструктор - дополнительный
         /// </summary>
-        public TECComponent(TEC tec)
+        public TECComponent(TEC tec, DataRow rComp) : this (tec)
+        {
+            name_shr = rComp["NAME_SHR"].ToString(); //rComp["NAME_GNOVOS"]
+            if (DbTSQLInterface.IsNameField(rComp, "NAME_FUTURE") == true) this.name_future = rComp["NAME_FUTURE"].ToString(); else ;
+            m_id = Convert.ToInt32(rComp["ID"]);
+            m_listMCentreId = getMCentreId(list_TECComponents, j);
+            m_listMTermId = getMTermId(list_TECComponents, j);
+            if ((!(list_TECComponents.Columns.IndexOf("INDX_COL_RDG_EXCEL") < 0)) && (!(rComp["INDX_COL_RDG_EXCEL"] is System.DBNull)))
+                tec[i].list_TECComponents[j].m_indx_col_rdg_excel = Convert.ToInt32(rComp["INDX_COL_RDG_EXCEL"]);
+            else
+                ;
+            if ((!(list_TECComponents.Columns.IndexOf("KoeffAlarmPcur") < 0)) && (!(rComp["KoeffAlarmPcur"] is System.DBNull)))
+                tec[i].list_TECComponents[j].m_dcKoeffAlarmPcur = Convert.ToInt32(rComp["KoeffAlarmPcur"]);
+            else
+                ;
+        }
+        /// <summary>
+        /// Конструктор - дополнительный
+        /// </summary>
+        private TECComponent(TEC tec)
         {
             this.tec = tec;
 
             m_listTG = new List<TG>();
             m_listMCentreId =
             m_listMTermId = null;
+        }
+    }
+
+    public class TECVyvod : TECComponentBase
+    {
+        private class ParamVyvod : object
+        {
+            int m_id;
+            string m_Symbol;
+            int m_typeAgregate;
+        }
+        /// <summary>
+        /// Список ТГ
+        /// </summary>
+        public List<ParamVyvod> m_listParam;
+        /// <summary>
+        /// Объект ТЭЦ - "владелец" компонента
+        /// </summary>
+        public TEC tec;
+        /// <summary>
+        /// Конструктор - основной (без параметров)
+        /// </summary>
+        public TECVyvod(TEC tec)
+        {
+            this.tec = tec;
+
+            m_listParam = new List<ParamVyvod>();
         }
     }
 }

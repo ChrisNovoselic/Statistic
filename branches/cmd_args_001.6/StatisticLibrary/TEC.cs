@@ -298,6 +298,10 @@ namespace StatisticCommon
         /// </summary>
         public List<TECComponent> list_TECComponents;
         /// <summary>
+        /// Список компонентов для ТЭЦ
+        /// </summary>
+        public List<TECVyvod> list_TECVyvod;
+        /// <summary>
         /// Список ТГ для ТЭЦ
         /// </summary>
         public List<TG> m_listTG;
@@ -407,6 +411,26 @@ namespace StatisticCommon
             else
                 ;
         }
+        public TEC(DataRow rTec, bool bUseData)
+            : this(Convert.ToInt32(rTec["ID"]),
+                rTec["NAME_SHR"].ToString(), //"NAME_SHR"
+                rTec["TABLE_NAME_ADMIN"].ToString(),
+                rTec["TABLE_NAME_PBR"].ToString()
+                , bUseData)
+        {
+            setNamesField(rTec["ADMIN_DATETIME"].ToString(),
+                rTec["ADMIN_REC"].ToString(),
+                rTec["ADMIN_IS_PER"].ToString(),
+                rTec["ADMIN_DIVIAT"].ToString(),
+                rTec["PBR_DATETIME"].ToString(),
+                rTec["PPBRvsPBR"].ToString(),
+                rTec["PBR_NUMBER"].ToString());
+
+            setAddingParameter (Convert.ToInt32(rTec["TIMEZONE_OFFSET_MOSCOW"])
+                , rTec["PATH_RDG_EXCEL"].ToString()
+                , rTec["TEMPLATE_NAME_SGN_DATA_TM"].ToString()
+                , rTec["TEMPLATE_NAME_SGN_DATA_FACT"].ToString());
+        }
         /// <summary>
         /// Коструктор объекта (с параметрами)
         /// </summary>
@@ -415,7 +439,7 @@ namespace StatisticCommon
         /// <param name="table_name_admin">Наименование таблици с административными значениями</param>
         /// <param name="table_name_pbr">Наименование таблици со значениями ПБР</param>
         /// <param name="bUseData">Признак создания объекта</param>
-        public TEC (int id, string name_shr, string table_name_admin, string table_name_pbr, bool bUseData) {
+        private TEC (int id, string name_shr, string table_name_admin, string table_name_pbr, bool bUseData) {
             list_TECComponents = new List<TECComponent>();
 
             this.m_id = id;
@@ -456,10 +480,11 @@ namespace StatisticCommon
         /// <param name="pbr_datetime">Наименование поля с меткой даты/времени значения в таблице с ПБР</param>
         /// <param name="ppbr_vs_pbr">Наименование поля со значениями целевой величины в таблице с ПБР</param>
         /// <param name="pbr_number">Наименование поля со значениями номеров ПБР в таблице с ПБР</param>
-        public void SetNamesField (string admin_datetime, string admin_rec, string admin_is_per, string admin_diviat,
-                                    string pbr_datetime, string ppbr_vs_pbr, string pbr_number) {
+        private void setNamesField(string admin_datetime, string admin_rec, string admin_is_per, string admin_diviat,
+                                    string pbr_datetime, string ppbr_vs_pbr, string pbr_number)
+        {
             //INDEX_NAME_FIELD.ADMIN_DATETIME
-            m_strNamesField [(int)INDEX_NAME_FIELD.ADMIN_DATETIME] = admin_datetime;
+            m_strNamesField[(int)INDEX_NAME_FIELD.ADMIN_DATETIME] = admin_datetime;
             m_strNamesField[(int)INDEX_NAME_FIELD.REC] = admin_rec; //INDEX_NAME_FIELD.REC
             m_strNamesField[(int)INDEX_NAME_FIELD.IS_PER] = admin_is_per; //INDEX_NAME_FIELD.IS_PER
             m_strNamesField[(int)INDEX_NAME_FIELD.DIVIAT] = admin_diviat; //INDEX_NAME_FIELD.DIVIAT
@@ -468,6 +493,14 @@ namespace StatisticCommon
             m_strNamesField[(int)INDEX_NAME_FIELD.PBR] = ppbr_vs_pbr; //INDEX_NAME_FIELD.PBR
 
             m_strNamesField[(int)INDEX_NAME_FIELD.PBR_NUMBER] = pbr_number; //INDEX_NAME_FIELD.PBR_NUMBER
+        }
+
+        private void setAddingParameter(int timezone_offset_msc, string path_rdg_excel, string strTemplateNameSgnDataTM, string strTemplateNameSgnDataFact)
+        {
+            this.m_timezone_offset_msc = timezone_offset_msc;
+            this.m_path_rdg_excel = path_rdg_excel;
+            this.m_strTemplateNameSgnDataTM = strTemplateNameSgnDataTM;
+            this.m_strTemplateNameSgnDataFact = strTemplateNameSgnDataFact;
         }
         /// <summary>
         /// Добавить идентификатор ТГ к уже имеющейся строке-перечислению (разделитель - запятая) с идентификаторами ТГ
