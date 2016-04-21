@@ -298,9 +298,9 @@ namespace StatisticCommon
         /// </summary>
         public List<TECComponent> list_TECComponents;
         /// <summary>
-        /// Список компонентов для ТЭЦ
+        /// Список выводОв для ТЭЦ
         /// </summary>
-        public List<TECVyvod> list_TECVyvod;
+        public List<Vyvod> m_list_Vyvod;
         /// <summary>
         /// Список ТГ для ТЭЦ
         /// </summary>
@@ -501,6 +501,36 @@ namespace StatisticCommon
             this.m_path_rdg_excel = path_rdg_excel;
             this.m_strTemplateNameSgnDataTM = strTemplateNameSgnDataTM;
             this.m_strTemplateNameSgnDataFact = strTemplateNameSgnDataFact;
+        }
+
+        public void InitTG(int indx, DataRow[] rows_tg)
+        {
+            int j = -1, k = -1;
+
+            for (j = 0; j < rows_tg.Length; j++)
+            {
+                for (k = 0; k < list_TECComponents.Count; k++)
+                {
+                    if (((list_TECComponents[k].IsTG == true)) && (Int32.Parse(rows_tg[j][@"ID_TG"].ToString()) == list_TECComponents[k].m_id))
+                        break;
+                    else
+                        ;
+                }
+
+                if (k < list_TECComponents.Count)
+                {
+                    list_TECComponents[indx].m_listTG.Add(list_TECComponents[k].m_listTG[0]);
+                    if (list_TECComponents[indx].IsGTP == true)
+                        list_TECComponents[k].m_listTG[0].m_id_owner_gtp = list_TECComponents[indx].m_id;
+                    else
+                        if (list_TECComponents[indx].IsPC == true)
+                            list_TECComponents[k].m_listTG[0].m_id_owner_pc = list_TECComponents[indx].m_id;
+                        else
+                            ;
+                }
+                else
+                    ;
+            }
         }
         /// <summary>
         /// Добавить идентификатор ТГ к уже имеющейся строке-перечислению (разделитель - запятая) с идентификаторами ТГ

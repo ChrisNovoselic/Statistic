@@ -123,22 +123,42 @@ namespace StatisticCommon
                 -1;
             m_TurnOnOff = INDEX_TURNOnOff.UNKNOWN; //Неизвестное состояние
         }
-
-
-        public void InitTG(TG dest, DataRow row_tg, DataTable allParamTG, out int err)
+        /// <summary>
+        /// Конструктор - основной (без параметров)
+        /// </summary>
+        public TG(DataRow row_tg, DataRow row_param_tg) : this ()
         {
-            err = -1;
-            
-            dest.name_shr = row_tg["NAME_SHR"].ToString();
-            dest.m_id = Convert.ToInt32(row_tg["ID"]);
-            dest.m_id_owner_gtp = Convert.ToInt32(row_tg["ID_GTP"]);
-
-            //DataRow[] rows_tg = allParamTG.Select(@"ID_TG=" + dest.m_id);
-            //dest.m_strKKS_NAME_TM = rows_tg[0][@"KKS_NAME"].ToString();
-            //dest.m_arIds_fact[(int)HDateTime.INTERVAL.MINUTES] = Int32.Parse(rows_tg[0][@"ID_IN_ASKUE_3"].ToString());
-            //dest.m_arIds_fact[(int)HDateTime.INTERVAL.HOURS] = Int32.Parse(rows_tg[0][@"ID_IN_ASKUE_30"].ToString());
+            initTG(row_tg, row_param_tg);
         }
 
+        //public void InitTG(DataRow row_tg, DataRow row_param_tg, out int err)
+        //{
+        //    err = -1;
+
+        //    name_shr = row_tg["NAME_SHR"].ToString();
+        //    m_id = Convert.ToInt32(row_tg["ID"]);
+        //    m_id_owner_gtp = Convert.ToInt32(row_tg["ID_GTP"]);
+
+        //    //DataRow[] rows_tg = allParamTG.Select(@"ID_TG=" + dest.m_id);
+        //    //dest.m_strKKS_NAME_TM = rows_tg[0][@"KKS_NAME"].ToString();
+        //    //dest.m_arIds_fact[(int)HDateTime.INTERVAL.MINUTES] = Int32.Parse(rows_tg[0][@"ID_IN_ASKUE_3"].ToString());
+        //    //dest.m_arIds_fact[(int)HDateTime.INTERVAL.HOURS] = Int32.Parse(rows_tg[0][@"ID_IN_ASKUE_30"].ToString());
+        //}
+
+        private void initTG(DataRow row_tg, DataRow row_param_tg)
+        {
+            name_shr = row_tg["NAME_SHR"].ToString();
+            if (DbTSQLInterface.IsNameField(row_tg, "NAME_FUTURE") == true) name_future = row_tg["NAME_FUTURE"].ToString(); else ;
+            m_id = Convert.ToInt32(row_tg["ID"]);
+            if (!(row_tg["INDX_COL_RDG_EXCEL"] is System.DBNull))
+                m_indx_col_rdg_excel = Convert.ToInt32(row_tg["INDX_COL_RDG_EXCEL"]);
+            else
+                ;
+
+            m_strKKS_NAME_TM = row_param_tg[@"KKS_NAME"].ToString();
+            m_arIds_fact[(int)HDateTime.INTERVAL.MINUTES] = Int32.Parse(row_param_tg[@"ID_IN_ASKUE_3"].ToString());
+            m_arIds_fact[(int)HDateTime.INTERVAL.HOURS] = Int32.Parse(row_param_tg[@"ID_IN_ASKUE_30"].ToString());
+        }
     }
     /// <summary>
     /// Класс для описания компонента ТЭЦ (ГТП, Б(Гр)ЩУ)
@@ -169,14 +189,14 @@ namespace StatisticCommon
             name_shr = rComp["NAME_SHR"].ToString(); //rComp["NAME_GNOVOS"]
             if (DbTSQLInterface.IsNameField(rComp, "NAME_FUTURE") == true) this.name_future = rComp["NAME_FUTURE"].ToString(); else ;
             m_id = Convert.ToInt32(rComp["ID"]);
-            m_listMCentreId = getMCentreId(list_TECComponents, j);
-            m_listMTermId = getMTermId(list_TECComponents, j);
-            if ((!(list_TECComponents.Columns.IndexOf("INDX_COL_RDG_EXCEL") < 0)) && (!(rComp["INDX_COL_RDG_EXCEL"] is System.DBNull)))
-                tec[i].list_TECComponents[j].m_indx_col_rdg_excel = Convert.ToInt32(rComp["INDX_COL_RDG_EXCEL"]);
+            m_listMCentreId = getMCentreId(rComp);
+            m_listMTermId = getMTermId(rComp);
+            if ((DbTSQLInterface.IsNameField (rComp, "INDX_COL_RDG_EXCEL") == true) && (!(rComp["INDX_COL_RDG_EXCEL"] is System.DBNull)))
+                m_indx_col_rdg_excel = Convert.ToInt32(rComp["INDX_COL_RDG_EXCEL"]);
             else
                 ;
-            if ((!(list_TECComponents.Columns.IndexOf("KoeffAlarmPcur") < 0)) && (!(rComp["KoeffAlarmPcur"] is System.DBNull)))
-                tec[i].list_TECComponents[j].m_dcKoeffAlarmPcur = Convert.ToInt32(rComp["KoeffAlarmPcur"]);
+            if ((DbTSQLInterface.IsNameField (rComp, "KoeffAlarmPcur") == true) && (!(rComp["KoeffAlarmPcur"] is System.DBNull)))
+                m_dcKoeffAlarmPcur = Convert.ToInt32(rComp["KoeffAlarmPcur"]);
             else
                 ;
         }
@@ -191,11 +211,45 @@ namespace StatisticCommon
             m_listMCentreId =
             m_listMTermId = null;
         }
+
+        protected List<int> getModesId(DataRow r, string col)
+        {
+            int i = -1
+                , id = -1;
+            List<int> listRes = new List<int>();
+
+            if ((DbTSQLInterface.IsNameField (r, col) == true) && (!(r[col] is DBNull)))
+            {
+                string[] ids = r[col].ToString().Split(',');
+                for (i = 0; i < ids.Length; i++)
+                    if (ids[i].Length > 0)
+                        if (Int32.TryParse(ids[i], out id) == true)
+                            listRes.Add(id);
+                        else
+                            listRes.Add(-1);
+                    else
+                        listRes.Add(-1);
+            }
+            else
+                ;
+
+            return listRes;
+        }
+
+        protected List<int> getMCentreId(DataRow r)
+        {
+            return getModesId(r, @"ID_MC");
+        }
+
+        protected List<int> getMTermId(DataRow r)
+        {
+            return getModesId(r, @"ID_MT");
+        }
     }
 
-    public class TECVyvod : TECComponentBase
+    public class Vyvod : TECComponentBase
     {
-        private class ParamVyvod : object
+        protected class ParamVyvod : object
         {
             int m_id;
             string m_Symbol;
@@ -204,7 +258,7 @@ namespace StatisticCommon
         /// <summary>
         /// Список ТГ
         /// </summary>
-        public List<ParamVyvod> m_listParam;
+        protected List<ParamVyvod> m_listParam;
         /// <summary>
         /// Объект ТЭЦ - "владелец" компонента
         /// </summary>
@@ -212,7 +266,7 @@ namespace StatisticCommon
         /// <summary>
         /// Конструктор - основной (без параметров)
         /// </summary>
-        public TECVyvod(TEC tec)
+        public Vyvod(TEC tec)
         {
             this.tec = tec;
 
