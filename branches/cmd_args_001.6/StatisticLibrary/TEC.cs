@@ -291,8 +291,8 @@ namespace StatisticCommon
         /// <summary>
         /// Шаблон для наименования ТГ (KKS_NAME) в системах АИИС КУЭ, СОТИАССО
         /// </summary>
-        public string m_strTemplateNameSgnDataTM,
-                    m_strTemplateNameSgnDataFact;
+        public string m_strTemplateNameSgnDataTM
+            , m_strTemplateNameSgnDataFact;
         /// <summary>
         /// Список компонентов для ТЭЦ
         /// </summary>
@@ -330,7 +330,20 @@ namespace StatisticCommon
         /// <summary>
         /// Массив с параметрами соединения для источников данных
         /// </summary>
-        public ConnectionSettings [] connSetts;        
+        public ConnectionSettings [] connSetts;
+
+        private static Dictionary<CONN_SETT_TYPE, string> _dictIdConfigDataSources = new Dictionary<CONN_SETT_TYPE, string>() {
+            {CONN_SETT_TYPE.DATA_AISKUE, @"ID_SOURCE_DATA"}
+            , {CONN_SETT_TYPE.DATA_SOTIASSO, @"ID_SOURCE_DATA_TM"}
+            , {CONN_SETT_TYPE.ADMIN, @"ID_SOURCE_ADMIN"}
+            , {CONN_SETT_TYPE.PBR, @"ID_SOURCE_PBR"}
+            , {CONN_SETT_TYPE.MTERM, @"ID_SOURCE_MTERM"}
+        };
+        /// <summary>
+        /// Словарь с парами - ключ: идентификатор типа источников данных, значение - наименование поля таблицы [TEC_LIST] в БД конфигурации
+        /// </summary>
+        public static Dictionary<CONN_SETT_TYPE, string> s_dictIdConfigDataSources { get { return _dictIdConfigDataSources; } }
+
         /// <summary>
         /// Признак инициализации строки с идентификаторами ТГ
         /// </summary>
