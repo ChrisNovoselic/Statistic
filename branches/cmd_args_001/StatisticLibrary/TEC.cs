@@ -291,12 +291,16 @@ namespace StatisticCommon
         /// <summary>
         /// Шаблон для наименования ТГ (KKS_NAME) в системах АИИС КУЭ, СОТИАССО
         /// </summary>
-        public string m_strTemplateNameSgnDataTM,
-                    m_strTemplateNameSgnDataFact;
+        public string m_strTemplateNameSgnDataTM
+            , m_strTemplateNameSgnDataFact;
         /// <summary>
         /// Список компонентов для ТЭЦ
         /// </summary>
         public List<TECComponent> list_TECComponents;
+        /// <summary>
+        /// Список выводОв для ТЭЦ
+        /// </summary>
+        public List<Vyvod> m_list_Vyvod;
         /// <summary>
         /// Список ТГ для ТЭЦ
         /// </summary>
@@ -326,7 +330,20 @@ namespace StatisticCommon
         /// <summary>
         /// Массив с параметрами соединения для источников данных
         /// </summary>
-        public ConnectionSettings [] connSetts;        
+        public ConnectionSettings [] connSetts;
+
+        private static Dictionary<CONN_SETT_TYPE, string> _dictIdConfigDataSources = new Dictionary<CONN_SETT_TYPE, string>() {
+            {CONN_SETT_TYPE.DATA_AISKUE, @"ID_SOURCE_DATA"}
+            , {CONN_SETT_TYPE.DATA_SOTIASSO, @"ID_SOURCE_DATA_TM"}
+            , {CONN_SETT_TYPE.ADMIN, @"ID_SOURCE_ADMIN"}
+            , {CONN_SETT_TYPE.PBR, @"ID_SOURCE_PBR"}
+            , {CONN_SETT_TYPE.MTERM, @"ID_SOURCE_MTERM"}
+        };
+        /// <summary>
+        /// Словарь с парами - ключ: идентификатор типа источников данных, значение - наименование поля таблицы [TEC_LIST] в БД конфигурации
+        /// </summary>
+        public static Dictionary<CONN_SETT_TYPE, string> s_dictIdConfigDataSources { get { return _dictIdConfigDataSources; } }
+
         /// <summary>
         /// Признак инициализации строки с идентификаторами ТГ
         /// </summary>
@@ -407,6 +424,26 @@ namespace StatisticCommon
             else
                 ;
         }
+        public TEC(DataRow rTec, bool bUseData)
+            : this(Convert.ToInt32(rTec["ID"]),
+                rTec["NAME_SHR"].ToString(), //"NAME_SHR"
+                rTec["TABLE_NAME_ADMIN"].ToString(),
+                rTec["TABLE_NAME_PBR"].ToString()
+                , bUseData)
+        {
+            setNamesField(rTec["ADMIN_DATETIME"].ToString(),
+                rTec["ADMIN_REC"].ToString(),
+                rTec["ADMIN_IS_PER"].ToString(),
+                rTec["ADMIN_DIVIAT"].ToString(),
+                rTec["PBR_DATETIME"].ToString(),
+                rTec["PPBRvsPBR"].ToString(),
+                rTec["PBR_NUMBER"].ToString());
+
+            setAddingParameter (Convert.ToInt32(rTec["TIMEZONE_OFFSET_MOSCOW"])
+                , rTec["PATH_RDG_EXCEL"].ToString()
+                , rTec["TEMPLATE_NAME_SGN_DATA_TM"].ToString()
+                , rTec["TEMPLATE_NAME_SGN_DATA_FACT"].ToString());
+        }
         /// <summary>
         /// Коструктор объекта (с параметрами)
         /// </summary>
@@ -415,7 +452,7 @@ namespace StatisticCommon
         /// <param name="table_name_admin">Наименование таблици с административными значениями</param>
         /// <param name="table_name_pbr">Наименование таблици со значениями ПБР</param>
         /// <param name="bUseData">Признак создания объекта</param>
-        public TEC (int id, string name_shr, string table_name_admin, string table_name_pbr, bool bUseData) {
+        private TEC (int id, string name_shr, string table_name_admin, string table_name_pbr, bool bUseData) {
             list_TECComponents = new List<TECComponent>();
 
             this.m_id = id;
@@ -456,10 +493,11 @@ namespace StatisticCommon
         /// <param name="pbr_datetime">Наименование поля с меткой даты/времени значения в таблице с ПБР</param>
         /// <param name="ppbr_vs_pbr">Наименование поля со значениями целевой величины в таблице с ПБР</param>
         /// <param name="pbr_number">Наименование поля со значениями номеров ПБР в таблице с ПБР</param>
-        public void SetNamesField (string admin_datetime, string admin_rec, string admin_is_per, string admin_diviat,
-                                    string pbr_datetime, string ppbr_vs_pbr, string pbr_number) {
+        private void setNamesField(string admin_datetime, string admin_rec, string admin_is_per, string admin_diviat,
+                                    string pbr_datetime, string ppbr_vs_pbr, string pbr_number)
+        {
             //INDEX_NAME_FIELD.ADMIN_DATETIME
-            m_strNamesField [(int)INDEX_NAME_FIELD.ADMIN_DATETIME] = admin_datetime;
+            m_strNamesField[(int)INDEX_NAME_FIELD.ADMIN_DATETIME] = admin_datetime;
             m_strNamesField[(int)INDEX_NAME_FIELD.REC] = admin_rec; //INDEX_NAME_FIELD.REC
             m_strNamesField[(int)INDEX_NAME_FIELD.IS_PER] = admin_is_per; //INDEX_NAME_FIELD.IS_PER
             m_strNamesField[(int)INDEX_NAME_FIELD.DIVIAT] = admin_diviat; //INDEX_NAME_FIELD.DIVIAT
@@ -468,6 +506,44 @@ namespace StatisticCommon
             m_strNamesField[(int)INDEX_NAME_FIELD.PBR] = ppbr_vs_pbr; //INDEX_NAME_FIELD.PBR
 
             m_strNamesField[(int)INDEX_NAME_FIELD.PBR_NUMBER] = pbr_number; //INDEX_NAME_FIELD.PBR_NUMBER
+        }
+
+        private void setAddingParameter(int timezone_offset_msc, string path_rdg_excel, string strTemplateNameSgnDataTM, string strTemplateNameSgnDataFact)
+        {
+            this.m_timezone_offset_msc = timezone_offset_msc;
+            this.m_path_rdg_excel = path_rdg_excel;
+            this.m_strTemplateNameSgnDataTM = strTemplateNameSgnDataTM;
+            this.m_strTemplateNameSgnDataFact = strTemplateNameSgnDataFact;
+        }
+
+        public void InitTG(int indx, DataRow[] rows_tg)
+        {
+            int j = -1, k = -1;
+
+            for (j = 0; j < rows_tg.Length; j++)
+            {
+                for (k = 0; k < list_TECComponents.Count; k++)
+                {
+                    if (((list_TECComponents[k].IsTG == true)) && (Int32.Parse(rows_tg[j][@"ID_TG"].ToString()) == list_TECComponents[k].m_id))
+                        break;
+                    else
+                        ;
+                }
+
+                if (k < list_TECComponents.Count)
+                {
+                    list_TECComponents[indx].m_listTG.Add(list_TECComponents[k].m_listTG[0]);
+                    if (list_TECComponents[indx].IsGTP == true)
+                        list_TECComponents[k].m_listTG[0].m_id_owner_gtp = list_TECComponents[indx].m_id;
+                    else
+                        if (list_TECComponents[indx].IsPC == true)
+                            list_TECComponents[k].m_listTG[0].m_id_owner_pc = list_TECComponents[indx].m_id;
+                        else
+                            ;
+                }
+                else
+                    ;
+            }
         }
         /// <summary>
         /// Добавить идентификатор ТГ к уже имеющейся строке-перечислению (разделитель - запятая) с идентификаторами ТГ
