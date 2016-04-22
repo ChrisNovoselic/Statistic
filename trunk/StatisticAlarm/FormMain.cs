@@ -69,9 +69,7 @@ namespace StatisticAlarm
             /// <param name="command"></param>
             private void RunCmd()
             {
-                string strArgMinimize = "minimize";
-
-                s_bMinimize = (cmd.Equals (strArgMinimize) == true); //|| (param.Equals (strArgMinimize) == true);
+                s_bMinimize = (m_dictCmdArgs.ContainsKey("minimize") == true); //|| (param.Equals (strArgMinimize) == true);
             }
         }
         // Перехват нажатия на кнопку свернуть

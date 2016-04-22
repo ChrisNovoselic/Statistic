@@ -88,7 +88,7 @@ namespace StatisticCommon
             this.linkLabel1.Size = new System.Drawing.Size(81, 13);
             this.linkLabel1.TabIndex = 3;
             this.linkLabel1.TabStop = true;
-            this.linkLabel1.Text = "real@tps-nsk.ru";
+            this.linkLabel1.Text = "Revyakin_EA@sibeco.su";
             this.linkLabel1.LinkClicked += new System.Windows.Forms.LinkLabelLinkClickedEventHandler(this.llblMailTo_LinkClicked);
             // 
             // m_lblProductVersion
@@ -109,7 +109,7 @@ namespace StatisticCommon
             this.linkLabel2.Size = new System.Drawing.Size(104, 13);
             this.linkLabel2.TabIndex = 5;
             this.linkLabel2.TabStop = true;
-            this.linkLabel2.Text = "Chrjapin_AN@itss.ru";
+            this.linkLabel2.Text = "Chrjapin_AN@sibeco.su";
             // 
             // m_lblDomainMashineUserName
             // 
@@ -130,7 +130,7 @@ namespace StatisticCommon
             this.linkLabel3.Size = new System.Drawing.Size(109, 13);
             this.linkLabel3.TabIndex = 7;
             this.linkLabel3.TabStop = true;
-            this.linkLabel3.Text = "Apelgans_AV@itss.ru";
+            this.linkLabel3.Text = "Apelgans_AV@sibeco.su";
             // 
             // linkLabel4
             // 
@@ -140,7 +140,7 @@ namespace StatisticCommon
             this.linkLabel4.Size = new System.Drawing.Size(113, 13);
             this.linkLabel4.TabIndex = 8;
             this.linkLabel4.TabStop = true;
-            this.linkLabel4.Text = "Pasternak_AS@itss.ru";
+            this.linkLabel4.Text = "Pasternak_AS@sibeco.su";
             // 
             // FormAbout
             // 

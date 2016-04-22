@@ -123,45 +123,46 @@ namespace StatisticTrans
             /// <param name="command"></param>
             private void RunCmd()
             {
-                switch (cmd)
-                {
-                    case "date":
-                        m_modeMashine = MODE_MASHINE.TO_DATE;
+                foreach (KeyValuePair<string, string> pair in m_dictCmdArgs)
+                    switch (pair.Key)
+                    {
+                        case "date":
+                            m_modeMashine = MODE_MASHINE.TO_DATE;
 
-                        if (param == "default")
-                            m_arg_date = DateTime.Now.AddDays(1);
-                        else
-                            if (param == "now")
-                                ; //Уже присвоено значение
+                            if (pair.Value == "default")
+                                m_arg_date = DateTime.Now.AddDays(1);
                             else
-                                m_arg_date = DateTime.Parse(param);
-                        break;
+                                if (pair.Value == "now")
+                                    ; //Уже присвоено значение
+                                else
+                                    m_arg_date = DateTime.Parse(pair.Value);
+                            break;
 
-                    case "service":
-                        m_modeMashine = MODE_MASHINE.SERVICE;
+                        case "service":
+                            m_modeMashine = MODE_MASHINE.SERVICE;
 
-                        if (param == "default")
-                            ;
-                        else
-                            m_arg_interval = Int32.Parse(param);
+                            if (pair.Value == "default")
+                                ;
+                            else
+                                m_arg_interval = Int32.Parse(pair.Value);
 
-                        if (m_arg_interval < TIMER_SERVICE_MIN_INTERVAL)
-                        {
-                            msg_throw = "Интервал задан меньше необходимого значения";
-                            m_modeMashine = MODE_MASHINE.UNKNOWN;
-                        }
-                        else
-                            ;
-                        int argt = m_arg_interval;
-                        break;
+                            if (m_arg_interval < TIMER_SERVICE_MIN_INTERVAL)
+                            {
+                                msg_throw = "Интервал задан меньше необходимого значения";
+                                m_modeMashine = MODE_MASHINE.UNKNOWN;
+                            }
+                            else
+                                ;
+                            int argt = m_arg_interval;
+                            break;
 
-                    case "start":
-                        m_modeMashine = MODE_MASHINE.SERVICE;
-                        m_arg_interval = TIMER_SERVICE_MIN_INTERVAL;
-                        break;
-                    default:
-                        break;
-                }
+                        case "start":
+                            m_modeMashine = MODE_MASHINE.SERVICE;
+                            m_arg_interval = TIMER_SERVICE_MIN_INTERVAL;
+                            break;
+                        default:
+                            break;
+                    }
             }
         }
 
