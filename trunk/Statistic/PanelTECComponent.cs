@@ -768,7 +768,7 @@ namespace Statistic
 
             DbConnection dbConn = DbSources.Sources().GetConnection(idListener, out err);
 
-            DbTSQLInterface.RecUpdateInsertDelete(ref dbConn,nameTable,keyField,table_origin,table_edit,out err);
+            DbTSQLInterface.RecUpdateInsertDelete(ref dbConn, nameTable, keyField, string.Empty, table_origin, table_edit, out err);
 
             unregister_idListenerMainDB(idListener);
         }
