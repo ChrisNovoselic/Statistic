@@ -263,7 +263,8 @@ namespace StatisticCommon
 
             tec = new ListTEC ();
 
-            int err = 0;
+            int err = 0
+                , indx_comp = -1;
             // подключиться к бд, инициализировать глобальные переменные, выбрать режим работы
             DataTable list_tec= null // = DbTSQLInterface.Select(connSett, "SELECT * FROM TEC_LIST"),
                 , list_TECComponents = null
@@ -303,8 +304,10 @@ namespace StatisticCommon
                             for (int j = 0; j < list_TECComponents.Rows.Count; j ++) {
                                 tec[i].list_TECComponents.Add(new TECComponent(tec[i], list_TECComponents.Rows[j]));
 
+                                indx_comp = tec[i].list_TECComponents.Count - 1;
+
                                 if (err == 0)
-                                    tec[i].InitTG (j, all_PARAM_TG.Select (@"ID_" + FormChangeMode.getPrefixMode(indx) + @"=" + tec[i].list_TECComponents[indx]));
+                                    tec[i].InitTG(j, all_PARAM_TG.Select(@"ID_" + FormChangeMode.getPrefixMode(indx) + @"=" + tec[i].list_TECComponents[indx_comp].m_id));
                                 else
                                     ; //Ошибка получения списка ТГ
                             }

@@ -141,10 +141,11 @@ namespace StatisticTrans
                         case "service":
                             m_modeMashine = MODE_MASHINE.SERVICE;
 
-                            if (pair.Value == "default")
+                            if ((pair.Value.Equals(string.Empty) == true)
+                                || (pair.Value.Equals(@"default") == true))
                                 ;
                             else
-                                m_arg_interval = Int32.Parse(pair.Value);
+                                Int32.TryParse(pair.Value, out m_arg_interval);
 
                             if (m_arg_interval < TIMER_SERVICE_MIN_INTERVAL)
                             {
@@ -963,11 +964,9 @@ namespace StatisticTrans
         /// </summary>
         protected virtual void errorDataGridViewAdmin()
         {
-            CT.PopIter();
             if ((m_bTransAuto == true || m_modeMashine == MODE_MASHINE.SERVICE) && (m_bEnabledUIControl == false))
             {
-                //CT.ErrorComp(CT.nameComponent);
-                //CT.currentIter = 0;
+                CT.ErrorIter();
 
                 IAsyncResult asyncRes;
                 if (IsHandleCreated/*InvokeRequired*/ == true)
@@ -1004,13 +1003,13 @@ namespace StatisticTrans
 
             if ((m_bTransAuto == true || m_modeMashine == MODE_MASHINE.SERVICE) && (m_bEnabledUIControl == false))
             {
+                //??? зачем нужен '.NextDay'
                 CT.NextDay = IsTomorrow();
-
                 if (comboBoxTECComponent.InvokeRequired)
-                    comboBoxTECComponent.Invoke(new Action(() => CT.PushIter((string)comboBoxTECComponent.Items[comboBoxTECComponent.SelectedIndex])));
+                    comboBoxTECComponent.Invoke(new Action(() => CT.SuccessIter(/*(string)comboBoxTECComponent.Items[comboBoxTECComponent.SelectedIndex]*/)));
                 else
-                    CT.PushIter((string)comboBoxTECComponent.Items[comboBoxTECComponent.SelectedIndex]);
-
+                    CT.SuccessIter(/*(string)comboBoxTECComponent.Items[comboBoxTECComponent.SelectedIndex]*/);
+                
                 IAsyncResult asyncRes;
                 //if (IsHandleCreated/*InvokeRequired*/ == true)
                 asyncRes = this.BeginInvoke(new DelegateFunc(trans_auto_next));
@@ -1216,6 +1215,14 @@ namespace StatisticTrans
             if (comboBoxTECComponent.SelectedIndex + 1 < comboBoxTECComponent.Items.Count)
             {
                 comboBoxTECComponent.SelectedIndex++;
+                //??? зачем нужен '.NextDay'
+                CT.NextDay = IsTomorrow();
+                //// в этом контексте вызов 'comboBoxTECComponent.InvokeRequired' не требуется
+                //if (comboBoxTECComponent.InvokeRequired)
+                //    comboBoxTECComponent.Invoke(new Action(() => CT.AttemptIter((string)comboBoxTECComponent.Items[comboBoxTECComponent.SelectedIndex])));
+                //else
+                    CT.AttemptIter((string)comboBoxTECComponent.Items[comboBoxTECComponent.SelectedIndex]);
+
                 //Обработчик отключен - вызов "программно"
                 comboBoxTECComponent_SelectedIndexChanged(null, EventArgs.Empty);
             }

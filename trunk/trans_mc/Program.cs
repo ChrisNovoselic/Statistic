@@ -27,10 +27,12 @@ namespace trans_mc
             catch (Exception e)
             { Logging.Logg().Exception(e, "Ошибка запуска приложения.", Logging.INDEX_MESSAGE.NOT_SET); }
 
-            try
-            { Application.Run(formMain); }
-            catch (Exception e)
-            { Logging.Logg().Exception(e, "Ошибка выполнения приложения.", Logging.INDEX_MESSAGE.NOT_SET); }
+            if (!(formMain == null))
+                try
+                { Application.Run(formMain); }
+                catch (Exception e)
+                { Logging.Logg().Exception(e, "Ошибка выполнения приложения.", Logging.INDEX_MESSAGE.NOT_SET); }
+            else ;
 
             ProgramBase.Exit();
         }

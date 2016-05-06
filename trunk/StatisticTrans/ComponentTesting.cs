@@ -14,7 +14,7 @@ namespace StatisticTrans
         /// <summary>
         /// Кол-во пройденных итераций
         /// </summary>
-        private int countIt = 0;
+        private int successIter = 0;
 
         /// <summary>
         /// Текущая иттерация
@@ -48,19 +48,28 @@ namespace StatisticTrans
         }
 
         /// <summary>
-        /// Успешные итерации
+        /// Попытка итерации
         /// </summary>
         /// <param name="nameElem">имя опрашеваемого компонента</param>
-        public void PushIter(string nameElem)
+        public void AttemptIter(string nameElem)
         {
-            if (GetNum() == countIt)
-                ClearStck();
-
             Iters[currentIter] = nameElem;
             currentIter++;
-            commonSuccessIter++;
             commonTotalIter++;
-            countIt++;
+
+            reportIter(getTextReportSuccessIter());
+        }
+
+        /// <summary>
+        /// Успешные итерации
+        /// </summary>
+        public void SuccessIter()
+        {
+            resultIter();
+
+            successIter++;
+            commonSuccessIter++;
+
             reportIter(getTextReportSuccessIter ());
         }
 
@@ -68,21 +77,27 @@ namespace StatisticTrans
         /// Кол-во итераций
         /// </summary>
         /// <returns>кол-во итераций</returns>
-        private int GetNum()
+        private int CountPart
         {
-            return Iters.Length;
+            get { return Iters.Length; }
         }
 
         /// <summary>
         /// Уменьшение счетчика итераций
         /// </summary>
-        public void PopIter()
+        public void ErrorIter()
         {
-            reportIter(getTextReportErrorIter ());
-            currentIter--;
-            commonSuccessIter--;
-            reportIter(getTextReportSuccessIter());
-            countIt++;
+            resultIter();
+
+            reportIter(getTextReportErrorIter());
+        }
+
+        private void resultIter ()
+        {
+            if (CountPart == currentIter)
+                ClearStck();
+            else
+                ;
         }
 
         private void reportIter(string text)
@@ -98,9 +113,9 @@ namespace StatisticTrans
         {
             return "Время крайнего опроса: "
                 + DateTime.Now.ToString() + ";"
-                + " Успешных итераций: " + currentIter
+                + " Успешных итераций(всего): " + successIter
                     + "(" + commonSuccessIter + @")"
-                + " из " + GetNum()
+                + " из " + CountPart
                     + @"(" + commonTotalIter + @")";
         }
 
@@ -110,7 +125,7 @@ namespace StatisticTrans
         private void ClearStck()
         {
             currentIter = 0;
-            countIt = 0;
+            successIter = 0;
         }
 
         /// <summary>
@@ -119,7 +134,7 @@ namespace StatisticTrans
         private string getTextReportErrorIter()
         {
             return getTextReportSuccessIter ()
-               + "; Ошибка на компоненте: " + Iters[currentIter].ToString();
+                + "; Ошибка на компоненте: " + (((!(Iters[currentIter] == null)) && (currentIter < Iters.Length)) ? Iters[currentIter].ToString() : @"не известно");
         }
     }
 }
