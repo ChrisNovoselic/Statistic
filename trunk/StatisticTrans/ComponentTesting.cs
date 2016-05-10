@@ -53,6 +53,11 @@ namespace StatisticTrans
         /// <param name="nameElem">имя опрашеваемого компонента</param>
         public void AttemptIter(string nameElem)
         {
+            if (currentIter == CountPart)
+                ClearStck();
+            else
+                ;
+
             Iters[currentIter] = nameElem;
             currentIter++;
             commonTotalIter++;
@@ -65,12 +70,12 @@ namespace StatisticTrans
         /// </summary>
         public void SuccessIter()
         {
-            resultIter();
-
             successIter++;
             commonSuccessIter++;
 
             reportIter(getTextReportSuccessIter ());
+
+            //resultIter();
         }
 
         /// <summary>
@@ -87,18 +92,18 @@ namespace StatisticTrans
         /// </summary>
         public void ErrorIter()
         {
-            resultIter();
-
             reportIter(getTextReportErrorIter());
+
+            //resultIter();
         }
 
-        private void resultIter ()
-        {
-            if (CountPart == currentIter)
-                ClearStck();
-            else
-                ;
-        }
+        //private void resultIter ()
+        //{
+        //    if (CountPart == currentIter)
+        //        ClearStck();
+        //    else
+        //        ;
+        //}
 
         private void reportIter(string text)
         {
