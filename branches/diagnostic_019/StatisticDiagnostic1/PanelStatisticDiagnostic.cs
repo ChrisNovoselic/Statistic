@@ -813,7 +813,7 @@ namespace StatisticDiagnostic
             /// <summary>
             /// Список номер истчоников СОТИАССО
             /// </summary>
-            enum TM { TM1 = 2, TM2 };
+            enum TM { TM_1 = 2, TM_2, TM_1T, TM_2T};
 
             /// <summary>
             /// Номер строки вызова контекстного меню
@@ -1317,13 +1317,15 @@ namespace StatisticDiagnostic
                         else
                             bFL = false;
                         break;
-
+                    case "СОТИАССО_TorIs_0":
+                    case "СОТИАССО_TorIs":
                     case "СОТИАССО_0":
                         if (diffTime(m_DTnowSOTIASSO, time))
                             bFL = true;
                         else
                             bFL = false;
                         break;
+
                 }
                 return bFL;
             }
