@@ -82,12 +82,12 @@ namespace StatisticAnalyzer
                 this.tabPageTabes = new System.Windows.Forms.TabPage();
                 this.panelTabPageTabes = new TableLayoutPanel();
                 this.listTabVisible = new System.Windows.Forms.ListBox();
-                this.checkBoxs=new CheckBox[(int)FormChangeMode.MODE_TECCOMPONENT.UNKNOWN +1];
+                this.checkBoxs=new CheckBox[(int)FormChangeMode.MODE_TECCOMPONENT.ANY +1];
                 this.checkBoxs[(int)FormChangeMode.MODE_TECCOMPONENT.TEC] = new CheckBox();
                 this.checkBoxs[(int)FormChangeMode.MODE_TECCOMPONENT.TG] = new CheckBox();
                 this.checkBoxs[(int)FormChangeMode.MODE_TECCOMPONENT.GTP] = new CheckBox();
                 this.checkBoxs[(int)FormChangeMode.MODE_TECCOMPONENT.PC] = new CheckBox();
-                this.checkBoxs[(int)FormChangeMode.MODE_TECCOMPONENT.UNKNOWN] = new CheckBox();
+                this.checkBoxs[(int)FormChangeMode.MODE_TECCOMPONENT.ANY] = new CheckBox();
 
                 System.Windows.Forms.Label labelDatetimeStart = new System.Windows.Forms.Label();
                 this.dgvDatetimeStart = new System.Windows.Forms.DataGridView();
@@ -408,7 +408,7 @@ namespace StatisticAnalyzer
                     this.panelTabPageTabes.ColumnStyles.Add(new ColumnStyle(SizeType.Percent, 100F / this.panelTabPageTabes.ColumnCount));
                 for (i = 0; i < this.panelTabPageTabes.RowCount; i++)
                     this.panelTabPageTabes.RowStyles.Add(new RowStyle(SizeType.Percent, 100F / this.panelTabPageTabes.RowCount));
-                this.panelTabPageTabes.Controls.Add(this.checkBoxs[(int)FormChangeMode.MODE_TECCOMPONENT.UNKNOWN], 0, 0); this.SetRowSpan(this.checkBoxs[(int)FormChangeMode.MODE_TECCOMPONENT.UNKNOWN], 2);
+                this.panelTabPageTabes.Controls.Add(this.checkBoxs[(int)FormChangeMode.MODE_TECCOMPONENT.ANY], 0, 0); this.SetRowSpan(this.checkBoxs[(int)FormChangeMode.MODE_TECCOMPONENT.ANY], 2);
                 this.panelTabPageTabes.Controls.Add(this.checkBoxs[(int)FormChangeMode.MODE_TECCOMPONENT.PC], 1, 0); this.SetRowSpan(this.checkBoxs[(int)FormChangeMode.MODE_TECCOMPONENT.PC], 2);
                 this.panelTabPageTabes.Controls.Add(this.checkBoxs[(int)FormChangeMode.MODE_TECCOMPONENT.GTP], 1, 2); this.SetRowSpan(this.checkBoxs[(int)FormChangeMode.MODE_TECCOMPONENT.GTP], 2);
                 this.panelTabPageTabes.Controls.Add(this.checkBoxs[(int)FormChangeMode.MODE_TECCOMPONENT.TG], 2, 0); this.SetRowSpan(this.checkBoxs[(int)FormChangeMode.MODE_TECCOMPONENT.TG], 2);
@@ -475,15 +475,15 @@ namespace StatisticAnalyzer
                 // 
                 // checkBoxAdmin
                 // 
-                this.checkBoxs[(int)FormChangeMode.MODE_TECCOMPONENT.UNKNOWN].AutoSize = true;
-                this.checkBoxs[(int)FormChangeMode.MODE_TECCOMPONENT.UNKNOWN].Enabled = true;
-                //this.checkBoxs[(int)FormChangeMode.MODE_TECCOMPONENT.UNKNOWN].Location = new System.Drawing.Point(6, 275);
-                this.checkBoxs[(int)FormChangeMode.MODE_TECCOMPONENT.UNKNOWN].Name = "checkBoxAdmin";
-                //this.checkBoxs[(int)FormChangeMode.MODE_TECCOMPONENT.UNKNOWN].Size = new System.Drawing.Size(48, 17);
-                this.checkBoxs[(int)FormChangeMode.MODE_TECCOMPONENT.UNKNOWN].TabIndex = 20;
-                this.checkBoxs[(int)FormChangeMode.MODE_TECCOMPONENT.UNKNOWN].Text = "ПБР";
-                this.checkBoxs[(int)FormChangeMode.MODE_TECCOMPONENT.UNKNOWN].UseVisualStyleBackColor = true;
-                this.checkBoxs[(int)FormChangeMode.MODE_TECCOMPONENT.UNKNOWN].Checked = true;
+                this.checkBoxs[(int)FormChangeMode.MODE_TECCOMPONENT.ANY].AutoSize = true;
+                this.checkBoxs[(int)FormChangeMode.MODE_TECCOMPONENT.ANY].Enabled = true;
+                //this.checkBoxs[(int)FormChangeMode.MODE_TECCOMPONENT.ANY].Location = new System.Drawing.Point(6, 275);
+                this.checkBoxs[(int)FormChangeMode.MODE_TECCOMPONENT.ANY].Name = "checkBoxAdmin";
+                //this.checkBoxs[(int)FormChangeMode.MODE_TECCOMPONENT.ANY].Size = new System.Drawing.Size(48, 17);
+                this.checkBoxs[(int)FormChangeMode.MODE_TECCOMPONENT.ANY].TabIndex = 20;
+                this.checkBoxs[(int)FormChangeMode.MODE_TECCOMPONENT.ANY].Text = "ПБР";
+                this.checkBoxs[(int)FormChangeMode.MODE_TECCOMPONENT.ANY].UseVisualStyleBackColor = true;
+                this.checkBoxs[(int)FormChangeMode.MODE_TECCOMPONENT.ANY].Checked = true;
 
                 // 
                 // buttonUpdate
@@ -704,7 +704,7 @@ namespace StatisticAnalyzer
                     panelTabs.RowStyles.Add(new RowStyle(SizeType.Percent, 100F / panelTabs.RowCount));
                 panelTabs.Dock = DockStyle.Fill;
 
-                panelTabs.Controls.Add(this.checkBoxs[(int)FormChangeMode.MODE_TECCOMPONENT.UNKNOWN], 0, 8); this.SetRowSpan(this.checkBoxs[(int)FormChangeMode.MODE_TECCOMPONENT.UNKNOWN], 2);
+                panelTabs.Controls.Add(this.checkBoxs[(int)FormChangeMode.MODE_TECCOMPONENT.ANY], 0, 8); this.SetRowSpan(this.checkBoxs[(int)FormChangeMode.MODE_TECCOMPONENT.ANY], 2);
                 panelTabs.Controls.Add(this.checkBoxs[(int)FormChangeMode.MODE_TECCOMPONENT.PC], 0,6); this.SetRowSpan(this.checkBoxs[(int)FormChangeMode.MODE_TECCOMPONENT.PC], 2);
                 panelTabs.Controls.Add(this.checkBoxs[(int)FormChangeMode.MODE_TECCOMPONENT.GTP], 0, 4); this.SetRowSpan(this.checkBoxs[(int)FormChangeMode.MODE_TECCOMPONENT.GTP], 2);
                 panelTabs.Controls.Add(this.checkBoxs[(int)FormChangeMode.MODE_TECCOMPONENT.TG], 0, 2); this.SetRowSpan(this.checkBoxs[(int)FormChangeMode.MODE_TECCOMPONENT.TG], 2);
@@ -942,7 +942,7 @@ namespace StatisticAnalyzer
             }
             unregister_idListenerConfDB(idListener);
         }
-        
+
         /// <summary>
         /// Регистрация ID
         /// </summary>
@@ -2296,7 +2296,7 @@ namespace StatisticAnalyzer
             checkBoxs[(int)FormChangeMode.MODE_TECCOMPONENT.PC].CheckedChanged += new EventHandler(checkBox_click);
             checkBoxs[(int)FormChangeMode.MODE_TECCOMPONENT.TEC].CheckedChanged += new EventHandler(checkBox_click);
             checkBoxs[(int)FormChangeMode.MODE_TECCOMPONENT.TG].CheckedChanged += new EventHandler(checkBox_click);
-            checkBoxs[(int)FormChangeMode.MODE_TECCOMPONENT.UNKNOWN].CheckedChanged += new EventHandler(checkBox_click);
+            checkBoxs[(int)FormChangeMode.MODE_TECCOMPONENT.ANY].CheckedChanged += new EventHandler(checkBox_click);
         }
 
         #region Наследуемые методы
@@ -3266,19 +3266,20 @@ namespace StatisticAnalyzer
                 SEPARATOR, SEPARATOR_DATETIME,
                 UNKNOWN, COUNT_TYPE_LOGMESSAGE
             };
+
             public static string[] DESC_LOGMESSAGE = { "Запуск", "Выход",
-                                            "БД открыть", "БД закрыть", "БД исключение",
-                                            "Ошибка", "Отладка",
-                                            "Детализация",
-                                            "Раздел./сообщ.", "Раздел./дата/время",
-                                            "Неопределенный тип" };
+                "БД открыть", "БД закрыть", "БД исключение",
+                "Ошибка", "Отладка",
+                "Детализация",
+                "Раздел./сообщ.", "Раздел./дата/время",
+                "Неопределенный тип" };
 
             protected string[] SIGNATURE_LOGMESSAGE = { ProgramBase.MessageWellcome, ProgramBase.MessageExit,
-                                                    DbTSQLInterface.MessageDbOpen, DbTSQLInterface.MessageDbClose, DbTSQLInterface.MessageDbException,
-                                                    "!Ошибка!", "!Отладка!",
-                                                    string.Empty,
-                                                    Logging.MessageSeparator, Logging.DatetimeStampSeparator,
-                                                    string.Empty, "Неопределенный тип" };
+                DbTSQLInterface.MessageDbOpen, DbTSQLInterface.MessageDbClose, DbTSQLInterface.MessageDbException,
+                "!Ошибка!", "!Отладка!",
+                string.Empty,
+                Logging.MessageSeparator, Logging.DatetimeStampSeparator,
+                string.Empty, "Неопределенный тип" };
 
             public LogParse_File()
             {

@@ -2224,7 +2224,7 @@ namespace Statistic
         private void addTabPageAdmin(int idListener, FormChangeMode.MANAGER modeAdmin)
         {
             int iRes = 0;
-            StatisticCommon.FormChangeMode.MODE_TECCOMPONENT mode = FormChangeMode.MODE_TECCOMPONENT.UNKNOWN;
+            StatisticCommon.FormChangeMode.MODE_TECCOMPONENT mode = FormChangeMode.MODE_TECCOMPONENT.ANY;
 
             if (HStatisticUsers.RoleIsDisp == true)
             {

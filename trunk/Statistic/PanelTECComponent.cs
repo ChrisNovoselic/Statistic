@@ -127,7 +127,7 @@ namespace Statistic
         DelegateBoolFunc delegateReportClear;
 
         TG new_tg = new TG();
-        
+
         DB_Sostav_TEC db_sostav = new DB_Sostav_TEC();
 
         /// <summary>
@@ -142,19 +142,8 @@ namespace Statistic
             return nameModes[indx];
         }
 
-        protected DataTable[] m_arr_originalTable = new DataTable [4];
-
-        protected DataTable[] m_arr_editTable = new DataTable[4];
-
-        //protected DataTable m_arr_originalTable[(int)FormChangeMode.MODE_TECCOMPONENT.TG],
-        //    m_arr_originalTable[(int)FormChangeMode.MODE_TECCOMPONENT.GTP],
-        //    m_arr_originalTable[(int)FormChangeMode.MODE_TECCOMPONENT.PC],
-        //    m_arr_originalTable[(int)FormChangeMode.MODE_TECCOMPONENT.TEC],
-        //    m_arr_editTable[(int)FormChangeMode.MODE_TECCOMPONENT.TG],
-        //    m_table_GTP_edited,
-        //    m_arr_editTable[(int)FormChangeMode.MODE_TECCOMPONENT.PC],
-        //    m_arr_editTable[(int)FormChangeMode.MODE_TECCOMPONENT.TGm_arr_editTable[(int)FormChangeMode.MODE_TECCOMPONENT.TEC],
-        //    m_table_audit;
+        protected DataTable[] m_arr_originalTable
+            , m_arr_editTable;
 
         #endregion
 
@@ -162,7 +151,9 @@ namespace Statistic
             : base()
         {
             InitializeComponent();
-            
+
+            m_arr_originalTable = new DataTable[(int)FormChangeMode.MODE_TECCOMPONENT.ANY];
+            m_arr_editTable = new DataTable[(int)FormChangeMode.MODE_TECCOMPONENT.ANY];
             fill_DataTable_ComponentsTEC();
             
             treeView_TECComponent.GetID += new TreeView_TECComponent.intGetID(this.GetNextID);
@@ -174,7 +165,7 @@ namespace Statistic
         /// Активировать/деактивировать панель
         /// </summary>
         /// <param name="active">Признак активации/деактивации</param>
-        /// <returns></returns>
+        /// <returns>Признак применения указанного в аргументе признака</returns>
         public override bool Activate(bool activated)
         {
             bool bRes = base.Activate(activated);
@@ -183,6 +174,8 @@ namespace Statistic
             {
                 delegateReportClear(true);
             }
+            else
+                ;
 
             return bRes;
         }
@@ -222,7 +215,7 @@ namespace Statistic
         /// </summary>
         private void fill_DataTable_ComponentsTEC()
         {
-            for(int i=(int)FormChangeMode.MODE_TECCOMPONENT.TEC;i<(int)FormChangeMode.MODE_TECCOMPONENT.UNKNOWN;i++)
+            for(int i = (int)FormChangeMode.MODE_TECCOMPONENT.TEC; i < (int)FormChangeMode.MODE_TECCOMPONENT.ANY; i++)
             {
                 m_arr_originalTable[i]=db_sostav.GetTableCompTEC(i);
             }
@@ -512,7 +505,7 @@ namespace Statistic
 
             if (validate_saving(m_arr_editTable, out warning) == false)
             {
-                for (int i = (int)FormChangeMode.MODE_TECCOMPONENT.TEC; i < (int)FormChangeMode.MODE_TECCOMPONENT.UNKNOWN; i++)
+                for (int i = (int)FormChangeMode.MODE_TECCOMPONENT.TEC; i < (int)FormChangeMode.MODE_TECCOMPONENT.ANY; i++)
                 {
                     if (i == (int)FormChangeMode.MODE_TECCOMPONENT.PC)
                         db_sostav.Edit(FormChangeMode.getPrefixMode((short)i) + "_LIST", "ID_TEC,ID", m_arr_originalTable[i], m_arr_editTable[i], out err);
@@ -1212,7 +1205,7 @@ namespace Statistic
                             pc_indx = 0,
                             node_indx = -1;
 
-                        for (int i = (int)FormChangeMode.MODE_TECCOMPONENT.GTP; i < (int)FormChangeMode.MODE_TECCOMPONENT.UNKNOWN; i++)
+                        for (int i = (int)FormChangeMode.MODE_TECCOMPONENT.GTP; i < (int)FormChangeMode.MODE_TECCOMPONENT.ANY; i++)
                         {
                            this.Nodes[tec_indx].Nodes.Add(FormChangeMode.getNameMode((short)i));
                         }

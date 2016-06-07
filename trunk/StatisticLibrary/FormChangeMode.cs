@@ -56,7 +56,8 @@ namespace StatisticCommon
         /// <summary>
         /// Перечисление - тип режима
         /// </summary>
-        public enum MODE_TECCOMPONENT : ushort { TEC, GTP, PC, TG, UNKNOWN };
+        public enum MODE_TECCOMPONENT : ushort { TEC, GTP, PC, TG
+            , ANY };
         /// <summary>
         /// Тип вкладки  из инструментария "администратор-диспетчер"
         /// </summary>
@@ -167,7 +168,7 @@ namespace StatisticCommon
 
             //m_modeTECComponent.UnMarked ();
 
-            //for (int i = (int)MODE_TECCOMPONENT.TEC; i < (int)MODE_TECCOMPONENT.UNKNOWN; i++)
+            //for (int i = (int)MODE_TECCOMPONENT.TEC; i < (int)MODE_TECCOMPONENT.ANY; i++)
             //{
             //    if (m_listCheckBoxTECComponent[i].Checked == true)
             //        m_modeTECComponent.Marked (i);
@@ -274,7 +275,7 @@ namespace StatisticCommon
         /// <param name="idMaxVal">Максимальное значение идентификатора компонента ТЭЦ, привлекаемое для обработки</param>
         /// <param name="mode">Тип режима</param>
         /// <returns>Признак выполнения функции</returns>
-        private bool itemSetState(Item item, int idMinVal = -1, int idMaxVal = -1, MODE_TECCOMPONENT mode = MODE_TECCOMPONENT.UNKNOWN)
+        private bool itemSetState(Item item, int idMinVal = -1, int idMaxVal = -1, MODE_TECCOMPONENT mode = MODE_TECCOMPONENT.ANY)
         {
             bool bRes = false;
 

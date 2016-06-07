@@ -209,7 +209,7 @@ namespace StatisticCommon
             //m_ignore_connsett_data = ! bUseData;
 
             if (!(idListener < 0))
-                if (mode == FormChangeMode.MODE_TECCOMPONENT.UNKNOWN)
+                if (mode == FormChangeMode.MODE_TECCOMPONENT.ANY)
                     this.m_list_tec = new InitTEC_200(idListener, bIgnoreTECInUse, arTECLimit, false).tec;
                 else
                     this.m_list_tec = new InitTEC_200(idListener, (short)mode, bIgnoreTECInUse, arTECLimit, false).tec;
@@ -553,7 +553,7 @@ namespace StatisticCommon
 
         public FormChangeMode.MODE_TECCOMPONENT modeTECComponent(int indx)
         {
-            FormChangeMode.MODE_TECCOMPONENT modeRes = FormChangeMode.MODE_TECCOMPONENT.UNKNOWN;
+            FormChangeMode.MODE_TECCOMPONENT modeRes = FormChangeMode.MODE_TECCOMPONENT.ANY;
             ////Вариант №1
             //if ((allTECComponents[indx].m_id > 0) && (allTECComponents[indx].m_id < 100))
             //    //???
