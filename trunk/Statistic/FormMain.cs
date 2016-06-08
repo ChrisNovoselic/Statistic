@@ -1005,8 +1005,7 @@ namespace Statistic
                     else
                         throw new Exception(@"FormMain::FormMain_OnFormFloat_Closing () - невозможно определить тип панели...");
                 //Добавить вкладку в "основное" окно
-                tclTecViews.AddTabPage(formFloat.Text, getKeyFormFloat(formFloat), HTabCtrlEx.TYPE_TAB.FLOAT);
-                tclTecViews.TabPages[tclTecViews.TabCount - 1].Controls.Add(formFloat.GetPanel());
+                tclTecViews.AddTabPage(formFloat.GetPanel(), formFloat.Text, getKeyFormFloat(formFloat), HTabCtrlEx.TYPE_TAB.FLOAT);
 
                 //???Отладка
                 Console.WriteLine(@"FormMain::FormMain_OnFormFloat_Closing () - TabCount=" + tclTecViews.TabCount + @", SelectedIndex=" + tclTecViews.SelectedIndex);
@@ -1952,11 +1951,10 @@ namespace Statistic
                     && (m_dictFormFloat == null ? true : m_dictFormFloat.ContainsKey(panel_tecView.id) == false))
                 {
                     // добавить вкладку
-                    tclTecViews.AddTabPage(formChangeMode.m_listItems[panel_tecView.indx_itemChangeMode].name_shr
+                    tclTecViews.AddTabPage(m_listStandardTabs[panel_tecView.indx_tecView]
+                        , formChangeMode.m_listItems[panel_tecView.indx_itemChangeMode].name_shr
                         , m_listStandardTabs[panel_tecView.indx_tecView].m_ID
                         , HTabCtrlEx.TYPE_TAB.FLOAT);
-                    // добавить к вкладке панель
-                    tclTecViews.TabPages[tclTecViews.TabCount - 1].Controls.Add(m_listStandardTabs[panel_tecView.indx_tecView]);
                     // инициировать операции по инициализации панели
                     m_listStandardTabs[panel_tecView.indx_tecView].Start();
                 }
@@ -2286,9 +2284,7 @@ namespace Statistic
                                 break;
                         }
 
-                        tclTecViews.AddTabPage(formChangeMode.getNameAdminValues(modeAdmin, mode), -1, HTabCtrlEx.TYPE_TAB.FIXED);
-
-                        tclTecViews.TabPages[tclTecViews.TabCount - 1].Controls.Add(m_arPanelAdmin[(int)modeAdmin]);
+                        tclTecViews.AddTabPage(m_arPanelAdmin[(int)modeAdmin], formChangeMode.getNameAdminValues(modeAdmin, mode), -1, HTabCtrlEx.TYPE_TAB.FIXED);
 
                         switch (modeAdmin)
                         {
@@ -2605,6 +2601,8 @@ namespace Statistic
 
         private void видSubToolStripMenuItem_CheckedChanged(PanelStatistic obj, string nameTab, bool[] arCheckedStoped)
         {
+            bool bRes = false;
+
             if (arCheckedStoped[0] == true)
             {
                 HTabCtrlEx.TYPE_TAB typeTab = HTabCtrlEx.TYPE_TAB.FIXED;
@@ -2620,8 +2618,7 @@ namespace Statistic
                 else
                     ;
 
-                tclTecViews.AddTabPage(nameTab, key, typeTab);
-                tclTecViews.TabPages[tclTecViews.TabCount - 1].Controls.Add(obj);
+                tclTecViews.AddTabPage(obj, nameTab, key, typeTab);
 
                 obj.Start();
                 if (m_bAutoActionTabs == false)
@@ -2631,7 +2628,7 @@ namespace Statistic
             }
             else
             {//arCheckedStoped[0] == false
-                bool bRes = tclTecViews.RemoveTabPage(nameTab);
+                bRes = tclTecViews.RemoveTabPage(); //nameTab
                 if (arCheckedStoped[1] == true)
                 {
                     obj.Activate(false);
