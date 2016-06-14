@@ -131,20 +131,295 @@ namespace Statistic
                 }
 
                 private void InitializeComponents()
-                {                    
+                {
                     COUNT_ROWS = 3;
 
-                    SZ_COLUMN_LABEL = 58F;
+                    // значение 'SZ_COLUMN_LABEL' устанавливается индивидуально
+                    /*SZ_COLUMN_LABEL = 48F;*/ SZ_COLUMN_LABEL_VALUE = 78F;
+                    SZ_COLUMN_TG_LABEL = 40F; SZ_COLUMN_TG_LABEL_VALUE = 75F;
+
+                    m_indxStartCommonFirstValueSeries = (int)CONTROLS.lblTemperatureCurrent;
+                    m_indxStartCommonSecondValueSeries = (int)CONTROLS.lblDeviatCurrent;
+                    m_iCountCommonLabels = (int)CONTROLS.lblDeviatDateValue - (int)CONTROLS.lblTemperatureCurrent + 1;
+
+                    // количество и параметры строк макета панели
+                    this.RowCount = COUNT_ROWS;
+                    for (int i = 0; i < this.RowCount + 1; i++)
+                        this.RowStyles.Add(new RowStyle(SizeType.Percent, (float)Math.Round((float)100 / this.RowCount, 1)));
+
+                    this.m_arLabelCommon = new System.Windows.Forms.Label[m_iCountCommonLabels];
+
+                    //
+                    // btnSetNow
+                    //
+                    this.Controls.Add(this.btnSetNow, 0, 0);
+                    // 
+                    // dtprDate
+                    // 
+                    this.Controls.Add(this.dtprDate, 0, 1);
+                    // 
+                    // lblServerTime
+                    // 
+                    this.Controls.Add(this.lblServerTime, 0, 2);
+
+                    //Ширина столбца группы "Элементы управления"
+                    this.ColumnStyles.Add(new ColumnStyle(SizeType.Absolute, 100F));
+
+                    //Создание ОБЩих элементов управления
+                    Color foreColor, backClolor;
+                    float szFont;
+                    ContentAlignment align;
+                    string text = string.Empty;
+
+                    #region добавить поля для значений ТЕМПЕРАТУРЫ и их подписи
+                    for (CONTROLS i = (CONTROLS)m_indxStartCommonFirstValueSeries; i < CONTROLS.lblTemperatureDateValue + 1; i++)
+                    {
+                        //szFont = 6F;
+
+                        switch (i)
+                        {
+                            case CONTROLS.lblTemperatureCurrent:
+                            case CONTROLS.lblTemperatureHour:
+                            case CONTROLS.lblTemperatureDate:
+                                foreColor = Color.Black;
+                                backClolor = Color.Empty;
+                                szFont = 8F;
+                                align = ContentAlignment.MiddleLeft;
+                                break;
+                            case CONTROLS.lblTemperatureCurrentValue:
+                            case CONTROLS.lblTemperatureHourValue:
+                            case CONTROLS.lblTemperatureDateValue:
+                                foreColor = Color.LimeGreen;
+                                backClolor = Color.Black;
+                                szFont = 15F;
+                                align = ContentAlignment.MiddleCenter;
+                                break;
+                            default:
+                                foreColor = Color.Yellow;
+                                backClolor = Color.Red;
+                                szFont = 6F;
+                                align = ContentAlignment.MiddleCenter;
+                                break;
+                        }
+
+                        switch (i)
+                        {
+                            case CONTROLS.lblTemperatureCurrent:
+                                text = @"t тек";
+                                break;
+                            case CONTROLS.lblTemperatureHour:
+                                text = @"t час";
+                                break;
+                            case CONTROLS.lblTemperatureDate:
+                                text = @"t сут";
+                                break;
+                            default:
+                                text = string.Empty;
+                                break;
+                        }
+
+                        createLabel((int)i, text, foreColor, backClolor, szFont, align);
+                    }
+                    #endregion
+
+                    #region добавить поля для значений отклонения и их подписи
+                    for (CONTROLS i = (CONTROLS)m_indxStartCommonSecondValueSeries; i < CONTROLS.lblDeviatDateValue + 1; i++)
+                    {
+                        switch (i)
+                        {
+                            case CONTROLS.lblDeviatCurrent:
+                            case CONTROLS.lblDeviatHour:
+                            case CONTROLS.lblDeviatDate:
+                                foreColor = Color.Black;
+                                backClolor = Color.Empty;
+                                szFont = 8F;
+                                align = ContentAlignment.MiddleLeft;
+                                break;
+                            case CONTROLS.lblDeviatCurrentValue:
+                            case CONTROLS.lblDeviatHourValue:
+                            case CONTROLS.lblDeviatDateValue:
+                                foreColor = Color.LimeGreen;
+                                backClolor = Color.Black;
+                                szFont = 15F;
+                                align = ContentAlignment.MiddleCenter;
+                                break;
+                            default:
+                                foreColor = Color.Yellow;
+                                backClolor = Color.Red;
+                                szFont = 6F;
+                                align = ContentAlignment.MiddleCenter;
+                                break;
+                        }
+
+                        switch (i)
+                        {
+                            case CONTROLS.lblDeviatCurrent:
+                                text = @"Откл.тек";
+                                break;
+                            case CONTROLS.lblDeviatHour:
+                                text = @"Откл.час";
+                                break;
+                            case CONTROLS.lblDeviatDate:
+                                text = @"Откл.сут";
+                                break;
+                            default:
+                                text = string.Empty;
+                                break;
+                        }
+
+                        createLabel((int)i, text, foreColor, backClolor, szFont, align);
+                    }
+                    #endregion
                 }
+
+                public enum CONTROLS : short
+                {
+                    unknown = -1
+                    , lblTemperatureCurrent, lblTemperatureCurrentValue
+                    , lblTemperatureHour, lblTemperatureHourValue
+                    , lblTemperatureDate, lblTemperatureDateValue
+                    , lblDeviatCurrent, lblDeviatCurrentValue
+                    , lblDeviatHour, lblDeviatHourValue
+                    , lblDeviatDate, lblDeviatDateValue
+                    , btnSetNow
+                    , dtprDate
+                    , cbxTimeZone
+                    , lblServerTime
+                        , COUNT_CONTROLS
+                }
+
+                //protected override void initializeLayoutStyle(int cols = -1, int rows = -1)
+                //{
+                //    throw new NotImplementedException();
+                //}
 
                 protected override TableLayoutPanelCellPosition getPositionCell(int indx)
                 {
-                    throw new NotImplementedException();
+                    int row = -1,
+                    col = -1;
+
+                    switch ((CONTROLS)indx)
+                    {
+                        case CONTROLS.lblTemperatureCurrent:
+                            row = 0; col = 1;
+                            break;
+                        case CONTROLS.lblTemperatureCurrentValue:
+                            row = 0; col = 2;
+                            break;
+                        case CONTROLS.lblTemperatureHour:
+                            row = 1; col = 1;
+                            break;
+                        case CONTROLS.lblTemperatureHourValue:
+                            row = 1; col = 2;
+                            break;
+                        case CONTROLS.lblTemperatureDate:
+                            row = 2; col = 1;
+                            break;
+                        case CONTROLS.lblTemperatureDateValue:
+                            row = 2; col = 2;
+                            break;
+                        case CONTROLS.lblDeviatCurrent:
+                            row = 0; col = 3;
+                            break;
+                        case CONTROLS.lblDeviatCurrentValue:
+                            row = 0; col = 4;
+                            break;
+                        case CONTROLS.lblDeviatHour:
+                            row = 1; col = 3;
+                            break;
+                        case CONTROLS.lblDeviatHourValue:
+                            row = 1; col = 4;
+                            break;
+                        case CONTROLS.lblDeviatDate:
+                            row = 2; col = 3;
+                            break;
+                        case CONTROLS.lblDeviatDateValue:
+                            row = 2; col = 4;
+                            break;
+                        default:
+                            break;
+                    }
+
+                    return new TableLayoutPanelCellPosition(col, row);
                 }
 
                 public override void RestructControl()
                 {
-                    ;
+                    COUNT_LABEL = 2; COUNT_TG_IN_COLUMN = 3; COL_TG_START = 5;
+                    COUNT_ROW_LABELCOMMON = 1;
+
+                    bool bPowerFactZoom = false;
+                    int cntCols = 0;
+
+                    TableLayoutPanelCellPosition pos;
+
+                    //Удаление ОБЩих элементов управления
+                    // температуры
+                    removeFirstCommonLabels((int)CONTROLS.lblTemperatureDateValue);
+                    ////??? мощности
+                    //removeSecondCommonLabels((int)CONTROLS.lblPowerHourValue);
+
+                    //Удаление ПУСТой панели
+                    if (!(this.Controls.IndexOf(m_panelEmpty) < 0)) this.Controls.Remove(m_panelEmpty); else ;
+
+                    //Удаление стилей столбцов
+                    while (this.ColumnStyles.Count > 1)
+                        this.ColumnStyles.RemoveAt(this.ColumnStyles.Count - 1);
+
+                    ////??? отображается ли Мощность (Отклонения) - для текущей вкладки неактуально
+                    //COL_TG_START -= 2; // вне ~ от контекстного меню, т.к. контекстного меню нет
+
+                    ////??? отображается ли ТМ - для текущей вкладки неактуально
+                    //COUNT_LABEL--; // вне ~ от контекстного меню, т.к. контекстного меню нет
+                    //COL_TG_START--; // отображение ТМ для этой вкладки не предусмотрено
+
+                    #region Температура
+                    for (CONTROLS i = (CONTROLS)m_indxStartCommonFirstValueSeries; i < CONTROLS.lblTemperatureDateValue + 1; i++)
+                    {
+                        //this.Controls.Add(m_arLabelCommon[(int)i - m_indxStartCommonPVal]);
+                        this.Controls.Add(this.m_arLabelCommon[(int)i - m_indxStartCommonFirstValueSeries]);
+                        pos = getPositionCell((int)i);
+                        this.SetCellPosition(this.m_arLabelCommon[(int)i - m_indxStartCommonFirstValueSeries], pos);
+                        //this.SetRowSpan(this.m_arLabelCommon[(int)i - m_indxStartCommonFirstValueSeries], COUNT_ROW_LABELCOMMON);
+                    }
+
+                    //Ширина столбцов группы "Температура"
+                    SZ_COLUMN_LABEL = 48F; /*SZ_COLUMN_LABEL_VALUE = 78F;*/
+                    this.ColumnStyles.Add(new ColumnStyle(SizeType.Absolute, SZ_COLUMN_LABEL));
+                    this.ColumnStyles.Add(new ColumnStyle(SizeType.Absolute, SZ_COLUMN_LABEL_VALUE));
+                    #endregion
+
+                    #region Отклонение
+                    for (CONTROLS i = (CONTROLS)m_indxStartCommonSecondValueSeries; i < CONTROLS.lblDeviatDateValue + 1; i++)
+                    {
+                        //this.Controls.Add(m_arLabelCommon[(int)i - m_indxStartCommonPVal]);
+                        this.Controls.Add(this.m_arLabelCommon[(int)i - m_indxStartCommonFirstValueSeries]);
+                        this.SetCellPosition(this.m_arLabelCommon[(int)i - m_indxStartCommonFirstValueSeries], getPositionCell((int)i));
+                        //this.SetRowSpan(this.m_arLabelCommon[(int)i - m_indxStartCommonFirstValueSeries], COUNT_ROW_LABELCOMMON);
+                    }
+
+                    //Ширина столбцов группы "Отклонение"
+                    SZ_COLUMN_LABEL = 63F; /*SZ_COLUMN_LABEL_VALUE = 78F;*/
+                    this.ColumnStyles.Add(new ColumnStyle(SizeType.Absolute, SZ_COLUMN_LABEL));
+                    this.ColumnStyles.Add(new ColumnStyle(SizeType.Absolute, SZ_COLUMN_LABEL_VALUE));
+                    #endregion
+
+                    cntCols = ((m_tgLabels.Count / COUNT_TG_IN_COLUMN) + ((m_tgLabels.Count % COUNT_TG_IN_COLUMN == 0) ? 0 : 1));
+
+                    for (int i = 0; i < cntCols; i++)
+                    {
+                        this.ColumnStyles.Add(new ColumnStyle(SizeType.Absolute, SZ_COLUMN_TG_LABEL));
+                        this.ColumnStyles.Add(new ColumnStyle(SizeType.Absolute, SZ_COLUMN_TG_LABEL_VALUE));
+                    }
+
+                    //if (m_tgLabels.Count > 0)
+                    //    addTGLabels(false);
+                    //else
+                    //    ;
+
+                    this.Controls.Add(m_panelEmpty, COL_TG_START + cntCols * COUNT_LABEL + (bPowerFactZoom == true ? 1 : 0), 0);
+                    this.SetRowSpan(m_panelEmpty, COUNT_ROWS);
+                    this.ColumnStyles.Add(new ColumnStyle(SizeType.AutoSize));
                 }
 
                 public override void ShowFactValues()
