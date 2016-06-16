@@ -1358,6 +1358,8 @@ namespace StatisticDiagnostic
 
                 switch (nameSource)
                 {
+                    case "СОТИАССО_TorIs_0":
+                    case "СОТИАССО_TorIs":
                     case "СОТИАССО":
                         if ((Npanel + 1) == 6)
                             result = result.AddHours(6.0);
