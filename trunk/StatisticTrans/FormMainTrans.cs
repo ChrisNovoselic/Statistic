@@ -18,7 +18,7 @@ namespace StatisticTrans
     {
         [DllImport("user32.dll")]
         static extern IntPtr SendMessage(IntPtr hWnd, int Msg, int wParam, int lParam);
-        ComponentTesting CT;
+        ComponentTesting CT;//
         private const Int32 TIMER_SERVICE_MIN_INTERVAL = 66666;
 
         /// <summary>
