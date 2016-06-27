@@ -584,12 +584,14 @@ namespace StatisticAlarm
         //    }
         //}
 
+        private DateTime currentDateTime = DateTime.Now;
         private void onEventDateChanged(object obj, DateRangeEventArgs ev)
         {
             delegateDatetimeChanged(new AdminAlarm.DatetimeCurrentEventArgs(DateCurrent, HourBegin, HourEnd));
             //(Find (INDEX_CONTROL.DGV_EVENTS) as DataGridView).Rows.Clear ();
             (Find(INDEX_CONTROL.DGV_DETAIL) as DataGridView).Rows.Clear();
-            Logging.Logg().Action("PanelAlarm:EventDateChanged - Изменение даты", Logging.INDEX_MESSAGE.NOT_SET);
+            Logging.Logg().Action("PanelAlarm:EventDateChanged - Изменение даты:[" + currentDateTime.ToString() + "]=>[" + ev.Start.ToString() + "]", Logging.INDEX_MESSAGE.NOT_SET);
+            currentDateTime = ev.Start;
         }
 
         public enum INDEX_FILTER : uint { NOT, DATETIME_REGISTRED, ID, ALL }

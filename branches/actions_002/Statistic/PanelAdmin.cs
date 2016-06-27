@@ -334,6 +334,7 @@ namespace Statistic
         {
             DialogResult result;
             Errors resultSaving;
+            string prev_datetime = m_admin.m_prevDate.ToString();
 
             bool bRequery = false;
 
@@ -377,7 +378,7 @@ namespace Statistic
                 initTableHourRows();
 
                 m_admin.GetRDGValues(/*(int)m_admin.m_typeFields,*/ m_listTECComponentIndex[comboBoxTecComponent.SelectedIndex], mcldrDate.SelectionStart);
-                Logging.Logg().Action("PanelAdminKomDisp:DateSelected - Изменение даты", Logging.INDEX_MESSAGE.NOT_SET);
+                Logging.Logg().Action("PanelAdminKomDisp:DateSelected - Изменение даты:[" + prev_datetime + "]=>[" + m_admin.m_curDate.ToString() + "]", Logging.INDEX_MESSAGE.NOT_SET);
             }
             else
                 ;
@@ -453,7 +454,8 @@ namespace Statistic
                 ClearTables();
 
                 m_admin.GetRDGValues(/*(int)m_admin.m_typeFields,*/ m_listTECComponentIndex[comboBoxTecComponent.SelectedIndex], mcldrDate.SelectionStart);
-                Logging.Logg().Action("PanelAdminKomDisp:Set - Сохранение данных", Logging.INDEX_MESSAGE.NOT_SET);
+                string log = m_admin.GetLogStringChanged();
+                Logging.Logg().Action("PanelAdminKomDisp:Set - Сохранение данных" + log, Logging.INDEX_MESSAGE.NOT_SET);
             }
             else
             {
