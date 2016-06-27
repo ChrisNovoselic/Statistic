@@ -2876,29 +2876,28 @@ namespace StatisticCommon
             string log = string.Empty;
             for (int i = 0; i < m_curRDGValues.Length; i++)
             {
-                log += @"Час:[" + i + "]" + '\n';
                 string hour_log = String.Empty;
                 if (m_prevRDGValues[i].pbr != m_curRDGValues[i].pbr /*double.Parse(this.dgwAdminTable.Rows[i].Cells[(int)DataGridViewAdmin.DESC_INDEX.PLAN].Value.ToString())*/)
                 {
-                    hour_log += @"ПБР:[" + m_prevRDGValues[i].pbr + "]=>[" + m_curRDGValues[i].pbr + "]" + '\n';
+                    hour_log += @"ПБР [" + m_prevRDGValues[i].pbr.ToString("F1") + "]=>[" + m_curRDGValues[i].pbr.ToString("F1") + "]" + '\n';
                 }
                 else
                     ;
                 if (m_prevRDGValues[i].recomendation != m_curRDGValues[i].recomendation /*double.Parse(this.dgwAdminTable.Rows[i].Cells[(int)DataGridViewAdmin.DESC_INDEX.RECOMENDATION].Value.ToString())*/)
                 {
-                    hour_log += @"Рекомендации:[" + m_prevRDGValues[i].recomendation + "]=>[" + m_curRDGValues[i].recomendation + "]" + '\n';
+                    hour_log += @"Рекомендации [" + m_prevRDGValues[i].recomendation.ToString("F1") + "]=>[" + m_curRDGValues[i].recomendation.ToString("F1") + "]" + '\n';
                 }
                 else
                     ;
                 if (m_prevRDGValues[i].deviation != m_curRDGValues[i].deviation /*double.Parse(this.dgwAdminTable.Rows[i].Cells[(int)DataGridViewAdmin.DESC_INDEX.DEVIATION].Value.ToString())*/)
                 {
-                    hour_log += @"Отклонение:[" + m_prevRDGValues[i].deviation + "]=>[" + m_curRDGValues[i].deviation + "]" + '\n';
+                    hour_log += @"Отклонение [" + m_prevRDGValues[i].deviation.ToString("F1") + "]=>[" + m_curRDGValues[i].deviation.ToString("F1") + "]" + '\n';
                 }
                 else
                     ;
                 if (hour_log != string.Empty)
                 {
-                    log += @"Час:[" + i + "]" + '\n';
+                    log += @"Час[" + i + "]: ";
                     log += hour_log;
                 }
             }

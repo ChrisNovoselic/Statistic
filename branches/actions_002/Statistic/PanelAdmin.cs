@@ -451,11 +451,11 @@ namespace Statistic
             Errors resultSaving = m_admin.SaveChanges();
             if (resultSaving == Errors.NoError)
             {
+                string log = m_admin.GetLogStringChanged();
+                Logging.Logg().Action("PanelAdminKomDisp:Set - Сохранение данных" + log, Logging.INDEX_MESSAGE.NOT_SET);
                 ClearTables();
 
                 m_admin.GetRDGValues(/*(int)m_admin.m_typeFields,*/ m_listTECComponentIndex[comboBoxTecComponent.SelectedIndex], mcldrDate.SelectionStart);
-                string log = m_admin.GetLogStringChanged();
-                Logging.Logg().Action("PanelAdminKomDisp:Set - Сохранение данных" + log, Logging.INDEX_MESSAGE.NOT_SET);
             }
             else
             {
