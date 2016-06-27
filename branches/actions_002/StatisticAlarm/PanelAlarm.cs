@@ -572,6 +572,7 @@ namespace StatisticAlarm
             // за указанную дату
             // в период указанных часов
             delegateDatetimeChanged(new AdminAlarm.DatetimeCurrentEventArgs(DateCurrent, HourBegin, HourEnd));
+            Logging.Logg().Action("PanelAlarm:Refresh - Обновление данных", Logging.INDEX_MESSAGE.NOT_SET);
         }
 
         //private bool isActivateViewAlarm
@@ -588,6 +589,7 @@ namespace StatisticAlarm
             delegateDatetimeChanged(new AdminAlarm.DatetimeCurrentEventArgs(DateCurrent, HourBegin, HourEnd));
             //(Find (INDEX_CONTROL.DGV_EVENTS) as DataGridView).Rows.Clear ();
             (Find(INDEX_CONTROL.DGV_DETAIL) as DataGridView).Rows.Clear();
+            Logging.Logg().Action("PanelAlarm:EventDateChanged - Изменение даты", Logging.INDEX_MESSAGE.NOT_SET);
         }
 
         public enum INDEX_FILTER : uint { NOT, DATETIME_REGISTRED, ID, ALL }

@@ -973,6 +973,8 @@ namespace Statistic
             //Вариань №2
             m_tecView.currHour = true;
             NewDateRefresh();
+            Logging.Logg().Action("PanelTecViewBase:SetNow - Текущая дата/время(обновить)", Logging.INDEX_MESSAGE.NOT_SET);
+
         }
 
         //private void changeState()

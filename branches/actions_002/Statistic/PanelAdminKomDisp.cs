@@ -405,7 +405,10 @@ namespace Statistic
 
                 //Еще одна проверка на ошибки (т.к. была возможность ее подтвердить)
                 if (iRes == 0)
+                {
                     ((AdminTS_KomDisp)m_admin).ImpCSVValues(mcldrDate.SelectionStart, files.FileName);
+                    Logging.Logg().Action("PanelAdminKomDisp:ImportCSV - Импорт данных", Logging.INDEX_MESSAGE.NOT_SET);
+                }
                 else
                     ;
             }
@@ -464,7 +467,10 @@ namespace Statistic
                     }
 
                     if (iRes == 0)
+                    {
                         ((AdminTS_KomDisp)m_admin).ImpCSVValues(mcldrDate.SelectionStart, files.FileName);
+                        Logging.Logg().Action("PanelAdminKomDisp:ImportCSV_Def - Импорт данных по-умолчанию", Logging.INDEX_MESSAGE.NOT_SET);
+                    }
                     else
                         ;
                 } else { }

@@ -377,6 +377,7 @@ namespace Statistic
                 initTableHourRows();
 
                 m_admin.GetRDGValues(/*(int)m_admin.m_typeFields,*/ m_listTECComponentIndex[comboBoxTecComponent.SelectedIndex], mcldrDate.SelectionStart);
+                Logging.Logg().Action("PanelAdminKomDisp:DateSelected - Изменение даты", Logging.INDEX_MESSAGE.NOT_SET);
             }
             else
                 ;
@@ -452,6 +453,7 @@ namespace Statistic
                 ClearTables();
 
                 m_admin.GetRDGValues(/*(int)m_admin.m_typeFields,*/ m_listTECComponentIndex[comboBoxTecComponent.SelectedIndex], mcldrDate.SelectionStart);
+                Logging.Logg().Action("PanelAdminKomDisp:Set - Сохранение данных", Logging.INDEX_MESSAGE.NOT_SET);
             }
             else
             {
@@ -467,6 +469,7 @@ namespace Statistic
             ClearTables();
 
             m_admin.GetRDGValues(/*(int)m_admin.m_typeFields,*/ m_listTECComponentIndex[comboBoxTecComponent.SelectedIndex], mcldrDate.SelectionStart);
+            Logging.Logg().Action("PanelAdmin:Refresh - Обновление данных", Logging.INDEX_MESSAGE.NOT_SET);
         }
 
         //private string SetNumberSeparator(string current_str)
