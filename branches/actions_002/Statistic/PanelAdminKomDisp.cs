@@ -407,7 +407,7 @@ namespace Statistic
                 if (iRes == 0)
                 {
                     ((AdminTS_KomDisp)m_admin).ImpCSVValues(mcldrDate.SelectionStart, files.FileName);
-                    Logging.Logg().Action("PanelAdminKomDisp:ImportCSV - Импорт данных", Logging.INDEX_MESSAGE.NOT_SET);
+                    Logging.Logg().Action("PanelAdminKomDisp:ImportCSV - Импорт данных из " + files.FileName, Logging.INDEX_MESSAGE.NOT_SET);
                 }
                 else
                     ;
@@ -444,7 +444,7 @@ namespace Statistic
                 files.InitialDirectory = FormMain.formParameters.m_arParametrSetup [(int)FormParameters.PARAMETR_SETUP.KOMDISP_FOLDER_CSV]; //@"\\ne2844\2.X.X\ПБР-csv"; //@"E:\Temp\ПБР-csv";
                 files.DefaultExt = @"csv";
                 files.Filter = @"Рекомендации-по-умолчанию (AdminValuesDefault.csv)|AdminValuesDefault.csv";
-                files.Title = "Выберите файл со рекомендациями по умолчанию...";
+                files.Title = "Выберите файл с рекомендациями по умолчанию...";
 
                 int iRes = -1;
                 if (files.ShowDialog(FormMain.formParameters) == DialogResult.OK) {
@@ -469,7 +469,7 @@ namespace Statistic
                     if (iRes == 0)
                     {
                         ((AdminTS_KomDisp)m_admin).ImpCSVValues(mcldrDate.SelectionStart, files.FileName);
-                        Logging.Logg().Action("PanelAdminKomDisp:ImportCSV_Def - Импорт данных по-умолчанию", Logging.INDEX_MESSAGE.NOT_SET);
+                        Logging.Logg().Action("PanelAdminKomDisp:ImportCSV_Def - Импорт данных по-умолчанию из " + files.FileName, Logging.INDEX_MESSAGE.NOT_SET);
                     }
                     else
                         ;

@@ -109,29 +109,56 @@ namespace StatisticCommon
                         excel.LoadCsv(m_fullPathCSVValues, ';');
                         ExcelWorksheet w = excel.Worksheets[0];
                         m_tableValuesResponse = new DataTable();
-                        foreach (ExcelRow r in w.Rows)
+                        if (w.Rows.Count < 20)
                         {
-                            if (r.Index != 0)
+                            foreach (ExcelRow r in w.Rows)
                             {
-                                m_tableValuesResponse.Rows.Add(new object[] { r.Cells[0].Value, r.Cells[1].Value, r.Cells[2].Value, r.Cells[3].Value, r.Cells[4].Value, r.Cells[5].Value, r.Cells[6].Value });
-                                for (int i = 1; i < 24; i++)
+                                if (r.Index != 0)
                                 {
-                                    m_tableValuesResponse.Rows.Add(new object[] { r.Cells[0].Value, r.Cells[1].Value, i, r.Cells[3].Value, r.Cells[4].Value, r.Cells[5].Value, r.Cells[6].Value });
-                                }
-                            }
-                            else
-                            {
-                                foreach (ExcelCell c in r.Cells)
-                                {
-                                    if (c.Value != null && c.Value.ToString() != "")
+                                    m_tableValuesResponse.Rows.Add(new object[] { r.Cells[0].Value, r.Cells[1].Value, r.Cells[2].Value, r.Cells[3].Value, r.Cells[4].Value, r.Cells[5].Value, r.Cells[6].Value });
+                                    for (int i = 1; i < 24; i++)
                                     {
-                                        m_tableValuesResponse.Columns.Add(c.Value.ToString());
+                                        m_tableValuesResponse.Rows.Add(new object[] { r.Cells[0].Value, r.Cells[1].Value, i, r.Cells[3].Value, r.Cells[4].Value, r.Cells[5].Value, r.Cells[6].Value });
+                                    }
+                                }
+                                else
+                                {
+                                    foreach (ExcelCell c in r.Cells)
+                                    {
+                                        if (c.Value != null && c.Value.ToString() != "")
+                                        {
+                                            m_tableValuesResponse.Columns.Add(c.Value.ToString());
+                                        }
                                     }
                                 }
                             }
+                            err = 0;
                         }
-                        err = 0;
-
+                        else
+                        {
+                            foreach (ExcelRow r in w.Rows)
+                            {
+                                if (r.Index != 0)
+                                {
+                                    m_tableValuesResponse.Rows.Add(new object[] { r.Cells[0].Value, r.Cells[1].Value, r.Cells[2].Value, r.Cells[3].Value, r.Cells[4].Value, r.Cells[5].Value, r.Cells[6].Value });
+                                    for (int i = 1; i < 24; i++)
+                                    {
+                                        m_tableValuesResponse.Rows.Add(new object[] { r.Cells[0].Value, r.Cells[1].Value, i, r.Cells[3].Value, r.Cells[4].Value, r.Cells[5].Value, r.Cells[6].Value });
+                                    }
+                                }
+                                else
+                                {
+                                    foreach (ExcelCell c in r.Cells)
+                                    {
+                                        if (c.Value != null && c.Value.ToString() != "")
+                                        {
+                                            m_tableValuesResponse.Columns.Add(c.Value.ToString());
+                                        }
+                                    }
+                                }
+                            }
+                            err = 0;
+                        }
                     }
                     else
                         ;
