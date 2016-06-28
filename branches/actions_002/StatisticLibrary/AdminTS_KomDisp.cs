@@ -140,11 +140,12 @@ namespace StatisticCommon
                             {
                                 if (r.Index != 0)
                                 {
-                                    m_tableValuesResponse.Rows.Add(new object[] { r.Cells[0].Value, r.Cells[1].Value, r.Cells[2].Value, r.Cells[3].Value, r.Cells[4].Value, r.Cells[5].Value, r.Cells[6].Value });
-                                    for (int i = 1; i < 24; i++)
+                                    object[] obj = new object[m_tableValuesResponse.Columns.Count];
+                                    for (int i = 0; i < m_tableValuesResponse.Columns.Count; i++)
                                     {
-                                        m_tableValuesResponse.Rows.Add(new object[] { r.Cells[0].Value, r.Cells[1].Value, i, r.Cells[3].Value, r.Cells[4].Value, r.Cells[5].Value, r.Cells[6].Value });
+                                        obj[i] = r.Cells[i].Value;
                                     }
+                                    m_tableValuesResponse.Rows.Add(obj);
                                 }
                                 else
                                 {
