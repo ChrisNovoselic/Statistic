@@ -95,6 +95,7 @@ namespace Statistic
                 {
                     valuesBaseCalculate = values.valuesPBR;
                     iReverse = 1;
+                    //bAbs = true; //???
                 }
                 else
                     //Проверить признак использования ветви "Мощность минимальная"

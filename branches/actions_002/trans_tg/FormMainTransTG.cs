@@ -306,6 +306,8 @@ namespace trans_tg
                                 {
                                     ((AdminTransTG)m_arAdmin[indxDB]).m_listCurRDGValues[indx_comp][i].pbr = Convert.ToDouble(m_dgwAdminTable.Rows[i].Cells[indx_comp + 1].Value); // '+ 1' за счет DateTime
 
+                                    ((AdminTransTG)m_arAdmin[indxDB]).m_listCurRDGValues[indx_comp][i].fc = false;
+                                    
                                     ((AdminTransTG)m_arAdmin[indxDB]).m_listCurRDGValues[indx_comp][i].recomendation = 0.0;
                                     ((AdminTransTG)m_arAdmin[indxDB]).m_listCurRDGValues[indx_comp][i].deviationPercent = ((AdminTransTG)m_arAdmin[indxDB]).m_listCurRDGValues[indx_owner][i].deviationPercent;
                                     ((AdminTransTG)m_arAdmin[indxDB]).m_listCurRDGValues[indx_comp][i].deviation = ((AdminTransTG)m_arAdmin[indxDB]).m_listCurRDGValues[indx_owner][i].deviation;

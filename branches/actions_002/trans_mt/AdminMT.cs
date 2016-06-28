@@ -239,6 +239,8 @@ namespace trans_mt
 
                     m_curRDGValues[hour - 1].dtRecUpdate = DateTime.MinValue;
 
+                    m_curRDGValues[hour - 1].fc = false;
+
                     m_curRDGValues[hour - 1].recomendation = 0;
                     m_curRDGValues[hour - 1].deviationPercent = false;
                     m_curRDGValues[hour - 1].deviation = 0;

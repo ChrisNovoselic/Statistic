@@ -492,6 +492,8 @@ namespace Statistic
             {
                 public DataSource(int indx_tec, int indx_comp = -1) : base (indx_tec, indx_comp)
                 {
+                    // для того, чтобы увеличить период опроса БД
+                    m_idAISKUEParNumber = ID_AISKUE_PARNUMBER.FACT_30;
                 }
 
                 //protected override int StateCheckResponse(int state, out bool error, out object outobj)
@@ -541,7 +543,31 @@ namespace Statistic
 
                 public override void GetRDGValues(int indx, DateTime date)
                 {
-                    throw new NotImplementedException();
+                    ClearStates();
+
+                    //ClearValues();
+
+                    using_date = false;
+
+                    if (m_tec.m_bSensorsStrings == true)
+                        if (currHour == true)
+                            AddState((int)StatesMachine.CurrentTimeView);
+                        else
+                            ;
+                    else
+                    {
+                        AddState((int)StatesMachine.InitSensors);
+                        AddState((int)StatesMachine.CurrentTimeView);
+                    }
+
+                    // добавить необходимые события(идентификаторы запросов) для обработки
+                }
+
+                public override void ChangeState()
+                {
+                    lock (m_lockState) { GetRDGValues(-1, DateTime.MinValue); }
+
+                    base.ChangeState(); //Run
                 }
 
                 public override bool WasChanged()

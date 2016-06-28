@@ -112,6 +112,7 @@ namespace Statistic
                             //((AdminTS_NSS)m_admin).m_listCurRDGValues[indx_tg][i].pmax = 
 
                             ((AdminTS_NSS)m_admin).m_listCurRDGValues[indx_tg][i].recomendation = 0.0;
+                            ((AdminTS_NSS)m_admin).m_listCurRDGValues[indx_tg][i].fc = false;
                             ((AdminTS_NSS)m_admin).m_listCurRDGValues[indx_tg][i].deviationPercent = ((AdminTS_NSS)m_admin).m_listCurRDGValues[indx_gtp][i].deviationPercent;
                             ((AdminTS_NSS)m_admin).m_listCurRDGValues[indx_tg][i].deviation = ((AdminTS_NSS)m_admin).m_listCurRDGValues[indx_gtp][i].deviation;
                         }

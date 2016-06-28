@@ -11,6 +11,10 @@ using HClassLibrary;
 
 namespace StatisticCommon
 {
+    /// <summary>
+    /// Класс для для запросов/обработки/хранения результатов для объекта
+    ///  , размещаемого на вкладке/панели со сводными значенями телемеханики
+    /// </summary>
     public class TecViewTMPower : TecView
     {
         public TecViewTMPower()
@@ -38,7 +42,10 @@ namespace StatisticCommon
             AddState((int)TecView.StatesMachine.LastValue_TM_SN);
         }
     }
-
+    /// <summary>
+    /// Класс для для запросов/обработки/хранения результатов для объекта
+    ///  , размещаемого на стандартной вкладке/панели
+    /// </summary>
     public class TecViewStandard : TecView
     {
         public TecViewStandard(int indx_tec, int indx_comp)
@@ -121,7 +128,9 @@ namespace StatisticCommon
             AddState((int)StatesMachine.AdminValues);
         }
     }
-
+    /// <summary>
+    /// Базовый класс для запросов/обработки/хранения результатов для объекта
+    /// </summary>
     public abstract class TecView : HAdmin
     {
         /// <summary>
@@ -132,7 +141,9 @@ namespace StatisticCommon
         /// Индекс типа панели в интересах которой выполняется текущий объект
         /// </summary>
         public ID_AISKUE_PARNUMBER m_idAISKUEParNumber;
-        
+        /// <summary>
+        /// Перечисление - индексы запросов
+        /// </summary>
         protected enum StatesMachine
         {
             InitSensors, //Инициализация строк с идентификаторами ГТП (ТГ) для дальнейшего использования в запросах
@@ -161,25 +172,53 @@ namespace StatisticCommon
             AdminValues, //Получение административных/ПБР значений
             PPBRValues,
         }
-
+        /// <summary>
+        /// Делегат для установки даты/времени на панели оперативной информации
+        /// </summary>
         public DelegateFunc setDatetimeView;
+        /// <summary>
+        /// Делегат для обновления фактических значений
+        /// </summary>
         public IntDelegateIntIntFunc updateGUI_Fact;
+        /// <summary>
+        /// Делегаты для обновления значений телемеханика-генерация/телемеханика-собств.нужды/кр.минута_часа
+        /// </summary>
         public DelegateFunc updateGUI_TM_Gen
-                            , updateGUI_TM_SN
-                            , updateGUI_LastMinutes;
-
+            , updateGUI_TM_SN
+            , updateGUI_LastMinutes;
+        /// <summary>
+        /// Итоговое КРАЙНЕЕ значение мощности, затрачиваемое на собств.нужды
+        /// </summary>
         public double m_dblTotalPower_TM_SN;
+        /// <summary>
+        /// Крайние дата/время обновления значений телемеханика-генерация(самое старое)
+        /// </summary>
         public DateTime m_dtLastChangedAt_TM_Gen;
+        /// <summary>
+        /// Крайние дата/время обновления значений телемеханика-собств.нужды(самое старое)
+        /// </summary>
         public DateTime m_dtLastChangedAt_TM_SN;
+        /// <summary>
+        /// Интервал (сек) от момента крайнего обновления, по истечению которого значение какого-либо сигнала/канала телемеханики становится НЕ актуальным
+        /// </summary>
         public static int SEC_VALIDATE_TMVALUE = -1;
-        public double [] m_arValueCurrentTM_Gen;
+        ///// <summary>
+        ///// Массив со значениями телемеханика-генерация для различных интервалов времени
+        ///// </summary>
+        //public double [] m_arValueCurrentTM_Gen;
 
         //private AdminTS.TYPE_FIELDS s_typeFields = AdminTS.TYPE_FIELDS.DYNAMIC;
-
+        /// <summary>
+        /// Таблица с результатом запроса плановых значений
+        ///  для сохранения результата запроса при выполнении других запросов
+        /// </summary>
         protected DataTable m_tablePPBRValuesResponse
-                    //, m_tableRDGExcelValuesResponse
-                    ;
-
+            //, m_tableRDGExcelValuesResponse
+            ;
+        /// <summary>
+        /// Класс для хранения значений в течение одного часа
+        ///  (поля совпадают со столбцами представления на стандартной вкладке для объекта отображения: ТЭЦ, ГТП, ЩУ, ТГ)
+        /// </summary>
         public abstract class values
         {
             public double valuesLastMinutesTM;
@@ -195,7 +234,9 @@ namespace StatisticCommon
 
             public double valuesREC;
         }
-
+        /// <summary>
+        /// Класс для хранения значений ТГ (на вкладке "Значения СОТИАССО")
+        /// </summary>
         public class valuesTG : Object {
             /// <summary>
             ///  для мгн./значений в течении минуты
@@ -226,7 +267,9 @@ namespace StatisticCommon
             /// </summary>
             public double [] m_power_LastMinutesTM;
         }
-
+        /// <summary>
+        /// Класс для хранения значений для компонента объекта (ТЭЦ)
+        /// </summary>
         public class valuesTECComponent : values
         {
             //public volatile double[] valuesREC;
@@ -235,73 +278,121 @@ namespace StatisticCommon
             /// </summary>
             public double valuesISPER;
             /// <summary>
-            /// Значение из БД
+            /// Значение из БД - максимально возможное отклонение (в ~ с 'valuesISPER')
             /// </summary>
             public double valuesDIV;
         }
-
+        /// <summary>
+        /// Класс для хранения значений объекта (ТЭЦ)
+        /// </summary>
         public class valuesTEC : values
         {
             public double valuesFact;
             public double valuesTMSNPsum;
         }
-
+        /// <summary>
+        /// Объект синхронизации при установке значений в нескольких потоках
+        /// </summary>
         public object m_lockValue;
-
-        //'public' для доступа из объекта m_panelQuickData класса 'PanelQuickData'
+        /// <summary>
+        /// Признак выбора пользователя по запросу/отображению данных (текущие/ретромпективные значения)
+        ///  'public' для доступа из объекта m_panelQuickData класса 'PanelQuickData'
+        /// </summary>
         public volatile bool currHour;
-        //private bool m_bCurrHour; public volatile bool CurrHour { }
-
+        /// <summary>
+        /// Индекс(номер) крайнего часа в выбранных сутках
+        /// </summary>
         public volatile int lastHour;
+        /// <summary>
+        /// Индекс(номер) крайнего часа при обработке запроса в выбранных сутках
+        /// </summary>
         public volatile int lastReceivedHour;
+        /// <summary>
+        /// Индекс(номер) крайней минуты в выбранном часе
+        /// </summary>
         public volatile int lastMin;
-
-        //public volatile bool lastMinError;
-        //public volatile bool lastHourError;
-        //public volatile bool lastHourHalfError;
-        //public volatile bool currentMinuteTM_GenWarning;
+        /// <summary>
+        /// Перечисление - индексы для объекта 'm_markWarning'
+        /// </summary>
         public enum INDEX_WARNING { LAST_MIN, LAST_HOUR, LAST_HOURHALF, CURR_MIN_TM_GEN
-                                    , COUNT_WARNING };
+            , COUNT_WARNING };
+        /// <summary>
+        /// Объект для хранения признаков наличия/отсутствия предупреждений при обрпаботке результатов запроса
+        /// </summary>
         public HMark m_markWarning;
-
-        public volatile string lastLayout;
-
-        //'public' для доступа из объекта m_panelQuickData класса 'PanelQuickData'
+        /// <summary>
+        /// Строка - наименование(с номером) набора ПБР
+        /// </summary>
+        public volatile string lastLayout;        
+        /// <summary>
+        /// Массив значений за час для объекта отображения
+        ///  'public' для доступа из объекта m_panelQuickData класса 'PanelQuickData'
+        /// </summary>
         public volatile valuesTEC[] m_valuesMins;
+        /// <summary>
+        /// Массив значений за сутки для объекта отображения
+        ///  'public' для доступа из объекта m_panelQuickData класса 'PanelQuickData'
+        /// </summary>
         public volatile valuesTEC[] m_valuesHours;
-        //public DateTime selectedTime;
-        //public DateTime serverTime;
-
+        /// <summary>
+        /// Индекс главного объекта отображения в глобальном списке объектов отображения
+        /// </summary>
         public volatile int m_indx_TEC;
-        //public volatile int m_indx_TECComponent;
+        /// <summary>
+        /// Список (локальный) компонентов текущего объекта отображения
+        /// </summary>
         public List <TECComponentBase> m_localTECComponents;
         /// <summary>
         /// Идентификатор объекта (ТЭЦ, ГТП, ЩУ, ТГ)
         ///  , которому принадлежит текущий объект 'TecView'
         /// </summary>
         public int m_ID { get { return indxTECComponents < 0 ? m_tec.m_id : m_tec.list_TECComponents[indxTECComponents].m_id; } }
+        /// <summary>
+        /// Массив (сутки-час) словарей со значениями для компонентов текущего объекта отображения
+        ///  ключи в ловаре - идентификаторы компонентов объекта
+        /// </summary>
         public volatile Dictionary<int, TecView.valuesTECComponent> [] m_dictValuesTECComponent;
+        /// <summary>
+        /// Массив (сутки-час) словарей со значениями для ТГ текущего объекта отображения
+        /// </summary>
         public volatile Dictionary<int, TecView.valuesTG>m_dictValuesTG;
-
+        /// <summary>
+        /// Массив с типами возможных источников информацмм для значений с разными интервалами интегрирования
+        /// </summary>
         public CONN_SETT_TYPE[] m_arTypeSourceData;
-        public int[] m_arIdListeners; //Идентификаторы номеров клиентов подключенных к
-
-        //'public' для доступа из объекта m_panelQuickData класса 'PanelQuickData'
+        ///// <summary>
+        ///// Массив - идентификаторы для формирования/обработки запросов в БД
+        ///// </summary>
+        //public int[] m_arIdListeners;
+        /// <summary>
+        /// Итоговое значение рекомендации, расчитанное для текущего объекта отображения
+        ///  'public' для доступа из объекта m_panelQuickData класса 'PanelQuickData'
+        /// </summary>
         public double recomendation;
-
-        //'public' для доступа из объекта m_panelQuickData класса 'PanelQuickData'
+        /// <summary>
+        /// Признак получения/разбора административных значений
+        ///  'public' для доступа из объекта m_panelQuickData класса 'PanelQuickData'
+        /// </summary>
         public volatile bool adminValuesReceived;
-
-        //'public' для доступа из объекта m_panelQuickData класса 'PanelQuickData'
-        public volatile bool recalcAver;
-
-        //'public' для доступа из объекта m_panelQuickData класса 'PanelQuickData'
+        /// <summary>
+        /// Признак повторного использования результатов обработки(перерасчета)
+        ///  'public' для доступа из объекта m_panelQuickData класса 'PanelQuickData'
+        /// </summary>
+        public volatile bool recalcAver;        
+        /// <summary>
+        /// Признак отображения крайних значений телемеханики для ТГ на панели оперативной информации
+        ///  'public' для доступа из объекта m_panelQuickData класса 'PanelQuickData'
+        /// </summary>
         public volatile bool m_bLastValue_TM_Gen;
-
+        /// <summary>
+        /// Главный объект для текущего объекта отображения
+        /// </summary>
         public StatisticCommon.TEC m_tec {
             get { return m_list_tec [0]; }
         }
-
+        /// <summary>
+        /// Перечень ТГ для текущего объекта отображения
+        /// </summary>
         public List<TG> listTG
         {
             get
@@ -312,7 +403,9 @@ namespace StatisticCommon
                     return m_tec.list_TECComponents[indxTECComponents].m_listTG;
             }
         }
-
+        /// <summary>
+        /// Количество ТГ для текущего объекта отображения
+        /// </summary>
         public int CountTG
         {
             get
@@ -349,7 +442,7 @@ namespace StatisticCommon
 
             m_arTypeSourceData = new CONN_SETT_TYPE [(int)HDateTime.INTERVAL.COUNT_ID_TIME];
 
-            m_arValueCurrentTM_Gen = new double[(int)HDateTime.INTERVAL.COUNT_ID_TIME] { -1F, -1F };
+            //m_arValueCurrentTM_Gen = new double[(int)HDateTime.INTERVAL.COUNT_ID_TIME] { -1F, -1F };
 
             ClearStates();
         }
@@ -435,14 +528,16 @@ namespace StatisticCommon
             m_indx_TEC = indx_tec;
             indxTECComponents = indx_comp;
 
-            m_arIdListeners = new int[(int)CONN_SETT_TYPE.COUNT_CONN_SETT_TYPE];
+            //m_arIdListeners = new int[(int)CONN_SETT_TYPE.COUNT_CONN_SETT_TYPE];
 
-            for (int i = (int)CONN_SETT_TYPE.ADMIN; i < (int)CONN_SETT_TYPE.COUNT_CONN_SETT_TYPE; i++)
-            {
-                m_arIdListeners[i] = -1;
-            }
+            //for (int i = (int)CONN_SETT_TYPE.ADMIN; i < (int)CONN_SETT_TYPE.COUNT_CONN_SETT_TYPE; i++)
+            //{
+            //    m_arIdListeners[i] = -1;
+            //}
         }        
-
+        /// <summary>
+        /// Текущий компонент объекта
+        /// </summary>
         public TECComponent TECComponentCurrent { get { return allTECComponents[indxTECComponents]; } }
         /// <summary>
         /// Возвратить признак наличия значений за указанный час
@@ -491,72 +586,6 @@ namespace StatisticCommon
 
             return dblRes;
         }
-
-        //public void ChangeState_SobstvNyzhdy () 
-        //{
-        //    ClearStates();
-
-        //    ClearValues();
-
-        //    if (m_tec.m_bSensorsStrings == false)
-        //        AddState((int)StatesMachine.InitSensors);
-        //    else ;
-
-        //    //using_date = false;
-
-        //    //AddState((int)TecView.StatesMachine.CurrentHours_Fact); //Только для определения сезона ???
-        //    //AddState((int)TecView.StatesMachine.CurrentTimeView);
-        //    AddState((int)TecView.StatesMachine.CurrentHours_TM_SN_PSUM);
-        //    AddState((int)TecView.StatesMachine.LastValue_TM_SN);
-        //}
-
-        //public void ChangeState_SOTIASSO()
-        //{
-        //    ClearStates();
-
-        //    ClearValues();
-
-        //    if (m_tec.m_bSensorsStrings == false)
-        //        AddState((int)StatesMachine.InitSensors);
-        //    else ;
-
-        //    using_date = false;
-
-        //    AddState((int)TecView.StatesMachine.CurrentTimeAdmin); // без m_curDate = serverTime
-        //    AddState((int)TecView.StatesMachine.CurrentMins_TM);
-        //    AddState((int)TecView.StatesMachine.CurrentMinDetail_TM);
-
-        //    AddState((int)TecView.StatesMachine.PPBRValues);
-        //    AddState((int)TecView.StatesMachine.AdminValues);
-        //}
-
-        //private void ChangeState_AdminAlarm () {
-        //    new Thread(new ParameterizedThreadStart(threadGetRDGValues)).Start();
-        //}
-
-        //public void ChangeState_LK()
-        //{
-        //    ClearStates();
-
-        //    //ClearValues();
-
-        //    using_date = false;
-
-        //    if (m_tec.m_bSensorsStrings == true)
-        //        if (currHour == true)
-        //            AddState((int)StatesMachine.CurrentTimeView);
-        //        else
-        //            ;
-        //    else
-        //    {
-        //        AddState((int)StatesMachine.InitSensors);
-        //        AddState((int)StatesMachine.CurrentTimeView);
-        //    }
-
-        //    AddState((int)TecView.StatesMachine.Hours_Fact);
-        //    AddState((int)TecView.StatesMachine.PPBRValues);
-        //    AddState((int)TecView.StatesMachine.AdminValues);
-        //}
 
         public override bool Activate(bool active)
         {
@@ -1669,7 +1698,7 @@ namespace StatisticCommon
             //}
 
             //if (!(m_typePanel == TecView.TYPE_PANEL.ADMIN_ALARM))
-                Run(@"TecView::ChangeState () - ...");
+            Run(this.GetType().Namespace + @"." + this.GetType().Name + @"::ChangeState () - ...");
             //else ;
         }
 
@@ -1967,7 +1996,7 @@ namespace StatisticCommon
             m_markWarning.UnMarked((int)INDEX_WARNING.LAST_MIN);
 
             m_dtLastChangedAt_TM_Gen = DateTime.MaxValue;
-            m_arValueCurrentTM_Gen [(int)HDateTime.INTERVAL.MINUTES] = -1F;
+            //m_arValueCurrentTM_Gen [(int)HDateTime.INTERVAL.MINUTES] = -1F;
             m_markWarning.UnMarked((int)INDEX_WARNING.CURR_MIN_TM_GEN);
         }
 
@@ -2046,7 +2075,7 @@ namespace StatisticCommon
             m_markWarning.UnMarked((int)INDEX_WARNING.LAST_HOUR);
             m_markWarning.UnMarked((int)INDEX_WARNING.LAST_HOURHALF);
 
-            m_arValueCurrentTM_Gen[(int)HDateTime.INTERVAL.HOURS] = -1F;
+            //m_arValueCurrentTM_Gen[(int)HDateTime.INTERVAL.HOURS] = -1F;
         }
 
         private void ClearPBRValues()

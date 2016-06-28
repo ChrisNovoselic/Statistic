@@ -114,6 +114,8 @@ namespace trans_mc
                     else
                         m_curRDGValues[hour - 1].pmax = 0;
 
+                    m_curRDGValues[hour - 1].fc = false;
+
                     m_curRDGValues[hour - 1].recomendation = 0;
                     m_curRDGValues[hour - 1].deviationPercent = false;
                     m_curRDGValues[hour - 1].deviation = 0;
@@ -130,6 +132,8 @@ namespace trans_mc
 
                         m_curRDGValues[hour].pmax = m_curRDGValues[hour - 1].pmax;
 
+                        m_curRDGValues[hour].fc = m_curRDGValues[hour - 1].fc;
+                        
                         m_curRDGValues[hour].recomendation = m_curRDGValues[hour - 1].recomendation;
                         m_curRDGValues[hour].deviationPercent = m_curRDGValues[hour - 1].deviationPercent;
                         m_curRDGValues[hour].deviation = m_curRDGValues[hour - 1].deviation;

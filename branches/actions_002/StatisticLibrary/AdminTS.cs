@@ -960,6 +960,7 @@ namespace StatisticCommon
                     return ;
 
             item.recomendation = 0;
+            item.fc = false;
 
             if (item.pbr > 0)
             {
@@ -2830,7 +2831,7 @@ namespace StatisticCommon
                 m_curRDGValues[i].pbr =
                 m_curRDGValues[i].pmin = m_curRDGValues[i].pmax = 
                 m_curRDGValues[i].recomendation = m_curRDGValues[i].deviation = 0;
-                m_curRDGValues[i].deviationPercent = false;
+                m_curRDGValues[i].fc = m_curRDGValues[i].deviationPercent = false;
 
                 m_curRDGValues[i].pbr_number = string.Empty;
                 m_curRDGValues[i].dtRecUpdate = DateTime.MinValue;
