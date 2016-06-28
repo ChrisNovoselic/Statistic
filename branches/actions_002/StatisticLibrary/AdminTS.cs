@@ -2889,6 +2889,12 @@ namespace StatisticCommon
                 }
                 else
                     ;
+                if (m_prevRDGValues[i].deviationPercent != m_curRDGValues[i].deviationPercent /*double.Parse(this.dgwAdminTable.Rows[i].Cells[(int)DataGridViewAdmin.DESC_INDEX.RECOMENDATION].Value.ToString())*/)
+                {
+                    hour_log += @"% [" + m_prevRDGValues[i].deviationPercent.ToString() + "]=>[" + m_curRDGValues[i].deviationPercent.ToString() + "]" + '\n';
+                }
+                else
+                    ;
                 if (m_prevRDGValues[i].deviation != m_curRDGValues[i].deviation /*double.Parse(this.dgwAdminTable.Rows[i].Cells[(int)DataGridViewAdmin.DESC_INDEX.DEVIATION].Value.ToString())*/)
                 {
                     hour_log += @"Отклонение [" + m_prevRDGValues[i].deviation.ToString("F1") + "]=>[" + m_curRDGValues[i].deviation.ToString("F1") + "]" + '\n';

@@ -916,7 +916,8 @@ namespace Statistic
             //delegateStopWait ();
             if (!(delegateStopWait == null)) delegateStopWait(); else ;
         }
-
+        
+        
         private void dtprDate_ValueChanged(object sender, EventArgs e)
         {
             //Debug.WriteLine(@"PanelTecViewBase::dtprDate_ValueChanged () - DATE_pnlQuickData=" + _pnlQuickData.dtprDate.Value.ToString() + @", update=" + update);
@@ -929,6 +930,8 @@ namespace Statistic
                 else
                     ;
 
+                Logging.Logg().Action("PanelTecViewBase:DateSelected - Изменение даты:[" + m_tecView.m_curDate.Date.ToString() + "]=>[" + _pnlQuickData.dtprDate.Value.Date.ToString() + "]", Logging.INDEX_MESSAGE.NOT_SET);
+                
                 //В этом методе даты/время приравниваем ???
                 initTableHourRows ();
 
