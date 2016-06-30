@@ -469,8 +469,7 @@ namespace StatisticDiagnostic
             {
                 if (m_dictIdListeners.ContainsKey(0) == false)
                     m_dictIdListeners.Add(0, new int[] { -1, -1 });
-                else
-                    ;
+
                 register(0, (int)CONN_SETT_TYPE.LIST_SOURCE, m_connSett[(int)CONN_SETT_TYPE.LIST_SOURCE], m_connSett[(int)CONN_SETT_TYPE.LIST_SOURCE].name);
                 register(0, (int)CONN_SETT_TYPE.CONFIG_DB, m_connSett[(int)CONN_SETT_TYPE.CONFIG_DB], m_connSett[(int)CONN_SETT_TYPE.CONFIG_DB].name);
             }
@@ -507,7 +506,7 @@ namespace StatisticDiagnostic
                 switch (state)
                 {
                     case (int)State.ServerTime:
-                        GetCurrentTimeRequest (DbInterface.DB_TSQL_INTERFACE_TYPE.MSSQL, m_dictIdListeners[0][(int)CONN_SETT_TYPE.LIST_SOURCE]);
+                        GetCurrentTimeRequest(DbInterface.DB_TSQL_INTERFACE_TYPE.MSSQL, m_dictIdListeners[0][(int)CONN_SETT_TYPE.LIST_SOURCE]);
                         actionReport(@"Получение времени с сервера БД - состояние: " + ((State)state).ToString());
                         break;
                     case (int)State.Command:
@@ -716,14 +715,16 @@ namespace StatisticDiagnostic
                 this.TECDataGridView.AllowUserToAddRows = false;
                 this.TECDataGridView.Name = "TECDataGridView";
                 this.TECDataGridView.TabIndex = 0;
-                this.TECDataGridView.ColumnCount = 6;
+                this.TECDataGridView.ColumnCount = 7;
                 this.TECDataGridView.Columns[0].Name = "Источник данных";
                 this.TECDataGridView.Columns[1].Name = "Крайнее время";
                 this.TECDataGridView.Columns[2].Name = "Крайнее значение";
                 this.TECDataGridView.Columns[3].Name = "Время проверки";
                 this.TECDataGridView.Columns[4].Name = "Связь";
                 this.TECDataGridView.Columns[5].Name = "TEC";
+                this.TECDataGridView.Columns[6].Name = "NameSource";
                 this.TECDataGridView.Columns[5].Visible = false;
+                this.TECDataGridView.Columns[6].Visible = false;
                 this.TECDataGridView.Columns[0].Width = 43;
                 this.TECDataGridView.Columns[1].Width = 57;
                 this.TECDataGridView.Columns[2].Width = 35;
@@ -779,7 +780,7 @@ namespace StatisticDiagnostic
             {
                 if ((e.Button == MouseButtons.Right) && (e.RowIndex > -1))
                 {
-                    if (TECDataGridView.Rows[e.RowIndex].Cells[0].Value.ToString() != "АИИСКУЭ")
+                    if (TECDataGridView.Rows[e.RowIndex].Cells[0].Value.ToString() != "АИИСКУЭ")//??
                     {
                         if
                         (TECDataGridView.Rows[e.RowIndex].Cells[e.ColumnIndex].Style.BackColor == System.Drawing.Color.DeepSkyBlue)
@@ -813,7 +814,7 @@ namespace StatisticDiagnostic
             /// <summary>
             /// Список номер истчоников СОТИАССО
             /// </summary>
-            enum TM { TM1 = 2, TM2 };
+            enum TM { TM1 = 2, TM2, TM1T, TM2T };
 
             /// <summary>
             /// Номер строки вызова контекстного меню
@@ -833,14 +834,9 @@ namespace StatisticDiagnostic
             public void ActivateTEC(bool activated)
             {
                 if (activated == true)
-                {
                     if (!(m_arPanelsTEC == null))
-                    {
                         for (int i = 0; i < m_arPanelsTEC.Length; i++)
                             m_arPanelsTEC[i].Focus();
-                    }
-                }
-                else ;
             }
 
             /// <summary>
@@ -850,7 +846,6 @@ namespace StatisticDiagnostic
             {
                 if (!(m_arPanelsTEC == null))
                     clearGrid();
-                else ;
             }
 
             /// <summary>
@@ -875,8 +870,11 @@ namespace StatisticDiagnostic
             {
                 string filter = "NAME_SHR = '" + nameTec + "'";
                 DataRow[] m_foundrow = m_dtSource.Select(filter);
-                object a = m_foundrow[0]["ID"].ToString();
+                object a = null;
 
+                for (int i = 0; i < m_foundrow.Count(); i++)
+                     a = m_foundrow[i]["ID"].ToString(); 
+               
                 return a;
             }
 
@@ -895,11 +893,8 @@ namespace StatisticDiagnostic
                 updateTecTM(stringQuery(t, numberPanel + 1));
 
                 for (int i = 0; i < m_arPanelsTEC[numberPanel].TECDataGridView.Rows.Count; i++)
-                {
                     if (m_arPanelsTEC[numberPanel].TECDataGridView.Rows[i].Cells[0].Style.BackColor == System.Drawing.Color.DeepSkyBlue)
                         paintCellDeactive(numberPanel, i);
-                    else ;
-                }
 
                 paintCellActive(numberPanel, RowIndex);
                 changenumSource(t, a, numberPanel);
@@ -932,7 +927,6 @@ namespace StatisticDiagnostic
                 {
                     if (m_arPanelsTEC[i] == null)
                         m_arPanelsTEC[i] = new Tec();
-                    else ;
                 }
                 SourceNameTEC();
             }
@@ -1232,8 +1226,6 @@ namespace StatisticDiagnostic
                 {
                     if (TECDataGridView.SelectedCells.Count > 0)
                         TECDataGridView.SelectedCells[0].Selected = false;
-                    else
-                        ;
                 }
                 catch { }
             }
@@ -1312,11 +1304,11 @@ namespace StatisticDiagnostic
                         break;
 
                     case "СОТИАССО":
-                        if (diffTime(m_DTnowSOTIASSO, time))
-                            bFL = true;
-                        else
-                            bFL = false;
-                        break;
+                        //if (diffTime(m_DTnowSOTIASSO, time))
+                        //    bFL = true;
+                        //else
+                        //    bFL = false;
+                        //break;
 
                     case "СОТИАССО_0":
                         if (diffTime(m_DTnowSOTIASSO, time))
@@ -1337,7 +1329,7 @@ namespace StatisticDiagnostic
             private void paintValuesSource(bool bflag, int i, int r)
             {
                 if (bflag == true)
-                    m_arPanelsTEC[i].TECDataGridView.Rows[r].Cells[2].Style.BackColor = System.Drawing.Color.Firebrick;                   
+                    m_arPanelsTEC[i].TECDataGridView.Rows[r].Cells[2].Style.BackColor = System.Drawing.Color.Firebrick;
                 else
                     m_arPanelsTEC[i].TECDataGridView.Rows[r].Cells[2].Style.BackColor = System.Drawing.Color.Empty;
             }
@@ -1346,8 +1338,10 @@ namespace StatisticDiagnostic
             /// Форматирование даты
             /// “HH:mm:ss.fff”
             /// </summary>
-            /// <param name="datetime"></param>
-            /// <returns></returns>
+            /// <param name="datetime">дата входная</param>
+            /// <param name="Npanel">номер панели</param>
+            /// <param name="nameSource">имя источника</param>
+            /// <returns>дата сформированная</returns>
             private string formatTime(string datetime, int Npanel, string nameSource)
             {
                 DateTime result;
@@ -1357,17 +1351,15 @@ namespace StatisticDiagnostic
                 switch (nameSource)
                 {
                     case "СОТИАССО":
-                        if ((Npanel + 1) == 6)
-                            result = result.AddHours(6.0);
-                        else
-                            ;
-                        break;
+                        //if ((Npanel + 1) == 6)
+                        //    result = result.AddHours(6.0);
+                        //break;
+
                     case "СОТИАССО_0":
                         if ((Npanel + 1) == 6)
                             result = result.AddHours(6);
-                        else
-                            ;
                         break;
+
                     default:
                         break;
                 }
@@ -1512,14 +1504,9 @@ namespace StatisticDiagnostic
             public void ActivateMODES(bool activated)
             {
                 if (activated == true)
-                {
                     if (!(m_arPanelsMODES == null))
-                    {
                         for (int i = 0; i < m_arPanelsMODES.Length; i++)
                             m_arPanelsMODES[i].Focus();
-                    }
-                }
-                else ;
             }
 
             /// <summary>
@@ -1529,7 +1516,6 @@ namespace StatisticDiagnostic
             {
                 if (!(m_arPanelsMODES == null))
                     clearGrid();
-                else ;
 
                 base.Stop();
             }
@@ -1540,13 +1526,9 @@ namespace StatisticDiagnostic
             private void clearGrid()
             {
                 for (int i = 0; i < m_arPanelsMODES.Length; i++)
-                {
                     for (int j = 0; j < m_arPanelsMODES[i].ModesDataGridView.Rows.Count; j++)
-                    {
                         if (m_arPanelsMODES[i].ModesDataGridView.Rows.Count > 0)
                             m_arPanelsMODES[i].ModesDataGridView.Rows.Clear();
-                    }
-                }
             }
 
             /// <summary>
@@ -1571,12 +1553,10 @@ namespace StatisticDiagnostic
             private void addRowsModes(int i, int counter)
             {
                 for (int x = 0; x < counter; x++)
-                {
                     if (m_arPanelsMODES[i].ModesDataGridView.InvokeRequired)
                         m_arPanelsMODES[i].ModesDataGridView.Invoke(new Action(() => m_arPanelsMODES[i].ModesDataGridView.Rows.Add()));
                     else
                         m_arPanelsMODES[i].ModesDataGridView.Rows.Add();
-                }
             }
 
             /// <summary>
@@ -2690,8 +2670,7 @@ namespace StatisticDiagnostic
                 m_dtTECList = InitTEC_200.getListTEC(ref dbconn, false, new int[] { 0, 10 }, out err);
             }
             else
-                throw new Exception(@"Нет соединения с БД");
-            //createListActiveSource(m_dtTECList);
+                throw new Exception(@"Нет соединения с БД");;
         }
 
         /// <summary>
@@ -2734,7 +2713,6 @@ namespace StatisticDiagnostic
                 {
                     //indx += (int)(indx / ModesTableLayoutPanel.RowCount);
                 }
-                //else ;
 
                 row = (int)(indx / ModesTableLayoutPanel.RowCount);
                 col = indx % (ModesTableLayoutPanel.RowCount - 0);
@@ -2794,8 +2772,6 @@ namespace StatisticDiagnostic
 
                 base.Stop();
             }
-            else
-                ;
         }
 
         /// <summary>
@@ -2810,7 +2786,6 @@ namespace StatisticDiagnostic
                 m_DataSource.StopDbInterfaces();
                 m_DataSource.Stop();
             }
-            else ;
         }
 
         /// <summary>
