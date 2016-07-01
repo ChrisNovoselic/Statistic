@@ -18,22 +18,6 @@ namespace StatisticTimeSync
     /// </summary>
     public partial class PanelSourceData : PanelStatistic
     {
-        public PanelGetDate[] m_arPanels;
-
-        /// <summary>
-        /// Массив значений
-        /// </summary>
-        private static int[] INDEX_SOURCE_GETDATE = {
-            26 //Эталон - ne2844
-            //Вариант №1
-            , 1, 4, 7, 10, 13, /*16*/-1
-            , 2, 5, 8, 11, 14, 17
-            , 3, 6, 9, 12, 15, -1
-            ////Вариант №2
-            //, -1, -1, -1, -1, -1, /*16*/-1
-            //, -1, -1, -1, -1, -1, 17
-            //, -1, -1, -1, -1, -1, -1
-        };
 
         /// <summary>
         /// Работа с компонентами панели
@@ -531,18 +515,23 @@ namespace StatisticTimeSync
             public System.Windows.Forms.Label m_labelDiff;
         }
 
-        private object m_lockTimerGetDate;
-        private System.Windows.Forms.Timer m_timerGetDate;
-        private event DelegateObjectFunc EvtGetDate;
-        private event DelegateDateFunc EvtEtalonDate;
-        //int iListenerId;
-        private DataTable m_tableSourceData;
+        delegate void DelAddPan(object[] ar_pan);
+
+        DelAddPan m_delAddPan;
 
         HandlerSourceData HSD = null;
 
         public PanelSourceData()
         {
+            
+            m_delAddPan = new DelAddPan(addPanel);
             initialize();
+            HSD = new HandlerSourceData(this);
+            HSD.Start();
+            HSD.Activate(true);
+            HSD.Push(null, new object[] {new object[] { new object[] {(int)HandlerSourceData.StatesMachine.AddControl} } });
+
+
         }
 
         public PanelSourceData(IContainer container)
@@ -553,15 +542,14 @@ namespace StatisticTimeSync
 
             HSD.Activate(true);
             HSD.Start();
+            HSD.AddState((int)HandlerSourceData.StatesMachine.AddControl);
 
-            //initialize();
+            initialize();
         }
 
         private void initialize()
         {
             InitializeComponent();
-
-            m_lockTimerGetDate = new object();
         }
 
         public override void SetDelegateReport(DelegateStringFunc ferr, DelegateStringFunc fwar, DelegateStringFunc fact, DelegateBoolFunc fclr)
@@ -573,185 +561,73 @@ namespace StatisticTimeSync
         {
             base.Start();
 
-            start();
-        }
-
-        private void start()
-        {
-            int err = -1; //Признак выполнения метода/функции
-            //Зарегистрировать соединение/получить идентификатор соединения
-            int iListenerId = DbSources.Sources().Register(FormMain.s_listFormConnectionSettings[(int)CONN_SETT_TYPE.CONFIG_DB].getConnSett(), false, @"CONFIG_DB");
-
-            m_tableSourceData = null;
-
-            DbConnection dbConn = null;
-            dbConn = DbSources.Sources().GetConnection(iListenerId, out err);
-
-            if ((err == 0) && (!(dbConn == null)))
-            {
-                m_tableSourceData = DbTSQLInterface.Select(ref dbConn, @"SELECT * FROM source", null, null, out err);
-
-                if (err == 0)
-                {
-                    if (m_tableSourceData.Rows.Count > 0)
-                    {
-                        int i = -1
-                            , j = -1;
-                        for (i = 0; i < INDEX_SOURCE_GETDATE.Length; i++)
-                        {
-                            m_arPanels[i].EvtAskedData += new DelegateObjectFunc(onEvtQueryAskedData);
-                            for (j = 0; j < m_tableSourceData.Rows.Count; j++)
-                            {
-                                m_arPanels[i].AddSourceData(m_tableSourceData.Rows[j][@"NAME_SHR"].ToString());
-                            }
-                        }
-                    }
-                    else
-                        ;
-                }
-                else
-                    ;
-            }
-            else
-                throw new Exception(@"Нет соединения с БД");
-
-           DbSources.Sources().UnRegister(iListenerId);
-
-           for (int i = 0; i < INDEX_SOURCE_GETDATE.Length; i++)
-           {
-               m_arPanels[i].Start();
-               //m_arPanels[i].TurnOn(INDEX_SOURCE_GETDATE [i]);
-               m_arPanels[i].Select(INDEX_SOURCE_GETDATE[i]);
-           }
-        }
-
-        private void onEvtQueryAskedData(object ev)
-        {
-            int iListenerId = -1
-                , id = -1
-                , err = -1;
-            string nameShrSourceData = string.Empty;
-            DataRow rowConnSett;
-
-            try
-            {
-                switch (((EventArgsDataHost)ev).id_detail)
-                {
-                    case (int)PanelGetDate.ID_ASKED_DATAHOST.CONN_SETT:
-                        iListenerId = DbSources.Sources().Register(FormMain.s_listFormConnectionSettings[(int)CONN_SETT_TYPE.CONFIG_DB].getConnSett(), false, @"CONFIG_DB");
-                        nameShrSourceData = ((PanelGetDate)((EventArgsDataHost)ev).par[0]).GetNameShrSelectedSourceData();
-                        id = Int32.Parse(m_tableSourceData.Select(@"NAME_SHR = '" + nameShrSourceData + @"'")[0][@"ID"].ToString());
-                        rowConnSett = ConnectionSettingsSource.GetConnectionSettings(/*TYPE_DATABASE_CFG.CFG_200,*/ iListenerId, id, 501, out err).Rows[0];
-                        ConnectionSettings connSett = new ConnectionSettings(rowConnSett, -1);
-                        ((PanelGetDate)((EventArgsDataHost)ev).par[0]).OnEvtDataRecievedHost(new EventArgsDataHost(-1, ((EventArgsDataHost)ev).id_detail, new object[] { connSett }));
-                        DbSources.Sources().UnRegister(iListenerId);
-                        break;
-                    default:
-                        break;
-                }
-            }
-            catch (Exception e)
-            {
-                Logging.Logg().Exception(e, @"PanelSourceData::onEvtQueryAskedData () - ...", Logging.INDEX_MESSAGE.NOT_SET);
-            }
-        }
-
-        private void recievedEtalonDate(DateTime date)
-        {
-            EvtEtalonDate(date);
-        }
-
-        private void fThreadGetDate(object obj, EventArgs ev)
-        {
-            EvtGetDate(DateTime.UtcNow);
-
-            //lock (m_lockTimerGetDate)
-            //{
-            //    if (!(m_timerGetDate == null))
-            //        m_timerGetDate.Change(1000, System.Threading.Timeout.Infinite);
-            //    else ;
-            //}
-        }
+        }        
 
         public override void Stop()
         {
-            stop();
-
-            for (int i = 0; i < INDEX_SOURCE_GETDATE.Length; i++)
-                m_arPanels[i].Stop();
-
             base.Stop();
-        }
-
-        private void stop()
-        {
-            if (!(m_timerGetDate == null))
-            {
-                //m_timerGetDate.Change(System.Threading.Timeout.Infinite, System.Threading.Timeout.Infinite);
-                m_timerGetDate.Stop();
-                m_timerGetDate.Dispose();
-                m_timerGetDate = null;
-            }
-
-            else ;
         }
 
         public override bool Activate(bool activated)
         {
             bool bRes = base.Activate(activated);
 
-            //Выбрать действие
-            lock (m_lockTimerGetDate)
-            {
-                if (activated == true)
-                {//Запустить поток
-                    if (m_timerGetDate == null)
-                    {
-                        m_timerGetDate = new
-                            //System.Threading.Timer(fThreadGetDate)
-                            System.Windows.Forms.Timer()
-                            ;
-                        m_timerGetDate.Tick += new EventHandler(fThreadGetDate);
-                        m_timerGetDate.Interval = 1000;
-                    }
-                    else
-                        ;
-
-                    //m_timerGetDate.Change(0, System.Threading.Timeout.Infinite);
-                    m_timerGetDate.Start();
-                }
-                else
-                {
-                    //Остановить поток
-                    stop();
-                }
-            }
-
-            for (int i = 0; i < m_arPanels.Length; i++)
-                m_arPanels[i].Activate(activated);
+            
 
             return bRes;
         }
 
+        private void addPanel(object[] obj)
+        {
+            PanelGetDate[] ar_pan = (PanelGetDate[])obj;
+            //this.SuspendLayout();
+
+            this.Controls.Add(ar_pan[0], 0, 0);
+
+            int indx = -1
+                , col = -1
+                , row = -1;
+            for (int i = 1; i < ar_pan.Length; i++)
+            {
+                indx = i;
+                //if (! (indx < this.RowCount))
+                indx += (int)(indx / this.RowCount);
+                //else ;
+
+                col = (int)(indx / this.RowCount);
+                row = indx % (this.RowCount - 0);
+                if (row == 0) row = 1; else ;
+                this.Controls.Add(ar_pan[i], col, row);
+            }
+            this.ResumeLayout();
+
+            HSD.StartPan(ar_pan);
+        }
 
         public partial class HandlerSourceData : HHandlerQueue
         {
             /// <summary>
             /// Перечисление - индексы известных для обработки состояний
             /// </summary>
-            public enum StatesMachine { Unknown = -1, AddControl }
+            public enum StatesMachine { Unknown = -1, AddControl=60 }
 
             private event DelegateDateFunc EvtEtalonDate;
             private event DelegateObjectFunc EvtGetDate;
+            PanelSourceData.PanelGetDate[] m_ar_panels;
+
+            private System.Windows.Forms.Timer m_timerGetDate;
+            private object m_lockTimerGetDate;
 
             object m_panel = null;
             DataTable m_tableSourceData = null;
 
             public HandlerSourceData(object panel)
                 : base()
-        {
-            m_panel = panel;
-        }
+            {
+                Initialize();
+                m_panel = panel;
+                m_ar_panels = new PanelSourceData.PanelGetDate[INDEX_SOURCE_GETDATE.Length];
+            }
 
             protected override int StateCheckResponse(int state, out bool error, out object outobj)
             {
@@ -788,7 +664,25 @@ namespace StatisticTimeSync
 
             public override bool Activate(bool active)
             {
-                return base.Activate(active);
+                bool bRes = base.Activate(active);
+
+                if (this.Actived == false)
+                    for (int i = 0; i < m_ar_panels.Length; i++)
+                        m_ar_panels[i].Activate(this.Actived);
+
+                return bRes;
+            }
+
+            private void fThreadGetDate(object obj, EventArgs ev)
+            {
+                EvtGetDate(DateTime.UtcNow);
+
+                //lock (m_lockTimerGetDate)
+                //{
+                //    if (!(m_timerGetDate == null))
+                //        m_timerGetDate.Change(1000, System.Threading.Timeout.Infinite);
+                //    else ;
+                //}
             }
 
             public override void Start()
@@ -798,11 +692,31 @@ namespace StatisticTimeSync
 
             public override void Stop()
             {
+                stop();
+
                 base.Stop();
+            }
+
+            private void stop()
+            {
+                for (int i = 0; i < INDEX_SOURCE_GETDATE.Length; i++)
+                    m_ar_panels[i].Stop();
+
+                if (!(m_timerGetDate == null))
+                {
+                    //m_timerGetDate.Change(System.Threading.Timeout.Infinite, System.Threading.Timeout.Infinite);
+                    m_timerGetDate.Stop();
+                    m_timerGetDate.Dispose();
+                    m_timerGetDate = null;
+                }
+
+                else ;
             }
 
             protected override void Initialize()
             {
+                m_lockTimerGetDate = new object();
+
                 base.Initialize();
             }
 
@@ -813,45 +727,31 @@ namespace StatisticTimeSync
 
             private void addPanels()
             {
-                PanelSourceData.PanelGetDate[] ar_panels = new PanelSourceData.PanelGetDate[INDEX_SOURCE_GETDATE.Length];
-
-                for (int i = 0; i < INDEX_SOURCE_GETDATE.Length; i++)
+                try
                 {
-                    ar_panels[i] = new PanelSourceData.PanelGetDate();
-                }
+                    m_ar_panels = new PanelSourceData.PanelGetDate[INDEX_SOURCE_GETDATE.Length];
 
-                ar_panels[0].DelegateEtalonGetDate = new HClassLibrary.DelegateDateFunc(recievedEtalonDate);
-                //Для панелей с любыми серверами БД
-                for (int i = 0; i < ar_panels.Length; i++)
+                    for (int i = 0; i < INDEX_SOURCE_GETDATE.Length; i++)
+                    {
+                        m_ar_panels[i] = new PanelSourceData.PanelGetDate();
+                    }
+
+                    m_ar_panels[0].DelegateEtalonGetDate = new HClassLibrary.DelegateDateFunc(recievedEtalonDate);
+                    //Для панелей с любыми серверами БД
+                    for (int i = 0; i < m_ar_panels.Length; i++)
+                    {
+                        EvtGetDate += new HClassLibrary.DelegateObjectFunc(m_ar_panels[i].OnEvtGetDate);
+                        EvtEtalonDate += new HClassLibrary.DelegateDateFunc(m_ar_panels[i].OnEvtEtalonDate);
+                    }
+
+                    ((PanelSourceData)m_panel).Invoke(((PanelSourceData)m_panel).m_delAddPan,new object[]{m_ar_panels});
+                }
+                catch (Exception e)
                 {
-                    EvtGetDate += new HClassLibrary.DelegateObjectFunc(ar_panels[i].OnEvtGetDate);
-                    EvtEtalonDate += new HClassLibrary.DelegateDateFunc(ar_panels[i].OnEvtEtalonDate);
                 }
-
-                ((PanelSourceData)m_panel).SuspendLayout();
-
-                ((PanelSourceData)m_panel).Controls.Add(ar_panels[0], 0, 0);
-
-                int indx = -1
-                    , col = -1
-                    , row = -1;
-                for (int i = 1; i < ar_panels.Length; i++)
-                {
-                    indx = i;
-                    //if (! (indx < this.RowCount))
-                    indx += (int)(indx / ((PanelSourceData)m_panel).RowCount);
-                    //else ;
-
-                    col = (int)(indx / ((PanelSourceData)m_panel).RowCount);
-                    row = indx % (((PanelSourceData)m_panel).RowCount - 0);
-                    if (row == 0) row = 1; else ;
-                    ((PanelSourceData)m_panel).Controls.Add(ar_panels[i], col, row);
-                }
-                ((PanelSourceData)m_panel).ResumeLayout();
-                start(ar_panels);
             }
 
-            private void start(PanelSourceData.PanelGetDate[] ar_panels)
+            public void StartPan(PanelSourceData.PanelGetDate[] ar_panels)
             {
                 int err = -1; //Признак выполнения метода/функции
                 //Зарегистрировать соединение/получить идентификатор соединения
@@ -896,6 +796,36 @@ namespace StatisticTimeSync
                     //m_arPanels[i].TurnOn(INDEX_SOURCE_GETDATE [i]);
                     ar_panels[i].Select(INDEX_SOURCE_GETDATE[i]);
                 }
+
+                //Выбрать действие
+                lock (m_lockTimerGetDate)
+                {
+                    if (this.Actived == true)
+                    {//Запустить поток
+                        if (m_timerGetDate == null)
+                        {
+                            m_timerGetDate = new
+                                //System.Threading.Timer(fThreadGetDate)
+                                System.Windows.Forms.Timer()
+                                ;
+                            m_timerGetDate.Tick += new EventHandler(fThreadGetDate);
+                            m_timerGetDate.Interval = 1000;
+                        }
+                        else
+                            ;
+
+                        //m_timerGetDate.Change(0, System.Threading.Timeout.Infinite);
+                        m_timerGetDate.Start();
+                    }
+                    else
+                    {
+                        //Остановить поток
+                        stop();
+                    }
+                }
+                
+                for (int i = 0; i < m_ar_panels.Length; i++)
+                    m_ar_panels[i].Activate(this.Actived);
             }
 
             private void recievedEtalonDate(DateTime date)
@@ -948,7 +878,6 @@ namespace StatisticTimeSync
 
         }
     }
-
 }
 
 
