@@ -77,6 +77,7 @@ namespace StatisticTimeSync
 
                 if (m_checkBoxTurnOn.Checked == true)
                 {
+                    Activate(true);
                     //Start
                     //Спросить параметры соединения
                     IAsyncResult iar = BeginInvoke(new DelegateFunc(queryConnSett));
