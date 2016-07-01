@@ -538,6 +538,8 @@ namespace StatisticTimeSync
         //int iListenerId;
         private DataTable m_tableSourceData;
 
+        HandlerSourceData HSD = null;
+
         public PanelSourceData()
         {
             initialize();
@@ -547,7 +549,12 @@ namespace StatisticTimeSync
         {
             container.Add(this);
 
-            initialize();
+            HSD = new HandlerSourceData(this);
+
+            HSD.Activate(true);
+            HSD.Start();
+
+            //initialize();
         }
 
         private void initialize()
@@ -725,7 +732,223 @@ namespace StatisticTimeSync
 
             return bRes;
         }
+
+
+        public partial class HandlerSourceData : HHandlerQueue
+        {
+            /// <summary>
+            /// Перечисление - индексы известных для обработки состояний
+            /// </summary>
+            public enum StatesMachine { Unknown = -1, AddControl }
+
+            private event DelegateDateFunc EvtEtalonDate;
+            private event DelegateObjectFunc EvtGetDate;
+
+            object m_panel = null;
+            DataTable m_tableSourceData = null;
+
+            public HandlerSourceData(object panel)
+                : base()
+        {
+            m_panel = panel;
+        }
+
+            protected override int StateCheckResponse(int state, out bool error, out object outobj)
+            {
+                throw new NotImplementedException();
+            }
+
+            protected override HHandler.INDEX_WAITHANDLE_REASON StateErrors(int state, int req, int res)
+            {
+                throw new NotImplementedException();
+            }
+
+            protected override int StateRequest(int state)
+            {
+                int iRes = 0;
+
+                switch (state)
+                {
+                    case (int)StatesMachine.AddControl:
+                        addPanels();
+                        break;
+                }
+                return iRes;
+            }
+
+            protected override int StateResponse(int state, object obj)
+            {
+                throw new NotImplementedException();
+            }
+
+            protected override void StateWarnings(int state, int req, int res)
+            {
+                throw new NotImplementedException();
+            }
+
+            public override bool Activate(bool active)
+            {
+                return base.Activate(active);
+            }
+
+            public override void Start()
+            {
+                base.Start();
+            }
+
+            public override void Stop()
+            {
+                base.Stop();
+            }
+
+            protected override void Initialize()
+            {
+                base.Initialize();
+            }
+
+            public override void ClearStates()
+            {
+                base.ClearStates();
+            }
+
+            private void addPanels()
+            {
+                PanelSourceData.PanelGetDate[] ar_panels = new PanelSourceData.PanelGetDate[INDEX_SOURCE_GETDATE.Length];
+
+                for (int i = 0; i < INDEX_SOURCE_GETDATE.Length; i++)
+                {
+                    ar_panels[i] = new PanelSourceData.PanelGetDate();
+                }
+
+                ar_panels[0].DelegateEtalonGetDate = new HClassLibrary.DelegateDateFunc(recievedEtalonDate);
+                //Для панелей с любыми серверами БД
+                for (int i = 0; i < ar_panels.Length; i++)
+                {
+                    EvtGetDate += new HClassLibrary.DelegateObjectFunc(ar_panels[i].OnEvtGetDate);
+                    EvtEtalonDate += new HClassLibrary.DelegateDateFunc(ar_panels[i].OnEvtEtalonDate);
+                }
+
+                ((PanelSourceData)m_panel).SuspendLayout();
+
+                ((PanelSourceData)m_panel).Controls.Add(ar_panels[0], 0, 0);
+
+                int indx = -1
+                    , col = -1
+                    , row = -1;
+                for (int i = 1; i < ar_panels.Length; i++)
+                {
+                    indx = i;
+                    //if (! (indx < this.RowCount))
+                    indx += (int)(indx / ((PanelSourceData)m_panel).RowCount);
+                    //else ;
+
+                    col = (int)(indx / ((PanelSourceData)m_panel).RowCount);
+                    row = indx % (((PanelSourceData)m_panel).RowCount - 0);
+                    if (row == 0) row = 1; else ;
+                    ((PanelSourceData)m_panel).Controls.Add(ar_panels[i], col, row);
+                }
+                ((PanelSourceData)m_panel).ResumeLayout();
+                start(ar_panels);
+            }
+
+            private void start(PanelSourceData.PanelGetDate[] ar_panels)
+            {
+                int err = -1; //Признак выполнения метода/функции
+                //Зарегистрировать соединение/получить идентификатор соединения
+                int iListenerId = DbSources.Sources().Register(FormMain.s_listFormConnectionSettings[(int)CONN_SETT_TYPE.CONFIG_DB].getConnSett(), false, @"CONFIG_DB");
+
+                DbConnection dbConn = null;
+                dbConn = DbSources.Sources().GetConnection(iListenerId, out err);
+
+                if ((err == 0) && (!(dbConn == null)))
+                {
+                    m_tableSourceData = DbTSQLInterface.Select(ref dbConn, @"SELECT * FROM source", null, null, out err);
+
+                    if (err == 0)
+                    {
+                        if (m_tableSourceData.Rows.Count > 0)
+                        {
+                            int i = -1
+                                , j = -1;
+                            for (i = 0; i < INDEX_SOURCE_GETDATE.Length; i++)
+                            {
+                                ar_panels[i].EvtAskedData += new DelegateObjectFunc(onEvtQueryAskedData);
+                                for (j = 0; j < m_tableSourceData.Rows.Count; j++)
+                                {
+                                    ar_panels[i].AddSourceData(m_tableSourceData.Rows[j][@"NAME_SHR"].ToString());
+                                }
+                            }
+                        }
+                        else
+                            ;
+                    }
+                    else
+                        ;
+                }
+                else
+                    throw new Exception(@"Нет соединения с БД");
+
+                DbSources.Sources().UnRegister(iListenerId);
+
+                for (int i = 0; i < INDEX_SOURCE_GETDATE.Length; i++)
+                {
+                    ar_panels[i].Start();
+                    //m_arPanels[i].TurnOn(INDEX_SOURCE_GETDATE [i]);
+                    ar_panels[i].Select(INDEX_SOURCE_GETDATE[i]);
+                }
+            }
+
+            private void recievedEtalonDate(DateTime date)
+            {
+                EvtEtalonDate(date);
+            }
+
+            /// <summary>
+            /// Массив значений
+            /// </summary>
+            private static int[] INDEX_SOURCE_GETDATE = 
+        {
+            26 //Эталон - ne2844
+            //Вариант №1
+            , 1, 4, 7, 10, 13, /*16*/-1
+            , 2, 5, 8, 11, 14, 17
+            , 3, 6, 9, 12, 15, -1
+        };
+
+            private void onEvtQueryAskedData(object ev)
+            {
+                int iListenerId = -1
+                    , id = -1
+                    , err = -1;
+                string nameShrSourceData = string.Empty;
+                DataRow rowConnSett;
+
+                try
+                {
+                    switch (((EventArgsDataHost)ev).id_detail)
+                    {
+                        case (int)PanelSourceData.PanelGetDate.ID_ASKED_DATAHOST.CONN_SETT:
+                            iListenerId = DbSources.Sources().Register(FormMain.s_listFormConnectionSettings[(int)CONN_SETT_TYPE.CONFIG_DB].getConnSett(), false, @"CONFIG_DB");
+                            nameShrSourceData = ((PanelSourceData.PanelGetDate)((EventArgsDataHost)ev).par[0]).GetNameShrSelectedSourceData();
+                            id = Int32.Parse(m_tableSourceData.Select(@"NAME_SHR = '" + nameShrSourceData + @"'")[0][@"ID"].ToString());
+                            rowConnSett = ConnectionSettingsSource.GetConnectionSettings(/*TYPE_DATABASE_CFG.CFG_200,*/ iListenerId, id, 501, out err).Rows[0];
+                            ConnectionSettings connSett = new ConnectionSettings(rowConnSett, -1);
+                            ((PanelSourceData.PanelGetDate)((EventArgsDataHost)ev).par[0]).OnEvtDataRecievedHost(new EventArgsDataHost(-1, ((EventArgsDataHost)ev).id_detail, new object[] { connSett }));
+                            DbSources.Sources().UnRegister(iListenerId);
+                            break;
+                        default:
+                            break;
+                    }
+                }
+                catch (Exception e)
+                {
+                    Logging.Logg().Exception(e, @"PanelSourceData::onEvtQueryAskedData () - ...", Logging.INDEX_MESSAGE.NOT_SET);
+                }
+            }
+
+        }
     }
+
 }
 
 
