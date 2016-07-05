@@ -18,37 +18,61 @@ namespace StatisticTimeSync
     /// </summary>
     public partial class PanelSourceData : PanelStatistic
     {
-
         /// <summary>
         /// Работа с компонентами панели
         /// </summary>
         public partial class PanelGetDate : HPanelCommon
         {
+            /// <summary>
+            /// Перечисление - идентификаторы сообщений между панелями
+            /// </summary>
             public enum ID_ASKED_DATAHOST
             {
                 CONN_SETT
                 ,
             }
+            /// <summary>
+            /// Перечисление - индексы для обращения к элементам массива (виды объектов дата/время)
+            /// </summary>
             private enum INDEX_DATETME
             {
-                METKA, ETALON,
+                UNKNOWN = -1
+                , METKA, ETALON,
                 SERVER
-                    , INDEX_DATETME_COUNT
+                    , COUNT
             }
-
+            /// <summary>
+            /// Событие - запрос на получение данных
+            /// </summary>
             public event DelegateObjectFunc EvtAskedData;
+            /// <summary>
+            /// Тип делегата для обработки события - получение эталонного даты/время
+            /// </summary>
             public DelegateDateFunc DelegateEtalonGetDate;
-
+            /// <summary>
+            /// Объект синхронизации доступа к панели одного источника
+            /// </summary>
             private object m_lockGetDate;
+            /// <summary>
+            /// Объект для опроса текущего времени источника
+            /// </summary>
             private HGetDate m_getDate;
+            /// <summary>
+            /// Массив объектов дата/время для хранения всех видов таких объектов
+            /// </summary>
             private DateTime[] m_arDateTime;
-
+            /// <summary>
+            /// Конструктор - основной (без параметров)
+            /// </summary>
             public PanelGetDate()
                 : base(-1, -1)
             {
                 initialize();
             }
-
+            /// <summary>
+            /// Конструктор - дополнительный (с параметром)
+            /// </summary>
+            /// <param name="container">Объект - родительский контейнер</param>
             public PanelGetDate(IContainer container)
                 : base(container, -1, -1)
             {
@@ -56,21 +80,24 @@ namespace StatisticTimeSync
 
                 initialize();
             }
-
+            /// <summary>
+            /// Инициализация объектов класса
+            ///  (могла быть выполнена в конструкторе, но выделена в метод, т.к. имеется > 1 конструктора)
+            /// </summary>
             private void initialize()
             {
                 InitializeComponent();
 
                 m_lockGetDate = new object();
 
-                m_arDateTime = new DateTime[(int)INDEX_DATETME.INDEX_DATETME_COUNT] { DateTime.MinValue, DateTime.MinValue, DateTime.MinValue };
+                m_arDateTime = new DateTime[(int)INDEX_DATETME.COUNT] { DateTime.MinValue, DateTime.MinValue, DateTime.MinValue };
             }
 
             /// <summary>
-            /// 
+            /// Обработчик события - изменение состояния признака вкл/выкл составной элемент управления
             /// </summary>
-            /// <param name="obj"></param>
-            /// <param name="ev"></param>
+            /// <param name="obj">Объект, инициировавший событие</param>
+            /// <param name="ev">Аргумент события</param>
             private void checkBoxTurnOn_CheckedChanged(object obj, EventArgs ev)
             {
                 this.m_comboBoxSourceData.Enabled = !m_checkBoxTurnOn.Checked;
@@ -102,10 +129,10 @@ namespace StatisticTimeSync
             }
 
             /// <summary>
-            /// 
+            /// Обработчик события - изменение выбранного элемента в списке
             /// </summary>
-            /// <param name="obj"></param>
-            /// <param name="ev"></param>
+            /// <param name="obj">Объект, инициировавший событие (список с источниками данных)</param>
+            /// <param name="ev">Аргумент события</param>
             private void comboBoxSourceData_SelectedIndexChanged(object obj, EventArgs ev)
             {
                 if (m_comboBoxSourceData.SelectedIndex > 0)
@@ -117,34 +144,35 @@ namespace StatisticTimeSync
             /// <summary>
             /// добавления значений в комбобокс
             /// </summary>
-            /// <param name="desc"></param>
+            /// <param name="desc">Строка - описание источника данных</param>
             public void AddSourceData(string desc)
             {
                 m_comboBoxSourceData.Items.Add(desc);
             }
 
             /// <summary>
-            /// 
+            /// Возвратить короткое нименование выбранного источника данных
             /// </summary>
-            /// <returns></returns>
+            /// <returns>Стпрка - короткое наименование источника данных</returns>
             public string GetNameShrSelectedSourceData()
             {
                 return (string)Invoke(new Func<string>(() => m_comboBoxSourceData.SelectedItem.ToString()));
             }
 
             /// <summary>
-            /// 
+            /// Обработчик события - получение данных (по запросу) от сервера
             /// </summary>
-            /// <param name="ev"></param>
+            /// <param name="ev">Аргумент события - полученные данные</param>
             public void OnEvtDataRecievedHost(EventArgsDataHost ev)
             {
                 switch (ev.id_detail)
                 {
-                    case (int)ID_ASKED_DATAHOST.CONN_SETT:
-                        //Установить соедиение
+                    case (int)ID_ASKED_DATAHOST.CONN_SETT: //получены параметры соединения
+                        //Установить соедиение - создать объект
                         m_getDate = new HGetDate((ConnectionSettings)ev.par[0], recievedGetDate, errorGetDate);
-                        //Запустить поток
+                        //Установить соедиение - запустить поток обработки(отправления) запросов
                         m_getDate.StartDbInterfaces();
+                        //Установить соедиение - начать обработку запросов
                         m_getDate.Start();
                         break;
                     default:
@@ -153,9 +181,9 @@ namespace StatisticTimeSync
             }
 
             /// <summary>
-            /// 
+            /// Обработать полученную дату/время
             /// </summary>
-            /// <param name="date"></param>
+            /// <param name="date">Дата/время для обработки</param>
             private void recievedGetDate(DateTime date)
             {
                 //Console.WriteLine (date.Kind.ToString ());
@@ -164,7 +192,7 @@ namespace StatisticTimeSync
                 this.BeginInvoke(new DelegateFunc(updateGetDate));
                 //Если панель с ЭТАЛОНным сервером БД
                 if ((m_arDateTime[(int)INDEX_DATETME.SERVER].Equals(DateTime.MinValue) == false)
-                    && (!(DelegateEtalonGetDate == null)))
+                    && (isEtalon == true))
                     DelegateEtalonGetDate(date);
                 else
                     ;
@@ -216,23 +244,26 @@ namespace StatisticTimeSync
             public void updateDiffDate()
             {
                 string textDiff = string.Empty;
+                double msecDiff = -1F;
 
-                if ((m_arDateTime[(int)INDEX_DATETME.ETALON].Equals(DateTime.MinValue) == false)
-                    && m_arDateTime[(int)INDEX_DATETME.SERVER].Equals(DateTime.MinValue) == false)
-                {
-                    double msecDiff = (m_arDateTime[(int)INDEX_DATETME.ETALON] - m_arDateTime[(int)INDEX_DATETME.SERVER]).TotalMilliseconds;
-                    if (Math.Abs(msecDiff) < (1 * 60 * 60 * 1000))
-                        ;
+                if (m_arDateTime[(int)INDEX_DATETME.ETALON].Equals(DateTime.MinValue) == false)
+                    if (m_arDateTime[(int)INDEX_DATETME.SERVER].Equals(DateTime.MinValue) == false)
+                    {
+                        msecDiff = (m_arDateTime[(int)INDEX_DATETME.ETALON] - m_arDateTime[(int)INDEX_DATETME.SERVER]).TotalMilliseconds;
+                        if (Math.Abs(msecDiff) < (1 * 60 * 60 * 1000))
+                            ;
+                        else
+                            m_arDateTime[(int)INDEX_DATETME.SERVER] = m_arDateTime[(int)INDEX_DATETME.SERVER].AddHours(-3);
+
+                        textDiff = ((m_arDateTime[(int)INDEX_DATETME.ETALON] - m_arDateTime[(int)INDEX_DATETME.SERVER]).TotalMilliseconds / 1000).ToString();
+
+                    }
                     else
-                        m_arDateTime[(int)INDEX_DATETME.SERVER] = m_arDateTime[(int)INDEX_DATETME.SERVER].AddHours(-3);
-
-                    textDiff = ((m_arDateTime[(int)INDEX_DATETME.ETALON] - m_arDateTime[(int)INDEX_DATETME.SERVER]).TotalMilliseconds / 1000).ToString();
-
-                }
+                        //Признак останова (деактивации)
+                        textDiff = @"--.---";
                 else
-                    //Признак останова (деактивации)
+                    //Признак отсутствия эталонного времени
                     textDiff = @"--.---";
-                //Activate(false);
 
                 m_labelDiff.Text = textDiff;
                 m_labelDiff.Refresh();
@@ -272,7 +303,7 @@ namespace StatisticTimeSync
             }
 
             /// <summary>
-            /// 
+            /// Остановить панель
             /// </summary>
             public override void Stop()
             {
@@ -280,7 +311,9 @@ namespace StatisticTimeSync
 
                 base.Stop();
             }
-
+            /// <summary>
+            /// Остановить панель
+            /// </summary>
             private void stop()
             {
                 //Stop
@@ -297,6 +330,13 @@ namespace StatisticTimeSync
                 }
             }
 
+            private bool isEtalon { get { return !(DelegateEtalonGetDate == null); } }
+
+            /// <summary>
+            /// Активировать панель
+            /// </summary>
+            /// <param name="activated">Признак активации</param>
+            /// <returns>Признак изменения состояния панели после выполнения</returns>
             public override bool Activate(bool activated)
             {
                 bool bRes = base.Activate(activated);
@@ -319,6 +359,11 @@ namespace StatisticTimeSync
                         //Признак деактивации
                         recievedGetDate(DateTime.MinValue);
                         recievedEtalonDate(DateTime.MinValue);
+                        //!!! только, если панель эталонная! - сообщить всем клиентам, что эталонное время недоступно
+                        if (isEtalon == true)
+                            DelegateEtalonGetDate(DateTime.MinValue);
+                        else
+                            ;
                     }
                 else
                     ;
@@ -349,9 +394,9 @@ namespace StatisticTimeSync
             }
 
             /// <summary>
-            /// 
+            /// Включть/выключить панель
             /// </summary>
-            /// <param name="indx"></param>
+            /// <param name="indx">Индекс источника данных (при включении)</param>
             public void TurnOff(int indx = -1)
             {
                 if (m_checkBoxTurnOn.Checked == true)
@@ -374,9 +419,9 @@ namespace StatisticTimeSync
             }
 
             /// <summary>
-            ///  проверка на чек
+            ///  Выбрать источник данных из списка
             /// </summary>
-            /// <param name="indx"></param>
+            /// <param name="indx">Индекс источника данных</param>
             public void Select(int indx)
             {
                 if (m_checkBoxTurnOn.Checked == false)
@@ -571,9 +616,7 @@ namespace StatisticTimeSync
 
         public override bool Activate(bool activated)
         {
-            bool bRes = base.Activate(activated);
-
-            
+            bool bRes = base.Activate(activated);            
 
             return bRes;
         }
@@ -686,10 +729,10 @@ namespace StatisticTimeSync
                 //}
             }
 
-            public override void Start()
-            {
-                base.Start();
-            }
+            //public override void Start()
+            //{
+            //    base.Start();
+            //}
 
             public override void Stop()
             {
@@ -721,10 +764,10 @@ namespace StatisticTimeSync
                 base.Initialize();
             }
 
-            public override void ClearStates()
-            {
-                base.ClearStates();
-            }
+            //public override void ClearStates()
+            //{
+            //    base.ClearStates();
+            //}
 
             private void addPanels()
             {
@@ -835,17 +878,20 @@ namespace StatisticTimeSync
             }
 
             /// <summary>
-            /// Массив значений
+            /// Массив значений - индексы источников данных (по таблице БД_КОНФИГУРАЦИИ.[SOURCE])
             /// </summary>
             private static int[] INDEX_SOURCE_GETDATE = 
-        {
-            26 //Эталон - ne2844
-            //Вариант №1
-            , 1, 4, 7, 10, 13, /*16*/-1
-            , 2, 5, 8, 11, 14, 17
-            , 3, 6, 9, 12, 15, -1
-        };
-
+            {
+                26 //Эталон - ne2844
+                //Вариант №1
+                , 1, 4, 7, 10, 13, /*16*/-1
+                , 2, 5, 8, 11, 14, 17
+                , 3, 6, 9, 12, 15, -1
+            };
+            /// <summary>
+            /// Обработчик запросов на получение информации
+            /// </summary>
+            /// <param name="ev"></param>
             private void onEvtQueryAskedData(object ev)
             {
                 int iListenerId = -1
@@ -853,17 +899,19 @@ namespace StatisticTimeSync
                     , err = -1;
                 string nameShrSourceData = string.Empty;
                 DataRow rowConnSett;
-
+                // отправить ответ в ~ от идентификатора запрашиваемой информации
                 try
                 {
                     switch (((EventArgsDataHost)ev).id_detail)
                     {
-                        case (int)PanelSourceData.PanelGetDate.ID_ASKED_DATAHOST.CONN_SETT:
+                        case (int)PanelSourceData.PanelGetDate.ID_ASKED_DATAHOST.CONN_SETT: // запрошены параметры соединения
                             iListenerId = DbSources.Sources().Register(FormMain.s_listFormConnectionSettings[(int)CONN_SETT_TYPE.CONFIG_DB].getConnSett(), false, @"CONFIG_DB");
                             nameShrSourceData = ((PanelSourceData.PanelGetDate)((EventArgsDataHost)ev).par[0]).GetNameShrSelectedSourceData();
                             id = Int32.Parse(m_tableSourceData.Select(@"NAME_SHR = '" + nameShrSourceData + @"'")[0][@"ID"].ToString());
                             rowConnSett = ConnectionSettingsSource.GetConnectionSettings(/*TYPE_DATABASE_CFG.CFG_200,*/ iListenerId, id, 501, out err).Rows[0];
+                            // создать объект с параметрами соединения
                             ConnectionSettings connSett = new ConnectionSettings(rowConnSett, -1);
+                            // отправить запрашиваемые данные
                             ((PanelSourceData.PanelGetDate)((EventArgsDataHost)ev).par[0]).OnEvtDataRecievedHost(new EventArgsDataHost(-1, ((EventArgsDataHost)ev).id_detail, new object[] { connSett }));
                             DbSources.Sources().UnRegister(iListenerId);
                             break;
@@ -876,7 +924,6 @@ namespace StatisticTimeSync
                     Logging.Logg().Exception(e, @"PanelSourceData::onEvtQueryAskedData () - ...", Logging.INDEX_MESSAGE.NOT_SET);
                 }
             }
-
         }
     }
 }
