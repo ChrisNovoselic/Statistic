@@ -224,43 +224,12 @@ namespace StatisticTimeSync
         private void InitializeComponent()
         {
             components = new System.ComponentModel.Container();
-
-            int i = -1;
-
-            m_arPanels = new PanelGetDate[INDEX_SOURCE_GETDATE.Length];
-            for (i = 0; i < m_arPanels.Length; i++)
-                m_arPanels [i] = new PanelGetDate ();
             
-            //Только для панели с эталонным серверои БД
-           m_arPanels[0].DelegateEtalonGetDate = new HClassLibrary.DelegateDateFunc(recievedEtalonDate);
-            //Для панелей с любыми серверами БД
-            for (i = 0; i < m_arPanels.Length; i++) 
-            {
-                EvtGetDate += new HClassLibrary.DelegateObjectFunc(m_arPanels[i].OnEvtGetDate);
-                EvtEtalonDate += new HClassLibrary.DelegateDateFunc(m_arPanels[i].OnEvtEtalonDate);
-            }
-
             this.SuspendLayout();
 
             this.Dock = DockStyle.Fill;
             initializeLayoutStyle (3, 7);
 
-            this.Controls.Add(m_arPanels[0], 0, 0);
-
-            int indx = -1
-                , col = -1
-                , row = -1;
-            for (i = 1; i < m_arPanels.Length; i++) {
-                indx = i;
-                //if (! (indx < this.RowCount))
-                    indx += (int)(indx / this.RowCount);
-                //else ;
-
-                col = (int)(indx / this.RowCount);
-                row = indx % (this.RowCount - 0);
-                if (row == 0) row = 1; else ;
-                this.Controls.Add(m_arPanels[i], col, row); 
-            }
             this.ResumeLayout();
         }
 
