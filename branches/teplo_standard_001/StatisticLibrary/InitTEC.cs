@@ -127,7 +127,9 @@ namespace StatisticCommon
 
     public class InitTEC_200 : InitTECBase
     {
-        // комментарий для подключения к redmine
+        // комментарий для подключения к redmine #1001
+        // комментарий для подключения к redmine #1002
+        // комментарий для подключения к redmine #1003
         private DataTable getALL_PARAM_TG(int ver, out int err)
         {
             return DbTSQLInterface.Select(ref m_connConfigDB, @"SELECT * FROM [dbo].[ft_ALL_PARAM_TG_KKS] (" + ver + @")", null, null, out err);
