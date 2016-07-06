@@ -191,6 +191,7 @@ namespace StatisticCommon
                             {
                                 //Logging.Logg().Debug("InitTEC::InitTEC (3 параметра) - tec.Add () = Ok");
 
+                                #region Добавить ТГ для ТЭЦ
                                 list_tg = getListTG(Convert.ToInt32(list_tec.Rows[i]["ID"]), out err);
 
                                 if (err == 0)
@@ -204,7 +205,9 @@ namespace StatisticCommon
                                     }
                                 else
                                     ; //Ошибка получения списка ТГ
+                                #endregion
 
+                                #region Добавить компоненты ТЭЦ (ГТП, ЩУ)
                                 for (int c = (int)FormChangeMode.MODE_TECCOMPONENT.GTP; !(c > (int)FormChangeMode.MODE_TECCOMPONENT.PC); c++)
                                 {
                                     list_TECComponents = getListTECComponent(FormChangeMode.getPrefixMode(c), Convert.ToInt32(list_tec.Rows[i]["ID"]), out err);
@@ -236,6 +239,7 @@ namespace StatisticCommon
                                     else
                                         ; //Ошибка при получении списка компонентов
                                 }
+                                #endregion
                             }
                             else
                                 ; //Ошибка получения параметров соединений с БД
