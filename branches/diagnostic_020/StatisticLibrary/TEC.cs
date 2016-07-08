@@ -642,22 +642,24 @@ namespace StatisticCommon
 
             m_SensorsString_SOTIASSO = string.Empty;
             //Цикл по всем компонентам ТЭЦ
-            for (i = 0; i < list_TECComponents.Count; i++) {
+            for (i = 0; i < list_TECComponents.Count; i++) 
+            {
                 //Проверить тип компонента
-                if (list_TECComponents [i].IsTG == true) {
+                if (list_TECComponents [i].IsTG == true) 
+                {
                     //Только для ТГ
                     m_listTG.Add(list_TECComponents[i].m_listTG[0]);
-                    //Формировать строку-перечисление с иджентификаторами для ТЭЦ в целом (АИИС КУЭ - час)
+                    //Формировать строку-перечисление с идентификаторами для ТЭЦ в целом (АИИС КУЭ - час)
                     m_SensorsStrings_ASKUE[(int)HDateTime.INTERVAL.HOURS] = addSensor(m_SensorsStrings_ASKUE[(int)HDateTime.INTERVAL.HOURS]
                                                                     , list_TECComponents[i].m_listTG[0].m_arIds_fact[(int)HDateTime.INTERVAL.HOURS]
                                                                     , type
                                                                     , m_arTypeSourceData[(int)CONN_SETT_TYPE.DATA_AISKUE - (int)CONN_SETT_TYPE.DATA_AISKUE]);
-                    //Формировать строку-перечисление с иджентификаторами для ТЭЦ в целом (АИИС КУЭ - минуты)
+                    //Формировать строку-перечисление с идентификаторами для ТЭЦ в целом (АИИС КУЭ - минуты)
                     m_SensorsStrings_ASKUE[(int)HDateTime.INTERVAL.MINUTES] = addSensor(m_SensorsStrings_ASKUE[(int)HDateTime.INTERVAL.MINUTES]
                                                                     , list_TECComponents[i].m_listTG[0].m_arIds_fact[(int)HDateTime.INTERVAL.MINUTES]
                                                                     , type
                                                                     , m_arTypeSourceData[(int)CONN_SETT_TYPE.DATA_AISKUE - (int)CONN_SETT_TYPE.DATA_AISKUE]);
-                    //Формировать строку-перечисление с иджентификаторами для ТЭЦ в целом (СОТИАССО)
+                    //Формировать строку-перечисление с идентификаторами для ТЭЦ в целом (СОТИАССО)
                     m_SensorsString_SOTIASSO = addSensor(m_SensorsString_SOTIASSO
                                                         , list_TECComponents[i].m_listTG[0].m_strKKS_NAME_TM
                                                         , type

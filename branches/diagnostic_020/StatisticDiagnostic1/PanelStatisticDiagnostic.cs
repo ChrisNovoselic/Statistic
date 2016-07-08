@@ -873,8 +873,8 @@ namespace StatisticDiagnostic
                 object a = null;
 
                 for (int i = 0; i < m_foundrow.Count(); i++)
-                     a = m_foundrow[i]["ID"].ToString(); 
-               
+                    a = m_foundrow[i]["ID"].ToString();
+
                 return a;
             }
 
@@ -1304,11 +1304,12 @@ namespace StatisticDiagnostic
                         break;
 
                     case "СОТИАССО":
-                        //if (diffTime(m_DTnowSOTIASSO, time))
-                        //    bFL = true;
-                        //else
-                        //    bFL = false;
-                        //break;
+                    case "СОТИАССО_TorIs":
+                    //if (diffTime(m_DTnowSOTIASSO, time))
+                    //    bFL = true;
+                    //else
+                    //    bFL = false;
+                    //break;
 
                     case "СОТИАССО_0":
                         if (diffTime(m_DTnowSOTIASSO, time))
@@ -1351,9 +1352,9 @@ namespace StatisticDiagnostic
                 switch (nameSource)
                 {
                     case "СОТИАССО":
-                        //if ((Npanel + 1) == 6)
-                        //    result = result.AddHours(6.0);
-                        //break;
+                    //if ((Npanel + 1) == 6)
+                    //    result = result.AddHours(6.0);
+                    //break;
 
                     case "СОТИАССО_0":
                         if ((Npanel + 1) == 6)
@@ -1991,17 +1992,19 @@ namespace StatisticDiagnostic
                 this.TaskDataGridView.Dock = DockStyle.Fill;
                 this.TaskDataGridView.ClearSelection();
                 this.TaskDataGridView.Name = "TaskDataGridView";
-                this.TaskDataGridView.ColumnCount = 5;
+                this.TaskDataGridView.ColumnCount = 6;
                 this.TaskDataGridView.Columns[0].Name = "Имя задачи";
                 this.TaskDataGridView.Columns[1].Name = "Среднее время выполнения";
                 this.TaskDataGridView.Columns[3].Name = "Время проверки";
                 this.TaskDataGridView.Columns[2].Name = "Время выполнения задачи";
                 this.TaskDataGridView.Columns[4].Name = "Описание ошибки";
-                this.TaskDataGridView.Columns[0].Width = 25;
+                this.TaskDataGridView.Columns[5].Name = "Статус задачи";
+                this.TaskDataGridView.Columns[0].Width = 30;
                 this.TaskDataGridView.Columns[1].Width = 12;
                 this.TaskDataGridView.Columns[3].Width = 5;
                 this.TaskDataGridView.Columns[2].Width = 15;
-                this.TaskDataGridView.Columns[4].Width = 27;
+                this.TaskDataGridView.Columns[4].Width = 20;
+                this.TaskDataGridView.Columns[5].Width = 15;
                 this.TaskDataGridView.RowHeadersVisible = false;
                 this.TaskDataGridView.TabIndex = 0;
                 this.TaskDataGridView.AllowUserToAddRows = false;
@@ -2045,7 +2048,6 @@ namespace StatisticDiagnostic
             {
                 if (!(TaskDataGridView == null))
                     TaskDataGridView.Rows.Clear();
-                else ;
 
                 base.Stop();
             }
@@ -2070,7 +2072,6 @@ namespace StatisticDiagnostic
 
                     if (TaskDataGridView.Rows.Count < Convert.ToInt32(m_enumIDtask.Count()))
                         addRowsTask(Convert.ToInt32(m_enumIDtask.Count()));
-                    else ;
 
                     for (int i = 0; i < Convert.ToInt32(m_enumIDtask.Count()); i++)
                     {
@@ -2111,8 +2112,6 @@ namespace StatisticDiagnostic
                 {
                     if (TaskDataGridView.SelectedCells.Count > 0)
                         TaskDataGridView.SelectedCells[0].Selected = false;
-                    else
-                        ;
                 }
                 catch { }
             }
@@ -2216,50 +2215,64 @@ namespace StatisticDiagnostic
                         m_lim = limTaskAvg;
                     else m_lim = limTask;
 
-                    if (drTask[i]["Value"].ToString() == "")
+                    if (int.Parse(drTask[i]["Link"].ToString()) == 1)
                     {
-                        if (TaskDataGridView.Columns[4].Visible == false)
-                            TaskDataGridView.Invoke(new Action(() => TaskDataGridView.Columns[4].Visible = true));
-                        else ;
-                        TaskDataGridView.Invoke(new Action(() => TaskDataGridView.Rows[m_check].Cells[4].Value = "Задача не выполняется"));
-                        upselectrow(m_check);
-                        m_counter--;
-                    }
-                    else
-                        if (interruptTask(drTask[i + 1]["Value"].ToString()))
+                        if (drTask[i]["Value"].ToString() == "")
                         {
                             if (TaskDataGridView.Columns[4].Visible == false)
                                 TaskDataGridView.Invoke(new Action(() => TaskDataGridView.Columns[4].Visible = true));
-                            else ;
+
                             TaskDataGridView.Invoke(new Action(() => TaskDataGridView.Rows[m_check].Cells[4].Value = "Задача не выполняется"));
+                            TaskDataGridView.Invoke(new Action(() => TaskDataGridView.Rows[m_check].Cells[5].Value = ""));
                             upselectrow(m_check);
                             m_counter--;
                         }
                         else
-                            if (TimeSpan.FromSeconds(Convert.ToDouble(drTask[i]["Value"])) > m_lim)
+                            if (interruptTask(drTask[i + 1]["Value"].ToString()))
                             {
                                 if (TaskDataGridView.Columns[4].Visible == false)
                                     TaskDataGridView.Invoke(new Action(() => TaskDataGridView.Columns[4].Visible = true));
 
-                                TaskDataGridView.Invoke(new Action(() => TaskDataGridView.Rows[m_check].Cells[4].Value = "Превышено время выполнения задачи"));
+                                TaskDataGridView.Invoke(new Action(() => TaskDataGridView.Rows[m_check].Cells[4].Value = "Задача не выполняется"));
+                                TaskDataGridView.Invoke(new Action(() => TaskDataGridView.Rows[m_check].Cells[5].Value = ""));
                                 upselectrow(m_check);
                                 m_counter--;
                             }
                             else
-                            {
-                                TaskDataGridView.Invoke(new Action(() => TaskDataGridView.Rows[m_check].DefaultCellStyle.BackColor = Color.White));
-                                TaskDataGridView.Invoke(new Action(() => TaskDataGridView.Rows[m_check].Cells[4].Value = ""));
+                                if (TimeSpan.FromSeconds(Convert.ToDouble(drTask[i]["Value"])) > m_lim)
+                                {
+                                    if (TaskDataGridView.Columns[4].Visible == false)
+                                        TaskDataGridView.Invoke(new Action(() => TaskDataGridView.Columns[4].Visible = true));
 
-                                if (m_counter == TaskDataGridView.Rows.Count)
-                                    if (TaskDataGridView.Columns[4].Visible == true)
-                                        TaskDataGridView.Invoke(new Action(() => TaskDataGridView.Columns[4].Visible = false));
-                                    else ;
+                                    TaskDataGridView.Invoke(new Action(() => TaskDataGridView.Rows[m_check].Cells[4].Value = "Превышено время выполнения задачи"));
+                                    TaskDataGridView.Invoke(new Action(() => TaskDataGridView.Rows[m_check].Cells[5].Value = ""));
+                                    upselectrow(m_check);
+                                    m_counter--;
+                                }
                                 else
-                                    m_counter++;
-                            }
+                                {
+                                    TaskDataGridView.Invoke(new Action(() => TaskDataGridView.Rows[m_check].DefaultCellStyle.BackColor = Color.White));
+                                    TaskDataGridView.Invoke(new Action(() => TaskDataGridView.Rows[m_check].Cells[4].Value = ""));
+                                    TaskDataGridView.Invoke(new Action(() => TaskDataGridView.Rows[m_check].Cells[5].Value = ""));
+
+                                    if (m_counter == TaskDataGridView.Rows.Count)
+                                        if (TaskDataGridView.Columns[4].Visible == true)
+                                            TaskDataGridView.Invoke(new Action(() => TaskDataGridView.Columns[4].Visible = false));
+                                        else ;
+                                    else
+                                        m_counter++;
+                                }
+                    }
+                    else
+                    {
+                        TaskDataGridView.Invoke(new Action(() => TaskDataGridView.Rows[m_check].Cells[5].Value = "Запрещена"));
+                        upselectrow(m_check);
+                        m_counter++;
+                    }
                     m_check++;
                     i++;
                 }
+
             }
 
             /// <summary>
@@ -2276,16 +2289,20 @@ namespace StatisticDiagnostic
                     for (int i = 0; i < TaskDataGridView.Rows[indxrow + 1].Cells.Count; i++)
                         TaskDataGridView.Invoke(new Action(() => TaskDataGridView.Rows[0].Cells[i].Value = TaskDataGridView.Rows[indxrow + 1].Cells[i].Value));
 
-                    if (TaskDataGridView.Rows[0].Cells[4].Value.ToString() == "Задача не выполняется")
+                    if (Convert.ToString(TaskDataGridView.Rows[0].Cells[4].Value) == "Задача не выполняется")
                     {
-                        TaskDataGridView.Invoke(new Action(() => TaskDataGridView.Rows[0].DefaultCellStyle.BackColor = Color.Firebrick));
                         TaskDataGridView.Invoke(new Action(() => TaskDataGridView.Rows[0].DefaultCellStyle.BackColor = Color.Firebrick));
                     }
                     else
-                    {
-                        TaskDataGridView.Invoke(new Action(() => TaskDataGridView.Rows[0].DefaultCellStyle.BackColor = Color.Sienna));
-                        TaskDataGridView.Invoke(new Action(() => TaskDataGridView.Rows[0].DefaultCellStyle.BackColor = Color.Sienna));
-                    }
+                        if (TaskDataGridView.Rows[0].Cells[4].Value == "Превышено время выполнения задачи")
+                        {
+                            TaskDataGridView.Invoke(new Action(() => TaskDataGridView.Rows[0].DefaultCellStyle.BackColor = Color.Sienna));
+                        }
+                        else
+                            if (TaskDataGridView.Rows[0].Cells[5].Value == "Запрещена")
+                            {
+                                TaskDataGridView.Invoke(new Action(() => TaskDataGridView.Rows[0].DefaultCellStyle.BackColor = Color.White));
+                            }
                     TaskDataGridView.Invoke(new Action(() => TaskDataGridView.Rows.RemoveAt(indxrow + 1)));
                 }
                 else
@@ -2670,7 +2687,7 @@ namespace StatisticDiagnostic
                 m_dtTECList = InitTEC_200.getListTEC(ref dbconn, false, new int[] { 0, 10 }, out err);
             }
             else
-                throw new Exception(@"Нет соединения с БД");;
+                throw new Exception(@"Нет соединения с БД"); ;
         }
 
         /// <summary>
