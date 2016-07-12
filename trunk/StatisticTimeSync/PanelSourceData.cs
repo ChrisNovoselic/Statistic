@@ -675,12 +675,17 @@ namespace StatisticTimeSync
 
             protected override int StateCheckResponse(int state, out bool error, out object outobj)
             {
-                throw new NotImplementedException();
+                int iRes = 0;
+
+                error = false;
+                outobj = null;
+
+                return iRes;
             }
 
             protected override HHandler.INDEX_WAITHANDLE_REASON StateErrors(int state, int req, int res)
             {
-                throw new NotImplementedException();
+                return INDEX_WAITHANDLE_REASON.SUCCESS;
             }
 
             protected override int StateRequest(int state)
@@ -698,7 +703,11 @@ namespace StatisticTimeSync
 
             protected override int StateResponse(int state, object obj)
             {
-                throw new NotImplementedException();
+                int iRes = 0;
+
+                obj = null;
+
+                return iRes;
             }
 
             protected override void StateWarnings(int state, int req, int res)

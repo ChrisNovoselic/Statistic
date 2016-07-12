@@ -28,7 +28,6 @@ namespace StatisticCommon
         /// </summary>
         private void InitializeComponent()
         {
-            System.ComponentModel.ComponentResourceManager resources = new System.ComponentModel.ComponentResourceManager(typeof(FormAbout));
             this.pictureBox1 = new System.Windows.Forms.PictureBox();
             this.label1 = new System.Windows.Forms.Label();
             this.llblMailTo = new System.Windows.Forms.LinkLabel();
@@ -39,6 +38,7 @@ namespace StatisticCommon
             this.m_lblDomainMashineUserName = new System.Windows.Forms.Label();
             this.linkLabel3 = new System.Windows.Forms.LinkLabel();
             this.linkLabel4 = new System.Windows.Forms.LinkLabel();
+            this.label2 = new System.Windows.Forms.Label();
             ((System.ComponentModel.ISupportInitialize)(this.pictureBox1)).BeginInit();
             this.SuspendLayout();
             // 
@@ -53,16 +53,18 @@ namespace StatisticCommon
             // 
             // label1
             // 
-            this.label1.Location = new System.Drawing.Point(66, 44);
+            this.label1.Location = new System.Drawing.Point(9, 67);
             this.label1.Name = "label1";
-            this.label1.Size = new System.Drawing.Size(264, 95);
+            this.label1.Size = new System.Drawing.Size(264, 65);
             this.label1.TabIndex = 2;
-            this.label1.Text = resources.GetString("label1.Text");
+            this.label1.Text = "разработчик: Качайло Михаил, e-mail: \r\nсоразработчик: Ревякин Е.А., e-mail:\r\nсора" +
+    "зработчик: Хряпин А.Н., e-mail:\r\nсоразработчик: Апельганс А.В., e-mail:\r\nсоразра" +
+    "ботчик: Пастернак А.С., e-mail:";
             // 
             // llblMailTo
             // 
             this.llblMailTo.AutoSize = true;
-            this.llblMailTo.Location = new System.Drawing.Point(277, 68);
+            this.llblMailTo.Location = new System.Drawing.Point(219, 66);
             this.llblMailTo.Name = "llblMailTo";
             this.llblMailTo.Size = new System.Drawing.Size(106, 13);
             this.llblMailTo.TabIndex = 1;
@@ -72,7 +74,7 @@ namespace StatisticCommon
             // 
             // btnClose
             // 
-            this.btnClose.Location = new System.Drawing.Point(162, 142);
+            this.btnClose.Location = new System.Drawing.Point(145, 141);
             this.btnClose.Name = "btnClose";
             this.btnClose.Size = new System.Drawing.Size(75, 23);
             this.btnClose.TabIndex = 0;
@@ -83,9 +85,9 @@ namespace StatisticCommon
             // linkLabel1
             // 
             this.linkLabel1.AutoSize = true;
-            this.linkLabel1.Location = new System.Drawing.Point(277, 81);
+            this.linkLabel1.Location = new System.Drawing.Point(219, 79);
             this.linkLabel1.Name = "linkLabel1";
-            this.linkLabel1.Size = new System.Drawing.Size(81, 13);
+            this.linkLabel1.Size = new System.Drawing.Size(128, 13);
             this.linkLabel1.TabIndex = 3;
             this.linkLabel1.TabStop = true;
             this.linkLabel1.Text = "Revyakin_EA@sibeco.su";
@@ -104,9 +106,9 @@ namespace StatisticCommon
             // linkLabel2
             // 
             this.linkLabel2.AutoSize = true;
-            this.linkLabel2.Location = new System.Drawing.Point(277, 95);
+            this.linkLabel2.Location = new System.Drawing.Point(219, 93);
             this.linkLabel2.Name = "linkLabel2";
-            this.linkLabel2.Size = new System.Drawing.Size(104, 13);
+            this.linkLabel2.Size = new System.Drawing.Size(122, 13);
             this.linkLabel2.TabIndex = 5;
             this.linkLabel2.TabStop = true;
             this.linkLabel2.Text = "Chrjapin_AN@sibeco.su";
@@ -125,9 +127,9 @@ namespace StatisticCommon
             // linkLabel3
             // 
             this.linkLabel3.AutoSize = true;
-            this.linkLabel3.Location = new System.Drawing.Point(277, 108);
+            this.linkLabel3.Location = new System.Drawing.Point(219, 106);
             this.linkLabel3.Name = "linkLabel3";
-            this.linkLabel3.Size = new System.Drawing.Size(109, 13);
+            this.linkLabel3.Size = new System.Drawing.Size(127, 13);
             this.linkLabel3.TabIndex = 7;
             this.linkLabel3.TabStop = true;
             this.linkLabel3.Text = "Apelgans_AV@sibeco.su";
@@ -135,18 +137,27 @@ namespace StatisticCommon
             // linkLabel4
             // 
             this.linkLabel4.AutoSize = true;
-            this.linkLabel4.Location = new System.Drawing.Point(277, 121);
+            this.linkLabel4.Location = new System.Drawing.Point(219, 119);
             this.linkLabel4.Name = "linkLabel4";
-            this.linkLabel4.Size = new System.Drawing.Size(113, 13);
+            this.linkLabel4.Size = new System.Drawing.Size(131, 13);
             this.linkLabel4.TabIndex = 8;
             this.linkLabel4.TabStop = true;
             this.linkLabel4.Text = "Pasternak_AS@sibeco.su";
+            // 
+            // label2
+            // 
+            this.label2.Location = new System.Drawing.Point(66, 42);
+            this.label2.Name = "label2";
+            this.label2.Size = new System.Drawing.Size(264, 19);
+            this.label2.TabIndex = 9;
+            this.label2.Text = "Заказчик: ОАО \"Новосибирскэнерго\", отдел IT.";
             // 
             // FormAbout
             // 
             this.AutoScaleDimensions = new System.Drawing.SizeF(6F, 13F);
             this.AutoScaleMode = System.Windows.Forms.AutoScaleMode.Font;
-            this.ClientSize = new System.Drawing.Size(393, 171);
+            this.ClientSize = new System.Drawing.Size(361, 171);
+            this.Controls.Add(this.label2);
             this.Controls.Add(this.linkLabel4);
             this.Controls.Add(this.linkLabel3);
             this.Controls.Add(this.m_lblDomainMashineUserName);
@@ -181,5 +192,6 @@ namespace StatisticCommon
         private System.Windows.Forms.Label m_lblDomainMashineUserName;
         private System.Windows.Forms.LinkLabel linkLabel3;
         private System.Windows.Forms.LinkLabel linkLabel4;
+        private System.Windows.Forms.Label label2;
     }
 }

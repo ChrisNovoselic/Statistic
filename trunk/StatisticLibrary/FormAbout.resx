@@ -117,13 +117,4 @@
   <resheader name="writer">
     <value>System.Resources.ResXResourceWriter, System.Windows.Forms, Version=2.0.0.0, Culture=neutral, PublicKeyToken=b77a5c561934e089</value>
   </resheader>
-  <data name="label1.Text" xml:space="preserve">
-    <value>Заказчик: ОАО "Новосибирскэнерго", отдел IT.
-
-разработчик: Качайло Михаил, e-mail: 
-соразработчик: Ревякин Е.А., e-mail:
-соразработчик: Хряпин А.Н., e-mail:
-соразработчик: Апельганс А.В., e-mail:
-соразработчик: Пастернак А.С., e-mail:</value>
-  </data>
 </root>
