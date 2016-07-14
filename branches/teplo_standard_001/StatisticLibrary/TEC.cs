@@ -741,19 +741,17 @@ namespace StatisticCommon
 
             m_SensorsString_VZLET = string.Empty;
             //Цикл по всем ВЫВОДам ТЭЦ
-            for (i = 0; i < m_list_Vyvod.Count; i++)
-            {
-                for (j = 0; j < m_list_Vyvod[i].m_listParam.Count; j ++)
+            foreach (Vyvod v in m_list_Vyvod)
+                foreach (Vyvod.ParamVyvod pv in v.m_listParam)
                 {
                     m_SensorsString_VZLET = addSensor(m_SensorsString_VZLET
-                        , m_list_Vyvod[i].m_listParam[j].m_SensorsString_VZLET
+                        , pv.m_SensorsString_VZLET //.name_future
                         , INDEX_TYPE_SOURCE_DATA.EQU_MAIN);
 
-                    m_list_Vyvod[i].m_SensorsString_VZLET = addSensor(m_list_Vyvod[i].m_SensorsString_VZLET
-                        , m_list_Vyvod[i].m_listParam[j].m_SensorsString_VZLET //.name_future
+                    v.m_SensorsString_VZLET = addSensor(v.m_SensorsString_VZLET
+                        , pv.m_SensorsString_VZLET //.name_future
                         , INDEX_TYPE_SOURCE_DATA.EQU_MAIN);
-                }                
-            }
+                }
         }
         /// <summary>
         /// Присвоить значения параметров соединения с источником данных
