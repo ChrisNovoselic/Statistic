@@ -40,7 +40,8 @@ namespace StatisticCommon
 
         //Копия из 'class PanelStatisticView : PanelStatistic' - из 'PanelStatisticView' класса требуется исключть???
         public volatile string[] m_SensorsStrings_ASKUE = { string.Empty, string.Empty }; //Только для особенной ТЭЦ (Бийск) - 3-х, 30-ти мин идентификаторы
-        public volatile string m_SensorsString_SOTIASSO = string.Empty;        
+        public volatile string m_SensorsString_SOTIASSO = string.Empty;
+        public volatile string m_SensorsString_VZLET = string.Empty;
         /// <summary>
         /// Коструктор - основной (без параметров)
         /// </summary>
@@ -249,28 +250,95 @@ namespace StatisticCommon
 
     public class Vyvod : TECComponentBase
     {
-        protected class ParamVyvod : object
+        public class ParamVyvod : TECComponentBase
         {
-            int m_id;
-            string m_Symbol;
-            int m_typeAgregate;
+            public string m_Symbol;
+            public int m_typeAgregate;
+
+            public ParamVyvod(DataRow r)
+            {
+                m_id = Convert.ToInt32(r[@"ID"]);
+
+                Initialize(r);
+            }
+
+            public void Initialize(DataRow r)
+            {
+                m_SensorsString_VZLET = ((string)r[@"KKS_NAME"]).Trim();
+
+                name_shr = ((string)r[@"NAME_SHR"]).Trim();
+                m_Symbol = ((string)r[@"SYMBOL"]).Trim();
+                m_typeAgregate = Convert.ToByte(r[@"TYPE_AGREGATE"]);
+            }
         }
         /// <summary>
         /// Список ТГ
         /// </summary>
-        protected List<ParamVyvod> m_listParam;
+        public List<ParamVyvod> m_listParam;
         /// <summary>
         /// Объект ТЭЦ - "владелец" компонента
         /// </summary>
         public TEC tec;
+
+        private bool m_bKomUchet;
+
+        public Vyvod(TEC tec, DataRow row_param)
+            : this(tec, new DataRow[] { row_param })
+        {
+        }
         /// <summary>
-        /// Конструктор - основной (без параметров)
+        /// Конструктор - основной (c параметрами)
         /// </summary>
-        public Vyvod(TEC tec)
+        /// <param name="tec">Объект-ТЭЦ - родительский по отношению к создаваемому объекту</param>
+        /// <param name="r">Строка со значениями свойств создаваемого объекта-ВЫВОДа</param>
+        public Vyvod(TEC tec, DataRow []rows_param)
         {
             this.tec = tec;
 
             m_listParam = new List<ParamVyvod>();
+
+            Initialize(rows_param);
+        }
+        /// <summary>
+        /// Инициализировать вывод значениями свойств всех параметров (по аналогии с ГТП добавить все ТГ)
+        /// </summary>
+        /// <param name="r">Строки таблицы со значенями свойств всех параметров</param>
+        public void Initialize (DataRow []rows_param)
+        {
+            if (rows_param.Length > 0)
+            {
+                m_id = Convert.ToInt32(rows_param[0][@"ID_VYVOD"]);
+                name_shr = ((string)rows_param[0][@"VYVOD_NAME_SHR"]).Trim ();
+                m_bKomUchet = Convert.ToByte(rows_param[0][@"KOM_UCHET"]) == 1 ? true : false;
+
+                foreach (DataRow r in rows_param)
+                    InitParam(r);
+            }
+            else
+                Logging.Logg().Error(@"Vyvod::Initialize () - нет ни одной строки со значенями свойств параметров ВЫВОДа...", Logging.INDEX_MESSAGE.NOT_SET);
+                ; //??? исключение
+        }
+        /// <summary>
+        /// Игициализировать значения свойства параметра
+        /// </summary>
+        /// <param name="r">Строка объекта-таблицы со значенями свойств параметра</param>
+        public void InitParam(DataRow r)
+        {
+            ParamVyvod pv = null;
+            int iIdParam = -1;
+
+            iIdParam = Convert.ToInt32(r[@"ID"]);
+            pv = m_listParam.Find(p => { return p.m_id == iIdParam; });
+
+            if (pv == null)
+            {
+                pv = new ParamVyvod(r);
+                m_listParam.Add(pv);
+            }
+            else
+                // такой параметр уже существует
+                // инициализация новыми значенями свойств (кроме ID)
+                pv.Initialize(r);
         }
     }
 }

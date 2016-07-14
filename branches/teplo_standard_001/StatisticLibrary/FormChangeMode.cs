@@ -212,7 +212,7 @@ namespace StatisticCommon
         {
             String[] arPREFIX_COMPONENT = { "TEC", "GTP", "PC", "TG" };
 
-            return arPREFIX_COMPONENT[indx];
+            return !(indx < 0) ? arPREFIX_COMPONENT[indx] : @"VYVOD";
         }
         /// <summary>
         /// Возвратить наименование режима компонентов ТЭЦ по индексу
@@ -222,7 +222,7 @@ namespace StatisticCommon
         public static string getNameMode (Int16 indx) {
             string [] nameModes = {"ТЭЦ", "ГТП", "ЩУ", "Поблочно", "Неизвестно"};
 
-            return nameModes[indx];
+            return !(indx < 0) ? nameModes[indx] : @"Выводы";
         }
         /// <summary>
         /// Возвратить наименование элемента списка (специальная вкладка)

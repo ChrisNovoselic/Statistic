@@ -61,7 +61,7 @@ namespace Statistic
         /// Конструктор-основной
         /// </summary>
         /// <param name="listTec">Лист ТЭЦ</param>
-        public PanelVzletTDirect(List<StatisticCommon.TEC> listTec)
+        public PanelVzletTDirect(List<TEC> listTec)
             : base(typeof(PanelTecVzletTDirect))
         {
             InitializeComponent();
@@ -87,7 +87,7 @@ namespace Statistic
         /// </summary>
         /// <param name="container"></param>
         /// <param name="listTec">Лист ТЭЦ</param>
-        public PanelVzletTDirect(IContainer container, List<StatisticCommon.TEC> listTec)
+        public PanelVzletTDirect(IContainer container, List<TEC> listTec)
             : this(listTec)
         {
             container.Add(this);

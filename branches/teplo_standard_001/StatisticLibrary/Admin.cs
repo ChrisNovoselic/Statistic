@@ -187,65 +187,57 @@ namespace StatisticCommon
             else
                 m_markQueries.Add(markQueries);
         }
-        
+
         public virtual void InitTEC(List <StatisticCommon.TEC> listTEC, HMark markQueries)
         {
             this.m_list_tec = new InitTECBase.ListTEC ();
+            ////Вариант №1
+            //this.m_list_tec.AddRange(listTEC);
+            ////Вариант №2
+            //listTEC.ForEach(t => this.m_list_tec.Add(t));
+            //Вариант №3 - позволяет исключить при необходимости элементы в соответствии с установленным правилом
             foreach (TEC t in listTEC)
-            {
                 //if ((HAdmin.DEBUG_ID_TEC == -1) || (HAdmin.DEBUG_ID_TEC == t.m_id))
                     this.m_list_tec.Add (t);
                 //else ;
-            }
 
             initQueries(markQueries);
             initTEC();
         }
 
-        public void InitTEC(int idListener, FormChangeMode.MODE_TECCOMPONENT mode, /*TYPE_DATABASE_CFG typeCfg, */HMark markQueries, bool bIgnoreTECInUse, int [] arTECLimit)
+        public void InitTEC(int idListener, FormChangeMode.MODE_TECCOMPONENT mode, /*TYPE_DATABASE_CFG typeCfg, */HMark markQueries, bool bIgnoreTECInUse, int[] arTECLimit, bool bUseData = false)
         {
             //Logging.Logg().Debug("Admin::InitTEC () - вход...");
 
-            //m_ignore_connsett_data = ! bUseData;
-
             if (!(idListener < 0))
                 if (mode == FormChangeMode.MODE_TECCOMPONENT.ANY)
-                    this.m_list_tec = new InitTEC_200(idListener, bIgnoreTECInUse, arTECLimit, false).tec;
+                    this.m_list_tec = new InitTEC_200(idListener, bIgnoreTECInUse, arTECLimit, bUseData).tec;
                 else
-                    this.m_list_tec = new InitTEC_200(idListener, (short)mode, bIgnoreTECInUse, arTECLimit, false).tec;
+                    this.m_list_tec = new InitTEC_200(idListener, (short)mode, bIgnoreTECInUse, arTECLimit, bUseData).tec;
             else
                 this.m_list_tec = new InitTECBase.ListTEC ();
 
             initQueries(markQueries);
             initTEC();
         }
-
+        /// <summary>
+        /// Инициализация списка со всеми компонентами ТЭЦ
+        /// </summary>
         protected virtual void initTEC()
         {
-            //comboBoxTecComponent.Items.Clear ();
             allTECComponents.Clear();
 
             foreach (StatisticCommon.TEC t in this.m_list_tec)
             {
                 //Logging.Logg().Debug("Admin::InitTEC () - формирование компонентов для ТЭЦ:" + t.name);
 
-                if (t.list_TECComponents.Count > 0)
+                //if (t.list_TECComponents.Count > 0)
                     foreach (TECComponent g in t.list_TECComponents)
-                    {
-                        //comboBoxTecComponent.Items.Add(t.name + " - " + g.name);
                         allTECComponents.Add(g);
-                    }
-                else
-                {
-                    //comboBoxTecComponent.Items.Add(t.name);
-                    allTECComponents.Add(t.list_TECComponents[0]);
-                }
+                //else
+                //    //??? исключение - используется индекс вне допустимого диапазона
+                //    allTECComponents.Add(t.list_TECComponents[0]);
             }
-
-            /*if (! (fillTECComponent == null))
-                fillTECComponent ();
-            else
-                ;*/
         }
 
         protected static bool CheckNameFieldsOfTable(DataTable tbl, string[] nameFields)

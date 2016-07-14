@@ -240,7 +240,7 @@ namespace StatisticCommon
         /// Перечисление - индексы типов источников данных (общий-централизованный источник данных, индивидуальный для каждой ТЭЦ - не поддерживается)
         ///  только для АИИС КУЭ, СОТИАССО
         /// </summary>
-        public enum INDEX_TYPE_SOURCE_DATA { COMMON, /*INDIVIDUAL,*/ COUNT_TYPE_SOURCEDATA };
+        public enum INDEX_TYPE_SOURCE_DATA { EQU_MAIN, /*INDIVIDUAL,*/ COUNT_TYPE_SOURCEDATA };
         /// <summary>
         /// Массив типов источников данных (только для АИИС КУЭ, СОТИАССО)
         /// </summary>
@@ -261,7 +261,7 @@ namespace StatisticCommon
         /// Перечисление - типы ТЭЦ
         ///  Бийская ТЭЦ - "особенная" с отличными от других АИИС КУЭ, СОТИАССО
         /// </summary>
-        public enum TEC_TYPE { COMMON, BIYSK };
+        public enum TEC_TYPE { UNKNOWN = -1, COMMON, BIYSK };
         /// <summary>
         /// Идентификатор ТЭЦ (из БД конфигурации)
         /// </summary>
@@ -314,6 +314,8 @@ namespace StatisticCommon
         ///  массив для особенной ТЭЦ (Бийск) - 3-х, 30-ти мин идентификаторы
         /// </summary>
         protected volatile string[] m_SensorsStrings_ASKUE = { string.Empty, string.Empty };
+
+        protected volatile string m_SensorsString_VZLET = string.Empty;
         /// <summary>
         /// Перечисление - индексы возможных вариантов усреднения "мгновенных" значений
         /// </summary>
@@ -454,6 +456,7 @@ namespace StatisticCommon
         /// <param name="bUseData">Признак создания объекта</param>
         private TEC (int id, string name_shr, string table_name_admin, string table_name_pbr, bool bUseData) {
             list_TECComponents = new List<TECComponent>();
+            m_list_Vyvod = new List<Vyvod>();
 
             this.m_id = id;
             this.name_shr = name_shr;
@@ -481,6 +484,16 @@ namespace StatisticCommon
             for (int i = 0; i < (int)INDEX_NAME_FIELD.COUNT_INDEX_NAME_FIELD; i++) m_strNamesField.Add(string.Empty);
 
             EventUpdate += new EventHandler(StatisticCommon.InitTEC_200.OnTECUpdate);
+        }
+
+        public void AddTECComponent(DataRow r)
+        {
+            list_TECComponents.Add(new TECComponent(this, r));
+        }
+
+        public void AddVyvod (DataRow []rows_param)
+        {
+            m_list_Vyvod.Add(new Vyvod(this, rows_param));
         }
         /// <summary>
         /// Установить наименования полей таблиц при обращении к БД с запросами для получения
@@ -546,14 +559,39 @@ namespace StatisticCommon
             }
         }
         /// <summary>
+        /// Инициализация всех параметров для всех ВЫВОДов
+        /// </summary>
+        /// <param name="rows_param">Массив строк со свойствами парметров</param>
+        public void InitParamVyvod(DataRow[] rows_param)
+        {
+            Vyvod vyvod = null;
+            int j = -1;
+
+            for (j = 0; j < rows_param.Length; j++)
+            {
+                vyvod = m_list_Vyvod.Find(v => { return v.m_id == Convert.ToInt32(rows_param[j][@"ID_VYVOD"]); });
+
+                if (vyvod == null)
+                {
+                    vyvod = new Vyvod(this, rows_param[j]);
+                    m_list_Vyvod.Add(vyvod);
+                }
+                else
+                    // ВЫВОД уже существует
+                    // инициализация существующего парметра новыми значенями
+                    //  либо добавление нового параметра
+                    vyvod.InitParam(rows_param[j]);
+            }
+        }
+        /// <summary>
         /// Добавить идентификатор ТГ к уже имеющейся строке-перечислению (разделитель - запятая) с идентификаторами ТГ
         /// </summary>
         /// <param name="prevSensors">Строка-перечисление (разделитель - запятая)</param>
         /// <param name="sensor">Идентификатор</param>
-        /// <param name="typeTEC">Тип ТЭЦ (Бийская ТЭЦ + остальные)</param>
+        ///// <param name="typeTEC">Тип ТЭЦ (Бийская ТЭЦ + остальные)</param>
         /// <param name="typeSourceData">Тип источника данных</param>
         /// <returns>Строка-перечисление с добавленным идентификатором</returns>
-        private static string addSensor(string prevSensors, object sensor, TEC.TEC_TYPE typeTEC, TEC.INDEX_TYPE_SOURCE_DATA typeSourceData)
+        private static string addSensor(string prevSensors, object sensor/*, TEC.TEC_TYPE typeTEC*/, TEC.INDEX_TYPE_SOURCE_DATA typeSourceData)
         {
             string strRes = prevSensors;
             //Признак необходимости использовать кавычки для строковых идентификаторов
@@ -563,7 +601,7 @@ namespace StatisticCommon
                 //При добавленных - установить перед очередным идентификатором разделитель (запятая, т.к. TSQL)
                 switch (typeSourceData)
                 {
-                    case TEC.INDEX_TYPE_SOURCE_DATA.COMMON:
+                    case TEC.INDEX_TYPE_SOURCE_DATA.EQU_MAIN:
                         //Общий источник для всех ТЭЦ
                         strRes += @", "; //@" OR ";
                         break;
@@ -575,7 +613,7 @@ namespace StatisticCommon
             //Добавить идентификатор
             switch (typeSourceData)
             {
-                case TEC.INDEX_TYPE_SOURCE_DATA.COMMON:
+                case TEC.INDEX_TYPE_SOURCE_DATA.EQU_MAIN:
                     //Общий источник для всех ТЭЦ                    
                     strRes += strQuote + sensor.ToString() + strQuote;
                     break;
@@ -650,32 +688,32 @@ namespace StatisticCommon
                     //Формировать строку-перечисление с иджентификаторами для ТЭЦ в целом (АИИС КУЭ - час)
                     m_SensorsStrings_ASKUE[(int)HDateTime.INTERVAL.HOURS] = addSensor(m_SensorsStrings_ASKUE[(int)HDateTime.INTERVAL.HOURS]
                                                                     , list_TECComponents[i].m_listTG[0].m_arIds_fact[(int)HDateTime.INTERVAL.HOURS]
-                                                                    , type
+                        /*, type*/
                                                                     , m_arTypeSourceData[(int)CONN_SETT_TYPE.DATA_AISKUE - (int)CONN_SETT_TYPE.DATA_AISKUE]);
                     //Формировать строку-перечисление с иджентификаторами для ТЭЦ в целом (АИИС КУЭ - минуты)
                     m_SensorsStrings_ASKUE[(int)HDateTime.INTERVAL.MINUTES] = addSensor(m_SensorsStrings_ASKUE[(int)HDateTime.INTERVAL.MINUTES]
                                                                     , list_TECComponents[i].m_listTG[0].m_arIds_fact[(int)HDateTime.INTERVAL.MINUTES]
-                                                                    , type
+                        /*, type*/
                                                                     , m_arTypeSourceData[(int)CONN_SETT_TYPE.DATA_AISKUE - (int)CONN_SETT_TYPE.DATA_AISKUE]);
                     //Формировать строку-перечисление с иджентификаторами для ТЭЦ в целом (СОТИАССО)
                     m_SensorsString_SOTIASSO = addSensor(m_SensorsString_SOTIASSO
                                                         , list_TECComponents[i].m_listTG[0].m_strKKS_NAME_TM
-                                                        , type
+                        /*, type*/
                                                         , m_arTypeSourceData[(int)CONN_SETT_TYPE.DATA_SOTIASSO - (int)CONN_SETT_TYPE.DATA_AISKUE]);
                     //Одновременно присвоить идентификаторы для ТГ  (АИИС КУЭ - час)
                     list_TECComponents[i].m_SensorsStrings_ASKUE[(int)HDateTime.INTERVAL.HOURS] = addSensor(list_TECComponents[i].m_SensorsStrings_ASKUE[(int)HDateTime.INTERVAL.HOURS]
                                                                                                 , list_TECComponents[i].m_listTG[0].m_arIds_fact[(int)HDateTime.INTERVAL.HOURS]
-                                                                                                , type
+                        /*, type*/
                                                                                                 , m_arTypeSourceData[(int)CONN_SETT_TYPE.DATA_AISKUE - (int)CONN_SETT_TYPE.DATA_AISKUE]);
                     //Одновременно присвоить идентификаторы для ТГ  (АИИС КУЭ - минута)
                     list_TECComponents[i].m_SensorsStrings_ASKUE[(int)HDateTime.INTERVAL.MINUTES] = addSensor(list_TECComponents[i].m_SensorsStrings_ASKUE[(int)HDateTime.INTERVAL.MINUTES]
                                                                                                 , list_TECComponents[i].m_listTG[0].m_arIds_fact[(int)HDateTime.INTERVAL.MINUTES]
-                                                                                                , type
+                        /*, type*/
                                                                                                 , m_arTypeSourceData[(int)CONN_SETT_TYPE.DATA_AISKUE - (int)CONN_SETT_TYPE.DATA_AISKUE]);
                     //Одновременно присвоить идентификаторы для ТГ  (СОТИАССО)
                     list_TECComponents[i].m_SensorsString_SOTIASSO = addSensor(list_TECComponents[i].m_SensorsString_SOTIASSO
                                                                                 , list_TECComponents[i].m_listTG[0].m_strKKS_NAME_TM
-                                                                                , type
+                        /*, type*/
                                                                                 , m_arTypeSourceData[(int)CONN_SETT_TYPE.DATA_SOTIASSO - (int)CONN_SETT_TYPE.DATA_AISKUE]);
                 }
                 else
@@ -685,21 +723,37 @@ namespace StatisticCommon
                         //Формировать строку-перечисление с иджентификаторами для компонента ТЭЦ в целом (АИИС КУЭ - час)
                         list_TECComponents[i].m_SensorsStrings_ASKUE[(int)HDateTime.INTERVAL.HOURS] = addSensor(list_TECComponents[i].m_SensorsStrings_ASKUE[(int)HDateTime.INTERVAL.HOURS]
                                                                                                         , list_TECComponents[i].m_listTG[j].m_arIds_fact[(int)HDateTime.INTERVAL.HOURS]
-                                                                                                        , type
+                            /*, type*/
                                                                                                         , m_arTypeSourceData[(int)CONN_SETT_TYPE.DATA_AISKUE - (int)CONN_SETT_TYPE.DATA_AISKUE]);
                         //Формировать строку-перечисление с иджентификаторами для компонента ТЭЦ в целом (АИИС КУЭ - минута)
                         list_TECComponents[i].m_SensorsStrings_ASKUE[(int)HDateTime.INTERVAL.MINUTES] = addSensor(list_TECComponents[i].m_SensorsStrings_ASKUE[(int)HDateTime.INTERVAL.MINUTES]
                                                                                                         , list_TECComponents[i].m_listTG[j].m_arIds_fact[(int)HDateTime.INTERVAL.MINUTES]
-                                                                                                        , type
+                            /*, type*/
                                                                                                         , m_arTypeSourceData[(int)CONN_SETT_TYPE.DATA_AISKUE - (int)CONN_SETT_TYPE.DATA_AISKUE]);
                         //Формировать строку-перечисление с иджентификаторами для компонента ТЭЦ в целом (АСОТИАССО)
                         list_TECComponents[i].m_SensorsString_SOTIASSO = addSensor(list_TECComponents[i].m_SensorsString_SOTIASSO
                                                                                 , list_TECComponents[i].m_listTG[j].m_strKKS_NAME_TM
-                                                                                , type
+                            /*, type*/
                                                                                 , m_arTypeSourceData[(int)CONN_SETT_TYPE.DATA_SOTIASSO - (int)CONN_SETT_TYPE.DATA_AISKUE]);
                     } // - Цикл по ТГ компонента
                 }
             } // - Цикл по всем компонентам ТЭЦ
+
+            m_SensorsString_VZLET = string.Empty;
+            //Цикл по всем ВЫВОДам ТЭЦ
+            for (i = 0; i < m_list_Vyvod.Count; i++)
+            {
+                for (j = 0; j < m_list_Vyvod[i].m_listParam.Count; j ++)
+                {
+                    m_SensorsString_VZLET = addSensor(m_SensorsString_VZLET
+                        , m_list_Vyvod[i].m_listParam[j].m_SensorsString_VZLET
+                        , INDEX_TYPE_SOURCE_DATA.EQU_MAIN);
+
+                    m_list_Vyvod[i].m_SensorsString_VZLET = addSensor(m_list_Vyvod[i].m_SensorsString_VZLET
+                        , m_list_Vyvod[i].m_listParam[j].m_SensorsString_VZLET //.name_future
+                        , INDEX_TYPE_SOURCE_DATA.EQU_MAIN);
+                }                
+            }
         }
         /// <summary>
         /// Присвоить значения параметров соединения с источником данных
@@ -716,7 +770,7 @@ namespace StatisticCommon
             if ((!((int)type < (int)CONN_SETT_TYPE.DATA_AISKUE)) && (!((int)type > (int)CONN_SETT_TYPE.DATA_SOTIASSO)))
                 if (FormMainBase.s_iMainSourceData == connSetts[(int)type].id)
                 {
-                    m_arTypeSourceData[(int)type - (int)CONN_SETT_TYPE.DATA_AISKUE] = TEC.INDEX_TYPE_SOURCE_DATA.COMMON;
+                    m_arTypeSourceData[(int)type - (int)CONN_SETT_TYPE.DATA_AISKUE] = TEC.INDEX_TYPE_SOURCE_DATA.EQU_MAIN;
                 }
                 else
                     ; //??? throw new Exception(@"TEC::connSettings () - неизвестный тип источника данных...")
@@ -878,7 +932,7 @@ namespace StatisticCommon
                 case TEC.TEC_TYPE.COMMON:
                     switch (m_arTypeSourceData [(int)CONN_SETT_TYPE.DATA_AISKUE - (int)CONN_SETT_TYPE.DATA_AISKUE])
                     {
-                        case INDEX_TYPE_SOURCE_DATA.COMMON:
+                        case INDEX_TYPE_SOURCE_DATA.EQU_MAIN:
                             request = minsFactCommonRequest (usingDate, sensors, idParNumber);
                             break;
                         default:
@@ -888,7 +942,7 @@ namespace StatisticCommon
                 case TEC.TEC_TYPE.BIYSK:
                     switch (m_arTypeSourceData [(int)CONN_SETT_TYPE.DATA_AISKUE - (int)CONN_SETT_TYPE.DATA_AISKUE])
                     {
-                        case INDEX_TYPE_SOURCE_DATA.COMMON:
+                        case INDEX_TYPE_SOURCE_DATA.EQU_MAIN:
                             request = minsFactCommonRequest(usingDate, sensors, idParNumber);
                             break;
                         default:
@@ -960,7 +1014,7 @@ namespace StatisticCommon
 
             switch (m_arTypeSourceData[(int)CONN_SETT_TYPE.DATA_SOTIASSO - (int)CONN_SETT_TYPE.DATA_AISKUE])
             {
-                case INDEX_TYPE_SOURCE_DATA.COMMON:
+                case INDEX_TYPE_SOURCE_DATA.EQU_MAIN:
                     if (TEC.s_SourceSOTIASSO == SOURCE_SOTIASSO.AVERAGE)
                         request =
                             @"SELECT SUM ([VALUE]) as [VALUE], COUNT (*) as [cnt]"
@@ -1020,7 +1074,7 @@ namespace StatisticCommon
 
             switch (m_arTypeSourceData[(int)CONN_SETT_TYPE.DATA_SOTIASSO - (int)CONN_SETT_TYPE.DATA_AISKUE])
             {
-                case INDEX_TYPE_SOURCE_DATA.COMMON:
+                case INDEX_TYPE_SOURCE_DATA.EQU_MAIN:
                     request = @"SELECT [KKS_NAME], [Value], [tmdelta], DATEADD (HH, DATEDIFF (HH, GETUTCDATE (), GETDATE()), [last_changed_at]) as [last_changed_at]"
                                     + @" FROM [dbo].[ALL_PARAM_SOTIASSO_KKS]"
                                     + @" WHERE  [ID_TEC] = " + m_id + @" AND [KKS_NAME] IN (" + sensors + @")" + @" AND ID_SOURCE=" + queryIdSOTIASSOLinkSource //m_IdSOTIASSOLinkSourceTM
@@ -1055,7 +1109,7 @@ namespace StatisticCommon
 
             switch (m_arTypeSourceData [(int)CONN_SETT_TYPE.DATA_SOTIASSO - (int)CONN_SETT_TYPE.DATA_AISKUE])
             {
-                case INDEX_TYPE_SOURCE_DATA.COMMON:
+                case INDEX_TYPE_SOURCE_DATA.EQU_MAIN:
                     if (TEC.s_SourceSOTIASSO == SOURCE_SOTIASSO.AVERAGE)
                         request =
                         ////Вариант №1
@@ -1147,7 +1201,7 @@ namespace StatisticCommon
                 case TEC.TEC_TYPE.COMMON:
                     switch (m_arTypeSourceData[(int)CONN_SETT_TYPE.DATA_AISKUE - (int)CONN_SETT_TYPE.DATA_AISKUE])
                     {
-                        case INDEX_TYPE_SOURCE_DATA.COMMON:
+                        case INDEX_TYPE_SOURCE_DATA.EQU_MAIN:
                             request = hoursFactCommonRequest(usingDate, sensors);
                             break;
                         default:
@@ -1157,7 +1211,7 @@ namespace StatisticCommon
                 case TEC.TEC_TYPE.BIYSK:
                     switch (m_arTypeSourceData[(int)CONN_SETT_TYPE.DATA_AISKUE - (int)CONN_SETT_TYPE.DATA_AISKUE])
                     {
-                        case INDEX_TYPE_SOURCE_DATA.COMMON:
+                        case INDEX_TYPE_SOURCE_DATA.EQU_MAIN:
                             request = hoursFactCommonRequest(usingDate, sensors);
                             break;
                         default:
@@ -1226,7 +1280,7 @@ namespace StatisticCommon
 
             switch (m_arTypeSourceData[(int)CONN_SETT_TYPE.DATA_AISKUE - (int)CONN_SETT_TYPE.DATA_AISKUE])
             {
-                case INDEX_TYPE_SOURCE_DATA.COMMON:
+                case INDEX_TYPE_SOURCE_DATA.EQU_MAIN:
                     switch (TEC.s_SourceSOTIASSO)
                     {
                         case SOURCE_SOTIASSO.AVERAGE:
@@ -1302,7 +1356,7 @@ namespace StatisticCommon
 
             switch (m_arTypeSourceData[(int)CONN_SETT_TYPE.DATA_AISKUE - (int)CONN_SETT_TYPE.DATA_AISKUE])
             {
-                case INDEX_TYPE_SOURCE_DATA.COMMON:
+                case INDEX_TYPE_SOURCE_DATA.EQU_MAIN:
                     switch (TEC.s_SourceSOTIASSO) {
                         case SOURCE_SOTIASSO.AVERAGE:
                             //Запрос №5 по МСК, ответ по МСК
@@ -1605,7 +1659,7 @@ namespace StatisticCommon
 
             switch (m_arTypeSourceData[(int)CONN_SETT_TYPE.DATA_SOTIASSO - (int)CONN_SETT_TYPE.DATA_AISKUE])
             {
-                case INDEX_TYPE_SOURCE_DATA.COMMON:
+                case INDEX_TYPE_SOURCE_DATA.EQU_MAIN:
                     query = @"SELECT * FROM [dbo].[v_LAST_VALUE_TSN] WHERE ID_TEC=" + m_id;
                     break;
                 default:
@@ -1625,7 +1679,7 @@ namespace StatisticCommon
 
             switch (m_arTypeSourceData[(int)CONN_SETT_TYPE.DATA_SOTIASSO - (int)CONN_SETT_TYPE.DATA_AISKUE])
             {
-                case INDEX_TYPE_SOURCE_DATA.COMMON:
+                case INDEX_TYPE_SOURCE_DATA.EQU_MAIN:
                     query = @"SELECT AVG ([SUM_P_SN]) as VALUE, DATEPART(hour,[LAST_UPDATE]) as HOUR"
                             + @" FROM [dbo].[P_SUMM_TSN_KKS]"
                             + @" WHERE [ID_TEC] = " + m_id
@@ -1651,7 +1705,7 @@ namespace StatisticCommon
 
             switch (m_arTypeSourceData[(int)CONN_SETT_TYPE.DATA_SOTIASSO - (int)CONN_SETT_TYPE.DATA_AISKUE])
             {
-                case INDEX_TYPE_SOURCE_DATA.COMMON:
+                case INDEX_TYPE_SOURCE_DATA.EQU_MAIN:
                     //Общий источник для всех ТЭЦ
                     query = @"SELECT [KKS_NAME] as KKS_NAME, [last_changed_at], [Current_Value_SOTIASSO] as value, [ID_SOURCE] " +
                             @"FROM [dbo].[v_ALL_VALUE_SOTIASSO_KKS] " +
@@ -1678,7 +1732,7 @@ namespace StatisticCommon
 
             switch (m_arTypeSourceData[(int)CONN_SETT_TYPE.DATA_SOTIASSO - (int)CONN_SETT_TYPE.DATA_AISKUE])
             {
-                case INDEX_TYPE_SOURCE_DATA.COMMON:
+                case INDEX_TYPE_SOURCE_DATA.EQU_MAIN:
                     //dt -= HDateTime.GetUTCOffsetOfMoscowTimeZone();
 
                     if (TEC.s_SourceSOTIASSO == SOURCE_SOTIASSO.AVERAGE)

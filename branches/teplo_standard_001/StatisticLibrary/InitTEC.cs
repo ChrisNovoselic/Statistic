@@ -23,6 +23,7 @@ namespace StatisticCommon
             }
         }
 
+        #region Неиспользуемые конструкторы
         //protected InitTECBase ()
         //{
         //}
@@ -32,6 +33,7 @@ namespace StatisticCommon
         //    int err = -1;
         //    m_connConfigDB = DbSources.Sources().GetConnection(iListenerId, out err);
         //}
+        #endregion
 
         public ListTEC tec;
         protected /*static*/ DbConnection m_connConfigDB;
@@ -127,12 +129,36 @@ namespace StatisticCommon
 
     public class InitTEC_200 : InitTECBase
     {
-        // комментарий для подключения к redmine #1001
-        // комментарий для подключения к redmine #1002
-        // комментарий для подключения к redmine #1003
+        // комментарий для тестирования подключения к redmine #1001
+        // комментарий для тестирования подключения к redmine #1002
+        // комментарий для тестирования подключения к redmine #1003
+        /// <summary>
+        /// Возвратить результат запроса "Параметры всех ТГ"
+        /// </summary>
+        /// <param name="ver">Версия набора параметров (0 - самая новая, 1 - предыдущая, и т.д.)</param>
+        /// <param name="err">Признак наличия ошибки при выполнении</param>
+        /// <returns>Объект таблицы с результатами запроса</returns>
         private DataTable getALL_PARAM_TG(int ver, out int err)
         {
             return DbTSQLInterface.Select(ref m_connConfigDB, @"SELECT * FROM [dbo].[ft_ALL_PARAM_TG_KKS] (" + ver + @")", null, null, out err);
+        }
+        /// <summary>
+        /// Возвратить результат запроса "Все параметры всех выводов"
+        /// </summary>        
+        /// <param name="err">Признак наличия ошибки при выполнении метода</param>
+        /// <returns>Объект-таблица с результатами запроса</returns>
+        private DataTable getALL_ParamVyvod(out int err)
+        {
+            return DbTSQLInterface.Select(ref m_connConfigDB
+                , @"SELECT pnt.[ID_TEC], tl.NAME_SHR as TEC_NAME_SHR"
+                        + @", pnt.[KKS_NAME], pnt.[ID_VYVOD]"
+                        + @", vl.NAME_SHR as VYVOD_NAME_SHR, vl.KOM_UCHET"
+                        + @", par.[ID], par.[NAME_SHR], par.[SYMBOL], par.TYPE_AGREGATE"
+                    + @" FROM [dbo].[ID_POINT_ASKUTE] pnt"
+                    + @" LEFT JOIN [dbo].[TEC_LIST] tl ON tl.ID = pnt.ID_TEC"
+                    + @" LEFT JOIN [dbo].[ID_PARAM_ASKUTE] par ON par.ID = pnt.ID_PARAM"
+                    + @" LEFT JOIN [dbo].[VYVOD_LIST] vl ON vl.ID = pnt.ID_VYVOD"
+                , null, null, out err);
         }
 
         /// <summary>
@@ -140,6 +166,7 @@ namespace StatisticCommon
         /// </summary>
         /// <param name="idListener">Идентификатор установленного соединения с БД концигурации</param>
         /// <param name="bIgnoreTECInUse">Признак использования поля [TEC_LIST].[InUse]</param>
+        /// <param name="arTECLimit">Массив-диапазон допустимых идентификаторов ТЭЦ</param>
         /// <param name="bUseData">Признак возможности обращения к данным компонентов собираемого списка</param>
         public InitTEC_200(int idListener, bool bIgnoreTECInUse, int [] arTECLimit, bool bUseData)
         {
@@ -153,19 +180,22 @@ namespace StatisticCommon
 
             m_connConfigDB = DbSources.Sources().GetConnection(idListener, out err);
 
+            int indx = -1
+                , indx_tec = -1;
             // подключиться к бд, инициализировать глобальные переменные, выбрать режим работы
             DataTable list_tec = null // = DbTSQLInterface.Select(connSett, "SELECT * FROM TEC_LIST"),
                 , list_TECComponents = null
                 , list_tg = null
-                , all_PARAM_TG = null;
+                , all_PARAM_TG = null,  all_ParamVyvod = null; // семантика отличается т.к. ТГ не аналог "вывода". "Вывод" аналог ГТП(ЩУ), Параметр "вывода" аналог ТГ.
 
-            all_PARAM_TG = getALL_PARAM_TG (0, out err);
+            all_PARAM_TG = getALL_PARAM_TG (0, out err);            
 
             if (err == 0) {
                 //Получить список ТЭЦ, используя статическую функцию
                 list_tec = getListTEC(ref m_connConfigDB, bIgnoreTECInUse, arTECLimit, out err);
 
                 if (err == 0)
+                {
                     for (int i = 0; i < list_tec.Rows.Count; i++)
                     {
                         //Logging.Logg().Debug("InitTEC::InitTEC (3 параметра) - list_tec.Rows[i][\"ID\"] = " + list_tec.Rows[i]["ID"]);
@@ -179,10 +209,10 @@ namespace StatisticCommon
                             //Создание объекта ТЭЦ
                             tec.Add(new TEC(list_tec.Rows[i], bUseData));
 
-                            int indx_tec = tec.Count - 1;
+                            indx_tec = tec.Count - 1;
                             EventTECListUpdate += tec[indx_tec].PerformUpdate;
 
-                            int indx = -1;
+                            indx = -1;
                             foreach (KeyValuePair<CONN_SETT_TYPE, string> pair in TEC.s_dictIdConfigDataSources)
                                 if ((err == 0)
                                     && ((list_tec.Rows[i][pair.Value] is DBNull) == false))
@@ -252,6 +282,18 @@ namespace StatisticCommon
                         }
                         else
                             ;
+                    } // for i
+
+                    #region Получить параметры выводов
+                    all_ParamVyvod = getALL_ParamVyvod(out err);
+
+                    if (err == 0)
+                    {
+                        tec.ForEach(t => t.InitParamVyvod(all_ParamVyvod.Select(@"ID_TEC=" + t.m_id)));                        
+                    }
+                    else
+                        ; // ошибка получения параметров вывода
+                    #endregion
                 }
                 else
                     ; //Ошибка получения списка ТЭЦ
@@ -263,7 +305,14 @@ namespace StatisticCommon
 
             //Logging.Logg().Debug("InitTEC::InitTEC (3 параметра) - вЫход...");
         }
-
+        /// <summary>
+        /// Список компонентов (ТЭЦ, ГТП, ЩУ, ТГ) в ~ от индекса компонента
+        /// </summary>
+        /// <param name="idListener">Идентификатор установленного соединения с БД концигурации</param>
+        /// <param name="indx">Индекс компонента - значение из перечисления 'FormChangeMode.MODE_TECCOMPONENT' ('0' или > '0' означает TEC(GTP, PC, TG), '-1' означает VYVOD)</param>
+        /// <param name="bIgnoreTECInUse">Признак использования поля [TEC_LIST].[InUse]</param>
+        /// <param name="arTECLimit">Массив-диапазон допустимых идентификаторов ТЭЦ</param>
+        /// <param name="bUseData">Признак возможности обращения к данным компонентов собираемого списка</param>
         public InitTEC_200(int idListener, Int16 indx, bool bIgnoreTECInUse, int []arTECLimit, bool bUseData) //indx = {GTP или PC}
         {
             //Logging.Logg().Debug("InitTEC::InitTEC (4 параметра) - вход...");
@@ -271,11 +320,12 @@ namespace StatisticCommon
             tec = new ListTEC ();
 
             int err = 0
+                , id_comp = -1
                 , indx_comp = -1;
             // подключиться к бд, инициализировать глобальные переменные, выбрать режим работы
             DataTable list_tec= null // = DbTSQLInterface.Select(connSett, "SELECT * FROM TEC_LIST"),
                 , list_TECComponents = null
-                , all_PARAM_TG = null;
+                , all_PARAM_DETAIL = null;
 
             //Logging.Logg().Debug("InitTEC::InitTEC (4 параметра) - получение объекта MySqlConnection...");
             m_connConfigDB = DbSources.Sources().GetConnection(idListener, out err);
@@ -283,7 +333,10 @@ namespace StatisticCommon
             //Использование статической функции
             list_tec = getListTEC(ref m_connConfigDB, bIgnoreTECInUse, arTECLimit, out err);
 
-            all_PARAM_TG = getALL_PARAM_TG (0, out err);
+            if (!(indx < 0))
+                all_PARAM_DETAIL = getALL_PARAM_TG (0, out err);
+            else
+                all_PARAM_DETAIL = getALL_ParamVyvod(out err);
 
             if (err == 0)
                 for (int i = 0; i < list_tec.Rows.Count; i ++) {
@@ -304,249 +357,41 @@ namespace StatisticCommon
                             else
                                 break;
 
-                        // получить список компонентов, с учетом типа компонентов по 'indx'
-                        if (err == 0) list_TECComponents = getListTECComponent(FormChangeMode.getPrefixMode(indx), Convert.ToInt32 (list_tec.Rows[i]["ID"]), out err); else ;
-
                         if (err == 0)
-                            for (int j = 0; j < list_TECComponents.Rows.Count; j ++) {
-                                tec[i].list_TECComponents.Add(new TECComponent(tec[i], list_TECComponents.Rows[j]));
-
-                                indx_comp = tec[i].list_TECComponents.Count - 1;
+                        // получить список компонентов, с учетом типа компонентов по 'indx'
+                            if (!(indx < 0))
+                            {// инициализация "обычных" компонентов ТЭЦ
+                                list_TECComponents = getListTECComponent(FormChangeMode.getPrefixMode(indx), Convert.ToInt32(list_tec.Rows[i]["ID"]), out err);
 
                                 if (err == 0)
-                                    tec[i].InitTG(j, all_PARAM_TG.Select(@"ID_" + FormChangeMode.getPrefixMode(indx) + @"=" + tec[i].list_TECComponents[indx_comp].m_id));
+                                    for (indx_comp = 0; indx_comp < list_TECComponents.Rows.Count; indx_comp++)
+                                    {
+                                        id_comp = Convert.ToInt32 (list_TECComponents.Rows[indx_comp][@"ID"]);
+                                        tec[i].AddTECComponent(list_TECComponents.Rows[indx_comp]);
+                                        tec[i].InitTG(indx_comp, all_PARAM_DETAIL.Select(@"ID_" + FormChangeMode.getPrefixMode(indx) + @"=" + id_comp));
+                                    }
                                 else
-                                    ; //Ошибка получения списка ТГ
+                                    ; //Ошибка ???
+                            }
+                            else
+                            {// инициализация "необычных компонентов" - ВЫВОДов
+                                list_TECComponents = getListTECComponent(FormChangeMode.getPrefixMode(indx), Convert.ToInt32(list_tec.Rows[i]["ID"]), out err);
+
+                                if (err == 0)
+                                    for (indx_comp = 0; indx_comp < list_TECComponents.Rows.Count; indx_comp++)
+                                    {
+                                        id_comp = Convert.ToInt32(list_TECComponents.Rows[indx_comp][@"ID"]);
+                                        tec[i].AddVyvod(all_PARAM_DETAIL.Select(@"ID_" + FormChangeMode.getPrefixMode(indx) + @"=" + id_comp));
+                                    }
+                                else
+                                    ; //Ошибка ???
                             }
                         else
-                            ; //Ошибка ???
+                            ; // ошибка при получении идентификаторов источников данных
                     //} else ;
                 }
             else
                 ; //Ошибка получения списка ТЭЦ
-
-            //DbTSQLInterface.CloseConnection (m_connConfigDB, out err);
-
-            //ConnectionSettings connSett = new ConnectionSettings();
-            //connSett.server = "127.0.0.1";
-            //connSett.port = 3306;
-            //connSett.dbName = "techsite";
-            //connSett.userName = "techsite";
-            //connSett.password = "12345";
-            //connSett.ignore = false;
-
-            /*
-            int i, j, k; //Индексы для ТЭЦ, ГТП, ТГ
-            tec = new List<TEC>();
-
-            i = j = k = 0; //Обнуление индекса ТЭЦ, ГТП, ТГ
-
-            //Создание объекта ТЭЦ (i = 0, Б)
-            tec.Add(new TEC("БТЭЦ"));
-            
-            //Создание ГТП и добавление к ТЭЦ
-            tec[i].list_TECComponents.Add(new TECComponent(tec[i]));
-            tec[i].TECComponent[j].field = "TG1";
-            tec[i].TECComponent[j].name = "ГТП ТГ1"; //GNOVOS36
-            //Создание ТГ и добавление к ГТП
-            tec[i].TECComponent[j].TG.Add(new TG(tec[i].TECComponent[j]));
-            tec[i].TECComponent[j++].TG[k++].name = "ТГ1";
-            k = 0; //Обнуление индекса ТГ
-            //Создание ГТП и добавление к ТЭЦ
-            tec[i].TECComponent.Add(new TECComponent(tec[i]));
-            tec[i].TECComponent[j].field = "TG2";
-            tec[i].TECComponent[j].name = "ГТП ТГ2"; //GNOVOS37
-            //Создание ТГ и добавление к ГТП
-            tec[i].TECComponent[j].TG.Add(new TG(tec[i].TECComponent[j]));
-            tec[i].TECComponent[j++].TG[k++].name = "ТГ2";
-            k = 0; //Обнуление индекса ТГ
-            //Создание ГТП и добавление к ТЭЦ
-            tec[i].TECComponent.Add(new TECComponent(tec[i]));
-            tec[i].TECComponent[j].field = "TG35"; //GNOVOS38
-            tec[i].TECComponent[j].name = "ГТП ТГ3,5";
-            //Создание ТГ и добавление к ГТП
-            tec[i].TECComponent[j].TG.Add(new TG(tec[i].TECComponent[j]));
-            tec[i].TECComponent[j].TG[k++].name = "ТГ3";
-            //Создание ТГ и добавление к ГТП
-            tec[i].TECComponent[j].TG.Add(new TG(tec[i].TECComponent[j]));
-            tec[i].TECComponent[j++].TG[k++].name = "ТГ5";
-            k = 0; //Обнуление индекса ТГ
-            //Создание ГТП и добавление к ТЭЦ
-            tec[i].TECComponent.Add(new TECComponent(tec[i]));
-            tec[i].TECComponent[j].field = "TG4";
-            tec[i].TECComponent[j].name = "ГТП ТГ4"; //GNOVOS08
-            //Создание ТГ и добавление к ГТП
-            tec[i].TECComponent[j].TG.Add(new TG(tec[i].TECComponent[j]));
-            tec[i].TECComponent[j].TG[k++].name = "ТГ4";
-
-            j = k = 0; //Обнуление индекса ГТП, ТГ
-            i ++; //Инкрементируем индекс ТЭЦ
-            tec.Add(new TEC("ТЭЦ-2"));
-            tec[i].TECComponent.Add(new TECComponent(tec[i]));
-            tec[i].TECComponent[j].field = "";
-            tec[i].TECComponent[j].name = "";
-            tec[i].TECComponent[j].TG.Add(new TG(tec[i].TECComponent[j]));
-            tec[i].TECComponent[j].TG[k++].name = "ТГ3";
-            tec[i].TECComponent[j].TG.Add(new TG(tec[i].TECComponent[j]));
-            tec[i].TECComponent[j].TG[k++].name = "ТГ4";
-            tec[i].TECComponent[j].TG.Add(new TG(tec[i].TECComponent[j]));
-            tec[i].TECComponent[j].TG[k++].name = "ТГ5";
-            tec[i].TECComponent[j].TG.Add(new TG(tec[i].TECComponent[j]));
-            tec[i].TECComponent[j].TG[k++].name = "ТГ6";
-            tec[i].TECComponent[j].TG.Add(new TG(tec[i].TECComponent[j]));
-            tec[i].TECComponent[j].TG[k++].name = "ТГ7";
-            tec[i].TECComponent[j].TG.Add(new TG(tec[i].TECComponent[j]));
-            tec[i].TECComponent[j].TG[k++].name = "ТГ8";
-            tec[i].TECComponent[j].TG.Add(new TG(tec[i].TECComponent[j]));
-            tec[i].TECComponent[j].TG[k++].name = "ТГ9";
-
-            j = k = 0;
-            i++;
-            tec.Add(new TEC("ТЭЦ-3"));
-            //Создание ГТП и добавление к ТЭЦ
-            tec[i].TECComponent.Add(new TECComponent(tec[i]));
-            tec[i].TECComponent[j].field = "TG1";
-            tec[i].TECComponent[j].name = "ГТП ТГ1"; //GNOVOS33
-            //Создание ТГ и добавление к ГТП
-            tec[i].TECComponent[j].TG.Add(new TG(tec[i].TECComponent[j]));
-            tec[i].TECComponent[j++].TG[k++].name = "ТГ1";
-            k = 0; //Обнуление индекса ТГ
-            //Создание ГТП и добавление к ТЭЦ
-            tec[i].TECComponent.Add(new TECComponent(tec[i]));
-            tec[i].TECComponent[j].field = "TG5";
-            tec[i].TECComponent[j].name = "ГТП ТГ5"; //GNOVOS34
-            //Создание ТГ и добавление к ГТП
-            tec[i].TECComponent[j].TG.Add(new TG(tec[i].TECComponent[j]));
-            tec[i].TECComponent[j++].TG[k++].name = "ТГ5";
-            k = 0; //Обнуление индекса ТГ
-            //Создание ГТП и добавление к ТЭЦ
-            tec[i].TECComponent.Add(new TECComponent(tec[i]));
-            tec[i].TECComponent[j].field = "TG712"; //GNOVOS03
-            tec[i].TECComponent[j].name = "ГТП ТГ7-12";
-            //Создание ТГ и добавление к ГТП
-            tec[i].TECComponent[j].TG.Add(new TG(tec[i].TECComponent[j]));
-            tec[i].TECComponent[j].TG[k++].name = "ТГ7";
-            //Создание ТГ и добавление к ГТП
-            tec[i].TECComponent[j].TG.Add(new TG(tec[i].TECComponent[j]));
-            tec[i].TECComponent[j].TG[k++].name = "ТГ8";
-            //Создание ТГ и добавление к ГТП
-            tec[i].TECComponent[j].TG.Add(new TG(tec[i].TECComponent[j]));
-            tec[i].TECComponent[j].TG[k++].name = "ТГ9";
-            //Создание ТГ и добавление к ГТП
-            tec[i].TECComponent[j].TG.Add(new TG(tec[i].TECComponent[j]));
-            tec[i].TECComponent[j].TG[k++].name = "ТГ10";
-            //Создание ТГ и добавление к ГТП
-            tec[i].TECComponent[j].TG.Add(new TG(tec[i].TECComponent[j]));
-            tec[i].TECComponent[j].TG[k++].name = "ТГ11";
-            //Создание ТГ и добавление к ГТП
-            tec[i].TECComponent[j].TG.Add(new TG(tec[i].TECComponent[j]));
-            tec[i].TECComponent[j++].TG[k++].name = "ТГ12";
-            k = 0; //Обнуление индекса ТГ
-            //Создание ГТП и добавление к ТЭЦ
-            tec[i].TECComponent.Add(new TECComponent(tec[i]));
-            tec[i].TECComponent[j].field = "TG1314"; //GNOVOS04
-            tec[i].TECComponent[j].name = "ГТП ТГ13,14";
-            //Создание ТГ и добавление к ГТП
-            tec[i].TECComponent[j].TG.Add(new TG(tec[i].TECComponent[j]));
-            tec[i].TECComponent[j].TG[k++].name = "ТГ13";
-            //Создание ТГ и добавление к ГТП
-            tec[i].TECComponent[j].TG.Add(new TG(tec[i].TECComponent[j]));
-            tec[i].TECComponent[j++].TG[k++].name = "ТГ14";
-
-            j = k = 0;
-            i++;
-            //Создание ТЭЦ и добавление к списку ТЭЦ
-            tec.Add(new TEC("ТЭЦ-4"));
-            //Создание ГТП и добавление к ТЭЦ
-            tec[i].TECComponent.Add(new TECComponent(tec[i]));
-            tec[i].TECComponent[j].field = "TG3";
-            tec[i].TECComponent[j].name = "ГТП ТГ3"; //GNOVOS35
-            //Создание ТГ и добавление к ГТП
-            tec[i].TECComponent[j].TG.Add(new TG(tec[i].TECComponent[j]));
-            tec[i].TECComponent[j++].TG[k++].name = "ТГ3";
-            k = 0; //Обнуление индекса ТГ
-            //Создание ГТП и добавление к ТЭЦ
-            tec[i].TECComponent.Add(new TECComponent(tec[i]));
-            tec[i].TECComponent[j].field = "TG48";
-            tec[i].TECComponent[j].name = "ГТП ТГ4-8"; //GNOVOS07
-            //Создание ТГ и добавление к ГТП
-            tec[i].TECComponent[j].TG.Add(new TG(tec[i].TECComponent[j]));
-            tec[i].TECComponent[j].TG[k++].name = "ТГ4";
-            //Создание ТГ и добавление к ГТП
-            tec[i].TECComponent[j].TG.Add(new TG(tec[i].TECComponent[j]));
-            tec[i].TECComponent[j].TG[k++].name = "ТГ5";
-            //Создание ТГ и добавление к ГТП
-            tec[i].TECComponent[j].TG.Add(new TG(tec[i].TECComponent[j]));
-            tec[i].TECComponent[j].TG[k++].name = "ТГ6";
-            //Создание ТГ и добавление к ГТП
-            tec[i].TECComponent[j].TG.Add(new TG(tec[i].TECComponent[j]));
-            tec[i].TECComponent[j].TG[k++].name = "ТГ7";
-            //Создание ТГ и добавление к ГТП
-            tec[i].TECComponent[j].TG.Add(new TG(tec[i].TECComponent[j]));
-            tec[i].TECComponent[j].TG[k++].name = "ТГ8";
-
-            j = k = 0; //Обнуление индекса ГТП, ТГ
-            i ++; //Инкрементируем индекс ТЭЦ
-            //Создание ТЭЦ и добавление к списку ТЭЦ
-            tec.Add(new TEC("ТЭЦ-5"));
-            //Создание ГТП и добавление к ТЭЦ
-            tec [i].TECComponent.Add (new TECComponent (tec [i]));
-            tec[i].TECComponent[j].field = "TG12";
-            tec[i].TECComponent[j].name = "ГТП ТГ1,2"; //GNOVOS06
-            //Создание ТГ и добавление к ГТП
-            tec [i].TECComponent [j].TG.Add (new TG (tec [i].TECComponent [j]));
-            tec [i].TECComponent [j].TG [k ++].name = "ТГ1";
-            //Создание ТГ и добавление к ГТП
-            tec [i].TECComponent [j].TG.Add (new TG (tec [i].TECComponent [j]));
-            tec [i].TECComponent [j ++].TG [k ++].name = "ТГ2";
-            k = 0; //Обнуление индекса ТГ
-            //Создание ГТП и добавление к ТЭЦ
-            tec [i].TECComponent.Add (new TECComponent (tec [i]));
-            tec[i].TECComponent[j].field = "TG36";
-            tec[i].TECComponent[j].name = "ГТП ТГ3-6"; //GNOVOS07
-            //Создание ТГ и добавление к ГТП
-            tec [i].TECComponent [j].TG.Add (new TG (tec [i].TECComponent [j]));
-            tec [i].TECComponent [j].TG [k ++].name = "ТГ3";
-            //Создание ТГ и добавление к ГТП
-            tec [i].TECComponent [j].TG.Add(new TG(tec [i].TECComponent [j]));
-            tec [i].TECComponent [j].TG [k ++].name = "ТГ4";
-            //Создание ТГ и добавление к ГТП
-            tec [i].TECComponent [j].TG.Add(new TG(tec [i].TECComponent [j]));
-            tec [i].TECComponent [j].TG [k ++].name = "ТГ5";
-            //Создание ТГ и добавление к ГТП
-            tec [i].TECComponent [j].TG.Add(new TG(tec [i].TECComponent [j]));
-            tec [i].TECComponent [j].TG [k ++].name = "ТГ6";
-
-            j = k = 0; //Обнуление индекса ГТП, ТГ
-            i++; //Инкрементируем индекс ТЭЦ
-            //Создание ТЭЦ и добавление к списку ТЭЦ
-            tec.Add(new TEC("Бийск-ТЭЦ"));
-            //Создание ГТП и добавление к ТЭЦ
-            tec[i].TECComponent.Add(new TECComponent(tec[i]));
-            tec[i].TECComponent[j].field = "TG12";
-            tec[i].TECComponent[j].name = "ГТП ТГ1,2";
-            tec[i].TECComponent[j].TG.Add(new TG(tec[i].TECComponent[j]));
-            tec[i].TECComponent[j].TG[k++].name = "ТГ1";
-            tec[i].TECComponent[j].TG.Add(new TG(tec[i].TECComponent[j]));
-            tec[i].TECComponent[j++].TG[k++].name = "ТГ2";
-            k = 0; //Обнуление индекса ТГ
-            //Создание ГТП и добавление к ТЭЦ
-            tec[i].TECComponent.Add(new TECComponent(tec[i]));
-            tec[i].TECComponent[j].field = "TG38";
-            tec[i].TECComponent[j].name = "ГТП ТГ3-8";
-            tec[i].TECComponent[j].TG.Add(new TG(tec[i].TECComponent[j]));
-            tec[i].TECComponent[j].TG[k++].name = "ТГ3";
-            tec[i].TECComponent[j].TG.Add(new TG(tec[i].TECComponent[j]));
-            tec[i].TECComponent[j].TG[k++].name = "ТГ4";
-            tec[i].TECComponent[j].TG.Add(new TG(tec[i].TECComponent[j]));
-            tec[i].TECComponent[j].TG[k++].name = "ТГ5";
-            tec[i].TECComponent[j].TG.Add(new TG(tec[i].TECComponent[j]));
-            tec[i].TECComponent[j].TG[k++].name = "ТГ6";
-            tec[i].TECComponent[j].TG.Add(new TG(tec[i].TECComponent[j]));
-            tec[i].TECComponent[j].TG[k++].name = "ТГ7";
-            tec[i].TECComponent[j].TG.Add(new TG(tec[i].TECComponent[j]));
-            tec[i].TECComponent[j].TG[k++].name = "ТГ8";
-            */
 
             //Logging.Logg().Debug("InitTEC::InitTEC (4 параметра) - вЫход...");
         }
@@ -605,5 +450,23 @@ namespace StatisticCommon
             else
                 ;
         }
+
+        #region Дополнительные методы для реализации задачи Расчет теплосети
+        //public InitTEC_200(List<TEC> listTec)
+        //{
+        //    tec = new ListTEC ();
+        //    tec.AddRange(listTec);
+
+        //    tec.ForEach(getVyvod);
+        //}
+
+        ////public InitTEC_200(ListTEC listTec) : this (listTec.)
+        ////{
+        ////}
+
+        //private void getVyvod (TEC t)
+        //{
+        //}
+        #endregion
     }
 }
