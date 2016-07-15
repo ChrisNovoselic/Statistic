@@ -742,6 +742,9 @@ namespace StatisticCommon
             m_SensorsString_VZLET = string.Empty;
             //Цикл по всем ВЫВОДам ТЭЦ
             foreach (Vyvod v in m_list_Vyvod)
+            {
+                v.m_SensorsString_VZLET = string.Empty;
+
                 foreach (Vyvod.ParamVyvod pv in v.m_listParam)
                 {
                     m_SensorsString_VZLET = addSensor(m_SensorsString_VZLET
@@ -752,6 +755,7 @@ namespace StatisticCommon
                         , pv.m_SensorsString_VZLET //.name_future
                         , INDEX_TYPE_SOURCE_DATA.EQU_MAIN);
                 }
+            }
         }
         /// <summary>
         /// Присвоить значения параметров соединения с источником данных

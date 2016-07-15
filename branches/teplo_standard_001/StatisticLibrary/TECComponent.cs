@@ -14,9 +14,17 @@ namespace StatisticCommon
     public class TECComponentBase
     {
         /// <summary>
+        /// Перечисление - типы компонентов в отношении его принадлежности к электро-, или тепловой части оборудования ТЭЦ
+        /// </summary>
+        public enum TYPE : short { UNKNOWN = -1, TEPLO, ELECTRO, COUNT }
+        /// <summary>
+        /// Тип компонента в отношении его принадлежности к электро-, или тепловой части оборудования ТЭЦ
+        /// </summary>
+        TYPE _type;
+        /// <summary>
         /// Идентификаторы для типов компонента ТЭЦ
         /// </summary>
-        public enum ID : int { LK = 10, GTP = 100, GTP_LK = 200, PC = 500, TG = 1000, MAX = 10000 }
+        public enum ID : int { LK = 10, GTP = 100, GTP_LK = 200, PC = 500, VYVOD = 900, TG = 1000, PARAM_VYVOD = 2000, MAX = 10000 }
         /// <summary>
         /// Краткое наименовнаие компонента
         /// </summary>
@@ -45,8 +53,10 @@ namespace StatisticCommon
         /// <summary>
         /// Коструктор - основной (без параметров)
         /// </summary>
-        public TECComponentBase()
+        public TECComponentBase(TYPE type = TYPE.ELECTRO)
         {
+            _type = type;
+
             m_dcKoeffAlarmPcur = -1;
         }
         /// <summary>
