@@ -487,7 +487,7 @@ namespace Statistic
 
         protected abstract void createPanelQuickData();
 
-        public PanelTecViewBase(/*TecView.TYPE_PANEL type, */TEC tec, int indx_tec, int indx_comp/*, DelegateStringFunc fErrRep, DelegateStringFunc fWarRep, DelegateStringFunc fActRep, DelegateBoolFunc fRepClr*/)
+        public PanelTecViewBase(/*TecView.TYPE_PANEL type, */TEC tec, int indx_tec, int indx_comp, HMark markQueries)
         {
             //InitializeComponent();
 
@@ -495,11 +495,7 @@ namespace Statistic
 
             createTecView(indx_tec, indx_comp); //m_tecView = new TecView(type, indx_tec, indx_comp);
 
-            HMark markQueries = new HMark(new int []{(int)CONN_SETT_TYPE.ADMIN, (int)CONN_SETT_TYPE.PBR, (int)CONN_SETT_TYPE.DATA_AISKUE, (int)CONN_SETT_TYPE.DATA_SOTIASSO});
-            //markQueries.Marked((int)CONN_SETT_TYPE.ADMIN);
-            //markQueries.Marked((int)CONN_SETT_TYPE.PBR);
-            //markQueries.Marked((int)CONN_SETT_TYPE.DATA_AISKUE);
-            //markQueries.Marked((int)CONN_SETT_TYPE.DATA_SOTIASSO);
+            //HMark markQueries = new HMark(new int []{(int)CONN_SETT_TYPE.ADMIN, (int)CONN_SETT_TYPE.PBR, (int)CONN_SETT_TYPE.DATA_AISKUE, (int)CONN_SETT_TYPE.DATA_SOTIASSO});
 
             m_tecView.InitTEC(new List<StatisticCommon.TEC>() { tec }, markQueries);
             //m_tecView.SetDelegateReport(fErrRep, fWarRep, fActRep, fRepClr);
@@ -515,8 +511,7 @@ namespace Statistic
             else
                 ;
 
-            foreach (TG tg in m_tecView.listTG)
-                _pnlQuickData.AddTGView(tg);
+            AddTGView();
 
             if (tec.Type == TEC.TEC_TYPE.BIYSK)
                 ; //this.parameters = FormMain.papar;
@@ -644,6 +639,12 @@ namespace Statistic
                     ;
 
             m_dgwMins.Fill ();
+        }
+
+        public virtual void AddTGView()
+        {
+            foreach (TG tg in m_tecView.listTG)
+                _pnlQuickData.AddTGView(tg);
         }
 
         private int getHeightItem (bool bUseLabel, int iRow) { return bUseLabel == true ? m_arPercRows[iRow] : m_arPercRows[iRow] + m_arPercRows[iRow + 1]; }

@@ -17,8 +17,11 @@ namespace StatisticCommon
     /// </summary>
     public enum CONN_SETT_TYPE
     {
-        CONFIG_DB = 0, LIST_SOURCE,
-        DATA_AISKUE_PLUS_SOTIASSO = -1 /*Факт+СОТИАССО. - смешанный*/, ADMIN = 0, PBR = 1, DATA_AISKUE = 2 /*Факт. - АИСКУЭ*/, DATA_SOTIASSO = 3, DATA_SOTIASSO_3_MIN = 4, DATA_SOTIASSO_1_MIN = 5 /*ТелеМеханика - СОТИАССО*/, MTERM = 6 /*Модес-Терминал*/,
+        CONFIG_DB = 0, LIST_SOURCE
+        , DATA_AISKUE_PLUS_SOTIASSO = -1 /*Факт+СОТИАССО. - смешанный*/, ADMIN = 0, PBR = 1, DATA_AISKUE = 2 /*Факт. - АИСКУЭ*/, DATA_SOTIASSO = 3
+        , DATA_VZLET
+            , DATA_SOTIASSO_3_MIN = 4, DATA_SOTIASSO_1_MIN = 5 /*ТелеМеханика - СОТИАССО*/
+            , MTERM = 6 /*Модес-Терминал*/,
         COUNT_CONN_SETT_TYPE = 7
     };
     /// <summary>
@@ -234,7 +237,7 @@ namespace StatisticCommon
     /// <summary>
     /// Класс описания ТЭЦ
     /// </summary>
-    public class TEC //: StatisticCommon.ITEC
+    public partial class TEC //: StatisticCommon.ITEC
     {
         /// <summary>
         /// Перечисление - индексы типов источников данных (общий-централизованный источник данных, индивидуальный для каждой ТЭЦ - не поддерживается)

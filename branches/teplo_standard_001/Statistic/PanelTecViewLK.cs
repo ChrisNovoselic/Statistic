@@ -17,7 +17,7 @@ namespace Statistic
     class PanelLKView : PanelTecViewBase
     {
         public PanelLKView(StatisticCommon.TEC tec, int num_tec, int num_comp, PanelCustomTecView.HLabelCustomTecView label = null)
-            : base(tec, num_tec, num_comp)
+            : base(tec, num_tec, num_comp, new HMark(new int[] { (int)CONN_SETT_TYPE.ADMIN, (int)CONN_SETT_TYPE.PBR, (int)CONN_SETT_TYPE.DATA_AISKUE }))
         {
             m_label = label;
             
@@ -357,7 +357,7 @@ namespace Statistic
             public override void RestructControl()
             {
                 COUNT_LABEL = 2; COUNT_TG_IN_COLUMN = 3; COL_TG_START = 5;
-                COUNT_ROW_LABELCOMMON = 1;
+                COUNT_ROWSPAN_LABELCOMMON = 1;
 
                 bool bPowerFactZoom = false;
                 int cntCols = 0;

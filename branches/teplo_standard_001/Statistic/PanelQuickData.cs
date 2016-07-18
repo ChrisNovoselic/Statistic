@@ -278,11 +278,26 @@ namespace Statistic
 
         protected abstract class HPanelQuickData : HPanelTableLayout
         {
-            protected int COUNT_LABEL
-                    , COUNT_TG_IN_COLUMN
-                    , COL_TG_START
-                    , COUNT_ROWS = -1
-                    , COUNT_ROW_LABELCOMMON;
+            /// <summary>
+            /// Количество элементов управления-подписей по оси X
+            /// </summary>
+            protected int COUNT_LABEL;
+            /// <summary>
+            /// Количество элементов управления-подписей по оси Y для ТГ(параметров ВЫВОДов)
+            /// </summary>
+            protected int COUNT_TG_IN_COLUMN;
+            /// <summary>
+            /// Индекс столбца с которого начинается отображение ТГ(параметров ВЫВОДов)
+            /// </summary>
+            protected int COL_TG_START;
+            /// <summary>
+            /// Количество виртуальных строк на которые разбита панель
+            /// </summary>
+            protected int COUNT_ROWS = -1;
+            /// <summary>
+            /// Количество виртуальных строк на которых размещается любая из ОБЩих подписей (до ТГ, параметров ВЫВОДов)
+            /// </summary>
+            protected int COUNT_ROWSPAN_LABELCOMMON;
             protected float SZ_COLUMN_LABEL, SZ_COLUMN_LABEL_VALUE
                 , SZ_COLUMN_TG_LABEL, SZ_COLUMN_TG_LABEL_VALUE;
 
@@ -380,34 +395,36 @@ namespace Statistic
             }
 
             //public void addTGView(ref string name_shr, /*ref float val,*/ ref int positionXName, ref int positionYName, ref int positionXValue, ref int positionYValue)
-            public void AddTGView(TG tg)
+            public virtual void AddTGView(TECComponentBase comp)
             {
-                int cnt = -1;
-                m_tgLabels.Add(tg.m_id, new Label[(int)TG.INDEX_VALUE.COUNT_INDEX_VALUE]);
-                m_tgToolTips.Add(tg.m_id, new ToolTip[(int)TG.INDEX_VALUE.COUNT_INDEX_VALUE]);
+                int cnt = -1
+                    , id = -1;
+                HLabel hlblValue;
+
+                id = comp.m_id;
+
+                m_tgLabels.Add(id, new Label[(int)TG.INDEX_VALUE.COUNT_INDEX_VALUE]);
+                m_tgToolTips.Add(id, new ToolTip[(int)TG.INDEX_VALUE.COUNT_INDEX_VALUE]);
                 cnt = m_tgLabels.Count;
 
-                m_tgLabels[tg.m_id][(int)TG.INDEX_VALUE.LABEL_DESC] = HLabel.createLabel(tg.name_shr,
+                m_tgLabels[id][(int)TG.INDEX_VALUE.LABEL_DESC] = HLabel.createLabel(comp.name_shr,
                                                                         new HLabelStyles(/*arPlacement[(int)i].pt, sz,*/new Point(-1, -1), new Size(-1, -1),
                                                                         Color.Black, Color.Empty,
-                                                                        8F, ContentAlignment.MiddleRight))
-                    //, lblValue = null
-                    ;
-                HLabel hlblValue;
+                                                                        8F, ContentAlignment.MiddleRight));                
 
                 hlblValue = new HLabel(new HLabelStyles(new Point(-1, -1), new Size(-1, -1), Color.LimeGreen, Color.Black, 13F, ContentAlignment.MiddleCenter));
                 hlblValue.Text = @"---.--"; //name_shr + @"_Fact";
                 hlblValue.m_type = HLabel.TYPE_HLABEL.TG;
-                //m_tgToolTips[tg.m_id][(int)TG.INDEX_VALUE.FACT].SetToolTip(hlblValue, tg.name_shr + @"[" + tg.m_SensorsStrings_ASKUE[0] + @"]: " + (tg.m_TurnOnOff == TG.INDEX_TURNOnOff.ON ? @"вкл." : @"выкл."));
-                m_tgLabels[tg.m_id][(int)TG.INDEX_VALUE.FACT] = (Label)hlblValue;
-                m_tgToolTips[tg.m_id][(int)TG.INDEX_VALUE.FACT] = new ToolTip();
+                //m_tgToolTips[id][(int)TG.INDEX_VALUE.FACT].SetToolTip(hlblValue, tg.name_shr + @"[" + tg.m_SensorsStrings_ASKUE[0] + @"]: " + (tg.m_TurnOnOff == TG.INDEX_TURNOnOff.ON ? @"вкл." : @"выкл."));
+                m_tgLabels[id][(int)TG.INDEX_VALUE.FACT] = (Label)hlblValue;
+                m_tgToolTips[id][(int)TG.INDEX_VALUE.FACT] = new ToolTip();
 
                 hlblValue = new HLabel(new HLabelStyles(new Point(-1, -1), new Size(-1, -1), Color.Green, Color.Black, 13F, ContentAlignment.MiddleCenter));
                 hlblValue.Text = @"---.--"; //name_shr + @"_TM";
                 hlblValue.m_type = HLabel.TYPE_HLABEL.TG;
-                m_tgLabels[tg.m_id][(int)TG.INDEX_VALUE.TM] = (Label)hlblValue;
+                m_tgLabels[id][(int)TG.INDEX_VALUE.TM] = (Label)hlblValue;
 
-                m_tgToolTips[tg.m_id][(int)TG.INDEX_VALUE.TM] = new ToolTip();
+                m_tgToolTips[id][(int)TG.INDEX_VALUE.TM] = new ToolTip();
             }
 
             protected void createLabel(int indx, string strLabelText, Color clrLabelFore, Color clrLabelBackground, float fSzLabelFont, ContentAlignment alignLabel)
@@ -431,23 +448,23 @@ namespace Statistic
                     }
                     else ;
             }
-
+            /// <summary>
+            /// Удалить 1-ую (по порядку) общую подпись
+            /// </summary>
+            /// <param name="limit">Индекс (подписи) до которого следует удалять подписи</param>
             protected void removeFirstCommonLabels(int limit)
             {
-                for (int i = m_indxStartCommonFirstValueSeries; i < limit + 1; i++)
-                {
-                    if (!(this.m_arLabelCommon[(int)i - m_indxStartCommonFirstValueSeries] == null))
-                        if (!(this.Controls.IndexOf(this.m_arLabelCommon[(int)i - m_indxStartCommonFirstValueSeries]) < 0))
-                            this.Controls.Remove(this.m_arLabelCommon[(int)i - m_indxStartCommonFirstValueSeries]);
-                        else ;
-                    else
-                        ;
-                }
+                removeSecondCommonLabels(m_indxStartCommonFirstValueSeries, limit);
             }
 
             protected void removeSecondCommonLabels (int limit)
             {
-                for (int i = m_indxStartCommonSecondValueSeries; i < limit + 1; i++)
+                removeSecondCommonLabels (m_indxStartCommonSecondValueSeries, limit);
+            }
+
+            private void removeSecondCommonLabels(int indxStart, int limit)
+            {
+                for (int i = indxStart; i < limit + 1; i++)
                 {
                     if (!(this.m_arLabelCommon[(int)i - m_indxStartCommonFirstValueSeries] == null))
                         if (!(this.Controls.IndexOf(this.m_arLabelCommon[(int)i - m_indxStartCommonFirstValueSeries]) < 0))
@@ -884,8 +901,8 @@ namespace Statistic
 
             public override void RestructControl()
             {
-                COUNT_LABEL = 3; COUNT_TG_IN_COLUMN = 4; COL_TG_START = 6;
-                COUNT_ROW_LABELCOMMON = 4;
+                COUNT_LABEL = (int)TG.INDEX_VALUE.COUNT_INDEX_VALUE; COUNT_TG_IN_COLUMN = 4; COL_TG_START = 6;
+                COUNT_ROWSPAN_LABELCOMMON = 4;
 
                 bool bPowerFactZoom = false;
                 int cntCols = -1;                
@@ -949,7 +966,7 @@ namespace Statistic
                         //this.Controls.Add(m_arLabelCommon[(int)i - m_indxStartCommonPVal]);
                         this.Controls.Add(this.m_arLabelCommon[(int)i - m_indxStartCommonFirstValueSeries]);
                         this.SetCellPosition(this.m_arLabelCommon[(int)i - m_indxStartCommonFirstValueSeries], getPositionCell((int)i));
-                        this.SetRowSpan(this.m_arLabelCommon[(int)i - m_indxStartCommonFirstValueSeries], COUNT_ROW_LABELCOMMON);
+                        this.SetRowSpan(this.m_arLabelCommon[(int)i - m_indxStartCommonFirstValueSeries], COUNT_ROWSPAN_LABELCOMMON);
                     }
                     else
                         ;
@@ -973,7 +990,7 @@ namespace Statistic
                         //this.Controls.Add(m_arLabelCommon[(int)i - m_indxStartCommonPVal]);
                         this.Controls.Add(this.m_arLabelCommon[(int)i - m_indxStartCommonFirstValueSeries]);
                         this.SetCellPosition(this.m_arLabelCommon[(int)i - m_indxStartCommonFirstValueSeries], getPositionCell((int)i));
-                        this.SetRowSpan(this.m_arLabelCommon[(int)i - m_indxStartCommonFirstValueSeries], COUNT_ROW_LABELCOMMON);
+                        this.SetRowSpan(this.m_arLabelCommon[(int)i - m_indxStartCommonFirstValueSeries], COUNT_ROWSPAN_LABELCOMMON);
                     }
 
                     //Ширина столбцов группы "Отклонение"
@@ -1004,7 +1021,8 @@ namespace Statistic
                     ;
 
                 //if ((Users.Role == (int)Users.ID_ROLES.NSS) || (Users.Role == (int)Users.ID_ROLES.MAJOR_MASHINIST) || (Users.Role == (int)Users.ID_ROLES.MASHINIST))
-                if ((((ToolStripMenuItem)ContextMenuStrip.Items[(int)INDEX_CONTEXTMENUITEM.FORECASTEE]).Checked == false) && (((ToolStripMenuItem)ContextMenuStrip.Items[(int)INDEX_CONTEXTMENUITEM.TM]).Checked == false))
+                if ((((ToolStripMenuItem)ContextMenuStrip.Items[(int)INDEX_CONTEXTMENUITEM.FORECASTEE]).Checked == false)
+                    && (((ToolStripMenuItem)ContextMenuStrip.Items[(int)INDEX_CONTEXTMENUITEM.TM]).Checked == false))
                 {
                     this.Controls.Add(m_lblPowerFactZoom, COL_TG_START + cntCols * COUNT_LABEL + 0, 0);
                     this.SetRowSpan(m_lblPowerFactZoom, COUNT_ROWS);

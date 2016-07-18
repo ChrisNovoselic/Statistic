@@ -86,91 +86,100 @@ namespace StatisticCommon
         /// </summary>
         public bool IsTG { get { return (m_id > (int)ID.TG) && (m_id < (int)ID.MAX); } }
     }
-    /// <summary>
-    /// Класс для описания компонента ТЭЦ - ТГ
-    /// </summary>
-    public class TG : TECComponentBase
-    {
+
+    //public partial class TEC {
         /// <summary>
-        /// Перечисление - индексы элементов интерфейса для отображения значений ТГ
+        /// Класс для описания компонента ТЭЦ - ТГ
         /// </summary>
-        public enum INDEX_VALUE : int { FACT //факт.
-                                        , TM //телемеханика
-                                        , LABEL_DESC //описание (краткое наименование) ТГ
-                                        , COUNT_INDEX_VALUE }; //Количество индексов
-        /// <summary>
-        /// Перечисление - возможные состояния ТГ
-        /// </summary>
-        public enum INDEX_TURNOnOff : int { OFF = -1, UNKNOWN, ON };
-        /// <summary>
-        /// Массив идентификаторов ТГ в АИИС КУЭ (размерность по 'ID_TIME')
-        ///  для особенной ТЭЦ (Бийск) различаются 3-х и 30-ти мин идентификаторы
-        ///  для остальных - совпадают
-        /// </summary>
-        public int[] m_arIds_fact;
-        /// <summary>
-        /// Строковый идентификатор в СОТИАССО
-        /// </summary>
-        public string m_strKKS_NAME_TM;
-        /// <summary>
-        /// Идентификаторы "владельцев" для ТГ (ГТП, Б(Гр)ЩУ)
-        /// </summary>
-        public int m_id_owner_gtp,
-                    m_id_owner_pc;
-        /// <summary>
-        /// Признак состояния ТГ
-        /// </summary>
-        public INDEX_TURNOnOff m_TurnOnOff; //Состояние -1 - выкл., 0 - неизвестно, 1 - вкл. (только для AdminAlarm)
-        /// <summary>
-        /// Конструктор - основной (без параметров)
-        /// </summary>
-        public TG()
+        public class TG : TECComponentBase
         {
-            m_arIds_fact = new int[(int)HDateTime.INTERVAL.COUNT_ID_TIME];
+            /// <summary>
+            /// Перечисление - индексы элементов интерфейса для отображения значений ТГ
+            /// </summary>
+            public enum INDEX_VALUE : int
+            {
+                FACT //факт.
+                ,
+                TM //телемеханика
+                    ,
+                LABEL_DESC //описание (краткое наименование) ТГ
+                    , COUNT_INDEX_VALUE
+            }; //Количество индексов
+            /// <summary>
+            /// Перечисление - возможные состояния ТГ
+            /// </summary>
+            public enum INDEX_TURNOnOff : int { OFF = -1, UNKNOWN, ON };
+            /// <summary>
+            /// Массив идентификаторов ТГ в АИИС КУЭ (размерность по 'ID_TIME')
+            ///  для особенной ТЭЦ (Бийск) различаются 3-х и 30-ти мин идентификаторы
+            ///  для остальных - совпадают
+            /// </summary>
+            public int[] m_arIds_fact;
+            /// <summary>
+            /// Строковый идентификатор в СОТИАССО
+            /// </summary>
+            public string m_strKKS_NAME_TM;
+            /// <summary>
+            /// Идентификаторы "владельцев" для ТГ (ГТП, Б(Гр)ЩУ)
+            /// </summary>
+            public int m_id_owner_gtp,
+                        m_id_owner_pc;
+            /// <summary>
+            /// Признак состояния ТГ
+            /// </summary>
+            public INDEX_TURNOnOff m_TurnOnOff; //Состояние -1 - выкл., 0 - неизвестно, 1 - вкл. (только для AdminAlarm)
+            /// <summary>
+            /// Конструктор - основной (без параметров)
+            /// </summary>
+            public TG()
+            {
+                m_arIds_fact = new int[(int)HDateTime.INTERVAL.COUNT_ID_TIME];
 
-            m_id_owner_gtp =
-            m_id_owner_pc =
-                //Неизвестный владелец
-                -1;
-            m_TurnOnOff = INDEX_TURNOnOff.UNKNOWN; //Неизвестное состояние
+                m_id_owner_gtp =
+                m_id_owner_pc =
+                    //Неизвестный владелец
+                    -1;
+                m_TurnOnOff = INDEX_TURNOnOff.UNKNOWN; //Неизвестное состояние
+            }
+            /// <summary>
+            /// Конструктор - основной (без параметров)
+            /// </summary>
+            public TG(DataRow row_tg, DataRow row_param_tg)
+                : this()
+            {
+                initTG(row_tg, row_param_tg);
+            }
+
+            //public void InitTG(DataRow row_tg, DataRow row_param_tg, out int err)
+            //{
+            //    err = -1;
+
+            //    name_shr = row_tg["NAME_SHR"].ToString();
+            //    m_id = Convert.ToInt32(row_tg["ID"]);
+            //    m_id_owner_gtp = Convert.ToInt32(row_tg["ID_GTP"]);
+
+            //    //DataRow[] rows_tg = allParamTG.Select(@"ID_TG=" + dest.m_id);
+            //    //dest.m_strKKS_NAME_TM = rows_tg[0][@"KKS_NAME"].ToString();
+            //    //dest.m_arIds_fact[(int)HDateTime.INTERVAL.MINUTES] = Int32.Parse(rows_tg[0][@"ID_IN_ASKUE_3"].ToString());
+            //    //dest.m_arIds_fact[(int)HDateTime.INTERVAL.HOURS] = Int32.Parse(rows_tg[0][@"ID_IN_ASKUE_30"].ToString());
+            //}
+
+            private void initTG(DataRow row_tg, DataRow row_param_tg)
+            {
+                name_shr = row_tg["NAME_SHR"].ToString();
+                if (DbTSQLInterface.IsNameField(row_tg, "NAME_FUTURE") == true) name_future = row_tg["NAME_FUTURE"].ToString(); else ;
+                m_id = Convert.ToInt32(row_tg["ID"]);
+                if (!(row_tg["INDX_COL_RDG_EXCEL"] is System.DBNull))
+                    m_indx_col_rdg_excel = Convert.ToInt32(row_tg["INDX_COL_RDG_EXCEL"]);
+                else
+                    ;
+
+                m_strKKS_NAME_TM = row_param_tg[@"KKS_NAME"].ToString();
+                m_arIds_fact[(int)HDateTime.INTERVAL.MINUTES] = Int32.Parse(row_param_tg[@"ID_IN_ASKUE_3"].ToString());
+                m_arIds_fact[(int)HDateTime.INTERVAL.HOURS] = Int32.Parse(row_param_tg[@"ID_IN_ASKUE_30"].ToString());
+            }
         }
-        /// <summary>
-        /// Конструктор - основной (без параметров)
-        /// </summary>
-        public TG(DataRow row_tg, DataRow row_param_tg) : this ()
-        {
-            initTG(row_tg, row_param_tg);
-        }
-
-        //public void InitTG(DataRow row_tg, DataRow row_param_tg, out int err)
-        //{
-        //    err = -1;
-
-        //    name_shr = row_tg["NAME_SHR"].ToString();
-        //    m_id = Convert.ToInt32(row_tg["ID"]);
-        //    m_id_owner_gtp = Convert.ToInt32(row_tg["ID_GTP"]);
-
-        //    //DataRow[] rows_tg = allParamTG.Select(@"ID_TG=" + dest.m_id);
-        //    //dest.m_strKKS_NAME_TM = rows_tg[0][@"KKS_NAME"].ToString();
-        //    //dest.m_arIds_fact[(int)HDateTime.INTERVAL.MINUTES] = Int32.Parse(rows_tg[0][@"ID_IN_ASKUE_3"].ToString());
-        //    //dest.m_arIds_fact[(int)HDateTime.INTERVAL.HOURS] = Int32.Parse(rows_tg[0][@"ID_IN_ASKUE_30"].ToString());
-        //}
-
-        private void initTG(DataRow row_tg, DataRow row_param_tg)
-        {
-            name_shr = row_tg["NAME_SHR"].ToString();
-            if (DbTSQLInterface.IsNameField(row_tg, "NAME_FUTURE") == true) name_future = row_tg["NAME_FUTURE"].ToString(); else ;
-            m_id = Convert.ToInt32(row_tg["ID"]);
-            if (!(row_tg["INDX_COL_RDG_EXCEL"] is System.DBNull))
-                m_indx_col_rdg_excel = Convert.ToInt32(row_tg["INDX_COL_RDG_EXCEL"]);
-            else
-                ;
-
-            m_strKKS_NAME_TM = row_param_tg[@"KKS_NAME"].ToString();
-            m_arIds_fact[(int)HDateTime.INTERVAL.MINUTES] = Int32.Parse(row_param_tg[@"ID_IN_ASKUE_3"].ToString());
-            m_arIds_fact[(int)HDateTime.INTERVAL.HOURS] = Int32.Parse(row_param_tg[@"ID_IN_ASKUE_30"].ToString());
-        }
-    }
+    //} partial class TEC
     /// <summary>
     /// Класс для описания компонента ТЭЦ (ГТП, Б(Гр)ЩУ)
     /// </summary>
@@ -262,6 +271,14 @@ namespace StatisticCommon
     {
         public class ParamVyvod : TECComponentBase
         {
+            public enum INDEX_VALUE : short
+            {
+                FACT //факт.
+                , DEVIAT //телемеханика
+                , LABEL_DESC //описание (краткое наименование) ВЫВОДА
+                    , COUNT
+            }; //Количество индексов
+
             public string m_Symbol;
             public int m_typeAgregate;
 

@@ -85,8 +85,8 @@ namespace Statistic
         /// <summary>
         /// Конструктор
         /// </summary>
-        /// <param name="container"></param>
-        /// <param name="listTec">Лист ТЭЦ</param>
+        /// <param name="container">Объект владелец для вкладки</param>
+        /// <param name="listTec">Список ТЭЦ</param>
         public PanelVzletTDirect(IContainer container, List<TEC> listTec)
             : this(listTec)
         {
@@ -100,6 +100,11 @@ namespace Statistic
                 public DataGridViewVzletTDirectHours(HDateTime.INTERVAL interval, ColumnProperies[] arColumns)
                     : base(interval, arColumns)
                 {
+                    Name = "dgvTableTDirectHours";
+                    RowHeadersVisible = false;
+                    RowTemplate.Resizable = DataGridViewTriState.False;
+
+                    RowsAdd();
                 }
 
                 public override void Fill(TecView.valuesTEC[] values, params object[] pars)
@@ -124,6 +129,8 @@ namespace Statistic
             /// </summary>
             private class PanelQuickDataVzletTDirect : HPanelQuickData
             {
+                private enum INDEX_VALUE {  }
+                
                 public PanelQuickDataVzletTDirect()
                     : base(/*-1, -1*/)
                 {
@@ -132,7 +139,10 @@ namespace Statistic
 
                 private void InitializeComponents()
                 {
-                    COUNT_ROWS = 3;
+                    COUNT_ROWS = 12;
+
+                    int count_ui = 3
+                        , count_rowspan_ui = COUNT_ROWS / count_ui;
 
                     // значение 'SZ_COLUMN_LABEL' устанавливается индивидуально
                     /*SZ_COLUMN_LABEL = 48F;*/ SZ_COLUMN_LABEL_VALUE = 78F;
@@ -153,14 +163,17 @@ namespace Statistic
                     // btnSetNow
                     //
                     this.Controls.Add(this.btnSetNow, 0, 0);
+                    this.SetRowSpan(this.btnSetNow, count_rowspan_ui);
                     // 
                     // dtprDate
                     // 
-                    this.Controls.Add(this.dtprDate, 0, 1);
+                    this.Controls.Add(this.dtprDate, 0, 1 * count_rowspan_ui);
+                    this.SetRowSpan(this.dtprDate, count_rowspan_ui);
                     // 
                     // lblServerTime
                     // 
-                    this.Controls.Add(this.lblServerTime, 0, 2);
+                    this.Controls.Add(this.lblServerTime, 0, 2 * count_rowspan_ui);
+                    this.SetRowSpan(this.lblServerTime, count_rowspan_ui);
 
                     //Ширина столбца группы "Элементы управления"
                     this.ColumnStyles.Add(new ColumnStyle(SizeType.Absolute, 100F));
@@ -307,16 +320,16 @@ namespace Statistic
                             row = 0; col = 2;
                             break;
                         case CONTROLS.lblTemperatureHour:
-                            row = 1; col = 1;
+                            row = 1 * COUNT_ROWSPAN_LABELCOMMON; col = 1;
                             break;
                         case CONTROLS.lblTemperatureHourValue:
-                            row = 1; col = 2;
+                            row = 1 * COUNT_ROWSPAN_LABELCOMMON; col = 2;
                             break;
                         case CONTROLS.lblTemperatureDate:
-                            row = 2; col = 1;
+                            row = 2 * COUNT_ROWSPAN_LABELCOMMON; col = 1;
                             break;
                         case CONTROLS.lblTemperatureDateValue:
-                            row = 2; col = 2;
+                            row = 2 * COUNT_ROWSPAN_LABELCOMMON; col = 2;
                             break;
                         case CONTROLS.lblDeviatCurrent:
                             row = 0; col = 3;
@@ -325,16 +338,16 @@ namespace Statistic
                             row = 0; col = 4;
                             break;
                         case CONTROLS.lblDeviatHour:
-                            row = 1; col = 3;
+                            row = 1 * COUNT_ROWSPAN_LABELCOMMON; col = 3;
                             break;
                         case CONTROLS.lblDeviatHourValue:
-                            row = 1; col = 4;
+                            row = 1 * COUNT_ROWSPAN_LABELCOMMON; col = 4;
                             break;
                         case CONTROLS.lblDeviatDate:
-                            row = 2; col = 3;
+                            row = 2 * COUNT_ROWSPAN_LABELCOMMON; col = 3;
                             break;
                         case CONTROLS.lblDeviatDateValue:
-                            row = 2; col = 4;
+                            row = 2 * COUNT_ROWSPAN_LABELCOMMON; col = 4;
                             break;
                         default:
                             break;
@@ -343,10 +356,73 @@ namespace Statistic
                     return new TableLayoutPanelCellPosition(col, row);
                 }
 
+                public override void AddTGView(TECComponentBase comp)
+                {
+                    int cnt = -1
+                        , id = -1;
+                    HLabel hlblValue;
+
+                    id = comp.m_id;
+
+                    m_tgLabels.Add(id, new Label[(int)Vyvod.ParamVyvod.INDEX_VALUE.COUNT]);
+                    m_tgToolTips.Add(id, new ToolTip[(int)Vyvod.ParamVyvod.INDEX_VALUE.COUNT]);
+                    cnt = m_tgLabels.Count;
+
+                    m_tgLabels[id][(int)Vyvod.ParamVyvod.INDEX_VALUE.LABEL_DESC] = HLabel.createLabel(comp.name_shr,
+                                                                            new HLabelStyles(/*arPlacement[(int)i].pt, sz,*/new Point(-1, -1), new Size(-1, -1),
+                                                                            Color.Black, Color.Empty,
+                                                                            8F, ContentAlignment.MiddleRight));
+
+                    hlblValue = new HLabel(new HLabelStyles(new Point(-1, -1), new Size(-1, -1), Color.LimeGreen, Color.Black, 13F, ContentAlignment.MiddleCenter));
+                    hlblValue.Text = @"---.--"; //name_shr + @"_Fact";
+                    hlblValue.m_type = HLabel.TYPE_HLABEL.TG;
+                    //m_tgToolTips[id][(int)Vyvod.ParamVyvod.INDEX_VALUE.FACT].SetToolTip(hlblValue, tg.name_shr + @"[" + tg.m_SensorsStrings_ASKUE[0] + @"]: " + (tg.m_TurnOnOff == Vyvod.ParamVyvod.INDEX_TURNOnOff.ON ? @"вкл." : @"выкл."));
+                    m_tgLabels[id][(int)Vyvod.ParamVyvod.INDEX_VALUE.FACT] = (Label)hlblValue;
+                    m_tgToolTips[id][(int)Vyvod.ParamVyvod.INDEX_VALUE.FACT] = new ToolTip();
+
+                    hlblValue = new HLabel(new HLabelStyles(new Point(-1, -1), new Size(-1, -1), Color.Green, Color.Black, 13F, ContentAlignment.MiddleCenter));
+                    hlblValue.Text = @"---.--"; //name_shr + @"_TM";
+                    hlblValue.m_type = HLabel.TYPE_HLABEL.TG;
+                    m_tgLabels[id][(int)Vyvod.ParamVyvod.INDEX_VALUE.DEVIAT] = (Label)hlblValue;
+
+                    m_tgToolTips[id][(int)Vyvod.ParamVyvod.INDEX_VALUE.DEVIAT] = new ToolTip();
+                }
+
+                new protected void addTGLabels(bool bIsDeviation = true)
+                {
+                    int r = -1, c = -1
+                        , i = 0;
+
+                    foreach (int key in m_tgLabels.Keys)
+                    {
+                        i++;
+
+                        this.Controls.Add(m_tgLabels[key][(int)Vyvod.ParamVyvod.INDEX_VALUE.LABEL_DESC]);
+                        c = (i - 1) / COUNT_TG_IN_COLUMN * COUNT_LABEL + (COL_TG_START + 0); r = (i - 1) % COUNT_TG_IN_COLUMN * (COUNT_ROWS / COUNT_TG_IN_COLUMN);
+                        this.SetCellPosition(m_tgLabels[key][(int)Vyvod.ParamVyvod.INDEX_VALUE.LABEL_DESC], new TableLayoutPanelCellPosition(c, r));
+                        this.SetRowSpan(m_tgLabels[key][(int)Vyvod.ParamVyvod.INDEX_VALUE.LABEL_DESC], (COUNT_ROWS / COUNT_TG_IN_COLUMN));
+
+                        this.Controls.Add(m_tgLabels[key][(int)Vyvod.ParamVyvod.INDEX_VALUE.FACT]);
+                        c = (i - 1) / COUNT_TG_IN_COLUMN * COUNT_LABEL + (COL_TG_START + 1); r = (i - 1) % COUNT_TG_IN_COLUMN * (COUNT_ROWS / COUNT_TG_IN_COLUMN);
+                        this.SetCellPosition(m_tgLabels[key][(int)Vyvod.ParamVyvod.INDEX_VALUE.FACT], new TableLayoutPanelCellPosition(c, r));
+                        this.SetRowSpan(m_tgLabels[key][(int)Vyvod.ParamVyvod.INDEX_VALUE.FACT], (COUNT_ROWS / COUNT_TG_IN_COLUMN));
+
+                        if (bIsDeviation == true)
+                        {
+                            this.Controls.Add(m_tgLabels[key][(int)Vyvod.ParamVyvod.INDEX_VALUE.DEVIAT]);
+                            c = (i - 1) / COUNT_TG_IN_COLUMN * COUNT_LABEL + (COL_TG_START + 2); r = (i - 1) % COUNT_TG_IN_COLUMN * (COUNT_ROWS / COUNT_TG_IN_COLUMN);
+                            this.SetCellPosition(m_tgLabels[key][(int)Vyvod.ParamVyvod.INDEX_VALUE.DEVIAT], new TableLayoutPanelCellPosition(c, r));
+                            this.SetRowSpan(m_tgLabels[key][(int)Vyvod.ParamVyvod.INDEX_VALUE.DEVIAT], (COUNT_ROWS / COUNT_TG_IN_COLUMN));
+                        }
+                        else
+                            ;
+                    }
+                }
+
                 public override void RestructControl()
                 {
-                    COUNT_LABEL = 2; COUNT_TG_IN_COLUMN = 3; COL_TG_START = 5;
-                    COUNT_ROW_LABELCOMMON = 1;
+                    COUNT_LABEL = (int)Vyvod.ParamVyvod.INDEX_VALUE.COUNT; COUNT_TG_IN_COLUMN = 4; COL_TG_START = 5;
+                    COUNT_ROWSPAN_LABELCOMMON = 4;
 
                     bool bPowerFactZoom = false;
                     int cntCols = 0;
@@ -380,7 +456,7 @@ namespace Statistic
                         this.Controls.Add(this.m_arLabelCommon[(int)i - m_indxStartCommonFirstValueSeries]);
                         pos = getPositionCell((int)i);
                         this.SetCellPosition(this.m_arLabelCommon[(int)i - m_indxStartCommonFirstValueSeries], pos);
-                        //this.SetRowSpan(this.m_arLabelCommon[(int)i - m_indxStartCommonFirstValueSeries], COUNT_ROW_LABELCOMMON);
+                        this.SetRowSpan(this.m_arLabelCommon[(int)i - m_indxStartCommonFirstValueSeries], COUNT_ROWSPAN_LABELCOMMON);
                     }
 
                     //Ширина столбцов группы "Температура"
@@ -394,8 +470,9 @@ namespace Statistic
                     {
                         //this.Controls.Add(m_arLabelCommon[(int)i - m_indxStartCommonPVal]);
                         this.Controls.Add(this.m_arLabelCommon[(int)i - m_indxStartCommonFirstValueSeries]);
-                        this.SetCellPosition(this.m_arLabelCommon[(int)i - m_indxStartCommonFirstValueSeries], getPositionCell((int)i));
-                        //this.SetRowSpan(this.m_arLabelCommon[(int)i - m_indxStartCommonFirstValueSeries], COUNT_ROW_LABELCOMMON);
+                        pos = getPositionCell((int)i);
+                        this.SetCellPosition(this.m_arLabelCommon[(int)i - m_indxStartCommonFirstValueSeries], pos);
+                        this.SetRowSpan(this.m_arLabelCommon[(int)i - m_indxStartCommonFirstValueSeries], COUNT_ROWSPAN_LABELCOMMON);
                     }
 
                     //Ширина столбцов группы "Отклонение"
@@ -408,14 +485,15 @@ namespace Statistic
 
                     for (int i = 0; i < cntCols; i++)
                     {
-                        this.ColumnStyles.Add(new ColumnStyle(SizeType.Absolute, SZ_COLUMN_TG_LABEL));
-                        this.ColumnStyles.Add(new ColumnStyle(SizeType.Absolute, SZ_COLUMN_TG_LABEL_VALUE));
+                        this.ColumnStyles.Add(new ColumnStyle(SizeType.Absolute, SZ_COLUMN_TG_LABEL)); // для подписи вывода
+                        this.ColumnStyles.Add(new ColumnStyle(SizeType.Absolute, SZ_COLUMN_TG_LABEL_VALUE)); // для значения
+                        this.ColumnStyles.Add(new ColumnStyle(SizeType.Absolute, SZ_COLUMN_TG_LABEL_VALUE)); // для отклонения
                     }
 
-                    //if (m_tgLabels.Count > 0)
-                    //    addTGLabels(false);
-                    //else
-                    //    ;
+                    if (m_tgLabels.Count > 0)
+                        addTGLabels();
+                    else
+                        ;
 
                     this.Controls.Add(m_panelEmpty, COL_TG_START + cntCols * COUNT_LABEL + (bPowerFactZoom == true ? 1 : 0), 0);
                     this.SetRowSpan(m_panelEmpty, COUNT_ROWS);
@@ -431,7 +509,7 @@ namespace Statistic
                 {
                     ;
                 }
-            }        
+            }
             /// <summary>
             /// Определить размеры ячеек макета панели
             /// </summary>
@@ -553,7 +631,7 @@ namespace Statistic
             /// constructor
             /// </summary>
             public PanelTecVzletTDirect(TEC tec, int indx_tec, int indx_comp)
-                : base(tec, indx_tec, indx_comp)
+                : base(tec, indx_tec, indx_comp, new HMark(new int[] { (int)CONN_SETT_TYPE.ADMIN, (int)CONN_SETT_TYPE.PBR, (int)CONN_SETT_TYPE.DATA_VZLET }))
             {
                 initialize();
             }
@@ -561,8 +639,8 @@ namespace Statistic
             /// constructor
             /// </summary>
             /// <param name="container"></param>
-            public PanelTecVzletTDirect(IContainer container, TEC tec, int indx_tec, int indx_comp)
-                : base(tec, indx_tec, indx_comp)
+            public PanelTecVzletTDirect(IContainer container, TEC tec, int indx_tec, int indx_comp, HMark markQueries)
+                : base(tec, indx_tec, indx_comp, markQueries)
             {
                 container.Add(this);
                 initialize();
@@ -588,6 +666,12 @@ namespace Statistic
             protected override void createTecView(int indx_tec, int indx_comp)
             {
                 m_tecView = new DataSource(indx_tec, indx_comp);
+            }
+
+            public override void AddTGView()
+            {
+                foreach (Vyvod v in m_tecView.m_tec.m_list_Vyvod)
+                    _pnlQuickData.AddTGView(v);
             }
             /// <summary>
             /// Обработчик события - получение данных при запросе к БД
@@ -617,6 +701,8 @@ namespace Statistic
             public override void Start()
             {
                 base.Start();
+
+                start();
             }
             /// <summary>
             /// Вызов функций для заполнения 
