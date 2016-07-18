@@ -1234,9 +1234,13 @@ namespace Statistic
             else
                 ;
 
-            ComboBox cbxGTP = (this.Controls.Find(KEY_CONTROLS.CB_GTP.ToString(), true))[0] as ComboBox;
-            cbxGTP.SelectedIndex = -1;
-            cbxGTP.SelectedIndex = 0;
+            if (m_tecView.IsFirstActivated == true & IsFirstActivated==true)
+            {
+                ComboBox cbxGTP = (this.Controls.Find(KEY_CONTROLS.CB_GTP.ToString(), true))[0] as ComboBox;
+                cbxGTP.SelectedIndex = -1;
+                cbxGTP.SelectedIndex = 0;
+            }
+            
 
             return bRes;
         }
