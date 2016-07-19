@@ -17,7 +17,7 @@ namespace StatisticCommon
     public abstract partial class FormParametersTG : FormParametersBase
     {
         protected const int COUNT_TG = 8;
-
+        protected int[] indexes_TG_Off = new int[]{1};//Массив с индексами отключенных ТГ
         protected System.Windows.Forms.TextBox[,] m_array_tbxTG;
         protected System.Windows.Forms.Label[,] m_array_lblTG;
 
@@ -34,7 +34,7 @@ namespace StatisticCommon
             this.btnReset.Click += new System.EventHandler(this.btnReset_Click);
 
             //delegateParamsApply = delParApp;
-
+            
             if ((m_tg_id_default.Length / m_tg_id_default.Rank == COUNT_TG) && (m_tg_id_default.Rank == (int)HDateTime.INTERVAL.COUNT_ID_TIME)) ;
             else ;
 
@@ -43,7 +43,7 @@ namespace StatisticCommon
             {
                 for (int j = 0; j < COUNT_TG; j++)
                 {
-                    m_tg_id[i, j] = m_tg_id_default[i, j];
+                     m_tg_id[i, j] = m_tg_id_default[i, j];
                 }
             }
             m_array_tbxTG = new System.Windows.Forms.TextBox[(int)HDateTime.INTERVAL.COUNT_ID_TIME, COUNT_TG];
@@ -78,6 +78,8 @@ namespace StatisticCommon
                     m_array_tbxTG[i, j].Size = new System.Drawing.Size(70, 20);
                     m_array_tbxTG[i, j].TabIndex = (i * COUNT_TG) + j + 7;
                     this.Controls.Add(m_array_tbxTG[i, j]);
+                    if (findElement(indexes_TG_Off, j) == true)
+                        m_array_tbxTG[i, j].Enabled = false;
                 }
             }
 
@@ -150,13 +152,30 @@ namespace StatisticCommon
                 for (int i = 0; i < (int)HDateTime.INTERVAL.COUNT_ID_TIME; i++)
                 {
                     for (int j = 0; j < COUNT_TG; j++)
-                        m_array_tbxTG[i, j].Text = m_tg_id[i, j].ToString();
+                    {
+                        if(findElement(indexes_TG_Off,j)==false)
+                            m_array_tbxTG[i, j].Text = m_tg_id[i, j].ToString();
+                    }
                 }
             }
             catch (Exception e)
             {
                 Logging.Logg().Exception(e, @"FormParametersTG::loadParam () - ...", Logging.INDEX_MESSAGE.NOT_SET);
             }
+        }
+
+        protected bool findElement(int[] mass, int elem)
+        {
+            bool b_Finded = false;
+            foreach (int i in mass)
+            {
+                if (i == elem)
+                {
+                    b_Finded = true;
+                    break;
+                }
+            }
+            return b_Finded;
         }
     }
 
@@ -170,7 +189,8 @@ namespace StatisticCommon
 
         FileINI m_FileINI;
 
-        public FormParametersTG_FileINI (string nameSetupFileINI) {
+        public FormParametersTG_FileINI (string nameSetupFileINI)
+        {
             m_FileINI = new FileINI (nameSetupFileINI, false);
 
             loadParam(true);
@@ -245,7 +265,7 @@ namespace StatisticCommon
         {
             m_connSett = connSett;
             m_idListenerConfigDB = -1;
-
+            
             //Поиск Бийской ТЭЦ
             int indx_tec = -1;
             foreach (TEC t in list_tec) {
@@ -298,14 +318,17 @@ namespace StatisticCommon
             {    
                 for (j = 0; j < COUNT_TG; j++)
                 {
-                    rowsRes = tblTGSensors.Select(getWhereParamTG(j + 1));
-                    if (rowsRes.Length == 1)
-                        for (int i = (int)HDateTime.INTERVAL.MINUTES; i < (int)HDateTime.INTERVAL.COUNT_ID_TIME; i++)
-                            if (int.TryParse(rowsRes[0][NAME_FIELDS_TIME[i]].ToString(), out tg_id) == true)
-                                m_tg_id[i, j] = tg_id;
-                            else ;
-                    else
-                        break;
+                    if (findElement(indexes_TG_Off, j) == false)
+                    {
+                        rowsRes = tblTGSensors.Select(getWhereParamTG(j + 1));
+                        if (rowsRes.Length == 1)
+                            for (int i = (int)HDateTime.INTERVAL.MINUTES; i < (int)HDateTime.INTERVAL.COUNT_ID_TIME; i++)
+                                if (int.TryParse(rowsRes[0][NAME_FIELDS_TIME[i]].ToString(), out tg_id) == true)
+                                    m_tg_id[i, j] = tg_id;
+                                else ;
+                        else
+                            break;
+                    }
                 }
 
                 if (! (j < COUNT_TG)) {
@@ -323,23 +346,31 @@ namespace StatisticCommon
                     if (err == 0) {
                         for (j = 0; j < COUNT_TG; j++)
                         {
-                            rowsRes = tblTGSensors.Select(getWhereParamTG(j + 1));
-                            if (rowsRes.Length == 1) {
-                                for (int i = (int)HDateTime.INTERVAL.MINUTES; i < (int)HDateTime.INTERVAL.COUNT_ID_TIME; i++)
-                                    if (int.TryParse(rowsRes[0][NAME_FIELDS_TIME[i]].ToString(), out tg_id) == true)
-                                        m_tg_id_default[i, j] = tg_id;
-                                    else ;
-                            }
-                            else {
-                                break;
+                            if (findElement(indexes_TG_Off, j) == false)
+                            {
+                                rowsRes = tblTGSensors.Select(getWhereParamTG(j + 1));
+                                if (rowsRes.Length == 1)
+                                {
+                                    for (int i = (int)HDateTime.INTERVAL.MINUTES; i < (int)HDateTime.INTERVAL.COUNT_ID_TIME; i++)
+                                        if (int.TryParse(rowsRes[0][NAME_FIELDS_TIME[i]].ToString(), out tg_id) == true)
+                                            m_tg_id_default[i, j] = tg_id;
+                                        else ;
+                                }
+                                else
+                                {
+                                    break;
+                                }
                             }
                         }
                     } else {
                         for (j = 0; j < COUNT_TG; j++)
                         {
-                            for (int i = (int)HDateTime.INTERVAL.MINUTES; i < (int)HDateTime.INTERVAL.COUNT_ID_TIME; i++)
+                            if (findElement(indexes_TG_Off, j) == false)
                             {
-                                m_tg_id_default [i, j] = m_tg_id [i, j];
+                                for (int i = (int)HDateTime.INTERVAL.MINUTES; i < (int)HDateTime.INTERVAL.COUNT_ID_TIME; i++)
+                                {
+                                    m_tg_id_default[i, j] = m_tg_id[i, j];
+                                }
                             }
                         }
                     }
@@ -370,14 +401,18 @@ namespace StatisticCommon
 
             for (int j = 0; j < COUNT_TG; j++)
             {
-                queryInsert += @"(";
-                queryInsert += m_tec.m_id + @",";
-                queryInsert += @"'" + SENSORS_NAME_PREFIX + (j + 1).ToString () + SENSORS_NAME_POSTFIX + @"'" + @",";
-                queryInsert += @"GETDATE(),";
-                queryInsert += m_tec.m_listTG [j].m_id + @",";
-                queryInsert += m_array_tbxTG[(int)HDateTime.INTERVAL.MINUTES, j].Text + @",";
-                queryInsert += m_array_tbxTG[(int)HDateTime.INTERVAL.HOURS, j].Text;
-                queryInsert += @"),";
+                if (findElement(indexes_TG_Off, j) == false)
+                {
+                    queryInsert += @"(";
+                    queryInsert += m_tec.m_id + @",";
+                    queryInsert += @"'" + SENSORS_NAME_PREFIX + (j + 1).ToString() + SENSORS_NAME_POSTFIX + @"'" + @",";
+                    queryInsert += @"GETDATE(),";
+                    queryInsert += m_tec.m_listTG.Find(x => x.name_shr == SENSORS_NAME_PREFIX + (j + 1).ToString()).m_id + @",";
+                    //queryInsert += m_tec.m_listTG[j].m_id + @",";
+                    queryInsert += m_array_tbxTG[(int)HDateTime.INTERVAL.MINUTES, j].Text + @",";
+                    queryInsert += m_array_tbxTG[(int)HDateTime.INTERVAL.HOURS, j].Text;
+                    queryInsert += @"),";
+                }
             }
 
             //Удалить лишнюю запятую...
