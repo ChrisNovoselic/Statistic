@@ -75,7 +75,7 @@ namespace Statistic
             m_admin.SetDelegateSaveComplete(null);
         }
 
-        private int GetIndexGTPOwner(int indx_tg)
+        private int getIndexGTPOwner(int indx_tg)
         {
             int iRes = -1
                 , id_gtp_owner = ((DataGridViewAdminNSS)dgwAdminTable).GetIdGTPOwner(indx_tg);
@@ -102,7 +102,7 @@ namespace Statistic
                 if (m_admin.modeTECComponent(indx) == FormChangeMode.MODE_TECCOMPONENT.TG)
                 {
                     int indx_tg = ((AdminTS_NSS)m_admin).m_listTECComponentIndexDetail.IndexOf(indx),
-                        indx_gtp = GetIndexGTPOwner(indx_tg);
+                        indx_gtp = getIndexGTPOwner(indx_tg);
 
                     if ((!(indx_tg < 0)) && (!(indx_gtp < 0)))
                         for (int i = 0; i < 24; i++)

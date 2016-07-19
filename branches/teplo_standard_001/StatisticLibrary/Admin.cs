@@ -415,15 +415,15 @@ namespace StatisticCommon
 
         public abstract void GetRDGValues(/*int /*TYPE_FIELDS mode,*/ int indx, DateTime date);
 
-        protected abstract void GetPPBRDatesRequest(DateTime date);
+        protected abstract void getPPBRDatesRequest(DateTime date);
 
-        protected abstract int GetPPBRDatesResponse(DataTable table, DateTime date);
+        protected abstract int getPPBRDatesResponse(DataTable table, DateTime date);
 
-        protected abstract void GetPPBRValuesRequest(TEC t, TECComponent comp, DateTime date/*, AdminTS.TYPE_FIELDS mode*/);
+        protected abstract void getPPBRValuesRequest(TEC t, TECComponent comp, DateTime date/*, AdminTS.TYPE_FIELDS mode*/);
 
-        protected abstract int GetPPBRValuesResponse(DataTable table, DateTime date);        
+        protected abstract int getPPBRValuesResponse(DataTable table, DateTime date);        
 
-        protected virtual void ClearDates(CONN_SETT_TYPE type)
+        protected virtual void clearDates(CONN_SETT_TYPE type)
         {
             int i = 1
                 , cntHours = 24
@@ -454,9 +454,9 @@ namespace StatisticCommon
             }
         }
 
-        protected void ClearPPBRDates()
+        protected void clearPPBRDates()
         {
-            ClearDates(CONN_SETT_TYPE.PBR);
+            clearDates(CONN_SETT_TYPE.PBR);
         }
 
         public TECComponent FindTECComponent(int id)

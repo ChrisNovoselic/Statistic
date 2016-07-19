@@ -32,12 +32,11 @@ namespace trans_mc
             m_strMCServiceHost = strMCServiceHost;
         }
 
-        protected override void GetPPBRDatesRequest(DateTime date)
+        protected override void getPPBRDatesRequest(DateTime date)
         {
-
         }
 
-        protected override void GetPPBRValuesRequest(TEC t, TECComponent comp, DateTime date/*, AdminTS.TYPE_FIELDS mode*/)
+        protected override void getPPBRValuesRequest(TEC t, TECComponent comp, DateTime date/*, AdminTS.TYPE_FIELDS mode*/)
         {
             string query = "PPBR";
             int i = -1;
@@ -61,14 +60,14 @@ namespace trans_mc
             //Logging.Logg().Debug("AdminMC::GetPPBRValuesRequest (TEC, TECComponent, DateTime, AdminTS.TYPE_FIELDS) - вЫход...: query=" + query, Logging.INDEX_MESSAGE.NOT_SET);
         }
 
-        protected override int GetPPBRDatesResponse(DataTable table, DateTime date)
+        protected override int getPPBRDatesResponse(DataTable table, DateTime date)
         {
             int iRes = 0;
 
             return iRes;
         }
 
-        protected override int GetPPBRValuesResponse(DataTable table, DateTime date)
+        protected override int getPPBRValuesResponse(DataTable table, DateTime date)
         {
             int iRes = 0;
             int i = -1, j = -1,
@@ -183,7 +182,7 @@ namespace trans_mc
                     break;
                 case (int)StatesMachine.PPBRValues:
                     ActionReport("Получение данных плана.");
-                    GetPPBRValuesRequest(allTECComponents[indxTECComponents].tec, allTECComponents[indxTECComponents], m_curDate.Date/*, AdminTS.TYPE_FIELDS.COUNT_TYPE_FIELDS*/);
+                    getPPBRValuesRequest(allTECComponents[indxTECComponents].tec, allTECComponents[indxTECComponents], m_curDate.Date/*, AdminTS.TYPE_FIELDS.COUNT_TYPE_FIELDS*/);
                     break;
                 case (int)StatesMachine.PPBRDates:
                     if ((serverTime.Date > m_curDate.Date) && (m_ignore_date == false))
@@ -244,7 +243,7 @@ namespace trans_mc
                 case (int)StatesMachine.PPBRValues:
                     delegateStopWait();
 
-                    result = GetPPBRValuesResponse(table as DataTable, m_curDate);
+                    result = getPPBRValuesResponse(table as DataTable, m_curDate);
                     if (result == 0)
                     {
                         readyData(m_curDate);
@@ -253,8 +252,8 @@ namespace trans_mc
                         ;
                     break;
                 case (int)StatesMachine.PPBRDates:
-                    ClearPPBRDates();
-                    result = GetPPBRDatesResponse(table as DataTable, m_curDate);
+                    clearPPBRDates();
+                    result = getPPBRDatesResponse(table as DataTable, m_curDate);
                     if (result == 0)
                     {
                     }

@@ -156,7 +156,7 @@ namespace Statistic
             m_arr_editTable = new DataTable[(int)FormChangeMode.MODE_TECCOMPONENT.ANY];
             fill_DataTable_ComponentsTEC();
             
-            treeView_TECComponent.GetID += new TreeView_TECComponent.intGetID(this.GetNextID);
+            treeView_TECComponent.GetID += new TreeView_TECComponent.intGetID(this.getNextID);
             treeView_TECComponent.EditNode += new TreeView_TECComponent.EditNodeEventHandler(this.get_operation_tree);
             treeView_TECComponent.Report += new TreeView_TECComponent.ReportEventHandler(this.tree_report);
         }
@@ -635,7 +635,7 @@ namespace Statistic
         /// Обработчик для получения следующего идентификатора
         /// </summary>
         /// <returns>Возвращает идентификатор</returns>
-        private int GetNextID(object sender, TreeView_TECComponent.GetIDEventArgs e)
+        private int getNextID(object sender, TreeView_TECComponent.GetIDEventArgs e)
         {
             int ID = 0;
             int err = 0;

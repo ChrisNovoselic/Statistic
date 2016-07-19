@@ -63,9 +63,9 @@ namespace trans_tg
             return iRes;
         }
 
-        protected override void ClearDates(StatisticCommon.CONN_SETT_TYPE type)
+        protected override void clearDates(StatisticCommon.CONN_SETT_TYPE type)
         {
-            base.ClearDates(type);
+            base.clearDates(type);
             
             int i = 1;
 
@@ -118,12 +118,12 @@ namespace trans_tg
 
             if (IsCanUseTECComponents())
                 //Request(m_indxDbInterfaceCommon, m_listenerIdCommon, allTECComponents[indxTECComponents].tec.GetAdminDatesQuery(date));
-                Request(m_dictIdListeners[allTECComponents[indxTECComponents].tec.m_id][(int)StatisticCommon.CONN_SETT_TYPE.ADMIN], GetAdminDatesQuery(date/*, m_typeFields*/, allTECComponents[indxTECComponents]));
+                Request(m_dictIdListeners[allTECComponents[indxTECComponents].tec.m_id][(int)StatisticCommon.CONN_SETT_TYPE.ADMIN], getAdminDatesQuery(date/*, m_typeFields*/, allTECComponents[indxTECComponents]));
             else
                 ;
         }
 
-        protected override void GetPPBRDatesRequest(DateTime date)
+        protected override void getPPBRDatesRequest(DateTime date)
         {
             if (m_curDate.Date > date.Date)
             {
@@ -134,13 +134,13 @@ namespace trans_tg
 
             if (IsCanUseTECComponents () == true)
                 //Request(m_indxDbInterfaceCommon, m_listenerIdCommon, allTECComponents[indxTECComponents].tec.GetPBRDatesQuery(date));
-                Request(m_dictIdListeners[allTECComponents[indxTECComponents].tec.m_id][(int)StatisticCommon.CONN_SETT_TYPE.ADMIN], GetPBRDatesQuery(date/*, m_typeFields*/, allTECComponents[indxTECComponents]));
+                Request(m_dictIdListeners[allTECComponents[indxTECComponents].tec.m_id][(int)StatisticCommon.CONN_SETT_TYPE.ADMIN], getPBRDatesQuery(date/*, m_typeFields*/, allTECComponents[indxTECComponents]));
             else
                 ;
         }
 
         //Из 'TEC.cs'
-        private string GetAdminDatesQuery(DateTime dt/*, AdminTS.TYPE_FIELDS mode*/, TECComponent comp)
+        private string getAdminDatesQuery(DateTime dt/*, AdminTS.TYPE_FIELDS mode*/, TECComponent comp)
         {
             string strRes = string.Empty;
 
@@ -167,7 +167,7 @@ namespace trans_tg
         }
 
         //Из 'TEC.cs'
-        private string GetPBRDatesQuery(DateTime dt/*, AdminTS.TYPE_FIELDS mode*/, TECComponent comp)
+        private string getPBRDatesQuery(DateTime dt/*, AdminTS.TYPE_FIELDS mode*/, TECComponent comp)
         {
             string strRes = string.Empty;
 
@@ -195,19 +195,20 @@ namespace trans_tg
             return strRes;
         }
 
-        private int GetCountGTP ()
-        {
-            int iRes = 0;
+        private int CountGTP {
+            get  {
+                int iRes = 0;
 
-            foreach (int indx in m_listTECComponentIndexDetail)
-            {
-                if (modeTECComponent (indx) == FormChangeMode.MODE_TECCOMPONENT.GTP)
-                    iRes ++;
-                else
-                    ;
+                foreach (int indx in m_listTECComponentIndexDetail)
+                {
+                    if (modeTECComponent(indx) == FormChangeMode.MODE_TECCOMPONENT.GTP)
+                        iRes++;
+                    else
+                        ;
+                }
+
+                return iRes;
             }
-
-            return iRes;
         }
 
         protected override string [] setAdminValuesQuery(TEC t, TECComponent comp, DateTime date)
@@ -221,7 +222,7 @@ namespace trans_tg
 
             currentHour = 0;
 
-            int indx = m_listTECComponentIndexDetail.IndexOf (GetIndexTECComponent (t.m_id, comp.m_id)) - GetCountGTP ();
+            int indx = m_listTECComponentIndexDetail.IndexOf (GetIndexTECComponent (t.m_id, comp.m_id)) - CountGTP;
 
             if (indx < m_listCurTimezoneOffsetRDGExcelValues.Count)
             {
@@ -293,7 +294,7 @@ namespace trans_tg
 
             currentHour = 0;
 
-            int indx = m_listTECComponentIndexDetail.IndexOf(GetIndexTECComponent(t.m_id, comp.m_id)) - GetCountGTP();
+            int indx = m_listTECComponentIndexDetail.IndexOf(GetIndexTECComponent(t.m_id, comp.m_id)) - CountGTP;
             if (indx < m_listCurTimezoneOffsetRDGExcelValues.Count)
             {
                 for (int i = currentHour; i < m_listTimezoneOffsetHaveDates[(int)CONN_SETT_TYPE.PBR].Count; i++)

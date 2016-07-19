@@ -462,7 +462,7 @@ namespace StatisticCommon
         /// <param name="t">ТЭЦ</param>
         /// <param name="comp">Компонент ТЭЦ</param>
         /// <param name="date">Дата за которую необходимо получить значения</param>
-        protected override void GetPPBRValuesRequest(TEC t, TECComponent comp, DateTime date/*, AdminTS.TYPE_FIELDS mode*/)
+        protected override void getPPBRValuesRequest(TEC t, TECComponent comp, DateTime date/*, AdminTS.TYPE_FIELDS mode*/)
         {
             Request(m_dictIdListeners [t.m_id][(int)CONN_SETT_TYPE.PBR], t.GetPBRValueQuery(comp, date/*, mode*/));
         }
@@ -473,7 +473,7 @@ namespace StatisticCommon
         /// <param name="t">ТЭЦ</param>
         /// <param name="comp">Компонент ТЭЦ</param>
         /// <param name="date">Дата за которую необходимо получить значения</param>
-        private void GetAdminValuesRequest(TEC t, TECComponent comp, DateTime date/*, AdminTS.TYPE_FIELDS mode*/) {
+        private void getAdminValuesRequest(TEC t, TECComponent comp, DateTime date/*, AdminTS.TYPE_FIELDS mode*/) {
             Request(m_dictIdListeners[t.m_id][(int)CONN_SETT_TYPE.ADMIN], t.GetAdminValueQuery(comp, date/*, mode*/));
         }
 
@@ -568,7 +568,7 @@ namespace StatisticCommon
         /// <param name="table">Таблица с результатом запроса</param>
         /// <param name="date">Дата</param>
         /// <returns>Ошибка</returns>
-        protected override int GetPPBRValuesResponse(DataTable table, DateTime date)
+        protected override int getPPBRValuesResponse(DataTable table, DateTime date)
         {
             int iRes = 0;
             
@@ -1024,7 +1024,7 @@ namespace StatisticCommon
         /// Получение и выполнение запроса для получения административных данных
         /// </summary>
         /// <param name="date">Дата за которую проводится выборка</param>
-        protected override void GetPPBRDatesRequest(DateTime date)
+        protected override void getPPBRDatesRequest(DateTime date)
         {
             if (m_curDate.Date > date.Date)
             {
@@ -1047,9 +1047,9 @@ namespace StatisticCommon
         /// <summary>
         /// Очистка административных значений
         /// </summary>
-        private void ClearAdminDates()
+        private void clearAdminDates()
         {
-            ClearDates(CONN_SETT_TYPE.ADMIN);
+            clearDates(CONN_SETT_TYPE.ADMIN);
         }
 
         /// <summary>
@@ -1134,7 +1134,7 @@ namespace StatisticCommon
         /// <param name="table">Таблица с данными</param>
         /// <param name="date">Дата за которую производится выборка</param>
         /// <returns>Ошибка</returns>
-        private int GetAdminDatesResponse(DataTable table, DateTime date)
+        private int getAdminDatesResponse(DataTable table, DateTime date)
         {
             return GetDatesResponse(CONN_SETT_TYPE.ADMIN, table, date);
         }
@@ -1145,7 +1145,7 @@ namespace StatisticCommon
         /// <param name="table">Таблица с данными</param>
         /// <param name="date">Дата за которую производится выборка</param>
         /// <returns>Ошибка</returns>
-        protected override int GetPPBRDatesResponse(DataTable table, DateTime date)
+        protected override int getPPBRDatesResponse(DataTable table, DateTime date)
         {
             return GetDatesResponse(CONN_SETT_TYPE.PBR, table, date);
         }
@@ -1840,7 +1840,7 @@ namespace StatisticCommon
                 case (int)StatesMachine.PPBRValues:
                     strRep = @"Получение данных плана.";
                     if (indxTECComponents < allTECComponents.Count)
-                        GetPPBRValuesRequest(allTECComponents[indxTECComponents].tec, allTECComponents[indxTECComponents]
+                        getPPBRValuesRequest(allTECComponents[indxTECComponents].tec, allTECComponents[indxTECComponents]
                             , m_curDate.Date.Add(-m_tsOffsetToMoscow)/*, m_typeFields*/);
                     else
                         ; //result = false;
@@ -1848,7 +1848,7 @@ namespace StatisticCommon
                 case (int)StatesMachine.AdminValues:
                     strRep = @"Получение административных данных.";
                     if ((indxTECComponents < allTECComponents.Count) && (m_markQueries.IsMarked ((int)CONN_SETT_TYPE.ADMIN) == true))
-                        GetAdminValuesRequest(allTECComponents[indxTECComponents].tec, allTECComponents[indxTECComponents]
+                        getAdminValuesRequest(allTECComponents[indxTECComponents].tec, allTECComponents[indxTECComponents]
                             , m_curDate.Date.Add(-m_tsOffsetToMoscow)/*, m_typeFields*/);
                     else
                         ; //result = false;
@@ -1886,7 +1886,7 @@ namespace StatisticCommon
                     else
                         ;                        
                     strRep = @"Получение списка сохранённых часовых значений.";
-                    GetPPBRDatesRequest(m_curDate);
+                    getPPBRDatesRequest(m_curDate);
                     break;
                 case (int)StatesMachine.AdminDates:
                     //int offset_days = (m_curDate.Date - serverTime.Date).Days;
@@ -2080,7 +2080,7 @@ namespace StatisticCommon
                         ;
                     break;
                 case (int)StatesMachine.PPBRValues:
-                    result = GetPPBRValuesResponse(table as DataTable, m_curDate);
+                    result = getPPBRValuesResponse(table as DataTable, m_curDate);
                     if (result == 0)
                     {
                         if (m_markQueries.IsMarked((int)CONN_SETT_TYPE.ADMIN) == false)
@@ -2158,8 +2158,8 @@ namespace StatisticCommon
                         ;
                     break;
                 case (int)StatesMachine.PPBRDates:
-                    ClearPPBRDates();
-                    result = GetPPBRDatesResponse(table as System.Data.DataTable, m_curDate);
+                    clearPPBRDates();
+                    result = getPPBRDatesResponse(table as System.Data.DataTable, m_curDate);
                     if (result == 0)
                     {
                     }
@@ -2167,9 +2167,9 @@ namespace StatisticCommon
                         ;
                     break;
                 case (int)StatesMachine.AdminDates:
-                    ClearAdminDates();
+                    clearAdminDates();
                     if (m_markQueries.IsMarked((int)CONN_SETT_TYPE.ADMIN) == true)
-                        result = GetAdminDatesResponse(table as System.Data.DataTable, m_curDate);
+                        result = getAdminDatesResponse(table as System.Data.DataTable, m_curDate);
                     else
                         result = 0;
 

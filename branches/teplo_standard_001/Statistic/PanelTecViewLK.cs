@@ -17,7 +17,8 @@ namespace Statistic
     class PanelLKView : PanelTecViewBase
     {
         public PanelLKView(StatisticCommon.TEC tec, int num_tec, int num_comp, PanelCustomTecView.HLabelCustomTecView label = null)
-            : base(tec, num_tec, num_comp, new HMark(new int[] { (int)CONN_SETT_TYPE.ADMIN, (int)CONN_SETT_TYPE.PBR, (int)CONN_SETT_TYPE.DATA_AISKUE }))
+            // в АИИС КУЭ читаем "мощность", в СОТИАССО - температуру окр.воздуха
+            : base(tec, num_tec, num_comp, new HMark(new int[] { (int)CONN_SETT_TYPE.ADMIN, (int)CONN_SETT_TYPE.PBR, (int)CONN_SETT_TYPE.DATA_AISKUE, (int)CONN_SETT_TYPE.DATA_SOTIASSO }))
         {
             m_label = label;
             

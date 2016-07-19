@@ -146,7 +146,7 @@ namespace Statistic
 
             treeView_Users.Update_tree(m_arr_editTable[(int)ID_Table.User], m_arr_editTable[(int)ID_Table.Role]);
 
-            treeView_Users.GetID += new TreeView_Users.intGetID(this.GetNextID);
+            treeView_Users.GetID += new TreeView_Users.intGetID(this.getNextID);
             treeView_Users.EditNode += new TreeView_Users.EditNodeEventHandler(this.get_operation_tree);
             treeView_Users.Report += new TreeView_Users.ReportEventHandler(this.tree_report);
             
@@ -707,7 +707,7 @@ namespace Statistic
         /// Обработчик для получения следующего идентификатора
         /// </summary>
         /// <returns>Возвращает идентификатор</returns>
-        private int GetNextID(object sender, TreeView_Users.GetIDEventArgs e)
+        private int getNextID(object sender, TreeView_Users.GetIDEventArgs e)
         {
             int ID = 0;
             int err = 0;

@@ -130,6 +130,7 @@ namespace StatisticCommon
         public enum ID_AISKUE_PARNUMBER : uint { FACT_03 = 2, FACT_30 = 12 };
         /// <summary>
         /// Индекс типа панели в интересах которой выполняется текущий объект
+        ///  определяет длительность интервала между опросами
         /// </summary>
         public ID_AISKUE_PARNUMBER m_idAISKUEParNumber;
         
@@ -492,72 +493,6 @@ namespace StatisticCommon
             return dblRes;
         }
 
-        //public void ChangeState_SobstvNyzhdy () 
-        //{
-        //    ClearStates();
-
-        //    ClearValues();
-
-        //    if (m_tec.m_bSensorsStrings == false)
-        //        AddState((int)StatesMachine.InitSensors);
-        //    else ;
-
-        //    //using_date = false;
-
-        //    //AddState((int)TecView.StatesMachine.CurrentHours_Fact); //Только для определения сезона ???
-        //    //AddState((int)TecView.StatesMachine.CurrentTimeView);
-        //    AddState((int)TecView.StatesMachine.CurrentHours_TM_SN_PSUM);
-        //    AddState((int)TecView.StatesMachine.LastValue_TM_SN);
-        //}
-
-        //public void ChangeState_SOTIASSO()
-        //{
-        //    ClearStates();
-
-        //    ClearValues();
-
-        //    if (m_tec.m_bSensorsStrings == false)
-        //        AddState((int)StatesMachine.InitSensors);
-        //    else ;
-
-        //    using_date = false;
-
-        //    AddState((int)TecView.StatesMachine.CurrentTimeAdmin); // без m_curDate = serverTime
-        //    AddState((int)TecView.StatesMachine.CurrentMins_TM);
-        //    AddState((int)TecView.StatesMachine.CurrentMinDetail_TM);
-
-        //    AddState((int)TecView.StatesMachine.PPBRValues);
-        //    AddState((int)TecView.StatesMachine.AdminValues);
-        //}
-
-        //private void ChangeState_AdminAlarm () {
-        //    new Thread(new ParameterizedThreadStart(threadGetRDGValues)).Start();
-        //}
-
-        //public void ChangeState_LK()
-        //{
-        //    ClearStates();
-
-        //    //ClearValues();
-
-        //    using_date = false;
-
-        //    if (m_tec.m_bSensorsStrings == true)
-        //        if (currHour == true)
-        //            AddState((int)StatesMachine.CurrentTimeView);
-        //        else
-        //            ;
-        //    else
-        //    {
-        //        AddState((int)StatesMachine.InitSensors);
-        //        AddState((int)StatesMachine.CurrentTimeView);
-        //    }
-
-        //    AddState((int)TecView.StatesMachine.Hours_Fact);
-        //    AddState((int)TecView.StatesMachine.PPBRValues);
-        //    AddState((int)TecView.StatesMachine.AdminValues);
-        //}
-
         public override bool Activate(bool active)
         {
             bool bRes = base.Activate(active);
@@ -683,22 +618,22 @@ namespace StatisticCommon
         {
         }
 
-        protected override void GetPPBRDatesRequest(DateTime date)
+        protected override void getPPBRDatesRequest(DateTime date)
         {//!!! не используется            
         }
 
-        protected override void GetPPBRValuesRequest(StatisticCommon.TEC t, TECComponent comp, DateTime date/*, AdminTS.TYPE_FIELDS mode*/)
+        protected override void getPPBRValuesRequest(StatisticCommon.TEC t, TECComponent comp, DateTime date/*, AdminTS.TYPE_FIELDS mode*/)
         {//!!! не используется
         }
 
-        protected override int GetPPBRDatesResponse(System.Data.DataTable table, DateTime date)
+        protected override int getPPBRDatesResponse(System.Data.DataTable table, DateTime date)
         {//!!! не используется
             int iRes = 0;
 
             return iRes;
         }
 
-        protected override int GetPPBRValuesResponse(System.Data.DataTable table, DateTime date)
+        protected override int getPPBRValuesResponse(System.Data.DataTable table, DateTime date)
         {//!!! не используется
             int iRes = 0;
 
@@ -716,13 +651,13 @@ namespace StatisticCommon
             return m_tec.m_bSensorsStrings;
         }
 
-        private void GetCurrentTMGenRequest()
+        private void getCurrentTMGenRequest()
         {
             //Request(allTECComponents[indxTECComponents].tec.m_arIdListeners[(int)CONN_SETT_TYPE.DATA_SOTIASSO_INSTANT], allTECComponents[indxTECComponents].tec.currentTMRequest(sensorsString_TM));
             Request(m_dictIdListeners[m_tec.m_id][(int)CONN_SETT_TYPE.DATA_SOTIASSO], m_tec.currentTMRequest(m_tec.GetSensorsString(indxTECComponents, CONN_SETT_TYPE.DATA_SOTIASSO)));
         }
 
-        private int GetCurrentTMGenResponse(DataTable table)
+        private int getCurrentTMGenResponse(DataTable table)
         {
             int iRes = 0;
             int i = -1
@@ -855,13 +790,13 @@ namespace StatisticCommon
                 return true;
         }
 
-        private void GetCurrentTMSNRequest()
+        private void getCurrentTMSNRequest()
         {
             //m_tec.Request(CONN_SETT_TYPE.DATA_SOTIASSO_INSTANT, m_tec.currentTMSNRequest());
             Request(m_dictIdListeners[m_tec.m_id][(int)CONN_SETT_TYPE.DATA_SOTIASSO], m_tec.currentTMSNRequest());
         }
 
-        private int GetCurrentTMSNResponse(DataTable table)
+        private int getCurrentTMSNResponse(DataTable table)
         {
             int iRes = 0;
             int id = -1;
@@ -1210,48 +1145,48 @@ namespace StatisticCommon
                     break;
                 case StatesMachine.Hours_Fact:
                     msg = @"получасовых значений";
-                    GetHoursFactRequest(m_curDate.Date.Add(-m_tsOffsetToMoscow));
+                    getHoursFactRequest(m_curDate.Date.Add(-m_tsOffsetToMoscow));
                     break;
                 case StatesMachine.Hour_TM:
                     msg = @"усредн. за час телемеханики";
-                    GetHourTMRequest(m_curDate.Date, lastHour);
+                    getHourTMRequest(m_curDate.Date, lastHour);
                     break;
                 case StatesMachine.Hours_TM:
                     msg = @"часовых значений";
-                    GetHoursTMRequest(m_curDate.Date);
+                    getHoursTMRequest(m_curDate.Date);
                     break;
                 case StatesMachine.CurrentMins_Fact:
                     msg = @"трёхминутных значений";
-                    GetMinsFactRequest(lastHour);
+                    getMinsFactRequest(lastHour);
                     break;
                 case StatesMachine.CurrentMin_TM:
                     msg = @"усредн. за интервал телемеханики";
-                    GetMinTMRequest(m_curDate.Date, lastHour, lastMin);
+                    getMinTMRequest(m_curDate.Date, lastHour, lastMin);
                     break;
                 case StatesMachine.CurrentMinDetail_TM:
                 case StatesMachine.RetroMinDetail_TM:
                     msg = @"усредн. за интервал телемеханики";
-                    GetMinDetailTMRequest(m_curDate.Date, lastHour, lastMin);
+                    getMinDetailTMRequest(m_curDate.Date, lastHour, lastMin);
                     break;
                 case StatesMachine.CurrentMins_TM:
                     msg = getNameInterval() + @"-минутных значений";
-                    GetMinsTMRequest(lastHour);
+                    getMinsTMRequest(lastHour);
                     break;
                 case StatesMachine.CurrentHours_TM_SN_PSUM:
                     msg = @"часовых значений (собств. нужды)";
-                    GetHoursTMSNPsumRequest();
+                    getHoursTMSNPsumRequest();
                     break;
                 case StatesMachine.LastValue_TM_Gen:
                     msg = @"текущих значений (генерация)";
-                    GetCurrentTMGenRequest ();
+                    getCurrentTMGenRequest ();
                     break;
                 case StatesMachine.LastValue_TM_SN:
                     msg = @"текущих значений (собств. нужды)";
-                    GetCurrentTMSNRequest();
+                    getCurrentTMSNRequest();
                     break;
                 case StatesMachine.LastMinutes_TM:
                     msg = @"текущих значений 59 мин";
-                    GetLastMinutesTMRequest();
+                    getLastMinutesTMRequest();
                     break;
                 //case StatesMachine.RetroHours:
                 //    msg = @"получасовых значений";
@@ -1260,20 +1195,20 @@ namespace StatisticCommon
                 //    break;
                 case StatesMachine.RetroMins_Fact:
                     msg = @"трёхминутных значений";
-                    GetMinsFactRequest(lastHour);
+                    getMinsFactRequest(lastHour);
                     break;
                 case StatesMachine.RetroMin_TM_Gen:
                     msg = @"M-минутнго значения";
-                    GetMinTMGenRequest(m_curDate.Date, lastHour, lastMin - 1);
+                    getMinTMGenRequest(m_curDate.Date, lastHour, lastMin - 1);
                     break;
                 case StatesMachine.RetroMins_TM:
                     msg = getNameInterval () + @"-минутных значений";
-                    GetMinsTMRequest(lastHour);
+                    getMinsTMRequest(lastHour);
                     break;
                 case StatesMachine.HoursTMTemperatureValues:
                     msg = @"по-часовой температуры окр.воздуха";
                     // привести к UTC, а затем к требуемому часовому поясу
-                    GetHoursTMTemperatureRequest(m_curDate.Date);
+                    getHoursTMTemperatureRequest(m_curDate.Date);
                     break;
                 //case StatesMachine.CurrentTemperatureValues:
                 //    msg = @"текущей температуры окр.воздуха";
@@ -1285,13 +1220,13 @@ namespace StatisticCommon
                 //    break;
                 case StatesMachine.PPBRValues:
                     msg = @"данных плана";
-                    GetPPBRValuesRequest();
+                    getPPBRValuesRequest();
                     break;
                 //case StatesMachine.AdminDates:
                 //    break;
                 case StatesMachine.AdminValues:
                     msg = @"административных данных";
-                    GetAdminValuesRequest(/*s_typeFields*/);
+                    getAdminValuesRequest(/*s_typeFields*/);
                     break;
                 default:
                     iRes = -1;
@@ -1330,7 +1265,7 @@ namespace StatisticCommon
                             ;
                     break;
                 case StatesMachine.CurrentTimeAdmin:
-                    iRes = GetCurrentTimeAdminResponse(table as System.Data.DataTable);
+                    iRes = getCurrentTimeAdminResponse(table as System.Data.DataTable);
                     if (iRes == 0)
                     {
                         if (using_date == true) {
@@ -1346,7 +1281,7 @@ namespace StatisticCommon
                         ;
                     break;
                 case StatesMachine.CurrentTimeView:
-                    iRes = GetCurrentTimeViewResponse(table as System.Data.DataTable);
+                    iRes = getCurrentTimeViewResponse(table as System.Data.DataTable);
                     if (iRes == 0)
                     {
                         //this.BeginInvoke(delegateShowValues, "StatesMachine.CurrentTime");
@@ -1360,7 +1295,7 @@ namespace StatisticCommon
                 case StatesMachine.Hours_Fact:
                     ClearValuesHours ();
                     //GenerateHoursTable(seasonJumpE.SummerToWinter, 3, table);
-                    iRes = GetHoursFactResponse(table as System.Data.DataTable);
+                    iRes = getHoursFactResponse(table as System.Data.DataTable);
                     if (! (iRes < 0))
                     {//Успех...
                     }
@@ -1368,15 +1303,15 @@ namespace StatisticCommon
                         ;
                     break;
                 case StatesMachine.Hour_TM:
-                    iRes = GetHourTMResponse(table as System.Data.DataTable);
+                    iRes = getHourTMResponse(table as System.Data.DataTable);
                     break;
                 case StatesMachine.Hours_TM:
                     ClearValuesHours();
-                    iRes = GetHoursTMResponse(table as System.Data.DataTable);
+                    iRes = getHoursTMResponse(table as System.Data.DataTable);
                     break;
                 case StatesMachine.CurrentMins_Fact:
                     ClearValuesMins();
-                    iRes = GetMinsFactResponse(table as System.Data.DataTable);
+                    iRes = getMinsFactResponse(table as System.Data.DataTable);
                     if (iRes == 0)
                     {
                         //this.BeginInvoke(delegateUpdateGUI_Fact, lastHour, lastMin);
@@ -1385,21 +1320,21 @@ namespace StatisticCommon
                         ;
                     break;
                 case StatesMachine.CurrentMin_TM:
-                    iRes = GetMinTMResponse(table as System.Data.DataTable);
+                    iRes = getMinTMResponse(table as System.Data.DataTable);
                     break;
                 case StatesMachine.CurrentMinDetail_TM:
-                    iRes = GetMinDetailTMResponse(table as System.Data.DataTable);
+                    iRes = getMinDetailTMResponse(table as System.Data.DataTable);
                     break;
                 case StatesMachine.RetroMinDetail_TM:
-                    iRes = GetMinDetailTMResponse(table as System.Data.DataTable);
+                    iRes = getMinDetailTMResponse(table as System.Data.DataTable);
                     updateGUI_Fact (/*lastHour*/-1, lastMin); //-1 - признак отобразить только "минута по-секундно"
                     break;
                 case StatesMachine.CurrentMins_TM:
                     ClearValuesMins();
-                    iRes = GetMinsTMResponse(table as System.Data.DataTable);
+                    iRes = getMinsTMResponse(table as System.Data.DataTable);
                     break;
                 case StatesMachine.CurrentHours_TM_SN_PSUM:
-                        iRes = GetHoursTMSNPsumResponse(table as System.Data.DataTable);
+                        iRes = getHoursTMSNPsumResponse(table as System.Data.DataTable);
                         if (iRes == 0)
                         {
                         }
@@ -1407,7 +1342,7 @@ namespace StatisticCommon
                             ;
                     break;
                 case StatesMachine.LastValue_TM_Gen:
-                    iRes = GetCurrentTMGenResponse(table as System.Data.DataTable);
+                    iRes = getCurrentTMGenResponse(table as System.Data.DataTable);
                     if (! (iRes < 0))
                     {
                         if (!(updateGUI_TM_Gen == null)) updateGUI_TM_Gen(); else ;
@@ -1416,7 +1351,7 @@ namespace StatisticCommon
                         ;
                     break;
                 case StatesMachine.LastValue_TM_SN:
-                    iRes = GetCurrentTMSNResponse(table as System.Data.DataTable);
+                    iRes = getCurrentTMSNResponse(table as System.Data.DataTable);
                     if (iRes == 0)
                     {
                         updateGUI_TM_SN ();
@@ -1426,7 +1361,7 @@ namespace StatisticCommon
                     break;
                 case StatesMachine.LastMinutes_TM:
                     ClearValuesLastMinutesTM ();
-                    iRes = GetLastMinutesTMResponse(table as System.Data.DataTable, m_curDate);
+                    iRes = getLastMinutesTMResponse(table as System.Data.DataTable, m_curDate);
                     if (iRes == 0)
                     {
                         if (! (updateGUI_LastMinutes == null))
@@ -1439,7 +1374,7 @@ namespace StatisticCommon
                     break;
                 //case StatesMachine.RetroHours:
                 //    ClearValues();
-                //    bRes = GetHoursResponse(table);
+                //    bRes = getHoursResponse(table);
                 //    if (bRes == true)
                 //    {
                 //    }
@@ -1447,7 +1382,7 @@ namespace StatisticCommon
                 //        ;
                 //    break;
                 case StatesMachine.RetroMin_TM_Gen:
-                    iRes = GetMinTMGenResponse(table as System.Data.DataTable);
+                    iRes = getMinTMGenResponse(table as System.Data.DataTable);
                     //14.04.2015 ???
                     //if (iRes == 0)
                         updateGUI_TM_Gen ();
@@ -1458,11 +1393,11 @@ namespace StatisticCommon
                     ClearValuesMins();
                     if ((m_arTypeSourceData[(int)HDateTime.INTERVAL.MINUTES] == CONN_SETT_TYPE.DATA_AISKUE)
                         || (m_arTypeSourceData[(int)HDateTime.INTERVAL.MINUTES] == CONN_SETT_TYPE.DATA_AISKUE_PLUS_SOTIASSO))
-                        iRes = GetMinsFactResponse(table as System.Data.DataTable);
+                        iRes = getMinsFactResponse(table as System.Data.DataTable);
                     else
                         if ((m_arTypeSourceData[(int)HDateTime.INTERVAL.MINUTES] == CONN_SETT_TYPE.DATA_SOTIASSO_3_MIN)
                             || (m_arTypeSourceData[(int)HDateTime.INTERVAL.MINUTES] == CONN_SETT_TYPE.DATA_SOTIASSO_1_MIN))
-                            iRes = GetMinsTMResponse(table as System.Data.DataTable);
+                            iRes = getMinsTMResponse(table as System.Data.DataTable);
                         else
                             ;
                     //14.04.2015 - всегда будет вызвана из 'AdminValues'
@@ -1474,14 +1409,14 @@ namespace StatisticCommon
                     //else ;
                     break;
                 case StatesMachine.HoursTMTemperatureValues:
-                    iRes = GetHoursTMTemperatureResponse(table as System.Data.DataTable);
+                    iRes = getHoursTMTemperatureResponse(table as System.Data.DataTable);
                     break;
                 //case StatesMachine.CurrentTemperatureValues:
                 //    GetCurrentTemperatureResponse();
                 //    break;
                 //case StatesMachine.PPBRDates:
                 //    ClearPPBRDates();
-                //    iRes = GetPPBRDatesResponse(table as System.Data.DataTable, m_curDate);
+                //    iRes = getPPBRDatesResponse(table as System.Data.DataTable, m_curDate);
                 //    if (iRes == 0)
                 //    {
                 //    }
@@ -1490,7 +1425,7 @@ namespace StatisticCommon
                 //    break;
                 case StatesMachine.PPBRValues:
                     ClearPBRValues();
-                    iRes = GetPPBRValuesResponse(table as System.Data.DataTable);
+                    iRes = getPPBRValuesResponse(table as System.Data.DataTable);
                     if (iRes == 0)
                     {
                     }
@@ -1501,7 +1436,7 @@ namespace StatisticCommon
                 //    break;
                 case StatesMachine.AdminValues:
                     ClearAdminValues();
-                    iRes = GetAdminValuesResponse(table as System.Data.DataTable);
+                    iRes = getAdminValuesResponse(table as System.Data.DataTable);
                     if (iRes == 0)
                     {
                         //this.BeginInvoke(delegateShowValues, "StatesMachine.AdminValues");
@@ -1692,12 +1627,12 @@ namespace StatisticCommon
             GetCurrentTimeRequest(typeDB, iListenerId);
         }
 
-        private int GetCurrentTimeAdminResponse(DataTable table)
+        private int getCurrentTimeAdminResponse(DataTable table)
         {
             return GetCurrentTimeResponse(table);
         }
 
-        private int GetCurrentTimeViewResponse(DataTable table)
+        private int getCurrentTimeViewResponse(DataTable table)
         {
             int iRes = 0;
             
@@ -2107,7 +2042,7 @@ namespace StatisticCommon
                 m_valuesMins[i].valuesUDGe = 0;
         }
 
-        private int GetAdminValuesResponse(DataTable table_in)
+        private int getAdminValuesResponse(DataTable table_in)
         {
             DateTime date = m_curDate.Add (m_tsOffsetToMoscow) //m_pnlQuickData.dtprDate.Value.Date
                     , dtPBR;
@@ -2388,7 +2323,7 @@ namespace StatisticCommon
                             else
                                 ;
 
-                            if (LayoutIsBiggerByName(lastLayout, tmp))
+                            if (equalePBR(lastLayout, tmp) < 0)
                                 lastLayout = tmp;
                             else
                                 ;
@@ -2464,7 +2399,7 @@ namespace StatisticCommon
                             else
                                 ;
 
-                            if (LayoutIsBiggerByName(lastLayout, tmp))
+                            if (equalePBR(lastLayout, tmp) < 0)
                                 lastLayout = tmp;
                             else
                                 ;
@@ -2719,7 +2654,7 @@ namespace StatisticCommon
                             else
                                 ;
 
-                            if (LayoutIsBiggerByName(lastLayout, tmp))
+                            if (equalePBR(lastLayout, tmp) < 0)
                                 lastLayout = tmp;
                             else
                                 ;
@@ -2787,7 +2722,7 @@ namespace StatisticCommon
                             else
                                 ;
 
-                            if (LayoutIsBiggerByName(lastLayout, tmp))
+                            if (equalePBR(lastLayout, tmp) < 0)
                                 lastLayout = tmp;
                             else
                                 ;
@@ -3183,7 +3118,7 @@ namespace StatisticCommon
             return table_in_restruct;
         }
 
-        private int GetHoursFactResponse(DataTable table)
+        private int getHoursFactResponse(DataTable table)
         {
             int i, j
                 , half = 0 //Индекс получаса
@@ -3282,7 +3217,7 @@ namespace StatisticCommon
                         if (hour < 0)
                         {
                             if (season > DateTime.Now.Year)
-                                GetSeason(dt, season, out season);
+                                getSeason(dt, season, out season);
                             else
                                 ;
                             prev_season = season;
@@ -3344,7 +3279,7 @@ namespace StatisticCommon
                         //{
                             //Отладка ???
                             if (season > DateTime.Now.Year)
-                                GetSeason(dt, season, out season);
+                                getSeason(dt, season, out season);
                             else
                                 ;
 
@@ -3372,7 +3307,7 @@ namespace StatisticCommon
 
                         //Отладка ???
                         if (season > DateTime.Now.Year)
-                            GetSeason(dt, season, out season);
+                            getSeason(dt, season, out season);
                         else
                             ;
 
@@ -3537,7 +3472,7 @@ namespace StatisticCommon
             return iRes;
         }
 
-        private int GetHourTMResponse(DataTable table)
+        private int getHourTMResponse(DataTable table)
         {
             //Logging.Logg().Debug(@"TecView::GetHoursTMResponse (lastHour=" + lastHour + @") - Rows.Count=" + table.Rows.Count);
 
@@ -3658,7 +3593,7 @@ namespace StatisticCommon
             return 0;
         }
 
-        private int GetHoursTMResponse(DataTable table, bool bErrorCritical = true)
+        private int getHoursTMResponse(DataTable table, bool bErrorCritical = true)
         {
             int iRes = -1
                 , hour = -1;
@@ -3844,7 +3779,7 @@ namespace StatisticCommon
             return (bErrorCritical == true) ? iRes : 0;
         }
 
-        private int GetHoursTMSNPsumResponse(DataTable table)
+        private int getHoursTMSNPsumResponse(DataTable table)
         {
             int iRes = 0;
             int i = -1
@@ -3863,7 +3798,7 @@ namespace StatisticCommon
             return iRes;
         }
 
-        private int GetLastMinutesTMResponse(DataTable table_in, DateTime dtReq)
+        private int getLastMinutesTMResponse(DataTable table_in, DateTime dtReq)
         {
             int iRes = -1;
             int i = -1,
@@ -4070,7 +4005,7 @@ namespace StatisticCommon
             return iRes;
         }
 
-        private int GetMinsFactResponse(DataTable table)
+        private int getMinsFactResponse(DataTable table)
         {
             int iRes = 0
                 , i, j = 0, min = 0;
@@ -4636,7 +4571,7 @@ namespace StatisticCommon
             return tgCurValues;
         }
 
-        private int GetMinTMResponse(DataTable table)
+        private int getMinTMResponse(DataTable table)
         {
             //Logging.Logg().Debug(@"TecView::GetMinTMResponse (lastHour=" + lastHour + @", lastMin=" + lastMin + @") - Rows.Count=" + table.Rows.Count);
 
@@ -4752,7 +4687,7 @@ namespace StatisticCommon
             return 0;
         }
 
-        private int GetMinDetailTMResponse(DataTable table)
+        private int getMinDetailTMResponse(DataTable table)
         {
             //Logging.Logg().Debug(@"TecView::GetMinTMResponse (lastHour=" + lastHour + @", lastMin=" + lastMin + @") - Rows.Count=" + table.Rows.Count);
 
@@ -4857,7 +4792,7 @@ namespace StatisticCommon
             return 0;
         }
 
-        private int GetMinsTMResponse(DataTable table)
+        private int getMinsTMResponse(DataTable table)
         {
             string [] checkFields = null;
 
@@ -5078,7 +5013,7 @@ namespace StatisticCommon
             return iRes;
         }
 
-        private int GetMinTMGenResponse(DataTable table)
+        private int getMinTMGenResponse(DataTable table)
         {
             //Logging.Logg().Debug(@"TecView::GetMinTMResponse (lastHour=" + lastHour + @", lastMin=" + lastMin + @") - Rows.Count=" + table.Rows.Count);
 
@@ -5183,7 +5118,7 @@ namespace StatisticCommon
             return iRes;
         }
 
-        private int LayotByName(string l)
+        private int getNumPBRByName(string l)
         {
             int iRes = -1;
 
@@ -5209,7 +5144,7 @@ namespace StatisticCommon
             return iRes;
         }
 
-        private void GetSeason(DateTime date, int db_season, out int season)
+        private void getSeason(DateTime date, int db_season, out int season)
         {
             season = db_season - date.Year - date.Year;
             if (season < 0)
@@ -5221,22 +5156,25 @@ namespace StatisticCommon
                     ;
         }
 
-        private bool LayoutIsBiggerByName(string l1, string l2)
+        private int equalePBR(string l1, string l2)
         {
-            bool bRes = false;
+            int iRes = 0;
 
-            int num1 = LayotByName(l1),
-                num2 = LayotByName(l2);
+            int num1 = getNumPBRByName(l1),
+                num2 = getNumPBRByName(l2);
 
-            if (num2 > num1)
-                bRes = true;
+            if (num1 > num2)
+                iRes = 1;
             else
-                ;
+                if (num1 < num2)
+                    iRes = -1;
+                else
+                    ;
 
-            return bRes;
+            return iRes;
         }
 
-        private int GetPPBRValuesResponse(DataTable table)
+        private int getPPBRValuesResponse(DataTable table)
         {
             int iRes = 0;
 
@@ -5248,7 +5186,7 @@ namespace StatisticCommon
             return iRes;
         }
 
-        private void GetHoursFactRequest(DateTime date)
+        private void getHoursFactRequest(DateTime date)
         {
             //m_tec.Request(CONN_SETT_TYPE.DATA_ASKUE, m_tec.hoursRequest(date, m_tec.GetSensorsString(indx_TEC, CONN_SETT_TYPE.DATA_ASKUE, HDateTime.INTERVAL.HOURS)));
             //m_tec.Request(CONN_SETT_TYPE.DATA_ASKUE, m_tec.hoursRequest(date, m_tec.GetSensorsString(m_indx_TECComponent, CONN_SETT_TYPE.DATA_ASKUE, HDateTime.INTERVAL.HOURS)));
@@ -5257,7 +5195,7 @@ namespace StatisticCommon
             //Debug.WriteLine(@"TecView::GetHoursFactRequest () - DATE=" + date.ToString());
         }
 
-        private void GetHourTMRequest(DateTime date, int lh)
+        private void getHourTMRequest(DateTime date, int lh)
         {
             int interval = GetIntervalOfTypeSourceData(HDateTime.INTERVAL.HOURS);
 
@@ -5267,7 +5205,7 @@ namespace StatisticCommon
                 ;
         }
 
-        private void GetHoursTMRequest(DateTime date)
+        private void getHoursTMRequest(DateTime date)
         {
             int interval = GetIntervalOfTypeSourceData(HDateTime.INTERVAL.HOURS);
 
@@ -5277,7 +5215,7 @@ namespace StatisticCommon
                 ;
         }
 
-        private void GetMinsFactRequest(int hour)
+        private void getMinsFactRequest(int hour)
         {
             //tec.Request(CONN_SETT_TYPE.DATA_ASKUE, tec.minsRequest(selectedTime, hour, sensorsStrings_Fact[(int)HDateTime.INTERVAL.MINUTES]));
             //m_tec.Request(CONN_SETT_TYPE.DATA_ASKUE, m_tec.minsRequest(selectedTime, hour, m_tec.GetSensorsString(indx_TEC, CONN_SETT_TYPE.DATA_ASKUE, HDateTime.INTERVAL.MINUTES)));
@@ -5292,7 +5230,7 @@ namespace StatisticCommon
             );
         }
 
-        private void GetMinTMRequest(DateTime date, int lh, int lm)
+        private void getMinTMRequest(DateTime date, int lh, int lm)
         {
             int interval = GetIntervalOfTypeSourceData(HDateTime.INTERVAL.MINUTES);
 
@@ -5301,7 +5239,7 @@ namespace StatisticCommon
             else ;
         }
 
-        private void GetMinDetailTMRequest(DateTime date, int lh, int lm)
+        private void getMinDetailTMRequest(DateTime date, int lh, int lm)
         {
             int interval = 1; //GetIntervalOfTypeSourceData(HDateTime.INTERVAL.MINUTES);
 
@@ -5315,7 +5253,7 @@ namespace StatisticCommon
             else ;
         }
 
-        private void GetMinTMGenRequest(DateTime date, int lh, int lm)
+        private void getMinTMGenRequest(DateTime date, int lh, int lm)
         {
             int interval = GetIntervalOfTypeSourceData(HDateTime.INTERVAL.MINUTES);
 
@@ -5365,7 +5303,7 @@ namespace StatisticCommon
             return iRes;
         }
         
-        private void GetMinsTMRequest(int hour)
+        private void getMinsTMRequest(int hour)
         {
             int interval = GetIntervalOfTypeSourceData(HDateTime.INTERVAL.MINUTES);
 
@@ -5375,7 +5313,7 @@ namespace StatisticCommon
                 Logging.Logg().Error(@"TecView::GetMinsTMRequest (hour=" + hour + @") - не выбран интервал для запроса...", Logging.INDEX_MESSAGE.NOT_SET);
         }
 
-        private void GetHoursTMTemperatureRequest(DateTime dt)
+        private void getHoursTMTemperatureRequest(DateTime dt)
         {
             TimeSpan tsOffset = HDateTime.TS_MSK_OFFSET_OF_UTCTIMEZONE + m_tsOffsetToMoscow;
             DateTime dtReq = dt.Date.Add(-tsOffset);
@@ -5391,11 +5329,11 @@ namespace StatisticCommon
             Request(m_dictIdListeners[m_tec.m_id][(int)CONN_SETT_TYPE.DATA_SOTIASSO], strQuery);
         }
 
-        //private void GetCurrentTemperatureRequest()
+        //private void getCurrentTemperatureRequest()
         //{
         //}
 
-        private int GetHoursTMTemperatureResponse(DataTable table)
+        private int getHoursTMTemperatureResponse(DataTable table)
         {
             int iRes = 0;
 
@@ -5405,16 +5343,16 @@ namespace StatisticCommon
             return iRes;
         }
 
-        //private void GetCurrentTemperatureResponse()
+        //private void getCurrentTemperatureResponse()
         //{
         //}
 
-        private void GetHoursTMSNPsumRequest()
+        private void getHoursTMSNPsumRequest()
         {
             Request(m_dictIdListeners[m_tec.m_id][(int)CONN_SETT_TYPE.DATA_SOTIASSO], m_tec.hoursTMSNPsumRequest(m_curDate));
         }
 
-        private void GetLastMinutesTMRequest()
+        private void getLastMinutesTMRequest()
         {
             DateTime dtReq = m_curDate.Date;
             //if (dtReq.Kind == DateTimeKind.Unspecified)
@@ -5428,7 +5366,7 @@ namespace StatisticCommon
             Request(m_dictIdListeners[m_tec.m_id][(int)CONN_SETT_TYPE.DATA_SOTIASSO], m_tec.lastMinutesTMRequest(dtReq.Date, m_tec.GetSensorsString(indxTECComponents, CONN_SETT_TYPE.DATA_SOTIASSO), cnt));
         }
 
-        private void GetPPBRValuesRequest()
+        private void getPPBRValuesRequest()
         {
             //m_admin.Request(tec.m_arIdListeners[(int)CONN_SETT_TYPE.PBR], tec.GetPBRValueQuery(indx_TECComponent, m_pnlQuickData.dtprDate.Value.Date, m_admin.m_typeFields));
             //m_tec.Request(CONN_SETT_TYPE.PBR, m_tec.GetPBRValueQuery(m_indx_TECComponent, m_pnlQuickData.dtprDate.Value.Date, s_typeFields));
@@ -5436,7 +5374,7 @@ namespace StatisticCommon
             Request(m_dictIdListeners[m_tec.m_id][(int)CONN_SETT_TYPE.PBR], m_tec.GetPBRValueQuery(indxTECComponents, m_curDate.Date.Add(-m_tsOffsetToMoscow)/*, s_typeFields*/));
         }
 
-        private void GetAdminValuesRequest(/*AdminTS.TYPE_FIELDS mode*/)
+        private void getAdminValuesRequest(/*AdminTS.TYPE_FIELDS mode*/)
         {
             //m_admin.Request(tec.m_arIdListeners[(int)CONN_SETT_TYPE.ADMIN], tec.GetAdminValueQuery(indx_TECComponent, m_pnlQuickData.dtprDate.Value.Date/*, mode*/));
             //m_tec.Request(CONN_SETT_TYPE.ADMIN, m_tec.GetAdminValueQuery(indx_TECComponent, m_pnlQuickData.dtprDate.Value.Date/*, mode*/));

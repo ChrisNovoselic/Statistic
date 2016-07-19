@@ -29,6 +29,29 @@ namespace Statistic
 {
     public partial class FormMain : FormMainBaseWithStatusStrip
     {
+        //??? требуется перенос кода в HClassLibrary
+        private class HTabCtrlEx : HClassLibrary.HTabCtrlEx
+        {
+            public int IndexOfName (string name)
+            {
+                int iRes = -1;
+
+                int i = -1;
+
+                for (i = 0; i < TabCount; i++)
+                    if (TabPages[i].Name.Trim().Equals(name.Trim()) == true)
+                    {
+                        iRes = i;
+
+                        break;
+                    }
+                    else
+                        ;
+
+                return iRes;
+            }
+        }
+
         //10001 = ADMIN_KOM_DISP, 10002 = ADMIN_NSS (FormChangeMode)
         private enum ID_ADDING_TAB
         {
@@ -134,7 +157,7 @@ namespace Statistic
            
         }
 
-        private string GetINIParametersOfID(int id)
+        private string getINIParametersOfID(int id)
         {
             return formParameters.m_arParametrSetup[id];
         }
@@ -170,7 +193,7 @@ namespace Statistic
                 Logging.LinkId(Logging.INDEX_MESSAGE.W_001, (int)FormParameters.PARAMETR_SETUP.TECVIEW_GETCURRENTTMGEN_LOGWARNING);
                 Logging.LinkId(Logging.INDEX_MESSAGE.D_001, (int)FormParameters.PARAMETR_SETUP.MAINFORMBASE_CONTROLHANDLE_LOGERRORCREATE);
 
-                Logging.DelegateGetINIParametersOfID = new StringDelegateIntFunc(GetINIParametersOfID);
+                Logging.DelegateGetINIParametersOfID = new StringDelegateIntFunc(getINIParametersOfID);
 
                 updateParametersSetup();                
 
@@ -2603,15 +2626,17 @@ namespace Statistic
         {
             bool bRes = false;
 
+            HTabCtrlEx.TYPE_TAB typeTab = HTabCtrlEx.TYPE_TAB.FIXED;
+            int key = -1
+                , indxItem = -1;
+            INDEX_CUSTOM_TAB indxTab = INDEX_CUSTOM_TAB.TAB_2X2;
+
             if (arCheckedStoped[0] == true)
             {
-                HTabCtrlEx.TYPE_TAB typeTab = HTabCtrlEx.TYPE_TAB.FIXED;
-                int key = -1;
-
                 if (nameTab.IndexOf(@"Окно") > -1)
                 {
-                    INDEX_CUSTOM_TAB indxTab = getIndexCustomTab(nameTab);
-                    int indxItem = getIndexItemCustomTab(nameTab);
+                    indxTab = getIndexCustomTab(nameTab);
+                    indxItem = getIndexItemCustomTab(nameTab);
                     key = (int)m_arIdCustomTabs[(int)indxTab, indxItem];
                     typeTab = HTabCtrlEx.TYPE_TAB.FLOAT;
                 }
@@ -2628,7 +2653,7 @@ namespace Statistic
             }
             else
             {//arCheckedStoped[0] == false
-                bRes = tclTecViews.RemoveTabPage(); //nameTab
+                bRes = tclTecViews.RemoveTabPage(tclTecViews.IndexOfName (nameTab)); //nameTab
                 if (arCheckedStoped[1] == true)
                 {
                     obj.Activate(false);

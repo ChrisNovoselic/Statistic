@@ -597,29 +597,55 @@ namespace Statistic
                 //    throw new NotImplementedException();
                 //}
 
-                protected override void GetPPBRDatesRequest(DateTime date)
+                public override void ChangeState()
+                {
+                    lock (m_lockState) { GetRDGValues(-1, DateTime.MinValue); }
+
+                    base.ChangeState(); //Run
+                }
+
+                protected override void getPPBRDatesRequest(DateTime date)
                 {
                     throw new NotImplementedException();
                 }
 
-                protected override int GetPPBRDatesResponse(DataTable table, DateTime date)
+                protected override int getPPBRDatesResponse(DataTable table, DateTime date)
                 {
                     throw new NotImplementedException();
                 }
 
-                protected override void GetPPBRValuesRequest(TEC t, TECComponent comp, DateTime date)
+                protected override void getPPBRValuesRequest(TEC t, TECComponent comp, DateTime date)
                 {
                     throw new NotImplementedException();
                 }
 
-                protected override int GetPPBRValuesResponse(DataTable table, DateTime date)
+                protected override int getPPBRValuesResponse(DataTable table, DateTime date)
                 {
                     throw new NotImplementedException();
                 }
 
                 public override void GetRDGValues(int indx, DateTime date)
                 {
-                    throw new NotImplementedException();
+                    ClearStates();
+
+                    //ClearValues();
+
+                    using_date = false;
+
+                    if (m_tec.m_bSensorsStrings == true)
+                        if (currHour == true)
+                            AddState((int)StatesMachine.CurrentTimeView);
+                        else
+                            ;
+                    else
+                    {
+                        AddState((int)StatesMachine.InitSensors);
+                        AddState((int)StatesMachine.CurrentTimeView);
+                    }
+
+                    //// ...
+                    //AddState((int)TecView.StatesMachine.PPBRValues);
+                    //AddState((int)TecView.StatesMachine.AdminValues);
                 }
 
                 public override bool WasChanged()
@@ -638,7 +664,7 @@ namespace Statistic
             /// <summary>
             /// constructor
             /// </summary>
-            /// <param name="container"></param>
+            /// <param name="container">Родительский объект по отношению к создаваемому</param>
             public PanelTecVzletTDirect(IContainer container, TEC tec, int indx_tec, int indx_comp, HMark markQueries)
                 : base(tec, indx_tec, indx_comp, markQueries)
             {
@@ -662,15 +688,24 @@ namespace Statistic
 
                 return iRes;
             }
-
+            /// <summary>
+            /// Создать объект для обращения к БД
+            /// </summary>
+            /// <param name="indx_tec">Индекс ТЭЦ в глобальном списке</param>
+            /// <param name="indx_comp">Индекс компонента ТЭЦ (внутренний для ТЭЦ), если -1, то ТЭЦ в целом</param>
             protected override void createTecView(int indx_tec, int indx_comp)
             {
                 m_tecView = new DataSource(indx_tec, indx_comp);
             }
-
+            /// <summary>
+            /// Создать объекты панели оперативной информации для отображения значений
+            ///  в соответствии с составом объекта отображения в целом
+            /// </summary>
             public override void AddTGView()
             {
+                // цикл по всем ВЫВОДам
                 foreach (Vyvod v in m_tecView.m_tec.m_list_Vyvod)
+                    // добавить элементы управления для отображения значений указанного ВЫВОДа
                     _pnlQuickData.AddTGView(v);
             }
             /// <summary>
@@ -749,12 +784,16 @@ namespace Statistic
 
                 return bRes;
             }
-
+            /// <summary>
+            /// Создать панель отображения оперативных данных
+            /// </summary>
             protected override void createPanelQuickData()
             {
                 _pnlQuickData = new PanelQuickDataVzletTDirect();
             }
-
+            /// <summary>
+            /// Создать таблицу-представление для отображения значений в разрезе "сутки - час"
+            /// </summary>
             protected override void createDataGridViewHours()
             {
                 m_dgwHours = new DataGridViewVzletTDirectHours(HDateTime.INTERVAL.HOURS, new HDataGridViewBase.ColumnProperies[]
@@ -768,17 +807,25 @@ namespace Statistic
                     }
                 );
             }
-
+            /// <summary>
+            /// Создать таблицу-представление для отображения значений в разрезе "час - минуты"
+            /// </summary>
             protected override void createDataGridViewMins()
             {
                 ; // не требуется
             }
-
+            /// <summary>
+            /// Создать объект для графической интерпретации данных в разрезе "сутки - час"
+            /// </summary>
+            /// <param name="objLock">Объект синхронизации(блокировки) при обновлении информации на объекте</param>
             protected override void createZedGraphControlHours(object objLock)
             {
                 m_ZedGraphHours = new ZedGraphControlVzletTDirect(new object());
             }
-
+            /// <summary>
+            /// Создать объект для графической интерпретации данных в разрезе "час - минуты"
+            /// </summary>
+            /// <param name="objLock">Объект синхронизации(блокировки) при обновлении информации на объекте</param>
             protected override void createZedGraphControlMins(object objLock)
             {
                 ; // не требуется
