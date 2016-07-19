@@ -421,7 +421,7 @@ namespace StatisticCommon
 
         protected abstract void getPPBRValuesRequest(TEC t, TECComponent comp, DateTime date/*, AdminTS.TYPE_FIELDS mode*/);
 
-        protected abstract int getPPBRValuesResponse(DataTable table, DateTime date);        
+        protected abstract int getPPBRValuesResponse(DataTable table, DateTime date);
 
         protected virtual void clearDates(CONN_SETT_TYPE type)
         {

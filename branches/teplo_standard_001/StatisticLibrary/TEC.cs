@@ -448,7 +448,7 @@ namespace StatisticCommon
             setAddingParameter (Convert.ToInt32(rTec["TIMEZONE_OFFSET_MOSCOW"])
                 , rTec["PATH_RDG_EXCEL"].ToString()
                 , rTec["TEMPLATE_NAME_SGN_DATA_TM"].ToString()
-                , rTec["TEMPLATE_NAME_SGN_DATA_FACT"].ToString());
+                , rTec["TEMPLATE_NAME_SGN_DATA_FACT"].ToString());            
         }
         /// <summary>
         /// Коструктор объекта (с параметрами)
@@ -770,20 +770,40 @@ namespace StatisticCommon
         public int connSettings (DataTable source, int type)
         {
             int iRes = 0;
+            string strLog = string.Empty;
 
-            connSetts[type] = new ConnectionSettings(source.Rows[0], -1);
+            if (source.Rows.Count > 0)
+            {
+                connSetts[type] = new ConnectionSettings(source.Rows[0], -1);
 
-            if ((!((int)type < (int)CONN_SETT_TYPE.DATA_AISKUE)) && (!((int)type > (int)CONN_SETT_TYPE.DATA_SOTIASSO)))
-                if (FormMainBase.s_iMainSourceData == connSetts[(int)type].id)
+                if (source.Rows.Count == 1)
                 {
-                    m_arTypeSourceData[(int)type - (int)CONN_SETT_TYPE.DATA_AISKUE] = TEC.INDEX_TYPE_SOURCE_DATA.EQU_MAIN;
+                    if ((!(type < (int)CONN_SETT_TYPE.DATA_AISKUE)) && (!((int)type > (int)CONN_SETT_TYPE.DATA_SOTIASSO)))
+                        if (FormMainBase.s_iMainSourceData == connSetts[(int)type].id)
+                            // 
+                            m_arTypeSourceData[type - (int)CONN_SETT_TYPE.DATA_AISKUE] = TEC.INDEX_TYPE_SOURCE_DATA.EQU_MAIN;
+                        else                            
+                            iRes = 1; //??? throw new Exception(@"TEC::connSettings () - неизвестный тип источника данных...")
+                    else
+                        ;
+
+                    m_arInterfaceType[(int)type] = DbTSQLInterface.getTypeDB(connSetts[(int)type].port);
                 }
                 else
-                    ; //??? throw new Exception(@"TEC::connSettings () - неизвестный тип источника данных...")
+                {
+                    iRes = -1;
+                    connSetts[type] = null;                    
+                }
+            }
+            else
+            {// значит строк вообще нет, т.к. 'Count' не м.б. < 0
+                iRes = -2;
+            }
+
+            if (iRes < 0)
+                m_arInterfaceType[(int)type] = DbInterface.DB_TSQL_INTERFACE_TYPE.UNKNOWN;
             else
                 ;
-
-            m_arInterfaceType[(int)type] = DbTSQLInterface.getTypeDB(connSetts[(int)type].port);
 
             return iRes;
         }

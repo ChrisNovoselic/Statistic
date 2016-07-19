@@ -610,6 +610,7 @@ namespace StatisticCommon
             }
         }
 
+        #region Неиспользуемые функции - наследство для линии 'Admin'
         public override void CopyCurToPrevRDGValues()
         {//!!! не используется
         }
@@ -639,6 +640,7 @@ namespace StatisticCommon
 
             return iRes;
         }
+        #endregion
 
         private bool GetSensorsTEC()
         {

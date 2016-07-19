@@ -269,6 +269,13 @@ namespace StatisticCommon
 
     public class Vyvod : TECComponentBase
     {
+        public enum ID_PARAM : short { UNKNOWN = -1
+            , G_PV = 1, G_OV
+            , T_PV, T_OV
+            , P_PV, P_OV
+            , T2_PV, T2_OV
+            , }
+        
         public class ParamVyvod : TECComponentBase
         {
             public enum INDEX_VALUE : short
@@ -279,6 +286,7 @@ namespace StatisticCommon
                     , COUNT
             }; //Количество индексов
 
+            public ID_PARAM m_id_param;
             public string m_Symbol;
             public int m_typeAgregate;
 
@@ -291,6 +299,7 @@ namespace StatisticCommon
 
             public void Initialize(DataRow r)
             {
+                m_id_param = (ID_PARAM)Convert.ToInt16(r[@"ID_PARAM"]);
                 m_SensorsString_VZLET = ((string)r[@"KKS_NAME"]).Trim();
 
                 name_shr = ((string)r[@"NAME_SHR"]).Trim();
