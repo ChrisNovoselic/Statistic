@@ -611,11 +611,11 @@ namespace StatisticCommon
         }
 
         public override void CopyCurToPrevRDGValues()
-        {
+        {//!!! не используется
         }
 
         public override void getCurRDGValues(HAdmin source)
-        {
+        {//!!! не используется
         }
 
         protected override void getPPBRDatesRequest(DateTime date)
@@ -5366,7 +5366,7 @@ namespace StatisticCommon
             Request(m_dictIdListeners[m_tec.m_id][(int)CONN_SETT_TYPE.DATA_SOTIASSO], m_tec.lastMinutesTMRequest(dtReq.Date, m_tec.GetSensorsString(indxTECComponents, CONN_SETT_TYPE.DATA_SOTIASSO), cnt));
         }
 
-        private void getPPBRValuesRequest()
+        protected virtual void getPPBRValuesRequest()
         {
             //m_admin.Request(tec.m_arIdListeners[(int)CONN_SETT_TYPE.PBR], tec.GetPBRValueQuery(indx_TECComponent, m_pnlQuickData.dtprDate.Value.Date, m_admin.m_typeFields));
             //m_tec.Request(CONN_SETT_TYPE.PBR, m_tec.GetPBRValueQuery(m_indx_TECComponent, m_pnlQuickData.dtprDate.Value.Date, s_typeFields));
@@ -5374,7 +5374,7 @@ namespace StatisticCommon
             Request(m_dictIdListeners[m_tec.m_id][(int)CONN_SETT_TYPE.PBR], m_tec.GetPBRValueQuery(indxTECComponents, m_curDate.Date.Add(-m_tsOffsetToMoscow)/*, s_typeFields*/));
         }
 
-        private void getAdminValuesRequest(/*AdminTS.TYPE_FIELDS mode*/)
+        protected virtual void getAdminValuesRequest(/*AdminTS.TYPE_FIELDS mode*/)
         {
             //m_admin.Request(tec.m_arIdListeners[(int)CONN_SETT_TYPE.ADMIN], tec.GetAdminValueQuery(indx_TECComponent, m_pnlQuickData.dtprDate.Value.Date/*, mode*/));
             //m_tec.Request(CONN_SETT_TYPE.ADMIN, m_tec.GetAdminValueQuery(indx_TECComponent, m_pnlQuickData.dtprDate.Value.Date/*, mode*/));

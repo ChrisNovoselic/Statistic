@@ -604,24 +604,28 @@ namespace Statistic
                     base.ChangeState(); //Run
                 }
 
-                protected override void getPPBRDatesRequest(DateTime date)
+                protected override void getPPBRValuesRequest()
                 {
-                    throw new NotImplementedException();
+                    string strQuery = string.Empty;
+
+                    strQuery =
+                        //m_tec.GetPBRValueQuery(indxTECComponents, m_curDate.Date.Add(-m_tsOffsetToMoscow))
+                        @""
+                        ;
+
+                    Request(m_dictIdListeners[m_tec.m_id][(int)CONN_SETT_TYPE.PBR], strQuery);
                 }
 
-                protected override int getPPBRDatesResponse(DataTable table, DateTime date)
+                protected override void getAdminValuesRequest()
                 {
-                    throw new NotImplementedException();
-                }
+                    string strQuery = string.Empty;
 
-                protected override void getPPBRValuesRequest(TEC t, TECComponent comp, DateTime date)
-                {
-                    throw new NotImplementedException();
-                }
+                    strQuery =
+                        //m_tec.GetAdminValueQuery(indxTECComponents, m_curDate.Date.Add(-m_tsOffsetToMoscow)/*, mode*/)
+                        @""
+                        ;
 
-                protected override int getPPBRValuesResponse(DataTable table, DateTime date)
-                {
-                    throw new NotImplementedException();
+                    Request(m_dictIdListeners[m_tec.m_id][(int)CONN_SETT_TYPE.ADMIN], strQuery);
                 }
 
                 public override void GetRDGValues(int indx, DateTime date)
@@ -643,9 +647,9 @@ namespace Statistic
                         AddState((int)StatesMachine.CurrentTimeView);
                     }
 
-                    //// ...
-                    //AddState((int)TecView.StatesMachine.PPBRValues);
-                    //AddState((int)TecView.StatesMachine.AdminValues);
+                    // ...
+                    AddState((int)TecView.StatesMachine.PPBRValues);
+                    AddState((int)TecView.StatesMachine.AdminValues);
                 }
 
                 public override bool WasChanged()

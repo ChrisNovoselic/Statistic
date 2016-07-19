@@ -218,7 +218,7 @@ namespace StatisticCommon
                                     && ((list_tec.Rows[i][pair.Value] is DBNull) == false))
                                     tec[i].connSettings(ConnectionSettingsSource.GetConnectionSettings(ref m_connConfigDB, Convert.ToInt32(list_tec.Rows[i][pair.Value]), -1, out err), (int)pair.Key);
                                 else
-                                    break;
+                                    ; // break
 
                             if (err == 0)
                             {
@@ -355,7 +355,7 @@ namespace StatisticCommon
                                 && ((list_tec.Rows[i][pair.Value] is DBNull) == false))
                                 tec[i].connSettings(ConnectionSettingsSource.GetConnectionSettings(ref m_connConfigDB, Convert.ToInt32(list_tec.Rows[i][pair.Value]), -1, out err), (int)pair.Key);
                             else
-                                break;
+                                ; // break
 
                         if (err == 0)
                         // получить список компонентов, с учетом типа компонентов по 'indx'

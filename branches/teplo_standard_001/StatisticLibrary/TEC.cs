@@ -19,10 +19,10 @@ namespace StatisticCommon
     {
         CONFIG_DB = 0, LIST_SOURCE
         , DATA_AISKUE_PLUS_SOTIASSO = -1 /*Факт+СОТИАССО. - смешанный*/, ADMIN = 0, PBR = 1, DATA_AISKUE = 2 /*Факт. - АИСКУЭ*/, DATA_SOTIASSO = 3
-        , DATA_VZLET
-            , DATA_SOTIASSO_3_MIN = 4, DATA_SOTIASSO_1_MIN = 5 /*ТелеМеханика - СОТИАССО*/
-            , MTERM = 6 /*Модес-Терминал*/,
-        COUNT_CONN_SETT_TYPE = 7
+        , DATA_VZLET = 4
+            , DATA_SOTIASSO_3_MIN = 5, DATA_SOTIASSO_1_MIN = 6 /*ТелеМеханика - СОТИАССО*/
+            , MTERM = 7 /*Модес-Терминал*/,
+        COUNT_CONN_SETT_TYPE = 8
     };
     /// <summary>
     /// Интерфейс для описания ТЭЦ
@@ -343,6 +343,7 @@ namespace StatisticCommon
             , {CONN_SETT_TYPE.ADMIN, @"ID_SOURCE_ADMIN"}
             , {CONN_SETT_TYPE.PBR, @"ID_SOURCE_PBR"}
             , {CONN_SETT_TYPE.MTERM, @"ID_SOURCE_MTERM"}
+            , {CONN_SETT_TYPE.DATA_VZLET, @"ID_SOURCE_TEPLO"}
         };
         /// <summary>
         /// Словарь с парами - ключ: идентификатор типа источников данных, значение - наименование поля таблицы [TEC_LIST] в БД конфигурации
