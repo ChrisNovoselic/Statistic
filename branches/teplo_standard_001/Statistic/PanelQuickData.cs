@@ -1073,9 +1073,9 @@ namespace Statistic
             {
                 showTMValue(ref m_tgLabels[tg.m_id][(int)TG.INDEX_VALUE.TM]
                                                 , tg.m_strKKS_NAME_TM
-                                                , m_parent.m_tecView.m_dictValuesTG[tg.m_id].m_powerMinutes[min]
-                                                , m_parent.m_tecView.m_dictValuesTG[tg.m_id].m_powerCurrent_TM
-                                                , m_parent.m_tecView.m_dictValuesTG[tg.m_id].m_dtCurrent_TM
+                                                , m_parent.m_tecView.m_dictValuesLowPointDev[tg.m_id].m_powerMinutes[min]
+                                                , m_parent.m_tecView.m_dictValuesLowPointDev[tg.m_id].m_powerCurrent_TM
+                                                , m_parent.m_tecView.m_dictValuesLowPointDev[tg.m_id].m_dtCurrent_TM
                                                 , m_parent.m_tecView.serverTime
                                                 ,m_tgToolTips[tg.m_id][(int)TG.INDEX_VALUE.TM]
                                                 , ref val);
@@ -1170,9 +1170,9 @@ namespace Statistic
                     {
                         foreach (TECComponent g in m_parent.m_tecView.m_tec.list_TECComponents)
                         {
-                            if (g.m_id < 500)
+                            if (g.IsGTP == true)
                                 //Только ГТП
-                                foreach (TG tg in g.m_listTG)
+                                foreach (TG tg in g.m_listLowPointDev)
                                     showTMValue(tg, ref value_TM, min);
                             else
                                 ;
@@ -1180,7 +1180,7 @@ namespace Statistic
                     }
                     else
                     {
-                        foreach (TG tg in m_parent.m_tecView.m_tec.list_TECComponents[m_parent.indx_TECComponent].m_listTG)
+                        foreach (TG tg in m_parent.m_tecView.m_tec.list_TECComponents[m_parent.indx_TECComponent].m_listLowPointDev)
                             showTMValue(tg, ref value_TM, min);
                     }
                 }
@@ -1211,20 +1211,24 @@ namespace Statistic
             /// </summary>
             public override void ShowFactValues()
             {
+                int indxStartCommonPVal = m_indxStartCommonFirstValueSeries;
+                int id = -1
+                    , i = -1, j = -1
+                    , min = -1;
+
+                bool bPrevValueValidate = false
+                        , bMinValuesReceived = true;
+                double prevValue = 0F, value = 0F
+                    , valueEBefore = 0F
+                    , valueECur = 0F
+                    , valueEFuture = 0F;
+
                 if (!(m_parent == null))
                 {
-                    int indxStartCommonPVal = m_indxStartCommonFirstValueSeries;
-                    int i = -1, j = -1
-                        , min = m_parent.m_tecView.lastMin;
+                    indxStartCommonPVal = m_indxStartCommonFirstValueSeries;
+                    min = m_parent.m_tecView.lastMin;
 
                     if (!(min == 0)) min--; else ;
-
-                    bool bPrevValueValidate = false
-                        , bMinValuesReceived = true;
-                    double prevValue = 0F, value = 0F
-                        , valueEBefore = 0F
-                        , valueECur = 0F
-                        , valueEFuture = 0F;
 
                     bPrevValueValidate = double.TryParse(m_arLabelCommon[(int)PanelQuickDataStandard.CONTROLS.lblCommonPVal_Fact - indxStartCommonPVal].Text, out prevValue);
 
@@ -1241,14 +1245,16 @@ namespace Statistic
                     else
                         ;
 
-                    for (i = 0; i < m_parent.m_tecView.listTG.Count; i++)
-                        if (m_parent.m_tecView.m_dictValuesTG[m_parent.m_tecView.listTG[i].m_id].m_bPowerMinutesRecieved == true)
-                            for (j = 0; j < min; j++)
-                                if ((!(m_parent.m_tecView.m_dictValuesTG[m_parent.m_tecView.listTG[i].m_id].m_powerMinutes[j] < 0))
-                                    && (m_parent.m_tecView.m_dictValuesTG[m_parent.m_tecView.listTG[i].m_id].m_powerMinutes[j] > 1))
-                                    valueEBefore += m_parent.m_tecView.m_dictValuesTG[m_parent.m_tecView.listTG[i].m_id].m_powerMinutes[j] / 20;
+                    for (i = 0; i < m_parent.m_tecView.ListLowPointDev.Count; i++)
+                        if (m_parent.m_tecView.m_dictValuesLowPointDev[m_parent.m_tecView.ListLowPointDev[i].m_id].m_bPowerMinutesRecieved == true)
+                            for (j = 0; j < min; j++) {
+                                id = m_parent.m_tecView.ListLowPointDev[i].m_id;
+                                if ((!(m_parent.m_tecView.m_dictValuesLowPointDev[id].m_powerMinutes[j] < 0))
+                                    && (m_parent.m_tecView.m_dictValuesLowPointDev[m_parent.m_tecView.ListLowPointDev[i].m_id].m_powerMinutes[j] > 1))
+                                    valueEBefore += m_parent.m_tecView.m_dictValuesLowPointDev[id].m_powerMinutes[j] / 20;
                                 else
                                     ;
+                            }
                         else
                             ;
 
@@ -1449,19 +1455,19 @@ namespace Statistic
                     i = 0;
                     if (m_parent.indx_TECComponent < 0) // значит этот view будет суммарным для всех ГТП
                     {
-                        foreach (TECComponent g in m_parent.m_tecView.m_localTECComponents)
+                        foreach (TECComponent g in m_parent.m_tecView.LocalTECComponents)
                         {
                             if (g.IsGTP == true)
                                 //Только ГТП
-                                foreach (TG tg in g.m_listTG)
+                                foreach (TG tg in g.m_listLowPointDev)
                                 {//Цикл по списку с ТГ
                                     //Отобразить значение
-                                    if ((!(m_parent.m_tecView.m_dictValuesTG[tg.m_id].m_powerMinutes == null))
+                                    if ((!(m_parent.m_tecView.m_dictValuesLowPointDev[tg.m_id].m_powerMinutes == null))
                                         //Ошибка при запуске 'CustomTecView' с оперативной панелью (Исправлено: 13.05.2015)
                                         // не "успевает" new ???
-                                        && (!(m_parent.m_tecView.m_dictValuesTG[tg.m_id].m_powerMinutes[min] < 0)))
+                                        && (!(m_parent.m_tecView.m_dictValuesLowPointDev[tg.m_id].m_powerMinutes[min] < 0)))
                                         showValue(m_tgLabels[tg.m_id][(int)TG.INDEX_VALUE.FACT]
-                                            , m_parent.m_tecView.m_dictValuesTG[tg.m_id].m_powerMinutes[min]
+                                            , m_parent.m_tecView.m_dictValuesLowPointDev[tg.m_id].m_powerMinutes[min]
                                             , 2 //round
                                             , true);
                                     else
@@ -1480,18 +1486,18 @@ namespace Statistic
                     }
                     else
                     {
-                        foreach (TECComponent comp in m_parent.m_tecView.m_localTECComponents)
+                        foreach (TECComponent comp in m_parent.m_tecView.LocalTECComponents)
                         {
-                            if ((!(m_parent.m_tecView.m_dictValuesTG[comp.m_listTG[0].m_id].m_powerMinutes == null))
-                                && (!(m_parent.m_tecView.m_dictValuesTG[comp.m_listTG[0].m_id].m_powerMinutes[min] < 0)))
-                                showValue(m_tgLabels[comp.m_listTG[0].m_id][(int)TG.INDEX_VALUE.FACT]
-                                    , m_parent.m_tecView.m_dictValuesTG[comp.m_listTG[0].m_id].m_powerMinutes[min]
+                            if ((!(m_parent.m_tecView.m_dictValuesLowPointDev[comp.m_listLowPointDev[0].m_id].m_powerMinutes == null))
+                                && (!(m_parent.m_tecView.m_dictValuesLowPointDev[comp.m_listLowPointDev[0].m_id].m_powerMinutes[min] < 0)))
+                                showValue(m_tgLabels[comp.m_listLowPointDev[0].m_id][(int)TG.INDEX_VALUE.FACT]
+                                    , m_parent.m_tecView.m_dictValuesLowPointDev[comp.m_listLowPointDev[0].m_id].m_powerMinutes[min]
                                     , 2 //round
                                     , true);
                             else
-                                m_tgLabels[comp.m_listTG[0].m_id][(int)TG.INDEX_VALUE.FACT].Text = "---";
+                                m_tgLabels[comp.m_listLowPointDev[0].m_id][(int)TG.INDEX_VALUE.FACT].Text = "---";
 
-                            m_tgLabels[comp.m_listTG[0].m_id][(int)TG.INDEX_VALUE.FACT].ForeColor = getColorFactValues();
+                            m_tgLabels[comp.m_listLowPointDev[0].m_id][(int)TG.INDEX_VALUE.FACT].ForeColor = getColorFactValues();
 
                             i++;
                         }

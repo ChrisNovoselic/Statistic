@@ -48,7 +48,7 @@ namespace Statistic
         private class TecViewLK : TecView
         {
             public TecViewLK (int indx_tec, int indx_comp)
-                : base (indx_tec, indx_comp) 
+                : base (indx_tec, indx_comp, TECComponentBase.TYPE.ELECTRO) 
             {
                 m_idAISKUEParNumber = ID_AISKUE_PARNUMBER.FACT_30;
                 _tsOffsetToMoscow = HDateTime.TS_NSK_OFFSET_OF_MOSCOWTIMEZONE;
@@ -86,32 +86,38 @@ namespace Statistic
                 AddState((int)TecView.StatesMachine.PPBRValues);
                 AddState((int)TecView.StatesMachine.AdminValues);
             }
-
+            /// <summary>
+            /// Возвратить сумму фактических значений для всех ТГ
+            /// </summary>
+            /// <param name="hour">Номер часа за который расчитывается сумма</param>
+            /// <returns>Результат суммирования</returns>
             public override double GetSummaFactValues(int hour)
             {
                 double dblRes = -1F;
                 double[] arTGRes = null;
                 uint[] arTGcounter = null;
-                int iter = m_idAISKUEParNumber == ID_AISKUE_PARNUMBER.FACT_03 ? 1 :
-                    m_idAISKUEParNumber == ID_AISKUE_PARNUMBER.FACT_30 ? 10 : -1;
+                int id = -1
+                    , iter = IntervalMultiplier;
 
-                arTGRes = new double[listTG.Count];
-                arTGcounter = new uint[listTG.Count];
+                arTGRes = new double[ListLowPointDev.Count];
+                arTGcounter = new uint[ListLowPointDev.Count];
 
-                for (int t = 0; t < listTG.Count; t++)
+                for (int t = 0; t < ListLowPointDev.Count; t++)
                 {
+                    id = ListLowPointDev[t].m_id;
+
                     arTGRes[t] = -1F;
                     arTGcounter[t] = 0;
 
                     for (int j = 10; j < ((60 / 3) + 1); j += iter)
-                        if (!(m_dictValuesTG[listTG[t].m_id].m_powerMinutes[j] < 0))
+                        if (!(m_dictValuesLowPointDev[id].m_powerMinutes[j] < 0))
                         {
                             if (arTGRes[t] < 0F)
                                 arTGRes[t] = 0F;
                             else
                                 ;
 
-                            arTGRes[t] += m_dictValuesTG[listTG[t].m_id].m_powerMinutes[j];
+                            arTGRes[t] += m_dictValuesLowPointDev[id].m_powerMinutes[j];
                             arTGcounter[t]++;
                         }
                         else
@@ -542,12 +548,12 @@ namespace Statistic
                     //ShowTGValue
                     if (m_parent.indx_TECComponent < 0) // значит этот view будет суммарным для всех ГТП
                     {
-                        foreach (TECComponent g in m_parent.m_tecView.m_localTECComponents)
+                        foreach (TECComponent g in m_parent.m_tecView.LocalTECComponents)
                             if (g.IsGTP == true)
                             //Только ГТП
-                                foreach (TG tg in g.m_listTG) {
+                                foreach (TG tg in g.m_listLowPointDev) {
                                 //Цикл по списку с ТГ
-                                    powerLastHourMinutes = m_parent.m_tecView.m_dictValuesTG[tg.m_id].m_powerMinutes;
+                                    powerLastHourMinutes = m_parent.m_tecView.m_dictValuesLowPointDev[tg.m_id].m_powerMinutes;
                                     //Проверить возможность получения значения
                                     if (!(powerLastHourMinutes == null))
                                         showFactTGValue(tg.m_id, powerLastHourMinutes);
@@ -558,12 +564,12 @@ namespace Statistic
                                 ;
                     }
                     else
-                        foreach (TECComponent comp in m_parent.m_tecView.m_localTECComponents) {
+                        foreach (TECComponent comp in m_parent.m_tecView.LocalTECComponents) {
                         //Цикл по списку ТГ в компоненте ТЭЦ (ГТП, ЩУ)
-                            powerLastHourMinutes = m_parent.m_tecView.m_dictValuesTG[comp.m_listTG[0].m_id].m_powerMinutes;
+                            powerLastHourMinutes = m_parent.m_tecView.m_dictValuesLowPointDev[comp.m_listLowPointDev[0].m_id].m_powerMinutes;
                             //Проверить возможность получения значения
                             if (!(powerLastHourMinutes == null))
-                                showFactTGValue (comp.m_listTG[0].m_id, powerLastHourMinutes);
+                                showFactTGValue (comp.m_listLowPointDev[0].m_id, powerLastHourMinutes);
                             else
                                 ;
                         }

@@ -57,7 +57,7 @@ namespace Statistic
                             {
                                 m_listTECComponentIndexDetail.Add(allTECComponents.IndexOf(comp));
 
-                                foreach (TG tg in comp.m_listTG)
+                                foreach (TG tg in comp.m_listLowPointDev)
                                     foreach (TECComponent comp_tg in allTECComponents)
                                         if (comp_tg.m_id == tg.m_id)
                                             m_listTECComponentIndexDetail.Add(allTECComponents.IndexOf(comp_tg));

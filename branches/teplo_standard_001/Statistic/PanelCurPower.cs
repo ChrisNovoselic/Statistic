@@ -348,20 +348,20 @@ namespace Statistic
                         this.Controls.Add(m_dictLabelVal[g.m_id], 1, this.RowCount);
                         //m_dictLabelVal[g.m_id].TextChanged += new EventHandler(PanelTecCurPower_TextChangedValue);
 
-                        foreach (TG tg in g.m_listTG)
+                        foreach (TECComponentBase tc in g.m_listLowPointDev)
                         {
                             //Добавить наименование ТГ
-                            this.Controls.Add(HLabel.createLabel(tg.name_shr, PanelCurPower.s_arLabelStyles[(int)INDEX_LABEL.NAME_TG]), 2, this.RowCount);
+                            this.Controls.Add(HLabel.createLabel(tc.name_shr, PanelCurPower.s_arLabelStyles[(int)INDEX_LABEL.NAME_TG]), 2, this.RowCount);
                             //Добавить значение ТГ
-                            m_dictLabelVal.Add(tg.m_id, HLabel.createLabel(@"---", PanelCurPower.s_arLabelStyles[(int)INDEX_LABEL.VALUE_TG]));
-                            this.Controls.Add(m_dictLabelVal[tg.m_id], 3, this.RowCount);
+                            m_dictLabelVal.Add(tc.m_id, HLabel.createLabel(@"---", PanelCurPower.s_arLabelStyles[(int)INDEX_LABEL.VALUE_TG]));
+                            this.Controls.Add(m_dictLabelVal[tc.m_id], 3, this.RowCount);
                             //m_dictLabelVal[tg.m_id].TextChanged += new EventHandler(PanelTecCurPower_TextChangedValue);
 
                             this.RowCount++;
                         }
 
-                        this.SetRowSpan(lblTECComponent, g.m_listTG.Count);
-                        this.SetRowSpan(m_dictLabelVal[g.m_id], g.m_listTG.Count);
+                        this.SetRowSpan(lblTECComponent, g.m_listLowPointDev.Count);
+                        this.SetRowSpan(m_dictLabelVal[g.m_id], g.m_listLowPointDev.Count);
                     }
                     else
                         ;
@@ -491,10 +491,10 @@ namespace Statistic
                     {
                         dblTECComponentPower_TM = 0.0;
 
-                        foreach (TG tg in g.m_listTG)
+                        foreach (TG tg in g.m_listLowPointDev)
                         {
                             if (tg.m_strKKS_NAME_TM.Length > 0) {
-                                dblTECComponentPower_TM += setTextToLabelVal(m_dictLabelVal[tg.m_id], m_tecView.m_dictValuesTG[tg.m_id].m_powerCurrent_TM);
+                                dblTECComponentPower_TM += setTextToLabelVal(m_dictLabelVal[tg.m_id], m_tecView.m_dictValuesLowPointDev[tg.m_id].m_powerCurrent_TM);
                             }
                             else
                                 m_dictLabelVal[tg.m_id].Text = @"---";

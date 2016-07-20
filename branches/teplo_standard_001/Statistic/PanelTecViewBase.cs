@@ -506,7 +506,7 @@ namespace Statistic
             m_tecView.updateGUI_TM_Gen = new DelegateFunc(updateGUI_TM_Gen);
 
             createPanelQuickData(); //Предвосхищая вызов 'InitializeComponent'
-            if (m_tecView.listTG == null) //m_tecView.m_tec.m_bSensorsStrings == false
+            if (m_tecView.ListLowPointDev == null) //m_tecView.m_tec.m_bSensorsStrings == false
                 m_tecView.m_tec.InitSensorsTEC();
             else
                 ;
@@ -643,7 +643,7 @@ namespace Statistic
 
         public virtual void AddTGView()
         {
-            foreach (TG tg in m_tecView.listTG)
+            foreach (TG tg in m_tecView.ListLowPointDev)
                 _pnlQuickData.AddTGView(tg);
         }
 
@@ -1135,7 +1135,7 @@ namespace Statistic
                     return;
 
                 //if (!(((currValuesPeriod++) * 1000) < Int32.Parse(FormMain.formParameters.m_arParametrSetup[(int)FormParameters.PARAMETR_SETUP.POLL_TIME]) * 1000))
-                if (!(currValuesPeriod++ < POOL_TIME * (m_tecView.m_idAISKUEParNumber == TecView.ID_AISKUE_PARNUMBER.FACT_03 ? 1 : 6)))
+                if (!(currValuesPeriod++ < POOL_TIME * (m_tecView.IntervalMultiplier)))
                 {
                     currValuesPeriod = 0;
                     NewDateRefresh();

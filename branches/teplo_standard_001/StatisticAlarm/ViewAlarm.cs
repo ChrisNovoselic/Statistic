@@ -1092,8 +1092,8 @@ namespace StatisticAlarm
                     else
                         if (mode == FormChangeMode.MODE_TECCOMPONENT.TG)
                             if (tc.IsGTP == true)
-                                foreach (TG tg in tc.m_listTG)
-                                    if (tg.m_id == id_comp)
+                                foreach (TECComponentBase lpd in tc.m_listLowPointDev)
+                                    if (lpd.m_id == id_comp)
                                     {
                                         iRes = tc.m_id;
                                         bContinue = false;

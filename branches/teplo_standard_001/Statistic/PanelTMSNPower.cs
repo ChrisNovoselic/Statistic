@@ -463,11 +463,11 @@ namespace Statistic
                     {
                         dblTECComponentPower_TM = 0.0;
 
-                        foreach (TG tg in g.m_listTG)
+                        foreach (TG tg in g.m_listLowPointDev)
                         {
                             if (tg.m_strKKS_NAME_TM.Length > 0)
                             {
-                                dblTECComponentPower_TM += setTextToLabelVal(null, m_tecView.m_dictValuesTG [tg.m_id].m_powerCurrent_TM);
+                                dblTECComponentPower_TM += setTextToLabelVal(null, m_tecView.m_dictValuesLowPointDev [tg.m_id].m_powerCurrent_TM);
                             }
                             else
                                 m_dictLabelVal[tg.m_id].Text = @"---";

@@ -705,7 +705,7 @@ namespace Statistic
             public class TecViewLastMinutes : TecView
             {
                 public TecViewLastMinutes()
-                    : base(/*TecView.TYPE_PANEL.CUR_POWER, */-1, -1)
+                    : base(/*TecView.TYPE_PANEL.CUR_POWER, */-1, -1, TECComponentBase.TYPE.ELECTRO)
                 {
                 }
 
@@ -798,7 +798,7 @@ namespace Statistic
                 this.Controls.Add(lblNameTEC, 0, 0);
 
                 foreach (TECComponent g in m_tecView.m_tec.list_TECComponents)
-                    if ((g.m_id > 100) && (g.m_id < 500))
+                    if (g.IsGTP == true)
                     {
                         //Добавить наименование ГТП
                         this.Controls.Add(HLabel.createLabel(g.name_shr.Split(' ')[1], PanelLastMinutes.s_arLabelStyles[(int)INDEX_LABEL.NAME_COMPONENT]), CountTECComponent, COUNT_FIXED_ROWS - 1);

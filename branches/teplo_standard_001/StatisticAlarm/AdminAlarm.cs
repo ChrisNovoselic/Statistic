@@ -187,9 +187,9 @@ namespace StatisticAlarm
 
                     if ((!(tc == null))
                         && (tc.IsTG == true))
-                        if (!(tc.m_listTG[0].m_TurnOnOff == state))
+                        if (!((tc.m_listLowPointDev[0] as TG).m_TurnOnOff == state))
                         {
-                            tc.m_listTG[0].m_TurnOnOff = state;
+                            (tc.m_listLowPointDev[0] as TG).m_TurnOnOff = state;
                             Logging.Logg().Action(@"AdminAlarm::tgConfirm (id=" + id_tg + @") - ТГ состояние=" + state.ToString (), Logging.INDEX_MESSAGE.NOT_SET);
                         }
                         else

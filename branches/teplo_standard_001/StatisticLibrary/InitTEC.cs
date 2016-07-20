@@ -226,7 +226,7 @@ namespace StatisticCommon
 
                                     indx = tec[indx_tec].list_TECComponents.Count - 1;
 
-                                    tec[indx_tec].list_TECComponents[indx].m_listTG.Add(new TG(list_tg.Rows[k], all_PARAM_TG.Select(@"ID_TG=" + tec[indx_tec].list_TECComponents[indx].m_id)[0]));
+                                    tec[indx_tec].list_TECComponents[indx].m_listLowPointDev.Add(new TG(list_tg.Rows[k], all_PARAM_TG.Select(@"ID_TG=" + tec[indx_tec].list_TECComponents[indx].m_id)[0]));
                                 }
                             else
                                 ; //Ошибка получения списка ТГ

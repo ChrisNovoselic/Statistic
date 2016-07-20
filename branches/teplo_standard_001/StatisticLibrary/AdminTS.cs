@@ -945,19 +945,22 @@ namespace StatisticCommon
         /// <param name="iRows">Идентификатор строки</param>
         protected void setRDGExcelValuesItem(out RDGStruct item, int iRows)
         {
-            int j = -1;
+            int indx_col = 1
+                , j = -1;
             item = new RDGStruct();
             double val = -1F;
 
-            for (j = 0; j < allTECComponents[indxTECComponents].m_listTG.Count; j++)
-                if (allTECComponents[indxTECComponents].m_listTG[j].m_indx_col_rdg_excel > 1)
-                    if (! (m_tableRDGExcelValuesResponse.Rows[iRows][allTECComponents[indxTECComponents].m_listTG[j].m_indx_col_rdg_excel - 1] is DBNull) &&
-                        (double.TryParse (m_tableRDGExcelValuesResponse.Rows[iRows][allTECComponents[indxTECComponents].m_listTG[j].m_indx_col_rdg_excel - 1].ToString (), out val) == true))
+            for (j = 0; j < allTECComponents[indxTECComponents].m_listLowPointDev.Count; j++) {
+                indx_col = allTECComponents[indxTECComponents].m_listLowPointDev[j].m_indx_col_rdg_excel;
+                if (indx_col > 1)
+                    if (!(m_tableRDGExcelValuesResponse.Rows[iRows][indx_col - 1] is DBNull) &&
+                        (double.TryParse(m_tableRDGExcelValuesResponse.Rows[iRows][indx_col - 1].ToString(), out val) == true))
                         item.pbr += val;
                     else
                         ;
                 else
-                    return ;
+                    return;
+            }
 
             item.recomendation = 0;
 
@@ -2701,9 +2704,9 @@ namespace StatisticCommon
                 {
                     if ((comp.tec.m_id == allTECComponents[indx].tec.m_id) && (modeTECComponent(allTECComponents.IndexOf(comp)) == ownerMode))
                     {
-                        foreach (TG tg in comp.m_listTG)
+                        foreach (TECComponentBase tc in comp.m_listLowPointDev)
                         {
-                            if (tg.m_id == allTECComponents[indx].m_id)
+                            if (tc.m_id == allTECComponents[indx].m_id)
                             {
                                 return comp.m_id;
                             }

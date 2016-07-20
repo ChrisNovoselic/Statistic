@@ -20,11 +20,28 @@ namespace StatisticCommon
         /// <summary>
         /// Тип компонента в отношении его принадлежности к электро-, или тепловой части оборудования ТЭЦ
         /// </summary>
-        TYPE _type;
+        public TYPE Type {
+            get {
+                TYPE typeRes = TYPE.UNKNOWN;
+
+                if ((IsVyvod == true)
+                    || (IsParamVyvod == true))
+                    typeRes = TYPE.TEPLO;
+                else
+                    if ((IsGTP == true)
+                        || (IsPC == true)
+                        || (IsTG == true))
+                        typeRes = TYPE.ELECTRO;
+                    else
+                        ;
+
+                return typeRes;
+            }
+        }
         /// <summary>
         /// Идентификаторы для типов компонента ТЭЦ
         /// </summary>
-        public enum ID : int { LK = 10, GTP = 100, GTP_LK = 200, PC = 500, VYVOD = 900, TG = 1000, PARAM_VYVOD = 2000, MAX = 10000 }
+        public enum ID : int { LK = 10, GTP = 100, GTP_LK = 200, PC = 500, VYVOD = 600, TG = 1000, PARAM_VYVOD = 2000, MAX = 10000 }
         /// <summary>
         /// Краткое наименовнаие компонента
         /// </summary>
@@ -53,10 +70,8 @@ namespace StatisticCommon
         /// <summary>
         /// Коструктор - основной (без параметров)
         /// </summary>
-        public TECComponentBase(TYPE type = TYPE.ELECTRO)
+        public TECComponentBase()
         {
-            _type = type;
-
             m_dcKoeffAlarmPcur = -1;
         }
         /// <summary>
@@ -80,11 +95,15 @@ namespace StatisticCommon
         /// Признак принадлежности компонента к группе щиты управления
         ///  (блочные, групповые)
         /// </summary>
-        public bool IsPC { get { return (m_id > (int)ID.PC) && (m_id < (int)ID.TG); } }
+        public bool IsPC { get { return (m_id > (int)ID.PC) && (m_id < (int)ID.VYVOD); } }
         /// <summary>
         /// Признак принадлежности компонента к группе ТГ
         /// </summary>
-        public bool IsTG { get { return (m_id > (int)ID.TG) && (m_id < (int)ID.MAX); } }
+        public bool IsTG { get { return (m_id > (int)ID.TG) && (m_id < (int)ID.PARAM_VYVOD); } }
+
+        public bool IsVyvod { get { return (m_id > (int)ID.VYVOD) && (m_id < (int)ID.TG); } }
+        
+        public bool IsParamVyvod { get { return (m_id > (int)ID.PARAM_VYVOD) && (m_id < (int)ID.MAX); } }
     }
 
     //public partial class TEC {
@@ -196,7 +215,7 @@ namespace StatisticCommon
         /// <summary>
         /// Список ТГ
         /// </summary>
-        public List<TG> m_listTG;
+        public List<TECComponentBase> m_listLowPointDev;
         /// <summary>
         /// Объект ТЭЦ - "владелец" компонента
         /// </summary>
@@ -227,7 +246,7 @@ namespace StatisticCommon
         {
             this.tec = tec;
 
-            m_listTG = new List<TG>();
+            m_listLowPointDev = new List<TECComponentBase>();
             m_listMCentreId =
             m_listMTermId = null;
         }
@@ -267,7 +286,7 @@ namespace StatisticCommon
         }
     }
 
-    public class Vyvod : TECComponentBase
+    public class Vyvod : TECComponent
     {
         public enum ID_PARAM : short { UNKNOWN = -1
             , G_PV = 1, G_OV
@@ -286,6 +305,8 @@ namespace StatisticCommon
                     , COUNT
             }; //Количество индексов
 
+            public int m_owner_vyvod;
+
             public ID_PARAM m_id_param;
             public string m_Symbol;
             public int m_typeAgregate;
@@ -299,6 +320,8 @@ namespace StatisticCommon
 
             public void Initialize(DataRow r)
             {
+                m_owner_vyvod = Convert.ToInt32(r[@"ID_VYVOD"]);
+
                 m_id_param = (ID_PARAM)Convert.ToInt16(r[@"ID_PARAM"]);
                 m_SensorsString_VZLET = ((string)r[@"KKS_NAME"]).Trim();
 
@@ -318,6 +341,11 @@ namespace StatisticCommon
 
         private bool m_bKomUchet;
 
+        public Vyvod()
+            : this(null, new DataRow[] {  })
+        {
+        }
+
         public Vyvod(TEC tec, DataRow row_param)
             : this(tec, new DataRow[] { row_param })
         {
@@ -327,7 +355,7 @@ namespace StatisticCommon
         /// </summary>
         /// <param name="tec">Объект-ТЭЦ - родительский по отношению к создаваемому объекту</param>
         /// <param name="r">Строка со значениями свойств создаваемого объекта-ВЫВОДа</param>
-        public Vyvod(TEC tec, DataRow []rows_param)
+        public Vyvod(TEC tec, DataRow []rows_param) : base (tec, rows_param[0])
         {
             this.tec = tec;
 

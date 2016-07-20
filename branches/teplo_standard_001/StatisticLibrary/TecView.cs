@@ -14,7 +14,7 @@ namespace StatisticCommon
     public class TecViewTMPower : TecView
     {
         public TecViewTMPower()
-            : base(/*TecView.TYPE_PANEL.CUR_POWER, */-1, -1)
+            : base(/*TecView.TYPE_PANEL.CUR_POWER, */-1, -1, TECComponentBase.TYPE.ELECTRO)
         {
         }
 
@@ -42,7 +42,7 @@ namespace StatisticCommon
     public class TecViewStandard : TecView
     {
         public TecViewStandard(int indx_tec, int indx_comp)
-            : base(indx_tec, indx_comp)
+            : base(indx_tec, indx_comp, TECComponentBase.TYPE.ELECTRO)
         {
         }
 
@@ -125,15 +125,31 @@ namespace StatisticCommon
     public abstract class TecView : HAdmin
     {
         /// <summary>
+        /// Тип текущего объекта (тип оборудования электро-, тепло)
+        /// </summary>
+        protected TECComponentBase.TYPE _type;
+        /// <summary>
+        /// ??? Тип текущего объекта нельзя определить до тех пор, пока тепловые компоненты не будут встроены в общий список 'allTECComponents'
+        ///  , поэтому указываем явно при создании объекта; собственно, определить невозможно, если объект - ТЭЦ в целом
+        /// </summary>
+        public TECComponentBase.TYPE Type { get { return _type; } }
+        /// <summary>
         /// Перечисление - Идентификаторы типов минутных АИИСКУЭ значений
         /// </summary>
         public enum ID_AISKUE_PARNUMBER : uint { FACT_03 = 2, FACT_30 = 12 };
         /// <summary>
         /// Индекс типа панели в интересах которой выполняется текущий объект
-        ///  определяет длительность интервала между опросами
+        ///  , определяет длительность интервала между опросами
         /// </summary>
         public ID_AISKUE_PARNUMBER m_idAISKUEParNumber;
-        
+
+        public int IntervalMultiplier {
+            get {
+                return m_idAISKUEParNumber == ID_AISKUE_PARNUMBER.FACT_03 ? 1 :
+                    m_idAISKUEParNumber == ID_AISKUE_PARNUMBER.FACT_30 ? 10 : -1;
+            }
+        }
+
         protected enum StatesMachine
         {
             InitSensors, //Инициализация строк с идентификаторами ГТП (ТГ) для дальнейшего использования в запросах
@@ -197,7 +213,7 @@ namespace StatisticCommon
             public double valuesREC;
         }
 
-        public class valuesTG : Object {
+        public class valuesLowPointDev : Object {
             /// <summary>
             ///  для мгн./значений в течении минуты
             /// </summary>
@@ -275,14 +291,23 @@ namespace StatisticCommon
 
         public volatile int m_indx_TEC;
         //public volatile int m_indx_TECComponent;
-        public List <TECComponentBase> m_localTECComponents;
+
+        //private List <TECComponentBase> _localParamVyvod;
+        protected List <TECComponentBase> _localTECComponents;
+        public List <TECComponentBase> LocalTECComponents {
+            get {
+                return /*_type == TECComponentBase.TYPE.TEPLO ? _localParamVyvod :
+                    _type == TECComponentBase.TYPE.ELECTRO ?*/ _localTECComponents /*: null*/
+                    ;
+            }
+        }
         /// <summary>
         /// Идентификатор объекта (ТЭЦ, ГТП, ЩУ, ТГ)
         ///  , которому принадлежит текущий объект 'TecView'
         /// </summary>
         public int m_ID { get { return indxTECComponents < 0 ? m_tec.m_id : m_tec.list_TECComponents[indxTECComponents].m_id; } }
         public volatile Dictionary<int, TecView.valuesTECComponent> [] m_dictValuesTECComponent;
-        public volatile Dictionary<int, TecView.valuesTG>m_dictValuesTG;
+        public volatile Dictionary<int, TecView.valuesLowPointDev>m_dictValuesLowPointDev;
 
         public CONN_SETT_TYPE[] m_arTypeSourceData;
         public int[] m_arIdListeners; //Идентификаторы номеров клиентов подключенных к
@@ -303,25 +328,25 @@ namespace StatisticCommon
             get { return m_list_tec [0]; }
         }
 
-        public List<TG> listTG
+        public List<TECComponentBase> ListLowPointDev
         {
             get
             {
                 if (indxTECComponents < 0)
-                    return m_tec.m_listTG;
+                    return m_tec.GetListLowPointDev (_type);
                 else
-                    return m_tec.list_TECComponents[indxTECComponents].m_listTG;
+                    return m_tec.list_TECComponents[indxTECComponents].m_listLowPointDev;
             }
         }
 
-        public int CountTG
+        public int CountLowPointDev
         {
             get
             {
                 if (indxTECComponents < 0)
-                    return m_tec.m_listTG.Count;
+                    return ListLowPointDev.Count;
                 else
-                    return allTECComponents[indxTECComponents].m_listTG.Count;
+                    return allTECComponents[indxTECComponents].m_listLowPointDev.Count;
             }
         }
 
@@ -343,9 +368,10 @@ namespace StatisticCommon
             m_valuesMins = new valuesTEC [21];
             m_valuesHours = new valuesTEC [24];
 
-            m_dictValuesTG = new Dictionary<int,valuesTG> ();
+            m_dictValuesLowPointDev = new Dictionary<int,valuesLowPointDev> ();
 
-            m_localTECComponents = new List<TECComponentBase>();
+            //_localParamVyvod = new List<TECComponentBase>();
+            _localTECComponents = new List<TECComponentBase>();
             //tgsName = new List<System.Windows.Forms.Label>();
 
             m_arTypeSourceData = new CONN_SETT_TYPE [(int)HDateTime.INTERVAL.COUNT_ID_TIME];
@@ -360,44 +386,46 @@ namespace StatisticCommon
             //countTG = 0;
             List<int> tg_ids = new List<int>(); //Временный список идентификаторов ТГ
 
+            //_localParamVyvod.Clear();
             //07.09.2015 Для новой возможности (PanelSOSTIASSO) - реинициализации во время выполнения
-            m_localTECComponents.Clear ();
-            m_dictValuesTG.Clear ();
+            _localTECComponents.Clear ();
+            m_dictValuesLowPointDev.Clear ();
 
             if (indxTECComponents < 0) // значит этот view будет суммарным для всех ГТП
-            {                
-                foreach (TECComponent c in m_tec.list_TECComponents)
+            {
+                switch (_type)
                 {
-                    if ((c.m_id > 100) && (c.m_id < 500)) {
-                        m_localTECComponents.Add(c);
+                    case TECComponentBase.TYPE.TEPLO:
+                        foreach (Vyvod v in m_tec.m_list_Vyvod)
+                        {
+                            _localTECComponents.Add(v);
+                            initDictValuesParamVyvod(v);
+                        }
+                        break;
+                    case TECComponentBase.TYPE.ELECTRO:
+                        foreach (TECComponent tc in m_tec.list_TECComponents)
+                        {
+                            if (tc.IsGTP == true)
+                            {
+                                _localTECComponents.Add(tc);
 
-                        //m_dictValuesTECComponent.Add (c.m_id, new valuesTECComponent(25));
-                    }
-                    else
-                        ;
+                                //m_dictValuesTECComponent.Add (c.m_id, new valuesTECComponent(25));
+                            }
+                            else
+                                ;
 
-                    //foreach (TG tg in g.m_listTG)
-                    //{
-                    //    //Проверка обработки текущего ТГ
-                    //    if (tg_ids.IndexOf(tg.m_id) == -1)
-                    //    {
-                    //        tg_ids.Add(tg.m_id); //Запомнить, что ТГ обработан
-                    //    
-                    //        //positionYValue = 19;
-                    //        m_pnlQuickData.addTGView(ref tg.name_shr);
-                    //    }
-                    //    else
-                    //        ;
-                    //}
-
-                    initDictValuesTG (c);
+                            initDictValuesTG(tc);
+                        }
+                        break;
+                    default:
+                        break;
                 }
             }
             else
-                foreach (TG tg in m_tec.list_TECComponents[indxTECComponents].m_listTG)
+                foreach (TG tg in m_tec.list_TECComponents[indxTECComponents].m_listLowPointDev)
                     foreach (TECComponent c in m_tec.list_TECComponents)
                         if (tg.m_id == c.m_id) {
-                            m_localTECComponents.Add(c);
+                            _localTECComponents.Add(c);
 
                             initDictValuesTG(c);
                         }
@@ -411,7 +439,7 @@ namespace StatisticCommon
         {
             m_dictValuesTECComponent = new Dictionary<int, valuesTECComponent>[cnt];
             
-            foreach (TECComponent c in m_localTECComponents)
+            foreach (TECComponentBase c in _localTECComponents)
                 for (int i = 0; i < m_dictValuesTECComponent.Length; i ++) {
                     if (m_dictValuesTECComponent[i] == null) m_dictValuesTECComponent[i] = new Dictionary<int,valuesTECComponent> (); else ;
                     m_dictValuesTECComponent[i].Add(c.m_id, new TecView.valuesTECComponent ());
@@ -420,17 +448,27 @@ namespace StatisticCommon
 
         private void initDictValuesTG(TECComponent comp)
         {
-            foreach (TG tg in comp.m_listTG)
-                if (m_dictValuesTG.ContainsKey(tg.m_id) == false)
-                    m_dictValuesTG.Add(tg.m_id, new valuesTG());
+            foreach (TG tg in comp.m_listLowPointDev)
+                if (m_dictValuesLowPointDev.ContainsKey(tg.m_id) == false)
+                    m_dictValuesLowPointDev.Add(tg.m_id, new valuesLowPointDev());
+                else
+                    ;
+        }
+
+        private void initDictValuesParamVyvod(Vyvod v)
+        {
+            foreach (Vyvod.ParamVyvod pv in v.m_listParam)
+                if (m_dictValuesLowPointDev.ContainsKey(pv.m_id) == false)
+                    m_dictValuesLowPointDev.Add(pv.m_id, new valuesLowPointDev());
                 else
                     ;
         }
 
         //public TecView(bool[] arMarkSavePPBRValues, TYPE_PANEL type, int indx_tec, int indx_comp)
-        public TecView(/*TYPE_PANEL type, */int indx_tec, int indx_comp)
+        public TecView(/*TYPE_PANEL type, */int indx_tec, int indx_comp, TECComponentBase.TYPE type)
             : base()
         {
+            _type = type;
             m_idAISKUEParNumber = ID_AISKUE_PARNUMBER.FACT_03;
 
             m_indx_TEC = indx_tec;
@@ -466,21 +504,24 @@ namespace StatisticCommon
         {
             double dblRes = 0F;
 
-            int min = lastMin;
+            int id = -1
+                , min = lastMin;
 
             if (!(min == 0)) min--; else ;
 
-            for (int i = 0; i < listTG.Count; i++)
+            for (int i = 0; i < ListLowPointDev.Count; i++)
             {
-                if (m_dictValuesTG[listTG[i].m_id].m_bPowerMinutesRecieved == false)
+                id = ListLowPointDev[i].m_id;
+
+                if (m_dictValuesLowPointDev[id].m_bPowerMinutesRecieved == false)
                     //Не учитывать ТГ, для которого НЕ было получено НИ одного значения
                     continue;
                 else
                     ;
 
-                if (!(m_dictValuesTG[listTG[i].m_id].m_powerMinutes[min] < 0))
-                    if (m_dictValuesTG[listTG[i].m_id].m_powerMinutes[min] > 1)
-                        dblRes += m_dictValuesTG[listTG[i].m_id].m_powerMinutes[min];
+                if (!(m_dictValuesLowPointDev[id].m_powerMinutes[min] < 0))
+                    if (m_dictValuesLowPointDev[id].m_powerMinutes[min] > 1)
+                        dblRes += m_dictValuesLowPointDev[id].m_powerMinutes[min];
                     else ;
                 else
                 {
@@ -555,6 +596,8 @@ namespace StatisticCommon
 
         public void ClearValuesLastMinutesTM()
         {
+            TG tg = null;
+
             try
             {
                 if (!(m_dictValuesTECComponent.Length - m_valuesHours.Length == 1))
@@ -577,23 +620,25 @@ namespace StatisticCommon
                 else
                     ;
 
-                foreach (TECComponent g in m_localTECComponents)
+                foreach (TECComponent g in _localTECComponents)
                 {
-                    foreach (TG tg in g.m_listTG)
+                    foreach (TECComponentBase tc in g.m_listLowPointDev)
                     {
-                        if (m_dictValuesTG[tg.m_id].m_power_LastMinutesTM == null)
-                            m_dictValuesTG[tg.m_id].m_power_LastMinutesTM = new double[m_dictValuesTECComponent.Length + 1];
-                        else {
-                            if (!(m_dictValuesTG[tg.m_id].m_power_LastMinutesTM.Length == m_dictValuesTECComponent.Length))
-                            {
-                                m_dictValuesTG[tg.m_id].m_power_LastMinutesTM = null;
+                        tg = tc as TG;
 
-                                m_dictValuesTG[tg.m_id].m_power_LastMinutesTM = new double[m_dictValuesTECComponent.Length + 1];
+                        if (m_dictValuesLowPointDev[tg.m_id].m_power_LastMinutesTM == null)
+                            m_dictValuesLowPointDev[tg.m_id].m_power_LastMinutesTM = new double[m_dictValuesTECComponent.Length + 1];
+                        else {
+                            if (!(m_dictValuesLowPointDev[tg.m_id].m_power_LastMinutesTM.Length == m_dictValuesTECComponent.Length))
+                            {
+                                m_dictValuesLowPointDev[tg.m_id].m_power_LastMinutesTM = null;
+
+                                m_dictValuesLowPointDev[tg.m_id].m_power_LastMinutesTM = new double[m_dictValuesTECComponent.Length + 1];
                             } else
                                 ;
                         }
 
-                        m_dictValuesTG[tg.m_id].m_power_LastMinutesTM[i] = 0F;
+                        m_dictValuesLowPointDev[tg.m_id].m_power_LastMinutesTM[i] = 0F;
                     }
                     
                     if (m_dictValuesTECComponent[i] == null) m_dictValuesTECComponent[i] = new Dictionary<int, valuesTECComponent>(); else ;
@@ -663,6 +708,7 @@ namespace StatisticCommon
         {
             int iRes = 0;
             int i = -1
+                , id = -1
                 , id_tm = -1;
             string kks_name = string.Empty;
             float value = -1;
@@ -670,13 +716,15 @@ namespace StatisticCommon
                 , dtServer = serverTime.Add(-HDateTime.TS_MSK_OFFSET_OF_UTCTIMEZONE);
             TG tgTmp;
 
-            foreach (TECComponent g in m_localTECComponents)
+            foreach (TECComponent g in _localTECComponents)
             {
-                foreach (TG tg in g.m_listTG)
+                foreach (TECComponentBase tc in g.m_listLowPointDev)
                 {
-                    m_dictValuesTG[tg.m_id].m_powerCurrent_TM = -1F;
-                    m_dictValuesTG[tg.m_id].m_dtCurrent_TM = DateTime.MinValue;
-                    m_dictValuesTG[tg.m_id].m_id_TM = -1;
+                    id = tc.m_id;
+
+                    m_dictValuesLowPointDev[id].m_powerCurrent_TM = -1F;
+                    m_dictValuesLowPointDev[id].m_dtCurrent_TM = DateTime.MinValue;
+                    m_dictValuesLowPointDev[id].m_id_TM = -1;
                 }
             }
 
@@ -746,19 +794,19 @@ namespace StatisticCommon
                             break;
                     }
 
-                    if (!(m_dictValuesTG[tgTmp.m_id].m_powerCurrent_TM == value))
+                    if (!(m_dictValuesLowPointDev[tgTmp.m_id].m_powerCurrent_TM == value))
                         // значения НЕ совпадают
                         if (! (value < 0))
                         {// больше ИЛИ = 0
-                            m_dictValuesTG[tgTmp.m_id].m_dtCurrent_TM = HDateTime.ToMoscowTimeZone(dtLastChangedAt);
+                            m_dictValuesLowPointDev[tgTmp.m_id].m_dtCurrent_TM = HDateTime.ToMoscowTimeZone(dtLastChangedAt);
 
                             //if (!(value < 1))
                             //    // больше ИЛИ = 1                                
                             //    ;
                             //else ; // меньше 1
 
-                            m_dictValuesTG[tgTmp.m_id].m_powerCurrent_TM = value;
-                            m_dictValuesTG[tgTmp.m_id].m_id_TM = id_tm;
+                            m_dictValuesLowPointDev[tgTmp.m_id].m_powerCurrent_TM = value;
+                            m_dictValuesLowPointDev[tgTmp.m_id].m_id_TM = id_tm;
                         }
                         else
                             ; // меньше 0
@@ -1845,12 +1893,12 @@ namespace StatisticCommon
                 m_valuesMins = new valuesTEC[cnt];
 
                 //Следовательно и для ТГ требуется изменить размер массива
-                foreach (TECComponent g in m_localTECComponents)
+                foreach (TECComponent g in _localTECComponents)
                 {
-                    foreach (TG tg in g.m_listTG)
+                    foreach (TECComponentBase tc in g.m_listLowPointDev)
                     {
-                        this.m_dictValuesTG[tg.m_id].m_powerMinutes = null;
-                        this.m_dictValuesTG[tg.m_id].m_powerMinutes = new double[cnt];
+                        this.m_dictValuesLowPointDev[tc.m_id].m_powerMinutes = null;
+                        this.m_dictValuesLowPointDev[tc.m_id].m_powerMinutes = new double[cnt];
                     }
                 }
             }
@@ -1862,6 +1910,8 @@ namespace StatisticCommon
         /// </summary>
         protected void ClearValuesMins()
         {
+            int id = -1;
+            
             initValuesMinLength ();
 
             for (int i = 0; i < m_valuesMins.Length; i++)
@@ -1876,28 +1926,30 @@ namespace StatisticCommon
             }
 
             //foreach (TECComponent g in m_tec.list_TECComponents)
-            foreach (TECComponent comp in m_localTECComponents)
+            foreach (TECComponent comp in _localTECComponents)
             {
-                foreach (TG tg in comp.m_listTG)
+                foreach (TECComponentBase tc in comp.m_listLowPointDev)
                 {
+                    id = tc.m_id;
+
                     //Проверить размер массива для уср./мин. значений в течении часа
-                    if ((! (m_dictValuesTG[tg.m_id].m_powerMinutes == null)) && (!(m_dictValuesTG[tg.m_id].m_powerMinutes.Length == m_valuesMins.Length)))
-                        m_dictValuesTG[tg.m_id].m_powerMinutes = null;
+                    if ((! (m_dictValuesLowPointDev[id].m_powerMinutes == null)) && (!(m_dictValuesLowPointDev[id].m_powerMinutes.Length == m_valuesMins.Length)))
+                        m_dictValuesLowPointDev[id].m_powerMinutes = null;
                     else
                         ;
                     //Выделить память (при необходимости)
-                    if (m_dictValuesTG[tg.m_id].m_powerMinutes == null)
-                        m_dictValuesTG[tg.m_id].m_powerMinutes = new double[m_valuesMins.Length];
+                    if (m_dictValuesLowPointDev[id].m_powerMinutes == null)
+                        m_dictValuesLowPointDev[id].m_powerMinutes = new double[m_valuesMins.Length];
                     else
                         ;
                     //Инициализировать все элементы массива уср./мин. значений в течении часа
-                    m_dictValuesTG[tg.m_id].m_bPowerMinutesRecieved = false;
-                    for (int i = 0; i < m_dictValuesTG[tg.m_id].m_powerMinutes.Length; i++)
+                    m_dictValuesLowPointDev[id].m_bPowerMinutesRecieved = false;
+                    for (int i = 0; i < m_dictValuesLowPointDev[id].m_powerMinutes.Length; i++)
                     {
-                        m_dictValuesTG[tg.m_id].m_powerMinutes[i] = -1; //Признак НЕполучения данных
+                        m_dictValuesLowPointDev[id].m_powerMinutes[i] = -1; //Признак НЕполучения данных
                     }
 
-                    clearTGValuesSecs(m_dictValuesTG[tg.m_id]);
+                    clearLowPointDevValuesSecs(m_dictValuesLowPointDev[id]);
                 }
             }
 
@@ -1908,7 +1960,7 @@ namespace StatisticCommon
             m_markWarning.UnMarked((int)INDEX_WARNING.CURR_MIN_TM_GEN);
         }
 
-        protected void clearTGValuesSecs (valuesTG vals)
+        protected void clearLowPointDevValuesSecs (valuesLowPointDev vals)
         {
             //Выделить память (при необходимости) для мгнов. значений в течении мин
             if (vals.m_powerSeconds == null)
@@ -1994,8 +2046,8 @@ namespace StatisticCommon
         {
             int id = -1;
 
-            for (int j = 0; j < m_localTECComponents.Count; j ++) {
-                id = m_localTECComponents[j].m_id;
+            for (int j = 0; j < _localTECComponents.Count; j ++) {
+                id = _localTECComponents[j].m_id;
                 
                 if (m_dictValuesTECComponent[indx][id] == null) m_dictValuesTECComponent[indx][id] = new valuesTECComponent(); else ;
 
@@ -2075,15 +2127,20 @@ namespace StatisticCommon
             //    case TEC.TEC_TYPE.COMMON:
             //        offsetPrev = -1;
 
-            if ((indxTECComponents < 0) || //ТЭЦ
-                ((!(indxTECComponents < 0)) && (m_tec.list_TECComponents[indxTECComponents].m_id > 500))) //компоненты ЩУ, ТГ
+            if ((indxTECComponents < 0) //ТЭЦ
+                || ((!(indxTECComponents < 0))
+                    && ((m_tec.list_TECComponents[indxTECComponents].IsPC == true) //компонент ЩУ
+                        || (m_tec.list_TECComponents[indxTECComponents].IsTG == true)))) //компонент ТГ
             {//Для ТЭЦ, и комопнентов ЩУ, ТГ
                 offsetUDG = 1;
                 offsetPlan = /*offsetUDG + 3 * tec.list_TECComponents.Count +*/ 1; //ID_COMPONENT
                 offsetLayout = -1;
 
-                m_tablePPBRValuesResponse = restruct_table_pbrValues(m_tablePPBRValuesResponse, m_tec.list_TECComponents, indxTECComponents, m_tsOffsetToMoscow);
-                offsetLayout = (!(m_tablePPBRValuesResponse.Columns.IndexOf("PBR_NUMBER") < 0)) ? (offsetPlan + m_localTECComponents.Count * 3) : m_tablePPBRValuesResponse.Columns.Count;
+                m_tablePPBRValuesResponse = restruct_table_pbrValues(m_tablePPBRValuesResponse
+                    , _type == TECComponentBase.TYPE.TEPLO ? m_tec.m_list_Vyvod : m_tec.list_TECComponents
+                    , indxTECComponents
+                    , m_tsOffsetToMoscow);
+                offsetLayout = (!(m_tablePPBRValuesResponse.Columns.IndexOf("PBR_NUMBER") < 0)) ? (offsetPlan + _localTECComponents.Count * 3) : m_tablePPBRValuesResponse.Columns.Count;
 
                 DataTable tableAdminValuesResponse = null;
                 if (bSeason == true)
@@ -2108,9 +2165,9 @@ namespace StatisticCommon
                             {
                                 offsetPrev = i;
                                 //foreach (TECComponent g in tec.list_TECComponents)
-                                for (j = 0; j < m_localTECComponents.Count; j++)
+                                for (j = 0; j < _localTECComponents.Count; j++)
                                 {
-                                    int id = m_localTECComponents[j].m_id;
+                                    int id = _localTECComponents[j].m_id;
 
                                     if ((offsetPlan + j * 3) < m_tablePPBRValuesResponse.Columns.Count)
                                     {
@@ -2192,13 +2249,13 @@ namespace StatisticCommon
                             hour += GetSeasonHourOffset(hour);
 
                             //foreach (TECComponent g in tec.list_TECComponents)
-                            for (j = 0; j < m_localTECComponents.Count; j++)
+                            for (j = 0; j < _localTECComponents.Count; j++)
                             {
                                 int id = -1;
                                 
                                 try
                                 {
-                                    id = m_localTECComponents[j].m_id;
+                                    id = _localTECComponents[j].m_id;
 
                                     if ((offsetPlan + (j * 3) < m_tablePPBRValuesResponse.Columns.Count) && (!(m_tablePPBRValuesResponse.Rows[i][offsetPlan + (j * 3)] is System.DBNull)))
                                     {
@@ -2351,13 +2408,13 @@ namespace StatisticCommon
                                     ;
 
                             //foreach (TECComponent g in tec.list_TECComponents)
-                            for (j = 0; j < m_localTECComponents.Count; j++)
+                            for (j = 0; j < _localTECComponents.Count; j++)
                             {
                                 int id = -1;
 
                                 try
                                 {
-                                    id = m_localTECComponents[j].m_id;
+                                    id = _localTECComponents[j].m_id;
 
                                     m_dictValuesTECComponent[hour - 0][id].valuesPBR = 0;
 
@@ -2417,9 +2474,9 @@ namespace StatisticCommon
                 for (i = 0; i < m_valuesHours.Length; i++) //??? m_valuesHours.Length == m_dictValuesTECComponent.Length + 1
                 {
                     //i = ii - 1;
-                    for (j = 0; j < m_localTECComponents.Count; j++)
+                    for (j = 0; j < _localTECComponents.Count; j++)
                     {
-                        int id = m_localTECComponents [j].m_id;
+                        int id = _localTECComponents [j].m_id;
                         
                         m_valuesHours[i].valuesPBR += m_dictValuesTECComponent[i + 1][id].valuesPBR;
                         m_valuesHours[i].valuesPmin += m_dictValuesTECComponent[i + 1][id].valuesPmin;
@@ -2854,8 +2911,14 @@ namespace StatisticCommon
             DataTable table_in_restruct = new DataTable();
             List<DataColumn> cols_data = new List<DataColumn>();
             DataRow[] dataRows;
-            int i = -1, j = -1, k = -1;
+            int i = -1, j = -1, k = -1
+                , id = -1
+                , count_comp = -1;
             string nameFieldDate = "DATE_PBR"; // tec.m_strNamesField[(int)TEC.INDEX_NAME_FIELD.PBR_DATETIME]
+
+            //List<TECComponent> list_TECComponents = null; // используется при 'num_comp < 0' (ТЭЦ в целом)
+            List<TECComponentBase> list_TECComponents = null; // используется при 'num_comp < 0' (ТЭЦ в целом)
+            //List<TECComponentBase> list_LowPointDev = null; // используется при 'num_comp НЕ< 0'
 
             for (i = 0; i < table_in.Columns.Count; i++)
             {
@@ -2870,23 +2933,27 @@ namespace StatisticCommon
 
             if (i < table_in.Columns.Count)
             {
-                List<TG> list_TG = null;
-                List<TECComponent> list_TECComponents = null;
-                int count_comp = -1;
+                count_comp = -1;
 
                 if (num_comp < 0)
                 {
-                    list_TECComponents = new List<TECComponent>();
+                    list_TECComponents = new List<TECComponentBase>();
                     for (i = 0; i < listTECComp.Count; i++)
                     {
-                        if ((listTECComp[i].m_id > 100) && (listTECComp[i].m_id < 500))
+                        if (listTECComp[i].IsGTP == true)
                             list_TECComponents.Add(listTECComp[i]);
                         else
-                            ;
+                            if (listTECComp[i].IsVyvod == true)
+                                list_TECComponents.Add((listTECComp[i] as Vyvod).m_listParam[0]);
+                            else
+                                ;
                     }
                 }
                 else
-                    list_TG = listTECComp[num_comp].m_listTG;
+                    //list_LowPointDev = listTECComp[num_comp].m_listLowPointDev
+                    list_TECComponents = listTECComp[num_comp].m_listLowPointDev
+                    ;
+
 
                 //Преобразование таблицы
                 for (i = 0; i < table_in.Columns.Count; i++)
@@ -2912,20 +2979,20 @@ namespace StatisticCommon
                             ;
                 }
 
-                if (num_comp < 0)
+                //if (num_comp < 0)
                     count_comp = list_TECComponents.Count;
-                else
-                    count_comp = list_TG.Count;
+                //else
+                //    count_comp = list_LowPointDev.Count;
 
                 for (i = 0; i < count_comp; i++)
                 {
                     for (j = 0; j < cols_data.Count; j++)
                     {
                         table_in_restruct.Columns.Add(cols_data[j].ColumnName, cols_data[j].DataType);
-                        if (num_comp < 0)
+                        //if (num_comp < 0)
                             table_in_restruct.Columns[table_in_restruct.Columns.Count - 1].ColumnName += "_" + list_TECComponents[i].m_id;
-                        else
-                            table_in_restruct.Columns[table_in_restruct.Columns.Count - 1].ColumnName += "_" + list_TG[i].m_id;
+                        //else
+                        //    table_in_restruct.Columns[table_in_restruct.Columns.Count - 1].ColumnName += "_" + list_LowPointDev[i].m_id;
                     }
                 }
 
@@ -2939,10 +3006,11 @@ namespace StatisticCommon
 
                 for (i = 0; i < count_comp; i++)
                 {
-                    if (num_comp < 0)
+                    id = list_TECComponents[i].m_id;
+                    //if (num_comp < 0)
                         dataRows = table_in.Select("ID_COMPONENT=" + list_TECComponents[i].m_id);
-                    else
-                        dataRows = table_in.Select("ID_COMPONENT=" + list_TG[i].m_id);
+                    //else
+                    //    dataRows = table_in.Select("ID_COMPONENT=" + list_LowPointDev[i].m_id);
 
                     listDataRows.Add(new DataRow[dataRows.Length]);
                     dataRows.CopyTo(listDataRows[i], 0);
@@ -2977,10 +3045,10 @@ namespace StatisticCommon
 
                         for (k = 0; k < cols_data.Count; k++)
                         {
-                            if (num_comp < 0)
-                                table_in_restruct.Rows[indx_row][cols_data[k].ColumnName + "_" + list_TECComponents[i].m_id] = listDataRows[i][j][cols_data[k].ColumnName];
-                            else
-                                table_in_restruct.Rows[indx_row][cols_data[k].ColumnName + "_" + list_TG[i].m_id] = listDataRows[i][j][cols_data[k].ColumnName];
+                            //if (num_comp < 0)
+                                table_in_restruct.Rows[indx_row][cols_data[k].ColumnName + "_" + id] = listDataRows[i][j][cols_data[k].ColumnName];
+                            //else
+                            //    table_in_restruct.Rows[indx_row][cols_data[k].ColumnName + "_" + list_LowPointDev[i].m_id] = listDataRows[i][j][cols_data[k].ColumnName];
                         }
                     }
                 }
@@ -3002,6 +3070,9 @@ namespace StatisticCommon
             int i = -1, j = -1, k = -1;
             string nameFieldDate = "DATE_ADMIN"; // tec.m_strNamesField[(int)TEC.INDEX_NAME_FIELD.ADMIN_DATETIME]
 
+            List<TECComponentBase> list_LowPointDev = null;
+            List<TECComponent> list_TECComponents = null;
+
             for (i = 0; i < table_in.Columns.Count; i++)
             {
                 if (table_in.Columns[i].ColumnName == "ID_COMPONENT")
@@ -3015,8 +3086,6 @@ namespace StatisticCommon
 
             if (i < table_in.Columns.Count)
             {
-                List<TG> list_TG = null;
-                List<TECComponent> list_TECComponents = null;
                 int count_comp = -1;
 
                 if (num_comp < 0)
@@ -3024,14 +3093,14 @@ namespace StatisticCommon
                     list_TECComponents = new List<TECComponent>();
                     for (i = 0; i < listTECComp.Count; i++)
                     {
-                        if ((listTECComp[i].m_id > 100) && (listTECComp[i].m_id < 500))
+                        if (listTECComp[i].IsGTP == true)
                             list_TECComponents.Add(listTECComp[i]);
                         else
                             ;
                     }
                 }
                 else
-                    list_TG = listTECComp[num_comp].m_listTG;
+                    list_LowPointDev = listTECComp[num_comp].m_listLowPointDev;
 
                 //Преобразование таблицы
                 for (i = 0; i < table_in.Columns.Count; i++)
@@ -3053,7 +3122,7 @@ namespace StatisticCommon
                 if (num_comp < 0)
                     count_comp = list_TECComponents.Count;
                 else
-                    count_comp = list_TG.Count;
+                    count_comp = list_LowPointDev.Count;
 
                 for (i = 0; i < count_comp; i++)
                 {
@@ -3063,7 +3132,7 @@ namespace StatisticCommon
                         if (num_comp < 0)
                             table_in_restruct.Columns[table_in_restruct.Columns.Count - 1].ColumnName += "_" + list_TECComponents[i].m_id;
                         else
-                            table_in_restruct.Columns[table_in_restruct.Columns.Count - 1].ColumnName += "_" + list_TG[i].m_id;
+                            table_in_restruct.Columns[table_in_restruct.Columns.Count - 1].ColumnName += "_" + list_LowPointDev[i].m_id;
                     }
                 }
 
@@ -3074,7 +3143,7 @@ namespace StatisticCommon
                     if (num_comp < 0)
                         dataRows = table_in.Select("ID_COMPONENT=" + list_TECComponents[i].m_id);
                     else
-                        dataRows = table_in.Select("ID_COMPONENT=" + list_TG[i].m_id);
+                        dataRows = table_in.Select("ID_COMPONENT=" + list_LowPointDev[i].m_id);
                     listDataRows.Add(new DataRow[dataRows.Length]);
                     dataRows.CopyTo(listDataRows[i], 0);
 
@@ -3106,7 +3175,7 @@ namespace StatisticCommon
                             if (num_comp < 0)
                                 table_in_restruct.Rows[indx_row][cols_data[k].ColumnName + "_" + list_TECComponents[i].m_id] = listDataRows[i][j][cols_data[k].ColumnName];
                             else
-                                table_in_restruct.Rows[indx_row][cols_data[k].ColumnName + "_" + list_TG[i].m_id] = listDataRows[i][j][cols_data[k].ColumnName];
+                                table_in_restruct.Rows[indx_row][cols_data[k].ColumnName + "_" + list_LowPointDev[i].m_id] = listDataRows[i][j][cols_data[k].ColumnName];
                         }
                     }
                 }
@@ -3123,11 +3192,16 @@ namespace StatisticCommon
         private int getHoursFactResponse(DataTable table)
         {
             int i, j
+                , cntTG = -1
                 , half = 0 //Индекс получаса
                 , hour = 0
                 , prev_season = 0, season = 0, offset_season = 0;
             double hourVal = 0, halfVal = 0, value; //Значения за период времени
             DateTime dt , dtNeeded, dtServer;
+            DataRow[] tgRows = null;
+            TG tg = null;
+
+            cntTG = CountLowPointDev;
             dt = dtNeeded = DateTime.Now;
 
             dtServer = serverTime/*.Add(m_tsOffsetToMoscow)*/;
@@ -3136,7 +3210,7 @@ namespace StatisticCommon
             else
                 ;
 
-            double[, ,] powerHourHalf = new double[listTG.Count, 2, m_valuesHours.Length];
+            double[, ,] powerHourHalf = new double[ListLowPointDev.Count, 2, m_valuesHours.Length];
 
             if (currHour == true)
                 lastHour = lastReceivedHour = 0;
@@ -3150,7 +3224,7 @@ namespace StatisticCommon
             //foreach (TECComponent g in m_tec.list_TECComponents)
             //{
                 i = 0;
-                foreach (TG t in listTG)
+                foreach (TECComponentBase tc in ListLowPointDev)
                 {
                     //t.power.Length == t.receivedHourHalf1.Length == t.receivedHourHalf2.Length
                     for (j = 0; j < m_valuesHours.Length; j++)
@@ -3193,11 +3267,11 @@ namespace StatisticCommon
             else
                 ;
 
-            i = 0;
-            DataRow [] tgRows = null;
+            i = 0;            
             //Цикл по ТГ 
-            foreach (TG tg in listTG)
-            {                
+            foreach (TECComponentBase tc in ListLowPointDev)
+            {
+                tg = tc as TG;
                 tgRows = table.Select(@"ID=" + tg.m_arIds_fact[(int)HDateTime.INTERVAL.HOURS], @"DATA_DATE");
 
                 hour = -1;
@@ -3335,20 +3409,22 @@ namespace StatisticCommon
 
                 for (j = 0; j < 2; j ++) {
                     halfVal = -1F;
-                    i = 0; //Индекс ТГ
-                    foreach (TG tg in listTG)
+                    //Индекс ТГ
+                    for (i = 0; i < cntTG; i ++)
                     {
-                        if (powerHourHalf [i, j, hour] < 0) {
+                        if (powerHourHalf[i, j, hour] < 0)
+                        {
                             //Нет данных для ТГ
                             //break;
-                        } else {
-                            if (halfVal < 0) halfVal = 0F; else ;
-                            halfVal += powerHourHalf [i, j, hour];
                         }
-                        i ++;
+                        else
+                        {
+                            if (halfVal < 0) halfVal = 0F; else ;
+                            halfVal += powerHourHalf[i, j, hour];
+                        }
                     }
 
-                    if (i < listTG.Count) {
+                    if (i < cntTG) {
                         //Нет данных для одного из ТГ
                         //break;
                     } else {
@@ -3430,7 +3506,7 @@ namespace StatisticCommon
                     {
                         if (! (lastHour == 0))
                         {//Не начало суток
-                            for (i = 0; i < listTG.Count; i++)
+                            for (i = 0; i < cntTG; i++)
                             {
                                 if ((half & 1) == 1)
                                 {
@@ -3809,6 +3885,7 @@ namespace StatisticCommon
                 //, offsetUTC = (int)HDateTime.GetUTCOffsetOfMoscowTimeZone().TotalHours
                 ;
             double val = -1F;
+            TG tg = null;
             DateTime dtVal = DateTime.Now;
             string [] checkFields = null;
 
@@ -3835,10 +3912,12 @@ namespace StatisticCommon
 
                     if (indxTECComponents < 0)
                     {
-                        foreach (TECComponent g in m_localTECComponents)
+                        foreach (TECComponent g in _localTECComponents)
                         {
-                            foreach (TG tg in g.m_listTG)
+                            foreach (TECComponentBase tc in g.m_listLowPointDev)
                             {
+                                tg = tc as TG;
+
                                 //for (i = 0; i < tg.m_power_LastMinutesTM.Length; i++)
                                 //{
                                 //    tg.m_power_LastMinutesTM[i] = 0;
@@ -3868,7 +3947,7 @@ namespace StatisticCommon
                                     //if (!(hour < 24)) hour -= 24; else ;
                                     if ((hour > 0) && (! (hour > m_valuesHours.Length)))
                                     {
-                                        m_dictValuesTG[tg.m_id].m_power_LastMinutesTM[hour - 0] = val;
+                                        m_dictValuesLowPointDev[tg.m_id].m_power_LastMinutesTM[hour - 0] = val;
 
                                         //Запрос с учетом значения перехода через сутки
                                         if (val > 1)
@@ -3887,14 +3966,14 @@ namespace StatisticCommon
                     }
                     else
                     {
-                        foreach (TECComponent comp in m_localTECComponents)
+                        foreach (TECComponent comp in _localTECComponents)
                         {
-                            //for (i = 0; i < comp.m_listTG [0].m_power_LastMinutesTM.Length; i++)
+                            //for (i = 0; i < comp.m_listLowPointDev [0].m_power_LastMinutesTM.Length; i++)
                             //{
-                            //    comp.m_listTG[0].m_power_LastMinutesTM[i] = 0;
+                            //    comp.m_listLowPointDev[0].m_power_LastMinutesTM[i] = 0;
                             //}
 
-                            tgRows = table_in.Select(@"[KKS_NAME]='" + comp.m_listTG[0].m_strKKS_NAME_TM + @"'");
+                            tgRows = table_in.Select(@"[KKS_NAME]='" + (comp.m_listLowPointDev[0] as TG).m_strKKS_NAME_TM + @"'");
 
                             for (i = 0; i < tgRows.Length; i++)
                             {
@@ -3927,7 +4006,7 @@ namespace StatisticCommon
                                 hour = dtVal.Hour + 1;
                                 if ((hour > 0) && (! (hour > m_valuesHours.Length)))
                                 {
-                                    m_dictValuesTG[comp.m_listTG[0].m_id].m_power_LastMinutesTM[hour - 0] = val;
+                                    m_dictValuesLowPointDev[comp.m_listLowPointDev[0].m_id].m_power_LastMinutesTM[hour - 0] = val;
 
                                     if (val > 1)
                                         m_valuesHours[hour - 1].valuesLastMinutesTM += val;
@@ -3948,7 +4027,7 @@ namespace StatisticCommon
                         double[] valLastMins = new double[listSensors.Count + 1];
                         foreach (string strId in listSensors)
                         {
-                            TG tg = m_tec.FindTGById(Int32.Parse(strId), TG.INDEX_VALUE.TM, HDateTime.INTERVAL.MINUTES);
+                            tg = m_tec.FindTGById(Int32.Parse(strId), TG.INDEX_VALUE.TM, HDateTime.INTERVAL.MINUTES);
                             if (tg == null)
                                 return -1;
                             else
@@ -3971,7 +4050,7 @@ namespace StatisticCommon
                                 foreach (string strId in listSensors)
                                 {
                                     int indx = listSensors.IndexOf(strId);
-                                    m_dictValuesTG[arIds[indx]].m_power_LastMinutesTM[hour + 1] = valLastMins[indx];
+                                    m_dictValuesLowPointDev[arIds[indx]].m_power_LastMinutesTM[hour + 1] = valLastMins[indx];
                                     if (indxTECComponents < 0)
                                         m_dictValuesTECComponent[hour + 1][arOwnerGTPIds[indx]].valuesLastMinutesTM += valLastMins[indx];
                                     else
@@ -4132,7 +4211,7 @@ namespace StatisticCommon
 
                         //
                         jump = false;
-                        for (j = 0; j < CountTG; j++, i++)
+                        for (j = 0; j < CountLowPointDev; j++, i++)
                         {
                             if (i >= table.Rows.Count)
                             {
@@ -4221,11 +4300,11 @@ namespace StatisticCommon
                             }
 
                             minuteVal += value;
-                            m_dictValuesTG[tgTmp.m_id].m_powerMinutes [min] = value / 1000;
+                            m_dictValuesLowPointDev[tgTmp.m_id].m_powerMinutes [min] = value / 1000;
                             //tgTmp.receivedMin[min] = true;
 
                             //Признак получения значения хотя бы за один интервал
-                            if (m_dictValuesTG[tgTmp.m_id].m_bPowerMinutesRecieved == false) m_dictValuesTG[tgTmp.m_id].m_bPowerMinutesRecieved = true; else ;
+                            if (m_dictValuesLowPointDev[tgTmp.m_id].m_bPowerMinutesRecieved == false) m_dictValuesLowPointDev[tgTmp.m_id].m_bPowerMinutesRecieved = true; else ;
                         } //для for (j = 0; j < CountTG; j++, i++)
 
                         //if ((j < CountTG) && ((end == false) || (jump == false)))
@@ -4762,11 +4841,11 @@ namespace StatisticCommon
                                 ;
 
                             //Обработка значения
-                            if (m_dictValuesTG[tgTmp.m_id].m_powerSeconds[dtLastChangedAt.Second] < 0)
-                                m_dictValuesTG[tgTmp.m_id].m_powerSeconds[dtLastChangedAt.Second] = val;
+                            if (m_dictValuesLowPointDev[tgTmp.m_id].m_powerSeconds[dtLastChangedAt.Second] < 0)
+                                m_dictValuesLowPointDev[tgTmp.m_id].m_powerSeconds[dtLastChangedAt.Second] = val;
                             else
                                 //???усреднение
-                                m_dictValuesTG[tgTmp.m_id].m_powerSeconds[dtLastChangedAt.Second] = (m_dictValuesTG[tgTmp.m_id].m_powerSeconds[dtLastChangedAt.Second] + val) / 2;
+                                m_dictValuesLowPointDev[tgTmp.m_id].m_powerSeconds[dtLastChangedAt.Second] = (m_dictValuesLowPointDev[tgTmp.m_id].m_powerSeconds[dtLastChangedAt.Second] + val) / 2;
                         }
 
                         //Console.WriteLine(@"TecView::GetMinDetailTMResponse () - кол-во строк=" + table.Rows.Count);
@@ -4857,7 +4936,7 @@ namespace StatisticCommon
                                         foreach (string strId in listSensors)
                                         {                            
                                             indx = listSensors.IndexOf (strId);
-                                            m_dictValuesTG[arIds [indx]].m_powerMinutes[min + 1] = valMins[indx];
+                                            m_dictValuesLowPointDev[arIds [indx]].m_powerMinutes[min + 1] = valMins[indx];
                                         }
 
                                         m_valuesMins[min + 1].valuesFact = valMins[listSensors.Count];
@@ -4924,11 +5003,11 @@ namespace StatisticCommon
                                     ;
 
                                 min ++;
-                                m_dictValuesTG[tgTmp.m_id].m_powerMinutes[min] = val;
+                                m_dictValuesLowPointDev[tgTmp.m_id].m_powerMinutes[min] = val;
                                 m_valuesMins [min].valuesFact += val;
 
                                 //Признак получения значения хотя бы за один интервал
-                                if (m_dictValuesTG[tgTmp.m_id].m_bPowerMinutesRecieved == false) m_dictValuesTG[tgTmp.m_id].m_bPowerMinutesRecieved = true; else ;
+                                if (m_dictValuesLowPointDev[tgTmp.m_id].m_bPowerMinutesRecieved == false) m_dictValuesLowPointDev[tgTmp.m_id].m_bPowerMinutesRecieved = true; else ;
 
                                 cntRecievedValues [min] ++;
                             }
@@ -4944,7 +5023,7 @@ namespace StatisticCommon
                                 default:
                                     if (cntRecievedValues [min] < cntRecievedValues [min - 1])
                                     {
-                                        foreach (valuesTG vals in m_dictValuesTG.Values)
+                                        foreach (valuesLowPointDev vals in m_dictValuesLowPointDev.Values)
                                             vals.m_powerMinutes[min] = 0;
 
                                         m_valuesMins[min].valuesFact = 0;
@@ -5040,13 +5119,13 @@ namespace StatisticCommon
 
             int iRes = -1;
 
-            foreach (TECComponent g in m_localTECComponents)
+            foreach (TECComponent g in _localTECComponents)
             {
-                foreach (TG tg in g.m_listTG)
+                foreach (TECComponentBase tc in g.m_listLowPointDev)
                 {
-                    m_dictValuesTG[tg.m_id].m_powerCurrent_TM = -1F;
-                    m_dictValuesTG[tg.m_id].m_dtCurrent_TM = DateTime.MinValue;
-                    m_dictValuesTG[tg.m_id].m_id_TM = -1;
+                    m_dictValuesLowPointDev[tc.m_id].m_powerCurrent_TM = -1F;
+                    m_dictValuesLowPointDev[tc.m_id].m_dtCurrent_TM = DateTime.MinValue;
+                    m_dictValuesLowPointDev[tc.m_id].m_id_TM = -1;
                 }
             }
 
@@ -5097,7 +5176,7 @@ namespace StatisticCommon
                                     else
                                         ;
 
-                                    double.TryParse(r[@"VALUE"].ToString(), out m_dictValuesTG[tgTmp.m_id].m_powerCurrent_TM);                                    
+                                    double.TryParse(r[@"VALUE"].ToString(), out m_dictValuesLowPointDev[tgTmp.m_id].m_powerCurrent_TM);                                    
                                 }
                                 break;
                             case TEC.SOURCE_SOTIASSO.INSATANT_APP:
@@ -5357,31 +5436,19 @@ namespace StatisticCommon
         private void getLastMinutesTMRequest()
         {
             DateTime dtReq = m_curDate.Date;
-            //if (dtReq.Kind == DateTimeKind.Unspecified)
-            //    dtReq = dtReq.ToLocalTime();
-            //else
-            //    ;
             int cnt = HAdmin.CountHoursOfDate (dtReq);
 
-            //m_tec.Request(CONN_SETT_TYPE.DATA_SOTIASSO_INSTANT, m_tec.lastMinutesTMRequest(dtReq.Date, m_tec.GetSensorsString(indx_TEC, CONN_SETT_TYPE.DATA_SOTIASSO_INSTANT)));
-            //m_tec.Request(CONN_SETT_TYPE.DATA_SOTIASSO_INSTANT, m_tec.lastMinutesTMRequest(dtReq.Date, m_tec.GetSensorsString(m_indx_TECComponent, CONN_SETT_TYPE.DATA_SOTIASSO_INSTANT)));
             Request(m_dictIdListeners[m_tec.m_id][(int)CONN_SETT_TYPE.DATA_SOTIASSO], m_tec.lastMinutesTMRequest(dtReq.Date, m_tec.GetSensorsString(indxTECComponents, CONN_SETT_TYPE.DATA_SOTIASSO), cnt));
         }
 
         protected virtual void getPPBRValuesRequest()
         {
-            //m_admin.Request(tec.m_arIdListeners[(int)CONN_SETT_TYPE.PBR], tec.GetPBRValueQuery(indx_TECComponent, m_pnlQuickData.dtprDate.Value.Date, m_admin.m_typeFields));
-            //m_tec.Request(CONN_SETT_TYPE.PBR, m_tec.GetPBRValueQuery(m_indx_TECComponent, m_pnlQuickData.dtprDate.Value.Date, s_typeFields));
-            //m_tec.Request(CONN_SETT_TYPE.PBR, m_tec.GetPBRValueQuery(m_indx_TECComponent, selectedTime.Date, s_typeFields));
-            Request(m_dictIdListeners[m_tec.m_id][(int)CONN_SETT_TYPE.PBR], m_tec.GetPBRValueQuery(indxTECComponents, m_curDate.Date.Add(-m_tsOffsetToMoscow)/*, s_typeFields*/));
+            Request(m_dictIdListeners[m_tec.m_id][(int)CONN_SETT_TYPE.PBR], m_tec.GetPBRValueQuery(indxTECComponents, m_curDate.Date.Add(-m_tsOffsetToMoscow), _type));
         }
 
-        protected virtual void getAdminValuesRequest(/*AdminTS.TYPE_FIELDS mode*/)
+        protected virtual void getAdminValuesRequest()
         {
-            //m_admin.Request(tec.m_arIdListeners[(int)CONN_SETT_TYPE.ADMIN], tec.GetAdminValueQuery(indx_TECComponent, m_pnlQuickData.dtprDate.Value.Date/*, mode*/));
-            //m_tec.Request(CONN_SETT_TYPE.ADMIN, m_tec.GetAdminValueQuery(indx_TECComponent, m_pnlQuickData.dtprDate.Value.Date/*, mode*/));
-            //m_tec.Request(CONN_SETT_TYPE.ADMIN, m_tec.GetAdminValueQuery(m_indx_TECComponent, selectedTime.Date/*, mode*/));
-            Request(m_dictIdListeners[m_tec.m_id][(int)CONN_SETT_TYPE.ADMIN], m_tec.GetAdminValueQuery(indxTECComponents, m_curDate.Date.Add(-m_tsOffsetToMoscow)/*, mode*/));
+            Request(m_dictIdListeners[m_tec.m_id][(int)CONN_SETT_TYPE.ADMIN], m_tec.GetAdminValueQuery(indxTECComponents, m_curDate.Date.Add(-m_tsOffsetToMoscow), _type));
         }
 
         protected override void InitializeSyncState()

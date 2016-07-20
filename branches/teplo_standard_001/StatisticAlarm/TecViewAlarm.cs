@@ -68,7 +68,7 @@ namespace StatisticAlarm
         /// <param name="indxTEC">Индекс ТЭЦ в списке</param>
         /// <param name="indx_comp">??? Индекс компонента</param>
         public TecViewAlarm(/*StatisticCommon.TecView.TYPE_PANEL typePanel, */int indxTEC, int indx_comp)
-            : base(/*typePanel, */indxTEC, indx_comp)
+            : base(/*typePanel, */indxTEC, indx_comp, TECComponentBase.TYPE.ELECTRO)
         {
         }
 
@@ -194,7 +194,7 @@ namespace StatisticAlarm
             int iRes = (int)HHandler.INDEX_WAITHANDLE_REASON.SUCCESS
                 , iDebug = -1 //-1 - нет отладки, 0 - раб./отладка, 1 - имитирование
                 , cntTGTurnOn = 0 // кол-во вкл. ТГ
-                , cntTGTurnUnknown = allTECComponents[indxTECComponents].m_listTG.Count // кол-во ТГ с неизвестным состоянием
+                , cntTGTurnUnknown = allTECComponents[indxTECComponents].m_listLowPointDev.Count // кол-во ТГ с неизвестным состоянием
                 , cntPower_TMValues = 0; //Счетчик кол-ва значений тек./мощн. ТГ в общем значении мощности для ГТП
             //Константы
             double TGTURNONOFF_VALUE = -1F //Значения для сигнализации "ТГ вкл./откл."
@@ -221,20 +221,20 @@ namespace StatisticAlarm
             }
             else
             {
-                foreach (StatisticCommon.TG tg in allTECComponents[indxTECComponents].m_listTG)
+                foreach (StatisticCommon.TG tg in allTECComponents[indxTECComponents].m_listLowPointDev)
                 {
                     curTurnOnOff = StatisticCommon.TG.INDEX_TURNOnOff.UNKNOWN;
 
                     #region Код для отладки
                     if (!(iDebug < 0))
-                        Console.Write(tg.m_id_owner_gtp + @":" + tg.m_id + @"=" + m_dictValuesTG[tg.m_id].m_powerCurrent_TM);
+                        Console.Write(tg.m_id_owner_gtp + @":" + tg.m_id + @"=" + m_dictValuesLowPointDev[tg.m_id].m_powerCurrent_TM);
                     else
                         ;
                     #endregion Окончание блока кода для отладки
 
-                    if (m_dictValuesTG[tg.m_id].m_powerCurrent_TM < 1F)
+                    if (m_dictValuesLowPointDev[tg.m_id].m_powerCurrent_TM < 1F)
                         //??? проверять ли значение на '< 0F'
-                        if (!(m_dictValuesTG[tg.m_id].m_powerCurrent_TM < 0F))
+                        if (!(m_dictValuesLowPointDev[tg.m_id].m_powerCurrent_TM < 0F))
                             curTurnOnOff = StatisticCommon.TG.INDEX_TURNOnOff.OFF;
                         else
                             ; //??? неопределенное состояние ТГ
@@ -244,7 +244,7 @@ namespace StatisticAlarm
                         // подготовить значение                        
                         if (power_TM == NOT_VALUE) power_TM = 0F; else ;
                         // учесть в общем значении мощности ГТП, текущую мощность ТГ
-                        power_TM += m_dictValuesTG[tg.m_id].m_powerCurrent_TM;
+                        power_TM += m_dictValuesLowPointDev[tg.m_id].m_powerCurrent_TM;
                         // увеличить счетчик 
                         cntPower_TMValues ++;
                     }
@@ -252,9 +252,9 @@ namespace StatisticAlarm
                     listEventDetail.Add(new TecViewAlarm.AlarmTecViewEventArgs.EventDetail()
                     {
                         id = tg.m_id
-                        , value = m_dictValuesTG[tg.m_id].m_powerCurrent_TM
-                        , last_changed_at = m_dictValuesTG[tg.m_id].m_dtCurrent_TM
-                        , id_tm = m_dictValuesTG[tg.m_id].m_id_TM
+                        , value = m_dictValuesLowPointDev[tg.m_id].m_powerCurrent_TM
+                        , last_changed_at = m_dictValuesLowPointDev[tg.m_id].m_dtCurrent_TM
+                        , id_tm = m_dictValuesLowPointDev[tg.m_id].m_id_TM
                     });
 
                     #region Код для отладки
@@ -265,9 +265,9 @@ namespace StatisticAlarm
                             if (curTurnOnOff == StatisticCommon.TG.INDEX_TURNOnOff.ON)
                             {// имитация - ТГ выкл.
                                 //Учесть мощность выключенного ТГ в значении для ГТП в целом
-                                power_TM -= m_dictValuesTG[tg.m_id].m_powerCurrent_TM;
+                                power_TM -= m_dictValuesLowPointDev[tg.m_id].m_powerCurrent_TM;
                                 //Присвоить значение для "отладки" (< 1)
-                                m_dictValuesTG[tg.m_id].m_powerCurrent_TM = 0.666F;
+                                m_dictValuesLowPointDev[tg.m_id].m_powerCurrent_TM = 0.666F;
                                 //Изменить состояние
                                 curTurnOnOff = StatisticCommon.TG.INDEX_TURNOnOff.OFF;
                             }
@@ -275,7 +275,7 @@ namespace StatisticAlarm
                                 if (curTurnOnOff == StatisticCommon.TG.INDEX_TURNOnOff.OFF)
                                 {
                                     //Присвоить значение для "отладки" (> 1)
-                                    m_dictValuesTG[tg.m_id].m_powerCurrent_TM = 66.6F;
+                                    m_dictValuesLowPointDev[tg.m_id].m_powerCurrent_TM = 66.6F;
                                     //Изменить состояние
                                     curTurnOnOff = StatisticCommon.TG.INDEX_TURNOnOff.ON;
                                 }
@@ -284,7 +284,7 @@ namespace StatisticAlarm
 
                             Console.Write(Environment.NewLine + @"Отладка:: "
                                 + tg.m_id_owner_gtp + @":" + tg.m_id + @"="
-                                + m_dictValuesTG[tg.m_id].m_powerCurrent_TM
+                                + m_dictValuesLowPointDev[tg.m_id].m_powerCurrent_TM
                                 + Environment.NewLine);                            
                         }
                         else
@@ -335,7 +335,7 @@ namespace StatisticAlarm
 
                     #region Код для отладки
                     if (!(iDebug < 0))
-                        if ((TECComponentCurrent.m_listTG.IndexOf(tg) + 1) < TECComponentCurrent.m_listTG.Count)
+                        if ((TECComponentCurrent.m_listLowPointDev.IndexOf(tg) + 1) < TECComponentCurrent.m_listLowPointDev.Count)
                             Console.Write(@", ");
                         else
                             ;

@@ -191,7 +191,7 @@ namespace Statistic
             public class TecViewSobstvNyzhdy : TecView
             {
                 public TecViewSobstvNyzhdy()
-                    : base(/*TecView.TYPE_PANEL.CUR_POWER, */-1, -1)
+                    : base(/*TecView.TYPE_PANEL.CUR_POWER, */-1, -1, TECComponentBase.TYPE.ELECTRO)
                 {
                 }
 

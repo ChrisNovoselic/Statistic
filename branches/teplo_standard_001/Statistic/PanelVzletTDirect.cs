@@ -568,8 +568,9 @@ namespace Statistic
         {
             private class DataSource : TecView
             {
-                public DataSource(int indx_tec, int indx_comp = -1) : base (indx_tec, indx_comp)
+                public DataSource(int indx_tec, int indx_comp = -1) : base (indx_tec, indx_comp, TECComponentBase.TYPE.TEPLO)
                 {
+                    m_idAISKUEParNumber = ID_AISKUE_PARNUMBER.FACT_03;
                 }
 
                 //protected override int StateCheckResponse(int state, out bool error, out object outobj)
@@ -604,29 +605,27 @@ namespace Statistic
                     base.ChangeState(); //Run
                 }
 
-                protected override void getPPBRValuesRequest()
-                {
-                    string strQuery = string.Empty;
+                //protected override void getPPBRValuesRequest()
+                //{
+                //    string strQuery = string.Empty;
 
-                    strQuery =
-                        //m_tec.GetPBRValueQuery(indxTECComponents, m_curDate.Date.Add(-m_tsOffsetToMoscow))
-                        @""
-                        ;
+                //    strQuery =
+                //        m_tec.GetPBRValueQuery(indxTECComponents, m_curDate.Date.Add(-m_tsOffsetToMoscow), _type) //TECComponentBase.TYPE.TEPLO
+                //        ;
 
-                    Request(m_dictIdListeners[m_tec.m_id][(int)CONN_SETT_TYPE.PBR], strQuery);
-                }
+                //    Request(m_dictIdListeners[m_tec.m_id][(int)CONN_SETT_TYPE.PBR], strQuery);
+                //}
 
-                protected override void getAdminValuesRequest()
-                {
-                    string strQuery = string.Empty;
+                //protected override void getAdminValuesRequest()
+                //{
+                //    string strQuery = string.Empty;
 
-                    strQuery =
-                        //m_tec.GetAdminValueQuery(indxTECComponents, m_curDate.Date.Add(-m_tsOffsetToMoscow)/*, mode*/)
-                        @""
-                        ;
+                //    strQuery =
+                //        m_tec.GetAdminValueQuery(indxTECComponents, m_curDate.Date.Add(-m_tsOffsetToMoscow), _type)
+                //        ;
 
-                    Request(m_dictIdListeners[m_tec.m_id][(int)CONN_SETT_TYPE.ADMIN], strQuery);
-                }
+                //    Request(m_dictIdListeners[m_tec.m_id][(int)CONN_SETT_TYPE.ADMIN], strQuery);
+                //}
 
                 public override void GetRDGValues(int indx, DateTime date)
                 {
