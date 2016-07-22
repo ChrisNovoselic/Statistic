@@ -3070,8 +3070,8 @@ namespace StatisticCommon
             int i = -1, j = -1, k = -1;
             string nameFieldDate = "DATE_ADMIN"; // tec.m_strNamesField[(int)TEC.INDEX_NAME_FIELD.ADMIN_DATETIME]
 
-            List<TECComponentBase> list_LowPointDev = null;
-            List<TECComponent> list_TECComponents = null;
+            //List<TECComponentBase> list_LowPointDev = null;
+            List<TECComponentBase> list_TECComponents = null;
 
             for (i = 0; i < table_in.Columns.Count; i++)
             {
@@ -3090,17 +3090,22 @@ namespace StatisticCommon
 
                 if (num_comp < 0)
                 {
-                    list_TECComponents = new List<TECComponent>();
+                    list_TECComponents = new List<TECComponentBase>();
                     for (i = 0; i < listTECComp.Count; i++)
                     {
                         if (listTECComp[i].IsGTP == true)
                             list_TECComponents.Add(listTECComp[i]);
                         else
-                            ;
+                            if (listTECComp[i].IsVyvod == true)
+                                list_TECComponents.Add((listTECComp[i] as Vyvod).m_listParam[0]);
+                            else
+                                ;
                     }
                 }
                 else
-                    list_LowPointDev = listTECComp[num_comp].m_listLowPointDev;
+                    //list_LowPointDev = listTECComp[num_comp].m_listLowPointDev
+                    list_TECComponents = listTECComp[num_comp].m_listLowPointDev
+                    ;
 
                 //Преобразование таблицы
                 for (i = 0; i < table_in.Columns.Count; i++)
@@ -3119,20 +3124,20 @@ namespace StatisticCommon
                             ;
                 }
 
-                if (num_comp < 0)
+                //if (num_comp < 0)
                     count_comp = list_TECComponents.Count;
-                else
-                    count_comp = list_LowPointDev.Count;
+                //else
+                //    count_comp = list_LowPointDev.Count;
 
                 for (i = 0; i < count_comp; i++)
                 {
                     for (j = 0; j < cols_data.Count; j++)
                     {
                         table_in_restruct.Columns.Add(cols_data[j].ColumnName, cols_data[j].DataType);
-                        if (num_comp < 0)
+                        //if (num_comp < 0)
                             table_in_restruct.Columns[table_in_restruct.Columns.Count - 1].ColumnName += "_" + list_TECComponents[i].m_id;
-                        else
-                            table_in_restruct.Columns[table_in_restruct.Columns.Count - 1].ColumnName += "_" + list_LowPointDev[i].m_id;
+                        //else
+                        //    table_in_restruct.Columns[table_in_restruct.Columns.Count - 1].ColumnName += "_" + list_LowPointDev[i].m_id;
                     }
                 }
 
@@ -3140,10 +3145,10 @@ namespace StatisticCommon
 
                 for (i = 0; i < count_comp; i++)
                 {
-                    if (num_comp < 0)
+                    //if (num_comp < 0)
                         dataRows = table_in.Select("ID_COMPONENT=" + list_TECComponents[i].m_id);
-                    else
-                        dataRows = table_in.Select("ID_COMPONENT=" + list_LowPointDev[i].m_id);
+                    //else
+                    //    dataRows = table_in.Select("ID_COMPONENT=" + list_LowPointDev[i].m_id);
                     listDataRows.Add(new DataRow[dataRows.Length]);
                     dataRows.CopyTo(listDataRows[i], 0);
 
@@ -3172,10 +3177,10 @@ namespace StatisticCommon
 
                         for (k = 0; k < cols_data.Count; k++)
                         {
-                            if (num_comp < 0)
+                            //if (num_comp < 0)
                                 table_in_restruct.Rows[indx_row][cols_data[k].ColumnName + "_" + list_TECComponents[i].m_id] = listDataRows[i][j][cols_data[k].ColumnName];
-                            else
-                                table_in_restruct.Rows[indx_row][cols_data[k].ColumnName + "_" + list_LowPointDev[i].m_id] = listDataRows[i][j][cols_data[k].ColumnName];
+                            //else
+                            //    table_in_restruct.Rows[indx_row][cols_data[k].ColumnName + "_" + list_LowPointDev[i].m_id] = listDataRows[i][j][cols_data[k].ColumnName];
                         }
                     }
                 }
