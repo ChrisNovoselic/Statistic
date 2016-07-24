@@ -330,10 +330,10 @@ namespace StatisticCommon
                 m_typeAgregate = Convert.ToByte(r[@"TYPE_AGREGATE"]);
             }
         }
-        /// <summary>
-        /// Список ТГ
-        /// </summary>
-        public List<ParamVyvod> m_listParam;
+        ///// <summary>
+        ///// Список ТГ
+        ///// </summary>
+        //public List<ParamVyvod> m_listParam;
         /// <summary>
         /// Объект ТЭЦ - "владелец" компонента
         /// </summary>
@@ -359,7 +359,7 @@ namespace StatisticCommon
         {
             this.tec = tec;
 
-            m_listParam = new List<ParamVyvod>();
+            //m_listParam = new List<ParamVyvod>();
 
             Initialize(rows_param);
         }
@@ -392,12 +392,16 @@ namespace StatisticCommon
             int iIdParam = -1;
 
             iIdParam = Convert.ToInt32(r[@"ID"]);
-            pv = m_listParam.Find(p => { return p.m_id == iIdParam; });
+            pv =
+                //m_listParam.Find(p => { return p.m_id == iIdParam; })
+                m_listLowPointDev.Find(p => { return p.m_id == iIdParam; }) as ParamVyvod
+                ;
 
             if (pv == null)
             {
                 pv = new ParamVyvod(r);
-                m_listParam.Add(pv);
+                //m_listParam.Add(pv);
+                m_listLowPointDev.Add(pv);
             }
             else
                 // такой параметр уже существует

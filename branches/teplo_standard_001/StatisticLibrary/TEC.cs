@@ -781,7 +781,8 @@ namespace StatisticCommon
             {
                 v.m_SensorsString_VZLET = string.Empty;
 
-                foreach (Vyvod.ParamVyvod pv in v.m_listParam)
+                //foreach (Vyvod.ParamVyvod pv in v.m_listParam)
+                foreach (Vyvod.ParamVyvod pv in v.m_listLowPointDev)
                 {
                     m_SensorsString_VZLET = addSensor(m_SensorsString_VZLET
                         , pv.m_SensorsString_VZLET //.name_future
@@ -850,7 +851,8 @@ namespace StatisticCommon
             if (num_comp < 0) {
                 switch (type) {
                     case TECComponentBase.TYPE.TEPLO:
-                        m_list_Vyvod.ForEach(v => { strRes += @", " + (v as Vyvod).m_listParam[0].m_id.ToString(); });
+                        //m_list_Vyvod.ForEach(v => { strRes += @", " + (v as Vyvod).m_listParam[0].m_id.ToString(); });
+                        m_list_Vyvod.ForEach(v => { strRes += @", " + v.m_listLowPointDev[0].m_id.ToString(); });
                         break;
                     case TECComponentBase.TYPE.ELECTRO:
                         list_TECComponents.ForEach(g => { if (g.IsGTP == true) strRes += @", " + (g.m_id).ToString(); else ; });                        

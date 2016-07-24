@@ -97,8 +97,22 @@ namespace Statistic
         {
             private class DataGridViewVzletTDirectHours : HDataGridViewBase
             {
-                public DataGridViewVzletTDirectHours(HDateTime.INTERVAL interval, ColumnProperies[] arColumns)
-                    : base(interval, arColumns)
+                private enum INDEX_COLUMNS : short
+                {
+                    PART_TIME, TEMPERATURE_FACT, TEMPERATURE_PBR, REC, UDGt, TEMPERATURE_DEVIATION
+                        , COUNT_COLUMN
+                }
+
+                public DataGridViewVzletTDirectHours()
+                    : base(HDateTime.INTERVAL.HOURS, new HDataGridViewBase.ColumnProperies[]
+                    {//??? в сумме ширина = 310, проценты = 98, 
+                        new HDataGridViewBase.ColumnProperies (27, 8, @"Час", @"Hour")
+                        , new HDataGridViewBase.ColumnProperies (47, 18, @"Факт", @"FactHour")
+                        , new HDataGridViewBase.ColumnProperies (47, 18, @"План", @"PBRHour")
+                        , new HDataGridViewBase.ColumnProperies (47, 18, @"Рек.", @"RecHour")
+                        , new HDataGridViewBase.ColumnProperies (47, 18, @"УДГт", @"UDGtHour")
+                        , new HDataGridViewBase.ColumnProperies (47, 18, @"+/-", @"DeviationHour")
+                    })
                 {
                     Name = "dgvTableTDirectHours";
                     RowHeadersVisible = false;
@@ -107,9 +121,131 @@ namespace Statistic
                     RowsAdd();
                 }
 
+                public override void Fill(params object[] pars)
+                {
+                    int count = (int)pars[1]
+                    , hour = -1
+                    , offset = -1
+                    , i = -1, c = -1;
+                    DateTime dtCurrent = (DateTime)pars[0];
+                    bool bSeasonDate = (bool)pars[2];
+
+                    Rows.Clear();
+
+                    Rows.Add(count + 1);
+
+                    for (i = 0; i < count; i++)
+                    {
+                        hour = i + 1;
+                        if (bSeasonDate == true)
+                        {
+                            offset = HAdmin.GetSeasonHourOffset(dtCurrent, hour);
+
+                            Rows[i].Cells[(int)INDEX_COLUMNS.PART_TIME].Value = (hour - offset).ToString();
+                            if ((hour - 1) == HAdmin.SeasonDateTime.Hour)
+                                Rows[i].Cells[(int)INDEX_COLUMNS.PART_TIME].Value += @"*";
+                            else
+                                ;
+                        }
+                        else
+                            Rows[i].Cells[(int)INDEX_COLUMNS.PART_TIME].Value = (hour).ToString();
+
+                        for (c = 1; c < m_arColumns.Length; c++)
+                            Rows[i].Cells[c].Value = 0.ToString("F2");
+                    }
+
+                    Rows[count].Cells[0].Value = "Средн.";
+                    for (c = 1; c < m_arColumns.Length; c++)
+                        switch ((INDEX_COLUMNS)c)
+                        {
+                            case INDEX_COLUMNS.TEMPERATURE_FACT:
+                            case INDEX_COLUMNS.TEMPERATURE_PBR:
+                            case INDEX_COLUMNS.REC:
+                            case INDEX_COLUMNS.UDGt:
+                            case INDEX_COLUMNS.TEMPERATURE_DEVIATION:
+                                Rows[i].Cells[c].Value = @"-".ToString();
+                                break;
+                            default:
+                                Rows[i].Cells[c].Value = 0.ToString("F2");
+                                break;
+                        }
+                }
+
                 public override void Fill(TecView.valuesTEC[] values, params object[] pars)
                 {
-                    throw new NotImplementedException();
+                    //double sumFact = 0, sumUDGe = 0, sumDiviation = 0;
+                    int lastHour = (int)pars[0]; //m_tecView.lastHour;
+                    int lastReceivedHour = (int)pars[1]; //m_tecView.lastReceivedHour;
+                    int itemscount = (int)pars[2]; //m_tecView.m_valuesHours.Length;
+                    bool bPmin = (int)pars[3] == 5
+                        , bCurrHour = (bool)pars[4] //m_tecView.currHour
+                        , bIsTypeConnSettAISKUEHour = (bool)pars[5]; //m_tecView.m_arTypeSourceData[(int)HDateTime.INTERVAL.HOURS] == CONN_SETT_TYPE.DATA_AISKUE
+                    DateTime serverTime = (DateTime)pars[6]; //m_tecView.serverTime.Date.Equals(HDateTime.ToMoscowTimeZone(DateTime.Now.Date))
+
+                    int i = -1
+                        //, warn = -1, cntWarn = -1
+                        , lh = bCurrHour == true ? lastReceivedHour - 1 :
+                            serverTime.Date.Equals(DateTime.Now.Date) == true ? lastReceivedHour - 1 :
+                                itemscount;
+                    double t_pbr = -1F;
+                    string strWarn = string.Empty;
+
+                    Debug.WriteLine(@"DataGridViewLKHours::Fill () - serverTime=" + serverTime.ToString()
+                        + @"; lastHour=" + lastHour
+                        + @"; lastReceivedHour=" + lastReceivedHour);
+
+                    DataGridViewCellStyle curCellStyle;
+                    DataGridViewCellStyle normalHourCellStyle = new DataGridViewCellStyle()
+                        , errorHourCellStyle = new DataGridViewCellStyle();
+
+                    normalHourCellStyle.BackColor = Color.White;
+                    errorHourCellStyle.BackColor = Color.Red;
+                    //// полужирный на основе 1-ой ячейки                
+                    //mainHourCellStyle.Font = new System.Drawing.Font(RowsDefaultCellStyle.Font, FontStyle.Bold);
+
+                    //cntWarn = 0;
+                    t_pbr = 0;
+                    for (i = 0; i < itemscount; i++)
+                    {
+                        // номер часа
+                        curCellStyle = normalHourCellStyle;
+                        //Rows[i].Cells[(int)INDEX_COLUMNS.PART_TIME].Style = curCellStyle; // стиль определен для всей строки
+                        Rows[i].DefaultCellStyle = curCellStyle;
+                        //// факт
+                        //if (!(i > lh))
+                        //{
+                        //    Rows[i].Cells[(int)INDEX_COLUMNS.TEMPERATURE_FACT].Value = (values[i].valuesLastMinutesTM).ToString(@"F2"); // температура
+                        //}
+                        //else ;
+                        // план
+                        Rows[i].Cells[(int)INDEX_COLUMNS.TEMPERATURE_PBR].Value = (values[i].valuesPmin).ToString(@"F2"); // температура
+                        //Rows[i].Cells[(int)INDEX_COLUMNS.TEMPERATURE_PBR].Style = curCellStyle; // стиль определен для всей строки
+                        t_pbr += values[i].valuesPmin;
+                        // разность
+                        if (!(i > lh))
+                        {
+                            // - температура
+                            if ((!(values[i].valuesLastMinutesTM == 0))
+                                || (!(values[i].valuesPmin == 0)))
+                                Rows[i].Cells[(int)INDEX_COLUMNS.TEMPERATURE_DEVIATION].Value = (values[i].valuesPmin - values[i].valuesLastMinutesTM).ToString(@"F2");
+                            else
+                                Rows[i].Cells[(int)INDEX_COLUMNS.TEMPERATURE_DEVIATION].Value = @"-";                            
+                        }
+                        else
+                        {
+                            Rows[i].Cells[(int)INDEX_COLUMNS.TEMPERATURE_DEVIATION].Value =
+                                @"-";
+                        }
+                        //Rows[i].Cells[(int)INDEX_COLUMNS.TEMPERATURE_DEVIATION].Style = curCellStyle; // стиль определен для всей строки
+                        //Rows[i].Cells[(int)INDEX_COLUMNS.POWER_DEVIATION].Style = curCellStyle; // стиль определен для всей строки
+                    }
+
+                    t_pbr /= itemscount;
+                    t_pbr = Math.Round(t_pbr, 0);
+                    // план
+                    Rows[i].Cells[(int)INDEX_COLUMNS.TEMPERATURE_PBR].Value = t_pbr.ToString(@"F2"); // температура
+                    //// план для панели оперативной информации
+                    //EventPBRDateValues(new PBRDateValuesEventArgs() { m_temperatureDate = t_pbr, m_powerDate = p_pbr });
                 }
             }
 
@@ -655,6 +791,13 @@ namespace Statistic
                 {
                     throw new NotImplementedException();
                 }
+
+                protected override void setValuesHours(TECComponentBase.ID idComp = TECComponentBase.ID.MAX)
+                {
+                    double currPBRe = -1F;
+
+                    base.setValuesHours(idComp);
+                }
             }
             /// <summary>
             /// constructor
@@ -799,16 +942,7 @@ namespace Statistic
             /// </summary>
             protected override void createDataGridViewHours()
             {
-                m_dgwHours = new DataGridViewVzletTDirectHours(HDateTime.INTERVAL.HOURS, new HDataGridViewBase.ColumnProperies[]
-                    {//??? в сумме ширина = 310, проценты = 98, 
-                        new HDataGridViewBase.ColumnProperies (27, 8, @"Час", @"Hour")
-                        , new HDataGridViewBase.ColumnProperies (47, 18, @"Факт", @"FactHour")
-                        , new HDataGridViewBase.ColumnProperies (47, 18, @"План", @"PBRHour")
-                        , new HDataGridViewBase.ColumnProperies (47, 18, @"Рек.", @"RecHour")
-                        , new HDataGridViewBase.ColumnProperies (47, 18, @"УДГэ", @"UDGeHour")
-                        , new HDataGridViewBase.ColumnProperies (47, 18, @"+/-", @"DeviationHour")
-                    }
-                );
+                m_dgwHours = new DataGridViewVzletTDirectHours();
             }
             /// <summary>
             /// Создать таблицу-представление для отображения значений в разрезе "час - минуты"
