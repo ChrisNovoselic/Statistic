@@ -151,7 +151,7 @@ namespace Statistic
                             Rows[i].Cells[(int)INDEX_COLUMNS.PART_TIME].Value = (hour).ToString();
 
                         for (c = 1; c < m_arColumns.Length; c++)
-                            Rows[i].Cells[c].Value = 0.ToString("F2");
+                            Rows[i].Cells[c].Value = 0.ToString("F1");
                     }
 
                     Rows[count].Cells[0].Value = "Средн.";
@@ -166,7 +166,7 @@ namespace Statistic
                                 Rows[i].Cells[c].Value = @"-".ToString();
                                 break;
                             default:
-                                Rows[i].Cells[c].Value = 0.ToString("F2");
+                                Rows[i].Cells[c].Value = 0.ToString("F1");
                                 break;
                         }
                 }
@@ -187,7 +187,7 @@ namespace Statistic
                         , lh = bCurrHour == true ? lastReceivedHour - 1 :
                             serverTime.Date.Equals(DateTime.Now.Date) == true ? lastReceivedHour - 1 :
                                 itemscount;
-                    double t_pbr = -1F;
+                    double udg_t = -1F;
                     string strWarn = string.Empty;
 
                     Debug.WriteLine(@"DataGridViewLKHours::Fill () - serverTime=" + serverTime.ToString()
@@ -204,7 +204,7 @@ namespace Statistic
                     //mainHourCellStyle.Font = new System.Drawing.Font(RowsDefaultCellStyle.Font, FontStyle.Bold);
 
                     //cntWarn = 0;
-                    t_pbr = 0;
+                    udg_t = 0;
                     for (i = 0; i < itemscount; i++)
                     {
                         // номер часа
@@ -218,9 +218,13 @@ namespace Statistic
                         //}
                         //else ;
                         // план
-                        Rows[i].Cells[(int)INDEX_COLUMNS.TEMPERATURE_PBR].Value = (values[i].valuesPmin).ToString(@"F2"); // температура
-                        //Rows[i].Cells[(int)INDEX_COLUMNS.TEMPERATURE_PBR].Style = curCellStyle; // стиль определен для всей строки
-                        t_pbr += values[i].valuesPmin;
+                        Rows[i].Cells[(int)INDEX_COLUMNS.TEMPERATURE_PBR].Value = (values[i].valuesPmin).ToString(@"F1"); // температура
+                        //Rows[i].Cells[(int)INDEX_COLUMNS.TEMPERATURE_PBR].Style = curCellStyle; // стиль определен для всей строки                        
+                        // рекомендация
+                        Rows[i].Cells[(int)INDEX_COLUMNS.REC].Value = (values[i].valuesREC).ToString(@"F0");
+                        // уточненный дисп./график
+                        Rows[i].Cells[(int)INDEX_COLUMNS.UDGt].Value = (values[i].valuesUDGe).ToString(@"F1");
+                        udg_t += values[i].valuesUDGe;
                         // разность
                         if (!(i > lh))
                         {
@@ -240,10 +244,10 @@ namespace Statistic
                         //Rows[i].Cells[(int)INDEX_COLUMNS.POWER_DEVIATION].Style = curCellStyle; // стиль определен для всей строки
                     }
 
-                    t_pbr /= itemscount;
-                    t_pbr = Math.Round(t_pbr, 0);
-                    // план
-                    Rows[i].Cells[(int)INDEX_COLUMNS.TEMPERATURE_PBR].Value = t_pbr.ToString(@"F2"); // температура
+                    udg_t /= itemscount;
+                    udg_t = Math.Round(udg_t, 1);
+                    // Уточненный дисп./график (средний)
+                    Rows[i].Cells[(int)INDEX_COLUMNS.UDGt].Value = udg_t.ToString(@"F1");
                     //// план для панели оперативной информации
                     //EventPBRDateValues(new PBRDateValuesEventArgs() { m_temperatureDate = t_pbr, m_powerDate = p_pbr });
                 }
@@ -794,9 +798,59 @@ namespace Statistic
 
                 protected override void setValuesHours(TECComponentBase.ID idComp = TECComponentBase.ID.MAX)
                 {
-                    double currPBRe = -1F;
+                    double currPBRt = -1F;
+                    int cntResponsibled = -1;
 
-                    base.setValuesHours(idComp);
+                    for (int i = 0; i < m_valuesHours.Length; i++) //??? m_valuesHours.Length == m_dictValuesTECComponent.Length + 1
+                    {
+                        cntResponsibled = 0;
+
+                        foreach (int id in m_dictValuesTECComponent[i + 1].Keys)
+                        {
+                            if (m_dictValuesTECComponent[i + 1][id].valuesPmin > 5)
+                            {// responsible
+                                cntResponsibled++;
+
+                                // PBR, PBRmax не рассматриваются
+                                m_valuesHours[i].valuesPmin += m_dictValuesTECComponent[i + 1][id].valuesPmin;
+                                if (i == 0)
+                                {
+                                    currPBRt = (m_dictValuesTECComponent[i + 1][id].valuesPmin + m_dictValuesTECComponent[0][id].valuesPmin) / 2;
+                                }
+                                else
+                                {
+                                    currPBRt = (m_dictValuesTECComponent[i + 1][id].valuesPmin + m_dictValuesTECComponent[i][id].valuesPmin) / 2;
+                                }
+
+                                m_dictValuesTECComponent[i + 1][id].valuesPBRe = currPBRt;
+                                m_valuesHours[i].valuesPBRe += currPBRt;
+
+                                // valuesForeignCommand не рассматриваются
+
+                                m_valuesHours[i].valuesREC += m_dictValuesTECComponent[i + 1][id].valuesREC; // всегда в %
+
+                                m_dictValuesTECComponent[i + 1][id].valuesUDGe = currPBRt + (currPBRt * m_dictValuesTECComponent[i + 1][id].valuesREC / 100);
+                                m_valuesHours[i].valuesUDGe += m_dictValuesTECComponent[i + 1][id].valuesUDGe;
+
+                                if (m_dictValuesTECComponent[i + 1][id].valuesISPER == 1)
+                                {
+                                    m_dictValuesTECComponent[i + 1][id].valuesDiviation =
+                                        (currPBRt + m_dictValuesTECComponent[i + 1][id].valuesREC) * m_dictValuesTECComponent[i + 1][id].valuesDIV / 100;
+                                }
+                                else
+                                {
+                                    m_dictValuesTECComponent[i + 1][id].valuesDiviation = m_dictValuesTECComponent[i + 1][id].valuesDIV;
+                                }
+                                m_valuesHours[i].valuesDiviation += m_dictValuesTECComponent[i + 1][id].valuesDiviation;
+                            }
+                            else
+                                ; // not responsible
+                        }
+
+                        m_valuesHours[i].valuesPmin = m_valuesHours[i].valuesPmin / cntResponsibled;
+                        m_valuesHours[i].valuesREC = m_valuesHours[i].valuesREC / cntResponsibled;
+                        m_valuesHours[i].valuesUDGe = m_valuesHours[i].valuesUDGe / cntResponsibled;
+                    }
                 }
             }
             /// <summary>
