@@ -105,53 +105,34 @@ namespace StatisticCommon
             switch (ev.ColumnIndex)
             {
                 case (int)DESC_INDEX.PLAN: // План
-                    //cellValidated(ev.RowIndex, (int)DESC_INDEX.PLAN);
-
                     valid = double.TryParse((string)Rows[ev.RowIndex].Cells[(int)DESC_INDEX.PLAN].Value, out value);
                     if ((valid == false) || (value > maxRecomendationValue))
-                    {
-                        //m_curRDGValues[ev.RowIndex].plan = 0;
                         Rows[ev.RowIndex].Cells[(int)DESC_INDEX.PLAN].Value = 0.ToString("F2");
-                    }
                     else
-                    {
-                        //m_curRDGValues[ev.RowIndex].plan = value;
                         Rows[ev.RowIndex].Cells[(int)DESC_INDEX.PLAN].Value = value.ToString("F2");
-                    }
                     break;
                 case (int)DESC_INDEX.UDGe: //Не редактируется
                     break;
                 case (int)DESC_INDEX.RECOMENDATION: // Рекомендация
-                    {
-                        //cellValidated(ev.RowIndex, (int)DESC_INDEX.RECOMENDATION);
+                    valid = double.TryParse((string)Rows[ev.RowIndex].Cells[(int)DESC_INDEX.RECOMENDATION].Value, out value);
+                    if ((valid == false) || (value > maxRecomendationValue))
+                        Rows[ev.RowIndex].Cells[(int)DESC_INDEX.RECOMENDATION].Value = 0.ToString("F2");
+                    else {
+                        Rows[ev.RowIndex].Cells[(int)DESC_INDEX.RECOMENDATION].Value = value.ToString("F2");
 
-                        valid = double.TryParse((string)Rows[ev.RowIndex].Cells[(int)DESC_INDEX.RECOMENDATION].Value, out value);
-                        if ((valid == false) || (value > maxRecomendationValue))
-                        {
-                            //m_curRDGValues[ev.RowIndex].recomendation = 0;
-                            Rows[ev.RowIndex].Cells[(int)DESC_INDEX.RECOMENDATION].Value = 0.ToString("F2");
-                        }
+                        double prevPbr
+                            , Pbr = double.Parse(Rows[ev.RowIndex].Cells[(int)DESC_INDEX.PLAN].Value.ToString ());
+                        if (ev.RowIndex > 0)
+                            prevPbr = double.Parse(Rows[ev.RowIndex - 1].Cells[(int)DESC_INDEX.PLAN].Value.ToString());
                         else
-                        {
-                            //m_curRDGValues[ev.RowIndex].recomendation = value;
-                            Rows[ev.RowIndex].Cells[(int)DESC_INDEX.RECOMENDATION].Value = value.ToString("F2");
+                            prevPbr = m_PBR_0;
 
-                            double prevPbr
-                                , Pbr = double.Parse(Rows[ev.RowIndex].Cells[(int)DESC_INDEX.PLAN].Value.ToString ());
-                            if (ev.RowIndex > 0)
-                                prevPbr = double.Parse(Rows[ev.RowIndex - 1].Cells[(int)DESC_INDEX.PLAN].Value.ToString());
-                            else
-                                prevPbr = m_PBR_0;
-
-                            Rows[ev.RowIndex].Cells[(int)DESC_INDEX.UDGe].Value = (((Pbr + prevPbr) / 2) + value).ToString("F2");
-                        }
-                        break;
+                        Rows[ev.RowIndex].Cells[(int)DESC_INDEX.UDGe].Value = (((Pbr + prevPbr) / 2) + value).ToString("F2");
                     }
+                    break;
                 case (int)DESC_INDEX.FOREIGN_CMD:
                     bool fCmd = false;
                     try {
-                        //fCmd = bool.Parse((string)Rows[ev.RowIndex].Cells[(int)DESC_INDEX.FOREIGN_CMD].Value);                        
-                        //fCmd = (bool)Rows[ev.RowIndex].Cells[(int)DESC_INDEX.FOREIGN_CMD].Value;
                         fCmd = bool.Parse(Rows[ev.RowIndex].Cells[(int)DESC_INDEX.FOREIGN_CMD].Value.ToString());
                     }
                     catch (Exception e) {
@@ -165,49 +146,33 @@ namespace StatisticCommon
                     Rows[ev.RowIndex].Cells[(int)DESC_INDEX.FOREIGN_CMD].Value = fCmd;
                     break;
                 case (int)DESC_INDEX.DEVIATION_TYPE:
-                    {
-                        //m_curRDGValues[ev.RowIndex].deviationPercent = bool.Parse(this.dgwAdminTable.Rows[ev.RowIndex].Cells[(int)DESC_INDEX.DEVIATION_TYPE].Value.ToString());
-                        break;
-                    }
+                    break;
                 case (int)DESC_INDEX.DEVIATION: // Максимальное отклонение
-                    {
-                        valid = double.TryParse((string)Rows[ev.RowIndex].Cells[(int)DESC_INDEX.DEVIATION].Value, out value);
-                        bool isPercent = bool.Parse(Rows[ev.RowIndex].Cells[(int)DESC_INDEX.DEVIATION_TYPE].Value.ToString());
-                        double maxValue = -1F;
+                    valid = double.TryParse((string)Rows[ev.RowIndex].Cells[(int)DESC_INDEX.DEVIATION].Value, out value);
+                    bool isPercent = bool.Parse(Rows[ev.RowIndex].Cells[(int)DESC_INDEX.DEVIATION_TYPE].Value.ToString());
+                    double maxValue = -1F;
 
-                        if (isPercent == true)
-                            maxValue = maxDeviationPercentValue;
-                        else
-                            maxValue = maxDeviationValue; // вообще эти значения не суммируются, но для максимальной границы нормально
+                    if (isPercent == true)
+                        maxValue = maxDeviationPercentValue;
+                    else
+                        maxValue = maxDeviationValue; // вообще эти значения не суммируются, но для максимальной границы нормально
 
-                        if ((valid == false) || (value < 0) || (value > maxValue))
-                        {
-                            //m_curRDGValues[ev.RowIndex].deviation = 0;
-                            Rows[ev.RowIndex].Cells[(int)DESC_INDEX.DEVIATION].Value = 0.ToString("F2");
-                        }
-                        else
-                        {
-                            //m_curRDGValues[ev.RowIndex].deviation = value;
-                            Rows[ev.RowIndex].Cells[(int)DESC_INDEX.DEVIATION].Value = value.ToString("F2");
-                        }
-
-                        //Зачем преобразование еще и этой ячейки ???
-                        //double recom = -1F;
-                        //valid = double.TryParse((string)Rows[ev.RowIndex].Cells[(int)DESC_INDEX.RECOMENDATION].Value, out recom);
-                    }
+                    if ((valid == false) || (value < 0) || (value > maxValue))
+                        Rows[ev.RowIndex].Cells[(int)DESC_INDEX.DEVIATION].Value = 0.ToString("F2");
+                    else
+                        Rows[ev.RowIndex].Cells[(int)DESC_INDEX.DEVIATION].Value = value.ToString("F2");
+                    break;
+                default:
                     break;
             }
         }
 
         public override void ClearTables()
         {
-            for (int i = 0; i < Rows.Count; i++)
-            {
+            //for (int i = 0; i < Rows.Count; i++)
+            foreach (DataGridViewRow r in Rows)
                 for (int j = (int)DESC_INDEX.DATE_HOUR; j < ((int)DESC_INDEX.TO_ALL + 0); j++)
-                {
-                    Rows[i].Cells[j].Value = arDefaultValueIndex[j];
-                }
-            }
+                    r.Cells[j].Value = arDefaultValueIndex[j];
         }
 
         private void dgwAdminTable_CellMouseMove(object sender, DataGridViewCellMouseEventArgs e)

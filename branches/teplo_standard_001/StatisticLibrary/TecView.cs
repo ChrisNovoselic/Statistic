@@ -444,7 +444,12 @@ namespace StatisticCommon
             {
                 case TECComponentBase.TYPE.TEPLO:
                     listRes = new List<TECComponentBase>();
-                    m_tec.m_list_Vyvod.ForEach(v => { listRes.Add(v.m_listLowPointDev[0]); });
+                    m_tec.m_list_Vyvod.ForEach(v => {
+                        listRes.Add(v.m_listLowPointDev.Find(pv => {
+                            return /*((v as Vyvod).m_bKomUchet == true)
+                                &&*/ ((pv as Vyvod.ParamVyvod).m_id_param == Vyvod.ID_PARAM.T_PV);
+                        }));
+                    });
                     break;
                 case TECComponentBase.TYPE.ELECTRO:
                     listRes = _localTECComponents;

@@ -57,6 +57,8 @@ namespace StatisticCommon
             , TAB_LK_ADMIN // доступ к стандартной вкладке регламентируется идентификатором ЛК
             , AUTO_TAB_LK_ADMIN
             , MENUITEM_VIEW_VZLET_TDIRECT
+            , TAB_TEPLOSET_ADMIN // доступ к стандартной вкладке регламентируется идентификатором ЛК
+            , AUTO_TAB_TEPLOSET_ADMIN
         };
 
         public HStatisticUsers(int iListenerId)

@@ -224,6 +224,10 @@ namespace Statistic
                     //Возможность редактирования значений ПБР: НЕ изменяема, разрешена
                     m_admin = new PanelAdminLK.AdminTS_LK(new bool[] { false, true });
                     break;
+                case FormChangeMode.MANAGER.TEPLOSET:
+                    //Возможность редактирования значений ПБР: НЕ изменяема, разрешена
+                    m_admin = new PanelAdminVyvod.AdminTS_Vyvod(new bool[] { false, true });
+                    break;
                 default:
                     break;
             }

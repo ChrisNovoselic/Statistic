@@ -320,10 +320,16 @@ namespace StatisticCommon
 
             public void Initialize(DataRow r)
             {
+                int iVzletGrafa = -1;
+
                 m_owner_vyvod = Convert.ToInt32(r[@"ID_VYVOD"]);
 
                 m_id_param = (ID_PARAM)Convert.ToInt16(r[@"ID_PARAM"]);
-                m_SensorsString_VZLET = ((string)r[@"KKS_NAME"]).Trim();
+                iVzletGrafa = (int)r[@"VZLET_GRAFA"];
+                m_SensorsString_VZLET =
+                    //((string)r[@"KKS_NAME"]).Trim()
+                    iVzletGrafa > 0 ? @"Графа_" + iVzletGrafa.ToString() : string.Empty
+                    ;
 
                 name_shr = ((string)r[@"NAME_SHR"]).Trim();
                 m_Symbol = ((string)r[@"SYMBOL"]).Trim();
@@ -339,7 +345,7 @@ namespace StatisticCommon
         /// </summary>
         public TEC tec;
 
-        private bool m_bKomUchet;
+        public bool m_bKomUchet;
 
         public Vyvod()
             : this(null, new DataRow[] {  })

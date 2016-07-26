@@ -129,6 +129,7 @@
     </Reference>
   </ItemGroup>
   <ItemGroup>
+    <Compile Include="AdminTS_Vyvod.cs" />
     <Compile Include="AdminTS_LK.cs">
       <SubType>Component</SubType>
     </Compile>
@@ -208,6 +209,9 @@
     <Compile Include="PanelTecViewStandard.cs">
       <SubType>Component</SubType>
     </Compile>
+    <Compile Include="PanelAdminVyvod.cs">
+      <SubType>Component</SubType>
+    </Compile>
     <EmbeddedResource Include="FormGraphicsSettings.resx">
       <DependentUpon>FormGraphicsSettings.cs</DependentUpon>
       <SubType>Designer</SubType>
@@ -241,7 +245,7 @@
   <ItemGroup>
     <BootstrapperPackage Include="Microsoft.Net.Client.3.5">
       <Visible>False</Visible>
-      <ProductName>.NET Framework 3.5 SP1 Client Profile</ProductName>
+      <ProductName>Клиентский профиль .NET Framework 3.5 SP1</ProductName>
       <Install>false</Install>
     </BootstrapperPackage>
     <BootstrapperPackage Include="Microsoft.Net.Framework.3.5.SP1">

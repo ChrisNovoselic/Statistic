@@ -52,7 +52,7 @@ namespace StatisticCommon
         /// <summary>
         /// Идентификаторы специальных вкладок
         /// </summary>
-        public static int [] ID_SPECIAL_TAB = { 10001, 10002, 10011, 10012 };
+        public static int [] ID_SPECIAL_TAB = { 10001, 10002, 10011, 10012, 10021 };
         /// <summary>
         /// Перечисление - тип режима
         /// </summary>
@@ -61,7 +61,7 @@ namespace StatisticCommon
         /// <summary>
         /// Тип вкладки  из инструментария "администратор-диспетчер"
         /// </summary>
-        public enum MANAGER : ushort { DISP, NSS, ALARM, LK, COUNT_MANAGER, UNKNOWN };
+        public enum MANAGER : ushort { DISP, NSS, ALARM, LK, TEPLOSET, COUNT_MANAGER, UNKNOWN };
 
         private HMark m_modeTECComponent;
 
@@ -139,7 +139,7 @@ namespace StatisticCommon
                 //m_markTabAdminChecked.Set ((int)MANAGER.DISP, bChecked);
 
                 bChecked = listIDsProfileCheckedIndices.IndexOf(ID_SPECIAL_TAB[(int)MANAGER.NSS]) > -1;
-                m_listItems.Add(new Item(ID_SPECIAL_TAB[(int)MANAGER.NSS], getNameAdminValues(MANAGER.NSS, MODE_TECCOMPONENT.TG), bChecked));
+                m_listItems.Add(new Item(ID_SPECIAL_TAB[(int)MANAGER.NSS], getNameAdminValues(MANAGER.NSS, MODE_TECCOMPONENT.TEC), bChecked)); //TEC, TG, PC - не имеет значения...
                 //m_markTabAdminChecked.Set((int)MANAGER.NSS, bChecked);
 
                 bChecked = listIDsProfileCheckedIndices.IndexOf(ID_SPECIAL_TAB[(int)MANAGER.ALARM]) > -1;
@@ -147,7 +147,10 @@ namespace StatisticCommon
                 //m_markTabAdminChecked.Set((int)MANAGER.ALARM, bChecked);
 
                 bChecked = listIDsProfileCheckedIndices.IndexOf(ID_SPECIAL_TAB[(int)MANAGER.LK]) > -1;
-                m_listItems.Add(new Item(ID_SPECIAL_TAB[(int)MANAGER.LK], getNameAdminValues(MANAGER.LK, MODE_TECCOMPONENT.TG), bChecked));
+                m_listItems.Add(new Item(ID_SPECIAL_TAB[(int)MANAGER.LK], getNameAdminValues(MANAGER.LK, MODE_TECCOMPONENT.TEC), bChecked)); //TEC, TG, PC - не имеет значения...
+
+                bChecked = listIDsProfileCheckedIndices.IndexOf(ID_SPECIAL_TAB[(int)MANAGER.TEPLOSET]) > -1;
+                m_listItems.Add(new Item(ID_SPECIAL_TAB[(int)MANAGER.TEPLOSET], getNameAdminValues(MANAGER.TEPLOSET, MODE_TECCOMPONENT.TEC), bChecked)); //TEC, TG, PC - не имеет значения...
 
             }
             else {
@@ -232,12 +235,22 @@ namespace StatisticCommon
         /// <returns>Строка - подпись для элемента списка</returns>
         public string getNameAdminValues (MANAGER modeManager, MODE_TECCOMPONENT modeComponent) {
             string[] arNameAdminValues = { "НСС" /*TEC*/, "Диспетчер" /*GTP*/, "НСС" /*PC*/, "НСС" /*TG*/ };
-            string prefix = ((modeManager == MANAGER.DISP) || (modeManager == MANAGER.NSS) || (modeManager == MANAGER.LK)) ? @"ПБР" : (modeManager == MANAGER.ALARM) ? @"Сигн." : @"Неизвестно";
+            string prefix = ((modeManager == MANAGER.DISP) || (modeManager == MANAGER.NSS) || (modeManager == MANAGER.LK) || (modeManager == MANAGER.TEPLOSET)) ? @"ПБР" :
+                (modeManager == MANAGER.ALARM) ? @"Сигн." :
+                    @"Неизвестно";
 
-            if(modeManager == MANAGER.LK)
-                prefix += @" - ЛК";
-            else
-                prefix += @" - " + arNameAdminValues[(int)modeComponent];
+            switch (modeManager)
+            {
+                case MANAGER.LK:
+                    prefix += @" - ЛК";
+                    break;
+                case MANAGER.TEPLOSET:
+                    prefix += @" - Теплосеть";
+                    break;
+                default:
+                    prefix += @" - " + arNameAdminValues[(int)modeComponent];
+                    break;
+            }
 
             return prefix;
         }
@@ -294,7 +307,10 @@ namespace StatisticCommon
                             if (item.id == ID_SPECIAL_TAB[(int)MANAGER.LK])
                                 idAllowed = (int)HStatisticUsers.ID_ALLOWED.TAB_LK_ADMIN;
                             else
-                                ;
+                                if (item.id == ID_SPECIAL_TAB[(int)MANAGER.TEPLOSET])
+                                    idAllowed = (int)HStatisticUsers.ID_ALLOWED.TAB_TEPLOSET_ADMIN;
+                                else
+                                    ;
 
 
                 bRes = !(idAllowed < 0);
@@ -446,7 +462,10 @@ namespace StatisticCommon
                             if (item.id == ID_SPECIAL_TAB[(int)MANAGER.LK])
                                 m_markTabAdminChecked.Set((int)MANAGER.LK, item.bChecked);
                             else
-                                ;
+                                if (item.id == ID_SPECIAL_TAB[(int)MANAGER.TEPLOSET])
+                                    m_markTabAdminChecked.Set((int)MANAGER.TEPLOSET, item.bChecked);
+                                else
+                                    ;
             }
 
             try {
@@ -553,16 +572,19 @@ namespace StatisticCommon
                 switch (indxCheckedIndicies)
                 {
                     case -1: //KOM_DISP
-                        indx = clbMode.Items.IndexOf(getNameAdminValues(MANAGER.DISP, MODE_TECCOMPONENT.GTP));
+                        indx = clbMode.Items.IndexOf(getNameAdminValues(MANAGER.DISP, MODE_TECCOMPONENT.GTP)); //только ГТП
                         break;
                     case -2: //NSS
-                        indx = clbMode.Items.IndexOf(getNameAdminValues(MANAGER.NSS, MODE_TECCOMPONENT.TEC)); //TG, PC - не имеет значения...
+                        indx = clbMode.Items.IndexOf(getNameAdminValues(MANAGER.NSS, MODE_TECCOMPONENT.TEC)); //TEC, TG, PC - не имеет значения...
                         break;
                     case -3: //Alarm
-                        indx = clbMode.Items.IndexOf(getNameAdminValues(MANAGER.ALARM, MODE_TECCOMPONENT.GTP)); //TG, PC - не имеет значения...
+                        indx = clbMode.Items.IndexOf(getNameAdminValues(MANAGER.ALARM, MODE_TECCOMPONENT.GTP)); //только ГТП
                         break;
                     case -4: //LK
-                        indx = clbMode.Items.IndexOf(getNameAdminValues(MANAGER.LK, MODE_TECCOMPONENT.TEC)); //TG, PC - не имеет значения...
+                        indx = clbMode.Items.IndexOf(getNameAdminValues(MANAGER.LK, MODE_TECCOMPONENT.TEC)); //TEC, TG, PC - не имеет значения...
+                        break;
+                    case -5: //VYVOD(TEPLOSET)
+                        indx = clbMode.Items.IndexOf(getNameAdminValues(MANAGER.TEPLOSET, MODE_TECCOMPONENT.TEC)); //TEC, TG, PC - не имеет значения...
                         break;
                     default:
                         break;

@@ -151,7 +151,7 @@ namespace StatisticCommon
         {
             return DbTSQLInterface.Select(ref m_connConfigDB
                 , @"SELECT tl.NAME_SHR as TEC_NAME_SHR"
-                        + @", pnt.[ID_TEC], pnt.ID, pnt.[KKS_NAME]"
+                        + @", pnt.[ID_TEC], pnt.ID, pnt.[KKS_NAME], pnt.[VZLET_GRAFA]"
                         + @", vl.ID as [ID_VYVOD], vl.NAME_SHR as VYVOD_NAME_SHR, vl.KOM_UCHET"
                         + @", par.[ID] as [ID_PARAM], par.[NAME_SHR], par.[SYMBOL], par.[TYPE_AGREGATE]"
                     + @" FROM [dbo].[ID_POINT_ASKUTE] pnt"
