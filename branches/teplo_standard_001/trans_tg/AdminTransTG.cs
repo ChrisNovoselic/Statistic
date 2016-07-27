@@ -34,7 +34,7 @@ namespace trans_tg
             m_listCurTimezoneOffsetRDGExcelValues = new List<RDGStruct[]> ();
         }
 
-        protected override int ImpRDGExcelValuesResponse()
+        protected override int impRDGExcelValuesResponse()
         {
             int iRes = -1;
 
@@ -58,7 +58,7 @@ namespace trans_tg
             else
                 ;
 
-            iRes = base.ImpRDGExcelValuesResponse();
+            iRes = base.impRDGExcelValuesResponse();
 
             return iRes;
         }

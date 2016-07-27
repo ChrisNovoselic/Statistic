@@ -18,11 +18,47 @@ namespace Statistic
 {
     public class PanelAdminVyvod : PanelAdmin
     {
-        public class AdminTS_Vyvod : AdminTS
+        public class AdminTS_Vyvod : AdminTS_TG
         {
             public AdminTS_Vyvod(bool[] arMarkSavePPBRValues)
                 : base(arMarkSavePPBRValues)
             {
+            }
+
+            protected override void /*bool*/ impRDGExcelValuesRequest()
+            {
+                throw new NotImplementedException();
+            }
+
+            protected override int impRDGExcelValuesResponse()
+            {
+                throw new NotImplementedException();
+            }
+
+            protected override void /*bool*/ expRDGExcelValuesRequest()
+            {
+                throw new NotImplementedException();
+            }
+
+            public override void FillListIndexTECComponent(int id)
+            {
+                lock (m_lockSuccessGetData)
+                {
+                    m_listTECComponentIndexDetail.Clear();
+                    // перечень ТЭЦ
+                    foreach (TEC tec in m_list_tec)
+                        //ВЫВОДы
+                        foreach (Vyvod v in tec.m_list_Vyvod)
+                            // параметры выводов
+                            foreach (Vyvod.ParamVyvod pv in v.m_listLowPointDev)
+                                if ((tec.m_id == id) //Принадлежит ТЭЦ
+                                    && (pv.m_id_param == Vyvod.ID_PARAM.T_PV)) // и является параметром - температура прямая (для которого есть плановые значения)
+                                    m_listTECComponentIndexDetail.Add(pv.m_id);
+                                else
+                                    ;
+
+                    m_listCurRDGValues.Clear();
+                }
             }
         }
 
@@ -61,7 +97,7 @@ namespace Statistic
         }
 
         public PanelAdminVyvod(int idListener, HMark markQueries)
-            : base(idListener, FormChangeMode.MANAGER.DISP, markQueries, new int[] { 0, (int)TECComponent.ID.GTP })
+            : base(idListener, FormChangeMode.MANAGER.TEPLOSET, markQueries, new int[] { 0, (int)TECComponent.ID.TG })
         {
         }
 
@@ -93,15 +129,17 @@ namespace Statistic
                         case (int)DataGridViewAdminVyvod.DESC_INDEX.UDGt: // УДГэ
                             break;
                         case (int)DataGridViewAdminVyvod.DESC_INDEX.RECOMENDATION: // Рекомендация
+                            //valid = true;
+                            //valRec = (int)dgwAdminTable.Rows[i].Cells[(int)DataGridViewAdminVyvod.DESC_INDEX.RECOMENDATION].Value;
                             valid = double.TryParse((string)dgwAdminTable.Rows[i].Cells[(int)DataGridViewAdminVyvod.DESC_INDEX.RECOMENDATION].Value, out value);
                             m_admin.m_curRDGValues[i].recomendation = value;
 
                             break;
                         case (int)DataGridViewAdminVyvod.DESC_INDEX.DEVIATION_TYPE:
-                                if (!(this.dgwAdminTable.Rows[i].Cells[(int)DataGridViewAdminVyvod.DESC_INDEX.DEVIATION_TYPE].Value == null))
-                                    m_admin.m_curRDGValues[i].deviationPercent = bool.Parse(this.dgwAdminTable.Rows[i].Cells[(int)DataGridViewAdminVyvod.DESC_INDEX.DEVIATION_TYPE].Value.ToString());
-                                else
-                                    m_admin.m_curRDGValues[i].deviationPercent = false;
+                            if (!(this.dgwAdminTable.Rows[i].Cells[(int)DataGridViewAdminVyvod.DESC_INDEX.DEVIATION_TYPE].Value == null))
+                                m_admin.m_curRDGValues[i].deviationPercent = bool.Parse(this.dgwAdminTable.Rows[i].Cells[(int)DataGridViewAdminVyvod.DESC_INDEX.DEVIATION_TYPE].Value.ToString());
+                            else
+                                m_admin.m_curRDGValues[i].deviationPercent = false;
 
                             break;
                         case (int)DataGridViewAdminVyvod.DESC_INDEX.DEVIATION: // Максимальное отклонение
@@ -148,7 +186,7 @@ namespace Statistic
                     this.dgwAdminTable.Rows[i].Cells[(int)DataGridViewAdminVyvod.DESC_INDEX.UDGt].Value = (((m_admin.m_curRDGValues[i].pbr + m_admin.m_curRDGValues[i - 1].pbr) / 2) + m_admin.m_curRDGValues[i].recomendation).ToString("F2");
                 else
                     this.dgwAdminTable.Rows[i].Cells[(int)DataGridViewAdminVyvod.DESC_INDEX.UDGt].Value = (((m_admin.m_curRDGValues[i].pbr + m_admin.m_curRDGValues_PBR_0) / 2) + m_admin.m_curRDGValues[i].recomendation).ToString("F2");
-                this.dgwAdminTable.Rows[i].Cells[(int)DataGridViewAdminVyvod.DESC_INDEX.RECOMENDATION].Value = m_admin.m_curRDGValues[i].recomendation.ToString("F2");
+                (this.dgwAdminTable.Rows[i].Cells[(int)DataGridViewAdminVyvod.DESC_INDEX.RECOMENDATION] as DataGridViewComboBoxCell).Value = (object)(((int)m_admin.m_curRDGValues[i].recomendation).ToString());
                 this.dgwAdminTable.Rows[i].Cells[(int)DataGridViewAdminVyvod.DESC_INDEX.RECOMENDATION].ToolTipText = m_admin.m_curRDGValues[i].dtRecUpdate.ToString ();
                 this.dgwAdminTable.Rows[i].Cells[(int)DataGridViewAdminVyvod.DESC_INDEX.DEVIATION_TYPE].Value = m_admin.m_curRDGValues[i].deviationPercent.ToString();
                 this.dgwAdminTable.Rows[i].Cells[(int)DataGridViewAdminVyvod.DESC_INDEX.DEVIATION].Value = m_admin.m_curRDGValues[i].deviation.ToString("F2");
@@ -163,7 +201,22 @@ namespace Statistic
         }
 
         public override void InitializeComboBoxTecComponent(FormChangeMode.MODE_TECCOMPONENT mode)
-        {
+        {//??? копия 'AdminTS_NSS'
+            base.InitializeComboBoxTecComponent (mode);
+
+            if (m_listTECComponentIndex.Count > 0) {
+                comboBoxTecComponent.Items.AddRange (((AdminTS_TG)m_admin).GetListNameTEC ());
+
+                if (comboBoxTecComponent.Items.Count > 0)
+                {
+                    m_admin.indxTECComponents = m_listTECComponentIndex[0];
+                    comboBoxTecComponent.SelectedIndex = 0;
+                }
+                else
+                    ;
+            }
+            else
+                ;
         }      
 
         protected override void comboBoxTecComponent_SelectionChangeCommitted(object sender, EventArgs e)
@@ -176,7 +229,7 @@ namespace Statistic
             public enum DESC_INDEX : ushort { DATE_HOUR, PLAN, UDGt, RECOMENDATION, DEVIATION_TYPE, DEVIATION, TO_ALL, COUNT_COLUMN };
             private static string[] arDescStringIndex = { "DateHour", "Plan", @"UDGt", "Recomendation", "DeviationType", "Deviation", "ToAll" };
             private static string[] arDescRusStringIndex = { "Дата, час", "План", @"УДГт", "Рекомендация", "Отклонение в процентах", "Величина максимального отклонения", "Дозаполнить" };
-            private static string[] arDefaultValueIndex = { string.Empty, string.Empty, string.Empty, string.Empty, false.ToString(), string.Empty };
+            private static object[] arDefaultValueIndex = { string.Empty, string.Empty, string.Empty, 0, false.ToString(), string.Empty };
 
             public double m_PBR_0;
 
@@ -216,6 +269,12 @@ namespace Statistic
                     Columns[col].SortMode = System.Windows.Forms.DataGridViewColumnSortMode.NotSortable;
                 }
 
+                DataGridViewComboBoxCell cellTemplateRec = new DataGridViewComboBoxCell();
+                cellTemplateRec.DisplayStyle = DataGridViewComboBoxDisplayStyle.DropDownButton;
+                cellTemplateRec.Items.AddRange(new object[] { "-3", "0", "3" });
+                cellTemplateRec.Value = 0;
+                Columns[(int)DESC_INDEX.RECOMENDATION].CellTemplate = cellTemplateRec;
+
                 //dgvCellStyleError = new DataGridViewCellStyle();
                 //dgvCellStyleError.BackColor = Color.Red;
 
@@ -224,7 +283,7 @@ namespace Statistic
 
                 this.Dock = DockStyle.Fill;
 
-                this.CellValueChanged += new DataGridViewCellEventHandler(DataGridViewAdminVyvod_CellValueChanged);
+                this.CellValueChanged += new DataGridViewCellEventHandler(onCellValueChanged);
 
                 this.HorizontalScrollBar.Visible = true;
             }
@@ -246,22 +305,22 @@ namespace Statistic
                     case (int)DESC_INDEX.UDGt: //Не редактируется
                         break;
                     case (int)DESC_INDEX.RECOMENDATION: // Рекомендация
-                        valid = double.TryParse((string)Rows[ev.RowIndex].Cells[(int)DESC_INDEX.RECOMENDATION].Value, out value);
-                        if ((valid == false) || (value > maxRecomendationValue))
-                            Rows[ev.RowIndex].Cells[(int)DESC_INDEX.RECOMENDATION].Value = 0.ToString("F2");
-                        else
-                        {
-                            Rows[ev.RowIndex].Cells[(int)DESC_INDEX.RECOMENDATION].Value = value.ToString("F2");
+                        //valid = double.TryParse((string)Rows[ev.RowIndex].Cells[(int)DESC_INDEX.RECOMENDATION].Value, out value);
+                        //if ((valid == false) || (value > maxRecomendationValue))
+                        //    Rows[ev.RowIndex].Cells[(int)DESC_INDEX.RECOMENDATION].Value = 0.ToString("F2");
+                        //else
+                        //{
+                        //    Rows[ev.RowIndex].Cells[(int)DESC_INDEX.RECOMENDATION].Value = value.ToString("F2");
 
-                            double prevPbr
-                                , Pbr = double.Parse(Rows[ev.RowIndex].Cells[(int)DESC_INDEX.PLAN].Value.ToString());
-                            if (ev.RowIndex > 0)
-                                prevPbr = double.Parse(Rows[ev.RowIndex - 1].Cells[(int)DESC_INDEX.PLAN].Value.ToString());
-                            else
-                                prevPbr = m_PBR_0;
+                        //    double prevPbr
+                        //        , Pbr = double.Parse(Rows[ev.RowIndex].Cells[(int)DESC_INDEX.PLAN].Value.ToString());
+                        //    if (ev.RowIndex > 0)
+                        //        prevPbr = double.Parse(Rows[ev.RowIndex - 1].Cells[(int)DESC_INDEX.PLAN].Value.ToString());
+                        //    else
+                        //        prevPbr = m_PBR_0;
 
-                            Rows[ev.RowIndex].Cells[(int)DESC_INDEX.UDGt].Value = (((Pbr + prevPbr) / 2) + value).ToString("F2");
-                        }
+                        //    Rows[ev.RowIndex].Cells[(int)DESC_INDEX.UDGt].Value = (((Pbr + prevPbr) / 2) + value).ToString("F2");
+                        //}
                         break;
                     case (int)DESC_INDEX.DEVIATION_TYPE:
                         break;
@@ -285,16 +344,16 @@ namespace Statistic
                 }
             }
 
+            private void onCellValueChanged(object sender, DataGridViewCellEventArgs ev)
+            {
+            }
+
             public override void ClearTables()
             {
                 //for (int i = 0; i < Rows.Count; i++)
                 foreach (DataGridViewRow r in Rows)
                     for (int j = (int)DESC_INDEX.DATE_HOUR; j < ((int)DESC_INDEX.TO_ALL + 0); j++)
                         r.Cells[j].Value = arDefaultValueIndex[j];
-            }
-
-            private void DataGridViewAdminVyvod_CellValueChanged(object obj, DataGridViewCellEventArgs ev)
-            {
             }
         }
     }

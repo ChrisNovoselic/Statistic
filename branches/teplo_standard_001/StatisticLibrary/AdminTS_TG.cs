@@ -72,9 +72,9 @@ namespace StatisticCommon
         public AdminTS_TG(bool[] arMarkPPBRValues)
             : base(arMarkPPBRValues)
         {
-            delegateImportForeignValuesRequuest = ImpRDGExcelValuesRequest;
-            delegateExportForeignValuesRequuest = ExpRDGExcelValuesRequest;
-            delegateImportForeignValuesResponse = ImpRDGExcelValuesResponse;
+            delegateImportForeignValuesRequuest = impRDGExcelValuesRequest;
+            delegateExportForeignValuesRequuest = expRDGExcelValuesRequest;
+            delegateImportForeignValuesResponse = impRDGExcelValuesResponse;
             //delegateExportForeignValuesResponse = ExpRDGExcelValuesResponse;
 
             m_listCurRDGValues = new List<RDGStruct[]> ();
@@ -405,10 +405,10 @@ namespace StatisticCommon
             //delegateStopWait();
         }
 
-        protected abstract void /*bool*/ ImpRDGExcelValuesRequest();
+        protected abstract void /*bool*/ impRDGExcelValuesRequest();
 
-        protected abstract /*override*/ int ImpRDGExcelValuesResponse();
+        protected abstract /*override*/ int impRDGExcelValuesResponse();
 
-        protected abstract void /*bool*/ ExpRDGExcelValuesRequest();
+        protected abstract void /*bool*/ expRDGExcelValuesRequest();
     }
 }

@@ -50,7 +50,9 @@ namespace StatisticCommon
         public System.Windows.Forms.ContextMenuStrip m_MainFormContextMenuStripListTecViews;
 
         /// <summary>
-        /// Идентификаторы специальных вкладок
+        /// Массив идентификаторов специальных вкладок, редактирование значений оперативным персоналом
+        ///  , размещаются как п. списка в окне "Смена режима". Массив индексируется перечислением 'MANAGER'.
+        ///  Корректное название 'ID_MANAGER_TAB'
         /// </summary>
         public static int [] ID_SPECIAL_TAB = { 10001, 10002, 10011, 10012, 10021 };
         /// <summary>

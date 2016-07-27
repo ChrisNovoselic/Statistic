@@ -164,6 +164,11 @@ namespace Statistic
 
         private int Initialize(out string msgError)
         {
+            HMark markQueries
+                , markSett;
+            List<int> listIdProfilesUnit; // для проверки доступа к специальным вкладкам
+            List<int> listIDs; // идентификаторы 
+
             //StartWait ();
             delegateStartWait();
 
@@ -237,7 +242,7 @@ namespace Statistic
                 {
                     s_iMainSourceData = Int32.Parse(formParameters.m_arParametrSetup[(int)FormParameters.PARAMETR_SETUP.MAIN_DATASOURCE]);
 
-                    HMark markSett = new HMark(Int32.Parse(HStatisticUsers.GetAllowed((int)HStatisticUsers.ID_ALLOWED.AUTO_LOADSAVE_USERPROFILE)));
+                    markSett = new HMark(Int32.Parse(HStatisticUsers.GetAllowed((int)HStatisticUsers.ID_ALLOWED.AUTO_LOADSAVE_USERPROFILE)));
                     файлПрофильАвтоЗагрузитьСохранитьToolStripMenuItem.Enabled = markSett.IsMarked(0);
                     файлПрофильАвтоЗагрузитьСохранитьToolStripMenuItem.Checked = markSett.IsMarked(1);
 
@@ -279,7 +284,7 @@ namespace Statistic
                     //m_arAdmin = new AdminTS[(int)FormChangeMode.MANAGER.COUNT_MANAGER];
                     m_arPanelAdmin = new PanelStatistic[(int)FormChangeMode.MANAGER.COUNT_MANAGER];
 
-                    HMark markQueries = new HMark(new int [] {(int)CONN_SETT_TYPE.ADMIN, (int)CONN_SETT_TYPE.PBR});
+                    markQueries = new HMark(new int [] {(int)CONN_SETT_TYPE.ADMIN, (int)CONN_SETT_TYPE.PBR});
                     //markQueries.Marked((int)CONN_SETT_TYPE.ADMIN);
                     //markQueries.Marked((int)CONN_SETT_TYPE.PBR);
 
@@ -304,7 +309,7 @@ namespace Statistic
                             case FormChangeMode.MANAGER.ALARM:
                                 m_arPanelAdmin[i] = new PanelAlarm(idListenerConfigDB
                                     , new HMark(new int[] { (int)CONN_SETT_TYPE.ADMIN, (int)CONN_SETT_TYPE.PBR, (int)CONN_SETT_TYPE.DATA_AISKUE, (int)CONN_SETT_TYPE.DATA_SOTIASSO })
-                                    , MODE.ADMIN);
+                                    , StatisticAlarm.MODE.ADMIN);
                                 (m_arPanelAdmin[i] as PanelAlarm).EventGUIReg += new AlarmNotifyEventHandler(OnPanelAlarmEventGUIReg);
                                 m_formAlarmEvent.EventFixed += new DelegateObjectFunc((m_arPanelAdmin[i] as PanelAlarm).OnEventFixed);
                                 break;
@@ -317,50 +322,16 @@ namespace Statistic
                     }
 
                     m_bAutoActionTabs = файлПрофильАвтоЗагрузитьСохранитьToolStripMenuItem.Checked;
+                    // определить признаки автоматического отображения специальных вкладок
+                    listIdProfilesUnit = new List<int> { (int)HStatisticUsers.ID_ALLOWED.AUTO_TAB_PBR_KOMDISP
+                        , (int)HStatisticUsers.ID_ALLOWED.AUTO_TAB_PBR_NSS
+                        , (int)HStatisticUsers.ID_ALLOWED.AUTO_TAB_ALARM
+                        , (int)HStatisticUsers.ID_ALLOWED.AUTO_TAB_LK_ADMIN
+                        , (int)HStatisticUsers.ID_ALLOWED.AUTO_TAB_TEPLOSET_ADMIN };
+                    listIDs = new List<int>();
 
-                    List<int> listIDs = new List<int>();
-                    //if (((HStatisticUsers.RoleIsAdmin == true) || (HStatisticUsers.RoleIsDisp == true)) && (PanelAdminKomDisp.ALARM_USE == true))
-                    //if ((HStatisticUsers.IsAllowed ((int)HStatisticUsers.ID_ALLOWED.AUTO_TAB_PBR_KOMDISP) == true) && (PanelAdminKomDisp.ALARM_USE == true))
-                    if (HStatisticUsers.IsAllowed((int)HStatisticUsers.ID_ALLOWED.AUTO_TAB_PBR_KOMDISP) == true)
-                    {
-                        //m_markPrevStatePanelAdmin.Set((int)FormChangeMode.MANAGER.DISP, true);
-                        //listIDs.Add (FormChangeMode.ID_SPECIAL_TAB[(int)FormChangeMode.MANAGER.DISP]);
-                        listIDs.Add(FormChangeMode.ID_SPECIAL_TAB[(int)FormChangeMode.MANAGER.DISP]);
-                    }
-                    else
-                        ;
-
-                    if (HStatisticUsers.IsAllowed((int)HStatisticUsers.ID_ALLOWED.AUTO_TAB_PBR_NSS) == true)
-                    {
-                        //m_markPrevStatePanelAdmin.Set((int)FormChangeMode.MANAGER.NSS, true);
-                        //listIDs.Add (FormChangeMode.ID_SPECIAL_TAB[(int)FormChangeMode.MANAGER.DISP]);
-                        listIDs.Add(FormChangeMode.ID_SPECIAL_TAB[(int)FormChangeMode.MANAGER.NSS]);
-                    }
-                    else
-                        ;
-
-                    if (HStatisticUsers.IsAllowed((int)HStatisticUsers.ID_ALLOWED.AUTO_TAB_ALARM) == true)
-                    {
-                        //m_markPrevStatePanelAdmin.Set((int)FormChangeMode.MANAGER.ALARM, true);
-                        //listIDs.Add (FormChangeMode.ID_SPECIAL_TAB[(int)FormChangeMode.MANAGER.DISP]);
-                        listIDs.Add(FormChangeMode.ID_SPECIAL_TAB[(int)FormChangeMode.MANAGER.ALARM]);
-                    }
-                    else
-                        ;
-
-                    if (HStatisticUsers.IsAllowed((int)HStatisticUsers.ID_ALLOWED.AUTO_TAB_LK_ADMIN) == true)
-                    {
-                        //m_markPrevStatePanelAdmin.Set((int)FormChangeMode.MANAGER.ALARM, true);
-                        //listIDs.Add (FormChangeMode.ID_SPECIAL_TAB[(int)FormChangeMode.MANAGER.DISP]);
-                        listIDs.Add(FormChangeMode.ID_SPECIAL_TAB[(int)FormChangeMode.MANAGER.LK]);
-                    }
-                    else
-                        ;
-
-                    if (HStatisticUsers.IsAllowed((int)HStatisticUsers.ID_ALLOWED.AUTO_TAB_TEPLOSET_ADMIN) == true)
-                        listIDs.Add(FormChangeMode.ID_SPECIAL_TAB[(int)FormChangeMode.MANAGER.TEPLOSET]);
-                    else
-                        ;
+                    for (i = 0; i < FormChangeMode.ID_SPECIAL_TAB.Length; i++)
+                        if (HStatisticUsers.IsAllowed(listIdProfilesUnit[i]) == true) listIDs.Add(FormChangeMode.ID_SPECIAL_TAB[i]); else ;                    
 
                     //Добавить закладки автоматически...
                     //listIDs.Add(5); listIDs.Add(111);

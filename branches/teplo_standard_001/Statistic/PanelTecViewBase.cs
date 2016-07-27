@@ -549,7 +549,7 @@ namespace Statistic
         public override void Start()
         {
             base.Start ();
-            
+
             m_tecView.Start();
             // значения по умолчанию
             if (!(m_dgwMins == null))

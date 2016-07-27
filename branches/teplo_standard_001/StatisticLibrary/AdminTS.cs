@@ -1017,8 +1017,8 @@ namespace StatisticCommon
             if (IsCanUseTECComponents ())
                 //Request(m_indxDbInterfaceCommon, m_listenerIdCommon, allTECComponents[indxTECComponents].tec.GetAdminDatesQuery(date));
                 Request(m_dictIdListeners[allTECComponents[indxTECComponents].tec.m_id][(int)CONN_SETT_TYPE.ADMIN]
-                    , allTECComponents[indxTECComponents].tec.GetAdminDatesQuery(date.Add(-m_tsOffsetToMoscow)/*, m_typeFields*/
-                    , allTECComponents[indxTECComponents]));
+                    , allTECComponents[indxTECComponents].tec.GetAdminDatesQuery(allTECComponents[indxTECComponents]/*, m_typeFields*/
+                        , date.Add(-m_tsOffsetToMoscow)));
             else
                 ;
         }
@@ -1041,8 +1041,8 @@ namespace StatisticCommon
             if (IsCanUseTECComponents () == true)
                 //Request(m_indxDbInterfaceCommon, m_listenerIdCommon, allTECComponents[indxTECComponents].tec.GetPBRDatesQuery(date));
                 Request(m_dictIdListeners[allTECComponents[indxTECComponents].tec.m_id][(int)CONN_SETT_TYPE.PBR],
-                        allTECComponents[indxTECComponents].tec.GetPBRDatesQuery(date.Add(-m_tsOffsetToMoscow)/*, m_typeFields*/
-                        , allTECComponents[indxTECComponents]));
+                    allTECComponents[indxTECComponents].tec.GetPBRDatesQuery(allTECComponents[indxTECComponents]/*, m_typeFields*/
+                        , date.Add(-m_tsOffsetToMoscow)));
             else
                 ;
         }

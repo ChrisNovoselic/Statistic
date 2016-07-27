@@ -1890,7 +1890,7 @@ namespace StatisticCommon
         /// <param name="mode">Режим полей в таблице (в наст./время не актуально - используется 'AdminTS.TYPE_FIELDS.DYNAMIC')</param>
         /// <param name="comp">Объект компонента ТЭЦ для которого запрашиваются данные</param>
         /// <returns>Строка запроса</returns>
-        public string GetAdminDatesQuery(DateTime dt/*, AdminTS.TYPE_FIELDS mode*/, TECComponent comp)
+        public string GetAdminDatesQuery(TECComponent comp, DateTime dt/*, AdminTS.TYPE_FIELDS mode*/)
         {
             string strRes = string.Empty;
 
@@ -1920,7 +1920,7 @@ namespace StatisticCommon
         /// <param name="mode">Режим полей в таблице (в наст./время не актуально - используется 'AdminTS.TYPE_FIELDS.DYNAMIC')</param>
         /// <param name="comp">Объект компонента ТЭЦ для которого запрашиваются данные</param>
         /// <returns>Строка запроса</returns>
-        public string GetPBRDatesQuery(DateTime dt/*, AdminTS.TYPE_FIELDS mode*/, TECComponent comp)
+        public string GetPBRDatesQuery(TECComponent comp, DateTime dt/*, AdminTS.TYPE_FIELDS mode*/)
         {
             string strRes = string.Empty,
                 strNameFieldDateTime = m_strNamesField[(int)INDEX_NAME_FIELD.PBR_DATETIME];

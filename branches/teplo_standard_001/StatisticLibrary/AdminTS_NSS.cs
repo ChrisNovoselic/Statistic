@@ -17,7 +17,7 @@ namespace StatisticCommon
         {
         }
 
-        protected override /*override*/ int ImpRDGExcelValuesResponse()
+        protected override /*override*/ int impRDGExcelValuesResponse()
         {
             //bool bRes = base.ImpRDGExcelValuesResponse();
             int iRes = IsCanUseTECComponents() == true ? 0 : -1;
@@ -65,7 +65,7 @@ namespace StatisticCommon
             return iRes;
         }
 
-        protected override void /*bool*/ ImpRDGExcelValuesRequest()
+        protected override void /*bool*/ impRDGExcelValuesRequest()
         {
             Logging.Logg().Debug(@"AdminTS_NSS::ImpRDGExcelValuesRequest () - в’од...", Logging.INDEX_MESSAGE.NOT_SET);
 
@@ -150,7 +150,7 @@ namespace StatisticCommon
             //return bRes;
         }
 
-        protected override void /*bool*/ ExpRDGExcelValuesRequest()
+        protected override void /*bool*/ expRDGExcelValuesRequest()
         {
             //bool bRes = true;
             Boolean bMidnightValues = false;

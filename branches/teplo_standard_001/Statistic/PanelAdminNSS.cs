@@ -179,7 +179,7 @@ namespace Statistic
             base.InitializeComboBoxTecComponent (mode);
 
             if (m_listTECComponentIndex.Count > 0) {
-                comboBoxTecComponent.Items.AddRange (((AdminTS_NSS)m_admin).GetListNameTEC ());
+                comboBoxTecComponent.Items.AddRange (((AdminTS_TG)m_admin).GetListNameTEC ());
 
                 if (comboBoxTecComponent.Items.Count > 0)
                 {

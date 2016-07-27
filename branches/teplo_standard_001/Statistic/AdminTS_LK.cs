@@ -249,7 +249,6 @@ namespace Statistic
 
             //protected void /*bool*/ ExpRDGExcelValuesRequest()
             //{
-
             //}
 
             /// <summary>
@@ -436,17 +435,17 @@ namespace Statistic
                 }
             }
 
-            protected override void /*bool*/ ImpRDGExcelValuesRequest()
+            protected override void /*bool*/ impRDGExcelValuesRequest()
             {
                 throw new NotImplementedException();
             }
 
-            protected override int ImpRDGExcelValuesResponse()
+            protected override int impRDGExcelValuesResponse()
             {
                 throw new NotImplementedException();
             }
 
-            protected override void /*bool*/ ExpRDGExcelValuesRequest()
+            protected override void /*bool*/ expRDGExcelValuesRequest()
             {
                 throw new NotImplementedException();
             }

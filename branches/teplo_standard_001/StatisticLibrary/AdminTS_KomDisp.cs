@@ -19,8 +19,8 @@ namespace StatisticCommon
         public AdminTS_KomDisp(bool[] arMarkSavePPBRValues)
             : base(arMarkSavePPBRValues)
         {
-            delegateImportForeignValuesRequuest = ImpCSVValuesRequest;
-            delegateImportForeignValuesResponse = ImpCSVValuesResponse;
+            delegateImportForeignValuesRequuest = impCSVValuesRequest;
+            delegateImportForeignValuesResponse = impCSVValuesResponse;
 
             ////Отладка 'HMath.doubleParse'
             //string strVal = @"456,890";
@@ -152,7 +152,7 @@ namespace StatisticCommon
                 ;
         }
 
-        private void ImpCSVValuesRequest()
+        private void impCSVValuesRequest()
         {
             int err = -1
                 //, num_pbr = (int)GetPropertiesOfNameFilePPBRCSVValues()[1]
@@ -176,7 +176,7 @@ namespace StatisticCommon
             delegateStopWait();
         }
 
-        private int ImpCSVValuesResponse()
+        private int impCSVValuesResponse()
         {
             int iRes = -1;
 
