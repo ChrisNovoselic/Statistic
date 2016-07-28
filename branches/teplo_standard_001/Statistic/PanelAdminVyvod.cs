@@ -42,29 +42,54 @@ namespace Statistic
 
             public override void FillListIndexTECComponent(int id)
             {
+                TEC tec = null;
+
                 lock (m_lockSuccessGetData)
                 {
                     m_listTECComponentIndexDetail.Clear();
-                    // перечень ТЭЦ
-                    foreach (TEC tec in m_list_tec)
+                    // найти ТЭЦ по 'id'
+                    tec = m_list_tec.Find(t => { return t.m_id == id; });
+
+                    if (!(tec == null))
                         //ВЫВОДы
                         foreach (Vyvod v in tec.m_list_Vyvod)
                             // параметры выводов
                             foreach (Vyvod.ParamVyvod pv in v.m_listLowPointDev)
-                                if ((tec.m_id == id) //Принадлежит ТЭЦ
-                                    && (pv.m_id_param == Vyvod.ID_PARAM.T_PV)) // и является параметром - температура прямая (для которого есть плановые значения)
+                                if (pv.m_id_param == Vyvod.ID_PARAM.T_PV) // является параметром - температура прямая (для которого есть плановые значения)
                                     m_listTECComponentIndexDetail.Add(pv.m_id);
                                 else
                                     ;
+                    else
+                        Logging.Logg().Error(string.Format(@"Admin_TS_Vyvod::FillListIndexTECComponent (id={0}) - не найдена ТЭЦ...", id), Logging.INDEX_MESSAGE.NOT_SET);
 
                     m_listCurRDGValues.Clear();
                 }
             }
+
+            /// <summary>
+            /// Метод получения ТЭЦ компонентов
+            /// </summary>
+            protected override void initTEC()
+            {
+                allTECComponents.Clear();
+
+                foreach (StatisticCommon.TEC t in this.m_list_tec)
+                    if (t.m_list_Vyvod.Count > 0)
+                        foreach (TECComponent v in t.m_list_Vyvod)
+                        {
+                            allTECComponents.Add(v);
+
+                            foreach (Vyvod.ParamVyvod pv in v.m_listLowPointDev)
+                                allTECComponents.Add(pv);
+                        }
+                    else
+                        ;
+            }
         }
 
-        private enum INDEX_CONTROL_UI
-        {   UNKNOWN = -1
-            , COUNT };
+        private enum INDEX_CONTROL_UI { UNKNOWN = -1
+            , COUNT
+        };
 
         protected override void InitializeComponents()
         {
@@ -229,7 +254,7 @@ namespace Statistic
             public enum DESC_INDEX : ushort { DATE_HOUR, PLAN, UDGt, RECOMENDATION, DEVIATION_TYPE, DEVIATION, TO_ALL, COUNT_COLUMN };
             private static string[] arDescStringIndex = { "DateHour", "Plan", @"UDGt", "Recomendation", "DeviationType", "Deviation", "ToAll" };
             private static string[] arDescRusStringIndex = { "Дата, час", "План", @"УДГт", "Рекомендация", "Отклонение в процентах", "Величина максимального отклонения", "Дозаполнить" };
-            private static object[] arDefaultValueIndex = { string.Empty, string.Empty, string.Empty, 0, false.ToString(), string.Empty };
+            private static object[] arDefaultValueIndex = { string.Empty, string.Empty, string.Empty, 0.ToString(), false.ToString(), string.Empty };
 
             public double m_PBR_0;
 

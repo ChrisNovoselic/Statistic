@@ -473,7 +473,7 @@ namespace StatisticCommon
         /// <param name="t">ТЭЦ</param>
         /// <param name="comp">Компонент ТЭЦ</param>
         /// <param name="date">Дата за которую необходимо получить значения</param>
-        private void getAdminValuesRequest(TEC t, TECComponent comp, DateTime date/*, AdminTS.TYPE_FIELDS mode*/) {
+        protected void getAdminValuesRequest(TEC t, TECComponent comp, DateTime date/*, AdminTS.TYPE_FIELDS mode*/) {
             Request(m_dictIdListeners[t.m_id][(int)CONN_SETT_TYPE.ADMIN], t.GetAdminValueQuery(comp, date/*, mode*/));
         }
 
@@ -1159,7 +1159,7 @@ namespace StatisticCommon
         /// <param name="dt">Указанные дата/время</param>
         /// <param name="type">Тип данных (ПБР, админ./значения)</param>
         /// <returns>Номер часа</returns>
-        private int getCurrentHour (DateTime dt, CONN_SETT_TYPE type) {
+        protected int getCurrentHour (DateTime dt, CONN_SETT_TYPE type) {
             int iRes = -1;
 
             ////Вариант №1
@@ -1858,7 +1858,7 @@ namespace StatisticCommon
 
                     //this.BeginInvoke(delegateCalendarSetDate, m_prevDatetime);
                     break;
-
+                #region Импорт/экспорт значений
                 case (int)StatesMachine.ImpRDGExcelValues:
                     strRep = @"Импорт РДГ из Excel.";
                     delegateImportForeignValuesRequuest();
@@ -1871,6 +1871,7 @@ namespace StatisticCommon
                     strRep = @"Импорт из формата CSV.";
                     delegateImportForeignValuesRequuest();
                     break;
+                #endregion
                 case (int)StatesMachine.PPBRDates:
                     if ((serverTime.Date > m_curDate.Date) && (m_ignore_date == false))
                     {
@@ -2125,6 +2126,7 @@ namespace StatisticCommon
                     else
                         ;
                     break;
+                #region Импорт/экспорт значений
                 case (int)StatesMachine.ImpRDGExcelValues:
                     ActionReport("Импорт РДГ из Excel.");
                     //result = GetRDGExcelValuesResponse(table, m_curDate);
@@ -2160,6 +2162,7 @@ namespace StatisticCommon
                     else
                         ;
                     break;
+                #endregion
                 case (int)StatesMachine.PPBRDates:
                     clearPPBRDates();
                     result = getPPBRDatesResponse(table as System.Data.DataTable, m_curDate);

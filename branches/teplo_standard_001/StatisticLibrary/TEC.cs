@@ -560,20 +560,21 @@ namespace StatisticCommon
 
         public void InitTG(int indx, DataRow[] rows_tg)
         {
-            int j = -1, k = -1;
+            int j = -1 // индекс строк массива входного параметра
+                , k = -1; // индекс найденного ТГ
 
             for (j = 0; j < rows_tg.Length; j++)
             {
+                // поиск ТГ
                 for (k = 0; k < list_TECComponents.Count; k++)
-                {
-                    if (((list_TECComponents[k].IsTG == true)) && (Int32.Parse(rows_tg[j][@"ID_TG"].ToString()) == list_TECComponents[k].m_id))
+                    if (((list_TECComponents[k].IsTG == true))
+                        && (Int32.Parse(rows_tg[j][@"ID_TG"].ToString()) == list_TECComponents[k].m_id))
                         break;
                     else
                         ;
-                }
-
+                // проверить найден ли ТГ
                 if (k < list_TECComponents.Count)
-                {
+                {// ТГ найден
                     list_TECComponents[indx].m_listLowPointDev.Add(list_TECComponents[k].m_listLowPointDev[0]);
                     if (list_TECComponents[indx].IsGTP == true)
                         (list_TECComponents[k].m_listLowPointDev[0] as TG).m_id_owner_gtp = list_TECComponents[indx].m_id;
@@ -584,7 +585,7 @@ namespace StatisticCommon
                             ;
                 }
                 else
-                    ;
+                    ; // ТГ не найден
             }
         }
         /// <summary>
