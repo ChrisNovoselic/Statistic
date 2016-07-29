@@ -392,8 +392,11 @@ namespace StatisticCommon
         /// »гициализировать значени€ свойства параметра
         /// </summary>
         /// <param name="r">—трока объекта-таблицы со значен€ми свойств параметра</param>
-        public void InitParam(DataRow r)
+        /// <returns>ѕризнак результата инициализации</returns>
+        public int InitParam(DataRow r)
         {
+            int iRes = 0; // ошибрк нет - параметр добавлен
+
             ParamVyvod pv = null;
             int iIdParam = -1;
 
@@ -410,9 +413,14 @@ namespace StatisticCommon
                 m_listLowPointDev.Add(pv);
             }
             else
+            {
+                iRes = 1;
                 // такой параметр уже существует
                 // инициализаци€ новыми значен€ми свойств (кроме ID)
                 pv.Initialize(r);
+            }
+
+            return iRes;
         }
     }
 }

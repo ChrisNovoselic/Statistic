@@ -300,10 +300,10 @@ namespace StatisticCommon
         /// Список компонентов для ТЭЦ
         /// </summary>
         public List<TECComponent> list_TECComponents;
-        /// <summary>
-        /// Список выводОв для ТЭЦ
-        /// </summary>
-        public List<TECComponent> m_list_Vyvod;
+        ///// <summary>
+        ///// Список выводОв для ТЭЦ
+        ///// </summary>
+        //public List<TECComponent> m_list_Vyvod;
 
         private List<Vyvod.ParamVyvod> _listParamVyvod;
         /// <summary>
@@ -485,7 +485,7 @@ namespace StatisticCommon
         /// <param name="bUseData">Признак создания объекта</param>
         private TEC (int id, string name_shr, string table_name_admin, string table_name_pbr, bool bUseData) {
             list_TECComponents = new List<TECComponent>();
-            m_list_Vyvod = new List<TECComponent>();
+            //m_list_Vyvod = new List<TECComponent>();
 
             this.m_id = id;
             this.name_shr = name_shr;
@@ -520,10 +520,10 @@ namespace StatisticCommon
             list_TECComponents.Add(new TECComponent(this, r));
         }
 
-        public void AddVyvod (DataRow []rows_param)
-        {
-            m_list_Vyvod.Add(new Vyvod(this, rows_param));
-        }
+        //public void AddVyvod (DataRow []rows_param)
+        //{
+        //    m_list_Vyvod.Add(new Vyvod(this, rows_param));
+        //}
         /// <summary>
         /// Установить наименования полей таблиц при обращении к БД с запросами для получения
         ///  административных значений, ПБР
@@ -592,25 +592,28 @@ namespace StatisticCommon
         /// Инициализация всех параметров для всех ВЫВОДов
         /// </summary>
         /// <param name="rows_param">Массив строк со свойствами парметров</param>
-        public void InitParamVyvod(DataRow[] rows_param)
+        public void InitParamVyvod(int indx, DataRow[] rows_param)
         {
-            Vyvod vyvod = null;
+            TECComponent pv = null; // компонент - параметр вывода
             int j = -1;
+
+            if (indx < 0)
+                indx = list_TECComponents.Count - 1;
 
             for (j = 0; j < rows_param.Length; j++)
             {
-                vyvod = m_list_Vyvod.Find(v => { return v.m_id == Convert.ToInt32(rows_param[j][@"ID_VYVOD"]); }) as Vyvod;
-
-                if (vyvod == null)
+                pv = list_TECComponents.Find(comp => { return comp.m_id == Convert.ToInt32(rows_param[j][@"ID"]); });
+                // проверить найден ли ПараметрВывода
+                if (pv == null)
                 {
-                    vyvod = new Vyvod(this, rows_param[j]);
-                    m_list_Vyvod.Add(vyvod);
+                   list_TECComponents[indx].m_listLowPointDev.Add(pv.m_listLowPointDev[0]);
+                    if (list_TECComponents[indx].IsVyvod == true)
+                        (pv.m_listLowPointDev[0] as Vyvod.ParamVyvod).m_owner_vyvod = list_TECComponents[indx].m_id;
+                    else
+                        ;
                 }
                 else
-                    // ВЫВОД уже существует
-                    // инициализация существующего парметра новыми значенями
-                    //  либо добавление нового параметра
-                    vyvod.InitParam(rows_param[j]);
+                    ; // ошибка ИЛИ параметр уже добавлен
             }
         }
         /// <summary>

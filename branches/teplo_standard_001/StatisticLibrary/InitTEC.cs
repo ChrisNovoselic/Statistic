@@ -209,8 +209,8 @@ namespace StatisticCommon
                             //if ((HAdmin.DEBUG_ID_TEC == -1) || (HAdmin.DEBUG_ID_TEC == Convert.ToInt32 (list_tec.Rows[i]["ID"]))) {
                             //Создание объекта ТЭЦ
                             tec.Add(new TEC(list_tec.Rows[i], bUseData));
-
                             indx_tec = tec.Count - 1;
+
                             EventTECListUpdate += tec[indx_tec].PerformUpdate;
 
                             indx = -1;
@@ -223,7 +223,6 @@ namespace StatisticCommon
                                 for (int k = 0; k < list_tg.Rows.Count; k++)
                                 {
                                     tec[indx_tec].list_TECComponents.Add(new TECComponent(tec[indx_tec], list_tg.Rows[k]));
-
                                     indx = tec[indx_tec].list_TECComponents.Count - 1;
 
                                     tec[indx_tec].list_TECComponents[indx].m_listLowPointDev.Add(new TG(list_tg.Rows[k], all_PARAM_TG.Select(@"ID_TG=" + tec[indx_tec].list_TECComponents[indx].m_id)[0]));
@@ -247,14 +246,9 @@ namespace StatisticCommon
                                             //Logging.Logg().Debug("InitTEC::InitTEC (3 параметра) - ...tec[indx_tec].list_TECComponents.Add(new TECComponent...");
 
                                             tec[indx_tec].list_TECComponents.Add(new TECComponent(tec[indx_tec], list_TECComponents.Rows[j]));
-
                                             indx = tec[indx_tec].list_TECComponents.Count - 1;
 
-                                            if (err == 0)
-                                                tec[indx_tec].InitTG(indx, all_PARAM_TG.Select(@"ID_" + FormChangeMode.getPrefixMode(c) + @"=" + tec[indx_tec].list_TECComponents[indx].m_id));
-                                            //InitTG(tec[indx_tec].list_TECComponents, indx, all_PARAM_TG.Select(@"ID_" + FormChangeMode.getPrefixMode(c) + @"=" + tec[indx_tec].list_TECComponents[indx].m_id));
-                                            else
-                                                ; //Ошибка получения списка ТГ
+                                            tec[indx_tec].InitTG(indx, all_PARAM_TG.Select(@"ID_" + FormChangeMode.getPrefixMode(c) + @"=" + tec[indx_tec].list_TECComponents[indx].m_id));
                                         }
                                     }
                                     catch (Exception e)
@@ -266,22 +260,28 @@ namespace StatisticCommon
                             }
                             #endregion
 
+                            #region Добавить компоненты ТЭЦ (ВЫВОДы)
+                            list_TECComponents = getListTECComponent(FormChangeMode.getPrefixMode(-1), Convert.ToInt32(list_tec.Rows[i]["ID"]), out err);
+
+                            if (err == 0)
+                            {
+                                foreach (DataRow r in list_TECComponents.Rows)
+                                {
+                                    tec[indx_tec].list_TECComponents.Add(new TECComponent(tec[indx_tec], r));
+                                    indx = tec[indx_tec].list_TECComponents.Count - 1;
+
+                                    tec[indx_tec].InitParamVyvod(-1, all_PARAM_DETAIL.Select(@"ID_" + FormChangeMode.getPrefixMode(-1) + @"=" + tec[indx_tec].list_TECComponents[indx].m_id));
+                                }                      
+                            }
+                            else
+                                ; // ошибка получения параметров вывода
+                            #endregion
+
                             //Logging.Logg().Debug("InitTEC::InitTEC (3 параметра) - list_TG = Ok");
                         }
                         else
                             ;
                     } // for i
-
-                    #region Получить параметры выводов
-                    all_ParamVyvod = getALL_ParamVyvod(out err);
-
-                    if (err == 0)
-                    {
-                        tec.ForEach(t => t.InitParamVyvod(all_ParamVyvod.Select(@"ID_TEC=" + t.m_id)));                        
-                    }
-                    else
-                        ; // ошибка получения параметров вывода
-                    #endregion
                 }
                 else
                     ; //Ошибка получения списка ТЭЦ
@@ -339,43 +339,41 @@ namespace StatisticCommon
                         EventTECListUpdate += tec[i].PerformUpdate;
 
                         initTECConnectionSettings(i, list_tec.Rows[i]);
-
                         // получить список компонентов, с учетом типа компонентов по 'indx'
-                        if (!(indx < 0))
-                        {// инициализация "обычных" компонентов ТЭЦ
-                            list_TECComponents = getListTECComponent(FormChangeMode.getPrefixMode(indx), Convert.ToInt32(list_tec.Rows[i]["ID"]), out err);
+                        list_TECComponents = getListTECComponent(FormChangeMode.getPrefixMode(indx), Convert.ToInt32(list_tec.Rows[i]["ID"]), out err);
 
-                            if (err == 0)
+                        if (err == 0)
+                            if (!(indx < 0))
+                            {// инициализация "обычных" компонентов ТЭЦ                            
                                 for (indx_comp = 0; indx_comp < list_TECComponents.Rows.Count; indx_comp++)
                                 {
                                     id_comp = Convert.ToInt32 (list_TECComponents.Rows[indx_comp][@"ID"]);
                                     tec[i].AddTECComponent(list_TECComponents.Rows[indx_comp]);
                                     tec[i].InitTG(indx_comp, all_PARAM_DETAIL.Select(@"ID_" + FormChangeMode.getPrefixMode(indx) + @"=" + id_comp));
-                                }
+                                }                            
+                            }
                             else
-                                ; //Ошибка ???
-                        }
-                        else
-                        {// инициализация "необычных компонентов" - ВЫВОДов
-                            list_TECComponents = getListTECComponent(FormChangeMode.getPrefixMode(indx), Convert.ToInt32(list_tec.Rows[i]["ID"]), out err);
-
-                            if (err == 0)
+                            {// инициализация "необычных компонентов" - ВЫВОДов
                                 for (indx_comp = 0; indx_comp < list_TECComponents.Rows.Count; indx_comp++)
                                 {
                                     id_comp = Convert.ToInt32(list_TECComponents.Rows[indx_comp][@"ID"]);
-                                    tec[i].AddVyvod(all_PARAM_DETAIL.Select(@"ID_" + FormChangeMode.getPrefixMode(indx) + @"=" + id_comp));
+                                    tec[i].AddTECComponent(list_TECComponents.Rows[indx_comp]);
+                                    tec[i].InitParamVyvod(-1, all_PARAM_DETAIL.Select(@"ID_" + FormChangeMode.getPrefixMode(indx) + @"=" + id_comp));
                                 }
-                            else
-                                ; //Ошибка ???
-                        }                        
-                    //} else ;
+                            }
+                        else
+                            ; //Ошибка ???
                 }
             else
                 ; //Ошибка получения списка ТЭЦ
 
             //Logging.Logg().Debug("InitTEC::InitTEC (4 параметра) - вЫход...");
         }
-
+        /// <summary>
+        /// Инициализация параметров для соединения с БД всех источников данных, используемых для сбора отображения
+        /// </summary>
+        /// <param name="indx_tec">Индекс ТЭЦ в списке текущего объекта</param>
+        /// <param name="rTec">Строка таблицы [TEC_LIST], содержащая необходимые значения параметров</param>
         private void initTECConnectionSettings(int indx_tec, DataRow rTec)
         {
             int err = -1
@@ -430,7 +428,7 @@ namespace StatisticCommon
                         , Logging.INDEX_MESSAGE.NOT_SET);
         }
         /// <summary>
-        /// Событие для инициирования обновления параметров ТЭЦ для всех созданных списков (List <TEC>)
+        /// Событие для инициирования обновления параметров ТЭЦ для всех созданных списков (список ТЭЦ)
         ///  при указании обработчика события для 'TEC.EventUpdate'
         /// </summary>
         public static event DelegateIntFunc EventTECListUpdate;
