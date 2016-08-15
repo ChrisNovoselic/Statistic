@@ -264,15 +264,13 @@ namespace StatisticCommon
                             list_TECComponents = getListTECComponent(FormChangeMode.getPrefixMode(-1), Convert.ToInt32(list_tec.Rows[i]["ID"]), out err);
 
                             if (err == 0)
-                            {
                                 foreach (DataRow r in list_TECComponents.Rows)
                                 {
                                     tec[indx_tec].list_TECComponents.Add(new TECComponent(tec[indx_tec], r));
                                     indx = tec[indx_tec].list_TECComponents.Count - 1;
 
                                     tec[indx_tec].InitParamVyvod(-1, all_PARAM_DETAIL.Select(@"ID_" + FormChangeMode.getPrefixMode(-1) + @"=" + tec[indx_tec].list_TECComponents[indx].m_id));
-                                }                      
-                            }
+                                }
                             else
                                 ; // ошибка получения параметров вывода
                             #endregion
