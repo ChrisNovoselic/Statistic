@@ -397,25 +397,33 @@ namespace StatisticCommon
                 switch (_type)
                 {
                     case TECComponentBase.TYPE.TEPLO:
-                        foreach (Vyvod v in m_tec.m_list_Vyvod)
-                        {
-                            _localTECComponents.Add(v);
-                            initDictValuesParamVyvod(v);
-                        }
+                        m_tec.list_TECComponents.ForEach(v => {
+                            if (v.IsVyvod == true) {
+                                _localTECComponents.Add(v);
+                                initDictValuesParamVyvod(v as Vyvod);
+                            } else
+                                ;
+                        });
                         break;
                     case TECComponentBase.TYPE.ELECTRO:
                         foreach (TECComponent tc in m_tec.list_TECComponents)
                         {
-                            if (tc.IsGTP == true)
-                            {
-                                _localTECComponents.Add(tc);
+                            if ((tc.IsVyvod == false)
+                                && (tc.IsParamVyvod == false))
+                            {// только для электро-компонентов
+                                if (tc.IsGTP == true)
+                                {
+                                    _localTECComponents.Add(tc);
 
-                                //m_dictValuesTECComponent.Add (c.m_id, new valuesTECComponent(25));
+                                    //m_dictValuesTECComponent.Add (c.m_id, new valuesTECComponent(25));
+                                }
+                                else
+                                    ;
+
+                                initDictValuesTG(tc);
                             }
                             else
-                                ;
-
-                            initDictValuesTG(tc);
+                                ; // компонент тепло
                         }
                         break;
                     default:
@@ -444,10 +452,11 @@ namespace StatisticCommon
             {
                 case TECComponentBase.TYPE.TEPLO:
                     listRes = new List<TECComponentBase>();
-                    m_tec.m_list_Vyvod.ForEach(v => {
+                    m_tec.list_TECComponents.ForEach(v => {
                         listRes.Add(v.m_listLowPointDev.Find(pv => {
-                            return /*((v as Vyvod).m_bKomUchet == true)
-                                &&*/ ((pv as Vyvod.ParamVyvod).m_id_param == Vyvod.ID_PARAM.T_PV);
+                            return (v.IsVyvod == true)
+                                /*&& ((v as Vyvod).m_bKomUchet == true)*/
+                                && ((pv as Vyvod.ParamVyvod).m_id_param == Vyvod.ID_PARAM.T_PV);
                         }));
                     });
                     break;
@@ -2259,7 +2268,7 @@ namespace StatisticCommon
                 localTECComponents = getLocalTECComponents();
 
                 m_tablePPBRValuesResponse = restruct_table_pbrValues(m_tablePPBRValuesResponse
-                    , _type == TECComponentBase.TYPE.TEPLO ? m_tec.m_list_Vyvod :
+                    , _type == TECComponentBase.TYPE.TEPLO ? m_tec.list_TECComponents :
                         _type == TECComponentBase.TYPE.ELECTRO ? m_tec.list_TECComponents : null
                     , indxTECComponents
                     , m_tsOffsetToMoscow);
@@ -2272,7 +2281,7 @@ namespace StatisticCommon
                 else
                     ;
                 table_in = restruct_table_adminValues(table_in
-                    , _type == TECComponentBase.TYPE.TEPLO ? m_tec.m_list_Vyvod :
+                    , _type == TECComponentBase.TYPE.TEPLO ? m_tec.list_TECComponents :
                         _type == TECComponentBase.TYPE.ELECTRO ? m_tec.list_TECComponents : null
                     , indxTECComponents
                     , m_tsOffsetToMoscow);

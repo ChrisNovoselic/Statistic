@@ -904,9 +904,13 @@ namespace Statistic
             public override void AddTGView()
             {
                 // цикл по всем ВЫВОДам
-                foreach (Vyvod v in m_tecView.m_tec.m_list_Vyvod)
-                    // добавить элементы управления для отображения значений указанного ВЫВОДа
-                    _pnlQuickData.AddTGView(v);
+                m_tecView.m_tec.list_TECComponents.ForEach (v => {
+                    if (v.IsVyvod == true)
+                        // добавить элементы управления для отображения значений указанного ВЫВОДа
+                        _pnlQuickData.AddTGView(v);
+                    else
+                        ;
+                });
             }
             /// <summary>
             /// Обработчик события - получение данных при запросе к БД

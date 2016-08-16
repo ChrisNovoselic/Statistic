@@ -39,6 +39,22 @@ namespace StatisticCommon
             }
         }
         /// <summary>
+        /// Признак оборудования нижнего уровня
+        /// </summary>
+        public bool IsLowPointDev {
+            get {
+                bool bRes = false;
+
+                if ((IsTG == true)
+                    || (IsParamVyvod))
+                    bRes = true;
+                else
+                    ;
+
+                return bRes;
+            }
+        }
+        /// <summary>
         /// Идентификаторы для типов компонента ТЭЦ
         /// </summary>
         public enum ID : int { LK = 10, GTP = 100, GTP_LK = 200, PC = 500, VYVOD = 600, TG = 1000, PARAM_VYVOD = 2000, MAX = 10000 }

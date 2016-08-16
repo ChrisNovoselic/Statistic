@@ -591,7 +591,8 @@ namespace StatisticCommon
         /// <summary>
         /// Инициализация всех параметров для всех ВЫВОДов
         /// </summary>
-        /// <param name="rows_param">Массив строк со свойствами парметров</param>
+        /// <param name="indx">Индекс компонента-вывода, который инициализируется параметрами</param>
+        /// <param name="rows_param">Массив строк со значениями свойств парметров</param>
         public void InitParamVyvod(int indx, DataRow[] rows_param)
         {
             TECComponent pv = null; // компонент - параметр вывода
@@ -606,7 +607,8 @@ namespace StatisticCommon
                 // проверить найден ли ПараметрВывода
                 if (pv == null)
                 {
-                   list_TECComponents[indx].m_listLowPointDev.Add(pv.m_listLowPointDev[0]);
+                    pv = new TECComponent(this, rows_param[j]);
+                    list_TECComponents[indx].m_listLowPointDev.Add(pv.m_listLowPointDev[0]);
                     if (list_TECComponents[indx].IsVyvod == true)
                         (pv.m_listLowPointDev[0] as Vyvod.ParamVyvod).m_owner_vyvod = list_TECComponents[indx].m_id;
                     else
@@ -717,86 +719,98 @@ namespace StatisticCommon
             else
                 m_SensorsStrings_ASKUE [(int)HDateTime.INTERVAL.HOURS] = m_SensorsStrings_ASKUE [(int)HDateTime.INTERVAL.MINUTES] = string.Empty;
 
+            m_SensorsString_VZLET = string.Empty;
+
             m_SensorsString_SOTIASSO = string.Empty;
             //Цикл по всем компонентам ТЭЦ
-            for (i = 0; i < list_TECComponents.Count; i++) {
-                //Проверить тип компонента
-                if (list_TECComponents [i].IsTG == true) {
-                    //Только для ТГ
-                    _listTG.Add(list_TECComponents[i].m_listLowPointDev[0] as TG);
-                    //Формировать строку-перечисление с иджентификаторами для ТЭЦ в целом (АИИС КУЭ - час)
-                    m_SensorsStrings_ASKUE[(int)HDateTime.INTERVAL.HOURS] = addSensor(m_SensorsStrings_ASKUE[(int)HDateTime.INTERVAL.HOURS]
-                                                                    , (list_TECComponents[i].m_listLowPointDev[0] as TG).m_arIds_fact[(int)HDateTime.INTERVAL.HOURS]
-                        /*, type*/
-                                                                    , m_arTypeSourceData[(int)CONN_SETT_TYPE.DATA_AISKUE - (int)CONN_SETT_TYPE.DATA_AISKUE]);
-                    //Формировать строку-перечисление с иджентификаторами для ТЭЦ в целом (АИИС КУЭ - минуты)
-                    m_SensorsStrings_ASKUE[(int)HDateTime.INTERVAL.MINUTES] = addSensor(m_SensorsStrings_ASKUE[(int)HDateTime.INTERVAL.MINUTES]
-                                                                    , (list_TECComponents[i].m_listLowPointDev[0] as TG).m_arIds_fact[(int)HDateTime.INTERVAL.MINUTES]
-                        /*, type*/
-                                                                    , m_arTypeSourceData[(int)CONN_SETT_TYPE.DATA_AISKUE - (int)CONN_SETT_TYPE.DATA_AISKUE]);
-                    //Формировать строку-перечисление с иджентификаторами для ТЭЦ в целом (СОТИАССО)
-                    m_SensorsString_SOTIASSO = addSensor(m_SensorsString_SOTIASSO
-                                                        , (list_TECComponents[i].m_listLowPointDev[0] as TG).m_strKKS_NAME_TM
-                        /*, type*/
-                                                        , m_arTypeSourceData[(int)CONN_SETT_TYPE.DATA_SOTIASSO - (int)CONN_SETT_TYPE.DATA_AISKUE]);
-                    //Одновременно присвоить идентификаторы для ТГ  (АИИС КУЭ - час)
-                    list_TECComponents[i].m_SensorsStrings_ASKUE[(int)HDateTime.INTERVAL.HOURS] = addSensor(list_TECComponents[i].m_SensorsStrings_ASKUE[(int)HDateTime.INTERVAL.HOURS]
-                                                                                                , (list_TECComponents[i].m_listLowPointDev[0] as TG).m_arIds_fact[(int)HDateTime.INTERVAL.HOURS]
-                        /*, type*/
-                                                                                                , m_arTypeSourceData[(int)CONN_SETT_TYPE.DATA_AISKUE - (int)CONN_SETT_TYPE.DATA_AISKUE]);
-                    //Одновременно присвоить идентификаторы для ТГ  (АИИС КУЭ - минута)
-                    list_TECComponents[i].m_SensorsStrings_ASKUE[(int)HDateTime.INTERVAL.MINUTES] = addSensor(list_TECComponents[i].m_SensorsStrings_ASKUE[(int)HDateTime.INTERVAL.MINUTES]
-                                                                                                , (list_TECComponents[i].m_listLowPointDev[0] as TG).m_arIds_fact[(int)HDateTime.INTERVAL.MINUTES]
-                        /*, type*/
-                                                                                                , m_arTypeSourceData[(int)CONN_SETT_TYPE.DATA_AISKUE - (int)CONN_SETT_TYPE.DATA_AISKUE]);
-                    //Одновременно присвоить идентификаторы для ТГ  (СОТИАССО)
-                    list_TECComponents[i].m_SensorsString_SOTIASSO = addSensor(list_TECComponents[i].m_SensorsString_SOTIASSO
-                                                                                , (list_TECComponents[i].m_listLowPointDev[0] as TG).m_strKKS_NAME_TM
-                        /*, type*/
-                                                                                , m_arTypeSourceData[(int)CONN_SETT_TYPE.DATA_SOTIASSO - (int)CONN_SETT_TYPE.DATA_AISKUE]);
-                }
-                else
-                {//Для остальных (ГТП, Б(Гр)ЩУ) компонентов
-                    //Цикл по ТГ компонента
-                    for (j = 0; j < list_TECComponents[i].m_listLowPointDev.Count; j++)
-                    {
-                        //Формировать строку-перечисление с иджентификаторами для компонента ТЭЦ в целом (АИИС КУЭ - час)
-                        list_TECComponents[i].m_SensorsStrings_ASKUE[(int)HDateTime.INTERVAL.HOURS] = addSensor(list_TECComponents[i].m_SensorsStrings_ASKUE[(int)HDateTime.INTERVAL.HOURS]
-                                                                                                        , (list_TECComponents[i].m_listLowPointDev[j] as TG).m_arIds_fact[(int)HDateTime.INTERVAL.HOURS]
-                            /*, type*/
+            for (i = 0; i < list_TECComponents.Count; i++)
+                // в ~ от вида оборудования
+                switch (list_TECComponents[i].Type) {
+                    case TECComponentBase.TYPE.TEPLO:
+                        if (list_TECComponents[i].IsParamVyvod == true)
+                        {
+                        }
+                        else
+                        {
+                            list_TECComponents[i].m_SensorsString_VZLET = string.Empty;
+
+                            //foreach (Vyvod.ParamVyvod pv in v.m_listParam)
+                            foreach (Vyvod.ParamVyvod pv in list_TECComponents[i].m_listLowPointDev)
+                            {
+                                m_SensorsString_VZLET = addSensor(m_SensorsString_VZLET
+                                    , pv.m_SensorsString_VZLET //.name_future
+                                    , INDEX_TYPE_SOURCE_DATA.EQU_MAIN);
+
+                                list_TECComponents[i].m_SensorsString_VZLET = addSensor(list_TECComponents[i].m_SensorsString_VZLET
+                                    , pv.m_SensorsString_VZLET //.name_future
+                                    , INDEX_TYPE_SOURCE_DATA.EQU_MAIN);
+                            }
+                        }
+                        break;
+                    case TECComponentBase.TYPE.ELECTRO:
+                        //Проверить тип компонента
+                        if (list_TECComponents[i].IsTG == true)
+                        {
+                            //Только для ТГ
+                            _listTG.Add(list_TECComponents[i].m_listLowPointDev[0] as TG);
+                            //Формировать строку-перечисление с иджентификаторами для ТЭЦ в целом (АИИС КУЭ - час)
+                            m_SensorsStrings_ASKUE[(int)HDateTime.INTERVAL.HOURS] = addSensor(m_SensorsStrings_ASKUE[(int)HDateTime.INTERVAL.HOURS]
+                                                                            , (list_TECComponents[i].m_listLowPointDev[0] as TG).m_arIds_fact[(int)HDateTime.INTERVAL.HOURS]
+                                /*, type*/
+                                                                            , m_arTypeSourceData[(int)CONN_SETT_TYPE.DATA_AISKUE - (int)CONN_SETT_TYPE.DATA_AISKUE]);
+                            //Формировать строку-перечисление с иджентификаторами для ТЭЦ в целом (АИИС КУЭ - минуты)
+                            m_SensorsStrings_ASKUE[(int)HDateTime.INTERVAL.MINUTES] = addSensor(m_SensorsStrings_ASKUE[(int)HDateTime.INTERVAL.MINUTES]
+                                                                            , (list_TECComponents[i].m_listLowPointDev[0] as TG).m_arIds_fact[(int)HDateTime.INTERVAL.MINUTES]
+                                /*, type*/
+                                                                            , m_arTypeSourceData[(int)CONN_SETT_TYPE.DATA_AISKUE - (int)CONN_SETT_TYPE.DATA_AISKUE]);
+                            //Формировать строку-перечисление с иджентификаторами для ТЭЦ в целом (СОТИАССО)
+                            m_SensorsString_SOTIASSO = addSensor(m_SensorsString_SOTIASSO
+                                                                , (list_TECComponents[i].m_listLowPointDev[0] as TG).m_strKKS_NAME_TM
+                                /*, type*/
+                                                                , m_arTypeSourceData[(int)CONN_SETT_TYPE.DATA_SOTIASSO - (int)CONN_SETT_TYPE.DATA_AISKUE]);
+                            //Одновременно присвоить идентификаторы для ТГ  (АИИС КУЭ - час)
+                            list_TECComponents[i].m_SensorsStrings_ASKUE[(int)HDateTime.INTERVAL.HOURS] = addSensor(list_TECComponents[i].m_SensorsStrings_ASKUE[(int)HDateTime.INTERVAL.HOURS]
+                                                                                                        , (list_TECComponents[i].m_listLowPointDev[0] as TG).m_arIds_fact[(int)HDateTime.INTERVAL.HOURS]
+                                /*, type*/
                                                                                                         , m_arTypeSourceData[(int)CONN_SETT_TYPE.DATA_AISKUE - (int)CONN_SETT_TYPE.DATA_AISKUE]);
-                        //Формировать строку-перечисление с иджентификаторами для компонента ТЭЦ в целом (АИИС КУЭ - минута)
-                        list_TECComponents[i].m_SensorsStrings_ASKUE[(int)HDateTime.INTERVAL.MINUTES] = addSensor(list_TECComponents[i].m_SensorsStrings_ASKUE[(int)HDateTime.INTERVAL.MINUTES]
-                                                                                                        , (list_TECComponents[i].m_listLowPointDev[j] as TG).m_arIds_fact[(int)HDateTime.INTERVAL.MINUTES]
-                            /*, type*/
+                            //Одновременно присвоить идентификаторы для ТГ  (АИИС КУЭ - минута)
+                            list_TECComponents[i].m_SensorsStrings_ASKUE[(int)HDateTime.INTERVAL.MINUTES] = addSensor(list_TECComponents[i].m_SensorsStrings_ASKUE[(int)HDateTime.INTERVAL.MINUTES]
+                                                                                                        , (list_TECComponents[i].m_listLowPointDev[0] as TG).m_arIds_fact[(int)HDateTime.INTERVAL.MINUTES]
+                                /*, type*/
                                                                                                         , m_arTypeSourceData[(int)CONN_SETT_TYPE.DATA_AISKUE - (int)CONN_SETT_TYPE.DATA_AISKUE]);
-                        //Формировать строку-перечисление с иджентификаторами для компонента ТЭЦ в целом (АСОТИАССО)
-                        list_TECComponents[i].m_SensorsString_SOTIASSO = addSensor(list_TECComponents[i].m_SensorsString_SOTIASSO
-                                                                                , (list_TECComponents[i].m_listLowPointDev[j] as TG).m_strKKS_NAME_TM
-                            /*, type*/
-                                                                                , m_arTypeSourceData[(int)CONN_SETT_TYPE.DATA_SOTIASSO - (int)CONN_SETT_TYPE.DATA_AISKUE]);
-                    } // - Цикл по ТГ компонента
+                            //Одновременно присвоить идентификаторы для ТГ  (СОТИАССО)
+                            list_TECComponents[i].m_SensorsString_SOTIASSO = addSensor(list_TECComponents[i].m_SensorsString_SOTIASSO
+                                                                                        , (list_TECComponents[i].m_listLowPointDev[0] as TG).m_strKKS_NAME_TM
+                                /*, type*/
+                                                                                        , m_arTypeSourceData[(int)CONN_SETT_TYPE.DATA_SOTIASSO - (int)CONN_SETT_TYPE.DATA_AISKUE]);
+                        }
+                        else
+                        {//Для остальных (ГТП, Б(Гр)ЩУ) компонентов
+                            //Цикл по ТГ компонента
+                            for (j = 0; j < list_TECComponents[i].m_listLowPointDev.Count; j++)
+                            {
+                                //Формировать строку-перечисление с иджентификаторами для компонента ТЭЦ в целом (АИИС КУЭ - час)
+                                list_TECComponents[i].m_SensorsStrings_ASKUE[(int)HDateTime.INTERVAL.HOURS] = addSensor(list_TECComponents[i].m_SensorsStrings_ASKUE[(int)HDateTime.INTERVAL.HOURS]
+                                                                                                                , (list_TECComponents[i].m_listLowPointDev[j] as TG).m_arIds_fact[(int)HDateTime.INTERVAL.HOURS]
+                                    /*, type*/
+                                                                                                                , m_arTypeSourceData[(int)CONN_SETT_TYPE.DATA_AISKUE - (int)CONN_SETT_TYPE.DATA_AISKUE]);
+                                //Формировать строку-перечисление с иджентификаторами для компонента ТЭЦ в целом (АИИС КУЭ - минута)
+                                list_TECComponents[i].m_SensorsStrings_ASKUE[(int)HDateTime.INTERVAL.MINUTES] = addSensor(list_TECComponents[i].m_SensorsStrings_ASKUE[(int)HDateTime.INTERVAL.MINUTES]
+                                                                                                                , (list_TECComponents[i].m_listLowPointDev[j] as TG).m_arIds_fact[(int)HDateTime.INTERVAL.MINUTES]
+                                    /*, type*/
+                                                                                                                , m_arTypeSourceData[(int)CONN_SETT_TYPE.DATA_AISKUE - (int)CONN_SETT_TYPE.DATA_AISKUE]);
+                                //Формировать строку-перечисление с иджентификаторами для компонента ТЭЦ в целом (АСОТИАССО)
+                                list_TECComponents[i].m_SensorsString_SOTIASSO = addSensor(list_TECComponents[i].m_SensorsString_SOTIASSO
+                                                                                        , (list_TECComponents[i].m_listLowPointDev[j] as TG).m_strKKS_NAME_TM
+                                    /*, type*/
+                                                                                        , m_arTypeSourceData[(int)CONN_SETT_TYPE.DATA_SOTIASSO - (int)CONN_SETT_TYPE.DATA_AISKUE]);
+                            } // - Цикл по ТГ компонента
+                        }
+                        break;
+                    default:
+                        break;
                 }
-            } // - Цикл по всем компонентам ТЭЦ
-
-            m_SensorsString_VZLET = string.Empty;
-            //Цикл по всем ВЫВОДам ТЭЦ
-            foreach (Vyvod v in m_list_Vyvod)
-            {
-                v.m_SensorsString_VZLET = string.Empty;
-
-                //foreach (Vyvod.ParamVyvod pv in v.m_listParam)
-                foreach (Vyvod.ParamVyvod pv in v.m_listLowPointDev)
-                {
-                    m_SensorsString_VZLET = addSensor(m_SensorsString_VZLET
-                        , pv.m_SensorsString_VZLET //.name_future
-                        , INDEX_TYPE_SOURCE_DATA.EQU_MAIN);
-
-                    v.m_SensorsString_VZLET = addSensor(v.m_SensorsString_VZLET
-                        , pv.m_SensorsString_VZLET //.name_future
-                        , INDEX_TYPE_SOURCE_DATA.EQU_MAIN);
-                }
-            }
+            // - Цикл по всем компонентам ТЭЦ
         }
         /// <summary>
         /// Присвоить значения параметров соединения с источником данных
@@ -856,7 +870,12 @@ namespace StatisticCommon
                 switch (type) {
                     case TECComponentBase.TYPE.TEPLO:
                         //m_list_Vyvod.ForEach(v => { strRes += @", " + (v as Vyvod).m_listParam[0].m_id.ToString(); });
-                        m_list_Vyvod.ForEach(v => { strRes += @", " + v.m_listLowPointDev[0].m_id.ToString(); });
+                        list_TECComponents.ForEach(v => {
+                            if ((v.IsParamVyvod == true)
+                                && ((v.m_listLowPointDev[0] as Vyvod.ParamVyvod).m_id_param == Vyvod.ID_PARAM.T_PV))
+                                strRes += @", " + v.m_listLowPointDev[0].m_id.ToString();
+                            else ;
+                        });
                         break;
                     case TECComponentBase.TYPE.ELECTRO:
                         list_TECComponents.ForEach(g => { if (g.IsGTP == true) strRes += @", " + (g.m_id).ToString(); else ; });                        
