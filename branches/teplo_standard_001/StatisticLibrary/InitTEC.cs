@@ -300,7 +300,7 @@ namespace StatisticCommon
                                 if (err == 0)
                                     foreach (DataRow r in list_TECComponents.Rows)
                                     {
-                                        newTECItem/*tec[indx_tec]*/.list_TECComponents.Add(new TECComponent(newTECItem/*tec[indx_tec]*/, r));
+                                        newTECItem/*tec[indx_tec]*/.list_TECComponents.Add(new Vyvod(newTECItem/*tec[indx_tec]*/, r));
                                         indx = newTECItem/*tec[indx_tec]*/.list_TECComponents.Count - 1;
 
                                         //???

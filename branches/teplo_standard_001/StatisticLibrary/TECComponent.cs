@@ -234,6 +234,8 @@ namespace StatisticCommon
         /// Объект ТЭЦ - "владелец" компонента
         /// </summary>
         public TEC tec;
+
+        public bool m_bKomUchet;
         /// <summary>
         /// Конструктор - дополнительный
         /// </summary>
@@ -252,6 +254,8 @@ namespace StatisticCommon
                 m_dcKoeffAlarmPcur = Convert.ToInt32(rComp["KoeffAlarmPcur"]);
             else
                 ;
+
+            m_bKomUchet = true;
         }
         /// <summary>
         /// Конструктор - дополнительный
@@ -350,16 +354,6 @@ namespace StatisticCommon
                 m_typeAgregate = Convert.ToByte(r[@"TYPE_AGREGATE"]);
             }
         }
-        ///// <summary>
-        ///// Список ТГ
-        ///// </summary>
-        //public List<ParamVyvod> m_listParam;
-        ///// <summary>
-        ///// Объект ТЭЦ - "владелец" компонента
-        ///// </summary>
-        //public TEC tec;
-
-        public bool m_bKomUchet;
 
         public Vyvod()
             : this(null, new DataRow[] {  })
@@ -391,7 +385,7 @@ namespace StatisticCommon
         {
             if (rows_param.Length > 0)
             {
-                m_id = Convert.ToInt32(rows_param[0][@"ID_VYVOD"]);
+                m_id = Convert.ToInt32(rows_param[0][@"ID"]);
                 name_shr = ((string)rows_param[0][@"VYVOD_NAME_SHR"]).Trim ();
                 m_bKomUchet = Convert.ToByte(rows_param[0][@"KOM_UCHET"]) == 1 ? true : false;
 

@@ -96,11 +96,10 @@ namespace Statistic
         /// </summary>
         protected override void getDataGridViewAdmin()
         {
-            double value = 0.0;
-            bool valid = false;
+            //double value = 0.0;
+            //bool valid = false;
 
-            foreach (int indx in ((AdminTS_NSS)m_admin).m_listTECComponentIndexDetail) 
-            {
+            foreach (int indx in ((AdminTS_TG)m_admin).m_listTECComponentIndexDetail)
                 if (m_admin.modeTECComponent(indx) == FormChangeMode.MODE_TECCOMPONENT.TG)
                 {
                     int indx_tg = ((AdminTS_NSS)m_admin).m_listTECComponentIndexDetail.IndexOf(indx),
@@ -122,9 +121,11 @@ namespace Statistic
                 }
                 else
                     ;
-            }
         }
-
+        /// <summary>
+        /// Добавить текстовый столбец для очередного(динамического) компонента-ТГ
+        /// </summary>
+        /// <param name="date"></param>
         private void addTextBoxColumn (DateTime date) {
             DataGridViewCellEventArgs ev;
             int indx = ((AdminTS_NSS)m_admin).m_listTECComponentIndexDetail[this.dgwAdminTable.Columns.Count - 2];

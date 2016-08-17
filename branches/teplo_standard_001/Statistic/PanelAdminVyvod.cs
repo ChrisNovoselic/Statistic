@@ -240,12 +240,14 @@ namespace Statistic
             double value;
             bool valid;
             //int offset = -1;
+            int i = 1, j = -1, k = -1;
+            TECComponent tc = null;
 
-            for (int i = 0; i < dgwAdminTable.Rows.Count; i++)
+            for (i = 0; i < dgwAdminTable.Rows.Count; i++)
             {
                 //offset = m_admin.GetSeasonHourOffset(i);
                 
-                for (int j = 0; j < (int)DataGridViewAdminVyvod.DESC_INDEX.TO_ALL; j++)
+                for (j = 0; j < (int)DataGridViewAdminVyvod.DESC_INDEX.TO_ALL; j++)
                 {
                     switch (j)
                     {
@@ -255,6 +257,19 @@ namespace Statistic
                                 m_admin.m_curRDGValues[i].pmin = value;
                             else
                                 ; //m_admin.m_curRDGValues[i].pmin = 0F;
+                            // копировать установленные значения для всех параметров
+                            k = 0;
+                            foreach (HAdmin.RDGStruct[] arRDGValues in ((AdminTS_TG)m_admin).m_listCurRDGValues)
+                            {
+                                tc = m_admin.allTECComponents[(m_admin as AdminTS_TG).m_listTECComponentIndexDetail[k]];
+                                if ((tc.IsParamVyvod == true)
+                                    && ((tc.m_listLowPointDev[0] as Vyvod.ParamVyvod).m_id_param == Vyvod.ID_PARAM.T_PV)
+                                    && (tc.m_bKomUchet == true))
+                                    arRDGValues[i].pmin = value;
+                                else
+                                    ;
+                                k++;
+                            }
                             break;
                         case (int)DataGridViewAdminVyvod.DESC_INDEX.UDGt: // УДГэ
                             break;
@@ -264,19 +279,27 @@ namespace Statistic
                                 m_admin.m_curRDGValues[i].recomendation = value;
                             else
                                 ;
+                            // копировать установленные значения для всех параметров
+                            foreach (int indx in ((AdminTS_TG)m_admin).m_listTECComponentIndexDetail)
+                                ;
                             break;
                         case (int)DataGridViewAdminVyvod.DESC_INDEX.DEVIATION_TYPE:
                             if (!(this.dgwAdminTable.Rows[i].Cells[(int)DataGridViewAdminVyvod.DESC_INDEX.DEVIATION_TYPE].Value == null))
                                 m_admin.m_curRDGValues[i].deviationPercent = bool.Parse(this.dgwAdminTable.Rows[i].Cells[(int)DataGridViewAdminVyvod.DESC_INDEX.DEVIATION_TYPE].Value.ToString());
                             else
                                 m_admin.m_curRDGValues[i].deviationPercent = false;
-
+                            // копировать установленные значения для всех параметров
+                            foreach (int indx in ((AdminTS_TG)m_admin).m_listTECComponentIndexDetail)
+                                ;
                             break;
                         case (int)DataGridViewAdminVyvod.DESC_INDEX.DEVIATION: // Максимальное отклонение
                             valid = double.TryParse((string)this.dgwAdminTable.Rows[i].Cells[(int)DataGridViewAdminVyvod.DESC_INDEX.DEVIATION].Value, out value);
                             if (valid == true)
                                 m_admin.m_curRDGValues[i].deviation = value;
                             else
+                                ;
+                            // копировать установленные значения для всех параметров
+                            foreach (int indx in ((AdminTS_TG)m_admin).m_listTECComponentIndexDetail)
                                 ;
                             break;
                         default:
@@ -307,7 +330,7 @@ namespace Statistic
                 }
                 else
                     Logging.Logg().Error(@"PanelTAdminKomDisp::setDataGridViewAdmin () - ... BeginInvoke (normalizedTableHourRows) - ...", Logging.INDEX_MESSAGE.D_001);
-
+                // получить значения из объекта для обращения к данным
                 PBR_0 = (m_admin as AdminTS_Vyvod).m_SumRDGValues_PBR_0;
                 arSumCurRDGValues = new HAdmin.RDGStruct[(m_admin as AdminTS_Vyvod).m_arSumRDGValues.Length];
                 (m_admin as AdminTS_Vyvod).m_arSumRDGValues.CopyTo(arSumCurRDGValues, 0);
