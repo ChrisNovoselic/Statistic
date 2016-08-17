@@ -255,7 +255,10 @@ namespace StatisticCommon
             else
                 ;
 
-            m_bKomUchet = true;
+            if ((DbTSQLInterface.IsNameField(rComp, @"KOM_UCHET") == true) && (!(rComp[@"KOM_UCHET"] is System.DBNull)))
+                m_bKomUchet = Convert.ToByte(rComp[@"KOM_UCHET"]) == 1 ? true : false;
+            else
+                m_bKomUchet = true;
         }
         /// <summary>
         /// Конструктор - дополнительный
@@ -305,14 +308,18 @@ namespace StatisticCommon
     }
 
     public class Vyvod : TECComponent
-    {
+    {//??? как класс не требутся совсем - нет отличий от 'TECComponent'
+        /// <summary>
+        /// Идентификаторы параметров нижнего уровня
+        ///  следует добавить ТГ-активная/реактивная мощность
+        /// </summary>
         public enum ID_PARAM : short { UNKNOWN = -1
             , G_PV = 1, G_OV
             , T_PV, T_OV
             , P_PV, P_OV
             , T2_PV, T2_OV
             , }
-        
+
         public class ParamVyvod : TECComponentBase
         {
             public enum INDEX_VALUE : short
@@ -369,66 +376,50 @@ namespace StatisticCommon
         /// </summary>
         /// <param name="tec">Объект-ТЭЦ - родительский по отношению к создаваемому объекту</param>
         /// <param name="r">Строка со значениями свойств создаваемого объекта-ВЫВОДа</param>
-        public Vyvod(TEC tec, DataRow []rows_param) : base (tec, rows_param[0])
+        public Vyvod(TEC tec, DataRow[] rows_param)
+            : base(tec, rows_param[0])
         {
-            //this.tec = tec;
-
-            //m_listParam = new List<ParamVyvod>();
-
-            Initialize(rows_param);
         }
         /// <summary>
         /// Инициализировать вывод значениями свойств всех параметров (по аналогии с ГТП добавить все ТГ)
         /// </summary>
         /// <param name="r">Строки таблицы со значенями свойств всех параметров</param>
-        public void Initialize (DataRow []rows_param)
+        public void Initialize(DataRow[] rows_param)
         {
-            if (rows_param.Length > 0)
-            {
-                m_id = Convert.ToInt32(rows_param[0][@"ID"]);
-                name_shr = ((string)rows_param[0][@"VYVOD_NAME_SHR"]).Trim ();
-                m_bKomUchet = Convert.ToByte(rows_param[0][@"KOM_UCHET"]) == 1 ? true : false;
-
-                foreach (DataRow r in rows_param)
-                    InitParam(r);
-            }
-            else
-                Logging.Logg().Error(@"Vyvod::Initialize () - нет ни одной строки со значенями свойств параметров ВЫВОДа...", Logging.INDEX_MESSAGE.NOT_SET);
-                ; //??? исключение
         }
-        /// <summary>
-        /// Игициализировать значения свойства параметра
-        /// </summary>
-        /// <param name="r">Строка объекта-таблицы со значенями свойств параметра</param>
-        /// <returns>Признак результата инициализации</returns>
-        public int InitParam(DataRow r)
-        {
-            int iRes = 0; // ошибрк нет - параметр добавлен
+        ///// <summary>
+        ///// Игициализировать значения свойства параметра
+        ///// </summary>
+        ///// <param name="r">Строка объекта-таблицы со значенями свойств параметра</param>
+        ///// <returns>Признак результата инициализации</returns>
+        //public int InitParam(DataRow r)
+        //{
+        //    int iRes = 0; // ошибрк нет - параметр добавлен
 
-            ParamVyvod pv = null;
-            int iIdParam = -1;
+        //    ParamVyvod pv = null;
+        //    int iIdParam = -1;
 
-            iIdParam = Convert.ToInt32(r[@"ID"]);
-            pv =
-                //m_listParam.Find(p => { return p.m_id == iIdParam; })
-                m_listLowPointDev.Find(p => { return p.m_id == iIdParam; }) as ParamVyvod
-                ;
+        //    iIdParam = Convert.ToInt32(r[@"ID"]);
+        //    pv =
+        //        //m_listParam.Find(p => { return p.m_id == iIdParam; })
+        //        m_listLowPointDev.Find(p => { return p.m_id == iIdParam; }) as ParamVyvod
+        //        ;
 
-            if (pv == null)
-            {
-                pv = new ParamVyvod(r);
-                //m_listParam.Add(pv);
-                m_listLowPointDev.Add(pv);
-            }
-            else
-            {
-                iRes = 1;
-                // такой параметр уже существует
-                // инициализация новыми значенями свойств (кроме ID)
-                pv.Initialize(r);
-            }
+        //    if (pv == null)
+        //    {
+        //        pv = new ParamVyvod(r);
+        //        //m_listParam.Add(pv);
+        //        m_listLowPointDev.Add(pv);
+        //    }
+        //    else
+        //    {
+        //        iRes = 1;
+        //        // такой параметр уже существует
+        //        // инициализация новыми значенями свойств (кроме ID)
+        //        pv.Initialize(r);
+        //    }
 
-            return iRes;
-        }
+        //    return iRes;
+        //}
     }
 }

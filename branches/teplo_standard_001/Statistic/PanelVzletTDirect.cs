@@ -190,7 +190,7 @@ namespace Statistic
                     double udg_t = -1F;
                     string strWarn = string.Empty;
 
-                    Debug.WriteLine(@"DataGridViewLKHours::Fill () - serverTime=" + serverTime.ToString()
+                    Debug.WriteLine(@"DataGridViewVzletTDirectHours::Fill () - serverTime=" + serverTime.ToString()
                         + @"; lastHour=" + lastHour
                         + @"; lastReceivedHour=" + lastReceivedHour);
 

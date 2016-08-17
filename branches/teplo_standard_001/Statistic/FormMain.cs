@@ -1698,8 +1698,9 @@ namespace Statistic
                 }
                 else
                 {
-                    if ((!(s_listFormConnectionSettings == null)) &&
-                        (s_listFormConnectionSettings[(int)type] == null) && (!(s_listFormConnectionSettings[(int)CONN_SETT_TYPE.CONFIG_DB] == null)))
+                    if ((!(s_listFormConnectionSettings == null)) // список форм создан
+                        && (s_listFormConnectionSettings[(int)type] == null) //вызываемая форма ни разу не отображалась (объект не создан)
+                        && (!(s_listFormConnectionSettings[(int)CONN_SETT_TYPE.CONFIG_DB] == null))) // форма с праметрами соединенияя с БД конфигурации создана
                     {
                         DelegateReadConnSettFunc delegateRead = null;
                         DelegateSaveConnSettFunc delegateSave = null;
@@ -1731,8 +1732,9 @@ namespace Statistic
                     }
                     else
                         ;
-
-                    if ((!(s_listFormConnectionSettings[(int)type] == null)) && (!(s_listFormConnectionSettings[(int)type].Ready == 0)))
+                    // повторная проверка
+                    if ((!(s_listFormConnectionSettings[(int)type] == null)) // объект вызываемой формы создан
+                        && (!(s_listFormConnectionSettings[(int)type].Ready == 0))) // объект вызываемой формы не готов к отображению
                     {
                         bShowFormConnectionSettings = true;
                     }
@@ -1748,12 +1750,15 @@ namespace Statistic
                     }
                 }
 
-                DbSources.Sources().UnRegister(idListener);
-
                 if (bShowFormConnectionSettings == true)
                     connectionSettings(type);
                 else
                     ;
+                // в любом случае удалить объект с параметрами соединения списка источников данных
+                // , чтобы при повторном вызове гарантированно назначить актуальный идентификатор соединения с БД конфигурации
+                s_listFormConnectionSettings[(int)(int)CONN_SETT_TYPE.LIST_SOURCE] = null;
+
+                DbSources.Sources().UnRegister(idListener);
             }
             else
                 ;

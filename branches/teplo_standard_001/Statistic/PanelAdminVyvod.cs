@@ -48,7 +48,7 @@ namespace Statistic
                 lock (m_lockSuccessGetData)
                 {
                     // очистить суммарные значения
-                    m_curRDGValues_PBR_0 = 0f;
+                    m_SumRDGValues_PBR_0 = 0F;
                     m_arSumRDGValues = null;
 
                     m_listTECComponentIndexDetail.Clear();
@@ -185,6 +185,39 @@ namespace Statistic
 
                 return base.WasChanged();
             }
+
+            public void ReplicateCurRDGValues()
+            {
+                int h = -1, indx = -1;
+                TECComponent tc = null;
+
+                for (h = 0; h < m_curRDGValues.Length; h++)
+                {
+                    indx = 0;
+                    foreach (HAdmin.RDGStruct[] arRDGValues in m_listCurRDGValues)
+                    {
+                        tc = allTECComponents[m_listTECComponentIndexDetail[indx]];
+                        if ((tc.IsParamVyvod == true)
+                            && ((tc.m_listLowPointDev[0] as Vyvod.ParamVyvod).m_id_param == Vyvod.ID_PARAM.T_PV)
+                            && (tc.m_bKomUchet == true))
+                        {
+                            arRDGValues[h].pbr_number = m_curRDGValues[h].pbr_number;
+                            //arRDGValues[h].pbr = m_curRDGValues[h].pbr;
+                            arRDGValues[h].pmin = m_curRDGValues[h].pmin;
+                            //arRDGValues[h].pmax = m_curRDGValues[h].pmax;
+
+                            //arRDGValues[h].fc = m_curRDGValues[h].fc;
+                            arRDGValues[h].recomendation = m_curRDGValues[h].recomendation;
+                            arRDGValues[h].dtRecUpdate = m_curRDGValues[h].dtRecUpdate;
+                            arRDGValues[h].deviationPercent = m_curRDGValues[h].deviationPercent;
+                            arRDGValues[h].deviation = m_curRDGValues[h].deviation;
+                        }
+                        else
+                            ;
+                        indx++;
+                    }
+                }
+            }
         }
 
         private enum INDEX_CONTROL_UI { UNKNOWN = -1
@@ -240,66 +273,44 @@ namespace Statistic
             double value;
             bool valid;
             //int offset = -1;
-            int i = 1, j = -1, k = -1;
-            TECComponent tc = null;
+            int hour = 1;
+            DataGridViewAdminVyvod.DESC_INDEX col = DataGridViewAdminVyvod.DESC_INDEX.COUNT_COLUMN;
 
-            for (i = 0; i < dgwAdminTable.Rows.Count; i++)
+            for (hour = 0; hour < dgwAdminTable.Rows.Count; hour++)
             {
-                //offset = m_admin.GetSeasonHourOffset(i);
-                
-                for (j = 0; j < (int)DataGridViewAdminVyvod.DESC_INDEX.TO_ALL; j++)
+                //offset = m_admin.GetSeasonHourOffset(hour);
+
+                for (col = DataGridViewAdminVyvod.DESC_INDEX.PLAN; col < DataGridViewAdminVyvod.DESC_INDEX.TO_ALL; col++)
                 {
-                    switch (j)
+                    switch (col)
                     {
-                        case (int)DataGridViewAdminVyvod.DESC_INDEX.PLAN: // План
-                            valid = double.TryParse((string)dgwAdminTable.Rows[i].Cells[(int)DataGridViewAdminVyvod.DESC_INDEX.PLAN].Value, out value);
+                        case DataGridViewAdminVyvod.DESC_INDEX.PLAN: // План
+                            valid = double.TryParse((string)dgwAdminTable.Rows[hour].Cells[(int)DataGridViewAdminVyvod.DESC_INDEX.PLAN].Value, out value);
                             if (valid == true)
-                                m_admin.m_curRDGValues[i].pmin = value;
+                                m_admin.m_curRDGValues[hour].pmin = value;
                             else
-                                ; //m_admin.m_curRDGValues[i].pmin = 0F;
-                            // копировать установленные значения для всех параметров
-                            k = 0;
-                            foreach (HAdmin.RDGStruct[] arRDGValues in ((AdminTS_TG)m_admin).m_listCurRDGValues)
-                            {
-                                tc = m_admin.allTECComponents[(m_admin as AdminTS_TG).m_listTECComponentIndexDetail[k]];
-                                if ((tc.IsParamVyvod == true)
-                                    && ((tc.m_listLowPointDev[0] as Vyvod.ParamVyvod).m_id_param == Vyvod.ID_PARAM.T_PV)
-                                    && (tc.m_bKomUchet == true))
-                                    arRDGValues[i].pmin = value;
-                                else
-                                    ;
-                                k++;
-                            }
+                                ; //m_admin.m_curRDGValues[hour].pmin = 0F;                            
                             break;
-                        case (int)DataGridViewAdminVyvod.DESC_INDEX.UDGt: // УДГэ
+                        case DataGridViewAdminVyvod.DESC_INDEX.UDGt: // УДГэ
                             break;
-                        case (int)DataGridViewAdminVyvod.DESC_INDEX.RECOMENDATION: // Рекомендация
-                            valid = double.TryParse((string)dgwAdminTable.Rows[i].Cells[(int)DataGridViewAdminVyvod.DESC_INDEX.RECOMENDATION].Value, out value);
+                        case DataGridViewAdminVyvod.DESC_INDEX.RECOMENDATION: // Рекомендация
+                            valid = double.TryParse((string)dgwAdminTable.Rows[hour].Cells[(int)DataGridViewAdminVyvod.DESC_INDEX.RECOMENDATION].Value, out value);
                             if (valid == true)
-                                m_admin.m_curRDGValues[i].recomendation = value;
+                                m_admin.m_curRDGValues[hour].recomendation = value;
                             else
                                 ;
-                            // копировать установленные значения для всех параметров
-                            foreach (int indx in ((AdminTS_TG)m_admin).m_listTECComponentIndexDetail)
-                                ;
                             break;
-                        case (int)DataGridViewAdminVyvod.DESC_INDEX.DEVIATION_TYPE:
-                            if (!(this.dgwAdminTable.Rows[i].Cells[(int)DataGridViewAdminVyvod.DESC_INDEX.DEVIATION_TYPE].Value == null))
-                                m_admin.m_curRDGValues[i].deviationPercent = bool.Parse(this.dgwAdminTable.Rows[i].Cells[(int)DataGridViewAdminVyvod.DESC_INDEX.DEVIATION_TYPE].Value.ToString());
+                        case DataGridViewAdminVyvod.DESC_INDEX.DEVIATION_TYPE:
+                            if (!(this.dgwAdminTable.Rows[hour].Cells[(int)DataGridViewAdminVyvod.DESC_INDEX.DEVIATION_TYPE].Value == null))
+                                m_admin.m_curRDGValues[hour].deviationPercent = bool.Parse(this.dgwAdminTable.Rows[hour].Cells[(int)DataGridViewAdminVyvod.DESC_INDEX.DEVIATION_TYPE].Value.ToString());
                             else
-                                m_admin.m_curRDGValues[i].deviationPercent = false;
-                            // копировать установленные значения для всех параметров
-                            foreach (int indx in ((AdminTS_TG)m_admin).m_listTECComponentIndexDetail)
                                 ;
                             break;
-                        case (int)DataGridViewAdminVyvod.DESC_INDEX.DEVIATION: // Максимальное отклонение
-                            valid = double.TryParse((string)this.dgwAdminTable.Rows[i].Cells[(int)DataGridViewAdminVyvod.DESC_INDEX.DEVIATION].Value, out value);
+                        case DataGridViewAdminVyvod.DESC_INDEX.DEVIATION: // Максимальное отклонение
+                            valid = double.TryParse((string)this.dgwAdminTable.Rows[hour].Cells[(int)DataGridViewAdminVyvod.DESC_INDEX.DEVIATION].Value, out value);
                             if (valid == true)
-                                m_admin.m_curRDGValues[i].deviation = value;
+                                m_admin.m_curRDGValues[hour].deviation = value;
                             else
-                                ;
-                            // копировать установленные значения для всех параметров
-                            foreach (int indx in ((AdminTS_TG)m_admin).m_listTECComponentIndexDetail)
                                 ;
                             break;
                         default:
@@ -308,12 +319,15 @@ namespace Statistic
                 }
             }
 
+            // копировать установленные значения для всех параметров
+            (m_admin as AdminTS_Vyvod).ReplicateCurRDGValues();
+
             //m_admin.CopyCurRDGValues();
         }
 
         public override void setDataGridViewAdmin(DateTime date)
         {
-            int i = -1, j = -1
+            int hour = -1
                 , offset = -1;
             string strFmtDatetime = string.Empty;
             double PBR_0 = 0F;
@@ -331,28 +345,28 @@ namespace Statistic
                 else
                     Logging.Logg().Error(@"PanelTAdminKomDisp::setDataGridViewAdmin () - ... BeginInvoke (normalizedTableHourRows) - ...", Logging.INDEX_MESSAGE.D_001);
                 // получить значения из объекта для обращения к данным
-                PBR_0 = (m_admin as AdminTS_Vyvod).m_SumRDGValues_PBR_0;
+                PBR_0 =
+                (this.dgwAdminTable as DataGridViewAdminVyvod).m_PBR_0 =
+                    (m_admin as AdminTS_Vyvod).m_SumRDGValues_PBR_0;
                 arSumCurRDGValues = new HAdmin.RDGStruct[(m_admin as AdminTS_Vyvod).m_arSumRDGValues.Length];
                 (m_admin as AdminTS_Vyvod).m_arSumRDGValues.CopyTo(arSumCurRDGValues, 0);
 
-                for (j = 0; j < arSumCurRDGValues.Length; j++)
+                for (hour = 0; hour < arSumCurRDGValues.Length; hour++)
                 {
-                    strFmtDatetime = m_admin.GetFmtDatetime(j);
-                    offset = m_admin.GetSeasonHourOffset(j + 1);
+                    strFmtDatetime = m_admin.GetFmtDatetime(hour);
+                    offset = m_admin.GetSeasonHourOffset(hour + 1);
 
-                    this.dgwAdminTable.Rows[j].Cells[(int)DataGridViewAdminVyvod.DESC_INDEX.DATE_HOUR].Value = date.AddHours(j + 1 - offset).ToString(strFmtDatetime);
+                    this.dgwAdminTable.Rows[hour].Cells[(int)DataGridViewAdminVyvod.DESC_INDEX.DATE_HOUR].Value = date.AddHours(hour + 1 - offset).ToString(strFmtDatetime);
 
-                    this.dgwAdminTable.Rows[j].Cells[(int)DataGridViewAdminVyvod.DESC_INDEX.PLAN].Value = arSumCurRDGValues[j].pmin.ToString("F2");
-                    this.dgwAdminTable.Rows[j].Cells[(int)DataGridViewAdminVyvod.DESC_INDEX.PLAN].ToolTipText = arSumCurRDGValues[j].pbr_number;
+                    this.dgwAdminTable.Rows[hour].Cells[(int)DataGridViewAdminVyvod.DESC_INDEX.PLAN].Value = arSumCurRDGValues[hour].pmin.ToString("F2");
+                    this.dgwAdminTable.Rows[hour].Cells[(int)DataGridViewAdminVyvod.DESC_INDEX.PLAN].ToolTipText = arSumCurRDGValues[hour].pbr_number;
 
-                    this.dgwAdminTable.Rows[j].Cells[(int)DataGridViewAdminVyvod.DESC_INDEX.UDGt].Value = j > 0 ?
-                        (((arSumCurRDGValues[j].pmin + arSumCurRDGValues[j - 1].pmin) / 2) + arSumCurRDGValues[j].recomendation).ToString("F2") :
-                            (((arSumCurRDGValues[j].pmin + PBR_0) / 2) + arSumCurRDGValues[j].recomendation).ToString("F2");
+                    // UDGt вычисляется в 'DataGridViewAdminVyvod::onCellValueChanged'
 
-                    (this.dgwAdminTable.Rows[j].Cells[(int)DataGridViewAdminVyvod.DESC_INDEX.RECOMENDATION] as DataGridViewComboBoxCell).Value = (object)(((int)arSumCurRDGValues[j].recomendation).ToString());
-                    this.dgwAdminTable.Rows[j].Cells[(int)DataGridViewAdminVyvod.DESC_INDEX.RECOMENDATION].ToolTipText = arSumCurRDGValues[j].dtRecUpdate.ToString();
-                    this.dgwAdminTable.Rows[j].Cells[(int)DataGridViewAdminVyvod.DESC_INDEX.DEVIATION_TYPE].Value = arSumCurRDGValues[j].deviationPercent.ToString();
-                    this.dgwAdminTable.Rows[j].Cells[(int)DataGridViewAdminVyvod.DESC_INDEX.DEVIATION].Value = arSumCurRDGValues[j].deviation.ToString("F2");
+                    (this.dgwAdminTable.Rows[hour].Cells[(int)DataGridViewAdminVyvod.DESC_INDEX.RECOMENDATION] as DataGridViewComboBoxCell).Value = (object)(((int)arSumCurRDGValues[hour].recomendation).ToString());
+                    this.dgwAdminTable.Rows[hour].Cells[(int)DataGridViewAdminVyvod.DESC_INDEX.RECOMENDATION].ToolTipText = arSumCurRDGValues[hour].dtRecUpdate.ToString();
+                    this.dgwAdminTable.Rows[hour].Cells[(int)DataGridViewAdminVyvod.DESC_INDEX.DEVIATION_TYPE].Value = arSumCurRDGValues[hour].deviationPercent.ToString();
+                    this.dgwAdminTable.Rows[hour].Cells[(int)DataGridViewAdminVyvod.DESC_INDEX.DEVIATION].Value = arSumCurRDGValues[hour].deviation.ToString("F2");
                 }
             }
             else
@@ -395,9 +409,11 @@ namespace Statistic
             public enum DESC_INDEX : ushort { DATE_HOUR, PLAN, UDGt, RECOMENDATION, DEVIATION_TYPE, DEVIATION, TO_ALL, COUNT_COLUMN };
             private static string[] arDescStringIndex = { "DateHour", "Plan", @"UDGt", "Recomendation", "DeviationType", "Deviation", "ToAll" };
             private static string[] arDescRusStringIndex = { "Дата, час", "План", @"УДГт", "Рекомендация", "Отклонение в процентах", "Величина максимального отклонения", "Дозаполнить" };
-            private static object[] arDefaultValueIndex = { string.Empty, string.Empty, string.Empty, 0.ToString(), false.ToString(), string.Empty };
+            private static object[] arDefaultValueIndex = { string.Empty, string.Empty, string.Empty, string.Empty/*0.ToString()*/, false.ToString(), string.Empty };
 
             public double m_PBR_0;
+
+            protected override int INDEX_COLUMN_BUTTON_TO_ALL { get { return (int)DataGridViewAdminVyvod.DESC_INDEX.TO_ALL; } }
 
             /// <summary>
             /// Инициализация компонентов DataGridView
@@ -512,6 +528,34 @@ namespace Statistic
 
             private void onCellValueChanged(object sender, DataGridViewCellEventArgs ev)
             {
+                int hour = -1;
+                double valPrevPBR = -1F
+                    , valCurPBR = -1F
+                    , valRec = -1F;
+
+                if (ev.ColumnIndex == (int)DESC_INDEX.RECOMENDATION)
+                {
+                    hour = ev.RowIndex;
+                    // получить предыдущее значение
+                    if (hour == 0)
+                        valPrevPBR = m_PBR_0;
+                    else
+                        double.TryParse((string)Rows[hour - 1].Cells[(int)DataGridViewAdminVyvod.DESC_INDEX.PLAN].Value, out valPrevPBR);
+                    // получить текущее значение
+                    double.TryParse((string)Rows[hour].Cells[(int)DataGridViewAdminVyvod.DESC_INDEX.PLAN].Value, out valCurPBR);
+                    // получить измененное значение рекомендации
+                    if ((!(valPrevPBR < 0))
+                        && (!(valCurPBR < 0))
+                        && (double.TryParse((string)Rows[hour].Cells[(int)DataGridViewAdminVyvod.DESC_INDEX.RECOMENDATION].Value, out valRec) == true))
+                    {
+                        //Rows[hour].Cells[(int)DataGridViewAdminVyvod.DESC_INDEX.RECOMENDATION].ToolTipText = HDateTime.ToMoscowTimeZone().ToString();
+                        Rows[hour].Cells[(int)DataGridViewAdminVyvod.DESC_INDEX.UDGt].Value = (((valCurPBR + valPrevPBR) / 2) + ((valCurPBR + valPrevPBR) / 2) * (valRec / 100)).ToString("F2");
+                    }
+                    else
+                        ;
+                }
+                else
+                    ;
             }
 
             public override void ClearTables()

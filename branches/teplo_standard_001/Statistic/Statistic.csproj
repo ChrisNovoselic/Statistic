@@ -129,7 +129,9 @@
     </Reference>
   </ItemGroup>
   <ItemGroup>
-    <Compile Include="AdminTS_Vyvod.cs" />
+    <Compile Include="AdminTS_Vyvod.cs">
+      <SubType>Component</SubType>
+    </Compile>
     <Compile Include="AdminTS_LK.cs">
       <SubType>Component</SubType>
     </Compile>
@@ -245,7 +247,7 @@
   <ItemGroup>
     <BootstrapperPackage Include="Microsoft.Net.Client.3.5">
       <Visible>False</Visible>
-      <ProductName>Клиентский профиль .NET Framework 3.5 SP1</ProductName>
+      <ProductName>.NET Framework 3.5 SP1 Client Profile</ProductName>
       <Install>false</Install>
     </BootstrapperPackage>
     <BootstrapperPackage Include="Microsoft.Net.Framework.3.5.SP1">
