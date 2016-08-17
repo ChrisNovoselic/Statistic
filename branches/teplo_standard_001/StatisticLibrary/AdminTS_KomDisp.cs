@@ -17,7 +17,7 @@ namespace StatisticCommon
         private static string s_strMarkSession = @"ГТП(генерация) Сессия(";
 
         public AdminTS_KomDisp(bool[] arMarkSavePPBRValues)
-            : base(arMarkSavePPBRValues)
+            : base(arMarkSavePPBRValues, TECComponentBase.TYPE.ELECTRO)
         {
             delegateImportForeignValuesRequuest = impCSVValuesRequest;
             delegateImportForeignValuesResponse = impCSVValuesResponse;

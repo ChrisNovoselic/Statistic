@@ -69,8 +69,8 @@ namespace StatisticCommon
             }
         }
 
-        public AdminTS_TG(bool[] arMarkPPBRValues)
-            : base(arMarkPPBRValues)
+        public AdminTS_TG(bool[] arMarkPPBRValues, TECComponentBase.TYPE type)
+            : base(arMarkPPBRValues, type)
         {
             delegateImportForeignValuesRequuest = impRDGExcelValuesRequest;
             delegateExportForeignValuesRequuest = expRDGExcelValuesRequest;

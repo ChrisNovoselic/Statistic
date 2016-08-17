@@ -83,8 +83,8 @@ namespace StatisticCommon
         public enum INDEX_MARK_PPBRVALUES { PBR_ENABLED, PBR_AVALIABLE, ADMIN_ENABLED, ADMIN_AVALIABLE };
         protected HMark m_markSavedValues;
 
-        public AdminTS(bool[] arMarkSavePPBRValues)
-            : base()
+        public AdminTS(bool[] arMarkSavePPBRValues, TECComponentBase.TYPE type)
+            : base(type)
         {
             m_markSavedValues = new HMark(0);
 

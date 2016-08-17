@@ -69,6 +69,15 @@ namespace StatisticCommon
         protected DelegateDateFunc setDatetime;
 
         /// <summary>
+        /// Тип текущего объекта (тип оборудования электро-, тепло)
+        /// </summary>
+        protected TECComponentBase.TYPE _type;
+        ///// <summary>
+        ///// ??? Тип текущего объекта нельзя определить до тех пор, пока тепловые компоненты не будут встроены в общий список 'allTECComponents'
+        /////  , поэтому указываем явно при создании объекта; собственно, определить невозможно, если объект - ТЭЦ в целом
+        ///// </summary>
+        //public TECComponentBase.TYPE Type { get { return _type; } }
+        /// <summary>
         /// Список объектов 'TEC'
         /// </summary>
         public volatile StatisticCommon.InitTECBase.ListTEC m_list_tec;
@@ -125,8 +134,10 @@ namespace StatisticCommon
             }
         }
 
-        public HAdmin()
+        public HAdmin(TECComponentBase.TYPE type)
         {
+            _type = type;
+
             m_iHavePBR_Number = -1;
 
             Initialize ();
@@ -233,7 +244,10 @@ namespace StatisticCommon
 
                 //if (t.list_TECComponents.Count > 0)
                     foreach (TECComponent g in t.list_TECComponents)
-                        allTECComponents.Add(g);
+                        if (g.Type == _type)
+                            allTECComponents.Add(g);
+                        else
+                            ;
                 //else
                 //    //??? исключение - используется индекс вне допустимого диапазона
                 //    allTECComponents.Add(t.list_TECComponents[0]);

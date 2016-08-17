@@ -21,7 +21,7 @@ namespace Statistic
         public class AdminTS_Vyvod : AdminTS_TG
         {
             public AdminTS_Vyvod(bool[] arMarkSavePPBRValues)
-                : base(arMarkSavePPBRValues)
+                : base(arMarkSavePPBRValues, TECComponentBase.TYPE.TEPLO)
             {
             }
 
@@ -57,7 +57,8 @@ namespace Statistic
                                 // параметры выводов
                                 foreach (Vyvod.ParamVyvod pv in v.m_listLowPointDev)
                                     if (pv.m_id_param == Vyvod.ID_PARAM.T_PV) // является параметром - температура прямая (для которого есть плановые значения)
-                                        m_listTECComponentIndexDetail.Add(pv.m_id);
+                                        //m_listTECComponentIndexDetail.Add(pv.m_id);
+                                        m_listTECComponentIndexDetail.Add(allTECComponents.IndexOf (v));
                                     else
                                         ;
                             else
@@ -87,6 +88,11 @@ namespace Statistic
             //            }
             //        else
             //            ;
+            //}
+
+            //protected override bool IsCanUseTECComponents()
+            //{
+            //    return (!(indxTECComponents < 0)) && allTECComponents.Exists(tc => { return tc.m_id == indxTECComponents; });
             //}
         }
 

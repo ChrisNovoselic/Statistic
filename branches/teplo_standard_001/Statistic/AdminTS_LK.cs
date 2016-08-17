@@ -33,7 +33,7 @@ namespace Statistic
             /// </summary>
             /// <param name="arMarkPPBRValues"></param>
             public AdminTS_LK(bool[] arMarkPPBRValues)
-                : base(arMarkPPBRValues)
+                : base(arMarkPPBRValues, TECComponentBase.TYPE.ELECTRO)
             {
                 _tsOffsetToMoscow = HDateTime.TS_NSK_OFFSET_OF_MOSCOWTIMEZONE;
             }

@@ -125,15 +125,6 @@ namespace StatisticCommon
     public abstract class TecView : HAdmin
     {
         /// <summary>
-        /// “ип текущего объекта (тип оборудовани€ электро-, тепло)
-        /// </summary>
-        protected TECComponentBase.TYPE _type;
-        /// <summary>
-        /// ??? “ип текущего объекта нельз€ определить до тех пор, пока тепловые компоненты не будут встроены в общий список 'allTECComponents'
-        ///  , поэтому указываем €вно при создании объекта; собственно, определить невозможно, если объект - “Ё÷ в целом
-        /// </summary>
-        public TECComponentBase.TYPE Type { get { return _type; } }
-        /// <summary>
         /// ѕеречисление - »дентификаторы типов минутных ј»»— ”Ё значений
         /// </summary>
         public enum ID_AISKUE_PARNUMBER : uint { FACT_03 = 2, FACT_30 = 12 };
@@ -504,9 +495,8 @@ namespace StatisticCommon
 
         //public TecView(bool[] arMarkSavePPBRValues, TYPE_PANEL type, int indx_tec, int indx_comp)
         public TecView(/*TYPE_PANEL type, */int indx_tec, int indx_comp, TECComponentBase.TYPE type)
-            : base()
+            : base(type)
         {
-            _type = type;
             m_idAISKUEParNumber = ID_AISKUE_PARNUMBER.FACT_03;
 
             m_indx_TEC = indx_tec;
@@ -2402,8 +2392,8 @@ namespace StatisticCommon
                                 try
                                 {
                                     id_comp = localTECComponents[j].m_id;
-                                    id_part_field = Type == TECComponentBase.TYPE.TEPLO ? (localTECComponents[j] as TECComponent).m_listLowPointDev.Find(tcb => { return (tcb as Vyvod.ParamVyvod).m_id_param == Vyvod.ID_PARAM.T_PV; }).m_id :
-                                        Type == TECComponentBase.TYPE.ELECTRO ? localTECComponents[j].m_id :
+                                    id_part_field = _type == TECComponentBase.TYPE.TEPLO ? (localTECComponents[j] as TECComponent).m_listLowPointDev.Find(tcb => { return (tcb as Vyvod.ParamVyvod).m_id_param == Vyvod.ID_PARAM.T_PV; }).m_id :
+                                        _type == TECComponentBase.TYPE.ELECTRO ? localTECComponents[j].m_id :
                                             -1;
 
                                     if ((offsetPlan + (j * 3) < m_tablePPBRValuesResponse.Columns.Count) && (!(m_tablePPBRValuesResponse.Rows[i][offsetPlan + (j * 3)] is System.DBNull)))

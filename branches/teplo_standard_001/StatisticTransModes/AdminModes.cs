@@ -13,7 +13,9 @@ namespace StatisticTransModes
     {
         protected List<string> m_listModesId;
 
-        public AdminModes () : base () {
+        public AdminModes()
+            : base(TECComponentBase.TYPE.ELECTRO)
+        {
             m_listModesId = new List<string>();
         }
 

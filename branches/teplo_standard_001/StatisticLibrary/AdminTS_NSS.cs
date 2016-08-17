@@ -13,7 +13,7 @@ namespace StatisticCommon
     public class AdminTS_NSS : AdminTS_TG
     {
         public AdminTS_NSS(bool[] arMarkPPBRValues)
-            : base(arMarkPPBRValues)
+            : base(arMarkPPBRValues, TECComponentBase.TYPE.ELECTRO)
         {
         }
 

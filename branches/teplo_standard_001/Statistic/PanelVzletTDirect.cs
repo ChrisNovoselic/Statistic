@@ -710,7 +710,7 @@ namespace Statistic
             {
                 public DataSource(int indx_tec, int indx_comp = -1) : base (indx_tec, indx_comp, TECComponentBase.TYPE.TEPLO)
                 {
-                    m_idAISKUEParNumber = ID_AISKUE_PARNUMBER.FACT_03;
+                    m_idAISKUEParNumber = ID_AISKUE_PARNUMBER.FACT_30;
                 }
 
                 //protected override int StateCheckResponse(int state, out bool error, out object outobj)
