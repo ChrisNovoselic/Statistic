@@ -577,6 +577,11 @@ namespace StatisticCommon
             return iRes;
         }
 
+        protected virtual double getRDGValue_PBR_0(DataRow r, int indxTables, int cntFields)
+        {
+            return (double)r[indxTables * cntFields + (0 + 1)];
+        }
+
         /// <summary>
         /// Получение административных значений и объединение таблиц административных и ППБР значений 
         /// </summary>
@@ -726,7 +731,7 @@ namespace StatisticCommon
                         else
                             if (hour == 0)
                             {
-                                m_curRDGValues_PBR_0 = (double)table.Rows[i][arIndexTables[1] * arFieldsCount[1] + (0 + 1)];
+                                m_curRDGValues_PBR_0 = getRDGValue_PBR_0(table.Rows[i], arIndexTables[1], arFieldsCount[1]); //(double)table.Rows[i][arIndexTables[1] * arFieldsCount[1] + (0 + 1)];
 
                                 continue;
                             }
@@ -796,7 +801,7 @@ namespace StatisticCommon
                             if (hour == 0)
                             {
                                 if ((arIndexTables[0] * arFieldsCount[1] + 1) < table.Columns.Count)
-                                    m_curRDGValues_PBR_0 = (double)table.Rows[i][arIndexTables[0] * arFieldsCount[1] + 1];
+                                    m_curRDGValues_PBR_0 = getRDGValue_PBR_0(table.Rows[i], arIndexTables[0], arFieldsCount[1]); //(double)table.Rows[i][arIndexTables[0] * arFieldsCount[1] + 1];
                                 else
                                     m_curRDGValues_PBR_0 = 0F;
 

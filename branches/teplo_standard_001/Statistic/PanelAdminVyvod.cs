@@ -23,6 +23,7 @@ namespace Statistic
             public AdminTS_Vyvod(bool[] arMarkSavePPBRValues)
                 : base(arMarkSavePPBRValues, TECComponentBase.TYPE.TEPLO)
             {
+                m_SumRDGValues_PBR_0 = 0F;
             }
 
             protected override void /*bool*/ impRDGExcelValuesRequest()
@@ -46,6 +47,10 @@ namespace Statistic
 
                 lock (m_lockSuccessGetData)
                 {
+                    // очистить суммарные значения
+                    m_curRDGValues_PBR_0 = 0f;
+                    m_arSumRDGValues = null;
+
                     m_listTECComponentIndexDetail.Clear();
                     // найти ТЭЦ по 'id'
                     tec = m_list_tec.Find(t => { return t.m_id == id; });
@@ -53,7 +58,7 @@ namespace Statistic
                     if (!(tec == null))
                         //ВСЕ компоненты
                         foreach (TECComponent v in tec.list_TECComponents)
-                            if (v.IsVyvod == true)
+                            if (v.IsParamVyvod == true)
                                 // параметры выводов
                                 foreach (Vyvod.ParamVyvod pv in v.m_listLowPointDev)
                                     if (pv.m_id_param == Vyvod.ID_PARAM.T_PV) // является параметром - температура прямая (для которого есть плановые значения)
@@ -94,6 +99,92 @@ namespace Statistic
             //{
             //    return (!(indxTECComponents < 0)) && allTECComponents.Exists(tc => { return tc.m_id == indxTECComponents; });
             //}
+
+            public double m_SumRDGValues_PBR_0;
+            public RDGStruct[] m_arSumRDGValues;
+
+            public void SummatorRDGValues()
+            {
+                int i = m_listTECComponentIndexDetail.IndexOf(indxTECComponents)
+                    , iDiv = -1; // ' = i == 0 ? 1 : 2' общий делитель для усреднения невозможно определить, т.к. зависит от условия "> 0"
+
+                TECComponent tc = allTECComponents[m_listTECComponentIndexDetail[i]]; // компонент - параметр вывода
+
+                if (m_arSumRDGValues == null)
+                    m_arSumRDGValues = new HAdmin.RDGStruct[m_listCurRDGValues[i].Length];
+                else
+                    if (!(m_arSumRDGValues.Length == m_listCurRDGValues[i].Length))
+                        throw new Exception(string.Format (@"AdminTS_Vyvod::GetSumRDGValues () - не совпадают размеры массивов (часы в сутках) с полученными данными ПБР для компонента ID={0}...", tc.m_id));
+                    else
+                        ;
+
+                if (m_curRDGValues_PBR_0 > 0) {
+                    m_SumRDGValues_PBR_0 += m_curRDGValues_PBR_0;
+                    m_SumRDGValues_PBR_0 /= i == 0 ? 1 : 2; // делитель для усреднения
+                }
+                else ;
+
+                for (int j = 0; j < m_listCurRDGValues[i].Length; j++)
+                {                        
+                    //arSumCurRDGValues[j].pbr_number = arCurRDGValues[j].pbr_number;
+                    //if (arCurRDGValues[j].pbr > 0) arSumCurRDGValues[j].pbr += arCurRDGValues[j].pbr; else ;
+                    // для всех элементов д.б. одинаковые!
+                    if (m_listCurRDGValues[i][j].pmin > 0) {
+                        m_arSumRDGValues[j].pmin += m_listCurRDGValues[i][j].pmin;
+                        m_arSumRDGValues[j].pmin /= i == 0 ? 1 : 2; // делитель для усреднения
+                    } else ;
+                    //if (arCurRDGValues[j].pmax > 0) arSumCurRDGValues[j].pmax += arCurRDGValues[j].pmax; else ;
+                    // рекомендации для всех элементов д.б. одинаковые!
+                    if (m_listCurRDGValues[i][j].recomendation > 0) {
+                        m_arSumRDGValues[j].recomendation += m_listCurRDGValues[i][j].recomendation;
+                        m_arSumRDGValues[j].recomendation /= i == 0 ? 1 : 2; // делитель для усреднения
+                    }  else ;
+                    // типы отклонений  для всех элементов д.б. одинаковые!
+                    if (!(m_listCurRDGValues[i][j].deviationPercent == m_arSumRDGValues[j].deviationPercent)) m_arSumRDGValues[j].deviationPercent = m_listCurRDGValues[i][j].deviationPercent; else ;
+                    // величины отклонения для всех элементов д.б. одинаковые!
+                    if (m_listCurRDGValues[i][j].deviation > 0) {
+                        m_arSumRDGValues[j].deviation += m_listCurRDGValues[i][j].deviation;
+                        m_arSumRDGValues[j].deviation /= i == 0 ? 1 : 2; // делитель для усреднения
+                    } else ;
+                }
+            }
+
+            protected override double getRDGValue_PBR_0(DataRow r, int indxTables, int cntFields)
+            {
+                return (double)r[indxTables * cntFields + (0 + 2)];
+            }
+            /// <summary>
+            /// Возвратить признак выполненых пользователем изменений
+            /// </summary>
+            /// <returns>Признак изменений</returns>
+            public override bool WasChanged()
+            {
+                //bool bRes = false;
+
+                //for (int i = 0; i < 24; i++)
+                //{
+                //    if (m_prevRDGValues[i].pbr.Equals(m_curRDGValues[i].pbr) /*double.Parse(this.dgwAdminTable.Rows[i].Cells[(int)DataGridViewAdmin.DESC_INDEX.PLAN].Value.ToString())*/  == false)
+                //        return true;
+                //    else
+                //        ;
+                //    if (m_prevRDGValues[i].recomendation != m_curRDGValues[i].recomendation /*double.Parse(this.dgwAdminTable.Rows[i].Cells[(int)DataGridViewAdmin.DESC_INDEX.RECOMENDATION].Value.ToString())*/)
+                //        return true;
+                //    else
+                //        ;
+                //    if (m_prevRDGValues[i].deviationPercent != m_curRDGValues[i].deviationPercent /*bool.Parse(this.dgwAdminTable.Rows[i].Cells[(int)DataGridViewAdmin.DESC_INDEX.DEVIATION_TYPE].Value.ToString())*/)
+                //        return true;
+                //    else
+                //        ;
+                //    if (m_prevRDGValues[i].deviation != m_curRDGValues[i].deviation /*double.Parse(this.dgwAdminTable.Rows[i].Cells[(int)DataGridViewAdmin.DESC_INDEX.DEVIATION].Value.ToString())*/)
+                //        return true;
+                //    else
+                //        ;
+                //}
+
+                //return bRes;
+
+                return base.WasChanged();
+            }
         }
 
         private enum INDEX_CONTROL_UI { UNKNOWN = -1
@@ -141,7 +232,9 @@ namespace Statistic
         }
 
         private TECComponent findTECComponent(int id) { return m_admin.FindTECComponent(id); }
-
+        /// <summary>
+        /// Перенести в ОЗУ значения с формы/панели (почти полная копия 'PanelAdminNSS')
+        /// </summary>
         protected override void getDataGridViewAdmin()
         {
             double value;
@@ -158,16 +251,19 @@ namespace Statistic
                     {
                         case (int)DataGridViewAdminVyvod.DESC_INDEX.PLAN: // План
                             valid = double.TryParse((string)dgwAdminTable.Rows[i].Cells[(int)DataGridViewAdminVyvod.DESC_INDEX.PLAN].Value, out value);
-                            m_admin.m_curRDGValues[i].pmin = 0.0;
+                            if (valid == true)
+                                m_admin.m_curRDGValues[i].pmin = value;
+                            else
+                                ; //m_admin.m_curRDGValues[i].pmin = 0F;
                             break;
                         case (int)DataGridViewAdminVyvod.DESC_INDEX.UDGt: // УДГэ
                             break;
                         case (int)DataGridViewAdminVyvod.DESC_INDEX.RECOMENDATION: // Рекомендация
-                            //valid = true;
-                            //valRec = (int)dgwAdminTable.Rows[i].Cells[(int)DataGridViewAdminVyvod.DESC_INDEX.RECOMENDATION].Value;
                             valid = double.TryParse((string)dgwAdminTable.Rows[i].Cells[(int)DataGridViewAdminVyvod.DESC_INDEX.RECOMENDATION].Value, out value);
-                            m_admin.m_curRDGValues[i].recomendation = value;
-
+                            if (valid == true)
+                                m_admin.m_curRDGValues[i].recomendation = value;
+                            else
+                                ;
                             break;
                         case (int)DataGridViewAdminVyvod.DESC_INDEX.DEVIATION_TYPE:
                             if (!(this.dgwAdminTable.Rows[i].Cells[(int)DataGridViewAdminVyvod.DESC_INDEX.DEVIATION_TYPE].Value == null))
@@ -178,8 +274,10 @@ namespace Statistic
                             break;
                         case (int)DataGridViewAdminVyvod.DESC_INDEX.DEVIATION: // Максимальное отклонение
                             valid = double.TryParse((string)this.dgwAdminTable.Rows[i].Cells[(int)DataGridViewAdminVyvod.DESC_INDEX.DEVIATION].Value, out value);
-                            m_admin.m_curRDGValues[i].deviation = value;
-
+                            if (valid == true)
+                                m_admin.m_curRDGValues[i].deviation = value;
+                            else
+                                ;
                             break;
                         default:
                             break;
@@ -192,39 +290,50 @@ namespace Statistic
 
         public override void setDataGridViewAdmin(DateTime date)
         {
-            int offset = -1;
+            int i = -1, j = -1
+                , offset = -1;
             string strFmtDatetime = string.Empty;
+            double PBR_0 = 0F;
+            HAdmin.RDGStruct[] arSumCurRDGValues = null;
 
-            //??? не очень изящное решение
-            if (IsHandleCreated/*InvokeRequired*/ == true)
+            if ((m_admin as AdminTS_TG).CompletedGetRDGValues == true)
             {
-                m_evtAdminTableRowCount.Reset();
-                this.BeginInvoke(new DelegateFunc(normalizedTableHourRows));
-                m_evtAdminTableRowCount.WaitOne(System.Threading.Timeout.Infinite);
+                //??? не очень изящное решение
+                if (IsHandleCreated/*InvokeRequired*/ == true)
+                {
+                    m_evtAdminTableRowCount.Reset();
+                    this.BeginInvoke(new DelegateFunc(normalizedTableHourRows));
+                    m_evtAdminTableRowCount.WaitOne(System.Threading.Timeout.Infinite);
+                }
+                else
+                    Logging.Logg().Error(@"PanelTAdminKomDisp::setDataGridViewAdmin () - ... BeginInvoke (normalizedTableHourRows) - ...", Logging.INDEX_MESSAGE.D_001);
+
+                PBR_0 = (m_admin as AdminTS_Vyvod).m_SumRDGValues_PBR_0;
+                arSumCurRDGValues = new HAdmin.RDGStruct[(m_admin as AdminTS_Vyvod).m_arSumRDGValues.Length];
+                (m_admin as AdminTS_Vyvod).m_arSumRDGValues.CopyTo(arSumCurRDGValues, 0);
+
+                for (j = 0; j < arSumCurRDGValues.Length; j++)
+                {
+                    strFmtDatetime = m_admin.GetFmtDatetime(j);
+                    offset = m_admin.GetSeasonHourOffset(j + 1);
+
+                    this.dgwAdminTable.Rows[j].Cells[(int)DataGridViewAdminVyvod.DESC_INDEX.DATE_HOUR].Value = date.AddHours(j + 1 - offset).ToString(strFmtDatetime);
+
+                    this.dgwAdminTable.Rows[j].Cells[(int)DataGridViewAdminVyvod.DESC_INDEX.PLAN].Value = arSumCurRDGValues[j].pmin.ToString("F2");
+                    this.dgwAdminTable.Rows[j].Cells[(int)DataGridViewAdminVyvod.DESC_INDEX.PLAN].ToolTipText = arSumCurRDGValues[j].pbr_number;
+
+                    this.dgwAdminTable.Rows[j].Cells[(int)DataGridViewAdminVyvod.DESC_INDEX.UDGt].Value = j > 0 ?
+                        (((arSumCurRDGValues[j].pmin + arSumCurRDGValues[j - 1].pmin) / 2) + arSumCurRDGValues[j].recomendation).ToString("F2") :
+                            (((arSumCurRDGValues[j].pmin + PBR_0) / 2) + arSumCurRDGValues[j].recomendation).ToString("F2");
+
+                    (this.dgwAdminTable.Rows[j].Cells[(int)DataGridViewAdminVyvod.DESC_INDEX.RECOMENDATION] as DataGridViewComboBoxCell).Value = (object)(((int)arSumCurRDGValues[j].recomendation).ToString());
+                    this.dgwAdminTable.Rows[j].Cells[(int)DataGridViewAdminVyvod.DESC_INDEX.RECOMENDATION].ToolTipText = arSumCurRDGValues[j].dtRecUpdate.ToString();
+                    this.dgwAdminTable.Rows[j].Cells[(int)DataGridViewAdminVyvod.DESC_INDEX.DEVIATION_TYPE].Value = arSumCurRDGValues[j].deviationPercent.ToString();
+                    this.dgwAdminTable.Rows[j].Cells[(int)DataGridViewAdminVyvod.DESC_INDEX.DEVIATION].Value = arSumCurRDGValues[j].deviation.ToString("F2");
+                }
             }
             else
-                Logging.Logg().Error(@"PanelTAdminKomDisp::setDataGridViewAdmin () - ... BeginInvoke (normalizedTableHourRows) - ...", Logging.INDEX_MESSAGE.D_001);
-
-            ((DataGridViewAdminVyvod)this.dgwAdminTable).m_PBR_0 = m_admin.m_curRDGValues_PBR_0;
-
-            for (int i = 0; i < m_admin.m_curRDGValues.Length; i++)
-            {
-                strFmtDatetime = m_admin.GetFmtDatetime (i);
-                offset = m_admin.GetSeasonHourOffset (i + 1);
-
-                this.dgwAdminTable.Rows[i].Cells[(int)DataGridViewAdminVyvod.DESC_INDEX.DATE_HOUR].Value = date.AddHours(i + 1 - offset).ToString(strFmtDatetime);
-
-                this.dgwAdminTable.Rows[i].Cells[(int)DataGridViewAdminVyvod.DESC_INDEX.PLAN].Value = m_admin.m_curRDGValues[i].pbr.ToString("F2");
-                this.dgwAdminTable.Rows[i].Cells[(int)DataGridViewAdminVyvod.DESC_INDEX.PLAN].ToolTipText = m_admin.m_curRDGValues[i].pbr_number;
-                if (i > 0)
-                    this.dgwAdminTable.Rows[i].Cells[(int)DataGridViewAdminVyvod.DESC_INDEX.UDGt].Value = (((m_admin.m_curRDGValues[i].pbr + m_admin.m_curRDGValues[i - 1].pbr) / 2) + m_admin.m_curRDGValues[i].recomendation).ToString("F2");
-                else
-                    this.dgwAdminTable.Rows[i].Cells[(int)DataGridViewAdminVyvod.DESC_INDEX.UDGt].Value = (((m_admin.m_curRDGValues[i].pbr + m_admin.m_curRDGValues_PBR_0) / 2) + m_admin.m_curRDGValues[i].recomendation).ToString("F2");
-                (this.dgwAdminTable.Rows[i].Cells[(int)DataGridViewAdminVyvod.DESC_INDEX.RECOMENDATION] as DataGridViewComboBoxCell).Value = (object)(((int)m_admin.m_curRDGValues[i].recomendation).ToString());
-                this.dgwAdminTable.Rows[i].Cells[(int)DataGridViewAdminVyvod.DESC_INDEX.RECOMENDATION].ToolTipText = m_admin.m_curRDGValues[i].dtRecUpdate.ToString ();
-                this.dgwAdminTable.Rows[i].Cells[(int)DataGridViewAdminVyvod.DESC_INDEX.DEVIATION_TYPE].Value = m_admin.m_curRDGValues[i].deviationPercent.ToString();
-                this.dgwAdminTable.Rows[i].Cells[(int)DataGridViewAdminVyvod.DESC_INDEX.DEVIATION].Value = m_admin.m_curRDGValues[i].deviation.ToString("F2");
-            }
+                (m_admin as AdminTS_Vyvod).SummatorRDGValues (); // рано отображать, не все компоненнты(параметры) опрошены
 
             m_admin.CopyCurToPrevRDGValues();
         }

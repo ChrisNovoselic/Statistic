@@ -607,9 +607,7 @@ namespace StatisticCommon
 
         public override bool WasChanged()
         {
-            bool bRes = false;
-
-            return bRes;
+            throw new NotImplementedException();
         }
 
         //public override void  ClearValues(int cnt = -1)

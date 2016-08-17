@@ -91,7 +91,9 @@ namespace Statistic
 
             return iRes;
         }
-
+        /// <summary>
+        /// Перенести в ОЗУ значения с формы/панели (почти полная копия 'PanelAdminVyvod')
+        /// </summary>
         protected override void getDataGridViewAdmin()
         {
             double value = 0.0;
@@ -124,13 +126,12 @@ namespace Statistic
         }
 
         private void addTextBoxColumn (DateTime date) {
+            DataGridViewCellEventArgs ev;
             int indx = ((AdminTS_NSS)m_admin).m_listTECComponentIndexDetail[this.dgwAdminTable.Columns.Count - 2];
             ((DataGridViewAdminNSS)this.dgwAdminTable).addTextBoxColumn(m_admin.GetNameTECComponent(indx),
                                                                         m_admin.GetIdTECComponent (indx),
                                                                         m_admin.GetIdGTPOwnerTECComponent(indx),
                                                                         date);
-
-            DataGridViewCellEventArgs ev;
 
             for (int i = 0; i < 24; i++)
             {

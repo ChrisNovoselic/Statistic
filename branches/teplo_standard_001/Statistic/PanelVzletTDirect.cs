@@ -791,10 +791,10 @@ namespace Statistic
                     AddState((int)TecView.StatesMachine.AdminValues);
                 }
 
-                public override bool WasChanged()
-                {
-                    throw new NotImplementedException();
-                }
+                //public override bool WasChanged()
+                //{
+                //    throw new NotImplementedException();
+                //}
 
                 protected override void setValuesHours(TECComponentBase.ID idComp = TECComponentBase.ID.MAX)
                 {
