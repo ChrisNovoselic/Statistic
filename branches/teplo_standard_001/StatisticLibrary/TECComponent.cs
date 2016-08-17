@@ -134,10 +134,8 @@ namespace StatisticCommon
             public enum INDEX_VALUE : int
             {
                 FACT //факт.
-                ,
-                TM //телемеханика
-                    ,
-                LABEL_DESC //описание (краткое наименование) ТГ
+                , TM //телемеханика
+                , LABEL_DESC //описание (краткое наименование) ТГ
                     , COUNT_INDEX_VALUE
             }; //Количество индексов
             /// <summary>
@@ -157,8 +155,8 @@ namespace StatisticCommon
             /// <summary>
             /// Идентификаторы "владельцев" для ТГ (ГТП, Б(Гр)ЩУ)
             /// </summary>
-            public int m_id_owner_gtp,
-                        m_id_owner_pc;
+            public int m_id_owner_gtp
+                , m_id_owner_pc;
             /// <summary>
             /// Признак состояния ТГ
             /// </summary>
@@ -356,10 +354,10 @@ namespace StatisticCommon
         ///// Список ТГ
         ///// </summary>
         //public List<ParamVyvod> m_listParam;
-        /// <summary>
-        /// Объект ТЭЦ - "владелец" компонента
-        /// </summary>
-        public TEC tec;
+        ///// <summary>
+        ///// Объект ТЭЦ - "владелец" компонента
+        ///// </summary>
+        //public TEC tec;
 
         public bool m_bKomUchet;
 
@@ -379,7 +377,7 @@ namespace StatisticCommon
         /// <param name="r">Строка со значениями свойств создаваемого объекта-ВЫВОДа</param>
         public Vyvod(TEC tec, DataRow []rows_param) : base (tec, rows_param[0])
         {
-            this.tec = tec;
+            //this.tec = tec;
 
             //m_listParam = new List<ParamVyvod>();
 

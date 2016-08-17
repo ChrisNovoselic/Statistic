@@ -400,7 +400,7 @@ namespace StatisticCommon
                         m_tec.list_TECComponents.ForEach(v => {
                             if (v.IsVyvod == true) {
                                 _localTECComponents.Add(v);
-                                initDictValuesParamVyvod(v as Vyvod);
+                                initDictValuesParamVyvod(v);
                             } else
                                 ;
                         });
@@ -408,8 +408,7 @@ namespace StatisticCommon
                     case TECComponentBase.TYPE.ELECTRO:
                         foreach (TECComponent tc in m_tec.list_TECComponents)
                         {
-                            if ((tc.IsVyvod == false)
-                                && (tc.IsParamVyvod == false))
+                            if (tc.Type == TECComponentBase.TYPE.ELECTRO)
                             {// только для электро-компонентов
                                 if (tc.IsGTP == true)
                                 {
@@ -444,39 +443,40 @@ namespace StatisticCommon
             initDictValuesTECComponent (24 + 1);
         }
 
-        private List<TECComponentBase> getLocalTECComponents()
-        {
-            List<TECComponentBase> listRes = null;
+        //private List<TECComponentBase> getLocalTECComponents()
+        //{
+        //    List<TECComponentBase> listRes = null;
 
-            switch (_type)
-            {
-                case TECComponentBase.TYPE.TEPLO:
-                    listRes = new List<TECComponentBase>();
-                    m_tec.list_TECComponents.ForEach(v => {
-                        listRes.Add(v.m_listLowPointDev.Find(pv => {
-                            return (v.IsVyvod == true)
-                                /*&& ((v as Vyvod).m_bKomUchet == true)*/
-                                && ((pv as Vyvod.ParamVyvod).m_id_param == Vyvod.ID_PARAM.T_PV);
-                        }));
-                    });
-                    break;
-                case TECComponentBase.TYPE.ELECTRO:
-                    listRes = _localTECComponents;
-                    break;
-                default:
-                    break;
-            }
+        //    switch (_type)
+        //    {
+        //        case TECComponentBase.TYPE.TEPLO:
+        //            //listRes = new List<TECComponentBase>();
+        //            //foreach (TECComponent tc in m_tec.list_TECComponents)
+        //            //    foreach (TECComponentBase tcb in tc.m_listLowPointDev)
+        //            //        if ((tc.IsVyvod == true)
+        //            //            && ((tcb as Vyvod.ParamVyvod).m_id_param == Vyvod.ID_PARAM.T_PV))
+        //            //            listRes.Add(tcb);
+        //            //        else
+        //            //            ;
+        //            listRes = _localTECComponents;
+        //            break;
+        //        case TECComponentBase.TYPE.ELECTRO:
+        //            listRes = _localTECComponents;
+        //            break;
+        //        default:
+        //            break;
+        //    }
 
-            return listRes;
-        }
+        //    return listRes;
+        //}
 
         private void initDictValuesTECComponent(int cnt)
         {
-            List<TECComponentBase> localTECComponents = getLocalTECComponents();            
+            //List<TECComponentBase> localTECComponents = getLocalTECComponents();            
             
             m_dictValuesTECComponent = new Dictionary<int, valuesTECComponent>[cnt];
             
-            foreach (TECComponentBase c in localTECComponents)
+            foreach (TECComponentBase c in _localTECComponents)
                 for (int i = 0; i < m_dictValuesTECComponent.Length; i ++) {
                     if (m_dictValuesTECComponent[i] == null) m_dictValuesTECComponent[i] = new Dictionary<int,valuesTECComponent> (); else ;
                     m_dictValuesTECComponent[i].Add(c.m_id, new TecView.valuesTECComponent ());
@@ -492,7 +492,7 @@ namespace StatisticCommon
                     ;
         }
 
-        private void initDictValuesParamVyvod(Vyvod v)
+        private void initDictValuesParamVyvod(TECComponent v)
         {
             //foreach (Vyvod.ParamVyvod pv in v.m_listParam)
             foreach (Vyvod.ParamVyvod pv in v.m_listLowPointDev)
@@ -688,7 +688,7 @@ namespace StatisticCommon
                     switch (_type)
                     {
                         case TECComponentBase.TYPE.TEPLO:
-                            id = (g as Vyvod).m_listLowPointDev[0].m_id;
+                            id = g.m_id;
                             break;
                         case TECComponentBase.TYPE.ELECTRO:
                             id = g.m_id;
@@ -1024,16 +1024,16 @@ namespace StatisticCommon
                     break;
                 case StatesMachine.CurrentTimeAdmin:
                 case StatesMachine.CurrentTimeView:
-                    if (request == 0)
-                    {
-                        reason = @"разбора";
-                    }
-                    else
-                    {
-                        reason = @"получения";
-                    }
+                    //if (request == 0)
+                    //{
+                    //    reason = @"разбора";
+                    //}
+                    //else
+                    //{
+                    //    reason = @"получения";
+                    //}
 
-                    reason += @" текущего времени сервера";
+                    reason = @" текущего времени сервера";
                     waiting = @"Переход в ожидание";
 
                     break;
@@ -2100,11 +2100,11 @@ namespace StatisticCommon
 
         private void ClearAdminTECComponentValues(int indx)
         {
-            List<TECComponentBase> localTECComponents = getLocalTECComponents();
+            //List<TECComponentBase> localTECComponents = getLocalTECComponents();
             int id = -1;
 
-            for (int j = 0; j < localTECComponents.Count; j ++) {
-                id = localTECComponents[j].m_id;
+            for (int j = 0; j < _localTECComponents.Count; j ++) {
+                id = _localTECComponents[j].m_id;
                 
                 if (m_dictValuesTECComponent[indx][id] == null) m_dictValuesTECComponent[indx][id] = new valuesTECComponent(); else ;
 
@@ -2226,16 +2226,17 @@ namespace StatisticCommon
         {
             // для подмены '_localTECComponents' при обработке ТЭЦ в целом для ТЕПЛО и ЭЛЕКТРО
             List<TECComponentBase> localTECComponents = null;
-            
+
             DateTime date = m_curDate.Add (m_tsOffsetToMoscow) //m_pnlQuickData.dtprDate.Value.Date
                     , dtPBR;
-            int hour = -1, day = -1;
+            int h = -1, hour = -1, day = -1;
             bool bSeason = false;
-
             int offsetPrev = -1
                 //, tableRowsCount = table_in.Rows.Count; //tableRowsCount = m_tablePPBRValuesResponse.Rows.Count
-                , i = -1, j = -1,
-                offsetUDG, offsetPlan, offsetLayout;
+                , i = -1, j = -1
+                , offsetUDG, offsetPlan, offsetLayout // смещения значений УДГ, ПБР, номера ПБР от 0-го индекса в списке полей результата запроса
+                , id_comp = -1, id_part_field = -1; // идентификатор компонента, идентификатор компонента как часть наименования поля результата запроса (для ЭЛЕКТРО совпадают)
+            string tmpLayout = string.Empty; // для определения наименования номера ПБР
 
             lastLayout = "---";
 
@@ -2265,14 +2266,17 @@ namespace StatisticCommon
                 offsetPlan = /*offsetUDG + 3 * tec.list_TECComponents.Count +*/ 1; //ID_COMPONENT
                 offsetLayout = -1;
 
-                localTECComponents = getLocalTECComponents();
+                localTECComponents = _localTECComponents; //getLocalTECComponents();
 
                 m_tablePPBRValuesResponse = restruct_table_pbrValues(m_tablePPBRValuesResponse
+                    , _type
                     , _type == TECComponentBase.TYPE.TEPLO ? m_tec.list_TECComponents :
                         _type == TECComponentBase.TYPE.ELECTRO ? m_tec.list_TECComponents : null
                     , indxTECComponents
                     , m_tsOffsetToMoscow);
-                offsetLayout = (!(m_tablePPBRValuesResponse.Columns.IndexOf("PBR_NUMBER") < 0)) ? (offsetPlan + localTECComponents.Count * 3) : m_tablePPBRValuesResponse.Columns.Count;
+                offsetLayout = (!(m_tablePPBRValuesResponse.Columns.IndexOf("PBR_NUMBER") < 0)) ?
+                    (offsetPlan + localTECComponents.Count * 3) :
+                        m_tablePPBRValuesResponse.Columns.Count;
 
                 DataTable tableAdminValuesResponse = null;
                 if (bSeason == true)
@@ -2281,6 +2285,7 @@ namespace StatisticCommon
                 else
                     ;
                 table_in = restruct_table_adminValues(table_in
+                    , _type
                     , _type == TECComponentBase.TYPE.TEPLO ? m_tec.list_TECComponents :
                         _type == TECComponentBase.TYPE.ELECTRO ? m_tec.list_TECComponents : null
                     , indxTECComponents
@@ -2333,7 +2338,7 @@ namespace StatisticCommon
                                 ;
                         }
                         catch (Exception excpt) {
-                            Logging.Logg().Exception(excpt, "catch - PanelTecViewBase.GetAdminValuesResponse () - ...", Logging.INDEX_MESSAGE.NOT_SET);
+                            Logging.Logg().Exception(excpt, "TecView::getAdminValuesResponse () - ...", Logging.INDEX_MESSAGE.NOT_SET);
                         }
                     }
                     else
@@ -2353,8 +2358,9 @@ namespace StatisticCommon
                             else
                                 ;
                         }
-                        catch
+                        catch (Exception e)
                         {
+                            Logging.Logg().Exception(e, @"TecView::getAdminValuesresponse () - ...", Logging.INDEX_MESSAGE.NOT_SET);
                         }
                     }
                 }
@@ -2389,24 +2395,29 @@ namespace StatisticCommon
                             //foreach (TECComponent g in tec.list_TECComponents)
                             for (j = 0; j < localTECComponents.Count; j++)
                             {
-                                int id = -1;
-                                
+                                id_comp =
+                                id_part_field =
+                                    -1;
+
                                 try
                                 {
-                                    id = localTECComponents[j].m_id;
+                                    id_comp = localTECComponents[j].m_id;
+                                    id_part_field = Type == TECComponentBase.TYPE.TEPLO ? (localTECComponents[j] as TECComponent).m_listLowPointDev.Find(tcb => { return (tcb as Vyvod.ParamVyvod).m_id_param == Vyvod.ID_PARAM.T_PV; }).m_id :
+                                        Type == TECComponentBase.TYPE.ELECTRO ? localTECComponents[j].m_id :
+                                            -1;
 
                                     if ((offsetPlan + (j * 3) < m_tablePPBRValuesResponse.Columns.Count) && (!(m_tablePPBRValuesResponse.Rows[i][offsetPlan + (j * 3)] is System.DBNull)))
                                     {
                                         //valuesPBR[j, hour - 1] = (double)m_tablePPBRValuesResponse.Rows[i][offsetPlan + (j * 3)];
-                                        m_dictValuesTECComponent[hour - 0][id].valuesPBR = (double)m_tablePPBRValuesResponse.Rows[i][offsetPlan + (j * 3)];
+                                        m_dictValuesTECComponent[hour - 0][id_comp].valuesPBR = (double)m_tablePPBRValuesResponse.Rows[i][offsetPlan + (j * 3)];
                                         //valuesPmin[j, hour - 1] = (double)m_tablePPBRValuesResponse.Rows[i][offsetPlan + (j * 3) + 1];
-                                        m_dictValuesTECComponent[hour - 0][id].valuesPmin = (double)m_tablePPBRValuesResponse.Rows[i][offsetPlan + (j * 3) + 1];
+                                        m_dictValuesTECComponent[hour - 0][id_comp].valuesPmin = (double)m_tablePPBRValuesResponse.Rows[i][offsetPlan + (j * 3) + 1];
                                         //valuesPmax[j, hour - 1] = (double)m_tablePPBRValuesResponse.Rows[i][offsetPlan + (j * 3) + 2];
-                                        m_dictValuesTECComponent[hour - 0][id].valuesPmax = (double)m_tablePPBRValuesResponse.Rows[i][offsetPlan + (j * 3) + 2];
+                                        m_dictValuesTECComponent[hour - 0][id_comp].valuesPmax = (double)m_tablePPBRValuesResponse.Rows[i][offsetPlan + (j * 3) + 2];
                                     }
                                     else
                                     {
-                                        m_dictValuesTECComponent[hour - 0][id].valuesPBR = 0.0;
+                                        m_dictValuesTECComponent[hour - 0][id_comp].valuesPBR = 0.0;
                                         //m_dictValuesTECComponent[id].valuesPmin[hour - 1] = 0.0;
                                         //m_dictValuesTECComponent[id].valuesPmax[hour - 1] = 0.0;
                                     }
@@ -2415,34 +2426,31 @@ namespace StatisticCommon
                                     //Копия снизу по разбору ТЭЦ в целом + копии 'AdminTS'
                                     if (bSeason == true) {
                                         if ((hour - 1) == (HAdmin.SeasonDateTime.Hour + 1)) {
-                                            m_dictValuesTECComponent[hour - 1][id].valuesPBR = m_dictValuesTECComponent[hour - 2][id].valuesPBR;
-                                            m_dictValuesTECComponent[hour - 1][id].valuesPmin = m_dictValuesTECComponent[hour - 2][id].valuesPmin;
-                                            m_dictValuesTECComponent[hour - 1][id].valuesPmax = m_dictValuesTECComponent[hour - 2][id].valuesPmax;
+                                            m_dictValuesTECComponent[hour - 1][id_comp].valuesPBR = m_dictValuesTECComponent[hour - 2][id_comp].valuesPBR;
+                                            m_dictValuesTECComponent[hour - 1][id_comp].valuesPmin = m_dictValuesTECComponent[hour - 2][id_comp].valuesPmin;
+                                            m_dictValuesTECComponent[hour - 1][id_comp].valuesPmax = m_dictValuesTECComponent[hour - 2][id_comp].valuesPmax;
                                         } else {
                                         }
 
                                         if (hour == HAdmin.SeasonDateTime.Hour)
                                         {
                                             //row_in = table_in.Select("DATE_ADMIN = '" + dtPBR.ToString(@"yyyy-MM-dd HH:mm:ss") + @"'");
-                                            row_in = tableAdminValuesResponse.Select("DATE_ADMIN = '" + dtPBR.ToString("yyyy-MM-dd HH:mm:ss") + "' AND ID_COMPONENT = " + id.ToString ());
+                                            row_in = tableAdminValuesResponse.Select("DATE_ADMIN = '" + dtPBR.ToString("yyyy-MM-dd HH:mm:ss") + "' AND ID_COMPONENT = " + id_part_field.ToString ());
                                             //Копия в 'AdminRS'
                                             if (row_in.Length > 0)
                                             {
-                                                int h = -1;
+                                                h = -1;
                                                 foreach (DataRow r in row_in)
                                                 {
                                                     h = dtPBR.Hour;
-                                                    //GetSeasonHourIndex(Int32.Parse(r[@"SEASON_" + id.ToString ()].ToString()), ref h);
+
                                                     GetSeasonHourIndex(Int32.Parse(r[@"SEASON"].ToString()), ref h);
 
-                                                    m_dictValuesTECComponent[h - 0][id].valuesForeignCommand = (byte)r[@"FC"] == 1;
+                                                    m_dictValuesTECComponent[h - 0][id_comp].valuesForeignCommand = (byte)r[@"FC"] == 1;
 
-                                                    //m_dictValuesTECComponent[h - 0][id].valuesREC = (double)r[@"REC_" + id.ToString()];
-                                                    m_dictValuesTECComponent[h - 0][id].valuesREC = (double)r[@"REC"];
-                                                    //m_dictValuesTECComponent[h - 0][id].valuesISPER = (int)r[@"IS_PER_" + id.ToString()];
-                                                    m_dictValuesTECComponent[h - 0][id].valuesISPER = (int)r[@"IS_PER"];
-                                                    //m_dictValuesTECComponent[h - 0][id].valuesDIV = (double)r[@"DIVIAT_" + id.ToString()];
-                                                    m_dictValuesTECComponent[h - 0][id].valuesDIV = (double)r[@"DIVIAT"];
+                                                    m_dictValuesTECComponent[h - 0][id_comp].valuesREC = (double)r[@"REC"];
+                                                    m_dictValuesTECComponent[h - 0][id_comp].valuesISPER = (int)r[@"IS_PER"];
+                                                    m_dictValuesTECComponent[h - 0][id_comp].valuesDIV = (double)r[@"DIVIAT"];
                                                 }
                                             }
                                             else
@@ -2467,39 +2475,39 @@ namespace StatisticCommon
                                                 ; //Ошибка....
                                             else
                                                 ;
-                                            if (!(row_in[0]["FC_" + id.ToString()] is System.DBNull))
-                                                m_dictValuesTECComponent[hour - 0][id].valuesForeignCommand = (byte)row_in[0]["FC_" + id.ToString()] == 1;
+                                            if (!(row_in[0]["FC_" + id_part_field.ToString()] is System.DBNull))
+                                                m_dictValuesTECComponent[hour - 0][id_comp].valuesForeignCommand = (byte)row_in[0]["FC_" + id_part_field.ToString()] == 1;
                                             else
-                                                    m_dictValuesTECComponent[hour - 0][id].valuesForeignCommand = false;
+                                                m_dictValuesTECComponent[hour - 0][id_comp].valuesForeignCommand = false;
                                             //if (!(row_in[0][offsetUDG + j * 3] is System.DBNull))
-                                            if (!(row_in[0]["REC_" + id.ToString ()] is System.DBNull))
+                                            if (!(row_in[0]["REC_" + id_part_field.ToString()] is System.DBNull))
                                                 //if ((offsetLayout < m_tablePPBRValuesResponse.Columns.Count) && (!(table_in.Rows[i][offsetUDG + j * 3] is System.DBNull)))
                                                 //valuesREC[j, hour - 1] = (double)row_in[0][offsetUDG + j * 3];
                                                 //m_dictValuesTECComponent[hour - 0][id].valuesREC = (double)row_in[0][offsetUDG + j * 3];
-                                                m_dictValuesTECComponent[hour - 0][id].valuesREC = (double)row_in[0]["REC_" + id.ToString()];
+                                                m_dictValuesTECComponent[hour - 0][id_comp].valuesREC = (double)row_in[0]["REC_" + id_part_field.ToString()];
                                             else
                                                 //valuesREC[j, hour - 1] = 0;
-                                                m_dictValuesTECComponent[hour - 0][id].valuesREC = 0.0;
+                                                m_dictValuesTECComponent[hour - 0][id_comp].valuesREC = 0.0;
 
                                             //if (!(row_in[0][offsetUDG + 1 + j * 3] is System.DBNull))
-                                            if (!(row_in[0]["IS_PER_" + id.ToString ()] is System.DBNull))
+                                            if (!(row_in[0]["IS_PER_" + id_part_field.ToString()] is System.DBNull))
                                                 //m_dictValuesTECComponent[hour - 0][id].valuesISPER = (int)row_in[0][offsetUDG + 1 + j * 3];
-                                                m_dictValuesTECComponent[hour - 0][id].valuesISPER = (int)row_in[0]["IS_PER_" + id.ToString()];
+                                                m_dictValuesTECComponent[hour - 0][id_comp].valuesISPER = (int)row_in[0]["IS_PER_" + id_part_field.ToString()];
                                             else
                                                 ;
 
                                             //if (!(row_in[0][offsetUDG + 2 + j * 3] is System.DBNull))
-                                            if (!(row_in[0]["DIVIAT_" + id.ToString ()] is System.DBNull))
+                                            if (!(row_in[0]["DIVIAT_" + id_part_field.ToString()] is System.DBNull))
                                                 //m_dictValuesTECComponent[hour - 0][id].valuesDIV = (double)row_in[0][offsetUDG + 2 + j * 3];
-                                                m_dictValuesTECComponent[hour - 0][id].valuesDIV = (double)row_in[0]["DIVIAT_" + id.ToString()];
+                                                m_dictValuesTECComponent[hour - 0][id_comp].valuesDIV = (double)row_in[0]["DIVIAT_" + id_part_field.ToString()];
                                             else
                                                 ;
                                         }
                                         else
                                         {
-                                            m_dictValuesTECComponent[hour - 0][id].valuesForeignCommand = false;
+                                            m_dictValuesTECComponent[hour - 0][id_comp].valuesForeignCommand = false;
 
-                                            m_dictValuesTECComponent[hour - 0][id].valuesREC = 0.0;
+                                            m_dictValuesTECComponent[hour - 0][id_comp].valuesREC = 0.0;
                                         }
                                     }
                                     else
@@ -2513,21 +2521,21 @@ namespace StatisticCommon
                                 //j++;
                             }
 
-                            string tmp = "";
+                            tmpLayout = "";
                             //if ((m_tablePPBRValuesResponse.Columns.Contains ("PBR_NUMBER")) && !(m_tablePPBRValuesResponse.Rows[i][offsetLayout] is System.DBNull))
                             if ((offsetLayout < m_tablePPBRValuesResponse.Columns.Count) && (!(m_tablePPBRValuesResponse.Rows[i][offsetLayout] is System.DBNull)))
-                                tmp = (string)m_tablePPBRValuesResponse.Rows[i][offsetLayout];
+                                tmpLayout = (string)m_tablePPBRValuesResponse.Rows[i][offsetLayout];
                             else
                                 ;
 
-                            if (equalePBR(lastLayout, tmp) < 0)
-                                lastLayout = tmp;
+                            if (equalePBR(lastLayout, tmpLayout) < 0)
+                                lastLayout = tmpLayout;
                             else
                                 ;
                         }
                         catch (Exception e)
                         {
-                            Logging.Logg().Exception(e, @"PanelTecViewBase::GetAdminValuesResponse () - ...", Logging.INDEX_MESSAGE.NOT_SET);
+                            Logging.Logg().Exception(e, @"TecView::getAdminValuesResponse () - ...", Logging.INDEX_MESSAGE.NOT_SET);
                         }
                     }
                     else
@@ -2548,61 +2556,62 @@ namespace StatisticCommon
                             //foreach (TECComponent g in tec.list_TECComponents)
                             for (j = 0; j < localTECComponents.Count; j++)
                             {
-                                int id = -1;
+                                id_comp = -1;
 
                                 try
                                 {
-                                    id = localTECComponents[j].m_id;
+                                    id_comp = localTECComponents[j].m_id;
 
-                                    m_dictValuesTECComponent[hour - 0][id].valuesPBR = 0;
+                                    m_dictValuesTECComponent[hour - 0][id_comp].valuesPBR = 0;
 
                                     if (i < table_in.Rows.Count)
                                     {
                                         if (!(table_in.Rows[i][offsetUDG + 4 + j * cntFields] is System.DBNull))
-                                            m_dictValuesTECComponent[hour - 0][id].valuesForeignCommand = (byte)table_in.Rows[i][offsetUDG + 4 + j * cntFields] == 1;
+                                            m_dictValuesTECComponent[hour - 0][id_comp].valuesForeignCommand = (byte)table_in.Rows[i][offsetUDG + 4 + j * cntFields] == 1;
                                         else
-                                            m_dictValuesTECComponent[hour - 0][id].valuesForeignCommand = false;
+                                            m_dictValuesTECComponent[hour - 0][id_comp].valuesForeignCommand = false;
                                         
                                         if (!(table_in.Rows[i][offsetUDG + j * cntFields] is System.DBNull))
                                             //if ((offsetLayout < m_tablePPBRValuesResponse.Columns.Count) && (!(table_in.Rows[i][offsetUDG + j * cntFields] is System.DBNull)))
-                                            m_dictValuesTECComponent[hour - 0][id].valuesREC = (double)table_in.Rows[i][offsetUDG + j * cntFields];
+                                            m_dictValuesTECComponent[hour - 0][id_comp].valuesREC = (double)table_in.Rows[i][offsetUDG + j * cntFields];
                                         else
-                                            m_dictValuesTECComponent[hour - 0][id].valuesREC = 0;
+                                            m_dictValuesTECComponent[hour - 0][id_comp].valuesREC = 0;
 
                                         if (!(table_in.Rows[i][offsetUDG + 1 + j * cntFields] is System.DBNull))
-                                            m_dictValuesTECComponent[hour - 0][id].valuesISPER = (int)table_in.Rows[i][offsetUDG + 1 + j * cntFields];
+                                            m_dictValuesTECComponent[hour - 0][id_comp].valuesISPER = (int)table_in.Rows[i][offsetUDG + 1 + j * cntFields];
                                         else
                                             ;
 
                                         if (!(table_in.Rows[i][offsetUDG + 2 + j * cntFields] is System.DBNull))
-                                            m_dictValuesTECComponent[hour - 0][id].valuesDIV = (double)table_in.Rows[i][offsetUDG + 2 + j * cntFields];
+                                            m_dictValuesTECComponent[hour - 0][id_comp].valuesDIV = (double)table_in.Rows[i][offsetUDG + 2 + j * cntFields];
                                         else
                                             ;
                                     }
                                     else
                                     {
-                                        m_dictValuesTECComponent[hour - 0][id].valuesREC = 0.0;
+                                        m_dictValuesTECComponent[hour - 0][id_comp].valuesREC = 0.0;
                                     }
                                 }
-                                catch
+                                catch (Exception e)
                                 {
+                                    Logging.Logg().Exception(e, @"TecView::getAdminValuesResponse () - ...", Logging.INDEX_MESSAGE.NOT_SET);
                                 }
-                                //j++;
                             }
 
-                            string tmp = "";
+                            tmpLayout = "";
                             if ((offsetLayout < m_tablePPBRValuesResponse.Columns.Count) && (!(m_tablePPBRValuesResponse.Rows[i][offsetLayout] is System.DBNull)))
-                                tmp = (string)m_tablePPBRValuesResponse.Rows[i][offsetLayout];
+                                tmpLayout = (string)m_tablePPBRValuesResponse.Rows[i][offsetLayout];
                             else
                                 ;
 
-                            if (equalePBR(lastLayout, tmp) < 0)
-                                lastLayout = tmp;
+                            if (equalePBR(lastLayout, tmpLayout) < 0)
+                                lastLayout = tmpLayout;
                             else
                                 ;
                         }
-                        catch
+                        catch (Exception e)
                         {
+                            Logging.Logg().Exception(e, @"TecView::getAdminValuesResponse () - ...", Logging.INDEX_MESSAGE.NOT_SET);
                         }
                     }
                 }
@@ -2648,8 +2657,9 @@ namespace StatisticCommon
                             else
                                 ;
                         }
-                        catch
+                        catch (Exception e)
                         {
+                            Logging.Logg().Exception(e, @"TecView::getAdminValuesResponse () - ...", Logging.INDEX_MESSAGE.NOT_SET);
                         }
                     }
                     else
@@ -2662,8 +2672,9 @@ namespace StatisticCommon
                                 offsetPrev = i;
                             }
                         }
-                        catch
+                        catch (Exception e)
                         {
+                            Logging.Logg().Exception(e, @"TecView::getAdminValuesResponse () - ...", Logging.INDEX_MESSAGE.NOT_SET);
                         }
                     }
                 }
@@ -2794,14 +2805,14 @@ namespace StatisticCommon
                             {
                             }
 
-                            string tmp = "";
+                            tmpLayout = "";
                             if ((offsetLayout < m_tablePPBRValuesResponse.Columns.Count) && (!(m_tablePPBRValuesResponse.Rows[i][offsetLayout] is System.DBNull)))
-                                tmp = (string)m_tablePPBRValuesResponse.Rows[i][offsetLayout];
+                                tmpLayout = (string)m_tablePPBRValuesResponse.Rows[i][offsetLayout];
                             else
                                 ;
 
-                            if (equalePBR(lastLayout, tmp) < 0)
-                                lastLayout = tmp;
+                            if (equalePBR(lastLayout, tmpLayout) < 0)
+                                lastLayout = tmpLayout;
                             else
                                 ;
                         }
@@ -2862,19 +2873,20 @@ namespace StatisticCommon
                                 //valuesDIV[hour - 1] = 0;
                             }
 
-                            string tmp = "";
+                            tmpLayout = "";
                             if ((offsetLayout < m_tablePPBRValuesResponse.Columns.Count) && (!(m_tablePPBRValuesResponse.Rows[i][offsetLayout] is System.DBNull)))
-                                tmp = (string)m_tablePPBRValuesResponse.Rows[i][offsetLayout];
+                                tmpLayout = (string)m_tablePPBRValuesResponse.Rows[i][offsetLayout];
                             else
                                 ;
 
-                            if (equalePBR(lastLayout, tmp) < 0)
-                                lastLayout = tmp;
+                            if (equalePBR(lastLayout, tmpLayout) < 0)
+                                lastLayout = tmpLayout;
                             else
                                 ;
                         }
-                        catch
+                        catch (Exception e)
                         {
+                            Logging.Logg().Exception(e, @"TecView::getAdminValuesResponse () - ...", Logging.INDEX_MESSAGE.NOT_SET);
                         }
                     }
                 }
@@ -2995,7 +3007,7 @@ namespace StatisticCommon
                                 + @") [" + hour + @", " + lastMin + @"]", Logging.INDEX_MESSAGE.D_003);
         }
 
-        public static DataTable restruct_table_pbrValues(DataTable table_in, List<TECComponent> listTECComp, int num_comp, TimeSpan tsOffsetToMoscow)
+        public static DataTable restruct_table_pbrValues(DataTable table_in, TECComponentBase.TYPE type,List<TECComponent> listTECComp, int num_comp, TimeSpan tsOffsetToMoscow)
         {
             DataTable table_in_restruct = new DataTable();
             List<DataColumn> cols_data = new List<DataColumn>();
@@ -3029,10 +3041,12 @@ namespace StatisticCommon
                     list_TECComponents = new List<TECComponentBase>();
                     for (i = 0; i < listTECComp.Count; i++)
                     {
-                        if (listTECComp[i].IsGTP == true)
+                        if ((type == TECComponentBase.TYPE.ELECTRO)
+                            && (listTECComp[i].IsGTP == true))
                             list_TECComponents.Add(listTECComp[i]);
                         else
-                            if (listTECComp[i].IsVyvod == true)
+                            if ((type == TECComponentBase.TYPE.TEPLO)
+                                && (listTECComp[i].IsVyvod == true))
                                 //list_TECComponents.Add((listTECComp[i] as Vyvod).m_listParam[0]);
                                 list_TECComponents.Add(listTECComp[i].m_listLowPointDev[0]);
                             else
@@ -3043,7 +3057,6 @@ namespace StatisticCommon
                     //list_LowPointDev = listTECComp[num_comp].m_listLowPointDev
                     list_TECComponents = listTECComp[num_comp].m_listLowPointDev
                     ;
-
 
                 //Преобразование таблицы
                 for (i = 0; i < table_in.Columns.Count; i++)
@@ -3152,7 +3165,7 @@ namespace StatisticCommon
             return table_in_restruct;
         }
 
-        public static DataTable restruct_table_adminValues(DataTable table_in, List<TECComponent> listTECComp, int num_comp, TimeSpan tsOffsetToMoscow)
+        public static DataTable restruct_table_adminValues(DataTable table_in, TECComponentBase.TYPE type, List<TECComponent> listTECComp, int num_comp, TimeSpan tsOffsetToMoscow)
         {
             DataTable table_in_restruct = new DataTable();
             List<DataColumn> cols_data = new List<DataColumn>();
@@ -3183,10 +3196,12 @@ namespace StatisticCommon
                     list_TECComponents = new List<TECComponentBase>();
                     for (i = 0; i < listTECComp.Count; i++)
                     {
-                        if (listTECComp[i].IsGTP == true)
+                        if ((type == TECComponentBase.TYPE.ELECTRO)
+                            && (listTECComp[i].IsGTP == true))
                             list_TECComponents.Add(listTECComp[i]);
                         else
-                            if (listTECComp[i].IsVyvod == true)
+                            if ((type == TECComponentBase.TYPE.TEPLO)
+                                && (listTECComp[i].IsVyvod == true))
                                 //list_TECComponents.Add((listTECComp[i] as Vyvod).m_listParam[0]);
                                 list_TECComponents.Add(listTECComp[i].m_listLowPointDev[0]);
                             else

@@ -597,25 +597,29 @@ namespace StatisticCommon
         {
             TECComponent pv = null; // компонент - параметр вывода
             int j = -1;
+            bool bNewParamVyvod = true;
 
             if (indx < 0)
                 indx = list_TECComponents.Count - 1;
+            else
+                ;
 
             for (j = 0; j < rows_param.Length; j++)
             {
                 pv = list_TECComponents.Find(comp => { return comp.m_id == Convert.ToInt32(rows_param[j][@"ID"]); });
+                bNewParamVyvod = pv == null;
                 // проверить найден ли ПараметрВывода
-                if (pv == null)
-                {
+                if (bNewParamVyvod == true)
                     pv = new TECComponent(this, rows_param[j]);
-                    list_TECComponents[indx].m_listLowPointDev.Add(pv.m_listLowPointDev[0]);
-                    if (list_TECComponents[indx].IsVyvod == true)
-                        (pv.m_listLowPointDev[0] as Vyvod.ParamVyvod).m_owner_vyvod = list_TECComponents[indx].m_id;
-                    else
-                        ;
-                }
                 else
                     ; // ошибка ИЛИ параметр уже добавлен
+
+                list_TECComponents[indx].m_listLowPointDev.Add(pv.m_listLowPointDev[0]);
+                if ((bNewParamVyvod == true)
+                    && (list_TECComponents[indx].IsVyvod == true))
+                    (pv.m_listLowPointDev[0] as Vyvod.ParamVyvod).m_owner_vyvod = list_TECComponents[indx].m_id;
+                else
+                    ;
             }
         }
         /// <summary>
@@ -727,11 +731,11 @@ namespace StatisticCommon
                 // в ~ от вида оборудования
                 switch (list_TECComponents[i].Type) {
                     case TECComponentBase.TYPE.TEPLO:
-                        if (list_TECComponents[i].IsParamVyvod == true)
-                        {
-                        }
-                        else
-                        {
+                        //if (list_TECComponents[i].IsParamVyvod == true)
+                        //{
+                        //}
+                        //else
+                        //{
                             list_TECComponents[i].m_SensorsString_VZLET = string.Empty;
 
                             //foreach (Vyvod.ParamVyvod pv in v.m_listParam)
@@ -745,7 +749,7 @@ namespace StatisticCommon
                                     , pv.m_SensorsString_VZLET //.name_future
                                     , INDEX_TYPE_SOURCE_DATA.EQU_MAIN);
                             }
-                        }
+                        //}
                         break;
                     case TECComponentBase.TYPE.ELECTRO:
                         //Проверить тип компонента
