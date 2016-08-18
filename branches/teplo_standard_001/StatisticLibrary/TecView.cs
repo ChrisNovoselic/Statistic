@@ -2100,8 +2100,9 @@ namespace StatisticCommon
                 m_dictValuesTECComponent[indx][id].valuesPBR =
                 m_dictValuesTECComponent[indx][id].valuesPmin =
                 m_dictValuesTECComponent[indx][id].valuesPmax =
+                m_dictValuesTECComponent[indx][id].valuesREC =
                 m_dictValuesTECComponent[indx][id].valuesPBRe =
-                m_dictValuesTECComponent[indx][id].valuesUDGe = 0.0;
+                m_dictValuesTECComponent[indx][id].valuesUDGe = 0F;
 
                 m_dictValuesTECComponent[indx][id].valuesForeignCommand = false;
             }
@@ -2122,6 +2123,7 @@ namespace StatisticCommon
                 m_valuesHours[i].valuesPBR =
                 m_valuesHours[i].valuesPmin =
                 m_valuesHours[i].valuesPmax =
+                m_valuesHours[i].valuesREC =
                 m_valuesHours[i].valuesPBRe =
                 m_valuesHours[i].valuesUDGe = 0;
 

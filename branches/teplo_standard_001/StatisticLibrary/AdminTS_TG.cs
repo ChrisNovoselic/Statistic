@@ -279,6 +279,18 @@ namespace StatisticCommon
                     bRes = true;
                 else
                     ;
+                if ((m_prevRDGValues[i].pmin > 0)
+                    && (m_curRDGValues[i].pmin > 0)
+                    && (m_prevRDGValues[i].pmin.Equals (m_curRDGValues[i].pmin)== false))
+                    bRes = true;
+                else
+                    ;
+                if ((m_prevRDGValues[i].pmax > 0)
+                    && (m_curRDGValues[i].pmax > 0)
+                    && (m_prevRDGValues[i].pmax.Equals (m_curRDGValues[i].pmax)== false))
+                    bRes = true;
+                else
+                    ;
                 if (m_prevRDGValues[i].recomendation.Equals (m_curRDGValues[i].recomendation) == false)
                     bRes = true;
                 else

@@ -937,11 +937,11 @@ namespace Statistic
                 GraphPane.CurveList.Clear();
 
                 int itemscount = values.Length
-                    , iMainIntervalCount = MainHours.GetCountMainInterval (serverTime.Date)
+                    , iMainIntervalCount = MainHours.GetCountMainInterval (serverTime.Date) // кол-во главных интервалов (со значенями ПБР)
                     , i = -1, h = -1
-                    , indxItemMain = -1, indxHourMain = -1
-                    , iMainIntervalChanged = -1;
-                double y = -1F;
+                    , indxItemMain = -1, indxHourMain = -1 // индекс главного интервала, индекс часа в главном интервале
+                    , iMainIntervalChanged = -1; // признак смены типа интервала главный-обычный/обычный-главный
+                double y = -1F; // значение ПБР
 
                 string[] names = new string[itemscount];
 
@@ -995,7 +995,7 @@ namespace Statistic
                     }
                     else
                         names[i] = h.ToString();
-
+                    // плановые значения указываются только для часов по графику
                     if (values[i].valuesPBR > 0)
                     {
                         indxHourMain++;

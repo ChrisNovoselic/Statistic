@@ -79,8 +79,12 @@ namespace StatisticCommon
             Request,
             Data,
         }
-
-        public enum INDEX_MARK_PPBRVALUES { PBR_ENABLED, PBR_AVALIABLE, ADMIN_ENABLED, ADMIN_AVALIABLE };
+        /// <summary>
+        /// Массив индексов в объекте признаков разрешения/запрещения управления/записью значений ПБР, административных значений
+        ///  , включено - разрешается изменить вторичный признак 'SAVED'
+        ///  , 'SAVED' - запись разрешена/запрещена
+        /// </summary>
+        public enum INDEX_MARK_PPBRVALUES { PBR_ENABLED, PBR_SAVED, ADMIN_ENABLED, ADMIN_SAVED };
         protected HMark m_markSavedValues;
 
         public AdminTS(bool[] arMarkSavePPBRValues, TECComponentBase.TYPE type)
@@ -94,15 +98,15 @@ namespace StatisticCommon
                     m_markSavedValues.Set((int)INDEX_MARK_PPBRVALUES.PBR_ENABLED, arMarkSavePPBRValues[(int)INDEX_MARK_PPBRVALUES.PBR_ENABLED]);
                 else ;
 
-                if (arMarkSavePPBRValues.Length > (int)INDEX_MARK_PPBRVALUES.PBR_AVALIABLE)
-                    m_markSavedValues.Set((int)INDEX_MARK_PPBRVALUES.PBR_AVALIABLE, arMarkSavePPBRValues[(int)INDEX_MARK_PPBRVALUES.PBR_AVALIABLE] == true);
+                if (arMarkSavePPBRValues.Length > (int)INDEX_MARK_PPBRVALUES.PBR_SAVED)
+                    m_markSavedValues.Set((int)INDEX_MARK_PPBRVALUES.PBR_SAVED, arMarkSavePPBRValues[(int)INDEX_MARK_PPBRVALUES.PBR_SAVED] == true);
                 else ;
             }
             else
                 ;
 
             m_markSavedValues.Marked((int)INDEX_MARK_PPBRVALUES.ADMIN_ENABLED);
-            m_markSavedValues.Marked((int)INDEX_MARK_PPBRVALUES.ADMIN_AVALIABLE);
+            m_markSavedValues.Marked((int)INDEX_MARK_PPBRVALUES.ADMIN_SAVED);
         }
 
         protected override void Initialize () {
@@ -142,14 +146,14 @@ namespace StatisticCommon
 
                     AddState((int)StatesMachine.CurrentTime);
 
-                    if (m_markSavedValues.IsMarked((int)INDEX_MARK_PPBRVALUES.ADMIN_AVALIABLE) == true)
+                    if (m_markSavedValues.IsMarked((int)INDEX_MARK_PPBRVALUES.ADMIN_SAVED) == true)
                     {
                         AddState((int)StatesMachine.AdminDates);
                         AddState((int)StatesMachine.SaveAdminValues);
                     }
                     else ;
 
-                    if (m_markSavedValues.IsMarked((int)INDEX_MARK_PPBRVALUES.PBR_AVALIABLE) == true)
+                    if (m_markSavedValues.IsMarked((int)INDEX_MARK_PPBRVALUES.PBR_SAVED) == true)
                     {
                         AddState((int)StatesMachine.PPBRDates);
                         AddState((int)StatesMachine.SavePPBRValues);
@@ -213,7 +217,7 @@ namespace StatisticCommon
                     //Logging.Logg().Debug("AdminTS::ClearRDG () - states.Clear() - ...", Logging.INDEX_MESSAGE.NOT_SET);
 
                     AddState((int)StatesMachine.CurrentTime);
-                    if (m_markSavedValues.IsMarked((int)INDEX_MARK_PPBRVALUES.ADMIN_AVALIABLE) == true)
+                    if (m_markSavedValues.IsMarked((int)INDEX_MARK_PPBRVALUES.ADMIN_SAVED) == true)
                     {
                         AddState((int)StatesMachine.AdminDates);
                         AddState((int)StatesMachine.ClearAdminValues);
@@ -221,7 +225,7 @@ namespace StatisticCommon
                     else
                         ;
 
-                    if (m_markSavedValues.IsMarked((int)INDEX_MARK_PPBRVALUES.PBR_AVALIABLE) == true)
+                    if (m_markSavedValues.IsMarked((int)INDEX_MARK_PPBRVALUES.PBR_SAVED) == true)
                     {
                         AddState((int)StatesMachine.PPBRDates);
                         AddState((int)StatesMachine.ClearPPBRValues);
@@ -382,7 +386,7 @@ namespace StatisticCommon
         /// </summary>
         private void protectSavedPPBRValues()
         {
-            if (m_markSavedValues.IsMarked((int)INDEX_MARK_PPBRVALUES.PBR_ENABLED) == true) m_markSavedValues.UnMarked((int)INDEX_MARK_PPBRVALUES.PBR_AVALIABLE); else ;
+            if (m_markSavedValues.IsMarked((int)INDEX_MARK_PPBRVALUES.PBR_ENABLED) == true) m_markSavedValues.UnMarked((int)INDEX_MARK_PPBRVALUES.PBR_SAVED); else ;
         }
         
         /// <summary>
