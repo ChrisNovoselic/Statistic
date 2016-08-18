@@ -322,11 +322,10 @@ namespace StatisticCommon
 
         public class ParamVyvod : TECComponentBase
         {
-            public enum INDEX_VALUE : short
-            {
-                FACT //факт.
-                , DEVIAT //телемеханика
-                , LABEL_DESC //описание (краткое наименование) ВЫВОДА
+            public enum INDEX_VALUE : short {
+                FACT //факт. (основной источник данных)
+                , DEVIAT //телемеханика (альтерн./источник данных)
+                , LABEL_DESC //описание (краткое наименование) параметра ВЫВОДА
                     , COUNT
             }; //Количество индексов
 
@@ -336,8 +335,7 @@ namespace StatisticCommon
             public string m_Symbol;
             public int m_typeAgregate;
 
-            public ParamVyvod(DataRow r)
-            {
+            public ParamVyvod(DataRow r) : base () {
                 m_id = Convert.ToInt32(r[@"ID"]);
 
                 Initialize(r);

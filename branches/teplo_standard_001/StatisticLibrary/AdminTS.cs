@@ -2792,14 +2792,10 @@ namespace StatisticCommon
 
             for (int i = 0; i < m_curRDGValues.Length; i++)
             {
-                m_prevRDGValues[i].pbr = Math.Round(m_curRDGValues[i].pbr, 2);
-                m_prevRDGValues[i].pmin = Math.Round(m_curRDGValues[i].pmin, 2);
-                m_prevRDGValues[i].pmax = Math.Round(m_curRDGValues[i].pmax, 2);
-                m_prevRDGValues[i].pbr_number = m_curRDGValues[i].pbr_number;
-                m_prevRDGValues[i].dtRecUpdate = m_curRDGValues[i].dtRecUpdate;
-                m_prevRDGValues[i].recomendation = m_curRDGValues[i].recomendation;
-                m_prevRDGValues[i].deviationPercent = m_curRDGValues[i].deviationPercent;
-                m_prevRDGValues[i].deviation = m_curRDGValues[i].deviation;
+                m_prevRDGValues[i].From(m_curRDGValues[i]);
+                m_prevRDGValues[i].pbr = Math.Round(m_prevRDGValues[i].pbr, 2);
+                m_prevRDGValues[i].pmin = Math.Round(m_prevRDGValues[i].pmin, 2);
+                m_prevRDGValues[i].pmax = Math.Round(m_prevRDGValues[i].pmax, 2);
             }
         }
 

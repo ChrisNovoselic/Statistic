@@ -68,7 +68,7 @@ namespace Statistic
                             ;
 
                     m_listTECComponentIndexDetail.Sort();
-                    m_listCurRDGValues.Clear();
+                    ClearListRDGValues();
                 }
             }
 

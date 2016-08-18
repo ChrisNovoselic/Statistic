@@ -71,34 +71,9 @@ namespace Statistic
                     else
                         Logging.Logg().Error(string.Format(@"Admin_TS_Vyvod::FillListIndexTECComponent (id={0}) - не найдена ТЭЦ...", id), Logging.INDEX_MESSAGE.NOT_SET);
 
-                    m_listCurRDGValues.Clear();
+                    ClearListRDGValues();
                 }
             }
-
-            ///// <summary>
-            ///// Метод получения ТЭЦ компонентов
-            ///// </summary>
-            //protected override void initTEC()
-            //{
-            //    allTECComponents.Clear();
-
-            //    foreach (StatisticCommon.TEC t in this.m_list_tec)
-            //        if (t.m_list_Vyvod.Count > 0)
-            //            foreach (TECComponent v in t.m_list_Vyvod)
-            //            {
-            //                allTECComponents.Add(v);
-
-            //                foreach (Vyvod.ParamVyvod pv in v.m_listLowPointDev)
-            //                    allTECComponents.Add(pv);
-            //            }
-            //        else
-            //            ;
-            //}
-
-            //protected override bool IsCanUseTECComponents()
-            //{
-            //    return (!(indxTECComponents < 0)) && allTECComponents.Exists(tc => { return tc.m_id == indxTECComponents; });
-            //}
 
             public double m_SumRDGValues_PBR_0;
             public RDGStruct[] m_arSumRDGValues;
@@ -106,6 +81,7 @@ namespace Statistic
             public void SummatorRDGValues()
             {
                 int i = m_listTECComponentIndexDetail.IndexOf(indxTECComponents)
+                    , hour = 1
                     , iDiv = -1; // ' = i == 0 ? 1 : 2' общий делитель для усреднения невозможно определить, т.к. зависит от условия "> 0"
 
                 TECComponent tc = allTECComponents[m_listTECComponentIndexDetail[i]]; // компонент - параметр вывода
@@ -124,27 +100,27 @@ namespace Statistic
                 }
                 else ;
 
-                for (int j = 0; j < m_listCurRDGValues[i].Length; j++)
+                for (hour = 0; hour < m_listCurRDGValues[i].Length; hour++)
                 {                        
-                    //arSumCurRDGValues[j].pbr_number = arCurRDGValues[j].pbr_number;
-                    //if (arCurRDGValues[j].pbr > 0) arSumCurRDGValues[j].pbr += arCurRDGValues[j].pbr; else ;
+                    //arSumCurRDGValues[hour].pbr_number = arCurRDGValues[hour].pbr_number;
+                    //if (arCurRDGValues[hour].pbr > 0) arSumCurRDGValues[hour].pbr += arCurRDGValues[hour].pbr; else ;
                     // для всех элементов д.б. одинаковые!
-                    if (m_listCurRDGValues[i][j].pmin > 0) {
-                        m_arSumRDGValues[j].pmin += m_listCurRDGValues[i][j].pmin;
-                        m_arSumRDGValues[j].pmin /= i == 0 ? 1 : 2; // делитель для усреднения
+                    if (m_listCurRDGValues[i][hour].pmin > 0) {
+                        m_arSumRDGValues[hour].pmin += m_listCurRDGValues[i][hour].pmin;
+                        m_arSumRDGValues[hour].pmin /= i == 0 ? 1 : 2; // делитель для усреднения
                     } else ;
-                    //if (arCurRDGValues[j].pmax > 0) arSumCurRDGValues[j].pmax += arCurRDGValues[j].pmax; else ;
+                    //if (arCurRDGValues[hour].pmax > 0) arSumCurRDGValues[hour].pmax += arCurRDGValues[hour].pmax; else ;
                     // рекомендации для всех элементов д.б. одинаковые!
-                    if (m_listCurRDGValues[i][j].recomendation > 0) {
-                        m_arSumRDGValues[j].recomendation += m_listCurRDGValues[i][j].recomendation;
-                        m_arSumRDGValues[j].recomendation /= i == 0 ? 1 : 2; // делитель для усреднения
+                    if (!(m_listCurRDGValues[i][hour].recomendation == 0F)) {
+                        m_arSumRDGValues[hour].recomendation += m_listCurRDGValues[i][hour].recomendation;
+                        m_arSumRDGValues[hour].recomendation /= i == 0 ? 1 : 2; // делитель для усреднения
                     }  else ;
                     // типы отклонений  для всех элементов д.б. одинаковые!
-                    if (!(m_listCurRDGValues[i][j].deviationPercent == m_arSumRDGValues[j].deviationPercent)) m_arSumRDGValues[j].deviationPercent = m_listCurRDGValues[i][j].deviationPercent; else ;
+                    if (!(m_listCurRDGValues[i][hour].deviationPercent == m_arSumRDGValues[hour].deviationPercent)) m_arSumRDGValues[hour].deviationPercent = m_listCurRDGValues[i][hour].deviationPercent; else ;
                     // величины отклонения для всех элементов д.б. одинаковые!
-                    if (m_listCurRDGValues[i][j].deviation > 0) {
-                        m_arSumRDGValues[j].deviation += m_listCurRDGValues[i][j].deviation;
-                        m_arSumRDGValues[j].deviation /= i == 0 ? 1 : 2; // делитель для усреднения
+                    if (m_listCurRDGValues[i][hour].deviation > 0) {
+                        m_arSumRDGValues[hour].deviation += m_listCurRDGValues[i][hour].deviation;
+                        m_arSumRDGValues[hour].deviation /= i == 0 ? 1 : 2; // делитель для усреднения
                     } else ;
                 }
             }
@@ -159,64 +135,67 @@ namespace Statistic
             /// <returns>Признак изменений</returns>
             public override bool WasChanged()
             {
-                //bool bRes = false;
+                bool bRes = false;
 
-                //for (int i = 0; i < 24; i++)
-                //{
-                //    if (m_prevRDGValues[i].pbr.Equals(m_curRDGValues[i].pbr) /*double.Parse(this.dgwAdminTable.Rows[i].Cells[(int)DataGridViewAdmin.DESC_INDEX.PLAN].Value.ToString())*/  == false)
-                //        return true;
-                //    else
-                //        ;
-                //    if (m_prevRDGValues[i].recomendation != m_curRDGValues[i].recomendation /*double.Parse(this.dgwAdminTable.Rows[i].Cells[(int)DataGridViewAdmin.DESC_INDEX.RECOMENDATION].Value.ToString())*/)
-                //        return true;
-                //    else
-                //        ;
-                //    if (m_prevRDGValues[i].deviationPercent != m_curRDGValues[i].deviationPercent /*bool.Parse(this.dgwAdminTable.Rows[i].Cells[(int)DataGridViewAdmin.DESC_INDEX.DEVIATION_TYPE].Value.ToString())*/)
-                //        return true;
-                //    else
-                //        ;
-                //    if (m_prevRDGValues[i].deviation != m_curRDGValues[i].deviation /*double.Parse(this.dgwAdminTable.Rows[i].Cells[(int)DataGridViewAdmin.DESC_INDEX.DEVIATION].Value.ToString())*/)
-                //        return true;
-                //    else
-                //        ;
-                //}
+                //RDGStruct[] arRDGValues = null;
+                int hour = -1
+                    , indx = -1, cnt = m_listPrevRDGValues.Count; //m_listCurRDGValues.Count
 
-                //return bRes;
+                for (indx = 0; (indx < cnt) && (bRes == false); indx++)
+                {
+                    //arRDGValues = null;
+                    //arRDGValues = new RDGStruct[m_listPrevRDGValues[indx].Length];
+                    //m_listPrevRDGValues[indx].CopyTo (arRDGValues, 0);
 
-                return base.WasChanged();
+                    for (hour = 0; hour < m_listPrevRDGValues[indx].Length; hour++)
+                        m_prevRDGValues[hour].From(m_listPrevRDGValues[indx][hour]);
+
+                    //arRDGValues = null;
+                    //arRDGValues = new RDGStruct[m_listCurRDGValues[indx].Length];
+                    //m_listCurRDGValues[indx].CopyTo(arRDGValues, 0);
+
+                    for (hour = 0; hour < m_listCurRDGValues[indx].Length; hour++)
+                        m_curRDGValues[hour].From(m_listCurRDGValues[indx][hour]);
+
+                    bRes = base.WasChanged();
+                }
+
+                return bRes;
             }
-
+            /// <summary>
+            /// Тиражировать(копировать одно значение в несколько переменных) значений для всех параметров выводов
+            /// </summary>
             public void ReplicateCurRDGValues()
             {
                 int h = -1, indx = -1;
                 TECComponent tc = null;
 
-                for (h = 0; h < m_curRDGValues.Length; h++)
+                indx = 0;
+                foreach (HAdmin.RDGStruct[] arRDGValues in m_listCurRDGValues)
                 {
-                    indx = 0;
-                    foreach (HAdmin.RDGStruct[] arRDGValues in m_listCurRDGValues)
-                    {
-                        tc = allTECComponents[m_listTECComponentIndexDetail[indx]];
-                        if ((tc.IsParamVyvod == true)
-                            && ((tc.m_listLowPointDev[0] as Vyvod.ParamVyvod).m_id_param == Vyvod.ID_PARAM.T_PV)
-                            && (tc.m_bKomUchet == true))
-                        {
-                            arRDGValues[h].pbr_number = m_curRDGValues[h].pbr_number;
-                            //arRDGValues[h].pbr = m_curRDGValues[h].pbr;
-                            arRDGValues[h].pmin = m_curRDGValues[h].pmin;
-                            //arRDGValues[h].pmax = m_curRDGValues[h].pmax;
+                    tc = allTECComponents[m_listTECComponentIndexDetail[indx]];
 
-                            //arRDGValues[h].fc = m_curRDGValues[h].fc;
-                            arRDGValues[h].recomendation = m_curRDGValues[h].recomendation;
-                            arRDGValues[h].dtRecUpdate = m_curRDGValues[h].dtRecUpdate;
-                            arRDGValues[h].deviationPercent = m_curRDGValues[h].deviationPercent;
-                            arRDGValues[h].deviation = m_curRDGValues[h].deviation;
-                        }
-                        else
-                            ;
-                        indx++;
-                    }
+                    if ((tc.IsParamVyvod == true)
+                        && ((tc.m_listLowPointDev[0] as Vyvod.ParamVyvod).m_id_param == Vyvod.ID_PARAM.T_PV)
+                        && (tc.m_bKomUchet == true))
+                        for (h = 0; h < m_curRDGValues.Length; h++)
+                            arRDGValues[h].From(m_curRDGValues[h], true);
+                    else
+                        ;
+                    indx++;
                 }
+            }
+            /// <summary>
+            /// Сохранение текущих значений (ПБР + рекомендации = РДГ) для последующего изменения
+            /// </summary>
+            public override void CopyCurToPrevRDGValues()
+            {
+                base.CopyCurToPrevRDGValues();
+
+                RDGStruct[] prevRDGValues = new RDGStruct[m_prevRDGValues.Length];
+                for (int h = 0; h < m_prevRDGValues.Length; h++)
+                    prevRDGValues[h].From(m_prevRDGValues[h]);
+                m_listPrevRDGValues.Add(prevRDGValues);
             }
         }
 
@@ -333,6 +312,8 @@ namespace Statistic
             double PBR_0 = 0F;
             HAdmin.RDGStruct[] arSumCurRDGValues = null;
 
+            (m_admin as AdminTS_Vyvod).SummatorRDGValues();
+
             if ((m_admin as AdminTS_TG).CompletedGetRDGValues == true)
             {
                 //??? не очень изящное решение
@@ -370,7 +351,7 @@ namespace Statistic
                 }
             }
             else
-                (m_admin as AdminTS_Vyvod).SummatorRDGValues (); // рано отображать, не все компоненнты(параметры) опрошены
+                ; // рано отображать, не все компоненнты(параметры) опрошены
 
             m_admin.CopyCurToPrevRDGValues();
         }

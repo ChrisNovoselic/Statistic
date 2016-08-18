@@ -120,18 +120,7 @@ namespace trans_mc
                     //Копирование при переходе лето-зима (-1)                        
                     if ((m_curDate.Date.Equals(HAdmin.SeasonDateTime.Date) == true) && (hour == (HAdmin.SeasonDateTime.Hour - 0)))
                     {
-                        m_curRDGValues[hour].pbr_number = m_curRDGValues[hour - 1].pbr_number;
-                        m_curRDGValues[hour].dtRecUpdate = m_curRDGValues[hour - 1].dtRecUpdate;
-
-                        m_curRDGValues[hour].pbr = m_curRDGValues[hour - 1].pbr;
-
-                        m_curRDGValues[hour].pmin = m_curRDGValues[hour - 1].pmin;
-
-                        m_curRDGValues[hour].pmax = m_curRDGValues[hour - 1].pmax;
-
-                        m_curRDGValues[hour].recomendation = m_curRDGValues[hour - 1].recomendation;
-                        m_curRDGValues[hour].deviationPercent = m_curRDGValues[hour - 1].deviationPercent;
-                        m_curRDGValues[hour].deviation = m_curRDGValues[hour - 1].deviation;
+                        m_curRDGValues[hour].From(m_curRDGValues[hour - 1]);
 
                         offset++;
                     }

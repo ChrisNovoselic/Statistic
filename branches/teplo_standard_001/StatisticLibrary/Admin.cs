@@ -51,6 +51,35 @@ namespace StatisticCommon
 
             public string pbr_number;
             public DateTime dtRecUpdate;
+
+            public void From(RDGStruct src, bool bPBRNumberEmptyChecked = false)
+            {
+                pbr = src.pbr;
+                pmin = src.pmin;
+                pmax = src.pmax;
+                recomendation = src.recomendation;
+                deviationPercent = src.deviationPercent;
+                deviation = src.deviation;
+                fc = src.fc;
+
+                if (bPBRNumberEmptyChecked == true)
+                    if (src.pbr_number.Equals(string.Empty) == false)
+                        pbr_number = src.pbr_number;
+                    else
+                        ;
+                else
+                    pbr_number = src.pbr_number;
+                dtRecUpdate = src.dtRecUpdate;
+            }
+
+            public RDGStruct Copy(bool bPBRNumberEmptyChecked = false)
+            {
+                RDGStruct oRes = new RDGStruct();
+
+                oRes.From(this, bPBRNumberEmptyChecked);
+
+                return oRes;
+            }
         }
 
         protected TimeSpan _tsOffsetToMoscow;

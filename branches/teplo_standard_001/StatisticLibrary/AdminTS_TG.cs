@@ -81,6 +81,7 @@ namespace StatisticCommon
             delegateImportForeignValuesResponse = impRDGExcelValuesResponse;
             //delegateExportForeignValuesResponse = ExpRDGExcelValuesResponse;
 
+            m_listPrevRDGValues = new List<RDGStruct[]>();
             m_listCurRDGValues = new List<RDGStruct[]> ();
             m_listTECComponentIndexDetail = new List<int> ();
             m_listResSaveChanges = new List <Errors> ();
@@ -142,7 +143,7 @@ namespace StatisticCommon
                         ;
                 }
 
-                m_listCurRDGValues.Clear();
+                ClearListRDGValues();
             }
         }
 
@@ -272,19 +273,21 @@ namespace StatisticCommon
 
             for (int i = 0; (i < 24) && (bRes == false); i++)
             {
-                if (m_prevRDGValues[i].pbr.Equals (m_curRDGValues[i].pbr) /*double.Parse(this.dgwAdminTable.Rows[i].Cells[(int)DataGridViewAdmin.DESC_INDEX.PLAN].Value.ToString())*/  == false)
+                if ((m_prevRDGValues[i].pbr > 0)
+                    && (m_curRDGValues[i].pbr > 0)
+                    && (m_prevRDGValues[i].pbr.Equals (m_curRDGValues[i].pbr)== false))
                     bRes = true;
                 else
                     ;
-                if (m_prevRDGValues[i].recomendation != m_curRDGValues[i].recomendation /*double.Parse(this.dgwAdminTable.Rows[i].Cells[(int)DataGridViewAdmin.DESC_INDEX.RECOMENDATION].Value.ToString())*/)
+                if (m_prevRDGValues[i].recomendation.Equals (m_curRDGValues[i].recomendation) == false)
                     bRes = true;
                 else
                     ;
-                if (m_prevRDGValues[i].deviationPercent != m_curRDGValues[i].deviationPercent /*bool.Parse(this.dgwAdminTable.Rows[i].Cells[(int)DataGridViewAdmin.DESC_INDEX.DEVIATION_TYPE].Value.ToString())*/)
+                if (m_prevRDGValues[i].deviationPercent.Equals (m_curRDGValues[i].deviationPercent) == false)
                     bRes = true;
                 else
                     ;
-                if (m_prevRDGValues[i].deviation != m_curRDGValues[i].deviation /*double.Parse(this.dgwAdminTable.Rows[i].Cells[(int)DataGridViewAdmin.DESC_INDEX.DEVIATION].Value.ToString())*/)
+                if (m_prevRDGValues[i].deviation.Equals (m_curRDGValues[i].deviation) == false)
                     bRes = true;
                 else
                     ;
@@ -404,12 +407,18 @@ namespace StatisticCommon
         {
             //delegateStartWait();
 
-            m_listCurRDGValues.Clear();
+            ClearListRDGValues();
 
             new Thread(new ParameterizedThreadStart(threadImpRDGExcelValues)).Start(date);
             //threadGetRDGExcelValues (date);
 
             //delegateStopWait();
+        }
+
+        public void ClearListRDGValues()
+        {
+            m_listPrevRDGValues.Clear();
+            m_listCurRDGValues.Clear();
         }
 
         protected abstract void /*bool*/ impRDGExcelValuesRequest();

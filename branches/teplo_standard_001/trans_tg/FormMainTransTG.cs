@@ -283,7 +283,7 @@ namespace trans_tg
             double value;
             bool valid;
 
-            ((AdminTransTG)m_arAdmin[indxDB]).m_listCurRDGValues.Clear ();
+            ((AdminTS_TG)m_arAdmin[indxDB]).ClearListRDGValues();
 
             foreach (int indx in ((AdminTransTG)m_arAdmin[indxDB]).m_listTECComponentIndexDetail)
             {
