@@ -1183,7 +1183,7 @@ namespace Statistic
                 ;
         }
 
-        private void DrawGraphHours()
+        protected void DrawGraphHours()
         {
             m_ZedGraphHours.Draw(m_tecView.m_valuesHours
                 , new object [] {
@@ -1203,7 +1203,7 @@ namespace Statistic
         /// Обновление компонентов вкладки с проверкой изменения источника данных
         /// </summary>
         /// <param name="markUpdate">указывает на изменившиеся источники данных</param>
-        private void updateGraphicsRetro (HMark markUpdate)
+        protected void updateGraphicsRetro (HMark markUpdate)
         {
             //if (markUpdate.IsMarked() == false)
             //    return;

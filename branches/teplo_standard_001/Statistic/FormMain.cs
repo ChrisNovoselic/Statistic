@@ -2700,7 +2700,10 @@ namespace Statistic
                                 if (ctrl is PanelLKView)
                                     ((PanelLKView)ctrl).UpdateGraphicsCurrent(type);
                                 else
-                                    ;
+                                    if (ctrl is PanelVzletTDirect)
+                                        ((PanelVzletTDirect)ctrl).UpdateGraphicsCurrent(type);
+                                    else
+                                        ;
             else
                 ;
 

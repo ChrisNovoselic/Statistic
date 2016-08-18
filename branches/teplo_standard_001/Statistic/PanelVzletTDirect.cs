@@ -95,6 +95,12 @@ namespace Statistic
             container.Add(this);
         }
 
+        public void UpdateGraphicsCurrent(int type)
+        {
+            foreach (Control ptvtd in this.Controls)
+                if ((ptvtd is PanelTecVzletTDirect) == true) (ptvtd as PanelTecVzletTDirect).UpdateGraphicsCurrent(type); else ;
+        }
+
         public partial class PanelTecVzletTDirect : PanelTecViewBase
         {
             private class DataGridViewVzletTDirectHours : HDataGridViewBase
@@ -213,12 +219,12 @@ namespace Statistic
                         curCellStyle = normalHourCellStyle;
                         //Rows[i].Cells[(int)INDEX_COLUMNS.PART_TIME].Style = curCellStyle; // стиль определен для всей строки
                         Rows[i].DefaultCellStyle = curCellStyle;
-                        //// факт
-                        //if (!(i > lh))
-                        //{
-                        //    Rows[i].Cells[(int)INDEX_COLUMNS.TEMPERATURE_FACT].Value = (values[i].valuesLastMinutesTM).ToString(@"F2"); // температура
-                        //}
-                        //else ;
+                        // факт
+                        if (!(i > lh))
+                        {
+                            Rows[i].Cells[(int)INDEX_COLUMNS.TEMPERATURE_FACT].Value = (values[i].valuesFact).ToString(@"F2"); // температура
+                        }
+                        else ;
                         // план
                         Rows[i].Cells[(int)INDEX_COLUMNS.TEMPERATURE_PBR].Value = (values[i].valuesPmin).ToString(@"F1"); // температура
                         //Rows[i].Cells[(int)INDEX_COLUMNS.TEMPERATURE_PBR].Style = curCellStyle; // стиль определен для всей строки                        
@@ -231,9 +237,9 @@ namespace Statistic
                         if (!(i > lh))
                         {
                             // - температура
-                            if ((!(values[i].valuesLastMinutesTM == 0))
-                                || (!(values[i].valuesPmin == 0)))
-                                Rows[i].Cells[(int)INDEX_COLUMNS.TEMPERATURE_DEVIATION].Value = (values[i].valuesPmin - values[i].valuesLastMinutesTM).ToString(@"F2");
+                            if ((values[i].valuesFact > 0)
+                                && (values[i].valuesUDGe > 0))
+                                Rows[i].Cells[(int)INDEX_COLUMNS.TEMPERATURE_DEVIATION].Value = (values[i].valuesUDGe - values[i].valuesFact).ToString(@"F2");
                             else
                                 Rows[i].Cells[(int)INDEX_COLUMNS.TEMPERATURE_DEVIATION].Value = @"-";                            
                         }
@@ -326,7 +332,7 @@ namespace Statistic
                             //??? ошибка
                             ;
 
-                        y = values[i].valuesFact * 1000;
+                        y = values[i].valuesFact;
                         valuesFact.Add(h, y);
 
                         if (values[i].valuesPmin > 0)
@@ -435,11 +441,12 @@ namespace Statistic
 
                     //Значения
                     string strCurveNameValue = "Температура";
+                    Color clrData = Color.Purple;
                     if (FormMain.formGraphicsSettings.m_graphTypes == FormGraphicsSettings.GraphTypes.Bar)
                     {
                         if (typeConnSett == CONN_SETT_TYPE.DATA_VZLET)
                         //BarItem
-                            GraphPane.AddBar(strCurveNameValue, valuesFact, Color.White);
+                            GraphPane.AddBar(strCurveNameValue, valuesFact, clrData);
                         else
                             // других типов данных для ЛК не предусмотрено
                             ;
@@ -449,7 +456,7 @@ namespace Statistic
                         {
                             if (typeConnSett == CONN_SETT_TYPE.DATA_VZLET)
                             //LineItem
-                                GraphPane.AddCurve(strCurveNameValue, valuesFact, Color.White);                                
+                                GraphPane.AddCurve(strCurveNameValue, valuesFact, clrData);                                
                             else
                                 // других типов данных для ЛК не предусмотрено
                                 ;
@@ -1060,6 +1067,8 @@ namespace Statistic
                     }
 
                     // ...
+                    AddState((int)TecView.StatesMachine.HoursVzletTDirectValues);
+                    // ...
                     AddState((int)TecView.StatesMachine.PPBRValues);
                     AddState((int)TecView.StatesMachine.AdminValues);
                 }
@@ -1303,8 +1312,34 @@ namespace Statistic
 
             protected override HMark enabledSourceData_ToolStripMenuItems()
             {
+                m_tecView.m_arTypeSourceData[(int)HDateTime.INTERVAL.MINUTES] =
+                m_tecView.m_arTypeSourceData[(int)HDateTime.INTERVAL.HOURS] =
+                    CONN_SETT_TYPE.DATA_VZLET;
                 ; // не требуется, разнотипные источники данных отсутствуют
                 return new HMark(0);
+            }
+
+            public void UpdateGraphicsCurrent(int type)
+            {
+                lock (m_tecView.m_lockValue)
+                {
+                    //??? Проверка 'type' TYPE_UPDATEGUI
+                    HMark markChanged = enabledSourceData_ToolStripMenuItems();
+                    if (markChanged.IsMarked() == false)
+                    {
+                        //DrawGraphMins(m_tecView.lastHour);
+                        DrawGraphHours();
+                    }
+                    else
+                    {
+                        if (m_tecView.currHour == true)
+                            NewDateRefresh();
+                        else
+                        {//m_tecView.currHour == false
+                            updateGraphicsRetro(markChanged);
+                        }
+                    }
+                }
             }
         }
     }

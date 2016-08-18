@@ -165,7 +165,7 @@ namespace StatisticCommon
             //AdminDates, //Получение списка сохранённых часовых значений
             //PPBRDates,
             HoursTMTemperatureValues, //Температура окружающей среды
-            //CurrentTemperatureValues, //Температура окружающей среды
+            HoursVzletTDirectValues, //Температура, прямая подача, ВЫВОД-параметр
             AdminValues, //Получение административных/ПБР значений
             PPBRValues,
         }
@@ -958,7 +958,7 @@ namespace StatisticCommon
                 case (int)StatesMachine.RetroMin_TM_Gen:
                 case (int)StatesMachine.RetroMins_TM:
                 case (int)StatesMachine.HoursTMTemperatureValues:
-                //case (int)StatesMachine.CurrentTemperatureValues:
+                case (int)StatesMachine.HoursVzletTDirectValues:
                 //case (int)StatesMachine.PPBRDates:
                 case (int)StatesMachine.PPBRValues:
                 //case (int)StatesMachine.AdminDates:
@@ -1113,10 +1113,10 @@ namespace StatisticCommon
                     reason += @"по-часовой температуры окр.воздуха";
                     waiting = @"Переход в ожидание";
                     break;
-                //case StatesMachine.CurrentTemperatureValues:
-                //    reason += @"текущей температуры окр.воздуха";
-                //    waiting = @"Переход в ожидание";
-                //    break;
+                case StatesMachine.HoursVzletTDirectValues:
+                    reason += @"по-часовой температуры прямой подачи";
+                    waiting = @"Переход в ожидание";
+                    break;
                 case StatesMachine.PPBRValues:
                     reason = @"данных плана";
                     //AbortThreadRDGValues(INDEX_WAITHANDLE_REASON.ERROR);
@@ -1195,9 +1195,9 @@ namespace StatisticCommon
                 case StatesMachine.HoursTMTemperatureValues:
                     reason += @"Нет некоторых часовых значений температуры окр.воздуха";
                     break;
-                //case StatesMachine.CurrentTemperatureValues:
-                //    reason += @"Текущее значение температуры окр.воздуха не найдено";
-                //    break;
+                case StatesMachine.HoursVzletTDirectValues:
+                    reason += @"Нет некоторых часовых значений температуры прямой подачи";
+                    break;
                 default:
                     break;
             }
@@ -1304,10 +1304,10 @@ namespace StatisticCommon
                     // привести к UTC, а затем к требуемому часовому поясу
                     getHoursTMTemperatureRequest(m_curDate.Date);
                     break;
-                //case StatesMachine.CurrentTemperatureValues:
-                //    msg = @"текущей температуры окр.воздуха";
-                //    GetCurrentTemperatureRequest();
-                //    break;
+                case StatesMachine.HoursVzletTDirectValues:
+                    msg = @"по-часовой температуры прямой подачи";
+                    getHoursVzletTDirectRequest(m_curDate.Date);
+                    break;
                 //case StatesMachine.PPBRDates:
                 //    msg = @"списка сохранённых часовых значений";
                 //    GetPPBRDatesRequest(m_curDate);
@@ -1505,9 +1505,10 @@ namespace StatisticCommon
                 case StatesMachine.HoursTMTemperatureValues:
                     iRes = getHoursTMTemperatureResponse(table as System.Data.DataTable);
                     break;
-                //case StatesMachine.CurrentTemperatureValues:
-                //    GetCurrentTemperatureResponse();
-                //    break;
+                case StatesMachine.HoursVzletTDirectValues:
+                    ClearValuesHours();
+                    iRes = getHoursVzletTDirectResponse(table as System.Data.DataTable);
+                    break;
                 //case StatesMachine.PPBRDates:
                 //    ClearPPBRDates();
                 //    iRes = getPPBRDatesResponse(table as System.Data.DataTable, m_curDate);
@@ -2061,8 +2062,9 @@ namespace StatisticCommon
                 m_valuesHours[i].valuesPBR =
                 m_valuesHours[i].valuesPmin =
                 m_valuesHours[i].valuesPmax =
+                m_valuesHours[i].valuesREC =
                 m_valuesHours[i].valuesPBRe =
-                m_valuesHours[i].valuesUDGe = 0;
+                m_valuesHours[i].valuesUDGe = 0F;
 
                 m_valuesHours[i].valuesForeignCommand = false;
             }
@@ -5511,6 +5513,27 @@ namespace StatisticCommon
             Request(m_dictIdListeners[m_tec.m_id][(int)CONN_SETT_TYPE.DATA_SOTIASSO], strQuery);
         }
 
+        private void getHoursVzletTDirectRequest(DateTime dt)
+        {
+            TimeSpan tsOffset = HDateTime.TS_NSK_OFFSET_OF_MOSCOWTIMEZONE;
+            DateTime dtReq = dt.Date.Add(tsOffset); //добавить смещение НСК - МСК, т.к. в БД метки времени НСК
+
+            string strQuery = @"SELECT DATEPART(HH, [Дата]) - " + tsOffset.Hours // вычесть добавленное смещение НСК - МСК
+                    + ", AVG ([Графа_2]) * (AVG ([Графа_1])) / (AVG ([Графа_1] + [Графа_7] + [Графа_13] + [Графа_19] + [Графа_26] + [Графа_32]))"
+                    + ", AVG ([Графа_8]) * (AVG ([Графа_7])) / (AVG ([Графа_1] + [Графа_7] + [Графа_13] + [Графа_19] + [Графа_26] + [Графа_32]))"
+                    + ", AVG ([Графа_14]) * (AVG ([Графа_13])) / (AVG ([Графа_1] + [Графа_7] + [Графа_13] + [Графа_19] + [Графа_26] + [Графа_32]))"
+                    + ", AVG ([Графа_20]) * (AVG ([Графа_19])) / (AVG ([Графа_1] + [Графа_7] + [Графа_13] + [Графа_19] + [Графа_26] + [Графа_32]))"
+                    + ", AVG ([Графа_27]) * (AVG ([Графа_26])) / (AVG ([Графа_1] + [Графа_7] + [Графа_13] + [Графа_19] + [Графа_26] + [Графа_32]))"
+                    + ", AVG ([Графа_33]) * (AVG ([Графа_32])) / (AVG ([Графа_1] + [Графа_7] + [Графа_13] + [Графа_19] + [Графа_26] + [Графа_32]))"
+                + " FROM [Vzlet].[dbo].[teplo1]"
+                + " WHERE [Дата] > '" + dtReq.ToString(@"yyyyMMdd HH:00:00") + @"'"
+                    + " AND [Дата] < '" + dtReq.AddDays(1).ToString(@"yyyyMMdd HH:00:00") + @"'"
+                + " GROUP BY DATEPART(DD, [Дата]), DATEPART(HH, [Дата])"
+                + " ORDER BY DATEPART(DD, [Дата]), DATEPART(HH, [Дата])";
+
+            Request(m_dictIdListeners[m_tec.m_id][(int)CONN_SETT_TYPE.DATA_VZLET], strQuery);
+        }
+
         //private void getCurrentTemperatureRequest()
         //{
         //}
@@ -5525,9 +5548,19 @@ namespace StatisticCommon
             return iRes;
         }
 
-        //private void getCurrentTemperatureResponse()
-        //{
-        //}
+        private int getHoursVzletTDirectResponse(DataTable table)
+        {
+            int iRes = 0;
+
+            foreach (DataRow r in table.Rows)
+                for (int v = 1; v < table.Columns.Count; v ++ )
+                    m_valuesHours[(int)r[0]].valuesFact += (double)r[v];
+
+            lastHour = table.Rows.Count;
+            lastReceivedHour = table.Rows.Count + 1;
+
+            return iRes;
+        }
 
         private void getHoursTMSNPsumRequest()
         {

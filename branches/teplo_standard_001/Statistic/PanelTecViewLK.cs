@@ -1134,8 +1134,9 @@ namespace Statistic
                 }
 
                 Color colorChart = Color.Empty
-                    , colorPCurve = Color.Empty;
-                getColorZedGraph(typeConnSett, out colorChart, out colorPCurve);
+                    , colorPMainCurve = Color.Empty
+                    , colorPRegularCurve = Color.White;
+                getColorZedGraph(typeConnSett, out colorChart, out colorPMainCurve);
 
                 GraphPane.Chart.Fill = new Fill(colorChart);
 
@@ -1164,7 +1165,7 @@ namespace Statistic
                         if (!(valuesMainFact == null))
                             for (i = 0; i < valuesMainFact.Length; i++)
                             {
-                                GraphPane.AddBar(strCurveNameMain, valuesMainFact[i], colorPCurve);
+                                GraphPane.AddBar(strCurveNameMain, valuesMainFact[i], colorPMainCurve);
                                 // чтобы повторно не добавить подпись в легенду
                                 strCurveNameMain =
                                     string.Empty;
@@ -1174,7 +1175,7 @@ namespace Statistic
 
                         for (i = 0; i < valuesRegularFact.Length; i++)
                         {
-                            GraphPane.AddBar(strCurveNameReg, valuesRegularFact[i], Color.White);
+                            GraphPane.AddBar(strCurveNameReg, valuesRegularFact[i], colorPRegularCurve);
                             // чтобы повторно не добавить подпись в легенду
                             strCurveNameReg =
                                 string.Empty;
@@ -1192,7 +1193,7 @@ namespace Statistic
                             if (!(valuesMainFact == null))
                                 for (i = 0; i < valuesMainFact.Length; i++)
                                 {
-                                    GraphPane.AddCurve(strCurveNameMain, valuesMainFact[i], colorPCurve);
+                                    GraphPane.AddCurve(strCurveNameMain, valuesMainFact[i], colorPMainCurve);
                                     // чтобы повторно не добавить подпись в легенду
                                     strCurveNameMain =
                                         string.Empty;
@@ -1202,7 +1203,7 @@ namespace Statistic
 
                             for (i = 0; i < valuesRegularFact.Length; i++)
                             {
-                                GraphPane.AddCurve(strCurveNameReg, valuesRegularFact[i], Color.White);
+                                GraphPane.AddCurve(strCurveNameReg, valuesRegularFact[i], colorPRegularCurve);
                                 // чтобы повторно не добавить подпись в легенду
                                 strCurveNameReg =
                                     string.Empty;
