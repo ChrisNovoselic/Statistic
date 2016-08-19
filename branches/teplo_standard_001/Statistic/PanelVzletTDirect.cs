@@ -95,6 +95,19 @@ namespace Statistic
             container.Add(this);
         }
 
+        public override bool Activate(bool active)
+        {
+            bool bRes = base.Activate(active);
+
+            if (bRes == true)
+                foreach (Control ptvtd in this.Controls)
+                    if ((ptvtd is PanelTecVzletTDirect) == true) (ptvtd as PanelTecVzletTDirect).Activate(active); else ;
+            else
+                ;
+
+            return bRes;
+        }
+
         public void UpdateGraphicsCurrent(int type)
         {
             foreach (Control ptvtd in this.Controls)
@@ -194,35 +207,48 @@ namespace Statistic
                         //, warn = -1, cntWarn = -1
                         , lh = bCurrHour == true ? lastReceivedHour - 1 :
                             serverTime.Date.Equals(DateTime.Now.Date) == true ? lastReceivedHour - 1 :
-                                itemscount;
-                    double udg_t = -1F;
-                    string strWarn = string.Empty;
+                                itemscount
+                        , cntHourFactNotValues = -1; // кол-во часов с пропущенными фактическими значениями
+                    double factDev = -1F // фактическое отклонение
+                        , sumTFact = -1F, sumUDGt = -1F, sumFactDev = -1F; // суммарные значения для факт.темп. и уточненного дисп.графика (для возможности усреднения)
+                    string strVal = string.Empty
+                        , strWarn = string.Empty;
 
                     Debug.WriteLine(@"DataGridViewVzletTDirectHours::Fill () - serverTime=" + serverTime.ToString()
                         + @"; lastHour=" + lastHour
                         + @"; lastReceivedHour=" + lastReceivedHour);
 
                     DataGridViewCellStyle curCellStyle;
-                    DataGridViewCellStyle normalHourCellStyle = new DataGridViewCellStyle()
-                        , errorHourCellStyle = new DataGridViewCellStyle();
+                    DataGridViewCellStyle normalDevCellStyle = new DataGridViewCellStyle()
+                        , errorDevCellStyle = new DataGridViewCellStyle();
+                    curCellStyle = normalDevCellStyle;
 
-                    normalHourCellStyle.BackColor = Color.White;
-                    errorHourCellStyle.BackColor = Color.Red;
-                    //// полужирный на основе 1-ой ячейки                
-                    //mainHourCellStyle.Font = new System.Drawing.Font(RowsDefaultCellStyle.Font, FontStyle.Bold);
+                    normalDevCellStyle.BackColor = Color.White;
+                    errorDevCellStyle.BackColor = Color.Red;
 
-                    //cntWarn = 0;
-                    udg_t = 0;
+                    cntHourFactNotValues = 0;
+                    sumTFact = 0F;
+                    sumUDGt = 0F;
                     for (i = 0; i < itemscount; i++)
                     {
-                        // номер часа
-                        curCellStyle = normalHourCellStyle;
-                        //Rows[i].Cells[(int)INDEX_COLUMNS.PART_TIME].Style = curCellStyle; // стиль определен для всей строки
-                        Rows[i].DefaultCellStyle = curCellStyle;
+                        // номер часа - уже отображен
+
                         // факт
                         if (!(i > lh))
                         {
-                            Rows[i].Cells[(int)INDEX_COLUMNS.TEMPERATURE_FACT].Value = (values[i].valuesFact).ToString(@"F2"); // температура
+                            // - температура
+                            if (values[i].valuesFact > 0)
+                            {
+                                sumTFact += values[i].valuesFact;
+                                strVal = (values[i].valuesFact).ToString(@"F2");
+                            }
+                            else
+                            {
+                                cntHourFactNotValues++; // зафиксировать отсутствие значения
+                                strVal = @"-";
+                            }
+
+                            Rows[i].Cells[(int)INDEX_COLUMNS.TEMPERATURE_FACT].Value = strVal;
                         }
                         else ;
                         // план
@@ -230,32 +256,52 @@ namespace Statistic
                         //Rows[i].Cells[(int)INDEX_COLUMNS.TEMPERATURE_PBR].Style = curCellStyle; // стиль определен для всей строки                        
                         // рекомендация
                         Rows[i].Cells[(int)INDEX_COLUMNS.REC].Value = (values[i].valuesREC).ToString(@"F0");
-                        // уточненный дисп./график
+                        // уточненный дисп./график (??? с учетом рекомендации)
                         Rows[i].Cells[(int)INDEX_COLUMNS.UDGt].Value = (values[i].valuesUDGe).ToString(@"F1");
-                        udg_t += values[i].valuesUDGe;
+                        sumUDGt += values[i].valuesUDGe;
                         // разность
                         if (!(i > lh))
                         {
                             // - температура
                             if ((values[i].valuesFact > 0)
                                 && (values[i].valuesUDGe > 0))
-                                Rows[i].Cells[(int)INDEX_COLUMNS.TEMPERATURE_DEVIATION].Value = (values[i].valuesUDGe - values[i].valuesFact).ToString(@"F2");
+                            {
+                                factDev = values[i].valuesUDGe - values[i].valuesFact;
+                                sumFactDev += factDev;
+                                strVal = factDev.ToString(@"F2");
+                            }
                             else
-                                Rows[i].Cells[(int)INDEX_COLUMNS.TEMPERATURE_DEVIATION].Value = @"-";                            
+                                strVal = @"-";
                         }
                         else
                         {
-                            Rows[i].Cells[(int)INDEX_COLUMNS.TEMPERATURE_DEVIATION].Value =
-                                @"-";
+                            strVal = @"-";
                         }
-                        //Rows[i].Cells[(int)INDEX_COLUMNS.TEMPERATURE_DEVIATION].Style = curCellStyle; // стиль определен для всей строки
-                        //Rows[i].Cells[(int)INDEX_COLUMNS.POWER_DEVIATION].Style = curCellStyle; // стиль определен для всей строки
+                        Rows[i].Cells[(int)INDEX_COLUMNS.TEMPERATURE_DEVIATION].Value = strVal;
+
+                        // визуализация выхода за пределы диапазона
+                        if (!(i > lh))
+                            if (Math.Abs(factDev) > values[i].valuesDiviation)
+                                curCellStyle = errorDevCellStyle;
+                            else
+                                curCellStyle = normalDevCellStyle;
+                        else
+                            curCellStyle = normalDevCellStyle;
+                        Rows[i].Cells[(int)INDEX_COLUMNS.TEMPERATURE_DEVIATION].Style = curCellStyle;
                     }
 
-                    udg_t /= itemscount;
-                    udg_t = Math.Round(udg_t, 1);
-                    // Уточненный дисп./график (средний)
-                    Rows[i].Cells[(int)INDEX_COLUMNS.UDGt].Value = udg_t.ToString(@"F1");
+                    //Фактическое знач (среднее)
+                    sumTFact /= (lh - (cntHourFactNotValues > 0 ? lh < 24 ? cntHourFactNotValues - 1 : cntHourFactNotValues : 0));
+                    sumTFact = Math.Round(sumTFact, 1);
+                    Rows[i].Cells[(int)INDEX_COLUMNS.TEMPERATURE_FACT].Value = sumTFact.ToString(@"F2");
+                    //Уточненный дисп./график (средний)
+                    sumUDGt /= itemscount;
+                    sumUDGt = Math.Round(sumUDGt, 1);
+                    Rows[i].Cells[(int)INDEX_COLUMNS.UDGt].Value = sumUDGt.ToString(@"F1");
+                    //Отклонение за сутки (среднее)
+                    sumFactDev /= (lh - (cntHourFactNotValues > 0 ? lh < 24 ? cntHourFactNotValues - 1 : cntHourFactNotValues : 0));
+                    sumFactDev = Math.Round(sumFactDev, 1);
+                    Rows[i].Cells[(int)INDEX_COLUMNS.TEMPERATURE_DEVIATION].Value = sumFactDev.ToString(@"F2");
                     //// план для панели оперативной информации
                     //EventPBRDateValues(new PBRDateValuesEventArgs() { m_temperatureDate = t_pbr, m_powerDate = p_pbr });
                 }
@@ -282,7 +328,7 @@ namespace Statistic
 
                     int itemscount = values.Length
                         , i = -1, h = -1
-                        ;
+                        , lh = -1; // крайний час для отображения
                     double y = -1F;
 
                     string[] names = new string[itemscount];
@@ -297,6 +343,15 @@ namespace Statistic
                     double minimum = double.MaxValue, minimum_scale;
                     double maximum = 0, maximum_scale;
                     bool noValues = true;
+
+                    // копия в 'PanelTecVzletTDirect::HZedGraphControlStandardHours::Draw ()'
+                    if (currHour == true)
+                        lh = lastHour + 1;
+                    else
+                        if (HDateTime.ToMoscowTimeZone(DateTime.Now).Date.Equals(serverTime.Date) == true)
+                            lh = serverTime.Hour;
+                        else
+                            lh = 24;
 
                     // выделить память для
                     // регулярных часов - безусловно
@@ -331,9 +386,11 @@ namespace Statistic
                         else
                             //??? ошибка
                             ;
-
-                        y = values[i].valuesFact;
-                        valuesFact.Add(h, y);
+                        //Отобразить только завершившиеся часы
+                        if (i < lh) {
+                            y = values[i].valuesFact;
+                            valuesFact.Add(h, y);
+                        } else ;
 
                         if (values[i].valuesPmin > 0)
                         {
@@ -488,7 +545,7 @@ namespace Statistic
                     // доп.нинформация (по номеру часу) - копия из 'HZedGraphControlStandardMins::Draw'
                     GraphPane.Title.Text += new string(' ', 29);
                     if (bCurDateSeason == true)
-                    {
+                    {//??? не проверялось
                         int offset = delegateSeasonHourOffset(lastHour + 1);
                         GraphPane.Title.Text += //"Средняя мощность на " + /*System.TimeZone.CurrentTimeZone.ToUniversalTime(*/dtprDate.Value/*)*/.ToShortDateString() + " " + 
                             (lastHour + 1 - offset).ToString();
@@ -501,7 +558,7 @@ namespace Statistic
                     }
                     else
                         GraphPane.Title.Text += //"Средняя мощность на " + /*System.TimeZone.CurrentTimeZone.ToUniversalTime(*/dtprDate.Value/*)*/.ToShortDateString() + " " + 
-                            (lastHour + 1).ToString() + " час";
+                            (lastHour + 1 + (currHour == true ? 1 : 0)).ToString() + " час";
 
                     GraphPane.XAxis.Scale.TextLabels = names;
                     GraphPane.XAxis.Scale.IsPreventLabelOverlap = false;
@@ -1264,9 +1321,12 @@ namespace Statistic
             {
                 bool bRes = base.Activate(activated);
 
-                if (activated == true)
-                {
-                }
+                if (bRes == true)
+                    if (activated == true)
+                    {
+                    }
+                    else
+                        ;
                 else
                     ;
 
@@ -1312,35 +1372,34 @@ namespace Statistic
 
             protected override HMark enabledSourceData_ToolStripMenuItems()
             {
-                m_tecView.m_arTypeSourceData[(int)HDateTime.INTERVAL.MINUTES] =
-                m_tecView.m_arTypeSourceData[(int)HDateTime.INTERVAL.HOURS] =
-                    CONN_SETT_TYPE.DATA_VZLET;
+                m_tecView.m_arTypeSourceData[(int)HDateTime.INTERVAL.MINUTES] = CONN_SETT_TYPE.UNKNOWN;
+                m_tecView.m_arTypeSourceData[(int)HDateTime.INTERVAL.HOURS] = CONN_SETT_TYPE.DATA_VZLET;
                 ; // не требуется, разнотипные источники данных отсутствуют
                 return new HMark(0);
             }
 
-            public void UpdateGraphicsCurrent(int type)
-            {
-                lock (m_tecView.m_lockValue)
-                {
-                    //??? Проверка 'type' TYPE_UPDATEGUI
-                    HMark markChanged = enabledSourceData_ToolStripMenuItems();
-                    if (markChanged.IsMarked() == false)
-                    {
-                        //DrawGraphMins(m_tecView.lastHour);
-                        DrawGraphHours();
-                    }
-                    else
-                    {
-                        if (m_tecView.currHour == true)
-                            NewDateRefresh();
-                        else
-                        {//m_tecView.currHour == false
-                            updateGraphicsRetro(markChanged);
-                        }
-                    }
-                }
-            }
+            //public override void UpdateGraphicsCurrent(int type)
+            //{
+            //    lock (m_tecView.m_lockValue)
+            //    {
+            //        //??? Проверка 'type' TYPE_UPDATEGUI
+            //        HMark markChanged = enabledSourceData_ToolStripMenuItems();
+            //        if (markChanged.IsMarked() == false)
+            //        {
+            //            //DrawGraphMins(m_tecView.lastHour);
+            //            DrawGraphHours();
+            //        }
+            //        else
+            //        {
+            //            if (m_tecView.currHour == true)
+            //                NewDateRefresh();
+            //            else
+            //            {//m_tecView.currHour == false
+            //                updateGraphicsRetro(markChanged);
+            //            }
+            //        }
+            //    }
+            //}
         }
     }
 }

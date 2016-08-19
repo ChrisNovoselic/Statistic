@@ -1097,6 +1097,8 @@ namespace Statistic
             dt = dt.AddHours(hour);
             dt = dt.AddMinutes(min);
 
+            Debug.WriteLine(string.Format (@"PanelTecViewBase::setRetroTickTime (hour={0}, minute={1}) - ...", hour, min));
+
             if (IsHandleCreated == true)
                 if (InvokeRequired == true)
                     Invoke(delegateTickTime, dt);

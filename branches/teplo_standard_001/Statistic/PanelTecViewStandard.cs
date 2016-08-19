@@ -290,6 +290,7 @@ namespace Statistic
                         GraphPane.AddBar("Мощность", null, valuesFact, colorPCurve);
                     else
                     {
+                        // копия в 'PanelTecVzletTDirect::ZedGraphControlVzletTDirect::Draw ()'
                         int lh = -1;
                         if (currHour == true)
                             lh = lastHour;

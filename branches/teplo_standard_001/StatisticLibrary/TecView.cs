@@ -1784,6 +1784,8 @@ namespace StatisticCommon
 
         public virtual void GetRetroValues()
         {
+            CONN_SETT_TYPE typeSrcData = CONN_SETT_TYPE.UNKNOWN;
+
             lock (m_lockValue)
             {
                 ClearValues();
@@ -1793,31 +1795,42 @@ namespace StatisticCommon
                 adminValuesReceived = false;
 
                 //Часы...
-                if ((m_arTypeSourceData[(int)HDateTime.INTERVAL.HOURS] == CONN_SETT_TYPE.DATA_AISKUE)
-                    || (m_arTypeSourceData[(int)HDateTime.INTERVAL.HOURS] == CONN_SETT_TYPE.DATA_AISKUE_PLUS_SOTIASSO))
+                typeSrcData = m_arTypeSourceData[(int)HDateTime.INTERVAL.HOURS];
+                if ((typeSrcData == CONN_SETT_TYPE.DATA_AISKUE)
+                    || (typeSrcData == CONN_SETT_TYPE.DATA_AISKUE_PLUS_SOTIASSO))
                     AddState((int)StatesMachine.Hours_Fact);
                 else
-                    if ((m_arTypeSourceData[(int)HDateTime.INTERVAL.HOURS] == CONN_SETT_TYPE.DATA_SOTIASSO_3_MIN)
-                        || (m_arTypeSourceData[(int)HDateTime.INTERVAL.HOURS] == CONN_SETT_TYPE.DATA_SOTIASSO_1_MIN))
+                    if ((typeSrcData == CONN_SETT_TYPE.DATA_SOTIASSO_3_MIN)
+                        || (typeSrcData == CONN_SETT_TYPE.DATA_SOTIASSO_1_MIN))
                         AddState((int)StatesMachine.Hours_TM);
                     else
-                        ;
+                        if (typeSrcData == CONN_SETT_TYPE.DATA_VZLET)
+                            AddState((int)StatesMachine.HoursVzletTDirectValues);
+                        else
+                            ;
 
                 //Минуты...
-                if ((m_arTypeSourceData[(int)HDateTime.INTERVAL.MINUTES] == CONN_SETT_TYPE.DATA_AISKUE)
-                    || (m_arTypeSourceData[(int)HDateTime.INTERVAL.MINUTES] == CONN_SETT_TYPE.DATA_AISKUE_PLUS_SOTIASSO))
-                    AddState((int)StatesMachine.RetroMins_Fact);
-                else
-                    if ((m_arTypeSourceData[(int)HDateTime.INTERVAL.MINUTES] == CONN_SETT_TYPE.DATA_SOTIASSO_3_MIN)
-                        || (m_arTypeSourceData[(int)HDateTime.INTERVAL.MINUTES] == CONN_SETT_TYPE.DATA_SOTIASSO_1_MIN))
-                        AddState((int)StatesMachine.RetroMins_TM);
+                typeSrcData = m_arTypeSourceData[(int)HDateTime.INTERVAL.MINUTES];
+                if (!(typeSrcData == CONN_SETT_TYPE.UNKNOWN))
+                {
+                    if ((typeSrcData == CONN_SETT_TYPE.DATA_AISKUE)
+                        || (typeSrcData == CONN_SETT_TYPE.DATA_AISKUE_PLUS_SOTIASSO))
+                        AddState((int)StatesMachine.RetroMins_Fact);
                     else
-                        ;
-                if (m_bLastValue_TM_Gen == true)
-                    AddState((int)StatesMachine.RetroMin_TM_Gen);
-                else ;
+                        if ((typeSrcData == CONN_SETT_TYPE.DATA_SOTIASSO_3_MIN)
+                            || (typeSrcData == CONN_SETT_TYPE.DATA_SOTIASSO_1_MIN))
+                            AddState((int)StatesMachine.RetroMins_TM);
+                        else
+                            ;
+                    if (m_bLastValue_TM_Gen == true)
+                        AddState((int)StatesMachine.RetroMin_TM_Gen);
+                    else ;
 
-                AddState((int)StatesMachine.LastMinutes_TM);
+                    AddState((int)StatesMachine.LastMinutes_TM);
+                }
+                else
+                    ;
+
                 AddState((int)StatesMachine.PPBRValues);
                 AddState((int)StatesMachine.AdminValues);
 
@@ -5517,7 +5530,7 @@ namespace StatisticCommon
         {
             TimeSpan tsOffset = HDateTime.TS_NSK_OFFSET_OF_MOSCOWTIMEZONE;
             DateTime dtReq = dt.Date.Add(tsOffset); //добавить смещение НСК - МСК, т.к. в БД метки времени НСК
-
+            // запрос (с динамическими Графа_N) можно получить от объекта ТЭЦ, но т.к запрос временный - оставляем статическим
             string strQuery = @"SELECT DATEPART(HH, [Дата]) - " + tsOffset.Hours // вычесть добавленное смещение НСК - МСК
                     + ", AVG ([Графа_2]) * (AVG ([Графа_1])) / (AVG ([Графа_1] + [Графа_7] + [Графа_13] + [Графа_19] + [Графа_26] + [Графа_32]))"
                     + ", AVG ([Графа_8]) * (AVG ([Графа_7])) / (AVG ([Графа_1] + [Графа_7] + [Графа_13] + [Графа_19] + [Графа_26] + [Графа_32]))"
@@ -5531,6 +5544,7 @@ namespace StatisticCommon
                 + " GROUP BY DATEPART(DD, [Дата]), DATEPART(HH, [Дата])"
                 + " ORDER BY DATEPART(DD, [Дата]), DATEPART(HH, [Дата])";
 
+            //Debug.WriteLine(DateTime.Now.ToString () + @"; TecView::getHoursVzletTDirectRequest () - query = " + strQuery);
             Request(m_dictIdListeners[m_tec.m_id][(int)CONN_SETT_TYPE.DATA_VZLET], strQuery);
         }
 
@@ -5542,8 +5556,15 @@ namespace StatisticCommon
         {
             int iRes = 0;
 
-            foreach (DataRow r in table.Rows)
-                m_valuesHours[(int)r[@"HOUR"]].valuesLastMinutesTM = (double)r[@"VALUE"];
+            try {
+                foreach (DataRow r in table.Rows)
+                    m_valuesHours[(int)r[@"HOUR"]].valuesLastMinutesTM = (double)r[@"VALUE"];
+            }
+            catch (Exception e) {
+                iRes = -1;
+
+                Logging.Logg().Exception(e, @"TecView::getHoursTMTemperatureResponse () - ...", Logging.INDEX_MESSAGE.NOT_SET);
+            }
 
             return iRes;
         }
@@ -5552,12 +5573,46 @@ namespace StatisticCommon
         {
             int iRes = 0;
 
-            foreach (DataRow r in table.Rows)
-                for (int v = 1; v < table.Columns.Count; v ++ )
-                    m_valuesHours[(int)r[0]].valuesFact += (double)r[v];
+            int iHour = -1 // индекс для номера часа
+                , v = -1; // индекс для вывода
 
-            lastHour = table.Rows.Count;
-            lastReceivedHour = table.Rows.Count + 1;
+            try
+            {
+                foreach (DataRow r in table.Rows)
+                {
+                    iHour = (int)r[0];
+
+                    if (iHour < 0)
+                        iHour += m_valuesHours.Length/*24*/; 
+                    else
+                        if (!(iHour < m_valuesHours.Length))
+                            throw new Exception(string.Format(@"TecView::getHoursVzletTDirectResponse () - HOUR={0} за пределами диапазона...", iHour));
+                        else
+                            ; // индекс часа в пределах диапазона
+
+                    for (v = 1; v < table.Columns.Count; v++)
+                        m_valuesHours[iHour].valuesFact += (double)r[v];
+                }
+
+                //Определить полные ли сутки в результате запроса
+                if (currHour == true)
+                    if (iHour < (m_valuesHours.Length/*24*/ - 1)) {
+                        lastHour = iHour - 1;
+                        lastReceivedHour = iHour;
+                    } else {
+                        lastHour =
+                        lastReceivedHour =
+                            iHour;
+                    }
+                else
+                    ;
+            }
+            catch (Exception e)
+            {
+                iRes = -1;
+
+                Logging.Logg().Exception(e, @"TecView::getHoursVzletTDirectResponse () - ...", Logging.INDEX_MESSAGE.NOT_SET);
+            }
 
             return iRes;
         }

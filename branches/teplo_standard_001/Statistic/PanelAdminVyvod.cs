@@ -177,7 +177,8 @@ namespace Statistic
 
                     if ((tc.IsParamVyvod == true)
                         && ((tc.m_listLowPointDev[0] as Vyvod.ParamVyvod).m_id_param == Vyvod.ID_PARAM.T_PV)
-                        && (tc.m_bKomUchet == true))
+                        //&& (tc.m_bKomUchet == true)
+                        )
                         for (h = 0; h < m_curRDGValues.Length; h++)
                             arRDGValues[h].From(m_curRDGValues[h], true);
                     else

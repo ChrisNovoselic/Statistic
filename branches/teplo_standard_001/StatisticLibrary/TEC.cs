@@ -17,7 +17,8 @@ namespace StatisticCommon
     /// </summary>
     public enum CONN_SETT_TYPE
     {
-        CONFIG_DB = 0, LIST_SOURCE
+        UNKNOWN = -666
+        , CONFIG_DB = 0, LIST_SOURCE
         , DATA_AISKUE_PLUS_SOTIASSO = -1 /*Факт+СОТИАССО. - смешанный*/, ADMIN = 0, PBR = 1, DATA_AISKUE = 2 /*Факт. - АИСКУЭ*/, DATA_SOTIASSO = 3
         , DATA_VZLET = 4
             , DATA_SOTIASSO_3_MIN = 5, DATA_SOTIASSO_1_MIN = 6 /*ТелеМеханика - СОТИАССО*/
