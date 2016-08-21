@@ -30,7 +30,7 @@ namespace Statistic
 
             InitializeComponent ();
 
-            (m_dgwHours as DataGridViewLKHours).EventPBRDateValues += new DataGridViewLKHours.PBRDateValuesEventHandler((_pnlQuickData as PanelQuickDataLK).OnPBRDateValues);
+            m_dgwHours.EventDataValues += new HDataGridViewBase.DataValuesEventHandler((_pnlQuickData as PanelQuickDataLK).OnPBRDataValues);
         }
 
         protected override void InitializeComponent()
@@ -440,18 +440,18 @@ namespace Statistic
 
             private Color clrLabel { get { return m_parent.m_tecView.currHour == true ? Color.LimeGreen : Color.OrangeRed; } }
 
-            public void OnPBRDateValues(DataGridViewLKHours.PBRDateValuesEventArgs ev)
+            public void OnPBRDataValues(HDataGridViewBase.DataValuesEventArgs ev)
             {
                 // температура
                 showValue(ref m_arLabelCommon[(int)PanelQuickDataLK.CONTROLS.lblTemperatureDateValue - m_indxStartCommonFirstValueSeries]
-                    , (double)ev.m_temperatureDate //> 0 ? (double)val : double.NegativeInfinity
+                    , (double)ev.m_value1 //> 0 ? (double)val : double.NegativeInfinity
                     , 2 //round
                     , false
                     , true
                     , string.Empty);
                 // мощность
                 showValue(ref m_arLabelCommon[(int)PanelQuickDataLK.CONTROLS.lblPowerDateValue - m_indxStartCommonFirstValueSeries]
-                    , (double)ev.m_powerDate > 0 ? (double)ev.m_powerDate : double.NegativeInfinity
+                    , (double)ev.m_value2 > 0 ? (double)ev.m_value2 : double.NegativeInfinity
                     , 2 //round
                     , false
                     , true
@@ -505,14 +505,14 @@ namespace Statistic
                 {
                     //Температура
                     // текущее значение температуры (час)
-                    showValue(ref m_arLabelCommon[(int)PanelQuickDataLK.CONTROLS.lblTemperatureCurrentValue - indxStartCommonPVal]
+                    showValue(ref m_arLabelCommon[(int)CONTROLS.lblTemperatureCurrentValue - indxStartCommonPVal]
                         , m_parent.m_tecView.m_valuesHours[lastHour].valuesLastMinutesTM
                         , 2 //round
                         , false
                         , true
                         , string.Empty);
                     // плановое значение температуры (час)
-                    showValue(ref m_arLabelCommon[(int)PanelQuickDataLK.CONTROLS.lblTemperatureHourValue - indxStartCommonPVal]
+                    showValue(ref m_arLabelCommon[(int)CONTROLS.lblTemperatureHourValue - indxStartCommonPVal]
                         , m_parent.m_tecView.m_valuesHours[lastHour].valuesPmin
                         , 2 //round
                         , false
@@ -523,26 +523,26 @@ namespace Statistic
                     //Мощность
                     // текущее значение мощности (час)
                     powerLastHour = m_parent.m_tecView.GetSummaFactValues(lastHour);
-                    showValue(ref m_arLabelCommon[(int)PanelQuickDataLK.CONTROLS.lblPowerCurrentValue - indxStartCommonPVal]
+                    showValue(ref m_arLabelCommon[(int)CONTROLS.lblPowerCurrentValue - indxStartCommonPVal]
                         , powerLastHour < 0 ? double.NegativeInfinity : powerLastHour * 1000
                         , 2 //round
                         , false
                         , true
                         , powerLastHour < 0 ? @"---" : string.Empty);
                     // плановое значение мощности (час)
-                    showValue(ref m_arLabelCommon[(int)PanelQuickDataLK.CONTROLS.lblPowerHourValue - indxStartCommonPVal]
+                    showValue(ref m_arLabelCommon[(int)CONTROLS.lblPowerHourValue - indxStartCommonPVal]
                         , m_parent.m_tecView.m_valuesHours[lastHour].valuesPBR > 0 ? m_parent.m_tecView.m_valuesHours[lastHour].valuesPBR : double.NegativeInfinity
                         , 2 //round
                         , false
                         , true
                         , string.Empty);
                     // цвет шрифта для значений температуры, мощности
-                    m_arLabelCommon[(int)PanelQuickDataLK.CONTROLS.lblTemperatureCurrentValue - indxStartCommonPVal].ForeColor =
-                    m_arLabelCommon[(int)PanelQuickDataLK.CONTROLS.lblTemperatureHourValue - indxStartCommonPVal].ForeColor =
-                    m_arLabelCommon[(int)PanelQuickDataLK.CONTROLS.lblTemperatureDateValue - indxStartCommonPVal].ForeColor =
-                    m_arLabelCommon[(int)PanelQuickDataLK.CONTROLS.lblPowerCurrentValue - indxStartCommonPVal].ForeColor =
-                    m_arLabelCommon[(int)PanelQuickDataLK.CONTROLS.lblPowerHourValue - indxStartCommonPVal].ForeColor =
-                    m_arLabelCommon[(int)PanelQuickDataLK.CONTROLS.lblPowerDateValue - indxStartCommonPVal].ForeColor =
+                    m_arLabelCommon[(int)CONTROLS.lblTemperatureCurrentValue - indxStartCommonPVal].ForeColor =
+                    m_arLabelCommon[(int)CONTROLS.lblTemperatureHourValue - indxStartCommonPVal].ForeColor =
+                    m_arLabelCommon[(int)CONTROLS.lblTemperatureDateValue - indxStartCommonPVal].ForeColor =
+                    m_arLabelCommon[(int)CONTROLS.lblPowerCurrentValue - indxStartCommonPVal].ForeColor =
+                    m_arLabelCommon[(int)CONTROLS.lblPowerHourValue - indxStartCommonPVal].ForeColor =
+                    m_arLabelCommon[(int)CONTROLS.lblPowerDateValue - indxStartCommonPVal].ForeColor =
                         clrLabel;
                     // текущее значение мощности для компонентов-ТГ-фидеров (час)
                     //ShowTGValue
@@ -594,16 +594,6 @@ namespace Statistic
         {
             private enum INDEX_COLUMNS : short { PART_TIME, TEMPERATURE_FACT, POWER_FACT_SUM, TEMPERATURE_PBR, POWER_PBR, TEMPERATURE_DEVIATION, POWER_DEVIATION
                 , COUNT_COLUMN }
-
-            public class PBRDateValuesEventArgs : EventArgs
-            {
-                public double m_temperatureDate;
-                public double m_powerDate;
-            }
-
-            public delegate void PBRDateValuesEventHandler(PBRDateValuesEventArgs ev);
-
-            public event PBRDateValuesEventHandler EventPBRDateValues;
 
             /// <summary>
             /// Конструктор - основной (без параметров)
@@ -784,7 +774,7 @@ namespace Statistic
                 t_pbr = Math.Round(t_pbr, 0);
                 // план
                 Rows[i].Cells[(int)INDEX_COLUMNS.TEMPERATURE_PBR].Value = t_pbr.ToString(@"F2"); // температура
-                EventPBRDateValues(new PBRDateValuesEventArgs() { m_temperatureDate = t_pbr, m_powerDate = p_pbr });
+                PerformDataValues(new DataValuesEventArgs() { m_value1 = t_pbr, m_value2 = p_pbr });
             }
         }
 

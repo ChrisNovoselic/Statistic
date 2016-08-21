@@ -563,7 +563,7 @@ namespace Statistic
             /// Возвратить цвет для отображения фактических значений
             /// </summary>
             /// <returns>Цвет для фактических значений</returns>
-            protected Color getColorFactValues()
+            protected Color getColorValues(TG.INDEX_VALUE indx)
             {
                 //Определить цвет
                 if (m_parent.m_tecView.currHour == true)
@@ -1403,7 +1403,7 @@ namespace Statistic
                         //    {
                         m_arLabelCommon[(int)PanelQuickDataStandard.CONTROLS.lblAverPVal - indxStartCommonPVal].ForeColor =
                         m_arLabelCommon[(int)PanelQuickDataStandard.CONTROLS.lblCommonPVal_Fact - indxStartCommonPVal].ForeColor =
-                            m_lblPowerFactZoom.ForeColor = getColorFactValues();
+                            m_lblPowerFactZoom.ForeColor = getColorValues(TG.INDEX_VALUE.FACT);
 
                         if (m_parent.m_tecView.m_markWarning.IsMarked((int)TecView.INDEX_WARNING.LAST_MIN) == true)
                         {
@@ -1476,7 +1476,7 @@ namespace Statistic
                                         //m_tgToolTips[tg.m_id][(int)TG.INDEX_VALUE.FACT].SetToolTip (m_tgLabels[tg.m_id][(int)TG.INDEX_VALUE.FACT], @"Знач. недостоверно");
                                     }
 
-                                    m_tgLabels[tg.m_id][(int)TG.INDEX_VALUE.FACT].ForeColor = getColorFactValues();
+                                    m_tgLabels[tg.m_id][(int)TG.INDEX_VALUE.FACT].ForeColor = getColorValues(TG.INDEX_VALUE.FACT);
 
                                     i++;
                                 }
@@ -1497,7 +1497,7 @@ namespace Statistic
                             else
                                 m_tgLabels[comp.m_listLowPointDev[0].m_id][(int)TG.INDEX_VALUE.FACT].Text = "---";
 
-                            m_tgLabels[comp.m_listLowPointDev[0].m_id][(int)TG.INDEX_VALUE.FACT].ForeColor = getColorFactValues();
+                            m_tgLabels[comp.m_listLowPointDev[0].m_id][(int)TG.INDEX_VALUE.FACT].ForeColor = getColorValues(TG.INDEX_VALUE.FACT);
 
                             i++;
                         }

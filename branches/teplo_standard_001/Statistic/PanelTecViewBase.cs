@@ -818,12 +818,12 @@ namespace Statistic
         private void updateGUI_TM_Gen()
         {
             if (IsHandleCreated/*InvokeRequired*/ == true)
-                this.BeginInvoke(new DelegateFunc(UpdateGUI_TM_Gen));
+                this.BeginInvoke(new DelegateFunc(showTM_Gen));
             else
                 Logging.Logg().Error(@"PanelTecViewBase::updateGUI_TM_Gen () - ... BeginInvoke (UpdateGUI_TM_Gen) - ... ID = " + m_tecView.m_ID, Logging.INDEX_MESSAGE.D_001);
         }
 
-        private void UpdateGUI_TM_Gen()
+        private void showTM_Gen()
         {
             lock (m_tecView.m_lockValue)
             {
@@ -836,14 +836,14 @@ namespace Statistic
             int iRes = (int)HClassLibrary.HHandler.INDEX_WAITHANDLE_REASON.SUCCESS;
             
             if (IsHandleCreated/*InvokeRequired*/ == true)
-                this.BeginInvoke(new DelegateIntIntFunc(UpdateGUI_Fact), hour, min);
+                this.BeginInvoke(new DelegateIntIntFunc(show_Fact), hour, min);
             else
                 Logging.Logg().Error(@"PanelTecViewBase::updateGUI_Fact () - ... BeginInvoke (UpdateGUI_Fact) - ... ID = " + m_tecView.m_ID, Logging.INDEX_MESSAGE.D_001);
 
             return iRes;
         }
 
-        protected virtual void UpdateGUI_Fact(int hour, int min)
+        protected virtual void show_Fact(int hour, int min)
         {
             lock (m_tecView.m_lockValue)
             {
