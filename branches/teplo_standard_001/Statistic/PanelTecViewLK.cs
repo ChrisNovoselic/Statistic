@@ -438,7 +438,7 @@ namespace Statistic
                 this.ColumnStyles.Add(new ColumnStyle(SizeType.AutoSize));
             }
 
-            private Color clrLabel { get { return m_parent.m_tecView.currHour == true ? Color.LimeGreen : Color.OrangeRed; } }
+            //private Color clrLabel { get { return m_parent.m_tecView.currHour == true ? Color.LimeGreen : Color.OrangeRed; } }
 
             public void OnPBRDataValues(HDataGridViewBase.DataValuesEventArgs ev)
             {
@@ -459,7 +459,7 @@ namespace Statistic
 
                 m_arLabelCommon[(int)PanelQuickDataLK.CONTROLS.lblTemperatureDateValue - m_indxStartCommonFirstValueSeries].ForeColor =
                 m_arLabelCommon[(int)PanelQuickDataLK.CONTROLS.lblPowerDateValue - m_indxStartCommonFirstValueSeries].ForeColor =
-                    clrLabel;
+                    getColorValues (TG.INDEX_VALUE.FACT);
             }
 
             private void showFactTGValue(int id_tg, double[] powerLastHourMinutes)
@@ -488,8 +488,8 @@ namespace Statistic
 
                 // установить цвет шрифта для значения
                 m_tgLabels[id_tg][(int)TG.INDEX_VALUE.FACT].ForeColor =
-                    clrLabel
-                    //getColorFactValues()
+                    //clrLabel
+                    getColorValues(TG.INDEX_VALUE.FACT)
                         ;
             }
 
@@ -543,7 +543,7 @@ namespace Statistic
                     m_arLabelCommon[(int)CONTROLS.lblPowerCurrentValue - indxStartCommonPVal].ForeColor =
                     m_arLabelCommon[(int)CONTROLS.lblPowerHourValue - indxStartCommonPVal].ForeColor =
                     m_arLabelCommon[(int)CONTROLS.lblPowerDateValue - indxStartCommonPVal].ForeColor =
-                        clrLabel;
+                        getColorValues(TG.INDEX_VALUE.FACT);
                     // текущее значение мощности для компонентов-ТГ-фидеров (час)
                     //ShowTGValue
                     if (m_parent.indx_TECComponent < 0) // значит этот view будет суммарным для всех ГТП

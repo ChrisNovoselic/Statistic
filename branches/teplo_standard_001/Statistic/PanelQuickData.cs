@@ -407,7 +407,7 @@ namespace Statistic
                 m_tgToolTips.Add(id, new ToolTip[(int)TG.INDEX_VALUE.COUNT_INDEX_VALUE]);
                 cnt = m_tgLabels.Count;
 
-                m_tgLabels[id][(int)TG.INDEX_VALUE.LABEL_DESC] = HLabel.createLabel(comp.name_shr,
+                m_tgLabels[id][(int)TG.INDEX_VALUE.LABEL_DESC] = HLabel.createLabel(comp.name_shr.Trim(),
                                                                         new HLabelStyles(/*arPlacement[(int)i].pt, sz,*/new Point(-1, -1), new Size(-1, -1),
                                                                         Color.Black, Color.Empty,
                                                                         8F, ContentAlignment.MiddleRight));                
@@ -565,14 +565,35 @@ namespace Statistic
             /// <returns>Цвет для фактических значений</returns>
             protected Color getColorValues(TG.INDEX_VALUE indx)
             {
-                //Определить цвет
-                if (m_parent.m_tecView.currHour == true)
-                    if (m_parent.m_tecView.m_markWarning.IsMarked((int)TecView.INDEX_WARNING.LAST_MIN) == true)
-                        return System.Drawing.Color.OrangeRed;
-                    else
-                        return System.Drawing.Color.LimeGreen;
+                Color clrRes = Color.Empty;
+                Color[,] arColorValues = new Color[,] { { Color.OrangeRed, Color.Orange }, { Color.LimeGreen, Color.Green } }; // 0 - ретро-значения, 1 - текущие значения
+                //Color[] arColorRetroValues = new Color[] { Color.OrangeRed, Color.Orange };
+
+                if (!(m_parent == null))
+                    //Определить цвет
+                    switch (indx)
+                    {
+                        case TG.INDEX_VALUE.FACT: // для фактических значений или для значений в 1-ом столбце детализации
+                            if (m_parent.m_tecView.currHour == true)
+                                if (m_parent.m_tecView.m_markWarning.IsMarked((int)TecView.INDEX_WARNING.LAST_MIN) == true)
+                                    clrRes = arColorValues[0, (int)indx];
+                                else
+                                    clrRes = arColorValues[1, (int)indx];
+                            else
+                                clrRes = arColorValues[0, (int)indx];
+                            break;
+                        case TG.INDEX_VALUE.TM: // для значений телемеханики или значений во 2-ом столбце детализации
+                            clrRes = (m_parent.m_tecView.currHour == true) ?
+                                arColorValues[1, (int)indx] :
+                                    arColorValues[0, (int)indx];
+                            break;
+                        default:
+                            break;
+                    }
                 else
-                    return System.Drawing.Color.OrangeRed;
+                    ;
+
+                return clrRes;
             }
         }
 
@@ -1133,11 +1154,7 @@ namespace Statistic
                 if (bValidateDateTime == false)
                     lbl.ForeColor = Color.Orange;
                 else
-                    //if ((dt_srv - dt_val).TotalMinutes > 1)
-                    if (m_parent.m_tecView.currHour == false)
-                        lbl.ForeColor = Color.Orange;
-                    else
-                        lbl.ForeColor = Color.Green;
+                    lbl.ForeColor = getColorValues (TG.INDEX_VALUE.TM);
 
                 lbl.Text = text;
                 toolTip.SetToolTip(lbl, dt_val.ToString("dd.MM.yyyy HH:mm:ss"));
@@ -1198,12 +1215,7 @@ namespace Statistic
                     , true
                     , true
                     , string.Empty);
-                Color frCol = Color.Empty;
-                if ((!(m_parent == null)) && (m_parent.m_tecView.currHour == true))
-                    frCol = Color.Green;
-                else
-                    frCol = Color.Orange;
-                m_arLabelCommon[(int)PanelQuickDataStandard.CONTROLS.lblCommonPVal_TM - m_indxStartCommonFirstValueSeries].ForeColor = frCol;
+                m_arLabelCommon[(int)PanelQuickDataStandard.CONTROLS.lblCommonPVal_TM - m_indxStartCommonFirstValueSeries].ForeColor = getColorValues (TG.INDEX_VALUE.TM);
             }
 
             /// <summary>

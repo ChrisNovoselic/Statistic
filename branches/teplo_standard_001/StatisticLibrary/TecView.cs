@@ -392,7 +392,7 @@ namespace StatisticCommon
                         m_tec.list_TECComponents.ForEach(v => {
                             if (v.IsVyvod == true) {
                                 _localTECComponents.Add(v);
-                                initDictValuesParamVyvod(v);
+                                initDictValuesLowPointDev(v);
                             } else
                                 ;
                         });
@@ -411,7 +411,7 @@ namespace StatisticCommon
                                 else
                                     ;
 
-                                initDictValuesTG(tc);
+                                initDictValuesLowPointDev(tc);
                             }
                             else
                                 ; // компонент тепло
@@ -427,7 +427,7 @@ namespace StatisticCommon
                         if (tg.m_id == c.m_id) {
                             _localTECComponents.Add(c);
 
-                            initDictValuesTG(c);
+                            initDictValuesLowPointDev(c);
                         }
                         else
                             ;
@@ -475,24 +475,24 @@ namespace StatisticCommon
                 }
         }
 
-        private void initDictValuesTG(TECComponent comp)
+        protected virtual void initDictValuesLowPointDev(TECComponent comp)
         {
-            foreach (TG tg in comp.m_listLowPointDev)
-                if (m_dictValuesLowPointDev.ContainsKey(tg.m_id) == false)
-                    m_dictValuesLowPointDev.Add(tg.m_id, new valuesLowPointDev());
+            foreach (TECComponentBase dev in comp.m_listLowPointDev)
+                if (m_dictValuesLowPointDev.ContainsKey(dev.m_id) == false)
+                    m_dictValuesLowPointDev.Add(dev.m_id, new valuesLowPointDev());
                 else
                     ;
         }
 
-        private void initDictValuesParamVyvod(TECComponent v)
-        {
-            //foreach (Vyvod.ParamVyvod pv in v.m_listParam)
-            foreach (Vyvod.ParamVyvod pv in v.m_listLowPointDev)
-                if (m_dictValuesLowPointDev.ContainsKey(pv.m_id) == false)
-                    m_dictValuesLowPointDev.Add(pv.m_id, new valuesLowPointDev());
-                else
-                    ;
-        }
+        //private void initDictValuesParamVyvod(TECComponent v)
+        //{
+        //    //foreach (Vyvod.ParamVyvod pv in v.m_listParam)
+        //    foreach (Vyvod.ParamVyvod pv in v.m_listLowPointDev)
+        //        if (m_dictValuesLowPointDev.ContainsKey(pv.m_id) == false)
+        //            m_dictValuesLowPointDev.Add(pv.m_id, new valuesLowPointDev());
+        //        else
+        //            ;
+        //}
 
         //public TecView(bool[] arMarkSavePPBRValues, TYPE_PANEL type, int indx_tec, int indx_comp)
         public TecView(/*TYPE_PANEL type, */int indx_tec, int indx_comp, TECComponentBase.TYPE type)
@@ -811,7 +811,8 @@ namespace StatisticCommon
                     if (m_dtLastChangedAt_TM_Gen > dtLastChangedAt) {
                         m_dtLastChangedAt_TM_Gen = dtLastChangedAt;
 
-                        if ((!(value < 1)) && (ValidateDatetimeTMValue(dtServer, m_dtLastChangedAt_TM_Gen) == false) && (m_markWarning.IsMarked((int)TecView.INDEX_WARNING.CURR_MIN_TM_GEN) == false))
+                        if ((!(value < 1)) && (ValidateDatetimeTMValue(dtServer, m_dtLastChangedAt_TM_Gen) == false)
+                            && (m_markWarning.IsMarked((int)TecView.INDEX_WARNING.CURR_MIN_TM_GEN) == false))
                         {
                             m_markWarning.Marked((int)TecView.INDEX_WARNING.CURR_MIN_TM_GEN);
                             iRes = 1;
@@ -1314,11 +1315,11 @@ namespace StatisticCommon
                     break;
                 case StatesMachine.HoursVzletTDirectValues:
                     msg = @"по-часовой температуры прямой подачи";
-                    getHoursVzletTDirectRequest(m_curDate.Date);
+                    //getHoursVzletTDirectRequest(m_curDate.Date); перенесено в "свой" класс
                     break;
                 case StatesMachine.CurrentVzletTDirectValues:
                     msg = @"тек.знач. температуры прямой подачи";
-                    getCurrentVzletTDirectRequest();
+                    //getCurrentVzletTDirectRequest(); перенесено в "свой" класс
                     break;
                 //case StatesMachine.PPBRDates:
                 //    msg = @"списка сохранённых часовых значений";
@@ -1517,13 +1518,13 @@ namespace StatisticCommon
                 case StatesMachine.HoursTMTemperatureValues:
                     iRes = getHoursTMTemperatureResponse(table as System.Data.DataTable);
                     break;
-                case StatesMachine.HoursVzletTDirectValues:
-                    ClearValuesHours();
-                    iRes = getHoursVzletTDirectResponse(table as System.Data.DataTable);
-                    break;
-                case StatesMachine.CurrentVzletTDirectValues:
-                    iRes = getCurrentVzletTDirectResponse(table as System.Data.DataTable);
-                    break;
+                //Исключение обработки события, т.к. оно обрабатывается в "своем" классе
+                //case StatesMachine.HoursVzletTDirectValues:
+                //    break;
+                //Исключение обработки события, т.к. оно обрабатывается в "своем" классе
+                //case StatesMachine.CurrentVzletTDirectValues:
+                //    break;
+                //Нет необходимости опрашивать даты ПБР, т.к.объект не сохраняет ПБР
                 //case StatesMachine.PPBRDates:
                 //    ClearPPBRDates();
                 //    iRes = getPPBRDatesResponse(table as System.Data.DataTable, m_curDate);
@@ -1542,6 +1543,7 @@ namespace StatisticCommon
                     else
                         ;
                     break;
+                //Нет необходимости опрашивать даты админ.знач., т.к.объект их не сохраняет
                 //case StatesMachine.AdminDates:
                 //    break;
                 case StatesMachine.AdminValues:
@@ -2048,7 +2050,7 @@ namespace StatisticCommon
         }
 
         //protected void ClearValuesHours(int cnt = -1)
-        protected void ClearValuesHours()
+        protected virtual void ClearValuesHours()
         {
             int cntHours = -1;
             
@@ -5539,43 +5541,7 @@ namespace StatisticCommon
                 + @" ORDER BY [HOUR]";
 
             Request(m_dictIdListeners[m_tec.m_id][(int)CONN_SETT_TYPE.DATA_SOTIASSO], strQuery);
-        }
-
-        private void getHoursVzletTDirectRequest(DateTime dt)
-        {
-            TimeSpan tsOffset = HDateTime.TS_NSK_OFFSET_OF_MOSCOWTIMEZONE;
-            DateTime dtReq = dt.Date.Add(tsOffset); //добавить смещение НСК - МСК, т.к. в БД метки времени НСК
-            // запрос (с динамическими Графа_N) можно получить от объекта ТЭЦ, но т.к запрос временный - оставляем статическим
-            string strQuery = @"SELECT DATEPART(HH, [Дата]) - " + tsOffset.Hours + @" as [iHOUR]"// вычесть добавленное смещение НСК - МСК
-                // расходы
-                    + ", AVG ([Графа_1]) as [Gpv_2028]"
-                    + ", AVG ([Графа_7]) as [Gpv_2029]"
-                    + ", AVG ([Графа_13]) as [Gpv_2030]"
-                    + ", AVG ([Графа_19]) as [Gpv_2031]"
-                    + ", AVG ([Графа_26]) as [Gpv_2032]"
-                    + ", AVG ([Графа_32]) as [Gpv_2033]"
-                // температуры
-                    + ", AVG ([Графа_2]) as [Tpv_2020]"
-                    + ", AVG ([Графа_8]) as [Tpv_2021]"
-                    + ", AVG ([Графа_14]) as [Tpv_2022]"
-                    + ", AVG ([Графа_20]) as [Tpv_2023]"
-                    + ", AVG ([Графа_27]) as [Tpv_2024]"
-                    + ", AVG ([Графа_33]) as [Tpv_2025]"
-                // суммарное значение расходов
-                    + ", AVG ([Графа_1] + [Графа_7] + [Графа_13] + [Графа_19] + [Графа_26] + [Графа_32]) as [Tagr_2020]"                    
-                + " FROM [Vzlet].[dbo].[teplo1]"
-                + " WHERE [Дата] > '" + dtReq.ToString(@"yyyyMMdd HH:00:00") + @"'"
-                    + " AND [Дата] < '" + dtReq.AddDays(1).ToString(@"yyyyMMdd HH:00:00") + @"'"
-                + " GROUP BY DATEPART(DD, [Дата]), DATEPART(HH, [Дата])"
-                + " ORDER BY DATEPART(DD, [Дата]), DATEPART(HH, [Дата])";
-
-            //Debug.WriteLine(DateTime.Now.ToString () + @"; TecView::getHoursVzletTDirectRequest () - query = " + strQuery);
-            Request(m_dictIdListeners[m_tec.m_id][(int)CONN_SETT_TYPE.DATA_VZLET], strQuery);
-        }
-
-        private void getCurrentVzletTDirectRequest()
-        {
-        }
+        }        
 
         private int getHoursTMTemperatureResponse(DataTable table)
         {
@@ -5592,107 +5558,7 @@ namespace StatisticCommon
             }
 
             return iRes;
-        }
-
-        private int getHoursVzletTDirectResponse(DataTable table)
-        {
-            int iRes = 0;
-
-            int iHour = -1 // индекс для номера часа
-                , id = -1, v = -1, indx = -1 // идентификатор параметра-ВЫВОДА, индекс для вывода, индекс для поля в таблице-результате
-                , typeValue = 0, cntTypeValues = 2 // тип значения (0 - реальные расходы/0 - реальные температуры/2 - взвешенные температуры)
-                , cntVyvod = -1; // количество ВЫВОДов
-            string strNameField = string.Empty;
-            List <int>listIDLowPointDev = new List<int> (); // список идентификаторов параметров ВЫВОДов, значения которых представлены в столбцах таблицы-результата
-
-            try
-            {
-                cntVyvod = (table.Columns.Count - 1 - 1) / cntTypeValues; // 0-е поле для номера часа, крайнее для СРЕДН_СУММ_РАСХОДЫ, остальные для значений в ~ с типами значений
-
-                for (v = 1; v < table.Columns.Count; v++)
-                {
-                    strNameField = (string)table.Columns[v].ColumnName;
-                    if (Int32.TryParse(strNameField.Substring(strNameField.IndexOf('_') + 1), out id) == false)
-                        id = -1;
-                    else
-                        ;
-
-                    listIDLowPointDev.Add(id);
-                }
-
-                foreach (DataRow r in table.Rows)
-                {
-                    iHour = (int)r[@"iHOUR"];
-                    double Gpv = -1F, Tpv = -1F;
-
-                    if (iHour < 0)
-                        iHour += m_valuesHours.Length/*24*/; 
-                    else
-                        if (!(iHour < m_valuesHours.Length))
-                            throw new Exception(string.Format(@"TecView::getHoursVzletTDirectResponse () - HOUR={0} за пределами диапазона...", iHour));
-                        else
-                            ; // индекс часа в пределах диапазона
-
-                    m_valuesHours[iHour].valuesTMSNPsum = (double)r[table.Columns.Count - 1];
-
-                    for (v = 1; v < (cntVyvod + 1); v++)
-                    {
-                        // расходы
-                        typeValue = 0;
-                        indx = typeValue * cntVyvod + v;
-                        Gpv = (double)r[indx];
-                        m_dictValuesLowPointDev[listIDLowPointDev[indx - 1]].m_power_LastMinutesTM[iHour] = Gpv;
-                        // температуры
-                        typeValue = 1;
-                        indx = typeValue * cntVyvod + v;
-                        Tpv = (double)r[indx];
-                        m_dictValuesLowPointDev[listIDLowPointDev[indx - 1]].m_power_LastMinutesTM[iHour] = Tpv;
-                        // фактические значения
-                        m_valuesHours[iHour].valuesFact += Tpv * (Gpv / m_valuesHours[iHour].valuesTMSNPsum);
-                    }
-
-                    //m_valuesHours[iHour].valuesTMSNPsum /= cntVyvod;
-                }
-
-                //Определить полные ли сутки в результате запроса
-                if (currHour == true)
-                    if (iHour < (m_valuesHours.Length/*24*/ - 1)) {
-                        lastHour = iHour - 1;
-                        lastReceivedHour = iHour;
-                    } else {
-                        lastHour =
-                        lastReceivedHour =
-                            iHour;
-                    }
-                else
-                    ;
-            }
-            catch (Exception e)
-            {
-                iRes = -1;
-
-                Logging.Logg().Exception(e, @"TecView::getHoursVzletTDirectResponse () - ...", Logging.INDEX_MESSAGE.NOT_SET);
-            }
-
-            return iRes;
-        }
-
-        private int getCurrentVzletTDirectResponse(DataTable table)
-        {
-            int iRes = 0;
-
-            try
-            {
-            }
-            catch (Exception e)
-            {
-                iRes = -1;
-
-                Logging.Logg().Exception(e, @"TecView::getCurrentVzletTDirectResponse () - ...", Logging.INDEX_MESSAGE.NOT_SET);
-            }
-
-            return iRes;
-        }
+        }        
 
         private void getHoursTMSNPsumRequest()
         {

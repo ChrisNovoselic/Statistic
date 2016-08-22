@@ -203,13 +203,15 @@ namespace Statistic
                         , bIsTypeConnSettAISKUEHour = (bool)pars[5]; //m_tecView.m_arTypeSourceData[(int)HDateTime.INTERVAL.HOURS] == CONN_SETT_TYPE.DATA_AISKUE
                     DateTime serverTime = (DateTime)pars[6]; //m_tecView.serverTime.Date.Equals(HDateTime.ToMoscowTimeZone(DateTime.Now.Date))
 
+                    bool bCurrDate = serverTime.Date.Equals(DateTime.Now.Date);
                     int i = -1
                         //, warn = -1, cntWarn = -1
                         , lh = bCurrHour == true ? lastReceivedHour - 1 :
-                            serverTime.Date.Equals(DateTime.Now.Date) == true ? lastReceivedHour - 1 :
+                            bCurrDate == true ? lastReceivedHour - 1 :
                                 itemscount
                         , cntHourFactNotValues = -1 // кол-во часов с пропущенными фактическими значениями
-                        , cntHourFactRecieved = -1; // кол-во часов с фактически полученными значениями
+                        , cntHourFactRecieved = -1 // кол-во часов с фактически полученными значениями
+                        , digitRound = -1; // кол-во знаков для округления
                     double factDev = -1F // фактическое отклонение
                         , sumTFact = -1F, sumUDGt = -1F, sumFactDev = -1F; // суммарные значения для факт.темп. и уточненного дисп.графика (для возможности усреднения)
                     string strVal = string.Empty
@@ -228,8 +230,10 @@ namespace Statistic
                     errorDevCellStyle.BackColor = Color.Red;
 
                     cntHourFactNotValues = 0;
-                    sumTFact = 0F;
-                    sumUDGt = 0F;
+                    sumTFact =
+                    sumUDGt =
+                    sumFactDev =
+                        0F;
                     for (i = 0; i < itemscount; i++)
                     {
                         // номер часа - уже отображен
@@ -292,19 +296,22 @@ namespace Statistic
                     }
 
                     cntHourFactRecieved = (lh - (cntHourFactNotValues > 0 ? lh < 24 ? cntHourFactNotValues - 1 : cntHourFactNotValues : 0));
-                    cntHourFactRecieved += bCurrHour == true ? 1 : 0;
+                    cntHourFactRecieved += ((bCurrHour == true) || (bCurrDate == true)) ? 1 : 0;
                     //Фактическое знач (среднее)
+                    digitRound = 2;
                     sumTFact /= cntHourFactRecieved;
-                    sumTFact = Math.Round(sumTFact, 1);
-                    Rows[i].Cells[(int)INDEX_COLUMNS.TEMPERATURE_FACT].Value = sumTFact.ToString(@"F2");
+                    sumTFact = Math.Round(sumTFact, digitRound);
+                    Rows[i].Cells[(int)INDEX_COLUMNS.TEMPERATURE_FACT].Value = sumTFact.ToString(@"F" + digitRound);
                     //Уточненный дисп./график (средний)
+                    digitRound = 1;
                     sumUDGt /= itemscount;
-                    sumUDGt = Math.Round(sumUDGt, 1);
-                    Rows[i].Cells[(int)INDEX_COLUMNS.UDGt].Value = sumUDGt.ToString(@"F1");
+                    sumUDGt = Math.Round(sumUDGt, digitRound);
+                    Rows[i].Cells[(int)INDEX_COLUMNS.UDGt].Value = sumUDGt.ToString(@"F" + digitRound);
                     //Отклонение за сутки (среднее)
+                    digitRound = 2;
                     sumFactDev /= cntHourFactRecieved;
-                    sumFactDev = Math.Round(sumFactDev, 1);
-                    Rows[i].Cells[(int)INDEX_COLUMNS.TEMPERATURE_DEVIATION].Value = sumFactDev.ToString(@"F2");
+                    sumFactDev = Math.Round(sumFactDev, digitRound);
+                    Rows[i].Cells[(int)INDEX_COLUMNS.TEMPERATURE_DEVIATION].Value = sumFactDev.ToString(@"F" + digitRound);
                     //// план для панели оперативной информации
                     PerformDataValues(new DataValuesEventArgs() { m_value1 = sumTFact, m_value2 = sumFactDev });
                 }
@@ -352,7 +359,8 @@ namespace Statistic
                         lh = lastHour + 1;
                     else
                         if (HDateTime.ToMoscowTimeZone(DateTime.Now).Date.Equals(serverTime.Date) == true)
-                            lh = serverTime.Hour;
+                            lh = serverTime.Hour //lastHour + 1
+                                ;
                         else
                             lh = 24;
 
@@ -731,7 +739,7 @@ namespace Statistic
                             case CONTROLS.lblDeviatCurrentValue:
                             case CONTROLS.lblDeviatHourValue:
                             case CONTROLS.lblDeviatDateValue:
-                                foreColor = Color.LimeGreen;
+                                foreColor = Color.Yellow; //LimeGreen
                                 backClolor = Color.Black;
                                 szFont = 15F;
                                 align = ContentAlignment.MiddleCenter;
@@ -984,14 +992,37 @@ namespace Statistic
                 {
                     int indxStartCommonPVal = m_indxStartCommonFirstValueSeries
                         , lastHour = m_parent.m_tecView.currHour == true ? m_parent.m_tecView.lastHour + 1 : m_parent.m_tecView.lastHour
-                        , indxVyvodValue = -1
                         ;
+                    bool bCurrHour = m_parent.m_tecView.currHour;
+                    TG.INDEX_VALUE indxVyvodValue = TG.INDEX_VALUE.COUNT_INDEX_VALUE;
                     double []arValues = new double[(int)TG.INDEX_VALUE.COUNT_INDEX_VALUE - 1];
                     //int[] arIds = new int[(int)TG.INDEX_VALUE.COUNT_INDEX_VALUE - 1];
                     int idVyvod = -1;
+                    DateTime dtServer = m_parent.m_tecView.serverTime.Date;
 
                     if (m_parent.m_tecView.IsHourValues(lastHour) == true)
                     {
+                        //Температура
+                        // значение температуры (текущее)
+                        arValues[(int)TG.INDEX_VALUE.FACT] = ((bCurrHour == true) && ((m_parent.m_tecView as DataSource).m_valueCurrHour > 0)) ?
+                            (m_parent.m_tecView as DataSource).m_valueCurrHour :
+                                double.NegativeInfinity;
+                        showValue(ref m_arLabelCommon[(int)CONTROLS.lblTemperatureCurrentValue - indxStartCommonPVal]
+                            , arValues[(int)TG.INDEX_VALUE.FACT]
+                            , 2 //round
+                            , false
+                            , true
+                            , arValues[(int)TG.INDEX_VALUE.FACT] == double.NegativeInfinity ? @"--.--" : string.Empty);
+                        // отклонение значения температуры от УДГт (текущее)
+                        arValues[(int)TG.INDEX_VALUE.TM] = ((bCurrHour == true) && ((m_parent.m_tecView as DataSource).m_valueCurrHour > 0)) ?
+                            m_parent.m_tecView.m_valuesHours[lastHour].valuesUDGe - (m_parent.m_tecView as DataSource).m_valueCurrHour :
+                                double.NegativeInfinity;
+                        showValue(ref m_arLabelCommon[(int)CONTROLS.lblDeviatCurrentValue - indxStartCommonPVal]
+                            , arValues[(int)TG.INDEX_VALUE.TM]
+                            , 2 //round
+                            , false
+                            , true
+                            , arValues[(int)TG.INDEX_VALUE.TM] == double.NegativeInfinity ? @"---" : string.Empty);
                         //Температура
                         // часовое значение температуры (крайний час)
                         arValues[(int)TG.INDEX_VALUE.FACT] = m_parent.m_tecView.m_valuesHours[lastHour].valuesFact;
@@ -1009,18 +1040,18 @@ namespace Statistic
                             , false
                             , true
                             , string.Empty);
-                        // плановое значение температуры (сутки) - отображается при обработке события 'DataGridViewLKHours::EventTemperaturePBRDay'
-                        
+
                         //// цвет шрифта для значений температуры, мощности
                         //m_arLabelCommon[(int)CONTROLS.lblTemperatureCurrentValue - indxStartCommonPVal].ForeColor =
-                        //m_arLabelCommon[(int)CONTROLS.lblTemperatureHourValue - indxStartCommonPVal].ForeColor =
-                        //m_arLabelCommon[(int)CONTROLS.lblTemperatureDateValue - indxStartCommonPVal].ForeColor =
-                        ////...
-                        //    clrLabel;                        
+                        m_arLabelCommon[(int)CONTROLS.lblTemperatureHourValue - indxStartCommonPVal].ForeColor = getColorValues(TG.INDEX_VALUE.FACT);
+                        m_arLabelCommon[(int)CONTROLS.lblTemperatureDateValue - indxStartCommonPVal].ForeColor = dtServer.Equals(HDateTime.ToMoscowTimeZone().Date) == false ?
+                            getColorValues(TG.INDEX_VALUE.FACT) :
+                                Color.LimeGreen; // если сутки текущие, то оставить как есть
                     }
                     else
                         ;
                     // детализация
+                    // при текущих значениях поля для вывода значений очищаются (m_parent.m_tecView.currHour == true)
                     foreach (TECComponent g in m_parent.m_tecView.LocalTECComponents)
                         if (g.IsVyvod == true)
                         {//Только ГТП
@@ -1033,13 +1064,12 @@ namespace Statistic
                             arValues[(int)TG.INDEX_VALUE.FACT] =
                             arValues[(int)TG.INDEX_VALUE.TM] =
                                 -1F;
-
+                            // получить значения для параметров ВЫВОДа
                             foreach (Vyvod.ParamVyvod pv in g.m_listLowPointDev)
-                            {
-                                //Цикл по списку с парметрами ВЫВОДа
+                            {//Цикл по списку с парметрами ВЫВОДа
                                 if (!(m_parent.m_tecView.m_dictValuesLowPointDev[pv.m_id].m_power_LastMinutesTM == null))
                                 {
-                                    indxVyvodValue = -1;
+                                    indxVyvodValue = TG.INDEX_VALUE.COUNT_INDEX_VALUE;
 
                                     switch (pv.m_id_param)
                                     {
@@ -1047,18 +1077,22 @@ namespace Statistic
                                             indxVyvodValue = (int)TG.INDEX_VALUE.FACT;
                                             break;
                                         case Vyvod.ID_PARAM.T_PV:
-                                            indxVyvodValue = (int)TG.INDEX_VALUE.TM;
+                                            indxVyvodValue = TG.INDEX_VALUE.TM;
                                             break;
                                         default:
                                             break;
                                     }
 
                                     //arIds[indxVyvodValue] = pv.m_id;
-                                    if ((!(indxVyvodValue < 0))
-                                        && (m_parent.m_tecView.currHour == false))
-                                        arValues[indxVyvodValue] = m_parent.m_tecView.m_dictValuesLowPointDev[pv.m_id].m_power_LastMinutesTM[lastHour];
+                                    if (indxVyvodValue < TG.INDEX_VALUE.COUNT_INDEX_VALUE)
+                                        if (bCurrHour == true)
+                                            // текущее значение
+                                            arValues[(int)indxVyvodValue] = (m_parent.m_tecView as DataSource).m_dictCurrValuesLowPointDev[pv.m_id];
+                                        else
+                                            // ретро-значение
+                                            arValues[(int)indxVyvodValue] = m_parent.m_tecView.m_dictValuesLowPointDev[pv.m_id].m_power_LastMinutesTM[lastHour];
                                     else
-                                        arValues[indxVyvodValue] = -1F;
+                                        arValues[(int)indxVyvodValue] = -1F;
                                 }
                                 else
                                     ; // массив со значениями не инициализирован
@@ -1071,13 +1105,13 @@ namespace Statistic
                                 showTDirectValue(idVyvod
                                     , indxVyvodValue
                                     , ((arValues[(int)TG.INDEX_VALUE.FACT] > 0) && (arValues[(int)TG.INDEX_VALUE.TM] > 0)) ?
-                                        arValues[(int)TG.INDEX_VALUE.FACT] * arValues[(int)TG.INDEX_VALUE.TM] / m_parent.m_tecView.m_valuesHours[lastHour].valuesTMSNPsum :
+                                    arValues[(int)TG.INDEX_VALUE.FACT] * arValues[(int)TG.INDEX_VALUE.TM] / (bCurrHour == true ? (m_parent.m_tecView as DataSource).m_SummGpv : m_parent.m_tecView.m_valuesHours[lastHour].valuesTMSNPsum) :
                                             -1F);
                                 // отобразить значение температура
-                                indxVyvodValue = (int)TG.INDEX_VALUE.TM;
+                                indxVyvodValue = TG.INDEX_VALUE.TM;
                                 showTDirectValue(idVyvod
                                     , indxVyvodValue
-                                    , arValues[indxVyvodValue]);
+                                    , arValues[(int)indxVyvodValue]);
                             }
                             else
                                 ;
@@ -1087,25 +1121,25 @@ namespace Statistic
                 }
 
                 public override void ShowTMValues()
-                {// не используется                    
+                {// не используется. Одновременно отображается как FACT, так и TM
                 }
 
                 //private Color getColor
 
-                private void showTDirectValue(int id_tg, int indx, double powerLastHour)
+                private void showTDirectValue(int id_tg, TG.INDEX_VALUE indx, double powerLastHour)
                 {
                     if (powerLastHour > 0)
                         //Отобразить значение
-                        showValue(m_tgLabels[id_tg][indx]
+                        showValue(m_tgLabels[id_tg][(int)indx]
                             , powerLastHour, 2, false);
                     else
                         //Отобразить строку - отсутствие значения
-                        m_tgLabels[id_tg][indx].Text = "--.--";
+                        m_tgLabels[id_tg][(int)indx].Text = "--.--";
 
                     // установить цвет шрифта для значения
-                    m_tgLabels[id_tg][indx].ForeColor =
+                    m_tgLabels[id_tg][(int)indx].ForeColor =
                         //Color.Green
-                        getColorValues(TG.INDEX_VALUE.FACT)
+                        getColorValues(indx)
                             ;
                 }
 
@@ -1191,6 +1225,16 @@ namespace Statistic
                     m_idAISKUEParNumber = ID_AISKUE_PARNUMBER.FACT_30;
                 }
 
+                protected override void Initialize()
+                {
+                    base.Initialize();
+
+                    m_valueCurrHour =
+                    m_SummGpv =
+                        -1F;
+                    m_dictCurrValuesLowPointDev = new Dictionary<int, double>();
+                }
+
                 //protected override int StateCheckResponse(int state, out bool error, out object outobj)
                 //{
                 //    throw new NotImplementedException();
@@ -1221,6 +1265,279 @@ namespace Statistic
                     lock (m_lockState) { GetRDGValues(-1, DateTime.MinValue); }
 
                     base.ChangeState(); //Run
+                }
+
+                protected override int StateRequest(int state)
+                {
+                    int iRes = 0;
+                    bool bHandled = ((StatesMachine)state == StatesMachine.HoursVzletTDirectValues)
+                        || ((StatesMachine)state == StatesMachine.CurrentVzletTDirectValues);
+                    //НЕ исключать обработку событий в базовом методе, чтобы отобразить сообщение в строке статуса
+                    switch ((StatesMachine)state)
+                    {
+                        case StatesMachine.HoursVzletTDirectValues:
+                            ClearValuesHours();
+                            getHoursVzletTDirectRequest(m_curDate.Date);
+                            break;
+                        case StatesMachine.CurrentVzletTDirectValues:
+                            getCurrentVzletTDirectRequest();
+                            break;
+                        default:
+                            break;
+                    }
+
+                    base.StateRequest(state);
+
+                    return iRes;
+                }
+
+                protected override int StateResponse(int state, object table)
+                {
+                    int iRes = 0;
+                    bool bHandled = ((StatesMachine)state == StatesMachine.HoursVzletTDirectValues)
+                        || ((StatesMachine)state == StatesMachine.CurrentVzletTDirectValues);
+                    //ВАЖНО исключить обработку событий в базовом методе
+                    switch ((StatesMachine)state)
+                    {
+                        case StatesMachine.HoursVzletTDirectValues:
+                            iRes = getHoursVzletTDirectResponse(table as System.Data.DataTable);
+                            break;
+                        case StatesMachine.CurrentVzletTDirectValues:
+                            iRes = getCurrentVzletTDirectResponse(table as System.Data.DataTable);
+                            //updateGUI_TM_Gen();
+                            break;
+                        default:
+                            break;
+                    }
+
+                    if (bHandled == true)
+                        base.StateResponse(state, table);
+                    else
+                        iRes = base.StateResponse(state, table);
+
+                    return iRes;
+                }
+
+                private void getHoursVzletTDirectRequest(DateTime dt)
+                {
+                    string strQuery = m_tec.GetHoursVzletTDirectQuery(dt);
+
+                    //Debug.WriteLine(DateTime.Now.ToString () + @"; TecView::getHoursVzletTDirectRequest () - query = " + strQuery);
+                    Request(m_dictIdListeners[m_tec.m_id][(int)CONN_SETT_TYPE.DATA_VZLET], strQuery);
+                }
+
+                private void getCurrentVzletTDirectRequest()
+                {
+                    string strQuery = @"SELECT TOP 1 [Дата]"
+                        // расходы
+                            + ", [Графа_1] as [Gpv_2028]"
+                            + ", [Графа_7] as [Gpv_2029]"
+                            + ", [Графа_13] as [Gpv_2030]"
+                            + ", [Графа_19] as [Gpv_2031]"
+                            + ", [Графа_26] as [Gpv_2032]"
+                            + ", [Графа_32] as [Gpv_2033]"
+                        // температуры
+                            + ", [Графа_2] as [Tpv_2020]"
+                            + ", [Графа_8] as [Tpv_2021]"
+                            + ", [Графа_14] as [Tpv_2022]"
+                            + ", [Графа_20] as [Tpv_2023]"
+                            + ", [Графа_27] as [Tpv_2024]"
+                            + ", [Графа_33] as [Tpv_2025]"
+                        // суммарное значение расходов
+                            + ", [Графа_1] + [Графа_7] + [Графа_13] + [Графа_19] + [Графа_26] + [Графа_32]"
+                        + " FROM [teplo1]"
+                        + @" ORDER BY [Дата] DESC";
+
+                    //Debug.WriteLine(DateTime.Now.ToString() + @"; TecView::getCurrentVzletTDirectRequest () - query = " + strQuery);
+                    Request(m_dictIdListeners[m_tec.m_id][(int)CONN_SETT_TYPE.DATA_VZLET], strQuery);
+                }
+
+                private static int getIdComponent(string nameField)
+                {
+                    int iRes = -1;
+
+                    if (Int32.TryParse(nameField.Substring(nameField.IndexOf('_') + 1), out iRes) == false)
+                        iRes = -1;
+                    else
+                        ;
+
+                    return iRes;
+                }
+
+                private int getHoursVzletTDirectResponse(DataTable table)
+                {
+                    int iRes = 0;
+
+                    int iHour = -1 // индекс для номера часа
+                        , id = -1, v = -1, indx = -1 // идентификатор параметра-ВЫВОДА, индекс для вывода, индекс для поля в таблице-результате
+                        , typeValue = 0, cntTypeValues = 2 // тип значения (0 - реальные расходы/1 - реальные температуры/2 - взвешенные температуры)
+                        , cntVyvod = -1; // количество ВЫВОДов
+                    //string strNameField = string.Empty;
+                    List<int> listIDLowPointDev = new List<int>(); // список идентификаторов параметров ВЫВОДов, значения которых представлены в столбцах таблицы-результата
+
+                    try
+                    {
+                        cntVyvod = (table.Columns.Count - 1 - 1) / cntTypeValues; // 0-е поле для номера часа, крайнее для СРЕДН_СУММ_РАСХОДЫ, остальные для значений в ~ с типами значений
+
+                        for (v = 1; v < table.Columns.Count; v++)
+                        {
+                            id = getIdComponent((string)table.Columns[v].ColumnName);
+                            listIDLowPointDev.Add(id);
+                        }
+
+                        foreach (DataRow r in table.Rows)
+                        {
+                            iHour = (int)r[@"iHOUR"];
+                            double Gpv = -1F, Tpv = -1F;
+
+                            if (iHour < 0)
+                                iHour += m_valuesHours.Length/*24*/;
+                            else
+                                if (!(iHour < m_valuesHours.Length))
+                                    throw new Exception(string.Format(@"TecView::getHoursVzletTDirectResponse () - HOUR={0} за пределами диапазона...", iHour));
+                                else
+                                    ; // индекс часа в пределах диапазона
+
+                            if (!(r[table.Columns.Count - 1] is DBNull))
+                            {
+                                m_valuesHours[iHour].valuesTMSNPsum = (double)r[table.Columns.Count - 1];
+
+                                for (v = 1; v < (cntVyvod + 1); v++)
+                                {
+                                    // расходы
+                                    typeValue = 0;
+                                    indx = typeValue * cntVyvod + v;
+                                    Gpv = (double)r[indx];
+                                    m_dictValuesLowPointDev[listIDLowPointDev[indx - 1]].m_power_LastMinutesTM[iHour] = Gpv;
+                                    // температуры
+                                    typeValue = 1;
+                                    indx = typeValue * cntVyvod + v;
+                                    Tpv = (double)r[indx];
+                                    m_dictValuesLowPointDev[listIDLowPointDev[indx - 1]].m_power_LastMinutesTM[iHour] = Tpv;
+                                    // фактические значения
+                                    m_valuesHours[iHour].valuesFact += Tpv * (Gpv / m_valuesHours[iHour].valuesTMSNPsum);
+                                }
+
+                                //m_valuesHours[iHour].valuesTMSNPsum /= cntVyvod;
+                            }
+                            else
+                                break;
+                        }
+
+                        //Определить полные ли сутки в результате запроса
+                        if (currHour == true)
+                            if (iHour < (m_valuesHours.Length/*24*/ - 1))
+                            {
+                                lastHour = iHour - 1;
+                                lastReceivedHour = iHour;
+                            }
+                            else
+                            {
+                                lastHour =
+                                lastReceivedHour =
+                                    iHour;
+                            }
+                        else
+                            ;
+                    }
+                    catch (Exception e)
+                    {
+                        iRes = -1;
+
+                        Logging.Logg().Exception(e, @"TecView::getHoursVzletTDirectResponse () - ...", Logging.INDEX_MESSAGE.NOT_SET);
+                    }
+
+                    return iRes;
+                }
+
+                public double m_valueCurrHour
+                    , m_SummGpv;
+                public Dictionary<int, double> m_dictCurrValuesLowPointDev;
+
+                protected override void ClearValuesHours()
+                {
+                    base.ClearValuesHours();
+                    List<int> keys = new List<int>(m_dictCurrValuesLowPointDev.Keys);
+
+                    m_valueCurrHour =
+                    m_SummGpv =
+                        0F;
+                    foreach (int key in keys)
+                        m_dictCurrValuesLowPointDev[key] = 0F;
+                }
+
+                protected override void initDictValuesLowPointDev(TECComponent comp)
+                {
+                    base.initDictValuesLowPointDev(comp);
+
+                    foreach (TECComponentBase dev in comp.m_listLowPointDev)
+                        if (m_dictCurrValuesLowPointDev.ContainsKey(dev.m_id) == false)
+                            m_dictCurrValuesLowPointDev.Add(dev.m_id, -1F);
+                        else
+                            ;
+                }
+
+                private int getCurrentVzletTDirectResponse(DataTable table)
+                {
+                    int iRes = 0;
+
+                    int v = -1, id = -1, indx = -1 // идентификатор параметра-ВЫВОДА, индекс для вывода, индекс для поля в таблице-результате
+                        , typeValue = 0 // тип значения (0 - реальные расходы/1 - реальные температуры/2 - взвешенные температуры)
+                        , cntVyvod = -1; // количество ВЫВОДов
+                    double Gpv = -1F, Tpv = -1F;
+                    List<int> listIDLowPointDev = new List<int>(); // список идентификаторов параметров ВЫВОДов, значения которых представлены в столбцах таблицы-результата;
+
+                    try
+                    {
+                        if (table.Rows.Count == 1)
+                        {
+                            cntVyvod = (table.Columns.Count - 1 - 1) / 2;
+
+                            for (v = 1; v < table.Columns.Count; v++)
+                            {
+                                id = getIdComponent((string)table.Columns[v].ColumnName);
+                                listIDLowPointDev.Add(id);
+                            }
+
+                            if (TecView.ValidateDatetimeTMValue(serverTime.Add(-HDateTime.TS_MSK_OFFSET_OF_UTCTIMEZONE), (DateTime)table.Rows[0][0]) == false)
+                                iRes = 1; // не актуальное время крайнего опроса
+                            else
+                                ;
+
+                            if (!(table.Rows[0][table.Columns.Count - 1] is DBNull))
+                            {
+                                m_SummGpv = (float)table.Rows[0][table.Columns.Count - 1];
+
+                                for (v = 1; v < (cntVyvod + 1); v++)
+                                {
+                                    // расходы
+                                    typeValue = 0;
+                                    indx = typeValue * cntVyvod + v;
+                                    Gpv = (float)table.Rows[0][indx];
+                                    m_dictCurrValuesLowPointDev[listIDLowPointDev[indx - 1]] = Gpv;
+                                    // температуры
+                                    typeValue = 1;
+                                    indx = typeValue * cntVyvod + v;
+                                    Tpv = (float)table.Rows[0][indx];
+                                    m_dictCurrValuesLowPointDev[listIDLowPointDev[indx - 1]] = Tpv;
+                                    // фактические значения
+                                    m_valueCurrHour += Tpv * (Gpv / m_SummGpv);
+                                }
+                            }
+                            else
+                                iRes = 2; // один из расходов == НУЛЛ
+                        }
+                        else
+                            iRes = -2;
+                    }
+                    catch (Exception e)
+                    {
+                        iRes = -1;
+
+                        Logging.Logg().Exception(e, @"TecView::getCurrentVzletTDirectResponse () - ...", Logging.INDEX_MESSAGE.NOT_SET);
+                    }
+
+                    return iRes;
                 }
 
                 //protected override void getPPBRValuesRequest()

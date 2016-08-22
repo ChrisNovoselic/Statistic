@@ -1910,6 +1910,58 @@ namespace StatisticCommon
 
             return strRes;
         }
+
+        public string GetHoursVzletTDirectQuery(DateTime dt)
+        {
+            string strRes = string.Empty;
+
+            TimeSpan tsOffset = HDateTime.TS_NSK_OFFSET_OF_MOSCOWTIMEZONE;
+            DateTime dtReq = dt.Date.Add(tsOffset); //добавить смещение НСК - МСК, т.к. в БД метки времени НСК
+
+            Vyvod.ParamVyvod pv;
+            string strParamVyvod = string.Empty
+                , strSummaGpr = string.Empty;
+
+            // формировать расходы и температуры
+            foreach (TECComponent tc in list_TECComponents)
+            {
+                if (tc.IsParamVyvod == true)
+                {
+                    pv = tc.m_listLowPointDev[0] as Vyvod.ParamVyvod;
+
+                    if (((pv.m_id_param == Vyvod.ID_PARAM.G_PV) || (pv.m_id_param == Vyvod.ID_PARAM.T_PV))
+                        && (pv.m_SensorsString_VZLET.Equals(string.Empty) == false))
+                    {
+                        strParamVyvod += ", AVG ([" + pv.m_SensorsString_VZLET + @"]) as [" + pv.m_Symbol + @"pv_" + pv.m_id + @"]";
+
+                        if (pv.m_id_param == Vyvod.ID_PARAM.G_PV)
+                            strSummaGpr += @"[" + pv.m_SensorsString_VZLET + @"]+";
+                        else
+                            ;
+                    }
+                    else
+                        ;
+                }
+                else
+                    ;
+            }
+
+            // удалить лишний "+"
+            strSummaGpr = strSummaGpr.Substring(0, strSummaGpr.Length - 1);
+
+            strRes += @"SELECT DATEPART(HH, [Дата]) - " + tsOffset.Hours + @" as [iHOUR]" // вычесть добавленное смещение НСК - МСК
+            // расходы и температуры
+                + strParamVyvod
+            // суммарное значение расходов
+                + ", AVG (" + strSummaGpr + @")"
+            + " FROM [teplo1]"
+            + " WHERE [Дата] > '" + dtReq.ToString(@"yyyyMMdd HH:00:00") + @"'"
+                + " AND [Дата] < '" + dtReq.AddDays(1).ToString(@"yyyyMMdd HH:00:00") + @"'"
+            + " GROUP BY DATEPART(DD, [Дата]), DATEPART(HH, [Дата])"
+            + " ORDER BY DATEPART(DD, [Дата]), DATEPART(HH, [Дата])";
+
+            return strRes;
+        }
         /// <summary>
         /// Возвратить содержание запроса для получения уже имеющихся административных значений
         ///  (меток даты/времени для этих значений)
