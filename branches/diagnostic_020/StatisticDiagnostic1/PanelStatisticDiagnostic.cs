@@ -1292,21 +1292,23 @@ namespace StatisticDiagnostic
             /// <returns></returns>
             private bool selectInvalidValue(string nameS, DateTime time, int numberPanel)
             {
-                DateTime m_DTnowAISKUE = SERVER_TIME;
-                TimeZoneInfo m_tzInfo = TimeZoneInfo.FindSystemTimeZoneById("Russian Standard Time");
-                DateTime m_DTnowSOTIASSO;
+                
+                DateTime DTnowAISKUE = SERVER_TIME;
+                TimeZoneInfo tzInfo = TimeZoneInfo.FindSystemTimeZoneById("Russian Standard Time");
+                //TimeSpan tmsp = new TimeSpan(TimeZoneInfo.Local.BaseUtcOffset.Hours - tzInfo.BaseUtcOffset.Hours);
+                DateTime DTnowSOTIASSO;
 
                 if ((numberPanel + 1) == 6)
-                    m_DTnowSOTIASSO = TimeZoneInfo.ConvertTime(SERVER_TIME, TimeZoneInfo.Local);
+                    DTnowSOTIASSO = TimeZoneInfo.ConvertTime(SERVER_TIME, TimeZoneInfo.Local);
                 else
-                    m_DTnowSOTIASSO = TimeZoneInfo.ConvertTimeToUtc(SERVER_TIME, m_tzInfo);
+                    DTnowSOTIASSO = TimeZoneInfo.ConvertTimeToUtc(SERVER_TIME, tzInfo);
 
                 bool bFL = true; ;
 
                 switch (nameS)
                 {
                     case "АИИСКУЭ":
-                        if (diffTime(m_DTnowAISKUE, time))
+                        if (diffTime(DTnowAISKUE, time))
                             bFL = true;
                         else
                             bFL = false;
@@ -1314,14 +1316,8 @@ namespace StatisticDiagnostic
 
                     case "СОТИАССО":
                     case "СОТИАССО_TorIs":
-                    //if (diffTime(m_DTnowSOTIASSO, time))
-                    //    bFL = true;
-                    //else
-                    //    bFL = false;
-                    //break;
-
                     case "СОТИАССО_0":
-                        if (diffTime(m_DTnowSOTIASSO, time))
+                        if (diffTime(DTnowSOTIASSO, time))
                             bFL = true;
                         else
                             bFL = false;
@@ -1361,13 +1357,9 @@ namespace StatisticDiagnostic
                 switch (nameSource)
                 {
                     case "СОТИАССО":
-                    //if ((Npanel + 1) == 6)
-                    //    result = result.AddHours(6.0);
-                    //break;
-
                     case "СОТИАССО_0":
                         if ((Npanel + 1) == 6)
-                            result = result.AddHours(6);
+                            result = result.AddHours(TimeZoneInfo.Local.BaseUtcOffset.Hours);
                         break;
 
                     default:
@@ -2766,15 +2758,15 @@ namespace StatisticDiagnostic
         /// </summary>
         private void addPanelTEC()
         {
-            int i = -1;
-            int indx = -1
+            int i = -1,
+             indx = -1
                , col = -1
                , row = -1;
 
             for (i = 0; i < m_arPanelsTEC.Length; i++)
             {
                 indx = i;
-                if (!(indx < this.RowCount))
+                if (!(indx < RowCount))
                     //indx += (int)(indx / TecTableLayoutPanel.RowCount);
 
                     row = (int)(indx / TecTableLayoutPanel.RowCount);
