@@ -99,12 +99,6 @@ namespace Statistic
         {
             bool bRes = base.Activate(active);
 
-            if (bRes == true)
-                foreach (Control ptvtd in this.Controls)
-                    if ((ptvtd is PanelTecVzletTDirect) == true) (ptvtd as PanelTecVzletTDirect).Activate(active); else ;
-            else
-                ;
-
             return bRes;
         }
 

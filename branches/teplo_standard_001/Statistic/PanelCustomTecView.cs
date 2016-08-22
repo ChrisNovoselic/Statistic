@@ -491,8 +491,6 @@ namespace Statistic
             //SetDelegateReport (fErrRep, fWarRep, fActRep, fREpClr);
 
             InitializeComponent();
-
-
         }
 
         public PanelCustomTecView(IContainer container, FormChangeMode formCM, Size sz/*, DelegateStringFunc fErrRep, DelegateStringFunc fWarRep, DelegateStringFunc fActRep, DelegateBoolFunc fRepClr*/)
