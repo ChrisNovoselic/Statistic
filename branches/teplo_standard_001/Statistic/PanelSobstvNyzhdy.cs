@@ -898,16 +898,18 @@ namespace Statistic
             /// <summary>
             /// Обработчик события нажатия на кнопку экспорта
             /// </summary>
-            /// <param name="sender"></param>
-            /// <param name="e"></param>
+            /// <param name="sender">Объект, инициировавший событие</param>
+            /// <param name="e">Аргумент события</param>
             private void эксельToolStripMenuItemHours_Click(object sender, EventArgs e)
             {
                 lock (m_tecView.m_lockValue)
                 {
                     SaveFileDialog sf = new SaveFileDialog();
                     sf.CheckPathExists = true;
+                    sf.ValidateNames = true;
+                    sf.DereferenceLinks = false; // Will return .lnk in shortcuts.
                     sf.DefaultExt = ".xls";
-                    sf.Filter = "Файл Microsoft Excel (.xls) | *.xls";
+                    sf.Filter = s_DialogMSExcelBrowseFilter;
                     if (sf.ShowDialog() == DialogResult.OK)
                     {
                         string strSheetName = "Часовые_знач";

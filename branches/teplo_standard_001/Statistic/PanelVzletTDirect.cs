@@ -74,9 +74,13 @@ namespace Statistic
 
             initializeLayoutStyle(listTec.Count / 2
                 , listTec.Count);
-            //??? фильтр ТЭЦ-ЛК
+
+            PanelTecVzletTDirect.IndexCustomTecView = listTec.Count > 1 ? PanelTecVzletTDirect.INDEX_CUSTOM_TECVIEW.MULTI : PanelTecVzletTDirect.INDEX_CUSTOM_TECVIEW.SINGLE;
+
+            //??? фильтр ТЭЦ-ЛК, Бийская ТЭЦ - т.к. для них нет АИСКУТЭ
             for (i = 0; i < listTec.Count; i++)
-                if (!(listTec[i].m_id > (int)TECComponent.ID.LK))
+                if ((!(listTec[i].m_id > (int)TECComponent.ID.LK))
+                    && (!(listTec[i].Type == TEC.TEC_TYPE.BIYSK)))
                 {
                     ptvtd = new PanelTecVzletTDirect(listTec[i], i, -1);
                     this.Controls.Add(ptvtd, i % this.ColumnCount, i / this.ColumnCount);
@@ -539,7 +543,7 @@ namespace Statistic
                     GraphPane.YAxis.Title.Text = "";
                     //По просьбе НСС-машинистов ДОБАВИТЬ - источник данных  05.12.2014
                     //GraphPane.Title.Text = @"(" + m_ZedGraphHours.SourceDataText + @")";
-                    GraphPane.Title.Text = SourceDataText;
+                    GraphPane.Title.Text = @"АИСКУТЭ";
                     GraphPane.Title.Text += new string(' ', 29);
                     GraphPane.Title.Text +=
                         //"Мощность " +
@@ -604,6 +608,23 @@ namespace Statistic
                     AxisChange();
 
                     Invalidate();
+                }
+
+                private class ContextMenuStripZedGraph : HContextMenuStripZedGraph
+                {
+                    protected override void initializeItemAdding()
+                    {
+                        int indx = -1;
+                    }
+                }
+
+                protected override void createContextMenuStrip()
+                {
+                    this.ContextMenuStrip = new ContextMenuStripZedGraph();
+                }
+
+                protected override void initializeContextMenuItemAddingEventHandler(EventHandler fAddingHandler)
+                {
                 }
             }
             /// <summary>
@@ -1043,75 +1064,79 @@ namespace Statistic
                                 Color.LimeGreen; // если сутки текущие, то оставить как есть
                     }
                     else
-                        ;
-                    // детализация
-                    // при текущих значениях поля для вывода значений очищаются (m_parent.m_tecView.currHour == true)
-                    foreach (TECComponent g in m_parent.m_tecView.LocalTECComponents)
-                        if (g.IsVyvod == true)
-                        {//Только ГТП
-                            // идентификаторы параметров
-                            //arIds[(int)TG.INDEX_VALUE.FACT] =
-                            //arIds[(int)TG.INDEX_VALUE.TM] =
-                            //    -1;
-                            idVyvod = g.m_id;
-                            // значения параметров
-                            arValues[(int)TG.INDEX_VALUE.FACT] =
-                            arValues[(int)TG.INDEX_VALUE.TM] =
-                                -1F;
-                            // получить значения для параметров ВЫВОДа
-                            foreach (Vyvod.ParamVyvod pv in g.m_listLowPointDev)
-                            {//Цикл по списку с парметрами ВЫВОДа
-                                if (!(m_parent.m_tecView.m_dictValuesLowPointDev[pv.m_id].m_power_LastMinutesTM == null))
-                                {
-                                    indxVyvodValue = TG.INDEX_VALUE.COUNT_INDEX_VALUE;
+                        ; // нет значений для указанного 'lastHour' часа
 
-                                    switch (pv.m_id_param)
+                    if (PanelTecVzletTDirect.IndexCustomTecView == INDEX_CUSTOM_TECVIEW.SINGLE)
+                        // детализация
+                        // при текущих значениях поля для вывода значений очищаются (m_parent.m_tecView.currHour == true)
+                        foreach (TECComponent g in m_parent.m_tecView.LocalTECComponents)
+                            if (g.IsVyvod == true)
+                            {//Только ГТП
+                                // идентификаторы параметров
+                                //arIds[(int)TG.INDEX_VALUE.FACT] =
+                                //arIds[(int)TG.INDEX_VALUE.TM] =
+                                //    -1;
+                                idVyvod = g.m_id;
+                                // значения параметров
+                                arValues[(int)TG.INDEX_VALUE.FACT] =
+                                arValues[(int)TG.INDEX_VALUE.TM] =
+                                    -1F;
+                                // получить значения для параметров ВЫВОДа
+                                foreach (Vyvod.ParamVyvod pv in g.m_listLowPointDev)
+                                {//Цикл по списку с парметрами ВЫВОДа
+                                    if (!(m_parent.m_tecView.m_dictValuesLowPointDev[pv.m_id].m_power_LastMinutesTM == null))
                                     {
-                                        case Vyvod.ID_PARAM.G_PV:
-                                            indxVyvodValue = (int)TG.INDEX_VALUE.FACT;
-                                            break;
-                                        case Vyvod.ID_PARAM.T_PV:
-                                            indxVyvodValue = TG.INDEX_VALUE.TM;
-                                            break;
-                                        default:
-                                            break;
-                                    }
+                                        indxVyvodValue = TG.INDEX_VALUE.COUNT_INDEX_VALUE;
 
-                                    //arIds[indxVyvodValue] = pv.m_id;
-                                    if (indxVyvodValue < TG.INDEX_VALUE.COUNT_INDEX_VALUE)
-                                        if (bCurrHour == true)
-                                            // текущее значение
-                                            arValues[(int)indxVyvodValue] = (m_parent.m_tecView as DataSource).m_dictCurrValuesLowPointDev[pv.m_id];
+                                        switch (pv.m_id_param)
+                                        {
+                                            case Vyvod.ID_PARAM.G_PV:
+                                                indxVyvodValue = (int)TG.INDEX_VALUE.FACT;
+                                                break;
+                                            case Vyvod.ID_PARAM.T_PV:
+                                                indxVyvodValue = TG.INDEX_VALUE.TM;
+                                                break;
+                                            default:
+                                                break;
+                                        }
+
+                                        //arIds[indxVyvodValue] = pv.m_id;
+                                        if (indxVyvodValue < TG.INDEX_VALUE.COUNT_INDEX_VALUE)
+                                            if (bCurrHour == true)
+                                                // текущее значение
+                                                arValues[(int)indxVyvodValue] = (m_parent.m_tecView as DataSource).m_dictCurrValuesLowPointDev[pv.m_id];
+                                            else
+                                                // ретро-значение
+                                                arValues[(int)indxVyvodValue] = m_parent.m_tecView.m_dictValuesLowPointDev[pv.m_id].m_power_LastMinutesTM[lastHour];
                                         else
-                                            // ретро-значение
-                                            arValues[(int)indxVyvodValue] = m_parent.m_tecView.m_dictValuesLowPointDev[pv.m_id].m_power_LastMinutesTM[lastHour];
+                                            arValues[(int)indxVyvodValue] = -1F;
+                                    }
                                     else
-                                        arValues[(int)indxVyvodValue] = -1F;
+                                        ; // массив со значениями не инициализирован
+                                }
+
+                                if (idVyvod > 0)
+                                {
+                                    // отобразить значение ВЗВЕШЕННАЯ температура                            
+                                    indxVyvodValue = (int)TG.INDEX_VALUE.FACT;
+                                    showTDirectValue(idVyvod
+                                        , indxVyvodValue
+                                        , ((arValues[(int)TG.INDEX_VALUE.FACT] > 0) && (arValues[(int)TG.INDEX_VALUE.TM] > 0)) ?
+                                        arValues[(int)TG.INDEX_VALUE.FACT] * arValues[(int)TG.INDEX_VALUE.TM] / (bCurrHour == true ? (m_parent.m_tecView as DataSource).m_SummGpv : m_parent.m_tecView.m_valuesHours[lastHour].valuesTMSNPsum) :
+                                                -1F);
+                                    // отобразить значение температура
+                                    indxVyvodValue = TG.INDEX_VALUE.TM;
+                                    showTDirectValue(idVyvod
+                                        , indxVyvodValue
+                                        , arValues[(int)indxVyvodValue]);
                                 }
                                 else
-                                    ; // массив со значениями не инициализирован
-                            }
-
-                            if (idVyvod > 0)
-                            {
-                                // отобразить значение ВЗВЕШЕННАЯ температура                            
-                                indxVyvodValue = (int)TG.INDEX_VALUE.FACT;                            
-                                showTDirectValue(idVyvod
-                                    , indxVyvodValue
-                                    , ((arValues[(int)TG.INDEX_VALUE.FACT] > 0) && (arValues[(int)TG.INDEX_VALUE.TM] > 0)) ?
-                                    arValues[(int)TG.INDEX_VALUE.FACT] * arValues[(int)TG.INDEX_VALUE.TM] / (bCurrHour == true ? (m_parent.m_tecView as DataSource).m_SummGpv : m_parent.m_tecView.m_valuesHours[lastHour].valuesTMSNPsum) :
-                                            -1F);
-                                // отобразить значение температура
-                                indxVyvodValue = TG.INDEX_VALUE.TM;
-                                showTDirectValue(idVyvod
-                                    , indxVyvodValue
-                                    , arValues[(int)indxVyvodValue]);
+                                    ; // идентификатор ВЫВОДа не известен
                             }
                             else
-                                ;
-                        }
-                        else
-                            ;
+                                ; // только ВЫВОДы
+                    else
+                        ; // не детализировать при отображении нескольких ТЭЦ
                 }
 
                 public override void ShowTMValues()
@@ -1184,13 +1209,19 @@ namespace Statistic
 
             #region Код, автоматически созданный конструктором компонентов
 
+            public enum INDEX_CUSTOM_TECVIEW : short { UNKNOWN = -1, SINGLE, MULTI };
+            public static INDEX_CUSTOM_TECVIEW IndexCustomTecView = INDEX_CUSTOM_TECVIEW.UNKNOWN;
+            //отобразить часовые таблицу/гистограмму/панель с оперативными данными
+            //отобразить часовые таблицу
+            private static List<int[]> s_SetCustomTecView = new List<int[]> {new int [] { 0, 1, 0, 1, 0, 1, -1 }, new int [] { 0, 1, 0, 0, -1, 1, -1 }};
+
             protected override void InitializeComponent()
             {
                 components = new System.ComponentModel.Container();
 
-                int[] arProp = new int[] { 0, 1, 0, 1, 0, 1, -1 }; //отобразить часовые таблицу/гистограмму/панель с оперативными данными
-
                 base.InitializeComponent();
+
+                this.m_ZedGraphHours.InitializeContextMenuItemAddingEventHandler(this.эксельToolStripMenuItemHours_Click, null);
 
                 this.SuspendLayout();
 
@@ -1198,9 +1229,9 @@ namespace Statistic
                 this.PerformLayout();
 
                 if (!(m_label == null))
-                    m_label.PerformRestruct(arProp);
+                    m_label.PerformRestruct(s_SetCustomTecView[(int)IndexCustomTecView]);
                 else
-                    OnEventRestruct(arProp);
+                    OnEventRestruct(s_SetCustomTecView[(int)IndexCustomTecView]);
             }
 
             #endregion
@@ -1677,6 +1708,11 @@ namespace Statistic
             {
                 int iRes = 0;
 
+                if (IndexCustomTecView == INDEX_CUSTOM_TECVIEW.MULTI)
+                    m_label = new PanelCustomTecView.HLabelCustomTecView(s_SetCustomTecView[(int)IndexCustomTecView]);
+                else
+                    ;
+
                 SPLITTER_PERCENT_VERTICAL = 35;
 
                 m_arPercRows = new int[] { 5, 78 };
@@ -1702,16 +1738,20 @@ namespace Statistic
             /// </summary>
             public override void AddTGView()
             {
-                // цикл по всем ВЫВОДам
-                m_tecView.m_tec.list_TECComponents.ForEach (c => {
-                    //if ((c.IsParamVyvod == true)
-                    //    && ((c.m_listLowPointDev[0] as Vyvod.ParamVyvod).m_id_param == Vyvod.ID_PARAM.T_PV))
-                    if (c.IsVyvod == true)
-                        // добавить элементы управления для отображения значений указанного ВЫВОДа
-                        _pnlQuickData.AddTGView(c);
-                    else
-                        ;
-                });
+                if (IndexCustomTecView == INDEX_CUSTOM_TECVIEW.SINGLE)
+                    // цикл по всем ВЫВОДам
+                    m_tecView.m_tec.list_TECComponents.ForEach(c =>
+                    {
+                        //if ((c.IsParamVyvod == true)
+                        //    && ((c.m_listLowPointDev[0] as Vyvod.ParamVyvod).m_id_param == Vyvod.ID_PARAM.T_PV))
+                        if (c.IsVyvod == true)
+                            // добавить элементы управления для отображения значений указанного ВЫВОДа
+                            _pnlQuickData.AddTGView(c);
+                        else
+                            ;
+                    });
+                else
+                    ;
             }
             /// <summary>
             /// Обработчик события - получение данных при запросе к БД
@@ -1838,28 +1878,29 @@ namespace Statistic
                 return new HMark(0);
             }
 
-            //public override void UpdateGraphicsCurrent(int type)
-            //{
-            //    lock (m_tecView.m_lockValue)
-            //    {
-            //        //??? Проверка 'type' TYPE_UPDATEGUI
-            //        HMark markChanged = enabledSourceData_ToolStripMenuItems();
-            //        if (markChanged.IsMarked() == false)
-            //        {
-            //            //DrawGraphMins(m_tecView.lastHour);
-            //            DrawGraphHours();
-            //        }
-            //        else
-            //        {
-            //            if (m_tecView.currHour == true)
-            //                NewDateRefresh();
-            //            else
-            //            {//m_tecView.currHour == false
-            //                updateGraphicsRetro(markChanged);
-            //            }
-            //        }
-            //    }
-            //}
+            /// <summary>
+            /// Обработчик события нажатия на кнопку экспорта
+            /// </summary>
+            /// <param name="sender">Объект, инициировавший событие</param>
+            /// <param name="e">Аргумент события</param>
+            private void эксельToolStripMenuItemHours_Click(object sender, EventArgs e)
+            {
+                lock (m_tecView.m_lockValue)
+                {
+                    SaveFileDialog sf = new SaveFileDialog();
+                    sf.CheckPathExists = true;
+                    //sf.MultiSelect = false;
+                    sf.ValidateNames = true;
+                    sf.DereferenceLinks = false; // Will return .lnk in shortcuts.
+                    sf.DefaultExt = ".xls";
+                    sf.Filter = s_DialogMSExcelBrowseFilter;
+                    if (sf.ShowDialog() == DialogResult.OK)
+                    {
+                    }
+                    else
+                        ;
+                }
+            }
         }
     }
 }

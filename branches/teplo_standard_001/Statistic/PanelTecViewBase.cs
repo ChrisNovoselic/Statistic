@@ -61,19 +61,19 @@ namespace Statistic
                     // contextMenuStrip
                     // 
                     this.Items.AddRange(new System.Windows.Forms.ToolStripItem[] {
-                    new System.Windows.Forms.ToolStripMenuItem()
-                    , new System.Windows.Forms.ToolStripSeparator(),
-                    new System.Windows.Forms.ToolStripMenuItem(),
-                    new System.Windows.Forms.ToolStripMenuItem(),
-                    new System.Windows.Forms.ToolStripMenuItem()
-                    , new System.Windows.Forms.ToolStripSeparator(),
-                    new System.Windows.Forms.ToolStripMenuItem(),
-                    new System.Windows.Forms.ToolStripMenuItem()
-                    , new System.Windows.Forms.ToolStripSeparator(),
-                    new System.Windows.Forms.ToolStripMenuItem(),
-                    new System.Windows.Forms.ToolStripMenuItem(),
-                    new System.Windows.Forms.ToolStripMenuItem(),
-                    new System.Windows.Forms.ToolStripMenuItem()
+                        new System.Windows.Forms.ToolStripMenuItem()
+                        , new System.Windows.Forms.ToolStripSeparator(),
+                        new System.Windows.Forms.ToolStripMenuItem(),
+                        new System.Windows.Forms.ToolStripMenuItem(),
+                        new System.Windows.Forms.ToolStripMenuItem()
+                        , new System.Windows.Forms.ToolStripSeparator(),
+                        new System.Windows.Forms.ToolStripMenuItem(),
+                        new System.Windows.Forms.ToolStripMenuItem()
+                        //, new System.Windows.Forms.ToolStripSeparator(),
+                        //new System.Windows.Forms.ToolStripMenuItem(),
+                        //new System.Windows.Forms.ToolStripMenuItem(),
+                        //new System.Windows.Forms.ToolStripMenuItem(),
+                        //new System.Windows.Forms.ToolStripMenuItem()
                     });
                     this.Name = "contextMenuStripMins";
                     this.Size = new System.Drawing.Size(198, 148);
@@ -127,6 +127,20 @@ namespace Statistic
                     this.Items[indx].Size = new System.Drawing.Size(197, 22);
                     this.Items[indx].Text = "–аспечатать";
 
+                    initializeItemAdding();
+                }
+
+                protected virtual void initializeItemAdding()
+                {
+                    this.Items.AddRange(new System.Windows.Forms.ToolStripItem[] {
+                        new System.Windows.Forms.ToolStripSeparator(),
+                        new System.Windows.Forms.ToolStripMenuItem(),
+                        new System.Windows.Forms.ToolStripMenuItem(),
+                        new System.Windows.Forms.ToolStripMenuItem(),
+                        new System.Windows.Forms.ToolStripMenuItem()
+                    });
+
+                    int indx = -1;
                     // 
                     // источникј»— ”Ёи—ќ“»ј——ќToolStripMenuItem
                     // 
@@ -191,7 +205,7 @@ namespace Statistic
             /// <param name="fSetScale">ƒелегат изменени€ настроек масштабировани€</param>
             public HZedGraphControl(object lockVal, DelegateFunc fSetScale)
             {
-                this.ContextMenuStrip = new HContextMenuStripZedGraph();
+                createContextMenuStrip();
 
                 InitializeComponent();
 
@@ -226,15 +240,20 @@ namespace Statistic
                 this.IsEnableVZoom = false;
                 this.IsShowPointValues = true;
 
-                InitializeEventHandler();
+                initializeContextMenuItemStandardEventHandler();
 
                 this.PointValueEvent += new ZedGraph.ZedGraphControl.PointValueHandler(this.OnPointValueEvent);
                 this.DoubleClickEvent += new ZedGraph.ZedGraphControl.ZedMouseEventHandler(this.OnDoubleClickEvent);
             }
+
+            protected virtual void createContextMenuStrip()
+            {
+                this.ContextMenuStrip = new HContextMenuStripZedGraph();
+            }
             /// <summary>
             /// »нициализаци€ обработчиков собыьтй при выборе пунктов меню (стандартных)
             /// </summary>
-            private void InitializeEventHandler()
+            private void initializeContextMenuItemStandardEventHandler()
             {
                 ((HContextMenuStripZedGraph)this.ContextMenuStrip).Items[(int)INDEX_CONTEXTMENU_ITEM.SHOW_VALUES].Click += new System.EventHandler(показывать«начени€ToolStripMenuItem_Click);
                 ((HContextMenuStripZedGraph)this.ContextMenuStrip).Items[(int)INDEX_CONTEXTMENU_ITEM.COPY].Click += new System.EventHandler(копироватьToolStripMenuItem_Click);
@@ -247,11 +266,16 @@ namespace Statistic
             /// </summary>
             /// <param name="fToExcel">ƒелегат обработки событи€ - экспорт в MS_Excel</param>
             /// <param name="fSourceData">ƒелегат обработки событи€ - изменение типа отображаемых данных</param>
-            public void InitializeEventHandler(EventHandler fToExcel, EventHandler fSourceData)
+            public void InitializeContextMenuItemAddingEventHandler(EventHandler fToExcel, EventHandler fAddingHandler)
             {
                 ((HContextMenuStripZedGraph)this.ContextMenuStrip).Items[(int)INDEX_CONTEXTMENU_ITEM.TO_EXCEL].Click += new System.EventHandler(fToExcel);
+                initializeContextMenuItemAddingEventHandler(fAddingHandler);
+            }
+
+            protected virtual void initializeContextMenuItemAddingEventHandler(EventHandler fAddingHandler)
+            {
                 for (int i = (int)INDEX_CONTEXTMENU_ITEM.AISKUE_PLUS_SOTIASSO; i < this.ContextMenuStrip.Items.Count; i++)
-                    ((HContextMenuStripZedGraph)this.ContextMenuStrip).Items[i].Click += new System.EventHandler(fSourceData);
+                    ((HContextMenuStripZedGraph)this.ContextMenuStrip).Items[i].Click += new System.EventHandler(fAddingHandler);
             }
 
             private void показывать«начени€ToolStripMenuItem_Click(object sender, EventArgs e)

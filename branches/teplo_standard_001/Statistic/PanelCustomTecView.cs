@@ -46,7 +46,7 @@ namespace Statistic
             /// <summary>
             /// Конструктор - основной (без параметров)
             /// </summary>
-            public HLabelCustomTecView()
+            public HLabelCustomTecView(int []arProp = null)
             {
                 this.Dock = DockStyle.Fill;
                 this.Text = s_msg;
@@ -60,8 +60,19 @@ namespace Statistic
 
                 m_listIdContextMenuItems = new List<int>();
 
-                m_propView = new int[s_propViewDefault.Length];
-                s_propViewDefault.CopyTo(m_propView, 0);
+                if (arProp == null)
+                {
+                    m_propView = new int[s_propViewDefault.Length];
+                    s_propViewDefault.CopyTo(m_propView, 0);
+                }
+                else
+                    if (arProp.Length == s_propViewDefault.Length)
+                    {
+                        m_propView = new int[arProp.Length];
+                        arProp.CopyTo(m_propView, 0);
+                    }
+                    else
+                        throw new Exception(@"HLabelCustomTecView::ctor () - длина массива свойств ...");                
 
                 m_prevViewOrientation = m_propView[(int)INDEX_PROPERTIES_VIEW.ORIENTATION];
 
