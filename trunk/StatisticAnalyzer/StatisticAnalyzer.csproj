@@ -83,6 +83,9 @@
     <ApplicationManifest>Properties\app.manifest</ApplicationManifest>
   </PropertyGroup>
   <ItemGroup>
+    <Reference Include="HClassLibrary">
+      <HintPath>..\..\ExternalDLL\HClassLibrary.dll</HintPath>
+    </Reference>
     <Reference Include="System" />
     <Reference Include="System.Core" />
     <Reference Include="System.Xml.Linq" />
@@ -131,10 +134,6 @@
     </Compile>
   </ItemGroup>
   <ItemGroup>
-    <ProjectReference Include="..\..\HClassLibrary\HClassLibrary.csproj">
-      <Project>{A4F24CAA-ACAA-4923-AA4F-CEF6CBA46291}</Project>
-      <Name>HClassLibrary</Name>
-    </ProjectReference>
     <ProjectReference Include="..\StatisticLibrary\StatisticCommon.csproj">
       <Project>{5D7C7433-8D2F-4C1A-8BD7-B30B7AE7079B}</Project>
       <Name>StatisticCommon</Name>

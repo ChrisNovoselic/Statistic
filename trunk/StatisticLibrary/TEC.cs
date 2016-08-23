@@ -1915,7 +1915,7 @@ namespace StatisticCommon
         {
             string strRes = string.Empty;
 
-            TimeSpan tsOffset = HDateTime.TS_NSK_OFFSET_OF_MOSCOWTIMEZONE;
+            TimeSpan tsOffset = TimeSpan.Zero; // HDateTime.TS_NSK_OFFSET_OF_MOSCOWTIMEZONE;
             DateTime dtReq = dt.Date.Add(tsOffset); //добавить смещение НСК - МСК, т.к. в БД метки времени НСК
 
             Vyvod.ParamVyvod pv;

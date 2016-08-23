@@ -115,6 +115,10 @@
       <SpecificVersion>False</SpecificVersion>
       <HintPath>..\..\ExternalDLL\GemBox.Spreadsheet.dll</HintPath>
     </Reference>
+    <Reference Include="HClassLibrary, Version=2.0.3.1, Culture=neutral, PublicKeyToken=2f5f95fc94cb3397, processorArchitecture=MSIL">
+      <SpecificVersion>False</SpecificVersion>
+      <HintPath>..\..\ExternalDLL\HClassLibrary.dll</HintPath>
+    </Reference>
     <Reference Include="System" />
     <Reference Include="System.Configuration" />
     <Reference Include="System.Data" />
@@ -244,7 +248,7 @@
   <ItemGroup>
     <BootstrapperPackage Include="Microsoft.Net.Client.3.5">
       <Visible>False</Visible>
-      <ProductName>.NET Framework 3.5 SP1 Client Profile</ProductName>
+      <ProductName>Клиентский профиль .NET Framework 3.5 SP1</ProductName>
       <Install>false</Install>
     </BootstrapperPackage>
     <BootstrapperPackage Include="Microsoft.Net.Framework.3.5.SP1">
@@ -259,10 +263,6 @@
     </BootstrapperPackage>
   </ItemGroup>
   <ItemGroup>
-    <ProjectReference Include="..\..\HClassLibrary\HClassLibrary.csproj">
-      <Project>{A4F24CAA-ACAA-4923-AA4F-CEF6CBA46291}</Project>
-      <Name>HClassLibrary</Name>
-    </ProjectReference>
     <ProjectReference Include="..\StatisticAlarm\StatisticAlarm.csproj">
       <Project>{205A2B13-F4AC-42AC-8BB7-5B02DE932019}</Project>
       <Name>StatisticAlarm</Name>
@@ -287,48 +287,48 @@
   <ItemGroup>
     <PublishFile Include="connsett.ini">
       <Visible>False</Visible>
-      <PublishState>Include</PublishState>
-      <IncludeHash>True</IncludeHash>
       <Group>
       </Group>
       <TargetPath>
       </TargetPath>
+      <PublishState>Include</PublishState>
+      <IncludeHash>True</IncludeHash>
       <FileType>File</FileType>
     </PublishFile>
     <PublishFile Include="HClassLibrary.pdb">
       <Visible>False</Visible>
-      <PublishState>Include</PublishState>
-      <IncludeHash>True</IncludeHash>
       <Group>Отладка</Group>
       <TargetPath>
       </TargetPath>
+      <PublishState>Include</PublishState>
+      <IncludeHash>True</IncludeHash>
       <FileType>File</FileType>
     </PublishFile>
     <PublishFile Include="Statistic.pdb">
       <Visible>False</Visible>
-      <PublishState>Include</PublishState>
-      <IncludeHash>True</IncludeHash>
       <Group>Отладка</Group>
       <TargetPath>
       </TargetPath>
+      <PublishState>Include</PublishState>
+      <IncludeHash>True</IncludeHash>
       <FileType>File</FileType>
     </PublishFile>
     <PublishFile Include="StatisticCommon.pdb">
       <Visible>False</Visible>
-      <PublishState>Include</PublishState>
-      <IncludeHash>True</IncludeHash>
       <Group>Отладка</Group>
       <TargetPath>
       </TargetPath>
+      <PublishState>Include</PublishState>
+      <IncludeHash>True</IncludeHash>
       <FileType>File</FileType>
     </PublishFile>
     <PublishFile Include="StatisticTimeSync.pdb">
       <Visible>False</Visible>
-      <PublishState>Include</PublishState>
-      <IncludeHash>True</IncludeHash>
       <Group>Отладка</Group>
       <TargetPath>
       </TargetPath>
+      <PublishState>Include</PublishState>
+      <IncludeHash>True</IncludeHash>
       <FileType>File</FileType>
     </PublishFile>
   </ItemGroup>
