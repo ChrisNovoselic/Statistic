@@ -266,8 +266,8 @@ namespace Statistic
                 m_tecView.InitTEC (new List <TEC> () { tec }, markQueries);
                 //m_tecView.SetDelegateReport(fErrRep, fWarRep, fActRep, fRepClr);
 
-                m_tecView.updateGUI_TM_Gen = new DelegateFunc(showTMGenPower);
-                m_tecView.updateGUI_TM_SN = new DelegateFunc(showTMSNPower);
+                m_tecView.updateGUI_TM_Gen = new DelegateFunc(updateGUI_TM_Gen);
+                m_tecView.updateGUI_TM_SN = new DelegateFunc(updateGUI_TM_SN);
 
                 Initialize();
             }
@@ -437,37 +437,38 @@ namespace Statistic
                 return bRes;
             }
 
-            private void showTMGenPower()
+            private void updateGUI_TM_Gen()
             {
                 if (IsHandleCreated/*InvokeRequired*/ == true)
-                    this.BeginInvoke(new DelegateFunc(ShowTMGenPower));
+                    this.BeginInvoke(new DelegateFunc(showTMGenPower));
                 else
                     Logging.Logg().Error(@"PanelTecTMSNPower::showTMGenPower () - ... BeginInvoke (ShowTMGenPower) - ...", Logging.INDEX_MESSAGE.D_001);
             }
 
-            private void showTMSNPower()
+            private void updateGUI_TM_SN()
             {
                 if (IsHandleCreated/*InvokeRequired*/ == true)
-                    this.BeginInvoke(new DelegateFunc(ShowTMSNPower));
+                    this.BeginInvoke(new DelegateFunc(showTMSNPower));
                 else
                     Logging.Logg().Error(@"PanelTecTMSNPower::showTMSNPower () - ... BeginInvoke (ShowTMSNPower) - ...", Logging.INDEX_MESSAGE.D_001);
             }
 
-            private void ShowTMGenPower()
+            private void showTMGenPower()
             {
                 double dblTotalPower_TM = 0.0
-                        , dblTECComponentPower_TM = 0.0;
+                        , dblTECComponentPower_TM = 0.0;                
+
                 foreach (TECComponent g in m_tecView.m_tec.list_TECComponents)
                 {
                     if (g.IsGTP == true)
                     {
                         dblTECComponentPower_TM = 0.0;
 
-                        foreach (TG tg in g.m_listTG)
+                        foreach (TG tg in g.m_listLowPointDev)
                         {
                             if (tg.m_strKKS_NAME_TM.Length > 0)
                             {
-                                dblTECComponentPower_TM += setTextToLabelVal(null, m_tecView.m_dictValuesTG [tg.m_id].m_powerCurrent_TM);
+                                dblTECComponentPower_TM += setTextToLabelVal(null, m_tecView.m_dictValuesLowPointDev [tg.m_id].m_powerCurrent_TM);
                             }
                             else
                                 m_dictLabelVal[tg.m_id].Text = @"---";
@@ -485,32 +486,14 @@ namespace Statistic
 
                 //m_tecView.m_dtLastChangedAt_TM_Gen = HDateTime.ToMoscowTimeZone(m_tecView.m_dtLastChangedAt_TM_Gen);
 
-                if (TecView.ValidateDatetimeTMValue(m_tecView.serverTime, m_tecView.m_dtLastChangedAt_TM_Gen) == true)
-                {
-                    m_arLabel[(int)INDEX_LABEL.DATETIME_TM_Gen].Text = m_tecView.m_dtLastChangedAt_TM_Gen.ToString(@"HH:mm:ss");
-                    m_arLabel[(int)INDEX_LABEL.DATETIME_TM_Gen].ForeColor = Color.Black;
-                }
-                else
-                {
-                    m_arLabel[(int)INDEX_LABEL.DATETIME_TM_Gen].Text = m_tecView.m_dtLastChangedAt_TM_Gen.ToString(@"dd.MM.yyyy HH:mm:ss");
-                    m_arLabel[(int)INDEX_LABEL.DATETIME_TM_Gen].ForeColor = Color.Red;
-                }
+                setTextToLabelDateTime(m_tecView.m_dtLastChangedAt_TM_Gen, (int)INDEX_LABEL.DATETIME_TM_Gen);
             }
 
-            private void ShowTMSNPower()
+            private void showTMSNPower()
             {
                 setTextToLabelVal(m_arLabel[(int)INDEX_LABEL.VALUE_TM_SN], m_tecView.m_dblTotalPower_TM_SN);
 
-                if (TecView.ValidateDatetimeTMValue(m_tecView.serverTime, m_tecView.m_dtLastChangedAt_TM_SN) == true)
-                {
-                    m_arLabel[(int)INDEX_LABEL.DATETIME_TM_SN].Text = m_tecView.m_dtLastChangedAt_TM_SN.ToString(@"HH:mm:ss");
-                    m_arLabel[(int)INDEX_LABEL.DATETIME_TM_SN].ForeColor = Color.Black;
-                }
-                else
-                {
-                    m_arLabel[(int)INDEX_LABEL.DATETIME_TM_SN].Text = m_tecView.m_dtLastChangedAt_TM_SN.ToString(@"dd.MM.yyyy HH:mm:ss");
-                    m_arLabel[(int)INDEX_LABEL.DATETIME_TM_SN].ForeColor = Color.Red;
-                }
+                setTextToLabelDateTime(m_tecView.m_dtLastChangedAt_TM_SN, (int)INDEX_LABEL.DATETIME_TM_SN);
             }
 
             private double setTextToLabelVal(Label lblVal, double val)
@@ -524,6 +507,28 @@ namespace Statistic
                     if (!(lblVal == null)) lblVal.Text = 0.ToString(@"F0"); else ;
 
                 return 0;
+            }
+            /// <summary>
+            /// Отобразить значение дату/время (копия в PanelCurPower.PanelTecCurPower)
+            /// </summary>
+            /// <param name="dt">Дата/время для отображения</param>
+            /// <param name="indx">Индекс значения (генерация или СН)</param>
+            private void setTextToLabelDateTime (DateTime dt, int indx)
+            {
+                Color clrDatetime = Color.Empty;
+                string strFmtDatetime = @"HH:mm:ss";
+
+                if (TecView.ValidateDatetimeTMValue(m_tecView.serverTime, dt) == true)
+                    // формат даты/времени без изменения (без даты)
+                    clrDatetime = Color.Black;
+                else
+                {
+                    strFmtDatetime = @"dd.MM.yyyy " + strFmtDatetime; // добавить дату
+                    clrDatetime = Color.Red;
+                }
+
+                m_arLabel[indx].Text = dt.ToString(strFmtDatetime);
+                m_arLabel[indx].ForeColor = clrDatetime;
             }
 
             private void TimerCurrent_Tick(Object stateInfo)

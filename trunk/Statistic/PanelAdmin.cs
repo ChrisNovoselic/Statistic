@@ -213,16 +213,20 @@ namespace Statistic
             switch (type)
             {
                 case FormChangeMode.MANAGER.DISP:
-                    //Возможность редактирования значений ПБР: изменяема, НЕ разрешена
+                    //Возможность редактирования значений ПБР: разрешено управление (изменение разрешения на запись), запись НЕ разрешена
                     m_admin = new AdminTS_KomDisp(new bool[] { true, false });
                     break;
                 case FormChangeMode.MANAGER.NSS:
-                    //Возможность редактирования значений ПБР: НЕ изменяема, разрешена
+                    //Возможность редактирования значений ПБР: НЕ разрешено управление (изменение разрешения на запись), запись разрешена
                     m_admin = new AdminTS_NSS(new bool[] { false, true });
                     break;
                 case FormChangeMode.MANAGER.LK:
-                    //Возможность редактирования значений ПБР: НЕ изменяема, разрешена
+                    //Возможность редактирования значений ПБР: НЕ разрешено управление (изменение разрешения на запись), запись разрешена
                     m_admin = new PanelAdminLK.AdminTS_LK(new bool[] { false, true });
+                    break;
+                case FormChangeMode.MANAGER.TEPLOSET:
+                    //Возможность редактирования значений ПБР: разрешено управление (изменение разрешения на запись), запись НЕ разрешена
+                    m_admin = new PanelAdminVyvod.AdminTS_Vyvod(new bool[] { true, false });
                     break;
                 default:
                     break;

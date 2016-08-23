@@ -33,7 +33,7 @@ namespace Statistic
             /// </summary>
             /// <param name="arMarkPPBRValues"></param>
             public AdminTS_LK(bool[] arMarkPPBRValues)
-                : base(arMarkPPBRValues)
+                : base(arMarkPPBRValues, TECComponentBase.TYPE.ELECTRO)
             {
                 _tsOffsetToMoscow = HDateTime.TS_NSK_OFFSET_OF_MOSCOWTIMEZONE;
             }
@@ -57,7 +57,7 @@ namespace Statistic
                             {
                                 m_listTECComponentIndexDetail.Add(allTECComponents.IndexOf(comp));
 
-                                foreach (TG tg in comp.m_listTG)
+                                foreach (TG tg in comp.m_listLowPointDev)
                                     foreach (TECComponent comp_tg in allTECComponents)
                                         if (comp_tg.m_id == tg.m_id)
                                             m_listTECComponentIndexDetail.Add(allTECComponents.IndexOf(comp_tg));
@@ -68,7 +68,7 @@ namespace Statistic
                             ;
 
                     m_listTECComponentIndexDetail.Sort();
-                    m_listCurRDGValues.Clear();
+                    ClearListRDGValues();
                 }
             }
 
@@ -249,7 +249,6 @@ namespace Statistic
 
             //protected void /*bool*/ ExpRDGExcelValuesRequest()
             //{
-
             //}
 
             /// <summary>
@@ -436,17 +435,17 @@ namespace Statistic
                 }
             }
 
-            protected override void /*bool*/ ImpRDGExcelValuesRequest()
+            protected override void /*bool*/ impRDGExcelValuesRequest()
             {
                 throw new NotImplementedException();
             }
 
-            protected override int ImpRDGExcelValuesResponse()
+            protected override int impRDGExcelValuesResponse()
             {
                 throw new NotImplementedException();
             }
 
-            protected override void /*bool*/ ExpRDGExcelValuesRequest()
+            protected override void /*bool*/ expRDGExcelValuesRequest()
             {
                 throw new NotImplementedException();
             }

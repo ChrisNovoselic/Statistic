@@ -12,8 +12,12 @@ namespace StatisticCommon
 {
     public abstract class AdminTS_TG : AdminTS
     {
+        /// <summary>
+        /// Список индексов дочерних для выбранного сложного элемента (детализация сложного элемента)
+        /// </summary>
         public List<int> m_listTECComponentIndexDetail;
-        public List <RDGStruct []> m_listCurRDGValues;
+        public List<RDGStruct[]> m_listPrevRDGValues
+            , m_listCurRDGValues;
 
         public List <Errors>  m_listResSaveChanges;
 
@@ -69,14 +73,15 @@ namespace StatisticCommon
             }
         }
 
-        public AdminTS_TG(bool[] arMarkPPBRValues)
-            : base(arMarkPPBRValues)
+        public AdminTS_TG(bool[] arMarkPPBRValues, TECComponentBase.TYPE type)
+            : base(arMarkPPBRValues, type)
         {
-            delegateImportForeignValuesRequuest = ImpRDGExcelValuesRequest;
-            delegateExportForeignValuesRequuest = ExpRDGExcelValuesRequest;
-            delegateImportForeignValuesResponse = ImpRDGExcelValuesResponse;
+            delegateImportForeignValuesRequuest = impRDGExcelValuesRequest;
+            delegateExportForeignValuesRequuest = expRDGExcelValuesRequest;
+            delegateImportForeignValuesResponse = impRDGExcelValuesResponse;
             //delegateExportForeignValuesResponse = ExpRDGExcelValuesResponse;
 
+            m_listPrevRDGValues = new List<RDGStruct[]>();
             m_listCurRDGValues = new List<RDGStruct[]> ();
             m_listTECComponentIndexDetail = new List<int> ();
             m_listResSaveChanges = new List <Errors> ();
@@ -138,7 +143,7 @@ namespace StatisticCommon
                         ;
                 }
 
-                m_listCurRDGValues.Clear();
+                ClearListRDGValues();
             }
         }
 
@@ -258,27 +263,44 @@ namespace StatisticCommon
 
             return listRes.ToArray ();
         }
-
+        /// <summary>
+        /// Возвратить признак выполненых пользователем изменений
+        /// </summary>
+        /// <returns>Признак изменений</returns>
         public override bool WasChanged()
-        {
+        {//??? ТГ больше, чем один - метод не работоспособен...
             bool bRes = false;
 
-            for (int i = 0; i < 24; i++)
+            for (int i = 0; (i < 24) && (bRes == false); i++)
             {
-                if (m_prevRDGValues[i].pbr.Equals (m_curRDGValues[i].pbr) /*double.Parse(this.dgwAdminTable.Rows[i].Cells[(int)DataGridViewAdmin.DESC_INDEX.PLAN].Value.ToString())*/  == false)
-                    return true;
+                if ((m_prevRDGValues[i].pbr > 0)
+                    && (m_curRDGValues[i].pbr > 0)
+                    && (m_prevRDGValues[i].pbr.Equals (m_curRDGValues[i].pbr)== false))
+                    bRes = true;
                 else
                     ;
-                if (m_prevRDGValues[i].recomendation != m_curRDGValues[i].recomendation /*double.Parse(this.dgwAdminTable.Rows[i].Cells[(int)DataGridViewAdmin.DESC_INDEX.RECOMENDATION].Value.ToString())*/)
-                    return true;
+                if ((m_prevRDGValues[i].pmin > 0)
+                    && (m_curRDGValues[i].pmin > 0)
+                    && (m_prevRDGValues[i].pmin.Equals (m_curRDGValues[i].pmin)== false))
+                    bRes = true;
                 else
                     ;
-                if (m_prevRDGValues[i].deviationPercent != m_curRDGValues[i].deviationPercent /*bool.Parse(this.dgwAdminTable.Rows[i].Cells[(int)DataGridViewAdmin.DESC_INDEX.DEVIATION_TYPE].Value.ToString())*/)
-                    return true;
+                if ((m_prevRDGValues[i].pmax > 0)
+                    && (m_curRDGValues[i].pmax > 0)
+                    && (m_prevRDGValues[i].pmax.Equals (m_curRDGValues[i].pmax)== false))
+                    bRes = true;
                 else
                     ;
-                if (m_prevRDGValues[i].deviation != m_curRDGValues[i].deviation /*double.Parse(this.dgwAdminTable.Rows[i].Cells[(int)DataGridViewAdmin.DESC_INDEX.DEVIATION].Value.ToString())*/)
-                    return true;
+                if (m_prevRDGValues[i].recomendation.Equals (m_curRDGValues[i].recomendation) == false)
+                    bRes = true;
+                else
+                    ;
+                if (m_prevRDGValues[i].deviationPercent.Equals (m_curRDGValues[i].deviationPercent) == false)
+                    bRes = true;
+                else
+                    ;
+                if (m_prevRDGValues[i].deviation.Equals (m_curRDGValues[i].deviation) == false)
+                    bRes = true;
                 else
                     ;
             }
@@ -397,7 +419,7 @@ namespace StatisticCommon
         {
             //delegateStartWait();
 
-            m_listCurRDGValues.Clear();
+            ClearListRDGValues();
 
             new Thread(new ParameterizedThreadStart(threadImpRDGExcelValues)).Start(date);
             //threadGetRDGExcelValues (date);
@@ -405,10 +427,16 @@ namespace StatisticCommon
             //delegateStopWait();
         }
 
-        protected abstract void /*bool*/ ImpRDGExcelValuesRequest();
+        public void ClearListRDGValues()
+        {
+            m_listPrevRDGValues.Clear();
+            m_listCurRDGValues.Clear();
+        }
 
-        protected abstract /*override*/ int ImpRDGExcelValuesResponse();
+        protected abstract void /*bool*/ impRDGExcelValuesRequest();
 
-        protected abstract void /*bool*/ ExpRDGExcelValuesRequest();
+        protected abstract /*override*/ int impRDGExcelValuesResponse();
+
+        protected abstract void /*bool*/ expRDGExcelValuesRequest();
     }
 }

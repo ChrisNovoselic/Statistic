@@ -17,7 +17,13 @@ namespace StatisticAlarm
         private Queue<AlarmNotifyEventArgs> _queueArgs;
 
         //public delegate void ActivateTabPageEventHandler (int indx, bool active);
+        /// <summary>
+        /// Событие - после квитирования - активация вкладки
+        /// </summary>
         public event DelegateBoolFunc/*ActivateTabPageEventHandler*/ EventActivateTabPage;
+        /// <summary>
+        /// Событие - пользователь зафиксировал(квитировал) сообщение
+        /// </summary>
         public event DelegateObjectFunc EventFixed;
 
         private int m_iAlarmEventCounter;

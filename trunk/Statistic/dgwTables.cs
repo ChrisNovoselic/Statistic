@@ -16,6 +16,21 @@ namespace Statistic
     {
         HDateTime.INTERVAL m_IdInterval;
 
+        public class DataValuesEventArgs : EventArgs
+        {
+            public double m_value1;
+            public double m_value2;
+        }
+
+        public void PerformDataValues (DataValuesEventArgs ev)
+        {
+            EventDataValues(ev);
+        }
+
+        public delegate void DataValuesEventHandler(DataValuesEventArgs ev);
+
+        public event DataValuesEventHandler EventDataValues;
+
         public static DataGridViewCellStyle s_dgvCellStyleError
             , s_dgvCellStyleWarning
             , s_dgvCellStyleCommon;

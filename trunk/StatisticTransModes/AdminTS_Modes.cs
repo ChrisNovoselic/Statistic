@@ -13,7 +13,7 @@ namespace StatisticTransModes
     public class AdminTS_Modes : AdminTS
     {
         public AdminTS_Modes(bool[] arMarkPPBRValues)
-            : base(arMarkPPBRValues)
+            : base(arMarkPPBRValues, TECComponentBase.TYPE.ELECTRO)
         {
         }
 

@@ -44,7 +44,7 @@ namespace StatisticCommon
             // 
             // pictureBox1
             // 
-            this.pictureBox1.Location = new System.Drawing.Point(12, 9);
+            this.pictureBox1.Location = new System.Drawing.Point(10, 10);
             this.pictureBox1.Name = "pictureBox1";
             this.pictureBox1.Size = new System.Drawing.Size(48, 48);
             this.pictureBox1.SizeMode = System.Windows.Forms.PictureBoxSizeMode.AutoSize;
@@ -64,7 +64,7 @@ namespace StatisticCommon
             // llblMailTo
             // 
             this.llblMailTo.AutoSize = true;
-            this.llblMailTo.Location = new System.Drawing.Point(219, 66);
+            this.llblMailTo.Location = new System.Drawing.Point(267, 68);
             this.llblMailTo.Name = "llblMailTo";
             this.llblMailTo.Size = new System.Drawing.Size(106, 13);
             this.llblMailTo.TabIndex = 1;
@@ -74,7 +74,7 @@ namespace StatisticCommon
             // 
             // btnClose
             // 
-            this.btnClose.Location = new System.Drawing.Point(145, 141);
+            this.btnClose.Location = new System.Drawing.Point(165, 142);
             this.btnClose.Name = "btnClose";
             this.btnClose.Size = new System.Drawing.Size(75, 23);
             this.btnClose.TabIndex = 0;
@@ -85,7 +85,7 @@ namespace StatisticCommon
             // linkLabel1
             // 
             this.linkLabel1.AutoSize = true;
-            this.linkLabel1.Location = new System.Drawing.Point(219, 79);
+            this.linkLabel1.Location = new System.Drawing.Point(267, 81);
             this.linkLabel1.Name = "linkLabel1";
             this.linkLabel1.Size = new System.Drawing.Size(128, 13);
             this.linkLabel1.TabIndex = 3;
@@ -106,7 +106,7 @@ namespace StatisticCommon
             // linkLabel2
             // 
             this.linkLabel2.AutoSize = true;
-            this.linkLabel2.Location = new System.Drawing.Point(219, 93);
+            this.linkLabel2.Location = new System.Drawing.Point(267, 95);
             this.linkLabel2.Name = "linkLabel2";
             this.linkLabel2.Size = new System.Drawing.Size(122, 13);
             this.linkLabel2.TabIndex = 5;
@@ -127,7 +127,7 @@ namespace StatisticCommon
             // linkLabel3
             // 
             this.linkLabel3.AutoSize = true;
-            this.linkLabel3.Location = new System.Drawing.Point(219, 106);
+            this.linkLabel3.Location = new System.Drawing.Point(267, 108);
             this.linkLabel3.Name = "linkLabel3";
             this.linkLabel3.Size = new System.Drawing.Size(127, 13);
             this.linkLabel3.TabIndex = 7;
@@ -137,7 +137,7 @@ namespace StatisticCommon
             // linkLabel4
             // 
             this.linkLabel4.AutoSize = true;
-            this.linkLabel4.Location = new System.Drawing.Point(219, 119);
+            this.linkLabel4.Location = new System.Drawing.Point(267, 121);
             this.linkLabel4.Name = "linkLabel4";
             this.linkLabel4.Size = new System.Drawing.Size(131, 13);
             this.linkLabel4.TabIndex = 8;
@@ -156,8 +156,7 @@ namespace StatisticCommon
             // 
             this.AutoScaleDimensions = new System.Drawing.SizeF(6F, 13F);
             this.AutoScaleMode = System.Windows.Forms.AutoScaleMode.Font;
-            this.ClientSize = new System.Drawing.Size(361, 171);
-            this.Controls.Add(this.label2);
+            this.ClientSize = new System.Drawing.Size(402, 171);
             this.Controls.Add(this.linkLabel4);
             this.Controls.Add(this.linkLabel3);
             this.Controls.Add(this.m_lblDomainMashineUserName);

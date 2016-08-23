@@ -51,6 +51,35 @@ namespace StatisticCommon
 
             public string pbr_number;
             public DateTime dtRecUpdate;
+
+            public void From(RDGStruct src, bool bPBRNumberEmptyChecked = false)
+            {
+                pbr = src.pbr;
+                pmin = src.pmin;
+                pmax = src.pmax;
+                recomendation = src.recomendation;
+                deviationPercent = src.deviationPercent;
+                deviation = src.deviation;
+                fc = src.fc;
+
+                if (bPBRNumberEmptyChecked == true)
+                    if (src.pbr_number.Equals(string.Empty) == false)
+                        pbr_number = src.pbr_number;
+                    else
+                        ;
+                else
+                    pbr_number = src.pbr_number;
+                dtRecUpdate = src.dtRecUpdate;
+            }
+
+            public RDGStruct Copy(bool bPBRNumberEmptyChecked = false)
+            {
+                RDGStruct oRes = new RDGStruct();
+
+                oRes.From(this, bPBRNumberEmptyChecked);
+
+                return oRes;
+            }
         }
 
         protected TimeSpan _tsOffsetToMoscow;
@@ -68,6 +97,15 @@ namespace StatisticCommon
 
         protected DelegateDateFunc setDatetime;
 
+        /// <summary>
+        /// Тип текущего объекта (тип оборудования электро-, тепло)
+        /// </summary>
+        protected TECComponentBase.TYPE _type;
+        ///// <summary>
+        ///// ??? Тип текущего объекта нельзя определить до тех пор, пока тепловые компоненты не будут встроены в общий список 'allTECComponents'
+        /////  , поэтому указываем явно при создании объекта; собственно, определить невозможно, если объект - ТЭЦ в целом
+        ///// </summary>
+        //public TECComponentBase.TYPE Type { get { return _type; } }
         /// <summary>
         /// Список объектов 'TEC'
         /// </summary>
@@ -125,8 +163,10 @@ namespace StatisticCommon
             }
         }
 
-        public HAdmin()
+        public HAdmin(TECComponentBase.TYPE type)
         {
+            _type = type;
+
             m_iHavePBR_Number = -1;
 
             Initialize ();
@@ -187,65 +227,60 @@ namespace StatisticCommon
             else
                 m_markQueries.Add(markQueries);
         }
-        
+
         public virtual void InitTEC(List <StatisticCommon.TEC> listTEC, HMark markQueries)
         {
             this.m_list_tec = new InitTECBase.ListTEC ();
+            ////Вариант №1
+            //this.m_list_tec.AddRange(listTEC);
+            ////Вариант №2
+            //listTEC.ForEach(t => this.m_list_tec.Add(t));
+            //Вариант №3 - позволяет исключить при необходимости элементы в соответствии с установленным правилом
             foreach (TEC t in listTEC)
-            {
                 //if ((HAdmin.DEBUG_ID_TEC == -1) || (HAdmin.DEBUG_ID_TEC == t.m_id))
                     this.m_list_tec.Add (t);
                 //else ;
-            }
 
             initQueries(markQueries);
             initTEC();
         }
 
-        public void InitTEC(int idListener, FormChangeMode.MODE_TECCOMPONENT mode, /*TYPE_DATABASE_CFG typeCfg, */HMark markQueries, bool bIgnoreTECInUse, int [] arTECLimit)
+        public void InitTEC(int idListener, FormChangeMode.MODE_TECCOMPONENT mode, /*TYPE_DATABASE_CFG typeCfg, */HMark markQueries, bool bIgnoreTECInUse, int[] arTECLimit, bool bUseData = false)
         {
             //Logging.Logg().Debug("Admin::InitTEC () - вход...");
 
-            //m_ignore_connsett_data = ! bUseData;
-
             if (!(idListener < 0))
                 if (mode == FormChangeMode.MODE_TECCOMPONENT.ANY)
-                    this.m_list_tec = new InitTEC_200(idListener, bIgnoreTECInUse, arTECLimit, false).tec;
+                    this.m_list_tec = new InitTEC_200(idListener, bIgnoreTECInUse, arTECLimit, bUseData).tec;
                 else
-                    this.m_list_tec = new InitTEC_200(idListener, (short)mode, bIgnoreTECInUse, arTECLimit, false).tec;
+                    this.m_list_tec = new InitTEC_200(idListener, (short)mode, bIgnoreTECInUse, arTECLimit, bUseData).tec;
             else
                 this.m_list_tec = new InitTECBase.ListTEC ();
 
             initQueries(markQueries);
             initTEC();
         }
-
+        /// <summary>
+        /// Инициализация списка со всеми компонентами ТЭЦ
+        /// </summary>
         protected virtual void initTEC()
         {
-            //comboBoxTecComponent.Items.Clear ();
             allTECComponents.Clear();
 
             foreach (StatisticCommon.TEC t in this.m_list_tec)
             {
                 //Logging.Logg().Debug("Admin::InitTEC () - формирование компонентов для ТЭЦ:" + t.name);
 
-                if (t.list_TECComponents.Count > 0)
+                //if (t.list_TECComponents.Count > 0)
                     foreach (TECComponent g in t.list_TECComponents)
-                    {
-                        //comboBoxTecComponent.Items.Add(t.name + " - " + g.name);
-                        allTECComponents.Add(g);
-                    }
-                else
-                {
-                    //comboBoxTecComponent.Items.Add(t.name);
-                    allTECComponents.Add(t.list_TECComponents[0]);
-                }
+                        if (g.Type == _type)
+                            allTECComponents.Add(g);
+                        else
+                            ;
+                //else
+                //    //??? исключение - используется индекс вне допустимого диапазона
+                //    allTECComponents.Add(t.list_TECComponents[0]);
             }
-
-            /*if (! (fillTECComponent == null))
-                fillTECComponent ();
-            else
-                ;*/
         }
 
         protected static bool CheckNameFieldsOfTable(DataTable tbl, string[] nameFields)
@@ -423,15 +458,15 @@ namespace StatisticCommon
 
         public abstract void GetRDGValues(/*int /*TYPE_FIELDS mode,*/ int indx, DateTime date);
 
-        protected abstract void GetPPBRDatesRequest(DateTime date);
+        protected abstract void getPPBRDatesRequest(DateTime date);
 
-        protected abstract int GetPPBRDatesResponse(DataTable table, DateTime date);
+        protected abstract int getPPBRDatesResponse(DataTable table, DateTime date);
 
-        protected abstract void GetPPBRValuesRequest(TEC t, TECComponent comp, DateTime date/*, AdminTS.TYPE_FIELDS mode*/);
+        protected abstract void getPPBRValuesRequest(TEC t, TECComponent comp, DateTime date/*, AdminTS.TYPE_FIELDS mode*/);
 
-        protected abstract int GetPPBRValuesResponse(DataTable table, DateTime date);        
+        protected abstract int getPPBRValuesResponse(DataTable table, DateTime date);
 
-        protected virtual void ClearDates(CONN_SETT_TYPE type)
+        protected virtual void clearDates(CONN_SETT_TYPE type)
         {
             int i = 1
                 , cntHours = 24
@@ -462,9 +497,9 @@ namespace StatisticCommon
             }
         }
 
-        protected void ClearPPBRDates()
+        protected void clearPPBRDates()
         {
-            ClearDates(CONN_SETT_TYPE.PBR);
+            clearDates(CONN_SETT_TYPE.PBR);
         }
 
         public TECComponent FindTECComponent(int id)
@@ -632,7 +667,7 @@ namespace StatisticCommon
                 ;
         }
 
-        protected bool IsCanUseTECComponents()
+        protected virtual bool IsCanUseTECComponents()
         {
             //bool bRes = false;
             return (!(indxTECComponents < 0)) && (indxTECComponents < allTECComponents.Count);

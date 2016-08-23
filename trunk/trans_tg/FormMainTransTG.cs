@@ -260,7 +260,7 @@ namespace trans_tg
             enabledButtonSourceExport(m_arUIControls[(Int16)CONN_SETT_TYPE.SOURCE, (Int16)INDX_UICONTROLS.SERVER_IP].Text.Length > 0 ? true : false);
         }
 
-        private int GetIndexGTPOwner(int indx_tg)
+        private int getIndexGTPOwner(int indx_tg)
         {
             int indxDB = m_IndexDB,
                 id_gtp_owner = ((DataGridViewAdminNSS)m_dgwAdminTable).GetIdGTPOwner(indx_tg);
@@ -283,12 +283,12 @@ namespace trans_tg
             double value;
             bool valid;
 
-            ((AdminTransTG)m_arAdmin[indxDB]).m_listCurRDGValues.Clear ();
+            ((AdminTS_TG)m_arAdmin[indxDB]).ClearListRDGValues();
 
             foreach (int indx in ((AdminTransTG)m_arAdmin[indxDB]).m_listTECComponentIndexDetail)
             {
                 int indx_comp = ((AdminTransTG)m_arAdmin[indxDB]).m_listTECComponentIndexDetail.IndexOf(indx),
-                    indx_owner = GetIndexGTPOwner(indx_comp);
+                    indx_owner = getIndexGTPOwner(indx_comp);
 
                 if (!(indx_comp < 0))
                 {

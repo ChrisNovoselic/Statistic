@@ -290,6 +290,7 @@ namespace Statistic
                         GraphPane.AddBar("Мощность", null, valuesFact, colorPCurve);
                     else
                     {
+                        // копия в 'PanelTecVzletTDirect::ZedGraphControlVzletTDirect::Draw ()'
                         int lh = -1;
                         if (currHour == true)
                             lh = lastHour;
@@ -852,8 +853,8 @@ namespace Statistic
             }
         }
 
-        public PanelTecViewStandard(TEC tec, int indx_tec, int indx_comp)
-            : base(/*TecView.TYPE_PANEL.VIEW, */tec, indx_tec, indx_comp)
+        public PanelTecViewStandard(TEC tec, int indx_tec, int indx_comp, HMark markQueries)
+            : base(/*TecView.TYPE_PANEL.VIEW, */tec, indx_tec, indx_comp, markQueries)
         {
             m_arPercRows = new int [] { 5, 71 };
         }

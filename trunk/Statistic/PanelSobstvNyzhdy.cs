@@ -191,7 +191,7 @@ namespace Statistic
             public class TecViewSobstvNyzhdy : TecView
             {
                 public TecViewSobstvNyzhdy()
-                    : base(/*TecView.TYPE_PANEL.CUR_POWER, */-1, -1)
+                    : base(/*TecView.TYPE_PANEL.CUR_POWER, */-1, -1, TECComponentBase.TYPE.ELECTRO)
                 {
                 }
 
@@ -266,7 +266,7 @@ namespace Statistic
 
                 m_tecView.InitTEC (new List <TEC> () { tec }, markQueries);
 
-                m_tecView.updateGUI_TM_SN = new DelegateFunc(showTMSNPower);
+                m_tecView.updateGUI_TM_SN = new DelegateFunc(updateGUI_TMSNPower);
 
                 Initialize();
 
@@ -533,10 +533,10 @@ namespace Statistic
             /// <summary>
             /// Метод вызова отдельно потока для отображения значения за выьранный час в Label'е
             /// </summary>
-            private void showTMSNPower()
+            private void updateGUI_TMSNPower()
             {
                 if (IsHandleCreated/*InvokeRequired*/ == true)
-                    this.BeginInvoke(new DelegateFunc(ShowTMSNPower));
+                    this.BeginInvoke(new DelegateFunc(showTMSNPower));
                 else
                     Logging.Logg().Error(@"PanelTecSobstvNyzhdy::showTMSNPower () - ... BeginInvoke (ShowTMSNPower) - ...", Logging.INDEX_MESSAGE.D_001);
             }
@@ -544,7 +544,7 @@ namespace Statistic
             /// <summary>
             /// Метод для отображения выбранного часа и значения за этот час в Label'ах
             /// </summary>
-            private void ShowTMSNPower()
+            private void showTMSNPower()
             {
                 setTextToLabelVal(m_arLabel[(int)INDEX_LABEL.VALUE_TM_SN], m_tecView.m_dblTotalPower_TM_SN);
                 //try { m_dtLastChangedAt = HAdmin.ToCurrentTimeZone (m_dtLastChangedAt); }
@@ -582,7 +582,6 @@ namespace Statistic
                 dtCurrDate_ChangeValue(null, null);
                 startChangeValue.Change(System.Threading.Timeout.Infinite, System.Threading.Timeout.Infinite);
             }
-
             
             private void TimerCurrent_Tick(Object stateInfo)
             {
@@ -899,16 +898,18 @@ namespace Statistic
             /// <summary>
             /// Обработчик события нажатия на кнопку экспорта
             /// </summary>
-            /// <param name="sender"></param>
-            /// <param name="e"></param>
+            /// <param name="sender">Объект, инициировавший событие</param>
+            /// <param name="e">Аргумент события</param>
             private void эксельToolStripMenuItemHours_Click(object sender, EventArgs e)
             {
                 lock (m_tecView.m_lockValue)
                 {
                     SaveFileDialog sf = new SaveFileDialog();
                     sf.CheckPathExists = true;
+                    sf.ValidateNames = true;
+                    sf.DereferenceLinks = false; // Will return .lnk in shortcuts.
                     sf.DefaultExt = ".xls";
-                    sf.Filter = "Файл Microsoft Excel (.xls) | *.xls";
+                    sf.Filter = s_DialogMSExcelBrowseFilter;
                     if (sf.ShowDialog() == DialogResult.OK)
                     {
                         string strSheetName = "Часовые_знач";

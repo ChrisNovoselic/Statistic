@@ -27,7 +27,7 @@ namespace Statistic
             public HMark m_markRetroValues;
 
             public TecViewSOTIASSO(int indx_tec, int indx_comp)
-                : base(/*TecView.TYPE_PANEL.SOTIASSO, */indx_tec, indx_comp)
+                : base(/*TecView.TYPE_PANEL.SOTIASSO, */indx_tec, indx_comp, TECComponentBase.TYPE.ELECTRO)
             {
                 m_markRetroValues = new HMark(0);
             }
@@ -73,9 +73,9 @@ namespace Statistic
                     else ;
                     lastMin = indxMin + 1;
 
-                    foreach (TECComponent comp in m_localTECComponents)
-                        foreach (TG tg in comp.m_listTG)
-                            clearTGValuesSecs(m_dictValuesTG[tg.m_id]);
+                    foreach (TECComponent comp in _localTECComponents)
+                        foreach (TG tg in comp.m_listLowPointDev)
+                            clearLowPointDevValuesSecs(m_dictValuesLowPointDev[tg.m_id]);
 
                     ClearStates();
 
@@ -789,7 +789,7 @@ namespace Statistic
             /// <param name="obj">Объект, с данными для отображения</param>
             private void onEvtValuesSecs(object obj)
             {
-                Dictionary<int, TecView.valuesTG> dictValuesTG = obj as Dictionary<int, TecView.valuesTG>;
+                Dictionary<int, TecView.valuesLowPointDev> dictValuesTG = obj as Dictionary<int, TecView.valuesLowPointDev>;
                 DataGridViewTG dgvTG = this.Controls.Find(KEY_CONTROLS.DGV_TG_VALUE.ToString(), true)[0] as DataGridViewTG;
 
                 int i = -1; //Индекс столбца
@@ -1259,7 +1259,7 @@ namespace Statistic
             {
                 foreach (TECComponent tc in t.list_TECComponents)
                 {
-                    if ((tc.m_id > 100) && (tc.m_id < 500))
+                    if (tc.IsGTP == true)
                     {
                         //Наименование ТЭЦ + наименование ГТП
                         listGTPNameShr.Add(t.name_shr + @" " + tc.name_shr);
@@ -1433,7 +1433,7 @@ namespace Statistic
                 //        {//Только ГТП
                 //            if (indxGTP == indx)
                 //            {
-                //                foreach (TG tg in tc.m_listTG)
+                //                foreach (TG tg in tc.m_listLowPointDev)
                 //                    listTGNameShr.Add(/*tc.name_shr + @" " + */tg.name_shr);
 
                 //                m_dcGTPKoeffAlarmPcur = tc.m_dcKoeffAlarmPcur;
@@ -1478,7 +1478,7 @@ namespace Statistic
                 foreach (TEC t in m_listTEC)
                 {
                     // есть специальное свойство для проверки 't.m_bSensorsStrings'
-                    //if (t.m_listTG == null)
+                    //if (t.m_listLowPointDev == null)
                     if (t.m_bSensorsStrings == false)
                         t.InitSensorsTEC();
                     // проверить идентификатор ТЭЦ
@@ -1487,7 +1487,7 @@ namespace Statistic
                         indxTEC = m_listTEC.IndexOf(t);
                         indxTECComponent = -1;
 
-                        foreach (TG tg in t.m_listTG)
+                        foreach (TG tg in t.GetListLowPointDev(TECComponentBase.TYPE.ELECTRO))
                             listTG_Comp.Add(tg);
 
                         ////!!! не объявлять переменные в середине  кода, тем более внутри цикла
@@ -1543,7 +1543,7 @@ namespace Statistic
                                     indxTEC = m_listTEC.IndexOf(t);
                                     m_dcGTPKoeffAlarmPcur = tc.m_dcKoeffAlarmPcur;
 
-                                    foreach (TG tg in tc.m_listTG)
+                                    foreach (TG tg in tc.m_listLowPointDev)
                                         listTG_Comp.Add(tg);
                                     
                                     break;
@@ -1555,7 +1555,7 @@ namespace Statistic
                                         indxTECComponent = t.list_TECComponents.IndexOf(tc);
                                         indxTEC = m_listTEC.IndexOf(t);
 
-                                        foreach (TG tg in tc.m_listTG)
+                                        foreach (TG tg in tc.m_listLowPointDev)
                                             listTG_Comp.Add(tg);
 
                                         ////!!! не объявлять переменные в середине  кода, тем более внутри цикла
@@ -1692,7 +1692,7 @@ namespace Statistic
             else
                 ;
 
-            EvtValuesSecs(m_tecView.m_dictValuesTG);            
+            EvtValuesSecs(m_tecView.m_dictValuesLowPointDev);            
             drawGraphMinDetail();
 
             return iRes;
@@ -2026,7 +2026,7 @@ namespace Statistic
 
                     for (int j = 0; j < tgcount; j++)
                     {
-                        valsSecs[j, i] = m_tecView.m_dictValuesTG[m_listIdTGAdvised[j]].m_powerSeconds[i];
+                        valsSecs[j, i] = m_tecView.m_dictValuesLowPointDev[m_listIdTGAdvised[j]].m_powerSeconds[i];
                         if (valsSecs[j, i] < 0)
                             valsSecs[j, i] = 0;
                         else

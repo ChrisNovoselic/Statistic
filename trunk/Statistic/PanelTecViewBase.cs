@@ -61,19 +61,19 @@ namespace Statistic
                     // contextMenuStrip
                     // 
                     this.Items.AddRange(new System.Windows.Forms.ToolStripItem[] {
-                    new System.Windows.Forms.ToolStripMenuItem()
-                    , new System.Windows.Forms.ToolStripSeparator(),
-                    new System.Windows.Forms.ToolStripMenuItem(),
-                    new System.Windows.Forms.ToolStripMenuItem(),
-                    new System.Windows.Forms.ToolStripMenuItem()
-                    , new System.Windows.Forms.ToolStripSeparator(),
-                    new System.Windows.Forms.ToolStripMenuItem(),
-                    new System.Windows.Forms.ToolStripMenuItem()
-                    , new System.Windows.Forms.ToolStripSeparator(),
-                    new System.Windows.Forms.ToolStripMenuItem(),
-                    new System.Windows.Forms.ToolStripMenuItem(),
-                    new System.Windows.Forms.ToolStripMenuItem(),
-                    new System.Windows.Forms.ToolStripMenuItem()
+                        new System.Windows.Forms.ToolStripMenuItem()
+                        , new System.Windows.Forms.ToolStripSeparator(),
+                        new System.Windows.Forms.ToolStripMenuItem(),
+                        new System.Windows.Forms.ToolStripMenuItem(),
+                        new System.Windows.Forms.ToolStripMenuItem()
+                        , new System.Windows.Forms.ToolStripSeparator(),
+                        new System.Windows.Forms.ToolStripMenuItem(),
+                        new System.Windows.Forms.ToolStripMenuItem()
+                        //, new System.Windows.Forms.ToolStripSeparator(),
+                        //new System.Windows.Forms.ToolStripMenuItem(),
+                        //new System.Windows.Forms.ToolStripMenuItem(),
+                        //new System.Windows.Forms.ToolStripMenuItem(),
+                        //new System.Windows.Forms.ToolStripMenuItem()
                     });
                     this.Name = "contextMenuStripMins";
                     this.Size = new System.Drawing.Size(198, 148);
@@ -127,6 +127,20 @@ namespace Statistic
                     this.Items[indx].Size = new System.Drawing.Size(197, 22);
                     this.Items[indx].Text = "–аспечатать";
 
+                    initializeItemAdding();
+                }
+
+                protected virtual void initializeItemAdding()
+                {
+                    this.Items.AddRange(new System.Windows.Forms.ToolStripItem[] {
+                        new System.Windows.Forms.ToolStripSeparator(),
+                        new System.Windows.Forms.ToolStripMenuItem(),
+                        new System.Windows.Forms.ToolStripMenuItem(),
+                        new System.Windows.Forms.ToolStripMenuItem(),
+                        new System.Windows.Forms.ToolStripMenuItem()
+                    });
+
+                    int indx = -1;
                     // 
                     // источникј»— ”Ёи—ќ“»ј——ќToolStripMenuItem
                     // 
@@ -191,7 +205,7 @@ namespace Statistic
             /// <param name="fSetScale">ƒелегат изменени€ настроек масштабировани€</param>
             public HZedGraphControl(object lockVal, DelegateFunc fSetScale)
             {
-                this.ContextMenuStrip = new HContextMenuStripZedGraph();
+                createContextMenuStrip();
 
                 InitializeComponent();
 
@@ -226,15 +240,20 @@ namespace Statistic
                 this.IsEnableVZoom = false;
                 this.IsShowPointValues = true;
 
-                InitializeEventHandler();
+                initializeContextMenuItemStandardEventHandler();
 
                 this.PointValueEvent += new ZedGraph.ZedGraphControl.PointValueHandler(this.OnPointValueEvent);
                 this.DoubleClickEvent += new ZedGraph.ZedGraphControl.ZedMouseEventHandler(this.OnDoubleClickEvent);
             }
+
+            protected virtual void createContextMenuStrip()
+            {
+                this.ContextMenuStrip = new HContextMenuStripZedGraph();
+            }
             /// <summary>
             /// »нициализаци€ обработчиков собыьтй при выборе пунктов меню (стандартных)
             /// </summary>
-            private void InitializeEventHandler()
+            private void initializeContextMenuItemStandardEventHandler()
             {
                 ((HContextMenuStripZedGraph)this.ContextMenuStrip).Items[(int)INDEX_CONTEXTMENU_ITEM.SHOW_VALUES].Click += new System.EventHandler(показывать«начени€ToolStripMenuItem_Click);
                 ((HContextMenuStripZedGraph)this.ContextMenuStrip).Items[(int)INDEX_CONTEXTMENU_ITEM.COPY].Click += new System.EventHandler(копироватьToolStripMenuItem_Click);
@@ -247,11 +266,16 @@ namespace Statistic
             /// </summary>
             /// <param name="fToExcel">ƒелегат обработки событи€ - экспорт в MS_Excel</param>
             /// <param name="fSourceData">ƒелегат обработки событи€ - изменение типа отображаемых данных</param>
-            public void InitializeEventHandler(EventHandler fToExcel, EventHandler fSourceData)
+            public void InitializeContextMenuItemAddingEventHandler(EventHandler fToExcel, EventHandler fAddingHandler)
             {
                 ((HContextMenuStripZedGraph)this.ContextMenuStrip).Items[(int)INDEX_CONTEXTMENU_ITEM.TO_EXCEL].Click += new System.EventHandler(fToExcel);
+                initializeContextMenuItemAddingEventHandler(fAddingHandler);
+            }
+
+            protected virtual void initializeContextMenuItemAddingEventHandler(EventHandler fAddingHandler)
+            {
                 for (int i = (int)INDEX_CONTEXTMENU_ITEM.AISKUE_PLUS_SOTIASSO; i < this.ContextMenuStrip.Items.Count; i++)
-                    ((HContextMenuStripZedGraph)this.ContextMenuStrip).Items[i].Click += new System.EventHandler(fSourceData);
+                    ((HContextMenuStripZedGraph)this.ContextMenuStrip).Items[i].Click += new System.EventHandler(fAddingHandler);
             }
 
             private void показывать«начени€ToolStripMenuItem_Click(object sender, EventArgs e)
@@ -487,7 +511,7 @@ namespace Statistic
 
         protected abstract void createPanelQuickData();
 
-        public PanelTecViewBase(/*TecView.TYPE_PANEL type, */TEC tec, int indx_tec, int indx_comp/*, DelegateStringFunc fErrRep, DelegateStringFunc fWarRep, DelegateStringFunc fActRep, DelegateBoolFunc fRepClr*/)
+        public PanelTecViewBase(/*TecView.TYPE_PANEL type, */TEC tec, int indx_tec, int indx_comp, HMark markQueries)
         {
             //InitializeComponent();
 
@@ -495,11 +519,7 @@ namespace Statistic
 
             createTecView(indx_tec, indx_comp); //m_tecView = new TecView(type, indx_tec, indx_comp);
 
-            HMark markQueries = new HMark(new int []{(int)CONN_SETT_TYPE.ADMIN, (int)CONN_SETT_TYPE.PBR, (int)CONN_SETT_TYPE.DATA_AISKUE, (int)CONN_SETT_TYPE.DATA_SOTIASSO});
-            //markQueries.Marked((int)CONN_SETT_TYPE.ADMIN);
-            //markQueries.Marked((int)CONN_SETT_TYPE.PBR);
-            //markQueries.Marked((int)CONN_SETT_TYPE.DATA_AISKUE);
-            //markQueries.Marked((int)CONN_SETT_TYPE.DATA_SOTIASSO);
+            //HMark markQueries = new HMark(new int []{(int)CONN_SETT_TYPE.ADMIN, (int)CONN_SETT_TYPE.PBR, (int)CONN_SETT_TYPE.DATA_AISKUE, (int)CONN_SETT_TYPE.DATA_SOTIASSO});
 
             m_tecView.InitTEC(new List<StatisticCommon.TEC>() { tec }, markQueries);
             //m_tecView.SetDelegateReport(fErrRep, fWarRep, fActRep, fRepClr);
@@ -510,13 +530,12 @@ namespace Statistic
             m_tecView.updateGUI_TM_Gen = new DelegateFunc(updateGUI_TM_Gen);
 
             createPanelQuickData(); //ѕредвосхища€ вызов 'InitializeComponent'
-            if (m_tecView.listTG == null) //m_tecView.m_tec.m_bSensorsStrings == false
+            if (m_tecView.ListLowPointDev == null) //m_tecView.m_tec.m_bSensorsStrings == false
                 m_tecView.m_tec.InitSensorsTEC();
             else
                 ;
 
-            foreach (TG tg in m_tecView.listTG)
-                _pnlQuickData.AddTGView(tg);
+            AddTGView();
 
             if (tec.Type == TEC.TEC_TYPE.BIYSK)
                 ; //this.parameters = FormMain.papar;
@@ -554,7 +573,7 @@ namespace Statistic
         public override void Start()
         {
             base.Start ();
-            
+
             m_tecView.Start();
             // значени€ по умолчанию
             if (!(m_dgwMins == null))
@@ -644,6 +663,12 @@ namespace Statistic
                     ;
 
             m_dgwMins.Fill ();
+        }
+
+        public virtual void AddTGView()
+        {
+            foreach (TG tg in m_tecView.ListLowPointDev)
+                _pnlQuickData.AddTGView(tg);
         }
 
         private int getHeightItem (bool bUseLabel, int iRow) { return bUseLabel == true ? m_arPercRows[iRow] : m_arPercRows[iRow] + m_arPercRows[iRow + 1]; }
@@ -817,12 +842,12 @@ namespace Statistic
         private void updateGUI_TM_Gen()
         {
             if (IsHandleCreated/*InvokeRequired*/ == true)
-                this.BeginInvoke(new DelegateFunc(UpdateGUI_TM_Gen));
+                this.BeginInvoke(new DelegateFunc(showTM_Gen));
             else
                 Logging.Logg().Error(@"PanelTecViewBase::updateGUI_TM_Gen () - ... BeginInvoke (UpdateGUI_TM_Gen) - ... ID = " + m_tecView.m_ID, Logging.INDEX_MESSAGE.D_001);
         }
 
-        private void UpdateGUI_TM_Gen()
+        private void showTM_Gen()
         {
             lock (m_tecView.m_lockValue)
             {
@@ -835,14 +860,14 @@ namespace Statistic
             int iRes = (int)HClassLibrary.HHandler.INDEX_WAITHANDLE_REASON.SUCCESS;
             
             if (IsHandleCreated/*InvokeRequired*/ == true)
-                this.BeginInvoke(new DelegateIntIntFunc(UpdateGUI_Fact), hour, min);
+                this.BeginInvoke(new DelegateIntIntFunc(show_Fact), hour, min);
             else
                 Logging.Logg().Error(@"PanelTecViewBase::updateGUI_Fact () - ... BeginInvoke (UpdateGUI_Fact) - ... ID = " + m_tecView.m_ID, Logging.INDEX_MESSAGE.D_001);
 
             return iRes;
         }
 
-        protected virtual void UpdateGUI_Fact(int hour, int min)
+        protected virtual void show_Fact(int hour, int min)
         {
             lock (m_tecView.m_lockValue)
             {
@@ -1096,6 +1121,8 @@ namespace Statistic
             dt = dt.AddHours(hour);
             dt = dt.AddMinutes(min);
 
+            Debug.WriteLine(string.Format (@"PanelTecViewBase::setRetroTickTime (hour={0}, minute={1}) - ...", hour, min));
+
             if (IsHandleCreated == true)
                 if (InvokeRequired == true)
                     Invoke(delegateTickTime, dt);
@@ -1134,7 +1161,7 @@ namespace Statistic
                     return;
 
                 //if (!(((currValuesPeriod++) * 1000) < Int32.Parse(FormMain.formParameters.m_arParametrSetup[(int)FormParameters.PARAMETR_SETUP.POLL_TIME]) * 1000))
-                if (!(currValuesPeriod++ < POOL_TIME * (m_tecView.m_idAISKUEParNumber == TecView.ID_AISKUE_PARNUMBER.FACT_03 ? 1 : 6)))
+                if (!(currValuesPeriod++ < POOL_TIME * (m_tecView.IntervalMultiplier)))
                 {
                     currValuesPeriod = 0;
                     NewDateRefresh();
@@ -1182,7 +1209,7 @@ namespace Statistic
                 ;
         }
 
-        private void DrawGraphHours()
+        protected void DrawGraphHours()
         {
             m_ZedGraphHours.Draw(m_tecView.m_valuesHours
                 , new object [] {
@@ -1202,7 +1229,7 @@ namespace Statistic
         /// ќбновление компонентов вкладки с проверкой изменени€ источника данных
         /// </summary>
         /// <param name="markUpdate">указывает на изменившиес€ источники данных</param>
-        private void updateGraphicsRetro (HMark markUpdate)
+        protected void updateGraphicsRetro (HMark markUpdate)
         {
             //if (markUpdate.IsMarked() == false)
             //    return;

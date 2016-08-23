@@ -15,6 +15,8 @@ namespace StatisticCommon
         protected DelegateFunc delegateStopWait;
         protected DelegateFunc delegateEventUpdate;
 
+        protected static string s_DialogMSExcelBrowseFilter = @"Книга MS Excel 2003|*.xls|Книга MS Excel 2010|*.xlsx";
+
         public PanelStatistic(int cCols = -1, int cRows = -1)
             : base(cCols, cRows)
         {

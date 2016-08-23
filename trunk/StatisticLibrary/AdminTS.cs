@@ -79,12 +79,16 @@ namespace StatisticCommon
             Request,
             Data,
         }
-
-        public enum INDEX_MARK_PPBRVALUES { PBR_ENABLED, PBR_AVALIABLE, ADMIN_ENABLED, ADMIN_AVALIABLE };
+        /// <summary>
+        /// Массив индексов в объекте признаков разрешения/запрещения управления/записью значений ПБР, административных значений
+        ///  , включено - разрешается изменить вторичный признак 'SAVED'
+        ///  , 'SAVED' - запись разрешена/запрещена
+        /// </summary>
+        public enum INDEX_MARK_PPBRVALUES { PBR_ENABLED, PBR_SAVED, ADMIN_ENABLED, ADMIN_SAVED };
         protected HMark m_markSavedValues;
 
-        public AdminTS(bool[] arMarkSavePPBRValues)
-            : base()
+        public AdminTS(bool[] arMarkSavePPBRValues, TECComponentBase.TYPE type)
+            : base(type)
         {
             m_markSavedValues = new HMark(0);
 
@@ -94,15 +98,15 @@ namespace StatisticCommon
                     m_markSavedValues.Set((int)INDEX_MARK_PPBRVALUES.PBR_ENABLED, arMarkSavePPBRValues[(int)INDEX_MARK_PPBRVALUES.PBR_ENABLED]);
                 else ;
 
-                if (arMarkSavePPBRValues.Length > (int)INDEX_MARK_PPBRVALUES.PBR_AVALIABLE)
-                    m_markSavedValues.Set((int)INDEX_MARK_PPBRVALUES.PBR_AVALIABLE, arMarkSavePPBRValues[(int)INDEX_MARK_PPBRVALUES.PBR_AVALIABLE] == true);
+                if (arMarkSavePPBRValues.Length > (int)INDEX_MARK_PPBRVALUES.PBR_SAVED)
+                    m_markSavedValues.Set((int)INDEX_MARK_PPBRVALUES.PBR_SAVED, arMarkSavePPBRValues[(int)INDEX_MARK_PPBRVALUES.PBR_SAVED] == true);
                 else ;
             }
             else
                 ;
 
             m_markSavedValues.Marked((int)INDEX_MARK_PPBRVALUES.ADMIN_ENABLED);
-            m_markSavedValues.Marked((int)INDEX_MARK_PPBRVALUES.ADMIN_AVALIABLE);
+            m_markSavedValues.Marked((int)INDEX_MARK_PPBRVALUES.ADMIN_SAVED);
         }
 
         protected override void Initialize () {
@@ -142,14 +146,14 @@ namespace StatisticCommon
 
                     AddState((int)StatesMachine.CurrentTime);
 
-                    if (m_markSavedValues.IsMarked((int)INDEX_MARK_PPBRVALUES.ADMIN_AVALIABLE) == true)
+                    if (m_markSavedValues.IsMarked((int)INDEX_MARK_PPBRVALUES.ADMIN_SAVED) == true)
                     {
                         AddState((int)StatesMachine.AdminDates);
                         AddState((int)StatesMachine.SaveAdminValues);
                     }
                     else ;
 
-                    if (m_markSavedValues.IsMarked((int)INDEX_MARK_PPBRVALUES.PBR_AVALIABLE) == true)
+                    if (m_markSavedValues.IsMarked((int)INDEX_MARK_PPBRVALUES.PBR_SAVED) == true)
                     {
                         AddState((int)StatesMachine.PPBRDates);
                         AddState((int)StatesMachine.SavePPBRValues);
@@ -213,7 +217,7 @@ namespace StatisticCommon
                     //Logging.Logg().Debug("AdminTS::ClearRDG () - states.Clear() - ...", Logging.INDEX_MESSAGE.NOT_SET);
 
                     AddState((int)StatesMachine.CurrentTime);
-                    if (m_markSavedValues.IsMarked((int)INDEX_MARK_PPBRVALUES.ADMIN_AVALIABLE) == true)
+                    if (m_markSavedValues.IsMarked((int)INDEX_MARK_PPBRVALUES.ADMIN_SAVED) == true)
                     {
                         AddState((int)StatesMachine.AdminDates);
                         AddState((int)StatesMachine.ClearAdminValues);
@@ -221,7 +225,7 @@ namespace StatisticCommon
                     else
                         ;
 
-                    if (m_markSavedValues.IsMarked((int)INDEX_MARK_PPBRVALUES.PBR_AVALIABLE) == true)
+                    if (m_markSavedValues.IsMarked((int)INDEX_MARK_PPBRVALUES.PBR_SAVED) == true)
                     {
                         AddState((int)StatesMachine.PPBRDates);
                         AddState((int)StatesMachine.ClearPPBRValues);
@@ -382,7 +386,7 @@ namespace StatisticCommon
         /// </summary>
         private void protectSavedPPBRValues()
         {
-            if (m_markSavedValues.IsMarked((int)INDEX_MARK_PPBRVALUES.PBR_ENABLED) == true) m_markSavedValues.UnMarked((int)INDEX_MARK_PPBRVALUES.PBR_AVALIABLE); else ;
+            if (m_markSavedValues.IsMarked((int)INDEX_MARK_PPBRVALUES.PBR_ENABLED) == true) m_markSavedValues.UnMarked((int)INDEX_MARK_PPBRVALUES.PBR_SAVED); else ;
         }
         
         /// <summary>
@@ -462,7 +466,7 @@ namespace StatisticCommon
         /// <param name="t">ТЭЦ</param>
         /// <param name="comp">Компонент ТЭЦ</param>
         /// <param name="date">Дата за которую необходимо получить значения</param>
-        protected override void GetPPBRValuesRequest(TEC t, TECComponent comp, DateTime date/*, AdminTS.TYPE_FIELDS mode*/)
+        protected override void getPPBRValuesRequest(TEC t, TECComponent comp, DateTime date/*, AdminTS.TYPE_FIELDS mode*/)
         {
             Request(m_dictIdListeners [t.m_id][(int)CONN_SETT_TYPE.PBR], t.GetPBRValueQuery(comp, date/*, mode*/));
         }
@@ -473,7 +477,7 @@ namespace StatisticCommon
         /// <param name="t">ТЭЦ</param>
         /// <param name="comp">Компонент ТЭЦ</param>
         /// <param name="date">Дата за которую необходимо получить значения</param>
-        private void GetAdminValuesRequest(TEC t, TECComponent comp, DateTime date/*, AdminTS.TYPE_FIELDS mode*/) {
+        protected void getAdminValuesRequest(TEC t, TECComponent comp, DateTime date/*, AdminTS.TYPE_FIELDS mode*/) {
             Request(m_dictIdListeners[t.m_id][(int)CONN_SETT_TYPE.ADMIN], t.GetAdminValueQuery(comp, date/*, mode*/));
         }
 
@@ -568,13 +572,18 @@ namespace StatisticCommon
         /// <param name="table">Таблица с результатом запроса</param>
         /// <param name="date">Дата</param>
         /// <returns>Ошибка</returns>
-        protected override int GetPPBRValuesResponse(DataTable table, DateTime date)
+        protected override int getPPBRValuesResponse(DataTable table, DateTime date)
         {
             int iRes = 0;
             
             m_tableValuesResponse = table.Copy ();
             
             return iRes;
+        }
+
+        protected virtual double getRDGValue_PBR_0(DataRow r, int indxTables, int cntFields)
+        {
+            return (double)r[indxTables * cntFields + (0 + 1)];
         }
 
         /// <summary>
@@ -726,7 +735,7 @@ namespace StatisticCommon
                         else
                             if (hour == 0)
                             {
-                                m_curRDGValues_PBR_0 = (double)table.Rows[i][arIndexTables[1] * arFieldsCount[1] + (0 + 1)];
+                                m_curRDGValues_PBR_0 = getRDGValue_PBR_0(table.Rows[i], arIndexTables[1], arFieldsCount[1]); //(double)table.Rows[i][arIndexTables[1] * arFieldsCount[1] + (0 + 1)];
 
                                 continue;
                             }
@@ -796,7 +805,7 @@ namespace StatisticCommon
                             if (hour == 0)
                             {
                                 if ((arIndexTables[0] * arFieldsCount[1] + 1) < table.Columns.Count)
-                                    m_curRDGValues_PBR_0 = (double)table.Rows[i][arIndexTables[0] * arFieldsCount[1] + 1];
+                                    m_curRDGValues_PBR_0 = getRDGValue_PBR_0(table.Rows[i], arIndexTables[0], arFieldsCount[1]); //(double)table.Rows[i][arIndexTables[0] * arFieldsCount[1] + 1];
                                 else
                                     m_curRDGValues_PBR_0 = 0F;
 
@@ -945,19 +954,22 @@ namespace StatisticCommon
         /// <param name="iRows">Идентификатор строки</param>
         protected void setRDGExcelValuesItem(out RDGStruct item, int iRows)
         {
-            int j = -1;
+            int indx_col = 1
+                , j = -1;
             item = new RDGStruct();
             double val = -1F;
 
-            for (j = 0; j < allTECComponents[indxTECComponents].m_listTG.Count; j++)
-                if (allTECComponents[indxTECComponents].m_listTG[j].m_indx_col_rdg_excel > 1)
-                    if (! (m_tableRDGExcelValuesResponse.Rows[iRows][allTECComponents[indxTECComponents].m_listTG[j].m_indx_col_rdg_excel - 1] is DBNull) &&
-                        (double.TryParse (m_tableRDGExcelValuesResponse.Rows[iRows][allTECComponents[indxTECComponents].m_listTG[j].m_indx_col_rdg_excel - 1].ToString (), out val) == true))
+            for (j = 0; j < allTECComponents[indxTECComponents].m_listLowPointDev.Count; j++) {
+                indx_col = allTECComponents[indxTECComponents].m_listLowPointDev[j].m_indx_col_rdg_excel;
+                if (indx_col > 1)
+                    if (!(m_tableRDGExcelValuesResponse.Rows[iRows][indx_col - 1] is DBNull) &&
+                        (double.TryParse(m_tableRDGExcelValuesResponse.Rows[iRows][indx_col - 1].ToString(), out val) == true))
                         item.pbr += val;
                     else
                         ;
                 else
-                    return ;
+                    return;
+            }
 
             item.recomendation = 0;
 
@@ -1014,8 +1026,8 @@ namespace StatisticCommon
             if (IsCanUseTECComponents ())
                 //Request(m_indxDbInterfaceCommon, m_listenerIdCommon, allTECComponents[indxTECComponents].tec.GetAdminDatesQuery(date));
                 Request(m_dictIdListeners[allTECComponents[indxTECComponents].tec.m_id][(int)CONN_SETT_TYPE.ADMIN]
-                    , allTECComponents[indxTECComponents].tec.GetAdminDatesQuery(date.Add(-m_tsOffsetToMoscow)/*, m_typeFields*/
-                    , allTECComponents[indxTECComponents]));
+                    , allTECComponents[indxTECComponents].tec.GetAdminDatesQuery(allTECComponents[indxTECComponents]/*, m_typeFields*/
+                        , date.Add(-m_tsOffsetToMoscow)));
             else
                 ;
         }
@@ -1024,7 +1036,7 @@ namespace StatisticCommon
         /// Получение и выполнение запроса для получения административных данных
         /// </summary>
         /// <param name="date">Дата за которую проводится выборка</param>
-        protected override void GetPPBRDatesRequest(DateTime date)
+        protected override void getPPBRDatesRequest(DateTime date)
         {
             if (m_curDate.Date > date.Date)
             {
@@ -1038,8 +1050,8 @@ namespace StatisticCommon
             if (IsCanUseTECComponents () == true)
                 //Request(m_indxDbInterfaceCommon, m_listenerIdCommon, allTECComponents[indxTECComponents].tec.GetPBRDatesQuery(date));
                 Request(m_dictIdListeners[allTECComponents[indxTECComponents].tec.m_id][(int)CONN_SETT_TYPE.PBR],
-                        allTECComponents[indxTECComponents].tec.GetPBRDatesQuery(date.Add(-m_tsOffsetToMoscow)/*, m_typeFields*/
-                        , allTECComponents[indxTECComponents]));
+                    allTECComponents[indxTECComponents].tec.GetPBRDatesQuery(allTECComponents[indxTECComponents]/*, m_typeFields*/
+                        , date.Add(-m_tsOffsetToMoscow)));
             else
                 ;
         }
@@ -1047,9 +1059,9 @@ namespace StatisticCommon
         /// <summary>
         /// Очистка административных значений
         /// </summary>
-        private void ClearAdminDates()
+        private void clearAdminDates()
         {
-            ClearDates(CONN_SETT_TYPE.ADMIN);
+            clearDates(CONN_SETT_TYPE.ADMIN);
         }
 
         /// <summary>
@@ -1134,7 +1146,7 @@ namespace StatisticCommon
         /// <param name="table">Таблица с данными</param>
         /// <param name="date">Дата за которую производится выборка</param>
         /// <returns>Ошибка</returns>
-        private int GetAdminDatesResponse(DataTable table, DateTime date)
+        private int getAdminDatesResponse(DataTable table, DateTime date)
         {
             return GetDatesResponse(CONN_SETT_TYPE.ADMIN, table, date);
         }
@@ -1145,7 +1157,7 @@ namespace StatisticCommon
         /// <param name="table">Таблица с данными</param>
         /// <param name="date">Дата за которую производится выборка</param>
         /// <returns>Ошибка</returns>
-        protected override int GetPPBRDatesResponse(DataTable table, DateTime date)
+        protected override int getPPBRDatesResponse(DataTable table, DateTime date)
         {
             return GetDatesResponse(CONN_SETT_TYPE.PBR, table, date);
         }
@@ -1156,7 +1168,7 @@ namespace StatisticCommon
         /// <param name="dt">Указанные дата/время</param>
         /// <param name="type">Тип данных (ПБР, админ./значения)</param>
         /// <returns>Номер часа</returns>
-        private int getCurrentHour (DateTime dt, CONN_SETT_TYPE type) {
+        protected int getCurrentHour (DateTime dt, CONN_SETT_TYPE type) {
             int iRes = -1;
 
             ////Вариант №1
@@ -1840,7 +1852,7 @@ namespace StatisticCommon
                 case (int)StatesMachine.PPBRValues:
                     strRep = @"Получение данных плана.";
                     if (indxTECComponents < allTECComponents.Count)
-                        GetPPBRValuesRequest(allTECComponents[indxTECComponents].tec, allTECComponents[indxTECComponents]
+                        getPPBRValuesRequest(allTECComponents[indxTECComponents].tec, allTECComponents[indxTECComponents]
                             , m_curDate.Date.Add(-m_tsOffsetToMoscow)/*, m_typeFields*/);
                     else
                         ; //result = false;
@@ -1848,14 +1860,14 @@ namespace StatisticCommon
                 case (int)StatesMachine.AdminValues:
                     strRep = @"Получение административных данных.";
                     if ((indxTECComponents < allTECComponents.Count) && (m_markQueries.IsMarked ((int)CONN_SETT_TYPE.ADMIN) == true))
-                        GetAdminValuesRequest(allTECComponents[indxTECComponents].tec, allTECComponents[indxTECComponents]
+                        getAdminValuesRequest(allTECComponents[indxTECComponents].tec, allTECComponents[indxTECComponents]
                             , m_curDate.Date.Add(-m_tsOffsetToMoscow)/*, m_typeFields*/);
                     else
                         ; //result = false;
 
                     //this.BeginInvoke(delegateCalendarSetDate, m_prevDatetime);
                     break;
-
+                #region Импорт/экспорт значений
                 case (int)StatesMachine.ImpRDGExcelValues:
                     strRep = @"Импорт РДГ из Excel.";
                     delegateImportForeignValuesRequuest();
@@ -1868,6 +1880,7 @@ namespace StatisticCommon
                     strRep = @"Импорт из формата CSV.";
                     delegateImportForeignValuesRequuest();
                     break;
+                #endregion
                 case (int)StatesMachine.PPBRDates:
                     if ((serverTime.Date > m_curDate.Date) && (m_ignore_date == false))
                     {
@@ -1886,7 +1899,7 @@ namespace StatisticCommon
                     else
                         ;                        
                     strRep = @"Получение списка сохранённых часовых значений.";
-                    GetPPBRDatesRequest(m_curDate);
+                    getPPBRDatesRequest(m_curDate);
                     break;
                 case (int)StatesMachine.AdminDates:
                     //int offset_days = (m_curDate.Date - serverTime.Date).Days;
@@ -2080,7 +2093,7 @@ namespace StatisticCommon
                         ;
                     break;
                 case (int)StatesMachine.PPBRValues:
-                    result = GetPPBRValuesResponse(table as DataTable, m_curDate);
+                    result = getPPBRValuesResponse(table as DataTable, m_curDate);
                     if (result == 0)
                     {
                         if (m_markQueries.IsMarked((int)CONN_SETT_TYPE.ADMIN) == false)
@@ -2122,6 +2135,7 @@ namespace StatisticCommon
                     else
                         ;
                     break;
+                #region Импорт/экспорт значений
                 case (int)StatesMachine.ImpRDGExcelValues:
                     ActionReport("Импорт РДГ из Excel.");
                     //result = GetRDGExcelValuesResponse(table, m_curDate);
@@ -2157,9 +2171,10 @@ namespace StatisticCommon
                     else
                         ;
                     break;
+                #endregion
                 case (int)StatesMachine.PPBRDates:
-                    ClearPPBRDates();
-                    result = GetPPBRDatesResponse(table as System.Data.DataTable, m_curDate);
+                    clearPPBRDates();
+                    result = getPPBRDatesResponse(table as System.Data.DataTable, m_curDate);
                     if (result == 0)
                     {
                     }
@@ -2167,9 +2182,9 @@ namespace StatisticCommon
                         ;
                     break;
                 case (int)StatesMachine.AdminDates:
-                    ClearAdminDates();
+                    clearAdminDates();
                     if (m_markQueries.IsMarked((int)CONN_SETT_TYPE.ADMIN) == true)
-                        result = GetAdminDatesResponse(table as System.Data.DataTable, m_curDate);
+                        result = getAdminDatesResponse(table as System.Data.DataTable, m_curDate);
                     else
                         result = 0;
 
@@ -2701,9 +2716,9 @@ namespace StatisticCommon
                 {
                     if ((comp.tec.m_id == allTECComponents[indx].tec.m_id) && (modeTECComponent(allTECComponents.IndexOf(comp)) == ownerMode))
                     {
-                        foreach (TG tg in comp.m_listTG)
+                        foreach (TECComponentBase tc in comp.m_listLowPointDev)
                         {
-                            if (tg.m_id == allTECComponents[indx].m_id)
+                            if (tc.m_id == allTECComponents[indx].m_id)
                             {
                                 return comp.m_id;
                             }
@@ -2781,14 +2796,10 @@ namespace StatisticCommon
 
             for (int i = 0; i < m_curRDGValues.Length; i++)
             {
-                m_prevRDGValues[i].pbr = Math.Round(m_curRDGValues[i].pbr, 2);
-                m_prevRDGValues[i].pmin = Math.Round(m_curRDGValues[i].pmin, 2);
-                m_prevRDGValues[i].pmax = Math.Round(m_curRDGValues[i].pmax, 2);
-                m_prevRDGValues[i].pbr_number = m_curRDGValues[i].pbr_number;
-                m_prevRDGValues[i].dtRecUpdate = m_curRDGValues[i].dtRecUpdate;
-                m_prevRDGValues[i].recomendation = m_curRDGValues[i].recomendation;
-                m_prevRDGValues[i].deviationPercent = m_curRDGValues[i].deviationPercent;
-                m_prevRDGValues[i].deviation = m_curRDGValues[i].deviation;
+                m_prevRDGValues[i].From(m_curRDGValues[i]);
+                m_prevRDGValues[i].pbr = Math.Round(m_prevRDGValues[i].pbr, 2);
+                m_prevRDGValues[i].pmin = Math.Round(m_prevRDGValues[i].pmin, 2);
+                m_prevRDGValues[i].pmax = Math.Round(m_prevRDGValues[i].pmax, 2);
             }
         }
 

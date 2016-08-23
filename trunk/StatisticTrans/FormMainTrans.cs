@@ -92,12 +92,12 @@ namespace StatisticTrans
             //set;
         }
 
-        //private string GetINIParametersOfID(int param)
+        //private string getINIParametersOfID(int param)
         //{
         //    return m_sFileINI.GetValueOfID(param);
         //}
 
-        private string GetINIParametersOfKey(string keyParam)
+        private string getINIParametersOfKey(string keyParam)
         {
             return m_sFileINI.GetMainValueOfKey(keyParam);
         }
@@ -184,7 +184,7 @@ namespace StatisticTrans
             m_report = new HReports();
 
             //DelegateGetINIParametersOfID = new StringDelegateIntFunc(GetINIParametersOfID);
-            Logging.DelegateGetINIParametersOfKEY = new StringDelegateStringFunc(GetINIParametersOfKey);
+            Logging.DelegateGetINIParametersOfKEY = new StringDelegateStringFunc(getINIParametersOfKey);
 
             m_sFileINI = new FileINI(@"setup.ini", false, par, val);
 

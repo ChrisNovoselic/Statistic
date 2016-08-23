@@ -156,7 +156,7 @@ namespace Statistic
             m_arr_editTable = new DataTable[(int)FormChangeMode.MODE_TECCOMPONENT.ANY];
             fill_DataTable_ComponentsTEC();
             
-            treeView_TECComponent.GetID += new TreeView_TECComponent.intGetID(this.GetNextID);
+            treeView_TECComponent.GetID += new TreeView_TECComponent.intGetID(this.getNextID);
             treeView_TECComponent.EditNode += new TreeView_TECComponent.EditNodeEventHandler(this.get_operation_tree);
             treeView_TECComponent.Report += new TreeView_TECComponent.ReportEventHandler(this.tree_report);
         }
@@ -635,7 +635,7 @@ namespace Statistic
         /// Обработчик для получения следующего идентификатора
         /// </summary>
         /// <returns>Возвращает идентификатор</returns>
-        private int GetNextID(object sender, TreeView_TECComponent.GetIDEventArgs e)
+        private int getNextID(object sender, TreeView_TECComponent.GetIDEventArgs e)
         {
             int ID = 0;
             int err = 0;
@@ -1234,22 +1234,22 @@ namespace Statistic
                                 tg_path += ':' + g.m_id.ToString();
                                 this.Nodes[tec_indx].Nodes[(int)FormChangeMode.MODE_TECCOMPONENT.TG - 1].Nodes[node_indx].Name = tg_path;
                                 
-                                if (g.m_listTG[0].m_id_owner_pc == -1)
+                                if ((g.m_listLowPointDev[0] as TG).m_id_owner_pc == -1)
                                 {
                                     string pc_tg_path = path;
 
                                     pc_node_null_indx++;
-                                    this.Nodes[tec_indx].Nodes[(int)FormChangeMode.MODE_TECCOMPONENT.PC - 1].Nodes[0].Nodes.Add(g.m_listTG[0].name_shr);
-                                    pc_tg_path += ":" + g.m_listTG[0].m_id.ToString();
+                                    this.Nodes[tec_indx].Nodes[(int)FormChangeMode.MODE_TECCOMPONENT.PC - 1].Nodes[0].Nodes.Add(g.m_listLowPointDev[0].name_shr);
+                                    pc_tg_path += ":" + g.m_listLowPointDev[0].m_id.ToString();
                                     this.Nodes[tec_indx].Nodes[(int)FormChangeMode.MODE_TECCOMPONENT.PC - 1].Nodes[0].Nodes[pc_node_null_indx].Name = pc_tg_path;
                                 }
-                                if (g.m_listTG[0].m_id_owner_gtp == -1)
+                                if ((g.m_listLowPointDev[0] as TG).m_id_owner_gtp == -1)
                                 {
                                     string gtp_tg_path = path;
 
                                     gtp_node_null_indx++;
-                                    this.Nodes[tec_indx].Nodes[(int)FormChangeMode.MODE_TECCOMPONENT.GTP - 1].Nodes[0].Nodes.Add(g.m_listTG[0].name_shr);
-                                    gtp_tg_path += ":" + g.m_listTG[0].m_id.ToString();
+                                    this.Nodes[tec_indx].Nodes[(int)FormChangeMode.MODE_TECCOMPONENT.GTP - 1].Nodes[0].Nodes.Add(g.m_listLowPointDev[0].name_shr);
+                                    gtp_tg_path += ":" + g.m_listLowPointDev[0].m_id.ToString();
                                     this.Nodes[tec_indx].Nodes[(int)FormChangeMode.MODE_TECCOMPONENT.GTP - 1].Nodes[0].Nodes[gtp_node_null_indx].Name = gtp_tg_path;
                                 }
 
@@ -1267,7 +1267,7 @@ namespace Statistic
                                 gtp_path += ':' + g.m_id.ToString();
                                 this.Nodes[tec_indx].Nodes[(int)FormChangeMode.MODE_TECCOMPONENT.GTP - 1].Nodes[gtp_indx].Name = gtp_path;
 
-                                foreach (StatisticCommon.TG h in g.m_listTG)
+                                foreach (StatisticCommon.TG h in g.m_listLowPointDev)
                                 {
                                     string gtp_tg_path = gtp_path;
 
@@ -1295,7 +1295,7 @@ namespace Statistic
                                 pc_path += ':' + g.m_id.ToString();
                                 this.Nodes[tec_indx].Nodes[(int)FormChangeMode.MODE_TECCOMPONENT.PC - 1].Nodes[pc_indx].Name = pc_path;
 
-                                foreach (StatisticCommon.TG h in g.m_listTG)
+                                foreach (StatisticCommon.TG h in g.m_listLowPointDev)
                                 {
                                     string pc_tg_path = pc_path;
 

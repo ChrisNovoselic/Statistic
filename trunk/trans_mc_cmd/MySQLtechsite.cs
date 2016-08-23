@@ -180,7 +180,7 @@ namespace trans_mc_cmd
             return iRes;
         }*/
 
-        private int GetIndexTECComponentOfIdMC(int id_mc)
+        private int getIndexTECComponentOfIdMC(int id_mc)
         {
             int iRes = -1;
 

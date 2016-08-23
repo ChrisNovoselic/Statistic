@@ -364,6 +364,7 @@ namespace StatisticCommon
             Start ();
 
             int err = -1;
+            List<TECComponentBase> listTG = m_tec.GetListLowPointDev(TECComponentBase.TYPE.ELECTRO);
             DbConnection conn = DbSources.Sources ().GetConnection (m_idListenerConfigDB, out err);
             
             string queryInsert = @"INSERT INTO [dbo].[ID_TG_ASKUE_BiTEC] ([ID_TEC],[SENSORS_NAME],[LAST_UPDATE],[ID_TG],[ID_3],[ID_30]) VALUES ";
@@ -374,7 +375,7 @@ namespace StatisticCommon
                 queryInsert += m_tec.m_id + @",";
                 queryInsert += @"'" + SENSORS_NAME_PREFIX + (j + 1).ToString () + SENSORS_NAME_POSTFIX + @"'" + @",";
                 queryInsert += @"GETDATE(),";
-                queryInsert += m_tec.m_listTG [j].m_id + @",";
+                queryInsert += listTG [j].m_id + @",";
                 queryInsert += m_array_tbxTG[(int)HDateTime.INTERVAL.MINUTES, j].Text + @",";
                 queryInsert += m_array_tbxTG[(int)HDateTime.INTERVAL.HOURS, j].Text;
                 queryInsert += @"),";

@@ -95,18 +95,21 @@ namespace StatisticCommon
 
         protected abstract void dgwAdminTable_CellValidated(object sender, DataGridViewCellEventArgs e);
 
+        protected virtual int INDEX_COLUMN_BUTTON_TO_ALL { get { return (int)DataGridViewAdminKomDisp.DESC_INDEX.TO_ALL; } }
+
         protected virtual void dgwAdminTable_CellClick(object sender, DataGridViewCellEventArgs e)
         {
-            if (e.ColumnIndex == (int)DataGridViewAdminKomDisp.DESC_INDEX.TO_ALL && e.RowIndex >= 0) // кнопка применение для всех
+            int colStart = -1;
+
+            if ((e.ColumnIndex == INDEX_COLUMN_BUTTON_TO_ALL) // кнопка применение для всех
+                && (!(e.RowIndex < 0)))
             {
-                int colStart = (int)DataGridViewAdminKomDisp.DESC_INDEX.PLAN;
-                if (Columns[colStart].ReadOnly == true)
+                colStart = (int)DataGridViewAdminKomDisp.DESC_INDEX.PLAN;
+                while (Columns[colStart].ReadOnly == true)
                     colStart ++;
-                else
-                    ;
 
                 for (int i = e.RowIndex + 1; i < Rows.Count; i++)
-                    for (int j = colStart; j < (int)DataGridViewAdminKomDisp.DESC_INDEX.TO_ALL; j ++)
+                    for (int j = colStart; j < INDEX_COLUMN_BUTTON_TO_ALL; j++)
                         if (Columns[j].ReadOnly == false)
                             Rows[i].Cells[j].Value = Rows[e.RowIndex].Cells[j].Value;
                         else

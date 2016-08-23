@@ -278,11 +278,26 @@ namespace Statistic
 
         protected abstract class HPanelQuickData : HPanelTableLayout
         {
-            protected int COUNT_LABEL
-                    , COUNT_TG_IN_COLUMN
-                    , COL_TG_START
-                    , COUNT_ROWS = -1
-                    , COUNT_ROW_LABELCOMMON;
+            /// <summary>
+            /// Количество элементов управления-подписей по оси X
+            /// </summary>
+            protected int COUNT_LABEL;
+            /// <summary>
+            /// Количество элементов управления-подписей по оси Y для ТГ(параметров ВЫВОДов)
+            /// </summary>
+            protected int COUNT_TG_IN_COLUMN;
+            /// <summary>
+            /// Индекс столбца с которого начинается отображение ТГ(параметров ВЫВОДов)
+            /// </summary>
+            protected int COL_TG_START;
+            /// <summary>
+            /// Количество виртуальных строк на которые разбита панель
+            /// </summary>
+            protected int COUNT_ROWS = -1;
+            /// <summary>
+            /// Количество виртуальных строк на которых размещается любая из ОБЩих подписей (до ТГ, параметров ВЫВОДов)
+            /// </summary>
+            protected int COUNT_ROWSPAN_LABELCOMMON;
             protected float SZ_COLUMN_LABEL, SZ_COLUMN_LABEL_VALUE
                 , SZ_COLUMN_TG_LABEL, SZ_COLUMN_TG_LABEL_VALUE;
 
@@ -380,34 +395,36 @@ namespace Statistic
             }
 
             //public void addTGView(ref string name_shr, /*ref float val,*/ ref int positionXName, ref int positionYName, ref int positionXValue, ref int positionYValue)
-            public void AddTGView(TG tg)
+            public virtual void AddTGView(TECComponentBase comp)
             {
-                int cnt = -1;
-                m_tgLabels.Add(tg.m_id, new Label[(int)TG.INDEX_VALUE.COUNT_INDEX_VALUE]);
-                m_tgToolTips.Add(tg.m_id, new ToolTip[(int)TG.INDEX_VALUE.COUNT_INDEX_VALUE]);
+                int cnt = -1
+                    , id = -1;
+                HLabel hlblValue;
+
+                id = comp.m_id;
+
+                m_tgLabels.Add(id, new Label[(int)TG.INDEX_VALUE.COUNT_INDEX_VALUE]);
+                m_tgToolTips.Add(id, new ToolTip[(int)TG.INDEX_VALUE.COUNT_INDEX_VALUE]);
                 cnt = m_tgLabels.Count;
 
-                m_tgLabels[tg.m_id][(int)TG.INDEX_VALUE.LABEL_DESC] = HLabel.createLabel(tg.name_shr,
+                m_tgLabels[id][(int)TG.INDEX_VALUE.LABEL_DESC] = HLabel.createLabel(comp.name_shr.Trim(),
                                                                         new HLabelStyles(/*arPlacement[(int)i].pt, sz,*/new Point(-1, -1), new Size(-1, -1),
                                                                         Color.Black, Color.Empty,
-                                                                        8F, ContentAlignment.MiddleRight))
-                    //, lblValue = null
-                    ;
-                HLabel hlblValue;
+                                                                        8F, ContentAlignment.MiddleRight));                
 
                 hlblValue = new HLabel(new HLabelStyles(new Point(-1, -1), new Size(-1, -1), Color.LimeGreen, Color.Black, 13F, ContentAlignment.MiddleCenter));
                 hlblValue.Text = @"---.--"; //name_shr + @"_Fact";
                 hlblValue.m_type = HLabel.TYPE_HLABEL.TG;
-                //m_tgToolTips[tg.m_id][(int)TG.INDEX_VALUE.FACT].SetToolTip(hlblValue, tg.name_shr + @"[" + tg.m_SensorsStrings_ASKUE[0] + @"]: " + (tg.m_TurnOnOff == TG.INDEX_TURNOnOff.ON ? @"вкл." : @"выкл."));
-                m_tgLabels[tg.m_id][(int)TG.INDEX_VALUE.FACT] = (Label)hlblValue;
-                m_tgToolTips[tg.m_id][(int)TG.INDEX_VALUE.FACT] = new ToolTip();
+                //m_tgToolTips[id][(int)TG.INDEX_VALUE.FACT].SetToolTip(hlblValue, tg.name_shr + @"[" + tg.m_SensorsStrings_ASKUE[0] + @"]: " + (tg.m_TurnOnOff == TG.INDEX_TURNOnOff.ON ? @"вкл." : @"выкл."));
+                m_tgLabels[id][(int)TG.INDEX_VALUE.FACT] = (Label)hlblValue;
+                m_tgToolTips[id][(int)TG.INDEX_VALUE.FACT] = new ToolTip();
 
                 hlblValue = new HLabel(new HLabelStyles(new Point(-1, -1), new Size(-1, -1), Color.Green, Color.Black, 13F, ContentAlignment.MiddleCenter));
                 hlblValue.Text = @"---.--"; //name_shr + @"_TM";
                 hlblValue.m_type = HLabel.TYPE_HLABEL.TG;
-                m_tgLabels[tg.m_id][(int)TG.INDEX_VALUE.TM] = (Label)hlblValue;
+                m_tgLabels[id][(int)TG.INDEX_VALUE.TM] = (Label)hlblValue;
 
-                m_tgToolTips[tg.m_id][(int)TG.INDEX_VALUE.TM] = new ToolTip();
+                m_tgToolTips[id][(int)TG.INDEX_VALUE.TM] = new ToolTip();
             }
 
             protected void createLabel(int indx, string strLabelText, Color clrLabelFore, Color clrLabelBackground, float fSzLabelFont, ContentAlignment alignLabel)
@@ -431,23 +448,23 @@ namespace Statistic
                     }
                     else ;
             }
-
+            /// <summary>
+            /// Удалить 1-ую (по порядку) общую подпись
+            /// </summary>
+            /// <param name="limit">Индекс (подписи) до которого следует удалять подписи</param>
             protected void removeFirstCommonLabels(int limit)
             {
-                for (int i = m_indxStartCommonFirstValueSeries; i < limit + 1; i++)
-                {
-                    if (!(this.m_arLabelCommon[(int)i - m_indxStartCommonFirstValueSeries] == null))
-                        if (!(this.Controls.IndexOf(this.m_arLabelCommon[(int)i - m_indxStartCommonFirstValueSeries]) < 0))
-                            this.Controls.Remove(this.m_arLabelCommon[(int)i - m_indxStartCommonFirstValueSeries]);
-                        else ;
-                    else
-                        ;
-                }
+                removeSecondCommonLabels(m_indxStartCommonFirstValueSeries, limit);
             }
 
             protected void removeSecondCommonLabels (int limit)
             {
-                for (int i = m_indxStartCommonSecondValueSeries; i < limit + 1; i++)
+                removeSecondCommonLabels (m_indxStartCommonSecondValueSeries, limit);
+            }
+
+            private void removeSecondCommonLabels(int indxStart, int limit)
+            {
+                for (int i = indxStart; i < limit + 1; i++)
                 {
                     if (!(this.m_arLabelCommon[(int)i - m_indxStartCommonFirstValueSeries] == null))
                         if (!(this.Controls.IndexOf(this.m_arLabelCommon[(int)i - m_indxStartCommonFirstValueSeries]) < 0))
@@ -546,16 +563,37 @@ namespace Statistic
             /// Возвратить цвет для отображения фактических значений
             /// </summary>
             /// <returns>Цвет для фактических значений</returns>
-            protected Color getColorFactValues()
+            protected Color getColorValues(TG.INDEX_VALUE indx)
             {
-                //Определить цвет
-                if (m_parent.m_tecView.currHour == true)
-                    if (m_parent.m_tecView.m_markWarning.IsMarked((int)TecView.INDEX_WARNING.LAST_MIN) == true)
-                        return System.Drawing.Color.OrangeRed;
-                    else
-                        return System.Drawing.Color.LimeGreen;
+                Color clrRes = Color.Empty;
+                Color[,] arColorValues = new Color[,] { { Color.OrangeRed, Color.Orange }, { Color.LimeGreen, Color.Green } }; // 0 - ретро-значения, 1 - текущие значения
+                //Color[] arColorRetroValues = new Color[] { Color.OrangeRed, Color.Orange };
+
+                if (!(m_parent == null))
+                    //Определить цвет
+                    switch (indx)
+                    {
+                        case TG.INDEX_VALUE.FACT: // для фактических значений или для значений в 1-ом столбце детализации
+                            if (m_parent.m_tecView.currHour == true)
+                                if (m_parent.m_tecView.m_markWarning.IsMarked((int)TecView.INDEX_WARNING.LAST_MIN) == true)
+                                    clrRes = arColorValues[0, (int)indx];
+                                else
+                                    clrRes = arColorValues[1, (int)indx];
+                            else
+                                clrRes = arColorValues[0, (int)indx];
+                            break;
+                        case TG.INDEX_VALUE.TM: // для значений телемеханики или значений во 2-ом столбце детализации
+                            clrRes = (m_parent.m_tecView.currHour == true) ?
+                                arColorValues[1, (int)indx] :
+                                    arColorValues[0, (int)indx];
+                            break;
+                        default:
+                            break;
+                    }
                 else
-                    return System.Drawing.Color.OrangeRed;
+                    ;
+
+                return clrRes;
             }
         }
 
@@ -884,8 +922,8 @@ namespace Statistic
 
             public override void RestructControl()
             {
-                COUNT_LABEL = 3; COUNT_TG_IN_COLUMN = 4; COL_TG_START = 6;
-                COUNT_ROW_LABELCOMMON = 4;
+                COUNT_LABEL = (int)TG.INDEX_VALUE.COUNT_INDEX_VALUE; COUNT_TG_IN_COLUMN = 4; COL_TG_START = 6;
+                COUNT_ROWSPAN_LABELCOMMON = 4;
 
                 bool bPowerFactZoom = false;
                 int cntCols = -1;                
@@ -949,7 +987,7 @@ namespace Statistic
                         //this.Controls.Add(m_arLabelCommon[(int)i - m_indxStartCommonPVal]);
                         this.Controls.Add(this.m_arLabelCommon[(int)i - m_indxStartCommonFirstValueSeries]);
                         this.SetCellPosition(this.m_arLabelCommon[(int)i - m_indxStartCommonFirstValueSeries], getPositionCell((int)i));
-                        this.SetRowSpan(this.m_arLabelCommon[(int)i - m_indxStartCommonFirstValueSeries], COUNT_ROW_LABELCOMMON);
+                        this.SetRowSpan(this.m_arLabelCommon[(int)i - m_indxStartCommonFirstValueSeries], COUNT_ROWSPAN_LABELCOMMON);
                     }
                     else
                         ;
@@ -973,7 +1011,7 @@ namespace Statistic
                         //this.Controls.Add(m_arLabelCommon[(int)i - m_indxStartCommonPVal]);
                         this.Controls.Add(this.m_arLabelCommon[(int)i - m_indxStartCommonFirstValueSeries]);
                         this.SetCellPosition(this.m_arLabelCommon[(int)i - m_indxStartCommonFirstValueSeries], getPositionCell((int)i));
-                        this.SetRowSpan(this.m_arLabelCommon[(int)i - m_indxStartCommonFirstValueSeries], COUNT_ROW_LABELCOMMON);
+                        this.SetRowSpan(this.m_arLabelCommon[(int)i - m_indxStartCommonFirstValueSeries], COUNT_ROWSPAN_LABELCOMMON);
                     }
 
                     //Ширина столбцов группы "Отклонение"
@@ -1004,7 +1042,8 @@ namespace Statistic
                     ;
 
                 //if ((Users.Role == (int)Users.ID_ROLES.NSS) || (Users.Role == (int)Users.ID_ROLES.MAJOR_MASHINIST) || (Users.Role == (int)Users.ID_ROLES.MASHINIST))
-                if ((((ToolStripMenuItem)ContextMenuStrip.Items[(int)INDEX_CONTEXTMENUITEM.FORECASTEE]).Checked == false) && (((ToolStripMenuItem)ContextMenuStrip.Items[(int)INDEX_CONTEXTMENUITEM.TM]).Checked == false))
+                if ((((ToolStripMenuItem)ContextMenuStrip.Items[(int)INDEX_CONTEXTMENUITEM.FORECASTEE]).Checked == false)
+                    && (((ToolStripMenuItem)ContextMenuStrip.Items[(int)INDEX_CONTEXTMENUITEM.TM]).Checked == false))
                 {
                     this.Controls.Add(m_lblPowerFactZoom, COL_TG_START + cntCols * COUNT_LABEL + 0, 0);
                     this.SetRowSpan(m_lblPowerFactZoom, COUNT_ROWS);
@@ -1055,9 +1094,9 @@ namespace Statistic
             {
                 showTMValue(ref m_tgLabels[tg.m_id][(int)TG.INDEX_VALUE.TM]
                                                 , tg.m_strKKS_NAME_TM
-                                                , m_parent.m_tecView.m_dictValuesTG[tg.m_id].m_powerMinutes[min]
-                                                , m_parent.m_tecView.m_dictValuesTG[tg.m_id].m_powerCurrent_TM
-                                                , m_parent.m_tecView.m_dictValuesTG[tg.m_id].m_dtCurrent_TM
+                                                , m_parent.m_tecView.m_dictValuesLowPointDev[tg.m_id].m_powerMinutes[min]
+                                                , m_parent.m_tecView.m_dictValuesLowPointDev[tg.m_id].m_powerCurrent_TM
+                                                , m_parent.m_tecView.m_dictValuesLowPointDev[tg.m_id].m_dtCurrent_TM
                                                 , m_parent.m_tecView.serverTime
                                                 ,m_tgToolTips[tg.m_id][(int)TG.INDEX_VALUE.TM]
                                                 , ref val);
@@ -1115,11 +1154,7 @@ namespace Statistic
                 if (bValidateDateTime == false)
                     lbl.ForeColor = Color.Orange;
                 else
-                    //if ((dt_srv - dt_val).TotalMinutes > 1)
-                    if (m_parent.m_tecView.currHour == false)
-                        lbl.ForeColor = Color.Orange;
-                    else
-                        lbl.ForeColor = Color.Green;
+                    lbl.ForeColor = getColorValues (TG.INDEX_VALUE.TM);
 
                 lbl.Text = text;
                 toolTip.SetToolTip(lbl, dt_val.ToString("dd.MM.yyyy HH:mm:ss"));
@@ -1152,9 +1187,9 @@ namespace Statistic
                     {
                         foreach (TECComponent g in m_parent.m_tecView.m_tec.list_TECComponents)
                         {
-                            if (g.m_id < 500)
+                            if (g.IsGTP == true)
                                 //Только ГТП
-                                foreach (TG tg in g.m_listTG)
+                                foreach (TG tg in g.m_listLowPointDev)
                                     showTMValue(tg, ref value_TM, min);
                             else
                                 ;
@@ -1162,7 +1197,7 @@ namespace Statistic
                     }
                     else
                     {
-                        foreach (TG tg in m_parent.m_tecView.m_tec.list_TECComponents[m_parent.indx_TECComponent].m_listTG)
+                        foreach (TG tg in m_parent.m_tecView.m_tec.list_TECComponents[m_parent.indx_TECComponent].m_listLowPointDev)
                             showTMValue(tg, ref value_TM, min);
                     }
                 }
@@ -1180,12 +1215,7 @@ namespace Statistic
                     , true
                     , true
                     , string.Empty);
-                Color frCol = Color.Empty;
-                if ((!(m_parent == null)) && (m_parent.m_tecView.currHour == true))
-                    frCol = Color.Green;
-                else
-                    frCol = Color.Orange;
-                m_arLabelCommon[(int)PanelQuickDataStandard.CONTROLS.lblCommonPVal_TM - m_indxStartCommonFirstValueSeries].ForeColor = frCol;
+                m_arLabelCommon[(int)PanelQuickDataStandard.CONTROLS.lblCommonPVal_TM - m_indxStartCommonFirstValueSeries].ForeColor = getColorValues (TG.INDEX_VALUE.TM);
             }
 
             /// <summary>
@@ -1193,20 +1223,24 @@ namespace Statistic
             /// </summary>
             public override void ShowFactValues()
             {
+                int indxStartCommonPVal = m_indxStartCommonFirstValueSeries;
+                int id = -1
+                    , i = -1, j = -1
+                    , min = -1;
+
+                bool bPrevValueValidate = false
+                        , bMinValuesReceived = true;
+                double prevValue = 0F, value = 0F
+                    , valueEBefore = 0F
+                    , valueECur = 0F
+                    , valueEFuture = 0F;
+
                 if (!(m_parent == null))
                 {
-                    int indxStartCommonPVal = m_indxStartCommonFirstValueSeries;
-                    int i = -1, j = -1
-                        , min = m_parent.m_tecView.lastMin;
+                    indxStartCommonPVal = m_indxStartCommonFirstValueSeries;
+                    min = m_parent.m_tecView.lastMin;
 
                     if (!(min == 0)) min--; else ;
-
-                    bool bPrevValueValidate = false
-                        , bMinValuesReceived = true;
-                    double prevValue = 0F, value = 0F
-                        , valueEBefore = 0F
-                        , valueECur = 0F
-                        , valueEFuture = 0F;
 
                     bPrevValueValidate = double.TryParse(m_arLabelCommon[(int)PanelQuickDataStandard.CONTROLS.lblCommonPVal_Fact - indxStartCommonPVal].Text, out prevValue);
 
@@ -1223,14 +1257,16 @@ namespace Statistic
                     else
                         ;
 
-                    for (i = 0; i < m_parent.m_tecView.listTG.Count; i++)
-                        if (m_parent.m_tecView.m_dictValuesTG[m_parent.m_tecView.listTG[i].m_id].m_bPowerMinutesRecieved == true)
-                            for (j = 0; j < min; j++)
-                                if ((!(m_parent.m_tecView.m_dictValuesTG[m_parent.m_tecView.listTG[i].m_id].m_powerMinutes[j] < 0))
-                                    && (m_parent.m_tecView.m_dictValuesTG[m_parent.m_tecView.listTG[i].m_id].m_powerMinutes[j] > 1))
-                                    valueEBefore += m_parent.m_tecView.m_dictValuesTG[m_parent.m_tecView.listTG[i].m_id].m_powerMinutes[j] / 20;
+                    for (i = 0; i < m_parent.m_tecView.ListLowPointDev.Count; i++)
+                        if (m_parent.m_tecView.m_dictValuesLowPointDev[m_parent.m_tecView.ListLowPointDev[i].m_id].m_bPowerMinutesRecieved == true)
+                            for (j = 0; j < min; j++) {
+                                id = m_parent.m_tecView.ListLowPointDev[i].m_id;
+                                if ((!(m_parent.m_tecView.m_dictValuesLowPointDev[id].m_powerMinutes[j] < 0))
+                                    && (m_parent.m_tecView.m_dictValuesLowPointDev[m_parent.m_tecView.ListLowPointDev[i].m_id].m_powerMinutes[j] > 1))
+                                    valueEBefore += m_parent.m_tecView.m_dictValuesLowPointDev[id].m_powerMinutes[j] / 20;
                                 else
                                     ;
+                            }
                         else
                             ;
 
@@ -1379,7 +1415,7 @@ namespace Statistic
                         //    {
                         m_arLabelCommon[(int)PanelQuickDataStandard.CONTROLS.lblAverPVal - indxStartCommonPVal].ForeColor =
                         m_arLabelCommon[(int)PanelQuickDataStandard.CONTROLS.lblCommonPVal_Fact - indxStartCommonPVal].ForeColor =
-                            m_lblPowerFactZoom.ForeColor = getColorFactValues();
+                            m_lblPowerFactZoom.ForeColor = getColorValues(TG.INDEX_VALUE.FACT);
 
                         if (m_parent.m_tecView.m_markWarning.IsMarked((int)TecView.INDEX_WARNING.LAST_MIN) == true)
                         {
@@ -1431,19 +1467,19 @@ namespace Statistic
                     i = 0;
                     if (m_parent.indx_TECComponent < 0) // значит этот view будет суммарным для всех ГТП
                     {
-                        foreach (TECComponent g in m_parent.m_tecView.m_localTECComponents)
+                        foreach (TECComponent g in m_parent.m_tecView.LocalTECComponents)
                         {
                             if (g.IsGTP == true)
                                 //Только ГТП
-                                foreach (TG tg in g.m_listTG)
+                                foreach (TG tg in g.m_listLowPointDev)
                                 {//Цикл по списку с ТГ
                                     //Отобразить значение
-                                    if ((!(m_parent.m_tecView.m_dictValuesTG[tg.m_id].m_powerMinutes == null))
+                                    if ((!(m_parent.m_tecView.m_dictValuesLowPointDev[tg.m_id].m_powerMinutes == null))
                                         //Ошибка при запуске 'CustomTecView' с оперативной панелью (Исправлено: 13.05.2015)
                                         // не "успевает" new ???
-                                        && (!(m_parent.m_tecView.m_dictValuesTG[tg.m_id].m_powerMinutes[min] < 0)))
+                                        && (!(m_parent.m_tecView.m_dictValuesLowPointDev[tg.m_id].m_powerMinutes[min] < 0)))
                                         showValue(m_tgLabels[tg.m_id][(int)TG.INDEX_VALUE.FACT]
-                                            , m_parent.m_tecView.m_dictValuesTG[tg.m_id].m_powerMinutes[min]
+                                            , m_parent.m_tecView.m_dictValuesLowPointDev[tg.m_id].m_powerMinutes[min]
                                             , 2 //round
                                             , true);
                                     else
@@ -1452,7 +1488,7 @@ namespace Statistic
                                         //m_tgToolTips[tg.m_id][(int)TG.INDEX_VALUE.FACT].SetToolTip (m_tgLabels[tg.m_id][(int)TG.INDEX_VALUE.FACT], @"Знач. недостоверно");
                                     }
 
-                                    m_tgLabels[tg.m_id][(int)TG.INDEX_VALUE.FACT].ForeColor = getColorFactValues();
+                                    m_tgLabels[tg.m_id][(int)TG.INDEX_VALUE.FACT].ForeColor = getColorValues(TG.INDEX_VALUE.FACT);
 
                                     i++;
                                 }
@@ -1462,18 +1498,18 @@ namespace Statistic
                     }
                     else
                     {
-                        foreach (TECComponent comp in m_parent.m_tecView.m_localTECComponents)
+                        foreach (TECComponent comp in m_parent.m_tecView.LocalTECComponents)
                         {
-                            if ((!(m_parent.m_tecView.m_dictValuesTG[comp.m_listTG[0].m_id].m_powerMinutes == null))
-                                && (!(m_parent.m_tecView.m_dictValuesTG[comp.m_listTG[0].m_id].m_powerMinutes[min] < 0)))
-                                showValue(m_tgLabels[comp.m_listTG[0].m_id][(int)TG.INDEX_VALUE.FACT]
-                                    , m_parent.m_tecView.m_dictValuesTG[comp.m_listTG[0].m_id].m_powerMinutes[min]
+                            if ((!(m_parent.m_tecView.m_dictValuesLowPointDev[comp.m_listLowPointDev[0].m_id].m_powerMinutes == null))
+                                && (!(m_parent.m_tecView.m_dictValuesLowPointDev[comp.m_listLowPointDev[0].m_id].m_powerMinutes[min] < 0)))
+                                showValue(m_tgLabels[comp.m_listLowPointDev[0].m_id][(int)TG.INDEX_VALUE.FACT]
+                                    , m_parent.m_tecView.m_dictValuesLowPointDev[comp.m_listLowPointDev[0].m_id].m_powerMinutes[min]
                                     , 2 //round
                                     , true);
                             else
-                                m_tgLabels[comp.m_listTG[0].m_id][(int)TG.INDEX_VALUE.FACT].Text = "---";
+                                m_tgLabels[comp.m_listLowPointDev[0].m_id][(int)TG.INDEX_VALUE.FACT].Text = "---";
 
-                            m_tgLabels[comp.m_listTG[0].m_id][(int)TG.INDEX_VALUE.FACT].ForeColor = getColorFactValues();
+                            m_tgLabels[comp.m_listLowPointDev[0].m_id][(int)TG.INDEX_VALUE.FACT].ForeColor = getColorValues(TG.INDEX_VALUE.FACT);
 
                             i++;
                         }

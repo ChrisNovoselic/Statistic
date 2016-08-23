@@ -17,7 +17,8 @@ namespace Statistic
     class PanelLKView : PanelTecViewBase
     {
         public PanelLKView(StatisticCommon.TEC tec, int num_tec, int num_comp, PanelCustomTecView.HLabelCustomTecView label = null)
-            : base(tec, num_tec, num_comp)
+            // в АИИС КУЭ читаем "мощность", в СОТИАССО - температуру окр.воздуха
+            : base(tec, num_tec, num_comp, new HMark(new int[] { (int)CONN_SETT_TYPE.ADMIN, (int)CONN_SETT_TYPE.PBR, (int)CONN_SETT_TYPE.DATA_AISKUE, (int)CONN_SETT_TYPE.DATA_SOTIASSO }))
         {
             m_label = label;
             
@@ -29,7 +30,7 @@ namespace Statistic
 
             InitializeComponent ();
 
-            (m_dgwHours as DataGridViewLKHours).EventPBRDateValues += new DataGridViewLKHours.PBRDateValuesEventHandler((_pnlQuickData as PanelQuickDataLK).OnPBRDateValues);
+            m_dgwHours.EventDataValues += new HDataGridViewBase.DataValuesEventHandler((_pnlQuickData as PanelQuickDataLK).OnPBRDataValues);
         }
 
         protected override void InitializeComponent()
@@ -47,7 +48,7 @@ namespace Statistic
         private class TecViewLK : TecView
         {
             public TecViewLK (int indx_tec, int indx_comp)
-                : base (indx_tec, indx_comp) 
+                : base (indx_tec, indx_comp, TECComponentBase.TYPE.ELECTRO) 
             {
                 m_idAISKUEParNumber = ID_AISKUE_PARNUMBER.FACT_30;
                 _tsOffsetToMoscow = HDateTime.TS_NSK_OFFSET_OF_MOSCOWTIMEZONE;
@@ -85,32 +86,38 @@ namespace Statistic
                 AddState((int)TecView.StatesMachine.PPBRValues);
                 AddState((int)TecView.StatesMachine.AdminValues);
             }
-
+            /// <summary>
+            /// Возвратить сумму фактических значений для всех ТГ
+            /// </summary>
+            /// <param name="hour">Номер часа за который расчитывается сумма</param>
+            /// <returns>Результат суммирования</returns>
             public override double GetSummaFactValues(int hour)
             {
                 double dblRes = -1F;
                 double[] arTGRes = null;
                 uint[] arTGcounter = null;
-                int iter = m_idAISKUEParNumber == ID_AISKUE_PARNUMBER.FACT_03 ? 1 :
-                    m_idAISKUEParNumber == ID_AISKUE_PARNUMBER.FACT_30 ? 10 : -1;
+                int id = -1
+                    , iter = IntervalMultiplier;
 
-                arTGRes = new double[listTG.Count];
-                arTGcounter = new uint[listTG.Count];
+                arTGRes = new double[ListLowPointDev.Count];
+                arTGcounter = new uint[ListLowPointDev.Count];
 
-                for (int t = 0; t < listTG.Count; t++)
+                for (int t = 0; t < ListLowPointDev.Count; t++)
                 {
+                    id = ListLowPointDev[t].m_id;
+
                     arTGRes[t] = -1F;
                     arTGcounter[t] = 0;
 
                     for (int j = 10; j < ((60 / 3) + 1); j += iter)
-                        if (!(m_dictValuesTG[listTG[t].m_id].m_powerMinutes[j] < 0))
+                        if (!(m_dictValuesLowPointDev[id].m_powerMinutes[j] < 0))
                         {
                             if (arTGRes[t] < 0F)
                                 arTGRes[t] = 0F;
                             else
                                 ;
 
-                            arTGRes[t] += m_dictValuesTG[listTG[t].m_id].m_powerMinutes[j];
+                            arTGRes[t] += m_dictValuesLowPointDev[id].m_powerMinutes[j];
                             arTGcounter[t]++;
                         }
                         else
@@ -357,7 +364,7 @@ namespace Statistic
             public override void RestructControl()
             {
                 COUNT_LABEL = 2; COUNT_TG_IN_COLUMN = 3; COL_TG_START = 5;
-                COUNT_ROW_LABELCOMMON = 1;
+                COUNT_ROWSPAN_LABELCOMMON = 1;
 
                 bool bPowerFactZoom = false;
                 int cntCols = 0;
@@ -431,20 +438,20 @@ namespace Statistic
                 this.ColumnStyles.Add(new ColumnStyle(SizeType.AutoSize));
             }
 
-            private Color clrLabel { get { return m_parent.m_tecView.currHour == true ? Color.LimeGreen : Color.OrangeRed; } }
+            //private Color clrLabel { get { return m_parent.m_tecView.currHour == true ? Color.LimeGreen : Color.OrangeRed; } }
 
-            public void OnPBRDateValues(DataGridViewLKHours.PBRDateValuesEventArgs ev)
+            public void OnPBRDataValues(HDataGridViewBase.DataValuesEventArgs ev)
             {
                 // температура
                 showValue(ref m_arLabelCommon[(int)PanelQuickDataLK.CONTROLS.lblTemperatureDateValue - m_indxStartCommonFirstValueSeries]
-                    , (double)ev.m_temperatureDate //> 0 ? (double)val : double.NegativeInfinity
+                    , (double)ev.m_value1 //> 0 ? (double)val : double.NegativeInfinity
                     , 2 //round
                     , false
                     , true
                     , string.Empty);
                 // мощность
                 showValue(ref m_arLabelCommon[(int)PanelQuickDataLK.CONTROLS.lblPowerDateValue - m_indxStartCommonFirstValueSeries]
-                    , (double)ev.m_powerDate > 0 ? (double)ev.m_powerDate : double.NegativeInfinity
+                    , (double)ev.m_value2 > 0 ? (double)ev.m_value2 : double.NegativeInfinity
                     , 2 //round
                     , false
                     , true
@@ -452,7 +459,7 @@ namespace Statistic
 
                 m_arLabelCommon[(int)PanelQuickDataLK.CONTROLS.lblTemperatureDateValue - m_indxStartCommonFirstValueSeries].ForeColor =
                 m_arLabelCommon[(int)PanelQuickDataLK.CONTROLS.lblPowerDateValue - m_indxStartCommonFirstValueSeries].ForeColor =
-                    clrLabel;
+                    getColorValues (TG.INDEX_VALUE.FACT);
             }
 
             private void showFactTGValue(int id_tg, double[] powerLastHourMinutes)
@@ -481,8 +488,8 @@ namespace Statistic
 
                 // установить цвет шрифта для значения
                 m_tgLabels[id_tg][(int)TG.INDEX_VALUE.FACT].ForeColor =
-                    clrLabel
-                    //getColorFactValues()
+                    //clrLabel
+                    getColorValues(TG.INDEX_VALUE.FACT)
                         ;
             }
 
@@ -498,14 +505,14 @@ namespace Statistic
                 {
                     //Температура
                     // текущее значение температуры (час)
-                    showValue(ref m_arLabelCommon[(int)PanelQuickDataLK.CONTROLS.lblTemperatureCurrentValue - indxStartCommonPVal]
+                    showValue(ref m_arLabelCommon[(int)CONTROLS.lblTemperatureCurrentValue - indxStartCommonPVal]
                         , m_parent.m_tecView.m_valuesHours[lastHour].valuesLastMinutesTM
                         , 2 //round
                         , false
                         , true
                         , string.Empty);
                     // плановое значение температуры (час)
-                    showValue(ref m_arLabelCommon[(int)PanelQuickDataLK.CONTROLS.lblTemperatureHourValue - indxStartCommonPVal]
+                    showValue(ref m_arLabelCommon[(int)CONTROLS.lblTemperatureHourValue - indxStartCommonPVal]
                         , m_parent.m_tecView.m_valuesHours[lastHour].valuesPmin
                         , 2 //round
                         , false
@@ -516,37 +523,37 @@ namespace Statistic
                     //Мощность
                     // текущее значение мощности (час)
                     powerLastHour = m_parent.m_tecView.GetSummaFactValues(lastHour);
-                    showValue(ref m_arLabelCommon[(int)PanelQuickDataLK.CONTROLS.lblPowerCurrentValue - indxStartCommonPVal]
+                    showValue(ref m_arLabelCommon[(int)CONTROLS.lblPowerCurrentValue - indxStartCommonPVal]
                         , powerLastHour < 0 ? double.NegativeInfinity : powerLastHour * 1000
                         , 2 //round
                         , false
                         , true
                         , powerLastHour < 0 ? @"---" : string.Empty);
                     // плановое значение мощности (час)
-                    showValue(ref m_arLabelCommon[(int)PanelQuickDataLK.CONTROLS.lblPowerHourValue - indxStartCommonPVal]
+                    showValue(ref m_arLabelCommon[(int)CONTROLS.lblPowerHourValue - indxStartCommonPVal]
                         , m_parent.m_tecView.m_valuesHours[lastHour].valuesPBR > 0 ? m_parent.m_tecView.m_valuesHours[lastHour].valuesPBR : double.NegativeInfinity
                         , 2 //round
                         , false
                         , true
                         , string.Empty);
                     // цвет шрифта для значений температуры, мощности
-                    m_arLabelCommon[(int)PanelQuickDataLK.CONTROLS.lblTemperatureCurrentValue - indxStartCommonPVal].ForeColor =
-                    m_arLabelCommon[(int)PanelQuickDataLK.CONTROLS.lblTemperatureHourValue - indxStartCommonPVal].ForeColor =
-                    m_arLabelCommon[(int)PanelQuickDataLK.CONTROLS.lblTemperatureDateValue - indxStartCommonPVal].ForeColor =
-                    m_arLabelCommon[(int)PanelQuickDataLK.CONTROLS.lblPowerCurrentValue - indxStartCommonPVal].ForeColor =
-                    m_arLabelCommon[(int)PanelQuickDataLK.CONTROLS.lblPowerHourValue - indxStartCommonPVal].ForeColor =
-                    m_arLabelCommon[(int)PanelQuickDataLK.CONTROLS.lblPowerDateValue - indxStartCommonPVal].ForeColor =
-                        clrLabel;
+                    m_arLabelCommon[(int)CONTROLS.lblTemperatureCurrentValue - indxStartCommonPVal].ForeColor =
+                    m_arLabelCommon[(int)CONTROLS.lblTemperatureHourValue - indxStartCommonPVal].ForeColor =
+                    m_arLabelCommon[(int)CONTROLS.lblTemperatureDateValue - indxStartCommonPVal].ForeColor =
+                    m_arLabelCommon[(int)CONTROLS.lblPowerCurrentValue - indxStartCommonPVal].ForeColor =
+                    m_arLabelCommon[(int)CONTROLS.lblPowerHourValue - indxStartCommonPVal].ForeColor =
+                    m_arLabelCommon[(int)CONTROLS.lblPowerDateValue - indxStartCommonPVal].ForeColor =
+                        getColorValues(TG.INDEX_VALUE.FACT);
                     // текущее значение мощности для компонентов-ТГ-фидеров (час)
                     //ShowTGValue
                     if (m_parent.indx_TECComponent < 0) // значит этот view будет суммарным для всех ГТП
                     {
-                        foreach (TECComponent g in m_parent.m_tecView.m_localTECComponents)
+                        foreach (TECComponent g in m_parent.m_tecView.LocalTECComponents)
                             if (g.IsGTP == true)
                             //Только ГТП
-                                foreach (TG tg in g.m_listTG) {
+                                foreach (TG tg in g.m_listLowPointDev) {
                                 //Цикл по списку с ТГ
-                                    powerLastHourMinutes = m_parent.m_tecView.m_dictValuesTG[tg.m_id].m_powerMinutes;
+                                    powerLastHourMinutes = m_parent.m_tecView.m_dictValuesLowPointDev[tg.m_id].m_powerMinutes;
                                     //Проверить возможность получения значения
                                     if (!(powerLastHourMinutes == null))
                                         showFactTGValue(tg.m_id, powerLastHourMinutes);
@@ -557,12 +564,12 @@ namespace Statistic
                                 ;
                     }
                     else
-                        foreach (TECComponent comp in m_parent.m_tecView.m_localTECComponents) {
+                        foreach (TECComponent comp in m_parent.m_tecView.LocalTECComponents) {
                         //Цикл по списку ТГ в компоненте ТЭЦ (ГТП, ЩУ)
-                            powerLastHourMinutes = m_parent.m_tecView.m_dictValuesTG[comp.m_listTG[0].m_id].m_powerMinutes;
+                            powerLastHourMinutes = m_parent.m_tecView.m_dictValuesLowPointDev[comp.m_listLowPointDev[0].m_id].m_powerMinutes;
                             //Проверить возможность получения значения
                             if (!(powerLastHourMinutes == null))
-                                showFactTGValue (comp.m_listTG[0].m_id, powerLastHourMinutes);
+                                showFactTGValue (comp.m_listLowPointDev[0].m_id, powerLastHourMinutes);
                             else
                                 ;
                         }
@@ -587,16 +594,6 @@ namespace Statistic
         {
             private enum INDEX_COLUMNS : short { PART_TIME, TEMPERATURE_FACT, POWER_FACT_SUM, TEMPERATURE_PBR, POWER_PBR, TEMPERATURE_DEVIATION, POWER_DEVIATION
                 , COUNT_COLUMN }
-
-            public class PBRDateValuesEventArgs : EventArgs
-            {
-                public double m_temperatureDate;
-                public double m_powerDate;
-            }
-
-            public delegate void PBRDateValuesEventHandler(PBRDateValuesEventArgs ev);
-
-            public event PBRDateValuesEventHandler EventPBRDateValues;
 
             /// <summary>
             /// Конструктор - основной (без параметров)
@@ -777,7 +774,7 @@ namespace Statistic
                 t_pbr = Math.Round(t_pbr, 0);
                 // план
                 Rows[i].Cells[(int)INDEX_COLUMNS.TEMPERATURE_PBR].Value = t_pbr.ToString(@"F2"); // температура
-                EventPBRDateValues(new PBRDateValuesEventArgs() { m_temperatureDate = t_pbr, m_powerDate = p_pbr });
+                PerformDataValues(new DataValuesEventArgs() { m_value1 = t_pbr, m_value2 = p_pbr });
             }
         }
 
@@ -930,11 +927,11 @@ namespace Statistic
                 GraphPane.CurveList.Clear();
 
                 int itemscount = values.Length
-                    , iMainIntervalCount = MainHours.GetCountMainInterval (serverTime.Date)
+                    , iMainIntervalCount = MainHours.GetCountMainInterval (serverTime.Date) // кол-во главных интервалов (со значенями ПБР)
                     , i = -1, h = -1
-                    , indxItemMain = -1, indxHourMain = -1
-                    , iMainIntervalChanged = -1;
-                double y = -1F;
+                    , indxItemMain = -1, indxHourMain = -1 // индекс главного интервала, индекс часа в главном интервале
+                    , iMainIntervalChanged = -1; // признак смены типа интервала главный-обычный/обычный-главный
+                double y = -1F; // значение ПБР
 
                 string[] names = new string[itemscount];
 
@@ -988,7 +985,7 @@ namespace Statistic
                     }
                     else
                         names[i] = h.ToString();
-
+                    // плановые значения указываются только для часов по графику
                     if (values[i].valuesPBR > 0)
                     {
                         indxHourMain++;
@@ -1127,8 +1124,9 @@ namespace Statistic
                 }
 
                 Color colorChart = Color.Empty
-                    , colorPCurve = Color.Empty;
-                getColorZedGraph(typeConnSett, out colorChart, out colorPCurve);
+                    , colorPMainCurve = Color.Empty
+                    , colorPRegularCurve = Color.White;
+                getColorZedGraph(typeConnSett, out colorChart, out colorPMainCurve);
 
                 GraphPane.Chart.Fill = new Fill(colorChart);
 
@@ -1157,7 +1155,7 @@ namespace Statistic
                         if (!(valuesMainFact == null))
                             for (i = 0; i < valuesMainFact.Length; i++)
                             {
-                                GraphPane.AddBar(strCurveNameMain, valuesMainFact[i], colorPCurve);
+                                GraphPane.AddBar(strCurveNameMain, valuesMainFact[i], colorPMainCurve);
                                 // чтобы повторно не добавить подпись в легенду
                                 strCurveNameMain =
                                     string.Empty;
@@ -1167,7 +1165,7 @@ namespace Statistic
 
                         for (i = 0; i < valuesRegularFact.Length; i++)
                         {
-                            GraphPane.AddBar(strCurveNameReg, valuesRegularFact[i], Color.White);
+                            GraphPane.AddBar(strCurveNameReg, valuesRegularFact[i], colorPRegularCurve);
                             // чтобы повторно не добавить подпись в легенду
                             strCurveNameReg =
                                 string.Empty;
@@ -1185,7 +1183,7 @@ namespace Statistic
                             if (!(valuesMainFact == null))
                                 for (i = 0; i < valuesMainFact.Length; i++)
                                 {
-                                    GraphPane.AddCurve(strCurveNameMain, valuesMainFact[i], colorPCurve);
+                                    GraphPane.AddCurve(strCurveNameMain, valuesMainFact[i], colorPMainCurve);
                                     // чтобы повторно не добавить подпись в легенду
                                     strCurveNameMain =
                                         string.Empty;
@@ -1195,7 +1193,7 @@ namespace Statistic
 
                             for (i = 0; i < valuesRegularFact.Length; i++)
                             {
-                                GraphPane.AddCurve(strCurveNameReg, valuesRegularFact[i], Color.White);
+                                GraphPane.AddCurve(strCurveNameReg, valuesRegularFact[i], colorPRegularCurve);
                                 // чтобы повторно не добавить подпись в легенду
                                 strCurveNameReg =
                                     string.Empty;

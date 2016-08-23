@@ -84,11 +84,9 @@ namespace Statistic
 
         private enum INDEX_CONTROL_UI
         {
-                                        BUTTON_CSV_IMPORT_PBR, BUTTON_CSV_IMPORT_ADMINVALUESDEFAULT //BUTTON_CSV_IMPORT_ADMINVALUESDEFAULT
-                                        /*, GBX_DIVIDEALARM , CBX_ALARM
-                                        , LABEL_KOEFFALARMCURPOWER, NUDN_KOEFFALARMCURPOWER, BUTTON_ALARMCURPOWER, BUTTON_ALARMTGTUTNONOFF
-                                        , PANEL_ALARMSOURCES*/
-                                        , COUNT };
+            UNKNOWN = -1
+            , BUTTON_CSV_IMPORT_PBR, BUTTON_CSV_IMPORT_ADMINVALUESDEFAULT
+            , COUNT };
 
         protected override void InitializeComponents()
         {
@@ -98,42 +96,13 @@ namespace Statistic
                 , offsetPosY = m_iSizeY + 2 * m_iMarginY
                 , indx = -1;
             Rectangle[] arRectControlUI = new Rectangle[] {
-                //new Rectangle (new Point (10, 281), new Size (154, 23)) //btnImportCSV_PBRValues, BUTTON_CSV_IMPORT_PBR
-                //, new Rectangle (new Point (10, 307), new Size (154, 8)) //gbxDividerAlarm
-                //, new Rectangle (new Point (12, 323), new Size (-1, -1)) //cbxAlarm
-                //, new Rectangle (new Point (10, 326), new Size (-1, -1)) //lblKoeffAlarmCurPower
-                //, new Rectangle (new Point (116, 323), new Size (48, 20)) //nudnKoeffAlarmCurPower
-                //, new Rectangle (new Point (10, 352), new Size (154, 23)) //btnAlarmCurPower
-                //, new Rectangle (new Point (10, 381), new Size (154, 23)) //btnAlarmTGTurnOnOff
-                //, new Rectangle (new Point (10, 410), new Size (154, 6 * 29))
-                new Rectangle (new Point (10, posY), new Size (154, m_iSizeY)) //btnImportCSV_PBRValues, BUTTON_CSV_IMPORT_PBR
-                , new Rectangle (new Point (10, posY + 1 * (m_iSizeY + m_iMarginY)), new Size (154, m_iSizeY)) //ckbImportCSV_AdminDefaultValues, BUTTON_CSV_IMPORT_ADMINVALUESDEFAULT
-                , new Rectangle (new Point (10, posY + 2 * (m_iSizeY + m_iMarginY)), new Size (154, 8)) //gbxDividerAlarm
-                , new Rectangle (new Point (12, posY + 3 * (m_iSizeY + m_iMarginY) - m_iMarginY), new Size (-1, -1)) //cbxAlarm
-                , new Rectangle (new Point (10, posY + 3 * (m_iSizeY + m_iMarginY) + (m_iSizeY + m_iMarginY) - m_iMarginY), new Size (-1, -1)) //lblKoeffAlarmCurPower
-                , new Rectangle (new Point (116, posY + 3 * (m_iSizeY + m_iMarginY) + (m_iSizeY + 0) - m_iMarginY), new Size (48, (m_iSizeY - m_iMarginY))) //nudnKoeffAlarmCurPower
-                , new Rectangle (new Point (10, posY + 4 * (m_iSizeY + m_iMarginY) + offsetPosY - m_iMarginY), new Size (154, m_iSizeY)) //btnAlarmCurPower
-                , new Rectangle (new Point (10, posY + 5 * (m_iSizeY + m_iMarginY) + offsetPosY - m_iMarginY), new Size (154, m_iSizeY)) //btnAlarmTGTurnOnOff
-                , new Rectangle (new Point (10, posY + 6 * (m_iSizeY + m_iMarginY) + offsetPosY - m_iMarginY), new Size (154, 6 * offsetPosY))
+                new Rectangle (new Point (10, posY), new Size (154, m_iSizeY)) //BUTTON_CSV_IMPORT_PBR
+                , new Rectangle (new Point (10, posY + 1 * (m_iSizeY + m_iMarginY)), new Size (154, m_iSizeY)) //, BUTTON_CSV_IMPORT_ADMINVALUESDEFAULT
             };
 
             this.btnImportCSV_PBRValues = new System.Windows.Forms.Button();
             this.btnImportCSV_AdminDefaultValues = new System.Windows.Forms.Button();
-            //this.cbxImportCSV_AdminDefaultValues = new System.Windows.Forms.CheckBox();
             this.dgwAdminTable = new DataGridViewAdminKomDisp();
-            //Thread threadDGVAdmin = new Thread(() => this.dgwAdminTable = new DataGridViewAdminKomDisp()) { IsBackground = true };
-            //threadDGVAdmin.SetApartmentState (ApartmentState.STA);
-            //threadDGVAdmin.Start ();
-            //while (this.dgwAdminTable == null) ;
-
-            //this.m_cbxAlarm = new CheckBox();
-            //this.m_gbxDividerAlarm = new System.Windows.Forms.GroupBox();
-            //this.lblKoeffAlarmCurPower = new Label();
-            //this.m_nudnKoeffAlarmCurPower = new NumericUpDown();
-            //this.m_btnAlarmCurPower = new System.Windows.Forms.Button();
-            //this.m_btnAlarmTGTurnOnOff = new System.Windows.Forms.Button();
-
-            //m_panelLabelAlarm = new PanelLabelAlarm();
 
             this.SuspendLayout();
             ((System.ComponentModel.ISupportInitialize)(this.dgwAdminTable)).BeginInit();
@@ -141,15 +110,6 @@ namespace Statistic
             this.m_panelManagement.Controls.Add(this.btnImportCSV_PBRValues);
             this.m_panelManagement.Controls.Add(this.btnImportCSV_AdminDefaultValues);
             this.m_panelRDGValues.Controls.Add(this.dgwAdminTable);
-
-            //this.m_panelManagement.Controls.Add(m_cbxAlarm);
-            //this.m_panelManagement.Controls.Add(m_gbxDividerAlarm);
-            //this.m_panelManagement.Controls.Add(lblKoeffAlarmCurPower);
-            //this.m_panelManagement.Controls.Add(m_nudnKoeffAlarmCurPower);
-            //this.m_panelManagement.Controls.Add(m_btnAlarmCurPower);
-            //this.m_panelManagement.Controls.Add(m_panelLabelAlarm);
-
-            //this.m_panelManagement.Controls.Add(m_btnAlarmTGTurnOnOff);
 
             // 
             // btnImportCSV_PBRValues
@@ -319,8 +279,9 @@ namespace Statistic
         {
             base.InitializeComboBoxTecComponent(mode);
 
-            for (int i = 0; i < m_listTECComponentIndex.Count; i++)
-                comboBoxTecComponent.Items.Add(m_admin.allTECComponents[m_listTECComponentIndex[i]].tec.name_shr + " - " + m_admin.GetNameTECComponent(m_listTECComponentIndex[i]));
+            m_listTECComponentIndex.ForEach(indx => comboBoxTecComponent.Items.Add(m_admin.allTECComponents[indx].tec.name_shr + " - " + m_admin.GetNameTECComponent(indx)));
+            //for (int i = 0; i < m_listTECComponentIndex.Count; i++)
+            //    comboBoxTecComponent.Items.Add(m_admin.allTECComponents[m_listTECComponentIndex[i]].tec.name_shr + " - " + m_admin.GetNameTECComponent(m_listTECComponentIndex[i]));
 
             if (comboBoxTecComponent.Items.Count > 0)
             {
@@ -413,16 +374,10 @@ namespace Statistic
                 ;
         }
 
-        //private void ckbImportCSV_AdminDefaultValues_CheckedChanged(object sender, EventArgs e)
-        //{
-        //}
-
-        private string getSharedFolderRun () {
-            string strRes = string.Empty;
-
-            strRes = Path.GetPathRoot(Application.ExecutablePath);
-
-            return strRes;
+        private string SharedFolderRun {
+            get {
+                return Path.GetPathRoot(Application.ExecutablePath);
+            }
         }
 
         private void btnImportCSV_AdminValuesDefault_Click(object sender, EventArgs e)

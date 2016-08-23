@@ -21,7 +21,7 @@ namespace Statistic
     public class PanelTecView : PanelTecViewStandard
     {
         public PanelTecView(StatisticCommon.TEC tec, int num_tec, int num_comp, PanelCustomTecView.HLabelCustomTecView label/*, DelegateStringFunc fErrRep, DelegateStringFunc fWarRep, DelegateStringFunc fActRep, DelegateBoolFunc fRepClr*/)
-            : base(tec, num_tec, num_comp/*, fErrRep, fWarRep, fActRep, fRepClr*/)
+            : base(tec, num_tec, num_comp, new HMark(new int[] { (int)CONN_SETT_TYPE.ADMIN, (int)CONN_SETT_TYPE.PBR, (int)CONN_SETT_TYPE.DATA_AISKUE, (int)CONN_SETT_TYPE.DATA_SOTIASSO }))
         {
             m_label = label;
             
@@ -63,8 +63,8 @@ namespace Statistic
             this.m_ZedGraphMins.MouseUpEvent += new ZedGraph.ZedGraphControl.ZedMouseEventHandler(this.zedGraphMins_MouseUpEvent);
             // äëÿ zedGraphHours îáğàáîò÷èê äîáàâëåí â áàçîâîì êëàññå
 
-            this.m_ZedGraphMins.InitializeEventHandler(this.ıêñåëüToolStripMenuItemMins_Click, this.sourceDataMins_Click);
-            this.m_ZedGraphHours.InitializeEventHandler(this.ıêñåëüToolStripMenuItemHours_Click, this.sourceDataHours_Click);
+            this.m_ZedGraphMins.InitializeContextMenuItemAddingEventHandler(this.ıêñåëüToolStripMenuItemMins_Click, this.sourceDataMins_Click);
+            this.m_ZedGraphHours.InitializeContextMenuItemAddingEventHandler(this.ıêñåëüToolStripMenuItemHours_Click, this.sourceDataHours_Click);
         }
 
         protected override void createTecView(int indx_tec, int indx_comp)
@@ -89,8 +89,10 @@ namespace Statistic
                     ;
 
                 sf.CheckPathExists = true;
+                sf.ValidateNames = true;
+                sf.DereferenceLinks = false; // Will return .lnk in shortcuts.
                 sf.DefaultExt = ".xls";
-                sf.Filter = "Ôàéë Microsoft Excel (.xls) | *.xls";
+                sf.Filter = s_DialogMSExcelBrowseFilter;
                 if (sf.ShowDialog() == DialogResult.OK)
                 {
                     string strSheetName = "Ìèíóòíûå_çíà÷";
@@ -209,8 +211,10 @@ namespace Statistic
             {
                 SaveFileDialog sf = new SaveFileDialog();
                 sf.CheckPathExists = true;
+                sf.ValidateNames = true;
+                sf.DereferenceLinks = false; // Will return .lnk in shortcuts.
                 sf.DefaultExt = ".xls";
-                sf.Filter = "Ôàéë Microsoft Excel (.xls) | *.xls";
+                sf.Filter = s_DialogMSExcelBrowseFilter;
                 if (sf.ShowDialog() == DialogResult.OK)
                 {
                     string strSheetName = "×àñîâûå_çíà÷";

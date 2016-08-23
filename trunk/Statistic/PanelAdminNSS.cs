@@ -75,7 +75,7 @@ namespace Statistic
             m_admin.SetDelegateSaveComplete(null);
         }
 
-        private int GetIndexGTPOwner(int indx_tg)
+        private int getIndexGTPOwner(int indx_tg)
         {
             int iRes = -1
                 , id_gtp_owner = ((DataGridViewAdminNSS)dgwAdminTable).GetIdGTPOwner(indx_tg);
@@ -91,18 +91,19 @@ namespace Statistic
 
             return iRes;
         }
-
+        /// <summary>
+        /// Перенести в ОЗУ значения с формы/панели (почти полная копия 'PanelAdminVyvod')
+        /// </summary>
         protected override void getDataGridViewAdmin()
         {
-            double value = 0.0;
-            bool valid = false;
+            //double value = 0.0;
+            //bool valid = false;
 
-            foreach (int indx in ((AdminTS_NSS)m_admin).m_listTECComponentIndexDetail) 
-            {
+            foreach (int indx in ((AdminTS_TG)m_admin).m_listTECComponentIndexDetail)
                 if (m_admin.modeTECComponent(indx) == FormChangeMode.MODE_TECCOMPONENT.TG)
                 {
                     int indx_tg = ((AdminTS_NSS)m_admin).m_listTECComponentIndexDetail.IndexOf(indx),
-                        indx_gtp = GetIndexGTPOwner(indx_tg);
+                        indx_gtp = getIndexGTPOwner(indx_tg);
 
                     if ((!(indx_tg < 0)) && (!(indx_gtp < 0)))
                         for (int i = 0; i < 24; i++)
@@ -120,17 +121,18 @@ namespace Statistic
                 }
                 else
                     ;
-            }
         }
-
+        /// <summary>
+        /// Добавить текстовый столбец для очередного(динамического) компонента-ТГ
+        /// </summary>
+        /// <param name="date"></param>
         private void addTextBoxColumn (DateTime date) {
+            DataGridViewCellEventArgs ev;
             int indx = ((AdminTS_NSS)m_admin).m_listTECComponentIndexDetail[this.dgwAdminTable.Columns.Count - 2];
             ((DataGridViewAdminNSS)this.dgwAdminTable).addTextBoxColumn(m_admin.GetNameTECComponent(indx),
                                                                         m_admin.GetIdTECComponent (indx),
                                                                         m_admin.GetIdGTPOwnerTECComponent(indx),
                                                                         date);
-
-            DataGridViewCellEventArgs ev;
 
             for (int i = 0; i < 24; i++)
             {
@@ -179,7 +181,7 @@ namespace Statistic
             base.InitializeComboBoxTecComponent (mode);
 
             if (m_listTECComponentIndex.Count > 0) {
-                comboBoxTecComponent.Items.AddRange (((AdminTS_NSS)m_admin).GetListNameTEC ());
+                comboBoxTecComponent.Items.AddRange (((AdminTS_TG)m_admin).GetListNameTEC ());
 
                 if (comboBoxTecComponent.Items.Count > 0)
                 {

@@ -148,7 +148,7 @@ namespace StatisticTransModes
             else ;
         }
 
-        private int GetIndexGTPOwner(int indx_tg)
+        private int getIndexGTPOwner(int indx_tg)
         {
             int iRes = -1;
             
