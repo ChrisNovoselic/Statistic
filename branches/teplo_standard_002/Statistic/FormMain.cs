@@ -958,14 +958,14 @@ namespace Statistic
             }
             else
             {
-                if (panel is PanelTecViewStandard)
-                {
-                    key = (panel as PanelTecViewStandard).m_ID;
-                }
-                else
-                {
-                    throw new Exception(@"FormMain::showFormFloat () - невозможно определить идентификатор панели - неизвестный тип панели...");
-                }
+                //if (panel is PanelTecViewBase)
+                //    key = (panel as PanelTecViewBase).m_ID;
+                //else
+                //{
+                //    throw new Exception(@"FormMain::showFormFloat () - невозможно определить идентификатор панели - неизвестный тип панели...");
+                //}
+
+                key = tclTecViews.GetTabPageId(ev.TabIndex);
             }
             m_dictFormFloat.Add(key, formFloat);
             //Отобразить окно, установить на нем фокус...
@@ -986,11 +986,11 @@ namespace Statistic
             //int indxItem = getIndexItemCustomTab(formFloat.Text);
             //Назначить новые делегаты для заполнения строки статуса...
             Panel panel = formFloat.GetPanel();
-            if (panel is PanelCustomTecView)
-                ((PanelCustomTecView)panel).SetDelegateReport(arFuncRep[0], arFuncRep[1], arFuncRep[2], fRepClr);
+            if (panel is PanelTecView)
+                ((PanelTecView)panel).m_tecView.SetDelegateReport(arFuncRep[0], arFuncRep[1], arFuncRep[2], fRepClr);
             else
-                if (panel is PanelTecView)
-                    ((PanelTecView)panel).m_tecView.SetDelegateReport(arFuncRep[0], arFuncRep[1], arFuncRep[2], fRepClr);
+                if (panel is PanelStatistic)
+                    ((PanelStatistic)panel).SetDelegateReport(arFuncRep[0], arFuncRep[1], arFuncRep[2], fRepClr);
                 else
                     throw new Exception(@"FormMain::FormMain_OnFormFloat_Load () - невозможно назначить делегаты обновления строки статуса...");
             //"Стартовать", активировать "панель"...
@@ -1014,11 +1014,11 @@ namespace Statistic
             if (m_bAutoActionTabs == false)
             {
                 //Восстановить старые делегаты для заполнения строки статуса...
-                if (panel is PanelCustomTecView)
-                    ((PanelCustomTecView)panel).SetDelegateReport(ErrorReport, WarningReport, ActionReport, ReportClear);
+                if (panel is PanelTecView)
+                    ((PanelTecView)panel).m_tecView.SetDelegateReport(ErrorReport, WarningReport, ActionReport, ReportClear);
                 else
-                    if (panel is PanelTecView)
-                        ((PanelTecView)panel).m_tecView.SetDelegateReport(ErrorReport, WarningReport, ActionReport, ReportClear);
+                    if (panel is PanelStatistic)
+                        ((PanelStatistic)panel).SetDelegateReport(ErrorReport, WarningReport, ActionReport, ReportClear);
                     else
                         throw new Exception(@"FormMain::FormMain_OnFormFloat_Closing () - невозможно определить тип панели...");
                 //Добавить вкладку в "основное" окно
