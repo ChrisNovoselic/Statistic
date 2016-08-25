@@ -293,7 +293,7 @@ namespace Statistic
                         Rows[i].Cells[(int)INDEX_COLUMNS.TEMPERATURE_DEVIATION].Style = curCellStyle;
                     }
 
-                    cntHourFactRecieved = (lh - (cntHourFactNotValues > 0 ? lh < 24 ? cntHourFactNotValues - 1 : cntHourFactNotValues : 0));
+                    cntHourFactRecieved = (lh - (cntHourFactNotValues > 0 ? (lh < 24) ? cntHourFactNotValues - 1 : cntHourFactNotValues : (TEC.TypeDbVzlet == TEC.TYPE_DBVZLET.KKS_NAME ? (bCurrHour == true ? -1 : 0) : TEC.TypeDbVzlet == TEC.TYPE_DBVZLET.GRAFA ? 0 : Int16.MinValue)));
                     //cntHourFactRecieved += ((bCurrHour == true) || (bCurrDate == true)) ? 1 : 0;
                     //Фактическое знач (среднее)
                     digitRound = 2;
@@ -1040,21 +1040,22 @@ namespace Statistic
                             , arValues[(int)TG.INDEX_VALUE.TM] == double.NegativeInfinity ? @"---" : string.Empty);
                         //Температура
                         // часовое значение температуры (крайний час)
-                        arValues[(int)TG.INDEX_VALUE.FACT] = m_parent.m_tecView.m_valuesHours[lastHour].valuesFact;
+                        arValues[(int)TG.INDEX_VALUE.FACT] = m_parent.m_tecView.m_valuesHours[lastHour].valuesFact > 0 ? m_parent.m_tecView.m_valuesHours[lastHour].valuesFact : double.NegativeInfinity;
                         showValue(ref m_arLabelCommon[(int)CONTROLS.lblTemperatureHourValue - indxStartCommonPVal]
                             , arValues[(int)TG.INDEX_VALUE.FACT]
                             , 2 //round
-                            , false
                             , true
-                            , string.Empty);
+                            , true
+                            , arValues[(int)TG.INDEX_VALUE.FACT] == double.NegativeInfinity ? @"--.--" : string.Empty);
                         // отклонение часового значения температуры от УДГт (крайний час)
-                        arValues[(int)TG.INDEX_VALUE.TM] = m_parent.m_tecView.m_valuesHours[lastHour].valuesUDGe - m_parent.m_tecView.m_valuesHours[lastHour].valuesFact;
+                        arValues[(int)TG.INDEX_VALUE.TM] = ((m_parent.m_tecView.m_valuesHours[lastHour].valuesUDGe > 0) && (m_parent.m_tecView.m_valuesHours[lastHour].valuesFact > 0)) ?
+                            m_parent.m_tecView.m_valuesHours[lastHour].valuesUDGe - m_parent.m_tecView.m_valuesHours[lastHour].valuesFact : double.NegativeInfinity;
                         showValue(ref m_arLabelCommon[(int)CONTROLS.lblDeviatHourValue - indxStartCommonPVal]
                             , arValues[(int)TG.INDEX_VALUE.TM]
                             , 2 //round
                             , false
                             , true
-                            , string.Empty);
+                            , arValues[(int)TG.INDEX_VALUE.TM] == double.NegativeInfinity ? @"---" : string.Empty);
 
                         //// цвет шрифта для значений температуры, мощности
                         //m_arLabelCommon[(int)CONTROLS.lblTemperatureCurrentValue - indxStartCommonPVal].ForeColor =
@@ -1418,9 +1419,11 @@ namespace Statistic
                                         }
                                     }
                                     else
-                                        ;                                
+                                        ;
 
-                                for (iHour = 0; iHour < iHourRecieved; iHour++)
+                                //iHourRecieved++;
+
+                                for (iHour = 0; iHour < (iHourRecieved + 1); iHour++)
                                 // цикл по номерам часов с полученными значениями
                                     foreach (TECComponent tc in _localTECComponents)
                                         if ((tc.IsVyvod == true) // только ВЫВОДы
