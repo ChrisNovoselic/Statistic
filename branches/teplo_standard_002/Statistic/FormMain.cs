@@ -62,21 +62,24 @@ namespace Statistic
                 , SOTIASSO, DIAGNOSTIC, ANALYZER, TEC_Component, USERS
                 , VZLET_TDIRECT
         };
-        private enum INDEX_CUSTOM_TAB { TAB_2X2, TAB_2X3 };
+        private enum INDEX_CUSTOM_TAB { TAB_2X2, TAB_2X3, TAB_MULTI };
         private class ADDING_TAB
         {
             public ToolStripMenuItem menuItem;
             public PanelStatistic panel;
+            public HTabCtrlEx.TYPE_TAB m_typeTab;
 
-            public ADDING_TAB(string name, string text)
+            public ADDING_TAB(string menuItemName, string menuItemText, HTabCtrlEx.TYPE_TAB typeTab)
             {
                 menuItem = new System.Windows.Forms.ToolStripMenuItem();
                 menuItem.CheckOnClick = true;
                 menuItem.Size = new System.Drawing.Size(280, 22);
-                menuItem.Name = name;
-                menuItem.Text = text;
+                menuItem.Name = menuItemName;
+                menuItem.Text = menuItemText;
                 menuItem.Enabled = false;
                 panel = null;
+
+                m_typeTab = typeTab;
             }
         };
         /// <summary>
@@ -94,8 +97,9 @@ namespace Statistic
         private PanelAdmin PanelKomDisp { get { return m_arPanelAdmin[(int)FormChangeMode.MANAGER.DISP] as PanelAdmin; } }
         private ListPanelTecViewBase m_listStandardTabs;
         private Dictionary<int, ADDING_TAB> m_dictAddingTabs;
-        private static ID_ADDING_TAB[,] m_arIdCustomTabs = new ID_ADDING_TAB[,] { { ID_ADDING_TAB.CUSTOM_2X2_1, ID_ADDING_TAB.CUSTOM_2X2_2, ID_ADDING_TAB.CUSTOM_2X2_3, ID_ADDING_TAB.CUSTOM_2X2_4 }
-                                                                                , { ID_ADDING_TAB.CUSTOM_2X3_1, ID_ADDING_TAB.CUSTOM_2X3_2, ID_ADDING_TAB.CUSTOM_2X3_3, ID_ADDING_TAB.CUSTOM_2X3_4 }
+        private static List<ID_ADDING_TAB>[] m_arIdCustomTabs = new List<ID_ADDING_TAB>[] { new List<ID_ADDING_TAB> () { ID_ADDING_TAB.CUSTOM_2X2_1, ID_ADDING_TAB.CUSTOM_2X2_2, ID_ADDING_TAB.CUSTOM_2X2_3, ID_ADDING_TAB.CUSTOM_2X2_4 }
+                                                                                , new List<ID_ADDING_TAB> () { ID_ADDING_TAB.CUSTOM_2X3_1, ID_ADDING_TAB.CUSTOM_2X3_2, ID_ADDING_TAB.CUSTOM_2X3_3, ID_ADDING_TAB.CUSTOM_2X3_4 }
+                                                                                , new List<ID_ADDING_TAB> () { ID_ADDING_TAB.MONITOR_LAST_MINUTES, ID_ADDING_TAB.VZLET_TDIRECT }
                                                                             };
         public Passwords m_passwords;
         private FormPassword formPassword;
@@ -832,8 +836,12 @@ namespace Statistic
 
             this.BeginInvoke(new DelegateObjectFunc(showFormFloat), e);
         }
-
-        INDEX_CUSTOM_TAB getIndexCustomTab(string text)
+        /// <summary>
+        /// Возвратить индекс типа настраиваемой вкладки по наименованию п. меню ИЛИ наименования вкладки
+        /// </summary>
+        /// <param name="text">Наименование п. меню или вкладки</param>
+        /// <returns>Индекс (номер) типа</returns>
+        private INDEX_CUSTOM_TAB getIndexCustomTab(string text)
         {
             INDEX_CUSTOM_TAB indxRes = INDEX_CUSTOM_TAB.TAB_2X2; //e.TabHeaderText.Contains(@"2X2") == true
             if (text.Contains(@"2X3") == true)
@@ -843,7 +851,11 @@ namespace Statistic
 
             return indxRes;
         }
-
+        /// <summary>
+        /// Возвратить индекс (номер окна) по наименованию п. меню ИЛИ наименования вкладки
+        /// </summary>
+        /// <param name="text">Наименование п. меню или вкладки</param>
+        /// <returns>Индекс (номер)</returns>
         int getIndexItemCustomTab(string text)
         {
             return Int32.Parse(text.Substring(text.Length - 1, 1)) - 1;
@@ -942,7 +954,7 @@ namespace Statistic
                 text = ev.TabHeaderText;
                 INDEX_CUSTOM_TAB indxTab = getIndexCustomTab(text);
                 int indxItem = getIndexItemCustomTab(text);
-                key = (int)m_arIdCustomTabs[(int)indxTab, indxItem];
+                key = (int)m_arIdCustomTabs[(int)indxTab][indxItem];
             }
             else
             {
@@ -2427,7 +2439,7 @@ namespace Statistic
             else
                 ;
 
-            видSubToolStripMenuItem_CheckedChanged(m_dictAddingTabs[(int)ID_ADDING_TAB.CUR_POWER].panel, @"P тек ГТПг, ТЭЦсн"
+            видSubToolStripMenuItem_CheckedChanged(ID_ADDING_TAB.CUR_POWER, (sender as ToolStripMenuItem).Text //@"P тек ГТПг, ТЭЦсн"
                 , new bool[] { ((ToolStripMenuItem)sender).Checked, true });
         }
 
@@ -2442,7 +2454,7 @@ namespace Statistic
             else
                 ;
 
-            видSubToolStripMenuItem_CheckedChanged(m_dictAddingTabs[(int)ID_ADDING_TAB.TM_SN_POWER].panel, @"P тек ТЭЦг, ТЭЦсн"
+            видSubToolStripMenuItem_CheckedChanged(ID_ADDING_TAB.TM_SN_POWER, (sender as ToolStripMenuItem).Text //@"P тек ТЭЦг, ТЭЦсн"
                 , new bool[] { ((ToolStripMenuItem)sender).Checked, true });
         }
 
@@ -2457,7 +2469,7 @@ namespace Statistic
             else
                 ;
 
-            видSubToolStripMenuItem_CheckedChanged(m_dictAddingTabs[(int)ID_ADDING_TAB.MONITOR_LAST_MINUTES].panel, @"Монитор P-d4%"
+            видSubToolStripMenuItem_CheckedChanged(ID_ADDING_TAB.MONITOR_LAST_MINUTES, (sender as ToolStripMenuItem).Text //@"Монитор P-d4%"
                 , new bool[] { ((ToolStripMenuItem)sender).Checked, true });
         }
 
@@ -2470,7 +2482,7 @@ namespace Statistic
             }
             else
                 ;
-            видSubToolStripMenuItem_CheckedChanged(m_dictAddingTabs[(int)ID_ADDING_TAB.DIAGNOSTIC].panel, "Диагностика"
+            видSubToolStripMenuItem_CheckedChanged(ID_ADDING_TAB.DIAGNOSTIC, (sender as ToolStripMenuItem).Text //"Диагностика"
                 , new bool[] { ((ToolStripMenuItem)sender).Checked, true });
         }
 
@@ -2484,7 +2496,7 @@ namespace Statistic
             }
             else
                 ;
-            видSubToolStripMenuItem_CheckedChanged(m_dictAddingTabs[(int)ID_ADDING_TAB.ANALYZER].panel, "Журнал событий"
+            видSubToolStripMenuItem_CheckedChanged(ID_ADDING_TAB.ANALYZER, (sender as ToolStripMenuItem).Text //"Журнал событий"
                 , new bool[] { ((ToolStripMenuItem)sender).Checked, true });
         }
 
@@ -2498,7 +2510,7 @@ namespace Statistic
             }
             else
                 ;
-            видSubToolStripMenuItem_CheckedChanged(m_dictAddingTabs[(int)ID_ADDING_TAB.TEC_Component].panel, "Состав ТЭЦ"
+            видSubToolStripMenuItem_CheckedChanged(ID_ADDING_TAB.TEC_Component, (sender as ToolStripMenuItem).Text //"Состав ТЭЦ"
                 , new bool[] { ((ToolStripMenuItem)sender).Checked, true });
         }
        
@@ -2513,19 +2525,19 @@ namespace Statistic
             else
                 ;
 
-            видSubToolStripMenuItem_CheckedChanged(m_dictAddingTabs[(int)ID_ADDING_TAB.SOBSTV_NYZHDY].panel
+            видSubToolStripMenuItem_CheckedChanged(ID_ADDING_TAB.SOBSTV_NYZHDY
                 , ((ToolStripMenuItem)sender).Text
                 , new bool[] { ((ToolStripMenuItem)sender).Checked, true });
         }
 
         private void выборОбъекты22ToolStripMenuItem_CheckedChanged(object sender, EventArgs e)
         {
-            выборОбъектыToolStripMenuItem_CheckedChanged(sender, e, INDEX_CUSTOM_TAB.TAB_2X2);
+            выборОбъектыToolStripMenuItem_CheckedChanged(sender, e, INDEX_CUSTOM_TAB.TAB_2X2, -1);
         }
 
         private void выборОбъекты23ToolStripMenuItem_CheckedChanged(object sender, EventArgs e)
         {
-            выборОбъектыToolStripMenuItem_CheckedChanged(sender, e, INDEX_CUSTOM_TAB.TAB_2X3);
+            выборОбъектыToolStripMenuItem_CheckedChanged(sender, e, INDEX_CUSTOM_TAB.TAB_2X3, -1);
         }
 
         private Size getPanelCustomTecViewSize(INDEX_CUSTOM_TAB type)
@@ -2547,12 +2559,15 @@ namespace Statistic
             return szRes;
         }
 
-        private void выборОбъектыToolStripMenuItem_CheckedChanged(object sender, EventArgs e, INDEX_CUSTOM_TAB indx)
+        private void выборОбъектыToolStripMenuItem_CheckedChanged(object sender, EventArgs e, INDEX_CUSTOM_TAB indx, int indxItem)
         {
             ToolStripMenuItem obj = sender as ToolStripMenuItem;
-            int indxItem = ((ToolStripMenuItem)obj.OwnerItem).DropDownItems.IndexOf(obj);
+            if (indxItem < 0)
+                indxItem = ((ToolStripMenuItem)obj.OwnerItem).DropDownItems.IndexOf(obj);
+            else
+                ;
             bool bStoped = true;
-            int keyTab = (int)m_arIdCustomTabs[(int)indx, indxItem];
+            int keyTab = (int)m_arIdCustomTabs[(int)indx][indxItem];
 
             if ((obj.Checked == false)
                 && (!(m_dictFormFloat == null))
@@ -2577,7 +2592,7 @@ namespace Statistic
             else
                 ;
 
-            видSubToolStripMenuItem_CheckedChanged(m_dictAddingTabs[keyTab].panel
+            видSubToolStripMenuItem_CheckedChanged((ID_ADDING_TAB)keyTab
                 , obj.OwnerItem.Text + @" - " + obj.Text
                 , new bool[] { obj.Checked, bStoped });
         }
@@ -2589,7 +2604,7 @@ namespace Statistic
             else
                 ;
 
-            видSubToolStripMenuItem_CheckedChanged(m_dictAddingTabs[(int)ID_ADDING_TAB.DATETIMESYNC_SOURCE_DATA].panel, "Дата/время серверов БД"
+            видSubToolStripMenuItem_CheckedChanged(ID_ADDING_TAB.DATETIMESYNC_SOURCE_DATA, (sender as ToolStripMenuItem).Text //"Дата/время серверов БД"
                 , new bool[] { ((ToolStripMenuItem)sender).Checked, true });
         }
 
@@ -2605,7 +2620,7 @@ namespace Statistic
             else
                 ;
 
-            видSubToolStripMenuItem_CheckedChanged(m_dictAddingTabs[(int)ID_ADDING_TAB.SOTIASSO].panel, "Значения СОТИАССО"
+            видSubToolStripMenuItem_CheckedChanged(ID_ADDING_TAB.SOTIASSO, "Значения СОТИАССО"
                 , new bool[] { ((ToolStripMenuItem)sender).Checked, true });
         }
 
@@ -2619,34 +2634,45 @@ namespace Statistic
             else
                 ;
 
-            видSubToolStripMenuItem_CheckedChanged(m_dictAddingTabs[(int)ID_ADDING_TAB.VZLET_TDIRECT].panel, "Расчет теплосети"
+            видSubToolStripMenuItem_CheckedChanged(ID_ADDING_TAB.VZLET_TDIRECT, "Расчет теплосети"
                 , new bool[] { ((ToolStripMenuItem)sender).Checked, true });
         }
-
-        private void видSubToolStripMenuItem_CheckedChanged(PanelStatistic obj, string nameTab, bool[] arCheckedStoped)
+        /// <summary>
+        /// Общий метод обработки события - выбор п. меню (установка/снятие признака "Отобразить")
+        /// </summary>
+        /// <param name="idAddingPanel">Идентификатор панели</param>
+        /// <param name="nameTab">Текст-наименование панели</param>
+        /// <param name="arCheckedStoped">Массив с признаками: отобразить/снять_с_отображения панель, необходимости принудительно останавливать панель (в противном случае панель была остановлена ранее)</param>
+        private void видSubToolStripMenuItem_CheckedChanged(ID_ADDING_TAB idAddingPanel, string nameTab, bool[] arCheckedStoped)
         {
             bool bRes = false;
 
-            HTabCtrlEx.TYPE_TAB typeTab = HTabCtrlEx.TYPE_TAB.FIXED;
+            PanelStatistic panel = m_dictAddingTabs[(int)idAddingPanel].panel;
+            HTabCtrlEx.TYPE_TAB typeTab = m_dictAddingTabs[(int)idAddingPanel].m_typeTab;
             int key = -1
                 , indxItem = -1;
             INDEX_CUSTOM_TAB indxTab = INDEX_CUSTOM_TAB.TAB_2X2;
 
             if (arCheckedStoped[0] == true)
             {
-                if (nameTab.IndexOf(@"Окно") > -1)
-                {
-                    indxTab = getIndexCustomTab(nameTab);
-                    indxItem = getIndexItemCustomTab(nameTab);
-                    key = (int)m_arIdCustomTabs[(int)indxTab, indxItem];
-                    typeTab = HTabCtrlEx.TYPE_TAB.FLOAT;
-                }
+                if (typeTab == HClassLibrary.HTabCtrlEx.TYPE_TAB.FLOAT)
+                    if (nameTab.IndexOf(@"Окно") > -1)
+                    {
+                        indxTab = getIndexCustomTab(nameTab);
+                        indxItem = getIndexItemCustomTab(nameTab);
+                        key = (int)m_arIdCustomTabs[(int)indxTab][indxItem];
+                        //typeTab = HTabCtrlEx.TYPE_TAB.FLOAT;
+                    }
+                    else
+                    {
+                        key = (int)idAddingPanel;
+                    }
                 else
-                    ;
+                    ; // FIXED
 
-                tclTecViews.AddTabPage(obj, nameTab, key, typeTab);
+                tclTecViews.AddTabPage(panel, nameTab, key, typeTab);
 
-                obj.Start();
+                panel.Start();
                 if (m_bAutoActionTabs == false)
                     ActivateTabPage();
                 else
@@ -2655,10 +2681,11 @@ namespace Statistic
             else
             {//arCheckedStoped[0] == false
                 bRes = tclTecViews.RemoveTabPage(tclTecViews.IndexOfName (nameTab)); //nameTab
+                // проверить необходимость остановки панели
                 if (arCheckedStoped[1] == true)
                 {
-                    obj.Activate(false);
-                    obj.Stop();
+                    panel.Activate(false);
+                    panel.Stop();
                 }
                 else
                     ;
@@ -2825,7 +2852,7 @@ namespace Statistic
             }
             else
                 ;
-            видSubToolStripMenuItem_CheckedChanged(m_dictAddingTabs[(int)ID_ADDING_TAB.USERS].panel, "Пользователи"
+            видSubToolStripMenuItem_CheckedChanged(ID_ADDING_TAB.USERS, (sender as ToolStripMenuItem).Text //"Пользователи"
                 , new bool[] { ((ToolStripMenuItem)sender).Checked, true });
         }
 

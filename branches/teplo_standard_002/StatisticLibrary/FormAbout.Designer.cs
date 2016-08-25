@@ -39,6 +39,7 @@ namespace StatisticCommon
             this.linkLabel3 = new System.Windows.Forms.LinkLabel();
             this.linkLabel4 = new System.Windows.Forms.LinkLabel();
             this.label2 = new System.Windows.Forms.Label();
+            this.m_lblCustomer = new System.Windows.Forms.Label();
             ((System.ComponentModel.ISupportInitialize)(this.pictureBox1)).BeginInit();
             this.SuspendLayout();
             // 
@@ -152,11 +153,22 @@ namespace StatisticCommon
             this.label2.TabIndex = 9;
             this.label2.Text = "Заказчик: ОАО \"Новосибирскэнерго\", отдел IT.";
             // 
+            // m_lblCustomer
+            // 
+            this.m_lblCustomer.AutoSize = true;
+            this.m_lblCustomer.Font = new System.Drawing.Font("Microsoft Sans Serif", 8.25F, System.Drawing.FontStyle.Bold, System.Drawing.GraphicsUnit.Point, ((byte)(204)));
+            this.m_lblCustomer.Location = new System.Drawing.Point(66, 45);
+            this.m_lblCustomer.Name = "m_lblCustomer";
+            this.m_lblCustomer.Size = new System.Drawing.Size(281, 13);
+            this.m_lblCustomer.TabIndex = 9;
+            this.m_lblCustomer.Text = "Заказчик: АО СибЭКо, Техническая дирекция";
+            // 
             // FormAbout
             // 
             this.AutoScaleDimensions = new System.Drawing.SizeF(6F, 13F);
             this.AutoScaleMode = System.Windows.Forms.AutoScaleMode.Font;
             this.ClientSize = new System.Drawing.Size(402, 171);
+            this.Controls.Add(this.m_lblCustomer);
             this.Controls.Add(this.linkLabel4);
             this.Controls.Add(this.linkLabel3);
             this.Controls.Add(this.m_lblDomainMashineUserName);
@@ -192,5 +204,6 @@ namespace StatisticCommon
         private System.Windows.Forms.LinkLabel linkLabel3;
         private System.Windows.Forms.LinkLabel linkLabel4;
         private System.Windows.Forms.Label label2;
+        private System.Windows.Forms.Label m_lblCustomer;
     }
 }
