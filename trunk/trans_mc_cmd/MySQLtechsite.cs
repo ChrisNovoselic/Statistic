@@ -109,7 +109,7 @@ namespace trans_mc_cmd
 
             if (iRes == 0)
             {
-                m_admin = new AdminTS(new bool [] {false, true});
+                m_admin = new AdminTS(new bool [] {false, true}, TECComponentBase.TYPE.ELECTRO);
 
                 HMark markQueries = new HMark(new int[] { (int)StatisticCommon.CONN_SETT_TYPE.ADMIN, (int)StatisticCommon.CONN_SETT_TYPE.PBR });
                 //markQueries.Marked ((int)StatisticCommon.CONN_SETT_TYPE.ADMIN);
@@ -215,7 +215,7 @@ namespace trans_mc_cmd
         {
             TECComponent compRes = null;
 
-            int indxTECComponent = GetIndexTECComponentOfIdMC(id_mc);
+            int indxTECComponent = getIndexTECComponentOfIdMC(id_mc);
 
             if (!(indxTECComponent < 0))
             {
