@@ -1322,7 +1322,13 @@ namespace StatisticCommon
 
         private string queryIdSOTIASSOLinkSource
         {
-            get { return @"(SELECT [ID_LINK_SOURCE_DATA_TM] FROM [techsite_cfg-2.X.X].[dbo].[TEC_LIST] WHERE [ID] = " + m_id + @")"; }
+            get { return
+                @"("
+                //+ @"SELECT [ID_LINK_SOURCE_DATA_TM] FROM [techsite_cfg-2.X.X].[dbo].[TEC_LIST]"+ @" WHERE [ID]=" 
+                + @"SELECT [ID] FROM [v_CURR_ID_LINK_SOURCE_DATA_TM]" + @" WHERE [ID_TEC]=" 
+                    + m_id + @")"
+                ;
+            }
         }
 
         private string hoursTMCommonRequestAverage (DateTime dt1, DateTime dt2, string sensors, int interval) {

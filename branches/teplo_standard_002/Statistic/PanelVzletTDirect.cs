@@ -210,8 +210,8 @@ namespace Statistic
                         , cntHourFactNotValues = -1 // кол-во часов с пропущенными фактическими значениями
                         , cntHourFactRecieved = -1 // кол-во часов с фактически полученными значениями
                         , digitRound = -1; // кол-во знаков для округления
-                    double factDev = -1F // фактическое отклонение
-                        , sumTFact = -1F, sumUDGt = -1F, sumFactDev = -1F; // суммарные значения для факт.темп. и уточненного дисп.графика (для возможности усреднения)
+                    double hourFact = -1F, hourDev = -1F // фактическое отклонение за час, значение за крайний час, откл. за крайний час
+                        , sumFact = -1F, sumUDGt = -1F, sumDev = -1F; // суммарные значения для факт.темп. и уточненного дисп.графика (для возможности усреднения)
                     string strVal = string.Empty
                         , strWarn = string.Empty;
 
@@ -228,32 +228,35 @@ namespace Statistic
                     errorDevCellStyle.BackColor = Color.Red;
 
                     cntHourFactNotValues = 0;
-                    sumTFact =
+                    sumFact =
                     sumUDGt =
-                    sumFactDev =
+                    sumDev =
                         0F;
                     for (i = 0; i < itemscount; i++)
                     {
                         // номер часа - уже отображен
 
-                        // факт
-                        if (!(i > lh))
+                        // зафиксировать отсутствие значения
+                        cntHourFactNotValues += ((!(values[i].valuesFact > 0) && (!(i > lh))) ? 1 : 0);
+
+                        // - температура
+                        if (values[i].valuesFact > 0)
                         {
-                            // - температура
-                            if (values[i].valuesFact > 0)
+                            hourFact = values[i].valuesFact;
+                            // факт
+                            if (!(i > lh))
                             {
-                                sumTFact += values[i].valuesFact;
-                                strVal = (Math.Round(values[i].valuesFact, 2)).ToString();
+                                sumFact += hourFact;
+                                strVal = (Math.Round(hourFact, 2)).ToString();
                             }
                             else
-                            {
-                                cntHourFactNotValues++; // зафиксировать отсутствие значения
                                 strVal = @"-";
-                            }
-
-                            Rows[i].Cells[(int)INDEX_COLUMNS.TEMPERATURE_FACT].Value = strVal;
                         }
-                        else ;
+                        else
+                            strVal = @"-";
+
+                        Rows[i].Cells[(int)INDEX_COLUMNS.TEMPERATURE_FACT].Value = strVal;
+                        
                         // план
                         Rows[i].Cells[(int)INDEX_COLUMNS.TEMPERATURE_PBR].Value = (values[i].valuesPmin).ToString(@"F1"); // температура
                         //Rows[i].Cells[(int)INDEX_COLUMNS.TEMPERATURE_PBR].Style = curCellStyle; // стиль определен для всей строки                        
@@ -262,29 +265,29 @@ namespace Statistic
                         // уточненный дисп./график (??? с учетом рекомендации)
                         Rows[i].Cells[(int)INDEX_COLUMNS.UDGt].Value = (values[i].valuesUDGe).ToString(@"F1");
                         sumUDGt += values[i].valuesUDGe;
-                        // разность
-                        if (!(i > lh))
+                        
+                        // - температура
+                        if ((values[i].valuesFact > 0)
+                            && (values[i].valuesUDGe > 0))
                         {
-                            // - температура
-                            if ((values[i].valuesFact > 0)
-                                && (values[i].valuesUDGe > 0))
+                            // разность
+                            hourDev = values[i].valuesUDGe - values[i].valuesFact;                            
+                            
+                            if (!(i > lh))
                             {
-                                factDev = values[i].valuesUDGe - values[i].valuesFact;
-                                sumFactDev += factDev;
-                                strVal = Math.Round(factDev, 2).ToString();
+                                sumDev += hourDev;
+                                strVal = Math.Round(hourDev, 2).ToString();
                             }
                             else
                                 strVal = @"-";
                         }
                         else
-                        {
-                            strVal = @"-";
-                        }
+                            strVal = @"-";                        
                         Rows[i].Cells[(int)INDEX_COLUMNS.TEMPERATURE_DEVIATION].Value = strVal;
 
                         // визуализация выхода за пределы диапазона
                         if (!(i > lh))
-                            if (Math.Abs(factDev) > values[i].valuesDiviation)
+                            if (Math.Abs(hourDev) > values[i].valuesDiviation)
                                 curCellStyle = errorDevCellStyle;
                             else
                                 curCellStyle = normalDevCellStyle;
@@ -292,26 +295,29 @@ namespace Statistic
                             curCellStyle = normalDevCellStyle;
                         Rows[i].Cells[(int)INDEX_COLUMNS.TEMPERATURE_DEVIATION].Style = curCellStyle;
                     }
-
-                    cntHourFactRecieved = (lh - (cntHourFactNotValues > 0 ? (lh < 24) ? cntHourFactNotValues - 1 : cntHourFactNotValues : (TEC.TypeDbVzlet == TEC.TYPE_DBVZLET.KKS_NAME ? (bCurrHour == true ? -1 : 0) : TEC.TypeDbVzlet == TEC.TYPE_DBVZLET.GRAFA ? 0 : Int16.MinValue)));
+                    // кол-во фактически полученных значений в ~ от
+                    // кол-ва пропущенных значений
+                    // получены ли значения за полные сутки
+                    // признака "текущий" час
+                    // признака "текущие" сутки
+                    // типа БД
+                    cntHourFactRecieved = (lh - (cntHourFactNotValues > 0 ? (lh < 24) ? cntHourFactNotValues - 1 : cntHourFactNotValues : (TEC.TypeDbVzlet == TEC.TYPE_DBVZLET.KKS_NAME ? (bCurrHour == true ? -1 : (bCurrDate == true ? -1 : 0)) : TEC.TypeDbVzlet == TEC.TYPE_DBVZLET.GRAFA ? 0 : Int16.MinValue)));
                     //cntHourFactRecieved += ((bCurrHour == true) || (bCurrDate == true)) ? 1 : 0;
                     //Фактическое знач (среднее)
                     digitRound = 2;
-                    sumTFact /= cntHourFactRecieved;
-                    sumTFact = Math.Round(sumTFact, digitRound);
-                    Rows[i].Cells[(int)INDEX_COLUMNS.TEMPERATURE_FACT].Value = sumTFact.ToString(@"F" + digitRound);
+                    Rows[i].Cells[(int)INDEX_COLUMNS.TEMPERATURE_FACT].Value = Math.Round(sumFact / cntHourFactRecieved, digitRound).ToString(@"F" + digitRound);
                     //Уточненный дисп./график (средний)
                     digitRound = 1;
-                    sumUDGt /= itemscount;
-                    sumUDGt = Math.Round(sumUDGt, digitRound);
-                    Rows[i].Cells[(int)INDEX_COLUMNS.UDGt].Value = sumUDGt.ToString(@"F" + digitRound);
+                    Rows[i].Cells[(int)INDEX_COLUMNS.UDGt].Value = Math.Round(sumUDGt / itemscount, digitRound).ToString(@"F" + digitRound);
                     //Отклонение за сутки (среднее)
                     digitRound = 2;
-                    sumFactDev /= cntHourFactRecieved;
-                    sumFactDev = Math.Round(sumFactDev, digitRound);
-                    Rows[i].Cells[(int)INDEX_COLUMNS.TEMPERATURE_DEVIATION].Value = sumFactDev.ToString(@"F" + digitRound);
-                    //// план для панели оперативной информации
-                    PerformDataValues(new DataValuesEventArgs() { m_value1 = sumTFact, m_value2 = sumFactDev });
+                    Rows[i].Cells[(int)INDEX_COLUMNS.TEMPERATURE_DEVIATION].Value = Math.Round(sumDev / cntHourFactRecieved, digitRound).ToString(@"F" + digitRound);
+                    // план для панели оперативной информации
+                    PerformDataValues(new DataValuesEventArgs() {
+                        m_value1 = (bCurrHour == true ? (sumFact + hourFact) / (cntHourFactRecieved + 1) : sumFact / cntHourFactRecieved)
+                        ,
+                        m_value2 = (bCurrHour == true ? (sumDev + hourDev) / (cntHourFactRecieved + 1) : sumDev / cntHourFactRecieved)
+                    });
                 }
             }
 

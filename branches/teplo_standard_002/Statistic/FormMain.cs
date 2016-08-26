@@ -67,9 +67,10 @@ namespace Statistic
         {
             public ToolStripMenuItem menuItem;
             public PanelStatistic panel;
+            //public string m_TabText;
             public HTabCtrlEx.TYPE_TAB m_typeTab;
 
-            public ADDING_TAB(string menuItemName, string menuItemText, HTabCtrlEx.TYPE_TAB typeTab)
+            public ADDING_TAB(string menuItemName, string menuItemText/*, string tabText*/, HTabCtrlEx.TYPE_TAB typeTab)
             {
                 menuItem = new System.Windows.Forms.ToolStripMenuItem();
                 menuItem.CheckOnClick = true;
@@ -1977,7 +1978,7 @@ namespace Statistic
                     tclTecViews.AddTabPage(m_listStandardTabs[panel_tecView.indx_tecView]
                         , formChangeMode.m_listItems[panel_tecView.indx_itemChangeMode].name_shr
                         , m_listStandardTabs[panel_tecView.indx_tecView].m_ID
-                        , HTabCtrlEx.TYPE_TAB.FLOAT);
+                        , HTabCtrlEx.TYPE_TAB.FIXED);
                     // инициировать операции по инициализации панели
                     m_listStandardTabs[panel_tecView.indx_tecView].Start();
                 }
@@ -2668,7 +2669,7 @@ namespace Statistic
                         key = (int)idAddingPanel;
                     }
                 else
-                    ; // FIXED
+                    key = (int)idAddingPanel; // FIXED
 
                 tclTecViews.AddTabPage(panel, nameTab, key, typeTab);
 
