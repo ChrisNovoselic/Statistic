@@ -1977,16 +1977,19 @@ namespace StatisticCommon
                     strRes += strParamVyvod;
                     strRes += @") AS [SETTINGS]([ID_POINT_ASKUTE],[KKS_NAME]);" + NL;
 
-                    strRes += @"SELECT [ID_TEC], [KKS_NAME], [ID_POINT_ASKUTE], AVG([VALUE]) AS [VALUE]"
-                        + @", DATEADD(hh," + tsOffset.Hours + @", DATEADD(minute, (DATEDIFF(minute, @getdate, [DATETIME])/60)*60, @getdate)) AS [DATETIME]"
+                    strRes += @"SELECT [GROUP_DATA].[ID_TEC], [GROUP_DATA].[KKS_NAME], [SET].[ID_POINT_ASKUTE], [GROUP_DATA].[VALUE], [GROUP_DATA].[DATETIME]"
                         + @" FROM ("
-                            + @" SELECT [ARCH].[ID_TEC], [ARCH].[KKS_NAME], [SET].[ID_POINT_ASKUTE], [ARCH].[VALUE], [ARCH].[DATETIME]"
-                                + @" FROM [VZLET_CURRENT_ARCHIVES_MIN] AS [ARCH] WITH(INDEX(KKS_DATETIME), READUNCOMMITTED)"
-                                + @" INNER JOIN @SETTINGS_TABLE AS [SET] ON ([ARCH].[KKS_NAME] = [SET].[KKS_NAME])"
-                                + @" WHERE [ARCH].[DATETIME] BETWEEN @getdate AND DATEADD(ms, -3, DATEADD(dd,1,@getdate))"
-                            + @") AS [DATA]"
-                        + @" GROUP BY [ID_TEC], [KKS_NAME], [ID_POINT_ASKUTE], DATEADD(hh," + tsOffset.Hours + @",DATEADD(minute, (DATEDIFF(minute, @getdate, [DATETIME])/60)*60, @getdate))"
-                        + @" ORDER BY [DATETIME];" + NL;
+                            + @" SELECT [ID_TEC], [KKS_NAME], AVG([VALUE]) AS [VALUE],"
+                                + @" DATEADD(hh," + tsOffset.Hours + @",DATEADD(minute, (DATEDIFF(minute, @getdate, [DATETIME])/60)*60, @getdate)) AS [DATETIME]"
+                            + @" FROM ("
+                                + @" SELECT [ARCH].[ID_TEC], [ARCH].[KKS_NAME], [ARCH].[VALUE], [ARCH].[DATETIME]"
+                                    + @" FROM [VZLET_CURRENT_ARCHIVES_MIN] AS [ARCH] WITH(INDEX(KKS_DATETIME), READUNCOMMITTED)"
+                                        + @" INNER JOIN @SETTINGS_TABLE AS [SET] ON ([ARCH].[KKS_NAME] = [SET].[KKS_NAME])"
+                                    + @" WHERE [ARCH].[DATETIME] BETWEEN @getdate AND DATEADD(ms, -3, DATEADD(dd,1,@getdate))"
+                                + @") AS [DATA] "
+                        + @" GROUP BY [ID_TEC], [KKS_NAME], DATEADD(hh," + tsOffset.Hours + @",DATEADD(minute, (DATEDIFF(minute, @getdate, [DATETIME])/60)*60, @getdate))"
+                            + @") AS [GROUP_DATA] INNER JOIN @SETTINGS_TABLE AS [SET] ON ([GROUP_DATA].[KKS_NAME] = [SET].[KKS_NAME])"
+                        + @" ORDER BY [GROUP_DATA].[DATETIME];" + NL;
                     //strRes += @"GO";
                     break;                
                 case TYPE_DBVZLET.GRAFA:
