@@ -271,7 +271,7 @@ namespace Statistic
                             && (values[i].valuesUDGe > 0))
                         {
                             // разность
-                            hourDev = values[i].valuesUDGe - values[i].valuesFact;                            
+                            hourDev = values[i].valuesFact - values[i].valuesUDGe;                            
                             
                             if (!(i > lh))
                             {
@@ -1016,6 +1016,7 @@ namespace Statistic
                         ;
                     bool bCurrHour = m_parent.m_tecView.currHour;
                     TG.INDEX_VALUE indxVyvodValue = TG.INDEX_VALUE.COUNT_INDEX_VALUE;
+                    double dblValue = -1F;
                     double []arValues = new double[(int)TG.INDEX_VALUE.COUNT_INDEX_VALUE - 1];
                     //int[] arIds = new int[(int)TG.INDEX_VALUE.COUNT_INDEX_VALUE - 1];
                     int idVyvod = -1;
@@ -1036,7 +1037,7 @@ namespace Statistic
                             , arValues[(int)TG.INDEX_VALUE.FACT] == double.NegativeInfinity ? @"--.--" : string.Empty);
                         // отклонение значения температуры от УДГт (текущее)
                         arValues[(int)TG.INDEX_VALUE.TM] = ((bCurrHour == true) && ((m_parent.m_tecView as DataSource).m_valueCurrHour > 0)) ?
-                            m_parent.m_tecView.m_valuesHours[lastHour].valuesUDGe - (m_parent.m_tecView as DataSource).m_valueCurrHour :
+                            (m_parent.m_tecView as DataSource).m_valueCurrHour - m_parent.m_tecView.m_valuesHours[lastHour].valuesUDGe :
                                 double.NegativeInfinity;
                         showValue(ref m_arLabelCommon[(int)CONTROLS.lblDeviatCurrentValue - indxStartCommonPVal]
                             , arValues[(int)TG.INDEX_VALUE.TM]
@@ -1055,7 +1056,7 @@ namespace Statistic
                             , arValues[(int)TG.INDEX_VALUE.FACT] == double.NegativeInfinity ? @"--.--" : string.Empty);
                         // отклонение часового значения температуры от УДГт (крайний час)
                         arValues[(int)TG.INDEX_VALUE.TM] = ((m_parent.m_tecView.m_valuesHours[lastHour].valuesUDGe > 0) && (m_parent.m_tecView.m_valuesHours[lastHour].valuesFact > 0)) ?
-                            m_parent.m_tecView.m_valuesHours[lastHour].valuesUDGe - m_parent.m_tecView.m_valuesHours[lastHour].valuesFact : double.NegativeInfinity;
+                            m_parent.m_tecView.m_valuesHours[lastHour].valuesFact - m_parent.m_tecView.m_valuesHours[lastHour].valuesUDGe : double.NegativeInfinity;
                         showValue(ref m_arLabelCommon[(int)CONTROLS.lblDeviatHourValue - indxStartCommonPVal]
                             , arValues[(int)TG.INDEX_VALUE.TM]
                             , 2 //round
@@ -1098,9 +1099,11 @@ namespace Statistic
                                         switch (pv.m_id_param)
                                         {
                                             case Vyvod.ID_PARAM.G_PV:
+                                            case Vyvod.ID_PARAM.G2_PV:
                                                 indxVyvodValue = (int)TG.INDEX_VALUE.FACT;
                                                 break;
                                             case Vyvod.ID_PARAM.T_PV:
+                                            case Vyvod.ID_PARAM.T2_PV:
                                                 indxVyvodValue = TG.INDEX_VALUE.TM;
                                                 break;
                                             default:
@@ -1111,12 +1114,36 @@ namespace Statistic
                                         if (indxVyvodValue < TG.INDEX_VALUE.COUNT_INDEX_VALUE)
                                             if (bCurrHour == true)
                                                 // текущее значение
-                                                arValues[(int)indxVyvodValue] = (m_parent.m_tecView as DataSource).m_dictCurrValuesLowPointDev[pv.m_id];
+                                                dblValue = (m_parent.m_tecView as DataSource).m_dictCurrValuesLowPointDev[pv.m_id];
                                             else
                                                 // ретро-значение
-                                                arValues[(int)indxVyvodValue] = m_parent.m_tecView.m_dictValuesLowPointDev[pv.m_id].m_power_LastMinutesTM[lastHour];
+                                                dblValue = m_parent.m_tecView.m_dictValuesLowPointDev[pv.m_id].m_power_LastMinutesTM[lastHour];
                                         else
-                                            arValues[(int)indxVyvodValue] = -1F;
+                                            dblValue = -1F;
+
+                                        if (dblValue > 0)
+                                            switch (pv.m_id_param)
+                                            {
+                                                case Vyvod.ID_PARAM.G_PV:
+                                                case Vyvod.ID_PARAM.G2_PV:
+                                                    if (arValues[(int)indxVyvodValue] < 0)
+                                                        arValues[(int)indxVyvodValue] = 0;
+                                                    else
+                                                        ;
+                                                    arValues[(int)indxVyvodValue] += dblValue;
+                                                    break;
+                                                case Vyvod.ID_PARAM.T_PV:
+                                                case Vyvod.ID_PARAM.T2_PV:
+                                                    if (!(arValues[(int)indxVyvodValue] > 0))
+                                                        arValues[(int)indxVyvodValue] = dblValue;
+                                                    else
+                                                        ;
+                                                    break;
+                                                default:
+                                                    break;
+                                            }
+                                        else
+                                            ;
                                     }
                                     else
                                         ; // массив со значениями не инициализирован
@@ -1416,7 +1443,8 @@ namespace Statistic
 
                                                 m_dictValuesLowPointDev[id].m_power_LastMinutesTM[iHour] = (double)r[@"VALUE"];
 
-                                                if ((lpd as Vyvod.ParamVyvod).m_id_param == Vyvod.ID_PARAM.G_PV)
+                                                if (((lpd as Vyvod.ParamVyvod).m_id_param == Vyvod.ID_PARAM.G_PV)
+                                                    || ((lpd as Vyvod.ParamVyvod).m_id_param == Vyvod.ID_PARAM.G2_PV))
                                                 // суммировать массовые расходы для последующего вычисления массовой доли конкретного ВЫВОДа
                                                     m_valuesHours[iHour].valuesTMSNPsum += (double)r[@"VALUE"];
                                                 else
@@ -1430,36 +1458,48 @@ namespace Statistic
                                 //iHourRecieved++;
 
                                 for (iHour = 0; iHour < (iHourRecieved + 1); iHour++)
-                                // цикл по номерам часов с полученными значениями
-                                    foreach (TECComponent tc in _localTECComponents)
-                                        if ((tc.IsVyvod == true) // только ВЫВОДы
-                                            && (tc.m_bKomUchet == true)) // только коммерческие
-                                        {
-                                            foreach (TECComponentBase lpd in tc.m_listLowPointDev)
-                                            {// цикл по всем конечным устройствам ВЫВОДа
-                                                id = lpd.m_id;
-                                                // получить значение для формулы в ~ от типа параметра
-                                                switch ((lpd as Vyvod.ParamVyvod).m_id_param)
-                                                {
-                                                    case Vyvod.ID_PARAM.G_PV:
-                                                        Gpv = m_dictValuesLowPointDev[id].m_power_LastMinutesTM[iHour];
-                                                        break;
-                                                    case Vyvod.ID_PARAM.T_PV:
-                                                        Tpv = m_dictValuesLowPointDev[id].m_power_LastMinutesTM[iHour];
-                                                        break;
-                                                    default:
-                                                        break;
+                                    // цикл по номерам часов с полученными значениями
+                                    if (m_valuesHours[iHour].valuesTMSNPsum > 0)
+                                        foreach (TECComponent tc in _localTECComponents)
+                                            if ((tc.IsVyvod == true) // только ВЫВОДы
+                                                && (tc.m_bKomUchet == true)) // только коммерческие
+                                            {
+                                                Gpv =
+                                                Tpv =
+                                                    0F;
+
+                                                foreach (TECComponentBase lpd in tc.m_listLowPointDev)
+                                                {// цикл по всем конечным устройствам ВЫВОДа
+                                                    id = lpd.m_id;
+                                                    // получить значение для формулы в ~ от типа параметра
+                                                    switch ((lpd as Vyvod.ParamVyvod).m_id_param)
+                                                    {
+                                                        case Vyvod.ID_PARAM.G_PV:
+                                                        case Vyvod.ID_PARAM.G2_PV:
+                                                            Gpv += m_dictValuesLowPointDev[id].m_power_LastMinutesTM[iHour];
+                                                            break;
+                                                        case Vyvod.ID_PARAM.T_PV:
+                                                        case Vyvod.ID_PARAM.T2_PV:
+                                                            if (Tpv == 0F)
+                                                                Tpv = m_dictValuesLowPointDev[id].m_power_LastMinutesTM[iHour];
+                                                            else
+                                                                ;
+                                                            break;
+                                                        default:
+                                                            break;
+                                                    }
                                                 }
+                                                // вычислить вклад ВЫВОДа в общестанционное значение
+                                                if ((Gpv > 0)
+                                                    && (Tpv > 0))
+                                                    m_valuesHours[iHour].valuesFact += (Gpv / m_valuesHours[iHour].valuesTMSNPsum) * Tpv;
+                                                else
+                                                    ;
                                             }
-                                            // вычислить вклад ВЫВОДа в общестанционное значение
-                                            if ((Gpv > 0)
-                                                && (Tpv > 0))
-                                                m_valuesHours[iHour].valuesFact += (Gpv / m_valuesHours[iHour].valuesTMSNPsum) * Tpv;
                                             else
-                                                ;
-                                        }
-                                        else
-                                            ; // не ВЫВОД с ком.учетом
+                                                ; // не ВЫВОД с ком.учетом
+                                    else
+                                        ; // нет возможности произвести вычисления (знаменатель = 0)
                                 break;
                             case TEC.TYPE_DBVZLET.GRAFA:
                             default:
@@ -1602,6 +1642,7 @@ namespace Statistic
                                                 switch ((lpd as Vyvod.ParamVyvod).m_id_param)
                                                 {
                                                     case Vyvod.ID_PARAM.G_PV:
+                                                    case Vyvod.ID_PARAM.G2_PV:
                                                         Gpv = (float)arDataParamVyvod[0][@"VALUE"];
                                                         m_SummGpv += Gpv;
                                                         break;
@@ -1623,6 +1664,10 @@ namespace Statistic
                                         if ((tc.IsVyvod == true)
                                             && (tc.m_bKomUchet == true))
                                         {
+                                            Gpv =
+                                            Tpv =
+                                                0F;
+
                                             foreach (TECComponentBase lpd in tc.m_listLowPointDev)
                                             {
                                                 // получить идентификатор параметра ВЫВОДа
@@ -1632,10 +1677,15 @@ namespace Statistic
                                                 switch ((lpd as Vyvod.ParamVyvod).m_id_param)
                                                 {
                                                     case Vyvod.ID_PARAM.G_PV:
-                                                        Gpv = m_dictCurrValuesLowPointDev[id];
+                                                    case Vyvod.ID_PARAM.G2_PV:
+                                                        Gpv += m_dictCurrValuesLowPointDev[id];
                                                         break;
                                                     case Vyvod.ID_PARAM.T_PV:
-                                                        Tpv = m_dictCurrValuesLowPointDev[id];
+                                                    case Vyvod.ID_PARAM.T2_PV:
+                                                        if (Tpv == 0)
+                                                            Tpv = m_dictCurrValuesLowPointDev[id];
+                                                        else
+                                                            ;
                                                         break;
                                                     default:
                                                         break;

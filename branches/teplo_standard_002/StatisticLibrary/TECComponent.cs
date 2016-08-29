@@ -318,7 +318,8 @@ namespace StatisticCommon
         public enum ID_PARAM : short { UNKNOWN = -1
             , G_PV = 1, G_OV
             , T_PV, T_OV
-            , P_PV, P_OV
+            , P_PV, P_OV            
+            , G2_PV, G2_OV
             , T2_PV, T2_OV
             , }
 

@@ -1932,7 +1932,8 @@ namespace StatisticCommon
                 {
                     pv = tc.m_listLowPointDev[0] as Vyvod.ParamVyvod;
 
-                    if (((pv.m_id_param == Vyvod.ID_PARAM.G_PV) || (pv.m_id_param == Vyvod.ID_PARAM.T_PV))
+                    if (((pv.m_id_param == Vyvod.ID_PARAM.G_PV) || (pv.m_id_param == Vyvod.ID_PARAM.T_PV)
+                            || (pv.m_id_param == Vyvod.ID_PARAM.G2_PV) || (pv.m_id_param == Vyvod.ID_PARAM.T2_PV))
                         && (pv.m_SensorsString_VZLET.Equals(string.Empty) == false))
                         strRes += @"(" + pv.m_id + @",'" + pv.m_SensorsString_VZLET + @"'),";
                     else
@@ -1996,12 +1997,14 @@ namespace StatisticCommon
                         {
                             pv = tc.m_listLowPointDev[0] as Vyvod.ParamVyvod;
 
-                            if (((pv.m_id_param == Vyvod.ID_PARAM.G_PV) || (pv.m_id_param == Vyvod.ID_PARAM.T_PV))
+                            if (((pv.m_id_param == Vyvod.ID_PARAM.G_PV) || (pv.m_id_param == Vyvod.ID_PARAM.T_PV)
+                                    || (pv.m_id_param == Vyvod.ID_PARAM.G2_PV) || (pv.m_id_param == Vyvod.ID_PARAM.T2_PV))
                                 && (pv.m_SensorsString_VZLET.Equals(string.Empty) == false))
                             {
                                 strParamVyvod += ", AVG ([" + pv.m_SensorsString_VZLET + @"]) as [" + pv.m_Symbol + @"pv_" + pv.m_id + @"]";
 
-                                if (pv.m_id_param == Vyvod.ID_PARAM.G_PV)
+                                if ((pv.m_id_param == Vyvod.ID_PARAM.G_PV)
+                                    || (pv.m_id_param == Vyvod.ID_PARAM.G2_PV))
                                     strSummaGpr += @"[" + pv.m_SensorsString_VZLET + @"]+";
                                 else
                                     ;
@@ -2075,12 +2078,14 @@ namespace StatisticCommon
                         {
                             pv = tc.m_listLowPointDev[0] as Vyvod.ParamVyvod;
 
-                            if (((pv.m_id_param == Vyvod.ID_PARAM.G_PV) || (pv.m_id_param == Vyvod.ID_PARAM.T_PV))
+                            if (((pv.m_id_param == Vyvod.ID_PARAM.G_PV) || (pv.m_id_param == Vyvod.ID_PARAM.T_PV)
+                                || (pv.m_id_param == Vyvod.ID_PARAM.G2_PV) || (pv.m_id_param == Vyvod.ID_PARAM.T2_PV))
                                 && (pv.m_SensorsString_VZLET.Equals(string.Empty) == false))
                             {
                                 strParamVyvod += ", [" + pv.m_SensorsString_VZLET + @"] as [" + pv.m_Symbol + @"_" + pv.m_id + @"]";
 
-                                if (pv.m_id_param == Vyvod.ID_PARAM.G_PV)
+                                if ((pv.m_id_param == Vyvod.ID_PARAM.G_PV)
+                                    || (pv.m_id_param == Vyvod.ID_PARAM.G2_PV))
                                     strSummaGpr += @"[" + pv.m_SensorsString_VZLET + @"]+";
                                 else
                                     ;
