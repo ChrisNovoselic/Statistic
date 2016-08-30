@@ -386,8 +386,8 @@ namespace StatisticAlarm
                 Request(IdListener
                     , @"SELECT * FROM [dbo].[AlarmEvent]"
                         + @" WHERE [DATETIME_REGISTRED] BETWEEN '"
-                            + (m_dtCurrent.AddHours(m_iHourBegin) - HDateTime.TS_NSK_OFFSET_OF_MOSCOWTIMEZONE).ToString(@"yyyyMMdd HH:mm:ss") + @"' AND '"
-                            + (m_dtCurrent.AddHours(m_iHourEnd) - HDateTime.TS_NSK_OFFSET_OF_MOSCOWTIMEZONE).ToString(@"yyyyMMdd HH:mm:ss") + @"'"
+                            + (m_dtCurrent.AddHours(m_iHourBegin) - HDateTime.TS_MSK_OFFSET_OF_UTCTIMEZONE).ToString(@"yyyyMMdd HH:mm:ss") + @"' AND '"
+                            + (m_dtCurrent.AddHours(m_iHourEnd) - HDateTime.TS_MSK_OFFSET_OF_UTCTIMEZONE).ToString(@"yyyyMMdd HH:mm:ss") + @"'"
                         + @" ORDER BY [DATETIME_REGISTRED]");
             }
 

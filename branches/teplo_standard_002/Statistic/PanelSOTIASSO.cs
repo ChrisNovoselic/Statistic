@@ -297,7 +297,7 @@ namespace Statistic
             //m_panelManagement.EvtSetNowHour += new DelegateFunc(panelManagement_OnEvtSetNowHour);
             m_zGraph_GTP = new ZedGraphControlGTP(); // графическая панель для отображения значений ГТП
             m_zGraph_GTP.Name = KEY_CONTROLS.ZGRAPH_GTP.ToString();
-            m_zGraph_TG = new ZEdGraphControlTG(); // графическая панель для отображения значений ТГ
+            m_zGraph_TG = new ZedGraphControlTG(); // графическая панель для отображения значений ТГ
             m_zGraph_TG.Name = KEY_CONTROLS.ZGRAPH_TG.ToString();
 
             //Создать сплиттеры
@@ -779,9 +779,10 @@ namespace Statistic
             {
                 TecView.valuesTEC[] valuesMins = (obj as object[])[0] as TecView.valuesTEC[];
                 decimal dcGTPKoeffAlarmPcur = (decimal)(obj as object[])[1];
+                int lastMin = (int)(obj as object[])[2];
 
                 DataGridViewGTP dgvGTP = this.Controls.Find(KEY_CONTROLS.DGV_GTP_VALUE.ToString(), true)[0] as DataGridViewGTP;
-                dgvGTP.Fill(valuesMins, (int)(obj as object[])[2]);
+                dgvGTP.Fill(valuesMins, (int)dcGTPKoeffAlarmPcur, (int)(obj as object[])[2]);
             }
             /// <summary>
             /// Отобразить значения в разрезе минута-секунды
@@ -955,7 +956,7 @@ namespace Statistic
         /// Класс для отображения в графическом представлении
         ///  значений за указанную (дата/номер часа/номер минуты) 1 мин для выбранных ТГ, выбранного ГТП
         /// </summary>
-        private class ZEdGraphControlTG : HZedGraphControl
+        private class ZedGraphControlTG : HZedGraphControl
         {
             public void Draw()
             {
@@ -1032,7 +1033,8 @@ namespace Statistic
             {
                 DataGridViewCellStyle cellStyle;
                 double diviation = -1F;
-                int cntDiviation = 0;
+                int cntDiviation = 0
+                    , iLastMin = (int)pars[1];
                 decimal dcKoeff = (decimal)pars[0]; //dcGTPKoeffAlarmPcur
 
                 int i = -1;
@@ -1079,7 +1081,7 @@ namespace Statistic
                     Rows[i - 1].Cells[3].Style = cellStyle;
                 }
                 //Указать активную строку
-                i = pars[0] > 60 ? 60 : pars[0];
+                i = iLastMin > 60 ? 60 : iLastMin;
                 SetCurrentCell(i - 1);
             }
         }
@@ -1725,8 +1727,9 @@ namespace Statistic
                 string strRes = string.Empty
                     , strHour = string.Empty
                     , strMin = string.Empty;
+                int iLastMin = 60;
 
-                bool bLastMin = ! (m_tecView.lastMin < 59) //61
+                bool bLastMin = !(m_tecView.lastMin < iLastMin) //61
                     , bCurrHour = m_tecView.currHour;
                 //Подпись для номера часа
                 if (bLastMin == false)
@@ -1745,7 +1748,7 @@ namespace Statistic
                         strMin += (m_tecView.lastMin - 1);
                 else
                     if (bCurrHour == true)
-                        strMin += (m_tecView.lastMin - 58); //60
+                        strMin += (m_tecView.lastMin - (iLastMin - 1)); //60
                     else
                         strMin += 60;
                 strMin += @"-я мин";
@@ -2160,7 +2163,7 @@ namespace Statistic
             pane.YAxis.Title.Text = "P, МВт";
             pane.Title.Text = @"СОТИАССО";
             pane.Title.Text += new string(' ', 29);
-            pane.Title.Text += textGraphMinDetail;;
+            pane.Title.Text += textGraphMinDetail;
 
             pane.XAxis.Scale.TextLabels = names;
             pane.XAxis.Scale.IsPreventLabelOverlap = false;
