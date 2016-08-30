@@ -230,8 +230,8 @@ namespace Statistic
                     cntHourFactNotValues = 0;
                     sumFact =
                     sumUDGt =
-                    sumDev =
                         0F;
+                    sumDev = double.NegativeInfinity;
                     for (i = 0; i < itemscount; i++)
                     {
                         // номер часа - уже отображен
@@ -258,13 +258,15 @@ namespace Statistic
                         Rows[i].Cells[(int)INDEX_COLUMNS.TEMPERATURE_FACT].Value = strVal;
                         
                         // план
-                        Rows[i].Cells[(int)INDEX_COLUMNS.TEMPERATURE_PBR].Value = (values[i].valuesPmin).ToString(@"F1"); // температура
-                        //Rows[i].Cells[(int)INDEX_COLUMNS.TEMPERATURE_PBR].Style = curCellStyle; // стиль определен для всей строки                        
+                        showCell(i, INDEX_COLUMNS.TEMPERATURE_PBR, values[i].valuesPmin, 1); // температура
                         // рекомендация
-                        Rows[i].Cells[(int)INDEX_COLUMNS.REC].Value = (values[i].valuesREC).ToString(@"F0");
+                        showCell(i, INDEX_COLUMNS.REC, values[i].valuesREC, 0);
                         // уточненный дисп./график (??? с учетом рекомендации)
-                        Rows[i].Cells[(int)INDEX_COLUMNS.UDGt].Value = (values[i].valuesUDGe).ToString(@"F1");
-                        sumUDGt += values[i].valuesUDGe;
+                        showCell(i, INDEX_COLUMNS.UDGt, values[i].valuesUDGe, 1);
+                        if (Double.IsNaN(values[i].valuesUDGe) == false)
+                            sumUDGt += values[i].valuesUDGe;
+                        else
+                            ;
                         
                         // - температура
                         if ((values[i].valuesFact > 0)
@@ -275,6 +277,10 @@ namespace Statistic
                             
                             if (!(i > lh))
                             {
+                                if (double.IsNegativeInfinity(sumDev) == true)
+                                    sumDev = 0F;
+                                else
+                                    ;
                                 sumDev += hourDev;
                                 strVal = Math.Round(hourDev, 2).ToString();
                             }
@@ -305,19 +311,32 @@ namespace Statistic
                     //cntHourFactRecieved += ((bCurrHour == true) || (bCurrDate == true)) ? 1 : 0;
                     //Фактическое знач (среднее)
                     digitRound = 2;
-                    Rows[i].Cells[(int)INDEX_COLUMNS.TEMPERATURE_FACT].Value = Math.Round(sumFact / cntHourFactRecieved, digitRound).ToString(@"F" + digitRound);
+                    //Rows[i].Cells[(int)INDEX_COLUMNS.TEMPERATURE_FACT].Value = Math.Round(sumFact / cntHourFactRecieved, digitRound).ToString(@"F" + digitRound);
+                    showCell(i, INDEX_COLUMNS.TEMPERATURE_FACT, sumFact / cntHourFactRecieved, (ushort)digitRound);
                     //Уточненный дисп./график (средний)
                     digitRound = 1;
-                    Rows[i].Cells[(int)INDEX_COLUMNS.UDGt].Value = Math.Round(sumUDGt / itemscount, digitRound).ToString(@"F" + digitRound);
+                    //Rows[i].Cells[(int)INDEX_COLUMNS.UDGt].Value = Math.Round(sumUDGt / itemscount, digitRound).ToString(@"F" + digitRound);
+                    showCell (i, INDEX_COLUMNS.UDGt, sumUDGt / itemscount, (ushort)digitRound);
                     //Отклонение за сутки (среднее)
                     digitRound = 2;
-                    Rows[i].Cells[(int)INDEX_COLUMNS.TEMPERATURE_DEVIATION].Value = Math.Round(sumDev / cntHourFactRecieved, digitRound).ToString(@"F" + digitRound);
+                    //Rows[i].Cells[(int)INDEX_COLUMNS.TEMPERATURE_DEVIATION].Value = Math.Round(sumDev / cntHourFactRecieved, digitRound).ToString(@"F" + digitRound);
+                    showCell(i, INDEX_COLUMNS.TEMPERATURE_DEVIATION, sumDev / cntHourFactRecieved, (ushort)digitRound);
                     // план для панели оперативной информации
                     PerformDataValues(new DataValuesEventArgs() {
                         m_value1 = (bCurrHour == true ? (sumFact + hourFact) / (cntHourFactRecieved + 1) : sumFact / cntHourFactRecieved)
-                        ,
-                        m_value2 = (bCurrHour == true ? (sumDev + hourDev) / (cntHourFactRecieved + 1) : sumDev / cntHourFactRecieved)
+                        , m_value2 = (bCurrHour == true ? (sumDev + hourDev) / (cntHourFactRecieved + 1) : sumDev / cntHourFactRecieved)
                     });
+                }
+
+                private void showCell(int iRow, INDEX_COLUMNS indxCol, double value, ushort digit)
+                {
+                    //string strValue = @"-";
+
+                    if ((Double.IsNaN(value) == false)
+                        && (Double.IsNegativeInfinity(value) == false))
+                        Rows[iRow].Cells[(int)indxCol].Value = value.ToString(@"F" + digit.ToString());
+                    else
+                        Rows[iRow].Cells[(int)indxCol].Value = @"-";
                 }
             }
 
@@ -1036,7 +1055,7 @@ namespace Statistic
                             , true
                             , arValues[(int)TG.INDEX_VALUE.FACT] == double.NegativeInfinity ? @"--.--" : string.Empty);
                         // отклонение значения температуры от УДГт (текущее)
-                        arValues[(int)TG.INDEX_VALUE.TM] = ((bCurrHour == true) && ((m_parent.m_tecView as DataSource).m_valueCurrHour > 0)) ?
+                        arValues[(int)TG.INDEX_VALUE.TM] = ((bCurrHour == true) && ((m_parent.m_tecView as DataSource).m_valueCurrHour > 0) && (m_parent.m_tecView.m_valuesHours[lastHour].valuesUDGe > 0)) ?
                             (m_parent.m_tecView as DataSource).m_valueCurrHour - m_parent.m_tecView.m_valuesHours[lastHour].valuesUDGe :
                                 double.NegativeInfinity;
                         showValue(ref m_arLabelCommon[(int)CONTROLS.lblDeviatCurrentValue - indxStartCommonPVal]
@@ -1212,7 +1231,7 @@ namespace Statistic
                         , 2 //round
                         , false
                         , true
-                        , string.Empty);
+                        , ev.m_value2 == double.NegativeInfinity ? @"---" : string.Empty);
                 }
             }
             /// <summary>
