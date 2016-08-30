@@ -1322,7 +1322,13 @@ namespace StatisticCommon
 
         private string queryIdSOTIASSOLinkSource
         {
-            get { return @"(SELECT [ID_LINK_SOURCE_DATA_TM] FROM [techsite_cfg-2.X.X].[dbo].[TEC_LIST] WHERE [ID] = " + m_id + @")"; }
+            get { return
+                @"("
+                //+ @"SELECT [ID_LINK_SOURCE_DATA_TM] FROM [techsite_cfg-2.X.X].[dbo].[TEC_LIST]"+ @" WHERE [ID]=" 
+                + @"SELECT [ID] FROM [v_CURR_ID_LINK_SOURCE_DATA_TM]" + @" WHERE [ID_TEC]=" 
+                    + m_id + @")"
+                ;
+            }
         }
 
         private string hoursTMCommonRequestAverage (DateTime dt1, DateTime dt2, string sensors, int interval) {
@@ -1911,6 +1917,36 @@ namespace StatisticCommon
             return strRes;
         }
 
+        public enum TYPE_DBVZLET : short { UNKNOWN = -1, GRAFA = 0, KKS_NAME }
+        public static TYPE_DBVZLET TypeDbVzlet { get { return TYPE_DBVZLET.KKS_NAME; } }
+
+        private string getVzletSensorsParamVyvod ()
+        {
+            string strRes = string.Empty;
+
+            Vyvod.ParamVyvod pv;
+
+            // формировать расходы и температуры
+            foreach (TECComponent tc in list_TECComponents)
+                if (tc.IsParamVyvod == true)
+                {
+                    pv = tc.m_listLowPointDev[0] as Vyvod.ParamVyvod;
+
+                    if (((pv.m_id_param == Vyvod.ID_PARAM.G_PV) || (pv.m_id_param == Vyvod.ID_PARAM.T_PV)
+                            || (pv.m_id_param == Vyvod.ID_PARAM.G2_PV) || (pv.m_id_param == Vyvod.ID_PARAM.T2_PV))
+                        && (pv.m_SensorsString_VZLET.Equals(string.Empty) == false))
+                        strRes += @"(" + pv.m_id + @",'" + pv.m_SensorsString_VZLET + @"'),";
+                    else
+                        ;
+                }
+                else
+                    ;
+            // убрать лишнюю запятую
+            strRes = strRes.Substring(0, strRes.Length - 1);
+
+            return strRes;
+        }
+
         public string GetHoursVzletTDirectQuery(DateTime dt)
         {
             string strRes = string.Empty;
@@ -1920,45 +1956,156 @@ namespace StatisticCommon
 
             Vyvod.ParamVyvod pv;
             string strParamVyvod = string.Empty
-                , strSummaGpr = string.Empty;
+                , strSummaGpr = string.Empty
+                , NL = string.Empty //Environment.NewLine
+                ;
 
-            // формировать расходы и температуры
-            foreach (TECComponent tc in list_TECComponents)
+            switch (TypeDbVzlet)
             {
-                if (tc.IsParamVyvod == true)
-                {
-                    pv = tc.m_listLowPointDev[0] as Vyvod.ParamVyvod;
+                case TYPE_DBVZLET.KKS_NAME:
+                    strRes = @"DECLARE @getdate AS DATETIME2;" + NL;
+                    strRes += @"SELECT @getdate = CAST(DATEADD(hh," + tsOffset.Hours + @"," + @"'" + dtReq.ToString(@"yyyyMMdd HH:00:00") + @"') AS DATETIME2(7));" + NL;
 
-                    if (((pv.m_id_param == Vyvod.ID_PARAM.G_PV) || (pv.m_id_param == Vyvod.ID_PARAM.T_PV))
-                        && (pv.m_SensorsString_VZLET.Equals(string.Empty) == false))
-                    {
-                        strParamVyvod += ", AVG ([" + pv.m_SensorsString_VZLET + @"]) as [" + pv.m_Symbol + @"pv_" + pv.m_id + @"]";
+                    strRes += @"DECLARE @SETTINGS_TABLE AS TABLE ([ID_POINT_ASKUTE] [int] NOT NULL, [KKS_NAME] [nvarchar](256) NOT NULL);" + NL;
 
-                        if (pv.m_id_param == Vyvod.ID_PARAM.G_PV)
-                            strSummaGpr += @"[" + pv.m_SensorsString_VZLET + @"]+";
+                    //Сюда вписать настройки соотнесения ID_POINT_ASKUTE и KKS-кодов
+                    strRes += @"INSERT INTO @SETTINGS_TABLE ([ID_POINT_ASKUTE],[KKS_NAME])"
+                        + @" SELECT [ID_POINT_ASKUTE],[KKS_NAME] FROM (VALUES " //+ NL
+                        ;
+                    // формировать расходы и температуры
+                    strParamVyvod = getVzletSensorsParamVyvod();
+                    strRes += strParamVyvod;
+                    strRes += @") AS [SETTINGS]([ID_POINT_ASKUTE],[KKS_NAME]);" + NL;
+
+                    strRes += @"SELECT [GROUP_DATA].[ID_TEC], [GROUP_DATA].[KKS_NAME], [SET].[ID_POINT_ASKUTE], [GROUP_DATA].[VALUE], [GROUP_DATA].[DATETIME]"
+                        + @" FROM ("
+                            + @" SELECT [ID_TEC], [KKS_NAME], AVG([VALUE]) AS [VALUE],"
+                                + @" DATEADD(hh," + tsOffset.Hours + @",DATEADD(minute, (DATEDIFF(minute, @getdate, [DATETIME])/60)*60, @getdate)) AS [DATETIME]"
+                            + @" FROM ("
+                                + @" SELECT [ARCH].[ID_TEC], [ARCH].[KKS_NAME], [ARCH].[VALUE], [ARCH].[DATETIME]"
+                                    + @" FROM [VZLET_CURRENT_ARCHIVES_MIN] AS [ARCH] WITH(INDEX(KKS_DATETIME), READUNCOMMITTED)"
+                                        + @" INNER JOIN @SETTINGS_TABLE AS [SET] ON ([ARCH].[KKS_NAME] = [SET].[KKS_NAME])"
+                                    + @" WHERE [ARCH].[DATETIME] BETWEEN @getdate AND DATEADD(ms, -3, DATEADD(dd,1,@getdate))"
+                                + @") AS [DATA] "
+                        + @" GROUP BY [ID_TEC], [KKS_NAME], DATEADD(hh," + tsOffset.Hours + @",DATEADD(minute, (DATEDIFF(minute, @getdate, [DATETIME])/60)*60, @getdate))"
+                            + @") AS [GROUP_DATA] INNER JOIN @SETTINGS_TABLE AS [SET] ON ([GROUP_DATA].[KKS_NAME] = [SET].[KKS_NAME])"
+                        + @" ORDER BY [GROUP_DATA].[DATETIME];" + NL;
+                    //strRes += @"GO";
+                    break;                
+                case TYPE_DBVZLET.GRAFA:
+                default:
+                    // формировать расходы и температуры
+                    foreach (TECComponent tc in list_TECComponents)
+                        if (tc.IsParamVyvod == true)
+                        {
+                            pv = tc.m_listLowPointDev[0] as Vyvod.ParamVyvod;
+
+                            if (((pv.m_id_param == Vyvod.ID_PARAM.G_PV) || (pv.m_id_param == Vyvod.ID_PARAM.T_PV)
+                                    || (pv.m_id_param == Vyvod.ID_PARAM.G2_PV) || (pv.m_id_param == Vyvod.ID_PARAM.T2_PV))
+                                && (pv.m_SensorsString_VZLET.Equals(string.Empty) == false))
+                            {
+                                strParamVyvod += ", AVG ([" + pv.m_SensorsString_VZLET + @"]) as [" + pv.m_Symbol + @"pv_" + pv.m_id + @"]";
+
+                                if ((pv.m_id_param == Vyvod.ID_PARAM.G_PV)
+                                    || (pv.m_id_param == Vyvod.ID_PARAM.G2_PV))
+                                    strSummaGpr += @"[" + pv.m_SensorsString_VZLET + @"]+";
+                                else
+                                    ;
+                            }
+                            else
+                                ;
+                        }
                         else
                             ;
-                    }
-                    else
-                        ;
-                }
-                else
-                    ;
+
+                    // удалить лишний "+"
+                    strSummaGpr = strSummaGpr.Substring(0, strSummaGpr.Length - 1);
+
+                    strRes += @"SELECT DATEPART(HH, [Дата]) - " + tsOffset.Hours + @" as [iHOUR]" // вычесть добавленное смещение НСК - МСК
+                        // расходы и температуры
+                        + strParamVyvod
+                        // суммарное значение расходов
+                        + ", AVG (" + strSummaGpr + @")"
+                    + " FROM [teplo1]"
+                    + " WHERE [Дата] > '" + dtReq.ToString(@"yyyyMMdd HH:00:00") + @"'"
+                        + " AND [Дата] < '" + dtReq.AddDays(1).ToString(@"yyyyMMdd HH:00:00") + @"'"
+                    + " GROUP BY DATEPART(DD, [Дата]), DATEPART(HH, [Дата])"
+                    + " ORDER BY DATEPART(DD, [Дата]), DATEPART(HH, [Дата])";
+                    break;
             }
 
-            // удалить лишний "+"
-            strSummaGpr = strSummaGpr.Substring(0, strSummaGpr.Length - 1);
+            return strRes;
+        }
 
-            strRes += @"SELECT DATEPART(HH, [Дата]) - " + tsOffset.Hours + @" as [iHOUR]" // вычесть добавленное смещение НСК - МСК
-            // расходы и температуры
-                + strParamVyvod
-            // суммарное значение расходов
-                + ", AVG (" + strSummaGpr + @")"
-            + " FROM [teplo1]"
-            + " WHERE [Дата] > '" + dtReq.ToString(@"yyyyMMdd HH:00:00") + @"'"
-                + " AND [Дата] < '" + dtReq.AddDays(1).ToString(@"yyyyMMdd HH:00:00") + @"'"
-            + " GROUP BY DATEPART(DD, [Дата]), DATEPART(HH, [Дата])"
-            + " ORDER BY DATEPART(DD, [Дата]), DATEPART(HH, [Дата])";
+        public string GetCurrentVzletTDirectQuery()
+        {
+            string strRes = string.Empty;
+
+            Vyvod.ParamVyvod pv;
+            string strParamVyvod = string.Empty
+                , strSummaGpr = string.Empty
+                , NL = string.Empty //Environment.NewLine
+                ;
+
+            switch (TypeDbVzlet)
+            {
+                case TYPE_DBVZLET.KKS_NAME:
+                    strRes = @"DECLARE @SETTINGS_TABLE AS TABLE ([ID_POINT_ASKUTE] [int] NOT NULL, [KKS_NAME] [nvarchar](256) NOT NULL);" + NL;
+//----Корректнаое смещение времени на часовой пояс региона географического расположения сервера относительно системных часов сервера
+//--DECLARE @OFFSET_TIME AS INT;
+//--SELECT @OFFSET_TIME = (SELECT CAST([VALUE] AS INT) FROM [VZLETDATAARCHIVES].[dbo].[VZLETDATAARCHIVES_SETTINGS] WHERE [ID] = 'TIMEZONE_OFFSET_NSK') 
+//--                    - (DATEPART(tz, SYSDATETIMEOFFSET())/60);
+
+                    //Сюда вписать настройки соотнесения ID_POINT_ASKUTE и KKS-кодов
+                    strRes += @"INSERT INTO @SETTINGS_TABLE ([ID_POINT_ASKUTE],[KKS_NAME])"
+                        + @" SELECT [ID_POINT_ASKUTE],[KKS_NAME] FROM (VALUES " //+ NL
+                        ;
+                    // формировать расходы и температуры                    
+                    strParamVyvod = getVzletSensorsParamVyvod ();
+                    strRes += strParamVyvod;
+                    strRes += @") AS [SETTINGS]([ID_POINT_ASKUTE],[KKS_NAME]);" + NL;
+
+                    strRes += @"SELECT [SET].[ID_POINT_ASKUTE], [V].[ID_TEC], [V].[KKS_NAME], [V].[VALUE]"
+                            + @", V.[DATETIME]" //DATEADD(hh, @OFFSET_TIME, [V].[DATETIME]) AS [DATETIME] 
+                            //+ @", [V].[LIVE_PARAM]"
+                        + @" FROM [v_CURRENT_VALUES] AS [V]"
+                        + @" INNER JOIN @SETTINGS_TABLE AS [SET] ON ([V].[KKS_NAME] = [SET].[KKS_NAME]) ORDER BY [SET].[ID_POINT_ASKUTE] ASC;" + NL;
+                    //strRes += @"GO";
+                    break;
+                case TYPE_DBVZLET.GRAFA:
+                default:
+                    strRes = @"SELECT TOP 1 [Дата]";
+                    // формировать расходы и температуры
+                    foreach (TECComponent tc in list_TECComponents)
+                        if (tc.IsParamVyvod == true)
+                        {
+                            pv = tc.m_listLowPointDev[0] as Vyvod.ParamVyvod;
+
+                            if (((pv.m_id_param == Vyvod.ID_PARAM.G_PV) || (pv.m_id_param == Vyvod.ID_PARAM.T_PV)
+                                || (pv.m_id_param == Vyvod.ID_PARAM.G2_PV) || (pv.m_id_param == Vyvod.ID_PARAM.T2_PV))
+                                && (pv.m_SensorsString_VZLET.Equals(string.Empty) == false))
+                            {
+                                strParamVyvod += ", [" + pv.m_SensorsString_VZLET + @"] as [" + pv.m_Symbol + @"_" + pv.m_id + @"]";
+
+                                if ((pv.m_id_param == Vyvod.ID_PARAM.G_PV)
+                                    || (pv.m_id_param == Vyvod.ID_PARAM.G2_PV))
+                                    strSummaGpr += @"[" + pv.m_SensorsString_VZLET + @"]+";
+                                else
+                                    ;
+                            }
+                            else
+                                ;
+                        }
+                        else
+                            ;
+                    // удалить лишний "+"
+                    strSummaGpr = strSummaGpr.Substring(0, strSummaGpr.Length - 1);
+                    strRes += strParamVyvod + @"," + strSummaGpr;
+
+                    strRes += @" FROM [teplo1]"
+                        + @" ORDER BY [Дата] DESC";
+                    break;
+            }
 
             return strRes;
         }

@@ -1050,7 +1050,7 @@ namespace StatisticAnalyzer
             m_bThreadTimerCheckedAllowed = true;
 
             m_timerChecked =
-                new System.Threading.Timer(new TimerCallback(procChecked), null, 500, System.Threading.Timeout.Infinite)
+                new System.Threading.Timer(new TimerCallback(procChecked), null, System.Threading.Timeout.Infinite, System.Threading.Timeout.Infinite)
                 //new System.Windows.Forms.Timer()
                 ;
             ////Вариант №1

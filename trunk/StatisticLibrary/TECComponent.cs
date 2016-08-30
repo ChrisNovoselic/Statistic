@@ -103,8 +103,10 @@ namespace StatisticCommon
         {
             return (id < (int)ID.GTP) == true ? FormChangeMode.MODE_TECCOMPONENT.TEC :
                 ((id > (int)ID.GTP) && (id < (int)ID.PC)) == true ? FormChangeMode.MODE_TECCOMPONENT.GTP :
-                ((id > (int)ID.PC) && (id < (int)ID.TG)) == true ? FormChangeMode.MODE_TECCOMPONENT.PC :
-                    ((id > (int)ID.TG) && (id < (int)ID.MAX)) == true ? FormChangeMode.MODE_TECCOMPONENT.TG :
+                ((id > (int)ID.PC) && (id < (int)ID.VYVOD)) == true ? FormChangeMode.MODE_TECCOMPONENT.PC :
+                ((id > (int)ID.VYVOD) && (id < (int)ID.TG)) == true ? FormChangeMode.MODE_TECCOMPONENT.ANY : // для ВЫВОДа нет идентификатора типа
+                    ((id > (int)ID.TG) && (id < (int)ID.PARAM_VYVOD)) == true ? FormChangeMode.MODE_TECCOMPONENT.TG :
+                    ((id > (int)ID.PARAM_VYVOD) && (id < (int)ID.MAX)) == true ? FormChangeMode.MODE_TECCOMPONENT.ANY : // для параметра ВЫВОДа нет идентификатора типа
                         FormChangeMode.MODE_TECCOMPONENT.ANY;
         }
         /// <summary>
@@ -316,7 +318,8 @@ namespace StatisticCommon
         public enum ID_PARAM : short { UNKNOWN = -1
             , G_PV = 1, G_OV
             , T_PV, T_OV
-            , P_PV, P_OV
+            , P_PV, P_OV            
+            , G2_PV, G2_OV
             , T2_PV, T2_OV
             , }
 
@@ -349,9 +352,8 @@ namespace StatisticCommon
 
                 m_id_param = (ID_PARAM)Convert.ToInt16(r[@"ID_PARAM"]);
                 iVzletGrafa = (int)r[@"VZLET_GRAFA"];
-                m_SensorsString_VZLET =
-                    //((string)r[@"KKS_NAME"]).Trim()
-                    iVzletGrafa > 0 ? @"Графа_" + iVzletGrafa.ToString() : string.Empty
+                m_SensorsString_VZLET = TEC.TypeDbVzlet == TEC.TYPE_DBVZLET.KKS_NAME ? ((string)r[@"KKS_NAME"]).Trim() :
+                        ((TEC.TypeDbVzlet == TEC.TYPE_DBVZLET.GRAFA) && (iVzletGrafa > 0)) ? @"Графа_" + iVzletGrafa.ToString() : string.Empty
                     ;
 
                 name_shr = ((string)r[@"NAME_SHR"]).Trim();

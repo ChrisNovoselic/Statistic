@@ -39,6 +39,7 @@ namespace StatisticCommon
             this.linkLabel3 = new System.Windows.Forms.LinkLabel();
             this.linkLabel4 = new System.Windows.Forms.LinkLabel();
             this.label2 = new System.Windows.Forms.Label();
+            this.m_lblCustomer = new System.Windows.Forms.Label();
             ((System.ComponentModel.ISupportInitialize)(this.pictureBox1)).BeginInit();
             this.SuspendLayout();
             // 
@@ -53,18 +54,17 @@ namespace StatisticCommon
             // 
             // label1
             // 
-            this.label1.Location = new System.Drawing.Point(9, 67);
+            this.label1.Location = new System.Drawing.Point(66, 61);
             this.label1.Name = "label1";
-            this.label1.Size = new System.Drawing.Size(264, 65);
+            this.label1.Size = new System.Drawing.Size(141, 80);
             this.label1.TabIndex = 2;
-            this.label1.Text = "разработчик: Качайло Михаил, e-mail: \r\nсоразработчик: Ревякин Е.А., e-mail:\r\nсора" +
-    "зработчик: Хряпин А.Н., e-mail:\r\nсоразработчик: Апельганс А.В., e-mail:\r\nсоразра" +
-    "ботчик: Пастернак А.С., e-mail:";
+            this.label1.Text = "Команда разработчиков:\r\nКачайло Михаил,\r\nРевякин Е.А.,\r\nХряпин А.Н.,\r\nАпельганс А" +
+    ".В.,\r\nПастернак А.С.";
             // 
             // llblMailTo
             // 
             this.llblMailTo.AutoSize = true;
-            this.llblMailTo.Location = new System.Drawing.Point(267, 68);
+            this.llblMailTo.Location = new System.Drawing.Point(206, 73);
             this.llblMailTo.Name = "llblMailTo";
             this.llblMailTo.Size = new System.Drawing.Size(106, 13);
             this.llblMailTo.TabIndex = 1;
@@ -74,7 +74,7 @@ namespace StatisticCommon
             // 
             // btnClose
             // 
-            this.btnClose.Location = new System.Drawing.Point(165, 142);
+            this.btnClose.Location = new System.Drawing.Point(145, 144);
             this.btnClose.Name = "btnClose";
             this.btnClose.Size = new System.Drawing.Size(75, 23);
             this.btnClose.TabIndex = 0;
@@ -85,7 +85,7 @@ namespace StatisticCommon
             // linkLabel1
             // 
             this.linkLabel1.AutoSize = true;
-            this.linkLabel1.Location = new System.Drawing.Point(267, 81);
+            this.linkLabel1.Location = new System.Drawing.Point(206, 86);
             this.linkLabel1.Name = "linkLabel1";
             this.linkLabel1.Size = new System.Drawing.Size(128, 13);
             this.linkLabel1.TabIndex = 3;
@@ -106,7 +106,7 @@ namespace StatisticCommon
             // linkLabel2
             // 
             this.linkLabel2.AutoSize = true;
-            this.linkLabel2.Location = new System.Drawing.Point(267, 95);
+            this.linkLabel2.Location = new System.Drawing.Point(206, 99);
             this.linkLabel2.Name = "linkLabel2";
             this.linkLabel2.Size = new System.Drawing.Size(122, 13);
             this.linkLabel2.TabIndex = 5;
@@ -127,7 +127,7 @@ namespace StatisticCommon
             // linkLabel3
             // 
             this.linkLabel3.AutoSize = true;
-            this.linkLabel3.Location = new System.Drawing.Point(267, 108);
+            this.linkLabel3.Location = new System.Drawing.Point(206, 112);
             this.linkLabel3.Name = "linkLabel3";
             this.linkLabel3.Size = new System.Drawing.Size(127, 13);
             this.linkLabel3.TabIndex = 7;
@@ -137,7 +137,7 @@ namespace StatisticCommon
             // linkLabel4
             // 
             this.linkLabel4.AutoSize = true;
-            this.linkLabel4.Location = new System.Drawing.Point(267, 121);
+            this.linkLabel4.Location = new System.Drawing.Point(206, 125);
             this.linkLabel4.Name = "linkLabel4";
             this.linkLabel4.Size = new System.Drawing.Size(131, 13);
             this.linkLabel4.TabIndex = 8;
@@ -152,11 +152,22 @@ namespace StatisticCommon
             this.label2.TabIndex = 9;
             this.label2.Text = "Заказчик: ОАО \"Новосибирскэнерго\", отдел IT.";
             // 
+            // m_lblCustomer
+            // 
+            this.m_lblCustomer.AutoSize = true;
+            this.m_lblCustomer.Font = new System.Drawing.Font("Microsoft Sans Serif", 8.25F, System.Drawing.FontStyle.Bold, System.Drawing.GraphicsUnit.Point, ((byte)(204)));
+            this.m_lblCustomer.Location = new System.Drawing.Point(66, 42);
+            this.m_lblCustomer.Name = "m_lblCustomer";
+            this.m_lblCustomer.Size = new System.Drawing.Size(281, 13);
+            this.m_lblCustomer.TabIndex = 9;
+            this.m_lblCustomer.Text = "Заказчик: АО СибЭКо, Техническая дирекция";
+            // 
             // FormAbout
             // 
             this.AutoScaleDimensions = new System.Drawing.SizeF(6F, 13F);
             this.AutoScaleMode = System.Windows.Forms.AutoScaleMode.Font;
-            this.ClientSize = new System.Drawing.Size(402, 171);
+            this.ClientSize = new System.Drawing.Size(351, 171);
+            this.Controls.Add(this.m_lblCustomer);
             this.Controls.Add(this.linkLabel4);
             this.Controls.Add(this.linkLabel3);
             this.Controls.Add(this.m_lblDomainMashineUserName);
@@ -192,5 +203,6 @@ namespace StatisticCommon
         private System.Windows.Forms.LinkLabel linkLabel3;
         private System.Windows.Forms.LinkLabel linkLabel4;
         private System.Windows.Forms.Label label2;
+        private System.Windows.Forms.Label m_lblCustomer;
     }
 }

@@ -64,9 +64,13 @@ namespace StatisticCommon
         /// Тип вкладки  из инструментария "администратор-диспетчер"
         /// </summary>
         public enum MANAGER : ushort { DISP, NSS, ALARM, LK, TEPLOSET, COUNT_MANAGER, UNKNOWN };
-
+        /// <summary>
+        /// Совокупность установленных признаков для компонентов станции
+        /// </summary>
         private HMark m_modeTECComponent;
-
+        /// <summary>
+        /// Совокупность признаков для административных вкладок
+        /// </summary>
         public HMark m_markTabAdminChecked;
 
         public FormChangeMode(List<TEC> tec, List<int> listIDsProfileCheckedIndices, System.Windows.Forms.ContextMenuStrip FormMainContextMenuStrip /*= null*//*, DelegateFunc changeMode*/)
