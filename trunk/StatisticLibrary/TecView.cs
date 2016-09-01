@@ -4221,15 +4221,22 @@ namespace StatisticCommon
 
         private int getMinsFactResponse(DataTable table)
         {
-            int iRes = 0
-                , i, j = 0, min = 0;
+            int iRes = 0;
+
             double minuteVal = 0, value;
             TG tgTmp;
-            int id;
             bool end = false;
             DateTime dt
                 , dtNeeded = DateTime.MinValue;
-            int season = 0, need_season = 0, max_season = 0;            
+            int i, j = 0, min = 0
+                , id = 0
+                , season = 0, need_season = 0, max_season = 0
+                , intervalMin = m_idAISKUEParNumber == ID_AISKUE_PARNUMBER.FACT_03 ? 3 :
+                    m_idAISKUEParNumber == ID_AISKUE_PARNUMBER.FACT_30 ? 30 :
+                        0
+                , intervalMultiplier = m_idAISKUEParNumber == ID_AISKUE_PARNUMBER.FACT_03 ? 1 :
+                    m_idAISKUEParNumber == ID_AISKUE_PARNUMBER.FACT_30 ? 10 :
+                        0;
             bool jump = false; // признак прехода между сезонами времяисчисления
 
             if (CheckNameFieldsOfTable(table, new string[] { @"ID", @"DATA_DATE", @"SEASON", @"VALUE0" }) == false)
@@ -4266,7 +4273,7 @@ namespace StatisticCommon
                     if (iRes == 0)
                     {
                         need_season = max_season = season;
-                        min = (int)(dt.Minute / 3);
+                        min = (int)(dt.Minute / intervalMin);
                         dtNeeded = dt;
                     }
                     else
@@ -4276,7 +4283,7 @@ namespace StatisticCommon
                 {
                     //Ошибка - нет ни одной строки
                     if (currHour == true)
-                        if (!((m_curDate.Minute / 3) == 0))
+                        if (!((m_curDate.Minute / intervalMin) == 0))
                         {//Ошибка - номер 3-хмин > 1
                             m_markWarning.Marked((int)INDEX_WARNING.LAST_MIN);
                             //lastMin = ((m_curDate.Minute) / 3) + 1;
@@ -4329,12 +4336,12 @@ namespace StatisticCommon
                         //else ;
                     }
 
-                    for (i = 0; (end == false) && (min < m_valuesMins.Length); min++)
+                    for (i = 0; (end == false) && (min < m_valuesMins.Length); min += intervalMultiplier)
                     {
                         //При 1-м проходе всегда == false
                         if (jump == true)
                         {
-                            min--;
+                            min -= intervalMultiplier;
                         }
                         else
                         {//Всегда выполняется при 1-ом проходе
@@ -4448,7 +4455,7 @@ namespace StatisticCommon
 
                         if (jump == false)
                         {
-                            dtNeeded = dtNeeded.AddMinutes(3);
+                            dtNeeded = dtNeeded.AddMinutes(intervalMin);
 
                             //MessageBox.Show("end " + end.ToString() + ", minVal " + (minVal / 1000).ToString());
 
@@ -4483,7 +4490,7 @@ namespace StatisticCommon
                                 //Сохранить значение для очередного интервала
                                 m_valuesMins[min].valuesFact = minuteVal / 1000;
                                 //Увеличить индекс
-                                lastMin = min + 1;
+                                lastMin = min + intervalMultiplier;
                             }
                             else
                                 ;
@@ -4495,7 +4502,7 @@ namespace StatisticCommon
                     /*f2.FillMinValues(lastMin, selectedTime, m_tecView.m_valuesMins.valuesFact);
                     f2.ShowDialog();*/
 
-                    if (! (lastMin > ((m_curDate.Minute - 1) / 3)))
+                    if (! (lastMin > ((m_curDate.Minute - 1) / intervalMin)))
                     {
                         m_markWarning.Marked((int)INDEX_WARNING.LAST_MIN);
                         //lastMin = ((selectedTime.Minute - 1) / 3) + 1;

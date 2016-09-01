@@ -1040,8 +1040,7 @@ namespace Statistic
 
             if (!(m_tecView == null))
             {
-                if (m_tecView.lastReceivedHour > 0)
-                {
+                //if (m_tecView.lastReceivedHour > 0) {
                     if (!(delegateStartWait == null)) delegateStartWait(); else ;
 
                     bRetroHour = m_tecView.zedGraphHours_MouseUpEvent(index);
@@ -1059,9 +1058,7 @@ namespace Statistic
                     }
 
                     if (!(delegateStopWait == null)) delegateStopWait(); else ;
-                }
-                else
-                    ;
+                //} else ;
             }
             else
                 ;         
