@@ -25,10 +25,36 @@ namespace Statistic
 
         protected uint SPLITTER_PERCENT_VERTICAL;
 
-        //protected static AdminTS.TYPE_FIELDS s_typeFields = AdminTS.TYPE_FIELDS.DYNAMIC;
-
         protected abstract class HZedGraphControl : ZedGraph.ZedGraphControl
         {
+            public event DelegateIntFunc EventItemSelected;
+
+            public bool OnMouseUpEvent(ZedGraphControl sender, MouseEventArgs e)
+            {
+                if (e.Button != MouseButtons.Left)
+                    return true;
+
+                object obj;
+                PointF p = new PointF(e.X, e.Y);
+                bool found;
+                int index;
+
+                found = FindNearestObject(p, CreateGraphics(), out obj, out index);
+
+                if ((found == true)
+                    && ((!(obj == null)) && (obj is CurveItem)))
+                {
+                    if (((obj as CurveItem).IsBar == false) && ((obj as CurveItem).IsLine == false))
+                        return true;
+
+                    EventItemSelected(index);
+                }
+                else
+                    ;
+
+                return true;
+            }
+
             public enum INDEX_CONTEXTMENU_ITEM
             {
                 SHOW_VALUES,
@@ -423,7 +449,8 @@ namespace Statistic
 
             createZedGraphControlMins(m_tecView.m_lockValue);
             createZedGraphControlHours(m_tecView.m_lockValue);
-            this.m_ZedGraphHours.MouseUpEvent += new ZedGraph.ZedGraphControl.ZedMouseEventHandler(this.zedGraphHours_MouseUpEvent);
+            this.m_ZedGraphHours.MouseUpEvent += new ZedGraph.ZedGraphControl.ZedMouseEventHandler(this.m_ZedGraphHours.OnMouseUpEvent);
+            this.m_ZedGraphHours.EventItemSelected += new DelegateIntFunc(zedGraphHours_MouseUpEvent);
 
             this.stctrViewPanel1 = new System.Windows.Forms.SplitContainer();
             this.stctrViewPanel2 = new System.Windows.Forms.SplitContainer();
@@ -1007,29 +1034,17 @@ namespace Statistic
         //    m_tecView.ChangeState ();
         //}
 
-        protected bool zedGraphHours_MouseUpEvent(ZedGraphControl sender, MouseEventArgs e)
+        protected void zedGraphHours_MouseUpEvent(int index)
         {
-            if (e.Button != MouseButtons.Left)
-                return true;
+            bool bRetroHour = false;
 
-            object obj;
-            PointF p = new PointF(e.X, e.Y);
-            bool found;
-            int index;
-
-            found = m_ZedGraphHours.FindNearestObject(p, CreateGraphics(), out obj, out index);
-
-            if ((found == true)
-                && ((!(obj == null)) && (obj is CurveItem)))
+            if (!(m_tecView == null))
             {
-                if (((obj as CurveItem).IsBar == false) && ((obj as CurveItem).IsLine == false))
-                    return true;
-
-                if (!(m_tecView == null))
+                if (m_tecView.lastReceivedHour > 0)
                 {
                     if (!(delegateStartWait == null)) delegateStartWait(); else ;
 
-                    bool bRetroHour = m_tecView.zedGraphHours_MouseUpEvent(index);
+                    bRetroHour = m_tecView.zedGraphHours_MouseUpEvent(index);
 
                     if (bRetroHour == true)
                         setRetroTickTime(m_tecView.lastHour, 60);
@@ -1045,11 +1060,11 @@ namespace Statistic
 
                     if (!(delegateStopWait == null)) delegateStopWait(); else ;
                 }
+                else
+                    ;
             }
             else
-                ;
-
-            return true;
+                ;         
         }
 
         protected bool timerCurrentStarted

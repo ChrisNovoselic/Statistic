@@ -137,6 +137,8 @@ namespace Statistic
                     RowHeadersVisible = false;
                     RowTemplate.Resizable = DataGridViewTriState.False;
 
+                    this.RowEnter += new DataGridViewCellEventHandler(onRowEnter);
+
                     RowsAdd();
                 }
 
@@ -339,6 +341,13 @@ namespace Statistic
                         Rows[iRow].Cells[(int)indxCol].Value = value.ToString(@"F" + digit.ToString());
                     else
                         Rows[iRow].Cells[(int)indxCol].Value = @"-";
+                }
+
+                public event DelegateIntFunc EventHourSelected;
+
+                private void onRowEnter(object obj, DataGridViewCellEventArgs ev)
+                {
+                    //EventHourSelected(ev.RowIndex);
                 }
             }
 
@@ -1135,7 +1144,7 @@ namespace Statistic
                                         if (indxVyvodValue < TG.INDEX_VALUE.COUNT_INDEX_VALUE)
                                             if (bCurrHour == true)
                                                 // текущее значение
-                                                dblValue = (m_parent.m_tecView as DataSource).m_dictCurrValuesLowPointDev[pv.m_id];
+                                                dblValue = (m_parent.m_tecView as DataSource).m_dictCurrValuesLowPointDev[pv.m_id].m_powerCurrent_TM;
                                             else
                                                 // ретро-значение
                                                 dblValue = m_parent.m_tecView.m_dictValuesLowPointDev[pv.m_id].m_power_LastMinutesTM[lastHour];
@@ -1276,6 +1285,7 @@ namespace Statistic
 
                 base.InitializeComponent();
 
+                (m_dgwHours as DataGridViewVzletTDirectHours).EventHourSelected += new DelegateIntFunc(zedGraphHours_MouseUpEvent);
                 this.m_ZedGraphHours.InitializeContextMenuItemAddingEventHandler(this.эксельToolStripMenuItemHours_Click, null);
 
                 this.SuspendLayout();
@@ -1312,7 +1322,7 @@ namespace Statistic
                     m_valueCurrHour =
                     m_SummGpv =
                         -1F;
-                    m_dictCurrValuesLowPointDev = new Dictionary<int, double>();
+                    m_dictCurrValuesLowPointDev = new Dictionary<int, valuesLowPointDev>();
                 }
 
                 //protected override int StateCheckResponse(int state, out bool error, out object outobj)
@@ -1603,7 +1613,7 @@ namespace Statistic
 
                 public double m_valueCurrHour
                     , m_SummGpv;
-                public Dictionary<int, double> m_dictCurrValuesLowPointDev;
+                public Dictionary<int, TecView.valuesLowPointDev> m_dictCurrValuesLowPointDev;
 
                 protected override void ClearValuesHours()
                 {
@@ -1614,7 +1624,10 @@ namespace Statistic
                     m_SummGpv =
                         0F;
                     foreach (int key in keys)
-                        m_dictCurrValuesLowPointDev[key] = 0F;
+                    {
+                        m_dictCurrValuesLowPointDev[key].m_dtCurrent_TM = DateTime.MinValue;
+                        m_dictCurrValuesLowPointDev[key].m_powerCurrent_TM = 0F;
+                    }
                 }
 
                 protected override void initDictValuesLowPointDev(TECComponent comp)
@@ -1623,7 +1636,7 @@ namespace Statistic
 
                     foreach (TECComponentBase dev in comp.m_listLowPointDev)
                         if (m_dictCurrValuesLowPointDev.ContainsKey(dev.m_id) == false)
-                            m_dictCurrValuesLowPointDev.Add(dev.m_id, -1F);
+                            m_dictCurrValuesLowPointDev.Add(dev.m_id, new valuesLowPointDev ());
                         else
                             ;
                 }
@@ -1658,7 +1671,8 @@ namespace Statistic
 
                                             if (arDataParamVyvod.Length == 1)
                                             {
-                                                m_dictCurrValuesLowPointDev[id] = (float)arDataParamVyvod[0][@"VALUE"];
+                                                m_dictCurrValuesLowPointDev[id].m_dtCurrent_TM = (DateTime)arDataParamVyvod[0][@"DATETIME"];
+                                                m_dictCurrValuesLowPointDev[id].m_powerCurrent_TM = (float)arDataParamVyvod[0][@"VALUE"];
                                                 // получить значение для формулы в ~ от типа параметра
                                                 switch ((lpd as Vyvod.ParamVyvod).m_id_param)
                                                 {
@@ -1699,12 +1713,12 @@ namespace Statistic
                                                 {
                                                     case Vyvod.ID_PARAM.G_PV:
                                                     case Vyvod.ID_PARAM.G2_PV:
-                                                        Gpv += m_dictCurrValuesLowPointDev[id];
+                                                        Gpv += m_dictCurrValuesLowPointDev[id].m_powerCurrent_TM;
                                                         break;
                                                     case Vyvod.ID_PARAM.T_PV:
                                                     case Vyvod.ID_PARAM.T2_PV:
                                                         if (Tpv == 0)
-                                                            Tpv = m_dictCurrValuesLowPointDev[id];
+                                                            Tpv = m_dictCurrValuesLowPointDev[id].m_powerCurrent_TM;
                                                         else
                                                             ;
                                                         break;
@@ -1749,12 +1763,12 @@ namespace Statistic
                                             typeValue = 0;
                                             indx = typeValue * cntVyvod + v;
                                             Gpv = (float)table.Rows[0][indx];
-                                            m_dictCurrValuesLowPointDev[listIDLowPointDev[indx - 1]] = Gpv;
+                                            m_dictCurrValuesLowPointDev[listIDLowPointDev[indx - 1]].m_powerCurrent_TM = Gpv;
                                             // температуры
                                             typeValue = 1;
                                             indx = typeValue * cntVyvod + v;
                                             Tpv = (float)table.Rows[0][indx];
-                                            m_dictCurrValuesLowPointDev[listIDLowPointDev[indx - 1]] = Tpv;
+                                            m_dictCurrValuesLowPointDev[listIDLowPointDev[indx - 1]].m_powerCurrent_TM = Tpv;
                                             // фактические значения
                                             m_valueCurrHour += Tpv * (Gpv / m_SummGpv);
                                         }
