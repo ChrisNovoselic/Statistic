@@ -3070,7 +3070,7 @@ namespace StatisticCommon
                             if ((type == TECComponentBase.TYPE.TEPLO)
                                 && (listTECComp[i].IsVyvod == true))
                                 //list_TECComponents.Add((listTECComp[i] as Vyvod).m_listParam[0]);
-                                list_TECComponents.Add(listTECComp[i].m_listLowPointDev[0]);
+                                list_TECComponents.Add(listTECComp[i].m_listLowPointDev.Find(dev => { return (dev as Vyvod.ParamVyvod).m_id_param == Vyvod.ID_PARAM.T_PV; }));
                             else
                                 ;
                     }
@@ -3225,7 +3225,7 @@ namespace StatisticCommon
                             if ((type == TECComponentBase.TYPE.TEPLO)
                                 && (listTECComp[i].IsVyvod == true))
                                 //list_TECComponents.Add((listTECComp[i] as Vyvod).m_listParam[0]);
-                                list_TECComponents.Add(listTECComp[i].m_listLowPointDev[0]);
+                                list_TECComponents.Add(listTECComp[i].m_listLowPointDev.Find(dev => { return (dev as Vyvod.ParamVyvod).m_id_param == Vyvod.ID_PARAM.T_PV; }));
                             else
                                 ;
                     }

@@ -212,7 +212,7 @@ namespace Statistic
                         , digitRound = -1; // кол-во знаков для округления
                     double hourFact = -1F, hourDev = -1F // фактическое отклонение за час, значение за крайний час, откл. за крайний час
                         , sumFact = -1F, sumUDGt = -1F, sumDev = -1F; // суммарные значения для факт.темп. и уточненного дисп.графика (для возможности усреднения)
-                    string strVal = string.Empty
+                    string strVal = string.Empty, strNotValue = @"-"
                         , strWarn = string.Empty;
 
                     Debug.WriteLine(@"DataGridViewVzletTDirectHours::Fill () - serverTime=" + serverTime.ToString()
@@ -250,10 +250,10 @@ namespace Statistic
                                 strVal = (Math.Round(hourFact, 2)).ToString();
                             }
                             else
-                                strVal = @"-";
+                                strVal = strNotValue;
                         }
                         else
-                            strVal = @"-";
+                            strVal = strNotValue;
 
                         Rows[i].Cells[(int)INDEX_COLUMNS.TEMPERATURE_FACT].Value = strVal;
                         
@@ -285,20 +285,22 @@ namespace Statistic
                                 strVal = Math.Round(hourDev, 2).ToString();
                             }
                             else
-                                strVal = @"-";
+                                strVal = strNotValue;
                         }
                         else
-                            strVal = @"-";                        
+                            strVal = strNotValue;                        
                         Rows[i].Cells[(int)INDEX_COLUMNS.TEMPERATURE_DEVIATION].Value = strVal;
-
+                        
                         // визуализация выхода за пределы диапазона
-                        if (!(i > lh))
+                        curCellStyle = normalDevCellStyle;
+                        if ((strVal.Equals(strNotValue) == false)
+                            && (!(i > lh)))
                             if (Math.Abs(hourDev) > values[i].valuesDiviation)
                                 curCellStyle = errorDevCellStyle;
                             else
-                                curCellStyle = normalDevCellStyle;
+                                ; // оставить по умолчанию
                         else
-                            curCellStyle = normalDevCellStyle;
+                            ; // оставить по умолчанию
                         Rows[i].Cells[(int)INDEX_COLUMNS.TEMPERATURE_DEVIATION].Style = curCellStyle;
                     }
                     // кол-во фактически полученных значений в ~ от

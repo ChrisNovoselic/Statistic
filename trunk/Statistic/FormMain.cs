@@ -1762,16 +1762,16 @@ namespace Statistic
                             ;
                     }
                 }
-
+                // отменять регистрацию именно ДО вызова 'connectionSettings'
+                // , иначе идентификаторы старого и нового наборов парметров соединения с БД совпадут
+                DbSources.Sources().UnRegister(idListener);
                 if (bShowFormConnectionSettings == true)
                     connectionSettings(type);
                 else
                     ;
                 // в любом случае удалить объект с параметрами соединения списка источников данных
                 // , чтобы при повторном вызове гарантированно назначить актуальный идентификатор соединения с БД конфигурации
-                s_listFormConnectionSettings[(int)(int)CONN_SETT_TYPE.LIST_SOURCE] = null;
-
-                DbSources.Sources().UnRegister(idListener);
+                s_listFormConnectionSettings[(int)(int)CONN_SETT_TYPE.LIST_SOURCE] = null;                
             }
             else
                 ;

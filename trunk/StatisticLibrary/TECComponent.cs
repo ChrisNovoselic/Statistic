@@ -106,7 +106,7 @@ namespace StatisticCommon
                 ((id > (int)ID.PC) && (id < (int)ID.VYVOD)) == true ? FormChangeMode.MODE_TECCOMPONENT.PC :
                 ((id > (int)ID.VYVOD) && (id < (int)ID.TG)) == true ? FormChangeMode.MODE_TECCOMPONENT.ANY : // для ВЫВОДа нет идентификатора типа
                     ((id > (int)ID.TG) && (id < (int)ID.PARAM_VYVOD)) == true ? FormChangeMode.MODE_TECCOMPONENT.TG :
-                    ((id > (int)ID.PARAM_VYVOD) && (id < (int)ID.MAX)) == true ? FormChangeMode.MODE_TECCOMPONENT.ANY : // для параметра ВЫВОДа нет идентификатора типа
+                    ((id > (int)ID.PARAM_VYVOD) && (id < (int)ID.MAX)) == true ? FormChangeMode.MODE_TECCOMPONENT.TG : //??? (эмуляция для 'SaveChanges') для параметра ВЫВОДа нет идентификатора типа
                         FormChangeMode.MODE_TECCOMPONENT.ANY;
         }
         /// <summary>
