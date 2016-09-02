@@ -11,18 +11,21 @@ namespace StatisticCommon
 {
     public abstract class HDataGridViewTables : DataGridView
     {
-        public HDataGridViewTables()
+        protected bool _bIsItogo;
+        
+        public HDataGridViewTables(bool bIsItogo)
             : base()
         {
+            _bIsItogo = bIsItogo;
         }
 
         public void InitRows(int cnt, bool bIns)
         {
             if (bIns == true)
-                while (Rows.Count < cnt)
+                while (Rows.Count < (cnt + (_bIsItogo == true ? 1 : 0)))
                     Rows.Insert(0, 1);
             else
-                while (Rows.Count > cnt)
+                while (Rows.Count > (cnt + (_bIsItogo == true ? 1 : 0)))
                     Rows.RemoveAt(0);
         }
     }
@@ -54,7 +57,7 @@ namespace StatisticCommon
             ColumnHeadersHeightSizeMode = System.Windows.Forms.DataGridViewColumnHeadersHeightSizeMode.AutoSize;
         }
 
-        public DataGridViewAdmin () : base () {
+        public DataGridViewAdmin () : base (false) {
             //Thread.CurrentThread.SetApartmentState(ApartmentState.STA);
 
             InitializeComponents ();

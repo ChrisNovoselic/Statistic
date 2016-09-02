@@ -682,10 +682,10 @@ namespace Statistic
             if ((m_tecView.m_arTypeSourceData [(int)HDateTime.INTERVAL.MINUTES] == CONN_SETT_TYPE.DATA_AISKUE)
                 || (m_tecView.m_arTypeSourceData [(int)HDateTime.INTERVAL.MINUTES] == CONN_SETT_TYPE.DATA_AISKUE_PLUS_SOTIASSO)
                 || (m_tecView.m_arTypeSourceData [(int)HDateTime.INTERVAL.MINUTES] == CONN_SETT_TYPE.DATA_SOTIASSO_3_MIN))
-                m_dgwMins.InitRows (21, false);
+                m_dgwMins.InitRows (20, false);
             else
                 if (m_tecView.m_arTypeSourceData [(int)HDateTime.INTERVAL.MINUTES] == CONN_SETT_TYPE.DATA_SOTIASSO_1_MIN)
-                    m_dgwMins.InitRows (61, true);
+                    m_dgwMins.InitRows (60, true);
                 else
                     ;
 
@@ -1173,7 +1173,7 @@ namespace Statistic
                     return;
 
                 //if (!(((currValuesPeriod++) * 1000) < Int32.Parse(FormMain.formParameters.m_arParametrSetup[(int)FormParameters.PARAMETR_SETUP.POLL_TIME]) * 1000))
-                if (!(currValuesPeriod++ < POOL_TIME * (m_tecView.IntervalMultiplier)))
+                if (!(currValuesPeriod++ < POOL_TIME * (m_tecView.PeriodMultiplier)))
                 {
                     currValuesPeriod = 0;
                     NewDateRefresh();

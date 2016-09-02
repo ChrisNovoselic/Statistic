@@ -35,7 +35,7 @@ namespace Statistic
                     , new ColumnProperies (50, 16, @"ÏÁÐý", @"PBReMin")
                     , new ColumnProperies (50, 19, @"ÓÄÃý", @"UDGeMin")
                     , new ColumnProperies (50, 16, @"+/-", @"DeviationMin")
-            })
+            }, true)
             {
                 InitializeComponents();
 

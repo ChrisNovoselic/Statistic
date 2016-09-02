@@ -133,7 +133,20 @@ namespace StatisticCommon
         ///  , определяет длительность интервала между опросами
         /// </summary>
         public ID_AISKUE_PARNUMBER m_idAISKUEParNumber;
-
+        /// <summary>
+        /// Множитель(коэффициент) для увеличения периода опроса текущих значений
+        ///  в ~ от их периода обновления в БД (интервал интегрирования)
+        /// </summary>
+        public int PeriodMultiplier {
+            get {
+                return m_idAISKUEParNumber == ID_AISKUE_PARNUMBER.FACT_03 ? 1 :
+                    m_idAISKUEParNumber == ID_AISKUE_PARNUMBER.FACT_30 ? 10 : -1;
+            }
+        }
+        /// <summary>
+        /// Шаг для инкрементации счетчика номера интервала в массиве интегрированных значений в разрезе "час - минуты"
+        /// в ~ от этого интервала интегрирования
+        /// </summary>
         public int IntervalMultiplier {
             get {
                 return m_idAISKUEParNumber == ID_AISKUE_PARNUMBER.FACT_03 ? 1 :
@@ -614,6 +627,8 @@ namespace StatisticCommon
         //public override void  ClearValues(int cnt = -1)
         public override void  ClearValues()
         {
+            //Debug.WriteLine(@"TecView::ClearValues () - вХод...");
+
             ClearValuesMins();
             //ClearValuesHours(cnt);
             ClearValuesHours();
@@ -623,6 +638,8 @@ namespace StatisticCommon
 
         public void ClearValuesLastMinutesTM()
         {
+            //Debug.WriteLine(@"TecView::ClearValuesLastMinutesTM () - вХод...");
+
             int id = -1;
             //List<TECComponentBase> localTECComponents = getLocalTECComponents();
 
@@ -1842,7 +1859,7 @@ namespace StatisticCommon
                     if (m_bLastValue_TM_Gen == true)
                         AddState((int)StatesMachine.RetroMin_TM_Gen);
                     else ;
-
+                    //??? для ЛК не вызывать, иначе б. вызвана 'ClearValuesLastMinutesTM'
                     AddState((int)StatesMachine.LastMinutes_TM);
                 }
                 else
@@ -1851,7 +1868,7 @@ namespace StatisticCommon
                 AddState((int)StatesMachine.PPBRValues);
                 AddState((int)StatesMachine.AdminValues);
 
-                Run(@"TecView::GetRetroHours ()");
+                Run(@"TecView::GetRetroValues ()");
             }
         }
 
@@ -1905,6 +1922,9 @@ namespace StatisticCommon
                 if (m_bLastValue_TM_Gen)
                     AddState((int)StatesMachine.RetroMin_TM_Gen);
                 else ;
+                ////???
+                //AddState((int)StatesMachine.LastMinutes_TM);
+
                 AddState((int)StatesMachine.PPBRValues);
                 AddState((int)StatesMachine.AdminValues);
 
@@ -4233,9 +4253,6 @@ namespace StatisticCommon
                 , season = 0, need_season = 0, max_season = 0
                 , intervalMin = m_idAISKUEParNumber == ID_AISKUE_PARNUMBER.FACT_03 ? 3 :
                     m_idAISKUEParNumber == ID_AISKUE_PARNUMBER.FACT_30 ? 30 :
-                        0
-                , intervalMultiplier = m_idAISKUEParNumber == ID_AISKUE_PARNUMBER.FACT_03 ? 1 :
-                    m_idAISKUEParNumber == ID_AISKUE_PARNUMBER.FACT_30 ? 10 :
                         0;
             bool jump = false; // признак прехода между сезонами времяисчисления
 
@@ -4336,12 +4353,12 @@ namespace StatisticCommon
                         //else ;
                     }
 
-                    for (i = 0; (end == false) && (min < m_valuesMins.Length); min += intervalMultiplier)
+                    for (i = 0; (end == false) && (min < m_valuesMins.Length); min += IntervalMultiplier)
                     {
                         //При 1-м проходе всегда == false
                         if (jump == true)
                         {
-                            min -= intervalMultiplier;
+                            min -= IntervalMultiplier;
                         }
                         else
                         {//Всегда выполняется при 1-ом проходе
@@ -4490,7 +4507,7 @@ namespace StatisticCommon
                                 //Сохранить значение для очередного интервала
                                 m_valuesMins[min].valuesFact = minuteVal / 1000;
                                 //Увеличить индекс
-                                lastMin = min + intervalMultiplier;
+                                lastMin = min + IntervalMultiplier;
                             }
                             else
                                 ;
@@ -5536,6 +5553,8 @@ namespace StatisticCommon
 
         private void getHoursTMTemperatureRequest(DateTime dt)
         {
+            //Debug.WriteLine(string.Format (@"TecView::getHoursTMTemperatureRequest () - вХод, дата={0}...", dt.ToString()));
+
             TimeSpan tsOffset = HDateTime.TS_MSK_OFFSET_OF_UTCTIMEZONE + m_tsOffsetToMoscow;
             DateTime dtReq = dt.Date.Add(-tsOffset);
 

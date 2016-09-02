@@ -79,7 +79,7 @@ namespace Statistic
         }
 
         //protected DataGridViewTables (int [] arWidthColiumns) {
-        protected HDataGridViewBase(HDateTime.INTERVAL interval, ColumnProperies[] arColuumns)
+        protected HDataGridViewBase(HDateTime.INTERVAL interval, ColumnProperies[] arColuumns, bool bIsItogo) : base (bIsItogo)
         {
             m_IdInterval = interval;
 
@@ -232,10 +232,10 @@ namespace Statistic
             switch (m_IdInterval)
             {
                 case HDateTime.INTERVAL.HOURS:
-                    Rows.Add(25);
+                    Rows.Add(24 + (_bIsItogo == true ? 1 : 0));
                     break;
                 case HDateTime.INTERVAL.MINUTES:
-                    Rows.Add(21);
+                    Rows.Add(20 + (_bIsItogo == true ? 1 : 0));
                     break;
                 default:
                     throw new Exception(@"HDataGridViewBase::RowsAdd () - неизвестный тип интервала");
@@ -256,8 +256,8 @@ namespace Statistic
     {
         public enum INDEX_COLUMNS : int { PART_TIME, FACT, PBR, PBRe, UDGe, DEVIATION, LAST_MINUTES, COUNT_INDEX_COLUMNS };
 
-        public HDataGridViewStandard(HDateTime.INTERVAL interval, ColumnProperies[] arColumns)
-            : base(interval, arColumns)
+        public HDataGridViewStandard(HDateTime.INTERVAL interval, ColumnProperies[] arColumns, bool bIsItogo)
+            : base(interval, arColumns, bIsItogo)
         {
         }
     }
@@ -326,7 +326,7 @@ namespace Statistic
                     , new ColumnProperies (47, 15, @"”ƒ√э", @"UDGeHour")
                     , new ColumnProperies (42, 15, @"+/-", @"DeviationHour")
                     , new ColumnProperies (46, 15, @"59мин", @"")
-            })
+            }, true)
         {
             InitializeComponents ();
 
@@ -463,7 +463,8 @@ namespace Statistic
 
             Rows.Clear();
 
-            Rows.Add(count + 1);
+            //Rows.Add(count + 1);
+            RowsAdd();
 
             for (i = 0; i < count; i++)
             {

@@ -86,6 +86,31 @@ namespace Statistic
                 AddState((int)TecView.StatesMachine.PPBRValues);
                 AddState((int)TecView.StatesMachine.AdminValues);
             }
+
+            public override void GetRetroValues()
+            {
+                lock (m_lockValue)
+                {
+                    ClearValues();
+
+                    ClearStates();
+
+                    adminValuesReceived = false;
+
+                    //Часы...
+                    AddState((int)StatesMachine.Hours_Fact);                    
+
+                    //Минуты...                    
+                    AddState((int)StatesMachine.RetroMins_Fact);                    
+                    AddState((int)StatesMachine.HoursTMTemperatureValues);
+
+                    AddState((int)StatesMachine.PPBRValues);
+                    AddState((int)StatesMachine.AdminValues);
+
+                    Run(@"TecView::GetRetroValues ()");
+                }
+            }
+
             /// <summary>
             /// Возвратить сумму фактических значений для всех ТГ
             /// </summary>
@@ -97,10 +122,13 @@ namespace Statistic
                 double[] arTGRes = null;
                 uint[] arTGcounter = null;
                 int id = -1
-                    , iter = IntervalMultiplier;
+                    , min = -1
+                    , iter = IntervalMultiplier
+                    , cntInterval = -1; ;
 
                 arTGRes = new double[ListLowPointDev.Count];
                 arTGcounter = new uint[ListLowPointDev.Count];
+                cntInterval = 60 / 3;
 
                 for (int t = 0; t < ListLowPointDev.Count; t++)
                 {
@@ -109,15 +137,15 @@ namespace Statistic
                     arTGRes[t] = -1F;
                     arTGcounter[t] = 0;
 
-                    for (int j = 10; j < ((60 / 3) + 1); j += iter)
-                        if (!(m_dictValuesLowPointDev[id].m_powerMinutes[j] < 0))
+                    for (min = 1; min < cntInterval; min += iter)
+                        if (!(m_dictValuesLowPointDev[id].m_powerMinutes[min] < 0))
                         {
                             if (arTGRes[t] < 0F)
                                 arTGRes[t] = 0F;
                             else
                                 ;
 
-                            arTGRes[t] += m_dictValuesLowPointDev[id].m_powerMinutes[j];
+                            arTGRes[t] += m_dictValuesLowPointDev[id].m_powerMinutes[min];
                             arTGcounter[t]++;
                         }
                         else
@@ -468,7 +496,7 @@ namespace Statistic
                     , cntMinValues = 0;
                 double powerLastHour = 0F;
 
-                for (min = 10; min < powerLastHourMinutes.Length; min += 10)
+                for (min = 1; min < powerLastHourMinutes.Length; min += 10)
                     //Проверить возможность получения значения
                     if (! (powerLastHourMinutes[min] < 0)) {
                         powerLastHour += powerLastHourMinutes[min];
@@ -609,7 +637,7 @@ namespace Statistic
                     , new ColumnProperies (47, 15, @"P пл/ч", @"PowerPBR")
                     , new ColumnProperies (42, 15, @"t +/-", @"TemperatureDevHour")
                     , new ColumnProperies (42, 15, @"P +/-", @"PowerDevHour")
-            })
+            }, true)
             {
                 InitializeComponents();
 
@@ -698,14 +726,14 @@ namespace Statistic
                 int i = -1
                     //, warn = -1, cntWarn = -1
                     , lh = bCurrHour == true ? lastReceivedHour - 1 :
-                        serverTime.Date.Equals(DateTime.Now.Date) == true ? lastReceivedHour - 1 :
+                        serverTime.Date.Equals(DateTime.Now.Date) == true ? lastReceivedHour - 1 : //??? '.Now' не работает, если часовой пояс не НСК (например, МСК - на сервере)
                             itemscount;
                 double t_pbr = -1F, p_pbr = -1F;
                 string strWarn = string.Empty;
 
-                Debug.WriteLine(@"DataGridViewLKHours::Fill () - serverTime=" + serverTime.ToString()
-                    + @"; lastHour=" + lastHour
-                    + @"; lastReceivedHour=" + lastReceivedHour);
+                //Debug.WriteLine(@"DataGridViewLKHours::Fill () - serverTime=" + serverTime.ToString()
+                //    + @"; lastHour=" + lastHour
+                //    + @"; lastReceivedHour=" + lastReceivedHour);
 
                 DataGridViewCellStyle curCellStyle;
                 DataGridViewCellStyle regularHourCellStyle = new DataGridViewCellStyle()

@@ -131,13 +131,15 @@ namespace Statistic
                         , new HDataGridViewBase.ColumnProperies (47, 18, @"Рек.(%)", @"RecHour")
                         , new HDataGridViewBase.ColumnProperies (47, 18, @"УДГт", @"UDGtHour")
                         , new HDataGridViewBase.ColumnProperies (47, 18, @"+/-", @"DeviationHour")
-                    })
+                    }, true)
                 {
                     Name = "dgvTableTDirectHours";
                     RowHeadersVisible = false;
                     RowTemplate.Resizable = DataGridViewTriState.False;
 
                     this.RowEnter += new DataGridViewCellEventHandler(onRowEnter);
+
+                    RowsRemoved += new DataGridViewRowsRemovedEventHandler (onRowsRemoved);
 
                     RowsAdd();
                 }
@@ -172,7 +174,8 @@ namespace Statistic
                             Rows[i].Cells[(int)INDEX_COLUMNS.PART_TIME].Value = (hour).ToString();
 
                         for (c = 1; c < m_arColumns.Length; c++)
-                            Rows[i].Cells[c].Value = 0.ToString("F1");
+                            Rows[i].Cells[c].Value = @"-" //0.ToString("F1")
+                                ;
                     }
 
                     Rows[count].Cells[0].Value = "Средн.";
@@ -330,6 +333,8 @@ namespace Statistic
                         m_value1 = (bCurrHour == true ? (sumFact + hourFact) / (cntHourFactRecieved + 1) : sumFact / cntHourFactRecieved)
                         , m_value2 = (bCurrHour == true ? (sumDev + hourDev) / (cntHourFactRecieved + 1) : sumDev / cntHourFactRecieved)
                     });
+
+                    setFirstDisplayedScrollingRowIndex(lastHour, false);
                 }
 
                 private void showCell(int iRow, INDEX_COLUMNS indxCol, double value, ushort digit)
@@ -348,6 +353,10 @@ namespace Statistic
                 private void onRowEnter(object obj, DataGridViewCellEventArgs ev)
                 {
                     //EventHourSelected(ev.RowIndex);
+                }
+
+                private void onRowsRemoved(object obj, DataGridViewRowsRemovedEventArgs ev)
+                {
                 }
             }
 
@@ -685,7 +694,7 @@ namespace Statistic
 
                     // значение 'SZ_COLUMN_LABEL' устанавливается индивидуально
                     /*SZ_COLUMN_LABEL = 48F;*/ SZ_COLUMN_LABEL_VALUE = 78F;
-                    SZ_COLUMN_TG_LABEL = 40F; SZ_COLUMN_TG_LABEL_VALUE = 75F;
+                    SZ_COLUMN_TG_LABEL = 44F; SZ_COLUMN_TG_LABEL_VALUE = 75F;
 
                     m_indxStartCommonFirstValueSeries = (int)CONTROLS.lblTemperatureCurrent;
                     m_indxStartCommonSecondValueSeries = (int)CONTROLS.lblDeviatCurrent;
@@ -907,10 +916,10 @@ namespace Statistic
                     m_tgToolTips.Add(id, new ToolTip[(int)Vyvod.ParamVyvod.INDEX_VALUE.COUNT]);
                     cnt = m_tgLabels.Count;
 
-                    m_tgLabels[id][(int)Vyvod.ParamVyvod.INDEX_VALUE.LABEL_DESC] = HLabel.createLabel(comp.name_shr,
+                    m_tgLabels[id][(int)Vyvod.ParamVyvod.INDEX_VALUE.LABEL_DESC] = HLabel.createLabel(comp.name_shr.Trim(),
                                                                             new HLabelStyles(/*arPlacement[(int)i].pt, sz,*/new Point(-1, -1), new Size(-1, -1),
                                                                             Color.Black, Color.Empty,
-                                                                            8F, ContentAlignment.MiddleRight));
+                                                                            8F, ContentAlignment.MiddleLeft));
 
                     hlblValue = new HLabel(new HLabelStyles(new Point(-1, -1), new Size(-1, -1), Color.LimeGreen, Color.Black, 13F, ContentAlignment.MiddleCenter));
                     hlblValue.Text = @"---.--"; //name_shr + @"_Fact";
@@ -1585,21 +1594,28 @@ namespace Statistic
                                 break;
                         }
 
-                        //Определить полные ли сутки в результате запроса
-                        if (currHour == true)
-                            if (iHourRecieved < (m_valuesHours.Length/*24*/ - 1))
-                            {
-                                lastHour = iHourRecieved - 1;
-                                lastReceivedHour = iHourRecieved;
-                            }
+                        if (!(iHourRecieved < 0))
+                            //Определить полные ли сутки в результате запроса
+                            if (currHour == true)
+                                if (iHourRecieved < (m_valuesHours.Length/*24*/ - 1))
+                                {
+                                    lastHour = iHourRecieved - 1;
+                                    lastReceivedHour = iHourRecieved;
+                                }
+                                else
+                                {
+                                    lastHour =
+                                    lastReceivedHour =
+                                        iHourRecieved;
+                                }
                             else
-                            {
-                                lastHour =
-                                lastReceivedHour =
-                                    iHourRecieved;
-                            }
-                        else
-                            ;
+                                ;
+                        else {
+                        // не получено ни одного значения
+                            lastHour =
+                            lastReceivedHour =
+                                0;
+                        }
                     }
                     catch (Exception e)
                     {
