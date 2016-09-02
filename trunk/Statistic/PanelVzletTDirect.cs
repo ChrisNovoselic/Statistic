@@ -1594,7 +1594,7 @@ namespace Statistic
                                 break;
                         }
 
-                        if (!(iHourRecieved < 0))
+                        if (iHourRecieved > 0)
                             //Определить полные ли сутки в результате запроса
                             if (currHour == true)
                                 if (iHourRecieved < (m_valuesHours.Length/*24*/ - 1))
