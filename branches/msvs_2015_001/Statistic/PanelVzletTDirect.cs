@@ -20,6 +20,10 @@ using System.Collections.Generic;
 
 namespace Statistic
 {
+    /// <summary>
+    /// Класс для описания панели с информацией
+    ///  по диагностированию состояния ИС - необходимые определения
+    /// </summary>
     partial class PanelVzletTDirect
     {
         /// <summary>
@@ -55,7 +59,7 @@ namespace Statistic
     }
     /// <summary>
     /// Класс для описания панели с информацией
-    ///  по дианостированию состояния ИС
+    ///  по диагностированию состояния ИС - расширенные определения
     /// </summary>
     public partial class PanelVzletTDirect : PanelContainerStatistic
     {
@@ -105,7 +109,10 @@ namespace Statistic
 
             return bRes;
         }
-
+        /// <summary>
+        /// Метод непосредственного применения параметров графического представления данных
+        /// </summary>
+        /// <param name="type">Тип изменившихся параметров</param>
         public void UpdateGraphicsCurrent(int type)
         {
             foreach (Control ptvtd in this.Controls)
@@ -1317,6 +1324,20 @@ namespace Statistic
         /// </summary>
         public partial class PanelTecVzletTDirect : PanelTecViewBase
         {
+            /// <summary>
+            /// Класс для отображения заголовка встаиваемой панели
+            /// </summary>
+            private class HLabelTecVzletTDirect : PanelCustomTecView.HLabelCustomTecView
+            {
+                public HLabelTecVzletTDirect(int []arProperties) : base (arProperties)
+                {
+                    // для возможности назначения красного цвета шрифта (см. '_color' базового класса)
+                    _state = true;
+                }
+            }
+            /// <summary>
+            /// Класс для обращения к данным (отправление запросов, обработка их результатов)
+            /// </summary>
             private class DataSource : TecView
             {
                 public DataSource(int indx_tec, int indx_comp = -1) : base (indx_tec, indx_comp, TECComponentBase.TYPE.TEPLO)
@@ -1807,28 +1828,6 @@ namespace Statistic
                     return iRes;
                 }
 
-                //protected override void getPPBRValuesRequest()
-                //{
-                //    string strQuery = string.Empty;
-
-                //    strQuery =
-                //        m_tec.GetPBRValueQuery(indxTECComponents, m_curDate.Date.Add(-m_tsOffsetToMoscow), _type) //TECComponentBase.TYPE.TEPLO
-                //        ;
-
-                //    Request(m_dictIdListeners[m_tec.m_id][(int)CONN_SETT_TYPE.PBR], strQuery);
-                //}
-
-                //protected override void getAdminValuesRequest()
-                //{
-                //    string strQuery = string.Empty;
-
-                //    strQuery =
-                //        m_tec.GetAdminValueQuery(indxTECComponents, m_curDate.Date.Add(-m_tsOffsetToMoscow), _type)
-                //        ;
-
-                //    Request(m_dictIdListeners[m_tec.m_id][(int)CONN_SETT_TYPE.ADMIN], strQuery);
-                //}
-
                 public override void GetRDGValues(int indx, DateTime date)
                 {
                     ClearStates();
@@ -1951,7 +1950,7 @@ namespace Statistic
                 int iRes = 0;
 
                 if (IndexCustomTecView == INDEX_CUSTOM_TECVIEW.MULTI)
-                    m_label = new PanelCustomTecView.HLabelCustomTecView(s_SetCustomTecView[(int)IndexCustomTecView]);
+                    m_label = new HLabelTecVzletTDirect(s_SetCustomTecView[(int)IndexCustomTecView]);
                 else
                     ;
 
@@ -1961,9 +1960,20 @@ namespace Statistic
 
                 InitializeComponent();
 
+                this.SizeChanged += onSizeChanged;
+
                 m_dgwHours.EventDataValues += new HDataGridViewBase.DataValuesEventHandler((_pnlQuickData as PanelQuickDataVzletTDirect).OnSumDataValues);
 
                 return iRes;
+            }
+            /// <summary>
+            /// Метод обработки события 'изменение размера'
+            /// </summary>
+            /// <param name="sender">Объект изменивший размер - панель</param>
+            /// <param name="ev">Аргумент события</param>
+            private void onSizeChanged(object sender, EventArgs ev)
+            {
+                m_label?.FitFont();
             }
             /// <summary>
             /// Создать объект для обращения к БД
