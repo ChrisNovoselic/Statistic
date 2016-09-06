@@ -345,6 +345,8 @@ namespace StatisticCommon
         protected volatile string[] m_SensorsStrings_ASKUE = { string.Empty, string.Empty };
 
         protected volatile string m_SensorsString_VZLET = string.Empty;
+
+        private string m_prefixVzletData;
         /// <summary>
         /// Перечисление - индексы возможных вариантов усреднения "мгновенных" значений
         /// </summary>
@@ -471,8 +473,8 @@ namespace StatisticCommon
                 "PBR",
                 "PBR_NUMBER");
 
-            setAddingParameter (/*Convert.ToInt32(rTec["TIMEZONE_OFFSET_MOSCOW"])
-                , */rTec["PATH_RDG_EXCEL"].ToString()
+            setAddingParameter (rTec["PREFIX_VZLETDATA"] is DBNull ? string.Empty : rTec["PREFIX_VZLETDATA"].ToString().Trim()
+                , rTec["PATH_RDG_EXCEL"].ToString()
                 , rTec["TEMPLATE_NAME_SGN_DATA_TM"].ToString()
                 , rTec["TEMPLATE_NAME_SGN_DATA_FACT"].ToString());            
         }
@@ -491,22 +493,8 @@ namespace StatisticCommon
             this.m_id = id;
             this.name_shr = name_shr;
 
-            ////Выделение  памяти под наименования таблиц с Админ, -ПБР значениями
-            //this.m_arNameTableAdminValues = new string[(int)AdminTS.TYPE_FIELDS.COUNT_TYPE_FIELDS];
-            //this.m_arNameTableUsedPPBRvsPBR = new string[(int)AdminTS.TYPE_FIELDS.COUNT_TYPE_FIELDS];
-
-            ////Сохранить наименования таблиц с Админ, -ПБР значениями со СТАТИЧЕСКИМИ наименованиями полей
-            //this.m_arNameTableAdminValues[(int)AdminTS.TYPE_FIELDS.STATIC] = table_name_admin;
-            //this.m_arNameTableUsedPPBRvsPBR[(int)AdminTS.TYPE_FIELDS.STATIC] = table_name_pbr;
-            ////Сохранить наименования таблиц с Админ, -ПБР значениями со ДИНАМИЧЕСКИМИ наименованиями полей
-            ////Вариант №1 (в т.ч. и для для тестирования загрузки макета из CSV-файла)
-            //this.m_arNameTableAdminValues[(int)AdminTS.TYPE_FIELDS.DYNAMIC] = @"AdminValuesOfID"; //@"AdminValuesOfID_20141026";
-            //this.m_arNameTableUsedPPBRvsPBR[(int)AdminTS.TYPE_FIELDS.DYNAMIC] = @"PPBRvsPBROfID"; // @"PPBRvsPBROfID-Test";
-            //////Вариант №2 (наименования таблиц из БД конфигурации, обратить внимание Бийская ТЭЦ!!! )
-            ////this.m_arNameTableAdminValues[(int)AdminTS.TYPE_FIELDS.DYNAMIC] = table_name_admin;
-            ////this.m_arNameTableUsedPPBRvsPBR[(int)AdminTS.TYPE_FIELDS.DYNAMIC] = table_name_pbr;
-            this.m_strNameTableAdminValues/*[(int)AdminTS.TYPE_FIELDS.DYNAMIC]*/ = @"AdminValuesOfID"; //@"AdminValuesOfID_20141026";
-            this.m_strNameTableUsedPPBRvsPBR/*[(int)AdminTS.TYPE_FIELDS.DYNAMIC]*/ = @"PPBRvsPBROfID"; // @"PPBRvsPBROfID-Test";
+            this.m_strNameTableAdminValues = table_name_admin;
+            this.m_strNameTableUsedPPBRvsPBR = table_name_pbr;
 
             connSetts = new ConnectionSettings[(int) CONN_SETT_TYPE.COUNT_CONN_SETT_TYPE];
 
@@ -551,9 +539,9 @@ namespace StatisticCommon
             m_strNamesField[(int)INDEX_NAME_FIELD.PBR_NUMBER] = pbr_number; //INDEX_NAME_FIELD.PBR_NUMBER
         }
 
-        private void setAddingParameter(/*int timezone_offset_msc, */string path_rdg_excel, string strTemplateNameSgnDataTM, string strTemplateNameSgnDataFact)
+        private void setAddingParameter(string prefix_vzletData, string path_rdg_excel, string strTemplateNameSgnDataTM, string strTemplateNameSgnDataFact)
         {
-            //this.m_timezone_offset_msc = timezone_offset_msc;
+            this.m_prefixVzletData = prefix_vzletData;
             this.m_path_rdg_excel = path_rdg_excel;
             this.m_strTemplateNameSgnDataTM = strTemplateNameSgnDataTM;
             this.m_strTemplateNameSgnDataFact = strTemplateNameSgnDataFact;
