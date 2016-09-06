@@ -244,7 +244,7 @@ namespace Statistic
             /// Состояние элемента управления
             ///  0/1 - нет/есть объекта отображения
             /// </summary>
-            private bool _state;
+            protected bool _state;
             /// <summary>
             /// Шрифт для подписи элемента управления
             /// </summary>

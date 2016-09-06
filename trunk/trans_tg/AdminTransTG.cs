@@ -44,7 +44,10 @@ namespace trans_tg
 
             if (iRes == 0)
             {
-                iTimeZoneOffset = allTECComponents[indxTECComponents].tec.m_timezone_offset_msc;
+                iTimeZoneOffset =
+                    //allTECComponents[indxTECComponents].tec.m_timezone_offset_msc
+                    HDateTime.TS_NSK_OFFSET_OF_MOSCOWTIMEZONE.Hours
+                    ;
                 m_listCurTimezoneOffsetRDGExcelValues.Add(new RDGStruct[iTimeZoneOffset]);
 
                 iRes = m_tableRDGExcelValuesResponse.Rows.Count > 0 ? 0 : -1;
@@ -70,7 +73,12 @@ namespace trans_tg
             int i = 1;
 
             m_listTimezoneOffsetHaveDates[(int)type].Clear();
-            for (i = 0; i < allTECComponents[indxTECComponents].tec.m_timezone_offset_msc; i++)
+            for (i = 0;
+                i <
+                    //allTECComponents[indxTECComponents].tec.m_timezone_offset_msc
+                    HDateTime.TS_NSK_OFFSET_OF_MOSCOWTIMEZONE.Hours
+                    ;
+                i++)
             {
                 m_listTimezoneOffsetHaveDates[(int)type].Add(false);
             }
@@ -79,7 +87,10 @@ namespace trans_tg
 
         protected override int GetDatesResponse(StatisticCommon.CONN_SETT_TYPE type, DataTable table, DateTime date)
         {
-            DateTime dateTimezoneOffsetRDGExcel = date.AddHours(-1 * allTECComponents[indxTECComponents].tec.m_timezone_offset_msc);
+            DateTime dateTimezoneOffsetRDGExcel = date.AddHours(-1 *
+                //allTECComponents[indxTECComponents].tec.m_timezone_offset_msc
+                HDateTime.TS_NSK_OFFSET_OF_MOSCOWTIMEZONE.Hours
+                );
             //bool bIsHourTimezoneOffsetRDGExcel = false;
 
             for (int i = 0, hour; i < table.Rows.Count; i++)
@@ -98,7 +109,10 @@ namespace trans_tg
                         m_arHaveDates[(int)type, hour - 1] = Convert.ToInt32 (table.Rows[i][1]); //true;
                     else {
                         hour = hour == 0 ? 24 : hour;
-                        m_listTimezoneOffsetHaveDates[(int)type][hour - 1 - (24 + (-1 * allTECComponents[indxTECComponents].tec.m_timezone_offset_msc))] = true;
+                        m_listTimezoneOffsetHaveDates[(int)type][hour - 1 - (24 + (-1 *
+                            //allTECComponents[indxTECComponents].tec.m_timezone_offset_msc
+                            HDateTime.TS_NSK_OFFSET_OF_MOSCOWTIMEZONE.Hours
+                            ))] = true;
                     }
                 }
                 catch { }
@@ -155,7 +169,10 @@ namespace trans_tg
             //    case AdminTS.TYPE_FIELDS.DYNAMIC:
                     strRes = @"SELECT DATE, ID FROM " + allTECComponents[indxTECComponents].tec.m_strNameTableAdminValues/*[(int)mode]*/ + " WHERE" +
                             @" ID_COMPONENT = " + comp.m_id +
-                          @" AND DATE > '" + dt.AddHours(-1 * allTECComponents[indxTECComponents].tec.m_timezone_offset_msc).ToString("yyyyMMdd HH:mm:ss") +
+                          @" AND DATE > '" + dt.AddHours(-1 *
+                            //allTECComponents[indxTECComponents].tec.m_timezone_offset_msc
+                            HDateTime.TS_NSK_OFFSET_OF_MOSCOWTIMEZONE.Hours
+                            ).ToString("yyyyMMdd HH:mm:ss") +
                           @"' AND DATE <= '" + dt.AddDays(1).ToString("yyyyMMdd HH:mm:ss") +
                           @"' ORDER BY DATE ASC";
             //        break;
@@ -184,7 +201,10 @@ namespace trans_tg
                     strRes = @"SELECT DATE_TIME, ID FROM " + @"[" + allTECComponents[indxTECComponents].tec.m_strNameTableUsedPPBRvsPBR/*[(int)mode]*/ + @"]" +
                             @" WHERE" +
                             @" ID_COMPONENT = " + comp.m_id + "" +
-                            @" AND DATE_TIME > '" + dt.AddHours(-1 * allTECComponents[indxTECComponents].tec.m_timezone_offset_msc).ToString("yyyyMMdd HH:mm:ss") +
+                            @" AND DATE_TIME > '" + dt.AddHours(-1 *
+                                //allTECComponents[indxTECComponents].tec.m_timezone_offset_msc
+                                HDateTime.TS_NSK_OFFSET_OF_MOSCOWTIMEZONE.Hours
+                                ).ToString("yyyyMMdd HH:mm:ss") +
                             @"' AND DATE_TIME <= '" + dt.AddDays(1).ToString("yyyyMMdd HH:mm:ss") +
                             @"' ORDER BY DATE_TIME ASC";
             //        break;
@@ -245,7 +265,10 @@ namespace trans_tg
                                             @"', " + "SEASON=" + (offset > 0 ? (SEASON_BASE + (int)HAdmin.seasonJumpE.WinterToSummer) : (SEASON_BASE + (int)HAdmin.seasonJumpE.SummerToWinter)) +
                                             @", " + "FC=" + (m_curRDGValues[i].fc ? 1 : 0) +
                                             @" WHERE" +
-                                            @" DATE = '" + date.AddHours((i + 1) + (-1 * t.m_timezone_offset_msc)).ToString("yyyyMMdd HH:mm:ss") +
+                                            @" DATE = '" + date.AddHours((i + 1) + (-1 *
+                                                //t.m_timezone_offset_msc
+                                                HDateTime.TS_NSK_OFFSET_OF_MOSCOWTIMEZONE.Hours
+                                                )).ToString("yyyyMMdd HH:mm:ss") +
                                             @"'" +
                                             @" AND ID_COMPONENT = " + comp.m_id + "; ";
                         //        break;
@@ -261,7 +284,10 @@ namespace trans_tg
                         //    case AdminTS.TYPE_FIELDS.STATIC:
                         //        break;
                         //    case AdminTS.TYPE_FIELDS.DYNAMIC:
-                                resQuery[(int)DbTSQLInterface.QUERY_TYPE.INSERT] += @" ('" + date.AddHours((i + 1) + (-1 * t.m_timezone_offset_msc)).ToString("yyyyMMdd HH:mm:ss") +
+                                resQuery[(int)DbTSQLInterface.QUERY_TYPE.INSERT] += @" ('" + date.AddHours((i + 1) + (-1 *
+                                                //t.m_timezone_offset_msc
+                                                HDateTime.TS_NSK_OFFSET_OF_MOSCOWTIMEZONE.Hours
+                                                )).ToString("yyyyMMdd HH:mm:ss") +
                                             @"', '" + m_listCurTimezoneOffsetRDGExcelValues[indx][i].recomendation.ToString("F2", CultureInfo.InvariantCulture) +
                                             @"', " + (m_listCurTimezoneOffsetRDGExcelValues[indx][i].deviationPercent ? "1" : "0") +
                                             @", '" + m_listCurTimezoneOffsetRDGExcelValues[indx][i].deviation.ToString("F2", CultureInfo.InvariantCulture) +
@@ -313,7 +339,10 @@ namespace trans_tg
                                             @", Pmin='" + m_listCurTimezoneOffsetRDGExcelValues[indx][i].pmin.ToString("F2", CultureInfo.InvariantCulture) + "'" +
                                             @", Pmax='" + m_listCurTimezoneOffsetRDGExcelValues[indx][i].pbr.ToString("F2", CultureInfo.InvariantCulture) + "'" +
                                             @" WHERE " +
-                                            t.m_strNamesField [(int)TEC.INDEX_NAME_FIELD.PBR_DATETIME] + @" = '" + date.AddHours((i + 1) + (-1 * t.m_timezone_offset_msc)).ToString("yyyyMMdd HH:mm:ss") +
+                                            t.m_strNamesField [(int)TEC.INDEX_NAME_FIELD.PBR_DATETIME] + @" = '" + date.AddHours((i + 1) + (-1 *
+                                                //t.m_timezone_offset_msc
+                                                HDateTime.TS_NSK_OFFSET_OF_MOSCOWTIMEZONE.Hours
+                                                )).ToString("yyyyMMdd HH:mm:ss") +
                                             @"'" +
                                             @" AND ID_COMPONENT = " + comp.m_id + "; ";
                         //        break;
@@ -329,9 +358,15 @@ namespace trans_tg
                         //    case AdminTS.TYPE_FIELDS.STATIC:
                         //        break;
                         //    case AdminTS.TYPE_FIELDS.DYNAMIC:
-                                resQuery[(int)DbTSQLInterface.QUERY_TYPE.INSERT] += @" ('" + date.AddHours((i + 1) + (-1 * t.m_timezone_offset_msc)).ToString("yyyyMMdd HH:mm:ss") +
+                                resQuery[(int)DbTSQLInterface.QUERY_TYPE.INSERT] += @" ('" + date.AddHours((i + 1) + (-1 *
+                                                //t.m_timezone_offset_msc
+                                                HDateTime.TS_NSK_OFFSET_OF_MOSCOWTIMEZONE.Hours
+                                                )).ToString("yyyyMMdd HH:mm:ss") +
                                             @"', '" + serverTime.ToString("yyyyMMdd HH:mm:ss") +
-                                            @"', '" + GetPBRNumber((i + 0) + (-1 * t.m_timezone_offset_msc)) +
+                                            @"', '" + GetPBRNumber((i + 0) + (-1 *
+                                                //t.m_timezone_offset_msc
+                                                HDateTime.TS_NSK_OFFSET_OF_MOSCOWTIMEZONE.Hours
+                                                )) +
                                             @"', " + comp.m_id +
                                             @", '" + "0" + "'" +
                                             @", '" + m_listCurTimezoneOffsetRDGExcelValues[indx][i].pbr.ToString("F1", CultureInfo.InvariantCulture) + "'" +

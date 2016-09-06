@@ -283,10 +283,10 @@ namespace StatisticCommon
         /// Список наименований полей
         /// </summary>
         public List <string> m_strNamesField;
-        /// <summary>
-        /// Свойство - смещение (часы) зоны даты/времени от зоны с часовым поясом "Москва"
-        /// </summary>
-        public int m_timezone_offset_msc { get; set; }
+        ///// <summary>
+        ///// Свойство - смещение (часы) зоны даты/времени от зоны с часовым поясом "Москва"
+        ///// </summary>
+        //public int m_timezone_offset_msc { get; set; }
         /// <summary>
         /// Путь для размещения с файлом-книгой MS Excel
         ///  со значениями РДГ на уровне ТГ (НСС)
@@ -459,20 +459,20 @@ namespace StatisticCommon
         public TEC(DataRow rTec, bool bUseData)
             : this(Convert.ToInt32(rTec["ID"]),
                 rTec["NAME_SHR"].ToString(), //"NAME_SHR"
-                rTec["TABLE_NAME_ADMIN"].ToString(),
-                rTec["TABLE_NAME_PBR"].ToString()
+                @"AdminValuesOfID",
+                @"PPBRvsPBROfID"
                 , bUseData)
         {
-            setNamesField(rTec["ADMIN_DATETIME"].ToString(),
-                rTec["ADMIN_REC"].ToString(),
-                rTec["ADMIN_IS_PER"].ToString(),
-                rTec["ADMIN_DIVIAT"].ToString(),
-                rTec["PBR_DATETIME"].ToString(),
-                rTec["PPBRvsPBR"].ToString(),
-                rTec["PBR_NUMBER"].ToString());
+            setNamesField(@"DATE",
+                @"REC",
+                @"IS_PER",
+                "DIVIAT",
+                "DATE_TIME",
+                "PBR",
+                "PBR_NUMBER");
 
-            setAddingParameter (Convert.ToInt32(rTec["TIMEZONE_OFFSET_MOSCOW"])
-                , rTec["PATH_RDG_EXCEL"].ToString()
+            setAddingParameter (/*Convert.ToInt32(rTec["TIMEZONE_OFFSET_MOSCOW"])
+                , */rTec["PATH_RDG_EXCEL"].ToString()
                 , rTec["TEMPLATE_NAME_SGN_DATA_TM"].ToString()
                 , rTec["TEMPLATE_NAME_SGN_DATA_FACT"].ToString());            
         }
@@ -551,9 +551,9 @@ namespace StatisticCommon
             m_strNamesField[(int)INDEX_NAME_FIELD.PBR_NUMBER] = pbr_number; //INDEX_NAME_FIELD.PBR_NUMBER
         }
 
-        private void setAddingParameter(int timezone_offset_msc, string path_rdg_excel, string strTemplateNameSgnDataTM, string strTemplateNameSgnDataFact)
+        private void setAddingParameter(/*int timezone_offset_msc, */string path_rdg_excel, string strTemplateNameSgnDataTM, string strTemplateNameSgnDataFact)
         {
-            this.m_timezone_offset_msc = timezone_offset_msc;
+            //this.m_timezone_offset_msc = timezone_offset_msc;
             this.m_path_rdg_excel = path_rdg_excel;
             this.m_strTemplateNameSgnDataTM = strTemplateNameSgnDataTM;
             this.m_strTemplateNameSgnDataFact = strTemplateNameSgnDataFact;

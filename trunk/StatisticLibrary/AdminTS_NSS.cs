@@ -25,9 +25,11 @@ namespace StatisticCommon
 
             if (iRes == 0)
             {
-                int i = -1,
-                    iTimeZoneOffset = allTECComponents[indxTECComponents].tec.m_timezone_offset_msc,
-                    rowRDGExcelStart = 1 + iTimeZoneOffset,
+                int i = -1
+                    , iTimeZoneOffset =
+                        //allTECComponents[indxTECComponents].tec.m_timezone_offset_msc
+                        HDateTime.TS_NSK_OFFSET_OF_MOSCOWTIMEZONE.Hours
+                    , rowRDGExcelStart = 1 + iTimeZoneOffset,
                     hour = -1;
 
                 if (m_tableRDGExcelValuesResponse.Rows.Count > 0) iRes = 0; else ;
@@ -70,10 +72,13 @@ namespace StatisticCommon
             Logging.Logg().Debug(@"AdminTS_NSS::ImpRDGExcelValuesRequest () - вХод...", Logging.INDEX_MESSAGE.NOT_SET);
 
             //bool bRes = true;
-            int err = 0,
-                i = -1, j = -1,
-                rowOffsetData = 2,
-                iTimeZoneOffset = allTECComponents[indxTECComponents].tec.m_timezone_offset_msc;
+            int err = 0
+                , i = -1, j = -1
+                , rowOffsetData = 2
+                , iTimeZoneOffset =
+                    //allTECComponents[indxTECComponents].tec.m_timezone_offset_msc
+                    HDateTime.TS_NSK_OFFSET_OF_MOSCOWTIMEZONE.Hours
+                    ;
             string path_rdg_excel = allTECComponents[indxTECComponents].tec.m_path_rdg_excel,
                 strSelect = @"SELECT * FROM [Лист1$]";
             object[] dataRowAddIn = null;
@@ -154,12 +159,15 @@ namespace StatisticCommon
         {
             //bool bRes = true;
             Boolean bMidnightValues = false;
-            int err = 0,
-                i = -1,
-                rowOffsetData = 2,
-                rowOffsetNextDay = 0,
-                iMidnightValues = 0,
-                iTimeZoneOffset = allTECComponents[m_listTECComponentIndexDetail[0/*любой из индексов, т.к. они принадлежат одной ТЭЦ*/]].tec.m_timezone_offset_msc;
+            int err = 0
+                , i = -1
+                , rowOffsetData = 2
+                , rowOffsetNextDay = 0
+                //, iMidnightValues = 0
+                , iTimeZoneOffset =
+                    //allTECComponents[m_listTECComponentIndexDetail[0/*любой из индексов, т.к. они принадлежат одной ТЭЦ*/]].tec.m_timezone_offset_msc
+                    HDateTime.TS_NSK_OFFSET_OF_MOSCOWTIMEZONE.Hours
+                    ;
             string path_rdg_excel = allTECComponents[m_listTECComponentIndexDetail[0/*любой из индексов, т.к. они принадлежат одной ТЭЦ*/]].tec.m_path_rdg_excel,
                 strUpdate = string.Empty;
             TECComponentBase comp;

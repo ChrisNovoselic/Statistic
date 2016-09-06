@@ -611,16 +611,17 @@ namespace Statistic
                 , m_tecView.m_valuesHours.Length
                 , m_tecView.m_curDate.Date.CompareTo(HAdmin.SeasonDateTime.Date) == 0);
 
-            DaylightTime daylight = TimeZone.CurrentTimeZone.GetDaylightChanges(DateTime.Now.Year);
-            TimeSpan timezone_offset = TimeSpan.FromHours (m_tecView.m_tec.m_timezone_offset_msc);
-            timezone_offset = timezone_offset.Add(m_tecView.m_tsOffsetToMoscow);
-            if (TimeZone.IsDaylightSavingTime(DateTime.Now, daylight))
-                timezone_offset = timezone_offset.Add(TimeSpan.FromHours(1));
-            else
-                ;
+            //DaylightTime daylight = TimeZone.CurrentTimeZone.GetDaylightChanges(DateTime.Now.Year);
+            //TimeSpan timezone_offset = TimeSpan.FromHours (m_tecView.m_tec.m_timezone_offset_msc);
+            //timezone_offset = timezone_offset.Add(m_tecView.m_tsOffsetToMoscow);
+            //if (TimeZone.IsDaylightSavingTime(DateTime.Now, daylight))
+            //    timezone_offset = timezone_offset.Add(TimeSpan.FromHours(1));
+            //else
+            //    ;
 
-            //ย๐ๅ์ÿ ไ.แ. ฬัส ???
-            _pnlQuickData.dtprDate.Value = TimeZone.CurrentTimeZone.ToUniversalTime(DateTime.Now).Add(timezone_offset);
+            ////ย๐ๅ์ÿ ไ.แ. ฬัส ???
+            //_pnlQuickData.dtprDate.Value = TimeZone.CurrentTimeZone.ToUniversalTime(DateTime.Now).Add(timezone_offset);
+            _pnlQuickData.dtprDate.Value = HDateTime.ToMoscowTimeZone ();
 
             //initTableMinRows ();
             initTableHourRows ();            
