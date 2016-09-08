@@ -97,7 +97,7 @@
   </PropertyGroup>
   <ItemGroup>
     <Reference Include="HClassLibrary">
-      <HintPath>..\..\ExternalDLL\HClassLibrary.dll</HintPath>
+      <HintPath>..\..\ExternalDll\HClassLibrary.dll</HintPath>
     </Reference>
     <Reference Include="System" />
     <Reference Include="System.Core" />

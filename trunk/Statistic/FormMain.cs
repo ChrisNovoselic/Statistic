@@ -1764,7 +1764,11 @@ namespace Statistic
                 }
                 // отменять регистрацию именно ДО вызова 'connectionSettings'
                 // , иначе идентификаторы старого и нового наборов парметров соединения с БД совпадут
-                DbSources.Sources().UnRegister(idListener);
+                // , но только для БД_конфигурации, для списка БД 'idListener' сохранен в форме
+                if (type == CONN_SETT_TYPE.CONFIG_DB)
+                    DbSources.Sources().UnRegister(idListener);
+                else
+                    ;
                 if (bShowFormConnectionSettings == true)
                     connectionSettings(type);
                 else
@@ -2106,8 +2110,9 @@ namespace Statistic
                         && (!(selTecView.m_tecView.m_tec.connSetts[(int)CONN_SETT_TYPE.DATA_SOTIASSO] == null))))
                     {
                         if ((m_report.actioned_state == true)
-                            && ((selTecView.m_tecView.m_tec.connSetts[(int)CONN_SETT_TYPE.DATA_AISKUE].ignore == false)
-                            && (selTecView.m_tecView.m_tec.connSetts[(int)CONN_SETT_TYPE.DATA_SOTIASSO].ignore == false)))
+                            //&& ((selTecView.m_tecView.m_tec.connSetts[(int)CONN_SETT_TYPE.DATA_AISKUE].ignore == false)
+                            //&& (selTecView.m_tecView.m_tec.connSetts[(int)CONN_SETT_TYPE.DATA_SOTIASSO].ignore == false))
+                            )
                         {
                             if (selTecView.Actived == true)
                             {
@@ -2121,8 +2126,9 @@ namespace Statistic
                             ;
 
                         if ((m_report.warninged_state == true)
-                            && ((selTecView.m_tecView.m_tec.connSetts[(int)CONN_SETT_TYPE.DATA_AISKUE].ignore == false)
-                            && (selTecView.m_tecView.m_tec.connSetts[(int)CONN_SETT_TYPE.DATA_SOTIASSO].ignore == false)))
+                            //&& ((selTecView.m_tecView.m_tec.connSetts[(int)CONN_SETT_TYPE.DATA_AISKUE].ignore == false)
+                            //&& (selTecView.m_tecView.m_tec.connSetts[(int)CONN_SETT_TYPE.DATA_SOTIASSO].ignore == false))
+                            )
                         {
                             have_msg = 1;
                             if (selTecView.Actived == true)
@@ -2137,8 +2143,9 @@ namespace Statistic
                             ;
 
                         if ((m_report.errored_state == true)
-                            && ((selTecView.m_tecView.m_tec.connSetts[(int)CONN_SETT_TYPE.DATA_AISKUE].ignore == false)
-                            && (selTecView.m_tecView.m_tec.connSetts[(int)CONN_SETT_TYPE.DATA_SOTIASSO].ignore == false)))
+                            //&& ((selTecView.m_tecView.m_tec.connSetts[(int)CONN_SETT_TYPE.DATA_AISKUE].ignore == false)
+                            //&& (selTecView.m_tecView.m_tec.connSetts[(int)CONN_SETT_TYPE.DATA_SOTIASSO].ignore == false))
+                            )
                         {
                             have_msg = -1;
                             if (selTecView.Actived == true)

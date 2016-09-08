@@ -43,6 +43,16 @@ namespace StatisticCommon
 
         protected override bool Connect()
         {
+            if (m_connectionSettings == null)
+                return false;
+            else
+                ;
+
+            if (m_connectionSettings.GetType().Equals(typeof(string)) == false)
+                return false;
+            else
+                ;
+
             if (!(((string)m_connectionSettings).Length > 0))
                 return false;
             else
