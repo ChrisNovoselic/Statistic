@@ -265,20 +265,36 @@ namespace trans_mt
 
             for (hour = 1; hour < 25; hour++)
             {
+                m_curRDGValues[hour - 1].pbr = -1F;
+                m_curRDGValues[hour - 1].pmin = -1F;
+                m_curRDGValues[hour - 1].pmax = -1F;
+
+                m_curRDGValues[hour - 1].pbr_number = string.Empty;
+
                 for (c = 0; c < comp.m_listMTermId.Count; c++)
                 {
                     MTermId = comp.m_listMTermId[c];
 
-                    if (!(arRDGValues[c, hour - 1].pbr < 0))
+                    if (!(arRDGValues[c, hour - 1].pbr < 0)) {
+                        // значение есть, необходимо суммировать, установить в "0"
+                        if (m_curRDGValues[hour - 1].pbr < 0) m_curRDGValues[hour - 1].pbr = 0F; else ;
+                        // суммируем
                         m_curRDGValues[hour - 1].pbr += arRDGValues[c, hour - 1].pbr;
-                    else
+                    } else
                         ;
-                    if (!(arRDGValues[c, hour - 1].pmin < 0))
+                    if (!(arRDGValues[c, hour - 1].pmin < 0)) {
+                        // значение есть, необходимо суммировать, установить в "0"
+                        if (m_curRDGValues[hour - 1].pmin < 0) m_curRDGValues[hour - 1].pmin = 0F; else ;
+                        // суммируем
                         m_curRDGValues[hour - 1].pmin += arRDGValues[c, hour - 1].pmin;
-                    else
+                    } else
                         ;
-                    if (!(arRDGValues[c, hour - 1].pmax < 0))
+                    if (!(arRDGValues[c, hour - 1].pmax < 0)) {
+                        // значение есть, необходимо суммировать, установить в "0"
+                        if (m_curRDGValues[hour - 1].pmax < 0) m_curRDGValues[hour - 1].pmax = 0F; else ;
+                        // суммируем
                         m_curRDGValues[hour - 1].pmax += arRDGValues[c, hour - 1].pmax;
+                    }
                     else
                         ;
                 } // цикл-окончание по идентификатору составного элемента (только ГТП3-6 НТЭЦ-5)
