@@ -371,7 +371,7 @@ namespace StatisticCommon
             , {CONN_SETT_TYPE.ADMIN, @"ID_SOURCE_ADMIN"}
             , {CONN_SETT_TYPE.PBR, @"ID_SOURCE_PBR"}
             , {CONN_SETT_TYPE.MTERM, @"ID_SOURCE_MTERM"}
-            , {CONN_SETT_TYPE.DATA_VZLET, @"ID_SOURCE_TEPLO"}
+            , {CONN_SETT_TYPE.DATA_VZLET, @"ID_SOURCE_DATAVZLET"}
         };
         /// <summary>
         /// Словарь с парами - ключ: идентификатор типа источников данных, значение - наименование поля таблицы [TEC_LIST] в БД конфигурации
@@ -1967,14 +1967,14 @@ namespace StatisticCommon
 
                     strRes += @"SELECT [GROUP_DATA].[ID_TEC], [GROUP_DATA].[KKS_NAME], [SET].[ID_POINT_ASKUTE], [GROUP_DATA].[VALUE], [GROUP_DATA].[DATETIME]"
                         + @" FROM ("
-                            + @" SELECT [ID_TEC], [KKS_NAME], AVG([VALUE]) AS [VALUE],"
+                            + @"SELECT [ID_TEC], [KKS_NAME], AVG([VALUE]) AS [VALUE],"
                                 + @" DATEADD(hh," + tsOffset.Hours + @",DATEADD(minute, (DATEDIFF(minute, @getdate, [DATETIME])/60)*60, @getdate)) AS [DATETIME]"
                             + @" FROM ("
-                                + @" SELECT [ARCH].[ID_TEC], [ARCH].[KKS_NAME], [ARCH].[VALUE], [ARCH].[DATETIME]"
-                                    + @" FROM [VZLET_CURRENT_ARCHIVES_MIN] AS [ARCH] WITH(INDEX(KKS_DATETIME), READUNCOMMITTED)"
+                                + @"SELECT [ARCH].[ID_TEC], [ARCH].[KKS_NAME], [ARCH].[VALUE], [ARCH].[DATETIME]"
+                                    + @" FROM [VZLET_CURRENT_ARCHIVES_MIN_" + m_prefixVzletData + @"] AS [ARCH] WITH(INDEX(KKS_DATETIME), READUNCOMMITTED)"
                                         + @" INNER JOIN @SETTINGS_TABLE AS [SET] ON ([ARCH].[KKS_NAME] = [SET].[KKS_NAME])"
                                     + @" WHERE [ARCH].[DATETIME] BETWEEN @getdate AND DATEADD(ms, -3, DATEADD(dd,1,@getdate))"
-                                + @") AS [DATA] "
+                                + @") AS [DATA]"
                         + @" GROUP BY [ID_TEC], [KKS_NAME], DATEADD(hh," + tsOffset.Hours + @",DATEADD(minute, (DATEDIFF(minute, @getdate, [DATETIME])/60)*60, @getdate))"
                             + @") AS [GROUP_DATA] INNER JOIN @SETTINGS_TABLE AS [SET] ON ([GROUP_DATA].[KKS_NAME] = [SET].[KKS_NAME])"
                         + @" ORDER BY [GROUP_DATA].[DATETIME];" + NL;

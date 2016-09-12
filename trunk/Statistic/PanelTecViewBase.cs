@@ -21,6 +21,10 @@ namespace Statistic
 {
     public abstract partial  class PanelTecViewBase : PanelStatisticWithTableHourRows
     {
+        private static readonly int MS_TIMER_CURRENT_UPDATE = 1000;
+        /// <summary>
+        /// Объект-подпись для текущего объекта панели
+        /// </summary>
         protected PanelCustomTecView.HLabelCustomTecView m_label;
 
         protected uint SPLITTER_PERCENT_VERTICAL;
@@ -386,36 +390,66 @@ namespace Statistic
                 return GraphPane.FindNearestObject(p, g, out obj, out index);
             }
         }        
-
+        /// <summary>
+        /// Массив для хранения пропорций при размещении элементов управления: подпись, таблицв/гистограммы, панель оперативных данных
+        /// </summary>
         protected int[] m_arPercRows = null; // [0] - для подписи, [1] - для таблиц/гистограмм, остальное - панель оперативных данных
         
         protected HPanelQuickData _pnlQuickData;
 
         protected System.Windows.Forms.SplitContainer stctrView;
         protected System.Windows.Forms.SplitContainer stctrViewPanel1, stctrViewPanel2;
+        /// <summary>
+        /// Гистограммы в разрезе "час - минуты"
+        /// </summary>
         protected HZedGraphControl m_ZedGraphMins;
+        /// <summary>
+        /// Гистограммы в разрезе "сутки - час"
+        /// </summary>
         protected HZedGraphControl m_ZedGraphHours;
-
+        /// <summary>
+        /// Таблица в разрезе "сутки - час"
+        /// </summary>
         protected HDataGridViewBase m_dgwHours;
+        /// <summary>
+        /// Таблица в разрезе "час - минуты"
+        /// </summary>
         protected HDataGridViewBase m_dgwMins;
 
-        //private ManualResetEvent m_evTimerCurrent;
         private
             //System.Threading.Timer
             System.Windows.Forms.Timer
                 m_timerCurrent
                 ;
+        /// <summary>
+        /// Делегат для обновления текущего времени на панели оперативной информации
+        /// </summary>
         private DelegateObjectFunc delegateTickTime;
-
+        /// <summary>
+        /// Объект для работы с БД (отправка/получение/обраюотка результатов запросов)
+        /// </summary>
         public TecView m_tecView;
-
-        int currValuesPeriod;
-
+        /// <summary>
+        /// Количество внутренних отсчетов(внутренний отсчет = 1 сек), произошедших с момента крайнего обновлнения информации
+        ///  , используется для
+        /// </summary>
+        private int _currValuesPeriod;
+        /// <summary>
+        /// Индекс ТЭЦ, в интересах которой создан текущий объект, в глобальном списке ТЭЦ
+        /// </summary>
         public int indx_TEC { get { return m_tecView.m_indx_TEC; } }
+        /// <summary>
+        /// Индекс компонента ТЭЦ, в интересах которого создан текущий объект, в глобальном списке компонентов ТЭЦ
+        /// </summary>
         public int indx_TECComponent { get { return m_tecView.indxTECComponents; } }
+        /// <summary>
+        /// Идентификатор объекта (ТЭЦ/компонент ТЭЦ), в интересах которого создан текущий объект
+        /// </summary>
         public int m_ID { get { return m_tecView.m_ID; } }
-
-        private bool update;
+        /// <summary>
+        /// Признак текущего состояния панели (обновлена/не_обновлена)
+        /// </summary>
+        private bool _update;
 
         protected virtual void InitializeComponent()
         {
@@ -586,8 +620,8 @@ namespace Statistic
                     m_tecView.m_bLastValue_TM_Gen = ((ToolStripMenuItem)_pnlQuickData.ContextMenuStrip.Items[1]).Checked;
                 else
                     ;
-
-            update = false;
+            // установить признак панель не обновлена
+            _update = false;
 
             delegateTickTime = new DelegateObjectFunc(tickTime);
         }
@@ -637,17 +671,12 @@ namespace Statistic
                 //new System.Threading.Timer(new TimerCallback(TimerCurrent_Tick), m_evTimerCurrent, 0, 1000)
                 new System.Windows.Forms.Timer ()
                 ;
-            m_timerCurrent.Interval = 1000;
+            m_timerCurrent.Interval = MS_TIMER_CURRENT_UPDATE;
             m_timerCurrent.Tick += new EventHandler(TimerCurrent_Tick);
             m_timerCurrent.Start ();
 
-            //??? TecView::Start
-            update = false;
-            //setNowDate(true); //??? ...не требуется
-
-            //??? Отображение графиков по 'Activate (true)'
-            //DrawGraphMins(0);
-            //DrawGraphHours();
+            // установить признак - панель не обновлена
+            _update = false;
         }
 
         public override void Stop()
@@ -946,7 +975,9 @@ namespace Statistic
 
             //Logging.Logg().Debug(@"PanelTecViewBase::FillGridHours () - ...");
         }
-
+        /// <summary>
+        /// Иницировать запрос данных с выбранной датой (в ходе запроса отобразить окно длительного выполнения операции)
+        /// </summary>
         protected void NewDateRefresh()
         {
             //Debug.WriteLine(@"PanelTecViewBase::NewDateRefresh () - m_tecView.currHour=" + m_tecView.currHour.ToString ());
@@ -969,12 +1000,16 @@ namespace Statistic
             //delegateStopWait ();
             if (!(delegateStopWait == null)) delegateStopWait(); else ;
         }
-
+        /// <summary>
+        /// Обработчик события - изменение даты на календаре на панели оперативной информации
+        /// </summary>
+        /// <param name="sender">Объект, инициировавший событие (календарь на панели оперативной информации)</param>
+        /// <param name="e">Аргумент события</param>
         private void dtprDate_ValueChanged(object sender, EventArgs e)
         {
             //Debug.WriteLine(@"PanelTecViewBase::dtprDate_ValueChanged () - DATE_pnlQuickData=" + _pnlQuickData.dtprDate.Value.ToString() + @", update=" + update);
 
-            if (update == true)
+            if (_update == true)
             {
                 //Сравниваем даты/время ????
                 if (!(_pnlQuickData.dtprDate.Value.Date.CompareTo (m_tecView.m_curDate.Date) == 0))
@@ -991,7 +1026,7 @@ namespace Statistic
                 setRetroTickTime(m_tecView.lastHour, 60);
             }
             else
-                update = true;
+                _update = true;
         }
 
         private void setNowDate()
@@ -1002,39 +1037,42 @@ namespace Statistic
             else
                 Logging.Logg().Error(@"PanelTecViewBase::setNowDate () - ... BeginInvoke (SetNowDate) - ...", Logging.INDEX_MESSAGE.D_001);
         }
-
-        protected void setNowDate(bool received)
+        /// <summary>
+        /// Установить выбранную дату равной текущей дате
+        /// </summary>
+        /// <param name="recieved">Признак получения данных для отображения</param>
+        protected void setNowDate(bool recieved)
         {
             m_tecView.currHour = true;
 
-            if (received == true)
-            {
-                update = false;
+            if (recieved == true)
+            {// данные получены
+                // установить признак - панель не обновлена
+                _update = false;
+                // инициировать запрос данных с новой датой
                 _pnlQuickData.dtprDate.Value = m_tecView.m_curDate/*.Add(m_tecView.m_tsOffsetToMoscow)*/;
             }
             else
-            {
+            {// данные не получены
+                // запросить данные для отобрадения
                 NewDateRefresh();
             }
         }
-
+        /// <summary>
+        /// Обработчик события - нажать кнопку "Текущий час"
+        /// </summary>
+        /// <param name="sender">Объект, инициировавший событие (кнопка)</param>
+        /// <param name="e">Аргумент события (пустой)</param>
         private void btnSetNow_Click(object sender, EventArgs e)
         {
-            ////Вариань №1
-            //setNowDate(false);
-
-            //Вариань №2
             m_tecView.currHour = true;
             NewDateRefresh();
         }
-
-        //private void changeState()
-        //{
-        //    m_tecView.m_curDate = _pnlQuickData.dtprDate.Value;
-            
-        //    m_tecView.ChangeState ();
-        //}
-
+        /// <summary>
+        /// Обработчик события - отпустить нажатую ранее левую кнопку "мыши"
+        ///  выбор интервала (часа/минуты) на гистограмме
+        /// </summary>
+        /// <param name="index">Индекс интервала</param>
         protected void zedGraphHours_MouseUpEvent(int index)
         {
             bool bRetroHour = false;
@@ -1082,7 +1120,7 @@ namespace Statistic
 
                 if (Actived == true)
                 {
-                    currValuesPeriod = 0;
+                    _currValuesPeriod = 0;
 
                     ////??? Перенос в 'Activate'
                     ////??? Перенос в 'enabledDataSource_...'
@@ -1103,8 +1141,7 @@ namespace Statistic
 
                     _pnlQuickData.OnSizeChanged(null, EventArgs.Empty);
 
-                    //m_timerCurrent.Change(0, 1000);
-                    m_timerCurrent.Interval = 1000;
+                    m_timerCurrent.Interval = MS_TIMER_CURRENT_UPDATE;
                     m_timerCurrent.Start ();
                 }
                 else
@@ -1174,9 +1211,9 @@ namespace Statistic
                     return;
 
                 //if (!(((currValuesPeriod++) * 1000) < Int32.Parse(FormMain.formParameters.m_arParametrSetup[(int)FormParameters.PARAMETR_SETUP.POLL_TIME]) * 1000))
-                if (!(currValuesPeriod++ < POOL_TIME * (m_tecView.PeriodMultiplier)))
+                if (!(_currValuesPeriod++ < POOL_TIME * (m_tecView.PeriodMultiplier)))
                 {
-                    currValuesPeriod = 0;
+                    _currValuesPeriod = 0;
                     NewDateRefresh();
                 }
                 else

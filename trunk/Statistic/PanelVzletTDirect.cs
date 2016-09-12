@@ -1956,7 +1956,7 @@ namespace Statistic
 
                 SPLITTER_PERCENT_VERTICAL = 35;
 
-                m_arPercRows = new int[] { 5, 78 };
+                m_arPercRows = new int[] { 5, 72 };
 
                 InitializeComponent();
 
