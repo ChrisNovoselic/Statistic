@@ -91,6 +91,12 @@ namespace trans_mc
                     hour += offset;
 
                     m_curRDGValues[hour - 1].pbr_number = table.Rows[i][@"PBR_NUMBER"].ToString();
+                    if (m_curRDGValues[hour - 1].pbr_number.IndexOf(@"ПБР") < 0)
+                        m_curRDGValues[hour - 1].pbr_number = @"ПБР" + m_curRDGValues[hour - 1].pbr_number;
+                    else
+                        ;
+
+                    Logging.Logg().Debug(string.Format(@"AdminMC::getPPBRValuesResponse () - hour={0}, PBRNumber={1}...", hour, m_curRDGValues[hour - 1].pbr_number), Logging.INDEX_MESSAGE.NOT_SET);
 
                     //for (j = 0; j < 3 /*4 для SN???*/; j ++)
                     //{
