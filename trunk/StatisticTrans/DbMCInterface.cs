@@ -170,13 +170,29 @@ namespace StatisticCommon
         protected override bool GetData(DataTable table, object query)
         {
             bool result = false;
+
             int i = -1;
             Modes.BusinessLogic.IGenObject igo;
+
+            ////Вариант №1
+            //PPBR_Record ppbr = null;
+            //SortedList<DateTime, PPBR_Record> srtListPPBR = new SortedList<DateTime,PPBR_Record> ();
+            //Вариант №2
+            DataRow []ppbr_rows = null;
+
+            string pbr_number = string.Empty;
+            DateTime date = DateTime.MinValue;
+            string[] args = null
+                , idsInner = null;
+            bool valid = false;
+            int idInner = -1;
+            IList<PlanValueItem> listPVI = null;
+            DateTime dateCurrent;
 
             table.Reset();
             table.Locale = System.Globalization.CultureInfo.CurrentCulture;
 
-            string [] args = ((string)query).Split (';');
+            args = ((string)query).Split (';');
 
             //Logging.Logg().Debug("DbMCInterface::GetData () - " + query + "...", Logging.INDEX_MESSAGE.NOT_SET);
 
@@ -193,19 +209,9 @@ namespace StatisticCommon
                     table.Columns.Add("Pmax", typeof(double));
                     table.Columns.Add("PBR_NUMBER", typeof(string));
                     //table.Columns.Add("ID_COMPONENT", typeof(Int32));
-                    
-                    ////Вариант №1
-                    //PPBR_Record ppbr = null;
-                    //SortedList<DateTime, PPBR_Record> srtListPPBR = new SortedList<DateTime,PPBR_Record> ();
-                    //Вариант №2
-                    DataRow [] ppbr_rows = null;
 
-                    DateTime date = DateTime.FromOADate (Double.Parse (args [2]));
-                    string [] idsInner = args[1].Split(',');
-                    bool valid = false;
-                    int idInner = -1;
-                    IList<PlanValueItem> listPVI = null;
-                    DateTime dateCurrent;
+                    date = DateTime.FromOADate(Double.Parse(args[2]));
+                    idsInner = args[1].Split(',');
 
                     for (i = 0; i < idsInner.Length; i ++)
                     {
@@ -257,6 +263,7 @@ namespace StatisticCommon
                                 //                            m_listPFI[pvi.ObjFactor].Name + " =" + pvi.Value.ToString());
 
                                 dateCurrent = pvi.DT.SystemToLocalHqEx();
+                                pbr_number = pvi.Type.ToString().IndexOf(@"ПБР") < 0 ? @"ПБР" + pvi.Type.ToString() : pvi.Type.ToString();
 
                                 //Получение записи с другими параметрами за это время
                                 ////Вариант №1
@@ -269,7 +276,7 @@ namespace StatisticCommon
                                 if (table.Rows.Count > 0)
                                     ppbr_rows = table.Select("DATE_PBR='" + dateCurrent.ToString() + "'");
                                 else
-                                    ;
+                                    ;                                
 
                                 //Обработка получения записи
                                 ////Вариант №1
@@ -288,15 +295,16 @@ namespace StatisticCommon
                                 //    ;
 
                                 //Вариант №2
-                                if ((ppbr_rows == null) || (ppbr_rows.Length == 0))
+                                if ((ppbr_rows == null)
+                                    || (ppbr_rows.Length == 0))
                                 {
-                                    table.Rows.Add(new object[] { dateCurrent, DateTime.Now, 0.0, 0.0, 0.0, pvi.Type.ToString()/*, igo.IdInner*/});
+                                    table.Rows.Add(new object[] { dateCurrent, DateTime.Now, 0.0, 0.0, 0.0, pbr_number/*, igo.IdInner*/});
                                     ppbr_rows = table.Select("DATE_PBR='" + dateCurrent.ToString() + "'");
                                 }
                                 else
                                     ;
 
-                                ppbr_rows [0]["PBR_NUMBER"] = pvi.Type.ToString();
+                                ppbr_rows[0]["PBR_NUMBER"] = pbr_number;
 
                                 switch (m_listPFI[pvi.ObjFactor].Id)
                                 {
