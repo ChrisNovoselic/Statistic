@@ -62,9 +62,9 @@ namespace StatisticCommon
         };
 
         public HStatisticUsers(int iListenerId)
-            : base(iListenerId)
+            : base(iListenerId, MODE_REGISTRATION.MACHINE_DOMAINNAME)
         {
-            Initialize(@"Пользователь: " + DomainName + @", (id=" + Id + @"), роль: " + Role + @", id_tec=" + allTEC);
+            Initialize(@"роль: " + Role);
         }
 
         public static ID_ROLES Role
