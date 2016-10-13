@@ -100,7 +100,7 @@ namespace StatisticTimeSync
                 switch (_state)
                 {
                     case -1:
-                        msgError = @"Неизвестная причина";
+                        msgError = FormMainStatistic.MSG_ERROR_INIT[(int)FormMainStatistic.INDEX_ERROR_INIT.UNKNOWN];
                         break;
                     case -3: //@"Не найден пользователь@
                         break;
@@ -147,7 +147,7 @@ namespace StatisticTimeSync
             try
             {
                 //Создать И удалить объект с пользовательскими настройками (заполнить статические члены)
-                HStatisticUsers users = new HStatisticUsers(idListenerConfigDB);
+                using (HStatisticUsers users = new HStatisticUsers(idListenerConfigDB, HUsers.MODE_REGISTRATION.MIXED)) { ; }
             }
             catch (Exception e)
             {

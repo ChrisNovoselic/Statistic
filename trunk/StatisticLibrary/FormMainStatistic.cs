@@ -20,6 +20,10 @@ namespace StatisticCommon
         protected static FileINI m_sFileINI;//setup.ini
         protected static FIleConnSett m_sFileCS;//connsett.ini
 
+        public enum ID_ERROR_INIT { UNKNOWN = -1, }
+        public enum INDEX_ERROR_INIT { UNKNOWN = 0, }
+        public static string[] MSG_ERROR_INIT = { @"Неизвестная причина" };
+
         /// <summary>
         /// вызов класса работы с командной строкой
         /// </summary>

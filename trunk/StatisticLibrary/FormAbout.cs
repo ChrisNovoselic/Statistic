@@ -20,8 +20,7 @@ namespace StatisticCommon
 
             m_lblProductVersion.Text = ProgramBase.AppProductVersion; //Application.ProductVersion; //Properties.Resources.TradeMarkVersion;
 
-            m_lblDomainMashineUserName.Text = Environment.UserDomainName + @"\" + Environment.UserName
-                + @" на " + Environment.MachineName;
+            m_lblDomainMashineUserName.Text = HUsers.UserDomainName;
         }
 
         private void llblMailTo_LinkClicked(object sender, LinkLabelLinkClickedEventArgs e)

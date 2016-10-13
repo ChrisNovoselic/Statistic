@@ -141,7 +141,7 @@ namespace StatisticAlarm
                 switch (_state)
                 {
                     case -1:
-                        msgError = @"Неизвестная причина";
+                        msgError = FormMainStatistic.MSG_ERROR_INIT[(int)FormMainStatistic.INDEX_ERROR_INIT.UNKNOWN];
                         break;
                     case -3: //@"Не найден пользователь@
                         break;
@@ -239,7 +239,7 @@ namespace StatisticAlarm
             try
             {
                 //Создать И удалить объект с пользовательскими настройками (заполнить статические члены)
-                using (HStatisticUsers users = new HStatisticUsers(iListenerId)) { ; }
+                using (HStatisticUsers users = new HStatisticUsers(iListenerId, HUsers.MODE_REGISTRATION.MIXED)) { ; }
             }
             catch (Exception e)
             {

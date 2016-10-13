@@ -10,70 +10,76 @@ namespace StatisticCommon
 {
     public abstract partial class FormParameters : FormParametersBase
     {
-        public enum PARAMETR_SETUP {    UNKNOWN = -1
-                                        , POLL_TIME, ERROR_DELAY, MAX_ATTEMPT, WAITING_TIME, WAITING_COUNT,
-                                        MAIN_DATASOURCE, MAIN_PRIORITY,
-                                        /*ALARM_USE, */ ALARM_TIMER_UPDATE, ALARM_EVENT_RETRY, ALARM_TIMER_BEEP, ALARM_SYSTEMMEDIA_TIMERBEEP
-                                        , USERS_DOMAIN_NAME, USERS_ID_TEC, USERS_ID_ROLE                                    
-                                        , SEASON_DATETIME, SEASON_ACTION
-                                        //, GRINVICH_OFFSET_DATETIME
-                                        , APP_VERSION, APP_VERSION_QUERY_INTERVAL
-                                        , KOMDISP_FOLDER_CSV
-                                        //Логгирование
-                                        , MAINFORMBASE_CONTROLHANDLE_LOGERRORCREATE
-                                        , MAINFORMBASE_SETPBRQUERY_LOGPBRNUMBER, MAINFORMBASE_SETPBRQUERY_LOGQUERY
-                                        , TECVIEW_LOGRECOMENDATIONVAL, TECVIEW_GETCURRENTTMGEN_LOGWARNING
-                                        , PANELQUICKDATA_LOGDEVIATIONEVAL
-                                        //Продолжение параметров...
-                                        , VALIDATE_TM_VALUE , VALIDATE_ASKUE_VALUE
-                                        , DIAGNOSTIC_TIMER_UPDATE
-                                        ////??? И где же универсальность
-                                        //, ID_SOURCE_SOTIASSO_BTEC, ID_SOURCE_SOTIASSO_TEC2, ID_SOURCE_SOTIASSO_TEC3, ID_SOURCE_SOTIASSO_TEC4, ID_SOURCE_SOTIASSO_TEC5, ID_SOURCE_SOTIASSO_BiTEC
-                                        , IGO_VERSION
-                                        , COUNT_PARAMETR_SETUP
-                                    };
-        protected static string[] NAME_PARAMETR_SETUP = { "Polling period", "Error delay", "Max attempts count", @"Waiting time", @"Waiting count"
-                                                            , @"Main DataSource", @"Main Priority"
-                                                            /*@"Alarm Use", */, @"Alarm Timer Update" , @"Alarm Event Retry", @"Alarm Timer Beep", @"Alarm SytemMedia FileNam"
-                                                            , @"Users DomainName", @"Users ID_TEC", @"Users ID_ROLE"
-                                                            , @"Season DateTime", @"Season Action"
-                                                            //, @"Grinvich OffsetDateTime"
-                                                            , @"App Version", @"App Version Query Interval"
-                                                            , @"KomDisp Folder CSV"
-                                                            //Логгирование
-                                                            , @"ControlHandle LogErrorCreate"
-                                                            , @"SetPBRQuery LogPBRNumber", @"SetPBRQuery LogQuery"
-                                                            , @"TecView LogRecomendation", @"GetCurrentTMGenResponse LogWarning"
-                                                            , @"ShowFactValues LogDevEVal"
-                                                            //Продолжение параметров...
-                                                            , @"Validate TM Value"
-                                                            ,@"Validate ASKUE Value"
-                                                             ,@"Diagnostic Timer Update" 
-                                                            ////Идентификаторы прилинкованных активных источников СОТИАССО
-                                                            //, @"ID_SOURCE_SOTIASSO_BTEC", @"ID_SOURCE_SOTIASSO_TEC2", @"ID_SOURCE_SOTIASSO_TEC3", @"ID_SOURCE_SOTIASSO_TEC4", @"ID_SOURCE_SOTIASSO_TEC5", @"ID_SOURCE_SOTIASSO_BiTEC"
-                                                            ,@"IGO Version"
-                                                    };
-        protected static string[] NAMESI_PARAMETR_SETUP = { "сек", "сек", "ед.", @"мсек", @"мсек",
-                                                            @"ном", @"стр",
-                                                            /*@"лог", */"сек", "сек", "сек", @"стр"
-                                                            , @"стр", @"ном", @"ном"
-                                                            , @"дата/время", @"ном"
-                                                            //, "час"
-                                                            , @"стр", @"мсек"
-                                                            , @"стр"
-                                                            //Логгирование
-                                                            , @"стр-лог"
-                                                            , @"стр-лог", @"стр-лог"
-                                                            , @"стр-лог", @"стр-лог"
-                                                            , @"стр-лог"
-                                                            //Продолжение параметров...
-                                                            , @"сек"
-                                                            ,@"сек"
-                                                             ,@"сек"
-                                                            //Идентификаторы прилинкованных активных источников СОТИАССО
-                                                            //, @"ном", @"ном", @"ном", @"ном", @"ном", @"ном"
-                                                            ,@"ном"
-                                                    };
+        public enum PARAMETR_SETUP {
+            UNKNOWN = -1
+            , POLL_TIME, ERROR_DELAY, MAX_ATTEMPT, WAITING_TIME, WAITING_COUNT,
+            MAIN_DATASOURCE, MAIN_PRIORITY,
+            /*ALARM_USE, */ ALARM_TIMER_UPDATE, ALARM_EVENT_RETRY, ALARM_TIMER_BEEP, ALARM_SYSTEMMEDIA_TIMERBEEP
+            , USERS_DOMAIN_NAME, USERS_ID_TEC, USERS_ID_ROLE                                    
+            , SEASON_DATETIME, SEASON_ACTION
+            //, GRINVICH_OFFSET_DATETIME
+            , APP_VERSION, APP_VERSION_QUERY_INTERVAL
+            , KOMDISP_FOLDER_CSV
+            //Логгирование
+            , MAINFORMBASE_CONTROLHANDLE_LOGERRORCREATE
+            , MAINFORMBASE_SETPBRQUERY_LOGPBRNUMBER, MAINFORMBASE_SETPBRQUERY_LOGQUERY
+            , TECVIEW_LOGRECOMENDATIONVAL, TECVIEW_GETCURRENTTMGEN_LOGWARNING
+            , PANELQUICKDATA_LOGDEVIATIONEVAL
+            //Продолжение параметров...
+            , VALIDATE_TM_VALUE , VALIDATE_ASKUE_VALUE
+            , DIAGNOSTIC_TIMER_UPDATE
+            ////??? И где же универсальность
+            //, ID_SOURCE_SOTIASSO_BTEC, ID_SOURCE_SOTIASSO_TEC2, ID_SOURCE_SOTIASSO_TEC3, ID_SOURCE_SOTIASSO_TEC4, ID_SOURCE_SOTIASSO_TEC5, ID_SOURCE_SOTIASSO_BiTEC
+            , IGO_VERSION
+            , MODE_REGISTRATION
+            , COUNT_PARAMETR_SETUP
+        };
+        protected static string[] NAME_PARAMETR_SETUP = {
+            "Polling period", "Error delay", "Max attempts count", @"Waiting time", @"Waiting count"
+            , @"Main DataSource", @"Main Priority"
+            /*@"Alarm Use", */, @"Alarm Timer Update" , @"Alarm Event Retry", @"Alarm Timer Beep", @"Alarm SytemMedia FileNam"
+            , @"Users DomainName", @"Users ID_TEC", @"Users ID_ROLE"
+            , @"Season DateTime", @"Season Action"
+            //, @"Grinvich OffsetDateTime"
+            , @"App Version", @"App Version Query Interval"
+            , @"KomDisp Folder CSV"
+            //Логгирование
+            , @"ControlHandle LogErrorCreate"
+            , @"SetPBRQuery LogPBRNumber", @"SetPBRQuery LogQuery"
+            , @"TecView LogRecomendation", @"GetCurrentTMGenResponse LogWarning"
+            , @"ShowFactValues LogDevEVal"
+            //Продолжение параметров...
+            , @"Validate TM Value"
+            , @"Validate ASKUE Value"
+            , @"Diagnostic Timer Update" 
+            ////Идентификаторы прилинкованных активных источников СОТИАССО
+            //, @"ID_SOURCE_SOTIASSO_BTEC", @"ID_SOURCE_SOTIASSO_TEC2", @"ID_SOURCE_SOTIASSO_TEC3", @"ID_SOURCE_SOTIASSO_TEC4", @"ID_SOURCE_SOTIASSO_TEC5", @"ID_SOURCE_SOTIASSO_BiTEC"
+            , @"IGO Version"
+            , @"Mode Registration"
+        };
+        protected static string[] NAMESI_PARAMETR_SETUP = {
+            "сек", "сек", "ед.", @"мсек", @"мсек"
+            , @"ном", @"стр",
+            /*@"лог", */"сек", "сек", "сек", @"стр"
+            , @"стр", @"ном", @"ном"
+            , @"дата/время", @"ном"
+            //, "час"
+            , @"стр", @"мсек"
+            , @"стр"
+            //Логгирование
+            , @"стр-лог"
+            , @"стр-лог", @"стр-лог"
+            , @"стр-лог", @"стр-лог"
+            , @"стр-лог"
+            //Продолжение параметров...
+            , @"сек"
+            , @"сек"
+            , @"сек"
+            //Идентификаторы прилинкованных активных источников СОТИАССО
+            //, @"ном", @"ном", @"ном", @"ном", @"ном", @"ном"
+            , @"ном"
+            , @"стр"
+        };
         protected Dictionary<int, string> m_arParametrSetupDefault;
         public Dictionary<int, string> m_arParametrSetup;
 
@@ -115,23 +121,19 @@ namespace StatisticCommon
 
             m_arParametrSetup.Add((int)PARAMETR_SETUP.KOMDISP_FOLDER_CSV, @"\\ne2844\2.X.X\ПБР-csv");
 
-            m_arParametrSetup.Add((int)PARAMETR_SETUP.MAINFORMBASE_CONTROLHANDLE_LOGERRORCREATE, @"False");
-            m_arParametrSetup.Add((int)PARAMETR_SETUP.MAINFORMBASE_SETPBRQUERY_LOGPBRNUMBER, @"False");
-            m_arParametrSetup.Add((int)PARAMETR_SETUP.MAINFORMBASE_SETPBRQUERY_LOGQUERY, @"False");
-            m_arParametrSetup.Add((int)PARAMETR_SETUP.TECVIEW_LOGRECOMENDATIONVAL, @"False");
-            m_arParametrSetup.Add((int)PARAMETR_SETUP.TECVIEW_GETCURRENTTMGEN_LOGWARNING, @"False");
-            m_arParametrSetup.Add((int)PARAMETR_SETUP.PANELQUICKDATA_LOGDEVIATIONEVAL, @"False");
+            m_arParametrSetup.Add((int)PARAMETR_SETUP.MAINFORMBASE_CONTROLHANDLE_LOGERRORCREATE, false.ToString());
+            m_arParametrSetup.Add((int)PARAMETR_SETUP.MAINFORMBASE_SETPBRQUERY_LOGPBRNUMBER, false.ToString());
+            m_arParametrSetup.Add((int)PARAMETR_SETUP.MAINFORMBASE_SETPBRQUERY_LOGQUERY, false.ToString());
+            m_arParametrSetup.Add((int)PARAMETR_SETUP.TECVIEW_LOGRECOMENDATIONVAL, false.ToString());
+            m_arParametrSetup.Add((int)PARAMETR_SETUP.TECVIEW_GETCURRENTTMGEN_LOGWARNING, false.ToString());
+            m_arParametrSetup.Add((int)PARAMETR_SETUP.PANELQUICKDATA_LOGDEVIATIONEVAL, false.ToString());
 
             m_arParametrSetup.Add((int)PARAMETR_SETUP.VALIDATE_TM_VALUE, @"86");
             m_arParametrSetup.Add((int)PARAMETR_SETUP.VALIDATE_ASKUE_VALUE, @"86");
             m_arParametrSetup.Add((int)PARAMETR_SETUP.DIAGNOSTIC_TIMER_UPDATE, @"30000");
 
-            //m_arParametrSetup.Add((int)PARAMETR_SETUP.ID_SOURCE_SOTIASSO_BTEC, @"12");
-            //m_arParametrSetup.Add((int)PARAMETR_SETUP.ID_SOURCE_SOTIASSO_TEC2, @"22");
-            //m_arParametrSetup.Add((int)PARAMETR_SETUP.ID_SOURCE_SOTIASSO_TEC3, @"32");
-            //m_arParametrSetup.Add((int)PARAMETR_SETUP.ID_SOURCE_SOTIASSO_TEC4, @"42");
-            //m_arParametrSetup.Add((int)PARAMETR_SETUP.ID_SOURCE_SOTIASSO_TEC5, @"52");
-            //m_arParametrSetup.Add((int)PARAMETR_SETUP.ID_SOURCE_SOTIASSO_BiTEC, @"63");
+            m_arParametrSetup.Add((int)PARAMETR_SETUP.IGO_VERSION, 0.ToString());
+            m_arParametrSetup.Add((int)PARAMETR_SETUP.MODE_REGISTRATION, HStatisticUsers.MODE_REGISTRATION.MIXED.ToString());
 
             m_arParametrSetupDefault = new Dictionary<int, string>(m_arParametrSetup);
 

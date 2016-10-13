@@ -61,17 +61,27 @@ namespace StatisticCommon
             , AUTO_TAB_TEPLOSET_ADMIN
         };
 
-        public HStatisticUsers(int iListenerId)
-            : base(iListenerId, MODE_REGISTRATION.MACHINE_DOMAINNAME)
+        public HStatisticUsers(int iListenerId, MODE_REGISTRATION modeRegistration)
+            : base(iListenerId, modeRegistration)
         {
             Initialize(@"роль: " + Role);
+        }
+
+        public HStatisticUsers(int iListenerId, string modeRegistration)
+            : this (iListenerId, Enum.IsDefined(typeof(MODE_REGISTRATION), modeRegistration) == true ? (MODE_REGISTRATION)Enum.Parse(typeof(MODE_REGISTRATION), modeRegistration) : MODE_REGISTRATION.MIXED)
+        {
+        }
+
+        public HStatisticUsers(int iListenerId)
+            : this(iListenerId, MODE_REGISTRATION.USER_DOMAINNAME)
+        {
         }
 
         public static ID_ROLES Role
         {
             get
             {
-                return (m_DataRegistration == null) ? ID_ROLES.UNKNOWN : ((!((int)INDEX_REGISTRATION.ID_TEC < m_DataRegistration.Length)) || (m_DataRegistration[(int)INDEX_REGISTRATION.ROLE] == null)) ? ID_ROLES.ADMIN : (ID_ROLES)m_DataRegistration[(int)INDEX_REGISTRATION.ROLE];
+                return (s_DataRegistration == null) ? ID_ROLES.UNKNOWN : ((!((int)INDEX_REGISTRATION.ID_TEC < s_DataRegistration.Length)) || (s_DataRegistration[(int)INDEX_REGISTRATION.ROLE] == null)) ? ID_ROLES.ADMIN : (ID_ROLES)s_DataRegistration[(int)INDEX_REGISTRATION.ROLE];
             }
         }
 

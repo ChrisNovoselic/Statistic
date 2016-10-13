@@ -81,7 +81,7 @@
     <Reference Include="GemBox.Spreadsheet">
       <HintPath>..\..\ExternalDLL\GemBox.Spreadsheet.dll</HintPath>
     </Reference>
-    <Reference Include="HClassLibrary, Version=2.0.3.1, Culture=neutral, PublicKeyToken=2f5f95fc94cb3397, processorArchitecture=MSIL">
+    <Reference Include="HClassLibrary, Version=2.0.4.3, Culture=neutral, PublicKeyToken=2f5f95fc94cb3397, processorArchitecture=MSIL">
       <SpecificVersion>False</SpecificVersion>
       <HintPath>..\..\ExternalDll\HClassLibrary.dll</HintPath>
     </Reference>

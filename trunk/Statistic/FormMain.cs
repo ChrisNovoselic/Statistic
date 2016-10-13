@@ -55,12 +55,11 @@ namespace Statistic
         //10001 = ADMIN_KOM_DISP, 10002 = ADMIN_NSS (FormChangeMode)
         private enum ID_ADDING_TAB
         {
-            CUR_POWER = 10101, TM_SN_POWER, MONITOR_LAST_MINUTES, SOBSTV_NYZHDY, CUSTOM_2X2_1, CUSTOM_2X3_1,
-            DATETIMESYNC_SOURCE_DATA
-                , CUSTOM_2X2_2, CUSTOM_2X3_2, CUSTOM_2X2_3, CUSTOM_2X3_3, CUSTOM_2X2_4,
-            CUSTOM_2X3_4
-                , SOTIASSO, DIAGNOSTIC, ANALYZER, TEC_Component, USERS
-                , VZLET_TDIRECT
+            CUR_POWER = 10101, TM_SN_POWER, MONITOR_LAST_MINUTES, SOBSTV_NYZHDY, CUSTOM_2X2_1, CUSTOM_2X3_1
+            , DATETIMESYNC_SOURCE_DATA
+            , CUSTOM_2X2_2, CUSTOM_2X3_2, CUSTOM_2X2_3, CUSTOM_2X3_3, CUSTOM_2X2_4, CUSTOM_2X3_4
+            , SOTIASSO, DIAGNOSTIC, ANALYZER, TEC_Component, USERS
+            , VZLET_TDIRECT
         };
         private enum INDEX_CUSTOM_TAB { TAB_2X2, TAB_2X3, TAB_MULTI };
         private class ADDING_TAB
@@ -89,19 +88,16 @@ namespace Statistic
         /// </summary>
         private static bool m_bAutoActionTabs = false;
 
-        public enum ID_ERROR_INIT { UNKNOWN = -1, }
-        private enum INDEX_ERROR_INIT { UNKNOWN = 0, }
-        private static string[] MSG_ERROR_INIT = { @"Неизвестная причина" };
-
         private Dictionary<int, Form> m_dictFormFloat;
         private PanelStatistic[] m_arPanelAdmin;
         private PanelAdmin PanelKomDisp { get { return m_arPanelAdmin[(int)FormChangeMode.MANAGER.DISP] as PanelAdmin; } }
         private ListPanelTecViewBase m_listStandardTabs;
         private Dictionary<int, ADDING_TAB> m_dictAddingTabs;
-        private static List<ID_ADDING_TAB>[] m_arIdCustomTabs = new List<ID_ADDING_TAB>[] { new List<ID_ADDING_TAB> () { ID_ADDING_TAB.CUSTOM_2X2_1, ID_ADDING_TAB.CUSTOM_2X2_2, ID_ADDING_TAB.CUSTOM_2X2_3, ID_ADDING_TAB.CUSTOM_2X2_4 }
-                                                                                , new List<ID_ADDING_TAB> () { ID_ADDING_TAB.CUSTOM_2X3_1, ID_ADDING_TAB.CUSTOM_2X3_2, ID_ADDING_TAB.CUSTOM_2X3_3, ID_ADDING_TAB.CUSTOM_2X3_4 }
-                                                                                , new List<ID_ADDING_TAB> () { ID_ADDING_TAB.MONITOR_LAST_MINUTES, ID_ADDING_TAB.VZLET_TDIRECT }
-                                                                            };
+        private static List<ID_ADDING_TAB>[] m_arIdCustomTabs = new List<ID_ADDING_TAB>[] {
+            new List<ID_ADDING_TAB> () { ID_ADDING_TAB.CUSTOM_2X2_1, ID_ADDING_TAB.CUSTOM_2X2_2, ID_ADDING_TAB.CUSTOM_2X2_3, ID_ADDING_TAB.CUSTOM_2X2_4 }
+            , new List<ID_ADDING_TAB> () { ID_ADDING_TAB.CUSTOM_2X3_1, ID_ADDING_TAB.CUSTOM_2X3_2, ID_ADDING_TAB.CUSTOM_2X3_3, ID_ADDING_TAB.CUSTOM_2X3_4 }
+            , new List<ID_ADDING_TAB> () { ID_ADDING_TAB.MONITOR_LAST_MINUTES, ID_ADDING_TAB.VZLET_TDIRECT }
+        };
         public Passwords m_passwords;
         private FormPassword formPassword;
         private FormSetPassword formSetPassword;
@@ -208,11 +204,11 @@ namespace Statistic
                 updateParametersSetup();                
 
                 //Предустановленные в файле/БД конфигурации
-                HUsers.s_REGISTRATION_INI[(int)HUsers.INDEX_REGISTRATION.DOMAIN_NAME] = formParameters.m_arParametrSetup[(int)FormParameters.PARAMETR_SETUP.USERS_DOMAIN_NAME]; //string.Empty; //@"Отладчик";
+                HUsers.s_REGISTRATION_INI[(int)HUsers.INDEX_REGISTRATION.DOMAIN_NAME] = getINIParametersOfID((int)FormParameters.PARAMETR_SETUP.USERS_DOMAIN_NAME); //string.Empty; //@"Отладчик";
                 HUsers.s_REGISTRATION_INI[(int)HUsers.INDEX_REGISTRATION.ID] = 0; //Неизвестный пользователь
-                HUsers.s_REGISTRATION_INI[(int)HUsers.INDEX_REGISTRATION.ID_TEC] = Int32.Parse(formParameters.m_arParametrSetup[(int)FormParameters.PARAMETR_SETUP.USERS_ID_TEC]); //5
-                HUsers.s_REGISTRATION_INI[(int)HUsers.INDEX_REGISTRATION.ROLE] = Int32.Parse(formParameters.m_arParametrSetup[(int)FormParameters.PARAMETR_SETUP.USERS_ID_ROLE]); //2;
-                m_iGO_Version = Convert.ToInt32(formParameters.m_arParametrSetup[(int)FormParameters.PARAMETR_SETUP.IGO_VERSION]);
+                HUsers.s_REGISTRATION_INI[(int)HUsers.INDEX_REGISTRATION.ID_TEC] = Int32.Parse(getINIParametersOfID((int)FormParameters.PARAMETR_SETUP.USERS_ID_TEC)); //5
+                HUsers.s_REGISTRATION_INI[(int)HUsers.INDEX_REGISTRATION.ROLE] = Int32.Parse(getINIParametersOfID((int)FormParameters.PARAMETR_SETUP.USERS_ID_ROLE)); //2;
+                m_iGO_Version = Convert.ToInt32(getINIParametersOfID((int)FormParameters.PARAMETR_SETUP.IGO_VERSION));
             }
             catch (Exception e)
             {
@@ -227,7 +223,7 @@ namespace Statistic
                 try
                 {
                     //Т.к. все используемые члены-данные СТАТИЧЕСКИЕ
-                    using (new HStatisticUsers(idListenerConfigDB)) { ; }
+                    using (new HStatisticUsers(idListenerConfigDB, getINIParametersOfID((int)FormParameters.PARAMETR_SETUP.MODE_REGISTRATION))) { ; }
                 }
                 catch (Exception e)
                 {
@@ -1498,7 +1494,7 @@ namespace Statistic
                 switch (Initialize(out msg))
                 {
                     case -1:
-                        msg = @"Неизвестная причина";
+                        msg = FormMainStatistic.MSG_ERROR_INIT[(int)FormMainStatistic.INDEX_ERROR_INIT.UNKNOWN];
                         break;
                     case -3: //Не найден пользователь
                         //Остальные п.п. меню блокируются в 'сменитьРежимToolStripMenuItem_EnabledChanged'
@@ -1592,20 +1588,9 @@ namespace Statistic
             result = s_listFormConnectionSettings[(int)type].ShowDialog(this);
             if (result == DialogResult.Yes)
             {
-                //??? Закрывыаются все вкладки
-                // , но 7 строк ниже "админ"-ские закрываются СНОВА
                 StopTabPages();
 
                 base.Stop();
-
-                //int i = -1;
-                //if (!(m_arPanelAdmin == null))
-                //    for (i = 0; i < (int)FormChangeMode.MANAGER.COUNT_MANAGER; i++)
-                //    {
-                //        if (!(m_arPanelAdmin[i] == null)) m_arPanelAdmin[i].Stop(); else ;
-                //    }
-                //else
-                //    ;
 
                 string msg = string.Empty;
                 iRes = Initialize(out msg);
@@ -1614,13 +1599,6 @@ namespace Statistic
                     Abort(msg, false);
                 else
                     ;
-
-                //foreach (PanelTecViewBase t in m_listStandardTabs)
-                //{
-                //    t.Reinit();
-                //}
-
-                //m_arPanelAdmin[(int)FormChangeMode.MANAGER.DISP].Reinit();
             }
             else
                 ;
@@ -1635,11 +1613,8 @@ namespace Statistic
             if (tclTecViews.TabCount > 0)
                 if (MessageBox.Show(this, "Вы уверены, что хотите закрыть текущие вкладки?", "Подтверждение", MessageBoxButtons.YesNo, MessageBoxIcon.Question) == DialogResult.Yes)
                 {
-                    //StartWait();
                     delegateStartWait();
 
-                    //??? Закрывыаются все вкладки
-                    // , но 8 строк ниже "админ"-ские закрываются СНОВА
                     StopTabPages();
 
                     if (!(m_listStandardTabs == null))
@@ -1648,9 +1623,6 @@ namespace Statistic
                     else
                         ;
 
-                    //m_arPanelAdmin[(int)FormChangeMode.MANAGER.DISP].Stop();
-                    //m_arPanelAdmin[(int)FormChangeMode.MANAGER.NSS].Stop();
-                    //m_arPanelAdmin[(int)FormChangeMode.MANAGER.ALARM].Stop();
                     m_markPrevStatePanelAdmin.UnMarked();
 
                     formChangeMode.btnClearAll_Click(formChangeMode, new EventArgs());
