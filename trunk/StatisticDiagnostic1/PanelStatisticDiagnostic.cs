@@ -377,7 +377,6 @@ namespace StatisticDiagnostic
         static DataTable m_dtSource = new DataTable();
         static DataTable m_dtGTP = new DataTable();
         static DataTable m_dtTECList = new DataTable();
-        //static DataTable m_dtSIZEDB = new DataTable();
         static DataTable m_dtParamDiagnostic = new DataTable();
         /// <summary>
         /// 
@@ -410,7 +409,7 @@ namespace StatisticDiagnostic
         /// <summary>
         /// Экземпляры класса Tec
         /// </summary>
-        static Tec m_tecdb = new Tec();
+        public Tec m_tecdb = new Tec();
 
         /// <summary>
         /// 
@@ -969,7 +968,7 @@ namespace StatisticDiagnostic
             {
                 bool blflag = false;
 
-                for (int i = 0; i < countRow; i++)
+                for (int i = 0; i < sourceDR.Count(); i++)
                 {
                     if (sourceDR[i]["Value"].ToString() == "")
                     {
@@ -1010,7 +1009,7 @@ namespace StatisticDiagnostic
                     //DateTime.Now.ToString("HH:mm:ss.fff")));
                     paintingCells(i, r);
 
-                    if (IsNUll(ref m_drTecSource, countElem))
+                    if (IsNUll(ref m_drTecSource, m_drTecSource.Count()))
                         checkrelevancevalues(DateTime.Parse(m_shortTime), i, r);
                     else ;
 
@@ -1049,7 +1048,7 @@ namespace StatisticDiagnostic
             {
                 string filter;
 
-                for (int i = 0; i < m_arPanelsTEC.Length; i++)
+                for (int i = 0; i < m_dtTECList.Rows.Count; i++)
                 {
                     filter = "ID_EXT = " + Convert.ToInt32(m_dtTECList.Rows[i][0]);
                     addRowsTEC(i, m_tableSourceData.Select(filter).Length);
@@ -1357,6 +1356,7 @@ namespace StatisticDiagnostic
                 switch (nameSource)
                 {
                     case "СОТИАССО":
+                    case "СОТИАССО_TorIs":
                     case "СОТИАССО_0":
                         if ((Npanel + 1) == 6)
                             result = result.AddHours(TimeZoneInfo.Local.BaseUtcOffset.Hours);
@@ -2293,19 +2293,13 @@ namespace StatisticDiagnostic
                         TaskDataGridView.Invoke(new Action(() => TaskDataGridView.Rows[0].Cells[i].Value = TaskDataGridView.Rows[indxrow + 1].Cells[i].Value));
 
                     if (Convert.ToString(TaskDataGridView.Rows[0].Cells[4].Value) == "Задача не выполняется")
-                    {
                         TaskDataGridView.Invoke(new Action(() => TaskDataGridView.Rows[0].DefaultCellStyle.BackColor = Color.Firebrick));
-                    }
                     else
                         if (TaskDataGridView.Rows[0].Cells[4].Value.ToString() == "Превышено время выполнения задачи")
-                        {
                             TaskDataGridView.Invoke(new Action(() => TaskDataGridView.Rows[0].DefaultCellStyle.BackColor = Color.Sienna));
-                        }
                         else
-                            if (TaskDataGridView.Rows[0].Cells[5].Value == "Запрещена")
-                            {
+                            if (TaskDataGridView.Rows[0].Cells[5].Value.ToString() == "Запрещена")
                                 TaskDataGridView.Invoke(new Action(() => TaskDataGridView.Rows[0].DefaultCellStyle.BackColor = Color.White));
-                            }
                     TaskDataGridView.Invoke(new Action(() => TaskDataGridView.Rows.RemoveAt(indxrow + 1)));
                 }
                 else
@@ -2684,10 +2678,8 @@ namespace StatisticDiagnostic
             if ((err == 0) && (!(dbconn == null)))
             {
                 m_dtSourceDiag = DbTSQLInterface.Select(ref dbconn, "SELECT * FROM DIAGNOSTIC_SOURCES", null, null, out err);//task modes size
-                //m_dtSourceModes = DbTSQLInterface.Select(ref dbconn, "SELECT * FROM DIAGNOSTIC_TASK_MODES", null, null, out err);
                 m_dtSource = DbTSQLInterface.Select(ref dbconn, "SELECT * FROM SOURCE", null, null, out err);
                 m_dtGTP = DbTSQLInterface.Select(ref dbconn, "SELECT * FROM GTP_LIST", null, null, out err);
-                //m_dtSIZEDB = DbTSQLInterface.Select(ref dbconn, "SELECT * FROM DIAGNOSTIC_SIZEDB", null, null, out err);//??param
                 m_dtParamDiagnostic = DbTSQLInterface.Select(ref dbconn, "SELECT * FROM DIAGNOSTIC_PARAM", null, null, out err);
                 m_dtTECList = InitTEC_200.getListTEC(ref dbconn, false, new int[] { 0, 10 }, out err);
             }
@@ -2840,7 +2832,7 @@ namespace StatisticDiagnostic
         {
             m_arrayActiveSource = new object[table.Rows.Count, 2];
 
-            for (int i = 0; i < table.Rows.Count; i++)
+            for (int i = 0; i < table.Rows.Count; i++) 
                 m_arrayActiveSource.SetValue(table.Rows[i]["ID_LINK_SOURCE_DATA_TM"], i, 0);
 
             int t = -1;
