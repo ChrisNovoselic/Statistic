@@ -175,7 +175,7 @@ namespace trans_mc_cmd
             connSettRes.userName = m_fileINI.ReadString(m_strProgramNameSectionDB_INI, "ИмяПользователь", string.Empty);
             connSettRes.port = Int32.Parse(m_fileINI.ReadString(m_strProgramNameSectionDB_INI, "ПортСУБД", string.Empty));
             connSettRes.password = m_crypt.Decrypt(m_fileINI.ReadString(m_strProgramNameSectionDB_INI, "ПортСУБД", string.Empty), Crypt.KEY);
-            connSettRes.ignore = false;
+            //connSettRes.ignore = false;
 
             typeConfigDB = m_fileINI.ReadInt(m_strProgramNameSectionDB_INI, "ТипБДКфгНазначение", -1);
 

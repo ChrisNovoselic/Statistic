@@ -75,9 +75,9 @@ namespace TestFunc
 
                 ConnectionSettings[] arConnSett = new ConnectionSettings[]
                 {
-                    new ConnectionSettings (671, @"Statistic-CentreV", "10.100.104.18", 1433, @"techsite-2.X.X", @"client", @"client")
-                    , new ConnectionSettings (63, @"Oracle", "10.220.2.5", 1521, @"ORCL", @"arch_viewer", @"1")
-                    , new ConnectionSettings (675, @"Statistic-CentreS", "10.100.204.63", 1433, @"techsite-2.X.X", @"client", @"client")
+                    new ConnectionSettings (671, @"Statistic-CentreV", "10.100.104.18", "", 1433, @"techsite-2.X.X", @"client", @"client") 
+                    , new ConnectionSettings (63, @"Oracle", "10.220.2.5", "", 1521, @"ORCL", @"arch_viewer", @"1")
+                    , new ConnectionSettings (675, @"Statistic-CentreS", "10.100.204.63", "", 1433, @"techsite-2.X.X", @"client", @"client")
                 };
 
                 arThreadDbConn = new BackgroundWorker[arConnSett.Length];

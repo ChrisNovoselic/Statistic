@@ -395,8 +395,8 @@ namespace Statistic
                 //files.InitialDirectory = Environment.GetFolderPath (Environment.SpecialFolder.Desktop);
                 files.InitialDirectory = FormMain.formParameters.m_arParametrSetup [(int)FormParameters.PARAMETR_SETUP.KOMDISP_FOLDER_CSV]; //@"\\ne2844\2.X.X\ПБР-csv"; //@"E:\Temp\ПБР-csv";
                 files.DefaultExt = @"csv";
-                files.Filter = @"Рекомендации-по-умолчанию (AdminValuesDefault.csv)|AdminValuesDefault.csv";
-                files.Title = "Выберите файл со рекомендациями по умолчанию...";
+                files.Filter = @"Рекомендации-по-умолчанию (AdminValuesDefault)|AdminValuesDefault*.csv";
+                files.Title = "Выберите файл с рекомендациями по умолчанию...";
 
                 int iRes = -1;
                 if (files.ShowDialog(FormMain.formParameters) == DialogResult.OK) {
