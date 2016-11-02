@@ -430,7 +430,7 @@ namespace StatisticDiagnostic
         private void timerUp()
         {
             m_timerUpdate = new System.Timers.Timer();
-            m_timerUpdate.Enabled = true;
+            //m_timerUpdate.Enabled = true;
             m_timerUpdate.AutoReset = true;
             m_timerUpdate.Elapsed += new ElapsedEventHandler(UpdateTimer_Elapsed);
             m_timerUpdate.Interval = Convert.ToDouble(UPDATE_TIME);

@@ -86,43 +86,48 @@ namespace Statistic
 
                 TECComponent tc = allTECComponents[m_listTECComponentIndexDetail[i]]; // компонент - параметр вывода
 
-                if (m_arSumRDGValues == null)
-                    m_arSumRDGValues = new HAdmin.RDGStruct[m_listCurRDGValues[i].Length];
-                else
-                    if (!(m_arSumRDGValues.Length == m_listCurRDGValues[i].Length))
-                        throw new Exception(string.Format (@"AdminTS_Vyvod::GetSumRDGValues () - не совпадают размеры массивов (часы в сутках) с полученными данными ПБР для компонента ID={0}...", tc.m_id));
+                if ((i < m_listCurRDGValues.Count)
+                    && (m_listCurRDGValues[i].Length > 0)) {
+                    if (m_arSumRDGValues == null)
+                        m_arSumRDGValues = new HAdmin.RDGStruct[m_listCurRDGValues[i].Length];
+                    else
+                        if (!(m_arSumRDGValues.Length == m_listCurRDGValues[i].Length))
+                        throw new Exception(string.Format(@"AdminTS_Vyvod::GetSumRDGValues () - не совпадают размеры массивов (часы в сутках) с полученными данными ПБР для компонента ID={0}...", tc.m_id));
                     else
                         ;
 
-                if (m_curRDGValues_PBR_0 > 0) {
-                    m_SumRDGValues_PBR_0 += m_curRDGValues_PBR_0;
-                    m_SumRDGValues_PBR_0 /= i == 0 ? 1 : 2; // делитель для усреднения
-                }
-                else ;
+                    if (m_curRDGValues_PBR_0 > 0) {
+                        m_SumRDGValues_PBR_0 += m_curRDGValues_PBR_0;
+                        m_SumRDGValues_PBR_0 /= i == 0 ? 1 : 2; // делитель для усреднения
+                    }
+                    else;
 
-                for (hour = 0; hour < m_listCurRDGValues[i].Length; hour++)
-                {                        
-                    //arSumCurRDGValues[hour].pbr_number = arCurRDGValues[hour].pbr_number;
-                    //if (arCurRDGValues[hour].pbr > 0) arSumCurRDGValues[hour].pbr += arCurRDGValues[hour].pbr; else ;
-                    // для всех элементов д.б. одинаковые!
-                    if (m_listCurRDGValues[i][hour].pmin > 0) {
-                        m_arSumRDGValues[hour].pmin += m_listCurRDGValues[i][hour].pmin;
-                        m_arSumRDGValues[hour].pmin /= i == 0 ? 1 : 2; // делитель для усреднения
-                    } else ;
-                    //if (arCurRDGValues[hour].pmax > 0) arSumCurRDGValues[hour].pmax += arCurRDGValues[hour].pmax; else ;
-                    // рекомендации для всех элементов д.б. одинаковые!
-                    if (!(m_listCurRDGValues[i][hour].recomendation == 0F)) {
-                        m_arSumRDGValues[hour].recomendation += m_listCurRDGValues[i][hour].recomendation;
-                        m_arSumRDGValues[hour].recomendation /= i == 0 ? 1 : 2; // делитель для усреднения
-                    }  else ;
-                    // типы отклонений  для всех элементов д.б. одинаковые!
-                    if (!(m_listCurRDGValues[i][hour].deviationPercent == m_arSumRDGValues[hour].deviationPercent)) m_arSumRDGValues[hour].deviationPercent = m_listCurRDGValues[i][hour].deviationPercent; else ;
-                    // величины отклонения для всех элементов д.б. одинаковые!
-                    if (m_listCurRDGValues[i][hour].deviation > 0) {
-                        m_arSumRDGValues[hour].deviation += m_listCurRDGValues[i][hour].deviation;
-                        m_arSumRDGValues[hour].deviation /= i == 0 ? 1 : 2; // делитель для усреднения
-                    } else ;
-                }
+                    for (hour = 0; hour < m_listCurRDGValues[i].Length; hour++) {
+                        //arSumCurRDGValues[hour].pbr_number = arCurRDGValues[hour].pbr_number;
+                        //if (arCurRDGValues[hour].pbr > 0) arSumCurRDGValues[hour].pbr += arCurRDGValues[hour].pbr; else ;
+                        // для всех элементов д.б. одинаковые!
+                        if (m_listCurRDGValues[i][hour].pmin > 0) {
+                            m_arSumRDGValues[hour].pmin += m_listCurRDGValues[i][hour].pmin;
+                            m_arSumRDGValues[hour].pmin /= i == 0 ? 1 : 2; // делитель для усреднения
+                        } else;
+                        //if (arCurRDGValues[hour].pmax > 0) arSumCurRDGValues[hour].pmax += arCurRDGValues[hour].pmax; else ;
+                        // рекомендации для всех элементов д.б. одинаковые!
+                        if (!(m_listCurRDGValues[i][hour].recomendation == 0F)) {
+                            m_arSumRDGValues[hour].recomendation += m_listCurRDGValues[i][hour].recomendation;
+                            m_arSumRDGValues[hour].recomendation /= i == 0 ? 1 : 2; // делитель для усреднения
+                        } else;
+                        // типы отклонений  для всех элементов д.б. одинаковые!
+                        if (!(m_listCurRDGValues[i][hour].deviationPercent == m_arSumRDGValues[hour].deviationPercent)) m_arSumRDGValues[hour].deviationPercent = m_listCurRDGValues[i][hour].deviationPercent; else;
+                        // величины отклонения для всех элементов д.б. одинаковые!
+                        if (m_listCurRDGValues[i][hour].deviation > 0) {
+                            m_arSumRDGValues[hour].deviation += m_listCurRDGValues[i][hour].deviation;
+                            m_arSumRDGValues[hour].deviation /= i == 0 ? 1 : 2; // делитель для усреднения
+                        } else;
+                    }
+                } else
+                    Logging.Logg().Error(string.Format(@"PanelAdminVyvod.AdminTS_Vyvod::SummatorRDGValues (комп.ID={0}, комп.индекс={1}, комп.индекс_детальный={2}) - суммирование (кол-во часов={3}) не выполнено..."
+                        , tc.m_id, indxTECComponents, i, m_listCurRDGValues[i].Length)
+                        , Logging.INDEX_MESSAGE.NOT_SET);
             }
 
             protected override double getRDGValue_PBR_0(DataRow r, int indxTables, int cntFields)
