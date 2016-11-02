@@ -260,6 +260,8 @@ namespace Statistic
             {
                 m_tecView = new TecViewSobstvNyzhdy();
 
+                m_mnlSetDateTimeResetEvent = new ManualResetEvent(false);
+
                 InitializeComponent();
 
                 HMark markQueries = new HMark(new int[] { (int)CONN_SETT_TYPE.DATA_AISKUE, (int)CONN_SETT_TYPE.DATA_SOTIASSO });
@@ -446,6 +448,9 @@ namespace Statistic
             {
                 m_tecView.Stop ();
 
+                m_mnlSetDateTimeResetEvent.Reset();
+                m_mnlSetDateTimeResetEvent.Close();
+
                 if (!(m_evTimerCurrent == null)) m_evTimerCurrent.Reset(); else ;
                 if (!(m_timerCurrent == null)) m_timerCurrent.Dispose(); else ;
 
@@ -480,7 +485,9 @@ namespace Statistic
                     m_tecView.currHour = false;
                 }
             }
-            
+
+            private ManualResetEvent m_mnlSetDateTimeResetEvent;
+
             /// <summary>
             /// Установить дату/час для объекта обработки запросов к БД
             /// </summary>
@@ -498,6 +505,8 @@ namespace Statistic
                 }
                 else
                     ;
+
+                m_mnlSetDateTimeResetEvent.Set();
             }
 
             /// <summary>
@@ -505,6 +514,8 @@ namespace Statistic
             /// </summary>
             private void changeState()
             {
+                m_mnlSetDateTimeResetEvent.WaitOne();
+
                 m_tecView.ChangeState ();
             }
 

@@ -5588,7 +5588,10 @@ namespace StatisticCommon
 
         private void getHoursTMSNPsumRequest()
         {
-            Request(m_dictIdListeners[m_tec.m_id][(int)CONN_SETT_TYPE.DATA_SOTIASSO], m_tec.hoursTMSNPsumRequest(m_curDate));
+            if (m_curDate.Equals(DateTime.MinValue) == false)
+                Request(m_dictIdListeners[m_tec.m_id][(int)CONN_SETT_TYPE.DATA_SOTIASSO], m_tec.hoursTMSNPsumRequest(m_curDate));
+            else
+                ;
         }
 
         private void getLastMinutesTMRequest()
@@ -5601,12 +5604,18 @@ namespace StatisticCommon
 
         protected virtual void getPPBRValuesRequest()
         {
-            Request(m_dictIdListeners[m_tec.m_id][(int)CONN_SETT_TYPE.PBR], m_tec.GetPBRValueQuery(indxTECComponents, m_curDate.Date.Add(-m_tsOffsetToMoscow), _type));
+            if (m_curDate.Equals(DateTime.MinValue) == false)
+                Request(m_dictIdListeners[m_tec.m_id][(int)CONN_SETT_TYPE.PBR], m_tec.GetPBRValueQuery(indxTECComponents, m_curDate.Date.Add(-m_tsOffsetToMoscow), _type));
+            else
+                ;
         }
 
         protected virtual void getAdminValuesRequest()
         {
-            Request(m_dictIdListeners[m_tec.m_id][(int)CONN_SETT_TYPE.ADMIN], m_tec.GetAdminValueQuery(indxTECComponents, m_curDate.Date.Add(-m_tsOffsetToMoscow), _type));
+            if (m_curDate.Equals(DateTime.MinValue) == false)
+                Request(m_dictIdListeners[m_tec.m_id][(int)CONN_SETT_TYPE.ADMIN], m_tec.GetAdminValueQuery(indxTECComponents, m_curDate.Date.Add(-m_tsOffsetToMoscow), _type));
+            else
+                ;
         }
 
         protected override void InitializeSyncState()
