@@ -1019,7 +1019,7 @@ namespace Statistic
                     else
                         throw new Exception(@"FormMain::FormMain_OnFormFloat_Closing () - невозможно определить тип панели...");
                 //Добавить вкладку в "основное" окно
-                tclTecViews.AddTabPage(formFloat.GetPanel(), formFloat.Text, getKeyFormFloat(formFloat), HTabCtrlEx.TYPE_TAB.FLOAT);
+                tclTecViews.AddTabPage(formFloat.GetPanel(), formFloat.Text, keyTab, HTabCtrlEx.TYPE_TAB.FLOAT);
 
                 //???Отладка
                 Console.WriteLine(@"FormMain::FormMain_OnFormFloat_Closing () - TabCount=" + tclTecViews.TabCount + @", SelectedIndex=" + tclTecViews.SelectedIndex);
@@ -1954,7 +1954,7 @@ namespace Statistic
                     tclTecViews.AddTabPage(m_listStandardTabs[panel_tecView.indx_tecView]
                         , formChangeMode.m_listItems[panel_tecView.indx_itemChangeMode].name_shr
                         , m_listStandardTabs[panel_tecView.indx_tecView].m_ID
-                        , HTabCtrlEx.TYPE_TAB.FIXED);
+                        , HTabCtrlEx.TYPE_TAB.FLOAT);
                     // инициировать операции по инициализации панели
                     m_listStandardTabs[panel_tecView.indx_tecView].Start();
                 }
