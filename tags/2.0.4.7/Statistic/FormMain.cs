@@ -935,36 +935,36 @@ namespace Statistic
             //Назначить обработчики событий...
             formFloat.delegateFormClosing = FormMain_OnFormFloat_Closing;
             formFloat.delegateFormLoad = FormMain_OnFormFloat_Load;
-            //Сохранить значение в массиве "вспомогательных" форм
-            //m_dictFormFloat.Add((int)m_arIdCustomTabs[(int)indxTab, indxItem], formFloat);
-            int key = -1;
-            ////Вариант №1
-            //key = getKeyOfPanel(panel);
-            //Вариант №2
-            if (panel is PanelCustomTecView)
-            {
-                //Определить индексы в массиве
-                string text = string.Empty;
-                ////Вариант №1
-                //text = tclTecViews.NameOfItemControl(panel);
-                //Вариант №2
-                text = ev.TabHeaderText;
-                INDEX_CUSTOM_TAB indxTab = getIndexCustomTab(text);
-                int indxItem = getIndexItemCustomTab(text);
-                key = (int)m_arIdCustomTabs[(int)indxTab][indxItem];
-            }
-            else
-            {
-                //if (panel is PanelTecViewBase)
-                //    key = (panel as PanelTecViewBase).m_ID;
-                //else
-                //{
-                //    throw new Exception(@"FormMain::showFormFloat () - невозможно определить идентификатор панели - неизвестный тип панели...");
-                //}
+            ////Сохранить значение в массиве "вспомогательных" форм
+            ////m_dictFormFloat.Add((int)m_arIdCustomTabs[(int)indxTab, indxItem], formFloat);
+            //int key = -1;
+            //////Вариант №1
+            ////key = getKeyOfPanel(panel);
+            ////Вариант №2
+            //if (panel is PanelCustomTecView)
+            //{
+            //    //Определить индексы в массиве
+            //    string text = string.Empty;
+            //    ////Вариант №1
+            //    //text = tclTecViews.NameOfItemControl(panel);
+            //    //Вариант №2
+            //    text = ev.TabHeaderText;
+            //    INDEX_CUSTOM_TAB indxTab = getIndexCustomTab(text);
+            //    int indxItem = getIndexItemCustomTab(text);
+            //    key = (int)m_arIdCustomTabs[(int)indxTab][indxItem];
+            //}
+            //else
+            //{
+            //    //if (panel is PanelTecViewBase)
+            //    //    key = (panel as PanelTecViewBase).m_ID;
+            //    //else
+            //    //{
+            //    //    throw new Exception(@"FormMain::showFormFloat () - невозможно определить идентификатор панели - неизвестный тип панели...");
+            //    //}
 
-                key = tclTecViews.GetTabPageId(ev.TabIndex);
-            }
-            m_dictFormFloat.Add(key, formFloat);
+            //    key = ev.Id;
+            //}
+            m_dictFormFloat.Add(ev.Id, formFloat);
             //Отобразить окно, установить на нем фокус...
             formFloat.Show(null);
             formFloat.Focus();
