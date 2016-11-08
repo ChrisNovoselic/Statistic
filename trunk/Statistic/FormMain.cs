@@ -1954,7 +1954,7 @@ namespace Statistic
                     tclTecViews.AddTabPage(m_listStandardTabs[panel_tecView.indx_tecView]
                         , formChangeMode.m_listItems[panel_tecView.indx_itemChangeMode].name_shr
                         , m_listStandardTabs[panel_tecView.indx_tecView].m_ID
-                        , HTabCtrlEx.TYPE_TAB.FIXED);
+                        , HTabCtrlEx.TYPE_TAB.FLOAT);
                     // инициировать операции по инициализации панели
                     m_listStandardTabs[panel_tecView.indx_tecView].Start();
                 }
