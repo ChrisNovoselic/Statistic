@@ -563,16 +563,17 @@ namespace StatisticCommon
             if (iHour < 0)
             {
                 if (m_ignore_date == true)
-                    iHour = HDateTime.ToMoscowTimeZone (DateTime.Now).Hour;
+                    iHour = HDateTime.ToMoscowTimeZone ().Hour;
                 else
                     iHour = serverTime.Hour;
             }
             else
                 ;
 
-            if ((iHour % 2) > 0)
-                iRes = iHour;
-            else
+            //// для интервала обновления ПБР = 2 ч
+            //if ((iHour % 2) > 0)
+            //    iRes = iHour;
+            //else
                 iRes = iHour + 1;
 
             return iRes;

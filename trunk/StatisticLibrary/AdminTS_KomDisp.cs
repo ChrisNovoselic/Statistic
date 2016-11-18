@@ -415,7 +415,7 @@ namespace StatisticCommon
 
             int indxStartSession = nameFile.IndexOf(s_strMarkSession, 0) + s_strMarkSession.Length
                 , indxEndSession = nameFile.IndexOf(@")", indxStartSession);
-            arObjRes[1] = Int32.Parse(nameFile.Substring(indxStartSession, indxEndSession - indxStartSession)) - 2;
+            arObjRes[1] = Int32.Parse(nameFile.Substring(indxStartSession, indxEndSession - indxStartSession)) - 1;
 
             return arObjRes;
         }

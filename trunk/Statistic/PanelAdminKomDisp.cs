@@ -321,12 +321,9 @@ namespace Statistic
                 object[] prop = AdminTS_KomDisp.GetPropertiesOfNameFilePPBRCSVValues(files.FileName);
 
                 //if (!((DateTime)prop[0] == DateTime.Now.Date))
-                if (!((DateTime)prop[0] == m_admin.m_curDate.Date))
-                {
+                if (!((DateTime)prop[0] == m_admin.m_curDate.Date)) {
                     iRes = -1;
-                }
-                else
-                {
+                } else {
                     //Сравнить с текущим номером ПБР
                     if (!((int)prop[1] > curPBRNumber))
                         iRes = -2;
@@ -335,29 +332,22 @@ namespace Statistic
                 }
 
                 //Проверка на ошибки
-                if (!(iRes == 0))
-                {
+                if (!(iRes == 0)) {
                     string strMsg = string.Empty;
                     //Ошибка по дате
-                    if (iRes == -1)
-                    {
-                        strMsg = string.Format(@"Дата загружаемого [{0}] набора ПБР не соответствует установл./дате [{1}]", ((DateTime)prop[0]).ToString(@"dd.MM.yyyy"), DateTime.Now.Date.ToString(@"dd.MM.yyyy"));
+                    if (iRes == -1) {
+                        strMsg = string.Format(@"Дата загружаемого [{0:dd.MM.yyyy}] набора ПБР не соответствует установл./дате [{1:dd.MM.yyyy}]"
+                            , ((DateTime)prop[0]), m_admin.m_curDate.Date);
                         MessageBox.Show(this, strMsg, @"Информация", MessageBoxButtons.OK, MessageBoxIcon.Information);
-                    }
-                    else
-                    {
+                    } else {
                         //Ошибка по номеру ПБР
-                        if (iRes == -2)
-                        {
+                        if (iRes == -2) {
                             strMsg = string.Format(@"Номер загружаемого набора [{0}] ПБР не выше, чем текущий [{1}].{2}Продолжить?", (int)prop[1], curPBRNumber, Environment.NewLine);
-                            if (MessageBox.Show(this, strMsg, @"Подтверждение", MessageBoxButtons.YesNo, MessageBoxIcon.Information, MessageBoxDefaultButton.Button1) == DialogResult.Yes)
-                            {
+                            if (MessageBox.Show(this, strMsg, @"Подтверждение", MessageBoxButtons.YesNo, MessageBoxIcon.Information, MessageBoxDefaultButton.Button1) == DialogResult.Yes) {
                                 iRes = 0;
-                            }
-                            else
+                            } else
                                 ;
-                        }
-                        else
+                        } else
                             ;
                     }
                 }

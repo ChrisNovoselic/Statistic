@@ -1939,7 +1939,8 @@ namespace StatisticCommon
         {
             string strRes = string.Empty;
 
-            TimeSpan tsOffset = TimeSpan.Zero; // HDateTime.TS_NSK_OFFSET_OF_MOSCOWTIMEZONE;
+            // смещение между метками времени источника данных и метками времени значений к отображению
+            TimeSpan  tsOffset = HDateTime.TS_NSK_OFFSET_OF_MOSCOWTIMEZONE;
             DateTime dtReq = dt.Date.Add(tsOffset); //добавить смещение НСК - МСК, т.к. в БД метки времени НСК
 
             Vyvod.ParamVyvod pv;
@@ -1952,7 +1953,7 @@ namespace StatisticCommon
             {
                 case TYPE_DBVZLET.KKS_NAME:
                     strRes = @"DECLARE @getdate AS DATETIME2;" + NL;
-                    strRes += @"SELECT @getdate = CAST(DATEADD(hh," + tsOffset.Hours + @"," + @"'" + dtReq.ToString(@"yyyyMMdd HH:00:00") + @"') AS DATETIME2(7));" + NL;
+                    strRes += @"SELECT @getdate = CAST('" + dtReq.ToString(@"yyyyMMdd HH:00:00") + @"' AS DATETIME2(7));" + NL;
 
                     strRes += @"DECLARE @SETTINGS_TABLE AS TABLE ([ID_POINT_ASKUTE] [int] NOT NULL, [KKS_NAME] [nvarchar](256) NOT NULL);" + NL;
 
@@ -1965,17 +1966,17 @@ namespace StatisticCommon
                     strRes += strParamVyvod;
                     strRes += @") AS [SETTINGS]([ID_POINT_ASKUTE],[KKS_NAME]);" + NL;
 
-                    strRes += @"SELECT [GROUP_DATA].[ID_TEC], [GROUP_DATA].[KKS_NAME], [SET].[ID_POINT_ASKUTE], [GROUP_DATA].[VALUE], [GROUP_DATA].[DATETIME]"
+                    strRes += @"SELECT [GROUP_DATA].[ID_TEC], [GROUP_DATA].[KKS_NAME], [SET].[ID_POINT_ASKUTE], [GROUP_DATA].[VALUE], DATEADD(HOUR, -" + tsOffset.Hours + @", [GROUP_DATA].[DATETIME]) AS [DATETIME]"
                         + @" FROM ("
                             + @"SELECT [ID_TEC], [KKS_NAME], AVG([VALUE]) AS [VALUE],"
-                                + @" DATEADD(hh," + tsOffset.Hours + @",DATEADD(minute, (DATEDIFF(minute, @getdate, [DATETIME])/60)*60, @getdate)) AS [DATETIME]"
+                                + @" DATEADD(minute, (DATEDIFF(minute, @getdate, [DATETIME]) / 60) * 60, @getdate) AS [DATETIME]"
                             + @" FROM ("
                                 + @"SELECT [ARCH].[ID_TEC], [ARCH].[KKS_NAME], [ARCH].[VALUE], [ARCH].[DATETIME]"
                                     + @" FROM [VZLET_CURRENT_ARCHIVES_MIN_" + m_prefixVzletData + @"] AS [ARCH] WITH(INDEX(KKS_DATETIME), READUNCOMMITTED)"
                                         + @" INNER JOIN @SETTINGS_TABLE AS [SET] ON ([ARCH].[KKS_NAME] = [SET].[KKS_NAME])"
                                     + @" WHERE [ARCH].[DATETIME] BETWEEN @getdate AND DATEADD(ms, -3, DATEADD(dd,1,@getdate))"
                                 + @") AS [DATA]"
-                        + @" GROUP BY [ID_TEC], [KKS_NAME], DATEADD(hh," + tsOffset.Hours + @",DATEADD(minute, (DATEDIFF(minute, @getdate, [DATETIME])/60)*60, @getdate))"
+                        + @" GROUP BY [ID_TEC], [KKS_NAME], DATEADD(minute, (DATEDIFF(minute, @getdate, [DATETIME]) / 60) * 60, @getdate)"
                             + @") AS [GROUP_DATA] INNER JOIN @SETTINGS_TABLE AS [SET] ON ([GROUP_DATA].[KKS_NAME] = [SET].[KKS_NAME])"
                         + @" ORDER BY [GROUP_DATA].[DATETIME];" + NL;
                     //strRes += @"GO";

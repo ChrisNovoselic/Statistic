@@ -1342,7 +1342,8 @@ namespace Statistic
             {
                 public DataSource(int indx_tec, int indx_comp = -1) : base (indx_tec, indx_comp, TECComponentBase.TYPE.TEPLO)
                 {
-                    m_idAISKUEParNumber = ID_AISKUE_PARNUMBER.FACT_30;
+                    m_idAISKUEParNumber = ID_AISKUE_PARNUMBER.FACT_30;                    
+                    //_tsOffsetToMoscow = HDateTime.TS_NSK_OFFSET_OF_MOSCOWTIMEZONE;
                 }
 
                 protected override void Initialize()
@@ -1477,43 +1478,45 @@ namespace Statistic
                     double Gpv = -1F, Tpv = -1F;
                     List<int> listIDLowPointDev = new List<int>(); // список идентификаторов параметров ВЫВОДов, значения которых представлены в столбцах таблицы-результата
                     DataRow[] arDataParamVyvod = null;
+                    DateTime dtValue = DateTime.MinValue;
 
                     try
                     {
-                        switch (TEC.TypeDbVzlet)
-                        {
+                        switch (TEC.TypeDbVzlet) {
                             case TEC.TYPE_DBVZLET.KKS_NAME:
                                 foreach (TECComponent tc in _localTECComponents)
                                     if ((tc.IsVyvod == true)
-                                        && (tc.m_bKomUchet == true))
-                                    {
-                                        foreach (TECComponentBase lpd in tc.m_listLowPointDev)
-                                        {
+                                        && (tc.m_bKomUchet == true)) {
+                                        foreach (TECComponentBase lpd in tc.m_listLowPointDev) {
                                             // получить идентификатор параметра ВЫВОДа
                                             id = lpd.m_id;
                                             // получить все строки со значениями для параметра ВЫВОДа
                                             arDataParamVyvod = table.Select(@"ID_POINT_ASKUTE=" + id);
-                                            foreach (DataRow r in arDataParamVyvod)
-                                            {
-                                                iHour = ((DateTime)r[@"DATETIME"]).Hour;
-                                                // запомнить крайний номер часа с полученными значениями
-                                                if (iHourRecieved < iHour)
-                                                    iHourRecieved = iHour;
-                                                else
-                                                    ;
+                                            foreach (DataRow r in arDataParamVyvod) {
+                                                dtValue = ((DateTime)r[@"DATETIME"]);
 
-                                                m_dictValuesLowPointDev[id].m_power_LastMinutesTM[iHour] = (double)r[@"VALUE"];
+                                                if (!(dtValue < m_curDate.Date)) {
+                                                    iHour = dtValue.Hour;
 
-                                                if (((lpd as Vyvod.ParamVyvod).m_id_param == Vyvod.ID_PARAM.G_PV)
-                                                    || ((lpd as Vyvod.ParamVyvod).m_id_param == Vyvod.ID_PARAM.G2_PV))
-                                                // суммировать массовые расходы для последующего вычисления массовой доли конкретного ВЫВОДа
-                                                    m_valuesHours[iHour].valuesTMSNPsum += (double)r[@"VALUE"];
-                                                else
+                                                    // запомнить крайний номер часа с полученными значениями
+                                                    if (iHourRecieved < iHour)
+                                                        iHourRecieved = iHour;
+                                                    else
+                                                        ;
+
+                                                    m_dictValuesLowPointDev[id].m_power_LastMinutesTM[iHour] = (double)r[@"VALUE"];
+
+                                                    if (((lpd as Vyvod.ParamVyvod).m_id_param == Vyvod.ID_PARAM.G_PV)
+                                                        || ((lpd as Vyvod.ParamVyvod).m_id_param == Vyvod.ID_PARAM.G2_PV))
+                                                        // суммировать массовые расходы для последующего вычисления массовой доли конкретного ВЫВОДа
+                                                        m_valuesHours[iHour].valuesTMSNPsum += (double)r[@"VALUE"];
+                                                    else
+                                                        ;
+                                                } else
                                                     ;
                                             }
                                         }
-                                    }
-                                    else
+                                    } else
                                         ;
 
                                 //iHourRecieved++;
