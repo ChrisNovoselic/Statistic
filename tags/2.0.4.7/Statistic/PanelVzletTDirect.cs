@@ -1441,7 +1441,7 @@ namespace Statistic
 
                 private void getHoursVzletTDirectRequest(DateTime dt)
                 {
-                    string strQuery = m_tec.GetHoursVzletTDirectQuery(dt);
+                    string strQuery = m_tec.GetHoursVzletTDirectQuery(dt.Add(-HDateTime.TS_MSK_OFFSET_OF_UTCTIMEZONE/* - m_tsOffsetToMoscow*/));
 
                     //Debug.WriteLine(DateTime.Now.ToString () + @"; TecView::getHoursVzletTDirectRequest () - query = " + strQuery);
                     Request(m_dictIdListeners[m_tec.m_id][(int)CONN_SETT_TYPE.DATA_VZLET], strQuery);
