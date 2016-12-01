@@ -23,6 +23,7 @@ namespace Statistic
             public AdminTS_Vyvod(bool[] arMarkSavePPBRValues)
                 : base(arMarkSavePPBRValues, TECComponentBase.TYPE.TEPLO)
             {
+                //_tsOffsetToMoscow = HDateTime.TS_NSK_OFFSET_OF_MOSCOWTIMEZONE;
                 m_SumRDGValues_PBR_0 = 0F;
             }
 
