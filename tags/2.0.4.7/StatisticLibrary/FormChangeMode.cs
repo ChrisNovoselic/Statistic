@@ -337,51 +337,47 @@ namespace StatisticCommon
             {
                 bRes = (item.id > idMinVal) && (item.id < idMaxVal);
                 if (bRes == true)
-                    if (IsModeTECComponent(mode) == true)
-                    {
-                        clbMode.Items.Add(item.name_shr);
-                        //Контекстное меню - главная форма
-                        if (!(m_MainFormContextMenuStripListTecViews == null))
-                        {
-                            m_MainFormContextMenuStripListTecViews.Items.Add(item.name_shr);
-                            if ((item.id >= (int)TECComponent.ID.GTP_LK & item.id < (int)TECComponent.ID.PC) || (item.id >= (int)TECComponent.ID.LK & item.id < (int)TECComponent.ID.GTP))
-                            {
-                            }
-                            else
-                            {
-                                foreach (TEC t in m_list_tec)
-                                {
-                                    if(t.m_id==item.id)
-                                        m_list_change_items.Add(item);
-                                    else
-                                        foreach (TECComponent tc in t.list_TECComponents)
-                                        {
-                                            if (tc.m_id == item.id)
-                                                if (tc.tec.m_id >= (int)TECComponent.ID.LK & tc.tec.m_id < (int)TECComponent.ID.GTP)
-                                                {
-                                                }
-                                                else
-                                                {
-                                                    if (tc.IsGTP == true)
-                                                    {
-                                                        m_list_change_items.Add(item);
-                                                    }
-                                                    if (tc.IsPC == true)
-                                                    {
-                                                        m_list_change_items.Add(item);
-                                                    }
-                                                }
-                                        }
-                                }
-                            }
-                        }
-                        else ;
-                        if (!(EventMenuItemAdd == null)) EventMenuItemAdd(item.id + @";" + item.name_shr);
+                    if (IsModeTECComponent(mode) == true) {
+                        if (TECComponent.VerifyID(item.id
+                            , TECComponent.ID.TEC, TECComponent.ID.LK, TECComponent.ID.GTP, TECComponent.ID.GTP_LK, TECComponent.ID.PC, TECComponent.ID.TG) == true) {
+                            clbMode.Items.Add(item.name_shr);
+                            //Контекстное меню - главная форма
+                            if (!(m_MainFormContextMenuStripListTecViews == null)) {
+                                m_MainFormContextMenuStripListTecViews.Items.Add(item.name_shr);
 
-                        clbMode.SetItemChecked(clbMode.Items.Count - 1, item.bChecked);
-                        item.bVisibled = true;
-                    }
-                    else
+                                if (TECComponent.VerifyID(item.id, TECComponent.ID.LK, TECComponent.ID.GTP_LK) == false)
+                                    foreach (TEC t in m_list_tec) {
+                                        if (t.m_id == item.id)
+                                            m_list_change_items.Add(item);
+                                        else
+                                            foreach (TECComponent tc in t.list_TECComponents)
+                                                if (tc.m_id == item.id)
+                                                    if (tc.tec.m_id >= (int)TECComponent.ID.LK & tc.tec.m_id < (int)TECComponent.ID.GTP)
+                                                        ;
+                                                    else {
+                                                        if (tc.IsGTP == true)
+                                                            m_list_change_items.Add(item);
+                                                        else
+                                                            ;
+
+                                                        if (tc.IsPC == true)
+                                                            m_list_change_items.Add(item);
+                                                        else
+                                                            ;
+                                                    }
+                                    }
+                                else
+                                    ;
+                            } else
+                                ;
+
+                            if (!(EventMenuItemAdd == null)) EventMenuItemAdd(item.id + @";" + item.name_shr);
+
+                            clbMode.SetItemChecked(clbMode.Items.Count - 1, item.bChecked);
+                            item.bVisibled = true;
+                        } else
+                            ;                        
+                    } else
                         item.bVisibled = false;
                 else
                     ;

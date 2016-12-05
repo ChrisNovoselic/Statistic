@@ -57,7 +57,26 @@ namespace StatisticCommon
         /// <summary>
         /// Идентификаторы для типов компонента ТЭЦ
         /// </summary>
-        public enum ID : int { LK = 10, GTP = 100, GTP_LK = 200, PC = 500, VYVOD = 600, TG = 1000, PARAM_VYVOD = 2000, MAX = 10000 }
+        public enum ID : int { TEC, LK = 10, GTP = 100, GTP_LK = 200, PC = 500, VYVOD = 600, TG = 1000, PARAM_VYVOD = 2000, MAX = 10000 }
+        /// <summary>
+        /// Тип делегата для проверки идентификатора на принадлежность к группе
+        /// </summary>
+        /// <param name="verId">Идентификатор для проверки</param>
+        /// <returns>Признак принадлежности к группе</returns>
+        private delegate bool BoolDelegateIntFunc(int verId);
+        /// <summary>
+        /// Словарь с методами для проверки идентификатора компонента на проверку к принадлежности к группе
+        /// </summary>
+        private static Dictionary<ID, BoolDelegateIntFunc> _dictVerifyIDDelegate = new Dictionary<ID, BoolDelegateIntFunc> {
+            { ID.TEC, VerifyTEC }
+            , { ID.LK, VerifyLK }
+            , { ID.GTP, VerifyGTP }
+            , { ID.GTP_LK, VerifyGTP_LK }
+            , { ID.PC, VerifyPC }
+            , { ID.TG, VerifyTG }
+            , { ID.VYVOD, VerifyVyvod }
+            , { ID.PARAM_VYVOD, VerifyParamVyvod }
+        };
         /// <summary>
         /// Краткое наименовнаие компонента
         /// </summary>
@@ -89,11 +108,7 @@ namespace StatisticCommon
         public TECComponentBase()
         {
             m_dcKoeffAlarmPcur = -1;
-        }
-        /// <summary>
-        /// Признак принадлежности компонента к группе ГТП
-        /// </summary>
-        public bool IsGTP { get { return (m_id > (int)ID.GTP) && (m_id < (int)ID.PC); } }
+        }        
         /// <summary>
         /// Возвратить тип (режим) компонента по указанному идентификатору
         /// </summary>
@@ -109,19 +124,72 @@ namespace StatisticCommon
                     ((id > (int)ID.PARAM_VYVOD) && (id < (int)ID.MAX)) == true ? FormChangeMode.MODE_TECCOMPONENT.TG : //??? (эмуляция для 'SaveChanges') для параметра ВЫВОДа нет идентификатора типа
                         FormChangeMode.MODE_TECCOMPONENT.ANY;
         }
+
+        public bool IsLK { get { return VerifyLK(m_id); } }
+        /// <summary>
+        /// Признак принадлежности компонента к группе ГТП
+        /// </summary>
+        public bool IsGTP { get { return VerifyGTP(m_id); } }
+        /// <summary>
+        /// Признак принадлежности компонента к группе ГТП(ЛК)
+        /// </summary>
+        public bool IsGTP_LK { get { return VerifyGTP_LK(m_id); } }
         /// <summary>
         /// Признак принадлежности компонента к группе щиты управления
         ///  (блочные, групповые)
         /// </summary>
-        public bool IsPC { get { return (m_id > (int)ID.PC) && (m_id < (int)ID.VYVOD); } }
+        public bool IsPC { get { return VerifyPC(m_id); } }
         /// <summary>
         /// Признак принадлежности компонента к группе ТГ
         /// </summary>
-        public bool IsTG { get { return (m_id > (int)ID.TG) && (m_id < (int)ID.PARAM_VYVOD); } }
+        public bool IsTG { get { return VerifyTG(m_id); } }
+        /// <summary>
+        /// Признак принадлежности компонента к группе выводов
+        /// </summary>
+        public bool IsVyvod { get { return VerifyVyvod(m_id); } }
+        /// <summary>
+        /// Признак принадлежности компонента к группе параметры вывода
+        /// </summary>
+        public bool IsParamVyvod { get { return VerifyParamVyvod(m_id); } }
+        /// <summary>
+        /// Проверить идентификатор на принадлежность к одной из групп
+        /// </summary>
+        /// <param name="verId">Идентификатор для проверки</param>
+        /// <param name="arId">Идентификаторы групп компонентов</param>
+        /// <returns>Признак принадлежности к одной из групп, перечисленных в аргументе 'arId'</returns>
+        public static bool VerifyID(int verId, params ID[] arId)
+        {
+            bool bRes = false;
 
-        public bool IsVyvod { get { return (m_id > (int)ID.VYVOD) && (m_id < (int)ID.TG); } }
-        
-        public bool IsParamVyvod { get { return (m_id > (int)ID.PARAM_VYVOD) && (m_id < (int)ID.MAX); } }
+            foreach (ID id in arId)
+                if (bRes = _dictVerifyIDDelegate[id](verId) == true)
+                    break;
+                else
+                    ;
+
+            return bRes;
+        }
+
+        public static bool VerifyTEC(int id) { return (id > 0) && (id < (int)ID.LK); }
+
+        public static bool VerifyLK(int id) { return (id > (int)ID.LK) && (id < (int)ID.GTP); }
+
+        public static bool VerifyGTP(int id) { return (id > (int)ID.GTP) && (id < (int)ID.GTP_LK); }
+
+        public static bool VerifyGTP_LK(int id) { return (id > (int)ID.GTP_LK) && (id < (int)ID.PC); }
+        /// <summary>
+        /// Признак принадлежности компонента к группе щиты управления
+        ///  (блочные, групповые)
+        /// </summary>
+        public static bool VerifyPC(int id) { return (id > (int)ID.PC) && (id < (int)ID.VYVOD); }
+        /// <summary>
+        /// Признак принадлежности компонента к группе ТГ
+        /// </summary>
+        public static bool VerifyTG(int id) { return (id > (int)ID.TG) && (id < (int)ID.PARAM_VYVOD); }
+
+        public static bool VerifyVyvod(int id) { return (id > (int)ID.VYVOD) && (id < (int)ID.TG); }
+
+        public static bool VerifyParamVyvod(int id) { return (id > (int)ID.PARAM_VYVOD) && (id < (int)ID.MAX); }
     }
 
     //public partial class TEC {
@@ -184,20 +252,6 @@ namespace StatisticCommon
             {
                 initTG(row_tg, row_param_tg);
             }
-
-            //public void InitTG(DataRow row_tg, DataRow row_param_tg, out int err)
-            //{
-            //    err = -1;
-
-            //    name_shr = row_tg["NAME_SHR"].ToString();
-            //    m_id = Convert.ToInt32(row_tg["ID"]);
-            //    m_id_owner_gtp = Convert.ToInt32(row_tg["ID_GTP"]);
-
-            //    //DataRow[] rows_tg = allParamTG.Select(@"ID_TG=" + dest.m_id);
-            //    //dest.m_strKKS_NAME_TM = rows_tg[0][@"KKS_NAME"].ToString();
-            //    //dest.m_arIds_fact[(int)HDateTime.INTERVAL.MINUTES] = Int32.Parse(rows_tg[0][@"ID_IN_ASKUE_3"].ToString());
-            //    //dest.m_arIds_fact[(int)HDateTime.INTERVAL.HOURS] = Int32.Parse(rows_tg[0][@"ID_IN_ASKUE_30"].ToString());
-            //}
 
             private void initTG(DataRow row_tg, DataRow row_param_tg)
             {
