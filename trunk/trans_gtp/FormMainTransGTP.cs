@@ -110,6 +110,15 @@ namespace trans_gtp
             markQueries.Set((int)StatisticCommon.CONN_SETT_TYPE.ADMIN, ОпросАдминЗначенияToolStripMenuItem.Checked);
 
             int idListener = -1;
+
+            // определить пользователя по 1-ой БД конфигурации
+            idListener = DbSources.Sources().Register(s_listFormConnectionSettings[(int)StatisticCommon.CONN_SETT_TYPE.CONFIG_DB].getConnSett(0), false, @"CONFIG_DB");
+            try {
+                using (HStatisticUsers users = new HStatisticUsers(idListener, HUsers.MODE_REGISTRATION.MIXED)) {; }
+            } catch (Exception e) {
+                Logging.Logg().Exception(e, "FormMainTransGTP::FormMainTransGTP ()", Logging.INDEX_MESSAGE.NOT_SET);
+            }
+
             //Инициализация объектов получения данных
             for (i = 0; i < (Int16)CONN_SETT_TYPE.COUNT_CONN_SETT_TYPE; i++)
             {

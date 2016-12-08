@@ -29,6 +29,7 @@ namespace StatisticCommon
                     typeRes = TYPE.TEPLO;
                 else
                     if ((IsGTP == true)
+                        || (IsGTP_LK == true)
                         || (IsPC == true)
                         || (IsTG == true))
                         typeRes = TYPE.ELECTRO;
