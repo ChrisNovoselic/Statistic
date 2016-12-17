@@ -272,9 +272,9 @@
       <Project>{2133e9d0-7f92-4ce3-b768-a09a3864bb60}</Project>
       <Name>StatisticAnalyzer</Name>
     </ProjectReference>
-    <ProjectReference Include="..\StatisticDiagnostic1\StatisticDiagnostic1.csproj">
-      <Project>{2F11223C-00CF-4D6C-B234-1B8FA95F8B2F}</Project>
-      <Name>StatisticDiagnostic1</Name>
+    <ProjectReference Include="..\StatisticDiagnostic\StatisticDiagnostic.csproj">
+      <Project>{2f11223c-00cf-4d6c-b234-1b8fa95f8b2f}</Project>
+      <Name>StatisticDiagnostic</Name>
     </ProjectReference>
     <ProjectReference Include="..\StatisticLibrary\StatisticCommon.csproj">
       <Project>{5D7C7433-8D2F-4C1A-8BD7-B30B7AE7079B}</Project>

@@ -256,7 +256,7 @@ namespace trans_tg
 
         protected override void setUIControlSourceState()
         {
-            m_arUIControls [(Int16)CONN_SETT_TYPE.SOURCE, (Int16)INDX_UICONTROLS.SERVER_IP].Text = ((AdminTS)m_arAdmin[(Int16)CONN_SETT_TYPE.DEST]).allTECComponents[((AdminTS_NSS)m_arAdmin[(Int16)CONN_SETT_TYPE.DEST]).m_listTECComponentIndexDetail[0]].tec.m_path_rdg_excel;
+            m_arUIControls [(Int16)CONN_SETT_TYPE.SOURCE, (Int16)INDX_UICONTROLS.SERVER_IP].Text = ((AdminTS)m_arAdmin[(Int16)CONN_SETT_TYPE.DEST]).allTECComponents[((AdminTS_NSS)m_arAdmin[(Int16)CONN_SETT_TYPE.DEST]).m_listTECComponentIndexDetail[0]].tec.GetAddingParameter(TEC.ADDING_PARAM_KEY.PATH_RDG_EXCEL).ToString();
             enabledButtonSourceExport(m_arUIControls[(Int16)CONN_SETT_TYPE.SOURCE, (Int16)INDX_UICONTROLS.SERVER_IP].Text.Length > 0 ? true : false);
         }
 

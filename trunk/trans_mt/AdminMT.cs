@@ -38,7 +38,7 @@ namespace trans_mt
             query += @"SELECT [objName], [idFactor], [PBR_NUMBER], [Datetime],"
                     //+ @" SUM([Value_MBT]) as VALUE"
                     + @" [Value_MBT] as VALUE"
-                + @" FROM [dbo].[v_ALL_PARAM_MODES_BIYSK]" +
+                + @" FROM [dbo].[v_ALL_PARAM_MODES_" + t.GetAddingParameter(TEC.ADDING_PARAM_KEY.PREFIX_MODES_TERMINAL).ToString() + @"]" +
                 @" WHERE [ID_Type_Data] = 3" +
                 @" AND [objName] IN (" + string.Join (@",", comp.m_listMTermId.ToArray()) + @")" +
                 @" AND [Datetime] > " + @"'" + dtReq.ToString(@"yyyyMMdd HH:00:00.000") + @"'"

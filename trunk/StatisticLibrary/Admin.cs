@@ -518,8 +518,15 @@ namespace StatisticCommon
             return @"ПБР" + getPBRNumber (hour);
         }
 
-        public int GetPBRNumber(int indx = -1)
+        public int GetPBRNumber(out int err)
         {
+            return GetPBRNumber(-1, out err);
+        }
+
+        public int GetPBRNumber(int indx, out int err)
+        {
+            err = 0;
+
             int iRes = -1
                 , iIndx = indx;
 
@@ -532,25 +539,30 @@ namespace StatisticCommon
                 if ((!(m_curRDGValues == null))
                     && (!(m_curRDGValues[iIndx].pbr_number == null))
                     && (m_curRDGValues[iIndx].pbr_number.Length > @"ПБР".Length))
-                    if (Int32.TryParse(m_curRDGValues[iIndx].pbr_number.Substring(@"ПБР".Length), out iRes) == false)
+                    if (Int32.TryParse(m_curRDGValues[iIndx].pbr_number.Substring(@"ПБР".Length), out iRes) == false) {
+                        err = -2; //ПБР не распознан
+
                         iRes = getPBRNumber();
+                    } else
+                        ;
+                else {
+                    err = -1; //РДГ не загружен
+
+                    iRes = getPBRNumber();
+                }
+            else
+                if (m_curDate.Date.CompareTo(serverTime.Date) > 0)
+                if ((!(m_curRDGValues == null))
+                    && (!(m_curRDGValues[iIndx].pbr_number == null))
+                    && (m_curRDGValues[iIndx].pbr_number.Length > @"ПБР".Length))
+                    if (Int32.TryParse(m_curRDGValues[iIndx].pbr_number.Substring(@"ПБР".Length), out iRes) == false)
+                        iRes = 0; //Предварительный ПБР
                     else
                         ;
                 else
                     iRes = getPBRNumber();
             else
-                if (m_curDate.Date.CompareTo(serverTime.Date) > 0)
-                    if ((!(m_curRDGValues == null))
-                        && (!(m_curRDGValues[iIndx].pbr_number == null))
-                        && (m_curRDGValues[iIndx].pbr_number.Length > @"ПБР".Length))
-                        if (Int32.TryParse(m_curRDGValues[iIndx].pbr_number.Substring(@"ПБР".Length), out iRes) == false)
-                            iRes = 0; //Предварительный ПБР
-                        else
-                            ;
-                    else
-                        iRes = getPBRNumber();
-                else
-                    ;
+                ;
 
             return iRes;
         }

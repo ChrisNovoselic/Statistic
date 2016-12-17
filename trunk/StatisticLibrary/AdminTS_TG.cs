@@ -314,7 +314,7 @@ namespace StatisticCommon
 
             foreach (TECComponent comp in allTECComponents) {
                 if (comp.tec.m_id == id_tec) {
-                    if (comp.tec.m_path_rdg_excel.Length > 0) {
+                    if (comp.tec.GetAddingParameter(TEC.ADDING_PARAM_KEY.PATH_RDG_EXCEL).ToString().Length > 0) {
                         bRes = true;
 
                         break;

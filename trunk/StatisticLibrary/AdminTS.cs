@@ -328,10 +328,8 @@ namespace StatisticCommon
         /// <returns>Возвращает флаг доступности</returns>
         public virtual bool IsRDGExcel (int indx) {
             bool bRes = false;
-            if (allTECComponents[indx].tec.m_path_rdg_excel.Length > 0)
-                bRes = true;
-            else
-                ;
+
+            bRes =  allTECComponents[indx].tec.GetAddingParameter(TEC.ADDING_PARAM_KEY.PATH_RDG_EXCEL).ToString().Length > 0;
 
             return bRes;
         }
@@ -1460,6 +1458,7 @@ namespace StatisticCommon
         /// <returns>Массив запросов</returns>
         protected virtual string[] setPPBRQuery(TEC t, TECComponent comp, DateTime date)
         {
+            int err = -1; // признак ошибки при определении номера ПБР
             string[] resQuery = new string[(int)DbTSQLInterface.QUERY_TYPE.COUNT_QUERY_TYPE] { string.Empty, string.Empty, string.Empty };
 
             date = date.Date;
@@ -1478,7 +1477,7 @@ namespace StatisticCommon
                     //        break;
                     //    case AdminTS.TYPE_FIELDS.DYNAMIC:
                             bool bUpdate = m_ignore_date;
-                            int pbr_number = GetPBRNumber (i);
+                            int pbr_number = GetPBRNumber (i, out err);
 
                             if (bUpdate == false)
                                 if (m_iHavePBR_Number < pbr_number)

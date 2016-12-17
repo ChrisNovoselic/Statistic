@@ -312,8 +312,9 @@ namespace trans_tg
 
         protected override string [] setPPBRQuery(TEC t, TECComponent comp, DateTime date)
         {
-            string [] resQuery = base.setPPBRQuery(t, comp, date);
+            int err = -1; // признак ошибки при определении номера ПБР
 
+            string [] resQuery = base.setPPBRQuery(t, comp, date);
             int currentHour = -1;
 
             date = date.Date;
@@ -366,7 +367,7 @@ namespace trans_tg
                                             @"', '" + GetPBRNumber((i + 0) + (-1 *
                                                 //t.m_timezone_offset_msc
                                                 HDateTime.TS_NSK_OFFSET_OF_MOSCOWTIMEZONE.Hours
-                                                )) +
+                                                ), out err) +
                                             @"', " + comp.m_id +
                                             @", '" + "0" + "'" +
                                             @", '" + m_listCurTimezoneOffsetRDGExcelValues[indx][i].pbr.ToString("F1", CultureInfo.InvariantCulture) + "'" +

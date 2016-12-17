@@ -79,7 +79,7 @@ namespace StatisticCommon
                     //allTECComponents[indxTECComponents].tec.m_timezone_offset_msc
                     HDateTime.TS_NSK_OFFSET_OF_MOSCOWTIMEZONE.Hours
                     ;
-            string path_rdg_excel = allTECComponents[indxTECComponents].tec.m_path_rdg_excel,
+            string path_rdg_excel = allTECComponents[indxTECComponents].tec.GetAddingParameter(TEC.ADDING_PARAM_KEY.PATH_RDG_EXCEL).ToString(),
                 strSelect = @"SELECT * FROM [Лист1$]";
             object[] dataRowAddIn = null;
 
@@ -168,7 +168,7 @@ namespace StatisticCommon
                     //allTECComponents[m_listTECComponentIndexDetail[0/*любой из индексов, т.к. они принадлежат одной ТЭЦ*/]].tec.m_timezone_offset_msc
                     HDateTime.TS_NSK_OFFSET_OF_MOSCOWTIMEZONE.Hours
                     ;
-            string path_rdg_excel = allTECComponents[m_listTECComponentIndexDetail[0/*любой из индексов, т.к. они принадлежат одной ТЭЦ*/]].tec.m_path_rdg_excel,
+            string path_rdg_excel = allTECComponents[m_listTECComponentIndexDetail[0/*любой из индексов, т.к. они принадлежат одной ТЭЦ*/]].tec.GetAddingParameter(TEC.ADDING_PARAM_KEY.PATH_RDG_EXCEL).ToString(),
                 strUpdate = string.Empty;
             TECComponentBase comp;
 

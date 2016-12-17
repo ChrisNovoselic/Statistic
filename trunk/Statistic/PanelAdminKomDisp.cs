@@ -294,6 +294,8 @@ namespace Statistic
 
         private void btnImportCSV_PBRValues_Click(object sender, EventArgs e)
         {
+            int err = -1; // признак ошибки при определении номера ПБР
+
             //Вариант №1 (каталог)
             //FolderBrowserDialog folders = new FolderBrowserDialog();
             //folders.ShowNewFolderButton = false;
@@ -316,7 +318,7 @@ namespace Statistic
 
             if (files.ShowDialog(FormMain.formParameters) == DialogResult.OK) {
                 int iRes = 0
-                    , curPBRNumber = m_admin.GetPBRNumber (); //Текущий номер ПБР
+                    , curPBRNumber = m_admin.GetPBRNumber (out err); //Текущий номер ПБР
                 //Дата ПБР, номер ПБР из наименования файла
                 object[] prop = AdminTS_KomDisp.GetPropertiesOfNameFilePPBRCSVValues(files.FileName);
 
@@ -325,7 +327,9 @@ namespace Statistic
                     iRes = -1;
                 } else {
                     //Сравнить с текущим номером ПБР
-                    if (!((int)prop[1] > curPBRNumber))
+                    // , номер ПБР по умолчанию не рассматривается (err == 0)
+                    if ((!((int)prop[1] > curPBRNumber))
+                        && (err == 0))
                         iRes = -2;
                     else
                         ; //iRes = 0

@@ -287,16 +287,16 @@ namespace StatisticCommon
         ///// Свойство - смещение (часы) зоны даты/времени от зоны с часовым поясом "Москва"
         ///// </summary>
         //public int m_timezone_offset_msc { get; set; }
-        /// <summary>
-        /// Путь для размещения с файлом-книгой MS Excel
-        ///  со значениями РДГ на уровне ТГ (НСС)
-        /// </summary>
-        public string m_path_rdg_excel { get; set;}
-        /// <summary>
-        /// Шаблон для наименования ТГ (KKS_NAME) в системах АИИС КУЭ, СОТИАССО
-        /// </summary>
-        public string m_strTemplateNameSgnDataTM
-            , m_strTemplateNameSgnDataFact;
+        ///// <summary>
+        ///// Путь для размещения с файлом-книгой MS Excel
+        /////  со значениями РДГ на уровне ТГ (НСС)
+        ///// </summary>
+        //public string m_path_rdg_excel { get; set;}
+        ///// <summary>
+        ///// Шаблон для наименования ТГ (KKS_NAME) в системах АИИС КУЭ, СОТИАССО
+        ///// </summary>
+        //public string m_strTemplateNameSgnDataTM
+        //    , m_strTemplateNameSgnDataFact;
         /// <summary>
         /// Список компонентов для ТЭЦ
         /// </summary>
@@ -346,7 +346,7 @@ namespace StatisticCommon
 
         protected volatile string m_SensorsString_VZLET = string.Empty;
 
-        private string m_prefixVzletData;
+        //private string m_prefixVzletData;
         /// <summary>
         /// Перечисление - индексы возможных вариантов усреднения "мгновенных" значений
         /// </summary>
@@ -458,6 +458,14 @@ namespace StatisticCommon
             else
                 ;
         }
+
+        public enum ADDING_PARAM_KEY : short { PREFIX_MODES_TERMINAL
+            , PREFIX_VZLETDATA
+            , PATH_RDG_EXCEL
+            //, TEMPLATE_NAME_SGN_DATA_TM
+            //, TEMPLATE_NAME_SGN_DATA_FACT
+        }
+
         public TEC(DataRow rTec, bool bUseData)
             : this(Convert.ToInt32(rTec["ID"]),
                 rTec["NAME_SHR"].ToString(), //"NAME_SHR"
@@ -473,10 +481,11 @@ namespace StatisticCommon
                 "PBR",
                 "PBR_NUMBER");
 
-            setAddingParameter (rTec["PREFIX_VZLETDATA"] is DBNull ? string.Empty : rTec["PREFIX_VZLETDATA"].ToString().Trim()
-                , rTec["PATH_RDG_EXCEL"].ToString()
-                , rTec["TEMPLATE_NAME_SGN_DATA_TM"].ToString()
-                , rTec["TEMPLATE_NAME_SGN_DATA_FACT"].ToString());            
+            m_dictAddingParam = new Dictionary<ADDING_PARAM_KEY, PARAM_ADDING>();
+            foreach (ADDING_PARAM_KEY key in Enum.GetValues(typeof(ADDING_PARAM_KEY)))
+                m_dictAddingParam.Add(key, new PARAM_ADDING() { m_type = typeof(string), m_value = rTec[key.ToString()] is DBNull ? string.Empty : rTec[key.ToString()].ToString().Trim() });
+
+            //string strTest = GetAddingParameter(TEC.ADDING_PARAM_KEY.PATH_RDG_EXCEL).ToString();
         }
         /// <summary>
         /// Коструктор объекта (с параметрами)
@@ -539,12 +548,18 @@ namespace StatisticCommon
             m_strNamesField[(int)INDEX_NAME_FIELD.PBR_NUMBER] = pbr_number; //INDEX_NAME_FIELD.PBR_NUMBER
         }
 
-        private void setAddingParameter(string prefix_vzletData, string path_rdg_excel, string strTemplateNameSgnDataTM, string strTemplateNameSgnDataFact)
+        private struct PARAM_ADDING
         {
-            this.m_prefixVzletData = prefix_vzletData;
-            this.m_path_rdg_excel = path_rdg_excel;
-            this.m_strTemplateNameSgnDataTM = strTemplateNameSgnDataTM;
-            this.m_strTemplateNameSgnDataFact = strTemplateNameSgnDataFact;
+            public Type m_type;
+
+            public object m_value;
+        }
+
+        private Dictionary<ADDING_PARAM_KEY, PARAM_ADDING> m_dictAddingParam;
+
+        public object GetAddingParameter(ADDING_PARAM_KEY key)
+        {
+            return (m_dictAddingParam.ContainsKey(key) == true) ? m_dictAddingParam[key].m_value : string.Empty;
         }
 
         public void InitTG(int indx, DataRow[] rows_tg)
@@ -1972,7 +1987,7 @@ namespace StatisticCommon
                                 + @" DATEADD(minute, (DATEDIFF(minute, @getdate, [DATETIME]) / 60) * 60, @getdate) AS [DATETIME]"
                             + @" FROM ("
                                 + @"SELECT [ARCH].[ID_TEC], [ARCH].[KKS_NAME], [ARCH].[VALUE], [ARCH].[DATETIME]"
-                                    + @" FROM [VZLET_CURRENT_ARCHIVES_MIN_" + m_prefixVzletData + @"] AS [ARCH] WITH(INDEX(KKS_DATETIME), READUNCOMMITTED)"
+                                    + @" FROM [VZLET_CURRENT_ARCHIVES_MIN_" + GetAddingParameter(ADDING_PARAM_KEY.PREFIX_VZLETDATA).ToString() + @"] AS [ARCH] WITH(INDEX(KKS_DATETIME), READUNCOMMITTED)"
                                         + @" INNER JOIN @SETTINGS_TABLE AS [SET] ON ([ARCH].[KKS_NAME] = [SET].[KKS_NAME])"
                                     + @" WHERE [ARCH].[DATETIME] BETWEEN @getdate AND DATEADD(ms, -3, DATEADD(dd,1,@getdate))"
                                 + @") AS [DATA]"
