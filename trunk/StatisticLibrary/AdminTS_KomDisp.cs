@@ -93,50 +93,66 @@ namespace StatisticCommon
         {
             err = -1;
 
-            if (!(m_fullPathCSVValues == string.Empty))
-            {
-                if (File.Exists(m_fullPathCSVValues) == true)
-                {
+            object[] objRow = null;
+            int iCol = -1;
+
+            if (!(m_fullPathCSVValues == string.Empty)) {
+                if (File.Exists(m_fullPathCSVValues) == true) {
                     string strCSVNameFileTemp = Path.GetFileNameWithoutExtension(m_fullPathCSVValues);
 
-                    if ((IsCanUseTECComponents() == true) && (strCSVNameFileTemp.Length > 0))
-                    {
-                        //m_tableValuesResponse = DbTSQLInterface.CSVImport(m_fullPathCSVValues
-                        //                                                    , @"*"
-                        //                                                    , out err);
+                    if ((IsCanUseTECComponents() == true) && (strCSVNameFileTemp.Length > 0)) {
+                        m_tableValuesResponse = DbTSQLInterface.CSVImport(m_fullPathCSVValues
+                                                                            , @"*"
+                                                                            , out err);
+                        //??? GemBox.SpeadSheet ограниечение 150 строк на лист
+                        //ExcelFile excel = new ExcelFile();
+                        //excel.LoadCsv(m_fullPathCSVValues, ';');
+                        //ExcelWorksheet w = excel.Worksheets[0];
+                        //m_tableValuesResponse = new DataTable();
+                        //foreach (ExcelRow r in w.Rows)
+                        //{
+                        //    if (r.Index > 0) {
+                        //        objRow = new object[m_tableValuesResponse.Columns.Count];
 
-                        ExcelFile excel = new ExcelFile();
-                        excel.LoadCsv(m_fullPathCSVValues, ';');
-                        ExcelWorksheet w = excel.Worksheets[0];
-                        m_tableValuesResponse = new DataTable();
-                        foreach (ExcelRow r in w.Rows)
-                        {
-                            if (r.Index != 0)
-                            {
-                                m_tableValuesResponse.Rows.Add(new object[] { r.Cells[0].Value, r.Cells[1].Value, r.Cells[2].Value, r.Cells[3].Value, r.Cells[4].Value, r.Cells[5].Value, r.Cells[6].Value });
-                                for (int i = 1; i < 24; i++)
-                                {
-                                    m_tableValuesResponse.Rows.Add(new object[] { r.Cells[0].Value, r.Cells[1].Value, i, r.Cells[3].Value, r.Cells[4].Value, r.Cells[5].Value, r.Cells[6].Value });
-                                }
-                            }
-                            else
-                            {
-                                foreach (ExcelCell c in r.Cells)
-                                {
-                                    if (c.Value != null && c.Value.ToString() != "")
-                                    {
-                                        m_tableValuesResponse.Columns.Add(c.Value.ToString());
-                                    }
-                                }
-                            }
-                        }
-                        err = 0;
+                        //        iCol = 0;
+                        //        foreach (ExcelCell c in r.Cells) {
+                        //            if ((!(c.Value == null))
+                        //                && (string.IsNullOrEmpty(c.Value.ToString()) == false))
+                        //                objRow[iCol] = c.Value.ToString().Trim();
+                        //            else
+                        //                ;
 
+                        //            iCol++;
+                        //        }
+
+                        //        m_tableValuesResponse.Rows.Add(objRow);
+
+                        //        //for (int i = 1; i < 24; i++) {
+                        //        //    m_tableValuesResponse.Rows.Add
+                        //        //        (new object[] {
+                        //        //            r.Cells[0].Value
+                        //        //            , r.Cells[1].Value
+                        //        //            , i
+                        //        //            , r.Cells[3].Value
+                        //        //            , r.Cells[4].Value
+                        //        //            , r.Cells[5].Value
+                        //        //            , r.Cells[6].Value });
+                        //        //}
+                        //    } else {
+                        //        foreach (ExcelCell c in r.Cells)
+                        //            if ((!(c.Value == null))
+                        //                && (string.IsNullOrEmpty(c.Value.ToString()) == false))
+                        //                m_tableValuesResponse.Columns.Add(c.Value.ToString().Trim());
+                        //            else
+                        //                ;
+                        //    }
+                        //}
+
+                        //err = 0;
                     }
                     else
                         ;
-                }
-                else
+                } else
                     err = -2; //Файл не существует (очень НЕвероятно, т.к. выбран с помощью диалогового окна)
             }
             else
@@ -230,7 +246,7 @@ namespace StatisticCommon
                 //Запретить запись Админ-значений
                 if (m_markSavedValues.IsMarked((int)INDEX_MARK_PPBRVALUES.ADMIN_ENABLED) == true) m_markSavedValues.UnMarked((int)INDEX_MARK_PPBRVALUES.ADMIN_SAVED); else ;
 
-                strPBRNumber = getNamePBRNumber((int)GetPropertiesOfNameFilePPBRCSVValues()[1]);
+                strPBRNumber = getNamePBRNumber((int)GetPropertiesOfNameFilePPBRCSVValues()[1] - 1);
             }
             else
                 ;
@@ -295,6 +311,7 @@ namespace StatisticCommon
             RDGStruct[] curRDGValues = new RDGStruct[m_curRDGValues.Length];
             int hour = -1;
             double val = -1F;
+            string name_future = string.Empty;
 
             CONN_SETT_TYPE typeValues = CONN_SETT_TYPE.COUNT_CONN_SETT_TYPE;
             if (pbr_number is string)
@@ -306,21 +323,37 @@ namespace StatisticCommon
                     ;
 
             if ((typeValues == CONN_SETT_TYPE.PBR)
-                || (typeValues == CONN_SETT_TYPE.ADMIN))
-            {
+                || (typeValues == CONN_SETT_TYPE.ADMIN)) {
+                List<DataRow> rowsTECComponent = null;
                 //Получить значения для сохранения
-                DataRow [] rowsTECComponent = m_tableValuesResponse.Select(@"GTP_ID='" + allTECComponents[indx].name_future + @"'");
+                name_future = allTECComponents[indx].name_future;
+                rowsTECComponent = new List<DataRow>(m_tableValuesResponse.Select(@"GTP_ID='" + name_future + @"'"));
+                //Вариант №2 - тестовый                
+                //foreach (DataRow r in m_tableValuesResponse.Rows)
+                //    if (name_future.Equals(r["GTP_ID"]) == true)
+                //        rowsTECComponent.Add(r);
+                //    else
+                //        ;
                 //Проверить наличие записей для ГТП
-                if (rowsTECComponent.Length > 0)
-                {
-                    foreach (DataRow r in rowsTECComponent)
-                    {
+                if (rowsTECComponent.Count > 0) {
+                    // добавление недостающих строк путем копирования крайней
+                    if (rowsTECComponent.Count < 24) {
+                        while (rowsTECComponent.Count < 24) {
+                            rowsTECComponent.Add(rowsTECComponent[rowsTECComponent.Count - 1]);
+
+                            if (m_tableValuesResponse.Columns.Contains(@"SESSION_INTERVAL") == true)
+                                rowsTECComponent[rowsTECComponent.Count - 1][@"SESSION_INTERVAL"] = rowsTECComponent.Count - 1;
+                            else
+                                ;
+                        }
+                    } else
+                        ;
+
+                    foreach (DataRow r in rowsTECComponent) {
                         hour = int.Parse(r[@"SESSION_INTERVAL"].ToString());
 
-                        try
-                        {
-                            switch (typeValues)
-                            {
+                        try {
+                            switch (typeValues) {
                                 case CONN_SETT_TYPE.PBR:
                                     HMath.doubleParse(r[@"TotalBR"].ToString(), out curRDGValues[hour].pbr);
                                     HMath.doubleParse(r[@"PminBR"].ToString(), out curRDGValues[hour].pmin);
