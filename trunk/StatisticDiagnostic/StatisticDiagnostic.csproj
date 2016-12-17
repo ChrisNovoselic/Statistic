@@ -8,8 +8,8 @@
     <ProjectGuid>{2F11223C-00CF-4D6C-B234-1B8FA95F8B2F}</ProjectGuid>
     <OutputType>WinExe</OutputType>
     <AppDesignerFolder>Properties</AppDesignerFolder>
-    <RootNamespace>StatisticDiagnostic1</RootNamespace>
-    <AssemblyName>StatisticDiagnostic1</AssemblyName>
+    <RootNamespace>StatisticDiagnostic</RootNamespace>
+    <AssemblyName>StatisticDiagnostic</AssemblyName>
     <TargetFrameworkVersion>v3.5</TargetFrameworkVersion>
     <TargetFrameworkProfile>
     </TargetFrameworkProfile>
