@@ -367,12 +367,14 @@ namespace StatisticDiagnostic
         static object[,] m_arrayActiveSource;
         static Modes[] m_arPanelsMODES;
         static Tec[] m_arPanelsTEC;
-        static DataTable m_tableSourceData;
-        static public DataTable m_dtSourceDiag = new DataTable();
-        static DataTable m_dtSource = new DataTable();
-        static DataTable m_dtGTP = new DataTable();
-        static DataTable m_dtTECList = new DataTable();
-        static DataTable m_dtParamDiagnostic = new DataTable();
+
+        public static DataTable m_tableSourceDiag = new DataTable();
+
+        private static DataTable m_tableSourceData;        
+        private static DataTable m_tableSourceList = new DataTable();
+        private static DataTable m_tableGTPList = new DataTable();
+        private static DataTable m_tableTECList = new DataTable();
+        private static DataTable m_tableParamDiagnostic = new DataTable();
         /// <summary>
         /// Перечесления типов источников
         /// </summary>
@@ -650,11 +652,11 @@ namespace StatisticDiagnostic
         /// </summary>
         public partial class Tec : HPanelCommon
         {
-            private DataGridView TECDataGridView = new DataGridView();
+            private DataGridView m_dgvTesting = new DataGridView();
             private Label LabelTec = new Label();
             private ContextMenuStrip ContextmenuChangeState;
-            private ToolStripMenuItem toolStripMenuItemActivate;
-            private ToolStripMenuItem toolStripMenuItemDeactivate;
+            //private ToolStripMenuItem toolStripMenuItemActivate;
+            //private ToolStripMenuItem toolStripMenuItemDeactivate;
 
             public Tec()
                 : base(-1, -1)
@@ -698,6 +700,8 @@ namespace StatisticDiagnostic
                 base.Dispose(disposing);
             }
 
+            private enum INDEX_CONTEXTMENU_ITEM : short { ACTIVATED = 0, DEACTIVATED }
+
             #region Код, автоматически созданный конструктором компонентов
 
             /// <summary>
@@ -707,73 +711,63 @@ namespace StatisticDiagnostic
             private void InitializeComponentTEC()
             {
                 this.Controls.Add(LabelTec, 0, 0);
-                this.Controls.Add(TECDataGridView, 0, 1);
+                this.Controls.Add(m_dgvTesting, 0, 1);
                 this.RowStyles.Add(new System.Windows.Forms.RowStyle(System.Windows.Forms.SizeType.Absolute, 15F));
                 this.RowStyles.Add(new System.Windows.Forms.RowStyle(System.Windows.Forms.SizeType.Percent, 100.74641F));
 
                 this.ContextmenuChangeState = new System.Windows.Forms.ContextMenuStrip();
-                this.toolStripMenuItemActivate = new System.Windows.Forms.ToolStripMenuItem();
-                this.toolStripMenuItemDeactivate = new System.Windows.Forms.ToolStripMenuItem();
-
                 this.ContextmenuChangeState.SuspendLayout();
 
                 this.SuspendLayout();
 
-                this.TECDataGridView.ColumnHeadersHeightSizeMode = System.Windows.Forms.DataGridViewColumnHeadersHeightSizeMode.AutoSize;
-                this.TECDataGridView.AutoSizeColumnsMode = DataGridViewAutoSizeColumnsMode.Fill;
-                this.TECDataGridView.ClearSelection();
-                this.TECDataGridView.AllowUserToDeleteRows = false;
-                this.TECDataGridView.Dock = System.Windows.Forms.DockStyle.Fill;
-                this.TECDataGridView.RowHeadersVisible = false;
-                this.TECDataGridView.ReadOnly = true;
+                this.m_dgvTesting.ColumnHeadersHeightSizeMode = System.Windows.Forms.DataGridViewColumnHeadersHeightSizeMode.AutoSize;
+                this.m_dgvTesting.AutoSizeColumnsMode = DataGridViewAutoSizeColumnsMode.Fill;
+                this.m_dgvTesting.ClearSelection();
+                this.m_dgvTesting.AllowUserToDeleteRows = false;
+                this.m_dgvTesting.Dock = System.Windows.Forms.DockStyle.Fill;
+                this.m_dgvTesting.RowHeadersVisible = false;
+                this.m_dgvTesting.ReadOnly = true;
                 //this.TECDataGridView.AutoResizeColumns(DataGridViewAutoSizeColumnsMode.Fill);
-                this.TECDataGridView.AutoSizeRowsMode = DataGridViewAutoSizeRowsMode.AllCellsExceptHeaders;
-                this.TECDataGridView.AllowUserToAddRows = false;
-                this.TECDataGridView.Name = "TECDataGridView";
-                this.TECDataGridView.TabIndex = 0;
-                this.TECDataGridView.ColumnCount = 7;
-                this.TECDataGridView.Columns[0].Name = "Источник данных";
-                this.TECDataGridView.Columns[1].Name = "Крайнее время";
-                this.TECDataGridView.Columns[2].Name = "Крайнее значение";
-                this.TECDataGridView.Columns[3].Name = "Время проверки";
-                this.TECDataGridView.Columns[4].Name = "Связь";
-                this.TECDataGridView.Columns[5].Name = "TEC";
-                this.TECDataGridView.Columns[6].Name = "NameSource";
-                this.TECDataGridView.Columns[5].Visible = false;
-                this.TECDataGridView.Columns[6].Visible = false;
-                this.TECDataGridView.Columns[0].Width = 43;
-                this.TECDataGridView.Columns[1].Width = 57;
-                this.TECDataGridView.Columns[2].Width = 35;
-                this.TECDataGridView.Columns[3].Width = 57;
-                this.TECDataGridView.Columns[4].Width = 35;
-                this.TECDataGridView.CellClick += new DataGridViewCellEventHandler(TECDataGridView_Cell);
-                this.TECDataGridView.CellValueChanged += new DataGridViewCellEventHandler(TECDataGridView_Cell);
-                this.TECDataGridView.CellMouseDown += new DataGridViewCellMouseEventHandler(TECDataGridView_CellMouseDown);
+                this.m_dgvTesting.AutoSizeRowsMode = DataGridViewAutoSizeRowsMode.AllCellsExceptHeaders;
+                this.m_dgvTesting.AllowUserToAddRows = false;
+                this.m_dgvTesting.Name = "TECDataGridView";
+                this.m_dgvTesting.TabIndex = 0;
+                this.m_dgvTesting.ColumnCount = (int)INDEX_CELL.COUNT;
+                this.m_dgvTesting.Columns[(int)INDEX_CELL.NAME_SOURCE].Name = "Источник данных"; this.m_dgvTesting.Columns[(int)INDEX_CELL.NAME_SOURCE].Width = 43;
+                this.m_dgvTesting.Columns[(int)INDEX_CELL.DATETIME_VALUE].Name = "Крайнее время"; this.m_dgvTesting.Columns[(int)INDEX_CELL.DATETIME_VALUE].Width = 57;
+                this.m_dgvTesting.Columns[(int)INDEX_CELL.VALUE].Name = "Крайнее значение"; this.m_dgvTesting.Columns[(int)INDEX_CELL.VALUE].Width = 35;
+                this.m_dgvTesting.Columns[(int)INDEX_CELL.DATETIME_NOW].Name = "Время проверки"; this.m_dgvTesting.Columns[(int)INDEX_CELL.DATETIME_NOW].Width = 57;
+                this.m_dgvTesting.Columns[(int)INDEX_CELL.STATE].Name = "Связь"; this.m_dgvTesting.Columns[(int)INDEX_CELL.STATE].Width = 35;
+
+                this.m_dgvTesting.CellClick += new DataGridViewCellEventHandler(TECDataGridView_Cell);
+                this.m_dgvTesting.CellValueChanged += new DataGridViewCellEventHandler(TECDataGridView_Cell);
+                this.m_dgvTesting.CellMouseDown += new DataGridViewCellMouseEventHandler(TECDataGridView_CellMouseDown);
                 //
                 //ContextmenuChangeState
                 //
                 this.ContextmenuChangeState.Items.AddRange(new System.Windows.Forms.ToolStripItem[] {
-                this.toolStripMenuItemActivate,
-                this.toolStripMenuItemDeactivate});
-                this.toolStripMenuItemActivate.Name = "contextMenuStrip1";
+                    new ToolStripMenuItem () //Activated
+                    , new ToolStripMenuItem() }); //Deactivated
                 this.ContextmenuChangeState.Size = new System.Drawing.Size(180, 70);
                 this.ContextmenuChangeState.ShowCheckMargin = true;
                 // 
                 // toolStripMenuItemActivate
                 // 
-                this.toolStripMenuItemActivate.Name = "toolStripMenuItem1";
-                this.toolStripMenuItemActivate.Size = new System.Drawing.Size(179, 22);
-                this.toolStripMenuItemActivate.Text = "Activate";
-                this.toolStripMenuItemActivate.Click += new EventHandler(toolStripMenuItemActivate_Click);
-                this.toolStripMenuItemActivate.CheckOnClick = true;
+                this.ContextmenuChangeState.Items[(int)INDEX_CONTEXTMENU_ITEM.ACTIVATED].Name = "toolStripMenuItem1";
+                this.ContextmenuChangeState.Items[(int)INDEX_CONTEXTMENU_ITEM.ACTIVATED].Size = new System.Drawing.Size(179, 22);
+                this.ContextmenuChangeState.Items[(int)INDEX_CONTEXTMENU_ITEM.ACTIVATED].Text = "Activate";
+                this.ContextmenuChangeState.Items[(int)INDEX_CONTEXTMENU_ITEM.ACTIVATED].Click += new EventHandler(toolStripMenuItemActivate_Click);
+                (this.ContextmenuChangeState.Items[(int)INDEX_CONTEXTMENU_ITEM.ACTIVATED] as ToolStripMenuItem).CheckOnClick = true;
+                this.ContextmenuChangeState.Items[(int)INDEX_CONTEXTMENU_ITEM.ACTIVATED].Tag = INDEX_CONTEXTMENU_ITEM.ACTIVATED;
                 // 
                 // toolStripMenuItemDeactivate
                 // 
-                this.toolStripMenuItemDeactivate.Name = "toolStripMenuItem2";
-                this.toolStripMenuItemDeactivate.Size = new System.Drawing.Size(179, 22);
-                this.toolStripMenuItemDeactivate.Text = "Deactivate";
-                this.toolStripMenuItemDeactivate.Click += new EventHandler(toolStripMenuItemDeactivate_Click);
-                this.toolStripMenuItemDeactivate.CheckOnClick = false;
+                this.ContextmenuChangeState.Items[(int)INDEX_CONTEXTMENU_ITEM.DEACTIVATED].Name = "toolStripMenuItem2";
+                this.ContextmenuChangeState.Items[(int)INDEX_CONTEXTMENU_ITEM.DEACTIVATED].Size = new System.Drawing.Size(179, 22);
+                this.ContextmenuChangeState.Items[(int)INDEX_CONTEXTMENU_ITEM.DEACTIVATED].Text = "Deactivate";
+                this.ContextmenuChangeState.Items[(int)INDEX_CONTEXTMENU_ITEM.DEACTIVATED].Click += new EventHandler(toolStripMenuItemDeactivate_Click);
+                (this.ContextmenuChangeState.Items[(int)INDEX_CONTEXTMENU_ITEM.DEACTIVATED] as ToolStripMenuItem).CheckOnClick = false;
+                this.ContextmenuChangeState.Items[(int)INDEX_CONTEXTMENU_ITEM.DEACTIVATED].Tag = INDEX_CONTEXTMENU_ITEM.DEACTIVATED;
                 //
                 // LabelTec
                 //
@@ -787,33 +781,30 @@ namespace StatisticDiagnostic
                 this.ResumeLayout(false);
             }
 
+            private enum INDEX_CELL : short { NAME_SOURCE = 0, DATETIME_VALUE, VALUE, DATETIME_NOW, STATE
+                , COUNT  }
+
             /// <summary>
-            /// 
+            /// Обработчик события - нажатие кнопки "мыши"
             /// </summary>
-            /// <param name="sender"></param>
-            /// <param name="e"></param>
+            /// <param name="sender">Объект, инициировавший событие (DataGridView)</param>
+            /// <param name="e">Аргумент события</param>
             void TECDataGridView_CellMouseDown(object sender, DataGridViewCellMouseEventArgs e)
             {
                 if ((e.Button == MouseButtons.Right) && (e.RowIndex > -1))
-                {
-                    if (TECDataGridView.Rows[e.RowIndex].Cells[0].Value.ToString() != "АИИСКУЭ")//??
-                    {
-                        if
-                        (TECDataGridView.Rows[e.RowIndex].Cells[e.ColumnIndex].Style.BackColor == System.Drawing.Color.DeepSkyBlue)
-                        {
-                            RowIndex = e.RowIndex;
-                            attachContextMenu(e.RowIndex);
-                            this.TECDataGridView.Rows[point.X].Cells[e.ColumnIndex].ContextMenuStrip = ContextmenuChangeState;
-                        }
-
+                // только по нажатию правой кнопки и выбранной строки
+                    if (m_dgvTesting.Rows[e.RowIndex].Cells[(int)INDEX_CELL.NAME_SOURCE].Value.ToString() != "АИИСКУЭ") {//??
+                    // только для источников СОТИАССО 
+                        RowIndex = e.RowIndex;
+                        initContextMenu(m_dgvTesting.Rows[e.RowIndex].Cells[e.ColumnIndex].Style.BackColor == s_ColorSOTIASSOState[(int)INDEX_CONTEXTMENU_ITEM.ACTIVATED]);
+                        if ((sender as DataGridView).Rows[e.RowIndex].Cells[e.ColumnIndex].ContextMenuStrip == null)
+                            (sender as DataGridView).Rows[e.RowIndex].Cells[e.ColumnIndex].ContextMenuStrip = ContextmenuChangeState;
                         else
-                        {
-                            RowIndex = e.RowIndex;
-                            attachContextMenu(e.RowIndex);
-                            this.TECDataGridView.Rows[point.X].Cells[e.ColumnIndex].ContextMenuStrip = ContextmenuChangeState;
-                        }
-                    }
-                }
+                            ;
+                    } else
+                        ; // строки не являются описанием источников СОТИАССО
+                else
+                    ; // нажата не правая кнопка ИЛИ не выбрана строка
             }
 
             #endregion
@@ -837,11 +828,11 @@ namespace StatisticDiagnostic
             /// </summary>
             private int RowIndex;
 
-            /// <summary>
-            /// Экземпляр класса для получения 
-            /// координатов мышки
-            /// </summary>
-            private Point point = new Point();
+            ///// <summary>
+            ///// Экземпляр класса для получения 
+            ///// координатов мышки
+            ///// </summary>
+            //private Point point = new Point();
 
             /// <summary>
             /// Функция активации панелей ТЭЦ
@@ -853,12 +844,16 @@ namespace StatisticDiagnostic
                     if (!(m_arPanelsTEC == null))
                         for (int i = 0; i < m_arPanelsTEC.Length; i++)
                             m_arPanelsTEC[i].Focus();
+                    else
+                        ;
+                else
+                    ;
             }
 
             /// <summary>
             /// очистка панелей
             /// </summary>
-            public void StopTEC()
+            public void Clear()
             {
                 if (!(m_arPanelsTEC == null))
                     clearGrid();
@@ -884,8 +879,7 @@ namespace StatisticDiagnostic
             /// <returns>номер источника СОТИАССО</returns>
             private object selectionArraySource(string nameTec)
             {
-                string filter = "NAME_SHR = '" + nameTec + "'";
-                DataRow[] m_foundrow = m_dtSource.Select(filter);
+                DataRow[] m_foundrow = m_tableSourceList.Select("NAME_SHR = '" + nameTec + "'");
                 object a = null;
 
                 for (int i = 0; i < m_foundrow.Count(); i++)
@@ -893,6 +887,8 @@ namespace StatisticDiagnostic
 
                 return a;
             }
+
+            private static Color[] s_ColorSOTIASSOState = new Color[] { Color.DeepSkyBlue, Color.Empty };
 
             /// <summary>
             /// Обработка события клика по пункту меню "Active"
@@ -902,15 +898,17 @@ namespace StatisticDiagnostic
             /// <param name="e"></param>
             private void toolStripMenuItemActivate_Click(object sender, EventArgs e)
             {
-                string a = TECDataGridView.Rows[RowIndex].Cells[5].Value.ToString();
+                string a = m_dgvTesting.Rows[RowIndex].Tag.ToString();
                 int t = Convert.ToInt32(selectionArraySource(a));
                 int numberPanel = (t / 10) - 1;
 
                 updateTecTM(stringQuery(t, numberPanel + 1));
 
-                for (int i = 0; i < m_arPanelsTEC[numberPanel].TECDataGridView.Rows.Count; i++)
-                    if (m_arPanelsTEC[numberPanel].TECDataGridView.Rows[i].Cells[0].Style.BackColor == Color.DeepSkyBlue)
+                for (int i = 0; i < m_arPanelsTEC[numberPanel].m_dgvTesting.Rows.Count; i++)
+                    if (m_arPanelsTEC[numberPanel].m_dgvTesting.Rows[i].Cells[(int)INDEX_CELL.NAME_SOURCE].Style.BackColor == s_ColorSOTIASSOState[(int)INDEX_CONTEXTMENU_ITEM.ACTIVATED])
                         paintCellDeactive(numberPanel, i);
+                    else
+                        ;
 
                 paintCellActive(numberPanel, RowIndex);
                 changenumSource(t, a, numberPanel);
@@ -923,27 +921,28 @@ namespace StatisticDiagnostic
             /// <param name="sender"></param>
             /// <param name="e"></param>
             private void toolStripMenuItemDeactivate_Click(object sender, EventArgs e)
-            {
-                int c = 0;
-                string a = TECDataGridView.Rows[RowIndex].Cells[5].Value.ToString();
-                int m_numberPanel = ((Convert.ToInt32(selectionArraySource(a))) / 10) - 1;
+            {                
+                string a = m_dgvTesting.Rows[RowIndex].Tag.ToString();
+                int t = Convert.ToInt32(selectionArraySource(a));
+                int numberPanel = (t / 10) - 1;
 
-                paintCellDeactive(m_numberPanel, RowIndex);
-                updateTecTM(stringQuery(c, m_numberPanel + 1));
+                paintCellDeactive(numberPanel, RowIndex);
+                updateTecTM(stringQuery(0, numberPanel + 1));
             }
 
             /// <summary>
             /// Создание панелей ТЭЦ
             /// </summary>
-            public void Create_PanelTEC()
+            public void Create_Panel()
             {
-                m_arPanelsTEC = new Tec[m_dtTECList.Rows.Count];
+                m_arPanelsTEC = new Tec[m_tableTECList.Rows.Count];
 
                 for (int i = 0; i < m_arPanelsTEC.Length; i++)
-                {
                     if (m_arPanelsTEC[i] == null)
                         m_arPanelsTEC[i] = new Tec();
-                }
+                    else
+                        ;
+
                 SourceNameTEC();
             }
 
@@ -951,43 +950,39 @@ namespace StatisticDiagnostic
             /// Добавление строк
             /// </summary>
             /// <param name="x">номер панели</param>
-            /// <param name="countrow">кол-во строк</param>
-            private void addRowsTEC(int x, int countrow)
+            /// <param name="cntRow">кол-во строк</param>
+            private void addRows(int x, int cntRow)
             {
-                if (m_arPanelsTEC[x].TECDataGridView.RowCount < countrow / 2)
-                {
-                    for (int i = 0; i < countrow / 2; i++)
-                    {
-                        if (m_arPanelsTEC[x].TECDataGridView.InvokeRequired)
-                            m_arPanelsTEC[x].TECDataGridView.Invoke(new Action(() => m_arPanelsTEC[x].TECDataGridView.Rows.Add()));
-                        else
-                            m_arPanelsTEC[x].TECDataGridView.Rows.Add();
-                    }
-                }
+                Action<int> actionAddRows = new Action<int>((cnt) => { m_arPanelsTEC[x].m_dgvTesting.Rows.Add(cnt); });
+
+                if (m_arPanelsTEC[x].m_dgvTesting.RowCount < cntRow / 2)
+                    if (m_arPanelsTEC[x].m_dgvTesting.InvokeRequired)
+                        m_arPanelsTEC[x].m_dgvTesting.Invoke(actionAddRows, cntRow / 2);
+                    else
+                        actionAddRows(cntRow / 2);
+                else
+                    ;
             }
 
             /// <summary>
             /// Функция проверки на пустоту значений
             /// </summary>
             /// <param name="sourceDR">набор проверяемых данных</param>
-            /// <param name="countRow">количество строк</param>
             /// <returns></returns>
-            private bool IsNUll(ref DataRow[] sourceDR, int countRow)
+            private bool testingNull(ref DataRow[] sourceDR)
             {
-                bool blflag = false;
+                bool bRes = false;
 
                 for (int i = 0; i < sourceDR.Count(); i++)
-                {
-                    if (sourceDR[i]["Value"].ToString() == "")
-                    {
+                    if (string.IsNullOrEmpty(sourceDR[i]["Value"].ToString()) == true) {
                         sourceDR[i]["Value"] = "Нет данных в БД";
-                        blflag = false;
+                        /*ничего не делаем*/
+                        //bRes = false;
                     }
-
                     else
-                        blflag = true;
-                }
-                return blflag;
+                        if (bRes == false) bRes = true; else /*ничего не делаем*/;
+
+                return bRes;
             }
 
             /// <summary>
@@ -995,47 +990,52 @@ namespace StatisticDiagnostic
             /// </summary>
             /// <param name="filter">фильтр для обработки данных</param>
             /// <param name="i">номер панели</param>
-            private void insertDataTEC(string filter, int i)
+            private void fillValues(string filter, int i)
             {
-                DataRow[] m_drTecSource;
-                int t = 0;
-                string m_shortTime;
-                m_drTecSource = m_tableSourceData.Select(filter, "NAME_SHR DESC");
+                DataRow[] drTecSource;
+                string nameSource
+                    , shortTime;
 
-                textColumnTec(i);
+                drTecSource = m_tableSourceData.Select(filter, "NAME_SHR DESC");
 
-                for (int r = 0; r < m_arPanelsTEC[i].TECDataGridView.Rows.Count; r++)
-                {
-                    string nameSource = m_arPanelsTEC[i].TECDataGridView.Rows[r].Cells[0].Value.ToString();
+                setTextColumn(i);
 
-                    m_shortTime = formatTime(m_drTecSource[t + 1]["Value"].ToString(), i, nameSource);
-                    m_arPanelsTEC[i].TECDataGridView.Invoke(new Action(() => m_arPanelsTEC[i].TECDataGridView.Rows[r].Cells[2].Value = m_drTecSource[t]["Value"]));
-                    m_arPanelsTEC[i].TECDataGridView.Invoke(new Action(() => m_arPanelsTEC[i].TECDataGridView.Rows[r].Cells[1].Value = m_shortTime));
-                    m_arPanelsTEC[i].TECDataGridView.Invoke(new Action(() => m_arPanelsTEC[i].TECDataGridView.Rows[r].Cells[5].Value = m_drTecSource[t]["NAME_SHR"]));
-                    m_arPanelsTEC[i].TECDataGridView.Invoke(new Action(() => m_arPanelsTEC[i].TECDataGridView.Rows[r].Cells[3].Value =
+                for (int r = 0, t = 0; r < m_arPanelsTEC[i].m_dgvTesting.Rows.Count; r++, t += 2) {
+                    nameSource = m_arPanelsTEC[i].m_dgvTesting.Rows[r].Cells[(int)INDEX_CELL.NAME_SOURCE].Value.ToString();
+
+                    shortTime = formatTime(drTecSource[t + 1]["Value"].ToString(), i, nameSource);
+                    m_arPanelsTEC[i].m_dgvTesting.Invoke(new Action(() => m_arPanelsTEC[i].m_dgvTesting.Rows[r].Cells[(int)INDEX_CELL.DATETIME_VALUE].Value = shortTime));
+                    m_arPanelsTEC[i].m_dgvTesting.Invoke(new Action(() => m_arPanelsTEC[i].m_dgvTesting.Rows[r].Cells[(int)INDEX_CELL.VALUE].Value = drTecSource[t]["Value"]));                    
+                    m_arPanelsTEC[i].m_dgvTesting.Invoke(new Action(() => m_arPanelsTEC[i].m_dgvTesting.Rows[r].Cells[(int)INDEX_CELL.DATETIME_NOW].Value =
                         TimeZoneInfo.ConvertTimeBySystemTimeZoneId(DateTime.Now, TimeZoneInfo.Local.Id, "Russian Standard Time").ToString("hh:mm:ss:fff")));
+
+                    m_arPanelsTEC[i].m_dgvTesting.Invoke(new Action(() => m_arPanelsTEC[i].m_dgvTesting.Rows[r].Tag = drTecSource[t]["NAME_SHR"]));
+
                     paintingCells(i, r);
 
-                    if (IsNUll(ref m_drTecSource, m_drTecSource.Count()))
-                        checkrelevancevalues(DateTime.Parse(m_shortTime), i, r);
-
-                    t = t + 2;
+                    if (testingNull(ref drTecSource) == true)
+                        checkRelevanceValues(DateTime.Parse(shortTime), i, r);
+                    else
+                        ;
                 }
             }
 
             /// <summary>
             /// Функция заполнения гридов
             /// </summary>
-            public void AddItemTec()
+            public void AddItem()
             {
                 string filter;
 
-                for (int i = 0; i < m_dtTECList.Rows.Count; i++)
+                for (int i = 0; i < m_tableTECList.Rows.Count; i++)
                 {
-                    filter = "ID_EXT = " + Convert.ToInt32(m_dtTECList.Rows[i][0]);
-                    addRowsTEC(i, m_tableSourceData.Select(filter).Length);
-                    insertDataTEC(filter, i);
+                    filter = "ID_EXT = " + Convert.ToInt32(m_tableTECList.Rows[i][0]);
+
+                    addRows(i, m_tableSourceData.Select(filter).Length);
+
+                    fillValues(filter, i);
                 }
+
                 cellsPingTEC();
             }
 
@@ -1049,9 +1049,9 @@ namespace StatisticDiagnostic
                 {
                     if (m_arPanelsTEC[i].LabelTec.InvokeRequired)
                         m_arPanelsTEC[i].LabelTec.Invoke(new Action(() => m_arPanelsTEC[i].LabelTec.Text =
-                            m_dtTECList.Rows[i][@"NAME_SHR"].ToString()));
+                            m_tableTECList.Rows[i][@"NAME_SHR"].ToString()));
                     else
-                        m_arPanelsTEC[i].LabelTec.Text = m_dtTECList.Rows[i][@"NAME_SHR"].ToString();
+                        m_arPanelsTEC[i].LabelTec.Text = m_tableTECList.Rows[i][@"NAME_SHR"].ToString();
                 }
             }
 
@@ -1059,28 +1059,46 @@ namespace StatisticDiagnostic
             /// Функция перемеинования ячейки датагрид TEC
             /// </summary>
             /// <param name="panelNum"></param>
-            private void textColumnTec(int panelNum)
+            private void setTextColumn(int panelNum)
             {
-                string filter1, filter2;
-                DataRow[] DR;
+                string filterSourceData, filterParamDiagnostic;
+                DataRow[] arSelSourceData = null
+                    , arSelParamDiagnostic = null;
+
+                Action<int, string> setTextNameSource =
+                    new Action<int, string>((indx, name_shr) => { m_arPanelsTEC[panelNum].m_dgvTesting.Rows[indx].Cells[(int)INDEX_CELL.NAME_SOURCE].Value = name_shr; });
 
                 //for (int k = 0; k < m_dtTECList.Rows.Count; k++)
                 //{
-                filter1 = "ID_Units = 12 and ID_EXT = '" + (panelNum + 1) + "'";
+                    filterSourceData = "ID_Units = 12 and ID_EXT = '" + (panelNum + 1) + "'";
 
-                for (int j = 0; j < m_arPanelsTEC[panelNum].TECDataGridView.Rows.Count; j++)
-                {
-                    DR = m_tableSourceData.Select(filter1, "NAME_SHR DESC");
-                    filter2 = "ID = '" + DR[j]["ID_VALUE"] + "'";
-                    DataRow[] dr = m_dtParamDiagnostic.Select(filter2);
+                    for (int j = 0; j < m_arPanelsTEC[panelNum].m_dgvTesting.Rows.Count; j++) {
+                        arSelSourceData = m_tableSourceData.Select(filterSourceData, "NAME_SHR DESC");
 
-                    if (m_arPanelsTEC[panelNum].TECDataGridView.InvokeRequired)
-                        m_arPanelsTEC[panelNum].TECDataGridView.Invoke(new Action(() => m_arPanelsTEC[panelNum].TECDataGridView.Rows[j].Cells[0].Value = dr[0]["NAME_SHR"]));
-                    else
-                        m_arPanelsTEC[panelNum].TECDataGridView.Rows[j].Cells[0].Value = dr[0]["NAME_SHR"];
-                }
+                        filterParamDiagnostic = "ID = '" + arSelSourceData[j]["ID_VALUE"] + "'";
+                        arSelParamDiagnostic = m_tableParamDiagnostic.Select(filterParamDiagnostic);
+
+                        if (m_arPanelsTEC[panelNum].m_dgvTesting.InvokeRequired)
+                            m_arPanelsTEC[panelNum].m_dgvTesting.Invoke(setTextNameSource, j, arSelParamDiagnostic[0]["NAME_SHR"].ToString());
+                        else
+                            setTextNameSource (j, arSelParamDiagnostic[0]["NAME_SHR"].ToString());
+                    }
                 //}
             }
+
+            private struct STATE_SOURCE
+            {
+                public string m_Text;
+
+                public Color m_Color;
+            }
+
+            private enum INDEX_STATE : short { OK = 0, ERROR }
+
+            private static STATE_SOURCE[] s_StateSources = new STATE_SOURCE[] {
+                new STATE_SOURCE() { m_Text = @"Да", m_Color = Color.White }
+                , new STATE_SOURCE() { m_Text = @"Нет", m_Color = Color.Red }
+            };
 
             /// <summary>
             /// Заполнение элемента панели 
@@ -1088,42 +1106,22 @@ namespace StatisticDiagnostic
             /// </summary>
             private void cellsPingTEC()
             {
-                DataRow[] dt;
+                DataRow[] arSel = null;
+
+                Action<int, int, INDEX_STATE> setState = new Action<int, int, INDEX_STATE>((num, iRow, iState) => {
+                    m_arPanelsTEC[num].m_dgvTesting.Rows[iRow].Cells[(int)INDEX_CELL.STATE].Value = s_StateSources[(int)iState].m_Text;
+                    m_arPanelsTEC[num].m_dgvTesting.Rows[iRow].Cells[(int)INDEX_CELL.STATE].Style.BackColor = s_StateSources[(int)iState].m_Color;
+                });
+
                 for (int j = 0; j < m_arPanelsTEC.Count(); j++)
                 {
-                    dt = m_tableSourceData.Select(@"ID_EXT = " + Convert.ToInt32(m_dtTECList.Rows[j][0]));
-                    int t = 0;
+                    arSel = m_tableSourceData.Select(@"ID_EXT = " + Convert.ToInt32(m_tableTECList.Rows[j][0]));
 
-                    for (int i = 0; i < m_arPanelsTEC[j].TECDataGridView.Rows.Count; i++)
-                    {
-                        if (m_arPanelsTEC[j].TECDataGridView.InvokeRequired)
-                        {
-                            if (dt[t]["Link"].ToString() == "1")
-                            {
-                                m_arPanelsTEC[j].TECDataGridView.Invoke(new Action(() => m_arPanelsTEC[j].TECDataGridView.Rows[i].Cells[4].Value = "Да"));
-                                m_arPanelsTEC[j].TECDataGridView.Invoke(new Action(() => m_arPanelsTEC[j].TECDataGridView.Rows[i].Cells[4].Style.BackColor = System.Drawing.Color.White));
-                            }
-                            else
-                            {
-                                m_arPanelsTEC[j].TECDataGridView.Invoke(new Action(() => m_arPanelsTEC[j].TECDataGridView.Rows[i].Cells[4].Value = "Нет"));
-                                m_arPanelsTEC[j].TECDataGridView.Invoke(new Action(() => m_arPanelsTEC[j].TECDataGridView.Rows[i].Cells[4].Style.BackColor = System.Drawing.Color.OrangeRed));
-                            }
-                        }
+                    for (int i = 0, t = 0; i < m_arPanelsTEC[j].m_dgvTesting.Rows.Count; i++, t += 2)
+                        if (m_arPanelsTEC[j].m_dgvTesting.InvokeRequired == true)
+                            m_arPanelsTEC[j].m_dgvTesting.Invoke(setState, j, i, (arSel[t]["Link"].ToString().Equals("1") == true) ? INDEX_STATE.OK : INDEX_STATE.ERROR);
                         else
-                        {
-                            if (dt[t]["Link"].ToString() == "1")
-                            {
-                                m_arPanelsTEC[j].TECDataGridView.Rows[i].Cells[4].Value = "Да";
-                                m_arPanelsTEC[j].TECDataGridView.Rows[i].Cells[4].Style.BackColor = System.Drawing.Color.White;
-                            }
-                            else
-                            {
-                                m_arPanelsTEC[j].TECDataGridView.Rows[i].Cells[4].Value = "Нет";
-                                m_arPanelsTEC[j].TECDataGridView.Rows[i].Cells[4].Style.BackColor = System.Drawing.Color.OrangeRed;
-                            }
-                        }
-                        t = t + 2;
-                    }
+                            setState(j, i, (arSel[t]["Link"].ToString().Equals("1") == true) ? INDEX_STATE.OK : INDEX_STATE.ERROR);
                 }
             }
 
@@ -1135,10 +1133,7 @@ namespace StatisticDiagnostic
             /// <param name="y">номер строки</param>
             private void paintCellDeactive(int x, int y)
             {
-                if (m_arPanelsTEC[x].TECDataGridView.InvokeRequired)
-                    m_arPanelsTEC[x].TECDataGridView.Invoke(new Action(() => m_arPanelsTEC[x].TECDataGridView.Rows[y].Cells[0].Style.BackColor = Color.Empty));
-                else
-                    m_arPanelsTEC[x].TECDataGridView.Rows[y].Cells[0].Style.BackColor = Color.Empty;
+                paintCell(x, y, Color.Empty);
             }
 
             /// <summary>
@@ -1149,10 +1144,15 @@ namespace StatisticDiagnostic
             /// <param name="y">номер строки</param>
             private void paintCellActive(int x, int y)
             {
-                if (m_arPanelsTEC[x].TECDataGridView.InvokeRequired)
-                    m_arPanelsTEC[x].TECDataGridView.Invoke(new Action(() => m_arPanelsTEC[x].TECDataGridView.Rows[y].Cells[0].Style.BackColor = Color.DeepSkyBlue));
+                paintCell(x, y, s_ColorSOTIASSOState[(int)INDEX_CONTEXTMENU_ITEM.ACTIVATED]);
+            }
+
+            private void paintCell(int x, int y, Color clrCell)
+            {
+                if (m_arPanelsTEC[x].m_dgvTesting.InvokeRequired)
+                    m_arPanelsTEC[x].m_dgvTesting.Invoke(new Action(() => m_arPanelsTEC[x].m_dgvTesting.Rows[y].Cells[(int)INDEX_CELL.NAME_SOURCE].Style.BackColor = clrCell));
                 else
-                    m_arPanelsTEC[x].TECDataGridView.Rows[y].Cells[0].Style.BackColor = Color.DeepSkyBlue;
+                    m_arPanelsTEC[x].m_dgvTesting.Rows[y].Cells[(int)INDEX_CELL.NAME_SOURCE].Style.BackColor = clrCell;
             }
 
             /// <summary>
@@ -1162,7 +1162,7 @@ namespace StatisticDiagnostic
             /// <param name="y">номер строки</param>
             private void paintingCells(int x, int y)
             {
-                string a = m_arPanelsTEC[x].TECDataGridView.Rows[y].Cells[5].Value.ToString();
+                string a = m_arPanelsTEC[x].m_dgvTesting.Rows[y].Tag.ToString();
                 string b;
 
                 for (int i = 0; i < m_arrayActiveSource.Length / 2; i++)
@@ -1180,27 +1180,13 @@ namespace StatisticDiagnostic
             }
 
             /// <summary>
-            /// Подключение к ячейки контекстного меню
+            /// Подключение к ячейке контекстного меню
             /// </summary>
             /// <param name="y">номер строки</param>
-            private void attachContextMenu(int y)
+            private void initContextMenu(bool bActived)
             {
-                if (TECDataGridView.Rows[y].Cells[0].Style.BackColor == Color.DeepSkyBlue)
-                {
-                    TECDataGridView.Rows[y].Cells[0].ContextMenuStrip = ContextmenuChangeState;
-                    toolStripMenuItemActivate.CheckState = CheckState.Checked;
-                    toolStripMenuItemDeactivate.CheckState = CheckState.Unchecked;
-                }
-
-                else
-                {
-                    if (!(TECDataGridView.Rows[y].Cells[0].Value.ToString() == "АИИСКУЭ"))
-                    {
-                        TECDataGridView.Rows[y].Cells[0].ContextMenuStrip = ContextmenuChangeState;
-                        toolStripMenuItemActivate.CheckState = CheckState.Unchecked;
-                        toolStripMenuItemDeactivate.CheckState = CheckState.Checked;
-                    }
-                }
+                (this.ContextmenuChangeState.Items[(int)INDEX_CONTEXTMENU_ITEM.ACTIVATED] as ToolStripMenuItem).CheckState = bActived == true ? CheckState.Checked : CheckState.Unchecked;
+                (this.ContextmenuChangeState.Items[(int)INDEX_CONTEXTMENU_ITEM.DEACTIVATED] as ToolStripMenuItem).CheckState = bActived == false ? CheckState.Checked : CheckState.Unchecked;
             }
 
             /// <summary>
@@ -1210,12 +1196,13 @@ namespace StatisticDiagnostic
             /// <param name="e">Аргумент события</param>
             private void TECDataGridView_Cell(object sender, EventArgs e)
             {
-                try
-                {
-                    if (TECDataGridView.SelectedCells.Count > 0)
-                        TECDataGridView.SelectedCells[0].Selected = false;
+                try {
+                    if (m_dgvTesting.SelectedCells.Count > 0)
+                        m_dgvTesting.SelectedCells[0].Selected = false;
+                    else
+                        ;
+                } catch {
                 }
-                catch { }
             }
 
             /// <summary>
@@ -1224,9 +1211,11 @@ namespace StatisticDiagnostic
             private void clearGrid()
             {
                 for (int i = 0; i < m_arPanelsTEC.Length; i++)
-                    for (int j = 0; j < m_arPanelsTEC[i].TECDataGridView.Rows.Count; j++)
-                        if (m_arPanelsTEC[i].TECDataGridView.Rows.Count > 0)
-                            m_arPanelsTEC[i].TECDataGridView.Rows.Clear();
+                    for (int j = 0; j < m_arPanelsTEC[i].m_dgvTesting.Rows.Count; j++)
+                        if (m_arPanelsTEC[i].m_dgvTesting.Rows.Count > 0)
+                            m_arPanelsTEC[i].m_dgvTesting.Rows.Clear();
+                        else
+                            ;
             }
 
             /// <summary>
@@ -1236,12 +1225,12 @@ namespace StatisticDiagnostic
             /// <param name="time"></param>
             /// <param name="i">номер панели</param>
             /// <param name="r">индекс строки</param>
-            private void checkrelevancevalues(DateTime time, int i, int r)
+            private void checkRelevanceValues(DateTime time, int i, int r)
             {
-                string nameSource = m_arPanelsTEC[i].TECDataGridView.Rows[r].Cells[0].Value.ToString();
+                string nameSource = m_arPanelsTEC[i].m_dgvTesting.Rows[r].Cells[(int)INDEX_CELL.NAME_SOURCE].Value.ToString();
 
                 if ((!(nameSource == "АИИСКУЭ"))
-                    && m_arPanelsTEC[i].TECDataGridView.Rows[r].Cells[0].Style.BackColor == System.Drawing.Color.Empty)
+                    && m_arPanelsTEC[i].m_dgvTesting.Rows[r].Cells[(int)INDEX_CELL.NAME_SOURCE].Style.BackColor == System.Drawing.Color.Empty)
                     paintValuesSource(false, i, r);
                 else
                     paintValuesSource(selectInvalidValue(nameSource, time, i), i, r);
@@ -1273,7 +1262,6 @@ namespace StatisticDiagnostic
             /// <returns></returns>
             private bool selectInvalidValue(string nameS, DateTime time, int numberPanel)
             {
-
                 DateTime DTnowAISKUE = SERVER_TIME;
                 TimeZoneInfo tzInfo = TimeZoneInfo.FindSystemTimeZoneById("Russian Standard Time");
                 DateTime DTnowSOTIASSO;
@@ -1293,7 +1281,6 @@ namespace StatisticDiagnostic
                         else
                             bFL = false;
                         break;
-
                     case "СОТИАССО":
                     case "СОТИАССО_TorIs":
                     case "СОТИАССО_0":
@@ -1302,7 +1289,10 @@ namespace StatisticDiagnostic
                         else
                             bFL = false;
                         break;
+                    default:
+                        break;
                 }
+
                 return bFL;
             }
 
@@ -1314,10 +1304,7 @@ namespace StatisticDiagnostic
             /// <param name="r">номер строки</param>
             private void paintValuesSource(bool bflag, int i, int r)
             {
-                if (bflag == true)
-                    m_arPanelsTEC[i].TECDataGridView.Rows[r].Cells[2].Style.BackColor = Color.Firebrick;
-                else
-                    m_arPanelsTEC[i].TECDataGridView.Rows[r].Cells[2].Style.BackColor = Color.Empty;
+                m_arPanelsTEC[i].m_dgvTesting.Rows[r].Cells[2].Style.BackColor = bflag == true ? Color.Firebrick : Color.Empty;
             }
 
             /// <summary>
@@ -1503,12 +1490,10 @@ namespace StatisticDiagnostic
             /// <summary>
             /// очистка панелей
             /// </summary>
-            public override void Stop()
+            public void Clear()
             {
                 if (!(m_arPanelsMODES == null))
                     clearGrid();
-
-                base.Stop();
             }
 
             /// <summary>
@@ -1527,7 +1512,7 @@ namespace StatisticDiagnostic
             /// </summary>
             public void Create_Modes()
             {
-                m_arPanelsMODES = new Modes[m_dtTECList.Rows.Count + 1];
+                m_arPanelsMODES = new Modes[m_tableTECList.Rows.Count + 1];
 
                 for (int i = 0; i < m_arPanelsMODES.Length; i++)
                 {
@@ -1579,10 +1564,10 @@ namespace StatisticDiagnostic
             /// <param name="filter">фильтр для отбора записей</param>
             private void insertDataMC(int i, string filter)
             {
-                string m_filter1 = string.Empty,
-                 m_sortOrderBy = "Component ASC",
-                   m_time;
-                DataRow[] m_drIDModes, m_drComponent;
+                string m_filter1 = string.Empty
+                    , sortOrderBy = "Component ASC"
+                    , time;
+                DataRow[] arSelIDModes, arSelIDComponent;
                 int m_tic = -1;
 
                 if (m_arPanelsMODES[i].ModesDataGridView.ColumnCount < 6)
@@ -1591,53 +1576,53 @@ namespace StatisticDiagnostic
                     m_arPanelsMODES[i].ModesDataGridView.Invoke(new Action(() => m_arPanelsMODES[i].ModesDataGridView.Columns["TEC"].DisplayIndex = 1));
                 }
 
-                m_drIDModes = m_dtSourceDiag.Select(filter, m_sortOrderBy);
+                arSelIDModes = m_tableSourceDiag.Select(filter, sortOrderBy);
 
-                for (int d = 0; d < m_dtSourceDiag.Select(filter).Length - 1; d++)
+                for (int d = 0; d < m_tableSourceDiag.Select(filter).Length - 1; d++)
                 {
-                    m_filter1 = @"ID_Value = '" + m_drIDModes[d + 1][@"Component"] + "'";
+                    m_filter1 = @"ID_Value = '" + arSelIDModes[d + 1][@"Component"] + "'";
 
-                    if (m_arPanelsMODES[i].ModesDataGridView.Rows.Count < m_dtSourceDiag.Select(filter).Length - 1)
+                    if (m_arPanelsMODES[i].ModesDataGridView.Rows.Count < m_tableSourceDiag.Select(filter).Length - 1)
                         addRowsModes(i, 1);
                     else;
 
-                    m_drComponent = m_tableSourceData.Select(m_filter1);
-                    m_time = formatTime(m_drComponent[1]["Value"].ToString());
+                    arSelIDComponent = m_tableSourceData.Select(m_filter1);
+                    time = formatTime(arSelIDComponent[1]["Value"].ToString());
                     m_tic++;
 
                     if (m_arPanelsMODES[i].ModesDataGridView.InvokeRequired)
                     {
-                        if (IsNUll(ref m_drComponent))
+                        if (IsNUll(ref arSelIDComponent))
                         {
-                            if (checkPBR() == m_drComponent[0]["Value"].ToString())
+                            if (checkPBR() == arSelIDComponent[0]["Value"].ToString())
                                 paintPbrTrue(i, m_tic);
                             else
                                 paintPbrError(i, m_tic);
                         }
 
-                        m_arPanelsMODES[i].ModesDataGridView.Invoke(new Action(() => m_arPanelsMODES[i].ModesDataGridView.Rows[m_tic].Cells[5].Value = m_drComponent[0][5]));
+                        m_arPanelsMODES[i].ModesDataGridView.Invoke(new Action(() => m_arPanelsMODES[i].ModesDataGridView.Rows[m_tic].Cells[5].Value = arSelIDComponent[0][5]));
                         //m_arPanelsMODES[i].ModesDataGridView.Invoke(new Action(() => m_arPanelsMODES[i].ModesDataGridView.Rows[m_tic].Cells[0].Value = m_drComponent[0]["ID_Value"]));
-                        m_arPanelsMODES[i].ModesDataGridView.Invoke(new Action(() => m_arPanelsMODES[i].ModesDataGridView.Rows[m_tic].Cells[2].Value = m_time));
-                        m_arPanelsMODES[i].ModesDataGridView.Invoke(new Action(() => m_arPanelsMODES[i].ModesDataGridView.Rows[m_tic].Cells[1].Value = m_drComponent[0]["Value"]));
+                        m_arPanelsMODES[i].ModesDataGridView.Invoke(new Action(() => m_arPanelsMODES[i].ModesDataGridView.Rows[m_tic].Cells[2].Value = time));
+                        m_arPanelsMODES[i].ModesDataGridView.Invoke(new Action(() => m_arPanelsMODES[i].ModesDataGridView.Rows[m_tic].Cells[1].Value = arSelIDComponent[0]["Value"]));
                         m_arPanelsMODES[i].ModesDataGridView.Invoke(new Action(() => m_arPanelsMODES[i].ModesDataGridView.Rows[m_tic].Cells[3].Value = TimeZoneInfo.ConvertTimeBySystemTimeZoneId(DateTime.Now, TimeZoneInfo.Local.Id, "Russian Standard Time").ToString("hh:mm:ss:fff")));
 
                         cellsPing(m_filter1, i, m_tic);
                     }
                     else
                     {
-                        if (checkPBR() == m_drComponent[0]["Value"].ToString())
+                        if (checkPBR() == arSelIDComponent[0]["Value"].ToString())
                             paintPbrTrue(i, m_tic);
                         else
                             paintPbrError(i, m_tic);
 
                         //m_arPanelsMODES[i].ModesDataGridView.Rows[m_tic].Cells[0].Value = m_drComponent[0]["ID_Value"];
-                        m_arPanelsMODES[i].ModesDataGridView.Rows[m_tic].Cells[2].Value = m_time;
-                        m_arPanelsMODES[i].ModesDataGridView.Rows[m_tic].Cells[1].Value = m_drComponent[0]["Value"];
+                        m_arPanelsMODES[i].ModesDataGridView.Rows[m_tic].Cells[2].Value = time;
+                        m_arPanelsMODES[i].ModesDataGridView.Rows[m_tic].Cells[1].Value = arSelIDComponent[0]["Value"];
                         m_arPanelsMODES[i].ModesDataGridView.Rows[m_tic].Cells[3].Value = DateTime.Now.ToString("HH:mm:ss.fff");
 
                         cellsPing(m_filter1, i, m_tic);
                     }
-                    nameComponentGTP(m_drComponent, m_tic, i);
+                    nameComponentGTP(arSelIDComponent, m_tic, i);
                 }
             }
 
@@ -1648,58 +1633,57 @@ namespace StatisticDiagnostic
             /// <param name="i">индекс панели</param>
             private void insertDataModes(string filterSource, int i)
             {
-                string m_textDateTime = TimeZoneInfo.ConvertTimeBySystemTimeZoneId(DateTime.Now, TimeZoneInfo.Local.Id, "Russian Standard Time").ToString("hh:mm:ss:fff"),
-                 filterComp;
+                string textDateTime = TimeZoneInfo.ConvertTimeBySystemTimeZoneId(DateTime.Now, TimeZoneInfo.Local.Id, "Russian Standard Time").ToString("hh:mm:ss:fff")
+                    , filterComp;
+                DataRow[] arSelSourceModes;
+                DataRow[] arSelComponentSource;
+                string m_sortOrderBy = "Component ASC";
 
-                if (m_dtSourceDiag.Rows[i][@"NAME_SHR"].ToString() == "Modes-Centre")
+                if (m_tableSourceDiag.Rows[i][@"NAME_SHR"].ToString() == "Modes-Centre")
                     insertDataMC(i, "DESCRIPTION = 'Modes-Centre'");
-                else
-                {
-                    DataRow[] m_drSourceModes;
-                    DataRow[] m_drComponentSource;
-                    string m_sortOrderBy = "Component ASC";
-                    m_drComponentSource = m_dtSourceDiag.Select(filterSource, m_sortOrderBy);
+                else {
+                    arSelComponentSource = m_tableSourceDiag.Select(filterSource, m_sortOrderBy);
 
-                    for (int r = 0; r < m_dtSourceDiag.Select(filterSource).Length; r++)
+                    for (int r = 0; r < m_tableSourceDiag.Select(filterSource).Length; r++)
                     {
-                        filterComp = "ID_Value = '" + m_drComponentSource[r][3].ToString() + "'";
+                        filterComp = "ID_Value = '" + arSelComponentSource[r][3].ToString() + "'";
 
-                        if (m_arPanelsMODES[i].ModesDataGridView.Rows.Count < m_dtSourceDiag.Select(filterSource).Length)
+                        if (m_arPanelsMODES[i].ModesDataGridView.Rows.Count < m_tableSourceDiag.Select(filterSource).Length)
                             addRowsModes(i, 1);
+                        else
+                            ;
 
-                        m_drSourceModes = m_tableSourceData.Select(filterComp);
+                        arSelSourceModes = m_tableSourceData.Select(filterComp);
 
-                        if (m_arPanelsMODES[i].ModesDataGridView.InvokeRequired)
-                        {
-                            if (IsNUll(ref m_drSourceModes))
-                            {
-                                if (checkPBR() == m_drSourceModes[0]["Value"].ToString())
+                        if (m_arPanelsMODES[i].ModesDataGridView.InvokeRequired) {
+                            if (IsNUll(ref arSelSourceModes))
+                                if (checkPBR() == arSelSourceModes[0]["Value"].ToString())
                                     paintPbrTrue(i, r);
                                 else paintPbrError(i, r);
-                            }
+                            else
+                                ;
 
                             //m_arPanelsMODES[i].ModesDataGridView.Invoke(new Action(() => m_arPanelsMODES[i].ModesDataGridView.Rows[r].Cells[0].Value = m_drSourceModes[0]["ID_Value"]));
-                            m_arPanelsMODES[i].ModesDataGridView.Invoke(new Action(() => m_arPanelsMODES[i].ModesDataGridView.Rows[r].Cells[1].Value = m_drSourceModes[0]["Value"]));
-                            m_arPanelsMODES[i].ModesDataGridView.Invoke(new Action(() => m_arPanelsMODES[i].ModesDataGridView.Rows[r].Cells[2].Value = formatTime(m_drSourceModes[1]["Value"].ToString())));
-                            m_arPanelsMODES[i].ModesDataGridView.Invoke(new Action(() => m_arPanelsMODES[i].ModesDataGridView.Rows[r].Cells[3].Value = m_textDateTime.ToString()));
+                            m_arPanelsMODES[i].ModesDataGridView.Invoke(new Action(() => m_arPanelsMODES[i].ModesDataGridView.Rows[r].Cells[1].Value = arSelSourceModes[0]["Value"]));
+                            m_arPanelsMODES[i].ModesDataGridView.Invoke(new Action(() => m_arPanelsMODES[i].ModesDataGridView.Rows[r].Cells[2].Value = formatTime(arSelSourceModes[1]["Value"].ToString())));
+                            m_arPanelsMODES[i].ModesDataGridView.Invoke(new Action(() => m_arPanelsMODES[i].ModesDataGridView.Rows[r].Cells[3].Value = textDateTime));
 
                             cellsPing(filterComp, i, r);
-                        }
-                        else
-                        {
-                            if (checkPBR() == m_drSourceModes[0]["Value"].ToString())
+                        } else {
+                            if (checkPBR() == arSelSourceModes[0]["Value"].ToString())
                                 paintPbrTrue(i, r);
                             else
                                 paintPbrError(i, r);
 
                             //m_arPanelsMODES[i].ModesDataGridView.Rows[r].Cells[0].Value = m_drSourceModes[0]["ID_Value"];
-                            m_arPanelsMODES[i].ModesDataGridView.Rows[r].Cells[1].Value = m_drSourceModes[0]["Value"];
+                            m_arPanelsMODES[i].ModesDataGridView.Rows[r].Cells[1].Value = arSelSourceModes[0]["Value"];
                             //m_arPanelsMODES[i].ModesDataGridView.Rows[r].Cells[2].Value = formatTime(m_drSourceModes[1]["Value"].ToString());
-                            m_arPanelsMODES[i].ModesDataGridView.Rows[r].Cells[3].Value = m_textDateTime.ToString();
+                            m_arPanelsMODES[i].ModesDataGridView.Rows[r].Cells[3].Value = textDateTime;
 
                             cellsPing(filterComp, i, r);
                         }
-                        nameComponentGTP(m_drSourceModes, r, i);
+
+                        nameComponentGTP(arSelSourceModes, r, i);
                     }
                 }
             }
@@ -1709,9 +1693,8 @@ namespace StatisticDiagnostic
             /// </summary>
             public void AddItem()
             {
-                try
-                {
-                    var m_enumModes = (from r in m_dtSourceDiag.AsEnumerable()
+                try {
+                    var m_enumModes = (from r in m_tableSourceDiag.AsEnumerable()
                                        where r.Field<int>("ID") >= (int)INDEX_SOURCE.MODES && r.Field<int>("ID") < (int)INDEX_SOURCE.TASK
                                        orderby r.Field<int>("ID")
                                        select new
@@ -1720,14 +1703,10 @@ namespace StatisticDiagnostic
                                        }).Distinct();
 
                     for (int i = 0; i < m_arPanelsMODES.Length; i++)
-                    {
                         insertDataModes("ID = " + Convert.ToInt32(m_enumModes.ElementAt(i).ID), i);
-                    }
 
                     SourceNameText();
-                }
-                catch (Exception e)
-                {
+                } catch (Exception e) {
                     MessageBox.Show(e.ToString());
                 }
             }
@@ -1738,7 +1717,7 @@ namespace StatisticDiagnostic
             private void SourceNameText()
             {
                 string m_nameshr;
-                var m_enumModes = (from r in m_dtSourceDiag.AsEnumerable()
+                var m_enumModes = (from r in m_tableSourceDiag.AsEnumerable()
                                    where r.Field<int>("ID") >= (int)INDEX_SOURCE.MODES && r.Field<int>("ID") < (int)INDEX_SOURCE.TASK
                                    orderby r.Field<int>("ID")
                                    select new
@@ -1746,8 +1725,7 @@ namespace StatisticDiagnostic
                                        NAME_SHR = r.Field<string>("NAME_SHR"),
                                    }).Distinct();
 
-                for (int i = 0; i < m_enumModes.Count(); i++)
-                {
+                for (int i = 0; i < m_enumModes.Count(); i++) {
                     m_nameshr = m_enumModes.ToArray().ElementAt(i).NAME_SHR;
 
                     if (m_arPanelsMODES[i].LabelModes.InvokeRequired)
@@ -1762,16 +1740,14 @@ namespace StatisticDiagnostic
             /// </summary>
             private void nameComponentGTP(DataRow[] dtComp, int rownext, int numPanel)
             {
-                for (int j = 0; j < m_dtGTP.Rows.Count; j++)
-                {
-                    if (m_dtGTP.Rows[j]["ID"].ToString() == dtComp[0]["ID_Value"].ToString())
-                    {
+                for (int j = 0; j < m_tableGTPList.Rows.Count; j++)
+                    if (m_tableGTPList.Rows[j]["ID"].ToString() == dtComp[0]["ID_Value"].ToString()) {
                         if (m_arPanelsMODES[numPanel].ModesDataGridView.InvokeRequired)
-                            m_arPanelsMODES[numPanel].ModesDataGridView.Invoke(new Action(() => m_arPanelsMODES[numPanel].ModesDataGridView.Rows[rownext].Cells[0].Value = m_dtGTP.Rows[j]["NAME_SHR"]));
+                            m_arPanelsMODES[numPanel].ModesDataGridView.Invoke(new Action(() => m_arPanelsMODES[numPanel].ModesDataGridView.Rows[rownext].Cells[0].Value = m_tableGTPList.Rows[j]["NAME_SHR"]));
                         else
-                            m_arPanelsMODES[numPanel].ModesDataGridView.Rows[rownext].Cells[0].Value = m_dtGTP.Rows[j]["NAME_SHR"];
-                    }
-                }
+                            m_arPanelsMODES[numPanel].ModesDataGridView.Rows[rownext].Cells[0].Value = m_tableGTPList.Rows[j]["NAME_SHR"];
+                    } else
+                        ;
             }
 
             /// <summary>
@@ -1787,13 +1763,10 @@ namespace StatisticDiagnostic
 
                 if (m_arPanelsMODES[k].ModesDataGridView.InvokeRequired)
                 {
-                    if (m_drLink[0]["Link"].ToString() == "1")
-                    {
+                    if (m_drLink[0]["Link"].ToString() == "1") {
                         m_arPanelsMODES[k].ModesDataGridView.Invoke(new Action(() => m_arPanelsMODES[k].ModesDataGridView.Rows[r].Cells[4].Value = "Да"));
                         m_arPanelsMODES[k].ModesDataGridView.Invoke(new Action(() => m_arPanelsMODES[k].ModesDataGridView.Rows[r].Cells[4].Style.BackColor = System.Drawing.Color.White));
-                    }
-                    else
-                    {
+                    } else {
                         m_arPanelsMODES[k].ModesDataGridView.Invoke(new Action(() => m_arPanelsMODES[k].ModesDataGridView.Rows[r].Cells[4].Value = "Нет"));
                         m_arPanelsMODES[k].ModesDataGridView.Invoke(new Action(() => m_arPanelsMODES[k].ModesDataGridView.Rows[r].Cells[4].Style.BackColor = System.Drawing.Color.OrangeRed));
                     }
@@ -2029,12 +2002,10 @@ namespace StatisticDiagnostic
             /// <summary>
             /// очистка панелей
             /// </summary>
-            public override void Stop()
+            public void Clear()
             {
                 if (!(TaskDataGridView == null))
                     TaskDataGridView.Rows.Clear();
-
-                base.Stop();
             }
 
             /// <summary>
@@ -2396,7 +2367,7 @@ namespace StatisticDiagnostic
                 int countID,
                  countrow = 0;
 
-                var m_enumIDEXTDB = (from r in m_dtSourceDiag.AsEnumerable()
+                var m_enumIDEXTDB = (from r in m_tableSourceDiag.AsEnumerable()
                                      where r.Field<int>("COMPONENT") >= (int)INDEX_SOURCE.SIZEDB && r.Field<int>("COMPONENT") < (int)INDEX_SOURCE.MODES - 100
                                      select new
                                      {
@@ -2414,7 +2385,7 @@ namespace StatisticDiagnostic
                         AddRows(countID);
 
                     AddItem(drSizeOF, countrow);
-                    NameBD(drSizeOF, m_dtSourceDiag.Select("COMPONENT = '" + m_enumIDEXTDB.ElementAt(j).COMPONENT + "'"), countrow);
+                    NameBD(drSizeOF, m_tableSourceDiag.Select("COMPONENT = '" + m_enumIDEXTDB.ElementAt(j).COMPONENT + "'"), countrow);
                     countrow = countrow + 2;
                 }
             }
@@ -2566,6 +2537,7 @@ namespace StatisticDiagnostic
         private void dataSource_OnEvtRecievedTable(object table)
         {
             m_tableSourceData = (DataTable)table;
+
             start();
         }
 
@@ -2604,7 +2576,7 @@ namespace StatisticDiagnostic
         /// </summary>
         private void createPanels()
         {
-            m_tecdb.Create_PanelTEC();
+            m_tecdb.Create_Panel();
             m_modesdb.Create_Modes();
         }
 
@@ -2639,7 +2611,7 @@ namespace StatisticDiagnostic
         {
             try
             {
-                m_tecdb.AddItemTec();
+                m_tecdb.AddItem();
                 m_taskdb.AddItem();
                 m_modesdb.AddItem();
                 m_sizedb.LoadValues();
@@ -2662,11 +2634,11 @@ namespace StatisticDiagnostic
 
             if ((err == 0) && (!(dbconn == null)))
             {
-                m_dtSourceDiag = DbTSQLInterface.Select(ref dbconn, "SELECT * FROM DIAGNOSTIC_SOURCES", null, null, out err);//task modes size
-                m_dtSource = DbTSQLInterface.Select(ref dbconn, "SELECT * FROM SOURCE", null, null, out err);
-                m_dtGTP = DbTSQLInterface.Select(ref dbconn, "SELECT * FROM GTP_LIST", null, null, out err);
-                m_dtParamDiagnostic = DbTSQLInterface.Select(ref dbconn, "SELECT * FROM DIAGNOSTIC_PARAM", null, null, out err);
-                m_dtTECList = InitTEC_200.getListTEC(ref dbconn, false, new int[] { 0, 10 }, out err);
+                m_tableSourceDiag = DbTSQLInterface.Select(ref dbconn, "SELECT * FROM DIAGNOSTIC_SOURCES", null, null, out err);//task modes size
+                m_tableSourceList = DbTSQLInterface.Select(ref dbconn, "SELECT * FROM SOURCE", null, null, out err);
+                m_tableGTPList = DbTSQLInterface.Select(ref dbconn, "SELECT * FROM GTP_LIST", null, null, out err);
+                m_tableParamDiagnostic = DbTSQLInterface.Select(ref dbconn, "SELECT * FROM DIAGNOSTIC_PARAM", null, null, out err);
+                m_tableTECList = InitTEC_200.getListTEC(ref dbconn, false, new int[] { 0, 10 }, out err);
             }
             else
                 throw new Exception(@"Нет соединения с БД"); ;
@@ -2756,6 +2728,13 @@ namespace StatisticDiagnostic
             }
         }
 
+        private void clear()
+        {
+            m_tecdb.Clear();
+            m_modesdb.Clear();
+            m_taskdb.Clear();
+        }
+
         /// <summary>
         /// Остановка работы панели
         /// </summary>
@@ -2763,11 +2742,9 @@ namespace StatisticDiagnostic
         {
             if (Started == true)
             {
-                stop();
+                clear();
 
-                m_tecdb.StopTEC();
-                m_modesdb.Stop();
-                m_taskdb.Stop();
+                stop();                
 
                 base.Stop();
             }
@@ -2828,7 +2805,7 @@ namespace StatisticDiagnostic
                 do
                 {
                     t++;
-                    id = (int)m_dtSource.Rows[t][@"ID"];
+                    id = (int)m_tableSourceList.Rows[t][@"ID"];
 
                     if ((int)m_arrayActiveSource[j, 0] == 0)
                         break;
@@ -2836,7 +2813,7 @@ namespace StatisticDiagnostic
 
                 while ((int)m_arrayActiveSource[j, 0] != id);
 
-                m_arrayActiveSource.SetValue(m_dtSource.Rows[t][@"NAME_SHR"].ToString(), j, 1);
+                m_arrayActiveSource.SetValue(m_tableSourceList.Rows[t][@"NAME_SHR"].ToString(), j, 1);
             }
         }
 
