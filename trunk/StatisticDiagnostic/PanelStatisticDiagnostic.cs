@@ -366,15 +366,15 @@ namespace StatisticDiagnostic
         /// </summary>
         static object[,] m_arrayActiveSource;
         static Modes[] m_arPanelsMODES;
-        static Tec[] m_arPanelsTEC;
+        static Tec[] m_arPanelsTEC;        
 
-        public static DataTable m_tableSourceDiag = new DataTable();
+        private static DataTable m_tableSourceData;
 
-        private static DataTable m_tableSourceData;        
-        private static DataTable m_tableSourceList = new DataTable();
-        private static DataTable m_tableGTPList = new DataTable();
-        private static DataTable m_tableTECList = new DataTable();
-        private static DataTable m_tableParamDiagnostic = new DataTable();
+        public DataTable m_tableSourceDiagnostic = new DataTable();
+        private DataTable m_tableSourceList = new DataTable();
+        private DataTable m_tableGTPList = new DataTable();
+        private DataTable m_tableTECList = new DataTable();
+        private DataTable m_tableParamDiagnostic = new DataTable();
         /// <summary>
         /// Перечесления типов источников
         /// </summary>
@@ -879,11 +879,11 @@ namespace StatisticDiagnostic
             /// <returns>номер источника СОТИАССО</returns>
             private object selectionArraySource(string nameTec)
             {
-                DataRow[] m_foundrow = m_tableSourceList.Select("NAME_SHR = '" + nameTec + "'");
+                DataRow[] arSel = m_tableSourceList.Select("NAME_SHR = '" + nameTec + "'");
                 object a = null;
 
-                for (int i = 0; i < m_foundrow.Count(); i++)
-                    a = m_foundrow[i]["ID"].ToString();
+                for (int i = 0; i < arSel.Length; i++)
+                    a = arSel[i]["ID"].ToString();
 
                 return a;
             }
@@ -1576,13 +1576,13 @@ namespace StatisticDiagnostic
                     m_arPanelsMODES[i].ModesDataGridView.Invoke(new Action(() => m_arPanelsMODES[i].ModesDataGridView.Columns["TEC"].DisplayIndex = 1));
                 }
 
-                arSelIDModes = m_tableSourceDiag.Select(filter, sortOrderBy);
+                arSelIDModes = m_tableSourceDiagnostic.Select(filter, sortOrderBy);
 
-                for (int d = 0; d < m_tableSourceDiag.Select(filter).Length - 1; d++)
+                for (int d = 0; d < m_tableSourceDiagnostic.Select(filter).Length - 1; d++)
                 {
                     m_filter1 = @"ID_Value = '" + arSelIDModes[d + 1][@"Component"] + "'";
 
-                    if (m_arPanelsMODES[i].ModesDataGridView.Rows.Count < m_tableSourceDiag.Select(filter).Length - 1)
+                    if (m_arPanelsMODES[i].ModesDataGridView.Rows.Count < m_tableSourceDiagnostic.Select(filter).Length - 1)
                         addRowsModes(i, 1);
                     else;
 
@@ -1639,16 +1639,16 @@ namespace StatisticDiagnostic
                 DataRow[] arSelComponentSource;
                 string m_sortOrderBy = "Component ASC";
 
-                if (m_tableSourceDiag.Rows[i][@"NAME_SHR"].ToString() == "Modes-Centre")
+                if (m_tableSourceDiagnostic.Rows[i][@"NAME_SHR"].ToString() == "Modes-Centre")
                     insertDataMC(i, "DESCRIPTION = 'Modes-Centre'");
                 else {
-                    arSelComponentSource = m_tableSourceDiag.Select(filterSource, m_sortOrderBy);
+                    arSelComponentSource = m_tableSourceDiagnostic.Select(filterSource, m_sortOrderBy);
 
-                    for (int r = 0; r < m_tableSourceDiag.Select(filterSource).Length; r++)
+                    for (int r = 0; r < m_tableSourceDiagnostic.Select(filterSource).Length; r++)
                     {
                         filterComp = "ID_Value = '" + arSelComponentSource[r][3].ToString() + "'";
 
-                        if (m_arPanelsMODES[i].ModesDataGridView.Rows.Count < m_tableSourceDiag.Select(filterSource).Length)
+                        if (m_arPanelsMODES[i].ModesDataGridView.Rows.Count < m_tableSourceDiagnostic.Select(filterSource).Length)
                             addRowsModes(i, 1);
                         else
                             ;
@@ -1694,7 +1694,7 @@ namespace StatisticDiagnostic
             public void AddItem()
             {
                 try {
-                    var m_enumModes = (from r in m_tableSourceDiag.AsEnumerable()
+                    var m_enumModes = (from r in m_tableSourceDiagnostic.AsEnumerable()
                                        where r.Field<int>("ID") >= (int)INDEX_SOURCE.MODES && r.Field<int>("ID") < (int)INDEX_SOURCE.TASK
                                        orderby r.Field<int>("ID")
                                        select new
@@ -1717,7 +1717,7 @@ namespace StatisticDiagnostic
             private void SourceNameText()
             {
                 string m_nameshr;
-                var m_enumModes = (from r in m_tableSourceDiag.AsEnumerable()
+                var m_enumModes = (from r in m_tableSourceDiagnostic.AsEnumerable()
                                    where r.Field<int>("ID") >= (int)INDEX_SOURCE.MODES && r.Field<int>("ID") < (int)INDEX_SOURCE.TASK
                                    orderby r.Field<int>("ID")
                                    select new
@@ -2367,7 +2367,7 @@ namespace StatisticDiagnostic
                 int countID,
                  countrow = 0;
 
-                var m_enumIDEXTDB = (from r in m_tableSourceDiag.AsEnumerable()
+                var m_enumIDEXTDB = (from r in m_tableSourceDiagnostic.AsEnumerable()
                                      where r.Field<int>("COMPONENT") >= (int)INDEX_SOURCE.SIZEDB && r.Field<int>("COMPONENT") < (int)INDEX_SOURCE.MODES - 100
                                      select new
                                      {
@@ -2385,7 +2385,7 @@ namespace StatisticDiagnostic
                         AddRows(countID);
 
                     AddItem(drSizeOF, countrow);
-                    NameBD(drSizeOF, m_tableSourceDiag.Select("COMPONENT = '" + m_enumIDEXTDB.ElementAt(j).COMPONENT + "'"), countrow);
+                    NameBD(drSizeOF, m_tableSourceDiagnostic.Select("COMPONENT = '" + m_enumIDEXTDB.ElementAt(j).COMPONENT + "'"), countrow);
                     countrow = countrow + 2;
                 }
             }
@@ -2634,7 +2634,7 @@ namespace StatisticDiagnostic
 
             if ((err == 0) && (!(dbconn == null)))
             {
-                m_tableSourceDiag = DbTSQLInterface.Select(ref dbconn, "SELECT * FROM DIAGNOSTIC_SOURCES", null, null, out err);//task modes size
+                m_tableSourceDiagnostic = DbTSQLInterface.Select(ref dbconn, "SELECT * FROM DIAGNOSTIC_SOURCES", null, null, out err);//task modes size
                 m_tableSourceList = DbTSQLInterface.Select(ref dbconn, "SELECT * FROM SOURCE", null, null, out err);
                 m_tableGTPList = DbTSQLInterface.Select(ref dbconn, "SELECT * FROM GTP_LIST", null, null, out err);
                 m_tableParamDiagnostic = DbTSQLInterface.Select(ref dbconn, "SELECT * FROM DIAGNOSTIC_PARAM", null, null, out err);
