@@ -114,8 +114,8 @@ namespace StatisticDiagnostic
             public void LoadValues()
             {
                 DataRow[] arSelSizeOF;
-                int countID,
-                 countrow = 0;
+                string filter = string.Empty;
+                int countID;
 
                 var m_enumIDEXTDB = (from r in m_listDiagnosticSource
                                      where r.m_id_component >= (int)INDEX_SOURCE.SIZEDB && r.m_id_component < (int)INDEX_SOURCE.MODES - 100
@@ -126,17 +126,17 @@ namespace StatisticDiagnostic
 
                 countID = m_enumIDEXTDB.Count();
 
-                for (int j = 0; j < countID; j++)
-                {
-                    string filter = "ID_EXT = '" + m_enumIDEXTDB.ElementAt(j).COMPONENT + "'";
+                for (int j = 0, countRow = 0; j < countID; j++, countRow += 2) {
+                    filter = "ID_EXT = '" + m_enumIDEXTDB.ElementAt(j).COMPONENT + "'";
                     arSelSizeOF = m_tableSourceData.Select(filter);
 
                     if (SizeDbDataGridView.RowCount < (countID * 2))
                         AddRows(countID);
+                    else
+                        ;
 
-                    AddItem(arSelSizeOF, countrow);
-                    NameDb(arSelSizeOF, m_listDiagnosticSource.FindAll(item => { return item.m_id_component == m_enumIDEXTDB.ElementAt(j).COMPONENT; }), countrow);
-                    countrow = countrow + 2;
+                    AddItem(arSelSizeOF, countRow);
+                    NameDb(arSelSizeOF, m_listDiagnosticSource.FindAll(item => { return item.m_id_component == m_enumIDEXTDB.ElementAt(j).COMPONENT; }), countRow);
                 }
             }
 

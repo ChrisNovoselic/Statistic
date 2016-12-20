@@ -500,9 +500,11 @@ namespace StatisticDiagnostic
                 lock (m_lockState)
                 {
                     ClearStates();
+
                     AddState((int)State.UpdateSource);
                     AddState((int)State.ServerTime);
                     AddState((int)State.Command);
+
                     Run(@"StatisticDiagnostic.HHandlerDb :: Command");
                 }
             }
@@ -537,6 +539,7 @@ namespace StatisticDiagnostic
                 return iRes;
             }
 
+            /// <summary>
             /// Получить результат обработки события
             /// </summary>
             /// <param name="state">Событие для получения результата</param>
@@ -774,7 +777,7 @@ namespace StatisticDiagnostic
         private void dataSource_OnEvtRecievedTable(object table)
         {
             m_tableSourceData = (DataTable)table;
-
+            // обновить значения
             try {
                 m_tecdb.AddItem();
                 m_taskdb.AddItem();

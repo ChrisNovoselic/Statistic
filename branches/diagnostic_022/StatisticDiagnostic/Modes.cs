@@ -239,9 +239,9 @@ namespace StatisticDiagnostic
                         if (arSource[i]["Value"].ToString() == "")
                         {
                             arSource[i]["Value"] = "Нет данных в БД";
-                            bRes = false;
+                            //bRes = false; // ничего не делать
                         } else
-                            bRes = true;
+                            if (bRes == false) bRes = true; else /*ничего не делать*/;
 
                     return bRes;
                 }
