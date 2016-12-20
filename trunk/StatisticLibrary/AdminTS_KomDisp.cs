@@ -337,17 +337,22 @@ namespace StatisticCommon
                 //ѕроверить наличие записей дл€ √“ѕ
                 if (rowsTECComponent.Count > 0) {
                     // добавление недостающих строк путем копировани€ крайней
-                    if (rowsTECComponent.Count < 24) {
+                    if (rowsTECComponent.Count < 24)
                         while (rowsTECComponent.Count < 24) {
-                            rowsTECComponent.Add(rowsTECComponent[rowsTECComponent.Count - 1]);
-
-                            if (m_tableValuesResponse.Columns.Contains(@"SESSION_INTERVAL") == true)
-                                rowsTECComponent[rowsTECComponent.Count - 1][@"SESSION_INTERVAL"] = rowsTECComponent.Count - 1;
-                            else
-                                ;
-                        }
-                    } else
-                        ;
+                            // добавить новую строку
+                            rowsTECComponent.Add(m_tableValuesResponse.NewRow());
+                            // скопировать в новую строку значени€ из предыдущей
+                            foreach (DataColumn col in m_tableValuesResponse.Columns)
+                                if (col.ColumnName.Equals(@"SESSION_INTERVAL") == true)
+                                // номер часа = индексу строки
+                                    rowsTECComponent[rowsTECComponent.Count - 1][col.ColumnName] = rowsTECComponent.Count - 1;
+                                else
+                                // значени€ из предыдущей строки
+                                    rowsTECComponent[rowsTECComponent.Count - 1][col.ColumnName] =
+                                        rowsTECComponent[rowsTECComponent.Count - 2][col.ColumnName];
+                        } // while - 24 часа
+                    else
+                        ; // ничего добавл€ть не надо
 
                     foreach (DataRow r in rowsTECComponent) {
                         hour = int.Parse(r[@"SESSION_INTERVAL"].ToString());
