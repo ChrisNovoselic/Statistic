@@ -370,11 +370,11 @@ namespace StatisticDiagnostic
 
         private static DataTable m_tableSourceData;
 
-        public DataTable m_tableSourceDiagnostic = new DataTable();
-        private DataTable m_tableSourceList = new DataTable();
-        private DataTable m_tableGTPList = new DataTable();
-        private DataTable m_tableTECList = new DataTable();
-        private DataTable m_tableParamDiagnostic = new DataTable();
+        public static DataTable m_tableSourceDiagnostic = new DataTable();
+        private static DataTable m_tableSourceList = new DataTable();
+        private static DataTable m_tableGTPList = new DataTable();
+        private static DataTable m_tableTECList = new DataTable();
+        private static DataTable m_tableParamDiagnostic = new DataTable();
         /// <summary>
         /// Перечесления типов источников
         /// </summary>
