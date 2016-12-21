@@ -183,123 +183,10 @@ namespace StatisticDiagnostic
 
             this.SuspendLayout();
 
-            //Tasklabel = new System.Windows.Forms.Label();
-            //SizeBDlabel = new System.Windows.Forms.Label();
-            //TEClabel = new System.Windows.Forms.Label();
-            //Modeslabel = new System.Windows.Forms.Label();
-            ////
-            ////TecTableLayoutPanel
-            ////
-            //this.TecTableLayoutPanel = new System.Windows.Forms.TableLayoutPanel();
-            //this.TecTableLayoutPanel.Dock = DockStyle.Fill;
-            //this.TecTableLayoutPanel.AutoSize = true;
-            //this.TecTableLayoutPanel.CellBorderStyle = System.Windows.Forms.TableLayoutPanelCellBorderStyle.Single;
-            //this.TecTableLayoutPanel.AutoSizeMode = System.Windows.Forms.AutoSizeMode.GrowAndShrink;
-            //this.TecTableLayoutPanel.ColumnCount = 3;
-            //this.TecTableLayoutPanel.ColumnStyles.Add(new System.Windows.Forms.ColumnStyle(System.Windows.Forms.SizeType.Percent, 50F));
-            //this.TecTableLayoutPanel.ColumnStyles.Add(new System.Windows.Forms.ColumnStyle(System.Windows.Forms.SizeType.Percent, 50F));
-            //this.TecTableLayoutPanel.ColumnStyles.Add(new System.Windows.Forms.ColumnStyle(System.Windows.Forms.SizeType.Percent, 50F));
-            //this.TecTableLayoutPanel.RowCount = 2;
-            //this.TecTableLayoutPanel.RowStyles.Add(new System.Windows.Forms.RowStyle(System.Windows.Forms.SizeType.Percent, 50F));
-            //this.TecTableLayoutPanel.RowStyles.Add(new System.Windows.Forms.RowStyle(System.Windows.Forms.SizeType.Percent, 50F));
-            ////
-            ////ModesTableLayoutPanel
-            ////
-            //this.ModesTableLayoutPanel = new System.Windows.Forms.TableLayoutPanel();
-            //this.ModesTableLayoutPanel.Dock = DockStyle.Fill;
-            //this.ModesTableLayoutPanel.CellBorderStyle = System.Windows.Forms.TableLayoutPanelCellBorderStyle.Single;
-            //this.ModesTableLayoutPanel.AutoSizeMode = System.Windows.Forms.AutoSizeMode.GrowAndShrink;
-            //this.ModesTableLayoutPanel.AutoSize = true;
-            //this.ModesTableLayoutPanel.ColumnCount = 3;
-            //this.ModesTableLayoutPanel.ColumnStyles.Add(new System.Windows.Forms.ColumnStyle(System.Windows.Forms.SizeType.Percent, 50F));
-            //this.ModesTableLayoutPanel.ColumnStyles.Add(new System.Windows.Forms.ColumnStyle(System.Windows.Forms.SizeType.Percent, 50F));
-            //this.ModesTableLayoutPanel.ColumnStyles.Add(new System.Windows.Forms.ColumnStyle(System.Windows.Forms.SizeType.Percent, 50F));
-            //this.ModesTableLayoutPanel.RowCount = 2;
-            //this.ModesTableLayoutPanel.RowStyles.Add(new System.Windows.Forms.RowStyle(System.Windows.Forms.SizeType.Percent, 50F));
-            //this.ModesTableLayoutPanel.RowStyles.Add(new System.Windows.Forms.RowStyle(System.Windows.Forms.SizeType.Percent, 50F));
-            ////
-            ////TaskTableLayoutPanel
-            ////
-            //this.TaskTableLayoutPanel = new System.Windows.Forms.TableLayoutPanel();
-            //this.TaskTableLayoutPanel.Dock = DockStyle.Fill;
-            //this.TaskTableLayoutPanel.AutoSize = true;
-            //this.TaskTableLayoutPanel.CellBorderStyle = System.Windows.Forms.TableLayoutPanelCellBorderStyle.Single;
-            //this.TaskTableLayoutPanel.AutoSizeMode = System.Windows.Forms.AutoSizeMode.GrowAndShrink;
-            //this.TaskTableLayoutPanel.ColumnCount = 2;
-            //this.TaskTableLayoutPanel.ColumnStyles.Add(new System.Windows.Forms.ColumnStyle(System.Windows.Forms.SizeType.Percent, 60F));
-            //this.TaskTableLayoutPanel.ColumnStyles.Add(new System.Windows.Forms.ColumnStyle(System.Windows.Forms.SizeType.Percent, 40F));
-            //this.TaskTableLayoutPanel.RowCount = 1;
-            //this.TaskTableLayoutPanel.RowStyles.Add(new System.Windows.Forms.RowStyle(System.Windows.Forms.SizeType.Percent, 50F));
-            //this.TaskTableLayoutPanel.Controls.Add(m_taskdb.TaskDataGridView, 0, 0);
-            //this.TaskTableLayoutPanel.Controls.Add(m_sizedb.SizeDbDataGridView, 1, 0);
-            ////
-            ////LabelTableLayoutPanel
-            ////
-            //this.LabelTableLayoutPanel = new System.Windows.Forms.TableLayoutPanel();
-            //this.LabelTableLayoutPanel.Dock = DockStyle.Fill;
-            //this.LabelTableLayoutPanel.AutoSize = true;
-            //this.LabelTableLayoutPanel.CellBorderStyle = System.Windows.Forms.TableLayoutPanelCellBorderStyle.None;
-            //this.LabelTableLayoutPanel.AutoSizeMode = System.Windows.Forms.AutoSizeMode.GrowOnly;
-            //this.LabelTableLayoutPanel.ColumnCount = 2;
-            //this.LabelTableLayoutPanel.ColumnStyles.Add(new System.Windows.Forms.ColumnStyle(System.Windows.Forms.SizeType.Percent, 60F));
-            //this.LabelTableLayoutPanel.ColumnStyles.Add(new System.Windows.Forms.ColumnStyle(System.Windows.Forms.SizeType.Percent, 40F));
-            //this.LabelTableLayoutPanel.RowCount = 1;
-            //this.LabelTableLayoutPanel.RowStyles.Add(new System.Windows.Forms.RowStyle(System.Windows.Forms.SizeType.Percent, 50F));
-            //this.LabelTableLayoutPanel.Controls.Add(Tasklabel, 0, 0);
-            //this.LabelTableLayoutPanel.Controls.Add(SizeBDlabel, 1, 0);
-
-            //this.Controls.Add(TEClabel, 0, 0);
-            //this.Controls.Add(TecTableLayoutPanel, 0, 1);
-            //this.Controls.Add(Modeslabel, 0, 2);
-            //this.Controls.Add(ModesTableLayoutPanel, 0, 3);
-            //this.Controls.Add(LabelTableLayoutPanel, 0, 4);
-            //this.Controls.Add(TaskTableLayoutPanel, 0, 5);
-
-            //this.Modeslabel.AutoSize = true;
-            //this.Modeslabel.Dock = System.Windows.Forms.DockStyle.Fill;
-            //this.Modeslabel.Name = "Modeslabel";
-            //this.Modeslabel.TabIndex = 0;
-            //this.Modeslabel.Text = "Панель данных - МОДЕС";
-            //this.Modeslabel.Size = new System.Drawing.Size(10, 10);
-            //this.Modeslabel.Anchor = ((System.Windows.Forms.AnchorStyles)(((System.Windows.Forms.AnchorStyles.Bottom | System.Windows.Forms.AnchorStyles.Left))));
-
-            //this.TEClabel.Name = "TEClabel";
-            //this.TEClabel.TabIndex = 0;
-            //this.TEClabel.Text = "Панель данных - ТЭЦ";
-            //this.TEClabel.Size = new System.Drawing.Size(10, 10);
-            //this.TEClabel.AutoSize = true;
-            //this.TEClabel.Anchor = ((System.Windows.Forms.AnchorStyles)(((System.Windows.Forms.AnchorStyles.Bottom | System.Windows.Forms.AnchorStyles.Left))));
-
-            //this.Tasklabel.Size = new System.Drawing.Size(10, 10);
-            ////this.Tasklabel.Dock = System.Windows.Forms.DockStyle.Fill;
-            //this.Tasklabel.Name = "Tasklabel";
-            //this.Tasklabel.TabIndex = 0;
-            //this.Tasklabel.AutoSize = true;
-            //this.Tasklabel.Text = "Список задач";
-            //this.Tasklabel.Anchor = ((System.Windows.Forms.AnchorStyles)(((System.Windows.Forms.AnchorStyles.Bottom | System.Windows.Forms.AnchorStyles.Left))));
-
-            //this.SizeBDlabel.Size = new System.Drawing.Size(10, 10);
-            ////this.SizeBDlabel.Dock = System.Windows.Forms.DockStyle.Fill;
-            //this.SizeBDlabel.Name = "SizeBDlabel";
-            //this.SizeBDlabel.TabIndex = 0;
-            //this.SizeBDlabel.AutoSize = true;
-            //this.SizeBDlabel.Text = "Информация БД";
-            //this.SizeBDlabel.Anchor = ((System.Windows.Forms.AnchorStyles)(((System.Windows.Forms.AnchorStyles.Bottom | System.Windows.Forms.AnchorStyles.Left))));
-
-            this.Dock = DockStyle.Fill;
-
-            //this.ColumnCount = 1;
-            //this.ColumnStyles.Add(new System.Windows.Forms.ColumnStyle(System.Windows.Forms.SizeType.Percent, 50F));
-            //this.RowCount = 6;
-            //this.RowStyles.Add(new System.Windows.Forms.RowStyle(System.Windows.Forms.SizeType.Percent, 5F));
-            //this.RowStyles.Add(new System.Windows.Forms.RowStyle(System.Windows.Forms.SizeType.Percent, 70F));
-            //this.RowStyles.Add(new System.Windows.Forms.RowStyle(System.Windows.Forms.SizeType.Percent, 5F));
-            //this.RowStyles.Add(new System.Windows.Forms.RowStyle(System.Windows.Forms.SizeType.Percent, 87F));
-            //this.RowStyles.Add(new System.Windows.Forms.RowStyle(System.Windows.Forms.SizeType.Percent, 7F));
-            //this.RowStyles.Add(new System.Windows.Forms.RowStyle(System.Windows.Forms.SizeType.Percent, 45F));
-
-            m_tecdb.Create();
-            m_modesdb.Create();
+            this.Controls.Add(m_tecdb, 0, 0); this.SetColumnSpan(m_tecdb, 8); this.SetRowSpan(m_tecdb, 6);
+            this.Controls.Add(m_modesdb, 0, 6); this.SetColumnSpan(m_tecdb, 8); this.SetRowSpan(m_tecdb, 5);
+            this.Controls.Add(m_taskdb, 0, 11); this.SetColumnSpan(m_tecdb, 5); this.SetRowSpan(m_tecdb, 5);
+            this.Controls.Add(m_sizedb, 5, 11); this.SetColumnSpan(m_tecdb, 3); this.SetRowSpan(m_tecdb, 5);
 
             this.ResumeLayout();
         }
@@ -354,7 +241,7 @@ namespace StatisticDiagnostic
         /// </summary>
         static object[,] m_arrayActiveSource;
 
-        private static DataTable m_tableSourceData;
+        //private static DataTable m_tableSourceData;
 
         //public static DataTable m_tableSourceDiagnostic = new DataTable(); //m_listDiagnosticSource
         private static DataTable m_tableSourceList = new DataTable();
@@ -401,7 +288,20 @@ namespace StatisticDiagnostic
         /// Экземпляры класса Tec
         /// </summary>
         private PanelContainerTec m_tecdb;
+        
+        private struct STATE_SOURCE
+        {
+            public string m_Text;
 
+            public Color m_Color;
+        }
+
+        private enum INDEX_STATE : short { OK = 0, ERROR }
+
+        private static STATE_SOURCE[] s_StateSources = new STATE_SOURCE[] {
+            new STATE_SOURCE() { m_Text = @"Да", m_Color = Color.White }
+            , new STATE_SOURCE() { m_Text = @"Нет", m_Color = Color.Red }
+        };
         /// <summary>
         /// 
         /// </summary>
@@ -776,16 +676,16 @@ namespace StatisticDiagnostic
         /// <param name="table">Результат выполнения запроса - таблица с данными</param>
         private void dataSource_OnEvtRecievedTable(object table)
         {
-            m_tableSourceData = (DataTable)table;
-            // обновить значения
-            try {
-                m_tecdb.AddItem();
-                m_taskdb.AddItem();
-                m_modesdb.AddItem();
-                m_sizedb.LoadValues();
-            } catch (Exception e) {
-                Logging.Logg().Exception(e, @"PanelStatisticDiagnostic::_OnEvtRecievedTable () - ...", Logging.INDEX_MESSAGE.NOT_SET);
-            }
+            //m_tableSourceData = (DataTable)table;
+            //// обновить значения
+            //try {
+            //    m_tecdb.Update();
+            //    m_taskdb.Update();
+            //    m_modesdb.Update();
+            //    m_sizedb.LoadValues();
+            //} catch (Exception e) {
+            //    Logging.Logg().Exception(e, @"PanelStatisticDiagnostic::_OnEvtRecievedTable () - ...", Logging.INDEX_MESSAGE.NOT_SET);
+            //}
         }
 
         /// <summary>
@@ -814,8 +714,13 @@ namespace StatisticDiagnostic
         {
             m_DataSource.Start();
             m_DataSource.StartDbInterfaces();
-            m_DataSource.EvtRecievedActiveSource += new DelegateObjectFunc(dataSource_OnEvtRecievedActiveSource);
+            //m_DataSource.EvtRecievedActiveSource += new DelegateObjectFunc(dataSource_OnEvtRecievedActiveSource);
+            m_DataSource.EvtRecievedActiveSource += new DelegateObjectFunc(m_tecdb.Update);
             m_DataSource.EvtRecievedTable += new DelegateObjectFunc(dataSource_OnEvtRecievedTable);
+            m_DataSource.EvtRecievedTable += new DelegateObjectFunc(m_tecdb.Update);
+            m_DataSource.EvtRecievedTable += new DelegateObjectFunc(m_modesdb.Update);
+            m_DataSource.EvtRecievedTable += new DelegateObjectFunc(m_taskdb.Update);
+            m_DataSource.EvtRecievedTable += new DelegateObjectFunc(m_sizedb.Update);
         }
 
         /// <summary>

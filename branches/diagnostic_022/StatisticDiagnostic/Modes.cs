@@ -72,6 +72,10 @@ namespace StatisticDiagnostic
                         ;
             }
 
+            public void Update(object table)
+            {
+            }
+
             /// <summary>
             /// Класс для описания элемента панели с информацией
             /// значений параметров диагностики работоспособности 
@@ -247,7 +251,7 @@ namespace StatisticDiagnostic
                 }
 
                 /// <summary>
-                /// заполненеи панели МС данными
+                /// DataGridView Modes-Centre
                 /// </summary>
                 private void insertDataMC()
                 {
@@ -291,7 +295,7 @@ namespace StatisticDiagnostic
                             m_dgvValues.Invoke(new Action(() => m_dgvValues.Rows[iRow].Cells[1].Value = arSelIDComponent[0]["Value"]));
                             m_dgvValues.Invoke(new Action(() => m_dgvValues.Rows[iRow].Cells[3].Value = TimeZoneInfo.ConvertTimeBySystemTimeZoneId(DateTime.Now, TimeZoneInfo.Local.Id, "Russian Standard Time").ToString("hh:mm:ss:fff")));
 
-                            cellsPing(filterComp, iRow);
+                            cellsPing(arSelIDComponent[0]["Link"].ToString().Equals(1.ToString()), iRow);
                         } else {
                             paintPbr(iRow, !(checkPBR() == arSelIDComponent[0]["Value"].ToString()));
 
@@ -300,7 +304,7 @@ namespace StatisticDiagnostic
                             m_dgvValues.Rows[iRow].Cells[1].Value = arSelIDComponent[0]["Value"];
                             m_dgvValues.Rows[iRow].Cells[3].Value = DateTime.Now.ToString("HH:mm:ss.fff");
 
-                            cellsPing(filterComp, iRow);
+                            cellsPing(arSelIDComponent[0]["Link"].ToString().Equals(1.ToString()), iRow);
                         }
 
                         nameComponentGTP(arSelIDComponent, iRow);
@@ -311,7 +315,7 @@ namespace StatisticDiagnostic
                 /// добавление записей в грид
                 /// </summary>
                 /// <param name="id">фильтр для отбора данных</param>
-                private void insertDataModes(int id)
+                private void insertData(int id)
                 {
                     string textDateTime = TimeZoneInfo.ConvertTimeBySystemTimeZoneId(DateTime.Now, TimeZoneInfo.Local.Id, "Russian Standard Time").ToString("hh:mm:ss:fff")
                         , filterComp;
@@ -319,7 +323,7 @@ namespace StatisticDiagnostic
                     DataRow[] arSelSourceModes = null;
 
                     if (m_listDiagnosticSource[i].m_name_shr == "Modes-Centre")
-                        insertDataMC(i);
+                        insertDataMC();
                     else
                     {
                         listDiagnosticSource = m_listDiagnosticSource.FindAll(item => { return item.m_id == id; });
@@ -330,19 +334,15 @@ namespace StatisticDiagnostic
                             filterComp = "ID_Value = '" + listDiagnosticSource[r].m_id_component + "'";
 
                             if (m_dgvValues.Rows.Count < listDiagnosticSource.Count)
-                                addRows(i, 1);
+                                addRows(1);
                             else
                                 ;
 
                             arSelSourceModes = m_tableSourceData.Select(filterComp);
 
-                            if (m_dgvValues.InvokeRequired)
-                            {
+                            if (m_dgvValues.InvokeRequired == true) {
                                 if (testingNull(ref arSelSourceModes))
-                                    if (checkPBR() == arSelSourceModes[0]["Value"].ToString())
-                                        paintPbr(r, false);
-                                    else
-                                        paintPbr(r, true);
+                                    paintPbr(r, !(checkPBR() == arSelSourceModes[0]["Value"].ToString()));
                                 else
                                     ;
 
@@ -351,24 +351,19 @@ namespace StatisticDiagnostic
                                 m_dgvValues.Invoke(new Action(() => m_dgvValues.Rows[r].Cells[2].Value = formatTime(arSelSourceModes[1]["Value"].ToString())));
                                 m_dgvValues.Invoke(new Action(() => m_dgvValues.Rows[r].Cells[3].Value = textDateTime));
 
-                                cellsPing(filterComp, i, r);
-                            }
-                            else
-                            {
-                                if (checkPBR() == arSelSourceModes[0]["Value"].ToString())
-                                    paintPbr(r, false);
-                                else
-                                    paintPbr(r, true);
+                                cellsPing(arSelSourceModes[0]["Link"].ToString().Equals(1.ToString()), r);
+                            } else {
+                                paintPbr(r, !(checkPBR() == arSelSourceModes[0]["Value"].ToString()));
 
                                 //m_dgvValues.Rows[r].Cells[0].Value = m_drSourceModes[0]["ID_Value"];
                                 m_dgvValues.Rows[r].Cells[1].Value = arSelSourceModes[0]["Value"];
                                 //m_dgvValues.Rows[r].Cells[2].Value = formatTime(m_drSourceModes[1]["Value"].ToString());
                                 m_dgvValues.Rows[r].Cells[3].Value = textDateTime;
 
-                                cellsPing(filterComp, i, r);
+                                cellsPing(arSelSourceModes[0]["Link"].ToString().Equals(1.ToString()), r);
                             }
 
-                            nameComponentGTP(arSelSourceModes, r, i);
+                            nameComponentGTP(arSelSourceModes, r);
                         }
                     }
                 }
@@ -387,7 +382,7 @@ namespace StatisticDiagnostic
                                                ID = r.m_id,
                                            }).Distinct();
 
-                        insertDataModes(Convert.ToInt32(m_enumModes.ElementAt(i).ID));
+                        insertData(Convert.ToInt32(m_enumModes.ElementAt(i).ID));
 
                         SetItemNameShr();
                     } catch (Exception e) {
@@ -434,19 +429,24 @@ namespace StatisticDiagnostic
                             ;
                 }
 
+                private enum INDEX_CELL : short { STATE = 4 }
+
                 /// <summary>
                 /// Заполнение панели данными о связи 
                 /// с источниками для МОДЕС
                 /// </summary>
                 /// <param name="f">фильтр для отбора данных</param>
                 /// <param name="r">номер строки</param>
-                private void cellsPing(string f, int k, int r)
+                private void cellsPing(bool bLink, int r)
                 {
-                    DataRow[] m_drLink = m_tableSourceData.Select(f);
+                    Action<int, INDEX_STATE> setState = new Action<int, INDEX_STATE>((iRow, iState) => {
+                        m_dgvValues.Rows[iRow].Cells[(int)INDEX_CELL.STATE].Value = s_StateSources[(int)iState].m_Text;
+                        m_dgvValues.Rows[iRow].Cells[(int)INDEX_CELL.STATE].Style.BackColor = s_StateSources[(int)iState].m_Color;
+                    });
 
                     if (m_dgvValues.InvokeRequired)
                     {
-                        if (m_drLink[0]["Link"].ToString() == "1")
+                        if (bLink == true)
                         {
                             m_dgvValues.Invoke(new Action(() => m_dgvValues.Rows[r].Cells[4].Value = "Да"));
                             m_dgvValues.Invoke(new Action(() => m_dgvValues.Rows[r].Cells[4].Style.BackColor = System.Drawing.Color.White));
@@ -459,7 +459,7 @@ namespace StatisticDiagnostic
                     }
                     else
                     {
-                        if (m_drLink[0]["Link"].ToString() == "1")
+                        if (bLink == true)
                         {
                             m_dgvValues.Rows[r].Cells[4].Value = "Да";
                             m_dgvValues.Rows[r].Cells[4].Style.BackColor = System.Drawing.Color.White;
@@ -479,13 +479,12 @@ namespace StatisticDiagnostic
                 /// <param name="e">событие</param>
                 private void m_arPanelsMODES_Cell(object sender, EventArgs e)
                 {
-                    try
-                    {
+                    try {
                         if (m_dgvValues.SelectedCells.Count > 0)
                             m_dgvValues.SelectedCells[0].Selected = false;
                         else;
+                    } catch {
                     }
-                    catch { }
                 }
 
                 /// <summary>

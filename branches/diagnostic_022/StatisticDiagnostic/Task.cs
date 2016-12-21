@@ -20,7 +20,7 @@ namespace StatisticDiagnostic
         /// </summary>
         private partial class PanelTask : HPanelCommon
         {
-            public DataGridView TaskDataGridView = new DataGridView();
+            public DataGridView m_dgvValues;
 
             public PanelTask()
                 : base(-1, -1)
@@ -70,41 +70,39 @@ namespace StatisticDiagnostic
             /// </summary>
             private void InitializeComponentTask()
             {
-                TaskDataGridView = new System.Windows.Forms.DataGridView();
+                m_dgvValues = new System.Windows.Forms.DataGridView();
                 this.SuspendLayout();
 
-                this.TaskDataGridView.ColumnHeadersHeightSizeMode = System.Windows.Forms.DataGridViewColumnHeadersHeightSizeMode.AutoSize;
-                this.TaskDataGridView.AutoSizeRowsMode = DataGridViewAutoSizeRowsMode.AllCellsExceptHeaders;
-                this.TaskDataGridView.AutoSizeColumnsMode = DataGridViewAutoSizeColumnsMode.Fill;
-                this.TaskDataGridView.Dock = DockStyle.Fill;
-                this.TaskDataGridView.ClearSelection();
-                this.TaskDataGridView.Name = "TaskDataGridView";
-                this.TaskDataGridView.ColumnCount = 6;
-                this.TaskDataGridView.Columns[0].Name = "Имя задачи";
-                this.TaskDataGridView.Columns[1].Name = "Среднее время выполнения";
-                this.TaskDataGridView.Columns[3].Name = "Время проверки";
-                this.TaskDataGridView.Columns[2].Name = "Время выполнения задачи";
-                this.TaskDataGridView.Columns[4].Name = "Описание ошибки";
-                this.TaskDataGridView.Columns[5].Name = "Статус задачи";
-                this.TaskDataGridView.Columns[0].Width = 30;
-                this.TaskDataGridView.Columns[1].Width = 12;
-                this.TaskDataGridView.Columns[3].Width = 5;
-                this.TaskDataGridView.Columns[2].Width = 15;
-                this.TaskDataGridView.Columns[4].Width = 20;
-                this.TaskDataGridView.Columns[5].Width = 15;
-                this.TaskDataGridView.RowHeadersVisible = false;
-                this.TaskDataGridView.TabIndex = 0;
-                this.TaskDataGridView.AllowUserToAddRows = false;
-                this.TaskDataGridView.ReadOnly = true;
+                this.m_dgvValues.ColumnHeadersHeightSizeMode = System.Windows.Forms.DataGridViewColumnHeadersHeightSizeMode.AutoSize;
+                this.m_dgvValues.AutoSizeRowsMode = DataGridViewAutoSizeRowsMode.AllCellsExceptHeaders;
+                this.m_dgvValues.AutoSizeColumnsMode = DataGridViewAutoSizeColumnsMode.Fill;
+                this.m_dgvValues.Dock = DockStyle.Fill;
+                this.m_dgvValues.ClearSelection();
+                this.m_dgvValues.Name = "TaskDataGridView";
+                this.m_dgvValues.ColumnCount = 6;
+                this.m_dgvValues.Columns[0].Name = "Имя задачи";
+                this.m_dgvValues.Columns[1].Name = "Среднее время выполнения";
+                this.m_dgvValues.Columns[3].Name = "Время проверки";
+                this.m_dgvValues.Columns[2].Name = "Время выполнения задачи";
+                this.m_dgvValues.Columns[4].Name = "Описание ошибки";
+                this.m_dgvValues.Columns[5].Name = "Статус задачи";
+                this.m_dgvValues.Columns[0].Width = 30;
+                this.m_dgvValues.Columns[1].Width = 12;
+                this.m_dgvValues.Columns[3].Width = 5;
+                this.m_dgvValues.Columns[2].Width = 15;
+                this.m_dgvValues.Columns[4].Width = 20;
+                this.m_dgvValues.Columns[5].Width = 15;
+                this.m_dgvValues.RowHeadersVisible = false;
+                this.m_dgvValues.TabIndex = 0;
+                this.m_dgvValues.AllowUserToAddRows = false;
+                this.m_dgvValues.ReadOnly = true;
 
-                this.TaskDataGridView.CellClick += TaskDataGridView_CellClick;
-                this.TaskDataGridView.CellValueChanged += TaskDataGridView_CellClick;
+                this.m_dgvValues.CellClick += TaskDataGridView_CellClick;
+                this.m_dgvValues.CellValueChanged += TaskDataGridView_CellClick;
                 this.ResumeLayout();
             }
 
             #endregion;
-
-            public System.Windows.Forms.TableLayoutPanel TaskTableLayoutPanel;
         }
 
         /// <summary>
@@ -114,18 +112,8 @@ namespace StatisticDiagnostic
         /// </summary>
         partial class PanelTask
         {
-            /// <summary>
-            /// Функция активации
-            /// </summary>
-            /// <param name="?">параметр активации</param>
-            public void ActivateTask(bool activated)
+            public void Update(object table)
             {
-                if (activated == true)
-                {
-                    if (!(TaskTableLayoutPanel == null))
-                        TaskTableLayoutPanel.Focus();
-                }
-                else;
             }
 
             /// <summary>
@@ -133,8 +121,10 @@ namespace StatisticDiagnostic
             /// </summary>
             public void Clear()
             {
-                if (!(TaskDataGridView == null))
-                    TaskDataGridView.Rows.Clear();
+                if (!(m_dgvValues == null))
+                    m_dgvValues.Rows.Clear();
+                else
+                    ;
             }
 
             /// <summary>
@@ -158,7 +148,7 @@ namespace StatisticDiagnostic
 
                     enumCnt = m_enumIDtask.Count();
 
-                    if (TaskDataGridView.Rows.Count < enumCnt)
+                    if (m_dgvValues.Rows.Count < enumCnt)
                         addRowsTask(enumCnt);
 
                     for (int i = 0; i < enumCnt; i++)
@@ -166,21 +156,22 @@ namespace StatisticDiagnostic
                         filter = "NAME_SHR = '" + m_enumIDtask.ElementAt(i).NAME + "'";
                         drNameTask = m_tableSourceData.Select(filter);
 
-                        if (TaskDataGridView.InvokeRequired)
+                        if (m_dgvValues.InvokeRequired)
                         {
                             columTimeTask(i);
-                            TaskDataGridView.Invoke(new Action(() => TaskDataGridView.Rows[i].Cells[1].Value = ToDateTime(drNameTask[0]["Value"])));
-                            TaskDataGridView.Invoke(new Action(() => TaskDataGridView.Rows[i].Cells[2].Value = formatTime(drNameTask[1]["Value"].ToString())));
-                            TaskDataGridView.Invoke(new Action(() => TaskDataGridView.Rows[i].Cells[0].Value = drNameTask[0]["NAME_SHR"]));
+                            m_dgvValues.Invoke(new Action(() => m_dgvValues.Rows[i].Cells[1].Value = ToDateTime(drNameTask[0]["Value"])));
+                            m_dgvValues.Invoke(new Action(() => m_dgvValues.Rows[i].Cells[2].Value = formatTime(drNameTask[1]["Value"].ToString())));
+                            m_dgvValues.Invoke(new Action(() => m_dgvValues.Rows[i].Cells[0].Value = drNameTask[0]["NAME_SHR"]));
                         }
                         else
                         {
                             columTimeTask(i);
-                            TaskDataGridView.Rows[i].Cells[1].Value = drNameTask[0]["Value"];
-                            TaskDataGridView.Rows[i].Cells[2].Value = formatTime(drNameTask[1]["Value"].ToString());
-                            TaskDataGridView.Rows[i].Cells[0].Value = drNameTask[0]["NAME_SHR"];
+                            m_dgvValues.Rows[i].Cells[1].Value = drNameTask[0]["Value"];
+                            m_dgvValues.Rows[i].Cells[2].Value = formatTime(drNameTask[1]["Value"].ToString());
+                            m_dgvValues.Rows[i].Cells[0].Value = drNameTask[0]["NAME_SHR"];
                         }
                     }
+
                     overLimit();
                 }
                 catch (Exception e)
@@ -198,8 +189,8 @@ namespace StatisticDiagnostic
             {
                 try
                 {
-                    if (TaskDataGridView.SelectedCells.Count > 0)
-                        TaskDataGridView.SelectedCells[0].Selected = false;
+                    if (m_dgvValues.SelectedCells.Count > 0)
+                        m_dgvValues.SelectedCells[0].Selected = false;
                 }
                 catch { }
             }
@@ -237,7 +228,7 @@ namespace StatisticDiagnostic
             {
                 string m_timeNow =
                     TimeZoneInfo.ConvertTimeBySystemTimeZoneId(DateTime.Now, TimeZoneInfo.Local.Id, "Russian Standard Time").ToString("hh:mm:ss:fff");
-                TaskDataGridView.Rows[i].Cells[3].Value = m_timeNow;
+                m_dgvValues.Rows[i].Cells[3].Value = m_timeNow;
             }
 
             /// <summary>
@@ -267,10 +258,10 @@ namespace StatisticDiagnostic
             {
                 for (int x = 0; x < counter; x++)
                 {
-                    if (TaskDataGridView.InvokeRequired)
-                        TaskDataGridView.Invoke(new Action(() => TaskDataGridView.Rows.Add()));
+                    if (m_dgvValues.InvokeRequired)
+                        m_dgvValues.Invoke(new Action(() => m_dgvValues.Rows.Add()));
                     else
-                        TaskDataGridView.Rows.Add();
+                        m_dgvValues.Rows.Add();
                 }
             }
 
@@ -299,7 +290,7 @@ namespace StatisticDiagnostic
 
                 for (int i = 0; i < drTask.Count(); i++)
                 {
-                    if (TaskDataGridView.Rows[m_check].Cells[0].Value.ToString() == "Усреднитель данных из СОТИАССО")
+                    if (m_dgvValues.Rows[m_check].Cells[0].Value.ToString() == "Усреднитель данных из СОТИАССО")
                         m_lim = limTaskAvg;
                     else m_lim = limTask;
 
@@ -307,45 +298,45 @@ namespace StatisticDiagnostic
                     {
                         if (drTask[i]["Value"].ToString() == "")
                         {
-                            if (TaskDataGridView.Columns[4].Visible == false)
-                                TaskDataGridView.Invoke(new Action(() => TaskDataGridView.Columns[4].Visible = true));
+                            if (m_dgvValues.Columns[4].Visible == false)
+                                m_dgvValues.Invoke(new Action(() => m_dgvValues.Columns[4].Visible = true));
 
-                            TaskDataGridView.Invoke(new Action(() => TaskDataGridView.Rows[m_check].Cells[4].Value = "Задача не выполняется"));
-                            TaskDataGridView.Invoke(new Action(() => TaskDataGridView.Rows[m_check].Cells[5].Value = ""));
+                            m_dgvValues.Invoke(new Action(() => m_dgvValues.Rows[m_check].Cells[4].Value = "Задача не выполняется"));
+                            m_dgvValues.Invoke(new Action(() => m_dgvValues.Rows[m_check].Cells[5].Value = ""));
                             upselectrow(m_check);
                             m_counter--;
                         }
                         else
                             if (interruptTask(drTask[i + 1]["Value"].ToString()))
                         {
-                            if (TaskDataGridView.Columns[4].Visible == false)
-                                TaskDataGridView.Invoke(new Action(() => TaskDataGridView.Columns[4].Visible = true));
+                            if (m_dgvValues.Columns[4].Visible == false)
+                                m_dgvValues.Invoke(new Action(() => m_dgvValues.Columns[4].Visible = true));
 
-                            TaskDataGridView.Invoke(new Action(() => TaskDataGridView.Rows[m_check].Cells[4].Value = "Задача не выполняется"));
-                            TaskDataGridView.Invoke(new Action(() => TaskDataGridView.Rows[m_check].Cells[5].Value = ""));
+                            m_dgvValues.Invoke(new Action(() => m_dgvValues.Rows[m_check].Cells[4].Value = "Задача не выполняется"));
+                            m_dgvValues.Invoke(new Action(() => m_dgvValues.Rows[m_check].Cells[5].Value = ""));
                             upselectrow(m_check);
                             m_counter--;
                         }
                         else
                                 if (TimeSpan.FromSeconds(Convert.ToDouble(drTask[i]["Value"])) > m_lim)
                         {
-                            if (TaskDataGridView.Columns[4].Visible == false)
-                                TaskDataGridView.Invoke(new Action(() => TaskDataGridView.Columns[4].Visible = true));
+                            if (m_dgvValues.Columns[4].Visible == false)
+                                m_dgvValues.Invoke(new Action(() => m_dgvValues.Columns[4].Visible = true));
 
-                            TaskDataGridView.Invoke(new Action(() => TaskDataGridView.Rows[m_check].Cells[4].Value = "Превышено время выполнения задачи"));
-                            TaskDataGridView.Invoke(new Action(() => TaskDataGridView.Rows[m_check].Cells[5].Value = ""));
+                            m_dgvValues.Invoke(new Action(() => m_dgvValues.Rows[m_check].Cells[4].Value = "Превышено время выполнения задачи"));
+                            m_dgvValues.Invoke(new Action(() => m_dgvValues.Rows[m_check].Cells[5].Value = ""));
                             upselectrow(m_check);
                             m_counter--;
                         }
                         else
                         {
-                            TaskDataGridView.Invoke(new Action(() => TaskDataGridView.Rows[m_check].DefaultCellStyle.BackColor = Color.White));
-                            TaskDataGridView.Invoke(new Action(() => TaskDataGridView.Rows[m_check].Cells[4].Value = ""));
-                            TaskDataGridView.Invoke(new Action(() => TaskDataGridView.Rows[m_check].Cells[5].Value = ""));
+                            m_dgvValues.Invoke(new Action(() => m_dgvValues.Rows[m_check].DefaultCellStyle.BackColor = Color.White));
+                            m_dgvValues.Invoke(new Action(() => m_dgvValues.Rows[m_check].Cells[4].Value = ""));
+                            m_dgvValues.Invoke(new Action(() => m_dgvValues.Rows[m_check].Cells[5].Value = ""));
 
-                            if (m_counter == TaskDataGridView.Rows.Count)
-                                if (TaskDataGridView.Columns[4].Visible == true)
-                                    TaskDataGridView.Invoke(new Action(() => TaskDataGridView.Columns[4].Visible = false));
+                            if (m_counter == m_dgvValues.Rows.Count)
+                                if (m_dgvValues.Columns[4].Visible == true)
+                                    m_dgvValues.Invoke(new Action(() => m_dgvValues.Columns[4].Visible = false));
                                 else;
                             else
                                 m_counter++;
@@ -353,7 +344,7 @@ namespace StatisticDiagnostic
                     }
                     else
                     {
-                        TaskDataGridView.Invoke(new Action(() => TaskDataGridView.Rows[m_check].Cells[5].Value = "Запрещена"));
+                        m_dgvValues.Invoke(new Action(() => m_dgvValues.Rows[m_check].Cells[5].Value = "Запрещена"));
                         upselectrow(m_check);
                         m_counter++;
                     }
@@ -370,27 +361,27 @@ namespace StatisticDiagnostic
             /// <param name="row">индекс строки</param>
             private void upselectrow(int indxrow)
             {
-                if (TaskDataGridView.InvokeRequired)
+                if (m_dgvValues.InvokeRequired)
                 {
-                    TaskDataGridView.Invoke(new Action(() => TaskDataGridView.Rows.Insert(0, 1)));
+                    m_dgvValues.Invoke(new Action(() => m_dgvValues.Rows.Insert(0, 1)));
 
-                    for (int i = 0; i < TaskDataGridView.Rows[indxrow + 1].Cells.Count; i++)
-                        TaskDataGridView.Invoke(new Action(() => TaskDataGridView.Rows[0].Cells[i].Value = TaskDataGridView.Rows[indxrow + 1].Cells[i].Value));
+                    for (int i = 0; i < m_dgvValues.Rows[indxrow + 1].Cells.Count; i++)
+                        m_dgvValues.Invoke(new Action(() => m_dgvValues.Rows[0].Cells[i].Value = m_dgvValues.Rows[indxrow + 1].Cells[i].Value));
 
-                    if (Convert.ToString(TaskDataGridView.Rows[0].Cells[4].Value) == "Задача не выполняется")
-                        TaskDataGridView.Invoke(new Action(() => TaskDataGridView.Rows[0].DefaultCellStyle.BackColor = Color.Firebrick));
+                    if (Convert.ToString(m_dgvValues.Rows[0].Cells[4].Value) == "Задача не выполняется")
+                        m_dgvValues.Invoke(new Action(() => m_dgvValues.Rows[0].DefaultCellStyle.BackColor = Color.Firebrick));
                     else
-                        if (TaskDataGridView.Rows[0].Cells[4].Value.ToString() == "Превышено время выполнения задачи")
-                        TaskDataGridView.Invoke(new Action(() => TaskDataGridView.Rows[0].DefaultCellStyle.BackColor = Color.Sienna));
+                        if (m_dgvValues.Rows[0].Cells[4].Value.ToString() == "Превышено время выполнения задачи")
+                        m_dgvValues.Invoke(new Action(() => m_dgvValues.Rows[0].DefaultCellStyle.BackColor = Color.Sienna));
                     else
-                            if (TaskDataGridView.Rows[0].Cells[5].Value.ToString() == "Запрещена")
-                        TaskDataGridView.Invoke(new Action(() => TaskDataGridView.Rows[0].DefaultCellStyle.BackColor = Color.White));
-                    TaskDataGridView.Invoke(new Action(() => TaskDataGridView.Rows.RemoveAt(indxrow + 1)));
+                            if (m_dgvValues.Rows[0].Cells[5].Value.ToString() == "Запрещена")
+                        m_dgvValues.Invoke(new Action(() => m_dgvValues.Rows[0].DefaultCellStyle.BackColor = Color.White));
+                    m_dgvValues.Invoke(new Action(() => m_dgvValues.Rows.RemoveAt(indxrow + 1)));
                 }
                 else
                 {
-                    TaskDataGridView.Rows.InsertCopy(indxrow, 0);
-                    TaskDataGridView.Rows.RemoveAt(indxrow);
+                    m_dgvValues.Rows.InsertCopy(indxrow, 0);
+                    m_dgvValues.Rows.RemoveAt(indxrow);
                 }
             }
         }

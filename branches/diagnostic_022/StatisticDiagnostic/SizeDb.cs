@@ -111,8 +111,9 @@ namespace StatisticDiagnostic
             /// <summary>
             /// Загрузка значений
             /// </summary>
-            public void LoadValues()
+            public void Update(object rec)
             {
+                DataTable tableRecieved = rec as DataTable;
                 DataRow[] arSelSizeOF;
                 string filter = string.Empty;
                 int countID;
@@ -128,7 +129,7 @@ namespace StatisticDiagnostic
 
                 for (int j = 0, countRow = 0; j < countID; j++, countRow += 2) {
                     filter = "ID_EXT = '" + m_enumIDEXTDB.ElementAt(j).COMPONENT + "'";
-                    arSelSizeOF = m_tableSourceData.Select(filter);
+                    arSelSizeOF = tableRecieved.Select(filter);
 
                     if (SizeDbDataGridView.RowCount < (countID * 2))
                         AddRows(countID);
