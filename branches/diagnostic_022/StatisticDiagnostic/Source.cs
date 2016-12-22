@@ -24,7 +24,7 @@ namespace StatisticDiagnostic
 
             public PanelContainerTec(IContainer container) : base(container, -1, -1)
             {
-                
+                initialize();
             }
 
             private void InitComponents()
@@ -37,7 +37,7 @@ namespace StatisticDiagnostic
 
             private void initialize()
             {
-                string filter;
+                string filter = string.Empty;
 
                 InitComponents();
 

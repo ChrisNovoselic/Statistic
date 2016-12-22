@@ -384,7 +384,7 @@ namespace StatisticDiagnostic
                     m_dictIdListeners.Add(0, new int[] { -1, -1 });
 
                 register(0, (int)CONN_SETT_TYPE.LIST_SOURCE, m_connSett[(int)CONN_SETT_TYPE.LIST_SOURCE], m_connSett[(int)CONN_SETT_TYPE.LIST_SOURCE].name);
-                register(0, (int)CONN_SETT_TYPE.CONFIG_DB, m_connSett[(int)CONN_SETT_TYPE.CONFIG_DB], m_connSett[(int)CONN_SETT_TYPE.CONFIG_DB].name);
+                //register(0, (int)CONN_SETT_TYPE.CONFIG_DB, m_connSett[(int)CONN_SETT_TYPE.CONFIG_DB], m_connSett[(int)CONN_SETT_TYPE.CONFIG_DB].name);
             }
 
             public override void ClearValues()
@@ -425,11 +425,11 @@ namespace StatisticDiagnostic
                         actionReport(@"Получение времени с сервера БД - состояние: " + ((State)state).ToString());
                         break;
                     case (int)State.Command:
-                        Request(m_dictIdListeners[0][(int)CONN_SETT_TYPE.LIST_SOURCE], @"SELECT * FROM Diagnostic");
+                        Request(m_dictIdListeners[0][(int)CONN_SETT_TYPE.LIST_SOURCE], @"SELECT * FROM [dbo].[Diagnostic]");
                         actionReport(@"Получение значений из БД - состояние: " + ((State)state).ToString());
                         break;
                     case (int)State.UpdateSource:
-                        Request(m_dictIdListeners[0][(int)CONN_SETT_TYPE.CONFIG_DB], InitTECBase.getQueryListTEC(false, new int[] { 0, 10 }));
+                        Request(m_dictIdListeners[0][(int)CONN_SETT_TYPE.LIST_SOURCE], @"SELECT * FROM [dbo].[v_CURR_ID_LINK_SOURCE_DATA_TM]");
                         actionReport(@"Обновление списка активных источников - состояние: " + ((State)state).ToString());
                         break;
                     default:
