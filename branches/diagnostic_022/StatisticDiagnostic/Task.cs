@@ -133,46 +133,46 @@ namespace StatisticDiagnostic
             /// </summary>
             public void AddItem()
             {
+                DataRow[] drNameTask;
+                string filter;
+                int enumCnt;
+
                 try
                 {
-                    DataRow[] drNameTask;
-                    string filter;
-                    int enumCnt;
+                    //var m_enumIDtask = (from r in m_tableSourceData.AsEnumerable()
+                    //                    where r.Field<string>("ID_Value") == "28"
+                    //                    select new
+                    //                    {
+                    //                        NAME = r.Field<string>("NAME_SHR"),
+                    //                    }).Distinct();
 
-                    var m_enumIDtask = (from r in m_tableSourceData.AsEnumerable()
-                                        where r.Field<string>("ID_Value") == "28"
-                                        select new
-                                        {
-                                            NAME = r.Field<string>("NAME_SHR"),
-                                        }).Distinct();
+                    //enumCnt = m_enumIDtask.Count();
 
-                    enumCnt = m_enumIDtask.Count();
+                    //if (m_dgvValues.Rows.Count < enumCnt)
+                    //    addRowsTask(enumCnt);
 
-                    if (m_dgvValues.Rows.Count < enumCnt)
-                        addRowsTask(enumCnt);
+                    //for (int i = 0; i < enumCnt; i++)
+                    //{
+                    //    filter = "NAME_SHR = '" + m_enumIDtask.ElementAt(i).NAME + "'";
+                    //    drNameTask = m_tableSourceData.Select(filter);
 
-                    for (int i = 0; i < enumCnt; i++)
-                    {
-                        filter = "NAME_SHR = '" + m_enumIDtask.ElementAt(i).NAME + "'";
-                        drNameTask = m_tableSourceData.Select(filter);
+                    //    if (m_dgvValues.InvokeRequired)
+                    //    {
+                    //        columTimeTask(i);
+                    //        m_dgvValues.Invoke(new Action(() => m_dgvValues.Rows[i].Cells[1].Value = ToDateTime(drNameTask[0]["Value"])));
+                    //        m_dgvValues.Invoke(new Action(() => m_dgvValues.Rows[i].Cells[2].Value = formatTime(drNameTask[1]["Value"].ToString())));
+                    //        m_dgvValues.Invoke(new Action(() => m_dgvValues.Rows[i].Cells[0].Value = drNameTask[0]["NAME_SHR"]));
+                    //    }
+                    //    else
+                    //    {
+                    //        columTimeTask(i);
+                    //        m_dgvValues.Rows[i].Cells[1].Value = drNameTask[0]["Value"];
+                    //        m_dgvValues.Rows[i].Cells[2].Value = formatTime(drNameTask[1]["Value"].ToString());
+                    //        m_dgvValues.Rows[i].Cells[0].Value = drNameTask[0]["NAME_SHR"];
+                    //    }
+                    //}
 
-                        if (m_dgvValues.InvokeRequired)
-                        {
-                            columTimeTask(i);
-                            m_dgvValues.Invoke(new Action(() => m_dgvValues.Rows[i].Cells[1].Value = ToDateTime(drNameTask[0]["Value"])));
-                            m_dgvValues.Invoke(new Action(() => m_dgvValues.Rows[i].Cells[2].Value = formatTime(drNameTask[1]["Value"].ToString())));
-                            m_dgvValues.Invoke(new Action(() => m_dgvValues.Rows[i].Cells[0].Value = drNameTask[0]["NAME_SHR"]));
-                        }
-                        else
-                        {
-                            columTimeTask(i);
-                            m_dgvValues.Rows[i].Cells[1].Value = drNameTask[0]["Value"];
-                            m_dgvValues.Rows[i].Cells[2].Value = formatTime(drNameTask[1]["Value"].ToString());
-                            m_dgvValues.Rows[i].Cells[0].Value = drNameTask[0]["NAME_SHR"];
-                        }
-                    }
-
-                    overLimit();
+                    //overLimit();
                 }
                 catch (Exception e)
                 {

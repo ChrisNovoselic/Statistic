@@ -15,6 +15,20 @@ namespace StatisticDiagnostic
     {
         private class PanelContainerTec : HPanelCommon
         {
+            private struct Values
+            {
+                public int m_dtValue;
+
+                public int m_value;
+            }
+
+            private class DictionaryTecValues : Dictionary<int, Values>
+            {
+                public DictionaryTecValues(DataTable tableRecieved)
+                {
+                }
+            }            
+
             private PanelTec[] m_arPanels;
 
             public PanelContainerTec() : base(-1, -1)
@@ -45,7 +59,7 @@ namespace StatisticDiagnostic
                 for (int i = 0; i < m_tableTECList.Rows.Count; i++) {
                     filter = "ID_EXT = " + Convert.ToInt32(m_tableTECList.Rows[i][0]);
 
-                    m_arPanels[i].AddRows(m_tableSourceData.Select(filter).Length);
+                    //m_arPanels[i].AddRows(m_tableSourceData.Select(filter).Length);
                 }
             }
 
@@ -97,16 +111,10 @@ namespace StatisticDiagnostic
 
             public void Update(object rec)
             {
-                DataTable tableRecieved = rec as DataTable;
-
-                string filter;
+                DictionaryTecValues dictTecValues = new DictionaryTecValues(rec as DataTable);
 
                 for (int i = 0; i < m_tableTECList.Rows.Count; i++)
-                {
-                    filter = "ID_EXT = " + Convert.ToInt32(m_tableTECList.Rows[i][0]);
-
-                    m_arPanels[i].Update(filter);
-                }
+                    m_arPanels[i].Update(dictTecValues.Select(item => item).Where(key => key.Equals((int)m_tableTECList.Rows[i][0]) == true) as DictionaryTecValues);
             }
 
             /// <summary>
@@ -200,7 +208,7 @@ namespace StatisticDiagnostic
                     this.m_dgvValues.Columns[(int)INDEX_CELL.NAME_SOURCE].Name = "Источник данных"; this.m_dgvValues.Columns[(int)INDEX_CELL.NAME_SOURCE].Width = 43;
                     this.m_dgvValues.Columns[(int)INDEX_CELL.DATETIME_VALUE].Name = "Крайнее время"; this.m_dgvValues.Columns[(int)INDEX_CELL.DATETIME_VALUE].Width = 57;
                     this.m_dgvValues.Columns[(int)INDEX_CELL.VALUE].Name = "Крайнее значение"; this.m_dgvValues.Columns[(int)INDEX_CELL.VALUE].Width = 35;
-                    this.m_dgvValues.Columns[(int)INDEX_CELL.DATETIME_NOW].Name = "Время проверки"; this.m_dgvValues.Columns[(int)INDEX_CELL.DATETIME_NOW].Width = 57;
+                    this.m_dgvValues.Columns[(int)INDEX_CELL.DATETIME_VERIFICATION].Name = "Время проверки"; this.m_dgvValues.Columns[(int)INDEX_CELL.DATETIME_VERIFICATION].Width = 57;
                     this.m_dgvValues.Columns[(int)INDEX_CELL.STATE].Name = "Связь"; this.m_dgvValues.Columns[(int)INDEX_CELL.STATE].Width = 35;
 
                     this.m_dgvValues.CellClick += new DataGridViewCellEventHandler(TECDataGridView_Cell);
@@ -247,7 +255,7 @@ namespace StatisticDiagnostic
 
                 private enum INDEX_CELL : short
                 {
-                    NAME_SOURCE = 0, DATETIME_VALUE, VALUE, DATETIME_NOW, STATE
+                    NAME_SOURCE = 0, DATETIME_VALUE, VALUE, DATETIME_VERIFICATION, STATE
                     , COUNT
                 }
 
@@ -423,13 +431,13 @@ namespace StatisticDiagnostic
                 /// Функция заполнения данными элементов ТЭЦ
                 /// </summary>
                 /// <param name="filter">фильтр для обработки данных</param>
-                public void Update(string filter)
+                public void Update(Dictionary<int, Values> dictValues)
                 {
-                    DataRow[] drTecSource;
+                    DataRow[] arSelTecSource = null;
                     string nameSource
                         , shortTime;
 
-                    drTecSource = m_tableSourceData.Select(filter, "NAME_SHR DESC");
+                    //arSelTecSource = m_tableSourceData.Select(filter, "NAME_SHR DESC");
 
                     setTextColumn();
 
@@ -437,17 +445,17 @@ namespace StatisticDiagnostic
                     {
                         nameSource = m_dgvValues.Rows[r].Cells[(int)INDEX_CELL.NAME_SOURCE].Value.ToString();
 
-                        shortTime = formatTime(drTecSource[t + 1]["Value"].ToString(), nameSource);
+                        shortTime = formatTime(arSelTecSource[t + 1]["Value"].ToString(), nameSource);
                         m_dgvValues.Invoke(new Action(() => m_dgvValues.Rows[r].Cells[(int)INDEX_CELL.DATETIME_VALUE].Value = shortTime));
-                        m_dgvValues.Invoke(new Action(() => m_dgvValues.Rows[r].Cells[(int)INDEX_CELL.VALUE].Value = drTecSource[t]["Value"]));
-                        m_dgvValues.Invoke(new Action(() => m_dgvValues.Rows[r].Cells[(int)INDEX_CELL.DATETIME_NOW].Value =
+                        m_dgvValues.Invoke(new Action(() => m_dgvValues.Rows[r].Cells[(int)INDEX_CELL.VALUE].Value = arSelTecSource[t]["Value"]));
+                        m_dgvValues.Invoke(new Action(() => m_dgvValues.Rows[r].Cells[(int)INDEX_CELL.DATETIME_VERIFICATION].Value =
                             TimeZoneInfo.ConvertTimeBySystemTimeZoneId(DateTime.Now, TimeZoneInfo.Local.Id, "Russian Standard Time").ToString("hh:mm:ss:fff")));
 
-                        m_dgvValues.Invoke(new Action(() => m_dgvValues.Rows[r].Tag = drTecSource[t]["NAME_SHR"]));
+                        m_dgvValues.Invoke(new Action(() => m_dgvValues.Rows[r].Tag = arSelTecSource[t]["NAME_SHR"]));
 
                         paintingCells(r);
 
-                        if (testingNull(ref drTecSource) == true)
+                        if (testingNull(ref arSelTecSource) == true)
                             checkRelevanceValues(DateTime.Parse(shortTime), r);
                         else
                             ;

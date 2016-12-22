@@ -17,6 +17,8 @@ namespace StatisticDiagnostic
         {
             private PanelModes[] m_arPanels;
 
+            private ListDiagnosticSource m_listDiagnosticSource;
+
             public PanelContainerModes(ListDiagnosticSource listDiagSource) : base(-1, -1)
             {
             }
@@ -67,9 +69,69 @@ namespace StatisticDiagnostic
 
                 for (int i = 0; i < m_arPanels.Length; i++)
                     if (m_arPanels[i] == null)
-                        m_arPanels[i] = new PanelModes(listDiagSource);
+                        m_arPanels[i] = new PanelModes((int)m_tableTECList.Rows[i][@"ID"], listDiagSource);
                     else
                         ;
+
+                try
+                {
+                    var enumModes = (from r in m_listDiagnosticSource
+                                     where r.m_id >= (int)INDEX_SOURCE.MODES && r.m_id < (int)INDEX_SOURCE.TASK
+                                     orderby r.m_id
+                                     select new
+                                     {
+                                         ID = r.m_id
+                                         ,
+                                         NAME_SHR = r.m_name_shr
+                                         ,
+                                         ID_COMPONENT = r.m_id_component
+                                         ,
+                                         DESCRIPTION = r.m_description
+                                     }).Distinct();
+
+                    foreach (var item in enumModes)
+                        if (item.DESCRIPTION.Equals(@"Modes-Centre") == true)
+                            createItemModesCentre();
+                        else
+                            createItemModesTerminal(item.ID);
+                } catch (Exception e) {
+                    Logging.Logg().Exception(e, @"", Logging.INDEX_MESSAGE.NOT_SET);
+                }
+            }
+
+            /// <summary>
+            /// DataGridView Modes-Centre
+            /// </summary>
+            private void createItemModesCentre()
+            {
+                string filterComp = string.Empty
+                    , sortOrderBy = "Component ASC"
+                    , time;
+                DataRow[] arSelIDModes, arSelIDComponent;
+                List<DIAGNOSTIC_SOURCE> listDiagnosticSource;
+                int iRow = -1;                
+
+                listDiagnosticSource = m_listDiagnosticSource.FindAll(item => { return item.m_description == @"Modes-Centre"; });
+                listDiagnosticSource = listDiagnosticSource.OrderBy(item => item.m_id_component).ToList();
+
+                m_arPanels[0] = new PanelModes(0, listDiagnosticSource as ListDiagnosticSource);                
+            }
+
+            /// <summary>
+            /// добавление записей в грид
+            /// </summary>
+            /// <param name="id">фильтр для отбора данных</param>
+            private void createItemModesTerminal(int id)
+            {
+                string textDateTime = TimeZoneInfo.ConvertTimeBySystemTimeZoneId(DateTime.Now, TimeZoneInfo.Local.Id, "Russian Standard Time").ToString("hh:mm:ss:fff")
+                    , filterComp;
+                List<DIAGNOSTIC_SOURCE> listDiagnosticSource;
+                DataRow[] arSelSourceModes = null;
+
+                listDiagnosticSource = m_listDiagnosticSource.FindAll(item => { return item.m_description == @"Modes-Centre"; });
+                listDiagnosticSource = listDiagnosticSource.OrderBy(item => item.m_id_component).ToList();
+
+                m_arPanels[0] = new PanelModes(id, listDiagnosticSource as ListDiagnosticSource);
             }
 
             public void Update(object table)
@@ -83,33 +145,45 @@ namespace StatisticDiagnostic
             /// </summary>
             private partial class PanelModes : HPanelCommon
             {
-                ListDiagnosticSource m_listDiagnosticSource;
-
                 /// <summary>
                 /// Конструктор - основной (с параметрами)
                 /// </summary>
-                public PanelModes(ListDiagnosticSource listDiagSource)
+                public PanelModes(int id, ListDiagnosticSource listDiagSource)
                     : base(-1, -1)
                 {
-                    initialize(listDiagSource);
+                    initialize(id, listDiagSource);
                 }
                 /// <summary>
                 /// 
                 /// </summary>
                 /// <param name="container"></param>
-                public PanelModes(IContainer container, ListDiagnosticSource listDiagSource)
+                public PanelModes(IContainer container, int id, ListDiagnosticSource listDiagSource)
                     : base(container, -1, -1)
                 {
                     container.Add(this);
 
-                    initialize(listDiagSource);
+                    initialize(id, listDiagSource);
                 }
                 /// <summary>
                 /// 
                 /// </summary>
-                private void initialize(ListDiagnosticSource listDiagSource)
+                private void initialize(int id, ListDiagnosticSource listDiagSource)
                 {
-                    m_listDiagnosticSource = listDiagSource;
+                    Tag = id;
+                    // добавить столбцы
+                    if (m_dgvValues.ColumnCount < 6)
+                    {
+                        m_dgvValues.Invoke(new Action(() => m_dgvValues.Columns.Add("TEC", "ТЭЦ")));
+                        m_dgvValues.Invoke(new Action(() => m_dgvValues.Columns["TEC"].DisplayIndex = 1));
+                    }
+                    else
+                        ;
+                    // добавить строки
+                    addRows(listDiagSource.Count);
+                    // указать наименования
+                    foreach (DIAGNOSTIC_SOURCE src in listDiagSource) {
+                        //nameComponentGTP(src.m_name_shr, m_dgvValues.RowCount - 1);
+                    }
 
                     InitializeComponent();
                 }
@@ -250,143 +324,52 @@ namespace StatisticDiagnostic
                     return bRes;
                 }
 
-                /// <summary>
-                /// DataGridView Modes-Centre
-                /// </summary>
-                private void insertDataMC()
+                public void Update(List <DIAGNOSTIC_DATA> listData)
                 {
-                    string filterComp = string.Empty
-                        , sortOrderBy = "Component ASC"
-                        , time;
-                    DataRow[] arSelIDModes, arSelIDComponent;
-                    List<DIAGNOSTIC_SOURCE> listDiagnosticSource;
-                    int iRow = -1;
+                    List<DIAGNOSTIC_DATA> data;
 
-                    if (m_dgvValues.ColumnCount < 6) {
-                        m_dgvValues.Invoke(new Action(() => m_dgvValues.Columns.Add("TEC", "ТЭЦ")));
-                        m_dgvValues.Invoke(new Action(() => m_dgvValues.Columns["TEC"].DisplayIndex = 1));
-                    } else
-                        ;
+                    DataRow[] arSelIDComponent = null;
+                    string time;
+                    int iRow = 0;
 
-                    listDiagnosticSource = m_listDiagnosticSource.FindAll(item => { return item.m_description == @"Modes-Centre"; });
-                    listDiagnosticSource = listDiagnosticSource.OrderBy(item => item.m_id_component).ToList();
-
-                    for (int d = 0; d < listDiagnosticSource.Count - 1; d++)
+                    foreach (DataGridViewRow row in m_dgvValues.Rows)
                     {
-                        filterComp = @"ID_Value = '" + listDiagnosticSource[d + 1].m_id_component + "'";
+                        data = listData.FindAll(item => { return item.m_id == (int)row.Tag; });
 
-                        if (m_dgvValues.Rows.Count < listDiagnosticSource.Count - 1)
-                            addRows(1);
-                        else;
+                        if (data.Count == 1) {
+                            time = formatTime(listData[0].m_dtVerification);
+                            iRow++;
 
-                        arSelIDComponent = m_tableSourceData.Select(filterComp);
-                        time = formatTime(arSelIDComponent[1]["Value"].ToString());
-                        iRow++;
-
-                        if (m_dgvValues.InvokeRequired) {
-                            if (testingNull(ref arSelIDComponent) == true) {
-                                paintPbr(iRow, !(checkPBR() == arSelIDComponent[0]["Value"].ToString()));
-                            } else
-                                ;
-
-                            m_dgvValues.Invoke(new Action(() => m_dgvValues.Rows[iRow].Cells[5].Value = arSelIDComponent[0][5]));
-                            //m_dgvValues.Invoke(new Action(() => m_dgvValues.Rows[m_tic].Cells[0].Value = m_drComponent[0]["ID_Value"]));
-                            m_dgvValues.Invoke(new Action(() => m_dgvValues.Rows[iRow].Cells[2].Value = time));
-                            m_dgvValues.Invoke(new Action(() => m_dgvValues.Rows[iRow].Cells[1].Value = arSelIDComponent[0]["Value"]));
-                            m_dgvValues.Invoke(new Action(() => m_dgvValues.Rows[iRow].Cells[3].Value = TimeZoneInfo.ConvertTimeBySystemTimeZoneId(DateTime.Now, TimeZoneInfo.Local.Id, "Russian Standard Time").ToString("hh:mm:ss:fff")));
-
-                            cellsPing(arSelIDComponent[0]["Link"].ToString().Equals(1.ToString()), iRow);
-                        } else {
-                            paintPbr(iRow, !(checkPBR() == arSelIDComponent[0]["Value"].ToString()));
-
-                            //m_dgvValues.Rows[m_tic].Cells[0].Value = m_drComponent[0]["ID_Value"];
-                            m_dgvValues.Rows[iRow].Cells[2].Value = time;
-                            m_dgvValues.Rows[iRow].Cells[1].Value = arSelIDComponent[0]["Value"];
-                            m_dgvValues.Rows[iRow].Cells[3].Value = DateTime.Now.ToString("HH:mm:ss.fff");
-
-                            cellsPing(arSelIDComponent[0]["Link"].ToString().Equals(1.ToString()), iRow);
-                        }
-
-                        nameComponentGTP(arSelIDComponent, iRow);
-                    }
-                }
-
-                /// <summary>
-                /// добавление записей в грид
-                /// </summary>
-                /// <param name="id">фильтр для отбора данных</param>
-                private void insertData(int id)
-                {
-                    string textDateTime = TimeZoneInfo.ConvertTimeBySystemTimeZoneId(DateTime.Now, TimeZoneInfo.Local.Id, "Russian Standard Time").ToString("hh:mm:ss:fff")
-                        , filterComp;
-                    List<DIAGNOSTIC_SOURCE> listDiagnosticSource;
-                    DataRow[] arSelSourceModes = null;
-
-                    if (m_listDiagnosticSource[i].m_name_shr == "Modes-Centre")
-                        insertDataMC();
-                    else
-                    {
-                        listDiagnosticSource = m_listDiagnosticSource.FindAll(item => { return item.m_id == id; });
-                        listDiagnosticSource = listDiagnosticSource.OrderBy(item => item.m_id_component).ToList();
-
-                        for (int r = 0; r < listDiagnosticSource.Count; r++)
-                        {
-                            filterComp = "ID_Value = '" + listDiagnosticSource[r].m_id_component + "'";
-
-                            if (m_dgvValues.Rows.Count < listDiagnosticSource.Count)
-                                addRows(1);
-                            else
-                                ;
-
-                            arSelSourceModes = m_tableSourceData.Select(filterComp);
-
-                            if (m_dgvValues.InvokeRequired == true) {
-                                if (testingNull(ref arSelSourceModes))
-                                    paintPbr(r, !(checkPBR() == arSelSourceModes[0]["Value"].ToString()));
+                            if (m_dgvValues.InvokeRequired)
+                            {
+                                if (testingNull(ref arSelIDComponent) == true)
+                                {
+                                    paintPbr(iRow, !(checkPBR() == arSelIDComponent[0]["Value"].ToString()));
+                                }
                                 else
                                     ;
 
-                                //m_dgvValues.Invoke(new Action(() => m_dgvValues.Rows[r].Cells[0].Value = m_drSourceModes[0]["ID_Value"]));
-                                m_dgvValues.Invoke(new Action(() => m_dgvValues.Rows[r].Cells[1].Value = arSelSourceModes[0]["Value"]));
-                                m_dgvValues.Invoke(new Action(() => m_dgvValues.Rows[r].Cells[2].Value = formatTime(arSelSourceModes[1]["Value"].ToString())));
-                                m_dgvValues.Invoke(new Action(() => m_dgvValues.Rows[r].Cells[3].Value = textDateTime));
+                                m_dgvValues.Invoke(new Action(() => m_dgvValues.Rows[iRow].Cells[5].Value = arSelIDComponent[0][5]));
+                                //m_dgvValues.Invoke(new Action(() => m_dgvValues.Rows[m_tic].Cells[0].Value = m_drComponent[0]["ID_Value"]));
+                                m_dgvValues.Invoke(new Action(() => m_dgvValues.Rows[iRow].Cells[2].Value = time));
+                                m_dgvValues.Invoke(new Action(() => m_dgvValues.Rows[iRow].Cells[1].Value = arSelIDComponent[0]["Value"]));
+                                m_dgvValues.Invoke(new Action(() => m_dgvValues.Rows[iRow].Cells[3].Value = TimeZoneInfo.ConvertTimeBySystemTimeZoneId(DateTime.Now, TimeZoneInfo.Local.Id, "Russian Standard Time").ToString("hh:mm:ss:fff")));
 
-                                cellsPing(arSelSourceModes[0]["Link"].ToString().Equals(1.ToString()), r);
-                            } else {
-                                paintPbr(r, !(checkPBR() == arSelSourceModes[0]["Value"].ToString()));
-
-                                //m_dgvValues.Rows[r].Cells[0].Value = m_drSourceModes[0]["ID_Value"];
-                                m_dgvValues.Rows[r].Cells[1].Value = arSelSourceModes[0]["Value"];
-                                //m_dgvValues.Rows[r].Cells[2].Value = formatTime(m_drSourceModes[1]["Value"].ToString());
-                                m_dgvValues.Rows[r].Cells[3].Value = textDateTime;
-
-                                cellsPing(arSelSourceModes[0]["Link"].ToString().Equals(1.ToString()), r);
+                                cellsPing(arSelIDComponent[0]["Link"].ToString().Equals(1.ToString()), iRow);
                             }
+                            else
+                            {
+                                paintPbr(iRow, !(checkPBR() == arSelIDComponent[0]["Value"].ToString()));
 
-                            nameComponentGTP(arSelSourceModes, r);
-                        }
-                    }
-                }
+                                //m_dgvValues.Rows[m_tic].Cells[0].Value = m_drComponent[0]["ID_Value"];
+                                m_dgvValues.Rows[iRow].Cells[2].Value = time;
+                                m_dgvValues.Rows[iRow].Cells[1].Value = arSelIDComponent[0]["Value"];
+                                m_dgvValues.Rows[iRow].Cells[3].Value = DateTime.Now.ToString("HH:mm:ss.fff");
 
-                /// <summary>
-                /// Функция Заполнения панелей Модес
-                /// </summary>
-                public void AddItem()
-                {
-                    try {
-                        var m_enumModes = (from r in m_listDiagnosticSource
-                                           where r.m_id >= (int)INDEX_SOURCE.MODES && r.m_id < (int)INDEX_SOURCE.TASK
-                                           orderby r.m_id
-                                           select new
-                                           {
-                                               ID = r.m_id,
-                                           }).Distinct();
-
-                        insertData(Convert.ToInt32(m_enumModes.ElementAt(i).ID));
-
-                        SetItemNameShr();
-                    } catch (Exception e) {
-                        MessageBox.Show(e.ToString());
+                                cellsPing(arSelIDComponent[0]["Link"].ToString().Equals(1.ToString()), iRow);
+                            }
+                        } else
+                            throw new Exception(@"PanelModes::Update () - ...");
                     }
                 }
 
@@ -410,23 +393,6 @@ namespace StatisticDiagnostic
                             LabelModes.Invoke(new Action(() => LabelModes.Text = m_nameshr));
                         else
                             LabelModes.Text = m_nameshr;
-                }
-
-                /// <summary>
-                /// Функция подписи источников ПБР
-                /// </summary>
-                private void nameComponentGTP(DataRow[] dtComp, int rownext)
-                {
-                    for (int j = 0; j < m_tableGTPList.Rows.Count; j++)
-                        if (m_tableGTPList.Rows[j]["ID"].ToString() == dtComp[0]["ID_Value"].ToString())
-                        {
-                            if (m_dgvValues.InvokeRequired == true)
-                                m_dgvValues.Invoke(new Action(() => m_dgvValues.Rows[rownext].Cells[0].Value = m_tableGTPList.Rows[j]["NAME_SHR"]));
-                            else
-                                m_dgvValues.Rows[rownext].Cells[0].Value = m_tableGTPList.Rows[j]["NAME_SHR"];
-                        }
-                        else
-                            ;
                 }
 
                 private enum INDEX_CELL : short { STATE = 4 }

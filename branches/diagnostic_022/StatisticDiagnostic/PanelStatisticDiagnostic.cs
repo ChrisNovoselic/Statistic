@@ -303,7 +303,7 @@ namespace StatisticDiagnostic
             , new STATE_SOURCE() { m_Text = @"Нет", m_Color = Color.Red }
         };
         /// <summary>
-        /// 
+        /// ???
         /// </summary>
         public static volatile int UPDATE_TIME,
             VALIDATE_ASKUE_TM;
@@ -801,6 +801,15 @@ namespace StatisticDiagnostic
             public string m_name_shr
                 , m_description
                 , m_source_data;
+        }
+
+        private struct DIAGNOSTIC_DATA
+        {
+            public int m_id;
+
+            public string m_value
+                , m_dtValue
+                , m_dtVerification;
         }
 
         private class ListDiagnosticParameter : List<DIAGNOSTIC_PARAMETER>
