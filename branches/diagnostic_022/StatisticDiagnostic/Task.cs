@@ -285,18 +285,18 @@ namespace StatisticDiagnostic
             {
                 TimeSpan m_lim;
                 int m_check = 0;
-                DataRow[] drTask = m_tableSourceData.Select(@"ID_Value = '28'");
+                DataRow[] arSelTask = null; // m_tableSourceData.Select(@"ID_Value = '28'");
                 int m_counter = 1;
 
-                for (int i = 0; i < drTask.Count(); i++)
+                for (int i = 0; i < arSelTask.Count(); i++)
                 {
                     if (m_dgvValues.Rows[m_check].Cells[0].Value.ToString() == "Усреднитель данных из СОТИАССО")
                         m_lim = limTaskAvg;
                     else m_lim = limTask;
 
-                    if (int.Parse(drTask[i]["Link"].ToString()) == 1)
+                    if (int.Parse(arSelTask[i]["Link"].ToString()) == 1)
                     {
-                        if (drTask[i]["Value"].ToString() == "")
+                        if (arSelTask[i]["Value"].ToString() == "")
                         {
                             if (m_dgvValues.Columns[4].Visible == false)
                                 m_dgvValues.Invoke(new Action(() => m_dgvValues.Columns[4].Visible = true));
@@ -307,7 +307,7 @@ namespace StatisticDiagnostic
                             m_counter--;
                         }
                         else
-                            if (interruptTask(drTask[i + 1]["Value"].ToString()))
+                            if (interruptTask(arSelTask[i + 1]["Value"].ToString()))
                         {
                             if (m_dgvValues.Columns[4].Visible == false)
                                 m_dgvValues.Invoke(new Action(() => m_dgvValues.Columns[4].Visible = true));
@@ -318,7 +318,7 @@ namespace StatisticDiagnostic
                             m_counter--;
                         }
                         else
-                                if (TimeSpan.FromSeconds(Convert.ToDouble(drTask[i]["Value"])) > m_lim)
+                                if (TimeSpan.FromSeconds(Convert.ToDouble(arSelTask[i]["Value"])) > m_lim)
                         {
                             if (m_dgvValues.Columns[4].Visible == false)
                                 m_dgvValues.Invoke(new Action(() => m_dgvValues.Columns[4].Visible = true));

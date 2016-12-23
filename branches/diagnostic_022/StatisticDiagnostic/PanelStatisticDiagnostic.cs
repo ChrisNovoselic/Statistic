@@ -147,6 +147,14 @@ namespace StatisticDiagnostic
     /// </summary>
     public partial class PanelStatisticDiagnostic
     {
+        private enum ID_CONTAINER_PANEL : short { UNKNOWN = -1
+            , TEC
+            , MODES
+            , TASK
+            , SIZE
+            ,
+        }
+
         /// <summary>
         /// Определить размеры ячеек макета панели
         /// </summary>
@@ -184,11 +192,13 @@ namespace StatisticDiagnostic
             this.SuspendLayout();
 
             this.Controls.Add(m_tecdb, 0, 0); this.SetColumnSpan(m_tecdb, 8); this.SetRowSpan(m_tecdb, 6);
-            this.Controls.Add(m_modesdb, 0, 6); this.SetColumnSpan(m_tecdb, 8); this.SetRowSpan(m_tecdb, 5);
-            this.Controls.Add(m_taskdb, 0, 11); this.SetColumnSpan(m_tecdb, 5); this.SetRowSpan(m_tecdb, 5);
-            this.Controls.Add(m_sizedb, 5, 11); this.SetColumnSpan(m_tecdb, 3); this.SetRowSpan(m_tecdb, 5);
+            this.Controls.Add(m_modesdb, 0, 6); this.SetColumnSpan(m_modesdb, 8); this.SetRowSpan(m_modesdb, 5);
+            this.Controls.Add(m_taskdb, 0, 11); this.SetColumnSpan(m_taskdb, 5); this.SetRowSpan(m_taskdb, 5);
+            this.Controls.Add(m_sizedb, 5, 11); this.SetColumnSpan(m_sizedb, 3); this.SetRowSpan(m_sizedb, 5);
 
             this.ResumeLayout();
+
+            initializeLayoutStyle();
         }
 
         #endregion
@@ -361,6 +371,8 @@ namespace StatisticDiagnostic
             {
                 int err = -1;
 
+                _filterListTEC = new int[] { 0, 10 };
+
                 ConnectionSettings connSett = new ConnectionSettings(InitTECBase.getConnSettingsOfIdSource(ListenerId, FormMainBase.s_iMainSourceData, -1, out err).Rows[0], -1);
 
                 m_connSett = new ConnectionSettings[2];//??? why number
@@ -382,6 +394,8 @@ namespace StatisticDiagnostic
             {
                 if (m_dictIdListeners.ContainsKey(0) == false)
                     m_dictIdListeners.Add(0, new int[] { -1, -1 });
+                else
+                    ;
 
                 register(0, (int)CONN_SETT_TYPE.LIST_SOURCE, m_connSett[(int)CONN_SETT_TYPE.LIST_SOURCE], m_connSett[(int)CONN_SETT_TYPE.LIST_SOURCE].name);
                 //register(0, (int)CONN_SETT_TYPE.CONFIG_DB, m_connSett[(int)CONN_SETT_TYPE.CONFIG_DB], m_connSett[(int)CONN_SETT_TYPE.CONFIG_DB].name);
@@ -503,7 +517,7 @@ namespace StatisticDiagnostic
                     return new DataTable();
             }
 
-            public DataTable GetSources(out int err)
+            public DataTable GetSource(out int err)
             {
                 err = _connConfigDb == null ? -1 : 0;
 
@@ -533,14 +547,26 @@ namespace StatisticDiagnostic
                     return new DataTable();
             }
 
-            public DataTable GetListTEC(out int err)
+            private readonly int[] _filterListTEC;
+
+            public DataTable GetDataTableTEC(out int err)
             {
                 err = _connConfigDb == null ? -1 : 0;
 
                 if (err == 0)
-                    return InitTEC_200.getListTEC(ref _connConfigDb, false, new int[] { 0, 10 }, out err);
+                    return InitTEC_200.getListTEC(ref _connConfigDb, false, _filterListTEC, out err);
                 else
                     return new DataTable();
+            }
+
+            public List<TEC> GetListTEC(out int err)
+            {
+                err = _connConfigDb == null ? -1 : 0;
+
+                if (err == 0)
+                    return new InitTEC_200(_iListenerId, true, _filterListTEC, false).tec; //.getListTEC(ref _connConfigDb, false, _filterListTEC, out err);
+                else
+                    return new List<TEC> ();
             }
 
             /// <summary>
@@ -617,10 +643,13 @@ namespace StatisticDiagnostic
             }
         }
 
+        private const int COUNT_LAYOUT_COLUMN = 8
+            , COUNT_LAYOUT_ROW = 16;
+
         /// <summary>
         /// constructor
         /// </summary>
-        public PanelStatisticDiagnostic() : base (-1, -1)
+        public PanelStatisticDiagnostic() : base (COUNT_LAYOUT_COLUMN, COUNT_LAYOUT_ROW)
         {
             initialize();
         }
@@ -629,7 +658,7 @@ namespace StatisticDiagnostic
         /// constructor
         /// </summary>
         /// <param name="container"></param>
-        public PanelStatisticDiagnostic(IContainer container) : base(-1, -1)
+        public PanelStatisticDiagnostic(IContainer container) : base(COUNT_LAYOUT_COLUMN, COUNT_LAYOUT_ROW)
         {
             container.Add(this);
 
@@ -645,27 +674,32 @@ namespace StatisticDiagnostic
         {
             int err = -1; //Признак выполнения метода/функции
 
-            initializeLayoutStyle(8, 16);
-
             HDataSource.RegisterConfigDb(out err);
 
             // зарегистрировать синхронное соединение с БД_конфигурации
             m_DataSource = new HDataSource();
-            // назначить обработчик события - получение данных
+
             m_listDiagnosticSource = new ListDiagnosticSource(m_DataSource.GetDiagnosticSource(out err));
-            m_tableSourceList = m_DataSource.GetSources(out err);
+
+            m_tableSourceList = m_DataSource.GetSource(out err);
+
             m_tableGTPList = m_DataSource.GetListGTP(out err);
+
             m_tableParamDiagnostic = m_DataSource.GetDiagnosticParameter (out err);
-            m_tableTECList = m_DataSource.GetListTEC(out err);
+            m_listDiagnosticParameter = new ListDiagnosticParameter(m_tableParamDiagnostic);
 
-            HDataSource.UnregisterConfigDb();
+            m_tableTECList = m_DataSource.GetDataTableTEC(out err);
 
-            m_tecdb = new PanelContainerTec();
+            m_tecdb = new PanelContainerTec(m_DataSource.GetListTEC(out err), m_listDiagnosticParameter.FindAll(item => { return item.m_id_container.Equals(ID_CONTAINER_PANEL.TEC.ToString()); }));
             m_modesdb = new PanelContainerModes(m_listDiagnosticSource);
             m_taskdb = new PanelTask();
             m_sizedb = new SizeDb(m_listDiagnosticSource);
 
+            HDataSource.UnregisterConfigDb();
+
             InitializeComponent();
+
+            this.Controls.Add(m_tecdb, 0, 0); this.SetColumnSpan(m_tecdb, COUNT_LAYOUT_COLUMN); this.SetRowSpan(m_tecdb, 6);
 
             return err;
         }
@@ -769,7 +803,7 @@ namespace StatisticDiagnostic
             }
         }
 
-        private ListDiagnosticSource m_listDiagnosticSource;
+        private ListDiagnosticSource m_listDiagnosticSource;        
 
         private struct SOURCE
         {
@@ -798,7 +832,8 @@ namespace StatisticDiagnostic
         {
             public int m_id;
 
-            public string m_name_shr
+            public string m_id_container
+                , m_name_shr
                 , m_description
                 , m_source_data;
         }
@@ -819,12 +854,15 @@ namespace StatisticDiagnostic
                 foreach (DataRow r in tableDb.Rows)
                     Add(new DIAGNOSTIC_PARAMETER() {
                         m_id = r.Field<int>(@"ID")
+                        , m_id_container = r.Field<string>(@"ID_CONTAINER_PANEL").Trim()
                         , m_name_shr = r.Field<string>(@"NAME_SHR").Trim()
-                        , m_description = r.Field<string>(@"DESCRIPTION").Trim()
-                        , m_source_data = r.Field<string>(@"SOURCE_DATA").Trim()
+                        , m_description = r.Field<string>(@"DESCRIPTION")?.Trim()
+                        , m_source_data = r.Field<string>(@"SOURCE_DATA")?.Trim()
                     });
             }
         }
+
+        private ListDiagnosticParameter m_listDiagnosticParameter;
 
         private void clear()
         {

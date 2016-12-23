@@ -8,6 +8,7 @@ using System.Data;
 using System.Drawing;
 
 using HClassLibrary;
+using StatisticCommon;
 
 namespace StatisticDiagnostic
 {
@@ -15,6 +16,9 @@ namespace StatisticDiagnostic
     {
         private class PanelContainerTec : HPanelCommon
         {
+            private const int COUNT_LAYOUT_COLUMN = 3
+                , COUNT_LAYOUT_ROW = 2;
+
             private struct Values
             {
                 public int m_dtValue;
@@ -26,40 +30,52 @@ namespace StatisticDiagnostic
             {
                 public DictionaryTecValues(DataTable tableRecieved)
                 {
+                    foreach (DataRow r in tableRecieved.Rows)
+                        Add(r.Field<int>(@"ID"), new PanelContainerTec.Values() { m_value = r.Field<int>(@"ID"), m_dtValue = r.Field<int>(@"ID") });
                 }
             }            
 
             private PanelTec[] m_arPanels;
 
-            public PanelContainerTec() : base(-1, -1)
+            public PanelContainerTec(List<TEC> listTEC, List<DIAGNOSTIC_PARAMETER> listDiagnosticParameter) : base(COUNT_LAYOUT_COLUMN, COUNT_LAYOUT_ROW)
             {
-                initialize();
+                initialize(listTEC, listDiagnosticParameter);
             }
 
-            public PanelContainerTec(IContainer container) : base(container, -1, -1)
+            public PanelContainerTec(IContainer container, List<TEC> listTEC, List<DIAGNOSTIC_PARAMETER> listDiagnosticParameter) : base(container, COUNT_LAYOUT_COLUMN, COUNT_LAYOUT_ROW)
             {
-                initialize();
+                initialize(listTEC, listDiagnosticParameter);
             }
 
             private void InitComponents()
             {
+                this.CellBorderStyle = TableLayoutPanelCellBorderStyle.Single;
+
+                initializeLayoutStyle();
             }
 
             protected override void initializeLayoutStyle(int col = -1, int row = -1)
             {
+                initializeLayoutStyleEvenly(col, row);
             }
 
-            private void initialize()
+            private void initialize(List<TEC> listTEC, List<DIAGNOSTIC_PARAMETER> listDiagPar/*, List<DIAGNOSTIC_SOURCE> listDiagSrc*/)
             {
-                string filter = string.Empty;
+                IEnumerable<DIAGNOSTIC_PARAMETER> par = listDiagPar
+                    .GroupBy(item => item.m_name_shr)
+                    .Select(group => group.First());
 
                 InitComponents();
 
-                // добавляем строки в таблицы для каждой ТЭЦ для каждого источника
-                for (int i = 0; i < m_tableTECList.Rows.Count; i++) {
-                    filter = "ID_EXT = " + Convert.ToInt32(m_tableTECList.Rows[i][0]);
+                m_arPanels = new PanelTec[listTEC.Count];
 
-                    //m_arPanels[i].AddRows(m_tableSourceData.Select(filter).Length);
+                // добавляем строки в таблицы для каждой ТЭЦ для каждого источника
+                for (int i = 0; i < listTEC.Count; i++) {
+                    m_arPanels[i] = new PanelTec(par.ToList());
+
+                    this.Controls.Add(m_arPanels[i], (i + 0) % COUNT_LAYOUT_COLUMN, (i + 0) / COUNT_LAYOUT_COLUMN);
+                    //this.SetColumnSpan(m_arPanels[i], 1);
+                    //this.SetRowSpan(m_arPanels[i], 1);
                 }
             }
 
@@ -84,20 +100,6 @@ namespace StatisticDiagnostic
             }
 
             /// <summary>
-            /// Создание панелей ТЭЦ
-            /// </summary>
-            public void Create()
-            {
-                m_arPanels = new PanelTec[m_tableTECList.Rows.Count];
-
-                for (int i = 0; i < m_arPanels.Length; i++)
-                    if (m_arPanels[i] == null)
-                        m_arPanels[i] = new PanelTec();
-                    else
-                        ;
-            }
-
-            /// <summary>
             /// очистка панелей
             /// </summary>
             public void Clear()
@@ -113,8 +115,9 @@ namespace StatisticDiagnostic
             {
                 DictionaryTecValues dictTecValues = new DictionaryTecValues(rec as DataTable);
 
-                for (int i = 0; i < m_tableTECList.Rows.Count; i++)
-                    m_arPanels[i].Update(dictTecValues.Select(item => item).Where(key => key.Equals((int)m_tableTECList.Rows[i][0]) == true) as DictionaryTecValues);
+                foreach (KeyValuePair<int, Values> pair in dictTecValues)
+                    m_arPanels.ToList().Find(panel => (int)panel.Tag == pair.Key)
+                        .Update(pair.Value);
             }
 
             /// <summary>
@@ -124,29 +127,41 @@ namespace StatisticDiagnostic
             /// </summary>
             private partial class PanelTec : HPanelCommon
             {
-                private DataGridView m_dgvValues = new DataGridView();
-                private Label LabelTec = new Label();
-                private ContextMenuStrip ContextmenuChangeState;
-                //private ToolStripMenuItem toolStripMenuItemActivate;
-                //private ToolStripMenuItem toolStripMenuItemDeactivate;
+                private const int COUNT_LAYOUT_COLUMN = 1
+                    , COUNT_LAYOUT_ROW = 12;
 
-                public PanelTec()
-                    : base(-1, -1)
+                private DataGridView m_dgvValues;
+
+                private Label m_labelDescription;
+
+                private ContextMenuStrip ContextmenuChangeState;
+                
+                public PanelTec(List<DIAGNOSTIC_PARAMETER> listDiagnosticParameter)
+                    : base(COUNT_LAYOUT_COLUMN, COUNT_LAYOUT_ROW)
                 {
-                    initialize();
+                    initialize(listDiagnosticParameter);
                 }
 
-                public PanelTec(IContainer container)
-                    : base(container, -1, -1)
+                public PanelTec(IContainer container, List<DIAGNOSTIC_PARAMETER> listDiagnosticParameter)
+                    : base(container, COUNT_LAYOUT_COLUMN, COUNT_LAYOUT_ROW)
                 {
                     container.Add(this);
 
-                    initialize();
+                    initialize(listDiagnosticParameter);
                 }
 
-                private void initialize()
+                private void initialize(List<DIAGNOSTIC_PARAMETER> listDiagPar)
                 {
-                    InitializeComponentTEC();
+                    initializeLayoutStyle();
+
+                    InitializeComponent();
+
+                    listDiagPar.ForEach(item => {
+                        m_dgvValues.Rows.Add(1);
+
+                        m_dgvValues.Rows[m_dgvValues.RowCount - 1].Tag = item.m_source_data;
+                        m_dgvValues.Rows[m_dgvValues.RowCount - 1].Cells[(int)INDEX_CELL.NAME_SOURCE].Value = item.m_name_shr;
+                    });
                 }
 
                 protected override void initializeLayoutStyle(int cols = -1, int rows = -1)
@@ -180,28 +195,31 @@ namespace StatisticDiagnostic
                 /// Обязательный метод для поддержки конструктора - не изменяйте
                 /// содержимое данного метода при помощи редактора кода.
                 /// </summary>
-                private void InitializeComponentTEC()
+                private void InitializeComponent()
                 {
-                    this.Controls.Add(LabelTec, 0, 0);
-                    this.Controls.Add(m_dgvValues, 0, 1);
-                    this.RowStyles.Add(new System.Windows.Forms.RowStyle(System.Windows.Forms.SizeType.Absolute, 15F));
-                    this.RowStyles.Add(new System.Windows.Forms.RowStyle(System.Windows.Forms.SizeType.Percent, 100.74641F));
+                    this.m_dgvValues = new DataGridView();
+                    this.m_labelDescription = new Label();
 
+                    this.Controls.Add(m_labelDescription, 0, 0); this.SetRowSpan(m_labelDescription, 2);
+                    this.Controls.Add(m_dgvValues, 0, 2); this.SetRowSpan(m_dgvValues, 10);
+                    
                     this.ContextmenuChangeState = new System.Windows.Forms.ContextMenuStrip();
                     this.ContextmenuChangeState.SuspendLayout();
 
                     this.SuspendLayout();
 
                     this.m_dgvValues.ColumnHeadersHeightSizeMode = System.Windows.Forms.DataGridViewColumnHeadersHeightSizeMode.AutoSize;
-                    this.m_dgvValues.AutoSizeColumnsMode = DataGridViewAutoSizeColumnsMode.Fill;
+                    this.m_dgvValues.AutoSizeColumnsMode = DataGridViewAutoSizeColumnsMode.Fill; //.AllCells
                     this.m_dgvValues.ClearSelection();
                     this.m_dgvValues.AllowUserToDeleteRows = false;
                     this.m_dgvValues.Dock = System.Windows.Forms.DockStyle.Fill;
                     this.m_dgvValues.RowHeadersVisible = false;
                     this.m_dgvValues.ReadOnly = true;
                     //this.TECDataGridView.AutoResizeColumns(DataGridViewAutoSizeColumnsMode.Fill);
-                    this.m_dgvValues.AutoSizeRowsMode = DataGridViewAutoSizeRowsMode.AllCellsExceptHeaders;
+                    //this.m_dgvValues.AutoSizeRowsMode = DataGridViewAutoSizeRowsMode.AllCellsExceptHeaders;
                     this.m_dgvValues.AllowUserToAddRows = false;
+                    this.m_dgvValues.AllowUserToResizeRows = false;
+                    this.m_dgvValues.ScrollBars = ScrollBars.Vertical;
                     this.m_dgvValues.Name = "TECDataGridView";
                     this.m_dgvValues.TabIndex = 0;
                     this.m_dgvValues.ColumnCount = (int)INDEX_CELL.COUNT;
@@ -218,8 +236,8 @@ namespace StatisticDiagnostic
                     //ContextmenuChangeState
                     //
                     this.ContextmenuChangeState.Items.AddRange(new System.Windows.Forms.ToolStripItem[] {
-                    new ToolStripMenuItem () //Activated
-                    , new ToolStripMenuItem() }); //Deactivated
+                        new ToolStripMenuItem () //Activated
+                        , new ToolStripMenuItem() }); //Deactivated
                     this.ContextmenuChangeState.Size = new System.Drawing.Size(180, 70);
                     this.ContextmenuChangeState.ShowCheckMargin = true;
                     // 
@@ -243,13 +261,14 @@ namespace StatisticDiagnostic
                     //
                     // LabelTec
                     //
-                    this.LabelTec.AutoSize = true;
-                    this.LabelTec.Name = "LabelTec";
-                    this.LabelTec.TabIndex = 1;
-                    this.LabelTec.Text = "Unknow_TEC";
-                    this.LabelTec.Dock = System.Windows.Forms.DockStyle.Fill;
-                    this.LabelTec.TextAlign = System.Drawing.ContentAlignment.MiddleCenter;
+                    this.m_labelDescription.AutoSize = true;
+                    this.m_labelDescription.Name = "LabelTec";
+                    this.m_labelDescription.TabIndex = 1;
+                    this.m_labelDescription.Text = "Unknow_TEC";
+                    this.m_labelDescription.Dock = System.Windows.Forms.DockStyle.Fill;
+                    this.m_labelDescription.TextAlign = System.Drawing.ContentAlignment.MiddleCenter;
                     this.ContextmenuChangeState.ResumeLayout(false);
+
                     this.ResumeLayout(false);
                 }
 
@@ -431,15 +450,13 @@ namespace StatisticDiagnostic
                 /// Функция заполнения данными элементов ТЭЦ
                 /// </summary>
                 /// <param name="filter">фильтр для обработки данных</param>
-                public void Update(Dictionary<int, Values> dictValues)
+                public void Update(Values values)
                 {
                     DataRow[] arSelTecSource = null;
                     string nameSource
                         , shortTime;
 
                     //arSelTecSource = m_tableSourceData.Select(filter, "NAME_SHR DESC");
-
-                    setTextColumn();
 
                     for (int r = 0, t = 0; r < m_dgvValues.Rows.Count; r++, t += 2)
                     {
@@ -472,43 +489,11 @@ namespace StatisticDiagnostic
                 {
                     int i = -1;
 
-                    if (LabelTec.InvokeRequired)
-                        LabelTec.Invoke(new Action(() => LabelTec.Text =
+                    if (m_labelDescription.InvokeRequired)
+                        m_labelDescription.Invoke(new Action(() => m_labelDescription.Text =
                             m_tableTECList.Rows[i][@"NAME_SHR"].ToString()));
                     else
-                        LabelTec.Text = m_tableTECList.Rows[i][@"NAME_SHR"].ToString();
-                }
-
-                /// <summary>
-                /// Функция перемеинования ячейки датагрид TEC
-                /// </summary>
-                /// <return></return>
-                private void setTextColumn()
-                {
-                    string filterSourceData, filterParamDiagnostic;
-                    DataRow[] arSelSourceData = null
-                        , arSelParamDiagnostic = null;
-
-                    Action<int, string> setTextNameSource =
-                        new Action<int, string>((indx, name_shr) => { m_dgvValues.Rows[indx].Cells[(int)INDEX_CELL.NAME_SOURCE].Value = name_shr; });
-
-                    //for (int k = 0; k < m_dtTECList.Rows.Count; k++)
-                    //{
-                        filterSourceData = "ID_Units = 12 and ID_EXT = '" + m_tec.m_id + "'";
-
-                        for (int j = 0; j < m_dgvValues.Rows.Count; j++)
-                        {
-                            arSelSourceData = m_tableSourceData.Select(filterSourceData, "NAME_SHR DESC");
-
-                            filterParamDiagnostic = "ID = '" + arSelSourceData[j]["ID_VALUE"] + "'";
-                            arSelParamDiagnostic = m_tableParamDiagnostic.Select(filterParamDiagnostic);
-
-                            if (m_dgvValues.InvokeRequired == true)
-                                m_dgvValues.Invoke(setTextNameSource, j, arSelParamDiagnostic[0]["NAME_SHR"].ToString());
-                            else
-                                setTextNameSource(j, arSelParamDiagnostic[0]["NAME_SHR"].ToString());
-                        }
-                    //}
+                        m_labelDescription.Text = m_tableTECList.Rows[i][@"NAME_SHR"].ToString();
                 }
 
                 /// <summary>
@@ -524,7 +509,7 @@ namespace StatisticDiagnostic
                         m_dgvValues.Rows[iRow].Cells[(int)INDEX_CELL.STATE].Style.BackColor = s_StateSources[(int)iState].m_Color;
                     });
 
-                    arSel = m_tableSourceData.Select(@"ID_EXT = " + Convert.ToInt32(m_tec.m_id));
+                    //arSel = m_tableSourceData.Select(@"ID_EXT = " + Convert.ToInt32(m_tec.m_id));
 
                     for (int i = 0, t = 0; i < m_dgvValues.Rows.Count; i++, t += 2)
                         if (m_dgvValues.InvokeRequired == true)

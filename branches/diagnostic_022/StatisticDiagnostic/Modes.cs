@@ -73,27 +73,23 @@ namespace StatisticDiagnostic
                     else
                         ;
 
-                try
-                {
-                    var enumModes = (from r in m_listDiagnosticSource
+                try {
+                    IEnumerable<DIAGNOSTIC_SOURCE> enumModes = (from r in m_listDiagnosticSource
                                      where r.m_id >= (int)INDEX_SOURCE.MODES && r.m_id < (int)INDEX_SOURCE.TASK
                                      orderby r.m_id
-                                     select new
+                                     select new DIAGNOSTIC_SOURCE ()
                                      {
-                                         ID = r.m_id
-                                         ,
-                                         NAME_SHR = r.m_name_shr
-                                         ,
-                                         ID_COMPONENT = r.m_id_component
-                                         ,
-                                         DESCRIPTION = r.m_description
+                                         m_id = r.m_id
+                                         , m_name_shr = r.m_name_shr
+                                         , m_id_component = r.m_id_component
+                                         , m_description = r.m_description
                                      }).Distinct();
 
                     foreach (var item in enumModes)
-                        if (item.DESCRIPTION.Equals(@"Modes-Centre") == true)
+                        if (item.m_description.Equals(@"Modes-Centre") == true)
                             createItemModesCentre();
                         else
-                            createItemModesTerminal(item.ID);
+                            createItemModesTerminal(item.m_id);
                 } catch (Exception e) {
                     Logging.Logg().Exception(e, @"", Logging.INDEX_MESSAGE.NOT_SET);
                 }
@@ -376,23 +372,12 @@ namespace StatisticDiagnostic
                 /// <summary>
                 /// Функция изменения заголовков грида Modes
                 /// </summary>
-                private void SetItemNameShr()
+                private void setDescription(string name_shr)
                 {
-                    string m_nameshr;
-                    var m_enumModes = (from r in m_listDiagnosticSource.AsEnumerable()
-                                       where r.m_id >= (int)INDEX_SOURCE.MODES && r.m_id < (int)INDEX_SOURCE.TASK
-                                       orderby r.m_id
-                                       select new
-                                       {
-                                           NAME_SHR = r.m_name_shr,
-                                       }).Distinct();
-
-                        m_nameshr = m_enumModes.ToArray().ElementAt(i).NAME_SHR;
-
-                        if (LabelModes.InvokeRequired)
-                            LabelModes.Invoke(new Action(() => LabelModes.Text = m_nameshr));
-                        else
-                            LabelModes.Text = m_nameshr;
+                    if (LabelModes.InvokeRequired)
+                        LabelModes.Invoke(new Action(() => LabelModes.Text = name_shr));
+                    else
+                        LabelModes.Text = name_shr;
                 }
 
                 private enum INDEX_CELL : short { STATE = 4 }
