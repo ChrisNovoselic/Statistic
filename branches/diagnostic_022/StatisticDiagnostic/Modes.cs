@@ -30,14 +30,19 @@ namespace StatisticDiagnostic
             private void InitComponents()
             {
             }
-
+            /// <summary>
+            /// Инициализация характеристик, стилей макета для размещения дочерних элементов интерфейса
+            ///  (должна быть вызвана явно)
+            /// </summary>
+            /// <param name="col">Количество столбцов в макете</param>
+            /// <param name="row">Количество строк в макете</param>
             protected override void initializeLayoutStyle(int col = -1, int row = -1)
             {
             }
 
             public void Clear()
             {
-                m_arPanels.ToList().ForEach(panel => panel.Clear());
+                m_arPanels?.ToList().ForEach(panel => panel.Clear());
             }
 
             /// <summary>

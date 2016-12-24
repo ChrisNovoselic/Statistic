@@ -40,7 +40,12 @@ namespace Statistic
 
         protected static int m_iSizeY = 22
             , m_iMarginY = 3;
-
+        /// <summary>
+        /// Инициализация характеристик, стилей макета для размещения дочерних элементов интерфейса
+        ///  (должна быть вызвана явно)
+        /// </summary>
+        /// <param name="col">Количество столбцов в макете</param>
+        /// <param name="row">Количество строк в макете</param>
         protected override void initializeLayoutStyle(int cols = -1, int rows = -1)
         {
             this.ColumnCount = cols;

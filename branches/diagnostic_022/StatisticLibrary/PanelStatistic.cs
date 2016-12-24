@@ -109,10 +109,11 @@ namespace StatisticCommon
             return bRes;
         }
         /// <summary>
-        /// Определить размеры ячеек макета панели
+        /// Инициализация характеристик, стилей макета для размещения дочерних элементов интерфейса
+        ///  (должна быть вызвана явно)
         /// </summary>
-        /// <param name="cols">Количество столбцов в макете</param>
-        /// <param name="rows">Количество строк в макете</param>
+        /// <param name="col">Количество столбцов в макете</param>
+        /// <param name="row">Количество строк в макете</param>
         protected override void initializeLayoutStyle(int cols = -1, int rows = -1)
         {
             this.ColumnCount = cols;
