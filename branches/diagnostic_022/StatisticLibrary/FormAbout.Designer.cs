@@ -129,20 +129,20 @@ namespace StatisticCommon
             this.linkLabel3.AutoSize = true;
             this.linkLabel3.Location = new System.Drawing.Point(206, 112);
             this.linkLabel3.Name = "linkLabel3";
-            this.linkLabel3.Size = new System.Drawing.Size(127, 13);
+            this.linkLabel3.Size = new System.Drawing.Size(65, 13);
             this.linkLabel3.TabIndex = 7;
             this.linkLabel3.TabStop = true;
-            this.linkLabel3.Text = "Apelgans_AV@sibeco.su";
+            this.linkLabel3.Text = "help@itss.ru";
             // 
             // linkLabel4
             // 
             this.linkLabel4.AutoSize = true;
             this.linkLabel4.Location = new System.Drawing.Point(206, 125);
             this.linkLabel4.Name = "linkLabel4";
-            this.linkLabel4.Size = new System.Drawing.Size(131, 13);
+            this.linkLabel4.Size = new System.Drawing.Size(65, 13);
             this.linkLabel4.TabIndex = 8;
             this.linkLabel4.TabStop = true;
-            this.linkLabel4.Text = "Pasternak_AS@sibeco.su";
+            this.linkLabel4.Text = "help@itss.ru";
             // 
             // label2
             // 

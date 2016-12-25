@@ -29,24 +29,8 @@ namespace StatisticDiagnostic
             private const int COUNT_LAYOUT_COLUMN = 3
                 , COUNT_LAYOUT_ROW = 2;
             /// <summary>
-            /// Структура для хранения получаемых значений из таблицы-результата запроса
+            /// Сложный ключ для соваря со значениями при обновлении дочерних панелей
             /// </summary>
-            private struct Values
-            {
-                /// <summary>
-                /// Метка времени значения
-                /// </summary>
-                public DateTime m_dtValue;
-                /// <summary>
-                /// Значение одного из дианостических параметров
-                /// </summary>
-                public object m_value;
-
-                public string m_strLink;
-
-                public string m_name_shr;
-            }
-
             private struct KEY_DIAGNOSTIC_PARAMETER
             {
                 /// <summary>
@@ -56,21 +40,23 @@ namespace StatisticDiagnostic
                 /// <summary>
                 /// Словарь с информацией о CLR-типах значений 
                 /// </summary>
-                public static Dictionary<ID_UNIT, Type> TypeOf = new Dictionary<ID_UNIT, Type> () {
+                public static Dictionary<ID_UNIT, Type> TypeOf = new Dictionary<ID_UNIT, Type>() {
                     { ID_UNIT.FLOAT, typeof(float) }
                     , { ID_UNIT.DATETIME, typeof(DateTime) }
                 };
                 /// <summary>
                 /// Идентификаторы значений из БД конфигурации, таблица [DIAGNOSTIC_PARAM].[ID]
                 /// </summary>
-                public enum ID_VALUE : short { UNKNOWN = -1
+                public enum ID_VALUE : short
+                {
+                    UNKNOWN = -1
                     , AIISKUE_VALUE = 1, AIISKUE_DATETIME = 4
                     , SOTIASSO_1_VALUE = 2, SOTIASSO_2_VALUE, SOTIASSO_1_DATETIME = 5, SOTIASSO_2_DATETIME
                     , SOTIASSO_1_TORIS_VALUE = 11, SOTIASSO_1_TORIS_DATETIME, SOTIASSO_2_TORIS_VALUE, SOTIASSO_2_TORIS_DATETIME
-                    , MODES_CENTRE_VALUE = 7, MODES_CENTRE_DATETIME
-                    , MODES_TERMINAL_VALUE = 9, MODES_TERMINAL_DATETIME
-                    , SIZE_DB = 27, SIZE_DB_LOG = 26
-                    , AVG_TIME_TASK = 28
+                    //, MODES_CENTRE_VALUE = 7, MODES_CENTRE_DATETIME
+                    //, MODES_TERMINAL_VALUE = 9, MODES_TERMINAL_DATETIME
+                    //, SIZE_DB = 27, SIZE_DB_LOG = 26
+                    //, AVG_TIME_TASK = 28
                 }
 
                 public ID_UNIT m_id_unit;
@@ -112,7 +98,7 @@ namespace StatisticDiagnostic
                             ;
 
                     try {
-                    // рез-т м.б. 2-х типов: 1) источники данных
+                    // рез-т м.б. 2-х типов: 1) активные источники данных СОТИАССО; 2) крайние значения для всех источников данных
                         if (!(type == TYPE.UNKNOWN))
                             foreach (DataRow r in tableRecieved.Rows)
                                 switch (type) {
@@ -120,7 +106,7 @@ namespace StatisticDiagnostic
                                         id = r.Field<int>(@"ID_TEC");
 
                                         if (this.Keys.Contains(id) == false)
-                                            Add(id, new Dictionary<KEY_DIAGNOSTIC_PARAMETER, PanelContainerTec.Values>());
+                                            Add(id, new Dictionary<KEY_DIAGNOSTIC_PARAMETER, Values>());
                                         else
                                             ;
 
@@ -129,7 +115,7 @@ namespace StatisticDiagnostic
                                                 m_id_unit = KEY_DIAGNOSTIC_PARAMETER.ID_UNIT.UNKNOWN
                                                 , m_id_value = KEY_DIAGNOSTIC_PARAMETER.ID_VALUE.UNKNOWN
                                             }
-                                            , new PanelContainerTec.Values() {
+                                            , new Values() {
                                                 m_value = r.Field<int>(@"ID")
                                                 , m_strLink = string.Empty
                                                 , m_name_shr = string.Empty
@@ -142,7 +128,7 @@ namespace StatisticDiagnostic
 
                                         if (id < (int)INDEX_SOURCE.SIZEDB) {
                                             if (this.Keys.Contains(id) == false)
-                                                Add(id, new Dictionary<KEY_DIAGNOSTIC_PARAMETER, PanelContainerTec.Values>());
+                                                Add(id, new Dictionary<KEY_DIAGNOSTIC_PARAMETER, Values>());
                                             else
                                                 ;
 
@@ -151,7 +137,7 @@ namespace StatisticDiagnostic
                                                     m_id_unit = (KEY_DIAGNOSTIC_PARAMETER.ID_UNIT)r.Field<int>(@"ID_Units")
                                                     , m_id_value = (KEY_DIAGNOSTIC_PARAMETER.ID_VALUE)Convert.ToInt32(r.Field<string>(@"ID_Value"))
                                                 }
-                                                , new PanelContainerTec.Values() {
+                                                , new Values() {
                                                     m_value = r.Field<string>(@"Value")
                                                     , m_strLink = r.Field<string>(@"Link")
                                                     , m_name_shr = r.Field<string>(@"NAME_SHR")
@@ -174,7 +160,7 @@ namespace StatisticDiagnostic
 
                     Type = type;
                 }
-            }            
+            }
             /// <summary>
             /// Массив дочерних панелей для каждой из ТЭЦ
             /// </summary>
@@ -1077,7 +1063,9 @@ namespace StatisticDiagnostic
                                 foreach (KeyValuePair<KEY_DIAGNOSTIC_PARAMETER, Values> pair in values) {
                                     try {
                                         // сопоставление 'r.source_name' && 'values.name_shr'
-                                        if (pair.Value.m_name_shr?.IndexOf(r.SourceData) > 0) {
+                                        if ((pair.Value.m_name_shr?.IndexOf(r.SourceData) > 0)
+                                            && (!(pair.Value.m_value == null))
+                                            && (string.IsNullOrEmpty((string)pair.Value.m_value) == false)) {
                                             switch (pair.Key.m_id_value) {
                                                 case KEY_DIAGNOSTIC_PARAMETER.ID_VALUE.AIISKUE_VALUE:
                                                 case KEY_DIAGNOSTIC_PARAMETER.ID_VALUE.SOTIASSO_1_VALUE:

@@ -8,6 +8,7 @@ using System.Data;
 using System.Drawing;
 
 using HClassLibrary;
+using StatisticCommon;
 
 namespace StatisticDiagnostic
 {
@@ -15,20 +16,72 @@ namespace StatisticDiagnostic
     {
         private class PanelContainerModes : HPanelCommon
         {
+            /// <summary>
+            /// Количество столбцов, строк в сетке макета
+            /// </summary>
+            private const int COUNT_LAYOUT_COLUMN = 4
+                , COUNT_LAYOUT_ROW = 2;
+            /// <summary>
+            /// Сложный ключ для соваря со значениями при обновлении дочерних панелей
+            /// </summary>
+            private struct KEY_DIAGNOSTIC_PARAMETER
+            {
+                /// <summary>
+                /// Перечисление - типов значений
+                /// </summary>
+                public enum ID_UNIT : short { UNKNOWN = -1, PBR = 12, DATETIME = 13 }
+                /// <summary>
+                /// Словарь с информацией о CLR-типах значений 
+                /// </summary>
+                public static Dictionary<ID_UNIT, Type> TypeOf = new Dictionary<ID_UNIT, Type>() {
+                    { ID_UNIT.PBR, typeof(string) }
+                    , { ID_UNIT.DATETIME, typeof(DateTime) }
+                };
+
+                public ID_UNIT m_id_unit;
+
+                public int m_id_value;
+            }
+            /// <summary>
+            /// Массив дочерних панелей для каждой из Модес-источников
+            /// </summary>
             private PanelModes[] m_arPanels;
-
-            private ListDiagnosticSource m_listDiagnosticSource;
-
-            public PanelContainerModes(ListDiagnosticSource listDiagSource) : base(-1, -1)
+            /// <summary>
+            /// Конструктор основной (с парметрами)
+            /// </summary>
+            /// <param name="listTEC">Список ТЭЦ</param>
+            /// <param name="listDiagParam">Список с параметрами диагностики (БД конфигурации)</param>
+            /// <param name="listDiagSource">Список контролируемых источников данных (БД конфигурации)</param>
+            public PanelContainerModes(List<TEC> listTEC
+                , List<DIAGNOSTIC_PARAMETER> listDiagParam
+                , ListDiagnosticSource listDiagSource)
+                    : base(COUNT_LAYOUT_COLUMN, COUNT_LAYOUT_ROW)
             {
+                initialize(listTEC, listDiagParam, listDiagSource);
             }
-
-            public PanelContainerModes(IContainer container) : base(container, -1, -1)
+            /// <summary>
+            /// Конструктор дополнительный (с параметрами)
+            /// </summary>
+            /// <param name="container">Объект - владелец</param>
+            /// <param name="listTEC">Список ТЭЦ</param>
+            /// <param name="listDiagnosticParameter">Список с параметрами диагностики (БД конфигурации)</param>
+            /// <param name="listDiagSource">Список контролируемых источников данных (БД конфигурации)</param>
+            public PanelContainerModes(IContainer container
+                , List<TEC> listTEC
+                , List<DIAGNOSTIC_PARAMETER> listDiagnosticParameter
+                , ListDiagnosticSource listDiagSource)
+                    : base(container, COUNT_LAYOUT_COLUMN, COUNT_LAYOUT_ROW)
             {
+                initialize(listTEC, listDiagnosticParameter, listDiagSource);
             }
-
+            /// <summary>
+            /// Инициализация (создание/размещение) дочерних элементов управления
+            /// </summary>
             private void InitComponents()
             {
+                this.CellBorderStyle = TableLayoutPanelCellBorderStyle.Single;
+
+                initializeLayoutStyle();
             }
             /// <summary>
             /// Инициализация характеристик, стилей макета для размещения дочерних элементов интерфейса
@@ -38,6 +91,78 @@ namespace StatisticDiagnostic
             /// <param name="row">Количество строк в макете</param>
             protected override void initializeLayoutStyle(int col = -1, int row = -1)
             {
+                initializeLayoutStyleEvenly(col, row);
+            }
+            /// <summary>
+            /// Инициализация (создание/размещение) дочерних элементов управления
+            /// </summary>
+            /// <param name="listTEC">Список ТЭЦ</param>
+            /// <param name="listDiagnosticParameter">Список с параметрами диагностики (БД конфигурации)</param>
+            /// <param name="listDiagnosticSource">Список контролируемых источников данных (БД конфигурации)</param>
+            private void initialize(List<TEC> listTEC
+                , List<DIAGNOSTIC_PARAMETER> listDiagnosticParameter
+                , ListDiagnosticSource listDiagnosticSource)
+            {
+                int i = -1;
+                ListDiagnosticParameter listDiagParam;
+                ListDiagnosticSource listDiagSrc;
+
+                InitComponents();
+                // 1 DataGridView(Модес-Центр) + на каждую ТЭЦ по DataGridView(Модес-Терминал)
+                m_arPanels = new PanelModes[listTEC.Count + 1];
+                // добавляем 'DataGridView' Modes-Centre - подготовка конфигурациооных списков
+                i = 0;
+                listDiagParam = new ListDiagnosticParameter(listDiagnosticParameter.FindAll(item => { return item.m_name_shr == @"Modes-Centre"; }));
+                listDiagParam = new ListDiagnosticParameter(listDiagParam.OrderBy(item => item.m_id));
+                listDiagSrc = new ListDiagnosticSource(listDiagnosticSource.FindAll(item => { return item.m_description == @"Modes-Centre"; }));
+                listDiagSrc = new ListDiagnosticSource(listDiagSrc.OrderBy(item => item.m_id_component));
+                // добавляем 'DataGridView' Modes-Centre - создание панели
+                m_arPanels[i] = new PanelModes(listTEC, listDiagParam, listDiagSrc);
+                // добавляем 'DataGridView' Modes-Centre - размещение панели
+                this.Controls.Add(m_arPanels[i], 0, 0); this.SetRowSpan(m_arPanels[i], 2);
+
+                for (i = 1; i < m_arPanels.Length; i++)
+                    if (m_arPanels[i] == null) {
+                        // добавляем 'DataGridView' Modes-Terminal - подготовка конфигурациооных списков
+                        listDiagParam = new ListDiagnosticParameter(listDiagnosticParameter.FindAll(item => { return item.m_name_shr == @"Modes-term"; }));
+                        listDiagParam = new ListDiagnosticParameter(listDiagParam.OrderBy(item => item.m_id));
+                        listDiagSrc = new ListDiagnosticSource();
+                        foreach (DIAGNOSTIC_SOURCE diagSrc in listDiagnosticSource)
+                            // "-1", т.к. начинали с "1"
+                            foreach (TECComponent comp in listTEC[i - 1].list_TECComponents)
+                                if ((comp.IsGTP == true)
+                                    && (diagSrc.m_id_component == comp.m_id))
+                                    listDiagSrc.Add(diagSrc);
+                                else
+                                    ;
+                        listDiagSrc = new ListDiagnosticSource(listDiagSrc.OrderBy(item => item.m_id_component));
+                        // добавляем 'DataGridView' Modes-Terminal - создание панели
+                        m_arPanels[i] = new PanelModes(new List<TEC>() { listTEC[i - 1] }, listDiagParam, listDiagSrc);
+                        // добавляем 'DataGridView' Modes-Terminal - размещение панели
+                        this.Controls.Add(m_arPanels[i], ((i - 1) % (COUNT_LAYOUT_COLUMN - 1)) + 1, (i - 1) / (COUNT_LAYOUT_COLUMN - 1));
+                    } else
+                        ;
+
+                //try {
+                //    IEnumerable<DIAGNOSTIC_SOURCE> enumModes = (from r in m_listDiagnosticSource
+                //        where r.m_id >= (int)INDEX_SOURCE.MODES && r.m_id < (int)INDEX_SOURCE.TASK
+                //        orderby r.m_id
+                //        select new DIAGNOSTIC_SOURCE()
+                //        {
+                //            m_id = r.m_id
+                //            , m_name_shr = r.m_name_shr
+                //            , m_id_component = r.m_id_component
+                //            , m_description = r.m_description
+                //        }).Distinct();
+
+                //    foreach (var item in enumModes)
+                //        if (item.m_description.Equals(@"Modes-Centre") == true)
+                //            createItemModesCentre();
+                //        else
+                //            createItemModesTerminal(item.m_id);
+                //} catch (Exception e) {
+                //    Logging.Logg().Exception(e, @"", Logging.INDEX_MESSAGE.NOT_SET);
+                //}
             }
 
             public void Clear()
@@ -65,78 +190,75 @@ namespace StatisticDiagnostic
                 return bRes;
             }
 
-            /// <summary>
-            /// Создание панелей Модес
-            /// </summary>
-            private void create(ListDiagnosticSource listDiagSource)
+            private class DictionaryGTPValues : Dictionary<int, Dictionary<KEY_DIAGNOSTIC_PARAMETER, Values>>
             {
-                m_arPanels = new PanelModes[m_tableTECList.Rows.Count + 1];
+                /// <summary>
+                /// Конструктор - основной (с парметром)
+                /// </summary>
+                /// <param name="tableRecieved">Таблица - результат запроса значений</param>
+                public DictionaryGTPValues(DataTable tableRecieved)
+                {
+                    int id = -1;
 
-                for (int i = 0; i < m_arPanels.Length; i++)
-                    if (m_arPanels[i] == null)
-                        m_arPanels[i] = new PanelModes((int)m_tableTECList.Rows[i][@"ID"], listDiagSource);
-                    else
-                        ;
+                    try {
+                        foreach (DataRow r in tableRecieved.Rows) {
+                            id = r.Field<int>(@"ID_EXT"); // читать как ИД ТЭЦ
 
-                try {
-                    IEnumerable<DIAGNOSTIC_SOURCE> enumModes = (from r in m_listDiagnosticSource
-                                     where r.m_id >= (int)INDEX_SOURCE.MODES && r.m_id < (int)INDEX_SOURCE.TASK
-                                     orderby r.m_id
-                                     select new DIAGNOSTIC_SOURCE ()
-                                     {
-                                         m_id = r.m_id
-                                         , m_name_shr = r.m_name_shr
-                                         , m_id_component = r.m_id_component
-                                         , m_description = r.m_description
-                                     }).Distinct();
+                            if ((id > (int)INDEX_SOURCE.MODES)
+                                && (id < (int)INDEX_SOURCE.TASK)) {
+                                if (this.Keys.Contains(id) == false)
+                                    Add(id, new Dictionary<KEY_DIAGNOSTIC_PARAMETER, Values>());
+                                else
+                                    ;
 
-                    foreach (var item in enumModes)
-                        if (item.m_description.Equals(@"Modes-Centre") == true)
-                            createItemModesCentre();
-                        else
-                            createItemModesTerminal(item.m_id);
-                } catch (Exception e) {
-                    Logging.Logg().Exception(e, @"", Logging.INDEX_MESSAGE.NOT_SET);
+                                this[id].Add(
+                                    new KEY_DIAGNOSTIC_PARAMETER() {
+                                        m_id_unit = (KEY_DIAGNOSTIC_PARAMETER.ID_UNIT)r.Field<int>(@"ID_Units")
+                                        //??? читать как ИД ГТП
+                                        , m_id_value = Convert.ToInt32(r.Field<string>(@"ID_Value"))
+                                    }
+                                    , new Values() {
+                                        m_value = r.Field<string>(@"Value")
+                                        , m_strLink = r.Field<string>(@"Link")
+                                        , m_name_shr = r.Field<string>(@"NAME_SHR")
+                                        , m_dtValue = r.Field<DateTime>(@"UPDATE_DATETIME")
+                                    }
+                                );
+                            } else
+                            // 'INDEX_SOURCE.SIZEDB' - минимальное значение
+                            // идентификатор ТЭЦ в диапазоне 1 - 10 
+                                ;
+                        }                        
+                    } catch (Exception e) {
+                        Logging.Logg().Exception(e, @"PanelContainerModes.DictionaryGTPValues::ctor () - ...", Logging.INDEX_MESSAGE.NOT_SET);
+                    }
                 }
             }
 
             /// <summary>
-            /// DataGridView Modes-Centre
+            /// Обработчик события панели-родителя - обновление значений
             /// </summary>
-            private void createItemModesCentre()
+            /// <param name="rec">Таблица с результатами запрос</param>
+            public void Update(object rec)
             {
-                string filterComp = string.Empty
-                    , sortOrderBy = "Component ASC"
-                    , time;
-                DataRow[] arSelIDModes, arSelIDComponent;
-                List<DIAGNOSTIC_SOURCE> listDiagnosticSource;
-                int iRow = -1;                
+                PanelModes panelModes;
+                DictionaryGTPValues dictTecValues = null;
 
-                listDiagnosticSource = m_listDiagnosticSource.FindAll(item => { return item.m_description == @"Modes-Centre"; });
-                listDiagnosticSource = listDiagnosticSource.OrderBy(item => item.m_id_component).ToList();
+                //m_semUpdateHandler.WaitOne();
 
-                m_arPanels[0] = new PanelModes(0, listDiagnosticSource as ListDiagnosticSource);                
-            }
+                dictTecValues = new DictionaryGTPValues((rec as DataTable));
 
-            /// <summary>
-            /// добавление записей в грид
-            /// </summary>
-            /// <param name="id">фильтр для отбора данных</param>
-            private void createItemModesTerminal(int id)
-            {
-                string textDateTime = TimeZoneInfo.ConvertTimeBySystemTimeZoneId(DateTime.Now, TimeZoneInfo.Local.Id, "Russian Standard Time").ToString("hh:mm:ss:fff")
-                    , filterComp;
-                List<DIAGNOSTIC_SOURCE> listDiagnosticSource;
-                DataRow[] arSelSourceModes = null;
+                foreach (KeyValuePair<int, Dictionary<KEY_DIAGNOSTIC_PARAMETER, Values>> pair in dictTecValues) {
+                    panelModes = m_arPanels.ToList().Find(panel => (int)panel.Tag == pair.Key);
 
-                listDiagnosticSource = m_listDiagnosticSource.FindAll(item => { return item.m_description == @"Modes-Centre"; });
-                listDiagnosticSource = listDiagnosticSource.OrderBy(item => item.m_id_component).ToList();
+                    if (!(panelModes == null)) {
+                        m_arPanels[0].Update(pair.Value);
+                        panelModes.Update(pair.Value);
+                    } else
+                        ;
+                }
 
-                m_arPanels[0] = new PanelModes(id, listDiagnosticSource as ListDiagnosticSource);
-            }
-
-            public void Update(object table)
-            {
+                //m_semUpdateHandler.Release(1);
             }
 
             /// <summary>
@@ -147,46 +269,81 @@ namespace StatisticDiagnostic
             private partial class PanelModes : HPanelCommon
             {
                 /// <summary>
+                /// Количество столбцов, строк в сетке макета
+                /// </summary>
+                private const int COUNT_LAYOUT_COLUMN = 1
+                    , COUNT_LAYOUT_ROW = 7;
+                /// <summary>
                 /// Конструктор - основной (с параметрами)
                 /// </summary>
-                public PanelModes(int id, ListDiagnosticSource listDiagSource)
-                    : base(-1, -1)
+                public PanelModes(List<TEC> listTEC, List<DIAGNOSTIC_PARAMETER>listDiagParam, List<DIAGNOSTIC_SOURCE> listDiagSrc)
+                    : base(COUNT_LAYOUT_COLUMN, COUNT_LAYOUT_ROW)
                 {
-                    initialize(id, listDiagSource);
+                    initialize(listTEC, listDiagParam, listDiagSrc);
                 }
                 /// <summary>
                 /// 
                 /// </summary>
                 /// <param name="container"></param>
-                public PanelModes(IContainer container, int id, ListDiagnosticSource listDiagSource)
-                    : base(container, -1, -1)
+                public PanelModes(IContainer container, List<TEC> listTEC, List<DIAGNOSTIC_PARAMETER> listDiagParam, ListDiagnosticSource listDiagSrc)
+                    : base(container, COUNT_LAYOUT_COLUMN, COUNT_LAYOUT_ROW)
                 {
                     container.Add(this);
 
-                    initialize(id, listDiagSource);
+                    initialize(listTEC, listDiagParam, listDiagSrc);
                 }
                 /// <summary>
-                /// 
+                /// Инициализация (создание/размещение) дочерних компонентов
                 /// </summary>
-                private void initialize(int id, ListDiagnosticSource listDiagSource)
+                private void initialize(List<TEC>listTEC, List<DIAGNOSTIC_PARAMETER> listDiagParam, List<DIAGNOSTIC_SOURCE> listDiagSrc)
                 {
-                    Tag = id;
-                    // добавить столбцы
-                    if (m_dgvValues.ColumnCount < 6)
-                    {
-                        m_dgvValues.Invoke(new Action(() => m_dgvValues.Columns.Add("TEC", "ТЭЦ")));
-                        m_dgvValues.Invoke(new Action(() => m_dgvValues.Columns["TEC"].DisplayIndex = 1));
-                    }
-                    else
-                        ;
-                    // добавить строки
-                    addRows(listDiagSource.Count);
-                    // указать наименования
-                    foreach (DIAGNOSTIC_SOURCE src in listDiagSource) {
-                        //nameComponentGTP(src.m_name_shr, m_dgvValues.RowCount - 1);
-                    }
+                    int indxNewRow = -1
+                        , iTec = -1;
+                    TECComponent gtp;
+
+                    //Tag = listTEC;
+                    // идентификатор ТЭЦ (??? еще один, надо было использовать в [techsite_cfg-2.X.X]...[DIAGNOSTIC_SOURCES] из [techsite_cfg-2.X.X]...[TEC_LIST])
+                    //  (можно взять любой элемент списка, например [0])
+                    Tag = listDiagSrc[0].m_id;
+
+                    initializeLayoutStyle();
 
                     InitializeComponent();
+
+                    //if (listTEC.Count > 1) {
+                    //    m_dgvValues.Columns.Add("TEC", "ТЭЦ");
+                    //    m_dgvValues.Columns["TEC"].DisplayIndex = 0;
+                    //} else
+                    //    ;
+
+                    // добавить строки, указать их наименования
+                    foreach (DIAGNOSTIC_SOURCE src in listDiagSrc)
+                        if (src.m_id_component > 0) {
+                            indxNewRow = m_dgvValues.Rows.Add(new DataGridViewGTPRow());
+
+                            (m_dgvValues.Rows[indxNewRow] as DataGridViewGTPRow).Tag = src.m_id_component;
+
+                            iTec = 0; gtp = null;
+                            while ((gtp == null)
+                                && (iTec < listTEC.Count)) {
+                                gtp = listTEC[iTec].list_TECComponents.Find(comp => { return comp.m_id == src.m_id_component; });
+
+                                iTec++;
+                            }
+
+                            (m_dgvValues.Rows[indxNewRow] as DataGridViewGTPRow).Name =
+                                //src.m_name_shr
+                                string.Format(@"{0}-{1}", gtp.tec.name_shr, gtp.name_shr);
+                                ;
+
+                            (m_dgvValues.Rows[indxNewRow] as DataGridViewGTPRow).Enabled = false;
+                        } else
+                            ;
+                    //// идентификатор ТЭЦ (??? еще один, надо было использовать в [techsite_cfg-2.X.X]...[DIAGNOSTIC_SOURCES] из [techsite_cfg-2.X.X]...[TEC_LIST])
+                    ////  (можно взять любой элемент списка, например [0])
+                    //m_dgvValues.Tag = listDiagSrc[0].m_id;
+                    // заголовок 'DataGridView' (можно взять любой элемент списка, например [0])
+                    setTextDescription(listDiagSrc[0].m_name_shr);
                 }
 
                 protected override void initializeLayoutStyle(int cols = -1, int rows = -1)
@@ -219,18 +376,18 @@ namespace StatisticDiagnostic
                 /// содержимое данного метода при помощи редактора кода.
                 /// </summary>
                 public DataGridView m_dgvValues = new DataGridView();
-                public Label LabelModes = new Label();
+                public Label m_labelDescription = new Label();
+
+                private enum INDEX_CELL : short { NAME_GTP = 0, DATETIME_VALUE, VALUE, DATETIME_VERIFICATION, STATE
+                    , COUNT
+                }
 
                 private void InitializeComponent()
                 {
-                    this.Controls.Add(LabelModes, 0, 0);
-                    this.Controls.Add(m_dgvValues, 0, 1);
-                    this.RowStyles.Add(new System.Windows.Forms.RowStyle(System.Windows.Forms.SizeType.Absolute, 15F));
-                    this.RowStyles.Add(new System.Windows.Forms.RowStyle(System.Windows.Forms.SizeType.Percent, 100.74641F));
+                    this.Controls.Add(m_labelDescription, 0, 0);
+                    this.Controls.Add(m_dgvValues, 0, 1); this.SetRowSpan(m_dgvValues, 6);
 
                     this.SuspendLayout();
-
-                    this.Dock = DockStyle.Fill;
                     //
                     //ModesDataGridView
                     //
@@ -245,29 +402,24 @@ namespace StatisticDiagnostic
                     this.m_dgvValues.CurrentCell = null;
                     this.m_dgvValues.TabIndex = 0;
                     this.m_dgvValues.ReadOnly = true;
-                    this.m_dgvValues.ColumnCount = 5;
-                    this.m_dgvValues.Columns[0].Name = "Источник данных";
-                    this.m_dgvValues.Columns[1].Name = "Крайнее значение";
-                    this.m_dgvValues.Columns[2].Name = "Крайнее время";
-                    this.m_dgvValues.Columns[3].Name = "Время проверки";
-                    this.m_dgvValues.Columns[4].Name = "Связь";
-                    this.m_dgvValues.Columns[0].Width = 22;
-                    this.m_dgvValues.Columns[1].Width = 15;
-                    this.m_dgvValues.Columns[2].Width = 23;
-                    this.m_dgvValues.Columns[3].Width = 20;
-                    this.m_dgvValues.Columns[4].Width = 25;
+                    this.m_dgvValues.ColumnCount = (int)INDEX_CELL.COUNT;
+                    this.m_dgvValues.Columns[(int)INDEX_CELL.NAME_GTP].Name = "Источник данных"; this.m_dgvValues.Columns[(int)INDEX_CELL.NAME_GTP].Width = 22;
+                    this.m_dgvValues.Columns[(int)INDEX_CELL.DATETIME_VALUE].Name = "Крайнее время"; this.m_dgvValues.Columns[(int)INDEX_CELL.DATETIME_VALUE].Width = 17;
+                    this.m_dgvValues.Columns[(int)INDEX_CELL.VALUE].Name = "Крайнее значение"; this.m_dgvValues.Columns[(int)INDEX_CELL.VALUE].Width = 23;
+                    this.m_dgvValues.Columns[(int)INDEX_CELL.DATETIME_VERIFICATION].Name = "Время проверки"; this.m_dgvValues.Columns[(int)INDEX_CELL.DATETIME_VERIFICATION].Width = 18;
+                    this.m_dgvValues.Columns[(int)INDEX_CELL.STATE].Name = "Связь"; this.m_dgvValues.Columns[(int)INDEX_CELL.STATE].Width = 25;
 
-                    this.m_dgvValues.CellValueChanged += new DataGridViewCellEventHandler(m_arPanelsMODES_Cell);
-                    this.m_dgvValues.CellClick += new DataGridViewCellEventHandler(m_arPanelsMODES_Cell);
+                    this.m_dgvValues.CellValueChanged += new DataGridViewCellEventHandler(dgv_CellCancel);
+                    this.m_dgvValues.CellClick += new DataGridViewCellEventHandler(dgv_CellCancel);
                     //
                     //LabelModes
                     //
-                    this.LabelModes.AutoSize = true;
-                    this.LabelModes.Dock = System.Windows.Forms.DockStyle.Fill;
-                    this.LabelModes.Name = "LabelModes";
-                    this.LabelModes.TabIndex = 1;
-                    this.LabelModes.Text = " ";
-                    this.LabelModes.TextAlign = System.Drawing.ContentAlignment.MiddleCenter;
+                    this.m_labelDescription.AutoSize = true;
+                    this.m_labelDescription.Dock = System.Windows.Forms.DockStyle.Fill;
+                    this.m_labelDescription.Name = "LabelModes";
+                    this.m_labelDescription.TabIndex = 1;
+                    this.m_labelDescription.Text = " ";
+                    this.m_labelDescription.TextAlign = System.Drawing.ContentAlignment.MiddleCenter;
 
                     this.ResumeLayout(false);
                 }
@@ -283,6 +435,177 @@ namespace StatisticDiagnostic
             partial class PanelModes
             {
                 /// <summary>
+                /// Структура для описания идентификатора строк в 'm_dgvValues'
+                /// </summary>
+                private class DataGridViewGTPRow : DataGridViewRow
+                {
+                    /// <summary>
+                    /// Наименование источника - постоянная величина, устанавливается при создании строки
+                    /// </summary>
+                    public string Name {
+                        get {
+                            return (string)Cells[(int)INDEX_CELL.NAME_GTP].Value;
+                        }
+
+                        set {
+                            if (!(Index < 0))
+                                Cells[(int)INDEX_CELL.NAME_GTP].Value = value;
+                            else
+                                ;
+                        }
+                    }
+
+                    public bool Enabled { get; set; }
+
+                    public void SetValueCells(object[] values)
+                    {
+                        object value;
+                        INDEX_CELL_STATE indxState = INDEX_CELL_STATE.ERROR;
+                        Color clrCell = Color.Empty;
+                        bool enableValuePrevious = Enabled
+                            , enableValueCurrrent = false;
+
+                        foreach (INDEX_CELL i in Enum.GetValues(typeof(INDEX_CELL))) {
+                            try {
+                                if (((int)i < values.Length)
+                                    && (!(values[(int)i] == null))
+                                    //&& (string.IsNullOrEmpty((string)values[(int)i]) == false)
+                                    ) {
+                                    indxState = INDEX_CELL_STATE.ERROR;
+                                    clrCell = Color.Empty;
+
+                                    switch (i) {
+                                        case INDEX_CELL.NAME_GTP:
+                                        case INDEX_CELL.COUNT:
+                                            continue;
+                                            break;
+                                        case INDEX_CELL.STATE:
+                                            indxState = ((string)values[(int)i])?.Equals(1.ToString()) == true ?
+                                                INDEX_CELL_STATE.OK :
+                                                    INDEX_CELL_STATE.ERROR;
+                                            value = s_StateSources[(int)indxState].m_Text;
+                                            clrCell = s_StateSources[(int)indxState].m_Color;
+                                            break;
+                                        case INDEX_CELL.DATETIME_VALUE:
+                                        case INDEX_CELL.DATETIME_VERIFICATION:
+                                            value = values[(int)i] is DateTime ?
+                                                formatDateTime(i, (DateTime)values[(int)i]) :
+                                                    values[(int)i];
+                                            clrCell = s_StateSources[(int)isRelevanceDateTime(i, (DateTime)values[(int)i])].m_Color;
+                                            break;
+                                        case INDEX_CELL.VALUE:
+                                            value = values[(int)i];
+                                            break;
+                                        default:
+                                            indxState = ((string)values[(int)i])?.Equals(EtalonPBR) == true ?
+                                                INDEX_CELL_STATE.OK :
+                                                    INDEX_CELL_STATE.ERROR;
+                                            value = values[(int)i];
+                                            break;
+                                    }
+
+                                    Cells[(int)i].Value = value;
+                                    // изменить цвет ячейки
+                                    Cells[(int)i].Style.BackColor = clrCell;
+                                } else
+                                    ; // значение == null
+                            } catch (Exception e) {
+                                Logging.Logg().Exception(e, @"PanelContainerModes.PanelModes.DataGridViewGTPRow::SetValueCells () - ...", Logging.INDEX_MESSAGE.NOT_SET);
+                            }
+                        } // INDEX_CELL i in Enum.GetValues(typeof(INDEX_CELL))
+                    }
+                    /// <summary>
+                    /// Форматировать значение даты времени
+                    /// </summary>
+                    /// <param name="indxCell">Номер(индекс) столбца</param>
+                    /// <param name="dtFormated">Значение даты/времени для форматирования</param>
+                    /// <returns>Строка с датой/временем</returns>
+                    private string formatDateTime(INDEX_CELL indxCell, DateTime dtFormated)
+                    {
+                        string strRes = string.Empty;
+
+                        if (SERVER_TIME.Date > dtFormated.Date)
+                            strRes = dtFormated.ToString(@"dd.MM.yyyy HH:mm:ss");
+                        else
+                            strRes = dtFormated.ToString(@"HH:mm:ss");
+
+                        return strRes;
+                    }
+                    /// <summary>
+                    /// Признак актуальности даты/времени
+                    /// </summary>
+                    /// <param name="indxCell">Номер(индекс) столбца</param>
+                    /// <param name="dtChecked">Значение даты/времени для проверки</param>
+                    /// <returns>Признак актуальности</returns>
+                    private INDEX_CELL_STATE isRelevanceDateTime(INDEX_CELL indxCell, DateTime dtChecked)
+                    {
+                        INDEX_CELL_STATE stateRes = INDEX_CELL_STATE.ERROR;
+
+                        TimeSpan tsDifference = SERVER_TIME - dtChecked;
+
+                        if (tsDifference.TotalSeconds > 0)
+                            switch (indxCell)
+                            {
+                                case INDEX_CELL.DATETIME_VALUE:
+                                    stateRes = (tsDifference.TotalMinutes > 76) ?
+                                        (tsDifference.TotalMinutes > 121) ?
+                                            INDEX_CELL_STATE.ERROR :
+                                                INDEX_CELL_STATE.WARNING :
+                                                    INDEX_CELL_STATE.OK;
+                                    break;
+                                case INDEX_CELL.DATETIME_VERIFICATION:
+                                    stateRes = (tsDifference.TotalMinutes > 3) ?
+                                        (tsDifference.TotalMinutes > 9) ?
+                                            INDEX_CELL_STATE.ERROR :
+                                                INDEX_CELL_STATE.WARNING :
+                                                    INDEX_CELL_STATE.OK;
+                                    break;
+                                default:
+                                    break;
+                            }
+                        else
+                            // оставить 'ERROR'
+                            ;
+
+                        return stateRes;
+                    }
+                    /// <summary>
+                    /// Функция для нахождения ПБР на текущее время
+                    /// </summary>
+                    /// <returns>возвращает ПБР на текущее время</returns>
+                    private string EtalonPBR
+                    {
+                        get {
+                            string strRes = string.Empty;
+                            int iNowMinute =
+                                    TimeZoneInfo.ConvertTimeBySystemTimeZoneId(DateTime.Now, TimeZoneInfo.Local.Id, "Russian Standard Time").Minute
+                                , iNowHour =
+                                    TimeZoneInfo.ConvertTimeBySystemTimeZoneId(DateTime.Now, TimeZoneInfo.Local.Id, "Russian Standard Time").Hour;
+
+                            //if ((Convert.ToInt32(m_DTMin)) > 41)
+                            //{
+                            //    if ((Convert.ToInt32(m_DTHour)) % 2 == 0)
+                            //        m_etalon_pbr = "ПБР" + (Convert.ToInt32(m_DTHour) + 1);
+                            //    else
+                            //        m_etalon_pbr = "ПБР" + ((Convert.ToInt32(m_DTHour) + 2));
+
+                            //    return m_etalon_pbr;
+                            //}
+
+                            //else
+                            //{
+                            //if ((Convert.ToInt32(m_DTHour)) % 2 == 0)
+                            strRes = string.Format("ПБР{0}", iNowHour);
+                            //else
+                            //    m_etalon_pbr = "ПБР" + Convert.ToInt32(m_DTHour);
+
+                            return strRes;
+                            //}
+                        }
+                    }
+                }
+
+                /// <summary>
                 /// очистка панелей
                 /// </summary>
                 public void Clear()
@@ -293,139 +616,64 @@ namespace StatisticDiagnostic
                         ;
                 }
 
-                /// <summary>
-                /// Добавление строк в грид
-                /// </summary>
-                /// <param name="counter">кол-во строк</param>
-                private void addRows(int counter)
+                private void update(Dictionary<KEY_DIAGNOSTIC_PARAMETER, Values> values)
                 {
-                    if (m_dgvValues.InvokeRequired)
-                        m_dgvValues.Invoke(new Action(() => m_dgvValues.Rows.Add(counter)));
-                    else
-                        m_dgvValues.Rows.Add(counter);
-                }
+                    object value;
+                    object[] rowValues;
 
-                /// <summary>
-                /// Функция проверки на пустоту значений
-                /// </summary>
-                /// <param name="arSource">набор проверяемых данных</param>
-                /// <returns></returns>
-                private bool testingNull(ref DataRow[] arSource)
-                {
-                    bool bRes = false;
+                    foreach (DataGridViewGTPRow r in m_dgvValues.Rows) {
+                        rowValues = new object[(int)INDEX_CELL.COUNT];
 
-                    for (int i = 0; i < arSource.Length; i++)
-                        if (arSource[i]["Value"].ToString() == "")
-                        {
-                            arSource[i]["Value"] = "Нет данных в БД";
-                            //bRes = false; // ничего не делать
-                        } else
-                            if (bRes == false) bRes = true; else /*ничего не делать*/;
-
-                    return bRes;
-                }
-
-                public void Update(List <DIAGNOSTIC_DATA> listData)
-                {
-                    List<DIAGNOSTIC_DATA> data;
-
-                    DataRow[] arSelIDComponent = null;
-                    string time;
-                    int iRow = 0;
-
-                    foreach (DataGridViewRow row in m_dgvValues.Rows)
-                    {
-                        data = listData.FindAll(item => { return item.m_id == (int)row.Tag; });
-
-                        if (data.Count == 1) {
-                            time = formatTime(listData[0].m_dtVerification);
-                            iRow++;
-
-                            if (m_dgvValues.InvokeRequired)
-                            {
-                                if (testingNull(ref arSelIDComponent) == true)
-                                {
-                                    paintPbr(iRow, !(checkPBR() == arSelIDComponent[0]["Value"].ToString()));
-                                }
-                                else
+                        foreach (KeyValuePair<KEY_DIAGNOSTIC_PARAMETER, Values> pair in values) {
+                            try {
+                                // сопоставление ???
+                                if (((int)r.Tag == pair.Key.m_id_value)
+                                    && (!(pair.Value.m_value == null))
+                                    && (string.IsNullOrEmpty((string)pair.Value.m_value) == false)) {
+                                    switch (pair.Key.m_id_unit) {
+                                        case KEY_DIAGNOSTIC_PARAMETER.ID_UNIT.PBR:
+                                            rowValues[(int)INDEX_CELL.VALUE] =
+                                                Convert.ChangeType(pair.Value.m_value, KEY_DIAGNOSTIC_PARAMETER.TypeOf[pair.Key.m_id_unit]);
+                                            rowValues[(int)INDEX_CELL.DATETIME_VERIFICATION] =
+                                                Convert.ChangeType(pair.Value.m_dtValue, typeof(DateTime));
+                                            rowValues[(int)INDEX_CELL.STATE] =
+                                                Convert.ChangeType(pair.Value.m_strLink, typeof(string));
+                                            break;
+                                        case KEY_DIAGNOSTIC_PARAMETER.ID_UNIT.DATETIME:
+                                            rowValues[(int)INDEX_CELL.DATETIME_VALUE] =
+                                                Convert.ChangeType(pair.Value.m_value, KEY_DIAGNOSTIC_PARAMETER.TypeOf[pair.Key.m_id_unit]);
+                                            break;
+                                        default:                                            
+                                            break;
+                                    }
+                                } else
                                     ;
-
-                                m_dgvValues.Invoke(new Action(() => m_dgvValues.Rows[iRow].Cells[5].Value = arSelIDComponent[0][5]));
-                                //m_dgvValues.Invoke(new Action(() => m_dgvValues.Rows[m_tic].Cells[0].Value = m_drComponent[0]["ID_Value"]));
-                                m_dgvValues.Invoke(new Action(() => m_dgvValues.Rows[iRow].Cells[2].Value = time));
-                                m_dgvValues.Invoke(new Action(() => m_dgvValues.Rows[iRow].Cells[1].Value = arSelIDComponent[0]["Value"]));
-                                m_dgvValues.Invoke(new Action(() => m_dgvValues.Rows[iRow].Cells[3].Value = TimeZoneInfo.ConvertTimeBySystemTimeZoneId(DateTime.Now, TimeZoneInfo.Local.Id, "Russian Standard Time").ToString("hh:mm:ss:fff")));
-
-                                cellsPing(arSelIDComponent[0]["Link"].ToString().Equals(1.ToString()), iRow);
+                            } catch (Exception e) {
+                                Logging.Logg().Exception(e, @"PanelContainerModes.PanelModes::update () - ...", Logging.INDEX_MESSAGE.NOT_SET);
                             }
-                            else
-                            {
-                                paintPbr(iRow, !(checkPBR() == arSelIDComponent[0]["Value"].ToString()));
+                        } // KeyValuePair<KEY_DIAGNOSTIC_PARAMETER, Values> pair in values
 
-                                //m_dgvValues.Rows[m_tic].Cells[0].Value = m_drComponent[0]["ID_Value"];
-                                m_dgvValues.Rows[iRow].Cells[2].Value = time;
-                                m_dgvValues.Rows[iRow].Cells[1].Value = arSelIDComponent[0]["Value"];
-                                m_dgvValues.Rows[iRow].Cells[3].Value = DateTime.Now.ToString("HH:mm:ss.fff");
+                        r.SetValueCells(rowValues);
+                    } // DataGridViewGTPRow r in m_dgvValues.Rows
+                }
 
-                                cellsPing(arSelIDComponent[0]["Link"].ToString().Equals(1.ToString()), iRow);
-                            }
-                        } else
-                            throw new Exception(@"PanelModes::Update () - ...");
-                    }
+                public void Update(Dictionary<KEY_DIAGNOSTIC_PARAMETER, Values> values)
+                {
+                    if (InvokeRequired == true)
+                        Invoke(new Action<Dictionary<KEY_DIAGNOSTIC_PARAMETER, Values>>(update), values);
+                    else
+                        update(values);
                 }
 
                 /// <summary>
                 /// Функция изменения заголовков грида Modes
                 /// </summary>
-                private void setDescription(string name_shr)
+                private void setTextDescription(string name_shr)
                 {
-                    if (LabelModes.InvokeRequired)
-                        LabelModes.Invoke(new Action(() => LabelModes.Text = name_shr));
+                    if (m_labelDescription.InvokeRequired)
+                        m_labelDescription.Invoke(new Action(() => m_labelDescription.Text = name_shr));
                     else
-                        LabelModes.Text = name_shr;
-                }
-
-                private enum INDEX_CELL : short { STATE = 4 }
-
-                /// <summary>
-                /// Заполнение панели данными о связи 
-                /// с источниками для МОДЕС
-                /// </summary>
-                /// <param name="f">фильтр для отбора данных</param>
-                /// <param name="r">номер строки</param>
-                private void cellsPing(bool bLink, int r)
-                {
-                    Action<int, INDEX_CELL_STATE> setState = new Action<int, INDEX_CELL_STATE>((iRow, iState) => {
-                        m_dgvValues.Rows[iRow].Cells[(int)INDEX_CELL.STATE].Value = s_StateSources[(int)iState].m_Text;
-                        m_dgvValues.Rows[iRow].Cells[(int)INDEX_CELL.STATE].Style.BackColor = s_StateSources[(int)iState].m_Color;
-                    });
-
-                    if (m_dgvValues.InvokeRequired)
-                    {
-                        if (bLink == true)
-                        {
-                            m_dgvValues.Invoke(new Action(() => m_dgvValues.Rows[r].Cells[4].Value = "Да"));
-                            m_dgvValues.Invoke(new Action(() => m_dgvValues.Rows[r].Cells[4].Style.BackColor = System.Drawing.Color.White));
-                        }
-                        else
-                        {
-                            m_dgvValues.Invoke(new Action(() => m_dgvValues.Rows[r].Cells[4].Value = "Нет"));
-                            m_dgvValues.Invoke(new Action(() => m_dgvValues.Rows[r].Cells[4].Style.BackColor = System.Drawing.Color.OrangeRed));
-                        }
-                    }
-                    else
-                    {
-                        if (bLink == true)
-                        {
-                            m_dgvValues.Rows[r].Cells[4].Value = "Да";
-                            m_dgvValues.Rows[r].Cells[4].Style.BackColor = System.Drawing.Color.White;
-                        }
-                        else
-                        {
-                            m_dgvValues.Rows[r].Cells[4].Value = "Нет";
-                            m_dgvValues.Rows[r].Cells[4].Style.BackColor = System.Drawing.Color.OrangeRed;
-                        }
-                    }
+                        m_labelDescription.Text = name_shr;
                 }
 
                 /// <summary>
@@ -433,7 +681,7 @@ namespace StatisticDiagnostic
                 /// </summary>
                 /// <param name="sender">параметр</param>
                 /// <param name="e">событие</param>
-                private void m_arPanelsMODES_Cell(object sender, EventArgs e)
+                private void dgv_CellCancel(object sender, EventArgs e)
                 {
                     try {
                         if (m_dgvValues.SelectedCells.Count > 0)
@@ -441,75 +689,6 @@ namespace StatisticDiagnostic
                         else;
                     } catch {
                     }
-                }
-
-                /// <summary>
-                /// Выделение верного ПБР
-                /// </summary>
-                /// <param name="numR">номер строки</param>
-                private void paintPbr(int numR, bool bError)
-                {
-                    Color clrPbr = bError == true ? Color.Red : Color.Empty;
-
-                    if (m_dgvValues.InvokeRequired == true)
-                        m_dgvValues.Invoke(new Action(() => m_dgvValues.Rows[numR].Cells[1].Style.BackColor = Color.White));
-                    else
-                        m_dgvValues.Rows[numR].Cells[1].Style.BackColor = Color.White;
-                }
-
-                /// <summary>
-                /// Функция для нахождения ПБР на текущее время
-                /// </summary>
-                /// <returns>возвращает ПБР на текущее время</returns>
-                private string checkPBR()
-                {
-                    string m_etalon_pbr = string.Empty,
-                     m_DTMin = TimeZoneInfo.ConvertTimeBySystemTimeZoneId(DateTime.Now, TimeZoneInfo.Local.Id, "Russian Standard Time").ToString("mm"),
-                     m_DTHour = TimeZoneInfo.ConvertTimeBySystemTimeZoneId(DateTime.Now, TimeZoneInfo.Local.Id, "Russian Standard Time").ToString("HH");
-
-                    //if ((Convert.ToInt32(m_DTMin)) > 41)
-                    //{
-                    //    if ((Convert.ToInt32(m_DTHour)) % 2 == 0)
-                    //        m_etalon_pbr = "ПБР" + (Convert.ToInt32(m_DTHour) + 1);
-                    //    else
-                    //        m_etalon_pbr = "ПБР" + ((Convert.ToInt32(m_DTHour) + 2));
-
-                    //    return m_etalon_pbr;
-                    //}
-
-                    //else
-                    //{
-                    //if ((Convert.ToInt32(m_DTHour)) % 2 == 0)
-                    m_etalon_pbr = "ПБР" + (Convert.ToInt32(m_DTHour) + 1);
-                    //else
-                    //    m_etalon_pbr = "ПБР" + Convert.ToInt32(m_DTHour);
-
-                    return m_etalon_pbr;
-                    //}
-                }
-
-                /// <summary>
-                /// Форматирование даты
-                /// “HH:mm:ss.fff”
-                /// </summary>
-                /// <param name="datetime">дата/время</param>
-                /// <returns>отформатированная дата</returns>
-                private string formatTime(string datetime)
-                {
-                    DateTime result;
-                    string m_dt, m_dt2Time = DateTime.TryParse(datetime, out result).ToString();
-
-                    if (m_dt2Time != "False")
-                    {
-                        if (Convert.ToInt32(result.Day - DateTime.Now.Day) < 0)
-                            return m_dt = DateTime.Parse(datetime).ToString("dd.MM.yy HH:mm:ss");
-                        else
-                            return m_dt = DateTime.Parse(datetime).ToString("HH:mm:ss.fff");
-                    }
-                    else
-                        m_dt = datetime;
-
-                    return m_dt;
                 }
             }
         }

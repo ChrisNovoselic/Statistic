@@ -192,9 +192,9 @@ namespace StatisticDiagnostic
             this.SuspendLayout();
 
             this.Controls.Add(m_tecdb, 0, 0); this.SetColumnSpan(m_tecdb, 8); this.SetRowSpan(m_tecdb, 6);
-            this.Controls.Add(m_modesdb, 0, 6); this.SetColumnSpan(m_modesdb, 8); this.SetRowSpan(m_modesdb, 5);
-            this.Controls.Add(m_taskdb, 0, 11); this.SetColumnSpan(m_taskdb, 5); this.SetRowSpan(m_taskdb, 5);
-            this.Controls.Add(m_sizedb, 5, 11); this.SetColumnSpan(m_sizedb, 3); this.SetRowSpan(m_sizedb, 5);
+            this.Controls.Add(m_modesdb, 0, 6); this.SetColumnSpan(m_modesdb, 8); this.SetRowSpan(m_modesdb, 6);
+            this.Controls.Add(m_taskdb, 0, 12); this.SetColumnSpan(m_taskdb, 5); this.SetRowSpan(m_taskdb, 4);
+            this.Controls.Add(m_sizedb, 5, 12); this.SetColumnSpan(m_sizedb, 3); this.SetRowSpan(m_sizedb, 4);
 
             this.ResumeLayout();
 
@@ -202,42 +202,6 @@ namespace StatisticDiagnostic
         }
 
         #endregion
-
-        ///// <summary>
-        ///// Подпись к вложенной панели с задачами
-        ///// </summary>
-        //private Label Tasklabel;
-        ///// <summary>
-        ///// Подпись к вложенной панели с параметрами диагностирования источников данных для ТЭЦ
-        ///// </summary>
-        //private Label TEClabel;
-        ///// <summary>
-        ///// Подпись к вложенной панели с параметрами диагностирования сервисов Модес
-        ///// </summary>
-        //private Label Modeslabel;
-        ///// <summary>
-        ///// Подпись к вложенной панели с параметрами Баз Данных
-        ///// </summary>
-        //private Label SizeBDlabel;
-        ///// <summary>
-        ///// Панель для размещения групповых элементов интерфейса с пользователем
-        /////  с параметрами диагностирования источников данных для ТЭЦ
-        ///// </summary>
-        //private TableLayoutPanel TecTableLayoutPanel;
-        ///// <summary>
-        ///// Панель для размещения групповых элементов интерфейса с пользователем
-        /////  с параметрами диагностирования сервисов Модес
-        ///// </summary>
-        //private TableLayoutPanel ModesTableLayoutPanel;
-        ///// <summary>
-        ///// Панель для размещения групповых элементов интерфейса с пользователем
-        /////  с параметрами диагностирования сервисов Модес
-        ///// </summary>
-        //private TableLayoutPanel TaskTableLayoutPanel;
-        ///// <summary>
-        ///// Панель для размещения подписей для информационных окон
-        ///// </summary>
-        //private TableLayoutPanel LabelTableLayoutPanel;
     }
 
     /// <summary>
@@ -247,8 +211,8 @@ namespace StatisticDiagnostic
     public partial class PanelStatisticDiagnostic : PanelStatistic
     {
         private static DataTable m_tableSourceList = new DataTable();
-        private static DataTable m_tableGTPList = new DataTable();
-        private static DataTable m_tableTECList = new DataTable();
+        //private static DataTable m_tableGTPList = new DataTable();
+        //private static DataTable m_tableTECList = new DataTable();
         private static DataTable m_tableParamDiagnostic = new DataTable();
         /// <summary>
         /// Перечесления типов источников
@@ -259,6 +223,24 @@ namespace StatisticDiagnostic
             SIZEDB = 10,
             MODES = 200,
             TASK = 300
+        }        
+        /// <summary>
+        /// Структура для хранения получаемых значений из таблицы-результата запроса
+        /// </summary>
+        private struct Values
+        {
+            /// <summary>
+            /// Метка времени значения
+            /// </summary>
+            public DateTime m_dtValue;
+            /// <summary>
+            /// Значение одного из дианостических параметров
+            /// </summary>
+            public object m_value;
+
+            public string m_strLink;
+
+            public string m_name_shr;
         }
         /// <summary>
         /// экземпляр класса 
@@ -375,7 +357,7 @@ namespace StatisticDiagnostic
             }
 
             /// <summary>
-            /// 
+            /// Установить необходимые для работы соединения с БД
             /// </summary>
             public override void StartDbInterfaces()
             {
@@ -477,7 +459,10 @@ namespace StatisticDiagnostic
             public static int ListenerId { get { return _iListenerId; } }
 
             public bool IsRegisterConfogDb { get { return ListenerId > 0; } }
-
+            /// <summary>
+            /// Зарегистрировать(установить) временное соединение с БД конфигурации
+            /// </summary>
+            /// <param name="err">Признак ошибки при выполнении операции</param>
             public static void RegisterConfigDb(out int err)
             {
                 // зарегистрировать соединение/получить идентификатор соединения
@@ -485,7 +470,9 @@ namespace StatisticDiagnostic
 
                 _connConfigDb = DbSources.Sources().GetConnection(_iListenerId, out err);
             }
-
+            /// <summary>
+            /// Отменить регистрацию(разорвать) соединения с БД конфигурации
+            /// </summary>
             public static void UnregisterConfigDb()
             {
                 DbSources.Sources().UnRegister(ListenerId);
@@ -493,7 +480,11 @@ namespace StatisticDiagnostic
                 _connConfigDb = null;
                 _iListenerId = -1;
             }
-
+            /// <summary>
+            /// Возвратить таблицу с контролируемыми источниками данных
+            /// </summary>
+            /// <param name="err">Признак ошибки при выполнении операции</param>
+            /// <returns>Таблица с данными - результат запроса</returns>
             public DataTable GetDiagnosticSource(out int err)
             {
                 err = _connConfigDb == null ? -1 : 0;
@@ -503,7 +494,11 @@ namespace StatisticDiagnostic
                 else
                     return new DataTable();
             }
-
+            /// <summary>
+            /// Возвратить таблицу со всеми источниками данных
+            /// </summary>
+            /// <param name="err">Признак ошибки при выполнении операции</param>
+            /// <returns>Таблица с данными - результат запроса</returns>
             public DataTable GetSource(out int err)
             {
                 err = _connConfigDb == null ? -1 : 0;
@@ -513,17 +508,25 @@ namespace StatisticDiagnostic
                 else
                     return new DataTable();
             }
+            ///// <summary>
+            ///// Возвратить таблицу с перечнем ГТП
+            ///// </summary>
+            ///// <param name="err">Признак ошибки при выполнении операции</param>
+            ///// <returns>Таблица с данными - результат запроса</returns>
+            //public DataTable GetListGTP(out int err)
+            //{
+            //    err = _connConfigDb == null ? -1 : 0;
 
-            public DataTable GetListGTP(out int err)
-            {
-                err = _connConfigDb == null ? -1 : 0;
-
-                if (err == 0)
-                    return DbTSQLInterface.Select(ref _connConfigDb, "SELECT * FROM GTP_LIST", null, null, out err);
-                else
-                    return new DataTable();
-            }
-
+            //    if (err == 0)
+            //        return DbTSQLInterface.Select(ref _connConfigDb, "SELECT * FROM GTP_LIST", null, null, out err);
+            //    else
+            //        return new DataTable();
+            //}
+            /// <summary>
+            /// Возвратить таблицу с перечнем парметров дигностики
+            /// </summary>
+            /// <param name="err">Признак ошибки при выполнении операции</param>
+            /// <returns>Таблица с данными - результат запроса</returns>
             public DataTable GetDiagnosticParameter(out int err)
             {
                 err = _connConfigDb == null ? -1 : 0;
@@ -533,9 +536,15 @@ namespace StatisticDiagnostic
                 else
                     return new DataTable();
             }
-
+            /// <summary>
+            /// Фильтр для выборки только ТЭЦ (без ЛК)
+            /// </summary>
             private readonly int[] _filterListTEC;
-
+            /// <summary>
+            /// Возвратить таблицу с перечнем ТЭЦ
+            /// </summary>
+            /// <param name="err">Признак ошибки при выполнении операции</param>
+            /// <returns>Таблица с данными - результат запроса</returns>
             public DataTable GetDataTableTEC(out int err)
             {
                 err = _connConfigDb == null ? -1 : 0;
@@ -545,7 +554,11 @@ namespace StatisticDiagnostic
                 else
                     return new DataTable();
             }
-
+            /// <summary>
+            /// Возвратить список ТЭЦ
+            /// </summary>
+            /// <param name="err">Признак ошибки при выполнении операции</param>
+            /// <returns>Список ТЭЦ - результат обработки запроса</returns>
             public List<TEC> GetListTEC(out int err)
             {
                 err = _connConfigDb == null ? -1 : 0;
@@ -555,7 +568,10 @@ namespace StatisticDiagnostic
                 else
                     return new List<TEC> ();
             }
-
+            /// <summary>
+            /// Изменить идентификатор активного источника данных (СОТИАССО)
+            /// </summary>
+            /// <param name="ev">Параметры для изменения, например новый идентификатор источника данных</param>
             public void UpdateSourceId(PanelContainerTec.EventSourceIdChangedArgs ev)
             {
                 int err = -1;
@@ -679,27 +695,32 @@ namespace StatisticDiagnostic
         private int initialize()
         {
             int err = -1; //Признак выполнения метода/функции
+            List<TEC> listTEC;
 
             HDataSource.RegisterConfigDb(out err);
 
             // зарегистрировать синхронное соединение с БД_конфигурации
             m_DataSource = new HDataSource();
 
+            listTEC = m_DataSource.GetListTEC(out err);
+
             m_listDiagnosticSource = new ListDiagnosticSource(m_DataSource.GetDiagnosticSource(out err));
 
             m_tableSourceList = m_DataSource.GetSource(out err);
 
-            m_tableGTPList = m_DataSource.GetListGTP(out err);
+            //m_tableGTPList = m_DataSource.GetListGTP(out err);
 
             m_tableParamDiagnostic = m_DataSource.GetDiagnosticParameter (out err);
             m_listDiagnosticParameter = new ListDiagnosticParameter(m_tableParamDiagnostic);
 
-            m_tableTECList = m_DataSource.GetDataTableTEC(out err);
+            //m_tableTECList = m_DataSource.GetDataTableTEC(out err);
 
-            m_tecdb = new PanelContainerTec(m_DataSource.GetListTEC(out err)
+            m_tecdb = new PanelContainerTec(listTEC
                 , m_listDiagnosticParameter.FindAll(item => { return item.m_id_container.Equals(ID_CONTAINER_PANEL.TEC.ToString()); })
                 , panelContainerTec_onSourceIdChanged);
-            m_modesdb = new PanelContainerModes(m_listDiagnosticSource);
+            m_modesdb = new PanelContainerModes(listTEC
+                , m_listDiagnosticParameter.FindAll(item => { return item.m_id_container.Equals(ID_CONTAINER_PANEL.MODES.ToString()); })
+                , m_listDiagnosticSource);
             m_taskdb = new PanelTask();
             m_sizedb = new SizeDb(m_listDiagnosticSource);
 
@@ -712,6 +733,11 @@ namespace StatisticDiagnostic
             return err;
         }
 
+        /// <summary>
+        /// Делегат для изменения идентификатора источника данных
+        /// </summary>
+        /// <param name="obj">Объект в контексте которого был вызван делегат</param>
+        /// <param name="ev">Параметры для изменения идентикатора источника данных</param>
         private void panelContainerTec_onSourceIdChanged(object obj, PanelContainerTec.EventSourceIdChangedArgs ev)
         {
             PanelContainerTec panelContainerTec = obj as PanelContainerTec;
@@ -730,16 +756,6 @@ namespace StatisticDiagnostic
         /// <param name="table">Результат выполнения запроса - таблица с данными</param>
         private void dataSource_OnEvtRecievedTable(object table)
         {
-            //m_tableSourceData = (DataTable)table;
-            //// обновить значения
-            //try {
-            //    m_tecdb.Update();
-            //    m_taskdb.Update();
-            //    m_modesdb.Update();
-            //    m_sizedb.LoadValues();
-            //} catch (Exception e) {
-            //    Logging.Logg().Exception(e, @"PanelStatisticDiagnostic::_OnEvtRecievedTable () - ...", Logging.INDEX_MESSAGE.NOT_SET);
-            //}
         }
 
         /// <summary>
@@ -754,10 +770,10 @@ namespace StatisticDiagnostic
         /// <summary>
         /// Получение серверного времени
         /// </summary>
-        /// <param name="dtTime"></param>
-        public static void GetTimeServer(DateTime dtTime)
+        /// <param name="dtTime">Дата/время, полученное от сервера (MS SQLServer, T-SQL  запрос)</param>
+        public static void GetTimeServer(DateTime serverTime)
         {
-            SERVER_TIME = dtTime;
+            SERVER_TIME = serverTime;
         }
 
         /// <summary>
@@ -820,6 +836,10 @@ namespace StatisticDiagnostic
                         , m_description = r.Field<string>(@"DESCRIPTION").Trim()
                     });
             }
+
+            public ListDiagnosticSource(IEnumerable<DIAGNOSTIC_SOURCE> list) : base (list) { }
+
+            public ListDiagnosticSource() : base() { }
         }
 
         private ListDiagnosticSource m_listDiagnosticSource;        
@@ -879,6 +899,10 @@ namespace StatisticDiagnostic
                         , m_source_data = r.Field<string>(@"SOURCE_DATA")?.Trim()
                     });
             }
+
+            public ListDiagnosticParameter(IEnumerable<DIAGNOSTIC_PARAMETER> list) : base(list) { }
+
+            public ListDiagnosticParameter() : base() { }
         }
 
         private ListDiagnosticParameter m_listDiagnosticParameter;
