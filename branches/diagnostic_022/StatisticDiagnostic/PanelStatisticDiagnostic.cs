@@ -283,19 +283,21 @@ namespace StatisticDiagnostic
         /// </summary>
         private PanelContainerTec m_tecdb;
         
-        private struct STATE_SOURCE
+        private struct CELL_STATE
         {
             public string m_Text;
 
             public Color m_Color;
         }
 
-        private enum INDEX_STATE : short { ERROR = 0, OK, UNKNOWN }
+        private enum INDEX_CELL_STATE : short { OK = 0, WARNING, ERROR, UNKNOWN, DISABLED }
 
-        private static STATE_SOURCE[] s_StateSources = new STATE_SOURCE[] {
-            new STATE_SOURCE() { m_Text = @"Нет", m_Color = Color.Red }
-            , new STATE_SOURCE() { m_Text = @"Да", m_Color = Color.White }
-            , new STATE_SOURCE() { m_Text = @"н/д", m_Color = Color.LightGray }
+        private static CELL_STATE[] s_StateSources = new CELL_STATE[] {
+            new CELL_STATE() { m_Text = @"Да", m_Color = Color.White }
+            , new CELL_STATE() { m_Text = string.Empty, m_Color = Color.Yellow }
+            , new CELL_STATE() { m_Text = @"Нет", m_Color = Color.Red }
+            , new CELL_STATE() { m_Text = @"н/д", m_Color = Color.LightGray }
+            , new CELL_STATE() { m_Text = string.Empty, m_Color = Color.DarkGray }
         };
         /// <summary>
         /// ???

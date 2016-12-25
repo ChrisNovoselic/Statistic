@@ -395,7 +395,7 @@ namespace StatisticDiagnostic
                 /// <param name="r">номер строки</param>
                 private void cellsPing(bool bLink, int r)
                 {
-                    Action<int, INDEX_STATE> setState = new Action<int, INDEX_STATE>((iRow, iState) => {
+                    Action<int, INDEX_CELL_STATE> setState = new Action<int, INDEX_CELL_STATE>((iRow, iState) => {
                         m_dgvValues.Rows[iRow].Cells[(int)INDEX_CELL.STATE].Value = s_StateSources[(int)iState].m_Text;
                         m_dgvValues.Rows[iRow].Cells[(int)INDEX_CELL.STATE].Style.BackColor = s_StateSources[(int)iState].m_Color;
                     });

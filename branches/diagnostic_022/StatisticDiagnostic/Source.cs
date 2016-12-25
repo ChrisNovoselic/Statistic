@@ -382,12 +382,12 @@ namespace StatisticDiagnostic
                 private static Dictionary<KEY_TIMEZONE_SOURCE, TimeZoneInfo> s_dictTimeZoneSource = new Dictionary<KEY_TIMEZONE_SOURCE, TimeZoneInfo>() {
                     // ТЭЦ Новосибирского района
                     { new KEY_TIMEZONE_SOURCE () { m_ConnSettType = CONN_SETT_TYPE.DATA_AISKUE, m_tecType = TEC.TEC_TYPE.COMMON }, TimeZoneInfo.FindSystemTimeZoneById(@"Russian Standard Time") } 
-                    , { new KEY_TIMEZONE_SOURCE () { m_ConnSettType = CONN_SETT_TYPE.DATA_SOTIASSO, m_tecType = TEC.TEC_TYPE.COMMON }, TimeZoneInfo.FindSystemTimeZoneById(@"Central Asia Standard Time") }
+                    , { new KEY_TIMEZONE_SOURCE () { m_ConnSettType = CONN_SETT_TYPE.DATA_SOTIASSO, m_tecType = TEC.TEC_TYPE.COMMON }, TimeZoneInfo.Utc }
                     , { new KEY_TIMEZONE_SOURCE () { m_ConnSettType = CONN_SETT_TYPE.DATA_VZLET, m_tecType = TEC.TEC_TYPE.COMMON }, TimeZoneInfo.FindSystemTimeZoneById(@"SE Asia Standard Time") }
                     // Бийская ТЭЦ
                     , { new KEY_TIMEZONE_SOURCE () { m_ConnSettType = CONN_SETT_TYPE.DATA_AISKUE, m_tecType = TEC.TEC_TYPE.BIYSK }, TimeZoneInfo.FindSystemTimeZoneById(@"Russian Standard Time") }
-                    , { new KEY_TIMEZONE_SOURCE () { m_ConnSettType = CONN_SETT_TYPE.DATA_SOTIASSO, m_tecType = TEC.TEC_TYPE.BIYSK }, TimeZoneInfo.FindSystemTimeZoneById(@"Central Asia Standard Time") }
-                    , { new KEY_TIMEZONE_SOURCE () { m_ConnSettType = CONN_SETT_TYPE.DATA_VZLET, m_tecType = TEC.TEC_TYPE.BIYSK }, TimeZoneInfo.Local }
+                    , { new KEY_TIMEZONE_SOURCE () { m_ConnSettType = CONN_SETT_TYPE.DATA_SOTIASSO, m_tecType = TEC.TEC_TYPE.BIYSK }, TimeZoneInfo.Utc/*@"Central Asia Standard Time"*/ }
+                    , { new KEY_TIMEZONE_SOURCE () { m_ConnSettType = CONN_SETT_TYPE.DATA_VZLET, m_tecType = TEC.TEC_TYPE.BIYSK }, null }
                 };
 
                 /// <summary>
@@ -418,7 +418,7 @@ namespace StatisticDiagnostic
                     /// <summary>
                     /// Перечисление - индексы для доступа к признакам по управлению отображением строки
                     /// </summary>
-                    private enum INDEX_RULE : byte { ACTIVATED }
+                    private enum INDEX_RULE : byte { ACTIVATED, ENABLED }
                     /// <summary>
                     /// См. описание типа поля
                     /// </summary>
@@ -524,22 +524,20 @@ namespace StatisticDiagnostic
                             return tecRes;
                         }
                     }
-
-                    public enum ENABLE_VALUE : short { UNKNOWN = -1, FALSE, TRUE, OUTDATE }
-
-                    private ENABLE_VALUE _enabled;
                     /// <summary>
                     /// Признак возможности использования источника данных
                     /// </summary>
-                    public ENABLE_VALUE Enabled
+                    public bool Enabled
                     {
-                        get { return _enabled; }
+                        get { return _markRule.IsMarked((int)INDEX_RULE.ENABLED); }
 
                         set {
                             // выбрать цвет для ячейки
-                            Color clrCell = value == ENABLE_VALUE.TRUE ? Color.Empty : Color.LightGray;
+                            Color clrCell = (value == true) ?
+                                s_StateSources[(int)INDEX_CELL_STATE.OK].m_Color :
+                                    s_StateSources[(int)INDEX_CELL_STATE.DISABLED].m_Color;
                             // установить признак включения(доступности)
-                            _enabled = value;
+                            _markRule.Set((int)INDEX_RULE.ENABLED, value);
 
                             foreach (INDEX_CELL i in Enum.GetValues(typeof(INDEX_CELL))) {
                                 switch (i) {
@@ -558,7 +556,7 @@ namespace StatisticDiagnostic
                                 // установить цвет ячейки
                                 Cells[(int)i].Style.BackColor = clrCell;
                                 // при необходимости, удалить контекстное меню
-                                if ((!(value == ENABLE_VALUE.TRUE))
+                                if ((!(value == false))
                                     && (!(ContextMenuStrip == null)))
                                     ContextMenuStrip = null;
                                 else
@@ -591,24 +589,29 @@ namespace StatisticDiagnostic
                     /// Идентификатор источника данных
                     /// </summary>
                     public int SourceID { get { return m_source_id; } }
-
+                    /// <summary>
+                    /// Признак принадлежности строки к группе источников данных СОТИАССО - TorIs
+                    /// </summary>
                     private bool isSourceSOTIASSOToris {
                         get {
                             return (SourceID % 10 == (int)TM.TM1T)
                                 || (SourceID % 10 == (int)TM.TM2T);
                         }
                     }
-
+                    /// <summary>
+                    /// Установить значения (отобразить) для ячеек строки
+                    /// </summary>
+                    /// <param name="values">Значения параметров для отображения</param>
                     public void SetValueCells(object[]values)
                     {
                         object value;
-                        INDEX_STATE indxState = INDEX_STATE.ERROR;
+                        INDEX_CELL_STATE indxState = INDEX_CELL_STATE.ERROR;
                         Color clrCell = Color.Empty;
-                        ENABLE_VALUE enableValuePrevious = Enabled
-                            , enableValueCurrrent = ENABLE_VALUE.UNKNOWN;
+                        bool enableValuePrevious = Enabled
+                            , enableValueCurrrent = false;
 
-                        Func <ENABLE_VALUE> isEnabled = new Func<ENABLE_VALUE> (() => {
-                            ENABLE_VALUE enableValueRes = ENABLE_VALUE.TRUE;
+                        Func<bool> isEnabled = new Func<bool> (() => {
+                            bool enableValueRes = true;
 
                             foreach (INDEX_CELL i in Enum.GetValues(typeof(INDEX_CELL))) {
                                 switch (i) {
@@ -616,22 +619,21 @@ namespace StatisticDiagnostic
                                     case INDEX_CELL.COUNT:
                                         continue;
                                         break;
+                                    case INDEX_CELL.DATETIME_VALUE:
                                     case INDEX_CELL.DATETIME_VERIFICATION:
                                         enableValueRes = ((!(values[(int)i] == null))
                                             && ((values[(int)i] is DateTime) == true)) ?
-                                                (isRelevanceDateTime(i, (DateTime)values[(int)i]) == true) ?
-                                                    ENABLE_VALUE.TRUE :
-                                                        ENABLE_VALUE.OUTDATE :
-                                                            ENABLE_VALUE.FALSE;
+                                                true :
+                                                    false;
                                         break;
                                     default:
-                                        enableValueRes = (!(values[(int)i] == null) == true) ?
-                                            ENABLE_VALUE.TRUE :
-                                                ENABLE_VALUE.FALSE;
+                                        enableValueRes = ((!(values[(int)i] == null)) == true) ?
+                                            true :
+                                                false;
                                         break;
                                 }
 
-                                if (!(enableValueRes == ENABLE_VALUE.TRUE))
+                                if (!(enableValueRes == false))
                                     break;
                                 else
                                     ;
@@ -640,6 +642,15 @@ namespace StatisticDiagnostic
                             return enableValueRes;
                         });
 
+                        // корректировать часовой пояс значения с датой временем
+                        if ((!(values[(int)INDEX_CELL.DATETIME_VALUE] == null))
+                            && ((values[(int)INDEX_CELL.DATETIME_VALUE] is DateTime) == true))
+                            values[(int)INDEX_CELL.DATETIME_VALUE] = (DateTime)values[(int)INDEX_CELL.DATETIME_VALUE] +
+                                (TimeZoneInfo.FindSystemTimeZoneById(@"Russian Standard Time").BaseUtcOffset -
+                                    s_dictTimeZoneSource[new KEY_TIMEZONE_SOURCE() { m_ConnSettType = SourceType, m_tecType = _tec.Type }].BaseUtcOffset);
+                        else
+                            ;
+
                         enableValueCurrrent = isEnabled();
 
                         if (!(enableValuePrevious == enableValueCurrrent))
@@ -647,10 +658,9 @@ namespace StatisticDiagnostic
                         else
                             ;
 
-                        if ((Enabled == ENABLE_VALUE.TRUE)
-                            || (Enabled == ENABLE_VALUE.OUTDATE))
+                        if (Enabled == true)
                             foreach (INDEX_CELL i in Enum.GetValues(typeof(INDEX_CELL))) {
-                                indxState = INDEX_STATE.ERROR;
+                                indxState = INDEX_CELL_STATE.ERROR;
                                 clrCell = Color.Empty;
 
                                 switch (i) {
@@ -660,10 +670,10 @@ namespace StatisticDiagnostic
                                         break;
                                     case INDEX_CELL.STATE:
                                         indxState = ((string)values[(int)i])?.Equals(1.ToString()) == true ?
-                                            INDEX_STATE.OK :
+                                            INDEX_CELL_STATE.OK :
                                                 isSourceSOTIASSOToris == false ?
-                                                    INDEX_STATE.ERROR :
-                                                        INDEX_STATE.UNKNOWN;
+                                                    INDEX_CELL_STATE.ERROR :
+                                                        INDEX_CELL_STATE.UNKNOWN;
                                         value = s_StateSources[(int)indxState].m_Text;
                                         clrCell = s_StateSources[(int)indxState].m_Color;
                                         break;
@@ -672,6 +682,7 @@ namespace StatisticDiagnostic
                                         value = values[(int)i] is DateTime ?
                                             formatDateTime (i, (DateTime)values[(int)i]) :
                                                 values[(int)i];
+                                        clrCell = s_StateSources[(int)isRelevanceDateTime(i, (DateTime)values[(int)i])].m_Color;
                                         break;
                                     default:
                                         value = values[(int)i];
@@ -680,30 +691,20 @@ namespace StatisticDiagnostic
 
                                 Cells[(int)i].Value = value;
                                 // изменить цвет ячейки
-                                if (Enabled == ENABLE_VALUE.TRUE)
-                                // только если источник включен
-                                    Cells[(int)i].Style.BackColor = clrCell;
-                                else
-                                    ;
+                                Cells[(int)i].Style.BackColor = clrCell;
                             } // INDEX_CELL i in Enum.GetValues(typeof(INDEX_CELL))
                         else
                             ;
                     }
-
+                    /// <summary>
+                    /// Форматировать значение даты времени
+                    /// </summary>
+                    /// <param name="indxCell">Номер(индекс) столбца</param>
+                    /// <param name="dtFormated">Значение даты/времени для форматирования</param>
+                    /// <returns>Строка с датой/временем</returns>
                     private string formatDateTime(INDEX_CELL indxCell, DateTime dtFormated)
                     {
                         string strRes = string.Empty;
-
-                        KEY_TIMEZONE_SOURCE keyTimeZoneSource;
-                        TimeZoneInfo timeZoneInfo;
-
-                        if (indxCell == INDEX_CELL.DATETIME_VALUE) {
-                            keyTimeZoneSource = new KEY_TIMEZONE_SOURCE() { m_ConnSettType = SourceType, m_tecType = _tec.Type };
-                            timeZoneInfo = s_dictTimeZoneSource[keyTimeZoneSource];
-
-                            dtFormated = TimeZoneInfo.ConvertTime(dtFormated, timeZoneInfo);
-                        } else
-                            ;
 
                         if (SERVER_TIME.Date > dtFormated.Date)
                             strRes = dtFormated.ToString(@"dd.MM.yyyy HH:mm:ss");
@@ -712,20 +713,36 @@ namespace StatisticDiagnostic
 
                         return strRes;
                     }
-
-                    private bool isRelevanceDateTime(INDEX_CELL indxCell, DateTime dtChecked)
+                    /// <summary>
+                    /// Признак актуальности даты/времени
+                    /// </summary>
+                    /// <param name="indxCell">Номер(индекс) столбца</param>
+                    /// <param name="dtChecked">Значение даты/времени для проверки</param>
+                    /// <returns>Признак актуальности</returns>
+                    private INDEX_CELL_STATE isRelevanceDateTime(INDEX_CELL indxCell, DateTime dtChecked)
                     {
-                        bool bRes = true;
+                        INDEX_CELL_STATE stateRes = INDEX_CELL_STATE.ERROR;
 
-                        switch (indxCell) {
-                            case INDEX_CELL.DATETIME_VERIFICATION:
-                                bRes = !((SERVER_TIME - dtChecked).TotalHours > 1);
-                                break;
-                            default:
-                                break;
-                        }
+                        TimeSpan tsDifference = SERVER_TIME - dtChecked;
 
-                        return bRes;
+                        if (tsDifference.TotalSeconds > 0)
+                            switch (indxCell) {
+                                case INDEX_CELL.DATETIME_VALUE:
+                                case INDEX_CELL.DATETIME_VERIFICATION:
+                                    stateRes = (tsDifference.TotalMinutes > 3) ?
+                                        (tsDifference.TotalMinutes > 9) ?
+                                            INDEX_CELL_STATE.ERROR :
+                                                INDEX_CELL_STATE.WARNING :
+                                                    INDEX_CELL_STATE.OK;
+                                    break;
+                                default:
+                                    break;
+                            }
+                        else
+                        // оставить 'ERROR'
+                            ;
+
+                        return stateRes;
                     }
                 }
 
@@ -780,7 +797,7 @@ namespace StatisticDiagnostic
                         // неизменямое наименование источника данных
                         (m_dgvValues.Rows[indxNewRow] as DataGridViewSourceRow).Name = item.m_name_shr;
                         // исходное состояние строки - источник данных отключен
-                        (m_dgvValues.Rows[indxNewRow] as DataGridViewSourceRow).Enabled = DataGridViewSourceRow.ENABLE_VALUE.FALSE;
+                        (m_dgvValues.Rows[indxNewRow] as DataGridViewSourceRow).Enabled = false;
                     });
                 }
 
@@ -916,7 +933,7 @@ namespace StatisticDiagnostic
                     if ((e.Button == MouseButtons.Right) && (e.RowIndex > -1))
                     // только по нажатию правой кнопки и выбранной строки
                         if (((m_dgvValues.Rows[e.RowIndex] as DataGridViewSourceRow).SourceType == CONN_SETT_TYPE.DATA_SOTIASSO)
-                            && ((m_dgvValues.Rows[e.RowIndex] as DataGridViewSourceRow).Enabled == DataGridViewSourceRow.ENABLE_VALUE.TRUE)
+                            && ((m_dgvValues.Rows[e.RowIndex] as DataGridViewSourceRow).Enabled == true)
                             && (AlternativeSourceIdSOTIASSO.Count > 1)) {
                         //?? только для источников СОТИАССО И включенных И наличия альтернативы
                             initContextMenu((m_dgvValues.Rows[e.RowIndex] as DataGridViewSourceRow).Activated == true);
@@ -1108,14 +1125,17 @@ namespace StatisticDiagnostic
                             break;
                     }
                 }
-
+                /// <summary>
+                /// Список идентификаторов  - источников данных СОТИАССО доступных для выбоа
+                ///  (каждый их списка альтернатива друг другу)
+                /// </summary>
                 private List<int> AlternativeSourceIdSOTIASSO {
                     get {
                         List<int> listRes = new List<int>();
 
                         foreach (DataGridViewSourceRow r in m_dgvValues.Rows)
                             if ((r.SourceType == CONN_SETT_TYPE.DATA_SOTIASSO)
-                                && (r.Enabled == DataGridViewSourceRow.ENABLE_VALUE.TRUE)) {
+                                && (r.Enabled == true)) {
                             // только если: СОТИАССО И включен
                                 listRes.Add(r.SourceID);
                             }
@@ -1126,6 +1146,10 @@ namespace StatisticDiagnostic
                     }
                 }
 
+                /// <summary>
+                /// Визуализация активных источников данных СОТИАССО
+                /// </summary>
+                /// <param name="values">Значения параметров, характеризующие состояние источников данных</param>
                 private void activateSourceSOTIASSO(Dictionary<KEY_DIAGNOSTIC_PARAMETER, Values> values)
                 {
                     bool bChangeActivated = false;
