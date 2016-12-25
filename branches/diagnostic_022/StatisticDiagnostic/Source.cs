@@ -49,12 +49,20 @@ namespace StatisticDiagnostic
 
             private struct KEY_DIAGNOSTIC_PARAMETER
             {
+                /// <summary>
+                /// Перечисление - типов значений
+                /// </summary>
                 public enum ID_UNIT : short { UNKNOWN = -1, FLOAT = 12, DATETIME = 13 }
+                /// <summary>
+                /// Словарь с информацией о CLR-типах значений 
+                /// </summary>
                 public static Dictionary<ID_UNIT, Type> TypeOf = new Dictionary<ID_UNIT, Type> () {
                     { ID_UNIT.FLOAT, typeof(float) }
                     , { ID_UNIT.DATETIME, typeof(DateTime) }
                 };
-
+                /// <summary>
+                /// Идентификаторы значений из БД конфигурации, таблица [DIAGNOSTIC_PARAM].[ID]
+                /// </summary>
                 public enum ID_VALUE : short { UNKNOWN = -1
                     , AIISKUE_VALUE = 1, AIISKUE_DATETIME = 4
                     , SOTIASSO_1_VALUE = 2, SOTIASSO_2_VALUE, SOTIASSO_1_DATETIME = 5, SOTIASSO_2_DATETIME
@@ -176,9 +184,12 @@ namespace StatisticDiagnostic
             /// </summary>
             /// <param name="listTEC">Список ТЭЦ</param>
             /// <param name="listDiagnosticParameter">Список диагностических параметров</param>
-            public PanelContainerTec(List<TEC> listTEC, List<DIAGNOSTIC_PARAMETER> listDiagnosticParameter) : base(COUNT_LAYOUT_COLUMN, COUNT_LAYOUT_ROW)
+            public PanelContainerTec(List<TEC> listTEC
+                , List<DIAGNOSTIC_PARAMETER> listDiagnosticParameter
+                , EventSourceIdChangedHandler fSourceIdChangedHandler)
+                    : base(COUNT_LAYOUT_COLUMN, COUNT_LAYOUT_ROW)
             {
-                initialize(listTEC, listDiagnosticParameter);
+                initialize(listTEC, listDiagnosticParameter, fSourceIdChangedHandler);
             }
             /// <summary>
             /// Конструктор дополнительный (с парметрами)
@@ -186,9 +197,13 @@ namespace StatisticDiagnostic
             /// <param name="container">Родительскимй объект</param>
             /// <param name="listTEC">Список ТЭЦ</param>
             /// <param name="listDiagnosticParameter">Список диагностических параметров</param>
-            public PanelContainerTec(IContainer container, List<TEC> listTEC, List<DIAGNOSTIC_PARAMETER> listDiagnosticParameter) : base(container, COUNT_LAYOUT_COLUMN, COUNT_LAYOUT_ROW)
+            public PanelContainerTec(IContainer container
+                , List<TEC> listTEC
+                , List<DIAGNOSTIC_PARAMETER> listDiagnosticParameter
+                , EventSourceIdChangedHandler fSourceIdChangedHandler)
+                    : base(container, COUNT_LAYOUT_COLUMN, COUNT_LAYOUT_ROW)
             {
-                initialize(listTEC, listDiagnosticParameter);
+                initialize(listTEC, listDiagnosticParameter, fSourceIdChangedHandler);
             }
             /// <summary>
             /// Инициализация, размещение дочерних элементов управления
@@ -217,8 +232,15 @@ namespace StatisticDiagnostic
             /// </summary>
             /// <param name="listTEC">Список ТЭЦ</param>
             /// <param name="listDiagPar">Список параметров диагностики</param>
-            private void initialize(List<TEC> listTEC, List<DIAGNOSTIC_PARAMETER> listDiagPar/*, List<DIAGNOSTIC_SOURCE> listDiagSrc*/)
+            private void initialize(List<TEC> listTEC
+                , List<DIAGNOSTIC_PARAMETER> listDiagPar
+                , EventSourceIdChangedHandler fSourceIdChangedHandler
+                /*, List<DIAGNOSTIC_SOURCE> listDiagSrc*/
+                )
             {
+                //foreach (TimeZoneInfo tzi in TimeZoneInfo.GetSystemTimeZones())
+                //    System.Diagnostics.Debug.WriteLine(string.Format(@"{0} --- {1}", tzi.Id, tzi.BaseUtcOffset.ToString()));
+
                 IEnumerable<DIAGNOSTIC_PARAMETER> par = listDiagPar
                     .GroupBy(item => item.m_name_shr)
                     .Select(group => group.First());
@@ -234,7 +256,11 @@ namespace StatisticDiagnostic
                     this.Controls.Add(m_arPanels[i], (i + 0) % COUNT_LAYOUT_COLUMN, (i + 0) / COUNT_LAYOUT_COLUMN);
                     //this.SetColumnSpan(m_arPanels[i], 1);
                     //this.SetRowSpan(m_arPanels[i], 1);
+
+                    m_arPanels[i].EventSourceIdChanged += new EventSourceIdChangedHandler(panelTec_onSourceIdChanged);
                 }
+
+                delegateSourceIdChanged = fSourceIdChangedHandler;
 
                 m_semUpdateHandler = new Semaphore(1, 1);
             }
@@ -271,7 +297,15 @@ namespace StatisticDiagnostic
                     ;
             }
 
+            /// <summary>
+            /// Объект синхронизации при обработке события обновления дочерних панелей
+            /// </summary>
             private Semaphore m_semUpdateHandler;
+
+            private void panelTec_onSourceIdChanged(object obj, EventSourceIdChangedArgs ev)
+            {
+                delegateSourceIdChanged?.Invoke(this, ev);
+            }
 
             /// <summary>
             /// Обработчик события панели-родителя - обновление значений
@@ -292,6 +326,28 @@ namespace StatisticDiagnostic
                 m_semUpdateHandler.Release(1);
             }
 
+            public class EventSourceIdChangedArgs : EventArgs
+            {
+                public TEC m_tec;
+
+                public CONN_SETT_TYPE m_connSettType;
+
+                public int m_iNewSourceId;
+
+                public EventSourceIdChangedArgs(object obj, CONN_SETT_TYPE connSettType, int iNewSourceId)
+                {
+                    m_tec = (TEC)(obj as PanelTec).Tag;
+
+                    m_connSettType = connSettType;
+
+                    m_iNewSourceId = iNewSourceId;
+                }
+            }
+
+            public delegate void EventSourceIdChangedHandler(object obj, EventSourceIdChangedArgs ev);
+
+            public EventSourceIdChangedHandler delegateSourceIdChanged;
+
             /// <summary>
             /// Класс для описания элемента панели с информацией
             /// по дианостированию работоспособности 
@@ -311,12 +367,27 @@ namespace StatisticDiagnostic
                 private enum INDEX_CONTEXTMENU_ITEM : short { ACTIVATED = 0, DEACTIVATED }
 
                 /// <summary>
+                /// Ключ для словаря с часовыми поясами для источников данных
+                /// </summary>
+                private struct KEY_TIMEZONE_SOURCE
+                {
+                    public CONN_SETT_TYPE m_ConnSettType;
+
+                    public TEC.TEC_TYPE m_tecType;
+                }
+
+                /// <summary>
                 /// Словарь с параметрами часового пояса известных источников данных
                 /// </summary>
-                private static Dictionary<CONN_SETT_TYPE, TimeZoneInfo> m_dictTimeZoneSource = new Dictionary<CONN_SETT_TYPE, TimeZoneInfo>() {
-                    { CONN_SETT_TYPE.DATA_AISKUE, TimeZoneInfo.FindSystemTimeZoneById(@"Russian Standard Time") }
-                    , { CONN_SETT_TYPE.DATA_SOTIASSO, TimeZoneInfo.Utc }
-                    , { CONN_SETT_TYPE.DATA_VZLET, TimeZoneInfo.FindSystemTimeZoneById(@"Central Asia Standard Time") }
+                private static Dictionary<KEY_TIMEZONE_SOURCE, TimeZoneInfo> s_dictTimeZoneSource = new Dictionary<KEY_TIMEZONE_SOURCE, TimeZoneInfo>() {
+                    // ТЭЦ Новосибирского района
+                    { new KEY_TIMEZONE_SOURCE () { m_ConnSettType = CONN_SETT_TYPE.DATA_AISKUE, m_tecType = TEC.TEC_TYPE.COMMON }, TimeZoneInfo.FindSystemTimeZoneById(@"Russian Standard Time") } 
+                    , { new KEY_TIMEZONE_SOURCE () { m_ConnSettType = CONN_SETT_TYPE.DATA_SOTIASSO, m_tecType = TEC.TEC_TYPE.COMMON }, TimeZoneInfo.FindSystemTimeZoneById(@"Central Asia Standard Time") }
+                    , { new KEY_TIMEZONE_SOURCE () { m_ConnSettType = CONN_SETT_TYPE.DATA_VZLET, m_tecType = TEC.TEC_TYPE.COMMON }, TimeZoneInfo.FindSystemTimeZoneById(@"SE Asia Standard Time") }
+                    // Бийская ТЭЦ
+                    , { new KEY_TIMEZONE_SOURCE () { m_ConnSettType = CONN_SETT_TYPE.DATA_AISKUE, m_tecType = TEC.TEC_TYPE.BIYSK }, TimeZoneInfo.FindSystemTimeZoneById(@"Russian Standard Time") }
+                    , { new KEY_TIMEZONE_SOURCE () { m_ConnSettType = CONN_SETT_TYPE.DATA_SOTIASSO, m_tecType = TEC.TEC_TYPE.BIYSK }, TimeZoneInfo.FindSystemTimeZoneById(@"Central Asia Standard Time") }
+                    , { new KEY_TIMEZONE_SOURCE () { m_ConnSettType = CONN_SETT_TYPE.DATA_VZLET, m_tecType = TEC.TEC_TYPE.BIYSK }, TimeZoneInfo.Local }
                 };
 
                 /// <summary>
@@ -347,7 +418,7 @@ namespace StatisticDiagnostic
                     /// <summary>
                     /// Перечисление - индексы для доступа к признакам по управлению отображением строки
                     /// </summary>
-                    private enum INDEX_RULE : byte { ENABLED, ACTIVATED }
+                    private enum INDEX_RULE : byte { ACTIVATED }
                     /// <summary>
                     /// См. описание типа поля
                     /// </summary>
@@ -453,14 +524,47 @@ namespace StatisticDiagnostic
                             return tecRes;
                         }
                     }
+
+                    public enum ENABLE_VALUE : short { UNKNOWN = -1, FALSE, TRUE, OUTDATE }
+
+                    private ENABLE_VALUE _enabled;
                     /// <summary>
                     /// Признак возможности использования источника данных
                     /// </summary>
-                    public bool Enabled
+                    public ENABLE_VALUE Enabled
                     {
-                        get { return _markRule.IsMarked((int)INDEX_RULE.ENABLED); }
+                        get { return _enabled; }
 
-                        set { _markRule.Set((int)INDEX_RULE.ENABLED, value); }
+                        set {
+                            // выбрать цвет для ячейки
+                            Color clrCell = value == ENABLE_VALUE.TRUE ? Color.Empty : Color.LightGray;
+                            // установить признак включения(доступности)
+                            _enabled = value;
+
+                            foreach (INDEX_CELL i in Enum.GetValues(typeof(INDEX_CELL))) {
+                                switch (i) {
+                                    case INDEX_CELL.COUNT:
+                                        continue;
+                                        break;
+                                    case INDEX_CELL.NAME_SOURCE:
+                                        if (Activated == true)
+                                            continue;
+                                        else
+                                            ;
+                                        break;
+                                    default:
+                                        break;
+                                }
+                                // установить цвет ячейки
+                                Cells[(int)i].Style.BackColor = clrCell;
+                                // при необходимости, удалить контекстное меню
+                                if ((!(value == ENABLE_VALUE.TRUE))
+                                    && (!(ContextMenuStrip == null)))
+                                    ContextMenuStrip = null;
+                                else
+                                    ;
+                            }
+                        }
                     }
                     /// <summary>
                     /// Признак активности источника данных (используется/не_используется)
@@ -469,7 +573,15 @@ namespace StatisticDiagnostic
                     {
                         get { return _markRule.IsMarked((int)INDEX_RULE.ACTIVATED); }
 
-                        set { _markRule.Set((int)INDEX_RULE.ACTIVATED, value); }
+                        set {
+                            _markRule.Set((int)INDEX_RULE.ACTIVATED, value);
+
+                            Cells[(int)INDEX_CELL.NAME_SOURCE].Style.BackColor = s_ColorSOTIASSOState[
+                                value == true ? (int)INDEX_CONTEXTMENU_ITEM.ACTIVATED :
+                                    value == false ? (int)INDEX_CONTEXTMENU_ITEM.DEACTIVATED :
+                                        (int)INDEX_CONTEXTMENU_ITEM.DEACTIVATED
+                            ];
+                        }
                     }
                     /// <summary>
                     /// Тип источника данных
@@ -479,6 +591,142 @@ namespace StatisticDiagnostic
                     /// Идентификатор источника данных
                     /// </summary>
                     public int SourceID { get { return m_source_id; } }
+
+                    private bool isSourceSOTIASSOToris {
+                        get {
+                            return (SourceID % 10 == (int)TM.TM1T)
+                                || (SourceID % 10 == (int)TM.TM2T);
+                        }
+                    }
+
+                    public void SetValueCells(object[]values)
+                    {
+                        object value;
+                        INDEX_STATE indxState = INDEX_STATE.ERROR;
+                        Color clrCell = Color.Empty;
+                        ENABLE_VALUE enableValuePrevious = Enabled
+                            , enableValueCurrrent = ENABLE_VALUE.UNKNOWN;
+
+                        Func <ENABLE_VALUE> isEnabled = new Func<ENABLE_VALUE> (() => {
+                            ENABLE_VALUE enableValueRes = ENABLE_VALUE.TRUE;
+
+                            foreach (INDEX_CELL i in Enum.GetValues(typeof(INDEX_CELL))) {
+                                switch (i) {
+                                    case INDEX_CELL.NAME_SOURCE:
+                                    case INDEX_CELL.COUNT:
+                                        continue;
+                                        break;
+                                    case INDEX_CELL.DATETIME_VERIFICATION:
+                                        enableValueRes = ((!(values[(int)i] == null))
+                                            && ((values[(int)i] is DateTime) == true)) ?
+                                                (isRelevanceDateTime(i, (DateTime)values[(int)i]) == true) ?
+                                                    ENABLE_VALUE.TRUE :
+                                                        ENABLE_VALUE.OUTDATE :
+                                                            ENABLE_VALUE.FALSE;
+                                        break;
+                                    default:
+                                        enableValueRes = (!(values[(int)i] == null) == true) ?
+                                            ENABLE_VALUE.TRUE :
+                                                ENABLE_VALUE.FALSE;
+                                        break;
+                                }
+
+                                if (!(enableValueRes == ENABLE_VALUE.TRUE))
+                                    break;
+                                else
+                                    ;
+                            } // INDEX_CELL i in Enum.GetValues(typeof(INDEX_CELL))
+
+                            return enableValueRes;
+                        });
+
+                        enableValueCurrrent = isEnabled();
+
+                        if (!(enableValuePrevious == enableValueCurrrent))
+                            Enabled = enableValueCurrrent;
+                        else
+                            ;
+
+                        if ((Enabled == ENABLE_VALUE.TRUE)
+                            || (Enabled == ENABLE_VALUE.OUTDATE))
+                            foreach (INDEX_CELL i in Enum.GetValues(typeof(INDEX_CELL))) {
+                                indxState = INDEX_STATE.ERROR;
+                                clrCell = Color.Empty;
+
+                                switch (i) {
+                                    case INDEX_CELL.NAME_SOURCE:
+                                    case INDEX_CELL.COUNT:
+                                        continue;
+                                        break;
+                                    case INDEX_CELL.STATE:
+                                        indxState = ((string)values[(int)i])?.Equals(1.ToString()) == true ?
+                                            INDEX_STATE.OK :
+                                                isSourceSOTIASSOToris == false ?
+                                                    INDEX_STATE.ERROR :
+                                                        INDEX_STATE.UNKNOWN;
+                                        value = s_StateSources[(int)indxState].m_Text;
+                                        clrCell = s_StateSources[(int)indxState].m_Color;
+                                        break;
+                                    case INDEX_CELL.DATETIME_VALUE:
+                                    case INDEX_CELL.DATETIME_VERIFICATION:
+                                        value = values[(int)i] is DateTime ?
+                                            formatDateTime (i, (DateTime)values[(int)i]) :
+                                                values[(int)i];
+                                        break;
+                                    default:
+                                        value = values[(int)i];
+                                        break;
+                                }
+
+                                Cells[(int)i].Value = value;
+                                // изменить цвет ячейки
+                                if (Enabled == ENABLE_VALUE.TRUE)
+                                // только если источник включен
+                                    Cells[(int)i].Style.BackColor = clrCell;
+                                else
+                                    ;
+                            } // INDEX_CELL i in Enum.GetValues(typeof(INDEX_CELL))
+                        else
+                            ;
+                    }
+
+                    private string formatDateTime(INDEX_CELL indxCell, DateTime dtFormated)
+                    {
+                        string strRes = string.Empty;
+
+                        KEY_TIMEZONE_SOURCE keyTimeZoneSource;
+                        TimeZoneInfo timeZoneInfo;
+
+                        if (indxCell == INDEX_CELL.DATETIME_VALUE) {
+                            keyTimeZoneSource = new KEY_TIMEZONE_SOURCE() { m_ConnSettType = SourceType, m_tecType = _tec.Type };
+                            timeZoneInfo = s_dictTimeZoneSource[keyTimeZoneSource];
+
+                            dtFormated = TimeZoneInfo.ConvertTime(dtFormated, timeZoneInfo);
+                        } else
+                            ;
+
+                        if (SERVER_TIME.Date > dtFormated.Date)
+                            strRes = dtFormated.ToString(@"dd.MM.yyyy HH:mm:ss");
+                        else
+                            strRes = dtFormated.ToString(@"HH:mm:ss");
+
+                        return strRes;
+                    }
+
+                    private bool isRelevanceDateTime(INDEX_CELL indxCell, DateTime dtChecked)
+                    {
+                        bool bRes = true;
+
+                        switch (indxCell) {
+                            case INDEX_CELL.DATETIME_VERIFICATION:
+                                bRes = !((SERVER_TIME - dtChecked).TotalHours > 1);
+                                break;
+                            default:
+                                break;
+                        }
+
+                        return bRes;
+                    }
                 }
 
                 /// <summary>
@@ -507,8 +755,8 @@ namespace StatisticDiagnostic
                 /// <summary>
                 /// Инициализация полей/свойств
                 /// </summary>
-                /// <param name="listDiagPar">Список параметров диагностики</param>
-                private void initialize(TEC tag, List<DIAGNOSTIC_PARAMETER> listDiagPar)
+                /// <param name="listDiagnosticParameter">Список параметров диагностики</param>
+                private void initialize(TEC tag, List<DIAGNOSTIC_PARAMETER> listDiagnosticParameter)
                 {
                     /*DataGridViewSourceRow newRow = null;*/
                     int indxNewRow = -1;
@@ -523,7 +771,7 @@ namespace StatisticDiagnostic
                     setTextDescription();
 
                     // добавить строки в соответствии со списком диагностических параметров
-                    listDiagPar.ForEach(item => {
+                    listDiagnosticParameter.ForEach(item => {
                         m_dgvValues.Rows.Add(/*newRow = */new DataGridViewSourceRow());
 
                         indxNewRow = m_dgvValues.RowCount - 1;
@@ -531,8 +779,11 @@ namespace StatisticDiagnostic
                         (m_dgvValues.Rows[indxNewRow] as DataGridViewSourceRow).SourceData = item.m_source_data;
                         // неизменямое наименование источника данных
                         (m_dgvValues.Rows[indxNewRow] as DataGridViewSourceRow).Name = item.m_name_shr;
+                        // исходное состояние строки - источник данных отключен
+                        (m_dgvValues.Rows[indxNewRow] as DataGridViewSourceRow).Enabled = DataGridViewSourceRow.ENABLE_VALUE.FALSE;
                     });
                 }
+
                 /// <summary>
                 /// Инициализация характеристик, стилей макета для размещения дочерних элементов интерфейса
                 ///  (должна быть вызвана явно)
@@ -602,9 +853,9 @@ namespace StatisticDiagnostic
                     this.m_dgvValues.Columns[(int)INDEX_CELL.DATETIME_VERIFICATION].Name = "Время проверки"; this.m_dgvValues.Columns[(int)INDEX_CELL.DATETIME_VERIFICATION].Width = 57;
                     this.m_dgvValues.Columns[(int)INDEX_CELL.STATE].Name = "Связь"; this.m_dgvValues.Columns[(int)INDEX_CELL.STATE].Width = 35;
 
-                    this.m_dgvValues.CellClick += new DataGridViewCellEventHandler(TECDataGridView_Cell);
-                    this.m_dgvValues.CellValueChanged += new DataGridViewCellEventHandler(TECDataGridView_Cell);
-                    this.m_dgvValues.CellMouseDown += new DataGridViewCellMouseEventHandler(TECDataGridView_CellMouseDown);
+                    this.m_dgvValues.CellClick += new DataGridViewCellEventHandler(dgv_OnCellSelectedCancel);
+                    this.m_dgvValues.CellValueChanged += new DataGridViewCellEventHandler(dgv_OnCellSelectedCancel);
+                    this.m_dgvValues.CellMouseDown += new DataGridViewCellMouseEventHandler(dgv_OnCellMouseDown);
                     //
                     //ContextmenuChangeState
                     //
@@ -619,7 +870,7 @@ namespace StatisticDiagnostic
                     this.ContextmenuChangeState.Items[(int)INDEX_CONTEXTMENU_ITEM.ACTIVATED].Name = "toolStripMenuItem1";
                     this.ContextmenuChangeState.Items[(int)INDEX_CONTEXTMENU_ITEM.ACTIVATED].Size = new System.Drawing.Size(179, 22);
                     this.ContextmenuChangeState.Items[(int)INDEX_CONTEXTMENU_ITEM.ACTIVATED].Text = "Activate";
-                    this.ContextmenuChangeState.Items[(int)INDEX_CONTEXTMENU_ITEM.ACTIVATED].Click += new EventHandler(toolStripMenuItemActivate_Click);
+                    this.ContextmenuChangeState.Items[(int)INDEX_CONTEXTMENU_ITEM.ACTIVATED].Click += new EventHandler(toolStripMenuItem_Click);
                     (this.ContextmenuChangeState.Items[(int)INDEX_CONTEXTMENU_ITEM.ACTIVATED] as ToolStripMenuItem).CheckOnClick = true;
                     this.ContextmenuChangeState.Items[(int)INDEX_CONTEXTMENU_ITEM.ACTIVATED].Tag = INDEX_CONTEXTMENU_ITEM.ACTIVATED;
                     // 
@@ -628,7 +879,7 @@ namespace StatisticDiagnostic
                     this.ContextmenuChangeState.Items[(int)INDEX_CONTEXTMENU_ITEM.DEACTIVATED].Name = "toolStripMenuItem2";
                     this.ContextmenuChangeState.Items[(int)INDEX_CONTEXTMENU_ITEM.DEACTIVATED].Size = new System.Drawing.Size(179, 22);
                     this.ContextmenuChangeState.Items[(int)INDEX_CONTEXTMENU_ITEM.DEACTIVATED].Text = "Deactivate";
-                    this.ContextmenuChangeState.Items[(int)INDEX_CONTEXTMENU_ITEM.DEACTIVATED].Click += new EventHandler(toolStripMenuItemDeactivate_Click);
+                    this.ContextmenuChangeState.Items[(int)INDEX_CONTEXTMENU_ITEM.DEACTIVATED].Click += new EventHandler(toolStripMenuItem_Click);
                     (this.ContextmenuChangeState.Items[(int)INDEX_CONTEXTMENU_ITEM.DEACTIVATED] as ToolStripMenuItem).CheckOnClick = false;
                     this.ContextmenuChangeState.Items[(int)INDEX_CONTEXTMENU_ITEM.DEACTIVATED].Tag = INDEX_CONTEXTMENU_ITEM.DEACTIVATED;
                     //
@@ -644,6 +895,7 @@ namespace StatisticDiagnostic
 
                     this.ResumeLayout(false);
                 }
+
                 /// <summary>
                 /// Перечисление - индексы для ячеек в строке
                 /// </summary>
@@ -652,26 +904,28 @@ namespace StatisticDiagnostic
                     , COUNT
                 }
 
+                private int indexRowContextMenu;
+
                 /// <summary>
                 /// Обработчик события - нажатие кнопки "мыши"
                 /// </summary>
                 /// <param name="sender">Объект, инициировавший событие (DataGridView)</param>
                 /// <param name="e">Аргумент события</param>
-                void TECDataGridView_CellMouseDown(object sender, DataGridViewCellMouseEventArgs e)
+                void dgv_OnCellMouseDown(object sender, DataGridViewCellMouseEventArgs e)
                 {
                     if ((e.Button == MouseButtons.Right) && (e.RowIndex > -1))
-                        // только по нажатию правой кнопки и выбранной строки
-                        if (m_dgvValues.Rows[e.RowIndex].Cells[(int)INDEX_CELL.NAME_SOURCE].Value.ToString() != "АИИСКУЭ")
-                        {//??
-                         // только для источников СОТИАССО 
-                            RowIndex = e.RowIndex;
-                            initContextMenu(m_dgvValues.Rows[e.RowIndex].Cells[e.ColumnIndex].Style.BackColor == s_ColorSOTIASSOState[(int)INDEX_CONTEXTMENU_ITEM.ACTIVATED]);
-                            if ((sender as DataGridView).Rows[e.RowIndex].Cells[e.ColumnIndex].ContextMenuStrip == null)
+                    // только по нажатию правой кнопки и выбранной строки
+                        if (((m_dgvValues.Rows[e.RowIndex] as DataGridViewSourceRow).SourceType == CONN_SETT_TYPE.DATA_SOTIASSO)
+                            && ((m_dgvValues.Rows[e.RowIndex] as DataGridViewSourceRow).Enabled == DataGridViewSourceRow.ENABLE_VALUE.TRUE)
+                            && (AlternativeSourceIdSOTIASSO.Count > 1)) {
+                        //?? только для источников СОТИАССО И включенных И наличия альтернативы
+                            initContextMenu((m_dgvValues.Rows[e.RowIndex] as DataGridViewSourceRow).Activated == true);
+                            ContextmenuChangeState.Tag = e.RowIndex;
+                            if ((sender as DataGridView).Rows[e.RowIndex].Cells[e.ColumnIndex].ContextMenuStrip == null) {                                
                                 (sender as DataGridView).Rows[e.RowIndex].Cells[e.ColumnIndex].ContextMenuStrip = ContextmenuChangeState;
-                            else
+                            } else
                                 ;
-                        }
-                        else
+                        } else
                             ; // строки не являются описанием источников СОТИАССО
                     else
                         ; // нажата не правая кнопка ИЛИ не выбрана строка
@@ -680,7 +934,7 @@ namespace StatisticDiagnostic
                 #endregion
             }
 
-            interface IPanelTec
+            private interface IPanelTec
             {
                 StatisticCommon.TEC m_tec { get; }
             }
@@ -703,11 +957,6 @@ namespace StatisticDiagnostic
                 private static Color[] s_ColorSOTIASSOState = new Color[] { Color.DeepSkyBlue, Color.Empty };
 
                 /// <summary>
-                /// Номер строки вызова контекстного меню
-                /// </summary>
-                private int RowIndex;
-
-                /// <summary>
                 /// Очистить представление от строк (столбцы без изменений)
                 /// </summary>
                 public void Clear()
@@ -719,34 +968,13 @@ namespace StatisticDiagnostic
                             ;
                 }
 
-                /// <summary>
-                /// Изменение в массиве активного 
-                /// источника СОТИАССО
-                /// </summary>
-                /// <param name="tm">номер истчоника</param>
-                /// <param name="nameTM">имя источника</param>
-                /// <param name="pos">позиция в массиве</param>
-                private void changenumSource(int tm, string nameTM, int pos)
-                {
-                    m_arrayActiveSource.SetValue((tm), pos, 0);
-                    m_arrayActiveSource.SetValue(nameTM, pos, 1);
-                }
+                //private int ActiveSourceIdSOTIASSO {
+                //    get {
+                //        return -1;
+                //    }
+                //}
 
-                /// <summary>
-                /// Функция нахождения источника СОТИАССО
-                /// </summary>
-                /// <param name="nameTec">имя источника СОТИАССО</param>
-                /// <returns>номер источника СОТИАССО</returns>
-                private object selectionArraySource(string nameTec)
-                {
-                    DataRow[] arSel = m_tableSourceList.Select("NAME_SHR = '" + nameTec + "'");
-                    object a = null;
-
-                    for (int i = 0; i < arSel.Length; i++)
-                        a = arSel[i]["ID"].ToString();
-
-                    return a;
-                }
+                public event EventSourceIdChangedHandler EventSourceIdChanged;
 
                 /// <summary>
                 /// Обработка события клика по пункту меню "Active"
@@ -754,77 +982,44 @@ namespace StatisticDiagnostic
                 /// </summary>
                 /// <param name="sender"></param>
                 /// <param name="e"></param>
-                private void toolStripMenuItemActivate_Click(object sender, EventArgs e)
+                private void toolStripMenuItem_Click(object sender, EventArgs e)
                 {
-                    string a = m_dgvValues.Rows[RowIndex].Tag.ToString();
-                    int t = Convert.ToInt32(selectionArraySource(a));
-                    int numberPanel = (t / 10) - 1;
+                    int iPrevSourceId = -1, iNewSourceId = -1
+                        , indxPrevSourceId = -1, indxNewSourceId = -1;
+                    List<int> alternativeSourceIdSOTIASSO = AlternativeSourceIdSOTIASSO;
 
-                    updateTecTM(stringQuery(t, numberPanel + 1));
+                    if ((INDEX_CONTEXTMENU_ITEM)(sender as ToolStripMenuItem).Tag == INDEX_CONTEXTMENU_ITEM.ACTIVATED) {
+                        iNewSourceId = (m_dgvValues.Rows[(int)ContextmenuChangeState.Tag] as DataGridViewSourceRow).SourceID;
+                    } else {
+                    // INDEX_CONTEXTMENU_ITEM.DEACTIVATED
+                        iPrevSourceId = (m_dgvValues.Rows[(int)ContextmenuChangeState.Tag] as DataGridViewSourceRow).SourceID;
+                        indxPrevSourceId = alternativeSourceIdSOTIASSO.IndexOf(iPrevSourceId);
+                        // выбираем очередной источник данных - следующий за текущим
+                        indxNewSourceId = indxPrevSourceId + 1;
 
-                    for (int i = 0; i < m_dgvValues.Rows.Count; i++)
-                        if (m_dgvValues.Rows[i].Cells[(int)INDEX_CELL.NAME_SOURCE].Style.BackColor == s_ColorSOTIASSOState[(int)INDEX_CONTEXTMENU_ITEM.ACTIVATED])
-                            paintCellDeactive(i);
+                        if (!(indxNewSourceId < alternativeSourceIdSOTIASSO.Count))
+                            indxNewSourceId = 0;
                         else
                             ;
 
-                    paintCellActive(RowIndex);
-                    changenumSource(t, a, numberPanel);
-                }
+                        iNewSourceId = alternativeSourceIdSOTIASSO[indxNewSourceId];
+                    }
 
-                /// <summary>
-                /// Обработка события клика по пункту меню "Deactive"
-                /// для деактивации активного итсочника СОТИАССО
-                /// </summary>
-                /// <param name="sender"></param>
-                /// <param name="e"></param>
-                private void toolStripMenuItemDeactivate_Click(object sender, EventArgs e)
-                {
-                    string a = m_dgvValues.Rows[RowIndex].Tag.ToString();
-                    int t = Convert.ToInt32(selectionArraySource(a));
-                    int numberPanel = (t / 10) - 1;
-
-                    paintCellDeactive(RowIndex);
-                    updateTecTM(stringQuery(0, numberPanel + 1));
-                }
-
-                /// <summary>
-                /// Добавление строк
-                /// </summary>
-                /// <param name="cntRow">кол-во строк</param>
-                public void AddRows(int cntRow)
-                {
-                    Action<int> actionAddRows = new Action<int>((cnt) => { m_dgvValues.Rows.Add(cnt); });
-
-                    if (m_dgvValues.RowCount < cntRow / 2)
-                        if (m_dgvValues.InvokeRequired)
-                            m_dgvValues.Invoke(actionAddRows, cntRow / 2);
-                        else
-                            actionAddRows(cntRow / 2);
-                    else
-                        ;
-                }
-
-                /// <summary>
-                /// Функция проверки на пустоту значений
-                /// </summary>
-                /// <param name="sourceDR">набор проверяемых данных</param>
-                /// <returns></returns>
-                private bool testingNull(ref DataRow[] sourceDR)
-                {
-                    bool bRes = false;
-
-                    for (int i = 0; i < sourceDR.Count(); i++)
-                        if (string.IsNullOrEmpty(sourceDR[i]["Value"].ToString()) == true)
-                        {
-                            sourceDR[i]["Value"] = "Нет данных в БД";
-                            /*ничего не делаем*/
-                            //bRes = false;
-                        }
-                        else
-                            if (bRes == false) bRes = true; else /*ничего не делаем*/;
-
-                    return bRes;
+                    foreach (DataGridViewSourceRow r in m_dgvValues.Rows)
+                        if ((r.Activated == true)
+                            && (r.SourceType == CONN_SETT_TYPE.DATA_SOTIASSO)) {
+                            r.Activated = false;
+                            // прерываемся т.к. активный источник СОТИАССО только один
+                            break;
+                        } else
+                            ;
+                    // событие для сохранения нового источника и немедленного опроса состояния источников данных
+                    EventSourceIdChanged(
+                        null // панель передается через поле аргумента
+                        , new EventSourceIdChangedArgs(this
+                            , (m_dgvValues.Rows[(int)ContextmenuChangeState.Tag] as DataGridViewSourceRow).SourceType
+                            , iNewSourceId)
+                    );
                 }
 
                 /// <summary>
@@ -841,6 +1036,7 @@ namespace StatisticDiagnostic
                     else
                         update(type, values/*, out err*/);
                 }
+
                 /// <summary>
                 /// Метод заполнения данными элементов ТЭЦ
                 /// </summary>
@@ -851,6 +1047,7 @@ namespace StatisticDiagnostic
                     //err = 0; // ошибок нет
 
                     object value;
+                    object[] rowValues;
 
                     switch (type) {
                         case DictionaryTecValues.TYPE.ACTIVE_SOURCE_SOTIASSO:
@@ -858,10 +1055,12 @@ namespace StatisticDiagnostic
                             break;
                         default:
                             foreach (DataGridViewSourceRow r in m_dgvValues.Rows) {
+                                rowValues = new object[(int)INDEX_CELL.COUNT];
+
                                 foreach (KeyValuePair<KEY_DIAGNOSTIC_PARAMETER, Values> pair in values) {
                                     try {
                                         // сопоставление 'r.source_name' && 'values.name_shr'
-                                        if (pair.Value.m_name_shr.IndexOf(r.SourceData) > 0) {
+                                        if (pair.Value.m_name_shr?.IndexOf(r.SourceData) > 0) {
                                             switch (pair.Key.m_id_value) {
                                                 case KEY_DIAGNOSTIC_PARAMETER.ID_VALUE.AIISKUE_VALUE:
                                                 case KEY_DIAGNOSTIC_PARAMETER.ID_VALUE.SOTIASSO_1_VALUE:
@@ -876,10 +1075,10 @@ namespace StatisticDiagnostic
                                                             value = Convert.ChangeType(pair.Value.m_value, KEY_DIAGNOSTIC_PARAMETER.TypeOf[pair.Key.m_id_unit]);
                                                             break;
                                                     }
-                                                    r.Cells[(int)INDEX_CELL.VALUE].Value = value;
-                                                    r.Cells[(int)INDEX_CELL.DATETIME_VERIFICATION].Value =
+                                                    rowValues[(int)INDEX_CELL.VALUE] = value;
+                                                    rowValues[(int)INDEX_CELL.DATETIME_VERIFICATION] =
                                                         Convert.ChangeType(pair.Value.m_dtValue, typeof(DateTime));
-                                                    r.Cells[(int)INDEX_CELL.STATE].Value =
+                                                    rowValues[(int)INDEX_CELL.STATE] =
                                                         Convert.ChangeType(pair.Value.m_strLink, typeof(string));
                                                     break;
                                                 case KEY_DIAGNOSTIC_PARAMETER.ID_VALUE.AIISKUE_DATETIME:
@@ -887,7 +1086,7 @@ namespace StatisticDiagnostic
                                                 case KEY_DIAGNOSTIC_PARAMETER.ID_VALUE.SOTIASSO_2_DATETIME:
                                                 case KEY_DIAGNOSTIC_PARAMETER.ID_VALUE.SOTIASSO_1_TORIS_DATETIME:
                                                 case KEY_DIAGNOSTIC_PARAMETER.ID_VALUE.SOTIASSO_2_TORIS_DATETIME:
-                                                    r.Cells[(int)INDEX_CELL.DATETIME_VALUE].Value =
+                                                    rowValues[(int)INDEX_CELL.DATETIME_VALUE] =
                                                         Convert.ChangeType(pair.Value.m_value, KEY_DIAGNOSTIC_PARAMETER.TypeOf[pair.Key.m_id_unit]);
                                                     //r.Cells[(int)INDEX_CELL.DATETIME_VALUE].ToolTipText =
                                                     //    Convert.ChangeType(pair.Value.m_dtValue, typeof(DateTime)).ToString();
@@ -900,25 +1099,30 @@ namespace StatisticDiagnostic
                                     } catch (Exception e) {
                                         Logging.Logg().Exception(e, @"PanelContainerTec.PanelTec::update () - ...", Logging.INDEX_MESSAGE.NOT_SET);
                                     }
-                                }
+                                } // KeyValuePair<KEY_DIAGNOSTIC_PARAMETER, Values> pair in values
 
-                                //nameSource = r.Cells[(int)INDEX_CELL.NAME_SOURCE].Value.ToString();
-
-                                ////shortTime = formatTime(arSelTecSource[t + 1]["Value"].ToString(), nameSource);
-
-                                //r.Cells[(int)INDEX_CELL.DATETIME_VALUE].Value = shortTime;
-                                //r.Cells[(int)INDEX_CELL.VALUE].Value = arSelTecSource[t]["Value"];
-                                //r.Cells[(int)INDEX_CELL.DATETIME_VERIFICATION].Value =
-                                //    TimeZoneInfo.ConvertTimeBySystemTimeZoneId(DateTime.Now, TimeZoneInfo.Local.Id, "Russian Standard Time").ToString("hh:mm:ss:fff");
-
-                                //if (testingNull(ref arSelTecSource) == true)
-                                //    checkRelevanceValues(DateTime.Parse(shortTime), r);
-                                //else
-                                //    ;
-                            }
+                                r.SetValueCells(rowValues);
+                            } // DataGridViewSourceRow r in m_dgvValues.Rows
 
                             //cellsPing();
                             break;
+                    }
+                }
+
+                private List<int> AlternativeSourceIdSOTIASSO {
+                    get {
+                        List<int> listRes = new List<int>();
+
+                        foreach (DataGridViewSourceRow r in m_dgvValues.Rows)
+                            if ((r.SourceType == CONN_SETT_TYPE.DATA_SOTIASSO)
+                                && (r.Enabled == DataGridViewSourceRow.ENABLE_VALUE.TRUE)) {
+                            // только если: СОТИАССО И включен
+                                listRes.Add(r.SourceID);
+                            }
+                            else
+                                ;
+
+                        return listRes;
                     }
                 }
 
@@ -932,8 +1136,8 @@ namespace StatisticDiagnostic
                     foreach (DataGridViewSourceRow r in m_dgvValues.Rows)
                         if ((r.SourceType == CONN_SETT_TYPE.DATA_SOTIASSO)
                             && (r.SourceID == iSourceId)
-                            && (r.Activated == false))
-                        {
+                            && (r.Activated == false)) {
+                        // только если: СОТИАССО И совпадает 'SourceID' И не активен
                             // установить признак наличия изменений
                             bChangeActivated =
                             // активация источника
@@ -977,56 +1181,6 @@ namespace StatisticDiagnostic
                 }
 
                 /// <summary>
-                /// Заполнение элемента панели 
-                /// информацией о связи с истчоником ТЭЦ
-                /// </summary>
-                private void cellsPing()
-                {
-                    DataRow[] arSel = null;
-
-                    Action<int, INDEX_STATE> setState = new Action<int, INDEX_STATE>((iRow, iState) => {
-                        m_dgvValues.Rows[iRow].Cells[(int)INDEX_CELL.STATE].Value = s_StateSources[(int)iState].m_Text;
-                        m_dgvValues.Rows[iRow].Cells[(int)INDEX_CELL.STATE].Style.BackColor = s_StateSources[(int)iState].m_Color;
-                    });
-
-                    //arSel = m_tableSourceData.Select(@"ID_EXT = " + Convert.ToInt32(m_tec.m_id));
-
-                    for (int i = 0, t = 0; i < m_dgvValues.Rows.Count; i++, t += 2)
-                        if (m_dgvValues.InvokeRequired == true)
-                            m_dgvValues.Invoke(setState, i, (arSel[t]["Link"].ToString().Equals("1") == true) ? INDEX_STATE.OK : INDEX_STATE.ERROR);
-                        else
-                            setState(i, (arSel[t]["Link"].ToString().Equals("1") == true) ? INDEX_STATE.OK : INDEX_STATE.ERROR);
-                }
-
-                /// <summary>
-                /// Функция выделение 
-                /// неактивного истчоника СОТИАССО
-                /// </summary>
-                /// <param name="y">номер строки</param>
-                private void paintCellDeactive(int y)
-                {
-                    paintCell(y, Color.Empty);
-                }
-
-                /// <summary>
-                /// Функция выделения 
-                /// активного источника СОТИАССО
-                /// </summary>
-                /// <param name="y">номер строки</param>
-                private void paintCellActive(int y)
-                {
-                    paintCell(y, s_ColorSOTIASSOState[(int)INDEX_CONTEXTMENU_ITEM.ACTIVATED]);
-                }
-
-                private void paintCell(int y, Color clrCell)
-                {
-                    if (m_dgvValues.InvokeRequired)
-                        m_dgvValues.Invoke(new Action(() => m_dgvValues.Rows[y].Cells[(int)INDEX_CELL.NAME_SOURCE].Style.BackColor = clrCell));
-                    else
-                        m_dgvValues.Rows[y].Cells[(int)INDEX_CELL.NAME_SOURCE].Style.BackColor = clrCell;
-                }
-
-                /// <summary>
                 /// Подключение к ячейке контекстного меню
                 /// </summary>
                 /// <param name="y">номер строки</param>
@@ -1041,7 +1195,7 @@ namespace StatisticDiagnostic
                 /// </summary>
                 /// <param name="sender">Объект, инициировавший событие - (???ячейка, скорее - 'DataGridView')</param>
                 /// <param name="e">Аргумент события</param>
-                private void TECDataGridView_Cell(object sender, EventArgs e)
+                private void dgv_OnCellSelectedCancel(object sender, EventArgs e)
                 {
                     try
                     {
@@ -1053,94 +1207,6 @@ namespace StatisticDiagnostic
                     catch
                     {
                     }
-                }
-
-                /// <summary>
-                /// Проверка актуальности времени 
-                /// СОТИАССО и АИИСКУЭ
-                /// </summary>
-                /// <param name="time"></param>
-                /// <param name="r">индекс строки</param>
-                private void checkRelevanceValues(DateTime time, int r)
-                {
-                    string nameSource = m_dgvValues.Rows[r].Cells[(int)INDEX_CELL.NAME_SOURCE].Value.ToString();
-
-                    if ((!(nameSource == "АИИСКУЭ"))
-                        && m_dgvValues.Rows[r].Cells[(int)INDEX_CELL.NAME_SOURCE].Style.BackColor == System.Drawing.Color.Empty)
-                        paintValuesSource(false, r);
-                    else
-                        paintValuesSource(selectInvalidValue(nameSource, time), r);
-                }
-
-                /// <summary>
-                /// Проверка разницы времени между эталоном и источником
-                /// </summary>
-                /// <param name="timeEtalon">эталонное время</param>
-                /// <param name="timeSource">время источника</param>
-                /// <returns>флаг о правильности времени</returns>
-                private bool diffTime(DateTime timeEtalon, DateTime timeSource)
-                {
-                    TimeSpan VALIDATE_TM = TimeSpan.FromSeconds(VALIDATE_ASKUE_TM);
-                    TimeSpan ts = timeEtalon - (timeSource + VALIDATE_TM);
-                    TimeSpan validateTime = TimeSpan.FromSeconds(180);
-
-                    if (ts > validateTime)
-                        return true;
-                    else
-                        return false;
-                }
-                /// <summary>
-                /// Проверка актуальности времени источника
-                /// </summary>
-                /// <param name="nameS">имя источника</param>
-                /// <param name="time">время источника</param>
-                /// <param name="numberPanel">нопмер панели</param>
-                /// <returns></returns>
-                private bool selectInvalidValue(string nameS, DateTime time)
-                {
-                    DateTime DTnowAISKUE = SERVER_TIME;
-                    TimeZoneInfo tzInfo = TimeZoneInfo.FindSystemTimeZoneById("Russian Standard Time");
-                    DateTime DTnowSOTIASSO;
-
-                    if (m_tec.Type == StatisticCommon.TEC.TEC_TYPE.BIYSK)
-                        DTnowSOTIASSO = TimeZoneInfo.ConvertTime(SERVER_TIME, TimeZoneInfo.Local);
-                    else
-                        DTnowSOTIASSO = TimeZoneInfo.ConvertTimeToUtc(SERVER_TIME, tzInfo);
-
-                    bool bFL = true; ;
-
-                    switch (nameS)
-                    {
-                        case "АИИСКУЭ":
-                            if (diffTime(DTnowAISKUE, time))
-                                bFL = true;
-                            else
-                                bFL = false;
-                            break;
-                        case "СОТИАССО":
-                        case "СОТИАССО_TorIs":
-                        case "СОТИАССО_0":
-                            if (diffTime(DTnowSOTIASSO, time))
-                                bFL = true;
-                            else
-                                bFL = false;
-                            break;
-                        default:
-                            break;
-                    }
-
-                    return bFL;
-                }
-
-                /// <summary>
-                /// Выделение значения источника
-                /// </summary>
-                /// <param name="bflag"></param>
-                /// <param name="i">номер панели</param>
-                /// <param name="r">номер строки</param>
-                private void paintValuesSource(bool bflag, int r)
-                {
-                    m_dgvValues.Rows[r].Cells[(int)INDEX_CELL.VALUE].Style.BackColor = bflag == true ? Color.Firebrick : Color.Empty;
                 }
             }
         }

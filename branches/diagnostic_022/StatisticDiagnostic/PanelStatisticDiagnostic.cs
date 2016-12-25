@@ -246,14 +246,6 @@ namespace StatisticDiagnostic
     /// </summary>
     public partial class PanelStatisticDiagnostic : PanelStatistic
     {
-        /// <summary>
-        /// Список активных источников
-        /// </summary>
-        static object[,] m_arrayActiveSource;
-
-        //private static DataTable m_tableSourceData;
-
-        //public static DataTable m_tableSourceDiagnostic = new DataTable(); //m_listDiagnosticSource
         private static DataTable m_tableSourceList = new DataTable();
         private static DataTable m_tableGTPList = new DataTable();
         private static DataTable m_tableTECList = new DataTable();
@@ -267,14 +259,6 @@ namespace StatisticDiagnostic
             SIZEDB = 10,
             MODES = 200,
             TASK = 300
-        }
-        /// <summary>
-        /// 
-        /// </summary>
-        protected enum INDEX_UNITS
-        {
-            UNKNOW = 0,
-            VALUE = 12, DATA = 13
         }
         /// <summary>
         /// экземпляр класса 
@@ -306,11 +290,12 @@ namespace StatisticDiagnostic
             public Color m_Color;
         }
 
-        private enum INDEX_STATE : short { OK = 0, ERROR }
+        private enum INDEX_STATE : short { ERROR = 0, OK, UNKNOWN }
 
         private static STATE_SOURCE[] s_StateSources = new STATE_SOURCE[] {
-            new STATE_SOURCE() { m_Text = @"Да", m_Color = Color.White }
-            , new STATE_SOURCE() { m_Text = @"Нет", m_Color = Color.Red }
+            new STATE_SOURCE() { m_Text = @"Нет", m_Color = Color.Red }
+            , new STATE_SOURCE() { m_Text = @"Да", m_Color = Color.White }
+            , new STATE_SOURCE() { m_Text = @"н/д", m_Color = Color.LightGray }
         };
         /// <summary>
         /// ???
@@ -380,7 +365,7 @@ namespace StatisticDiagnostic
                 m_connSett[(int)CONN_SETT_TYPE.CONFIG_DB] = FormMain.s_listFormConnectionSettings[(int)CONN_SETT_TYPE.CONFIG_DB].getConnSett();
                 m_connSett[(int)CONN_SETT_TYPE.CONFIG_DB].id = ConnectionSettings.UN_ENUMERABLE_ID - 6;
 
-                //??? анализ err
+                //??? разбор err
                 if (err < 0)
                     throw new Exception(@"PanelStatisticDiagnostic::HDataSource () - ctor () - ...");
                 else
@@ -569,6 +554,25 @@ namespace StatisticDiagnostic
                     return new List<TEC> ();
             }
 
+            public void UpdateSourceId(PanelContainerTec.EventSourceIdChangedArgs ev)
+            {
+                int err = -1;
+
+                RegisterConfigDb(out err);
+
+                err = _connConfigDb == null ? -1 : 0;
+
+                if (err == 0)
+                    DbTSQLInterface.ExecNonQuery(ref _connConfigDb
+                        , string.Format("UPDATE [TEC_LIST] SET  [ID_LINK_SOURCE_DATA_TM] = {0} WHERE [ID] = {1}", ev.m_iNewSourceId, ev.m_tec.m_id)
+                        , null, null, 
+                        out err);
+                else
+                    ;
+
+                UnregisterConfigDb();
+            }
+
             /// <summary>
             /// Событие - получение данных 
             /// </summary>
@@ -690,7 +694,9 @@ namespace StatisticDiagnostic
 
             m_tableTECList = m_DataSource.GetDataTableTEC(out err);
 
-            m_tecdb = new PanelContainerTec(m_DataSource.GetListTEC(out err), m_listDiagnosticParameter.FindAll(item => { return item.m_id_container.Equals(ID_CONTAINER_PANEL.TEC.ToString()); }));
+            m_tecdb = new PanelContainerTec(m_DataSource.GetListTEC(out err)
+                , m_listDiagnosticParameter.FindAll(item => { return item.m_id_container.Equals(ID_CONTAINER_PANEL.TEC.ToString()); })
+                , panelContainerTec_onSourceIdChanged);
             m_modesdb = new PanelContainerModes(m_listDiagnosticSource);
             m_taskdb = new PanelTask();
             m_sizedb = new SizeDb(m_listDiagnosticSource);
@@ -702,6 +708,18 @@ namespace StatisticDiagnostic
             this.Controls.Add(m_tecdb, 0, 0); this.SetColumnSpan(m_tecdb, COUNT_LAYOUT_COLUMN); this.SetRowSpan(m_tecdb, 6);
 
             return err;
+        }
+
+        private void panelContainerTec_onSourceIdChanged(object obj, PanelContainerTec.EventSourceIdChangedArgs ev)
+        {
+            PanelContainerTec panelContainerTec = obj as PanelContainerTec;
+            TEC tec = ev.m_tec;
+            CONN_SETT_TYPE connSettType = ev.m_connSettType;
+            int iNewSourceId = ev.m_iNewSourceId;
+
+            m_DataSource.UpdateSourceId(ev);
+
+            m_DataSource.Command();
         }
 
         /// <summary>
@@ -729,7 +747,6 @@ namespace StatisticDiagnostic
         /// <param name="table">Результат выполнения запроса - таблица с данными</param>
         private void dataSource_OnEvtRecievedActiveSource(object table)
         {
-            createListActiveSource((DataTable)table);
         }
 
         /// <summary>
@@ -917,65 +934,6 @@ namespace StatisticDiagnostic
                 m_timerUpdate.Stop();
 
             return bRes;
-        }
-
-        /// <summary>
-        /// Создание списка активных 
-        /// источников СОТИАССО для всех ТЭЦ
-        /// </summary>
-        /// <param name="table">список тэц</param>
-        private void createListActiveSource(DataTable table)
-        {
-            m_arrayActiveSource = new object[table.Rows.Count, 2];
-
-            for (int i = 0; i < table.Rows.Count; i++)
-                m_arrayActiveSource.SetValue(table.Rows[i]["ID_LINK_SOURCE_DATA_TM"], i, 0);
-
-            int t = -1;
-            int id;
-
-            for (int j = 0; j < table.Rows.Count; j++) {
-                do {
-                    t++;
-                    id = (int)m_tableSourceList.Rows[t][@"ID"];
-
-                    if ((int)m_arrayActiveSource[j, 0] == 0)
-                        break;
-                    else
-                        ;
-                } while ((int)m_arrayActiveSource[j, 0] != id);
-
-                m_arrayActiveSource.SetValue(m_tableSourceList.Rows[t][@"NAME_SHR"].ToString(), j, 1);
-            }
-        }
-
-        /// <summary>
-        /// Формирование строки запроса с параметром 
-        /// активного источника СОТИАССО
-        /// </summary>
-        /// <param name="TM">новый параметр</param>
-        /// <param name="tec">тэц</param>
-        /// <returns>строка запроса</returns>
-        static private string stringQuery(int TM, int tec)
-        {
-            string query = string.Empty;
-            query = "update TEC_LIST set  ID_LINK_SOURCE_DATA_TM = " + TM + " where ID =" + tec;
-            return query;
-        }
-
-        /// <summary>
-        /// Функция на обновление парамтера активного 
-        /// источника СОТИАССО в таблице TEC_LIST
-        /// </summary>
-        /// <param name="query">строка запроса</param>
-        static void updateTecTM(string query)
-        {
-            int err = -1;
-            int iListernID = DbSources.Sources().Register(FormMain.s_listFormConnectionSettings[(int)CONN_SETT_TYPE.CONFIG_DB].getConnSett(), false, @"CONFIG_DB");
-
-            DbConnection m_dbConn = DbSources.Sources().GetConnection(iListernID, out err);
-            DbTSQLInterface.ExecNonQuery(ref m_dbConn, query, null, null, out err);
-            DbSources.Sources().UnRegister(iListernID);
         }
     }
 }
