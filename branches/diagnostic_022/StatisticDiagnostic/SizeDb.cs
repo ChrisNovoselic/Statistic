@@ -19,27 +19,49 @@ namespace StatisticDiagnostic
         /// </summary>
         private partial class SizeDb : HPanelCommon
         {
-            public DataGridView SizeDbDataGridView = new DataGridView();
+            /// <summary>
+            /// Количество столбцов, строк в сетке макета
+            /// </summary>
+            private const int COUNT_LAYOUT_COLUMN = 1
+                , COUNT_LAYOUT_ROW = 9;
 
-            public SizeDb(ListDiagnosticSource listDiagSource)
-                : base(-1, -1)
+            private DataGridView m_dgvValues;
+
+            private Label m_labelDescription;
+
+            public SizeDb(ListDiagnosticSource listDiagnosticSource)
+                : base(COUNT_LAYOUT_COLUMN, COUNT_LAYOUT_ROW)
             {
-                initialize(listDiagSource);
+                initialize(listDiagnosticSource);
             }
 
-            public SizeDb(IContainer container, ListDiagnosticSource listDiagSource)
-                : base(container, -1, -1)
+            public SizeDb(IContainer container, ListDiagnosticSource listDiagnosticSource)
+                : base(container, COUNT_LAYOUT_COLUMN, COUNT_LAYOUT_ROW)
             {
                 container.Add(this);
 
-                initialize(listDiagSource);
+                initialize(listDiagnosticSource);
             }
 
-            private void initialize(ListDiagnosticSource listDiagSource)
+            private void initialize(ListDiagnosticSource listDiagnosticSource)
             {
-                m_listDiagnosticSource = listDiagSource;
+                ListDiagnosticSource listDiagSrc;
+                int iNewRow = -1;
+
+                initializeLayoutStyle();
 
                 InitializeComponent();
+
+                listDiagSrc = new ListDiagnosticSource (listDiagnosticSource.FindAll(item => { return (!(item.m_id_component < (int)INDEX_SOURCE.SIZEDB))
+                    && (item.m_id_component < (int)INDEX_SOURCE.MODES - 100); }));
+
+                foreach (DIAGNOSTIC_SOURCE src in listDiagSrc) {
+                    iNewRow = m_dgvValues.Rows.Add(new DataGridViewDbRow ());
+
+                    m_dgvValues.Rows[iNewRow].Tag = src.m_id_component;
+
+                    (m_dgvValues.Rows[iNewRow] as DataGridViewDbRow).Name = src.m_name_shr;
+                }
             }
 
             protected override void initializeLayoutStyle(int cols = -1, int rows = -1)
@@ -73,26 +95,30 @@ namespace StatisticDiagnostic
             /// </summary>
             private void InitializeComponent()
             {
-                SizeDbDataGridView = new System.Windows.Forms.DataGridView();
+                m_dgvValues = new System.Windows.Forms.DataGridView(); this.Controls.Add(m_dgvValues, 0, 1); this.SetRowSpan(m_dgvValues, COUNT_LAYOUT_ROW - 1);
+                m_labelDescription = new Label(); this.Controls.Add(m_labelDescription, 0, 0);
+
                 this.SuspendLayout();
 
-                this.SizeDbDataGridView.ColumnHeadersHeightSizeMode = System.Windows.Forms.DataGridViewColumnHeadersHeightSizeMode.AutoSize;
-                this.SizeDbDataGridView.AutoSizeRowsMode = DataGridViewAutoSizeRowsMode.AllCellsExceptHeaders;
-                this.SizeDbDataGridView.AutoSizeColumnsMode = DataGridViewAutoSizeColumnsMode.Fill;
-                this.SizeDbDataGridView.Dock = DockStyle.Fill;
-                this.SizeDbDataGridView.ClearSelection();
-                this.SizeDbDataGridView.Name = "SizeDbDataGridView";
-                this.SizeDbDataGridView.ColumnCount = 3;
-                this.SizeDbDataGridView.Columns[0].Name = "Имя базы данных";
-                this.SizeDbDataGridView.Columns[1].Name = "Размер базы данных, МБ";
-                this.SizeDbDataGridView.Columns[2].Name = "Время проверки";
-                this.SizeDbDataGridView.RowHeadersVisible = false;
-                this.SizeDbDataGridView.TabIndex = 0;
-                this.SizeDbDataGridView.AllowUserToAddRows = false;
-                this.SizeDbDataGridView.ReadOnly = true;
+                this.m_dgvValues.ColumnHeadersHeightSizeMode = System.Windows.Forms.DataGridViewColumnHeadersHeightSizeMode.AutoSize;
+                this.m_dgvValues.AutoSizeRowsMode = DataGridViewAutoSizeRowsMode.AllCellsExceptHeaders;
+                this.m_dgvValues.AutoSizeColumnsMode = DataGridViewAutoSizeColumnsMode.Fill;
+                this.m_dgvValues.Dock = DockStyle.Fill;
+                this.m_dgvValues.ClearSelection();
+                this.m_dgvValues.Name = "SizeDbDataGridView";
+                this.m_dgvValues.ColumnCount = 3;
+                this.m_dgvValues.Columns[0].Name = "Имя базы данных";
+                this.m_dgvValues.Columns[1].Name = "Размер базы данных, МБ";
+                this.m_dgvValues.Columns[2].Name = "Время проверки";
+                this.m_dgvValues.RowHeadersVisible = false;
+                this.m_dgvValues.TabIndex = 0;
+                this.m_dgvValues.AllowUserToAddRows = false;
+                this.m_dgvValues.ReadOnly = true;
 
-                this.SizeDbDataGridView.CellClick += SizeDbDataGridView_CellClick;
-                this.SizeDbDataGridView.CellValueChanged += SizeDbDataGridView_CellClick;
+                m_labelDescription.Text = @"Размер БД";
+
+                this.m_dgvValues.CellClick += dgv_CellCancel;
+                this.m_dgvValues.CellValueChanged += dgv_CellCancel;
                 this.ResumeLayout();
             }
 
@@ -106,39 +132,23 @@ namespace StatisticDiagnostic
         /// </summary>
         partial class SizeDb
         {
-            private ListDiagnosticSource m_listDiagnosticSource;
+            private enum INDEX_CELL : short { NAME }
 
+            private class DataGridViewDbRow : DataGridViewRow
+            {
+                public string Name
+                {
+                    get { return Cells[(int)INDEX_CELL.NAME].Value.ToString(); }
+
+                    set { Cells[(int)INDEX_CELL.NAME].Value = value; }
+                }
+            }
             /// <summary>
             /// Загрузка значений
             /// </summary>
             public void Update(object rec)
             {
                 DataTable tableRecieved = rec as DataTable;
-                DataRow[] arSelSizeOF;
-                string filter = string.Empty;
-                int countID;
-
-                var m_enumIDEXTDB = (from r in m_listDiagnosticSource
-                                     where r.m_id_component >= (int)INDEX_SOURCE.SIZEDB && r.m_id_component < (int)INDEX_SOURCE.MODES - 100
-                                     select new
-                                     {
-                                         COMPONENT = r.m_id_component,
-                                     }).Distinct();
-
-                countID = m_enumIDEXTDB.Count();
-
-                for (int j = 0, countRow = 0; j < countID; j++, countRow += 2) {
-                    filter = "ID_EXT = '" + m_enumIDEXTDB.ElementAt(j).COMPONENT + "'";
-                    arSelSizeOF = tableRecieved.Select(filter);
-
-                    if (SizeDbDataGridView.RowCount < (countID * 2))
-                        AddRows(countID);
-                    else
-                        ;
-
-                    AddItem(arSelSizeOF, countRow);
-                    NameDb(arSelSizeOF, m_listDiagnosticSource.FindAll(item => { return item.m_id_component == m_enumIDEXTDB.ElementAt(j).COMPONENT; }), countRow);
-                }
             }
 
             /// <summary>
@@ -149,33 +159,18 @@ namespace StatisticDiagnostic
             {
                 for (int i = 0; i < dr.Count(); i++)
                 {
-                    if (SizeDbDataGridView.InvokeRequired)
+                    if (m_dgvValues.InvokeRequired)
                     {
-                        SizeDbDataGridView.Invoke(new Action(() => SizeDbDataGridView.Rows[row].Cells[1].Value = dr[i]["Value"]));
-                        SizeDbDataGridView.Invoke(new Action(() => SizeDbDataGridView.Rows[row].Cells[2].Value = TimeZoneInfo.ConvertTimeBySystemTimeZoneId(DateTime.Now, TimeZoneInfo.Local.Id, "Russian Standard Time").ToString("hh:mm:ss:fff")));
+                        m_dgvValues.Invoke(new Action(() => m_dgvValues.Rows[row].Cells[1].Value = dr[i]["Value"]));
+                        m_dgvValues.Invoke(new Action(() => m_dgvValues.Rows[row].Cells[2].Value = TimeZoneInfo.ConvertTimeBySystemTimeZoneId(DateTime.Now, TimeZoneInfo.Local.Id, "Russian Standard Time").ToString("hh:mm:ss:fff")));
                         row++;
                     }
                     else
                     {
-                        SizeDbDataGridView.Rows[row].Cells[1].Value = dr[i]["Value"];
-                        SizeDbDataGridView.Rows[row].Cells[2].Value = TimeZoneInfo.ConvertTimeBySystemTimeZoneId(DateTime.Now, TimeZoneInfo.Local.Id, "Russian Standard Time").ToString("hh:mm:ss:fff");
+                        m_dgvValues.Rows[row].Cells[1].Value = dr[i]["Value"];
+                        m_dgvValues.Rows[row].Cells[2].Value = TimeZoneInfo.ConvertTimeBySystemTimeZoneId(DateTime.Now, TimeZoneInfo.Local.Id, "Russian Standard Time").ToString("hh:mm:ss:fff");
                         row++;
                     }
-                }
-            }
-
-            /// <summary>
-            /// Добавление строк в датагрид
-            /// </summary>
-            /// <param name="countRows">кол-во строк</param>
-            private void AddRows(int countRows)
-            {
-                for (int i = 0; i < countRows; i++)
-                {
-                    if (SizeDbDataGridView.InvokeRequired)
-                        SizeDbDataGridView.Invoke(new Action(() => SizeDbDataGridView.Rows.Add()));
-                    else
-                        SizeDbDataGridView.Rows.Add();
                 }
             }
 
@@ -217,7 +212,7 @@ namespace StatisticDiagnostic
                     {
                         if (drMain[i]["ID_Value"].ToString() == listDiagSource[j].m_id.ToString())
                         {
-                            SizeDbDataGridView.Rows[nextrow].Cells[0].Value = listDiagSource[j].m_description;
+                            m_dgvValues.Rows[nextrow].Cells[0].Value = listDiagSource[j].m_description;
                             nextrow++;
                         }
                     }
@@ -229,12 +224,12 @@ namespace StatisticDiagnostic
             /// </summary>
             /// <param name="sender"></param>
             /// <param name="e"></param>
-            void SizeDbDataGridView_CellClick(object sender, DataGridViewCellEventArgs e)
+            void dgv_CellCancel(object sender, DataGridViewCellEventArgs e)
             {
                 try
                 {
-                    if (SizeDbDataGridView.SelectedCells.Count > 0)
-                        SizeDbDataGridView.SelectedCells[0].Selected = false;
+                    if (m_dgvValues.SelectedCells.Count > 0)
+                        m_dgvValues.SelectedCells[0].Selected = false;
                     else
                         ;
                 }

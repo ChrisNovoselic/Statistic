@@ -696,6 +696,7 @@ namespace StatisticDiagnostic
         {
             int err = -1; //Признак выполнения метода/функции
             List<TEC> listTEC;
+            ListDiagnosticSource listDiagnosticSource;
 
             HDataSource.RegisterConfigDb(out err);
 
@@ -704,7 +705,7 @@ namespace StatisticDiagnostic
 
             listTEC = m_DataSource.GetListTEC(out err);
 
-            m_listDiagnosticSource = new ListDiagnosticSource(m_DataSource.GetDiagnosticSource(out err));
+            listDiagnosticSource = new ListDiagnosticSource(m_DataSource.GetDiagnosticSource(out err));
 
             m_tableSourceList = m_DataSource.GetSource(out err);
 
@@ -720,15 +721,13 @@ namespace StatisticDiagnostic
                 , panelContainerTec_onSourceIdChanged);
             m_modesdb = new PanelContainerModes(listTEC
                 , m_listDiagnosticParameter.FindAll(item => { return item.m_id_container.Equals(ID_CONTAINER_PANEL.MODES.ToString()); })
-                , m_listDiagnosticSource);
-            m_taskdb = new PanelTask();
-            m_sizedb = new SizeDb(m_listDiagnosticSource);
+                , listDiagnosticSource);
+            m_taskdb = new PanelTask(listDiagnosticSource);
+            m_sizedb = new SizeDb(listDiagnosticSource);
 
             HDataSource.UnregisterConfigDb();
 
             InitializeComponent();
-
-            this.Controls.Add(m_tecdb, 0, 0); this.SetColumnSpan(m_tecdb, COUNT_LAYOUT_COLUMN); this.SetRowSpan(m_tecdb, 6);
 
             return err;
         }
@@ -783,9 +782,11 @@ namespace StatisticDiagnostic
         {
             m_DataSource.Start();
             m_DataSource.StartDbInterfaces();
+            // ??? самостоятельная обработка не требуется
             //m_DataSource.EvtRecievedActiveSource += new DelegateObjectFunc(dataSource_OnEvtRecievedActiveSource);
+            //m_DataSource.EvtRecievedTable += new DelegateObjectFunc(dataSource_OnEvtRecievedTable);
+            // обработчики события получения данных
             m_DataSource.EvtRecievedActiveSource += new DelegateObjectFunc(m_tecdb.Update);
-            m_DataSource.EvtRecievedTable += new DelegateObjectFunc(dataSource_OnEvtRecievedTable);
             m_DataSource.EvtRecievedTable += new DelegateObjectFunc(m_tecdb.Update);
             m_DataSource.EvtRecievedTable += new DelegateObjectFunc(m_modesdb.Update);
             m_DataSource.EvtRecievedTable += new DelegateObjectFunc(m_taskdb.Update);
@@ -842,7 +843,7 @@ namespace StatisticDiagnostic
             public ListDiagnosticSource() : base() { }
         }
 
-        private ListDiagnosticSource m_listDiagnosticSource;        
+        //private ListDiagnosticSource m_listDiagnosticSource;        
 
         private struct SOURCE
         {

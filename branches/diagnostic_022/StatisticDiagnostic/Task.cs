@@ -20,25 +20,50 @@ namespace StatisticDiagnostic
         /// </summary>
         private partial class PanelTask : HPanelCommon
         {
-            public DataGridView m_dgvValues;
+            /// <summary>
+            /// Количество столбцов, строк в сетке макета
+            /// </summary>
+            private const int COUNT_LAYOUT_COLUMN = 1
+                , COUNT_LAYOUT_ROW = 9;
 
-            public PanelTask()
-                : base(-1, -1)
+            private DataGridView m_dgvValues;
+
+            private Label m_labelDescription;
+
+            public PanelTask(ListDiagnosticSource listDiagnosticSource)
+                : base(COUNT_LAYOUT_COLUMN, COUNT_LAYOUT_ROW)
             {
-                initialize();
+                initialize(listDiagnosticSource);
             }
 
-            public PanelTask(IContainer container)
-                : base(container, -1, -1)
+            public PanelTask(IContainer container, ListDiagnosticSource listDiagnosticSource)
+                : base(container, COUNT_LAYOUT_COLUMN, COUNT_LAYOUT_ROW)
             {
                 container.Add(this);
 
-                initialize();
+                initialize(listDiagnosticSource);
             }
 
-            private void initialize()
+            private void initialize(ListDiagnosticSource listDiagnosticSource)
             {
-                InitializeComponentTask();
+                ListDiagnosticSource listDiagSrc;
+                int iNewRow = -1;
+
+                initializeLayoutStyle();
+
+                InitializeComponent();
+
+                listDiagSrc = new ListDiagnosticSource(listDiagnosticSource.FindAll(item => {
+                    return item.m_id_component < (int)INDEX_SOURCE.SIZEDB;
+                }));
+
+                foreach (DIAGNOSTIC_SOURCE src in listDiagSrc) {
+                    iNewRow = m_dgvValues.Rows.Add(new DataGridViewTaskRow());
+
+                    m_dgvValues.Rows[iNewRow].Tag = src.m_id_component;
+
+                    (m_dgvValues.Rows[iNewRow] as DataGridViewTaskRow).Name = src.m_name_shr;
+                }
             }
 
             protected override void initializeLayoutStyle(int cols = -1, int rows = -1)
@@ -62,15 +87,23 @@ namespace StatisticDiagnostic
                 base.Dispose(disposing);
             }
 
+            private enum INDEX_CELL : short { NAME, AVG_RUNTIME, DATETIME_VERIFICATION, DATETIME_RUN, ERROR_DESCRIPTION, STATE
+                , COUNT
+            }
+
             #region Код, автоматически созданный конструктором компонентов
 
             /// <summary>
             /// Обязательный метод для поддержки конструктора - не изменяйте
             /// содержимое данного метода при помощи редактора кода.
             /// </summary>
-            private void InitializeComponentTask()
+            private void InitializeComponent()
             {
-                m_dgvValues = new System.Windows.Forms.DataGridView();
+                //this.CellBorderStyle = TableLayoutPanelCellBorderStyle.Outset;
+
+                m_dgvValues = new System.Windows.Forms.DataGridView(); this.Controls.Add(m_dgvValues, 0, 1); this.SetRowSpan(m_dgvValues, COUNT_LAYOUT_ROW - 1);
+                m_labelDescription = new Label(); this.Controls.Add(m_labelDescription, 0, 0);
+
                 this.SuspendLayout();
 
                 this.m_dgvValues.ColumnHeadersHeightSizeMode = System.Windows.Forms.DataGridViewColumnHeadersHeightSizeMode.AutoSize;
@@ -79,26 +112,24 @@ namespace StatisticDiagnostic
                 this.m_dgvValues.Dock = DockStyle.Fill;
                 this.m_dgvValues.ClearSelection();
                 this.m_dgvValues.Name = "TaskDataGridView";
-                this.m_dgvValues.ColumnCount = 6;
-                this.m_dgvValues.Columns[0].Name = "Имя задачи";
-                this.m_dgvValues.Columns[1].Name = "Среднее время выполнения";
-                this.m_dgvValues.Columns[3].Name = "Время проверки";
-                this.m_dgvValues.Columns[2].Name = "Время выполнения задачи";
-                this.m_dgvValues.Columns[4].Name = "Описание ошибки";
-                this.m_dgvValues.Columns[5].Name = "Статус задачи";
-                this.m_dgvValues.Columns[0].Width = 30;
-                this.m_dgvValues.Columns[1].Width = 12;
-                this.m_dgvValues.Columns[3].Width = 5;
-                this.m_dgvValues.Columns[2].Width = 15;
-                this.m_dgvValues.Columns[4].Width = 20;
-                this.m_dgvValues.Columns[5].Width = 15;
+                this.m_dgvValues.ColumnCount = (int)INDEX_CELL.COUNT;
+                this.m_dgvValues.Columns[(int)INDEX_CELL.NAME].Name = "Имя задачи"; this.m_dgvValues.Columns[(int)INDEX_CELL.NAME].Width = 30;
+                this.m_dgvValues.Columns[(int)INDEX_CELL.AVG_RUNTIME].Name = "Среднее время выполнения"; this.m_dgvValues.Columns[(int)INDEX_CELL.AVG_RUNTIME].Width = 12;
+                this.m_dgvValues.Columns[(int)INDEX_CELL.DATETIME_VERIFICATION].Name = "Время проверки"; this.m_dgvValues.Columns[(int)INDEX_CELL.DATETIME_VERIFICATION].Width = 5;
+                this.m_dgvValues.Columns[(int)INDEX_CELL.DATETIME_RUN].Name = "Время выполнения задачи"; this.m_dgvValues.Columns[(int)INDEX_CELL.DATETIME_RUN].Width = 15;
+                this.m_dgvValues.Columns[(int)INDEX_CELL.ERROR_DESCRIPTION].Name = "Описание ошибки"; this.m_dgvValues.Columns[(int)INDEX_CELL.ERROR_DESCRIPTION].Width = 20;
+                this.m_dgvValues.Columns[(int)INDEX_CELL.STATE].Name = "Статус задачи"; this.m_dgvValues.Columns[(int)INDEX_CELL.STATE].Width = 15;
                 this.m_dgvValues.RowHeadersVisible = false;
                 this.m_dgvValues.TabIndex = 0;
                 this.m_dgvValues.AllowUserToAddRows = false;
                 this.m_dgvValues.ReadOnly = true;
 
-                this.m_dgvValues.CellClick += TaskDataGridView_CellClick;
-                this.m_dgvValues.CellValueChanged += TaskDataGridView_CellClick;
+                m_labelDescription.Text = @"Задачи по расписанию";
+                m_labelDescription.Dock = DockStyle.Fill;
+
+                this.m_dgvValues.CellClick += dgv_CellCancel;
+                this.m_dgvValues.CellValueChanged += dgv_CellCancel;
+
                 this.ResumeLayout();
             }
 
@@ -112,6 +143,16 @@ namespace StatisticDiagnostic
         /// </summary>
         partial class PanelTask
         {
+            private class DataGridViewTaskRow : DataGridViewRow
+            {
+                public string Name
+                {
+                    get { return Cells[(int)INDEX_CELL.NAME].Value.ToString(); }
+
+                    set { Cells[(int)INDEX_CELL.NAME].Value = value; }
+                }
+            }
+
             public void Update(object table)
             {
             }
@@ -128,71 +169,19 @@ namespace StatisticDiagnostic
             }
 
             /// <summary>
-            /// Функция для заполнения 
-            /// грида информацией о задачах
-            /// </summary>
-            public void AddItem()
-            {
-                DataRow[] drNameTask;
-                string filter;
-                int enumCnt;
-
-                try
-                {
-                    //var m_enumIDtask = (from r in m_tableSourceData.AsEnumerable()
-                    //                    where r.Field<string>("ID_Value") == "28"
-                    //                    select new
-                    //                    {
-                    //                        NAME = r.Field<string>("NAME_SHR"),
-                    //                    }).Distinct();
-
-                    //enumCnt = m_enumIDtask.Count();
-
-                    //if (m_dgvValues.Rows.Count < enumCnt)
-                    //    addRowsTask(enumCnt);
-
-                    //for (int i = 0; i < enumCnt; i++)
-                    //{
-                    //    filter = "NAME_SHR = '" + m_enumIDtask.ElementAt(i).NAME + "'";
-                    //    drNameTask = m_tableSourceData.Select(filter);
-
-                    //    if (m_dgvValues.InvokeRequired)
-                    //    {
-                    //        columTimeTask(i);
-                    //        m_dgvValues.Invoke(new Action(() => m_dgvValues.Rows[i].Cells[1].Value = ToDateTime(drNameTask[0]["Value"])));
-                    //        m_dgvValues.Invoke(new Action(() => m_dgvValues.Rows[i].Cells[2].Value = formatTime(drNameTask[1]["Value"].ToString())));
-                    //        m_dgvValues.Invoke(new Action(() => m_dgvValues.Rows[i].Cells[0].Value = drNameTask[0]["NAME_SHR"]));
-                    //    }
-                    //    else
-                    //    {
-                    //        columTimeTask(i);
-                    //        m_dgvValues.Rows[i].Cells[1].Value = drNameTask[0]["Value"];
-                    //        m_dgvValues.Rows[i].Cells[2].Value = formatTime(drNameTask[1]["Value"].ToString());
-                    //        m_dgvValues.Rows[i].Cells[0].Value = drNameTask[0]["NAME_SHR"];
-                    //    }
-                    //}
-
-                    //overLimit();
-                }
-                catch (Exception e)
-                {
-                    MessageBox.Show("Ошибка заполнения субобласти Задачи" + e + "");
-                }
-            }
-
-            /// <summary>
             /// Снятие выделения с ячеек
             /// </summary>
-            /// <param name="sender"></param>
-            /// <param name="e"></param>
-            void TaskDataGridView_CellClick(object sender, DataGridViewCellEventArgs e)
+            /// <param name="sender">объект, инициировавший событие</param>
+            /// <param name="e">Аргумент события</param>
+            void dgv_CellCancel(object sender, DataGridViewCellEventArgs e)
             {
-                try
-                {
+                try {
                     if (m_dgvValues.SelectedCells.Count > 0)
                         m_dgvValues.SelectedCells[0].Selected = false;
+                    else
+                        ;
+                } catch {
                 }
-                catch { }
             }
 
             /// <summary>
@@ -226,9 +215,9 @@ namespace StatisticDiagnostic
             /// <param name="i">номер строки</param>
             private void columTimeTask(int i)
             {
-                string m_timeNow =
+                string strNow =
                     TimeZoneInfo.ConvertTimeBySystemTimeZoneId(DateTime.Now, TimeZoneInfo.Local.Id, "Russian Standard Time").ToString("hh:mm:ss:fff");
-                m_dgvValues.Rows[i].Cells[3].Value = m_timeNow;
+                m_dgvValues.Rows[i].Cells[3].Value = strNow;
             }
 
             /// <summary>
