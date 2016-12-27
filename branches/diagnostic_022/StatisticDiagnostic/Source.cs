@@ -476,7 +476,7 @@ namespace StatisticDiagnostic
                     /// <summary>
                     /// Наименование источника - постоянная величина, устанавливается при создании строки
                     /// </summary>
-                    public string Name {
+                    public override string Name {
                         get {
                             return (string)Cells[(int)INDEX_CELL.NAME_SOURCE].Value;
                         }

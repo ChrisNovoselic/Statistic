@@ -248,17 +248,23 @@ namespace Statistic
                     файлПрофильАвтоЗагрузитьСохранитьToolStripMenuItem.Checked = markSett.IsMarked(1);
 
                     //Инструмент администратора - доступ по роли
+                    администрированиеToolStripMenuItem.Enabled =
                     параметрыToolStripMenuItem.Enabled =
-                    администрированиеToolStripMenuItem.Enabled =                        
-                    m_dictAddingTabs[(int)ID_ADDING_TAB.DATETIMESYNC_SOURCE_DATA].menuItem.Enabled =
-                    m_dictAddingTabs[(int)ID_ADDING_TAB.DIAGNOSTIC].menuItem.Enabled =
-                    m_dictAddingTabs[(int)ID_ADDING_TAB.ANALYZER].menuItem.Enabled =
-                    m_dictAddingTabs[(int)ID_ADDING_TAB.TEC_Component].menuItem.Enabled =
-                    m_dictAddingTabs[(int)ID_ADDING_TAB.USERS].menuItem.Enabled =
-                        HStatisticUsers.RoleIsAdmin;
+                        m_dictAddingTabs[(int)ID_ADDING_TAB.DATETIMESYNC_SOURCE_DATA].menuItem.Enabled =
+                        m_dictAddingTabs[(int)ID_ADDING_TAB.DIAGNOSTIC].menuItem.Enabled =
+                        m_dictAddingTabs[(int)ID_ADDING_TAB.ANALYZER].menuItem.Enabled =
+                        m_dictAddingTabs[(int)ID_ADDING_TAB.TEC_Component].menuItem.Enabled =
+                        m_dictAddingTabs[(int)ID_ADDING_TAB.USERS].menuItem.Enabled =
+                            HStatisticUsers.RoleIsAdmin;
                     //Инструмент администратора - проверка дополнительных настроек [profiles]
-                    m_dictAddingTabs[(int)ID_ADDING_TAB.DATETIMESYNC_SOURCE_DATA].menuItem.Enabled &= HStatisticUsers.IsAllowed((int)HStatisticUsers.ID_ALLOWED.MENUITEM_SETTING_PARAMETERS_SYNC_DATETIME_DB);
-                    m_dictAddingTabs[(int)ID_ADDING_TAB.DIAGNOSTIC].menuItem.Enabled &= HStatisticUsers.IsAllowed((int)HStatisticUsers.ID_ALLOWED.MENUITEM_SETTING_PARAMETERS_DIAGNOSTIC);
+                    m_dictAddingTabs[(int)ID_ADDING_TAB.DATETIMESYNC_SOURCE_DATA].menuItem.Enabled = HStatisticUsers.IsAllowed((int)HStatisticUsers.ID_ALLOWED.MENUITEM_SETTING_PARAMETERS_SYNC_DATETIME_DB);
+                    m_dictAddingTabs[(int)ID_ADDING_TAB.DIAGNOSTIC].menuItem.Enabled = HStatisticUsers.IsAllowed((int)HStatisticUsers.ID_ALLOWED.MENUITEM_SETTING_PARAMETERS_DIAGNOSTIC);
+                    m_dictAddingTabs[(int)ID_ADDING_TAB.TEC_Component].menuItem.Enabled = HStatisticUsers.IsAllowed((int)HStatisticUsers.ID_ALLOWED.MENUITEM_SETTING_ADMIN_TECCOMPONENT_CHANGE);
+
+                    администрированиеToolStripMenuItem.Enabled |=
+                        m_dictAddingTabs[(int)ID_ADDING_TAB.DATETIMESYNC_SOURCE_DATA].menuItem.Enabled
+                        || m_dictAddingTabs[(int)ID_ADDING_TAB.DIAGNOSTIC].menuItem.Enabled
+                        || m_dictAddingTabs[(int)ID_ADDING_TAB.TEC_Component].menuItem.Enabled;
 
                     //ProgramBase.s_iAppID = Int32.Parse ((string)Properties.Settings.Default [@"AppID"]);
                     ProgramBase.s_iAppID = Int32.Parse((string)Properties.Resources.AppID);
@@ -2009,19 +2015,29 @@ namespace Statistic
 
         private void сменитьРежимToolStripMenuItem_EnabledChanged(object sender, EventArgs e)
         {
-            bool bPrevEnabled = видToolStripMenuItem.Enabled // предцдущее состояние по одному из (например, 1-му в списке) п.п. меню
+            bool bPrevEnabled = видToolStripMenuItem.Enabled // предыдущее состояние по одному из (например, 1-му в списке) п.п. меню
                 , bCurEnabled = (sender as ToolStripMenuItem).Enabled;
 
             if (!(bCurEnabled == bPrevEnabled))
             {
-                видToolStripMenuItem.Enabled =
+                видToolStripMenuItem.Enabled = bCurEnabled;
+
+                настройкиСоединенияБДКонфToolStripMenuItem.Enabled =                
                 настройкиСоединенияБДИсточникToolStripMenuItem.Enabled =
+                    bCurEnabled && (HStatisticUsers.RoleIsAdmin == true);
+                ////Вариант №1 - индивидуальные пароли - установить индивидуально
+                //изменитьПарольДиспетчераToolStripMenuItem.Enabled = bCurEnabled && ((HStatisticUsers.RoleIsAdmin == true) || (HStatisticUsers.RoleIsKomDisp == true));
+                //изменитьПарольАдминистратораToolStripMenuItem.Enabled = bCurEnabled && (HStatisticUsers.RoleIsAdmin == true);
+                //изменитьПарольНССToolStripMenuItem.Enabled = bCurEnabled && ((HStatisticUsers.RoleIsAdmin == true) || (HStatisticUsers.Role == HStatisticUsers.ID_ROLES.NSS));
+                //изменитьПарольЛКДиспетчераToolStripMenuItem.Enabled = bCurEnabled && ((HStatisticUsers.RoleIsAdmin == true) || (HStatisticUsers.Role == HStatisticUsers.ID_ROLES.LK_DISP));
+                //Вариант №2 - индивидуальные пароли - установить на общих основаниях
                 изменитьПарольДиспетчераToolStripMenuItem.Enabled =
                 изменитьПарольАдминистратораToolStripMenuItem.Enabled =
                 изменитьПарольНССToolStripMenuItem.Enabled =
                 изменитьПарольЛКДиспетчераToolStripMenuItem.Enabled =
-                параметрыToolStripMenuItem.Enabled =
-                    bCurEnabled;
+                    bCurEnabled && (HStatisticUsers.RoleIsAdmin == true);
+
+                параметрыToolStripMenuItem.Enabled = bCurEnabled;
                 // разрешить использование дочерних п.п.
                 if (bCurEnabled == true)
                 {
@@ -2457,7 +2473,9 @@ namespace Statistic
         {
             if (m_dictAddingTabs[(int)ID_ADDING_TAB.DIAGNOSTIC].panel == null)
             {
-                m_dictAddingTabs[(int)ID_ADDING_TAB.DIAGNOSTIC].panel = new PanelStatisticDiagnostic();
+                m_dictAddingTabs[(int)ID_ADDING_TAB.DIAGNOSTIC].panel = new PanelStatisticDiagnostic(HStatisticUsers.Role == HStatisticUsers.ID_ROLES.ADMIN ?
+                    PanelStatisticDiagnostic.Mode.DEFAULT :
+                        PanelStatisticDiagnostic.Mode.SOURCE_ONLY);
                 m_dictAddingTabs[(int)ID_ADDING_TAB.DIAGNOSTIC].panel.SetDelegateReport (ErrorReport, WarningReport, ActionReport, ReportClear);
             }
             else

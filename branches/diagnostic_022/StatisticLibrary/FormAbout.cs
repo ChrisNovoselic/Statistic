@@ -1,12 +1,17 @@
 using System;
-using System.Collections.Generic;
-//using System.ComponentModel;
-using System.Data;
 using System.Drawing;
-using System.Text;
 using System.Windows.Forms;
 
 using HClassLibrary;
+
+/*
+Автор проекта: Лукашевич А.А. 2012 г. - 
+Разработчики: Качайло Михаил 2012 - 2013 г.
+Ревякин Е.А. (БД) 2014 г. - 
+Хряпин А.Н. 2013 г. - 
+Апельганс А.В. 2016 г.
+Пастернак А.С. 2015 - 2016 г.
+*/
 
 namespace StatisticCommon
 {

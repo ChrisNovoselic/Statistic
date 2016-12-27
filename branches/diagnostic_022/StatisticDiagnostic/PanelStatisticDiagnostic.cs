@@ -143,10 +143,13 @@ namespace StatisticDiagnostic
 
             this.SuspendLayout();
 
-            this.Controls.Add(m_tecdb, 0, 0); this.SetColumnSpan(m_tecdb, 8); this.SetRowSpan(m_tecdb, 6);
-            this.Controls.Add(m_modesdb, 0, 6); this.SetColumnSpan(m_modesdb, 8); this.SetRowSpan(m_modesdb, 6);
-            this.Controls.Add(m_taskdb, 0, 12); this.SetColumnSpan(m_taskdb, 5); this.SetRowSpan(m_taskdb, 4);
-            this.Controls.Add(m_sizedb, 5, 12); this.SetColumnSpan(m_sizedb, 3); this.SetRowSpan(m_sizedb, 4);
+            this.Controls.Add(m_tecdb, 0, 0); this.SetColumnSpan(m_tecdb, 8); this.SetRowSpan(m_tecdb, m_Mode == Mode.DEFAULT ? 6 : 16);
+            if (m_Mode == Mode.DEFAULT) {
+                this.Controls.Add(m_modesdb, 0, 6); this.SetColumnSpan(m_modesdb, 8); this.SetRowSpan(m_modesdb, 6);
+                this.Controls.Add(m_taskdb, 0, 12); this.SetColumnSpan(m_taskdb, 5); this.SetRowSpan(m_taskdb, 4);
+                this.Controls.Add(m_sizedb, 5, 12); this.SetColumnSpan(m_sizedb, 3); this.SetRowSpan(m_sizedb, 4);
+            } else
+                ;
 
             this.ResumeLayout();
 
@@ -162,10 +165,7 @@ namespace StatisticDiagnostic
     /// </summary>
     public partial class PanelStatisticDiagnostic : PanelStatistic
     {
-        private static DataTable m_tableSourceList = new DataTable();
-        //private static DataTable m_tableGTPList = new DataTable();
-        //private static DataTable m_tableTECList = new DataTable();
-        private static DataTable m_tableParamDiagnostic = new DataTable();
+        public enum Mode : short { DEFAULT, SOURCE_ONLY }
         /// <summary>
         /// Перечесления типов источников
         /// </summary>
@@ -194,6 +194,8 @@ namespace StatisticDiagnostic
 
             public string m_name_shr;
         }
+
+        public Mode m_Mode { get; set; }
         /// <summary>
         /// Экземпляр класса 
         ///  для подключения/отправления/получения запросов к БД
@@ -254,12 +256,18 @@ namespace StatisticDiagnostic
             VALIDATE_ASKUE_TM;
         public static DateTime SERVER_TIME;//серверное время
 
+        private interface IDataGridViewDiagnosticRow
+        {
+            string Name { get; set; }
+        }
+
         /// <summary>
         /// Элемент интерфейса - строка в представлении для отображения данных
         /// </summary>
-        private abstract class DataGridViewDiagnosticRow : DataGridViewRow
+        private abstract class DataGridViewDiagnosticRow : DataGridViewRow, IDataGridViewDiagnosticRow
         {
-            public string Name { get; set; }
+            public abstract string Name { get; set; }
+
             /// <summary>
             /// Форматировать значение даты времени
             /// </summary>
@@ -288,7 +296,7 @@ namespace StatisticDiagnostic
             m_timerUpdate = new System.Timers.Timer();
             //m_timerUpdate.Enabled = true;
             m_timerUpdate.AutoReset = true;
-            m_timerUpdate.Elapsed += new ElapsedEventHandler(UpdateTimer_Elapsed);
+            m_timerUpdate.Elapsed += new ElapsedEventHandler(updateTimer_OnElapsed);
             m_timerUpdate.Interval = Convert.ToDouble(UPDATE_TIME);
             GC.KeepAlive(m_timerUpdate);
         }
@@ -298,7 +306,7 @@ namespace StatisticDiagnostic
         /// </summary>
         /// <param name="source">Объект, инициировавший событие(таймер)</param>
         /// <param name="e">Аргумент события</param>
-        public void UpdateTimer_Elapsed(object source, ElapsedEventArgs e)
+        private void updateTimer_OnElapsed(object source, ElapsedEventArgs e)
         {
             m_DataSource.Command();
         }
@@ -657,8 +665,10 @@ namespace StatisticDiagnostic
         /// <summary>
         /// constructor
         /// </summary>
-        public PanelStatisticDiagnostic() : base (COUNT_LAYOUT_COLUMN, COUNT_LAYOUT_ROW)
+        public PanelStatisticDiagnostic(Mode mode = Mode.DEFAULT) : base (COUNT_LAYOUT_COLUMN, COUNT_LAYOUT_ROW)
         {
+            m_Mode = mode;
+
             initialize();
         }
 
@@ -666,9 +676,11 @@ namespace StatisticDiagnostic
         /// constructor
         /// </summary>
         /// <param name="container"></param>
-        public PanelStatisticDiagnostic(IContainer container) : base(COUNT_LAYOUT_COLUMN, COUNT_LAYOUT_ROW)
+        public PanelStatisticDiagnostic(IContainer container, Mode mode = Mode.DEFAULT) : base(COUNT_LAYOUT_COLUMN, COUNT_LAYOUT_ROW)
         {
             container.Add(this);
+
+            m_Mode = mode;
 
             initialize();
         }
@@ -682,6 +694,7 @@ namespace StatisticDiagnostic
         {
             int err = -1; //Признак выполнения метода/функции
             List<TEC> listTEC;
+            ListDiagnosticParameter listDiagnosticParameter;
             ListDiagnosticSource listDiagnosticSource;
 
             HDataSource.RegisterConfigDb(out err);
@@ -693,23 +706,23 @@ namespace StatisticDiagnostic
 
             listDiagnosticSource = new ListDiagnosticSource(m_DataSource.GetDiagnosticSource(out err));
 
-            m_tableSourceList = m_DataSource.GetSource(out err);
-
-            //m_tableGTPList = m_DataSource.GetListGTP(out err);
-
-            m_tableParamDiagnostic = m_DataSource.GetDiagnosticParameter (out err);
-            m_listDiagnosticParameter = new ListDiagnosticParameter(m_tableParamDiagnostic);
+            listDiagnosticParameter = new ListDiagnosticParameter(m_DataSource.GetDiagnosticParameter(out err));
 
             //m_tableTECList = m_DataSource.GetDataTableTEC(out err);
 
             m_tecdb = new PanelContainerTec(listTEC
-                , m_listDiagnosticParameter.FindAll(item => { return item.m_id_container.Equals(ID_CONTAINER_PANEL.TEC.ToString()); })
+                , listDiagnosticParameter.FindAll(item => { return item.m_id_container.Equals(ID_CONTAINER_PANEL.TEC.ToString()); })
                 , panelContainerTec_onSourceIdChanged);
-            m_modesdb = new PanelContainerModes(listTEC
-                , m_listDiagnosticParameter.FindAll(item => { return item.m_id_container.Equals(ID_CONTAINER_PANEL.MODES.ToString()); })
-                , listDiagnosticSource);
-            m_taskdb = new PanelTask(listDiagnosticSource);
-            m_sizedb = new SizeDb(listDiagnosticSource);
+            // проверить режим отображения панели
+            if (m_Mode == Mode.DEFAULT) {
+            // только в режиме по умолчанию
+                m_modesdb = new PanelContainerModes(listTEC
+                    , listDiagnosticParameter.FindAll(item => { return item.m_id_container.Equals(ID_CONTAINER_PANEL.MODES.ToString()); })
+                    , listDiagnosticSource);
+                m_taskdb = new PanelTask(listDiagnosticSource);
+                m_sizedb = new SizeDb(listDiagnosticSource);
+            } else
+                ;
 
             HDataSource.UnregisterConfigDb();
 
@@ -774,9 +787,12 @@ namespace StatisticDiagnostic
             // обработчики события получения данных
             m_DataSource.EvtRecievedActiveSource += new DelegateObjectFunc(m_tecdb.Update);
             m_DataSource.EvtRecievedTable += new DelegateObjectFunc(m_tecdb.Update);
-            m_DataSource.EvtRecievedTable += new DelegateObjectFunc(m_modesdb.Update);
-            m_DataSource.EvtRecievedTable += new DelegateObjectFunc(m_taskdb.Update);
-            m_DataSource.EvtRecievedTable += new DelegateObjectFunc(m_sizedb.Update);
+            if (m_Mode == Mode.DEFAULT) {
+                m_DataSource.EvtRecievedTable += new DelegateObjectFunc(m_modesdb.Update);
+                m_DataSource.EvtRecievedTable += new DelegateObjectFunc(m_taskdb.Update);
+                m_DataSource.EvtRecievedTable += new DelegateObjectFunc(m_sizedb.Update);
+            } else
+                ;            
         }
 
         /// <summary>
@@ -892,13 +908,15 @@ namespace StatisticDiagnostic
             public ListDiagnosticParameter() : base() { }
         }
 
-        private ListDiagnosticParameter m_listDiagnosticParameter;
-
         private void clear()
         {
             m_tecdb.Clear();
-            m_modesdb.Clear();
-            m_taskdb.Clear();
+            if (m_Mode == Mode.DEFAULT) {
+                m_modesdb.Clear();
+                m_taskdb.Clear();
+                //m_sizedb.Clear();
+            } else
+                ;
         }
 
         /// <summary>

@@ -222,6 +222,9 @@ namespace StatisticDiagnostic
 
             private class DataGridViewDiagnosticDbRow : DataGridViewDiagnosticRow
             {
+                /// <summary>
+                /// Идентификатор строки
+                /// </summary>
                 public struct KEY_TAG
                 {
                     public int m_id;
@@ -250,12 +253,13 @@ namespace StatisticDiagnostic
                     }
                 }
 
-                public string Name
+                public override string Name
                 {
                     get { return Cells[(int)INDEX_CELL.NAME].Value.ToString(); }
 
                     set { Cells[(int)INDEX_CELL.NAME].Value = value; }
                 }
+
                 public bool Enabled { get; set; }
 
                 public void SetValueCells(object []values)

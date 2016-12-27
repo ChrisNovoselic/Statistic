@@ -299,7 +299,7 @@ namespace StatisticDiagnostic
                 /// <summary>
                 /// Описание строки - значение 0-го столбца
                 /// </summary>
-                public string Name
+                public override string Name
                 {
                     get { return Cells[(int)INDEX_CELL.NAME].Value.ToString(); }
 

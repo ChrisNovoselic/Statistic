@@ -44,7 +44,7 @@ namespace StatisticDiagnostic
             CreatefileConnSett(@"connsett.ini");
             Start();
             bAbort = initialize(out msg);
-            this.panelMain = new PanelStatisticDiagnostic();
+            this.panelMain = new PanelStatisticDiagnostic(PanelStatisticDiagnostic.Mode.SOURCE_ONLY);
             this.panelMain.SetDelegateReport(ErrorReport, WarningReport, ActionReport, ReportClear);
             //Создать панель для размещения "рабочих" панелей
             Panel _panelMain = new Panel();
