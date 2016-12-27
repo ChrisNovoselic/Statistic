@@ -36,10 +36,9 @@ namespace StatisticCommon
             this.m_lblProductVersion = new System.Windows.Forms.Label();
             this.linkLabel2 = new System.Windows.Forms.LinkLabel();
             this.m_lblDomainMashineUserName = new System.Windows.Forms.Label();
-            this.linkLabel3 = new System.Windows.Forms.LinkLabel();
-            this.linkLabel4 = new System.Windows.Forms.LinkLabel();
             this.label2 = new System.Windows.Forms.Label();
             this.m_lblCustomer = new System.Windows.Forms.Label();
+            this.linkLabel3 = new System.Windows.Forms.LinkLabel();
             ((System.ComponentModel.ISupportInitialize)(this.pictureBox1)).BeginInit();
             this.SuspendLayout();
             // 
@@ -56,15 +55,15 @@ namespace StatisticCommon
             // 
             this.label1.Location = new System.Drawing.Point(66, 61);
             this.label1.Name = "label1";
-            this.label1.Size = new System.Drawing.Size(141, 80);
+            this.label1.Size = new System.Drawing.Size(141, 67);
             this.label1.TabIndex = 2;
-            this.label1.Text = "Команда разработчиков:\r\nКачайло Михаил,\r\nРевякин Е.А.,\r\nХряпин А.Н.,\r\nАпельганс А" +
-    ".В.,\r\nПастернак А.С.";
+            this.label1.Text = "Команда разработчиков:\r\nЛукашевич А.А.\r\nКачайло Михаил,\r\nРевякин Е.А.,\r\nХряпин А." +
+    "Н.,";
             // 
             // llblMailTo
             // 
             this.llblMailTo.AutoSize = true;
-            this.llblMailTo.Location = new System.Drawing.Point(206, 73);
+            this.llblMailTo.Location = new System.Drawing.Point(206, 82);
             this.llblMailTo.Name = "llblMailTo";
             this.llblMailTo.Size = new System.Drawing.Size(106, 13);
             this.llblMailTo.TabIndex = 1;
@@ -74,7 +73,7 @@ namespace StatisticCommon
             // 
             // btnClose
             // 
-            this.btnClose.Location = new System.Drawing.Point(145, 144);
+            this.btnClose.Location = new System.Drawing.Point(145, 126);
             this.btnClose.Name = "btnClose";
             this.btnClose.Size = new System.Drawing.Size(75, 23);
             this.btnClose.TabIndex = 0;
@@ -85,7 +84,7 @@ namespace StatisticCommon
             // linkLabel1
             // 
             this.linkLabel1.AutoSize = true;
-            this.linkLabel1.Location = new System.Drawing.Point(206, 86);
+            this.linkLabel1.Location = new System.Drawing.Point(206, 95);
             this.linkLabel1.Name = "linkLabel1";
             this.linkLabel1.Size = new System.Drawing.Size(128, 13);
             this.linkLabel1.TabIndex = 3;
@@ -106,7 +105,7 @@ namespace StatisticCommon
             // linkLabel2
             // 
             this.linkLabel2.AutoSize = true;
-            this.linkLabel2.Location = new System.Drawing.Point(206, 99);
+            this.linkLabel2.Location = new System.Drawing.Point(206, 108);
             this.linkLabel2.Name = "linkLabel2";
             this.linkLabel2.Size = new System.Drawing.Size(122, 13);
             this.linkLabel2.TabIndex = 5;
@@ -123,26 +122,6 @@ namespace StatisticCommon
             this.m_lblDomainMashineUserName.Size = new System.Drawing.Size(154, 13);
             this.m_lblDomainMashineUserName.TabIndex = 6;
             this.m_lblDomainMashineUserName.Text = "DomainMashineUserName";
-            // 
-            // linkLabel3
-            // 
-            this.linkLabel3.AutoSize = true;
-            this.linkLabel3.Location = new System.Drawing.Point(206, 112);
-            this.linkLabel3.Name = "linkLabel3";
-            this.linkLabel3.Size = new System.Drawing.Size(127, 13);
-            this.linkLabel3.TabIndex = 7;
-            this.linkLabel3.TabStop = true;
-            this.linkLabel3.Text = "Apelgans_AV@sibeco.su";
-            // 
-            // linkLabel4
-            // 
-            this.linkLabel4.AutoSize = true;
-            this.linkLabel4.Location = new System.Drawing.Point(206, 125);
-            this.linkLabel4.Name = "linkLabel4";
-            this.linkLabel4.Size = new System.Drawing.Size(131, 13);
-            this.linkLabel4.TabIndex = 8;
-            this.linkLabel4.TabStop = true;
-            this.linkLabel4.Text = "Pasternak_AS@sibeco.su";
             // 
             // label2
             // 
@@ -162,14 +141,23 @@ namespace StatisticCommon
             this.m_lblCustomer.TabIndex = 9;
             this.m_lblCustomer.Text = "Заказчик: АО СибЭКо, Техническая дирекция";
             // 
+            // linkLabel3
+            // 
+            this.linkLabel3.AutoSize = true;
+            this.linkLabel3.Location = new System.Drawing.Point(206, 71);
+            this.linkLabel3.Name = "linkLabel3";
+            this.linkLabel3.Size = new System.Drawing.Size(144, 13);
+            this.linkLabel3.TabIndex = 10;
+            this.linkLabel3.TabStop = true;
+            this.linkLabel3.Text = "Lukashevich_AA@sibeco.su";
+            // 
             // FormAbout
             // 
             this.AutoScaleDimensions = new System.Drawing.SizeF(6F, 13F);
             this.AutoScaleMode = System.Windows.Forms.AutoScaleMode.Font;
-            this.ClientSize = new System.Drawing.Size(351, 171);
-            this.Controls.Add(this.m_lblCustomer);
-            this.Controls.Add(this.linkLabel4);
+            this.ClientSize = new System.Drawing.Size(351, 155);
             this.Controls.Add(this.linkLabel3);
+            this.Controls.Add(this.m_lblCustomer);
             this.Controls.Add(this.m_lblDomainMashineUserName);
             this.Controls.Add(this.linkLabel2);
             this.Controls.Add(this.m_lblProductVersion);
@@ -200,9 +188,8 @@ namespace StatisticCommon
         private System.Windows.Forms.Label m_lblProductVersion;
         private System.Windows.Forms.LinkLabel linkLabel2;
         private System.Windows.Forms.Label m_lblDomainMashineUserName;
-        private System.Windows.Forms.LinkLabel linkLabel3;
-        private System.Windows.Forms.LinkLabel linkLabel4;
         private System.Windows.Forms.Label label2;
         private System.Windows.Forms.Label m_lblCustomer;
+        private System.Windows.Forms.LinkLabel linkLabel3;
     }
 }

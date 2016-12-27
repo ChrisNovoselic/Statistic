@@ -94,7 +94,11 @@ namespace StatisticCommon
             err = -1;
 
             object[] objRow = null;
-            int iCol = -1;
+            int iCol = -1
+                , hour = -1;
+            List<TECComponent> listGTP;
+            List<DataRow> rowsTECComponent;
+            DataRow rowNew;
 
             if (!(m_fullPathCSVValues == string.Empty)) {
                 if (File.Exists(m_fullPathCSVValues) == true) {
@@ -147,6 +151,30 @@ namespace StatisticCommon
                         //                ;
                         //    }
                         //}
+
+                        // получить все ГТП
+                        listGTP = allTECComponents.FindAll(comp => { return comp.IsGTP == true; });
+                        // проверить наличие всех часовых значений для каждого из ГТП
+                        // при необходимости добавить отсутствующие значения (как копии предыдущей строки)
+                        rowsTECComponent = new List<DataRow>(new DataRow[1]);
+                        foreach (TECComponent gtp in listGTP) {
+                            rowsTECComponent = new List<DataRow>(m_tableValuesResponse.Select(@"GTP_ID='" + gtp.name_future + @"'"));
+
+                            if ((rowsTECComponent.Count > 0)
+                                && (rowsTECComponent.Count < 24)) {
+                                hour = rowsTECComponent.Count;
+
+                                while (hour < 24) {
+                                    rowNew = m_tableValuesResponse.Rows.Add(rowsTECComponent[rowsTECComponent.Count - 1].ItemArray);
+
+                                    if (m_tableValuesResponse.Columns.Contains(@"SESSION_INTERVAL") == true)
+                                        rowNew[@"SESSION_INTERVAL"] = ++hour - 1;
+                                    else
+                                        ;
+                                }
+                            } else
+                                ;
+                        };
 
                         //err = 0;
                     }
@@ -338,21 +366,19 @@ namespace StatisticCommon
                 if (rowsTECComponent.Count > 0) {
                     // добавление недостающих строк путем копирования крайней
                     if (rowsTECComponent.Count < 24)
-                        while (rowsTECComponent.Count < 24) {
-                            // добавить новую строку
-                            rowsTECComponent.Add(m_tableValuesResponse.NewRow());
-                            // скопировать в новую строку значения из предыдущей
-                            foreach (DataColumn col in m_tableValuesResponse.Columns)
-                                if (col.ColumnName.Equals(@"SESSION_INTERVAL") == true)
-                                // номер часа = индексу строки
-                                    rowsTECComponent[rowsTECComponent.Count - 1][col.ColumnName] = rowsTECComponent.Count - 1;
-                                else
-                                // значения из предыдущей строки
-                                    rowsTECComponent[rowsTECComponent.Count - 1][col.ColumnName] =
-                                        rowsTECComponent[rowsTECComponent.Count - 2][col.ColumnName];
-                        } // while - 24 часа
-                    else
-                        ; // ничего добавлять не надо
+                        // фрагмент кода выполняется при загрузке
+                        //while (rowsTECComponent.Count < 24) {
+                        //    rowsTECComponent.Add(rowsTECComponent[rowsTECComponent.Count - 1]);
+
+                        //    if (m_tableValuesResponse.Columns.Contains(@"SESSION_INTERVAL") == true)
+                        //        rowsTECComponent[rowsTECComponent.Count - 1][@"SESSION_INTERVAL"] = rowsTECComponent.Count - 1;
+                        //    else
+                        //        ;
+                        //}
+                    } else
+                        Logging.Logg().Error(string.Format(@"AdminTS_KomDisp::saveCSVValues () - для ГТП(ИД={0}) количество записей={1} ..."
+                            , name_future, rowsTECComponent.Count)
+                                , Logging.INDEX_MESSAGE.NOT_SET);
 
                     foreach (DataRow r in rowsTECComponent) {
                         hour = int.Parse(r[@"SESSION_INTERVAL"].ToString());

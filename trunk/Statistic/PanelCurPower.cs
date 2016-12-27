@@ -50,21 +50,29 @@ namespace Statistic
 
     public partial class PanelCurPower : PanelStatisticWithTableHourRows
     {
-        enum INDEX_LABEL : int { NAME,
-                                DATETIME_TM,
-                                DATETIME_TM_SN,
-                                VALUE_TM,
-                                VALUE_TM_SN,
-                                NAME_COMPONENT,
-                                VALUE_COMPONENT,
-                                NAME_TG,
-                                VALUE_TG,
-                                COUNT_INDEX_LABEL
+        enum INDEX_LABEL : int { NAME
+            , DATETIME_TM
+            , DATETIME_TM_SN
+            , VALUE_TM
+            , VALUE_TM_SN
+            , NAME_COMPONENT
+            , VALUE_COMPONENT
+            , NAME_TG
+            , VALUE_TG
+            , COUNT_INDEX_LABEL
         };
-        const int COUNT_FIXED_ROWS = (int)INDEX_LABEL.VALUE_TM_SN - 1;
 
-        static Color s_clrBackColorLabel = Color.FromArgb(212, 208, 200), s_clrBackColorLabelVal_TM = Color.FromArgb(219, 223, 227), s_clrBackColorLabelVal_TM_SN = Color.FromArgb(219, 223, 247);
-        static HLabelStyles[] s_arLabelStyles = { new HLabelStyles(Color.Black, s_clrBackColorLabel, 22F, ContentAlignment.MiddleCenter),
+        private const int COUNT_FIXED_ROWS = (int)INDEX_LABEL.VALUE_TM_SN - 1;
+        /// <summary>
+        /// 
+        /// </summary>
+        private static Color s_clrBackColorLabel = Color.FromArgb(212, 208, 200)
+            , s_clrBackColorLabelVal_TM = Color.FromArgb(219, 223, 227)
+            , s_clrBackColorLabelVal_TM_SN = Color.FromArgb(219, 223, 247);
+        /// <summary>
+        /// Стили для элементов интерфейса - подписей к полям с отображаемыми джанными
+        /// </summary>
+        private static HLabelStyles[] s_arLabelStyles = { new HLabelStyles(Color.Black, s_clrBackColorLabel, 22F, ContentAlignment.MiddleCenter),
                                                 new HLabelStyles(Color.Black, s_clrBackColorLabelVal_TM, 18F, ContentAlignment.MiddleCenter),
                                                 new HLabelStyles(Color.Black, s_clrBackColorLabelVal_TM_SN, 18F, ContentAlignment.MiddleCenter),
                                                 new HLabelStyles(Color.Black, s_clrBackColorLabelVal_TM, 18F, ContentAlignment.MiddleCenter),
@@ -73,13 +81,13 @@ namespace Statistic
                                                 new HLabelStyles(Color.Black, s_clrBackColorLabelVal_TM, 14F, ContentAlignment.MiddleRight),
                                                 new HLabelStyles(Color.Black, s_clrBackColorLabel, 14F, ContentAlignment.MiddleCenter),
                                                 new HLabelStyles(Color.Black, s_clrBackColorLabelVal_TM, 14F, ContentAlignment.MiddleRight)};
-        
-        //enum StatesMachine : int {Init_TM, Current_TM_Gen, Current_TM_SN};
 
-        //HReports m_report;
-        
-        //public bool m_bIsActive;
-
+        /// <summary>
+        /// Инициализация характеристик, стилей макета для размещения дочерних элементов интерфейса
+        ///  (должна быть вызвана явно)
+        /// </summary>
+        /// <param name="col">Количество столбцов в макете</param>
+        /// <param name="row">Количество строк в макете</param>
         protected override void initializeLayoutStyle(int cols = -1, int rows = -1)
         {
             this.ColumnCount = cols;
@@ -371,7 +379,12 @@ namespace Statistic
 
                 m_lockRep = new object();
             }
-
+            /// <summary>
+            /// Инициализация характеристик, стилей макета для размещения дочерних элементов интерфейса
+            ///  (должна быть вызвана явно)
+            /// </summary>
+            /// <param name="col">Количество столбцов в макете</param>
+            /// <param name="row">Количество строк в макете</param>
             protected override void initializeLayoutStyle(int cols = -1, int rows = -1)
             {                
                 int i = -1;

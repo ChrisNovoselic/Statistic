@@ -23,10 +23,10 @@ namespace Statistic
             /// </summary>
             public Semaphore m_semaIndxTECComponents;
 
-            /// <summary>
-            /// Список предыдущих значений RDG
-            /// </summary>
-            public List<RDGStruct[]> m_listPrevRDGValues;
+            ///// <summary>
+            ///// Список предыдущих значений RDG
+            ///// </summary>
+            //public List<RDGStruct[]> m_listPrevRDGValues;
 
             /// <summary>
             /// Конструктор
@@ -52,7 +52,7 @@ namespace Statistic
                     foreach (TECComponent comp in allTECComponents)
                         if (comp.tec.m_id > (int)TECComponent.ID.LK)
                             if ((comp.m_id == GetIdTECComponent(id)) && //Принадлежит ТЭЦ
-                                ((comp.IsGTP == true) /*|| //Является ГТП
+                                ((comp.IsGTP_LK == true) /*|| //Является ГТП_ЛК
                             ((comp.m_id > 1000) && (comp.m_id < 10000))*/)) //Является ТГ
                             {
                                 m_listTECComponentIndexDetail.Add(allTECComponents.IndexOf(comp));
@@ -75,7 +75,7 @@ namespace Statistic
             /// <summary>
             /// Метод создания потока получения значений без даты
             /// </summary>
-            /// <param name="obj"></param>
+            /// <param name="obj">Объект, передаваемый в качестве параметра при запуске потока</param>
             protected override void threadGetRDGValuesWithoutDate(object obj)
             {
                 int indxEv = -1;
@@ -104,7 +104,7 @@ namespace Statistic
             /// <summary>
             /// Метод создания потока получения значений с датой
             /// </summary>
-            /// <param name="obj"></param>
+            /// <param name="obj">Объект, передаваемый в качестве параметра при запуске потока</param>
             protected override void threadGetRDGValuesWithDate(object date)
             {
                 int indxEv = -1;
