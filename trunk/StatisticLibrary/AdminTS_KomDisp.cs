@@ -365,7 +365,7 @@ namespace StatisticCommon
                 //Проверить наличие записей для ГТП
                 if (rowsTECComponent.Count > 0) {
                     // добавление недостающих строк путем копирования крайней
-                    if (rowsTECComponent.Count < 24)
+                    if (rowsTECComponent.Count < 24) {
                         // фрагмент кода выполняется при загрузке
                         //while (rowsTECComponent.Count < 24) {
                         //    rowsTECComponent.Add(rowsTECComponent[rowsTECComponent.Count - 1]);
