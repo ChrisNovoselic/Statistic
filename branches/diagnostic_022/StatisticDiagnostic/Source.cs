@@ -395,7 +395,7 @@ namespace StatisticDiagnostic
                 /// <summary>
                 /// Структура для описания идентификатора строк в 'm_dgvValues'
                 /// </summary>
-                private class DataGridViewSourceRow : DataGridViewRow
+                private class DataGridViewDiagnosticSourceRow : DataGridViewDiagnosticRow
                 {
                     /// <summary>
                     /// Список номер источников СОТИАССО
@@ -421,7 +421,7 @@ namespace StatisticDiagnostic
                     /// Конструктор - основной (с параметрами)
                     /// </summary>
                     /// <param name="source_data">Обязательная часть описания источника данных</param>
-                    public DataGridViewSourceRow()
+                    public DataGridViewDiagnosticSourceRow()
                     {
                         m_source_type = CONN_SETT_TYPE.UNKNOWN;
                         m_source_id = -1;
@@ -520,8 +520,8 @@ namespace StatisticDiagnostic
                         set {
                             // выбрать цвет для ячейки
                             Color clrCell = (value == true) ?
-                                s_StateSources[(int)INDEX_CELL_STATE.OK].m_Color :
-                                    s_StateSources[(int)INDEX_CELL_STATE.DISABLED].m_Color;
+                                s_CellState[(int)INDEX_CELL_STATE.OK].m_Color :
+                                    s_CellState[(int)INDEX_CELL_STATE.DISABLED].m_Color;
                             // установить признак включения(доступности)
                             _markRule.Set((int)INDEX_RULE.ENABLED, value);
 
@@ -660,15 +660,15 @@ namespace StatisticDiagnostic
                                                 isSourceSOTIASSOToris == false ?
                                                     INDEX_CELL_STATE.ERROR :
                                                         INDEX_CELL_STATE.UNKNOWN;
-                                        value = s_StateSources[(int)indxState].m_Text;
-                                        clrCell = s_StateSources[(int)indxState].m_Color;
+                                        value = s_CellState[(int)indxState].m_Text;
+                                        clrCell = s_CellState[(int)indxState].m_Color;
                                         break;
                                     case INDEX_CELL.DATETIME_VALUE:
                                     case INDEX_CELL.DATETIME_VERIFICATION:
                                         value = values[(int)i] is DateTime ?
-                                            formatDateTime (i, (DateTime)values[(int)i]) :
+                                            formatDateTime ((DateTime)values[(int)i]) :
                                                 values[(int)i];
-                                        clrCell = s_StateSources[(int)isRelevanceDateTime(i, (DateTime)values[(int)i])].m_Color;
+                                        clrCell = s_CellState[(int)isRelevanceDateTime(i, (DateTime)values[(int)i])].m_Color;
                                         break;
                                     default:
                                         value = values[(int)i];
@@ -681,23 +681,6 @@ namespace StatisticDiagnostic
                             } // INDEX_CELL i in Enum.GetValues(typeof(INDEX_CELL))
                         else
                             ;
-                    }
-                    /// <summary>
-                    /// Форматировать значение даты времени
-                    /// </summary>
-                    /// <param name="indxCell">Номер(индекс) столбца</param>
-                    /// <param name="dtFormated">Значение даты/времени для форматирования</param>
-                    /// <returns>Строка с датой/временем</returns>
-                    private string formatDateTime(INDEX_CELL indxCell, DateTime dtFormated)
-                    {
-                        string strRes = string.Empty;
-
-                        if (SERVER_TIME.Date > dtFormated.Date)
-                            strRes = dtFormated.ToString(@"dd.MM.yyyy HH:mm:ss");
-                        else
-                            strRes = dtFormated.ToString(@"HH:mm:ss");
-
-                        return strRes;
                     }
                     /// <summary>
                     /// Признак актуальности даты/времени
@@ -775,15 +758,15 @@ namespace StatisticDiagnostic
 
                     // добавить строки в соответствии со списком диагностических параметров
                     listDiagnosticParameter.ForEach(item => {
-                        m_dgvValues.Rows.Add(/*newRow = */new DataGridViewSourceRow());
+                        m_dgvValues.Rows.Add(/*newRow = */new DataGridViewDiagnosticSourceRow());
 
                         indxNewRow = m_dgvValues.RowCount - 1;
                         // инициализация зависимых параметров от 'item.m_source_data'
-                        (m_dgvValues.Rows[indxNewRow] as DataGridViewSourceRow).SourceData = item.m_source_data;
+                        (m_dgvValues.Rows[indxNewRow] as DataGridViewDiagnosticSourceRow).SourceData = item.m_source_data;
                         // неизменямое наименование источника данных
-                        (m_dgvValues.Rows[indxNewRow] as DataGridViewSourceRow).Name = item.m_name_shr;
+                        (m_dgvValues.Rows[indxNewRow] as DataGridViewDiagnosticSourceRow).Name = item.m_name_shr;
                         // исходное состояние строки - источник данных отключен
-                        (m_dgvValues.Rows[indxNewRow] as DataGridViewSourceRow).Enabled = false;
+                        (m_dgvValues.Rows[indxNewRow] as DataGridViewDiagnosticSourceRow).Enabled = false;
                     });
                 }
 
@@ -918,11 +901,11 @@ namespace StatisticDiagnostic
                 {
                     if ((e.Button == MouseButtons.Right) && (e.RowIndex > -1))
                     // только по нажатию правой кнопки и выбранной строки
-                        if (((m_dgvValues.Rows[e.RowIndex] as DataGridViewSourceRow).SourceType == CONN_SETT_TYPE.DATA_SOTIASSO)
-                            && ((m_dgvValues.Rows[e.RowIndex] as DataGridViewSourceRow).Enabled == true)
+                        if (((m_dgvValues.Rows[e.RowIndex] as DataGridViewDiagnosticSourceRow).SourceType == CONN_SETT_TYPE.DATA_SOTIASSO)
+                            && ((m_dgvValues.Rows[e.RowIndex] as DataGridViewDiagnosticSourceRow).Enabled == true)
                             && (AlternativeSourceIdSOTIASSO.Count > 1)) {
                         //?? только для источников СОТИАССО И включенных И наличия альтернативы
-                            initContextMenu((m_dgvValues.Rows[e.RowIndex] as DataGridViewSourceRow).Activated == true);
+                            initContextMenu((m_dgvValues.Rows[e.RowIndex] as DataGridViewDiagnosticSourceRow).Activated == true);
                             ContextmenuChangeState.Tag = e.RowIndex;
                             if ((sender as DataGridView).Rows[e.RowIndex].Cells[e.ColumnIndex].ContextMenuStrip == null) {                                
                                 (sender as DataGridView).Rows[e.RowIndex].Cells[e.ColumnIndex].ContextMenuStrip = ContextmenuChangeState;
@@ -992,10 +975,10 @@ namespace StatisticDiagnostic
                     List<int> alternativeSourceIdSOTIASSO = AlternativeSourceIdSOTIASSO;
 
                     if ((INDEX_CONTEXTMENU_ITEM)(sender as ToolStripMenuItem).Tag == INDEX_CONTEXTMENU_ITEM.ACTIVATED) {
-                        iNewSourceId = (m_dgvValues.Rows[(int)ContextmenuChangeState.Tag] as DataGridViewSourceRow).SourceID;
+                        iNewSourceId = (m_dgvValues.Rows[(int)ContextmenuChangeState.Tag] as DataGridViewDiagnosticSourceRow).SourceID;
                     } else {
                     // INDEX_CONTEXTMENU_ITEM.DEACTIVATED
-                        iPrevSourceId = (m_dgvValues.Rows[(int)ContextmenuChangeState.Tag] as DataGridViewSourceRow).SourceID;
+                        iPrevSourceId = (m_dgvValues.Rows[(int)ContextmenuChangeState.Tag] as DataGridViewDiagnosticSourceRow).SourceID;
                         indxPrevSourceId = alternativeSourceIdSOTIASSO.IndexOf(iPrevSourceId);
                         // выбираем очередной источник данных - следующий за текущим
                         indxNewSourceId = indxPrevSourceId + 1;
@@ -1008,7 +991,7 @@ namespace StatisticDiagnostic
                         iNewSourceId = alternativeSourceIdSOTIASSO[indxNewSourceId];
                     }
 
-                    foreach (DataGridViewSourceRow r in m_dgvValues.Rows)
+                    foreach (DataGridViewDiagnosticSourceRow r in m_dgvValues.Rows)
                         if ((r.Activated == true)
                             && (r.SourceType == CONN_SETT_TYPE.DATA_SOTIASSO)) {
                             r.Activated = false;
@@ -1020,7 +1003,7 @@ namespace StatisticDiagnostic
                     EventSourceIdChanged(
                         null // панель передается через поле аргумента
                         , new EventSourceIdChangedArgs(this
-                            , (m_dgvValues.Rows[(int)ContextmenuChangeState.Tag] as DataGridViewSourceRow).SourceType
+                            , (m_dgvValues.Rows[(int)ContextmenuChangeState.Tag] as DataGridViewDiagnosticSourceRow).SourceType
                             , iNewSourceId)
                     );
                 }
@@ -1057,7 +1040,7 @@ namespace StatisticDiagnostic
                             activateSourceSOTIASSO(values);
                             break;
                         default:
-                            foreach (DataGridViewSourceRow r in m_dgvValues.Rows) {
+                            foreach (DataGridViewDiagnosticSourceRow r in m_dgvValues.Rows) {
                                 rowValues = new object[(int)INDEX_CELL.COUNT];
 
                                 foreach (KeyValuePair<KEY_DIAGNOSTIC_PARAMETER, Values> pair in values) {
@@ -1121,7 +1104,7 @@ namespace StatisticDiagnostic
                     get {
                         List<int> listRes = new List<int>();
 
-                        foreach (DataGridViewSourceRow r in m_dgvValues.Rows)
+                        foreach (DataGridViewDiagnosticSourceRow r in m_dgvValues.Rows)
                             if ((r.SourceType == CONN_SETT_TYPE.DATA_SOTIASSO)
                                 && (r.Enabled == true)) {
                             // только если: СОТИАССО И включен
@@ -1145,7 +1128,7 @@ namespace StatisticDiagnostic
                         m_id_unit = KEY_DIAGNOSTIC_PARAMETER.ID_UNIT.UNKNOWN
                         , m_id_value = KEY_DIAGNOSTIC_PARAMETER.ID_VALUE.UNKNOWN}].m_value;
 
-                    foreach (DataGridViewSourceRow r in m_dgvValues.Rows)
+                    foreach (DataGridViewDiagnosticSourceRow r in m_dgvValues.Rows)
                         if ((r.SourceType == CONN_SETT_TYPE.DATA_SOTIASSO)
                             && (r.SourceID == iSourceId)
                             && (r.Activated == false)) {
@@ -1162,7 +1145,7 @@ namespace StatisticDiagnostic
                             ;
                     // деактивация при наличии изменений
                     if (bChangeActivated == true)
-                        foreach (DataGridViewSourceRow r in m_dgvValues.Rows) {
+                        foreach (DataGridViewDiagnosticSourceRow r in m_dgvValues.Rows) {
                             if ((r.SourceType == CONN_SETT_TYPE.DATA_SOTIASSO)
                                 && (!(r.SourceID == iSourceId))
                                 && (r.Activated == true)) {

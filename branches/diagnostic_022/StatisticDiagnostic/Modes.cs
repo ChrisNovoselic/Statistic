@@ -319,9 +319,9 @@ namespace StatisticDiagnostic
                     // добавить строки, указать их наименования
                     foreach (DIAGNOSTIC_SOURCE src in listDiagSrc)
                         if (src.m_id_component > 0) {
-                            indxNewRow = m_dgvValues.Rows.Add(new DataGridViewGTPRow());
+                            indxNewRow = m_dgvValues.Rows.Add(new DataGridViewDiagnosticGTPRow());
 
-                            (m_dgvValues.Rows[indxNewRow] as DataGridViewGTPRow).Tag = src.m_id_component;
+                            (m_dgvValues.Rows[indxNewRow] as DataGridViewDiagnosticGTPRow).Tag = src.m_id_component;
 
                             iTec = 0; gtp = null;
                             while ((gtp == null)
@@ -331,12 +331,12 @@ namespace StatisticDiagnostic
                                 iTec++;
                             }
 
-                            (m_dgvValues.Rows[indxNewRow] as DataGridViewGTPRow).Name =
+                            (m_dgvValues.Rows[indxNewRow] as DataGridViewDiagnosticGTPRow).Name =
                                 //src.m_name_shr
                                 string.Format(@"{0}-{1}", gtp.tec.name_shr, gtp.name_shr);
                                 ;
 
-                            (m_dgvValues.Rows[indxNewRow] as DataGridViewGTPRow).Enabled = false;
+                            (m_dgvValues.Rows[indxNewRow] as DataGridViewDiagnosticGTPRow).Enabled = false;
                         } else
                             ;
                     //// идентификатор ТЭЦ (??? еще один, надо было использовать в [techsite_cfg-2.X.X]...[DIAGNOSTIC_SOURCES] из [techsite_cfg-2.X.X]...[TEC_LIST])
@@ -437,7 +437,7 @@ namespace StatisticDiagnostic
                 /// <summary>
                 /// Структура для описания идентификатора строк в 'm_dgvValues'
                 /// </summary>
-                private class DataGridViewGTPRow : DataGridViewRow
+                private class DataGridViewDiagnosticGTPRow : DataGridViewDiagnosticRow
                 {
                     /// <summary>
                     /// Наименование источника - постоянная величина, устанавливается при создании строки
@@ -483,15 +483,15 @@ namespace StatisticDiagnostic
                                             indxState = ((string)values[(int)i])?.Equals(1.ToString()) == true ?
                                                 INDEX_CELL_STATE.OK :
                                                     INDEX_CELL_STATE.ERROR;
-                                            value = s_StateSources[(int)indxState].m_Text;
-                                            clrCell = s_StateSources[(int)indxState].m_Color;
+                                            value = s_CellState[(int)indxState].m_Text;
+                                            clrCell = s_CellState[(int)indxState].m_Color;
                                             break;
                                         case INDEX_CELL.DATETIME_VALUE:
                                         case INDEX_CELL.DATETIME_VERIFICATION:
                                             value = values[(int)i] is DateTime ?
-                                                formatDateTime(i, (DateTime)values[(int)i]) :
+                                                formatDateTime((DateTime)values[(int)i]) :
                                                     values[(int)i];
-                                            clrCell = s_StateSources[(int)isRelevanceDateTime(i, (DateTime)values[(int)i])].m_Color;
+                                            clrCell = s_CellState[(int)isRelevanceDateTime(i, (DateTime)values[(int)i])].m_Color;
                                             break;
                                         case INDEX_CELL.VALUE:
                                             value = values[(int)i];
@@ -513,23 +513,6 @@ namespace StatisticDiagnostic
                                 Logging.Logg().Exception(e, @"PanelContainerModes.PanelModes.DataGridViewGTPRow::SetValueCells () - ...", Logging.INDEX_MESSAGE.NOT_SET);
                             }
                         } // INDEX_CELL i in Enum.GetValues(typeof(INDEX_CELL))
-                    }
-                    /// <summary>
-                    /// Форматировать значение даты времени
-                    /// </summary>
-                    /// <param name="indxCell">Номер(индекс) столбца</param>
-                    /// <param name="dtFormated">Значение даты/времени для форматирования</param>
-                    /// <returns>Строка с датой/временем</returns>
-                    private string formatDateTime(INDEX_CELL indxCell, DateTime dtFormated)
-                    {
-                        string strRes = string.Empty;
-
-                        if (SERVER_TIME.Date > dtFormated.Date)
-                            strRes = dtFormated.ToString(@"dd.MM.yyyy HH:mm:ss");
-                        else
-                            strRes = dtFormated.ToString(@"HH:mm:ss");
-
-                        return strRes;
                     }
                     /// <summary>
                     /// Признак актуальности даты/времени
@@ -615,13 +598,16 @@ namespace StatisticDiagnostic
                     else
                         ;
                 }
-
+                /// <summary>
+                /// Обновить значения в представлении
+                /// </summary>
+                /// <param name="values">Значения для отображения</param>
                 private void update(Dictionary<KEY_DIAGNOSTIC_PARAMETER, Values> values)
                 {
                     object value;
                     object[] rowValues;
 
-                    foreach (DataGridViewGTPRow r in m_dgvValues.Rows) {
+                    foreach (DataGridViewDiagnosticGTPRow r in m_dgvValues.Rows) {
                         rowValues = new object[(int)INDEX_CELL.COUNT];
 
                         foreach (KeyValuePair<KEY_DIAGNOSTIC_PARAMETER, Values> pair in values) {

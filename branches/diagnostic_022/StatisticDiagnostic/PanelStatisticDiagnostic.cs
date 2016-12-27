@@ -35,13 +35,9 @@ namespace StatisticDiagnostic
 
         protected abstract void Activated(bool activated);
 
-        protected abstract void AddRows(int numP, int countRow);
-
         protected abstract void ClearGrid();
 
         protected abstract void CreateForm();
-
-        protected abstract void CellsPingAdd();
 
         protected abstract string FormatTime(string datetime);
     }
@@ -87,55 +83,11 @@ namespace StatisticDiagnostic
         /// </summary>
         private void InitializeComponent()
         {
-            //this.Controls.Add(lblName, 0, 0);
-            //this.Controls.Add(dgvCommon, 0, 1);
-            //this.RowStyles.Add(new System.Windows.Forms.RowStyle(System.Windows.Forms.SizeType.Absolute, 15F));
-            //this.RowStyles.Add(new System.Windows.Forms.RowStyle(System.Windows.Forms.SizeType.Percent, 100.74641F));
-
-            //this.dgvCommon = new DataGridView();
-            //this.lblName = new Label();
             this.CellBorderStyle = System.Windows.Forms.TableLayoutPanelCellBorderStyle.Single;
 
             this.SuspendLayout();
 
-            //this.dgvCommon.ColumnHeadersHeightSizeMode = System.Windows.Forms.DataGridViewColumnHeadersHeightSizeMode.AutoSize;
-            //this.dgvCommon.AutoSizeColumnsMode = DataGridViewAutoSizeColumnsMode.Fill;
-            //this.dgvCommon.AutoSizeRowsMode = DataGridViewAutoSizeRowsMode.DisplayedCellsExceptHeaders;
-            //this.dgvCommon.AllowUserToAddRows = false;
-            //this.dgvCommon.ClearSelection();
-            //this.dgvCommon.AllowUserToDeleteRows = false;
-            //this.dgvCommon.Dock = System.Windows.Forms.DockStyle.Fill;
-            //this.dgvCommon.RowHeadersVisible = false;
-            //this.dgvCommon.ReadOnly = true;
-            //this.dgvCommon.CellValueChanged += dgvCommon_CellValueChanged;
-            //this.dgvCommon.CellClick += dgvCommon_CellValueChanged;
-
-            ////this.dgvCommon.ColumnCount = ;
-            ////this.dgvCommon.RowCount = ;
-
-            //this.lblName.AutoSize = true;
-            //this.lblName.Name = "Label";
-            //this.lblName.TabIndex = 0;
-            //this.lblName.Text = "Unknow";
-            //this.lblName.TextAlign = System.Drawing.ContentAlignment.TopCenter;
-
             this.ResumeLayout(false);
-        }
-
-        /// <summary>
-        /// Обработчик события - при "щелчке" по любой части ячейки
-        /// </summary>
-        /// <param name="sender">Объект, инициировавший событие - (???ячейка, скорее - 'DataGridView')</param>
-        /// <param name="e">Аргумент события</param>
-        void dgvCommon_CellValueChanged(object sender, DataGridViewCellEventArgs e)
-        {
-            try {
-                //if (dgvCommon.SelectedCells.Count > 0)
-                //    dgvCommon.SelectedCells[0].Selected = false;
-                //else
-                //    ;
-            } catch {
-            }
         }
 
         #endregion
@@ -243,11 +195,14 @@ namespace StatisticDiagnostic
             public string m_name_shr;
         }
         /// <summary>
-        /// экземпляр класса 
-        /// для подклчения к бд
+        /// Экземпляр класса 
+        ///  для подключения/отправления/получения запросов к БД
         /// </summary>
         private HDataSource m_DataSource;
-        private System.Timers.Timer m_timerUpdate; //таймер для обновления панелей
+        /// <summary>
+        /// Таймер для обновления панелей
+        /// </summary>
+        private System.Timers.Timer m_timerUpdate;
         /// <summary>
         /// Экземпляры класса Task
         /// </summary>
@@ -264,22 +219,33 @@ namespace StatisticDiagnostic
         /// Экземпляры класса Tec
         /// </summary>
         private PanelContainerTec m_tecdb;
-        
+        /// <summary>
+        /// Характеристики ячейки
+        /// </summary>
         private struct CELL_STATE
         {
+            /// <summary>
+            /// Текст(содержимое) ячейки
+            /// </summary>
             public string m_Text;
-
+            /// <summary>
+            /// Цвет фона ячейки
+            /// </summary>
             public Color m_Color;
-        }
 
+            public string m_Detail;
+        }
+        /// <summary>
+        /// Перечисление - индексы для доступа к элементам статического массива 's_CellState'
+        /// </summary>
         private enum INDEX_CELL_STATE : short { OK = 0, WARNING, ERROR, UNKNOWN, DISABLED }
 
-        private static CELL_STATE[] s_StateSources = new CELL_STATE[] {
+        private static CELL_STATE[] s_CellState = new CELL_STATE[] {
             new CELL_STATE() { m_Text = @"Да", m_Color = Color.White }
-            , new CELL_STATE() { m_Text = string.Empty, m_Color = Color.Yellow }
-            , new CELL_STATE() { m_Text = @"Нет", m_Color = Color.Red }
+            , new CELL_STATE() { m_Text = string.Empty, m_Color = Color.Yellow, m_Detail = @"Продолжительное выполнение" }
+            , new CELL_STATE() { m_Text = @"Нет", m_Color = Color.Red, m_Detail = @"Превышено ожидание" }
             , new CELL_STATE() { m_Text = @"н/д", m_Color = Color.LightGray }
-            , new CELL_STATE() { m_Text = string.Empty, m_Color = Color.DarkGray }
+            , new CELL_STATE() { m_Text = string.Empty, m_Color = Color.DarkGray, m_Detail = @"Запрещено" }
         };
         /// <summary>
         /// ???
@@ -287,11 +253,31 @@ namespace StatisticDiagnostic
         public static volatile int UPDATE_TIME,
             VALIDATE_ASKUE_TM;
         public static DateTime SERVER_TIME;//серверное время
+
         /// <summary>
-        /// крайняя граница времени выполения задач
+        /// Элемент интерфейса - строка в представлении для отображения данных
         /// </summary>
-        static TimeSpan limTaskAvg = TimeSpan.FromSeconds(145);
-        static TimeSpan limTask = TimeSpan.FromSeconds(30);
+        private abstract class DataGridViewDiagnosticRow : DataGridViewRow
+        {
+            public string Name { get; set; }
+            /// <summary>
+            /// Форматировать значение даты времени
+            /// </summary>
+            /// <param name="indxCell">Номер(индекс) столбца</param>
+            /// <param name="dtFormated">Значение даты/времени для форматирования</param>
+            /// <returns>Строка с датой/временем</returns>
+            protected string formatDateTime(DateTime dtFormated)
+            {
+                string strRes = string.Empty;
+
+                if (SERVER_TIME.Date > dtFormated.Date)
+                    strRes = dtFormated.ToString(@"dd.MM.yyyy HH:mm:ss");
+                else
+                    strRes = dtFormated.ToString(@"HH:mm:ss");
+
+                return strRes;
+            }
+        }
 
         /// <summary>
         /// Создание и настройка таймера 
@@ -310,8 +296,8 @@ namespace StatisticDiagnostic
         /// <summary>
         /// Обработчик события таймера
         /// </summary>
-        /// <param name="source"></param>
-        /// <param name="e"></param>
+        /// <param name="source">Объект, инициировавший событие(таймер)</param>
+        /// <param name="e">Аргумент события</param>
         public void UpdateTimer_Elapsed(object source, ElapsedEventArgs e)
         {
             m_DataSource.Command();
