@@ -668,7 +668,7 @@ namespace StatisticDiagnostic
                                         value = values[(int)i] is DateTime ?
                                             formatDateTime ((DateTime)values[(int)i]) :
                                                 values[(int)i];
-                                        clrCell = s_CellState[(int)isRelevanceDateTime(i, (DateTime)values[(int)i])].m_Color;
+                                        clrCell = s_CellState[(int)isRelevanceDateTime((int)i, (DateTime)values[(int)i])].m_Color;
                                         break;
                                     default:
                                         value = values[(int)i];
@@ -682,24 +682,32 @@ namespace StatisticDiagnostic
                         else
                             ;
                     }
+
+                    /// <summary>
+                    /// Коэффициент при определении достоверности значения в ячейке
+                    /// </summary>
+                    private float KoefRelevanceDateTime { get { return Activated == true ? 1 : 3; } }
+
                     /// <summary>
                     /// Признак актуальности даты/времени
                     /// </summary>
                     /// <param name="indxCell">Номер(индекс) столбца</param>
                     /// <param name="dtChecked">Значение даты/времени для проверки</param>
                     /// <returns>Признак актуальности</returns>
-                    private INDEX_CELL_STATE isRelevanceDateTime(INDEX_CELL indxCell, DateTime dtChecked)
+                    protected override INDEX_CELL_STATE isRelevanceDateTime(int iColumn, DateTime dtChecked)
                     {
-                        INDEX_CELL_STATE stateRes = INDEX_CELL_STATE.ERROR;
+                        INDEX_CELL indxCell = (INDEX_CELL)iColumn;
+                        INDEX_CELL_STATE stateRes = INDEX_CELL_STATE.OK;
 
                         TimeSpan tsDifference = SERVER_TIME - dtChecked;
+                        float koefRelevanceDateTime = KoefRelevanceDateTime;
 
                         if (tsDifference.TotalSeconds > 0)
                             switch (indxCell) {
                                 case INDEX_CELL.DATETIME_VALUE:
                                 case INDEX_CELL.DATETIME_VERIFICATION:
-                                    stateRes = (tsDifference.TotalMinutes > 3) ?
-                                        (tsDifference.TotalMinutes > 9) ?
+                                    stateRes = (tsDifference.TotalMinutes > koefRelevanceDateTime * 3) ?
+                                        (tsDifference.TotalMinutes > koefRelevanceDateTime * 9) ?
                                             INDEX_CELL_STATE.ERROR :
                                                 INDEX_CELL_STATE.WARNING :
                                                     INDEX_CELL_STATE.OK;
@@ -708,10 +716,15 @@ namespace StatisticDiagnostic
                                     break;
                             }
                         else
-                        // оставить 'ERROR'
+                        // оставить 'ОК' (дата/время обновления новее, чем время сервера)
                             ;
 
                         return stateRes;
+                    }
+
+                    protected override INDEX_CELL_STATE isRelevanceValue(int iColumn, double value)
+                    {
+                        throw new NotImplementedException();
                     }
                 }
 

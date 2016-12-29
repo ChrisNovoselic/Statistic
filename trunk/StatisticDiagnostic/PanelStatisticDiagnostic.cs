@@ -285,6 +285,15 @@ namespace StatisticDiagnostic
 
                 return strRes;
             }
+            /// <summary>
+            /// Признак актуальности даты/времени
+            /// </summary>
+            /// <param name="indxCell">Номер(индекс) столбца</param>
+            /// <param name="dtChecked">Значение даты/времени для проверки</param>
+            /// <returns>Признак актуальности</returns>
+            protected abstract INDEX_CELL_STATE isRelevanceDateTime(int iColumn, DateTime dtChecked);
+
+            protected abstract INDEX_CELL_STATE isRelevanceValue(int iColumn, double value);
         }
 
         /// <summary>

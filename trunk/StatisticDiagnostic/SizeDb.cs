@@ -296,11 +296,11 @@ namespace StatisticDiagnostic
                                         value = values[(int)i] is DateTime ?
                                             formatDateTime((DateTime)values[(int)i]) :
                                                 values[(int)i];
-                                        clrCell = s_CellState[(int)isRelevanceDateTime(i, (DateTime)values[(int)i])].m_Color;
+                                        clrCell = s_CellState[(int)isRelevanceDateTime((int)i, (DateTime)values[(int)i])].m_Color;
                                         break;
                                     case INDEX_CELL.VALUE:
                                         value = values[(int)i];
-                                        clrCell = s_CellState[(int)isRelevanceValue((double)values[(int)i])].m_Color;
+                                        clrCell = s_CellState[(int)isRelevanceValue((int)i, (double)values[(int)i])].m_Color;
                                         break;
                                     default:
                                         indxState = /*((string)values[(int)i])?.Equals(EtalonPBR) ==*/ true ?
@@ -322,8 +322,10 @@ namespace StatisticDiagnostic
                     } // INDEX_CELL i in Enum.GetValues(typeof(INDEX_CELL))
                 }
 
-                private INDEX_CELL_STATE isRelevanceValue(double value)
+                protected override INDEX_CELL_STATE isRelevanceValue(int iColumn, double value)
                 {
+                    INDEX_CELL indxCell = (INDEX_CELL)iColumn;
+
                     return //value < 3 ?
                         INDEX_CELL_STATE.OK //:
                             //value < 3 ?
@@ -337,8 +339,9 @@ namespace StatisticDiagnostic
                 /// <param name="indxCell">Номер(индекс) столбца</param>
                 /// <param name="dtChecked">Значение даты/времени для проверки</param>
                 /// <returns>Признак актуальности</returns>
-                private INDEX_CELL_STATE isRelevanceDateTime(INDEX_CELL indxCell, DateTime dtChecked)
+                protected override INDEX_CELL_STATE isRelevanceDateTime(int iColumn, DateTime dtChecked)
                 {
+                    INDEX_CELL indxCell = (INDEX_CELL)iColumn;
                     INDEX_CELL_STATE stateRes = INDEX_CELL_STATE.ERROR;
 
                     TimeSpan tsDifference = SERVER_TIME - dtChecked;
