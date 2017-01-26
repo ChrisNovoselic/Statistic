@@ -58,6 +58,36 @@ namespace Statistic
     public class Hd2PercentControl
     {
         /// <summary>
+        /// Индексы массива со значенями для условий(правил) проверки нахождения значения в диапазоне
+        /// </summary>
+        private enum INDEX_RULE
+        {
+            PERCENT2, POWER3MWt
+        }
+        /// <summary>
+        /// Структура для хранения значений по одному из условий(правил) проверки нахождения значения в диапазоне
+        /// </summary>
+        struct VALUE_RULE
+        {
+            /// <summary>
+            /// Признак применения правила
+            /// </summary>
+            public bool Use;
+            /// <summary>
+            /// Реперная точка - значение с которым производится сравнение
+            /// </summary>
+            public double Reper;
+            /// <summary>
+            /// Относительное(от уровня) значение сравниваемое с реперной точкой
+            ///  , вычисляется на этапе проверки
+            /// </summary>
+            public double Relative;
+            /// <summary>
+            /// Для отображения всплывающей подсказки
+            /// </summary>
+            public double Deviation { get { return Reper + Relative; } }
+        }
+        /// <summary>
         /// Конструктор - основной (без параметров)
         /// </summary>
         public Hd2PercentControl() { }
@@ -73,11 +103,13 @@ namespace Statistic
             string strRes = string.Empty; //Строка - результат
             double valuesBaseCalculate = -1F; //Основная величина по которой производится расчет
 
-            double[] dblRel = new double[] { 0F, 0F }
-                 , dbl2AbsPercentControl = new double[] { -1F, 3F };
+            VALUE_RULE[] valuesRule = new VALUE_RULE[] {
+                new VALUE_RULE() { Use = true, Reper = -1F, Relative = -1F }
+                , new VALUE_RULE() { Use = true, Reper = 3F, Relative = -1F }
+            };
             double delta = -1.0;
-            int iReverse = 0 //Признак направления отклонения (по умолчанию - нет)
-                , indxReason = -1;
+            int iReverse = 0; //Признак направления отклонения (по умолчанию - нет)
+            INDEX_RULE indxRule = INDEX_RULE.PERCENT2;
             bool bAbs = false; //Признак абсолютного значения (по умолчанию - нет)
 
             //Проверить наличие внешней команды
@@ -99,17 +131,17 @@ namespace Statistic
                 else
                     //Проверить признак использования ветви "Мощность минимальная"
                     if (bPmin == true)
-                        //Использовать ветвь "Мощность минимальная"
-                        if (values.valuesPBR == values.valuesPmin)
-                        {//Установить значение величины-основания
-                            valuesBaseCalculate = values.valuesPBR;
-                            //Установить признак отклонения "вниз"
-                            iReverse = -1;
-                        }
-                        else
-                            ;
+                    //Использовать ветвь "Мощность минимальная"
+                    if (values.valuesPBR == values.valuesPmin)
+                    {//Установить значение величины-основания
+                        valuesBaseCalculate = values.valuesPBR;
+                        //Установить признак отклонения "вниз"
+                        iReverse = -1;
+                    }
                     else
                         ;
+                else
+                    ;
             }
             //Проверить установлена ли величина-основание
             if (valuesBaseCalculate > 1)
@@ -122,7 +154,7 @@ namespace Statistic
                 {
                     strRes += @"; Pmin=" + values.valuesPmin.ToString(@"F2");
                 }
-                else ;
+                else;
                 //Проверить признак наличия значения за крайнюю минуту часа
                 if (values.valuesLastMinutesTM > 1)
                 {
@@ -138,43 +170,58 @@ namespace Statistic
                     }
                     else
                         ;
+                    //Определить реперную точку для 1-го правила (2%)
+                    valuesRule[(int)INDEX_RULE.PERCENT2].Reper = valuesBaseCalculate / 100 * 2;
 
-                    dbl2AbsPercentControl[0] = valuesBaseCalculate / 100 * 2;
-
-                    if (dbl2AbsPercentControl[0] < 1)
-                        dbl2AbsPercentControl[0] = 1;
+                    if (valuesRule[(int)INDEX_RULE.PERCENT2].Reper < 1)
+                        valuesRule[(int)INDEX_RULE.PERCENT2].Reper = 1;
                     else
                         ;
+                    //!!!Реперная точка для 2-го правила - константа
 
                     if (valuesBaseCalculate > 1)
-                        dblRel[0] = delta - dbl2AbsPercentControl[0];
+                        for (indxRule = INDEX_RULE.PERCENT2; indxRule < (INDEX_RULE)Enum.GetValues(typeof(INDEX_RULE)).Length; indxRule++)
+                            if (valuesRule[(int)indxRule].Use == true)
+                                valuesRule[(int)indxRule].Relative = delta - valuesRule[(int)indxRule].Reper;
+                            else
+                                continue;
                     else
                         ;
 
                     if (!(iReverse == 0))
                     {
-                        for (indxReason = 0; indxReason < dblRel.Length; indxReason++)
-                            if (dblRel[indxReason] > 0)
+                        for (indxRule = INDEX_RULE.PERCENT2; indxRule < (INDEX_RULE)Enum.GetValues(typeof(INDEX_RULE)).Length; indxRule++)
+                            if ((valuesRule[(int)indxRule].Use == true)
+                                && (valuesRule[(int)indxRule].Relative > 0))
                                 break;
                             else
                                 ;
 
-                        if (indxReason < dblRel.Length)
+                        if (indxRule < (INDEX_RULE)Enum.GetValues(typeof(INDEX_RULE)).Length)
                             err = 1;
                         else
                         {
-                            indxReason = 0;
+                            indxRule = INDEX_RULE.PERCENT2;
                             err = 0;
                         }
                     }
                     else
                     {
-                        indxReason = 0;
+                        indxRule = INDEX_RULE.PERCENT2;
                         err = 0;
                     }
 
-                    strRes += @"; Откл=" + (dbl2AbsPercentControl[indxReason] + dblRel[indxReason]).ToString(@"F1")
-                        + @"(" + (((dbl2AbsPercentControl[indxReason] + dblRel[indxReason]) / valuesBaseCalculate) * 100).ToString(@"F1") + @"%)";
+                    strRes += @"; Откл=" + valuesRule[(int)indxRule].Deviation.ToString(@"F1");
+                    strRes += string.Format(@"({0}%", ((valuesRule[(int)INDEX_RULE.PERCENT2].Deviation / valuesBaseCalculate) * 100).ToString(@"F1"));
+
+                    if (valuesRule[(int)INDEX_RULE.POWER3MWt].Use == true)
+                        strRes += string.Format(@",{0}{1}МВт"
+                            , (valuesRule[(int)INDEX_RULE.POWER3MWt].Relative > 0) ? @">" : @"<"
+                            , valuesRule[(int)INDEX_RULE.POWER3MWt].Reper.ToString(@"F0"));
+                    else
+                        ;
+
+                    strRes += @")";
                 }
                 else
                 {
@@ -193,7 +240,7 @@ namespace Statistic
                 {
                     strRes += @"; Pmin=" + values.valuesPmin.ToString(@"F2");
                 }
-                else ;
+                else;
 
                 strRes += @"; Откл=--(--%)";
             }

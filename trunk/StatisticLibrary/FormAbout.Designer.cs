@@ -57,8 +57,8 @@ namespace StatisticCommon
             this.label1.Name = "label1";
             this.label1.Size = new System.Drawing.Size(141, 67);
             this.label1.TabIndex = 2;
-            this.label1.Text = "Команда разработчиков:\r\nЛукашевич А.А.\r\nКачайло Михаил,\r\nРевякин Е.А.,\r\nХряпин А." +
-    "Н.,";
+            this.label1.Text = "Команда разработчиков:\r\nЛукашевич А.А.,\r\nКачайло Михаил,\r\nРевякин Е.А.,\r\nХряпин А" +
+    ".Н.";
             // 
             // llblMailTo
             // 
