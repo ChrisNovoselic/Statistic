@@ -1497,7 +1497,7 @@ namespace StatisticCommon
                             else
                                 ;
 
-                            Logging.Logg().Debug(@"AdminTS::setPPBRQuery () - [ID_COMPONENT=" + comp.m_id + @"] Час=" + i + @"; БД=" + m_iHavePBR_Number + @"; Модес=" + pbr_number, Logging.INDEX_MESSAGE.D_002);
+                            Logging.Logg().Debug(@"AdminTS::setPPBRQuery () - [ID_COMPONENT=" + comp.m_id + @"] Час=" + i + @"; БД=" + m_iHavePBR_Number + @"; Модес=" + pbr_number, Logging.INDEX_MESSAGE.D_001);
 
                             if (bUpdate == true) {
                                 resQuery[(int)DbTSQLInterface.QUERY_TYPE.UPDATE] += @"UPDATE [" + t.m_strNameTableUsedPPBRvsPBR/*[(int)m_typeFields]*/ + @"]" +
@@ -1539,7 +1539,7 @@ namespace StatisticCommon
                     //        ;
                     //        break;
                     //    case AdminTS.TYPE_FIELDS.DYNAMIC:
-                            Logging.Logg().Debug(@"AdminTS::setPPBRQuery () - [ID_COMPONENT=" + comp.m_id + @"] Час=" + i + @"; БД=" + m_iHavePBR_Number + @"; Модес=" + strPBRNumber, Logging.INDEX_MESSAGE.D_002);
+                            Logging.Logg().Debug(@"AdminTS::setPPBRQuery () - [ID_COMPONENT=" + comp.m_id + @"] Час=" + i + @"; БД=" + m_iHavePBR_Number + @"; Модес=" + strPBRNumber, Logging.INDEX_MESSAGE.D_001);
 
                             if (!(m_curRDGValues[i].pbr < 0))
                                 resQuery[(int)DbTSQLInterface.QUERY_TYPE.INSERT] += @" ('" + date.AddHours(i + 1 - m_tsOffsetToMoscow.Hours).ToString("yyyyMMdd HH:mm:ss") +
@@ -1563,6 +1563,10 @@ namespace StatisticCommon
 
             return resQuery;
         }
+
+        public enum INDEX_SET_LOGGING { PBR_QUERY, PBR_NUMBER }
+
+        private HMark m_markSetLogging;
 
         /// <summary>
         /// Получение и выполнение запросов на добавление и обновление заначений ППБР
@@ -1593,40 +1597,41 @@ namespace StatisticCommon
                 ;
 
             query[(int)DbTSQLInterface.QUERY_TYPE.DELETE] = @"";
-                                   //@"DELETE FROM " + m_strUsedPPBRvsPBR + " WHERE " +
-                                   //@"BTEC_PBR = 0 AND BTEC_Pmax = 0 AND BTEC_Pmin = 0 AND " +
-                                   //@"BTEC_TG1_PBR = 0 AND BTEC_TG1_Pmax = 0 AND BTEC_TG1_Pmin = 0 AND " +
-                                   //@"BTEC_TG2_PBR = 0 AND BTEC_TG2_Pmax = 0 AND BTEC_TG2_Pmin = 0 AND " +
-                                   //@"BTEC_TG35_PBR = 0 AND BTEC_TG35_Pmax = 0 AND BTEC_TG35_Pmin = 0 AND " +
-                                   //@"BTEC_TG4_PBR = 0 AND BTEC_TG4_Pmax = 0 AND BTEC_TG4_Pmin = 0 AND " +
-                                   //@"TEC2_PBR = 0 AND TEC2_Pmax = 0 AND TEC2_Pmin = 0 AND " +
-                                   //@"TEC3_PBR = 0 AND TEC3_TG1_Pmax = 0 AND TEC3_TG1_Pmin = 0 AND " +
-                                   //@"TEC3_TG1_PBR = 0 AND TEC3_TG1_Pmax = 0 AND TEC3_TG1_Pmin = 0 AND " +
-                                   //@"TEC3_TG5_PBR = 0 AND TEC3_TG5_Pmax = 0 AND TEC3_TG5_Pmin = 0 AND " +
-                                   //@"TEC3_TG712_PBR = 0 AND TEC3_TG712_Pmax = 0 AND TEC3_TG712_Pmin = 0 AND " +
-                                   //@"TEC3_TG1314_PBR = 0 AND TEC3_TG1314_Pmax = 0 AND TEC3_TG1314_Pmin = 0 AND " +
-                                   //@"TEC4_PBR = 0 AND TEC4_TG3_Pmax = 0 AND TEC4_TG3_Pmin = 0 AND " +
-                                   //@"TEC4_TG3_PBR = 0 AND TEC4_TG3_Pmax = 0 AND TEC4_TG3_Pmin = 0 AND " +
-                                   //@"TEC4_TG48_PBR = 0 AND TEC4_TG48_Pmax = 0 AND TEC4_TG48_Pmin = 0 AND " +
-                                   //@"TEC5_PBR = 0 AND TEC5_TG12_Pmax = 0 AND TEC5_TG12_Pmin = 0 AND " +
-                                   //@"TEC5_TG12_PBR = 0 AND TEC5_TG12_Pmax = 0 AND TEC5_TG12_Pmin = 0 AND " +
-                                   //@"TEC5_TG36_PBR = 0 AND TEC5_TG36_Pmax = 0 AND TEC5_TG36_Pmin = 0 AND " +
-                                   //@"DATE_TIME > '" + date.ToString("yyyyMMdd HH:mm:ss") +
-                                   //@"' AND DATE_TIME <= '" + date.AddHours(1).ToString("yyyyMMdd HH:mm:ss") +
-                                   //@"';";
-
-            //Logging.Logg().Debug("AdminTS::SetPPBRRequest ()", Logging.INDEX_MESSAGE.NOT_SET);
+                //@"DELETE FROM " + m_strUsedPPBRvsPBR + " WHERE " +
+                //@"BTEC_PBR = 0 AND BTEC_Pmax = 0 AND BTEC_Pmin = 0 AND " +
+                //@"BTEC_TG1_PBR = 0 AND BTEC_TG1_Pmax = 0 AND BTEC_TG1_Pmin = 0 AND " +
+                //@"BTEC_TG2_PBR = 0 AND BTEC_TG2_Pmax = 0 AND BTEC_TG2_Pmin = 0 AND " +
+                //@"BTEC_TG35_PBR = 0 AND BTEC_TG35_Pmax = 0 AND BTEC_TG35_Pmin = 0 AND " +
+                //@"BTEC_TG4_PBR = 0 AND BTEC_TG4_Pmax = 0 AND BTEC_TG4_Pmin = 0 AND " +
+                //@"TEC2_PBR = 0 AND TEC2_Pmax = 0 AND TEC2_Pmin = 0 AND " +
+                //@"TEC3_PBR = 0 AND TEC3_TG1_Pmax = 0 AND TEC3_TG1_Pmin = 0 AND " +
+                //@"TEC3_TG1_PBR = 0 AND TEC3_TG1_Pmax = 0 AND TEC3_TG1_Pmin = 0 AND " +
+                //@"TEC3_TG5_PBR = 0 AND TEC3_TG5_Pmax = 0 AND TEC3_TG5_Pmin = 0 AND " +
+                //@"TEC3_TG712_PBR = 0 AND TEC3_TG712_Pmax = 0 AND TEC3_TG712_Pmin = 0 AND " +
+                //@"TEC3_TG1314_PBR = 0 AND TEC3_TG1314_Pmax = 0 AND TEC3_TG1314_Pmin = 0 AND " +
+                //@"TEC4_PBR = 0 AND TEC4_TG3_Pmax = 0 AND TEC4_TG3_Pmin = 0 AND " +
+                //@"TEC4_TG3_PBR = 0 AND TEC4_TG3_Pmax = 0 AND TEC4_TG3_Pmin = 0 AND " +
+                //@"TEC4_TG48_PBR = 0 AND TEC4_TG48_Pmax = 0 AND TEC4_TG48_Pmin = 0 AND " +
+                //@"TEC5_PBR = 0 AND TEC5_TG12_Pmax = 0 AND TEC5_TG12_Pmin = 0 AND " +
+                //@"TEC5_TG12_PBR = 0 AND TEC5_TG12_Pmax = 0 AND TEC5_TG12_Pmin = 0 AND " +
+                //@"TEC5_TG36_PBR = 0 AND TEC5_TG36_Pmax = 0 AND TEC5_TG36_Pmin = 0 AND " +
+                //@"DATE_TIME > '" + date.ToString("yyyyMMdd HH:mm:ss") +
+                //@"' AND DATE_TIME <= '" + date.AddHours(1).ToString("yyyyMMdd HH:mm:ss") +
+                //@"';";
 
             if ((query[(int)DbTSQLInterface.QUERY_TYPE.UPDATE].Equals(string.Empty) == false) ||
-                (query[(int)DbTSQLInterface.QUERY_TYPE.INSERT].Equals(string.Empty) == false))
-            {
+                (query[(int)DbTSQLInterface.QUERY_TYPE.INSERT].Equals(string.Empty) == false)) {
+                Logging.Logg().Debug("AdminTS::SetPPBRRequest ()", Logging.INDEX_MESSAGE.D_002);
+
                 //Logging.Logg().Debug(@"AdminTS::setPPBRQuery () - INSERT: " + query[(int)DbTSQLInterface.QUERY_TYPE.INSERT], Logging.INDEX_MESSAGE.D_005);
                 //Logging.Logg().Debug(@"AdminTS::setPPBRQuery () - UPDATE: " + query[(int)DbTSQLInterface.QUERY_TYPE.UPDATE], Logging.INDEX_MESSAGE.D_005);
                 //Logging.Logg().Debug(@"AdminTS::setPPBRQuery () - DELETE: " + resQuery[(int)DbTSQLInterface.QUERY_TYPE.DELETE], Logging.INDEX_MESSAGE.D_005);
 
-                Request(m_dictIdListeners[t.m_id][(int)CONN_SETT_TYPE.PBR], query[(int)DbTSQLInterface.QUERY_TYPE.UPDATE]
-                                                                            + query[(int)DbTSQLInterface.QUERY_TYPE.INSERT]
-                                                                            + query[(int)DbTSQLInterface.QUERY_TYPE.DELETE]);
+                Request(m_dictIdListeners[t.m_id][(int)CONN_SETT_TYPE.PBR]
+                    , query[(int)DbTSQLInterface.QUERY_TYPE.UPDATE]
+                        + query[(int)DbTSQLInterface.QUERY_TYPE.INSERT]
+                        + query[(int)DbTSQLInterface.QUERY_TYPE.DELETE]
+                );
             }
             else
                 //Logging.Logg().Debug("AdminTS::SetPPBRRequest () - Empty", Logging.INDEX_MESSAGE.NOT_SET) //Запрос пуст

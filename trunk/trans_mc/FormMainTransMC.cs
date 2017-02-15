@@ -23,6 +23,10 @@ namespace trans_mc
             this.Icon = trans_mc.Properties.Resources.statistic5;
             InitializeComponentTransSrc (@"Сервер Модес-Центр");
 
+            Logging.LinkId(Logging.INDEX_MESSAGE.D_001, (int)FormParameters.PARAMETR_SETUP.MAINFORMBASE_SETPBRQUERY_LOGPBRNUMBER);
+            Logging.LinkId(Logging.INDEX_MESSAGE.D_002, (int)FormParameters.PARAMETR_SETUP.MAINFORMBASE_SETPBRQUERY_LOGQUERY);
+            Logging.UpdateMarkDebugLog();
+
             m_dgwAdminTable.Size = new System.Drawing.Size(498, 391);
         }
 

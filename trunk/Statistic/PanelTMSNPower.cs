@@ -67,9 +67,6 @@ namespace Statistic
                                                 new HLabelStyles(Color.Black, s_clrBackColorLabelVal_TM_SN, 18F, ContentAlignment.MiddleCenter),
                                                 new HLabelStyles(Color.Black, s_clrBackColorLabelVal_TM, 18F, ContentAlignment.MiddleCenter),
                                                 new HLabelStyles(Color.Black, s_clrBackColorLabelVal_TM_SN, 18F, ContentAlignment.MiddleCenter)};
-
-        enum StatesMachine : int { Init_TM, Current_TM_Gen, Current_TM_SN };
-
         //HReports m_report;
 
         public bool m_bIsActive;

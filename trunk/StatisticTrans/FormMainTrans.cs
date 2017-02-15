@@ -97,9 +97,14 @@ namespace StatisticTrans
         //    return m_sFileINI.GetValueOfID(param);
         //}
 
-        private string getINIParametersOfKey(string keyParam)
+        //private string getINIParametersOfKey(string keyParam)
+        //{
+        //    return m_sFileINI.GetMainValueOfKey(keyParam);
+        //}
+
+        private string getINIParametersOfID(int id)
         {
-            return m_sFileINI.GetMainValueOfKey(keyParam);
+            return m_sFileINI.GetMainValueOfKey(FormParameters.GetNameParametersOfIndex(id));
         }
 
         /// <summary>
@@ -184,7 +189,7 @@ namespace StatisticTrans
             m_report = new HReports();
 
             //DelegateGetINIParametersOfID = new StringDelegateIntFunc(GetINIParametersOfID);
-            Logging.DelegateGetINIParametersOfKEY = new StringDelegateStringFunc(getINIParametersOfKey);
+            Logging.DelegateGetINIParametersOfID = new StringDelegateIntFunc(getINIParametersOfID);
 
             m_sFileINI = new FileINI(@"setup.ini", false, par, val);
 
@@ -929,11 +934,8 @@ namespace StatisticTrans
                     //Копирование данных из массива одного объекта (SOURCE) в массив другого объекта (DEST)
                     m_arAdmin[(int)CONN_SETT_TYPE.DEST].getCurRDGValues(m_arAdmin[(int)CONN_SETT_TYPE.SOURCE]);
                     //((AdminTS)m_arAdmin[(int)CONN_SETT_TYPE.DEST]).m_bSavePPBRValues = true;
-                }
-
-                catch (Exception e)
-                {
-                    MessageBox.Show("Error");
+                } catch (Exception e) {
+                    Logging.Logg().Exception(e, string.Format(@"FormMainTrans::setDataGridView () - ...", m_arAdmin[(int)CONN_SETT_TYPE.SOURCE].indxTECComponents), Logging.INDEX_MESSAGE.NOT_SET);
                 }
 
                 //SaveRDGValues (false);

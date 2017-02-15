@@ -82,9 +82,6 @@ namespace Statistic
         static HLabelStyles[] s_arLabelStyles = { new HLabelStyles(Color.Black, s_clrBackColorLabel, 15F, ContentAlignment.MiddleCenter),
                                                 new HLabelStyles(Color.Black, s_clrBackColorLabelVal_TM_SN, 11F, ContentAlignment.MiddleCenter),
                                                 new HLabelStyles(Color.Black, s_clrBackColorLabelVal_TM_SN, 11F, ContentAlignment.MiddleCenter)};
-
-        enum StatesMachine : int { Init_TM, Current_TM_Gen, Current_TM_SN };
-
         /// <summary>
         /// Конструктор-основной
         /// </summary>

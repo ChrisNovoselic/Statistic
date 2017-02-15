@@ -189,6 +189,10 @@ namespace StatisticCommon
 
         public abstract void IncIGOVersion();
 
+        public static string GetNameParametersOfIndex(int indx)
+        {
+            return NAME_PARAMETR_SETUP[indx];
+        } 
     }
 
     public partial class FormParameters_FIleINI : FormParameters

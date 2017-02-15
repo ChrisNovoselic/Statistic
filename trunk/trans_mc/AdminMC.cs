@@ -57,7 +57,7 @@ namespace trans_mc
 
             DbMCSources.Sources().Request(m_IdListenerCurrent, query); //
 
-            //Logging.Logg().Debug("AdminMC::GetPPBRValuesRequest (TEC, TECComponent, DateTime, AdminTS.TYPE_FIELDS) - вЫход...: query=" + query, Logging.INDEX_MESSAGE.NOT_SET);
+            Logging.Logg().Debug("AdminMC::GetPPBRValuesRequest (TEC, TECComponent, DateTime, AdminTS.TYPE_FIELDS) - вЫход...: query=" + query, Logging.INDEX_MESSAGE.D_002);
         }
 
         protected override int getPPBRDatesResponse(DataTable table, DateTime date)
@@ -74,6 +74,7 @@ namespace trans_mc
                 hour = -1,
                 offsetPBR = 2
                 , offset = 0;
+            string msgDebug = string.Format(@"Получено строк={0} Модес-Центр за {1}: ", table.Rows.Count, date);
 
             for (i = 0; i < table.Rows.Count; i++)
             {
@@ -125,19 +126,22 @@ namespace trans_mc
                     m_curRDGValues[hour - 1].deviation = 0;
 
                     //Копирование при переходе лето-зима (-1)                        
-                    if ((m_curDate.Date.Equals(HAdmin.SeasonDateTime.Date) == true) && (hour == (HAdmin.SeasonDateTime.Hour - 0)))
-                    {
+                    if ((m_curDate.Date.Equals(HAdmin.SeasonDateTime.Date) == true) && (hour == (HAdmin.SeasonDateTime.Hour - 0))) {
                         m_curRDGValues[hour].From(m_curRDGValues[hour - 1]);
 
                         offset++;
+                    } else {
                     }
-                    else
-                    {
-                    }
+
+                    msgDebug += string.Format(@"[Час={0}, ПБР={1}],", hour, m_curRDGValues[hour - 1].pbr);
+                } catch(Exception e) {
+                    Logging.Logg().Exception(e, string.Format(@"AdminMC::getPPBRValuesResponse () - строка={0}", i), Logging.INDEX_MESSAGE.NOT_SET);
                 }
-                catch { }
             }
-            //tPBR.InsertData();
+
+            msgDebug = msgDebug.Substring(0, msgDebug.Length - 1);
+            Logging.Logg().Debug(msgDebug, Logging.INDEX_MESSAGE.D_002);
+
             return iRes;
         }
 
