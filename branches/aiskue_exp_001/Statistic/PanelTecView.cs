@@ -120,8 +120,8 @@ namespace Statistic
                         else
                         {
                             ws.Cells[0, 0].Value = m_tecView.m_tec.name_shr;
-                            foreach (TECComponent g in m_tecView.m_tec.list_TECComponents)
-                                ws.Cells[0, 0].Value += ", " + g.name_shr;
+                            //foreach (TECComponent g in m_tecView.m_tec.list_TECComponents)
+                            //    ws.Cells[0, 0].Value += ", " + g.name_shr;
                         }
                     }
                     else
@@ -242,8 +242,8 @@ namespace Statistic
                         else
                         {
                             ws.Cells[0, 0].Value = m_tecView.m_tec.name_shr;
-                            foreach (TECComponent g in m_tecView.m_tec.list_TECComponents)
-                                ws.Cells[0, 0].Value += ", " + g.name_shr;
+                            //foreach (TECComponent g in m_tecView.m_tec.list_TECComponents)
+                                //ws.Cells[0, 0].Value += ", " + g.name_shr;
                         }
                     }
                     else
