@@ -39,10 +39,14 @@ namespace StatisticCommon
 
             SetConnectionSettings();
         }
-
-
+        /// <summary>
+        /// Установить соединение с Модес-Центром и подготовить объект соединения к запросам
+        /// </summary>
+        /// <returns>Результат установления соединения и инициализации</returns>
         protected override bool Connect()
         {
+            string msgLog = string.Empty;
+
             if (m_connectionSettings == null)
                 return false;
             else
@@ -60,15 +64,12 @@ namespace StatisticCommon
 
             bool result = false, bRes = false;
 
-            try
-            {
+            try {
                 if (bRes == true)
                     return bRes;
                 else
                     bRes = true;
-            }
-            catch (Exception e)
-            {
+            } catch (Exception e) {
                 Logging.Logg().Exception(e, "DbMCInterface::Connect ()", Logging.INDEX_MESSAGE.NOT_SET);
             }
 
@@ -80,31 +81,35 @@ namespace StatisticCommon
                     ;
             }
 
-            try
-            {
+            msgLog = string.Format("Соединение с Modes-Centre ({0})", (string)m_connectionSettings);
+
+            try {
                 ModesApiFactory.Initialize((string)m_connectionSettings);
 
-                Logging.Logg().Debug("Соединение с Modes-Centre (" + (string)m_connectionSettings + ")", Logging.INDEX_MESSAGE.NOT_SET);
-            }
-            catch (Exception e)
-            {
-                Logging.Logg().Exception(e, "Ошибка соединения с Modes-Centre (" + (string)m_connectionSettings + ")", Logging.INDEX_MESSAGE.NOT_SET);
+                Logging.Logg().Debug(string.Format(@"{0} - ...", msgLog), Logging.INDEX_MESSAGE.NOT_SET);
+            } catch (Exception e) {
+                Logging.Logg().Exception(e, string.Format(@"{0} - ...", msgLog), Logging.INDEX_MESSAGE.NOT_SET);
             }
 
             bRes = 
             result =
-            ModesApiFactory.IsInitilized;
+                ModesApiFactory.IsInitilized;
+            
+            if (bRes == true) {
+                // на случай перезагрузки сервера Модес-центр
+                try {
+                    m_MCApi = ModesApiFactory.GetModesApi();
+                    m_MCTimeSlice = m_MCApi.GetModesTimeSlice(DateTime.Now.Date.LocalHqToSystemEx(), SyncZone.First, TreeContent.PGObjects, true);
+                    m_listPFI = m_MCApi.GetPlanFactors();
 
-            if (bRes == true)
-            {
-                m_MCApi = ModesApiFactory.GetModesApi();
-                m_MCTimeSlice = m_MCApi.GetModesTimeSlice(DateTime.Now.Date.LocalHqToSystemEx(), SyncZone.First, TreeContent.PGObjects, true);
-                m_listPFI = m_MCApi.GetPlanFactors();
-            }
-            else
+                    Logging.Logg().Debug(string.Format(@"{0} - {1}...", msgLog, @"УСПЕХ"), Logging.INDEX_MESSAGE.NOT_SET);
+                } catch (Exception e) {
+                    Logging.Logg().Exception(e, string.Format(@"{0} - ...", msgLog), Logging.INDEX_MESSAGE.NOT_SET);
+
+                    result = false;
+                }                
+            } else
                 ;
-
-            Logging.Logg().Debug("Соединение с Modes-Centre(" + (string)m_connectionSettings + ") - УСПЕХ", Logging.INDEX_MESSAGE.NOT_SET);
 
             return result;
         }
