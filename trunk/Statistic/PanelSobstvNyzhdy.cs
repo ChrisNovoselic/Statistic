@@ -937,8 +937,10 @@ namespace Statistic
                         {
                             ws.Cells[0, 0].Value = "Собственные нужды " + m_tecView.m_tec.name_shr;
                             if (m_tecView.m_tec.list_TECComponents.Count != 1)
-                                foreach (TECComponent g in m_tecView.m_tec.list_TECComponents)
-                                    ws.Cells[0, 0].Value += ", " + g.name_shr;
+                            {
+                                //foreach (TECComponent g in m_tecView.m_tec.list_TECComponents)
+                                //    ws.Cells[0, 0].Value += ", " + g.name_shr;
+                            }
                         }
                         else
                         {
