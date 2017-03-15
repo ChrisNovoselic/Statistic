@@ -20,6 +20,7 @@ namespace Statistic
     /// </summary>
     public partial class FormGraphicsSettings : Form                                 
     {
+        #region Перечисления
         /// <summary>
         /// Открытое перечисление INDEX_COLOR (индекс цвета)
         /// </summary>
@@ -53,7 +54,7 @@ namespace Statistic
             , SOTIASSO_3_MIN, SOTIASSO_1_MIN
             , COSTUMIZE
                 , COUNT_CONN_SETT_TYPE
-        };
+        }
 
         /// <summary>
         /// Открытое перечисление GraphTypes  (типы графиков)
@@ -65,11 +66,10 @@ namespace Statistic
             //гистограмма                                                     
             Bar,                                                                
         }
-
-
+        #endregion
 
         /// <summary>
-        /// ??поле m_markSourceData, класс HMark
+        /// Массив признаков использования источников данных
         /// </summary>
         HMark m_markSourceData;
 
@@ -83,7 +83,7 @@ namespace Statistic
         //    , m_bgColor_ASKUE, m_bgColor_SOTIASSO
         //    , gridColor;
 
-
+        #region Регион 1
         /// <summary>
         /// Открытое поле scale (масштаб) типа bool
         /// </summary>
@@ -93,6 +93,7 @@ namespace Statistic
         /// Открытое поле m_graphTypes (типы графиков) типа GraphTypes
         /// </summary>
         public GraphTypes m_graphTypes;
+        #endregion
 
         /// <summary>
         /// Открытое поле m_connSettType_SourceData (источник данных) типа StatisticCommon.CONN_SETT_TYPE
@@ -255,8 +256,9 @@ namespace Statistic
                 //переднему плану (надписи) присвоить зрительно отличный цвет
                 ((Label)sender).ForeColor = Color.FromArgb((((Label)sender).BackColor.R + 128) % 256, (((Label)sender).BackColor.G + 128) % 256, (((Label)sender).BackColor.B + 128) % 256);
                 //обновить активную настройку (цвет)
-                delegateUpdateActiveGui((int)TYPE_UPDATEGUI.COLOR); 
-            }
+                delegateUpdateActiveGui((int)TYPE_UPDATEGUI.COLOR);
+            } else
+                ;
         }
 
         /// <summary>
