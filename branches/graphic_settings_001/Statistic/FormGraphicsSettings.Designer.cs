@@ -26,10 +26,10 @@ namespace Statistic
             /// <summary>
             ///  Параметризованный конструктор LABEL_COLOR инициализирует поля структуры
             /// </summary>
-            /// <param name="col"></param>
-            /// <param name="name"></param>
-            /// <param name="text"></param>
-            /// <param name="pt"></param>
+            /// <param name="col">Цвет</param>
+            /// <param name="name">Имя</param>
+            /// <param name="text">Надпись</param>
+            /// <param name="pt">Позиция</param>
             public LABEL_COLOR(Color col, string name, string text, System.Drawing.Point pt)
             {
                 this.color = col;  this.name = name; this.text = text; this.pos = pt;
@@ -59,10 +59,12 @@ namespace Statistic
         /// <summary>
         /// Required method for Designer support - do not modify
         /// the contents of this method with the code editor.
-        /// </summary>
+        /// 
         /// Метод InitializeComponent() инициализирует все компоненты,расположенные на форме.
         /// InitializeComponent() вызывает метод LoadComponent().
         /// LoadComponent() извлекает скомпилированный XAML из сборки и использует его для построения пользовательского интерфейса.
+        /// </summary>
+
         private void InitializeComponent()                                                           
         {
             // Создание CheckBox (флажка)
@@ -98,7 +100,7 @@ namespace Statistic
             // Размер элемента автоматически изменятся в соответствии с размером его содержимого
             this.cbxScale.AutoSize = true;
             //Координаты левого верхнего угла элемента относительно левого верхнего угла его контейнера 
-            this.cbxScale.Location = new System.Drawing.Point(167, 13);
+            this.cbxScale.Location = new System.Drawing.Point(222, 13);
             // Имя элемента
             this.cbxScale.Name = "cbxScale";
             // Размер элемента
@@ -112,21 +114,23 @@ namespace Statistic
             // Обработка нажатия флажка обработчиком события
             this.cbxScale.CheckedChanged += new System.EventHandler(this.cbxScale_CheckedChanged);
 
-            // Массив лейблов, состоящий из 8 элементов (УДГэ,Отклонение и т.д.)
+            // Массив лейблов, состоящий из 10 элементов (УДГэ,Отклонение и т.д.)
             LABEL_COLOR[] arLabelColor = new LABEL_COLOR [(int)INDEX_COLOR.COUNT_INDEX_COLOR] 
             {
-                // LABEL1: Цвет черный,имя "lblUDGcolor",надпись "УДГэ",координаты положения (12, 11)
-                new LABEL_COLOR (Color.FromArgb(0, 0, 0), "lblUDGcolor", "УДГэ", new System.Drawing.Point(12, 11))
+                // LABEL1: Цвет черный,имя "lblUDGcolor",надпись "УДГэ, УДГт",координаты положения (12, 11)
+                  new LABEL_COLOR (Color.FromArgb(0, 0, 0), "lblUDGcolor", "УДГэ, УДГт", new System.Drawing.Point(12, 11))
                 , new LABEL_COLOR (Color.FromArgb(255, 0, 0), "lblDIVcolor", "Отклонение", new System.Drawing.Point(12, 36))
-                , new LABEL_COLOR (Color.FromArgb(0, 128, 0), "lblP_ASKUEcolor", "Мощность (АИСКУЭ)", new System.Drawing.Point(12, 61))
-                , new LABEL_COLOR (Color.FromArgb(0, 128, 192), "lblP_SOTIASSOcolor", "Мощность (СОТИАССО)", new System.Drawing.Point(12, 86))
-                , new LABEL_COLOR (Color.FromArgb(255, 255, 0), "lblRECcolor", "Рекомендация", new System.Drawing.Point(12, 111))
-                , new LABEL_COLOR (Color.FromArgb(231, 231, 238 /*230, 230, 230*/), "lblBG_ASKUE_color", "Фон (АИСКУЭ)", new System.Drawing.Point(12, 136))
-                , new LABEL_COLOR (Color.FromArgb(231, 238, 231), "lblBG_SOTIASSO_color", "Фон (СОТИАССО)", new System.Drawing.Point(12, 161))                
-                , new LABEL_COLOR (Color.FromArgb(200, 200, 200), "lblGRIDcolor", "Сетка", new System.Drawing.Point(12, 186))
+                , new LABEL_COLOR (Color.FromArgb(0, 128, 0), "lblP_ASKUEcolor", "Мощность (АИИСКУЭЭ)", new System.Drawing.Point(12, 61))
+                , new LABEL_COLOR (Color.FromArgb(255, 255, 255), "lblP_ASKUE_normHourscolor", "Мощность (АИИСКУЭЭ, обычн.ч.)", new System.Drawing.Point(12, 86))
+                , new LABEL_COLOR (Color.FromArgb(0, 128, 192), "lblP_SOTIASSOcolor", "Мощность (СОТИАССО)", new System.Drawing.Point(12, 111))
+                , new LABEL_COLOR (Color.FromArgb(255, 255, 0), "lblRECcolor", "Рекомендация", new System.Drawing.Point(12, 136))
+                , new LABEL_COLOR (Color.FromArgb(128, 000, 128), "lblT_ASKUTEcolor", "Температура (АИИСКУТЭ)", new System.Drawing.Point(12, 161))
+                , new LABEL_COLOR (Color.FromArgb(231, 231, 238 /*230, 230, 230*/), "lblBG_ASKUE_color", "Фон (АИИСКУЭЭ)", new System.Drawing.Point(12, 186))
+                , new LABEL_COLOR (Color.FromArgb(231, 238, 231), "lblBG_SOTIASSO_color", "Фон (СОТИАССО)", new System.Drawing.Point(12, 211))                
+                , new LABEL_COLOR (Color.FromArgb(200, 200, 200), "lblGRIDcolor", "Сетка", new System.Drawing.Point(12, 236))
             };
 
-            // Для каждого параметра (УДГэ,Отклонение и т.д.)
+            // Для каждого параметра (УДГ,Отклонение и т.д.)
             for (int i = 0; i < (int)INDEX_COLOR.COUNT_INDEX_COLOR; i++)
             {
                 // Cоздать лейбл 
@@ -142,7 +146,7 @@ namespace Statistic
                 // Имя
                 this.m_arlblColor[i].Name = arLabelColor[i].name;
                 // Размер
-                this.m_arlblColor[i].Size = new System.Drawing.Size(140, 26);
+                this.m_arlblColor[i].Size = new System.Drawing.Size(195, 26);
                 // Текс надписи
                 this.m_arlblColor[i].Text = arLabelColor [i].text;
                 // Выравнивание текста
@@ -157,7 +161,7 @@ namespace Statistic
             this.gbxType.Controls.Add(this.rbtnBar);
             this.gbxType.Controls.Add(this.rbtnLine);
             // Координаты расположения ящика
-            this.gbxType.Location = new System.Drawing.Point(167, 32);
+            this.gbxType.Location = new System.Drawing.Point(222, 32);
             // Имя ящика
             this.gbxType.Name = "gbxType";
             // Размер 
@@ -198,7 +202,7 @@ namespace Statistic
             // 
             // Добавление массива кнопок в ящик (коллекцию)
             this.groupBoxSourceData.Controls.AddRange(m_arRadioButtonSourceData);
-            this.groupBoxSourceData.Location = new System.Drawing.Point(167, 96);
+            this.groupBoxSourceData.Location = new System.Drawing.Point(222, 96);
             this.groupBoxSourceData.Name = "groupBoxSourceData";
             this.groupBoxSourceData.Size = new System.Drawing.Size(173, 114);
             this.groupBoxSourceData.TabIndex = 8;
@@ -287,8 +291,8 @@ namespace Statistic
             this.AutoScaleDimensions = new System.Drawing.SizeF(6F, 13F);
             // Автомасштабирование шрифта
             this.AutoScaleMode = System.Windows.Forms.AutoScaleMode.Font;
-            // Размер окна 352*217
-            this.ClientSize = new System.Drawing.Size(352, 217);
+            // Размер окна 407*300
+            this.ClientSize = new System.Drawing.Size(407, 300);
             // Добавление элементов управления в окно
             for (int i = 0; i < (int)INDEX_COLOR.COUNT_INDEX_COLOR; i++)
                 this.Controls.Add(this.m_arlblColor [i]);
@@ -301,7 +305,7 @@ namespace Statistic
             this.MaximizeBox = false;
             this.MinimizeBox = false;
             // Минимальный размер, в который может быть изменен размер формы
-            this.MinimumSize = new System.Drawing.Size(170, 25);
+            //this.MinimumSize = new System.Drawing.Size(170, 25);
             this.Name = "FormGraphicsSettings";
             // Не отображать значок в строке заголовка формы
             this.ShowIcon = false;
