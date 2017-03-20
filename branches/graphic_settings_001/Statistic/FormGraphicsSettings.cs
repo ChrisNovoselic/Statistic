@@ -1,4 +1,4 @@
-// добавление ссылок на типы, определенные в пространстве имен System
+// Добавление ссылок на типы, определенные в пространстве имен System
 using System;                                                                    
 using System.Collections.Generic;
 //using System.ComponentModel;
@@ -27,15 +27,15 @@ namespace Statistic
         public enum INDEX_COLOR                                                    
         {
             /// <summary>
-            /// В перечислении INDEX_COLOR  определены 9 именованных констант, по умолчанию
+            /// В перечислении INDEX_COLOR  определены 11 именованных констант, по умолчанию
             /// первому эл-ту присваивается 0, остальным n+1
             /// </summary>
-            UDG, DIVIATION, ASKUE, SOTIASSO, REC, BG_ASKUE, BG_SOTIASSO, GRID      
-                , COUNT_INDEX_COLOR                                                     
+            UDG, DIVIATION, ASKUE, ASKUE_NORMAL_HOURS, SOTIASSO, REC, TEMP_ASKUTE,
+            BG_ASKUE, BG_SOTIASSO, GRID, COUNT_INDEX_COLOR                                                     
         }
 
         /// <summary>
-        /// Открытое перечисление  TYPE_UPDATEGUI  (типы настроек)   
+        /// Открытое перечисление  TYPE_UPDATEGUI  (типы пользовательских настроек)   
         /// </summary>
         public enum TYPE_UPDATEGUI                                                                                              
         {
@@ -83,7 +83,7 @@ namespace Statistic
         //    , m_bgColor_ASKUE, m_bgColor_SOTIASSO
         //    , gridColor;
 
-        #region Регион 1
+        #region Поля
         /// <summary>
         /// Открытое поле scale (масштаб) типа bool
         /// </summary>
@@ -115,11 +115,7 @@ namespace Statistic
         /// </summary>
         private FormMain m_formMain;
 
-
-
-
-
-
+        #region Конструктор
         /// <summary>
         /// Открытый пользовательский конструктор FormGraphicsSettings инициализирует поля m_formMain, delegateUpdateActiveGui, delegateHideGraphicsSettings
         /// </summary>
@@ -128,8 +124,7 @@ namespace Statistic
         /// <param name="Hide"></param>
         public FormGraphicsSettings(FormMain fm, DelegateIntFunc delUp, DelegateFunc Hide) 
         {
-            
-            InitializeComponent();                                                                       //??                                                        
+            InitializeComponent();                                                                                                                             
 
             // инициализация полей заданными пользователем значениями
             delegateUpdateActiveGui = delUp;                                                            
@@ -164,10 +159,10 @@ namespace Statistic
 
             m_graphTypes = GraphTypes.Bar; // тип графика-Гистограмма по умолчанию
         }
+        #endregion
 
 
-
-
+        #region Методы
         /// <summary>
         /// Закрытый метод getForeColor (получить цвет надписи) принимает агрумент типа структуры Color (выбранный цвет заднего плана)
         /// и возвращает цвет надписи (переднего плана)
@@ -180,7 +175,6 @@ namespace Statistic
             
             return Color.FromArgb((bgColor.R + 128) % 256, (bgColor.G + 128) % 256, (bgColor.B + 128) % 256); 
         }
-
 
         /// <summary>
         /// Открытый метод COLOR принимает аргумент типа INDEX_COLOR (индекс настраиваемого параметра)
@@ -223,8 +217,6 @@ namespace Statistic
                             else
                                 ;
         }
-
-
         /// <summary>
         /// Закрытый метод cbxScale_CheckedChanged (проверка изменения масштаба), 
         /// принимающий событие нажатия на кнопку "масштабирование" и ничего не возвращающий
@@ -236,9 +228,6 @@ namespace Statistic
             scale = cbxScale.Checked;                              //полю присвоить проверенное  значение
             delegateUpdateActiveGui((int)TYPE_UPDATEGUI.SCALE);    //обновить активную настройку (масштаб)
         }
-
-
-
         /// <summary>
         /// Закрытый метод lbl_color_Click (нажатие цвета), принимающий событие нажатия на выбранный цвет
         /// и ничего не возвращающий
@@ -300,8 +289,6 @@ namespace Statistic
             
             delegateUpdateActiveGui((int)TYPE_UPDATEGUI.LINEAR);   //обновить активную настройку (линейный)
         }
-
-
         /// <summary>
         /// Закрытый метод rbtnSourceData_Click( нажатие источника данных), ничего не принимает и не возвращает
         /// </summary>
@@ -311,8 +298,6 @@ namespace Statistic
 
             delegateUpdateActiveGui((int)TYPE_UPDATEGUI.SOURCE_DATA); //обновить активную настройку (источник данных)
         }
-
-
         /// <summary>
         /// Перегруженный метод, принимающий индекс источника информации
         /// </summary>
@@ -329,7 +314,6 @@ namespace Statistic
             else
                 ;
         }
-
 
         /// <summary>
         /// Закрытый метод rbtnSourceData_ASKUEPLUSSOTIASSO_Click, принимающий событие нажатия на "АИСКУЭ+СОТИАССО"
@@ -361,5 +345,6 @@ namespace Statistic
         {
             rbtnSourceData_Click(CONN_SETT_TYPE.COSTUMIZE);
         }
+        #endregion
     }
 }
