@@ -27,17 +27,28 @@ using StatisticAnalyzer;
 
 namespace Statistic
 {
+    /// <summary>
+    /// Открытый частичный класс FormMain наследуется от FormMainBaseWithStatusStrip
+    /// </summary>
     public partial class FormMain : FormMainBaseWithStatusStrip
     {
         //??? требуется перенос кода в HClassLibrary
+        /// <summary>
+        /// Закрытый класс HTabCtrlEx наследуется от HClassLibrary.HTabCtrlEx
+        /// </summary>
         private class HTabCtrlEx : HClassLibrary.HTabCtrlEx
         {
+            /// <summary>
+            /// Открытый метод IndexOfName (индекс имени) принимает строковый аргумент, возвращает значение типа int
+            /// </summary>
+            /// <param name="name">Имя</param>
+            /// <returns>Число</returns>
             public int IndexOfName (string name)
             {
                 int iRes = -1;
 
                 int i = -1;
-
+                //?? что-то с вкладками связано
                 for (i = 0; i < TabCount; i++)
                     if (TabPages[i].Name.Trim().Equals(name.Trim()) == true)
                     {

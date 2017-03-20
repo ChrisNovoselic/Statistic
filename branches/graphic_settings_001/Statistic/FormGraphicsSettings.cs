@@ -30,7 +30,7 @@ namespace Statistic
             /// В перечислении INDEX_COLOR  определены 11 именованных констант, по умолчанию
             /// первому эл-ту присваивается 0, остальным n+1
             /// </summary>
-            UDG, DIVIATION, ASKUE, ASKUE_NORMAL_HOURS, SOTIASSO, REC, TEMP_ASKUTE,
+            UDG, DIVIATION, ASKUE, ASKUE_LK_REGULAR, SOTIASSO, REC, TEMP_ASKUTE,
             BG_ASKUE, BG_SOTIASSO, GRID, COUNT_INDEX_COLOR                                                     
         }
 
