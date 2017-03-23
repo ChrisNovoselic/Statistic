@@ -237,7 +237,7 @@ namespace Statistic
                     curCellStyle = normalDevCellStyle;
 
                     normalDevCellStyle.BackColor = Color.White;
-                    errorDevCellStyle.BackColor = Color.Red;
+                    errorDevCellStyle.BackColor = FormMain.formGraphicsSettings.COLOR(FormGraphicsSettings.INDEX_COLOR.DIVIATION);
 
                     cntHourFactNotValues = 0;
                     sumFact =
@@ -547,7 +547,7 @@ namespace Statistic
                     getColorZedGraph(typeConnSett, out colorChart, out colorPCurve);
 
                     GraphPane.Chart.Fill = new Fill(colorChart);
-                    colorPCurve = Color.Purple;
+                    colorPCurve = FormMain.formGraphicsSettings.COLOR(FormGraphicsSettings.INDEX_COLOR.TEMP_ASKUTE);
 
                     //LineItem - план/отклонения
                     string strCurveNamePlan = "Тпр план"

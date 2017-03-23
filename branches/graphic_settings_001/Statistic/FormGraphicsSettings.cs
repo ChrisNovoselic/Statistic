@@ -186,7 +186,9 @@ namespace Statistic
         {
             return m_arlblColor [(int)indx].BackColor;     
         }
-
+        /// <summary>
+        /// Установить признаки использования типов источников данных
+        /// </summary>
         /// <summary>
         /// Закрытый метод checkedSourceData (проверить источник данных) ничего не принимает, ничего не возвращает
         /// </summary>
