@@ -19,20 +19,41 @@ using StatisticCommon;
 
 namespace Statistic
 {
+    /// <summary>
+    /// Открытый абстрактный частичный класс PanelTecViewBase наследуется от PanelStatisticWithTableHourRows
+    /// </summary>
     public abstract partial  class PanelTecViewBase : PanelStatisticWithTableHourRows
     {
+        /// <summary>
+        /// Поле только для чтения "Текущее обновление таймера"
+        /// </summary>
+        
         private static readonly int MS_TIMER_CURRENT_UPDATE = 1000;
         /// <summary>
         /// Объект-подпись для текущего объекта панели
         /// </summary>
         protected PanelCustomTecView.HLabelCustomTecView m_label;
 
+        /// <summary>
+        /// Поле разделитель процентов вертикальный
+        /// </summary>
         protected uint SPLITTER_PERCENT_VERTICAL;
 
+        /// <summary>
+        /// Абстрактный класс "Гистограмма"
+        /// </summary>
         protected abstract class HZedGraphControl : ZedGraph.ZedGraphControl
         {
+            /// <summary>
+            /// Событие "Выбранные элементы события"
+            /// </summary>
             public event DelegateIntFunc EventItemSelected;
-
+            /// <summary>
+            /// Событие нажатия мыши
+            /// </summary>
+            /// <param name="sender">ZedGraphControl</param>
+            /// <param name="e">MouseEventArgs</param>
+            /// <returns></returns>
             public bool OnMouseUpEvent(ZedGraphControl sender, MouseEventArgs e)
             {
                 if (e.Button != MouseButtons.Left)
@@ -58,7 +79,9 @@ namespace Statistic
 
                 return true;
             }
-
+            /// <summary>
+            /// Перечисление "Пункты контекстного меню" (при нажатии по графику правой кнопкой мыши)
+            /// </summary>
             public enum INDEX_CONTEXTMENU_ITEM
             {
                 SHOW_VALUES,
@@ -210,10 +233,12 @@ namespace Statistic
                     this.Items[indx].Enabled = false;
                 }
             }
-
+            /// <summary>
+            /// Поле  m_lockValue типа object
+            /// </summary>
             private object m_lockValue;
             /// <summary>
-            /// Текст, поясняющий тип отображаемых данных
+            /// Свойство SourceDataText возвращает текст контекстного меню
             /// </summary>
             public string SourceDataText
             {
@@ -281,7 +306,7 @@ namespace Statistic
                 this.ContextMenuStrip = new HContextMenuStripZedGraph();
             }
             /// <summary>
-            /// Инициализация обработчиков собыьтй при выборе пунктов меню (стандартных)
+            /// Инициализация обработчиков событий при выборе пунктов меню (стандартных)
             /// </summary>
             private void initializeContextMenuItemStandardEventHandler()
             {
@@ -349,7 +374,12 @@ namespace Statistic
             {
                 return curve[iPt].Y.ToString("F2");
             }
-
+            /// <summary>
+            /// Событие "Двойной клик"-масштабирование
+            /// </summary>
+            /// <param name="sender">ZedGraphControl</param>
+            /// <param name="e">MouseEventArgs</param>
+            /// <returns></returns>
             private bool OnDoubleClickEvent(ZedGraphControl sender, MouseEventArgs e)
             {
                 //FormMain.formGraphicsSettings.SetScale();
@@ -365,6 +395,12 @@ namespace Statistic
             //    getColorZedGraph(m_tecView.m_arTypeSourceData[(int)id_time], out colChart, out colP);
             //}
 
+            /// <summary>
+            /// Получение цвета гистограммы
+            /// </summary>
+            /// <param name="typeConnSett">источник данных</param>
+            /// <param name="colChart">цвет фона</param>
+            /// <param name="colP">цвет графика</param>
             protected void getColorZedGraph(CONN_SETT_TYPE typeConnSett, out Color colChart, out Color colP)
             {
                 //Значения по умолчанию
@@ -384,7 +420,7 @@ namespace Statistic
                     else
                         ;
             }
-        
+   
             public virtual bool FindNearestObject (PointF p, Graphics g, out object obj, out int index)
             {
                 return GraphPane.FindNearestObject(p, g, out obj, out index);
@@ -426,7 +462,7 @@ namespace Statistic
         /// </summary>
         private DelegateObjectFunc delegateTickTime;
         /// <summary>
-        /// Объект для работы с БД (отправка/получение/обраюотка результатов запросов)
+        /// Объект для работы с БД (отправка/получение/обработка результатов запросов)
         /// </summary>
         public TecView m_tecView;
         /// <summary>
@@ -1299,7 +1335,7 @@ namespace Statistic
                         ;
         }
 
-        public void UpdateGraphicsCurrent(int type)
+        public virtual void UpdateGraphicsCurrent(int type)
         {
             lock (m_tecView.m_lockValue)
             {
