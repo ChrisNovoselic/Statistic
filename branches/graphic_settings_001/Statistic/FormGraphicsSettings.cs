@@ -31,7 +31,7 @@ namespace Statistic
             /// первому эл-ту присваивается 0, остальным n+1
             /// </summary>
             UDG, DIVIATION, ASKUE, ASKUE_LK_REGULAR, SOTIASSO, REC, TEMP_ASKUTE,
-            BG_ASKUE, BG_SOTIASSO, GRID, COUNT_INDEX_COLOR                                                     
+            BG_ASKUE, BG_SOTIASSO, BG_ASKUTE, GRID, COUNT_INDEX_COLOR                                                     
         }
 
         /// <summary>

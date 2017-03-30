@@ -100,7 +100,7 @@ namespace Statistic
             // Размер элемента автоматически изменятся в соответствии с размером его содержимого
             this.cbxScale.AutoSize = true;
             //Координаты левого верхнего угла элемента относительно левого верхнего угла его контейнера 
-            this.cbxScale.Location = new System.Drawing.Point(222, 13);
+            this.cbxScale.Location = new System.Drawing.Point(222, 11);
             // Имя элемента
             this.cbxScale.Name = "cbxScale";
             // Размер элемента
@@ -126,8 +126,9 @@ namespace Statistic
                 , new LABEL_COLOR (Color.FromArgb(255, 255, 0), "lblRECcolor", "Рекомендация", new System.Drawing.Point(12, 136))
                 , new LABEL_COLOR (Color.FromArgb(128, 000, 128), "lblT_ASKUTEcolor", "Температура (АИИСКУТЭ)", new System.Drawing.Point(12, 161))
                 , new LABEL_COLOR (Color.FromArgb(231, 231, 238 /*230, 230, 230*/), "lblBG_ASKUE_color", "Фон (АИИСКУЭЭ)", new System.Drawing.Point(12, 186))
-                , new LABEL_COLOR (Color.FromArgb(231, 238, 231), "lblBG_SOTIASSO_color", "Фон (СОТИАССО)", new System.Drawing.Point(12, 211))                
-                , new LABEL_COLOR (Color.FromArgb(200, 200, 200), "lblGRIDcolor", "Сетка", new System.Drawing.Point(12, 236))
+                , new LABEL_COLOR (Color.FromArgb(231, 238, 231), "lblBG_SOTIASSO_color", "Фон (СОТИАССО)", new System.Drawing.Point(12, 211))
+                , new LABEL_COLOR (Color.FromArgb(231, 231, 238), "lblBG_ASKUTE_color", "Фон (АИИСКУТЭ)", new System.Drawing.Point(12, 236))
+                , new LABEL_COLOR (Color.FromArgb(200, 200, 200), "lblGRIDcolor", "Сетка", new System.Drawing.Point(12, 261))
             };
 
             // Для каждого параметра (УДГ,Отклонение и т.д.)
@@ -168,7 +169,7 @@ namespace Statistic
             // Имя ящика
             this.gbxType.Name = "gbxType";
             // Размер 
-            this.gbxType.Size = new System.Drawing.Size(173, 58);
+            this.gbxType.Size = new System.Drawing.Size(173, 77);
             // Последовательность перехода между ссылками при нажатии на кнопку Tab
             this.gbxType.TabIndex = 5;
             // gbxType не получает фокус с помощью клавиши TAB. 
@@ -181,7 +182,7 @@ namespace Statistic
             this.rbtnBar.AutoSize = true;
             // Включена проверка нажатия
             this.rbtnBar.Checked = true;
-            this.rbtnBar.Location = new System.Drawing.Point(6, 16);
+            this.rbtnBar.Location = new System.Drawing.Point(6, 19);
             this.rbtnBar.Name = "rbtnBar";
             this.rbtnBar.Size = new System.Drawing.Size(92, 17);
             this.rbtnBar.TabIndex = 1;
@@ -192,7 +193,7 @@ namespace Statistic
             // rbtnLine Элемент "Линейный"
             // 
             this.rbtnLine.AutoSize = true;
-            this.rbtnLine.Location = new System.Drawing.Point(6, 37);
+            this.rbtnLine.Location = new System.Drawing.Point(6, 48);
             this.rbtnLine.Name = "rbtnLine";
             this.rbtnLine.Size = new System.Drawing.Size(75, 17);
             this.rbtnLine.TabIndex = 0;
@@ -205,9 +206,9 @@ namespace Statistic
             // 
             // Добавление массива кнопок в ящик (коллекцию)
             this.groupBoxSourceData.Controls.AddRange(m_arRadioButtonSourceData);
-            this.groupBoxSourceData.Location = new System.Drawing.Point(222, 96);
+            this.groupBoxSourceData.Location = new System.Drawing.Point(222, 115);
             this.groupBoxSourceData.Name = "groupBoxSourceData";
-            this.groupBoxSourceData.Size = new System.Drawing.Size(173, 114);
+            this.groupBoxSourceData.Size = new System.Drawing.Size(173, 173);
             this.groupBoxSourceData.TabIndex = 8;
             this.groupBoxSourceData.TabStop = false;
             this.groupBoxSourceData.Text = "Типы значений графиков";
@@ -216,12 +217,12 @@ namespace Statistic
                 //Позиция по оси ординат
                 , yPos = -1
                 //Расстояние между элементами управления
-                , yMargin = 19;
+                , yMargin = 29;
             // 
             // rbtnSourceData_AISKUE_PLUS_SOTIASSO
             // 
             // Переменной indx присвоен 0, yPos присвоен 16;
-            indx = (int)CONN_SETT_TYPE.AISKUE_PLUS_SOTIASSO; yPos = 16;
+            indx = (int)CONN_SETT_TYPE.AISKUE_PLUS_SOTIASSO; yPos = 19;
             // Группа элементов управления RadioButton не будет действовать как взаимоисключающая группа,
             // а свойство Checked должно быть обновлено в коде
             this.m_arRadioButtonSourceData[(int)indx].AutoCheck = false;
