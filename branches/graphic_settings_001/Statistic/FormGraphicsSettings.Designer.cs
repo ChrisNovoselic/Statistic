@@ -153,7 +153,10 @@ namespace Statistic
                 this.m_arlblColor[i].TextAlign = System.Drawing.ContentAlignment.MiddleCenter;
                 // При CLick на лейбл обработчику событий передается событие нажатия 
                 this.m_arlblColor[i].Click += new System.EventHandler(this.lbl_color_Click);
+                
             }
+            
+
             // 
             // gbxType Элемент "Тип графиков"
             // 

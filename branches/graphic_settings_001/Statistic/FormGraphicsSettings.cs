@@ -161,7 +161,6 @@ namespace Statistic
         }
         #endregion
 
-
         #region Методы
         /// <summary>
         /// Закрытый метод getForeColor (получить цвет надписи) принимает агрумент типа структуры Color (выбранный цвет заднего плана)

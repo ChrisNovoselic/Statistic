@@ -20,6 +20,22 @@ namespace Statistic
 {
     public abstract class PanelTecViewStandard : PanelTecViewBase
     {
+        public override void UpdateGraphicsCurrent(int type)
+        {
+            base.UpdateGraphicsCurrent(type);
+
+            lock (m_tecView.m_lockValue)
+            {
+                m_dgwHours.Fill(m_tecView.m_valuesHours
+                , m_tecView.lastHour
+                , m_tecView.lastReceivedHour
+                , m_tecView.m_valuesHours.Length
+                , m_tecView.m_tec.m_id
+                , m_tecView.currHour
+                , m_tecView.m_arTypeSourceData[(int)HDateTime.INTERVAL.HOURS] == CONN_SETT_TYPE.DATA_AISKUE
+                , m_tecView.serverTime);
+            }
+        }
         public class DataGridViewStandardMins : HDataGridViewStandard
         {
             protected virtual void InitializeComponents()

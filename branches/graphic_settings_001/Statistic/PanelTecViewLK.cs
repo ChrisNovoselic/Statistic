@@ -19,29 +19,35 @@ namespace Statistic
     /// </summary>
     class PanelLKView : PanelTecViewBase
     {
-        // Конструктор производного класса принимает ТЭЦ, номер ТЭЦ,номер компонента, лейбл панели пользовательского вида ТЭЦ = null
+        /// <summary>
+        /// Конструктор класса "Вид панели ЛК"
+        /// </summary>
+        /// <param name="tec"> ТЭЦ</param>
+        /// <param name="num_tec">номер ТЭЦ</param>
+        /// <param name="num_comp">номер компонента</param>
+        /// <param name="label">лейбл панели пользовательского вида ТЭЦ</param>
         public PanelLKView(StatisticCommon.TEC tec, int num_tec, int num_comp, PanelCustomTecView.HLabelCustomTecView label = null)
-            // в АИИС КУЭ читаем "мощность", в СОТИАССО - температуру окр.воздуха
-
+            // В АИИС КУЭ читаем "мощность", в СОТИАССО - температуру окр.воздуха
             //Вызов конструктора из базового класса PanelTecViewBase, передаем параметры: ТЭЦ, номер ТЭЦ,номер компонента,
             //экземпляр класса HMark (источник данных) с массивом аргументов: администратор, ПБР, данные АИИСКУЭ и СОТИАССО
             : base(tec, num_tec, num_comp, new HMark(new int[] { (int)CONN_SETT_TYPE.ADMIN, (int)CONN_SETT_TYPE.PBR, (int)CONN_SETT_TYPE.DATA_AISKUE, (int)CONN_SETT_TYPE.DATA_SOTIASSO }))
         {
-            //лейбл= null
+            //Лейбл= null
             m_label = label;
-            //разделитель вертикальных процентов= 30
-            
+            //Разделитель вертикальных процентов= 30
             SPLITTER_PERCENT_VERTICAL = 30;
-            // массив для хранения пропорций при размещении эл-ов управления 
+            // Массив для хранения пропорций при размещении эл-ов управления 
             m_arPercRows = new int[] { 5, 78 };
-            //инициализировать компоненты контрольных часов
+            //Инициализировать компоненты контрольных часов
             MainHours.Initialize();
 
             InitializeComponent ();
 
             m_dgwHours.EventDataValues += new HDataGridViewBase.DataValuesEventHandler((_pnlQuickData as PanelQuickDataLK).OnPBRDataValues);
         }
-        // переопределение метода базового класса
+        /// <summary>
+        /// Метод "Инициализация компонентов" 
+        /// </summary>
         protected override void InitializeComponent()
         {
             int[] arProp = new int[] { 0, 1, 0, 1, 0, 1, -1 }; //отобразить часовые таблицу/гистограмму/панель с оперативными данными
@@ -49,16 +55,20 @@ namespace Statistic
             base.InitializeComponent();
 
             if (!(m_label == null))
-                //произвести реструктуризацию
+                //Произвести реструктуризацию
                 m_label.PerformRestruct(arProp);
             else
-                //восстановление события
+                //Восстановление события
                 OnEventRestruct(arProp);
         }
-        //Класс  TecViewLK наследуется от TecView
+      
         private class TecViewLK : TecView
         {
-            //Конструктор TecViewLK принимает индекс тэц, индекс компонента
+            /// <summary>
+            /// Конструктор TecViewLK 
+            /// </summary>
+            /// <param name="indx_tec">индекс тэц</param>
+            /// <param name="indx_comp">индекс компонента</param>
             public TecViewLK (int indx_tec, int indx_comp)
                 //Вызов конструктора из базового класса TecView, передаем параметры: индекс тэц, индекс компонента,
                 //компонент принадлежащий электрической части тэц
@@ -67,7 +77,9 @@ namespace Statistic
                 m_idAISKUEParNumber = ID_AISKUE_PARNUMBER.FACT_30;
                 _tsOffsetToMoscow = HDateTime.TS_NSK_OFFSET_OF_MOSCOWTIMEZONE;
             }
-             //изменение состояния
+            /// <summary>
+            /// Метод "Изменение состояния" 
+            /// </summary>
             public override void ChangeState()
             {
                 lock (m_lockState) { GetRDGValues(-1, DateTime.MinValue); }
@@ -131,7 +143,7 @@ namespace Statistic
             }
 
             /// <summary>
-            /// Возвратить сумму фактических значений для всех ТГ
+            /// Метод "Возвратить сумму фактических значений для всех ТГ"
             /// </summary>
             /// <param name="hour">Номер часа за который расчитывается сумма</param>
             /// <returns>Результат суммирования</returns>
@@ -192,7 +204,9 @@ namespace Statistic
         /// </summary>
         private class PanelQuickDataLK : HPanelQuickData
         {
-            //Быстрые данные панели
+            /// <summary>
+            /// Конструктор "Быстрые данные панели ЛК"
+            /// </summary>
             public PanelQuickDataLK()
                 : base (/*-1, -1*/)
             {
@@ -203,16 +217,14 @@ namespace Statistic
             {
                 //Количество виртуальных строк, на которые  разбита панель
                 COUNT_ROWS = 3;
-
                 SZ_COLUMN_LABEL = 58F;
                 // Текущая температура
                 m_indxStartCommonFirstValueSeries = (int)CONTROLS.lblTemperatureCurrent;
                 // Текущая мощность
                 m_indxStartCommonSecondValueSeries = (int)CONTROLS.lblPowerCurrent;
-
                 m_iCountCommonLabels = (int)CONTROLS.lblPowerDateValue - (int)CONTROLS.lblTemperatureCurrent + 1;
 
-                // количество и параметры строк макета панели
+                // Количество и параметры строк макета панели
                 this.RowCount = COUNT_ROWS;
                 for (int i = 0; i < this.RowCount + 1; i++)
                     this.RowStyles.Add(new RowStyle(SizeType.Percent, (float)Math.Round((float)100 / this.RowCount, 1)));
@@ -308,11 +320,11 @@ namespace Statistic
                 {
                     switch (i)
                     {
-                        //лейбл для P час
+                        //Лейбл для P час
                         case CONTROLS.lblPowerCurrent:
-                        //лейбл для P пл/ч
+                        //Лейбл для P пл/ч
                         case CONTROLS.lblPowerHour:
-                        //лейбл для P сети
+                        //Лейбл для P сети
                         case CONTROLS.lblPowerDate:
                             // Цвет переднего плана черный, заднего пустой
                             foreColor = Color.Black;
@@ -361,7 +373,9 @@ namespace Statistic
                 }
                 #endregion
             }
-            //Перечисление контролируемых величин
+            /// <summary>
+            ///Перечисление контролируемых величин
+            /// </summary>
             public enum CONTROLS : short
             {
                 unknown = -1
@@ -381,7 +395,11 @@ namespace Statistic
             //{
             //    throw new NotImplementedException();
             //}
-            //Расположение  в ячейках таблицы
+            /// <summary>
+            /// Метод "Расположение  в ячейках таблицы"
+            /// </summary>
+            /// <param name="indx"></param>
+            /// <returns></returns>
             protected override TableLayoutPanelCellPosition getPositionCell(int indx)
             {   //ряд
                 int row = -1,
@@ -559,7 +577,7 @@ namespace Statistic
                     //Отобразить строку - отсутствие значения
                     m_tgLabels[id_tg][(int)TG.INDEX_VALUE.FACT].Text = "--.--";
 
-                // установить цвет шрифта для значения
+                // Установить цвет шрифта для значения
                 m_tgLabels[id_tg][(int)TG.INDEX_VALUE.FACT].ForeColor =
                     //clrLabel
                     getColorValues(TG.INDEX_VALUE.FACT)
@@ -665,7 +683,9 @@ namespace Statistic
         /// </summary>
         public class DataGridViewLKHours : HDataGridViewBase
         {
-            //Перечисление колонок таблицы
+            /// <summary>
+            ///Перечисление колонок таблицы
+            /// </summary>
             private enum INDEX_COLUMNS : short { PART_TIME, TEMPERATURE_FACT, POWER_FACT_SUM, TEMPERATURE_PBR, POWER_PBR, TEMPERATURE_DEVIATION, POWER_DEVIATION
                 , COUNT_COLUMN }
 
@@ -676,7 +696,7 @@ namespace Statistic
                 //: base(new int[] { 8, 15, 15, 15, 15, 15, 15 })
                 : base(
                     HDateTime.INTERVAL.HOURS
-                      //название колонок таблицы
+                      //Название колонок таблицы
                     , new ColumnProperies[] { new ColumnProperies (27, 10, @"Час", @"Hour")
                     , new ColumnProperies (47, 15, @"t час", @"TemperatureFact")
                     , new ColumnProperies (47, 15, @"P час", @"PowerFactSum")
@@ -698,7 +718,6 @@ namespace Statistic
             /// Конструктор - вспомогательный (с параметрами)
             /// </summary>
             /// <param name="container">Владелец текущего объекта</param>
-            //Вид сетки данных ЛК часы
             public DataGridViewLKHours(IContainer container)
                 : this()
             {
@@ -710,7 +729,7 @@ namespace Statistic
             private void InitializeComponents()
             {
             }
-            //Заполнить
+  
             public override void Fill(params object[] pars)
             {
                 int count = (int)pars[1]
@@ -798,40 +817,40 @@ namespace Statistic
                 t_pbr = 0;
                 for (i = 0; i < itemscount; i++)
                 {
-                    // номер часа
-                    curCellStyle = (MainHours.IsMain(serverTime, i + 1) == true) ? mainHourCellStyle :
-                        regularHourCellStyle;
+                    // Текущий стиль ячейки
+       curCellStyle = (MainHours.IsMain(serverTime, i+ 1) == true) ? mainHourCellStyle :
+                      regularHourCellStyle;
                     //Rows[i].Cells[(int)INDEX_COLUMNS.PART_TIME].Style = curCellStyle; // стиль определен для всей строки
-                    Rows[i].DefaultCellStyle = curCellStyle;
+              Rows[i].DefaultCellStyle = curCellStyle;
                     // факт
                     if (!(i > lh)) {
                         Rows[i].Cells[(int)INDEX_COLUMNS.TEMPERATURE_FACT].Value = (values[i].valuesLastMinutesTM).ToString(@"F2"); // температура
-                        //Rows[i].Cells[(int)INDEX_COLUMNS.TEMPERATURE_FACT].Style = curCellStyle; // стиль определен для всей строки
+                       // Rows[i].Cells[(int)INDEX_COLUMNS.TEMPERATURE_FACT].Style = curCellStyle; // стиль определен для всей строки
                         Rows[i].Cells[(int)INDEX_COLUMNS.POWER_FACT_SUM].Value = (values[i].valuesFact * 1000).ToString(@"F2"); // мощность
-                        //Rows[i].Cells[(int)INDEX_COLUMNS.POWER_FACT_SUM].Style = curCellStyle; // стиль определен для всей строки
+                   //     Rows[i].Cells[(int)INDEX_COLUMNS.POWER_FACT_SUM].Style = curCellStyle; // стиль определен для всей строки
                     } else ;
                     // план
                     Rows[i].Cells[(int)INDEX_COLUMNS.TEMPERATURE_PBR].Value = (values[i].valuesPmin).ToString(@"F2"); // температура
-                    //Rows[i].Cells[(int)INDEX_COLUMNS.TEMPERATURE_PBR].Style = curCellStyle; // стиль определен для всей строки
+                 //   Rows[i].Cells[(int)INDEX_COLUMNS.TEMPERATURE_PBR].Style = curCellStyle; // стиль определен для всей строки
                     t_pbr += values[i].valuesPmin;
                     Rows[i].Cells[(int)INDEX_COLUMNS.POWER_PBR].Value = (values[i].valuesPBR).ToString(@"F2"); // мощность
-                    //Rows[i].Cells[(int)INDEX_COLUMNS.POWER_PBR].Style = curCellStyle; // стиль определен для всей строки
+                   // Rows[i].Cells[(int)INDEX_COLUMNS.POWER_PBR].Style = curCellStyle; // стиль определен для всей строки
                     // мощность сети (максимальная из загруженных)
                     if ((values[i].valuesPBR > 0)
                         && (p_pbr < values[i].valuesPBR))
                         p_pbr = values[i].valuesPBR;
                     else
                         ;
-                    // разность
+                    // Разность
                     if (!(i > lh))
                     {
-                        // - температура
+                        // - Температура
                         if ((!(values[i].valuesLastMinutesTM == 0))
                             || (!(values[i].valuesPmin == 0)))
                             Rows[i].Cells[(int)INDEX_COLUMNS.TEMPERATURE_DEVIATION].Value = (values[i].valuesPmin - values[i].valuesLastMinutesTM).ToString(@"F2");                            
                         else
                             Rows[i].Cells[(int)INDEX_COLUMNS.TEMPERATURE_DEVIATION].Value = @"-";                        
-                        // - мощность
+                        // - Мощность
                         if ((values[i].valuesFact > 0)
                             && (values[i].valuesPBR > 0))
                             Rows[i].Cells[(int)INDEX_COLUMNS.POWER_DEVIATION].Value = (values[i].valuesPBR - values[i].valuesFact * 1000).ToString(@"F2");
@@ -855,7 +874,6 @@ namespace Statistic
                 PerformDataValues(new DataValuesEventArgs() { m_value1 = t_pbr, m_value2 = p_pbr });
             }
         }
-
         private class MainHours
         {
             //Диапазон  часов
@@ -948,7 +966,7 @@ namespace Statistic
 
                 return bRes;
             }
-            //Получить количество главных интервалов
+  
             public static int GetCountMainInterval(DateTime curDate)
             {
                 int iRes = 0;
@@ -984,17 +1002,22 @@ namespace Statistic
                 return iRes;
             }
         }
-        // Класс гистограмма ЛК
+        /// <summary>
+        /// Класс "Отрисовка гистограммы панели ЛК"
+        /// </summary>
         private class ZedGraphControlLK : HZedGraphControl
         {
-            // Конструктор ZedGraphControlLK принимает аргумент типа object
+            /// <summary>
+            /// Конструктор ZedGraphControlLK принимает аргумент типа object
+            /// </summary>
+            /// <param name="lockVal">объект для обеспечения синхронизации при обращении к отображаемым данным</param>
             public ZedGraphControlLK(object lockVal)
                 //Вызов конструктора из базового класса HZedGraphControl
                 : base(lockVal, FormMain.formGraphicsSettings.SetScale)
             {
                 InitializeComponent();
             }
-            //Рисовать
+
             public override void Draw(TecView.valuesTEC []values, params object[] pars)
             {
                 bool currHour = (bool)pars[0]; //m_tecView.currHour
@@ -1025,13 +1048,13 @@ namespace Statistic
                     , valuesODiviation = null //new PointPairList () //new double[itemscount]
                     ;
 
-                // выделить память для
+                // Выделить память для
                 // регулярных часов - безусловно
                 valuesRegularFact = new PointPairList[iMainIntervalCount + 1];
                 //Для каждого регулярного часа создать пару точек 
                 for (i = 0; i < valuesRegularFact.Length; i++)
                     valuesRegularFact[i] = new PointPairList();
-                // для остальных при необходимости
+                // Для остальных при необходимости
                 if (iMainIntervalCount > 0)
                 {
                     valuesMainFact = new PointPairList[iMainIntervalCount];
@@ -1069,7 +1092,7 @@ namespace Statistic
                     }
                     else
                         names[i] = h.ToString();
-                    // плановые значения указываются только для часов по графику
+                    // Плановые значения указываются только для часов по графику
                     if (values[i].valuesPBR > 0)
                     {
                         indxHourMain++;
@@ -1206,16 +1229,18 @@ namespace Statistic
                         maximum_scale = maximum + maximum * 0.2;
                     }
                 }
-                // Цвет диаграммы= пусто
+                    // Цвет диаграммы= пусто
                 Color colorChart = Color.Empty
                     //Цвет контрольной кривой
                     , colorPMainCurve = Color.Empty
                     //Цвет обычной кривой
-                    , colorPRegularCurve = FormMain.formGraphicsSettings.COLOR(FormGraphicsSettings.INDEX_COLOR.ASKUE_LK_REGULAR);
+              , colorPRegularCurve = FormMain.formGraphicsSettings.COLOR(FormGraphicsSettings.INDEX_COLOR.ASKUE_LK_REGULAR);
+               
                 //Получить цвет гистограммы
                 getColorZedGraph(typeConnSett, out colorChart, out colorPMainCurve);
 
                 GraphPane.Chart.Fill = new Fill(colorChart);
+
 
                 //LineItem - план/отклонения
                 //Надпись кривой "P план"
@@ -1230,7 +1255,7 @@ namespace Statistic
                     GraphPane.AddCurve(string.Empty, /*null,*/ valuesODiviation[i], FormMain.formGraphicsSettings.COLOR(FormGraphicsSettings.INDEX_COLOR.DIVIATION));
                     //LineItem
                     GraphPane.AddCurve(strCurveNameDeviation, /*null,*/ valuesPDiviation[i], FormMain.formGraphicsSettings.COLOR(FormGraphicsSettings.INDEX_COLOR.DIVIATION));
-                    // чтобы повторно не добавить подпись в легенду
+                    //Чтобы повторно не добавить подпись в легенду
                     strCurveNamePPlan =
                     strCurveNameDeviation =
                         string.Empty;
@@ -1246,6 +1271,7 @@ namespace Statistic
                         if (!(valuesMainFact == null))
                             for (i = 0; i < valuesMainFact.Length; i++)
                             {
+                                //Область графика, добавить столбик
                                 GraphPane.AddBar(strCurveNameMain, valuesMainFact[i], colorPMainCurve);
                                 // чтобы повторно не добавить подпись в легенду
                                 strCurveNameMain =
@@ -1445,6 +1471,23 @@ namespace Statistic
             HMark markRes = new HMark(0);
 
             return markRes;
+        }
+
+        public override void UpdateGraphicsCurrent(int type)
+        {
+            base.UpdateGraphicsCurrent(type);
+
+            lock (m_tecView.m_lockValue)
+            {
+                m_dgwHours.Fill(m_tecView.m_valuesHours
+                , m_tecView.lastHour
+                , m_tecView.lastReceivedHour
+                , m_tecView.m_valuesHours.Length
+                , m_tecView.m_tec.m_id
+                , m_tecView.currHour
+                , m_tecView.m_arTypeSourceData[(int)HDateTime.INTERVAL.HOURS] == CONN_SETT_TYPE.DATA_AISKUE
+                , m_tecView.serverTime);
+            }
         }
 
         //protected override void initTableHourRows()
