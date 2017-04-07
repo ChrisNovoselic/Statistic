@@ -1050,6 +1050,7 @@ namespace Statistic
                 //Сравниваем даты/время ????
                 if (!(_pnlQuickData.dtprDate.Value.Date.CompareTo (m_tecView.m_curDate.Date) == 0))
                     m_tecView.currHour = false;
+
                 else
                     ;
 

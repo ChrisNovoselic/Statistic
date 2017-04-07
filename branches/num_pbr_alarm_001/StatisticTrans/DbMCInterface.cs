@@ -21,19 +21,28 @@ namespace StatisticCommon
         IList <PlanFactorItem> m_listPFI;
 
         List <Modes.BusinessLogic.IGenObject> m_listIGO;
-
+        /// <summary>
+        /// Пользовательский конструктор
+        /// </summary>
+        /// <param name="name">имя</param>
         public DbMCInterface(string name)
+            //Вызов конструктора из базового класса DbInterface
             : base(name)
         {
             m_listIGO = new List<Modes.BusinessLogic.IGenObject> ();
         }
-
+        /// <summary>
+        /// Реализация абстрактного метода ("Задать настройки подключения") из базового класса
+        /// </summary>
+        /// <param name="mcHostName">Модес центр имя хоста</param>
+        /// <param name="bStarted">Начато</param>
         public override void SetConnectionSettings(object mcHostName, bool bStarted)
         {
             lock (lockConnectionSettings) // изменение настроек подключения и выставление флага для переподключения - атомарная операция
             {
+                //полю "Настройки соединения" присвоить имя хоста
                 m_connectionSettings = mcHostName;
-
+                //необходимо повторно подключить
                 needReconnect = true;
             }
 
