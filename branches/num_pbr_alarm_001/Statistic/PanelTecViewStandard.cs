@@ -18,9 +18,11 @@ using StatisticCommon;
 
 namespace Statistic
 {
-    public abstract class PanelTecViewStandard : PanelTecViewBase
+ 
+  public abstract class PanelTecViewStandard : PanelTecViewBase
     {
-        public override void UpdateGraphicsCurrent(int type)
+        
+      public override void UpdateGraphicsCurrent(int type)
         {
             base.UpdateGraphicsCurrent(type);
 
@@ -35,6 +37,7 @@ namespace Statistic
                 , m_tecView.m_arTypeSourceData[(int)HDateTime.INTERVAL.HOURS] == CONN_SETT_TYPE.DATA_AISKUE
                 , m_tecView.serverTime);
             }
+            PanelQuickData.UpdateColorPbr();
         }
         public class DataGridViewStandardMins : HDataGridViewStandard
         {
@@ -61,7 +64,6 @@ namespace Statistic
 
                 RowsAdd();
             }
-
             public override void Fill(TecView.valuesTEC[] values, params object[] pars)
             {
                 int hour = (int)pars[0]

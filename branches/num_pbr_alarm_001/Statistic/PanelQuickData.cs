@@ -1491,9 +1491,6 @@ namespace Statistic
                     lblPBRNumber.Text = m_parent.m_tecView.lastLayout;
                     lblPBRNumber.BackColor = PBRState == (int)PBR_STATE.NORM ? Color.Empty : FormMain.formGraphicsSettings.COLOR(FormGraphicsSettings.INDEX_COLOR.DIVIATION);
 
-
-
-
                     //ShowTGValue
                     i = 0;
                     if (m_parent.indx_TECComponent < 0) // значит этот view будет суммарным для всех ГТП
@@ -1589,7 +1586,7 @@ namespace Statistic
                     return _PBRstate;  
                 }
             }
-
+           
             private string EtalonPBR
             {
                 get
@@ -1604,6 +1601,10 @@ namespace Statistic
                     return strRes;
                    }
                }
+            public void UpdateColorPbr()
+            {
+                lblPBRNumber.BackColor = PBRState == (int)PBR_STATE.NORM ? Color.Empty : FormMain.formGraphicsSettings.COLOR(FormGraphicsSettings.INDEX_COLOR.DIVIATION);
+            }
            }
         }
     }
