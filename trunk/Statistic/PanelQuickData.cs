@@ -12,41 +12,55 @@ using StatisticCommon;
 
 namespace Statistic
 {
+    /// <summary>
+    /// Частичный класс  "Панель ТЭЦ основная"
+    /// </summary>
     partial class PanelTecViewBase
     {
+
+        /// <summary>
+        /// Защищенный частичный класс "Макет таблицы"
+        /// </summary>
         protected partial class HPanelTableLayout : TableLayoutPanel
         {
+            /// <summary>
+            /// Конструктор
+            /// </summary>
             public HPanelTableLayout()
             {
+                //Свойство возвращает или задает язык и региональные параметры для текущего потока
                 Thread.CurrentThread.CurrentCulture =
                 Thread.CurrentThread.CurrentUICulture =
                     ProgramBase.ss_MainCultureInfo;
 
                 InitializeComponent();
             }
-
+            /// <summary>
+            /// Конструктор
+            /// </summary>
+            /// <param name="container">контейнер</param>
             public HPanelTableLayout(IContainer container)
             {
                 container.Add(this);
 
                 InitializeComponent();
             }
-
+            //Получить метку шрифта
             public Font GetFontHLabel(HLabel.TYPE_HLABEL typeLabel)
             {
                 Font fontRes = null;
-
+                //Максимальная длина текста
                 string textOfMaxLengths = string.Empty;
                 string strValue = string.Empty;
-                SizeF szLabelOfMinSizes = new SizeF (); //(float.MaxValue, float.MaxValue);
+                SizeF szLabelOfMinSizes = new SizeF(); //(float.MaxValue, float.MaxValue);
 
                 Graphics g = this.CreateGraphics();
-                    
+
                 textOfMaxLengths = string.Empty;
                 szLabelOfMinSizes.Height =
                 szLabelOfMinSizes.Width =
                     float.MaxValue;
-
+                //Для каждого элемента управления
                 foreach (Control ctrl in this.Controls)
                 {
                     if (ctrl is HClassLibrary.HLabel)
@@ -58,19 +72,19 @@ namespace Statistic
                                 switch (typeLabel)
                                 {
                                     case HLabel.TYPE_HLABEL.TG:
-                                        if (ctrl.Text.LongCount(delegate(char ch) { return ch == '-'; }) > 1)
-                                            strValue = new string('8', (int)ctrl.Text.LongCount(delegate(char ch) { return ch == '-'; }));
+                                        if (ctrl.Text.LongCount(delegate (char ch) { return ch == '-'; }) > 1)
+                                            strValue = new string('8', (int)ctrl.Text.LongCount(delegate (char ch) { return ch == '-'; }));
                                         else
                                             strValue = ctrl.Text;
                                         break;
                                     case HLabel.TYPE_HLABEL.TOTAL:
-                                        if (ctrl.Text.LongCount(delegate(char ch) { return ch == '-'; }) > 1)
+                                        if (ctrl.Text.LongCount(delegate (char ch) { return ch == '-'; }) > 1)
                                             strValue = new string('8', ctrl.Text.Length + 3);
                                         else
                                             strValue = ctrl.Text;
                                         break;
                                     case HLabel.TYPE_HLABEL.TOTAL_ZOOM:
-                                        if (ctrl.Text.LongCount(delegate(char ch) { return ch == '-'; }) > 1)
+                                        if (ctrl.Text.LongCount(delegate (char ch) { return ch == '-'; }) > 1)
                                             strValue = new string('8', ctrl.Text.Length + 6);
                                         else
                                             strValue = ctrl.Text;
@@ -151,19 +165,19 @@ namespace Statistic
                                 switch (indx)
                                 {
                                     case (int)HLabel.TYPE_HLABEL.TG:
-                                        if (ctrl.Text.LongCount(delegate(char ch) { return ch == '-'; }) > 1)
-                                            strValue = new string('8', (int)ctrl.Text.LongCount(delegate(char ch) { return ch == '-'; }));
+                                        if (ctrl.Text.LongCount(delegate (char ch) { return ch == '-'; }) > 1)
+                                            strValue = new string('8', (int)ctrl.Text.LongCount(delegate (char ch) { return ch == '-'; }));
                                         else
                                             strValue = ctrl.Text;
                                         break;
                                     case (int)HLabel.TYPE_HLABEL.TOTAL:
-                                        if (ctrl.Text.LongCount(delegate(char ch) { return ch == '-'; }) > 1)
+                                        if (ctrl.Text.LongCount(delegate (char ch) { return ch == '-'; }) > 1)
                                             strValue = new string('8', ctrl.Text.Length + 3);
                                         else
                                             strValue = ctrl.Text;
                                         break;
                                     case (int)HLabel.TYPE_HLABEL.TOTAL_ZOOM:
-                                        if (ctrl.Text.LongCount(delegate(char ch) { return ch == '-'; }) > 1)
+                                        if (ctrl.Text.LongCount(delegate (char ch) { return ch == '-'; }) > 1)
                                             strValue = new string('8', ctrl.Text.Length + 6);
                                         else
                                             strValue = ctrl.Text;
@@ -180,7 +194,7 @@ namespace Statistic
                             }
                             else
                                 ;
-                            if ((szLabelOfMinSizes[indx].Height > ctrl.Height) || (szLabelOfMinSizes[indx].Width > ctrl.Width)) { szLabelOfMinSizes[indx].Height = ctrl.Height; szLabelOfMinSizes[indx].Width = ctrl.Width; } else ;
+                            if ((szLabelOfMinSizes[indx].Height > ctrl.Height) || (szLabelOfMinSizes[indx].Width > ctrl.Width)) { szLabelOfMinSizes[indx].Height = ctrl.Height; szLabelOfMinSizes[indx].Width = ctrl.Width; } else;
                         }
                         else
                         {
@@ -242,6 +256,7 @@ namespace Statistic
 
         partial class HPanelTableLayout
         {
+
             /// <summary>
             /// Требуется переменная конструктора.
             /// </summary>
@@ -275,7 +290,9 @@ namespace Statistic
 
             #endregion
         }
-
+        /// <summary>
+        /// Защищенный абстрактный класс "Панель быстрые данные"
+        /// </summary>
         protected abstract class HPanelQuickData : HPanelTableLayout
         {
             /// <summary>
@@ -300,9 +317,11 @@ namespace Statistic
             protected int COUNT_ROWSPAN_LABELCOMMON;
             protected float SZ_COLUMN_LABEL, SZ_COLUMN_LABEL_VALUE
                 , SZ_COLUMN_TG_LABEL, SZ_COLUMN_TG_LABEL_VALUE;
-
+            //Кнопка "Текущий час"
             public System.Windows.Forms.Button btnSetNow;
+            //Календарь
             public DateTimePicker dtprDate;
+            //Время сервера
             public System.Windows.Forms.Label lblServerTime;
 
             protected Panel m_panelEmpty;
@@ -311,7 +330,7 @@ namespace Statistic
 
             protected abstract TableLayoutPanelCellPosition getPositionCell(int indx);
 
-            public abstract void ShowFactValues();            
+            public abstract void ShowFactValues();
             public abstract void ShowTMValues();
 
             protected virtual PanelTecViewBase m_parent { get { return (PanelTecViewBase)Parent; } }
@@ -324,10 +343,10 @@ namespace Statistic
 
             protected Dictionary<int, System.Windows.Forms.Label[]> m_tgLabels;
             protected Dictionary<int, System.Windows.Forms.ToolTip[]> m_tgToolTips;
-            
-            public HPanelQuickData ()
+
+            public HPanelQuickData()
             {
-                InitializeComponent ();
+                InitializeComponent();
             }
 
             public HPanelQuickData(IContainer container)
@@ -337,11 +356,12 @@ namespace Statistic
                 InitializeComponent();
             }
 
-            private void InitializeComponent ()
+            private void InitializeComponent()
             {
-                /*SZ_COLUMN_LABEL = 48F;*/ SZ_COLUMN_LABEL_VALUE = 88F;
+                /*SZ_COLUMN_LABEL = 48F;*/
+                SZ_COLUMN_LABEL_VALUE = 88F;
                 SZ_COLUMN_TG_LABEL = 40F; SZ_COLUMN_TG_LABEL_VALUE = 75F;
-                
+
                 this.btnSetNow = new System.Windows.Forms.Button();
                 this.dtprDate = new System.Windows.Forms.DateTimePicker();
                 this.lblServerTime = new System.Windows.Forms.Label();
@@ -349,9 +369,9 @@ namespace Statistic
                 m_panelEmpty = new Panel();
 
                 this.SuspendLayout();
-                
+
                 //
-                // btnSetNow
+                // btnSetNow (Текущий час)
                 //
                 //this.btnSetNow.Anchor = ((System.Windows.Forms.AnchorStyles)((System.Windows.Forms.AnchorStyles.Bottom | System.Windows.Forms.AnchorStyles.Left)));
                 this.btnSetNow.Dock = DockStyle.Fill;
@@ -363,7 +383,7 @@ namespace Statistic
                 this.btnSetNow.UseVisualStyleBackColor = true;
 
                 // 
-                // dtprDate
+                // dtprDate (Дата-Календарь)
                 // 
                 //this.dtprDate.Anchor = ((System.Windows.Forms.AnchorStyles)((System.Windows.Forms.AnchorStyles.Bottom | System.Windows.Forms.AnchorStyles.Left)));
                 this.dtprDate.Dock = DockStyle.Fill;
@@ -373,7 +393,7 @@ namespace Statistic
                 this.dtprDate.TabIndex = 4;
 
                 // 
-                // lblServerTime
+                // lblServerTime (Время сервера)
                 // 
                 //this.lblServerTime.Anchor = ((System.Windows.Forms.AnchorStyles)((System.Windows.Forms.AnchorStyles.Bottom | System.Windows.Forms.AnchorStyles.Left)));
                 this.lblServerTime.Dock = DockStyle.Fill;
@@ -410,7 +430,7 @@ namespace Statistic
                 m_tgLabels[id][(int)TG.INDEX_VALUE.LABEL_DESC] = HLabel.createLabel(comp.name_shr.Trim(),
                                                                         new HLabelStyles(/*arPlacement[(int)i].pt, sz,*/new Point(-1, -1), new Size(-1, -1),
                                                                         Color.Black, Color.Empty,
-                                                                        8F, ContentAlignment.MiddleRight));                
+                                                                        8F, ContentAlignment.MiddleRight));
 
                 hlblValue = new HLabel(new HLabelStyles(new Point(-1, -1), new Size(-1, -1), Color.LimeGreen, Color.Black, 13F, ContentAlignment.MiddleCenter));
                 hlblValue.Text = @"---.--"; //name_shr + @"_Fact";
@@ -435,18 +455,18 @@ namespace Statistic
                                                                                         new HLabelStyles(/*arPlacement[(int)i].pt, sz,*/new Point(-1, -1), new Size(-1, -1),
                                                                                         clrLabelFore, clrLabelBackground,
                                                                                         fSzLabelFont, alignLabel));
-                    else ;
+                    else;
                 else
                     if (m_arLabelCommon[indx - m_indxStartCommonFirstValueSeries] == null)
-                    {
-                        m_arLabelCommon[indx - m_indxStartCommonFirstValueSeries] = new HLabel(/*i.ToString(); @"---",*/
-                                                                                        new HLabelStyles(/*arPlacement[(int)i].pt, sz,*/new Point(-1, -1), new Size(-1, -1),
-                                                                                        clrLabelFore, clrLabelBackground,
-                                                                                        fSzLabelFont, alignLabel));
-                        m_arLabelCommon[indx - m_indxStartCommonFirstValueSeries].Text = @"---";
-                        ((HLabel)m_arLabelCommon[indx - m_indxStartCommonFirstValueSeries]).m_type = HLabel.TYPE_HLABEL.TOTAL;
-                    }
-                    else ;
+                {
+                    m_arLabelCommon[indx - m_indxStartCommonFirstValueSeries] = new HLabel(/*i.ToString(); @"---",*/
+                                                                                    new HLabelStyles(/*arPlacement[(int)i].pt, sz,*/new Point(-1, -1), new Size(-1, -1),
+                                                                                    clrLabelFore, clrLabelBackground,
+                                                                                    fSzLabelFont, alignLabel));
+                    m_arLabelCommon[indx - m_indxStartCommonFirstValueSeries].Text = @"---";
+                    ((HLabel)m_arLabelCommon[indx - m_indxStartCommonFirstValueSeries]).m_type = HLabel.TYPE_HLABEL.TOTAL;
+                }
+                else;
             }
             /// <summary>
             /// Удалить 1-ую (по порядку) общую подпись
@@ -457,9 +477,9 @@ namespace Statistic
                 removeSecondCommonLabels(m_indxStartCommonFirstValueSeries, limit);
             }
 
-            protected void removeSecondCommonLabels (int limit)
+            protected void removeSecondCommonLabels(int limit)
             {
-                removeSecondCommonLabels (m_indxStartCommonSecondValueSeries, limit);
+                removeSecondCommonLabels(m_indxStartCommonSecondValueSeries, limit);
             }
 
             private void removeSecondCommonLabels(int indxStart, int limit)
@@ -469,7 +489,7 @@ namespace Statistic
                     if (!(this.m_arLabelCommon[(int)i - m_indxStartCommonFirstValueSeries] == null))
                         if (!(this.Controls.IndexOf(this.m_arLabelCommon[(int)i - m_indxStartCommonFirstValueSeries]) < 0))
                             this.Controls.Remove(this.m_arLabelCommon[(int)i - m_indxStartCommonFirstValueSeries]);
-                        else ;
+                        else;
                     else
                         ;
                 }
@@ -534,13 +554,13 @@ namespace Statistic
                         lbl.Text = adding;
                     else
                         if (bPower == true)
-                            if ((val > 1)
-                                || (bCheckVal == false))
-                                lbl.Text = val.ToString("F" + round.ToString ()) + adding;
-                            else
-                                lbl.Text = 0.ToString("F0");
-                        else
+                        if ((val > 1)
+                            || (bCheckVal == false))
                             lbl.Text = val.ToString("F" + round.ToString()) + adding;
+                        else
+                            lbl.Text = 0.ToString("F0");
+                    else
+                        lbl.Text = val.ToString("F" + round.ToString()) + adding;
                 else
                     ;
             }
@@ -596,9 +616,14 @@ namespace Statistic
                 return clrRes;
             }
         }
-
+        /// <summary>
+        /// Защищенный частичный класс "Стандартная панель Быстрые данные"
+        /// </summary>
         protected partial class PanelQuickDataStandard : HPanelQuickData
         {
+            /// <summary>
+            /// Перечисление "Индексы контестного меню:прогноз ЭЭ, значение телеметрии"
+            /// </summary>
             private enum INDEX_CONTEXTMENUITEM { FORECASTEE, TM };
 
             /// <summary>
@@ -692,7 +717,7 @@ namespace Statistic
 
                 m_indxStartCommonFirstValueSeries = (int)CONTROLS.lblCommonP;
                 m_indxStartCommonSecondValueSeries = (int)CONTROLS.lblCurrentE;
-                m_iCountCommonLabels = (int)CONTROLS.lblDevEVal - (int)CONTROLS.lblCommonP + 1;                
+                m_iCountCommonLabels = (int)CONTROLS.lblDevEVal - (int)CONTROLS.lblCommonP + 1;
 
                 components = new System.ComponentModel.Container();
 
@@ -712,7 +737,7 @@ namespace Statistic
 
                 for (int i = 0; i < this.RowCount + 1; i++)
                     this.RowStyles.Add(new RowStyle(SizeType.Percent, (float)Math.Round((float)100 / this.RowCount, 1)));
-
+                // Создание лейбла для номера ПБР
                 this.lblPBRNumber = new System.Windows.Forms.Label();
 
                 this.m_arLabelCommon = new System.Windows.Forms.Label[m_iCountCommonLabels];
@@ -748,6 +773,7 @@ namespace Statistic
                 this.lblPBRNumber.TextAlign = ContentAlignment.MiddleCenter;
                 this.Controls.Add(this.lblPBRNumber, 0, 9);
                 this.SetRowSpan(this.lblPBRNumber, 3);
+                
 
                 //Ширина столбца группы "Элементы управления"
                 this.ColumnStyles.Add(new ColumnStyle(SizeType.Absolute, 100F));
@@ -894,7 +920,7 @@ namespace Statistic
                 //Создание пассивного эл./упр. "надпись" для увеличенного дублирования знач. Pтек
                 m_lblPowerFactZoom = new HLabel(new Point(-1, -1), new Size(-1, -1), Color.LimeGreen, SystemColors.Control, 12F, ContentAlignment.MiddleCenter);
                 m_lblPowerFactZoom.m_type = HLabel.TYPE_HLABEL.TOTAL_ZOOM;
-                m_lblPowerFactZoom.Text = @"Pтек=----.--";                
+                m_lblPowerFactZoom.Text = @"Pтек=----.--";
 
                 //OnSizeChanged(this, EventArgs.Empty);
             }
@@ -917,8 +943,8 @@ namespace Statistic
                 COUNT_CONTROLS
             };
 
-            private HLabel m_lblPowerFactZoom;            
-            private System.Windows.Forms.Label lblPBRNumber;            
+            private HLabel m_lblPowerFactZoom;
+            private System.Windows.Forms.Label lblPBRNumber;
 
             public override void RestructControl()
             {
@@ -926,7 +952,7 @@ namespace Statistic
                 COUNT_ROWSPAN_LABELCOMMON = 4;
 
                 bool bPowerFactZoom = false;
-                int cntCols = -1;                
+                int cntCols = -1;
 
                 //Console.WriteLine(@"PanelQuickData::RestructControl () - вХод...");
 
@@ -940,10 +966,10 @@ namespace Statistic
                 removeTGLabels();
 
                 //Удаление ДУБЛирующей подписи
-                if (!(this.Controls.IndexOf(m_lblPowerFactZoom) < 0)) this.Controls.Remove(m_lblPowerFactZoom); else ;
+                if (!(this.Controls.IndexOf(m_lblPowerFactZoom) < 0)) this.Controls.Remove(m_lblPowerFactZoom); else;
 
                 //Удаление ПУСТой панели
-                if (!(this.Controls.IndexOf(m_panelEmpty) < 0)) this.Controls.Remove(m_panelEmpty); else ;
+                if (!(this.Controls.IndexOf(m_panelEmpty) < 0)) this.Controls.Remove(m_panelEmpty); else;
 
                 //Удаление стилей столбцов
                 while (this.ColumnStyles.Count > 1)
@@ -1023,7 +1049,7 @@ namespace Statistic
                 #endregion
 
                 bPowerFactZoom = false;
-                cntCols = ((m_tgLabels.Count / COUNT_TG_IN_COLUMN) + ((m_tgLabels.Count % COUNT_TG_IN_COLUMN == 0) ? 0 : 1));                
+                cntCols = ((m_tgLabels.Count / COUNT_TG_IN_COLUMN) + ((m_tgLabels.Count % COUNT_TG_IN_COLUMN == 0) ? 0 : 1));
 
                 for (int i = 0; i < cntCols; i++)
                 {
@@ -1062,9 +1088,11 @@ namespace Statistic
                 this.ColumnStyles.Add(new ColumnStyle(SizeType.AutoSize));
             }
         }
-
+        ///
         partial class PanelQuickDataStandard : HPanelQuickData
         {
+
+
             ///// <summary>
             ///// Класс для хранения информации о местоположении элемента управления
             ///// </summary>
@@ -1077,7 +1105,7 @@ namespace Statistic
             //    }
             //};
 
-            public PanelQuickDataStandard() : base ()
+            public PanelQuickDataStandard() : base()
             {
                 InitializeComponent();
             }
@@ -1098,7 +1126,7 @@ namespace Statistic
                                                 , m_parent.m_tecView.m_dictValuesLowPointDev[tg.m_id].m_powerCurrent_TM
                                                 , m_parent.m_tecView.m_dictValuesLowPointDev[tg.m_id].m_dtCurrent_TM
                                                 , m_parent.m_tecView.serverTime
-                                                ,m_tgToolTips[tg.m_id][(int)TG.INDEX_VALUE.TM]
+                                                , m_tgToolTips[tg.m_id][(int)TG.INDEX_VALUE.TM]
                                                 , ref val);
             }
 
@@ -1154,7 +1182,7 @@ namespace Statistic
                 if (bValidateDateTime == false)
                     lbl.ForeColor = Color.Orange;
                 else
-                    lbl.ForeColor = getColorValues (TG.INDEX_VALUE.TM);
+                    lbl.ForeColor = getColorValues(TG.INDEX_VALUE.TM);
 
                 lbl.Text = text;
                 toolTip.SetToolTip(lbl, dt_val.ToString("dd.MM.yyyy HH:mm:ss"));
@@ -1215,7 +1243,7 @@ namespace Statistic
                     , true
                     , true
                     , string.Empty);
-                m_arLabelCommon[(int)PanelQuickDataStandard.CONTROLS.lblCommonPVal_TM - m_indxStartCommonFirstValueSeries].ForeColor = getColorValues (TG.INDEX_VALUE.TM);
+                m_arLabelCommon[(int)PanelQuickDataStandard.CONTROLS.lblCommonPVal_TM - m_indxStartCommonFirstValueSeries].ForeColor = getColorValues(TG.INDEX_VALUE.TM);
             }
 
             /// <summary>
@@ -1240,7 +1268,7 @@ namespace Statistic
                     indxStartCommonPVal = m_indxStartCommonFirstValueSeries;
                     min = m_parent.m_tecView.lastMin;
 
-                    if (!(min == 0)) min--; else ;
+                    if (!(min == 0)) min--; else;
 
                     bPrevValueValidate = double.TryParse(m_arLabelCommon[(int)PanelQuickDataStandard.CONTROLS.lblCommonPVal_Fact - indxStartCommonPVal].Text, out prevValue);
 
@@ -1426,9 +1454,9 @@ namespace Statistic
                                 strErrMsg += @"3-минутному";
                             else
                                 if (m_parent.m_tecView.m_arTypeSourceData[(int)HDateTime.INTERVAL.MINUTES] == CONN_SETT_TYPE.DATA_SOTIASSO_1_MIN)
-                                    strErrMsg += @"1-минутному";
-                                else
-                                    ;
+                                strErrMsg += @"1-минутному";
+                            else
+                                ;
                             strErrMsg += @" отрезку значений не найдено!";
                             m_parent.m_tecView.ErrorReport(strErrMsg);
                         }
@@ -1437,12 +1465,12 @@ namespace Statistic
                             if (!(m_arLabelCommon[(int)PanelQuickDataStandard.CONTROLS.lblCurrentEVal - indxStartCommonPVal] == null))
                                 m_arLabelCommon[(int)PanelQuickDataStandard.CONTROLS.lblCurrentEVal - indxStartCommonPVal].ForeColor =
                                     System.Drawing.Color.LimeGreen;
-                            else ;
+                            else;
 
                             if (!(m_arLabelCommon[(int)PanelQuickDataStandard.CONTROLS.lblHourEVal - indxStartCommonPVal] == null))
                                 m_arLabelCommon[(int)PanelQuickDataStandard.CONTROLS.lblHourEVal - indxStartCommonPVal].ForeColor =
                                     System.Drawing.Color.Yellow;
-                            else ;
+                            else;
                         }
                         //    }
                         //}
@@ -1460,8 +1488,8 @@ namespace Statistic
                         else
                             ;
                     }
-
                     lblPBRNumber.Text = m_parent.m_tecView.lastLayout;
+                    lblPBRNumber.BackColor = PBRState == (int)PBR_STATE.NORM ? Color.Empty : FormMain.formGraphicsSettings.COLOR(FormGraphicsSettings.INDEX_COLOR.DIVIATION);
 
                     //ShowTGValue
                     i = 0;
@@ -1519,7 +1547,7 @@ namespace Statistic
                 }
                 else
                     ;
-            }            
+            }
 
             private void OnItemClick(object obj, EventArgs ev)
             {
@@ -1532,6 +1560,52 @@ namespace Statistic
 
                 RestructControl();
             }
+
+            // Код для визуальной сигнализации в случае деактуализации номера ПБР
+            public enum PBR_STATE { NORM=0, ERR=1 }
+            public int PBRState
+            {
+                get
+                {
+                    int _PBRstate = 0;
+                  
+                    if (m_parent.m_tecView.currHour == true) 
+                       {
+                        if (lblPBRNumber.Text?.Equals(EtalonPBR) == true)
+                            _PBRstate = (int)PBR_STATE.NORM;
+                        else
+                            _PBRstate = (int)PBR_STATE.ERR;
+                       }
+                   else
+                       {
+                        if (lblPBRNumber.Text == "ПБР24")
+                            _PBRstate = (int)PBR_STATE.NORM;
+                        else
+                            _PBRstate = (int)PBR_STATE.ERR;
+                       }
+                    return _PBRstate;  
+                }
+            }
+           
+            private string EtalonPBR
+            {
+                get
+                  {
+                    string strRes = string.Empty;
+                    int iNowMinute =
+                            TimeZoneInfo.ConvertTimeBySystemTimeZoneId(DateTime.Now, TimeZoneInfo.Local.Id, "Russian Standard Time").Minute
+                        , iNowHour =
+                            TimeZoneInfo.ConvertTimeBySystemTimeZoneId(DateTime.Now, TimeZoneInfo.Local.Id, "Russian Standard Time").Hour;
+
+                    strRes = string.Format("ПБР{0}", iNowHour);
+                    return strRes;
+                   }
+               }
+            public void UpdateColorPbr()
+            {
+                lblPBRNumber.BackColor = PBRState == (int)PBR_STATE.NORM ? Color.Empty : FormMain.formGraphicsSettings.COLOR(FormGraphicsSettings.INDEX_COLOR.DIVIATION);
+            }
+           }
         }
     }
-}
+

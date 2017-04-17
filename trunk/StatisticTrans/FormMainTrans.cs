@@ -14,9 +14,21 @@ using StatisticCommon;
 
 namespace StatisticTrans
 {
+    /// <summary>
+    /// Класс "Главная форма Trans (Передача?)"
+    /// </summary>
     public abstract partial class FormMainTrans : FormMainStatistic
     {
         [DllImport("user32.dll")]
+        /// <summary>
+        /// Модификатор extern используется для объявления метода с внешней реализацией. 
+        ///  Метод SendMessage (послать сообщение) импортируется из библиотеки User32.dll. 
+        /// </summary>
+        /// <param name="hWnd"></param>
+        /// <param name="Msg">сообщение</param>
+        /// <param name="wParam"></param>
+        /// <param name="lParam"></param>
+        /// <returns></returns>
         static extern IntPtr SendMessage(IntPtr hWnd, int Msg, int wParam, int lParam);
         ComponentTesting CT;//
         private const Int32 TIMER_SERVICE_MIN_INTERVAL = 66666;
@@ -25,14 +37,25 @@ namespace StatisticTrans
         /// счетчик иттераций ошибок
         /// </summary>
         public int IndexCount;
-
+        /// <summary>
+        /// //Перечисление "Режим машины" (интерактивный,дата, сервис,неизвестный)
+        /// </summary>
         protected enum MODE_MASHINE : ushort { INTERACTIVE, TO_DATE, SERVICE, UNKNOWN };
+        /// <summary>
+        ///Перечисление "Типы настроек"
+        /// </summary>
         public enum CONN_SETT_TYPE : short { SOURCE, DEST, COUNT_CONN_SETT_TYPE };
+        /// <summary>
+        ///Перечисление "Управление" (IP сервера,порт, имя БД, ID пользователя, пароль, кол-во эл-ов управления)
+        /// </summary>
         protected enum INDX_UICONTROLS { SERVER_IP, PORT, NAME_DATABASE, USER_ID, PASS, COUNT_INDX_UICONTROLS };
-
+        /// <summary>
+        /// Двумерный массив типа Control
+        /// </summary>
         protected System.Windows.Forms.Control[,] m_arUIControls;
 
         protected
+            //Таймер вызывает событие через определенный интервал времени
             System.Windows.Forms.Timer
             //System.Threading.Timer
                 timerService

@@ -12,8 +12,14 @@ using StatisticCommon;
 
 namespace StatisticDiagnostic
 {
+    /// <summary>
+    /// Класс "Панель Диагностика"
+    /// </summary>
     partial class PanelStatisticDiagnostic
     {
+        /// <summary>
+        /// Класс "Панель данных - МОДЕС"
+        /// </summary>
         private class PanelContainerModes : HPanelCommon
         {
             /// <summary>
@@ -23,23 +29,25 @@ namespace StatisticDiagnostic
                 , COUNT_LAYOUT_ROW = 2;
             /// <summary>
             /// Сложный ключ для соваря со значениями при обновлении дочерних панелей
+            /// Структура "Ключ параметров"
             /// </summary>
             private struct KEY_DIAGNOSTIC_PARAMETER
             {
                 /// <summary>
-                /// Перечисление - типов значений
+                /// Перечисление  "ID единиц измерений"
                 /// </summary>
                 public enum ID_UNIT : short { UNKNOWN = -1, PBR = 12, DATETIME = 13 }
                 /// <summary>
-                /// Словарь с информацией о CLR-типах значений 
+                /// Класс "Словарь" предоставляет коллекцию ключей и значений
+                /// Словарь с информацией о CLR-типах значений (CLR-общеязыковая исполняющая среда)
                 /// </summary>
-                public static Dictionary<ID_UNIT, Type> TypeOf = new Dictionary<ID_UNIT, Type>() {
+                public static Dictionary<ID_UNIT, Type> TypeOf = new Dictionary<ID_UNIT, Type>()
+                {
                     { ID_UNIT.PBR, typeof(string) }
                     , { ID_UNIT.DATETIME, typeof(DateTime) }
                 };
-
+                //Поля единица измерения, величина
                 public ID_UNIT m_id_unit;
-
                 public int m_id_value;
             }
             /// <summary>
@@ -79,6 +87,7 @@ namespace StatisticDiagnostic
             /// </summary>
             private void InitComponents()
             {
+                //Стиль  границ таблицы
                 this.CellBorderStyle = TableLayoutPanelCellBorderStyle.Single;
 
                 initializeLayoutStyle();
@@ -91,6 +100,7 @@ namespace StatisticDiagnostic
             /// <param name="row">Количество строк в макете</param>
             protected override void initializeLayoutStyle(int col = -1, int row = -1)
             {
+                //Инициализировать стиль макета равномерно
                 initializeLayoutStyleEvenly(col, row);
             }
             /// <summary>
@@ -108,7 +118,7 @@ namespace StatisticDiagnostic
                 ListDiagnosticSource listDiagSrc;
 
                 InitComponents();
-                // 1 DataGridView(Модес-Центр) + на каждую ТЭЦ по DataGridView(Модес-Терминал)
+                // 1 DataGridView(Модес-Центр) + на каждую ТЭЦ по DataGridView -6 шт(Модес-Терминал)
                 m_arPanels = new PanelModes[listTEC.Count + 1];
                 // добавляем 'DataGridView' Modes-Centre - подготовка конфигурациооных списков
                 i = 0;
@@ -121,6 +131,7 @@ namespace StatisticDiagnostic
                 // добавляем 'DataGridView' Modes-Centre - размещение панели
                 this.Controls.Add(m_arPanels[i], 0, 0); this.SetRowSpan(m_arPanels[i], 2);
 
+                //Для массива панелей 
                 for (i = 1; i < m_arPanels.Length; i++)
                     if (m_arPanels[i] == null) {
                         // добавляем 'DataGridView' Modes-Terminal - подготовка конфигурациооных списков
@@ -171,7 +182,7 @@ namespace StatisticDiagnostic
             }
 
             /// <summary>
-            /// Функция активации панелей модес
+            /// Метод активации панелей модес
             /// </summary>
             /// <param name="activated">параметр активации</param>
             public override bool Activate(bool activated)
@@ -181,6 +192,7 @@ namespace StatisticDiagnostic
                 if (activated == true)
                     if (!(m_arPanels == null))
                         for (int i = 0; i < m_arPanels.Length; i++)
+                            //Фокус ввода элементу управления
                             m_arPanels[i].Focus();
                     else
                         ;
@@ -190,10 +202,14 @@ namespace StatisticDiagnostic
                 return bRes;
             }
 
+            /// <summary>
+            /// Словарь  ГТП
+            /// </summary>
             private class DictionaryGTPValues : Dictionary<int, Dictionary<KEY_DIAGNOSTIC_PARAMETER, Values>>
             {
                 /// <summary>
                 /// Конструктор - основной (с парметром)
+                /// Словарь значений ГТП
                 /// </summary>
                 /// <param name="tableRecieved">Таблица - результат запроса значений</param>
                 public DictionaryGTPValues(DataTable tableRecieved)
@@ -228,7 +244,8 @@ namespace StatisticDiagnostic
                             // 'INDEX_SOURCE.SIZEDB' - минимальное значение
                             // идентификатор ТЭЦ в диапазоне 1 - 10 
                                 ;
-                        }                        
+                        }      
+                                         
                     } catch (Exception e) {
                         Logging.Logg().Exception(e, @"PanelContainerModes.DictionaryGTPValues::ctor () - ...", Logging.INDEX_MESSAGE.NOT_SET);
                     }
@@ -281,10 +298,6 @@ namespace StatisticDiagnostic
                 {
                     initialize(listTEC, listDiagParam, listDiagSrc);
                 }
-                /// <summary>
-                /// 
-                /// </summary>
-                /// <param name="container"></param>
                 public PanelModes(IContainer container, List<TEC> listTEC, List<DIAGNOSTIC_PARAMETER> listDiagParam, ListDiagnosticSource listDiagSrc)
                     : base(container, COUNT_LAYOUT_COLUMN, COUNT_LAYOUT_ROW)
                 {
@@ -377,7 +390,9 @@ namespace StatisticDiagnostic
                 /// </summary>
                 public DataGridView m_dgvValues = new DataGridView();
                 public Label m_labelDescription = new Label();
-
+                /// <summary>
+                /// Перечисление параметров (источник данных,крайнее время, крайнее значение,время проверки, связь, количество параметров)
+                /// </summary>
                 private enum INDEX_CELL : short { NAME_GTP = 0, DATETIME_VALUE, VALUE, DATETIME_VERIFICATION, STATE
                     , COUNT
                 }
@@ -391,18 +406,24 @@ namespace StatisticDiagnostic
                     //
                     //ModesDataGridView
                     //
+                    //Высота заголовка колонки (размер)
                     this.m_dgvValues.ColumnHeadersHeightSizeMode = System.Windows.Forms.DataGridViewColumnHeadersHeightSizeMode.AutoSize;
+                    //Режим строки
                     this.m_dgvValues.AutoSizeRowsMode = DataGridViewAutoSizeRowsMode.AllCellsExceptHeaders;
                     this.m_dgvValues.AutoSizeColumnsMode = DataGridViewAutoSizeColumnsMode.Fill;
                     this.m_dgvValues.Dock = DockStyle.Fill;
                     this.m_dgvValues.ClearSelection();
+                    //Позволять пользователю добавлять строки=false
                     this.m_dgvValues.AllowUserToAddRows = false;
                     this.m_dgvValues.RowHeadersVisible = false;
                     this.m_dgvValues.Name = "ModesDataGridView";
                     this.m_dgvValues.CurrentCell = null;
                     this.m_dgvValues.TabIndex = 0;
+                    //Только для чтения
                     this.m_dgvValues.ReadOnly = true;
+                    //Количество колонок 5
                     this.m_dgvValues.ColumnCount = (int)INDEX_CELL.COUNT;
+                    //Названия и ширина колонок
                     this.m_dgvValues.Columns[(int)INDEX_CELL.NAME_GTP].Name = "Источник данных"; this.m_dgvValues.Columns[(int)INDEX_CELL.NAME_GTP].Width = 22;
                     this.m_dgvValues.Columns[(int)INDEX_CELL.DATETIME_VALUE].Name = "Крайнее время"; this.m_dgvValues.Columns[(int)INDEX_CELL.DATETIME_VALUE].Width = 17;
                     this.m_dgvValues.Columns[(int)INDEX_CELL.VALUE].Name = "Крайнее значение"; this.m_dgvValues.Columns[(int)INDEX_CELL.VALUE].Width = 23;
@@ -436,11 +457,13 @@ namespace StatisticDiagnostic
             {
                 /// <summary>
                 /// Структура для описания идентификатора строк в 'm_dgvValues'
+                /// (Строки ГТП)
                 /// </summary>
                 private class DataGridViewDiagnosticGTPRow : DataGridViewDiagnosticRow
                 {
                     /// <summary>
                     /// Наименование источника - постоянная величина, устанавливается при создании строки
+                    /// Свойство Name
                     /// </summary>
                     public override string Name {
                         get {
@@ -457,20 +480,28 @@ namespace StatisticDiagnostic
 
                     public bool Enabled { get; set; }
 
+                    /// <summary>
+                    /// Установить значения в ячейках
+                    /// </summary>
+                    /// <param name="values">значения</param>
                     public void SetValueCells(object[] values)
                     {
                         object value;
                         INDEX_CELL_STATE indxState = INDEX_CELL_STATE.ERROR;
                         Color clrCell = Color.Empty;
+                            // Доступно предыдущее значение
                         bool enableValuePrevious = Enabled
+                            // Не доступно текущее значение
                             , enableValueCurrrent = false;
 
+                        //Для каждого параметра (столбца) в перечислении INDEX_CELL
                         foreach (INDEX_CELL i in Enum.GetValues(typeof(INDEX_CELL))) {
                             try {
                                 if (((int)i < values.Length)
                                     && (!(values[(int)i] == null))
                                     //&& (string.IsNullOrEmpty((string)values[(int)i]) == false)
                                     ) {
+                                    //Связь=ошибка, цвет ячейки=пусто
                                     indxState = INDEX_CELL_STATE.ERROR;
                                     clrCell = Color.Empty;
 
@@ -480,6 +511,7 @@ namespace StatisticDiagnostic
                                             continue;
                                             break;
                                         case INDEX_CELL.STATE:
+                                            // ???Если значение равно строковому типу, то статус ОК, иначе ERROR
                                             indxState = ((string)values[(int)i])?.Equals(1.ToString()) == true ?
                                                 INDEX_CELL_STATE.OK :
                                                     INDEX_CELL_STATE.ERROR;
@@ -493,10 +525,12 @@ namespace StatisticDiagnostic
                                                     values[(int)i];
                                             clrCell = s_CellState[(int)isRelevanceDateTime((int)i, (DateTime)values[(int)i])].m_Color;
                                             break;
+                                            //Крайнее значение (ПБРномер)
                                         case INDEX_CELL.VALUE:
                                             value = values[(int)i];
                                             break;
                                         default:
+                                            // Если значение равно эталонному ПБР (на текущее время), то статус ОК, иначе ERROR
                                             indxState = ((string)values[(int)i])?.Equals(EtalonPBR) == true ?
                                                 INDEX_CELL_STATE.OK :
                                                     INDEX_CELL_STATE.ERROR;
@@ -509,6 +543,7 @@ namespace StatisticDiagnostic
                                     Cells[(int)i].Style.BackColor = clrCell;
                                 } else
                                     ; // значение == null
+                                //Если возникнет исключение, обработчик исключений установит сообщение "Не установлено"
                             } catch (Exception e) {
                                 Logging.Logg().Exception(e, @"PanelContainerModes.PanelModes.DataGridViewGTPRow::SetValueCells () - ...", Logging.INDEX_MESSAGE.NOT_SET);
                             }
@@ -553,19 +588,26 @@ namespace StatisticDiagnostic
 
                         return stateRes;
                     }
-
+                    /// <summary>
+                    /// Признак актуальности значений
+                    /// </summary>
+                    /// <param name="iColumn">колонка</param>
+                    /// <param name="value">значение</param>
+                    /// <returns></returns>
                     protected override INDEX_CELL_STATE isRelevanceValue(int iColumn, double value)
                     {
+                        // Нереализованное исключение
                         throw new NotImplementedException();
                     }
                     /// <summary>
-                    /// Функция для нахождения ПБР на текущее время
+                    /// Свойство "Эталонный ПБР"
                     /// </summary>
                     /// <returns>возвращает ПБР на текущее время</returns>
                     private string EtalonPBR
                     {
                         get {
                             string strRes = string.Empty;
+                            //Метод преобразует время в одном часовом поясе во время в другом, исходя из идентификаторов этих поясов
                             int iNowMinute =
                                     TimeZoneInfo.ConvertTimeBySystemTimeZoneId(DateTime.Now, TimeZoneInfo.Local.Id, "Russian Standard Time").Minute
                                 , iNowHour =

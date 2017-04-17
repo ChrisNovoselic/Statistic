@@ -13,7 +13,7 @@ using System.Windows.Forms; //TableLayoutPanel
 namespace StatisticDiagnostic
 {
     /// <summary>
-    /// общий класс для панелей(???)
+    /// Абстрактный класс "Панель Диагностика"
     /// </summary>
     public abstract partial class PanelDiagnostic : HPanelCommon
     {
@@ -22,7 +22,10 @@ namespace StatisticDiagnostic
         {
             initialize();
         }
-
+        /// <summary>
+        /// Конструктор "Панель Диагностика"
+        /// </summary>
+        /// <param name="container">контейнер</param>
         public PanelDiagnostic(IContainer container)
             : base(container, -1, -1)
         {
@@ -51,7 +54,11 @@ namespace StatisticDiagnostic
         {
             InitializeComponent();
         }
-
+        /// <summary>
+        /// Метод "Инициализовать стиль макета"
+        /// </summary>
+        /// <param name="cols">столбцы</param>
+        /// <param name="rows">строки</param>
         protected override void initializeLayoutStyle(int cols = -1, int rows = -1)
         {
             initializeLayoutStyleEvenly(cols, rows);
@@ -100,9 +107,13 @@ namespace StatisticDiagnostic
     public partial class PanelStatisticDiagnostic
     {
         private enum ID_CONTAINER_PANEL : short { UNKNOWN = -1
+            //Область оценки работоспособности источников значений (АИИСКУЭ, СОТИАССО)
             , TEC
+            //Область оценки работоспособности источников значений ПБР (Модес-центр, терминал)
             , MODES
+            //Область оценки работоспособности компонентов вспомогательного ПО
             , TASK
+            //Область оценки размеров БД
             , SIZE
             ,
         }
@@ -142,8 +153,9 @@ namespace StatisticDiagnostic
             components = new System.ComponentModel.Container();
 
             this.SuspendLayout();
-
+            //Задать диапазон столбцов и строк
             this.Controls.Add(m_tecdb, 0, 0); this.SetColumnSpan(m_tecdb, 8); this.SetRowSpan(m_tecdb, m_Mode == Mode.DEFAULT ? 6 : 16);
+            //Если режим по умолчанию
             if (m_Mode == Mode.DEFAULT) {
                 this.Controls.Add(m_modesdb, 0, 6); this.SetColumnSpan(m_modesdb, 8); this.SetRowSpan(m_modesdb, 6);
                 this.Controls.Add(m_taskdb, 0, 12); this.SetColumnSpan(m_taskdb, 5); this.SetRowSpan(m_taskdb, 4);
@@ -165,6 +177,7 @@ namespace StatisticDiagnostic
     /// </summary>
     public partial class PanelStatisticDiagnostic : PanelStatistic
     {
+        //Перечисление "Режим: по умолчанию, только источник"
         public enum Mode : short { DEFAULT, SOURCE_ONLY }
         /// <summary>
         /// Перечесления типов источников
@@ -250,14 +263,19 @@ namespace StatisticDiagnostic
             , new CELL_STATE() { m_Text = string.Empty, m_Color = Color.DarkGray, m_Detail = @"Запрещено" }
         };
         /// <summary>
-        /// ???
+        /// К полям UPDATE_TIME и  VALIDATE_ASKUE_TM обращается несколько потоков
         /// </summary>
         public static volatile int UPDATE_TIME,
             VALIDATE_ASKUE_TM;
-        public static DateTime SERVER_TIME;//серверное время
+        //Cерверное время
+        public static DateTime SERVER_TIME;
 
+        /// <summary>
+        /// Интерфейс "Строки таблицы панели Диагностика"
+        /// </summary>
         private interface IDataGridViewDiagnosticRow
         {
+            //Автоматически реализуемое свойство
             string Name { get; set; }
         }
 
@@ -269,7 +287,7 @@ namespace StatisticDiagnostic
             public abstract string Name { get; set; }
 
             /// <summary>
-            /// Форматировать значение даты времени
+            /// Метод "Форматировать значение даты времени"
             /// </summary>
             /// <param name="indxCell">Номер(индекс) столбца</param>
             /// <param name="dtFormated">Значение даты/времени для форматирования</param>
@@ -599,7 +617,7 @@ namespace StatisticDiagnostic
             /// </summary>
             public event DelegateObjectFunc EvtRecievedTable;
             /// <summary>
-            /// 
+            /// Событие - получение активных источников
             /// </summary>
             public event DelegateObjectFunc EvtRecievedActiveSource;
 

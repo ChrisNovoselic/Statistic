@@ -12,6 +12,7 @@ using StatisticCommon;
 /// <summary>
 /// Пространство имен Statistic 
 /// </summary>
+/// 
 namespace Statistic
 {
     /// <summary>
