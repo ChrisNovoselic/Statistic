@@ -253,7 +253,7 @@ namespace StatisticCommon
                             catch (Exception e)
                             {
                                 Logging.Logg().Exception(e, @"DbMCInterface::GetData () - GetPlanValuesActual () ...", Logging.INDEX_MESSAGE.NOT_SET);
-                                Console.WriteLine("    ОШИБКА получения значений!");
+                                Console.WriteLine(string.Format("{0}ОШИБКА получения значений!", "\t"));
 
                                 needReconnect = true;
 
@@ -262,7 +262,7 @@ namespace StatisticCommon
 
                             if (result == true)
                                 if (listPVI.Count == 0)
-                                    Console.WriteLine("    Нет параметров генерации!");
+                                    Console.WriteLine(string.Format("{0}Нет параметров генерации!", "\t"));
                                 else
                                     ;
                             else

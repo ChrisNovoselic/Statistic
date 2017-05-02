@@ -17,7 +17,6 @@ namespace Statistic
     /// </summary>
     partial class PanelTecViewBase
     {
-
         /// <summary>
         /// Защищенный частичный класс "Макет таблицы"
         /// </summary>
@@ -1091,8 +1090,6 @@ namespace Statistic
         ///
         partial class PanelQuickDataStandard : HPanelQuickData
         {
-
-
             ///// <summary>
             ///// Класс для хранения информации о местоположении элемента управления
             ///// </summary>
@@ -1489,7 +1486,7 @@ namespace Statistic
                             ;
                     }
                     lblPBRNumber.Text = m_parent.m_tecView.lastLayout;
-                    lblPBRNumber.BackColor = PBRState == (int)PBR_STATE.NORM ? Color.Empty : FormMain.formGraphicsSettings.COLOR(FormGraphicsSettings.INDEX_COLOR.DIVIATION);
+                    lblPBRNumber.BackColor = PBRState == TecViewStandard.PBR_STATE.NORM ? Color.Empty : FormMain.formGraphicsSettings.COLOR(FormGraphicsSettings.INDEX_COLOR.DIVIATION);
 
                     //ShowTGValue
                     i = 0;
@@ -1561,51 +1558,13 @@ namespace Statistic
                 RestructControl();
             }
 
-            // Код для визуальной сигнализации в случае деактуализации номера ПБР
-            public enum PBR_STATE { NORM=0, ERR=1 }
-            public int PBRState
-            {
-                get
-                {
-                    int _PBRstate = 0;
-                  
-                    if (m_parent.m_tecView.currHour == true) 
-                       {
-                        if (lblPBRNumber.Text?.Equals(EtalonPBR) == true)
-                            _PBRstate = (int)PBR_STATE.NORM;
-                        else
-                            _PBRstate = (int)PBR_STATE.ERR;
-                       }
-                   else
-                       {
-                        if (lblPBRNumber.Text == "ПБР24")
-                            _PBRstate = (int)PBR_STATE.NORM;
-                        else
-                            _PBRstate = (int)PBR_STATE.ERR;
-                       }
-                    return _PBRstate;  
-                }
-            }
-           
-            private string EtalonPBR
-            {
-                get
-                  {
-                    string strRes = string.Empty;
-                    int iNowMinute =
-                            TimeZoneInfo.ConvertTimeBySystemTimeZoneId(DateTime.Now, TimeZoneInfo.Local.Id, "Russian Standard Time").Minute
-                        , iNowHour =
-                            TimeZoneInfo.ConvertTimeBySystemTimeZoneId(DateTime.Now, TimeZoneInfo.Local.Id, "Russian Standard Time").Hour;
+            private TecViewStandard.PBR_STATE PBRState { get { return (m_parent.m_tecView as TecViewStandard).PBRState; } }
 
-                    strRes = string.Format("ПБР{0}", iNowHour);
-                    return strRes;
-                   }
-               }
             public void UpdateColorPbr()
             {
-                lblPBRNumber.BackColor = PBRState == (int)PBR_STATE.NORM ? Color.Empty : FormMain.formGraphicsSettings.COLOR(FormGraphicsSettings.INDEX_COLOR.DIVIATION);
+                lblPBRNumber.BackColor = PBRState == TecViewStandard.PBR_STATE.NORM ? Color.Empty : FormMain.formGraphicsSettings.COLOR(FormGraphicsSettings.INDEX_COLOR.DIVIATION);
             }
-           }
         }
     }
+}
 

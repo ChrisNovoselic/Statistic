@@ -8,6 +8,7 @@ using System.Threading;
 using System.Drawing; //Color
 
 using HClassLibrary;
+using System.Linq;
 
 namespace StatisticCommon
 {
@@ -119,6 +120,55 @@ namespace StatisticCommon
             AddState((int)StatesMachine.LastMinutes_TM);
             AddState((int)StatesMachine.PPBRValues);
             AddState((int)StatesMachine.AdminValues);
+        }
+
+        // Код для визуальной сигнализации в случае деактуализации номера ПБР
+        public enum PBR_STATE { NORM = 0, ERR = 1 }
+
+        private PBR_STATE _PBRstate = PBR_STATE.ERR;
+
+        public PBR_STATE PBRState
+        {
+            get {
+                if (string.IsNullOrEmpty(lastLayout) == false)
+                    if (currHour == true)
+                        _PBRstate = (EtalonPBR.Where(delegate (string etalonPBR) { return etalonPBR.Equals(lastLayout) == true; })
+                        .Count() == 1)
+                            ? PBR_STATE.NORM
+                                : PBR_STATE.ERR;
+                    else
+                        _PBRstate = (lastLayout.Equals(string.Format("ПБР{0}", 24)) == true)
+                            ? PBR_STATE.NORM
+                                : _PBRstate = PBR_STATE.ERR;
+                else
+                    _PBRstate = PBR_STATE.ERR;
+
+                return _PBRstate;
+            }
+        }
+
+        private IEnumerable<string> EtalonPBR
+        {
+            get {
+                List<string> listRes = new List<string>();
+
+                DateTime datetimeMscTimezoneNow;
+                int iNowMinute = -1
+                    , iNowHour = -1;
+
+                datetimeMscTimezoneNow = HDateTime.ToMoscowTimeZone();
+                iNowHour = datetimeMscTimezoneNow.Hour;
+
+                listRes.Add(string.Format("ПБР{0}", iNowHour + 1));
+
+                iNowMinute = datetimeMscTimezoneNow.Minute;
+                if (iNowMinute > 40)
+                    listRes.Add(string.Format("ПБР{0}", iNowHour + 2));
+                else
+                    ;
+
+                return listRes;
+            }
         }
     }
 

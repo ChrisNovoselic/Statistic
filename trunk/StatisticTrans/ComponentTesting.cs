@@ -53,8 +53,8 @@ namespace StatisticTrans
         /// <param name="nameElem">имя опрашеваемого компонента</param>
         public void AttemptIter(string nameElem)
         {
-            if (currentIter == CountPart)
-                ClearStck();
+            if (currentIter == CountIter)
+                ClearCounter();
             else
                 ;
 
@@ -82,7 +82,7 @@ namespace StatisticTrans
         /// Кол-во итераций
         /// </summary>
         /// <returns>кол-во итераций</returns>
-        private int CountPart
+        private int CountIter
         {
             get { return Iters.Length; }
         }
@@ -120,17 +120,30 @@ namespace StatisticTrans
                 + DateTime.Now.ToString() + ";"
                 + " Успешных итераций(всего): " + successIter
                     + "(" + commonSuccessIter + @")"
-                + " из " + CountPart
+                + " из " + CountIter
                     + @"(" + commonTotalIter + @")";
         }
 
         /// <summary>
         /// Очистка итераций
         /// </summary>
-        private void ClearStck()
+        private void ClearCounter()
         {
             currentIter = 0;
             successIter = 0;
+        }
+
+        private bool IsValidateIters
+        {
+            get
+            {
+                return (
+                    (!(Iters == null))
+                    && (!(currentIter < 0))
+                    && (currentIter < CountIter)
+                    && (!(Iters[currentIter] == null))                    
+                    );
+            }
         }
 
         /// <summary>
@@ -139,7 +152,7 @@ namespace StatisticTrans
         private string getTextReportErrorIter()
         {
             return getTextReportSuccessIter ()
-                + "; Ошибка на компоненте: " + (((!(Iters[currentIter] == null)) && (currentIter < Iters.Length)) ? Iters[currentIter].ToString() : @"не известно");
+                + string.Format("; Ошибка на компоненте: {0}, индекс={1}", (IsValidateIters ? Iters[currentIter] : @"не известно"), currentIter);
         }
     }
 }
