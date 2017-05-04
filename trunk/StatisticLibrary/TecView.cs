@@ -132,14 +132,14 @@ namespace StatisticCommon
             get {
                 if (string.IsNullOrEmpty(lastLayout) == false)
                     if (currHour == true)
-                        _PBRstate = (EtalonPBR.Where(delegate (string etalonPBR) { return etalonPBR.Equals(lastLayout) == true; })
-                        .Count() == 1)
+                        _PBRstate = (GetValidatePBR(lastLayout) == true)
                             ? PBR_STATE.NORM
                                 : PBR_STATE.ERR;
                     else
-                        _PBRstate = (lastLayout.Equals(string.Format("œ¡–{0}", 24)) == true)
-                            ? PBR_STATE.NORM
-                                : _PBRstate = PBR_STATE.ERR;
+                        _PBRstate = PBR_STATE.NORM;
+                        //_PBRstate = (lastLayout.Equals(string.Format("œ¡–{0}", 24)) == true)
+                        //    ? PBR_STATE.NORM
+                        //        : _PBRstate = PBR_STATE.ERR;
                 else
                     _PBRstate = PBR_STATE.ERR;
 
@@ -147,7 +147,7 @@ namespace StatisticCommon
             }
         }
 
-        private IEnumerable<string> EtalonPBR
+        public static IEnumerable<string> EtalonPBR
         {
             get {
                 List<string> listRes = new List<string>();
@@ -170,6 +170,8 @@ namespace StatisticCommon
                 return listRes;
             }
         }
+
+        public static bool GetValidatePBR(string pbr) { return TecViewStandard.EtalonPBR.Where(delegate (string etalonPBR) { return etalonPBR.Equals(pbr) == true; }).Count() == 1; }
     }
 
     public abstract class TecView : HAdmin

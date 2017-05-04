@@ -511,7 +511,7 @@ namespace StatisticDiagnostic
                                             continue;
                                             break;
                                         case INDEX_CELL.STATE:
-                                            // ???Если значение равно строковому типу, то статус ОК, иначе ERROR
+                                        // ???Если значение равно строковому типу, то статус ОК, иначе ERROR
                                             indxState = ((string)values[(int)i])?.Equals(1.ToString()) == true ?
                                                 INDEX_CELL_STATE.OK :
                                                     INDEX_CELL_STATE.ERROR;
@@ -524,16 +524,15 @@ namespace StatisticDiagnostic
                                                 formatDateTime((DateTime)values[(int)i]) :
                                                     values[(int)i];
                                             clrCell = s_CellState[(int)isRelevanceDateTime((int)i, (DateTime)values[(int)i])].m_Color;
-                                            break;
-                                            //Крайнее значение (ПБРномер)
-                                        case INDEX_CELL.VALUE:
+                                            break;                                            
+                                        case INDEX_CELL.VALUE: //Крайнее значение (ПБРномер)
+                                        // Если значение равно эталонному ПБР (на текущее время), то статус ОК, иначе ERROR
                                             value = values[(int)i];
-                                            break;
-                                        default:
-                                            // Если значение равно эталонному ПБР (на текущее время), то статус ОК, иначе ERROR
-                                            indxState = ((string)values[(int)i])?.Equals(EtalonPBR) == true ?
+                                            indxState = (TecViewStandard.GetValidatePBR((string)value) == true) ?
                                                 INDEX_CELL_STATE.OK :
                                                     INDEX_CELL_STATE.ERROR;
+                                            break;
+                                        default:
                                             value = values[(int)i];
                                             break;
                                     }
@@ -598,41 +597,6 @@ namespace StatisticDiagnostic
                     {
                         // Нереализованное исключение
                         throw new NotImplementedException();
-                    }
-                    /// <summary>
-                    /// Свойство "Эталонный ПБР"
-                    /// </summary>
-                    /// <returns>возвращает ПБР на текущее время</returns>
-                    private string EtalonPBR
-                    {
-                        get {
-                            string strRes = string.Empty;
-                            //Метод преобразует время в одном часовом поясе во время в другом, исходя из идентификаторов этих поясов
-                            int iNowMinute =
-                                    TimeZoneInfo.ConvertTimeBySystemTimeZoneId(DateTime.Now, TimeZoneInfo.Local.Id, "Russian Standard Time").Minute
-                                , iNowHour =
-                                    TimeZoneInfo.ConvertTimeBySystemTimeZoneId(DateTime.Now, TimeZoneInfo.Local.Id, "Russian Standard Time").Hour;
-
-                            //if ((Convert.ToInt32(m_DTMin)) > 41)
-                            //{
-                            //    if ((Convert.ToInt32(m_DTHour)) % 2 == 0)
-                            //        m_etalon_pbr = "ПБР" + (Convert.ToInt32(m_DTHour) + 1);
-                            //    else
-                            //        m_etalon_pbr = "ПБР" + ((Convert.ToInt32(m_DTHour) + 2));
-
-                            //    return m_etalon_pbr;
-                            //}
-
-                            //else
-                            //{
-                            //if ((Convert.ToInt32(m_DTHour)) % 2 == 0)
-                            strRes = string.Format("ПБР{0}", iNowHour);
-                            //else
-                            //    m_etalon_pbr = "ПБР" + Convert.ToInt32(m_DTHour);
-
-                            return strRes;
-                            //}
-                        }
                     }
                 }
 
