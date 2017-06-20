@@ -141,20 +141,11 @@ namespace Statistic
         /// </summary>
         private enum KEY_CONTROLS
         {
-            UNKNOWN = -1
-                , NUD_CUR_HOUR,
-            DTP_CUR_DATE
-                /*, LABEL_CUR_TIME*/,
-            BTN_SET_NOWDATEHOUR
-                , CB_GTP,
-            LABEL_GTP_KOEFF
-                , DGV_GTP_VALUE,
-            ZGRAPH_GTP
-                ,
-            CLB_TG
-                , DGV_TG_VALUE,
-            ZGRAPH_TG
-                , COUNT_KEY_CONTROLS
+            UNKNOWN = -1                
+                , DTP_CUR_DATE, NUD_CUR_HOUR, BTN_SET_NOWDATEHOUR
+                , CB_GTP, LABEL_GTP_KOEFF, DGV_GTP_VALUE, ZGRAPH_GTP
+                , CLB_TG , DGV_TG_VALUE, ZGRAPH_TG
+                    , COUNT_KEY_CONTROLS
         }
         /// <summary>
         /// Объект с признаками обработки типов значений
@@ -623,8 +614,16 @@ namespace Statistic
             /// Заполнение ComboBox данными на основе formChangeMode
             /// </summary>
             /// <param name="listGTPNameShr">Таблица с данными из formChangeMode</param>
-            public void InitializeGTPList(DataTable listGTPNameShr)
+            public void InitializeGTPList(List<FormChangeMode.Item> listGTPNameShr)
             {
+                DataTable table = new DataTable();
+                table.Columns.Add("Name");
+                table.Columns.Add("ID");
+
+                foreach (FormChangeMode.Item item in listGTPNameShr) {
+                    table.Rows.Add(item.name_shr, item.id);
+                }
+
                 ComboBox cbxGTP = (this.Controls.Find(KEY_CONTROLS.CB_GTP.ToString(), true))[0] as ComboBox;
 
                 BindingSource bs = new BindingSource();
@@ -634,7 +633,6 @@ namespace Statistic
                 cbxGTP.ValueMember = "ID";
                 cbxGTP.BindingContext = new BindingContext();
             }
-
 
             public void InitializeKoeffAlarmPcur(decimal koeff)
             {
@@ -695,6 +693,7 @@ namespace Statistic
 
                 int iRes = 0
                     , iHour = -1;
+
                 if (curHour == 0)
                     iRes = -1;
                 else
@@ -821,7 +820,6 @@ namespace Statistic
                     // в ~ от наличия значения в ней
                     dgvTG.Rows[j].Visible = bRowVisible;
                 }
-
             }
         }
         /// <summary>
@@ -1236,13 +1234,12 @@ namespace Statistic
             else
                 ;
 
-            if (m_tecView.IsFirstActivated == true & IsFirstActivated==true)
-            {
+            if (m_tecView.IsFirstActivated == true & IsFirstActivated == true) {
                 ComboBox cbxGTP = (this.Controls.Find(KEY_CONTROLS.CB_GTP.ToString(), true))[0] as ComboBox;
                 cbxGTP.SelectedIndex = -1;
                 cbxGTP.SelectedIndex = 0;
-            }
-            
+            } else
+                ;            
 
             return bRes;
         }
@@ -1286,19 +1283,8 @@ namespace Statistic
         /// <param name="obj">Объект, инициировавший событие</param>      
         public void ChangeMode(object obj)
         {
-            DataTable table = new DataTable();
-            table.Columns.Add("Name");
-            table.Columns.Add("ID");
-
-            List<FormChangeMode.Item> list_item = (List<FormChangeMode.Item>)obj;
-
-            foreach (FormChangeMode.Item item in list_item)
-            {
-                table.Rows.Add(item.name_shr,item.id);
-            }
-
             //Добавить строки на дочернюю панель
-            m_panelManagement.InitializeGTPList(table);
+            m_panelManagement.InitializeGTPList((List<FormChangeMode.Item>)obj);
 
             EvtValuesMins += new DelegateObjectFunc(m_panelManagement.Parent_OnEvtValuesMins);
             EvtValuesSecs += new DelegateObjectFunc(m_panelManagement.Parent_OnEvtValuesSecs);
