@@ -63,6 +63,8 @@ namespace Statistic
             m_dictAddingTabs.Add((int)ID_ADDING_TAB.DIAGNOSTIC, new ADDING_TAB("ДиагностикаToolStripMenuItem", "Диагностика", HClassLibrary.HTabCtrlEx.TYPE_TAB.FIXED));
             m_dictAddingTabs.Add((int)ID_ADDING_TAB.ANALYZER, new ADDING_TAB("ПросмотрЖурналаToolStripMenuItem", "Журнал событий", HClassLibrary.HTabCtrlEx.TYPE_TAB.FIXED));
             m_dictAddingTabs.Add((int)ID_ADDING_TAB.SOTIASSO, new ADDING_TAB("значенияСОТИАССОToolStripMenuItem", "Значения СОТИАССО", HClassLibrary.HTabCtrlEx.TYPE_TAB.FIXED));
+            // KhryapinAN 2017-06
+            m_dictAddingTabs.Add((int)ID_ADDING_TAB.SOTIASSO_DAY, new ADDING_TAB("значенияСОТИАССОСуткиToolStripMenuItem", "Значения СОТИАССО-сутки", HClassLibrary.HTabCtrlEx.TYPE_TAB.FIXED));
             m_dictAddingTabs.Add((int)ID_ADDING_TAB.VZLET_TDIRECT, new ADDING_TAB("значенияВзлетТпрямаяToolStripMenuItem", "Расчет теплосети", HClassLibrary.HTabCtrlEx.TYPE_TAB.FLOAT));
             m_dictAddingTabs.Add((int)ID_ADDING_TAB.TEC_Component, new ADDING_TAB("СоставТЭЦToolStripMenuItem", "Изменить состав ТЭЦ", HClassLibrary.HTabCtrlEx.TYPE_TAB.FIXED));
             m_dictAddingTabs.Add((int)ID_ADDING_TAB.USERS, new ADDING_TAB("изментьСоставПользовательToolStripMenuItem", "Изменить состав пользователей", HClassLibrary.HTabCtrlEx.TYPE_TAB.FIXED));
@@ -186,6 +188,8 @@ namespace Statistic
                 , m_dictAddingTabs[(int)ID_ADDING_TAB.MONITOR_LAST_MINUTES].menuItem
                 , m_dictAddingTabs[(int)ID_ADDING_TAB.SOBSTV_NYZHDY].menuItem
                 , m_dictAddingTabs[(int)ID_ADDING_TAB.SOTIASSO].menuItem
+                // KhryapinAN 2017-06
+                , m_dictAddingTabs[(int)ID_ADDING_TAB.SOTIASSO_DAY].menuItem
                 , m_dictAddingTabs[(int)ID_ADDING_TAB.VZLET_TDIRECT].menuItem
             });
             this.видToolStripMenuItem.Name = "видToolStripMenuItem";
@@ -255,10 +259,16 @@ namespace Statistic
             // значенияСОТИАССОToolStripMenuItem
             // 
             this.m_dictAddingTabs[(int)ID_ADDING_TAB.SOTIASSO].menuItem.CheckedChanged += new System.EventHandler(this.значенияСОТИАССОToolStripMenuItem_CheckedChanged);
+            #region KhryapinAN, 2017-06
+            // 
+            // значенияСОТИАССОСуткиToolStripMenuItem
+            // 
+            this.m_dictAddingTabs[(int)ID_ADDING_TAB.SOTIASSO_DAY].menuItem.CheckedChanged += new System.EventHandler(this.значенияСОТИАССОСуткиToolStripMenuItem_CheckedChanged);
+            #endregion
             // 
             // значенияВзлетТпрямаяToolStripMenuItem
             // 
-            this.m_dictAddingTabs[(int)ID_ADDING_TAB.VZLET_TDIRECT].menuItem.CheckedChanged += new System.EventHandler(this.значенияВзлетТпрямаяToolStripMenuItem_CheckedChanged);
+            this.m_dictAddingTabs[(int)ID_ADDING_TAB.VZLET_TDIRECT].menuItem.CheckedChanged += new System.EventHandler(this.значенияВзлетТпрямаяToolStripMenuItem_CheckedChanged);            
 
             // 
             // настройкиToolStripMenuItem

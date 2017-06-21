@@ -71,6 +71,8 @@ namespace Statistic
             , CUSTOM_2X2_2, CUSTOM_2X3_2, CUSTOM_2X2_3, CUSTOM_2X3_3, CUSTOM_2X2_4, CUSTOM_2X3_4
             , SOTIASSO, DIAGNOSTIC, ANALYZER, TEC_Component, USERS
             , VZLET_TDIRECT
+            // KhryapinAN, 2017-06
+            , SOTIASSO_DAY
         };
         private enum INDEX_CUSTOM_TAB { TAB_2X2, TAB_2X3, TAB_MULTI };
         private class ADDING_TAB
@@ -836,7 +838,11 @@ namespace Statistic
                                                                                     if (tclTecViews.TabPages[e.TabIndex].Controls[0] is PanelUser)
                                                                                         m_dictAddingTabs[(int)ID_ADDING_TAB.USERS].menuItem.Checked = false;
                                                                                     else
-                                                                                        ;
+                // KhryapinAN, 2017-06
+                                                                    if (tclTecViews.TabPages[e.TabIndex].Controls[0] is PanelSOTIASSODay)
+                                                                        m_dictAddingTabs[(int)ID_ADDING_TAB.SOTIASSO_DAY].menuItem.Checked = false;
+                                                                    else
+                ;
         }
 
         void delegateOnFloatTab(object sender, HTabCtrlExEventArgs e)
@@ -2066,10 +2072,14 @@ namespace Statistic
                     m_dictAddingTabs[(int)ID_ADDING_TAB.MONITOR_LAST_MINUTES].menuItem.Enabled =
                     m_dictAddingTabs[(int)ID_ADDING_TAB.SOBSTV_NYZHDY].menuItem.Enabled =
                     m_dictAddingTabs[(int)ID_ADDING_TAB.SOTIASSO].menuItem.Enabled =
+                    // KhryapinAN, 2017-06
+                    m_dictAddingTabs[(int)ID_ADDING_TAB.SOTIASSO_DAY].menuItem.Enabled =
                     m_dictAddingTabs[(int)ID_ADDING_TAB.VZLET_TDIRECT].menuItem.Enabled =
                         bCurEnabled && (HStatisticUsers.allTEC < (int)TECComponent.ID.LK);
 
                     m_dictAddingTabs[(int)ID_ADDING_TAB.SOTIASSO].menuItem.Enabled &= HStatisticUsers.IsAllowed((int)HStatisticUsers.ID_ALLOWED.MENUITEM_VIEW_VALUES_SOTIASSO);
+                    // KhryapinAN, 2017-06
+                    m_dictAddingTabs[(int)ID_ADDING_TAB.SOTIASSO_DAY].menuItem.Enabled &= HStatisticUsers.IsAllowed((int)HStatisticUsers.ID_ALLOWED.MENUITEM_VIEW_VALUES_SOTIASSO_DAY);
                     m_dictAddingTabs[(int)ID_ADDING_TAB.VZLET_TDIRECT].menuItem.Enabled &= HStatisticUsers.IsAllowed((int)HStatisticUsers.ID_ALLOWED.MENUITEM_VIEW_VZLET_TDIRECT);
                 }
                 else
@@ -2632,6 +2642,22 @@ namespace Statistic
             видSubToolStripMenuItem_CheckedChanged(ID_ADDING_TAB.SOTIASSO, "Значения СОТИАССО"
                 , new bool[] { ((ToolStripMenuItem)sender).Checked, true });
         }
+
+        #region // KhryapinAN, 2017-06
+        private void значенияСОТИАССОСуткиToolStripMenuItem_CheckedChanged(object sender, EventArgs e)
+        {
+            ID_ADDING_TAB keyTab = ID_ADDING_TAB.SOTIASSO_DAY;
+
+            if (m_dictAddingTabs[(int)keyTab].panel == null) {
+                m_dictAddingTabs[(int)keyTab].panel = new PanelSOTIASSODay(PanelKomDisp.m_list_tec);
+                m_dictAddingTabs[(int)keyTab].panel.SetDelegateReport(ErrorReport, WarningReport, ActionReport, ReportClear);
+            } else
+                ;
+
+            видSubToolStripMenuItem_CheckedChanged(keyTab, "Значения СОТИАССО-сутки"
+                , new bool[] { ((ToolStripMenuItem)sender).Checked, true });
+        }
+        #endregion
 
         private void значенияВзлетТпрямаяToolStripMenuItem_CheckedChanged(object sender, EventArgs e)
         {

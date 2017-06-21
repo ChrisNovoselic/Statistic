@@ -23,7 +23,12 @@ namespace Statistic
     {
         private class TecViewSOTIASSODay : TecView
         {
-            public TecViewSOTIASSODay(int indx_tec, int indx_comp, TECComponentBase.TYPE type) : base(indx_tec, indx_comp, type)
+            public TecViewSOTIASSODay(int indxTEC)
+                : base(indxTEC, -1, TECComponentBase.TYPE.ELECTRO)
+            {
+            }
+
+            public override void ChangeState()
             {
             }
 
@@ -53,13 +58,13 @@ namespace Statistic
         /// <summary>
         /// Объект для обработки запросов/получения данных из/в БД
         /// </summary>
-        private TecViewSOTIASSODay m_tecView;
+        private Dictionary<CONN_SETT_TYPE, TecViewSOTIASSODay> m_dictTecView;
 
         System.Windows.Forms.SplitContainer stctrMain
             , stctrView;
         /// <summary>
-        /// Панели графической интерпретации значений СОТИАССО
-        /// 1) "час - по-минутно для выбранного ГТП", 2) "минута - по-секундно для выбранных ТГ"
+        /// Панели графической интерпретации значений
+        /// 1) АИИСКУЭ "сутки - по-часам для выбранных сигналов, 2) СОТИАССО "сутки - по-часам для выбранных сигналов"
         /// </summary>
         private ZedGraph.ZedGraphControl m_zGraph_AIISKUE
             , m_zGraph_SOTIASSO;
@@ -96,20 +101,27 @@ namespace Statistic
                     m_listTEC.Add(tec);
                 else
                     ;
-            //Создать объект с признаками обработки тех типов значений
-            // , которые будут использоваться фактически
-            m_markQueries = new HMark(new int[] { (int)CONN_SETT_TYPE.DATA_AISKUE, (int)CONN_SETT_TYPE.DATA_SOTIASSO });
-            //Создать объект обработки запросов - установить первоначальные индексы для ТЭЦ, компонента
-            m_tecView = new TecViewSOTIASSODay(0, 0);
-            //Инициализировать список ТЭЦ для 'TecView' - указать ТЭЦ в соответствии с указанным ранее индексом (0)
-            m_tecView.InitTEC(new List<StatisticCommon.TEC>() { m_listTEC[0] }, m_markQueries);
-            //Установить тип значений
-            m_tecView.m_arTypeSourceData[(int)HDateTime.INTERVAL.MINUTES] = CONN_SETT_TYPE.DATA_SOTIASSO_1_MIN;
-            m_tecView.m_arTypeSourceData[(int)HDateTime.INTERVAL.HOURS] = CONN_SETT_TYPE.DATA_SOTIASSO_1_MIN;
-            //Делегат для установки текущего времени на панели 'PanelManagement'
-            //m_tecView.SetDelegateDatetime(...);
-            //Делегат по окончанию обработки всех состояний 'TecView::ChangeState_SOTIASSO'
-            m_tecView.updateGUI_Fact = new IntDelegateIntIntFunc(onEvtHandlerStatesCompleted);
+
+            if (m_listTEC.Count > 0) {
+                //Создать объект с признаками обработки тех типов значений
+                // , которые будут использоваться фактически
+                m_markQueries = new HMark(new int[] { (int)CONN_SETT_TYPE.ADMIN, (int)CONN_SETT_TYPE.PBR, (int)CONN_SETT_TYPE.DATA_SOTIASSO });
+                //Создать объект обработки запросов - установить первоначальные индексы для ТЭЦ, компонента
+                m_dictTecView = new Dictionary<CONN_SETT_TYPE, TecViewSOTIASSODay>() {
+                    { CONN_SETT_TYPE.DATA_AISKUE, new TecViewSOTIASSODay(0) }
+                    , { CONN_SETT_TYPE.DATA_SOTIASSO, new TecViewSOTIASSODay(0) }
+                };
+                //Инициализировать список ТЭЦ для 'TecView' - указать ТЭЦ в соответствии с указанным ранее индексом (0)
+                foreach (TecViewSOTIASSODay tecView in m_dictTecView.Values)
+                    tecView.InitTEC(new List<StatisticCommon.TEC>() { m_listTEC[0] }, m_markQueries);
+                //Установить тип значений
+                m_dictTecView[CONN_SETT_TYPE.DATA_AISKUE].m_arTypeSourceData[(int)HDateTime.INTERVAL.HOURS] = CONN_SETT_TYPE.DATA_AISKUE;
+                m_dictTecView[CONN_SETT_TYPE.DATA_SOTIASSO].m_arTypeSourceData[(int)HDateTime.INTERVAL.HOURS] = CONN_SETT_TYPE.DATA_SOTIASSO;
+                //Делегат по окончанию обработки всех состояний 'TecView::ChangeState_SOTIASSO'
+                foreach (TecViewSOTIASSODay tecView in m_dictTecView.Values)
+                    tecView.updateGUI_Fact = new IntDelegateIntIntFunc(onEvtHandlerStatesCompleted);
+            } else
+                Logging.Logg().Error(@"PanelSOTIASSODay::ctor () - кол-во ТЭЦ = 0...", Logging.INDEX_MESSAGE.NOT_SET);
 
             m_listIdAIISKUEAdvised = new List<int>();
             m_listIdSOTIASSOAdvised = new List<int>();
@@ -117,7 +129,7 @@ namespace Statistic
             //Создать, разместить дочерние элементы управления
             initializeComponent();
             m_panelManagement.EvtTECListSelectionIndexChanged += new Action<int>(panelManagement_TECListOnSelectionChanged);
-            m_panelManagement.EvtDatetimeHourChanged += new DelegateDateFunc(panelManagement_OnEvtDatetimeHourChanged);
+            m_panelManagement.EvtDateTimeChanged += new DelegateDateFunc(panelManagement_OnEvtDateTimeChanged);
             m_panelManagement.EvtSignalItemChecked += new Action<CONN_SETT_TYPE, int>(panelManagement_OnEvtSignalItemChecked);
             //m_panelManagement.EvtSetNowHour += new DelegateFunc(panelManagement_OnEvtSetNowHour);
             // сообщить дочернему элементу, что дескриптор родительской панели создан
@@ -156,9 +168,9 @@ namespace Statistic
             //Создать дочерние элементы управления
             m_panelManagement = new PanelManagement(); // панель для размещения элементов управления
             
-            m_zGraph_AIISKUE = new ZedGraphControlSignalDayValues(); // графическая панель для отображения значений ГТП
+            m_zGraph_AIISKUE = new HZedGraphControl(); // графическая панель для отображения значений ГТП
             m_zGraph_AIISKUE.Name = KEY_CONTROLS.ZGRAPH_AIISKUE.ToString();
-            m_zGraph_SOTIASSO = new ZedGraphControlSignalDayValues(); // графическая панель для отображения значений ТГ
+            m_zGraph_SOTIASSO = new ZedGraphControl(); // графическая панель для отображения значений ТГ
             m_zGraph_SOTIASSO.Name = KEY_CONTROLS.ZGRAPH_SOTIASSO.ToString();
 
             //Создать сплиттеры
@@ -202,14 +214,15 @@ namespace Statistic
 
         public override void SetDelegateReport(DelegateStringFunc ferr, DelegateStringFunc fwar, DelegateStringFunc fact, DelegateBoolFunc fclr)
         {
-            m_tecView.SetDelegateReport(ferr, fwar, fact, fclr);
+            foreach(TecViewSOTIASSODay tecView in m_dictTecView.Values)
+                tecView.SetDelegateReport(ferr, fwar, fact, fclr);
         }
         /// <summary>
         /// Класс для размещения активных элементов управления
         /// </summary>
         private class PanelManagement : HPanelCommon
         {
-            public event DelegateDateFunc EvtDatetimeHourChanged;
+            public event DelegateDateFunc EvtDateTimeChanged;
             /// <summary>
             /// Событие изменения текущего индекса ГТП
             /// </summary>
@@ -407,37 +420,6 @@ namespace Statistic
 
                 return true;
             }
-        }
-        /// <summary>
-        /// Класс для отображения в графическом представлении
-        ///  значений за укзанный (дата/номер часа) 1 час для выбранного ГТП
-        /// </summary>
-        private class ZedGraphControlSignalDayValues : HZedGraphControl
-        {
-            /// <summary>
-            /// Конструктор - основной (без параметров)
-            /// </summary>
-            public ZedGraphControlSignalDayValues()
-                : base()
-            {
-                initializeComponent();
-            }
-            /// <summary>
-            /// Конструктор - вспомогательный (с параметрами)
-            /// </summary>
-            /// <param name="container">Владелец объекта</param>
-            public ZedGraphControlSignalDayValues(IContainer container)
-                : this()
-            {
-                container.Add(this);
-            }
-            /// <summary>
-            /// Инициализация собственных компонентов элемента управления
-            /// </summary>
-            private void initializeComponent()
-            {
-            }
-
             /// <summary>
             /// Обновить содержание в графической субобласти "час по-минутно"
             /// </summary>
@@ -596,7 +578,8 @@ namespace Statistic
         {
             base.Start();
 
-            m_tecView.Start();
+            foreach (TecViewSOTIASSODay tecView in m_dictTecView.Values)
+                tecView.Start();
         }
         /// <summary>
         /// Переопределение наследуемой функции - останов объекта
@@ -604,24 +587,25 @@ namespace Statistic
         public override void Stop()
         {
             //Проверить актуальность объекта обработки запросов
-            if (!(m_tecView == null))
-            {
-                if (m_tecView.Actived == true)
-                    //Если активен - деактивировать
-                    m_tecView.Activate(false);
+            foreach (TecViewSOTIASSODay tecView in m_dictTecView.Values)
+                if (!(tecView == null))
+                {
+                    if (tecView.Actived == true)
+                        //Если активен - деактивировать
+                        tecView.Activate(false);
+                    else
+                        ;
+
+                    if (tecView.IsStarted == true)
+                        //Если выполняется - остановить
+                        tecView.Stop();
+                    else
+                        ;
+
+                    //m_tecView = null;
+                }
                 else
                     ;
-
-                if (m_tecView.IsStarted == true)
-                    //Если выполняется - остановить
-                    m_tecView.Stop();
-                else
-                    ;
-
-                //m_tecView = null;
-            }
-            else
-                ;
 
             //Остановить базовый объект
             base.Stop();
@@ -638,18 +622,19 @@ namespace Statistic
 
             bRes = base.Activate(active);
 
-            m_tecView.Activate(active);
+            foreach (TecViewSOTIASSODay tecView in m_dictTecView.Values) {
+                tecView.Activate(active);
 
-            if (m_tecView.Actived == true)
-            {
-                dueTime = 0;
-            }
-            else
-            {
-                m_tecView.ReportClear(true);
+                if (tecView.Actived == true) {
+                    dueTime = 0;
+                } else {
+                    tecView.ReportClear(true);
+                }
             }
 
-            if (m_tecView.IsFirstActivated == true & IsFirstActivated == true) {
+            // признак 1-ой активации можно получить у любого объекта в словаре
+            if ((m_dictTecView[CONN_SETT_TYPE.DATA_AISKUE].IsFirstActivated == true)
+                    & (IsFirstActivated == true)) {
                 cbxTECList = findControl(KEY_CONTROLS.CBX_TEC_LIST.ToString()) as ComboBox;
                 // инициировать начало заполнения дочерних элементов содержанием
                 cbxTECList.SelectedIndex = -1;
@@ -663,30 +648,19 @@ namespace Statistic
         /// Обработчик события - изменения даты/номера часа на панели с управляющими элементами
         /// </summary>
         /// <param name="dtNew">Новые дата/номер часа</param>
-        private void panelManagement_OnEvtDatetimeHourChanged(DateTime dtNew)
+        private void panelManagement_OnEvtDateTimeChanged(DateTime dtNew)
         {
             //Проверить наличие даты/времени полученного на сервере (хотя бы один раз)
-            if (m_tecView.serverTime.Equals(DateTime.MinValue) == false)
-                if ((m_tecView.m_curDate.Date.Equals(m_tecView.serverTime.Date) == true)
-                    && (m_tecView.lastHour.Equals(m_tecView.serverTime.Hour) == true))
-                {
-                    m_tecView.adminValuesReceived = false; //Чтобы не выполнилась ветвь - переход к след./часу
-                    m_tecView.currHour = true;
-                }
+            foreach (TecViewSOTIASSODay tecView in m_dictTecView.Values)
+                if (tecView.serverTime.Equals(DateTime.MinValue) == false)
+                    if ((tecView.m_curDate.Date.Equals(tecView.serverTime.Date) == true)
+                        && (tecView.lastHour.Equals(tecView.serverTime.Hour) == true))
+                        tecView.adminValuesReceived = false; //Чтобы не выполнилась ветвь - переход к след./часу
+                    else
+                        tecView.ChangeState();
                 else
-                {
-                    m_tecView.currHour = false;
-
-                    m_tecView.ChangeState();
-                }
-            else
                 // не выполнен НИ один успешный запрос к БД_значений
-                ;
-        }
-
-        public void panelManagement_OnEvtSetDatetimeHour(DateTime dtVal)
-        {
-            throw new NotImplementedException();
+                    ;
         }
         /// <summary>
         /// Обработчик события - все состояния 'ChangeState_SOTIASSO' обработаны
@@ -694,18 +668,33 @@ namespace Statistic
         /// <param name="hour">Номер часа в запросе</param>
         /// <param name="min">Номер минуты в звпросе</param>
         /// <returns>Признак результата выполнения функции</returns>
-        private int onEvtHandlerStatesCompleted(int hour, int min)
+        private int onEvtHandlerStatesCompleted(int iHour, int iMin)
         {
             int iRes = 0;
 
             return iRes;
         }
 
-        private void getColorZEDGraph(out Color colChart, out Color colP)
+        private void getColorZEDGraph(CONN_SETT_TYPE type, out Color colorChart, out Color colValue)
         {
+            FormGraphicsSettings.INDEX_COLOR indxBackGround = FormGraphicsSettings.INDEX_COLOR.COUNT_INDEX_COLOR
+                , indxChart = FormGraphicsSettings.INDEX_COLOR.COUNT_INDEX_COLOR;
+
             //Значения по умолчанию
-            colChart = FormMain.formGraphicsSettings.COLOR(FormGraphicsSettings.INDEX_COLOR.BG_SOTIASSO);
-            colP = FormMain.formGraphicsSettings.COLOR(FormGraphicsSettings.INDEX_COLOR.SOTIASSO);
+            switch (type) {
+                default:
+                case CONN_SETT_TYPE.DATA_AISKUE:
+                    indxBackGround = FormGraphicsSettings.INDEX_COLOR.BG_ASKUE;
+                    indxChart = FormGraphicsSettings.INDEX_COLOR.ASKUE;
+                    break;
+                case CONN_SETT_TYPE.DATA_SOTIASSO:
+                    indxBackGround = FormGraphicsSettings.INDEX_COLOR.BG_SOTIASSO;
+                    indxChart = FormGraphicsSettings.INDEX_COLOR.SOTIASSO;
+                    break;
+            }
+
+            colorChart = FormMain.formGraphicsSettings.COLOR(indxBackGround);
+            colValue = FormMain.formGraphicsSettings.COLOR(indxChart);
         }
         /// <summary>
         /// Текст (часть) заголовка для графической субобласти
@@ -726,9 +715,13 @@ namespace Statistic
         {
             Color colorChart = Color.Empty
                     , colorPCurve = Color.Empty;
-            getColorZEDGraph(out colorChart, out colorPCurve);
 
-            (m_zGraph_AIISKUE as ZedGraphControlSignalDayValues).Draw(m_tecView.m_valuesMins
+            getColorZEDGraph(CONN_SETT_TYPE.DATA_AISKUE, out colorChart, out colorPCurve);
+            (m_zGraph_AIISKUE as HZedGraphControl).Draw(m_dictTecView[CONN_SETT_TYPE.DATA_AISKUE].m_valuesHours
+                , textGraphCurDateTime
+                , colorChart, colorPCurve);
+            getColorZEDGraph(CONN_SETT_TYPE.DATA_SOTIASSO, out colorChart, out colorPCurve);
+            (m_zGraph_SOTIASSO as HZedGraphControl).Draw(m_dictTecView[CONN_SETT_TYPE.DATA_SOTIASSO].m_valuesHours
                 , textGraphCurDateTime
                 , colorChart, colorPCurve);
         }
@@ -744,6 +737,9 @@ namespace Statistic
 
             if (!(indxTEC < 0)
                 && (indxTEC < m_listTEC.Count)) {
+                //Инициализировать список ТЭЦ для 'TecView' - указать ТЭЦ в соответствии с указанным ранее индексом (0)
+                m_dictTecView[CONN_SETT_TYPE.DATA_AISKUE].InitTEC(new List<StatisticCommon.TEC>() { m_listTEC[indxTEC] }, m_markQueries);
+                m_dictTecView[CONN_SETT_TYPE.DATA_SOTIASSO].InitTEC(new List<StatisticCommon.TEC>() { m_listTEC[indxTEC] }, m_markQueries);
                 //Добавить строки(сигналы) на дочернюю панель(список АИИСКУЭ-сигналов)
                 m_panelManagement.InitializeAIISKUESignalList(listAIISKUESignalNameShr);
                 //Добавить строки(сигналы) на дочернюю панель(список СОТИАССО-сигналов)
