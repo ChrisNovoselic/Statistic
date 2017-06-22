@@ -2648,9 +2648,15 @@ namespace Statistic
         {
             ID_ADDING_TAB keyTab = ID_ADDING_TAB.SOTIASSO_DAY;
 
+            int iListenerConfigId = -1;
+
             if (m_dictAddingTabs[(int)keyTab].panel == null) {
-                m_dictAddingTabs[(int)keyTab].panel = new PanelSOTIASSODay(PanelKomDisp.m_list_tec);
+                iListenerConfigId = DbSources.Sources().Register(s_listFormConnectionSettings[(int)CONN_SETT_TYPE.CONFIG_DB].getConnSett(), false, @"CONFIG_DB");
+
+                m_dictAddingTabs[(int)keyTab].panel = new PanelSOTIASSODay(iListenerConfigId, PanelKomDisp.m_list_tec);
                 m_dictAddingTabs[(int)keyTab].panel.SetDelegateReport(ErrorReport, WarningReport, ActionReport, ReportClear);
+
+                DbSources.Sources().UnRegister(iListenerConfigId);
             } else
                 ;
 
