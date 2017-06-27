@@ -503,6 +503,10 @@ namespace Statistic
                 initializeLayoutStyleEvenly();
 
                 initializeComponent();
+
+                ComboBox ctrl = findControl(KEY_CONTROLS.CBX_TIMEZONE.ToString()) as ComboBox;
+                ctrl.Items.AddRange (new object []{ "UTC", "Москва", "Новосибирск" });
+                ctrl.SelectedIndex = 1;
             }
             /// <summary>
             /// Конструктор - вспомогательный (с параметрами)
@@ -543,18 +547,18 @@ namespace Statistic
                 (ctrl as DateTimePicker).DropDownAlign = LeftRightAlignment.Right;
                 (ctrl as DateTimePicker).Format = DateTimePickerFormat.Custom;
                 (ctrl as DateTimePicker).CustomFormat = "dd MMM, yyyy";
-                (ctrl as DateTimePicker).ValueChanged += new EventHandler(onCurDatetime_ValueChanged);
                 //Добавить к текущей панели календарь
                 this.Controls.Add(ctrl, 0, 0);
                 this.SetColumnSpan(ctrl, 3);
                 this.SetRowSpan(ctrl, 1);
                 // Обработчики событий
-                (ctrl as DateTimePicker).ValueChanged += new EventHandler(curDate_OnValueChanged);                
+                (ctrl as DateTimePicker).ValueChanged += new EventHandler(curDatetime_OnValueChanged);                
 
                 // список для выбора ТЭЦ
                 ctrl = new ComboBox();
                 ctrl.Name = KEY_CONTROLS.CBX_TEC_LIST.ToString();
                 ctrl.Dock = DockStyle.Fill;
+                (ctrl as ComboBox).DropDownStyle = ComboBoxStyle.DropDownList;
                 //Добавить к текущей панели список выбра ТЭЦ
                 this.Controls.Add(ctrl, 3, 0);
                 this.SetColumnSpan(ctrl, 3);
@@ -566,13 +570,14 @@ namespace Statistic
                 ctrl = new ComboBox();
                 ctrl.Name = KEY_CONTROLS.CBX_TIMEZONE.ToString();
                 ctrl.Dock = DockStyle.Fill;
+                (ctrl as ComboBox).DropDownStyle = ComboBoxStyle.DropDownList;
                 ctrl.Enabled = false;
                 //Добавить к текущей панели список для часовых поясов
                 this.Controls.Add(ctrl, 0, 1);
                 this.SetColumnSpan(ctrl, 3);
                 this.SetRowSpan(ctrl, 1);
                 //// Обработчики событий
-                //(ctrl as ComboBox).SelectedIndexChanged += new EventHandler(cbxTimezone_OnSelectedIndexChanged);
+                (ctrl as ComboBox).SelectedIndexChanged += new EventHandler(cbxTimezone_OnSelectedIndexChanged);
 
                 // кнопка для инициирования экспорта
                 ctrl = new Button();
@@ -658,11 +663,6 @@ namespace Statistic
                 EvtSignal?.Invoke(CONN_SETT_TYPE.DATA_SOTIASSO, ActionSignal.SELECT, (sender as CheckedListBox).SelectedIndex);
             }
 
-            private void curDate_OnValueChanged(object sender, EventArgs e)
-            {
-                throw new NotImplementedException();
-            }
-
             /// <summary>
             /// Обработчик события - дескриптор элемента управления создан
             /// </summary>
@@ -724,8 +724,9 @@ namespace Statistic
                         , Logging.INDEX_MESSAGE.NOT_SET);
             }
 
-            private void onCurDatetime_ValueChanged(object obj, EventArgs ev)
+            private void curDatetime_OnValueChanged(object obj, EventArgs ev)
             {
+                EvtDateTimeChanged?.Invoke(CurDateTime);
             }
 
             public void SetTECList(IEnumerable<TEC> listTEC)
@@ -745,6 +746,10 @@ namespace Statistic
             private void cbxTECList_OnSelectionIndexChanged(object obj, EventArgs ev)
             {
                 EvtTECListSelectionIndexChanged(Convert.ToInt32(((this.Controls.Find(KEY_CONTROLS.CBX_TEC_LIST.ToString(), true))[0] as ComboBox).SelectedIndex));
+            }
+
+            private void cbxTimezone_OnSelectedIndexChanged(object obj, EventArgs ev)
+            {
             }
 
             private void onAIISKUESignal_ItemCheck(object obj, ItemCheckEventArgs ev)
