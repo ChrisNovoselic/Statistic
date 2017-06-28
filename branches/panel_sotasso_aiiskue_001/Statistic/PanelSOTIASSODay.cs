@@ -12,6 +12,7 @@ using ZedGraph;
 using HClassLibrary;
 using StatisticCommon;
 using System.Linq;
+using System.Data.Common;
 
 namespace Statistic
 {
@@ -74,7 +75,19 @@ namespace Statistic
 
             private int _current_id_tec;
 
-            private Dictionary<CONN_SETT_TYPE, IEnumerable<ConnectionSettings>> m_dictConnSett;
+            //private int IndexDbSource {
+            //    get
+            //    {
+            //        return _current_type == CONN_SETT_TYPE.UNKNOWN ? -1
+            //            : _types.ToList().IndexOf(_current_type);
+            //    }
+            //}
+            /// <summary>
+            /// Словарь с параметрами соединения с БД
+            ///  для всех типов источников данных (АИИСКУЭ, СОТИАССО)
+            ///  для всех ТЭЦ из списка в аргументе конструктора
+            /// </summary>
+            private Dictionary<int, Dictionary<CONN_SETT_TYPE, ConnectionSettings>> m_dictConnSett;
             /// <summary>
             /// Структура для хранения значения
             /// </summary>
@@ -94,29 +107,114 @@ namespace Statistic
                 public short quality;
             }
 
-            public struct VALUES
+            public /*struct*/ class VALUES
             {
                 public DateTime serverTime;
 
                 public IEnumerable<VALUE> m_valuesHours;
+
+                //public void SetServerTime(DateTime serverTime)
+                //{
+                //    this.serverTime = serverTime;
+                //}
             }
             /// <summary>
-            /// Конструктор - основной (без аргументов)
+            /// Конструктор - основной (с аргументами)
             /// </summary>
-            /// <param name="type"></param>
+            /// <param name="iListenerConfigDbId">Идентификатор установленного соединения с БД конфигурации</param>
+            /// <param name="listTEC">Список ТЭЦ</param>
             public HandlerDbSignalValue(int iListenerConfigDbId, IEnumerable<TEC> listTEC)
                 : base()
             {
+                int err = -1
+                    , id_tec = -1
+                    , id_source = -1;
+                DbConnection dbConn;
+
                 _current_type = CONN_SETT_TYPE.UNKNOWN;
 
                 _current_id_tec = -1;
+
+                m_dictConnSett = new Dictionary<int, Dictionary<CONN_SETT_TYPE, ConnectionSettings>>();
+                // в ~ от списка ТЭЦ инициализация словаря с параметрами соединения с БД
+                dbConn = DbSources.Sources().GetConnection(iListenerConfigDbId, out err);
+
+                if (err == 0)
+                    foreach (TEC tec in listTEC) {
+                        id_tec = tec.m_id;
+
+                        if (m_dictConnSett.ContainsKey(id_tec) == false)
+                            m_dictConnSett.Add(id_tec, new Dictionary<CONN_SETT_TYPE, ConnectionSettings>());
+                        else
+                            ;
+
+                        foreach (CONN_SETT_TYPE type in _types) {
+                            id_source = id_tec * 10
+                                + (type == CONN_SETT_TYPE.DATA_AISKUE ? 1
+                                    : type == CONN_SETT_TYPE.DATA_SOTIASSO ? 2
+                                        : -1); //??? "-1" - ошибка
+
+                            if (m_dictConnSett[id_tec].ContainsKey(type) == false) {
+                                m_dictConnSett[id_tec].Add(type
+                                    , new ConnectionSettings(InitTECBase.getConnSettingsOfIdSource(iListenerConfigDbId, id_source, -1, out err)?.Rows[0], -1));
+
+                                if (!(err == 0)) {
+                                    Logging.Logg().Error(string.Format(@"HandlerDbSignalValue::ctor () - ошибка инициализации источника данных {0} для ТЭЦ.ID={1}, идентификатор источника данных={2}..."
+                                            , type, tec.m_id, id_source)
+                                        , Logging.INDEX_MESSAGE.NOT_SET);
+
+                                    err = 0;
+                                } else
+                                    ;
+                            } else
+                                ;
+                        }
+                    }
+                else
+                    throw new Exception(string.Format(@"HandlerDbSignalValue::ctor () - ошибка при получения объекта с соединением с БД конфигурации по идентификатору в аргументе..."));
+                //// на этапе отладки (без БД конфигурации)
+                //m_dictConnSett = new Dictionary<CONN_SETT_TYPE, Dictionary<int, ConnectionSettings>> {
+                //    { CONN_SETT_TYPE.DATA_AISKUE, new Dictionary<int, ConnectionSettings>() {
+                //            { 1, new ConnectionSettings() }
+                //            , { 2, new ConnectionSettings() }
+                //            , { 3, new ConnectionSettings() }
+                //            , { 4, new ConnectionSettings() }
+                //            , { 5, new ConnectionSettings() }
+                //        }
+                //    }
+                //    , { CONN_SETT_TYPE.DATA_SOTIASSO, new Dictionary<int, ConnectionSettings>() {
+                //            { 1, new ConnectionSettings() }
+                //            , { 2, new ConnectionSettings() }
+                //            , { 3, new ConnectionSettings() }
+                //            , { 4, new ConnectionSettings() }
+                //            , { 5, new ConnectionSettings() }
+                //        }
+                //    }
+                //};
+
+                Values = new DictionaryValues();
+                _dictSignals = new Dictionary<CONN_SETT_TYPE, IEnumerable<SIGNAL>>();
+                foreach (CONN_SETT_TYPE type in _types) {
+                    Values.Add(type, new VALUES());
+
+                    _dictSignals.Add(type, new List<SIGNAL>());
+                }                
             }
 
-            public Dictionary<CONN_SETT_TYPE, VALUES> Values;
+            public class DictionaryValues : Dictionary<CONN_SETT_TYPE, VALUES>
+            {
+                //public void SetServerTime(CONN_SETT_TYPE type, DateTime serverTime)
+                //{
+                //    this[type].SetServerTime(serverTime);
+                //}
+            }
+
+            public DictionaryValues Values;
 
             public IntDelegateIntIntFunc UpdateGUI_Fact;
 
             private Dictionary<CONN_SETT_TYPE, IEnumerable<SIGNAL>> _dictSignals;
+            public Dictionary<CONN_SETT_TYPE, IEnumerable<SIGNAL>> Signals { get { return _dictSignals; } }
             /// <summary>
             /// Перечень сигналов для текущей ТЭЦ
             /// </summary>
@@ -132,52 +230,103 @@ namespace Statistic
             {
                 if (!(_current_id_tec == id)) {
                     _current_id_tec = id;
-                    _current_type = CONN_SETT_TYPE.DATA_AISKUE;
 
-                    AddState((int)StatesMachine.SERVER_TIME);
-                    AddState((int)StatesMachine.LIST_SIGNAL);
+                    ClearValues();
 
-                    Run(string.Format(@"HandlerDbSignalValue::InitTEC (id_tec={0}, type={1}) - ...", _current_id_tec, _current_type));
+                    //Поток запроса значений для 
+                    new Thread(new ParameterizedThreadStart((param) => {
+                        int indxEv = -1;
+                        // чтобы в 1-ый проход "пройти" WaitHandle.WaitAny и перейти к выполнению запроса
+                        ((AutoResetEvent)m_waitHandleState[(int)INDEX_WAITHANDLE_REASON.SUCCESS]).Set();
+
+                        for (INDEX_WAITHANDLE_REASON i = INDEX_WAITHANDLE_REASON.ERROR; i < INDEX_WAITHANDLE_REASON.COUNT_INDEX_WAITHANDLE_REASON; i++)
+                            ((ManualResetEvent)m_waitHandleState[(int)i]).Reset();
+
+                        foreach (CONN_SETT_TYPE type in _types) {
+                            indxEv = WaitHandle.WaitAny(m_waitHandleState);
+                            if (indxEv == (int)INDEX_WAITHANDLE_REASON.BREAK)
+                            // прекратить выполнение досрочно
+                                break;
+                            else {
+                                if (!(indxEv == (int)INDEX_WAITHANDLE_REASON.SUCCESS))
+                                // в сигнальное состояние установлен отличный от BREAK, SUCCESS объект синхронизации
+                                    // восстановить его состояние для очередной итерации
+                                    ((ManualResetEvent)m_waitHandleState[indxEv]).Reset();
+                                else
+                                    ;
+
+                                ClearStates();
+
+                                _current_type = type;
+
+                                getListSignals(); //getvalues();
+                            }
+                        }
+                    })).Start();
                 } else
                     ;
             }
-
+            /// <summary>
+            /// Отправить запрос на получение значений сигналов АИИСКУЭ, СОТИАССО
+            /// </summary>
             public void Request()
             {
-                _current_type = CONN_SETT_TYPE.DATA_AISKUE;
+                //ClearValues();
+                //ClearStates();                
 
-                AddState((int)StatesMachine.SERVER_TIME);
-                AddState((int)StatesMachine.VALUES);
+                //new Thread(new ParameterizedThreadStart(threadGetValues)).Start(getValues);
+            }
 
-                Run(string.Format(@"HandlerDbSignalValue::Request (id_tec={0}, type={1}) - ...", _current_id_tec, _current_type));
+            public override void Start()
+            {
+                base.Start();
+
+                StartDbInterfaces();
+            }
+
+            //public override void Stop()
+            //{
+            //    StopDbInterfaces();
+
+            //    base.Stop();
+            //}
+
+            public override bool Activate(bool active)
+            {
+                bool bRes = base.Activate(active);
+
+                if ((bRes == true)
+                    && (IsFirstActivated == true))
+                    ;
+                else
+                    ;
+
+                return bRes;
             }
             /// <summary>
             /// Очистить полученные ранее значения
             /// </summary>
             public override void ClearValues()
             {
-                throw new NotImplementedException();
+                Signals[_current_type].ToList().Clear();
             }
             /// <summary>
             /// Установить/зарегистрировать соединения с необходимыми источниками данных
             /// </summary>
             public override void StartDbInterfaces()
             {
-                int i = 1
-                    , j = -1;
-                ConnectionSettings connSett;
-
-                foreach (KeyValuePair<CONN_SETT_TYPE, IEnumerable<ConnectionSettings>> pair in m_dictConnSett) {
-                    for (j = 0; j < pair.Value.Count(); j ++) {
+                foreach (KeyValuePair<int, Dictionary<CONN_SETT_TYPE, ConnectionSettings>> pair in m_dictConnSett) {
+                    foreach (CONN_SETT_TYPE type in pair.Value.Keys) {
                         if (m_dictIdListeners.ContainsKey((int)pair.Key) == false) {
-                            m_dictIdListeners.Add((int)pair.Key, new int[pair.Value.Count()]);
+                            m_dictIdListeners.Add((int)pair.Key, new int[(int)_types.Max() + 1]);
 
-                            m_dictIdListeners[(int)pair.Key].ToList().ForEach(item => { item = -1; });
+                            for (int j = 0; j < m_dictIdListeners[(int)pair.Key].Length; j++)
+                                m_dictIdListeners[(int)pair.Key][j] = -1;
+                                //m_dictIdListeners[(int)pair.Key].SetValue(-1, ...);
                         } else
                             ;
 
-                        connSett = pair.Value.ElementAt(j);
-                        register((int)pair.Key, j, connSett, connSett.name);
+                        register((int)pair.Key, (int)type, pair.Value[type], pair.Value[type].name);
                     }
                 }
             }
@@ -215,52 +364,79 @@ namespace Statistic
             /// <returns>Признак выполнения функции-обработчика возникновения ошибки</returns>
             protected override INDEX_WAITHANDLE_REASON StateErrors(int state, int req, int res)
             {
-                errorReport(string.Format(@"HandlerDbStateValue::StateWarnings(type={0}) - state={1} ...", _current_type, (StatesMachine)state));
+                errorReport(string.Format(@"HandlerDbStateValue::StateErrors(type={0}) - state={1} ...", _current_type, (StatesMachine)state));
 
                 return INDEX_WAITHANDLE_REASON.ERROR;
             }
 
             protected override int StateRequest(int state)
             {
-                INDEX_WAITHANDLE_REASON indxReasonRes = INDEX_WAITHANDLE_REASON.SUCCESS;
+                INDEX_WAITHANDLE_REASON indxReasonRes =
+                    //!(IndexDbSource < 0)
+                    !(_current_type == CONN_SETT_TYPE.UNKNOWN)
+                        ? INDEX_WAITHANDLE_REASON.SUCCESS : INDEX_WAITHANDLE_REASON.ERROR;
 
+                string query = string.Empty;
+
+                //actionReport(string.Format(@"HandlerDbStateValue::StateRequest(type={0}) - state={1}, IndexDbSource={2} ...", _current_type, (StatesMachine)state, IndexDbSource));
                 actionReport(string.Format(@"HandlerDbStateValue::StateRequest(type={0}) - state={1} ...", _current_type, (StatesMachine)state));
 
-                switch ((StatesMachine)state) {
-                    case StatesMachine.SERVER_TIME:
-                        break;
-                    case StatesMachine.LIST_SIGNAL:
-                        break;
-                    case StatesMachine.VALUES:
-                        break;
-                    default:
-                        break;
-                }
+                if (indxReasonRes == INDEX_WAITHANDLE_REASON.SUCCESS)
+                    switch ((StatesMachine)state) {
+                        case StatesMachine.SERVER_TIME:
+                            GetCurrentTimeRequest(DbInterface.DB_TSQL_INTERFACE_TYPE.MSSQL, m_dictIdListeners[_current_id_tec][(int)_current_type]);
+                            break;
+                        case StatesMachine.LIST_SIGNAL:
+                            if (string.IsNullOrEmpty(query = getListSignalRequest()) == false)
+                                Request(m_dictIdListeners[_current_id_tec][(int)_current_type], query);
+                            else
+                                indxReasonRes = INDEX_WAITHANDLE_REASON.ERROR;
+                            break;
+                        case StatesMachine.VALUES:
+                            break;
+                        default:
+                            break;
+                    }
+                else
+                    ;
 
                 return (int)indxReasonRes;
             }
 
             protected override int StateResponse(int state, object obj)
             {
-                INDEX_WAITHANDLE_REASON indxReasonRes = INDEX_WAITHANDLE_REASON.SUCCESS;
+                INDEX_WAITHANDLE_REASON indxReasonRes = !(_current_type == CONN_SETT_TYPE.UNKNOWN) ? INDEX_WAITHANDLE_REASON.SUCCESS : INDEX_WAITHANDLE_REASON.ERROR;
 
-                //actionReport(string.Format(@"HandlerDbStateValue::StateResponse(type={0}) - state={1} ...", _type, (StatesMachine)state));
+                DataTable tableResponse = null;
 
-                switch ((StatesMachine)state) {
-                    case StatesMachine.SERVER_TIME:
-                        break;
-                    case StatesMachine.LIST_SIGNAL:
-                        break;
-                    case StatesMachine.VALUES:
-                        break;
-                    default:
-                        break;
-                }
+                //actionReport(string.Format(@"HandlerDbStateValue::StateResponse(type={0}) - state={1}, IndexDbSource={2} ...", _current_type, (StatesMachine)state, IndexDbSource));
 
-                if (isLastState(state)) {
-                    UpdateGUI_Fact?.Invoke(-1, -1);
+                if (indxReasonRes == INDEX_WAITHANDLE_REASON.SUCCESS) {
+                    tableResponse = obj as DataTable;
 
-                    (m_waitHandleState[(int)INDEX_WAITHANDLE_REASON.SUCCESS] as ManualResetEvent).Set();
+                    switch ((StatesMachine)state) {
+                        case StatesMachine.SERVER_TIME:
+                            //Values.SetServerTime(_current_type, (DateTime)tableResponse.Rows[0][0]);
+                            Values[_current_type].serverTime = (DateTime)tableResponse.Rows[0][0];
+                            break;
+                        case StatesMachine.LIST_SIGNAL:
+                            getListSignalResponse(tableResponse);
+                            Logging.Logg().Debug(string.Format(@"::StateResponse () - [id_tec={0}, type={1}] получено строк={2}"
+                                    , _current_id_tec, _current_type, tableResponse.Rows.Count)
+                                , Logging.INDEX_MESSAGE.NOT_SET);
+                            break;
+                        case StatesMachine.VALUES:
+                            break;
+                        default:
+                            break;
+                    }
+                } else
+                    ;
+
+                if (isLastState(state) == true) {
+                    UpdateGUI_Fact?.Invoke((int)_current_type, tableResponse.Rows.Count);
+
+                    (m_waitHandleState[(int)INDEX_WAITHANDLE_REASON.SUCCESS] as AutoResetEvent).Set();
 
                     ReportClear(true);
                 } else
@@ -273,7 +449,10 @@ namespace Statistic
             {
                 warningReport(string.Format(@"HandlerDbStateValue::StateWarnings(type={0}) - state={1} ...", _current_type, (StatesMachine)state));
             }
-
+            /// <summary>
+            /// Инициализация дополнительных объектов синхронизации
+            ///  для возможности последовательных запросов АИИСКУЭ, СОТИАССО
+            /// </summary>
             protected override void InitializeSyncState()
             {
                 m_waitHandleState = new WaitHandle[(int)INDEX_WAITHANDLE_REASON.COUNT_INDEX_WAITHANDLE_REASON];
@@ -283,8 +462,44 @@ namespace Statistic
                     m_waitHandleState[i] = new ManualResetEvent(false);
                 }
             }
-        }
 
+            private void getListSignals()
+            {
+                AddState((int)StatesMachine.SERVER_TIME);
+                AddState((int)StatesMachine.LIST_SIGNAL);
+
+                Run(string.Format(@"HandlerDbSignalValue::getListSignals (id_tec={0}, type={1}) - ...", _current_id_tec, _current_type));
+            }
+
+            private string getListSignalRequest()
+            {
+                return _current_type == CONN_SETT_TYPE.DATA_AISKUE ? string.Format(@"SELECT * FROM [{0}]", "SENSORS")
+                    : _current_type == CONN_SETT_TYPE.DATA_SOTIASSO ? string.Format(@"SELECT * FROM [{0}] WHERE [{1}] LIKE '{2}'", "reals_v", "DESCRIPTION", "%Сум%")
+                        : string.Empty;
+            }
+
+            private void getListSignalResponse(DataTable tableSignals)
+            {
+                foreach (DataRow r in tableSignals.Rows)
+                    switch (_current_type) {
+                        case CONN_SETT_TYPE.DATA_AISKUE:
+                            Signals[_current_id_tec].
+                            break;
+                        case CONN_SETT_TYPE.DATA_SOTIASSO:
+                            break;
+                        default:
+                            break;
+                    }
+            }
+
+            private void getValues()
+            {
+                AddState((int)StatesMachine.SERVER_TIME);
+                //AddState((int)StatesMachine.VALUES);
+
+                Run(string.Format(@"HandlerDbSignalValue::getValues (id_tec={0}, type={1}) - ...", _current_id_tec, _current_type));
+            }
+        }
         /// <summary>
         /// Перечисление - целочисленные идентификаторы дочерних элементов управления
         /// </summary>
@@ -340,13 +555,8 @@ namespace Statistic
         public PanelSOTIASSODay(int iListenerConfigId, List<StatisticCommon.TEC> listTec)
             : base()
         {
-            // фильтр ТЭЦ-ЛК
-            m_listTEC = new List<TEC>();
-            foreach (TEC tec in listTec)
-                if (!(tec.m_id > (int)TECComponent.ID.LK))
-                    m_listTEC.Add(tec);
-                else
-                    ;
+            // фильтр ТЭЦ
+            m_listTEC = listTec.FindAll(tec => { return (tec.Type == TEC.TEC_TYPE.COMMON) && (tec.m_id < (int)TECComponent.ID.LK); });
 
             if (m_listTEC.Count > 0) {
                 //Создать объект обработки запросов - установить первоначальные индексы для ТЭЦ, компонента
@@ -362,7 +572,7 @@ namespace Statistic
             initializeComponent();
 
             #region Дополнительная инициализация панели управления
-            m_panelManagement.SetTECList(listTec);
+            m_panelManagement.SetTECList(m_listTEC);
             m_panelManagement.EvtTECListSelectionIndexChanged += new Action<int>(panelManagement_TECListOnSelectionChanged);
             m_panelManagement.EvtDateTimeChanged += new DelegateDateFunc(panelManagement_OnEvtDateTimeChanged);
             m_panelManagement.EvtSignal += new Action<CONN_SETT_TYPE, ActionSignal, int>(panelManagement_OnEvtSignalItemChecked);
