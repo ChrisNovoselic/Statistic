@@ -1,4 +1,5 @@
 ﻿using System;
+using System.Collections;
 using System.Collections.Generic;
 using System.Runtime.InteropServices;
 using System.Windows.Forms;
@@ -44,10 +45,16 @@ namespace Statistic
         /// </summary>
         private enum ActionSignal { SELECT, CHECK }
         /// <summary>
+        /// Перечисление - возможные изменения даты/времени, часового пояса
+        /// </summary>
+        [Flags]
+        private enum ActionDateTime { UNKNOWN = 0, VALUE = 0x1, TIMEZONE = 0x2 }
+        /// <summary>
         /// Структура для описания сигнала
         /// </summary>
         private struct SIGNAL
         {
+            public int id;
             /// <summary>
             /// Уникальный строковый идентификатор сигнала
             ///  , для АИИСКУЭ - формируется динамически по правилу [PREFIX_TEC]#OBJECT[идентификатор_УСПД]_ITEM[номер_канала_в_УСПД]
@@ -71,17 +78,47 @@ namespace Statistic
         {
             private IEnumerable<CONN_SETT_TYPE> _types = new List<CONN_SETT_TYPE>() { CONN_SETT_TYPE.DATA_AISKUE, CONN_SETT_TYPE.DATA_SOTIASSO };
 
-            private CONN_SETT_TYPE _current_type;
+            private struct KEY
+            {
+                public int _current_id_tec;
 
-            private int _current_id_tec;
+                public CONN_SETT_TYPE _current_type;
 
-            //private int IndexDbSource {
-            //    get
-            //    {
-            //        return _current_type == CONN_SETT_TYPE.UNKNOWN ? -1
-            //            : _types.ToList().IndexOf(_current_type);
-            //    }
-            //}
+                public int _current_index;
+            }
+
+            private static KEY _key = new KEY() { _current_id_tec = -1, _current_type = CONN_SETT_TYPE.UNKNOWN, _current_index = -1 };
+
+            public struct USER_DATE
+            {
+                public int UTC_OFFSET;
+
+                public DateTime Value;
+            }
+
+            private USER_DATE _userDate;
+            public USER_DATE UserDate
+            {
+                get { return _userDate; }
+
+                set {
+                    // при 1-ом присваивании значения - опрос не выполняется
+                    bool bRequest = false;
+
+                    if (_userDate.Equals(value) == false) {
+                        // проверить 1-ая установка значения? Или повторная
+                        bRequest = _userDate.Equals(DateTime.MinValue) == true;
+
+                        _userDate = value;
+
+                        if (bRequest == true)
+                            Request();
+                        else
+                            ;
+                    } else
+                        ;
+                }
+            }
             /// <summary>
             /// Словарь с параметрами соединения с БД
             ///  для всех типов источников данных (АИИСКУЭ, СОТИАССО)
@@ -98,6 +135,10 @@ namespace Statistic
                 /// </summary>
                 public DateTime stamp;
                 /// <summary>
+                /// Индекс 30-ти мин интервала
+                /// </summary>
+                public int index_stamp;
+                /// <summary>
                 /// Значение
                 /// </summary>
                 public float value;
@@ -111,7 +152,7 @@ namespace Statistic
             {
                 public DateTime serverTime;
 
-                public IEnumerable<VALUE> m_valuesHours;
+                public IList<VALUE> m_valuesHours;
 
                 //public void SetServerTime(DateTime serverTime)
                 //{
@@ -131,9 +172,8 @@ namespace Statistic
                     , id_source = -1;
                 DbConnection dbConn;
 
-                _current_type = CONN_SETT_TYPE.UNKNOWN;
-
-                _current_id_tec = -1;
+                _key._current_type = CONN_SETT_TYPE.UNKNOWN;
+                _key._current_id_tec = -1;
 
                 m_dictConnSett = new Dictionary<int, Dictionary<CONN_SETT_TYPE, ConnectionSettings>>();
                 // в ~ от списка ТЭЦ инициализация словаря с параметрами соединения с БД
@@ -169,8 +209,7 @@ namespace Statistic
                             } else
                                 ;
                         }
-                    }
-                else
+                    } else
                     throw new Exception(string.Format(@"HandlerDbSignalValue::ctor () - ошибка при получения объекта с соединением с БД конфигурации по идентификатору в аргументе..."));
                 //// на этапе отладки (без БД конфигурации)
                 //m_dictConnSett = new Dictionary<CONN_SETT_TYPE, Dictionary<int, ConnectionSettings>> {
@@ -192,29 +231,36 @@ namespace Statistic
                 //    }
                 //};
 
-                Values = new DictionaryValues();
-                _dictSignals = new Dictionary<CONN_SETT_TYPE, IEnumerable<SIGNAL>>();
+                request_handlers = new Dictionary<StatesMachine, Func<string>>() { { StatesMachine.LIST_SIGNAL, getListSignalRequest }, { StatesMachine.VALUES, getValuesRequest } };
+                response_handlers = new Dictionary<StatesMachine, Func<DataTable, bool>>() { { StatesMachine.LIST_SIGNAL, getListSignalResponse }, { StatesMachine.VALUES, getValuesResponse } };
+
+                Values = new /*DictionaryValues*/Dictionary<CONN_SETT_TYPE, VALUES>();
+                _dictSignals = new Dictionary<CONN_SETT_TYPE, IList<SIGNAL>>();
                 foreach (CONN_SETT_TYPE type in _types) {
-                    Values.Add(type, new VALUES());
+                    Values.Add(type, new VALUES() { serverTime = DateTime.MinValue, m_valuesHours = new List<VALUE>() });
 
                     _dictSignals.Add(type, new List<SIGNAL>());
-                }                
+                }
             }
 
-            public class DictionaryValues : Dictionary<CONN_SETT_TYPE, VALUES>
-            {
-                //public void SetServerTime(CONN_SETT_TYPE type, DateTime serverTime)
-                //{
-                //    this[type].SetServerTime(serverTime);
-                //}
-            }
+            private static Dictionary<StatesMachine, Func<string>> request_handlers;
 
-            public DictionaryValues Values;
+            private static Dictionary<StatesMachine, Func<DataTable, bool>> response_handlers;
+
+            //public class DictionaryValues : Dictionary<CONN_SETT_TYPE, VALUES>
+            //{
+            //    //public void SetServerTime(CONN_SETT_TYPE type, DateTime serverTime)
+            //    //{
+            //    //    this[type].SetServerTime(serverTime);
+            //    //}
+            //}
+
+            public /*DictionaryValues*/Dictionary<CONN_SETT_TYPE, VALUES> Values;
 
             public IntDelegateIntIntFunc UpdateGUI_Fact;
 
-            private Dictionary<CONN_SETT_TYPE, IEnumerable<SIGNAL>> _dictSignals;
-            public Dictionary<CONN_SETT_TYPE, IEnumerable<SIGNAL>> Signals { get { return _dictSignals; } }
+            private Dictionary<CONN_SETT_TYPE, IList<SIGNAL>> _dictSignals;
+            public Dictionary<CONN_SETT_TYPE, IList<SIGNAL>> Signals { get { return _dictSignals; } }
             /// <summary>
             /// Перечень сигналов для текущей ТЭЦ
             /// </summary>
@@ -228,8 +274,8 @@ namespace Statistic
             /// <param name="id">Идентификатор ТЭЦ</param>
             public void InitTEC(int id)
             {
-                if (!(_current_id_tec == id)) {
-                    _current_id_tec = id;
+                if (!(_key._current_id_tec == id)) {
+                    _key._current_id_tec = id;
 
                     ClearValues();
 
@@ -245,11 +291,11 @@ namespace Statistic
                         foreach (CONN_SETT_TYPE type in _types) {
                             indxEv = WaitHandle.WaitAny(m_waitHandleState);
                             if (indxEv == (int)INDEX_WAITHANDLE_REASON.BREAK)
-                            // прекратить выполнение досрочно
+                                // прекратить выполнение досрочно
                                 break;
                             else {
                                 if (!(indxEv == (int)INDEX_WAITHANDLE_REASON.SUCCESS))
-                                // в сигнальное состояние установлен отличный от BREAK, SUCCESS объект синхронизации
+                                    // в сигнальное состояние установлен отличный от BREAK, SUCCESS объект синхронизации
                                     // восстановить его состояние для очередной итерации
                                     ((ManualResetEvent)m_waitHandleState[indxEv]).Reset();
                                 else
@@ -257,7 +303,7 @@ namespace Statistic
 
                                 ClearStates();
 
-                                _current_type = type;
+                                _key._current_type = type;
 
                                 getListSignals(); //getvalues();
                             }
@@ -266,15 +312,31 @@ namespace Statistic
                 } else
                     ;
             }
+
+            public void Request()
+            {
+
+            }
             /// <summary>
             /// Отправить запрос на получение значений сигналов АИИСКУЭ, СОТИАССО
             /// </summary>
-            public void Request()
+            public void Request(CONN_SETT_TYPE type, int indx)
             {
-                //ClearValues();
-                //ClearStates();                
+                clearValues(type, false);
+                ClearStates();
 
-                //new Thread(new ParameterizedThreadStart(threadGetValues)).Start(getValues);
+                _key._current_type = type;
+                _key._current_index = indx;
+
+                getValues();
+            }
+
+            private void getValues()
+            {
+                AddState((int)StatesMachine.SERVER_TIME);
+                AddState((int)StatesMachine.VALUES);
+
+                Run(string.Format(@"HandlerDbSignalValues::GetValues (type={0}, indx={1}) - KKS_CODE={2}...", _key._current_type, _key._current_index, Signals[_key._current_type].ElementAt(_key._current_index).kks_code));
             }
 
             public override void Start()
@@ -308,7 +370,19 @@ namespace Statistic
             /// </summary>
             public override void ClearValues()
             {
-                Signals[_current_type].ToList().Clear();
+                foreach (CONN_SETT_TYPE type in _types)
+                    clearValues(type, true);
+            }
+
+            private void clearValues(CONN_SETT_TYPE type, bool bIsSignalClear)
+            {
+                Values[type].serverTime = DateTime.MinValue;
+                Values[type].m_valuesHours.Clear();
+
+                if (bIsSignalClear == true)
+                    _dictSignals[type].Clear();
+                else
+                    ;
             }
             /// <summary>
             /// Установить/зарегистрировать соединения с необходимыми источниками данных
@@ -322,7 +396,7 @@ namespace Statistic
 
                             for (int j = 0; j < m_dictIdListeners[(int)pair.Key].Length; j++)
                                 m_dictIdListeners[(int)pair.Key][j] = -1;
-                                //m_dictIdListeners[(int)pair.Key].SetValue(-1, ...);
+                            //m_dictIdListeners[(int)pair.Key].SetValue(-1, ...);
                         } else
                             ;
 
@@ -364,7 +438,7 @@ namespace Statistic
             /// <returns>Признак выполнения функции-обработчика возникновения ошибки</returns>
             protected override INDEX_WAITHANDLE_REASON StateErrors(int state, int req, int res)
             {
-                errorReport(string.Format(@"HandlerDbStateValue::StateErrors(type={0}) - state={1} ...", _current_type, (StatesMachine)state));
+                errorReport(string.Format(@"HandlerDbStateValue::StateErrors(type={0}) - state={1} ...", _key._current_type, (StatesMachine)state));
 
                 return INDEX_WAITHANDLE_REASON.ERROR;
             }
@@ -373,31 +447,32 @@ namespace Statistic
             {
                 INDEX_WAITHANDLE_REASON indxReasonRes =
                     //!(IndexDbSource < 0)
-                    !(_current_type == CONN_SETT_TYPE.UNKNOWN)
+                    !(_key._current_type == CONN_SETT_TYPE.UNKNOWN)
                         ? INDEX_WAITHANDLE_REASON.SUCCESS : INDEX_WAITHANDLE_REASON.ERROR;
 
                 string query = string.Empty;
 
-                //actionReport(string.Format(@"HandlerDbStateValue::StateRequest(type={0}) - state={1}, IndexDbSource={2} ...", _current_type, (StatesMachine)state, IndexDbSource));
-                actionReport(string.Format(@"HandlerDbStateValue::StateRequest(type={0}) - state={1} ...", _current_type, (StatesMachine)state));
+                //actionReport(string.Format(@"HandlerDbStateValue::StateRequest(type={0}) - state={1}, IndexDbSource={2} ...", _key._current_type, (StatesMachine)state, IndexDbSource));
+                actionReport(string.Format(@"HandlerDbStateValue::StateRequest(type={0}) - state={1} ...", _key._current_type, (StatesMachine)state));
 
                 if (indxReasonRes == INDEX_WAITHANDLE_REASON.SUCCESS)
                     switch ((StatesMachine)state) {
                         case StatesMachine.SERVER_TIME:
-                            GetCurrentTimeRequest(DbInterface.DB_TSQL_INTERFACE_TYPE.MSSQL, m_dictIdListeners[_current_id_tec][(int)_current_type]);
+                            GetCurrentTimeRequest(DbInterface.DB_TSQL_INTERFACE_TYPE.MSSQL, m_dictIdListeners[_key._current_id_tec][(int)_key._current_type]);
                             break;
                         case StatesMachine.LIST_SIGNAL:
-                            if (string.IsNullOrEmpty(query = getListSignalRequest()) == false)
-                                Request(m_dictIdListeners[_current_id_tec][(int)_current_type], query);
-                            else
-                                indxReasonRes = INDEX_WAITHANDLE_REASON.ERROR;
-                            break;
                         case StatesMachine.VALUES:
+                            indxReasonRes = (string.IsNullOrEmpty(query = request_handlers[(StatesMachine)state]()) == false)
+                                ? INDEX_WAITHANDLE_REASON.SUCCESS : INDEX_WAITHANDLE_REASON.ERROR;
+
+                            if (indxReasonRes == INDEX_WAITHANDLE_REASON.SUCCESS)
+                                Request(m_dictIdListeners[_key._current_id_tec][(int)_key._current_type], query);
+                            else
+                                ;
                             break;
                         default:
                             break;
-                    }
-                else
+                    } else
                     ;
 
                 return (int)indxReasonRes;
@@ -405,27 +480,31 @@ namespace Statistic
 
             protected override int StateResponse(int state, object obj)
             {
-                INDEX_WAITHANDLE_REASON indxReasonRes = !(_current_type == CONN_SETT_TYPE.UNKNOWN) ? INDEX_WAITHANDLE_REASON.SUCCESS : INDEX_WAITHANDLE_REASON.ERROR;
+                INDEX_WAITHANDLE_REASON indxReasonRes = !(_key._current_type == CONN_SETT_TYPE.UNKNOWN) ? INDEX_WAITHANDLE_REASON.SUCCESS : INDEX_WAITHANDLE_REASON.ERROR;
 
                 DataTable tableResponse = null;
 
-                //actionReport(string.Format(@"HandlerDbStateValue::StateResponse(type={0}) - state={1}, IndexDbSource={2} ...", _current_type, (StatesMachine)state, IndexDbSource));
+                //actionReport(string.Format(@"HandlerDbStateValue::StateResponse(type={0}) - state={1}, IndexDbSource={2} ...", _key._current_type, (StatesMachine)state, IndexDbSource));
 
                 if (indxReasonRes == INDEX_WAITHANDLE_REASON.SUCCESS) {
                     tableResponse = obj as DataTable;
 
                     switch ((StatesMachine)state) {
                         case StatesMachine.SERVER_TIME:
-                            //Values.SetServerTime(_current_type, (DateTime)tableResponse.Rows[0][0]);
-                            Values[_current_type].serverTime = (DateTime)tableResponse.Rows[0][0];
+                            //Values.SetServerTime(_key._current_type, (DateTime)tableResponse.Rows[0][0]);
+                            Values[_key._current_type].serverTime = (DateTime)tableResponse.Rows[0][0];
                             break;
                         case StatesMachine.LIST_SIGNAL:
-                            getListSignalResponse(tableResponse);
-                            Logging.Logg().Debug(string.Format(@"::StateResponse () - [id_tec={0}, type={1}] получено строк={2}"
-                                    , _current_id_tec, _current_type, tableResponse.Rows.Count)
+                            indxReasonRes = response_handlers[(StatesMachine)state](tableResponse) == true
+                                 ? INDEX_WAITHANDLE_REASON.SUCCESS : INDEX_WAITHANDLE_REASON.ERROR;
+
+                            Logging.Logg().Debug(string.Format(@"::StateResponse () - [id_tec={0}, type={1}] получено строк={2}, сигналов={3}; Рез-т={4}"
+                                    , _key._current_id_tec, _key._current_type, tableResponse.Rows.Count, Signals[_key._current_type].Count, indxReasonRes)
                                 , Logging.INDEX_MESSAGE.NOT_SET);
                             break;
                         case StatesMachine.VALUES:
+                            indxReasonRes = response_handlers[(StatesMachine)state](tableResponse) == true
+                                 ? INDEX_WAITHANDLE_REASON.SUCCESS : INDEX_WAITHANDLE_REASON.ERROR;
                             break;
                         default:
                             break;
@@ -434,7 +513,7 @@ namespace Statistic
                     ;
 
                 if (isLastState(state) == true) {
-                    UpdateGUI_Fact?.Invoke((int)_current_type, tableResponse.Rows.Count);
+                    UpdateGUI_Fact?.Invoke((int)_key._current_type, state);
 
                     (m_waitHandleState[(int)INDEX_WAITHANDLE_REASON.SUCCESS] as AutoResetEvent).Set();
 
@@ -447,7 +526,7 @@ namespace Statistic
 
             protected override void StateWarnings(int state, int req, int res)
             {
-                warningReport(string.Format(@"HandlerDbStateValue::StateWarnings(type={0}) - state={1} ...", _current_type, (StatesMachine)state));
+                warningReport(string.Format(@"HandlerDbStateValue::StateWarnings(type={0}) - state={1} ...", _key._current_type, (StatesMachine)state));
             }
             /// <summary>
             /// Инициализация дополнительных объектов синхронизации
@@ -463,41 +542,208 @@ namespace Statistic
                 }
             }
 
+            private class AIISKUE_KKSCODE
+            {
+                public struct SENSOR
+                {
+                    public int id_object;
+
+                    public int num_item;
+                }
+
+                public static string ToKKSCode(int iObject, int iItem)
+                {
+                    string strRes = string.Empty;
+
+                    strRes = string.Format(@"OBJECT{0}_ITEM{1}", iObject, iItem);
+
+                    return strRes;
+                }
+
+                public static SENSOR ToSensor(string kks_code)
+                {
+                    SENSOR sensorRes = new SENSOR() { id_object = -1, num_item = -1 };
+
+                    int value = -1;
+
+                    if ((kks_code.Contains("OBJECT") == true)
+                        && (kks_code.Contains("ITEM") == true)
+                        && (kks_code.Contains("_") == true)) {
+                        if (int.TryParse(kks_code.Split('_')[0].Substring("OBJECT".Length), out value) == true) {
+                            sensorRes.id_object = value;
+
+                            if (int.TryParse(kks_code.Split('_')[1].Substring("ITEM".Length), out value) == true) {
+                                sensorRes.num_item = value;
+                            } else
+                                ;
+                        } else
+                            ;
+                    } else
+                        ;
+
+                    return sensorRes;
+                }
+            }
+
             private void getListSignals()
             {
                 AddState((int)StatesMachine.SERVER_TIME);
                 AddState((int)StatesMachine.LIST_SIGNAL);
 
-                Run(string.Format(@"HandlerDbSignalValue::getListSignals (id_tec={0}, type={1}) - ...", _current_id_tec, _current_type));
+                Run(string.Format(@"HandlerDbSignalValue::getListSignals (id_tec={0}, type={1}) - ...", _key._current_id_tec, _key._current_type));
             }
 
             private string getListSignalRequest()
             {
-                return _current_type == CONN_SETT_TYPE.DATA_AISKUE ? string.Format(@"SELECT * FROM [{0}]", "SENSORS")
-                    : _current_type == CONN_SETT_TYPE.DATA_SOTIASSO ? string.Format(@"SELECT * FROM [{0}] WHERE [{1}] LIKE '{2}'", "reals_v", "DESCRIPTION", "%Сум%")
+                return _key._current_type == CONN_SETT_TYPE.DATA_AISKUE ? string.Format(@"SELECT *, {3}.[CODE] as [{6}] FROM [{0}] as {1} JOIN [{2}] {3} ON {1}.[{4}] = {3}.[{5}]"
+                        , "SENSORS", "sen", "DEVICES", "dev", "STATIONID", "ID", "USPD_CODE")
+                    : _key._current_type == CONN_SETT_TYPE.DATA_SOTIASSO ? string.Format(@"SELECT * FROM [{0}] WHERE [{1}] LIKE '{2}'"
+                        , "reals_v", "DESCRIPTION", "%Сум%")
                         : string.Empty;
             }
 
-            private void getListSignalResponse(DataTable tableSignals)
+            private bool getListSignalResponse(DataTable tableListSignals)
             {
-                foreach (DataRow r in tableSignals.Rows)
-                    switch (_current_type) {
-                        case CONN_SETT_TYPE.DATA_AISKUE:
-                            Signals[_current_id_tec].
-                            break;
-                        case CONN_SETT_TYPE.DATA_SOTIASSO:
-                            break;
-                        default:
-                            break;
+                bool bRes = true;
+
+                SIGNAL sgnl;
+
+                foreach (DataRow r in tableListSignals.Rows) {
+                    try {
+                        switch (_key._current_type) {
+                            case CONN_SETT_TYPE.DATA_AISKUE:
+                                sgnl = new SIGNAL() {
+                                    id = (int)r[@"ID"]
+                                    , kks_code = AIISKUE_KKSCODE.ToKKSCode((int)r[@"USPD_CODE"], (int)r[@"CODE"])
+                                    , name_shr = string.Format(@"{0}", (string)r[@"NAME"])
+                                    , name = string.Format(@"{0}", (string)r[@"NAME"])
+                                };
+                                break;
+                            case CONN_SETT_TYPE.DATA_SOTIASSO:
+                                sgnl = new SIGNAL() {
+                                    id = (int)(decimal)r[@"id"]
+                                    , kks_code = string.Format(@"{0}", (string)r[@"name"])
+                                    , name_shr = string.Format(@"{0}", ((string)r[@"description"]).Split(new char[] { '.' })[1].Split(' ')[1])
+                                    , name = string.Format(@"{0}", (string)r[@"description"])
+                                };
+                                break;
+                            default:
+                                sgnl = new SIGNAL();
+                                break;
+                        }
+                    } catch (Exception e) {
+                        bRes = false;
+                        sgnl = new SIGNAL();
+
+                        Logging.Logg().Exception(e, string.Format(@"::getListSignalResponse () - ..."), Logging.INDEX_MESSAGE.NOT_SET);
                     }
+
+                    if (sgnl.id > 0)
+                        _dictSignals[_key._current_type].Add(sgnl);
+                    else
+                        ; // Logging.Logg().Error(string.Format(@""), Logging.INDEX_MESSAGE.NOT_SET)
+                }
+
+                return bRes;
             }
 
-            private void getValues()
+            private string getValuesRequest()
             {
-                AddState((int)StatesMachine.SERVER_TIME);
-                //AddState((int)StatesMachine.VALUES);
+                string strRes = string.Empty;
 
-                Run(string.Format(@"HandlerDbSignalValue::getValues (id_tec={0}, type={1}) - ...", _current_id_tec, _current_type));
+                string db_table = string.Empty
+                    , kks_code = string.Empty;
+                AIISKUE_KKSCODE.SENSOR sensor;
+                int parnumber = -1
+                    , i_agregate = -1
+                    , UTC_OFFSET = -1;
+                DateTime sql_datetime_start = DateTime.MinValue
+                    , sql_datetime_end = DateTime.MinValue;
+
+                switch (_key._current_type) {
+                    case CONN_SETT_TYPE.DATA_AISKUE:
+                        sensor = AIISKUE_KKSCODE.ToSensor(Signals[_key._current_type].ElementAt(_key._current_index).kks_code);
+                        parnumber = 12;
+                        sql_datetime_start = UserDate.Value.Date;
+                        sql_datetime_end = sql_datetime_start.AddDays(1F);
+                        UTC_OFFSET = 0;
+
+                        strRes = string.Format("SELECT [OBJECT], [ITEM], [DATA_DATE], [VALUE0]" +
+                            " FROM [DATA]" +
+                            " WHERE" +
+                                " PARNUMBER={2}" +
+                                " AND [OBJECT]={0}" +
+                                " AND [ITEM]={1}" +
+                                " AND [DATA_DATE] > '{3:yyyyMMdd HH:mm:ss}' AND [DATA_DATE] <= '{4:yyyyMMdd HH:mm:ss}'" +
+                            " ORDER BY [DATA_DATE]"
+                            , sensor.id_object, sensor.num_item, parnumber, sql_datetime_start, sql_datetime_end);
+                        break;
+                    case CONN_SETT_TYPE.DATA_SOTIASSO:
+                        db_table = "states_real_his_0";
+                        kks_code = Signals[_key._current_type].ElementAt(_key._current_index).kks_code;
+                        sql_datetime_start = UserDate.Value.Date;
+                        sql_datetime_end = sql_datetime_start.AddDays(1F);
+                        i_agregate = 30;
+                        UTC_OFFSET = 0;
+
+                        strRes = string.Format("SELECT [id], DATEADD(MINUTE, {5}, dateadd(MINUTE, (datediff(MINUTE, '{2:yyyyMMdd HH:mm:ss}', [last_changed_at]) / {4}) * {4}, '{2:yyyyMMdd HH:mm:ss}')) as [last_changed_at]" +
+                            ", AVG([Value]) * 1000 AS [VALUE]" +
+                            ", COUNT(*)" +
+                            " FROM (" +
+                                "SELECT [id], dateadd(SECOND, (datediff(SECOND, '{2:yyyyMMdd HH:mm:ss}', [last_changed_at]) / 60) * 60, '{2:yyyyMMdd HH:mm:ss}') as [last_changed_at]" +
+                                    ", CONVERT(DECIMAL(10, 6), (SUM(CONVERT(DECIMAL(10, 6), [Value]) * [tmdelta]) / SUM([tmdelta]))) AS [VALUE]" +
+                                    ", COUNT(*) as [COUNT]" +
+                                    " FROM [dbo].[{0}]" +
+                                    " WHERE ID IN (" +
+                                        "SELECT [ID]" +
+                                            " FROM [dbo].[reals_v]" +
+                                            " WHERE [NAME] LIKE '%{1}%'" +
+                                        ")" +
+                                        " AND [last_changed_at] >= '{2:yyyyMMdd HH:mm:ss}' AND [last_changed_at] < '{3:yyyyMMdd HH:mm:ss}'" +
+                                " GROUP BY dateadd(SECOND, (datediff(SECOND, '{2:yyyyMMdd HH:mm:ss}', [last_changed_at]) / 60) * 60, '{2:yyyyMMdd HH:mm:ss}'), id" +
+                            ") res" +
+                            " GROUP BY dateadd(MINUTE, (datediff(MINUTE, '{2:yyyyMMdd HH:mm:ss}', [last_changed_at]) / {4}) * {4}, '{2:yyyyMMdd HH:mm:ss}'), id" +
+                            " ORDER BY [last_changed_at], [id]"
+                            , db_table, kks_code, sql_datetime_start, sql_datetime_end, i_agregate, (UTC_OFFSET * 60 + 30));
+                        break;
+                    default:
+                        break;
+                }
+
+                return strRes;
+            }
+
+            private bool getValuesResponse(DataTable tableValues)
+            {
+                bool bRes = true;
+
+                DateTime stamp = DateTime.MinValue
+                    , min_stamp = DateTime.MaxValue;
+
+                try {
+                    foreach (DataRow r in tableValues.Rows) {
+                        stamp = (DateTime)r[@"DATA_DATE"];
+
+                        if ((min_stamp - stamp).TotalSeconds > 0)
+                            min_stamp = stamp;
+                        else
+                            ;
+
+                        Values[_key._current_type].m_valuesHours.Add(new VALUE() {
+                            stamp = stamp
+                            , index_stamp = (int)((stamp - min_stamp).TotalMinutes / 30)
+                            , value = (float)(double)r[@"VALUE0"]
+                            , quality = -1 });
+                    }
+                } catch (Exception e) {
+                    bRes = false;
+
+                    Logging.Logg().Exception(e, string.Format(@"HandlerDbSignalValue::getValuesResponse (id_tec={0}, type={1}, signal.kks={2}) - ..."
+                            , _key._current_id_tec, _key._current_type, Signals[_key._current_type].ElementAt(_key._current_index).kks_code)
+                        , Logging.INDEX_MESSAGE.NOT_SET);
+                }
+
+                return bRes;
             }
         }
         /// <summary>
@@ -521,22 +767,23 @@ namespace Statistic
         /// Объект для обработки запросов/получения данных из/в БД
         /// </summary>
         private HandlerDbSignalValue m_HandlerDb;
-
-        private DataGridView m_dgv_AIISKUE
-            , m_dgv_SOTIASSO;
+        /// <summary>
+        /// Словарь с предствалениями для отображения значений выбранных (на панели управления) сигналов
+        /// </summary>
+        private Dictionary<CONN_SETT_TYPE, HDataGridView> m_dictDataGridViewValues;
         /// <summary>
         /// Панели графической интерпретации значений
         /// 1) АИИСКУЭ "сутки - по-часам для выбранных сигналов, 2) СОТИАССО "сутки - по-часам для выбранных сигналов"
         /// </summary>
-        private ZedGraph.ZedGraphControl m_zGraph_AIISKUE
-            , m_zGraph_SOTIASSO;
+        private Dictionary<CONN_SETT_TYPE, ZedGraph.ZedGraphControl> m_dictZGraphValues;
+
         private List<StatisticCommon.TEC> m_listTEC;
-        /// <summary>
-        /// Список индексов компонентов ТЭЦ (ТГ)
-        ///  для отображения в субобласти графической интерпретации значений СОТИАССО "минута - по-секундно"
-        /// </summary>
-        private List<int> m_listIdAIISKUEAdvised
-            , m_listIdSOTIASSOAdvised;
+        ///// <summary>
+        ///// Список индексов компонентов ТЭЦ (ТГ)
+        /////  для отображения в субобласти графической интерпретации значений СОТИАССО "минута - по-секундно"
+        ///// </summary>
+        //private List<int> m_listIdAIISKUEAdvised
+        //    , m_listIdSOTIASSOAdvised;
         ///// <summary>
         ///// Событие выбора даты
         ///// </summary>
@@ -558,23 +805,27 @@ namespace Statistic
             // фильтр ТЭЦ
             m_listTEC = listTec.FindAll(tec => { return (tec.Type == TEC.TEC_TYPE.COMMON) && (tec.m_id < (int)TECComponent.ID.LK); });
 
-            if (m_listTEC.Count > 0) {
-                //Создать объект обработки запросов - установить первоначальные индексы для ТЭЦ, компонента
-                m_HandlerDb = new HandlerDbSignalValue(iListenerConfigId, m_listTEC);              
-                m_HandlerDb.UpdateGUI_Fact += new IntDelegateIntIntFunc(onEvtHandlerStatesCompleted);                
-            } else
-                Logging.Logg().Error(@"PanelSOTIASSODay::ctor () - кол-во ТЭЦ = 0...", Logging.INDEX_MESSAGE.NOT_SET);
-
-            m_listIdAIISKUEAdvised = new List<int>();
-            m_listIdSOTIASSOAdvised = new List<int>();
+            m_dictDataGridViewValues = new Dictionary<CONN_SETT_TYPE, HDataGridView>();
+            m_dictZGraphValues = new Dictionary<CONN_SETT_TYPE, ZedGraphControl>();
 
             //Создать, разместить дочерние элементы управления
             initializeComponent();
 
+            if (m_listTEC.Count > 0) {
+                //Создать объект обработки запросов - установить первоначальные индексы для ТЭЦ, компонента
+                m_HandlerDb = new HandlerDbSignalValue(iListenerConfigId, m_listTEC);
+                m_HandlerDb.UpdateGUI_Fact += new IntDelegateIntIntFunc(onEvtHandlerStatesCompleted);
+                m_HandlerDb.UserDate = new HandlerDbSignalValue.USER_DATE() { UTC_OFFSET = m_panelManagement.CurUtcOffset, Value = m_panelManagement.CurDateTime };
+            } else
+                Logging.Logg().Error(@"PanelSOTIASSODay::ctor () - кол-во ТЭЦ = 0...", Logging.INDEX_MESSAGE.NOT_SET);
+
+            //m_listIdAIISKUEAdvised = new List<int>();
+            //m_listIdSOTIASSOAdvised = new List<int>();
+
             #region Дополнительная инициализация панели управления
             m_panelManagement.SetTECList(m_listTEC);
             m_panelManagement.EvtTECListSelectionIndexChanged += new Action<int>(panelManagement_TECListOnSelectionChanged);
-            m_panelManagement.EvtDateTimeChanged += new DelegateDateFunc(panelManagement_OnEvtDateTimeChanged);
+            m_panelManagement.EvtDateTimeChanged += new Action<ActionDateTime>(panelManagement_OnEvtDateTimeChanged);
             m_panelManagement.EvtSignal += new Action<CONN_SETT_TYPE, ActionSignal, int>(panelManagement_OnEvtSignalItemChecked);
             //m_panelManagement.EvtSetNowHour += new DelegateFunc(panelManagement_OnEvtSetNowHour);
             #endregion
@@ -612,6 +863,7 @@ namespace Statistic
         /// </summary>
         private void initializeComponent()
         {
+            CONN_SETT_TYPE type = CONN_SETT_TYPE.UNKNOWN;
             System.Windows.Forms.SplitContainer stctrMain
                 , stctrView
                 , stctrAIISKUE, stctrSOTIASSO;
@@ -620,20 +872,24 @@ namespace Statistic
             m_panelManagement = new PanelManagement(); // панель для размещения элементов управления
 
             //Создать, настроить размещение таблиц для отображения значений
-            m_dgv_AIISKUE = new DataGridView(); // АИИСКУЭ-значения
-            m_dgv_AIISKUE.Name = KEY_CONTROLS.DGV_AIISKUE_VALUE.ToString();
-            m_dgv_AIISKUE.Dock = DockStyle.Fill;
-            m_dgv_SOTIASSO = new DataGridView(); // СОТИАССО-значения
-            m_dgv_SOTIASSO.Name = KEY_CONTROLS.DGV_SOTIASSO_VALUE.ToString();
-            m_dgv_SOTIASSO.Dock = DockStyle.Fill;
+            type = CONN_SETT_TYPE.DATA_AISKUE;
+            m_dictDataGridViewValues.Add(type, new HDataGridView()); // АИИСКУЭ-значения
+            m_dictDataGridViewValues[type].Name = KEY_CONTROLS.DGV_AIISKUE_VALUE.ToString();
+            m_dictDataGridViewValues[type].Dock = DockStyle.Fill;
+            type = CONN_SETT_TYPE.DATA_SOTIASSO;
+            m_dictDataGridViewValues.Add(type, new HDataGridView()); // СОТИАССО-значения
+            m_dictDataGridViewValues[type].Name = KEY_CONTROLS.DGV_SOTIASSO_VALUE.ToString();
+            m_dictDataGridViewValues[type].Dock = DockStyle.Fill;
 
             //Создать, настроить размещение графических панелей
-            m_zGraph_AIISKUE = new HZedGraphControl(); // графическая панель для отображения АИИСКУЭ-значений
-            m_zGraph_AIISKUE.Name = KEY_CONTROLS.ZGRAPH_AIISKUE.ToString();
-            m_zGraph_AIISKUE.Dock = DockStyle.Fill;
-            m_zGraph_SOTIASSO = new ZedGraphControl(); // графическая панель для отображения СОТИАССО-значений
-            m_zGraph_SOTIASSO.Name = KEY_CONTROLS.ZGRAPH_SOTIASSO.ToString();
-            m_zGraph_SOTIASSO.Dock = DockStyle.Fill;
+            type = CONN_SETT_TYPE.DATA_AISKUE;
+            m_dictZGraphValues.Add(type, new HZedGraphControl()); // графическая панель для отображения АИИСКУЭ-значений
+            m_dictZGraphValues[type].Name = KEY_CONTROLS.ZGRAPH_AIISKUE.ToString();
+            m_dictZGraphValues[type].Dock = DockStyle.Fill;
+            type = CONN_SETT_TYPE.DATA_SOTIASSO;
+            m_dictZGraphValues.Add(type, new ZedGraphControl()); // графическая панель для отображения СОТИАССО-значений
+            m_dictZGraphValues[type].Name = KEY_CONTROLS.ZGRAPH_SOTIASSO.ToString();
+            m_dictZGraphValues[type].Dock = DockStyle.Fill;
 
             //Создать контейнеры-сплиттеры, настроить размещение 
             stctrMain = new SplitContainer(); // для главного контейнера (вертикальный)
@@ -653,11 +909,13 @@ namespace Statistic
             this.SuspendLayout();
 
             //Добавить во вспомогательный контейнер элементы управления АИИСКУЭ
-            stctrAIISKUE.Panel1.Controls.Add(m_dgv_AIISKUE);
-            stctrAIISKUE.Panel2.Controls.Add(m_zGraph_AIISKUE);
+            type = CONN_SETT_TYPE.DATA_AISKUE;
+            stctrAIISKUE.Panel1.Controls.Add(m_dictDataGridViewValues[type]);
+            stctrAIISKUE.Panel2.Controls.Add(m_dictZGraphValues[type]);
             //Добавить во вспомогательный контейнер элементы управления СОТИАССО
-            stctrSOTIASSO.Panel1.Controls.Add(m_dgv_SOTIASSO);
-            stctrSOTIASSO.Panel2.Controls.Add(m_zGraph_SOTIASSO);
+            type = CONN_SETT_TYPE.DATA_SOTIASSO;
+            stctrSOTIASSO.Panel1.Controls.Add(m_dictDataGridViewValues[type]);
+            stctrSOTIASSO.Panel2.Controls.Add(m_dictZGraphValues[type]);
             //Добавить вспомогательные контейнеры
             stctrView.Panel1.Controls.Add(stctrAIISKUE);
             stctrView.Panel2.Controls.Add(stctrSOTIASSO);
@@ -675,11 +933,25 @@ namespace Statistic
             this.PerformLayout();
         }
 
-        private void panelManagement_OnEvtSignalItemChecked(CONN_SETT_TYPE typeSignal, ActionSignal action, int indxSignal)
+        private void panelManagement_OnEvtSignalItemChecked(CONN_SETT_TYPE type, ActionSignal action, int indxSignal)
         {
             bool bCheckStateReverse = action == ActionSignal.CHECK;
 
-            throw new NotImplementedException();
+            switch (action) {
+                case ActionSignal.CHECK:
+                    if (m_dictDataGridViewValues[type].ActionColumn(m_HandlerDb.Signals[type].ElementAt(indxSignal).kks_code
+                        , m_HandlerDb.Signals[type].ElementAt(indxSignal).name_shr) == true) {
+                        // запросить значения для заполнения нового столбца
+                        m_HandlerDb.Request(type, indxSignal);
+                    } else
+                    // столбец удален - ничего не делаем
+                        ;
+                    break;
+                case ActionSignal.SELECT:
+                    break;
+                default:
+                    break;
+            }
         }
 
         public override void SetDelegateReport(DelegateStringFunc ferr, DelegateStringFunc fwar, DelegateStringFunc fact, DelegateBoolFunc fclr)
@@ -693,7 +965,7 @@ namespace Statistic
         {
             public event Action<int, DateTime> EvtExportDo;
 
-            public event DelegateDateFunc EvtDateTimeChanged;
+            public event Action<ActionDateTime> EvtDateTimeChanged;
             /// <summary>
             /// Событие изменения текущего индекса ГТП
             /// </summary>
@@ -757,6 +1029,7 @@ namespace Statistic
                 (ctrl as DateTimePicker).DropDownAlign = LeftRightAlignment.Right;
                 (ctrl as DateTimePicker).Format = DateTimePickerFormat.Custom;
                 (ctrl as DateTimePicker).CustomFormat = "dd MMM, yyyy";
+                (ctrl as DateTimePicker).Value = DateTime.Now.Date.AddDays(-1);
                 //Добавить к текущей панели календарь
                 this.Controls.Add(ctrl, 0, 0);
                 this.SetColumnSpan(ctrl, 3);
@@ -892,16 +1165,53 @@ namespace Statistic
                     return (findControl(KEY_CONTROLS.DTP_CUR_DATE.ToString()) as DateTimePicker).Value;
                 }
             }
-            /// <summary>
-            /// Заполнить список с игналами значениями в аргументе
-            /// </summary>
-            /// <param name="clb_id">Идентификатор списка</param>
-            /// <param name="listAIISKUESignalNameShr">Список </param>
-            private void initializeSignalList(KEY_CONTROLS clb_id, IEnumerable<string> listSignalNameShr)
-            {
-                CheckedListBox clb = (findControl(clb_id.ToString())) as CheckedListBox;
 
-                
+            public int CurUtcOffset
+            {
+                get {
+                    int iRes = 0;
+
+                    switch ((findControl(KEY_CONTROLS.CBX_TIMEZONE.ToString()) as ComboBox).SelectedIndex) {
+                        case 0:
+                            // UTC
+                            break;
+                        case 1:
+                            iRes = 3; // Москва
+                            break;
+                        case 2:
+                            iRes = 7; // Новосибирск
+                            break;
+                        default:
+                            break;
+                    }
+
+                    return iRes;
+                }
+            }
+
+            public void ClearSignalList(CONN_SETT_TYPE key)
+            {
+                KEY_CONTROLS keyCtrl = KEY_CONTROLS.UNKNOWN;
+                CheckedListBox clb;
+
+                switch (key) {
+                    case CONN_SETT_TYPE.DATA_AISKUE:
+                        keyCtrl = KEY_CONTROLS.CLB_AIISKUE_SIGNAL;
+                        break;
+                    case CONN_SETT_TYPE.DATA_SOTIASSO:
+                        keyCtrl = KEY_CONTROLS.CLB_SOTIASSO_SIGNAL;
+                        break;
+                    default:
+                        break;
+                }
+
+                if (!(keyCtrl == KEY_CONTROLS.UNKNOWN)) {
+                    clb = (findControl(keyCtrl.ToString())) as CheckedListBox;
+
+                    clb.Items.Clear();                    
+                } else
+                    Logging.Logg().Error(string.Format(@"PanelSOTIASSODay.PanelManagement::InitializeSignalList (key={0}) - ", key.ToString())
+                        , Logging.INDEX_MESSAGE.NOT_SET);
             }
 
             public void InitializeSignalList(CONN_SETT_TYPE key, IEnumerable<string> listSignalNameShr)
@@ -936,7 +1246,7 @@ namespace Statistic
 
             private void curDatetime_OnValueChanged(object obj, EventArgs ev)
             {
-                EvtDateTimeChanged?.Invoke(CurDateTime);
+                EvtDateTimeChanged?.Invoke(ActionDateTime.VALUE);
             }
 
             public void SetTECList(IEnumerable<TEC> listTEC)
@@ -955,20 +1265,96 @@ namespace Statistic
             /// <param name="ev">Аргумент события</param>
             private void cbxTECList_OnSelectionIndexChanged(object obj, EventArgs ev)
             {
-                EvtTECListSelectionIndexChanged(Convert.ToInt32(((this.Controls.Find(KEY_CONTROLS.CBX_TEC_LIST.ToString(), true))[0] as ComboBox).SelectedIndex));
+                EvtTECListSelectionIndexChanged?.Invoke(Convert.ToInt32(((this.Controls.Find(KEY_CONTROLS.CBX_TEC_LIST.ToString(), true))[0] as ComboBox).SelectedIndex));
             }
 
             private void cbxTimezone_OnSelectedIndexChanged(object obj, EventArgs ev)
             {
+                EvtDateTimeChanged?.Invoke(ActionDateTime.TIMEZONE);
+            }        
+        }
+
+        private class HDataGridView : DataGridView
+        {
+            public HDataGridView()
+                : base()
+            {
+                initializeComponent();
             }
 
-            private void onAIISKUESignal_ItemCheck(object obj, ItemCheckEventArgs ev)
+            private void initializeComponent()
             {
+                TimeSpan tsRow = TimeSpan.Zero;
+
+                Columns.Add("Unknown", string.Empty);
+                Columns[0].Visible = false;
+                Columns[0].SortMode = DataGridViewColumnSortMode.NotSortable;
+
+                for (int i = 0; i < 49; i++) {
+                    Rows.Add();
+
+                    Rows[i].Tag = i;
+                    if (i < 48) {
+                        Rows[i].HeaderCell.Value =
+                        Rows[i].HeaderCell.ToolTipText =
+                            string.Format("{0}", new DateTime((tsRow = tsRow.Add(TimeSpan.FromMinutes(30))).Ticks).ToString(@"HH:mm"));
+                    } else
+                        Rows[i].HeaderCell.Value =
+                        Rows[i].HeaderCell.ToolTipText =
+                            string.Format("{0}", @"Итог:");
+                }
+
+                AllowUserToAddRows = false;
+                AllowUserToDeleteRows = false;
+                AllowUserToResizeColumns = false;
+
+                RowHeadersWidthSizeMode = DataGridViewRowHeadersWidthSizeMode.AutoSizeToAllHeaders | DataGridViewRowHeadersWidthSizeMode.DisableResizing;
+                MultiSelect = false;
+                AutoSizeColumnsMode = /*DataGridViewAutoSizeColumnsMode.ColumnHeader |*/ DataGridViewAutoSizeColumnsMode.AllCells;
+                SelectionMode = DataGridViewSelectionMode.FullColumnSelect;
+            }
+            /// <summary>
+            /// Действие со столбцом: при наличии - удалить, при отсутствии - добавить
+            /// </summary>
+            /// <param name="name">Идентификатор столбца</param>
+            /// <param name="headerText">Заголовок столбца</param>
+            /// <returns>Признак удаления/добавления столбца</returns>
+            public bool ActionColumn(string name, string headerText)
+            {
+                bool bRes = !Columns.Contains(name);
+
+                if (bRes == false)
+                // столбец найден
+                    Columns.Remove(name);
+                else {
+                // столбец не найден - добавить
+                    SelectionMode = DataGridViewSelectionMode.CellSelect;
+
+                    Columns.Add(name, headerText);
+                    Columns[ColumnCount - 1].DefaultCellStyle.Alignment = DataGridViewContentAlignment.MiddleRight;
+                    Columns[ColumnCount - 1].SortMode = DataGridViewColumnSortMode.NotSortable;
+
+                    SelectionMode = DataGridViewSelectionMode.FullColumnSelect;
+                }
+
+                return bRes;
             }
 
-            private void onSOTIASSOSignal_ItemCheck(object obj, ItemCheckEventArgs ev)
+            public void Fill(IEnumerable<HandlerDbSignalValue.VALUE> values)
             {
-            }           
+                int iColumn = ColumnCount - 1;
+
+                foreach (DataGridViewRow row in Rows) {
+                    if (row.Index < values.Count())
+                        try {
+                            row.Cells[iColumn].Value = (from value in values where value.index_stamp == (int)row.Tag select value.value).ElementAt(0);
+                        } catch (Exception e) {
+                            Logging.Logg().Error(string.Format(@"PanelSOTIASSODay.HDataGridView::Fill () - не найдено значение для строки Index={0}, Tag={1}", row.Index, row.Tag), Logging.INDEX_MESSAGE.NOT_SET);
+                        }
+                    else
+                        row.Cells[iColumn].Value = values.Sum(v => v.value);
+                }
+            }
         }
         /// <summary>
         /// Класс - общий для графического представления значений СОТИАССО на вкладке
@@ -1269,9 +1655,14 @@ namespace Statistic
         /// Обработчик события - изменения даты/номера часа на панели с управляющими элементами
         /// </summary>
         /// <param name="dtNew">Новые дата/номер часа</param>
-        private void panelManagement_OnEvtDateTimeChanged(DateTime dtNew)
+        private void panelManagement_OnEvtDateTimeChanged(ActionDateTime action_changed)
         {
-            m_HandlerDb.Request();
+            //??? либо автоматический опрос в 'm_HandlerDb'
+            m_HandlerDb.UserDate = new HandlerDbSignalValue.USER_DATE() { UTC_OFFSET = m_panelManagement.CurUtcOffset, Value = m_panelManagement.CurDateTime };
+            // , либо организация цикла опроса в этой функции
+            //...
+            // , либо вызов метода с аргументами
+            //m_HandlerDb.Request(...);
         }
         /// <summary>
         /// Обработчик события - все состояния 'ChangeState_SOTIASSO' обработаны
@@ -1279,11 +1670,30 @@ namespace Statistic
         /// <param name="hour">Номер часа в запросе</param>
         /// <param name="min">Номер минуты в звпросе</param>
         /// <returns>Признак результата выполнения функции</returns>
-        private int onEvtHandlerStatesCompleted(int iHour, int iMin)
+        private int onEvtHandlerStatesCompleted(int conn_sett_type, int state_machine)
         {
-            int iRes = 0;
+            int iRes = ((!((CONN_SETT_TYPE)conn_sett_type == CONN_SETT_TYPE.UNKNOWN)) // тип источника данных известен
+                && (!(state_machine < 0))) // кол-во строк "не меньше 0"
+                ? 0
+                    : -1;
+
+            IAsyncResult iar = BeginInvoke(new Action<CONN_SETT_TYPE, int>(onStatesCompleted), (CONN_SETT_TYPE)conn_sett_type, state_machine);
 
             return iRes;
+        }
+
+        private void onStatesCompleted(CONN_SETT_TYPE type, int state_machine)
+        {
+            switch ((StatesMachine)state_machine) {
+                case StatesMachine.LIST_SIGNAL:
+                    m_panelManagement.InitializeSignalList(type, m_HandlerDb.GetListSignals(type).Select(sgnl => { return sgnl.name_shr; }));
+                    break;
+                case StatesMachine.VALUES:
+                    m_dictDataGridViewValues[type].Fill(m_HandlerDb.Values[type].m_valuesHours);
+                    break;
+                default:
+                    break;
+            }
         }
 
         private void getColorZEDGraph(CONN_SETT_TYPE type, out Color colorChart, out Color colValue)
@@ -1327,14 +1737,14 @@ namespace Statistic
             Color colorChart = Color.Empty
                     , colorPCurve = Color.Empty;
 
-            getColorZEDGraph(CONN_SETT_TYPE.DATA_AISKUE, out colorChart, out colorPCurve);
-            (m_zGraph_AIISKUE as HZedGraphControl).Draw(m_HandlerDb.Values[CONN_SETT_TYPE.DATA_AISKUE].m_valuesHours
-                , textGraphCurDateTime
-                , colorChart, colorPCurve);
-            getColorZEDGraph(CONN_SETT_TYPE.DATA_SOTIASSO, out colorChart, out colorPCurve);
-            (m_zGraph_SOTIASSO as HZedGraphControl).Draw(m_HandlerDb.Values[CONN_SETT_TYPE.DATA_SOTIASSO].m_valuesHours
-                , textGraphCurDateTime
-                , colorChart, colorPCurve);
+            foreach (CONN_SETT_TYPE conn_sett_type in new CONN_SETT_TYPE[] { CONN_SETT_TYPE.DATA_AISKUE, CONN_SETT_TYPE.DATA_SOTIASSO }) {
+                // получить цветовую гамму
+                getColorZEDGraph(conn_sett_type, out colorChart, out colorPCurve);
+                // отобразить
+                (m_dictZGraphValues[conn_sett_type] as HZedGraphControl).Draw(m_HandlerDb.Values[conn_sett_type].m_valuesHours
+                    , textGraphCurDateTime
+                    , colorChart, colorPCurve);
+            }
         }
         /// <summary>
         /// Обработчик события - изменение выбора строки в списке ТЭЦ
@@ -1347,11 +1757,13 @@ namespace Statistic
 
             if (!(indxTEC < 0)
                 && (indxTEC < m_listTEC.Count)) {
+                //Очистить списки с сигналами
+                foreach (CONN_SETT_TYPE conn_sett_type in new CONN_SETT_TYPE[] { CONN_SETT_TYPE.DATA_AISKUE, CONN_SETT_TYPE.DATA_SOTIASSO })
+                    m_panelManagement.ClearSignalList(conn_sett_type);
                 //Инициализировать список ТЭЦ для 'TecView' - указать ТЭЦ в соответствии с указанным ранее индексом (0)
                 m_HandlerDb.InitTEC(m_listTEC[indxTEC].m_id);
                 //Добавить строки(сигналы) на дочернюю панель(список АИИСКУЭ, СОТИАССО-сигналов)
-                m_panelManagement.InitializeSignalList(CONN_SETT_TYPE.DATA_AISKUE, m_HandlerDb.GetListSignals(CONN_SETT_TYPE.DATA_AISKUE).Select(sgnl => { return sgnl.name_shr; }));
-                m_panelManagement.InitializeSignalList(CONN_SETT_TYPE.DATA_AISKUE, m_HandlerDb.GetListSignals(CONN_SETT_TYPE.DATA_SOTIASSO).Select(sgnl => { return sgnl.name_shr; }));
+                // - по возникновению сигнала окончания заппроса                
             } else
                 ;            
         }
