@@ -176,10 +176,16 @@
     <Compile Include="PanelQuickData.cs">
       <SubType>Component</SubType>
     </Compile>
-    <Compile Include="PanelSOTIASSODay.cs">
+    <Compile Include="PanelSOTIASSO.cs">
       <SubType>Component</SubType>
     </Compile>
-    <Compile Include="PanelSOTIASSO.cs">
+    <Compile Include="PanelSOTIASSODay\HandlerDbSignalValue.cs">
+      <SubType>Component</SubType>
+    </Compile>
+    <Compile Include="PanelSOTIASSODay\HandlerSignalQueue.cs">
+      <SubType>Component</SubType>
+    </Compile>
+    <Compile Include="PanelSOTIASSODay\PanelSOTIASSODay.cs">
       <SubType>Component</SubType>
     </Compile>
     <Compile Include="PanelTECComponent.cs">
@@ -336,6 +342,7 @@
       <FileType>File</FileType>
     </PublishFile>
   </ItemGroup>
+  <ItemGroup />
   <Import Project="$(MSBuildBinPath)\Microsoft.CSharp.targets" />
   <!-- To modify your build process, add your task inside one of the targets below and uncomment it. 
        Other similar extension points exist, see Microsoft.Common.targets.
