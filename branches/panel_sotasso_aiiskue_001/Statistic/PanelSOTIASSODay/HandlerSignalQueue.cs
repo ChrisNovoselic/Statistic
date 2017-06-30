@@ -23,8 +23,9 @@ namespace Statistic
     /// </summary>
     partial class PanelSOTIASSODay
     {
-        private class HandlerSignalQueue : HHandlerQueue
+        private partial class HandlerSignalQueue : HHandlerQueue
         {
+            public enum EVENT { SET_TEC, LIST_SIGNAL, VALUES }
             /// <summary>
             /// Структура для хранения значения
             /// </summary>
@@ -71,11 +72,50 @@ namespace Statistic
 
             private HandlerDbSignalValue _handlerDb;
 
+            public Dictionary<CONN_SETT_TYPE, IList<SIGNAL>> Signals { get { return _handlerDb.Signals; } }
+
+            public Dictionary<CONN_SETT_TYPE, VALUES> Values { get { return _handlerDb.Values; } }
+
             public HandlerSignalQueue(int iListenerConfigDbId, IEnumerable<TEC> listTEC)
                 : base ()
             {
                 _handlerDb = new HandlerDbSignalValue(iListenerConfigDbId, listTEC);
                 _handlerDb.UpdateGUI_Fact += new IntDelegateIntIntFunc(onEvtHandlerStatesCompleted);
+            }
+            /// <summary>
+            /// Переопределение наследуемой функции - запуск объекта
+            /// </summary>
+            public override void Start()
+            {
+                base.Start();
+
+                _handlerDb.Start();
+            }
+            /// <summary>
+            /// Переопределение наследуемой функции - останов объекта
+            /// </summary>
+            public override void Stop()
+            {
+                //Проверить актуальность объекта обработки запросов
+                if (!(_handlerDb == null)) {
+                    if (_handlerDb.Actived == true)
+                        //Если активен - деактивировать
+                        _handlerDb.Activate(false);
+                    else
+                        ;
+
+                    if (_handlerDb.IsStarted == true)
+                        //Если выполняется - остановить
+                        _handlerDb.Stop();
+                    else
+                        ;
+
+                    //m_tecView = null;
+                } else
+                    ;
+
+                //Остановить базовый объект
+                base.Stop();
             }
             /// <summary>
             /// Обработчик события - все состояния 'ChangeState_SOTIASSO' обработаны
@@ -94,6 +134,11 @@ namespace Statistic
                 //Invoke(new Action<CONN_SETT_TYPE, int>(onStatesCompleted), (CONN_SETT_TYPE)conn_sett_type, state_machine);
 
                 return iRes;
+            }
+
+            public void SetDelegateReport(DelegateStringFunc ferr, DelegateStringFunc fwar, DelegateStringFunc fact, DelegateBoolFunc fclr)
+            {
+                _handlerDb.SetDelegateReport(ferr, fwar,  fact, fclr);
             }
 
             protected override int StateCheckResponse(int state, out bool error, out object outobj)

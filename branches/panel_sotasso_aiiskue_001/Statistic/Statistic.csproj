@@ -185,6 +185,12 @@
     <Compile Include="PanelSOTIASSODay\HandlerSignalQueue.cs">
       <SubType>Component</SubType>
     </Compile>
+    <Compile Include="PanelSOTIASSODay\PanelManagement.cs">
+      <SubType>Component</SubType>
+    </Compile>
+    <Compile Include="PanelSOTIASSODay\ZedGraphControl.cs">
+      <SubType>Component</SubType>
+    </Compile>
     <Compile Include="PanelSOTIASSODay\PanelSOTIASSODay.cs">
       <SubType>Component</SubType>
     </Compile>
