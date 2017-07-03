@@ -30,18 +30,16 @@ namespace Statistic
             /// </summary>
             private class HandlerDbSignalValue : HHandlerDb
             {
-                private IEnumerable<CONN_SETT_TYPE> _types = new List<CONN_SETT_TYPE>() { CONN_SETT_TYPE.DATA_AISKUE, CONN_SETT_TYPE.DATA_SOTIASSO };
-
-                private struct KEY
+                public struct KEY
                 {
                     public int _current_id_tec;
 
                     public CONN_SETT_TYPE _current_type;
 
-                    public int _current_index;
+                    public string _kks_code;
                 }
 
-                private static KEY _key = new KEY() { _current_id_tec = -1, _current_type = CONN_SETT_TYPE.UNKNOWN, _current_index = -1 };
+                private static KEY _key = new KEY() { _current_id_tec = -1, _current_type = CONN_SETT_TYPE.UNKNOWN, _kks_code = string.Empty };
 
                 private USER_DATE _userDate;
                 public USER_DATE UserDate
@@ -71,13 +69,13 @@ namespace Statistic
                 ///  для всех типов источников данных (АИИСКУЭ, СОТИАССО)
                 ///  для всех ТЭЦ из списка в аргументе конструктора
                 /// </summary>
-                private Dictionary<int, Dictionary<CONN_SETT_TYPE, ConnectionSettings>> m_dictConnSett;                
+                private Dictionary<int, Dictionary<CONN_SETT_TYPE, ConnectionSettings>> m_dictConnSett;
                 /// <summary>
                 /// Конструктор - основной (с аргументами)
                 /// </summary>
                 /// <param name="iListenerConfigDbId">Идентификатор установленного соединения с БД конфигурации</param>
                 /// <param name="listTEC">Список ТЭЦ</param>
-                public HandlerDbSignalValue(int iListenerConfigDbId, IEnumerable<TEC> listTEC)
+                public HandlerDbSignalValue(int iListenerConfigDbId, IEnumerable<TEC> listTEC, IEnumerable<CONN_SETT_TYPE>types)
                     : base()
                 {
                     int err = -1
@@ -101,7 +99,7 @@ namespace Statistic
                             else
                                 ;
 
-                            foreach (CONN_SETT_TYPE type in _types) {
+                            foreach (CONN_SETT_TYPE type in types) {
                                 id_source = id_tec * 10
                                     + (type == CONN_SETT_TYPE.DATA_AISKUE ? 1
                                         : type == CONN_SETT_TYPE.DATA_SOTIASSO ? 2
@@ -122,7 +120,8 @@ namespace Statistic
                                 } else
                                     ;
                             }
-                        } else
+                        }
+                    else
                         throw new Exception(string.Format(@"HandlerDbSignalValue::ctor () - ошибка при получения объекта с соединением с БД конфигурации по идентификатору в аргументе..."));
                     //// на этапе отладки (без БД конфигурации)
                     //m_dictConnSett = new Dictionary<CONN_SETT_TYPE, Dictionary<int, ConnectionSettings>> {
@@ -144,16 +143,17 @@ namespace Statistic
                     //    }
                     //};
 
+                    m_arSyncStateCheckResponse = new AutoResetEvent[(int)INDEX_SYNC_STATECHECKRESPONSE.COUNT_INDEX_SYNC_STATECHECKRESPONSE] {
+                        new AutoResetEvent (false)
+                        , new AutoResetEvent (false)
+                        , new AutoResetEvent (false)
+                    };
+
                     request_handlers = new Dictionary<StatesMachine, Func<string>>() { { StatesMachine.LIST_SIGNAL, getListSignalRequest }, { StatesMachine.VALUES, getValuesRequest } };
                     response_handlers = new Dictionary<StatesMachine, Func<DataTable, bool>>() { { StatesMachine.LIST_SIGNAL, getListSignalResponse }, { StatesMachine.VALUES, getValuesResponse } };
 
-                    Values = new /*DictionaryValues*/Dictionary<CONN_SETT_TYPE, VALUES>();
-                    _dictSignals = new Dictionary<CONN_SETT_TYPE, IList<SIGNAL>>();
-                    foreach (CONN_SETT_TYPE type in _types) {
-                        Values.Add(type, new VALUES() { serverTime = DateTime.MinValue, m_valuesHours = new List<VALUE>() });
-
-                        _dictSignals.Add(type, new List<SIGNAL>());
-                    }
+                    Values = new VALUES() { serverTime = DateTime.MinValue, m_valuesHours = new List<VALUE>() };
+                    _signals = new List<SIGNAL>();
                 }
 
                 private static Dictionary<StatesMachine, Func<string>> request_handlers;
@@ -166,65 +166,77 @@ namespace Statistic
                 //    //{
                 //    //    this[type].SetServerTime(serverTime);
                 //    //}
+                //}                
+
+                //public IntDelegateIntIntFunc UpdateGUI_Fact;
+
+                public VALUES Values;
+
+                private IList<SIGNAL> _signals;
+                public IList<SIGNAL> Signals { get { return _signals; } }
+                ///// <summary>
+                ///// Перечень сигналов для текущей ТЭЦ
+                ///// </summary>
+                //public IEnumerable<SIGNAL> GetListSignals(CONN_SETT_TYPE type)
+                //{
+                //    return ((!(_dictSignals == null)) && (_dictSignals.ContainsKey(type) == true)) ? _dictSignals[type] : new List<SIGNAL>();
                 //}
-
-                public /*DictionaryValues*/Dictionary<CONN_SETT_TYPE, VALUES> Values;
-
-                public IntDelegateIntIntFunc UpdateGUI_Fact;
-
-                private Dictionary<CONN_SETT_TYPE, IList<SIGNAL>> _dictSignals;
-                public Dictionary<CONN_SETT_TYPE, IList<SIGNAL>> Signals { get { return _dictSignals; } }
                 /// <summary>
-                /// Перечень сигналов для текущей ТЭЦ
+                /// Перечисление - индексы объектов синхронизации для обмена данными (результатом) обработки событий
                 /// </summary>
-                public IEnumerable<SIGNAL> GetListSignals(CONN_SETT_TYPE type)
+                public enum INDEX_SYNC_STATECHECKRESPONSE
                 {
-                    return ((!(_dictSignals == null)) && (_dictSignals.ContainsKey(type) == true)) ? _dictSignals[type] : new List<SIGNAL>();
+                    UNKNOWN = -1, RESPONSE, ERROR, WARNING
+                    , COUNT_INDEX_SYNC_STATECHECKRESPONSE
                 }
                 /// <summary>
-                /// Установить идентификатор выбранной в данный момент ТЭЦ
+                /// Объекты синхронизации для обмена данными (результатом) обработки событий
                 /// </summary>
-                /// <param name="id">Идентификатор ТЭЦ</param>
-                public void InitTEC(int id)
-                {
-                    if (!(_key._current_id_tec == id)) {
-                        _key._current_id_tec = id;
+                public AutoResetEvent[] m_arSyncStateCheckResponse;
+                ///// <summary>
+                ///// Установить идентификатор выбранной в данный момент ТЭЦ
+                ///// </summary>
+                ///// <param name="id">Идентификатор ТЭЦ</param>
+                //public void InitTEC(int id)
+                //{
+                //    if (!(_key._current_id_tec == id)) {
+                //        _key._current_id_tec = id;
 
-                        ClearValues();
+                //        ClearValues();
 
-                        //Поток запроса значений для 
-                        new Thread(new ParameterizedThreadStart((param) => {
-                            int indxEv = -1;
-                            // чтобы в 1-ый проход "пройти" WaitHandle.WaitAny и перейти к выполнению запроса
-                            ((AutoResetEvent)m_waitHandleState[(int)INDEX_WAITHANDLE_REASON.SUCCESS]).Set();
+                //        //Поток запроса значений для 
+                //        new Thread(new ParameterizedThreadStart((param) => {
+                //            int indxEv = -1;
+                //            // чтобы в 1-ый проход "пройти" WaitHandle.WaitAny и перейти к выполнению запроса
+                //            ((AutoResetEvent)m_waitHandleState[(int)INDEX_WAITHANDLE_REASON.SUCCESS]).Set();
 
-                            for (INDEX_WAITHANDLE_REASON i = INDEX_WAITHANDLE_REASON.ERROR; i < INDEX_WAITHANDLE_REASON.COUNT_INDEX_WAITHANDLE_REASON; i++)
-                                ((ManualResetEvent)m_waitHandleState[(int)i]).Reset();
+                //            for (INDEX_WAITHANDLE_REASON i = INDEX_WAITHANDLE_REASON.ERROR; i < INDEX_WAITHANDLE_REASON.COUNT_INDEX_WAITHANDLE_REASON; i++)
+                //                ((ManualResetEvent)m_waitHandleState[(int)i]).Reset();
 
-                            foreach (CONN_SETT_TYPE type in _types) {
-                                indxEv = WaitHandle.WaitAny(m_waitHandleState);
-                                if (indxEv == (int)INDEX_WAITHANDLE_REASON.BREAK)
-                                    // прекратить выполнение досрочно
-                                    break;
-                                else {
-                                    if (!(indxEv == (int)INDEX_WAITHANDLE_REASON.SUCCESS))
-                                        // в сигнальное состояние установлен отличный от BREAK, SUCCESS объект синхронизации
-                                        // восстановить его состояние для очередной итерации
-                                        ((ManualResetEvent)m_waitHandleState[indxEv]).Reset();
-                                    else
-                                        ;
+                //            foreach (CONN_SETT_TYPE type in _types) {
+                //                indxEv = WaitHandle.WaitAny(m_waitHandleState);
+                //                if (indxEv == (int)INDEX_WAITHANDLE_REASON.BREAK)
+                //                    // прекратить выполнение досрочно
+                //                    break;
+                //                else {
+                //                    if (!(indxEv == (int)INDEX_WAITHANDLE_REASON.SUCCESS))
+                //                        // в сигнальное состояние установлен отличный от BREAK, SUCCESS объект синхронизации
+                //                        // восстановить его состояние для очередной итерации
+                //                        ((ManualResetEvent)m_waitHandleState[indxEv]).Reset();
+                //                    else
+                //                        ;
 
-                                    ClearStates();
+                //                    ClearStates();
 
-                                    _key._current_type = type;
+                //                    _key._current_type = type;
 
-                                    getListSignals(); //getvalues();
-                                }
-                            }
-                        })).Start();
-                    } else
-                        ;
-                }
+                //                    getListSignals(); //getvalues();
+                //                }
+                //            }
+                //        })).Start();
+                //    } else
+                //        ;
+                //}
 
                 public void Request()
                 {
@@ -233,13 +245,13 @@ namespace Statistic
                 /// <summary>
                 /// Отправить запрос на получение значений сигналов АИИСКУЭ, СОТИАССО
                 /// </summary>
-                public void Request(CONN_SETT_TYPE type, int indx)
+                public void Request(CONN_SETT_TYPE type, string kks_code)
                 {
-                    clearValues(type, false);
+                    clearValues(false);
                     ClearStates();
 
                     _key._current_type = type;
-                    _key._current_index = indx;
+                    _key._kks_code = kks_code;
 
                     getValues();
                 }
@@ -249,7 +261,7 @@ namespace Statistic
                     AddState((int)StatesMachine.SERVER_TIME);
                     AddState((int)StatesMachine.VALUES);
 
-                    Run(string.Format(@"HandlerDbSignalValues::GetValues (type={0}, indx={1}) - KKS_CODE={2}...", _key._current_type, _key._current_index, Signals[_key._current_type].ElementAt(_key._current_index).kks_code));
+                    Run(string.Format(@"HandlerDbSignalValues::GetValues (type={0}) - KKS_CODE={1}...", _key._current_type, _key._kks_code));
                 }
 
                 public override void Start()
@@ -259,12 +271,12 @@ namespace Statistic
                     StartDbInterfaces();
                 }
 
-                //public override void Stop()
-                //{
-                //    StopDbInterfaces();
+                public override void Stop()
+                {
+                    m_arSyncStateCheckResponse[(int)INDEX_SYNC_STATECHECKRESPONSE.WARNING].Set();
 
-                //    base.Stop();
-                //}
+                    base.Stop();
+                }
 
                 public override bool Activate(bool active)
                 {
@@ -283,17 +295,16 @@ namespace Statistic
                 /// </summary>
                 public override void ClearValues()
                 {
-                    foreach (CONN_SETT_TYPE type in _types)
-                        clearValues(type, true);
+                    clearValues(true);
                 }
 
-                private void clearValues(CONN_SETT_TYPE type, bool bIsSignalClear)
+                private void clearValues(bool bIsSignalClear)
                 {
-                    Values[type].serverTime = DateTime.MinValue;
-                    Values[type].m_valuesHours.Clear();
+                    Values.serverTime = DateTime.MinValue;
+                    Values.m_valuesHours.Clear();
 
                     if (bIsSignalClear == true)
-                        _dictSignals[type].Clear();
+                        _signals.Clear();
                     else
                         ;
                 }
@@ -305,7 +316,7 @@ namespace Statistic
                     foreach (KeyValuePair<int, Dictionary<CONN_SETT_TYPE, ConnectionSettings>> pair in m_dictConnSett) {
                         foreach (CONN_SETT_TYPE type in pair.Value.Keys) {
                             if (m_dictIdListeners.ContainsKey((int)pair.Key) == false) {
-                                m_dictIdListeners.Add((int)pair.Key, new int[(int)_types.Max() + 1]);
+                                m_dictIdListeners.Add((int)pair.Key, new int[(int)pair.Value.Keys.Max() + 1]);
 
                                 for (int j = 0; j < m_dictIdListeners[(int)pair.Key].Length; j++)
                                     m_dictIdListeners[(int)pair.Key][j] = -1;
@@ -351,6 +362,8 @@ namespace Statistic
                 /// <returns>Признак выполнения функции-обработчика возникновения ошибки</returns>
                 protected override INDEX_WAITHANDLE_REASON StateErrors(int state, int req, int res)
                 {
+                    m_arSyncStateCheckResponse[(int)INDEX_SYNC_STATECHECKRESPONSE.ERROR].Set();
+
                     errorReport(string.Format(@"HandlerDbStateValue::StateErrors(type={0}) - state={1} ...", _key._current_type, (StatesMachine)state));
 
                     return INDEX_WAITHANDLE_REASON.ERROR;
@@ -405,14 +418,14 @@ namespace Statistic
                         switch ((StatesMachine)state) {
                             case StatesMachine.SERVER_TIME:
                                 //Values.SetServerTime(_key._current_type, (DateTime)tableResponse.Rows[0][0]);
-                                Values[_key._current_type].serverTime = (DateTime)tableResponse.Rows[0][0];
+                                Values.serverTime = (DateTime)tableResponse.Rows[0][0];
                                 break;
                             case StatesMachine.LIST_SIGNAL:
                                 indxReasonRes = response_handlers[(StatesMachine)state](tableResponse) == true
                                      ? INDEX_WAITHANDLE_REASON.SUCCESS : INDEX_WAITHANDLE_REASON.ERROR;
 
                                 Logging.Logg().Debug(string.Format(@"::StateResponse () - [id_tec={0}, type={1}] получено строк={2}, сигналов={3}; Рез-т={4}"
-                                        , _key._current_id_tec, _key._current_type, tableResponse.Rows.Count, Signals[_key._current_type].Count, indxReasonRes)
+                                        , _key._current_id_tec, _key._current_type, tableResponse.Rows.Count, Signals.Count, indxReasonRes)
                                     , Logging.INDEX_MESSAGE.NOT_SET);
                                 break;
                             case StatesMachine.VALUES:
@@ -425,10 +438,8 @@ namespace Statistic
                     } else
                         ;
 
-                    if (isLastState(state) == true) {
-                        UpdateGUI_Fact?.Invoke((int)_key._current_type, state);
-
-                        (m_waitHandleState[(int)INDEX_WAITHANDLE_REASON.SUCCESS] as AutoResetEvent).Set();
+                    if (isLastState(state) == true) {                        
+                        m_arSyncStateCheckResponse[(int)INDEX_SYNC_STATECHECKRESPONSE.RESPONSE].Set();
 
                         ReportClear(true);
                     } else
@@ -439,21 +450,23 @@ namespace Statistic
 
                 protected override void StateWarnings(int state, int req, int res)
                 {
+                    m_arSyncStateCheckResponse[(int)INDEX_SYNC_STATECHECKRESPONSE.WARNING].Set();
+
                     warningReport(string.Format(@"HandlerDbStateValue::StateWarnings(type={0}) - state={1} ...", _key._current_type, (StatesMachine)state));
                 }
-                /// <summary>
-                /// Инициализация дополнительных объектов синхронизации
-                ///  для возможности последовательных запросов АИИСКУЭ, СОТИАССО
-                /// </summary>
-                protected override void InitializeSyncState()
-                {
-                    m_waitHandleState = new WaitHandle[(int)INDEX_WAITHANDLE_REASON.COUNT_INDEX_WAITHANDLE_REASON];
-                    base.InitializeSyncState();
+                ///// <summary>
+                ///// Инициализация дополнительных объектов синхронизации
+                /////  для возможности последовательных запросов АИИСКУЭ, СОТИАССО
+                ///// </summary>
+                //protected override void InitializeSyncState()
+                //{
+                //    m_waitHandleState = new WaitHandle[(int)INDEX_WAITHANDLE_REASON.COUNT_INDEX_WAITHANDLE_REASON];
+                //    base.InitializeSyncState();
 
-                    for (int i = (int)INDEX_WAITHANDLE_REASON.SUCCESS + 1; i < (int)INDEX_WAITHANDLE_REASON.COUNT_INDEX_WAITHANDLE_REASON; i++) {
-                        m_waitHandleState[i] = new ManualResetEvent(false);
-                    }
-                }
+                //    for (int i = (int)INDEX_WAITHANDLE_REASON.SUCCESS + 1; i < (int)INDEX_WAITHANDLE_REASON.COUNT_INDEX_WAITHANDLE_REASON; i++) {
+                //        m_waitHandleState[i] = new ManualResetEvent(false);
+                //    }
+                //}
 
                 private class AIISKUE_KKSCODE
                 {
@@ -498,6 +511,17 @@ namespace Statistic
                     }
                 }
 
+                public void GetListSignals(int id_tec, CONN_SETT_TYPE type)
+                {
+                    clearValues(true);
+                    ClearStates();
+
+                    _key._current_id_tec = id_tec;
+                    _key._current_type = type;
+
+                    getListSignals();
+                }
+
                 private void getListSignals()
                 {
                     AddState((int)StatesMachine.SERVER_TIME);
@@ -521,6 +545,8 @@ namespace Statistic
 
                     SIGNAL sgnl;
                     string[] description;
+                    string name_main = string.Empty
+                        , name_detail = string.Empty;
 
                     foreach (DataRow r in tableListSignals.Rows) {
                         try {
@@ -536,10 +562,13 @@ namespace Statistic
                                 case CONN_SETT_TYPE.DATA_SOTIASSO:
                                     description = ((string)r[@"description"]).Split(new char[] { '.' });
 
+                                    name_main = description[1].Split(' ')[1];
+                                    name_detail = description[1].Split(' ')[description[1].Split(' ').Length - 1];
+
                                     sgnl = new SIGNAL() {
                                         id = (int)(decimal)r[@"id"]
                                         , kks_code = string.Format(@"{0}", (string)r[@"name"])
-                                        , name_shr = string.Format(@"{0} {1}", description[1].Split(' ')[1], description[1].Split(' ')[description[1].Split(' ').Length - 1])
+                                        , name_shr = string.Format(@"{0} {1}", name_main, name_detail.Equals(name_main) == false ? name_detail : string.Empty)
                                         , name = string.Format(@"{0}", (string)r[@"description"])
                                     };
                                     break;
@@ -555,7 +584,7 @@ namespace Statistic
                         }
 
                         if (sgnl.id > 0)
-                            _dictSignals[_key._current_type].Add(sgnl);
+                            _signals.Add(sgnl);
                         else
                             ; // Logging.Logg().Error(string.Format(@""), Logging.INDEX_MESSAGE.NOT_SET)
                     }
@@ -578,7 +607,7 @@ namespace Statistic
 
                     switch (_key._current_type) {
                         case CONN_SETT_TYPE.DATA_AISKUE:
-                            sensor = AIISKUE_KKSCODE.ToSensor(Signals[_key._current_type].ElementAt(_key._current_index).kks_code);
+                            sensor = AIISKUE_KKSCODE.ToSensor(_key._kks_code);
                             parnumber = 12;
                             sql_datetime_start = UserDate.Value.Date;
                             sql_datetime_end = sql_datetime_start.AddDays(1F);
@@ -596,7 +625,7 @@ namespace Statistic
                             break;
                         case CONN_SETT_TYPE.DATA_SOTIASSO:
                             db_table = "states_real_his_0";
-                            kks_code = Signals[_key._current_type].ElementAt(_key._current_index).kks_code;
+                            kks_code = _key._kks_code;
                             sql_datetime_start = UserDate.Value.Date;
                             sql_datetime_end = sql_datetime_start.AddDays(1F);
                             i_agregate = 30;
@@ -654,7 +683,7 @@ namespace Statistic
                             else
                                 ;
 
-                            Values[_key._current_type].m_valuesHours.Add(new VALUE() {
+                            Values.m_valuesHours.Add(new VALUE() {
                                 stamp = stamp
                                 , index_stamp = (int)((stamp - min_stamp).TotalMinutes / 30)
                                 , value = _key._current_type == CONN_SETT_TYPE.DATA_AISKUE ? (float)(double)r[@"VALUE0"]
@@ -666,7 +695,7 @@ namespace Statistic
                         bRes = false;
 
                         Logging.Logg().Exception(e, string.Format(@"HandlerDbSignalValue::getValuesResponse (id_tec={0}, type={1}, signal.kks={2}) - ..."
-                                , _key._current_id_tec, _key._current_type, Signals[_key._current_type].ElementAt(_key._current_index).kks_code)
+                                , _key._current_id_tec, _key._current_type, _key._kks_code)
                             , Logging.INDEX_MESSAGE.NOT_SET);
                     }
 

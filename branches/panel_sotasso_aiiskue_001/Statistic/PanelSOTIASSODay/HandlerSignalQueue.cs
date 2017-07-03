@@ -25,7 +25,12 @@ namespace Statistic
     {
         private partial class HandlerSignalQueue : HHandlerQueue
         {
-            public enum EVENT { SET_TEC, LIST_SIGNAL, VALUES }
+            public enum EVENT { /*SET_TEC,*/ LIST_SIGNAL = 11, VALUES }
+            ///// <summary>
+            ///// Делегат по окончанию обработки очередного обработанного из очереди события
+            /////  (наименование по традиции из HHandlerDB)
+            ///// </summary>
+            //public Action<CONN_SETT_TYPE, EVENT> UpdateGUI_Fact;
             /// <summary>
             /// Структура для хранения значения
             /// </summary>
@@ -72,15 +77,22 @@ namespace Statistic
 
             private HandlerDbSignalValue _handlerDb;
 
-            public Dictionary<CONN_SETT_TYPE, IList<SIGNAL>> Signals { get { return _handlerDb.Signals; } }
+            public Dictionary<CONN_SETT_TYPE, IList<SIGNAL>> Signals;
 
-            public Dictionary<CONN_SETT_TYPE, VALUES> Values { get { return _handlerDb.Values; } }
+            public Dictionary<CONN_SETT_TYPE, VALUES> Values;
+
+            public Action<DelegateStringFunc, DelegateStringFunc, DelegateStringFunc, DelegateBoolFunc> SetDelegateReport;
+            public Action<bool> ReportClear;
 
             public HandlerSignalQueue(int iListenerConfigDbId, IEnumerable<TEC> listTEC)
                 : base ()
             {
-                _handlerDb = new HandlerDbSignalValue(iListenerConfigDbId, listTEC);
-                _handlerDb.UpdateGUI_Fact += new IntDelegateIntIntFunc(onEvtHandlerStatesCompleted);
+                Signals = new Dictionary<CONN_SETT_TYPE, IList<SIGNAL>>();
+                Values = new Dictionary<CONN_SETT_TYPE, VALUES>();
+
+                _handlerDb = new HandlerDbSignalValue(iListenerConfigDbId, listTEC, _types);                
+                SetDelegateReport += new Action<DelegateStringFunc, DelegateStringFunc, DelegateStringFunc, DelegateBoolFunc>(_handlerDb.SetDelegateReport);
+                ReportClear += new Action<bool>(_handlerDb.ReportClear);
             }
             /// <summary>
             /// Переопределение наследуемой функции - запуск объекта
@@ -117,33 +129,45 @@ namespace Statistic
                 //Остановить базовый объект
                 base.Stop();
             }
-            /// <summary>
-            /// Обработчик события - все состояния 'ChangeState_SOTIASSO' обработаны
-            /// </summary>
-            /// <param name="hour">Номер часа в запросе</param>
-            /// <param name="min">Номер минуты в звпросе</param>
-            /// <returns>Признак результата выполнения функции</returns>
-            private int onEvtHandlerStatesCompleted(int conn_sett_type, int state_machine)
-            {
-                int iRes = ((!((CONN_SETT_TYPE)conn_sett_type == CONN_SETT_TYPE.UNKNOWN)) // тип источника данных известен
-                    && (!(state_machine < 0))) // кол-во строк "не меньше 0"
-                    ? 0
-                        : -1;
-
-                ///*IAsyncResult iar = Begin*/
-                //Invoke(new Action<CONN_SETT_TYPE, int>(onStatesCompleted), (CONN_SETT_TYPE)conn_sett_type, state_machine);
-
-                return iRes;
-            }
-
-            public void SetDelegateReport(DelegateStringFunc ferr, DelegateStringFunc fwar, DelegateStringFunc fact, DelegateBoolFunc fclr)
-            {
-                _handlerDb.SetDelegateReport(ferr, fwar,  fact, fclr);
-            }
 
             protected override int StateCheckResponse(int state, out bool error, out object outobj)
             {
-                throw new NotImplementedException();
+                int iRes = 0;
+
+                error = false;
+                outobj = null;
+
+                HandlerDbSignalValue.INDEX_SYNC_STATECHECKRESPONSE indxSync = HandlerDbSignalValue.INDEX_SYNC_STATECHECKRESPONSE.UNKNOWN;
+                
+                indxSync = (HandlerDbSignalValue.INDEX_SYNC_STATECHECKRESPONSE)WaitHandle.WaitAny(_handlerDb.m_arSyncStateCheckResponse);
+                switch (indxSync) {
+                    case HandlerDbSignalValue.INDEX_SYNC_STATECHECKRESPONSE.RESPONSE:
+                        switch ((EVENT)state) {
+                            case EVENT.LIST_SIGNAL:
+                                outobj = _handlerDb.Signals;
+                                break;
+                            case EVENT.VALUES:
+                                outobj = _handlerDb.Values;
+                                break;
+                            default:
+                                iRes = -2;
+                                break;
+                        }
+                        break;
+                    case HandlerDbSignalValue.INDEX_SYNC_STATECHECKRESPONSE.ERROR:
+                        iRes = -1;
+                        break;
+                    case HandlerDbSignalValue.INDEX_SYNC_STATECHECKRESPONSE.WARNING:
+                        iRes = 1;
+                        break;
+                    default:
+                        iRes = -3;
+                        break;
+                }                
+
+                error = !(iRes == 0);
+
+                return iRes;
             }
 
             protected override INDEX_WAITHANDLE_REASON StateErrors(int state, int req, int res)
@@ -153,12 +177,63 @@ namespace Statistic
 
             protected override int StateRequest(int state)
             {
-                throw new NotImplementedException();
+                int iRes = 0;
+                ItemQueue itemQueue = Peek;
+
+                CONN_SETT_TYPE type = CONN_SETT_TYPE.UNKNOWN;
+
+                switch ((EVENT)state) {
+                    case EVENT.LIST_SIGNAL:
+                        type = (CONN_SETT_TYPE)itemQueue.Pars[1];
+
+                        _handlerDb.GetListSignals((int)itemQueue.Pars[0], type);
+                        break;
+                    case EVENT.VALUES:
+                        type = (CONN_SETT_TYPE)itemQueue.Pars[0];
+
+                        _handlerDb.Request(type, Signals[type].ElementAt((int)itemQueue.Pars[1]).kks_code);
+                        break;
+                    default:
+                        Logging.Logg().Error(string.Format(@"HandlerSignalQueue::StateRequest (CONN_SETT_TYPE={0}, event={1}) - необработанное событие...", type, (EVENT)state), Logging.INDEX_MESSAGE.NOT_SET);
+
+                        iRes = -1;
+                        break;
+                }
+
+                return iRes;
             }
 
             protected override int StateResponse(int state, object obj)
             {
-                throw new NotImplementedException();
+                int iRes = 0;
+                ItemQueue itemQueue = Peek;
+
+                CONN_SETT_TYPE type = CONN_SETT_TYPE.UNKNOWN;
+
+                switch ((EVENT)state) {
+                    case EVENT.LIST_SIGNAL:
+                        type = (CONN_SETT_TYPE)itemQueue.Pars[1];
+
+                        if (Signals.ContainsKey(type) == false)
+                            Signals.Add(type, new List<SIGNAL> (obj as IList<SIGNAL>));
+                        else
+                            Signals[type] = new List<SIGNAL>(obj as IList<SIGNAL>);
+                        break;
+                    case EVENT.VALUES:
+                        type = (CONN_SETT_TYPE)itemQueue.Pars[0];
+
+                        if (Values.ContainsKey(type) == false)
+                            Values.Add(type, obj as VALUES);
+                        else
+                            Values[type] = obj as VALUES;
+                        break;
+                    default:
+                        break;
+                }
+
+                itemQueue.m_dataHostRecieved.OnEvtDataRecievedHost(new EventArgsDataHost(null, new object[] { (EVENT)state, type }));
+
+                return iRes;
             }
 
             protected override void StateWarnings(int state, int req, int res)

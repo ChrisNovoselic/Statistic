@@ -23,6 +23,7 @@ namespace Statistic
     /// </summary>
     public partial class PanelSOTIASSODay : PanelStatistic, IDataHost
     {
+        private static CONN_SETT_TYPE[] _types = { CONN_SETT_TYPE.DATA_AISKUE, CONN_SETT_TYPE.DATA_SOTIASSO };
         /// <summary>
         /// Перечисление - состояния для обработки обращений к БД
         /// </summary>
@@ -123,9 +124,6 @@ namespace Statistic
         /// Панель для активных элементов управления
         /// </summary>
         private PanelManagement m_panelManagement;
-
-        public event DelegateObjectFunc EvtDataAskedHost;
-
         /// <summary>
         /// Конструктор - основной (без параметров)
         /// </summary>
@@ -143,8 +141,9 @@ namespace Statistic
 
             if (m_listTEC.Count > 0) {
                 //Создать объект обработки запросов - установить первоначальные индексы для ТЭЦ, компонента
-                m_HandlerQueue = new HandlerSignalQueue(iListenerConfigId, m_listTEC);                
+                m_HandlerQueue = new HandlerSignalQueue(iListenerConfigId, m_listTEC);
                 m_HandlerQueue.UserDate = new HandlerSignalQueue.USER_DATE() { UTC_OFFSET = m_panelManagement.CurUtcOffset, Value = m_panelManagement.CurDateTime };
+                //m_HandlerQueue.UpdateGUI_Fact += new Action<CONN_SETT_TYPE, HandlerSignalQueue.EVENT>(handlerSignalQueue_OnEventCompleted);
             } else
                 Logging.Logg().Error(@"PanelSOTIASSODay::ctor () - кол-во ТЭЦ = 0...", Logging.INDEX_MESSAGE.NOT_SET);
 
@@ -290,12 +289,13 @@ namespace Statistic
                         //??? оптимизация, сравнение с предыдущим, полученным по 'SELECT', набором значений - должны совпадать => запрос не требуется
                         m_dictDataGridViewValues[type].Fill(m_HandlerQueue.Values[type].m_valuesHours);
                     } else
-                    // столбец удален - ничего не делаем
+                        // столбец удален - ничего не делаем
                         ;
                     break;
                 case ActionSignal.SELECT:
                     //??? оптимизация, поиск в табличном представлении ранее запрошенных/полученных наборов значений
-                    m_HandlerQueue.Request(type, indxSignal);
+                    //m_HandlerQueue.Push(this, new object[] { new object[] { new object[] { HandlerSignalQueue.EVENT.VALUES, type, indxSignal } } });
+                    DataAskedHost(new object[] { new object[] { HandlerSignalQueue.EVENT.VALUES, type, indxSignal } });
                     break;
                 default:
                     break;
@@ -357,10 +357,10 @@ namespace Statistic
                 bool bRes = !Columns.Contains(name);
 
                 if (bRes == false)
-                // столбец найден
+                    // столбец найден
                     Columns.Remove(name);
                 else {
-                // столбец не найден - добавить
+                    // столбец не найден - добавить
                     SelectionMode = DataGridViewSelectionMode.CellSelect;
 
                     Columns.Add(name, headerText);
@@ -383,8 +383,7 @@ namespace Statistic
                             row.Cells[iColumn].Value = (from value in values where value.index_stamp == (int)row.Tag select value.value).ElementAt(0);
                         } catch (Exception e) {
                             Logging.Logg().Error(string.Format(@"PanelSOTIASSODay.HDataGridView::Fill () - не найдено значение для строки Index={0}, Tag={1}", row.Index, row.Tag), Logging.INDEX_MESSAGE.NOT_SET);
-                        }
-                    else
+                        } else
                         row.Cells[iColumn].Value = values.Sum(v => v.value);
                 }
             }
@@ -410,8 +409,7 @@ namespace Statistic
         public override void Stop()
         {
             //Проверить актуальность объекта обработки запросов
-            if (!(m_HandlerQueue == null))
-            {
+            if (!(m_HandlerQueue == null)) {
                 if (m_HandlerQueue.Actived == true)
                     //Если активен - деактивировать
                     m_HandlerQueue.Activate(false);
@@ -425,8 +423,7 @@ namespace Statistic
                     ;
 
                 //m_tecView = null;
-            }
-            else
+            } else
                 ;
 
             //Остановить базовый объект
@@ -463,7 +460,7 @@ namespace Statistic
                 else
                     Logging.Logg().Error(@"PanelSOTIASSODay::Activate () - не заполнен список с ТЭЦ...", Logging.INDEX_MESSAGE.NOT_SET);
             } else
-                ;            
+                ;
 
             return bRes;
         }
@@ -479,21 +476,6 @@ namespace Statistic
             //...
             // , либо вызов метода с аргументами
             //m_HandlerDb.Request(...);
-        }        
-
-        private void onEventCompleted(CONN_SETT_TYPE type, int state_machine)
-        {
-            switch ((StatesMachine)state_machine) {
-                case StatesMachine.LIST_SIGNAL:
-                    m_panelManagement.InitializeSignalList(type, m_HandlerQueue.Signals[type].Select(sgnl => { return sgnl.name_shr; }));
-                    break;
-                case StatesMachine.VALUES:
-                    //draw(type);
-                    //m_threadDraw.RunWorkerAsync(type);                    
-                    break;
-                default:
-                    break;
-            }
         }
 
         private void draw(CONN_SETT_TYPE type)
@@ -501,12 +483,15 @@ namespace Statistic
             Color colorChart = Color.Empty
                 , colorPCurve = Color.Empty;
 
-            // получить цветовую гамму
-            getColorZEDGraph(type, out colorChart, out colorPCurve);
-            // отобразить
-            m_dictZGraphValues[type].Draw(m_HandlerQueue.Values[type].m_valuesHours
-                , type == CONN_SETT_TYPE.DATA_AISKUE ? @"АИИСКУЭ" : type == CONN_SETT_TYPE.DATA_SOTIASSO ? @"СОТИАССО" : @"Неизвестный тип", textGraphCurDateTime
-                , colorChart, colorPCurve);
+            if (m_HandlerQueue.Values[type].m_valuesHours.Count > 0) {
+                // получить цветовую гамму
+                getColorZEDGraph(type, out colorChart, out colorPCurve);
+                // отобразить
+                m_dictZGraphValues[type].Draw(m_HandlerQueue.Values[type].m_valuesHours
+                    , type == CONN_SETT_TYPE.DATA_AISKUE ? @"АИИСКУЭ" : type == CONN_SETT_TYPE.DATA_SOTIASSO ? @"СОТИАССО" : @"Неизвестный тип", textGraphCurDateTime
+                    , colorChart, colorPCurve);
+            } else
+                Logging.Logg().Error(string.Format(@"PanelSOTIASSODay::draw (type={0}) - нет ни одного значения ...", type), Logging.INDEX_MESSAGE.NOT_SET);
         }
 
         private void getColorZEDGraph(CONN_SETT_TYPE type, out Color colorChart, out Color colValue)
@@ -535,8 +520,7 @@ namespace Statistic
         /// </summary>
         private string textGraphCurDateTime
         {
-            get
-            {
+            get {
                 return m_panelManagement.CurDateTime.ToShortDateString();
             }
         }
@@ -555,13 +539,13 @@ namespace Statistic
         /// Обработчик события - изменение выбора строки в списке ТЭЦ
         /// </summary>
         /// <param name="indxTEC">Индекс выбранного элемента</param>
-        private void panelManagement_TECListOnSelectionChanged (int indxTEC)
+        private void panelManagement_TECListOnSelectionChanged(int indxTEC)
         {
-            IEnumerable<TECComponentBase> listAIISKUESignalNameShr = new List <TECComponentBase>()
+            IEnumerable<TECComponentBase> listAIISKUESignalNameShr = new List<TECComponentBase>()
                 , listSOTIASSOSignalNameShr = new List<TECComponentBase>();
 
             if (!(indxTEC < 0)
-                && (indxTEC < m_listTEC.Count)) {                
+                && (indxTEC < m_listTEC.Count)) {
                 foreach (CONN_SETT_TYPE conn_sett_type in new CONN_SETT_TYPE[] { CONN_SETT_TYPE.DATA_AISKUE, CONN_SETT_TYPE.DATA_SOTIASSO }) {
                     //Очистить графические представления
                     m_dictZGraphValues[conn_sett_type].Clear();
@@ -571,21 +555,61 @@ namespace Statistic
                     m_panelManagement.ClearSignalList(conn_sett_type);
                 }
                 //Инициализировать список ТЭЦ для 'TecView' - указать ТЭЦ в соответствии с указанным ранее индексом (0)
-                m_HandlerQueue.Push(this, new object[] { new object[] { HandlerSignalQueue.EVENT.SET_TEC, m_listTEC[indxTEC].m_id } });
+                foreach (CONN_SETT_TYPE type in _types) {
+                    //m_HandlerQueue.Push(this, new object[] { new object[] { new object[] { HandlerSignalQueue.EVENT.LIST_SIGNAL, m_listTEC[indxTEC].m_id, type/*.ToString()*/ } } });
+                    DataAskedHost(new object[] { new object[] { HandlerSignalQueue.EVENT.LIST_SIGNAL, m_listTEC[indxTEC].m_id, type/*.ToString()*/ } });
+                    //EvtDataAskedHost(new object[] { new object[] { HandlerSignalQueue.EVENT.LIST_SIGNAL, m_listTEC[indxTEC].m_id, type/*.ToString()*/ } });
+                }
                 //Добавить строки(сигналы) на дочернюю панель(список АИИСКУЭ, СОТИАССО-сигналов)
                 // - по возникновению сигнала окончания заппроса                
             } else
-                ;            
+                ;
         }
 
+        #region Интерфейс IDataHost
+        /// <summary>
+        /// Не используется
+        /// </summary>
+        public event DelegateObjectFunc EvtDataAskedHost;
+        /// <summary>
+        /// Не используется
+        /// </summary>
+        /// <param name="par">Аргумент для передачи обработчику очереди событий</param>
         public void DataAskedHost(object par)
         {
-            throw new NotImplementedException();
+            m_HandlerQueue.Push(this, new object[] { par });
         }
 
         public void OnEvtDataRecievedHost(object res)
         {
-            throw new NotImplementedException();
+            object[] pars;
+            HandlerSignalQueue.EVENT evt;
+            CONN_SETT_TYPE type;
+
+            pars = (res as EventArgsDataHost).par;
+            evt = (HandlerSignalQueue.EVENT)pars[0];
+            type = (CONN_SETT_TYPE)pars[1];
+
+            if (InvokeRequired == true)
+                Invoke(new Action<CONN_SETT_TYPE, HandlerSignalQueue.EVENT>(onEvtCompleted), type, evt);
+            else
+                onEvtCompleted(type, evt);
+        }
+        #endregion
+
+        private void onEvtCompleted(CONN_SETT_TYPE type, HandlerSignalQueue.EVENT evt)
+        {
+            switch (evt) {
+                case HandlerSignalQueue.EVENT.LIST_SIGNAL:
+                    m_panelManagement.InitializeSignalList(type, m_HandlerQueue.Signals[type].Select(sgnl => { return sgnl.name_shr; }));
+                    break;
+                case HandlerSignalQueue.EVENT.VALUES:
+                    draw(type);
+                    //m_threadDraw.RunWorkerAsync(type);                    
+                    break;
+                default:
+                    break;
+            }
         }
     }
 }

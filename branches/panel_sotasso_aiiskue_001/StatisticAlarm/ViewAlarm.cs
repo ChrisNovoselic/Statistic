@@ -1281,7 +1281,6 @@ namespace StatisticAlarm
                             break;
                         case HandlerDb.INDEX_SYNC_STATECHECKRESPONSE.ERROR:
                             iRes = -1;
-                            error = true;
                             break;
                         case HandlerDb.INDEX_SYNC_STATECHECKRESPONSE.WARNING:
                             iRes = 1;
