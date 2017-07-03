@@ -2765,13 +2765,18 @@ namespace Statistic
                             if (ctrl is PanelSOTIASSO)
                                 ((PanelSOTIASSO)ctrl).UpdateGraphicsCurrent(type);
                             else
-                                if (ctrl is PanelLKView)
-                                    ((PanelLKView)ctrl).UpdateGraphicsCurrent(type);
+                                #region KhryapinAN, 2017-06, PanelSOTIASSODay
+                                if (ctrl is PanelSOTIASSODay)
+                                    ((PanelSOTIASSODay)ctrl).UpdateGraphicsCurrent(type);
                                 else
-                                    if (ctrl is PanelVzletTDirect)
-                                        ((PanelVzletTDirect)ctrl).UpdateGraphicsCurrent(type);
+                                #endregion
+                                    if (ctrl is PanelLKView)
+                                        ((PanelLKView)ctrl).UpdateGraphicsCurrent(type);
                                     else
-                                        ;
+                                        if (ctrl is PanelVzletTDirect)
+                                            ((PanelVzletTDirect)ctrl).UpdateGraphicsCurrent(type);
+                                        else
+                                            ;
             else
                 ;
 

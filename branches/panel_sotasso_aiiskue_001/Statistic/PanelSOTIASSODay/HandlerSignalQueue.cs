@@ -64,6 +64,11 @@ namespace Statistic
                 //{
                 //    this.serverTime = serverTime;
                 //}
+
+                public static VALUES Copy(VALUES src)
+                {
+                    return new VALUES() { serverTime = src.serverTime, m_valuesHours = new List<VALUE>(src.m_valuesHours) };
+                }
             }
 
             public struct USER_DATE
@@ -223,9 +228,9 @@ namespace Statistic
                         type = (CONN_SETT_TYPE)itemQueue.Pars[0];
 
                         if (Values.ContainsKey(type) == false)
-                            Values.Add(type, obj as VALUES);
+                            Values.Add(type, VALUES.Copy(obj as VALUES));
                         else
-                            Values[type] = obj as VALUES;
+                            Values[type] = VALUES.Copy(obj as VALUES);
                         break;
                     default:
                         break;

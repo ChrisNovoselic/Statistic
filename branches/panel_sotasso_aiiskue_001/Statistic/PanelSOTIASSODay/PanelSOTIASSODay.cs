@@ -470,12 +470,37 @@ namespace Statistic
         /// <param name="dtNew">Новые дата/номер часа</param>
         private void panelManagement_OnEvtDateTimeChanged(ActionDateTime action_changed)
         {
+            KEY_CONTROLS key_ctrl = KEY_CONTROLS.UNKNOWN;
+            CheckedListBox clb = null;
+
+            foreach (CONN_SETT_TYPE conn_sett_type in _types) {
+                //Очистить графические представления
+                m_dictZGraphValues[conn_sett_type].Clear();
+                //Очистить табличные представления значений
+                m_dictDataGridViewValues[conn_sett_type].Clear();
+            }
             //??? либо автоматический опрос в 'm_HandlerDb'
             m_HandlerQueue.UserDate = new HandlerSignalQueue.USER_DATE() { UTC_OFFSET = m_panelManagement.CurUtcOffset, Value = m_panelManagement.CurDateTime };
             // , либо организация цикла опроса в этой функции
             //...
             // , либо вызов метода с аргументами
             //m_HandlerDb.Request(...);
+            foreach (CONN_SETT_TYPE conn_sett_type in _types) {
+                key_ctrl = conn_sett_type == CONN_SETT_TYPE.DATA_AISKUE ? KEY_CONTROLS.CLB_AIISKUE_SIGNAL
+                    : conn_sett_type == CONN_SETT_TYPE.DATA_SOTIASSO ? KEY_CONTROLS.CLB_SOTIASSO_SIGNAL
+                        : KEY_CONTROLS.UNKNOWN;
+
+                if (!(key_ctrl == KEY_CONTROLS.UNKNOWN)) {
+                    clb = findControl(key_ctrl.ToString()) as CheckedListBox;
+
+                    DataAskedHost(new object[] { new object[] { HandlerSignalQueue.EVENT.VALUES, conn_sett_type, clb.SelectedIndex } });
+
+                    //foreach (int indx in clb.CheckedIndices.Cast<int>()) {
+                    //}
+                } else
+                    Logging.Logg().Error(string.Format(@"PanelSOTIASSODay::panelManagement_OnEvtDateTimeChanged () - не удалось найти элемент графического интерфейса для {0}", conn_sett_type)
+                        , Logging.INDEX_MESSAGE.NOT_SET);
+            }
         }
 
         private void draw(CONN_SETT_TYPE type)
@@ -491,7 +516,7 @@ namespace Statistic
                     , type == CONN_SETT_TYPE.DATA_AISKUE ? @"АИИСКУЭ" : type == CONN_SETT_TYPE.DATA_SOTIASSO ? @"СОТИАССО" : @"Неизвестный тип", textGraphCurDateTime
                     , colorChart, colorPCurve);
             } else
-                Logging.Logg().Error(string.Format(@"PanelSOTIASSODay::draw (type={0}) - нет ни одного значения ...", type), Logging.INDEX_MESSAGE.NOT_SET);
+                Logging.Logg().Error(string.Format(@"PanelSOTIASSODay::draw (type={0}) - нет ни одного значения за [{1}]...", type, m_HandlerQueue.UserDate), Logging.INDEX_MESSAGE.NOT_SET);
         }
 
         private void getColorZEDGraph(CONN_SETT_TYPE type, out Color colorChart, out Color colValue)
@@ -546,7 +571,7 @@ namespace Statistic
 
             if (!(indxTEC < 0)
                 && (indxTEC < m_listTEC.Count)) {
-                foreach (CONN_SETT_TYPE conn_sett_type in new CONN_SETT_TYPE[] { CONN_SETT_TYPE.DATA_AISKUE, CONN_SETT_TYPE.DATA_SOTIASSO }) {
+                foreach (CONN_SETT_TYPE conn_sett_type in _types) {
                     //Очистить графические представления
                     m_dictZGraphValues[conn_sett_type].Clear();
                     //Очистить табличные представления значений

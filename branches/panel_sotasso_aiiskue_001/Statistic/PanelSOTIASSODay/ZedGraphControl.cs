@@ -70,6 +70,10 @@ namespace Statistic
 
                 this.PointValueEvent += new ZedGraph.ZedGraphControl.PointValueHandler(this.onPointValueEvent);
                 this.DoubleClickEvent += new ZedGraph.ZedGraphControl.ZedMouseEventHandler(this.onDoubleClickEvent);
+
+                GraphPane pane = this.GraphPane;
+                // Подпишемся на событие, которое будет вызываться при выводе каждой отметки на оси
+                pane.XAxis.ScaleFormatEvent += new Axis.ScaleFormatHandler(xAxis_OnScaleFormatEvent);
             }
             /// <summary>
             /// Обработчик события - отобразить значения точек
@@ -95,6 +99,24 @@ namespace Statistic
 
                 return true;
             }
+
+            private const int DIV_MAJOR_STEP = 4;
+            /// <summary>
+            /// Метод, который вызывается, когда надо отобразить очередную метку по оси
+            /// </summary>
+            /// <param name="pane">Указатель на текущий GraphPane</param>
+            /// <param name="axis">Указатель на ось</param>
+            /// <param name="val">Значение, которое надо отобразить</param>
+            /// <param name="index">Порядковый номер данного отсчета</param>
+            /// <returns>Метод должен вернуть строку, которая будет отображаться под данной меткой</returns>
+            private string xAxis_OnScaleFormatEvent(GraphPane pane, Axis axis, double val, int index)
+            {
+                //if (index > 0)
+                    return string.Format(@"{0}", new DateTime(TimeSpan.FromMinutes(((index + 1) * DIV_MAJOR_STEP) * 30).Ticks).ToString("HH:mm"));
+                //else
+                //    return string.Empty;
+            }
+
             /// <summary>
             /// Обновить содержание в графической субобласти "сутки по-часам"
             /// </summary>
@@ -105,16 +127,16 @@ namespace Statistic
             {
                 double[] values = null;
                 int itemscount = -1;
-                string[] names = null;
+                //string[] names = null;
                 double minimum
                     , minimum_scale
                     , maximum
                     , maximum_scale;
                 bool noValues = false;
 
-                itemscount = srcValues.Count() - 1;
+                itemscount = srcValues.Count();
 
-                names = new string[itemscount];
+                //names = new string[itemscount];
 
                 values = new double[itemscount];
 
@@ -123,9 +145,9 @@ namespace Statistic
                 noValues = true;
 
                 for (int i = 0; i < itemscount; i++) {
-                    names[i] = (i + 1).ToString();
+                    //names[i] = string.Format(@"{0}", new DateTime(TimeSpan.FromMinutes((i + 1) * 30).Ticks).ToString("HH:mm"));
 
-                    values[i] = srcValues.ElementAt(i + 1).value;
+                    values[i] = srcValues.ElementAt(i).value;
 
                     if ((minimum > values[i]) && (!(values[i] == 0))) {
                         minimum = values[i];
@@ -195,18 +217,18 @@ namespace Statistic
                 pane.XAxis.Scale.Min = 0.5;
                 pane.XAxis.Scale.Max = pane.XAxis.Scale.Min + itemscount;
                 pane.XAxis.Scale.MinorStep = 1;
-                pane.XAxis.Scale.MajorStep = itemscount / 20;
+                pane.XAxis.Scale.MajorStep = itemscount /  (itemscount / DIV_MAJOR_STEP);
 
                 pane.XAxis.Type = AxisType.Linear; //...из minutes
                                                    //pane.XAxis.Type = AxisType.Text;
-                pane.XAxis.Title.Text = "t, мин";
+                pane.XAxis.Title.Text = "t, ЧЧ:мм";
                 pane.YAxis.Title.Text = "P, МВт";
                 pane.Title.Text = textConnSettType;
                 pane.Title.Text += new string(' ', 29);
                 pane.Title.Text += textDate;
 
-                pane.XAxis.Scale.TextLabels = names;
-                pane.XAxis.Scale.IsPreventLabelOverlap = false;
+                //pane.XAxis.Scale.TextLabels = names;
+                pane.XAxis.Scale.IsPreventLabelOverlap = true;
 
                 // Включаем отображение сетки напротив крупных рисок по оси X
                 pane.XAxis.MajorGrid.IsVisible = true;
