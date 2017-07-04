@@ -1,19 +1,15 @@
 ﻿using System;
-using System.Collections;
 using System.Collections.Generic;
-using System.Runtime.InteropServices;
 using System.Windows.Forms;
 using System.ComponentModel; //IContainer
-using System.Threading; //ManualResetEvent
 using System.Drawing; //Color
 using System.Data;
-
-using ZedGraph;
 
 using HClassLibrary;
 using StatisticCommon;
 using System.Linq;
-using System.Data.Common;
+using GemBox.Spreadsheet;
+using System.IO;
 
 namespace Statistic
 {
@@ -158,7 +154,7 @@ namespace Statistic
             m_panelManagement.EvtTECListSelectionIndexChanged += new Action<int>(panelManagement_TECListOnSelectionChanged);
             m_panelManagement.EvtDateTimeChanged += new Action<ActionDateTime>(panelManagement_OnEvtDateTimeChanged);
             m_panelManagement.EvtActionSignalItem += new Action<CONN_SETT_TYPE, ActionSignal, int>(panelManagement_OnEvtActionSignalItem);
-            //m_panelManagement.EvtSetNowHour += new DelegateFunc(panelManagement_OnEvtSetNowHour);
+            m_panelManagement.EvtExportDo += new DelegateFunc(panelManagement_OnEvtExportDo);
             #endregion
 
             // сообщить дочернему элементу, что дескриптор родительской панели создан
@@ -303,6 +299,126 @@ namespace Statistic
                 default:
                     break;
             }
+        }
+
+        #region Константы для работы с шаблоном отчета
+        private const int STARTROW_TEMPLATE_SOTIASSO_DAY = 6;
+        private const int STARTCOLUMN_TEMPLATE_SOTIASSO_DAY = 1;
+        private const string NAMEFOLDER_TEMPLATE_SOTIASSO_DAY = @"Template";
+        private const string NAMEFILE_TEMPLATE_SOTIASSO_DAY = @"Отчет по подинтервальной мощности_TEC_DATE.xls";
+        private const string NAMEFOLDER_STATISTIC = @"Statistic";
+        private const int I_AGREGATE = 30;
+        #endregion
+
+        /// <summary>
+        /// Обработчик события - нажатие кнопки "Экспорт"
+        /// </summary>
+        private void panelManagement_OnEvtExportDo()
+        {
+            KEY_CONTROLS key_ctrl = KEY_CONTROLS.UNKNOWN;
+            HDataGridView dgv;
+            string pathRemoteTemplate = string.Empty
+                , pathUserTemplate = string.Empty
+                , nameFolderRemoteTemplate = NAMEFOLDER_TEMPLATE_SOTIASSO_DAY
+                , nameFolderUserTemplate = string.Empty
+                , nameFileTemplate = NAMEFILE_TEMPLATE_SOTIASSO_DAY;
+            ExcelFile excel;
+            DataTable tableExportDo;
+            int iColumn = STARTCOLUMN_TEMPLATE_SOTIASSO_DAY
+                , iStartRow = STARTROW_TEMPLATE_SOTIASSO_DAY
+                , i_agregate = I_AGREGATE;
+            //Excel Application Object
+            Microsoft.Office.Interop.Excel.Application oExcelApp;
+            Microsoft.Office.Interop.Excel.Workbook oExcelWorkbook;
+
+            try {
+                // определить путь к шаблону отчета
+                pathRemoteTemplate = Path.Combine(AppDomain.CurrentDomain.BaseDirectory, Path.Combine(nameFolderRemoteTemplate, nameFileTemplate));
+                // определить каталог для размещения итогового отчета
+                nameFolderUserTemplate = Path.Combine(Environment.GetFolderPath(Environment.SpecialFolder.ApplicationData), @"Statistic");
+                // определить полный путь для размещения итогового отчета
+                pathUserTemplate = Path.Combine(nameFolderUserTemplate
+                    , nameFileTemplate.Replace(@"TEC", (string)(findControl(KEY_CONTROLS.CBX_TEC_LIST.ToString()) as ComboBox).SelectedItem)
+                        .Replace(@"DATE", m_panelManagement.CurDateTime.Date.ToString(@"yyyyMMdd")));
+                // создать при необходимости каталог на ПК пользователя
+                if (Directory.Exists(nameFolderUserTemplate) == false)
+                    Directory.CreateDirectory(nameFolderUserTemplate);
+                else
+                    ;
+                // проверить: выполняется ли уже MS Excel
+                oExcelApp = null;
+                try {
+                    oExcelApp = (Microsoft.Office.Interop.Excel.Application)System.Runtime.InteropServices.Marshal.GetActiveObject("Excel.Application");
+                } catch {
+                } finally {                    
+                    if (object.Equals(oExcelApp, null) == true)
+                    // если не выполняется - создать объект MS Excel
+                        oExcelApp = new Microsoft.Office.Interop.Excel.Application();
+                    else
+                        ;
+                }                
+                if (File.Exists(pathUserTemplate) == true)
+                    try {
+                        File.Delete(pathUserTemplate);
+                    } catch {
+                        oExcelWorkbook = oExcelApp.Workbooks.Cast<Microsoft.Office.Interop.Excel.Workbook>().FirstOrDefault(book => { return book.FullName.Equals(pathUserTemplate) == true; });
+                        if (object.Equals(oExcelWorkbook, null) == false)
+                            oExcelWorkbook.Close(false);
+                        else
+                            ;
+
+                        try {
+                            File.Delete(pathUserTemplate);
+                        } catch {
+                            return;
+                        }
+                    }
+                else
+                    ;
+
+                File.Copy(pathRemoteTemplate, pathUserTemplate);
+
+                excel = new GemBox.Spreadsheet.ExcelFile();
+                excel.LoadXls(pathUserTemplate);
+
+                excel.Worksheets[0].Rows[0].Cells[0].Value = i_agregate;
+                excel.Worksheets[0].Rows[0].Cells[1].Value = m_panelManagement.CurDateTime.Date.ToShortDateString();
+                excel.Worksheets[0].Rows[0].Cells[2].Value = m_panelManagement.CurDateTime.Date.AddDays(1).ToShortDateString();
+
+                foreach (CONN_SETT_TYPE conn_sett_type in _types) {
+                    key_ctrl = conn_sett_type == CONN_SETT_TYPE.DATA_AISKUE ? KEY_CONTROLS.DGV_AIISKUE_VALUE
+                        : conn_sett_type == CONN_SETT_TYPE.DATA_SOTIASSO ? KEY_CONTROLS.DGV_SOTIASSO_VALUE
+                            : KEY_CONTROLS.UNKNOWN;
+
+                    if (!(key_ctrl == KEY_CONTROLS.UNKNOWN)) {
+                        dgv = findControl(key_ctrl.ToString()) as HDataGridView;
+
+                        try {
+                            tableExportDo = dgv.GetValues();
+                            if (tableExportDo.Columns.Count > 0) {
+                                excel.Worksheets[0].InsertDataTable(tableExportDo, iStartRow - 1, iColumn, true);
+
+                                iColumn += tableExportDo.Columns.Count;
+                            } else
+                            // нет столбцов - нет строк - нет значений для вставки
+                                ;
+                        } catch (Exception e) {
+                            Logging.Logg().Exception(e, string.Format(@"PanelSOTIASSODay::panelManagement_OnEvtExportDo () - conn_sett_type={0}, заполнение значениями...", conn_sett_type), Logging.INDEX_MESSAGE.NOT_SET);
+                        }
+                    } else
+                        Logging.Logg().Error(string.Format(@"PanelSOTIASSODay::panelManagement_OnEvtExportDo () - не удалось найти элемент графического интерфейса для {0}", conn_sett_type)
+                            , Logging.INDEX_MESSAGE.NOT_SET);
+                }
+
+                excel.SaveXls(pathUserTemplate);
+
+                //System.Diagnostics.Process.Start(new System.Diagnostics.ProcessStartInfo(@"excel.exe", string.Format("\"{0}\"", pathUserTemplate)));
+
+                oExcelApp.Workbooks.Open(pathUserTemplate);
+                oExcelApp.Visible = true;
+            } catch (Exception e) {
+                Logging.Logg().Exception(e, string.Format(@"PanelSOTIASSODay::panelManagement_OnEvtExportDo () - подготовка шаблона..."), Logging.INDEX_MESSAGE.NOT_SET);
+            } 
         }
 
         public override void SetDelegateReport(DelegateStringFunc ferr, DelegateStringFunc fwar, DelegateStringFunc fact, DelegateBoolFunc fclr)

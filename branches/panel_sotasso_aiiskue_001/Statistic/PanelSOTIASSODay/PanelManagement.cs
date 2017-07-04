@@ -28,7 +28,7 @@ namespace Statistic
         /// </summary>
         private class PanelManagement : HPanelCommon
         {
-            public event Action<int, DateTime> EvtExportDo;
+            public event DelegateFunc EvtExportDo;
 
             public event Action<ActionDateTime> EvtDateTimeChanged;
             /// <summary>
@@ -191,7 +191,7 @@ namespace Statistic
 
             private void btnExport_OnClick(object sender, EventArgs e)
             {
-                EvtExportDo?.Invoke(-1, DateTime.MinValue);
+                EvtExportDo?.Invoke();
             }
 
             private void clbAIISKUESignal_OnItemChecked(object sender, ItemCheckEventArgs e)
