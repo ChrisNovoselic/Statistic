@@ -626,7 +626,7 @@ namespace Statistic
                         case CONN_SETT_TYPE.DATA_SOTIASSO:
                             db_table = "states_real_his_0";
                             kks_code = _key._kks_code;
-                            sql_datetime_start = UserDate.Value.Date;
+                            sql_datetime_start = UserDate.Value.Date.AddHours(-1 * UserDate.UTC_OFFSET);
                             sql_datetime_end = sql_datetime_start.AddDays(1F);
                             i_agregate = 30;
                             UTC_OFFSET = 0;

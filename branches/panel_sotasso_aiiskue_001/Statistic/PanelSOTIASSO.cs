@@ -18,7 +18,7 @@ namespace Statistic
     /// Панель для отображения значений СОТИАССО (телеметрия)
     ///  для контроля
     /// </summary>
-    public class PanelSOTIASSO : PanelStatistic
+    public class PanelSOTIASSOHour : PanelStatistic
     {
         private class TecViewSOTIASSO : TecView
         {
@@ -207,7 +207,7 @@ namespace Statistic
         /// <summary>
         /// Конструктор - основной (без параметров)
         /// </summary>
-        public PanelSOTIASSO(List<StatisticCommon.TEC> listTec)
+        public PanelSOTIASSOHour(List<StatisticCommon.TEC> listTec)
             : base()
         {
             //m_listTEC = listTec;
@@ -254,7 +254,7 @@ namespace Statistic
         /// Конструктор - вспомогательный (с параметрами)
         /// </summary>
         /// <param name="container">Владелец текущего объекта</param>
-        public PanelSOTIASSO(IContainer container, List<StatisticCommon.TEC> listTec/*, DelegateStringFunc fErrRep, DelegateStringFunc fWarRep, DelegateStringFunc fActRep, DelegateBoolFunc fRepClr*/)
+        public PanelSOTIASSOHour(IContainer container, List<StatisticCommon.TEC> listTec/*, DelegateStringFunc fErrRep, DelegateStringFunc fWarRep, DelegateStringFunc fActRep, DelegateBoolFunc fRepClr*/)
             : this(listTec)
         {
             container.Add(this);
@@ -516,7 +516,7 @@ namespace Statistic
                 this.SetColumnSpan(ctrl, 2); this.SetRowSpan(ctrl, 1);
 
                 // таблица для отображения значений ГТП
-                ctrl = new PanelSOTIASSO.DataGridViewGTP();
+                ctrl = new PanelSOTIASSOHour.DataGridViewGTP();
                 ctrl.Name = KEY_CONTROLS.DGV_GTP_VALUE.ToString();
                 ctrl.Dock = DockStyle.Fill;
                 //ctrl.Anchor = (AnchorStyles)((AnchorStyles.Left | AnchorStyles.Top) | AnchorStyles.Right);
@@ -544,7 +544,7 @@ namespace Statistic
                 this.SetColumnSpan(ctrl, 6); this.SetRowSpan(ctrl, 3);
 
                 // таблица для отображения значений ГТП
-                ctrl = new PanelSOTIASSO.DataGridViewTG();
+                ctrl = new PanelSOTIASSOHour.DataGridViewTG();
                 ctrl.Name = KEY_CONTROLS.DGV_TG_VALUE.ToString();
                 ctrl.Dock = DockStyle.Fill;
                 //ctrl.Anchor = (AnchorStyles)((AnchorStyles.Left | AnchorStyles.Top) | AnchorStyles.Right);

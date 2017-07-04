@@ -141,13 +141,13 @@ namespace Statistic
                 values = new double[itemscount];
 
                 minimum = double.MaxValue;
-                maximum = 0;
+                maximum = double.MinValue;
                 noValues = true;
 
                 for (int i = 0; i < itemscount; i++) {
                     //names[i] = string.Format(@"{0}", new DateTime(TimeSpan.FromMinutes((i + 1) * 30).Ticks).ToString("HH:mm"));
 
-                    values[i] = srcValues.ElementAt(i).value;
+                    values[i] = srcValues.ElementAt(i).value < 0 ? -1 * srcValues.ElementAt(i).value : srcValues.ElementAt(i).value;
 
                     if ((minimum > values[i]) && (!(values[i] == 0))) {
                         minimum = values[i];
@@ -210,6 +210,16 @@ namespace Statistic
                 } else
                     ;
 
+                //// Ось X будет пересекаться с осью Y на уровне Y = 0
+                //pane.XAxis.Cross = 65.0;
+                //// Отключим отображение первых и последних меток по осям
+                pane.XAxis.Scale.IsSkipFirstLabel = false;
+                pane.XAxis.Scale.IsSkipLastLabel = true;
+                //// Отключим отображение меток в точке пересечения с другой осью
+                //pane.XAxis.Scale.IsSkipCrossLabel = true;
+                //// Спрячем заголовки осей
+                //pane.XAxis.Title.IsVisible = false;
+
                 //Для размещения в одной позиции ОДНого значения
                 pane.BarSettings.Type = BarType.Overlay;
 
@@ -270,6 +280,7 @@ namespace Statistic
 
             public void Clear()
             {
+                GraphPane.CurveList.Clear();
             }
         }
      }

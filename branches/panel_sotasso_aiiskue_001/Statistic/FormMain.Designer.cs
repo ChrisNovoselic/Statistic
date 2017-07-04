@@ -62,9 +62,10 @@ namespace Statistic
             m_dictAddingTabs.Add((int)ID_ADDING_TAB.DATETIMESYNC_SOURCE_DATA, new ADDING_TAB("рассинхронизацияДатаВремяСерверБДToolStripMenuItem", "Рассинхронизация даты/времени серверов БД", HClassLibrary.HTabCtrlEx.TYPE_TAB.FIXED));
             m_dictAddingTabs.Add((int)ID_ADDING_TAB.DIAGNOSTIC, new ADDING_TAB("ДиагностикаToolStripMenuItem", "Диагностика", HClassLibrary.HTabCtrlEx.TYPE_TAB.FIXED));
             m_dictAddingTabs.Add((int)ID_ADDING_TAB.ANALYZER, new ADDING_TAB("ПросмотрЖурналаToolStripMenuItem", "Журнал событий", HClassLibrary.HTabCtrlEx.TYPE_TAB.FIXED));
-            m_dictAddingTabs.Add((int)ID_ADDING_TAB.SOTIASSO, new ADDING_TAB("значенияСОТИАССОToolStripMenuItem", "Значения СОТИАССО", HClassLibrary.HTabCtrlEx.TYPE_TAB.FIXED));
-            // KhryapinAN 2017-06
+            #region KhryapinAN 2017-06
+            m_dictAddingTabs.Add((int)ID_ADDING_TAB.SOTIASSO_HOUR, new ADDING_TAB("значенияСОТИАССОЧасToolStripMenuItem", "Значения СОТИАССО-час", HClassLibrary.HTabCtrlEx.TYPE_TAB.FIXED));            
             m_dictAddingTabs.Add((int)ID_ADDING_TAB.SOTIASSO_DAY, new ADDING_TAB("значенияСОТИАССОСуткиToolStripMenuItem", "Значения СОТИАССО-сутки", HClassLibrary.HTabCtrlEx.TYPE_TAB.FIXED));
+            #endregion
             m_dictAddingTabs.Add((int)ID_ADDING_TAB.VZLET_TDIRECT, new ADDING_TAB("значенияВзлетТпрямаяToolStripMenuItem", "Расчет теплосети", HClassLibrary.HTabCtrlEx.TYPE_TAB.FLOAT));
             m_dictAddingTabs.Add((int)ID_ADDING_TAB.TEC_Component, new ADDING_TAB("СоставТЭЦToolStripMenuItem", "Изменить состав ТЭЦ", HClassLibrary.HTabCtrlEx.TYPE_TAB.FIXED));
             m_dictAddingTabs.Add((int)ID_ADDING_TAB.USERS, new ADDING_TAB("изментьСоставПользовательToolStripMenuItem", "Изменить состав пользователей", HClassLibrary.HTabCtrlEx.TYPE_TAB.FIXED));
@@ -187,9 +188,12 @@ namespace Statistic
                 , m_dictAddingTabs[(int)ID_ADDING_TAB.TM_SN_POWER].menuItem
                 , m_dictAddingTabs[(int)ID_ADDING_TAB.MONITOR_LAST_MINUTES].menuItem
                 , m_dictAddingTabs[(int)ID_ADDING_TAB.SOBSTV_NYZHDY].menuItem
-                , m_dictAddingTabs[(int)ID_ADDING_TAB.SOTIASSO].menuItem
-                // KhryapinAN 2017-06
+                #region KhryapinAN 2017-06
+                , new System.Windows.Forms.ToolStripSeparator()
+                , m_dictAddingTabs[(int)ID_ADDING_TAB.SOTIASSO_HOUR].menuItem                
                 , m_dictAddingTabs[(int)ID_ADDING_TAB.SOTIASSO_DAY].menuItem
+                , new System.Windows.Forms.ToolStripSeparator()
+                #endregion
                 , m_dictAddingTabs[(int)ID_ADDING_TAB.VZLET_TDIRECT].menuItem
             });
             this.видToolStripMenuItem.Name = "видToolStripMenuItem";
@@ -254,12 +258,12 @@ namespace Statistic
             //изментьСоставПользовательStripMenuItem_CheckedChanged
             //
             this.m_dictAddingTabs[(int)ID_ADDING_TAB.USERS].menuItem.CheckedChanged += new System.EventHandler(this.изментьСоставПользовательToolStripMenuItem_CheckedChanged);
-            
-            // 
-            // значенияСОТИАССОToolStripMenuItem
-            // 
-            this.m_dictAddingTabs[(int)ID_ADDING_TAB.SOTIASSO].menuItem.CheckedChanged += new System.EventHandler(this.значенияСОТИАССОToolStripMenuItem_CheckedChanged);
+
             #region KhryapinAN, 2017-06
+            // 
+            // значенияСОТИАССОЧасToolStripMenuItem
+            // 
+            this.m_dictAddingTabs[(int)ID_ADDING_TAB.SOTIASSO_HOUR].menuItem.CheckedChanged += new System.EventHandler(this.значенияСОТИАССОЧасToolStripMenuItem_CheckedChanged);            
             // 
             // значенияСОТИАССОСуткиToolStripMenuItem
             // 
