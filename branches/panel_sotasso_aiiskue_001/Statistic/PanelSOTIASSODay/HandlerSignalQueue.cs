@@ -25,7 +25,7 @@ namespace Statistic
     {
         private partial class HandlerSignalQueue : HHandlerQueue
         {
-            public enum EVENT { /*SET_TEC,*/ LIST_SIGNAL = 11, VALUES }
+            public enum EVENT { /*SET_TEC,*/ LIST_SIGNAL = 11, CUR_VALUES, CHECK_VALUES }
             ///// <summary>
             ///// Делегат по окончанию обработки очередного обработанного из очереди события
             /////  (наименование по традиции из HHandlerDB)
@@ -151,7 +151,8 @@ namespace Statistic
                             case EVENT.LIST_SIGNAL:
                                 outobj = _handlerDb.Signals;
                                 break;
-                            case EVENT.VALUES:
+                            case EVENT.CUR_VALUES:
+                            case EVENT.CHECK_VALUES:
                                 outobj = _handlerDb.Values;
                                 break;
                             default:
@@ -193,7 +194,8 @@ namespace Statistic
 
                         _handlerDb.GetListSignals((int)itemQueue.Pars[0], type);
                         break;
-                    case EVENT.VALUES:
+                    case EVENT.CUR_VALUES:
+                    case EVENT.CHECK_VALUES:
                         type = (CONN_SETT_TYPE)itemQueue.Pars[0];
 
                         _handlerDb.Request(type, Signals[type].ElementAt((int)itemQueue.Pars[1]).kks_code);
@@ -214,29 +216,36 @@ namespace Statistic
                 ItemQueue itemQueue = Peek;
 
                 CONN_SETT_TYPE type = CONN_SETT_TYPE.UNKNOWN;
+                EventArgsDataHost arg;
 
                 switch ((EVENT)state) {
                     case EVENT.LIST_SIGNAL:
                         type = (CONN_SETT_TYPE)itemQueue.Pars[1];
 
                         if (Signals.ContainsKey(type) == false)
-                            Signals.Add(type, new List<SIGNAL> (obj as IList<SIGNAL>));
+                            Signals.Add(type, new List<SIGNAL>(obj as IList<SIGNAL>));
                         else
                             Signals[type] = new List<SIGNAL>(obj as IList<SIGNAL>);
+
+                        arg = new EventArgsDataHost(null, new object[] { (EVENT)state, type });
                         break;
-                    case EVENT.VALUES:
+                    case EVENT.CUR_VALUES:
+                    case EVENT.CHECK_VALUES:
                         type = (CONN_SETT_TYPE)itemQueue.Pars[0];
 
                         if (Values.ContainsKey(type) == false)
                             Values.Add(type, VALUES.Copy(obj as VALUES));
                         else
                             Values[type] = VALUES.Copy(obj as VALUES);
+                        // дополнительно передать ккс-код (для поиска столбца)
+                        arg = new EventArgsDataHost(null, new object[] { (EVENT)state, type, Signals[type].ElementAt((int)itemQueue.Pars[1]).kks_code });
                         break;
                     default:
+                        arg = new EventArgsDataHost(null, new object[] { });
                         break;
                 }
 
-                itemQueue.m_dataHostRecieved.OnEvtDataRecievedHost(new EventArgsDataHost(null, new object[] { (EVENT)state, type }));
+                itemQueue.m_dataHostRecieved.OnEvtDataRecievedHost(arg);
 
                 return iRes;
             }

@@ -188,6 +188,9 @@
     <Compile Include="PanelSOTIASSODay\PanelManagement.cs">
       <SubType>Component</SubType>
     </Compile>
+    <Compile Include="PanelSOTIASSODay\DataGridView.cs">
+      <SubType>Component</SubType>
+    </Compile>
     <Compile Include="PanelSOTIASSODay\ZedGraphControl.cs">
       <SubType>Component</SubType>
     </Compile>

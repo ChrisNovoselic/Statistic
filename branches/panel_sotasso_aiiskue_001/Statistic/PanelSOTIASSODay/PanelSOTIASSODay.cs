@@ -279,12 +279,15 @@ namespace Statistic
 
         private void panelManagement_OnEvtActionSignalItem(CONN_SETT_TYPE type, ActionSignal action, int indxSignal)
         {
+            SIGNAL signal;
             bool bCheckStateReverse = action == ActionSignal.CHECK;
 
             switch (action) {
                 case ActionSignal.CHECK:
-                    if (m_dictDataGridViewValues[type].ActionColumn(m_HandlerQueue.Signals[type].ElementAt(indxSignal).kks_code
-                        , m_HandlerQueue.Signals[type].ElementAt(indxSignal).name_shr) == true) {
+                    signal = m_HandlerQueue.Signals[type].ElementAt(indxSignal);
+
+                    if (m_dictDataGridViewValues[type].ActionColumn(signal.kks_code
+                        , signal.name_shr) == true) {
                         // запросить значения для заполнения нового столбца
                         //??? оптимизация, сравнение с предыдущим, полученным по 'SELECT', набором значений - должны совпадать => запрос не требуется
                         m_dictDataGridViewValues[type].Fill(m_HandlerQueue.Values[type].m_valuesHours);
@@ -295,7 +298,7 @@ namespace Statistic
                 case ActionSignal.SELECT:
                     //??? оптимизация, поиск в табличном представлении ранее запрошенных/полученных наборов значений
                     //m_HandlerQueue.Push(this, new object[] { new object[] { new object[] { HandlerSignalQueue.EVENT.VALUES, type, indxSignal } } });
-                    DataAskedHost(new object[] { new object[] { HandlerSignalQueue.EVENT.VALUES, type, indxSignal } });
+                    DataAskedHost(new object[] { new object[] { HandlerSignalQueue.EVENT.CUR_VALUES, type, indxSignal } });
                     break;
                 default:
                     break;
@@ -305,94 +308,6 @@ namespace Statistic
         public override void SetDelegateReport(DelegateStringFunc ferr, DelegateStringFunc fwar, DelegateStringFunc fact, DelegateBoolFunc fclr)
         {
             m_HandlerQueue.SetDelegateReport(ferr, fwar, fact, fclr);
-        }
-
-        private class HDataGridView : DataGridView
-        {
-            public HDataGridView()
-                : base()
-            {
-                initializeComponent();
-            }
-
-            private void initializeComponent()
-            {
-                TimeSpan tsRow = TimeSpan.Zero;
-
-                Columns.Add("Unknown", string.Empty);
-                Columns[0].Visible = false;
-                Columns[0].SortMode = DataGridViewColumnSortMode.NotSortable;
-
-                for (int i = 0; i < 49; i++) {
-                    Rows.Add();
-
-                    Rows[i].Tag = i;
-                    if (i < 48) {
-                        Rows[i].HeaderCell.Value =
-                        Rows[i].HeaderCell.ToolTipText =
-                            string.Format("{0}", new DateTime((tsRow = tsRow.Add(TimeSpan.FromMinutes(30))).Ticks).ToString(@"HH:mm"));
-                    } else
-                        Rows[i].HeaderCell.Value =
-                        Rows[i].HeaderCell.ToolTipText =
-                            string.Format("{0}", @"Итог:");
-                }
-
-                AllowUserToAddRows = false;
-                AllowUserToDeleteRows = false;
-                AllowUserToResizeColumns = false;
-
-                RowHeadersWidthSizeMode = DataGridViewRowHeadersWidthSizeMode.AutoSizeToAllHeaders | DataGridViewRowHeadersWidthSizeMode.DisableResizing;
-                MultiSelect = false;
-                AutoSizeColumnsMode = /*DataGridViewAutoSizeColumnsMode.ColumnHeader |*/ DataGridViewAutoSizeColumnsMode.AllCells;
-                SelectionMode = DataGridViewSelectionMode.FullColumnSelect;
-            }
-            /// <summary>
-            /// Действие со столбцом: при наличии - удалить, при отсутствии - добавить
-            /// </summary>
-            /// <param name="name">Идентификатор столбца</param>
-            /// <param name="headerText">Заголовок столбца</param>
-            /// <returns>Признак удаления/добавления столбца</returns>
-            public bool ActionColumn(string name, string headerText)
-            {
-                bool bRes = !Columns.Contains(name);
-
-                if (bRes == false)
-                    // столбец найден
-                    Columns.Remove(name);
-                else {
-                    // столбец не найден - добавить
-                    SelectionMode = DataGridViewSelectionMode.CellSelect;
-
-                    Columns.Add(name, headerText);
-                    Columns[ColumnCount - 1].DefaultCellStyle.Alignment = DataGridViewContentAlignment.MiddleRight;
-                    Columns[ColumnCount - 1].SortMode = DataGridViewColumnSortMode.NotSortable;
-
-                    SelectionMode = DataGridViewSelectionMode.FullColumnSelect;
-                }
-
-                return bRes;
-            }
-
-            public void Fill(IEnumerable<HandlerSignalQueue.VALUE> values)
-            {
-                int iColumn = ColumnCount - 1;
-
-                foreach (DataGridViewRow row in Rows) {
-                    if (row.Index < values.Count())
-                        try {
-                            row.Cells[iColumn].Value = (from value in values where value.index_stamp == (int)row.Tag select value.value).ElementAt(0);
-                        } catch (Exception e) {
-                            Logging.Logg().Error(string.Format(@"PanelSOTIASSODay.HDataGridView::Fill () - не найдено значение для строки Index={0}, Tag={1}", row.Index, row.Tag), Logging.INDEX_MESSAGE.NOT_SET);
-                        } else
-                        row.Cells[iColumn].Value = values.Sum(v => v.value);
-                }
-            }
-
-            public void Clear()
-            {
-                while (ColumnCount > 1)
-                    Columns.RemoveAt(ColumnCount - 1);
-            }
         }
         /// <summary>
         /// Переопределение наследуемой функции - запуск объекта
@@ -493,10 +408,10 @@ namespace Statistic
                 if (!(key_ctrl == KEY_CONTROLS.UNKNOWN)) {
                     clb = findControl(key_ctrl.ToString()) as CheckedListBox;
 
-                    DataAskedHost(new object[] { new object[] { HandlerSignalQueue.EVENT.VALUES, conn_sett_type, clb.SelectedIndex } });
+                    foreach (int indx in clb.CheckedIndices.Cast<int>())
+                        DataAskedHost(new object[] { new object[] { HandlerSignalQueue.EVENT.CHECK_VALUES, conn_sett_type, indx } });
 
-                    //foreach (int indx in clb.CheckedIndices.Cast<int>()) {
-                    //}
+                    DataAskedHost(new object[] { new object[] { HandlerSignalQueue.EVENT.CUR_VALUES, conn_sett_type, clb.SelectedIndex } });
                 } else
                     Logging.Logg().Error(string.Format(@"PanelSOTIASSODay::panelManagement_OnEvtDateTimeChanged () - не удалось найти элемент графического интерфейса для {0}", conn_sett_type)
                         , Logging.INDEX_MESSAGE.NOT_SET);
@@ -607,30 +522,43 @@ namespace Statistic
 
         public void OnEvtDataRecievedHost(object res)
         {
-            object[] pars;
-            HandlerSignalQueue.EVENT evt;
-            CONN_SETT_TYPE type;
-
-            pars = (res as EventArgsDataHost).par;
-            evt = (HandlerSignalQueue.EVENT)pars[0];
-            type = (CONN_SETT_TYPE)pars[1];
-
             if (InvokeRequired == true)
-                Invoke(new Action<CONN_SETT_TYPE, HandlerSignalQueue.EVENT>(onEvtCompleted), type, evt);
+                Invoke(new Action<EventArgsDataHost>(onEvtCompleted), res as EventArgsDataHost);
             else
-                onEvtCompleted(type, evt);
+                onEvtCompleted(res as EventArgsDataHost);
         }
         #endregion
 
-        private void onEvtCompleted(CONN_SETT_TYPE type, HandlerSignalQueue.EVENT evt)
+        private void onEvtCompleted(EventArgsDataHost ev)
         {
+            HandlerSignalQueue.EVENT evt;
+            CONN_SETT_TYPE type;
+            SIGNAL signal;
+            string kks_code = string.Empty;
+
+            evt = (HandlerSignalQueue.EVENT)ev.par[0];
+            type = (CONN_SETT_TYPE)ev.par[1];
+
             switch (evt) {
                 case HandlerSignalQueue.EVENT.LIST_SIGNAL:
                     m_panelManagement.InitializeSignalList(type, m_HandlerQueue.Signals[type].Select(sgnl => { return sgnl.name_shr; }));
                     break;
-                case HandlerSignalQueue.EVENT.VALUES:
+                case HandlerSignalQueue.EVENT.CUR_VALUES:
                     draw(type);
                     //m_threadDraw.RunWorkerAsync(type);                    
+                    break;
+                case HandlerSignalQueue.EVENT.CHECK_VALUES:
+                    kks_code = (string)ev.par[2];
+                    signal = m_HandlerQueue.Signals[type].FirstOrDefault(sgnl => { return sgnl.kks_code.Equals(kks_code) == true; });
+
+                    if (m_dictDataGridViewValues[type].ActionColumn(signal.kks_code
+                        , signal.name_shr) == true) {
+                        // запросить значения для заполнения нового столбца
+                        //??? оптимизация, сравнение с предыдущим, полученным по 'SELECT', набором значений - должны совпадать => запрос не требуется
+                        m_dictDataGridViewValues[type].Fill(m_HandlerQueue.Values[type].m_valuesHours);
+                    } else
+                        // столбец удален - ничего не делаем
+                        ;
                     break;
                 default:
                     break;
