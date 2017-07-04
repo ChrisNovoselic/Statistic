@@ -356,32 +356,39 @@ namespace Statistic
                         oExcelApp = new Microsoft.Office.Interop.Excel.Application();
                     else
                         ;
-                }                
+                }
+                // проверить: существует ли уже файл с отчетом
                 if (File.Exists(pathUserTemplate) == true)
                     try {
+                        // удалить файл, т.к. на его место запишем новый
                         File.Delete(pathUserTemplate);
                     } catch {
+                        // нет доступа к файлу, возможно, он уже открыт в MS Excel - найти открытую книгу с известным наименованием
                         oExcelWorkbook = oExcelApp.Workbooks.Cast<Microsoft.Office.Interop.Excel.Workbook>().FirstOrDefault(book => { return book.FullName.Equals(pathUserTemplate) == true; });
                         if (object.Equals(oExcelWorkbook, null) == false)
+                        // закрыть - если была найдена
                             oExcelWorkbook.Close(false);
                         else
                             ;
-
+                        // книгу "освободили" - можно удалить
                         try {
+                        // но только в том случае, если книга была занята действительно MS Excel
                             File.Delete(pathUserTemplate);
                         } catch {
+                        // иначе - выход (книгу блокирует другая программа)
                             return;
                         }
                     }
                 else
                     ;
-
+                // копируем шаблон на ПК пользователя
                 File.Copy(pathRemoteTemplate, pathUserTemplate);
-
+                // объект для работы с ячейками книги MS Excel
                 excel = new GemBox.Spreadsheet.ExcelFile();
                 excel.LoadXls(pathUserTemplate);
 
-                excel.Worksheets[0].Rows[0].Cells[0].Value = i_agregate;
+                //excel.Worksheets[0].Rows[0].Cells[0].Value = i_agregate;
+                // устанавливаем дату
                 excel.Worksheets[0].Rows[0].Cells[1].Value = m_panelManagement.CurDateTime.Date.ToShortDateString();
                 excel.Worksheets[0].Rows[0].Cells[2].Value = m_panelManagement.CurDateTime.Date.AddDays(1).ToShortDateString();
 
