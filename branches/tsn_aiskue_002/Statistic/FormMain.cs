@@ -59,7 +59,7 @@ namespace Statistic
             , DATETIMESYNC_SOURCE_DATA
             , CUSTOM_2X2_2, CUSTOM_2X3_2, CUSTOM_2X2_3, CUSTOM_2X3_3, CUSTOM_2X2_4, CUSTOM_2X3_4
             , SOTIASSO, DIAGNOSTIC, ANALYZER, TEC_Component, USERS
-            , VZLET_TDIRECT
+            , VZLET_TDIRECT, SOBSTV_NYZHDY_NEW
         };
         private enum INDEX_CUSTOM_TAB { TAB_2X2, TAB_2X3, TAB_MULTI };
         private class ADDING_TAB
@@ -155,7 +155,8 @@ namespace Statistic
 
             tclTecViews.EventHTabCtrlExClose += delegateOnCloseTab;
             tclTecViews.EventHTabCtrlExFloat += delegateOnFloatTab;
-           
+
+            this.m_dictAddingTabs[(int)ID_ADDING_TAB.SOBSTV_NYZHDY_NEW].menuItem.Enabled = true;
         }
 
         private string getINIParametersOfID(int id)
@@ -803,7 +804,10 @@ namespace Statistic
                                                     else
                                                         if (tclTecViews.TabPages[e.TabIndex].Controls[0] is PanelSobstvNyzhdy)
                                                             m_dictAddingTabs[(int)ID_ADDING_TAB.SOBSTV_NYZHDY].menuItem.Checked = false;
-                                                        else
+                                                         else
+                                                        if (tclTecViews.TabPages[e.TabIndex].Controls[0] is PanelCommonAux)
+                                                            m_dictAddingTabs[(int)ID_ADDING_TAB.SOBSTV_NYZHDY_NEW].menuItem.Checked = false;
+                                                         else
                                                             if (tclTecViews.TabPages[e.TabIndex].Controls[0] is PanelCustomTecView)
                                                                 m_dictAddingTabs[e.Id].menuItem.Checked = false;
                                                             else
@@ -2528,6 +2532,22 @@ namespace Statistic
                 , new bool[] { ((ToolStripMenuItem)sender).Checked, true });
         }
 
+        private void собственныеНуждыНовToolStripMenuItem_CheckedChanged(object sender, EventArgs e)
+        {
+            if (m_dictAddingTabs[(int)ID_ADDING_TAB.SOBSTV_NYZHDY_NEW].panel == null)
+            {
+                m_dictAddingTabs[(int)ID_ADDING_TAB.SOBSTV_NYZHDY_NEW].panel = new PanelCommonAux(/*PanelKomDisp.m_list_tec, ErrorReport, WarningReport, ActionReport, ReportClear*/);
+                ((PanelCommonAux)m_dictAddingTabs[(int)ID_ADDING_TAB.SOBSTV_NYZHDY_NEW].panel).SetDelegateWait(null, null, delegateEvent);
+                ((PanelCommonAux)m_dictAddingTabs[(int)ID_ADDING_TAB.SOBSTV_NYZHDY_NEW].panel).SetDelegateReport(ErrorReport, WarningReport, ActionReport, ReportClear);
+            }
+            else
+                ;
+
+            видSubToolStripMenuItem_CheckedChanged(ID_ADDING_TAB.SOBSTV_NYZHDY_NEW
+                , ((ToolStripMenuItem)sender).Text
+                , new bool[] { ((ToolStripMenuItem)sender).Checked, true });
+        }
+
         private void выборОбъекты22ToolStripMenuItem_CheckedChanged(object sender, EventArgs e)
         {
             выборОбъектыToolStripMenuItem_CheckedChanged(sender, e, INDEX_CUSTOM_TAB.TAB_2X2, -1);
@@ -2631,6 +2651,9 @@ namespace Statistic
             }
             else
                 ;
+
+            int a;
+            //a.ToString.
 
             видSubToolStripMenuItem_CheckedChanged(ID_ADDING_TAB.VZLET_TDIRECT, "Расчет теплосети"
                 , new bool[] { ((ToolStripMenuItem)sender).Checked, true });

@@ -176,6 +176,7 @@
     <Compile Include="PanelQuickData.cs">
       <SubType>Component</SubType>
     </Compile>
+    <Compile Include="PanelCommonAux.cs" />
     <Compile Include="PanelSOTIASSO.cs">
       <SubType>Component</SubType>
     </Compile>
