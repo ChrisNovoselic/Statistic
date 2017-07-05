@@ -232,7 +232,7 @@ namespace Statistic
                 pane.XAxis.Type = AxisType.Linear; //...из minutes
                                                    //pane.XAxis.Type = AxisType.Text;
                 pane.XAxis.Title.Text = "t, ЧЧ:мм";
-                pane.YAxis.Title.Text = "P, МВт";
+                pane.YAxis.Title.Text = "P, кВт";
                 pane.Title.Text = textConnSettType;
                 pane.Title.Text += new string(' ', 29);
                 pane.Title.Text += textDate;

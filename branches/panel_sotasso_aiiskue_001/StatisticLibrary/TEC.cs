@@ -453,10 +453,7 @@ namespace StatisticCommon
         public void PerformUpdate (int iListenerId)
         {
             //Установить по запросу текущий идентификатор источника данных в системе СОТИАССО
-            if (! (EventUpdate == null))
-                EventUpdate(this, new InitTEC_200.TECListUpdateEventArgs () { m_iListenerId = iListenerId });
-            else
-                ;
+            EventUpdate?.Invoke(this, new InitTEC_200.TECListUpdateEventArgs () { m_iListenerId = iListenerId });
         }
 
         public enum ADDING_PARAM_KEY : short { PREFIX_MODES_TERMINAL

@@ -507,37 +507,42 @@ namespace StatisticCommon
                 , err = -1;
             DataTable tableRes;
             DataRow []selRows;
+            DbConnection connConfigDB;
 
-            DbConnection connConfigDB = DbSources.Sources ().GetConnection (iListenerId, out err);
+            try {
+                connConfigDB = DbSources.Sources().GetConnection(iListenerId, out err);
 
-            if (err == 0) {
-                //tableRes = getListTEC(ref connConfigDB, true, new int[] { 0, (int)TECComponent.ID.GTP }, out err);
-                ////??? обновление параметров ТЭЦ (например: m_IdSOTIASSOLinkSourceTM)
-                //tec.Update (tableRes);
+                if (err == 0) {
+                    //tableRes = getListTEC(ref connConfigDB, true, new int[] { 0, (int)TECComponent.ID.GTP }, out err);
+                    ////??? обновление параметров ТЭЦ (например: m_IdSOTIASSOLinkSourceTM)
+                    //tec.Update (tableRes);
 
-                tableRes = getListTECComponent(ref connConfigDB, @"GTP", tec.m_id, out err);
-                // обновление параметров ГТП
-                if (err == 0)
-                    if (tableRes.Columns.IndexOf("KoeffAlarmPcur") > 0)
-                        // поиск ГТП
-                        foreach (TECComponent tc in tec.list_TECComponents)
-                            if (tc.IsGTP == true) {
-                                selRows = tableRes.Select(@"ID=" + tc.m_id);
-                                // проверить наличие значения
-                                if ((selRows.Length == 1)
-                                    && (!(selRows[0]["KoeffAlarmPcur"] is System.DBNull)))
-                                    // обновить значение коэффициента
-                                    tc.m_dcKoeffAlarmPcur = Convert.ToInt32(selRows[0]["KoeffAlarmPcur"]);
-                                else
+                    tableRes = getListTECComponent(ref connConfigDB, @"GTP", tec.m_id, out err);
+                    // обновление параметров ГТП
+                    if (err == 0)
+                        if (tableRes.Columns.IndexOf("KoeffAlarmPcur") > 0)
+                            // поиск ГТП
+                            foreach (TECComponent tc in tec.list_TECComponents)
+                                if (tc.IsGTP == true) {
+                                    selRows = tableRes.Select(@"ID=" + tc.m_id);
+                                    // проверить наличие значения
+                                    if ((selRows.Length == 1)
+                                        && (!(selRows[0]["KoeffAlarmPcur"] is System.DBNull)))
+                                        // обновить значение коэффициента
+                                        tc.m_dcKoeffAlarmPcur = Convert.ToInt32(selRows[0]["KoeffAlarmPcur"]);
+                                    else
+                                        ;
+                                } else
                                     ;
-                            } else
-                                ;
+                        else
+                            ;
                     else
                         ;
-                else
+                } else
                     ;
-            } else
-                ;
+            } catch (Exception e) {
+                Logging.Logg().Exception(e, string.Format(@"InitTEC_200::OnTECUpdate (ID={0}, NAME={1}) - ...", (obj as TEC).m_id, (obj as TEC).name_shr), Logging.INDEX_MESSAGE.NOT_SET);
+            }
         }
 
         #region Дополнительные методы для реализации задачи Расчет теплосети
