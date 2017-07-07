@@ -909,6 +909,27 @@ namespace Statistic
     //    return strRes;
     //}
 
+    ///// <summary>
+    ///// Возвратить таблицу [TEC_LIST] из БД конфигурации
+    ///// </summary>
+    ///// <param name="connConfigDB">Ссылка на объект с установленным соединением с БД</param>
+    ///// <param name="bIgnoreTECInUse">Признак игнорирования поля [InUse] в таблице [TEC_LIST]</param>
+    ///// <param name="arIdLimits">Диапазон идентификаторов ТЭЦ</param>
+    ///// <param name="err">Идентификатор ошибки при выполнении запроса</param>
+    ///// <returns>Таблица - с данными</returns>
+    //public static DataTable getListTEC(ref DbConnection connConfigDB, bool bIgnoreTECInUse, int[] arIdLimits, out int err)
+    //{
+    //    string req = getQueryListTEC(bIgnoreTECInUse, arIdLimits);
+
+    //    return DbTSQLInterface.Select(ref connConfigDB, req, null, null, out err);
+    //}
+
+        public struct Demo
+    {
+        int a;
+    }
+
+
     /// <summary>
     /// /// Класс для описания файла конфигурации приложения
     /// /// </summary>
@@ -948,6 +969,47 @@ namespace Statistic
                     ;
             }
         }
+
+
+    //    /// <summary>
+    //    /// /// Класс для описания файла конфигурации приложения
+    //    /// /// </summary>
+    //    public class FileINI : HClassLibrary.FileINI
+    //{
+    //    public enum INDEX_MSEXCEL_COLUMN { APOWER, SNUZHDY }
+
+    //    public static string SEC_CONFIG = @"CONFIG"
+    //        , SEC_SELECT = @"SELECT"
+    //        , SEC_TEMPLATE = @"Template";
+    //    private List<string> m_KeyPars;
+
+    //    private string m_strFullPathTemplate;
+    //    /// <summary>
+    //    /// Каталог для размещения шаблонов
+    //    /// </summary>
+    //    public string FullPathTemplate
+    //    {
+    //        get { return m_strFullPathTemplate; }
+
+    //        set
+    //        {
+    //            if ((m_strFullPathTemplate == null)
+    //                || ((!(m_strFullPathTemplate == null))
+    //                    && (m_strFullPathTemplate.Equals(value) == false)))
+    //            {
+    //                m_strFullPathTemplate = value;
+
+    //                if ((value.Equals(string.Empty) == false)
+    //                && (Path.GetDirectoryName(value).Equals(string.Empty) == false)
+    //                && (Path.GetFileName(value).Equals(string.Empty) == false))
+    //                    SetSecValueOfKey(SEC_TEMPLATE, Environment.UserDomainName + @"\" + Environment.UserName, value);
+    //                else
+    //                    ;
+    //            }
+    //            else
+    //                ;
+    //        }
+    //    }
 
         public FileINI(MODE_SECTION_APPLICATION mode = MODE_SECTION_APPLICATION.INSTANCE)
             : base(@"Config\setup.ini", true, mode)
@@ -1495,19 +1557,75 @@ namespace Statistic
         private DataGridViewValues m_dgvValues_GRVII;
         private DataGridViewValues m_dgvValues_GRVIII;
 
+        /// <summary>
+        /// Требуется переменная конструктора
+        /// </summary>
+        private IContainer components = null;
+
         protected override void initializeLayoutStyle(int cols = -1, int rows = -1)
         {
-            //this.ColumnCount = cols;
-            //this.RowCount = rows;
+            this.ColumnCount = cols;
+            this.RowCount = rows;
 
-            //this.ColumnStyles.Add(new ColumnStyle(SizeType.Absolute, 172));
-            //this.ColumnStyles.Add(new ColumnStyle(SizeType.AutoSize));
+            this.ColumnStyles.Add(new ColumnStyle(SizeType.Absolute, 172));
+            this.ColumnStyles.Add(new ColumnStyle(SizeType.AutoSize));
 
-            //this.RowStyles.Add(new RowStyle(SizeType.AutoSize));
+            this.RowStyles.Add(new RowStyle(SizeType.AutoSize));
         }
+
+        ///// <summary>
+        ///// Определить размеры ячеек макета панели
+        ///// </summary>
+        ///// <param name="cols">Количество столбцов в макете</param>
+        ///// <param name="rows">Количество строк в макете</param>
+        //protected override void initializeLayoutStyle(int cols = -1, int rows = -1)
+        //{
+        //    initializeLayoutStyleEvenly(cols, rows);
+        //}
 
         protected virtual void InitializeComponents()
         {
+
+            components = new System.ComponentModel.Container();
+
+            this.SuspendLayout();
+
+            this.Controls.Add(m_btnLoad, 0, 0); this.SetColumnSpan(m_btnLoad, 8); this.SetRowSpan(m_btnLoad, 1);
+            this.Controls.Add(m_btnOpen, 0, 0); this.SetColumnSpan(m_btnOpen, 8); this.SetRowSpan(m_btnOpen, 1);
+            this.Controls.Add(m_btnExit, 0, 0); this.SetColumnSpan(m_btnExit, 8); this.SetRowSpan(m_btnExit, 1);
+            this.Controls.Add(m_btnStripButtonExcel, 0, 0); this.SetColumnSpan(m_btnStripButtonExcel, 8); this.SetRowSpan(m_btnStripButtonExcel, 1);
+            this.Controls.Add(m_listBoxTEC, 0, 0); this.SetColumnSpan(m_listBoxTEC, 8); this.SetRowSpan(m_listBoxTEC, 1);
+            this.Controls.Add(m_listBoxGrpSgnl, 0, 0); this.SetColumnSpan(m_listBoxGrpSgnl, 8); this.SetRowSpan(m_listBoxGrpSgnl, 1);
+            this.Controls.Add(m_monthCalendar, 0, 0); this.SetColumnSpan(m_monthCalendar, 8); this.SetRowSpan(m_monthCalendar, 1);
+            this.Controls.Add(monthCalendarEnd, 0, 0); this.SetColumnSpan(monthCalendarEnd, 8); this.SetRowSpan(monthCalendarEnd, 1);
+            this.Controls.Add(m_labelTEC, 0, 0); this.SetColumnSpan(m_labelTEC, 8); this.SetRowSpan(m_labelTEC, 1);
+            this.Controls.Add(m_labelGrpSgnl, 0, 0); this.SetColumnSpan(m_labelGrpSgnl, 8); this.SetRowSpan(m_labelGrpSgnl, 1);
+            this.Controls.Add(m_labelValues, 0, 0); this.SetColumnSpan(m_labelValues, 8); this.SetRowSpan(m_labelValues, 1);
+            this.Controls.Add(m_labelStartDate, 0, 0); this.SetColumnSpan(m_labelStartDate, 8); this.SetRowSpan(m_labelStartDate, 1);
+            this.Controls.Add(m_labelEndDate, 0, 0); this.SetColumnSpan(m_labelEndDate, 8); this.SetRowSpan(m_labelEndDate, 1);
+            this.Controls.Add(m_label_TG, 0, 0); this.SetColumnSpan(m_label_TG, 8); this.SetRowSpan(m_label_TG, 1);
+            this.Controls.Add(m_label_TG_sum, 0, 0); this.SetColumnSpan(m_label_TG_sum, 8); this.SetRowSpan(m_label_TG_sum, 1);
+            this.Controls.Add(m_label_TG_sum_value, 0, 0); this.SetColumnSpan(m_label_TG_sum_value, 8); this.SetRowSpan(m_label_TG_sum_value, 1);
+            this.Controls.Add(m_label_TSN, 0, 0); this.SetColumnSpan(m_label_TSN, 8); this.SetRowSpan(m_label_TSN, 1);
+            this.Controls.Add(m_label_TSN_sum, 0, 0); this.SetColumnSpan(m_label_TSN_sum, 8); this.SetRowSpan(m_label_TSN_sum, 1);
+            this.Controls.Add(m_label_TSN_sum_value, 0, 0); this.SetColumnSpan(m_label_TSN_sum_value, 8); this.SetRowSpan(m_label_TSN_sum_value, 1);
+            this.Controls.Add(m_label_GRII, 0, 0); this.SetColumnSpan(m_label_GRII, 8); this.SetRowSpan(m_label_GRII, 1);
+            this.Controls.Add(m_label_GRII_sum, 0, 0); this.SetColumnSpan(m_label_GRII_sum, 8); this.SetRowSpan(m_label_GRII_sum, 1);
+            this.Controls.Add(m_label_GRII_sum_value, 0, 0); this.SetColumnSpan(m_label_GRII_sum_value, 8); this.SetRowSpan(m_label_GRII_sum_value, 1);
+            this.Controls.Add(m_label_GRVI, 0, 0); this.SetColumnSpan(m_label_GRVI, 8); this.SetRowSpan(m_label_GRVI, 1);
+            this.Controls.Add(m_label_GRVI_sum, 0, 0); this.SetColumnSpan(m_label_GRVI_sum, 8); this.SetRowSpan(m_label_GRVI_sum, 1);
+            this.Controls.Add(m_label_GRVI_sum_value, 0, 0); this.SetColumnSpan(m_label_GRVI_sum_value, 8); this.SetRowSpan(m_label_GRVI_sum_value, 1);
+            this.Controls.Add(m_label_GRVII, 0, 0); this.SetColumnSpan(m_label_GRVII, 8); this.SetRowSpan(m_label_GRVII, 1);
+            this.Controls.Add(m_listBoxTEC, 0, 0); this.SetColumnSpan(m_listBoxTEC, 8); this.SetRowSpan(m_listBoxTEC, 1);
+
+
+            this.ResumeLayout();
+
+            initializeLayoutStyle();
+
+
+
+            #region Инициализация переменных
             System.Windows.Forms.DataGridViewCellStyle dataGridViewCellStyle1 = new System.Windows.Forms.DataGridViewCellStyle();
             System.Windows.Forms.DataGridViewCellStyle dataGridViewCellStyle2 = new System.Windows.Forms.DataGridViewCellStyle();
             this.m_btnLoad = new System.Windows.Forms.Button();
@@ -1562,12 +1680,13 @@ namespace Statistic
             ((System.ComponentModel.ISupportInitialize)(this.m_dgvValues_GRVI)).BeginInit();
             ((System.ComponentModel.ISupportInitialize)(this.m_dgvValues_GRVII)).BeginInit();
             ((System.ComponentModel.ISupportInitialize)(this.m_dgvValues_GRVIII)).BeginInit();
+            #endregion
+
+            #region Абсолютная привязка элементов
             // 
             // m_btnLoad
             // 
-            this.m_btnLoad.Location = new System.Drawing.Point(747, 306);
             this.m_btnLoad.Name = "m_btnLoad";
-            this.m_btnLoad.Size = new System.Drawing.Size(75, 23);
             this.m_btnLoad.TabIndex = 0;
             this.m_btnLoad.Text = "Load";
             this.m_btnLoad.UseVisualStyleBackColor = true;
@@ -1575,9 +1694,7 @@ namespace Statistic
             // 
             // m_btnOpen
             // 
-            this.m_btnOpen.Location = new System.Drawing.Point(747, 256);
             this.m_btnOpen.Name = "m_btnSave";
-            this.m_btnOpen.Size = new System.Drawing.Size(75, 23);
             this.m_btnOpen.TabIndex = 1;
             this.m_btnOpen.Text = "Open";
             this.m_btnOpen.UseVisualStyleBackColor = true;
@@ -1585,9 +1702,7 @@ namespace Statistic
             // 
             // m_btnExit
             // 
-            this.m_btnExit.Location = new System.Drawing.Point(827, 306);
             this.m_btnExit.Name = "m_btnExit";
-            this.m_btnExit.Size = new System.Drawing.Size(75, 23);
             this.m_btnExit.TabIndex = 2;
             this.m_btnExit.Text = "Exit";
             this.m_btnExit.UseVisualStyleBackColor = true;
@@ -1595,9 +1710,7 @@ namespace Statistic
             // 
             // m_btnStripButtonExcel
             // 
-            this.m_btnStripButtonExcel.Location = new System.Drawing.Point(827, 256);
             this.m_btnStripButtonExcel.Name = "m_btnStripButtonExcel";
-            this.m_btnStripButtonExcel.Size = new System.Drawing.Size(75, 23);
             this.m_btnStripButtonExcel.TabIndex = 0;
             this.m_btnStripButtonExcel.Text = "Export";
             this.m_btnStripButtonExcel.UseVisualStyleBackColor = true;
@@ -1606,28 +1719,22 @@ namespace Statistic
             // m_listBoxTEC
             // 
             this.m_listBoxTEC.FormattingEnabled = true;
-            this.m_listBoxTEC.Location = new System.Drawing.Point(605, 244);
             this.m_listBoxTEC.Name = "m_listBoxTEC";
-            this.m_listBoxTEC.Size = new System.Drawing.Size(120, 95);
             this.m_listBoxTEC.TabIndex = 3;
             // 
             // m_listBoxGrpSgnl
             // 
             this.m_listBoxGrpSgnl.FormattingEnabled = true;
-            this.m_listBoxGrpSgnl.Location = new System.Drawing.Point(608, 384);
             this.m_listBoxGrpSgnl.Name = "m_listBoxGrpSgnl";
-            this.m_listBoxGrpSgnl.Size = new System.Drawing.Size(120, 95);
             this.m_listBoxGrpSgnl.TabIndex = 4;
             // 
             // m_monthCalendar
             // 
-            this.m_monthCalendar.Location = new System.Drawing.Point(605, 50);
             this.m_monthCalendar.Name = "m_monthCalendar";
             this.m_monthCalendar.TabIndex = 5;
             // 
             // monthCalendar2
             // 
-            this.monthCalendarEnd.Location = new System.Drawing.Point(775, 50);
             this.monthCalendarEnd.Name = "monthCalendar2";
             this.monthCalendarEnd.TabIndex = 6;
             // 
@@ -1635,9 +1742,7 @@ namespace Statistic
             // 
             this.m_labelTEC.Anchor = ((System.Windows.Forms.AnchorStyles)((System.Windows.Forms.AnchorStyles.Top | System.Windows.Forms.AnchorStyles.Right)));
             this.m_labelTEC.AutoSize = true;
-            this.m_labelTEC.Location = new System.Drawing.Point(605, 224);
             this.m_labelTEC.Name = "m_labelTEC";
-            this.m_labelTEC.Size = new System.Drawing.Size(87, 13);
             this.m_labelTEC.TabIndex = 2;
             this.m_labelTEC.Text = "Подразделение";
             // 
@@ -1645,63 +1750,49 @@ namespace Statistic
             // 
             this.m_labelGrpSgnl.Anchor = ((System.Windows.Forms.AnchorStyles)((System.Windows.Forms.AnchorStyles.Top | System.Windows.Forms.AnchorStyles.Right)));
             this.m_labelGrpSgnl.AutoSize = true;
-            this.m_labelGrpSgnl.Location = new System.Drawing.Point(608, 364);
             this.m_labelGrpSgnl.Name = "m_labelGrpSgnl";
-            this.m_labelGrpSgnl.Size = new System.Drawing.Size(92, 13);
             this.m_labelGrpSgnl.TabIndex = 3;
             this.m_labelGrpSgnl.Text = "Группа сигналов";
             // 
             // m_labelValues
             // 
             this.m_labelValues.AutoSize = true;
-            this.m_labelValues.Location = new System.Drawing.Point(45, 10);
             this.m_labelValues.Name = "m_labelValues";
-            this.m_labelValues.Size = new System.Drawing.Size(142, 13);
             this.m_labelValues.TabIndex = 5;
             this.m_labelValues.Text = "Значения сигналов (сутки)";
             // 
             // m_labelStartDate
             // 
             this.m_labelStartDate.AutoSize = true;
-            this.m_labelStartDate.Location = new System.Drawing.Point(605, 30);
             this.m_labelStartDate.Name = "m_labelStartDate";
-            this.m_labelStartDate.Size = new System.Drawing.Size(142, 13);
             this.m_labelStartDate.TabIndex = 5;
             this.m_labelStartDate.Text = "";
             // 
             // m_labelEndDate
             // 
             this.m_labelEndDate.AutoSize = true;
-            this.m_labelEndDate.Location = new System.Drawing.Point(775, 30);
             this.m_labelEndDate.Name = "m_labelEndDate";
-            this.m_labelEndDate.Size = new System.Drawing.Size(142, 13);
             this.m_labelEndDate.TabIndex = 5;
             this.m_labelEndDate.Text = "";
             // 
             // m_label_TG
             // 
             this.m_label_TG.AutoSize = true;
-            this.m_label_TG.Location = new System.Drawing.Point(10, 47);
             this.m_label_TG.Name = "m_label_TG";
-            this.m_label_TG.Size = new System.Drawing.Size(142, 13);
             this.m_label_TG.TabIndex = 5;
             this.m_label_TG.Text = "TG";
             // 
             // m_label_TG_sum
             // 
             this.m_label_TG_sum.AutoSize = true;
-            this.m_label_TG_sum.Location = new System.Drawing.Point(655, 380);
             this.m_label_TG_sum.Name = "m_label_TG_sum";
-            this.m_label_TG_sum.Size = new System.Drawing.Size(142, 13);
             this.m_label_TG_sum.TabIndex = 5;
             this.m_label_TG_sum.Text = "TG_sum";
             // 
             // m_label_TG_sum_value
             // 
             this.m_label_TG_sum_value.AutoSize = true;
-            this.m_label_TG_sum_value.Location = new System.Drawing.Point(805, 380);
             this.m_label_TG_sum_value.Name = "m_label_TG_sum_value";
-            this.m_label_TG_sum_value.Size = new System.Drawing.Size(142, 13);
             this.m_label_TG_sum_value.TabIndex = 5;
             this.m_label_TG_sum_value.Text = "0";
             this.m_label_TG_sum_value.BackColor = Color.White;
@@ -1709,90 +1800,63 @@ namespace Statistic
             // m_label_TSN
             // 
             this.m_label_TSN.AutoSize = true;
-            this.m_label_TSN.Location = new System.Drawing.Point(10, 147);
             this.m_label_TSN.Name = "m_label_TSN";
-            this.m_label_TSN.Size = new System.Drawing.Size(142, 13);
             this.m_label_TSN.TabIndex = 5;
             this.m_label_TSN.Text = "TSN";
             // 
             // m_label_TSN_sum
             // 
             this.m_label_TSN_sum.AutoSize = true;
-            this.m_label_TSN_sum.Location = new System.Drawing.Point(655, 420);
             this.m_label_TSN_sum.Name = "m_label_TSN_sum";
-            this.m_label_TSN_sum.Size = new System.Drawing.Size(142, 13);
             this.m_label_TSN_sum.TabIndex = 5;
             this.m_label_TSN_sum.Text = "TSN_sum";
             // 
             // m_label_TSN_sum_value
             // 
-            this.m_label_TSN_sum_value.AutoSize = true;
-            this.m_label_TSN_sum_value.Location = new System.Drawing.Point(805, 420);
             this.m_label_TSN_sum_value.Name = "m_label_TSN_sum_value";
-            this.m_label_TSN_sum_value.Size = new System.Drawing.Size(142, 13);
             this.m_label_TSN_sum_value.TabIndex = 5;
             this.m_label_TSN_sum_value.Text = "0";
             // 
             // m_label_GRII
             // 
-            this.m_label_GRII.AutoSize = true;
-            this.m_label_GRII.Location = new System.Drawing.Point(10, 247);
             this.m_label_GRII.Name = "m_label_GRII";
-            this.m_label_GRII.Size = new System.Drawing.Size(142, 13);
             this.m_label_GRII.TabIndex = 5;
             this.m_label_GRII.Text = "GRII";
             // 
             // m_label_GRII_sum
             // 
-            this.m_label_GRII_sum.AutoSize = true;
-            this.m_label_GRII_sum.Location = new System.Drawing.Point(655, 460);
             this.m_label_GRII_sum.Name = "m_label_GRII_sum";
-            this.m_label_GRII_sum.Size = new System.Drawing.Size(142, 13);
             this.m_label_GRII_sum.TabIndex = 5;
             this.m_label_GRII_sum.Text = "GRII_sum";
             // 
             // m_label_GRII_sum_value
             // 
-            this.m_label_GRII_sum_value.AutoSize = true;
-            this.m_label_GRII_sum_value.Location = new System.Drawing.Point(805, 460);
             this.m_label_GRII_sum_value.Name = "m_label_GRII_sum_value";
-            this.m_label_GRII_sum_value.Size = new System.Drawing.Size(142, 13);
             this.m_label_GRII_sum_value.TabIndex = 5;
             this.m_label_GRII_sum_value.Text = "0";
+            #endregion
             // 
             // m_label_GRVI
             // 
-            this.m_label_GRVI.AutoSize = true;
-            this.m_label_GRVI.Location = new System.Drawing.Point(10, 347);
             this.m_label_GRVI.Name = "m_label_GRVI";
-            this.m_label_GRVI.Size = new System.Drawing.Size(142, 13);
             this.m_label_GRVI.TabIndex = 5;
             this.m_label_GRVI.Text = "GRVI";
             // 
             // m_label_GRVI_sum
             // 
-            this.m_label_GRVI_sum.AutoSize = true;
-            this.m_label_GRVI_sum.Location = new System.Drawing.Point(655, 500);
             this.m_label_GRVI_sum.Name = "m_label_GRVI_sum";
-            this.m_label_GRVI_sum.Size = new System.Drawing.Size(142, 13);
             this.m_label_GRVI_sum.TabIndex = 5;
             this.m_label_GRVI_sum.Text = "GRVI_sum";
             // 
             // m_label_GRVI_sum_value
             // 
-            this.m_label_GRVI_sum_value.AutoSize = true;
-            this.m_label_GRVI_sum_value.Location = new System.Drawing.Point(805, 500);
             this.m_label_GRVI_sum_value.Name = "m_label_GRVI_sum_value";
-            this.m_label_GRVI_sum_value.Size = new System.Drawing.Size(142, 13);
             this.m_label_GRVI_sum_value.TabIndex = 5;
             this.m_label_GRVI_sum_value.Text = "0";
             // 
             // m_label_GRVII
             // 
-            this.m_label_GRVII.AutoSize = true;
-            this.m_label_GRVII.Location = new System.Drawing.Point(5, 447);
             this.m_label_GRVII.Name = "m_label_GRVII";
-            this.m_label_GRVII.Size = new System.Drawing.Size(142, 13);
             this.m_label_GRVII.TabIndex = 5;
             this.m_label_GRVII.Text = "GRVII";
             // 
