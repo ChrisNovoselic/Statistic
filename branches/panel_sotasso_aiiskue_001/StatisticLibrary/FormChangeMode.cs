@@ -723,15 +723,12 @@ namespace StatisticCommon
 
             FillListBoxTab();
 
-            CallEventChangeMode();
+            PerformChangeMode();
         }
 
-        public void CallEventChangeMode()
+        public void PerformChangeMode()
         {
-            if (EventChangeMode != null)
-            {
-                EventChangeMode(m_list_change_items);
-            }
+            EventChangeMode?.Invoke(m_list_change_items);
         }
 
         public string getIdsOfCheckedIndicies ()

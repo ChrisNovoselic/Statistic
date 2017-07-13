@@ -2629,19 +2629,20 @@ namespace Statistic
 
         private void значенияСОТИАССОЧасToolStripMenuItem_CheckedChanged(object sender, EventArgs e)
         {
-            int id_tab = (int)ID_ADDING_TAB.SOTIASSO_HOUR;
+            ID_ADDING_TAB keyTab = ID_ADDING_TAB.SOTIASSO_HOUR;
+            int id_tab = (int)keyTab;
 
             if (m_dictAddingTabs[id_tab].panel == null)
             {
                 m_dictAddingTabs[id_tab].panel = new PanelSOTIASSOHour(PanelKomDisp.m_list_tec);
                 m_dictAddingTabs[id_tab].panel.SetDelegateReport(ErrorReport, WarningReport, ActionReport, ReportClear);
                 formChangeMode.EventChangeMode += ((PanelSOTIASSOHour)(m_dictAddingTabs[id_tab].panel)).ChangeMode;
-                formChangeMode.CallEventChangeMode();
+                formChangeMode.PerformChangeMode();
             }
             else
                 ;
 
-            видSubToolStripMenuItem_CheckedChanged(ID_ADDING_TAB.SOTIASSO_HOUR, "Значения СОТИАССО-час"
+            видSubToolStripMenuItem_CheckedChanged(keyTab, "Значения СОТИАССО-час"
                 , new bool[] { ((ToolStripMenuItem)sender).Checked, true });
         }
 
