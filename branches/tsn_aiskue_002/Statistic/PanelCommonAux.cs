@@ -924,12 +924,6 @@ namespace Statistic
     //    return DbTSQLInterface.Select(ref connConfigDB, req, null, null, out err);
     //}
 
-        public struct Demo
-    {
-        int a;
-    }
-
-
     /// <summary>
     /// /// Класс для описания файла конфигурации приложения
     /// /// </summary>
@@ -1171,6 +1165,58 @@ namespace Statistic
         public string GetQueryTemplateSignals()
         {
             return GetSecValueOfKey(SEC_SELECT, string.Format(@"AIISKUE"));
+        }
+    }
+
+    /// <summary>
+    /// Класс для взаимодействия с базой данных
+    /// </summary>
+    public class GetDataFromDB
+    {
+        protected /*static*/ DbConnection m_connConfigDB;
+
+        /// <summary>
+        /// Возвратить строку запроса для получения списка каналов
+        /// </summary>
+        /// <returns>Строка запроса</returns>
+        public static string getQueryListTEC()
+        {
+            string strRes = "SELECT * FROM ID_TSN_AISKUE_2017 ";
+            return strRes;
+        }
+
+        /// <summary>
+        /// Возвратить таблицу [ID_TSN_AISKUE_2017] из БД конфигурации
+        /// </summary>
+        /// <param name="connConfigDB">Ссылка на объект с установленным соединением с БД</param>
+        /// <param name="err">Идентификатор ошибки при выполнении запроса</param>
+        /// <returns>Таблица - с данными</returns>
+        public static DataTable getListChannels(ref DbConnection connConfigDB, out int err)
+        {
+            string req = getQueryListTEC();
+            return DbTSQLInterface.Select(ref connConfigDB, req, null, null, out err);
+        }
+
+        /// <summary>
+        /// Загрузка всех каналов из базы данных
+        /// </summary>
+        /// /// <param name="idListener">Идентификатор установленного соединения с БД концигурации</param>
+        public void InitChannels(int idListener)
+        {
+            int err = -1;
+
+            m_connConfigDB = DbSources.Sources().GetConnection(idListener, out err);
+
+            DataTable list_channels = null;
+
+            //Получить список каналов, используя статическую функцию
+            list_channels = getListChannels(ref m_connConfigDB, out err);
+
+            for (int i = 0; i < list_channels.Rows.Count; i++)
+            {
+
+            }
+
         }
     }
 
@@ -1562,26 +1608,26 @@ namespace Statistic
         /// </summary>
         private IContainer components = null;
 
-        protected override void initializeLayoutStyle(int cols = -1, int rows = -1)
-        {
-            this.ColumnCount = cols;
-            this.RowCount = rows;
-
-            this.ColumnStyles.Add(new ColumnStyle(SizeType.Absolute, 172));
-            this.ColumnStyles.Add(new ColumnStyle(SizeType.AutoSize));
-
-            this.RowStyles.Add(new RowStyle(SizeType.AutoSize));
-        }
-
-        ///// <summary>
-        ///// Определить размеры ячеек макета панели
-        ///// </summary>
-        ///// <param name="cols">Количество столбцов в макете</param>
-        ///// <param name="rows">Количество строк в макете</param>
         //protected override void initializeLayoutStyle(int cols = -1, int rows = -1)
         //{
-        //    initializeLayoutStyleEvenly(cols, rows);
+        //    this.ColumnCount = cols;
+        //    this.RowCount = rows;
+
+        //    this.ColumnStyles.Add(new ColumnStyle(SizeType.Absolute, 172));
+        //    this.ColumnStyles.Add(new ColumnStyle(SizeType.AutoSize));
+
+        //    this.RowStyles.Add(new RowStyle(SizeType.AutoSize));
         //}
+
+        /// <summary>
+        /// Определить размеры ячеек макета панели
+        /// </summary>
+        /// <param name="cols">Количество столбцов в макете</param>
+        /// <param name="rows">Количество строк в макете</param>
+        protected override void initializeLayoutStyle(int cols = 100, int rows = 100)
+        {
+            initializeLayoutStyleEvenly(cols, rows);
+        }
 
         protected virtual void InitializeComponents()
         {
@@ -1590,14 +1636,14 @@ namespace Statistic
 
             this.SuspendLayout();
 
-            this.Controls.Add(m_btnLoad, 0, 0); this.SetColumnSpan(m_btnLoad, 8); this.SetRowSpan(m_btnLoad, 1);
-            this.Controls.Add(m_btnOpen, 0, 0); this.SetColumnSpan(m_btnOpen, 8); this.SetRowSpan(m_btnOpen, 1);
-            this.Controls.Add(m_btnExit, 0, 0); this.SetColumnSpan(m_btnExit, 8); this.SetRowSpan(m_btnExit, 1);
-            this.Controls.Add(m_btnStripButtonExcel, 0, 0); this.SetColumnSpan(m_btnStripButtonExcel, 8); this.SetRowSpan(m_btnStripButtonExcel, 1);
+            this.Controls.Add(m_btnLoad, 70, 30); this.SetColumnSpan(m_btnLoad, 10); this.SetRowSpan(m_btnLoad, 5);
+            this.Controls.Add(m_btnOpen, 80, 30); this.SetColumnSpan(m_btnOpen, 10); this.SetRowSpan(m_btnOpen, 5);
+            this.Controls.Add(m_btnExit, 70, 40); this.SetColumnSpan(m_btnExit, 10); this.SetRowSpan(m_btnExit, 5);
+            this.Controls.Add(m_btnStripButtonExcel, 80, 40); this.SetColumnSpan(m_btnStripButtonExcel, 8); this.SetRowSpan(m_btnStripButtonExcel, 5);
             this.Controls.Add(m_listBoxTEC, 0, 0); this.SetColumnSpan(m_listBoxTEC, 8); this.SetRowSpan(m_listBoxTEC, 1);
             this.Controls.Add(m_listBoxGrpSgnl, 0, 0); this.SetColumnSpan(m_listBoxGrpSgnl, 8); this.SetRowSpan(m_listBoxGrpSgnl, 1);
-            this.Controls.Add(m_monthCalendar, 0, 0); this.SetColumnSpan(m_monthCalendar, 8); this.SetRowSpan(m_monthCalendar, 1);
-            this.Controls.Add(monthCalendarEnd, 0, 0); this.SetColumnSpan(monthCalendarEnd, 8); this.SetRowSpan(monthCalendarEnd, 1);
+            this.Controls.Add(m_monthCalendar, 60, 10); this.SetColumnSpan(m_monthCalendar, 20); this.SetRowSpan(m_monthCalendar, 15);
+            this.Controls.Add(monthCalendarEnd, 80, 10); this.SetColumnSpan(monthCalendarEnd, 20); this.SetRowSpan(monthCalendarEnd, 15);
             this.Controls.Add(m_labelTEC, 0, 0); this.SetColumnSpan(m_labelTEC, 8); this.SetRowSpan(m_labelTEC, 1);
             this.Controls.Add(m_labelGrpSgnl, 0, 0); this.SetColumnSpan(m_labelGrpSgnl, 8); this.SetRowSpan(m_labelGrpSgnl, 1);
             this.Controls.Add(m_labelValues, 0, 0); this.SetColumnSpan(m_labelValues, 8); this.SetRowSpan(m_labelValues, 1);
@@ -1616,14 +1662,24 @@ namespace Statistic
             this.Controls.Add(m_label_GRVI_sum, 0, 0); this.SetColumnSpan(m_label_GRVI_sum, 8); this.SetRowSpan(m_label_GRVI_sum, 1);
             this.Controls.Add(m_label_GRVI_sum_value, 0, 0); this.SetColumnSpan(m_label_GRVI_sum_value, 8); this.SetRowSpan(m_label_GRVI_sum_value, 1);
             this.Controls.Add(m_label_GRVII, 0, 0); this.SetColumnSpan(m_label_GRVII, 8); this.SetRowSpan(m_label_GRVII, 1);
-            this.Controls.Add(m_listBoxTEC, 0, 0); this.SetColumnSpan(m_listBoxTEC, 8); this.SetRowSpan(m_listBoxTEC, 1);
-
+            this.Controls.Add(m_label_GRVII_sum, 0, 0); this.SetColumnSpan(m_label_GRVII_sum, 8); this.SetRowSpan(m_label_GRVII_sum, 1);
+            this.Controls.Add(m_label_GRVII_sum_value, 0, 0); this.SetColumnSpan(m_label_GRVII_sum_value, 8); this.SetRowSpan(m_label_GRVII_sum_value, 1);
+            this.Controls.Add(m_label_GRVIII, 0, 0); this.SetColumnSpan(m_label_GRVIII, 8); this.SetRowSpan(m_label_GRVIII, 1);
+            this.Controls.Add(m_label_GRVIII_sum, 0, 0); this.SetColumnSpan(m_label_GRVIII_sum, 8); this.SetRowSpan(m_label_GRVIII_sum, 1);
+            this.Controls.Add(m_label_GRVIII_sum_value, 0, 0); this.SetColumnSpan(m_label_GRVIII_sum_value, 8); this.SetRowSpan(m_label_GRVIII_sum_value, 1);
+            this.Controls.Add(m_dgvValues, 7, 0); this.SetColumnSpan(m_dgvValues, 8); this.SetRowSpan(m_dgvValues, 1);
+            this.Controls.Add(m_dgvValues_TG, 7, 10); this.SetColumnSpan(m_dgvValues_TG, 50); this.SetRowSpan(m_dgvValues_TG, 15);
+            this.Controls.Add(m_dgvValues_TSN, 7, 25); this.SetColumnSpan(m_dgvValues_TSN, 50); this.SetRowSpan(m_dgvValues_TSN, 15);
+            this.Controls.Add(m_dgvValues_GRII, 7, 40); this.SetColumnSpan(m_dgvValues_GRII, 50); this.SetRowSpan(m_dgvValues_GRII, 15);
+            this.Controls.Add(m_dgvValues_GRVI, 7, 55); this.SetColumnSpan(m_dgvValues_GRVI, 50); this.SetRowSpan(m_dgvValues_GRVI, 15);
+            this.Controls.Add(m_dgvValues_GRVII, 7, 70); this.SetColumnSpan(m_dgvValues_GRVII, 50); this.SetRowSpan(m_dgvValues_GRVII, 15);
+            this.Controls.Add(m_dgvValues_GRVII, 7, 85); this.SetColumnSpan(m_dgvValues_GRVII, 50); this.SetRowSpan(m_dgvValues_GRVII, 15);
+            this.Controls.Add(m_listBoxTEC, 60, 60); this.SetColumnSpan(m_listBoxTEC, 15); this.SetRowSpan(m_listBoxTEC, 15);
+            this.Controls.Add(m_listBoxTEC, 80, 60); this.SetColumnSpan(m_listBoxTEC, 15); this.SetRowSpan(m_listBoxTEC, 15);
 
             this.ResumeLayout();
 
             initializeLayoutStyle();
-
-
 
             #region Инициализация переменных
             System.Windows.Forms.DataGridViewCellStyle dataGridViewCellStyle1 = new System.Windows.Forms.DataGridViewCellStyle();
@@ -1682,7 +1738,7 @@ namespace Statistic
             ((System.ComponentModel.ISupportInitialize)(this.m_dgvValues_GRVIII)).BeginInit();
             #endregion
 
-            #region Абсолютная привязка элементов
+            #region Параметры элементов управления
             // 
             // m_btnLoad
             // 
@@ -1834,7 +1890,6 @@ namespace Statistic
             this.m_label_GRII_sum_value.Name = "m_label_GRII_sum_value";
             this.m_label_GRII_sum_value.TabIndex = 5;
             this.m_label_GRII_sum_value.Text = "0";
-            #endregion
             // 
             // m_label_GRVI
             // 
@@ -1862,46 +1917,31 @@ namespace Statistic
             // 
             // m_label_GRVII_sum
             // 
-            this.m_label_GRVII_sum.AutoSize = true;
-            this.m_label_GRVII_sum.Location = new System.Drawing.Point(655, 540);
             this.m_label_GRVII_sum.Name = "m_label_GRVII_sum";
-            this.m_label_GRVII_sum.Size = new System.Drawing.Size(142, 13);
             this.m_label_GRVII_sum.TabIndex = 5;
             this.m_label_GRVII_sum.Text = "GRVII_sum";
             // 
             // m_label_GRVII_sum_value
             // 
-            this.m_label_GRVII_sum_value.AutoSize = true;
-            this.m_label_GRVII_sum_value.Location = new System.Drawing.Point(805, 540);
             this.m_label_GRVII_sum_value.Name = "m_label_GRVII_sum_value";
-            this.m_label_GRVII_sum_value.Size = new System.Drawing.Size(142, 13);
             this.m_label_GRVII_sum_value.TabIndex = 5;
             this.m_label_GRVII_sum_value.Text = "0";
             // 
             // m_label_GRVIII
             // 
-            this.m_label_GRVIII.AutoSize = true;
-            this.m_label_GRVIII.Location = new System.Drawing.Point(5, 547);
             this.m_label_GRVIII.Name = "m_label_GRVIII";
-            this.m_label_GRVIII.Size = new System.Drawing.Size(142, 13);
             this.m_label_GRVIII.TabIndex = 5;
             this.m_label_GRVIII.Text = "GRVIII";
             // 
             // m_label_GRVIII_sum
             // 
-            this.m_label_GRVIII_sum.AutoSize = true;
-            this.m_label_GRVIII_sum.Location = new System.Drawing.Point(655, 580);
             this.m_label_GRVIII_sum.Name = "m_label_GRVIII_sum";
-            this.m_label_GRVIII_sum.Size = new System.Drawing.Size(142, 13);
             this.m_label_GRVIII_sum.TabIndex = 5;
             this.m_label_GRVIII_sum.Text = "GRVIII_sum";
             // 
             // m_label_GRVIII_sum_value
             // 
-            this.m_label_GRVIII_sum_value.AutoSize = true;
-            this.m_label_GRVIII_sum_value.Location = new System.Drawing.Point(805, 580);
             this.m_label_GRVIII_sum_value.Name = "m_label_GRVIII_sum_value";
-            this.m_label_GRVIII_sum_value.Size = new System.Drawing.Size(142, 13);
             this.m_label_GRVIII_sum_value.TabIndex = 5;
             this.m_label_GRVIII_sum_value.Text = "0";
             // 
@@ -1926,13 +1966,11 @@ namespace Statistic
             dataGridViewCellStyle1.SelectionForeColor = System.Drawing.SystemColors.HighlightText;
             dataGridViewCellStyle1.WrapMode = System.Windows.Forms.DataGridViewTriState.False;
             this.m_dgvValues.DefaultCellStyle = dataGridViewCellStyle1;
-            this.m_dgvValues.Location = new System.Drawing.Point(45, 27);
             this.m_dgvValues.Name = "m_dgvValues";
             this.m_dgvValues.RowHeadersWidthSizeMode = System.Windows.Forms.DataGridViewRowHeadersWidthSizeMode.AutoSizeToAllHeaders;
             this.m_dgvValues.RowTemplate.ReadOnly = true;
             this.m_dgvValues.RowTemplate.Resizable = System.Windows.Forms.DataGridViewTriState.False;
             this.m_dgvValues.SelectionMode = System.Windows.Forms.DataGridViewSelectionMode.FullRowSelect;
-            this.m_dgvValues.Size = new System.Drawing.Size(550, 100);
             this.m_dgvValues.TabIndex = 4;
             // 
             // m_dgvValues_TG
@@ -1956,13 +1994,11 @@ namespace Statistic
             dataGridViewCellStyle2.SelectionForeColor = System.Drawing.SystemColors.HighlightText;
             dataGridViewCellStyle2.WrapMode = System.Windows.Forms.DataGridViewTriState.False;
             this.m_dgvValues_TG.DefaultCellStyle = dataGridViewCellStyle2;
-            this.m_dgvValues_TG.Location = new System.Drawing.Point(45, 27);
             this.m_dgvValues_TG.Name = "m_dgvValues_TG";
             this.m_dgvValues_TG.RowHeadersWidthSizeMode = System.Windows.Forms.DataGridViewRowHeadersWidthSizeMode.AutoSizeToAllHeaders;
             this.m_dgvValues_TG.RowTemplate.ReadOnly = true;
             this.m_dgvValues_TG.RowTemplate.Resizable = System.Windows.Forms.DataGridViewTriState.False;
             this.m_dgvValues_TG.SelectionMode = System.Windows.Forms.DataGridViewSelectionMode.FullRowSelect;
-            this.m_dgvValues_TG.Size = new System.Drawing.Size(550, 100);
             this.m_dgvValues_TG.TabIndex = 4;
             // 
             // m_dgvValues_TSN
@@ -2016,13 +2052,11 @@ namespace Statistic
             dataGridViewCellStyle2.SelectionForeColor = System.Drawing.SystemColors.HighlightText;
             dataGridViewCellStyle2.WrapMode = System.Windows.Forms.DataGridViewTriState.False;
             this.m_dgvValues_GRII.DefaultCellStyle = dataGridViewCellStyle2;
-            this.m_dgvValues_GRII.Location = new System.Drawing.Point(45, 227);
             this.m_dgvValues_GRII.Name = "m_dgvValues_GRII";
             this.m_dgvValues_GRII.RowHeadersWidthSizeMode = System.Windows.Forms.DataGridViewRowHeadersWidthSizeMode.AutoSizeToAllHeaders;
             this.m_dgvValues_GRII.RowTemplate.ReadOnly = true;
             this.m_dgvValues_GRII.RowTemplate.Resizable = System.Windows.Forms.DataGridViewTriState.False;
             this.m_dgvValues_GRII.SelectionMode = System.Windows.Forms.DataGridViewSelectionMode.FullRowSelect;
-            this.m_dgvValues_GRII.Size = new System.Drawing.Size(550, 100);
             this.m_dgvValues_GRII.TabIndex = 4;
             // 
             // m_dgvValues_GRVI
@@ -2046,13 +2080,11 @@ namespace Statistic
             dataGridViewCellStyle2.SelectionForeColor = System.Drawing.SystemColors.HighlightText;
             dataGridViewCellStyle2.WrapMode = System.Windows.Forms.DataGridViewTriState.False;
             this.m_dgvValues_GRVI.DefaultCellStyle = dataGridViewCellStyle2;
-            this.m_dgvValues_GRVI.Location = new System.Drawing.Point(45, 327);
             this.m_dgvValues_GRVI.Name = "m_dgvValues_GRVI";
             this.m_dgvValues_GRVI.RowHeadersWidthSizeMode = System.Windows.Forms.DataGridViewRowHeadersWidthSizeMode.AutoSizeToAllHeaders;
             this.m_dgvValues_GRVI.RowTemplate.ReadOnly = true;
             this.m_dgvValues_GRVI.RowTemplate.Resizable = System.Windows.Forms.DataGridViewTriState.False;
             this.m_dgvValues_GRVI.SelectionMode = System.Windows.Forms.DataGridViewSelectionMode.FullRowSelect;
-            this.m_dgvValues_GRVI.Size = new System.Drawing.Size(550, 100);
             this.m_dgvValues_GRVI.TabIndex = 4;
             // 
             // m_dgvValues_GRVII
@@ -2076,13 +2108,11 @@ namespace Statistic
             dataGridViewCellStyle2.SelectionForeColor = System.Drawing.SystemColors.HighlightText;
             dataGridViewCellStyle2.WrapMode = System.Windows.Forms.DataGridViewTriState.False;
             this.m_dgvValues_GRVII.DefaultCellStyle = dataGridViewCellStyle2;
-            this.m_dgvValues_GRVII.Location = new System.Drawing.Point(45, 427);
             this.m_dgvValues_GRVII.Name = "m_dgvValues_GRVII";
             this.m_dgvValues_GRVII.RowHeadersWidthSizeMode = System.Windows.Forms.DataGridViewRowHeadersWidthSizeMode.AutoSizeToAllHeaders;
             this.m_dgvValues_GRVII.RowTemplate.ReadOnly = true;
             this.m_dgvValues_GRVII.RowTemplate.Resizable = System.Windows.Forms.DataGridViewTriState.False;
             this.m_dgvValues_GRVII.SelectionMode = System.Windows.Forms.DataGridViewSelectionMode.FullRowSelect;
-            this.m_dgvValues_GRVII.Size = new System.Drawing.Size(550, 100);
             this.m_dgvValues_GRVII.TabIndex = 4;
             // 
             // m_dgvValues_GRVIII
@@ -2106,20 +2136,18 @@ namespace Statistic
             dataGridViewCellStyle2.SelectionForeColor = System.Drawing.SystemColors.HighlightText;
             dataGridViewCellStyle2.WrapMode = System.Windows.Forms.DataGridViewTriState.False;
             this.m_dgvValues_GRVIII.DefaultCellStyle = dataGridViewCellStyle2;
-            this.m_dgvValues_GRVIII.Location = new System.Drawing.Point(45, 527);
             this.m_dgvValues_GRVIII.Name = "m_dgvValues_GRVIII";
             this.m_dgvValues_GRVIII.RowHeadersWidthSizeMode = System.Windows.Forms.DataGridViewRowHeadersWidthSizeMode.AutoSizeToAllHeaders;
             this.m_dgvValues_GRVIII.RowTemplate.ReadOnly = true;
             this.m_dgvValues_GRVIII.RowTemplate.Resizable = System.Windows.Forms.DataGridViewTriState.False;
             this.m_dgvValues_GRVIII.SelectionMode = System.Windows.Forms.DataGridViewSelectionMode.FullRowSelect;
-            this.m_dgvValues_GRVIII.Size = new System.Drawing.Size(550, 100);
             this.m_dgvValues_GRVIII.TabIndex = 4;
+            #endregion
 
             m_listBoxTEC.Tag = INDEX_CONTROL.LB_TEC;
             m_listBoxTEC.SelectedIndexChanged += listBox_SelectedIndexChanged;
             m_listBoxGrpSgnl.Tag = INDEX_CONTROL.LB_GROUP_SIGNAL;
             m_listBoxGrpSgnl.SelectedIndexChanged += listBox_SelectedIndexChanged;
-
             m_monthCalendar.DateChanged += monthCalendar_DateChanged;
             monthCalendarEnd.DateChanged += monthCalendarEnd_DateChanged;
 
@@ -2129,11 +2157,8 @@ namespace Statistic
 
             foreach (TEC_LOCAL tec in m_listTEC)
             {
-                //indx =
                 m_listBoxTEC.Items.Add(tec.m_strNameShr);
-                //m_listBoxTEC.
             }
-
             foreach (TEC_LOCAL.INDEX_DATA indx in Enum.GetValues(typeof(TEC_LOCAL.INDEX_DATA)))
             {
                 m_listBoxGrpSgnl.Items.Add(indx.ToString());
@@ -2227,7 +2252,7 @@ namespace Statistic
             }
             else
                 ;
-
+        
             return iRes;
         }
 
