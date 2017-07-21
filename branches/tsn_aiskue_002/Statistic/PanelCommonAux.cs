@@ -1173,6 +1173,100 @@ namespace Statistic
     /// </summary>
     public class GetDataFromDB
     {
+        private string m_strFullPathTemplate;
+        /// <summary>
+        /// Каталог для размещения шаблонов
+        /// </summary>
+        public string FullPathTemplate
+        {
+            get { return m_strFullPathTemplate; }
+
+            set
+            {
+                if ((m_strFullPathTemplate == null)
+                    || ((!(m_strFullPathTemplate == null))
+                        && (m_strFullPathTemplate.Equals(value) == false)))
+                {
+                    m_strFullPathTemplate = value;
+
+                    if ((value.Equals(string.Empty) == false)
+                    && (Path.GetDirectoryName(value).Equals(string.Empty) == false)
+                    && (Path.GetFileName(value).Equals(string.Empty) == false))
+                        //SetSecValueOfKey(SEC_TEMPLATE, Environment.UserDomainName + @"\" + Environment.UserName, value);
+                    else
+                        ;
+                }
+                else
+                    ;
+            }
+        }
+
+        public List<TEC_LOCAL> GetListTEC()
+        {
+            List<TEC_LOCAL> listRes = new List<TEC_LOCAL>();
+            TEC_LOCAL tec;
+
+            int i = -1;
+            string key = string.Empty;
+
+            i = 0;
+            key = @"TEC" + i;
+            //while (isSecKey(SEC_CONFIG, key) == true)
+            //{
+            //    tec = getTEC(GetSecValueOfKey(SEC_CONFIG, key));
+            //    tec.m_Index = i;
+            //    listRes.Add(tec);
+
+            //    key = @"TEC" + ++i;
+            //}
+
+            return listRes;
+        }
+
+        private List<SIGNAL> getSignals(string sec, string prefix)
+        {
+            List<SIGNAL> listRes = new List<SIGNAL>();
+
+            int i = -1;
+            string key = string.Empty;
+            bool bUse = false;
+            string[] vals;
+
+            i = 0;
+            key = prefix + i;
+            while (isSecKey(sec, key) == true)
+            {
+                vals = GetSecValueOfKey(sec, key).Split(s_chSecDelimeters[(int)INDEX_DELIMETER.PAIR_VAL]);
+
+                try
+                {
+                    if (m_KeyPars.IndexOf(@"USE") < vals.Length)
+                        if (bool.TryParse(vals[m_KeyPars.IndexOf(@"USE")], out bUse) == false)
+                            bUse = true;
+                        else
+                            ; // значение успешно распознано
+                    else
+                        // значение не установлено - по умолчанию "в работе"
+                        bUse = true;
+
+                    listRes.Add(new SIGNAL(vals[m_KeyPars.IndexOf(@"Description")]
+                        , Int32.Parse(vals[m_KeyPars.IndexOf(@"USPD")])
+                        , Int32.Parse(vals[m_KeyPars.IndexOf(@"CHANNEL")])
+                        , bUse
+                    ));
+                }
+                catch (Exception e)
+                {
+                    Logging.Logg().Exception(e, string.Format(@"FileINI::GetSignals () - "), Logging.INDEX_MESSAGE.NOT_SET);
+                }
+
+
+                key = prefix + ++i;
+            }
+
+            return listRes;
+        }
+
         protected /*static*/ DbConnection m_connConfigDB;
 
         /// <summary>
@@ -1214,9 +1308,15 @@ namespace Statistic
 
             for (int i = 0; i < list_channels.Rows.Count; i++)
             {
-
+                try
+                {
+                    
+                }
+                catch (Exception e)
+                {
+                    Logging.Logg().Exception(e, string.Format(@""), Logging.INDEX_MESSAGE.NOT_SET);
+                }
             }
-
         }
     }
 
@@ -1394,7 +1494,7 @@ namespace Statistic
         public PanelCommonAux()
 
         {
-            //InitializeComponents();
+            InitializeComponents();
 
             //initializeLayoutStyle(listTec.Count / 2, listTec.Count);
         }
@@ -1631,56 +1731,6 @@ namespace Statistic
 
         protected virtual void InitializeComponents()
         {
-
-            components = new System.ComponentModel.Container();
-
-            this.SuspendLayout();
-
-            this.Controls.Add(m_btnLoad, 70, 30); this.SetColumnSpan(m_btnLoad, 10); this.SetRowSpan(m_btnLoad, 5);
-            this.Controls.Add(m_btnOpen, 80, 30); this.SetColumnSpan(m_btnOpen, 10); this.SetRowSpan(m_btnOpen, 5);
-            this.Controls.Add(m_btnExit, 70, 40); this.SetColumnSpan(m_btnExit, 10); this.SetRowSpan(m_btnExit, 5);
-            this.Controls.Add(m_btnStripButtonExcel, 80, 40); this.SetColumnSpan(m_btnStripButtonExcel, 8); this.SetRowSpan(m_btnStripButtonExcel, 5);
-            this.Controls.Add(m_listBoxTEC, 0, 0); this.SetColumnSpan(m_listBoxTEC, 8); this.SetRowSpan(m_listBoxTEC, 1);
-            this.Controls.Add(m_listBoxGrpSgnl, 0, 0); this.SetColumnSpan(m_listBoxGrpSgnl, 8); this.SetRowSpan(m_listBoxGrpSgnl, 1);
-            this.Controls.Add(m_monthCalendar, 60, 10); this.SetColumnSpan(m_monthCalendar, 20); this.SetRowSpan(m_monthCalendar, 15);
-            this.Controls.Add(monthCalendarEnd, 80, 10); this.SetColumnSpan(monthCalendarEnd, 20); this.SetRowSpan(monthCalendarEnd, 15);
-            this.Controls.Add(m_labelTEC, 0, 0); this.SetColumnSpan(m_labelTEC, 8); this.SetRowSpan(m_labelTEC, 1);
-            this.Controls.Add(m_labelGrpSgnl, 0, 0); this.SetColumnSpan(m_labelGrpSgnl, 8); this.SetRowSpan(m_labelGrpSgnl, 1);
-            this.Controls.Add(m_labelValues, 0, 0); this.SetColumnSpan(m_labelValues, 8); this.SetRowSpan(m_labelValues, 1);
-            this.Controls.Add(m_labelStartDate, 0, 0); this.SetColumnSpan(m_labelStartDate, 8); this.SetRowSpan(m_labelStartDate, 1);
-            this.Controls.Add(m_labelEndDate, 0, 0); this.SetColumnSpan(m_labelEndDate, 8); this.SetRowSpan(m_labelEndDate, 1);
-            this.Controls.Add(m_label_TG, 0, 0); this.SetColumnSpan(m_label_TG, 8); this.SetRowSpan(m_label_TG, 1);
-            this.Controls.Add(m_label_TG_sum, 0, 0); this.SetColumnSpan(m_label_TG_sum, 8); this.SetRowSpan(m_label_TG_sum, 1);
-            this.Controls.Add(m_label_TG_sum_value, 0, 0); this.SetColumnSpan(m_label_TG_sum_value, 8); this.SetRowSpan(m_label_TG_sum_value, 1);
-            this.Controls.Add(m_label_TSN, 0, 0); this.SetColumnSpan(m_label_TSN, 8); this.SetRowSpan(m_label_TSN, 1);
-            this.Controls.Add(m_label_TSN_sum, 0, 0); this.SetColumnSpan(m_label_TSN_sum, 8); this.SetRowSpan(m_label_TSN_sum, 1);
-            this.Controls.Add(m_label_TSN_sum_value, 0, 0); this.SetColumnSpan(m_label_TSN_sum_value, 8); this.SetRowSpan(m_label_TSN_sum_value, 1);
-            this.Controls.Add(m_label_GRII, 0, 0); this.SetColumnSpan(m_label_GRII, 8); this.SetRowSpan(m_label_GRII, 1);
-            this.Controls.Add(m_label_GRII_sum, 0, 0); this.SetColumnSpan(m_label_GRII_sum, 8); this.SetRowSpan(m_label_GRII_sum, 1);
-            this.Controls.Add(m_label_GRII_sum_value, 0, 0); this.SetColumnSpan(m_label_GRII_sum_value, 8); this.SetRowSpan(m_label_GRII_sum_value, 1);
-            this.Controls.Add(m_label_GRVI, 0, 0); this.SetColumnSpan(m_label_GRVI, 8); this.SetRowSpan(m_label_GRVI, 1);
-            this.Controls.Add(m_label_GRVI_sum, 0, 0); this.SetColumnSpan(m_label_GRVI_sum, 8); this.SetRowSpan(m_label_GRVI_sum, 1);
-            this.Controls.Add(m_label_GRVI_sum_value, 0, 0); this.SetColumnSpan(m_label_GRVI_sum_value, 8); this.SetRowSpan(m_label_GRVI_sum_value, 1);
-            this.Controls.Add(m_label_GRVII, 0, 0); this.SetColumnSpan(m_label_GRVII, 8); this.SetRowSpan(m_label_GRVII, 1);
-            this.Controls.Add(m_label_GRVII_sum, 0, 0); this.SetColumnSpan(m_label_GRVII_sum, 8); this.SetRowSpan(m_label_GRVII_sum, 1);
-            this.Controls.Add(m_label_GRVII_sum_value, 0, 0); this.SetColumnSpan(m_label_GRVII_sum_value, 8); this.SetRowSpan(m_label_GRVII_sum_value, 1);
-            this.Controls.Add(m_label_GRVIII, 0, 0); this.SetColumnSpan(m_label_GRVIII, 8); this.SetRowSpan(m_label_GRVIII, 1);
-            this.Controls.Add(m_label_GRVIII_sum, 0, 0); this.SetColumnSpan(m_label_GRVIII_sum, 8); this.SetRowSpan(m_label_GRVIII_sum, 1);
-            this.Controls.Add(m_label_GRVIII_sum_value, 0, 0); this.SetColumnSpan(m_label_GRVIII_sum_value, 8); this.SetRowSpan(m_label_GRVIII_sum_value, 1);
-            this.Controls.Add(m_dgvValues, 7, 0); this.SetColumnSpan(m_dgvValues, 8); this.SetRowSpan(m_dgvValues, 1);
-            this.Controls.Add(m_dgvValues_TG, 7, 10); this.SetColumnSpan(m_dgvValues_TG, 50); this.SetRowSpan(m_dgvValues_TG, 15);
-            this.Controls.Add(m_dgvValues_TSN, 7, 25); this.SetColumnSpan(m_dgvValues_TSN, 50); this.SetRowSpan(m_dgvValues_TSN, 15);
-            this.Controls.Add(m_dgvValues_GRII, 7, 40); this.SetColumnSpan(m_dgvValues_GRII, 50); this.SetRowSpan(m_dgvValues_GRII, 15);
-            this.Controls.Add(m_dgvValues_GRVI, 7, 55); this.SetColumnSpan(m_dgvValues_GRVI, 50); this.SetRowSpan(m_dgvValues_GRVI, 15);
-            this.Controls.Add(m_dgvValues_GRVII, 7, 70); this.SetColumnSpan(m_dgvValues_GRVII, 50); this.SetRowSpan(m_dgvValues_GRVII, 15);
-            this.Controls.Add(m_dgvValues_GRVII, 7, 85); this.SetColumnSpan(m_dgvValues_GRVII, 50); this.SetRowSpan(m_dgvValues_GRVII, 15);
-            this.Controls.Add(m_listBoxTEC, 60, 60); this.SetColumnSpan(m_listBoxTEC, 15); this.SetRowSpan(m_listBoxTEC, 15);
-            this.Controls.Add(m_listBoxTEC, 80, 60); this.SetColumnSpan(m_listBoxTEC, 15); this.SetRowSpan(m_listBoxTEC, 15);
-
-            this.ResumeLayout();
-
-            initializeLayoutStyle();
-
             #region Инициализация переменных
             System.Windows.Forms.DataGridViewCellStyle dataGridViewCellStyle1 = new System.Windows.Forms.DataGridViewCellStyle();
             System.Windows.Forms.DataGridViewCellStyle dataGridViewCellStyle2 = new System.Windows.Forms.DataGridViewCellStyle();
@@ -1737,6 +1787,55 @@ namespace Statistic
             ((System.ComponentModel.ISupportInitialize)(this.m_dgvValues_GRVII)).BeginInit();
             ((System.ComponentModel.ISupportInitialize)(this.m_dgvValues_GRVIII)).BeginInit();
             #endregion
+
+            components = new System.ComponentModel.Container();
+
+            this.SuspendLayout();
+
+            this.Controls.Add(m_btnLoad, 70, 45); this.SetColumnSpan(m_btnLoad, 10); this.SetRowSpan(m_btnLoad, 5);
+            this.Controls.Add(m_btnOpen, 80, 45); this.SetColumnSpan(m_btnOpen, 10); this.SetRowSpan(m_btnOpen, 5);
+            this.Controls.Add(m_btnExit, 70, 60); this.SetColumnSpan(m_btnExit, 10); this.SetRowSpan(m_btnExit, 5);
+            this.Controls.Add(m_btnStripButtonExcel, 80, 60); this.SetColumnSpan(m_btnStripButtonExcel, 10); this.SetRowSpan(m_btnStripButtonExcel, 5);
+            //this.Controls.Add(m_listBoxTEC, 70, 70); this.SetColumnSpan(m_listBoxTEC, 8); this.SetRowSpan(m_listBoxTEC, 10);
+            //this.Controls.Add(m_listBoxGrpSgnl, 85, 70); this.SetColumnSpan(m_listBoxGrpSgnl, 8); this.SetRowSpan(m_listBoxGrpSgnl, 10);
+            this.Controls.Add(m_monthCalendar, 60, 10); this.SetColumnSpan(m_monthCalendar, 15); this.SetRowSpan(m_monthCalendar, 15);
+            this.Controls.Add(monthCalendarEnd, 80, 10); this.SetColumnSpan(monthCalendarEnd, 15); this.SetRowSpan(monthCalendarEnd, 15);
+            this.Controls.Add(m_labelTEC, 70, 70); this.SetColumnSpan(m_labelTEC, 8); this.SetRowSpan(m_labelTEC, 2);
+            this.Controls.Add(m_labelGrpSgnl, 85, 70); this.SetColumnSpan(m_labelGrpSgnl, 8); this.SetRowSpan(m_labelGrpSgnl, 2);
+            this.Controls.Add(m_labelValues, 0, 0); this.SetColumnSpan(m_labelValues, 8); this.SetRowSpan(m_labelValues, 2);
+            this.Controls.Add(m_labelStartDate, 60, 5); this.SetColumnSpan(m_labelStartDate, 8); this.SetRowSpan(m_labelStartDate, 2);
+            this.Controls.Add(m_labelEndDate, 80, 5); this.SetColumnSpan(m_labelEndDate, 8); this.SetRowSpan(m_labelEndDate, 2);
+            this.Controls.Add(m_label_TG, 3, 15); this.SetColumnSpan(m_label_TG, 5); this.SetRowSpan(m_label_TG, 2);
+            this.Controls.Add(m_label_TG_sum, 70, 73); this.SetColumnSpan(m_label_TG_sum, 8); this.SetRowSpan(m_label_TG_sum, 2);
+            this.Controls.Add(m_label_TG_sum_value, 85, 73); this.SetColumnSpan(m_label_TG_sum_value, 8); this.SetRowSpan(m_label_TG_sum_value, 2);
+            this.Controls.Add(m_label_TSN, 3, 30); this.SetColumnSpan(m_label_TSN, 5); this.SetRowSpan(m_label_TSN, 2);
+            this.Controls.Add(m_label_TSN_sum, 70, 76); this.SetColumnSpan(m_label_TSN_sum, 8); this.SetRowSpan(m_label_TSN_sum, 2);
+            this.Controls.Add(m_label_TSN_sum_value, 85, 76); this.SetColumnSpan(m_label_TSN_sum_value, 8); this.SetRowSpan(m_label_TSN_sum_value, 2);
+            this.Controls.Add(m_label_GRII, 3, 45); this.SetColumnSpan(m_label_GRII, 5); this.SetRowSpan(m_label_GRII, 2);
+            this.Controls.Add(m_label_GRII_sum, 70, 79); this.SetColumnSpan(m_label_GRII_sum, 8); this.SetRowSpan(m_label_GRII_sum, 2);
+            this.Controls.Add(m_label_GRII_sum_value, 85, 79); this.SetColumnSpan(m_label_GRII_sum_value, 8); this.SetRowSpan(m_label_GRII_sum_value, 2);
+            this.Controls.Add(m_label_GRVI, 3, 60); this.SetColumnSpan(m_label_GRVI, 5); this.SetRowSpan(m_label_GRVI, 2);
+            this.Controls.Add(m_label_GRVI_sum, 70, 82); this.SetColumnSpan(m_label_GRVI_sum, 8); this.SetRowSpan(m_label_GRVI_sum, 2);
+            this.Controls.Add(m_label_GRVI_sum_value, 85, 82); this.SetColumnSpan(m_label_GRVI_sum_value, 8); this.SetRowSpan(m_label_GRVI_sum_value, 2);
+            this.Controls.Add(m_label_GRVII, 3, 75); this.SetColumnSpan(m_label_GRVII, 8); this.SetRowSpan(m_label_GRVII, 2);
+            this.Controls.Add(m_label_GRVII_sum, 70, 85); this.SetColumnSpan(m_label_GRVII_sum, 8); this.SetRowSpan(m_label_GRVII_sum, 2);
+            this.Controls.Add(m_label_GRVII_sum_value, 85, 85); this.SetColumnSpan(m_label_GRVII_sum_value, 8); this.SetRowSpan(m_label_GRVII_sum_value, 2);
+            this.Controls.Add(m_label_GRVIII, 3, 90); this.SetColumnSpan(m_label_GRVIII, 8); this.SetRowSpan(m_label_GRVIII, 2);
+            this.Controls.Add(m_label_GRVIII_sum, 70, 88); this.SetColumnSpan(m_label_GRVIII_sum, 8); this.SetRowSpan(m_label_GRVIII_sum, 2);
+            this.Controls.Add(m_label_GRVIII_sum_value, 85, 88); this.SetColumnSpan(m_label_GRVIII_sum_value, 8); this.SetRowSpan(m_label_GRVIII_sum_value, 2);
+            //this.Controls.Add(m_dgvValues, 7, 0); this.SetColumnSpan(m_dgvValues, 50); this.SetRowSpan(m_dgvValues, 1);
+            this.Controls.Add(m_dgvValues_TG, 7, 5); this.SetColumnSpan(m_dgvValues_TG, 50); this.SetRowSpan(m_dgvValues_TG, 15);
+            this.Controls.Add(m_dgvValues_TSN, 7, 20); this.SetColumnSpan(m_dgvValues_TSN, 50); this.SetRowSpan(m_dgvValues_TSN, 15);
+            this.Controls.Add(m_dgvValues_GRII, 7, 35); this.SetColumnSpan(m_dgvValues_GRII, 50); this.SetRowSpan(m_dgvValues_GRII, 15);
+            this.Controls.Add(m_dgvValues_GRVI, 7, 50); this.SetColumnSpan(m_dgvValues_GRVI, 50); this.SetRowSpan(m_dgvValues_GRVI, 15);
+            this.Controls.Add(m_dgvValues_GRVII, 7, 65); this.SetColumnSpan(m_dgvValues_GRVII, 50); this.SetRowSpan(m_dgvValues_GRVII, 15);
+            this.Controls.Add(m_dgvValues_GRVIII, 7, 80); this.SetColumnSpan(m_dgvValues_GRVIII, 50); this.SetRowSpan(m_dgvValues_GRVIII, 15);
+
+            this.ResumeLayout();
+
+            initializeLayoutStyle();
+
+           
 
             #region Параметры элементов управления
             // 
@@ -2151,18 +2250,18 @@ namespace Statistic
             m_monthCalendar.DateChanged += monthCalendar_DateChanged;
             monthCalendarEnd.DateChanged += monthCalendarEnd_DateChanged;
 
-            setListTEC();
+            //setListTEC();
 
-            m_arMSEXEL_PARS = new string[(int)INDEX_MSEXCEL_PARS.COUNT];
+            //m_arMSEXEL_PARS = new string[(int)INDEX_MSEXCEL_PARS.COUNT];
 
-            foreach (TEC_LOCAL tec in m_listTEC)
-            {
-                m_listBoxTEC.Items.Add(tec.m_strNameShr);
-            }
-            foreach (TEC_LOCAL.INDEX_DATA indx in Enum.GetValues(typeof(TEC_LOCAL.INDEX_DATA)))
-            {
-                m_listBoxGrpSgnl.Items.Add(indx.ToString());
-            }
+            //foreach (TEC_LOCAL tec in m_listTEC)
+            //{
+            //    m_listBoxTEC.Items.Add(tec.m_strNameShr);
+            //}
+            //foreach (TEC_LOCAL.INDEX_DATA indx in Enum.GetValues(typeof(TEC_LOCAL.INDEX_DATA)))
+            //{
+            //    m_listBoxGrpSgnl.Items.Add(indx.ToString());
+            //}
         }
 
         private void monthCalendarEnd_DateChanged(object sender, DateRangeEventArgs e)
