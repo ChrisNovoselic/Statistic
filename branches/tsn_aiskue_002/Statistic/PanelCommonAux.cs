@@ -1234,35 +1234,35 @@ namespace Statistic
 
             i = 0;
             key = prefix + i;
-            while (isSecKey(sec, key) == true)
-            {
-                vals = GetSecValueOfKey(sec, key).Split(s_chSecDelimeters[(int)INDEX_DELIMETER.PAIR_VAL]);
+            //while (isSecKey(sec, key) == true)
+            //{
+            //    vals = GetSecValueOfKey(sec, key).Split(s_chSecDelimeters[(int)INDEX_DELIMETER.PAIR_VAL]);
 
-                try
-                {
-                    if (m_KeyPars.IndexOf(@"USE") < vals.Length)
-                        if (bool.TryParse(vals[m_KeyPars.IndexOf(@"USE")], out bUse) == false)
-                            bUse = true;
-                        else
-                            ; // значение успешно распознано
-                    else
-                        // значение не установлено - по умолчанию "в работе"
-                        bUse = true;
+            //    try
+            //    {
+            //        if (m_KeyPars.IndexOf(@"USE") < vals.Length)
+            //            if (bool.TryParse(vals[m_KeyPars.IndexOf(@"USE")], out bUse) == false)
+            //                bUse = true;
+            //            else
+            //                ; // значение успешно распознано
+            //        else
+            //            // значение не установлено - по умолчанию "в работе"
+            //            bUse = true;
 
-                    listRes.Add(new SIGNAL(vals[m_KeyPars.IndexOf(@"Description")]
-                        , Int32.Parse(vals[m_KeyPars.IndexOf(@"USPD")])
-                        , Int32.Parse(vals[m_KeyPars.IndexOf(@"CHANNEL")])
-                        , bUse
-                    ));
-                }
-                catch (Exception e)
-                {
-                    Logging.Logg().Exception(e, string.Format(@"FileINI::GetSignals () - "), Logging.INDEX_MESSAGE.NOT_SET);
-                }
+            //        listRes.Add(new SIGNAL(vals[m_KeyPars.IndexOf(@"Description")]
+            //            , Int32.Parse(vals[m_KeyPars.IndexOf(@"USPD")])
+            //            , Int32.Parse(vals[m_KeyPars.IndexOf(@"CHANNEL")])
+            //            , bUse
+            //        ));
+            //    }
+            //    catch (Exception e)
+            //    {
+            //        Logging.Logg().Exception(e, string.Format(@"FileINI::GetSignals () - "), Logging.INDEX_MESSAGE.NOT_SET);
+            //    }
 
 
-                key = prefix + ++i;
-            }
+            //    key = prefix + ++i;
+            //}
 
             return listRes;
         }
