@@ -1168,158 +1168,6 @@ namespace Statistic
         }
     }
 
-    /// <summary>
-    /// Класс для взаимодействия с базой данных
-    /// </summary>
-    public class GetDataFromDB
-    {
-        private string m_strFullPathTemplate;
-        /// <summary>
-        /// Каталог для размещения шаблонов
-        /// </summary>
-        public string FullPathTemplate
-        {
-            get { return m_strFullPathTemplate; }
-
-            set
-            {
-                if ((m_strFullPathTemplate == null)
-                    || ((!(m_strFullPathTemplate == null))
-                        && (m_strFullPathTemplate.Equals(value) == false)))
-                {
-                    m_strFullPathTemplate = value;
-
-                    if ((value.Equals(string.Empty) == false)
-                    && (Path.GetDirectoryName(value).Equals(string.Empty) == false)
-                    && (Path.GetFileName(value).Equals(string.Empty) == false))
-                        //SetSecValueOfKey(SEC_TEMPLATE, Environment.UserDomainName + @"\" + Environment.UserName, value);
-                    else
-                        ;
-                }
-                else
-                    ;
-            }
-        }
-
-        public List<TEC_LOCAL> GetListTEC()
-        {
-            List<TEC_LOCAL> listRes = new List<TEC_LOCAL>();
-            TEC_LOCAL tec;
-
-            int i = -1;
-            string key = string.Empty;
-
-            i = 0;
-            key = @"TEC" + i;
-            //while (isSecKey(SEC_CONFIG, key) == true)
-            //{
-            //    tec = getTEC(GetSecValueOfKey(SEC_CONFIG, key));
-            //    tec.m_Index = i;
-            //    listRes.Add(tec);
-
-            //    key = @"TEC" + ++i;
-            //}
-
-            return listRes;
-        }
-
-        private List<SIGNAL> getSignals(string sec, string prefix)
-        {
-            List<SIGNAL> listRes = new List<SIGNAL>();
-
-            int i = -1;
-            string key = string.Empty;
-            bool bUse = false;
-            string[] vals;
-
-            i = 0;
-            key = prefix + i;
-            //while (isSecKey(sec, key) == true)
-            //{
-            //    vals = GetSecValueOfKey(sec, key).Split(s_chSecDelimeters[(int)INDEX_DELIMETER.PAIR_VAL]);
-
-            //    try
-            //    {
-            //        if (m_KeyPars.IndexOf(@"USE") < vals.Length)
-            //            if (bool.TryParse(vals[m_KeyPars.IndexOf(@"USE")], out bUse) == false)
-            //                bUse = true;
-            //            else
-            //                ; // значение успешно распознано
-            //        else
-            //            // значение не установлено - по умолчанию "в работе"
-            //            bUse = true;
-
-            //        listRes.Add(new SIGNAL(vals[m_KeyPars.IndexOf(@"Description")]
-            //            , Int32.Parse(vals[m_KeyPars.IndexOf(@"USPD")])
-            //            , Int32.Parse(vals[m_KeyPars.IndexOf(@"CHANNEL")])
-            //            , bUse
-            //        ));
-            //    }
-            //    catch (Exception e)
-            //    {
-            //        Logging.Logg().Exception(e, string.Format(@"FileINI::GetSignals () - "), Logging.INDEX_MESSAGE.NOT_SET);
-            //    }
-
-
-            //    key = prefix + ++i;
-            //}
-
-            return listRes;
-        }
-
-        protected /*static*/ DbConnection m_connConfigDB;
-
-        /// <summary>
-        /// Возвратить строку запроса для получения списка каналов
-        /// </summary>
-        /// <returns>Строка запроса</returns>
-        public static string getQueryListTEC()
-        {
-            string strRes = "SELECT * FROM ID_TSN_AISKUE_2017 ";
-            return strRes;
-        }
-
-        /// <summary>
-        /// Возвратить таблицу [ID_TSN_AISKUE_2017] из БД конфигурации
-        /// </summary>
-        /// <param name="connConfigDB">Ссылка на объект с установленным соединением с БД</param>
-        /// <param name="err">Идентификатор ошибки при выполнении запроса</param>
-        /// <returns>Таблица - с данными</returns>
-        public static DataTable getListChannels(ref DbConnection connConfigDB, out int err)
-        {
-            string req = getQueryListTEC();
-            return DbTSQLInterface.Select(ref connConfigDB, req, null, null, out err);
-        }
-
-        /// <summary>
-        /// Загрузка всех каналов из базы данных
-        /// </summary>
-        /// /// <param name="idListener">Идентификатор установленного соединения с БД концигурации</param>
-        public void InitChannels(int idListener)
-        {
-            int err = -1;
-
-            m_connConfigDB = DbSources.Sources().GetConnection(idListener, out err);
-
-            DataTable list_channels = null;
-
-            //Получить список каналов, используя статическую функцию
-            list_channels = getListChannels(ref m_connConfigDB, out err);
-
-            for (int i = 0; i < list_channels.Rows.Count; i++)
-            {
-                try
-                {
-                    
-                }
-                catch (Exception e)
-                {
-                    Logging.Logg().Exception(e, string.Format(@""), Logging.INDEX_MESSAGE.NOT_SET);
-                }
-            }
-        }
-    }
-
     public class MSExcelIO : HClassLibrary.MSExcelIO
     {
         public MSExcelIO(string path) : base()
@@ -1490,15 +1338,228 @@ namespace Statistic
 
     partial class PanelCommonAux : PanelStatistic
     {
+        /// <summary>
+        /// Класс для взаимодействия с базой данных
+        /// </summary>
+        public class GetDataFromDB
+        {
+            private string m_strFullPathTemplate;
+            /// <summary>
+            /// Каталог для размещения шаблонов
+            /// </summary>
+            public string FullPathTemplate
+            {
+                get { return m_strFullPathTemplate; }
+
+                set
+                {
+                    if ((m_strFullPathTemplate == null)
+                        || ((!(m_strFullPathTemplate == null))
+                            && (m_strFullPathTemplate.Equals(value) == false)))
+                    {
+                        m_strFullPathTemplate = value;
+
+                        if ((value.Equals(string.Empty) == false)
+                        && (Path.GetDirectoryName(value).Equals(string.Empty) == false)
+                        && (Path.GetFileName(value).Equals(string.Empty) == false)) ;
+                        //SetSecValueOfKey(SEC_TEMPLATE, Environment.UserDomainName + @"\" + Environment.UserName, value);
+                        else
+                            ;
+                    }
+                    else
+                        ;
+                }
+            }
+
+            public List<TEC_LOCAL> GetListTEC()
+            {
+                List<TEC_LOCAL> listRes = new List<TEC_LOCAL>();
+                TEC_LOCAL tec;
+
+                int i = -1;
+                string key = string.Empty;
+
+                i = 0;
+                key = @"TEC" + i;
+                //while (isSecKey(SEC_CONFIG, key) == true)
+                //{
+                //    tec = getTEC(GetSecValueOfKey(SEC_CONFIG, key));
+                //    tec.m_Index = i;
+                //    listRes.Add(tec);
+
+                //    key = @"TEC" + ++i;
+                //}
+
+                return listRes;
+            }
+
+            private List<SIGNAL> getSignals(string sec, string prefix)
+            {
+                List<SIGNAL> listRes = new List<SIGNAL>();
+
+                int i = -1;
+                string key = string.Empty;
+                bool bUse = false;
+                string[] vals;
+
+                i = 0;
+                key = prefix + i;
+                //while (isSecKey(sec, key) == true)
+                //{
+                //    vals = GetSecValueOfKey(sec, key).Split(s_chSecDelimeters[(int)INDEX_DELIMETER.PAIR_VAL]);
+
+                //    try
+                //    {
+                //        if (m_KeyPars.IndexOf(@"USE") < vals.Length)
+                //            if (bool.TryParse(vals[m_KeyPars.IndexOf(@"USE")], out bUse) == false)
+                //                bUse = true;
+                //            else
+                //                ; // значение успешно распознано
+                //        else
+                //            // значение не установлено - по умолчанию "в работе"
+                //            bUse = true;
+
+                //        listRes.Add(new SIGNAL(vals[m_KeyPars.IndexOf(@"Description")]
+                //            , Int32.Parse(vals[m_KeyPars.IndexOf(@"USPD")])
+                //            , Int32.Parse(vals[m_KeyPars.IndexOf(@"CHANNEL")])
+                //            , bUse
+                //        ));
+                //    }
+                //    catch (Exception e)
+                //    {
+                //        Logging.Logg().Exception(e, string.Format(@"FileINI::GetSignals () - "), Logging.INDEX_MESSAGE.NOT_SET);
+                //    }
+
+
+                //    key = prefix + ++i;
+                //}
+
+                return listRes;
+            }
+
+            protected static DbConnection m_connConfigDB;
+
+            private static int _iListenerId;
+
+            private static DbConnection _connConfigDb;
+
+            public static int ListenerId { get { return _iListenerId; } }
+
+            public bool IsRegisterConfogDb { get { return ListenerId > 0; } }
+            /// <summary>
+            /// Зарегистрировать(установить) временное соединение с БД конфигурации
+            /// </summary>
+            /// <param name="err">Признак ошибки при выполнении операции</param>
+            public static void RegisterConfigDb(out int err)
+            {
+                // зарегистрировать соединение/получить идентификатор соединения
+                _iListenerId = DbSources.Sources().Register(FormMain.s_listFormConnectionSettings[(int)CONN_SETT_TYPE.CONFIG_DB].getConnSett(), false, @"CONFIG_DB");
+
+                _connConfigDb = DbSources.Sources().GetConnection(_iListenerId, out err);
+            }
+            /// <summary>
+            /// Отменить регистрацию(разорвать) соединения с БД конфигурации
+            /// </summary>
+            public static void UnregisterConfigDb()
+            {
+                DbSources.Sources().UnRegister(ListenerId);
+
+                _connConfigDb = null;
+                _iListenerId = -1;
+            }
+
+            /// <summary>
+            /// Возвратить строку запроса для получения списка каналов
+            /// </summary>
+            /// <returns>Строка запроса</returns>
+            public static string getQueryListTEC()
+            {
+                string strRes = "SELECT * FROM [techsite_cfg-2.X.X].[dbo].[ID_TSN_ASKUE_2017]";
+                return strRes;
+            }
+
+            /// <summary>
+            /// Возвратить таблицу [ID_TSN_AISKUE_2017] из БД конфигурации
+            /// </summary>
+            /// <param name="connConfigDB">Ссылка на объект с установленным соединением с БД</param>
+            /// <param name="err">Идентификатор ошибки при выполнении запроса</param>
+            /// <returns>Таблица - с данными</returns>
+            public static DataTable getListChannels(ref DbConnection connConfigDB, out int err)
+            {
+                string req = getQueryListTEC();
+                return DbTSQLInterface.Select(ref connConfigDB, req, null, null, out err);
+            }
+
+            /// <summary>
+            /// Загрузка всех каналов из базы данных
+            /// </summary>
+            public static void InitChannels()
+            {
+                int err = -1;
+
+                // зарегистрировать соединение/получить идентификатор соединения
+                _iListenerId = DbSources.Sources().Register(FormMain.s_listFormConnectionSettings[(int)CONN_SETT_TYPE.CONFIG_DB].getConnSett(), false, @"CONFIG_DB");
+
+                m_connConfigDB = DbSources.Sources().GetConnection(_iListenerId, out err);
+
+                DataTable list_channels = null;
+
+                //Получить список каналов, используя статическую функцию
+                list_channels = getListChannels(ref m_connConfigDB, out err);
+
+                int aa = list_channels.Rows.Count;
+
+                for (int i = 0; i < list_channels.Rows.Count; i++)
+                {
+                    try
+                    {
+                        DataRow ab = list_channels.Rows[i];
+                    }
+                    catch (Exception e)
+                    {
+                        Logging.Logg().Exception(e, string.Format(@""), Logging.INDEX_MESSAGE.NOT_SET);
+                    }
+                }
+            }
+
+            private TEC_LOCAL getTEC(string id)
+            {
+                TEC_LOCAL tecRes = new TEC_LOCAL();
+                tecRes.m_strId = id;
+
+                string[] arNumCols;
+                int i = -1;
+                //string sec = @"TEC" + s_chSecDelimeters[(int)INDEX_DELIMETER.SEC_PART_TARGET] + id;
+
+                //arNumCols = GetSecValueOfKey(sec, @"MSEXEL_COLS").Split(s_chSecDelimeters[(int)INDEX_DELIMETER.PAIR_VAL]);
+                //if (!(arNumCols.Length == Enum.GetValues(typeof(INDEX_MSEXCEL_COLUMN)).Length))
+                //    throw new Exception(string.Format(@"FileINI::getTEC (ИД={0}) - не определены номера столбцов MS Excel для сохранения значений ...", id));
+                //else
+                //    ;
+
+                //tecRes.m_Id = Int32.Parse(GetSecValueOfKey(sec, @"ID"));
+                //tecRes.m_strNameShr = GetSecValueOfKey(sec, @"NAME_SHR");
+                //tecRes.m_arMSExcelNumColumns = new int[Enum.GetValues(typeof(INDEX_MSEXCEL_COLUMN)).Length];
+
+                i = 0;
+                //foreach (string numCol in arNumCols)
+                    //tecRes.m_arMSExcelNumColumns[i++] = Int32.Parse(numCol);
+
+                //foreach (TEC_LOCAL.INDEX_DATA indx in Enum.GetValues(typeof(TEC_LOCAL.INDEX_DATA)))
+                    //tecRes.m_arListSgnls[(int)indx] = getSignals(sec, string.Format(@"AIISKUE_{0}", indx.ToString()));
+
+                return tecRes;
+            }
+        }
 
         public PanelCommonAux()
 
         {
+            GetDataFromDB.InitChannels();
+  
             InitializeComponents();
-
             //initializeLayoutStyle(listTec.Count / 2, listTec.Count);
         }
-
 
         public override void SetDelegateReport(DelegateStringFunc ferr, DelegateStringFunc fwar, DelegateStringFunc fact, DelegateBoolFunc fclr)
         {
