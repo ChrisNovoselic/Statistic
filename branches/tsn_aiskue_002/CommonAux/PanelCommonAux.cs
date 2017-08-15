@@ -19,7 +19,7 @@ using HClassLibrary;
 using StatisticCommon;
 using System.Reflection;
 
-namespace Statistic
+namespace CommonAux
 {
     /// <summary>
     /// Класс для описания параметров сигнала
@@ -873,213 +873,6 @@ namespace Statistic
         }
     }
 
-    ///// <summary>
-    ///// Возвратить строку запроса для получения списка ТЭЦ
-    ///// </summary>
-    ///// <param name="bIgnoreTECInUse">Признак игнорирования поля [InUse] в таблице [TEC_LIST]</param>
-    ///// <param name="arIdLimits">Диапазон идентификаторов ТЭЦ</param>
-    ///// <returns>Строка запроса</returns>
-    //public static string getQueryListTEC(bool bIgnoreTECInUse, int[] arIdLimits)
-    //{
-    //    string strRes = "SELECT * FROM TEC_LIST ";
-
-    //    if (bIgnoreTECInUse == false)
-    //        strRes += "WHERE INUSE=1 ";
-    //    else
-    //        ;
-
-    //    if (bIgnoreTECInUse == true)
-    //        // условие еще не добавлено - добавляем
-    //        strRes += @"WHERE ";
-    //    else
-    //        if (bIgnoreTECInUse == false)
-    //        // условие уже добавлено
-    //        strRes += @"AND ";
-    //    else
-    //        ;
-
-    //    if (!(HStatisticUsers.allTEC == 0))
-    //    {
-    //        strRes += @"ID=" + HStatisticUsers.allTEC.ToString();
-    //    }
-    //    else
-    //        //??? ограничение (временное) для ЛК
-    //        strRes += @"NOT ID<" + arIdLimits[0] + @" AND NOT ID>" + arIdLimits[1];
-
-    //    return strRes;
-    //}
-
-    ///// <summary>
-    ///// Возвратить таблицу [TEC_LIST] из БД конфигурации
-    ///// </summary>
-    ///// <param name="connConfigDB">Ссылка на объект с установленным соединением с БД</param>
-    ///// <param name="bIgnoreTECInUse">Признак игнорирования поля [InUse] в таблице [TEC_LIST]</param>
-    ///// <param name="arIdLimits">Диапазон идентификаторов ТЭЦ</param>
-    ///// <param name="err">Идентификатор ошибки при выполнении запроса</param>
-    ///// <returns>Таблица - с данными</returns>
-    //public static DataTable getListTEC(ref DbConnection connConfigDB, bool bIgnoreTECInUse, int[] arIdLimits, out int err)
-    //{
-    //    string req = getQueryListTEC(bIgnoreTECInUse, arIdLimits);
-
-    //    return DbTSQLInterface.Select(ref connConfigDB, req, null, null, out err);
-    //}
-
-    /// <summary>
-    /// /// Класс для описания файла конфигурации приложения
-    /// /// </summary>
-    public class FileINI : HClassLibrary.FileINI
-    {
-        public enum INDEX_MSEXCEL_COLUMN { APOWER, SNUZHDY }
-
-        public static string SEC_CONFIG = @"CONFIG"
-            , SEC_SELECT = @"SELECT"
-            , SEC_TEMPLATE = @"Template";
-        private List<string> m_KeyPars;
-
-        private string m_strFullPathTemplate;
-        /// <summary>
-        /// Каталог для размещения шаблонов
-        /// </summary>
-        public string FullPathTemplate
-        {
-            get { return m_strFullPathTemplate; }
-
-            set
-            {
-                if ((m_strFullPathTemplate == null)
-                    || ((!(m_strFullPathTemplate == null))
-                        && (m_strFullPathTemplate.Equals(value) == false)))
-                {
-                    m_strFullPathTemplate = value;
-
-                    if ((value.Equals(string.Empty) == false)
-                    && (Path.GetDirectoryName(value).Equals(string.Empty) == false)
-                    && (Path.GetFileName(value).Equals(string.Empty) == false))
-                        SetSecValueOfKey(SEC_TEMPLATE, Environment.UserDomainName + @"\" + Environment.UserName, value);
-                    else
-                        ;
-                }
-                else
-                    ;
-            }
-        }
-
-        public FileINI(MODE_SECTION_APPLICATION mode = MODE_SECTION_APPLICATION.INSTANCE)
-            : base(@"Config\setup.ini", true, mode)
-        {
-            m_KeyPars = GetSecValueOfKey(SEC_CONFIG, @"AIISKUE_PARS").Split(s_chSecDelimeters[(int)INDEX_DELIMETER.PAIR_VAL]).ToList<string>();
-            m_strFullPathTemplate = GetSecValueOfKey(SEC_TEMPLATE, Environment.UserDomainName + @"\" + Environment.UserName);
-        }
-        /// <summary>
-        /// Возвраить список объектов ТЭЦ
-        /// </summary>
-        /// <returns>Список объектов ТЭЦ</returns>
-        public List<TEC_LOCAL> GetListTEC()
-        {
-            List<TEC_LOCAL> listRes = new List<TEC_LOCAL>();
-            TEC_LOCAL tec;
-
-            int i = -1;
-            string key = string.Empty;
-
-            i = 0;
-            key = @"TEC" + i;
-            while (isSecKey(SEC_CONFIG, key) == true)
-            {
-                tec = getTEC(GetSecValueOfKey(SEC_CONFIG, key));
-                tec.m_Index = i;
-                listRes.Add(tec);
-
-                key = @"TEC" + ++i;
-            }
-
-            return listRes;
-        }
-
-        private TEC_LOCAL getTEC(string id)
-        {
-            TEC_LOCAL tecRes = new TEC_LOCAL();
-            tecRes.m_strId = id;
-
-            string[] arNumCols;
-            int i = -1;
-            string sec = @"TEC" + s_chSecDelimeters[(int)INDEX_DELIMETER.SEC_PART_TARGET] + id;
-
-            arNumCols = GetSecValueOfKey(sec, @"MSEXEL_COLS").Split(s_chSecDelimeters[(int)INDEX_DELIMETER.PAIR_VAL]);
-            if (!(arNumCols.Length == Enum.GetValues(typeof(INDEX_MSEXCEL_COLUMN)).Length))
-                throw new Exception(string.Format(@"FileINI::getTEC (ИД={0}) - не определены номера столбцов MS Excel для сохранения значений ...", id));
-            else
-                ;
-
-            tecRes.m_Id = Int32.Parse(GetSecValueOfKey(sec, @"ID"));
-            tecRes.m_strNameShr = GetSecValueOfKey(sec, @"NAME_SHR");
-            tecRes.m_arMSExcelNumColumns = new int[Enum.GetValues(typeof(INDEX_MSEXCEL_COLUMN)).Length];
-
-            i = 0;
-            foreach (string numCol in arNumCols)
-                tecRes.m_arMSExcelNumColumns[i++] = Int32.Parse(numCol);
-
-            foreach (TEC_LOCAL.INDEX_DATA indx in Enum.GetValues(typeof(TEC_LOCAL.INDEX_DATA)))
-                tecRes.m_arListSgnls[(int)indx] = getSignals(sec, string.Format(@"AIISKUE_{0}", indx.ToString()));
-
-            return tecRes;
-        }
-
-        private List<SIGNAL> getSignals(string sec, string prefix)
-        {
-            List<SIGNAL> listRes = new List<SIGNAL>();
-
-            int i = -1;
-            string key = string.Empty;
-            bool bUse = false;
-            string[] vals;
-
-            i = 0;
-            key = prefix + i;
-            while (isSecKey(sec, key) == true)
-            {
-                vals = GetSecValueOfKey(sec, key).Split(s_chSecDelimeters[(int)INDEX_DELIMETER.PAIR_VAL]);
-
-                try
-                {
-                    if (m_KeyPars.IndexOf(@"USE") < vals.Length)
-                        if (bool.TryParse(vals[m_KeyPars.IndexOf(@"USE")], out bUse) == false)
-                            bUse = true;
-                        else
-                            ; // значение успешно распознано
-                    else
-                        // значение не установлено - по умолчанию "в работе"
-                        bUse = true;
-
-                    listRes.Add(new SIGNAL(vals[m_KeyPars.IndexOf(@"Description")]
-                        , Int32.Parse(vals[m_KeyPars.IndexOf(@"USPD")])
-                        , Int32.Parse(vals[m_KeyPars.IndexOf(@"CHANNEL")])
-                        , bUse
-                    ));
-                }
-                catch (Exception e)
-                {
-                    Logging.Logg().Exception(e, string.Format(@"FileINI::GetSignals () - "), Logging.INDEX_MESSAGE.NOT_SET);
-                }
-
-
-                key = prefix + ++i;
-            }
-
-            return listRes;
-        }
-
-        //public string GetQueryTemplateSignals(TEC.INDEX_DATA indx)
-        //{
-        //    return GetSecValueOfKey(SEC_SELECT, string.Format(@"AIISKUE_CENTRE_{0}", indx.ToString()));
-        //}
-
-        public string GetQueryTemplateSignals()
-        {
-            return GetSecValueOfKey(SEC_SELECT, string.Format(@"AIISKUE"));
-        }
-    }
-
     public class MSExcelIO : HClassLibrary.MSExcelIO
     {
         public MSExcelIO(string path) : base()
@@ -1262,29 +1055,7 @@ namespace Statistic
                 , SEC_TEMPLATE = @"Template";
             private List<string> m_KeyPars;
 
-
             private string m_strFullPathTemplate;
- 
-            protected static DbConnection m_connConfigDB;
-
-            private static int _iListenerId;
-
-            private static DbConnection _connConfigDb;
-
-            public static int ListenerId { get { return _iListenerId; } }
-
-            public bool IsRegisterConfogDb { get { return ListenerId > 0; } }
-            /// <summary>
-            /// Зарегистрировать(установить) временное соединение с БД конфигурации
-            /// </summary>
-            /// <param name="err">Признак ошибки при выполнении операции</param>
-            public static void RegisterConfigDb(out int err)
-            {
-                // зарегистрировать соединение/получить идентификатор соединения
-                _iListenerId = DbSources.Sources().Register(FormMain.s_listFormConnectionSettings[(int)CONN_SETT_TYPE.CONFIG_DB].getConnSett(), false, @"CONFIG_DB");
-
-                _connConfigDb = DbSources.Sources().GetConnection(_iListenerId, out err);
-            }
             /// <summary>
             /// Каталог для размещения шаблонов
             /// </summary>
@@ -1310,6 +1081,98 @@ namespace Statistic
                     else
                         ;
                 }
+            }
+
+            public string GetQueryTemplateSignals()
+            {
+                return GetSecValueOfKey(SEC_SELECT, string.Format(@"AIISKUE"));
+            }
+
+            public List<TEC_LOCAL> GetListTEC()
+            {
+                List<TEC_LOCAL> listRes = new List<TEC_LOCAL>();
+                TEC_LOCAL tec;
+
+                int i = -1;
+                string key = string.Empty;
+
+                i = 0;
+                key = @"TEC" + i;
+                //while (isSecKey(SEC_CONFIG, key) == true)
+                //{
+                //    tec = getTEC(GetSecValueOfKey(SEC_CONFIG, key));
+                //    tec.m_Index = i;
+                //    listRes.Add(tec);
+
+                //    key = @"TEC" + ++i;
+                //}
+
+                return listRes;
+            }
+
+            private List<SIGNAL> getSignals(string sec, string prefix)
+            {
+                List<SIGNAL> listRes = new List<SIGNAL>();
+
+                int i = -1;
+                string key = string.Empty;
+                bool bUse = false;
+                string[] vals;
+
+                i = 0;
+                key = prefix + i;
+                //while (isSecKey(sec, key) == true)
+                //{
+                //    vals = GetSecValueOfKey(sec, key).Split(s_chSecDelimeters[(int)INDEX_DELIMETER.PAIR_VAL]);
+
+                //    try
+                //    {
+                //        if (m_KeyPars.IndexOf(@"USE") < vals.Length)
+                //            if (bool.TryParse(vals[m_KeyPars.IndexOf(@"USE")], out bUse) == false)
+                //                bUse = true;
+                //            else
+                //                ; // значение успешно распознано
+                //        else
+                //            // значение не установлено - по умолчанию "в работе"
+                //            bUse = true;
+
+                //        listRes.Add(new SIGNAL(vals[m_KeyPars.IndexOf(@"Description")]
+                //            , Int32.Parse(vals[m_KeyPars.IndexOf(@"USPD")])
+                //            , Int32.Parse(vals[m_KeyPars.IndexOf(@"CHANNEL")])
+                //            , bUse
+                //        ));
+                //    }
+                //    catch (Exception e)
+                //    {
+                //        Logging.Logg().Exception(e, string.Format(@"FileINI::GetSignals () - "), Logging.INDEX_MESSAGE.NOT_SET);
+                //    }
+
+
+                //    key = prefix + ++i;
+                //}
+
+                return listRes;
+            }
+
+            protected static DbConnection m_connConfigDB;
+
+            private static int _iListenerId;
+
+            private static DbConnection _connConfigDb;
+
+            public static int ListenerId { get { return _iListenerId; } }
+
+            public bool IsRegisterConfogDb { get { return ListenerId > 0; } }
+            /// <summary>
+            /// Зарегистрировать(установить) временное соединение с БД конфигурации
+            /// </summary>
+            /// <param name="err">Признак ошибки при выполнении операции</param>
+            public static void RegisterConfigDb(out int err)
+            {
+                // зарегистрировать соединение/получить идентификатор соединения
+                _iListenerId = DbSources.Sources().Register(FormMain.s_listFormConnectionSettings[(int)CONN_SETT_TYPE.CONFIG_DB].getConnSett(), false, @"CONFIG_DB");
+
+                _connConfigDb = DbSources.Sources().GetConnection(_iListenerId, out err);
             }
             /// <summary>
             /// Отменить регистрацию(разорвать) соединения с БД конфигурации
@@ -1385,97 +1248,26 @@ namespace Statistic
 
                 string[] arNumCols;
                 int i = -1;
-                string sec = @"TEC" + s_chSecDelimeters[(int)INDEX_DELIMETER.SEC_PART_TARGET] + id;
+                //string sec = @"TEC" + s_chSecDelimeters[(int)INDEX_DELIMETER.SEC_PART_TARGET] + id;
 
-                arNumCols = GetSecValueOfKey(sec, @"MSEXEL_COLS").Split(s_chSecDelimeters[(int)INDEX_DELIMETER.PAIR_VAL]);
-                if (!(arNumCols.Length == Enum.GetValues(typeof(INDEX_MSEXCEL_COLUMN)).Length))
-                    throw new Exception(string.Format(@"FileINI::getTEC (ИД={0}) - не определены номера столбцов MS Excel для сохранения значений ...", id));
-                else
-                    ;
+                //arNumCols = GetSecValueOfKey(sec, @"MSEXEL_COLS").Split(s_chSecDelimeters[(int)INDEX_DELIMETER.PAIR_VAL]);
+                //if (!(arNumCols.Length == Enum.GetValues(typeof(INDEX_MSEXCEL_COLUMN)).Length))
+                //    throw new Exception(string.Format(@"FileINI::getTEC (ИД={0}) - не определены номера столбцов MS Excel для сохранения значений ...", id));
+                //else
+                //    ;
 
-                tecRes.m_Id = Int32.Parse(GetSecValueOfKey(sec, @"ID"));
-                tecRes.m_strNameShr = GetSecValueOfKey(sec, @"NAME_SHR");
-                tecRes.m_arMSExcelNumColumns = new int[Enum.GetValues(typeof(INDEX_MSEXCEL_COLUMN)).Length];
+                //tecRes.m_Id = Int32.Parse(GetSecValueOfKey(sec, @"ID"));
+                //tecRes.m_strNameShr = GetSecValueOfKey(sec, @"NAME_SHR");
+                //tecRes.m_arMSExcelNumColumns = new int[Enum.GetValues(typeof(INDEX_MSEXCEL_COLUMN)).Length];
 
                 i = 0;
-                foreach (string numCol in arNumCols)
-                    tecRes.m_arMSExcelNumColumns[i++] = Int32.Parse(numCol);
+                //foreach (string numCol in arNumCols)
+                    //tecRes.m_arMSExcelNumColumns[i++] = Int32.Parse(numCol);
 
-                foreach (TEC_LOCAL.INDEX_DATA indx in Enum.GetValues(typeof(TEC_LOCAL.INDEX_DATA)))
-                    tecRes.m_arListSgnls[(int)indx] = getSignals(sec, string.Format(@"AIISKUE_{0}", indx.ToString()));
+                //foreach (TEC_LOCAL.INDEX_DATA indx in Enum.GetValues(typeof(TEC_LOCAL.INDEX_DATA)))
+                    //tecRes.m_arListSgnls[(int)indx] = getSignals(sec, string.Format(@"AIISKUE_{0}", indx.ToString()));
 
                 return tecRes;
-            }
-
-            public List<TEC_LOCAL> GetListTEC()
-            {
-                List<TEC_LOCAL> listRes = new List<TEC_LOCAL>();
-                TEC_LOCAL tec;
-
-                int i = -1;
-                string key = string.Empty;
-
-                i = 0;
-                key = @"TEC" + i;
-                //while (isSecKey(SEC_CONFIG, key) == true)
-                //{
-                //    tec = getTEC(GetSecValueOfKey(SEC_CONFIG, key));
-                //    tec.m_Index = i;
-                //    listRes.Add(tec);
-
-                //    key = @"TEC" + ++i;
-                //}
-
-                return listRes;
-            }
-
-            private List<SIGNAL> getSignals(string sec, string prefix)
-            {
-                List<SIGNAL> listRes = new List<SIGNAL>();
-
-                int i = -1;
-                string key = string.Empty;
-                bool bUse = false;
-                string[] vals;
-
-                i = 0;
-                key = prefix + i;
-                while (isSecKey(sec, key) == true)
-                {
-                    vals = GetSecValueOfKey(sec, key).Split(s_chSecDelimeters[(int)INDEX_DELIMETER.PAIR_VAL]);
-
-                    try
-                    {
-                        if (m_KeyPars.IndexOf(@"USE") < vals.Length)
-                            if (bool.TryParse(vals[m_KeyPars.IndexOf(@"USE")], out bUse) == false)
-                                bUse = true;
-                            else
-                                ; // значение успешно распознано
-                        else
-                            // значение не установлено - по умолчанию "в работе"
-                            bUse = true;
-
-                        listRes.Add(new SIGNAL(vals[m_KeyPars.IndexOf(@"Description")]
-                            , Int32.Parse(vals[m_KeyPars.IndexOf(@"USPD")])
-                            , Int32.Parse(vals[m_KeyPars.IndexOf(@"CHANNEL")])
-                            , bUse
-                        ));
-                    }
-                    catch (Exception e)
-                    {
-                        Logging.Logg().Exception(e, string.Format(@"FileINI::GetSignals () - "), Logging.INDEX_MESSAGE.NOT_SET);
-                    }
-
-
-                    key = prefix + ++i;
-                }
-
-                return listRes;
-            }
-
-            public string GetQueryTemplateSignals()
-            {
-                return GetSecValueOfKey(SEC_SELECT, string.Format(@"AIISKUE"));
             }
         }
 
