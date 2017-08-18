@@ -118,7 +118,7 @@ namespace StatisticCommon
                     result = false;
                 }                
             } else
-                ;
+                Logging.Logg().Debug(string.Format(@"{0} - {1}...", msgLog, @"Œÿ»¡ ¿"), Logging.INDEX_MESSAGE.NOT_SET);
 
             return result;
         }

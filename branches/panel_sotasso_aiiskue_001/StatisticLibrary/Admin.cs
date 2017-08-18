@@ -552,17 +552,17 @@ namespace StatisticCommon
                 }
             else
                 if (m_curDate.Date.CompareTo(serverTime.Date) > 0)
-                if ((!(m_curRDGValues == null))
-                    && (!(m_curRDGValues[iIndx].pbr_number == null))
-                    && (m_curRDGValues[iIndx].pbr_number.Length > @"ПБР".Length))
-                    if (Int32.TryParse(m_curRDGValues[iIndx].pbr_number.Substring(@"ПБР".Length), out iRes) == false)
-                        iRes = 0; //Предварительный ПБР
+                    if ((!(m_curRDGValues == null))
+                        && (!(m_curRDGValues[iIndx].pbr_number == null))
+                        && (m_curRDGValues[iIndx].pbr_number.Length > @"ПБР".Length))
+                        if (Int32.TryParse(m_curRDGValues[iIndx].pbr_number.Substring(@"ПБР".Length), out iRes) == false)
+                            iRes = 0; //Предварительный ПБР
+                        else
+                            ;
                     else
-                        ;
+                        iRes = getPBRNumber();                
                 else
-                    iRes = getPBRNumber();
-            else
-                ;
+                    ;
 
             return iRes;
         }

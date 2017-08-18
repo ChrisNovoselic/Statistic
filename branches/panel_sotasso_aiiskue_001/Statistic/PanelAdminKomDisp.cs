@@ -317,23 +317,24 @@ namespace Statistic
             files.Title = "Выберите файл с ПБР...";
 
             if (files.ShowDialog(FormMain.formParameters) == DialogResult.OK) {
+                Logging.Logg().Action(string.Format(@"PanelAdminKomDisp::btnImportCSV_PBRValues_Click () - выбран CSV-макет {0}...", files.FileName), Logging.INDEX_MESSAGE.NOT_SET);
+
                 int iRes = 0
                     , curPBRNumber = m_admin.GetPBRNumber (out err); //Текущий номер ПБР
                 //Дата ПБР, номер ПБР из наименования файла
                 object[] prop = AdminTS_KomDisp.GetPropertiesOfNameFilePPBRCSVValues(files.FileName);
 
                 //if (!((DateTime)prop[0] == DateTime.Now.Date))
-                if (!((DateTime)prop[0] == m_admin.m_curDate.Date)) {
+                if (!(((DateTime)prop[0]).CompareTo(m_admin.m_curDate.Date) == 0)) {
                     iRes = -1;
-                } else {
-                    //Сравнить с текущим номером ПБР
-                    // , номер ПБР по умолчанию не рассматривается (err == 0)
+                } else
+                //Сравнить с текущим номером ПБР
+                // , номер ПБР по умолчанию не рассматривается (err == 0)
                     if ((!((int)prop[1] > curPBRNumber))
                         && (err == 0))
                         iRes = -2;
                     else
                         ; //iRes = 0
-                }
 
                 //Проверка на ошибки
                 if (!(iRes == 0)) {
@@ -362,10 +363,10 @@ namespace Statistic
                 if (iRes == 0)
                     ((AdminTS_KomDisp)m_admin).ImpCSVValues(mcldrDate.SelectionStart, files.FileName);
                 else
-                    ;
+                    Logging.Logg().Action(string.Format(@"PanelAdminKomDisp::btnImportCSV_PBRValues_Click () - отмена импорта значений CSV-макета, ошибка={0}...", iRes), Logging.INDEX_MESSAGE.NOT_SET);
             }
             else
-                ;
+                Logging.Logg().Action(string.Format(@"PanelAdminKomDisp::btnImportCSV_PBRValues_Click () - отмена выбора CSV-макета..."), Logging.INDEX_MESSAGE.NOT_SET);
         }
 
         private string SharedFolderRun {
