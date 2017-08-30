@@ -17,12 +17,10 @@ using HClassLibrary;
 using StatisticCommon;
 
 namespace Statistic
-{
- 
-  public abstract class PanelTecViewStandard : PanelTecViewBase
+{ 
+    public abstract class PanelTecViewStandard : PanelTecViewBase
     {
-        
-      public override void UpdateGraphicsCurrent(int type)
+        public override void UpdateGraphicsCurrent(int type)
         {
             base.UpdateGraphicsCurrent(type);
 
@@ -39,6 +37,7 @@ namespace Statistic
             }
             PanelQuickData.UpdateColorPbr();
         }
+
         public class DataGridViewStandardMins : HDataGridViewStandard
         {
             protected virtual void InitializeComponents()
@@ -48,13 +47,15 @@ namespace Statistic
             public DataGridViewStandardMins()
                 //: base (new int [] {15, 16, 16, 16, 19, 16})
                 : base(HDateTime.INTERVAL.MINUTES
-                    , new ColumnProperies[] { new ColumnProperies (50, 15, @"Ìèí.", @"Min")
-                    , new ColumnProperies (50, 16, @"Ôàêò", @"FactMin")
-                    , new ColumnProperies (50, 16, @"ÏÁÐ", @"PBRMin")
-                    , new ColumnProperies (50, 16, @"ÏÁÐý", @"PBReMin")
-                    , new ColumnProperies (50, 19, @"ÓÄÃý", @"UDGeMin")
-                    , new ColumnProperies (50, 16, @"+/-", @"DeviationMin")
-            }, true)
+                        , new ColumnProperies[] {
+                            new ColumnProperies (50, 15, @"Ìèí.", @"Min")
+                            , new ColumnProperies (50, 16, @"Ôàêò", @"FactMin")
+                            , new ColumnProperies (50, 16, @"ÏÁÐ", @"PBRMin")
+                            , new ColumnProperies (50, 16, @"ÏÁÐý", @"PBReMin")
+                            , new ColumnProperies (50, 19, @"ÓÄÃý", @"UDGeMin")
+                            , new ColumnProperies (50, 16, @"+/-", @"DeviationMin")
+                        }
+                    , true)
             {
                 InitializeComponents();
 
@@ -64,10 +65,12 @@ namespace Statistic
 
                 RowsAdd();
             }
+
             public override void Fill(TecView.valuesTEC[] values, params object[] pars)
             {
                 int hour = (int)pars[0]
-                    , min = (int)pars[1]; //m_tecView.lastMin;
+                    , min = (int)pars[1] //m_tecView.lastMin;
+                    , cnt = -1;
                 double sumFact = 0, sumUDGe = 0, sumDiviation = 0;
 
                 if (!(min == 0))
@@ -75,13 +78,15 @@ namespace Statistic
                 else
                     ;
 
+                cnt = Rows.Count - 1;
+
                 for (int i = 0; i < values.Length - 1; i++)
                 {
                     //Îãðàíè÷èòü îòîáðàæåíèå (äëÿ ðåæèìà ÀÈÑÊÓÝ+ÑÎÒÈÀÑÑÎ)
                     Rows[i].Cells[(int)DataGridViewStandardHours.INDEX_COLUMNS.FACT].Value = values[i + 1].valuesFact.ToString("F2");
                     if (i < min)
                     {
-                        sumFact += values[i + 1].valuesFact;
+                        sumFact += values[i + 1].valuesFact/* / cnt*/;
                     }
                     else
                         ;
@@ -100,7 +105,7 @@ namespace Statistic
                         //else
                         Rows[i].Cells[(int)DataGridViewStandardHours.INDEX_COLUMNS.DEVIATION].Style = s_dgvCellStyleCommon;
 
-                        sumDiviation += values[i + 1].valuesFact - values[i].valuesUDGe;
+                        sumDiviation += (values[i + 1].valuesFact - values[i].valuesUDGe)/* / cnt*/;
                     }
                     else
                     {
@@ -109,7 +114,6 @@ namespace Statistic
                     }
                 }
 
-                int cnt = Rows.Count - 1;
                 if (!(min > 0))
                 {
                     Rows[cnt].Cells[(int)DataGridViewStandardHours.INDEX_COLUMNS.FACT].Value = 0.ToString("F2");

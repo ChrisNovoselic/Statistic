@@ -111,6 +111,10 @@ namespace StatisticCommon
                     m_MCTimeSlice = m_MCApi.GetModesTimeSlice(DateTime.Now.Date.LocalHqToSystemEx(), SyncZone.First, TreeContent.PGObjects, true);
                     m_listPFI = m_MCApi.GetPlanFactors();
 
+                    m_MCApi.OnData53500Modified += mcApi_OnData53500Modified;
+                    m_MCApi.OnPlanDataChanged += mcApi_OnPlanDataChanged;
+                    m_MCApi.OnMaket53500Changed += mcApi_OnMaket53500Changed;
+
                     Logging.Logg().Debug(string.Format(@"{0} - {1}...", msgLog, @"УСПЕХ"), Logging.INDEX_MESSAGE.NOT_SET);
                 } catch (Exception e) {
                     Logging.Logg().Exception(e, string.Format(@"{0} - ...", msgLog), Logging.INDEX_MESSAGE.NOT_SET);
@@ -121,6 +125,27 @@ namespace StatisticCommon
                 Logging.Logg().Debug(string.Format(@"{0} - {1}...", msgLog, @"ОШИБКА"), Logging.INDEX_MESSAGE.NOT_SET);
 
             return result;
+        }
+
+        private void mcApi_OnData53500Modified(object sender, Modes.NetAccess.EventRefreshData53500 e)
+        {
+            Logging.Logg().Action(string.Format(@"DbMCInterface::mcApi_OnData53500Modified() - обработчик события - изменения[кол-во={0}] в перечне оборудования..."
+                    , e.Equipments.Count)
+                , Logging.INDEX_MESSAGE.NOT_SET);
+        }
+
+        private void mcApi_OnMaket53500Changed(object sender, Modes.NetAccess.EventRefreshJournalMaket53500 e)
+        {
+            Logging.Logg().Action(string.Format(@"DbMCInterface::mcApi_OnData53500Modified() - обработчик события - переопубликация[на дату={0}, кол-во макетов={1}]..."
+                    , e.dtTarget.ToString(), e.countMakets)
+                , Logging.INDEX_MESSAGE.NOT_SET);
+        }
+
+        private void mcApi_OnPlanDataChanged(object sender, Modes.NetAccess.EventPlanDataChanged e)
+        {
+            Logging.Logg().Action(string.Format(@"DbMCInterface::mcApi_OnData53500Modified() - обработчик события - новый план[на дату={0}, для подразделения={1}]..."
+                    , e.Day, e.IdGate)
+                , Logging.INDEX_MESSAGE.NOT_SET);
         }
 
         protected override bool Disconnect()

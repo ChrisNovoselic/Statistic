@@ -1336,8 +1336,8 @@ namespace StatisticCommon
                 @"SELECT SUM([VALUE]) as [VALUE], COUNT (*) as [CNT], [HOUR]"
                 + @" FROM ("
                     + @"SELECT" 
-		                + @" [KKS_NAME] as [KKS_NAME], AVG ([VALUE]) as [VALUE], SUM ([tmdelta]) as [tmdelta]"
-		                + @", DATEPART (HOUR, [last_changed_at]) as [HOUR]"
+		                + @" [KKS_NAME] as [KKS_NAME], SUM ([VALUE] / (60 / " + interval + @")) as [VALUE], SUM ([tmdelta]) as [tmdelta]" // AVG ([VALUE]) AS [VALUE]
+                        + @", DATEPART (HOUR, [last_changed_at]) as [HOUR]"
                     + @" FROM ("
                         + @"SELECT"
                             + @" [KKS_NAME] as [KKS_NAME], AVG ([VALUE]) as [VALUE], SUM ([tmdelta]) as [tmdelta]"
@@ -1505,6 +1505,10 @@ namespace StatisticCommon
                 default:
                     break;
             }
+
+            //Console.WriteLine(string.Format(@"TEC::hoursTMRequest (usingDate={1}, sensors={2}, interval={3}) - variant SOTIASSO={4} {0}REQUEST={5}"
+            //    , Environment.NewLine, usingDate, sensors, interval, TEC.s_SourceSOTIASSO.ToString()
+            //    , request));
 
             return request;
         }

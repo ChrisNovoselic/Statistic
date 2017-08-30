@@ -146,6 +146,7 @@ namespace Statistic
                         if (!(indx_gtp < 0))
                             for (int i = 0; i < 24; i++)//Перебор часовых значений ГТП
                             {
+                                try {
                                     ((AdminTS_LK)m_admin).m_listCurRDGValues[indx_gtp][i].pbr = Convert.ToDouble(dgwAdminTable.Rows[i].Cells[(int)DataGridViewAdminLK.DESC_INDEX.PLAN_POWER].Value); // '+ 1' за счет DateTime
                                     ((AdminTS_LK)m_admin).m_listCurRDGValues[indx_gtp][i].pmin = Convert.ToDouble(dgwAdminTable.Rows[i].Cells[(int)DataGridViewAdminLK.DESC_INDEX.PLAN_TEMPERATURE].Value);
 
@@ -157,7 +158,11 @@ namespace Statistic
                                     valid = double.TryParse((string)this.dgwAdminTable.Rows[i].Cells[this.dgwAdminTable.Columns.Count - 2].Value, out value);
                                     ((AdminTS_LK)m_admin).m_listCurRDGValues[indx_gtp][i].deviation = value;
                                     ((AdminTS_LK)m_admin).m_listCurRDGValues[indx_gtp][i].pbr_number = "ППБР";
+
                                     //AdminTS.m_sOwner_PBR = 0;
+                                } catch (Exception e) {
+                                    Logging.Logg().Exception(e, string.Format(@"PanelAdminLK::getDataGridViewAdmin () - ..."), Logging.INDEX_MESSAGE.NOT_SET);
+                                }
                             }
                         else
                             ;
