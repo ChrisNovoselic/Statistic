@@ -1215,8 +1215,8 @@ namespace StatisticCommon
                         //    + @" AND [last_changed_at] BETWEEN DATEADD (HH, DATEDIFF (HH, GETDATE (), GETUTCDATE()), '" + dtReq.ToString(@"yyyyMMdd HH:mm:00.000") + @"')"
                         //        + @" AND DATEADD (HH, DATEDIFF (HH, GETDATE (), GETUTCDATE()), '" + dtReq.AddHours(1).AddMilliseconds(-2).ToString(@"yyyyMMdd HH:mm:ss.fff") + @"')"
                         //Вариант №2
-                        @"SELECT [KKS_NAME] as [KKS_NAME], AVG ([VALUE]) as [VALUE], SUM ([tmdelta]) as [tmdelta]"
-	                        + @", DATEADD (HH, DATEDIFF (HH, GETUTCDATE (), GETDATE()), [last_changed_at]) as [last_changed_at]"
+                        @"SELECT [KKS_NAME] as [KKS_NAME], AVG ([VALUE]) AS [VALUE], SUM ([VALUE] / (60 / " + interval + @")) as [VALUE0], SUM ([tmdelta]) as [tmdelta]"
+                            + @", DATEADD (HH, DATEDIFF (HH, GETUTCDATE (), GETDATE()), [last_changed_at]) as [last_changed_at]"
 	                        + @", (DATEPART (MINUTE, DATEADD (HH, DATEDIFF (HH, GETUTCDATE (), GETDATE()), [last_changed_at])) / " + interval + @") as [MINUTE]"
                         + @" FROM ("
                             + @"SELECT [KKS_NAME] as [KKS_NAME], [Value] as [VALUE], [tmdelta] as [tmdelta]"
@@ -1333,10 +1333,10 @@ namespace StatisticCommon
 
         private string hoursTMCommonRequestAverage (DateTime dt1, DateTime dt2, string sensors, int interval) {
             return
-                @"SELECT SUM([VALUE]) as [VALUE], COUNT (*) as [CNT], [HOUR]"
+                @"SELECT SUM([VALUE]) as [VALUE], SUM([VALUE0]) as [VALUE0], COUNT (*) as [CNT], [HOUR]"
                 + @" FROM ("
                     + @"SELECT" 
-		                + @" [KKS_NAME] as [KKS_NAME], SUM ([VALUE] / (60 / " + interval + @")) as [VALUE], SUM ([tmdelta]) as [tmdelta]" // AVG ([VALUE]) AS [VALUE]
+		                + @" [KKS_NAME] as [KKS_NAME], AVG ([VALUE]) AS [VALUE], SUM ([VALUE] / (60 / " + interval + @")) as [VALUE0], SUM ([tmdelta]) as [tmdelta]"
                         + @", DATEPART (HOUR, [last_changed_at]) as [HOUR]"
                     + @" FROM ("
                         + @"SELECT"
