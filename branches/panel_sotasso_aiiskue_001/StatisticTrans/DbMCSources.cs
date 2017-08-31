@@ -21,10 +21,13 @@ namespace StatisticCommon
         /// </summary>
         private const int MC_ID = -666;
         /// <summary>
+        /// Делегат для ретрансляции событий Модес-Центр
+        /// </summary>
+        private Action<object> delegateMCApiHandler;
+        /// <summary>
         /// Конструктор - основной (без параметров)
         /// </summary>
-        protected DbMCSources () : base () {
-        }
+        protected DbMCSources () : base () { }
         /// <summary>
         /// Функция доступа к объекту управления установленными соединенями
         /// </summary>
@@ -38,13 +41,18 @@ namespace StatisticCommon
 
             return (DbMCSources) m_this;
         }
+
+        public void SetMCApiHandler(Action<object> mcApiHandler)
+        {
+            delegateMCApiHandler = mcApiHandler;
+        }
         /// <summary>
         /// Регистриует клиента соединения, активным или нет, при необходимости принудительно отдельный экземпляр
         /// </summary>
         /// <param name="connSett">параметры соединения</param>
         /// <param name="active">признак активности</param>
         /// <param name="bReq">признак принудительного создания отдельного экземпляра</param>
-        /// <returns></returns>
+        /// <returns>Идентификатор установленного соединения</returns>
         public override int Register(object connSett, bool active, string desc, bool bReq = false)
         {
             int id = -1,
@@ -65,7 +73,10 @@ namespace StatisticCommon
                 DbTSQLInterface.DB_TSQL_INTERFACE_TYPE dbType = DbTSQLInterface.DB_TSQL_INTERFACE_TYPE.ModesCentre;
                 dbNameType = dbType.ToString();
 
-                m_dictDbInterfaces.Add(MC_ID, new DbMCInterface ((string)connSett));
+                if (Equals(delegateMCApiHandler, null) == false)
+                    m_dictDbInterfaces.Add(MC_ID, new DbMCInterface((string)connSett, delegateMCApiHandler));
+                else
+                    throw new Exception(string.Format(@"DbMCSources::Register () - не назначен делегат обработчика извещений от Модес-Центр..."));
                 
                 if (active == true) m_dictDbInterfaces[MC_ID].Start(); else ;
                 m_dictDbInterfaces[MC_ID].SetConnectionSettings(connSett, active);
@@ -76,6 +87,6 @@ namespace StatisticCommon
                 ;
 
             return registerListener(ListenerIdLocal, MC_ID, id, active, out err);
-        }
+        }        
     }
 }

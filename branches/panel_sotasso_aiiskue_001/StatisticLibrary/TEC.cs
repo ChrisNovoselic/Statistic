@@ -275,6 +275,10 @@ namespace StatisticCommon
         /// </summary>
         public string name_shr;
         /// <summary>
+        /// Наименование-идентификатор в Модес-Центр
+        /// </summary>
+        public string name_MC;
+        /// <summary>
         /// Массив наименований таблиц со значениями ПБР, административными значениями
         /// </summary>
         public string m_strNameTableAdminValues, m_strNameTableUsedPPBRvsPBR;
@@ -464,10 +468,11 @@ namespace StatisticCommon
         }
 
         public TEC(DataRow rTec, bool bUseData)
-            : this(Convert.ToInt32(rTec["ID"]),
-                rTec["NAME_SHR"].ToString(), //"NAME_SHR"
-                @"AdminValuesOfID",
-                @"PPBRvsPBROfID"
+            : this(Convert.ToInt32(rTec["ID"])
+                , rTec["NAME_SHR"].ToString().Trim() //"NAME_SHR"
+                , rTec["NAME_MC"].ToString().Trim() //"NAME_MC"
+                , @"AdminValuesOfID"
+                , @"PPBRvsPBROfID"
                 , bUseData)
         {
             setNamesField(@"DATE",
@@ -489,15 +494,24 @@ namespace StatisticCommon
         /// </summary>
         /// <param name="id">Идентификатр ТЭЦ</param>
         /// <param name="name_shr">Краткое наименование</param>
+        /// <param name="name_MC">Наименование-идентификатор в Модес-Центр</param>
         /// <param name="table_name_admin">Наименование таблици с административными значениями</param>
         /// <param name="table_name_pbr">Наименование таблици со значениями ПБР</param>
         /// <param name="bUseData">Признак создания объекта</param>
-        private TEC (int id, string name_shr, string table_name_admin, string table_name_pbr, bool bUseData) {
+        private TEC (int id, string name_shr, string name_MC , string table_name_admin, string table_name_pbr, bool bUseData) {
+            int iNameMC = -1;
+
             list_TECComponents = new List<TECComponent>();
             //m_list_Vyvod = new List<TECComponent>();
 
             this.m_id = id;
             this.name_shr = name_shr;
+            this.name_MC = name_MC;
+            if ((this.m_id < (int)TECComponent.ID.LK)
+                && (int.TryParse(this.name_MC, out iNameMC) == false))
+                Logging.Logg().Warning(string.Format(@"Значение идентификатора подразделения [{0}] в Модес-Центр не установлено...", this.name_shr), Logging.INDEX_MESSAGE.NOT_SET);
+            else
+                ;
 
             this.m_strNameTableAdminValues = table_name_admin;
             this.m_strNameTableUsedPPBRvsPBR = table_name_pbr;
