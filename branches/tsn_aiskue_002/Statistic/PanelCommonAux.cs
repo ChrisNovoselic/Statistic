@@ -1311,16 +1311,6 @@ namespace Statistic
                         ;
                 }
             }
-            /// <summary>
-            /// Отменить регистрацию(разорвать) соединения с БД конфигурации
-            /// </summary>
-            public static void UnregisterConfigDb()
-            {
-                DbSources.Sources().UnRegister(ListenerId);
-
-                _connConfigDb = null;
-                _iListenerId = -1;
-            }
 
             /// <summary>
             /// Возвратить строку запроса для получения списка каналов
@@ -1330,6 +1320,17 @@ namespace Statistic
             {
                 string strRes = "SELECT * FROM [techsite_cfg-2.X.X].[dbo].[ID_TSN_ASKUE_2017]";
                 return strRes;
+            }
+
+            /// <summary>
+            /// Отменить регистрацию(разорвать) соединения с БД конфигурации
+            /// </summary>
+            public static void UnregisterConfigDb()
+            {
+                DbSources.Sources().UnRegister(ListenerId);
+
+                _connConfigDb = null;
+                _iListenerId = -1;
             }
 
             /// <summary>
@@ -1378,55 +1379,41 @@ namespace Statistic
                 }
             }
 
+            //public List<TEC_LOCAL> GetListTEC()
+            //{
+            //    List<TEC_LOCAL> listRes = new List<TEC_LOCAL>();
+            //    TEC_LOCAL tec;
+
+            //    int i = -1;
+            //    string key = string.Empty;
+
+            //    i = 0;
+            //    key = @"TEC" + i;
+            //    while (isSecKey(SEC_CONFIG, key) == true)
+            //    {
+            //        tec = getTEC(GetSecValueOfKey(SEC_CONFIG, key));
+            //        tec.m_Index = i;
+            //        listRes.Add(tec);
+
+            //        key = @"TEC" + ++i;
+            //    }
+
+            //    return listRes;
+            //}
+
             private TEC_LOCAL getTEC(string id)
             {
                 TEC_LOCAL tecRes = new TEC_LOCAL();
                 tecRes.m_strId = id;
 
-                string[] arNumCols;
-                int i = -1;
-                string sec = @"TEC" + s_chSecDelimeters[(int)INDEX_DELIMETER.SEC_PART_TARGET] + id;
+                //i = 0;
+                //foreach (string numCol in arNumCols)
+                //    tecRes.m_arMSExcelNumColumns[i++] = Int32.Parse(numCol);
 
-                arNumCols = GetSecValueOfKey(sec, @"MSEXEL_COLS").Split(s_chSecDelimeters[(int)INDEX_DELIMETER.PAIR_VAL]);
-                if (!(arNumCols.Length == Enum.GetValues(typeof(INDEX_MSEXCEL_COLUMN)).Length))
-                    throw new Exception(string.Format(@"FileINI::getTEC (ИД={0}) - не определены номера столбцов MS Excel для сохранения значений ...", id));
-                else
-                    ;
-
-                tecRes.m_Id = Int32.Parse(GetSecValueOfKey(sec, @"ID"));
-                tecRes.m_strNameShr = GetSecValueOfKey(sec, @"NAME_SHR");
-                tecRes.m_arMSExcelNumColumns = new int[Enum.GetValues(typeof(INDEX_MSEXCEL_COLUMN)).Length];
-
-                i = 0;
-                foreach (string numCol in arNumCols)
-                    tecRes.m_arMSExcelNumColumns[i++] = Int32.Parse(numCol);
-
-                foreach (TEC_LOCAL.INDEX_DATA indx in Enum.GetValues(typeof(TEC_LOCAL.INDEX_DATA)))
-                    tecRes.m_arListSgnls[(int)indx] = getSignals(sec, string.Format(@"AIISKUE_{0}", indx.ToString()));
+                //foreach (TEC_LOCAL.INDEX_DATA indx in Enum.GetValues(typeof(TEC_LOCAL.INDEX_DATA)))
+                //    tecRes.m_arListSgnls[(int)indx] = getSignals(sec, string.Format(@"AIISKUE_{0}", indx.ToString()));
 
                 return tecRes;
-            }
-
-            public List<TEC_LOCAL> GetListTEC()
-            {
-                List<TEC_LOCAL> listRes = new List<TEC_LOCAL>();
-                TEC_LOCAL tec;
-
-                int i = -1;
-                string key = string.Empty;
-
-                i = 0;
-                key = @"TEC" + i;
-                //while (isSecKey(SEC_CONFIG, key) == true)
-                //{
-                //    tec = getTEC(GetSecValueOfKey(SEC_CONFIG, key));
-                //    tec.m_Index = i;
-                //    listRes.Add(tec);
-
-                //    key = @"TEC" + ++i;
-                //}
-
-                return listRes;
             }
 
             private List<SIGNAL> getSignals(string sec, string prefix)
@@ -1440,52 +1427,50 @@ namespace Statistic
 
                 i = 0;
                 key = prefix + i;
-                while (isSecKey(sec, key) == true)
-                {
-                    vals = GetSecValueOfKey(sec, key).Split(s_chSecDelimeters[(int)INDEX_DELIMETER.PAIR_VAL]);
+                //while (isSecKey(sec, key) == true)
+                //{
+                //    vals = GetSecValueOfKey(sec, key).Split(s_chSecDelimeters[(int)INDEX_DELIMETER.PAIR_VAL]);
 
-                    try
-                    {
-                        if (m_KeyPars.IndexOf(@"USE") < vals.Length)
-                            if (bool.TryParse(vals[m_KeyPars.IndexOf(@"USE")], out bUse) == false)
-                                bUse = true;
-                            else
-                                ; // значение успешно распознано
-                        else
-                            // значение не установлено - по умолчанию "в работе"
-                            bUse = true;
+                //    try
+                //    {
+                //        if (m_KeyPars.IndexOf(@"USE") < vals.Length)
+                //            if (bool.TryParse(vals[m_KeyPars.IndexOf(@"USE")], out bUse) == false)
+                //                bUse = true;
+                //            else
+                //                ; // значение успешно распознано
+                //        else
+                //            // значение не установлено - по умолчанию "в работе"
+                //            bUse = true;
 
-                        listRes.Add(new SIGNAL(vals[m_KeyPars.IndexOf(@"Description")]
-                            , Int32.Parse(vals[m_KeyPars.IndexOf(@"USPD")])
-                            , Int32.Parse(vals[m_KeyPars.IndexOf(@"CHANNEL")])
-                            , bUse
-                        ));
-                    }
-                    catch (Exception e)
-                    {
-                        Logging.Logg().Exception(e, string.Format(@"FileINI::GetSignals () - "), Logging.INDEX_MESSAGE.NOT_SET);
-                    }
+                //        listRes.Add(new SIGNAL(vals[m_KeyPars.IndexOf(@"Description")]
+                //            , Int32.Parse(vals[m_KeyPars.IndexOf(@"USPD")])
+                //            , Int32.Parse(vals[m_KeyPars.IndexOf(@"CHANNEL")])
+                //            , bUse
+                //        ));
+                //    }
+                //    catch (Exception e)
+                //    {
+                //        Logging.Logg().Exception(e, string.Format(@"FileINI::GetSignals () - "), Logging.INDEX_MESSAGE.NOT_SET);
+                //    }
 
 
-                    key = prefix + ++i;
-                }
+                //    key = prefix + ++i;
+                //}
 
                 return listRes;
             }
 
-            public string GetQueryTemplateSignals()
-            {
-                return GetSecValueOfKey(SEC_SELECT, string.Format(@"AIISKUE"));
-            }
+            //public string GetQueryTemplateSignals()
+            //{
+            //    //return GetSecValueOfKey(SEC_SELECT, string.Format(@"AIISKUE"));
+            //}
         }
 
         public PanelCommonAux()
 
         {
             GetDataFromDB.InitChannels();
-  
             InitializeComponents();
-            //initializeLayoutStyle(listTec.Count / 2, listTec.Count);
         }
 
         public override void SetDelegateReport(DelegateStringFunc ferr, DelegateStringFunc fwar, DelegateStringFunc fact, DelegateBoolFunc fclr)
@@ -1493,18 +1478,20 @@ namespace Statistic
             //m_tecView.SetDelegateReport(ferr, fwar, fact, fclr);
         }
 
+
+
         // Начало блока Common
 
 
         public static string _ExecutingAssemlyDirectoryName { get { return Path.GetDirectoryName(Assembly.GetExecutingAssembly().Location); } }
 
-        public void FormMainBase(HClassLibrary.FileINI.MODE_SECTION_APPLICATION modeSecApp = HClassLibrary.FileINI.MODE_SECTION_APPLICATION.INSTANCE)
-        {
-            m_fileINI = new FileINI(modeSecApp);
+        //public void FormMainBase(HClassLibrary.FileINI.MODE_SECTION_APPLICATION modeSecApp = HClassLibrary.FileINI.MODE_SECTION_APPLICATION.INSTANCE)
+        //{
+        //    m_fileINI = new FileINI(modeSecApp);
 
-            //Получить параметры соединения с источником данных
-            m_connSettAIISKUECentre = m_fileINI.GetConnSettAIISKUECentre();
-        }
+        //    //Получить параметры соединения с источником данных
+        //    m_connSettAIISKUECentre = m_fileINI.GetConnSettAIISKUECentre();
+        //}
         /// <summary>
         /// Объект с параметрами соединения с источником данных
         /// </summary>
@@ -1522,7 +1509,7 @@ namespace Statistic
             string strRes = string.Empty;
 
             m_GetDataFromDB = new GetDataFromDB();
-            m_listTEC = m_GetDataFromDB.GetListTEC();
+            //m_listTEC = m_GetDataFromDB.GetListTEC();
             strRes = @"Список ТЭЦ с параметрами сигналов сформирован: " + m_listTEC.Count + Environment.NewLine;
 
             //Получить шаблоны запросов для выбоки данных
@@ -1531,7 +1518,7 @@ namespace Statistic
             //TEC_LOCAL.s_strQueryTemplate[(int)TEC_LOCAL.INDEX_DATA.GRII] = m_GetDataFromDB.GetQueryTemplateSignals(Common.TEC.INDEX_DATA.GRII);
             //TEC_LOCAL.s_strQueryTemplate[(int)TEC_LOCAL.INDEX_DATA.GRVI] = m_GetDataFromDB.GetQueryTemplateSignals(Common.TEC.INDEX_DATA.GRVI);
             //TEC_LOCAL.s_strQueryTemplate[(int)TEC_LOCAL.INDEX_DATA.GRVII] = m_GetDataFromDB.GetQueryTemplateSignals(Common.TEC.INDEX_DATA.GRVII);
-            TEC_LOCAL.s_strQueryTemplate = m_GetDataFromDB.GetQueryTemplateSignals();
+            //TEC_LOCAL.s_strQueryTemplate = m_GetDataFromDB.GetQueryTemplateSignals();
             //Инициализация строк с идентификаторами
             foreach (TEC_LOCAL t in m_listTEC)
             {
@@ -2325,23 +2312,23 @@ namespace Statistic
                 ;
         }
 
-        private int setFullPathTemplate(string strFullPathTemplate)
-        {
-            int iRes = 0; // исходное состояние - нет ошибки
+        //private int setFullPathTemplate(string strFullPathTemplate)
+        //{
+        //    int iRes = 0; // исходное состояние - нет ошибки
 
-            iRes = validateTemplate(strFullPathTemplate);
-            if (iRes == 0)
-            {
-                // сохранить каталог с крайним прошедшим
-                m_fileINI.FullPathTemplate =
-                FullPathTemplate =
-                    strFullPathTemplate;
-            }
-            else
-                ;
+        //    iRes = validateTemplate(strFullPathTemplate);
+        //    if (iRes == 0)
+        //    {
+        //        // сохранить каталог с крайним прошедшим
+        //        m_fileINI.FullPathTemplate =
+        //        FullPathTemplate =
+        //            strFullPathTemplate;
+        //    }
+        //    else
+        //        ;
         
-            return iRes;
-        }
+        //    return iRes;
+        //}
 
         /// <summary>
         /// Обработчик нажатия на кнопку на панели быстрого доступа "Открыть"
@@ -2366,26 +2353,26 @@ namespace Statistic
                 //labelLog.Text += @"Выбор шаблона: ";
 
                 //Установить исходные параметры для формы диалога
-                if (m_fileINI.FullPathTemplate.Equals(string.Empty) == true)
-                    m_fileINI.FullPathTemplate =
-                        //Environment.GetFolderPath (Environment.SpecialFolder.MyDocuments)
-                        m_arMSEXEL_PARS[(int)INDEX_MSEXCEL_PARS.TEMPLATE_PATH_DEFAULT]
-                        + @"\"
-                        + m_arMSEXEL_PARS[(int)INDEX_MSEXCEL_PARS.TEMPLATE_NAME]
-                        ;
-                else
-                    ;
-                formChoiсeTemplate.InitialDirectory = Path.GetDirectoryName(m_fileINI.FullPathTemplate);
+                //if (m_fileINI.FullPathTemplate.Equals(string.Empty) == true)
+                //    m_fileINI.FullPathTemplate =
+                //        //Environment.GetFolderPath (Environment.SpecialFolder.MyDocuments)
+                //        m_arMSEXEL_PARS[(int)INDEX_MSEXCEL_PARS.TEMPLATE_PATH_DEFAULT]
+                //        + @"\"
+                //        + m_arMSEXEL_PARS[(int)INDEX_MSEXCEL_PARS.TEMPLATE_NAME]
+                //        ;
+                //else
+                //    ;
+                //formChoiсeTemplate.InitialDirectory = Path.GetDirectoryName(m_fileINI.FullPathTemplate);
                 formChoiсeTemplate.Title = @"Указать книгу MS Excel-шаблон";
                 formChoiсeTemplate.CheckPathExists =
                 formChoiсeTemplate.CheckFileExists =
                     true;
                 formChoiсeTemplate.Filter = MS_EXCEL_FILTER;
                 //Отобразить форму диалога
-                if (formChoiсeTemplate.ShowDialog() == System.Windows.Forms.DialogResult.OK)
-                    iErr = setFullPathTemplate(formChoiсeTemplate.FileName);
-                else
-                    iErr = 1;
+                //if (formChoiсeTemplate.ShowDialog() == System.Windows.Forms.DialogResult.OK)
+                //    iErr = setFullPathTemplate(formChoiсeTemplate.FileName);
+                //else
+                //    iErr = 1;
 
                 if (!(iErr == 0))
                     switch (iErr)
@@ -2787,14 +2774,14 @@ namespace Statistic
             m_labelEndDate.Text = monthCalendarEnd.SelectionStart.ToShortDateString();
             m_labelStartDate.Text = m_monthCalendar.SelectionStart.ToShortDateString();
 
-            string[] arMSExcelPars = m_fileINI.GetSecValueOfKey(FileINI.SEC_CONFIG, @"MSEXCEL").Split(FileINI.s_chSecDelimeters[(int)FileINI.INDEX_DELIMETER.PAIR_VAL]);
-            if (arMSExcelPars.Length == m_arMSEXEL_PARS.Length)
-            {
-                for (int i = (int)INDEX_MSEXCEL_PARS.TEMPLATE_PATH_DEFAULT; i < (int)INDEX_MSEXCEL_PARS.COUNT; i++)
-                    m_arMSEXEL_PARS[i] = arMSExcelPars[i];
-            }
-            else
-                throw new Exception(@"FormMain::FormMain_Load () - параметры для шаблона-книги MS Excel в файле конфигурации...");
+            //string[] arMSExcelPars = m_fileINI.GetSecValueOfKey(FileINI.SEC_CONFIG, @"MSEXCEL").Split(FileINI.s_chSecDelimeters[(int)FileINI.INDEX_DELIMETER.PAIR_VAL]);
+            //if (arMSExcelPars.Length == m_arMSEXEL_PARS.Length)
+            //{
+            //    //for (int i = (int)INDEX_MSEXCEL_PARS.TEMPLATE_PATH_DEFAULT; i < (int)INDEX_MSEXCEL_PARS.COUNT; i++)
+            //    //    m_arMSEXEL_PARS[i] = arMSExcelPars[i];
+            //}
+            //else
+            //    throw new Exception(@"FormMain::FormMain_Load () - параметры для шаблона-книги MS Excel в файле конфигурации...");
         }
     }
 }
