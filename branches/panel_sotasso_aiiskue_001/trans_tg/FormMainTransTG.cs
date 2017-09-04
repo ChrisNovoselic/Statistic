@@ -429,7 +429,7 @@ namespace trans_tg
             //if (WindowState == FormWindowState.Minimized)
             //if (m_bTransAuto == true)
             //if (m_modeMashine == MODE_MASHINE.AUTO || m_modeMashine == MODE_MASHINE.SERVICE)
-            if ((m_bTransAuto == true || m_modeMashine == MODE_MASHINE.SERVICE) && (m_bEnabledUIControl == false))
+            if ((m_bTransAuto == true) && (m_bEnabledUIControl == false))
             {
                 if (((AdminTS_NSS)m_arAdmin[(int)CONN_SETT_TYPE.SOURCE]).CompletedGetRDGValues == true)
                 {
