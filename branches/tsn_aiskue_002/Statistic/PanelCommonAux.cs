@@ -1318,7 +1318,7 @@ namespace Statistic
             /// <returns>Строка запроса</returns>
             public static string getQueryListTEC()
             {
-                string strRes = "SELECT * FROM [techsite_cfg-2.X.X].[dbo].[ID_TSN_ASKUE_2017]";
+                string strRes = "SELECT * FROM [ID_TSN_ASKUE_2017]";
                 return strRes;
             }
 
