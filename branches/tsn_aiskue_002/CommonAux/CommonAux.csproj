@@ -37,13 +37,13 @@
       <HintPath>..\..\TSN_Project1\bin\Debug\Common.dll</HintPath>
     </Reference>
     <Reference Include="GemBox.Spreadsheet">
-      <HintPath>..\Statistic\bin\Debug\GemBox.Spreadsheet.dll</HintPath>
+      <HintPath>..\StatisticLibrary\bin\Debug\GemBox.Spreadsheet.dll</HintPath>
     </Reference>
     <Reference Include="HClassLibrary">
       <HintPath>..\..\ExternalDLL\HClassLibrary.dll</HintPath>
     </Reference>
     <Reference Include="StatisticCommon">
-      <HintPath>..\trans_tg\bin\Debug\StatisticCommon.dll</HintPath>
+      <HintPath>..\StatisticLibrary\bin\Debug\StatisticCommon.dll</HintPath>
     </Reference>
     <Reference Include="System" />
     <Reference Include="System.Core" />
@@ -57,7 +57,7 @@
     <Reference Include="System.Windows.Forms" />
     <Reference Include="System.Xml" />
     <Reference Include="ZedGraph">
-      <HintPath>..\trans_tg\bin\Debug\ZedGraph.dll</HintPath>
+      <HintPath>..\StatisticLibrary\bin\Debug\ZedGraph.dll</HintPath>
     </Reference>
   </ItemGroup>
   <ItemGroup>

@@ -321,12 +321,6 @@ namespace CommonAux
                 }
             }
 
-            //public class VALUES_GROUP_TEC5 : VALUES_GROUP
-            //{
-            //    public VALUES_GROUP_TEC5(List<SIGNAL>listSgnls) : base (listSgnls)
-            //    {
-            //    }
-            //}
             /// <summary>
             /// Метка времени текущего объекта
             /// </summary>
@@ -1083,10 +1077,10 @@ namespace CommonAux
                 }
             }
 
-            public string GetQueryTemplateSignals()
-            {
-                return GetSecValueOfKey(SEC_SELECT, string.Format(@"AIISKUE"));
-            }
+            //public string GetQueryTemplateSignals()
+            //{
+            //    return GetSecValueOfKey(SEC_SELECT, string.Format(@"AIISKUE"));
+            //}
 
             public List<TEC_LOCAL> GetListTEC()
             {
@@ -1105,50 +1099,6 @@ namespace CommonAux
                 //    listRes.Add(tec);
 
                 //    key = @"TEC" + ++i;
-                //}
-
-                return listRes;
-            }
-
-            private List<SIGNAL> getSignals(string sec, string prefix)
-            {
-                List<SIGNAL> listRes = new List<SIGNAL>();
-
-                int i = -1;
-                string key = string.Empty;
-                bool bUse = false;
-                string[] vals;
-
-                i = 0;
-                key = prefix + i;
-                //while (isSecKey(sec, key) == true)
-                //{
-                //    vals = GetSecValueOfKey(sec, key).Split(s_chSecDelimeters[(int)INDEX_DELIMETER.PAIR_VAL]);
-
-                //    try
-                //    {
-                //        if (m_KeyPars.IndexOf(@"USE") < vals.Length)
-                //            if (bool.TryParse(vals[m_KeyPars.IndexOf(@"USE")], out bUse) == false)
-                //                bUse = true;
-                //            else
-                //                ; // значение успешно распознано
-                //        else
-                //            // значение не установлено - по умолчанию "в работе"
-                //            bUse = true;
-
-                //        listRes.Add(new SIGNAL(vals[m_KeyPars.IndexOf(@"Description")]
-                //            , Int32.Parse(vals[m_KeyPars.IndexOf(@"USPD")])
-                //            , Int32.Parse(vals[m_KeyPars.IndexOf(@"CHANNEL")])
-                //            , bUse
-                //        ));
-                //    }
-                //    catch (Exception e)
-                //    {
-                //        Logging.Logg().Exception(e, string.Format(@"FileINI::GetSignals () - "), Logging.INDEX_MESSAGE.NOT_SET);
-                //    }
-
-
-                //    key = prefix + ++i;
                 //}
 
                 return listRes;
@@ -1191,7 +1141,7 @@ namespace CommonAux
             /// <returns>Строка запроса</returns>
             public static string getQueryListTEC()
             {
-                string strRes = "SELECT * FROM [techsite_cfg-2.X.X].[dbo].[ID_TSN_ASKUE_2017]";
+                string strRes = "SELECT * FROM [ID_TSN_ASKUE_2017]";
                 return strRes;
             }
 
@@ -1210,29 +1160,26 @@ namespace CommonAux
             /// <summary>
             /// Загрузка всех каналов из базы данных
             /// </summary>
-            public static void InitChannels()
+            public static void InitChannels(DbConnection m_connConfigDB)
             {
                 int err = -1;
 
-                // зарегистрировать соединение/получить идентификатор соединения
-                _iListenerId = DbSources.Sources().Register(FormMain.s_listFormConnectionSettings[(int)CONN_SETT_TYPE.CONFIG_DB].getConnSett(), false, @"CONFIG_DB");
-
-                m_connConfigDB = DbSources.Sources().GetConnection(_iListenerId, out err);
+                List<SIGNAL> listRes = new List<SIGNAL>();
 
                 DataTable list_channels = null;
 
                 //Получить список каналов, используя статическую функцию
                 list_channels = getListChannels(ref m_connConfigDB, out err);
 
-                int aa = list_channels.Rows.Count;
-
                 for (int i = 0; i < list_channels.Rows.Count; i++)
                 {
                     try
                     {
-                        DataRow ab = list_channels.Rows[i];
-
-
+                        listRes.Add(new SIGNAL(Convert.ToString(list_channels.Rows[i].GetChildRows(@"DESCRIPTION")),
+                            Convert.ToInt32(list_channels.Rows[i].GetChildRows(@"USPD")),
+                            Convert.ToInt32(list_channels.Rows[i].GetChildRows(@"CHANNEL")),
+                            Convert.ToBoolean(list_channels.Rows[i].GetChildRows(@"USE"))
+                        ));
                     }
                     catch (Exception e)
                     {
@@ -1271,10 +1218,10 @@ namespace CommonAux
             }
         }
 
-        public PanelCommonAux()
-
+        public PanelCommonAux(int idListener)
         {
-            GetDataFromDB.InitChannels();
+            GetDataFromDB GetDataFDB = new GetDataFromDB();
+            GetDataFDB.InitChannels(idListener);
   
             InitializeComponents();
             //initializeLayoutStyle(listTec.Count / 2, listTec.Count);
@@ -1292,10 +1239,10 @@ namespace CommonAux
 
         public void FormMainBase(HClassLibrary.FileINI.MODE_SECTION_APPLICATION modeSecApp = HClassLibrary.FileINI.MODE_SECTION_APPLICATION.INSTANCE)
         {
-            m_fileINI = new FileINI(modeSecApp);
+            //m_fileINI = new FileINI(modeSecApp);
 
             //Получить параметры соединения с источником данных
-            m_connSettAIISKUECentre = m_fileINI.GetConnSettAIISKUECentre();
+            //m_connSettAIISKUECentre = m_fileINI.GetConnSettAIISKUECentre();
         }
         /// <summary>
         /// Объект с параметрами соединения с источником данных
@@ -1309,6 +1256,27 @@ namespace CommonAux
         /// Объект для инициализации входных параметров
         /// </summary>
         protected GetDataFromDB m_GetDataFromDB;
+        /// <summary>
+        /// Возвраить список объектов ТЭЦ
+        /// </summary>
+        /// <returns>Список объектов ТЭЦ</returns>
+        public void GetListTEC(List<TEC> tec)
+        {
+            List<TEC_LOCAL> listRes = new List<TEC_LOCAL>();
+            TEC_LOCAL tec_local;
+
+            for (int i = 0; i < tec.Count; i++)
+            {
+                tec_local = new TEC_LOCAL();
+
+                tec_local.m_Id = tec[i].m_id;
+                tec_local.m_strNameShr = tec[i].name_shr;
+
+                listRes.Add(tec_local);
+            }
+
+            m_listTEC = listRes;
+        }
         protected string setListTEC()
         {
             string strRes = string.Empty;
@@ -1323,7 +1291,9 @@ namespace CommonAux
             //TEC_LOCAL.s_strQueryTemplate[(int)TEC_LOCAL.INDEX_DATA.GRII] = m_GetDataFromDB.GetQueryTemplateSignals(Common.TEC.INDEX_DATA.GRII);
             //TEC_LOCAL.s_strQueryTemplate[(int)TEC_LOCAL.INDEX_DATA.GRVI] = m_GetDataFromDB.GetQueryTemplateSignals(Common.TEC.INDEX_DATA.GRVI);
             //TEC_LOCAL.s_strQueryTemplate[(int)TEC_LOCAL.INDEX_DATA.GRVII] = m_GetDataFromDB.GetQueryTemplateSignals(Common.TEC.INDEX_DATA.GRVII);
-            TEC_LOCAL.s_strQueryTemplate = m_GetDataFromDB.GetQueryTemplateSignals();
+
+
+            //TEC_LOCAL.s_strQueryTemplate = m_GetDataFromDB.GetQueryTemplateSignals();
             //Инициализация строк с идентификаторами
             foreach (TEC_LOCAL t in m_listTEC)
             {
@@ -1335,10 +1305,6 @@ namespace CommonAux
 
             return strRes;
         }
-    
-
-
-    // Завершение блока Common
 
     private enum INDEX_CONTROL : short { LB_TEC, LB_GROUP_SIGNAL }
 
@@ -1488,17 +1454,6 @@ namespace CommonAux
         /// </summary>
         private IContainer components = null;
 
-        //protected override void initializeLayoutStyle(int cols = -1, int rows = -1)
-        //{
-        //    this.ColumnCount = cols;
-        //    this.RowCount = rows;
-
-        //    this.ColumnStyles.Add(new ColumnStyle(SizeType.Absolute, 172));
-        //    this.ColumnStyles.Add(new ColumnStyle(SizeType.AutoSize));
-
-        //    this.RowStyles.Add(new RowStyle(SizeType.AutoSize));
-        //}
-
         /// <summary>
         /// Определить размеры ячеек макета панели
         /// </summary>
@@ -1576,8 +1531,6 @@ namespace CommonAux
             this.Controls.Add(m_btnOpen, 80, 45); this.SetColumnSpan(m_btnOpen, 10); this.SetRowSpan(m_btnOpen, 5);
             this.Controls.Add(m_btnExit, 70, 60); this.SetColumnSpan(m_btnExit, 10); this.SetRowSpan(m_btnExit, 5);
             this.Controls.Add(m_btnStripButtonExcel, 80, 60); this.SetColumnSpan(m_btnStripButtonExcel, 10); this.SetRowSpan(m_btnStripButtonExcel, 5);
-            //this.Controls.Add(m_listBoxTEC, 70, 70); this.SetColumnSpan(m_listBoxTEC, 8); this.SetRowSpan(m_listBoxTEC, 10);
-            //this.Controls.Add(m_listBoxGrpSgnl, 85, 70); this.SetColumnSpan(m_listBoxGrpSgnl, 8); this.SetRowSpan(m_listBoxGrpSgnl, 10);
             this.Controls.Add(m_monthCalendar, 60, 10); this.SetColumnSpan(m_monthCalendar, 15); this.SetRowSpan(m_monthCalendar, 15);
             this.Controls.Add(monthCalendarEnd, 80, 10); this.SetColumnSpan(monthCalendarEnd, 15); this.SetRowSpan(monthCalendarEnd, 15);
             this.Controls.Add(m_labelTEC, 70, 70); this.SetColumnSpan(m_labelTEC, 8); this.SetRowSpan(m_labelTEC, 2);
@@ -2031,17 +1984,6 @@ namespace CommonAux
             monthCalendarEnd.DateChanged += monthCalendarEnd_DateChanged;
 
             setListTEC();
-
-            //m_arMSEXEL_PARS = new string[(int)INDEX_MSEXCEL_PARS.COUNT];
-
-            //foreach (TEC_LOCAL tec in m_listTEC)
-            //{
-            //    m_listBoxTEC.Items.Add(tec.m_strNameShr);
-            //}
-            //foreach (TEC_LOCAL.INDEX_DATA indx in Enum.GetValues(typeof(TEC_LOCAL.INDEX_DATA)))
-            //{
-            //    m_listBoxGrpSgnl.Items.Add(indx.ToString());
-            //}
         }
 
         private void monthCalendarEnd_DateChanged(object sender, DateRangeEventArgs e)
@@ -2125,9 +2067,9 @@ namespace CommonAux
             if (iRes == 0)
             {
                 // сохранить каталог с крайним прошедшим
-                m_fileINI.FullPathTemplate =
-                FullPathTemplate =
-                    strFullPathTemplate;
+                //m_fileINI.FullPathTemplate =
+                //FullPathTemplate =
+                //    strFullPathTemplate;
             }
             else
                 ;
@@ -2158,16 +2100,16 @@ namespace CommonAux
                 //labelLog.Text += @"Выбор шаблона: ";
 
                 //Установить исходные параметры для формы диалога
-                if (m_fileINI.FullPathTemplate.Equals(string.Empty) == true)
-                    m_fileINI.FullPathTemplate =
-                        //Environment.GetFolderPath (Environment.SpecialFolder.MyDocuments)
-                        m_arMSEXEL_PARS[(int)INDEX_MSEXCEL_PARS.TEMPLATE_PATH_DEFAULT]
-                        + @"\"
-                        + m_arMSEXEL_PARS[(int)INDEX_MSEXCEL_PARS.TEMPLATE_NAME]
-                        ;
-                else
-                    ;
-                formChoiсeTemplate.InitialDirectory = Path.GetDirectoryName(m_fileINI.FullPathTemplate);
+                //if (m_fileINI.FullPathTemplate.Equals(string.Empty) == true)
+                //    m_fileINI.FullPathTemplate =
+                //        //Environment.GetFolderPath (Environment.SpecialFolder.MyDocuments)
+                //        m_arMSEXEL_PARS[(int)INDEX_MSEXCEL_PARS.TEMPLATE_PATH_DEFAULT]
+                //        + @"\"
+                //        + m_arMSEXEL_PARS[(int)INDEX_MSEXCEL_PARS.TEMPLATE_NAME]
+                //        ;
+                //else
+                //    ;
+                //formChoiсeTemplate.InitialDirectory = Path.GetDirectoryName(m_fileINI.FullPathTemplate);
                 formChoiсeTemplate.Title = @"Указать книгу MS Excel-шаблон";
                 formChoiсeTemplate.CheckPathExists =
                 formChoiсeTemplate.CheckFileExists =
@@ -2428,16 +2370,16 @@ namespace CommonAux
                                             ;
 
                                         //Сохранить набор значений на листе книги MS Excel
-                                        excel.WriteValues(t.m_arMSExcelNumColumns[(int)FileINI.INDEX_MSEXCEL_COLUMN.APOWER]
-                                            , iRowStart
-                                            , valsDate.m_dictData[TEC_LOCAL.INDEX_DATA.TG].m_summaHours);
+                                        //excel.WriteValues(t.m_arMSExcelNumColumns[(int)FileINI.INDEX_MSEXCEL_COLUMN.APOWER]
+                                        //    , iRowStart
+                                        //    , valsDate.m_dictData[TEC_LOCAL.INDEX_DATA.TG].m_summaHours);
                                         // получить набор значений для записи в соответствии с вариантом расчета
                                         arWriteValues = valsDate.GetValues(out iErr);
-                                        if (iErr == 0)
-                                            //Сохранить набор значений на листе книги MS Excel
-                                            excel.WriteValues(t.m_arMSExcelNumColumns[(int)FileINI.INDEX_MSEXCEL_COLUMN.SNUZHDY]
-                                                , iRowStart
-                                                , arWriteValues);
+                                        if (iErr == 0) ;
+                                        //Сохранить набор значений на листе книги MS Excel
+                                        //excel.WriteValues(t.m_arMSExcelNumColumns[(int)FileINI.INDEX_MSEXCEL_COLUMN.SNUZHDY]
+                                        //    , iRowStart
+                                        //    , arWriteValues);
                                         else
                                             Logging.Logg().Error(string.Format(@"FormMain::экспортВMSExcelToolStripMenuItem_Click () - TEC.ИД={0}, дата={1}, отсутствуют необходимые для расчета группы..."
                                                     , t.m_Id, valsDate.m_dataDate)
@@ -2579,11 +2521,11 @@ namespace CommonAux
             m_labelEndDate.Text = monthCalendarEnd.SelectionStart.ToShortDateString();
             m_labelStartDate.Text = m_monthCalendar.SelectionStart.ToShortDateString();
 
-            string[] arMSExcelPars = m_fileINI.GetSecValueOfKey(FileINI.SEC_CONFIG, @"MSEXCEL").Split(FileINI.s_chSecDelimeters[(int)FileINI.INDEX_DELIMETER.PAIR_VAL]);
-            if (arMSExcelPars.Length == m_arMSEXEL_PARS.Length)
+            //string[] arMSExcelPars = m_fileINI.GetSecValueOfKey(FileINI.SEC_CONFIG, @"MSEXCEL").Split(FileINI.s_chSecDelimeters[(int)FileINI.INDEX_DELIMETER.PAIR_VAL]);
+            if (false /*arMSExcelPars.Length == m_arMSEXEL_PARS.Length*/)
             {
-                for (int i = (int)INDEX_MSEXCEL_PARS.TEMPLATE_PATH_DEFAULT; i < (int)INDEX_MSEXCEL_PARS.COUNT; i++)
-                    m_arMSEXEL_PARS[i] = arMSExcelPars[i];
+                //for (int i = (int)INDEX_MSEXCEL_PARS.TEMPLATE_PATH_DEFAULT; i < (int)INDEX_MSEXCEL_PARS.COUNT; i++)
+                //    m_arMSEXEL_PARS[i] = arMSExcelPars[i];
             }
             else
                 throw new Exception(@"FormMain::FormMain_Load () - параметры для шаблона-книги MS Excel в файле конфигурации...");

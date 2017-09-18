@@ -1348,72 +1348,32 @@ namespace Statistic
             /// <summary>
             /// Загрузка всех каналов из базы данных
             /// </summary>
-            public static void InitChannels()
+            public static void InitChannels(DbConnection m_connConfigDB)
             {
                 int err = -1;
 
-                // зарегистрировать соединение/получить идентификатор соединения
-                _iListenerId = DbSources.Sources().Register(FormMain.s_listFormConnectionSettings[(int)CONN_SETT_TYPE.CONFIG_DB].getConnSett(), false, @"CONFIG_DB");
-
-                m_connConfigDB = DbSources.Sources().GetConnection(_iListenerId, out err);
+                List<SIGNAL> listRes = new List<SIGNAL>();
 
                 DataTable list_channels = null;
 
                 //Получить список каналов, используя статическую функцию
                 list_channels = getListChannels(ref m_connConfigDB, out err);
 
-                int aa = list_channels.Rows.Count;
-
                 for (int i = 0; i < list_channels.Rows.Count; i++)
                 {
                     try
                     {
-                        DataRow ab = list_channels.Rows[i];
-
-
+                        listRes.Add(new SIGNAL(Convert.ToString(list_channels.Rows[i].GetChildRows(@"DESCRIPTION")),
+                            Convert.ToInt32(list_channels.Rows[i].GetChildRows(@"USPD")),
+                            Convert.ToInt32(list_channels.Rows[i].GetChildRows(@"CHANNEL")),
+                            Convert.ToBoolean(list_channels.Rows[i].GetChildRows(@"USE"))
+                        ));
                     }
                     catch (Exception e)
                     {
                         Logging.Logg().Exception(e, string.Format(@""), Logging.INDEX_MESSAGE.NOT_SET);
                     }
                 }
-            }
-
-            //public List<TEC_LOCAL> GetListTEC()
-            //{
-            //    List<TEC_LOCAL> listRes = new List<TEC_LOCAL>();
-            //    TEC_LOCAL tec;
-
-            //    int i = -1;
-            //    string key = string.Empty;
-
-            //    i = 0;
-            //    key = @"TEC" + i;
-            //    while (isSecKey(SEC_CONFIG, key) == true)
-            //    {
-            //        tec = getTEC(GetSecValueOfKey(SEC_CONFIG, key));
-            //        tec.m_Index = i;
-            //        listRes.Add(tec);
-
-            //        key = @"TEC" + ++i;
-            //    }
-
-            //    return listRes;
-            //}
-
-            private TEC_LOCAL getTEC(string id)
-            {
-                TEC_LOCAL tecRes = new TEC_LOCAL();
-                tecRes.m_strId = id;
-
-                //i = 0;
-                //foreach (string numCol in arNumCols)
-                //    tecRes.m_arMSExcelNumColumns[i++] = Int32.Parse(numCol);
-
-                //foreach (TEC_LOCAL.INDEX_DATA indx in Enum.GetValues(typeof(TEC_LOCAL.INDEX_DATA)))
-                //    tecRes.m_arListSgnls[(int)indx] = getSignals(sec, string.Format(@"AIISKUE_{0}", indx.ToString()));
-
-                return tecRes;
             }
 
             private List<SIGNAL> getSignals(string sec, string prefix)
@@ -1467,10 +1427,17 @@ namespace Statistic
         }
 
         public PanelCommonAux()
-
         {
-            GetDataFromDB.InitChannels();
+            int err = -1;
+            // зарегистрировать соединение/получить идентификатор соединения
+            int _iListenerId = DbSources.Sources().Register(FormMain.s_listFormConnectionSettings[(int)CONN_SETT_TYPE.CONFIG_DB].getConnSett(), false, @"CONFIG_DB");
+
+            DbConnection m_connConfigDB = DbSources.Sources().GetConnection(_iListenerId, out err);
+
+            GetDataFromDB.InitChannels(m_connConfigDB);
             InitializeComponents();
+
+            m_listTEC = GetListTEC(new List<TEC>());
         }
 
         public override void SetDelegateReport(DelegateStringFunc ferr, DelegateStringFunc fwar, DelegateStringFunc fact, DelegateBoolFunc fclr)
@@ -1504,6 +1471,27 @@ namespace Statistic
         /// Объект для инициализации входных параметров
         /// </summary>
         protected GetDataFromDB m_GetDataFromDB;
+        /// <summary>
+        /// Возвраить список объектов ТЭЦ
+        /// </summary>
+        /// <returns>Список объектов ТЭЦ</returns>
+        public List<TEC_LOCAL> GetListTEC(List<TEC> tec)
+        {
+            List<TEC_LOCAL> listRes = new List<TEC_LOCAL>();
+            TEC_LOCAL tec_local;
+
+            for (int i=0; i<tec.Count; i++)
+            {
+                tec_local = new TEC_LOCAL();
+
+                tec_local.m_Id = tec[i].m_id;
+                tec_local.m_strNameShr = tec[i].name_shr;
+
+                listRes.Add(tec_local);
+            }
+
+            return listRes;
+        }
         protected string setListTEC()
         {
             string strRes = string.Empty;
