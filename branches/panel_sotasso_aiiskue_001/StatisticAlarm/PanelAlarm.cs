@@ -67,6 +67,7 @@ namespace StatisticAlarm
         /// </summary>
         /// <param name="mode">Режим работы панели</param>
         public PanelAlarm(int iListenerConfigDB, HMark markQueries, MODE mode)
+            : base()
         {
             //Инициализация собственных значений
             initialize(iListenerConfigDB, markQueries, mode);
@@ -77,6 +78,7 @@ namespace StatisticAlarm
         /// <param name="container">См. документацию на 'Control'</param>
         /// <param name="mode">Режим работы панели</param>
         public PanelAlarm(IContainer container, int iListenerConfigDB, HMark markQueries, MODE mode)
+            : base ()
         {
             container.Add(this);
             //Инициализация собственных значений

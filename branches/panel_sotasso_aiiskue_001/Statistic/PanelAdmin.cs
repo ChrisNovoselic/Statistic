@@ -14,30 +14,102 @@ using StatisticCommon;
 
 namespace Statistic
 {
-    public class PanelAdmin : PanelStatisticWithTableHourRows
+    public abstract class PanelAdmin : PanelStatisticWithTableHourRows
     {
+        /// <summary>
+        /// Перечисление - значения для режимов чтения данных (админ. + ПБР) БД
+        ///  , режим изменяется при инициировании операции обращения к БД
+        /// </summary>
+        protected enum MODE_GET_RDG_VALUES { DISPLAY, EXPORT }
+        /// <summary>
+        /// Режим чтения данных (админ. + ПБР) БД
+        ///  , для отображения значений одного из ГТП
+        ///  , всех ГТП при экспорте значений в файл для ком./дисп с целью сравнения значений ПБР с аналогичными значениями из других источников
+        /// </summary>
+        protected MODE_GET_RDG_VALUES modeGetRDGValues;
+        /// <summary>
+        /// Класс для разделителя(сепаратора) групп элементов интерфейса на панели с управляющими элементами интерфейса
+        /// </summary>
+        protected class GroupBoxDividerChoice : System.Windows.Forms.GroupBox
+        {
+            private static int counter = 0;
+
+            public GroupBoxDividerChoice()
+                : base ()
+            {
+                counter++;
+
+                InitializeComponent();
+            }
+
+            private void InitializeComponent()
+            {
+                Name = string.Format("gbxDividerChoice_{0}", (counter + 1));
+                Size = new System.Drawing.Size(154, 8);
+                TabIndex = (counter + 1) * 4;
+                TabStop = false;
+            }
+
+            public void Initialize(int posY)
+            {
+                Location = new System.Drawing.Point(10, posY + 2 * (m_iSizeY + m_iMarginY));                
+            }
+        }
+
         //protected static AdminTS.TYPE_FIELDS s_typeFields = AdminTS.TYPE_FIELDS.DYNAMIC;
-
-        protected Panel m_panelManagement, m_panelRDGValues;
-
+        /// <summary>
+        /// Панели для размещения активных(управляющих), пассивных элементов интерфейса
+        /// </summary>
+        protected Panel m_panelManagement
+            , m_panelRDGValues;
+        /// <summary>
+        /// Календарь для выбора даты, за котору. требуется прочитать(отобразить/экспортировать) значения из БД
+        /// </summary>
         protected System.Windows.Forms.MonthCalendar mcldrDate;
-
+        /// <summary>
+        /// Объект синхронизации при изменении кол-ва сторок в представлении для отображения значений
+        /// </summary>
         protected ManualResetEvent m_evtAdminTableRowCount;
+        /// <summary>
+        /// Элемент управления(представление) для отображения значений
+        /// </summary>
         protected DataGridViewAdmin dgwAdminTable;
-
+        /// <summary>
+        /// Элемент упарвления(управляющий) для инициирования операции сохранения значений в БД из представления
+        /// </summary>
         private System.Windows.Forms.Button btnSet;
+        /// <summary>
+        /// Элемент упарвления(управляющий) для инициирования операции обновления значений в представлении
+        /// </summary>
         protected System.Windows.Forms.Button btnRefresh;
-
+        /// <summary>
+        /// Элемент управления(управляющий) для выбора компонента ТЭЦ(ГТП), для кторого требуется
+        /// </summary>
         protected System.Windows.Forms.ComboBox comboBoxTecComponent;
-        private System.Windows.Forms.GroupBox gbxDividerChoice;
-
+        /// <summary>
+        /// Объект разделителя групп управляющих элементов интерфейса
+        /// </summary>
+        private GroupBoxDividerChoice gbxDividerChoice;
+        /// <summary>
+        /// Объект для обращения к БД
+        /// </summary>
         protected AdminTS m_admin;
-
+        /// <summary>
+        /// Список индексов в списке идентификаторов компонентов ТЭЦ, 
+        /// </summary>
         protected List <int>m_listTECComponentIndex;
+        /// <summary>
+        /// Индекс
+        /// </summary>
         protected volatile int prevSelectedIndex;
-
+        /// <summary>
+        /// Список ТЭЦ, собирается автоматически при запуске приложения
+        ///  , передается в панель при создании объекта панели
+        /// </summary>
         public List <StatisticCommon.TEC> m_list_tec { get { return m_admin.m_list_tec; } }
-
+        /// <summary>
+        /// Значения для позиционирования элементов управления
+        /// </summary>
         protected static int m_iSizeY = 22
             , m_iMarginY = 3;
         /// <summary>
@@ -68,7 +140,7 @@ namespace Statistic
             //this.dgwAdminTable = new DataGridViewAdmin();
             this.mcldrDate = new System.Windows.Forms.MonthCalendar();
             this.comboBoxTecComponent = new System.Windows.Forms.ComboBox();
-            this.gbxDividerChoice = new System.Windows.Forms.GroupBox();
+            this.gbxDividerChoice = new GroupBoxDividerChoice();
 
             initializeLayoutStyle (2, 1);
 
@@ -139,11 +211,7 @@ namespace Statistic
             // 
             // gbxDividerChoice
             // 
-            this.gbxDividerChoice.Location = new System.Drawing.Point(10, posY + 2 * (m_iSizeY + m_iMarginY));
-            this.gbxDividerChoice.Name = "gbxDividerChoice";
-            this.gbxDividerChoice.Size = new System.Drawing.Size(154, 8);
-            this.gbxDividerChoice.TabIndex = 4;
-            this.gbxDividerChoice.TabStop = false;
+            this.gbxDividerChoice.Initialize(posY);
             // 
             // btnLoadLayout
             // 
@@ -168,9 +236,9 @@ namespace Statistic
             this.ResumeLayout();
         }
 
-        public PanelAdmin(int idListener, FormChangeMode.MANAGER type, HMark markQueries, int [] arTECLimit)
+        public PanelAdmin(int idListener, HMark markQueries, int [] arTECLimit)
         {
-            preInitialize (type);
+            createAdmin ();
 
             try { m_admin.InitTEC(idListener, FormChangeMode.MODE_TECCOMPONENT.ANY, /*TYPE_DATABASE_CFG.CFG_200, */markQueries, false, arTECLimit); }
             catch (Exception e)
@@ -188,9 +256,9 @@ namespace Statistic
             initialize ();
         }
 
-        public PanelAdmin(List<StatisticCommon.TEC> tec, FormChangeMode.MANAGER type)
+        public PanelAdmin(List<StatisticCommon.TEC> tec)
         {
-            preInitialize (type);
+            createAdmin ();
             
             //Для установки типов соединения (оптимизация кол-ва соединений с БД)
             HMark markQueries = new HMark(new int [] {(int)CONN_SETT_TYPE.ADMIN, (int)CONN_SETT_TYPE.PBR});
@@ -213,30 +281,7 @@ namespace Statistic
             initialize ();
         }
 
-        private void preInitialize(FormChangeMode.MANAGER type)
-        {
-            switch (type)
-            {
-                case FormChangeMode.MANAGER.DISP:
-                    //Возможность редактирования значений ПБР: разрешено управление (изменение разрешения на запись), запись НЕ разрешена
-                    m_admin = new AdminTS_KomDisp(new bool[] { true, false });
-                    break;
-                case FormChangeMode.MANAGER.NSS:
-                    //Возможность редактирования значений ПБР: НЕ разрешено управление (изменение разрешения на запись), запись разрешена
-                    m_admin = new AdminTS_NSS(new bool[] { false, true });
-                    break;
-                case FormChangeMode.MANAGER.LK:
-                    //Возможность редактирования значений ПБР: НЕ разрешено управление (изменение разрешения на запись), запись разрешена
-                    m_admin = new PanelAdminLK.AdminTS_LK(new bool[] { false, true });
-                    break;
-                case FormChangeMode.MANAGER.TEPLOSET:
-                    //Возможность редактирования значений ПБР: разрешено управление (изменение разрешения на запись), запись НЕ разрешена
-                    m_admin = new PanelAdminVyvod.AdminTS_Vyvod(new bool[] { true, false });
-                    break;
-                default:
-                    break;
-            }
-        }
+        protected abstract void createAdmin ();
 
         private void initialize () {
             m_evtAdminTableRowCount = new ManualResetEvent (false);
@@ -298,7 +343,7 @@ namespace Statistic
         /// Делегат для установки значения в элементе управления 'календарь'
         /// при вызове из 'другого' потока
         /// </summary>
-        /// <param name="date"></param>
+        /// <param name="date">Дата/время нового значения</param>
         public void CalendarSetDate(DateTime date)
         {
             if (IsHandleCreated/*InvokeRequired*/ == true)
@@ -453,6 +498,8 @@ namespace Statistic
 
         private void btnSet_Click(object sender, EventArgs e)
         {
+            modeGetRDGValues = MODE_GET_RDG_VALUES.DISPLAY;
+
             getDataGridViewAdmin();
 
             Errors resultSaving = m_admin.SaveChanges();
@@ -473,34 +520,12 @@ namespace Statistic
 
         private void btnRefresh_Click(object sender, EventArgs e)
         {
+            modeGetRDGValues = MODE_GET_RDG_VALUES.DISPLAY;
+
             ClearTables();
 
             m_admin.GetRDGValues(/*(int)m_admin.m_typeFields,*/ m_listTECComponentIndex[comboBoxTecComponent.SelectedIndex], mcldrDate.SelectionStart);
         }
-
-        //private string SetNumberSeparator(string current_str)
-        //{
-        //    if (current_str.IndexOf(".") > 0)
-        //    {
-        //        if (System.Globalization.CultureInfo.CurrentUICulture.NumberFormat.NumberDecimalSeparator != ".")
-        //            return current_str.Replace(".", System.Globalization.CultureInfo.CurrentUICulture.NumberFormat.NumberDecimalSeparator);
-        //        else
-        //            ;
-        //    }
-        //    else
-        //    {
-        //        if (current_str.IndexOf(",") > 0)
-        //        {
-        //            if (System.Globalization.CultureInfo.CurrentUICulture.NumberFormat.NumberDecimalSeparator != ",")
-        //                return current_str.Replace(",", System.Globalization.CultureInfo.CurrentUICulture.NumberFormat.NumberDecimalSeparator);
-        //            else
-        //                ;
-        //        }
-        //        else
-        //            ;
-        //    }
-        //    return current_str;
-        //}
 
         public override bool MayToClose()
         {

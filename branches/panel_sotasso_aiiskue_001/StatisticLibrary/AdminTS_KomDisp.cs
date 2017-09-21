@@ -7,15 +7,22 @@ using System.Data;
 
 using HClassLibrary;
 
-using GemBox.Spreadsheet;
-
 namespace StatisticCommon
 {
-    public class AdminTS_KomDisp : AdminTS
+    public partial class AdminTS_KomDisp : AdminTS
     {
-        string m_fullPathCSVValues; //Для возможности импорта ПБР из *.csv
+        /// <summary>
+        /// Полный путь для файла CSV-макета при импорте ПБР из *.csv
+        /// </summary>
+        private string m_fullPathCSVValues;
+        /// <summary>
+        /// Шаблон для наименования файла CSV-макета
+        /// </summary>
         private static string s_strMarkSession = @"ГТП(генерация) Сессия(";
-
+        /// <summary>
+        /// Конструктор - основной(с аргументами)
+        /// </summary>
+        /// <param name="arMarkSavePPBRValues">Массив с признаками необходимости опрса того и иного типа значений</param>
         public AdminTS_KomDisp(bool[] arMarkSavePPBRValues)
             : base(arMarkSavePPBRValues, TECComponentBase.TYPE.ELECTRO)
         {
@@ -42,9 +49,57 @@ namespace StatisticCommon
 
             //strVal = @"567;890"; val = -1F;
             //HMath.doubleParse(strVal, out val);
+
+            _msExcelIOExportPBRValues = new MSExcelIOExportPBRValues();
+            _msExcelIOExportPBRValues.Result += new Action<object, MSExcelIOExportPBRValues.EventResultArgs> (msExcelIOExportPBRValues_onResult);
         }
 
-        //Вызов из панели ком./дисп.
+        public event Action<MSExcelIOExportPBRValues.EventResultArgs> EventExportPBRValues;
+
+        private void msExcelIOExportPBRValues_onResult(object sender, MSExcelIOExportPBRValues.EventResultArgs e)
+        {
+            string errMes = string.Empty;
+
+            switch (e.Result) {
+                case MSExcelIOExportPBRValues.RESULT.OK:
+                    break;
+                case MSExcelIOExportPBRValues.RESULT.VISIBLE:
+                    //_msExcelIOExportPBRValues.Visible = true;
+                    break;
+                case MSExcelIOExportPBRValues.RESULT.SHEDULE:
+                    EventExportPBRValues (e);
+                    break;
+                case MSExcelIOExportPBRValues.RESULT.ERROR_OPEN:
+                    errMes = string.Format ("Не удалось открыть книгу для экспорта ПБР-значений");
+                    break;
+                case MSExcelIOExportPBRValues.RESULT.ERROR_RETRY:
+                    errMes = string.Format ("Попытка повторно открыть книгу для экспорта ПБР-значений");
+                    break;
+                case MSExcelIOExportPBRValues.RESULT.ERROR_TEMPLATE:
+                    errMes = string.Format ("Не найден шаблон для экспорта ПБР-значений");
+                    break;
+                case MSExcelIOExportPBRValues.RESULT.ERROR_WAIT:
+                    errMes = string.Format("Превышено время ожидания({0} сек) при экспорте ПБР-значений", MS_WAIT_EXPORT_PBR_MAX / 1000);
+                    break;
+                case MSExcelIOExportPBRValues.RESULT.ERROR_APP:
+                    errMes = string.Format ("Нет отклика от MS Excel при экспорте ПБР-значений");
+                    break;
+                default:
+                    break;
+            }
+
+            if (errMes.Equals (string.Empty) == false)
+                ErrorReport (errMes);
+            else
+                ;
+        }
+
+        /// <summary>
+        /// Вызов из панели ком./дисп.
+        /// </summary>
+        /// <param name="date">Дата, выбранная пользователя для импорта значений из файла CSV-макета</param>
+        /// <param name="fullPath">Полный путь к файлу CSV-макета</param>
+        /// <returns>Признак(успех/ошибка) выполнения метода</returns>
         public int ImpCSVValues(DateTime date, string fullPath)
         {
             int iRes = 0; //Нет ошибки
@@ -510,5 +565,131 @@ namespace StatisticCommon
                 @") от " +
                 (m_curDate.AddDays(offset_day)).Date.GetDateTimeFormats()[0];
         }
+
+        #region Экспорт значений в MS Excel-файл для сравнения с аналогами из внешн. источника
+        /// <summary>
+        /// Интервал времени - максимальный для ожидания завершения операции экспорта
+        /// </summary>
+        public static int MS_WAIT_EXPORT_PBR_MAX = 16666
+            , MS_WAIT_EXPORT_PBR_ABORT = 666
+            , SEC_SHEDULE_START_EXPORT_PBR = 46 * 60
+            , SEC_SHEDULE_PERIOD_EXPORT_PBR = 60 * 60;
+
+        public static string Folder_CSV = string.Empty;
+
+        public enum MODE_EXPORT_PBRVALUES
+        {
+            MANUAL
+            , AUTO
+                , COUNT
+        }
+
+        public void SetModeExportPBRValues(MODE_EXPORT_PBRVALUES mode)
+        {
+            _msExcelIOExportPBRValues.Mode = mode;
+        }
+
+        public void SetSheduleExportPBRValues(TimeSpan tsShedule)
+        {
+            SEC_SHEDULE_START_EXPORT_PBR = (int)tsShedule.TotalSeconds;
+        }
+
+        public void SetPeriodExportPBRValues(TimeSpan tsPeriod)
+        {
+            SEC_SHEDULE_PERIOD_EXPORT_PBR = (int)tsPeriod.TotalSeconds;
+        }
+
+        public override void Stop ()
+        {
+            if (_msExcelIOExportPBRValues.Busy == true)
+                _msExcelIOExportPBRValues.Abort ();
+            else
+                ;
+
+            base.Stop ();
+        }
+
+        /// <summary>
+        /// Объект для заполнения/сохранения книги MS Excel значениями
+        ///  , накоплением входных значений для всех ГТП последовательно (по факту их получения из БД) 
+        /// </summary>
+        MSExcelIOExportPBRValues _msExcelIOExportPBRValues;
+        /// <summary>
+        /// Очередь индексов компонентов ТЭЦ для последоват. экспорта ПБР-значений
+        ///  , копия '_lisTECComponentIndex'
+        /// </summary>
+        List<int> _lisTECComponentIndex;
+
+        public void PrepareExportRDGValues(List<int> listIndex)
+        {
+            if (_lisTECComponentIndex == null)
+                _lisTECComponentIndex = new List<int>();
+            else
+                ;
+
+            _lisTECComponentIndex.Clear();
+            listIndex.ForEach((indx) => {
+                if (_lisTECComponentIndex.Contains(indx) == false)
+                    _lisTECComponentIndex.Add(indx);
+                else
+                    Logging.Logg().Error(string.Format("AdminTS_KomDisp::PrepareExportRDGValues () - добавление повторяющегося индекса {0}...", indx), Logging.INDEX_MESSAGE.NOT_SET);
+            });
+        }
+        /// <summary>
+        ///  Добавить значения для экспорта
+        /// </summary>
+        /// <param name="compValues">Значения (админ. + ПБР) для одного из компонентов ТЭЦ</param>
+        /// <param name="date">Дата, за которую получены значения</param>
+        /// <returns>Очередной индекс для запроса значений из БД</returns>
+        public int AddValueToExportRDGValues(RDGStruct[]compValues, DateTime date)
+        {
+            int iRes = -1;
+
+            if ((date - DateTime.MinValue.Date).Days > 0) {
+                if ((_lisTECComponentIndex.Count > 0)
+                    && (!(indxTECComponents < 0))
+                    && (!(_lisTECComponentIndex[0] < 0))) {
+                    if (indxTECComponents - _lisTECComponentIndex[0] == 0) {
+                        Logging.Logg().Debug(string.Format("AdminTS_KomDisp::AddValueToExportRDGValues () - получены значения для [ID={0}, Index={1}, за дату={2}, кол-во={3}] компонента..."
+                                , allTECComponents[_lisTECComponentIndex[0]].m_id, _lisTECComponentIndex[0], _lisTECComponentIndex[0], date, compValues.Length)
+                            , Logging.INDEX_MESSAGE.NOT_SET);
+
+                        if ((_msExcelIOExportPBRValues.AddTECComponent(allTECComponents[indxTECComponents]) == 0)
+                            && (_msExcelIOExportPBRValues.SetDate(date) == true)) {
+                            _lisTECComponentIndex.Remove(indxTECComponents); // дубликатов быть не должно (см. добавление элементов)
+
+                            //Console.WriteLine(@"AdminTS_KomDisp::AddValueToExportRDGValues () - обработка элемента=[{0}], остатолось элементов={1}", indxTECComponents, _lisTECComponentIndex.Count);
+
+                            // добавить значения по составному ключу: [DateTime, Index]
+                            _msExcelIOExportPBRValues.AddPBRValues(allTECComponents[indxTECComponents].m_id, compValues);
+
+                            // проверить повторно после удаления элемента
+                            if (_lisTECComponentIndex.Count > 0) {
+                            // очередной индекс компонента для запрооса
+                                iRes = _lisTECComponentIndex[0];
+                            } else {
+                            // все значения по всем компонентам получены/добавлены
+                                Logging.Logg().Debug(string.Format("AdminTS_KomDisp::AddValueToExportRDGValues () - получены все значения для всех компонентов...")
+                                    , Logging.INDEX_MESSAGE.NOT_SET);
+
+                                _msExcelIOExportPBRValues.Run();
+                            }
+                        } else
+                            Logging.Logg().Error(string.Format("AdminTS_KomDisp::AddValueToExportRDGValues () - компонент с индексом [{0}] не может быть добавлен (пред. опреация экспрта не завершена)...")
+                                , Logging.INDEX_MESSAGE.NOT_SET);
+                    } else
+                    // текущий индекс и 0-ой элемент массива индексов жолжны совпадать
+                        ;
+                } else
+                //??? ошибка, т.к. выполнен запрос и получены значения, а индекс компонента не известен
+                    Logging.Logg().Error(string.Format("AdminTS_KomDisp::AddValueToExportRDGValues () - получены значения для неизвестного компонента...")
+                        , Logging.INDEX_MESSAGE.NOT_SET);
+            } else
+            // дата для полученных значений неизвестна
+                ;
+
+            return iRes;
+        }
+        #endregion
     }
 }

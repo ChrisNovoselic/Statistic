@@ -64,7 +64,7 @@ namespace Statistic
             m_dictAddingTabs.Add((int)ID_ADDING_TAB.ANALYZER, new ADDING_TAB("ПросмотрЖурналаToolStripMenuItem", "Журнал событий", HClassLibrary.HTabCtrlEx.TYPE_TAB.FIXED));
             #region KhryapinAN 2017-06
             m_dictAddingTabs.Add((int)ID_ADDING_TAB.SOTIASSO_HOUR, new ADDING_TAB("значенияСОТИАССОЧасToolStripMenuItem", "Значения СОТИАССО-час", HClassLibrary.HTabCtrlEx.TYPE_TAB.FIXED));            
-            m_dictAddingTabs.Add((int)ID_ADDING_TAB.SOTIASSO_DAY, new ADDING_TAB("значенияСОТИАССОСуткиToolStripMenuItem", "Значения СОТИАССО-сутки", HClassLibrary.HTabCtrlEx.TYPE_TAB.FIXED));
+            m_dictAddingTabs.Add((int)ID_ADDING_TAB.AIISKUE_SOTIASSO_DAY, new ADDING_TAB("значенияАИИСКУЭСОТИАССОСуткиToolStripMenuItem", "Значения АИСКУЭ+СОТИАССО-сутки", HClassLibrary.HTabCtrlEx.TYPE_TAB.FIXED));
             #endregion
             m_dictAddingTabs.Add((int)ID_ADDING_TAB.VZLET_TDIRECT, new ADDING_TAB("значенияВзлетТпрямаяToolStripMenuItem", "Расчет теплосети", HClassLibrary.HTabCtrlEx.TYPE_TAB.FLOAT));
             m_dictAddingTabs.Add((int)ID_ADDING_TAB.TEC_Component, new ADDING_TAB("СоставТЭЦToolStripMenuItem", "Изменить состав ТЭЦ", HClassLibrary.HTabCtrlEx.TYPE_TAB.FIXED));
@@ -191,7 +191,7 @@ namespace Statistic
                 #region KhryapinAN 2017-06
                 , new System.Windows.Forms.ToolStripSeparator()
                 , m_dictAddingTabs[(int)ID_ADDING_TAB.SOTIASSO_HOUR].menuItem                
-                , m_dictAddingTabs[(int)ID_ADDING_TAB.SOTIASSO_DAY].menuItem
+                , m_dictAddingTabs[(int)ID_ADDING_TAB.AIISKUE_SOTIASSO_DAY].menuItem
                 , new System.Windows.Forms.ToolStripSeparator()
                 #endregion
                 , m_dictAddingTabs[(int)ID_ADDING_TAB.VZLET_TDIRECT].menuItem
@@ -267,7 +267,7 @@ namespace Statistic
             // 
             // значенияСОТИАССОСуткиToolStripMenuItem
             // 
-            this.m_dictAddingTabs[(int)ID_ADDING_TAB.SOTIASSO_DAY].menuItem.CheckedChanged += new System.EventHandler(this.значенияСОТИАССОСуткиToolStripMenuItem_CheckedChanged);
+            this.m_dictAddingTabs[(int)ID_ADDING_TAB.AIISKUE_SOTIASSO_DAY].menuItem.CheckedChanged += new System.EventHandler(this.значенияАИИСКУЭСОТИАССОСуткиToolStripMenuItem_CheckedChanged);
             #endregion
             // 
             // значенияВзлетТпрямаяToolStripMenuItem

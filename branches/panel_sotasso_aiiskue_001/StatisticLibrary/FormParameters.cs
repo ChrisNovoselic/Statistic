@@ -18,8 +18,10 @@ namespace StatisticCommon
             , USERS_DOMAIN_NAME, USERS_ID_TEC, USERS_ID_ROLE                                    
             , SEASON_DATETIME, SEASON_ACTION
             //, GRINVICH_OFFSET_DATETIME
-            , APP_VERSION, APP_VERSION_QUERY_INTERVAL
+            , APP_VERSION, APP_VERSION_QUERY_INTERVAL            
             , KOMDISP_FOLDER_CSV
+            , KOMDISP_SHEDULE_START_EXPORT_PBR, KOMDISP_SHEDULE_PERIOD_EXPORT_PBR /* 19/09/2017 ChrjapinAN */
+            , LK_FOLDER_CSV /* 19/09/2017 ChrjapinAN */
             //Логгирование
             , MAINFORMBASE_CONTROLHANDLE_LOGERRORCREATE
             , MAINFORMBASE_SETPBRQUERY_LOGPBRNUMBER, MAINFORMBASE_SETPBRQUERY_LOGQUERY
@@ -43,6 +45,8 @@ namespace StatisticCommon
             //, @"Grinvich OffsetDateTime"
             , @"App Version", @"App Version Query Interval"
             , @"KomDisp Folder CSV"
+            , @"KomDisp Shedule-Start Export PBR", @"KomDisp Shedule-Period Export PBR" /* 19/09/2017 ChrjapinAN */
+            , @"LK Folder CSV" /* 19/09/2017 ChrjapinAN */
             //Логгирование
             , @"ControlHandle LogErrorCreate"
             , @"SetPBRQuery LogPBRNumber", @"SetPBRQuery LogQuery"
@@ -66,6 +70,8 @@ namespace StatisticCommon
             //, "час"
             , @"стр", @"мсек"
             , @"стр"
+            , @"сек", @"сек" /* 19/09/2017 ChrjapinAN */
+            , @"стр" /* 19/09/2017 ChrjapinAN */
             //Логгирование
             , @"стр-лог"
             , @"стр-лог", @"стр-лог"
@@ -120,6 +126,9 @@ namespace StatisticCommon
             m_arParametrSetup.Add((int)PARAMETR_SETUP.APP_VERSION_QUERY_INTERVAL, @"66666");
 
             m_arParametrSetup.Add((int)PARAMETR_SETUP.KOMDISP_FOLDER_CSV, @"\\ne2844\2.X.X\ПБР-csv");
+            m_arParametrSetup.Add ((int)PARAMETR_SETUP.KOMDISP_SHEDULE_START_EXPORT_PBR, @"2760");
+            m_arParametrSetup.Add ((int)PARAMETR_SETUP.KOMDISP_SHEDULE_PERIOD_EXPORT_PBR, @"3600");
+            m_arParametrSetup.Add ((int)PARAMETR_SETUP.LK_FOLDER_CSV, @"\\ne2844\2.X.X\ПБР-csv");
 
             m_arParametrSetup.Add((int)PARAMETR_SETUP.MAINFORMBASE_CONTROLHANDLE_LOGERRORCREATE, false.ToString());
             m_arParametrSetup.Add((int)PARAMETR_SETUP.MAINFORMBASE_SETPBRQUERY_LOGPBRNUMBER, false.ToString());

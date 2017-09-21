@@ -70,7 +70,7 @@ namespace Statistic
         }
 
         public PanelAdminNSS(int idListener, HMark markQueries)
-            : base(idListener, FormChangeMode.MANAGER.NSS, markQueries, new int[] { 0, (int)TECComponent.ID.LK })
+            : base(idListener, markQueries, new int[] { 0, (int)TECComponent.ID.LK })
         {
             m_admin.SetDelegateSaveComplete(null);
         }
@@ -281,6 +281,12 @@ namespace Statistic
                         MessageBox.Show(this, "Не удалось сохранить изменения, возможно отсутствует связь с базой данных.", "Ошибка сохранения", MessageBoxButtons.OK, MessageBoxIcon.Error);
                 }
             //} else ;
+        }
+
+        protected override void createAdmin ()
+        {
+            //Возможность редактирования значений ПБР: НЕ разрешено управление (изменение разрешения на запись), запись разрешена
+            m_admin = new AdminTS_NSS (new bool[] { false, true });                    
         }
     }
 }

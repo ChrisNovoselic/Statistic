@@ -1,21 +1,14 @@
 ﻿using System;
 using System.Collections.Generic;
-using System.Text;
 using System.Windows.Forms;
 using System.Data;
-using System.Security.Cryptography;
-using System.IO;
-using System.Threading;
 using System.Globalization;
 using System.Drawing;
 
 using HClassLibrary;
 using StatisticCommon;
-using StatisticAlarm;
-using GemBox.Spreadsheet;
 
-namespace Statistic
-{
+namespace Statistic {
     partial class PanelAdminLK : PanelAdmin
     {
         private System.Windows.Forms.Button btnImportExcel;
@@ -81,7 +74,7 @@ namespace Statistic
         /// <param name="idListener">ИД слушателя</param>
         /// <param name="markQueries"></param>
         public PanelAdminLK(int idListener, HMark markQueries)
-            : base(idListener, FormChangeMode.MANAGER.LK, markQueries, new int[] { (int)TECComponent.ID.LK, (int)TECComponent.ID.GTP })
+            : base(idListener, markQueries, new int[] { (int)TECComponent.ID.LK, (int)TECComponent.ID.GTP })
         {
             m_admin.SetDelegateSaveComplete(null);
         }
@@ -363,7 +356,7 @@ namespace Statistic
             DataTable import_csv = new DataTable();
             OpenFileDialog files = new OpenFileDialog();
             files.Multiselect = false;
-            files.InitialDirectory = FormMain.formParameters.m_arParametrSetup[(int)FormParameters.PARAMETR_SETUP.KOMDISP_FOLDER_CSV]; //@"\\ne2844\2.X.X\ПБР-csv"; //@"E:\Temp\ПБР-csv";
+            files.InitialDirectory = FormMain.formParameters.m_arParametrSetup[(int)FormParameters.PARAMETR_SETUP.LK_FOLDER_CSV]; //@"\\ne2844\2.X.X\ПБР-csv"; //@"E:\Temp\ПБР-csv";
             files.DefaultExt = @"xls";
             files.Filter = @"xls файлы (*.xls)|*.xls|xlsx файлы(*.xlsx)|*.xlsx";
             files.Title = "Выберите файл с ПБР...";
@@ -412,6 +405,12 @@ namespace Statistic
                         MessageBox.Show(this, "Не удалось сохранить изменения, возможно отсутствует связь с базой данных.", "Ошибка сохранения", MessageBoxButtons.OK, MessageBoxIcon.Error);
                 }
             //} else ;
+        }
+
+        protected override void createAdmin ()
+        {
+            //Возможность редактирования значений ПБР: НЕ разрешено управление (изменение разрешения на запись), запись разрешена
+            m_admin = new PanelAdminLK.AdminTS_LK (new bool[] { false, true });                    
         }
     }
 
