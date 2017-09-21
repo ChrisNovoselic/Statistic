@@ -90,7 +90,7 @@ namespace StatisticTrans
 
                 //return !timerMain.Enabled;
 
-                return m_modeMashine == MODE_MASHINE.TO_DATE ? true : false;
+                return ((m_modeMashine == MODE_MASHINE.TO_DATE) || (m_modeMashine == MODE_MASHINE.SERVICE)) ? true : false;
             }
         }
         /// <summary>
@@ -950,7 +950,7 @@ namespace StatisticTrans
             //if (WindowState == FormWindowState.Minimized)
             //if (m_bTransAuto == true)
             //if (m_modeMashine == MODE_MASHINE.AUTO || m_modeMashine == MODE_MASHINE.SERVICE)
-            if ((m_bTransAuto == true || m_modeMashine == MODE_MASHINE.SERVICE) && (m_bEnabledUIControl == false))
+            if ((m_bTransAuto == true) && (m_bEnabledUIControl == false))
             {
                 try
                 {
@@ -989,7 +989,7 @@ namespace StatisticTrans
         /// </summary>
         protected virtual void errorDataGridViewAdmin()
         {
-            if ((m_bTransAuto == true || m_modeMashine == MODE_MASHINE.SERVICE) && (m_bEnabledUIControl == false))
+            if ((m_bTransAuto == true) && (m_bEnabledUIControl == false))
             {
                 CT.ErrorIter();
 
@@ -1026,7 +1026,7 @@ namespace StatisticTrans
         {
             //Logging.Logg().Debug(@"FormMainTrans::saveDataGridViewAdminComplete () - m_bTransAuto=" + m_bTransAuto + @", m_modeMashine=" + m_modeMashine.ToString () + @", - вХод...", Logging.INDEX_MESSAGE.NOT_SET);
 
-            if ((m_bTransAuto == true || m_modeMashine == MODE_MASHINE.SERVICE) && (m_bEnabledUIControl == false))
+            if ((m_bTransAuto == true) && (m_bEnabledUIControl == false))
             {
                 //??? зачем нужен '.NextDay'
                 CT.NextDay = IsTomorrow();
@@ -1230,7 +1230,7 @@ namespace StatisticTrans
                 trans_auto_next();
             }
             else
-                if (m_bTransAuto == true) buttonClose.PerformClick(); else enabledUIControl(true);
+                if (m_modeMashine == MODE_MASHINE.TO_DATE) buttonClose.PerformClick(); else enabledUIControl(true);
         }
 
         protected void trans_auto_next()
@@ -1252,7 +1252,7 @@ namespace StatisticTrans
                 comboBoxTECComponent_SelectedIndexChanged(null, EventArgs.Empty);
             }
             else
-                if (m_bTransAuto == true)
+                if (m_modeMashine == MODE_MASHINE.TO_DATE)
                     buttonClose.PerformClick();
                 else
                 {

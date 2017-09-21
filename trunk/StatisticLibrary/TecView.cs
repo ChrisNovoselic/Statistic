@@ -3762,6 +3762,7 @@ namespace StatisticCommon
             int iRes = -1
                 , hour = -1;
 
+            string nameFieldValue = currHour == true ? @"VALUE" : @"VALUE0";
             string [] checkFields = null;
 
             switch (TEC.s_SourceSOTIASSO) {
@@ -3770,7 +3771,7 @@ namespace StatisticCommon
                     break;
                 case TEC.SOURCE_SOTIASSO.AVERAGE:
                 case TEC.SOURCE_SOTIASSO.INSATANT_TSQL:
-                    checkFields = new string[] { @"VALUE", @"HOUR" };
+                    checkFields = new string[] { nameFieldValue, @"HOUR" };
                     break;
                 default:
                     break;
@@ -3822,7 +3823,7 @@ namespace StatisticCommon
                                 else
                                     ;
 
-                                if (double.TryParse(r[@"VALUE"].ToString(), out val) == false) {
+                                if (double.TryParse(r[nameFieldValue].ToString(), out val) == false) {
                                     iRes = -1;
                                     break;
                                 }
@@ -3882,6 +3883,7 @@ namespace StatisticCommon
                 , hour = -1;
             double val = -1F;
 
+            string nameFieldValue = currHour == true ? @"VALUE" : @"VALUE0";
             string[] checkFields = null;
 
             switch (TEC.s_SourceSOTIASSO)
@@ -3944,7 +3946,7 @@ namespace StatisticCommon
                                 else
                                     ;
 
-                                if (double.TryParse(r[@"VALUE"].ToString(), out val) == false) {
+                                if (double.TryParse(r[nameFieldValue].ToString(), out val) == false) {
                                     iRes = -21;
                                     break;
                                 }
@@ -5097,8 +5099,10 @@ namespace StatisticCommon
 
             int iRes = ! (checkFields == null) ? CheckNameFieldsOfTable(table, checkFields) == true ? 0 : -1 : -1
                 , min = -1
-                ;
+                , maxMin = -1;
             double val = -1F;
+
+            maxMin = (60 / GetIntervalOfTypeSourceData(HDateTime.INTERVAL.MINUTES)) + 1;
 
             if (iRes == 0)
             {
@@ -5265,7 +5269,7 @@ namespace StatisticCommon
 
             if (! (iRes == 0))
             {
-                lastMin = 61;
+                lastMin = maxMin;
             }
             else
             {
@@ -5278,7 +5282,7 @@ namespace StatisticCommon
                         break;
                     case TEC.SOURCE_SOTIASSO.AVERAGE:
                     case TEC.SOURCE_SOTIASSO.INSATANT_TSQL:
-                        lastMin = min + 1;
+                        lastMin = currHour == true ? min + 1 : maxMin;
                         break;
                     default:
                         break;

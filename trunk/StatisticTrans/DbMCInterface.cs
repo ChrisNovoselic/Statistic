@@ -16,20 +16,28 @@ namespace StatisticCommon
 {
     public class DbMCInterface : DbInterface
     {
-        IApiExternal m_MCApi;
-        Modes.BusinessLogic.IModesTimeSlice m_MCTimeSlice;
-        IList <PlanFactorItem> m_listPFI;
+        private IApiExternal m_MCApi;
+        private Modes.BusinessLogic.IModesTimeSlice m_MCTimeSlice;
+        private IList <PlanFactorItem> m_listPFI;
+
+        public enum ID_MC_EVENT : short { Unknown = -1, GENOBJECT_MODIFIED, NEW_PLAN_VALUES, RELOAD_PLAN_VALUES }
+        /// <summary>
+        /// Делегат для ретрансляции событий Модес-Центр
+        /// </summary>
+        Action<object> delegateMCApiHandler;
 
         List <Modes.BusinessLogic.IGenObject> m_listIGO;
         /// <summary>
         /// Пользовательский конструктор
         /// </summary>
         /// <param name="name">имя</param>
-        public DbMCInterface(string name)
+        public DbMCInterface(string name, Action<object>mcApiHandler)
             //Вызов конструктора из базового класса DbInterface
             : base(name)
         {
             m_listIGO = new List<Modes.BusinessLogic.IGenObject> ();
+
+            delegateMCApiHandler = mcApiHandler;
         }
         /// <summary>
         /// Реализация абстрактного метода ("Задать настройки подключения") из базового класса
@@ -111,6 +119,10 @@ namespace StatisticCommon
                     m_MCTimeSlice = m_MCApi.GetModesTimeSlice(DateTime.Now.Date.LocalHqToSystemEx(), SyncZone.First, TreeContent.PGObjects, true);
                     m_listPFI = m_MCApi.GetPlanFactors();
 
+                    m_MCApi.OnData53500Modified += mcApi_OnEventHandler;
+                    m_MCApi.OnPlanDataChanged += mcApi_OnEventHandler;
+                    m_MCApi.OnMaket53500Changed += mcApi_OnEventHandler;
+
                     Logging.Logg().Debug(string.Format(@"{0} - {1}...", msgLog, @"УСПЕХ"), Logging.INDEX_MESSAGE.NOT_SET);
                 } catch (Exception e) {
                     Logging.Logg().Exception(e, string.Format(@"{0} - ...", msgLog), Logging.INDEX_MESSAGE.NOT_SET);
@@ -118,9 +130,48 @@ namespace StatisticCommon
                     result = false;
                 }                
             } else
-                ;
+                Logging.Logg().Debug(string.Format(@"{0} - {1}...", msgLog, @"ОШИБКА"), Logging.INDEX_MESSAGE.NOT_SET);
 
             return result;
+        }
+
+        private void mcApi_OnEventHandler(object obj, EventArgs e)
+        {
+            object[] sendToTrans;
+
+            if (e.GetType().Equals(typeof(Modes.NetAccess.EventRefreshData53500)) == true) {
+                Modes.NetAccess.EventRefreshData53500 ev = e as Modes.NetAccess.EventRefreshData53500;
+
+                sendToTrans = new object[] {
+                    ID_MC_EVENT.GENOBJECT_MODIFIED
+                    , ev.Equipments
+                };
+            } else if (e.GetType().Equals(typeof(Modes.NetAccess.EventRefreshJournalMaket53500)) == true) {
+                Modes.NetAccess.EventRefreshJournalMaket53500 ev = e as Modes.NetAccess.EventRefreshJournalMaket53500;
+
+                sendToTrans = new object[] {
+                    ID_MC_EVENT.RELOAD_PLAN_VALUES
+                    , ev.dtTarget.GetValueOrDefault().SystemToLocalHqEx()
+                    , ev.makets
+                    , ev.Task.GetAbbr()
+                    , ev.Task.ModesTaskToString()
+                };
+            } else if (e.GetType().Equals(typeof(Modes.NetAccess.EventPlanDataChanged)) == true) {
+                Modes.NetAccess.EventPlanDataChanged ev = e as Modes.NetAccess.EventPlanDataChanged;
+
+                sendToTrans = new object[] {
+                    ID_MC_EVENT.NEW_PLAN_VALUES
+                    , ev.Day.SystemToLocalHqEx()
+                    , ev.Type.PlanTypeToString()
+                    , ev.Version.SystemToLocalHqEx()
+                    , ev.ClientId
+                    , ev.IdGate
+                };
+            } else
+                sendToTrans = new object[] { ID_MC_EVENT.Unknown };
+
+            // простая ретрансляция
+            delegateMCApiHandler(sendToTrans);
         }
 
         protected override bool Disconnect()
@@ -180,6 +231,18 @@ namespace StatisticCommon
             {
             }
         }
+        /// <summary>
+        /// Событие - получено извещение от Модес-Центр о наличии нового плана
+        /// </summary>
+        public event EventHandler NewPlanValues;
+        /// <summary>
+        /// Событие - получено извещение от Модес-Центр об изменении значений текущего(актуального) плана
+        /// </summary>
+        public event EventHandler ReloadPlanValues;
+        /// <summary>
+        /// Событие - получено извещение от Модес-Центр об изменении состава оборудования
+        /// </summary>
+        public event EventHandler GenObjectModified;
 
         protected override bool GetData(DataTable table, object query)
         {

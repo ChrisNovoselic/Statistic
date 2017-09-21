@@ -115,9 +115,14 @@
       <SpecificVersion>False</SpecificVersion>
       <HintPath>..\..\ExternalDLL\GemBox.Spreadsheet.dll</HintPath>
     </Reference>
-    <Reference Include="HClassLibrary, Version=2.0.4.3, Culture=neutral, PublicKeyToken=2f5f95fc94cb3397, processorArchitecture=MSIL">
+    <Reference Include="HClassLibrary, Version=2.0.6.5, Culture=neutral, PublicKeyToken=2f5f95fc94cb3397, processorArchitecture=MSIL">
       <SpecificVersion>False</SpecificVersion>
-      <HintPath>..\..\ExternalDll\HClassLibrary.dll</HintPath>
+      <HintPath>..\..\ExternalDLL\HClassLibrary.dll</HintPath>
+    </Reference>
+    <Reference Include="Microsoft.Office.Interop.Excel, Version=14.0.0.0, Culture=neutral, PublicKeyToken=71e9bce111e9429c, processorArchitecture=MSIL">
+      <SpecificVersion>False</SpecificVersion>
+      <EmbedInteropTypes>True</EmbedInteropTypes>
+      <HintPath>..\..\ExternalDLL\Microsoft.Office.Interop.Excel.dll</HintPath>
     </Reference>
     <Reference Include="System" />
     <Reference Include="System.Configuration" />
@@ -177,6 +182,24 @@
       <SubType>Component</SubType>
     </Compile>
     <Compile Include="PanelSOTIASSO.cs">
+      <SubType>Component</SubType>
+    </Compile>
+    <Compile Include="PanelSOTIASSODay\HandlerDbSignalValue.cs">
+      <SubType>Component</SubType>
+    </Compile>
+    <Compile Include="PanelSOTIASSODay\HandlerSignalQueue.cs">
+      <SubType>Component</SubType>
+    </Compile>
+    <Compile Include="PanelSOTIASSODay\PanelManagement.cs">
+      <SubType>Component</SubType>
+    </Compile>
+    <Compile Include="PanelSOTIASSODay\DataGridView.cs">
+      <SubType>Component</SubType>
+    </Compile>
+    <Compile Include="PanelSOTIASSODay\ZedGraphControl.cs">
+      <SubType>Component</SubType>
+    </Compile>
+    <Compile Include="PanelSOTIASSODay\PanelSOTIASSODay.cs">
       <SubType>Component</SubType>
     </Compile>
     <Compile Include="PanelTECComponent.cs">
@@ -245,6 +268,9 @@
       <DesignTimeSharedInput>True</DesignTimeSharedInput>
     </Compile>
     <EmbeddedResource Include="Resources\statistic2.ico" />
+    <None Include="Template\Отчет по подинтервальной мощности_TEC_DATE.xls">
+      <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
+    </None>
   </ItemGroup>
   <ItemGroup>
     <BootstrapperPackage Include="Microsoft.Net.Client.3.5">
@@ -333,6 +359,7 @@
       <FileType>File</FileType>
     </PublishFile>
   </ItemGroup>
+  <ItemGroup />
   <Import Project="$(MSBuildBinPath)\Microsoft.CSharp.targets" />
   <!-- To modify your build process, add your task inside one of the targets below and uncomment it. 
        Other similar extension points exist, see Microsoft.Common.targets.

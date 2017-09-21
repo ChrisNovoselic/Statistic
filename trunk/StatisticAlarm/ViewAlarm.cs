@@ -725,6 +725,7 @@ namespace StatisticAlarm
             //m_timerAlarm.Tick += new EventHandler(TimerAlarm_Tick);
 
             m_threadNotifyResponse = new BackgroundWorker ();
+            m_threadNotifyResponse.WorkerSupportsCancellation = true;
             m_threadNotifyResponse.DoWork += new DoWorkEventHandler(fThreadNotifyResponse_DoWork);
             m_threadNotifyResponse.RunWorkerCompleted += new RunWorkerCompletedEventHandler(fThreadNotifyResponse_RunWorkerCompleted);
         }
@@ -808,6 +809,8 @@ namespace StatisticAlarm
             if (bChecked == false)
             {
                 due = System.Threading.Timeout.Infinite;
+                //??? сброс(несигнальное состояние) только в случае, если таймер не запускается
+                //??? если таймер не запускается, то и событие 'Notify' не происходит
                 m_mEvtAlarmDbEventUpdated.Reset();
             }
             else
@@ -945,14 +948,15 @@ namespace StatisticAlarm
         /// <param name="ev">Аргумент события окончанмя выполнения потоковой функции</param>
         private void fThreadNotifyResponse_RunWorkerCompleted(object obj, RunWorkerCompletedEventArgs ev)
         {
-            if (ev.Error == null)
+            if (object.Equals (ev.Error, null) == false)
             {
-                Console.WriteLine(@"ViewAlarm::fThreadNotifyResponse_RunWorkerCompleted () - " + ev.Result + @"...");
-
-                m_mEvtAlarmDbEventUpdated.Set ();
+                Logging.Logg().Exception(ev.Error, @"ViewAlarm::fThreadListEventsResponse_DoWork () - ...", Logging.INDEX_MESSAGE.NOT_SET);
             }
             else
-                Logging.Logg().Exception(ev.Error, @"ViewAlarm::fThreadListEventsResponse_DoWork () - ...", Logging.INDEX_MESSAGE.NOT_SET);
+                //Console.WriteLine(@"ViewAlarm::fThreadNotifyResponse_RunWorkerCompleted () - " + ev.Result + @"...")
+                ;
+
+            m_mEvtAlarmDbEventUpdated.Set();
         }
         /// <summary>
         /// Функция обработки результатов запроса по указанной дате/часам
@@ -999,13 +1003,27 @@ namespace StatisticAlarm
                 EvtGetDataMain(listRes);
             else ;
         }
+
+        private const int TIMEOUT_DBEVENT_UPDATE = 666;
         /// <summary>
         /// Функция обработки результатов запроса текущих!!! событий сигнализаций
         /// </summary>
         /// <param name="tableRes">Таблица - результат запроса</param>
         private void GetNotifyResponse(ItemQueue itemQueue, DataTable tableRes)
         {
-            m_threadNotifyResponse.RunWorkerAsync(tableRes);
+            if (m_threadNotifyResponse.IsBusy == true)
+                m_threadNotifyResponse.CancelAsync();
+            else
+                ;
+
+            if (m_mEvtAlarmDbEventUpdated.WaitOne(TIMEOUT_DBEVENT_UPDATE) == true)
+                try {
+                    m_threadNotifyResponse.RunWorkerAsync(tableRes);
+                } catch (Exception e) {
+                    Logging.Logg().Exception(e, string.Format(@"AdminAlarm::GetNotifyResponse () - обработка не выполнена ..."), Logging.INDEX_MESSAGE.NOT_SET);
+                }
+            else
+                Logging.Logg().Error(string.Format(@"AdminAlarm::GetNotifyResponse () - обработка не выполнена, время ожидания истекло ..."), Logging.INDEX_MESSAGE.NOT_SET);
         }
 
         private void GetEventDetailResponse(ItemQueue itemQueue, DataTable tableRes)
@@ -1281,7 +1299,6 @@ namespace StatisticAlarm
                             break;
                         case HandlerDb.INDEX_SYNC_STATECHECKRESPONSE.ERROR:
                             iRes = -1;
-                            error = true;
                             break;
                         case HandlerDb.INDEX_SYNC_STATECHECKRESPONSE.WARNING:
                             iRes = 1;

@@ -514,10 +514,44 @@ namespace StatisticCommon
             return null;
         }
 
-        protected string getNamePBRNumber (int hour = -1) {
-            return @"ПБР" + getPBRNumber (hour);
-        }
+        public const string PBR_PREFIX = @"ПБР";
 
+        /// <summary>
+        /// Возратить наименование номера ПБР по номеру часа
+        /// </summary>
+        /// <param name="hour">Номер часа</param>
+        /// <returns>Наименование ПБР</returns>
+        protected string getNamePBRNumber (int hour = -1) {
+            return string.Format("{0}{1}", PBR_PREFIX, getPBRNumber (hour));
+        }
+        /// <summary>
+        /// Возвратить номер ПБР по наименованию
+        /// </summary>
+        /// <param name="pbr">Наименование ПБР</param>
+        /// <returns>Номер ПБР</returns>
+        public static int GetPBRNumber (string pbr, out int err) {
+            int iRes = -1;
+
+            err = int.TryParse(pbr.Substring(PBR_PREFIX.Length), out iRes) == true
+                ? err = 0
+                    : err = -1;
+
+            if (err < 0)
+                if (pbr.Equals (string.Format("{0}{1}", "П", PBR_PREFIX)) == true) {
+                    err = 1;
+                    iRes = 0;
+                } else
+                    ;
+            else
+                ;
+
+            return iRes;
+        }
+        /// <summary>
+        /// Возвратить номер ПБР по текущему часу
+        /// </summary>
+        /// <param name="err">Признак результата выполнения метода</param>
+        /// <returns></returns>
         public int GetPBRNumber(out int err)
         {
             return GetPBRNumber(-1, out err);
@@ -538,31 +572,27 @@ namespace StatisticCommon
             if (m_curDate.Date.CompareTo(serverTime.Date) == 0)
                 if ((!(m_curRDGValues == null))
                     && (!(m_curRDGValues[iIndx].pbr_number == null))
-                    && (m_curRDGValues[iIndx].pbr_number.Length > @"ПБР".Length))
-                    if (Int32.TryParse(m_curRDGValues[iIndx].pbr_number.Substring(@"ПБР".Length), out iRes) == false) {
-                        err = -2; //ПБР не распознан
-
+                    && (m_curRDGValues[iIndx].pbr_number.Length > PBR_PREFIX.Length)) {
+                    iRes = GetPBRNumber (m_curRDGValues[iIndx].pbr_number, out err);
+                    if (err < 0) {
                         iRes = getPBRNumber();
                     } else
                         ;
-                else {
-                    err = -1; //РДГ не загружен
+                } else {
+                    err = -2; //РДГ не загружен
 
                     iRes = getPBRNumber();
                 }
             else
                 if (m_curDate.Date.CompareTo(serverTime.Date) > 0)
-                if ((!(m_curRDGValues == null))
-                    && (!(m_curRDGValues[iIndx].pbr_number == null))
-                    && (m_curRDGValues[iIndx].pbr_number.Length > @"ПБР".Length))
-                    if (Int32.TryParse(m_curRDGValues[iIndx].pbr_number.Substring(@"ПБР".Length), out iRes) == false)
-                        iRes = 0; //Предварительный ПБР
-                    else
-                        ;
+                    if ((!(m_curRDGValues == null))
+                        && (!(m_curRDGValues[iIndx].pbr_number == null))
+                        && (m_curRDGValues[iIndx].pbr_number.Length > @"ПБР".Length)) {
+                        iRes = GetPBRNumber (m_curRDGValues[iIndx].pbr_number, out err);
+                    } else
+                        iRes = getPBRNumber();                
                 else
-                    iRes = getPBRNumber();
-            else
-                ;
+                    ;
 
             return iRes;
         }

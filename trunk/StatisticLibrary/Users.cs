@@ -59,6 +59,11 @@ namespace StatisticCommon
             , MENUITEM_VIEW_VZLET_TDIRECT
             , TAB_TEPLOSET_ADMIN // доступ к стандартной вкладке регламентируется идентификатором ЛК
             , AUTO_TAB_TEPLOSET_ADMIN
+            // KhryapinAN, 2017-06
+            , MENUITEM_VIEW_VALUES_AIISKUE_SOTIASSO_DAY
+            // KhryapinAN, 2017-09
+            , EXPORT_PBRVALUES_KOMDISP
+            , AUTO_EXPORT_PBRVALUES_KOMDISP
         };
 
         public HStatisticUsers(int iListenerId, MODE_REGISTRATION modeRegistration)

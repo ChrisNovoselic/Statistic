@@ -8,7 +8,7 @@ using System.Data;
 using HClassLibrary;
 using StatisticCommon;
 using StatisticTransModes;
-using StatisticTrans;
+using System.Collections.ObjectModel;
 
 namespace trans_mc
 {
@@ -74,17 +74,22 @@ namespace trans_mc
                 hour = -1,
                 offsetPBR = 2
                 , offset = 0;
-            string msgDebug = string.Format(@"Получено строк={0} Модес-Центр за {1}: ", table.Rows.Count, date);
+            string msgDebug = string.Format(@"Модес-Центр, получено строк={0}, [{1}] на {2}: ", table.Rows.Count, @"PBR_NUMBER", date);
 
             for (i = 0; i < table.Rows.Count; i++)
             {
                 try
                 {
                     hour = ((DateTime)table.Rows[i]["DATE_PBR"]).Hour;
-                    if ((hour == 0) && (!(((DateTime)table.Rows[i]["DATE_PBR"]).Day == date.Day)))
+                    if ((hour == 0)
+                        && (!(((DateTime)table.Rows[i]["DATE_PBR"]).Day == date.Day))) {
+                    // это крайний час текущих суток
                         hour = 24;
-                    else
+
+                        msgDebug = msgDebug.Replace(@"PBR_NUMBER", table.Rows[i][@"PBR_NUMBER"].ToString());
+                    } else
                         if (hour == 0)
+                        // это предыдущие сутки
                             continue;
                         else
                             ;
@@ -133,13 +138,13 @@ namespace trans_mc
                     } else {
                     }
 
-                    msgDebug += string.Format(@"[Час={0}, ПБР={1}],", hour, m_curRDGValues[hour - 1].pbr);
+                    msgDebug += string.Format(@"[Час={0}, знач={1}],", hour, m_curRDGValues[hour - 1].pbr);
                 } catch(Exception e) {
                     Logging.Logg().Exception(e, string.Format(@"AdminMC::getPPBRValuesResponse () - строка={0}", i), Logging.INDEX_MESSAGE.NOT_SET);
                 }
             }
 
-            msgDebug = msgDebug.Substring(0, msgDebug.Length - 1);
+            msgDebug = msgDebug.Substring(0, msgDebug.Length - 1); // удалить лишнюю запятую
             Logging.Logg().Debug(msgDebug, Logging.INDEX_MESSAGE.D_002);
 
             return iRes;
@@ -150,6 +155,7 @@ namespace trans_mc
             bool bRes = true;
             int i = -1;
 
+            DbMCSources.Sources().SetMCApiHandler(dbMCSources_OnEventHandler);
             m_IdListenerCurrent = DbMCSources.Sources().Register(m_strMCServiceHost, true, @"Modes-Centre");
 
             //for (i = 0; i < allTECComponents.Count; i ++)
@@ -166,6 +172,64 @@ namespace trans_mc
             //List <Modes.BusinessLogic.IGenObject> listIGO = (((DbMCInterface)m_listDbInterfaces[0]).GetListIGO(listMCId));
 
             return bRes;
+        }
+
+        private void dbMCSources_OnEventHandler(object obj)
+        {
+            DbMCInterface.ID_MC_EVENT id_event = (DbMCInterface.ID_MC_EVENT)(obj as object[])[0];
+
+            if (id_event == DbMCInterface.ID_MC_EVENT.GENOBJECT_MODIFIED) {
+                Dictionary<DateTime, List<int>> equipments;
+
+                string msg = string.Empty
+                    , listEquipment = string.Empty;
+
+                equipments = (obj as object[])[1] as Dictionary<DateTime, List<int>>;
+
+                msg = string.Format(@"::mcApi_OnData53500Modified() - обработчик события - изменения[кол-во={1}]{0}для оборудования {2}..."
+                        , Environment.NewLine, equipments.Count, @"СПИСОК");
+
+                foreach (KeyValuePair<DateTime, List<int>> pair in equipments) {
+                    listEquipment += string.Format(@"[{Дата=0}, список=({1})],", pair.Key.ToString(), string.Join(", ", pair.Value));
+                }
+
+                listEquipment = listEquipment.Remove(listEquipment.Length - 1);
+
+                msg = msg.Replace(@"СПИСОК", listEquipment);
+
+                Logging.Logg().Action(msg, Logging.INDEX_MESSAGE.NOT_SET);
+            } else if (id_event == DbMCInterface.ID_MC_EVENT.RELOAD_PLAN_VALUES) {
+                DateTime dateTarget;
+                ReadOnlyCollection<Guid>  makets;
+                string abbr = string.Empty
+                    , taskModes = string.Empty;
+
+                dateTarget = (DateTime)(obj as object[])[1];
+                makets = (obj as object[])[2] as ReadOnlyCollection<Guid>;
+                abbr = (string)(obj as object[])[3];
+                taskModes = (string)(obj as object[])[4];
+
+                Logging.Logg().Action(string.Format(@"::mcApi_OnMaket53500Changed() - обработчик события - переопубликация[на дату={0}, кол-во макетов={1}], Аббр={2}, описание={3}..."
+                    , dateTarget.ToString(), makets.Count, abbr, taskModes)
+                , Logging.INDEX_MESSAGE.NOT_SET);
+            } else if (id_event == DbMCInterface.ID_MC_EVENT.NEW_PLAN_VALUES) {
+                DateTime day
+                    , version;
+                string pbr_number = string.Empty
+                    , id_mc_tec = string.Empty;
+                int id_gate = -1;
+
+                day = (DateTime)(obj as object[])[1];
+                pbr_number = (string)(obj as object[])[2];
+                version = (DateTime)(obj as object[])[3];
+                id_mc_tec = (string)(obj as object[])[4];
+                id_gate = (int)(obj as object[])[5];
+
+                Logging.Logg().Action(string.Format(@"::mcApi_OnPlanDataChanged() - обработчик события - новый план[на дату={0}, номер={1}, от={2}, для подразделения={3}, IdGate={4}]..."
+                    , day.ToString(), pbr_number, version.ToString(), id_mc_tec, id_gate)
+                , Logging.INDEX_MESSAGE.NOT_SET);
+            } else
+                ;
         }
 
         protected override int StateRequest(int /*StatesMachine*/ state)

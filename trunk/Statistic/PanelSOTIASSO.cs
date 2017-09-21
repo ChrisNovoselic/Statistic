@@ -18,7 +18,7 @@ namespace Statistic
     /// Панель для отображения значений СОТИАССО (телеметрия)
     ///  для контроля
     /// </summary>
-    public class PanelSOTIASSO : PanelStatistic
+    public class PanelSOTIASSOHour : PanelStatistic
     {
         private class TecViewSOTIASSO : TecView
         {
@@ -141,20 +141,11 @@ namespace Statistic
         /// </summary>
         private enum KEY_CONTROLS
         {
-            UNKNOWN = -1
-                , NUD_CUR_HOUR,
-            DTP_CUR_DATE
-                /*, LABEL_CUR_TIME*/,
-            BTN_SET_NOWDATEHOUR
-                , CB_GTP,
-            LABEL_GTP_KOEFF
-                , DGV_GTP_VALUE,
-            ZGRAPH_GTP
-                ,
-            CLB_TG
-                , DGV_TG_VALUE,
-            ZGRAPH_TG
-                , COUNT_KEY_CONTROLS
+            UNKNOWN = -1                
+                , DTP_CUR_DATE, NUD_CUR_HOUR, BTN_SET_NOWDATEHOUR
+                , CB_GTP, LABEL_GTP_KOEFF, DGV_GTP_VALUE, ZGRAPH_GTP
+                , CLB_TG , DGV_TG_VALUE, ZGRAPH_TG
+                    , COUNT_KEY_CONTROLS
         }
         /// <summary>
         /// Объект с признаками обработки типов значений
@@ -216,7 +207,7 @@ namespace Statistic
         /// <summary>
         /// Конструктор - основной (без параметров)
         /// </summary>
-        public PanelSOTIASSO(List<StatisticCommon.TEC> listTec)
+        public PanelSOTIASSOHour(List<StatisticCommon.TEC> listTec)
             : base()
         {
             //m_listTEC = listTec;
@@ -234,7 +225,7 @@ namespace Statistic
             //m_markQueries.Marked((int)CONN_SETT_TYPE.PBR); //Для получения даты/времени
             //m_markQueries.Marked((int)CONN_SETT_TYPE.DATA_SOTIASSO);
             //Создать объект обработки запросов - установить первоначальные индексы для ТЭЦ, компонента
-            m_tecView = new TecViewSOTIASSO(0, 0);
+            m_tecView = new TecViewSOTIASSO(0, -1);
             //Инициализировать список ТЭЦ для 'TecView' - указать ТЭЦ в соответствии с указанным ранее индексом (0)
             m_tecView.InitTEC(new List<StatisticCommon.TEC>() { m_listTEC[0] }, m_markQueries);
             //Установить тип значений
@@ -263,7 +254,7 @@ namespace Statistic
         /// Конструктор - вспомогательный (с параметрами)
         /// </summary>
         /// <param name="container">Владелец текущего объекта</param>
-        public PanelSOTIASSO(IContainer container, List<StatisticCommon.TEC> listTec/*, DelegateStringFunc fErrRep, DelegateStringFunc fWarRep, DelegateStringFunc fActRep, DelegateBoolFunc fRepClr*/)
+        public PanelSOTIASSOHour(IContainer container, List<StatisticCommon.TEC> listTec/*, DelegateStringFunc fErrRep, DelegateStringFunc fWarRep, DelegateStringFunc fActRep, DelegateBoolFunc fRepClr*/)
             : this(listTec)
         {
             container.Add(this);
@@ -525,7 +516,7 @@ namespace Statistic
                 this.SetColumnSpan(ctrl, 2); this.SetRowSpan(ctrl, 1);
 
                 // таблица для отображения значений ГТП
-                ctrl = new PanelSOTIASSO.DataGridViewGTP();
+                ctrl = new PanelSOTIASSOHour.DataGridViewGTP();
                 ctrl.Name = KEY_CONTROLS.DGV_GTP_VALUE.ToString();
                 ctrl.Dock = DockStyle.Fill;
                 //ctrl.Anchor = (AnchorStyles)((AnchorStyles.Left | AnchorStyles.Top) | AnchorStyles.Right);
@@ -553,7 +544,7 @@ namespace Statistic
                 this.SetColumnSpan(ctrl, 6); this.SetRowSpan(ctrl, 3);
 
                 // таблица для отображения значений ГТП
-                ctrl = new PanelSOTIASSO.DataGridViewTG();
+                ctrl = new PanelSOTIASSOHour.DataGridViewTG();
                 ctrl.Name = KEY_CONTROLS.DGV_TG_VALUE.ToString();
                 ctrl.Dock = DockStyle.Fill;
                 //ctrl.Anchor = (AnchorStyles)((AnchorStyles.Left | AnchorStyles.Top) | AnchorStyles.Right);
@@ -606,35 +597,29 @@ namespace Statistic
             {
                 initDatetimeHourValue(HDateTime.ToMoscowTimeZone());
             }
-
-            public void InitializeGTPList(List<string> listGTPNameShr)
-            {
-                ComboBox cbxGTP = (this.Controls.Find(KEY_CONTROLS.CB_GTP.ToString(), true))[0] as ComboBox;
-
-                cbxGTP.Items.AddRange(listGTPNameShr.ToArray());
-
-                if (cbxGTP.Items.Count > 0)
-                    cbxGTP.SelectedIndex = 0;
-                else
-                    ;
-            }
-
             /// <summary>
             /// Заполнение ComboBox данными на основе formChangeMode
             /// </summary>
             /// <param name="listGTPNameShr">Таблица с данными из formChangeMode</param>
-            public void InitializeGTPList(DataTable listGTPNameShr)
+            public void InitializeGTPList(List<FormChangeMode.Item> listGTPNameShr)
             {
+                DataTable tableGTPNameShr = new DataTable();
+                tableGTPNameShr.Columns.Add("name_shr");
+                tableGTPNameShr.Columns.Add("id");
+
+                foreach (FormChangeMode.Item item in listGTPNameShr) {
+                    tableGTPNameShr.Rows.Add(item.name_shr, item.id);
+                }
+
                 ComboBox cbxGTP = (this.Controls.Find(KEY_CONTROLS.CB_GTP.ToString(), true))[0] as ComboBox;
 
                 BindingSource bs = new BindingSource();
-                bs.DataSource = listGTPNameShr;
+                bs.DataSource = tableGTPNameShr;
                 cbxGTP.DataSource = bs.DataSource;
-                cbxGTP.DisplayMember = "Name";
-                cbxGTP.ValueMember = "ID";
+                cbxGTP.DisplayMember = "name_shr";
+                cbxGTP.ValueMember = "id";
                 cbxGTP.BindingContext = new BindingContext();
             }
-
 
             public void InitializeKoeffAlarmPcur(decimal koeff)
             {
@@ -695,6 +680,7 @@ namespace Statistic
 
                 int iRes = 0
                     , iHour = -1;
+
                 if (curHour == 0)
                     iRes = -1;
                 else
@@ -731,7 +717,14 @@ namespace Statistic
             /// <param name="ev">Аргумент события</param>
             private void onGTP_SelectionIndexChanged(object obj, EventArgs ev)
             {
-                EvtGTPSelectionIndexChanged(Convert.ToInt32(((this.Controls.Find(KEY_CONTROLS.CB_GTP.ToString(), true))[0] as ComboBox).SelectedValue));
+                int idGTPSelected = -1;
+
+                if (Equals((findControl(KEY_CONTROLS.CB_GTP.ToString()) as ComboBox).SelectedValue, null) == false) {
+                    idGTPSelected = Convert.ToInt32((findControl(KEY_CONTROLS.CB_GTP.ToString()) as ComboBox).SelectedValue);
+
+                    EvtGTPSelectionIndexChanged(idGTPSelected);
+                } else
+                    ;
             }
 
             private void onTG_ItemCheck(object obj, ItemCheckEventArgs ev)
@@ -821,7 +814,6 @@ namespace Statistic
                     // в ~ от наличия значения в ней
                     dgvTG.Rows[j].Visible = bRowVisible;
                 }
-
             }
         }
         /// <summary>
@@ -1236,77 +1228,65 @@ namespace Statistic
             else
                 ;
 
-            if (m_tecView.IsFirstActivated == true & IsFirstActivated==true)
-            {
-                ComboBox cbxGTP = (this.Controls.Find(KEY_CONTROLS.CB_GTP.ToString(), true))[0] as ComboBox;
+            if ((m_tecView.IsFirstActivated == true)
+                && (IsFirstActivated == true)) {
+                ComboBox cbxGTP = findControl(KEY_CONTROLS.CB_GTP.ToString()) as ComboBox;
                 cbxGTP.SelectedIndex = -1;
                 cbxGTP.SelectedIndex = 0;
-            }
-            
+            } else
+                ;            
 
             return bRes;
         }
-        /// <summary>
-        /// Обработчик события - создание дескриптора панели
-        /// </summary>
-        /// <param name="obj">Объект, инициировавший событие</param>
-        /// <param name="ev">Аргумент события</param>        
-        private void OnHandleCreated(object obj, EventArgs ev)
-        {
-            //Список строк - наименований ГТП
-            // для передачи дочерней панели на отображение
-            List<string> listGTPNameShr = new List<string>();
-            //Сформировать список строк - наименований ГТП
-            foreach (TEC t in m_listTEC)
-            {
-                foreach (TECComponent tc in t.list_TECComponents)
-                {
-                    if (tc.IsGTP == true)
-                    {
-                        //Наименование ТЭЦ + наименование ГТП
-                        listGTPNameShr.Add(t.name_shr + @" " + tc.name_shr);
-                    }
-                    else
-                        ;
-                }
-            }
-            //Добавить строки на дочернюю панель
-            m_panelManagement.InitializeGTPList(listGTPNameShr);
+        ///// <summary>
+        ///// Обработчик события - создание дескриптора панели
+        ///// </summary>
+        ///// <param name="obj">Объект, инициировавший событие</param>
+        ///// <param name="ev">Аргумент события</param>        
+        //private void OnHandleCreated(object obj, EventArgs ev)
+        //{
+        //    //Список строк - наименований ГТП
+        //    // для передачи дочерней панели на отображение
+        //    List<string> listGTPNameShr = new List<string>();
+        //    //Сформировать список строк - наименований ГТП
+        //    foreach (TEC t in m_listTEC)
+        //    {
+        //        foreach (TECComponent tc in t.list_TECComponents)
+        //        {
+        //            if (tc.IsGTP == true)
+        //            {
+        //                //Наименование ТЭЦ + наименование ГТП
+        //                listGTPNameShr.Add(t.name_shr + @" " + tc.name_shr);
+        //            }
+        //            else
+        //                ;
+        //        }
+        //    }
+        //    //Добавить строки на дочернюю панель
+        //    m_panelManagement.InitializeGTPList(listGTPNameShr);
 
-            EvtValuesMins += new DelegateObjectFunc(m_panelManagement.Parent_OnEvtValuesMins);
-            EvtValuesSecs += new DelegateObjectFunc(m_panelManagement.Parent_OnEvtValuesSecs);
-            //EvtValuesMins += new DelegateObjectFunc((m_zGraph_GTP as HZEdGraph_GTP).Parent_OnEvtValuesMins); //???отображать значения будем в функции на панели
+        //    EvtValuesMins += new DelegateObjectFunc(m_panelManagement.Parent_OnEvtValuesMins);
+        //    EvtValuesSecs += new DelegateObjectFunc(m_panelManagement.Parent_OnEvtValuesSecs);
+        //    //EvtValuesMins += new DelegateObjectFunc((m_zGraph_GTP as HZEdGraph_GTP).Parent_OnEvtValuesMins); //???отображать значения будем в функции на панели
 
-            DataGridViewGTP dgvGTP = this.Controls.Find(KEY_CONTROLS.DGV_GTP_VALUE.ToString(), true)[0] as DataGridViewGTP;
-            dgvGTP.SelectionChanged += new EventHandler(panelManagement_dgvGTPOnSelectionChanged);
-        }
+        //    DataGridViewGTP dgvGTP = this.Controls.Find(KEY_CONTROLS.DGV_GTP_VALUE.ToString(), true)[0] as DataGridViewGTP;
+        //    dgvGTP.SelectionChanged += new EventHandler(panelManagement_dgvGTPOnSelectionChanged);
+        //}
         /// <summary>
         /// Обработчик события - создание дескриптора панели
         /// </summary>
         /// <param name="obj">Объект, инициировавший событие</param>      
         public void ChangeMode(object obj)
         {
-            DataTable table = new DataTable();
-            table.Columns.Add("Name");
-            table.Columns.Add("ID");
-
-            List<FormChangeMode.Item> list_item = (List<FormChangeMode.Item>)obj;
-
-            foreach (FormChangeMode.Item item in list_item)
-            {
-                table.Rows.Add(item.name_shr,item.id);
-            }
-
             //Добавить строки на дочернюю панель
-            m_panelManagement.InitializeGTPList(table);
+            m_panelManagement.InitializeGTPList((List<FormChangeMode.Item>)obj);
 
             EvtValuesMins += new DelegateObjectFunc(m_panelManagement.Parent_OnEvtValuesMins);
             EvtValuesSecs += new DelegateObjectFunc(m_panelManagement.Parent_OnEvtValuesSecs);
             //EvtValuesMins += new DelegateObjectFunc((m_zGraph_GTP as HZEdGraph_GTP).Parent_OnEvtValuesMins); //???отображать значения будем в функции на панели
 
-            DataGridViewGTP dgvGTP = this.Controls.Find(KEY_CONTROLS.DGV_GTP_VALUE.ToString(), true)[0] as DataGridViewGTP;
+            DataGridViewGTP dgvGTP = findControl(KEY_CONTROLS.DGV_GTP_VALUE.ToString()) as DataGridViewGTP;
             dgvGTP.SelectionChanged += new EventHandler(panelManagement_dgvGTPOnSelectionChanged);
-
         }
 
         /// <summary>

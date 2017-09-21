@@ -275,6 +275,10 @@ namespace StatisticCommon
         /// </summary>
         public string name_shr;
         /// <summary>
+        /// Наименование-идентификатор в Модес-Центр
+        /// </summary>
+        public string name_MC;
+        /// <summary>
         /// Массив наименований таблиц со значениями ПБР, административными значениями
         /// </summary>
         public string m_strNameTableAdminValues, m_strNameTableUsedPPBRvsPBR;
@@ -453,10 +457,7 @@ namespace StatisticCommon
         public void PerformUpdate (int iListenerId)
         {
             //Установить по запросу текущий идентификатор источника данных в системе СОТИАССО
-            if (! (EventUpdate == null))
-                EventUpdate(this, new InitTEC_200.TECListUpdateEventArgs () { m_iListenerId = iListenerId });
-            else
-                ;
+            EventUpdate?.Invoke(this, new InitTEC_200.TECListUpdateEventArgs () { m_iListenerId = iListenerId });
         }
 
         public enum ADDING_PARAM_KEY : short { PREFIX_MODES_TERMINAL
@@ -467,10 +468,11 @@ namespace StatisticCommon
         }
 
         public TEC(DataRow rTec, bool bUseData)
-            : this(Convert.ToInt32(rTec["ID"]),
-                rTec["NAME_SHR"].ToString(), //"NAME_SHR"
-                @"AdminValuesOfID",
-                @"PPBRvsPBROfID"
+            : this(Convert.ToInt32(rTec["ID"])
+                , rTec["NAME_SHR"].ToString().Trim() //"NAME_SHR"
+                , rTec["NAME_MC"].ToString().Trim() //"NAME_MC"
+                , @"AdminValuesOfID"
+                , @"PPBRvsPBROfID"
                 , bUseData)
         {
             setNamesField(@"DATE",
@@ -492,15 +494,24 @@ namespace StatisticCommon
         /// </summary>
         /// <param name="id">Идентификатр ТЭЦ</param>
         /// <param name="name_shr">Краткое наименование</param>
+        /// <param name="name_MC">Наименование-идентификатор в Модес-Центр</param>
         /// <param name="table_name_admin">Наименование таблици с административными значениями</param>
         /// <param name="table_name_pbr">Наименование таблици со значениями ПБР</param>
         /// <param name="bUseData">Признак создания объекта</param>
-        private TEC (int id, string name_shr, string table_name_admin, string table_name_pbr, bool bUseData) {
+        private TEC (int id, string name_shr, string name_MC , string table_name_admin, string table_name_pbr, bool bUseData) {
+            int iNameMC = -1;
+
             list_TECComponents = new List<TECComponent>();
             //m_list_Vyvod = new List<TECComponent>();
 
             this.m_id = id;
             this.name_shr = name_shr;
+            this.name_MC = name_MC;
+            if ((this.m_id < (int)TECComponent.ID.LK)
+                && (int.TryParse(this.name_MC, out iNameMC) == false))
+                Logging.Logg().Warning(string.Format(@"Значение идентификатора подразделения [{0}] в Модес-Центр не установлено...", this.name_shr), Logging.INDEX_MESSAGE.NOT_SET);
+            else
+                ;
 
             this.m_strNameTableAdminValues = table_name_admin;
             this.m_strNameTableUsedPPBRvsPBR = table_name_pbr;
@@ -1218,8 +1229,8 @@ namespace StatisticCommon
                         //    + @" AND [last_changed_at] BETWEEN DATEADD (HH, DATEDIFF (HH, GETDATE (), GETUTCDATE()), '" + dtReq.ToString(@"yyyyMMdd HH:mm:00.000") + @"')"
                         //        + @" AND DATEADD (HH, DATEDIFF (HH, GETDATE (), GETUTCDATE()), '" + dtReq.AddHours(1).AddMilliseconds(-2).ToString(@"yyyyMMdd HH:mm:ss.fff") + @"')"
                         //Вариант №2
-                        @"SELECT [KKS_NAME] as [KKS_NAME], AVG ([VALUE]) as [VALUE], SUM ([tmdelta]) as [tmdelta]"
-	                        + @", DATEADD (HH, DATEDIFF (HH, GETUTCDATE (), GETDATE()), [last_changed_at]) as [last_changed_at]"
+                        @"SELECT [KKS_NAME] as [KKS_NAME], AVG ([VALUE]) AS [VALUE], SUM ([VALUE] / (60 / " + interval + @")) as [VALUE0], SUM ([tmdelta]) as [tmdelta]"
+                            + @", DATEADD (HH, DATEDIFF (HH, GETUTCDATE (), GETDATE()), [last_changed_at]) as [last_changed_at]"
 	                        + @", (DATEPART (MINUTE, DATEADD (HH, DATEDIFF (HH, GETUTCDATE (), GETDATE()), [last_changed_at])) / " + interval + @") as [MINUTE]"
                         + @" FROM ("
                             + @"SELECT [KKS_NAME] as [KKS_NAME], [Value] as [VALUE], [tmdelta] as [tmdelta]"
@@ -1336,11 +1347,11 @@ namespace StatisticCommon
 
         private string hoursTMCommonRequestAverage (DateTime dt1, DateTime dt2, string sensors, int interval) {
             return
-                @"SELECT SUM([VALUE]) as [VALUE], COUNT (*) as [CNT], [HOUR]"
+                @"SELECT SUM([VALUE]) as [VALUE], SUM([VALUE0]) as [VALUE0], COUNT (*) as [CNT], [HOUR]"
                 + @" FROM ("
                     + @"SELECT" 
-		                + @" [KKS_NAME] as [KKS_NAME], AVG ([VALUE]) as [VALUE], SUM ([tmdelta]) as [tmdelta]"
-		                + @", DATEPART (HOUR, [last_changed_at]) as [HOUR]"
+		                + @" [KKS_NAME] as [KKS_NAME], AVG ([VALUE]) AS [VALUE], SUM ([VALUE] / (60 / " + interval + @")) as [VALUE0], SUM ([tmdelta]) as [tmdelta]"
+                        + @", DATEPART (HOUR, [last_changed_at]) as [HOUR]"
                     + @" FROM ("
                         + @"SELECT"
                             + @" [KKS_NAME] as [KKS_NAME], AVG ([VALUE]) as [VALUE], SUM ([tmdelta]) as [tmdelta]"
@@ -1508,6 +1519,10 @@ namespace StatisticCommon
                 default:
                     break;
             }
+
+            //Console.WriteLine(string.Format(@"TEC::hoursTMRequest (usingDate={1}, sensors={2}, interval={3}) - variant SOTIASSO={4} {0}REQUEST={5}"
+            //    , Environment.NewLine, usingDate, sensors, interval, TEC.s_SourceSOTIASSO.ToString()
+            //    , request));
 
             return request;
         }

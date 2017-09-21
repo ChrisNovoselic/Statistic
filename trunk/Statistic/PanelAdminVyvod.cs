@@ -241,7 +241,7 @@ namespace Statistic
         }
 
         public PanelAdminVyvod(int idListener, HMark markQueries)
-            : base(idListener, FormChangeMode.MANAGER.TEPLOSET, markQueries, new int[] { 0, (int)TECComponent.ID.TG })
+            : base(idListener, markQueries, new int[] { 0, (int)TECComponent.ID.TG })
         {
         }
 
@@ -390,6 +390,12 @@ namespace Statistic
         protected override void comboBoxTecComponent_SelectionChangeCommitted(object sender, EventArgs e)
         {
             base.comboBoxTecComponent_SelectionChangeCommitted (sender, e);
+        }
+
+        protected override void createAdmin ()
+        {
+            //Возможность редактирования значений ПБР: разрешено управление (изменение разрешения на запись), запись НЕ разрешена
+            m_admin = new PanelAdminVyvod.AdminTS_Vyvod (new bool[] { true, false });                    
         }
 
         private class DataGridViewAdminVyvod : DataGridViewAdmin

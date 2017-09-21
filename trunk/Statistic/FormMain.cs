@@ -69,8 +69,10 @@ namespace Statistic
             CUR_POWER = 10101, TM_SN_POWER, MONITOR_LAST_MINUTES, SOBSTV_NYZHDY, CUSTOM_2X2_1, CUSTOM_2X3_1
             , DATETIMESYNC_SOURCE_DATA
             , CUSTOM_2X2_2, CUSTOM_2X3_2, CUSTOM_2X2_3, CUSTOM_2X3_3, CUSTOM_2X2_4, CUSTOM_2X3_4
-            , SOTIASSO, DIAGNOSTIC, ANALYZER, TEC_Component, USERS
+            , SOTIASSO_HOUR, DIAGNOSTIC, ANALYZER, TEC_Component, USERS
             , VZLET_TDIRECT
+            // KhryapinAN, 2017-06
+            , AIISKUE_SOTIASSO_DAY
         };
         private enum INDEX_CUSTOM_TAB { TAB_2X2, TAB_2X3, TAB_MULTI };
         private class ADDING_TAB
@@ -821,8 +823,8 @@ namespace Statistic
                                                                 if (tclTecViews.TabPages[e.TabIndex].Controls[0] is PanelSourceData)
                                                                     m_dictAddingTabs[(int)ID_ADDING_TAB.DATETIMESYNC_SOURCE_DATA].menuItem.Checked = false;
                                                                 else
-                                                                    if (tclTecViews.TabPages[e.TabIndex].Controls[0] is PanelSOTIASSO)
-                                                                        m_dictAddingTabs[(int)ID_ADDING_TAB.SOTIASSO].menuItem.Checked = false;
+                                                                    if (tclTecViews.TabPages[e.TabIndex].Controls[0] is PanelSOTIASSOHour)
+                                                                        m_dictAddingTabs[(int)ID_ADDING_TAB.SOTIASSO_HOUR].menuItem.Checked = false;
                                                                     else
                                                                         if (tclTecViews.TabPages[e.TabIndex].Controls[0] is PanelVzletTDirect)
                                                                             m_dictAddingTabs[(int)ID_ADDING_TAB.VZLET_TDIRECT].menuItem.Checked = false;
@@ -836,7 +838,11 @@ namespace Statistic
                                                                                     if (tclTecViews.TabPages[e.TabIndex].Controls[0] is PanelUser)
                                                                                         m_dictAddingTabs[(int)ID_ADDING_TAB.USERS].menuItem.Checked = false;
                                                                                     else
-                                                                                        ;
+                // KhryapinAN, 2017-06
+                                                                    if (tclTecViews.TabPages[e.TabIndex].Controls[0] is PanelSOTIASSODay)
+                                                                        m_dictAddingTabs[(int)ID_ADDING_TAB.AIISKUE_SOTIASSO_DAY].menuItem.Checked = false;
+                                                                    else
+                ;
         }
 
         void delegateOnFloatTab(object sender, HTabCtrlExEventArgs e)
@@ -2065,11 +2071,15 @@ namespace Statistic
                     m_dictAddingTabs[(int)ID_ADDING_TAB.TM_SN_POWER].menuItem.Enabled =
                     m_dictAddingTabs[(int)ID_ADDING_TAB.MONITOR_LAST_MINUTES].menuItem.Enabled =
                     m_dictAddingTabs[(int)ID_ADDING_TAB.SOBSTV_NYZHDY].menuItem.Enabled =
-                    m_dictAddingTabs[(int)ID_ADDING_TAB.SOTIASSO].menuItem.Enabled =
+                    m_dictAddingTabs[(int)ID_ADDING_TAB.SOTIASSO_HOUR].menuItem.Enabled =
+                    // KhryapinAN, 2017-06
+                    m_dictAddingTabs[(int)ID_ADDING_TAB.AIISKUE_SOTIASSO_DAY].menuItem.Enabled =
                     m_dictAddingTabs[(int)ID_ADDING_TAB.VZLET_TDIRECT].menuItem.Enabled =
                         bCurEnabled && (HStatisticUsers.allTEC < (int)TECComponent.ID.LK);
 
-                    m_dictAddingTabs[(int)ID_ADDING_TAB.SOTIASSO].menuItem.Enabled &= HStatisticUsers.IsAllowed((int)HStatisticUsers.ID_ALLOWED.MENUITEM_VIEW_VALUES_SOTIASSO);
+                    m_dictAddingTabs[(int)ID_ADDING_TAB.SOTIASSO_HOUR].menuItem.Enabled &= HStatisticUsers.IsAllowed((int)HStatisticUsers.ID_ALLOWED.MENUITEM_VIEW_VALUES_SOTIASSO);
+                    // KhryapinAN, 2017-06
+                    m_dictAddingTabs[(int)ID_ADDING_TAB.AIISKUE_SOTIASSO_DAY].menuItem.Enabled &= HStatisticUsers.IsAllowed((int)HStatisticUsers.ID_ALLOWED.MENUITEM_VIEW_VALUES_AIISKUE_SOTIASSO_DAY);
                     m_dictAddingTabs[(int)ID_ADDING_TAB.VZLET_TDIRECT].menuItem.Enabled &= HStatisticUsers.IsAllowed((int)HStatisticUsers.ID_ALLOWED.MENUITEM_VIEW_VZLET_TDIRECT);
                 }
                 else
@@ -2617,21 +2627,46 @@ namespace Statistic
                 , new bool[] { ((ToolStripMenuItem)sender).Checked, true });
         }
 
-        private void значенияСОТИАССОToolStripMenuItem_CheckedChanged(object sender, EventArgs e)
+        private void значенияСОТИАССОЧасToolStripMenuItem_CheckedChanged(object sender, EventArgs e)
         {
-            if (m_dictAddingTabs[(int)ID_ADDING_TAB.SOTIASSO].panel == null)
+            ID_ADDING_TAB keyTab = ID_ADDING_TAB.SOTIASSO_HOUR;
+            int id_tab = (int)keyTab;
+
+            if (m_dictAddingTabs[id_tab].panel == null)
             {
-                m_dictAddingTabs[(int)ID_ADDING_TAB.SOTIASSO].panel = new PanelSOTIASSO(PanelKomDisp.m_list_tec);
-                m_dictAddingTabs[(int)ID_ADDING_TAB.SOTIASSO].panel.SetDelegateReport(ErrorReport, WarningReport, ActionReport, ReportClear);
-                formChangeMode.EventChangeMode += ((PanelSOTIASSO)(m_dictAddingTabs[(int)ID_ADDING_TAB.SOTIASSO].panel)).ChangeMode;
-                formChangeMode.CallEventChangeMode();
+                m_dictAddingTabs[id_tab].panel = new PanelSOTIASSOHour(PanelKomDisp.m_list_tec);
+                m_dictAddingTabs[id_tab].panel.SetDelegateReport(ErrorReport, WarningReport, ActionReport, ReportClear);
+                formChangeMode.EventChangeMode += ((PanelSOTIASSOHour)(m_dictAddingTabs[id_tab].panel)).ChangeMode;
+                formChangeMode.PerformChangeMode();
             }
             else
                 ;
 
-            видSubToolStripMenuItem_CheckedChanged(ID_ADDING_TAB.SOTIASSO, "Значения СОТИАССО"
+            видSubToolStripMenuItem_CheckedChanged(keyTab, "Значения СОТИАССО-час"
                 , new bool[] { ((ToolStripMenuItem)sender).Checked, true });
         }
+
+        #region // KhryapinAN, 2017-06
+        private void значенияАИИСКУЭСОТИАССОСуткиToolStripMenuItem_CheckedChanged (object sender, EventArgs e)
+        {
+            ID_ADDING_TAB keyTab = ID_ADDING_TAB.AIISKUE_SOTIASSO_DAY;
+
+            int iListenerConfigId = -1;
+
+            if (m_dictAddingTabs[(int)keyTab].panel == null) {
+                iListenerConfigId = DbSources.Sources().Register(s_listFormConnectionSettings[(int)CONN_SETT_TYPE.CONFIG_DB].getConnSett(), false, @"CONFIG_DB");
+
+                m_dictAddingTabs[(int)keyTab].panel = new PanelSOTIASSODay(iListenerConfigId, PanelKomDisp.m_list_tec);
+                m_dictAddingTabs[(int)keyTab].panel.SetDelegateReport(ErrorReport, WarningReport, ActionReport, ReportClear);
+
+                DbSources.Sources().UnRegister(iListenerConfigId);
+            } else
+                ;
+
+            видSubToolStripMenuItem_CheckedChanged(keyTab,  (sender as ToolStripMenuItem).Text //"Значения СОТИАССО-сутки"
+                , new bool[] { ((ToolStripMenuItem)sender).Checked, true });
+        }
+        #endregion
 
         private void значенияВзлетТпрямаяToolStripMenuItem_CheckedChanged(object sender, EventArgs e)
         {
@@ -2730,16 +2765,21 @@ namespace Statistic
                         if (ctrl is PanelSobstvNyzhdy)
                             ((PanelSobstvNyzhdy)ctrl).UpdateGraphicsCurrent(type);
                         else
-                            if (ctrl is PanelSOTIASSO)
-                                ((PanelSOTIASSO)ctrl).UpdateGraphicsCurrent(type);
-                            else
-                                if (ctrl is PanelLKView)
-                                    ((PanelLKView)ctrl).UpdateGraphicsCurrent(type);
+                            #region KhryapinAN, 2017-06, PanelSOTIASSOHour/PanelSOTIASSODay
+                            if (ctrl is PanelSOTIASSOHour)
+                                ((PanelSOTIASSOHour)ctrl).UpdateGraphicsCurrent(type);
+                            else                                
+                                if (ctrl is PanelSOTIASSODay)
+                                    ((PanelSOTIASSODay)ctrl).UpdateGraphicsCurrent(type);
                                 else
-                                    if (ctrl is PanelVzletTDirect)
-                                        ((PanelVzletTDirect)ctrl).UpdateGraphicsCurrent(type);
+                            #endregion
+                                    if (ctrl is PanelLKView)
+                                        ((PanelLKView)ctrl).UpdateGraphicsCurrent(type);
                                     else
-                                        ;
+                                        if (ctrl is PanelVzletTDirect)
+                                            ((PanelVzletTDirect)ctrl).UpdateGraphicsCurrent(type);
+                                        else
+                                            ;
             else
                 ;
 

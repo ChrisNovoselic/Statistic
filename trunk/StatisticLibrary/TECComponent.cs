@@ -91,9 +91,13 @@ namespace StatisticCommon
         /// </summary>
         public int m_id;
         /// <summary>
+        /// Индекс столбца в книге Excel со значениями ПБР для экспорта значений (подзадача сравнения ПБР-значений с аналогичными значениями из-вне, только для ГТП)
+        /// </summary>
+        public int m_indx_col_export_pbr_excel;
+        /// <summary>
         /// Индекс столбца в книге Excel со значениями РДГ для компонента (в настоящее время только для НТЭЦ-5)
         /// </summary>
-        public int m_indx_col_rdg_excel;
+        public int m_indx_col_rdg_excel;        
         /// <summary>
         /// Коэффициент для тонкой настройки алгоритма сигнализации
         /// </summary>
@@ -296,13 +300,17 @@ namespace StatisticCommon
         /// <summary>
         /// Конструктор - дополнительный
         /// </summary>
-        public TECComponent(TEC tec, DataRow rComp) : this (tec)
+        public TECComponent(TEC tec, DataRow rComp)
+            : this (tec)
         {
             name_shr = rComp["NAME_SHR"].ToString(); //rComp["NAME_GNOVOS"]
             if (DbTSQLInterface.IsNameField(rComp, "NAME_FUTURE") == true) this.name_future = rComp["NAME_FUTURE"].ToString(); else ;
             m_id = Convert.ToInt32(rComp["ID"]);
             m_listMCentreId = getMCentreId(rComp);
             m_listMTermId = getMTermId(rComp);
+            m_indx_col_export_pbr_excel = ((DbTSQLInterface.IsNameField(rComp, "INDX_COL_EXPORT_PBR_EXCEL") == true) && (!(rComp["INDX_COL_EXPORT_PBR_EXCEL"] is System.DBNull)))
+                ? Convert.ToInt32(rComp["INDX_COL_EXPORT_PBR_EXCEL"])
+                    : -1; // значение по умолчанию "-1" - не установлено
             if ((DbTSQLInterface.IsNameField (rComp, "INDX_COL_RDG_EXCEL") == true) && (!(rComp["INDX_COL_RDG_EXCEL"] is System.DBNull)))
                 m_indx_col_rdg_excel = Convert.ToInt32(rComp["INDX_COL_RDG_EXCEL"]);
             else

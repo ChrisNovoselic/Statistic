@@ -20,73 +20,21 @@ namespace Statistic
     {
         private System.Windows.Forms.Button btnImportCSV_PBRValues;
         private System.Windows.Forms.Button btnImportCSV_AdminDefaultValues;
-        //private System.Windows.Forms.CheckBox btnImportCSV_AdminDefaultValues;
-
-        //private System.Windows.Forms.CheckBox m_cbxAlarm;
-        //private System.Windows.Forms.GroupBox m_gbxDividerAlarm;
-        //private Label lblKoeffAlarmCurPower;
-        //private NumericUpDown m_nudnKoeffAlarmCurPower;
-        //private System.Windows.Forms.Button m_btnAlarmCurPower;
-        //private System.Windows.Forms.Button m_btnAlarmTGTurnOnOff;
-
-        //private class PanelLabelAlarm : HPanelCommon {
-        //    private Dictionary<KeyValuePair<int, int>, System.Windows.Forms.Label> m_dictLabel;
-            
-        //    public PanelLabelAlarm () : base (-1, -1) {
-        //        m_dictLabel = new Dictionary<KeyValuePair<int,int>,Label> ();
-
-        //        initializeLayoutStyle (1, 6);
-        //    }
-
-        //    protected override void initializeLayoutStyle(int cols = -1, int rows = -1)
-        //    {
-        //        this.ColumnCount = cols;
-        //        this.RowCount = rows;
-
-        //        for (int i = 0; i < this.RowCount; i++)
-        //            this.RowStyles.Add(new RowStyle(SizeType.Percent, this.Height / this.RowCount));
-        //    }
-
-        //    public void Add(string text, int id, int id_tg)
-        //    {
-        //        KeyValuePair <int, int> cKey = new KeyValuePair <int, int> (id, id_tg);
-        //        //m_dictLabel.Add(cKey, HLabel.createLabel (@"---", new HLabelStyles (Color.Red, Color.LightGray, 8F, ContentAlignment.MiddleLeft)));
-        //        m_dictLabel.Add(cKey, new HLabel (new HLabelStyles (Color.Red, Color.LightGray, 8F, ContentAlignment.MiddleLeft)));
-        //        m_dictLabel[cKey].Text = text; //??? - Наименование ГТП (ГТП + ТГ)
-
-        //        //if (m_dictLabel.Count < this.RowCount)
-        //            this.Controls.Add (m_dictLabel [cKey], 0, m_dictLabel.Count - 1);
-        //        //else
-        //        //    ;
-        //    }
-
-        //    public void Remove(int id, int id_tg)
-        //    {
-        //        KeyValuePair <int, int> cKey = new KeyValuePair <int, int> (id, id_tg);
-        //        int indx = this.Controls.IndexOf(m_dictLabel[cKey])
-        //            , i = -1;
-        //        this.Controls.Remove(m_dictLabel[cKey]);
-        //        m_dictLabel.Remove(cKey);
-        //        //if (indx > 0)
-        //            for (i = indx; i < this.RowCount; i ++)
-        //                if ((i < this.Controls.Count) && (!(this.Controls[i] == null)))
-        //                    this.SetRow(this.Controls [i], i);
-        //                else
-        //                    break;
-        //        //else
-        //        //    ;                
-        //    }
-        //}
-
-        //public static bool ALARM_USE = true;
-        //public AdminAlarm m_adminAlarm;
-        //private PanelLabelAlarm m_panelLabelAlarm;
+        private GroupBoxDividerChoice gbxDividerChoice;
+        private System.Windows.Forms.Button btnExport_PBRValues;
+        private System.Windows.Forms.CheckBox cbAutoExport_PBRValues;
+        private System.Windows.Forms.Label labelSheduleExport_PBRValues;
+        private System.Windows.Forms.DateTimePicker dtpSheduleStartExport_PBRValues;
+        private System.Windows.Forms.Label labelPeriodExport_PBRValues;
+        private System.Windows.Forms.DateTimePicker dtpShedulePeriodExport_PBRValues;
 
         private enum INDEX_CONTROL_UI
         {
             UNKNOWN = -1
             , BUTTON_CSV_IMPORT_PBR, BUTTON_CSV_IMPORT_ADMINVALUESDEFAULT
-            , COUNT };
+            , BUTTON_EXPORT_PBR, CB_AUTO_EXPORT_PBR, LABEL_SHEDULE_EXPORT_PBR, LABEL_PERIOD_EXPORT_PBR, DTP_SHEDULE_EXPORT_PBR, DTP_PERIOD_EXPORT_PBR
+                , COUNT
+        };
 
         protected override void InitializeComponents()
         {
@@ -94,14 +42,31 @@ namespace Statistic
 
             int posY = 271
                 , offsetPosY = m_iSizeY + 2 * m_iMarginY
+                , iMarginX = m_iMarginY
+                , width = 154
+                , width2 = 154 / 2 - iMarginX
                 , indx = -1;
             Rectangle[] arRectControlUI = new Rectangle[] {
                 new Rectangle (new Point (10, posY), new Size (154, m_iSizeY)) //BUTTON_CSV_IMPORT_PBR
-                , new Rectangle (new Point (10, posY + 1 * (m_iSizeY + m_iMarginY)), new Size (154, m_iSizeY)) //, BUTTON_CSV_IMPORT_ADMINVALUESDEFAULT
+                , new Rectangle (new Point (10, posY + 1 * (m_iSizeY + m_iMarginY)), new Size (154, m_iSizeY)) //, BUTTON_CSV_IMPORT_ADMINVALUESDEFAULT                
+                // ------ разделитель ------
+                , new Rectangle (new Point (10, posY + (int)(2.7 * (m_iSizeY + m_iMarginY))), new Size (width, m_iSizeY)) //, BUTTON_EXPORT_PBR
+                , new Rectangle (new Point (10, posY + (int)(3.7 * (m_iSizeY + m_iMarginY))), new Size (width, m_iSizeY)) //, CB_AUTO_EXPORT_PBR
+                , new Rectangle (new Point (10, posY + (int)(4.6 * (m_iSizeY + m_iMarginY))), new Size (width2, m_iSizeY)) //, LABEL_SHEDULE_EXPORT_PBR
+                , new Rectangle (new Point (10 + width2 + 2 * iMarginX, posY + (int)(4.6 * (m_iSizeY + m_iMarginY))), new Size (width2, m_iSizeY)) //, LABEL_PERIOD_EXPORT_PBR
+                , new Rectangle (new Point (10, posY + (int)(5.5 * (m_iSizeY + m_iMarginY))), new Size (width2, m_iSizeY)) //, DTP_SHEDULE_EXPORT_PBR
+                , new Rectangle (new Point (10 + width2 + 2 * iMarginX, posY + (int)(5.5 * (m_iSizeY + m_iMarginY))), new Size (width2, m_iSizeY)) //, DTP_PERIOD_EXPORT_PBR
             };
 
-            this.btnImportCSV_PBRValues = new System.Windows.Forms.Button();
-            this.btnImportCSV_AdminDefaultValues = new System.Windows.Forms.Button();
+            this.btnImportCSV_PBRValues = new Button();
+            this.btnImportCSV_AdminDefaultValues = new Button();            
+            this.btnExport_PBRValues = new Button();
+            this.cbAutoExport_PBRValues = new CheckBox();
+            this.labelSheduleExport_PBRValues = new Label();
+            this.dtpSheduleStartExport_PBRValues = new DateTimePicker();
+            this.dtpShedulePeriodExport_PBRValues = new DateTimePicker();
+            this.labelPeriodExport_PBRValues = new Label();
+            this.gbxDividerChoice = new GroupBoxDividerChoice();
             this.dgwAdminTable = new DataGridViewAdminKomDisp();
 
             this.SuspendLayout();
@@ -109,6 +74,13 @@ namespace Statistic
 
             this.m_panelManagement.Controls.Add(this.btnImportCSV_PBRValues);
             this.m_panelManagement.Controls.Add(this.btnImportCSV_AdminDefaultValues);
+            this.m_panelManagement.Controls.Add(this.gbxDividerChoice);
+            this.m_panelManagement.Controls.Add(this.btnExport_PBRValues);
+            this.m_panelManagement.Controls.Add(this.cbAutoExport_PBRValues);
+            this.m_panelManagement.Controls.Add(this.labelSheduleExport_PBRValues);
+            this.m_panelManagement.Controls.Add(this.labelPeriodExport_PBRValues);
+            this.m_panelManagement.Controls.Add(this.dtpSheduleStartExport_PBRValues);
+            this.m_panelManagement.Controls.Add(this.dtpShedulePeriodExport_PBRValues);
             this.m_panelRDGValues.Controls.Add(this.dgwAdminTable);
 
             // 
@@ -136,6 +108,79 @@ namespace Statistic
             this.btnImportCSV_AdminDefaultValues.Click += new System.EventHandler(this.btnImportCSV_AdminValuesDefault_Click);
             //this.ckbImportCSV_AdminDefaultValues.CheckedChanged += new EventHandler(ckbImportCSV_AdminDefaultValues_CheckedChanged);
             this.btnImportCSV_AdminDefaultValues.Enabled = true;
+            //
+            // gbxDividerChoice
+            //
+            gbxDividerChoice.Initialize(posY + 0 * (m_iSizeY + m_iMarginY));
+            // 
+            // btnExport_PBRValues
+            //
+            indx = (int)INDEX_CONTROL_UI.BUTTON_EXPORT_PBR;
+            this.btnExport_PBRValues.Location = arRectControlUI[indx].Location;
+            this.btnExport_PBRValues.Name = "btnExport_PBRValues";
+            this.btnExport_PBRValues.Size = arRectControlUI[indx].Size;
+            this.btnExport_PBRValues.TabIndex = 2;
+            this.btnExport_PBRValues.Text = "Экспорт тек.ПБР";
+            this.btnExport_PBRValues.UseVisualStyleBackColor = true;
+            this.btnExport_PBRValues.Click += new System.EventHandler(this.btnExport_PBRValues_Click);
+            this.btnExport_PBRValues.Enabled = EnabledExportPBRValues;
+            // 
+            // cbAutoExport_PBRValues
+            //
+            indx = (int)INDEX_CONTROL_UI.CB_AUTO_EXPORT_PBR;
+            this.cbAutoExport_PBRValues.Location = arRectControlUI[indx].Location;
+            this.cbAutoExport_PBRValues.Name = "cbAutoExport_PBRValues";
+            this.cbAutoExport_PBRValues.Size = arRectControlUI[indx].Size;
+            this.cbAutoExport_PBRValues.TabIndex = 2;
+            this.cbAutoExport_PBRValues.Text = "Автоматически";
+            this.cbAutoExport_PBRValues.CheckedChanged += cbAutoExport_PBRValues_CheckedChanged;
+            this.cbAutoExport_PBRValues.Enabled = AllowUserSetModeExportPBRValues;
+            // 
+            // labelSheduleExport_PBRValues
+            //
+            indx = (int)INDEX_CONTROL_UI.LABEL_SHEDULE_EXPORT_PBR;
+            this.labelSheduleExport_PBRValues.Location = arRectControlUI[indx].Location;
+            this.labelSheduleExport_PBRValues.Name = "labelSheduleExport_PBRValues";
+            this.labelSheduleExport_PBRValues.Size = arRectControlUI[indx].Size;
+            this.labelSheduleExport_PBRValues.TabIndex = 2;
+            this.labelSheduleExport_PBRValues.Text = "Начинать с:";
+            // 
+            // labelPeriodExport_PBRValues
+            //
+            indx = (int)INDEX_CONTROL_UI.LABEL_PERIOD_EXPORT_PBR;
+            this.labelPeriodExport_PBRValues.Location = arRectControlUI[indx].Location;
+            this.labelPeriodExport_PBRValues.Name = "labelPeriodExport_PBRValues";
+            this.labelPeriodExport_PBRValues.Size = arRectControlUI[indx].Size;
+            this.labelPeriodExport_PBRValues.TabIndex = 2;
+            this.labelPeriodExport_PBRValues.Text = "Каждые:";
+            // 
+            // dtpSheduleStartExport_PBRValues
+            //
+            indx = (int)INDEX_CONTROL_UI.DTP_SHEDULE_EXPORT_PBR;
+            this.dtpSheduleStartExport_PBRValues.Location = arRectControlUI[indx].Location;
+            this.dtpSheduleStartExport_PBRValues.Name = "dtpSheduleStartExport_PBRValues";
+            this.dtpSheduleStartExport_PBRValues.Size = arRectControlUI[indx].Size;
+            this.dtpSheduleStartExport_PBRValues.TabIndex = 2;
+            this.dtpSheduleStartExport_PBRValues.Format = DateTimePickerFormat.Custom;
+            this.dtpSheduleStartExport_PBRValues.CustomFormat = "00:mm:ss";
+            this.dtpSheduleStartExport_PBRValues.ShowUpDown = true;
+            this.dtpSheduleStartExport_PBRValues.Value = new DateTime(1970, 1, 1).AddSeconds(AdminTS_KomDisp.SEC_SHEDULE_START_EXPORT_PBR % 3600);
+            this.dtpSheduleStartExport_PBRValues.ValueChanged += dtpSheduleStartExport_PBRValues_ValueChanged;
+            this.dtpSheduleStartExport_PBRValues.Enabled = AllowUserChangeSheduleStartExportPBRValues;
+            // 
+            // dtpShedulePeriodExport_PBRValues
+            //
+            indx = (int)INDEX_CONTROL_UI.DTP_PERIOD_EXPORT_PBR;
+            this.dtpShedulePeriodExport_PBRValues.Location = arRectControlUI[indx].Location;
+            this.dtpShedulePeriodExport_PBRValues.Name = "dtpShedulePeriodExport_PBRValues";
+            this.dtpShedulePeriodExport_PBRValues.Size = arRectControlUI[indx].Size;
+            this.dtpShedulePeriodExport_PBRValues.TabIndex = 2;
+            this.dtpShedulePeriodExport_PBRValues.Format = DateTimePickerFormat.Custom;
+            this.dtpShedulePeriodExport_PBRValues.CustomFormat = "HH:mm:ss";
+            this.dtpShedulePeriodExport_PBRValues.ShowUpDown = true;
+            this.dtpShedulePeriodExport_PBRValues.Value = new DateTime(1970, 1, 1).AddSeconds(AdminTS_KomDisp.SEC_SHEDULE_PERIOD_EXPORT_PBR);
+            this.dtpShedulePeriodExport_PBRValues.ValueChanged += dtpShedulePeriodExport_PBRValues_ValueChanged; ;
+            this.dtpShedulePeriodExport_PBRValues.Enabled = AllowUserChangeShedulePeriodExportPBRValues;
             // 
             // dgwAdminTable
             //
@@ -147,11 +192,80 @@ namespace Statistic
             ((System.ComponentModel.ISupportInitialize)(this.dgwAdminTable)).EndInit();
 
             this.ResumeLayout();
+
+            cbAutoExport_PBRValues.Checked = EnabledExportPBRValues 
+                & (HStatisticUsers.IsAllowed ((int)HStatisticUsers.ID_ALLOWED.AUTO_EXPORT_PBRVALUES_KOMDISP));
+        }
+
+        private void admin_onEventExportPBRValues (AdminTS_KomDisp.MSExcelIOExportPBRValues.EventResultArgs ev)
+        {
+            switch (ev.Result) {
+                case AdminTS_KomDisp.MSExcelIOExportPBRValues.RESULT.SHEDULE:
+                    doExportPBRValues ();
+                    break;
+                default:
+                    break;
+            }
+        }
+
+        private void doExportPBRValues ()
+        {
+            // по завершению операции эксопрта требуется восстановить режим в исходный(DISPLAY - по умолчанию)
+            modeGetRDGValues = MODE_GET_RDG_VALUES.EXPORT;
+
+            (m_admin as AdminTS_KomDisp).PrepareExportRDGValues (m_listTECComponentIndex);
+
+            if (m_listTECComponentIndex.Count > 0)
+                m_admin.GetRDGValues (m_listTECComponentIndex [0], mcldrDate.SelectionStart.Date);
+            else
+                ;
+        }
+
+        private void btnExport_PBRValues_Click(object sender, EventArgs e)
+        {
+            doExportPBRValues ();
+        }
+
+        public static bool EnabledExportPBRValues = false;
+
+        public static bool AllowUserSetModeExportPBRValues = true;
+
+        private static bool AllowUserChangeSheduleStartExportPBRValues = false;
+
+        private static bool AllowUserChangeShedulePeriodExportPBRValues = false;
+
+        private void cbAutoExport_PBRValues_CheckedChanged(object sender, EventArgs e)
+        {
+            bool bChecked = false;
+
+            bChecked = (sender as CheckBox).Checked;
+
+            Admin.SetModeExportPBRValues((bChecked == true) ? AdminTS_KomDisp.MODE_EXPORT_PBRVALUES.AUTO : AdminTS_KomDisp.MODE_EXPORT_PBRVALUES.MANUAL);
+
+            btnExport_PBRValues.Enabled = !bChecked;
+            dtpSheduleStartExport_PBRValues.Enabled =            
+                 AllowUserChangeSheduleStartExportPBRValues && !bChecked;
+            dtpShedulePeriodExport_PBRValues.Enabled =
+                 AllowUserChangeShedulePeriodExportPBRValues && !bChecked;
+        }
+
+        private void dtpSheduleStartExport_PBRValues_ValueChanged(object sender, EventArgs e)
+        {
+            AdminTS_KomDisp.SEC_SHEDULE_START_EXPORT_PBR =
+                (int)new TimeSpan(dtpSheduleStartExport_PBRValues.Value.Hour, dtpSheduleStartExport_PBRValues.Value.Minute, dtpSheduleStartExport_PBRValues.Value.Second).TotalSeconds;
+        }
+
+        private void dtpShedulePeriodExport_PBRValues_ValueChanged(object sender, EventArgs e)
+        {
+            AdminTS_KomDisp.SEC_SHEDULE_PERIOD_EXPORT_PBR =
+                (int)new TimeSpan(dtpShedulePeriodExport_PBRValues.Value.Hour, dtpSheduleStartExport_PBRValues.Value.Minute, dtpSheduleStartExport_PBRValues.Value.Second).TotalSeconds;
         }
 
         public PanelAdminKomDisp(int idListener, HMark markQueries)
-            : base(idListener, FormChangeMode.MANAGER.DISP, markQueries, new int[] { 0, (int)TECComponent.ID.GTP })
+            : base(idListener, markQueries, new int[] { 0, (int)TECComponent.ID.GTP })
         {
+            //??? вызывается из базового класса
+            //InitializeComponents ();
         }
 
         public override bool Activate(bool activate)
@@ -228,46 +342,62 @@ namespace Statistic
             //m_admin.CopyCurRDGValues();
         }
 
+        private AdminTS_KomDisp Admin { get { return m_admin as AdminTS_KomDisp; } }
+
         public override void setDataGridViewAdmin(DateTime date)
         {
-            int offset = -1;
+            int offset = -1
+                , nextIndx = -1;
             string strFmtDatetime = string.Empty;
 
-            //??? не очень изящное решение
-            if (IsHandleCreated/*InvokeRequired*/ == true)
-            {
-                m_evtAdminTableRowCount.Reset();
-                this.BeginInvoke(new DelegateFunc(normalizedTableHourRows));
-                m_evtAdminTableRowCount.WaitOne(System.Threading.Timeout.Infinite);
-            }
-            else
-                Logging.Logg().Error(@"PanelTAdminKomDisp::setDataGridViewAdmin () - ... BeginInvoke (normalizedTableHourRows) - ...", Logging.INDEX_MESSAGE.D_001);
-
-            ((DataGridViewAdminKomDisp)this.dgwAdminTable).m_PBR_0 = m_admin.m_curRDGValues_PBR_0;
-
-            for (int i = 0; i < m_admin.m_curRDGValues.Length; i++)
-            {
-                strFmtDatetime = m_admin.GetFmtDatetime (i);
-                offset = m_admin.GetSeasonHourOffset (i + 1);
-
-                this.dgwAdminTable.Rows[i].Cells[(int)DataGridViewAdminKomDisp.DESC_INDEX.DATE_HOUR].Value = date.AddHours(i + 1 - offset).ToString(strFmtDatetime);
-
-                this.dgwAdminTable.Rows[i].Cells[(int)DataGridViewAdminKomDisp.DESC_INDEX.PLAN].Value = m_admin.m_curRDGValues[i].pbr.ToString("F2");
-                this.dgwAdminTable.Rows[i].Cells[(int)DataGridViewAdminKomDisp.DESC_INDEX.PLAN].ToolTipText = m_admin.m_curRDGValues[i].pbr_number;
-                if (i > 0)
-                    this.dgwAdminTable.Rows[i].Cells[(int)DataGridViewAdminKomDisp.DESC_INDEX.UDGe].Value = (((m_admin.m_curRDGValues[i].pbr + m_admin.m_curRDGValues[i - 1].pbr) / 2) + m_admin.m_curRDGValues[i].recomendation).ToString("F2");
+            if (modeGetRDGValues == MODE_GET_RDG_VALUES.DISPLAY) {
+                //??? не очень изящное решение
+                if (IsHandleCreated/*InvokeRequired*/ == true)
+                {
+                    m_evtAdminTableRowCount.Reset();
+                    // кол-во строк может быть изменено(нормализовано) только в том потоке,в котором было выполнено создание элемента управления
+                    this.BeginInvoke(new DelegateFunc(normalizedTableHourRows));
+                    //??? ожидать, пока не завершится выполнение предыдущего потока
+                    m_evtAdminTableRowCount.WaitOne(System.Threading.Timeout.Infinite);
+                }
                 else
-                    this.dgwAdminTable.Rows[i].Cells[(int)DataGridViewAdminKomDisp.DESC_INDEX.UDGe].Value = (((m_admin.m_curRDGValues[i].pbr + m_admin.m_curRDGValues_PBR_0) / 2) + m_admin.m_curRDGValues[i].recomendation).ToString("F2");
-                this.dgwAdminTable.Rows[i].Cells[(int)DataGridViewAdminKomDisp.DESC_INDEX.RECOMENDATION].Value = m_admin.m_curRDGValues[i].recomendation.ToString("F2");
-                this.dgwAdminTable.Rows[i].Cells[(int)DataGridViewAdminKomDisp.DESC_INDEX.RECOMENDATION].ToolTipText = m_admin.m_curRDGValues[i].dtRecUpdate.ToString ();
-                this.dgwAdminTable.Rows[i].Cells[(int)DataGridViewAdminKomDisp.DESC_INDEX.FOREIGN_CMD].Value = m_admin.m_curRDGValues[i].fc.ToString();
-                this.dgwAdminTable.Rows[i].Cells[(int)DataGridViewAdminKomDisp.DESC_INDEX.DEVIATION_TYPE].Value = m_admin.m_curRDGValues[i].deviationPercent.ToString();
-                this.dgwAdminTable.Rows[i].Cells[(int)DataGridViewAdminKomDisp.DESC_INDEX.DEVIATION].Value = m_admin.m_curRDGValues[i].deviation.ToString("F2");
-            }
+                    Logging.Logg().Error(@"PanelTAdminKomDisp::setDataGridViewAdmin () - ... BeginInvoke (normalizedTableHourRows) - ...", Logging.INDEX_MESSAGE.D_001);
 
-            //this.dgwAdminTable.Invalidate();
+                ((DataGridViewAdminKomDisp)this.dgwAdminTable).m_PBR_0 = m_admin.m_curRDGValues_PBR_0;
 
-            m_admin.CopyCurToPrevRDGValues();
+                //??? отобразить значения - почему не внутри класса-объекта представления
+                for (int i = 0; i < m_admin.m_curRDGValues.Length; i++)
+                {
+                    strFmtDatetime = m_admin.GetFmtDatetime(i);
+                    offset = m_admin.GetSeasonHourOffset(i + 1);
+
+                    this.dgwAdminTable.Rows[i].Cells[(int)DataGridViewAdminKomDisp.DESC_INDEX.DATE_HOUR].Value = date.AddHours(i + 1 - offset).ToString(strFmtDatetime);
+
+                    this.dgwAdminTable.Rows[i].Cells[(int)DataGridViewAdminKomDisp.DESC_INDEX.PLAN].Value = m_admin.m_curRDGValues[i].pbr.ToString("F2");
+                    this.dgwAdminTable.Rows[i].Cells[(int)DataGridViewAdminKomDisp.DESC_INDEX.PLAN].ToolTipText = m_admin.m_curRDGValues[i].pbr_number;
+                    if (i > 0)
+                        this.dgwAdminTable.Rows[i].Cells[(int)DataGridViewAdminKomDisp.DESC_INDEX.UDGe].Value = (((m_admin.m_curRDGValues[i].pbr + m_admin.m_curRDGValues[i - 1].pbr) / 2) + m_admin.m_curRDGValues[i].recomendation).ToString("F2");
+                    else
+                        this.dgwAdminTable.Rows[i].Cells[(int)DataGridViewAdminKomDisp.DESC_INDEX.UDGe].Value = (((m_admin.m_curRDGValues[i].pbr + m_admin.m_curRDGValues_PBR_0) / 2) + m_admin.m_curRDGValues[i].recomendation).ToString("F2");
+                    this.dgwAdminTable.Rows[i].Cells[(int)DataGridViewAdminKomDisp.DESC_INDEX.RECOMENDATION].Value = m_admin.m_curRDGValues[i].recomendation.ToString("F2");
+                    this.dgwAdminTable.Rows[i].Cells[(int)DataGridViewAdminKomDisp.DESC_INDEX.RECOMENDATION].ToolTipText = m_admin.m_curRDGValues[i].dtRecUpdate.ToString();
+                    this.dgwAdminTable.Rows[i].Cells[(int)DataGridViewAdminKomDisp.DESC_INDEX.FOREIGN_CMD].Value = m_admin.m_curRDGValues[i].fc.ToString();
+                    this.dgwAdminTable.Rows[i].Cells[(int)DataGridViewAdminKomDisp.DESC_INDEX.DEVIATION_TYPE].Value = m_admin.m_curRDGValues[i].deviationPercent.ToString();
+                    this.dgwAdminTable.Rows[i].Cells[(int)DataGridViewAdminKomDisp.DESC_INDEX.DEVIATION].Value = m_admin.m_curRDGValues[i].deviation.ToString("F2");
+                }
+
+                //this.dgwAdminTable.Invalidate();
+
+                m_admin.CopyCurToPrevRDGValues();
+            } else if (modeGetRDGValues == MODE_GET_RDG_VALUES.EXPORT) {
+                nextIndx = Admin.AddValueToExportRDGValues(m_admin.m_curRDGValues, date);
+
+                if (nextIndx < 0)
+                    Invoke(new Action(btnRefresh.PerformClick));
+                else
+                    Admin.GetRDGValues(nextIndx, mcldrDate.SelectionStart.Date);
+            } else
+                ;
         }
 
         public override void ClearTables()
@@ -311,29 +441,30 @@ namespace Statistic
             OpenFileDialog files = new OpenFileDialog ();
             files.Multiselect = false;
             //files.InitialDirectory = Environment.GetFolderPath (Environment.SpecialFolder.Desktop);
-            files.InitialDirectory = FormMain.formParameters.m_arParametrSetup [(int)FormParameters.PARAMETR_SETUP.KOMDISP_FOLDER_CSV]; //@"\\ne2844\2.X.X\ПБР-csv"; //@"E:\Temp\ПБР-csv";
+            files.InitialDirectory = AdminTS_KomDisp.Folder_CSV;
             files.DefaultExt = @"csv";
             files.Filter = @"csv файлы (*.csv)|*.csv";
             files.Title = "Выберите файл с ПБР...";
 
             if (files.ShowDialog(FormMain.formParameters) == DialogResult.OK) {
+                Logging.Logg().Action(string.Format(@"PanelAdminKomDisp::btnImportCSV_PBRValues_Click () - выбран CSV-макет {0}...", files.FileName), Logging.INDEX_MESSAGE.NOT_SET);
+
                 int iRes = 0
                     , curPBRNumber = m_admin.GetPBRNumber (out err); //Текущий номер ПБР
                 //Дата ПБР, номер ПБР из наименования файла
                 object[] prop = AdminTS_KomDisp.GetPropertiesOfNameFilePPBRCSVValues(files.FileName);
 
                 //if (!((DateTime)prop[0] == DateTime.Now.Date))
-                if (!((DateTime)prop[0] == m_admin.m_curDate.Date)) {
+                if (!(((DateTime)prop[0]).CompareTo(m_admin.m_curDate.Date) == 0)) {
                     iRes = -1;
-                } else {
-                    //Сравнить с текущим номером ПБР
-                    // , номер ПБР по умолчанию не рассматривается (err == 0)
+                } else
+                //Сравнить с текущим номером ПБР
+                // , номер ПБР по умолчанию не рассматривается (err == 0)
                     if ((!((int)prop[1] > curPBRNumber))
                         && (err == 0))
                         iRes = -2;
                     else
                         ; //iRes = 0
-                }
 
                 //Проверка на ошибки
                 if (!(iRes == 0)) {
@@ -362,10 +493,10 @@ namespace Statistic
                 if (iRes == 0)
                     ((AdminTS_KomDisp)m_admin).ImpCSVValues(mcldrDate.SelectionStart, files.FileName);
                 else
-                    ;
+                    Logging.Logg().Action(string.Format(@"PanelAdminKomDisp::btnImportCSV_PBRValues_Click () - отмена импорта значений CSV-макета, ошибка={0}...", iRes), Logging.INDEX_MESSAGE.NOT_SET);
             }
             else
-                ;
+                Logging.Logg().Action(string.Format(@"PanelAdminKomDisp::btnImportCSV_PBRValues_Click () - отмена выбора CSV-макета..."), Logging.INDEX_MESSAGE.NOT_SET);
         }
 
         private string SharedFolderRun {
@@ -387,7 +518,7 @@ namespace Statistic
                 OpenFileDialog files = new OpenFileDialog ();
                 files.Multiselect = false;
                 //files.InitialDirectory = Environment.GetFolderPath (Environment.SpecialFolder.Desktop);
-                files.InitialDirectory = FormMain.formParameters.m_arParametrSetup [(int)FormParameters.PARAMETR_SETUP.KOMDISP_FOLDER_CSV]; //@"\\ne2844\2.X.X\ПБР-csv"; //@"E:\Temp\ПБР-csv";
+                files.InitialDirectory = AdminTS_KomDisp.Folder_CSV;
                 files.DefaultExt = @"csv";
                 files.Filter = @"Рекомендации-по-умолчанию (AdminValuesDefault)|AdminValuesDefault*.csv";
                 files.Title = "Выберите файл с рекомендациями по умолчанию...";
@@ -423,6 +554,32 @@ namespace Statistic
         protected override void comboBoxTecComponent_SelectionChangeCommitted(object sender, EventArgs e)
         {
             base.comboBoxTecComponent_SelectionChangeCommitted (sender, e);
+        }
+
+        protected override void createAdmin ()
+        {
+            EnabledExportPBRValues = (HStatisticUsers.IsAllowed ((int)HStatisticUsers.ID_ALLOWED.EXPORT_PBRVALUES_KOMDISP));
+            //??? тоже следует читать из БД конфигурации
+            AdminTS_KomDisp.ModeDefaultExportPBRValues = AdminTS_KomDisp.MODE_EXPORT_PBRVALUES.MANUAL;            
+            AllowUserSetModeExportPBRValues = true & EnabledExportPBRValues;
+            AllowUserChangeSheduleStartExportPBRValues = false & EnabledExportPBRValues;
+            AllowUserChangeShedulePeriodExportPBRValues = false & EnabledExportPBRValues;
+            //??? тоже следует читать из БД конфигурации
+            AdminTS_KomDisp.ConstantExportPBRValues.MaskDocument = @"ПБР-Факт-Статистика";
+            AdminTS_KomDisp.ConstantExportPBRValues.MaskExtension = @"xlsx";
+            AdminTS_KomDisp.ConstantExportPBRValues.NumberRow_0 = 7;
+            AdminTS_KomDisp.ConstantExportPBRValues.Format_Date = "dd.MM.yyyy HH:mm";
+            AdminTS_KomDisp.ConstantExportPBRValues.NumberColumn_Date = 1;
+            AdminTS_KomDisp.ConstantExportPBRValues.NumberRow_Date = 5;
+
+            AdminTS_KomDisp.SEC_SHEDULE_START_EXPORT_PBR = int.Parse (FormMain.formParameters.m_arParametrSetup[(int)FormParameters.PARAMETR_SETUP.KOMDISP_SHEDULE_START_EXPORT_PBR]);
+            AdminTS_KomDisp.SEC_SHEDULE_PERIOD_EXPORT_PBR = int.Parse (FormMain.formParameters.m_arParametrSetup[(int)FormParameters.PARAMETR_SETUP.KOMDISP_SHEDULE_PERIOD_EXPORT_PBR]);
+            //AdminTS_KomDisp.MS_WAIT_EXPORT_PBR_MAX = 6666; установлен при объявлении/определении
+            //AdminTS_KomDisp.MS_WAIT_EXPORT_PBR_ABORT = 666; установлен при объявлении/определении
+            AdminTS_KomDisp.Folder_CSV = FormMain.formParameters.m_arParametrSetup[(int)FormParameters.PARAMETR_SETUP.KOMDISP_FOLDER_CSV]; //@"\\ne2844\2.X.X\ПБР-csv"; //@"E:\Temp\ПБР-csv";
+            //Возможность редактирования значений ПБР: разрешено управление (изменение разрешения на запись), запись НЕ разрешена
+            m_admin = new AdminTS_KomDisp (new bool[] { true, false });
+            Admin.EventExportPBRValues += new Action<AdminTS_KomDisp.MSExcelIOExportPBRValues.EventResultArgs> (admin_onEventExportPBRValues);
         }
     }
 }
