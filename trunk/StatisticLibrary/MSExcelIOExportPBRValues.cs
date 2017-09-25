@@ -380,7 +380,7 @@ namespace StatisticCommon
 #else
 #endif
                             if (openDocument (listFileInfoDest [0].FullName) == 0) {
-                                Logging.Logg ().Error (string.Format ("AdminTS_KomDisp.MSExcelIOExportPBRValues::Run () - открыли документ {0}...", listFileInfoDest [0].FullName)
+                                Logging.Logg ().Debug (string.Format ("AdminTS_KomDisp.MSExcelIOExportPBRValues::Run () - открыли документ {0}...", listFileInfoDest [0].FullName)
                                     , Logging.INDEX_MESSAGE.NOT_SET);
 
                                 #region Заполнить лист книги MS Excel значениями
@@ -530,6 +530,8 @@ namespace StatisticCommon
             /// </summary>
             private void clearContext ()
             {
+                _numberPBR = -1;
+
                 _date = DateTime.MinValue;
 
                 _dictValues.Clear ();
@@ -685,8 +687,8 @@ namespace StatisticCommon
                 bRes = WriteValue (col, row, value);
 #else
                 try {
-                    ExcelColumn msExcelColumn = _msExcelSheet.Columns [col];
-                    msExcelColumn.Cells [row].Value = value;
+                    ExcelColumn msExcelColumn = _msExcelSheet.Columns [col - 1];
+                    msExcelColumn.Cells [row - 1].Value = value;
 
                     bRes = true;
                 } catch (Exception e) {

@@ -61,7 +61,7 @@
   <PropertyGroup Condition="'$(Configuration)|$(Platform)' == 'Debug|x86'">
     <DebugSymbols>true</DebugSymbols>
     <OutputPath>bin\Debug\</OutputPath>
-    <DefineConstants>TRACE;DEBUG;_HCLASSLIBRARY_MSEXCELIO</DefineConstants>
+    <DefineConstants>TRACE;DEBUG;HCLASSLIBRARY_MSEXCELIO</DefineConstants>
     <DebugType>full</DebugType>
     <PlatformTarget>AnyCPU</PlatformTarget>
     <ErrorReport>prompt</ErrorReport>
@@ -81,9 +81,9 @@
     <Reference Include="GemBox.Spreadsheet">
       <HintPath>..\..\ExternalDLL\GemBox.Spreadsheet.dll</HintPath>
     </Reference>
-    <Reference Include="HClassLibrary, Version=2.0.6.5, Culture=neutral, PublicKeyToken=2f5f95fc94cb3397, processorArchitecture=MSIL">
+    <Reference Include="HClassLibrary, Version=2.0.6.17, Culture=neutral, PublicKeyToken=2f5f95fc94cb3397, processorArchitecture=MSIL">
       <SpecificVersion>False</SpecificVersion>
-      <HintPath>..\..\ExternalDLL\HClassLibrary.dll</HintPath>
+      <HintPath>..\..\ExternalDll\HClassLibrary.dll</HintPath>
     </Reference>
     <Reference Include="Microsoft.Office.Interop.Excel, Version=14.0.0.0, Culture=neutral, PublicKeyToken=71e9bce111e9429c, processorArchitecture=MSIL">
       <SpecificVersion>False</SpecificVersion>
