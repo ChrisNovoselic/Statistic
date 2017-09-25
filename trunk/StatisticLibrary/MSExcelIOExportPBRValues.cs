@@ -375,9 +375,10 @@ namespace StatisticCommon
                             else
                                 ;
                         }
+
+                        if (Visible == false)
 #else
 #endif
-                        if (Visible == false)
                             if (openDocument (listFileInfoDest [0].FullName) == 0) {
                                 Logging.Logg ().Error (string.Format ("AdminTS_KomDisp.MSExcelIOExportPBRValues::Run () - открыли документ {0}...", listFileInfoDest [0].FullName)
                                     , Logging.INDEX_MESSAGE.NOT_SET);
@@ -393,7 +394,7 @@ namespace StatisticCommon
 
                                 foreach (KeyValuePair<int, IVALUES> pair in _dictValues) {
                                     for (int iHour = 0; iHour < pair.Value.m_data.Length; iHour++)
-                                        if (writeValue (pair.Value.m_indxColumn, ConstantExportPBRValues.NumberRow_0 + iHour, pair.Value.m_data [iHour].pbr.ToString()) == false)
+                                        if (writeValue (pair.Value.m_indxColumn, ConstantExportPBRValues.NumberRow_0 + iHour, pair.Value.m_data [iHour].pbr) == false)
                                             Logging.Logg ().Error (string.Format ("AdminTS_KomDisp.MSExcelIOExportPBRValues::Run () - [компонент_ID={0}, час={1}] не удалось сохранить значение {2}"
                                                     , pair.Key, iHour + 1, pair.Value.m_data [iHour].pbr)
                                                 , Logging.INDEX_MESSAGE.NOT_SET);
@@ -442,9 +443,12 @@ namespace StatisticCommon
 
                                 arg = new EventResultArgs () { Result = RESULT.ERROR_OPEN };
                             }
+#if HCLASSLIBRARY_MSEXCELIO
                         else
                         // Видимость 'true' - ожидать действий пользователя
                             arg = new EventResultArgs () { Result = RESULT.ERROR_RETRY };
+#else
+#endif
                     } else {
                         Logging.Logg ().Error (string.Format ("AdminTS_KomDisp.MSExcelIOExportPBRValues::Run () - отсутствует шаблон с наименованием={0}\\{1}..."
                                 , Folder_CSV, TemplateDocument)
@@ -653,6 +657,27 @@ namespace StatisticCommon
             }
 
             private bool writeValue (int col, int row, string value)
+            {
+                bool bRes = false;
+
+#if HCLASSLIBRARY_MSEXCELIO
+                bRes = WriteValue (col, row, value);
+#else
+                try {
+                    ExcelColumn msExcelColumn = _msExcelSheet.Columns [col];
+                    msExcelColumn.Cells [row].Value = value;
+
+                    bRes = true;
+                } catch (Exception e) {
+                    Logging.Logg ().Exception (e, string.Format ("AdminTS_KomDisp.MSExcelIOExportPBRValues::writeValue(столбец={0}, строка={1}, значение={2}) - ..."
+                            , col, row, value)
+                        , Logging.INDEX_MESSAGE.NOT_SET);
+                }
+#endif
+                return bRes;
+            }
+
+            private bool writeValue (int col, int row, double value)
             {
                 bool bRes = false;
 
