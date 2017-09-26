@@ -350,54 +350,58 @@ namespace Statistic
                 , nextIndx = -1;
             string strFmtDatetime = string.Empty;
 
-            if (modeGetRDGValues == MODE_GET_RDG_VALUES.DISPLAY) {
-                //??? не очень изящное решение
-                if (IsHandleCreated/*InvokeRequired*/ == true)
-                {
-                    m_evtAdminTableRowCount.Reset();
-                    // кол-во строк может быть изменено(нормализовано) только в том потоке,в котором было выполнено создание элемента управления
-                    this.BeginInvoke(new DelegateFunc(normalizedTableHourRows));
-                    //??? ожидать, пока не завершится выполнение предыдущего потока
-                    m_evtAdminTableRowCount.WaitOne(System.Threading.Timeout.Infinite);
-                }
-                else
-                    Logging.Logg().Error(@"PanelTAdminKomDisp::setDataGridViewAdmin () - ... BeginInvoke (normalizedTableHourRows) - ...", Logging.INDEX_MESSAGE.D_001);
-
-                ((DataGridViewAdminKomDisp)this.dgwAdminTable).m_PBR_0 = m_admin.m_curRDGValues_PBR_0;
-
-                //??? отобразить значения - почему не внутри класса-объекта представления
-                for (int i = 0; i < m_admin.m_curRDGValues.Length; i++)
-                {
-                    strFmtDatetime = m_admin.GetFmtDatetime(i);
-                    offset = m_admin.GetSeasonHourOffset(i + 1);
-
-                    this.dgwAdminTable.Rows[i].Cells[(int)DataGridViewAdminKomDisp.DESC_INDEX.DATE_HOUR].Value = date.AddHours(i + 1 - offset).ToString(strFmtDatetime);
-
-                    this.dgwAdminTable.Rows[i].Cells[(int)DataGridViewAdminKomDisp.DESC_INDEX.PLAN].Value = m_admin.m_curRDGValues[i].pbr.ToString("F2");
-                    this.dgwAdminTable.Rows[i].Cells[(int)DataGridViewAdminKomDisp.DESC_INDEX.PLAN].ToolTipText = m_admin.m_curRDGValues[i].pbr_number;
-                    if (i > 0)
-                        this.dgwAdminTable.Rows[i].Cells[(int)DataGridViewAdminKomDisp.DESC_INDEX.UDGe].Value = (((m_admin.m_curRDGValues[i].pbr + m_admin.m_curRDGValues[i - 1].pbr) / 2) + m_admin.m_curRDGValues[i].recomendation).ToString("F2");
+            switch (modeGetRDGValues) {
+                case MODE_GET_RDG_VALUES.DISPLAY:
+                    //??? не очень изящное решение
+                    if (IsHandleCreated/*InvokeRequired*/ == true)
+                    {
+                        m_evtAdminTableRowCount.Reset();
+                        // кол-во строк может быть изменено(нормализовано) только в том потоке,в котором было выполнено создание элемента управления
+                        this.BeginInvoke(new DelegateFunc(normalizedTableHourRows));
+                        //??? ожидать, пока не завершится выполнение предыдущего потока
+                        m_evtAdminTableRowCount.WaitOne(System.Threading.Timeout.Infinite);
+                    }
                     else
-                        this.dgwAdminTable.Rows[i].Cells[(int)DataGridViewAdminKomDisp.DESC_INDEX.UDGe].Value = (((m_admin.m_curRDGValues[i].pbr + m_admin.m_curRDGValues_PBR_0) / 2) + m_admin.m_curRDGValues[i].recomendation).ToString("F2");
-                    this.dgwAdminTable.Rows[i].Cells[(int)DataGridViewAdminKomDisp.DESC_INDEX.RECOMENDATION].Value = m_admin.m_curRDGValues[i].recomendation.ToString("F2");
-                    this.dgwAdminTable.Rows[i].Cells[(int)DataGridViewAdminKomDisp.DESC_INDEX.RECOMENDATION].ToolTipText = m_admin.m_curRDGValues[i].dtRecUpdate.ToString();
-                    this.dgwAdminTable.Rows[i].Cells[(int)DataGridViewAdminKomDisp.DESC_INDEX.FOREIGN_CMD].Value = m_admin.m_curRDGValues[i].fc.ToString();
-                    this.dgwAdminTable.Rows[i].Cells[(int)DataGridViewAdminKomDisp.DESC_INDEX.DEVIATION_TYPE].Value = m_admin.m_curRDGValues[i].deviationPercent.ToString();
-                    this.dgwAdminTable.Rows[i].Cells[(int)DataGridViewAdminKomDisp.DESC_INDEX.DEVIATION].Value = m_admin.m_curRDGValues[i].deviation.ToString("F2");
-                }
+                        Logging.Logg().Error(@"PanelTAdminKomDisp::setDataGridViewAdmin () - ... BeginInvoke (normalizedTableHourRows) - ...", Logging.INDEX_MESSAGE.D_001);
 
-                //this.dgwAdminTable.Invalidate();
+                    ((DataGridViewAdminKomDisp)this.dgwAdminTable).m_PBR_0 = m_admin.m_curRDGValues_PBR_0;
 
-                m_admin.CopyCurToPrevRDGValues();
-            } else if (modeGetRDGValues == MODE_GET_RDG_VALUES.EXPORT) {
-                nextIndx = Admin.AddValueToExportRDGValues(m_admin.m_curRDGValues, date);
+                    //??? отобразить значения - почему не внутри класса-объекта представления
+                    for (int i = 0; i < m_admin.m_curRDGValues.Length; i++)
+                    {
+                        strFmtDatetime = m_admin.GetFmtDatetime(i);
+                        offset = m_admin.GetSeasonHourOffset(i + 1);
 
-                if (nextIndx < 0)
-                    Invoke(new Action(btnRefresh.PerformClick));
-                else
-                    Admin.GetRDGValues(nextIndx, mcldrDate.SelectionStart.Date);
-            } else
-                ;
+                        this.dgwAdminTable.Rows[i].Cells[(int)DataGridViewAdminKomDisp.DESC_INDEX.DATE_HOUR].Value = date.AddHours(i + 1 - offset).ToString(strFmtDatetime);
+
+                        this.dgwAdminTable.Rows[i].Cells[(int)DataGridViewAdminKomDisp.DESC_INDEX.PLAN].Value = m_admin.m_curRDGValues[i].pbr.ToString("F2");
+                        this.dgwAdminTable.Rows[i].Cells[(int)DataGridViewAdminKomDisp.DESC_INDEX.PLAN].ToolTipText = m_admin.m_curRDGValues[i].pbr_number;
+                        if (i > 0)
+                            this.dgwAdminTable.Rows[i].Cells[(int)DataGridViewAdminKomDisp.DESC_INDEX.UDGe].Value = (((m_admin.m_curRDGValues[i].pbr + m_admin.m_curRDGValues[i - 1].pbr) / 2) + m_admin.m_curRDGValues[i].recomendation).ToString("F2");
+                        else
+                            this.dgwAdminTable.Rows[i].Cells[(int)DataGridViewAdminKomDisp.DESC_INDEX.UDGe].Value = (((m_admin.m_curRDGValues[i].pbr + m_admin.m_curRDGValues_PBR_0) / 2) + m_admin.m_curRDGValues[i].recomendation).ToString("F2");
+                        this.dgwAdminTable.Rows[i].Cells[(int)DataGridViewAdminKomDisp.DESC_INDEX.RECOMENDATION].Value = m_admin.m_curRDGValues[i].recomendation.ToString("F2");
+                        this.dgwAdminTable.Rows[i].Cells[(int)DataGridViewAdminKomDisp.DESC_INDEX.RECOMENDATION].ToolTipText = m_admin.m_curRDGValues[i].dtRecUpdate.ToString();
+                        this.dgwAdminTable.Rows[i].Cells[(int)DataGridViewAdminKomDisp.DESC_INDEX.FOREIGN_CMD].Value = m_admin.m_curRDGValues[i].fc.ToString();
+                        this.dgwAdminTable.Rows[i].Cells[(int)DataGridViewAdminKomDisp.DESC_INDEX.DEVIATION_TYPE].Value = m_admin.m_curRDGValues[i].deviationPercent.ToString();
+                        this.dgwAdminTable.Rows[i].Cells[(int)DataGridViewAdminKomDisp.DESC_INDEX.DEVIATION].Value = m_admin.m_curRDGValues[i].deviation.ToString("F2");
+                    }
+
+                    //this.dgwAdminTable.Invalidate();
+
+                    m_admin.CopyCurToPrevRDGValues();
+                    break;
+                case MODE_GET_RDG_VALUES.EXPORT:
+                    nextIndx = Admin.AddValueToExportRDGValues(m_admin.m_curRDGValues, date);
+
+                    if (nextIndx < 0)
+                        Invoke(new Action(btnRefresh.PerformClick));
+                    else
+                        Admin.GetRDGValues(nextIndx, mcldrDate.SelectionStart.Date);
+                    break;
+                default:
+                    break;   
+            }
         }
 
         public override void ClearTables()
