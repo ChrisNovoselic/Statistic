@@ -321,6 +321,12 @@ namespace CommonAux
                 }
             }
 
+            //public class VALUES_GROUP_TEC5 : VALUES_GROUP
+            //{
+            //    public VALUES_GROUP_TEC5(List<SIGNAL>listSgnls) : base (listSgnls)
+            //    {
+            //    }
+            //}
             /// <summary>
             /// Метка времени текущего объекта
             /// </summary>
@@ -849,10 +855,10 @@ namespace CommonAux
         /// <returns>Строка запроса</returns>
         private string getQuery(INDEX_DATA indx, DateTime dtStart, DateTime dtEnd)
         {
-            string strRes =
-                //s_strQueryTemplate[(int)indx]
-                s_strQueryTemplate
-                ;
+            string strRes = "SELECT res.[OBJECT], res.[ITEM], SUM(res.[VALUE0]) / COUNT(*)[VALUE0], res.[DATETIME], COUNT(*) as [COUNT] FROM(SELECT[OBJECT], [ITEM], [VALUE0], DATEADD(MINUTE, ceiling(DATEDIFF(MINUTE, DATEADD(DAY, DATEDIFF(DAY, 0, '?DATADATESTART?'), 0), [DATA_DATE]) / 60.) * 60, DATEADD(DAY, DATEDIFF(DAY, 0, '?DATADATESTART?'), 0)) as [DATETIME] FROM[DATA] WHERE[PARNUMBER] = 12 AND([DATA_DATE] > '?DATADATESTART?' AND NOT[DATA_DATE] > '?DATADATEEND?') AND(?SENSORS?) GROUP BY[RCVSTAMP], [OBJECT], [ITEM], [VALUE0], DATEADD(MINUTE, ceiling(DATEDIFF(MINUTE, DATEADD(DAY, DATEDIFF(DAY, 0, '?DATADATESTART?'), 0), [DATA_DATE]) / 60.) * 60, DATEADD(DAY, DATEDIFF(DAY, 0, '?DATADATESTART?'), 0))) res GROUP BY[OBJECT], [ITEM], [DATETIME] ORDER BY[OBJECT], [ITEM], [DATETIME]";
+            //s_strQueryTemplate[(int)indx]
+            //s_strQueryTemplate
+            ;
 
             if (m_Sensors[(int)indx].Equals(string.Empty) == false)
             {
@@ -867,8 +873,12 @@ namespace CommonAux
         }
     }
 
+
+
     public class MSExcelIO : HClassLibrary.MSExcelIO
     {
+        public enum INDEX_MSEXCEL_COLUMN { APOWER, SNUZHDY }
+
         public MSExcelIO(string path) : base()
         {
             OpenDocument(path);
@@ -1049,7 +1059,30 @@ namespace CommonAux
                 , SEC_TEMPLATE = @"Template";
             private List<string> m_KeyPars;
 
+
             private string m_strFullPathTemplate;
+
+            protected static DbConnection m_connConfigDB;
+
+            private static int _iListenerId;
+
+            private static DbConnection _connConfigDb;
+
+            public static int ListenerId { get { return _iListenerId; } }
+
+            public bool IsRegisterConfogDb { get { return ListenerId > 0; } }
+
+            /// <summary>
+            /// Зарегистрировать(установить) временное соединение с БД конфигурации
+            /// </summary>
+            /// <param name="err">Признак ошибки при выполнении операции</param>
+            public static void RegisterConfigDb(out int err)
+            {
+                // зарегистрировать соединение/получить идентификатор соединения
+                _iListenerId = DbSources.Sources().Register(FormMain.s_listFormConnectionSettings[(int)CONN_SETT_TYPE.CONFIG_DB].getConnSett(), false, @"CONFIG_DB");
+
+                _connConfigDb = DbSources.Sources().GetConnection(_iListenerId, out err);
+            }
             /// <summary>
             /// Каталог для размещения шаблонов
             /// </summary>
@@ -1077,53 +1110,16 @@ namespace CommonAux
                 }
             }
 
-            //public string GetQueryTemplateSignals()
-            //{
-            //    return GetSecValueOfKey(SEC_SELECT, string.Format(@"AIISKUE"));
-            //}
-
-            public List<TEC_LOCAL> GetListTEC()
-            {
-                List<TEC_LOCAL> listRes = new List<TEC_LOCAL>();
-                TEC_LOCAL tec;
-
-                int i = -1;
-                string key = string.Empty;
-
-                i = 0;
-                key = @"TEC" + i;
-                //while (isSecKey(SEC_CONFIG, key) == true)
-                //{
-                //    tec = getTEC(GetSecValueOfKey(SEC_CONFIG, key));
-                //    tec.m_Index = i;
-                //    listRes.Add(tec);
-
-                //    key = @"TEC" + ++i;
-                //}
-
-                return listRes;
-            }
-
-            protected static DbConnection m_connConfigDB;
-
-            private static int _iListenerId;
-
-            private static DbConnection _connConfigDb;
-
-            public static int ListenerId { get { return _iListenerId; } }
-
-            public bool IsRegisterConfogDb { get { return ListenerId > 0; } }
             /// <summary>
-            /// Зарегистрировать(установить) временное соединение с БД конфигурации
+            /// Возвратить строку запроса для получения списка каналов
             /// </summary>
-            /// <param name="err">Признак ошибки при выполнении операции</param>
-            public static void RegisterConfigDb(out int err)
+            /// <returns>Строка запроса</returns>
+            public static string getQueryListTEC()
             {
-                // зарегистрировать соединение/получить идентификатор соединения
-                _iListenerId = DbSources.Sources().Register(FormMain.s_listFormConnectionSettings[(int)CONN_SETT_TYPE.CONFIG_DB].getConnSett(), false, @"CONFIG_DB");
-
-                _connConfigDb = DbSources.Sources().GetConnection(_iListenerId, out err);
+                string strRes = "SELECT * FROM [ID_TSN_ASKUE_2017]";
+                return strRes;
             }
+
             /// <summary>
             /// Отменить регистрацию(разорвать) соединения с БД конфигурации
             /// </summary>
@@ -1133,16 +1129,6 @@ namespace CommonAux
 
                 _connConfigDb = null;
                 _iListenerId = -1;
-            }
-
-            /// <summary>
-            /// Возвратить строку запроса для получения списка каналов
-            /// </summary>
-            /// <returns>Строка запроса</returns>
-            public static string getQueryListTEC()
-            {
-                string strRes = "SELECT * FROM [ID_TSN_ASKUE_2017]";
-                return strRes;
             }
 
             /// <summary>
@@ -1160,11 +1146,12 @@ namespace CommonAux
             /// <summary>
             /// Загрузка всех каналов из базы данных
             /// </summary>
-            public static void InitChannels(DbConnection m_connConfigDB)
+            public void InitChannels(DbConnection m_connConfigDB, List<TEC_LOCAL> m_listTEC)
             {
                 int err = -1;
 
                 List<SIGNAL> listRes = new List<SIGNAL>();
+                SIGNAL signal;
 
                 DataTable list_channels = null;
 
@@ -1175,11 +1162,12 @@ namespace CommonAux
                 {
                     try
                     {
-                        listRes.Add(new SIGNAL(Convert.ToString(list_channels.Rows[i].GetChildRows(@"DESCRIPTION")),
-                            Convert.ToInt32(list_channels.Rows[i].GetChildRows(@"USPD")),
-                            Convert.ToInt32(list_channels.Rows[i].GetChildRows(@"CHANNEL")),
-                            Convert.ToBoolean(list_channels.Rows[i].GetChildRows(@"USE"))
-                        ));
+                        signal = new SIGNAL(Convert.ToString(list_channels.Rows[i].ItemArray[4]),
+                            Convert.ToInt32(list_channels.Rows[i].ItemArray[5]),
+                            Convert.ToInt32(list_channels.Rows[i].ItemArray[6]),
+                            Convert.ToBoolean(list_channels.Rows[i].ItemArray[7])
+                        );
+                        m_listTEC[Convert.ToInt32(list_channels.Rows[i].ItemArray[1]) - 1].m_arListSgnls[GetGroupID(Convert.ToString(list_channels.Rows[i].ItemArray[2]))].Add(signal);
                     }
                     catch (Exception e)
                     {
@@ -1188,43 +1176,117 @@ namespace CommonAux
                 }
             }
 
-            private TEC_LOCAL getTEC(string id)
+            public int GetGroupID(string group)
             {
-                TEC_LOCAL tecRes = new TEC_LOCAL();
-                tecRes.m_strId = id;
+                if (group == "TG") return 0;
+                else if (group == "TSN") return 1;
+                else if (group == "GRII") return 2;
+                else if (group == "GRVI") return 3;
+                else if (group == "GRVII") return 4;
+                else return 5;
+            }
 
-                string[] arNumCols;
-                int i = -1;
-                //string sec = @"TEC" + s_chSecDelimeters[(int)INDEX_DELIMETER.SEC_PART_TARGET] + id;
+            /// <summary>
+            /// Возвратить объект с параметрами соединения
+            /// </summary>
+            /// <returns>Объект с параметрами соединения</returns>
+            public ConnectionSettings GetConnSettAIISKUECentre()
+            {
+                ConnectionSettings connSettRes = new ConnectionSettings();
 
-                //arNumCols = GetSecValueOfKey(sec, @"MSEXEL_COLS").Split(s_chSecDelimeters[(int)INDEX_DELIMETER.PAIR_VAL]);
-                //if (!(arNumCols.Length == Enum.GetValues(typeof(INDEX_MSEXCEL_COLUMN)).Length))
-                //    throw new Exception(string.Format(@"FileINI::getTEC (ИД={0}) - не определены номера столбцов MS Excel для сохранения значений ...", id));
-                //else
-                //    ;
+                connSettRes.id = 1;
+                connSettRes.name = "АИИСКУЭ - Центр";
+                connSettRes.server = "10.100.104.39";
+                connSettRes.port = 1433;
+                connSettRes.dbName = "Piramida2000";
+                connSettRes.userName = "AIISKUESIBECO";
+                connSettRes.password = "@1!$kue$!BE(0";
 
-                //tecRes.m_Id = Int32.Parse(GetSecValueOfKey(sec, @"ID"));
-                //tecRes.m_strNameShr = GetSecValueOfKey(sec, @"NAME_SHR");
-                //tecRes.m_arMSExcelNumColumns = new int[Enum.GetValues(typeof(INDEX_MSEXCEL_COLUMN)).Length];
-
-                i = 0;
-                //foreach (string numCol in arNumCols)
-                    //tecRes.m_arMSExcelNumColumns[i++] = Int32.Parse(numCol);
-
-                //foreach (TEC_LOCAL.INDEX_DATA indx in Enum.GetValues(typeof(TEC_LOCAL.INDEX_DATA)))
-                    //tecRes.m_arListSgnls[(int)indx] = getSignals(sec, string.Format(@"AIISKUE_{0}", indx.ToString()));
-
-                return tecRes;
+                return connSettRes;
             }
         }
 
-        public PanelCommonAux(int idListener)
+        public PanelCommonAux(int displayMode)
         {
-            GetDataFromDB GetDataFDB = new GetDataFromDB();
-            GetDataFDB.InitChannels(idListener);
-  
+            m_displayMode = displayMode;
+
+            int err = -1;
+            // зарегистрировать соединение/получить идентификатор соединения
+            int _iListenerId = DbSources.Sources().Register(FormMain.s_listFormConnectionSettings[(int)CONN_SETT_TYPE.CONFIG_DB].getConnSett(), false, @"CONFIG_DB");
+            DbConnection m_connConfigDB = DbSources.Sources().GetConnection(_iListenerId, out err);
+
+            m_listTEC = GetListTEC(new InitTEC_200(_iListenerId, true, new int[] { 0, (int)TECComponent.ID.GTP }, false).tec);
+
+            GetDataFromDB GD = new GetDataFromDB();
+            GD.InitChannels(m_connConfigDB, m_listTEC);
+
+            foreach (TEC_LOCAL t in m_listTEC)
+            {
+                t.InitSensors();
+            }
+
+            //Получить параметры соединения с источником данных
+            m_connSettAIISKUECentre = GD.GetConnSettAIISKUECentre();
+
             InitializeComponents();
-            //initializeLayoutStyle(listTec.Count / 2, listTec.Count);
+
+            foreach (TEC_LOCAL tec in m_listTEC)
+            {
+                m_listBoxTEC.Items.Add(tec.m_strNameShr);
+            }
+
+            m_listBoxTEC.SelectedIndex = 0;
+
+            m_listBoxTEC.Tag = INDEX_CONTROL.LB_TEC;
+            m_listBoxTEC.SelectedIndexChanged += listBox_SelectedIndexChanged;
+
+            m_labelEndDate.Text = monthCalendarEnd.SelectionStart.ToShortDateString();
+            m_labelStartDate.Text = m_monthCalendar.SelectionStart.ToShortDateString();
+
+            if (m_displayMode == 0)
+            {
+                m_btnExit.Visible = false;
+            }
+
+            //Установить начальные признаки готовности к экспорту
+            m_markReady = new HMark(0);
+
+            FullPathTemplate = string.Empty;
+
+            m_arMSEXEL_PARS = new string[7] { "\\\\ne22\\lnk", "Tepmlate.xls", "Sheet1", "1", "5", "25", "1.1" };
+
+            //Установить обработчики событий
+            EventNewPathToTemplate += new DelegateStringFunc(onNewPathToTemplate);
+
+            string[] sumGroups = new string[6] { "sum TG", "sum TSN", "sum GRII", "sum GRVI", "sum GRVII", "sum GRVIII" };
+
+            for (int i = 0; i < sumGroups.Count(); i++)
+            {
+                m_sumValues.Rows.Add();
+                m_sumValues.Rows[i].Cells[0].Value = sumGroups[i];
+                m_sumValues.Rows[i].Cells[1].Value = "0";
+            }
+        }
+        /// <summary>
+        /// Обработчик события установки нового значения для пути к шаблону
+        /// </summary>
+        /// <param name="path">Строка - полный путь к шаблону</param>
+        private void onNewPathToTemplate(string path)
+        {
+            //Проверить строку на наличие в ней значения - изменить состояние программы
+            m_markReady.Set((int)INDEX_READY.TEMPLATE, path.Equals(string.Empty) == false);
+            //Установить признак дотупности для элементов интерфейса экспорта в книгу MS Excel
+            // п. главного меню + кнопка на панели быстрого доступа
+            enableBtnExcel(State == STATE.READY);
+        }
+        /// <summary>
+        /// Включить/отключить доступность интерфейса экспорта в книгу MS Excel
+        /// </summary>
+        /// <param name="bEnabled">Признак включения/отключения</param>
+        private void enableBtnExcel(bool bEnabled)
+        {
+            m_btnStripButtonExcel.Enabled =
+                bEnabled;
         }
 
         public override void SetDelegateReport(DelegateStringFunc ferr, DelegateStringFunc fwar, DelegateStringFunc fact, DelegateBoolFunc fclr)
@@ -1232,18 +1294,12 @@ namespace CommonAux
             //m_tecView.SetDelegateReport(ferr, fwar, fact, fclr);
         }
 
-        // Начало блока Common
-
-
         public static string _ExecutingAssemlyDirectoryName { get { return Path.GetDirectoryName(Assembly.GetExecutingAssembly().Location); } }
 
-        public void FormMainBase(HClassLibrary.FileINI.MODE_SECTION_APPLICATION modeSecApp = HClassLibrary.FileINI.MODE_SECTION_APPLICATION.INSTANCE)
-        {
-            //m_fileINI = new FileINI(modeSecApp);
-
-            //Получить параметры соединения с источником данных
-            //m_connSettAIISKUECentre = m_fileINI.GetConnSettAIISKUECentre();
-        }
+        /// <summary>
+        /// Режим отображения (в составе статистики/самостоятельная вкладка)
+        /// </summary>
+        protected int m_displayMode;
         /// <summary>
         /// Объект с параметрами соединения с источником данных
         /// </summary>
@@ -1257,56 +1313,41 @@ namespace CommonAux
         /// </summary>
         protected GetDataFromDB m_GetDataFromDB;
         /// <summary>
-        /// Возвраить список объектов ТЭЦ
+        /// Возвраить список объектов ТЭЦ (без ЛК38)
         /// </summary>
         /// <returns>Список объектов ТЭЦ</returns>
-        public void GetListTEC(List<TEC> tec)
+        public List<TEC_LOCAL> GetListTEC(List<TEC> tec)
         {
             List<TEC_LOCAL> listRes = new List<TEC_LOCAL>();
             TEC_LOCAL tec_local;
 
-            for (int i = 0; i < tec.Count; i++)
+            for (int i = 0; i < tec.Count - 1; i++)
             {
                 tec_local = new TEC_LOCAL();
 
                 tec_local.m_Id = tec[i].m_id;
                 tec_local.m_strNameShr = tec[i].name_shr;
 
+                List<int> list_column = new List<int>();
+
+                foreach (string s in tec[i].GetAddingParameter(TEC.ADDING_PARAM_KEY.COLUMN_TSN_EXCEL).ToString().Split(','))
+                {
+                    list_column.Add(Convert.ToInt32(s));
+                }
+
+                tec_local.m_arMSExcelNumColumns = list_column.ToArray();
+
+                for (int j = 0; j < tec_local.m_arListSgnls.Count(); j++)
+                {
+                    tec_local.m_arListSgnls[j] = new List<SIGNAL>();
+                }
+
                 listRes.Add(tec_local);
             }
-
-            m_listTEC = listRes;
-        }
-        protected string setListTEC()
-        {
-            string strRes = string.Empty;
-
-            m_GetDataFromDB = new GetDataFromDB();
-            m_listTEC = m_GetDataFromDB.GetListTEC();
-            strRes = @"Список ТЭЦ с параметрами сигналов сформирован: " + m_listTEC.Count + Environment.NewLine;
-
-            //Получить шаблоны запросов для выбоки данных
-            //TEC_LOCAL.s_strQueryTemplate[(int)TEC_LOCAL.INDEX_DATA.TG] = m_GetDataFromDB.GetQueryTemplateSignals(Common.TEC.INDEX_DATA.TG);
-            //TEC_LOCAL.s_strQueryTemplate[(int)TEC_LOCAL.INDEX_DATA.TSN] = m_GetDataFromDB.GetQueryTemplateSignals(Common.TEC.INDEX_DATA.TSN);
-            //TEC_LOCAL.s_strQueryTemplate[(int)TEC_LOCAL.INDEX_DATA.GRII] = m_GetDataFromDB.GetQueryTemplateSignals(Common.TEC.INDEX_DATA.GRII);
-            //TEC_LOCAL.s_strQueryTemplate[(int)TEC_LOCAL.INDEX_DATA.GRVI] = m_GetDataFromDB.GetQueryTemplateSignals(Common.TEC.INDEX_DATA.GRVI);
-            //TEC_LOCAL.s_strQueryTemplate[(int)TEC_LOCAL.INDEX_DATA.GRVII] = m_GetDataFromDB.GetQueryTemplateSignals(Common.TEC.INDEX_DATA.GRVII);
-
-
-            //TEC_LOCAL.s_strQueryTemplate = m_GetDataFromDB.GetQueryTemplateSignals();
-            //Инициализация строк с идентификаторами
-            foreach (TEC_LOCAL t in m_listTEC)
-            {
-                t.InitSensors();
-                strRes += @"Строка с идентификаторами для выборки значений сформирована: " + t.m_strNameShr + Environment.NewLine;
-            }
-
-            Logging.Logg().Action(strRes, Logging.INDEX_MESSAGE.NOT_SET);
-
-            return strRes;
+            return listRes;
         }
 
-    private enum INDEX_CONTROL : short { LB_TEC, LB_GROUP_SIGNAL }
+        private enum INDEX_CONTROL : short { LB_TEC, LB_GROUP_SIGNAL }
 
         private const string MS_EXCEL_FILTER = @"Книга MS Excel 2010 (*.xls, *.xlsx)|*.xls;*.xlsx";
         /// <summary>
@@ -1405,6 +1446,22 @@ namespace CommonAux
             }
         }
 
+        private int setFullPathTemplate(string strFullPathTemplate)
+        {
+            int iRes = 0; // исходное состояние - нет ошибки
+
+            iRes = validateTemplate(strFullPathTemplate);
+            if (iRes == 0)
+            {
+                // сохранить каталог с крайним прошедшим
+                FullPathTemplate =
+                    strFullPathTemplate;
+            }
+            else
+                ;
+            return iRes;
+        }
+
         /// <summary>
         /// Событие при назначении нового пути для шаблона MS Excel
         /// </summary>
@@ -1429,18 +1486,6 @@ namespace CommonAux
         private System.Windows.Forms.Label m_label_GRVI;
         private System.Windows.Forms.Label m_label_GRVII;
         private System.Windows.Forms.Label m_label_GRVIII;
-        private System.Windows.Forms.Label m_label_TG_sum;
-        private System.Windows.Forms.Label m_label_TSN_sum;
-        private System.Windows.Forms.Label m_label_GRII_sum;
-        private System.Windows.Forms.Label m_label_GRVI_sum;
-        private System.Windows.Forms.Label m_label_GRVII_sum;
-        private System.Windows.Forms.Label m_label_GRVIII_sum;
-        private System.Windows.Forms.Label m_label_TG_sum_value;
-        private System.Windows.Forms.Label m_label_TSN_sum_value;
-        private System.Windows.Forms.Label m_label_GRII_sum_value;
-        private System.Windows.Forms.Label m_label_GRVI_sum_value;
-        private System.Windows.Forms.Label m_label_GRVII_sum_value;
-        private System.Windows.Forms.Label m_label_GRVIII_sum_value;
         private DataGridViewValues m_dgvValues;
         private DataGridViewValues m_dgvValues_TG;
         private DataGridViewValues m_dgvValues_TSN;
@@ -1448,6 +1493,7 @@ namespace CommonAux
         private DataGridViewValues m_dgvValues_GRVI;
         private DataGridViewValues m_dgvValues_GRVII;
         private DataGridViewValues m_dgvValues_GRVIII;
+        private DataGridView m_sumValues;
 
         /// <summary>
         /// Требуется переменная конструктора
@@ -1492,19 +1538,7 @@ namespace CommonAux
             this.m_label_GRVII = new System.Windows.Forms.Label();
             this.m_label_GRVIII = new System.Windows.Forms.Label();
 
-            this.m_label_TG_sum = new System.Windows.Forms.Label();
-            this.m_label_TSN_sum = new System.Windows.Forms.Label();
-            this.m_label_GRII_sum = new System.Windows.Forms.Label();
-            this.m_label_GRVI_sum = new System.Windows.Forms.Label();
-            this.m_label_GRVII_sum = new System.Windows.Forms.Label();
-            this.m_label_GRVIII_sum = new System.Windows.Forms.Label();
-
-            this.m_label_TG_sum_value = new System.Windows.Forms.Label();
-            this.m_label_TSN_sum_value = new System.Windows.Forms.Label();
-            this.m_label_GRII_sum_value = new System.Windows.Forms.Label();
-            this.m_label_GRVI_sum_value = new System.Windows.Forms.Label();
-            this.m_label_GRVII_sum_value = new System.Windows.Forms.Label();
-            this.m_label_GRVIII_sum_value = new System.Windows.Forms.Label();
+            m_sumValues = new DataGridView();
 
             this.m_dgvValues = new DataGridViewValues();
             this.m_dgvValues_TG = new DataGridViewValues();
@@ -1521,54 +1555,43 @@ namespace CommonAux
             ((System.ComponentModel.ISupportInitialize)(this.m_dgvValues_GRVI)).BeginInit();
             ((System.ComponentModel.ISupportInitialize)(this.m_dgvValues_GRVII)).BeginInit();
             ((System.ComponentModel.ISupportInitialize)(this.m_dgvValues_GRVIII)).BeginInit();
+
+            ((System.ComponentModel.ISupportInitialize)(this.m_sumValues)).BeginInit();
+
             #endregion
 
             components = new System.ComponentModel.Container();
 
             this.SuspendLayout();
 
-            this.Controls.Add(m_btnLoad, 70, 45); this.SetColumnSpan(m_btnLoad, 10); this.SetRowSpan(m_btnLoad, 5);
-            this.Controls.Add(m_btnOpen, 80, 45); this.SetColumnSpan(m_btnOpen, 10); this.SetRowSpan(m_btnOpen, 5);
-            this.Controls.Add(m_btnExit, 70, 60); this.SetColumnSpan(m_btnExit, 10); this.SetRowSpan(m_btnExit, 5);
-            this.Controls.Add(m_btnStripButtonExcel, 80, 60); this.SetColumnSpan(m_btnStripButtonExcel, 10); this.SetRowSpan(m_btnStripButtonExcel, 5);
-            this.Controls.Add(m_monthCalendar, 60, 10); this.SetColumnSpan(m_monthCalendar, 15); this.SetRowSpan(m_monthCalendar, 15);
-            this.Controls.Add(monthCalendarEnd, 80, 10); this.SetColumnSpan(monthCalendarEnd, 15); this.SetRowSpan(monthCalendarEnd, 15);
-            this.Controls.Add(m_labelTEC, 70, 70); this.SetColumnSpan(m_labelTEC, 8); this.SetRowSpan(m_labelTEC, 2);
-            this.Controls.Add(m_labelGrpSgnl, 85, 70); this.SetColumnSpan(m_labelGrpSgnl, 8); this.SetRowSpan(m_labelGrpSgnl, 2);
-            this.Controls.Add(m_labelValues, 0, 0); this.SetColumnSpan(m_labelValues, 8); this.SetRowSpan(m_labelValues, 2);
-            this.Controls.Add(m_labelStartDate, 60, 5); this.SetColumnSpan(m_labelStartDate, 8); this.SetRowSpan(m_labelStartDate, 2);
-            this.Controls.Add(m_labelEndDate, 80, 5); this.SetColumnSpan(m_labelEndDate, 8); this.SetRowSpan(m_labelEndDate, 2);
-            this.Controls.Add(m_label_TG, 3, 15); this.SetColumnSpan(m_label_TG, 5); this.SetRowSpan(m_label_TG, 2);
-            this.Controls.Add(m_label_TG_sum, 70, 73); this.SetColumnSpan(m_label_TG_sum, 8); this.SetRowSpan(m_label_TG_sum, 2);
-            this.Controls.Add(m_label_TG_sum_value, 85, 73); this.SetColumnSpan(m_label_TG_sum_value, 8); this.SetRowSpan(m_label_TG_sum_value, 2);
-            this.Controls.Add(m_label_TSN, 3, 30); this.SetColumnSpan(m_label_TSN, 5); this.SetRowSpan(m_label_TSN, 2);
-            this.Controls.Add(m_label_TSN_sum, 70, 76); this.SetColumnSpan(m_label_TSN_sum, 8); this.SetRowSpan(m_label_TSN_sum, 2);
-            this.Controls.Add(m_label_TSN_sum_value, 85, 76); this.SetColumnSpan(m_label_TSN_sum_value, 8); this.SetRowSpan(m_label_TSN_sum_value, 2);
-            this.Controls.Add(m_label_GRII, 3, 45); this.SetColumnSpan(m_label_GRII, 5); this.SetRowSpan(m_label_GRII, 2);
-            this.Controls.Add(m_label_GRII_sum, 70, 79); this.SetColumnSpan(m_label_GRII_sum, 8); this.SetRowSpan(m_label_GRII_sum, 2);
-            this.Controls.Add(m_label_GRII_sum_value, 85, 79); this.SetColumnSpan(m_label_GRII_sum_value, 8); this.SetRowSpan(m_label_GRII_sum_value, 2);
-            this.Controls.Add(m_label_GRVI, 3, 60); this.SetColumnSpan(m_label_GRVI, 5); this.SetRowSpan(m_label_GRVI, 2);
-            this.Controls.Add(m_label_GRVI_sum, 70, 82); this.SetColumnSpan(m_label_GRVI_sum, 8); this.SetRowSpan(m_label_GRVI_sum, 2);
-            this.Controls.Add(m_label_GRVI_sum_value, 85, 82); this.SetColumnSpan(m_label_GRVI_sum_value, 8); this.SetRowSpan(m_label_GRVI_sum_value, 2);
-            this.Controls.Add(m_label_GRVII, 3, 75); this.SetColumnSpan(m_label_GRVII, 8); this.SetRowSpan(m_label_GRVII, 2);
-            this.Controls.Add(m_label_GRVII_sum, 70, 85); this.SetColumnSpan(m_label_GRVII_sum, 8); this.SetRowSpan(m_label_GRVII_sum, 2);
-            this.Controls.Add(m_label_GRVII_sum_value, 85, 85); this.SetColumnSpan(m_label_GRVII_sum_value, 8); this.SetRowSpan(m_label_GRVII_sum_value, 2);
-            this.Controls.Add(m_label_GRVIII, 3, 90); this.SetColumnSpan(m_label_GRVIII, 8); this.SetRowSpan(m_label_GRVIII, 2);
-            this.Controls.Add(m_label_GRVIII_sum, 70, 88); this.SetColumnSpan(m_label_GRVIII_sum, 8); this.SetRowSpan(m_label_GRVIII_sum, 2);
-            this.Controls.Add(m_label_GRVIII_sum_value, 85, 88); this.SetColumnSpan(m_label_GRVIII_sum_value, 8); this.SetRowSpan(m_label_GRVIII_sum_value, 2);
-            //this.Controls.Add(m_dgvValues, 7, 0); this.SetColumnSpan(m_dgvValues, 50); this.SetRowSpan(m_dgvValues, 1);
-            this.Controls.Add(m_dgvValues_TG, 7, 5); this.SetColumnSpan(m_dgvValues_TG, 50); this.SetRowSpan(m_dgvValues_TG, 15);
-            this.Controls.Add(m_dgvValues_TSN, 7, 20); this.SetColumnSpan(m_dgvValues_TSN, 50); this.SetRowSpan(m_dgvValues_TSN, 15);
-            this.Controls.Add(m_dgvValues_GRII, 7, 35); this.SetColumnSpan(m_dgvValues_GRII, 50); this.SetRowSpan(m_dgvValues_GRII, 15);
-            this.Controls.Add(m_dgvValues_GRVI, 7, 50); this.SetColumnSpan(m_dgvValues_GRVI, 50); this.SetRowSpan(m_dgvValues_GRVI, 15);
-            this.Controls.Add(m_dgvValues_GRVII, 7, 65); this.SetColumnSpan(m_dgvValues_GRVII, 50); this.SetRowSpan(m_dgvValues_GRVII, 15);
-            this.Controls.Add(m_dgvValues_GRVIII, 7, 80); this.SetColumnSpan(m_dgvValues_GRVIII, 50); this.SetRowSpan(m_dgvValues_GRVIII, 15);
+            this.Controls.Add(m_btnLoad, 81, 40); this.SetColumnSpan(m_btnLoad, 18); this.SetRowSpan(m_btnLoad, 5);
+            this.Controls.Add(m_btnOpen, 81, 45); this.SetColumnSpan(m_btnOpen, 18); this.SetRowSpan(m_btnOpen, 5);
+            this.Controls.Add(m_btnExit, 81, 94); this.SetColumnSpan(m_btnExit, 18); this.SetRowSpan(m_btnExit, 5);
+            this.Controls.Add(m_btnStripButtonExcel, 81, 50); this.SetColumnSpan(m_btnStripButtonExcel, 18); this.SetRowSpan(m_btnStripButtonExcel, 5);
+            this.Controls.Add(m_listBoxTEC, 61, 40); this.SetColumnSpan(m_listBoxTEC, 18); this.SetRowSpan(m_listBoxTEC, 20);
+            this.Controls.Add(m_monthCalendar, 60, 8); this.SetColumnSpan(m_monthCalendar, 15); this.SetRowSpan(m_monthCalendar, 15);
+            this.Controls.Add(monthCalendarEnd, 80, 8); this.SetColumnSpan(monthCalendarEnd, 15); this.SetRowSpan(monthCalendarEnd, 15);
+            this.Controls.Add(m_labelTEC, 62, 37); this.SetColumnSpan(m_labelTEC, 11); this.SetRowSpan(m_labelTEC, 2);
+            this.Controls.Add(m_labelValues, 8, 2); this.SetColumnSpan(m_labelValues, 30); this.SetRowSpan(m_labelValues, 2);
+            this.Controls.Add(m_labelStartDate, 65, 6); this.SetColumnSpan(m_labelStartDate, 8); this.SetRowSpan(m_labelStartDate, 2);
+            this.Controls.Add(m_labelEndDate, 85, 6); this.SetColumnSpan(m_labelEndDate, 8); this.SetRowSpan(m_labelEndDate, 2);
+            this.Controls.Add(m_label_TG, 2, 15); this.SetColumnSpan(m_label_TG, 5); this.SetRowSpan(m_label_TG, 2);
+            this.Controls.Add(m_label_TSN, 2, 30); this.SetColumnSpan(m_label_TSN, 5); this.SetRowSpan(m_label_TSN, 2);
+            this.Controls.Add(m_label_GRII, 2, 45); this.SetColumnSpan(m_label_GRII, 5); this.SetRowSpan(m_label_GRII, 2);
+            this.Controls.Add(m_label_GRVI, 2, 60); this.SetColumnSpan(m_label_GRVI, 5); this.SetRowSpan(m_label_GRVI, 2);
+            this.Controls.Add(m_label_GRVII, 2, 75); this.SetColumnSpan(m_label_GRVII, 6); this.SetRowSpan(m_label_GRVII, 2);
+            this.Controls.Add(m_label_GRVIII, 2, 90); this.SetColumnSpan(m_label_GRVIII, 6); this.SetRowSpan(m_label_GRVIII, 2);
+            this.Controls.Add(m_dgvValues_TG, 8, 5); this.SetColumnSpan(m_dgvValues_TG, 50); this.SetRowSpan(m_dgvValues_TG, 15);
+            this.Controls.Add(m_dgvValues_TSN, 8, 20); this.SetColumnSpan(m_dgvValues_TSN, 50); this.SetRowSpan(m_dgvValues_TSN, 15);
+            this.Controls.Add(m_dgvValues_GRII, 8, 35); this.SetColumnSpan(m_dgvValues_GRII, 50); this.SetRowSpan(m_dgvValues_GRII, 15);
+            this.Controls.Add(m_dgvValues_GRVI, 8, 50); this.SetColumnSpan(m_dgvValues_GRVI, 50); this.SetRowSpan(m_dgvValues_GRVI, 15);
+            this.Controls.Add(m_dgvValues_GRVII, 8, 65); this.SetColumnSpan(m_dgvValues_GRVII, 50); this.SetRowSpan(m_dgvValues_GRVII, 15);
+            this.Controls.Add(m_dgvValues_GRVIII, 8, 80); this.SetColumnSpan(m_dgvValues_GRVIII, 50); this.SetRowSpan(m_dgvValues_GRVIII, 15);
+            this.Controls.Add(m_sumValues, 61, 60); this.SetColumnSpan(m_sumValues, 38); this.SetRowSpan(m_sumValues, 35);
 
             this.ResumeLayout();
 
             initializeLayoutStyle();
-
-           
 
             #region Параметры элементов управления
             // 
@@ -1579,6 +1602,7 @@ namespace CommonAux
             this.m_btnLoad.Text = "Load";
             this.m_btnLoad.UseVisualStyleBackColor = true;
             this.m_btnLoad.Click += new System.EventHandler(this.btnLoad_Click);
+            this.m_btnLoad.Width = m_monthCalendar.Width;
             // 
             // m_btnOpen
             // 
@@ -1587,6 +1611,7 @@ namespace CommonAux
             this.m_btnOpen.Text = "Open";
             this.m_btnOpen.UseVisualStyleBackColor = true;
             this.m_btnOpen.Click += new System.EventHandler(this.btnOpen_Click);
+            this.m_btnOpen.Width = m_monthCalendar.Width;
             // 
             // m_btnExit
             // 
@@ -1595,6 +1620,8 @@ namespace CommonAux
             this.m_btnExit.Text = "Exit";
             this.m_btnExit.UseVisualStyleBackColor = true;
             this.m_btnExit.Click += new System.EventHandler(this.btnExit_Click);
+            this.m_btnExit.Width = m_monthCalendar.Width;
+            this.m_btnExit.Visible = false;
             // 
             // m_btnStripButtonExcel
             // 
@@ -1603,12 +1630,15 @@ namespace CommonAux
             this.m_btnStripButtonExcel.Text = "Export";
             this.m_btnStripButtonExcel.UseVisualStyleBackColor = true;
             this.m_btnStripButtonExcel.Click += new System.EventHandler(this.btnStripButtonExcel_Click);
+            this.m_btnStripButtonExcel.Enabled = false;
+            this.m_btnStripButtonExcel.Width = m_monthCalendar.Width;
             // 
             // m_listBoxTEC
             // 
             this.m_listBoxTEC.FormattingEnabled = true;
             this.m_listBoxTEC.Name = "m_listBoxTEC";
             this.m_listBoxTEC.TabIndex = 3;
+            this.m_listBoxTEC.Width = m_monthCalendar.Width;
             // 
             // m_listBoxGrpSgnl
             // 
@@ -1670,21 +1700,6 @@ namespace CommonAux
             this.m_label_TG.TabIndex = 5;
             this.m_label_TG.Text = "TG";
             // 
-            // m_label_TG_sum
-            // 
-            this.m_label_TG_sum.AutoSize = true;
-            this.m_label_TG_sum.Name = "m_label_TG_sum";
-            this.m_label_TG_sum.TabIndex = 5;
-            this.m_label_TG_sum.Text = "TG_sum";
-            // 
-            // m_label_TG_sum_value
-            // 
-            this.m_label_TG_sum_value.AutoSize = true;
-            this.m_label_TG_sum_value.Name = "m_label_TG_sum_value";
-            this.m_label_TG_sum_value.TabIndex = 5;
-            this.m_label_TG_sum_value.Text = "0";
-            this.m_label_TG_sum_value.BackColor = Color.White;
-            // 
             // m_label_TSN
             // 
             this.m_label_TSN.AutoSize = true;
@@ -1692,36 +1707,11 @@ namespace CommonAux
             this.m_label_TSN.TabIndex = 5;
             this.m_label_TSN.Text = "TSN";
             // 
-            // m_label_TSN_sum
-            // 
-            this.m_label_TSN_sum.AutoSize = true;
-            this.m_label_TSN_sum.Name = "m_label_TSN_sum";
-            this.m_label_TSN_sum.TabIndex = 5;
-            this.m_label_TSN_sum.Text = "TSN_sum";
-            // 
-            // m_label_TSN_sum_value
-            // 
-            this.m_label_TSN_sum_value.Name = "m_label_TSN_sum_value";
-            this.m_label_TSN_sum_value.TabIndex = 5;
-            this.m_label_TSN_sum_value.Text = "0";
-            // 
             // m_label_GRII
             // 
             this.m_label_GRII.Name = "m_label_GRII";
             this.m_label_GRII.TabIndex = 5;
             this.m_label_GRII.Text = "GRII";
-            // 
-            // m_label_GRII_sum
-            // 
-            this.m_label_GRII_sum.Name = "m_label_GRII_sum";
-            this.m_label_GRII_sum.TabIndex = 5;
-            this.m_label_GRII_sum.Text = "GRII_sum";
-            // 
-            // m_label_GRII_sum_value
-            // 
-            this.m_label_GRII_sum_value.Name = "m_label_GRII_sum_value";
-            this.m_label_GRII_sum_value.TabIndex = 5;
-            this.m_label_GRII_sum_value.Text = "0";
             // 
             // m_label_GRVI
             // 
@@ -1729,53 +1719,17 @@ namespace CommonAux
             this.m_label_GRVI.TabIndex = 5;
             this.m_label_GRVI.Text = "GRVI";
             // 
-            // m_label_GRVI_sum
-            // 
-            this.m_label_GRVI_sum.Name = "m_label_GRVI_sum";
-            this.m_label_GRVI_sum.TabIndex = 5;
-            this.m_label_GRVI_sum.Text = "GRVI_sum";
-            // 
-            // m_label_GRVI_sum_value
-            // 
-            this.m_label_GRVI_sum_value.Name = "m_label_GRVI_sum_value";
-            this.m_label_GRVI_sum_value.TabIndex = 5;
-            this.m_label_GRVI_sum_value.Text = "0";
-            // 
             // m_label_GRVII
             // 
             this.m_label_GRVII.Name = "m_label_GRVII";
             this.m_label_GRVII.TabIndex = 5;
             this.m_label_GRVII.Text = "GRVII";
             // 
-            // m_label_GRVII_sum
-            // 
-            this.m_label_GRVII_sum.Name = "m_label_GRVII_sum";
-            this.m_label_GRVII_sum.TabIndex = 5;
-            this.m_label_GRVII_sum.Text = "GRVII_sum";
-            // 
-            // m_label_GRVII_sum_value
-            // 
-            this.m_label_GRVII_sum_value.Name = "m_label_GRVII_sum_value";
-            this.m_label_GRVII_sum_value.TabIndex = 5;
-            this.m_label_GRVII_sum_value.Text = "0";
-            // 
             // m_label_GRVIII
             // 
             this.m_label_GRVIII.Name = "m_label_GRVIII";
             this.m_label_GRVIII.TabIndex = 5;
             this.m_label_GRVIII.Text = "GRVIII";
-            // 
-            // m_label_GRVIII_sum
-            // 
-            this.m_label_GRVIII_sum.Name = "m_label_GRVIII_sum";
-            this.m_label_GRVIII_sum.TabIndex = 5;
-            this.m_label_GRVIII_sum.Text = "GRVIII_sum";
-            // 
-            // m_label_GRVIII_sum_value
-            // 
-            this.m_label_GRVIII_sum_value.Name = "m_label_GRVIII_sum_value";
-            this.m_label_GRVIII_sum_value.TabIndex = 5;
-            this.m_label_GRVIII_sum_value.Text = "0";
             // 
             // m_dgvValues
             // 
@@ -1974,6 +1928,40 @@ namespace CommonAux
             this.m_dgvValues_GRVIII.RowTemplate.Resizable = System.Windows.Forms.DataGridViewTriState.False;
             this.m_dgvValues_GRVIII.SelectionMode = System.Windows.Forms.DataGridViewSelectionMode.FullRowSelect;
             this.m_dgvValues_GRVIII.TabIndex = 4;
+            // 
+            // m_sumValues
+            // 
+            this.m_sumValues.RowHeadersVisible = false;
+            this.m_sumValues.AllowUserToAddRows = false;
+            this.m_sumValues.AllowUserToDeleteRows = false;
+            this.m_sumValues.AllowUserToOrderColumns = true;
+            this.m_sumValues.AllowUserToResizeColumns = false;
+            this.m_sumValues.AllowUserToResizeRows = false;
+            this.m_sumValues.Anchor = ((System.Windows.Forms.AnchorStyles)((((System.Windows.Forms.AnchorStyles.Top | System.Windows.Forms.AnchorStyles.Bottom)
+            | System.Windows.Forms.AnchorStyles.Left)
+            | System.Windows.Forms.AnchorStyles.Right)));
+            this.m_sumValues.AutoSizeColumnsMode = System.Windows.Forms.DataGridViewAutoSizeColumnsMode.Fill;
+            this.m_sumValues.AutoSizeRowsMode = System.Windows.Forms.DataGridViewAutoSizeRowsMode.AllCells;
+            //this.m_sumValues.ColumnHeadersHeightSizeMode = System.Windows.Forms.DataGridViewColumnHeadersHeightSizeMode.AutoSize;
+            dataGridViewCellStyle2.Alignment = System.Windows.Forms.DataGridViewContentAlignment.MiddleRight;
+            dataGridViewCellStyle2.BackColor = System.Drawing.SystemColors.Window;
+            dataGridViewCellStyle2.Font = new System.Drawing.Font("Microsoft Sans Serif", 8.25F, System.Drawing.FontStyle.Regular, System.Drawing.GraphicsUnit.Point, ((byte)(204)));
+            dataGridViewCellStyle2.ForeColor = System.Drawing.SystemColors.ControlText;
+            dataGridViewCellStyle2.SelectionBackColor = System.Drawing.SystemColors.Highlight;
+            dataGridViewCellStyle2.SelectionForeColor = System.Drawing.SystemColors.HighlightText;
+            dataGridViewCellStyle2.WrapMode = System.Windows.Forms.DataGridViewTriState.False;
+            this.m_sumValues.DefaultCellStyle = dataGridViewCellStyle2;
+            this.m_sumValues.Name = "m_sumValues";
+            //this.m_sumValues.RowHeadersWidthSizeMode = System.Windows.Forms.DataGridViewRowHeadersWidthSizeMode.AutoSizeToAllHeaders;
+            this.m_sumValues.RowTemplate.ReadOnly = true;
+            this.m_sumValues.RowTemplate.Resizable = System.Windows.Forms.DataGridViewTriState.False;
+            this.m_sumValues.SelectionMode = System.Windows.Forms.DataGridViewSelectionMode.FullRowSelect;
+            this.m_sumValues.TabIndex = 4;
+            this.m_sumValues.ColumnCount = 2;
+            this.m_sumValues.ColumnHeadersVisible = false;
+
+
+
             #endregion
 
             m_listBoxTEC.Tag = INDEX_CONTROL.LB_TEC;
@@ -1982,8 +1970,6 @@ namespace CommonAux
             m_listBoxGrpSgnl.SelectedIndexChanged += listBox_SelectedIndexChanged;
             m_monthCalendar.DateChanged += monthCalendar_DateChanged;
             monthCalendarEnd.DateChanged += monthCalendarEnd_DateChanged;
-
-            setListTEC();
         }
 
         private void monthCalendarEnd_DateChanged(object sender, DateRangeEventArgs e)
@@ -2047,34 +2033,13 @@ namespace CommonAux
         {
             if ((INDEX_CONTROL)((Control)sender).Tag == INDEX_CONTROL.LB_TEC)
             {
-                if (m_listBoxGrpSgnl.SelectedIndex == 0)
-                    updateRowData();
-                else
-                    m_listBoxGrpSgnl.SelectedIndex = 0;
+                updateRowData();
             }
             else
                 if ((INDEX_CONTROL)((Control)sender).Tag == INDEX_CONTROL.LB_GROUP_SIGNAL)
                 updateRowData();
             else
                 ;
-        }
-
-        private int setFullPathTemplate(string strFullPathTemplate)
-        {
-            int iRes = 0; // исходное состояние - нет ошибки
-
-            iRes = validateTemplate(strFullPathTemplate);
-            if (iRes == 0)
-            {
-                // сохранить каталог с крайним прошедшим
-                //m_fileINI.FullPathTemplate =
-                //FullPathTemplate =
-                //    strFullPathTemplate;
-            }
-            else
-                ;
-        
-            return iRes;
         }
 
         /// <summary>
@@ -2085,11 +2050,7 @@ namespace CommonAux
         private void btnOpen_Click(object sender, EventArgs e)
         {
             bool date_tmp;
-            //DateTime date_tmp_2 = (DateTime)date_tmp;
-            //DateTime date_tmp_2 = date_tmp as DateTime;
             date_tmp = ((object)1 == (object)1);
-
-
 
             //Создать форму диалога выбора файла-шаблона MS Excel
             using (FileDialog formChoiсeTemplate = new OpenFileDialog())
@@ -2100,16 +2061,16 @@ namespace CommonAux
                 //labelLog.Text += @"Выбор шаблона: ";
 
                 //Установить исходные параметры для формы диалога
-                //if (m_fileINI.FullPathTemplate.Equals(string.Empty) == true)
-                //    m_fileINI.FullPathTemplate =
-                //        //Environment.GetFolderPath (Environment.SpecialFolder.MyDocuments)
-                //        m_arMSEXEL_PARS[(int)INDEX_MSEXCEL_PARS.TEMPLATE_PATH_DEFAULT]
-                //        + @"\"
-                //        + m_arMSEXEL_PARS[(int)INDEX_MSEXCEL_PARS.TEMPLATE_NAME]
-                //        ;
-                //else
-                //    ;
-                //formChoiсeTemplate.InitialDirectory = Path.GetDirectoryName(m_fileINI.FullPathTemplate);
+                if (FullPathTemplate.Equals(string.Empty) == true)
+                    FullPathTemplate =
+                        //Environment.GetFolderPath (Environment.SpecialFolder.MyDocuments)
+                        m_arMSEXEL_PARS[(int)INDEX_MSEXCEL_PARS.TEMPLATE_PATH_DEFAULT]
+                        + @"\"
+                        + m_arMSEXEL_PARS[(int)INDEX_MSEXCEL_PARS.TEMPLATE_NAME]
+                        ;
+                else
+                    ;
+                formChoiсeTemplate.InitialDirectory = Path.GetDirectoryName(FullPathTemplate);
                 formChoiсeTemplate.Title = @"Указать книгу MS Excel-шаблон";
                 formChoiсeTemplate.CheckPathExists =
                 formChoiсeTemplate.CheckFileExists =
@@ -2137,12 +2098,12 @@ namespace CommonAux
                             break;
                     }
                 else
-                    ;
+                {
+                    m_btnStripButtonExcel.Enabled = true;
+                };
 
                 //labelLog.Text += Environment.NewLine;
             }
-
-
         }
 
         private void btnLoad_Click(object sender, EventArgs e)
@@ -2163,7 +2124,7 @@ namespace CommonAux
             m_dgvValues_GRVII.ClearValues();
             m_dgvValues_GRVIII.ClearValues();
 
-            delegateStartWait();
+            //delegateStartWait();
 
             //Установить соединение с источником данных
             iListenerId = DbSources.Sources().Register(m_connSettAIISKUECentre, false, @"");
@@ -2179,8 +2140,6 @@ namespace CommonAux
                         indx++; break;
                     }
 
-                    //indx = (Common.TEC.INDEX_DATA)m_listBoxGrpSgnl.SelectedIndex;
-
                     tec.ClearValues(m_monthCalendar.SelectionStart.Date, indx);
 
                     iRes = tec.Request(iListenerId
@@ -2195,27 +2154,27 @@ namespace CommonAux
                         {
                             case TEC_LOCAL.INDEX_DATA.TG:
                                 m_dgvValues_TG.Update(dictIndxValues);
-                                m_label_TG_sum_value.Text = Convert.ToString(m_dgvValues_TG.Rows[m_dgvValues_TG.Rows.Count - 1].Cells[24].Value);
+                                m_sumValues.Rows[0].Cells[1].Value = Convert.ToString(m_dgvValues_TG.Rows[m_dgvValues_TG.Rows.Count - 1].Cells[24].Value);
                                 break;
                             case TEC_LOCAL.INDEX_DATA.TSN:
                                 m_dgvValues_TSN.Update(dictIndxValues);
-                                m_label_TSN_sum_value.Text = Convert.ToString(m_dgvValues_TSN.Rows[m_dgvValues_TSN.Rows.Count - 1].Cells[24].Value);
+                                m_sumValues.Rows[1].Cells[1].Value = Convert.ToString(m_dgvValues_TSN.Rows[m_dgvValues_TSN.Rows.Count - 1].Cells[24].Value);
                                 break;
                             case TEC_LOCAL.INDEX_DATA.GRII:
                                 m_dgvValues_GRII.Update(dictIndxValues);
-                                m_label_GRII_sum_value.Text = Convert.ToString(m_dgvValues_GRII.Rows[m_dgvValues_GRII.Rows.Count - 1].Cells[24].Value);
+                                m_sumValues.Rows[2].Cells[1].Value = Convert.ToString(m_dgvValues_GRII.Rows[m_dgvValues_GRII.Rows.Count - 1].Cells[24].Value);
                                 break;
                             case TEC_LOCAL.INDEX_DATA.GRVI:
                                 m_dgvValues_GRVI.Update(dictIndxValues);
-                                m_label_GRVI_sum_value.Text = Convert.ToString(m_dgvValues_GRVI.Rows[m_dgvValues_GRVI.Rows.Count - 1].Cells[24].Value);
+                                m_sumValues.Rows[3].Cells[1].Value = Convert.ToString(m_dgvValues_GRVI.Rows[m_dgvValues_GRVI.Rows.Count - 1].Cells[24].Value);
                                 break;
                             case TEC_LOCAL.INDEX_DATA.GRVII:
                                 m_dgvValues_GRVII.Update(dictIndxValues);
-                                m_label_GRVII_sum_value.Text = Convert.ToString(m_dgvValues_GRVII.Rows[m_dgvValues_GRVII.Rows.Count - 1].Cells[24].Value);
+                                m_sumValues.Rows[4].Cells[1].Value = Convert.ToString(m_dgvValues_GRVII.Rows[m_dgvValues_GRVII.Rows.Count - 1].Cells[24].Value);
                                 break;
                             case TEC_LOCAL.INDEX_DATA.GRVIII:
                                 m_dgvValues_GRVIII.Update(dictIndxValues);
-                                m_label_GRVIII_sum_value.Text = Convert.ToString(m_dgvValues_GRVIII.Rows[m_dgvValues_GRVIII.Rows.Count - 1].Cells[24].Value);
+                                m_sumValues.Rows[5].Cells[1].Value = Convert.ToString(m_dgvValues_GRVIII.Rows[m_dgvValues_GRVIII.Rows.Count - 1].Cells[24].Value);
                                 break;
                         }
 
@@ -2241,11 +2200,11 @@ namespace CommonAux
             }
             else
             {
-                delegateStopWait();
+                //delegateStopWait();
                 throw new Exception(@"FormMain::btnLoad_Click () - не установлено соединение с источником данных...");
             }
 
-            delegateStopWait();
+            //delegateStopWait();
 
             //Разорвать соединение с источником данных
             DbSources.Sources().UnRegister(iListenerId);
@@ -2255,7 +2214,7 @@ namespace CommonAux
 
         private void btnExit_Click(object sender, EventArgs e)
         {
-            //Close();
+            this.FindForm().Close();
         }
 
         /// <summary>
@@ -2277,7 +2236,7 @@ namespace CommonAux
             else
             { }
 
-            delegateStartWait();
+            //delegateStartWait();
 
             //Установить соединение с источником данных
             iListenerId = DbSources.Sources().Register(m_connSettAIISKUECentre, false, @"");
@@ -2306,11 +2265,11 @@ namespace CommonAux
             }
             else
             {
-                delegateStopWait();
+                //delegateStopWait();
                 throw new Exception(@"FormMain::экспортВMSExcelToolStripMenuItem_Click () - не установлено соединение с источником данных...");
             }
 
-            delegateStopWait();
+            //delegateStopWait();
 
             //Разорвать соединение с источником данных
             DbSources.Sources().UnRegister(iListenerId);
@@ -2330,7 +2289,7 @@ namespace CommonAux
                 //Отобразить диалог для выбора книги MS Excel для сохранения рез-та
                 if (formChoiseResult.ShowDialog() == System.Windows.Forms.DialogResult.OK)
                 {
-                    delegateStartWait();
+                    //delegateStartWait();
 
                     if (File.Exists(formChoiseResult.FileName) == false)
                         File.Copy(FullPathTemplate, formChoiseResult.FileName);
@@ -2370,16 +2329,16 @@ namespace CommonAux
                                             ;
 
                                         //Сохранить набор значений на листе книги MS Excel
-                                        //excel.WriteValues(t.m_arMSExcelNumColumns[(int)FileINI.INDEX_MSEXCEL_COLUMN.APOWER]
-                                        //    , iRowStart
-                                        //    , valsDate.m_dictData[TEC_LOCAL.INDEX_DATA.TG].m_summaHours);
+                                        excel.WriteValues(t.m_arMSExcelNumColumns[(int)GetDataFromDB.INDEX_MSEXCEL_COLUMN.APOWER]
+                                            , iRowStart
+                                            , valsDate.m_dictData[TEC_LOCAL.INDEX_DATA.TG].m_summaHours);
                                         // получить набор значений для записи в соответствии с вариантом расчета
                                         arWriteValues = valsDate.GetValues(out iErr);
-                                        if (iErr == 0) ;
-                                        //Сохранить набор значений на листе книги MS Excel
-                                        //excel.WriteValues(t.m_arMSExcelNumColumns[(int)FileINI.INDEX_MSEXCEL_COLUMN.SNUZHDY]
-                                        //    , iRowStart
-                                        //    , arWriteValues);
+                                        if (iErr == 0)
+                                            //Сохранить набор значений на листе книги MS Excel
+                                            excel.WriteValues(t.m_arMSExcelNumColumns[(int)GetDataFromDB.INDEX_MSEXCEL_COLUMN.SNUZHDY]
+                                                , iRowStart
+                                                , arWriteValues);
                                         else
                                             Logging.Logg().Error(string.Format(@"FormMain::экспортВMSExcelToolStripMenuItem_Click () - TEC.ИД={0}, дата={1}, отсутствуют необходимые для расчета группы..."
                                                     , t.m_Id, valsDate.m_dataDate)
@@ -2396,29 +2355,6 @@ namespace CommonAux
                             else
                                 ;
 
-                        //List<TEC.VALUES_DATE> listData;
-
-                        //listWriteDates.Clear();
-
-                        //foreach (TEC t in m_listTEC) {
-                        //    listData = t.GetValues();
-
-                        //    foreach (TEC.VALUES_DATE valsDate in listData) {
-                        //        //Опредеоить начальную строку по дате набора значений
-                        //        iRowStart = iRowStartMSExcel + (valsDate.dataDate.Day - 1) * iRowCountDateMSExcel;
-
-                        //        if (listWriteDates.IndexOf(valsDate.dataDate) < 0) {
-                        //            listWriteDates.Add(valsDate.dataDate);
-
-                        //            excel.WriteDate(iColDataDate, iRowStart, valsDate.dataDate);
-                        //        } else
-                        //            ;
-
-                        //        //Сохранить набор значений на листе книги MS Excel
-                        //        excel.WriteValues(t.m_arMSExcelNumColumns[(int)TEC.INDEX_DATA.TSN], iRowStart, valsDate.data);
-                        //    }
-                        //}
-
                         excel.SaveExcel(formChoiseResult.FileName);
 
                         //Закрыть книгу MS Excel
@@ -2431,7 +2367,7 @@ namespace CommonAux
                     else
                         ;
 
-                    delegateStopWait();
+                    //delegateStopWait();
                 }
                 else
                 {
@@ -2512,23 +2448,6 @@ namespace CommonAux
                 ;
 
             return iRes;
-        }
-
-        private void FormMain_Load(object sender, EventArgs e)
-        {
-            m_listBoxTEC.SelectedIndex = 0;
-
-            m_labelEndDate.Text = monthCalendarEnd.SelectionStart.ToShortDateString();
-            m_labelStartDate.Text = m_monthCalendar.SelectionStart.ToShortDateString();
-
-            //string[] arMSExcelPars = m_fileINI.GetSecValueOfKey(FileINI.SEC_CONFIG, @"MSEXCEL").Split(FileINI.s_chSecDelimeters[(int)FileINI.INDEX_DELIMETER.PAIR_VAL]);
-            if (false /*arMSExcelPars.Length == m_arMSEXEL_PARS.Length*/)
-            {
-                //for (int i = (int)INDEX_MSEXCEL_PARS.TEMPLATE_PATH_DEFAULT; i < (int)INDEX_MSEXCEL_PARS.COUNT; i++)
-                //    m_arMSEXEL_PARS[i] = arMSExcelPars[i];
-            }
-            else
-                throw new Exception(@"FormMain::FormMain_Load () - параметры для шаблона-книги MS Excel в файле конфигурации...");
         }
     }
 }

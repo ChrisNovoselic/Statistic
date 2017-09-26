@@ -462,6 +462,7 @@ namespace StatisticCommon
         public enum ADDING_PARAM_KEY : short { PREFIX_MODES_TERMINAL
             , PREFIX_VZLETDATA
             , PATH_RDG_EXCEL
+            , COLUMN_TSN_EXCEL
             //, TEMPLATE_NAME_SGN_DATA_TM
             //, TEMPLATE_NAME_SGN_DATA_FACT
         }

@@ -41,7 +41,8 @@ namespace CommonAux
             Thread.CurrentThread.CurrentUICulture =
                 ProgramBase.ss_MainCultureInfo;
 
-            m_panel = new PanelCommonAux(idListener);
+            m_panel = new PanelCommonAux(1);
+            
             m_panel.GetListTEC(tec);
 
             if (!(m_panel == null))
