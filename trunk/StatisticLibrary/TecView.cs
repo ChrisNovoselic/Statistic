@@ -873,7 +873,7 @@ namespace StatisticCommon
 
                     if ((!(table.Rows[i]["ID_SOURCE"] is DBNull))
                         && (table.Rows[i]["ID_SOURCE"].GetType () == typeof(int)))
-                        id_tm = (int)table.Rows[i]["ID_SOURCE"];                        
+                        id_tm = (int)table.Rows[i]["ID_SOURCE"];
                     else
                         id_tm = -1;
 
@@ -915,7 +915,7 @@ namespace StatisticCommon
                             m_dictValuesLowPointDev[tgTmp.m_id].m_dtCurrent_TM = HDateTime.ToMoscowTimeZone(dtLastChangedAt);
 
                             //if (!(value < 1))
-                            //    // больше ИЛИ = 1                                
+                            //    // больше ИЛИ = 1
                             //    ;
                             //else ; // меньше 1
 
