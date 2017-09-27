@@ -307,16 +307,14 @@ namespace StatisticCommon
                             ;
 
                         if (!(igo == null)) {
-                            result = true;
-
-                            try
-                            {
+                            try {
                                 listPVI = m_MCApi.GetPlanValuesActual(date.LocalHqToSystemEx(), date.AddDays(1).LocalHqToSystemEx(), igo);
-                            }
-                            catch (Exception e)
-                            {
-                                Logging.Logg().Exception(e, @"DbMCInterface::GetData () - GetPlanValuesActual () ...", Logging.INDEX_MESSAGE.NOT_SET);
-                                Console.WriteLine(string.Format("{0}ОШИБКА получения значений!", "\t"));
+
+                                result = true;
+                            } catch (Exception e) {
+                                Logging.Logg().Exception(e, string.Format(@"DbMCInterface::GetData () - GetPlanValuesActual () - получение значений для '{0}', [IdInner={1}]..."
+                                        , igo.Description, igo.IdInner)
+                                    , Logging.INDEX_MESSAGE.NOT_SET);
 
                                 needReconnect = true;
 
@@ -325,7 +323,9 @@ namespace StatisticCommon
 
                             if (result == true)
                                 if (listPVI.Count == 0)
-                                    Console.WriteLine(string.Format("{0}Нет параметров генерации!", "\t"));
+                                    Logging.Logg ().Warning(string.Format("DbMCInterface::GetData () - GetPlanValuesActual () - нет параметров генерации для '{0}', [ID={1}]..."
+                                            , igo.Description, igo.IdInner)
+                                        , Logging.INDEX_MESSAGE.NOT_SET);
                                 else
                                     ;
                             else
