@@ -88,94 +88,113 @@ namespace StatisticAlarm
         /// Инициализация собственных параметров
         /// </summary>
         /// <param name="mode">Режим работы панели</param>
-        private void initialize(int iListenerConfigDB, HMark markQueries, MODE mode)
+        private int initialize(int iListenerConfigDB, HMark markQueries, MODE mode)
         {
+            int err = -1 //Признак выполнения метода/функции
+                         ////Зарегистрировать соединение/получить идентификатор соединения
+                         //, iListenerId = DbSources.Sources().Register(FormMain.s_listFormConnectionSettings[(int)CONN_SETT_TYPE.CONFIG_DB].getConnSett(), false, @"CONFIG_DB")
+                ;
+            bool bWorkChecked = false;
+            ConnectionSettings connSett;
+
             //Инициализация визуальных компонентов
             InitializeComponent();
 
-            int err = -1 //Признак выполнения метода/функции
-                ////Зарегистрировать соединение/получить идентификатор соединения
-                //, iListenerId = DbSources.Sources().Register(FormMain.s_listFormConnectionSettings[(int)CONN_SETT_TYPE.CONFIG_DB].getConnSett(), false, @"CONFIG_DB")
+            try {
+                bWorkChecked = (HStatisticUsers.IsAllowed((int)HStatisticUsers.ID_ALLOWED.AUTO_ALARM_KOMDISP)
+                    || (mode == MODE.SERVICE)) && (! (mode == MODE.VIEW));
+                //Инициализация списка с ТЭЦ
+                m_list_tec = new InitTEC_200(iListenerConfigDB, true, new int[] { 0, (int)TECComponent.ID.LK }, false).tec;
+                //Инициализация
+                connSett = new ConnectionSettings(InitTECBase.getConnSettingsOfIdSource(iListenerConfigDB
+                        , FormMainBase.s_iMainSourceData
+                        , -1
+                        , out err).Rows[0]
+                    , -1);
+
+                initAdminAlarm(connSett
+                    , mode
+                    , markQueries
+                    , bWorkChecked);
+            } catch (Exception e) {
+                Logging.Logg().Exception(e, string.Format("PanelAlarm::initialize () - отсутствуют строки в результате запроса необходимых значений параметров соединения с БД...")
+                    , Logging.INDEX_MESSAGE.NOT_SET);
+            }
+            
+            if (!(err < 0)) {
+                //Назначить делегаты при изменении:
+                // даты, часов начала, окончания для запроса списка событий
+                delegateDatetimeChanged = new AdminAlarm.DatetimeCurrentEventHandler(m_adminAlarm.OnEventDatetimeChanged);
+                // признака вкл./выкл.
+                delegateWorkCheckedChanged = new DelegateBoolFunc(m_adminAlarm.OnWorkCheckedChanged);
+
+                Control ctrl = null;
+                int indx = -1;
+                //Заполнить списки
+                m_listIdTECComponents = new List<int>();
+                ctrl = Find(INDEX_CONTROL.CLB_TECCOMPONENT);
+                (ctrl as CheckedListBox).Items.Add(@"Все компоненты", true);
+                foreach (TEC tec in m_list_tec)
+                    foreach (TECComponent comp in tec.list_TECComponents)
+                        if (comp.IsGTP == true)
+                        {
+                            indx = (ctrl as CheckedListBox).Items.Add(tec.name_shr + @" - " + comp.name_shr, true);
+                            m_listIdTECComponents.Add(comp.m_id);
+                        }
+                        else
+                            ;
+                //Назначить обработчик для события - изменение состояния переключателя элемента в списке компонентов ТЭЦ
+                (ctrl as CheckedListBox).ItemCheck += new ItemCheckEventHandler(fTECComponent_OnItemCheck);
+                //Назначить обработчик для события - выбор элемента в списке компонентов ТЭЦ
+                (ctrl as CheckedListBox).SelectedIndexChanged += new EventHandler(fTECComponent_OnSelectedIndexChanged);
+                //Выбрать 1-ый элемент ("Все компоненты")
+                (ctrl as CheckedListBox).SelectedIndex = 0;
+                (ctrl as CheckedListBox).Enabled = true; //mode == MODE.ADMIN
+                //Запустить на выполнениие (при необходимости) таймер для обновления значений в таблице
+                ctrl = Find(INDEX_CONTROL.CBX_WORK) as CheckBox;
+                (ctrl as CheckBox).Checked = bWorkChecked;
+                (ctrl as CheckBox).Enabled = ! (mode == MODE.VIEW);
+                //Назначить обработчик события изменение даты
+                (Find(INDEX_CONTROL.MCLDR_CURRENT) as MonthCalendar).DateChanged += new DateRangeEventHandler(onEventDateChanged);
+                //Назначить обработчик событий при изменении признака "Включено/отключено"
+                (ctrl as CheckBox).CheckedChanged += new EventHandler(cbxWork_OnCheckedChanged);            
+                //Установить доступность элементов управления по изменению коэффициентов ГТП (вычисление пороговых значений при проверке выполнения условий сигнализации "Тек./мощность ГТП")
+                (Find(INDEX_CONTROL.NUD_HOUR_BEGIN) as NumericUpDown).Enabled =
+                (Find(INDEX_CONTROL.NUD_HOUR_END) as NumericUpDown).Enabled =
+                     false; //mode == MODE.ADMIN;
+                ctrl = Find (INDEX_CONTROL.DGV_EVENTS);
+                //Установить фильтр отображения - идентификаторы компонентов
+                (ctrl as DataGridViewAlarmJournal).SetFilter (INDEX_FILTER.ID, getListIdCheckedIndices ());
+                //Назначить обработчик события при получении из БД списка событий (передать список для отображения)
+                m_adminAlarm.EvtGetDataMain += new DelegateObjectFunc((ctrl as DataGridViewAlarmJournal).OnEvtGetData);            
+                eventFilter += new DelegateObjectFunc((ctrl as DataGridViewAlarmJournal).OnEventFilter);            
+                (ctrl as DataGridViewAlarmJournal).EventConfirmed += new DelegateObjectFunc(OnEventConfirm);
+                (ctrl as DataGridViewAlarmJournal).EventFixed += new DelegateObjectFunc(OnEventFixed); // только в режиме 'SERVICE'
+                (ctrl as DataGridViewAlarmJournal).EventSelected += new DelegateObjectFunc (dgvJournal_OnSelectionChanged);
+
+                ////Назначить обработчика для события - очистить таблицу по требованию (при отсутствии строк в основной таблице)
+                //(ctrl as DataGridViewAlarmJournal).EventClearDetail += new DelegateFunc((Find (INDEX_CONTROL.DGV_DETAIL) as DataGridViewAlarmDetail).OnEventClear);
+
+                ctrl = Find(INDEX_CONTROL.DGV_DETAIL);
+                //Установить фильтр отображения - идентификаторы компонентов
+                (ctrl as DataGridViewAlarmDetail).SetFilter(INDEX_FILTER.ID, getListIdCheckedIndices());
+                m_adminAlarm.EvtGetDataDetail += new DelegateObjectFunc((ctrl as DataGridViewAlarmDetail).OnEvtGetData);
+                eventFilter += new DelegateObjectFunc((ctrl as DataGridViewAlarmDetail).OnEventFilter);
+
+                //Старт в любом режиме с учетом '(ctrl as CheckBox).Checked'
+                // SERVICE - БД_значений-ДА, таймер-ДА/НЕТ, оповещение (список)-ДА/НЕТ, оповещение (сигнализация)-НЕТ
+                // ADMIN - БД_значений-ДА, таймер-ДА/НЕТ, оповещение (список)-ДА/НЕТ, оповещение (сигнализация)-ДА/НЕТ
+                // VIEW - БД_значений-ДА, таймер-ДА/НЕТ, оповещение (список)-ДА/НЕТ, оповещение (сигнализация)-НЕТ
+                startAdminAlarm();
+            } else
                 ;
-            bool bWorkChecked = (HStatisticUsers.IsAllowed((int)HStatisticUsers.ID_ALLOWED.AUTO_ALARM_KOMDISP)
-                || (mode == MODE.SERVICE)) && (! (mode == MODE.VIEW));
-            //Инициализация списка с ТЭЦ
-            m_list_tec = new InitTEC_200(iListenerConfigDB, true, new int[] { 0, (int)TECComponent.ID.LK }, false).tec;
-            //Инициализация
-            ConnectionSettings connSett = new ConnectionSettings(InitTECBase.getConnSettingsOfIdSource(iListenerConfigDB
-                    , FormMainBase.s_iMainSourceData
-                    , -1
-                    , out err).Rows[0], -1);
-            initAdminAlarm(connSett
-                , mode
-                , markQueries
-                , bWorkChecked); 
-            ////Отменить регистрацию соединения
-            //DbSources.Sources().UnRegister(iListenerId);
-            //Назначить делегаты при изменении:
-            // даты, часов начала, окончания для запроса списка событий
-            delegateDatetimeChanged = new AdminAlarm.DatetimeCurrentEventHandler(m_adminAlarm.OnEventDatetimeChanged);
-            // признака вкл./выкл.
-            delegateWorkCheckedChanged = new DelegateBoolFunc(m_adminAlarm.OnWorkCheckedChanged);
 
-            Control ctrl = null;
-            int indx = -1;
-            //Заполнить списки             
-            m_listIdTECComponents = new List<int>();
-            ctrl = Find(INDEX_CONTROL.CLB_TECCOMPONENT);
-            (ctrl as CheckedListBox).Items.Add(@"Все компоненты", true);
-            foreach (TEC tec in m_list_tec)
-                foreach (TECComponent comp in tec.list_TECComponents)
-                    if (comp.IsGTP == true)
-                    {
-                        indx = (ctrl as CheckedListBox).Items.Add(tec.name_shr + @" - " + comp.name_shr, true);
-                        m_listIdTECComponents.Add(comp.m_id);
-                    }
-                    else
-                        ;
-            //Назначить обработчик для события - изменение состояния переключателя элемента в списке компонентов ТЭЦ
-            (ctrl as CheckedListBox).ItemCheck += new ItemCheckEventHandler(fTECComponent_OnItemCheck);
-            //Назначить обработчик для события - выбор элемента в списке компонентов ТЭЦ
-            (ctrl as CheckedListBox).SelectedIndexChanged += new EventHandler(fTECComponent_OnSelectedIndexChanged);
-            //Выбрать 1-ый элемент ("Все компоненты")
-            (ctrl as CheckedListBox).SelectedIndex = 0;
-            (ctrl as CheckedListBox).Enabled = true; //mode == MODE.ADMIN
-            //Запустить на выполнениие (при необходимости) таймер для обновления значений в таблице
-            ctrl = Find(INDEX_CONTROL.CBX_WORK) as CheckBox;
-            (ctrl as CheckBox).Checked = bWorkChecked;
-            (ctrl as CheckBox).Enabled = ! (mode == MODE.VIEW);
-            //Назначить обработчик события изменение даты
-            (Find(INDEX_CONTROL.MCLDR_CURRENT) as MonthCalendar).DateChanged += new DateRangeEventHandler(onEventDateChanged);
-            //Назначить обработчик событий при изменении признака "Включено/отключено"
-            (ctrl as CheckBox).CheckedChanged += new EventHandler(cbxWork_OnCheckedChanged);            
-            //Установить доступность элементов управления по изменению коэффициентов ГТП (вычисление пороговых значений при проверке выполнения условий сигнализации "Тек./мощность ГТП")
-            (Find(INDEX_CONTROL.NUD_HOUR_BEGIN) as NumericUpDown).Enabled =
-            (Find(INDEX_CONTROL.NUD_HOUR_END) as NumericUpDown).Enabled =
-                 false; //mode == MODE.ADMIN;
-            ctrl = Find (INDEX_CONTROL.DGV_EVENTS);
-            //Установить фильтр отображения - идентификаторы компонентов
-            (ctrl as DataGridViewAlarmJournal).SetFilter (INDEX_FILTER.ID, getListIdCheckedIndices ());
-            //Назначить обработчик события при получении из БД списка событий (передать список для отображения)
-            m_adminAlarm.EvtGetDataMain += new DelegateObjectFunc((ctrl as DataGridViewAlarmJournal).OnEvtGetData);            
-            eventFilter += new DelegateObjectFunc((ctrl as DataGridViewAlarmJournal).OnEventFilter);            
-            (ctrl as DataGridViewAlarmJournal).EventConfirmed += new DelegateObjectFunc(OnEventConfirm);
-            (ctrl as DataGridViewAlarmJournal).EventFixed += new DelegateObjectFunc(OnEventFixed); // только в режиме 'SERVICE'
-            (ctrl as DataGridViewAlarmJournal).EventSelected += new DelegateObjectFunc (dgvJournal_OnSelectionChanged);
+            if (err < 0)
+                throw new Exception("PanelAlarm::initialize () - объект не был создан...");
+            else
+                ;
 
-            ////Назначить обработчика для события - очистить таблицу по требованию (при отсутствии строк в основной таблице)
-            //(ctrl as DataGridViewAlarmJournal).EventClearDetail += new DelegateFunc((Find (INDEX_CONTROL.DGV_DETAIL) as DataGridViewAlarmDetail).OnEventClear);
-
-            ctrl = Find(INDEX_CONTROL.DGV_DETAIL);
-            //Установить фильтр отображения - идентификаторы компонентов
-            (ctrl as DataGridViewAlarmDetail).SetFilter(INDEX_FILTER.ID, getListIdCheckedIndices());
-            m_adminAlarm.EvtGetDataDetail += new DelegateObjectFunc((ctrl as DataGridViewAlarmDetail).OnEvtGetData);
-            eventFilter += new DelegateObjectFunc((ctrl as DataGridViewAlarmDetail).OnEventFilter);
-
-            //Старт в любом режиме с учетом '(ctrl as CheckBox).Checked'
-            // SERVICE - БД_значений-ДА, таймер-ДА/НЕТ, оповещение (список)-ДА/НЕТ, оповещение (сигнализация)-НЕТ
-            // ADMIN - БД_значений-ДА, таймер-ДА/НЕТ, оповещение (список)-ДА/НЕТ, оповещение (сигнализация)-ДА/НЕТ
-            // VIEW - БД_значений-ДА, таймер-ДА/НЕТ, оповещение (список)-ДА/НЕТ, оповещение (сигнализация)-НЕТ
-            startAdminAlarm();
+            return err;
         }
         /// <summary>
         /// Запустить на выполнение 

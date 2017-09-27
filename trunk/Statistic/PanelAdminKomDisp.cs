@@ -210,15 +210,23 @@ namespace Statistic
 
         private void doExportPBRValues ()
         {
+            DateTime date; // дата для экспорта значений 
+
             // по завершению операции эксопрта требуется восстановить режим в исходный(DISPLAY - по умолчанию)
             modeGetRDGValues = MODE_GET_RDG_VALUES.EXPORT;
 
             (m_admin as AdminTS_KomDisp).PrepareExportRDGValues (m_listTECComponentIndex);
 
-            if (m_listTECComponentIndex.Count > 0)
-                m_admin.GetRDGValues (m_listTECComponentIndex [0], mcldrDate.SelectionStart.Date);
-            else
-                ;
+            if (m_listTECComponentIndex.Count > 0) {
+                date = Admin.DateDoExportPBRValues;
+
+                if (date.Equals(DateTime.MinValue) == false)
+                    m_admin.GetRDGValues(m_listTECComponentIndex[0], date);
+                else
+                    ;
+            } else
+                Logging.Logg().Error(string.Format("PanelAdin_KomDisp::doExportPBRValues () - не найдено ГТП для экспорта..."), Logging.INDEX_MESSAGE.NOT_SET);
+            ;
         }
 
         private void btnExport_PBRValues_Click(object sender, EventArgs e)
@@ -397,7 +405,7 @@ namespace Statistic
                     if (nextIndx < 0)
                         Invoke(new Action(btnRefresh.PerformClick));
                     else
-                        Admin.GetRDGValues(nextIndx, mcldrDate.SelectionStart.Date);
+                        Admin.GetRDGValues(nextIndx, date);
                     break;
                 default:
                     break;   

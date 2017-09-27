@@ -620,6 +620,27 @@ namespace StatisticCommon
         /// </summary>
         List<int> _lisTECComponentIndex;
 
+        /// <summary>
+        /// Дата для экспорта ТОЛЬКО в режиме 'AUTO'
+        /// </summary>
+        public DateTime DateDoExportPBRValues
+        {
+            get
+            {
+                DateTime datetimeRes
+                , datetimeMsc;
+
+                if (_msExcelIOExportPBRValues.Mode == MODE_EXPORT_PBRVALUES.AUTO) {
+                    datetimeMsc = HDateTime.ToMoscowTimeZone();
+                    datetimeRes = datetimeMsc.Hour < 23 ? datetimeMsc.Date : datetimeMsc.Date.AddDays(1);
+                } else
+                // признак оставить полученную в аргументе (указанную в календаре на вкладке)
+                    datetimeRes = DateTime.MinValue;
+
+                return datetimeRes;
+            }
+        }
+
         public void PrepareExportRDGValues(List<int> listIndex)
         {
             if (_lisTECComponentIndex == null)
@@ -644,27 +665,18 @@ namespace StatisticCommon
         public int AddValueToExportRDGValues(RDGStruct[]compValues, DateTime date)
         {
             int iRes = -1;
-            DateTime datetimeExportPBR
-                , datetimeMsc;
 
-            if (_msExcelIOExportPBRValues.Mode == MODE_EXPORT_PBRVALUES.AUTO) {
-                datetimeMsc = HDateTime.ToMoscowTimeZone ();
-                datetimeExportPBR = datetimeMsc.Hour < 23 ? datetimeMsc.Date : datetimeMsc.Date.AddDays (1);
-            } else
-                // оставить полученную в аргументе (указанную в календаре на вкладке)
-                datetimeExportPBR = date.Date;
-
-            if ((datetimeExportPBR - DateTime.MinValue.Date).Days > 0) {
+            if ((date - DateTime.MinValue.Date).Days > 0) {
                 if ((_lisTECComponentIndex.Count > 0)
                     && (!(indxTECComponents < 0))
                     && (!(_lisTECComponentIndex[0] < 0))) {
                     if (indxTECComponents - _lisTECComponentIndex[0] == 0) {
                         Logging.Logg().Debug(string.Format("AdminTS_KomDisp::AddValueToExportRDGValues () - получены значения для [ID={0}, Index={1}, за дату={2}, кол-во={3}] компонента..."
-                                , allTECComponents[_lisTECComponentIndex[0]].m_id, _lisTECComponentIndex[0], _lisTECComponentIndex[0], datetimeExportPBR, compValues.Length)
+                                , allTECComponents[_lisTECComponentIndex[0]].m_id, _lisTECComponentIndex[0], _lisTECComponentIndex[0], date, compValues.Length)
                             , Logging.INDEX_MESSAGE.NOT_SET);
 
                         if ((_msExcelIOExportPBRValues.AddTECComponent(allTECComponents[indxTECComponents]) == 0)
-                            && (_msExcelIOExportPBRValues.SetDate(datetimeExportPBR) == true)) {
+                            && (_msExcelIOExportPBRValues.SetDate(date) == true)) {
                             _lisTECComponentIndex.Remove(indxTECComponents); // дубликатов быть не должно (см. добавление элементов)
 
                             //Console.WriteLine(@"AdminTS_KomDisp::AddValueToExportRDGValues () - обработка элемента=[{0}], остатолось элементов={1}", indxTECComponents, _lisTECComponentIndex.Count);
