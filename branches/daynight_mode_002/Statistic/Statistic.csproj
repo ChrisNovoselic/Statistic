@@ -181,13 +181,13 @@
     <Compile Include="PanelQuickData.cs">
       <SubType>Component</SubType>
     </Compile>
-    <Compile Include="PanelSOTIASSO.cs">
-      <SubType>Component</SubType>
-    </Compile>
     <Compile Include="PanelSOTIASSODay\HandlerDbSignalValue.cs">
       <SubType>Component</SubType>
     </Compile>
     <Compile Include="PanelSOTIASSODay\HandlerSignalQueue.cs">
+      <SubType>Component</SubType>
+    </Compile>
+    <Compile Include="PanelSOTIASSODay\PanelAISKUESOTIASSODay.cs">
       <SubType>Component</SubType>
     </Compile>
     <Compile Include="PanelSOTIASSODay\PanelManagement.cs">
@@ -199,7 +199,7 @@
     <Compile Include="PanelSOTIASSODay\ZedGraphControl.cs">
       <SubType>Component</SubType>
     </Compile>
-    <Compile Include="PanelSOTIASSODay\PanelSOTIASSODay.cs">
+    <Compile Include="PanelSOTIASSOHour.cs">
       <SubType>Component</SubType>
     </Compile>
     <Compile Include="PanelTECComponent.cs">

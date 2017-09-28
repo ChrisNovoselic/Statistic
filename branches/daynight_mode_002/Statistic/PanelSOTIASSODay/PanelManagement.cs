@@ -21,7 +21,7 @@ namespace Statistic
     /// Панель для отображения значений СОТИАССО (телеметрия)
     ///  для контроля
     /// </summary>
-    partial class PanelSOTIASSODay
+    partial class PanelAISKUESOTIASSODay
     {
         /// <summary>
         /// Класс для размещения активных элементов управления

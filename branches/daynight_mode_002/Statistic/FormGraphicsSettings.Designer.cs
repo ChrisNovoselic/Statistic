@@ -67,20 +67,28 @@ namespace Statistic
 
         private void InitializeComponent()                                                           
         {
-            // Создание CheckBox (флажка)
-            this.cbxScale = new System.Windows.Forms.CheckBox ();
             // Создание массива лейблов  (УДГэ,Отклонение и т.д.)
             this.m_arlblColor = new System.Windows.Forms.Label [(int)INDEX_COLOR.COUNT_INDEX_COLOR];
+            this.gbxColorShema = new System.Windows.Forms.GroupBox ();
+            this.m_arRbtnColorShema = new System.Windows.Forms.RadioButton []
+            {
+                new System.Windows.Forms.RadioButton()
+                , new System.Windows.Forms.RadioButton()
+            };
             // Создание GroupBox (ящик: тип графиков)         
-            this.gbxType = new System.Windows.Forms.GroupBox ();
-            // Создание RadioButton (переключатель:гистограмма)      
-            this.rbtnBar = new System.Windows.Forms.RadioButton ();
-            // Создание RadioButton (переключатель:линейный)
-            this.rbtnLine = new System.Windows.Forms.RadioButton ();
+            this.gbxTypeGraph = new System.Windows.Forms.GroupBox ();
+            // Создание CheckBox (флажка)
+            this.cbxScale = new System.Windows.Forms.CheckBox ();
+            // Создание RadioButton (переключатель:гистограмма, линейный)      
+            this.m_arRbtnTypeGraph = new System.Windows.Forms.RadioButton []
+            {
+                new System.Windows.Forms.RadioButton()
+                , new System.Windows.Forms.RadioButton()
+            };
             // Создание GroupBox (ящик: типы значений графиков)      
             this.gbxSourceData = new System.Windows.Forms.GroupBox ();
             // Создание массива переключателей "Типы значений графиков"
-            this.m_arRadioButtonSourceData = new System.Windows.Forms.RadioButton []
+            this.m_arRbtnSourceData = new System.Windows.Forms.RadioButton []
             {    
                 new System.Windows.Forms.RadioButton()
                 , new System.Windows.Forms.RadioButton()
@@ -88,34 +96,16 @@ namespace Statistic
                 , new System.Windows.Forms.RadioButton()
                 , new System.Windows.Forms.RadioButton()
             };
-            // Метод SuspendLayout() приостанавливает компоновку в ящиках "тип графиков" и "типы значений графиков"
-            this.gbxType.SuspendLayout();
+            // Метод SuspendLayout() приостанавливает компоновку в ящиках "цветовая схема", "тип графиков" и "типы значений графиков"
+            this.gbxColorShema.SuspendLayout ();
+            this.gbxTypeGraph.SuspendLayout();
             this.gbxSourceData.SuspendLayout();
             // SuspendLayout останавливает работу менеджера выравнивания (layout logic)
             this.SuspendLayout();
 
-            // 
-            // cbxScale Элемент "Масштабирование графиков"
-            // 
-            // Размер элемента автоматически изменятся в соответствии с размером его содержимого
-            this.cbxScale.AutoSize = true;
-            //Координаты левого верхнего угла элемента относительно левого верхнего угла его контейнера 
-            this.cbxScale.Location = new System.Drawing.Point(222, 11);
-            // Имя элемента
-            this.cbxScale.Name = "cbxScale";
-            // Размер элемента
-            this.cbxScale.Size = new System.Drawing.Size(159, 17);
-            // Последовательность перехода между ссылками при нажатии на кнопку Tab
-            this.cbxScale.TabIndex = 0;
-            // Подпись элемента
-            this.cbxScale.Text = "Масштабировать графики";
-            // Отрисовка фона с помощью визуальных стилей
-            this.cbxScale.UseVisualStyleBackColor = true;
-            // Обработка нажатия флажка обработчиком события
-            this.cbxScale.CheckedChanged += new System.EventHandler(this.cbxScale_CheckedChanged);
-
+            #region Подписи для выбора цвета элементов
             // Массив лейблов, состоящий из 10 элементов (УДГэ,Отклонение и т.д.)
-            LABEL_COLOR[] arLabelColor = new LABEL_COLOR [(int)INDEX_COLOR.COUNT_INDEX_COLOR] 
+            LABEL_COLOR [] arLabelColor = new LABEL_COLOR [(int)INDEX_COLOR.COUNT_INDEX_COLOR] 
             {
                 // LABEL1: Цвет черный,имя "lblUDGcolor",надпись "УДГэ, УДГт",координаты положения (12, 11)
                   new LABEL_COLOR (Color.FromArgb(0, 0, 0), "lblUDGcolor", "УДГэ, УДГт", new System.Drawing.Point(12, 11))
@@ -154,143 +144,218 @@ namespace Statistic
                 this.m_arlblColor[i].TextAlign = System.Drawing.ContentAlignment.MiddleCenter;
                 // При CLick на лейбл обработчику событий передается событие нажатия 
                 this.m_arlblColor[i].Click += new System.EventHandler(this.lbl_color_Click);                
-            }            
+            }
+            #endregion
 
+            int indx = -1
+                , yPos = -1 //Позиция по оси ординат
+                , yMargin = 22; //Расстояние между элементами управления по оси ординат
+
+            #region Цветовая схема
+            // Добавление в ящик  (коллекцию) элементов "Гистограмма" и "Линейный"
+            this.gbxColorShema.Controls.AddRange (m_arRbtnColorShema);
+            // Координаты расположения ящика
+            this.gbxColorShema.Location = new System.Drawing.Point (222, 6);
+            // Имя ящика
+            this.gbxColorShema.Name = "gbxCoorShema";
+            // Размер 
+            this.gbxColorShema.Size = new System.Drawing.Size (173, 60);
+            // Последовательность перехода между ссылками при нажатии на кнопку Tab
+            this.gbxColorShema.TabIndex = 5;
+            // gbxType не получает фокус с помощью клавиши TAB. 
+            this.gbxColorShema.TabStop = false;
+            // Текст надписи
+            this.gbxColorShema.Text = "Цветовая схема";
+            // 
+            // rbtnSystem Элемент "Система"
+            // 
+            indx = (int)ColorShemas.System;
+            this.m_arRbtnColorShema [indx].AutoSize = true;
+            // Включена проверка нажатия
+            this.m_arRbtnColorShema [indx].Tag = (GraphTypes)indx;
+            this.m_arRbtnColorShema [indx].Checked = true;
+            this.m_arRbtnColorShema [indx].Location = new System.Drawing.Point (6, yPos = 16);
+            this.m_arRbtnColorShema [indx].Name = "rbtnSystem";
+            this.m_arRbtnColorShema [indx].Size = new System.Drawing.Size (92, 17);
+            this.m_arRbtnColorShema [indx].TabIndex = 1;
+            this.m_arRbtnColorShema [indx].TabStop = true;
+            this.m_arRbtnColorShema [indx].Text = "система";
+            this.m_arRbtnColorShema [indx].UseVisualStyleBackColor = true;
+            // 
+            // rbtnDark Элемент "Темная"
+            // 
+            indx = (int)ColorShemas.Dark;
+            this.m_arRbtnColorShema [indx].Tag = (GraphTypes)indx;
+            this.m_arRbtnColorShema [indx].AutoSize = true;
+            this.m_arRbtnColorShema [indx].Location = new System.Drawing.Point (6, yPos += yMargin);
+            this.m_arRbtnColorShema [indx].Name = "rbtnDark";
+            this.m_arRbtnColorShema [indx].Size = new System.Drawing.Size (75, 17);
+            this.m_arRbtnColorShema [indx].TabIndex = 0;
+            this.m_arRbtnColorShema [indx].Text = "темная";
+            this.m_arRbtnColorShema [indx].UseVisualStyleBackColor = true;
+            // Обработка нажатия флажка обработчиком события
+            this.m_arRbtnColorShema [indx].CheckedChanged += new System.EventHandler (this.rbtnColorShema_CheckedChanged);
+            #endregion
+
+            #region Масштабирование, типы графиков
             // 
             // gbxType Элемент "Тип графиков"
             // 
+            this.gbxTypeGraph.Controls.Add (this.cbxScale);
             // Добавление в ящик  (коллекцию) элементов "Гистограмма" и "Линейный"
-            this.gbxType.Controls.Add(this.rbtnBar);
-            this.gbxType.Controls.Add(this.rbtnLine);
+            this.gbxTypeGraph.Controls.AddRange(m_arRbtnTypeGraph);
             // Координаты расположения ящика
-            this.gbxType.Location = new System.Drawing.Point(222, 32);
+            this.gbxTypeGraph.Location = new System.Drawing.Point(222, 69);
             // Имя ящика
-            this.gbxType.Name = "gbxType";
+            this.gbxTypeGraph.Name = "gbxTypeGraph";
             // Размер 
-            this.gbxType.Size = new System.Drawing.Size(173, 77);
+            this.gbxTypeGraph.Size = new System.Drawing.Size(173, 88);
             // Последовательность перехода между ссылками при нажатии на кнопку Tab
-            this.gbxType.TabIndex = 5;
+            this.gbxTypeGraph.TabIndex = 5;
             // gbxType не получает фокус с помощью клавиши TAB. 
-            this.gbxType.TabStop = false;
+            this.gbxTypeGraph.TabStop = false;
             // Текст надписи
-            this.gbxType.Text = "Тип графиков";
+            this.gbxTypeGraph.Text = "Тип графиков";
+            // 
+            // cbxScale Элемент "Масштабирование графиков"
+            // 
+            // Размер элемента автоматически изменятся в соответствии с размером его содержимого
+            this.cbxScale.AutoSize = true;
+            //Координаты левого верхнего угла элемента относительно левого верхнего угла его контейнера 
+            this.cbxScale.Location = new System.Drawing.Point (6, yPos = 19);
+            // Имя элемента
+            this.cbxScale.Name = "cbxScale";
+            // Размер элемента
+            this.cbxScale.Size = new System.Drawing.Size (159, 17);
+            // Последовательность перехода между ссылками при нажатии на кнопку Tab
+            this.cbxScale.TabIndex = 0;
+            // Подпись элемента
+            this.cbxScale.Text = "Масштабировать графики";
+            // Отрисовка фона с помощью визуальных стилей
+            this.cbxScale.UseVisualStyleBackColor = true;
+            // Обработка нажатия флажка обработчиком события
+            this.cbxScale.CheckedChanged += new System.EventHandler (this.cbxScale_CheckedChanged);
             // 
             // rbtnBar Элемент "Гистограмма"
             // 
-            this.rbtnBar.AutoSize = true;
+            indx = (int)GraphTypes.Bar;
+            this.m_arRbtnTypeGraph[indx].AutoSize = true;
             // Включена проверка нажатия
-            this.rbtnBar.Checked = true;
-            this.rbtnBar.Location = new System.Drawing.Point(6, 19);
-            this.rbtnBar.Name = "rbtnBar";
-            this.rbtnBar.Size = new System.Drawing.Size(92, 17);
-            this.rbtnBar.TabIndex = 1;
-            this.rbtnBar.TabStop = true;
-            this.rbtnBar.Text = "гистограмма";
-            this.rbtnBar.UseVisualStyleBackColor = true;
+            this.m_arRbtnTypeGraph [indx].Tag = (GraphTypes)indx;
+            this.m_arRbtnTypeGraph [indx].Checked = true;
+            this.m_arRbtnTypeGraph [indx].Location = new System.Drawing.Point(6, yPos += yMargin);
+            this.m_arRbtnTypeGraph [indx].Name = "rbtnBar";
+            this.m_arRbtnTypeGraph [indx].Size = new System.Drawing.Size(92, 17);
+            this.m_arRbtnTypeGraph [indx].TabIndex = 1;
+            this.m_arRbtnTypeGraph [indx].TabStop = true;
+            this.m_arRbtnTypeGraph [indx].Text = "гистограмма";
+            this.m_arRbtnTypeGraph [indx].UseVisualStyleBackColor = true;
             // 
             // rbtnLine Элемент "Линейный"
             // 
-            this.rbtnLine.AutoSize = true;
-            this.rbtnLine.Location = new System.Drawing.Point(6, 48);
-            this.rbtnLine.Name = "rbtnLine";
-            this.rbtnLine.Size = new System.Drawing.Size(75, 17);
-            this.rbtnLine.TabIndex = 0;
-            this.rbtnLine.Text = "линейный";
-            this.rbtnLine.UseVisualStyleBackColor = true;
+            indx = (int)GraphTypes.Linear;
+            this.m_arRbtnTypeGraph [indx].Tag = (GraphTypes)indx;
+            this.m_arRbtnTypeGraph [indx].AutoSize = true;
+            this.m_arRbtnTypeGraph [indx].Location = new System.Drawing.Point(6, yPos += yMargin);
+            this.m_arRbtnTypeGraph [indx].Name = "rbtnLine";
+            this.m_arRbtnTypeGraph [indx].Size = new System.Drawing.Size(75, 17);
+            this.m_arRbtnTypeGraph [indx].TabIndex = 0;
+            this.m_arRbtnTypeGraph [indx].Text = "линейный";
+            this.m_arRbtnTypeGraph [indx].UseVisualStyleBackColor = true;
             // Обработка нажатия флажка обработчиком события
-            this.rbtnLine.CheckedChanged += new System.EventHandler(this.rbtnLine_CheckedChanged);
+            this.m_arRbtnTypeGraph [indx].CheckedChanged += new System.EventHandler(this.rbtnTypeGraph_CheckedChanged);
+            #endregion
+
+            #region Типы значений графиков
             // 
             // groupBoxSourceData Элемент "Типы значений графиков"   
             // 
             // Добавление массива кнопок в ящик (коллекцию)
-            this.gbxSourceData.Controls.AddRange(m_arRadioButtonSourceData);
-            this.gbxSourceData.Location = new System.Drawing.Point(222, 115);
+            this.gbxSourceData.Controls.AddRange(m_arRbtnSourceData);
+            this.gbxSourceData.Location = new System.Drawing.Point(222, 162);
             this.gbxSourceData.Name = "groupBoxSourceData";
-            this.gbxSourceData.Size = new System.Drawing.Size(173, 173);
+            this.gbxSourceData.Size = new System.Drawing.Size(173, 126);
             this.gbxSourceData.TabIndex = 8;
             this.gbxSourceData.TabStop = false;
             this.gbxSourceData.Text = "Типы значений графиков";
-            
-            int indx = -1  
-                //Позиция по оси ординат
-                , yPos = -1
-                //Расстояние между элементами управления
-                , yMargin = 29;
+
             // 
             // rbtnSourceData_AISKUE_PLUS_SOTIASSO
             // 
             // Переменной indx присвоен 0, yPos присвоен 16;
-            indx = (int)CONN_SETT_TYPE.AISKUE_PLUS_SOTIASSO; yPos = 19;
+            indx = (int)CONN_SETT_TYPE.AISKUE_PLUS_SOTIASSO; yPos = 16;
             // Группа элементов управления RadioButton не будет действовать как взаимоисключающая группа,
             // а свойство Checked должно быть обновлено в коде
-            this.m_arRadioButtonSourceData [(int)indx].Tag = indx;
-            this.m_arRadioButtonSourceData[(int)indx].AutoCheck = false;
-            this.m_arRadioButtonSourceData[(int)indx].AutoSize = true;
-            this.m_arRadioButtonSourceData[(int)indx].Location = new System.Drawing.Point(6, yPos);
-            this.m_arRadioButtonSourceData[(int)indx].Name = "rbtnSourceData_ASKUE_PLUS_SOTIASSO";
-            this.m_arRadioButtonSourceData[(int)indx].Size = new System.Drawing.Size(134, 17);
-            this.m_arRadioButtonSourceData[(int)indx].TabIndex = 3;
-            this.m_arRadioButtonSourceData[(int)indx].Text = "АИСКУЭ+СОТИАССО";
-            this.m_arRadioButtonSourceData[(int)indx].UseVisualStyleBackColor = true;
-            this.m_arRadioButtonSourceData[(int)indx].Click += new System.EventHandler(this.rbtnSourceData_Click);
+            this.m_arRbtnSourceData [(int)indx].Tag = indx;
+            this.m_arRbtnSourceData[(int)indx].AutoCheck = false;
+            this.m_arRbtnSourceData[(int)indx].AutoSize = true;
+            this.m_arRbtnSourceData[(int)indx].Location = new System.Drawing.Point(6, yPos);
+            this.m_arRbtnSourceData[(int)indx].Name = "rbtnSourceData_ASKUE_PLUS_SOTIASSO";
+            this.m_arRbtnSourceData[(int)indx].Size = new System.Drawing.Size(134, 17);
+            this.m_arRbtnSourceData[(int)indx].TabIndex = 3;
+            this.m_arRbtnSourceData[(int)indx].Text = "АИСКУЭ+СОТИАССО";
+            this.m_arRbtnSourceData[(int)indx].UseVisualStyleBackColor = true;
+            this.m_arRbtnSourceData[(int)indx].Click += new System.EventHandler(this.rbtnSourceData_Click);
             // 
             // rbtnSourceData_ASKUE
             // Переменной indx присвоена 1, yPos присвоено 16+19=35;
             indx = (int)CONN_SETT_TYPE.AISKUE_3_MIN; yPos += yMargin;
-            this.m_arRadioButtonSourceData [(int)indx].Tag = indx;
-            this.m_arRadioButtonSourceData[(int)indx].AutoCheck = false;
-            this.m_arRadioButtonSourceData[(int)indx].AutoSize = true;
-            this.m_arRadioButtonSourceData[(int)indx].Checked = true;
-            this.m_arRadioButtonSourceData[(int)indx].Location = new System.Drawing.Point(6, yPos);
-            this.m_arRadioButtonSourceData[(int)indx].Name = "rbtnSourceData_ASKUE";
-            this.m_arRadioButtonSourceData[(int)indx].Size = new System.Drawing.Size(69, 17);
-            this.m_arRadioButtonSourceData[(int)indx].TabIndex = 1;
-            this.m_arRadioButtonSourceData[(int)indx].Text = "АИСКУЭ";
-            this.m_arRadioButtonSourceData[(int)indx].UseVisualStyleBackColor = true;
-            this.m_arRadioButtonSourceData[(int)indx].Click += new System.EventHandler(this.rbtnSourceData_Click);
+            this.m_arRbtnSourceData [(int)indx].Tag = indx;
+            this.m_arRbtnSourceData[(int)indx].AutoCheck = false;
+            this.m_arRbtnSourceData[(int)indx].AutoSize = true;
+            this.m_arRbtnSourceData[(int)indx].Checked = true;
+            this.m_arRbtnSourceData[(int)indx].Location = new System.Drawing.Point(6, yPos);
+            this.m_arRbtnSourceData[(int)indx].Name = "rbtnSourceData_ASKUE";
+            this.m_arRbtnSourceData[(int)indx].Size = new System.Drawing.Size(69, 17);
+            this.m_arRbtnSourceData[(int)indx].TabIndex = 1;
+            this.m_arRbtnSourceData[(int)indx].Text = "АИСКУЭ";
+            this.m_arRbtnSourceData[(int)indx].UseVisualStyleBackColor = true;
+            this.m_arRbtnSourceData[(int)indx].Click += new System.EventHandler(this.rbtnSourceData_Click);
             // 
             // rbtnSourceData_SOTIASSO_3_min
             // Переменной indx присвоена 2, yPos присвоено 35+19=54;
             indx = (int)CONN_SETT_TYPE.SOTIASSO_3_MIN; yPos += yMargin;
-            this.m_arRadioButtonSourceData [(int)indx].Tag = indx;
-            this.m_arRadioButtonSourceData[(int)indx].AutoCheck = false;
-            this.m_arRadioButtonSourceData[(int)indx].AutoSize = true;
-            this.m_arRadioButtonSourceData[(int)indx].Location = new System.Drawing.Point(6, yPos);
-            this.m_arRadioButtonSourceData[(int)indx].Name = "rbtnSourceData_SOTIASSO_3_min";
-            this.m_arRadioButtonSourceData[(int)indx].Size = new System.Drawing.Size(84, 17);
-            this.m_arRadioButtonSourceData[(int)indx].TabIndex = 0;
-            this.m_arRadioButtonSourceData[(int)indx].Text = "СОТИАССО(3 мин)";
-            this.m_arRadioButtonSourceData[(int)indx].UseVisualStyleBackColor = true;
-            this.m_arRadioButtonSourceData[(int)indx].Click += new System.EventHandler(this.rbtnSourceData_Click);
+            this.m_arRbtnSourceData [(int)indx].Tag = indx;
+            this.m_arRbtnSourceData[(int)indx].AutoCheck = false;
+            this.m_arRbtnSourceData[(int)indx].AutoSize = true;
+            this.m_arRbtnSourceData[(int)indx].Location = new System.Drawing.Point(6, yPos);
+            this.m_arRbtnSourceData[(int)indx].Name = "rbtnSourceData_SOTIASSO_3_min";
+            this.m_arRbtnSourceData[(int)indx].Size = new System.Drawing.Size(84, 17);
+            this.m_arRbtnSourceData[(int)indx].TabIndex = 0;
+            this.m_arRbtnSourceData[(int)indx].Text = "СОТИАССО(3 мин)";
+            this.m_arRbtnSourceData[(int)indx].UseVisualStyleBackColor = true;
+            this.m_arRbtnSourceData[(int)indx].Click += new System.EventHandler(this.rbtnSourceData_Click);
             // 
             // rbtnSourceData_SOTIASSO_1_min
             // Переменной indx присвоена 3, yPos присвоено 54+19=73;
             indx = (int)CONN_SETT_TYPE.SOTIASSO_1_MIN; yPos += yMargin;
-            this.m_arRadioButtonSourceData [(int)indx].Tag = indx;
-            this.m_arRadioButtonSourceData[(int)indx].AutoCheck = false;
-            this.m_arRadioButtonSourceData[(int)indx].AutoSize = true;
-            this.m_arRadioButtonSourceData[(int)indx].Location = new System.Drawing.Point(6, yPos);
-            this.m_arRadioButtonSourceData[(int)indx].Name = "rbtnSourceData_SOTIASSO_1_min";
-            this.m_arRadioButtonSourceData[(int)indx].Size = new System.Drawing.Size(84, 17);
-            this.m_arRadioButtonSourceData[(int)indx].TabIndex = 0;
-            this.m_arRadioButtonSourceData[(int)indx].Text = "СОТИАССО(1 мин)";
-            this.m_arRadioButtonSourceData[(int)indx].UseVisualStyleBackColor = true;
-            this.m_arRadioButtonSourceData[(int)indx].Click += new System.EventHandler(this.rbtnSourceData_Click);
+            this.m_arRbtnSourceData [(int)indx].Tag = indx;
+            this.m_arRbtnSourceData[(int)indx].AutoCheck = false;
+            this.m_arRbtnSourceData[(int)indx].AutoSize = true;
+            this.m_arRbtnSourceData[(int)indx].Location = new System.Drawing.Point(6, yPos);
+            this.m_arRbtnSourceData[(int)indx].Name = "rbtnSourceData_SOTIASSO_1_min";
+            this.m_arRbtnSourceData[(int)indx].Size = new System.Drawing.Size(84, 17);
+            this.m_arRbtnSourceData[(int)indx].TabIndex = 0;
+            this.m_arRbtnSourceData[(int)indx].Text = "СОТИАССО(1 мин)";
+            this.m_arRbtnSourceData[(int)indx].UseVisualStyleBackColor = true;
+            this.m_arRbtnSourceData[(int)indx].Click += new System.EventHandler(this.rbtnSourceData_Click);
             // 
             // rbtnSourceData_COSTUMIZE
             // Переменной indx присвоена 4, yPos присвоено 73+19=92;
             indx = (int)CONN_SETT_TYPE.COSTUMIZE; yPos += yMargin;
-            this.m_arRadioButtonSourceData [(int)indx].Tag = indx;
-            this.m_arRadioButtonSourceData[(int)indx].AutoCheck = false;
-            this.m_arRadioButtonSourceData[(int)indx].AutoSize = true;
-            this.m_arRadioButtonSourceData[(int)indx].Location = new System.Drawing.Point(6, yPos);
-            this.m_arRadioButtonSourceData[(int)indx].Name = "rbtnSourceData_COSTUMIZE";
-            this.m_arRadioButtonSourceData[(int)indx].Size = new System.Drawing.Size(80, 17);
-            this.m_arRadioButtonSourceData[(int)indx].TabIndex = 2;
-            this.m_arRadioButtonSourceData[(int)indx].TabStop = true;
-            this.m_arRadioButtonSourceData[(int)indx].Text = "выборочно";
-            this.m_arRadioButtonSourceData[(int)indx].UseVisualStyleBackColor = true;
-            this.m_arRadioButtonSourceData[(int)indx].Click += new System.EventHandler(this.rbtnSourceData_Click);
+            this.m_arRbtnSourceData [(int)indx].Tag = indx;
+            this.m_arRbtnSourceData[(int)indx].AutoCheck = false;
+            this.m_arRbtnSourceData[(int)indx].AutoSize = true;
+            this.m_arRbtnSourceData[(int)indx].Location = new System.Drawing.Point(6, yPos);
+            this.m_arRbtnSourceData[(int)indx].Name = "rbtnSourceData_COSTUMIZE";
+            this.m_arRbtnSourceData[(int)indx].Size = new System.Drawing.Size(80, 17);
+            this.m_arRbtnSourceData[(int)indx].TabIndex = 2;
+            this.m_arRbtnSourceData[(int)indx].TabStop = true;
+            this.m_arRbtnSourceData[(int)indx].Text = "выборочно";
+            this.m_arRbtnSourceData[(int)indx].UseVisualStyleBackColor = true;
+            this.m_arRbtnSourceData[(int)indx].Click += new System.EventHandler(this.rbtnSourceData_Click);
+            #endregion
+
             // 
             // FormGraphicsSettings
             // 
@@ -303,9 +368,10 @@ namespace Statistic
             // Добавление элементов управления в окно
             for (int i = 0; i < (int)INDEX_COLOR.COUNT_INDEX_COLOR; i++)
                 this.Controls.Add(this.m_arlblColor [i]);
+            this.Controls.Add (this.gbxColorShema);
+            this.Controls.Add (this.gbxTypeGraph);
             this.Controls.Add(this.gbxSourceData);            
-            this.Controls.Add(this.gbxType);
-            this.Controls.Add(this.cbxScale);
+            //this.Controls.Add(this.cbxScale);
             // Стиль рамки 
             this.FormBorderStyle = System.Windows.Forms.FormBorderStyle.FixedSingle;
             // Окно не разворачивается и не сворачивается
@@ -323,8 +389,10 @@ namespace Statistic
             this.Text = "Настройки графиков";
             this.FormClosing += new System.Windows.Forms.FormClosingEventHandler(this.GraphicsSettings_FormClosing);
             // Метод ResumeLayout возобновляет работу менеджера выравнивания 
-            this.gbxType.ResumeLayout(false);
-            this.gbxType.PerformLayout();
+            this.gbxColorShema.ResumeLayout (false);
+            this.gbxColorShema.PerformLayout ();
+            this.gbxTypeGraph.ResumeLayout(false);
+            this.gbxTypeGraph.PerformLayout();
             this.gbxSourceData.ResumeLayout(false);
             this.gbxSourceData.PerformLayout();
             this.ResumeLayout(false);
@@ -336,11 +404,12 @@ namespace Statistic
         #endregion
 
         private System.Windows.Forms.Label [] m_arlblColor;
-        private System.Windows.Forms.CheckBox cbxScale;             
-        private System.Windows.Forms.GroupBox gbxType;
-        private System.Windows.Forms.RadioButton rbtnBar;
-        private System.Windows.Forms.RadioButton rbtnLine;        
+        private System.Windows.Forms.GroupBox gbxColorShema;
+        private System.Windows.Forms.RadioButton [] m_arRbtnColorShema;
+        private System.Windows.Forms.GroupBox gbxTypeGraph;
+        private System.Windows.Forms.CheckBox cbxScale;
+        private System.Windows.Forms.RadioButton [] m_arRbtnTypeGraph;
         private System.Windows.Forms.GroupBox gbxSourceData;
-        private System.Windows.Forms.RadioButton [] m_arRadioButtonSourceData;        
+        private System.Windows.Forms.RadioButton [] m_arRbtnSourceData;        
     }
 }

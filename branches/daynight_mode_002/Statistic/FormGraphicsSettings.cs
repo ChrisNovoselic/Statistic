@@ -41,7 +41,7 @@ namespace Statistic
         public enum TYPE_UPDATEGUI                                                                                              
         {
         
-            SCALE, LINEAR, COLOR, SOURCE_DATA                                     
+            SCALE, LINEAR, COLOR, SOURCE_DATA, COLOR_SHEMA                                     
                , COUNT_TYPE_UPDATEGUI
         };
 
@@ -66,6 +66,20 @@ namespace Statistic
             Linear,
             //гистограмма                                                     
             Bar,                                                                
+        }
+
+        /// <summary>
+        /// Открытое перечисление ColorShemas  (цветовая схема)
+        /// </summary>
+        public enum ColorShemas {
+            /// <summary>
+            /// Системные цвета
+            /// </summary>
+            System,
+            /// <summary>
+            /// Темная схема
+            /// </summary>
+            Dark,
         }
         #endregion
 
@@ -94,6 +108,8 @@ namespace Statistic
         /// Открытое поле m_graphTypes (типы графиков) типа GraphTypes
         /// </summary>
         public GraphTypes m_graphTypes;
+
+        public ColorShemas m_colorShema;
         #endregion
 
         /// <summary>
@@ -120,17 +136,17 @@ namespace Statistic
         /// <summary>
         /// Открытый пользовательский конструктор FormGraphicsSettings инициализирует поля m_formMain, delegateUpdateActiveGui, delegateHideGraphicsSettings
         /// </summary>
-        /// <param name="fm"></param>
-        /// <param name="delUp"></param>
-        /// <param name="Hide"></param>
-        public FormGraphicsSettings(FormMain fm, DelegateIntFunc delUp, DelegateFunc Hide) 
+        /// <param name="form">Родительская форма - главное окно приложения</param>
+        /// <param name="fUpdate">Метод для применения изменений</param>
+        /// <param name="fHide">Метод снятия с отображения диалогового окна</param>
+        public FormGraphicsSettings (FormMain form, DelegateIntFunc fUpdate, DelegateFunc fHide) 
         {
             InitializeComponent();                                                                                                                             
 
             // инициализация полей заданными пользователем значениями
-            delegateUpdateActiveGui = delUp;                                                            
-            delegateHideGraphicsSettings = Hide;                                                     
-            m_formMain = fm;
+            delegateUpdateActiveGui = fUpdate;                                                            
+            delegateHideGraphicsSettings = fHide;                                                     
+            m_formMain = form;
             //масштабирование выключено по умолчанию
             scale = false;
             // полю m_markSourceData присваиваем ссылку на экземпляр класса HMark, вызываем конструктор HMark с одним параметром, передаем 0                                                                  
@@ -147,8 +163,8 @@ namespace Statistic
                 cstGroupBoxSourceData = CONN_SETT_TYPE.COSTUMIZE;  //переменной cstGroupBoxSourceData присваиваем константу=4 (по умолчанию установлен COSTUMIZE)
 
                 //кнопки АИСКУЭ+СОТИАССО и СОТИАССО(3 мин) становятся активными (да вроде все активные..?)
-                m_arRadioButtonSourceData[(int)CONN_SETT_TYPE.AISKUE_PLUS_SOTIASSO].Enabled = HStatisticUsers.IsAllowed((int)HStatisticUsers.ID_ALLOWED.SOURCEDATA_ASKUE_PLUS_SOTIASSO);
-                m_arRadioButtonSourceData[(int)CONN_SETT_TYPE.SOTIASSO_3_MIN].Enabled = HStatisticUsers.IsAllowed((int)HStatisticUsers.ID_ALLOWED.SOURCEDATA_SOTIASSO_3_MIN);
+                m_arRbtnSourceData[(int)CONN_SETT_TYPE.AISKUE_PLUS_SOTIASSO].Enabled = HStatisticUsers.IsAllowed((int)HStatisticUsers.ID_ALLOWED.SOURCEDATA_ASKUE_PLUS_SOTIASSO);
+                m_arRbtnSourceData[(int)CONN_SETT_TYPE.SOTIASSO_3_MIN].Enabled = HStatisticUsers.IsAllowed((int)HStatisticUsers.ID_ALLOWED.SOURCEDATA_SOTIASSO_3_MIN);
             }
             else
                 ;
@@ -170,8 +186,7 @@ namespace Statistic
         /// <param name="bgColor">Входной цвет фона, на котором размещается надпись</param>
         /// <returns>Цвет для надписи</returns>
         private Color getForeColor (Color bgColor)  
-        {
-            
+        {            
             return Color.FromArgb((bgColor.R + 128) % 256, (bgColor.G + 128) % 256, (bgColor.B + 128) % 256); 
         }
 
@@ -191,27 +206,27 @@ namespace Statistic
         /// </summary>
         private void checkedSourceData()     
         {
-            m_arRadioButtonSourceData[(int)CONN_SETT_TYPE.AISKUE_PLUS_SOTIASSO].Checked = m_markSourceData.IsMarked((int)(int)CONN_SETT_TYPE.AISKUE_PLUS_SOTIASSO);//??
-            m_arRadioButtonSourceData[(int)CONN_SETT_TYPE.AISKUE_3_MIN].Checked = m_markSourceData.IsMarked((int)(int)CONN_SETT_TYPE.AISKUE_3_MIN);
-            m_arRadioButtonSourceData[(int)CONN_SETT_TYPE.SOTIASSO_3_MIN].Checked = m_markSourceData.IsMarked((int)(int)CONN_SETT_TYPE.SOTIASSO_3_MIN);
-            m_arRadioButtonSourceData[(int)CONN_SETT_TYPE.SOTIASSO_1_MIN].Checked = m_markSourceData.IsMarked((int)(int)CONN_SETT_TYPE.SOTIASSO_1_MIN);
-            m_arRadioButtonSourceData[(int)CONN_SETT_TYPE.COSTUMIZE].Checked = m_markSourceData.IsMarked((int)(int)CONN_SETT_TYPE.COSTUMIZE);
+            m_arRbtnSourceData[(int)CONN_SETT_TYPE.AISKUE_PLUS_SOTIASSO].Checked = m_markSourceData.IsMarked((int)(int)CONN_SETT_TYPE.AISKUE_PLUS_SOTIASSO);//??
+            m_arRbtnSourceData[(int)CONN_SETT_TYPE.AISKUE_3_MIN].Checked = m_markSourceData.IsMarked((int)(int)CONN_SETT_TYPE.AISKUE_3_MIN);
+            m_arRbtnSourceData[(int)CONN_SETT_TYPE.SOTIASSO_3_MIN].Checked = m_markSourceData.IsMarked((int)(int)CONN_SETT_TYPE.SOTIASSO_3_MIN);
+            m_arRbtnSourceData[(int)CONN_SETT_TYPE.SOTIASSO_1_MIN].Checked = m_markSourceData.IsMarked((int)(int)CONN_SETT_TYPE.SOTIASSO_1_MIN);
+            m_arRbtnSourceData[(int)CONN_SETT_TYPE.COSTUMIZE].Checked = m_markSourceData.IsMarked((int)(int)CONN_SETT_TYPE.COSTUMIZE);
             
             //если нажата кнопка "АИСКУЭ+СОТИАССО", то источнику данных присвоить источник  "АИСКИЭ+СОТИАССО"
-            if (m_arRadioButtonSourceData[(int)CONN_SETT_TYPE.AISKUE_PLUS_SOTIASSO].Checked == true)    
+            if (m_arRbtnSourceData[(int)CONN_SETT_TYPE.AISKUE_PLUS_SOTIASSO].Checked == true)    
                 m_connSettType_SourceData = StatisticCommon.CONN_SETT_TYPE.DATA_AISKUE_PLUS_SOTIASSO;
             else
             //если нажата кнопка "АИСКУЭ(3мин)", то источнику данных присвоить источник  "АИСКУЭ(3мин)"
-                if (m_arRadioButtonSourceData[(int)CONN_SETT_TYPE.AISKUE_3_MIN].Checked == true)
+                if (m_arRbtnSourceData[(int)CONN_SETT_TYPE.AISKUE_3_MIN].Checked == true)
                     m_connSettType_SourceData = StatisticCommon.CONN_SETT_TYPE.DATA_AISKUE;
                 else
-                    if (m_arRadioButtonSourceData[(int)CONN_SETT_TYPE.SOTIASSO_3_MIN].Checked == true)           //аналогично
+                    if (m_arRbtnSourceData[(int)CONN_SETT_TYPE.SOTIASSO_3_MIN].Checked == true)           //аналогично
                         m_connSettType_SourceData = StatisticCommon.CONN_SETT_TYPE.DATA_SOTIASSO_3_MIN;
                     else
-                        if (m_arRadioButtonSourceData[(int)CONN_SETT_TYPE.SOTIASSO_1_MIN].Checked == true)
+                        if (m_arRbtnSourceData[(int)CONN_SETT_TYPE.SOTIASSO_1_MIN].Checked == true)
                             m_connSettType_SourceData = StatisticCommon.CONN_SETT_TYPE.DATA_SOTIASSO_1_MIN;
                         else
-                            if (m_arRadioButtonSourceData[(int)CONN_SETT_TYPE.COSTUMIZE].Checked == true)
+                            if (m_arRbtnSourceData[(int)CONN_SETT_TYPE.COSTUMIZE].Checked == true)
                                 m_connSettType_SourceData = StatisticCommon.CONN_SETT_TYPE.COUNT_CONN_SETT_TYPE;
                             else
                                 ;
@@ -231,7 +246,7 @@ namespace Statistic
         /// Закрытый метод lbl_color_Click (нажатие цвета), принимающий событие нажатия на выбранный цвет
         /// и ничего не возвращающий
         /// </summary>
-        /// <param name="sender"></param>
+        /// <param name="sender">Объект, инициировавший событие (подпись)</param>
         /// <param name="e">Аргумент события</param>
         private void lbl_color_Click(object sender, EventArgs e)   
         {
@@ -242,7 +257,7 @@ namespace Statistic
                 //заднему плану присвоить выбранный цвет
                 ((Label)sender).BackColor = cd.Color;
                 //переднему плану (надписи) присвоить зрительно отличный цвет
-                ((Label)sender).ForeColor = Color.FromArgb((((Label)sender).BackColor.R + 128) % 256, (((Label)sender).BackColor.G + 128) % 256, (((Label)sender).BackColor.B + 128) % 256);
+                ((Label)sender).ForeColor = getForeColor (cd.Color);
                 //обновить активную настройку (цвет)
                 delegateUpdateActiveGui((int)TYPE_UPDATEGUI.COLOR);
             } else
@@ -270,23 +285,36 @@ namespace Statistic
             cbxScale.Checked = !cbxScale.Checked;        
         }
 
+        private void rbtnColorShema_CheckedChanged (object sender, EventArgs e)
+        {
+            foreach (RadioButton rbtn in m_arRbtnColorShema)
+                if (rbtn.Checked == true) {
+                    m_colorShema = (ColorShemas)(rbtn as Control).Tag;
+
+                    break;
+                } else
+                    ;
+
+            delegateUpdateActiveGui ((int)TYPE_UPDATEGUI.COLOR_SHEMA);   //обновить активную настройку (тип графика)
+        }
+
         /// <summary>
         /// Закрытый метод rbtnLine_CheckedChanged (проверка изменения типа графика), 
         /// принимающий события нажатия на кнопку "линейный" или "гистограмма"
         /// </summary>
         /// <param name="sender">Объект, инициировавший событие</param>
         /// <param name="e">Аргумент события</param>
-        private void rbtnLine_CheckedChanged(object sender, EventArgs e)
+        private void rbtnTypeGraph_CheckedChanged(object sender, EventArgs e)
         {
-            if (rbtnBar.Checked == true)               //если кнопка "гистограмма" нажата
-                m_graphTypes = GraphTypes.Bar;         // полю  m_graphTypes присвоить "гистрограмма"
-            else
-                if (rbtnLine.Checked == true)          //если кнопка "линейный" нажата
-                m_graphTypes = GraphTypes.Linear;      // полю  m_graphTypes присвоить "линейный"
-            else
+            foreach (RadioButton rbtn in m_arRbtnTypeGraph)
+                if (rbtn.Checked == true) {
+                    m_graphTypes = (GraphTypes)(rbtn as Control).Tag;
+
+                    break;
+                } else
                     ;
             
-            delegateUpdateActiveGui((int)TYPE_UPDATEGUI.LINEAR);   //обновить активную настройку (линейный)
+            delegateUpdateActiveGui((int)TYPE_UPDATEGUI.LINEAR);   //обновить активную настройку (тип графика)
         }
 
         private void rbtnSourceData_Click (object sender, EventArgs e)
@@ -309,7 +337,7 @@ namespace Statistic
         /// <param name="indx">Индекс-таг-идентификатор типа источника данных для отображения</param>
         private void rbtnSourceData_Click(CONN_SETT_TYPE indx)   
         {
-            if (m_arRadioButtonSourceData[(int)indx].Checked == false) 
+            if (m_arRbtnSourceData[(int)indx].Checked == false) 
             {
                 m_markSourceData.UnMarked();
                 m_markSourceData.Marked((int)indx);
@@ -320,5 +348,45 @@ namespace Statistic
                 ;
         }        
         #endregion
+    }
+
+    public class DarkColorTable : ProfessionalColorTable
+    {
+        public DarkColorTable (Color colorSystem)
+        {
+            _System = colorSystem;
+
+            //UseSystemColors = true;
+        }
+
+        public static Color _System = Color.Empty;
+
+        public static Color _Custom = Color.SlateGray;
+
+        private Color _pressed = Color.FromArgb (255, 52, 68, 84);
+
+        private Color _border = Color.Black;
+
+        public override Color ToolStripBorder { get { return _border; } }
+
+        //public override Color ToolStripGradientBegin { get { return culoare; } }
+
+        //public override Color ToolStripGradientEnd { get { return culoare; } }
+
+        public override Color ToolStripDropDownBackground { get { return _Custom; } }
+
+        //public override Color MenuItemBorder { get { return _Background; } }
+
+        //public override Color MenuItemSelected { get { return _Background; } }        
+
+        //public override Color MenuItemSelectedGradientBegin { get { return _Background; } }
+
+        //public override Color MenuItemSelectedGradientEnd { get { return _Background; } }
+
+        public override Color MenuItemPressedGradientBegin { get { return _pressed; } }
+
+        public override Color MenuItemPressedGradientEnd { get { return _pressed; } }
+
+        public override Color MenuBorder { get { return _border; } }        
     }
 }

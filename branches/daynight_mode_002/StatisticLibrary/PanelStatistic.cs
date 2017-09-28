@@ -14,17 +14,37 @@ namespace StatisticCommon
         protected DelegateFunc delegateStartWait;
         protected DelegateFunc delegateStopWait;
         protected DelegateFunc delegateEventUpdate;
-
+        /// <summary>
+        /// Фильтр для диалогового окна открыть шаблон/макет книги MS Excel  для импорта/экспорта
+        /// </summary>
         protected static string s_DialogMSExcelBrowseFilter = @"Книга MS Excel 2003|*.xls|Книга MS Excel 2010|*.xlsx";
-
-        public PanelStatistic(int cCols = -1, int cRows = -1)
+        /// <summary>
+        /// Коструктор - основной (с аогументами)
+        /// </summary>
+        /// <param name="cCols">Количество столбцов в макете для размещения элементов управления</param>
+        /// <param name="cRows">Количество строк в макете для размещения элементов управления</param>
+        public PanelStatistic (int cCols = -1, int cRows = -1)
             : base(cCols, cRows)
         {
             Thread.CurrentThread.CurrentCulture =
             Thread.CurrentThread.CurrentUICulture =
                 ProgramBase.ss_MainCultureInfo;
 
-            BackColor = Color.SlateGray;
+            Control formMain = this.Parent;
+
+            while ((!(formMain == null))
+                && (!(formMain is Form)))
+                formMain = formMain.Parent;
+
+            if (!(formMain == null))
+                formMain.BackColorChanged += FormMain_BackColorChanged;
+            else
+                ;
+        }
+
+        private void FormMain_BackColorChanged (object sender, EventArgs e)
+        {
+            throw new NotImplementedException ();
         }
 
         public static volatile int POOL_TIME = -1

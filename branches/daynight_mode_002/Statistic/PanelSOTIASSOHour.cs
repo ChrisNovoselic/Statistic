@@ -20,13 +20,13 @@ namespace Statistic
     /// </summary>
     public class PanelSOTIASSOHour : PanelStatistic
     {
-        private class TecViewSOTIASSO : TecView
+        private class TecViewSOTIASSOHour : TecView
         {
             public enum REASON_RETROVALUES { UNKNOWN = -1, DATE, HOUR, MINUTE, BEGIN_HOUR, COUNT }
 
             public HMark m_markRetroValues;
 
-            public TecViewSOTIASSO(int indx_tec, int indx_comp)
+            public TecViewSOTIASSOHour(int indx_tec, int indx_comp)
                 : base(/*TecView.TYPE_PANEL.SOTIASSO, */indx_tec, indx_comp, TECComponentBase.TYPE.ELECTRO)
             {
                 m_markRetroValues = new HMark(0);
@@ -155,7 +155,7 @@ namespace Statistic
         /// <summary>
         /// Объект для обработки запросов/получения данных из/в БД
         /// </summary>
-        private TecViewSOTIASSO m_tecView;
+        private TecViewSOTIASSOHour m_tecView;
 
         System.Windows.Forms.SplitContainer stctrMain
             , stctrView;
@@ -225,7 +225,7 @@ namespace Statistic
             //m_markQueries.Marked((int)CONN_SETT_TYPE.PBR); //Для получения даты/времени
             //m_markQueries.Marked((int)CONN_SETT_TYPE.DATA_SOTIASSO);
             //Создать объект обработки запросов - установить первоначальные индексы для ТЭЦ, компонента
-            m_tecView = new TecViewSOTIASSO(0, -1);
+            m_tecView = new TecViewSOTIASSOHour(0, -1);
             //Инициализировать список ТЭЦ для 'TecView' - указать ТЭЦ в соответствии с указанным ранее индексом (0)
             m_tecView.InitTEC(new List<StatisticCommon.TEC>() { m_listTEC[0] }, m_markQueries);
             //Установить тип значений
@@ -1312,7 +1312,7 @@ namespace Statistic
                     m_timerCurrent.Change(PanelStatistic.POOL_TIME * 1000 - 1, System.Threading.Timeout.Infinite);
                 }
                 else
-                    if (m_tecView.m_markRetroValues.IsMarked ((int)TecViewSOTIASSO.REASON_RETROVALUES.BEGIN_HOUR) == true)
+                    if (m_tecView.m_markRetroValues.IsMarked ((int)TecViewSOTIASSOHour.REASON_RETROVALUES.BEGIN_HOUR) == true)
                         if ((m_tecView.lastMin > 60) && (m_tecView.serverTime.Minute > 2))
                             if (m_tecView.adminValuesReceived == true) //Признак успешного выполнения операций для состояния 'TecView.AdminValues'
                                 if (IsHandleCreated/*InvokeRequired*/ == true)
@@ -2264,9 +2264,9 @@ namespace Statistic
                     m_tecView.IsIndexRetroValues(index);
                     if (! (m_tecView.m_markRetroValues.Value == 0))
                         // для ретроспективных интервалов
-                        if ((m_tecView.m_markRetroValues.IsMarked((int)TecViewSOTIASSO.REASON_RETROVALUES.DATE) == true)
-                            || (m_tecView.m_markRetroValues.IsMarked ((int)TecViewSOTIASSO.REASON_RETROVALUES.HOUR) == true)
-                            || (m_tecView.m_markRetroValues.IsMarked ((int)TecViewSOTIASSO.REASON_RETROVALUES.MINUTE) == true))
+                        if ((m_tecView.m_markRetroValues.IsMarked((int)TecViewSOTIASSOHour.REASON_RETROVALUES.DATE) == true)
+                            || (m_tecView.m_markRetroValues.IsMarked ((int)TecViewSOTIASSOHour.REASON_RETROVALUES.HOUR) == true)
+                            || (m_tecView.m_markRetroValues.IsMarked ((int)TecViewSOTIASSOHour.REASON_RETROVALUES.MINUTE) == true))
                         {
                             m_tecView.currHour = false;
                             //Установить дату/час
@@ -2275,7 +2275,7 @@ namespace Statistic
                             m_tecView.GetRetroMinDetail(index);
                         }
                         else
-                            if (m_tecView.m_markRetroValues.IsMarked((int)TecViewSOTIASSO.REASON_RETROVALUES.BEGIN_HOUR) == true)
+                            if (m_tecView.m_markRetroValues.IsMarked((int)TecViewSOTIASSOHour.REASON_RETROVALUES.BEGIN_HOUR) == true)
                                 m_tecView.currHour = false
                                     ;
                             else

@@ -2,6 +2,7 @@
 
 using HClassLibrary;
 using System.Windows.Forms;
+using StatisticCommon;
 
 namespace Statistic
 {
@@ -108,7 +109,7 @@ namespace Statistic
             this.MainMenuStrip.Text = "Главное меню";
             this.MainMenuStrip.MenuActivate += new System.EventHandler(menuStrip_MenuActivate);
             this.MainMenuStrip.MenuDeactivate += new System.EventHandler(menuStrip_MenuDeactivate);
-            this.MainMenuStrip.BackColorChanged += mainMenuStrip_BackColorChanged;
+            //this.MainMenuStrip.BackColorChanged += mainMenuStrip_BackColorChanged;
             // 
             // ContextMenuStrip
             // 
@@ -465,33 +466,36 @@ namespace Statistic
             this.PerformLayout();
         }
 
-        /// <summary>
-        /// Обработчик события - изменение цвета фона
-        /// </summary>
-        /// <param name="sender">Объект инициировавший событие</param>
-        /// <param name="e">Аргумент события</param>
-        private void mainMenuStrip_BackColorChanged (object sender, System.EventArgs e)
-        {
-            for (int i = 0; i < (sender as MenuStrip).Items.Count; i++)                
-                changeColorToolStripMenuItem ((sender as MenuStrip).Items [i] as ToolStripMenuItem);
-        }
+        ///// <summary>
+        ///// Обработчик события - изменение цвета фона
+        ///// </summary>
+        ///// <param name="sender">Объект инициировавший событие</param>
+        ///// <param name="e">Аргумент события</param>
+        //private void mainMenuStrip_BackColorChanged (object sender, System.EventArgs e)
+        //{
+        //    for (int i = 0; i < (sender as MenuStrip).Items.Count; i++)                
+        //        changeColorToolStripMenuItem ((sender as MenuStrip).Items [i] as ToolStripMenuItem);
+        //}
 
 
-        private void changeColorToolStripMenuItem (ToolStripMenuItem item)
-        {
-            item.BackColor = _BackColor;
+        //private void changeColorToolStripMenuItem (ToolStripMenuItem item)
+        //{
+        //    item.BackColor =
+        //        //item.GetCurrentParent().BackColor ???изменение произошло, но не применено
+        //        PanelStatistic._BackColor
+        //        ;
 
-            if (item.HasDropDownItems == true) {                
-                for (int i = 0; i < item.DropDownItems.Count; i++)
-                    if (item.DropDownItems [i] is ToolStripMenuItem)
-                        changeColorToolStripMenuItem (item.DropDownItems [i] as ToolStripMenuItem);
-                    else
-                        //(item.DropDownItems [i] as ToolStripSeparator).
-                            ;
-            } else
-                ;
-        }
-
+        //    if (item.HasDropDownItems == true) {
+        //        for (int i = 0; i < item.DropDownItems.Count; i++)
+        //            if (item.DropDownItems [i] is ToolStripMenuItem)
+        //                changeColorToolStripMenuItem (item.DropDownItems [i] as ToolStripMenuItem);
+        //            else if (item.DropDownItems [i] is ToolStripSeparator)
+        //                (item.DropDownItems [i] as ToolStripSeparator).BackColor = PanelStatistic._BackColor;
+        //            else
+        //                ;
+        //    } else
+        //        ;
+        //}
         #endregion
 
         //private System.Windows.Forms.ContextMenuStrip m_ContextMenuStripListTecViews;

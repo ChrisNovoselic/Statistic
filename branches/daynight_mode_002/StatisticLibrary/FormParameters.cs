@@ -201,7 +201,17 @@ namespace StatisticCommon
         public static string GetNameParametersOfIndex(int indx)
         {
             return NAME_PARAMETR_SETUP[indx];
-        } 
+        }
+
+        public string GetINIParametersOfID (PARAMETR_SETUP id)
+        {
+            return GetINIParametersOfID((int)id);
+        }
+
+        public string GetINIParametersOfID (int id)
+        {
+            return m_arParametrSetup [id];
+        }
     }
 
     public partial class FormParameters_FIleINI : FormParameters
@@ -323,27 +333,32 @@ namespace StatisticCommon
                 {
                     query = string.Empty;
 
-                    for (PARAMETR_SETUP i = PARAMETR_SETUP.POLL_TIME; i < PARAMETR_SETUP.COUNT_PARAMETR_SETUP; i++)
-                    {
-                        //strRead = readString(NAME_PARAMETR_SETUP[(int)i], strDefault, out err);
-                        rowRes = table.Select(@"KEY='" + NAME_PARAMETR_SETUP[(int)i].ToString() + @"'");
-                        switch (rowRes.Length)
-                        {
+                    foreach (PARAMETR_SETUP indx in Enum.GetValues (typeof (PARAMETR_SETUP))) {
+                        if ((indx == PARAMETR_SETUP.UNKNOWN)
+                            || (indx == PARAMETR_SETUP.COUNT_PARAMETR_SETUP))
+                            continue;
+                        else
+                            ;
+
+                        rowRes = table.Select (@"KEY='" + NAME_PARAMETR_SETUP [(int)indx].ToString () + @"'");
+                        switch (rowRes.Length) {
                             case 1:
-                                m_arParametrSetup[(int)i] =
-                                m_arParametrSetupDefault[(int)i] =
-                                    rowRes[0][@"VALUE"].ToString().Trim();
+                                m_arParametrSetup [(int)indx] =
+                                m_arParametrSetupDefault [(int)indx] =
+                                    rowRes [0] [@"VALUE"].ToString ().Trim ();
                                 break;
                             case 0:
-                                m_arParametrSetup[(int)i] = m_arParametrSetupDefault[(int)i];
-                                query += getWriteStringRequest(NAME_PARAMETR_SETUP[(int)i], m_arParametrSetup[(int)i], true) + @";";
+                                m_arParametrSetup [(int)indx] = m_arParametrSetupDefault [(int)indx];
+                                query += getWriteStringRequest (NAME_PARAMETR_SETUP [(int)indx], m_arParametrSetup [(int)indx], true) + @";";
                                 break;
                             default:
                                 break;
                         }
                     }
 
+                    // проверить различия между параметрами в коде и таблице [setup] в БД конфигурации
                     if (query.Equals(string.Empty) == false)
+                    // дополнить таблицу в БД конфигурации отсутствующими параметрами и их значениями по умолчанию
                         DbTSQLInterface.ExecNonQuery(ref m_dbConn, query, null, null, out err);
                     else
                         ;

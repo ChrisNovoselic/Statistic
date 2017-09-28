@@ -17,7 +17,7 @@ namespace Statistic
     /// Панель для отображения значений СОТИАССО (телеметрия)
     ///  для контроля
     /// </summary>
-    public partial class PanelSOTIASSODay : PanelStatistic, IDataHost
+    public partial class PanelAISKUESOTIASSODay : PanelStatistic, IDataHost
     {
         private static CONN_SETT_TYPE[] _types = { CONN_SETT_TYPE.DATA_AISKUE, CONN_SETT_TYPE.DATA_SOTIASSO };
         /// <summary>
@@ -123,7 +123,7 @@ namespace Statistic
         /// <summary>
         /// Конструктор - основной (без параметров)
         /// </summary>
-        public PanelSOTIASSODay(int iListenerConfigId, List<StatisticCommon.TEC> listTec)
+        public PanelAISKUESOTIASSODay(int iListenerConfigId, List<StatisticCommon.TEC> listTec)
             : base()
         {
             // фильтр ТЭЦ
@@ -177,7 +177,7 @@ namespace Statistic
         /// Конструктор - вспомогательный (с параметрами)
         /// </summary>
         /// <param name="container">Владелец текущего объекта</param>
-        public PanelSOTIASSODay(IContainer container, int iListenerConfigId, List<StatisticCommon.TEC> listTec/*, DelegateStringFunc fErrRep, DelegateStringFunc fWarRep, DelegateStringFunc fActRep, DelegateBoolFunc fRepClr*/)
+        public PanelAISKUESOTIASSODay(IContainer container, int iListenerConfigId, List<StatisticCommon.TEC> listTec/*, DelegateStringFunc fErrRep, DelegateStringFunc fWarRep, DelegateStringFunc fActRep, DelegateBoolFunc fRepClr*/)
             : this(iListenerConfigId, listTec)
         {
             container.Add(this);
