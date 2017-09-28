@@ -1,7 +1,6 @@
 ﻿using System.Collections.Generic; //Dictionary
 
 using HClassLibrary;
-using System.Windows.Forms;
 
 namespace Statistic
 {
@@ -37,7 +36,7 @@ namespace Statistic
 
             this.components = new System.ComponentModel.Container();
             System.ComponentModel.ComponentResourceManager resources = new System.ComponentModel.ComponentResourceManager(typeof(FormMain));
-            this.MainMenuStrip = new System.Windows.Forms.MenuStrip();
+            this.menuStrip = new System.Windows.Forms.MenuStrip();
             this.ContextMenuStrip = new System.Windows.Forms.ContextMenuStrip();
             this.файлToolStripMenuItem = new System.Windows.Forms.ToolStripMenuItem();
             this.файлПрофильToolStripMenuItem = new System.Windows.Forms.ToolStripMenuItem();
@@ -89,26 +88,24 @@ namespace Statistic
             this.оПрограммеToolStripMenuItem = new System.Windows.Forms.ToolStripMenuItem();
             this.tclTecViews = new HTabCtrlEx (); //System.Windows.Forms.TabControl();
             this.lblLabel = new System.Windows.Forms.Label();
-            this.MainMenuStrip.SuspendLayout();
+            this.menuStrip.SuspendLayout();
             //this.m_ContextMenuStripListTecViews.SuspendLayout ();
             this.SuspendLayout();
             // 
             // menuStrip
             // 
-            this.MainMenuStrip.Items.AddRange(new System.Windows.Forms.ToolStripItem[] {
-                this.файлToolStripMenuItem
-                , this.видToolStripMenuItem
-                , this.настройкиToolStripMenuItem
-                , this.оПрограммеToolStripMenuItem
-            });
-            this.MainMenuStrip.Location = new System.Drawing.Point(0, 0);
-            this.MainMenuStrip.Name = "MainMenuStrip";
-            this.MainMenuStrip.Size = new System.Drawing.Size(982, 24);
-            this.MainMenuStrip.TabIndex = 2;
-            this.MainMenuStrip.Text = "Главное меню";
-            this.MainMenuStrip.MenuActivate += new System.EventHandler(menuStrip_MenuActivate);
-            this.MainMenuStrip.MenuDeactivate += new System.EventHandler(menuStrip_MenuDeactivate);
-            this.MainMenuStrip.BackColorChanged += mainMenuStrip_BackColorChanged;
+            this.menuStrip.Items.AddRange(new System.Windows.Forms.ToolStripItem[] {
+            this.файлToolStripMenuItem,
+            this.видToolStripMenuItem,
+            this.настройкиToolStripMenuItem,
+            this.оПрограммеToolStripMenuItem});
+            this.menuStrip.Location = new System.Drawing.Point(0, 0);
+            this.menuStrip.Name = "menuStrip";
+            this.menuStrip.Size = new System.Drawing.Size(982, 24);
+            this.menuStrip.TabIndex = 2;
+            this.menuStrip.Text = "Главное меню";
+            this.menuStrip.MenuActivate += new System.EventHandler(menuStrip_MenuActivate);
+            this.menuStrip.MenuDeactivate += new System.EventHandler(menuStrip_MenuDeactivate);
             // 
             // ContextMenuStrip
             // 
@@ -443,10 +440,10 @@ namespace Statistic
             this.ClientSize = new System.Drawing.Size(982, 784);
             this.Controls.Add(this.lblLabel);
             this.Controls.Add(this.tclTecViews);
-            this.Controls.Add(this.MainMenuStrip);
+            this.Controls.Add(this.menuStrip);
             //this.Controls.Add(this.m_ContextMenuStripListTecViews);
             this.Icon = ((System.Drawing.Icon)(resources.GetObject("$this.Icon")));
-            //this.MainMenuStrip = this.menuStrip;
+            this.MainMenuStrip = this.menuStrip;
             //this.ContextMenuStrip = this.m_ContextMenuStripListTecViews;
             this.MinimumSize = new System.Drawing.Size(800, 600);
             this.Name = "FormMain";
@@ -457,43 +454,17 @@ namespace Statistic
             this.Load += new System.EventHandler(FormMain_FormLoad);
             this.ContextMenuStrip.Opened += new System.EventHandler(menuStrip_MenuActivate);
             this.ContextMenuStrip.Closed += new System.Windows.Forms.ToolStripDropDownClosedEventHandler(contextMenuStrip_Closed);
-            this.MainMenuStrip.ResumeLayout(false);
-            this.MainMenuStrip.PerformLayout();
+            this.menuStrip.ResumeLayout(false);
+            this.menuStrip.PerformLayout();
             this.ContextMenuStrip.ResumeLayout(false);
             this.ContextMenuStrip.PerformLayout();
             this.ResumeLayout(false);
             this.PerformLayout();
         }
 
-        /// <summary>
-        /// Обработчик события - изменение цвета фона
-        /// </summary>
-        /// <param name="sender">Объект инициировавший событие</param>
-        /// <param name="e">Аргумент события</param>
-        private void mainMenuStrip_BackColorChanged (object sender, System.EventArgs e)
-        {
-            for (int i = 0; i < (sender as MenuStrip).Items.Count; i++)                
-                changeColorToolStripMenuItem ((sender as MenuStrip).Items [i] as ToolStripMenuItem);
-        }
-
-
-        private void changeColorToolStripMenuItem (ToolStripMenuItem item)
-        {
-            item.BackColor = _BackColor;
-
-            if (item.HasDropDownItems == true) {                
-                for (int i = 0; i < item.DropDownItems.Count; i++)
-                    if (item.DropDownItems [i] is ToolStripMenuItem)
-                        changeColorToolStripMenuItem (item.DropDownItems [i] as ToolStripMenuItem);
-                    else
-                        //(item.DropDownItems [i] as ToolStripSeparator).
-                            ;
-            } else
-                ;
-        }
-
         #endregion
 
+        private System.Windows.Forms.MenuStrip menuStrip;
         //private System.Windows.Forms.ContextMenuStrip m_ContextMenuStripListTecViews;
         private System.Windows.Forms.ToolStripMenuItem файлToolStripMenuItem;
         private System.Windows.Forms.ToolStripMenuItem файлПрофильToolStripMenuItem;

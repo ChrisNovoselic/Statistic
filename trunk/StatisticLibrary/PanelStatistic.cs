@@ -23,8 +23,6 @@ namespace StatisticCommon
             Thread.CurrentThread.CurrentCulture =
             Thread.CurrentThread.CurrentUICulture =
                 ProgramBase.ss_MainCultureInfo;
-
-            BackColor = Color.SlateGray;
         }
 
         public static volatile int POOL_TIME = -1
