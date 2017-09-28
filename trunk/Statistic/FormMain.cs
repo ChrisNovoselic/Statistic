@@ -148,9 +148,15 @@ namespace Statistic
             }
         }
 
+        public static Color _BackColor = Color.SlateGray;
+
         public FormMain()
         {
-            InitializeComponent();
+            InitializeComponent ();
+
+            BackColor =
+            MainMenuStrip.BackColor =
+                 _BackColor;
 
             ProgramBase.s_iMessageShowUnhandledException = 1;
 

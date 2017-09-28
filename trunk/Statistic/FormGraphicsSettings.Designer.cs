@@ -68,17 +68,17 @@ namespace Statistic
         private void InitializeComponent()                                                           
         {
             // Создание CheckBox (флажка)
-            this.cbxScale = new System.Windows.Forms.CheckBox();
+            this.cbxScale = new System.Windows.Forms.CheckBox ();
             // Создание массива лейблов  (УДГэ,Отклонение и т.д.)
             this.m_arlblColor = new System.Windows.Forms.Label [(int)INDEX_COLOR.COUNT_INDEX_COLOR];
             // Создание GroupBox (ящик: тип графиков)         
-            this.gbxType = new System.Windows.Forms.GroupBox();
+            this.gbxType = new System.Windows.Forms.GroupBox ();
             // Создание RadioButton (переключатель:гистограмма)      
-            this.rbtnBar = new System.Windows.Forms.RadioButton();
+            this.rbtnBar = new System.Windows.Forms.RadioButton ();
             // Создание RadioButton (переключатель:линейный)
-            this.rbtnLine = new System.Windows.Forms.RadioButton();
+            this.rbtnLine = new System.Windows.Forms.RadioButton ();
             // Создание GroupBox (ящик: типы значений графиков)      
-            this.groupBoxSourceData = new System.Windows.Forms.GroupBox();
+            this.gbxSourceData = new System.Windows.Forms.GroupBox ();
             // Создание массива переключателей "Типы значений графиков"
             this.m_arRadioButtonSourceData = new System.Windows.Forms.RadioButton []
             {    
@@ -90,7 +90,7 @@ namespace Statistic
             };
             // Метод SuspendLayout() приостанавливает компоновку в ящиках "тип графиков" и "типы значений графиков"
             this.gbxType.SuspendLayout();
-            this.groupBoxSourceData.SuspendLayout();
+            this.gbxSourceData.SuspendLayout();
             // SuspendLayout останавливает работу менеджера выравнивания (layout logic)
             this.SuspendLayout();
 
@@ -153,10 +153,8 @@ namespace Statistic
                 // Выравнивание текста
                 this.m_arlblColor[i].TextAlign = System.Drawing.ContentAlignment.MiddleCenter;
                 // При CLick на лейбл обработчику событий передается событие нажатия 
-                this.m_arlblColor[i].Click += new System.EventHandler(this.lbl_color_Click);
-                
-            }
-            
+                this.m_arlblColor[i].Click += new System.EventHandler(this.lbl_color_Click);                
+            }            
 
             // 
             // gbxType Элемент "Тип графиков"
@@ -205,13 +203,13 @@ namespace Statistic
             // groupBoxSourceData Элемент "Типы значений графиков"   
             // 
             // Добавление массива кнопок в ящик (коллекцию)
-            this.groupBoxSourceData.Controls.AddRange(m_arRadioButtonSourceData);
-            this.groupBoxSourceData.Location = new System.Drawing.Point(222, 115);
-            this.groupBoxSourceData.Name = "groupBoxSourceData";
-            this.groupBoxSourceData.Size = new System.Drawing.Size(173, 173);
-            this.groupBoxSourceData.TabIndex = 8;
-            this.groupBoxSourceData.TabStop = false;
-            this.groupBoxSourceData.Text = "Типы значений графиков";
+            this.gbxSourceData.Controls.AddRange(m_arRadioButtonSourceData);
+            this.gbxSourceData.Location = new System.Drawing.Point(222, 115);
+            this.gbxSourceData.Name = "groupBoxSourceData";
+            this.gbxSourceData.Size = new System.Drawing.Size(173, 173);
+            this.gbxSourceData.TabIndex = 8;
+            this.gbxSourceData.TabStop = false;
+            this.gbxSourceData.Text = "Типы значений графиков";
             
             int indx = -1  
                 //Позиция по оси ординат
@@ -225,6 +223,7 @@ namespace Statistic
             indx = (int)CONN_SETT_TYPE.AISKUE_PLUS_SOTIASSO; yPos = 19;
             // Группа элементов управления RadioButton не будет действовать как взаимоисключающая группа,
             // а свойство Checked должно быть обновлено в коде
+            this.m_arRadioButtonSourceData [(int)indx].Tag = indx;
             this.m_arRadioButtonSourceData[(int)indx].AutoCheck = false;
             this.m_arRadioButtonSourceData[(int)indx].AutoSize = true;
             this.m_arRadioButtonSourceData[(int)indx].Location = new System.Drawing.Point(6, yPos);
@@ -233,11 +232,12 @@ namespace Statistic
             this.m_arRadioButtonSourceData[(int)indx].TabIndex = 3;
             this.m_arRadioButtonSourceData[(int)indx].Text = "АИСКУЭ+СОТИАССО";
             this.m_arRadioButtonSourceData[(int)indx].UseVisualStyleBackColor = true;
-            this.m_arRadioButtonSourceData[(int)indx].Click += new System.EventHandler(this.rbtnSourceData_ASKUEPLUSSOTIASSO_Click);
+            this.m_arRadioButtonSourceData[(int)indx].Click += new System.EventHandler(this.rbtnSourceData_Click);
             // 
             // rbtnSourceData_ASKUE
             // Переменной indx присвоена 1, yPos присвоено 16+19=35;
             indx = (int)CONN_SETT_TYPE.AISKUE_3_MIN; yPos += yMargin;
+            this.m_arRadioButtonSourceData [(int)indx].Tag = indx;
             this.m_arRadioButtonSourceData[(int)indx].AutoCheck = false;
             this.m_arRadioButtonSourceData[(int)indx].AutoSize = true;
             this.m_arRadioButtonSourceData[(int)indx].Checked = true;
@@ -247,11 +247,12 @@ namespace Statistic
             this.m_arRadioButtonSourceData[(int)indx].TabIndex = 1;
             this.m_arRadioButtonSourceData[(int)indx].Text = "АИСКУЭ";
             this.m_arRadioButtonSourceData[(int)indx].UseVisualStyleBackColor = true;
-            this.m_arRadioButtonSourceData[(int)indx].Click += new System.EventHandler(this.rbtnSourceData_ASKUE_Click);
+            this.m_arRadioButtonSourceData[(int)indx].Click += new System.EventHandler(this.rbtnSourceData_Click);
             // 
             // rbtnSourceData_SOTIASSO_3_min
             // Переменной indx присвоена 2, yPos присвоено 35+19=54;
             indx = (int)CONN_SETT_TYPE.SOTIASSO_3_MIN; yPos += yMargin;
+            this.m_arRadioButtonSourceData [(int)indx].Tag = indx;
             this.m_arRadioButtonSourceData[(int)indx].AutoCheck = false;
             this.m_arRadioButtonSourceData[(int)indx].AutoSize = true;
             this.m_arRadioButtonSourceData[(int)indx].Location = new System.Drawing.Point(6, yPos);
@@ -260,11 +261,12 @@ namespace Statistic
             this.m_arRadioButtonSourceData[(int)indx].TabIndex = 0;
             this.m_arRadioButtonSourceData[(int)indx].Text = "СОТИАССО(3 мин)";
             this.m_arRadioButtonSourceData[(int)indx].UseVisualStyleBackColor = true;
-            this.m_arRadioButtonSourceData[(int)indx].Click += new System.EventHandler(this.rbtnSourceData_SOTIASSO3min_Click);
+            this.m_arRadioButtonSourceData[(int)indx].Click += new System.EventHandler(this.rbtnSourceData_Click);
             // 
             // rbtnSourceData_SOTIASSO_1_min
             // Переменной indx присвоена 3, yPos присвоено 54+19=73;
             indx = (int)CONN_SETT_TYPE.SOTIASSO_1_MIN; yPos += yMargin;
+            this.m_arRadioButtonSourceData [(int)indx].Tag = indx;
             this.m_arRadioButtonSourceData[(int)indx].AutoCheck = false;
             this.m_arRadioButtonSourceData[(int)indx].AutoSize = true;
             this.m_arRadioButtonSourceData[(int)indx].Location = new System.Drawing.Point(6, yPos);
@@ -273,11 +275,12 @@ namespace Statistic
             this.m_arRadioButtonSourceData[(int)indx].TabIndex = 0;
             this.m_arRadioButtonSourceData[(int)indx].Text = "СОТИАССО(1 мин)";
             this.m_arRadioButtonSourceData[(int)indx].UseVisualStyleBackColor = true;
-            this.m_arRadioButtonSourceData[(int)indx].Click += new System.EventHandler(this.rbtnSourceData_SOTIASSO1min_Click);
+            this.m_arRadioButtonSourceData[(int)indx].Click += new System.EventHandler(this.rbtnSourceData_Click);
             // 
             // rbtnSourceData_COSTUMIZE
             // Переменной indx присвоена 4, yPos присвоено 73+19=92;
             indx = (int)CONN_SETT_TYPE.COSTUMIZE; yPos += yMargin;
+            this.m_arRadioButtonSourceData [(int)indx].Tag = indx;
             this.m_arRadioButtonSourceData[(int)indx].AutoCheck = false;
             this.m_arRadioButtonSourceData[(int)indx].AutoSize = true;
             this.m_arRadioButtonSourceData[(int)indx].Location = new System.Drawing.Point(6, yPos);
@@ -287,7 +290,7 @@ namespace Statistic
             this.m_arRadioButtonSourceData[(int)indx].TabStop = true;
             this.m_arRadioButtonSourceData[(int)indx].Text = "выборочно";
             this.m_arRadioButtonSourceData[(int)indx].UseVisualStyleBackColor = true;
-            this.m_arRadioButtonSourceData[(int)indx].Click += new System.EventHandler(this.rbtnSourceData_COSTUMIZE_Click);
+            this.m_arRadioButtonSourceData[(int)indx].Click += new System.EventHandler(this.rbtnSourceData_Click);
             // 
             // FormGraphicsSettings
             // 
@@ -300,7 +303,7 @@ namespace Statistic
             // Добавление элементов управления в окно
             for (int i = 0; i < (int)INDEX_COLOR.COUNT_INDEX_COLOR; i++)
                 this.Controls.Add(this.m_arlblColor [i]);
-            this.Controls.Add(this.groupBoxSourceData);            
+            this.Controls.Add(this.gbxSourceData);            
             this.Controls.Add(this.gbxType);
             this.Controls.Add(this.cbxScale);
             // Стиль рамки 
@@ -322,8 +325,8 @@ namespace Statistic
             // Метод ResumeLayout возобновляет работу менеджера выравнивания 
             this.gbxType.ResumeLayout(false);
             this.gbxType.PerformLayout();
-            this.groupBoxSourceData.ResumeLayout(false);
-            this.groupBoxSourceData.PerformLayout();
+            this.gbxSourceData.ResumeLayout(false);
+            this.gbxSourceData.PerformLayout();
             this.ResumeLayout(false);
             //Выполнить компоновку
             this.PerformLayout();
@@ -337,7 +340,7 @@ namespace Statistic
         private System.Windows.Forms.GroupBox gbxType;
         private System.Windows.Forms.RadioButton rbtnBar;
         private System.Windows.Forms.RadioButton rbtnLine;        
-        private System.Windows.Forms.GroupBox groupBoxSourceData;
+        private System.Windows.Forms.GroupBox gbxSourceData;
         private System.Windows.Forms.RadioButton [] m_arRadioButtonSourceData;        
     }
 }

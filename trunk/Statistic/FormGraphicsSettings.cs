@@ -153,7 +153,7 @@ namespace Statistic
             else
                 ;
 
-            this.groupBoxSourceData.Enabled = bGroupBoxSourceData;       //??                                 
+            this.gbxSourceData.Enabled = bGroupBoxSourceData;       //??                                 
             m_markSourceData.Marked((int)cstGroupBoxSourceData);
 
             checkedSourceData();           // вызов метода проверки источника данных
@@ -167,9 +167,8 @@ namespace Statistic
         /// Закрытый метод getForeColor (получить цвет надписи) принимает агрумент типа структуры Color (выбранный цвет заднего плана)
         /// и возвращает цвет надписи (переднего плана)
         /// </summary>
-        /// <param name="bgColor"></param>
-        /// <returns></returns>
-
+        /// <param name="bgColor">Входной цвет фона, на котором размещается надпись</param>
+        /// <returns>Цвет для надписи</returns>
         private Color getForeColor (Color bgColor)  
         {
             
@@ -188,9 +187,7 @@ namespace Statistic
         }
         /// <summary>
         /// Установить признаки использования типов источников данных
-        /// </summary>
-        /// <summary>
-        /// Закрытый метод checkedSourceData (проверить источник данных) ничего не принимает, ничего не возвращает
+        /// , закрытый метод checkedSourceData (проверить источник данных) ничего не принимает, ничего не возвращает
         /// </summary>
         private void checkedSourceData()     
         {
@@ -223,8 +220,8 @@ namespace Statistic
         /// Закрытый метод cbxScale_CheckedChanged (проверка изменения масштаба), 
         /// принимающий событие нажатия на кнопку "масштабирование" и ничего не возвращающий
         /// </summary>
-        /// <param name="sender"></param>
-        /// <param name="e"></param>
+        /// <param name="sender">Объект, инициировавший событие</param>
+        /// <param name="e">Аргумент события</param>
         private void cbxScale_CheckedChanged(object sender, EventArgs e)
         {
             scale = cbxScale.Checked;                              //полю присвоить проверенное  значение
@@ -235,7 +232,7 @@ namespace Statistic
         /// и ничего не возвращающий
         /// </summary>
         /// <param name="sender"></param>
-        /// <param name="e"></param>
+        /// <param name="e">Аргумент события</param>
         private void lbl_color_Click(object sender, EventArgs e)   
         {
             ColorDialog cd = new ColorDialog();                   //создаем экземпляр cd класса ColorDialog (Диалоговое окно "Цвет")
@@ -256,8 +253,8 @@ namespace Statistic
         /// Закрытый метод GraphicsSettings_FormClosing (закрытие формы),
         /// принимающий событие закрытия формы (нажатие на крестик?) и ничего не возвращающий
         /// </summary>
-        /// <param name="sender"></param>
-        /// <param name="e"></param>
+        /// <param name="sender">Объект, инициировавший событие</param>
+        /// <param name="e">Аргумент события</param>
         private void GraphicsSettings_FormClosing(object sender, FormClosingEventArgs e)
         {
             e.Cancel = true;                   // отмена=true
@@ -277,8 +274,8 @@ namespace Statistic
         /// Закрытый метод rbtnLine_CheckedChanged (проверка изменения типа графика), 
         /// принимающий события нажатия на кнопку "линейный" или "гистограмма"
         /// </summary>
-        /// <param name="sender"></param>
-        /// <param name="e"></param>
+        /// <param name="sender">Объект, инициировавший событие</param>
+        /// <param name="e">Аргумент события</param>
         private void rbtnLine_CheckedChanged(object sender, EventArgs e)
         {
             if (rbtnBar.Checked == true)               //если кнопка "гистограмма" нажата
@@ -291,6 +288,12 @@ namespace Statistic
             
             delegateUpdateActiveGui((int)TYPE_UPDATEGUI.LINEAR);   //обновить активную настройку (линейный)
         }
+
+        private void rbtnSourceData_Click (object sender, EventArgs e)
+        {
+            rbtnSourceData_Click ((CONN_SETT_TYPE)(sender as Control).Tag);
+        }
+
         /// <summary>
         /// Закрытый метод rbtnSourceData_Click( нажатие источника данных), ничего не принимает и не возвращает
         /// </summary>
@@ -315,38 +318,7 @@ namespace Statistic
             }
             else
                 ;
-        }
-
-        /// <summary>
-        /// Закрытый метод rbtnSourceData_ASKUEPLUSSOTIASSO_Click, принимающий событие нажатия на "АИСКУЭ+СОТИАССО"
-        /// </summary>
-        /// <param name="sender"></param>
-        /// <param name="e"></param>
-        private void rbtnSourceData_ASKUEPLUSSOTIASSO_Click(object sender, EventArgs e)
-        {
-            //вызывается метод rbtnSourceData_Click, принимающий индекс перечисления (в данном случае передается 0)
-            rbtnSourceData_Click(CONN_SETT_TYPE.AISKUE_PLUS_SOTIASSO);
-        }
-
-        private void rbtnSourceData_ASKUE_Click(object sender, EventArgs e)        // аналогично
-        {
-                rbtnSourceData_Click(CONN_SETT_TYPE.AISKUE_3_MIN);
-        }
-
-        private void rbtnSourceData_SOTIASSO3min_Click(object sender, EventArgs e)
-        {
-            rbtnSourceData_Click(CONN_SETT_TYPE.SOTIASSO_3_MIN);
-        }
-
-        private void rbtnSourceData_SOTIASSO1min_Click(object sender, EventArgs e)
-        {
-            rbtnSourceData_Click(CONN_SETT_TYPE.SOTIASSO_1_MIN);
-        }
-
-        private void rbtnSourceData_COSTUMIZE_Click(object sender, EventArgs e)
-        {
-            rbtnSourceData_Click(CONN_SETT_TYPE.COSTUMIZE);
-        }
+        }        
         #endregion
     }
 }
