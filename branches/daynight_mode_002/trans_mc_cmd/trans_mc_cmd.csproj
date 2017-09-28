@@ -72,10 +72,6 @@
       <SpecificVersion>False</SpecificVersion>
       <HintPath>..\..\ExternalDll\HClassLibrary.dll</HintPath>
     </Reference>
-    <Reference Include="Infrastructure, Version=1.4.3.111, Culture=neutral, processorArchitecture=MSIL">
-      <SpecificVersion>False</SpecificVersion>
-      <HintPath>..\..\MCApiDLL\Infrastructure.dll</HintPath>
-    </Reference>
     <Reference Include="ModesApiExternal, Version=1.4.3.8, Culture=neutral, processorArchitecture=MSIL">
       <SpecificVersion>False</SpecificVersion>
       <HintPath>..\..\MCApiDLL\ModesApiExternal.dll</HintPath>

@@ -306,7 +306,7 @@ namespace Statistic
         /// <summary>
         /// Перегруженный метод, принимающий индекс источника информации
         /// </summary>
-        /// <param name="indx"></param>
+        /// <param name="indx">Индекс-таг-идентификатор типа источника данных для отображения</param>
         private void rbtnSourceData_Click(CONN_SETT_TYPE indx)   
         {
             if (m_arRadioButtonSourceData[(int)indx].Checked == false) 
