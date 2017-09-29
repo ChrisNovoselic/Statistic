@@ -1059,7 +1059,7 @@ namespace Statistic
                         {
                             //Установить счетчик случаев выхода за установленные границы в исходное состояние
                             cntDiviation = 0;
-                            cellStyle = HDataGridViewBase.s_dgvCellStyleCommon;
+                            cellStyle = DefaultCellStyle; // HDataGridViewBase.s_dgvCellStyleCommon;
                         }
                     }
                     else
@@ -1067,7 +1067,7 @@ namespace Statistic
                         Rows[i - 1].Cells[3].Value = 0.ToString(@"F3");
                         //Установить счетчик случаев выхода за установленные границы в исходное состояние
                         cntDiviation = 0;
-                        cellStyle = HDataGridViewBase.s_dgvCellStyleCommon;
+                        cellStyle = DefaultCellStyle; // HDataGridViewBase.s_dgvCellStyleCommon;
                     }
                     //Установить цвет ячейки
                     Rows[i - 1].Cells[3].Style = cellStyle;

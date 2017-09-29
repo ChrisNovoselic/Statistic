@@ -36,13 +36,14 @@ namespace Statistic
         /// <summary>
         /// Стили ячеек таблицы
         /// </summary>
-        public static DataGridViewCellStyle 
-            //Ошибка
-              s_dgvCellStyleError
-            //Предупреждение
+        public static DataGridViewCellStyle
+            /// <summary>Ошибка</summary>summary>
+            s_dgvCellStyleError
+            /// <summary>Предупреждение</summary>
             , s_dgvCellStyleWarning
-            //Общий
-            , s_dgvCellStyleCommon;
+                ///// <summary>Общий</summary>
+                //, s_dgvCellStyleCommon
+                ;
 
         /// <summary>
         /// Класс "Свойства колонок"
@@ -99,10 +100,18 @@ namespace Statistic
         protected HDataGridViewBase(HDateTime.INTERVAL interval, ColumnProperies[] arColuumns, bool bIsItogo) : base (bIsItogo)
         {
             m_IdInterval = interval;
-           
-            if (s_dgvCellStyleError == null) { s_dgvCellStyleError = new DataGridViewCellStyle(); s_dgvCellStyleError.BackColor = FormMain.formGraphicsSettings.COLOR(FormGraphicsSettings.INDEX_COLOR.DIVIATION); } else ;
-            if (s_dgvCellStyleWarning == null) { s_dgvCellStyleWarning = new DataGridViewCellStyle(); s_dgvCellStyleWarning.BackColor = Color.Yellow; } else ;
-            if (s_dgvCellStyleCommon == null) s_dgvCellStyleCommon = new DataGridViewCellStyle(); else ;
+
+            if (s_dgvCellStyleError == null) {
+                s_dgvCellStyleError = new DataGridViewCellStyle ();
+                s_dgvCellStyleError.BackColor = FormMain.formGraphicsSettings.COLOR (FormGraphicsSettings.INDEX_COLOR.DIVIATION);
+            } else
+                ;
+
+            if (s_dgvCellStyleWarning == null) {
+                s_dgvCellStyleWarning = new DataGridViewCellStyle ();
+                s_dgvCellStyleWarning.BackColor = Color.Yellow;
+            } else
+                ;
 
             //m_arColumns = new ColumnProperies[arWidthColiumns.Length];
             m_arColumns = new ColumnProperies[arColuumns.Length];
@@ -389,7 +398,7 @@ namespace Statistic
                         curCellStyle = s_dgvCellStyleWarning;
                 }
                 else
-                    curCellStyle = s_dgvCellStyleCommon;
+                    curCellStyle = DefaultCellStyle;
                 Rows[i + 0].Cells[(int)DataGridViewStandardHours.INDEX_COLUMNS.LAST_MINUTES].Style = curCellStyle;
 
                 if (values[i + 0].valuesLastMinutesTM > 1)
@@ -449,22 +458,18 @@ namespace Statistic
                 if (bDevVal == true)
                 {
                     Rows[i].Cells[(int)DataGridViewStandardHours.INDEX_COLUMNS.DEVIATION].Value = ((double)(values[i].valuesFact - values[i].valuesUDGe)).ToString("F2");
-                    if ((Math.Round(Math.Abs(values[i].valuesFact - values[i].valuesUDGe), 2) > Math.Round(values[i].valuesDiviation, 2))
-                        && (!(values[i].valuesDiviation == 0)))
-                    {
-                        s_dgvCellStyleError.BackColor = FormMain.formGraphicsSettings.COLOR(FormGraphicsSettings.INDEX_COLOR.DIVIATION);
-                        Rows[i].Cells[(int)DataGridViewStandardHours.INDEX_COLUMNS.DEVIATION].Style = s_dgvCellStyleError;
-                    }
-                        
- 
-                    else
-                        Rows[i].Cells[(int)DataGridViewStandardHours.INDEX_COLUMNS.DEVIATION].Style = s_dgvCellStyleCommon;
+                    if ((Math.Round (Math.Abs (values [i].valuesFact - values [i].valuesUDGe), 2) > Math.Round (values [i].valuesDiviation, 2))
+                        && (!(values [i].valuesDiviation == 0))) {
+                        s_dgvCellStyleError.BackColor = FormMain.formGraphicsSettings.COLOR (FormGraphicsSettings.INDEX_COLOR.DIVIATION);
+                        Rows [i].Cells [(int)DataGridViewStandardHours.INDEX_COLUMNS.DEVIATION].Style = s_dgvCellStyleError;
+                    } else
+                        Rows [i].Cells [(int)DataGridViewStandardHours.INDEX_COLUMNS.DEVIATION].Style = DefaultCellStyle; // s_dgvCellStyleCommon;
                     sumDiviation += Math.Abs(values[i].valuesFact - values[i].valuesUDGe);
                 }
                 else
                 {
                     Rows[i].Cells[(int)DataGridViewStandardHours.INDEX_COLUMNS.DEVIATION].Value = 0.ToString("F2");
-                    Rows[i].Cells[(int)DataGridViewStandardHours.INDEX_COLUMNS.DEVIATION].Style = s_dgvCellStyleCommon;
+                    Rows[i].Cells[(int)DataGridViewStandardHours.INDEX_COLUMNS.DEVIATION].Style = DefaultCellStyle; // s_dgvCellStyleCommon;
                 }
 
             }

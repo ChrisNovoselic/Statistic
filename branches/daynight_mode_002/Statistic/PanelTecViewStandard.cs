@@ -103,14 +103,14 @@ namespace Statistic
                         //    && values.valuesDiviation[i] != 0)
                         //    Rows[i].Cells[5].Style = dgvCellStyleError;
                         //else
-                        Rows[i].Cells[(int)DataGridViewStandardHours.INDEX_COLUMNS.DEVIATION].Style = s_dgvCellStyleCommon;
+                        Rows[i].Cells[(int)DataGridViewStandardHours.INDEX_COLUMNS.DEVIATION].Style = DefaultCellStyle; // s_dgvCellStyleCommon;
 
                         sumDiviation += (values[i + 1].valuesFact - values[i].valuesUDGe)/* / cnt*/;
                     }
                     else
                     {
                         Rows[i].Cells[(int)DataGridViewStandardHours.INDEX_COLUMNS.DEVIATION].Value = 0.ToString("F2");
-                        Rows[i].Cells[(int)DataGridViewStandardHours.INDEX_COLUMNS.DEVIATION].Style = s_dgvCellStyleCommon;
+                        Rows[i].Cells[(int)DataGridViewStandardHours.INDEX_COLUMNS.DEVIATION].Style = DefaultCellStyle; // s_dgvCellStyleCommon;
                     }
                 }
 

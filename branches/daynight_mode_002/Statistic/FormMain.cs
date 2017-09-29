@@ -32,37 +32,6 @@ namespace Statistic
     /// </summary>
     public partial class FormMain : FormMainBaseWithStatusStrip
     {
-        //??? требуется перенос кода в HClassLibrary
-        /// <summary>
-        /// Закрытый класс HTabCtrlEx наследуется от HClassLibrary.HTabCtrlEx
-        /// </summary>
-        private class HTabCtrlEx : HClassLibrary.HTabCtrlEx
-        {
-            /// <summary>
-            /// Открытый метод IndexOfName (индекс имени) принимает строковый аргумент, возвращает значение типа int
-            /// </summary>
-            /// <param name="name">Имя</param>
-            /// <returns>Число</returns>
-            public int IndexOfName (string name)
-            {
-                int iRes = -1;
-
-                int i = -1;
-                //?? что-то с вкладками связано
-                for (i = 0; i < TabCount; i++)
-                    if (TabPages[i].Name.Trim().Equals(name.Trim()) == true)
-                    {
-                        iRes = i;
-
-                        break;
-                    }
-                    else
-                        ;
-
-                return iRes;
-            }
-        }
-
         //10001 = ADMIN_KOM_DISP, 10002 = ADMIN_NSS (FormChangeMode)
         private enum ID_ADDING_TAB
         {
@@ -80,9 +49,9 @@ namespace Statistic
             public ToolStripMenuItem menuItem;
             public PanelStatistic panel;
             //public string m_TabText;
-            public HTabCtrlEx.TYPE_TAB m_typeTab;
+            public HStatisticTabCtrlEx.TYPE_TAB m_typeTab;
 
-            public ADDING_TAB(string menuItemName, string menuItemText/*, string tabText*/, HTabCtrlEx.TYPE_TAB typeTab)
+            public ADDING_TAB(string menuItemName, string menuItemText/*, string tabText*/, HStatisticTabCtrlEx.TYPE_TAB typeTab)
             {
                 menuItem = new System.Windows.Forms.ToolStripMenuItem();
                 menuItem.CheckOnClick = true;
@@ -168,6 +137,7 @@ namespace Statistic
             //Режим изменения цветовой гаммы
             _darkColorTable = new DarkColorTable (this.BackColor);            
             BackColorChanged += FormMain_BackColorChanged;
+            BackColorChanged += tclTecViews.FormMain_BackColorChanged;
 
             ProgramBase.s_iMessageShowUnhandledException = 1;
 
@@ -184,7 +154,7 @@ namespace Statistic
             //DelegateGetINIParametersOfID = new StringDelegateIntFunc(GetINIParametersOfID);
 
             tclTecViews.EventHTabCtrlExClose += delegateOnCloseTab;
-            tclTecViews.EventHTabCtrlExFloat += delegateOnFloatTab;           
+            tclTecViews.EventHTabCtrlExFloat += delegateOnFloatTab;
         }
 
         private int Initialize(out string msgError)
@@ -1053,7 +1023,7 @@ namespace Statistic
                     else
                         throw new Exception(@"FormMain::FormMain_OnFormFloat_Closing () - невозможно определить тип панели...");
                 //Добавить вкладку в "основное" окно
-                tclTecViews.AddTabPage(formFloat.GetPanel(), formFloat.Text, keyTab, HTabCtrlEx.TYPE_TAB.FLOAT);
+                tclTecViews.AddTabPage(formFloat.GetPanel(), formFloat.Text, keyTab, HStatisticTabCtrlEx.TYPE_TAB.FLOAT);
 
                 //???Отладка
                 Console.WriteLine(@"FormMain::FormMain_OnFormFloat_Closing () - TabCount=" + tclTecViews.TabCount + @", SelectedIndex=" + tclTecViews.SelectedIndex);
@@ -1990,7 +1960,7 @@ namespace Statistic
                     tclTecViews.AddTabPage(m_listStandardTabs[panel_tecView.indx_tecView]
                         , formChangeMode.m_listItems[panel_tecView.indx_itemChangeMode].name_shr
                         , m_listStandardTabs[panel_tecView.indx_tecView].m_ID
-                        , HTabCtrlEx.TYPE_TAB.FLOAT);
+                        , HStatisticTabCtrlEx.TYPE_TAB.FLOAT);
                     // инициировать операции по инициализации панели
                     m_listStandardTabs[panel_tecView.indx_tecView].Start();
                 }
@@ -2349,7 +2319,7 @@ namespace Statistic
                                 break;
                         }
 
-                        tclTecViews.AddTabPage(m_arPanelAdmin[(int)modeAdmin], formChangeMode.getNameAdminValues(modeAdmin, mode), -1, HTabCtrlEx.TYPE_TAB.FIXED);
+                        tclTecViews.AddTabPage(m_arPanelAdmin[(int)modeAdmin], formChangeMode.getNameAdminValues(modeAdmin, mode), -1, HStatisticTabCtrlEx.TYPE_TAB.FIXED);
 
                         switch (modeAdmin)
                         {
@@ -2705,7 +2675,7 @@ namespace Statistic
             bool bRes = false;
 
             PanelStatistic panel = m_dictAddingTabs[(int)idAddingPanel].panel;
-            HTabCtrlEx.TYPE_TAB typeTab = m_dictAddingTabs[(int)idAddingPanel].m_typeTab;
+            HStatisticTabCtrlEx.TYPE_TAB typeTab = m_dictAddingTabs[(int)idAddingPanel].m_typeTab;
             int key = -1
                 , indxItem = -1;
             INDEX_CUSTOM_TAB indxTab = INDEX_CUSTOM_TAB.TAB_2X2;
@@ -2786,6 +2756,8 @@ namespace Statistic
             // формы-утилиты
             foreach (Form form in _listFormUtility)
                 form.BackColor = BackColor;
+
+            tclTecViews.TabPages [0].BackColor = BackColor;
         }
 
         protected override void UpdateActiveGui(int type)

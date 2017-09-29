@@ -30,21 +30,19 @@ namespace StatisticCommon
             Thread.CurrentThread.CurrentUICulture =
                 ProgramBase.ss_MainCultureInfo;
 
-            Control formMain = this.Parent;
-
-            while ((!(formMain == null))
-                && (!(formMain is Form)))
-                formMain = formMain.Parent;
-
-            if (!(formMain == null))
-                formMain.BackColorChanged += FormMain_BackColorChanged;
-            else
-                ;
+            Application.OpenForms[0].BackColorChanged += formMain_BackColorChanged;
         }
 
-        private void FormMain_BackColorChanged (object sender, EventArgs e)
+        protected virtual void formMain_BackColorChanged (object sender, EventArgs e)
         {
-            throw new NotImplementedException ();
+            BackColor = (sender as Form).BackColor;
+
+            foreach (Control ctrl in Controls)
+                if ((ctrl is DataGridView)
+                    || (ctrl is HZedGraphControl)) {
+                    ctrl.BackColor = BackColor;
+                } else
+                    ;
         }
 
         public static volatile int POOL_TIME = -1

@@ -157,6 +157,9 @@
     <Compile Include="FormMain.designer.cs">
       <DependentUpon>FormMain.cs</DependentUpon>
     </Compile>
+    <Compile Include="HStatisticTabCtrlEx.cs">
+      <SubType>Form</SubType>
+    </Compile>
     <Compile Include="PanelAdmin.cs">
       <SubType>Component</SubType>
     </Compile>

@@ -74,7 +74,7 @@ namespace Statistic
         /// <summary>
         /// Цвета Label'ов
         /// </summary>
-        static Color s_clrBackColorLabel = Color.FromArgb(212, 208, 200), s_clrBackColorLabelVal_TM = Color.FromArgb(219, 223, 227), s_clrBackColorLabelVal_TM_SN = Color.FromArgb(219, 223, 247);
+        static Color s_clrBackColorLabel = SystemColors.Control, s_clrBackColorLabelVal_TM = Color.FromArgb(219, 223, 227), s_clrBackColorLabelVal_TM_SN = Color.FromArgb(219, 223, 247);
         
         /// <summary>
         /// Стили Label'ов
