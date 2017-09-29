@@ -131,6 +131,27 @@ namespace StatisticCommon
 
             private EventResultArgs _prevArg;
 
+            private bool _bAllowVisibled;
+
+            public bool AllowVisibled
+            {
+                get
+                {
+                    return _bAllowVisibled;
+                }
+
+                set
+                {
+#if HCLASSLIBRARY_MSEXCELIO
+#else
+                    
+                    //??? не забывать о природе 'Visible'
+                    Visible = value;
+#endif
+                    _bAllowVisibled = value;
+                }
+            }
+
             private MODE_EXPORT_PBRVALUES _mode;
             /// <summary>
             /// Режим работы объекта
@@ -296,8 +317,8 @@ namespace StatisticCommon
                 _mnlResetEventBusy.Set ();
                 // Интервал времени ожидания завершения операции
                 TimeSpan tsWait = TimeSpan.FromMilliseconds (MS_WAIT_EXPORT_PBR_MAX);
-                // запустить таймер ожидания завершения длительной операции
-                _timerWiat.Change ((int)tsWait.TotalMilliseconds, System.Threading.Timeout.Infinite);
+                //// запустить таймер ожидания завершения длительной операции
+                //_timerWiat.Change ((int)tsWait.TotalMilliseconds, System.Threading.Timeout.Infinite);
 
                 //TODO: ...длительная операция
                 _thread = new Thread (new ParameterizedThreadStart (run)) { IsBackground = true, Name = string.Format ("MSExcelIOExportPBRValues") };
@@ -387,10 +408,12 @@ namespace StatisticCommon
                                 selectWorksheet (1);
 
                                 if (writeValue (ConstantExportPBRValues.NumberColumn_Date, ConstantExportPBRValues.NumberRow_Date, HDateTime.ToMoscowTimeZone ().ToString (ConstantExportPBRValues.Format_Date)) == false)
-                                    Logging.Logg ().Error (string.Format ("AdminTS_KomDisp.MSExcelIOExportPBRValues::Run () - не удалось сохранить дату обновления...")
+                                    Logging.Logg ().Error (string.Format ("AdminTS_KomDisp.MSExcelIOExportPBRValues::Run () - не удалось сохранить дату/время обновления...")
                                         , Logging.INDEX_MESSAGE.NOT_SET);
                                 else
-                                    ;
+                                    Logging.Logg().Action(string.Format("AdminTS_KomDisp.MSExcelIOExportPBRValues::Run () - сохранили дату/время обновления [столб.={0}, стр.={1}, знач.={2}]..."
+                                            , ConstantExportPBRValues.NumberColumn_Date, ConstantExportPBRValues.NumberRow_Date, HDateTime.ToMoscowTimeZone().ToString(ConstantExportPBRValues.Format_Date))
+                                        , Logging.INDEX_MESSAGE.NOT_SET);
 
                                 foreach (KeyValuePair<int, IVALUES> pair in _dictValues) {
                                     for (int iHour = 0; iHour < pair.Value.m_data.Length; iHour++)
@@ -401,16 +424,17 @@ namespace StatisticCommon
                                         else
                                             ;
                                 }
-                                #endregion
+#endregion
 
-                                save (NameDocument);
+                                _previousNameDocument = NameDocument;
+                                save (_previousNameDocument);
 
-                                Logging.Logg ().Error (string.Format ("AdminTS_KomDisp.MSExcelIOExportPBRValues::Run () - сохранили документ {0} с наименованием {1}...", listFileInfoDest [0].FullName, NameDocument)
+                                Logging.Logg ().Action (string.Format ("AdminTS_KomDisp.MSExcelIOExportPBRValues::Run () - сохранили документ {0} с наименованием {1}...", listFileInfoDest [0].FullName, _previousNameDocument)
                                     , Logging.INDEX_MESSAGE.NOT_SET);
 
                                 try {
                                     if ((listFileInfoDest.Count > 0)
-                                        && (NameDocument.Equals (listFileInfoDest [0].FullName) == false)
+                                        && (_previousNameDocument.Equals (listFileInfoDest [0].FullName) == false)
                                         && (TemplateDocument.Equals (listFileInfoDest [0].FullName) == false))
                                         listFileInfoDest [0].Delete ();
                                     else
@@ -428,13 +452,7 @@ namespace StatisticCommon
 #endif
                                     arg = new EventResultArgs () { Result = RESULT.OK };
                                 } else {
-#if HCLASSLIBRARY_MSEXCELIO
-                                    Visible = true;
-#else
-                                    MSExcelIO msExcelIO = new MSExcelIO();
-                                    msExcelIO.OpenDocument(NameDocument);
-#endif
-                                    arg = new EventResultArgs () { Result = RESULT.VISIBLE };
+                                    arg = new EventResultArgs() { Result = RESULT.VISIBLE };
                                 }
                             } else {
                                 Logging.Logg ().Error (string.Format ("AdminTS_KomDisp.MSExcelIOExportPBRValues::Run () - не удалось открыть книгу MS Excel с наименованием={0}..."
@@ -474,6 +492,62 @@ namespace StatisticCommon
 
                 Result (this, _prevArg = arg);
             }
+
+#if HCLASSLIBRARY_MSEXCELIO
+            public override bool Visible
+            {
+                get
+                {
+                    return base.Visible;
+                }
+
+                set
+                {
+                    //??? непонятно что выполнять
+                    // 1) MS Excel изменить видимость
+                    // 2) открыть/закрыть файл-результат
+                    base.Visible = value;
+                }
+            }
+#else
+            private bool _visible;
+
+            public bool Visible
+            {
+                get
+                {
+                    return _visible;
+                }
+
+                set
+                {
+                    int err = -1;
+
+                    MSExcelIO msExcelIO = new MSExcelIO();
+                    if (value == true) {
+                        if ((msExcelIO.IsValidate == true)
+                            && (string.IsNullOrEmpty(_previousNameDocument) == false)) {
+                            msExcelIO.OpenDocument(_previousNameDocument);
+                            msExcelIO.Visible =
+                            _visible =
+                                true;
+                        } else
+                            _visible = false;
+                    } else if (value == false) {
+                        //TODO: найти открытый документ и закрыть его
+                        if ((msExcelIO.IsValidate == true)
+                            && (string.IsNullOrEmpty( _previousNameDocument) == false)
+                            && (msExcelIO.IsOpen(_previousNameDocument, out err) == true))
+                            msExcelIO.CloseExcelDoc(_previousNameDocument);
+                        else
+                            ;
+
+                        _visible = value;
+                    } else
+                        ;
+                }
+            }
+#endif
 
             /// <summary>
             /// Метод обратного вызова для таймера контроля длительности выполнения операции
@@ -548,6 +622,23 @@ namespace StatisticCommon
                         , Folder_CSV, ConstantExportPBRValues.MaskDocument, ConstantExportPBRValues.MaskExtension);
                 }
             }
+
+            /// <summary>
+            /// Наименование документа, использовавшееся в крайней операции экспорта
+            ///  , т.к. значение 'NameDocument' имеет зависимость от текущего времени
+            /// </summary>
+            private string _previousNameDocument;
+
+            ///// <summary>
+            ///// Актуальное наименование документа MS Excel при экспорте
+            ///// </summary>
+            //private string ActualNameDocument
+            //{
+            //    get
+            //    {
+            //        return ;
+            //    }
+            //}
 
             /// <summary>
             /// Наименование документа MS Excel при экспорте

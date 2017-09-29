@@ -64,7 +64,11 @@ namespace StatisticCommon
                 case MSExcelIOExportPBRValues.RESULT.OK:
                     break;
                 case MSExcelIOExportPBRValues.RESULT.VISIBLE:
-                    //_msExcelIOExportPBRValues.Visible = true;
+                    //??? не забывать о различной природе свойства (~ HCLASSLIBRARY_MSEXCELIO)
+                    if (_msExcelIOExportPBRValues.AllowVisibled == true)
+                        _msExcelIOExportPBRValues.Visible = true;
+                    else
+                        ;
                     break;
                 case MSExcelIOExportPBRValues.RESULT.SHEDULE:
                     EventExportPBRValues (e);
@@ -587,6 +591,11 @@ namespace StatisticCommon
         public void SetModeExportPBRValues(MODE_EXPORT_PBRVALUES mode)
         {
             _msExcelIOExportPBRValues.Mode = mode;
+        }
+
+        public void SetAllowMSExcelVisibledExportPBRValues(bool bVisibled)
+        {
+            _msExcelIOExportPBRValues.AllowVisibled = bVisibled;
         }
 
         public void SetSheduleExportPBRValues(TimeSpan tsShedule)

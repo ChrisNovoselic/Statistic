@@ -23,6 +23,7 @@ namespace Statistic
         private GroupBoxDividerChoice gbxDividerChoice;
         private System.Windows.Forms.Button btnExport_PBRValues;
         private System.Windows.Forms.CheckBox cbAutoExport_PBRValues;
+        private System.Windows.Forms.CheckBox cbMSExcelVisibledExport_PBRValues;
         private System.Windows.Forms.Label labelSheduleExport_PBRValues;
         private System.Windows.Forms.DateTimePicker dtpSheduleStartExport_PBRValues;
         private System.Windows.Forms.Label labelPeriodExport_PBRValues;
@@ -32,7 +33,7 @@ namespace Statistic
         {
             UNKNOWN = -1
             , BUTTON_CSV_IMPORT_PBR, BUTTON_CSV_IMPORT_ADMINVALUESDEFAULT
-            , BUTTON_EXPORT_PBR, CB_AUTO_EXPORT_PBR, LABEL_SHEDULE_EXPORT_PBR, LABEL_PERIOD_EXPORT_PBR, DTP_SHEDULE_EXPORT_PBR, DTP_PERIOD_EXPORT_PBR
+            , BUTTON_EXPORT_PBR, CB_AUTO_EXPORT_PBR, CB_MSECEL_VISIBLED_EXPORT_PBR, LABEL_SHEDULE_EXPORT_PBR, LABEL_PERIOD_EXPORT_PBR, DTP_SHEDULE_EXPORT_PBR, DTP_PERIOD_EXPORT_PBR
                 , COUNT
         };
 
@@ -48,20 +49,22 @@ namespace Statistic
                 , indx = -1;
             Rectangle[] arRectControlUI = new Rectangle[] {
                 new Rectangle (new Point (10, posY), new Size (154, m_iSizeY)) //BUTTON_CSV_IMPORT_PBR
-                , new Rectangle (new Point (10, posY + 1 * (m_iSizeY + m_iMarginY)), new Size (154, m_iSizeY)) //, BUTTON_CSV_IMPORT_ADMINVALUESDEFAULT                
+                , new Rectangle (new Point (10, posY + 1 * (m_iSizeY + m_iMarginY)), new Size (154, m_iSizeY)) //, BUTTON_CSV_IMPORT_ADMINVALUESDEFAULT
                 // ------ разделитель ------
                 , new Rectangle (new Point (10, posY + (int)(2.7 * (m_iSizeY + m_iMarginY))), new Size (width, m_iSizeY)) //, BUTTON_EXPORT_PBR
                 , new Rectangle (new Point (10, posY + (int)(3.7 * (m_iSizeY + m_iMarginY))), new Size (width, m_iSizeY)) //, CB_AUTO_EXPORT_PBR
-                , new Rectangle (new Point (10, posY + (int)(4.6 * (m_iSizeY + m_iMarginY))), new Size (width2, m_iSizeY)) //, LABEL_SHEDULE_EXPORT_PBR
-                , new Rectangle (new Point (10 + width2 + 2 * iMarginX, posY + (int)(4.6 * (m_iSizeY + m_iMarginY))), new Size (width2, m_iSizeY)) //, LABEL_PERIOD_EXPORT_PBR
-                , new Rectangle (new Point (10, posY + (int)(5.5 * (m_iSizeY + m_iMarginY))), new Size (width2, m_iSizeY)) //, DTP_SHEDULE_EXPORT_PBR
-                , new Rectangle (new Point (10 + width2 + 2 * iMarginX, posY + (int)(5.5 * (m_iSizeY + m_iMarginY))), new Size (width2, m_iSizeY)) //, DTP_PERIOD_EXPORT_PBR
+                , new Rectangle (new Point (10, posY + (int)(4.7 * (m_iSizeY + m_iMarginY))), new Size (width, m_iSizeY)) //, CB_MSEXCEL_VISIBLED
+                , new Rectangle (new Point (10, posY + (int)(5.6 * (m_iSizeY + m_iMarginY))), new Size (width2, m_iSizeY)) //, LABEL_SHEDULE_EXPORT_PBR
+                , new Rectangle (new Point (10 + width2 + 2 * iMarginX, posY + (int)(5.6 * (m_iSizeY + m_iMarginY))), new Size (width2, m_iSizeY)) //, LABEL_PERIOD_EXPORT_PBR
+                , new Rectangle (new Point (10, posY + (int)(6.5 * (m_iSizeY + m_iMarginY))), new Size (width2, m_iSizeY)) //, DTP_SHEDULE_EXPORT_PBR
+                , new Rectangle (new Point (10 + width2 + 2 * iMarginX, posY + (int)(6.5 * (m_iSizeY + m_iMarginY))), new Size (width2, m_iSizeY)) //, DTP_PERIOD_EXPORT_PBR
             };
 
             this.btnImportCSV_PBRValues = new Button();
-            this.btnImportCSV_AdminDefaultValues = new Button();            
+            this.btnImportCSV_AdminDefaultValues = new Button();
             this.btnExport_PBRValues = new Button();
             this.cbAutoExport_PBRValues = new CheckBox();
+            this.cbMSExcelVisibledExport_PBRValues = new CheckBox();
             this.labelSheduleExport_PBRValues = new Label();
             this.dtpSheduleStartExport_PBRValues = new DateTimePicker();
             this.dtpShedulePeriodExport_PBRValues = new DateTimePicker();
@@ -77,6 +80,7 @@ namespace Statistic
             this.m_panelManagement.Controls.Add(this.gbxDividerChoice);
             this.m_panelManagement.Controls.Add(this.btnExport_PBRValues);
             this.m_panelManagement.Controls.Add(this.cbAutoExport_PBRValues);
+            this.m_panelManagement.Controls.Add(this.cbMSExcelVisibledExport_PBRValues);
             this.m_panelManagement.Controls.Add(this.labelSheduleExport_PBRValues);
             this.m_panelManagement.Controls.Add(this.labelPeriodExport_PBRValues);
             this.m_panelManagement.Controls.Add(this.dtpSheduleStartExport_PBRValues);
@@ -135,6 +139,17 @@ namespace Statistic
             this.cbAutoExport_PBRValues.Text = "Автоматически";
             this.cbAutoExport_PBRValues.CheckedChanged += cbAutoExport_PBRValues_CheckedChanged;
             this.cbAutoExport_PBRValues.Enabled = AllowUserSetModeExportPBRValues;
+            // 
+            // cbMSExcelVisibledExport_PBRValues
+            //
+            indx = (int)INDEX_CONTROL_UI.CB_MSECEL_VISIBLED_EXPORT_PBR;
+            this.cbMSExcelVisibledExport_PBRValues.Location = arRectControlUI[indx].Location;
+            this.cbMSExcelVisibledExport_PBRValues.Name = "cbMSExcelVisibledExport_PBRValues";
+            this.cbMSExcelVisibledExport_PBRValues.Size = arRectControlUI[indx].Size;
+            this.cbMSExcelVisibledExport_PBRValues.TabIndex = 2;
+            this.cbMSExcelVisibledExport_PBRValues.Text = "Просмотр результата";
+            this.cbMSExcelVisibledExport_PBRValues.CheckedChanged += cbMSExcelVisibledExport_PBRValues_CheckedChanged;
+            this.cbMSExcelVisibledExport_PBRValues.Enabled = AllowUserSetModeExportPBRValues;
             // 
             // labelSheduleExport_PBRValues
             //
@@ -220,10 +235,14 @@ namespace Statistic
             if (m_listTECComponentIndex.Count > 0) {
                 date = Admin.DateDoExportPBRValues;
 
-                if (date.Equals(DateTime.MinValue) == false)
-                    m_admin.GetRDGValues(m_listTECComponentIndex[0], date);
+                if (date.Equals(DateTime.MinValue) == true)
+                // 'Admin.DateDoExportPBRValues' не установил значение, значит режим 'MODE_GET_RDG_VALUES.MANUAL'
+                // , следует взять значение из визуального компонента
+                    date = mcldrDate.SelectionStart.Date;
                 else
                     ;
+
+                m_admin.GetRDGValues(m_listTECComponentIndex[0], date);
             } else
                 Logging.Logg().Error(string.Format("PanelAdin_KomDisp::doExportPBRValues () - не найдено ГТП для экспорта..."), Logging.INDEX_MESSAGE.NOT_SET);
             ;
@@ -250,11 +269,22 @@ namespace Statistic
 
             Admin.SetModeExportPBRValues((bChecked == true) ? AdminTS_KomDisp.MODE_EXPORT_PBRVALUES.AUTO : AdminTS_KomDisp.MODE_EXPORT_PBRVALUES.MANUAL);
 
-            btnExport_PBRValues.Enabled = !bChecked;
-            dtpSheduleStartExport_PBRValues.Enabled =            
+            cbMSExcelVisibledExport_PBRValues.Checked = bChecked == true
+                ? !bChecked // инвертировать
+                    : cbMSExcelVisibledExport_PBRValues.Checked; // оставить "как есть"
+
+            btnExport_PBRValues.Enabled =
+            cbMSExcelVisibledExport_PBRValues.Enabled =
+                !bChecked;
+            dtpSheduleStartExport_PBRValues.Enabled =
                  AllowUserChangeSheduleStartExportPBRValues && !bChecked;
             dtpShedulePeriodExport_PBRValues.Enabled =
                  AllowUserChangeShedulePeriodExportPBRValues && !bChecked;
+        }
+
+        private void cbMSExcelVisibledExport_PBRValues_CheckedChanged(object sender, EventArgs e)
+        {
+            Admin.SetAllowMSExcelVisibledExportPBRValues((sender as CheckBox).Checked);
         }
 
         private void dtpSheduleStartExport_PBRValues_ValueChanged(object sender, EventArgs e)

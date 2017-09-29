@@ -15,6 +15,7 @@ using System.Threading;
 
 using HClassLibrary;
 using StatisticCommon;
+using System.Text.RegularExpressions;
 
 namespace TestFunc
 {
@@ -31,13 +32,15 @@ namespace TestFunc
                 //test = new HOracleConnection();
                 ////test = new HOleDbOracleConnection ();
                 //(test as HDbOracle).Open ();
-                //(test as HDbOracle).Query();                
+                //(test as HDbOracle).Query();
                 //(test as HDbOracle).Close ();
                 //(test as HDbOracle).OutResult ();
 
                 //test = new DbSources();
 
-                test = new GenericSorted();
+                //test = new GenericSorted();
+
+                test = new HRegEx();
             } catch (Exception e) {
                 Console.Write(e.Message + Environment.NewLine);
             }
@@ -214,6 +217,18 @@ namespace TestFunc
                 }
                 else
                     ;
+            }
+        }
+
+        private class HRegEx
+        {
+            public HRegEx ()
+            {
+                string reg = @"[\\/]";
+                string[] paths = { "sd\fdg", "asd/fger", "adf\\sefwes", "as//fdsfsw", "a\\sfs/aefwef", "jhgd\\sw\\ueg/rw" };
+                Regex rx = new Regex(reg);
+                foreach (string path in paths)
+                    Console.WriteLine(string.Format("в строке: '{0}' {1} вхождений из '{2}'", path, rx.Matches(path).Count, reg));
             }
         }
     }
