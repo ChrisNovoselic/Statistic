@@ -1158,12 +1158,12 @@ namespace Statistic
                 {
                     try
                     {
-                        signal = new SIGNAL(Convert.ToString(list_channels.Rows[i].ItemArray[4]),
-                            Convert.ToInt32(list_channels.Rows[i].ItemArray[5]),
-                            Convert.ToInt32(list_channels.Rows[i].ItemArray[6]),
-                            Convert.ToBoolean(list_channels.Rows[i].ItemArray[7])
+                        signal = new SIGNAL(Convert.ToString(list_channels.Rows[i].ItemArray[Convert.ToInt32(DB_TABLE_DATA.DESCRIPTION)]),
+                            Convert.ToInt32(list_channels.Rows[i].ItemArray[Convert.ToInt32(DB_TABLE_DATA.USPD)]),
+                            Convert.ToInt32(list_channels.Rows[i].ItemArray[Convert.ToInt32(DB_TABLE_DATA.CHANNEL)]),
+                            Convert.ToBoolean(list_channels.Rows[i].ItemArray[Convert.ToInt32(DB_TABLE_DATA.USE)])
                         );
-                        m_listTEC[Convert.ToInt32(list_channels.Rows[i].ItemArray[1]) - 1].m_arListSgnls[GetGroupID(Convert.ToString(list_channels.Rows[i].ItemArray[2]))].Add(signal);
+                        m_listTEC[Convert.ToInt32(list_channels.Rows[i].ItemArray[Convert.ToInt32(DB_TABLE_DATA.ID_TEC)]) - 1].m_arListSgnls[GetGroupID(Convert.ToString(list_channels.Rows[i].ItemArray[Convert.ToInt32(DB_TABLE_DATA.GROUP)]))].Add(signal);
                     }
                     catch (Exception e)
                     {
@@ -1219,7 +1219,8 @@ namespace Statistic
             }
 
             //Получить параметры соединения с источником данных
-            m_connSettAIISKUECentre = GD.GetConnSettAIISKUECentre();
+            m_connSettAIISKUECentre = FormMain.s_listFormConnectionSettings[(int)CONN_SETT_TYPE.DATA_AISKUE].getConnSett();
+            //GD.GetConnSettAIISKUECentre();
 
             InitializeComponents();
 
@@ -1348,7 +1349,15 @@ namespace Statistic
             return listRes;
         }
 
-    private enum INDEX_CONTROL : short { LB_TEC, LB_GROUP_SIGNAL }
+        private enum INDEX_CONTROL : short { LB_TEC, LB_GROUP_SIGNAL }
+
+        /// <summary>
+        /// Поля таблицы сигналов
+        /// </summary>
+        public enum DB_TABLE_DATA
+        {
+            ID, ID_TEC, GROUP, NAME, DESCRIPTION, USPD, CHANNEL, USE
+        };
 
         private const string MS_EXCEL_FILTER = @"Книга MS Excel 2010 (*.xls, *.xlsx)|*.xls;*.xlsx";
         /// <summary>
@@ -2145,7 +2154,7 @@ namespace Statistic
 
                 for (indx = 0; indx <= TEC_LOCAL.INDEX_DATA.GRVIII; indx++)
                 {
-                    if (m_listBoxTEC.SelectedIndex != 4 && indx == TEC_LOCAL.INDEX_DATA.GRVIII)
+                    if (m_listBoxTEC.SelectedIndex != m_listTEC.Count - 2 && indx == TEC_LOCAL.INDEX_DATA.GRVIII)
                     {
                         indx++; break;
                     }
@@ -2164,27 +2173,27 @@ namespace Statistic
                         {
                             case TEC_LOCAL.INDEX_DATA.TG:
                                 m_dgvValues_TG.Update(dictIndxValues);
-                                m_sumValues.Rows[0].Cells[1].Value = Convert.ToString(m_dgvValues_TG.Rows[m_dgvValues_TG.Rows.Count - 1].Cells[24].Value);
+                                m_sumValues.Rows[Convert.ToInt32(indx)].Cells[1].Value = Convert.ToString(m_dgvValues_TG.Rows[m_dgvValues_TG.Rows.Count - 1].Cells[24].Value);
                                 break;
                             case TEC_LOCAL.INDEX_DATA.TSN:
                                 m_dgvValues_TSN.Update(dictIndxValues);
-                                m_sumValues.Rows[1].Cells[1].Value = Convert.ToString(m_dgvValues_TSN.Rows[m_dgvValues_TSN.Rows.Count - 1].Cells[24].Value);
+                                m_sumValues.Rows[Convert.ToInt32(indx)].Cells[1].Value = Convert.ToString(m_dgvValues_TSN.Rows[m_dgvValues_TSN.Rows.Count - 1].Cells[24].Value);
                                 break;
                             case TEC_LOCAL.INDEX_DATA.GRII:
                                 m_dgvValues_GRII.Update(dictIndxValues);
-                                m_sumValues.Rows[2].Cells[1].Value = Convert.ToString(m_dgvValues_GRII.Rows[m_dgvValues_GRII.Rows.Count - 1].Cells[24].Value);
+                                m_sumValues.Rows[Convert.ToInt32(indx)].Cells[1].Value = Convert.ToString(m_dgvValues_GRII.Rows[m_dgvValues_GRII.Rows.Count - 1].Cells[24].Value);
                                 break;
                             case TEC_LOCAL.INDEX_DATA.GRVI:
                                 m_dgvValues_GRVI.Update(dictIndxValues);
-                                m_sumValues.Rows[3].Cells[1].Value = Convert.ToString(m_dgvValues_GRVI.Rows[m_dgvValues_GRVI.Rows.Count - 1].Cells[24].Value);
+                                m_sumValues.Rows[Convert.ToInt32(indx)].Cells[1].Value = Convert.ToString(m_dgvValues_GRVI.Rows[m_dgvValues_GRVI.Rows.Count - 1].Cells[24].Value);
                                 break;
                             case TEC_LOCAL.INDEX_DATA.GRVII:
                                 m_dgvValues_GRVII.Update(dictIndxValues);
-                                m_sumValues.Rows[4].Cells[1].Value = Convert.ToString(m_dgvValues_GRVII.Rows[m_dgvValues_GRVII.Rows.Count - 1].Cells[24].Value);
+                                m_sumValues.Rows[Convert.ToInt32(indx)].Cells[1].Value = Convert.ToString(m_dgvValues_GRVII.Rows[m_dgvValues_GRVII.Rows.Count - 1].Cells[24].Value);
                                 break;
                             case TEC_LOCAL.INDEX_DATA.GRVIII:
                                 m_dgvValues_GRVIII.Update(dictIndxValues);
-                                m_sumValues.Rows[5].Cells[1].Value = Convert.ToString(m_dgvValues_GRVIII.Rows[m_dgvValues_GRVIII.Rows.Count - 1].Cells[24].Value);
+                                m_sumValues.Rows[Convert.ToInt32(indx)].Cells[1].Value = Convert.ToString(m_dgvValues_GRVIII.Rows[m_dgvValues_GRVIII.Rows.Count - 1].Cells[24].Value);
                                 break;
                         }
 
@@ -2429,8 +2438,8 @@ namespace Statistic
         /// <summary>
         /// Проверить шаблон на возможность использования по назначению
         /// </summary>
-        /// <param name="excel"></param>
-        /// <returns></returns>
+        /// <param name="excel">Шаблон для экспорта данных</param>
+        /// <returns>Признак проверки (0 - успех)</returns>
         private int validateTemplate(MSExcelIO excel)
         {
             int iRes = 0;

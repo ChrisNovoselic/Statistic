@@ -56,21 +56,11 @@ namespace CommonAux
             m_panel.SetDelegateReport(ErrorReport, WarningReport, ActionReport, ReportClear);
         }
 
-        private void FormMainCommonAux_OnEvtPanelClose(object sender, EventArgs e)
-        {
-            Close();
-        }
-
-        private void FormMainCommonAux_FormClosed(object sender, FormClosingEventArgs e)
-        {
-            m_panel.Stop();
-        }
-
         /// <summary>
         /// Запуск старта панели
         /// </summary>
-        /// <param name="obj"></param>
-        /// <param name="ev"></param>
+        /// <param name="obj">Объект, инициировавший событие</param>
+        /// <param name="ev">Аргумент события</param>
         private void FormMain_Load(object obj, EventArgs ev)
         {
             string msg = string.Empty;
@@ -78,7 +68,6 @@ namespace CommonAux
 
             bAbort = InitializePanel(out msg);
             //Снять с отображения окно для визуализации выполнения длительной операции
-            delegateStopWait();
 
             if (msg.Equals(string.Empty) == false)
                 //Прекратить/выдать сообщение об ошибке
@@ -91,8 +80,8 @@ namespace CommonAux
         /// <summary>
         /// Активация формы
         /// </summary>
-        /// <param name="obj"></param>
-        /// <param name="ev"></param>
+        /// <param name="obj">Объект, инициировавший событие</param>
+        /// <param name="ev">Аргумент события</param>
         private void FormMain_Activate(object obj, EventArgs ev)
         {
             m_panel.Activate(true);
@@ -111,6 +100,7 @@ namespace CommonAux
         /// <summary>
         /// Инициализация панели
         /// </summary>
+        /// <param name="msgError">Сообщение об ошибке (при наличии)</param>
         public bool InitializePanel(out string msgError)
         {
             bool bRes = true;
@@ -205,6 +195,37 @@ namespace CommonAux
         private void fMenuItemExit_Click(object obj, EventArgs ev)
         {
             Close();
+        }
+
+        /// <summary>
+        /// Обработчик события выбора п. главного меню "Настройка-БД_конфигурации"
+        /// </summary>
+        /// <param name="obj">Объект, инициировавший событие</param>
+        /// <param name="ev">Аргумент события</param>
+        private void fMenuItemDBConfig_Click(object obj, EventArgs ev)
+        {
+            bool bAbort = false;
+            string msg = string.Empty; ;
+            //Получить рез-т отображения окна с настройками параметров соединения
+            DialogResult dlgRes = s_listFormConnectionSettings[(int)CONN_SETT_TYPE.CONFIG_DB].ShowDialog();
+
+            if ((dlgRes == DialogResult.OK)
+                || (dlgRes == DialogResult.Yes))
+            {
+                //??? Остановить панель
+                m_panel.Stop();
+
+                bAbort = InitializePanel(out msg);
+            }
+            else
+                ;
+            //Проверить наличие сообщения об ошибке
+            if (msg.Equals(string.Empty) == false)
+                //Отобразить сообщение/завершить работу приложения (в ~ от 'bAbort')
+                Abort(msg, bAbort);
+            else
+                //Продолжить работу
+                this.Activate();
         }
 
         /// <summary>

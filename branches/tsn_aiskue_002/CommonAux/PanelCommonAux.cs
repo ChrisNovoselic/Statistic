@@ -538,13 +538,11 @@ namespace CommonAux
             m_Sensors = new string[Enum.GetValues(typeof(INDEX_DATA)).Length];
         }
         /// <summary>
-        /// Перечисдение типов данных для результата
+        /// Перечисление типов данных для результата
         /// </summary>
         public enum INDEX_DATA
         {
-            TG, TSN
-            , GRII, GRVI, GRVII, GRVIII
-            //, COUNT
+            TG, TSN, GRII, GRVI, GRVII, GRVIII
         };
         /// <summary>
         /// Таблица - список записей результирующего набора
@@ -1052,26 +1050,29 @@ namespace CommonAux
         /// </summary>
         public class GetDataFromDB
         {
+            /// <summary>
+            /// Объект, содержащий наименование таблицы в БД
+            /// </summary>
+            public static string DB_TABLE_NAME = @"[ID_TSN_ASKUE_2017]";
+            /// <summary>
+            /// Объект, содержащий путь к шаблону excel
+            /// </summary>
+            private string m_strFullPathTemplate;
+            /// <summary>
+            /// Объекты с параметрами соединения с источником данных
+            /// </summary>
+            protected static DbConnection m_connConfigDB, _connConfigDb;
+            /// <summary>
+            /// Объект содержащий идентификатор соединения с БД
+            /// </summary>
+            private static int _iListenerId;
+            public static int ListenerId { get { return _iListenerId; } }
+
             public enum INDEX_MSEXCEL_COLUMN { APOWER, SNUZHDY }
 
             public static string SEC_CONFIG = @"CONFIG"
                 , SEC_SELECT = @"SELECT"
                 , SEC_TEMPLATE = @"Template";
-            private List<string> m_KeyPars;
-
-
-            private string m_strFullPathTemplate;
-
-            protected static DbConnection m_connConfigDB;
-
-            private static int _iListenerId;
-
-            private static DbConnection _connConfigDb;
-
-            public static int ListenerId { get { return _iListenerId; } }
-
-            public bool IsRegisterConfogDb { get { return ListenerId > 0; } }
-
             /// <summary>
             /// Зарегистрировать(установить) временное соединение с БД конфигурации
             /// </summary>
@@ -1116,7 +1117,8 @@ namespace CommonAux
             /// <returns>Строка запроса</returns>
             public static string getQueryListTEC()
             {
-                string strRes = "SELECT * FROM [ID_TSN_ASKUE_2017]";
+
+                string strRes = "SELECT * FROM " + DB_TABLE_NAME;
                 return strRes;
             }
 
@@ -1162,12 +1164,12 @@ namespace CommonAux
                 {
                     try
                     {
-                        signal = new SIGNAL(Convert.ToString(list_channels.Rows[i].ItemArray[4]),
-                            Convert.ToInt32(list_channels.Rows[i].ItemArray[5]),
-                            Convert.ToInt32(list_channels.Rows[i].ItemArray[6]),
-                            Convert.ToBoolean(list_channels.Rows[i].ItemArray[7])
+                        signal = new SIGNAL(Convert.ToString(list_channels.Rows[i].ItemArray[Convert.ToInt32(DB_TABLE_DATA.DESCRIPTION)]),
+                            Convert.ToInt32(list_channels.Rows[i].ItemArray[Convert.ToInt32(DB_TABLE_DATA.USPD)]),
+                            Convert.ToInt32(list_channels.Rows[i].ItemArray[Convert.ToInt32(DB_TABLE_DATA.CHANNEL)]),
+                            Convert.ToBoolean(list_channels.Rows[i].ItemArray[Convert.ToInt32(DB_TABLE_DATA.USE)])
                         );
-                        m_listTEC[Convert.ToInt32(list_channels.Rows[i].ItemArray[1]) - 1].m_arListSgnls[GetGroupID(Convert.ToString(list_channels.Rows[i].ItemArray[2]))].Add(signal);
+                        m_listTEC[Convert.ToInt32(list_channels.Rows[i].ItemArray[Convert.ToInt32(DB_TABLE_DATA.ID_TEC)]) - 1].m_arListSgnls[Convert.ToInt32(Enum.Parse(typeof(TEC_LOCAL.INDEX_DATA), Convert.ToString(list_channels.Rows[i].ItemArray[Convert.ToInt32(DB_TABLE_DATA.GROUP)])))].Add(signal);
                     }
                     catch (Exception e)
                     {
@@ -1176,22 +1178,14 @@ namespace CommonAux
                 }
             }
 
-            public int GetGroupID(string group)
-            {
-                if (group == "TG") return 0;
-                else if (group == "TSN") return 1;
-                else if (group == "GRII") return 2;
-                else if (group == "GRVI") return 3;
-                else if (group == "GRVII") return 4;
-                else return 5;
-            }
-
             /// <summary>
             /// Возвратить объект с параметрами соединения
             /// </summary>
             /// <returns>Объект с параметрами соединения</returns>
             public ConnectionSettings GetConnSettAIISKUECentre()
             {
+                //s_listFormConnectionSettings
+
                 ConnectionSettings connSettRes = new ConnectionSettings();
 
                 connSettRes.id = 1;
@@ -1206,6 +1200,10 @@ namespace CommonAux
             }
         }
 
+        /// <summary>
+        /// Конструктор панели
+        /// </summary>
+        /// <param name="displayMode">Параметр, определяющий режим отображения</param>
         public PanelCommonAux(int displayMode)
         {
             m_displayMode = displayMode;
@@ -1226,7 +1224,9 @@ namespace CommonAux
             }
 
             //Получить параметры соединения с источником данных
-            m_connSettAIISKUECentre = GD.GetConnSettAIISKUECentre();
+            m_connSettAIISKUECentre = 
+                //FormMain.s_listFormConnectionSettings[(int)CONN_SETT_TYPE.DATA_AISKUE].getConnSett();
+            //GD.GetConnSettAIISKUECentre();
 
             InitializeComponents();
 
@@ -1348,6 +1348,14 @@ namespace CommonAux
         }
 
         private enum INDEX_CONTROL : short { LB_TEC, LB_GROUP_SIGNAL }
+
+        /// <summary>
+        /// Поля таблицы сигналов
+        /// </summary>
+        public enum DB_TABLE_DATA
+        {
+            ID, ID_TEC, GROUP, NAME, DESCRIPTION, USPD, CHANNEL, USE
+        };
 
         private const string MS_EXCEL_FILTER = @"Книга MS Excel 2010 (*.xls, *.xlsx)|*.xls;*.xlsx";
         /// <summary>
@@ -1486,13 +1494,8 @@ namespace CommonAux
         private System.Windows.Forms.Label m_label_GRVI;
         private System.Windows.Forms.Label m_label_GRVII;
         private System.Windows.Forms.Label m_label_GRVIII;
-        private DataGridViewValues m_dgvValues;
-        private DataGridViewValues m_dgvValues_TG;
-        private DataGridViewValues m_dgvValues_TSN;
-        private DataGridViewValues m_dgvValues_GRII;
-        private DataGridViewValues m_dgvValues_GRVI;
-        private DataGridViewValues m_dgvValues_GRVII;
-        private DataGridViewValues m_dgvValues_GRVIII;
+
+        private List<DataGridViewValues> m_dgvValues;
         private DataGridView m_sumValues;
 
         /// <summary>
@@ -1540,21 +1543,12 @@ namespace CommonAux
 
             m_sumValues = new DataGridView();
 
-            this.m_dgvValues = new DataGridViewValues();
-            this.m_dgvValues_TG = new DataGridViewValues();
-            this.m_dgvValues_TSN = new DataGridViewValues();
-            this.m_dgvValues_GRII = new DataGridViewValues();
-            this.m_dgvValues_GRVI = new DataGridViewValues();
-            this.m_dgvValues_GRVII = new DataGridViewValues();
-            this.m_dgvValues_GRVIII = new DataGridViewValues();
-
-            ((System.ComponentModel.ISupportInitialize)(this.m_dgvValues)).BeginInit();
-            ((System.ComponentModel.ISupportInitialize)(this.m_dgvValues_TG)).BeginInit();
-            ((System.ComponentModel.ISupportInitialize)(this.m_dgvValues_TSN)).BeginInit();
-            ((System.ComponentModel.ISupportInitialize)(this.m_dgvValues_GRII)).BeginInit();
-            ((System.ComponentModel.ISupportInitialize)(this.m_dgvValues_GRVI)).BeginInit();
-            ((System.ComponentModel.ISupportInitialize)(this.m_dgvValues_GRVII)).BeginInit();
-            ((System.ComponentModel.ISupportInitialize)(this.m_dgvValues_GRVIII)).BeginInit();
+            this.m_dgvValues = new List<DataGridViewValues>();
+            for ( int i = 0; i <= Convert.ToInt32(TEC_LOCAL.INDEX_DATA.GRVIII); i++)
+            {
+                m_dgvValues.Add(new DataGridViewValues());
+                ((System.ComponentModel.ISupportInitialize)(this.m_dgvValues[i])).BeginInit();
+            }
 
             ((System.ComponentModel.ISupportInitialize)(this.m_sumValues)).BeginInit();
 
@@ -1581,12 +1575,10 @@ namespace CommonAux
             this.Controls.Add(m_label_GRVI, 2, 60); this.SetColumnSpan(m_label_GRVI, 5); this.SetRowSpan(m_label_GRVI, 2);
             this.Controls.Add(m_label_GRVII, 2, 75); this.SetColumnSpan(m_label_GRVII, 6); this.SetRowSpan(m_label_GRVII, 2);
             this.Controls.Add(m_label_GRVIII, 2, 90); this.SetColumnSpan(m_label_GRVIII, 6); this.SetRowSpan(m_label_GRVIII, 2);
-            this.Controls.Add(m_dgvValues_TG, 8, 5); this.SetColumnSpan(m_dgvValues_TG, 50); this.SetRowSpan(m_dgvValues_TG, 15);
-            this.Controls.Add(m_dgvValues_TSN, 8, 20); this.SetColumnSpan(m_dgvValues_TSN, 50); this.SetRowSpan(m_dgvValues_TSN, 15);
-            this.Controls.Add(m_dgvValues_GRII, 8, 35); this.SetColumnSpan(m_dgvValues_GRII, 50); this.SetRowSpan(m_dgvValues_GRII, 15);
-            this.Controls.Add(m_dgvValues_GRVI, 8, 50); this.SetColumnSpan(m_dgvValues_GRVI, 50); this.SetRowSpan(m_dgvValues_GRVI, 15);
-            this.Controls.Add(m_dgvValues_GRVII, 8, 65); this.SetColumnSpan(m_dgvValues_GRVII, 50); this.SetRowSpan(m_dgvValues_GRVII, 15);
-            this.Controls.Add(m_dgvValues_GRVIII, 8, 80); this.SetColumnSpan(m_dgvValues_GRVIII, 50); this.SetRowSpan(m_dgvValues_GRVIII, 15);
+            for (int i = 0; i < m_dgvValues.Count; i++)
+            {
+                this.Controls.Add(m_dgvValues[i], 8, 5 + i*15); this.SetColumnSpan(m_dgvValues[i], 50); this.SetRowSpan(m_dgvValues[i], 15);
+            }
             this.Controls.Add(m_sumValues, 61, 60); this.SetColumnSpan(m_sumValues, 38); this.SetRowSpan(m_sumValues, 35);
 
             this.ResumeLayout();
@@ -1733,201 +1725,34 @@ namespace CommonAux
             // 
             // m_dgvValues
             // 
-            this.m_dgvValues.AllowUserToAddRows = false;
-            this.m_dgvValues.AllowUserToDeleteRows = false;
-            this.m_dgvValues.AllowUserToOrderColumns = true;
-            this.m_dgvValues.AllowUserToResizeColumns = false;
-            this.m_dgvValues.AllowUserToResizeRows = false;
-            this.m_dgvValues.Anchor = ((System.Windows.Forms.AnchorStyles)((((System.Windows.Forms.AnchorStyles.Top | System.Windows.Forms.AnchorStyles.Bottom)
-            | System.Windows.Forms.AnchorStyles.Left)
-            | System.Windows.Forms.AnchorStyles.Right)));
-            this.m_dgvValues.AutoSizeColumnsMode = System.Windows.Forms.DataGridViewAutoSizeColumnsMode.ColumnHeader;
-            this.m_dgvValues.AutoSizeRowsMode = System.Windows.Forms.DataGridViewAutoSizeRowsMode.AllHeaders;
-            this.m_dgvValues.ColumnHeadersHeightSizeMode = System.Windows.Forms.DataGridViewColumnHeadersHeightSizeMode.AutoSize;
-            dataGridViewCellStyle1.Alignment = System.Windows.Forms.DataGridViewContentAlignment.MiddleRight;
-            dataGridViewCellStyle1.BackColor = System.Drawing.SystemColors.Window;
-            dataGridViewCellStyle1.Font = new System.Drawing.Font("Microsoft Sans Serif", 8.25F, System.Drawing.FontStyle.Regular, System.Drawing.GraphicsUnit.Point, ((byte)(204)));
-            dataGridViewCellStyle1.ForeColor = System.Drawing.SystemColors.ControlText;
-            dataGridViewCellStyle1.SelectionBackColor = System.Drawing.SystemColors.Highlight;
-            dataGridViewCellStyle1.SelectionForeColor = System.Drawing.SystemColors.HighlightText;
-            dataGridViewCellStyle1.WrapMode = System.Windows.Forms.DataGridViewTriState.False;
-            this.m_dgvValues.DefaultCellStyle = dataGridViewCellStyle1;
-            this.m_dgvValues.Name = "m_dgvValues";
-            this.m_dgvValues.RowHeadersWidthSizeMode = System.Windows.Forms.DataGridViewRowHeadersWidthSizeMode.AutoSizeToAllHeaders;
-            this.m_dgvValues.RowTemplate.ReadOnly = true;
-            this.m_dgvValues.RowTemplate.Resizable = System.Windows.Forms.DataGridViewTriState.False;
-            this.m_dgvValues.SelectionMode = System.Windows.Forms.DataGridViewSelectionMode.FullRowSelect;
-            this.m_dgvValues.TabIndex = 4;
-            // 
-            // m_dgvValues_TG
-            // 
-            this.m_dgvValues_TG.AllowUserToAddRows = false;
-            this.m_dgvValues_TG.AllowUserToDeleteRows = false;
-            this.m_dgvValues_TG.AllowUserToOrderColumns = true;
-            this.m_dgvValues_TG.AllowUserToResizeColumns = false;
-            this.m_dgvValues_TG.AllowUserToResizeRows = false;
-            this.m_dgvValues_TG.Anchor = ((System.Windows.Forms.AnchorStyles)((((System.Windows.Forms.AnchorStyles.Top | System.Windows.Forms.AnchorStyles.Bottom)
-            | System.Windows.Forms.AnchorStyles.Left)
-            | System.Windows.Forms.AnchorStyles.Right)));
-            this.m_dgvValues_TG.AutoSizeColumnsMode = System.Windows.Forms.DataGridViewAutoSizeColumnsMode.ColumnHeader;
-            this.m_dgvValues_TG.AutoSizeRowsMode = System.Windows.Forms.DataGridViewAutoSizeRowsMode.AllHeaders;
-            this.m_dgvValues_TG.ColumnHeadersHeightSizeMode = System.Windows.Forms.DataGridViewColumnHeadersHeightSizeMode.AutoSize;
-            dataGridViewCellStyle2.Alignment = System.Windows.Forms.DataGridViewContentAlignment.MiddleRight;
-            dataGridViewCellStyle2.BackColor = System.Drawing.SystemColors.Window;
-            dataGridViewCellStyle2.Font = new System.Drawing.Font("Microsoft Sans Serif", 8.25F, System.Drawing.FontStyle.Regular, System.Drawing.GraphicsUnit.Point, ((byte)(204)));
-            dataGridViewCellStyle2.ForeColor = System.Drawing.SystemColors.ControlText;
-            dataGridViewCellStyle2.SelectionBackColor = System.Drawing.SystemColors.Highlight;
-            dataGridViewCellStyle2.SelectionForeColor = System.Drawing.SystemColors.HighlightText;
-            dataGridViewCellStyle2.WrapMode = System.Windows.Forms.DataGridViewTriState.False;
-            this.m_dgvValues_TG.DefaultCellStyle = dataGridViewCellStyle2;
-            this.m_dgvValues_TG.Name = "m_dgvValues_TG";
-            this.m_dgvValues_TG.RowHeadersWidthSizeMode = System.Windows.Forms.DataGridViewRowHeadersWidthSizeMode.AutoSizeToAllHeaders;
-            this.m_dgvValues_TG.RowTemplate.ReadOnly = true;
-            this.m_dgvValues_TG.RowTemplate.Resizable = System.Windows.Forms.DataGridViewTriState.False;
-            this.m_dgvValues_TG.SelectionMode = System.Windows.Forms.DataGridViewSelectionMode.FullRowSelect;
-            this.m_dgvValues_TG.TabIndex = 4;
-            // 
-            // m_dgvValues_TSN
-            // 
-            this.m_dgvValues_TSN.AllowUserToAddRows = false;
-            this.m_dgvValues_TSN.AllowUserToDeleteRows = false;
-            this.m_dgvValues_TSN.AllowUserToOrderColumns = true;
-            this.m_dgvValues_TSN.AllowUserToResizeColumns = false;
-            this.m_dgvValues_TSN.AllowUserToResizeRows = false;
-            this.m_dgvValues_TSN.Anchor = ((System.Windows.Forms.AnchorStyles)((((System.Windows.Forms.AnchorStyles.Top | System.Windows.Forms.AnchorStyles.Bottom)
-            | System.Windows.Forms.AnchorStyles.Left)
-            | System.Windows.Forms.AnchorStyles.Right)));
-            this.m_dgvValues_TSN.AutoSizeColumnsMode = System.Windows.Forms.DataGridViewAutoSizeColumnsMode.ColumnHeader;
-            this.m_dgvValues_TSN.AutoSizeRowsMode = System.Windows.Forms.DataGridViewAutoSizeRowsMode.AllHeaders;
-            this.m_dgvValues_TSN.ColumnHeadersHeightSizeMode = System.Windows.Forms.DataGridViewColumnHeadersHeightSizeMode.AutoSize;
-            dataGridViewCellStyle2.Alignment = System.Windows.Forms.DataGridViewContentAlignment.MiddleRight;
-            dataGridViewCellStyle2.BackColor = System.Drawing.SystemColors.Window;
-            dataGridViewCellStyle2.Font = new System.Drawing.Font("Microsoft Sans Serif", 8.25F, System.Drawing.FontStyle.Regular, System.Drawing.GraphicsUnit.Point, ((byte)(204)));
-            dataGridViewCellStyle2.ForeColor = System.Drawing.SystemColors.ControlText;
-            dataGridViewCellStyle2.SelectionBackColor = System.Drawing.SystemColors.Highlight;
-            dataGridViewCellStyle2.SelectionForeColor = System.Drawing.SystemColors.HighlightText;
-            dataGridViewCellStyle2.WrapMode = System.Windows.Forms.DataGridViewTriState.False;
-            this.m_dgvValues_TSN.DefaultCellStyle = dataGridViewCellStyle2;
-            this.m_dgvValues_TSN.Location = new System.Drawing.Point(45, 127);
-            this.m_dgvValues_TSN.Name = "m_dgvValues_TSN";
-            this.m_dgvValues_TSN.RowHeadersWidthSizeMode = System.Windows.Forms.DataGridViewRowHeadersWidthSizeMode.AutoSizeToAllHeaders;
-            this.m_dgvValues_TSN.RowTemplate.ReadOnly = true;
-            this.m_dgvValues_TSN.RowTemplate.Resizable = System.Windows.Forms.DataGridViewTriState.False;
-            this.m_dgvValues_TSN.SelectionMode = System.Windows.Forms.DataGridViewSelectionMode.FullRowSelect;
-            this.m_dgvValues_TSN.Size = new System.Drawing.Size(550, 100);
-            this.m_dgvValues_TSN.TabIndex = 4;
-            // 
-            // m_dgvValues_GRII
-            // 
-            this.m_dgvValues_GRII.AllowUserToAddRows = false;
-            this.m_dgvValues_GRII.AllowUserToDeleteRows = false;
-            this.m_dgvValues_GRII.AllowUserToOrderColumns = true;
-            this.m_dgvValues_GRII.AllowUserToResizeColumns = false;
-            this.m_dgvValues_GRII.AllowUserToResizeRows = false;
-            this.m_dgvValues_GRII.Anchor = ((System.Windows.Forms.AnchorStyles)((((System.Windows.Forms.AnchorStyles.Top | System.Windows.Forms.AnchorStyles.Bottom)
-            | System.Windows.Forms.AnchorStyles.Left)
-            | System.Windows.Forms.AnchorStyles.Right)));
-            this.m_dgvValues_GRII.AutoSizeColumnsMode = System.Windows.Forms.DataGridViewAutoSizeColumnsMode.ColumnHeader;
-            this.m_dgvValues_GRII.AutoSizeRowsMode = System.Windows.Forms.DataGridViewAutoSizeRowsMode.AllHeaders;
-            this.m_dgvValues_GRII.ColumnHeadersHeightSizeMode = System.Windows.Forms.DataGridViewColumnHeadersHeightSizeMode.AutoSize;
-            dataGridViewCellStyle2.Alignment = System.Windows.Forms.DataGridViewContentAlignment.MiddleRight;
-            dataGridViewCellStyle2.BackColor = System.Drawing.SystemColors.Window;
-            dataGridViewCellStyle2.Font = new System.Drawing.Font("Microsoft Sans Serif", 8.25F, System.Drawing.FontStyle.Regular, System.Drawing.GraphicsUnit.Point, ((byte)(204)));
-            dataGridViewCellStyle2.ForeColor = System.Drawing.SystemColors.ControlText;
-            dataGridViewCellStyle2.SelectionBackColor = System.Drawing.SystemColors.Highlight;
-            dataGridViewCellStyle2.SelectionForeColor = System.Drawing.SystemColors.HighlightText;
-            dataGridViewCellStyle2.WrapMode = System.Windows.Forms.DataGridViewTriState.False;
-            this.m_dgvValues_GRII.DefaultCellStyle = dataGridViewCellStyle2;
-            this.m_dgvValues_GRII.Name = "m_dgvValues_GRII";
-            this.m_dgvValues_GRII.RowHeadersWidthSizeMode = System.Windows.Forms.DataGridViewRowHeadersWidthSizeMode.AutoSizeToAllHeaders;
-            this.m_dgvValues_GRII.RowTemplate.ReadOnly = true;
-            this.m_dgvValues_GRII.RowTemplate.Resizable = System.Windows.Forms.DataGridViewTriState.False;
-            this.m_dgvValues_GRII.SelectionMode = System.Windows.Forms.DataGridViewSelectionMode.FullRowSelect;
-            this.m_dgvValues_GRII.TabIndex = 4;
-            // 
-            // m_dgvValues_GRVI
-            // 
-            this.m_dgvValues_GRVI.AllowUserToAddRows = false;
-            this.m_dgvValues_GRVI.AllowUserToDeleteRows = false;
-            this.m_dgvValues_GRVI.AllowUserToOrderColumns = true;
-            this.m_dgvValues_GRVI.AllowUserToResizeColumns = false;
-            this.m_dgvValues_GRVI.AllowUserToResizeRows = false;
-            this.m_dgvValues_GRVI.Anchor = ((System.Windows.Forms.AnchorStyles)((((System.Windows.Forms.AnchorStyles.Top | System.Windows.Forms.AnchorStyles.Bottom)
-            | System.Windows.Forms.AnchorStyles.Left)
-            | System.Windows.Forms.AnchorStyles.Right)));
-            this.m_dgvValues_GRVI.AutoSizeColumnsMode = System.Windows.Forms.DataGridViewAutoSizeColumnsMode.ColumnHeader;
-            this.m_dgvValues_GRVI.AutoSizeRowsMode = System.Windows.Forms.DataGridViewAutoSizeRowsMode.AllHeaders;
-            this.m_dgvValues_GRVI.ColumnHeadersHeightSizeMode = System.Windows.Forms.DataGridViewColumnHeadersHeightSizeMode.AutoSize;
-            dataGridViewCellStyle2.Alignment = System.Windows.Forms.DataGridViewContentAlignment.MiddleRight;
-            dataGridViewCellStyle2.BackColor = System.Drawing.SystemColors.Window;
-            dataGridViewCellStyle2.Font = new System.Drawing.Font("Microsoft Sans Serif", 8.25F, System.Drawing.FontStyle.Regular, System.Drawing.GraphicsUnit.Point, ((byte)(204)));
-            dataGridViewCellStyle2.ForeColor = System.Drawing.SystemColors.ControlText;
-            dataGridViewCellStyle2.SelectionBackColor = System.Drawing.SystemColors.Highlight;
-            dataGridViewCellStyle2.SelectionForeColor = System.Drawing.SystemColors.HighlightText;
-            dataGridViewCellStyle2.WrapMode = System.Windows.Forms.DataGridViewTriState.False;
-            this.m_dgvValues_GRVI.DefaultCellStyle = dataGridViewCellStyle2;
-            this.m_dgvValues_GRVI.Name = "m_dgvValues_GRVI";
-            this.m_dgvValues_GRVI.RowHeadersWidthSizeMode = System.Windows.Forms.DataGridViewRowHeadersWidthSizeMode.AutoSizeToAllHeaders;
-            this.m_dgvValues_GRVI.RowTemplate.ReadOnly = true;
-            this.m_dgvValues_GRVI.RowTemplate.Resizable = System.Windows.Forms.DataGridViewTriState.False;
-            this.m_dgvValues_GRVI.SelectionMode = System.Windows.Forms.DataGridViewSelectionMode.FullRowSelect;
-            this.m_dgvValues_GRVI.TabIndex = 4;
-            // 
-            // m_dgvValues_GRVII
-            // 
-            this.m_dgvValues_GRVII.AllowUserToAddRows = false;
-            this.m_dgvValues_GRVII.AllowUserToDeleteRows = false;
-            this.m_dgvValues_GRVII.AllowUserToOrderColumns = true;
-            this.m_dgvValues_GRVII.AllowUserToResizeColumns = false;
-            this.m_dgvValues_GRVII.AllowUserToResizeRows = false;
-            this.m_dgvValues_GRVII.Anchor = ((System.Windows.Forms.AnchorStyles)((((System.Windows.Forms.AnchorStyles.Top | System.Windows.Forms.AnchorStyles.Bottom)
-            | System.Windows.Forms.AnchorStyles.Left)
-            | System.Windows.Forms.AnchorStyles.Right)));
-            this.m_dgvValues_GRVII.AutoSizeColumnsMode = System.Windows.Forms.DataGridViewAutoSizeColumnsMode.ColumnHeader;
-            this.m_dgvValues_GRVII.AutoSizeRowsMode = System.Windows.Forms.DataGridViewAutoSizeRowsMode.AllHeaders;
-            this.m_dgvValues_GRVII.ColumnHeadersHeightSizeMode = System.Windows.Forms.DataGridViewColumnHeadersHeightSizeMode.AutoSize;
-            dataGridViewCellStyle2.Alignment = System.Windows.Forms.DataGridViewContentAlignment.MiddleRight;
-            dataGridViewCellStyle2.BackColor = System.Drawing.SystemColors.Window;
-            dataGridViewCellStyle2.Font = new System.Drawing.Font("Microsoft Sans Serif", 8.25F, System.Drawing.FontStyle.Regular, System.Drawing.GraphicsUnit.Point, ((byte)(204)));
-            dataGridViewCellStyle2.ForeColor = System.Drawing.SystemColors.ControlText;
-            dataGridViewCellStyle2.SelectionBackColor = System.Drawing.SystemColors.Highlight;
-            dataGridViewCellStyle2.SelectionForeColor = System.Drawing.SystemColors.HighlightText;
-            dataGridViewCellStyle2.WrapMode = System.Windows.Forms.DataGridViewTriState.False;
-            this.m_dgvValues_GRVII.DefaultCellStyle = dataGridViewCellStyle2;
-            this.m_dgvValues_GRVII.Name = "m_dgvValues_GRVII";
-            this.m_dgvValues_GRVII.RowHeadersWidthSizeMode = System.Windows.Forms.DataGridViewRowHeadersWidthSizeMode.AutoSizeToAllHeaders;
-            this.m_dgvValues_GRVII.RowTemplate.ReadOnly = true;
-            this.m_dgvValues_GRVII.RowTemplate.Resizable = System.Windows.Forms.DataGridViewTriState.False;
-            this.m_dgvValues_GRVII.SelectionMode = System.Windows.Forms.DataGridViewSelectionMode.FullRowSelect;
-            this.m_dgvValues_GRVII.TabIndex = 4;
-            // 
-            // m_dgvValues_GRVIII
-            // 
-            this.m_dgvValues_GRVIII.AllowUserToAddRows = false;
-            this.m_dgvValues_GRVIII.AllowUserToDeleteRows = false;
-            this.m_dgvValues_GRVIII.AllowUserToOrderColumns = true;
-            this.m_dgvValues_GRVIII.AllowUserToResizeColumns = false;
-            this.m_dgvValues_GRVIII.AllowUserToResizeRows = false;
-            this.m_dgvValues_GRVIII.Anchor = ((System.Windows.Forms.AnchorStyles)((((System.Windows.Forms.AnchorStyles.Top | System.Windows.Forms.AnchorStyles.Bottom)
-            | System.Windows.Forms.AnchorStyles.Left)
-            | System.Windows.Forms.AnchorStyles.Right)));
-            this.m_dgvValues_GRVIII.AutoSizeColumnsMode = System.Windows.Forms.DataGridViewAutoSizeColumnsMode.ColumnHeader;
-            this.m_dgvValues_GRVIII.AutoSizeRowsMode = System.Windows.Forms.DataGridViewAutoSizeRowsMode.AllHeaders;
-            this.m_dgvValues_GRVIII.ColumnHeadersHeightSizeMode = System.Windows.Forms.DataGridViewColumnHeadersHeightSizeMode.AutoSize;
-            dataGridViewCellStyle2.Alignment = System.Windows.Forms.DataGridViewContentAlignment.MiddleRight;
-            dataGridViewCellStyle2.BackColor = System.Drawing.SystemColors.Window;
-            dataGridViewCellStyle2.Font = new System.Drawing.Font("Microsoft Sans Serif", 8.25F, System.Drawing.FontStyle.Regular, System.Drawing.GraphicsUnit.Point, ((byte)(204)));
-            dataGridViewCellStyle2.ForeColor = System.Drawing.SystemColors.ControlText;
-            dataGridViewCellStyle2.SelectionBackColor = System.Drawing.SystemColors.Highlight;
-            dataGridViewCellStyle2.SelectionForeColor = System.Drawing.SystemColors.HighlightText;
-            dataGridViewCellStyle2.WrapMode = System.Windows.Forms.DataGridViewTriState.False;
-            this.m_dgvValues_GRVIII.DefaultCellStyle = dataGridViewCellStyle2;
-            this.m_dgvValues_GRVIII.Name = "m_dgvValues_GRVIII";
-            this.m_dgvValues_GRVIII.RowHeadersWidthSizeMode = System.Windows.Forms.DataGridViewRowHeadersWidthSizeMode.AutoSizeToAllHeaders;
-            this.m_dgvValues_GRVIII.RowTemplate.ReadOnly = true;
-            this.m_dgvValues_GRVIII.RowTemplate.Resizable = System.Windows.Forms.DataGridViewTriState.False;
-            this.m_dgvValues_GRVIII.SelectionMode = System.Windows.Forms.DataGridViewSelectionMode.FullRowSelect;
-            this.m_dgvValues_GRVIII.TabIndex = 4;
+            for (int i = 0; i <= Convert.ToInt32(TEC_LOCAL.INDEX_DATA.GRVIII); i++)
+            {
+                this.m_dgvValues[i].AllowUserToAddRows = false;
+                this.m_dgvValues[i].AllowUserToDeleteRows = false;
+                this.m_dgvValues[i].AllowUserToOrderColumns = true;
+                this.m_dgvValues[i].AllowUserToResizeColumns = false;
+                this.m_dgvValues[i].AllowUserToResizeRows = false;
+                this.m_dgvValues[i].Anchor = ((System.Windows.Forms.AnchorStyles)((((System.Windows.Forms.AnchorStyles.Top | System.Windows.Forms.AnchorStyles.Bottom)
+                | System.Windows.Forms.AnchorStyles.Left)
+                | System.Windows.Forms.AnchorStyles.Right)));
+                this.m_dgvValues[i].AutoSizeColumnsMode = System.Windows.Forms.DataGridViewAutoSizeColumnsMode.ColumnHeader;
+                this.m_dgvValues[i].AutoSizeRowsMode = System.Windows.Forms.DataGridViewAutoSizeRowsMode.AllHeaders;
+                this.m_dgvValues[i].ColumnHeadersHeightSizeMode = System.Windows.Forms.DataGridViewColumnHeadersHeightSizeMode.AutoSize;
+                dataGridViewCellStyle1.Alignment = System.Windows.Forms.DataGridViewContentAlignment.MiddleRight;
+                dataGridViewCellStyle1.BackColor = System.Drawing.SystemColors.Window;
+                dataGridViewCellStyle1.Font = new System.Drawing.Font("Microsoft Sans Serif", 8.25F, System.Drawing.FontStyle.Regular, System.Drawing.GraphicsUnit.Point, ((byte)(204)));
+                dataGridViewCellStyle1.ForeColor = System.Drawing.SystemColors.ControlText;
+                dataGridViewCellStyle1.SelectionBackColor = System.Drawing.SystemColors.Highlight;
+                dataGridViewCellStyle1.SelectionForeColor = System.Drawing.SystemColors.HighlightText;
+                dataGridViewCellStyle1.WrapMode = System.Windows.Forms.DataGridViewTriState.False;
+                this.m_dgvValues[i].DefaultCellStyle = dataGridViewCellStyle1;
+                this.m_dgvValues[i].Name = "m_dgvValues" + i.ToString();
+                this.m_dgvValues[i].RowHeadersWidthSizeMode = System.Windows.Forms.DataGridViewRowHeadersWidthSizeMode.AutoSizeToAllHeaders;
+                this.m_dgvValues[i].RowTemplate.ReadOnly = true;
+                this.m_dgvValues[i].RowTemplate.Resizable = System.Windows.Forms.DataGridViewTriState.False;
+                this.m_dgvValues[i].SelectionMode = System.Windows.Forms.DataGridViewSelectionMode.FullRowSelect;
+                this.m_dgvValues[i].TabIndex = 4;
+            }
             // 
             // m_sumValues
             // 
@@ -1979,54 +1804,24 @@ namespace CommonAux
 
         private void monthCalendar_DateChanged(object sender, DateRangeEventArgs e)
         {
-            m_dgvValues.ClearValues();
-            m_dgvValues_TG.ClearValues();
-            m_dgvValues_TSN.ClearValues();
-            m_dgvValues_GRII.ClearValues();
-            m_dgvValues_GRVI.ClearValues();
-            m_dgvValues_GRVII.ClearValues();
-            m_dgvValues_GRVIII.ClearValues();
-
+            for (int i = 0; i <= Convert.ToInt32(TEC_LOCAL.INDEX_DATA.GRVIII); i++)
+            {
+                m_dgvValues[i].ClearValues();
+            }
             m_labelStartDate.Text = m_monthCalendar.SelectionStart.ToShortDateString();
         }
 
         private void updateRowData()
         {
             int rowWight = 200;
-            // очистить столбцы
-            m_dgvValues_TG.ClearRows();
-            m_dgvValues_TSN.ClearRows();
-            m_dgvValues_GRII.ClearRows();
-            m_dgvValues_GRVI.ClearRows();
-            m_dgvValues_GRVII.ClearRows();
-            m_dgvValues_GRVIII.ClearRows();
-
-            // добавить столбцы
-            m_dgvValues_TG.AddRowData(m_listTEC[m_listBoxTEC.SelectedIndex].m_arListSgnls[0]);
-            m_dgvValues_TSN.AddRowData(m_listTEC[m_listBoxTEC.SelectedIndex].m_arListSgnls[1]);
-            m_dgvValues_GRII.AddRowData(m_listTEC[m_listBoxTEC.SelectedIndex].m_arListSgnls[2]);
-            m_dgvValues_GRVI.AddRowData(m_listTEC[m_listBoxTEC.SelectedIndex].m_arListSgnls[3]);
-            m_dgvValues_GRVII.AddRowData(m_listTEC[m_listBoxTEC.SelectedIndex].m_arListSgnls[4]);
-            m_dgvValues_GRVIII.AddRowData(m_listTEC[m_listBoxTEC.SelectedIndex].m_arListSgnls[5]);
-
-            m_dgvValues_TG.RowHeadersWidthSizeMode =
+            for (int i = 0; i <= Convert.ToInt32(TEC_LOCAL.INDEX_DATA.GRVIII); i++)
+            {
+                m_dgvValues[i].ClearRows();
+                m_dgvValues[i].AddRowData(m_listTEC[m_listBoxTEC.SelectedIndex].m_arListSgnls[i]);
+                m_dgvValues[i].RowHeadersWidthSizeMode =
                 DataGridViewRowHeadersWidthSizeMode.EnableResizing;
-            m_dgvValues_TG.RowHeadersWidth = rowWight;
-            m_dgvValues_TSN.RowHeadersWidthSizeMode =
-                DataGridViewRowHeadersWidthSizeMode.EnableResizing;
-            m_dgvValues_TSN.RowHeadersWidth = rowWight;
-            m_dgvValues_GRII.RowHeadersWidthSizeMode =
-                DataGridViewRowHeadersWidthSizeMode.EnableResizing;
-            m_dgvValues_GRII.RowHeadersWidth = rowWight;
-            m_dgvValues_GRVI.RowHeadersWidthSizeMode =
-                DataGridViewRowHeadersWidthSizeMode.EnableResizing;
-            m_dgvValues_GRVI.RowHeadersWidth = rowWight;
-            m_dgvValues_GRVII.RowHeadersWidthSizeMode =
-                DataGridViewRowHeadersWidthSizeMode.EnableResizing;
-            m_dgvValues_GRVII.RowHeadersWidth = rowWight;
-            m_dgvValues_GRVIII.RowHeadersWidthSizeMode =
-                DataGridViewRowHeadersWidthSizeMode.EnableResizing;
-            m_dgvValues_GRVIII.RowHeadersWidth = rowWight;
+                m_dgvValues[i].RowHeadersWidth = rowWight;
+            }
         }
 
         private void listBox_SelectedIndexChanged(object sender, EventArgs e)
@@ -2057,8 +1852,6 @@ namespace CommonAux
             {
                 string strPathToTemplate = FullPathTemplate;
                 int iErr = 0;
-
-                //labelLog.Text += @"Выбор шаблона: ";
 
                 //Установить исходные параметры для формы диалога
                 if (FullPathTemplate.Equals(string.Empty) == true)
@@ -2112,17 +1905,13 @@ namespace CommonAux
                 , iListenerId = -1;
             string msg = string.Empty;
             TEC_LOCAL.INDEX_DATA indx;
-            HMark markErr = new HMark(0);
             TEC_LOCAL tec = m_listTEC[m_listBoxTEC.SelectedIndex];
             TEC_LOCAL.VALUES_DATE.VALUES_GROUP dictIndxValues;
 
-            m_dgvValues.ClearValues();
-            m_dgvValues_TG.ClearValues();
-            m_dgvValues_TSN.ClearValues();
-            m_dgvValues_GRII.ClearValues();
-            m_dgvValues_GRVI.ClearValues();
-            m_dgvValues_GRVII.ClearValues();
-            m_dgvValues_GRVIII.ClearValues();
+            for (int i = 0; i <= Convert.ToInt32(TEC_LOCAL.INDEX_DATA.GRVIII); i++)
+            {
+                m_dgvValues[i].ClearValues();
+            }
 
             //delegateStartWait();
 
@@ -2130,12 +1919,11 @@ namespace CommonAux
             iListenerId = DbSources.Sources().Register(m_connSettAIISKUECentre, false, @"");
             if (!(iListenerId < 0))
             {
-                msg = @"Установлено соединение с источником данных: " + m_connSettAIISKUECentre.server;
                 Logging.Logg().Action(msg, Logging.INDEX_MESSAGE.NOT_SET);
 
                 for (indx = 0; indx <= TEC_LOCAL.INDEX_DATA.GRVIII; indx++)
                 {
-                    if (m_listBoxTEC.SelectedIndex != 4 && indx == TEC_LOCAL.INDEX_DATA.GRVIII)
+                    if (m_listBoxTEC.SelectedIndex != m_listTEC.Count-2 && indx == TEC_LOCAL.INDEX_DATA.GRVIII)
                     {
                         indx++; break;
                     }
@@ -2153,33 +1941,30 @@ namespace CommonAux
                         switch (indx)
                         {
                             case TEC_LOCAL.INDEX_DATA.TG:
-                                m_dgvValues_TG.Update(dictIndxValues);
-                                m_sumValues.Rows[0].Cells[1].Value = Convert.ToString(m_dgvValues_TG.Rows[m_dgvValues_TG.Rows.Count - 1].Cells[24].Value);
+                                m_dgvValues[Convert.ToInt32(TEC_LOCAL.INDEX_DATA.TG)].Update(dictIndxValues);
+                                m_sumValues.Rows[Convert.ToInt32(indx)].Cells[1].Value = Convert.ToString(m_dgvValues[Convert.ToInt32(TEC_LOCAL.INDEX_DATA.TG)].Rows[m_dgvValues[Convert.ToInt32(TEC_LOCAL.INDEX_DATA.TG)].Rows.Count - 1].Cells[24].Value);
                                 break;
                             case TEC_LOCAL.INDEX_DATA.TSN:
-                                m_dgvValues_TSN.Update(dictIndxValues);
-                                m_sumValues.Rows[1].Cells[1].Value = Convert.ToString(m_dgvValues_TSN.Rows[m_dgvValues_TSN.Rows.Count - 1].Cells[24].Value);
+                                m_dgvValues[Convert.ToInt32(TEC_LOCAL.INDEX_DATA.TSN)].Update(dictIndxValues);
+                                m_sumValues.Rows[Convert.ToInt32(indx)].Cells[1].Value = Convert.ToString(m_dgvValues[Convert.ToInt32(TEC_LOCAL.INDEX_DATA.TSN)].Rows[m_dgvValues[Convert.ToInt32(TEC_LOCAL.INDEX_DATA.TSN)].Rows.Count - 1].Cells[24].Value);
                                 break;
                             case TEC_LOCAL.INDEX_DATA.GRII:
-                                m_dgvValues_GRII.Update(dictIndxValues);
-                                m_sumValues.Rows[2].Cells[1].Value = Convert.ToString(m_dgvValues_GRII.Rows[m_dgvValues_GRII.Rows.Count - 1].Cells[24].Value);
+                                m_dgvValues[Convert.ToInt32(TEC_LOCAL.INDEX_DATA.GRII)].Update(dictIndxValues);
+                                m_sumValues.Rows[Convert.ToInt32(indx)].Cells[1].Value = Convert.ToString(m_dgvValues[Convert.ToInt32(TEC_LOCAL.INDEX_DATA.GRII)].Rows[m_dgvValues[Convert.ToInt32(TEC_LOCAL.INDEX_DATA.GRII)].Rows.Count - 1].Cells[24].Value);
                                 break;
                             case TEC_LOCAL.INDEX_DATA.GRVI:
-                                m_dgvValues_GRVI.Update(dictIndxValues);
-                                m_sumValues.Rows[3].Cells[1].Value = Convert.ToString(m_dgvValues_GRVI.Rows[m_dgvValues_GRVI.Rows.Count - 1].Cells[24].Value);
+                                m_dgvValues[Convert.ToInt32(TEC_LOCAL.INDEX_DATA.GRVI)].Update(dictIndxValues);
+                                m_sumValues.Rows[Convert.ToInt32(indx)].Cells[1].Value = Convert.ToString(m_dgvValues[Convert.ToInt32(TEC_LOCAL.INDEX_DATA.GRVI)].Rows[m_dgvValues[Convert.ToInt32(TEC_LOCAL.INDEX_DATA.GRVI)].Rows.Count - 1].Cells[24].Value);
                                 break;
                             case TEC_LOCAL.INDEX_DATA.GRVII:
-                                m_dgvValues_GRVII.Update(dictIndxValues);
-                                m_sumValues.Rows[4].Cells[1].Value = Convert.ToString(m_dgvValues_GRVII.Rows[m_dgvValues_GRVII.Rows.Count - 1].Cells[24].Value);
+                                m_dgvValues[Convert.ToInt32(TEC_LOCAL.INDEX_DATA.GRVII)].Update(dictIndxValues);
+                                m_sumValues.Rows[Convert.ToInt32(indx)].Cells[1].Value = Convert.ToString(m_dgvValues[Convert.ToInt32(TEC_LOCAL.INDEX_DATA.GRVII)].Rows[m_dgvValues[Convert.ToInt32(TEC_LOCAL.INDEX_DATA.GRVII)].Rows.Count - 1].Cells[24].Value);
                                 break;
                             case TEC_LOCAL.INDEX_DATA.GRVIII:
-                                m_dgvValues_GRVIII.Update(dictIndxValues);
-                                m_sumValues.Rows[5].Cells[1].Value = Convert.ToString(m_dgvValues_GRVIII.Rows[m_dgvValues_GRVIII.Rows.Count - 1].Cells[24].Value);
+                                m_dgvValues[Convert.ToInt32(TEC_LOCAL.INDEX_DATA.GRVIII)].Update(dictIndxValues);
+                                m_sumValues.Rows[Convert.ToInt32(indx)].Cells[1].Value = Convert.ToString(m_dgvValues[Convert.ToInt32(TEC_LOCAL.INDEX_DATA.GRVIII)].Rows[m_dgvValues[Convert.ToInt32(TEC_LOCAL.INDEX_DATA.GRVIII)].Rows.Count - 1].Cells[24].Value);
                                 break;
                         }
-
-                        m_dgvValues.Update(dictIndxValues);
-
 
                         if (iRes == 0)
                         {
@@ -2208,7 +1993,6 @@ namespace CommonAux
 
             //Разорвать соединение с источником данных
             DbSources.Sources().UnRegister(iListenerId);
-            msg = @"Разорвано соединение с источником данных: " + m_connSettAIISKUECentre.server;
             Logging.Logg().Action(msg, Logging.INDEX_MESSAGE.NOT_SET);
         }
 
@@ -2242,8 +2026,6 @@ namespace CommonAux
             iListenerId = DbSources.Sources().Register(m_connSettAIISKUECentre, false, @"");
             if (!(iListenerId < 0))
             {
-                msg = @"Установлено соединение с источником данных: " + m_connSettAIISKUECentre.server;
-
                 Logging.Logg().Debug(msg, Logging.INDEX_MESSAGE.NOT_SET);
 
                 foreach (TEC_LOCAL t in m_listTEC)
@@ -2273,7 +2055,6 @@ namespace CommonAux
 
             //Разорвать соединение с источником данных
             DbSources.Sources().UnRegister(iListenerId);
-            msg = @"Разорвано соединение с источником данных: " + m_connSettAIISKUECentre.server;
 
             //Создать форму диалога выбора файла-шаблона MS Excel
             using (FileDialog formChoiseResult = new SaveFileDialog())
@@ -2419,8 +2200,8 @@ namespace CommonAux
         /// <summary>
         /// Проверить шаблон на возможность использования по назначению
         /// </summary>
-        /// <param name="excel"></param>
-        /// <returns></returns>
+        /// <param name="excel">Шаблон для экспорта данных</param>
+        /// <returns>Признак проверки (0 - успех)</returns>
         private int validateTemplate(MSExcelIO excel)
         {
             int iRes = 0;

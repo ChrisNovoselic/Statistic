@@ -59,7 +59,6 @@ namespace StatisticAnalyzer
                 ; //???Исключение
 
             m_panel.SetDelegateReport(ErrorReport, WarningReport, ActionReport, ReportClear);
-
         }
 
         private void FormMainAnalyzer_OnEvtPanelClose(object sender, EventArgs e)
@@ -75,8 +74,8 @@ namespace StatisticAnalyzer
         /// <summary>
         /// Запуск старта панели
         /// </summary>
-        /// <param name="obj"></param>
-        /// <param name="ev"></param>
+        /// <param name="obj">Объект, инициировавший событие</param>
+        /// <param name="ev">Аргумент события</param>
         private void FormMain_Load(object obj, EventArgs ev)
         {
             string msg = string.Empty;
@@ -84,7 +83,6 @@ namespace StatisticAnalyzer
 
             bAbort = initialize(out msg);
             //Снять с отображения окно для визуализации выполнения длительной операции
-            delegateStopWait();
 
             if (msg.Equals(string.Empty) == false)
                 //Прекратить/выдать сообщение об ошибке
@@ -97,8 +95,8 @@ namespace StatisticAnalyzer
         /// <summary>
         /// Активация формы
         /// </summary>
-        /// <param name="obj"></param>
-        /// <param name="ev"></param>
+        /// <param name="obj">Объект, инициировавший событие</param>
+        /// <param name="ev">Аргумент события</param>
         private void FormMain_Activate(object obj, EventArgs ev)
         {
             m_panel.Activate(true);
