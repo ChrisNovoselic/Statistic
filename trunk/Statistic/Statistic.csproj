@@ -142,6 +142,9 @@
     <Compile Include="AdminTS_LK.cs">
       <SubType>Component</SubType>
     </Compile>
+    <Compile Include="AdminTS_Vyvod.cs">
+      <SubType>Component</SubType>
+    </Compile>
     <Compile Include="dgwTables.cs">
       <SubType>Component</SubType>
     </Compile>

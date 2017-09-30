@@ -22,8 +22,8 @@ namespace Statistic
         private System.Windows.Forms.Button btnImportCSV_AdminDefaultValues;
         private GroupBoxDividerChoice gbxDividerChoice;
         private System.Windows.Forms.Button btnExport_PBRValues;
-        private System.Windows.Forms.CheckBox cbAutoExport_PBRValues;
         private System.Windows.Forms.CheckBox cbMSExcelVisibledExport_PBRValues;
+        private System.Windows.Forms.CheckBox cbAutoExport_PBRValues;
         private System.Windows.Forms.Label labelSheduleExport_PBRValues;
         private System.Windows.Forms.DateTimePicker dtpSheduleStartExport_PBRValues;
         private System.Windows.Forms.Label labelPeriodExport_PBRValues;
@@ -33,7 +33,7 @@ namespace Statistic
         {
             UNKNOWN = -1
             , BUTTON_CSV_IMPORT_PBR, BUTTON_CSV_IMPORT_ADMINVALUESDEFAULT
-            , BUTTON_EXPORT_PBR, CB_AUTO_EXPORT_PBR, CB_MSECEL_VISIBLED_EXPORT_PBR, LABEL_SHEDULE_EXPORT_PBR, LABEL_PERIOD_EXPORT_PBR, DTP_SHEDULE_EXPORT_PBR, DTP_PERIOD_EXPORT_PBR
+            , BUTTON_EXPORT_PBR, CB_MSECEL_VISIBLED_EXPORT_PBR, CB_AUTO_EXPORT_PBR, LABEL_SHEDULE_EXPORT_PBR, LABEL_PERIOD_EXPORT_PBR, DTP_SHEDULE_EXPORT_PBR, DTP_PERIOD_EXPORT_PBR
                 , COUNT
         };
 
@@ -52,8 +52,8 @@ namespace Statistic
                 , new Rectangle (new Point (10, posY + 1 * (m_iSizeY + m_iMarginY)), new Size (154, m_iSizeY)) //, BUTTON_CSV_IMPORT_ADMINVALUESDEFAULT
                 // ------ разделитель ------
                 , new Rectangle (new Point (10, posY + (int)(2.7 * (m_iSizeY + m_iMarginY))), new Size (width, m_iSizeY)) //, BUTTON_EXPORT_PBR
-                , new Rectangle (new Point (10, posY + (int)(3.7 * (m_iSizeY + m_iMarginY))), new Size (width, m_iSizeY)) //, CB_AUTO_EXPORT_PBR
-                , new Rectangle (new Point (10, posY + (int)(4.7 * (m_iSizeY + m_iMarginY))), new Size (width, m_iSizeY)) //, CB_MSEXCEL_VISIBLED
+                , new Rectangle (new Point (10, posY + (int)(3.7 * (m_iSizeY + m_iMarginY))), new Size (width, m_iSizeY)) //, CB_MSEXCEL_VISIBLED
+                , new Rectangle (new Point (10, posY + (int)(4.7 * (m_iSizeY + m_iMarginY))), new Size (width, m_iSizeY)) //, CB_AUTO_EXPORT_PBR
                 , new Rectangle (new Point (10, posY + (int)(5.6 * (m_iSizeY + m_iMarginY))), new Size (width2, m_iSizeY)) //, LABEL_SHEDULE_EXPORT_PBR
                 , new Rectangle (new Point (10 + width2 + 2 * iMarginX, posY + (int)(5.6 * (m_iSizeY + m_iMarginY))), new Size (width2, m_iSizeY)) //, LABEL_PERIOD_EXPORT_PBR
                 , new Rectangle (new Point (10, posY + (int)(6.5 * (m_iSizeY + m_iMarginY))), new Size (width2, m_iSizeY)) //, DTP_SHEDULE_EXPORT_PBR
@@ -63,8 +63,8 @@ namespace Statistic
             this.btnImportCSV_PBRValues = new Button();
             this.btnImportCSV_AdminDefaultValues = new Button();
             this.btnExport_PBRValues = new Button();
-            this.cbAutoExport_PBRValues = new CheckBox();
             this.cbMSExcelVisibledExport_PBRValues = new CheckBox();
+            this.cbAutoExport_PBRValues = new CheckBox();
             this.labelSheduleExport_PBRValues = new Label();
             this.dtpSheduleStartExport_PBRValues = new DateTimePicker();
             this.dtpShedulePeriodExport_PBRValues = new DateTimePicker();
@@ -79,8 +79,8 @@ namespace Statistic
             this.m_panelManagement.Controls.Add(this.btnImportCSV_AdminDefaultValues);
             this.m_panelManagement.Controls.Add(this.gbxDividerChoice);
             this.m_panelManagement.Controls.Add(this.btnExport_PBRValues);
-            this.m_panelManagement.Controls.Add(this.cbAutoExport_PBRValues);
             this.m_panelManagement.Controls.Add(this.cbMSExcelVisibledExport_PBRValues);
+            this.m_panelManagement.Controls.Add(this.cbAutoExport_PBRValues);
             this.m_panelManagement.Controls.Add(this.labelSheduleExport_PBRValues);
             this.m_panelManagement.Controls.Add(this.labelPeriodExport_PBRValues);
             this.m_panelManagement.Controls.Add(this.dtpSheduleStartExport_PBRValues);
@@ -124,21 +124,10 @@ namespace Statistic
             this.btnExport_PBRValues.Name = "btnExport_PBRValues";
             this.btnExport_PBRValues.Size = arRectControlUI[indx].Size;
             this.btnExport_PBRValues.TabIndex = 2;
-            this.btnExport_PBRValues.Text = "Экспорт тек.ПБР";
+            this.btnExport_PBRValues.Text = "Экспорт ПБР";
             this.btnExport_PBRValues.UseVisualStyleBackColor = true;
             this.btnExport_PBRValues.Click += new System.EventHandler(this.btnExport_PBRValues_Click);
             this.btnExport_PBRValues.Enabled = EnabledExportPBRValues;
-            // 
-            // cbAutoExport_PBRValues
-            //
-            indx = (int)INDEX_CONTROL_UI.CB_AUTO_EXPORT_PBR;
-            this.cbAutoExport_PBRValues.Location = arRectControlUI[indx].Location;
-            this.cbAutoExport_PBRValues.Name = "cbAutoExport_PBRValues";
-            this.cbAutoExport_PBRValues.Size = arRectControlUI[indx].Size;
-            this.cbAutoExport_PBRValues.TabIndex = 2;
-            this.cbAutoExport_PBRValues.Text = "Автоматически";
-            this.cbAutoExport_PBRValues.CheckedChanged += cbAutoExport_PBRValues_CheckedChanged;
-            this.cbAutoExport_PBRValues.Enabled = AllowUserSetModeExportPBRValues;
             // 
             // cbMSExcelVisibledExport_PBRValues
             //
@@ -150,6 +139,23 @@ namespace Statistic
             this.cbMSExcelVisibledExport_PBRValues.Text = "Просмотр результата";
             this.cbMSExcelVisibledExport_PBRValues.CheckedChanged += cbMSExcelVisibledExport_PBRValues_CheckedChanged;
             this.cbMSExcelVisibledExport_PBRValues.Enabled = AllowUserSetModeExportPBRValues;
+            this.cbMSExcelVisibledExport_PBRValues.Appearance = Appearance.Button;
+            this.cbMSExcelVisibledExport_PBRValues.TextAlign = this.cbMSExcelVisibledExport_PBRValues.Appearance == Appearance.Normal
+                ? ContentAlignment.MiddleLeft
+                    : this.cbMSExcelVisibledExport_PBRValues.Appearance == Appearance.Button
+                        ? ContentAlignment.MiddleCenter
+                            : ContentAlignment.MiddleLeft;
+            // 
+            // cbAutoExport_PBRValues
+            //
+            indx = (int)INDEX_CONTROL_UI.CB_AUTO_EXPORT_PBR;
+            this.cbAutoExport_PBRValues.Location = arRectControlUI[indx].Location;
+            this.cbAutoExport_PBRValues.Name = "cbAutoExport_PBRValues";
+            this.cbAutoExport_PBRValues.Size = arRectControlUI[indx].Size;
+            this.cbAutoExport_PBRValues.TabIndex = 2;
+            this.cbAutoExport_PBRValues.Text = "Автоматически (тек.)";
+            this.cbAutoExport_PBRValues.CheckedChanged += cbAutoExport_PBRValues_CheckedChanged;
+            this.cbAutoExport_PBRValues.Enabled = AllowUserSetModeExportPBRValues;
             // 
             // labelSheduleExport_PBRValues
             //

@@ -523,28 +523,33 @@ namespace StatisticCommon
                 {
                     int err = -1;
 
-                    MSExcelIO msExcelIO = new MSExcelIO();
-                    if (value == true) {
-                        if ((msExcelIO.IsValidate == true)
-                            && (string.IsNullOrEmpty(_previousNameDocument) == false)) {
-                            msExcelIO.OpenDocument(_previousNameDocument);
-                            msExcelIO.Visible =
-                            _visible =
-                                true;
-                        } else
-                            _visible = false;
-                    } else if (value == false) {
-                        //TODO: найти открытый документ и закрыть его
-                        if ((msExcelIO.IsValidate == true)
-                            && (string.IsNullOrEmpty( _previousNameDocument) == false)
-                            && (msExcelIO.IsOpen(_previousNameDocument, out err) == true))
-                            msExcelIO.CloseExcelDoc(_previousNameDocument);
-                        else
-                            ;
+                    Action<object> fThread = delegate (object obj)
+                    {
+                        MSExcelIO msExcelIO = new MSExcelIO();
+                        if (value == true) {
+                            if ((msExcelIO.IsValidate == true)
+                                && (string.IsNullOrEmpty(_previousNameDocument) == false)) {
+                                msExcelIO.OpenDocument(_previousNameDocument);
+                                msExcelIO.Visible =
+                                _visible =
+                                    true;
+                            } else
+                                _visible = false;
+                        } else if (value == false) {
+                            //TODO: найти открытый документ и закрыть его
+                            if ((msExcelIO.IsValidate == true)
+                                && (string.IsNullOrEmpty(_previousNameDocument) == false)
+                                && (msExcelIO.IsOpen(_previousNameDocument, out err) == true))
+                                msExcelIO.CloseExcelDoc(_previousNameDocument);
+                            else
+                                ;
 
-                        _visible = value;
-                    } else
-                        ;
+                            _visible = value;
+                        } else
+                            ;
+                    };
+
+                    new Thread(new ParameterizedThreadStart(fThread)).Start();
                 }
             }
 #endif
