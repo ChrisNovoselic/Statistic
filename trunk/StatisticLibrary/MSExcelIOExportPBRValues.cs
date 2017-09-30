@@ -317,8 +317,8 @@ namespace StatisticCommon
                 _mnlResetEventBusy.Set ();
                 // Интервал времени ожидания завершения операции
                 TimeSpan tsWait = TimeSpan.FromMilliseconds (MS_WAIT_EXPORT_PBR_MAX);
-                //// запустить таймер ожидания завершения длительной операции
-                //_timerWiat.Change ((int)tsWait.TotalMilliseconds, System.Threading.Timeout.Infinite);
+                // запустить таймер ожидания завершения длительной операции
+                _timerWiat.Change((int)tsWait.TotalMilliseconds, System.Threading.Timeout.Infinite);
 
                 //TODO: ...длительная операция
                 _thread = new Thread (new ParameterizedThreadStart (run)) { IsBackground = true, Name = string.Format ("MSExcelIOExportPBRValues") };
