@@ -3,6 +3,7 @@
 using HClassLibrary;
 using StatisticCommon;
 using StatisticTrans;
+using System.Drawing;
 
 namespace trans_gtp
 {
@@ -15,7 +16,7 @@ namespace trans_gtp
         {
             InitializeComponentTransDB();
 
-            this.m_dgwAdminTable = new StatisticCommon.DataGridViewAdminKomDisp();
+            this.m_dgwAdminTable = new StatisticCommon.DataGridViewAdminKomDisp(new Color [] { SystemColors.Window, Color.Yellow, Color.Red });
             ((System.ComponentModel.ISupportInitialize)(this.m_dgwAdminTable)).BeginInit();
             this.SuspendLayout();
             // 

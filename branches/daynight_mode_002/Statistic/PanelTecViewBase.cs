@@ -53,7 +53,7 @@ namespace Statistic
             /// </summary>
             /// <param name="sender">ZedGraphControl</param>
             /// <param name="e">MouseEventArgs</param>
-            /// <returns></returns>
+            /// <returns>??? Признак продолжения обработки события</returns>
             public bool OnMouseUpEvent(ZedGraphControl sender, MouseEventArgs e)
             {
                 if (e.Button != MouseButtons.Left)
@@ -69,8 +69,11 @@ namespace Statistic
                 if ((found == true)
                     && ((!(obj == null)) && (obj is CurveItem)))
                 {
-                    if (((obj as CurveItem).IsBar == false) && ((obj as CurveItem).IsLine == false))
+                    if (((obj as CurveItem).IsBar == false)
+                        && ((obj as CurveItem).IsLine == false))
                         return true;
+                    else
+                        ;
 
                     EventItemSelected(index);
                 }
@@ -295,7 +298,9 @@ namespace Statistic
                 this.IsEnableVZoom = false;
                 this.IsShowPointValues = true;
 
-                initializeContextMenuItemStandardEventHandler();
+                BackColor = SystemColors.Window;
+
+                initializeContextMenuItemStandardEventHandler ();
 
                 this.PointValueEvent += new ZedGraph.ZedGraphControl.PointValueHandler(this.OnPointValueEvent);
                 this.DoubleClickEvent += new ZedGraph.ZedGraphControl.ZedMouseEventHandler(this.OnDoubleClickEvent);
@@ -379,7 +384,7 @@ namespace Statistic
             /// </summary>
             /// <param name="sender">ZedGraphControl</param>
             /// <param name="e">MouseEventArgs</param>
-            /// <returns></returns>
+            /// <returns>Признак продолжения обработки события</returns>
             private bool OnDoubleClickEvent(ZedGraphControl sender, MouseEventArgs e)
             {
                 //FormMain.formGraphicsSettings.SetScale();
@@ -420,7 +425,22 @@ namespace Statistic
                     else
                         ;
             }
-   
+
+            //public override Color BackColor
+            //{
+            //    get
+            //    {
+            //        return base.BackColor;
+            //    }
+
+            //    set
+            //    {
+            //        base.BackColor =
+            //        //this.GraphPane.Fill.Color =
+            //            value;
+            //    }
+            //}
+
             public virtual bool FindNearestObject (PointF p, Graphics g, out object obj, out int index)
             {
                 return GraphPane.FindNearestObject(p, g, out obj, out index);
@@ -1196,7 +1216,9 @@ namespace Statistic
             {
                 err = -1; //???Ошибка
 
-                Logging.Logg().Warning(@"PanelTecViewBase::Activate (" + active + @") - ... ID=" + m_ID + @", Started=" + Started + @", isActive=" + Actived, Logging.INDEX_MESSAGE.NOT_SET);
+                Logging.Logg().Warning(string.Format(@"PanelTecViewBase::Activate ({0}) - повторная установка признака активности... ID={1}, Started={2}, isActive={3}"
+                        , active, m_ID, Started, Actived)
+                    , Logging.INDEX_MESSAGE.NOT_SET);
             }
 
             return bRes;

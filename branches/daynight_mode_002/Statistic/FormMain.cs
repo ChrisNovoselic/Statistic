@@ -260,6 +260,13 @@ namespace Statistic
                         || m_dictAddingTabs[(int)ID_ADDING_TAB.DIAGNOSTIC].menuItem.Enabled
                         || m_dictAddingTabs[(int)ID_ADDING_TAB.TEC_Component].menuItem.Enabled;
 
+                    #region KhryapinAN 02.10.2017 цвета должны быть доступны к моменту инициализации 'DataGridView'
+                    m_passwords = new Passwords ();
+                    formPassword = new FormPassword (m_passwords);
+                    formSetPassword = new FormSetPassword (m_passwords);
+                    formGraphicsSettings = new FormGraphicsSettings (this, delegateUpdateActiveGui, delegateHideGraphicsSettings);
+                    #endregion
+
                     //ProgramBase.s_iAppID = Int32.Parse ((string)Properties.Settings.Default [@"AppID"]);
                     ProgramBase.s_iAppID = Int32.Parse((string)Properties.Resources.AppID);
 
@@ -362,11 +369,6 @@ namespace Statistic
                     formChangeMode = new FormChangeMode(PanelKomDisp.m_list_tec, listIDs, this.ContextMenuStrip);
                     formChangeMode.ev_сменитьРежим += сменитьРежимToolStripMenuItem_Click;
                     if (сменитьРежимToolStripMenuItem.Enabled == false) сменитьРежимToolStripMenuItem.Enabled = true; else ;
-
-                    m_passwords = new Passwords();
-                    formPassword = new FormPassword(m_passwords);
-                    formSetPassword = new FormSetPassword(m_passwords);
-                    formGraphicsSettings = new FormGraphicsSettings(this, delegateUpdateActiveGui, delegateHideGraphicsSettings);
 
                     параметрыПриложенияToolStripMenuItem.Enabled = HStatisticUsers.RoleIsAdmin == true;
                     
@@ -2774,6 +2776,11 @@ namespace Statistic
             } else
                 ;
             #endregion
+
+            if ((FormGraphicsSettings.TYPE_UPDATEGUI)type == FormGraphicsSettings.TYPE_UPDATEGUI.COLOR) {
+                HDataGridViewTables.s_dgvCellStyles [(int)HDataGridViewTables.INDEX_CELL_STYLE.ERROR].BackColor = formGraphicsSettings.COLOR (FormGraphicsSettings.INDEX_COLOR.DIVIATION);
+            } else
+                ;
 
             if ((!(tclTecViews.SelectedIndex < 0))
                 && (tclTecViews.SelectedIndex < tclTecViews.TabCount))

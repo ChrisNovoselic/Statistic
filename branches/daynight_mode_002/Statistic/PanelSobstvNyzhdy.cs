@@ -242,7 +242,6 @@ namespace Statistic
                     m_timerCurrent,
                     startChangeValue;
 
-
             /// <summary>
             /// Экземплят графика
             /// </summary>
@@ -800,6 +799,7 @@ namespace Statistic
                 }
 
                 pane.Chart.Fill = new Fill(FormMain.formGraphicsSettings.COLOR(FormGraphicsSettings.INDEX_COLOR.BG_SOTIASSO));
+                pane.Fill = new Fill (m_zedGraphHours.BackColor);
 
                 if (FormMain.formGraphicsSettings.m_graphTypes == FormGraphicsSettings.GraphTypes.Bar)
                 {
@@ -1010,26 +1010,26 @@ namespace Statistic
             /// </summary>
             private void InitializeComponent()
             {
-                this.Dock = System.Windows.Forms.DockStyle.Fill;
-                //this.m_zedGraphHours.Location = arPlacement[(int)CONTROLS.m_zedGraphHours].pt;
+                //this.Dock = System.Windows.Forms.DockStyle.Fill;
+                ////this.m_zedGraphHours.Location = arPlacement[(int)CONTROLS.m_zedGraphHours].pt;
                 this.Name = "zedGraphSNHour";
-                this.ScrollGrace = 0;
-                this.ScrollMaxX = 0;
-                this.ScrollMaxY = 0;
-                this.ScrollMaxY2 = 0;
-                this.ScrollMinX = 0;
-                this.ScrollMinY = 0;
-                this.ScrollMinY2 = 0;
-                //this.m_zedGraphHours.Size = arPlacement[(int)CONTROLS.m_zedGraphHours].sz;
-                this.TabIndex = 0;
-                this.IsEnableHEdit = false;
-                this.IsEnableHPan = false;
-                this.IsEnableHZoom = false;
-                this.IsEnableSelection = false;
-                this.IsEnableVEdit = false;
-                this.IsEnableVPan = false;
-                this.IsEnableVZoom = false;
-                this.IsShowPointValues = true;
+                //this.ScrollGrace = 0;
+                //this.ScrollMaxX = 0;
+                //this.ScrollMaxY = 0;
+                //this.ScrollMaxY2 = 0;
+                //this.ScrollMinX = 0;
+                //this.ScrollMinY = 0;
+                //this.ScrollMinY2 = 0;
+                ////this.m_zedGraphHours.Size = arPlacement[(int)CONTROLS.m_zedGraphHours].sz;
+                //this.TabIndex = 0;
+                //this.IsEnableHEdit = false;
+                //this.IsEnableHPan = false;
+                //this.IsEnableHZoom = false;
+                //this.IsEnableSelection = false;
+                //this.IsEnableVEdit = false;
+                //this.IsEnableVPan = false;
+                //this.IsEnableVZoom = false;
+                //this.IsShowPointValues = true;
             }
         }
     }

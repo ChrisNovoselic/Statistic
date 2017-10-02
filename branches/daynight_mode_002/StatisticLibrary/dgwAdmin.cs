@@ -26,7 +26,7 @@ namespace StatisticCommon
                                                             System.Windows.Forms.AnchorStyles.Left)));
 
             dataGridViewCellStyle.Alignment = System.Windows.Forms.DataGridViewContentAlignment.MiddleCenter;
-            dataGridViewCellStyle.BackColor = System.Drawing.SystemColors.Control;
+            dataGridViewCellStyle.BackColor = System.Drawing.SystemColors.Window;
             dataGridViewCellStyle.Font = new System.Drawing.Font("Microsoft Sans Serif", 8.25F, System.Drawing.FontStyle.Regular, System.Drawing.GraphicsUnit.Point, ((byte)(204)));
             dataGridViewCellStyle.ForeColor = System.Drawing.SystemColors.WindowText;
             dataGridViewCellStyle.SelectionBackColor = System.Drawing.SystemColors.Highlight;
@@ -37,7 +37,7 @@ namespace StatisticCommon
             ColumnHeadersHeightSizeMode = System.Windows.Forms.DataGridViewColumnHeadersHeightSizeMode.AutoSize;
         }
 
-        public DataGridViewAdmin () : base (false) {
+        public DataGridViewAdmin (Color []colors) : base (colors, false) {
             //Thread.CurrentThread.SetApartmentState(ApartmentState.STA);
 
             InitializeComponents ();

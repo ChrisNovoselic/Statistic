@@ -147,6 +147,8 @@ namespace StatisticCommon
             }
         }
 
+        public static int NUM_MINUTE_PBR_APPLY = 40;
+
         public static IEnumerable<string> EtalonPBR
         {
             get {
@@ -162,7 +164,7 @@ namespace StatisticCommon
                 listRes.Add(string.Format("œ¡–{0}", iNowHour + 1));
 
                 iNowMinute = datetimeMscTimezoneNow.Minute;
-                if (iNowMinute > 40)
+                if (iNowMinute > NUM_MINUTE_PBR_APPLY)
                     listRes.Add(string.Format("œ¡–{0}", iNowHour + 2));
                 else
                     ;

@@ -1486,7 +1486,9 @@ namespace Statistic
                             ;
                     }
                     lblPBRNumber.Text = m_parent.m_tecView.lastLayout;
-                    lblPBRNumber.BackColor = PBRState == TecViewStandard.PBR_STATE.NORM ? Color.Empty : FormMain.formGraphicsSettings.COLOR(FormGraphicsSettings.INDEX_COLOR.DIVIATION);
+                    lblPBRNumber.BackColor = PBRState == TecViewStandard.PBR_STATE.NORM
+                        ? Color.Empty
+                            : HDataGridViewTables.s_dgvCellStyles[(int)HDataGridViewTables.INDEX_CELL_STYLE.ERROR].BackColor;
 
                     //ShowTGValue
                     i = 0;
@@ -1558,11 +1560,23 @@ namespace Statistic
                 RestructControl();
             }
 
-            private TecViewStandard.PBR_STATE PBRState { get { return (m_parent.m_tecView as TecViewStandard).PBRState; } }
+            private TecViewStandard.PBR_STATE PBRState
+            {
+                get
+                {
+                    return ((Equals(m_parent, null) == false)
+                            && (Equals (m_parent.m_tecView, null) == false)
+                            && (Equals (m_parent.m_tecView.GetType(), typeof(TecViewStandard)) == true))
+                        ? (m_parent.m_tecView as TecViewStandard).PBRState
+                            : TecViewStandard.PBR_STATE.NORM;
+                }
+            }
 
             public void UpdateColorPbr()
             {
-                lblPBRNumber.BackColor = PBRState == TecViewStandard.PBR_STATE.NORM ? Color.Empty : FormMain.formGraphicsSettings.COLOR(FormGraphicsSettings.INDEX_COLOR.DIVIATION);
+                lblPBRNumber.BackColor = PBRState == TecViewStandard.PBR_STATE.NORM
+                    ? Color.Empty
+                        : HDataGridViewTables.s_dgvCellStyles [(int)HDataGridViewTables.INDEX_CELL_STYLE.ERROR].BackColor;
             }
         }
     }

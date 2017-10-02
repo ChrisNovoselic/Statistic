@@ -127,10 +127,10 @@ namespace Statistic
         /// </summary>
         private DelegateFunc delegateHideGraphicsSettings;
 
-        /// <summary>
-        /// Закрытое поле m_formMain типа FormMain. Зачем оно?
-        /// </summary>
-        private FormMain m_formMain;
+        ///// <summary>
+        ///// Закрытое поле m_formMain типа FormMain. Зачем оно?
+        ///// </summary>
+        //private FormMain m_formMain;
 
         #region Конструктор
         /// <summary>
@@ -146,7 +146,7 @@ namespace Statistic
             // инициализация полей заданными пользователем значениями
             delegateUpdateActiveGui = fUpdate;                                                            
             delegateHideGraphicsSettings = fHide;                                                     
-            m_formMain = form;
+            //m_formMain = form;
             //масштабирование выключено по умолчанию
             scale = false;
             // полю m_markSourceData присваиваем ссылку на экземпляр класса HMark, вызываем конструктор HMark с одним параметром, передаем 0                                                                  
@@ -194,11 +194,27 @@ namespace Statistic
         /// Открытый метод COLOR принимает аргумент типа INDEX_COLOR (индекс настраиваемого параметра)
         /// и возвращает соответствующий цвет в палитре
         /// </summary>
-        /// <param name="indx"></param>
-        /// <returns></returns>
+        /// <param name="indx">Индекс цвета в палитре</param>
+        /// <returns>Цвет из палитры</returns>
         public Color COLOR(INDEX_COLOR indx)
         {
-            return m_arlblColor [(int)indx].BackColor;     
+            Color colorRes = Color.Empty;
+
+            if (m_colorShema == ColorShemas.System)
+                colorRes = m_arlblColor [(int)indx].BackColor;
+            else
+                switch (indx) {
+                    case INDEX_COLOR.BG_ASKUE:
+                    case INDEX_COLOR.BG_SOTIASSO:
+                    case INDEX_COLOR.BG_ASKUTE:
+                        colorRes = DarkColorTable._Custom;
+                        break;
+                    default:
+                        colorRes = m_arlblColor [(int)indx].BackColor;
+                        break;
+                }
+
+            return colorRes;
         }
         /// <summary>
         /// Установить признаки использования типов источников данных

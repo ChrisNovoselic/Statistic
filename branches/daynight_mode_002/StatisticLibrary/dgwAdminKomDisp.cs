@@ -19,7 +19,7 @@ namespace StatisticCommon
 
         public double m_PBR_0;
 
-        public DataGridViewAdminKomDisp()
+        public DataGridViewAdminKomDisp(System.Drawing.Color []colors) : base(colors)
         {
             this.CellMouseMove += new DataGridViewCellMouseEventHandler (dgwAdminTable_CellMouseMove);
         }

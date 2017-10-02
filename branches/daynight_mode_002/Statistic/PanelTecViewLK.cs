@@ -818,23 +818,23 @@ namespace Statistic
                 for (i = 0; i < itemscount; i++)
                 {
                     // Текущий стиль ячейки
-       curCellStyle = (MainHours.IsMain(serverTime, i+ 1) == true) ? mainHourCellStyle :
-                      regularHourCellStyle;
+                    curCellStyle = (MainHours.IsMain(serverTime, i+ 1) == true) ? mainHourCellStyle :
+                        regularHourCellStyle;
                     //Rows[i].Cells[(int)INDEX_COLUMNS.PART_TIME].Style = curCellStyle; // стиль определен для всей строки
-              Rows[i].DefaultCellStyle = curCellStyle;
+                    Rows[i].DefaultCellStyle = curCellStyle;
                     // факт
                     if (!(i > lh)) {
                         Rows[i].Cells[(int)INDEX_COLUMNS.TEMPERATURE_FACT].Value = (values[i].valuesLastMinutesTM).ToString(@"F2"); // температура
-                       // Rows[i].Cells[(int)INDEX_COLUMNS.TEMPERATURE_FACT].Style = curCellStyle; // стиль определен для всей строки
+                        //Rows[i].Cells[(int)INDEX_COLUMNS.TEMPERATURE_FACT].Style = curCellStyle; // стиль определен для всей строки
                         Rows[i].Cells[(int)INDEX_COLUMNS.POWER_FACT_SUM].Value = (values[i].valuesFact * 1000).ToString(@"F2"); // мощность
-                   //     Rows[i].Cells[(int)INDEX_COLUMNS.POWER_FACT_SUM].Style = curCellStyle; // стиль определен для всей строки
+                        //Rows[i].Cells[(int)INDEX_COLUMNS.POWER_FACT_SUM].Style = curCellStyle; // стиль определен для всей строки
                     } else ;
                     // план
                     Rows[i].Cells[(int)INDEX_COLUMNS.TEMPERATURE_PBR].Value = (values[i].valuesPmin).ToString(@"F2"); // температура
-                 //   Rows[i].Cells[(int)INDEX_COLUMNS.TEMPERATURE_PBR].Style = curCellStyle; // стиль определен для всей строки
+                    //Rows[i].Cells[(int)INDEX_COLUMNS.TEMPERATURE_PBR].Style = curCellStyle; // стиль определен для всей строки
                     t_pbr += values[i].valuesPmin;
                     Rows[i].Cells[(int)INDEX_COLUMNS.POWER_PBR].Value = (values[i].valuesPBR).ToString(@"F2"); // мощность
-                   // Rows[i].Cells[(int)INDEX_COLUMNS.POWER_PBR].Style = curCellStyle; // стиль определен для всей строки
+                    //Rows[i].Cells[(int)INDEX_COLUMNS.POWER_PBR].Style = curCellStyle; // стиль определен для всей строки
                     // мощность сети (максимальная из загруженных)
                     if ((values[i].valuesPBR > 0)
                         && (p_pbr < values[i].valuesPBR))
@@ -1240,7 +1240,7 @@ namespace Statistic
                 getColorZedGraph(typeConnSett, out colorChart, out colorPMainCurve);
 
                 GraphPane.Chart.Fill = new Fill(colorChart);
-
+                GraphPane.Fill = new Fill (BackColor);
 
                 //LineItem - план/отклонения
                 //Надпись кривой "P план"
@@ -1252,9 +1252,9 @@ namespace Statistic
                     //Цвета кривых УДГ, Отклонение
                     GraphPane.AddCurve(strCurveNamePPlan, /*null,*/ valuesPlan[i], FormMain.formGraphicsSettings.COLOR(FormGraphicsSettings.INDEX_COLOR.UDG));
                     //LineItem
-                    GraphPane.AddCurve(string.Empty, /*null,*/ valuesODiviation[i], FormMain.formGraphicsSettings.COLOR(FormGraphicsSettings.INDEX_COLOR.DIVIATION));
+                    GraphPane.AddCurve(string.Empty, /*null,*/ valuesODiviation[i], HDataGridViewTables.s_dgvCellStyles [(int)HDataGridViewTables.INDEX_CELL_STYLE.ERROR].BackColor);
                     //LineItem
-                    GraphPane.AddCurve(strCurveNameDeviation, /*null,*/ valuesPDiviation[i], FormMain.formGraphicsSettings.COLOR(FormGraphicsSettings.INDEX_COLOR.DIVIATION));
+                    GraphPane.AddCurve(strCurveNameDeviation, /*null,*/ valuesPDiviation[i], HDataGridViewTables.s_dgvCellStyles [(int)HDataGridViewTables.INDEX_CELL_STYLE.ERROR].BackColor);
                     //Чтобы повторно не добавить подпись в легенду
                     strCurveNamePPlan =
                     strCurveNameDeviation =

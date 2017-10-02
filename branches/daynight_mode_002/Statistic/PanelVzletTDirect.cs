@@ -236,8 +236,8 @@ namespace Statistic
                         , errorDevCellStyle = new DataGridViewCellStyle();
                     curCellStyle = normalDevCellStyle;
 
-                    normalDevCellStyle.BackColor = Color.White;
-                    errorDevCellStyle.BackColor = FormMain.formGraphicsSettings.COLOR(FormGraphicsSettings.INDEX_COLOR.DIVIATION);
+                    normalDevCellStyle = s_dgvCellStyles[(int)INDEX_CELL_STYLE.COMMON];
+                    errorDevCellStyle = s_dgvCellStyles [(int)INDEX_CELL_STYLE.ERROR];
 
                     cntHourFactNotValues = 0;
                     sumFact =
@@ -555,9 +555,9 @@ namespace Statistic
                         , strCurveNameDeviation = "Возможное отклонение";
                     GraphPane.AddCurve(strCurveNamePlan, /*null,*/ valuesPlan, FormMain.formGraphicsSettings.COLOR(FormGraphicsSettings.INDEX_COLOR.UDG));
                     //LineItem
-                    GraphPane.AddCurve(string.Empty, /*null,*/ valuesODiviation, FormMain.formGraphicsSettings.COLOR(FormGraphicsSettings.INDEX_COLOR.DIVIATION));
+                    GraphPane.AddCurve(string.Empty, /*null,*/ valuesODiviation, HDataGridViewTables.s_dgvCellStyles [(int)HDataGridViewTables.INDEX_CELL_STYLE.ERROR].BackColor);
                     //LineItem
-                    GraphPane.AddCurve(strCurveNameDeviation, /*null,*/ valuesPDiviation, FormMain.formGraphicsSettings.COLOR(FormGraphicsSettings.INDEX_COLOR.DIVIATION));                    
+                    GraphPane.AddCurve(strCurveNameDeviation, /*null,*/ valuesPDiviation, HDataGridViewTables.s_dgvCellStyles [(int)HDataGridViewTables.INDEX_CELL_STYLE.ERROR].BackColor);                    
 
                     //Значения
                     string strCurveNameValue = "Температура";

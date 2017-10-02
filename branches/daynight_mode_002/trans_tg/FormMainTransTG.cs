@@ -24,7 +24,7 @@ namespace trans_tg
             InitializeComponentTransSrc(@"Путь РДГ (Excel)");
 
             //???
-            this.m_dgwAdminTable = new StatisticCommon.DataGridViewAdminNSS();
+            this.m_dgwAdminTable = new StatisticCommon.DataGridViewAdminNSS(new Color [] { SystemColors.Window, Color.Yellow, Color.Red });
             ((System.ComponentModel.ISupportInitialize)(this.m_dgwAdminTable)).BeginInit();
             // 
             // m_dgwAdminTable

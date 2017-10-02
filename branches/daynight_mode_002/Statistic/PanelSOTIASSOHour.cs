@@ -20,6 +20,11 @@ namespace Statistic
     /// </summary>
     public class PanelSOTIASSOHour : PanelStatistic
     {
+        /// <summary>
+        /// Максимальное количество(подряд) значений с выходом за пределы установленных ограничений, после которого фиксируется "ошибка"
+        /// </summary>
+        private static ushort MAX_COUNT_WARNING = 4;
+
         private class TecViewSOTIASSOHour : TecView
         {
             public enum REASON_RETROVALUES { UNKNOWN = -1, DATE, HOUR, MINUTE, BEGIN_HOUR, COUNT }
@@ -960,6 +965,14 @@ namespace Statistic
         /// </summary>
         private class DataGridViewGTP : DataGridView
         {
+            private enum INDEX_COLUMN {
+                NUM_MINUTE
+                , VALUE
+                , UDGe
+                , DEVIATION
+                    , COUNT
+            }
+
             /// <summary>
             /// Конструктор - основной (без параметров)
             /// </summary>
@@ -983,16 +996,16 @@ namespace Statistic
             private void initializeComponent()
             {
                 this.Columns.AddRange(new DataGridViewColumn[] {
-                        new DataGridViewTextBoxColumn ()
-                        , new DataGridViewTextBoxColumn ()
-                        , new DataGridViewTextBoxColumn ()
-                        , new DataGridViewTextBoxColumn ()
+                        new DataGridViewTextBoxColumn () // INDEX_COLUMN.NUM_MINUTE
+                        , new DataGridViewTextBoxColumn () // INDEX_COLUMN.VALUE
+                        , new DataGridViewTextBoxColumn () // INDEX_COLUMN.UDGe
+                        , new DataGridViewTextBoxColumn () // INDEX_COLUMN.DEVIATION
                     });
 
-                this.Columns[0].HeaderText = @"Мин.";
-                this.Columns[1].HeaderText = @"Значение";
-                this.Columns[2].HeaderText = @"УДГэ";
-                this.Columns[3].HeaderText = @"Отклонение";
+                this.Columns[(int)INDEX_COLUMN.NUM_MINUTE].HeaderText = @"Мин.";
+                this.Columns[(int)INDEX_COLUMN.VALUE].HeaderText = @"Значение";
+                this.Columns[(int)INDEX_COLUMN.UDGe].HeaderText = @"УДГэ";
+                this.Columns[(int)INDEX_COLUMN.DEVIATION].HeaderText = @"Отклонение";
 
                 this.ReadOnly = true;
                 //this.ColumnHeadersVisible =
@@ -1004,11 +1017,11 @@ namespace Statistic
                     false;
                 this.MultiSelect = false;
                 this.SelectionMode = DataGridViewSelectionMode.FullRowSelect;
-                this.Columns[0].Width = 38;
-                this.Columns[0].Frozen = true;
-                this.Columns[1].AutoSizeMode = DataGridViewAutoSizeColumnMode.Fill;
-                this.Columns[2].AutoSizeMode = DataGridViewAutoSizeColumnMode.Fill;
-                this.Columns[3].AutoSizeMode = DataGridViewAutoSizeColumnMode.Fill;
+                this.Columns[(int)INDEX_COLUMN.NUM_MINUTE].Width = 38;
+                this.Columns[(int)INDEX_COLUMN.NUM_MINUTE].Frozen = true;
+                this.Columns[(int)INDEX_COLUMN.VALUE].AutoSizeMode = DataGridViewAutoSizeColumnMode.Fill;
+                this.Columns[(int)INDEX_COLUMN.UDGe].AutoSizeMode = DataGridViewAutoSizeColumnMode.Fill;
+                this.Columns[(int)INDEX_COLUMN.DEVIATION].AutoSizeMode = DataGridViewAutoSizeColumnMode.Fill;
 
                 //Добавить строки по числу мин. в часе
                 for (int i = 0; i < 60; i++)
@@ -1034,43 +1047,45 @@ namespace Statistic
                 for (i = 1; i < values.Length; i++)
                 {
                     //Значения
-                    Rows[i - 1].Cells[1].Value = values[i].valuesFact.ToString(@"F3");
+                    Rows[i - 1].Cells[(int)INDEX_COLUMN.VALUE].Value = values[i].valuesFact.ToString(@"F3");
+                    Rows [i - 1].Cells [(int)INDEX_COLUMN.VALUE].Style = HDataGridViewTables.s_dgvCellStyles [(int)HDataGridViewTables.INDEX_CELL_STYLE.COMMON];
                     //УДГэ
-                    Rows[i - 1].Cells[2].Value = values[i].valuesUDGe.ToString(@"F3");
+                    Rows [i - 1].Cells[(int)INDEX_COLUMN.UDGe].Value = values[i].valuesUDGe.ToString(@"F3");
+                    Rows [i - 1].Cells [(int)INDEX_COLUMN.UDGe].Style = HDataGridViewTables.s_dgvCellStyles [(int)HDataGridViewTables.INDEX_CELL_STYLE.COMMON];
                     //Отклонения
                     // максимальное отклонение
                     diviation = values[i].valuesUDGe / 100 * (double)dcKoeff;
                     //Проверить наличие значения
                     if (values[i].valuesFact > 0)
                     {
-                        Rows[i - 1].Cells[3].Value = (values[i].valuesFact - values[i].valuesUDGe).ToString(@"F3");
+                        Rows[i - 1].Cells[(int)INDEX_COLUMN.DEVIATION].Value = (values[i].valuesFact - values[i].valuesUDGe).ToString(@"F3");
                         //Определить цвет ячейки
                         if (Math.Abs(values[i].valuesFact - values[i].valuesUDGe) > diviation)
                         {
                             //Увеличить счетчик случаев выхода за установленные границы
                             cntDiviation++;
 
-                            if (cntDiviation > 4)
-                                cellStyle = HDataGridViewBase.s_dgvCellStyleError;
+                            if (cntDiviation > MAX_COUNT_WARNING)
+                                cellStyle = HDataGridViewTables.s_dgvCellStyles[(int)HDataGridViewTables.INDEX_CELL_STYLE.ERROR];
                             else
-                                cellStyle = HDataGridViewBase.s_dgvCellStyleWarning;
+                                cellStyle = HDataGridViewTables.s_dgvCellStyles [(int)HDataGridViewTables.INDEX_CELL_STYLE.WARNING];
                         }
                         else
                         {
                             //Установить счетчик случаев выхода за установленные границы в исходное состояние
                             cntDiviation = 0;
-                            cellStyle = DefaultCellStyle; // HDataGridViewBase.s_dgvCellStyleCommon;
+                            cellStyle = HDataGridViewTables.s_dgvCellStyles [(int)HDataGridViewTables.INDEX_CELL_STYLE.COMMON];
                         }
                     }
                     else
                     {
-                        Rows[i - 1].Cells[3].Value = 0.ToString(@"F3");
+                        Rows[i - 1].Cells[(int)INDEX_COLUMN.DEVIATION].Value = 0.ToString(@"F3");
                         //Установить счетчик случаев выхода за установленные границы в исходное состояние
                         cntDiviation = 0;
-                        cellStyle = DefaultCellStyle; // HDataGridViewBase.s_dgvCellStyleCommon;
+                        cellStyle = HDataGridViewTables.s_dgvCellStyles [(int)HDataGridViewTables.INDEX_CELL_STYLE.COMMON];
                     }
                     //Установить цвет ячейки
-                    Rows[i - 1].Cells[3].Style = cellStyle;
+                    Rows[i - 1].Cells[(int)INDEX_COLUMN.DEVIATION].Style = cellStyle;
                 }
                 //Указать активную строку
                 i = iLastMin > 60 ? 60 : iLastMin;
@@ -1864,9 +1879,9 @@ namespace Statistic
             //LineItem
             pane.AddCurve("УДГэ", null, valsUDGe, FormMain.formGraphicsSettings.COLOR(FormGraphicsSettings.INDEX_COLOR.UDG));
             //LineItem
-            pane.AddCurve("", null, valsOAlarm, FormMain.formGraphicsSettings.COLOR(FormGraphicsSettings.INDEX_COLOR.DIVIATION));
+            pane.AddCurve("", null, valsOAlarm, HDataGridViewTables.s_dgvCellStyles [(int)HDataGridViewTables.INDEX_CELL_STYLE.ERROR].BackColor);
             //LineItem
-            pane.AddCurve("Граница для сигнализации", null, valsPAlarm, FormMain.formGraphicsSettings.COLOR(FormGraphicsSettings.INDEX_COLOR.DIVIATION));
+            pane.AddCurve("Граница для сигнализации", null, valsPAlarm, HDataGridViewTables.s_dgvCellStyles [(int)HDataGridViewTables.INDEX_CELL_STYLE.ERROR].BackColor);
 
             if (FormMain.formGraphicsSettings.m_graphTypes == FormGraphicsSettings.GraphTypes.Bar)
             {

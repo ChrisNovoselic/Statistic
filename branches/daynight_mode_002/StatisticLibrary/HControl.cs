@@ -1096,6 +1096,8 @@ namespace StatisticCommon
             this.IsEnableVZoom = false;
             this.IsShowPointValues = true;
 
+            this.BackColor = SystemColors.Window;
+
             InitializeEventHandler();
 
             this.PointValueEvent += new ZedGraph.ZedGraphControl.PointValueHandler(this.OnPointValueEvent);
@@ -1177,6 +1179,20 @@ namespace StatisticCommon
         /// Делегат - изменение способа масштабированиягстограммы
         /// </summary>
         public DelegateFunc delegateSetScale;
+
+        //public override Color BackColor
+        //{
+        //    get
+        //    {
+        //        return base.BackColor;
+        //    }
+
+        //    set
+        //    {
+        //        base.BackColor = value;
+        //        //this.GraphPane.Fill = new Fill (value);
+        //    }
+        //}
     }
 
 

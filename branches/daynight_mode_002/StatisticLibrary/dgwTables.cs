@@ -15,13 +15,40 @@ namespace StatisticCommon
         protected bool _bIsItogo;
 
         /// <summary>
+        /// Индексы для стилей ячеек таблицы
+        /// </summary>
+        public enum INDEX_CELL_STYLE {
+            /// <summary>Общий</summary>
+            COMMON
+            /// <summary>Предупреждение</summary>
+            , WARNING
+            /// <summary>Ошибка</summary>summary>
+            , ERROR };
+
+        private static Color[] s_dgvCellColors; 
+
+        /// <summary>
+        /// Стили ячеек таблицы
+        /// </summary>
+        public static DataGridViewCellStyle[] s_dgvCellStyles;
+
+        /// <summary>
         /// Конструктор - основной (с аргументами)
         /// </summary>
         /// <param name="bIsItogo">Признак необходимости строки с итоговыми значенями</param>
-        public HDataGridViewTables(bool bIsItogo)
+        public HDataGridViewTables(Color[] colors, bool bIsItogo)
             : base()
         {
             _bIsItogo = bIsItogo;
+
+            s_dgvCellStyles = new DataGridViewCellStyle [] {
+                new DataGridViewCellStyle(DefaultCellStyle) // COMMON
+                , new DataGridViewCellStyle(DefaultCellStyle) // WARNING
+                , new DataGridViewCellStyle(DefaultCellStyle) // ERROR
+            };
+
+            s_dgvCellStyles [(int)INDEX_CELL_STYLE.WARNING].BackColor = colors[(int)INDEX_CELL_STYLE.WARNING];
+            s_dgvCellStyles [(int)INDEX_CELL_STYLE.ERROR].BackColor = colors [(int)INDEX_CELL_STYLE.ERROR];
         }
 
         public void InitRows(int cnt, bool bIns)
@@ -45,11 +72,10 @@ namespace StatisticCommon
             {
                 base.BackColor = value;
 
-                DefaultCellStyle.BackColor =
-                //s_dgvCellStyleCommon.BackColor =
-                    value.Equals (SystemColors.Control) == true
-                        ? DefaultBackColor
-                            : value;
+                s_dgvCellStyles[(int)INDEX_CELL_STYLE.COMMON].BackColor =
+                    //value.Equals (SystemColors.Control) == true
+                    //    ? SystemColors.Window :
+                            value;
             }
         }
     }

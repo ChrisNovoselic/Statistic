@@ -16,7 +16,7 @@ namespace StatisticTransModes
         private static string[] arDescStringIndex = { "DateHour", "Plan", "Pmin", "Pmax"/*, "ToAll"*/ };
         private static string[] arDescRusStringIndex = { "Дата, час", "План", "Минимум", "Максимум"/*, "Дозаполнить"*/ };
 
-        public DataGridViewAdminModes()
+        public DataGridViewAdminModes() : base(new System.Drawing.Color [] { System.Drawing.SystemColors.Window, System.Drawing.Color.Yellow, System.Drawing.Color.Red })
         {
         }
 

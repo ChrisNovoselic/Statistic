@@ -20,7 +20,7 @@ namespace StatisticCommon
         DataGridViewCellStyle dgvCellStyleError,
                              dgvCellStyleGTP;
 
-        public DataGridViewAdminNSS()
+        public DataGridViewAdminNSS(Color []colors) : base(colors)
         {
             m_listIds = new List<int[]>();
 

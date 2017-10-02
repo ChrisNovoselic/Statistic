@@ -38,10 +38,12 @@ namespace StatisticCommon
             BackColor = (sender as Form).BackColor;
 
             foreach (Control ctrl in Controls)
-                if ((ctrl is DataGridView)
-                    || (ctrl is HZedGraphControl)) {
-                    ctrl.BackColor = BackColor;
-                } else
+                if (ctrl is DataGridView)
+                    ctrl.BackColor = BackColor.Equals (SystemColors.Control) == false ? BackColor : SystemColors.Window;
+                else if (ctrl is ZedGraph.ZedGraphControl)
+                    ctrl.BackColor = BackColor.Equals (SystemColors.Control) == false ? BackColor : SystemColors.Window
+                        ;
+                else
                     ;
         }
 
