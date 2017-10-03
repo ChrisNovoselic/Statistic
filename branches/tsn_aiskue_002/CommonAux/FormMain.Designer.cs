@@ -58,6 +58,7 @@ namespace CommonAux
             this.MainMenuStrip.Items.AddRange(
               new ToolStripMenuItem[] {
                     new ToolStripMenuItem (@"Файл")
+                    , new ToolStripMenuItem (@"Настройка")
                     , new ToolStripMenuItem (@"О программе")
                 }
             );

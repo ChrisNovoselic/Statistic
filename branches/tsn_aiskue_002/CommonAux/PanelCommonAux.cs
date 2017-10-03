@@ -1051,9 +1051,21 @@ namespace CommonAux
         public class GetDataFromDB
         {
             /// <summary>
-            /// Объект, содержащий наименование таблицы в БД
+            /// Объект, содержащий наименование таблицы в БД, хранящей перечень каналов
             /// </summary>
             public static string DB_TABLE_NAME = @"[ID_TSN_ASKUE_2017]";
+            /// <summary>
+            /// Объект, содержащий наименование таблицы в БД, хранящей источники данных
+            /// </summary>
+            public static string DB_TABLE_SOURCE = @"[SOURCE]";
+            /// <summary>
+            /// Объект, содержащий наименование таблицы в БД, хранящей пароли
+            /// </summary>
+            public static string DB_TABLE_PASS = @"[passwords]";
+            /// <summary>
+            /// Объект, содержащий id записи в таблице, содержащей настройки подключения
+            /// </summary>
+            public static string ID_AIISKUE_CONSETT = @"7000";
             /// <summary>
             /// Объект, содержащий путь к шаблону excel
             /// </summary>
@@ -1069,7 +1081,20 @@ namespace CommonAux
             public static int ListenerId { get { return _iListenerId; } }
 
             public enum INDEX_MSEXCEL_COLUMN { APOWER, SNUZHDY }
-
+            /// <summary>
+            /// Поля таблицы настроек
+            /// </summary>
+            public enum DB_TABLE_AIISKUE
+            {
+                ID, IP, PORT, DB_NAME, UID, NAME_SHR
+            };
+            /// <summary>
+            /// Поля таблицы паролей
+            /// </summary>
+            public enum DB_TABLE_PSW
+            {
+                ID_EXT, ID_ROLE, HASH
+            };
             public static string SEC_CONFIG = @"CONFIG"
                 , SEC_SELECT = @"SELECT"
                 , SEC_TEMPLATE = @"Template";
@@ -1123,16 +1148,23 @@ namespace CommonAux
             }
 
             /// <summary>
-            /// Отменить регистрацию(разорвать) соединения с БД конфигурации
+            /// Возвратить строку запроса для получения настроек для доступа к серверу АИСКУЭ
             /// </summary>
-            public static void UnregisterConfigDb()
+            /// <returns>Строка запроса</returns>
+            public static string getQueryAIISKUE()
             {
-                DbSources.Sources().UnRegister(ListenerId);
-
-                _connConfigDb = null;
-                _iListenerId = -1;
+                string strRes = "SELECT * FROM " + DB_TABLE_SOURCE + "WHERE [ID] =" + ID_AIISKUE_CONSETT;
+                return strRes;
             }
-
+            /// <summary>
+            /// Возвратить строку запроса для получения дастроек для доступа к серверу АИСКУЭ
+            /// </summary>
+            /// <returns>Строка запроса</returns>
+            public static string getQueryAIISKUEPassword()
+            {
+                string strRes = "SELECT * FROM " + DB_TABLE_PASS + "WHERE [ID_EXT] =" + ID_AIISKUE_CONSETT;
+                return strRes;
+            }
             /// <summary>
             /// Возвратить таблицу [ID_TSN_AISKUE_2017] из БД конфигурации
             /// </summary>
@@ -1143,6 +1175,35 @@ namespace CommonAux
             {
                 string req = getQueryListTEC();
                 return DbTSQLInterface.Select(ref connConfigDB, req, null, null, out err);
+            }
+
+            /// <summary>
+            /// Возвратить объект с параметрами соединения
+            /// </summary>
+            /// <param name="connConfigDB">Ссылка на объект с установленным соединением с БД</param>
+            /// <param name="err">Идентификатор ошибки при выполнении запроса</param>
+            /// <returns>Объект с параметрами соединения</returns>
+            public ConnectionSettings GetConnSettAIISKUECentre(ref DbConnection connConfigDB, out int err)
+            {
+                ConnectionSettings connSettRes = new ConnectionSettings();
+                DataTable dataTableRes = new DataTable();
+
+                string req = getQueryAIISKUE();
+                dataTableRes = DbTSQLInterface.Select(ref connConfigDB, req, null, null, out err);
+
+                connSettRes.id = Convert.ToInt32(dataTableRes.Rows[dataTableRes.Rows.Count - 1].ItemArray[Convert.ToInt32(DB_TABLE_AIISKUE.ID)]);
+                connSettRes.name = dataTableRes.Rows[dataTableRes.Rows.Count - 1].ItemArray[Convert.ToInt32(DB_TABLE_AIISKUE.NAME_SHR)].ToString();
+                connSettRes.server = dataTableRes.Rows[dataTableRes.Rows.Count - 1].ItemArray[Convert.ToInt32(DB_TABLE_AIISKUE.IP)].ToString();
+                connSettRes.port = Convert.ToInt32(dataTableRes.Rows[dataTableRes.Rows.Count - 1].ItemArray[Convert.ToInt32(DB_TABLE_AIISKUE.PORT)]);
+                connSettRes.dbName = dataTableRes.Rows[dataTableRes.Rows.Count - 1].ItemArray[Convert.ToInt32(DB_TABLE_AIISKUE.DB_NAME)].ToString();
+                connSettRes.userName = dataTableRes.Rows[dataTableRes.Rows.Count - 1].ItemArray[Convert.ToInt32(DB_TABLE_AIISKUE.UID)].ToString();
+
+                req = getQueryAIISKUEPassword();
+                dataTableRes = DbTSQLInterface.Select(ref connConfigDB, req, null, null, out err);
+
+                connSettRes.password = Crypt.Crypting().Decrypt(dataTableRes.Rows[dataTableRes.Rows.Count - 1].ItemArray[Convert.ToInt32(DB_TABLE_PSW.HASH)].ToString(), Crypt.KEY);
+                
+                return connSettRes;
             }
 
             /// <summary>
@@ -1177,27 +1238,6 @@ namespace CommonAux
                     }
                 }
             }
-
-            /// <summary>
-            /// Возвратить объект с параметрами соединения
-            /// </summary>
-            /// <returns>Объект с параметрами соединения</returns>
-            public ConnectionSettings GetConnSettAIISKUECentre()
-            {
-                //s_listFormConnectionSettings
-
-                ConnectionSettings connSettRes = new ConnectionSettings();
-
-                connSettRes.id = 1;
-                connSettRes.name = "АИИСКУЭ - Центр";
-                connSettRes.server = "10.100.104.39";
-                connSettRes.port = 1433;
-                connSettRes.dbName = "Piramida2000";
-                connSettRes.userName = "AIISKUESIBECO";
-                connSettRes.password = "@1!$kue$!BE(0";
-
-                return connSettRes;
-            }
         }
 
         /// <summary>
@@ -1224,9 +1264,7 @@ namespace CommonAux
             }
 
             //Получить параметры соединения с источником данных
-            m_connSettAIISKUECentre = 
-                //FormMain.s_listFormConnectionSettings[(int)CONN_SETT_TYPE.DATA_AISKUE].getConnSett();
-            //GD.GetConnSettAIISKUECentre();
+            m_connSettAIISKUECentre = GD.GetConnSettAIISKUECentre(ref m_connConfigDB, out err);
 
             InitializeComponents();
 
@@ -1253,7 +1291,7 @@ namespace CommonAux
 
             FullPathTemplate = string.Empty;
 
-            m_arMSEXEL_PARS = new string[7] { "\\\\ne22\\lnk", "Tepmlate.xls", "Sheet1", "1", "5", "25", "1.1" };
+            m_arMSEXEL_PARS = new string[7] { "", "Tepmlate.xls", "Sheet1", "1", "5", "25", "1.1" };
 
             //Установить обработчики событий
             EventNewPathToTemplate += new DelegateStringFunc(onNewPathToTemplate);
@@ -1488,12 +1526,8 @@ namespace CommonAux
         private System.Windows.Forms.Label m_labelValues;
         private System.Windows.Forms.Label m_labelStartDate;
         private System.Windows.Forms.Label m_labelEndDate;
-        private System.Windows.Forms.Label m_label_TG;
-        private System.Windows.Forms.Label m_label_TSN;
-        private System.Windows.Forms.Label m_label_GRII;
-        private System.Windows.Forms.Label m_label_GRVI;
-        private System.Windows.Forms.Label m_label_GRVII;
-        private System.Windows.Forms.Label m_label_GRVIII;
+
+        private List<System.Windows.Forms.Label> m_labelsGroup;
 
         private List<DataGridViewValues> m_dgvValues;
         private DataGridView m_sumValues;
@@ -1533,21 +1567,16 @@ namespace CommonAux
             this.m_labelStartDate = new System.Windows.Forms.Label();
             this.m_labelEndDate = new System.Windows.Forms.Label();
 
-
-            this.m_label_TG = new System.Windows.Forms.Label();
-            this.m_label_TSN = new System.Windows.Forms.Label();
-            this.m_label_GRII = new System.Windows.Forms.Label();
-            this.m_label_GRVI = new System.Windows.Forms.Label();
-            this.m_label_GRVII = new System.Windows.Forms.Label();
-            this.m_label_GRVIII = new System.Windows.Forms.Label();
-
             m_sumValues = new DataGridView();
 
             this.m_dgvValues = new List<DataGridViewValues>();
+            this.m_labelsGroup = new List<System.Windows.Forms.Label>();
             for ( int i = 0; i <= Convert.ToInt32(TEC_LOCAL.INDEX_DATA.GRVIII); i++)
             {
                 m_dgvValues.Add(new DataGridViewValues());
                 ((System.ComponentModel.ISupportInitialize)(this.m_dgvValues[i])).BeginInit();
+
+                m_labelsGroup.Add(new System.Windows.Forms.Label());
             }
 
             ((System.ComponentModel.ISupportInitialize)(this.m_sumValues)).BeginInit();
@@ -1569,15 +1598,11 @@ namespace CommonAux
             this.Controls.Add(m_labelValues, 8, 2); this.SetColumnSpan(m_labelValues, 30); this.SetRowSpan(m_labelValues, 2);
             this.Controls.Add(m_labelStartDate, 65, 6); this.SetColumnSpan(m_labelStartDate, 8); this.SetRowSpan(m_labelStartDate, 2);
             this.Controls.Add(m_labelEndDate, 85, 6); this.SetColumnSpan(m_labelEndDate, 8); this.SetRowSpan(m_labelEndDate, 2);
-            this.Controls.Add(m_label_TG, 2, 15); this.SetColumnSpan(m_label_TG, 5); this.SetRowSpan(m_label_TG, 2);
-            this.Controls.Add(m_label_TSN, 2, 30); this.SetColumnSpan(m_label_TSN, 5); this.SetRowSpan(m_label_TSN, 2);
-            this.Controls.Add(m_label_GRII, 2, 45); this.SetColumnSpan(m_label_GRII, 5); this.SetRowSpan(m_label_GRII, 2);
-            this.Controls.Add(m_label_GRVI, 2, 60); this.SetColumnSpan(m_label_GRVI, 5); this.SetRowSpan(m_label_GRVI, 2);
-            this.Controls.Add(m_label_GRVII, 2, 75); this.SetColumnSpan(m_label_GRVII, 6); this.SetRowSpan(m_label_GRVII, 2);
-            this.Controls.Add(m_label_GRVIII, 2, 90); this.SetColumnSpan(m_label_GRVIII, 6); this.SetRowSpan(m_label_GRVIII, 2);
+
             for (int i = 0; i < m_dgvValues.Count; i++)
             {
                 this.Controls.Add(m_dgvValues[i], 8, 5 + i*15); this.SetColumnSpan(m_dgvValues[i], 50); this.SetRowSpan(m_dgvValues[i], 15);
+                this.Controls.Add(m_labelsGroup[i], 2, 7 + i*15); this.SetColumnSpan(m_labelsGroup[i], 5); this.SetRowSpan(m_labelsGroup[i], 2);
             }
             this.Controls.Add(m_sumValues, 61, 60); this.SetColumnSpan(m_sumValues, 38); this.SetRowSpan(m_sumValues, 35);
 
@@ -1685,43 +1710,14 @@ namespace CommonAux
             this.m_labelEndDate.TabIndex = 5;
             this.m_labelEndDate.Text = "";
             // 
-            // m_label_TG
+            // m_labelsGroup
             // 
-            this.m_label_TG.AutoSize = true;
-            this.m_label_TG.Name = "m_label_TG";
-            this.m_label_TG.TabIndex = 5;
-            this.m_label_TG.Text = "TG";
-            // 
-            // m_label_TSN
-            // 
-            this.m_label_TSN.AutoSize = true;
-            this.m_label_TSN.Name = "m_label_TSN";
-            this.m_label_TSN.TabIndex = 5;
-            this.m_label_TSN.Text = "TSN";
-            // 
-            // m_label_GRII
-            // 
-            this.m_label_GRII.Name = "m_label_GRII";
-            this.m_label_GRII.TabIndex = 5;
-            this.m_label_GRII.Text = "GRII";
-            // 
-            // m_label_GRVI
-            // 
-            this.m_label_GRVI.Name = "m_label_GRVI";
-            this.m_label_GRVI.TabIndex = 5;
-            this.m_label_GRVI.Text = "GRVI";
-            // 
-            // m_label_GRVII
-            // 
-            this.m_label_GRVII.Name = "m_label_GRVII";
-            this.m_label_GRVII.TabIndex = 5;
-            this.m_label_GRVII.Text = "GRVII";
-            // 
-            // m_label_GRVIII
-            // 
-            this.m_label_GRVIII.Name = "m_label_GRVIII";
-            this.m_label_GRVIII.TabIndex = 5;
-            this.m_label_GRVIII.Text = "GRVIII";
+            for (int i = 0; i <= Convert.ToInt32(TEC_LOCAL.INDEX_DATA.GRVIII); i++)
+            {
+                this.m_labelsGroup[i].Name = Enum.GetName(typeof(TEC_LOCAL.INDEX_DATA), i).ToString();
+                this.m_labelsGroup[i].TabIndex = 5;
+                this.m_labelsGroup[i].Text = Enum.GetName(typeof(TEC_LOCAL.INDEX_DATA), i).ToString();
+            }
             // 
             // m_dgvValues
             // 

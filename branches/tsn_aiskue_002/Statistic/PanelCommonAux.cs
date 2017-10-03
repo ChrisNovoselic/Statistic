@@ -1048,26 +1048,54 @@ namespace Statistic
         /// </summary>
         public class GetDataFromDB
         {
-            public enum INDEX_MSEXCEL_COLUMN { APOWER, SNUZHDY }
+            /// <summary>
+            /// Объект, содержащий наименование таблицы в БД, хранящей перечень каналов
+            /// </summary>
+            public static string DB_TABLE_NAME = @"[ID_TSN_ASKUE_2017]";
+            /// <summary>
+            /// Объект, содержащий наименование таблицы в БД, хранящей источники данных
+            /// </summary>
+            public static string DB_TABLE_SOURCE = @"[SOURCE]";
+            /// <summary>
+            /// Объект, содержащий наименование таблицы в БД, хранящей пароли
+            /// </summary>
+            public static string DB_TABLE_PASS = @"[passwords]";
+            /// <summary>
+            /// Объект, содержащий id записи в таблице, содержащей настройки подключения
+            /// </summary>
+            public static string ID_AIISKUE_CONSETT = @"7000";
+            /// <summary>
+            /// Объект, содержащий путь к шаблону excel
+            /// </summary>
+            private string m_strFullPathTemplate;
+            /// <summary>
+            /// Объекты с параметрами соединения с источником данных
+            /// </summary>
+            protected static DbConnection m_connConfigDB, _connConfigDb;
+            /// <summary>
+            /// Объект содержащий идентификатор соединения с БД
+            /// </summary>
+            private static int _iListenerId;
+            public static int ListenerId { get { return _iListenerId; } }
 
+            public enum INDEX_MSEXCEL_COLUMN { APOWER, SNUZHDY }
+            /// <summary>
+            /// Поля таблицы настроек
+            /// </summary>
+            public enum DB_TABLE_AIISKUE
+            {
+                ID, IP, PORT, DB_NAME, UID, NAME_SHR
+            };
+            /// <summary>
+            /// Поля таблицы паролей
+            /// </summary>
+            public enum DB_TABLE_PSW
+            {
+                ID_EXT, ID_ROLE, HASH
+            };
             public static string SEC_CONFIG = @"CONFIG"
                 , SEC_SELECT = @"SELECT"
                 , SEC_TEMPLATE = @"Template";
-            private List<string> m_KeyPars;
-
-
-            private string m_strFullPathTemplate;
- 
-            protected static DbConnection m_connConfigDB;
-
-            private static int _iListenerId;
-
-            private static DbConnection _connConfigDb;
-
-            public static int ListenerId { get { return _iListenerId; } }
-
-            public bool IsRegisterConfogDb { get { return ListenerId > 0; } }
-
             /// <summary>
             /// Зарегистрировать(установить) временное соединение с БД конфигурации
             /// </summary>
@@ -1112,21 +1140,29 @@ namespace Statistic
             /// <returns>Строка запроса</returns>
             public static string getQueryListTEC()
             {
-                string strRes = "SELECT * FROM [ID_TSN_ASKUE_2017]";
+
+                string strRes = "SELECT * FROM " + DB_TABLE_NAME;
                 return strRes;
             }
 
             /// <summary>
-            /// Отменить регистрацию(разорвать) соединения с БД конфигурации
+            /// Возвратить строку запроса для получения настроек для доступа к серверу АИСКУЭ
             /// </summary>
-            public static void UnregisterConfigDb()
+            /// <returns>Строка запроса</returns>
+            public static string getQueryAIISKUE()
             {
-                DbSources.Sources().UnRegister(ListenerId);
-
-                _connConfigDb = null;
-                _iListenerId = -1;
+                string strRes = "SELECT * FROM " + DB_TABLE_SOURCE + "WHERE [ID] =" + ID_AIISKUE_CONSETT;
+                return strRes;
             }
-
+            /// <summary>
+            /// Возвратить строку запроса для получения дастроек для доступа к серверу АИСКУЭ
+            /// </summary>
+            /// <returns>Строка запроса</returns>
+            public static string getQueryAIISKUEPassword()
+            {
+                string strRes = "SELECT * FROM " + DB_TABLE_PASS + "WHERE [ID_EXT] =" + ID_AIISKUE_CONSETT;
+                return strRes;
+            }
             /// <summary>
             /// Возвратить таблицу [ID_TSN_AISKUE_2017] из БД конфигурации
             /// </summary>
@@ -1140,9 +1176,38 @@ namespace Statistic
             }
 
             /// <summary>
+            /// Возвратить объект с параметрами соединения
+            /// </summary>
+            /// <param name="connConfigDB">Ссылка на объект с установленным соединением с БД</param>
+            /// <param name="err">Идентификатор ошибки при выполнении запроса</param>
+            /// <returns>Объект с параметрами соединения</returns>
+            public ConnectionSettings GetConnSettAIISKUECentre(ref DbConnection connConfigDB, out int err)
+            {
+                ConnectionSettings connSettRes = new ConnectionSettings();
+                DataTable dataTableRes = new DataTable();
+
+                string req = getQueryAIISKUE();
+                dataTableRes = DbTSQLInterface.Select(ref connConfigDB, req, null, null, out err);
+
+                connSettRes.id = Convert.ToInt32(dataTableRes.Rows[dataTableRes.Rows.Count - 1].ItemArray[Convert.ToInt32(DB_TABLE_AIISKUE.ID)]);
+                connSettRes.name = dataTableRes.Rows[dataTableRes.Rows.Count - 1].ItemArray[Convert.ToInt32(DB_TABLE_AIISKUE.NAME_SHR)].ToString();
+                connSettRes.server = dataTableRes.Rows[dataTableRes.Rows.Count - 1].ItemArray[Convert.ToInt32(DB_TABLE_AIISKUE.IP)].ToString();
+                connSettRes.port = Convert.ToInt32(dataTableRes.Rows[dataTableRes.Rows.Count - 1].ItemArray[Convert.ToInt32(DB_TABLE_AIISKUE.PORT)]);
+                connSettRes.dbName = dataTableRes.Rows[dataTableRes.Rows.Count - 1].ItemArray[Convert.ToInt32(DB_TABLE_AIISKUE.DB_NAME)].ToString();
+                connSettRes.userName = dataTableRes.Rows[dataTableRes.Rows.Count - 1].ItemArray[Convert.ToInt32(DB_TABLE_AIISKUE.UID)].ToString();
+
+                req = getQueryAIISKUEPassword();
+                dataTableRes = DbTSQLInterface.Select(ref connConfigDB, req, null, null, out err);
+
+                connSettRes.password = Crypt.Crypting().Decrypt(dataTableRes.Rows[dataTableRes.Rows.Count - 1].ItemArray[Convert.ToInt32(DB_TABLE_PSW.HASH)].ToString(), Crypt.KEY);
+
+                return connSettRes;
+            }
+
+            /// <summary>
             /// Загрузка всех каналов из базы данных
             /// </summary>
-            public void InitChannels(DbConnection m_connConfigDB, List <TEC_LOCAL> m_listTEC )
+            public void InitChannels(DbConnection m_connConfigDB, List<TEC_LOCAL> m_listTEC)
             {
                 int err = -1;
 
@@ -1163,41 +1228,13 @@ namespace Statistic
                             Convert.ToInt32(list_channels.Rows[i].ItemArray[Convert.ToInt32(DB_TABLE_DATA.CHANNEL)]),
                             Convert.ToBoolean(list_channels.Rows[i].ItemArray[Convert.ToInt32(DB_TABLE_DATA.USE)])
                         );
-                        m_listTEC[Convert.ToInt32(list_channels.Rows[i].ItemArray[Convert.ToInt32(DB_TABLE_DATA.ID_TEC)]) - 1].m_arListSgnls[GetGroupID(Convert.ToString(list_channels.Rows[i].ItemArray[Convert.ToInt32(DB_TABLE_DATA.GROUP)]))].Add(signal);
+                        m_listTEC[Convert.ToInt32(list_channels.Rows[i].ItemArray[Convert.ToInt32(DB_TABLE_DATA.ID_TEC)]) - 1].m_arListSgnls[Convert.ToInt32(Enum.Parse(typeof(TEC_LOCAL.INDEX_DATA), Convert.ToString(list_channels.Rows[i].ItemArray[Convert.ToInt32(DB_TABLE_DATA.GROUP)])))].Add(signal);
                     }
                     catch (Exception e)
                     {
                         Logging.Logg().Exception(e, string.Format(@""), Logging.INDEX_MESSAGE.NOT_SET);
                     }
                 }
-            }
-
-            public int GetGroupID (string group)
-            {
-                if (group == "TG") return 0; else if
-                    (group == "TSN") return 1; else if
-                    (group == "GRII") return 2; else if
-                    (group == "GRVI") return 3; else if
-                    (group == "GRVII") return 4; else return 5;
-            }
-
-            /// <summary>
-            /// Возвратить объект с параметрами соединения
-            /// </summary>
-            /// <returns>Объект с параметрами соединения</returns>
-            public ConnectionSettings GetConnSettAIISKUECentre()
-            {
-                ConnectionSettings connSettRes = new ConnectionSettings();
-
-                connSettRes.id = 1;
-                connSettRes.name = "АИИСКУЭ - Центр";
-                connSettRes.server = "10.100.104.39";
-                connSettRes.port = 1433;
-                connSettRes.dbName = "Piramida2000";
-                connSettRes.userName = "AIISKUESIBECO";
-                connSettRes.password = "@1!$kue$!BE(0";
-
-                return connSettRes;
             }
         }
 
@@ -1219,8 +1256,7 @@ namespace Statistic
             }
 
             //Получить параметры соединения с источником данных
-            m_connSettAIISKUECentre = FormMain.s_listFormConnectionSettings[(int)CONN_SETT_TYPE.DATA_AISKUE].getConnSett();
-            //GD.GetConnSettAIISKUECentre();
+            m_connSettAIISKUECentre = GD.GetConnSettAIISKUECentre(ref m_connConfigDB, out err);
 
             InitializeComponents();
 
@@ -1247,7 +1283,7 @@ namespace Statistic
 
             FullPathTemplate = string.Empty;
 
-            m_arMSEXEL_PARS = new string[7] { "\\\\ne22\\lnk", "Tepmlate.xls", "Sheet1", "1", "5", "25", "1.1" };
+            m_arMSEXEL_PARS = new string[7] { "", "Tepmlate.xls", "Sheet1", "1", "5", "25", "1.1" };
 
             //Установить обработчики событий
             EventNewPathToTemplate += new DelegateStringFunc(onNewPathToTemplate);
@@ -1491,19 +1527,24 @@ namespace Statistic
         private System.Windows.Forms.Label m_labelValues;
         private System.Windows.Forms.Label m_labelStartDate;
         private System.Windows.Forms.Label m_labelEndDate;
-        private System.Windows.Forms.Label m_label_TG;
-        private System.Windows.Forms.Label m_label_TSN;
-        private System.Windows.Forms.Label m_label_GRII;
-        private System.Windows.Forms.Label m_label_GRVI;
-        private System.Windows.Forms.Label m_label_GRVII;
-        private System.Windows.Forms.Label m_label_GRVIII;
-        private DataGridViewValues m_dgvValues;
-        private DataGridViewValues m_dgvValues_TG;
-        private DataGridViewValues m_dgvValues_TSN;
-        private DataGridViewValues m_dgvValues_GRII;
-        private DataGridViewValues m_dgvValues_GRVI;
-        private DataGridViewValues m_dgvValues_GRVII;
-        private DataGridViewValues m_dgvValues_GRVIII;
+        //private System.Windows.Forms.Label m_label_TG;
+        //private System.Windows.Forms.Label m_label_TSN;
+        //private System.Windows.Forms.Label m_label_GRII;
+        //private System.Windows.Forms.Label m_label_GRVI;
+        //private System.Windows.Forms.Label m_label_GRVII;
+        //private System.Windows.Forms.Label m_label_GRVIII;
+        //private DataGridViewValues m_dgvValues;
+        //private DataGridViewValues m_dgvValues_TG;
+        //private DataGridViewValues m_dgvValues_TSN;
+        //private DataGridViewValues m_dgvValues_GRII;
+        //private DataGridViewValues m_dgvValues_GRVI;
+        //private DataGridViewValues m_dgvValues_GRVII;
+        //private DataGridViewValues m_dgvValues_GRVIII;
+
+        private List<System.Windows.Forms.Label> m_labelsGroup;
+
+        private List<DataGridViewValues> m_dgvValues;
+
         private DataGridView m_sumValues;
 
         /// <summary>
@@ -1542,30 +1583,24 @@ namespace Statistic
             this.m_labelEndDate = new System.Windows.Forms.Label();
 
 
-            this.m_label_TG = new System.Windows.Forms.Label();
-            this.m_label_TSN = new System.Windows.Forms.Label();
-            this.m_label_GRII = new System.Windows.Forms.Label();
-            this.m_label_GRVI = new System.Windows.Forms.Label();
-            this.m_label_GRVII = new System.Windows.Forms.Label();
-            this.m_label_GRVIII = new System.Windows.Forms.Label();
+            //this.m_label_TG = new System.Windows.Forms.Label();
+            //this.m_label_TSN = new System.Windows.Forms.Label();
+            //this.m_label_GRII = new System.Windows.Forms.Label();
+            //this.m_label_GRVI = new System.Windows.Forms.Label();
+            //this.m_label_GRVII = new System.Windows.Forms.Label();
+            //this.m_label_GRVIII = new System.Windows.Forms.Label();
+
+            this.m_dgvValues = new List<DataGridViewValues>();
+            this.m_labelsGroup = new List<System.Windows.Forms.Label>();
+            for (int i = 0; i <= Convert.ToInt32(TEC_LOCAL.INDEX_DATA.GRVIII); i++)
+            {
+                m_dgvValues.Add(new DataGridViewValues());
+                ((System.ComponentModel.ISupportInitialize)(this.m_dgvValues[i])).BeginInit();
+
+                m_labelsGroup.Add(new System.Windows.Forms.Label());
+            }
 
             m_sumValues = new DataGridView();
-
-            this.m_dgvValues = new DataGridViewValues();
-            this.m_dgvValues_TG = new DataGridViewValues();
-            this.m_dgvValues_TSN = new DataGridViewValues();
-            this.m_dgvValues_GRII = new DataGridViewValues();
-            this.m_dgvValues_GRVI = new DataGridViewValues();
-            this.m_dgvValues_GRVII = new DataGridViewValues();
-            this.m_dgvValues_GRVIII = new DataGridViewValues();
-
-            ((System.ComponentModel.ISupportInitialize)(this.m_dgvValues)).BeginInit();
-            ((System.ComponentModel.ISupportInitialize)(this.m_dgvValues_TG)).BeginInit();
-            ((System.ComponentModel.ISupportInitialize)(this.m_dgvValues_TSN)).BeginInit();
-            ((System.ComponentModel.ISupportInitialize)(this.m_dgvValues_GRII)).BeginInit();
-            ((System.ComponentModel.ISupportInitialize)(this.m_dgvValues_GRVI)).BeginInit();
-            ((System.ComponentModel.ISupportInitialize)(this.m_dgvValues_GRVII)).BeginInit();
-            ((System.ComponentModel.ISupportInitialize)(this.m_dgvValues_GRVIII)).BeginInit();
 
             ((System.ComponentModel.ISupportInitialize)(this.m_sumValues)).BeginInit();
 
@@ -1586,18 +1621,13 @@ namespace Statistic
             this.Controls.Add(m_labelValues, 8, 2); this.SetColumnSpan(m_labelValues, 30); this.SetRowSpan(m_labelValues, 2);
             this.Controls.Add(m_labelStartDate, 65, 6); this.SetColumnSpan(m_labelStartDate, 8); this.SetRowSpan(m_labelStartDate, 2);
             this.Controls.Add(m_labelEndDate, 85, 6); this.SetColumnSpan(m_labelEndDate, 8); this.SetRowSpan(m_labelEndDate, 2);
-            this.Controls.Add(m_label_TG, 2, 15); this.SetColumnSpan(m_label_TG, 5); this.SetRowSpan(m_label_TG, 2);
-            this.Controls.Add(m_label_TSN, 2, 30); this.SetColumnSpan(m_label_TSN, 5); this.SetRowSpan(m_label_TSN, 2);
-            this.Controls.Add(m_label_GRII, 2, 45); this.SetColumnSpan(m_label_GRII, 5); this.SetRowSpan(m_label_GRII, 2);
-            this.Controls.Add(m_label_GRVI, 2, 60); this.SetColumnSpan(m_label_GRVI, 5); this.SetRowSpan(m_label_GRVI, 2);
-            this.Controls.Add(m_label_GRVII, 2, 75); this.SetColumnSpan(m_label_GRVII, 6); this.SetRowSpan(m_label_GRVII, 2);
-            this.Controls.Add(m_label_GRVIII, 2, 90); this.SetColumnSpan(m_label_GRVIII, 6); this.SetRowSpan(m_label_GRVIII, 2);
-            this.Controls.Add(m_dgvValues_TG, 8, 5); this.SetColumnSpan(m_dgvValues_TG, 50); this.SetRowSpan(m_dgvValues_TG, 15);
-            this.Controls.Add(m_dgvValues_TSN, 8, 20); this.SetColumnSpan(m_dgvValues_TSN, 50); this.SetRowSpan(m_dgvValues_TSN, 15);
-            this.Controls.Add(m_dgvValues_GRII, 8, 35); this.SetColumnSpan(m_dgvValues_GRII, 50); this.SetRowSpan(m_dgvValues_GRII, 15);
-            this.Controls.Add(m_dgvValues_GRVI, 8, 50); this.SetColumnSpan(m_dgvValues_GRVI, 50); this.SetRowSpan(m_dgvValues_GRVI, 15);
-            this.Controls.Add(m_dgvValues_GRVII, 8, 65); this.SetColumnSpan(m_dgvValues_GRVII, 50); this.SetRowSpan(m_dgvValues_GRVII, 15);
-            this.Controls.Add(m_dgvValues_GRVIII, 8, 80); this.SetColumnSpan(m_dgvValues_GRVIII, 50); this.SetRowSpan(m_dgvValues_GRVIII, 15);
+
+            for (int i = 0; i < m_dgvValues.Count; i++)
+            {
+                this.Controls.Add(m_dgvValues[i], 8, 5 + i * 15); this.SetColumnSpan(m_dgvValues[i], 50); this.SetRowSpan(m_dgvValues[i], 15);
+                this.Controls.Add(m_labelsGroup[i], 2, 7 + i * 15); this.SetColumnSpan(m_labelsGroup[i], 5); this.SetRowSpan(m_labelsGroup[i], 2);
+            }
+
             this.Controls.Add(m_sumValues, 61, 60); this.SetColumnSpan(m_sumValues, 38); this.SetRowSpan(m_sumValues, 35);
 
             this.ResumeLayout();
@@ -1704,241 +1734,45 @@ namespace Statistic
             this.m_labelEndDate.TabIndex = 5;
             this.m_labelEndDate.Text = "";
             // 
-            // m_label_TG
+            // m_labelsGroup
             // 
-            this.m_label_TG.AutoSize = true;
-            this.m_label_TG.Name = "m_label_TG";
-            this.m_label_TG.TabIndex = 5;
-            this.m_label_TG.Text = "TG";
-            // 
-            // m_label_TSN
-            // 
-            this.m_label_TSN.AutoSize = true;
-            this.m_label_TSN.Name = "m_label_TSN";
-            this.m_label_TSN.TabIndex = 5;
-            this.m_label_TSN.Text = "TSN";
-            // 
-            // m_label_GRII
-            // 
-            this.m_label_GRII.Name = "m_label_GRII";
-            this.m_label_GRII.TabIndex = 5;
-            this.m_label_GRII.Text = "GRII";
-            // 
-            // m_label_GRVI
-            // 
-            this.m_label_GRVI.Name = "m_label_GRVI";
-            this.m_label_GRVI.TabIndex = 5;
-            this.m_label_GRVI.Text = "GRVI";
-            // 
-            // m_label_GRVII
-            // 
-            this.m_label_GRVII.Name = "m_label_GRVII";
-            this.m_label_GRVII.TabIndex = 5;
-            this.m_label_GRVII.Text = "GRVII";
-            // 
-            // m_label_GRVIII
-            // 
-            this.m_label_GRVIII.Name = "m_label_GRVIII";
-            this.m_label_GRVIII.TabIndex = 5;
-            this.m_label_GRVIII.Text = "GRVIII";
+            for (int i = 0; i <= Convert.ToInt32(TEC_LOCAL.INDEX_DATA.GRVIII); i++)
+            {
+                this.m_labelsGroup[i].Name = Enum.GetName(typeof(TEC_LOCAL.INDEX_DATA), i).ToString();
+                this.m_labelsGroup[i].TabIndex = 5;
+                this.m_labelsGroup[i].Text = Enum.GetName(typeof(TEC_LOCAL.INDEX_DATA), i).ToString();
+            }
             // 
             // m_dgvValues
             // 
-            this.m_dgvValues.AllowUserToAddRows = false;
-            this.m_dgvValues.AllowUserToDeleteRows = false;
-            this.m_dgvValues.AllowUserToOrderColumns = true;
-            this.m_dgvValues.AllowUserToResizeColumns = false;
-            this.m_dgvValues.AllowUserToResizeRows = false;
-            this.m_dgvValues.Anchor = ((System.Windows.Forms.AnchorStyles)((((System.Windows.Forms.AnchorStyles.Top | System.Windows.Forms.AnchorStyles.Bottom)
-            | System.Windows.Forms.AnchorStyles.Left)
-            | System.Windows.Forms.AnchorStyles.Right)));
-            this.m_dgvValues.AutoSizeColumnsMode = System.Windows.Forms.DataGridViewAutoSizeColumnsMode.ColumnHeader;
-            this.m_dgvValues.AutoSizeRowsMode = System.Windows.Forms.DataGridViewAutoSizeRowsMode.AllHeaders;
-            this.m_dgvValues.ColumnHeadersHeightSizeMode = System.Windows.Forms.DataGridViewColumnHeadersHeightSizeMode.AutoSize;
-            dataGridViewCellStyle1.Alignment = System.Windows.Forms.DataGridViewContentAlignment.MiddleRight;
-            dataGridViewCellStyle1.BackColor = System.Drawing.SystemColors.Window;
-            dataGridViewCellStyle1.Font = new System.Drawing.Font("Microsoft Sans Serif", 8.25F, System.Drawing.FontStyle.Regular, System.Drawing.GraphicsUnit.Point, ((byte)(204)));
-            dataGridViewCellStyle1.ForeColor = System.Drawing.SystemColors.ControlText;
-            dataGridViewCellStyle1.SelectionBackColor = System.Drawing.SystemColors.Highlight;
-            dataGridViewCellStyle1.SelectionForeColor = System.Drawing.SystemColors.HighlightText;
-            dataGridViewCellStyle1.WrapMode = System.Windows.Forms.DataGridViewTriState.False;
-            this.m_dgvValues.DefaultCellStyle = dataGridViewCellStyle1;
-            this.m_dgvValues.Name = "m_dgvValues";
-            this.m_dgvValues.RowHeadersWidthSizeMode = System.Windows.Forms.DataGridViewRowHeadersWidthSizeMode.AutoSizeToAllHeaders;
-            this.m_dgvValues.RowTemplate.ReadOnly = true;
-            this.m_dgvValues.RowTemplate.Resizable = System.Windows.Forms.DataGridViewTriState.False;
-            this.m_dgvValues.SelectionMode = System.Windows.Forms.DataGridViewSelectionMode.FullRowSelect;
-            this.m_dgvValues.TabIndex = 4;
-            // 
-            // m_dgvValues_TG
-            // 
-            this.m_dgvValues_TG.AllowUserToAddRows = false;
-            this.m_dgvValues_TG.AllowUserToDeleteRows = false;
-            this.m_dgvValues_TG.AllowUserToOrderColumns = true;
-            this.m_dgvValues_TG.AllowUserToResizeColumns = false;
-            this.m_dgvValues_TG.AllowUserToResizeRows = false;
-            this.m_dgvValues_TG.Anchor = ((System.Windows.Forms.AnchorStyles)((((System.Windows.Forms.AnchorStyles.Top | System.Windows.Forms.AnchorStyles.Bottom)
-            | System.Windows.Forms.AnchorStyles.Left)
-            | System.Windows.Forms.AnchorStyles.Right)));
-            this.m_dgvValues_TG.AutoSizeColumnsMode = System.Windows.Forms.DataGridViewAutoSizeColumnsMode.ColumnHeader;
-            this.m_dgvValues_TG.AutoSizeRowsMode = System.Windows.Forms.DataGridViewAutoSizeRowsMode.AllHeaders;
-            this.m_dgvValues_TG.ColumnHeadersHeightSizeMode = System.Windows.Forms.DataGridViewColumnHeadersHeightSizeMode.AutoSize;
-            dataGridViewCellStyle2.Alignment = System.Windows.Forms.DataGridViewContentAlignment.MiddleRight;
-            dataGridViewCellStyle2.BackColor = System.Drawing.SystemColors.Window;
-            dataGridViewCellStyle2.Font = new System.Drawing.Font("Microsoft Sans Serif", 8.25F, System.Drawing.FontStyle.Regular, System.Drawing.GraphicsUnit.Point, ((byte)(204)));
-            dataGridViewCellStyle2.ForeColor = System.Drawing.SystemColors.ControlText;
-            dataGridViewCellStyle2.SelectionBackColor = System.Drawing.SystemColors.Highlight;
-            dataGridViewCellStyle2.SelectionForeColor = System.Drawing.SystemColors.HighlightText;
-            dataGridViewCellStyle2.WrapMode = System.Windows.Forms.DataGridViewTriState.False;
-            this.m_dgvValues_TG.DefaultCellStyle = dataGridViewCellStyle2;
-            this.m_dgvValues_TG.Name = "m_dgvValues_TG";
-            this.m_dgvValues_TG.RowHeadersWidthSizeMode = System.Windows.Forms.DataGridViewRowHeadersWidthSizeMode.AutoSizeToAllHeaders;
-            this.m_dgvValues_TG.RowTemplate.ReadOnly = true;
-            this.m_dgvValues_TG.RowTemplate.Resizable = System.Windows.Forms.DataGridViewTriState.False;
-            this.m_dgvValues_TG.SelectionMode = System.Windows.Forms.DataGridViewSelectionMode.FullRowSelect;
-            this.m_dgvValues_TG.TabIndex = 4;
-            // 
-            // m_dgvValues_TSN
-            // 
-            this.m_dgvValues_TSN.AllowUserToAddRows = false;
-            this.m_dgvValues_TSN.AllowUserToDeleteRows = false;
-            this.m_dgvValues_TSN.AllowUserToOrderColumns = true;
-            this.m_dgvValues_TSN.AllowUserToResizeColumns = false;
-            this.m_dgvValues_TSN.AllowUserToResizeRows = false;
-            this.m_dgvValues_TSN.Anchor = ((System.Windows.Forms.AnchorStyles)((((System.Windows.Forms.AnchorStyles.Top | System.Windows.Forms.AnchorStyles.Bottom)
-            | System.Windows.Forms.AnchorStyles.Left)
-            | System.Windows.Forms.AnchorStyles.Right)));
-            this.m_dgvValues_TSN.AutoSizeColumnsMode = System.Windows.Forms.DataGridViewAutoSizeColumnsMode.ColumnHeader;
-            this.m_dgvValues_TSN.AutoSizeRowsMode = System.Windows.Forms.DataGridViewAutoSizeRowsMode.AllHeaders;
-            this.m_dgvValues_TSN.ColumnHeadersHeightSizeMode = System.Windows.Forms.DataGridViewColumnHeadersHeightSizeMode.AutoSize;
-            dataGridViewCellStyle2.Alignment = System.Windows.Forms.DataGridViewContentAlignment.MiddleRight;
-            dataGridViewCellStyle2.BackColor = System.Drawing.SystemColors.Window;
-            dataGridViewCellStyle2.Font = new System.Drawing.Font("Microsoft Sans Serif", 8.25F, System.Drawing.FontStyle.Regular, System.Drawing.GraphicsUnit.Point, ((byte)(204)));
-            dataGridViewCellStyle2.ForeColor = System.Drawing.SystemColors.ControlText;
-            dataGridViewCellStyle2.SelectionBackColor = System.Drawing.SystemColors.Highlight;
-            dataGridViewCellStyle2.SelectionForeColor = System.Drawing.SystemColors.HighlightText;
-            dataGridViewCellStyle2.WrapMode = System.Windows.Forms.DataGridViewTriState.False;
-            this.m_dgvValues_TSN.DefaultCellStyle = dataGridViewCellStyle2;
-            this.m_dgvValues_TSN.Location = new System.Drawing.Point(45, 127);
-            this.m_dgvValues_TSN.Name = "m_dgvValues_TSN";
-            this.m_dgvValues_TSN.RowHeadersWidthSizeMode = System.Windows.Forms.DataGridViewRowHeadersWidthSizeMode.AutoSizeToAllHeaders;
-            this.m_dgvValues_TSN.RowTemplate.ReadOnly = true;
-            this.m_dgvValues_TSN.RowTemplate.Resizable = System.Windows.Forms.DataGridViewTriState.False;
-            this.m_dgvValues_TSN.SelectionMode = System.Windows.Forms.DataGridViewSelectionMode.FullRowSelect;
-            this.m_dgvValues_TSN.Size = new System.Drawing.Size(550, 100);
-            this.m_dgvValues_TSN.TabIndex = 4;
-            // 
-            // m_dgvValues_GRII
-            // 
-            this.m_dgvValues_GRII.AllowUserToAddRows = false;
-            this.m_dgvValues_GRII.AllowUserToDeleteRows = false;
-            this.m_dgvValues_GRII.AllowUserToOrderColumns = true;
-            this.m_dgvValues_GRII.AllowUserToResizeColumns = false;
-            this.m_dgvValues_GRII.AllowUserToResizeRows = false;
-            this.m_dgvValues_GRII.Anchor = ((System.Windows.Forms.AnchorStyles)((((System.Windows.Forms.AnchorStyles.Top | System.Windows.Forms.AnchorStyles.Bottom)
-            | System.Windows.Forms.AnchorStyles.Left)
-            | System.Windows.Forms.AnchorStyles.Right)));
-            this.m_dgvValues_GRII.AutoSizeColumnsMode = System.Windows.Forms.DataGridViewAutoSizeColumnsMode.ColumnHeader;
-            this.m_dgvValues_GRII.AutoSizeRowsMode = System.Windows.Forms.DataGridViewAutoSizeRowsMode.AllHeaders;
-            this.m_dgvValues_GRII.ColumnHeadersHeightSizeMode = System.Windows.Forms.DataGridViewColumnHeadersHeightSizeMode.AutoSize;
-            dataGridViewCellStyle2.Alignment = System.Windows.Forms.DataGridViewContentAlignment.MiddleRight;
-            dataGridViewCellStyle2.BackColor = System.Drawing.SystemColors.Window;
-            dataGridViewCellStyle2.Font = new System.Drawing.Font("Microsoft Sans Serif", 8.25F, System.Drawing.FontStyle.Regular, System.Drawing.GraphicsUnit.Point, ((byte)(204)));
-            dataGridViewCellStyle2.ForeColor = System.Drawing.SystemColors.ControlText;
-            dataGridViewCellStyle2.SelectionBackColor = System.Drawing.SystemColors.Highlight;
-            dataGridViewCellStyle2.SelectionForeColor = System.Drawing.SystemColors.HighlightText;
-            dataGridViewCellStyle2.WrapMode = System.Windows.Forms.DataGridViewTriState.False;
-            this.m_dgvValues_GRII.DefaultCellStyle = dataGridViewCellStyle2;
-            this.m_dgvValues_GRII.Name = "m_dgvValues_GRII";
-            this.m_dgvValues_GRII.RowHeadersWidthSizeMode = System.Windows.Forms.DataGridViewRowHeadersWidthSizeMode.AutoSizeToAllHeaders;
-            this.m_dgvValues_GRII.RowTemplate.ReadOnly = true;
-            this.m_dgvValues_GRII.RowTemplate.Resizable = System.Windows.Forms.DataGridViewTriState.False;
-            this.m_dgvValues_GRII.SelectionMode = System.Windows.Forms.DataGridViewSelectionMode.FullRowSelect;
-            this.m_dgvValues_GRII.TabIndex = 4;
-            // 
-            // m_dgvValues_GRVI
-            // 
-            this.m_dgvValues_GRVI.AllowUserToAddRows = false;
-            this.m_dgvValues_GRVI.AllowUserToDeleteRows = false;
-            this.m_dgvValues_GRVI.AllowUserToOrderColumns = true;
-            this.m_dgvValues_GRVI.AllowUserToResizeColumns = false;
-            this.m_dgvValues_GRVI.AllowUserToResizeRows = false;
-            this.m_dgvValues_GRVI.Anchor = ((System.Windows.Forms.AnchorStyles)((((System.Windows.Forms.AnchorStyles.Top | System.Windows.Forms.AnchorStyles.Bottom)
-            | System.Windows.Forms.AnchorStyles.Left)
-            | System.Windows.Forms.AnchorStyles.Right)));
-            this.m_dgvValues_GRVI.AutoSizeColumnsMode = System.Windows.Forms.DataGridViewAutoSizeColumnsMode.ColumnHeader;
-            this.m_dgvValues_GRVI.AutoSizeRowsMode = System.Windows.Forms.DataGridViewAutoSizeRowsMode.AllHeaders;
-            this.m_dgvValues_GRVI.ColumnHeadersHeightSizeMode = System.Windows.Forms.DataGridViewColumnHeadersHeightSizeMode.AutoSize;
-            dataGridViewCellStyle2.Alignment = System.Windows.Forms.DataGridViewContentAlignment.MiddleRight;
-            dataGridViewCellStyle2.BackColor = System.Drawing.SystemColors.Window;
-            dataGridViewCellStyle2.Font = new System.Drawing.Font("Microsoft Sans Serif", 8.25F, System.Drawing.FontStyle.Regular, System.Drawing.GraphicsUnit.Point, ((byte)(204)));
-            dataGridViewCellStyle2.ForeColor = System.Drawing.SystemColors.ControlText;
-            dataGridViewCellStyle2.SelectionBackColor = System.Drawing.SystemColors.Highlight;
-            dataGridViewCellStyle2.SelectionForeColor = System.Drawing.SystemColors.HighlightText;
-            dataGridViewCellStyle2.WrapMode = System.Windows.Forms.DataGridViewTriState.False;
-            this.m_dgvValues_GRVI.DefaultCellStyle = dataGridViewCellStyle2;
-            this.m_dgvValues_GRVI.Name = "m_dgvValues_GRVI";
-            this.m_dgvValues_GRVI.RowHeadersWidthSizeMode = System.Windows.Forms.DataGridViewRowHeadersWidthSizeMode.AutoSizeToAllHeaders;
-            this.m_dgvValues_GRVI.RowTemplate.ReadOnly = true;
-            this.m_dgvValues_GRVI.RowTemplate.Resizable = System.Windows.Forms.DataGridViewTriState.False;
-            this.m_dgvValues_GRVI.SelectionMode = System.Windows.Forms.DataGridViewSelectionMode.FullRowSelect;
-            this.m_dgvValues_GRVI.TabIndex = 4;
-            // 
-            // m_dgvValues_GRVII
-            // 
-            this.m_dgvValues_GRVII.AllowUserToAddRows = false;
-            this.m_dgvValues_GRVII.AllowUserToDeleteRows = false;
-            this.m_dgvValues_GRVII.AllowUserToOrderColumns = true;
-            this.m_dgvValues_GRVII.AllowUserToResizeColumns = false;
-            this.m_dgvValues_GRVII.AllowUserToResizeRows = false;
-            this.m_dgvValues_GRVII.Anchor = ((System.Windows.Forms.AnchorStyles)((((System.Windows.Forms.AnchorStyles.Top | System.Windows.Forms.AnchorStyles.Bottom)
-            | System.Windows.Forms.AnchorStyles.Left)
-            | System.Windows.Forms.AnchorStyles.Right)));
-            this.m_dgvValues_GRVII.AutoSizeColumnsMode = System.Windows.Forms.DataGridViewAutoSizeColumnsMode.ColumnHeader;
-            this.m_dgvValues_GRVII.AutoSizeRowsMode = System.Windows.Forms.DataGridViewAutoSizeRowsMode.AllHeaders;
-            this.m_dgvValues_GRVII.ColumnHeadersHeightSizeMode = System.Windows.Forms.DataGridViewColumnHeadersHeightSizeMode.AutoSize;
-            dataGridViewCellStyle2.Alignment = System.Windows.Forms.DataGridViewContentAlignment.MiddleRight;
-            dataGridViewCellStyle2.BackColor = System.Drawing.SystemColors.Window;
-            dataGridViewCellStyle2.Font = new System.Drawing.Font("Microsoft Sans Serif", 8.25F, System.Drawing.FontStyle.Regular, System.Drawing.GraphicsUnit.Point, ((byte)(204)));
-            dataGridViewCellStyle2.ForeColor = System.Drawing.SystemColors.ControlText;
-            dataGridViewCellStyle2.SelectionBackColor = System.Drawing.SystemColors.Highlight;
-            dataGridViewCellStyle2.SelectionForeColor = System.Drawing.SystemColors.HighlightText;
-            dataGridViewCellStyle2.WrapMode = System.Windows.Forms.DataGridViewTriState.False;
-            this.m_dgvValues_GRVII.DefaultCellStyle = dataGridViewCellStyle2;
-            this.m_dgvValues_GRVII.Name = "m_dgvValues_GRVII";
-            this.m_dgvValues_GRVII.RowHeadersWidthSizeMode = System.Windows.Forms.DataGridViewRowHeadersWidthSizeMode.AutoSizeToAllHeaders;
-            this.m_dgvValues_GRVII.RowTemplate.ReadOnly = true;
-            this.m_dgvValues_GRVII.RowTemplate.Resizable = System.Windows.Forms.DataGridViewTriState.False;
-            this.m_dgvValues_GRVII.SelectionMode = System.Windows.Forms.DataGridViewSelectionMode.FullRowSelect;
-            this.m_dgvValues_GRVII.TabIndex = 4;
-            // 
-            // m_dgvValues_GRVIII
-            // 
-            this.m_dgvValues_GRVIII.AllowUserToAddRows = false;
-            this.m_dgvValues_GRVIII.AllowUserToDeleteRows = false;
-            this.m_dgvValues_GRVIII.AllowUserToOrderColumns = true;
-            this.m_dgvValues_GRVIII.AllowUserToResizeColumns = false;
-            this.m_dgvValues_GRVIII.AllowUserToResizeRows = false;
-            this.m_dgvValues_GRVIII.Anchor = ((System.Windows.Forms.AnchorStyles)((((System.Windows.Forms.AnchorStyles.Top | System.Windows.Forms.AnchorStyles.Bottom)
-            | System.Windows.Forms.AnchorStyles.Left)
-            | System.Windows.Forms.AnchorStyles.Right)));
-            this.m_dgvValues_GRVIII.AutoSizeColumnsMode = System.Windows.Forms.DataGridViewAutoSizeColumnsMode.ColumnHeader;
-            this.m_dgvValues_GRVIII.AutoSizeRowsMode = System.Windows.Forms.DataGridViewAutoSizeRowsMode.AllHeaders;
-            this.m_dgvValues_GRVIII.ColumnHeadersHeightSizeMode = System.Windows.Forms.DataGridViewColumnHeadersHeightSizeMode.AutoSize;
-            dataGridViewCellStyle2.Alignment = System.Windows.Forms.DataGridViewContentAlignment.MiddleRight;
-            dataGridViewCellStyle2.BackColor = System.Drawing.SystemColors.Window;
-            dataGridViewCellStyle2.Font = new System.Drawing.Font("Microsoft Sans Serif", 8.25F, System.Drawing.FontStyle.Regular, System.Drawing.GraphicsUnit.Point, ((byte)(204)));
-            dataGridViewCellStyle2.ForeColor = System.Drawing.SystemColors.ControlText;
-            dataGridViewCellStyle2.SelectionBackColor = System.Drawing.SystemColors.Highlight;
-            dataGridViewCellStyle2.SelectionForeColor = System.Drawing.SystemColors.HighlightText;
-            dataGridViewCellStyle2.WrapMode = System.Windows.Forms.DataGridViewTriState.False;
-            this.m_dgvValues_GRVIII.DefaultCellStyle = dataGridViewCellStyle2;
-            this.m_dgvValues_GRVIII.Name = "m_dgvValues_GRVIII";
-            this.m_dgvValues_GRVIII.RowHeadersWidthSizeMode = System.Windows.Forms.DataGridViewRowHeadersWidthSizeMode.AutoSizeToAllHeaders;
-            this.m_dgvValues_GRVIII.RowTemplate.ReadOnly = true;
-            this.m_dgvValues_GRVIII.RowTemplate.Resizable = System.Windows.Forms.DataGridViewTriState.False;
-            this.m_dgvValues_GRVIII.SelectionMode = System.Windows.Forms.DataGridViewSelectionMode.FullRowSelect;
-            this.m_dgvValues_GRVIII.TabIndex = 4;
+            for (int i = 0; i <= Convert.ToInt32(TEC_LOCAL.INDEX_DATA.GRVIII); i++)
+            {
+                this.m_dgvValues[i].AllowUserToAddRows = false;
+                this.m_dgvValues[i].AllowUserToDeleteRows = false;
+                this.m_dgvValues[i].AllowUserToOrderColumns = true;
+                this.m_dgvValues[i].AllowUserToResizeColumns = false;
+                this.m_dgvValues[i].AllowUserToResizeRows = false;
+                this.m_dgvValues[i].Anchor = ((System.Windows.Forms.AnchorStyles)((((System.Windows.Forms.AnchorStyles.Top | System.Windows.Forms.AnchorStyles.Bottom)
+                | System.Windows.Forms.AnchorStyles.Left)
+                | System.Windows.Forms.AnchorStyles.Right)));
+                this.m_dgvValues[i].AutoSizeColumnsMode = System.Windows.Forms.DataGridViewAutoSizeColumnsMode.ColumnHeader;
+                this.m_dgvValues[i].AutoSizeRowsMode = System.Windows.Forms.DataGridViewAutoSizeRowsMode.AllHeaders;
+                this.m_dgvValues[i].ColumnHeadersHeightSizeMode = System.Windows.Forms.DataGridViewColumnHeadersHeightSizeMode.AutoSize;
+                dataGridViewCellStyle1.Alignment = System.Windows.Forms.DataGridViewContentAlignment.MiddleRight;
+                dataGridViewCellStyle1.BackColor = System.Drawing.SystemColors.Window;
+                dataGridViewCellStyle1.Font = new System.Drawing.Font("Microsoft Sans Serif", 8.25F, System.Drawing.FontStyle.Regular, System.Drawing.GraphicsUnit.Point, ((byte)(204)));
+                dataGridViewCellStyle1.ForeColor = System.Drawing.SystemColors.ControlText;
+                dataGridViewCellStyle1.SelectionBackColor = System.Drawing.SystemColors.Highlight;
+                dataGridViewCellStyle1.SelectionForeColor = System.Drawing.SystemColors.HighlightText;
+                dataGridViewCellStyle1.WrapMode = System.Windows.Forms.DataGridViewTriState.False;
+                this.m_dgvValues[i].DefaultCellStyle = dataGridViewCellStyle1;
+                this.m_dgvValues[i].Name = "m_dgvValues" + i.ToString();
+                this.m_dgvValues[i].RowHeadersWidthSizeMode = System.Windows.Forms.DataGridViewRowHeadersWidthSizeMode.AutoSizeToAllHeaders;
+                this.m_dgvValues[i].RowTemplate.ReadOnly = true;
+                this.m_dgvValues[i].RowTemplate.Resizable = System.Windows.Forms.DataGridViewTriState.False;
+                this.m_dgvValues[i].SelectionMode = System.Windows.Forms.DataGridViewSelectionMode.FullRowSelect;
+                this.m_dgvValues[i].TabIndex = 4;
+            }
             // 
             // m_sumValues
             // 
@@ -1990,13 +1824,10 @@ namespace Statistic
 
         private void monthCalendar_DateChanged(object sender, DateRangeEventArgs e)
         {
-            m_dgvValues.ClearValues();
-            m_dgvValues_TG.ClearValues();
-            m_dgvValues_TSN.ClearValues();
-            m_dgvValues_GRII.ClearValues();
-            m_dgvValues_GRVI.ClearValues();
-            m_dgvValues_GRVII.ClearValues();
-            m_dgvValues_GRVIII.ClearValues();
+            for (int i = 0; i <= Convert.ToInt32(TEC_LOCAL.INDEX_DATA.GRVIII); i++)
+            {
+                m_dgvValues[i].ClearValues();
+            }
 
             m_labelStartDate.Text = m_monthCalendar.SelectionStart.ToShortDateString();
         }
@@ -2004,40 +1835,14 @@ namespace Statistic
         private void updateRowData()
         {
             int rowWight = 200;
-            // очистить столбцы
-            m_dgvValues_TG.ClearRows();
-            m_dgvValues_TSN.ClearRows();
-            m_dgvValues_GRII.ClearRows();
-            m_dgvValues_GRVI.ClearRows();
-            m_dgvValues_GRVII.ClearRows();
-            m_dgvValues_GRVIII.ClearRows();
-
-            // добавить столбцы
-            m_dgvValues_TG.AddRowData(m_listTEC[m_listBoxTEC.SelectedIndex].m_arListSgnls[0]);
-            m_dgvValues_TSN.AddRowData(m_listTEC[m_listBoxTEC.SelectedIndex].m_arListSgnls[1]);
-            m_dgvValues_GRII.AddRowData(m_listTEC[m_listBoxTEC.SelectedIndex].m_arListSgnls[2]);
-            m_dgvValues_GRVI.AddRowData(m_listTEC[m_listBoxTEC.SelectedIndex].m_arListSgnls[3]);
-            m_dgvValues_GRVII.AddRowData(m_listTEC[m_listBoxTEC.SelectedIndex].m_arListSgnls[4]);
-            m_dgvValues_GRVIII.AddRowData(m_listTEC[m_listBoxTEC.SelectedIndex].m_arListSgnls[5]);
-
-            m_dgvValues_TG.RowHeadersWidthSizeMode =
+            for (int i = 0; i <= Convert.ToInt32(TEC_LOCAL.INDEX_DATA.GRVIII); i++)
+            {
+                m_dgvValues[i].ClearRows();
+                m_dgvValues[i].AddRowData(m_listTEC[m_listBoxTEC.SelectedIndex].m_arListSgnls[i]);
+                m_dgvValues[i].RowHeadersWidthSizeMode =
                 DataGridViewRowHeadersWidthSizeMode.EnableResizing;
-            m_dgvValues_TG.RowHeadersWidth = rowWight;
-            m_dgvValues_TSN.RowHeadersWidthSizeMode =
-                DataGridViewRowHeadersWidthSizeMode.EnableResizing;
-            m_dgvValues_TSN.RowHeadersWidth = rowWight;
-            m_dgvValues_GRII.RowHeadersWidthSizeMode =
-                DataGridViewRowHeadersWidthSizeMode.EnableResizing;
-            m_dgvValues_GRII.RowHeadersWidth = rowWight;
-            m_dgvValues_GRVI.RowHeadersWidthSizeMode =
-                DataGridViewRowHeadersWidthSizeMode.EnableResizing;
-            m_dgvValues_GRVI.RowHeadersWidth = rowWight;
-            m_dgvValues_GRVII.RowHeadersWidthSizeMode =
-                DataGridViewRowHeadersWidthSizeMode.EnableResizing;
-            m_dgvValues_GRVII.RowHeadersWidth = rowWight;
-            m_dgvValues_GRVIII.RowHeadersWidthSizeMode =
-                DataGridViewRowHeadersWidthSizeMode.EnableResizing;
-            m_dgvValues_GRVIII.RowHeadersWidth = rowWight;
+                m_dgvValues[i].RowHeadersWidth = rowWight;
+            }
         }
 
         private void listBox_SelectedIndexChanged(object sender, EventArgs e)
@@ -2135,13 +1940,10 @@ namespace Statistic
             TEC_LOCAL tec = m_listTEC[m_listBoxTEC.SelectedIndex];
             TEC_LOCAL.VALUES_DATE.VALUES_GROUP dictIndxValues;
 
-            m_dgvValues.ClearValues();
-            m_dgvValues_TG.ClearValues();
-            m_dgvValues_TSN.ClearValues();
-            m_dgvValues_GRII.ClearValues();
-            m_dgvValues_GRVI.ClearValues();
-            m_dgvValues_GRVII.ClearValues();
-            m_dgvValues_GRVIII.ClearValues();
+            for (int i = 0; i <= Convert.ToInt32(TEC_LOCAL.INDEX_DATA.GRVIII); i++)
+            {
+                m_dgvValues[i].ClearValues();
+            }
 
             delegateStartWait();
 
@@ -2172,33 +1974,30 @@ namespace Statistic
                         switch (indx)
                         {
                             case TEC_LOCAL.INDEX_DATA.TG:
-                                m_dgvValues_TG.Update(dictIndxValues);
-                                m_sumValues.Rows[Convert.ToInt32(indx)].Cells[1].Value = Convert.ToString(m_dgvValues_TG.Rows[m_dgvValues_TG.Rows.Count - 1].Cells[24].Value);
+                                m_dgvValues[Convert.ToInt32(TEC_LOCAL.INDEX_DATA.TG)].Update(dictIndxValues);
+                                m_sumValues.Rows[Convert.ToInt32(indx)].Cells[1].Value = Convert.ToString(m_dgvValues[Convert.ToInt32(TEC_LOCAL.INDEX_DATA.TG)].Rows[m_dgvValues[Convert.ToInt32(TEC_LOCAL.INDEX_DATA.TG)].Rows.Count - 1].Cells[24].Value);
                                 break;
                             case TEC_LOCAL.INDEX_DATA.TSN:
-                                m_dgvValues_TSN.Update(dictIndxValues);
-                                m_sumValues.Rows[Convert.ToInt32(indx)].Cells[1].Value = Convert.ToString(m_dgvValues_TSN.Rows[m_dgvValues_TSN.Rows.Count - 1].Cells[24].Value);
+                                m_dgvValues[Convert.ToInt32(TEC_LOCAL.INDEX_DATA.TSN)].Update(dictIndxValues);
+                                m_sumValues.Rows[Convert.ToInt32(indx)].Cells[1].Value = Convert.ToString(m_dgvValues[Convert.ToInt32(TEC_LOCAL.INDEX_DATA.TSN)].Rows[m_dgvValues[Convert.ToInt32(TEC_LOCAL.INDEX_DATA.TSN)].Rows.Count - 1].Cells[24].Value);
                                 break;
                             case TEC_LOCAL.INDEX_DATA.GRII:
-                                m_dgvValues_GRII.Update(dictIndxValues);
-                                m_sumValues.Rows[Convert.ToInt32(indx)].Cells[1].Value = Convert.ToString(m_dgvValues_GRII.Rows[m_dgvValues_GRII.Rows.Count - 1].Cells[24].Value);
+                                m_dgvValues[Convert.ToInt32(TEC_LOCAL.INDEX_DATA.GRII)].Update(dictIndxValues);
+                                m_sumValues.Rows[Convert.ToInt32(indx)].Cells[1].Value = Convert.ToString(m_dgvValues[Convert.ToInt32(TEC_LOCAL.INDEX_DATA.GRII)].Rows[m_dgvValues[Convert.ToInt32(TEC_LOCAL.INDEX_DATA.GRII)].Rows.Count - 1].Cells[24].Value);
                                 break;
                             case TEC_LOCAL.INDEX_DATA.GRVI:
-                                m_dgvValues_GRVI.Update(dictIndxValues);
-                                m_sumValues.Rows[Convert.ToInt32(indx)].Cells[1].Value = Convert.ToString(m_dgvValues_GRVI.Rows[m_dgvValues_GRVI.Rows.Count - 1].Cells[24].Value);
+                                m_dgvValues[Convert.ToInt32(TEC_LOCAL.INDEX_DATA.GRVI)].Update(dictIndxValues);
+                                m_sumValues.Rows[Convert.ToInt32(indx)].Cells[1].Value = Convert.ToString(m_dgvValues[Convert.ToInt32(TEC_LOCAL.INDEX_DATA.GRVI)].Rows[m_dgvValues[Convert.ToInt32(TEC_LOCAL.INDEX_DATA.GRVI)].Rows.Count - 1].Cells[24].Value);
                                 break;
                             case TEC_LOCAL.INDEX_DATA.GRVII:
-                                m_dgvValues_GRVII.Update(dictIndxValues);
-                                m_sumValues.Rows[Convert.ToInt32(indx)].Cells[1].Value = Convert.ToString(m_dgvValues_GRVII.Rows[m_dgvValues_GRVII.Rows.Count - 1].Cells[24].Value);
+                                m_dgvValues[Convert.ToInt32(TEC_LOCAL.INDEX_DATA.GRVII)].Update(dictIndxValues);
+                                m_sumValues.Rows[Convert.ToInt32(indx)].Cells[1].Value = Convert.ToString(m_dgvValues[Convert.ToInt32(TEC_LOCAL.INDEX_DATA.GRVII)].Rows[m_dgvValues[Convert.ToInt32(TEC_LOCAL.INDEX_DATA.GRVII)].Rows.Count - 1].Cells[24].Value);
                                 break;
                             case TEC_LOCAL.INDEX_DATA.GRVIII:
-                                m_dgvValues_GRVIII.Update(dictIndxValues);
-                                m_sumValues.Rows[Convert.ToInt32(indx)].Cells[1].Value = Convert.ToString(m_dgvValues_GRVIII.Rows[m_dgvValues_GRVIII.Rows.Count - 1].Cells[24].Value);
+                                m_dgvValues[Convert.ToInt32(TEC_LOCAL.INDEX_DATA.GRVIII)].Update(dictIndxValues);
+                                m_sumValues.Rows[Convert.ToInt32(indx)].Cells[1].Value = Convert.ToString(m_dgvValues[Convert.ToInt32(TEC_LOCAL.INDEX_DATA.GRVIII)].Rows[m_dgvValues[Convert.ToInt32(TEC_LOCAL.INDEX_DATA.GRVIII)].Rows.Count - 1].Cells[24].Value);
                                 break;
                         }
-
-                        m_dgvValues.Update(dictIndxValues);
-
 
                         if (iRes == 0)
                         {
