@@ -40,10 +40,6 @@
     <Reference Include="HClassLibrary">
       <HintPath>..\..\ExternalDLL\HClassLibrary.dll</HintPath>
     </Reference>
-    <Reference Include="StatisticCommon, Version=2.0.6.5, Culture=neutral, processorArchitecture=MSIL">
-      <SpecificVersion>False</SpecificVersion>
-      <HintPath>..\Statistic\bin\Debug\StatisticCommon.dll</HintPath>
-    </Reference>
     <Reference Include="System" />
     <Reference Include="System.Core" />
     <Reference Include="System.Xml.Linq" />
@@ -91,6 +87,12 @@
   </ItemGroup>
   <ItemGroup>
     <None Include="App.config" />
+  </ItemGroup>
+  <ItemGroup>
+    <ProjectReference Include="..\StatisticLibrary\StatisticCommon.csproj">
+      <Project>{5d7c7433-8d2f-4c1a-8bd7-b30b7ae7079b}</Project>
+      <Name>StatisticCommon</Name>
+    </ProjectReference>
   </ItemGroup>
   <Import Project="$(MSBuildToolsPath)\Microsoft.CSharp.targets" />
   <!-- To modify your build process, add your task inside one of the targets below and uncomment it. 
