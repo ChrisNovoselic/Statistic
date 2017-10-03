@@ -1,11 +1,12 @@
 ﻿using System;
 using System.Threading;
 using System.Windows.Forms;
+using System.Collections;
 using System.Collections.Generic;
-using System.Data;
 using System.Drawing; //Color..
 
 using HClassLibrary;
+using System.Linq;
 
 namespace StatisticCommon
 {
@@ -33,18 +34,40 @@ namespace StatisticCommon
             Application.OpenForms[0].BackColorChanged += formMain_BackColorChanged;
         }
 
+        private IEnumerable<Control> getTypedControls (Control ctrl, IEnumerable<Type> types)
+        {
+            List<Control> listRes = new List<Control>();
+
+            var list = from child in ctrl.Controls.Cast<Control>() where child.GetType() is types[0];
+
+            foreach (Control ctrlChild in ctrl.Controls) {
+                types.ForEach (type => { if ((ctrlChild is IConvertible) && (Equals (Convert.ChangeType (ctrlChild, type), null) == false)) listRes.Add (ctrlChild); else; });
+
+                listRes.AddRange (getTypedControls (ctrlChild, types));
+            }
+
+            return listRes;
+        }
+
+
         protected virtual void formMain_BackColorChanged (object sender, EventArgs e)
         {
+            List<Control> listCtrlDoChangeBackColor;
+
             BackColor = (sender as Form).BackColor;
 
-            foreach (Control ctrl in Controls)
-                if (ctrl is DataGridView)
-                    ctrl.BackColor = BackColor.Equals (SystemColors.Control) == false ? BackColor : SystemColors.Window;
-                else if (ctrl is ZedGraph.ZedGraphControl)
-                    ctrl.BackColor = BackColor.Equals (SystemColors.Control) == false ? BackColor : SystemColors.Window
-                        ;
-                else
-                    ;
+            listCtrlDoChangeBackColor = getTypedControls (this, new List<Type> () { typeof(DataGridView), typeof(ZedGraph.ZedGraphControl) });
+
+            //foreach (Control ctrl in Controls)
+            //    if (ctrl is DataGridView)
+            //        ctrl.BackColor = BackColor.Equals (SystemColors.Control) == false ? BackColor : SystemColors.Window;
+            //    else if (ctrl is ZedGraph.ZedGraphControl)
+            //        ctrl.BackColor = BackColor.Equals (SystemColors.Control) == false ? BackColor : SystemColors.Window
+            //            ;
+            //    else
+            //        ;
+
+            listCtrlDoChangeBackColor.ForEach (ctrl => ctrl.BackColor = BackColor.Equals (SystemColors.Control) == false ? BackColor : SystemColors.Window );
         }
 
         public static volatile int POOL_TIME = -1
