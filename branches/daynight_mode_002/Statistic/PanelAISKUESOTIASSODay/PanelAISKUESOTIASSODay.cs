@@ -224,11 +224,13 @@ namespace Statistic
             //Создать, настроить размещение графических панелей
             type = CONN_SETT_TYPE.DATA_AISKUE;
             m_dictZGraphValues.Add(type, new HZedGraphControl()); // графическая панель для отображения АИИСКУЭ-значений
-            m_dictZGraphValues[type].Name = KEY_CONTROLS.ZGRAPH_AIISKUE.ToString();
+            m_dictZGraphValues [type].Tag = type;
+            m_dictZGraphValues [type].Name = KEY_CONTROLS.ZGRAPH_AIISKUE.ToString();
             m_dictZGraphValues[type].Dock = DockStyle.Fill;
             type = CONN_SETT_TYPE.DATA_SOTIASSO;
             m_dictZGraphValues.Add(type, new HZedGraphControl()); // графическая панель для отображения СОТИАССО-значений
-            m_dictZGraphValues[type].Name = KEY_CONTROLS.ZGRAPH_SOTIASSO.ToString();
+            m_dictZGraphValues [type].Tag = type;
+            m_dictZGraphValues [type].Name = KEY_CONTROLS.ZGRAPH_SOTIASSO.ToString();
             m_dictZGraphValues[type].Dock = DockStyle.Fill;
 
             //Создать контейнеры-сплиттеры, настроить размещение 
@@ -546,38 +548,14 @@ namespace Statistic
             Color colorChart = Color.Empty
                 , colorPCurve = Color.Empty;
 
-            if (m_HandlerQueue.Values[type].m_valuesHours.Count > 0) {
-                // получить цветовую гамму
-                getColorZEDGraph(type, out colorChart, out colorPCurve);
+            if (m_HandlerQueue.Values[type].m_valuesHours.Count > 0) {                
                 // отобразить
                 m_dictZGraphValues[type].Draw(m_HandlerQueue.Values[type].m_valuesHours
-                    , type == CONN_SETT_TYPE.DATA_AISKUE ? @"АИИСКУЭ" : type == CONN_SETT_TYPE.DATA_SOTIASSO ? @"СОТИАССО" : @"Неизвестный тип", textGraphCurDateTime
-                    , colorChart, colorPCurve);
+                    , type == CONN_SETT_TYPE.DATA_AISKUE ? @"АИИСКУЭ" : type == CONN_SETT_TYPE.DATA_SOTIASSO ? @"СОТИАССО" : @"Неизвестный тип", textGraphCurDateTime);
             } else
                 Logging.Logg().Error(string.Format(@"PanelSOTIASSODay::draw (type={0}) - нет ни одного значения за [{1}]...", type, m_HandlerQueue.UserDate), Logging.INDEX_MESSAGE.NOT_SET);
         }
 
-        private void getColorZEDGraph(CONN_SETT_TYPE type, out Color colorChart, out Color colValue)
-        {
-            FormGraphicsSettings.INDEX_COLOR indxBackGround = FormGraphicsSettings.INDEX_COLOR.COUNT_INDEX_COLOR
-                , indxChart = FormGraphicsSettings.INDEX_COLOR.COUNT_INDEX_COLOR;
-
-            //Значения по умолчанию
-            switch (type) {
-                default:
-                case CONN_SETT_TYPE.DATA_AISKUE:
-                    indxBackGround = FormGraphicsSettings.INDEX_COLOR.BG_ASKUE;
-                    indxChart = FormGraphicsSettings.INDEX_COLOR.ASKUE;
-                    break;
-                case CONN_SETT_TYPE.DATA_SOTIASSO:
-                    indxBackGround = FormGraphicsSettings.INDEX_COLOR.BG_SOTIASSO;
-                    indxChart = FormGraphicsSettings.INDEX_COLOR.SOTIASSO;
-                    break;
-            }
-
-            colorChart = FormMain.formGraphicsSettings.COLOR(indxBackGround);
-            colValue = FormMain.formGraphicsSettings.COLOR(indxChart);
-        }
         /// <summary>
         /// Текст (часть) заголовка для графической субобласти
         /// </summary>
