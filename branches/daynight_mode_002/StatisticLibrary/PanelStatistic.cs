@@ -34,17 +34,21 @@ namespace StatisticCommon
             Application.OpenForms[0].BackColorChanged += formMain_BackColorChanged;
         }
 
+        /// <summary>
+        /// Найти все дочерние для 'ctrl' объекты с типами(наследованными от них), указанных в аргументе
+        /// </summary>
+        /// <param name="ctrl">Элемент интерфйеса</param>
+        /// <param name="types">Последовательность типов, объекты которых необходимо искать</param>
+        /// <returns>Последовательность элементов</returns>
         private IEnumerable<Control> getTypedControls (Control ctrl, IEnumerable<Type> types)
         {
             List<Control> listRes = new List<Control>();
 
-            var list = from child in ctrl.Controls.Cast<Control>() where child.GetType() is types[0];
+            types.ToList ().ForEach (type => listRes.AddRange (from child in ctrl.Controls.Cast<Control> ()
+                                                                where ((child.GetType ().IsSubclassOf (type)) || (child.GetType ().Equals(type) == true))
+                                                                select child));
 
-            foreach (Control ctrlChild in ctrl.Controls) {
-                types.ForEach (type => { if ((ctrlChild is IConvertible) && (Equals (Convert.ChangeType (ctrlChild, type), null) == false)) listRes.Add (ctrlChild); else; });
-
-                listRes.AddRange (getTypedControls (ctrlChild, types));
-            }
+            ctrl.Controls.Cast<Control> ().ToList ().ForEach (child => listRes.AddRange (getTypedControls(child, types)));
 
             return listRes;
         }
@@ -56,16 +60,7 @@ namespace StatisticCommon
 
             BackColor = (sender as Form).BackColor;
 
-            listCtrlDoChangeBackColor = getTypedControls (this, new List<Type> () { typeof(DataGridView), typeof(ZedGraph.ZedGraphControl) });
-
-            //foreach (Control ctrl in Controls)
-            //    if (ctrl is DataGridView)
-            //        ctrl.BackColor = BackColor.Equals (SystemColors.Control) == false ? BackColor : SystemColors.Window;
-            //    else if (ctrl is ZedGraph.ZedGraphControl)
-            //        ctrl.BackColor = BackColor.Equals (SystemColors.Control) == false ? BackColor : SystemColors.Window
-            //            ;
-            //    else
-            //        ;
+            listCtrlDoChangeBackColor = getTypedControls (this, new List<Type> () { typeof(DataGridView), typeof(ZedGraph.ZedGraphControl) }).ToList();
 
             listCtrlDoChangeBackColor.ForEach (ctrl => ctrl.BackColor = BackColor.Equals (SystemColors.Control) == false ? BackColor : SystemColors.Window );
         }
