@@ -1527,19 +1527,6 @@ namespace Statistic
         private System.Windows.Forms.Label m_labelValues;
         private System.Windows.Forms.Label m_labelStartDate;
         private System.Windows.Forms.Label m_labelEndDate;
-        //private System.Windows.Forms.Label m_label_TG;
-        //private System.Windows.Forms.Label m_label_TSN;
-        //private System.Windows.Forms.Label m_label_GRII;
-        //private System.Windows.Forms.Label m_label_GRVI;
-        //private System.Windows.Forms.Label m_label_GRVII;
-        //private System.Windows.Forms.Label m_label_GRVIII;
-        //private DataGridViewValues m_dgvValues;
-        //private DataGridViewValues m_dgvValues_TG;
-        //private DataGridViewValues m_dgvValues_TSN;
-        //private DataGridViewValues m_dgvValues_GRII;
-        //private DataGridViewValues m_dgvValues_GRVI;
-        //private DataGridViewValues m_dgvValues_GRVII;
-        //private DataGridViewValues m_dgvValues_GRVIII;
 
         private List<System.Windows.Forms.Label> m_labelsGroup;
 
@@ -1581,14 +1568,6 @@ namespace Statistic
             this.m_labelValues = new System.Windows.Forms.Label();
             this.m_labelStartDate = new System.Windows.Forms.Label();
             this.m_labelEndDate = new System.Windows.Forms.Label();
-
-
-            //this.m_label_TG = new System.Windows.Forms.Label();
-            //this.m_label_TSN = new System.Windows.Forms.Label();
-            //this.m_label_GRII = new System.Windows.Forms.Label();
-            //this.m_label_GRVI = new System.Windows.Forms.Label();
-            //this.m_label_GRVII = new System.Windows.Forms.Label();
-            //this.m_label_GRVIII = new System.Windows.Forms.Label();
 
             this.m_dgvValues = new List<DataGridViewValues>();
             this.m_labelsGroup = new List<System.Windows.Forms.Label>();

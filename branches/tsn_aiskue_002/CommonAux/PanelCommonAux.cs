@@ -121,6 +121,9 @@ namespace CommonAux
         /// </summary>
         public struct VALUES_DATE
         {
+            /// <summary>
+            /// Структура для хранения значений за сутки
+            /// </summary>
             public struct VALUES_SIGNAL
             {
                 public double[] m_data;
@@ -139,8 +142,10 @@ namespace CommonAux
             /// </summary>
             public class VALUES_GROUP : Dictionary<SIGNAL.KEY, VALUES_SIGNAL>
             {
+                /// <summary>
+                /// Перечисление для методов расчета потерь эл./эн. в сети ТЭЦ (стандартный/специальный)
+                /// </summary>
                 public enum MODE : short { STANDARD, EPOTERI }
-
                 //!!! сумма значений каждого из массивов 'sgnlValues', 'grpValues' д.б. равны между собой
                 /// <summary>
                 /// Cумма для группы сигналов по часам
@@ -797,7 +802,7 @@ namespace CommonAux
                     parseTableResult(dtStart, dtEnd, indx, out err);
                 else
                 {
-                    Logging.Logg().Error(string.Format("FormMain.Tec.Request () - TEC.ID={0}, ИНДЕКС={1} не получены данные за {2}{3}Запрос={4}"
+                    Logging.Logg().Error(string.Format("TEC.ID={0}, ИНДЕКС={1} не получены данные за {2}{3}Запрос={4}"
                             , m_Id, indx.ToString(), dtEnd, Environment.NewLine, query)
                         , Logging.INDEX_MESSAGE.NOT_SET);
 
@@ -806,7 +811,7 @@ namespace CommonAux
             }
             else
             {
-                Logging.Logg().Error(string.Format("FormMain.Tec.Request () - TEC.ID={0}, группа ИНДЕКС={1} пропущена, не сформирован запрос за {2}"
+                Logging.Logg().Error(string.Format("TEC.ID={0}, группа ИНДЕКС={1} пропущена, не сформирован запрос за {2}"
                         , m_Id, indx.ToString(), dtStart, Environment.NewLine, query)
                     , Logging.INDEX_MESSAGE.NOT_SET);
 
@@ -870,8 +875,6 @@ namespace CommonAux
             return strRes;
         }
     }
-
-
 
     public class MSExcelIO : HClassLibrary.MSExcelIO
     {
@@ -970,8 +973,6 @@ namespace CommonAux
                         sgnl.m_bUse == false ? System.Drawing.Color.LightGray :
                             System.Drawing.Color.Gray;
             }
-
-
             // добавить строку итого
             Rows.Add();
             Rows[RowCount - 1].HeaderCell.Value = groupRowTag;
@@ -1042,7 +1043,6 @@ namespace CommonAux
             }
         }
     }
-
     partial class PanelCommonAux : PanelStatistic
     {
         /// <summary>
@@ -1051,34 +1051,21 @@ namespace CommonAux
         public class GetDataFromDB
         {
             /// <summary>
-            /// Объект, содержащий наименование таблицы в БД, хранящей перечень каналов
+            /// Строка, содержащая наименование таблицы в БД, хранящей перечень каналов
             /// </summary>
-            public static string DB_TABLE_NAME = @"[ID_TSN_ASKUE_2017]";
-            /// <summary>
-            /// Объект, содержащий наименование таблицы в БД, хранящей источники данных
-            /// </summary>
-            public static string DB_TABLE_SOURCE = @"[SOURCE]";
-            /// <summary>
-            /// Объект, содержащий наименование таблицы в БД, хранящей пароли
-            /// </summary>
-            public static string DB_TABLE_PASS = @"[passwords]";
+            public static string DB_TABLE = @"[ID_TSN_ASKUE_2017]";
             /// <summary>
             /// Объект, содержащий id записи в таблице, содержащей настройки подключения
             /// </summary>
-            public static string ID_AIISKUE_CONSETT = @"7000";
+            public static int ID_AIISKUE_CONSETT = 7001;
             /// <summary>
             /// Объект, содержащий путь к шаблону excel
             /// </summary>
             private string m_strFullPathTemplate;
             /// <summary>
-            /// Объекты с параметрами соединения с источником данных
-            /// </summary>
-            protected static DbConnection m_connConfigDB, _connConfigDb;
-            /// <summary>
             /// Объект содержащий идентификатор соединения с БД
             /// </summary>
             private static int _iListenerId;
-            public static int ListenerId { get { return _iListenerId; } }
 
             public enum INDEX_MSEXCEL_COLUMN { APOWER, SNUZHDY }
             /// <summary>
@@ -1098,17 +1085,6 @@ namespace CommonAux
             public static string SEC_CONFIG = @"CONFIG"
                 , SEC_SELECT = @"SELECT"
                 , SEC_TEMPLATE = @"Template";
-            /// <summary>
-            /// Зарегистрировать(установить) временное соединение с БД конфигурации
-            /// </summary>
-            /// <param name="err">Признак ошибки при выполнении операции</param>
-            public static void RegisterConfigDb(out int err)
-            {
-                // зарегистрировать соединение/получить идентификатор соединения
-                _iListenerId = DbSources.Sources().Register(FormMain.s_listFormConnectionSettings[(int)CONN_SETT_TYPE.CONFIG_DB].getConnSett(), false, @"CONFIG_DB");
-
-                _connConfigDb = DbSources.Sources().GetConnection(_iListenerId, out err);
-            }
             /// <summary>
             /// Каталог для размещения шаблонов
             /// </summary>
@@ -1143,28 +1119,10 @@ namespace CommonAux
             public static string getQueryListTEC()
             {
 
-                string strRes = "SELECT * FROM " + DB_TABLE_NAME;
+                string strRes = "SELECT * FROM " + DB_TABLE;
                 return strRes;
             }
 
-            /// <summary>
-            /// Возвратить строку запроса для получения настроек для доступа к серверу АИСКУЭ
-            /// </summary>
-            /// <returns>Строка запроса</returns>
-            public static string getQueryAIISKUE()
-            {
-                string strRes = "SELECT * FROM " + DB_TABLE_SOURCE + "WHERE [ID] =" + ID_AIISKUE_CONSETT;
-                return strRes;
-            }
-            /// <summary>
-            /// Возвратить строку запроса для получения дастроек для доступа к серверу АИСКУЭ
-            /// </summary>
-            /// <returns>Строка запроса</returns>
-            public static string getQueryAIISKUEPassword()
-            {
-                string strRes = "SELECT * FROM " + DB_TABLE_PASS + "WHERE [ID_EXT] =" + ID_AIISKUE_CONSETT;
-                return strRes;
-            }
             /// <summary>
             /// Возвратить таблицу [ID_TSN_AISKUE_2017] из БД конфигурации
             /// </summary>
@@ -1180,28 +1138,15 @@ namespace CommonAux
             /// <summary>
             /// Возвратить объект с параметрами соединения
             /// </summary>
-            /// <param name="connConfigDB">Ссылка на объект с установленным соединением с БД</param>
+            /// <param name="iListenerId">Ссылка на объект с установленным соединением с БД</param>
             /// <param name="err">Идентификатор ошибки при выполнении запроса</param>
             /// <returns>Объект с параметрами соединения</returns>
-            public ConnectionSettings GetConnSettAIISKUECentre(ref DbConnection connConfigDB, out int err)
+            public ConnectionSettings GetConnSettAIISKUECentre(ref int iListenerId, out int err)
             {
-                ConnectionSettings connSettRes = new ConnectionSettings();
                 DataTable dataTableRes = new DataTable();
+                dataTableRes = InitTEC_200.getConnSettingsOfIdSource(iListenerId, ID_AIISKUE_CONSETT, -1, out err);
 
-                string req = getQueryAIISKUE();
-                dataTableRes = DbTSQLInterface.Select(ref connConfigDB, req, null, null, out err);
-
-                connSettRes.id = Convert.ToInt32(dataTableRes.Rows[dataTableRes.Rows.Count - 1].ItemArray[Convert.ToInt32(DB_TABLE_AIISKUE.ID)]);
-                connSettRes.name = dataTableRes.Rows[dataTableRes.Rows.Count - 1].ItemArray[Convert.ToInt32(DB_TABLE_AIISKUE.NAME_SHR)].ToString();
-                connSettRes.server = dataTableRes.Rows[dataTableRes.Rows.Count - 1].ItemArray[Convert.ToInt32(DB_TABLE_AIISKUE.IP)].ToString();
-                connSettRes.port = Convert.ToInt32(dataTableRes.Rows[dataTableRes.Rows.Count - 1].ItemArray[Convert.ToInt32(DB_TABLE_AIISKUE.PORT)]);
-                connSettRes.dbName = dataTableRes.Rows[dataTableRes.Rows.Count - 1].ItemArray[Convert.ToInt32(DB_TABLE_AIISKUE.DB_NAME)].ToString();
-                connSettRes.userName = dataTableRes.Rows[dataTableRes.Rows.Count - 1].ItemArray[Convert.ToInt32(DB_TABLE_AIISKUE.UID)].ToString();
-
-                req = getQueryAIISKUEPassword();
-                dataTableRes = DbTSQLInterface.Select(ref connConfigDB, req, null, null, out err);
-
-                connSettRes.password = Crypt.Crypting().Decrypt(dataTableRes.Rows[dataTableRes.Rows.Count - 1].ItemArray[Convert.ToInt32(DB_TABLE_PSW.HASH)].ToString(), Crypt.KEY);
+                ConnectionSettings connSettRes = new ConnectionSettings(dataTableRes.Rows[dataTableRes.Rows.Count - 1], 1);
                 
                 return connSettRes;
             }
@@ -1234,7 +1179,7 @@ namespace CommonAux
                     }
                     catch (Exception e)
                     {
-                        Logging.Logg().Exception(e, string.Format(@""), Logging.INDEX_MESSAGE.NOT_SET);
+                        Logging.Logg().Exception(e, string.Format(@"Ошибка получения списка каналов"), Logging.INDEX_MESSAGE.NOT_SET);
                     }
                 }
             }
@@ -1264,7 +1209,7 @@ namespace CommonAux
             }
 
             //Получить параметры соединения с источником данных
-            m_connSettAIISKUECentre = GD.GetConnSettAIISKUECentre(ref m_connConfigDB, out err);
+            m_connSettAIISKUECentre = GD.GetConnSettAIISKUECentre(ref _iListenerId, out err);
 
             InitializeComponents();
 
@@ -1278,8 +1223,8 @@ namespace CommonAux
             m_listBoxTEC.Tag = INDEX_CONTROL.LB_TEC;
             m_listBoxTEC.SelectedIndexChanged += listBox_SelectedIndexChanged;
 
-            m_labelEndDate.Text = monthCalendarEnd.SelectionStart.ToShortDateString();
-            m_labelStartDate.Text = m_monthCalendar.SelectionStart.ToShortDateString();
+            m_labelEndDate.Text = m_monthCalendarEnd.SelectionStart.ToShortDateString();
+            m_labelStartDate.Text = m_monthCalendarStart.SelectionStart.ToShortDateString();
 
             if (m_displayMode == 0)
             {
@@ -1291,12 +1236,12 @@ namespace CommonAux
 
             FullPathTemplate = string.Empty;
 
-            m_arMSEXEL_PARS = new string[7] { "", "Tepmlate.xls", "Sheet1", "1", "5", "25", "1.1" };
+            m_arMSEXEL_PARS = new string[] { "", "Tepmlate.xls", "Sheet1", "1", "5", "25", "1.1" };
 
             //Установить обработчики событий
             EventNewPathToTemplate += new DelegateStringFunc(onNewPathToTemplate);
 
-            string[] sumGroups = new string[6] { "sum TG", "sum TSN", "sum GRII", "sum GRVI", "sum GRVII", "sum GRVIII" };
+            string[] sumGroups = new string[] { "sum TG", "sum TSN", "sum GRII", "sum GRVI", "sum GRVII", "sum GRVIII" };
 
             for (int i = 0; i < sumGroups.Count(); i++)
             {
@@ -1519,8 +1464,8 @@ namespace CommonAux
         private System.Windows.Forms.Button m_btnStripButtonExcel;
         private System.Windows.Forms.ListBox m_listBoxTEC;
         private System.Windows.Forms.ListBox m_listBoxGrpSgnl;
-        private System.Windows.Forms.MonthCalendar m_monthCalendar;
-        private System.Windows.Forms.MonthCalendar monthCalendarEnd;
+        private System.Windows.Forms.MonthCalendar m_monthCalendarStart;
+        private System.Windows.Forms.MonthCalendar m_monthCalendarEnd;
         private System.Windows.Forms.Label m_labelTEC;
         private System.Windows.Forms.Label m_labelGrpSgnl;
         private System.Windows.Forms.Label m_labelValues;
@@ -1542,9 +1487,9 @@ namespace CommonAux
         /// </summary>
         /// <param name="cols">Количество столбцов в макете</param>
         /// <param name="rows">Количество строк в макете</param>
-        protected override void initializeLayoutStyle(int cols = 100, int rows = 100)
+        protected override void initializeLayoutStyle(int cols = -1, int rows = -1)
         {
-            initializeLayoutStyleEvenly(cols, rows);
+            initializeLayoutStyleEvenly(100, 100);
         }
 
         protected virtual void InitializeComponents()
@@ -1559,8 +1504,8 @@ namespace CommonAux
 
             this.m_listBoxTEC = new System.Windows.Forms.ListBox();
             this.m_listBoxGrpSgnl = new System.Windows.Forms.ListBox();
-            this.m_monthCalendar = new System.Windows.Forms.MonthCalendar();
-            this.monthCalendarEnd = new System.Windows.Forms.MonthCalendar();
+            this.m_monthCalendarStart = new System.Windows.Forms.MonthCalendar();
+            this.m_monthCalendarEnd = new System.Windows.Forms.MonthCalendar();
             this.m_labelTEC = new System.Windows.Forms.Label();
             this.m_labelGrpSgnl = new System.Windows.Forms.Label();
             this.m_labelValues = new System.Windows.Forms.Label();
@@ -1592,8 +1537,8 @@ namespace CommonAux
             this.Controls.Add(m_btnExit, 81, 94); this.SetColumnSpan(m_btnExit, 18); this.SetRowSpan(m_btnExit, 5);
             this.Controls.Add(m_btnStripButtonExcel, 81, 50); this.SetColumnSpan(m_btnStripButtonExcel, 18); this.SetRowSpan(m_btnStripButtonExcel, 5);
             this.Controls.Add(m_listBoxTEC, 61, 40); this.SetColumnSpan(m_listBoxTEC, 18); this.SetRowSpan(m_listBoxTEC, 20);
-            this.Controls.Add(m_monthCalendar, 60, 8); this.SetColumnSpan(m_monthCalendar, 15); this.SetRowSpan(m_monthCalendar, 15);
-            this.Controls.Add(monthCalendarEnd, 80, 8); this.SetColumnSpan(monthCalendarEnd, 15); this.SetRowSpan(monthCalendarEnd, 15);
+            this.Controls.Add(m_monthCalendarStart, 60, 8); this.SetColumnSpan(m_monthCalendarStart, 15); this.SetRowSpan(m_monthCalendarStart, 15);
+            this.Controls.Add(m_monthCalendarEnd, 80, 8); this.SetColumnSpan(m_monthCalendarEnd, 15); this.SetRowSpan(m_monthCalendarEnd, 15);
             this.Controls.Add(m_labelTEC, 62, 37); this.SetColumnSpan(m_labelTEC, 11); this.SetRowSpan(m_labelTEC, 2);
             this.Controls.Add(m_labelValues, 8, 2); this.SetColumnSpan(m_labelValues, 30); this.SetRowSpan(m_labelValues, 2);
             this.Controls.Add(m_labelStartDate, 65, 6); this.SetColumnSpan(m_labelStartDate, 8); this.SetRowSpan(m_labelStartDate, 2);
@@ -1619,7 +1564,7 @@ namespace CommonAux
             this.m_btnLoad.Text = "Load";
             this.m_btnLoad.UseVisualStyleBackColor = true;
             this.m_btnLoad.Click += new System.EventHandler(this.btnLoad_Click);
-            this.m_btnLoad.Width = m_monthCalendar.Width;
+            this.m_btnLoad.Width = m_monthCalendarStart.Width;
             // 
             // m_btnOpen
             // 
@@ -1628,7 +1573,7 @@ namespace CommonAux
             this.m_btnOpen.Text = "Open";
             this.m_btnOpen.UseVisualStyleBackColor = true;
             this.m_btnOpen.Click += new System.EventHandler(this.btnOpen_Click);
-            this.m_btnOpen.Width = m_monthCalendar.Width;
+            this.m_btnOpen.Width = m_monthCalendarStart.Width;
             // 
             // m_btnExit
             // 
@@ -1637,7 +1582,7 @@ namespace CommonAux
             this.m_btnExit.Text = "Exit";
             this.m_btnExit.UseVisualStyleBackColor = true;
             this.m_btnExit.Click += new System.EventHandler(this.btnExit_Click);
-            this.m_btnExit.Width = m_monthCalendar.Width;
+            this.m_btnExit.Width = m_monthCalendarStart.Width;
             this.m_btnExit.Visible = false;
             // 
             // m_btnStripButtonExcel
@@ -1648,14 +1593,14 @@ namespace CommonAux
             this.m_btnStripButtonExcel.UseVisualStyleBackColor = true;
             this.m_btnStripButtonExcel.Click += new System.EventHandler(this.btnStripButtonExcel_Click);
             this.m_btnStripButtonExcel.Enabled = false;
-            this.m_btnStripButtonExcel.Width = m_monthCalendar.Width;
+            this.m_btnStripButtonExcel.Width = m_monthCalendarStart.Width;
             // 
             // m_listBoxTEC
             // 
             this.m_listBoxTEC.FormattingEnabled = true;
             this.m_listBoxTEC.Name = "m_listBoxTEC";
             this.m_listBoxTEC.TabIndex = 3;
-            this.m_listBoxTEC.Width = m_monthCalendar.Width;
+            this.m_listBoxTEC.Width = m_monthCalendarStart.Width;
             // 
             // m_listBoxGrpSgnl
             // 
@@ -1665,13 +1610,13 @@ namespace CommonAux
             // 
             // m_monthCalendar
             // 
-            this.m_monthCalendar.Name = "m_monthCalendar";
-            this.m_monthCalendar.TabIndex = 5;
+            this.m_monthCalendarStart.Name = "m_monthCalendar";
+            this.m_monthCalendarStart.TabIndex = 5;
             // 
             // monthCalendar2
             // 
-            this.monthCalendarEnd.Name = "monthCalendar2";
-            this.monthCalendarEnd.TabIndex = 6;
+            this.m_monthCalendarEnd.Name = "monthCalendar2";
+            this.m_monthCalendarEnd.TabIndex = 6;
             // 
             // m_labelTEC
             // 
@@ -1789,13 +1734,13 @@ namespace CommonAux
             m_listBoxTEC.SelectedIndexChanged += listBox_SelectedIndexChanged;
             m_listBoxGrpSgnl.Tag = INDEX_CONTROL.LB_GROUP_SIGNAL;
             m_listBoxGrpSgnl.SelectedIndexChanged += listBox_SelectedIndexChanged;
-            m_monthCalendar.DateChanged += monthCalendar_DateChanged;
-            monthCalendarEnd.DateChanged += monthCalendarEnd_DateChanged;
+            m_monthCalendarStart.DateChanged += monthCalendar_DateChanged;
+            m_monthCalendarEnd.DateChanged += monthCalendarEnd_DateChanged;
         }
 
         private void monthCalendarEnd_DateChanged(object sender, DateRangeEventArgs e)
         {
-            m_labelEndDate.Text = monthCalendarEnd.SelectionStart.ToShortDateString();
+            m_labelEndDate.Text = m_monthCalendarEnd.SelectionStart.ToShortDateString();
         }
 
         private void monthCalendar_DateChanged(object sender, DateRangeEventArgs e)
@@ -1804,7 +1749,7 @@ namespace CommonAux
             {
                 m_dgvValues[i].ClearValues();
             }
-            m_labelStartDate.Text = m_monthCalendar.SelectionStart.ToShortDateString();
+            m_labelStartDate.Text = m_monthCalendarStart.SelectionStart.ToShortDateString();
         }
 
         private void updateRowData()
@@ -1924,16 +1869,16 @@ namespace CommonAux
                         indx++; break;
                     }
 
-                    tec.ClearValues(m_monthCalendar.SelectionStart.Date, indx);
+                    tec.ClearValues(m_monthCalendarStart.SelectionStart.Date, indx);
 
                     iRes = tec.Request(iListenerId
-                        , m_monthCalendar.SelectionStart.Date //SelectionStart всегда == SelectionEnd, т.к. MultiSelect = false
-                        , m_monthCalendar.SelectionEnd.Date.AddDays(1)
+                        , m_monthCalendarStart.SelectionStart.Date //SelectionStart всегда == SelectionEnd, т.к. MultiSelect = false
+                        , m_monthCalendarStart.SelectionEnd.Date.AddDays(1)
                         , indx);
 
                     if (!(iRes < 0))
                     {
-                        dictIndxValues = tec.m_listValuesDate.Find(item => { return item.m_dataDate == m_monthCalendar.SelectionStart.Date; }).m_dictData[indx];
+                        dictIndxValues = tec.m_listValuesDate.Find(item => { return item.m_dataDate == m_monthCalendarStart.SelectionStart.Date; }).m_dictData[indx];
                         switch (indx)
                         {
                             case TEC_LOCAL.INDEX_DATA.TG:
@@ -1975,7 +1920,7 @@ namespace CommonAux
                     }
                     else
                         Logging.Logg().Warning(string.Format(@"FormMain::btnLoadClick () - нет результата запроса за {0} либо группа сигналов INDEX={1} пустая..."
-                                , m_monthCalendar.SelectionStart.Date, indx)
+                                , m_monthCalendarStart.SelectionStart.Date, indx)
                             , Logging.INDEX_MESSAGE.NOT_SET);
                 }
             }
@@ -2026,7 +1971,7 @@ namespace CommonAux
 
                 foreach (TEC_LOCAL t in m_listTEC)
                 {
-                    iRes = t.Request(iListenerId, m_monthCalendar.SelectionStart.Date, monthCalendarEnd.SelectionStart.Date.AddDays(1));
+                    iRes = t.Request(iListenerId, m_monthCalendarStart.SelectionStart.Date, m_monthCalendarEnd.SelectionStart.Date.AddDays(1));
 
                     if (!(iRes < 0))
                     {
