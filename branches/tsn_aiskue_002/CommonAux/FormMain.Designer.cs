@@ -2,6 +2,8 @@
 using System.Drawing;
 using System.Windows.Forms;
 
+
+
 namespace CommonAux
 {
     partial class FormMain
@@ -43,12 +45,15 @@ namespace CommonAux
             this.SuspendLayout();
 
             // 
-            // FormMainAnalyzer
+            // FormMain
             // 
             this.AutoScaleDimensions = new System.Drawing.SizeF(6F, 13F);
             this.AutoScaleMode = System.Windows.Forms.AutoScaleMode.Font;
             this.ClientSize = new System.Drawing.Size(1000, 650);
             this.MinimumSize = new System.Drawing.Size(1000, 650);
+            //this.Icon = ((System.Drawing.Icon)(resources.GetObject("Resources/IconApp.ico")));
+            Icon icon = new Icon("../../Resources/IconApp.ico");
+            this.Icon = icon;
 
             this.MaximizeBox = true;
             this.Name = "FormMainAnalyzer";

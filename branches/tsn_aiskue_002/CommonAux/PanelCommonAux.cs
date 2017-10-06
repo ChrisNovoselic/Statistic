@@ -1263,10 +1263,29 @@ namespace CommonAux
 
             for (int i = 0; i < m_dgvValues.Count; i++)
             {
-                this.Controls.Add(m_dgvValues[i], 8, 5 + i*15); this.SetColumnSpan(m_dgvValues[i], 50); this.SetRowSpan(m_dgvValues[i], 15);
-                this.Controls.Add(m_labelsGroup[i], 2, 7 + i*15); this.SetColumnSpan(m_labelsGroup[i], 5); this.SetRowSpan(m_labelsGroup[i], 2);
+                this.Controls.Add(m_dgvValues[i], 8, 4 + i * 16); this.SetColumnSpan(m_dgvValues[i], 50); this.SetRowSpan(m_dgvValues[i], 16);
+                this.Controls.Add(m_labelsGroup[i], 2, 7 + i * 16); this.SetColumnSpan(m_labelsGroup[i], 5); this.SetRowSpan(m_labelsGroup[i], 2);
             }
-            this.Controls.Add(m_sumValues, 61, 60); this.SetColumnSpan(m_sumValues, 38); this.SetRowSpan(m_sumValues, 35);
+            this.Controls.Add(m_sumValues, 61, 60); this.SetColumnSpan(m_sumValues, 38); this.SetRowSpan(m_sumValues, 40);
+
+            //this.Controls.Add(m_btnLoad, 16, 10); this.SetColumnSpan(m_btnLoad, 3); this.SetRowSpan(m_btnLoad, 2);
+            //this.Controls.Add(m_btnOpen, 16, 12); this.SetColumnSpan(m_btnOpen, 3); this.SetRowSpan(m_btnOpen, 2);
+            //this.Controls.Add(m_btnExit, 16, 20); this.SetColumnSpan(m_btnExit, 3); this.SetRowSpan(m_btnExit, 2);
+            //this.Controls.Add(m_btnStripButtonExcel, 16, 14); this.SetColumnSpan(m_btnStripButtonExcel, 3); this.SetRowSpan(m_btnStripButtonExcel, 1);
+            //this.Controls.Add(m_listBoxTEC, 13, 10); this.SetColumnSpan(m_listBoxTEC, 3); this.SetRowSpan(m_listBoxTEC, 6);
+            //this.Controls.Add(m_monthCalendarStart, 13, 1); this.SetColumnSpan(m_monthCalendarStart, 3); this.SetRowSpan(m_monthCalendarStart, 3);
+            //this.Controls.Add(m_monthCalendarEnd, 17, 1); this.SetColumnSpan(m_monthCalendarEnd, 3); this.SetRowSpan(m_monthCalendarEnd, 3);
+            //this.Controls.Add(m_labelTEC, 62, 37); this.SetColumnSpan(m_labelTEC, 11); this.SetRowSpan(m_labelTEC, 2);
+            //this.Controls.Add(m_labelValues, 2, 0); this.SetColumnSpan(m_labelValues, 2); this.SetRowSpan(m_labelValues, 1);
+            //this.Controls.Add(m_labelStartDate, 13, 0); this.SetColumnSpan(m_labelStartDate, 3); this.SetRowSpan(m_labelStartDate, 1);
+            //this.Controls.Add(m_labelEndDate, 17, 0); this.SetColumnSpan(m_labelEndDate, 3); this.SetRowSpan(m_labelEndDate, 1);
+
+            //for (int i = 0; i < m_dgvValues.Count; i++)
+            //{
+            //    this.Controls.Add(m_dgvValues[i], 2, 1 + i * 4); this.SetColumnSpan(m_dgvValues[i], 10); this.SetRowSpan(m_dgvValues[i], 4);
+            //    this.Controls.Add(m_labelsGroup[i], 0, 1 + i * 4); this.SetColumnSpan(m_labelsGroup[i], 2); this.SetRowSpan(m_labelsGroup[i], 1);
+            //}
+            //this.Controls.Add(m_sumValues, 13, 17); this.SetColumnSpan(m_sumValues, 7); this.SetRowSpan(m_sumValues, 8);
 
             this.ResumeLayout();
 
@@ -1318,6 +1337,7 @@ namespace CommonAux
             this.m_listBoxTEC.Name = "m_listBoxTEC";
             this.m_listBoxTEC.TabIndex = 3;
             this.m_listBoxTEC.Width = m_monthCalendarStart.Width;
+            this.m_listBoxTEC.Dock = DockStyle.Fill;
             // 
             // m_listBoxGrpSgnl
             // 
