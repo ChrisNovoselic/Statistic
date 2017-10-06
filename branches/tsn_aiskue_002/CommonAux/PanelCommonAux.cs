@@ -325,13 +325,6 @@ namespace CommonAux
                     initialize();
                 }
             }
-
-            //public class VALUES_GROUP_TEC5 : VALUES_GROUP
-            //{
-            //    public VALUES_GROUP_TEC5(List<SIGNAL>listSgnls) : base (listSgnls)
-            //    {
-            //    }
-            //}
             /// <summary>
             /// Метка времени текущего объекта
             /// </summary>
@@ -552,7 +545,7 @@ namespace CommonAux
         /// <summary>
         /// Таблица - список записей результирующего набора
         /// </summary>
-        private class TableResult : List<RecordResult>
+        public class TableResult : List<RecordResult>
         {
             /// <summary>
             /// Конструктор - основной (с параметрами)
@@ -602,7 +595,7 @@ namespace CommonAux
         /// <summary>
         /// Массив таблиц с результатами запросов
         /// </summary>
-        private TableResult[] m_arTableResult;
+        public TableResult[] m_arTableResult;
         /// <summary>
         /// Строка шаблон для формирования запроса на выбрку значений ТГ, ТСН
         /// </summary>
@@ -693,141 +686,12 @@ namespace CommonAux
             return strRes;
         }
         /// <summary>
-        /// Очистить значения
-        /// </summary>
-        /// <param name="dtReq">Дата за которую требуется очистить значения</param>
-        /// <param name="indx">Индекс группы сигналов</param>
-        public void ClearValues(DateTime dtReq, INDEX_DATA indx)
-        {
-            VALUES_DATE valuesDate;
-
-            valuesDate = m_listValuesDate.Find(item => { return item.m_dataDate == dtReq; });
-            // проверить успешность поиска объекта
-            if ((valuesDate.m_dataDate > DateTime.MinValue)
-                && (!(valuesDate.m_dictData == null))
-                && (valuesDate.m_dictData.ContainsKey(indx) == true))
-                // объект найден и содержит необходимый ключ - индекс группы сигналов
-                valuesDate.m_dictData[indx].ClearValues();
-            else
-                ; // объект не найден
-        }
-
-        private HMark m_markIndxRequestError;
-        /// <summary>
-        /// Получить все (ТГ, ТСН) значения для станции
-        /// </summary>
-        /// <param name="iListenerId">Идентификатор установленного соединения с источником данных</param>
-        /// <param name="dtStart">Дата - начало</param>
-        /// <param name="dtEnd">Дата - окончание</param>
-        /// <returns>Результат выполнения - признак ошибки (0 - успех)</returns>
-        public int Request(int iListenerId, DateTime dtStart, DateTime dtEnd)
-        {
-            int iRes = 0;
-
-            m_listValuesDate.Clear();
-            if (m_markIndxRequestError == null)
-                m_markIndxRequestError = new HMark(0);
-            else
-                m_markIndxRequestError.SetOf(0);
-
-            DbConnection dbConn = DbSources.Sources().GetConnection(iListenerId, out iRes);
-
-            if (iRes == 0)
-                foreach (INDEX_DATA indx in Enum.GetValues(typeof(INDEX_DATA)))
-                {
-                    // запросить и обработать результат запроса по получению значений для группы сигналов в указанный диапазон дат
-                    iRes = Request(ref dbConn, dtStart, dtEnd, indx);
-                    m_markIndxRequestError.Set((int)indx, iRes < 0);
-                }
-            else
-            {
-                Logging.Logg().ExceptionDB("FormMain.Tec.Request () - не установлено соединение с DB...");
-                iRes = -1;
-            }
-
-            iRes = m_markIndxRequestError.Value == 0 ? 0 : -1;
-            return iRes;
-        }
-        /// <summary>
-        /// Получить все (ТГ, ТСН) значения для станции
-        /// </summary>
-        /// <param name="iListenerId">Идентификатор установленного соединения с источником данных</param>
-        /// <param name="dtStart">Дата - начало</param>
-        /// <param name="dtEnd">Дата - окончание</param>
-        /// <param name="indx">Индекс группы сигналов</param>
-        /// <returns>Результат выполнения - признак ошибки (0 - успех)</returns>
-        public int Request(int iListenerId, DateTime dtStart, DateTime dtEnd, INDEX_DATA indx)
-        {
-            int iRes = 0;
-            string query = string.Empty;
-
-            DbConnection dbConn = DbSources.Sources().GetConnection(iListenerId, out iRes);
-
-            iRes = Request(ref dbConn, dtStart, dtEnd, indx);
-
-            return iRes;
-        }
-        /// <summary>
-        /// Получить все (ТГ, ТСН) значения для станции
-        /// </summary>
-        /// <param name="dbConn">Ссылка на объект соединения с БД-источником данных</param>
-        /// <param name="dtStart">Дата - начало</param>
-        /// <param name="dtEnd">Дата - окончание</param>
-        /// <param name="indx">Индекс группы сигналов</param>
-        /// <returns>Результат выполнения - признак ошибки (0 - успех)</returns>
-        public int Request(ref DbConnection dbConn, DateTime dtStart, DateTime dtEnd, INDEX_DATA indx)
-        {
-            int iRes = 0
-                , err = -1;
-            string query = string.Empty;
-            DateTime dtQuery;
-            TimeSpan tsQuery;
-
-            dtQuery = DateTime.Now;
-
-            m_arTableResult[(int)indx] = null;
-            query = getQuery(indx, dtStart, dtEnd);
-
-            if (query.Equals(string.Empty) == false)
-            {
-                m_arTableResult[(int)indx] = new TableResult(DbTSQLInterface.Select(ref dbConn, query, null, null, out err));
-
-                tsQuery = DateTime.Now - dtQuery;
-
-                Logging.Logg().Action(string.Format(@"TEC.ID={0}, ИНДЕКС={1}, время={4}{2}запрос={3} сек"
-                        , m_Id, indx.ToString(), Environment.NewLine, query, tsQuery.TotalSeconds)
-                    , Logging.INDEX_MESSAGE.NOT_SET);
-
-                if (err == 0)
-                    parseTableResult(dtStart, dtEnd, indx, out err);
-                else
-                {
-                    Logging.Logg().Error(string.Format("TEC.ID={0}, ИНДЕКС={1} не получены данные за {2}{3}Запрос={4}"
-                            , m_Id, indx.ToString(), dtEnd, Environment.NewLine, query)
-                        , Logging.INDEX_MESSAGE.NOT_SET);
-
-                    iRes = -1;
-                }
-            }
-            else
-            {
-                Logging.Logg().Error(string.Format("TEC.ID={0}, группа ИНДЕКС={1} пропущена, не сформирован запрос за {2}"
-                        , m_Id, indx.ToString(), dtStart, Environment.NewLine, query)
-                    , Logging.INDEX_MESSAGE.NOT_SET);
-
-                iRes = 1; // Предупреждение
-            }
-
-            return iRes;
-        }
-        /// <summary>
         /// Привести полученные значения к часовому формату (из полу-часового)
         /// </summary>
-        private void parseTableResult(DateTime dtStart, DateTime dtEnd, INDEX_DATA indx, out int err)
+        public void parseTableResult(DateTime dtStart, DateTime dtEnd, INDEX_DATA indx, out int err)
         {
             err = 0;
 
-            //INDEX_DATA indx = INDEX_DATA.TG;
             TableResult table;
             List<RecordResult> rowsDate;
             VALUES_DATE valuesDate;
@@ -851,28 +715,23 @@ namespace CommonAux
             }
         }
         /// <summary>
-        /// Возвратитиь запрос для выборки данных ТГ
+        /// Очистить значения
         /// </summary>
-        /// <param name="dtStart">Дата - начало</param>
-        /// <param name="dtEnd">Дата - окончание</param>
-        /// <returns>Строка запроса</returns>
-        private string getQuery(INDEX_DATA indx, DateTime dtStart, DateTime dtEnd)
+        /// <param name="dtReq">Дата за которую требуется очистить значения</param>
+        /// <param name="indx">Индекс группы сигналов</param>
+        public void ClearValues(DateTime dtReq, INDEX_DATA indx)
         {
-            string strRes = "SELECT res.[OBJECT], res.[ITEM], SUM(res.[VALUE0]) / COUNT(*)[VALUE0], res.[DATETIME], COUNT(*) as [COUNT] FROM(SELECT[OBJECT], [ITEM], [VALUE0], DATEADD(MINUTE, ceiling(DATEDIFF(MINUTE, DATEADD(DAY, DATEDIFF(DAY, 0, '?DATADATESTART?'), 0), [DATA_DATE]) / 60.) * 60, DATEADD(DAY, DATEDIFF(DAY, 0, '?DATADATESTART?'), 0)) as [DATETIME] FROM[DATA] WHERE[PARNUMBER] = 12 AND([DATA_DATE] > '?DATADATESTART?' AND NOT[DATA_DATE] > '?DATADATEEND?') AND(?SENSORS?) GROUP BY[RCVSTAMP], [OBJECT], [ITEM], [VALUE0], DATEADD(MINUTE, ceiling(DATEDIFF(MINUTE, DATEADD(DAY, DATEDIFF(DAY, 0, '?DATADATESTART?'), 0), [DATA_DATE]) / 60.) * 60, DATEADD(DAY, DATEDIFF(DAY, 0, '?DATADATESTART?'), 0))) res GROUP BY[OBJECT], [ITEM], [DATETIME] ORDER BY[OBJECT], [ITEM], [DATETIME]";
-            //s_strQueryTemplate[(int)indx]
-            //s_strQueryTemplate
-            ;
+            VALUES_DATE valuesDate;
 
-            if (m_Sensors[(int)indx].Equals(string.Empty) == false)
-            {
-                strRes = strRes.Replace(@"?SENSORS?", m_Sensors[(int)indx]);
-                strRes = strRes.Replace(@"?DATADATESTART?", dtStart.ToString(@"yyyyMMdd"));
-                strRes = strRes.Replace(@"?DATADATEEND?", dtEnd.ToString(@"yyyyMMdd"));
-            }
+            valuesDate = m_listValuesDate.Find(item => { return item.m_dataDate == dtReq; });
+            // проверить успешность поиска объекта
+            if ((valuesDate.m_dataDate > DateTime.MinValue)
+                && (!(valuesDate.m_dictData == null))
+                && (valuesDate.m_dictData.ContainsKey(indx) == true))
+                // объект найден и содержит необходимый ключ - индекс группы сигналов
+                valuesDate.m_dictData[indx].ClearValues();
             else
-                strRes = string.Empty;
-
-            return strRes;
+                ; // объект не найден
         }
     }
 
@@ -1063,10 +922,8 @@ namespace CommonAux
             /// </summary>
             private string m_strFullPathTemplate;
             /// <summary>
-            /// Объект содержащий идентификатор соединения с БД
+            /// Номера столбцовы в шаблоне excel
             /// </summary>
-            private static int _iListenerId;
-
             public enum INDEX_MSEXCEL_COLUMN { APOWER, SNUZHDY }
             /// <summary>
             /// Поля таблицы настроек
@@ -1103,7 +960,6 @@ namespace CommonAux
                         if ((value.Equals(string.Empty) == false)
                         && (Path.GetDirectoryName(value).Equals(string.Empty) == false)
                         && (Path.GetFileName(value).Equals(string.Empty) == false)) ;
-                        //SetSecValueOfKey(SEC_TEMPLATE, Environment.UserDomainName + @"\" + Environment.UserName, value);
                         else
                             ;
                     }
@@ -1116,7 +972,7 @@ namespace CommonAux
             /// Возвратить строку запроса для получения списка каналов
             /// </summary>
             /// <returns>Строка запроса</returns>
-            public static string getQueryListTEC()
+            public static string getQueryListChannels()
             {
 
                 string strRes = "SELECT * FROM " + DB_TABLE;
@@ -1131,7 +987,7 @@ namespace CommonAux
             /// <returns>Таблица - с данными</returns>
             public static DataTable getListChannels(ref DbConnection connConfigDB, out int err)
             {
-                string req = getQueryListTEC();
+                string req = getQueryListChannels();
                 return DbTSQLInterface.Select(ref connConfigDB, req, null, null, out err);
             }
 
@@ -1182,6 +1038,150 @@ namespace CommonAux
                         Logging.Logg().Exception(e, string.Format(@"Ошибка получения списка каналов"), Logging.INDEX_MESSAGE.NOT_SET);
                     }
                 }
+            }
+
+            private HMark m_markIndxRequestError;
+            /// <summary>
+            /// Получить все (ТГ, ТСН) значения для станции
+            /// </summary>
+            /// <param name="tec">Станция, для которой необходимо получить значения</param>
+            /// <param name="iListenerId">Идентификатор установленного соединения с источником данных</param>
+            /// <param name="dtStart">Дата - начало</param>
+            /// <param name="dtEnd">Дата - окончание</param>
+            /// <returns>Результат выполнения - признак ошибки (0 - успех)</returns>
+            public int Request(TEC_LOCAL tec, int iListenerId, DateTime dtStart, DateTime dtEnd)
+            {
+                int iRes = 0;
+
+                tec.m_listValuesDate.Clear();
+                if (m_markIndxRequestError == null)
+                    m_markIndxRequestError = new HMark(0);
+                else
+                    m_markIndxRequestError.SetOf(0);
+
+                DbConnection dbConn = DbSources.Sources().GetConnection(iListenerId, out iRes);
+
+                if (iRes == 0)
+                    foreach (TEC_LOCAL.INDEX_DATA indx in Enum.GetValues(typeof(TEC_LOCAL.INDEX_DATA)))
+                    {
+                        // запросить и обработать результат запроса по получению значений для группы сигналов в указанный диапазон дат
+                        iRes = Request(tec, ref dbConn, dtStart, dtEnd, indx);
+                        m_markIndxRequestError.Set((int)indx, iRes < 0);
+                    }
+                else
+                {
+                    Logging.Logg().ExceptionDB("FormMain.Tec.Request () - не установлено соединение с DB...");
+                    iRes = -1;
+                }
+
+                iRes = m_markIndxRequestError.Value == 0 ? 0 : -1;
+                return iRes;
+            }
+            /// <summary>
+            /// Получить все (ТГ, ТСН) значения для станции
+            /// </summary>
+            /// <param name="tec">Станция, для которой необходимо получить значения</param>
+            /// <param name="iListenerId">Идентификатор установленного соединения с источником данных</param>
+            /// <param name="dtStart">Дата - начало</param>
+            /// <param name="dtEnd">Дата - окончание</param>
+            /// <param name="indx">Индекс группы сигналов</param>
+            /// <returns>Результат выполнения - признак ошибки (0 - успех)</returns>
+            public int Request(TEC_LOCAL tec, int iListenerId, DateTime dtStart, DateTime dtEnd, TEC_LOCAL.INDEX_DATA indx)
+            {
+                int iRes = 0;
+                string query = string.Empty;
+
+                DbConnection dbConn = DbSources.Sources().GetConnection(iListenerId, out iRes);
+
+                iRes = Request(tec, ref dbConn, dtStart, dtEnd, indx);
+
+                return iRes;
+            }
+            /// <summary>
+            /// Получить все (ТГ, ТСН) значения для станции
+            /// </summary>
+            /// <param name="tec">Станция, для которой необходимо получить значения</param>
+            /// <param name="dbConn">Ссылка на объект соединения с БД-источником данных</param>
+            /// <param name="dtStart">Дата - начало</param>
+            /// <param name="dtEnd">Дата - окончание</param>
+            /// <param name="indx">Индекс группы сигналов</param>
+            /// <returns>Результат выполнения - признак ошибки (0 - успех)</returns>
+            public int Request(TEC_LOCAL tec, ref DbConnection dbConn, DateTime dtStart, DateTime dtEnd, TEC_LOCAL.INDEX_DATA indx)
+            {
+                int iRes = 0
+                    , err = -1;
+                string query = string.Empty;
+                DateTime dtQuery;
+                TimeSpan tsQuery;
+
+                dtQuery = DateTime.Now;
+
+                tec.m_arTableResult[(int)indx] = null;
+                query = getQuery(tec, indx, dtStart, dtEnd);
+
+                if (query.Equals(string.Empty) == false)
+                {
+                    tec.m_arTableResult[(int)indx] = new TEC_LOCAL.TableResult(DbTSQLInterface.Select(ref dbConn, query, null, null, out err));
+
+                    tsQuery = DateTime.Now - dtQuery;
+
+                    Logging.Logg().Action(string.Format(@"TEC.ID={0}, ИНДЕКС={1}, время={4}{2}запрос={3} сек"
+                            , tec.m_Id, indx.ToString(), Environment.NewLine, query, tsQuery.TotalSeconds)
+                        , Logging.INDEX_MESSAGE.NOT_SET);
+
+                    if (err == 0)
+                        tec.parseTableResult(dtStart, dtEnd, indx, out err);
+                    else
+                    {
+                        Logging.Logg().Error(string.Format("TEC.ID={0}, ИНДЕКС={1} не получены данные за {2}{3}Запрос={4}"
+                                , tec.m_Id, indx.ToString(), dtEnd, Environment.NewLine, query)
+                            , Logging.INDEX_MESSAGE.NOT_SET);
+
+                        iRes = -1;
+                    }
+                }
+                else
+                {
+                    Logging.Logg().Error(string.Format("TEC.ID={0}, группа ИНДЕКС={1} пропущена, не сформирован запрос за {2}"
+                            , tec.m_Id, indx.ToString(), dtStart, Environment.NewLine, query)
+                        , Logging.INDEX_MESSAGE.NOT_SET);
+
+                    iRes = 1; // Предупреждение
+                }
+
+                return iRes;
+            }
+
+            /// <summary>
+            /// Возвратитиь запрос для выборки данных ТГ
+            /// </summary>
+            /// <param name="tec">Станция, для которой необходимо получить значения</param>
+            /// <param name="indx">Индекс текущей группы сигналов</param>
+            /// <param name="dtStart">Дата - начало</param>
+            /// <param name="dtEnd">Дата - окончание</param>
+            /// <returns>Строка запроса</returns>
+            private string getQuery(TEC_LOCAL tec, TEC_LOCAL.INDEX_DATA indx, DateTime dtStart, DateTime dtEnd)
+            {
+                string strRes = @"SELECT res.[OBJECT], res.[ITEM], SUM(res.[VALUE0]) / COUNT(*)[VALUE0], 
+                                res.[DATETIME], COUNT(*) as [COUNT] FROM(SELECT[OBJECT], [ITEM], [VALUE0], 
+                                DATEADD(MINUTE, ceiling(DATEDIFF(MINUTE, DATEADD(DAY, DATEDIFF(DAY, 0, '?DATADATESTART?'), 0), [DATA_DATE]) / 60.) * 60,
+                                DATEADD(DAY, DATEDIFF(DAY, 0, '?DATADATESTART?'), 0)) as [DATETIME] FROM[DATA] 
+                                WHERE[PARNUMBER] = 12 AND([DATA_DATE] > '?DATADATESTART?' AND NOT[DATA_DATE] > '?DATADATEEND?') 
+                                AND(?SENSORS?) GROUP BY[RCVSTAMP], [OBJECT], [ITEM], [VALUE0], 
+                                DATEADD(MINUTE, ceiling(DATEDIFF(MINUTE, DATEADD(DAY, DATEDIFF(DAY, 0, '?DATADATESTART?'), 0), [DATA_DATE]) / 60.) * 60, 
+                                DATEADD(DAY, DATEDIFF(DAY, 0, '?DATADATESTART?'), 0))) res GROUP BY[OBJECT], [ITEM], [DATETIME] ORDER BY[OBJECT], [ITEM], [DATETIME]";
+                ;
+
+                if (tec.m_Sensors[(int)indx].Equals(string.Empty) == false)
+                {
+                    strRes = strRes.Replace(@"?SENSORS?", tec.m_Sensors[(int)indx]);
+                    strRes = strRes.Replace(@"?DATADATESTART?", dtStart.ToString(@"yyyyMMdd"));
+                    strRes = strRes.Replace(@"?DATADATEEND?", dtEnd.ToString(@"yyyyMMdd"));
+                }
+                else
+                    strRes = string.Empty;
+
+                return strRes;
             }
         }
 
@@ -1241,12 +1241,10 @@ namespace CommonAux
             //Установить обработчики событий
             EventNewPathToTemplate += new DelegateStringFunc(onNewPathToTemplate);
 
-            string[] sumGroups = new string[] { "sum TG", "sum TSN", "sum GRII", "sum GRVI", "sum GRVII", "sum GRVIII" };
-
-            for (int i = 0; i < sumGroups.Count(); i++)
+            for (int i = 0; i <= Convert.ToInt32(TEC_LOCAL.INDEX_DATA.GRVIII); i++)
             {
                 m_sumValues.Rows.Add();
-                m_sumValues.Rows[i].Cells[0].Value = sumGroups[i];
+                m_sumValues.Rows[i].Cells[0].Value = "сум " + Enum.GetName(typeof(TEC_LOCAL.INDEX_DATA), i);
                 m_sumValues.Rows[i].Cells[1].Value = "0";
             }
         }
@@ -1734,7 +1732,7 @@ namespace CommonAux
             m_listBoxTEC.SelectedIndexChanged += listBox_SelectedIndexChanged;
             m_listBoxGrpSgnl.Tag = INDEX_CONTROL.LB_GROUP_SIGNAL;
             m_listBoxGrpSgnl.SelectedIndexChanged += listBox_SelectedIndexChanged;
-            m_monthCalendarStart.DateChanged += monthCalendar_DateChanged;
+            m_monthCalendarStart.DateChanged += monthCalendarStart_DateChanged;
             m_monthCalendarEnd.DateChanged += monthCalendarEnd_DateChanged;
         }
 
@@ -1743,7 +1741,7 @@ namespace CommonAux
             m_labelEndDate.Text = m_monthCalendarEnd.SelectionStart.ToShortDateString();
         }
 
-        private void monthCalendar_DateChanged(object sender, DateRangeEventArgs e)
+        private void monthCalendarStart_DateChanged(object sender, DateRangeEventArgs e)
         {
             for (int i = 0; i <= Convert.ToInt32(TEC_LOCAL.INDEX_DATA.GRVIII); i++)
             {
@@ -1848,6 +1846,7 @@ namespace CommonAux
             TEC_LOCAL.INDEX_DATA indx;
             TEC_LOCAL tec = m_listTEC[m_listBoxTEC.SelectedIndex];
             TEC_LOCAL.VALUES_DATE.VALUES_GROUP dictIndxValues;
+            GetDataFromDB GD = new GetDataFromDB();
 
             for (int i = 0; i <= Convert.ToInt32(TEC_LOCAL.INDEX_DATA.GRVIII); i++)
             {
@@ -1871,7 +1870,7 @@ namespace CommonAux
 
                     tec.ClearValues(m_monthCalendarStart.SelectionStart.Date, indx);
 
-                    iRes = tec.Request(iListenerId
+                    iRes = GD.Request(tec, iListenerId
                         , m_monthCalendarStart.SelectionStart.Date //SelectionStart всегда == SelectionEnd, т.к. MultiSelect = false
                         , m_monthCalendarStart.SelectionEnd.Date.AddDays(1)
                         , indx);
@@ -1954,6 +1953,7 @@ namespace CommonAux
             double[] arWriteValues;
             HMark markErr = new HMark(0);
             string msg = string.Empty;
+            GetDataFromDB GD = new GetDataFromDB();
             Logging.Logg().Action(@"Экспорт в MS Excel - начало ...", Logging.INDEX_MESSAGE.NOT_SET);
 
             if (m_connSettAIISKUECentre == null)
@@ -1971,7 +1971,7 @@ namespace CommonAux
 
                 foreach (TEC_LOCAL t in m_listTEC)
                 {
-                    iRes = t.Request(iListenerId, m_monthCalendarStart.SelectionStart.Date, m_monthCalendarEnd.SelectionStart.Date.AddDays(1));
+                    iRes = GD.Request(t, iListenerId, m_monthCalendarStart.SelectionStart.Date, m_monthCalendarEnd.SelectionStart.Date.AddDays(1));
 
                     if (!(iRes < 0))
                     {

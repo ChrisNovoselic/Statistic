@@ -121,6 +121,9 @@ namespace Statistic
         /// </summary>
         public struct VALUES_DATE
         {
+            /// <summary>
+            /// Структура для хранения значений за сутки
+            /// </summary>
             public struct VALUES_SIGNAL
             {
                 public double[] m_data;
@@ -139,8 +142,10 @@ namespace Statistic
             /// </summary>
             public class VALUES_GROUP : Dictionary<SIGNAL.KEY, VALUES_SIGNAL>
             {
+                /// <summary>
+                /// Перечисление для методов расчета потерь эл./эн. в сети ТЭЦ (стандартный/специальный)
+                /// </summary>
                 public enum MODE : short { STANDARD, EPOTERI }
-
                 //!!! сумма значений каждого из массивов 'sgnlValues', 'grpValues' д.б. равны между собой
                 /// <summary>
                 /// Cумма для группы сигналов по часам
@@ -320,13 +325,6 @@ namespace Statistic
                     initialize();
                 }
             }
-
-            //public class VALUES_GROUP_TEC5 : VALUES_GROUP
-            //{
-            //    public VALUES_GROUP_TEC5(List<SIGNAL>listSgnls) : base (listSgnls)
-            //    {
-            //    }
-            //}
             /// <summary>
             /// Метка времени текущего объекта
             /// </summary>
@@ -538,18 +536,16 @@ namespace Statistic
             m_Sensors = new string[Enum.GetValues(typeof(INDEX_DATA)).Length];
         }
         /// <summary>
-        /// Перечисдение типов данных для результата
+        /// Перечисление типов данных для результата
         /// </summary>
         public enum INDEX_DATA
         {
-            TG, TSN
-            , GRII, GRVI, GRVII, GRVIII
-            //, COUNT
+            TG, TSN, GRII, GRVI, GRVII, GRVIII
         };
         /// <summary>
         /// Таблица - список записей результирующего набора
         /// </summary>
-        private class TableResult : List<RecordResult>
+        public class TableResult : List<RecordResult>
         {
             /// <summary>
             /// Конструктор - основной (с параметрами)
@@ -599,7 +595,7 @@ namespace Statistic
         /// <summary>
         /// Массив таблиц с результатами запросов
         /// </summary>
-        private TableResult[] m_arTableResult;
+        public TableResult[] m_arTableResult;
         /// <summary>
         /// Строка шаблон для формирования запроса на выбрку значений ТГ, ТСН
         /// </summary>
@@ -690,141 +686,12 @@ namespace Statistic
             return strRes;
         }
         /// <summary>
-        /// Очистить значения
-        /// </summary>
-        /// <param name="dtReq">Дата за которую требуется очистить значения</param>
-        /// <param name="indx">Индекс группы сигналов</param>
-        public void ClearValues(DateTime dtReq, INDEX_DATA indx)
-        {
-            VALUES_DATE valuesDate;
-
-            valuesDate = m_listValuesDate.Find(item => { return item.m_dataDate == dtReq; });
-            // проверить успешность поиска объекта
-            if ((valuesDate.m_dataDate > DateTime.MinValue)
-                && (!(valuesDate.m_dictData == null))
-                && (valuesDate.m_dictData.ContainsKey(indx) == true))
-                // объект найден и содержит необходимый ключ - индекс группы сигналов
-                valuesDate.m_dictData[indx].ClearValues();
-            else
-                ; // объект не найден
-        }
-
-        private HMark m_markIndxRequestError;
-        /// <summary>
-        /// Получить все (ТГ, ТСН) значения для станции
-        /// </summary>
-        /// <param name="iListenerId">Идентификатор установленного соединения с источником данных</param>
-        /// <param name="dtStart">Дата - начало</param>
-        /// <param name="dtEnd">Дата - окончание</param>
-        /// <returns>Результат выполнения - признак ошибки (0 - успех)</returns>
-        public int Request(int iListenerId, DateTime dtStart, DateTime dtEnd)
-        {
-            int iRes = 0;
-
-            m_listValuesDate.Clear();
-            if (m_markIndxRequestError == null)
-                m_markIndxRequestError = new HMark(0);
-            else
-                m_markIndxRequestError.SetOf(0);
-
-            DbConnection dbConn = DbSources.Sources().GetConnection(iListenerId, out iRes);
-
-            if (iRes == 0)
-                foreach (INDEX_DATA indx in Enum.GetValues(typeof(INDEX_DATA)))
-                {
-                    // запросить и обработать результат запроса по получению значений для группы сигналов в указанный диапазон дат
-                    iRes = Request(ref dbConn, dtStart, dtEnd, indx);
-                    m_markIndxRequestError.Set((int)indx, iRes < 0);
-                }
-            else
-            {
-                Logging.Logg().ExceptionDB("FormMain.Tec.Request () - не установлено соединение с DB...");
-                iRes = -1;
-            }
-
-            iRes = m_markIndxRequestError.Value == 0 ? 0 : -1;
-            return iRes;
-        }
-        /// <summary>
-        /// Получить все (ТГ, ТСН) значения для станции
-        /// </summary>
-        /// <param name="iListenerId">Идентификатор установленного соединения с источником данных</param>
-        /// <param name="dtStart">Дата - начало</param>
-        /// <param name="dtEnd">Дата - окончание</param>
-        /// <param name="indx">Индекс группы сигналов</param>
-        /// <returns>Результат выполнения - признак ошибки (0 - успех)</returns>
-        public int Request(int iListenerId, DateTime dtStart, DateTime dtEnd, INDEX_DATA indx)
-        {
-            int iRes = 0;
-            string query = string.Empty;
-
-            DbConnection dbConn = DbSources.Sources().GetConnection(iListenerId, out iRes);
-
-            iRes = Request(ref dbConn, dtStart, dtEnd, indx);
-
-            return iRes;
-        }
-        /// <summary>
-        /// Получить все (ТГ, ТСН) значения для станции
-        /// </summary>
-        /// <param name="dbConn">Ссылка на объект соединения с БД-источником данных</param>
-        /// <param name="dtStart">Дата - начало</param>
-        /// <param name="dtEnd">Дата - окончание</param>
-        /// <param name="indx">Индекс группы сигналов</param>
-        /// <returns>Результат выполнения - признак ошибки (0 - успех)</returns>
-        public int Request(ref DbConnection dbConn, DateTime dtStart, DateTime dtEnd, INDEX_DATA indx)
-        {
-            int iRes = 0
-                , err = -1;
-            string query = string.Empty;
-            DateTime dtQuery;
-            TimeSpan tsQuery;
-
-            dtQuery = DateTime.Now;
-
-            m_arTableResult[(int)indx] = null;
-            query = getQuery(indx, dtStart, dtEnd);
-
-            if (query.Equals(string.Empty) == false)
-            {
-                m_arTableResult[(int)indx] = new TableResult(DbTSQLInterface.Select(ref dbConn, query, null, null, out err));
-
-                tsQuery = DateTime.Now - dtQuery;
-
-                Logging.Logg().Action(string.Format(@"TEC.ID={0}, ИНДЕКС={1}, время={4}{2}запрос={3} сек"
-                        , m_Id, indx.ToString(), Environment.NewLine, query, tsQuery.TotalSeconds)
-                    , Logging.INDEX_MESSAGE.NOT_SET);
-
-                if (err == 0)
-                    parseTableResult(dtStart, dtEnd, indx, out err);
-                else
-                {
-                    Logging.Logg().Error(string.Format("FormMain.Tec.Request () - TEC.ID={0}, ИНДЕКС={1} не получены данные за {2}{3}Запрос={4}"
-                            , m_Id, indx.ToString(), dtEnd, Environment.NewLine, query)
-                        , Logging.INDEX_MESSAGE.NOT_SET);
-
-                    iRes = -1;
-                }
-            }
-            else
-            {
-                Logging.Logg().Error(string.Format("FormMain.Tec.Request () - TEC.ID={0}, группа ИНДЕКС={1} пропущена, не сформирован запрос за {2}"
-                        , m_Id, indx.ToString(), dtStart, Environment.NewLine, query)
-                    , Logging.INDEX_MESSAGE.NOT_SET);
-
-                iRes = 1; // Предупреждение
-            }
-
-            return iRes;
-        }
-        /// <summary>
         /// Привести полученные значения к часовому формату (из полу-часового)
         /// </summary>
-        private void parseTableResult(DateTime dtStart, DateTime dtEnd, INDEX_DATA indx, out int err)
+        public void parseTableResult(DateTime dtStart, DateTime dtEnd, INDEX_DATA indx, out int err)
         {
             err = 0;
 
-            //INDEX_DATA indx = INDEX_DATA.TG;
             TableResult table;
             List<RecordResult> rowsDate;
             VALUES_DATE valuesDate;
@@ -848,28 +715,23 @@ namespace Statistic
             }
         }
         /// <summary>
-        /// Возвратитиь запрос для выборки данных ТГ
+        /// Очистить значения
         /// </summary>
-        /// <param name="dtStart">Дата - начало</param>
-        /// <param name="dtEnd">Дата - окончание</param>
-        /// <returns>Строка запроса</returns>
-        private string getQuery(INDEX_DATA indx, DateTime dtStart, DateTime dtEnd)
+        /// <param name="dtReq">Дата за которую требуется очистить значения</param>
+        /// <param name="indx">Индекс группы сигналов</param>
+        public void ClearValues(DateTime dtReq, INDEX_DATA indx)
         {
-            string strRes = "SELECT res.[OBJECT], res.[ITEM], SUM(res.[VALUE0]) / COUNT(*)[VALUE0], res.[DATETIME], COUNT(*) as [COUNT] FROM(SELECT[OBJECT], [ITEM], [VALUE0], DATEADD(MINUTE, ceiling(DATEDIFF(MINUTE, DATEADD(DAY, DATEDIFF(DAY, 0, '?DATADATESTART?'), 0), [DATA_DATE]) / 60.) * 60, DATEADD(DAY, DATEDIFF(DAY, 0, '?DATADATESTART?'), 0)) as [DATETIME] FROM[DATA] WHERE[PARNUMBER] = 12 AND([DATA_DATE] > '?DATADATESTART?' AND NOT[DATA_DATE] > '?DATADATEEND?') AND(?SENSORS?) GROUP BY[RCVSTAMP], [OBJECT], [ITEM], [VALUE0], DATEADD(MINUTE, ceiling(DATEDIFF(MINUTE, DATEADD(DAY, DATEDIFF(DAY, 0, '?DATADATESTART?'), 0), [DATA_DATE]) / 60.) * 60, DATEADD(DAY, DATEDIFF(DAY, 0, '?DATADATESTART?'), 0))) res GROUP BY[OBJECT], [ITEM], [DATETIME] ORDER BY[OBJECT], [ITEM], [DATETIME]";
-               //s_strQueryTemplate[(int)indx]
-               //s_strQueryTemplate
-               ;
+            VALUES_DATE valuesDate;
 
-            if (m_Sensors[(int)indx].Equals(string.Empty) == false)
-            {
-                strRes = strRes.Replace(@"?SENSORS?", m_Sensors[(int)indx]);
-                strRes = strRes.Replace(@"?DATADATESTART?", dtStart.ToString(@"yyyyMMdd"));
-                strRes = strRes.Replace(@"?DATADATEEND?", dtEnd.ToString(@"yyyyMMdd"));
-            }
+            valuesDate = m_listValuesDate.Find(item => { return item.m_dataDate == dtReq; });
+            // проверить успешность поиска объекта
+            if ((valuesDate.m_dataDate > DateTime.MinValue)
+                && (!(valuesDate.m_dictData == null))
+                && (valuesDate.m_dictData.ContainsKey(indx) == true))
+                // объект найден и содержит необходимый ключ - индекс группы сигналов
+                valuesDate.m_dictData[indx].ClearValues();
             else
-                strRes = string.Empty;
-
-            return strRes;
+                ; // объект не найден
         }
     }
 
@@ -1049,34 +911,17 @@ namespace Statistic
         public class GetDataFromDB
         {
             /// <summary>
-            /// Объект, содержащий наименование таблицы в БД, хранящей перечень каналов
+            /// Строка, содержащая наименование таблицы в БД, хранящей перечень каналов
             /// </summary>
-            public static string DB_TABLE_NAME = @"[ID_TSN_ASKUE_2017]";
-            /// <summary>
-            /// Объект, содержащий наименование таблицы в БД, хранящей источники данных
-            /// </summary>
-            public static string DB_TABLE_SOURCE = @"[SOURCE]";
-            /// <summary>
-            /// Объект, содержащий наименование таблицы в БД, хранящей пароли
-            /// </summary>
-            public static string DB_TABLE_PASS = @"[passwords]";
+            public static string DB_TABLE = @"[ID_TSN_ASKUE_2017]";
             /// <summary>
             /// Объект, содержащий id записи в таблице, содержащей настройки подключения
             /// </summary>
-            public static string ID_AIISKUE_CONSETT = @"7000";
+            public static int ID_AIISKUE_CONSETT = 7001;
             /// <summary>
             /// Объект, содержащий путь к шаблону excel
             /// </summary>
             private string m_strFullPathTemplate;
-            /// <summary>
-            /// Объекты с параметрами соединения с источником данных
-            /// </summary>
-            protected static DbConnection m_connConfigDB, _connConfigDb;
-            /// <summary>
-            /// Объект содержащий идентификатор соединения с БД
-            /// </summary>
-            private static int _iListenerId;
-            public static int ListenerId { get { return _iListenerId; } }
 
             public enum INDEX_MSEXCEL_COLUMN { APOWER, SNUZHDY }
             /// <summary>
@@ -1097,17 +942,6 @@ namespace Statistic
                 , SEC_SELECT = @"SELECT"
                 , SEC_TEMPLATE = @"Template";
             /// <summary>
-            /// Зарегистрировать(установить) временное соединение с БД конфигурации
-            /// </summary>
-            /// <param name="err">Признак ошибки при выполнении операции</param>
-            public static void RegisterConfigDb(out int err)
-            {
-                // зарегистрировать соединение/получить идентификатор соединения
-                _iListenerId = DbSources.Sources().Register(FormMain.s_listFormConnectionSettings[(int)CONN_SETT_TYPE.CONFIG_DB].getConnSett(), false, @"CONFIG_DB");
-
-                _connConfigDb = DbSources.Sources().GetConnection(_iListenerId, out err);
-            }
-            /// <summary>
             /// Каталог для размещения шаблонов
             /// </summary>
             public string FullPathTemplate
@@ -1125,7 +959,6 @@ namespace Statistic
                         if ((value.Equals(string.Empty) == false)
                         && (Path.GetDirectoryName(value).Equals(string.Empty) == false)
                         && (Path.GetFileName(value).Equals(string.Empty) == false)) ;
-                        //SetSecValueOfKey(SEC_TEMPLATE, Environment.UserDomainName + @"\" + Environment.UserName, value);
                         else
                             ;
                     }
@@ -1138,31 +971,13 @@ namespace Statistic
             /// Возвратить строку запроса для получения списка каналов
             /// </summary>
             /// <returns>Строка запроса</returns>
-            public static string getQueryListTEC()
+            public static string getQueryListChannels()
             {
 
-                string strRes = "SELECT * FROM " + DB_TABLE_NAME;
+                string strRes = "SELECT * FROM " + DB_TABLE;
                 return strRes;
             }
 
-            /// <summary>
-            /// Возвратить строку запроса для получения настроек для доступа к серверу АИСКУЭ
-            /// </summary>
-            /// <returns>Строка запроса</returns>
-            public static string getQueryAIISKUE()
-            {
-                string strRes = "SELECT * FROM " + DB_TABLE_SOURCE + "WHERE [ID] =" + ID_AIISKUE_CONSETT;
-                return strRes;
-            }
-            /// <summary>
-            /// Возвратить строку запроса для получения дастроек для доступа к серверу АИСКУЭ
-            /// </summary>
-            /// <returns>Строка запроса</returns>
-            public static string getQueryAIISKUEPassword()
-            {
-                string strRes = "SELECT * FROM " + DB_TABLE_PASS + "WHERE [ID_EXT] =" + ID_AIISKUE_CONSETT;
-                return strRes;
-            }
             /// <summary>
             /// Возвратить таблицу [ID_TSN_AISKUE_2017] из БД конфигурации
             /// </summary>
@@ -1171,35 +986,22 @@ namespace Statistic
             /// <returns>Таблица - с данными</returns>
             public static DataTable getListChannels(ref DbConnection connConfigDB, out int err)
             {
-                string req = getQueryListTEC();
+                string req = getQueryListChannels();
                 return DbTSQLInterface.Select(ref connConfigDB, req, null, null, out err);
             }
 
             /// <summary>
             /// Возвратить объект с параметрами соединения
             /// </summary>
-            /// <param name="connConfigDB">Ссылка на объект с установленным соединением с БД</param>
+            /// <param name="iListenerId">Ссылка на объект с установленным соединением с БД</param>
             /// <param name="err">Идентификатор ошибки при выполнении запроса</param>
             /// <returns>Объект с параметрами соединения</returns>
-            public ConnectionSettings GetConnSettAIISKUECentre(ref DbConnection connConfigDB, out int err)
+            public ConnectionSettings GetConnSettAIISKUECentre(ref int iListenerId, out int err)
             {
-                ConnectionSettings connSettRes = new ConnectionSettings();
                 DataTable dataTableRes = new DataTable();
+                dataTableRes = InitTEC_200.getConnSettingsOfIdSource(iListenerId, ID_AIISKUE_CONSETT, -1, out err);
 
-                string req = getQueryAIISKUE();
-                dataTableRes = DbTSQLInterface.Select(ref connConfigDB, req, null, null, out err);
-
-                connSettRes.id = Convert.ToInt32(dataTableRes.Rows[dataTableRes.Rows.Count - 1].ItemArray[Convert.ToInt32(DB_TABLE_AIISKUE.ID)]);
-                connSettRes.name = dataTableRes.Rows[dataTableRes.Rows.Count - 1].ItemArray[Convert.ToInt32(DB_TABLE_AIISKUE.NAME_SHR)].ToString();
-                connSettRes.server = dataTableRes.Rows[dataTableRes.Rows.Count - 1].ItemArray[Convert.ToInt32(DB_TABLE_AIISKUE.IP)].ToString();
-                connSettRes.port = Convert.ToInt32(dataTableRes.Rows[dataTableRes.Rows.Count - 1].ItemArray[Convert.ToInt32(DB_TABLE_AIISKUE.PORT)]);
-                connSettRes.dbName = dataTableRes.Rows[dataTableRes.Rows.Count - 1].ItemArray[Convert.ToInt32(DB_TABLE_AIISKUE.DB_NAME)].ToString();
-                connSettRes.userName = dataTableRes.Rows[dataTableRes.Rows.Count - 1].ItemArray[Convert.ToInt32(DB_TABLE_AIISKUE.UID)].ToString();
-
-                req = getQueryAIISKUEPassword();
-                dataTableRes = DbTSQLInterface.Select(ref connConfigDB, req, null, null, out err);
-
-                connSettRes.password = Crypt.Crypting().Decrypt(dataTableRes.Rows[dataTableRes.Rows.Count - 1].ItemArray[Convert.ToInt32(DB_TABLE_PSW.HASH)].ToString(), Crypt.KEY);
+                ConnectionSettings connSettRes = new ConnectionSettings(dataTableRes.Rows[dataTableRes.Rows.Count - 1], 1);
 
                 return connSettRes;
             }
@@ -1232,14 +1034,164 @@ namespace Statistic
                     }
                     catch (Exception e)
                     {
-                        Logging.Logg().Exception(e, string.Format(@""), Logging.INDEX_MESSAGE.NOT_SET);
+                        Logging.Logg().Exception(e, string.Format(@"Ошибка получения списка каналов"), Logging.INDEX_MESSAGE.NOT_SET);
                     }
                 }
             }
+
+            private HMark m_markIndxRequestError;
+            /// <summary>
+            /// Получить все (ТГ, ТСН) значения для станции
+            /// </summary>
+            /// <param name="tec">Станция, для которой необходимо получить значения</param>
+            /// <param name="iListenerId">Идентификатор установленного соединения с источником данных</param>
+            /// <param name="dtStart">Дата - начало</param>
+            /// <param name="dtEnd">Дата - окончание</param>
+            /// <returns>Результат выполнения - признак ошибки (0 - успех)</returns>
+            public int Request(TEC_LOCAL tec, int iListenerId, DateTime dtStart, DateTime dtEnd)
+            {
+                int iRes = 0;
+
+                tec.m_listValuesDate.Clear();
+                if (m_markIndxRequestError == null)
+                    m_markIndxRequestError = new HMark(0);
+                else
+                    m_markIndxRequestError.SetOf(0);
+
+                DbConnection dbConn = DbSources.Sources().GetConnection(iListenerId, out iRes);
+
+                if (iRes == 0)
+                    foreach (TEC_LOCAL.INDEX_DATA indx in Enum.GetValues(typeof(TEC_LOCAL.INDEX_DATA)))
+                    {
+                        // запросить и обработать результат запроса по получению значений для группы сигналов в указанный диапазон дат
+                        iRes = Request(tec, ref dbConn, dtStart, dtEnd, indx);
+                        m_markIndxRequestError.Set((int)indx, iRes < 0);
+                    }
+                else
+                {
+                    Logging.Logg().ExceptionDB("FormMain.Tec.Request () - не установлено соединение с DB...");
+                    iRes = -1;
+                }
+
+                iRes = m_markIndxRequestError.Value == 0 ? 0 : -1;
+                return iRes;
+            }
+            /// <summary>
+            /// Получить все (ТГ, ТСН) значения для станции
+            /// </summary>
+            /// <param name="tec">Станция, для которой необходимо получить значения</param>
+            /// <param name="iListenerId">Идентификатор установленного соединения с источником данных</param>
+            /// <param name="dtStart">Дата - начало</param>
+            /// <param name="dtEnd">Дата - окончание</param>
+            /// <param name="indx">Индекс группы сигналов</param>
+            /// <returns>Результат выполнения - признак ошибки (0 - успех)</returns>
+            public int Request(TEC_LOCAL tec, int iListenerId, DateTime dtStart, DateTime dtEnd, TEC_LOCAL.INDEX_DATA indx)
+            {
+                int iRes = 0;
+                string query = string.Empty;
+
+                DbConnection dbConn = DbSources.Sources().GetConnection(iListenerId, out iRes);
+
+                iRes = Request(tec, ref dbConn, dtStart, dtEnd, indx);
+
+                return iRes;
+            }
+            /// <summary>
+            /// Получить все (ТГ, ТСН) значения для станции
+            /// </summary>
+            /// <param name="tec">Станция, для которой необходимо получить значения</param>
+            /// <param name="dbConn">Ссылка на объект соединения с БД-источником данных</param>
+            /// <param name="dtStart">Дата - начало</param>
+            /// <param name="dtEnd">Дата - окончание</param>
+            /// <param name="indx">Индекс группы сигналов</param>
+            /// <returns>Результат выполнения - признак ошибки (0 - успех)</returns>
+            public int Request(TEC_LOCAL tec, ref DbConnection dbConn, DateTime dtStart, DateTime dtEnd, TEC_LOCAL.INDEX_DATA indx)
+            {
+                int iRes = 0
+                    , err = -1;
+                string query = string.Empty;
+                DateTime dtQuery;
+                TimeSpan tsQuery;
+
+                dtQuery = DateTime.Now;
+
+                tec.m_arTableResult[(int)indx] = null;
+                query = getQuery(tec, indx, dtStart, dtEnd);
+
+                if (query.Equals(string.Empty) == false)
+                {
+                    tec.m_arTableResult[(int)indx] = new TEC_LOCAL.TableResult(DbTSQLInterface.Select(ref dbConn, query, null, null, out err));
+
+                    tsQuery = DateTime.Now - dtQuery;
+
+                    Logging.Logg().Action(string.Format(@"TEC.ID={0}, ИНДЕКС={1}, время={4}{2}запрос={3} сек"
+                            , tec.m_Id, indx.ToString(), Environment.NewLine, query, tsQuery.TotalSeconds)
+                        , Logging.INDEX_MESSAGE.NOT_SET);
+
+                    if (err == 0)
+                        tec.parseTableResult(dtStart, dtEnd, indx, out err);
+                    else
+                    {
+                        Logging.Logg().Error(string.Format("TEC.ID={0}, ИНДЕКС={1} не получены данные за {2}{3}Запрос={4}"
+                                , tec.m_Id, indx.ToString(), dtEnd, Environment.NewLine, query)
+                            , Logging.INDEX_MESSAGE.NOT_SET);
+
+                        iRes = -1;
+                    }
+                }
+                else
+                {
+                    Logging.Logg().Error(string.Format("TEC.ID={0}, группа ИНДЕКС={1} пропущена, не сформирован запрос за {2}"
+                            , tec.m_Id, indx.ToString(), dtStart, Environment.NewLine, query)
+                        , Logging.INDEX_MESSAGE.NOT_SET);
+
+                    iRes = 1; // Предупреждение
+                }
+
+                return iRes;
+            }
+
+            /// <summary>
+            /// Возвратитиь запрос для выборки данных ТГ
+            /// </summary>
+            /// <param name="tec">Станция, для которой необходимо получить значения</param>
+            /// <param name="indx">Индекс текущей группы сигналов</param>
+            /// <param name="dtStart">Дата - начало</param>
+            /// <param name="dtEnd">Дата - окончание</param>
+            /// <returns>Строка запроса</returns>
+            private string getQuery(TEC_LOCAL tec, TEC_LOCAL.INDEX_DATA indx, DateTime dtStart, DateTime dtEnd)
+            {
+                string strRes = @"SELECT res.[OBJECT], res.[ITEM], SUM(res.[VALUE0]) / COUNT(*)[VALUE0], 
+                                res.[DATETIME], COUNT(*) as [COUNT] FROM(SELECT[OBJECT], [ITEM], [VALUE0], 
+                                DATEADD(MINUTE, ceiling(DATEDIFF(MINUTE, DATEADD(DAY, DATEDIFF(DAY, 0, '?DATADATESTART?'), 0), [DATA_DATE]) / 60.) * 60,
+                                DATEADD(DAY, DATEDIFF(DAY, 0, '?DATADATESTART?'), 0)) as [DATETIME] FROM[DATA] 
+                                WHERE[PARNUMBER] = 12 AND([DATA_DATE] > '?DATADATESTART?' AND NOT[DATA_DATE] > '?DATADATEEND?') 
+                                AND(?SENSORS?) GROUP BY[RCVSTAMP], [OBJECT], [ITEM], [VALUE0], 
+                                DATEADD(MINUTE, ceiling(DATEDIFF(MINUTE, DATEADD(DAY, DATEDIFF(DAY, 0, '?DATADATESTART?'), 0), [DATA_DATE]) / 60.) * 60, 
+                                DATEADD(DAY, DATEDIFF(DAY, 0, '?DATADATESTART?'), 0))) res GROUP BY[OBJECT], [ITEM], [DATETIME] ORDER BY[OBJECT], [ITEM], [DATETIME]";
+                ;
+
+                if (tec.m_Sensors[(int)indx].Equals(string.Empty) == false)
+                {
+                    strRes = strRes.Replace(@"?SENSORS?", tec.m_Sensors[(int)indx]);
+                    strRes = strRes.Replace(@"?DATADATESTART?", dtStart.ToString(@"yyyyMMdd"));
+                    strRes = strRes.Replace(@"?DATADATEEND?", dtEnd.ToString(@"yyyyMMdd"));
+                }
+                else
+                    strRes = string.Empty;
+
+                return strRes;
+            }
         }
 
-        public PanelCommonAux()
+        /// <summary>
+        /// Конструктор панели
+        /// </summary>
+        /// <param name="displayMode">Параметр, определяющий режим отображения</param>
+        public PanelCommonAux(int displayMode)
         {
+            m_displayMode = displayMode;
+
             int err = -1;
             // зарегистрировать соединение/получить идентификатор соединения
             int _iListenerId = DbSources.Sources().Register(FormMain.s_listFormConnectionSettings[(int)CONN_SETT_TYPE.CONFIG_DB].getConnSett(), false, @"CONFIG_DB");
@@ -1256,7 +1208,7 @@ namespace Statistic
             }
 
             //Получить параметры соединения с источником данных
-            m_connSettAIISKUECentre = GD.GetConnSettAIISKUECentre(ref m_connConfigDB, out err);
+            m_connSettAIISKUECentre = GD.GetConnSettAIISKUECentre(ref _iListenerId, out err);
 
             InitializeComponents();
 
@@ -1270,8 +1222,8 @@ namespace Statistic
             m_listBoxTEC.Tag = INDEX_CONTROL.LB_TEC;
             m_listBoxTEC.SelectedIndexChanged += listBox_SelectedIndexChanged;
 
-            m_labelEndDate.Text = monthCalendarEnd.SelectionStart.ToShortDateString();
-            m_labelStartDate.Text = m_monthCalendar.SelectionStart.ToShortDateString();
+            m_labelEndDate.Text = m_monthCalendarEnd.SelectionStart.ToShortDateString();
+            m_labelStartDate.Text = m_monthCalendarStart.SelectionStart.ToShortDateString();
 
             if (m_displayMode == 0)
             {
@@ -1283,17 +1235,15 @@ namespace Statistic
 
             FullPathTemplate = string.Empty;
 
-            m_arMSEXEL_PARS = new string[7] { "", "Tepmlate.xls", "Sheet1", "1", "5", "25", "1.1" };
+            m_arMSEXEL_PARS = new string[] { "", "Tepmlate.xls", "Sheet1", "1", "5", "25", "1.1" };
 
             //Установить обработчики событий
             EventNewPathToTemplate += new DelegateStringFunc(onNewPathToTemplate);
 
-            string[] sumGroups = new string [6] { "sum TG", "sum TSN", "sum GRII", "sum GRVI", "sum GRVII", "sum GRVIII" };
-
-            for (int i=0; i < sumGroups.Count(); i++)
+            for (int i = 0; i <= Convert.ToInt32(TEC_LOCAL.INDEX_DATA.GRVIII); i++)
             {
                 m_sumValues.Rows.Add();
-                m_sumValues.Rows[i].Cells[0].Value = sumGroups[i];
+                m_sumValues.Rows[i].Cells[0].Value = "сум " + Enum.GetName(typeof(TEC_LOCAL.INDEX_DATA), i);
                 m_sumValues.Rows[i].Cells[1].Value = "0";
             }
         }
@@ -1326,13 +1276,6 @@ namespace Statistic
 
         public static string _ExecutingAssemlyDirectoryName { get { return Path.GetDirectoryName(Assembly.GetExecutingAssembly().Location); } }
 
-        //public void FormMainBase(HClassLibrary.FileINI.MODE_SECTION_APPLICATION modeSecApp = HClassLibrary.FileINI.MODE_SECTION_APPLICATION.INSTANCE)
-        //{
-        //    m_fileINI = new FileINI(modeSecApp);
-
-        //    //Получить параметры соединения с источником данных
-        //    m_connSettAIISKUECentre = m_fileINI.GetConnSettAIISKUECentre();
-        //}
         /// <summary>
         /// Режим отображения (в составе статистики/самостоятельная вкладка)
         /// </summary>
@@ -1358,7 +1301,7 @@ namespace Statistic
             List<TEC_LOCAL> listRes = new List<TEC_LOCAL>();
             TEC_LOCAL tec_local;
 
-            for (int i=0; i<tec.Count - 1; i++)
+            for (int i = 0; i < tec.Count - 1; i++)
             {
                 tec_local = new TEC_LOCAL();
 
@@ -1374,14 +1317,13 @@ namespace Statistic
 
                 tec_local.m_arMSExcelNumColumns = list_column.ToArray();
 
-                for (int j = 0; j < tec_local.m_arListSgnls.Count(); j++ )
+                for (int j = 0; j < tec_local.m_arListSgnls.Count(); j++)
                 {
                     tec_local.m_arListSgnls[j] = new List<SIGNAL>();
                 }
 
                 listRes.Add(tec_local);
             }
-
             return listRes;
         }
 
@@ -1505,7 +1447,6 @@ namespace Statistic
             }
             else
                 ;
-
             return iRes;
         }
 
@@ -1520,8 +1461,8 @@ namespace Statistic
         private System.Windows.Forms.Button m_btnStripButtonExcel;
         private System.Windows.Forms.ListBox m_listBoxTEC;
         private System.Windows.Forms.ListBox m_listBoxGrpSgnl;
-        private System.Windows.Forms.MonthCalendar m_monthCalendar;
-        private System.Windows.Forms.MonthCalendar monthCalendarEnd;
+        private System.Windows.Forms.MonthCalendar m_monthCalendarStart;
+        private System.Windows.Forms.MonthCalendar m_monthCalendarEnd;
         private System.Windows.Forms.Label m_labelTEC;
         private System.Windows.Forms.Label m_labelGrpSgnl;
         private System.Windows.Forms.Label m_labelValues;
@@ -1531,7 +1472,6 @@ namespace Statistic
         private List<System.Windows.Forms.Label> m_labelsGroup;
 
         private List<DataGridViewValues> m_dgvValues;
-
         private DataGridView m_sumValues;
 
         /// <summary>
@@ -1544,9 +1484,9 @@ namespace Statistic
         /// </summary>
         /// <param name="cols">Количество столбцов в макете</param>
         /// <param name="rows">Количество строк в макете</param>
-        protected override void initializeLayoutStyle(int cols = 100, int rows = 100)
+        protected override void initializeLayoutStyle(int cols = -1, int rows = -1)
         {
-            initializeLayoutStyleEvenly(cols, rows);
+            initializeLayoutStyleEvenly(100, 100);
         }
 
         protected virtual void InitializeComponents()
@@ -1561,13 +1501,15 @@ namespace Statistic
 
             this.m_listBoxTEC = new System.Windows.Forms.ListBox();
             this.m_listBoxGrpSgnl = new System.Windows.Forms.ListBox();
-            this.m_monthCalendar = new System.Windows.Forms.MonthCalendar();
-            this.monthCalendarEnd = new System.Windows.Forms.MonthCalendar();
+            this.m_monthCalendarStart = new System.Windows.Forms.MonthCalendar();
+            this.m_monthCalendarEnd = new System.Windows.Forms.MonthCalendar();
             this.m_labelTEC = new System.Windows.Forms.Label();
             this.m_labelGrpSgnl = new System.Windows.Forms.Label();
             this.m_labelValues = new System.Windows.Forms.Label();
             this.m_labelStartDate = new System.Windows.Forms.Label();
             this.m_labelEndDate = new System.Windows.Forms.Label();
+
+            m_sumValues = new DataGridView();
 
             this.m_dgvValues = new List<DataGridViewValues>();
             this.m_labelsGroup = new List<System.Windows.Forms.Label>();
@@ -1579,8 +1521,6 @@ namespace Statistic
                 m_labelsGroup.Add(new System.Windows.Forms.Label());
             }
 
-            m_sumValues = new DataGridView();
-
             ((System.ComponentModel.ISupportInitialize)(this.m_sumValues)).BeginInit();
 
             #endregion
@@ -1591,11 +1531,11 @@ namespace Statistic
 
             this.Controls.Add(m_btnLoad, 81, 40); this.SetColumnSpan(m_btnLoad, 18); this.SetRowSpan(m_btnLoad, 5);
             this.Controls.Add(m_btnOpen, 81, 45); this.SetColumnSpan(m_btnOpen, 18); this.SetRowSpan(m_btnOpen, 5);
-            this.Controls.Add(m_btnExit, 90, 90); this.SetColumnSpan(m_btnExit, 15); this.SetRowSpan(m_btnExit, 5);
+            this.Controls.Add(m_btnExit, 81, 94); this.SetColumnSpan(m_btnExit, 18); this.SetRowSpan(m_btnExit, 5);
             this.Controls.Add(m_btnStripButtonExcel, 81, 50); this.SetColumnSpan(m_btnStripButtonExcel, 18); this.SetRowSpan(m_btnStripButtonExcel, 5);
             this.Controls.Add(m_listBoxTEC, 61, 40); this.SetColumnSpan(m_listBoxTEC, 18); this.SetRowSpan(m_listBoxTEC, 20);
-            this.Controls.Add(m_monthCalendar, 60, 8); this.SetColumnSpan(m_monthCalendar, 15); this.SetRowSpan(m_monthCalendar, 15);
-            this.Controls.Add(monthCalendarEnd, 80, 8); this.SetColumnSpan(monthCalendarEnd, 15); this.SetRowSpan(monthCalendarEnd, 15);
+            this.Controls.Add(m_monthCalendarStart, 60, 8); this.SetColumnSpan(m_monthCalendarStart, 15); this.SetRowSpan(m_monthCalendarStart, 15);
+            this.Controls.Add(m_monthCalendarEnd, 80, 8); this.SetColumnSpan(m_monthCalendarEnd, 15); this.SetRowSpan(m_monthCalendarEnd, 15);
             this.Controls.Add(m_labelTEC, 62, 37); this.SetColumnSpan(m_labelTEC, 11); this.SetRowSpan(m_labelTEC, 2);
             this.Controls.Add(m_labelValues, 8, 2); this.SetColumnSpan(m_labelValues, 30); this.SetRowSpan(m_labelValues, 2);
             this.Controls.Add(m_labelStartDate, 65, 6); this.SetColumnSpan(m_labelStartDate, 8); this.SetRowSpan(m_labelStartDate, 2);
@@ -1606,14 +1546,11 @@ namespace Statistic
                 this.Controls.Add(m_dgvValues[i], 8, 5 + i * 15); this.SetColumnSpan(m_dgvValues[i], 50); this.SetRowSpan(m_dgvValues[i], 15);
                 this.Controls.Add(m_labelsGroup[i], 2, 7 + i * 15); this.SetColumnSpan(m_labelsGroup[i], 5); this.SetRowSpan(m_labelsGroup[i], 2);
             }
-
             this.Controls.Add(m_sumValues, 61, 60); this.SetColumnSpan(m_sumValues, 38); this.SetRowSpan(m_sumValues, 35);
 
             this.ResumeLayout();
 
             initializeLayoutStyle();
-
-           
 
             #region Параметры элементов управления
             // 
@@ -1624,8 +1561,8 @@ namespace Statistic
             this.m_btnLoad.Text = "Load";
             this.m_btnLoad.UseVisualStyleBackColor = true;
             this.m_btnLoad.Click += new System.EventHandler(this.btnLoad_Click);
-            this.m_btnLoad.Width = m_monthCalendar.Width;
-            //
+            this.m_btnLoad.Width = m_monthCalendarStart.Width;
+            // 
             // m_btnOpen
             // 
             this.m_btnOpen.Name = "m_btnSave";
@@ -1633,7 +1570,7 @@ namespace Statistic
             this.m_btnOpen.Text = "Open";
             this.m_btnOpen.UseVisualStyleBackColor = true;
             this.m_btnOpen.Click += new System.EventHandler(this.btnOpen_Click);
-            this.m_btnOpen.Width = m_monthCalendar.Width;
+            this.m_btnOpen.Width = m_monthCalendarStart.Width;
             // 
             // m_btnExit
             // 
@@ -1642,6 +1579,8 @@ namespace Statistic
             this.m_btnExit.Text = "Exit";
             this.m_btnExit.UseVisualStyleBackColor = true;
             this.m_btnExit.Click += new System.EventHandler(this.btnExit_Click);
+            this.m_btnExit.Width = m_monthCalendarStart.Width;
+            this.m_btnExit.Visible = false;
             // 
             // m_btnStripButtonExcel
             // 
@@ -1651,14 +1590,14 @@ namespace Statistic
             this.m_btnStripButtonExcel.UseVisualStyleBackColor = true;
             this.m_btnStripButtonExcel.Click += new System.EventHandler(this.btnStripButtonExcel_Click);
             this.m_btnStripButtonExcel.Enabled = false;
-            this.m_btnStripButtonExcel.Width = m_monthCalendar.Width;
+            this.m_btnStripButtonExcel.Width = m_monthCalendarStart.Width;
             // 
             // m_listBoxTEC
             // 
             this.m_listBoxTEC.FormattingEnabled = true;
             this.m_listBoxTEC.Name = "m_listBoxTEC";
             this.m_listBoxTEC.TabIndex = 3;
-            this.m_listBoxTEC.Width = m_monthCalendar.Width;
+            this.m_listBoxTEC.Width = m_monthCalendarStart.Width;
             // 
             // m_listBoxGrpSgnl
             // 
@@ -1668,13 +1607,13 @@ namespace Statistic
             // 
             // m_monthCalendar
             // 
-            this.m_monthCalendar.Name = "m_monthCalendar";
-            this.m_monthCalendar.TabIndex = 5;
+            this.m_monthCalendarStart.Name = "m_monthCalendar";
+            this.m_monthCalendarStart.TabIndex = 5;
             // 
             // monthCalendar2
             // 
-            this.monthCalendarEnd.Name = "monthCalendar2";
-            this.monthCalendarEnd.TabIndex = 6;
+            this.m_monthCalendarEnd.Name = "monthCalendar2";
+            this.m_monthCalendarEnd.TabIndex = 6;
             // 
             // m_labelTEC
             // 
@@ -1783,7 +1722,7 @@ namespace Statistic
             this.m_sumValues.TabIndex = 4;
             this.m_sumValues.ColumnCount = 2;
             this.m_sumValues.ColumnHeadersVisible = false;
-            
+
 
 
             #endregion
@@ -1792,23 +1731,22 @@ namespace Statistic
             m_listBoxTEC.SelectedIndexChanged += listBox_SelectedIndexChanged;
             m_listBoxGrpSgnl.Tag = INDEX_CONTROL.LB_GROUP_SIGNAL;
             m_listBoxGrpSgnl.SelectedIndexChanged += listBox_SelectedIndexChanged;
-            m_monthCalendar.DateChanged += monthCalendar_DateChanged;
-            monthCalendarEnd.DateChanged += monthCalendarEnd_DateChanged;
+            m_monthCalendarStart.DateChanged += monthCalendarStart_DateChanged;
+            m_monthCalendarEnd.DateChanged += monthCalendarEnd_DateChanged;
         }
 
         private void monthCalendarEnd_DateChanged(object sender, DateRangeEventArgs e)
         {
-            m_labelEndDate.Text = monthCalendarEnd.SelectionStart.ToShortDateString();
+            m_labelEndDate.Text = m_monthCalendarEnd.SelectionStart.ToShortDateString();
         }
 
-        private void monthCalendar_DateChanged(object sender, DateRangeEventArgs e)
+        private void monthCalendarStart_DateChanged(object sender, DateRangeEventArgs e)
         {
             for (int i = 0; i <= Convert.ToInt32(TEC_LOCAL.INDEX_DATA.GRVIII); i++)
             {
                 m_dgvValues[i].ClearValues();
             }
-
-            m_labelStartDate.Text = m_monthCalendar.SelectionStart.ToShortDateString();
+            m_labelStartDate.Text = m_monthCalendarStart.SelectionStart.ToShortDateString();
         }
 
         private void updateRowData()
@@ -1828,10 +1766,7 @@ namespace Statistic
         {
             if ((INDEX_CONTROL)((Control)sender).Tag == INDEX_CONTROL.LB_TEC)
             {
-                //if (m_listBoxGrpSgnl.SelectedIndex == 0)
-                    updateRowData();
-                //else
-                   //m_listBoxGrpSgnl.SelectedIndex = 0;
+                updateRowData();
             }
             else
                 if ((INDEX_CONTROL)((Control)sender).Tag == INDEX_CONTROL.LB_GROUP_SIGNAL)
@@ -1848,8 +1783,6 @@ namespace Statistic
         private void btnOpen_Click(object sender, EventArgs e)
         {
             bool date_tmp;
-            //DateTime date_tmp_2 = (DateTime)date_tmp;
-            //DateTime date_tmp_2 = date_tmp as DateTime;
             date_tmp = ((object)1 == (object)1);
 
             //Создать форму диалога выбора файла-шаблона MS Excel
@@ -1857,8 +1790,6 @@ namespace Statistic
             {
                 string strPathToTemplate = FullPathTemplate;
                 int iErr = 0;
-
-                //labelLog.Text += @"Выбор шаблона: ";
 
                 //Установить исходные параметры для формы диалога
                 if (FullPathTemplate.Equals(string.Empty) == true)
@@ -1900,13 +1831,10 @@ namespace Statistic
                 else
                 {
                     m_btnStripButtonExcel.Enabled = true;
-                }
-                    ;
+                };
 
                 //labelLog.Text += Environment.NewLine;
             }
-
-
         }
 
         private void btnLoad_Click(object sender, EventArgs e)
@@ -1915,22 +1843,21 @@ namespace Statistic
                 , iListenerId = -1;
             string msg = string.Empty;
             TEC_LOCAL.INDEX_DATA indx;
-            HMark markErr = new HMark(0);
             TEC_LOCAL tec = m_listTEC[m_listBoxTEC.SelectedIndex];
             TEC_LOCAL.VALUES_DATE.VALUES_GROUP dictIndxValues;
+            GetDataFromDB GD = new GetDataFromDB();
 
             for (int i = 0; i <= Convert.ToInt32(TEC_LOCAL.INDEX_DATA.GRVIII); i++)
             {
                 m_dgvValues[i].ClearValues();
             }
 
-            delegateStartWait();
+            //delegateStartWait();
 
             //Установить соединение с источником данных
             iListenerId = DbSources.Sources().Register(m_connSettAIISKUECentre, false, @"");
             if (!(iListenerId < 0))
             {
-                msg = @"Установлено соединение с источником данных: " + m_connSettAIISKUECentre.server;
                 Logging.Logg().Action(msg, Logging.INDEX_MESSAGE.NOT_SET);
 
                 for (indx = 0; indx <= TEC_LOCAL.INDEX_DATA.GRVIII; indx++)
@@ -1940,16 +1867,16 @@ namespace Statistic
                         indx++; break;
                     }
 
-                    tec.ClearValues(m_monthCalendar.SelectionStart.Date, indx);
+                    tec.ClearValues(m_monthCalendarStart.SelectionStart.Date, indx);
 
-                    iRes = tec.Request(iListenerId
-                        , m_monthCalendar.SelectionStart.Date //SelectionStart всегда == SelectionEnd, т.к. MultiSelect = false
-                        , m_monthCalendar.SelectionEnd.Date.AddDays(1)
+                    iRes = GD.Request(tec, iListenerId
+                        , m_monthCalendarStart.SelectionStart.Date //SelectionStart всегда == SelectionEnd, т.к. MultiSelect = false
+                        , m_monthCalendarStart.SelectionEnd.Date.AddDays(1)
                         , indx);
 
                     if (!(iRes < 0))
                     {
-                        dictIndxValues = tec.m_listValuesDate.Find(item => { return item.m_dataDate == m_monthCalendar.SelectionStart.Date; }).m_dictData[indx];
+                        dictIndxValues = tec.m_listValuesDate.Find(item => { return item.m_dataDate == m_monthCalendarStart.SelectionStart.Date; }).m_dictData[indx];
                         switch (indx)
                         {
                             case TEC_LOCAL.INDEX_DATA.TG:
@@ -1991,27 +1918,26 @@ namespace Statistic
                     }
                     else
                         Logging.Logg().Warning(string.Format(@"FormMain::btnLoadClick () - нет результата запроса за {0} либо группа сигналов INDEX={1} пустая..."
-                                , m_monthCalendar.SelectionStart.Date, indx)
+                                , m_monthCalendarStart.SelectionStart.Date, indx)
                             , Logging.INDEX_MESSAGE.NOT_SET);
                 }
             }
             else
             {
-                delegateStopWait();
+                //delegateStopWait();
                 throw new Exception(@"FormMain::btnLoad_Click () - не установлено соединение с источником данных...");
             }
 
-            delegateStopWait();
+            //delegateStopWait();
 
             //Разорвать соединение с источником данных
             DbSources.Sources().UnRegister(iListenerId);
-            msg = @"Разорвано соединение с источником данных: " + m_connSettAIISKUECentre.server;
             Logging.Logg().Action(msg, Logging.INDEX_MESSAGE.NOT_SET);
         }
 
         private void btnExit_Click(object sender, EventArgs e)
         {
-            //Close();
+            this.FindForm().Close();
         }
 
         /// <summary>
@@ -2026,6 +1952,7 @@ namespace Statistic
             double[] arWriteValues;
             HMark markErr = new HMark(0);
             string msg = string.Empty;
+            GetDataFromDB GD = new GetDataFromDB();
             Logging.Logg().Action(@"Экспорт в MS Excel - начало ...", Logging.INDEX_MESSAGE.NOT_SET);
 
             if (m_connSettAIISKUECentre == null)
@@ -2039,13 +1966,11 @@ namespace Statistic
             iListenerId = DbSources.Sources().Register(m_connSettAIISKUECentre, false, @"");
             if (!(iListenerId < 0))
             {
-                msg = @"Установлено соединение с источником данных: " + m_connSettAIISKUECentre.server;
-
                 Logging.Logg().Debug(msg, Logging.INDEX_MESSAGE.NOT_SET);
 
                 foreach (TEC_LOCAL t in m_listTEC)
                 {
-                    iRes = t.Request(iListenerId, m_monthCalendar.SelectionStart.Date, monthCalendarEnd.SelectionStart.Date.AddDays(1));
+                    iRes = GD.Request(t, iListenerId, m_monthCalendarStart.SelectionStart.Date, m_monthCalendarEnd.SelectionStart.Date.AddDays(1));
 
                     if (!(iRes < 0))
                     {
@@ -2062,7 +1987,7 @@ namespace Statistic
             }
             else
             {
-                delegateStopWait();
+                //delegateStopWait();
                 throw new Exception(@"FormMain::экспортВMSExcelToolStripMenuItem_Click () - не установлено соединение с источником данных...");
             }
 
@@ -2070,7 +1995,6 @@ namespace Statistic
 
             //Разорвать соединение с источником данных
             DbSources.Sources().UnRegister(iListenerId);
-            msg = @"Разорвано соединение с источником данных: " + m_connSettAIISKUECentre.server;
 
             //Создать форму диалога выбора файла-шаблона MS Excel
             using (FileDialog formChoiseResult = new SaveFileDialog())
@@ -2086,7 +2010,7 @@ namespace Statistic
                 //Отобразить диалог для выбора книги MS Excel для сохранения рез-та
                 if (formChoiseResult.ShowDialog() == System.Windows.Forms.DialogResult.OK)
                 {
-                    delegateStartWait();
+                    //delegateStartWait();
 
                     if (File.Exists(formChoiseResult.FileName) == false)
                         File.Copy(FullPathTemplate, formChoiseResult.FileName);
