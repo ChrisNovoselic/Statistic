@@ -121,9 +121,6 @@
     <Compile Include="dgwAdminNSS.cs">
       <SubType>Component</SubType>
     </Compile>
-    <Compile Include="dgwTables.cs">
-      <SubType>Component</SubType>
-    </Compile>
     <Compile Include="FormAbout.cs">
       <SubType>Form</SubType>
     </Compile>
@@ -160,7 +157,6 @@
     <Compile Include="InitTEC.cs">
       <SubType>Code</SubType>
     </Compile>
-    <Compile Include="MSExcelIOExportPBRValues.cs" />
     <Compile Include="PanelStatistic.cs">
       <SubType>Component</SubType>
     </Compile>

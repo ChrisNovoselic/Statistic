@@ -157,9 +157,6 @@
     <Compile Include="FormMain.designer.cs">
       <DependentUpon>FormMain.cs</DependentUpon>
     </Compile>
-    <Compile Include="HStatisticTabCtrlEx.cs">
-      <SubType>Form</SubType>
-    </Compile>
     <Compile Include="PanelAdmin.cs">
       <SubType>Component</SubType>
     </Compile>
@@ -170,24 +167,6 @@
       <SubType>Component</SubType>
     </Compile>
     <Compile Include="PanelAdminNSS.cs">
-      <SubType>Component</SubType>
-    </Compile>
-    <Compile Include="PanelAISKUESOTIASSODay\DataGridView.cs">
-      <SubType>Component</SubType>
-    </Compile>
-    <Compile Include="PanelAISKUESOTIASSODay\HandlerDbSignalValue.cs">
-      <SubType>Component</SubType>
-    </Compile>
-    <Compile Include="PanelAISKUESOTIASSODay\HandlerSignalQueue.cs">
-      <SubType>Component</SubType>
-    </Compile>
-    <Compile Include="PanelAISKUESOTIASSODay\PanelAISKUESOTIASSODay.cs">
-      <SubType>Component</SubType>
-    </Compile>
-    <Compile Include="PanelAISKUESOTIASSODay\PanelManagement.cs">
-      <SubType>Component</SubType>
-    </Compile>
-    <Compile Include="PanelAISKUESOTIASSODay\ZedGraphControl.cs">
       <SubType>Component</SubType>
     </Compile>
     <Compile Include="PanelCurPower.cs">
