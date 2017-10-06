@@ -202,7 +202,7 @@
     <Compile Include="PanelQuickData.cs">
       <SubType>Component</SubType>
     </Compile>
-    <Compile Include="PanelSOTIASSOHour.cs">
+    <Compile Include="PanelSOTIASSO.cs">
       <SubType>Component</SubType>
     </Compile>
     <Compile Include="PanelTECComponent.cs">
@@ -290,6 +290,10 @@
     </BootstrapperPackage>
   </ItemGroup>
   <ItemGroup>
+    <ProjectReference Include="..\CommonAux\CommonAux.csproj">
+      <Project>{7a57e6be-c9eb-4382-b369-57da7c4ca1a4}</Project>
+      <Name>CommonAux</Name>
+    </ProjectReference>
     <ProjectReference Include="..\StatisticAlarm\StatisticAlarm.csproj">
       <Project>{205A2B13-F4AC-42AC-8BB7-5B02DE932019}</Project>
       <Name>StatisticAlarm</Name>

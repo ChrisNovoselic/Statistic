@@ -24,6 +24,7 @@ using StatisticDiagnostic;
 using StatisticTimeSync;
 using StatisticAlarm;
 using StatisticAnalyzer;
+using CommonAux;
 
 namespace Statistic
 {
