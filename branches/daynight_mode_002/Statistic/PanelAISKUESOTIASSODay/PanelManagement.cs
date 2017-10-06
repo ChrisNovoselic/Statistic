@@ -39,7 +39,10 @@ namespace Statistic
             /// Событие выбора сигнала (АИИСКУЭ/СОТИАССО) для отображения И экспорта
             /// </summary>
             public event Action<CONN_SETT_TYPE, ActionSignal, int> EvtActionSignalItem;
-
+            /// <summary>
+            /// Словарь с идентификаторами выбранных сигналов
+            /// 2 элемента; список использовать нельзя, т.к. значения перечисления 'CONN_SETT_TYPE' м.б. отрицательными
+            /// </summary>
             private Dictionary<CONN_SETT_TYPE, int> m_dictPreviousSignalItemSelected;
             /// <summary>
             /// Конструктор - основной (без параметров)
@@ -227,6 +230,7 @@ namespace Statistic
                 } else
                     ;
             }
+
             /// <summary>
             /// Обработчик события - дескриптор элемента управления создан
             /// </summary>
@@ -235,6 +239,7 @@ namespace Statistic
             public void Parent_OnHandleCreated(object obj, EventArgs ev)
             {
             }
+
             /// <summary>
             /// Текущее (указанное пользователем) дата/время
             /// ??? учитывать часовой пояс
@@ -385,7 +390,24 @@ namespace Statistic
             private void cbxTimezone_OnSelectedIndexChanged(object obj, EventArgs ev)
             {
                 EvtDateTimeChanged?.Invoke(ActionDateTime.TIMEZONE);
-            }        
+            }
+
+            public override Color BackColor
+            {
+                get
+                {
+                    return base.BackColor;
+                }
+
+                set
+                {
+                    base.BackColor = value;
+
+                    findControl (KEY_CONTROLS.CLB_AIISKUE_SIGNAL.ToString ()).BackColor =
+                    findControl (KEY_CONTROLS.CLB_SOTIASSO_SIGNAL.ToString ()).BackColor =
+                        BackColor == SystemColors.Control ? SystemColors.Window : BackColor;
+                }
+            }
         }
     }
 }

@@ -621,14 +621,6 @@ namespace StatisticCommon
             return iRes;
         }
 
-        public override void ClearStates()
-        {
-            //lock (m_lockState)
-            //{
-                base.ClearStates();
-            //}
-        }
-
         public FormChangeMode.MODE_TECCOMPONENT modeTECComponent(int indx)
         {
             FormChangeMode.MODE_TECCOMPONENT modeRes = FormChangeMode.MODE_TECCOMPONENT.ANY;

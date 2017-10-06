@@ -149,7 +149,7 @@ namespace Statistic
         {
             UNKNOWN = -1                
                 , DTP_CUR_DATE, NUD_CUR_HOUR, BTN_SET_NOWDATEHOUR
-                , CB_GTP, LABEL_GTP_KOEFF, DGV_GTP_VALUE, ZGRAPH_TECCOMPONENT
+                , CB_TECCOMPONENT, LABEL_GTP_KOEFF, DGV_TECCOMPONENT_VALUE, ZGRAPH_TECCOMPONENT
                 , CLB_TG , DGV_TG_VALUE, ZGRAPH_TG
                     , COUNT_KEY_CONTROLS
         }
@@ -205,11 +205,12 @@ namespace Statistic
         /// <summary>
         /// Значение коэффициента (для проверки выполнения условий сигнализации "Текущая мощность ГТП")
         /// </summary>
-        private decimal m_dcGTPKoeffAlarmPcur;
+        private decimal m_dcGTPKoeffAlarmPcur;        
         /// <summary>
         /// Панель для активных элементов управления
         /// </summary>
         private PanelManagement m_panelManagement;
+        
         /// <summary>
         /// Конструктор - основной (без параметров)
         /// </summary>
@@ -256,6 +257,7 @@ namespace Statistic
 
             this.m_zGraph_TECComponent.MouseUpEvent += new ZedGraph.ZedGraphControl.ZedMouseEventHandler(this.zedGraphTECComponent_MouseUpEvent);
         }
+        
         /// <summary>
         /// Конструктор - вспомогательный (с параметрами)
         /// </summary>
@@ -272,6 +274,7 @@ namespace Statistic
         //{
         //    m_tecView = null;
         //}
+        
         /// <summary>
         /// Инициализация панели с установкой кол-ва столбцов, строк
         /// </summary>
@@ -281,6 +284,7 @@ namespace Statistic
         {
             throw new System.NotImplementedException();
         }
+        
         /// <summary>
         /// Инициализация и размещение собственных элементов управления
         /// </summary>
@@ -289,7 +293,7 @@ namespace Statistic
             //Создать дочерние элементы управления
             m_panelManagement = new PanelManagement(); // панель для размещения элементов управления
             m_panelManagement.EvtDatetimeHourChanged += new DelegateDateFunc(panelManagement_OnEvtDatetimeHourChanged);
-            m_panelManagement.EvtGTPSelectionIndexChanged += new DelegateIntFunc(panelManagement_OnEvtGTPSelectionIndexChanged);
+            m_panelManagement.EvtGTPSelectionIndexChanged += new DelegateIntFunc(panelManagement_OnEvtTECComponentSelectionIndexChanged);
             m_panelManagement.EvtTGItemChecked += new DelegateIntFunc(panelManagement_OnEvtTGItemChecked);
             //m_panelManagement.EvtSetNowHour += new DelegateFunc(panelManagement_OnEvtSetNowHour);
             m_zGraph_TECComponent = new ZedGraphControlTECComponent(); // графическая панель для отображения значений ГТП
@@ -335,6 +339,7 @@ namespace Statistic
         {
             m_tecView.SetDelegateReport(ferr, fwar, fact, fclr);
         }
+        
         /// <summary>
         /// Класс для размещения активных элементов управления
         /// </summary>
@@ -342,19 +347,28 @@ namespace Statistic
         {
             private class CheckedListBoxTG : CheckedListBox
             {
-                private int[] m_arTGId;
-
-                public void AddRange (List<string>listNameShr, List<int>listTGId)
-                {
-                    Items.AddRange(listNameShr.ToArray  ());
-                    m_arTGId = null;
-                    m_arTGId = new int[listTGId.Count];
-                    listTGId.CopyTo(m_arTGId);
+                public class CheckListBoxItem {
+                    public int Tag;
+                    public string Text;
+                    public override string ToString ()
+                    {
+                        return Text;
+                    }
                 }
 
-                public int GetTGIdOfIndex(int indx)
+                public void AddRange (IEnumerable<TECComponentBase>listTG)
                 {
-                    return ((!(m_arTGId == null)) && (indx < m_arTGId.Length)) ? m_arTGId[indx] : -1;
+                    var items = (from tg in listTG select new { name_shr = tg.name_shr, id = tg.m_id }).ToList();
+
+                    items.ForEach (item => Items.Add (new CheckListBoxItem () {
+                        Tag = item.id
+                        , Text = item.name_shr
+                    }));
+                }
+
+                public int TagOfIndex(int indx)
+                {
+                    return (indx < Items.Count) ? (Items[indx] as CheckListBoxItem).Tag : -1;
                 }
             }
 
@@ -502,9 +516,9 @@ namespace Statistic
 
                 // раскрывающийся список для выбора ГТП
                 ctrl = new ComboBox();
-                ctrl.Name = KEY_CONTROLS.CB_GTP.ToString();
+                ctrl.Name = KEY_CONTROLS.CB_TECCOMPONENT.ToString();
                 (ctrl as ComboBox).DropDownStyle = ComboBoxStyle.DropDownList;
-                (ctrl as ComboBox).SelectedIndexChanged += new EventHandler(onGTP_SelectionIndexChanged);
+                (ctrl as ComboBox).SelectedIndexChanged += new EventHandler(onTECComponent_SelectionIndexChanged);
                 ctrl.Dock = DockStyle.Fill;
                 //Добавить к текущей панели список ГТП
                 this.Controls.Add(ctrl, 0, 1);
@@ -522,8 +536,8 @@ namespace Statistic
                 this.SetColumnSpan(ctrl, 2); this.SetRowSpan(ctrl, 1);
 
                 // таблица для отображения значений ГТП
-                ctrl = new PanelSOTIASSOHour.DataGridViewGTP();
-                ctrl.Name = KEY_CONTROLS.DGV_GTP_VALUE.ToString();
+                ctrl = new PanelSOTIASSOHour.DataGridViewTECComponent();
+                ctrl.Name = KEY_CONTROLS.DGV_TECCOMPONENT_VALUE.ToString();
                 ctrl.Dock = DockStyle.Fill;
                 //ctrl.Anchor = (AnchorStyles)((AnchorStyles.Left | AnchorStyles.Top) | AnchorStyles.Right);
                 //ctrl.Height = 240; // RowSpan = ...                
@@ -606,25 +620,26 @@ namespace Statistic
             /// <summary>
             /// Заполнение ComboBox данными на основе formChangeMode
             /// </summary>
-            /// <param name="listGTPNameShr">Таблица с данными из formChangeMode</param>
-            public void InitializeGTPList(List<FormChangeMode.Item> listGTPNameShr)
+            /// <param name="listTECComponentNameShr">Таблица с данными из formChangeMode</param>
+            public void InitializeTECComponentList(List<FormChangeMode.Item> listTECComponentNameShr)
             {
-                DataTable tableGTPNameShr = new DataTable();
-                tableGTPNameShr.Columns.Add("name_shr");
-                tableGTPNameShr.Columns.Add("id");
+                //??? способ заполнения, конечно, оригинальный, но не коррелирует с исторически сложившимися способами
+                DataTable tableTECComponentNameShr = new DataTable();
+                tableTECComponentNameShr.Columns.Add("name_shr");
+                tableTECComponentNameShr.Columns.Add("id");
 
-                foreach (FormChangeMode.Item item in listGTPNameShr) {
-                    tableGTPNameShr.Rows.Add(item.name_shr, item.id);
+                foreach (FormChangeMode.Item item in listTECComponentNameShr) {
+                    tableTECComponentNameShr.Rows.Add(item.name_shr, item.id);
                 }
 
-                ComboBox cbxGTP = (this.Controls.Find(KEY_CONTROLS.CB_GTP.ToString(), true))[0] as ComboBox;
+                ComboBox cbxTECComponent = (this.Controls.Find(KEY_CONTROLS.CB_TECCOMPONENT.ToString(), true))[0] as ComboBox;
 
                 BindingSource bs = new BindingSource();
-                bs.DataSource = tableGTPNameShr;
-                cbxGTP.DataSource = bs.DataSource;
-                cbxGTP.DisplayMember = "name_shr";
-                cbxGTP.ValueMember = "id";
-                cbxGTP.BindingContext = new BindingContext();
+                bs.DataSource = tableTECComponentNameShr;
+                cbxTECComponent.DataSource = bs.DataSource;
+                cbxTECComponent.DisplayMember = "name_shr";
+                cbxTECComponent.ValueMember = "id";
+                cbxTECComponent.BindingContext = new BindingContext();
             }
 
             public void InitializeKoeffAlarmPcur(decimal koeff)
@@ -638,29 +653,15 @@ namespace Statistic
 
             public void InitializeTGList(List<TECComponentBase> listTG)
             {
-                CheckedListBox clbTG = (this.Controls.Find(KEY_CONTROLS.CLB_TG.ToString(), true))[0] as CheckedListBox;
-                List<string> listTGNameShr = new List<string>();
-                List<int> listTGId = new List<int>();
+                Control ctrl;
 
-                foreach (TECComponentBase tc in listTG)
-                {
-                    listTGNameShr.Add(tc.name_shr);
-                    listTGId.Add(tc.m_id);
-                }
+                ctrl = (this.Controls.Find(KEY_CONTROLS.CLB_TG.ToString(), true))[0];
+                (ctrl as CheckedListBox).Items.Clear();
+                (ctrl as CheckedListBoxTG).AddRange(listTG);
 
-                clbTG.Items.Clear();
-                (clbTG as CheckedListBoxTG).AddRange(listTGNameShr, listTGId);
-
-                DataGridViewTG dgv = (this.Controls.Find(KEY_CONTROLS.DGV_TG_VALUE.ToString(), true))[0] as DataGridViewTG;
-                while (dgv.Columns.Count > 1)
-                    dgv.Columns.RemoveAt(dgv.Columns.Count - 1);
-                for (int i = 0; i < listTGNameShr.Count; i++)
-                {
-                    dgv.Columns.Add(new DataGridViewTextBoxColumn());
-                    dgv.Columns[i + 1].HeaderText = listTGNameShr[i];
-                    //dgv.Columns[i + 1].Width = ((dgv.Width - dgv.Columns[0].Width) / listTGNameShr.Count) - (listTGNameShr.Count + 1);
-                    dgv.Columns[i + 1].AutoSizeMode = DataGridViewAutoSizeColumnMode.Fill;
-                }
+                ctrl = findControl (KEY_CONTROLS.DGV_TG_VALUE.ToString ());
+                (ctrl as DataGridViewTG).Clear ();
+                (ctrl as DataGridViewTG).InitializeTGList(listTG);
             }
 
             private void onCurDatetime_ValueChanged(object obj, EventArgs ev)
@@ -721,12 +722,12 @@ namespace Statistic
             /// </summary>
             /// <param name="obj">Объект, инициировавший событие</param>
             /// <param name="ev">Аргумент события</param>
-            private void onGTP_SelectionIndexChanged(object obj, EventArgs ev)
+            private void onTECComponent_SelectionIndexChanged(object obj, EventArgs ev)
             {
                 int idGTPSelected = -1;
 
-                if (Equals((findControl(KEY_CONTROLS.CB_GTP.ToString()) as ComboBox).SelectedValue, null) == false) {
-                    idGTPSelected = Convert.ToInt32((findControl(KEY_CONTROLS.CB_GTP.ToString()) as ComboBox).SelectedValue);
+                if (Equals((findControl(KEY_CONTROLS.CB_TECCOMPONENT.ToString()) as ComboBox).SelectedValue, null) == false) {
+                    idGTPSelected = Convert.ToInt32((findControl(KEY_CONTROLS.CB_TECCOMPONENT.ToString()) as ComboBox).SelectedValue);
 
                     EvtGTPSelectionIndexChanged(idGTPSelected);
                 } else
@@ -735,7 +736,7 @@ namespace Statistic
 
             private void onTG_ItemCheck(object obj, ItemCheckEventArgs ev)
             {
-                EvtTGItemChecked((obj as CheckedListBoxTG).GetTGIdOfIndex (ev.Index));
+                EvtTGItemChecked((obj as CheckedListBoxTG).TagOfIndex (ev.Index));
             }
 
             private void onSetNowHour_Click(object obj, EventArgs ev)
@@ -780,8 +781,8 @@ namespace Statistic
                 decimal dcGTPKoeffAlarmPcur = (decimal)(obj as object[])[1];
                 int lastMin = (int)(obj as object[])[2];
 
-                DataGridViewGTP dgvGTP = this.Controls.Find(KEY_CONTROLS.DGV_GTP_VALUE.ToString(), true)[0] as DataGridViewGTP;
-                dgvGTP.Fill(valuesMins, (int)dcGTPKoeffAlarmPcur, (int)(obj as object[])[2]);                
+                DataGridViewTECComponent dgvTECComponent = this.Controls.Find(KEY_CONTROLS.DGV_TECCOMPONENT_VALUE.ToString(), true)[0] as DataGridViewTECComponent;
+                dgvTECComponent.Fill(valuesMins, (int)dcGTPKoeffAlarmPcur, (int)(obj as object[])[2]);                
             }
             /// <summary>
             /// Отобразить значения в разрезе минута-секунды
@@ -797,10 +798,16 @@ namespace Statistic
                 for (int j = 0; j < 60; j++)
                 {
                     i = 0;
+                    // фон ячеек с номером секунды д.б. обновлен
+                    dgvTG.Rows [j].Cells [i].Style.BackColor = dgvTG.BackColor;
+
                     bRowVisible = false;
                     foreach (int id in dictValuesTG.Keys)
                     {
                         i++; // очередной столбец
+
+                        dgvTG.Rows [j].Cells [i].Style.BackColor = dgvTG.BackColor;
+
                         //Проверить наличие значения для ТГ за очередную секунду
                         if (!(dictValuesTG[id].m_powerSeconds[j] < 0))
                         {//Есть значение
@@ -821,7 +828,25 @@ namespace Statistic
                     dgvTG.Rows[j].Visible = bRowVisible;
                 }
             }
+
+            public override Color BackColor
+            {
+                get
+                {
+                    return base.BackColor;
+                }
+
+                set
+                {
+                    base.BackColor = value;
+
+                    findControl (KEY_CONTROLS.DGV_TG_VALUE.ToString ()).BackColor =
+                    findControl (KEY_CONTROLS.CLB_TG.ToString ()).BackColor =
+                         value == SystemColors.Control ? SystemColors.Window : BackColor;
+                }
+            }
         }
+        
         /// <summary>
         /// Класс - общий для графического представления значений СОТИАССО на вкладке
         /// </summary>
@@ -902,6 +927,7 @@ namespace Statistic
                 colP = FormMain.formGraphicsSettings.COLOR (FormGraphicsSettings.INDEX_COLOR.SOTIASSO);
             }
         }
+        
         /// <summary>
         /// Класс для отображения в графическом представлении
         ///  значений за укзанный (дата/номер часа) 1 час для выбранного ГТП
@@ -1152,6 +1178,7 @@ namespace Statistic
                 Invalidate ();
             }
         }
+        
         /// <summary>
         /// Класс для отображения в графическом представлении
         ///  значений за указанную (дата/номер часа/номер минуты) 1 мин для выбранных ТГ, выбранного ГТП
@@ -1377,11 +1404,12 @@ namespace Statistic
                 Invalidate ();
             }
         }
+        
         /// <summary>
         /// Класс для отображения значений в табличном виде
         ///  в разрезе час-минуты для ГТП
         /// </summary>
-        private class DataGridViewGTP : DataGridView
+        private class DataGridViewTECComponent : DataGridView
         {
             private enum INDEX_COLUMN {
                 NUM_MINUTE
@@ -1394,7 +1422,7 @@ namespace Statistic
             /// <summary>
             /// Конструктор - основной (без параметров)
             /// </summary>
-            public DataGridViewGTP()
+            public DataGridViewTECComponent()
                 : base()
             {
                 initializeComponent();
@@ -1403,7 +1431,7 @@ namespace Statistic
             /// Конструктор - вспомогательный (с параметрами)
             /// </summary>
             /// <param name="container">Владелец текущего объекта</param>
-            public DataGridViewGTP(IContainer container)
+            public DataGridViewTECComponent(IContainer container)
                 : this()
             {
                 container.Add(this);
@@ -1452,6 +1480,11 @@ namespace Statistic
                 this.CurrentCell.Selected = true;
             }
 
+            /// <summary>
+            /// Заполнить значениями элемент управления
+            /// </summary>
+            /// <param name="values">Значения для отображения</param>
+            /// <param name="pars">Дополнительные параметры для отображения</param>
             public void Fill(TecView.valuesTEC []values, params int[]pars)
             {
                 DataGridViewCellStyle cellStyle;
@@ -1464,8 +1497,11 @@ namespace Statistic
 
                 for (i = 1; i < values.Length; i++)
                 {
+                    // изменяем фон ячеек с неизменяемым значением на случай изменения цветовой схемы "темная - светлая"
+                    Rows [i - 1].Cells [(int)INDEX_COLUMN.NUM_MINUTE].Style = HDataGridViewTables.s_dgvCellStyles [(int)HDataGridViewTables.INDEX_CELL_STYLE.COMMON];
+
                     //Значения
-                    Rows[i - 1].Cells[(int)INDEX_COLUMN.VALUE].Value = values[i].valuesFact.ToString(@"F3");
+                    Rows [i - 1].Cells[(int)INDEX_COLUMN.VALUE].Value = values[i].valuesFact.ToString(@"F3");
                     Rows [i - 1].Cells [(int)INDEX_COLUMN.VALUE].Style = HDataGridViewTables.s_dgvCellStyles [(int)HDataGridViewTables.INDEX_CELL_STYLE.COMMON];
                     //УДГэ
                     Rows [i - 1].Cells[(int)INDEX_COLUMN.UDGe].Value = values[i].valuesUDGe.ToString(@"F3");
@@ -1510,7 +1546,8 @@ namespace Statistic
                 SetCurrentCell(i - 1);
             }
         }
-        /// <summary>
+        
+        /// <summary>        
         /// Класс для отображения значений в табличном виде
         ///  в разрезе минута-секунды для ТГ
         /// </summary>
@@ -1524,6 +1561,7 @@ namespace Statistic
             {
                 initializeComponent();
             }
+
             /// <summary>
             /// Конструктор - вспомогательный (с параметрами)
             /// </summary>
@@ -1532,7 +1570,10 @@ namespace Statistic
                 : this()
             {
                 container.Add(this);
+
+                initializeComponent ();
             }
+
             /// <summary>
             /// Инициализация собственных компонентов элемента управления
             /// </summary>
@@ -1556,11 +1597,30 @@ namespace Statistic
                 this.SelectionMode = DataGridViewSelectionMode.FullRowSelect;
                 this.Columns[0].Width = 38;
 
+                BackColor = SystemColors.Window;
+
                 //Добавить строки по числу сек. в мин.
                 for (int i = 0; i < 60; i++)
                     this.Rows.Add(new object[] { i + 1 });
             }
+
+            public void Clear ()
+            {
+                while (Columns.Count > 1)
+                    Columns.RemoveAt (Columns.Count - 1);
+            }
+
+            public void InitializeTGList (IEnumerable<TECComponentBase> listTG)
+            {
+                for (int i = 0; i < listTG.Count(); i++) {
+                    Columns.Add (new DataGridViewTextBoxColumn ());
+                    Columns [i + 1].HeaderText = listTG.ElementAt (i).name_shr;
+                    //Columns[i + 1].Width = ((Width - Columns[0].Width) / listTGNameShr.Count) - (listTGNameShr.Count + 1);
+                    Columns [i + 1].AutoSizeMode = DataGridViewAutoSizeColumnMode.Fill;
+                }
+            }
         }
+        
         /// <summary>
         /// Переопределение наследуемой функции - запуск объекта
         /// </summary>
@@ -1580,6 +1640,7 @@ namespace Statistic
             //m_timerCurrent.Interval = ProgramBase.TIMER_START_INTERVAL;
             //m_timerCurrent.Start ();
         }
+        
         /// <summary>
         /// Переопределение наследуемой функции - останов объекта
         /// </summary>
@@ -1623,6 +1684,7 @@ namespace Statistic
             //Остановить базовый объект
             base.Stop();
         }
+
         /// <summary>
         /// Переопределение наследуемой функции - активация/деактивация объекта
         /// </summary>
@@ -1663,7 +1725,7 @@ namespace Statistic
 
             if ((m_tecView.IsFirstActivated == true)
                 && (IsFirstActivated == true)) {
-                ComboBox cbxGTP = findControl(KEY_CONTROLS.CB_GTP.ToString()) as ComboBox;
+                ComboBox cbxGTP = findControl(KEY_CONTROLS.CB_TECCOMPONENT.ToString()) as ComboBox;
                 cbxGTP.SelectedIndex = -1;
                 cbxGTP.SelectedIndex = 0;
             } else
@@ -1671,40 +1733,7 @@ namespace Statistic
 
             return bRes;
         }
-        ///// <summary>
-        ///// Обработчик события - создание дескриптора панели
-        ///// </summary>
-        ///// <param name="obj">Объект, инициировавший событие</param>
-        ///// <param name="ev">Аргумент события</param>        
-        //private void OnHandleCreated(object obj, EventArgs ev)
-        //{
-        //    //Список строк - наименований ГТП
-        //    // для передачи дочерней панели на отображение
-        //    List<string> listGTPNameShr = new List<string>();
-        //    //Сформировать список строк - наименований ГТП
-        //    foreach (TEC t in m_listTEC)
-        //    {
-        //        foreach (TECComponent tc in t.list_TECComponents)
-        //        {
-        //            if (tc.IsGTP == true)
-        //            {
-        //                //Наименование ТЭЦ + наименование ГТП
-        //                listGTPNameShr.Add(t.name_shr + @" " + tc.name_shr);
-        //            }
-        //            else
-        //                ;
-        //        }
-        //    }
-        //    //Добавить строки на дочернюю панель
-        //    m_panelManagement.InitializeGTPList(listGTPNameShr);
 
-        //    EvtValuesMins += new DelegateObjectFunc(m_panelManagement.Parent_OnEvtValuesMins);
-        //    EvtValuesSecs += new DelegateObjectFunc(m_panelManagement.Parent_OnEvtValuesSecs);
-        //    //EvtValuesMins += new DelegateObjectFunc((m_zGraph_GTP as HZEdGraph_GTP).Parent_OnEvtValuesMins); //???отображать значения будем в функции на панели
-
-        //    DataGridViewGTP dgvGTP = this.Controls.Find(KEY_CONTROLS.DGV_GTP_VALUE.ToString(), true)[0] as DataGridViewGTP;
-        //    dgvGTP.SelectionChanged += new EventHandler(panelManagement_dgvGTPOnSelectionChanged);
-        //}
         /// <summary>
         /// Обработчик события - создание дескриптора панели
         /// </summary>
@@ -1712,13 +1741,13 @@ namespace Statistic
         public void ChangeMode(object obj)
         {
             //Добавить строки на дочернюю панель
-            m_panelManagement.InitializeGTPList((List<FormChangeMode.Item>)obj);
+            m_panelManagement.InitializeTECComponentList((List<FormChangeMode.Item>)obj);
 
             EvtValuesMins += new DelegateObjectFunc(m_panelManagement.Parent_OnEvtValuesMins);
             EvtValuesSecs += new DelegateObjectFunc(m_panelManagement.Parent_OnEvtValuesSecs);
             //EvtValuesMins += new DelegateObjectFunc((m_zGraph_GTP as HZEdGraph_GTP).Parent_OnEvtValuesMins); //???отображать значения будем в функции на панели
 
-            DataGridViewGTP dgvGTP = findControl(KEY_CONTROLS.DGV_GTP_VALUE.ToString()) as DataGridViewGTP;
+            DataGridViewTECComponent dgvGTP = findControl(KEY_CONTROLS.DGV_TECCOMPONENT_VALUE.ToString()) as DataGridViewTECComponent;
             dgvGTP.SelectionChanged += new EventHandler(panelManagement_dgvGTPOnSelectionChanged);
         }
 
@@ -1730,6 +1759,7 @@ namespace Statistic
         {
             EvtSetDatetimeHour(val);
         }
+        
         /// <summary>
         /// Метод обратного вызова для таймера 'm_timerCurrent'
         /// </summary>
@@ -1766,6 +1796,7 @@ namespace Statistic
             else
                 ; //m_tecView.Actived == false
         }
+        
         /// <summary>
         /// Установить текущие дату/час для объекта обработки запросов к БД
         /// </summary>
@@ -1784,6 +1815,7 @@ namespace Statistic
             else
                 ;
         }
+        
         /// <summary>
         /// Обработчик события - изменения даты/номера часа на панели с управляющими элементами
         /// </summary>
@@ -1818,23 +1850,22 @@ namespace Statistic
         /// <summary>
         /// Обработчик события - выбор компонента ТЭЦ (ГТП) на панели с управляющими элементами
         /// </summary>
-        /// <param name="id"></param>
-        private void panelManagement_OnEvtGTPSelectionIndexChanged(int id)
+        /// <param name="id">Идентификатор ТЭЦ (компонента ГТП)</param>
+        private void panelManagement_OnEvtTECComponentSelectionIndexChanged(int id)
         {
             if (this.Actived == true)
             {
                 //Передать информацию 'PanelManagement' для заполнения списка ТГ
                 //List<string> listTGNameShr = new List<string>();
                 int indxTEC = -1 //Индекс ТЭЦ в списке из БД конфигурации
-                    , indxGTP = -1 //Индекс ГТП сквозной
                     , indxTECComponent = -1 //Индекс компонента ТЭЦ (ГТП) - локальный в пределах ТЭЦ
                     ;
                 List<TECComponentBase> listTG_Comp = new List<TECComponentBase>();
 
                 indxTEC =
-                indxGTP =
                     0;
                 #region Хряпин А.Н. - Заполнение списка наименований ТГ
+
                 //foreach (TEC t in m_listTEC)
                 //{
                 //    //В каждой ТЭЦ индекс локальный - обнулить
@@ -1905,35 +1936,6 @@ namespace Statistic
                         foreach (TG tg in t.GetListLowPointDev(TECComponentBase.TYPE.ELECTRO))
                             listTG_Comp.Add(tg);
 
-                        ////!!! не объявлять переменные в середине  кода, тем более внутри цикла
-                        //DataTable table = new DataTable();
-                        //table.Columns.Add("koeff");                        
-
-                        //foreach (TECComponent tc in t.list_TECComponents)
-                        //{
-                        //    if (tc.IsGTP == true)
-                        //    {
-                        //        table.Rows.Add(tc.m_dcKoeffAlarmPcur);
-                        //    }
-                        //}
-
-                        //res:
-                        //    for (int b = 0; b < table.Rows.Count - 1; b++)
-                        //    {
-                        //        if (Convert.ToDecimal(table.Rows[b][0]) <= Convert.ToDecimal(table.Rows[b + 1][0]))
-                        //        {
-                        //            table.Rows.RemoveAt(b + 1);
-                        //            goto res;
-                        //        }
-                        //        else
-                        //        {
-                        //            table.Rows.RemoveAt(b);
-                        //            goto res;
-                        //        }
-                        //    }
-
-                        //m_dcGTPKoeffAlarmPcur = Convert.ToDecimal(table.Rows[0][0]);
-
                         foreach (TECComponent tc in t.list_TECComponents)
                             if (tc.IsGTP == true)
                             {
@@ -1973,33 +1975,6 @@ namespace Statistic
                                         foreach (TG tg in tc.m_listLowPointDev)
                                             listTG_Comp.Add(tg);
 
-                                        ////!!! не объявлять переменные в середине  кода, тем более внутри цикла
-                                        //DataTable table = new DataTable();
-                                        //table.Columns.Add("koeff");
-
-                                        //foreach (TECComponent tcc in t.list_TECComponents)
-                                        //{
-                                        //    if (tcc.IsGTP == true && tcc.tec.m_id == tc.tec.m_id)
-                                        //    {
-                                        //        table.Rows.Add(tcc.m_dcKoeffAlarmPcur);
-                                        //    }
-                                        //}
-
-                                        //res:
-                                        //    for (int b = 0; b < table.Rows.Count - 1; b++)
-                                        //    {
-                                        //        if (Convert.ToDecimal(table.Rows[b][0]) <= Convert.ToDecimal(table.Rows[b + 1][0]))
-                                        //        {
-                                        //            table.Rows.RemoveAt(b + 1);
-                                        //            goto res;
-                                        //        }
-                                        //        else
-                                        //        {
-                                        //            table.Rows.RemoveAt(b);
-                                        //            goto res;
-                                        //        }
-                                        //    }
-
                                         foreach (TECComponent tcc in t.list_TECComponents)
                                             if ((tcc.IsGTP == true)
                                                 && (tcc.tec.m_id == tc.tec.m_id))
@@ -2024,6 +1999,7 @@ namespace Statistic
                     else
                         ;
                 }
+
                 #endregion
 
                 //Инициализировать значение коэффициента для выполнения условия сигнализации
@@ -2195,6 +2171,7 @@ namespace Statistic
             (m_zGraph_TECComponent as ZedGraphControlTECComponent).Draw (textGraphMins, m_tecView.m_valuesMins, m_dcGTPKoeffAlarmPcur);
             zedGraphTG_draw ();
         }
+        
         /// <summary>
         /// Текущие дата/час, выбранные пользователем
         /// </summary>
@@ -2202,6 +2179,7 @@ namespace Statistic
         {
             get { return m_panelManagement.GetCurrDateHour(); }
         }
+        
         /// <summary>
         /// Обработчик события - освобождение кн. мыши над 'zedGraphMins'
         /// </summary>
@@ -2237,13 +2215,14 @@ namespace Statistic
                 //if (!(delegateStartWait == null)) delegateStartWait(); else ;
 
                 //panelManagement_dgvGTPOnSelectionChanged (this.Controls.Find(KEY_CONTROLS.DGV_GTP_VALUE.ToString(), true)[0], new MinSelectedChangedEventArgs () { m_index = index });
-                (this.Controls.Find(KEY_CONTROLS.DGV_GTP_VALUE.ToString(), true)[0] as DataGridViewGTP).SetCurrentCell(index);
+                (this.Controls.Find(KEY_CONTROLS.DGV_TECCOMPONENT_VALUE.ToString(), true)[0] as DataGridViewTECComponent).SetCurrentCell(index);
 
                 //if (!(delegateStopWait == null)) delegateStopWait(); else ;
             }
 
             return true;
         }
+        
         /// <summary>
         /// Обработчик события - изменение выбора строки в 'DataGridViewGTP'
         /// </summary>
@@ -2252,7 +2231,7 @@ namespace Statistic
         private void panelManagement_dgvGTPOnSelectionChanged (object obj, EventArgs ev)
         {
             int index = -1;
-            DataGridViewGTP dgvGTP = obj as DataGridViewGTP;
+            DataGridViewTECComponent dgvGTP = obj as DataGridViewTECComponent;
             //Проверить был ли отправлен/обработан запрос для основных "час по-минутно" данных
             if (m_tecView.adminValuesReceived == true)
                 //Проверить есть выбранные строки
@@ -2293,5 +2272,22 @@ namespace Statistic
             else
                 ;
         }
+
+        public override Color BackColor
+        {
+            get
+            {
+                return base.BackColor;
+            }
+
+            set
+            {
+                base.BackColor = value;
+                m_panelManagement.BackColor = BackColor;                
+
+                // событие для панели управления ('PanelManagement') для табличной интерпретации значений
+                EvtValuesSecs (m_tecView.m_dictValuesLowPointDev);
+            }
+        }            
     }
 }

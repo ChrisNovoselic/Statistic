@@ -115,9 +115,14 @@
       <SpecificVersion>False</SpecificVersion>
       <HintPath>..\..\ExternalDLL\GemBox.Spreadsheet.dll</HintPath>
     </Reference>
-    <Reference Include="HClassLibrary, Version=2.0.4.3, Culture=neutral, PublicKeyToken=2f5f95fc94cb3397, processorArchitecture=MSIL">
+    <Reference Include="HClassLibrary, Version=2.0.6.23, Culture=neutral, PublicKeyToken=2f5f95fc94cb3397, processorArchitecture=MSIL">
       <SpecificVersion>False</SpecificVersion>
       <HintPath>..\..\ExternalDll\HClassLibrary.dll</HintPath>
+    </Reference>
+    <Reference Include="Microsoft.Office.Interop.Excel, Version=15.0.0.0, Culture=neutral, PublicKeyToken=71e9bce111e9429c, processorArchitecture=MSIL">
+      <SpecificVersion>False</SpecificVersion>
+      <EmbedInteropTypes>True</EmbedInteropTypes>
+      <HintPath>..\..\ExternalDLL\Microsoft.Office.Interop.Excel.dll</HintPath>
     </Reference>
     <Reference Include="System" />
     <Reference Include="System.Configuration" />
@@ -152,6 +157,9 @@
     <Compile Include="FormMain.designer.cs">
       <DependentUpon>FormMain.cs</DependentUpon>
     </Compile>
+    <Compile Include="HStatisticTabCtrlEx.cs">
+      <SubType>Form</SubType>
+    </Compile>
     <Compile Include="PanelAdmin.cs">
       <SubType>Component</SubType>
     </Compile>
@@ -162,6 +170,24 @@
       <SubType>Component</SubType>
     </Compile>
     <Compile Include="PanelAdminNSS.cs">
+      <SubType>Component</SubType>
+    </Compile>
+    <Compile Include="PanelAISKUESOTIASSODay\DataGridView.cs">
+      <SubType>Component</SubType>
+    </Compile>
+    <Compile Include="PanelAISKUESOTIASSODay\HandlerDbSignalValue.cs">
+      <SubType>Component</SubType>
+    </Compile>
+    <Compile Include="PanelAISKUESOTIASSODay\HandlerSignalQueue.cs">
+      <SubType>Component</SubType>
+    </Compile>
+    <Compile Include="PanelAISKUESOTIASSODay\PanelAISKUESOTIASSODay.cs">
+      <SubType>Component</SubType>
+    </Compile>
+    <Compile Include="PanelAISKUESOTIASSODay\PanelManagement.cs">
+      <SubType>Component</SubType>
+    </Compile>
+    <Compile Include="PanelAISKUESOTIASSODay\ZedGraphControl.cs">
       <SubType>Component</SubType>
     </Compile>
     <Compile Include="PanelCurPower.cs">
@@ -176,8 +202,7 @@
     <Compile Include="PanelQuickData.cs">
       <SubType>Component</SubType>
     </Compile>
-    <Compile Include="PanelCommonAux.cs" />
-    <Compile Include="PanelSOTIASSO.cs">
+    <Compile Include="PanelSOTIASSOHour.cs">
       <SubType>Component</SubType>
     </Compile>
     <Compile Include="PanelTECComponent.cs">

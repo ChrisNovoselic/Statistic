@@ -11,6 +11,8 @@ using System.Linq;
 using GemBox.Spreadsheet;
 using System.IO;
 
+using Microsoft.Office.Interop.Excel;
+
 namespace Statistic
 {
     /// <summary>
@@ -325,7 +327,7 @@ namespace Statistic
                 , nameFolderUserTemplate = string.Empty
                 , nameFileTemplate = NAMEFILE_TEMPLATE_SOTIASSO_DAY;
             ExcelFile excel;
-            DataTable tableExportDo;
+            System.Data.DataTable tableExportDo;
             int iColumn = STARTCOLUMN_TEMPLATE_SOTIASSO_DAY
                 , iStartRow = STARTROW_TEMPLATE_SOTIASSO_DAY
                 , i_agregate = I_AGREGATE;
@@ -663,6 +665,20 @@ namespace Statistic
                     break;
                 default:
                     break;
+            }
+        }
+
+        public override Color BackColor
+        {
+            get
+            {
+                return base.BackColor;
+            }
+
+            set
+            {
+                base.BackColor = value;
+                m_panelManagement.BackColor = BackColor;
             }
         }
     }

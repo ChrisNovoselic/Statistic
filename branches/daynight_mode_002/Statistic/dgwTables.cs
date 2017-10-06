@@ -185,7 +185,7 @@ namespace Statistic
             dataGridViewCellStyle.SelectionForeColor = System.Drawing.SystemColors.HighlightText;
             dataGridViewCellStyle.WrapMode = System.Windows.Forms.DataGridViewTriState.True;
 
-            ColumnHeadersDefaultCellStyle = dataGridViewCellStyle;
+            //ColumnHeadersDefaultCellStyle = dataGridViewCellStyle;
             ColumnHeadersHeightSizeMode = System.Windows.Forms.DataGridViewColumnHeadersHeightSizeMode.AutoSize;
 
             for (i = 0; i < this.m_arColumns.Length; i++)
