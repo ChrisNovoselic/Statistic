@@ -886,7 +886,7 @@ namespace StatisticAnalyzer
         #endregion
 
         public PanelAnalyzer(/*int idListener,*/ List<StatisticCommon.TEC> tec)
-            : base()
+            : base(MODE_UPDATE_VALUES.ACTION)
         {
             m_LogParse = newLogParse();
 
@@ -1887,8 +1887,8 @@ namespace StatisticAnalyzer
         /// <summary>
         /// Обработчик выбора Даты/Времени для лог сообщений
         /// </summary>
-        /// <param name="sender"></param>
-        /// <param name="e"></param>
+        /// <param name="sender">Объект, инициировавший событие</param>
+        /// <param name="e">Аргумент события</param>
         protected void dgvDatetimeStart_SelectionChanged(object sender, EventArgs e)
         {
             int rowIndex = dgvDatetimeStart.SelectedRows[0].Index;
@@ -2041,6 +2041,11 @@ namespace StatisticAnalyzer
         protected abstract void fillListBoxTabVisible(List<int> ID_tabs);
 
         #endregion
+
+        public override void UpdateGraphicsCurrent (int type)
+        {
+            throw new NotImplementedException ();
+        }
 
         public class DataGridView_LogMessageCounter : DataGridView
         {

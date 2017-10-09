@@ -126,7 +126,7 @@ namespace Statistic
         /// Конструктор - основной (без параметров)
         /// </summary>
         public PanelAISKUESOTIASSODay(int iListenerConfigId, List<StatisticCommon.TEC> listTec)
-            : base()
+            : base(MODE_UPDATE_VALUES.ACTION)
         {
             // фильтр ТЭЦ
             m_listTEC = listTec.FindAll(tec => { return (tec.Type == TEC.TEC_TYPE.COMMON) && (tec.m_id < (int)TECComponent.ID.LK); });

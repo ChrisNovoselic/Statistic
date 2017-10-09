@@ -250,12 +250,12 @@ namespace trans_gtp
 
             for (int i = 0; i < 24; i++)
             {
-                for (int j = 0; j < (int)DataGridViewAdminKomDisp.DESC_INDEX.TO_ALL; j++)
+                for (int j = 0; j < (int)DataGridViewAdminKomDisp.COLUMN_INDEX.TO_ALL; j++)
                 {
                     switch (j)
                     {
-                        case (int)DataGridViewAdminKomDisp.DESC_INDEX.PLAN: // План
-                            valid = double.TryParse((string)m_dgwAdminTable.Rows[i].Cells[(int)DataGridViewAdminKomDisp.DESC_INDEX.PLAN].Value, out value);
+                        case (int)DataGridViewAdminKomDisp.COLUMN_INDEX.PLAN: // План
+                            valid = double.TryParse((string)m_dgwAdminTable.Rows[i].Cells[(int)DataGridViewAdminKomDisp.COLUMN_INDEX.PLAN].Value, out value);
                             ((AdminTS)m_arAdmin[indxDB]).m_curRDGValues[i].pbr = value;
                             //((AdminTS)m_arAdmin[indxDB]).m_curRDGValues[i].pbr = ((AdminTS)m_arAdmin[(int)CONN_SETT_TYPE.SOURCE]).m_curRDGValues[i].pbr;
                             ((AdminTS)m_arAdmin[indxDB]).m_curRDGValues[i].pmin = ((AdminTS)m_arAdmin[(int)CONN_SETT_TYPE.SOURCE]).m_curRDGValues[i].pmin;
@@ -263,26 +263,26 @@ namespace trans_gtp
 
                             ((AdminTS)m_arAdmin[indxDB]).m_curRDGValues[i].pbr_number = ((AdminTS)m_arAdmin[(int)CONN_SETT_TYPE.SOURCE]).m_curRDGValues[i].pbr_number;
                             break;
-                        case (int)DataGridViewAdminKomDisp.DESC_INDEX.RECOMENDATION: // Рекомендация
+                        case (int)DataGridViewAdminKomDisp.COLUMN_INDEX.RECOMENDATION: // Рекомендация
                             //cellValidated(e.RowIndex, (int)DataGridViewAdminKomDisp.DESC_INDEX.RECOMENDATION);
 
-                            valid = double.TryParse((string)m_dgwAdminTable.Rows[i].Cells[(int)DataGridViewAdminKomDisp.DESC_INDEX.RECOMENDATION].Value, out value);
+                            valid = double.TryParse((string)m_dgwAdminTable.Rows[i].Cells[(int)DataGridViewAdminKomDisp.COLUMN_INDEX.RECOMENDATION].Value, out value);
                             ((AdminTS)m_arAdmin[indxDB]).m_curRDGValues[i].recomendation = value;
 
                             ((AdminTS)m_arAdmin[indxDB]).m_curRDGValues[i].dtRecUpdate = ((AdminTS)m_arAdmin[(int)CONN_SETT_TYPE.SOURCE]).m_curRDGValues[i].dtRecUpdate;
 
                             break;
-                        case (int)DataGridViewAdminKomDisp.DESC_INDEX.FOREIGN_CMD:
-                            ((AdminTS)m_arAdmin[indxDB]).m_curRDGValues[i].fc = bool.Parse(this.m_dgwAdminTable.Rows[i].Cells[(int)DataGridViewAdminKomDisp.DESC_INDEX.FOREIGN_CMD].Value.ToString());
+                        case (int)DataGridViewAdminKomDisp.COLUMN_INDEX.FOREIGN_CMD:
+                            ((AdminTS)m_arAdmin[indxDB]).m_curRDGValues[i].fc = bool.Parse(this.m_dgwAdminTable.Rows[i].Cells[(int)DataGridViewAdminKomDisp.COLUMN_INDEX.FOREIGN_CMD].Value.ToString());
                             break;
-                        case (int)DataGridViewAdminKomDisp.DESC_INDEX.DEVIATION_TYPE:
+                        case (int)DataGridViewAdminKomDisp.COLUMN_INDEX.DEVIATION_TYPE:
                             {
-                                ((AdminTS)m_arAdmin[indxDB]).m_curRDGValues[i].deviationPercent = bool.Parse(this.m_dgwAdminTable.Rows[i].Cells[(int)DataGridViewAdminKomDisp.DESC_INDEX.DEVIATION_TYPE].Value.ToString());
+                                ((AdminTS)m_arAdmin[indxDB]).m_curRDGValues[i].deviationPercent = bool.Parse(this.m_dgwAdminTable.Rows[i].Cells[(int)DataGridViewAdminKomDisp.COLUMN_INDEX.DEVIATION_TYPE].Value.ToString());
                                 break;
                             }
-                        case (int)DataGridViewAdminKomDisp.DESC_INDEX.DEVIATION: // Максимальное отклонение
+                        case (int)DataGridViewAdminKomDisp.COLUMN_INDEX.DEVIATION: // Максимальное отклонение
                             {
-                                valid = double.TryParse((string)this.m_dgwAdminTable.Rows[i].Cells[(int)DataGridViewAdminKomDisp.DESC_INDEX.DEVIATION].Value, out value);
+                                valid = double.TryParse((string)this.m_dgwAdminTable.Rows[i].Cells[(int)DataGridViewAdminKomDisp.COLUMN_INDEX.DEVIATION].Value, out value);
                                 ((AdminTS)m_arAdmin[indxDB]).m_curRDGValues[i].deviation = value;
 
                                 break;
@@ -302,18 +302,18 @@ namespace trans_gtp
 
             for (int i = 0; i < 24; i++)
             {
-                this.m_dgwAdminTable.Rows[i].Cells[(int)DataGridViewAdminKomDisp.DESC_INDEX.DATE_HOUR].Value = date.AddHours(i + 1).ToString("dd-MM-yyyy HH:00");
-                this.m_dgwAdminTable.Rows[i].Cells[(int)DataGridViewAdminKomDisp.DESC_INDEX.PLAN].Value = ((AdminTS)m_arAdmin[indxDB]).m_curRDGValues[i].pbr.ToString("F2");
-                this.m_dgwAdminTable.Rows[i].Cells[(int)DataGridViewAdminKomDisp.DESC_INDEX.PLAN].ToolTipText = ((AdminTS)m_arAdmin[indxDB]).m_curRDGValues[i].pbr_number;
+                this.m_dgwAdminTable.Rows[i].Cells[(int)DataGridViewAdminKomDisp.COLUMN_INDEX.DATE_HOUR].Value = date.AddHours(i + 1).ToString("dd-MM-yyyy HH:00");
+                this.m_dgwAdminTable.Rows[i].Cells[(int)DataGridViewAdminKomDisp.COLUMN_INDEX.PLAN].Value = ((AdminTS)m_arAdmin[indxDB]).m_curRDGValues[i].pbr.ToString("F2");
+                this.m_dgwAdminTable.Rows[i].Cells[(int)DataGridViewAdminKomDisp.COLUMN_INDEX.PLAN].ToolTipText = ((AdminTS)m_arAdmin[indxDB]).m_curRDGValues[i].pbr_number;
                 if (i > 0)
-                    this.m_dgwAdminTable.Rows[i].Cells[(int)DataGridViewAdminKomDisp.DESC_INDEX.UDGe].Value = (((m_arAdmin[indxDB].m_curRDGValues[i].pbr + m_arAdmin[indxDB].m_curRDGValues[i - 1].pbr) / 2) + m_arAdmin[indxDB].m_curRDGValues[i].recomendation).ToString("F2");
+                    this.m_dgwAdminTable.Rows[i].Cells[(int)DataGridViewAdminKomDisp.COLUMN_INDEX.UDGe].Value = (((m_arAdmin[indxDB].m_curRDGValues[i].pbr + m_arAdmin[indxDB].m_curRDGValues[i - 1].pbr) / 2) + m_arAdmin[indxDB].m_curRDGValues[i].recomendation).ToString("F2");
                 else
-                    this.m_dgwAdminTable.Rows[i].Cells[(int)DataGridViewAdminKomDisp.DESC_INDEX.UDGe].Value = (((m_arAdmin[indxDB].m_curRDGValues[i].pbr + ((AdminTS)m_arAdmin[indxDB]).m_curRDGValues_PBR_0) / 2) + m_arAdmin[indxDB].m_curRDGValues[i].recomendation).ToString("F2");
-                this.m_dgwAdminTable.Rows[i].Cells[(int)DataGridViewAdminKomDisp.DESC_INDEX.RECOMENDATION].Value = ((AdminTS)m_arAdmin[indxDB]).m_curRDGValues[i].recomendation.ToString("F2");
-                this.m_dgwAdminTable.Rows[i].Cells[(int)DataGridViewAdminKomDisp.DESC_INDEX.RECOMENDATION].ToolTipText = ((AdminTS)m_arAdmin[indxDB]).m_curRDGValues[i].dtRecUpdate.ToString();
-                this.m_dgwAdminTable.Rows[i].Cells[(int)DataGridViewAdminKomDisp.DESC_INDEX.FOREIGN_CMD].Value = ((AdminTS)m_arAdmin[indxDB]).m_curRDGValues[i].fc.ToString();
-                this.m_dgwAdminTable.Rows[i].Cells[(int)DataGridViewAdminKomDisp.DESC_INDEX.DEVIATION_TYPE].Value = ((AdminTS)m_arAdmin[indxDB]).m_curRDGValues[i].deviationPercent.ToString();
-                this.m_dgwAdminTable.Rows[i].Cells[(int)DataGridViewAdminKomDisp.DESC_INDEX.DEVIATION].Value = ((AdminTS)m_arAdmin[indxDB]).m_curRDGValues[i].deviation.ToString("F2");
+                    this.m_dgwAdminTable.Rows[i].Cells[(int)DataGridViewAdminKomDisp.COLUMN_INDEX.UDGe].Value = (((m_arAdmin[indxDB].m_curRDGValues[i].pbr + ((AdminTS)m_arAdmin[indxDB]).m_curRDGValues_PBR_0) / 2) + m_arAdmin[indxDB].m_curRDGValues[i].recomendation).ToString("F2");
+                this.m_dgwAdminTable.Rows[i].Cells[(int)DataGridViewAdminKomDisp.COLUMN_INDEX.RECOMENDATION].Value = ((AdminTS)m_arAdmin[indxDB]).m_curRDGValues[i].recomendation.ToString("F2");
+                this.m_dgwAdminTable.Rows[i].Cells[(int)DataGridViewAdminKomDisp.COLUMN_INDEX.RECOMENDATION].ToolTipText = ((AdminTS)m_arAdmin[indxDB]).m_curRDGValues[i].dtRecUpdate.ToString();
+                this.m_dgwAdminTable.Rows[i].Cells[(int)DataGridViewAdminKomDisp.COLUMN_INDEX.FOREIGN_CMD].Value = ((AdminTS)m_arAdmin[indxDB]).m_curRDGValues[i].fc.ToString();
+                this.m_dgwAdminTable.Rows[i].Cells[(int)DataGridViewAdminKomDisp.COLUMN_INDEX.DEVIATION_TYPE].Value = ((AdminTS)m_arAdmin[indxDB]).m_curRDGValues[i].deviationPercent.ToString();
+                this.m_dgwAdminTable.Rows[i].Cells[(int)DataGridViewAdminKomDisp.COLUMN_INDEX.DEVIATION].Value = ((AdminTS)m_arAdmin[indxDB]).m_curRDGValues[i].deviation.ToString("F2");
             }
 
             //m_arAdmin[indxDB].CopyCurToPrevRDGValues ();

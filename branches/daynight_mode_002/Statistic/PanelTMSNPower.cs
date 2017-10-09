@@ -72,6 +72,7 @@ namespace Statistic
         public bool m_bIsActive;
 
         public PanelTMSNPower(List<StatisticCommon.TEC> listTec/*, DelegateStringFunc fErrRep, DelegateStringFunc fWarRep, DelegateStringFunc fActRep, DelegateBoolFunc fRepClr*/)
+            : base (MODE_UPDATE_VALUES.AUTO)
         {
             InitializeComponent();
 
@@ -162,11 +163,6 @@ namespace Statistic
             base.Stop();
         }
 
-        protected override void initTableHourRows()
-        {
-            //Ничего не делаем, т.к. нет таблиц с часовыми значениями
-        }
-
         public override bool Activate(bool active)
         {
             bool bRes = base.Activate (active);
@@ -196,6 +192,18 @@ namespace Statistic
             }
 
             return bRes;
+        }
+
+        protected override void initTableHourRows ()
+        {
+            //Ничего не делаем, т.к. нет таблиц с часовыми значениями
+        }
+
+        public override void UpdateGraphicsCurrent (int type)
+        {
+            List<PanelTecTMSNPower> listPanelTec = getTypedControls (this, new Type [] { typeof(PanelTecTMSNPower) }).Cast<PanelTecTMSNPower> ().ToList();
+
+            listPanelTec.ForEach (panel => panel.UpdateGraphicsCurrent());
         }
 
         partial class PanelTecTMSNPower
@@ -551,6 +559,12 @@ namespace Statistic
                 }
                 else
                     ;
+            }
+
+            public void UpdateGraphicsCurrent ()
+            {
+                showTMGenPower ();
+                showTMSNPower ();
             }
         }
     }

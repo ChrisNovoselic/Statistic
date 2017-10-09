@@ -68,7 +68,7 @@ namespace Statistic
         /// </summary>
         /// <param name="listTec">Лист ТЭЦ</param>
         public PanelVzletTDirect(List<TEC> listTec)
-            : base(typeof(PanelTecVzletTDirect))
+            : base(MODE_UPDATE_VALUES.AUTO, typeof(PanelTecVzletTDirect))
         {
             InitializeComponent();
 
@@ -113,7 +113,7 @@ namespace Statistic
         /// Метод непосредственного применения параметров графического представления данных
         /// </summary>
         /// <param name="type">Тип изменившихся параметров</param>
-        public void UpdateGraphicsCurrent(int type)
+        public override void UpdateGraphicsCurrent(int type)
         {
             foreach (Control ptvtd in this.Controls)
                 if ((ptvtd is PanelTecVzletTDirect) == true) (ptvtd as PanelTecVzletTDirect).UpdateGraphicsCurrent(type); else ;

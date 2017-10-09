@@ -162,7 +162,7 @@ namespace StatisticTransModes
 
             for (int i = 0; i < 24; i++)
             {
-                for (int j = 0; j < (int)DataGridViewAdminKomDisp.DESC_INDEX.TO_ALL; j++)
+                for (int j = 0; j < (int)DataGridViewAdminKomDisp.COLUMN_INDEX.TO_ALL; j++)
                 {
                     switch (j)
                     {

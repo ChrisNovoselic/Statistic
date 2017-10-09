@@ -572,6 +572,8 @@ namespace Statistic
             }
         }
 
+        #region Код для отображения сообщения о событии сигнализации
+
         private int m_iAlarmEventCounter;
         private int AlarmEventCounter { get { return m_iAlarmEventCounter; } set { m_iAlarmEventCounter = value; } }
         SoundPlayer m_sndAlarmEvent;
@@ -589,141 +591,6 @@ namespace Statistic
             else
                 m_sndAlarmEvent.Play();
         }
-
-        private void messageBoxShow(object text)
-        {
-            ////Вариант №1
-            //MessageBox.Show((string)text, @"Сигнализация", MessageBoxButtons.OK, MessageBoxIcon.Information);
-            //Вариант №2
-            MessageBox.Show((string)text, @"Сигнализация", MessageBoxButtons.OK, MessageBoxIcon.Information, MessageBoxDefaultButton.Button1, MessageBoxOptions.ServiceNotification);
-
-            this.BeginInvoke(new DelegateFunc(messageBoxHide));
-        }
-
-        private void messageBoxHide()
-        {
-            //bool bContinue = false;
-
-            lock (this)
-            {
-                m_iAlarmEventCounter--;
-
-                if (m_iAlarmEventCounter == 0)
-                {
-                    //m_timerAlarmEvent.Change(System.Threading.Timeout.Infinite, System.Threading.Timeout.Infinite);
-                    m_timerAlarmEvent.Stop();
-                    m_timerAlarmEvent.Dispose();
-                    m_timerAlarmEvent = null;
-
-                    if (!(m_sndAlarmEvent == null))
-                    {
-                        m_sndAlarmEvent.Stop();
-                        m_sndAlarmEvent.Dispose();
-                        m_sndAlarmEvent = null;
-                    }
-                    else
-                        ;
-
-                    //bContinue = true;
-
-                    //Активация текущей вкладки
-                    activateTabPage(tclTecViews.SelectedIndex, true);
-
-                    ////Продолжение работы ...
-                    //((PanelAdminKomDisp)m_arPanelAdmin[(int)(int)FormChangeMode.MANAGER.DISP]).EventGUIConfirm();
-                }
-                else
-                    ;
-            }
-
-            //if (bContinue == true)
-            //{
-            //    //Активация текущей вкладки
-            //    activateTabPage(tclTecViews.SelectedIndex, true);
-
-            //    //Продолжение работы ...
-            //    ((PanelAdminKomDisp)m_arPanelAdmin[(int)(int)FormChangeMode.MANAGER.DISP]).EventGUIConfirm();
-            //}
-            //else
-            //    ;
-        }
-
-        private void panelAdminKomDispEventGUIReg(string text)
-        {
-            lock (this)
-            {
-                if (m_timerAlarmEvent == null)
-                {
-                    //Деактивация текущей вкладки
-                    activateTabPage(tclTecViews.SelectedIndex, false);
-
-                    string strPathSnd = Environment.GetEnvironmentVariable("windir") + @"\Media\" + StatisticAlarm.AdminAlarm.FNAME_ALARM_SYSTEMMEDIA_TIMERBEEP;
-                    if (File.Exists(strPathSnd) == true)
-                        m_sndAlarmEvent = new SoundPlayer(strPathSnd);
-                    else
-                        ;
-
-                    m_timerAlarmEvent =
-                        //new System.Threading.Timer(new TimerCallback(timerAlarmEvent), null, 0, AdminAlarm.MSEC_ALARM_TIMERBEEP) //Int32.Parse(formParameters.m_arParametrSetup[(int)FormParameters.PARAMETR_SETUP.ALARM_TIMER_BEEP]) * 1000
-                        new System.Windows.Forms.Timer();
-                    m_timerAlarmEvent.Tick += new EventHandler(timerAlarmEvent);
-                    m_timerAlarmEvent.Interval = StatisticAlarm.AdminAlarm.MSEC_ALARM_TIMERBEEP;
-                    m_timerAlarmEvent.Start();
-
-                    m_iAlarmEventCounter = 1;
-                }
-                else
-                    m_iAlarmEventCounter++;
-            }
-
-            //Поверх остальных окон
-            bool bPrevTopMost = this.TopMost;
-            this.TopMost = true;
-            //Диалоговое окно
-            new Thread(new ParameterizedThreadStart(messageBoxShow)).Start(text);
-            //Востановить значение по умолчанию
-            this.TopMost = bPrevTopMost;
-        }
-
-        private void panelAdminLKDispEventGUIReg(string text)
-        {
-            lock (this)
-            {
-                if (m_timerAlarmEvent == null)
-                {
-                    //Деактивация текущей вкладки
-                    activateTabPage(tclTecViews.SelectedIndex, false);
-
-                    string strPathSnd = Environment.GetEnvironmentVariable("windir") + @"\Media\" + StatisticAlarm.AdminAlarm.FNAME_ALARM_SYSTEMMEDIA_TIMERBEEP;
-                    if (File.Exists(strPathSnd) == true)
-                        m_sndAlarmEvent = new SoundPlayer(strPathSnd);
-                    else
-                        ;
-
-                    m_timerAlarmEvent =
-                        //new System.Threading.Timer(new TimerCallback(timerAlarmEvent), null, 0, AdminAlarm.MSEC_ALARM_TIMERBEEP) //Int32.Parse(formParameters.m_arParametrSetup[(int)FormParameters.PARAMETR_SETUP.ALARM_TIMER_BEEP]) * 1000
-                        new System.Windows.Forms.Timer();
-                    m_timerAlarmEvent.Tick += new EventHandler(timerAlarmEvent);
-                    m_timerAlarmEvent.Interval = StatisticAlarm.AdminAlarm.MSEC_ALARM_TIMERBEEP;
-                    m_timerAlarmEvent.Start();
-
-                    m_iAlarmEventCounter = 1;
-                }
-                else
-                    m_iAlarmEventCounter++;
-            }
-
-            //Поверх остальных окон
-            bool bPrevTopMost = this.TopMost;
-            this.TopMost = true;
-            //Диалоговое окно
-            new Thread(new ParameterizedThreadStart(messageBoxShow)).Start(text);
-            //Востановить значение по умолчанию
-            this.TopMost = bPrevTopMost;
-        }
-
-
-        #region Код для отображения сообщения о событии сигнализации
 
         MessageBoxAlarmEvent m_formAlarmEvent;
 
@@ -2784,35 +2651,15 @@ namespace Statistic
 
             if ((!(tclTecViews.SelectedIndex < 0))
                 && (tclTecViews.SelectedIndex < tclTecViews.TabCount))
-                if ((ctrl is PanelTecViewStandard)
+                if ((ctrl is PanelStatistic)
                     //|| (ctrl is PanelCustomTecView)
                     //|| (ctrl is PanelSobstvNyzhdy)
                     //|| (ctrl is PanelSOTIASSO)
                     //|| (ctrl is PanelLKView)
                     )
-                    ((PanelTecViewBase)ctrl).UpdateGraphicsCurrent(type);
+                    ((PanelStatistic)ctrl).UpdateGraphicsCurrent(type);
                 else
-                    if (ctrl is PanelCustomTecView)
-                        ((PanelCustomTecView)ctrl).UpdateGraphicsCurrent(type);
-                    else
-                        if (ctrl is PanelSobstvNyzhdy)
-                            ((PanelSobstvNyzhdy)ctrl).UpdateGraphicsCurrent(type);
-                        else
-                            #region KhryapinAN, 2017-06, PanelSOTIASSOHour/PanelSOTIASSODay
-                            if (ctrl is PanelSOTIASSOHour)
-                                ((PanelSOTIASSOHour)ctrl).UpdateGraphicsCurrent(type);
-                            else                                
-                                if (ctrl is PanelAISKUESOTIASSODay)
-                                    ((PanelAISKUESOTIASSODay)ctrl).UpdateGraphicsCurrent(type);
-                                else
-                            #endregion
-                                    if (ctrl is PanelLKView)
-                                        ((PanelLKView)ctrl).UpdateGraphicsCurrent(type);
-                                    else
-                                        if (ctrl is PanelVzletTDirect)
-                                            ((PanelVzletTDirect)ctrl).UpdateGraphicsCurrent(type);
-                                        else
-                                            ;
+                    ;
             else
                 ;
 
@@ -3151,6 +2998,7 @@ namespace Statistic
                 : base(text, panel, bLabel)
             {
             }
+
             /// <summary>
             /// Обновить текущее отображение в ~ от типа изменения
             /// </summary>

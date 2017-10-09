@@ -215,7 +215,7 @@ namespace Statistic
         /// Конструктор - основной (без параметров)
         /// </summary>
         public PanelSOTIASSOHour(List<StatisticCommon.TEC> listTec)
-            : base()
+            : base(MODE_UPDATE_VALUES.AUTO)
         {
             //m_listTEC = listTec;
             // фильтр ТЭЦ-ЛК
@@ -892,6 +892,8 @@ namespace Statistic
                 this.IsEnableVZoom = false;
                 this.IsShowPointValues = true;
 
+                this.BackColor = SystemColors.Window;
+
                 this.PointValueEvent += new ZedGraph.ZedGraphControl.PointValueHandler(this.onPointValueEvent);
                 this.DoubleClickEvent += new ZedGraph.ZedGraphControl.ZedMouseEventHandler(this.onDoubleClickEvent);
             }
@@ -1087,6 +1089,7 @@ namespace Statistic
                 GraphPane pane = GraphPane;
                 pane.CurveList.Clear ();
                 pane.Chart.Fill = new Fill (colorChart);
+                pane.Fill = new Fill (BackColor);
 
                 //LineItem
                 pane.AddCurve ("УДГэ", null, valsUDGe, FormMain.formGraphicsSettings.COLOR (FormGraphicsSettings.INDEX_COLOR.UDG));
@@ -1216,6 +1219,7 @@ namespace Statistic
 
                 getColorZEDGraph (out colorChart, out colorPCurve);
                 pane.Chart.Fill = new Fill (colorChart);
+                pane.Fill = new Fill (BackColor);
 
                 minimum = double.MaxValue;
                 maximum = 0;
@@ -2166,7 +2170,7 @@ namespace Statistic
         ///  , в зависимости от типа графического представления (гистограмма, график)
         /// </summary>
         /// <param name="type">Тип графической информации, подвергшейся изменениям</param>
-        public void UpdateGraphicsCurrent(int type)
+        public override void UpdateGraphicsCurrent(int type)
         {
             (m_zGraph_TECComponent as ZedGraphControlTECComponent).Draw (textGraphMins, m_tecView.m_valuesMins, m_dcGTPKoeffAlarmPcur);
             zedGraphTG_draw ();

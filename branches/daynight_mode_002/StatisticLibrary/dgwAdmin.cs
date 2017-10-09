@@ -26,7 +26,7 @@ namespace StatisticCommon
                                                             System.Windows.Forms.AnchorStyles.Left)));
 
             dataGridViewCellStyle.Alignment = System.Windows.Forms.DataGridViewContentAlignment.MiddleCenter;
-            dataGridViewCellStyle.BackColor = System.Drawing.SystemColors.Window;
+            dataGridViewCellStyle.BackColor = System.Drawing.SystemColors.Control;
             dataGridViewCellStyle.Font = new System.Drawing.Font("Microsoft Sans Serif", 8.25F, System.Drawing.FontStyle.Regular, System.Drawing.GraphicsUnit.Point, ((byte)(204)));
             dataGridViewCellStyle.ForeColor = System.Drawing.SystemColors.WindowText;
             dataGridViewCellStyle.SelectionBackColor = System.Drawing.SystemColors.Highlight;
@@ -78,7 +78,7 @@ namespace StatisticCommon
 
         protected abstract void dgwAdminTable_CellValidated(object sender, DataGridViewCellEventArgs e);
 
-        protected virtual int INDEX_COLUMN_BUTTON_TO_ALL { get { return (int)DataGridViewAdminKomDisp.DESC_INDEX.TO_ALL; } }
+        protected virtual int INDEX_COLUMN_BUTTON_TO_ALL { get { return (int)DataGridViewAdminKomDisp.COLUMN_INDEX.TO_ALL; } }
 
         protected virtual void dgwAdminTable_CellClick(object sender, DataGridViewCellEventArgs e)
         {
@@ -87,7 +87,7 @@ namespace StatisticCommon
             if ((e.ColumnIndex == INDEX_COLUMN_BUTTON_TO_ALL) // кнопка применение для всех
                 && (!(e.RowIndex < 0)))
             {
-                colStart = (int)DataGridViewAdminKomDisp.DESC_INDEX.PLAN;
+                colStart = (int)DataGridViewAdminKomDisp.COLUMN_INDEX.PLAN;
                 while (Columns[colStart].ReadOnly == true)
                     colStart ++;
 

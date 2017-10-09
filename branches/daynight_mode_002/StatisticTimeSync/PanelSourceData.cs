@@ -568,6 +568,7 @@ namespace StatisticTimeSync
         HandlerSourceData HSD = null;
 
         public PanelSourceData()
+            : base(MODE_UPDATE_VALUES.AUTO)
         {
             
             m_delAddPan = new DelAddPan(addPanel);
@@ -581,6 +582,7 @@ namespace StatisticTimeSync
         }
 
         public PanelSourceData(IContainer container)
+            : base (MODE_UPDATE_VALUES.AUTO)
         {
             container.Add(this);
 

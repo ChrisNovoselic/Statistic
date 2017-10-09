@@ -1473,6 +1473,10 @@ namespace Statistic
             return markRes;
         }
 
+        /// <summary>
+        /// Метод непосредственного применения параметров графического представления данных
+        /// </summary>
+        /// <param name="type">Тип изменившихся параметров</param>
         public override void UpdateGraphicsCurrent(int type)
         {
             base.UpdateGraphicsCurrent(type);

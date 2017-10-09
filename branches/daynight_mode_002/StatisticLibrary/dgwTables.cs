@@ -12,6 +12,13 @@ namespace StatisticCommon
 {
     public abstract class HDataGridViewTables : DataGridView
     {
+        public struct VALUE
+        {
+            string value;
+
+            string tool_tip;
+        }
+
         protected bool _bIsItogo;
 
         /// <summary>
@@ -77,6 +84,19 @@ namespace StatisticCommon
                     //    ? SystemColors.Window :
                             value;
             }
+        }
+
+        public void Fill (Dictionary<int, VALUE[]> values)
+        {
+            foreach (KeyValuePair<int, VALUE []> pair in values) {
+                foreach (VALUE value in pair.Value) {
+
+                }
+            }
+        }
+
+        public void Fill (VALUE [,] values)
+        {
         }
     }
  }

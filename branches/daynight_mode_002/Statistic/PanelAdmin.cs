@@ -237,6 +237,7 @@ namespace Statistic
         }
 
         public PanelAdmin(int idListener, HMark markQueries, int [] arTECLimit)
+            : base(MODE_UPDATE_VALUES.ACTION)
         {
             createAdmin ();
 
@@ -257,6 +258,7 @@ namespace Statistic
         }
 
         public PanelAdmin(List<StatisticCommon.TEC> tec)
+            : base (MODE_UPDATE_VALUES.ACTION)
         {
             createAdmin ();
             
@@ -321,6 +323,18 @@ namespace Statistic
             if (m_admin.IsStarted == true) m_admin.Stop(); else ;
 
             base.Stop ();
+        }
+
+        public override bool Activate (bool active)
+        {
+            bool bRes = base.Activate (active);
+
+            if (bRes == true) {
+                m_admin.Activate (active);
+            } else
+                ;
+
+            return bRes;
         }
 
         protected virtual void getDataGridViewAdmin() {}
@@ -568,20 +582,11 @@ namespace Statistic
             return false;
         }
 
-        public virtual void ClearTables() {}
+        public virtual void ClearTables() { }
 
-        public override bool Activate(bool active)
+        public override void UpdateGraphicsCurrent (int type)
         {
-            bool bRes = base.Activate (active);
-            
-            if (bRes == true)
-            {
-                m_admin.Activate(active);
-            }
-            else
-                ;
-
-            return bRes;
+            setDataGridViewAdmin (mcldrDate.SelectionStart.Date);
         }
     }
 }

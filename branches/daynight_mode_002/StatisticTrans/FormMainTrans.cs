@@ -1402,8 +1402,8 @@ namespace StatisticTrans
         /// <summary>
         /// Экспорт данных ихз источника
         /// </summary>
-        /// <param name="sender"></param>
-        /// <param name="e"></param>
+        /// <param name="sender">Объект, инициировавший событие</param>
+        /// <param name="e">Аргумент события</param>
         private void buttonSourceExport_Click(object sender, EventArgs e)
         {
             if (!(comboBoxTECComponent.SelectedIndex < 0))
@@ -1527,8 +1527,8 @@ namespace StatisticTrans
         /// <summary>
         /// обработчи события клика по иконке в трее
         /// </summary>
-        /// <param name="sender"></param>
-        /// <param name="e"></param>
+        /// <param name="sender">Объект, инициировавший событие</param>
+        /// <param name="e">Аргумент события</param>
         private void развернутьToolStripMenuItem_Click(object sender, EventArgs e)
         {
             //if (notifyIconMain.Visible == true)

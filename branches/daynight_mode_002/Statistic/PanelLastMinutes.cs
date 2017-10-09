@@ -294,6 +294,7 @@ namespace Statistic
         private event DelegateObjectFunc EventChangeDateTime;
 
         public PanelLastMinutes(List<StatisticCommon.TEC> listTec/*, DelegateStringFunc fErrRep, DelegateStringFunc fWarRep, DelegateStringFunc fActRep, DelegateBoolFunc fRepClr*/)
+            : base (MODE_UPDATE_VALUES.AUTO)
         {
             InitializeComponent();
 
@@ -565,7 +566,8 @@ namespace Statistic
 
             private Button m_btnUpdate;
 
-            public PanelDateTime() : base ()
+            public PanelDateTime()
+                : base (MODE_UPDATE_VALUES.ACTION)
             {
                 InitializeComponent();
 

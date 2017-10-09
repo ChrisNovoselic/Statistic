@@ -98,6 +98,7 @@ namespace Statistic
         }
 
         public PanelCurPower(List<StatisticCommon.TEC> listTec/*, DelegateStringFunc fErrRep, DelegateStringFunc fWarRep, DelegateStringFunc fActRep, DelegateBoolFunc fRepClr*/)
+            : base (MODE_UPDATE_VALUES.AUTO)
         {
             InitializeComponent();
 

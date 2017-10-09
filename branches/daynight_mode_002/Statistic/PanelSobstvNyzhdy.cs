@@ -87,7 +87,7 @@ namespace Statistic
         /// </summary>
         /// <param name="listTec">Лист ТЭЦ</param>
         public PanelSobstvNyzhdy(List<StatisticCommon.TEC> listTec)
-            : base(typeof(PanelTecSobstvNyzhdy))
+            : base(MODE_UPDATE_VALUES.AUTO, typeof(PanelTecSobstvNyzhdy))
         {
             InitializeComponent();
 
@@ -120,16 +120,16 @@ namespace Statistic
         }
 
         /// <summary>
-        /// Метод ререрисовки графика
+        /// Метод непосредственного применения параметров графического представления данных
         /// </summary>
-        /// <param name="type"></param>
-        public void UpdateGraphicsCurrent(int type)
+        /// <param name="type">Тип изменившихся параметров</param>
+        public override void UpdateGraphicsCurrent(int type)
         {
             foreach (Control ctrl in this.Controls)
             {
                 if (ctrl is PanelTecSobstvNyzhdy)
                 {
-                    ((PanelTecSobstvNyzhdy)ctrl).DrawGraphHours();
+                    ((PanelTecSobstvNyzhdy)ctrl).UpdateGraphicsCurrent (type);
                 }
                 else
                     ;
@@ -252,7 +252,7 @@ namespace Statistic
             /// </summary>
             /// <param name="tec">Лист ТЭЦ</param>
             public PanelTecSobstvNyzhdy(StatisticCommon.TEC tec)
-                : base (-1, -1)
+                : base (MODE_UPDATE_VALUES.AUTO, -1, -1)
             {
                 m_tecView = new TecViewSobstvNyzhdy();
 
@@ -456,8 +456,8 @@ namespace Statistic
             /// <summary>
             /// Обработчик события выбора даты
             /// </summary>
-            /// <param name="sender"></param>
-            /// <param name="e"></param>
+            /// <param name="sender">Объект, инициировавший событие(календарь)</param>
+            /// <param name="e">Аргумент события</param>
             private void dtCurrDate_ChangeValue(object sender, EventArgs e)
             {
                 if (HDateTime.ToMoscowTimeZone(dtCurrDate.Value.Date) == HDateTime.ToMoscowTimeZone(DateTime.Now.Date))
@@ -562,11 +562,11 @@ namespace Statistic
             }
 
             /// <summary>
-            /// Изменения текста Label'ов
+            /// ??? Изменения текста Label'ов (что возвращается)
             /// </summary>
             /// <param name="lblVal">Label</param>
             /// <param name="val">Значение</param>
-            /// <returns></returns>
+            /// <returns>Установленное значение</returns>
             private double setTextToLabelVal(System.Windows.Forms.Label lblVal, double val)
             {
                 if (val > 1)
@@ -583,7 +583,7 @@ namespace Statistic
             /// <summary>
             /// Обработчик таймера
             /// </summary>
-            /// <param name="stateInfo"></param>
+            /// <param name="stateInfo">Аргумент при очередном вызове метода</param>
             private void startChangeValue_Tick(Object stateInfo)
             {
                 dtCurrDate_ChangeValue(null, null);
@@ -659,8 +659,8 @@ namespace Statistic
             /// <summary>
             /// Обработчик выбора строки
             /// </summary>
-            /// <param name="sender"></param>
-            /// <param name="e"></param>
+            /// <param name="sender">Объект, иницировавший событие (DataGridView)</param>
+            /// <param name="e">Аргумент события</param>
             private void dgvSNHour_SelectionChanged(object sender, MouseEventArgs e)
             {
                 if (e.Button == System.Windows.Forms.MouseButtons.Left)
@@ -685,6 +685,11 @@ namespace Statistic
 
             //    return true;
             //}
+
+            public override void UpdateGraphicsCurrent (int type)
+            {
+                DrawGraphHours ();
+            }
 
             /// <summary>
             /// Метод для отрисовки графика
@@ -879,8 +884,8 @@ namespace Statistic
             /// <summary>
             /// Обработчик нажатия на пункт контекстного меню "Отобразить в таблице"
             /// </summary>
-            /// <param name="sender"></param>
-            /// <param name="e"></param>
+            /// <param name="sender">Объект, инициировавший событие</param>
+            /// <param name="e">Аргумент события</param>
             private void отобразитьВТаблицеToolStripMenuItem_Click(object sender, EventArgs e)
             {
                 if (((ToolStripMenuItem)sender).Checked == false)//Если не активно то перерисовываем сначала вместе с таблицей

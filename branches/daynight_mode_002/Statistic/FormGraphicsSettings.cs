@@ -377,7 +377,7 @@ namespace Statistic
 
         public static Color _System = Color.Empty;
 
-        public static Color _Custom = Color.SlateGray;
+        public static Color _Custom = Color.FromArgb (255, 112, 128, 144);  // Color.SlateGray;
 
         private Color _pressed = Color.FromArgb (255, 52, 68, 84);
 

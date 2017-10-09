@@ -629,6 +629,7 @@ namespace Statistic
         protected abstract void createPanelQuickData();
 
         public PanelTecViewBase(/*TecView.TYPE_PANEL type, */TEC tec, int indx_tec, int indx_comp, HMark markQueries)
+            : base (MODE_UPDATE_VALUES.AUTO)
         {
             //InitializeComponent();
 
@@ -1358,7 +1359,11 @@ namespace Statistic
                         ;
         }
 
-        public virtual void UpdateGraphicsCurrent(int type)
+        /// <summary>
+        /// Метод непосредственного применения параметров графического представления данных
+        /// </summary>
+        /// <param name="type">Тип изменившихся параметров</param>
+        public override void UpdateGraphicsCurrent(int type)
         {
             lock (m_tecView.m_lockValue)
             {

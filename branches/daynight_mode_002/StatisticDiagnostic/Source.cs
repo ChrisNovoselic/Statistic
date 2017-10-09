@@ -979,8 +979,8 @@ namespace StatisticDiagnostic
                 /// Обработка события клика по пункту меню "Active"
                 /// для активации нового источника СОТИАССО
                 /// </summary>
-                /// <param name="sender"></param>
-                /// <param name="e"></param>
+                /// <param name="sender">Объект, инициировавший событие</param>
+                /// <param name="e">Аргумент события</param>
                 private void toolStripMenuItem_Click(object sender, EventArgs e)
                 {
                     int iPrevSourceId = -1, iNewSourceId = -1

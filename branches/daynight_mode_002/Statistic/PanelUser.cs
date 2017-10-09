@@ -123,7 +123,7 @@ namespace Statistic
         #endregion
 
         public PanelUser()
-            : base()
+            : base(MODE_UPDATE_VALUES.ACTION)
         {
 
             m_arr_origTable = new DataTable[(int)ID_Table.Count];

@@ -346,8 +346,8 @@ namespace Statistic {
         /// <summary>
         /// Обработчик события нажатия на кнопку импорта из Excel
         /// </summary>
-        /// <param name="sender"></param>
-        /// <param name="e"></param>
+        /// <param name="sender">Объект, инициировавший событие</param>
+        /// <param name="e">Аргумент события</param>
         private void btnImportExcel_Click(object sender, EventArgs e)
         {
             int err = -1;
@@ -382,8 +382,8 @@ namespace Statistic {
         /// <summary>
         /// Обработчик события нажатия на кнопку экспорта в Excel
         /// </summary>
-        /// <param name="sender"></param>
-        /// <param name="e"></param>
+        /// <param name="sender">Объект, инициировавший событие</param>
+        /// <param name="e">Аргумент события</param>
         private void btnExportExcel_Click(object sender, EventArgs e)
         {
             //FolderBrowserDialog exportFolder = new FolderBrowserDialog();
@@ -503,8 +503,8 @@ namespace Statistic {
         /// <summary>
         /// Обработчик события выбора ячейки
         /// </summary>
-        /// <param name="sender"></param>
-        /// <param name="e"></param>
+        /// <param name="sender">Объект, инициировавший событие</param>
+        /// <param name="e">Аргумент события</param>
         public void DataGridViewAdminLK_CellValueChanged(object sender, DataGridViewCellEventArgs e)
         {
             if ((m_listIds.Count == Columns.Count - 4)
@@ -558,8 +558,8 @@ namespace Statistic {
         /// <summary>
         /// Метод проверки введенного значения в ячейку
         /// </summary>
-        /// <param name="sender"></param>
-        /// <param name="e"></param>
+        /// <param name="sender">Объект, инициировавший событие</param>
+        /// <param name="e">Аргумент события</param>
         protected override void dgwAdminTable_CellValidated(object sender, DataGridViewCellEventArgs e)
         {
             double value;
@@ -584,8 +584,8 @@ namespace Statistic {
         /// <summary>
         /// Обработчик события нажатия на кнопку в ячейке 
         /// </summary>
-        /// <param name="sender"></param>
-        /// <param name="e"></param>
+        /// <param name="sender">Объект, инициировавший событие</param>
+        /// <param name="e">Аргумент события</param>
         protected override void dgwAdminTable_CellClick(object sender, DataGridViewCellEventArgs e)
         {
             if ((this.Columns[e.ColumnIndex].Name == arDescStringIndex[(int)DESC_INDEX.TO_ALL]) && (!(e.RowIndex < 0))) // кнопка применение для всех

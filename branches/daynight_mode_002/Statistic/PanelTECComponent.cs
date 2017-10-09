@@ -148,7 +148,7 @@ namespace Statistic
         #endregion
 
         public PanelTECComponent(List<StatisticCommon.TEC> tec)
-            : base()
+            : base(MODE_UPDATE_VALUES.AUTO)
         {
             InitializeComponent();
 

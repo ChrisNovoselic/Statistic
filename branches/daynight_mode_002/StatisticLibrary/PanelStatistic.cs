@@ -12,8 +12,23 @@ namespace StatisticCommon
 {
     public abstract class PanelStatistic : HPanelCommon
     {
-        protected DelegateFunc delegateStartWait;
-        protected DelegateFunc delegateStopWait;
+        /// <summary>
+        /// Перечисление - возможные значения для режима обновления значений
+        /// </summary>
+        public enum MODE_UPDATE_VALUES { NOT_SET, AUTO, ACTION }
+        /// <summary>
+        /// Режим обновления значений
+        /// </summary>
+        protected MODE_UPDATE_VALUES _modeUpdateValues;
+        /// <summary>
+        /// Делегаты для отображения/скрытия элемента управления
+        ///  , визуализирующего длительный процесс обработки запроса
+        /// </summary>
+        protected DelegateFunc delegateStartWait
+            , delegateStopWait;
+        /// <summary>
+        /// Делегат при обработке события обновления (??? чего)
+        /// </summary>
         protected DelegateFunc delegateEventUpdate;
         /// <summary>
         /// Фильтр для диалогового окна открыть шаблон/макет книги MS Excel  для импорта/экспорта
@@ -24,12 +39,14 @@ namespace StatisticCommon
         /// </summary>
         /// <param name="cCols">Количество столбцов в макете для размещения элементов управления</param>
         /// <param name="cRows">Количество строк в макете для размещения элементов управления</param>
-        public PanelStatistic (int cCols = -1, int cRows = -1)
+        public PanelStatistic (MODE_UPDATE_VALUES modeUpdateValues, int cCols = -1, int cRows = -1)
             : base(cCols, cRows)
         {
             Thread.CurrentThread.CurrentCulture =
             Thread.CurrentThread.CurrentUICulture =
                 ProgramBase.ss_MainCultureInfo;
+
+            _modeUpdateValues = modeUpdateValues;
 
             Application.OpenForms[0].BackColorChanged += formMain_BackColorChanged;
         }
@@ -40,7 +57,7 @@ namespace StatisticCommon
         /// <param name="ctrl">Элемент интерфйеса</param>
         /// <param name="types">Последовательность типов, объекты которых необходимо искать</param>
         /// <returns>Последовательность элементов</returns>
-        private IEnumerable<Control> getTypedControls (Control ctrl, IEnumerable<Type> types)
+        protected IEnumerable<Control> getTypedControls (Control ctrl, IEnumerable<Type> types)
         {
             List<Control> listRes = new List<Control>();
 
@@ -53,7 +70,11 @@ namespace StatisticCommon
             return listRes;
         }
 
-
+        /// <summary>
+        /// Обработчик события - изменение цветовой схемы отображения
+        /// </summary>
+        /// <param name="sender">Объект, инициировавший событие(форма)</param>
+        /// <param name="e">Аргумент события</param>
         protected virtual void formMain_BackColorChanged (object sender, EventArgs e)
         {
             List<Control> listCtrlDoChangeBackColor;
@@ -82,15 +103,15 @@ namespace StatisticCommon
             return true;
         }
 
-        //protected List<TEC> m_listTEC;
+        public abstract void UpdateGraphicsCurrent (int type);
     }
 
     public abstract class PanelContainerStatistic : PanelStatistic
     {
         private Type _controlType;
 
-        public PanelContainerStatistic(Type type)
-            : base()
+        public PanelContainerStatistic(MODE_UPDATE_VALUES modeUpdateValues, Type type)
+            : base(modeUpdateValues)
         {
             registredControlType(type);
         }
@@ -181,6 +202,11 @@ namespace StatisticCommon
 
     public abstract class PanelStatisticWithTableHourRows : PanelStatistic
     {
+        public PanelStatisticWithTableHourRows (MODE_UPDATE_VALUES modeUpdateValues)
+            : base (modeUpdateValues)
+        {
+        }
+
         protected abstract void initTableHourRows();
     }
 }
