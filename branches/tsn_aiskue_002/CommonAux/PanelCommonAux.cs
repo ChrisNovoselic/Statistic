@@ -107,634 +107,6 @@ namespace CommonAux
         }
     }
 
-    /// <summary>
-    /// Класс для описания ТЭЦ с параметрами сигналов
-    /// </summary>
-    public class TEC_LOCAL
-    {
-        /// <summary>
-        /// Список всех значений за весь диапазон дат
-        /// </summary>
-        public List<VALUES_DATE> m_listValuesDate;
-        /// <summary>
-        /// Класс для хранения значений за сутки (все группы сигналов)
-        /// </summary>
-        public struct VALUES_DATE
-        {
-            /// <summary>
-            /// Структура для хранения значений за сутки
-            /// </summary>
-            public struct VALUES_SIGNAL
-            {
-                public double[] m_data;
-
-                public bool m_bUse;
-
-                public VALUES_SIGNAL(bool bUse)
-                {
-                    m_data = new double[24];
-
-                    m_bUse = bUse;
-                }
-            }
-            /// <summary>
-            /// Класс для хранения значений группы сигналов
-            /// </summary>
-            public class VALUES_GROUP : Dictionary<SIGNAL.KEY, VALUES_SIGNAL>
-            {
-                /// <summary>
-                /// Перечисление для методов расчета потерь эл./эн. в сети ТЭЦ (стандартный/специальный)
-                /// </summary>
-                public enum MODE : short { STANDARD, EPOTERI }
-                //!!! сумма значений каждого из массивов 'sgnlValues', 'grpValues' д.б. равны между собой
-                /// <summary>
-                /// Cумма для группы сигналов по часам
-                /// </summary>
-                public double[] m_summaHours;
-                /// <summary>
-                /// Cумма для сигналов за сутки (по-сигнально)
-                ///  индекс сигнала соответствует индексу ключа сигнала в коллекции ключей объекта
-                /// </summary>
-                public List<double> m_summaSgnls;
-                /// <summary>
-                /// Сумма значений всех сигналов группы за сутки
-                /// </summary>
-                public double m_Summa;
-
-                private MODE _mode;
-                /// <summary>
-                /// Конструктор - основной (без параметров)
-                /// </summary>
-                private VALUES_GROUP(MODE mode)
-                {
-                    _mode = mode;
-
-                    initialize();
-                }
-
-                public VALUES_GROUP(List<SIGNAL> listSgnls, MODE mode) : this(mode)
-                {
-                    InitSignals(listSgnls);
-                }
-                /// <summary>
-                /// Инициализация полей объекта
-                /// </summary>
-                private void initialize()
-                {
-                    m_summaHours = new double[24];
-
-                    if (m_summaSgnls == null)
-                        m_summaSgnls = new List<double>();
-                    else
-                        m_summaSgnls.Clear();
-
-                    m_Summa = 0F;
-                }
-
-                public void InitSignals(List<SIGNAL> listSgnls)
-                {
-                    foreach (SIGNAL sgnl in listSgnls)
-                    {
-                        Add(sgnl.m_key, new VALUES_SIGNAL(sgnl.m_bUse));
-
-                        m_summaSgnls.Add(0F);
-                    }
-                }
-                /// <summary>
-                /// Установить значение для сигнала по ключу, индексу часа
-                /// </summary>
-                /// <param name="key">Ключ сигнала</param>
-                /// <param name="iHour">Индекс часа</param>
-                /// <param name="value">Устанавливаемое значение</param>
-                public void SetValue(SIGNAL.KEY key, int iHour, double value)
-                {
-                    int indxKey = Keys.ToList().IndexOf(key);
-
-                    this[key].m_data[iHour] = value;
-
-                    if (indxKey < m_summaSgnls.Count)
-                    {
-                        m_summaSgnls[indxKey] += value;
-
-                        if (this[key].m_bUse == true)
-                        {
-                            if (_mode == MODE.STANDARD)
-                            {
-                                m_summaHours[iHour] += value;
-                                m_Summa += value;
-                            }
-                            else
-                                ;
-                        }
-                        else
-                            ;
-                    }
-                    else
-                        throw new Exception(string.Format(@"TEC.VALUES_DATE.VALUES_GROUP::SetValue () - для сигнала key={0} за час={1}..."
-                            , key.ToString(), iHour));
-                }
-                /// <summary>
-                /// Специальный метод расчета потерь эл./эн. в сети ТЭЦ
-                ///  только для группы в режиме 'MODE.EPOTERI'
-                /// </summary>
-                public void CompleteSetValues()
-                {
-                    int[,] Koef = new int[,] { { 40000, 45, 168 }
-                        , { 40000, 45, 168 }
-                        , { 40000, 41, 163 }
-                        , { 40000, 41, 163 }
-                        , { 40000, 33, 168 }
-                        , { 40000, 33, 168 }
-                    };
-
-                    double[] k1 = new double[] { (double)Koef[0, 1] / 2 //4
-                        , (double)Koef[1, 1] / 2 //4
-                        , (double)Koef[2, 1] / 2 //4
-                        , (double)Koef[3, 1] / 2 //4
-                        , (double)Koef[4, 1] / 2 //4
-                        , (double)Koef[5, 1] / 2 //4
-                    };
-                    double[] k2 = new double[] { 1/*2*/ * Koef[0, 2] / Math.Pow(Koef[0, 0], 2)
-                        , 1/*2*/ * Koef[1, 2] / Math.Pow(Koef[1, 0], 2)
-                        , 1/*2*/ * Koef[2, 2] / Math.Pow(Koef[2, 0], 2)
-                        , 1/*2*/ * Koef[3, 2] / Math.Pow(Koef[3, 0], 2)
-                        , 1/*2*/ * Koef[4, 2] / Math.Pow(Koef[4, 0], 2)
-                        , 1/*2*/ * Koef[5, 2] / Math.Pow(Koef[5, 0], 2)
-                    };
-
-                    int o = 4369;
-                    int[,] items = new int[,] { { 25, 29, 27, 31} //P-, P-, Q-, Q-
-                        , { 26, 30, 28, 32 } //P+, P+, Q+, Q+
-                        , { 33, 37, 35, 39 } //P-, P-, Q-, Q-
-                        , { 34, 38, 36, 40 } //P+, P+, Q+, Q+
-                        , { 41, 43, 42, 44 } //P-, P-, Q-, Q-
-                        , { 73, 75, 74, 76 } //P+, P+, Q+, Q+
-                    };
-
-                    int iHour = -1
-                        , iPoteri = -1;
-                    SIGNAL.KEY key;
-                    double e;
-                    double[,] values = new double[6 + 1, 24 + 1]; // "+1" для суммарных значений
-
-                    if (_mode == MODE.EPOTERI)
-                    {
-                        for (iPoteri = 0; iPoteri < 6; iPoteri++)
-                        {
-                            for (iHour = 0; iHour < 24; iHour++)
-                            {
-                                e = (Math.Pow(this[new SIGNAL.KEY(o, items[iPoteri, 0])].m_data[iHour] * 1000 + this[new SIGNAL.KEY(o, items[iPoteri, 1])].m_data[iHour] * 1000, 2)
-                                    + Math.Pow(this[new SIGNAL.KEY(o, items[iPoteri, 2])].m_data[iHour] * 1000 + this[new SIGNAL.KEY(o, items[iPoteri, 3])].m_data[iHour] * 1000, 2));
-
-                                if (iPoteri % 2 == 0)
-                                {
-                                    values[iPoteri, iHour] = -k1[iPoteri] - k2[iPoteri] * e;
-
-                                    m_summaHours[iHour] -= values[iPoteri, iHour];
-                                }
-                                else
-                                    if (iPoteri % 2 == 1)
-                                {
-                                    values[iPoteri, iHour] = k1[iPoteri] + k2[iPoteri] * e;
-
-                                    m_summaHours[iHour] += values[iPoteri, iHour];
-                                }
-                                else
-                                    ;
-
-                                values[iPoteri, 24] += values[iPoteri, iHour];
-                            }
-                        }
-
-                        for (iHour = 0; iHour < 24; iHour++)
-                        {
-                            m_summaHours[iHour] /= 1000;
-                            m_Summa += m_summaHours[iHour];
-                        }
-                    }
-                    else
-                        ;
-                }
-                /// <summary>
-                /// Очистиь значения объекта, привести в начальное (при создании) состояние
-                /// </summary>
-                public void ClearValues()
-                {
-                    Clear();
-
-                    initialize();
-                }
-            }
-            /// <summary>
-            /// Метка времени текущего объекта
-            /// </summary>
-            public DateTime m_dataDate;
-            /// <summary>
-            /// Словарь значений для групп сигналов (ключ - индекс группы сигналов, значение - группа сигналов)
-            /// </summary>
-            public Dictionary<INDEX_DATA, VALUES_GROUP> m_dictData;
-            /// <summary>
-            /// Конструктор специальный для реализации алгоритма расчета ТСН по ВАРИАНТУ №2
-            /// </summary>
-            /// <param name="dt">Дата для набора значений нового экземпляра</param>
-            /// <param name="dictValues">Словарь с исходными данными для расчета. KEYS=TG, GRII, GRVI, GRVII</param>
-            public VALUES_DATE(DateTime dt)
-            {
-                m_dataDate = dt;
-
-                m_dictData = new Dictionary<INDEX_DATA, VALUES_GROUP>();
-            }
-            /// <summary>
-            /// Конструктор - дополнительный (с парметрами)
-            /// </summary>
-            /// <param name="dt">Дата - метка времени для набора значений</param>
-            /// <param name="indx">Индекс группы сигналов</param>
-            /// <param name="listRecRes">Список значений в наборе</param>
-            public VALUES_DATE(DateTime dt, INDEX_DATA indx, List<SIGNAL> listSgnls, List<RecordResult> listRecRes)
-            {
-                m_dataDate = dt;
-
-                m_dictData = new Dictionary<INDEX_DATA, VALUES_GROUP>();
-
-                SetValues(indx, listSgnls, listRecRes);
-            }
-            /// <summary>
-            /// Инициализировать список доступных сигналов в группе
-            ///  не вызывается при отсутствии сигналов
-            /// </summary>
-            /// <param name="indx">Индекс-идентификатор группы сигналов</param>
-            /// <param name="listSgnls">Список доступных сигналов</param>
-            private void initSignals(INDEX_DATA indx, List<SIGNAL> listSgnls)
-            {
-                if (m_dictData.ContainsKey(indx) == false)
-                {
-                    // с VIII-ой группой произойдет вызов только приналичии сигналов
-                    m_dictData.Add(indx, new VALUES_GROUP(
-                        listSgnls
-                        , (!(indx == INDEX_DATA.GRVIII)) ?
-                            VALUES_GROUP.MODE.STANDARD :
-                            VALUES_GROUP.MODE.EPOTERI));
-                }
-                else
-                    m_dictData[indx].InitSignals(listSgnls);
-            }
-            /// <summary>
-            /// Установить значения для группы сигналов по индексу группы
-            /// </summary>
-            /// <param name="indx">Индекс группы сигналов</param>
-            /// <param name="listSgnls">Список сигналов</param>
-            /// <param name="listRecRes">Список значений</param>
-            public void SetValues(INDEX_DATA indx, List<SIGNAL> listSgnls, List<RecordResult> listRecRes)
-            {
-                initSignals(indx, listSgnls);
-
-                SetValues(indx, listRecRes);
-            }
-            /// <summary>
-            /// Установить значения для группы сигналов по индексу группы
-            /// </summary>
-            /// <param name="indx">Индекс группы сигналов</param>
-            /// <param name="listRecRes">Список значений</param>
-            public void SetValues(INDEX_DATA indx, List<RecordResult> listRecRes)
-            {
-                SIGNAL.KEY keySgnl; // ключ для сигнала
-                int iHour = -1; // индекс часа
-                MethodBase methodBase = MethodBase.GetCurrentMethod();
-                string errMsg = string.Format(@"{0}.{1}::{2} () - ", methodBase.Module, methodBase.DeclaringType, methodBase.Name);
-
-                if (m_dictData.ContainsKey(indx) == true)
-                {
-                    foreach (RecordResult r in listRecRes)
-                    {
-                        keySgnl = new SIGNAL.KEY(r.m_key);
-
-                        if (m_dictData[indx].ContainsKey(keySgnl) == true)
-                        {
-                            // дата всегда одна и та же за исключением одной записи
-                            iHour = r.m_dtRec.Hour > 0 ? r.m_dtRec.Hour - 1 : 23;
-                            m_dictData[indx].SetValue(keySgnl, iHour, r.m_value);
-                        }
-                        else
-                            Logging.Logg().Error(string.Format(@"{0}в словаре c INDEX={1} не инициализирован сигнал key={2}"
-                                    , errMsg, indx.ToString(), keySgnl.ToString())
-                                , Logging.INDEX_MESSAGE.NOT_SET);
-                    }
-
-                    m_dictData[indx].CompleteSetValues();
-                }
-                else
-                    Logging.Logg().Error(string.Format(@"{0}в словаре не инициализирована группа сигналов INDEX={1}..."
-                            , errMsg, indx.ToString())
-                        , Logging.INDEX_MESSAGE.NOT_SET);
-            }
-            /// <summary>
-            /// Установить значение для сигнала группы, по ключу, за указанный час
-            /// </summary>
-            /// <param name="indx">Индекс группы сигналов</param>
-            /// <param name="keySgnl">Ключ сигнала</param>
-            /// <param name="iHour">Индекс часа в сутках</param>
-            /// <param name="value">Устанавливаемое значение</param>
-            public void SetValue(INDEX_DATA indx, SIGNAL.KEY keySgnl, int iHour, double value)
-            {
-                MethodBase methodBase = MethodBase.GetCurrentMethod();
-                string errMsg = string.Format(@"{0}.{1}::{2} () - ", methodBase.Module, methodBase.DeclaringType, methodBase.Name);
-
-                if (m_dictData.ContainsKey(indx) == true)
-                    if (m_dictData[indx].ContainsKey(keySgnl) == true)
-                        m_dictData[indx][keySgnl].m_data[iHour] = value;
-                    else
-                        Logging.Logg().Error(string.Format(@"{0}в словаре c INDEX={1} не инициализирован сигнал key={2}"
-                                , errMsg, indx.ToString(), keySgnl.ToString())
-                            , Logging.INDEX_MESSAGE.NOT_SET);
-                else
-                    Logging.Logg().Error(string.Format(@"{0}в словаре не инициализирована группа сигналов INDEX={1}..."
-                            , errMsg, indx.ToString())
-                        , Logging.INDEX_MESSAGE.NOT_SET);
-            }
-            /// <summary>
-            /// Возвратить значения (одни сутки + все часы) в соответствии с ~ ВАРИАНТом расчета
-            /// </summary>
-            /// <returns>Объект со значениями (одни сутки)</returns>
-            public double[] GetValues(out int err)
-            {
-                err = 0;
-
-                double[] arRes = new double[24];
-
-                int iHour = -1;
-
-                //// вариант №1
-                //if (m_dictData.ContainsKey(INDEX_DATA.TSN) == true)
-                //    m_dictData[INDEX_DATA.TSN].m_summaHours.CopyTo(arRes, 0);
-                //else
-                //    err = -1;
-
-                // вариант №2
-                if ((m_dictData.ContainsKey(INDEX_DATA.TG) == true)
-                    && (m_dictData.ContainsKey(INDEX_DATA.GRII) == true)
-                    && (m_dictData.ContainsKey(INDEX_DATA.GRVI) == true)
-                    && (m_dictData.ContainsKey(INDEX_DATA.GRVII) == true))
-                    for (iHour = 0; iHour < 24; iHour++)
-                    {
-                        arRes[iHour] = m_dictData[INDEX_DATA.TG].m_summaHours[iHour]
-                            - (m_dictData[INDEX_DATA.GRVII].m_summaHours[iHour]
-                                + m_dictData[INDEX_DATA.GRVI].m_summaHours[iHour]
-                                - m_dictData[INDEX_DATA.GRII].m_summaHours[iHour]);
-
-                        // только для НТЭЦ-5 MODE=[EPOTERI]
-                        if (m_dictData.ContainsKey(INDEX_DATA.GRVIII) == true)
-                            // для MODE.STANDARD д.б. всегда == 0
-                            arRes[iHour] += m_dictData[INDEX_DATA.GRVIII].m_summaHours[iHour];
-                        else
-                            ;
-                    }
-                else
-                    err = -1;
-
-                return arRes;
-            }
-            /// <summary>
-            /// Обязательный для переопределения метод сравнения
-            /// </summary>
-            /// <param name="obj">Объект для срвнения</param>
-            /// <returns>Результат сравнения</returns>
-            public override bool Equals(object obj)
-            {
-                return this == (VALUES_DATE)obj; ;
-            }
-            /// <summary>
-            /// Обязательный для переопределения метод сравнения
-            /// </summary>
-            /// <returns>Результат сравнения</returns>
-            public override int GetHashCode()
-            {
-                return base.GetHashCode();
-            }
-
-            public static bool operator ==(VALUES_DATE obj1, VALUES_DATE obj2)
-            {
-                return (obj1.m_dataDate == obj2.m_dataDate)
-                    //&& (obj1.m_dictData == obj2.m_dictData)
-                    ;
-            }
-
-            public static bool operator !=(VALUES_DATE obj1, VALUES_DATE obj2)
-            {
-                return ((!(obj1.m_dataDate == obj2.m_dataDate))
-                    //|| (!(obj1.m_dictData == obj2.m_dictData))
-                    );
-            }
-        }
-        /// <summary>
-        /// Конструктор - основной (без параметров)
-        /// </summary>
-        public TEC_LOCAL()
-        {
-            m_listValuesDate = new List<VALUES_DATE>();
-            m_arTableResult = new TableResult[Enum.GetValues(typeof(INDEX_DATA)).Length];
-            m_arListSgnls = new List<SIGNAL>[Enum.GetValues(typeof(INDEX_DATA)).Length];
-            m_Sensors = new string[Enum.GetValues(typeof(INDEX_DATA)).Length];
-        }
-        /// <summary>
-        /// Перечисление типов данных для результата
-        /// </summary>
-        public enum INDEX_DATA
-        {
-            TG, TSN, GRII, GRVI, GRVII, GRVIII
-        };
-        /// <summary>
-        /// Таблица - список записей результирующего набора
-        /// </summary>
-        public class TableResult : List<RecordResult>
-        {
-            /// <summary>
-            /// Конструктор - основной (с параметрами)
-            /// </summary>
-            /// <param name="table">Таблица - результат запроса</param>
-            public TableResult(DataTable table)
-            {
-                foreach (DataRow r in table.Rows)
-                    Add(new RecordResult()
-                    {
-                        m_key = new SIGNAL.KEY(
-                            (int)r[@"OBJECT"]
-                            , (int)r[@"ITEM"])
-                        ,
-                        m_dtRec = (DateTime)r[@"DATETIME"]
-                        ,
-                        m_value = (double)r[@"VALUE0"] / 1000
-                        ,
-                        m_count = (int)r[@"COUNT"]
-                    });
-            }
-        }
-        /// <summary>
-        /// Объект для представления одной записи результирующего набора
-        /// </summary>
-        public struct RecordResult
-        {
-            /// <summary>
-            /// Ключ записи
-            /// </summary>
-            public SIGNAL.KEY m_key;
-            /// <summary>
-            /// Дата/время - метка времени значения
-            /// </summary>
-            public DateTime m_dtRec;
-            /// <summary>
-            /// Значение сигнала
-            /// </summary>
-            public double m_value;
-            /// <summary>
-            /// Количество строк, участвовавшие для получения значения при агрегации
-            /// </summary>
-            public int m_count;
-
-            public bool m_bUse;
-        }
-        /// <summary>
-        /// Массив таблиц с результатами запросов
-        /// </summary>
-        public TableResult[] m_arTableResult;
-        /// <summary>
-        /// Строка шаблон для формирования запроса на выбрку значений ТГ, ТСН
-        /// </summary>
-        public static string /*[]*/ s_strQueryTemplate = string.Empty; // new string [Enum.GetValues(typeof(INDEX_DATA)).Length];
-        /// <summary>
-        /// Целочисленный индекс ТЭЦ (из файла конфигурации)
-        /// </summary>
-        public int m_Index;
-        /// <summary>
-        /// Строковый идентификатор ТЭЦ (из файла конфигурации)
-        /// </summary>
-        public string m_strId;
-        /// <summary>
-        /// Целочисленный идентификатор ТЭЦ (из файла конфигурации)
-        /// </summary>
-        public int m_Id;
-        /// <summary>
-        /// Строка - краткое наименование ТЭЦ
-        /// </summary>
-        public string m_strNameShr;
-        /// <summary>
-        /// Массив списков сигналов по-группно (ТГ, ТСН, GRII и т.д.)
-        /// </summary>
-        public List<SIGNAL>[] m_arListSgnls;
-        /// <summary>
-        /// Строка с идентификаторами сигналов ТГ, ТСН
-        ///  для использования в запросе при выборке значений
-        /// </summary>
-        public string[] m_Sensors;
-        /// <summary>
-        /// Массив с номерами столбцов в шаблоне (книге MS Excel) для сохранения значений этой ТЭЦ
-        /// </summary>
-        public int[] m_arMSExcelNumColumns;
-        /// <summary>
-        /// Инициализация строки с идентификаторами сигналов
-        ///  для использования в запросе при выборке значений
-        /// </summary>
-        public void InitSensors()
-        {
-            foreach (INDEX_DATA indx in Enum.GetValues(typeof(INDEX_DATA)))
-                m_Sensors[(int)indx] = getSensors(m_arListSgnls[(int)indx]);
-        }
-        /// <summary>
-        /// Возвратить строку с идентификаторами сигналов для указанного списка
-        /// </summary>
-        /// <param name="listSgnls">Список сигналов для которых требуется возвратить строку</param>
-        /// <returns>Строка с идентификаторами сигналов</returns>
-        private static string getSensors(List<SIGNAL> listSgnls)
-        {
-            string strRes = string.Empty;
-
-            List<int> listIdUSPD = new List<int>();
-            List<string> sensorsUSPD = new List<string>();
-            string strOR = @" OR ";
-
-            if ((!(listSgnls == null))
-                && (listSgnls.Count > 0))
-            {
-                foreach (SIGNAL s in listSgnls)
-                {
-                    if (listIdUSPD.IndexOf(s.m_key.m_object) < 0)
-                    {
-                        listIdUSPD.Add(s.m_key.m_object);
-
-                        sensorsUSPD.Add(@"([OBJECT] = " + s.m_key.m_object + @" AND [ITEM] IN (" + s.m_key.m_item);
-                    }
-                    else
-                        sensorsUSPD[listIdUSPD.IndexOf(s.m_key.m_object)] += (@"," + s.m_key.m_item);
-                }
-
-                foreach (string s in sensorsUSPD)
-                {
-                    //Добавить завершающие скобки (1-я для IN, 2-я для [OBJECT])
-                    strRes += s + @"))";
-                    strRes += strOR;
-                }
-
-                if (strRes.Equals(string.Empty) == false)
-                    strRes = strRes.Substring(0, strRes.Length - strOR.Length);
-                else
-                    Logging.Logg().Error(string.Format(@"TEC::getSensors () - не распознан ни один сигнал для ТЭЦ...")
-                        , Logging.INDEX_MESSAGE.NOT_SET);
-            }
-            else
-                Logging.Logg().Error(string.Format(@"TEC::getSensors () - не определен ни один сигнал для ТЭЦ...")
-                    , Logging.INDEX_MESSAGE.NOT_SET);
-
-            return strRes;
-        }
-        /// <summary>
-        /// Привести полученные значения к часовому формату (из полу-часового)
-        /// </summary>
-        public void parseTableResult(DateTime dtStart, DateTime dtEnd, INDEX_DATA indx, out int err)
-        {
-            err = 0;
-
-            TableResult table;
-            List<RecordResult> rowsDate;
-            VALUES_DATE valuesDate;
-
-            table = m_arTableResult[(int)indx];
-
-            for (DateTime dtRec = dtStart; dtRec < dtEnd; dtRec += TimeSpan.FromDays(1))
-            {
-                // = (DateTime)r[@"DATA_DATE"];
-                valuesDate = m_listValuesDate.Find(item => { return item.m_dataDate == dtRec; });
-                rowsDate = table.FindAll(item => { return (item.m_dtRec > dtRec) && (!(item.m_dtRec > dtRec.AddDays(1))); });
-
-                if (valuesDate.m_dataDate.Equals(DateTime.MinValue) == true)
-                    m_listValuesDate.Add(new VALUES_DATE(dtRec, indx, m_arListSgnls[(int)indx], rowsDate));
-                else
-                {
-                    //valuesDate.InitSignals(indx, m_arListSgnls[(int)indx]);
-
-                    valuesDate.SetValues(indx, m_arListSgnls[(int)indx], rowsDate);
-                }
-            }
-        }
-        /// <summary>
-        /// Очистить значения
-        /// </summary>
-        /// <param name="dtReq">Дата за которую требуется очистить значения</param>
-        /// <param name="indx">Индекс группы сигналов</param>
-        public void ClearValues(DateTime dtReq, INDEX_DATA indx)
-        {
-            VALUES_DATE valuesDate;
-
-            valuesDate = m_listValuesDate.Find(item => { return item.m_dataDate == dtReq; });
-            // проверить успешность поиска объекта
-            if ((valuesDate.m_dataDate > DateTime.MinValue)
-                && (!(valuesDate.m_dictData == null))
-                && (valuesDate.m_dictData.ContainsKey(indx) == true))
-                // объект найден и содержит необходимый ключ - индекс группы сигналов
-                valuesDate.m_dictData[indx].ClearValues();
-            else
-                ; // объект не найден
-        }
-    }
-
     public class MSExcelIO : HClassLibrary.MSExcelIO
     {
         public enum INDEX_MSEXCEL_COLUMN { APOWER, SNUZHDY }
@@ -778,132 +150,154 @@ namespace CommonAux
         }
     }
 
-    class DataGridViewValues : DataGridView
-    {
-        /// <summary>
-        /// Конструктор - основной (без параметров)
-        /// </summary>
-        public DataGridViewValues() : base()
-        {
-            addColumns();
-
-            AutoSizeColumnsMode = DataGridViewAutoSizeColumnsMode.ColumnHeader;
-            DefaultCellStyle.Alignment = DataGridViewContentAlignment.MiddleRight;
-        }
-        /// <summary>
-        /// Добавить столбцы по количеству часов + столбец для итогового для сигнала значения
-        /// </summary>
-        private void addColumns()
-        {
-            int iHour = -1;
-
-            for (iHour = 0; iHour < 24; iHour++)
-            {
-                Columns.Add((iHour + 1).ToString(@"00"), (iHour + 1).ToString(@"00"));
-                // отобразить номер часа в заголовке столбца
-                //Columns[ColumnCount - 1].HeaderCell.Value = string.Format(@"{0:HH:mm}", iHour < 23 ? TimeSpan.FromHours(iHour + 1) : TimeSpan.Zero);
-            }
-            // добавить столбец для итогового для сигнала значения
-            Columns.Add(@"DATE", @"Сутки");
-        }
-        /// <summary>
-        /// Идентификатор итоговой строки
-        /// </summary>
-        private string groupRowTag = @"Группа";
-        /// <summary>
-        /// Добавить строки для сигналов
-        /// </summary>
-        /// <param name="listSgnls">Срисок сигналов</param>
-        public void AddRowData(List<SIGNAL> listSgnls)
-        {
-            foreach (SIGNAL sgnl in listSgnls)
-            {
-                Rows.Add();
-                // отобразить наименование сигнала
-                Rows[RowCount - 1].HeaderCell.Value = sgnl.m_strDesc;
-                //Rows[RowCount - 1].HeaderCell.Size.Width = 200;
-                // назначить идентификатор строки
-                Rows[RowCount - 1].Tag = new SIGNAL.KEY(sgnl.m_key);
-
-                //Rows[RowCount-1].
-
-                Rows[RowCount - 1].DefaultCellStyle.BackColor = sgnl.m_bUse == true ?
-                    System.Drawing.Color.Empty :
-                        sgnl.m_bUse == false ? System.Drawing.Color.LightGray :
-                            System.Drawing.Color.Gray;
-            }
-            // добавить строку итого
-            Rows.Add();
-            Rows[RowCount - 1].HeaderCell.Value = groupRowTag;
-            // назначить идентификатор итоговой строки
-            Rows[RowCount - 1].Tag = groupRowTag;
-        }
-        /// <summary>
-        /// Удалить все строки(сигналы)
-        /// </summary>
-        public void ClearRows()
-        {
-            Rows.Clear();
-        }
-        /// <summary>
-        /// Очистить значения во всех ячейках
-        /// </summary>
-        public void ClearValues()
-        {
-            foreach (DataGridViewRow r in Rows)
-                foreach (DataGridViewCell c in r.Cells)
-                    c.Value = string.Empty;
-        }
-        /// <summary>
-        /// Отобразить значения
-        /// </summary>
-        /// <param name="values">Значения для отображения</param>
-        public void Update(TEC_LOCAL.VALUES_DATE.VALUES_GROUP values)
-        {
-            int iHour = -1 // номер столбца (часа)
-                , iRow = -1; // номер строки для сигнала
-            double value = -1F;
-            SIGNAL.KEY key; // ключ сигнала - идетификатор строки
-
-            foreach (DataGridViewRow r in Rows)
-            {
-                key = values.Keys.ToList().Find(item => { if (r.Tag is SIGNAL.KEY) return item == (SIGNAL.KEY)r.Tag; else return false; });
-                // проверить найден ли ключ
-                if ((key.m_object > 0)
-                    && (key.m_item > 0))
-                {
-                    iRow = Rows.IndexOf(r);
-                    // заполнить значения для сигнала по часам в сутках
-                    for (iHour = 0; iHour < 24; iHour++)
-                    {
-                        value = values[key].m_data[iHour];
-                        // отобразить значение
-                        r.Cells[iHour].Value = value.ToString(@"F3");
-                    }
-                    // отобразить значение для сигнала за сутки
-                    r.Cells[iHour].Value = values.m_summaSgnls[values.Keys.ToList().IndexOf(key)].ToString(@"F3");
-                }
-                else
-                // ключ для строки не найден
-                    if ((r.Tag is string)
-                        && (((string)r.Tag).Equals(groupRowTag) == true))
-                {
-                    // итоговая строка
-                    for (iHour = 0; iHour < 24; iHour++)
-                        r.Cells[iHour].Value = values.m_summaHours[iHour].ToString(@"F3");
-
-                    r.Cells[iHour].Value = values.m_Summa;
-                }
-                else
-                    Logging.Logg().Error(
-                        string.Format(@"View.DataGridViewValues::Update () - не найден столбец для KEY_SIGNAL=[object={0}, item={1}]"
-                            , ((SIGNAL.KEY)r.Tag).m_object, ((SIGNAL.KEY)r.Tag).m_item)
-                        , Logging.INDEX_MESSAGE.NOT_SET);
-            }
-        }
-    }
     public partial class PanelCommonAux : PanelStatistic
     {
+        /// <summary>
+        /// Режим отображения (в составе статистики/самостоятельная вкладка)
+        /// </summary>
+        protected int m_displayMode;
+        /// <summary>
+        /// Объект с параметрами соединения с источником данных
+        /// </summary>
+        protected ConnectionSettings m_connSettAIISKUECentre;
+        /// <summary>
+        /// Список ТЭЦ с параметрами из файла конфигурации
+        /// </summary>
+        protected List<TEC_LOCAL> m_listTEC;
+        /// <summary>
+        /// Объект для инициализации входных параметров
+        /// </summary>
+        protected GetDataFromDB m_GetDataFromDB;
+        private enum INDEX_CONTROL : short { LB_TEC, LB_GROUP_SIGNAL }
+        /// <summary>
+        /// Поля таблицы сигналов
+        /// </summary>
+        public enum DB_TABLE_DATA
+        {
+            ID, ID_TEC, GROUP, NAME, DESCRIPTION, USPD, CHANNEL, USE
+        };
+
+        private const string MS_EXCEL_FILTER = @"Книга MS Excel 2010 (*.xls, *.xlsx)|*.xls;*.xlsx";
+        /// <summary>
+        /// Перечисление причин, влияющих на готовность к экспорту значений
+        /// </summary>
+        private enum INDEX_READY { TEMPLATE, DATE }
+        /// <summary>
+        /// Объект содержащий признаки готовности к экспорту значений
+        /// </summary>
+        HMark m_markReady;
+        private enum INDEX_MSEXCEL_PARS
+        {
+            /// <summary>
+            /// Полный путь к (исходному) шаблону
+            /// </summary>
+            TEMPLATE_PATH_DEFAULT
+            /// <summary>
+            /// Наименование (исходного) шаблона
+            /// </summary>
+            , TEMPLATE_NAME
+            /// <summary>
+            /// Наименование листа в книге-шаблоне
+            /// </summary>
+            , SHEET_NAME
+            /// <summary>
+            /// Номер столбца для отображения даты
+            /// </summary>
+            , COL_DATADATE
+            /// <summary>
+            /// Смещение относительно 1-ой строки в книге MS Excel
+            ///  для записи значений за 1-ый день месяца
+            /// </summary>
+            , ROW_START
+            /// <summary>
+            /// Количество строк в книге MS Excel на сутки
+            /// </summary>
+            , ROWCOUNT_DATE
+            /// <summary>
+            /// Версия шаблона книги MS Excel
+            /// </summary>
+            , TEMPLATE_VER
+            /// <summary>
+            /// Количество параметров для шаблона книги MS Excel
+            /// </summary>
+            , COUNT
+        }
+        /// <summary>
+        /// Массив с параметрами шаблона книги MS Excel
+        /// </summary>
+        private string[] m_arMSEXEL_PARS;
+        /// <summary>
+        /// Перечисление возможных состояний приложения
+        /// </summary>
+        private enum STATE { UNKNOWN = -1, READY, ERROR }
+
+        private bool m_bVisibleLog;
+        /// <summary>
+        /// Признак видимости элемента управления с содержанием лог-сообщений
+        /// </summary>
+        private bool VisibleLog { get { return m_bVisibleLog; } set { m_bVisibleLog = value; } }
+
+        //private STATE m_State;
+        /// <summary>
+        /// Состояние приложения
+        /// </summary>
+        STATE State { get { return (m_markReady.IsMarked((int)INDEX_READY.TEMPLATE) && m_markReady.IsMarked((int)INDEX_READY.DATE)) == true ? STATE.READY : STATE.ERROR; } }
+
+        private string m_strFullPathTemplate;
+        /// <summary>
+        /// Строка - полный путь для шаблона MS Excel
+        /// </summary>
+        /// 
+        private string FullPathTemplate
+        {
+            get { return m_strFullPathTemplate; }
+
+            set
+            {
+                if ((m_strFullPathTemplate == null)
+                    || ((!(m_strFullPathTemplate == null))
+                        && (m_strFullPathTemplate.Equals(value) == false)))
+                {
+                    m_strFullPathTemplate = value;
+
+                    if ((value.Equals(string.Empty) == false)
+                        && (Path.GetDirectoryName(value).Equals(string.Empty) == false)
+                        && (Path.GetFileName(value).Equals(string.Empty) == false))
+                        EventNewPathToTemplate(m_strFullPathTemplate);
+                    else
+                        ;
+                }
+                else
+                    ;
+            }
+        }
+        /// <summary>
+        /// Событие при назначении нового пути для шаблона MS Excel
+        /// </summary>
+        private event DelegateStringFunc EventNewPathToTemplate;
+
+        private System.Windows.Forms.Button m_btnLoad;
+        private System.Windows.Forms.Button m_btnOpen;
+        private System.Windows.Forms.Button m_btnExit;
+        private System.Windows.Forms.Button m_btnStripButtonExcel;
+        private System.Windows.Forms.ListBox m_listBoxTEC;
+        private System.Windows.Forms.ListBox m_listBoxGrpSgnl;
+        private System.Windows.Forms.MonthCalendar m_monthCalendarStart;
+        private System.Windows.Forms.MonthCalendar m_monthCalendarEnd;
+        private System.Windows.Forms.Label m_labelTEC;
+        private System.Windows.Forms.Label m_labelGrpSgnl;
+        private System.Windows.Forms.Label m_labelValues;
+        private System.Windows.Forms.Label m_labelStartDate;
+        private System.Windows.Forms.Label m_labelEndDate;
+
+        private List<System.Windows.Forms.Label> m_labelsGroup;
+
+        private List<DataGridViewValues> m_dgvValues;
+        private DataGridView m_sumValues;
+        /// <summary>
+        /// Требуется переменная конструктора
+        /// </summary>
+        private IContainer components = null;
         /// <summary>
         /// Конструктор панели
         /// </summary>
@@ -919,8 +313,8 @@ namespace CommonAux
 
             m_listTEC = GetListTEC(new InitTEC_200(_iListenerId, true, new int[] { 0, (int)TECComponent.ID.GTP }, false).tec);
 
-            GetDataFromDB GD = new GetDataFromDB();
-            GD.InitChannels(m_connConfigDB, m_listTEC);
+            m_GetDataFromDB = new GetDataFromDB();
+            m_GetDataFromDB.InitChannels(m_connConfigDB, m_listTEC);
 
             foreach (TEC_LOCAL t in m_listTEC)
             {
@@ -928,7 +322,7 @@ namespace CommonAux
             }
 
             //Получить параметры соединения с источником данных
-            m_connSettAIISKUECentre = GD.GetConnSettAIISKUECentre(ref _iListenerId, out err);
+            m_connSettAIISKUECentre = m_GetDataFromDB.GetConnSettAIISKUECentre(ref _iListenerId, out err);
 
             InitializeComponents();
 
@@ -994,24 +388,6 @@ namespace CommonAux
             //m_tecView.SetDelegateReport(ferr, fwar, fact, fclr);
         }
 
-        public static string _ExecutingAssemlyDirectoryName { get { return Path.GetDirectoryName(Assembly.GetExecutingAssembly().Location); } }
-
-        /// <summary>
-        /// Режим отображения (в составе статистики/самостоятельная вкладка)
-        /// </summary>
-        protected int m_displayMode;
-        /// <summary>
-        /// Объект с параметрами соединения с источником данных
-        /// </summary>
-        protected ConnectionSettings m_connSettAIISKUECentre;
-        /// <summary>
-        /// Список ТЭЦ с параметрами из файла конфигурации
-        /// </summary>
-        protected List<TEC_LOCAL> m_listTEC;
-        /// <summary>
-        /// Объект для инициализации входных параметров
-        /// </summary>
-        protected GetDataFromDB m_GetDataFromDB;
         /// <summary>
         /// Возвраить список объектов ТЭЦ (без ЛК38)
         /// </summary>
@@ -1044,114 +420,8 @@ namespace CommonAux
 
                 listRes.Add(tec_local);
             }
+
             return listRes;
-        }
-
-        private enum INDEX_CONTROL : short { LB_TEC, LB_GROUP_SIGNAL }
-
-        /// <summary>
-        /// Поля таблицы сигналов
-        /// </summary>
-        public enum DB_TABLE_DATA
-        {
-            ID, ID_TEC, GROUP, NAME, DESCRIPTION, USPD, CHANNEL, USE
-        };
-
-        private const string MS_EXCEL_FILTER = @"Книга MS Excel 2010 (*.xls, *.xlsx)|*.xls;*.xlsx";
-        /// <summary>
-        /// Перечисление причин, влияющих на готовность к экспорту значений
-        /// </summary>
-        private enum INDEX_READY { TEMPLATE, DATE }
-        /// <summary>
-        /// Объект содержащий признаки готовности к экспорту значений
-        /// </summary>
-        HMark m_markReady;
-
-        private enum INDEX_MSEXCEL_PARS
-        {
-            /// <summary>
-            /// Полный путь к (исходному) шаблону
-            /// </summary>
-            TEMPLATE_PATH_DEFAULT
-            /// <summary>
-            /// Наименование (исходного) шаблона
-            /// </summary>
-            , TEMPLATE_NAME
-            /// <summary>
-            /// Наименование листа в книге-шаблоне
-            /// </summary>
-            , SHEET_NAME
-            /// <summary>
-            /// Номер столбца для отображения даты
-            /// </summary>
-            , COL_DATADATE
-            /// <summary>
-            /// Смещение относительно 1-ой строки в книге MS Excel
-            ///  для записи значений за 1-ый день месяца
-            /// </summary>
-            , ROW_START
-            /// <summary>
-            /// Количество строк в книге MS Excel на сутки
-            /// </summary>
-            , ROWCOUNT_DATE
-            /// <summary>
-            /// Версия шаблона книги MS Excel
-            /// </summary>
-            , TEMPLATE_VER
-            /// <summary>
-            /// Количество параметров для шаблона книги MS Excel
-            /// </summary>
-            , COUNT
-        }
-        /// <summary>
-        /// Массив с параметрами шаблона книги MS Excel
-        /// </summary>
-        private string[] m_arMSEXEL_PARS;
-        /// <summary>
-        /// Перечисление возможных состояний приложения
-        /// </summary>
-        private enum STATE { UNKNOWN = -1, READY, ERROR }
-
-        private bool m_bVisibleLog;
-        /// <summary>
-        /// Признак видимости элемента управления с содержанием лог-сообщений
-        /// </summary>
-        private bool VisibleLog { get { return m_bVisibleLog; } set { m_bVisibleLog = value; } }
-
-        //private STATE m_State;
-        /// <summary>
-        /// Состояние приложения
-        /// </summary>
-        STATE State { get { return (m_markReady.IsMarked((int)INDEX_READY.TEMPLATE) && m_markReady.IsMarked((int)INDEX_READY.DATE)) == true ? STATE.READY : STATE.ERROR; } }
-
-        private string m_strFullPathTemplate;
-        /// <summary>
-        /// Строка - полный путь для шаблона MS Excel
-        /// </summary>
-        /// 
-
-        private string FullPathTemplate
-        {
-            get { return m_strFullPathTemplate; }
-
-            set
-            {
-                if ((m_strFullPathTemplate == null)
-                    || ((!(m_strFullPathTemplate == null))
-                        && (m_strFullPathTemplate.Equals(value) == false)))
-                {
-                    m_strFullPathTemplate = value;
-
-                    if ((value.Equals(string.Empty) == false)
-                        && (Path.GetDirectoryName(value).Equals(string.Empty) == false)
-                        && (Path.GetFileName(value).Equals(string.Empty) == false))
-                        EventNewPathToTemplate(m_strFullPathTemplate);
-                    else
-                        ;
-                }
-                else
-                    ;
-            }
         }
 
         private int setFullPathTemplate(string strFullPathTemplate)
@@ -1169,35 +439,6 @@ namespace CommonAux
                 ;
             return iRes;
         }
-
-        /// <summary>
-        /// Событие при назначении нового пути для шаблона MS Excel
-        /// </summary>
-        private event DelegateStringFunc EventNewPathToTemplate;
-
-        private System.Windows.Forms.Button m_btnLoad;
-        private System.Windows.Forms.Button m_btnOpen;
-        private System.Windows.Forms.Button m_btnExit;
-        private System.Windows.Forms.Button m_btnStripButtonExcel;
-        private System.Windows.Forms.ListBox m_listBoxTEC;
-        private System.Windows.Forms.ListBox m_listBoxGrpSgnl;
-        private System.Windows.Forms.MonthCalendar m_monthCalendarStart;
-        private System.Windows.Forms.MonthCalendar m_monthCalendarEnd;
-        private System.Windows.Forms.Label m_labelTEC;
-        private System.Windows.Forms.Label m_labelGrpSgnl;
-        private System.Windows.Forms.Label m_labelValues;
-        private System.Windows.Forms.Label m_labelStartDate;
-        private System.Windows.Forms.Label m_labelEndDate;
-
-        private List<System.Windows.Forms.Label> m_labelsGroup;
-
-        private List<DataGridViewValues> m_dgvValues;
-        private DataGridView m_sumValues;
-
-        /// <summary>
-        /// Требуется переменная конструктора
-        /// </summary>
-        private IContainer components = null;
 
         /// <summary>
         /// Определить размеры ячеек макета панели
@@ -1267,25 +508,6 @@ namespace CommonAux
                 this.Controls.Add(m_labelsGroup[i], 2, 7 + i * 16); this.SetColumnSpan(m_labelsGroup[i], 5); this.SetRowSpan(m_labelsGroup[i], 2);
             }
             this.Controls.Add(m_sumValues, 61, 60); this.SetColumnSpan(m_sumValues, 38); this.SetRowSpan(m_sumValues, 40);
-
-            //this.Controls.Add(m_btnLoad, 16, 10); this.SetColumnSpan(m_btnLoad, 3); this.SetRowSpan(m_btnLoad, 2);
-            //this.Controls.Add(m_btnOpen, 16, 12); this.SetColumnSpan(m_btnOpen, 3); this.SetRowSpan(m_btnOpen, 2);
-            //this.Controls.Add(m_btnExit, 16, 20); this.SetColumnSpan(m_btnExit, 3); this.SetRowSpan(m_btnExit, 2);
-            //this.Controls.Add(m_btnStripButtonExcel, 16, 14); this.SetColumnSpan(m_btnStripButtonExcel, 3); this.SetRowSpan(m_btnStripButtonExcel, 1);
-            //this.Controls.Add(m_listBoxTEC, 13, 10); this.SetColumnSpan(m_listBoxTEC, 3); this.SetRowSpan(m_listBoxTEC, 6);
-            //this.Controls.Add(m_monthCalendarStart, 13, 1); this.SetColumnSpan(m_monthCalendarStart, 3); this.SetRowSpan(m_monthCalendarStart, 3);
-            //this.Controls.Add(m_monthCalendarEnd, 17, 1); this.SetColumnSpan(m_monthCalendarEnd, 3); this.SetRowSpan(m_monthCalendarEnd, 3);
-            //this.Controls.Add(m_labelTEC, 62, 37); this.SetColumnSpan(m_labelTEC, 11); this.SetRowSpan(m_labelTEC, 2);
-            //this.Controls.Add(m_labelValues, 2, 0); this.SetColumnSpan(m_labelValues, 2); this.SetRowSpan(m_labelValues, 1);
-            //this.Controls.Add(m_labelStartDate, 13, 0); this.SetColumnSpan(m_labelStartDate, 3); this.SetRowSpan(m_labelStartDate, 1);
-            //this.Controls.Add(m_labelEndDate, 17, 0); this.SetColumnSpan(m_labelEndDate, 3); this.SetRowSpan(m_labelEndDate, 1);
-
-            //for (int i = 0; i < m_dgvValues.Count; i++)
-            //{
-            //    this.Controls.Add(m_dgvValues[i], 2, 1 + i * 4); this.SetColumnSpan(m_dgvValues[i], 10); this.SetRowSpan(m_dgvValues[i], 4);
-            //    this.Controls.Add(m_labelsGroup[i], 0, 1 + i * 4); this.SetColumnSpan(m_labelsGroup[i], 2); this.SetRowSpan(m_labelsGroup[i], 1);
-            //}
-            //this.Controls.Add(m_sumValues, 13, 17); this.SetColumnSpan(m_sumValues, 7); this.SetRowSpan(m_sumValues, 8);
 
             this.ResumeLayout();
 
@@ -1585,7 +807,7 @@ namespace CommonAux
             TEC_LOCAL.INDEX_DATA indx;
             TEC_LOCAL tec = m_listTEC[m_listBoxTEC.SelectedIndex];
             TEC_LOCAL.VALUES_DATE.VALUES_GROUP dictIndxValues;
-            GetDataFromDB GD = new GetDataFromDB();
+            m_GetDataFromDB = new GetDataFromDB();
 
             for (int i = 0; i <= Convert.ToInt32(TEC_LOCAL.INDEX_DATA.GRVIII); i++)
             {
@@ -1609,7 +831,7 @@ namespace CommonAux
 
                     tec.ClearValues(m_monthCalendarStart.SelectionStart.Date, indx);
 
-                    iRes = GD.Request(tec, iListenerId
+                    iRes = m_GetDataFromDB.Request(tec, iListenerId
                         , m_monthCalendarStart.SelectionStart.Date //SelectionStart всегда == SelectionEnd, т.к. MultiSelect = false
                         , m_monthCalendarStart.SelectionEnd.Date.AddDays(1)
                         , indx);
@@ -1692,7 +914,7 @@ namespace CommonAux
             double[] arWriteValues;
             HMark markErr = new HMark(0);
             string msg = string.Empty;
-            GetDataFromDB GD = new GetDataFromDB();
+            m_GetDataFromDB = new GetDataFromDB();
             Logging.Logg().Action(@"Экспорт в MS Excel - начало ...", Logging.INDEX_MESSAGE.NOT_SET);
 
             if (m_connSettAIISKUECentre == null)
@@ -1710,7 +932,7 @@ namespace CommonAux
 
                 foreach (TEC_LOCAL t in m_listTEC)
                 {
-                    iRes = GD.Request(t, iListenerId, m_monthCalendarStart.SelectionStart.Date, m_monthCalendarEnd.SelectionStart.Date.AddDays(1));
+                    iRes = m_GetDataFromDB.Request(t, iListenerId, m_monthCalendarStart.SelectionStart.Date, m_monthCalendarEnd.SelectionStart.Date.AddDays(1));
 
                     if (!(iRes < 0))
                     {
@@ -1838,7 +1060,6 @@ namespace CommonAux
                 Logging.Logg().Action(msg, Logging.INDEX_MESSAGE.NOT_SET);
             }
         }
-
         /// <summary>
         /// Проверить шаблон на корректность использования
         /// </summary>
@@ -1876,7 +1097,6 @@ namespace CommonAux
 
             return iRes;
         }
-
         /// <summary>
         /// Проверить шаблон на возможность использования по назначению
         /// </summary>

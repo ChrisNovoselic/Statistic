@@ -56,9 +56,7 @@ namespace CommonAux
         {
             ID_EXT, ID_ROLE, HASH
         };
-        public static string SEC_CONFIG = @"CONFIG"
-            , SEC_SELECT = @"SELECT"
-            , SEC_TEMPLATE = @"Template";
+        private HMark m_markIndxRequestError;
         /// <summary>
         /// Каталог для размещения шаблонов
         /// </summary>
@@ -91,8 +89,8 @@ namespace CommonAux
         /// <returns>Строка запроса</returns>
         public static string getQueryListChannels()
         {
-
             string strRes = "SELECT * FROM " + DB_TABLE;
+
             return strRes;
         }
 
@@ -105,6 +103,7 @@ namespace CommonAux
         public static DataTable getListChannels(ref DbConnection connConfigDB, out int err)
         {
             string req = getQueryListChannels();
+
             return DbTSQLInterface.Select(ref connConfigDB, req, null, null, out err);
         }
 
@@ -127,6 +126,8 @@ namespace CommonAux
         /// <summary>
         /// Загрузка всех каналов из базы данных
         /// </summary>
+        /// <param name="m_connConfigDB">Ссылка на объект с установленным соединением с БД</param>
+        /// <param name="m_listTEC">Список объектов, содержащий перечень каналов каждой ТЭЦ</param>
         public void InitChannels(DbConnection m_connConfigDB, List<TEC_LOCAL> m_listTEC)
         {
             int err = -1;
@@ -156,8 +157,6 @@ namespace CommonAux
                 }
             }
         }
-
-        private HMark m_markIndxRequestError;
         /// <summary>
         /// Получить все (ТГ, ТСН) значения для станции
         /// </summary>
@@ -192,6 +191,7 @@ namespace CommonAux
             }
 
             iRes = m_markIndxRequestError.Value == 0 ? 0 : -1;
+
             return iRes;
         }
         /// <summary>
