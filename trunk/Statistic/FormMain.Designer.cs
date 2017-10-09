@@ -59,6 +59,7 @@ namespace Statistic
             m_dictAddingTabs.Add((int)ID_ADDING_TAB.TM_SN_POWER, new ADDING_TAB("значенияТекущаяМощностьТЭЦгТЭЦснToolStripMenuItem", "Значения текущей мощности ТЭЦг, ТЭЦсн", HClassLibrary.HTabCtrlEx.TYPE_TAB.FLOAT));
             m_dictAddingTabs.Add((int)ID_ADDING_TAB.MONITOR_LAST_MINUTES, new ADDING_TAB("мониторингПоследняяМинутаЧасToolStripMenuItem", "Мониторинг - последняя минута часа", HClassLibrary.HTabCtrlEx.TYPE_TAB.FLOAT));
             m_dictAddingTabs.Add((int)ID_ADDING_TAB.SOBSTV_NYZHDY, new ADDING_TAB("собственныеНуждыToolStripMenuItem", "Собственные нужды", HClassLibrary.HTabCtrlEx.TYPE_TAB.FLOAT));
+            m_dictAddingTabs.Add((int)ID_ADDING_TAB.SOBSTV_NYZHDY_NEW, new ADDING_TAB("собственныеНуждыНовToolStripMenuItem", "Собственные нужды", HClassLibrary.HTabCtrlEx.TYPE_TAB.FLOAT));
             m_dictAddingTabs.Add((int)ID_ADDING_TAB.DATETIMESYNC_SOURCE_DATA, new ADDING_TAB("рассинхронизацияДатаВремяСерверБДToolStripMenuItem", "Рассинхронизация даты/времени серверов БД", HClassLibrary.HTabCtrlEx.TYPE_TAB.FIXED));
             m_dictAddingTabs.Add((int)ID_ADDING_TAB.DIAGNOSTIC, new ADDING_TAB("ДиагностикаToolStripMenuItem", "Диагностика", HClassLibrary.HTabCtrlEx.TYPE_TAB.FIXED));
             m_dictAddingTabs.Add((int)ID_ADDING_TAB.ANALYZER, new ADDING_TAB("ПросмотрЖурналаToolStripMenuItem", "Журнал событий", HClassLibrary.HTabCtrlEx.TYPE_TAB.FIXED));
@@ -75,6 +76,9 @@ namespace Statistic
             this.настройкиСоединенияБДКонфToolStripMenuItem = new System.Windows.Forms.ToolStripMenuItem();
             this.настройкиСоединенияБДИсточникToolStripMenuItem = new System.Windows.Forms.ToolStripMenuItem();
             this.администрированиеToolStripMenuItem = new System.Windows.Forms.ToolStripMenuItem();
+            this.собственныеНуждыОбщToolStripMenuItem = new System.Windows.Forms.ToolStripMenuItem();
+
+
             this.изменитьПарольДиспетчераToolStripMenuItem = new System.Windows.Forms.ToolStripMenuItem();
             this.изменитьПарольАдминистратораToolStripMenuItem = new System.Windows.Forms.ToolStripMenuItem();
             //this.рассинхронизацияДатаВремяСерверБДToolStripMenuItem = new System.Windows.Forms.ToolStripMenuItem();
@@ -187,7 +191,47 @@ namespace Statistic
                 , m_dictAddingTabs[(int)ID_ADDING_TAB.CUR_POWER].menuItem
                 , m_dictAddingTabs[(int)ID_ADDING_TAB.TM_SN_POWER].menuItem
                 , m_dictAddingTabs[(int)ID_ADDING_TAB.MONITOR_LAST_MINUTES].menuItem
-                , m_dictAddingTabs[(int)ID_ADDING_TAB.SOBSTV_NYZHDY].menuItem
+
+                , this.собственныеНуждыОбщToolStripMenuItem
+
+                // новый пункт меню (расширение существующего)
+                //, new System.Windows.Forms.ToolStripMenuItem (@"Собственные нужды", null, new System.Windows.Forms.ToolStripItem []
+                //{
+                //    //  m_dictAddingTabs[(int)m_arIdCustomTabs[(int)INDEX_CUSTOM_TAB.TAB_2X3][2]].menuItem
+                //    //, m_dictAddingTabs[(int)m_arIdCustomTabs[(int)INDEX_CUSTOM_TAB.TAB_2X3][3]].menuItem
+                //    //, m_dictAddingTabs[(int)m_arIdCustomTabs[(int)INDEX_CUSTOM_TAB.TAB_2X3][1]].menuItem
+                //    this.m_dictAddingTabs[(int)ID_ADDING_TAB.SOBSTV_NYZHDY].menuItem
+                //     ,this.m_dictAddingTabs[(int)ID_ADDING_TAB.USERS].menuItem
+                //    //,this.m_dictAddingTabs[(int)ID_ADDING_TAB.SOBSTV_NYZHDY_NEW].menuItem
+                //    , this.m_dictAddingTabs[(int)ID_ADDING_TAB.CUR_POWER].menuItem
+                //, this.m_dictAddingTabs[(int)ID_ADDING_TAB.TM_SN_POWER].menuItem
+                //, this.m_dictAddingTabs[(int)ID_ADDING_TAB.MONITOR_LAST_MINUTES].menuItem
+                //})
+
+
+            //    this.администрированиеToolStripMenuItem.DropDownItems.AddRange(new System.Windows.Forms.ToolStripItem[] {
+            //    this.настройкиСоединенияБДКонфToolStripMenuItem,
+            //    this.настройкиСоединенияБДИсточникToolStripMenuItem,
+            //    new System.Windows.Forms.ToolStripSeparator(),
+            //    this.m_dictAddingTabs[(int)ID_ADDING_TAB.DIAGNOSTIC].menuItem,
+            //    this.m_dictAddingTabs[(int)ID_ADDING_TAB.DATETIMESYNC_SOURCE_DATA].menuItem,
+            //    this.m_dictAddingTabs[(int)ID_ADDING_TAB.ANALYZER].menuItem,
+            //    new System.Windows.Forms.ToolStripSeparator(),
+            //    this.изменитьПарольДиспетчераToolStripMenuItem,
+            //    this.изменитьПарольАдминистратораToolStripMenuItem,
+            //    this.изменитьПарольНССToolStripMenuItem,
+            //    this.изменитьПарольЛКДиспетчераToolStripMenuItem,
+            //    new System.Windows.Forms.ToolStripSeparator(),
+            //    this.m_dictAddingTabs[(int)ID_ADDING_TAB.TEC_Component].menuItem,
+            //    this.m_dictAddingTabs[(int)ID_ADDING_TAB.USERS].menuItem
+            //});
+
+            //this.администрированиеToolStripMenuItem.Name = "администрированиеToolStripMenuItem";
+            //this.администрированиеToolStripMenuItem.Size = new System.Drawing.Size(191, 22);
+            //this.администрированиеToolStripMenuItem.Text = "Администрирование";
+
+
+                //, m_dictAddingTabs[(int)ID_ADDING_TAB.SOBSTV_NYZHDY].menuItem
                 #region KhryapinAN 2017-06
                 , new System.Windows.Forms.ToolStripSeparator()
                 , m_dictAddingTabs[(int)ID_ADDING_TAB.SOTIASSO_HOUR].menuItem                
@@ -238,6 +282,10 @@ namespace Statistic
             // собственныеНуждыToolStripMenuItem
             // 
             this.m_dictAddingTabs[(int)ID_ADDING_TAB.SOBSTV_NYZHDY].menuItem.CheckedChanged += new System.EventHandler(this.собственныеНуждыToolStripMenuItem_CheckedChanged);
+            // 
+            // собственныеНуждыНовToolStripMenuItem
+            // 
+            this.m_dictAddingTabs[(int)ID_ADDING_TAB.SOBSTV_NYZHDY_NEW].menuItem.CheckedChanged += new System.EventHandler(this.собственныеНуждыНовToolStripMenuItem_CheckedChanged);
             // 
             // рассинхронизацияДатаВремяСерверБДToolStripMenuItem
             // 
@@ -332,6 +380,22 @@ namespace Statistic
             this.администрированиеToolStripMenuItem.Name = "администрированиеToolStripMenuItem";
             this.администрированиеToolStripMenuItem.Size = new System.Drawing.Size(191, 22);
             this.администрированиеToolStripMenuItem.Text = "Администрирование";
+
+            // 
+            // собственныеНуждыОбщToolStripMenuItem
+            // 
+            this.собственныеНуждыОбщToolStripMenuItem.DropDownItems.AddRange(new System.Windows.Forms.ToolStripItem[] {
+                this.m_dictAddingTabs[(int)ID_ADDING_TAB.SOBSTV_NYZHDY].menuItem
+                ,this.m_dictAddingTabs[(int)ID_ADDING_TAB.SOBSTV_NYZHDY_NEW].menuItem
+            });
+
+            this.собственныеНуждыОбщToolStripMenuItem.Name = "собственныеНуждыОбщToolStripMenuItem";
+            this.собственныеНуждыОбщToolStripMenuItem.Size = new System.Drawing.Size(191, 22);
+            this.собственныеНуждыОбщToolStripMenuItem.Text = "Собственные нужды";
+
+
+
+
             // 
             // изменитьПарольДиспетчераToolStripMenuItem
             // 
@@ -480,6 +544,7 @@ namespace Statistic
         private System.Windows.Forms.ToolStripMenuItem настройкиСоединенияБДКонфToolStripMenuItem;
         private System.Windows.Forms.ToolStripMenuItem настройкиСоединенияБДИсточникToolStripMenuItem;
         private System.Windows.Forms.ToolStripMenuItem администрированиеToolStripMenuItem;
+        private System.Windows.Forms.ToolStripMenuItem собственныеНуждыОбщToolStripMenuItem;
         private System.Windows.Forms.ToolStripMenuItem изменитьПарольДиспетчераToolStripMenuItem;
         private System.Windows.Forms.ToolStripMenuItem изменитьПарольАдминистратораToolStripMenuItem;
         private System.Windows.Forms.ToolStripMenuItem изменитьПарольНССToolStripMenuItem;

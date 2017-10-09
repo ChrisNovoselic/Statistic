@@ -105,7 +105,7 @@ namespace Statistic
                     this.Controls.Add(ptcp, i % this.ColumnCount, i / this.ColumnCount);
                 }
                 else
-                    ;
+                {;}
         }
 
         /// <summary>
@@ -179,7 +179,6 @@ namespace Statistic
                 //this.m_zedGraphHours.InitializeEventHandler(this.эксельToolStripMenuItemHours_Click, this.sourceDataHours_Click);
 
             }
-
             #endregion
         }
 
@@ -188,7 +187,7 @@ namespace Statistic
             public class TecViewSobstvNyzhdy : TecView
             {
                 public TecViewSobstvNyzhdy()
-                    : base(/*TecView.TYPE_PANEL.CUR_POWER, */-1, -1, TECComponentBase.TYPE.ELECTRO)
+                    : base( /*TecView.TYPE_PANEL.CUR_POWER, */-1, -1, TECComponentBase.TYPE.ELECTRO)
                 {
                 }
 
@@ -207,7 +206,8 @@ namespace Statistic
 
                     if (m_tec.m_bSensorsStrings == false)
                         AddState((int)StatesMachine.InitSensors);
-                    else ;
+                    else
+                        ;
 
                     //using_date = false;
 
@@ -330,7 +330,6 @@ namespace Statistic
                 dgvSNHour.Columns["Value"].AutoSizeMode = DataGridViewAutoSizeColumnMode.Fill;
                 dgvSNHour.RowHeadersVisible = false;
                 dgvSNHour.AllowUserToAddRows = false;
-
 
                 //Свойства колонок
                 this.ColumnCount = 6;
@@ -515,7 +514,6 @@ namespace Statistic
 
                 m_tecView.ChangeState ();
             }
-
             /// <summary>
             /// Активация панели
             /// </summary>
@@ -577,7 +575,7 @@ namespace Statistic
                 }
                 else
                     if (!(lblVal == null)) lblVal.Text = 0.ToString(@"F0"); else ;
-
+                //
                 return 0;
             }
 
@@ -638,7 +636,7 @@ namespace Statistic
                 object obj;
                 PointF p = new PointF(e.X, e.Y);
                 bool found;
-                int index= -1;
+                int index = -1;
 
                 found = sender.GraphPane.FindNearestObject(p, CreateGraphics(), out obj, out index);
                 
@@ -757,11 +755,11 @@ namespace Statistic
                             if (maximum < valuesTMSNPsum[i])
                                 maximum = valuesTMSNPsum[i];
                             else
-                                ;
+                            {;}
                             index_last_not_null = i;
                         }
                         else
-                            ;
+                        {;}
                     }
                     else
                     {

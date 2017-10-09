@@ -35,6 +35,7 @@ namespace StatisticCommon
             , IGO_VERSION
             , MODE_REGISTRATION
             , COUNT_PARAMETR_SETUP
+            , COMMON_AUX_PATH
         };
         protected static string[] NAME_PARAMETR_SETUP = {
             "Polling period", "Error delay", "Max attempts count", @"Waiting time", @"Waiting count"
@@ -60,6 +61,7 @@ namespace StatisticCommon
             //, @"ID_SOURCE_SOTIASSO_BTEC", @"ID_SOURCE_SOTIASSO_TEC2", @"ID_SOURCE_SOTIASSO_TEC3", @"ID_SOURCE_SOTIASSO_TEC4", @"ID_SOURCE_SOTIASSO_TEC5", @"ID_SOURCE_SOTIASSO_BiTEC"
             , @"IGO Version"
             , @"Mode Registration"
+            , @"Common Aux Path"
         };
         protected static string[] NAMESI_PARAMETR_SETUP = {
             "сек", "сек", "ед.", @"мсек", @"мсек"
@@ -84,6 +86,7 @@ namespace StatisticCommon
             //»дентификаторы прилинкованных активных источников —ќ“»ј——ќ
             //, @"ном", @"ном", @"ном", @"ном", @"ном", @"ном"
             , @"ном"
+            , @"стр"
             , @"стр"
         };
         protected Dictionary<int, string> m_arParametrSetupDefault;
@@ -143,6 +146,7 @@ namespace StatisticCommon
 
             m_arParametrSetup.Add((int)PARAMETR_SETUP.IGO_VERSION, 0.ToString());
             m_arParametrSetup.Add((int)PARAMETR_SETUP.MODE_REGISTRATION, HStatisticUsers.MODE_REGISTRATION.MIXED.ToString());
+            m_arParametrSetup.Add((int)PARAMETR_SETUP.COMMON_AUX_PATH, @"\\ne22\lnk,Tepmlate.xls,Sheet1,1,5,25,1.1");
 
             m_arParametrSetupDefault = new Dictionary<int, string>(m_arParametrSetup);
 

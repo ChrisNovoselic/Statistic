@@ -14,11 +14,9 @@ using System.Text;
 using System.Threading;
 using System.Windows.Forms;
 
-
-
-namespace StatisticAnalyzer
+namespace CommonAux
 {
-    public abstract partial class FormMain : /*Form //FormMainBase//:*/ FormMainBaseWithStatusStrip
+    public partial class FormMain : FormMainBaseWithStatusStrip
     {
         /// <summary>
         /// Объект с параметрами приложения (из БД_конфигурации)
@@ -43,32 +41,19 @@ namespace StatisticAnalyzer
             Thread.CurrentThread.CurrentUICulture =
                 ProgramBase.ss_MainCultureInfo;
 
-            if (this is FormMain_TCPIP)
-                m_panel = new PanelAnalyzer_TCPIP(tec);
-            else
-                if (this is FormMain_DB)
-                    m_panel = new PanelAnalyzer_DB(tec);
-                else
-                    ;
+            m_panel = new PanelCommonAux(1);
+            
+            m_panel.GetListTEC(tec);
 
-            if (! (m_panel == null))
+            if (!(m_panel == null))
             {
                 InitializeComponent();
             }
             else
-                ; //???Исключение
+            {
+            } //???Исключение
 
             m_panel.SetDelegateReport(ErrorReport, WarningReport, ActionReport, ReportClear);
-        }
-
-        private void FormMainAnalyzer_OnEvtPanelClose(object sender, EventArgs e)
-        {
-            Close ();
-        }
-
-        private void FormMainAnalyzer_FormClosed(object sender, FormClosingEventArgs e)
-        {            
-            m_panel.Stop ();
         }
 
         /// <summary>
@@ -81,7 +66,7 @@ namespace StatisticAnalyzer
             string msg = string.Empty;
             bool bAbort = true;
 
-            bAbort = initialize(out msg);
+            bAbort = InitializePanel(out msg);
             //Снять с отображения окно для визуализации выполнения длительной операции
 
             if (msg.Equals(string.Empty) == false)
@@ -115,7 +100,8 @@ namespace StatisticAnalyzer
         /// <summary>
         /// Инициализация панели
         /// </summary>
-        public bool initialize(out string msgError)
+        /// <param name="msgError">Сообщение об ошибке (при наличии)</param>
+        public bool InitializePanel(out string msgError)
         {
             bool bRes = true;
             msgError = string.Empty;
@@ -140,7 +126,6 @@ namespace StatisticAnalyzer
                     default:
                         //Успех... пост-инициализация
                         formParameters = new FormParameters_DB(s_listFormConnectionSettings[(int)CONN_SETT_TYPE.CONFIG_DB].getConnSett());
-                        updateParametersSetup();
                         s_iMainSourceData = Int32.Parse(formParameters.m_arParametrSetup[(int)FormParameters.PARAMETR_SETUP.MAIN_DATASOURCE]);
 
                         m_panel.Start();
@@ -173,7 +158,7 @@ namespace StatisticAnalyzer
             try
             {
                 //Создать И удалить объект с пользовательскими настройками (заполнить статические члены)
-                using (HStatisticUsers users = new HStatisticUsers(idListenerConfigDB, HUsers.MODE_REGISTRATION.MIXED)) { ; }
+                using (HStatisticUsers users = new HStatisticUsers(idListenerConfigDB, HUsers.MODE_REGISTRATION.MIXED)) {; }
             }
             catch (Exception e)
             {
@@ -203,33 +188,6 @@ namespace StatisticAnalyzer
         }
 
         /// <summary>
-        /// 
-        /// </summary>
-        private void updateParametersSetup()
-        {
-            //Параметры записи сообщений лог-а...
-            Logging.UpdateMarkDebugLog();
-
-            //Параметры обновления "основной панели"...
-            PanelStatistic.POOL_TIME = Int32.Parse(FormMain.formParameters.m_arParametrSetup[(int)FormParameters.PARAMETR_SETUP.POLL_TIME]);
-            PanelStatistic.ERROR_DELAY = Int32.Parse(FormMain.formParameters.m_arParametrSetup[(int)FormParameters.PARAMETR_SETUP.ERROR_DELAY]);
-
-            //Параметры перехода на сезонное времяисчисление...
-            HAdmin.SeasonDateTime = DateTime.Parse(formParameters.m_arParametrSetup[(int)FormParameters.PARAMETR_SETUP.SEASON_DATETIME]);
-            HAdmin.SeasonAction = Int32.Parse(formParameters.m_arParametrSetup[(int)FormParameters.PARAMETR_SETUP.SEASON_ACTION]);
-
-            //Параметры обработки запросов к БД...
-            DbInterface.MAX_RETRY = Int32.Parse(formParameters.m_arParametrSetup[(int)FormParameters.PARAMETR_SETUP.MAX_ATTEMPT]);
-            DbInterface.MAX_WAIT_COUNT = Int32.Parse(formParameters.m_arParametrSetup[(int)FormParameters.PARAMETR_SETUP.WAITING_COUNT]);
-            DbInterface.WAIT_TIME_MS = Int32.Parse(formParameters.m_arParametrSetup[(int)FormParameters.PARAMETR_SETUP.WAITING_TIME]);
-
-            //Параметры валидности даты/времени получения данных СОТИАССО...
-            TecView.SEC_VALIDATE_TMVALUE = Int32.Parse(formParameters.m_arParametrSetup[(int)FormParameters.PARAMETR_SETUP.VALIDATE_TM_VALUE]);
-
-            //Параметрвы для ALARM...
-        }
-
-        /// <summary>
         /// Обработчик события выбора п. главного меню "Файл-Выход"
         /// </summary>
         /// <param name="obj">Объект, инициировавший событие</param>
@@ -238,7 +196,7 @@ namespace StatisticAnalyzer
         {
             Close();
         }
-        
+
         /// <summary>
         /// Обработчик события выбора п. главного меню "Настройка-БД_конфигурации"
         /// </summary>
@@ -257,7 +215,7 @@ namespace StatisticAnalyzer
                 //??? Остановить панель
                 m_panel.Stop();
 
-                bAbort = initialize(out msg);
+                bAbort = InitializePanel(out msg);
             }
             else
                 ;
@@ -283,22 +241,6 @@ namespace StatisticAnalyzer
             }
         }
 
-        ////При наследовании от 'FormMainBaseWithStatusStrip'
-        //protected override bool UpdateStatusString()
-        //{
-        //    bool have_eror = true;
-
-        //    return have_eror;
-        //}
-    }
-
-    public class FormMain_TCPIP : FormMain
-    {
-        public FormMain_TCPIP(int idListener, List<StatisticCommon.TEC> tec)
-            : base(idListener, tec)
-        {
-        }
-
         protected override void timer_Start()
         {
             throw new NotImplementedException();
@@ -318,65 +260,5 @@ namespace StatisticAnalyzer
         {
             throw new NotImplementedException();
         }
-
-    }
-
-    public class FormMain_DB : FormMain
-    {
-        public FormMain_DB(int idListener, List<StatisticCommon.TEC> tec)
-            : base(idListener, tec)
-        {
-        }
-
-        protected override void timer_Start()
-        {
-            throw new NotImplementedException();
-        }
-
-        protected override int UpdateStatusString()
-        {
-            int have_msg = 0;
-            m_lblDescMessage.Text = m_lblDateMessage.Text = string.Empty;
-
-
-            if (m_report.actioned_state == true)
-            {
-                m_lblDateMessage.Text = m_report.last_time_action.ToString();
-                m_lblDescMessage.Text = m_report.last_action;
-            }
-            else
-                ;
-
-            if (m_report.warninged_state == true)
-            {
-                have_msg = 1;
-                m_lblDateMessage.Text = m_report.last_time_warning.ToString();
-                m_lblDescMessage.Text = m_report.last_warning;
-            }
-            else
-                ;
-
-            if (m_report.errored_state == true)
-            {
-                have_msg = -1;
-                m_lblDateMessage.Text = m_report.last_time_error.ToString();
-                m_lblDescMessage.Text = m_report.last_error;
-            }
-            else
-                ;
-
-            return have_msg;
-        }
-
-        protected override void HideGraphicsSettings()
-        {
-            throw new NotImplementedException();
-        }
-
-        protected override void UpdateActiveGui(int type)
-        {
-            throw new NotImplementedException();
-        }
-
     }
 }
