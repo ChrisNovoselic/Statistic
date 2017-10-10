@@ -388,7 +388,8 @@ namespace Statistic
         /// Приведение кол-ва строк таблицы в соответствие с кол-ом элементов в массиве с данными
         /// решение (по объекту синхронизации 'PanelAdminKomDisp::setDataGridViewAdmin () - ...') далеко не изящное, НО временное ???
         /// </summary>
-        protected void normalizedTableHourRows () {
+        protected void normalizedTableHourRows ()
+        {
             if (!(this.dgwAdminTable.Rows.Count == m_admin.m_curRDGValues.Length))
                 if (this.dgwAdminTable.Rows.Count < m_admin.m_curRDGValues.Length)
                     this.dgwAdminTable.InitRows(m_admin.m_curRDGValues.Length, true);

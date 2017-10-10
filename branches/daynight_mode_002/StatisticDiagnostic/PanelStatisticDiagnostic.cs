@@ -22,6 +22,7 @@ namespace StatisticDiagnostic
         {
             initialize();
         }
+
         /// <summary>
         /// Конструктор "Панель Диагностика"
         /// </summary>
@@ -179,6 +180,7 @@ namespace StatisticDiagnostic
     {
         //Перечисление "Режим: по умолчанию, только источник"
         public enum Mode : short { DEFAULT, SOURCE_ONLY }
+
         /// <summary>
         /// Перечесления типов источников
         /// </summary>
@@ -188,7 +190,8 @@ namespace StatisticDiagnostic
             SIZEDB = 10,
             MODES = 200,
             TASK = 300
-        }        
+        }       
+ 
         /// <summary>
         /// Структура для хранения получаемых значений из таблицы-результата запроса
         /// </summary>
@@ -994,6 +997,11 @@ namespace StatisticDiagnostic
                 m_timerUpdate.Stop();
 
             return bRes;
+        }
+
+        public override void UpdateGraphicsCurrent (int type)
+        {
+            throw new NotImplementedException ();
         }
     }
 }

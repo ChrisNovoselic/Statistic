@@ -671,6 +671,11 @@ namespace Statistic
         {
 
         }
+
+        public override void UpdateGraphicsCurrent (int type)
+        {
+            //??? ничего не надо делать
+        }
     }
 
     public class DB_Sostav_TEC

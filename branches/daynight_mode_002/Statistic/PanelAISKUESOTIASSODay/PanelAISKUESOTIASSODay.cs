@@ -122,6 +122,7 @@ namespace Statistic
         /// Панель для активных элементов управления
         /// </summary>
         private PanelManagement m_panelManagement;
+        
         /// <summary>
         /// Конструктор - основной (без параметров)
         /// </summary>
@@ -191,7 +192,8 @@ namespace Statistic
         //{
         //    m_tecView = null;
         //}
-        /// <summary>
+        
+            /// <summary>
         /// Инициализация панели с установкой кол-ва столбцов, строк
         /// </summary>
         /// <param name="cols">Количество столбцов</param>
@@ -200,6 +202,7 @@ namespace Statistic
         {
             throw new System.NotImplementedException();
         }
+        
         /// <summary>
         /// Инициализация и размещение собственных элементов управления
         /// </summary>
@@ -436,6 +439,7 @@ namespace Statistic
         {
             m_HandlerQueue.SetDelegateReport(ferr, fwar, fact, fclr);
         }
+
         /// <summary>
         /// Переопределение наследуемой функции - запуск объекта
         /// </summary>
@@ -445,6 +449,7 @@ namespace Statistic
 
             m_HandlerQueue.Start();
         }
+        
         /// <summary>
         /// Переопределение наследуемой функции - останов объекта
         /// </summary>
@@ -471,6 +476,7 @@ namespace Statistic
             //Остановить базовый объект
             base.Stop();
         }
+        
         /// <summary>
         /// Переопределение наследуемой функции - активация/деактивация объекта
         /// </summary>
@@ -506,6 +512,7 @@ namespace Statistic
 
             return bRes;
         }
+        
         /// <summary>
         /// Обработчик события - изменения даты/номера часа на панели с управляющими элементами
         /// </summary>
@@ -567,17 +574,19 @@ namespace Statistic
                 return m_panelManagement.CurDateTime.ToShortDateString();
             }
         }
+        
         /// <summary>
         /// Перерисовать объекты с графическим представлением данных
         ///  , в зависимости от типа графического представления (гистограмма, график)
         /// </summary>
         /// <param name="type">Тип изменений, выполненных пользователем</param>
-        public void UpdateGraphicsCurrent(int type)
+        public override void UpdateGraphicsCurrent(int type)
         {
             foreach (CONN_SETT_TYPE conn_sett_type in new CONN_SETT_TYPE[] { CONN_SETT_TYPE.DATA_AISKUE, CONN_SETT_TYPE.DATA_SOTIASSO }) {
                 draw(conn_sett_type);
             }
         }
+        
         /// <summary>
         /// Обработчик события - изменение выбора строки в списке ТЭЦ
         /// </summary>

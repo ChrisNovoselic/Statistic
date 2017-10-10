@@ -361,13 +361,17 @@ namespace Statistic
             switch (modeGetRDGValues) {
                 case MODE_GET_RDG_VALUES.DISPLAY:
                     //??? не очень изящное решение
-                    if (IsHandleCreated/*InvokeRequired*/ == true)
+                    if (IsHandleCreated == true)
                     {
-                        m_evtAdminTableRowCount.Reset();
-                        // кол-во строк может быть изменено(нормализовано) только в том потоке,в котором было выполнено создание элемента управления
-                        this.BeginInvoke(new DelegateFunc(normalizedTableHourRows));
-                        //??? ожидать, пока не завершится выполнение предыдущего потока
-                        m_evtAdminTableRowCount.WaitOne(System.Threading.Timeout.Infinite);
+                        if (InvokeRequired == true) {
+                            m_evtAdminTableRowCount.Reset ();
+                            // кол-во строк может быть изменено(нормализовано) только в том потоке,в котором было выполнено создание элемента управления
+                            this.BeginInvoke (new DelegateFunc (normalizedTableHourRows));
+                            //??? ожидать, пока не завершится выполнение предыдущего потока
+                            m_evtAdminTableRowCount.WaitOne (System.Threading.Timeout.Infinite);
+                        } else {
+                            normalizedTableHourRows ();
+                        }
                     }
                     else
                         Logging.Logg().Error(@"PanelTAdminKomDisp::setDataGridViewAdmin () - ... BeginInvoke (normalizedTableHourRows) - ...", Logging.INDEX_MESSAGE.D_001);

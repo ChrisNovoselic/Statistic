@@ -723,6 +723,11 @@ namespace Statistic
 
             return ID;
         }
+
+        public override void UpdateGraphicsCurrent (int type)
+        {
+            //??? ничего не надо делать
+        }
     }
 
     public class User
@@ -877,8 +882,8 @@ namespace Statistic
         /// <summary>
         /// Метод для получения таблицы со всеми профайлами
         /// </summary>
-        /// <param name="dbConn"></param>
-        /// <returns></returns>
+        /// <param name="dbConn">Объект для соединения с БД</param>
+        /// <returns>??? Таблица с профилями всех пользователей</returns>
         public static DataTable GetTableAllProfile(DbConnection dbConn) 
         {
             return Profile.GetAllProfile(dbConn);

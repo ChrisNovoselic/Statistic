@@ -650,6 +650,11 @@ namespace StatisticTimeSync
             HSD.StartPan(ar_pan);
         }
 
+        public override void UpdateGraphicsCurrent (int type)
+        {
+            throw new NotImplementedException ();
+        }
+
         public partial class HandlerSourceData : HHandlerQueue
         {
             /// <summary>
