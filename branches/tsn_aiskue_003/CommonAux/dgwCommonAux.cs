@@ -24,6 +24,10 @@ namespace CommonAux
     class DataGridViewValues : DataGridView
     {
         /// <summary>
+        /// Идентификатор итоговой строки
+        /// </summary>
+        private string groupRowTag = @"Группа";
+        /// <summary>
         /// Конструктор - основной (без параметров)
         /// </summary>
         public DataGridViewValues() : base()
@@ -49,10 +53,6 @@ namespace CommonAux
             // добавить столбец для итогового для сигнала значения
             Columns.Add(@"DATE", @"Сутки");
         }
-        /// <summary>
-        /// Идентификатор итоговой строки
-        /// </summary>
-        private string groupRowTag = @"Группа";
         /// <summary>
         /// Добавить строки для сигналов
         /// </summary>

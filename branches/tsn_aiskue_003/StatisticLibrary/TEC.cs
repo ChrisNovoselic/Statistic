@@ -135,7 +135,7 @@ namespace StatisticCommon
         /// <returns>Строка запроса</returns>
         string hoursTMRequest(DateTime usingDate, string sensors, int interval);
         /// <summary>
-        /// Возвратить содержание запроса для получения часовых значений СОТИАССО (собственные нужды)
+        ///// Возвратить содержание запроса для получения часовых значений СОТИАССО (собственные нужды)
         /// </summary>
         /// <param name="dtReq">Дата - начало интервала, запрашиваемых данных</param>
         /// <returns>Строка запроса</returns>

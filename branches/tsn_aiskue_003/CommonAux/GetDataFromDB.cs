@@ -31,6 +31,10 @@ namespace CommonAux
         /// </summary>
         public static string DB_TABLE = @"[ID_TSN_ASKUE_2017]";
         /// <summary>
+        /// Строка, содержащая наименование таблицы в БД, хранящей путь к шаблону excel
+        /// </summary>
+        public static string DB_TABLE_SETUP = @"[setup]";
+        /// <summary>
         /// Объект, содержащий id записи в таблице, содержащей настройки подключения
         /// </summary>
         public static int ID_AIISKUE_CONSETT = 7001;
@@ -55,6 +59,13 @@ namespace CommonAux
         public enum DB_TABLE_PSW
         {
             ID_EXT, ID_ROLE, HASH
+        };
+        /// <summary>
+        /// Поля таблицы setup
+        /// </summary>
+        public enum DB_TABLE_STP
+        {
+            ID, VALUE, KEY, LAST_UPDATE, ID_UNIT
         };
         private HMark m_markIndxRequestError;
         /// <summary>
@@ -82,7 +93,6 @@ namespace CommonAux
                     ;
             }
         }
-
         /// <summary>
         /// Возвратить строку запроса для получения списка каналов
         /// </summary>
@@ -93,7 +103,6 @@ namespace CommonAux
 
             return strRes;
         }
-
         /// <summary>
         /// Возвратить таблицу [ID_TSN_AISKUE_2017] из БД конфигурации
         /// </summary>
@@ -105,6 +114,29 @@ namespace CommonAux
             string req = getQueryListChannels();
 
             return DbTSQLInterface.Select(ref connConfigDB, req, null, null, out err);
+        }
+
+        /// <summary>
+        /// Возвратить строку запроса для получения пути к шаблону excel
+        /// </summary>
+        /// <returns>Строка запроса</returns>
+        public static string getQueryExcelPath()
+        {
+            string strRes = "SELECT * FROM " + DB_TABLE_SETUP + "WHERE [KEY] = 'COMMON_AUX_PATH'";
+
+            return strRes;
+        }
+        /// <summary>
+        /// Возвратить путь к шаблону excel из БД конфигурации
+        /// </summary>
+        /// <param name="connConfigDB">Ссылка на объект с установленным соединением с БД</param>
+        /// <param name="err">Идентификатор ошибки при выполнении запроса</param>
+        /// <returns>Строка, содержащая путь к шаблону</returns>
+        public static string getExcelPath(ref DbConnection connConfigDB, out int err)
+        {
+            string req = getQueryExcelPath();
+
+            return (DbTSQLInterface.Select(ref connConfigDB, req, null, null, out err)).Rows[0].ItemArray[Convert.ToInt32(DB_TABLE_STP.VALUE)].ToString();
         }
 
         /// <summary>
@@ -279,15 +311,19 @@ namespace CommonAux
         /// <returns>Строка запроса</returns>
         private string getQuery(TEC_LOCAL tec, TEC_LOCAL.INDEX_DATA indx, DateTime dtStart, DateTime dtEnd)
         {
-            string strRes = @"SELECT res.[OBJECT], res.[ITEM], SUM(res.[VALUE0]) / COUNT(*)[VALUE0], 
-                                res.[DATETIME], COUNT(*) as [COUNT] FROM(SELECT[OBJECT], [ITEM], [VALUE0], 
-                                DATEADD(MINUTE, ceiling(DATEDIFF(MINUTE, DATEADD(DAY, DATEDIFF(DAY, 0, '?DATADATESTART?'), 0), [DATA_DATE]) / 60.) * 60,
-                                DATEADD(DAY, DATEDIFF(DAY, 0, '?DATADATESTART?'), 0)) as [DATETIME] FROM[DATA] 
-                                WHERE[PARNUMBER] = 12 AND([DATA_DATE] > '?DATADATESTART?' AND NOT[DATA_DATE] > '?DATADATEEND?') 
-                                AND(?SENSORS?) GROUP BY[RCVSTAMP], [OBJECT], [ITEM], [VALUE0], 
-                                DATEADD(MINUTE, ceiling(DATEDIFF(MINUTE, DATEADD(DAY, DATEDIFF(DAY, 0, '?DATADATESTART?'), 0), [DATA_DATE]) / 60.) * 60, 
-                                DATEADD(DAY, DATEDIFF(DAY, 0, '?DATADATESTART?'), 0))) res GROUP BY[OBJECT], [ITEM], [DATETIME] ORDER BY[OBJECT], [ITEM], [DATETIME]";
-            ;
+            string strRes = @"SELECT res.[OBJECT], res.[ITEM], SUM(res.[VALUE0]) / COUNT(*)[VALUE0], res.[DATETIME], COUNT(*) as [COUNT]
+                            FROM(
+                            SELECT[OBJECT], [ITEM], [VALUE0], 
+                            DATEADD(MINUTE, ceiling(DATEDIFF(MINUTE, DATEADD(DAY, DATEDIFF(DAY, 0, '?DATADATESTART?'), 0), [DATA_DATE]) / 60.) * 60,
+                            DATEADD(DAY, DATEDIFF(DAY, 0, '?DATADATESTART?'), 0)) as [DATETIME]
+                            FROM[DATA]
+                            WHERE[PARNUMBER] = 12 AND[OBJTYPE] = 0 AND([DATA_DATE] > '?DATADATESTART?' AND NOT[DATA_DATE] > '?DATADATEEND?')
+                            AND(?SENSORS ?)
+                            GROUP BY[RCVSTAMP], [OBJECT], [OBJTYPE], [ITEM], [VALUE0], [SEASON],
+                            DATEADD(MINUTE, ceiling(DATEDIFF(MINUTE, DATEADD(DAY, DATEDIFF(DAY, 0, '?DATADATESTART?'), 0), [DATA_DATE]) / 60.) * 60,
+                            DATEADD(DAY, DATEDIFF(DAY, 0, '?DATADATESTART?'), 0))) res
+                            GROUP BY[OBJECT], [ITEM], [DATETIME]
+                            ORDER BY[OBJECT], [ITEM], [DATETIME]";
 
             if (tec.m_Sensors[(int)indx].Equals(string.Empty) == false)
             {

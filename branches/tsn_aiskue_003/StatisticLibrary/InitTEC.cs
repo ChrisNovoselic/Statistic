@@ -341,7 +341,9 @@ namespace StatisticCommon
                 }
                 else
                     ; //Ошибка получения всех параметров для всех ТГ
-            } catch (Exception) { }
+            }
+            catch (Exception e)
+            { Logging.Logg().Exception(e, "Ошибка получения параметров для всех ТГ", Logging.INDEX_MESSAGE.NOT_SET); }
 
             //DbTSQLInterface.CloseConnection(m_connConfigDB, out err);
 

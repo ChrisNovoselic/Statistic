@@ -316,6 +316,8 @@ namespace CommonAux
             m_GetDataFromDB = new GetDataFromDB();
             m_GetDataFromDB.InitChannels(m_connConfigDB, m_listTEC);
 
+            m_arMSEXEL_PARS = GetDataFromDB.getExcelPath(ref m_connConfigDB, out err).Split(',');
+
             foreach (TEC_LOCAL t in m_listTEC)
             {
                 t.InitSensors();
@@ -348,8 +350,6 @@ namespace CommonAux
             m_markReady = new HMark(0);
 
             FullPathTemplate = string.Empty;
-
-            m_arMSEXEL_PARS = new string[] { "", "Tepmlate.xls", "Sheet1", "1", "5", "25", "1.1" };
 
             //Установить обработчики событий
             EventNewPathToTemplate += new DelegateStringFunc(onNewPathToTemplate);
@@ -439,7 +439,6 @@ namespace CommonAux
                 ;
             return iRes;
         }
-
         /// <summary>
         /// Определить размеры ячеек макета панели
         /// </summary>
@@ -736,7 +735,6 @@ namespace CommonAux
             else
                 ;
         }
-
         /// <summary>
         /// Обработчик нажатия на кнопку на панели быстрого доступа "Открыть"
         /// </summary>
@@ -794,8 +792,6 @@ namespace CommonAux
                 {
                     m_btnStripButtonExcel.Enabled = true;
                 };
-
-                //labelLog.Text += Environment.NewLine;
             }
         }
 
