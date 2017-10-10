@@ -68,6 +68,21 @@ namespace Statistic {
             this.ResumeLayout();
         }
 
+        public override Color BackColor
+        {
+            get
+            {
+                return base.BackColor;
+            }
+
+            set
+            {
+                base.BackColor = value;
+
+                dgwAdminTable.BackColor = value == SystemColors.Control ? SystemColors.Window : value;
+            }
+        }
+
         /// <summary>
         /// Конструктор класса
         /// </summary>
@@ -79,12 +94,11 @@ namespace Statistic {
             m_admin.SetDelegateSaveComplete(null);
         }
 
-
         /// <summary>
-        /// Метод получения ИД (m_id) родительской ГТП для ТГ
+        /// Возврв=атить идентификатор (m_id) родительской ГТП для ТГ
         /// </summary>
-        /// <param name="indx_tg">ИД ТГ</param>
-        /// <returns>Возвращает ИД ГТП</returns>
+        /// <param name="indx_tg">Идентификатор ТГ</param>
+        /// <returns>Идентификатор ГТП</returns>
         private int getIndexGTPOwner(int indx_tg)
         {
             int iRes = -1
@@ -108,19 +122,19 @@ namespace Statistic {
             double value = -1F;
             bool valid = false;
             
-            foreach (int indx in ((AdminTS_LK)m_admin).m_listTECComponentIndexDetail)//Перебор компонентов
+            foreach (int indx in ((AdminTS_LK)m_admin).m_listTECComponentIndexDetail) //Перебор компонентов
             {
-                if (m_admin.modeTECComponent(indx) == FormChangeMode.MODE_TECCOMPONENT.TG)//Если ТГ то
-                {
+                if (m_admin.modeTECComponent(indx) == FormChangeMode.MODE_TECCOMPONENT.TG) {
+                //Если ТГ, то
                     int indx_tg = ((AdminTS_LK)m_admin).m_listTECComponentIndexDetail.IndexOf(indx),
                         indx_gtp = getIndexGTPOwner(indx_tg);
 
                     if ((!(indx_tg < 0)) && (!(indx_gtp < 0)))
                         for (int i = 0; i < 24; i++)//Перебор часовых значений ТГ
                         {
-                            foreach (DataGridViewColumn col in dgwAdminTable.Columns)//Перебор колонок DataGridView
-                                if (m_admin.GetNameTECComponent(indx) == col.HeaderText)//Если имя ТГ соответствует имени колонки то
-                                    if (dgwAdminTable.Rows[i].Cells[col.Index].Value == null)//Проверка на пустое поле и запись значения
+                            foreach (DataGridViewColumn col in dgwAdminTable.Columns) //Перебор колонок DataGridView
+                                if (m_admin.GetNameTECComponent(indx) == col.HeaderText) //Если имя ТГ соответствует имени колонки
+                                    if (dgwAdminTable.Rows[i].Cells[col.Index].Value == null) // , то проверка на пустое поле и запись значения
                                         ((AdminTS_LK)m_admin).m_listCurRDGValues[indx_tg][i].pbr = Convert.ToDouble(0.ToString("F2"));
                                     else
                                         ((AdminTS_LK)m_admin).m_listCurRDGValues[indx_tg][i].pbr = Convert.ToDouble(dgwAdminTable.Rows[i].Cells[col.Index].Value); // '+ 1' за счет DateTime
@@ -129,37 +143,33 @@ namespace Statistic {
                         }
                     else
                         ;
-                }
-                else
-                {
-                    if (m_admin.modeTECComponent(indx) == FormChangeMode.MODE_TECCOMPONENT.GTP)//Если ГТП то
-                    {
-                        int indx_gtp = ((AdminTS_LK)m_admin).m_listTECComponentIndexDetail.IndexOf(indx);
+                }  else if (m_admin.modeTECComponent(indx) == FormChangeMode.MODE_TECCOMPONENT.GTP) {
+                //Если ГТП то
+                    int indx_gtp = ((AdminTS_LK)m_admin).m_listTECComponentIndexDetail.IndexOf(indx);
 
-                        if (!(indx_gtp < 0))
-                            for (int i = 0; i < 24; i++)//Перебор часовых значений ГТП
-                            {
-                                try {
-                                    ((AdminTS_LK)m_admin).m_listCurRDGValues[indx_gtp][i].pbr = Convert.ToDouble(dgwAdminTable.Rows[i].Cells[(int)DataGridViewAdminLK.DESC_INDEX.PLAN_POWER].Value); // '+ 1' за счет DateTime
-                                    ((AdminTS_LK)m_admin).m_listCurRDGValues[indx_gtp][i].pmin = Convert.ToDouble(dgwAdminTable.Rows[i].Cells[(int)DataGridViewAdminLK.DESC_INDEX.PLAN_TEMPERATURE].Value);
+                    if (!(indx_gtp < 0))
+                        for (int i = 0; i < 24; i++)//Перебор часовых значений ГТП
+                        {
+                            try {
+                                ((AdminTS_LK)m_admin).m_listCurRDGValues[indx_gtp][i].pbr = Convert.ToDouble(dgwAdminTable.Rows[i].Cells[(int)DataGridViewAdminLK.DESC_INDEX.PLAN_POWER].Value); // '+ 1' за счет DateTime
+                                ((AdminTS_LK)m_admin).m_listCurRDGValues[indx_gtp][i].pmin = Convert.ToDouble(dgwAdminTable.Rows[i].Cells[(int)DataGridViewAdminLK.DESC_INDEX.PLAN_TEMPERATURE].Value);
 
-                                    if (!(this.dgwAdminTable.Rows[i].Cells[this.dgwAdminTable.Columns.Count - 3].Value == null))
-                                        ((AdminTS_LK)m_admin).m_listCurRDGValues[indx_gtp][i].deviationPercent = bool.Parse(this.dgwAdminTable.Rows[i].Cells[this.dgwAdminTable.Columns.Count - 3].Value.ToString());
-                                    else
-                                        ((AdminTS_LK)m_admin).m_listCurRDGValues[indx_gtp][i].deviationPercent = false;
+                                if (!(this.dgwAdminTable.Rows[i].Cells[this.dgwAdminTable.Columns.Count - 3].Value == null))
+                                    ((AdminTS_LK)m_admin).m_listCurRDGValues[indx_gtp][i].deviationPercent = bool.Parse(this.dgwAdminTable.Rows[i].Cells[this.dgwAdminTable.Columns.Count - 3].Value.ToString());
+                                else
+                                    ((AdminTS_LK)m_admin).m_listCurRDGValues[indx_gtp][i].deviationPercent = false;
 
-                                    valid = double.TryParse((string)this.dgwAdminTable.Rows[i].Cells[this.dgwAdminTable.Columns.Count - 2].Value, out value);
-                                    ((AdminTS_LK)m_admin).m_listCurRDGValues[indx_gtp][i].deviation = value;
-                                    ((AdminTS_LK)m_admin).m_listCurRDGValues[indx_gtp][i].pbr_number = "ППБР";
+                                valid = double.TryParse((string)this.dgwAdminTable.Rows[i].Cells[this.dgwAdminTable.Columns.Count - 2].Value, out value);
+                                ((AdminTS_LK)m_admin).m_listCurRDGValues[indx_gtp][i].deviation = value;
+                                ((AdminTS_LK)m_admin).m_listCurRDGValues[indx_gtp][i].pbr_number = "ППБР";
 
-                                    //AdminTS.m_sOwner_PBR = 0;
-                                } catch (Exception e) {
-                                    Logging.Logg().Exception(e, string.Format(@"PanelAdminLK::getDataGridViewAdmin () - ..."), Logging.INDEX_MESSAGE.NOT_SET);
-                                }
+                                //AdminTS.m_sOwner_PBR = 0;
+                            } catch (Exception e) {
+                                Logging.Logg().Exception(e, string.Format(@"PanelAdminLK::getDataGridViewAdmin () - ..."), Logging.INDEX_MESSAGE.NOT_SET);
                             }
-                        else
-                            ;
-                    }
+                        }
+                    else
+                        ;
                 }
             }
 
@@ -167,99 +177,117 @@ namespace Statistic {
         }
 
         /// <summary>
-        /// Метод вызова отдельного потока для добавления новой колонки
+        /// Заполнить представление значениями 
+        ///  , при необходимости переносит выполнение в собственный поток
+        ///  для регулирования доступа к элементам управления
         /// </summary>
         /// <param name="date">Дата отображаемых значений</param>
-        public override void setDataGridViewAdmin(DateTime date)
+        /// <param name="bNewValues">Признак наличия новых значений, иначе требуется изменить оформление представления</param>
+        public override void setDataGridViewAdmin(DateTime date, bool bNewValues)
         {
-            if (IsHandleCreated/*InvokeRequired*/ == true)
+            if (IsHandleCreated == true)
             {
-                this.BeginInvoke(new DelegateDateFunc(addTextBoxColumn), date);
+                if (InvokeRequired == true)
+                    this.BeginInvoke (new Action<DateTime, bool, bool> (addTextBoxColumn), date, true, bNewValues);
+                else
+                    addTextBoxColumn (date, false);
             }
             else
                 Logging.Logg().Error(@"PanelTecCurPower::setDataGridViewAdmin () - ... BeginInvoke (addTextBoxColumn) - ...", Logging.INDEX_MESSAGE.D_001);
         }
 
         /// <summary>
-        /// Метод добавления колонок в DataGridView
+        /// Метод добавления колонок в DataGridView + заполнение значениями ячеек
         /// </summary>
         /// <param name="date">Дата отображаемых значений</param>
-        private void addTextBoxColumn(DateTime date)
+        /// <param name="bSyncReq">Признак необходимости синхронизации по окончании выполнения метода</param>
+        private void addTextBoxColumn(DateTime date, bool bSyncReq, bool nNewValues)
         {
             int indx = ((AdminTS_LK)m_admin).indxTECComponents;
             //((AdminTS_LK)m_admin).set_CurComponent(0, m_admin.m_curDate);
             //indx = ((AdminTS_LK)m_admin).m_listTECComponentIndexDetail[this.dgwAdminTable.Columns.Count - ((int)DataGridViewAdminLK.DESC_INDEX.COUNT_COLUMN)];
+            Color dgwBackColor;
 
-            
-            if (m_admin.GetIdTECComponent(indx) > (int)TECComponent.ID.TG)
-            {
-                ((DataGridViewAdminLK)this.dgwAdminTable).addTextBoxColumn(m_admin.GetNameTECComponent(indx),
+            dgwBackColor = this.dgwAdminTable.BackColor;
+
+            if (m_admin.GetIdTECComponent(indx) > (int)TECComponent.ID.TG) {
+            // новый столбец
+                ((DataGridViewAdminLK)this.dgwAdminTable).AddTextBoxColumn(m_admin.GetNameTECComponent(indx),
                                                                     m_admin.GetIdTECComponent(indx),
                                                                     m_admin.GetIdGTPOwnerTECComponent(indx),
                                                                     date);
-                DataGridViewCellEventArgs ev;
 
                 for (int i = 0; i < 24; i++)
                 {
-
+                    //Дата/время
                     if (this.dgwAdminTable.Columns.Count == ((int)DataGridViewAdminLK.DESC_INDEX.COUNT_COLUMN + 1)) //Только при добавлении 1-го столбца
-                    {
                         this.dgwAdminTable.Rows[i].Cells[0].Value = date.AddHours(i + 1).ToString(@"dd-MM-yyyy HH:mm", CultureInfo.InvariantCulture);
-                    }
                     else
                         ;
+                    // цвет 0-го столбца изменяем всегда, на случай изменения цветовой гаммы приложения
+                    this.dgwAdminTable.Rows [i].Cells [0].Style.BackColor = dgwBackColor;
 
                     try
                     {
                         this.dgwAdminTable.Rows[i].Cells[this.dgwAdminTable.Columns.Count - 4].Value = ((AdminTS_LK)m_admin).m_listCurRDGValues[indx][i].pbr.ToString("F2");
+                        this.dgwAdminTable.Rows [i].Cells [this.dgwAdminTable.Columns.Count - 4].Style.BackColor = dgwBackColor;
                     }
                     catch (Exception e)
                     {
-                        Logging.Logg().Warning("PanelAdminLK : addTextBoxColumn () - нет листа с суточными значениями(снова потерялся индекс)" + e.Message, Logging.INDEX_MESSAGE.NOT_SET);
+                        Logging.Logg().Warning(string.Format("PanelAdminLK : addTextBoxColumn () - нет листа с суточными значениями(снова потерян индекс): {0}", e.Message)
+                            , Logging.INDEX_MESSAGE.NOT_SET);
                     }
 
                     ((DataGridViewAdminLK)this.dgwAdminTable).DataGridViewAdminLK_CellValueChanged(null
                         , new DataGridViewCellEventArgs(this.dgwAdminTable.Columns.Count - 4, i));
-
                 }
                 
                 visibleControlRDGExcel(((AdminTS_LK)m_admin).GetIdTECOwnerTECComponent(indx));
+            } else
+                ;
 
-            }
-            if (m_admin.GetIdTECComponent(indx) > (int)TECComponent.ID.GTP & m_admin.GetIdTECComponent(indx) < (int)TECComponent.ID.PC)
-            {
-                DataGridViewCellEventArgs ev;
+            if ((m_admin.GetIdTECComponent(indx) > (int)TECComponent.ID.GTP)
+                && (m_admin.GetIdTECComponent(indx) < (int)TECComponent.ID.PC))
+            {                
                 for (int i = 0; i < 24; i++)
                 {
-
-                    if (this.dgwAdminTable.Columns.Count == ((int)DataGridViewAdminLK.DESC_INDEX.COUNT_COLUMN + 1)) //Только при добавлении 1-го столбца
-                        this.dgwAdminTable.Rows[i].Cells[0].Value = date.AddHours(i + 1).ToString(@"dd-MM-yyyy HH:mm", CultureInfo.InvariantCulture);
-                    else
+                    //Дата/время
+                    if (this.dgwAdminTable.Columns.Count == ((int)DataGridViewAdminLK.DESC_INDEX.COUNT_COLUMN + 1)) { //Только при добавлении 1-го столбца
+                        this.dgwAdminTable.Rows [i].Cells [0].Value = date.AddHours (i + 1).ToString (@"dd-MM-yyyy HH:mm", CultureInfo.InvariantCulture);
+                        // цвет 0-го столбца изменяем на случай изменения цветовой гаммы приложения
+                        this.dgwAdminTable.Rows [i].Cells [0].Style.BackColor = dgwBackColor;
+                    } else
                         ;
+
                     try
                     {
                         this.dgwAdminTable.Rows[i].Cells[(int)DataGridViewAdminLK.DESC_INDEX.PLAN_POWER].Value = ((AdminTS_LK)m_admin).m_listCurRDGValues[indx][i].pbr.ToString("F2");
+                        this.dgwAdminTable.Rows [i].Cells [(int)DataGridViewAdminLK.DESC_INDEX.PLAN_POWER].Style.BackColor = dgwBackColor;
                         this.dgwAdminTable.Rows[i].Cells[(int)DataGridViewAdminLK.DESC_INDEX.PLAN_TEMPERATURE].Value = ((AdminTS_LK)m_admin).m_listCurRDGValues[indx][i].pmin.ToString("F2");
+                        this.dgwAdminTable.Rows [i].Cells [(int)DataGridViewAdminLK.DESC_INDEX.PLAN_TEMPERATURE].Style.BackColor = dgwBackColor;
                         this.dgwAdminTable.Rows[i].Cells[dgwAdminTable.Columns.Count - 3].Value = (bool)(((AdminTS_LK)m_admin).m_listCurRDGValues[indx][i].deviationPercent);
+                        this.dgwAdminTable.Rows [i].Cells [dgwAdminTable.Columns.Count - 3].Style.BackColor = dgwBackColor;
                         this.dgwAdminTable.Rows[i].Cells[dgwAdminTable.Columns.Count - 2].Value = ((AdminTS_LK)m_admin).m_listCurRDGValues[indx][i].deviation.ToString("F2");
-                    
+                        this.dgwAdminTable.Rows [i].Cells [dgwAdminTable.Columns.Count - 2].Style.BackColor = dgwBackColor;
                     }
                     catch (Exception e)
                     {
-                        Logging.Logg().Warning("PanelAdminLK : addTextBoxColumn - нет листа с суточными значениями(снова потерялся индекс)" + e.Message, Logging.INDEX_MESSAGE.NOT_SET);
+                        Logging.Logg().Warning(string.Format("PanelAdminLK : addTextBoxColumn - нет листа с суточными значениями(снова потерян индекс): {0}", e.Message)
+                            , Logging.INDEX_MESSAGE.NOT_SET);
                     }
-    
-                    ev = new DataGridViewCellEventArgs(this.dgwAdminTable.Columns.Count - 4, i);
 
-
-                    ((DataGridViewAdminLK)this.dgwAdminTable).DataGridViewAdminLK_CellValueChanged(null, ev);
-
-                }
-                
+                    ((DataGridViewAdminLK)this.dgwAdminTable).DataGridViewAdminLK_CellValueChanged(null
+                        , new DataGridViewCellEventArgs (this.dgwAdminTable.Columns.Count - 4, i));
+                }                
             }
+
             m_admin.CopyCurToPrevRDGValues();
             ((AdminTS_LK)m_admin).m_listPrevRDGValues.Add(m_admin.m_prevRDGValues);
-            ((AdminTS_LK)m_admin).m_semaIndxTECComponents.Release();
+
+            if (bSyncReq == true)
+                ((AdminTS_LK)m_admin).m_semaIndxTECComponents.Release ();
+            else
+                ;
         }
 
         /// <summary>
@@ -435,14 +463,27 @@ namespace Statistic {
         /// Массив значений по умолчанию
         /// </summary>
         private static string[] arDefaultValueIndex = { string.Empty, string.Empty, string.Empty, false.ToString(), string.Empty };
-
-
+        /// <summary>
+        /// Перечисление - возможные типы идентификаторов
+        /// </summary>
         private enum ID_TYPE : ushort { ID, ID_OWNER, COUNT_ID_TYPE };
-
+        /// <summary>
+        /// Список массивов идентификторов:
+        ///  1-ый индекс (в списке) - тип идентификатора (ID_TYPE)
+        /// </summary>
         private List <int []> m_listIds;
+        /// <summary>
+        /// Стиль ячеек для плановых значений ГТП (цвет особый, т.к. их редактировать нельзя)
+        /// </summary>
+        private DataGridViewCellStyle dgvCellStyleReadOnly;
 
-        DataGridViewCellStyle dgvCellStyleError,
-                             dgvCellStyleGTP;
+        protected override int INDEX_COLUMN_BUTTON_TO_ALL
+        {
+            get
+            {
+                return (int)DESC_INDEX.TO_ALL;
+            }
+        }
 
         /// <summary>
         /// Конструктор
@@ -460,7 +501,13 @@ namespace Statistic {
             base.InitializeComponents ();
 
             int col = -1;
-            Columns.AddRange(new DataGridViewColumn[(int)DESC_INDEX.COUNT_COLUMN] { new DataGridViewTextBoxColumn(), new DataGridViewTextBoxColumn(), new DataGridViewTextBoxColumn(), new DataGridViewCheckBoxColumn(), new DataGridViewTextBoxColumn(), new DataGridViewButtonColumn() });
+            Columns.AddRange(new DataGridViewColumn[(int)DESC_INDEX.COUNT_COLUMN] { new DataGridViewTextBoxColumn()
+                , new DataGridViewTextBoxColumn()
+                , new DataGridViewTextBoxColumn()
+                , new DataGridViewCheckBoxColumn()
+                , new DataGridViewTextBoxColumn()
+                , new DataGridViewButtonColumn() });
+
             col = 0;
             for (col = 0; col < (int)DESC_INDEX.PLAN_POWER; col++)
             {
@@ -470,6 +517,7 @@ namespace Statistic {
                     Columns[col].ReadOnly = true;
                     Columns[col].SortMode = System.Windows.Forms.DataGridViewColumnSortMode.NotSortable;
             }
+
             for (col = (int)DESC_INDEX.PLAN_POWER; col < (int)DESC_INDEX.DEVIATION_TYPE; col++)
             {
                 Columns[col].Frozen = true;
@@ -478,6 +526,7 @@ namespace Statistic {
                 Columns[col].ReadOnly = false;
                 Columns[col].SortMode = System.Windows.Forms.DataGridViewColumnSortMode.NotSortable;
             }
+
             for (col = (int)DESC_INDEX.DEVIATION_TYPE; col < (int)DESC_INDEX.COUNT_COLUMN; col++)
             {
                 Columns[col].Frozen = false;
@@ -487,13 +536,13 @@ namespace Statistic {
                 Columns[col].SortMode = System.Windows.Forms.DataGridViewColumnSortMode.NotSortable;
             }
 
-            dgvCellStyleError = new DataGridViewCellStyle();
-            dgvCellStyleError.BackColor = Color.Red;
-
-            dgvCellStyleGTP = new DataGridViewCellStyle();
-            dgvCellStyleGTP.BackColor = Color.Yellow;
+            dgvCellStyleReadOnly = new DataGridViewCellStyle();
+            dgvCellStyleReadOnly.BackColor = Color.Yellow;
 
             this.Dock = DockStyle.Fill;
+
+            this.Columns [INDEX_COLUMN_BUTTON_TO_ALL].DefaultCellStyle.BackColor = SystemColors.Control;
+            this.BackColor = SystemColors.Window;
 
             this.CellValueChanged += new DataGridViewCellEventHandler(DataGridViewAdminLK_CellValueChanged);
 
@@ -507,25 +556,40 @@ namespace Statistic {
         /// <param name="e">Аргумент события</param>
         public void DataGridViewAdminLK_CellValueChanged(object sender, DataGridViewCellEventArgs e)
         {
-            if ((m_listIds.Count == Columns.Count - 4)
-                && (Columns[e.ColumnIndex].ReadOnly == false)
+            int CNT_FIXED_COLUMNS = -1;
+
+            CNT_FIXED_COLUMNS = 3; // за счт столбца "Дата, время", "План t", "План P"
+
+            if (Columns.Count == INDEX_COLUMN_BUTTON_TO_ALL + m_listIds.Count + 1) {
+            // повторный проход, когда все столбцы добавлены
+                for(int col = 0; col < m_listIds.Count; col ++)
+                    if ((Rows [e.RowIndex].Cells [col + CNT_FIXED_COLUMNS].Style.Equals(s_dgvCellStyles [(int)INDEX_CELL_STYLE.ERROR]) == false)
+                        && (Rows [e.RowIndex].Cells [col + CNT_FIXED_COLUMNS].Style.Equals (dgvCellStyleReadOnly) == false))
+                        Rows [e.RowIndex].Cells [col + CNT_FIXED_COLUMNS].Style.BackColor = BackColor;
+                    else
+                        ;
+            } else if ((m_listIds.Count == Columns.Count - 4)
+                && (Columns [e.ColumnIndex].ReadOnly == false)
                 && (e.ColumnIndex > 0)
-                && (e.ColumnIndex < Columns.Count - 3))
+                && (e.ColumnIndex < Columns.Count - CNT_FIXED_COLUMNS))
             {
-                int id_gtp = m_listIds[e.ColumnIndex - 3][(int)ID_TYPE.ID_OWNER],
+            // 1-ый проход при добавлении столбца
+                int id_gtp = m_listIds [e.ColumnIndex - CNT_FIXED_COLUMNS] [(int)ID_TYPE.ID_OWNER],
                     col_gtp = -1;
-                List<int> list_col_tg = new List<int>();
-                foreach (int[] ids in m_listIds)
-                {
+                List<int> list_col_tg = new List<int> ();
+
+                foreach (int [] ids in m_listIds) {
                     //Поиск номера столбца ГТП (только ОДИН раз)
-                    if ((col_gtp < 0) && (id_gtp == ids[(int)ID_TYPE.ID]) && (ids[(int)ID_TYPE.ID_OWNER] < 0))
-                        col_gtp = m_listIds.IndexOf(ids) + 3; // '+ 1' за счт столбца "Дата, время"
+                    if ((col_gtp < 0)
+                        && (id_gtp == ids [(int)ID_TYPE.ID])
+                        && (ids [(int)ID_TYPE.ID_OWNER] < 0))
+                        col_gtp = m_listIds.IndexOf (ids) + CNT_FIXED_COLUMNS; // '+ 3' за счт столбца "Дата, время", "План t", "План P"
                     else
                         ;
 
                     //Все столбцы для ГТП с id_gtp == ...
-                    if (id_gtp == ids[(int)ID_TYPE.ID_OWNER])
-                        list_col_tg.Add(m_listIds.IndexOf(ids) + 3); // '+ 1' за счт столбца "Дата, время"
+                    if (id_gtp == ids [(int)ID_TYPE.ID_OWNER])
+                        list_col_tg.Add (m_listIds.IndexOf (ids) + CNT_FIXED_COLUMNS); // '+ 3' за счт столбца "Дата, время", "План t", "План P"
                     else
                         ;
                 }
@@ -534,24 +598,18 @@ namespace Statistic {
                 {
                     double plan_gtp = 0.0;
                     foreach (int col in list_col_tg)
-                    {
                         plan_gtp += Convert.ToDouble(Rows[e.RowIndex].Cells[col].Value);
-                    }
 
-                    if (Convert.ToDouble(Rows[e.RowIndex].Cells[col_gtp].Value).Equals(plan_gtp) == false)
-                    {
-                        Rows[e.RowIndex].Cells[col_gtp].Style = dgvCellStyleError;
-                    }
+                    if (Convert.ToDouble (Rows [e.RowIndex].Cells [col_gtp].Value).Equals (plan_gtp) == false)
+                        Rows [e.RowIndex].Cells [col_gtp].Style = s_dgvCellStyles [(int)INDEX_CELL_STYLE.ERROR];
+                    else if (Rows [e.RowIndex].Cells [col_gtp].Style.BackColor == s_dgvCellStyles [(int)INDEX_CELL_STYLE.ERROR].BackColor)
+                        Rows [e.RowIndex].Cells [col_gtp].Style = dgvCellStyleReadOnly;
                     else
-                        if (Rows[e.RowIndex].Cells[col_gtp].Style.BackColor == dgvCellStyleError.BackColor)
-                            Rows[e.RowIndex].Cells[col_gtp].Style = dgvCellStyleGTP;
-                        else
-                            ;
+                        Rows [e.RowIndex].Cells [col_gtp].Style.BackColor = BackColor;
                 }
                 else
-                    ;
-            }
-            else
+                    ;                
+            } else
                 ;
         }
         
@@ -611,13 +669,13 @@ namespace Statistic {
         }
 
         /// <summary>
-        /// Метод для добавления новой колонки в таблицу
+        /// Добавить новый столбец/колонку в представление
         /// </summary>
         /// <param name="name">Имя колонки</param>
         /// <param name="id">m_id компонента</param>
         /// <param name="id_owner">m_id компонента-родителя</param>
         /// <param name="date">Дата выбранного значения</param>
-        public void addTextBoxColumn(string name, int id, int id_owner, DateTime date)
+        public void AddTextBoxColumn(string name, int id, int id_owner, DateTime date)
         {
             if (id > (int)FormChangeMode.MODE_TECCOMPONENT.TG)
             {
@@ -665,16 +723,16 @@ namespace Statistic {
         }
 
         /// <summary>
-        /// Метод поиска компонента по m_id родителя
+        /// Найти идентификатор компонента по m_id родителя
         /// </summary>
-        /// <param name="i"></param>
-        /// <returns></returns>
-        public int GetIdGTPOwner(int i)
+        /// <param name="id">Идентификатор родительского компонента</param>
+        /// <returns>Идентификатор компонента</returns>
+        public int GetIdGTPOwner(int id)
         {
             int iRes = -1;
 
-            if ((i < m_listIds.Count) && ((int)ID_TYPE.ID_OWNER < m_listIds[i].Length))
-                iRes = m_listIds [i][(int)ID_TYPE.ID_OWNER];
+            if ((id < m_listIds.Count) && ((int)ID_TYPE.ID_OWNER < m_listIds[id].Length))
+                iRes = m_listIds [id][(int)ID_TYPE.ID_OWNER];
             else
                 ;
 

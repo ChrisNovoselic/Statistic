@@ -921,7 +921,8 @@ namespace StatisticTrans
         /// Заполнение таблицы полученными данными (при [авто]режиме экспорт данных + переход к следующему элементу списка компонентов)
         /// </summary>
         /// <param name="date">дата</param>
-        protected virtual void setDataGridViewAdmin(DateTime date)
+        /// <param name="bNewValues">Признак наличия новых значений, иначе требуется изменить оформление представления</param>
+        protected virtual void setDataGridViewAdmin(DateTime date, bool bNewValues)
         {
             //if (m_IndexDB == (short)CONN_SETT_TYPE.SOURCE) {
             //    string strDatetimeSeason = m_fileINI.GetValueOfKey(@"Season DateTime");

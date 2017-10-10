@@ -1086,7 +1086,9 @@ namespace Statistic
             if ((!(formChangeMode == null))
                 && ((m_markPrevStatePanelAdmin.IsMarked((int)FormChangeMode.MANAGER.DISP) == true)
                     || (m_markPrevStatePanelAdmin.IsMarked((int)FormChangeMode.MANAGER.NSS) == true)
-                    || (m_markPrevStatePanelAdmin.IsMarked((int)FormChangeMode.MANAGER.ALARM) == true)))
+                    || (m_markPrevStatePanelAdmin.IsMarked((int)FormChangeMode.MANAGER.ALARM) == true)
+                    || (m_markPrevStatePanelAdmin.IsMarked ((int)FormChangeMode.MANAGER.LK) == true)
+                    || (m_markPrevStatePanelAdmin.IsMarked ((int)FormChangeMode.MANAGER.TEPLOSET) == true)))
             //if ((!(formChangeMode == null)) && (formChangeMode.admin_was_checked[(int)FormChangeMode.MANAGER.DISP] || formChangeMode.admin_was_checked[(int)FormChangeMode.MANAGER.NSS]))
             {
                 if (!(m_arPanelAdmin == null))
@@ -1223,9 +1225,10 @@ namespace Statistic
                                 FormChangeMode.MANAGER.UNKNOWN;
 
                         if ((!(indxManager == FormChangeMode.MANAGER.UNKNOWN))
-                            && (formChangeMode.m_markTabAdminChecked.IsMarked((int)indxManager) == false))
+                            && (formChangeMode.m_markTabAdminChecked.IsMarked ((int)indxManager) == false)) {
                             bToRemove = true;
-                        else
+                            m_markPrevStatePanelAdmin.UnMarked ((int)indxManager);
+                        } else
                             ;
                     }
                     else
@@ -1717,16 +1720,11 @@ namespace Statistic
                                 panel_tecView_ToAdding = new PANEL_TO_STANDARD_TAB()
                                 {
                                     id = t.m_id
-                                    ,
-                                    indx_itemChangeMode = i
-                                    ,
-                                    indx_tecView = m_listStandardTabs.Count - 1
-                                    ,
-                                    tec = t
-                                    ,
-                                    indxTEC = formChangeMode.m_list_tec.IndexOf(t)
-                                    ,
-                                    indxTECComponent = -1
+                                    , indx_itemChangeMode = i
+                                    , indx_tecView = m_listStandardTabs.Count - 1
+                                    , tec = t
+                                    , indxTEC = formChangeMode.m_list_tec.IndexOf(t)
+                                    , indxTECComponent = -1
                                 };
                                 list_tecView_toAddinng.Add(panel_tecView_ToAdding.GetValueOrDefault());
 
@@ -1749,16 +1747,11 @@ namespace Statistic
                                         panel_tecView_ToAdding = new PANEL_TO_STANDARD_TAB()
                                         {
                                             id = g.m_id
-                                            ,
-                                            indx_itemChangeMode = i
-                                            ,
-                                            indx_tecView = m_listStandardTabs.Count - 1
-                                            ,
-                                            tec = t
-                                            ,
-                                            indxTEC = formChangeMode.m_list_tec.IndexOf(t)
-                                            ,
-                                            indxTECComponent = t.list_TECComponents.IndexOf(g)
+                                            , indx_itemChangeMode = i
+                                            , indx_tecView = m_listStandardTabs.Count - 1
+                                            , tec = t
+                                            , indxTEC = formChangeMode.m_list_tec.IndexOf(t)
+                                            , indxTECComponent = t.list_TECComponents.IndexOf(g)
                                         };
                                         list_tecView_toAddinng.Add(panel_tecView_ToAdding.GetValueOrDefault());
 
@@ -1784,16 +1777,11 @@ namespace Statistic
                         panel_tecView_ToAdding = new PANEL_TO_STANDARD_TAB()
                         {
                             id = m_listStandardTabs[tecView_index].m_ID
-                            ,
-                            indx_itemChangeMode = i
-                            ,
-                            indx_tecView = tecView_index
-                            ,
-                            tec = m_listStandardTabs[tecView_index].m_tecView.m_tec
-                            ,
-                            indxTEC = m_listStandardTabs[tecView_index].indx_TEC
-                            ,
-                            indxTECComponent = m_listStandardTabs[tecView_index].indx_TECComponent
+                            , indx_itemChangeMode = i
+                            , indx_tecView = tecView_index
+                            , tec = m_listStandardTabs[tecView_index].m_tecView.m_tec
+                            , indxTEC = m_listStandardTabs[tecView_index].indx_TEC
+                            , indxTECComponent = m_listStandardTabs[tecView_index].indx_TECComponent
                         };
                         list_tecView_toAddinng.Add(panel_tecView_ToAdding.GetValueOrDefault());
                     }
@@ -2060,60 +2048,24 @@ namespace Statistic
 
         private void addTabPagesAdmin()
         {
-            if ((formChangeMode.m_markTabAdminChecked.IsMarked((int)FormChangeMode.MANAGER.DISP) == true)
-                || (formChangeMode.m_markTabAdminChecked.IsMarked((int)FormChangeMode.MANAGER.NSS) == true)
-                || (formChangeMode.m_markTabAdminChecked.IsMarked((int)FormChangeMode.MANAGER.ALARM) == true)
-                || (formChangeMode.m_markTabAdminChecked.IsMarked((int)FormChangeMode.MANAGER.LK) == true)
-                || (formChangeMode.m_markTabAdminChecked.IsMarked((int)FormChangeMode.MANAGER.TEPLOSET) == true))
-            {
-                int idListener = DbSources.Sources().Register(s_listFormConnectionSettings[(int)CONN_SETT_TYPE.CONFIG_DB].getConnSett(), false, @"CONFIG_DB");
+            List<FormChangeMode.MANAGER> indexes = new List<FormChangeMode.MANAGER> { FormChangeMode.MANAGER.DISP
+                , FormChangeMode.MANAGER.NSS
+                , FormChangeMode.MANAGER.ALARM
+                , FormChangeMode.MANAGER.LK
+                , FormChangeMode.MANAGER.TEPLOSET
+            };
 
-                if ((formChangeMode.m_markTabAdminChecked.IsMarked((int)FormChangeMode.MANAGER.DISP) == true)
-                    && (m_markPrevStatePanelAdmin.IsMarked ((int)FormChangeMode.MANAGER.DISP) == false))
-                {
-                    addTabPageAdmin(idListener, FormChangeMode.MANAGER.DISP);
-                }
+            int idListener = DbSources.Sources ().Register (s_listFormConnectionSettings [(int)CONN_SETT_TYPE.CONFIG_DB].getConnSett (), false, @"CONFIG_DB");
+
+            indexes.ForEach (indx => {
+                if ((formChangeMode.m_markTabAdminChecked.IsMarked ((int)indx) == true)
+                    && (m_markPrevStatePanelAdmin.IsMarked ((int)indx) == false))
+                    addTabPageAdmin (idListener, indx);
                 else
                     ;
+            });
 
-                if ((formChangeMode.m_markTabAdminChecked.IsMarked((int)FormChangeMode.MANAGER.NSS) == true)
-                    && (m_markPrevStatePanelAdmin.IsMarked ((int)FormChangeMode.MANAGER.NSS) == false))
-                {
-                    addTabPageAdmin(idListener, FormChangeMode.MANAGER.NSS);
-                }
-                else
-                    ;
-
-                if ((formChangeMode.m_markTabAdminChecked.IsMarked((int)FormChangeMode.MANAGER.ALARM) == true)
-                    && (m_markPrevStatePanelAdmin.IsMarked ((int)FormChangeMode.MANAGER.ALARM) == false))
-                {
-                    addTabPageAdmin(idListener, FormChangeMode.MANAGER.ALARM);
-                }
-                else
-                    ;
-
-                if ((formChangeMode.m_markTabAdminChecked.IsMarked((int)FormChangeMode.MANAGER.LK) == true)
-                    && (m_markPrevStatePanelAdmin.IsMarked ((int)FormChangeMode.MANAGER.LK) == false))
-                {
-                    addTabPageAdmin(idListener, FormChangeMode.MANAGER.LK);
-                }
-                else
-                    ;
-
-                if ((formChangeMode.m_markTabAdminChecked.IsMarked((int)FormChangeMode.MANAGER.TEPLOSET) == true)
-                    && (m_markPrevStatePanelAdmin.IsMarked ((int)FormChangeMode.MANAGER.TEPLOSET) == false))
-                {
-                    addTabPageAdmin(idListener, FormChangeMode.MANAGER.TEPLOSET);
-                }
-                else
-                    ;
-
-                DbSources.Sources().UnRegister(idListener);
-            }
-            else
-            {
-                m_markPrevStatePanelAdmin.UnMarked();
-            }
+            DbSources.Sources ().UnRegister (idListener);
         }
         /// <summary>
         /// Добавить вкладку(и) из интрументария 'администратор-диспетчер'

@@ -20,6 +20,14 @@ namespace StatisticCommon
         DataGridViewCellStyle dgvCellStyleError,
                              dgvCellStyleGTP;
 
+        protected override int INDEX_COLUMN_BUTTON_TO_ALL
+        {
+            get
+            {
+                return (int)ColumnCount - 1;
+            }
+        }
+
         public DataGridViewAdminNSS(Color []colors) : base(colors)
         {
             m_listIds = new List<int[]>();
@@ -59,18 +67,26 @@ namespace StatisticCommon
             Columns[col].Name = "ToAll";
             Columns[col].ReadOnly = true;
             Columns[col].SortMode = System.Windows.Forms.DataGridViewColumnSortMode.NotSortable;
+            Columns [col].DefaultCellStyle.BackColor = SystemColors.Control;
+
+            BackColor = SystemColors.Window;
         }
 
         public void DataGridViewAdminNSS_CellValueChanged(object sender, DataGridViewCellEventArgs e)
         {
-            if ((m_listIds.Count == Columns.Count - 2) && (Columns[e.ColumnIndex].ReadOnly == false) && (e.ColumnIndex > 0) && (e.ColumnIndex < Columns.Count - 1))
+            if ((m_listIds.Count == Columns.Count - 2)
+                && (Columns[e.ColumnIndex].ReadOnly == false)
+                && (e.ColumnIndex > 0)
+                && (e.ColumnIndex < Columns.Count - 1))
             {
                 int id_gtp = m_listIds [e.ColumnIndex - 1][(int)ID_TYPE.ID_OWNER],
                     col_gtp = -1;
                 List<int> list_col_tg = new List<int>();
+
                 foreach (int [] ids in m_listIds) {
                     //Поиск номера столбца ГТП (только ОДИН раз)
-                    if ((col_gtp < 0) && (id_gtp == ids[(int)ID_TYPE.ID]) && (ids[(int)ID_TYPE.ID_OWNER] < 0))
+                    if ((col_gtp < 0)
+                        && (id_gtp == ids[(int)ID_TYPE.ID]) && (ids[(int)ID_TYPE.ID_OWNER] < 0))
                         col_gtp = m_listIds.IndexOf(ids) + 1; // '+ 1' за счт столбца "Дата, время"
                     else
                         ;
@@ -84,6 +100,7 @@ namespace StatisticCommon
 
                 if (list_col_tg.Count > 0) {
                     double plan_gtp = 0.0;
+
                     foreach (int col in list_col_tg) {
                         plan_gtp += Convert.ToDouble (Rows [e.RowIndex].Cells[col].Value);
                     }
@@ -92,9 +109,13 @@ namespace StatisticCommon
                         Rows[e.RowIndex].Cells[col_gtp].Style = dgvCellStyleError;
                     }
                     else
+                    // значение плана ГТП совпадает с суммой плановых значений для ТГ
                         if (Rows[e.RowIndex].Cells[col_gtp].Style.BackColor == dgvCellStyleError.BackColor)
+                        // если ранее была установлена ошибка - исправить на цвет для ГТП "без ошибки"
                             Rows[e.RowIndex].Cells[col_gtp].Style = dgvCellStyleGTP;
                         else
+                        // ранее уже был установлен необходимый цвет
+                        //??? в целом, неправильно ошибку в ячейке определять по цвету - требуется установить доп. свойство
                             ;
                 }
                 else
@@ -202,6 +223,33 @@ namespace StatisticCommon
                 ;
 
             return iRes;
+        }
+
+        public override Color BackColor
+        {
+            get
+            {
+                return base.BackColor;
+            }
+
+            set
+            {
+                base.BackColor = value;
+
+                if ((INDEX_COLUMN_BUTTON_TO_ALL > 0)
+                    && (RowCount > 0))
+                    for (int col = 0; col < (int)INDEX_COLUMN_BUTTON_TO_ALL; col++)
+                        for (int i = 0; i < 24; i++) {
+                            if ((Rows [i].Cells [col].Style.BackColor.Equals (dgvCellStyleError.BackColor) == false)
+                                && (Rows [i].Cells [col].Style.BackColor.Equals (dgvCellStyleError.BackColor) == false))
+                                Rows [i].Cells [col].Style.BackColor = value == SystemColors.Control ? SystemColors.Window : value;
+                            else
+                                ;
+                        }
+                else
+                // нет столбцов/строк - нет действий по изменению цвета фона ячеек
+                    ;
+            }
         }
     }
 }

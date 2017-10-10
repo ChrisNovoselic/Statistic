@@ -115,7 +115,7 @@ namespace StatisticCommon
                 , DefaultCellStyle = new DataGridViewCellStyle() { NullValue = false }
                 , Frozen = false
                 , ReadOnly = false
-                , Resizable = DataGridViewTriState.False
+                , Resizable = DataGridViewTriState.False                
                 //, Width = -1
                 , SortMode = DataGridViewColumnSortMode.NotSortable
             }
@@ -151,8 +151,10 @@ namespace StatisticCommon
             }});
 
             //AutoSizeColumnsMode = DataGridViewAutoSizeColumnsMode.ColumnHeader;
-
-            (Columns [(int)COLUMN_INDEX.TO_ALL] as DataGridViewButtonColumn).DefaultCellStyle.BackColor = SystemColors.Control;
+            
+            Columns [(int)COLUMN_INDEX.FOREIGN_CMD].DefaultCellStyle.Alignment = DataGridViewContentAlignment.MiddleCenter;
+            Columns [(int)COLUMN_INDEX.DEVIATION_TYPE].DefaultCellStyle.Alignment = DataGridViewContentAlignment.MiddleCenter;
+            Columns [(int)COLUMN_INDEX.TO_ALL].DefaultCellStyle.BackColor = SystemColors.Control;
 
             BackColor = SystemColors.Window;
         }

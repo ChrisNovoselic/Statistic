@@ -352,7 +352,12 @@ namespace Statistic
 
         private AdminTS_KomDisp Admin { get { return m_admin as AdminTS_KomDisp; } }
 
-        public override void setDataGridViewAdmin(DateTime date)
+        /// <summary>
+        /// Отобразить значения в представлении
+        /// </summary>
+        /// <param name="date">Дата, за которую получены значения для отображения</param>
+        /// <param name="bNewValues">Признак наличия новых значений, иначе требуется изменить оформление представления</param>
+        public override void setDataGridViewAdmin(DateTime date, bool bNewValues)
         {
             int offset = -1
                 , nextIndx = -1;
@@ -366,11 +371,11 @@ namespace Statistic
                         if (InvokeRequired == true) {
                             m_evtAdminTableRowCount.Reset ();
                             // кол-во строк может быть изменено(нормализовано) только в том потоке,в котором было выполнено создание элемента управления
-                            this.BeginInvoke (new DelegateFunc (normalizedTableHourRows));
+                            this.BeginInvoke (new DelegateBoolFunc (normalizedTableHourRows), InvokeRequired);
                             //??? ожидать, пока не завершится выполнение предыдущего потока
                             m_evtAdminTableRowCount.WaitOne (System.Threading.Timeout.Infinite);
                         } else {
-                            normalizedTableHourRows ();
+                            normalizedTableHourRows (InvokeRequired);
                         }
                     }
                     else

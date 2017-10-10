@@ -311,7 +311,14 @@ namespace Statistic
             //m_admin.CopyCurRDGValues();
         }
 
-        public override void setDataGridViewAdmin(DateTime date)
+        /// <summary>
+        /// «аполнить представление значени€ми 
+        ///  , при необходимости переносит выполнение в собственный поток
+        ///  дл€ регулировани€ доступа к элементам управлени€
+        /// </summary>
+        /// <param name="date">ƒата отображаемых значений</param>
+        /// <param name="bNewValues">ѕризнак наличи€ новых значений, иначе требуетс€ изменить оформление представлени€</param>
+        public override void setDataGridViewAdmin(DateTime date, bool bNewValues)
         {
             int hour = -1
                 , offset = -1;
@@ -324,11 +331,14 @@ namespace Statistic
             if ((m_admin as AdminTS_TG).CompletedGetRDGValues == true)
             {
                 //??? не очень из€щное решение
-                if (IsHandleCreated/*InvokeRequired*/ == true)
+                if (IsHandleCreated == true)
                 {
-                    m_evtAdminTableRowCount.Reset();
-                    this.BeginInvoke(new DelegateFunc(normalizedTableHourRows));
-                    m_evtAdminTableRowCount.WaitOne(System.Threading.Timeout.Infinite);
+                    if (InvokeRequired == true) {
+                        m_evtAdminTableRowCount.Reset ();
+                        this.BeginInvoke (new DelegateBoolFunc (normalizedTableHourRows), InvokeRequired);
+                        m_evtAdminTableRowCount.WaitOne (System.Threading.Timeout.Infinite);
+                    } else
+                        normalizedTableHourRows(InvokeRequired);
                 }
                 else
                     Logging.Logg().Error(@"PanelTAdminKomDisp::setDataGridViewAdmin () - ... BeginInvoke (normalizedTableHourRows) - ...", Logging.INDEX_MESSAGE.D_001);

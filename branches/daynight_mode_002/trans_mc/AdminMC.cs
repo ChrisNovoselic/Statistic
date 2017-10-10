@@ -310,7 +310,7 @@ namespace trans_mc
                     result = getPPBRValuesResponse(table as DataTable, m_curDate);
                     if (result == 0)
                     {
-                        readyData(m_curDate);
+                        readyData(m_curDate, true);
                     }
                     else
                         ;
