@@ -343,7 +343,13 @@ namespace trans_tg
                 ;
         }
 
-        private void addTextBoxColumn(DateTime date)
+        /// <summary>
+        /// Добавить столбец в DataGridView + заполнение значениями ячеек
+        /// </summary>
+        /// <param name="date">Дата отображаемых значений</param>
+        /// <param name="bNewValues">Признак наличия новых значений (false - обновление оформления представления при изменении цветовой схемы)</param>
+        /// <param name="bSyncReq">Признак необходимости синхронизации по окончании выполнения метода</param>        
+        private void addTextBoxColumn (DateTime date, bool bNewValues, bool bSyncReq)
         {
             int indxDB = m_IndexDB,
                 indx = ((AdminTS_NSS)m_arAdmin[indxDB]).m_listTECComponentIndexDetail[m_dgwAdminTable.Columns.Count - 2];
@@ -366,9 +372,10 @@ namespace trans_tg
                 ((DataGridViewAdminNSS)m_dgwAdminTable).DataGridViewAdminNSS_CellValueChanged(null, ev);
             }
 
-            m_arAdmin[indxDB].CopyCurToPrevRDGValues();
-
-            //m_dgwAdminTable.Invalidate();
+            if (bNewValues == true)
+                m_arAdmin [indxDB].CopyCurToPrevRDGValues ();
+            else
+                ;
         }
 
         private void SaveChanges ()
@@ -382,12 +389,15 @@ namespace trans_tg
             //((AdminTS_NSS)m_arAdmin[(int)CONN_SETT_TYPE.DEST]).SaveChanges();
         }
 
-        protected override void updateDataGridViewAdmin(DateTime date)
+        protected override void updateDataGridViewAdmin(DateTime date, bool bNewValues)
         {
-            if (IsHandleCreated/*InvokeRequired*/ == true)
-                this.BeginInvoke(new DelegateDateFunc(addTextBoxColumn), date);
+            if (IsHandleCreated == true)
+                if (InvokeRequired == true)
+                    this.BeginInvoke (new Action<DateTime, bool, bool> (addTextBoxColumn), date, true, InvokeRequired);
+                else
+                    addTextBoxColumn(date, true, InvokeRequired);
             else
-                Logging.Logg().Error(@"FormMainTransTG::updateDataGridViewAdmin () - ... BeginInvoke (addTextBoxColumn) - ...", Logging.INDEX_MESSAGE.D_001);
+                Logging.Logg ().Error (@"FormMainTransTG::updateDataGridViewAdmin () - ... BeginInvoke (addTextBoxColumn) - ...", Logging.INDEX_MESSAGE.D_001);
         }
 
         protected override void buttonClear_Click(object sender, EventArgs e)
@@ -454,7 +464,7 @@ namespace trans_tg
             else
             {
                 //this.BeginInvoke(new DelegateDateFunction(addTextBoxColumn), date);
-                updateDataGridViewAdmin(date);
+                updateDataGridViewAdmin(date, bNewValues);
             }
         }
 

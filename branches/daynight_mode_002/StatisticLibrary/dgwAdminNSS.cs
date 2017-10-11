@@ -242,6 +242,7 @@ namespace StatisticCommon
                         for (int i = 0; i < 24; i++) {
                             if ((Rows [i].Cells [col].Style.BackColor.Equals (dgvCellStyleError.BackColor) == false)
                                 && (Rows [i].Cells [col].Style.BackColor.Equals (dgvCellStyleError.BackColor) == false))
+                            // »меютс€ ограничени€ при назначении фонового цвета дл€ €чеек
                                 Rows [i].Cells [col].Style.BackColor = value == SystemColors.Control ? SystemColors.Window : value;
                             else
                                 ;

@@ -135,6 +135,7 @@ namespace Statistic
             {
                 return (double)r[indxTables * cntFields + (0 + 2)];
             }
+
             /// <summary>
             /// ¬озвратить признак выполненых пользователем изменений
             /// </summary>
@@ -168,6 +169,7 @@ namespace Statistic
 
                 return bRes;
             }
+
             /// <summary>
             /// “иражировать(копировать одно значение в несколько переменных) значений дл€ всех параметров выводов
             /// </summary>
@@ -192,6 +194,7 @@ namespace Statistic
                     indx++;
                 }
             }
+
             /// <summary>
             /// —охранение текущих значений (ѕЅ– + рекомендации = –ƒ√) дл€ последующего изменени€
             /// </summary>
@@ -331,8 +334,7 @@ namespace Statistic
             if ((m_admin as AdminTS_TG).CompletedGetRDGValues == true)
             {
                 //??? не очень из€щное решение
-                if (IsHandleCreated == true)
-                {
+                if (IsHandleCreated == true) {
                     if (InvokeRequired == true) {
                         m_evtAdminTableRowCount.Reset ();
                         this.BeginInvoke (new DelegateBoolFunc (normalizedTableHourRows), InvokeRequired);
@@ -341,7 +343,8 @@ namespace Statistic
                         normalizedTableHourRows(InvokeRequired);
                 }
                 else
-                    Logging.Logg().Error(@"PanelTAdminKomDisp::setDataGridViewAdmin () - ... BeginInvoke (normalizedTableHourRows) - ...", Logging.INDEX_MESSAGE.D_001);
+                    Logging.Logg().Error(@"PanelAdminVyvod::setDataGridViewAdmin () - ... BeginInvoke (normalizedTableHourRows) - ...", Logging.INDEX_MESSAGE.D_001);
+
                 // получить значени€ из объекта дл€ обращени€ к данным
                 PBR_0 =
                 (this.dgwAdminTable as DataGridViewAdminVyvod).m_PBR_0 =
@@ -355,22 +358,36 @@ namespace Statistic
                     offset = m_admin.GetSeasonHourOffset(hour + 1);
 
                     this.dgwAdminTable.Rows[hour].Cells[(int)DataGridViewAdminVyvod.DESC_INDEX.DATE_HOUR].Value = date.AddHours(hour + 1 - offset).ToString(strFmtDatetime);
+                    this.dgwAdminTable.Rows [hour].Cells [(int)DataGridViewAdminVyvod.DESC_INDEX.DATE_HOUR].Style.BackColor = this.dgwAdminTable.BackColor;
 
                     this.dgwAdminTable.Rows[hour].Cells[(int)DataGridViewAdminVyvod.DESC_INDEX.PLAN].Value = arSumCurRDGValues[hour].pmin.ToString("F2");
                     this.dgwAdminTable.Rows[hour].Cells[(int)DataGridViewAdminVyvod.DESC_INDEX.PLAN].ToolTipText = arSumCurRDGValues[hour].pbr_number;
+                    this.dgwAdminTable.Rows [hour].Cells [(int)DataGridViewAdminVyvod.DESC_INDEX.PLAN].Style.BackColor = this.dgwAdminTable.BackColor;
 
                     // UDGt вычисл€етс€ в 'DataGridViewAdminVyvod::onCellValueChanged'
 
                     (this.dgwAdminTable.Rows[hour].Cells[(int)DataGridViewAdminVyvod.DESC_INDEX.RECOMENDATION] as DataGridViewComboBoxCell).Value = (object)(((int)arSumCurRDGValues[hour].recomendation).ToString());
                     this.dgwAdminTable.Rows[hour].Cells[(int)DataGridViewAdminVyvod.DESC_INDEX.RECOMENDATION].ToolTipText = arSumCurRDGValues[hour].dtRecUpdate.ToString();
+                    this.dgwAdminTable.Rows [hour].Cells [(int)DataGridViewAdminVyvod.DESC_INDEX.RECOMENDATION].Style.BackColor = this.dgwAdminTable.BackColor;
                     this.dgwAdminTable.Rows[hour].Cells[(int)DataGridViewAdminVyvod.DESC_INDEX.DEVIATION_TYPE].Value = arSumCurRDGValues[hour].deviationPercent.ToString();
+                    this.dgwAdminTable.Rows [hour].Cells [(int)DataGridViewAdminVyvod.DESC_INDEX.DEVIATION_TYPE].Style.BackColor = this.dgwAdminTable.BackColor;
                     this.dgwAdminTable.Rows[hour].Cells[(int)DataGridViewAdminVyvod.DESC_INDEX.DEVIATION].Value = arSumCurRDGValues[hour].deviation.ToString("F2");
+                    this.dgwAdminTable.Rows [hour].Cells [(int)DataGridViewAdminVyvod.DESC_INDEX.DEVIATION].Style.BackColor = this.dgwAdminTable.BackColor;
+
+                    if (bNewValues == false) {
+                    // самосто€тельно измен€ем цвет фона, т.к. в этих столбцах €чейки "обновл€ютс€" при проверке/изменении значений
+                        this.dgwAdminTable.Rows [hour].Cells [(int)DataGridViewAdminVyvod.DESC_INDEX.UDGt].Style.BackColor = this.dgwAdminTable.BackColor;
+                    } else
+                        ;
                 }
             }
             else
                 ; // рано отображать, не все компоненнты(параметры) опрошены
 
-            m_admin.CopyCurToPrevRDGValues();
+            if (bNewValues == true)
+                m_admin.CopyCurToPrevRDGValues ();
+            else
+                ;
         }
 
         public override void ClearTables()
@@ -473,6 +490,9 @@ namespace Statistic
 
                 this.Dock = DockStyle.Fill;
 
+                this.BackColor = SystemColors.Window;
+                Columns [INDEX_COLUMN_BUTTON_TO_ALL].DefaultCellStyle.BackColor = SystemColors.Control;
+
                 this.CellValueChanged += new DataGridViewCellEventHandler(onCellValueChanged);
 
                 this.HorizontalScrollBar.Visible = true;
@@ -558,6 +578,7 @@ namespace Statistic
                     {
                         //Rows[hour].Cells[(int)DataGridViewAdminVyvod.DESC_INDEX.RECOMENDATION].ToolTipText = HDateTime.ToMoscowTimeZone().ToString();
                         Rows[hour].Cells[(int)DataGridViewAdminVyvod.DESC_INDEX.UDGt].Value = (((valCurPBR + valPrevPBR) / 2) + ((valCurPBR + valPrevPBR) / 2) * (valRec / 100)).ToString("F2");
+                        Rows [hour].Cells [(int)DataGridViewAdminVyvod.DESC_INDEX.UDGt].Style.BackColor = BackColor;
                     }
                     else
                         ;
@@ -572,6 +593,30 @@ namespace Statistic
                 foreach (DataGridViewRow r in Rows)
                     for (int j = (int)DESC_INDEX.DATE_HOUR; j < ((int)DESC_INDEX.TO_ALL + 0); j++)
                         r.Cells[j].Value = arDefaultValueIndex[j];
+            }
+
+            public override Color BackColor
+            {
+                get
+                {
+                    return base.BackColor;
+                }
+
+                set
+                {
+                    base.BackColor = value;
+
+                    if ((INDEX_COLUMN_BUTTON_TO_ALL > 0)
+                        && (RowCount > 0))
+                        for (int col = 0; col < (int)INDEX_COLUMN_BUTTON_TO_ALL; col++)
+                            for (int i = 0; i < 24; i++) {
+                            // ограничений на изменение цвета фона в €чейке нет
+                            // например, сигнализаци€ о выходе за пределы некоторых значений - цвет таких €чеек измен€ть нельз€
+                                Rows [i].Cells [col].Style.BackColor = value == SystemColors.Control ? SystemColors.Window : value;
+                            } else
+                        // нет столбцов/строк - нет действий по изменению цвета фона €чеек
+                        ;
+                }
             }
         }
     }

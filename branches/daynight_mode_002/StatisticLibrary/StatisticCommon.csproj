@@ -161,7 +161,7 @@
       <DependentUpon>FormParametersTG.cs</DependentUpon>
     </Compile>
     <Compile Include="HControl.cs">
-      <SubType>Component</SubType>
+      <SubType>UserControl</SubType>
     </Compile>
     <Compile Include="InitTEC.cs">
       <SubType>Code</SubType>

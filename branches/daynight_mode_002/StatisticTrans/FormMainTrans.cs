@@ -972,7 +972,7 @@ namespace StatisticTrans
             }
             else
             {
-                updateDataGridViewAdmin(date);
+                updateDataGridViewAdmin(date, bNewValues);
             }
         }
 
@@ -1003,7 +1003,7 @@ namespace StatisticTrans
             else ;
         }
 
-        protected abstract void updateDataGridViewAdmin(DateTime date);
+        protected abstract void updateDataGridViewAdmin(DateTime date, bool bNewValues);
 
         protected void initTableHourRows(/*int indx = индекс для m_arAdmin*/)
         {

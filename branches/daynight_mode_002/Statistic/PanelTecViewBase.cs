@@ -93,8 +93,7 @@ namespace Statistic
                 SEPARATOR_2
                     , SETTINGS_PRINT, PRINT,
                 SEPARATOR_3
-                    , AISKUE_PLUS_SOTIASSO, AISKUE, SOTIASSO_3_MIN,
-                SOTIASSO_1_MIN
+                    , AISKUE_PLUS_SOTIASSO, AISKUE, SOTIASSO_3_MIN, SOTIASSO_1_MIN
                     , COUNT
             };
             /// <summary>

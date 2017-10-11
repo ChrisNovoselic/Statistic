@@ -128,8 +128,9 @@ namespace Statistic
         ///  + заполнить значенями ячейки столбца
         /// </summary>
         /// <param name="date">Дата/время значений, которыми заполняются ячейки столбца</param>
-        /// <param name="bSyncReq">Признак необходимости синхронизации выполнения действий в теле метода</param>
-        private void addTextBoxColumn (DateTime date, bool bSyncReq)
+        /// <param name="bNewValues">Признак наличия новых значений (false - обновление оформления представления при изменении цветовой схемы)</param>
+        /// <param name="bSyncReq">Признак необходимости синхронизации выполнения действий в теле метода</param>        
+        private void addTextBoxColumn (DateTime date, bool bNewValues, bool bSyncReq)
         {
             int indx = -1;
 
@@ -156,10 +157,13 @@ namespace Statistic
                         , new DataGridViewCellEventArgs (this.dgwAdminTable.Columns.Count - 2, i));
                 }
 
-                m_admin.CopyCurToPrevRDGValues ();
+                if (bNewValues == true)
+                    m_admin.CopyCurToPrevRDGValues ();
+                else
+                    ;
             } else {
             // в случае повторного прохода (изменение цветовой гаммы)
-                // см. реализацию 'overide set BackColor'
+            // см. реализацию 'overide set BackColor'
             }
         }
 
@@ -181,9 +185,9 @@ namespace Statistic
         {
             if (IsHandleCreated == true)
                 if (InvokeRequired == true)
-                    this.BeginInvoke (new Action<DateTime, bool> (addTextBoxColumn), date, InvokeRequired);
+                    this.BeginInvoke (new Action<DateTime, bool, bool> (addTextBoxColumn), date, bNewValues, InvokeRequired);
                 else
-                    addTextBoxColumn(date, InvokeRequired);
+                    addTextBoxColumn(date, bNewValues, InvokeRequired);
             else
                 Logging.Logg ().Error (@"PanelTecCurPower::setDataGridViewAdmin () - ... BeginInvoke (addTextBoxColumn) - ...", Logging.INDEX_MESSAGE.D_001);
                 ;

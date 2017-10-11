@@ -68,20 +68,20 @@ namespace Statistic {
             this.ResumeLayout();
         }
 
-        public override Color BackColor
-        {
-            get
-            {
-                return base.BackColor;
-            }
+        //public override Color BackColor
+        //{
+        //    get
+        //    {
+        //        return base.BackColor;
+        //    }
 
-            set
-            {
-                base.BackColor = value;
+        //    set
+        //    {
+        //        base.BackColor = value;
 
-                dgwAdminTable.BackColor = value == SystemColors.Control ? SystemColors.Window : value;
-            }
-        }
+        //        dgwAdminTable.BackColor = value == SystemColors.Control ? SystemColors.Window : value;
+        //    }
+        //}
 
         /// <summary>
         /// Конструктор класса
@@ -188,9 +188,9 @@ namespace Statistic {
             if (IsHandleCreated == true)
             {
                 if (InvokeRequired == true)
-                    this.BeginInvoke (new Action<DateTime, bool, bool> (addTextBoxColumn), date, true, bNewValues);
+                    this.BeginInvoke (new Action<DateTime, bool, bool> (addTextBoxColumn), date, bNewValues, InvokeRequired);
                 else
-                    addTextBoxColumn (date, false);
+                    addTextBoxColumn (date, bNewValues, InvokeRequired);
             }
             else
                 Logging.Logg().Error(@"PanelTecCurPower::setDataGridViewAdmin () - ... BeginInvoke (addTextBoxColumn) - ...", Logging.INDEX_MESSAGE.D_001);
@@ -200,8 +200,9 @@ namespace Statistic {
         /// Метод добавления колонок в DataGridView + заполнение значениями ячеек
         /// </summary>
         /// <param name="date">Дата отображаемых значений</param>
-        /// <param name="bSyncReq">Признак необходимости синхронизации по окончании выполнения метода</param>
-        private void addTextBoxColumn(DateTime date, bool bSyncReq, bool nNewValues)
+        /// <param name="bNewValues">Признак наличия новых значений (false - обновление оформления представления при изменении цветовой схемы)</param>
+        /// <param name="bSyncReq">Признак необходимости синхронизации по окончании выполнения метода</param>        
+        private void addTextBoxColumn(DateTime date, bool bNewValues, bool bSyncReq)
         {
             int indx = ((AdminTS_LK)m_admin).indxTECComponents;
             //((AdminTS_LK)m_admin).set_CurComponent(0, m_admin.m_curDate);
@@ -253,11 +254,11 @@ namespace Statistic {
                 {
                     //Дата/время
                     if (this.dgwAdminTable.Columns.Count == ((int)DataGridViewAdminLK.DESC_INDEX.COUNT_COLUMN + 1)) { //Только при добавлении 1-го столбца
-                        this.dgwAdminTable.Rows [i].Cells [0].Value = date.AddHours (i + 1).ToString (@"dd-MM-yyyy HH:mm", CultureInfo.InvariantCulture);
-                        // цвет 0-го столбца изменяем на случай изменения цветовой гаммы приложения
-                        this.dgwAdminTable.Rows [i].Cells [0].Style.BackColor = dgwBackColor;
+                        this.dgwAdminTable.Rows [i].Cells [0].Value = date.AddHours (i + 1).ToString (@"dd-MM-yyyy HH:mm", CultureInfo.InvariantCulture);                        
                     } else
                         ;
+                    // цвет 0-го столбца изменяем на случай изменения цветовой гаммы приложения
+                    this.dgwAdminTable.Rows [i].Cells [0].Style.BackColor = dgwBackColor;
 
                     try
                     {
@@ -281,8 +282,11 @@ namespace Statistic {
                 }                
             }
 
-            m_admin.CopyCurToPrevRDGValues();
-            ((AdminTS_LK)m_admin).m_listPrevRDGValues.Add(m_admin.m_prevRDGValues);
+            if (bNewValues == true) {
+                m_admin.CopyCurToPrevRDGValues ();
+                ((AdminTS_LK)m_admin).m_listPrevRDGValues.Add (m_admin.m_prevRDGValues);
+            } else
+                ;
 
             if (bSyncReq == true)
                 ((AdminTS_LK)m_admin).m_semaIndxTECComponents.Release ();
@@ -440,304 +444,308 @@ namespace Statistic {
             //Возможность редактирования значений ПБР: НЕ разрешено управление (изменение разрешения на запись), запись разрешена
             m_admin = new PanelAdminLK.AdminTS_LK (new bool[] { false, true });                    
         }
-    }
 
-    public class DataGridViewAdminLK : DataGridViewAdmin
-    {
-        /// <summary>
-        /// Идентификаторы колонок
-        /// </summary>
-        public enum DESC_INDEX : ushort { DATE_HOUR, PLAN_TEMPERATURE, PLAN_POWER, DEVIATION_TYPE, DEVIATION, TO_ALL, COUNT_COLUMN };
 
-        /// <summary>
-        /// Массив имен колонок
-        /// </summary>
-        private static string[] arDescStringIndex = { "DateHour", @"PLAN_T", "Plan_P", "DEVIATION_TYPE", "DEVIATION", "TO_ALL" };
+        public class DataGridViewAdminLK : DataGridViewAdmin {
+            /// <summary>
+            /// Идентификаторы колонок
+            /// </summary>
+            public enum DESC_INDEX : ushort { DATE_HOUR, PLAN_TEMPERATURE, PLAN_POWER, DEVIATION_TYPE, DEVIATION, TO_ALL, COUNT_COLUMN };
 
-        /// <summary>
-        /// Массив заголовков колонок
-        /// </summary>
-        private static string[] arDescRusStringIndex = { "Дата, час", @"Прогн. t", "План P", "Отклонение в процентах", "Величина максимального отклонения", "Дозаполнить" };
+            /// <summary>
+            /// Массив имен колонок
+            /// </summary>
+            private static string [] arDescStringIndex = { "DateHour", @"PLAN_T", "Plan_P", "DEVIATION_TYPE", "DEVIATION", "TO_ALL" };
 
-        /// <summary>
-        /// Массив значений по умолчанию
-        /// </summary>
-        private static string[] arDefaultValueIndex = { string.Empty, string.Empty, string.Empty, false.ToString(), string.Empty };
-        /// <summary>
-        /// Перечисление - возможные типы идентификаторов
-        /// </summary>
-        private enum ID_TYPE : ushort { ID, ID_OWNER, COUNT_ID_TYPE };
-        /// <summary>
-        /// Список массивов идентификторов:
-        ///  1-ый индекс (в списке) - тип идентификатора (ID_TYPE)
-        /// </summary>
-        private List <int []> m_listIds;
-        /// <summary>
-        /// Стиль ячеек для плановых значений ГТП (цвет особый, т.к. их редактировать нельзя)
-        /// </summary>
-        private DataGridViewCellStyle dgvCellStyleReadOnly;
+            /// <summary>
+            /// Массив заголовков колонок
+            /// </summary>
+            private static string [] arDescRusStringIndex = { "Дата, час", @"Прогн. t", "План P", "Отклонение в процентах", "Величина максимального отклонения", "Дозаполнить" };
 
-        protected override int INDEX_COLUMN_BUTTON_TO_ALL
-        {
-            get
+            /// <summary>
+            /// Массив значений по умолчанию
+            /// </summary>
+            private static string [] arDefaultValueIndex = { string.Empty, string.Empty, string.Empty, false.ToString (), string.Empty };
+            /// <summary>
+            /// Перечисление - возможные типы идентификаторов
+            /// </summary>
+            private enum ID_TYPE : ushort { ID, ID_OWNER, COUNT_ID_TYPE };
+            /// <summary>
+            /// Список массивов идентификторов:
+            ///  1-ый индекс (в списке) - тип идентификатора (ID_TYPE)
+            /// </summary>
+            private List<int []> m_listIds;
+            /// <summary>
+            /// Стиль ячеек для плановых значений ГТП (цвет особый, т.к. их редактировать нельзя)
+            /// </summary>
+            private DataGridViewCellStyle dgvCellStyleReadOnly;
+
+            protected override int INDEX_COLUMN_BUTTON_TO_ALL
             {
-                return (int)DESC_INDEX.TO_ALL;
+                get
+                {
+                    return (int)DESC_INDEX.TO_ALL;
+                }
             }
-        }
 
-        /// <summary>
-        /// Конструктор
-        /// </summary>
-        public DataGridViewAdminLK() : base(new Color [] { SystemColors.Window, Color.Yellow, FormMain.formGraphicsSettings.COLOR (FormGraphicsSettings.INDEX_COLOR.DIVIATION) })
-        {
-            m_listIds = new List<int[]>();
-        }
-        
-        /// <summary>
-        /// Инициализация компонентов DataGridView
-        /// </summary>
-        protected override void InitializeComponents () 
-        {
-            base.InitializeComponents ();
+            /// <summary>
+            /// Конструктор
+            /// </summary>
+            public DataGridViewAdminLK () : base (new Color [] { SystemColors.Window, Color.Yellow, FormMain.formGraphicsSettings.COLOR (FormGraphicsSettings.INDEX_COLOR.DIVIATION) })
+            {
+                m_listIds = new List<int []> ();
+            }
 
-            int col = -1;
-            Columns.AddRange(new DataGridViewColumn[(int)DESC_INDEX.COUNT_COLUMN] { new DataGridViewTextBoxColumn()
+            /// <summary>
+            /// Инициализация компонентов DataGridView
+            /// </summary>
+            protected override void InitializeComponents ()
+            {
+                base.InitializeComponents ();
+
+                int col = -1;
+                Columns.AddRange (new DataGridViewColumn [(int)DESC_INDEX.COUNT_COLUMN] { new DataGridViewTextBoxColumn()
                 , new DataGridViewTextBoxColumn()
                 , new DataGridViewTextBoxColumn()
                 , new DataGridViewCheckBoxColumn()
                 , new DataGridViewTextBoxColumn()
                 , new DataGridViewButtonColumn() });
 
-            col = 0;
-            for (col = 0; col < (int)DESC_INDEX.PLAN_POWER; col++)
-            {
-                    Columns[col].Frozen = true;
-                    Columns[col].HeaderText = arDescRusStringIndex[col];
-                    Columns[col].Name = arDescStringIndex[col];
-                    Columns[col].ReadOnly = true;
-                    Columns[col].SortMode = System.Windows.Forms.DataGridViewColumnSortMode.NotSortable;
-            }
-
-            for (col = (int)DESC_INDEX.PLAN_POWER; col < (int)DESC_INDEX.DEVIATION_TYPE; col++)
-            {
-                Columns[col].Frozen = true;
-                Columns[col].HeaderText = arDescRusStringIndex[col];
-                Columns[col].Name = arDescStringIndex[col];
-                Columns[col].ReadOnly = false;
-                Columns[col].SortMode = System.Windows.Forms.DataGridViewColumnSortMode.NotSortable;
-            }
-
-            for (col = (int)DESC_INDEX.DEVIATION_TYPE; col < (int)DESC_INDEX.COUNT_COLUMN; col++)
-            {
-                Columns[col].Frozen = false;
-                Columns[col].HeaderText = arDescRusStringIndex[col];
-                Columns[col].Name = arDescStringIndex[col];
-                Columns[col].ReadOnly = false;
-                Columns[col].SortMode = System.Windows.Forms.DataGridViewColumnSortMode.NotSortable;
-            }
-
-            dgvCellStyleReadOnly = new DataGridViewCellStyle();
-            dgvCellStyleReadOnly.BackColor = Color.Yellow;
-
-            this.Dock = DockStyle.Fill;
-
-            this.Columns [INDEX_COLUMN_BUTTON_TO_ALL].DefaultCellStyle.BackColor = SystemColors.Control;
-            this.BackColor = SystemColors.Window;
-
-            this.CellValueChanged += new DataGridViewCellEventHandler(DataGridViewAdminLK_CellValueChanged);
-
-            this.HorizontalScrollBar.Visible = true;
-        }
-
-        /// <summary>
-        /// Обработчик события выбора ячейки
-        /// </summary>
-        /// <param name="sender">Объект, инициировавший событие</param>
-        /// <param name="e">Аргумент события</param>
-        public void DataGridViewAdminLK_CellValueChanged(object sender, DataGridViewCellEventArgs e)
-        {
-            int CNT_FIXED_COLUMNS = -1;
-
-            CNT_FIXED_COLUMNS = 3; // за счт столбца "Дата, время", "План t", "План P"
-
-            if (Columns.Count == INDEX_COLUMN_BUTTON_TO_ALL + m_listIds.Count + 1) {
-            // повторный проход, когда все столбцы добавлены
-                for(int col = 0; col < m_listIds.Count; col ++)
-                    if ((Rows [e.RowIndex].Cells [col + CNT_FIXED_COLUMNS].Style.Equals(s_dgvCellStyles [(int)INDEX_CELL_STYLE.ERROR]) == false)
-                        && (Rows [e.RowIndex].Cells [col + CNT_FIXED_COLUMNS].Style.Equals (dgvCellStyleReadOnly) == false))
-                        Rows [e.RowIndex].Cells [col + CNT_FIXED_COLUMNS].Style.BackColor = BackColor;
-                    else
-                        ;
-            } else if ((m_listIds.Count == Columns.Count - 4)
-                && (Columns [e.ColumnIndex].ReadOnly == false)
-                && (e.ColumnIndex > 0)
-                && (e.ColumnIndex < Columns.Count - CNT_FIXED_COLUMNS))
-            {
-            // 1-ый проход при добавлении столбца
-                int id_gtp = m_listIds [e.ColumnIndex - CNT_FIXED_COLUMNS] [(int)ID_TYPE.ID_OWNER],
-                    col_gtp = -1;
-                List<int> list_col_tg = new List<int> ();
-
-                foreach (int [] ids in m_listIds) {
-                    //Поиск номера столбца ГТП (только ОДИН раз)
-                    if ((col_gtp < 0)
-                        && (id_gtp == ids [(int)ID_TYPE.ID])
-                        && (ids [(int)ID_TYPE.ID_OWNER] < 0))
-                        col_gtp = m_listIds.IndexOf (ids) + CNT_FIXED_COLUMNS; // '+ 3' за счт столбца "Дата, время", "План t", "План P"
-                    else
-                        ;
-
-                    //Все столбцы для ГТП с id_gtp == ...
-                    if (id_gtp == ids [(int)ID_TYPE.ID_OWNER])
-                        list_col_tg.Add (m_listIds.IndexOf (ids) + CNT_FIXED_COLUMNS); // '+ 3' за счт столбца "Дата, время", "План t", "План P"
-                    else
-                        ;
+                col = 0;
+                for (col = 0; col < (int)DESC_INDEX.PLAN_POWER; col++) {
+                    Columns [col].Frozen = true;
+                    Columns [col].HeaderText = arDescRusStringIndex [col];
+                    Columns [col].Name = arDescStringIndex [col];
+                    Columns [col].ReadOnly = true;
+                    Columns [col].SortMode = System.Windows.Forms.DataGridViewColumnSortMode.NotSortable;
                 }
 
-                if (list_col_tg.Count > 0)
+                for (col = (int)DESC_INDEX.PLAN_POWER; col < (int)DESC_INDEX.DEVIATION_TYPE; col++) {
+                    Columns [col].Frozen = true;
+                    Columns [col].HeaderText = arDescRusStringIndex [col];
+                    Columns [col].Name = arDescStringIndex [col];
+                    Columns [col].ReadOnly = false;
+                    Columns [col].SortMode = System.Windows.Forms.DataGridViewColumnSortMode.NotSortable;
+                }
+
+                for (col = (int)DESC_INDEX.DEVIATION_TYPE; col < (int)DESC_INDEX.COUNT_COLUMN; col++) {
+                    Columns [col].Frozen = false;
+                    Columns [col].HeaderText = arDescRusStringIndex [col];
+                    Columns [col].Name = arDescStringIndex [col];
+                    Columns [col].ReadOnly = false;
+                    Columns [col].SortMode = System.Windows.Forms.DataGridViewColumnSortMode.NotSortable;
+                }
+
+                dgvCellStyleReadOnly = new DataGridViewCellStyle ();
+                dgvCellStyleReadOnly.BackColor = Color.Yellow;
+
+                this.Dock = DockStyle.Fill;
+
+                this.Columns [INDEX_COLUMN_BUTTON_TO_ALL].DefaultCellStyle.BackColor = SystemColors.Control;
+                this.BackColor = SystemColors.Window;
+
+                this.CellValueChanged += new DataGridViewCellEventHandler (DataGridViewAdminLK_CellValueChanged);
+
+                this.HorizontalScrollBar.Visible = true;
+            }
+
+            /// <summary>
+            /// Обработчик события выбора ячейки
+            /// </summary>
+            /// <param name="sender">Объект, инициировавший событие</param>
+            /// <param name="e">Аргумент события</param>
+            public void DataGridViewAdminLK_CellValueChanged (object sender, DataGridViewCellEventArgs e)
+            {
+                int CNT_FIXED_COLUMNS = -1;
+
+                CNT_FIXED_COLUMNS = 3; // за счт столбца "Дата, время", "План t", "План P"
+
+                if (Columns.Count == INDEX_COLUMN_BUTTON_TO_ALL + m_listIds.Count + 1) {
+                    // повторный проход, когда все столбцы добавлены
+                    for (int col = 0; col < m_listIds.Count; col++)
+                        if ((Rows [e.RowIndex].Cells [col + CNT_FIXED_COLUMNS].Style.Equals (s_dgvCellStyles [(int)INDEX_CELL_STYLE.ERROR]) == false)
+                            && (Rows [e.RowIndex].Cells [col + CNT_FIXED_COLUMNS].Style.Equals (dgvCellStyleReadOnly) == false))
+                            Rows [e.RowIndex].Cells [col + CNT_FIXED_COLUMNS].Style.BackColor = BackColor;
+                        else
+                            ;
+                } else if ((m_listIds.Count == Columns.Count - 4)
+                    && (Columns [e.ColumnIndex].ReadOnly == false)
+                    && (e.ColumnIndex > 0)
+                    && (e.ColumnIndex < Columns.Count - CNT_FIXED_COLUMNS)) {
+                    // 1-ый проход при добавлении столбца
+                    int id_gtp = m_listIds [e.ColumnIndex - CNT_FIXED_COLUMNS] [(int)ID_TYPE.ID_OWNER],
+                        col_gtp = -1;
+                    List<int> list_col_tg = new List<int> ();
+
+                    foreach (int [] ids in m_listIds) {
+                        //Поиск номера столбца ГТП (только ОДИН раз)
+                        if ((col_gtp < 0)
+                            && (id_gtp == ids [(int)ID_TYPE.ID])
+                            && (ids [(int)ID_TYPE.ID_OWNER] < 0))
+                            col_gtp = m_listIds.IndexOf (ids) + CNT_FIXED_COLUMNS; // '+ 3' за счт столбца "Дата, время", "План t", "План P"
+                        else
+                            ;
+
+                        //Все столбцы для ГТП с id_gtp == ...
+                        if (id_gtp == ids [(int)ID_TYPE.ID_OWNER])
+                            list_col_tg.Add (m_listIds.IndexOf (ids) + CNT_FIXED_COLUMNS); // '+ 3' за счт столбца "Дата, время", "План t", "План P"
+                        else
+                            ;
+                    }
+
+                    if (list_col_tg.Count > 0) {
+                        double plan_gtp = 0.0;
+                        foreach (int col in list_col_tg)
+                            plan_gtp += Convert.ToDouble (Rows [e.RowIndex].Cells [col].Value);
+
+                        if (Convert.ToDouble (Rows [e.RowIndex].Cells [col_gtp].Value).Equals (plan_gtp) == false)
+                            Rows [e.RowIndex].Cells [col_gtp].Style = s_dgvCellStyles [(int)INDEX_CELL_STYLE.ERROR];
+                        else if (Rows [e.RowIndex].Cells [col_gtp].Style.BackColor == s_dgvCellStyles [(int)INDEX_CELL_STYLE.ERROR].BackColor)
+                            Rows [e.RowIndex].Cells [col_gtp].Style = dgvCellStyleReadOnly;
+                        else
+                            Rows [e.RowIndex].Cells [col_gtp].Style.BackColor = BackColor;
+                    } else
+                        ;
+                } else
+                    ;
+            }
+
+            /// <summary>
+            /// Метод проверки введенного значения в ячейку
+            /// </summary>
+            /// <param name="sender">Объект, инициировавший событие</param>
+            /// <param name="e">Аргумент события</param>
+            protected override void dgwAdminTable_CellValidated (object sender, DataGridViewCellEventArgs e)
+            {
+                double value;
+                bool valid;
+
+                if ((e.ColumnIndex > 0) && (e.ColumnIndex < Columns.Count - 3)) {
+                    valid = double.TryParse ((string)Rows [e.RowIndex].Cells [e.ColumnIndex].Value, out value);
+                    if ((valid == false) || (value > DataGridViewAdmin.maxRecomendationValue)) {
+                        Rows [e.RowIndex].Cells [e.ColumnIndex].Value = 0.ToString ("F2");
+                    } else {
+                        Rows [e.RowIndex].Cells [e.ColumnIndex].Value = value.ToString ("F2");
+                    }
+
+                    DataGridViewAdminLK_CellValueChanged (sender, e);
+                }
+            }
+
+            /// <summary>
+            /// Обработчик события нажатия на кнопку в ячейке 
+            /// </summary>
+            /// <param name="sender">Объект, инициировавший событие</param>
+            /// <param name="e">Аргумент события</param>
+            protected override void dgwAdminTable_CellClick (object sender, DataGridViewCellEventArgs e)
+            {
+                if ((this.Columns [e.ColumnIndex].Name == arDescStringIndex [(int)DESC_INDEX.TO_ALL]) && (!(e.RowIndex < 0))) // кнопка применение для всех
                 {
-                    double plan_gtp = 0.0;
-                    foreach (int col in list_col_tg)
-                        plan_gtp += Convert.ToDouble(Rows[e.RowIndex].Cells[col].Value);
+                    DataGridViewCellEventArgs ev;
 
-                    if (Convert.ToDouble (Rows [e.RowIndex].Cells [col_gtp].Value).Equals (plan_gtp) == false)
-                        Rows [e.RowIndex].Cells [col_gtp].Style = s_dgvCellStyles [(int)INDEX_CELL_STYLE.ERROR];
-                    else if (Rows [e.RowIndex].Cells [col_gtp].Style.BackColor == s_dgvCellStyles [(int)INDEX_CELL_STYLE.ERROR].BackColor)
-                        Rows [e.RowIndex].Cells [col_gtp].Style = dgvCellStyleReadOnly;
-                    else
-                        Rows [e.RowIndex].Cells [col_gtp].Style.BackColor = BackColor;
+                    for (int j = 1; j < Columns.Count - 3; j++) {
+                        if (Columns [j].ReadOnly == false)
+                            for (int i = e.RowIndex + 1; i < 24; i++) {
+                                Rows [i].Cells [j].Value = Rows [e.RowIndex].Cells [j].Value;
+
+                                ev = new DataGridViewCellEventArgs (j, i);
+                                DataGridViewAdminLK_CellValueChanged (null, ev);
+                            } else
+                            ;
+                    }
+                } else
+                    ;
+            }
+
+            /// <summary>
+            /// Добавить новый столбец/колонку в представление
+            /// </summary>
+            /// <param name="name">Имя колонки</param>
+            /// <param name="id">m_id компонента</param>
+            /// <param name="id_owner">m_id компонента-родителя</param>
+            /// <param name="date">Дата выбранного значения</param>
+            public void AddTextBoxColumn (string name, int id, int id_owner, DateTime date)
+            {
+                if (id > (int)FormChangeMode.MODE_TECCOMPONENT.TG) {
+                    DataGridViewTextBoxColumn insColumn = new DataGridViewTextBoxColumn ();
+                    insColumn.Frozen = false;
+                    insColumn.Width = 66;
+                    insColumn.HeaderText = name;
+                    insColumn.Name = "column" + (Columns.Count - 3);
+                    insColumn.ReadOnly = false;
+                    insColumn.SortMode = System.Windows.Forms.DataGridViewColumnSortMode.NotSortable;
+                    try {
+                        Columns.Insert (Columns.Count - 3, insColumn);
+                    } catch (Exception e) {
+                        Logging.Logg ().Exception (e, "dgwAdminLK - addTextBoxColumn () - Columns.Insert", Logging.INDEX_MESSAGE.NOT_SET);
+                    }
+
+                    m_listIds.Add (new int [(int)ID_TYPE.COUNT_ID_TYPE] { id, id_owner });
+
+                    Columns [Columns.Count - 3 - 1].Frozen = true;
+                    Columns [Columns.Count - 3 - 1].ReadOnly = true;
                 }
+            }
+
+            /// <summary>
+            /// Метод очистки таблицы
+            /// </summary>
+            public override void ClearTables ()
+            {
+                int i = -1;
+
+                m_listIds.Clear ();
+
+                while (Columns.Count > (int)DESC_INDEX.COUNT_COLUMN) {
+                    Columns.RemoveAt (Columns.Count - (int)DESC_INDEX.DEVIATION_TYPE - 1);
+                }
+
+                this.Rows.Clear ();
+                for (i = 0; i < 24; i++) {
+                    this.Rows.Add ();
+                }
+            }
+
+            /// <summary>
+            /// Найти идентификатор компонента по m_id родителя
+            /// </summary>
+            /// <param name="id">Идентификатор родительского компонента</param>
+            /// <returns>Идентификатор компонента</returns>
+            public int GetIdGTPOwner (int id)
+            {
+                int iRes = -1;
+
+                if ((id < m_listIds.Count) && ((int)ID_TYPE.ID_OWNER < m_listIds [id].Length))
+                    iRes = m_listIds [id] [(int)ID_TYPE.ID_OWNER];
                 else
-                    ;                
-            } else
-                ;
-        }
-        
-        /// <summary>
-        /// Метод проверки введенного значения в ячейку
-        /// </summary>
-        /// <param name="sender">Объект, инициировавший событие</param>
-        /// <param name="e">Аргумент события</param>
-        protected override void dgwAdminTable_CellValidated(object sender, DataGridViewCellEventArgs e)
-        {
-            double value;
-            bool valid;
+                    ;
 
-            if ((e.ColumnIndex > 0) && (e.ColumnIndex < Columns.Count - 3))
-            {
-                valid = double.TryParse((string)Rows[e.RowIndex].Cells[e.ColumnIndex].Value, out value);
-                if ((valid == false) || (value > DataGridViewAdmin.maxRecomendationValue))
-                {
-                    Rows[e.RowIndex].Cells[e.ColumnIndex].Value = 0.ToString("F2");
-                }
-                else
-                {
-                    Rows[e.RowIndex].Cells[e.ColumnIndex].Value = value.ToString("F2");
-                }
-
-                DataGridViewAdminLK_CellValueChanged (sender, e);
+                return iRes;
             }
-        }
 
-        /// <summary>
-        /// Обработчик события нажатия на кнопку в ячейке 
-        /// </summary>
-        /// <param name="sender">Объект, инициировавший событие</param>
-        /// <param name="e">Аргумент события</param>
-        protected override void dgwAdminTable_CellClick(object sender, DataGridViewCellEventArgs e)
-        {
-            if ((this.Columns[e.ColumnIndex].Name == arDescStringIndex[(int)DESC_INDEX.TO_ALL]) && (!(e.RowIndex < 0))) // кнопка применение для всех
+            public override Color BackColor
             {
-                DataGridViewCellEventArgs ev;
-
-                for (int j = 1; j < Columns.Count - 3; j++)
+                get
                 {
-                    if (Columns[j].ReadOnly == false)
-                        for (int i = e.RowIndex + 1; i < 24; i++)
-                        {
-                            Rows[i].Cells[j].Value = Rows[e.RowIndex].Cells[j].Value;
+                    return base.BackColor;
+                }
 
-                            ev = new DataGridViewCellEventArgs(j, i);
-                            DataGridViewAdminLK_CellValueChanged(null, ev);
-                        }
-                    else
+                set
+                {
+                    base.BackColor = value;
+
+                    if ((INDEX_COLUMN_BUTTON_TO_ALL > 0)
+                        && (RowCount > 0))
+                        for (int col = 0; col < ColumnCount - 1; col++)
+                            for (int i = 0; i < RowCount; i++) {
+                                // ограничений на изменение цвета фона в ячейке нет
+                                // например, сигнализация о выходе за пределы некоторых значений - цвет таких ячеек изменять нельзя
+                                Rows [i].Cells [col].Style.BackColor = value == SystemColors.Control ? SystemColors.Window : value;
+                            } else
+                        // нет столбцов/строк - нет действий по изменению цвета фона ячеек
                         ;
                 }
             }
-            else
-                ;
-        }
-
-        /// <summary>
-        /// Добавить новый столбец/колонку в представление
-        /// </summary>
-        /// <param name="name">Имя колонки</param>
-        /// <param name="id">m_id компонента</param>
-        /// <param name="id_owner">m_id компонента-родителя</param>
-        /// <param name="date">Дата выбранного значения</param>
-        public void AddTextBoxColumn(string name, int id, int id_owner, DateTime date)
-        {
-            if (id > (int)FormChangeMode.MODE_TECCOMPONENT.TG)
-            {
-                DataGridViewTextBoxColumn insColumn = new DataGridViewTextBoxColumn();
-                insColumn.Frozen = false;
-                insColumn.Width = 66;
-                insColumn.HeaderText = name;
-                insColumn.Name = "column" + (Columns.Count - 3);
-                insColumn.ReadOnly = false;
-                insColumn.SortMode = System.Windows.Forms.DataGridViewColumnSortMode.NotSortable;
-                try
-                {
-                    Columns.Insert(Columns.Count - 3, insColumn);
-                }
-                catch (Exception e)
-                {
-                    Logging.Logg().Exception(e, "dgwAdminLK - addTextBoxColumn () - Columns.Insert", Logging.INDEX_MESSAGE.NOT_SET);
-                }
-
-                m_listIds.Add(new int[(int)ID_TYPE.COUNT_ID_TYPE] { id, id_owner });
-
-                Columns[Columns.Count - 3 - 1].Frozen = true;
-                Columns[Columns.Count - 3 - 1].ReadOnly = true;
-            }
-        }
-
-        /// <summary>
-        /// Метод очистки таблицы
-        /// </summary>
-        public override void ClearTables () {
-            int i = -1;
-
-            m_listIds.Clear ();
-            
-            while (Columns.Count > (int)DESC_INDEX.COUNT_COLUMN)
-            {
-                Columns.RemoveAt(Columns.Count - (int)DESC_INDEX.DEVIATION_TYPE - 1);
-            }
-            
-            this.Rows.Clear();
-            for (i = 0; i < 24; i++)
-            {
-                this.Rows.Add();
-            }
-        }
-
-        /// <summary>
-        /// Найти идентификатор компонента по m_id родителя
-        /// </summary>
-        /// <param name="id">Идентификатор родительского компонента</param>
-        /// <returns>Идентификатор компонента</returns>
-        public int GetIdGTPOwner(int id)
-        {
-            int iRes = -1;
-
-            if ((id < m_listIds.Count) && ((int)ID_TYPE.ID_OWNER < m_listIds[id].Length))
-                iRes = m_listIds [id][(int)ID_TYPE.ID_OWNER];
-            else
-                ;
-
-            return iRes;
         }
     }
-
 }

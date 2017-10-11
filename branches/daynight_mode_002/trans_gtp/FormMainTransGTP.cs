@@ -296,7 +296,12 @@ namespace trans_gtp
             m_arAdmin[indxDB].CopyCurToPrevRDGValues();
         }
 
-        protected override void updateDataGridViewAdmin(DateTime date)
+        /// <summary>
+        /// Обновить значения в представлении
+        /// </summary>
+        /// <param name="date">Дата за которую требуется обновить значения</param>
+        /// <param name="bNewValues">Признак наличия новых значений (false - обновление оформления представления со старыми значениями при изменении цветовой схемы)</param>
+        protected override void updateDataGridViewAdmin(DateTime date, bool bNewValues)
         {
             int indxDB = m_IndexDB;
 

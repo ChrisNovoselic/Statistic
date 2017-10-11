@@ -379,7 +379,7 @@ namespace Statistic
                         }
                     }
                     else
-                        Logging.Logg().Error(@"PanelTAdminKomDisp::setDataGridViewAdmin () - ... BeginInvoke (normalizedTableHourRows) - ...", Logging.INDEX_MESSAGE.D_001);
+                        Logging.Logg().Error(@"PanelAdminKomDisp::setDataGridViewAdmin () - ... BeginInvoke (normalizedTableHourRows) - ...", Logging.INDEX_MESSAGE.D_001);
 
                     ((DataGridViewAdminKomDisp)this.dgwAdminTable).m_PBR_0 = m_admin.m_curRDGValues_PBR_0;
 
@@ -411,9 +411,10 @@ namespace Statistic
                         this.dgwAdminTable.Rows [i].Cells [(int)DataGridViewAdminKomDisp.COLUMN_INDEX.DEVIATION].Style.BackColor = this.dgwAdminTable.BackColor;
                     }
 
-                    //this.dgwAdminTable.Invalidate();
-
-                    m_admin.CopyCurToPrevRDGValues();
+                    if (bNewValues == true)
+                        m_admin.CopyCurToPrevRDGValues ();
+                    else
+                        ;
                     break;
                 case MODE_GET_RDG_VALUES.EXPORT:
                     nextIndx = Admin.AddValueToExportRDGValues(m_admin.m_curRDGValues, date);
