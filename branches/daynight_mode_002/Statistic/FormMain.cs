@@ -134,11 +134,6 @@ namespace Statistic
         {
             InitializeComponent ();
 
-            //Режим изменения цветовой гаммы
-            _darkColorTable = new DarkColorTable (this.BackColor);            
-            BackColorChanged += FormMain_BackColorChanged;
-            BackColorChanged += tclTecViews.FormMain_BackColorChanged;
-
             ProgramBase.s_iMessageShowUnhandledException = 1;
 
             //??? как рез-т проверка на запуск нового экземпляра... см. 'Program.cs'
@@ -237,6 +232,11 @@ namespace Statistic
                 {
                     s_iMainSourceData = Int32.Parse(formParameters.m_arParametrSetup[(int)FormParameters.PARAMETR_SETUP.MAIN_DATASOURCE]);
 
+                    //Режим изменения цветовой гаммы            
+                    _darkColorTable = new DarkColorTable (this.BackColor, HStatisticUsers.GetAllowed ((int)HStatisticUsers.ID_ALLOWED.PROFILE_VIEW_COLOR_SHEMA_CUSTOM));
+                    BackColorChanged += FormMain_BackColorChanged;
+                    BackColorChanged += tclTecViews.FormMain_BackColorChanged;                    
+
                     markSett = new HMark(Int32.Parse(HStatisticUsers.GetAllowed((int)HStatisticUsers.ID_ALLOWED.AUTO_LOADSAVE_USERPROFILE)));
                     файлПрофильАвтоЗагрузитьСохранитьToolStripMenuItem.Enabled = markSett.IsMarked(0);
                     файлПрофильАвтоЗагрузитьСохранитьToolStripMenuItem.Checked = markSett.IsMarked(1);
@@ -264,7 +264,9 @@ namespace Statistic
                     m_passwords = new Passwords ();
                     formPassword = new FormPassword (m_passwords);
                     formSetPassword = new FormSetPassword (m_passwords);
-                    formGraphicsSettings = new FormGraphicsSettings (this, delegateUpdateActiveGui, delegateHideGraphicsSettings);
+                    formGraphicsSettings = new FormGraphicsSettings (delegateUpdateActiveGui
+                        , delegateHideGraphicsSettings
+                        , bool.Parse(HStatisticUsers.GetAllowed((int)HStatisticUsers.ID_ALLOWED.PROFILE_VIEW_COLOR_CHANGESHEMA)));
                     #endregion
 
                     //ProgramBase.s_iAppID = Int32.Parse ((string)Properties.Settings.Default [@"AppID"]);
@@ -925,9 +927,9 @@ namespace Statistic
                 markSett.Set(0, файлПрофильАвтоЗагрузитьСохранитьToolStripMenuItem.Enabled);
                 markSett.Set(1, файлПрофильАвтоЗагрузитьСохранитьToolStripMenuItem.Checked);
 
-                int idListener = DbSources.Sources().Register(s_listFormConnectionSettings[(int)CONN_SETT_TYPE.CONFIG_DB].getConnSett(), false, CONN_SETT_TYPE.CONFIG_DB.ToString());
-                HStatisticUsers.SetAllowed(idListener, (int)HStatisticUsers.ID_ALLOWED.AUTO_LOADSAVE_USERPROFILE, markSett.Value.ToString());
-                DbSources.Sources().UnRegister(idListener);
+                HStatisticUsers.SetAllowed(s_listFormConnectionSettings [(int)CONN_SETT_TYPE.CONFIG_DB].getConnSett ()
+                    , HStatisticUsers.ID_ALLOWED.AUTO_LOADSAVE_USERPROFILE
+                    , markSett.Value.ToString());
             }
             else
                 ; //Загрузка формы...
@@ -2557,7 +2559,7 @@ namespace Statistic
         private void FormMain_BackColorChanged (object sender, EventArgs e)
         {
             //главное окно
-            if (formGraphicsSettings.m_colorShema == FormGraphicsSettings.ColorShemas.Dark) {
+            if (formGraphicsSettings.m_colorShema == FormGraphicsSettings.ColorShemas.Custom) {
                 BackColor =
                 MainMenuStrip.BackColor =
                      DarkColorTable._Custom;
@@ -2586,12 +2588,21 @@ namespace Statistic
             Control ctrl = tclTecViews.TabPages[tclTecViews.SelectedIndex].Controls[0];
 
             #region Режим изменения цветовой гаммы
-            if ((FormGraphicsSettings.TYPE_UPDATEGUI)type == FormGraphicsSettings.TYPE_UPDATEGUI.COLOR_SHEMA) {
-                    BackColor = (formGraphicsSettings.m_colorShema == FormGraphicsSettings.ColorShemas.Dark)
+            if (((FormGraphicsSettings.TYPE_UPDATEGUI)type == FormGraphicsSettings.TYPE_UPDATEGUI.COLOR_SHEMA)
+                || ((FormGraphicsSettings.TYPE_UPDATEGUI)type == FormGraphicsSettings.TYPE_UPDATEGUI.COLOR_CHANGESHEMA)) {
+                    BackColor = (formGraphicsSettings.m_colorShema == FormGraphicsSettings.ColorShemas.Custom)
                          ? DarkColorTable._Custom
                             : (formGraphicsSettings.m_colorShema == FormGraphicsSettings.ColorShemas.System)
                                 ? DarkColorTable._System
                                     : DarkColorTable._System;
+
+                if (((FormGraphicsSettings.TYPE_UPDATEGUI)type == FormGraphicsSettings.TYPE_UPDATEGUI.COLOR_CHANGESHEMA)
+                    && (formGraphicsSettings.m_colorShema == FormGraphicsSettings.ColorShemas.Custom)) {
+                    HStatisticUsers.SetAllowed (s_listFormConnectionSettings [(int)CONN_SETT_TYPE.CONFIG_DB].getConnSett ()
+                        , HStatisticUsers.ID_ALLOWED.PROFILE_VIEW_COLOR_SHEMA_CUSTOM
+                        , (_darkColorTable as DarkColorTable).CustomToString());
+                } else
+                    ;
             } else
                 ;
             #endregion

@@ -26,7 +26,7 @@ namespace StatisticDiagnostic
             private const int COUNT_LAYOUT_COLUMN = 1
                 , COUNT_LAYOUT_ROW = 9;
 
-            private DataGridView m_dgvValues;
+            private DataGridViewDiagnostic m_dgvValues;
 
             private Label m_labelDescription;
 
@@ -99,7 +99,7 @@ namespace StatisticDiagnostic
             /// </summary>
             private void InitializeComponent()
             {
-                m_dgvValues = new System.Windows.Forms.DataGridView(); this.Controls.Add(m_dgvValues, 0, 1); this.SetRowSpan(m_dgvValues, COUNT_LAYOUT_ROW - 1);
+                m_dgvValues = new DataGridViewDiagnostic(); this.Controls.Add(m_dgvValues, 0, 1); this.SetRowSpan(m_dgvValues, COUNT_LAYOUT_ROW - 1);
                 m_labelDescription = new Label(); this.Controls.Add(m_labelDescription, 0, 0);
 
                 this.SuspendLayout();
@@ -267,8 +267,7 @@ namespace StatisticDiagnostic
                     object value;
                     INDEX_CELL_STATE indxState = INDEX_CELL_STATE.ERROR;
                     Color clrCell = Color.Empty;
-                    bool enableValuePrevious = Enabled
-                        , enableValueCurrrent = false;
+                    bool enableValuePrevious = Enabled;
 
                     foreach (INDEX_CELL i in Enum.GetValues(typeof(INDEX_CELL))) {
                         try {
@@ -277,12 +276,13 @@ namespace StatisticDiagnostic
                                 //&& (string.IsNullOrEmpty((string)values[(int)i]) == false)
                                 ) {
                                 indxState = INDEX_CELL_STATE.ERROR;
-                                clrCell = Color.Empty;
+                                clrCell = s_CellState[(int)INDEX_CELL_STATE.OK].m_Color;
 
-                                switch (i) {
-                                    case INDEX_CELL.NAME:
+                                switch (i) {                                    
                                     case INDEX_CELL.COUNT:
                                         continue;
+                                    case INDEX_CELL.NAME:
+                                        value = null;
                                         break;
                                     //case INDEX_CELL.STATE:
                                     //    indxState = ((string)values[(int)i])?.Equals(1.ToString()) == true ?
@@ -310,7 +310,10 @@ namespace StatisticDiagnostic
                                         break;
                                 }
 
-                                Cells[(int)i].Value = value;
+                                if (!(value == null))
+                                    Cells [(int)i].Value = value;
+                                else
+                                    ;
                                 // изменить цвет ячейки
                                 Cells[(int)i].Style.BackColor = clrCell;
                             }
@@ -388,7 +391,11 @@ namespace StatisticDiagnostic
                                     && (!(pairTask.Value == null))) {
                                     switch (pair.Key.m_id_unit) {
                                         case KEY_DIAGNOSTIC_PARAMETER.ID_UNIT.FLOAT:
-                                            rowValues[(int)INDEX_CELL.VALUE] = HMath.doubleParse((string)pair.Value.m_value);
+                                            // Хряпин А.Н. 12.10.2017 - начало (для возможности изменения цвета фона ячеек с наименованием)
+                                            rowValues [(int)INDEX_CELL.NAME] =
+                                                Convert.ChangeType (pair.Value.m_name_shr, typeof (string));
+                                            // Хряпин А.Н. 12.10.2017 - окончание блока
+                                            rowValues [(int)INDEX_CELL.VALUE] = HMath.doubleParse((string)pair.Value.m_value);
                                         //    break;
                                         //case KEY_DIAGNOSTIC_PARAMETER.ID_UNIT.DATETIME:
                                             rowValues[(int)INDEX_CELL.DATETIME_VERIFICATION] =

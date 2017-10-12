@@ -1704,7 +1704,7 @@ namespace Statistic
             /// </summary>
             /// <param name="id">ИД типа</param>
             /// <param name="bIsRole"></param>
-            /// <returns></returns>
+            /// <returns>Строка таблицы со значениями прав доступа (или др. параметров конфигурации)</returns>
             private DataRow GetRowAllowed(int id)
             {
                 DataRow objRes = null;
@@ -1743,6 +1743,7 @@ namespace Statistic
 
                 query = @"SELECT * FROM " + m_nameTableProfilesData;
                 m_allProfile = DbTSQLInterface.Select(ref dbConn, query, null, null, out err);
+
                 return m_allProfile;
             }
         }

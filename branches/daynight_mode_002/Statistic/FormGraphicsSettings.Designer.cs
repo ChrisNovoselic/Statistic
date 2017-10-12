@@ -70,11 +70,13 @@ namespace Statistic
             // Создание массива лейблов  (УДГэ,Отклонение и т.д.)
             this.m_arlblColor = new System.Windows.Forms.Label [(int)INDEX_COLOR.COUNT_INDEX_COLOR];
             this.gbxColorShema = new System.Windows.Forms.GroupBox ();
-            this.m_arRbtnColorShema = new System.Windows.Forms.RadioButton []
-            {
-                new System.Windows.Forms.RadioButton()
-                , new System.Windows.Forms.RadioButton()
-            };
+            //this.m_arRbtnColorShema = new System.Windows.Forms.RadioButton []
+            //{
+            //    new System.Windows.Forms.RadioButton()
+            //    , new System.Windows.Forms.RadioButton()
+            //};
+            this.m_cbUseSystemColors = new System.Windows.Forms.CheckBox ();
+            this.m_labelColorShema = new System.Windows.Forms.Label ();
             // Создание GroupBox (ящик: тип графиков)         
             this.gbxTypeGraph = new System.Windows.Forms.GroupBox ();
             // Создание CheckBox (флажка)
@@ -153,7 +155,10 @@ namespace Statistic
 
             #region Цветовая схема
             // Добавление в ящик  (коллекцию) элементов "Гистограмма" и "Линейный"
-            this.gbxColorShema.Controls.AddRange (m_arRbtnColorShema);
+            this.gbxColorShema.Controls.AddRange (
+                //m_arRbtnColorShema
+                new System.Windows.Forms.Control [] { m_cbUseSystemColors, m_labelColorShema }
+            );
             // Координаты расположения ящика
             this.gbxColorShema.Location = new System.Drawing.Point (222, 6);
             // Имя ящика
@@ -167,34 +172,41 @@ namespace Statistic
             // Текст надписи
             this.gbxColorShema.Text = "Цветовая схема";
             // 
-            // rbtnSystem Элемент "Система"
+            // cbUseSystemColors Элемент "Система"
             // 
             indx = (int)ColorShemas.System;
-            this.m_arRbtnColorShema [indx].AutoSize = true;
+            this.m_cbUseSystemColors.AutoSize = true;
             // Включена проверка нажатия
-            this.m_arRbtnColorShema [indx].Tag = (GraphTypes)indx;
-            this.m_arRbtnColorShema [indx].Checked = true;
-            this.m_arRbtnColorShema [indx].Location = new System.Drawing.Point (6, yPos = 16);
-            this.m_arRbtnColorShema [indx].Name = "rbtnSystem";
-            this.m_arRbtnColorShema [indx].Size = new System.Drawing.Size (92, 17);
-            this.m_arRbtnColorShema [indx].TabIndex = 1;
-            this.m_arRbtnColorShema [indx].TabStop = true;
-            this.m_arRbtnColorShema [indx].Text = "система";
-            this.m_arRbtnColorShema [indx].UseVisualStyleBackColor = true;
+            this.m_cbUseSystemColors.Tag = (GraphTypes)indx;
+            this.m_cbUseSystemColors.Checked = true;
+            this.m_cbUseSystemColors.Location = new System.Drawing.Point (6, yPos = 16);
+            this.m_cbUseSystemColors.Name = "cbUseSystemColors";
+            this.m_cbUseSystemColors.Size = new System.Drawing.Size (92, 17);
+            this.m_cbUseSystemColors.TabIndex = 1;
+            this.m_cbUseSystemColors.TabStop = true;
+            this.m_cbUseSystemColors.Text = "Система";
+            this.m_cbUseSystemColors.UseVisualStyleBackColor = true;
+            this.m_cbUseSystemColors.CheckedChanged += new System.EventHandler (this.cbUseSystemColors_CheckedChanged);
+            this.m_cbUseSystemColors.Enabled = _allowedChangeShema;
             // 
-            // rbtnDark Элемент "Темная"
+            // labelColorShema Элемент "Пользователь"
             // 
-            indx = (int)ColorShemas.Dark;
-            this.m_arRbtnColorShema [indx].Tag = (GraphTypes)indx;
-            this.m_arRbtnColorShema [indx].AutoSize = true;
-            this.m_arRbtnColorShema [indx].Location = new System.Drawing.Point (6, yPos += yMargin);
-            this.m_arRbtnColorShema [indx].Name = "rbtnDark";
-            this.m_arRbtnColorShema [indx].Size = new System.Drawing.Size (75, 17);
-            this.m_arRbtnColorShema [indx].TabIndex = 0;
-            this.m_arRbtnColorShema [indx].Text = "темная";
-            this.m_arRbtnColorShema [indx].UseVisualStyleBackColor = true;
-            // Обработка нажатия флажка обработчиком события
-            this.m_arRbtnColorShema [indx].CheckedChanged += new System.EventHandler (this.rbtnColorShema_CheckedChanged);
+            indx = (int)ColorShemas.Custom;
+            this.m_labelColorShema.Tag = (GraphTypes)indx;
+            //this.m_labelColorShema.AutoSize = true;
+            this.m_labelColorShema.Location = new System.Drawing.Point (6, yPos += (yMargin - 2));
+            this.m_labelColorShema.Name = "labelColorShema";
+            this.m_labelColorShema.Size = new System.Drawing.Size (gbxColorShema.ClientSize.Width - (2 * 6), 17 + 2);
+            this.m_labelColorShema.TabIndex = 0;
+            this.m_labelColorShema.Text = "Пользователь";
+            this.m_labelColorShema.TextAlign = ContentAlignment.MiddleLeft;
+            this.m_labelColorShema.BorderStyle = System.Windows.Forms.BorderStyle.FixedSingle;
+            this.m_labelColorShema.ForeColor = getForeColor (DarkColorTable._Custom);
+            this.m_labelColorShema.BackColor = DarkColorTable._Custom;
+            this.m_labelColorShema.Enabled = false;
+            // Обработка события "двойной щелчок" - изменение цвета "темной" схемы
+            this.m_labelColorShema.DoubleClick += new System.EventHandler (lbl_color_Click);
+            this.m_labelColorShema.BackColorChanged += new System.EventHandler (labelColorShema_BackColorChanged);
             #endregion
 
             #region Масштабирование, типы графиков
@@ -401,11 +413,24 @@ namespace Statistic
 
         }
 
+        private void labelColorShema_BackColorChanged (object sender, System.EventArgs e)
+        {
+            DarkColorTable._Custom = (sender as System.Windows.Forms.Control).BackColor;            
+
+            //if (m_cbUseSystemColors.Checked == false)
+            // доступна только при выключенной системной схеме
+                delegateUpdateActiveGui ((int)TYPE_UPDATEGUI.COLOR_CHANGESHEMA);   //обновить активную настройку (цветовая схема)
+            //else
+            //    ;
+        }
+
         #endregion
 
         private System.Windows.Forms.Label [] m_arlblColor;
         private System.Windows.Forms.GroupBox gbxColorShema;
-        private System.Windows.Forms.RadioButton [] m_arRbtnColorShema;
+        //private System.Windows.Forms.RadioButton [] m_arRbtnColorShema;
+        private System.Windows.Forms.CheckBox m_cbUseSystemColors;
+        private System.Windows.Forms.Label m_labelColorShema;
         private System.Windows.Forms.GroupBox gbxTypeGraph;
         private System.Windows.Forms.CheckBox cbxScale;
         private System.Windows.Forms.RadioButton [] m_arRbtnTypeGraph;

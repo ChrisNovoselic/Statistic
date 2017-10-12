@@ -4,7 +4,7 @@ using System.Collections.Generic;
 //using System.ComponentModel;
 using System.Data;
 using System.Drawing;
-using System.Text;
+using System.Linq;
 using System.Windows.Forms;
 
 using HClassLibrary;
@@ -12,7 +12,6 @@ using StatisticCommon;
 /// <summary>
 /// Пространство имен Statistic 
 /// </summary>
-/// 
 namespace Statistic
 {
     /// <summary>
@@ -41,7 +40,7 @@ namespace Statistic
         public enum TYPE_UPDATEGUI                                                                                              
         {
         
-            SCALE, LINEAR, COLOR, SOURCE_DATA, COLOR_SHEMA                                     
+            SCALE, LINEAR, COLOR, SOURCE_DATA, COLOR_SHEMA, COLOR_CHANGESHEMA
                , COUNT_TYPE_UPDATEGUI
         };
 
@@ -77,9 +76,9 @@ namespace Statistic
             /// </summary>
             System,
             /// <summary>
-            /// Темная схема
+            /// Выбранная схема
             /// </summary>
-            Dark,
+            Custom,
         }
         #endregion
 
@@ -127,10 +126,10 @@ namespace Statistic
         /// </summary>
         private DelegateFunc delegateHideGraphicsSettings;
 
-        ///// <summary>
-        ///// Закрытое поле m_formMain типа FormMain. Зачем оно?
-        ///// </summary>
-        //private FormMain m_formMain;
+        /// <summary>
+        /// Закрытое поле m_formMain типа FormMain. Зачем оно?
+        /// </summary>
+        private bool _allowedChangeShema;
 
         #region Конструктор
         /// <summary>
@@ -139,18 +138,19 @@ namespace Statistic
         /// <param name="form">Родительская форма - главное окно приложения</param>
         /// <param name="fUpdate">Метод для применения изменений</param>
         /// <param name="fHide">Метод снятия с отображения диалогового окна</param>
-        public FormGraphicsSettings (FormMain form, DelegateIntFunc fUpdate, DelegateFunc fHide) 
+        /// <param name="bAllowedChangeShema">Признак(настраиваемый из БД) разрешения изменять цветовую схему</param>
+        public FormGraphicsSettings (DelegateIntFunc fUpdate, DelegateFunc fHide, bool bAllowedChangeShema) 
         {
-            InitializeComponent();                                                                                                                             
-
             // инициализация полей заданными пользователем значениями
-            delegateUpdateActiveGui = fUpdate;                                                            
-            delegateHideGraphicsSettings = fHide;                                                     
-            //m_formMain = form;
+            delegateUpdateActiveGui = fUpdate;
+            delegateHideGraphicsSettings = fHide;
+            _allowedChangeShema = bAllowedChangeShema;
             //масштабирование выключено по умолчанию
             scale = false;
-            // полю m_markSourceData присваиваем ссылку на экземпляр класса HMark, вызываем конструктор HMark с одним параметром, передаем 0                                                                  
-            m_markSourceData = new HMark(0);          
+            // полю m_markSourceData присваиваем ссылку на экземпляр класса HMark, вызываем конструктор HMark с одним параметром, передаем 0
+            m_markSourceData = new HMark (0);
+
+            InitializeComponent ();
 
             bool bGroupBoxSourceData = false;                                                            //переменной bGroupBoxSourceData присваиваем false
             CONN_SETT_TYPE cstGroupBoxSourceData = CONN_SETT_TYPE.AISKUE_3_MIN;                          //переменной cstGroupBoxSourceData присваиваем константу=1 (AISKUE_3_MIN)
@@ -266,16 +266,28 @@ namespace Statistic
         /// <param name="e">Аргумент события</param>
         private void lbl_color_Click(object sender, EventArgs e)   
         {
-            ColorDialog cd = new ColorDialog();                   //создаем экземпляр cd класса ColorDialog (Диалоговое окно "Цвет")
-            cd.Color = ((Label)sender).BackColor;                 //вызвана структура Color на экземпляре, структуре присвоено значение выбранного цвета
-            if (cd.ShowDialog(this) == DialogResult.OK)           // если выбран цвет и нажат ОК, то
+            TYPE_UPDATEGUI typeUpdate = ((sender as Control).Tag.GetType ().Equals (typeof (INDEX_COLOR))) == true
+                ? TYPE_UPDATEGUI.COLOR
+                    : TYPE_UPDATEGUI.COLOR_CHANGESHEMA;
+
+            ColorDialog cd = new ColorDialog();                   // создаем экземпляр cd класса ColorDialog (Диалоговое окно "Цвет")
+            cd.Color = ((Label)sender).BackColor;                 // вызвана структура Color на экземпляре, структуре присвоено значение выбранного цвета
+            if (cd.ShowDialog(this) == DialogResult.OK)           //  , если выбран цвет и нажат ОК, то
             {
-                //заднему плану присвоить выбранный цвет
+                // заднему плану присвоить выбранный цвет
                 ((Label)sender).BackColor = cd.Color;
-                //переднему плану (надписи) присвоить зрительно отличный цвет
+                // переднему плану (надписи) присвоить зрительно отличный цвет
                 ((Label)sender).ForeColor = getForeColor (cd.Color);
-                //обновить активную настройку (цвет)
-                delegateUpdateActiveGui((int)TYPE_UPDATEGUI.COLOR);
+                // при типе 'TYPE_UPDATEGUI.COLOR_SHEMA' выполнить дополн. действия
+                if (typeUpdate == TYPE_UPDATEGUI.COLOR) {
+                    // обновить активную настройку (цвет)
+                    // для 'TYPE_UPDATEGUI.COLOR_SHEMA' активная настройка обновится в 'BackColorChanged'
+                    delegateUpdateActiveGui ((int)typeUpdate);
+                    
+                } else
+                    //// изменить и цвет границы
+                    //((Label)sender).BorderColor = getForeColor (cd.Color)
+                    ;
             } else
                 ;
         }
@@ -301,17 +313,18 @@ namespace Statistic
             cbxScale.Checked = !cbxScale.Checked;        
         }
 
-        private void rbtnColorShema_CheckedChanged (object sender, EventArgs e)
+        private void cbUseSystemColors_CheckedChanged (object sender, EventArgs e)
         {
-            foreach (RadioButton rbtn in m_arRbtnColorShema)
-                if (rbtn.Checked == true) {
-                    m_colorShema = (ColorShemas)(rbtn as Control).Tag;
+            m_colorShema = (sender as System.Windows.Forms.CheckBox).Checked == true ? ColorShemas.System : ColorShemas.Custom;
 
-                    break;
-                } else
-                    ;
+            m_arlblColor [(int)INDEX_COLOR.BG_ASKUE].Enabled =
+            m_arlblColor [(int)INDEX_COLOR.BG_ASKUE].Enabled =
+            m_arlblColor [(int)INDEX_COLOR.BG_ASKUE].Enabled =
+                (sender as System.Windows.Forms.CheckBox).Checked;
 
-            delegateUpdateActiveGui ((int)TYPE_UPDATEGUI.COLOR_SHEMA);   //обновить активную настройку (тип графика)
+            m_labelColorShema.Enabled = !(sender as System.Windows.Forms.CheckBox).Checked;
+
+            delegateUpdateActiveGui ((int)TYPE_UPDATEGUI.COLOR_SHEMA);   //обновить активную настройку (цветовая схема)
         }
 
         /// <summary>
@@ -368,16 +381,37 @@ namespace Statistic
 
     public class DarkColorTable : ProfessionalColorTable
     {
-        public DarkColorTable (Color colorSystem)
+        public DarkColorTable (Color colorSystem, string colorCustom)
         {
+            int [] rgb;
+
             _System = colorSystem;
+
+            try {
+                rgb = Array.ConvertAll<string, int> (colorCustom.Split (','), Convert.ToInt32);                
+                _custom = Color.FromArgb (rgb [0], rgb [1], rgb [2]);
+            } catch (Exception e) {
+                Logging.Logg ().Exception (e, string.Format ("DarkColorTable::ctor () - ..."), Logging.INDEX_MESSAGE.NOT_SET);
+            }
 
             //UseSystemColors = true;
         }
 
         public static Color _System = Color.Empty;
 
-        public static Color _Custom = Color.FromArgb (255, 112, 128, 144);  // Color.SlateGray;
+        private static Color _custom;
+
+        public static Color _Custom
+        {// Color.FromArgb (255, 112, 128, 144);  // Color.SlateGray;
+            get { return _custom; }
+
+            set { _custom = value; }
+        }
+
+        public string CustomToString ()
+        {
+            return string.Format ("{0},{1},{2}", _custom.R, _custom.G, _custom.B);
+        }
 
         private Color _pressed = Color.FromArgb (255, 52, 68, 84);
 

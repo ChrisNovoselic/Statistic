@@ -1501,7 +1501,7 @@ namespace Statistic
 
                 for (i = 1; i < values.Length; i++)
                 {
-                    // изменяем фон ячеек с неизменяемым значением на случай изменения цветовой схемы "темная - светлая"
+                    // изменяем фон ячеек с неизменяемым значением на случай изменения цветовой схемы "Система - Пользователь"
                     Rows [i - 1].Cells [(int)INDEX_COLUMN.NUM_MINUTE].Style = HDataGridViewTables.s_dgvCellStyles [(int)HDataGridViewTables.INDEX_CELL_STYLE.COMMON];
 
                     //Значения

@@ -2044,7 +2044,28 @@ namespace StatisticAnalyzer
 
         public override void UpdateGraphicsCurrent (int type)
         {
-            throw new NotImplementedException ();
+            //??? ничегно не делаем
+        }
+
+        public override Color BackColor
+        {
+            get
+            {
+                return base.BackColor;
+            }
+
+            set
+            {
+                base.BackColor = value;
+
+                getTypedControls (this, new Type [] { typeof (DataGridView) }).Cast<DataGridView> ().ToList ().ForEach (dgv => {
+                    for (int j = 0; j < dgv.ColumnCount; j++)
+                        for (int i = 0; i < dgv.RowCount; i++)
+                            dgv.Rows [i].Cells [j].Style.BackColor = value == SystemColors.Control ? SystemColors.Window : value;
+                });
+
+                listTabVisible.BackColor = value == SystemColors.Control ? SystemColors.Window : value;
+            }
         }
 
         public class DataGridView_LogMessageCounter : DataGridView
@@ -2274,18 +2295,9 @@ namespace StatisticAnalyzer
     {
         protected DataTable m_tableTabs;
 
-        //class HLogMsgSource {
-        //public
-        DelegateIntFunc delegateConnect;
-        //public
-        DelegateFunc delegateErrorConnect;
-        //}
-        //HLogMsgSource m_logMsgSource;
+        private DelegateIntFunc delegateConnect;
         
-        ///// <summary>
-        ///// Список ТЭЦ
-        ///// </summary>
-        //List<StatisticCommon.TEC> m_listTEC;
+        private DelegateFunc delegateErrorConnect;
         
         /// <summary>
         /// Идентификатор для получения лога из БД

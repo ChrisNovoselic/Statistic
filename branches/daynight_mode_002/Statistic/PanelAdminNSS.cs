@@ -91,6 +91,7 @@ namespace Statistic
 
             return iRes;
         }
+
         /// <summary>
         /// Перенести в ОЗУ значения с формы/панели (почти полная копия 'PanelAdminVyvod')
         /// </summary>
@@ -164,13 +165,6 @@ namespace Statistic
             } else {
             // в случае повторного прохода (изменение цветовой гаммы)
             // см. реализацию 'overide set BackColor'
-            }
-        }
-
-        private void updateTextBoxColumn()
-        {
-            for (int i = 0; i < 24; i++) {
-            //???
             }
         }
 

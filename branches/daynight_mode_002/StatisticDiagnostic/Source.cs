@@ -19,7 +19,7 @@ namespace StatisticDiagnostic
         {
         }
         /// <summary>
-        /// Панель для размещения подпанелей с отображением диагностических параметров/значений источников ланных для ТЭЦ
+        /// Панель для размещения подпанелей с отображением диагностических параметров/значений источников данных для ТЭЦ
         /// </summary>
         private class PanelContainerTec : HPanelCommon, IPanelContainerTec
         {
@@ -254,7 +254,8 @@ namespace StatisticDiagnostic
             /// <summary>
             /// Функция активации панелей ТЭЦ
             /// </summary>
-            /// <param name="activated"></param>
+            /// <param name="activated">Новое состояние панели</param>
+            /// <return>Признак результата: выполнено изменение состояние/не_выполнено</return>
             public override bool Activate(bool activated)
             {
                 bool bRes = base.Activate(activated);
@@ -334,6 +335,25 @@ namespace StatisticDiagnostic
 
             public EventSourceIdChangedHandler delegateSourceIdChanged;
 
+            public override Color BackColor
+            {
+                get
+                {
+                    return base.BackColor;
+                }
+
+                set
+                {
+                    base.BackColor = value;
+
+                    if (!(m_arPanels == null))
+                        for (int i = 0; i < m_arPanels.Length; i++)
+                            m_arPanels [i].BackColor = value;
+                    else
+                        ;
+                }
+            }
+
             /// <summary>
             /// Класс для описания элемента панели с информацией
             /// по дианостированию работоспособности 
@@ -379,7 +399,7 @@ namespace StatisticDiagnostic
                 /// <summary>
                 /// Объект - элемент интерфейса - табличное представление отображаемых данных
                 /// </summary>
-                private DataGridView m_dgvValues;
+                private DataGridViewDiagnostic m_dgvValues;
 
                 /// <summary>
                 /// Элемент интерфейса - подпись - наименование ТЭЦ
@@ -604,7 +624,6 @@ namespace StatisticDiagnostic
                                     case INDEX_CELL.NAME_SOURCE:
                                     case INDEX_CELL.COUNT:
                                         continue;
-                                        break;
                                     case INDEX_CELL.DATETIME_VALUE:
                                     case INDEX_CELL.DATETIME_VERIFICATION:
                                         enableValueRes = ((!(values[(int)i] == null))
@@ -644,41 +663,53 @@ namespace StatisticDiagnostic
                         else
                             ;
 
-                        if (Enabled == true)
-                            foreach (INDEX_CELL i in Enum.GetValues(typeof(INDEX_CELL))) {
-                                indxState = INDEX_CELL_STATE.ERROR;
-                                clrCell = Color.Empty;
+                        if (Enabled == true)                            
+                            foreach (INDEX_CELL i in Enum.GetValues (typeof (INDEX_CELL))) {
+                                try {                                
+                                    indxState = INDEX_CELL_STATE.ERROR;
+                                    clrCell = s_CellState [(int)INDEX_CELL_STATE.OK].m_Color;
 
-                                switch (i) {
-                                    case INDEX_CELL.NAME_SOURCE:
-                                    case INDEX_CELL.COUNT:
-                                        continue;
-                                        break;
-                                    case INDEX_CELL.STATE:
-                                        indxState = ((string)values[(int)i])?.Equals(1.ToString()) == true ?
-                                            INDEX_CELL_STATE.OK :
-                                                isSourceSOTIASSOToris == false ?
-                                                    INDEX_CELL_STATE.ERROR :
-                                                        INDEX_CELL_STATE.UNKNOWN;
-                                        value = s_CellState[(int)indxState].m_Text;
-                                        clrCell = s_CellState[(int)indxState].m_Color;
-                                        break;
-                                    case INDEX_CELL.DATETIME_VALUE:
-                                    case INDEX_CELL.DATETIME_VERIFICATION:
-                                        value = values[(int)i] is DateTime ?
-                                            formatDateTime ((DateTime)values[(int)i]) :
-                                                values[(int)i];
-                                        clrCell = s_CellState[(int)isRelevanceDateTime((int)i, (DateTime)values[(int)i])].m_Color;
-                                        break;
-                                    default:
-                                        value = values[(int)i];
-                                        break;
+                                    switch (i) {
+                                        case INDEX_CELL.COUNT:
+                                            continue;
+                                        case INDEX_CELL.NAME_SOURCE:
+                                        // пропустить применение значения к ячейке, т.к. значение(наименование источника данных) постоянное
+                                            value = null;
+                                            if (Activated == true) clrCell = s_ColorSOTIASSOState [(int)INDEX_CONTEXTMENU_ITEM.ACTIVATED]; else;
+                                            break;
+                                        case INDEX_CELL.STATE:
+                                            indxState = ((string)values [(int)i])?.Equals (1.ToString ()) == true ?
+                                                INDEX_CELL_STATE.OK :
+                                                    isSourceSOTIASSOToris == false ?
+                                                        INDEX_CELL_STATE.ERROR :
+                                                            INDEX_CELL_STATE.UNKNOWN;
+                                            value = s_CellState [(int)indxState].m_Text;
+                                            clrCell = s_CellState [(int)indxState].m_Color;
+                                            break;
+                                        case INDEX_CELL.DATETIME_VALUE:
+                                        case INDEX_CELL.DATETIME_VERIFICATION:
+                                            value = values [(int)i] is DateTime ?
+                                                formatDateTime ((DateTime)values [(int)i]) :
+                                                    values [(int)i];
+                                            clrCell = s_CellState [(int)isRelevanceDateTime ((int)i, (DateTime)values [(int)i])].m_Color;
+                                            break;
+                                        default:
+                                            value = values [(int)i];
+                                            break;
+                                    }
+
+                                    if (!(value == null))
+                                        Cells [(int)i].Value = value;
+                                    else
+                                        ;
+                                    // изменить цвет ячейки
+                                    Cells [(int)i].Style.BackColor = clrCell;
+                                } catch (Exception e) {
+                                    Logging.Logg ().Exception (e
+                                        , string.Format ("PanelContainerTec.PanelTec.DataGridViewDiagnosticSourceRow::SetValueCell () - INDEX_CELL={0}...", i.ToString())
+                                        , Logging.INDEX_MESSAGE.NOT_SET);
                                 }
-
-                                Cells[(int)i].Value = value;
-                                // изменить цвет ячейки
-                                Cells[(int)i].Style.BackColor = clrCell;
-                            } // INDEX_CELL i in Enum.GetValues(typeof(INDEX_CELL))
+                            } // INDEX_CELL i in Enum.GetValues(typeof(INDEX_CELL))                        
                         else
                             ;
                     }
@@ -820,7 +851,7 @@ namespace StatisticDiagnostic
                 /// </summary>
                 private void InitializeComponent()
                 {
-                    this.m_dgvValues = new DataGridView();
+                    this.m_dgvValues = new DataGridViewDiagnostic();
                     this.m_labelDescription = new Label();
 
                     this.Controls.Add(m_labelDescription, 0, 0); this.SetRowSpan(m_labelDescription, 2);
@@ -902,8 +933,6 @@ namespace StatisticDiagnostic
                     NAME_SOURCE = 0, DATETIME_VALUE, VALUE, DATETIME_VERIFICATION, STATE
                     , COUNT
                 }
-
-                private int indexRowContextMenu;
 
                 /// <summary>
                 /// Обработчик события - нажатие кнопки "мыши"
@@ -1048,65 +1077,73 @@ namespace StatisticDiagnostic
                     object value;
                     object[] rowValues;
 
-                    switch (type) {
-                        case DictionaryTecValues.TYPE.ACTIVE_SOURCE_SOTIASSO:
-                            activateSourceSOTIASSO(values);
-                            break;
-                        default:
-                            foreach (DataGridViewDiagnosticSourceRow r in m_dgvValues.Rows) {
-                                rowValues = new object[(int)INDEX_CELL.COUNT];
+                    try {
+                        switch (type) {
+                            case DictionaryTecValues.TYPE.ACTIVE_SOURCE_SOTIASSO:
+                                activateSourceSOTIASSO(values);
+                                break;
+                            default:
+                                foreach (DataGridViewDiagnosticSourceRow r in m_dgvValues.Rows) {
+                                    rowValues = new object[(int)INDEX_CELL.COUNT];
 
-                                foreach (KeyValuePair<KEY_DIAGNOSTIC_PARAMETER, Values> pair in values) {
-                                    try {
-                                        // сопоставление 'r.source_name' && 'values.name_shr'
-                                        if ((pair.Value.m_name_shr?.IndexOf(r.SourceData) > 0)
-                                            && (!(pair.Value.m_value == null))
-                                            && (string.IsNullOrEmpty((string)pair.Value.m_value) == false)) {
-                                            switch (pair.Key.m_id_value) {
-                                                case KEY_DIAGNOSTIC_PARAMETER.ID_VALUE.AIISKUE_VALUE:
-                                                case KEY_DIAGNOSTIC_PARAMETER.ID_VALUE.SOTIASSO_1_VALUE:
-                                                case KEY_DIAGNOSTIC_PARAMETER.ID_VALUE.SOTIASSO_2_VALUE:
-                                                case KEY_DIAGNOSTIC_PARAMETER.ID_VALUE.SOTIASSO_1_TORIS_VALUE:
-                                                case KEY_DIAGNOSTIC_PARAMETER.ID_VALUE.SOTIASSO_2_TORIS_VALUE:
-                                                    switch (pair.Key.m_id_unit) {
-                                                        case KEY_DIAGNOSTIC_PARAMETER.ID_UNIT.FLOAT:
-                                                            value = HMath.doubleParse((string)pair.Value.m_value);
-                                                            break;
-                                                        default:
-                                                            value = Convert.ChangeType(pair.Value.m_value, KEY_DIAGNOSTIC_PARAMETER.TypeOf[pair.Key.m_id_unit]);
-                                                            break;
-                                                    }
-                                                    rowValues[(int)INDEX_CELL.VALUE] = value;
-                                                    rowValues[(int)INDEX_CELL.DATETIME_VERIFICATION] =
-                                                        Convert.ChangeType(pair.Value.m_dtValue, typeof(DateTime));
-                                                    rowValues[(int)INDEX_CELL.STATE] =
-                                                        Convert.ChangeType(pair.Value.m_strLink, typeof(string));
-                                                    break;
-                                                case KEY_DIAGNOSTIC_PARAMETER.ID_VALUE.AIISKUE_DATETIME:
-                                                case KEY_DIAGNOSTIC_PARAMETER.ID_VALUE.SOTIASSO_1_DATETIME:
-                                                case KEY_DIAGNOSTIC_PARAMETER.ID_VALUE.SOTIASSO_2_DATETIME:
-                                                case KEY_DIAGNOSTIC_PARAMETER.ID_VALUE.SOTIASSO_1_TORIS_DATETIME:
-                                                case KEY_DIAGNOSTIC_PARAMETER.ID_VALUE.SOTIASSO_2_TORIS_DATETIME:
-                                                    rowValues[(int)INDEX_CELL.DATETIME_VALUE] =
-                                                        Convert.ChangeType(pair.Value.m_value, KEY_DIAGNOSTIC_PARAMETER.TypeOf[pair.Key.m_id_unit]);
-                                                    //r.Cells[(int)INDEX_CELL.DATETIME_VALUE].ToolTipText =
-                                                    //    Convert.ChangeType(pair.Value.m_dtValue, typeof(DateTime)).ToString();
-                                                    break;
-                                                default:
-                                                    break;
-                                            }
-                                        } else
-                                            ;
-                                    } catch (Exception e) {
-                                        Logging.Logg().Exception(e, @"PanelContainerTec.PanelTec::update () - ...", Logging.INDEX_MESSAGE.NOT_SET);
-                                    }
-                                } // KeyValuePair<KEY_DIAGNOSTIC_PARAMETER, Values> pair in values
+                                    foreach (KeyValuePair<KEY_DIAGNOSTIC_PARAMETER, Values> pair in values) {
+                                        try {
+                                            // сопоставление 'r.source_name' && 'values.name_shr'
+                                            if ((pair.Value.m_name_shr?.IndexOf(r.SourceData) > 0)
+                                                && (!(pair.Value.m_value == null))
+                                                && (string.IsNullOrEmpty((string)pair.Value.m_value) == false)) {
+                                                switch (pair.Key.m_id_value) {
+                                                    case KEY_DIAGNOSTIC_PARAMETER.ID_VALUE.AIISKUE_VALUE:
+                                                    case KEY_DIAGNOSTIC_PARAMETER.ID_VALUE.SOTIASSO_1_VALUE:
+                                                    case KEY_DIAGNOSTIC_PARAMETER.ID_VALUE.SOTIASSO_2_VALUE:
+                                                    case KEY_DIAGNOSTIC_PARAMETER.ID_VALUE.SOTIASSO_1_TORIS_VALUE:
+                                                    case KEY_DIAGNOSTIC_PARAMETER.ID_VALUE.SOTIASSO_2_TORIS_VALUE:
+                                                        switch (pair.Key.m_id_unit) {
+                                                            case KEY_DIAGNOSTIC_PARAMETER.ID_UNIT.FLOAT:
+                                                                value = HMath.doubleParse((string)pair.Value.m_value);
+                                                                break;
+                                                            default:
+                                                                value = Convert.ChangeType(pair.Value.m_value, KEY_DIAGNOSTIC_PARAMETER.TypeOf[pair.Key.m_id_unit]);
+                                                                break;
+                                                        }
+                                                        // Хряпин А.Н. 12.10.2017 - начало (для возможности изменения цвета фона ячеек с наименованием)
+                                                        rowValues [(int)INDEX_CELL.NAME_SOURCE] =
+                                                            Convert.ChangeType (pair.Value.m_name_shr, typeof (string));
+                                                        // Хряпин А.Н. 12.10.2017 - окончание блока
+                                                        rowValues [(int)INDEX_CELL.VALUE] = value;
+                                                        rowValues[(int)INDEX_CELL.DATETIME_VERIFICATION] =
+                                                            Convert.ChangeType(pair.Value.m_dtValue, typeof(DateTime));
+                                                        rowValues[(int)INDEX_CELL.STATE] =
+                                                            Convert.ChangeType(pair.Value.m_strLink, typeof(string));
+                                                        break;
+                                                    case KEY_DIAGNOSTIC_PARAMETER.ID_VALUE.AIISKUE_DATETIME:
+                                                    case KEY_DIAGNOSTIC_PARAMETER.ID_VALUE.SOTIASSO_1_DATETIME:
+                                                    case KEY_DIAGNOSTIC_PARAMETER.ID_VALUE.SOTIASSO_2_DATETIME:
+                                                    case KEY_DIAGNOSTIC_PARAMETER.ID_VALUE.SOTIASSO_1_TORIS_DATETIME:
+                                                    case KEY_DIAGNOSTIC_PARAMETER.ID_VALUE.SOTIASSO_2_TORIS_DATETIME:
+                                                        rowValues[(int)INDEX_CELL.DATETIME_VALUE] =
+                                                            Convert.ChangeType(pair.Value.m_value, KEY_DIAGNOSTIC_PARAMETER.TypeOf[pair.Key.m_id_unit]);
+                                                        //r.Cells[(int)INDEX_CELL.DATETIME_VALUE].ToolTipText =
+                                                        //    Convert.ChangeType(pair.Value.m_dtValue, typeof(DateTime)).ToString();
+                                                        break;
+                                                    default:
+                                                        break;
+                                                }
+                                            } else
+                                                ;
+                                        } catch (Exception e) {
+                                            Logging.Logg().Exception(e, string.Format ("PanelContainerTec.PanelTec::update(type={0}) - ...", type.ToString ()), Logging.INDEX_MESSAGE.NOT_SET);
+                                        }
+                                    } // KeyValuePair<KEY_DIAGNOSTIC_PARAMETER, Values> pair in values
 
-                                r.SetValueCells(rowValues);
-                            } // DataGridViewSourceRow r in m_dgvValues.Rows
+                                    r.SetValueCells(rowValues);
+                                } // DataGridViewSourceRow r in m_dgvValues.Rows
 
-                            //cellsPing();
-                            break;
+                                //cellsPing();
+                                break;
+                        }
+                    } catch (Exception e) {
+                        Logging.Logg ().Exception (e, string.Format("PanelContainerTec.PanelTec::update(type={0}) - ...", type.ToString()), Logging.INDEX_MESSAGE.NOT_SET);
                     }
                 }
                 /// <summary>
