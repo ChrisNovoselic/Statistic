@@ -297,7 +297,7 @@ namespace Statistic
                 this.IsEnableVZoom = false;
                 this.IsShowPointValues = true;
 
-                BackColor = SystemColors.Window;
+                BackColor = SystemColors.Window; // SystemColors.Window
 
                 initializeContextMenuItemStandardEventHandler ();
 
@@ -425,20 +425,23 @@ namespace Statistic
                         ;
             }
 
-            //public override Color BackColor
-            //{
-            //    get
-            //    {
-            //        return base.BackColor;
-            //    }
+            public override Color BackColor
+            {
+                get
+                {
+                    return base.BackColor;
+                }
 
-            //    set
-            //    {
-            //        base.BackColor =
-            //        //this.GraphPane.Fill.Color =
-            //            value;
-            //    }
-            //}
+                set
+                {
+                    base.BackColor =
+                    //this.GraphPane.Fill.Color =
+                        value;
+
+                    //this.GraphPane.Chart.Fill = new Fill (value == SystemColors.Control ? SystemColors.Window : value);
+                    this.GraphPane.Fill = new Fill (value == SystemColors.Control ? SystemColors.Window : value);
+                }
+            }
 
             public virtual bool FindNearestObject (PointF p, Graphics g, out object obj, out int index)
             {

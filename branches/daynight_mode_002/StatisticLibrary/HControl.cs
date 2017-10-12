@@ -224,9 +224,9 @@ namespace StatisticCommon
             this.IsEnableVZoom = false;
             this.IsShowPointValues = true;
 
-            this.BackColor = SystemColors.Window;
+            this.BackColor = SystemColors.Window; // SystemColors.Window
 
-            InitializeEventHandler();
+            InitializeEventHandler ();
 
             this.PointValueEvent += new ZedGraph.ZedGraphControl.PointValueHandler(this.OnPointValueEvent);
             this.DoubleClickEvent += new ZedGraph.ZedGraphControl.ZedMouseEventHandler(this.OnDoubleClickEvent);

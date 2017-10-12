@@ -54,8 +54,11 @@ namespace StatisticCommon
                 , new DataGridViewCellStyle(DefaultCellStyle) // ERROR
             };
 
+            s_dgvCellStyles [(int)INDEX_CELL_STYLE.COMMON].BackColor = colors [(int)INDEX_CELL_STYLE.COMMON];
             s_dgvCellStyles [(int)INDEX_CELL_STYLE.WARNING].BackColor = colors[(int)INDEX_CELL_STYLE.WARNING];
             s_dgvCellStyles [(int)INDEX_CELL_STYLE.ERROR].BackColor = colors [(int)INDEX_CELL_STYLE.ERROR];
+
+            BackColor = colors [(int)INDEX_CELL_STYLE.COMMON];
         }
 
         public void InitRows(int cnt, bool bIns)
@@ -80,8 +83,8 @@ namespace StatisticCommon
                 base.BackColor = value;
 
                 s_dgvCellStyles[(int)INDEX_CELL_STYLE.COMMON].BackColor =
-                    //value.Equals (SystemColors.Control) == true
-                    //    ? SystemColors.Window :
+                    value.Equals (SystemColors.Control) == true
+                        ? SystemColors.Window :
                             value;
             }
         }

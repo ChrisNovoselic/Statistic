@@ -256,9 +256,9 @@ namespace StatisticDiagnostic
         private enum INDEX_CELL_STATE : short { OK = 0, WARNING, ERROR, UNKNOWN, DISABLED }
 
         private static CELL_STATE[] s_CellState = new CELL_STATE[] {
-            new CELL_STATE() { m_Text = @"Да", m_Color = SystemColors.Window }
-            , new CELL_STATE() { m_Text = string.Empty, m_Color = Color.Yellow, m_Detail = @"Продолжительное выполнение" }
-            , new CELL_STATE() { m_Text = @"Нет", m_Color = Color.Red, m_Detail = @"Превышено ожидание" }
+            new CELL_STATE() { m_Text = @"Да", m_Color = HDataGridViewTables.s_dgvCellStyles == null ? SystemColors.Window : HDataGridViewTables.s_dgvCellStyles[(int)HDataGridViewTables.INDEX_CELL_STYLE.COMMON].BackColor }
+            , new CELL_STATE() { m_Text = string.Empty, m_Color = HDataGridViewTables.s_dgvCellStyles == null ? Color.Yellow : HDataGridViewTables.s_dgvCellStyles[(int)HDataGridViewTables.INDEX_CELL_STYLE.WARNING].BackColor, m_Detail = @"Продолжительное выполнение" }
+            , new CELL_STATE() { m_Text = @"Нет", m_Color = HDataGridViewTables.s_dgvCellStyles == null ? Color.Red : HDataGridViewTables.s_dgvCellStyles[(int)HDataGridViewTables.INDEX_CELL_STYLE.ERROR].BackColor, m_Detail = @"Превышено ожидание" }
             , new CELL_STATE() { m_Text = @"н/д", m_Color = Color.LightGray }
             , new CELL_STATE() { m_Text = string.Empty, m_Color = Color.DarkGray, m_Detail = @"Запрещено" }
         };
@@ -345,7 +345,7 @@ namespace StatisticDiagnostic
         private void updateTimer_StartElapsed (IAsyncResult result)
         {
             ElapsedEventHandler handler = result.AsyncState as ElapsedEventHandler;
-            if (handler != null) {
+            if (Equals (handler, null) == false) {
                 handler.EndInvoke (result);
             } else
                 ;

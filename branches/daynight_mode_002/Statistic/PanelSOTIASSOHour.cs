@@ -892,7 +892,7 @@ namespace Statistic
                 this.IsEnableVZoom = false;
                 this.IsShowPointValues = true;
 
-                this.BackColor = SystemColors.Window;
+                this.BackColor = SystemColors.Window; // SystemColors.Window
 
                 this.PointValueEvent += new ZedGraph.ZedGraphControl.PointValueHandler(this.onPointValueEvent);
                 this.DoubleClickEvent += new ZedGraph.ZedGraphControl.ZedMouseEventHandler(this.onDoubleClickEvent);
@@ -1601,7 +1601,7 @@ namespace Statistic
                 this.SelectionMode = DataGridViewSelectionMode.FullRowSelect;
                 this.Columns[0].Width = 38;
 
-                BackColor = SystemColors.Window;
+                BackColor = HDataGridViewTables.s_dgvCellStyles [(int)HDataGridViewTables.INDEX_CELL_STYLE.COMMON].BackColor;
 
                 //Добавить строки по числу сек. в мин.
                 for (int i = 0; i < 60; i++)

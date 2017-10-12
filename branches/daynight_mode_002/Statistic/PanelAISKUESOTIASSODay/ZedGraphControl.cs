@@ -71,7 +71,7 @@ namespace Statistic
                 this.PointValueEvent += new ZedGraph.ZedGraphControl.PointValueHandler(this.onPointValueEvent);
                 this.DoubleClickEvent += new ZedGraph.ZedGraphControl.ZedMouseEventHandler(this.onDoubleClickEvent);
 
-                BackColor = SystemColors.Window;
+                BackColor = SystemColors.Window; // SystemColors.Window
 
                 GraphPane pane = this.GraphPane;
                 // Подпишемся на событие, которое будет вызываться при выводе каждой отметки на оси
@@ -102,7 +102,11 @@ namespace Statistic
                 return true;
             }
 
+            /// <summary>
+            /// Константа для настройки отображения сетки по оси X
+            /// </summary>
             private const int DIV_MAJOR_STEP = 4;
+
             /// <summary>
             /// Метод, который вызывается, когда надо отобразить очередную метку по оси
             /// </summary>
@@ -117,6 +121,24 @@ namespace Statistic
                     return string.Format(@"{0}", new DateTime(TimeSpan.FromMinutes(((index + 1) * DIV_MAJOR_STEP) * 30).Ticks).ToString("HH:mm"));
                 //else
                 //    return string.Empty;
+            }
+
+            private Color ColorChart
+            {
+                get
+                {
+                    Color clrRes = Color.Empty
+                        , clrNotReq = Color.Empty;
+
+                    getColorZEDGraph (out clrRes, out clrNotReq);
+
+                    return clrRes;
+                }
+            }
+
+            private void getColorZEDGraph (out Color colorChart, out Color colValue)
+            {
+                getColorZEDGraph (Tag == null ? CONN_SETT_TYPE.DATA_AISKUE : (CONN_SETT_TYPE)Tag, out colorChart, out colValue);
             }
 
             private void getColorZEDGraph (CONN_SETT_TYPE type, out Color colorChart, out Color colValue)
@@ -140,6 +162,23 @@ namespace Statistic
                 colorChart = FormMain.formGraphicsSettings.COLOR (indxBackGround);
                 colValue = FormMain.formGraphicsSettings.COLOR (indxChart);
             }
+
+            public override Color BackColor
+            {
+                get
+                {
+                    return base.BackColor;
+                }
+
+                set
+                {
+                    base.BackColor = value;
+
+                    GraphPane.Chart.Fill = new ZedGraph.Fill (ColorChart);
+                    GraphPane.Fill = new ZedGraph.Fill (BackColor == SystemColors.Control ? SystemColors.Window : BackColor);
+                }
+            }
+
             /// <summary>
             /// Обновить содержание в графической субобласти "сутки по-часам"
             /// </summary>

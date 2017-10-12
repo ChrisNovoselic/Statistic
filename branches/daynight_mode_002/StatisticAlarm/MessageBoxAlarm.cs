@@ -12,6 +12,9 @@ using StatisticCommon;
 
 namespace StatisticAlarm
 {
+    /// <summary>
+    /// Класс для окна с сообщением о событии сигнализации
+    /// </summary>
     public class MessageBoxAlarmEvent
     {
         private Queue<AlarmNotifyEventArgs> _queueArgs;

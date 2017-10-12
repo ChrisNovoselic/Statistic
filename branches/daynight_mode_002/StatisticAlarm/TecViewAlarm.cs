@@ -12,6 +12,9 @@ using StatisticCommon;
 
 namespace StatisticAlarm
 {
+    /// <summary>
+    /// Класс объект для обращения к данным
+    /// </summary>
     public class TecViewAlarm : StatisticCommon.TecView
     {
         /// <summary>

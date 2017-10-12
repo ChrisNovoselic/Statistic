@@ -69,7 +69,7 @@ namespace StatisticCommon
             Columns[col].SortMode = System.Windows.Forms.DataGridViewColumnSortMode.NotSortable;
             Columns [col].DefaultCellStyle.BackColor = SystemColors.Control;
 
-            BackColor = SystemColors.Window;
+            //BackColor = s_dgvCellStyles[(int)INDEX_CELL_STYLE.COMMON].BackColor;
         }
 
         public void DataGridViewAdminNSS_CellValueChanged(object sender, DataGridViewCellEventArgs e)

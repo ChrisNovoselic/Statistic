@@ -86,7 +86,14 @@ namespace Statistic
 
         //protected DataGridViewTables (int [] arWidthColiumns) {
         protected HDataGridViewBase(HDateTime.INTERVAL interval, ColumnProperies[] arColuumns, bool bIsItogo)
-            : base (new Color [] { SystemColors.Window, Color.Yellow, FormMain.formGraphicsSettings.COLOR (FormGraphicsSettings.INDEX_COLOR.DIVIATION) }, bIsItogo)
+            : base (new Color [] { FormMain.formGraphicsSettings.m_colorShema == FormGraphicsSettings.ColorShemas.System    // если текущая схема системная
+                    ? DarkColorTable._System                                                                                // , то установить цвет системной палитры
+                        : FormMain.formGraphicsSettings.m_colorShema == FormGraphicsSettings.ColorShemas.Custom             // , если текущая схема пользовательская
+                            ? DarkColorTable._Custom                                                                        // , то установить цвет пользователя
+                                : DarkColorTable._System                                                                    // , иначе установить цвет системной палитры
+                    , Color.Yellow
+                    , FormMain.formGraphicsSettings.COLOR (FormGraphicsSettings.INDEX_COLOR.DIVIATION) }
+                , bIsItogo)
         {
             m_IdInterval = interval;
 

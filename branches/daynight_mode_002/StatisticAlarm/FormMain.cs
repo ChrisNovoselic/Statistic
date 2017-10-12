@@ -64,15 +64,17 @@ namespace StatisticAlarm
 
 
             /// <summary>
-            /// обработка "своих" команд
+            /// Обработка "своих" команд
             /// </summary>
-            /// <param name="command"></param>
             private void RunCmd()
             {
                 s_bMinimize = (m_dictCmdArgs.ContainsKey("minimize") == true); //|| (param.Equals (strArgMinimize) == true);
             }
         }
-        // Перехват нажатия на кнопку свернуть
+        /// <summary>
+        /// Перехват нажатия на кнопку свернуть
+        /// </summary>
+        /// <param name="m">Событие Eindows</param>
         protected override void WndProc(ref Message m)
         {
             if (m.Msg == 0x112)

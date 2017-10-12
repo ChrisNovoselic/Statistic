@@ -136,7 +136,7 @@ namespace Statistic
                 this.MultiSelect = false;
                 this.RowHeadersWidth = 250;
 
-                BackColor = SystemColors.Window;
+                BackColor = HDataGridViewTables.s_dgvCellStyles[(int)HDataGridViewTables.INDEX_CELL_STYLE.COMMON].BackColor;
             }
 
             public DataGridView_Prop ()

@@ -3,6 +3,7 @@ using System.Collections.Generic;
 using System.ComponentModel;
 using System.Data.Common;
 using System.Diagnostics;
+using System.Drawing;
 using System.Linq;
 using System.Text;
 //using System.Data;
@@ -63,12 +64,14 @@ namespace StatisticAlarm
 
         //    DbSources.Sources().UnRegister(iListenerId);
         //}
-        
-            /// <summary>
+
+        /// <summary>
         /// Конструктор - основной (с параметрами)
         /// </summary>
+        /// <param name="iListenerConfigDB">Идентификатор установленного соединения с БД</param>
+        /// <param name="markQueries">Массив признаков кстановления связи с тем или иным источником данных</param>
         /// <param name="mode">Режим работы панели</param>
-        public PanelAlarm(int iListenerConfigDB, HMark markQueries, MODE mode)
+        public PanelAlarm (int iListenerConfigDB, HMark markQueries, MODE mode)
             : base(MODE_UPDATE_VALUES.AUTO)
         {
             //Инициализация собственных значений
@@ -79,8 +82,10 @@ namespace StatisticAlarm
         /// Конструктор - дополнительный (с параметрами)
         /// </summary>
         /// <param name="container">См. документацию на 'Control'</param>
+        /// <param name="iListenerConfigDB">Идентификатор установленного соединения с БД</param>
+        /// <param name="markQueries">Массив признаков кстановления связи с тем или иным источником данных</param>
         /// <param name="mode">Режим работы панели</param>
-        public PanelAlarm(IContainer container, int iListenerConfigDB, HMark markQueries, MODE mode)
+        public PanelAlarm (IContainer container, int iListenerConfigDB, HMark markQueries, MODE mode)
             : base (MODE_UPDATE_VALUES.AUTO)
         {
             container.Add(this);
@@ -91,6 +96,8 @@ namespace StatisticAlarm
         /// <summary>
         /// Инициализация собственных параметров
         /// </summary>
+        /// <param name="iListenerConfigDB">Идентификатор установленного соединения с БД</param>
+        /// <param name="markQueries">Массив признаков кстановления связи с тем или иным источником данных</param>
         /// <param name="mode">Режим работы панели</param>
         private int initialize(int iListenerConfigDB, HMark markQueries, MODE mode)
         {
@@ -499,8 +506,8 @@ namespace StatisticAlarm
         /// <summary>
         /// Обработчик события - выбор элемента в списке компонентов ТЭЦ
         /// </summary>
-        /// <param name="obj"></param>
-        /// <param name="ev"></param>
+        /// <param name="obj">Объект, инициировавший событие (CheckListBox)</param>
+        /// <param name="ev">Аргумент события</param>
         private void fTECComponent_OnSelectedIndexChanged(object obj, EventArgs ev)
         {
             //Получить объект со значением коэфициента для выбранного компонента ТЭЦ
@@ -638,16 +645,50 @@ namespace StatisticAlarm
             (find(INDEX_CONTROL.DGV_DETAIL) as DataGridView).Rows.Clear();
         }
 
+        /// <summary>
+        /// Применить изменения графического оформления
+        /// </summary>
+        /// <param name="type">Тип изменений графического оформления</param>
         public override void UpdateGraphicsCurrent (int type)
         {
-            //(find(INDEX_CONTROL.DGV_EVENTS) as DataGridViewAlarmJournal).
-            throw new Exception (string.Format("PanelAlarm::UpdateGraphicsCurrent (type={0}) - метод не реализован...", type));
+            //??? ничего не делать
         }
 
-        public enum INDEX_FILTER : uint { NOT, DATETIME_REGISTRED, ID, ALL }
+        public override Color BackColor
+        {
+            get
+            {
+                return base.BackColor;
+            }
+
+            set
+            {
+                base.BackColor = value;
+
+                find (INDEX_CONTROL.CLB_TECCOMPONENT).BackColor = BackColor;
+            }
+        }
+
+        /// <summary>
+        /// Тип фильтра(ограничений)
+        /// </summary>
+        public enum INDEX_FILTER : uint {
+            /// <summary>
+            /// Ограничения не устновлены
+            /// </summary>
+            NOT
+            /// <summary>
+            /// Ограничения по метке даты/времени регистрации события
+            /// </summary>
+            , DATETIME_REGISTRED
+            /// <summary>
+            /// Ограничения по идентификатору компоненту ТЭЦ
+            /// </summary>
+            , ID
+                , ALL }
         
         /// <summary>
-        /// Класс для описания фильтра
+        /// Класс для описания фильтра(ограничений) выбранных компонентов ТЭЦ
         /// </summary>
         private class Filter
         {
@@ -734,6 +775,8 @@ namespace StatisticAlarm
                 this.SelectionMode = DataGridViewSelectionMode.FullRowSelect;
                 this.RowHeadersVisible = false; //Отменить отображение заголовков для строк
                 this.ReadOnly = true; //Установить режим - 'только чтение'
+
+                BackColor = HDataGridViewTables.s_dgvCellStyles[(int)HDataGridViewTables.INDEX_CELL_STYLE.COMMON].BackColor;
             }
             
             /// <summary>
@@ -811,6 +854,27 @@ namespace StatisticAlarm
                 }
 
                 return iRes;
+            }
+
+            public override Color BackColor
+            {
+                get
+                {
+                    return base.BackColor;
+                }
+
+                set
+                {
+                    base.BackColor = value;
+
+                    for (int j = 0; j < ColumnCount; j++)
+                        for (int i = 0; i < RowCount; i++) {
+                            if (Columns [j].GetType ().Name.Contains ("button") == false)
+                                Rows [i].Cells [j].Style.BackColor = BackColor;
+                            else
+                                ;
+                        }
+                }
             }
         }
         
@@ -995,6 +1059,7 @@ namespace StatisticAlarm
                     (Rows[indxRow].Cells[this.Columns.Count - 1] as DataGridViewDisableButtonCell).Enabled = isRecEnabled((listView as List<ViewAlarmJournal>).IndexOf(r));
 
                     Rows[indxRow].Visible = m_filter.isVisibled (r);
+                    Rows [indxRow].DefaultCellStyle.BackColor = BackColor;
                 }
 
                 this.SelectionChanged += new EventHandler(onSelectionChanged);
@@ -1343,6 +1408,7 @@ namespace StatisticAlarm
                     });
 
                     Rows[indxRow].Visible = m_filter.isVisibled (r);
+                    Rows [indxRow].DefaultCellStyle.BackColor = BackColor;
                 }
 
                 indxRow = indexOfIdRec ((int)iINDEX_COLUMN.ID_REC, lPrevIdRecSelected);
@@ -1419,7 +1485,7 @@ namespace StatisticAlarm
         /// <summary>
         /// Обработчик события ответа от главной формы
         /// </summary>
-        /// <param name="obj">Объект класса 'EventArgsDataHost' с идентификатором/данными из главной формы</param>
+        /// <param name="res">Объект класса 'EventArgsDataHost' с идентификатором/данными из главной формы</param>
         public void OnEvtDataRecievedHost(object res)
         {
             EventArgsDataHost ev = res as EventArgsDataHost;

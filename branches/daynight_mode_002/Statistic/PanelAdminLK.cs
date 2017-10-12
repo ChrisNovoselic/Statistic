@@ -542,7 +542,7 @@ namespace Statistic {
                 this.Dock = DockStyle.Fill;
 
                 this.Columns [INDEX_COLUMN_BUTTON_TO_ALL].DefaultCellStyle.BackColor = SystemColors.Control;
-                this.BackColor = SystemColors.Window;
+                //this.BackColor = SystemColors.Window;
 
                 this.CellValueChanged += new DataGridViewCellEventHandler (DataGridViewAdminLK_CellValueChanged);
 

@@ -68,6 +68,7 @@ namespace Statistic
                 AutoSizeColumnsMode = /*DataGridViewAutoSizeColumnsMode.ColumnHeader |*/ DataGridViewAutoSizeColumnsMode.AllCells;
                 SelectionMode = DataGridViewSelectionMode.FullColumnSelect;
             }
+
             /// <summary>
             /// Действие со столбцом: при наличии - удалить, при отсутствии - добавить
             /// </summary>
@@ -94,6 +95,7 @@ namespace Statistic
 
                 return bRes;
             }
+
             /// <summary>
             /// Заполнить значениями один из столбцов по указанному индексу
             /// </summary>
@@ -114,6 +116,7 @@ namespace Statistic
                 else
                     Logging.Logg().Error(string.Format(@"PanelSOTIASSODay.HDataGridView::fill (iColumn={0}) - номер столбца для значений не корректен...", iColumn), Logging.INDEX_MESSAGE.NOT_SET);
             }
+
             /// <summary>
             /// Заполнить значениями один(всегда крайний) из столбцов
             /// </summary>
@@ -122,6 +125,7 @@ namespace Statistic
             {
                 fill(ColumnCount - 1, values);
             }
+
             ///// <summary>
             ///// Заполнить значениями один из столбцов: поиск по индексу
             ///// </summary>
@@ -139,6 +143,7 @@ namespace Statistic
             //{
             //    fill(Columns.Cast<DataGridViewColumn>().FirstOrDefault(col => { return false; }).Index, values);
             //}
+
             /// <summary>
             /// Очистить элемент (удалить столбцы
             ///  , за исключением 1-го, служебного, невидимого, чтобы сохранить строки и их идентификаторы - tag-и)
@@ -148,6 +153,7 @@ namespace Statistic
                 while (ColumnCount > 1) // т.к. необходимо оставить "Unknown", чтобы сохранить строки и их tag-и
                     Columns.RemoveAt(ColumnCount - 1);
             }
+
             /// <summary>
             /// Извлечь данные для экспорта
             /// </summary>
@@ -194,6 +200,23 @@ namespace Statistic
                     ;
 
                 return tableRes;
+            }
+
+            public override Color BackColor
+            {
+                get
+                {
+                    return base.BackColor;
+                }
+
+                set
+                {
+                    base.BackColor = value;
+
+                    for (int j = 0; j < ColumnCount; j++)
+                        //for (int i = 0; i < RowCount; i++)
+                            Columns[j].DefaultCellStyle.BackColor = BackColor;
+                }
             }
         }
     }

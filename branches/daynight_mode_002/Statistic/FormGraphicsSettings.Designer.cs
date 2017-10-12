@@ -70,8 +70,7 @@ namespace Statistic
             // Создание массива лейблов  (УДГэ,Отклонение и т.д.)
             this.m_arlblColor = new System.Windows.Forms.Label [(int)INDEX_COLOR.COUNT_INDEX_COLOR];
             this.gbxColorShema = new System.Windows.Forms.GroupBox ();
-            //this.m_arRbtnColorShema = new System.Windows.Forms.RadioButton []
-            //{
+            //this.m_arRbtnColorShema = new System.Windows.Forms.RadioButton [] {
             //    new System.Windows.Forms.RadioButton()
             //    , new System.Windows.Forms.RadioButton()
             //};
@@ -82,16 +81,14 @@ namespace Statistic
             // Создание CheckBox (флажка)
             this.cbxScale = new System.Windows.Forms.CheckBox ();
             // Создание RadioButton (переключатель:гистограмма, линейный)      
-            this.m_arRbtnTypeGraph = new System.Windows.Forms.RadioButton []
-            {
+            this.m_arRbtnTypeGraph = new System.Windows.Forms.RadioButton [] {
                 new System.Windows.Forms.RadioButton()
                 , new System.Windows.Forms.RadioButton()
             };
             // Создание GroupBox (ящик: типы значений графиков)      
             this.gbxSourceData = new System.Windows.Forms.GroupBox ();
             // Создание массива переключателей "Типы значений графиков"
-            this.m_arRbtnSourceData = new System.Windows.Forms.RadioButton []
-            {    
+            this.m_arRbtnSourceData = new System.Windows.Forms.RadioButton [] {    
                 new System.Windows.Forms.RadioButton()
                 , new System.Windows.Forms.RadioButton()
                 , new System.Windows.Forms.RadioButton()
@@ -205,7 +202,7 @@ namespace Statistic
             this.m_labelColorShema.BackColor = DarkColorTable._Custom;
             this.m_labelColorShema.Enabled = false;
             // Обработка события "двойной щелчок" - изменение цвета "темной" схемы
-            this.m_labelColorShema.DoubleClick += new System.EventHandler (lbl_color_Click);
+            this.m_labelColorShema.Click += new System.EventHandler (lbl_color_Click);
             this.m_labelColorShema.BackColorChanged += new System.EventHandler (labelColorShema_BackColorChanged);
             #endregion
 
@@ -398,7 +395,7 @@ namespace Statistic
             this.ShowInTaskbar = false;
             // Центрировать форму при запуске
             this.StartPosition = System.Windows.Forms.FormStartPosition.CenterParent;
-            this.Text = "Настройки графиков";
+            this.Text = "Настройки графического оформления";
             this.FormClosing += new System.Windows.Forms.FormClosingEventHandler(this.GraphicsSettings_FormClosing);
             // Метод ResumeLayout возобновляет работу менеджера выравнивания 
             this.gbxColorShema.ResumeLayout (false);
