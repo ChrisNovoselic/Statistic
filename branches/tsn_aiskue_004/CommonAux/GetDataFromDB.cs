@@ -30,14 +30,10 @@ namespace CommonAux
         /// Строка, содержащая наименование таблицы в БД, хранящей перечень каналов
         /// </summary>
         public static string DB_TABLE = @"[ID_TSN_ASKUE_2017]";
-        /// <summary>
-        /// Строка, содержащая наименование таблицы в БД, хранящей путь к шаблону excel
-        /// </summary>
-        public static string DB_TABLE_SETUP = @"[setup]";
-        /// <summary>
-        /// Объект, содержащий id записи в таблице, содержащей настройки подключения
-        /// </summary>
-        public static int ID_AIISKUE_CONSETT = 7001;
+        ///// <summary>
+        ///// Объект, содержащий id записи в таблице, содержащей настройки подключения
+        ///// </summary>
+        //public static int ID_AIISKUE_CONSETT = 7001;
         /// <summary>
         /// Объект, содержащий путь к шаблону excel
         /// </summary>
@@ -120,12 +116,13 @@ namespace CommonAux
         /// Возвратить объект с параметрами соединения
         /// </summary>
         /// <param name="iListenerId">Ссылка на объект с установленным соединением с БД</param>
+        /// <param name="id_ext"></param>
         /// <param name="err">Идентификатор ошибки при выполнении запроса</param>
         /// <returns>Объект с параметрами соединения</returns>
-        public ConnectionSettings GetConnSettAIISKUECentre(ref int iListenerId, out int err)
+        public ConnectionSettings GetConnSettAIISKUECentre(ref int iListenerId, int id_ext, out int err)
         {
             DataTable dataTableRes = new DataTable();
-            dataTableRes = InitTEC_200.getConnSettingsOfIdSource(iListenerId, ID_AIISKUE_CONSETT, -1, out err);
+            dataTableRes = InitTEC_200.getConnSettingsOfIdSource(iListenerId, id_ext, -1, out err);
 
             ConnectionSettings connSettRes = new ConnectionSettings(dataTableRes.Rows[dataTableRes.Rows.Count - 1], -1);
 

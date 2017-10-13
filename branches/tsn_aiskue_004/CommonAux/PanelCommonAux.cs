@@ -159,7 +159,7 @@ namespace CommonAux
         /// <summary>
         /// Объект с параметрами соединения с источником данных
         /// </summary>
-        protected ConnectionSettings m_connSettAIISKUECentre;
+        protected List<ConnectionSettings> m_connSettAIISKUECentre;
         /// <summary>
         /// Список ТЭЦ с параметрами из файла конфигурации
         /// </summary>
@@ -307,6 +307,7 @@ namespace CommonAux
         public PanelCommonAux(string pathTemplate)
         {
             m_GetDataFromDB = new GetDataFromDB();
+            m_connSettAIISKUECentre = new List<ConnectionSettings>();
 
             InitializeComponents();
 
@@ -371,10 +372,10 @@ namespace CommonAux
                 foreach (TEC_LOCAL t in m_listTEC)
                 {
                     t.InitSensors();
+                    //Получить параметры соединения с источником данных
+                    m_connSettAIISKUECentre.Add(m_GetDataFromDB.GetConnSettAIISKUECentre(ref _iListenerId, t.m_IdSource, out err));
                 }
 
-                //Получить параметры соединения с источником данных
-                m_connSettAIISKUECentre = m_GetDataFromDB.GetConnSettAIISKUECentre(ref _iListenerId, out err);
                 m_listBoxTEC.SelectedIndex = 0;
             }
 
@@ -427,7 +428,7 @@ namespace CommonAux
 
                 tec_local.m_Id = tec[i].m_id;
                 tec_local.m_strNameShr = tec[i].name_shr;
-
+                tec_local.m_IdSource = Convert.ToInt32(tec[i].GetAddingParameter(TEC.ADDING_PARAM_KEY.ID_SOURCE_AISKUE_TSN));
                 List<int> list_column = new List<int>();
 
                 foreach (string s in tec[i].GetAddingParameter(TEC.ADDING_PARAM_KEY.COLUMN_TSN_EXCEL).ToString().Split(','))
@@ -930,7 +931,7 @@ namespace CommonAux
             //delegateStartWait();
 
             //Установить соединение с источником данных
-            iListenerId = DbSources.Sources().Register(m_connSettAIISKUECentre, false, @"");
+            iListenerId = DbSources.Sources().Register(m_connSettAIISKUECentre[m_listBoxTEC.SelectedIndex], false, @"");
             if (!(iListenerId < 0))
             {
                 Logging.Logg().Action(msg, Logging.INDEX_MESSAGE.NOT_SET);

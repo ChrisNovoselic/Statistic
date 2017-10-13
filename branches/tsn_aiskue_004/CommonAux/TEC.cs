@@ -506,6 +506,10 @@ namespace CommonAux
         /// </summary>
         public int m_Id;
         /// <summary>
+        /// Целочисленный идентификатор источника данных ТЭЦ
+        /// </summary>
+        public int m_IdSource;
+        /// <summary>
         /// Строка - краткое наименование ТЭЦ
         /// </summary>
         public string m_strNameShr;

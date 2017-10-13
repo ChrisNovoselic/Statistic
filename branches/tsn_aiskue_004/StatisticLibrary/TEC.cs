@@ -464,6 +464,7 @@ namespace StatisticCommon
             , PREFIX_VZLETDATA
             , PATH_RDG_EXCEL
             , COLUMN_TSN_EXCEL
+            , ID_SOURCE_AISKUE_TSN
             //, TEMPLATE_NAME_SGN_DATA_TM
             //, TEMPLATE_NAME_SGN_DATA_FACT
         }
