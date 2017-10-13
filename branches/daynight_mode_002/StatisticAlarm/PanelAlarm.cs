@@ -666,7 +666,14 @@ namespace StatisticAlarm
             {
                 base.BackColor = value;
 
-                find (INDEX_CONTROL.CLB_TECCOMPONENT).BackColor = BackColor;
+                Control clbTECComponent;
+
+                clbTECComponent = find (INDEX_CONTROL.CLB_TECCOMPONENT);
+
+                if (Equals (clbTECComponent, null) == false)
+                    clbTECComponent.BackColor = BackColor;
+                else
+                    ;
             }
         }
 

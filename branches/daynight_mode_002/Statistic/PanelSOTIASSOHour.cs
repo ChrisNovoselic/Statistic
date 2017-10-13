@@ -2289,10 +2289,17 @@ namespace Statistic
             set
             {
                 base.BackColor = value;
-                m_panelManagement.BackColor = BackColor;                
+
+                if (Equals (m_panelManagement, null) == false)
+                    m_panelManagement.BackColor = BackColor;
+                else
+                    ;
 
                 // событие для панели управления ('PanelManagement') для табличной интерпретации значений
-                EvtValuesSecs (m_tecView.m_dictValuesLowPointDev);
+                if (Equals (m_tecView, null) == false)
+                    EvtValuesSecs (m_tecView.m_dictValuesLowPointDev);
+                else
+                    ;
             }
         }            
     }

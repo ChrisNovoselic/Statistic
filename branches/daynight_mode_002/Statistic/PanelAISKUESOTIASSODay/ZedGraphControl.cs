@@ -174,8 +174,11 @@ namespace Statistic
                 {
                     base.BackColor = value;
 
-                    GraphPane.Chart.Fill = new ZedGraph.Fill (ColorChart);
-                    GraphPane.Fill = new ZedGraph.Fill (BackColor == SystemColors.Control ? SystemColors.Window : BackColor);
+                    if (Equals (GraphPane, null) == false) {
+                        GraphPane.Chart.Fill = new ZedGraph.Fill (ColorChart);
+                        GraphPane.Fill = new ZedGraph.Fill (BackColor == SystemColors.Control ? SystemColors.Window : BackColor);
+                    } else
+                        ;
                 }
             }
 

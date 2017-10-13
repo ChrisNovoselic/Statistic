@@ -2064,7 +2064,10 @@ namespace StatisticAnalyzer
                             dgv.Rows [i].Cells [j].Style.BackColor = value == SystemColors.Control ? SystemColors.Window : value;
                 });
 
-                listTabVisible.BackColor = value == SystemColors.Control ? SystemColors.Window : value;
+                if (Equals (listTabVisible, null) == false)
+                    listTabVisible.BackColor = value == SystemColors.Control ? SystemColors.Window : value;
+                else
+                    ;
             }
         }
 

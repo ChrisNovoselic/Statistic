@@ -688,7 +688,10 @@ namespace Statistic
             {
                 base.BackColor = value;
 
-                treeView_TECComponent.BackColor = value == SystemColors.Control ? SystemColors.Window : value;
+                if (Equals (treeView_TECComponent, false) == false)
+                    treeView_TECComponent.BackColor = value == SystemColors.Control ? SystemColors.Window : value;
+                else
+                    ;
             }
         }
 

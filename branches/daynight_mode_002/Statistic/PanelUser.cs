@@ -1585,15 +1585,24 @@ namespace Statistic
 
                 Color backColor = value == SystemColors.Control ? SystemColors.Window : value;
 
-                treeView_Users.BackColor = backColor;
+                if (Equals (treeView_Users, null) == false)
+                    treeView_Users.BackColor = backColor;
+                else
+                    ;
 
-                for (int j = 0; j < dgvProfile.ColumnCount; j++)
-                    for (int i = 0; i < dgvProfile.RowCount; i++)
-                        dgvProfile.Rows [i].Cells[j].Style.BackColor = backColor;
+                if (Equals (dgvProfile, null) == false)
+                    for (int j = 0; j < dgvProfile.ColumnCount; j++)
+                        for (int i = 0; i < dgvProfile.RowCount; i++)
+                            dgvProfile.Rows [i].Cells [j].Style.BackColor = backColor;
+                else
+                    ;
 
-                for (int j = 0; j < dgvProp.ColumnCount; j++)
-                    for (int i = 0; i < dgvProp.RowCount; i++)
-                        dgvProp.Rows [i].Cells [j].Style.BackColor = backColor;
+                if (Equals (dgvProp, null) == false)
+                    for (int j = 0; j < dgvProp.ColumnCount; j++)
+                        for (int i = 0; i < dgvProp.RowCount; i++)
+                            dgvProp.Rows [i].Cells [j].Style.BackColor = backColor;
+                else
+                    ;
             }
         }
     }
