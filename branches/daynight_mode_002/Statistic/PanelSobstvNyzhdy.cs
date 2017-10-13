@@ -87,7 +87,7 @@ namespace Statistic
         /// </summary>
         /// <param name="listTec">Лист ТЭЦ</param>
         public PanelSobstvNyzhdy(List<StatisticCommon.TEC> listTec)
-            : base(MODE_UPDATE_VALUES.AUTO, typeof(PanelTecSobstvNyzhdy))
+            : base(MODE_UPDATE_VALUES.AUTO, FormMain.formGraphicsSettings.BackgroundColor, typeof(PanelTecSobstvNyzhdy))
         {
             InitializeComponent();
 
@@ -248,11 +248,11 @@ namespace Statistic
             StatisticCommon.HZedGraphControl m_zedGraphHours;
 
             /// <summary>
-            /// Коструктор-основной
+            /// Коструктор - основной (с аргументом)
             /// </summary>
-            /// <param name="tec">Лист ТЭЦ</param>
+            /// <param name="tec">Список с объектами ТЭЦ</param>
             public PanelTecSobstvNyzhdy(StatisticCommon.TEC tec)
-                : base (MODE_UPDATE_VALUES.AUTO, -1, -1)
+                : base (MODE_UPDATE_VALUES.AUTO, FormMain.formGraphicsSettings.BackgroundColor, -1, -1)
             {
                 m_tecView = new TecViewSobstvNyzhdy();
 

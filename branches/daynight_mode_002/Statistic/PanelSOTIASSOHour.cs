@@ -215,7 +215,7 @@ namespace Statistic
         /// Конструктор - основной (без параметров)
         /// </summary>
         public PanelSOTIASSOHour(List<StatisticCommon.TEC> listTec)
-            : base(MODE_UPDATE_VALUES.AUTO)
+            : base(MODE_UPDATE_VALUES.AUTO, FormMain.formGraphicsSettings.BackgroundColor)
         {
             //m_listTEC = listTec;
             // фильтр ТЭЦ-ЛК
@@ -892,7 +892,9 @@ namespace Statistic
                 this.IsEnableVZoom = false;
                 this.IsShowPointValues = true;
 
-                this.BackColor = SystemColors.Window; // SystemColors.Window
+                BackColor = FormMain.formGraphicsSettings.BackgroundColor == SystemColors.Control
+                    ? SystemColors.Window
+                        : FormMain.formGraphicsSettings.BackgroundColor;
 
                 this.PointValueEvent += new ZedGraph.ZedGraphControl.PointValueHandler(this.onPointValueEvent);
                 this.DoubleClickEvent += new ZedGraph.ZedGraphControl.ZedMouseEventHandler(this.onDoubleClickEvent);

@@ -68,7 +68,7 @@ namespace Statistic
         /// </summary>
         /// <param name="listTec">Лист ТЭЦ</param>
         public PanelVzletTDirect(List<TEC> listTec)
-            : base(MODE_UPDATE_VALUES.AUTO, typeof(PanelTecVzletTDirect))
+            : base(MODE_UPDATE_VALUES.AUTO, FormMain.formGraphicsSettings.BackgroundColor, typeof(PanelTecVzletTDirect))
         {
             InitializeComponent();
 
@@ -697,8 +697,8 @@ namespace Statistic
             {
                 private enum INDEX_VALUE {  }
                 
-                public PanelQuickDataVzletTDirect()
-                    : base(/*-1, -1*/)
+                public PanelQuickDataVzletTDirect(Color backColor)
+                    : base(backColor)
                 {
                     InitializeComponents();
                 }
@@ -2113,7 +2113,7 @@ namespace Statistic
             /// </summary>
             protected override void createPanelQuickData()
             {
-                _pnlQuickData = new PanelQuickDataVzletTDirect();
+                _pnlQuickData = new PanelQuickDataVzletTDirect(FormMain.formGraphicsSettings.BackgroundColor);
             }
             /// <summary>
             /// Создать таблицу-представление для отображения значений в разрезе "сутки - час"

@@ -198,8 +198,8 @@ namespace Statistic
             this.m_labelColorShema.Text = "Пользователь";
             this.m_labelColorShema.TextAlign = ContentAlignment.MiddleLeft;
             this.m_labelColorShema.BorderStyle = System.Windows.Forms.BorderStyle.FixedSingle;
-            this.m_labelColorShema.ForeColor = getForeColor (DarkColorTable._Custom);
-            this.m_labelColorShema.BackColor = DarkColorTable._Custom;
+            this.m_labelColorShema.ForeColor = getForeColor (CustomColorTable.BackColor);
+            this.m_labelColorShema.BackColor = CustomColorTable.BackColor;
             this.m_labelColorShema.Enabled = false;
             // Обработка события "двойной щелчок" - изменение цвета "темной" схемы
             this.m_labelColorShema.Click += new System.EventHandler (lbl_color_Click);
@@ -412,7 +412,7 @@ namespace Statistic
 
         private void labelColorShema_BackColorChanged (object sender, System.EventArgs e)
         {
-            DarkColorTable._Custom = (sender as System.Windows.Forms.Control).BackColor;            
+            CustomColorTable.BackColor = (sender as System.Windows.Forms.Control).BackColor;            
 
             //if (m_cbUseSystemColors.Checked == false)
             // доступна только при выключенной системной схеме

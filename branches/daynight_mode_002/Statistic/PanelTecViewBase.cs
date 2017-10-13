@@ -297,7 +297,9 @@ namespace Statistic
                 this.IsEnableVZoom = false;
                 this.IsShowPointValues = true;
 
-                BackColor = SystemColors.Window; // SystemColors.Window
+                BackColor = FormMain.formGraphicsSettings.BackgroundColor == SystemColors.Control
+                    ? SystemColors.Window
+                        : FormMain.formGraphicsSettings.BackgroundColor;
 
                 initializeContextMenuItemStandardEventHandler ();
 
@@ -631,7 +633,7 @@ namespace Statistic
         protected abstract void createPanelQuickData();
 
         public PanelTecViewBase(/*TecView.TYPE_PANEL type, */TEC tec, int indx_tec, int indx_comp, HMark markQueries)
-            : base (MODE_UPDATE_VALUES.AUTO)
+            : base (MODE_UPDATE_VALUES.AUTO, FormMain.formGraphicsSettings.BackgroundColor)
         {
             //InitializeComponent();
 
@@ -1034,6 +1036,7 @@ namespace Statistic
 
             //Logging.Logg().Debug(@"PanelTecViewBase::FillGridHours () - ...");
         }
+        
         /// <summary>
         /// Иницировать запрос данных с выбранной датой (в ходе запроса отобразить окно длительного выполнения операции)
         /// </summary>
@@ -1059,6 +1062,7 @@ namespace Statistic
             //delegateStopWait ();
             if (!(delegateStopWait == null)) delegateStopWait(); else ;
         }
+        
         /// <summary>
         /// Обработчик события - изменение даты на календаре на панели оперативной информации
         /// </summary>
@@ -1097,6 +1101,7 @@ namespace Statistic
             else
                 Logging.Logg().Error(@"PanelTecViewBase::setNowDate () - ... BeginInvoke (SetNowDate) - ...", Logging.INDEX_MESSAGE.D_001);
         }
+
         /// <summary>
         /// Установить выбранную дату равной текущей дате
         /// </summary>
@@ -1118,6 +1123,7 @@ namespace Statistic
                 NewDateRefresh();
             }
         }
+
         /// <summary>
         /// Обработчик события - нажать кнопку "Текущий час"
         /// </summary>
@@ -1128,6 +1134,7 @@ namespace Statistic
             m_tecView.currHour = true;
             NewDateRefresh();
         }
+        
         /// <summary>
         /// Обработчик события - отпустить нажатую ранее левую кнопку "мыши"
         ///  выбор интервала (часа/минуты) на гистограмме
@@ -1337,6 +1344,7 @@ namespace Statistic
         }
 
         protected abstract HMark enabledSourceData_ToolStripMenuItems();        
+        
         /// <summary>
         /// Обновление компонентов вкладки с проверкой изменения источника данных
         /// </summary>
@@ -1382,6 +1390,24 @@ namespace Statistic
                         updateGraphicsRetro(markChanged);
                     }
                 }
+            }
+        }
+
+        public override Color BackColor
+        {
+            get
+            {
+                return base.BackColor;
+            }
+
+            set
+            {
+                base.BackColor = value;
+
+                if (Equals (_pnlQuickData, null) == false)
+                    _pnlQuickData.BackColor = BackColor;
+                else
+                    ;
             }
         }
 

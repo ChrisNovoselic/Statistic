@@ -165,7 +165,8 @@ namespace StatisticAlarm
                         //Создать "рабочую" панель
                         m_panelAlarm = new PanelAlarm(idListenerConfigDB
                             , new HMark(new int [] {(int)CONN_SETT_TYPE.ADMIN, (int)CONN_SETT_TYPE.PBR, (int)CONN_SETT_TYPE.DATA_AISKUE, (int)CONN_SETT_TYPE.DATA_SOTIASSO})
-                            , MODE.SERVICE);
+                            , MODE.SERVICE
+                            , SystemColors.Control);
                         _panelMain.Controls.Add(m_panelAlarm);
 
                         m_formAlarmEvent = new MessageBoxAlarmEvent (this);

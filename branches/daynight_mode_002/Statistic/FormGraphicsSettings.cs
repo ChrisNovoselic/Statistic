@@ -112,20 +112,31 @@ namespace Statistic
         #endregion
 
         /// <summary>
+        /// Текущий установленный цвет фона
+        /// </summary>
+        public Color BackgroundColor
+        {
+            get
+            {
+                return m_colorShema == ColorShemas.Custom
+                    ? m_labelColorShema.BackColor
+                        : m_colorShema == ColorShemas.System
+                            ? SystemColors.Control
+                                : SystemColors.Control;
+            }
+        }
+        /// <summary>
         /// Открытое поле m_connSettType_SourceData (источник данных) типа StatisticCommon.CONN_SETT_TYPE
         /// </summary>
         public StatisticCommon.CONN_SETT_TYPE m_connSettType_SourceData;
-
         /// <summary>
         /// ?? обновить активные настройки (поле, а слово делегат)
         /// </summary>
         private DelegateIntFunc delegateUpdateActiveGui;
-
         /// <summary>
         /// ??закрыть окно настроек графиков (поле, а слово делегат)
         /// </summary>
         private DelegateFunc delegateHideGraphicsSettings;
-
         /// <summary>
         /// Закрытое поле m_formMain типа FormMain. Зачем оно?
         /// </summary>
@@ -207,7 +218,7 @@ namespace Statistic
                     case INDEX_COLOR.BG_ASKUE:
                     case INDEX_COLOR.BG_SOTIASSO:
                     case INDEX_COLOR.BG_ASKUTE:
-                        colorRes = DarkColorTable._Custom;
+                        colorRes = m_labelColorShema.BackColor;
                         break;
                     default:
                         colorRes = m_arlblColor [(int)indx].BackColor;
@@ -379,17 +390,15 @@ namespace Statistic
         #endregion
     }
 
-    public class DarkColorTable : ProfessionalColorTable
+    public class CustomColorTable : ProfessionalColorTable
     {
-        public DarkColorTable (Color colorSystem, string colorCustom)
+        public CustomColorTable (string colorCustom)
         {
             int [] rgb;
 
-            _System = colorSystem;
-
             try {
                 rgb = Array.ConvertAll<string, int> (colorCustom.Split (','), Convert.ToInt32);                
-                _custom = Color.FromArgb (rgb [0], rgb [1], rgb [2]);
+                BackColor = Color.FromArgb (rgb [0], rgb [1], rgb [2]);
             } catch (Exception e) {
                 Logging.Logg ().Exception (e, string.Format ("DarkColorTable::ctor () - ..."), Logging.INDEX_MESSAGE.NOT_SET);
             }
@@ -397,20 +406,11 @@ namespace Statistic
             //UseSystemColors = true;
         }
 
-        public static Color _System = Color.Empty;
-
-        private static Color _custom;
-
-        public static Color _Custom
-        {// Color.FromArgb (255, 112, 128, 144);  // Color.SlateGray;
-            get { return _custom; }
-
-            set { _custom = value; }
-        }
+        public static Color BackColor { get; set; }
 
         public string CustomToString ()
         {
-            return string.Format ("{0},{1},{2}", _custom.R, _custom.G, _custom.B);
+            return string.Format ("{0},{1},{2}", BackColor.R, BackColor.G, BackColor.B);
         }
 
         private Color _pressed = Color.FromArgb (255, 52, 68, 84);
@@ -423,7 +423,7 @@ namespace Statistic
 
         //public override Color ToolStripGradientEnd { get { return culoare; } }
 
-        public override Color ToolStripDropDownBackground { get { return _Custom; } }
+        public override Color ToolStripDropDownBackground { get { return BackColor; } }
 
         //public override Color MenuItemBorder { get { return _Background; } }
 

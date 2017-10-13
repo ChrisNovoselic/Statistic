@@ -706,8 +706,8 @@ namespace StatisticDiagnostic
         /// <summary>
         /// constructor
         /// </summary>
-        public PanelStatisticDiagnostic(Mode mode = Mode.DEFAULT)
-            : base (MODE_UPDATE_VALUES.AUTO, COUNT_LAYOUT_COLUMN, COUNT_LAYOUT_ROW)
+        public PanelStatisticDiagnostic(Mode mode, Color backColor)
+            : base (MODE_UPDATE_VALUES.AUTO, backColor, COUNT_LAYOUT_COLUMN, COUNT_LAYOUT_ROW)
         {
             m_Mode = mode;
 
@@ -718,8 +718,8 @@ namespace StatisticDiagnostic
         /// constructor
         /// </summary>
         /// <param name="container">Контейнер для панели</param>
-        public PanelStatisticDiagnostic(IContainer container, Mode mode = Mode.DEFAULT)
-            : base(MODE_UPDATE_VALUES.AUTO, COUNT_LAYOUT_COLUMN, COUNT_LAYOUT_ROW)
+        public PanelStatisticDiagnostic(IContainer container, Mode mode, Color backColor)
+            : base(MODE_UPDATE_VALUES.AUTO, backColor , COUNT_LAYOUT_COLUMN, COUNT_LAYOUT_ROW)
         {
             container.Add(this);
 

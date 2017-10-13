@@ -237,7 +237,7 @@ namespace Statistic
         }
 
         public PanelAdmin(int idListener, HMark markQueries, int [] arTECLimit)
-            : base(MODE_UPDATE_VALUES.ACTION)
+            : base(MODE_UPDATE_VALUES.ACTION, FormMain.formGraphicsSettings.BackgroundColor)
         {
             createAdmin ();
 
@@ -258,7 +258,7 @@ namespace Statistic
         }
 
         public PanelAdmin(List<StatisticCommon.TEC> tec)
-            : base (MODE_UPDATE_VALUES.ACTION)
+            : base (MODE_UPDATE_VALUES.ACTION, FormMain.formGraphicsSettings.BackgroundColor)
         {
             createAdmin ();
             

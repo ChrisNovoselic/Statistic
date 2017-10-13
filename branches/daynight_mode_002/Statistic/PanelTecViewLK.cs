@@ -207,8 +207,8 @@ namespace Statistic
             /// <summary>
             /// Конструктор "Быстрые данные панели ЛК"
             /// </summary>
-            public PanelQuickDataLK()
-                : base (/*-1, -1*/)
+            public PanelQuickDataLK(Color backColor)
+                : base (backColor)
             {
                 InitializeComponent();
             }
@@ -1463,7 +1463,7 @@ namespace Statistic
 
         protected override void createPanelQuickData()
         {
-            this._pnlQuickData = new PanelQuickDataLK ();
+            this._pnlQuickData = new PanelQuickDataLK (BackColor);
         }
 
         protected override HMark enabledSourceData_ToolStripMenuItems()

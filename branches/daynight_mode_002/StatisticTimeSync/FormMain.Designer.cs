@@ -35,7 +35,7 @@ namespace StatisticTimeSync
         /// </summary>
         private void InitializeComponent()
         {
-            m_panelMain = new PanelSourceData();
+            m_panelMain = new PanelSourceData(SystemColors.Control);
             
             this.SuspendLayout();
             // 

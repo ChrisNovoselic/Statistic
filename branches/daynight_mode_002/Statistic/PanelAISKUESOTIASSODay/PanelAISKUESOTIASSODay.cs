@@ -127,7 +127,7 @@ namespace Statistic
         /// Конструктор - основной (без параметров)
         /// </summary>
         public PanelAISKUESOTIASSODay(int iListenerConfigId, List<StatisticCommon.TEC> listTec)
-            : base(MODE_UPDATE_VALUES.ACTION)
+            : base(MODE_UPDATE_VALUES.ACTION, FormMain.formGraphicsSettings.BackgroundColor)
         {
             // фильтр ТЭЦ
             m_listTEC = listTec.FindAll(tec => { return (tec.Type == TEC.TEC_TYPE.COMMON) && (tec.m_id < (int)TECComponent.ID.LK); });
@@ -687,7 +687,11 @@ namespace Statistic
             set
             {
                 base.BackColor = value;
-                m_panelManagement.BackColor = BackColor;
+
+                if (Equals (m_panelManagement, null) == false)
+                    m_panelManagement.BackColor = BackColor;
+                else
+                    ;
             }
         }
     }

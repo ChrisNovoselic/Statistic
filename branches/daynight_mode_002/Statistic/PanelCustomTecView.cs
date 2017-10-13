@@ -493,7 +493,7 @@ namespace Statistic
         }
 
         public PanelCustomTecView(FormChangeMode formCM, Size sz/*, DelegateStringFunc fErrRep, DelegateStringFunc fWarRep, DelegateStringFunc fActRep, DelegateBoolFunc fREpClr*/)
-            : base (MODE_UPDATE_VALUES.AUTO)
+            : base (MODE_UPDATE_VALUES.AUTO, FormMain.formGraphicsSettings.BackgroundColor)
         {
             m_formChangeMode = formCM;
 

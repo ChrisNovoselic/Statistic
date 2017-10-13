@@ -39,6 +39,7 @@ namespace Statistic
                 , m_tecView.m_arTypeSourceData[(int)HDateTime.INTERVAL.HOURS] == CONN_SETT_TYPE.DATA_AISKUE
                 , m_tecView.serverTime);
             }
+
             PanelQuickData.UpdateColorPbr();
         }
 
@@ -921,7 +922,7 @@ namespace Statistic
 
         protected override void createPanelQuickData()
         {
-            this._pnlQuickData = new PanelQuickDataStandard();
+            this._pnlQuickData = new PanelQuickDataStandard(BackColor);
         }
 
         protected PanelQuickDataStandard PanelQuickData { get { return _pnlQuickData as PanelQuickDataStandard; } }

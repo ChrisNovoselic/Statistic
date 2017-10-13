@@ -44,10 +44,10 @@ namespace StatisticAnalyzer
                 ProgramBase.ss_MainCultureInfo;
 
             if (this is FormMain_TCPIP)
-                m_panel = new PanelAnalyzer_TCPIP(tec);
+                m_panel = new PanelAnalyzer_TCPIP(tec, SystemColors.Control);
             else
                 if (this is FormMain_DB)
-                    m_panel = new PanelAnalyzer_DB(tec);
+                    m_panel = new PanelAnalyzer_DB(tec, SystemColors.Control);
                 else
                     ;
 

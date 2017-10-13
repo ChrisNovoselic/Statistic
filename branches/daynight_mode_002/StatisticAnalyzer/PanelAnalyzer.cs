@@ -885,8 +885,8 @@ namespace StatisticAnalyzer
 
         #endregion
 
-        public PanelAnalyzer(/*int idListener,*/ List<StatisticCommon.TEC> tec)
-            : base(MODE_UPDATE_VALUES.ACTION)
+        public PanelAnalyzer(/*int idListener,*/ List<StatisticCommon.TEC> tec, Color backColor)
+            : base(MODE_UPDATE_VALUES.ACTION, backColor)
         {
             m_LogParse = newLogParse();
 
@@ -2304,8 +2304,8 @@ namespace StatisticAnalyzer
         /// </summary>
         int m_idListenerLoggingDB;
 
-        public PanelAnalyzer_DB(List<StatisticCommon.TEC> tec)
-            : base(tec)
+        public PanelAnalyzer_DB(List<StatisticCommon.TEC> tec, Color backColor)
+            : base(tec, backColor)
         {
             m_listTEC = tec;
 
@@ -2988,8 +2988,8 @@ namespace StatisticAnalyzer
         TcpClientAsync m_tcpClient;
         List<TcpClientAsync> m_listTCPClientUsers;
 
-        public PanelAnalyzer_TCPIP(List<StatisticCommon.TEC> tec)
-            : base(tec)
+        public PanelAnalyzer_TCPIP(List<StatisticCommon.TEC> tec, Color backColor)
+            : base(tec, backColor)
         {
         }
 

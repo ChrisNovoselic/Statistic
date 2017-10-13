@@ -314,7 +314,7 @@ namespace Statistic
         /// </summary>
         /// <param name="listTec">Список ТЭЦ для построения списка дочерних панелей, и, в дальнейшем опроса БД, заполнения их значениями</param>
         public PanelLastMinutes(List<StatisticCommon.TEC> listTec/*, DelegateStringFunc fErrRep, DelegateStringFunc fWarRep, DelegateStringFunc fActRep, DelegateBoolFunc fRepClr*/)
-            : base (MODE_UPDATE_VALUES.AUTO)
+            : base (MODE_UPDATE_VALUES.AUTO, FormMain.formGraphicsSettings.BackgroundColor)
         {
             InitializeComponent();
 
@@ -610,7 +610,7 @@ namespace Statistic
             private Button m_btnUpdate;
 
             public PanelDateTime()
-                : base (MODE_UPDATE_VALUES.ACTION)
+                : base (MODE_UPDATE_VALUES.ACTION, FormMain.formGraphicsSettings.BackgroundColor)
             {
                 InitializeComponent();
 

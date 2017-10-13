@@ -39,13 +39,14 @@ namespace StatisticCommon
         /// </summary>
         /// <param name="cCols">Количество столбцов в макете для размещения элементов управления</param>
         /// <param name="cRows">Количество строк в макете для размещения элементов управления</param>
-        public PanelStatistic (MODE_UPDATE_VALUES modeUpdateValues, int cCols = -1, int cRows = -1)
+        public PanelStatistic (MODE_UPDATE_VALUES modeUpdateValues, Color backColor, int cCols = -1, int cRows = -1)
             : base(cCols, cRows)
         {
             Thread.CurrentThread.CurrentCulture =
             Thread.CurrentThread.CurrentUICulture =
                 ProgramBase.ss_MainCultureInfo;
 
+            BackColor = backColor;
             _modeUpdateValues = modeUpdateValues;
 
             Application.OpenForms[0].BackColorChanged += formMain_BackColorChanged;
@@ -110,8 +111,8 @@ namespace StatisticCommon
     {
         private Type _controlType;
 
-        public PanelContainerStatistic(MODE_UPDATE_VALUES modeUpdateValues, Type type)
-            : base(modeUpdateValues)
+        public PanelContainerStatistic(MODE_UPDATE_VALUES modeUpdateValues, Color backColor, Type type)
+            : base(modeUpdateValues, backColor)
         {
             registredControlType(type);
         }
@@ -202,8 +203,8 @@ namespace StatisticCommon
 
     public abstract class PanelStatisticWithTableHourRows : PanelStatistic
     {
-        public PanelStatisticWithTableHourRows (MODE_UPDATE_VALUES modeUpdateValues)
-            : base (modeUpdateValues)
+        public PanelStatisticWithTableHourRows (MODE_UPDATE_VALUES modeUpdateValues, Color backColor)
+            : base (modeUpdateValues, backColor)
         {
         }
 

@@ -942,7 +942,7 @@ namespace Statistic
         #endregion
 
         public PanelUser ()
-            : base(MODE_UPDATE_VALUES.ACTION)
+            : base(MODE_UPDATE_VALUES.ACTION, FormMain.formGraphicsSettings.BackgroundColor)
         {
             m_arr_origTable = new DataTable[(int)ID_Table.Count];
             m_arr_editTable = new DataTable[(int)ID_Table.Count];

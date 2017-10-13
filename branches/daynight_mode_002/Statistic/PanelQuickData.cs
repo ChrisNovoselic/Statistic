@@ -25,12 +25,14 @@ namespace Statistic
             /// <summary>
             /// Конструктор
             /// </summary>
-            public HPanelTableLayout()
+            public HPanelTableLayout(Color backColor)
             {
                 //Свойство возвращает или задает язык и региональные параметры для текущего потока
                 Thread.CurrentThread.CurrentCulture =
                 Thread.CurrentThread.CurrentUICulture =
                     ProgramBase.ss_MainCultureInfo;
+
+                BackColor = backColor;
 
                 InitializeComponent();
             }
@@ -343,12 +345,14 @@ namespace Statistic
             protected Dictionary<int, System.Windows.Forms.Label[]> m_tgLabels;
             protected Dictionary<int, System.Windows.Forms.ToolTip[]> m_tgToolTips;
 
-            public HPanelQuickData()
+            public HPanelQuickData(Color backColor)
+                : base (backColor)
             {
                 InitializeComponent();
             }
 
-            public HPanelQuickData(IContainer container)
+            public HPanelQuickData(IContainer container, Color backColor)
+                : base (backColor)
             {
                 container.Add(this);
 
@@ -1102,13 +1106,14 @@ namespace Statistic
             //    }
             //};
 
-            public PanelQuickDataStandard() : base()
+            public PanelQuickDataStandard(Color backColor)
+                : base(backColor)
             {
                 InitializeComponent();
             }
 
-            public PanelQuickDataStandard(IContainer container)
-                : base(container)
+            public PanelQuickDataStandard(IContainer container, Color backColor)
+                : base (container, backColor)
             {
                 container.Add(this);
 

@@ -233,7 +233,7 @@ namespace Statistic
                     s_iMainSourceData = Int32.Parse(formParameters.m_arParametrSetup[(int)FormParameters.PARAMETR_SETUP.MAIN_DATASOURCE]);
 
                     //Режим изменения цветовой гаммы            
-                    _darkColorTable = new DarkColorTable (this.BackColor, HStatisticUsers.GetAllowed ((int)HStatisticUsers.ID_ALLOWED.PROFILE_VIEW_COLOR_SHEMA_CUSTOM));
+                    _darkColorTable = new CustomColorTable (HStatisticUsers.GetAllowed ((int)HStatisticUsers.ID_ALLOWED.PROFILE_VIEW_COLOR_SHEMA_CUSTOM));
                     BackColorChanged += FormMain_BackColorChanged;
                     BackColorChanged += tclTecViews.FormMain_BackColorChanged;                    
 
@@ -319,7 +319,8 @@ namespace Statistic
                             case FormChangeMode.MANAGER.ALARM:
                                 m_arPanelAdmin[i] = new PanelAlarm(idListenerConfigDB
                                     , new HMark(new int[] { (int)CONN_SETT_TYPE.ADMIN, (int)CONN_SETT_TYPE.PBR, (int)CONN_SETT_TYPE.DATA_AISKUE, (int)CONN_SETT_TYPE.DATA_SOTIASSO })
-                                    , StatisticAlarm.MODE.ADMIN);
+                                    , StatisticAlarm.MODE.ADMIN
+                                    , formGraphicsSettings.BackgroundColor);
                                 (m_arPanelAdmin[i] as PanelAlarm).EventGUIReg += new AlarmNotifyEventHandler(OnPanelAlarmEventGUIReg);
                                 m_formAlarmEvent.EventFixed += new DelegateObjectFunc((m_arPanelAdmin[i] as PanelAlarm).OnEventFixed);
                                 break;
@@ -807,6 +808,7 @@ namespace Statistic
             FormMainFloat formFloat = null;
             //formFloat = new FormMainFloat(m_dictAddingTabs[(int)m_arIdCustomTabs[(int)indxTab, indxItem]].panel);
             formFloat = new FormMainFloat(ev.TabHeaderText, panel, panel is PanelCustomTecView == false);
+            formFloat.BackColor = formGraphicsSettings.BackgroundColor;
             //Назначить обработчики событий...
             formFloat.delegateFormClosing = FormMain_OnFormFloat_Closing;
             formFloat.delegateFormLoad = FormMain_OnFormFloat_Load;
@@ -2302,7 +2304,8 @@ namespace Statistic
             {
                 m_dictAddingTabs[(int)ID_ADDING_TAB.DIAGNOSTIC].panel = new PanelStatisticDiagnostic(HStatisticUsers.Role == HStatisticUsers.ID_ROLES.ADMIN ?
                     PanelStatisticDiagnostic.Mode.DEFAULT :
-                        PanelStatisticDiagnostic.Mode.SOURCE_ONLY);
+                        PanelStatisticDiagnostic.Mode.SOURCE_ONLY
+                    , formGraphicsSettings.BackgroundColor);
                 m_dictAddingTabs[(int)ID_ADDING_TAB.DIAGNOSTIC].panel.SetDelegateReport (ErrorReport, WarningReport, ActionReport, ReportClear);
             }
             else
@@ -2316,7 +2319,7 @@ namespace Statistic
             if (m_dictAddingTabs[(int)ID_ADDING_TAB.ANALYZER].panel == null)
             {
                 int idListener = DbSources.Sources().Register(s_listFormConnectionSettings[(int)CONN_SETT_TYPE.CONFIG_DB].getConnSett(), false, @"CONFIG_DB");
-                m_dictAddingTabs[(int)ID_ADDING_TAB.ANALYZER].panel = new PanelAnalyzer_DB(PanelKomDisp.m_list_tec);
+                m_dictAddingTabs[(int)ID_ADDING_TAB.ANALYZER].panel = new PanelAnalyzer_DB(PanelKomDisp.m_list_tec, formGraphicsSettings.BackgroundColor);
                 m_dictAddingTabs[(int)ID_ADDING_TAB.ANALYZER].panel.SetDelegateReport(ErrorReport, WarningReport, ActionReport, ReportClear);
             }
             else
@@ -2425,7 +2428,7 @@ namespace Statistic
         private void рассинхронизацияДатаВремяСерверБДToolStripMenuItem_CheckedChanged(object sender, EventArgs e)
         {
             if (m_dictAddingTabs[(int)ID_ADDING_TAB.DATETIMESYNC_SOURCE_DATA].panel == null)
-                m_dictAddingTabs[(int)ID_ADDING_TAB.DATETIMESYNC_SOURCE_DATA].panel = new PanelSourceData();
+                m_dictAddingTabs[(int)ID_ADDING_TAB.DATETIMESYNC_SOURCE_DATA].panel = new PanelSourceData(formGraphicsSettings.BackgroundColor);
             else
                 ;
 
@@ -2559,18 +2562,14 @@ namespace Statistic
         private void FormMain_BackColorChanged (object sender, EventArgs e)
         {
             //главное окно
-            if (formGraphicsSettings.m_colorShema == FormGraphicsSettings.ColorShemas.Custom) {
-                BackColor =
-                MainMenuStrip.BackColor =
-                     DarkColorTable._Custom;
+            BackColor =
+            MainMenuStrip.BackColor =
+                formGraphicsSettings.BackgroundColor;
 
+            if (formGraphicsSettings.m_colorShema == FormGraphicsSettings.ColorShemas.Custom) {
                 MainMenuStrip.RenderMode = ToolStripRenderMode.Professional;
                 MainMenuStrip.Renderer = new ToolStripProfessionalRenderer (_darkColorTable);
             } else if (formGraphicsSettings.m_colorShema == FormGraphicsSettings.ColorShemas.System) {
-                BackColor =
-                MainMenuStrip.BackColor =
-                     DarkColorTable._System;
-
                 MainMenuStrip.RenderMode = ToolStripRenderMode.System;
                 MainMenuStrip.Renderer = null;
             } else
@@ -2590,17 +2589,13 @@ namespace Statistic
             #region Режим изменения цветовой гаммы
             if (((FormGraphicsSettings.TYPE_UPDATEGUI)type == FormGraphicsSettings.TYPE_UPDATEGUI.COLOR_SHEMA)
                 || ((FormGraphicsSettings.TYPE_UPDATEGUI)type == FormGraphicsSettings.TYPE_UPDATEGUI.COLOR_CHANGESHEMA)) {
-                    BackColor = (formGraphicsSettings.m_colorShema == FormGraphicsSettings.ColorShemas.Custom)
-                         ? DarkColorTable._Custom
-                            : (formGraphicsSettings.m_colorShema == FormGraphicsSettings.ColorShemas.System)
-                                ? DarkColorTable._System
-                                    : DarkColorTable._System;
+                    BackColor = formGraphicsSettings.BackgroundColor;
 
                 if (((FormGraphicsSettings.TYPE_UPDATEGUI)type == FormGraphicsSettings.TYPE_UPDATEGUI.COLOR_CHANGESHEMA)
                     && (formGraphicsSettings.m_colorShema == FormGraphicsSettings.ColorShemas.Custom)) {
                     HStatisticUsers.SetAllowed (s_listFormConnectionSettings [(int)CONN_SETT_TYPE.CONFIG_DB].getConnSett ()
                         , HStatisticUsers.ID_ALLOWED.PROFILE_VIEW_COLOR_SHEMA_CUSTOM
-                        , (_darkColorTable as DarkColorTable).CustomToString());
+                        , (_darkColorTable as CustomColorTable).CustomToString());
                 } else
                     ;
             } else
@@ -2968,8 +2963,11 @@ namespace Statistic
             /// <param name="type">Тип изменения параметров отображения</param>
             public void UpdateGraphicsCurrent(int type)
             {
+                BackColor = formGraphicsSettings.BackgroundColor;
+
                 Panel panel = GetPanel();
 
+                /*
                 if (panel is PanelTecViewStandard)
                     (panel as PanelTecViewStandard).UpdateGraphicsCurrent(type);
                 else
@@ -2977,6 +2975,8 @@ namespace Statistic
                         (panel as PanelCustomTecView).UpdateGraphicsCurrent(type);
                     else
                         ;
+                */
+                (panel as PanelStatistic).UpdateGraphicsCurrent (type);
             }
         }
     }
