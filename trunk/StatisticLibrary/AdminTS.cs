@@ -1971,8 +1971,6 @@ namespace StatisticCommon
                     break;
             }
 
-            ActionReport(strRep);
-
             //Logging.Logg().Debug(@"AdminTS::StateRequest () - state=" + state.ToString() + @" - вЫход...");
 
             return result;
