@@ -330,6 +330,7 @@ namespace StatisticAnalyzer
                 this.dgvDatetimeStart.RowTemplate.Resizable = System.Windows.Forms.DataGridViewTriState.False;
                 this.dgvDatetimeStart.SelectionMode = System.Windows.Forms.DataGridViewSelectionMode.FullRowSelect;
                 //this.dgvDatetimeStart.Size = new System.Drawing.Size(170, 164);
+                this.dgvDatetimeStart.BackColor = this.BackColor;
                 this.dgvDatetimeStart.TabIndex = 10;
                 // 
                 // dataGridViewCheckBoxColumnDatetimeStartUse
@@ -2059,13 +2060,11 @@ namespace StatisticAnalyzer
                 base.BackColor = value;
 
                 getTypedControls (this, new Type [] { typeof (DataGridView) }).Cast<DataGridView> ().ToList ().ForEach (dgv => {
-                    for (int j = 0; j < dgv.ColumnCount; j++)
-                        for (int i = 0; i < dgv.RowCount; i++)
-                            dgv.Rows [i].Cells [j].Style.BackColor = value == SystemColors.Control ? SystemColors.Window : value;
+                    dgv.DefaultCellStyle.BackColor = BackColor == SystemColors.Control ? SystemColors.Window : BackColor;
                 });
 
                 if (Equals (listTabVisible, null) == false)
-                    listTabVisible.BackColor = value == SystemColors.Control ? SystemColors.Window : value;
+                    listTabVisible.BackColor = BackColor == SystemColors.Control ? SystemColors.Window : BackColor;
                 else
                     ;
             }

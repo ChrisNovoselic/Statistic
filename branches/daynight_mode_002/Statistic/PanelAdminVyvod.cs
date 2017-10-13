@@ -352,33 +352,35 @@ namespace Statistic
                 arSumCurRDGValues = new HAdmin.RDGStruct[(m_admin as AdminTS_Vyvod).m_arSumRDGValues.Length];
                 (m_admin as AdminTS_Vyvod).m_arSumRDGValues.CopyTo(arSumCurRDGValues, 0);
 
+                this.dgwAdminTable.DefaultCellStyle.BackColor = this.dgwAdminTable.BackColor;
+
                 for (hour = 0; hour < arSumCurRDGValues.Length; hour++)
                 {
                     strFmtDatetime = m_admin.GetFmtDatetime(hour);
                     offset = m_admin.GetSeasonHourOffset(hour + 1);
 
                     this.dgwAdminTable.Rows[hour].Cells[(int)DataGridViewAdminVyvod.DESC_INDEX.DATE_HOUR].Value = date.AddHours(hour + 1 - offset).ToString(strFmtDatetime);
-                    this.dgwAdminTable.Rows [hour].Cells [(int)DataGridViewAdminVyvod.DESC_INDEX.DATE_HOUR].Style.BackColor = this.dgwAdminTable.BackColor;
+                    //this.dgwAdminTable.Rows [hour].Cells [(int)DataGridViewAdminVyvod.DESC_INDEX.DATE_HOUR].Style.BackColor = this.dgwAdminTable.BackColor;
 
                     this.dgwAdminTable.Rows[hour].Cells[(int)DataGridViewAdminVyvod.DESC_INDEX.PLAN].Value = arSumCurRDGValues[hour].pmin.ToString("F2");
                     this.dgwAdminTable.Rows[hour].Cells[(int)DataGridViewAdminVyvod.DESC_INDEX.PLAN].ToolTipText = arSumCurRDGValues[hour].pbr_number;
-                    this.dgwAdminTable.Rows [hour].Cells [(int)DataGridViewAdminVyvod.DESC_INDEX.PLAN].Style.BackColor = this.dgwAdminTable.BackColor;
+                    //this.dgwAdminTable.Rows [hour].Cells [(int)DataGridViewAdminVyvod.DESC_INDEX.PLAN].Style.BackColor = this.dgwAdminTable.BackColor;
 
                     // UDGt вычисл€етс€ в 'DataGridViewAdminVyvod::onCellValueChanged'
 
                     (this.dgwAdminTable.Rows[hour].Cells[(int)DataGridViewAdminVyvod.DESC_INDEX.RECOMENDATION] as DataGridViewComboBoxCell).Value = (object)(((int)arSumCurRDGValues[hour].recomendation).ToString());
                     this.dgwAdminTable.Rows[hour].Cells[(int)DataGridViewAdminVyvod.DESC_INDEX.RECOMENDATION].ToolTipText = arSumCurRDGValues[hour].dtRecUpdate.ToString();
-                    this.dgwAdminTable.Rows [hour].Cells [(int)DataGridViewAdminVyvod.DESC_INDEX.RECOMENDATION].Style.BackColor = this.dgwAdminTable.BackColor;
+                    //this.dgwAdminTable.Rows [hour].Cells [(int)DataGridViewAdminVyvod.DESC_INDEX.RECOMENDATION].Style.BackColor = this.dgwAdminTable.BackColor;
                     this.dgwAdminTable.Rows[hour].Cells[(int)DataGridViewAdminVyvod.DESC_INDEX.DEVIATION_TYPE].Value = arSumCurRDGValues[hour].deviationPercent.ToString();
-                    this.dgwAdminTable.Rows [hour].Cells [(int)DataGridViewAdminVyvod.DESC_INDEX.DEVIATION_TYPE].Style.BackColor = this.dgwAdminTable.BackColor;
+                    //this.dgwAdminTable.Rows [hour].Cells [(int)DataGridViewAdminVyvod.DESC_INDEX.DEVIATION_TYPE].Style.BackColor = this.dgwAdminTable.BackColor;
                     this.dgwAdminTable.Rows[hour].Cells[(int)DataGridViewAdminVyvod.DESC_INDEX.DEVIATION].Value = arSumCurRDGValues[hour].deviation.ToString("F2");
-                    this.dgwAdminTable.Rows [hour].Cells [(int)DataGridViewAdminVyvod.DESC_INDEX.DEVIATION].Style.BackColor = this.dgwAdminTable.BackColor;
+                    //this.dgwAdminTable.Rows [hour].Cells [(int)DataGridViewAdminVyvod.DESC_INDEX.DEVIATION].Style.BackColor = this.dgwAdminTable.BackColor;
 
-                    if (bNewValues == false) {
-                    // самосто€тельно измен€ем цвет фона, т.к. в этих столбцах €чейки "обновл€ютс€" при проверке/изменении значений
-                        this.dgwAdminTable.Rows [hour].Cells [(int)DataGridViewAdminVyvod.DESC_INDEX.UDGt].Style.BackColor = this.dgwAdminTable.BackColor;
-                    } else
-                        ;
+                    //if (bNewValues == false) {
+                    //// самосто€тельно измен€ем цвет фона, т.к. в этих столбцах €чейки "обновл€ютс€" при проверке/изменении значений
+                    //    this.dgwAdminTable.Rows [hour].Cells [(int)DataGridViewAdminVyvod.DESC_INDEX.UDGt].Style.BackColor = this.dgwAdminTable.BackColor;
+                    //} else
+                    //    ;
                 }
             }
             else
