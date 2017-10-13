@@ -24,7 +24,7 @@ namespace CommonAux
     /// <summary>
     /// Класс для взаимодействия с базой данных
     /// </summary>
-    public partial class GetDataFromDB
+    public partial class GetDataFromDB : HHandlerDb
     {
         /// <summary>
         /// Строка, содержащая наименование таблицы в БД, хранящей перечень каналов
@@ -117,29 +117,6 @@ namespace CommonAux
         }
 
         /// <summary>
-        /// Возвратить строку запроса для получения пути к шаблону excel
-        /// </summary>
-        /// <returns>Строка запроса</returns>
-        public static string getQueryExcelPath()
-        {
-            string strRes = "SELECT * FROM " + DB_TABLE_SETUP + "WHERE [KEY] = 'COMMON_AUX_PATH'";
-
-            return strRes;
-        }
-        /// <summary>
-        /// Возвратить путь к шаблону excel из БД конфигурации
-        /// </summary>
-        /// <param name="connConfigDB">Ссылка на объект с установленным соединением с БД</param>
-        /// <param name="err">Идентификатор ошибки при выполнении запроса</param>
-        /// <returns>Строка, содержащая путь к шаблону</returns>
-        public static string getExcelPath(ref DbConnection connConfigDB, out int err)
-        {
-            string req = getQueryExcelPath();
-
-            return (DbTSQLInterface.Select(ref connConfigDB, req, null, null, out err)).Rows[0].ItemArray[Convert.ToInt32(DB_TABLE_STP.VALUE)].ToString();
-        }
-
-        /// <summary>
         /// Возвратить объект с параметрами соединения
         /// </summary>
         /// <param name="iListenerId">Ссылка на объект с установленным соединением с БД</param>
@@ -150,7 +127,7 @@ namespace CommonAux
             DataTable dataTableRes = new DataTable();
             dataTableRes = InitTEC_200.getConnSettingsOfIdSource(iListenerId, ID_AIISKUE_CONSETT, -1, out err);
 
-            ConnectionSettings connSettRes = new ConnectionSettings(dataTableRes.Rows[dataTableRes.Rows.Count - 1], 1);
+            ConnectionSettings connSettRes = new ConnectionSettings(dataTableRes.Rows[dataTableRes.Rows.Count - 1], -1);
 
             return connSettRes;
         }
@@ -201,6 +178,8 @@ namespace CommonAux
         {
             int iRes = 0;
 
+            
+
             tec.m_listValuesDate.Clear();
             if (m_markIndxRequestError == null)
                 m_markIndxRequestError = new HMark(0);
@@ -212,9 +191,12 @@ namespace CommonAux
             if (iRes == 0)
                 foreach (TEC_LOCAL.INDEX_DATA indx in Enum.GetValues(typeof(TEC_LOCAL.INDEX_DATA)))
                 {
+                    ActionReport("Получение значения для " + indx.ToString() + " " + tec.m_strNameShr);
                     // запросить и обработать результат запроса по получению значений для группы сигналов в указанный диапазон дат
                     iRes = Request(tec, ref dbConn, dtStart, dtEnd, indx);
                     m_markIndxRequestError.Set((int)indx, iRes < 0);
+
+                    ActionReport("Получены значения для " + indx.ToString() + " " + tec.m_strNameShr);
                 }
             else
             {
@@ -224,6 +206,7 @@ namespace CommonAux
 
             iRes = m_markIndxRequestError.Value == 0 ? 0 : -1;
 
+            ReportClear(true);
             return iRes;
         }
         /// <summary>
@@ -263,6 +246,8 @@ namespace CommonAux
             DateTime dtQuery;
             TimeSpan tsQuery;
 
+            ActionReport("Получение значения для " + indx.ToString() + " " + tec.m_strNameShr);
+
             dtQuery = DateTime.Now;
 
             tec.m_arTableResult[(int)indx] = null;
@@ -279,7 +264,10 @@ namespace CommonAux
                     , Logging.INDEX_MESSAGE.NOT_SET);
 
                 if (err == 0)
+                {
                     tec.parseTableResult(dtStart, dtEnd, indx, out err);
+                    ActionReport("Получены значения для " + indx.ToString() + " " + tec.m_strNameShr);
+                }
                 else
                 {
                     Logging.Logg().Error(string.Format("TEC.ID={0}, ИНДЕКС={1} не получены данные за {2}{3}Запрос={4}"
@@ -298,6 +286,7 @@ namespace CommonAux
                 iRes = 1; // Предупреждение
             }
 
+            ReportClear(true);
             return iRes;
         }
 
@@ -318,7 +307,7 @@ namespace CommonAux
                             DATEADD(DAY, DATEDIFF(DAY, 0, '?DATADATESTART?'), 0)) as [DATETIME]
                             FROM[DATA]
                             WHERE[PARNUMBER] = 12 AND[OBJTYPE] = 0 AND([DATA_DATE] > '?DATADATESTART?' AND NOT[DATA_DATE] > '?DATADATEEND?')
-                            AND(?SENSORS ?)
+                            AND(?SENSORS?)
                             GROUP BY[RCVSTAMP], [OBJECT], [OBJTYPE], [ITEM], [VALUE0], [SEASON],
                             DATEADD(MINUTE, ceiling(DATEDIFF(MINUTE, DATEADD(DAY, DATEDIFF(DAY, 0, '?DATADATESTART?'), 0), [DATA_DATE]) / 60.) * 60,
                             DATEADD(DAY, DATEDIFF(DAY, 0, '?DATADATESTART?'), 0))) res
@@ -335,6 +324,41 @@ namespace CommonAux
                 strRes = string.Empty;
 
             return strRes;
+        }
+
+        public override void StartDbInterfaces()
+        {
+            throw new NotImplementedException();
+        }
+
+        public override void ClearValues()
+        {
+            throw new NotImplementedException();
+        }
+
+        protected override int StateCheckResponse(int state, out bool error, out object outobj)
+        {
+            throw new NotImplementedException();
+        }
+
+        protected override int StateRequest(int state)
+        {
+            throw new NotImplementedException();
+        }
+
+        protected override int StateResponse(int state, object obj)
+        {
+            throw new NotImplementedException();
+        }
+
+        protected override INDEX_WAITHANDLE_REASON StateErrors(int state, int req, int res)
+        {
+            throw new NotImplementedException();
+        }
+
+        protected override void StateWarnings(int state, int req, int res)
+        {
+            throw new NotImplementedException();
         }
     }
 }

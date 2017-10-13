@@ -2558,7 +2558,7 @@ namespace Statistic
         {
             if (m_dictAddingTabs[(int)ID_ADDING_TAB.SOBSTV_NYZHDY_NEW].panel == null)
             {
-                m_dictAddingTabs[(int)ID_ADDING_TAB.SOBSTV_NYZHDY_NEW].panel = new PanelCommonAux(0/*PanelKomDisp.m_list_tec, ErrorReport, WarningReport, ActionReport, ReportClear*/);
+                m_dictAddingTabs[(int)ID_ADDING_TAB.SOBSTV_NYZHDY_NEW].panel = new PanelCommonAux(formParameters.m_arParametrSetup[(int)FormParameters.PARAMETR_SETUP.COMMON_AUX_PATH]);
                 ((PanelCommonAux)m_dictAddingTabs[(int)ID_ADDING_TAB.SOBSTV_NYZHDY_NEW].panel).SetDelegateWait(delegateStartWait, delegateStopWait, delegateEvent);
                 ((PanelCommonAux)m_dictAddingTabs[(int)ID_ADDING_TAB.SOBSTV_NYZHDY_NEW].panel).SetDelegateReport(ErrorReport, WarningReport, ActionReport, ReportClear);
             }

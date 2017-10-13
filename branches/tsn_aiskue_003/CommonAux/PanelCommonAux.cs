@@ -168,6 +168,8 @@ namespace CommonAux
         /// Объект для инициализации входных параметров
         /// </summary>
         protected GetDataFromDB m_GetDataFromDB;
+        protected DbConnection m_connConfigDB;
+        protected int _iListenerId;
         private enum INDEX_CONTROL : short { LB_TEC, LB_GROUP_SIGNAL }
         /// <summary>
         /// Поля таблицы сигналов
@@ -298,61 +300,31 @@ namespace CommonAux
         /// Требуется переменная конструктора
         /// </summary>
         private IContainer components = null;
+
         /// <summary>
         /// Конструктор панели
         /// </summary>
-        /// <param name="displayMode">Параметр, определяющий режим отображения</param>
-        public PanelCommonAux(int displayMode)
+        public PanelCommonAux(string pathTemplate)
         {
-            m_displayMode = displayMode;
-
-            int err = -1;
-            // зарегистрировать соединение/получить идентификатор соединения
-            int _iListenerId = DbSources.Sources().Register(FormMain.s_listFormConnectionSettings[(int)CONN_SETT_TYPE.CONFIG_DB].getConnSett(), false, @"CONFIG_DB");
-            DbConnection m_connConfigDB = DbSources.Sources().GetConnection(_iListenerId, out err);
-
-            m_listTEC = GetListTEC(new InitTEC_200(_iListenerId, true, new int[] { 0, (int)TECComponent.ID.GTP }, false).tec);
-
             m_GetDataFromDB = new GetDataFromDB();
-            m_GetDataFromDB.InitChannels(m_connConfigDB, m_listTEC);
-
-            m_arMSEXEL_PARS = GetDataFromDB.getExcelPath(ref m_connConfigDB, out err).Split(',');
-
-            foreach (TEC_LOCAL t in m_listTEC)
-            {
-                t.InitSensors();
-            }
-
-            //Получить параметры соединения с источником данных
-            m_connSettAIISKUECentre = m_GetDataFromDB.GetConnSettAIISKUECentre(ref _iListenerId, out err);
 
             InitializeComponents();
-
-            foreach (TEC_LOCAL tec in m_listTEC)
-            {
-                m_listBoxTEC.Items.Add(tec.m_strNameShr);
-            }
-
-            m_listBoxTEC.SelectedIndex = 0;
 
             m_listBoxTEC.Tag = INDEX_CONTROL.LB_TEC;
             m_listBoxTEC.SelectedIndexChanged += listBox_SelectedIndexChanged;
 
-            m_labelEndDate.Text = m_monthCalendarEnd.SelectionStart.ToShortDateString();
-            m_labelStartDate.Text = m_monthCalendarStart.SelectionStart.ToShortDateString();
-
-            if (m_displayMode == 0)
-            {
-                m_btnExit.Visible = false;
-            }
-
-            //Установить начальные признаки готовности к экспорту
-            m_markReady = new HMark(0);
-
-            FullPathTemplate = string.Empty;
-
             //Установить обработчики событий
             EventNewPathToTemplate += new DelegateStringFunc(onNewPathToTemplate);
+
+            m_arMSEXEL_PARS = pathTemplate.Split(',');
+        }
+
+        /// <summary>
+        /// Фукнция вызова старта программы
+        /// </summary>
+        public override void Start()
+        {
+            base.Start();
 
             for (int i = 0; i <= Convert.ToInt32(TEC_LOCAL.INDEX_DATA.GRVIII); i++)
             {
@@ -360,7 +332,55 @@ namespace CommonAux
                 m_sumValues.Rows[i].Cells[0].Value = "сум " + Enum.GetName(typeof(TEC_LOCAL.INDEX_DATA), i);
                 m_sumValues.Rows[i].Cells[1].Value = "0";
             }
+
+            int err = -1;
+            // зарегистрировать соединение/получить идентификатор соединения
+            _iListenerId = DbSources.Sources().Register(FormMain.s_listFormConnectionSettings[(int)CONN_SETT_TYPE.CONFIG_DB].getConnSett(), false, @"CONFIG_DB");
+            m_connConfigDB = DbSources.Sources().GetConnection(_iListenerId, out err);
+
+            m_listTEC = GetListTEC(new InitTEC_200(_iListenerId, true, new int[] { 0, (int)TECComponent.ID.GTP }, false).tec);
+
+            foreach (TEC_LOCAL tec in m_listTEC)
+            {
+                m_listBoxTEC.Items.Add(tec.m_strNameShr);
+            }
+
+            m_labelEndDate.Text = m_monthCalendarEnd.SelectionStart.ToShortDateString();
+            m_labelStartDate.Text = m_monthCalendarStart.SelectionStart.ToShortDateString();
+
+            //Установить начальные признаки готовности к экспорту
+            m_markReady = new HMark(0);
+
+            FullPathTemplate = string.Empty;
         }
+
+        /// <summary>
+        /// Функция активация вкладки
+        /// </summary>
+        /// <param name="activated">параметр</param>
+        /// <returns>результат</returns>
+        public override bool Activate(bool activated)
+        {
+            int err = -1; 
+            bool bRes = base.Activate(activated);
+
+            if (base.IsFirstActivated == true)
+            {
+                m_GetDataFromDB.InitChannels(m_connConfigDB, m_listTEC);
+
+                foreach (TEC_LOCAL t in m_listTEC)
+                {
+                    t.InitSensors();
+                }
+
+                //Получить параметры соединения с источником данных
+                m_connSettAIISKUECentre = m_GetDataFromDB.GetConnSettAIISKUECentre(ref _iListenerId, out err);
+                m_listBoxTEC.SelectedIndex = 0;
+            }
+
+            return bRes;
+        }
+
         /// <summary>
         /// Обработчик события установки нового значения для пути к шаблону
         /// </summary>
@@ -373,6 +393,7 @@ namespace CommonAux
             // п. главного меню + кнопка на панели быстрого доступа
             enableBtnExcel(State == STATE.READY);
         }
+
         /// <summary>
         /// Включить/отключить доступность интерфейса экспорта в книгу MS Excel
         /// </summary>
@@ -385,7 +406,10 @@ namespace CommonAux
 
         public override void SetDelegateReport(DelegateStringFunc ferr, DelegateStringFunc fwar, DelegateStringFunc fact, DelegateBoolFunc fclr)
         {
-            //m_tecView.SetDelegateReport(ferr, fwar, fact, fclr);
+            if (!(m_GetDataFromDB == null))
+            {
+                m_GetDataFromDB.SetDelegateReport(ferr, fwar, fact, fclr);
+            }
         }
 
         /// <summary>
@@ -437,8 +461,10 @@ namespace CommonAux
             }
             else
                 ;
+
             return iRes;
         }
+
         /// <summary>
         /// Определить размеры ячеек макета панели
         /// </summary>
@@ -446,7 +472,9 @@ namespace CommonAux
         /// <param name="rows">Количество строк в макете</param>
         protected override void initializeLayoutStyle(int cols = -1, int rows = -1)
         {
-            initializeLayoutStyleEvenly(100, 100);
+            //initializeLayoutStyleEvenly(100, 100);
+            initializeLayoutStyleEvenly(20, 25);
+            //CellBorderStyle = TableLayoutPanelCellBorderStyle.Single;
         }
 
         protected virtual void InitializeComponents()
@@ -489,24 +517,43 @@ namespace CommonAux
 
             this.SuspendLayout();
 
-            this.Controls.Add(m_btnLoad, 81, 40); this.SetColumnSpan(m_btnLoad, 18); this.SetRowSpan(m_btnLoad, 5);
-            this.Controls.Add(m_btnOpen, 81, 45); this.SetColumnSpan(m_btnOpen, 18); this.SetRowSpan(m_btnOpen, 5);
-            this.Controls.Add(m_btnExit, 81, 94); this.SetColumnSpan(m_btnExit, 18); this.SetRowSpan(m_btnExit, 5);
-            this.Controls.Add(m_btnStripButtonExcel, 81, 50); this.SetColumnSpan(m_btnStripButtonExcel, 18); this.SetRowSpan(m_btnStripButtonExcel, 5);
-            this.Controls.Add(m_listBoxTEC, 61, 40); this.SetColumnSpan(m_listBoxTEC, 18); this.SetRowSpan(m_listBoxTEC, 20);
-            this.Controls.Add(m_monthCalendarStart, 60, 8); this.SetColumnSpan(m_monthCalendarStart, 15); this.SetRowSpan(m_monthCalendarStart, 15);
-            this.Controls.Add(m_monthCalendarEnd, 80, 8); this.SetColumnSpan(m_monthCalendarEnd, 15); this.SetRowSpan(m_monthCalendarEnd, 15);
-            this.Controls.Add(m_labelTEC, 62, 37); this.SetColumnSpan(m_labelTEC, 11); this.SetRowSpan(m_labelTEC, 2);
-            this.Controls.Add(m_labelValues, 8, 2); this.SetColumnSpan(m_labelValues, 30); this.SetRowSpan(m_labelValues, 2);
-            this.Controls.Add(m_labelStartDate, 65, 6); this.SetColumnSpan(m_labelStartDate, 8); this.SetRowSpan(m_labelStartDate, 2);
-            this.Controls.Add(m_labelEndDate, 85, 6); this.SetColumnSpan(m_labelEndDate, 8); this.SetRowSpan(m_labelEndDate, 2);
+            //this.Controls.Add(m_btnLoad, 81, 40); this.SetColumnSpan(m_btnLoad, 18); this.SetRowSpan(m_btnLoad, 5);
+            //this.Controls.Add(m_btnOpen, 81, 46); this.SetColumnSpan(m_btnOpen, 18); this.SetRowSpan(m_btnOpen, 5);
+            //this.Controls.Add(m_btnExit, 81, 94); this.SetColumnSpan(m_btnExit, 18); this.SetRowSpan(m_btnExit, 5);
+            //this.Controls.Add(m_btnStripButtonExcel, 81, 52); this.SetColumnSpan(m_btnStripButtonExcel, 18); this.SetRowSpan(m_btnStripButtonExcel, 5);
+            //this.Controls.Add(m_listBoxTEC, 61, 40); this.SetColumnSpan(m_listBoxTEC, 18); this.SetRowSpan(m_listBoxTEC, 20);
+            //this.Controls.Add(m_monthCalendarStart, 60, 8); this.SetColumnSpan(m_monthCalendarStart, 15); this.SetRowSpan(m_monthCalendarStart, 15);
+            //this.Controls.Add(m_monthCalendarEnd, 80, 8); this.SetColumnSpan(m_monthCalendarEnd, 15); this.SetRowSpan(m_monthCalendarEnd, 15);
+            //this.Controls.Add(m_labelTEC, 62, 37); this.SetColumnSpan(m_labelTEC, 11); this.SetRowSpan(m_labelTEC, 2);
+            //this.Controls.Add(m_labelValues, 8, 2); this.SetColumnSpan(m_labelValues, 30); this.SetRowSpan(m_labelValues, 2);
+            //this.Controls.Add(m_labelStartDate, 65, 6); this.SetColumnSpan(m_labelStartDate, 8); this.SetRowSpan(m_labelStartDate, 2);
+            //this.Controls.Add(m_labelEndDate, 85, 6); this.SetColumnSpan(m_labelEndDate, 8); this.SetRowSpan(m_labelEndDate, 2);
+
+            //for (int i = 0; i < m_dgvValues.Count; i++)
+            //{
+            //    this.Controls.Add(m_dgvValues[i], 8, 4 + i * 16); this.SetColumnSpan(m_dgvValues[i], 50); this.SetRowSpan(m_dgvValues[i], 16);
+            //    this.Controls.Add(m_labelsGroup[i], 2, 7 + i * 16); this.SetColumnSpan(m_labelsGroup[i], 5); this.SetRowSpan(m_labelsGroup[i], 2);
+            //}
+            //this.Controls.Add(m_sumValues, 61, 60); this.SetColumnSpan(m_sumValues, 38); this.SetRowSpan(m_sumValues, 40);
+
+            this.Controls.Add(m_btnLoad, 16, 9); this.SetColumnSpan(m_btnLoad, 4); this.SetRowSpan(m_btnLoad, 2);
+            this.Controls.Add(m_btnOpen, 16, 11); this.SetColumnSpan(m_btnOpen, 4); this.SetRowSpan(m_btnOpen, 2);
+            //this.Controls.Add(m_btnExit, 81, 94); this.SetColumnSpan(m_btnExit, 18); this.SetRowSpan(m_btnExit, 5);
+            this.Controls.Add(m_btnStripButtonExcel, 16, 13); this.SetColumnSpan(m_btnStripButtonExcel, 4); this.SetRowSpan(m_btnStripButtonExcel, 2);
+            this.Controls.Add(m_listBoxTEC, 12, 9); this.SetColumnSpan(m_listBoxTEC, 4); this.SetRowSpan(m_listBoxTEC, 6);
+            this.Controls.Add(m_monthCalendarStart, 12, 1); this.SetColumnSpan(m_monthCalendarStart, 1); this.SetRowSpan(m_monthCalendarStart, 1);
+            this.Controls.Add(m_monthCalendarEnd, 16, 1); this.SetColumnSpan(m_monthCalendarEnd, 1); this.SetRowSpan(m_monthCalendarEnd, 1);
+            this.Controls.Add(m_labelTEC, 12, 8); this.SetColumnSpan(m_labelTEC, 2); this.SetRowSpan(m_labelTEC, 1);
+            this.Controls.Add(m_labelValues, 2, 0); this.SetColumnSpan(m_labelValues, 5); this.SetRowSpan(m_labelValues, 1);
+            this.Controls.Add(m_labelStartDate, 12, 0); this.SetColumnSpan(m_labelStartDate, 3); this.SetRowSpan(m_labelStartDate, 1);
+            this.Controls.Add(m_labelEndDate, 16, 0); this.SetColumnSpan(m_labelEndDate, 3); this.SetRowSpan(m_labelEndDate, 1);
 
             for (int i = 0; i < m_dgvValues.Count; i++)
             {
-                this.Controls.Add(m_dgvValues[i], 8, 4 + i * 16); this.SetColumnSpan(m_dgvValues[i], 50); this.SetRowSpan(m_dgvValues[i], 16);
-                this.Controls.Add(m_labelsGroup[i], 2, 7 + i * 16); this.SetColumnSpan(m_labelsGroup[i], 5); this.SetRowSpan(m_labelsGroup[i], 2);
+                this.Controls.Add(m_dgvValues[i], 1, 1 + i * 4); this.SetColumnSpan(m_dgvValues[i], 11); this.SetRowSpan(m_dgvValues[i], 4);
+                this.Controls.Add(m_labelsGroup[i], 0, 2 + i * 4); this.SetColumnSpan(m_labelsGroup[i], 1); this.SetRowSpan(m_labelsGroup[i], 1);
             }
-            this.Controls.Add(m_sumValues, 61, 60); this.SetColumnSpan(m_sumValues, 38); this.SetRowSpan(m_sumValues, 40);
+            this.Controls.Add(m_sumValues, 12, 15); this.SetColumnSpan(m_sumValues, 8); this.SetRowSpan(m_sumValues, 10);
 
             this.ResumeLayout();
 
@@ -518,25 +565,26 @@ namespace CommonAux
             // 
             this.m_btnLoad.Name = "m_btnLoad";
             this.m_btnLoad.TabIndex = 0;
-            this.m_btnLoad.Text = "Load";
+            this.m_btnLoad.Text = "Загрузить";
             this.m_btnLoad.UseVisualStyleBackColor = true;
             this.m_btnLoad.Click += new System.EventHandler(this.btnLoad_Click);
-            this.m_btnLoad.Width = m_monthCalendarStart.Width;
+            this.m_btnLoad.Dock = DockStyle.Fill;
             // 
             // m_btnOpen
             // 
             this.m_btnOpen.Name = "m_btnSave";
             this.m_btnOpen.TabIndex = 1;
-            this.m_btnOpen.Text = "Open";
+            this.m_btnOpen.Text = "Открыть";
             this.m_btnOpen.UseVisualStyleBackColor = true;
             this.m_btnOpen.Click += new System.EventHandler(this.btnOpen_Click);
-            this.m_btnOpen.Width = m_monthCalendarStart.Width;
+            this.m_btnOpen.Dock = DockStyle.Fill;
+            this.m_btnOpen.Width = m_listBoxTEC.Width;
             // 
             // m_btnExit
             // 
             this.m_btnExit.Name = "m_btnExit";
             this.m_btnExit.TabIndex = 2;
-            this.m_btnExit.Text = "Exit";
+            this.m_btnExit.Text = "Выход";
             this.m_btnExit.UseVisualStyleBackColor = true;
             this.m_btnExit.Click += new System.EventHandler(this.btnExit_Click);
             this.m_btnExit.Width = m_monthCalendarStart.Width;
@@ -546,11 +594,12 @@ namespace CommonAux
             // 
             this.m_btnStripButtonExcel.Name = "m_btnStripButtonExcel";
             this.m_btnStripButtonExcel.TabIndex = 0;
-            this.m_btnStripButtonExcel.Text = "Export";
+            this.m_btnStripButtonExcel.Text = "Экспорт";
             this.m_btnStripButtonExcel.UseVisualStyleBackColor = true;
             this.m_btnStripButtonExcel.Click += new System.EventHandler(this.btnStripButtonExcel_Click);
             this.m_btnStripButtonExcel.Enabled = false;
-            this.m_btnStripButtonExcel.Width = m_monthCalendarStart.Width;
+            this.m_btnStripButtonExcel.Dock = DockStyle.Fill;
+            this.m_btnStripButtonExcel.Width = m_listBoxTEC.Width;
             // 
             // m_listBoxTEC
             // 
@@ -598,6 +647,7 @@ namespace CommonAux
             this.m_labelValues.Name = "m_labelValues";
             this.m_labelValues.TabIndex = 5;
             this.m_labelValues.Text = "Значения сигналов (сутки)";
+            this.m_labelValues.Dock = DockStyle.Bottom;
             // 
             // m_labelStartDate
             // 
@@ -605,6 +655,7 @@ namespace CommonAux
             this.m_labelStartDate.Name = "m_labelStartDate";
             this.m_labelStartDate.TabIndex = 5;
             this.m_labelStartDate.Text = "";
+            this.m_labelStartDate.Visible = false;
             // 
             // m_labelEndDate
             // 
@@ -612,6 +663,7 @@ namespace CommonAux
             this.m_labelEndDate.Name = "m_labelEndDate";
             this.m_labelEndDate.TabIndex = 5;
             this.m_labelEndDate.Text = "";
+            this.m_labelEndDate.Visible = false;
             // 
             // m_labelsGroup
             // 
@@ -696,9 +748,44 @@ namespace CommonAux
             m_monthCalendarEnd.DateChanged += monthCalendarEnd_DateChanged;
         }
 
+        /// <summary>
+        /// Проверка допустимости выбранного диапазона дат
+        /// </summary>
+        /// <returns>Результат проверки</returns>
+        private int validateDates()
+        {
+            int iRes = 0;
+
+            if (!(m_monthCalendarStart.SelectionStart.Year == m_monthCalendarEnd.SelectionStart.Year))
+                iRes = -1;
+            else
+                if (!(m_monthCalendarStart.SelectionStart.Month == m_monthCalendarEnd.SelectionStart.Month))
+                iRes = -2;
+            else
+                    if (m_monthCalendarStart.SelectionStart.Day > m_monthCalendarEnd.SelectionStart.Day)
+                iRes = 1;
+            else
+                ;
+
+            return iRes;
+        }
+
         private void monthCalendarEnd_DateChanged(object sender, DateRangeEventArgs e)
         {
             m_labelEndDate.Text = m_monthCalendarEnd.SelectionStart.ToShortDateString();
+
+            int iRes = validateDates();
+
+            if (iRes == 0)
+            {
+                m_btnStripButtonExcel.Enabled = true;
+                m_GetDataFromDB.ReportClear(true);
+            }
+            else
+            {
+                m_btnStripButtonExcel.Enabled = false;
+                m_GetDataFromDB.ErrorReport("Некорректный временной диапазон");
+            }
         }
 
         private void monthCalendarStart_DateChanged(object sender, DateRangeEventArgs e)
@@ -708,6 +795,19 @@ namespace CommonAux
                 m_dgvValues[i].ClearValues();
             }
             m_labelStartDate.Text = m_monthCalendarStart.SelectionStart.ToShortDateString();
+
+            int iRes = validateDates();
+
+            if (iRes == 0)
+            {
+                m_btnStripButtonExcel.Enabled = true;
+                m_GetDataFromDB.ReportClear(true);
+            }
+            else
+            {
+                m_btnStripButtonExcel.Enabled = false;
+                m_GetDataFromDB.ErrorReport("Некорректный временной диапазон");
+            }
         }
 
         private void updateRowData()
@@ -725,6 +825,10 @@ namespace CommonAux
 
         private void listBox_SelectedIndexChanged(object sender, EventArgs e)
         {
+            for (int i = 0; i <= Convert.ToInt32(TEC_LOCAL.INDEX_DATA.GRVIII); i++)
+            { 
+                m_sumValues.Rows[i].Cells[1].Value = "0";
+            }
             if ((INDEX_CONTROL)((Control)sender).Tag == INDEX_CONTROL.LB_TEC)
             {
                 updateRowData();
@@ -735,6 +839,7 @@ namespace CommonAux
             else
                 ;
         }
+
         /// <summary>
         /// Обработчик нажатия на кнопку на панели быстрого доступа "Открыть"
         /// </summary>
@@ -767,9 +872,13 @@ namespace CommonAux
                 formChoiсeTemplate.CheckFileExists =
                     true;
                 formChoiсeTemplate.Filter = MS_EXCEL_FILTER;
+
+                m_GetDataFromDB.ActionReport("Проверка шаблона");
                 //Отобразить форму диалога
                 if (formChoiсeTemplate.ShowDialog() == System.Windows.Forms.DialogResult.OK)
+                {
                     iErr = setFullPathTemplate(formChoiсeTemplate.FileName);
+                }
                 else
                     iErr = 1;
 
@@ -778,18 +887,26 @@ namespace CommonAux
                     {
                         case 1: //...отмена действия
                             //labelLog.Text += @"отменено пользователем..." + @"шаблон: " + (FullPathTemplate.Length > 0 ? FullPathTemplate : @"не указан...");
+                            m_GetDataFromDB.ActionReport(@"Отменено пользователем..." + @"шаблон: " + (FullPathTemplate.Length > 0 ? FullPathTemplate : @"не указан..."));
+                            m_GetDataFromDB.ReportClear(true);
                             break;
                         case -1: //...шаблон не прошел проверку
                             MessageBox.Show("Ошибка при проверке шаблона.\r\nОбратитесь в службу поодержки (тел.: 0-4444, 289-04-37).", @"Ошибка!", MessageBoxButtons.OK, MessageBoxIcon.Error, MessageBoxDefaultButton.Button1);
+                            m_GetDataFromDB.ActionReport("Ошибка при проверке шаблона");
+                            m_GetDataFromDB.ReportClear(true);
                             //labelLog.Text += @"ошибка проверки..." + @"шаблон: " + (FullPathTemplate.Length > 0 ? FullPathTemplate : @"не указан...");
                             break;
                         case -2:
+                            m_GetDataFromDB.ReportClear(true);
                             break;
                         default:
+                            m_GetDataFromDB.ReportClear(true);
                             break;
                     }
                 else
                 {
+                    m_GetDataFromDB.ActionReport("Проверка шаблона успешно завершена");
+                    m_GetDataFromDB.ReportClear(true);
                     m_btnStripButtonExcel.Enabled = true;
                 };
             }
@@ -803,7 +920,7 @@ namespace CommonAux
             TEC_LOCAL.INDEX_DATA indx;
             TEC_LOCAL tec = m_listTEC[m_listBoxTEC.SelectedIndex];
             TEC_LOCAL.VALUES_DATE.VALUES_GROUP dictIndxValues;
-            m_GetDataFromDB = new GetDataFromDB();
+            //m_GetDataFromDB = new GetDataFromDB();
 
             for (int i = 0; i <= Convert.ToInt32(TEC_LOCAL.INDEX_DATA.GRVIII); i++)
             {
@@ -910,8 +1027,8 @@ namespace CommonAux
             double[] arWriteValues;
             HMark markErr = new HMark(0);
             string msg = string.Empty;
-            m_GetDataFromDB = new GetDataFromDB();
             Logging.Logg().Action(@"Экспорт в MS Excel - начало ...", Logging.INDEX_MESSAGE.NOT_SET);
+            m_GetDataFromDB.ActionReport("Экспорт в MS Excel - получение данных");
 
             if (m_connSettAIISKUECentre == null)
                 throw new Exception(@"FormMain::экспортВMSExcelToolStripMenuItem_Click () - нет параметров для установки соединения с источником данных...");
@@ -953,6 +1070,8 @@ namespace CommonAux
 
             //Разорвать соединение с источником данных
             DbSources.Sources().UnRegister(iListenerId);
+
+            m_GetDataFromDB.ActionReport("Экспорт в MS Excel - запись данных");
 
             //Создать форму диалога выбора файла-шаблона MS Excel
             using (FileDialog formChoiseResult = new SaveFileDialog())
@@ -1052,10 +1171,11 @@ namespace CommonAux
                 {
                     msg += @"отменено пользователем...";
                 }
-
                 Logging.Logg().Action(msg, Logging.INDEX_MESSAGE.NOT_SET);
             }
+            m_GetDataFromDB.ReportClear(true);
         }
+
         /// <summary>
         /// Проверить шаблон на корректность использования
         /// </summary>
@@ -1093,6 +1213,7 @@ namespace CommonAux
 
             return iRes;
         }
+
         /// <summary>
         /// Проверить шаблон на возможность использования по назначению
         /// </summary>

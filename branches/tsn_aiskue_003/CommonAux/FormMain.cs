@@ -41,7 +41,8 @@ namespace CommonAux
             Thread.CurrentThread.CurrentUICulture =
                 ProgramBase.ss_MainCultureInfo;
 
-            m_panel = new PanelCommonAux(1);
+            formParameters = new FormParameters_DB(s_listFormConnectionSettings[0].ConnectionSettingsEdit);
+            m_panel = new PanelCommonAux(formParameters.m_arParametrSetup[(int)FormParameters.PARAMETR_SETUP.COMMON_AUX_PATH]);
             
             m_panel.GetListTEC(tec);
 
@@ -248,6 +249,7 @@ namespace CommonAux
 
         protected override int UpdateStatusString()
         {
+            return 0;
             throw new NotImplementedException();
         }
 

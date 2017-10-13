@@ -34,8 +34,8 @@ namespace StatisticCommon
             //, ID_SOURCE_SOTIASSO_BTEC, ID_SOURCE_SOTIASSO_TEC2, ID_SOURCE_SOTIASSO_TEC3, ID_SOURCE_SOTIASSO_TEC4, ID_SOURCE_SOTIASSO_TEC5, ID_SOURCE_SOTIASSO_BiTEC
             , IGO_VERSION
             , MODE_REGISTRATION
-            , COUNT_PARAMETR_SETUP
             , COMMON_AUX_PATH
+            , COUNT_PARAMETR_SETUP
         };
         protected static string[] NAME_PARAMETR_SETUP = {
             "Polling period", "Error delay", "Max attempts count", @"Waiting time", @"Waiting count"
@@ -61,7 +61,7 @@ namespace StatisticCommon
             //, @"ID_SOURCE_SOTIASSO_BTEC", @"ID_SOURCE_SOTIASSO_TEC2", @"ID_SOURCE_SOTIASSO_TEC3", @"ID_SOURCE_SOTIASSO_TEC4", @"ID_SOURCE_SOTIASSO_TEC5", @"ID_SOURCE_SOTIASSO_BiTEC"
             , @"IGO Version"
             , @"Mode Registration"
-            , @"Common Aux Path"
+            , @"COMMON_AUX_PATH"
         };
         protected static string[] NAMESI_PARAMETR_SETUP = {
             "сек", "сек", "ед.", @"мсек", @"мсек"
