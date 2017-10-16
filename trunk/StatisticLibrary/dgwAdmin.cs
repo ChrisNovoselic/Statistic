@@ -6,30 +6,10 @@ using System.Windows.Forms;
 using System.Threading;
 using System.Data;
 using System.Globalization;
+using System.Drawing;
 
 namespace StatisticCommon
-{
-    public abstract class HDataGridViewTables : DataGridView
-    {
-        protected bool _bIsItogo;
-        
-        public HDataGridViewTables(bool bIsItogo)
-            : base()
-        {
-            _bIsItogo = bIsItogo;
-        }
-
-        public void InitRows(int cnt, bool bIns)
-        {
-            if (bIns == true)
-                while (Rows.Count < (cnt + (_bIsItogo == true ? 1 : 0)))
-                    Rows.Insert(0, 1);
-            else
-                while (Rows.Count > (cnt + (_bIsItogo == true ? 1 : 0)))
-                    Rows.RemoveAt(0);
-        }
-    }
-    
+{    
     public abstract class DataGridViewAdmin : HDataGridViewTables
     {
         protected const double maxPlanValue = 1500;
@@ -57,7 +37,7 @@ namespace StatisticCommon
             ColumnHeadersHeightSizeMode = System.Windows.Forms.DataGridViewColumnHeadersHeightSizeMode.AutoSize;
         }
 
-        public DataGridViewAdmin () : base (false) {
+        public DataGridViewAdmin (Color []colors) : base (colors, false) {
             //Thread.CurrentThread.SetApartmentState(ApartmentState.STA);
 
             InitializeComponents ();
@@ -98,7 +78,7 @@ namespace StatisticCommon
 
         protected abstract void dgwAdminTable_CellValidated(object sender, DataGridViewCellEventArgs e);
 
-        protected virtual int INDEX_COLUMN_BUTTON_TO_ALL { get { return (int)DataGridViewAdminKomDisp.DESC_INDEX.TO_ALL; } }
+        protected virtual int INDEX_COLUMN_BUTTON_TO_ALL { get { return (int)DataGridViewAdminKomDisp.COLUMN_INDEX.TO_ALL; } }
 
         protected virtual void dgwAdminTable_CellClick(object sender, DataGridViewCellEventArgs e)
         {
@@ -107,7 +87,7 @@ namespace StatisticCommon
             if ((e.ColumnIndex == INDEX_COLUMN_BUTTON_TO_ALL) // кнопка применение для всех
                 && (!(e.RowIndex < 0)))
             {
-                colStart = (int)DataGridViewAdminKomDisp.DESC_INDEX.PLAN;
+                colStart = (int)DataGridViewAdminKomDisp.COLUMN_INDEX.PLAN;
                 while (Columns[colStart].ReadOnly == true)
                     colStart ++;
 

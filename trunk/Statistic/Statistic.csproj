@@ -160,6 +160,9 @@
     <Compile Include="FormMain.designer.cs">
       <DependentUpon>FormMain.cs</DependentUpon>
     </Compile>
+    <Compile Include="HStatisticTabCtrlEx.cs">
+      <SubType>Form</SubType>
+    </Compile>
     <Compile Include="PanelAdmin.cs">
       <SubType>Component</SubType>
     </Compile>
@@ -170,6 +173,24 @@
       <SubType>Component</SubType>
     </Compile>
     <Compile Include="PanelAdminNSS.cs">
+      <SubType>Component</SubType>
+    </Compile>
+    <Compile Include="PanelAISKUESOTIASSODay\DataGridView.cs">
+      <SubType>Component</SubType>
+    </Compile>
+    <Compile Include="PanelAISKUESOTIASSODay\HandlerDbSignalValue.cs">
+      <SubType>Component</SubType>
+    </Compile>
+    <Compile Include="PanelAISKUESOTIASSODay\HandlerSignalQueue.cs">
+      <SubType>Component</SubType>
+    </Compile>
+    <Compile Include="PanelAISKUESOTIASSODay\PanelAISKUESOTIASSODay.cs">
+      <SubType>Component</SubType>
+    </Compile>
+    <Compile Include="PanelAISKUESOTIASSODay\PanelManagement.cs">
+      <SubType>Component</SubType>
+    </Compile>
+    <Compile Include="PanelAISKUESOTIASSODay\ZedGraphControl.cs">
       <SubType>Component</SubType>
     </Compile>
     <Compile Include="PanelCurPower.cs">
@@ -184,25 +205,7 @@
     <Compile Include="PanelQuickData.cs">
       <SubType>Component</SubType>
     </Compile>
-    <Compile Include="PanelSOTIASSO.cs">
-      <SubType>Component</SubType>
-    </Compile>
-    <Compile Include="PanelSOTIASSODay\HandlerDbSignalValue.cs">
-      <SubType>Component</SubType>
-    </Compile>
-    <Compile Include="PanelSOTIASSODay\HandlerSignalQueue.cs">
-      <SubType>Component</SubType>
-    </Compile>
-    <Compile Include="PanelSOTIASSODay\PanelManagement.cs">
-      <SubType>Component</SubType>
-    </Compile>
-    <Compile Include="PanelSOTIASSODay\DataGridView.cs">
-      <SubType>Component</SubType>
-    </Compile>
-    <Compile Include="PanelSOTIASSODay\ZedGraphControl.cs">
-      <SubType>Component</SubType>
-    </Compile>
-    <Compile Include="PanelSOTIASSODay\PanelSOTIASSODay.cs">
+    <Compile Include="PanelSOTIASSOHour.cs">
       <SubType>Component</SubType>
     </Compile>
     <Compile Include="PanelTECComponent.cs">

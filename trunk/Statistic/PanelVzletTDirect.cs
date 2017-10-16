@@ -68,7 +68,7 @@ namespace Statistic
         /// </summary>
         /// <param name="listTec">Лист ТЭЦ</param>
         public PanelVzletTDirect(List<TEC> listTec)
-            : base(typeof(PanelTecVzletTDirect))
+            : base(MODE_UPDATE_VALUES.AUTO, FormMain.formGraphicsSettings.BackgroundColor, typeof(PanelTecVzletTDirect))
         {
             InitializeComponent();
 
@@ -113,7 +113,7 @@ namespace Statistic
         /// Метод непосредственного применения параметров графического представления данных
         /// </summary>
         /// <param name="type">Тип изменившихся параметров</param>
-        public void UpdateGraphicsCurrent(int type)
+        public override void UpdateGraphicsCurrent(int type)
         {
             foreach (Control ptvtd in this.Controls)
                 if ((ptvtd is PanelTecVzletTDirect) == true) (ptvtd as PanelTecVzletTDirect).UpdateGraphicsCurrent(type); else ;
@@ -179,27 +179,32 @@ namespace Statistic
                         }
                         else
                             Rows[i].Cells[(int)INDEX_COLUMNS.PART_TIME].Value = (hour).ToString();
+                        Rows [i].Cells [(int)INDEX_COLUMNS.PART_TIME].Style.BackColor = BackColor;
 
-                        for (c = 1; c < m_arColumns.Length; c++)
-                            Rows[i].Cells[c].Value = @"-" //0.ToString("F1")
+                        for (c = 1; c < m_arColumns.Length; c++) {
+                            Rows [i].Cells [c].Value = @"-" //0.ToString("F1")
                                 ;
+                            Rows [i].Cells [c].Style.BackColor = BackColor;
+                        }
                     }
 
                     Rows[count].Cells[0].Value = "Средн.";
-                    for (c = 1; c < m_arColumns.Length; c++)
-                        switch ((INDEX_COLUMNS)c)
-                        {
+                    for (c = 1; c < m_arColumns.Length; c++) {
+                        switch ((INDEX_COLUMNS)c) {
                             case INDEX_COLUMNS.TEMPERATURE_FACT:
                             case INDEX_COLUMNS.TEMPERATURE_PBR:
                             case INDEX_COLUMNS.REC:
                             case INDEX_COLUMNS.UDGt:
                             case INDEX_COLUMNS.TEMPERATURE_DEVIATION:
-                                Rows[i].Cells[c].Value = @"-".ToString();
+                                Rows [i].Cells [c].Value = @"-".ToString ();
                                 break;
                             default:
-                                Rows[i].Cells[c].Value = 0.ToString("F1");
+                                Rows [i].Cells [c].Value = 0.ToString ("F1");
                                 break;
                         }
+
+                        Rows [i].Cells [c].Style.BackColor = BackColor;
+                    }
                 }
 
                 public override void Fill(TecView.valuesTEC[] values, params object[] pars)
@@ -236,8 +241,8 @@ namespace Statistic
                         , errorDevCellStyle = new DataGridViewCellStyle();
                     curCellStyle = normalDevCellStyle;
 
-                    normalDevCellStyle.BackColor = Color.White;
-                    errorDevCellStyle.BackColor = FormMain.formGraphicsSettings.COLOR(FormGraphicsSettings.INDEX_COLOR.DIVIATION);
+                    normalDevCellStyle = s_dgvCellStyles[(int)INDEX_CELL_STYLE.COMMON];
+                    errorDevCellStyle = s_dgvCellStyles [(int)INDEX_CELL_STYLE.ERROR];
 
                     cntHourFactNotValues = 0;
                     sumFact =
@@ -247,6 +252,8 @@ namespace Statistic
                     for (i = 0; i < itemscount; i++)
                     {
                         // номер часа - уже отображен
+                        // но для изменения цвета фона ячейка перерисовка требуется
+                        Rows [i].Cells [(int)INDEX_COLUMNS.PART_TIME].Style = normalDevCellStyle;
 
                         // зафиксировать отсутствие значения
                         cntHourFactNotValues += ((!(values[i].valuesFact > 0) && (!(i > lh))) ? 1 : 0);
@@ -268,9 +275,10 @@ namespace Statistic
                             strVal = strNotValue;
 
                         Rows[i].Cells[(int)INDEX_COLUMNS.TEMPERATURE_FACT].Value = strVal;
-                        
+                        Rows [i].Cells [(int)INDEX_COLUMNS.TEMPERATURE_FACT].Style = normalDevCellStyle;
+
                         // план
-                        showCell(i, INDEX_COLUMNS.TEMPERATURE_PBR, values[i].valuesPmin, 1); // температура
+                        showCell (i, INDEX_COLUMNS.TEMPERATURE_PBR, values[i].valuesPmin, 1); // температура
                         // рекомендация
                         showCell(i, INDEX_COLUMNS.REC, values[i].valuesREC, 0);
                         // уточненный дисп./график (??? с учетом рекомендации)
@@ -353,6 +361,7 @@ namespace Statistic
                         Rows[iRow].Cells[(int)indxCol].Value = value.ToString(@"F" + digit.ToString());
                     else
                         Rows[iRow].Cells[(int)indxCol].Value = @"-";
+                    Rows [iRow].Cells [(int)indxCol].Style = s_dgvCellStyles [(int)INDEX_CELL_STYLE.COMMON];
                 }
 
                 public event DelegateIntFunc EventHourSelected;
@@ -548,6 +557,7 @@ namespace Statistic
 
                     colorChart = FormMain.formGraphicsSettings.COLOR(FormGraphicsSettings.INDEX_COLOR.BG_ASKUTE);
                     GraphPane.Chart.Fill = new Fill(colorChart);
+                    GraphPane.Fill = new Fill (BackColor);
                     colorPCurve = FormMain.formGraphicsSettings.COLOR(FormGraphicsSettings.INDEX_COLOR.TEMP_ASKUTE);
                    
                     //LineItem - план/отклонения
@@ -555,9 +565,9 @@ namespace Statistic
                         , strCurveNameDeviation = "Возможное отклонение";
                     GraphPane.AddCurve(strCurveNamePlan, /*null,*/ valuesPlan, FormMain.formGraphicsSettings.COLOR(FormGraphicsSettings.INDEX_COLOR.UDG));
                     //LineItem
-                    GraphPane.AddCurve(string.Empty, /*null,*/ valuesODiviation, FormMain.formGraphicsSettings.COLOR(FormGraphicsSettings.INDEX_COLOR.DIVIATION));
+                    GraphPane.AddCurve(string.Empty, /*null,*/ valuesODiviation, HDataGridViewTables.s_dgvCellStyles [(int)HDataGridViewTables.INDEX_CELL_STYLE.ERROR].BackColor);
                     //LineItem
-                    GraphPane.AddCurve(strCurveNameDeviation, /*null,*/ valuesPDiviation, FormMain.formGraphicsSettings.COLOR(FormGraphicsSettings.INDEX_COLOR.DIVIATION));                    
+                    GraphPane.AddCurve(strCurveNameDeviation, /*null,*/ valuesPDiviation, HDataGridViewTables.s_dgvCellStyles [(int)HDataGridViewTables.INDEX_CELL_STYLE.ERROR].BackColor);                    
 
                     //Значения
                     string strCurveNameValue = "Температура";
@@ -687,8 +697,8 @@ namespace Statistic
             {
                 private enum INDEX_VALUE {  }
                 
-                public PanelQuickDataVzletTDirect()
-                    : base(/*-1, -1*/)
+                public PanelQuickDataVzletTDirect(Color backColor)
+                    : base(backColor)
                 {
                     InitializeComponents();
                 }
@@ -2072,21 +2082,28 @@ namespace Statistic
             {
             }
             /// <summary>
-            /// Функция активация Вкладки
+            /// Функция активация вкладки
             /// </summary>
-            /// <param name="activated">параметр</param>
-            /// <returns>результат</returns>
+            /// <param name="activated">Новое состояние панели/вкладки</param>
+            /// <returns>Результат</returns>
             public override bool Activate(bool activated)
             {
                 bool bRes = base.Activate(activated);
 
                 if (bRes == true)
-                    if (activated == true)
-                    {
+                    if (activated == true) {
+                    // панель активируется
+                        if (IsFirstActivated == true) {
+                        // 1-ая активация
+                        } else
+                        // очередня активация
+                            ;
                     }
                     else
+                    // панель деактивируется
                         ;
                 else
+                // состояние не изменилось
                     ;
 
                 return bRes;
@@ -2096,7 +2113,7 @@ namespace Statistic
             /// </summary>
             protected override void createPanelQuickData()
             {
-                _pnlQuickData = new PanelQuickDataVzletTDirect();
+                _pnlQuickData = new PanelQuickDataVzletTDirect(FormMain.formGraphicsSettings.BackgroundColor);
             }
             /// <summary>
             /// Создать таблицу-представление для отображения значений в разрезе "сутки - час"
@@ -2134,6 +2151,7 @@ namespace Statistic
                 m_tecView.m_arTypeSourceData[(int)HDateTime.INTERVAL.MINUTES] = CONN_SETT_TYPE.UNKNOWN;
                 m_tecView.m_arTypeSourceData[(int)HDateTime.INTERVAL.HOURS] = CONN_SETT_TYPE.DATA_VZLET;
                 ; // не требуется, разнотипные источники данных отсутствуют
+
                 return new HMark(0);
             }
 

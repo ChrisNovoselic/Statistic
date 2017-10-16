@@ -1,28 +1,90 @@
 ﻿using System;
 using System.Threading;
 using System.Windows.Forms;
+using System.Collections;
 using System.Collections.Generic;
-using System.Data;
 using System.Drawing; //Color..
 
 using HClassLibrary;
+using System.Linq;
 
 namespace StatisticCommon
 {
     public abstract class PanelStatistic : HPanelCommon
     {
-        protected DelegateFunc delegateStartWait;
-        protected DelegateFunc delegateStopWait;
+        /// <summary>
+        /// Перечисление - возможные значения для режима обновления значений
+        /// </summary>
+        public enum MODE_UPDATE_VALUES { NOT_SET, AUTO, ACTION }
+        /// <summary>
+        /// Режим обновления значений
+        /// </summary>
+        protected MODE_UPDATE_VALUES _modeUpdateValues;
+        /// <summary>
+        /// Делегаты для отображения/скрытия элемента управления
+        ///  , визуализирующего длительный процесс обработки запроса
+        /// </summary>
+        protected DelegateFunc delegateStartWait
+            , delegateStopWait;
+        /// <summary>
+        /// Делегат при обработке события обновления (??? чего)
+        /// </summary>
         protected DelegateFunc delegateEventUpdate;
-
+        /// <summary>
+        /// Фильтр для диалогового окна открыть шаблон/макет книги MS Excel  для импорта/экспорта
+        /// </summary>
         protected static string s_DialogMSExcelBrowseFilter = @"Книга MS Excel 2003|*.xls|Книга MS Excel 2010|*.xlsx";
-
-        public PanelStatistic(int cCols = -1, int cRows = -1)
+        /// <summary>
+        /// Коструктор - основной (с аогументами)
+        /// </summary>
+        /// <param name="cCols">Количество столбцов в макете для размещения элементов управления</param>
+        /// <param name="cRows">Количество строк в макете для размещения элементов управления</param>
+        public PanelStatistic (MODE_UPDATE_VALUES modeUpdateValues, Color backColor, int cCols = -1, int cRows = -1)
             : base(cCols, cRows)
         {
             Thread.CurrentThread.CurrentCulture =
             Thread.CurrentThread.CurrentUICulture =
                 ProgramBase.ss_MainCultureInfo;
+
+            BackColor = backColor;
+            _modeUpdateValues = modeUpdateValues;
+
+            Application.OpenForms[0].BackColorChanged += formMain_BackColorChanged;
+        }
+
+        /// <summary>
+        /// Найти все дочерние для 'ctrl' объекты с типами(наследованными от них), указанных в аргументе
+        /// </summary>
+        /// <param name="ctrl">Элемент интерфйеса</param>
+        /// <param name="types">Последовательность типов, объекты которых необходимо искать</param>
+        /// <returns>Последовательность элементов</returns>
+        protected IEnumerable<Control> getTypedControls (Control ctrl, IEnumerable<Type> types)
+        {
+            List<Control> listRes = new List<Control>();
+
+            types.ToList ().ForEach (type => listRes.AddRange (from child in ctrl.Controls.Cast<Control> ()
+                                                                where ((child.GetType ().IsSubclassOf (type)) || (child.GetType ().Equals(type) == true))
+                                                                select child));
+
+            ctrl.Controls.Cast<Control> ().ToList ().ForEach (child => listRes.AddRange (getTypedControls(child, types)));
+
+            return listRes;
+        }
+
+        /// <summary>
+        /// Обработчик события - изменение цветовой схемы отображения
+        /// </summary>
+        /// <param name="sender">Объект, инициировавший событие(форма)</param>
+        /// <param name="e">Аргумент события</param>
+        protected virtual void formMain_BackColorChanged (object sender, EventArgs e)
+        {
+            List<Control> listCtrlDoChangeBackColor;
+
+            BackColor = (sender as Form).BackColor;
+
+            listCtrlDoChangeBackColor = getTypedControls (this, new List<Type> () { typeof(DataGridView), typeof(ZedGraph.ZedGraphControl) }).ToList();
+
+            listCtrlDoChangeBackColor.ForEach (ctrl => ctrl.BackColor = BackColor.Equals (SystemColors.Control) == false ? BackColor : SystemColors.Window );
         }
 
         public static volatile int POOL_TIME = -1
@@ -42,15 +104,15 @@ namespace StatisticCommon
             return true;
         }
 
-        //protected List<TEC> m_listTEC;
+        public abstract void UpdateGraphicsCurrent (int type);
     }
 
     public abstract class PanelContainerStatistic : PanelStatistic
     {
         private Type _controlType;
 
-        public PanelContainerStatistic(Type type)
-            : base()
+        public PanelContainerStatistic(MODE_UPDATE_VALUES modeUpdateValues, Color backColor, Type type)
+            : base(modeUpdateValues, backColor)
         {
             registredControlType(type);
         }
@@ -141,6 +203,11 @@ namespace StatisticCommon
 
     public abstract class PanelStatisticWithTableHourRows : PanelStatistic
     {
+        public PanelStatisticWithTableHourRows (MODE_UPDATE_VALUES modeUpdateValues, Color backColor)
+            : base (modeUpdateValues, backColor)
+        {
+        }
+
         protected abstract void initTableHourRows();
     }
 }

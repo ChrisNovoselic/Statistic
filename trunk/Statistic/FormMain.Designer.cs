@@ -1,6 +1,7 @@
 ﻿using System.Collections.Generic; //Dictionary
 
 using HClassLibrary;
+using StatisticCommon;
 
 namespace Statistic
 {
@@ -47,14 +48,14 @@ namespace Statistic
 
             this.видToolStripMenuItem = new System.Windows.Forms.ToolStripMenuItem();
             this.панельГрафическихToolStripMenuItem = new System.Windows.Forms.ToolStripMenuItem();
-            m_dictAddingTabs.Add((int)ID_ADDING_TAB.CUSTOM_2X2_1, new ADDING_TAB("выборОбъектывыборОбъекты22-1-ToolStripMenuItem", "Окно 1", HTabCtrlEx.TYPE_TAB.FLOAT));
-            m_dictAddingTabs.Add((int)ID_ADDING_TAB.CUSTOM_2X2_2, new ADDING_TAB("выборОбъектывыборОбъекты22-2-ToolStripMenuItem", "Окно 2", HTabCtrlEx.TYPE_TAB.FLOAT));
-            m_dictAddingTabs.Add((int)ID_ADDING_TAB.CUSTOM_2X2_3, new ADDING_TAB("выборОбъектывыборОбъекты22-3-ToolStripMenuItem", "Окно 3", HTabCtrlEx.TYPE_TAB.FLOAT));
-            m_dictAddingTabs.Add((int)ID_ADDING_TAB.CUSTOM_2X2_4, new ADDING_TAB("выборОбъектывыборОбъекты22-4-ToolStripMenuItem", "Окно 4", HTabCtrlEx.TYPE_TAB.FLOAT));
-            m_dictAddingTabs.Add((int)ID_ADDING_TAB.CUSTOM_2X3_1, new ADDING_TAB("выборОбъектывыборОбъекты23-1-ToolStripMenuItem", "Окно 1", HTabCtrlEx.TYPE_TAB.FLOAT));            
-            m_dictAddingTabs.Add((int)ID_ADDING_TAB.CUSTOM_2X3_2, new ADDING_TAB("выборОбъектывыборОбъекты23-2-ToolStripMenuItem", "Окно 2", HTabCtrlEx.TYPE_TAB.FLOAT));
-            m_dictAddingTabs.Add((int)ID_ADDING_TAB.CUSTOM_2X3_3, new ADDING_TAB("выборОбъектывыборОбъекты23-3-ToolStripMenuItem", "Окно 3", HTabCtrlEx.TYPE_TAB.FLOAT));
-            m_dictAddingTabs.Add((int)ID_ADDING_TAB.CUSTOM_2X3_4, new ADDING_TAB("выборОбъектывыборОбъекты23-4-ToolStripMenuItem", "Окно 4", HTabCtrlEx.TYPE_TAB.FLOAT));
+            m_dictAddingTabs.Add((int)ID_ADDING_TAB.CUSTOM_2X2_1, new ADDING_TAB("выборОбъектывыборОбъекты22-1-ToolStripMenuItem", "Окно 1", HStatisticTabCtrlEx.TYPE_TAB.FLOAT));
+            m_dictAddingTabs.Add((int)ID_ADDING_TAB.CUSTOM_2X2_2, new ADDING_TAB("выборОбъектывыборОбъекты22-2-ToolStripMenuItem", "Окно 2", HStatisticTabCtrlEx.TYPE_TAB.FLOAT));
+            m_dictAddingTabs.Add((int)ID_ADDING_TAB.CUSTOM_2X2_3, new ADDING_TAB("выборОбъектывыборОбъекты22-3-ToolStripMenuItem", "Окно 3", HStatisticTabCtrlEx.TYPE_TAB.FLOAT));
+            m_dictAddingTabs.Add((int)ID_ADDING_TAB.CUSTOM_2X2_4, new ADDING_TAB("выборОбъектывыборОбъекты22-4-ToolStripMenuItem", "Окно 4", HStatisticTabCtrlEx.TYPE_TAB.FLOAT));
+            m_dictAddingTabs.Add((int)ID_ADDING_TAB.CUSTOM_2X3_1, new ADDING_TAB("выборОбъектывыборОбъекты23-1-ToolStripMenuItem", "Окно 1", HStatisticTabCtrlEx.TYPE_TAB.FLOAT));            
+            m_dictAddingTabs.Add((int)ID_ADDING_TAB.CUSTOM_2X3_2, new ADDING_TAB("выборОбъектывыборОбъекты23-2-ToolStripMenuItem", "Окно 2", HStatisticTabCtrlEx.TYPE_TAB.FLOAT));
+            m_dictAddingTabs.Add((int)ID_ADDING_TAB.CUSTOM_2X3_3, new ADDING_TAB("выборОбъектывыборОбъекты23-3-ToolStripMenuItem", "Окно 3", HStatisticTabCtrlEx.TYPE_TAB.FLOAT));
+            m_dictAddingTabs.Add((int)ID_ADDING_TAB.CUSTOM_2X3_4, new ADDING_TAB("выборОбъектывыборОбъекты23-4-ToolStripMenuItem", "Окно 4", HStatisticTabCtrlEx.TYPE_TAB.FLOAT));
             m_dictAddingTabs.Add((int)ID_ADDING_TAB.CUR_POWER, new ADDING_TAB("значенияТекущаяМощностьГТПгТЭЦснToolStripMenuItem", "Значения текущей мощности ГТПг, ТЭЦсн", HClassLibrary.HTabCtrlEx.TYPE_TAB.FLOAT));
             m_dictAddingTabs.Add((int)ID_ADDING_TAB.TM_SN_POWER, new ADDING_TAB("значенияТекущаяМощностьТЭЦгТЭЦснToolStripMenuItem", "Значения текущей мощности ТЭЦг, ТЭЦсн", HClassLibrary.HTabCtrlEx.TYPE_TAB.FLOAT));
             m_dictAddingTabs.Add((int)ID_ADDING_TAB.MONITOR_LAST_MINUTES, new ADDING_TAB("мониторингПоследняяМинутаЧасToolStripMenuItem", "Мониторинг - последняя минута часа", HClassLibrary.HTabCtrlEx.TYPE_TAB.FLOAT));
@@ -89,7 +90,7 @@ namespace Statistic
             this.параметрыПриложенияToolStripMenuItem = new System.Windows.Forms.ToolStripMenuItem();
             this.параметрыТГБийскToolStripMenuItem = new System.Windows.Forms.ToolStripMenuItem();
             this.оПрограммеToolStripMenuItem = new System.Windows.Forms.ToolStripMenuItem();
-            this.tclTecViews = new HTabCtrlEx (); //System.Windows.Forms.TabControl();
+            this.tclTecViews = new HStatisticTabCtrlEx (); //System.Windows.Forms.TabControl();
             this.lblLabel = new System.Windows.Forms.Label();
             this.menuStrip.SuspendLayout();
             //this.m_ContextMenuStripListTecViews.SuspendLayout ();
@@ -97,18 +98,20 @@ namespace Statistic
             // 
             // menuStrip
             // 
-            this.menuStrip.Items.AddRange(new System.Windows.Forms.ToolStripItem[] {
-            this.файлToolStripMenuItem,
-            this.видToolStripMenuItem,
-            this.настройкиToolStripMenuItem,
-            this.оПрограммеToolStripMenuItem});
-            this.menuStrip.Location = new System.Drawing.Point(0, 0);
-            this.menuStrip.Name = "menuStrip";
-            this.menuStrip.Size = new System.Drawing.Size(982, 24);
-            this.menuStrip.TabIndex = 2;
-            this.menuStrip.Text = "Главное меню";
-            this.menuStrip.MenuActivate += new System.EventHandler(menuStrip_MenuActivate);
-            this.menuStrip.MenuDeactivate += new System.EventHandler(menuStrip_MenuDeactivate);
+            this.MainMenuStrip.Items.AddRange(new System.Windows.Forms.ToolStripItem[] {
+                this.файлToolStripMenuItem
+                , this.видToolStripMenuItem
+                , this.настройкиToolStripMenuItem
+                , this.оПрограммеToolStripMenuItem
+            });
+            this.MainMenuStrip.Location = new System.Drawing.Point(0, 0);
+            this.MainMenuStrip.Name = "MainMenuStrip";
+            this.MainMenuStrip.Size = new System.Drawing.Size(982, 24);
+            this.MainMenuStrip.TabIndex = 2;
+            this.MainMenuStrip.Text = "Главное меню";
+            this.MainMenuStrip.MenuActivate += new System.EventHandler(menuStrip_MenuActivate);
+            this.MainMenuStrip.MenuDeactivate += new System.EventHandler(menuStrip_MenuDeactivate);
+            //this.MainMenuStrip.BackColorChanged += mainMenuStrip_BackColorChanged;
             // 
             // ContextMenuStrip
             // 
@@ -495,6 +498,36 @@ namespace Statistic
             this.PerformLayout();
         }
 
+        ///// <summary>
+        ///// Обработчик события - изменение цвета фона
+        ///// </summary>
+        ///// <param name="sender">Объект инициировавший событие</param>
+        ///// <param name="e">Аргумент события</param>
+        //private void mainMenuStrip_BackColorChanged (object sender, System.EventArgs e)
+        //{
+        //    for (int i = 0; i < (sender as MenuStrip).Items.Count; i++)                
+        //        changeColorToolStripMenuItem ((sender as MenuStrip).Items [i] as ToolStripMenuItem);
+        //}
+
+
+        //private void changeColorToolStripMenuItem (ToolStripMenuItem item)
+        //{
+        //    item.BackColor =
+        //        //item.GetCurrentParent().BackColor ???изменение произошло, но не применено
+        //        PanelStatistic._BackColor
+        //        ;
+
+        //    if (item.HasDropDownItems == true) {
+        //        for (int i = 0; i < item.DropDownItems.Count; i++)
+        //            if (item.DropDownItems [i] is ToolStripMenuItem)
+        //                changeColorToolStripMenuItem (item.DropDownItems [i] as ToolStripMenuItem);
+        //            else if (item.DropDownItems [i] is ToolStripSeparator)
+        //                (item.DropDownItems [i] as ToolStripSeparator).BackColor = PanelStatistic._BackColor;
+        //            else
+        //                ;
+        //    } else
+        //        ;
+        //}
         #endregion
 
         private System.Windows.Forms.MenuStrip menuStrip;
@@ -509,7 +542,7 @@ namespace Statistic
         private System.Windows.Forms.ToolStripMenuItem сменитьРежимToolStripMenuItem;
         //private System.Windows.Forms.ToolStripMenuItem ДиагностикаToolStripMenuItem;
         //private System.Windows.Forms.ToolStripMenuItem рассинхронизацияДатаВремяСерверБДToolStripMenuItem;
-        private HTabCtrlEx /*System.Windows.Forms.TabControl*/ tclTecViews;
+        private HStatisticTabCtrlEx /*System.Windows.Forms.TabControl*/ tclTecViews;
         private System.Windows.Forms.ToolStripMenuItem настройкиСоединенияБДКонфToolStripMenuItem;
         private System.Windows.Forms.ToolStripMenuItem настройкиСоединенияБДИсточникToolStripMenuItem;
         private System.Windows.Forms.ToolStripMenuItem администрированиеToolStripMenuItem;

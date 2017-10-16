@@ -147,6 +147,8 @@ namespace StatisticCommon
             }
         }
 
+        public static int NUM_MINUTE_PBR_APPLY = 40;
+
         public static IEnumerable<string> EtalonPBR
         {
             get {
@@ -162,7 +164,7 @@ namespace StatisticCommon
                 listRes.Add(string.Format("ПБР{0}", iNowHour + 1));
 
                 iNowMinute = datetimeMscTimezoneNow.Minute;
-                if (iNowMinute > 40)
+                if (iNowMinute > NUM_MINUTE_PBR_APPLY)
                     listRes.Add(string.Format("ПБР{0}", iNowHour + 2));
                 else
                     ;
@@ -640,20 +642,39 @@ namespace StatisticCommon
             return bRes;
         }
 
+        private string getDbInterfaceIdListeners (/*string func*/)
+        {
+            string dbgMes = string.Empty;
+            dbgMes += "[ ";
+            foreach (int iConnSett in m_dictIdListeners.Keys)
+                dbgMes += string.Format ("[{0}], ", string.Join (", ", Array.ConvertAll (m_dictIdListeners [iConnSett], i => i.ToString ())));
+            dbgMes = dbgMes.Remove (dbgMes.Length - 2, 2); // лишние запятая + пробел
+            dbgMes += " ]";
+
+            //Console.WriteLine (string.Format ("TecView.{0}() - {1}...", func, dbgMes));
+            return dbgMes;
+        }
+
         public override void Start()
         {
             ClearValues();
 
-            StartDbInterfaces();
-            
-            base.Start();
+            // для проверки отсутствия совпадений при назначении идентификаторов подписки
+            //consoleDebugDbInterfaceIdListeners ("Start");
+            Logging.Logg ().Debug (string.Format ("TecView::Start() - идентификаторы подписки обращения к БД = {0}...", getDbInterfaceIdListeners()), Logging.INDEX_MESSAGE.NOT_SET);
+
+            base.Start ();
+
+            StartDbInterfaces ();
         }
 
         public override void Stop()
         {
-            base.Stop();
+            // для проверки отсутствия совпадений при назначении идентификаторов подписки
+            //consoleDebugDbInterfaceIdListeners ("Stop");
+            Logging.Logg ().Debug (string.Format ("TecView::Stop() - идентификаторы подписки обращения к БД = {0}...", getDbInterfaceIdListeners ()), Logging.INDEX_MESSAGE.NOT_SET);
 
-            StopDbInterfaces();
+            base.Stop();            
         }
 
         public override void InitTEC(List<StatisticCommon.TEC> listTEC, HMark markQueries)

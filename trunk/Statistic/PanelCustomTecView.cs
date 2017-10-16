@@ -493,6 +493,7 @@ namespace Statistic
         }
 
         public PanelCustomTecView(FormChangeMode formCM, Size sz/*, DelegateStringFunc fErrRep, DelegateStringFunc fWarRep, DelegateStringFunc fActRep, DelegateBoolFunc fREpClr*/)
+            : base (MODE_UPDATE_VALUES.AUTO, FormMain.formGraphicsSettings.BackgroundColor)
         {
             m_formChangeMode = formCM;
 
@@ -562,7 +563,11 @@ namespace Statistic
             }
         }
 
-        public void UpdateGraphicsCurrent(int type)
+        /// <summary>
+        /// Метод непосредственного применения параметров графического представления данных
+        /// </summary>
+        /// <param name="type">Тип изменившихся параметров</param>
+        public override void UpdateGraphicsCurrent(int type)
         {
             foreach (Control ctrl in this.Controls)
             {

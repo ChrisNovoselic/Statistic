@@ -2104,7 +2104,7 @@ namespace StatisticCommon
 
                             if (result == 0)
                             {
-                                readyData(m_prevDate);
+                                readyData(m_prevDate, true);
                             }
                             else
                                 ;
@@ -2132,7 +2132,7 @@ namespace StatisticCommon
 
                     if (result == 0)
                     {
-                        readyData(m_prevDate);
+                        readyData(m_prevDate, true);
                     }
                     else
                         ;
@@ -2144,7 +2144,7 @@ namespace StatisticCommon
                     result = delegateImportForeignValuesResponse();
                     if (result == 0)
                     {
-                        readyData(m_prevDate);
+                        readyData(m_prevDate, true);
                     }
                     else
                         ;
@@ -2168,7 +2168,7 @@ namespace StatisticCommon
                     result = delegateImportForeignValuesResponse();
                     if (result == 0)
                     {
-                        readyData(m_prevDate);
+                        readyData(m_prevDate, true);
                     }
                     else
                         ;

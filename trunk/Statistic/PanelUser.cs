@@ -40,7 +40,7 @@ namespace Statistic
             //System.ComponentModel.ComponentResourceManager resources = new System.ComponentModel.ComponentResourceManager(typeof(FormUser));
            
             this.treeView_Users = new TreeView_Users();
-            this.dgvProp = new StatisticCommon.DataGridView_Prop_ComboBoxCell();
+            this.dgvProp = new DataGridView_Prop_ComboBoxCell();
             this.btnOK = new Button();
             this.btnBreak = new Button();
             this.SuspendLayout();
@@ -101,34 +101,852 @@ namespace Statistic
         TreeView_Users.Type_Comp m_type_sel_node;
 
         /// <summary>
-        /// Идентификаторы для типов компонента ТЭЦ
+        /// Идентификаторы для типов данных (таблиц с настраиваемыми параметрами)
         /// </summary>
         public enum ID_Table : int { Unknown = -1, Role, User, Profiles, Count }
 
-        private DB_Sostav_TEC db_sostav = new DB_Sostav_TEC();
+        //private DB_Sostav_TEC db_sostav;
 
         /// <summary>
-        /// Возвратить наименование компонента 
+        /// Возвратить наименование таблиц
         /// </summary>
-        /// <param name="indx">Индекс </param>
+        /// <param name="indx">Индекс(идентификатор) таблицы</param>
         /// <returns>Строка - наименование</returns>
-        protected static string getNameMode(ID_Table id)
+        protected static string getTableName(ID_Table id)
         {
             string[] nameModes = { "roles", "users", "profiles" };
 
             return nameModes[(int)id];
         }
-
-
         #endregion
 
-        public PanelUser()
-            : base()
-        {
+        #region DataGridView
+        public class DataGridView_Prop : DataGridView {
+            private void InitializeComponent ()
+            {
+                this.Columns.Add ("Значение", "Значение");
+                this.ColumnHeadersVisible = true;
+                this.AutoSizeColumnsMode = DataGridViewAutoSizeColumnsMode.Fill;
+                this.Columns [0].SortMode = DataGridViewColumnSortMode.NotSortable;
+                this.RowHeadersVisible = true;
+                this.AllowUserToAddRows = false;
+                this.ColumnHeadersHeightSizeMode = System.Windows.Forms.DataGridViewColumnHeadersHeightSizeMode.AutoSize;
+                //this.AutoSizeRowsMode = DataGridViewAutoSizeRowsMode.AllCells;
+                //this.SelectionMode = DataGridViewSelectionMode.FullRowSelect;
+                this.MultiSelect = false;
+                this.RowHeadersWidth = 250;
 
+                BackColor = HDataGridViewTables.s_dgvCellStyles[(int)HDataGridViewTables.INDEX_CELL_STYLE.COMMON].BackColor;
+            }
+
+            public DataGridView_Prop ()
+                : base ()
+            {
+                InitializeComponent ();//инициализация компонентов
+
+                this.CellValueChanged += new DataGridViewCellEventHandler (this.cell_EndEdit);
+            }
+
+            /// <summary>
+            /// Запрос на получение таблицы со свойствами
+            /// </summary>
+            /// <param name="id_list">Лист с идентификаторами компонентов</param>
+            public virtual void Update_dgv (int id_component, DataTable [] tables)
+            {
+                this.Rows.Clear ();
+                DataRow [] rowsSel = tables [0].Select (@"ID=" + id_component);
+
+                if (rowsSel.Length == 1)
+                    foreach (DataColumn col in tables [0].Columns) {
+                        this.Rows.Add (rowsSel [0] [col.ColumnName]);
+                        this.Rows [this.Rows.Count - 1].HeaderCell.Value = col.ColumnName.ToString ();
+                    } else
+                        Logging.Logg ().Error (@"Ошибка....", Logging.INDEX_MESSAGE.NOT_SET);
+
+                //cell_ID_Edit_ReadOnly();
+            }
+
+            /// <summary>
+            /// Метод для присваивания ячейке свойства ReadOnly
+            /// </summary>
+            /// <param name="id_cell">id ячейки</param>
+            private void cell_ID_Edit_ReadOnly ()
+            {
+                for (int i = 0; i < this.Rows.Count; i++) {
+                    if (this.Rows [i].HeaderCell.Value.ToString () [0] == 'I' && this.Rows [i].HeaderCell.Value.ToString () [1] == 'D') {
+                        this.Rows [i].Cells ["Значение"].ReadOnly = true;
+                        this.Rows [i].Cells ["Значение"].ToolTipText = "Только для чтения";
+                    }
+                }
+            }
+
+            /// <summary>
+            /// Обработчик события окончания изменения ячейки
+            /// </summary>
+            protected void cell_EndEdit (object sender, DataGridViewCellEventArgs e)
+            {
+                int n_row = -1;
+                for (int i = 0; i < this.Rows.Count; i++) {
+                    if (this.Rows [i].HeaderCell.Value.ToString () == "ID") {
+                        n_row = (int)this.Rows [i].Cells [0].Value;
+                    }
+                }
+
+                if (Rows [e.RowIndex].Cells [0].Value != null) {
+                    if (EventCellValueChanged != null)
+                        EventCellValueChanged (this, new DataGridView_Prop.DataGridView_Prop_ValuesCellValueChangedEventArgs (n_row//Идентификатор компонента
+                                            , Rows [e.RowIndex].HeaderCell.Value.ToString () //Идентификатор компонента
+                                            , Rows [e.RowIndex].Cells [0].Value.ToString () //Идентификатор параметра с учетом периода расчета
+                                            ));
+                } else {
+                }
+            }
+
+            /// <summary>
+            /// Класс для описания аргумента события - изменения значения ячейки
+            /// </summary>
+            public class DataGridView_Prop_ValuesCellValueChangedEventArgs : EventArgs {
+                /// <summary>
+                /// ID компонента
+                /// </summary>
+                public int m_IdComp;
+
+                /// <summary>
+                /// Имя изменяемого параметра
+                /// </summary>
+                public string m_Header_name;
+
+                /// <summary>
+                /// Значение изменяемого параметра
+                /// </summary>
+                public string m_Value;
+
+                public DataGridView_Prop_ValuesCellValueChangedEventArgs ()
+                    : base ()
+                {
+                    m_IdComp = -1;
+                    m_Header_name = string.Empty;
+                    m_Value = string.Empty;
+                }
+
+                public DataGridView_Prop_ValuesCellValueChangedEventArgs (int id_comp, string header_name, string value)
+                    : this ()
+                {
+                    m_IdComp = id_comp;
+                    m_Header_name = header_name;
+                    m_Value = value;
+                }
+            }
+
+            /// <summary>
+            /// Тип делегата для обработки события - изменение значения в ячейке
+            /// </summary>
+            public delegate void DataGridView_Prop_ValuesCellValueChangedEventHandler (object obj, DataGridView_Prop_ValuesCellValueChangedEventArgs e);
+
+            /// <summary>
+            /// Событие - изменение значения ячейки
+            /// </summary>
+            public DataGridView_Prop_ValuesCellValueChangedEventHandler EventCellValueChanged;
+        }
+
+        public class DataGridView_Prop_ComboBoxCell : DataGridView_Prop {
+            enum INDEX_TABLE {
+                user, role, tec
+            }
+            /// <summary>
+            /// Запрос на получение таблицы со свойствами и ComboBox
+            /// </summary>
+            /// <param name="id_list">Лист с идентификаторами компонентов</param>
+            public override void Update_dgv (int id_component, DataTable [] tables)
+            {
+                this.CellValueChanged -= cell_EndEdit;
+                this.Rows.Clear ();
+                DataRow [] rowsSel = tables [(int)INDEX_TABLE.user].Select (@"ID=" + id_component);
+
+                if (rowsSel.Length == 1)
+                    foreach (DataColumn col in tables [(int)INDEX_TABLE.user].Columns) {
+                        if (col.ColumnName == "ID_ROLE") {
+                            DataGridViewRow row = new DataGridViewRow ();
+                            DataGridViewComboBoxCell combo = new DataGridViewComboBoxCell ();
+                            combo.AutoComplete = true;
+                            row.Cells.Add (combo);
+                            //combo.Items.Clear();
+                            this.Rows.Add (row);
+                            ArrayList roles = new ArrayList ();
+                            foreach (DataRow row_role in tables [(int)INDEX_TABLE.role].Rows) {
+                                roles.Add (new role (row_role ["DESCRIPTION"].ToString (), row_role ["ID"].ToString ()));
+                            }
+                            combo.DataSource = roles;
+                            combo.DisplayMember = "NameRole";
+                            combo.ValueMember = "IdRole";
+                            this.Rows [Rows.Count - 1].HeaderCell.Value = "ID_ROLE";
+                            this.Rows [Rows.Count - 1].Cells [0].Value = rowsSel [0] [col.ColumnName].ToString ();
+                        } else
+                            if (col.ColumnName == "ID_TEC") {
+                            DataGridViewRow row = new DataGridViewRow ();
+                            DataGridViewComboBoxCell combo = new DataGridViewComboBoxCell ();
+                            combo.AutoComplete = true;
+                            row.Cells.Add (combo);
+                            //combo.Items.Clear();
+                            this.Rows.Add (row);
+                            ArrayList TEC = new ArrayList ();
+                            foreach (DataRow row_tec in tables [(int)INDEX_TABLE.tec].Rows) {
+                                TEC.Add (new role (row_tec ["DESCRIPTION"].ToString (), row_tec ["ID"].ToString ()));
+                            }
+                            TEC.Add (new role ("Все ТЭЦ", "0"));
+                            combo.DataSource = TEC;
+                            combo.DisplayMember = "NameRole";
+                            combo.ValueMember = "IdRole";
+                            this.Rows [Rows.Count - 1].HeaderCell.Value = "ID_TEC";
+                            this.Rows [Rows.Count - 1].Cells [0].Value = rowsSel [0] [col.ColumnName].ToString ();
+                        } else {
+                            this.Rows.Add (rowsSel [0] [col.ColumnName]);
+                            this.Rows [this.Rows.Count - 1].HeaderCell.Value = col.ColumnName.ToString ();
+                        }
+
+                        this.Rows [this.Rows.Count - 1].Cells [0].Style.BackColor = this.BackColor;
+                    } else
+                        Logging.Logg ().Error (@"Ошибка....", Logging.INDEX_MESSAGE.NOT_SET);
+
+                this.CellValueChanged += cell_EndEdit;
+            }
+
+            public class role {
+                private string Name;
+                private string ID;
+
+                public role (string name, string id)
+                {
+
+                    this.Name = name;
+                    this.ID = id;
+                }
+
+                public string NameRole
+                {
+                    get
+                    {
+                        return Name;
+                    }
+                }
+
+                public string IdRole
+                {
+
+                    get
+                    {
+                        return ID;
+                    }
+                }
+
+            }
+        }
+
+        public class DataGridView_Prop_Text_Check : DataGridView_Prop {
+            enum INDEX_TABLE {
+                user, role, tec
+            }
+
+            public DataGridView_Prop_Text_Check (DataTable tables)
+                : base ()
+            {
+                create_dgv (tables);
+                this.RowHeadersWidth = 500;
+            }
+
+            /// <summary>
+            /// Запрос на получение таблицы со свойствами и ComboBox
+            /// </summary>
+            /// <param name="id_list">Лист с идентификаторами компонентов</param>
+            private void create_dgv (DataTable tables)
+            {
+                this.CellValueChanged -= cell_EndEdit;
+                this.Rows.Clear ();
+
+                foreach (DataRow r in tables.Rows) {
+                    DataGridViewRow row = new DataGridViewRow ();
+
+                    if (r ["ID_UNIT"].ToString ().Trim () == "8") {
+                        DataGridViewCheckBoxCell check = new DataGridViewCheckBoxCell ();
+                        row.Cells.Add (check);
+                        check.Value = false;
+                        this.Rows.Add (row);
+                        this.Rows [this.Rows.Count - 1].HeaderCell.Value = r ["DESCRIPTION"].ToString ().Trim ();
+                    } else {
+                        this.Rows.Add ();
+                        this.Rows [this.Rows.Count - 1].HeaderCell.Value = r ["DESCRIPTION"].ToString ().Trim ();
+                        this.Rows [this.Rows.Count - 1].Cells [0].Value = "";
+                    }
+                }
+                this.CellValueChanged += cell_EndEdit;
+            }
+
+            public override void Update_dgv (int id_component, DataTable [] tables)
+            {
+                this.CellValueChanged -= cell_EndEdit;
+
+                for (int i = 0; i < this.Rows.Count; i++) {
+                    if (this.Rows [i].Cells [0] is DataGridViewCheckBoxCell) {
+                        if (Convert.ToInt32 (tables [0].Rows [i] ["VALUE"]) == 0)
+                            this.Rows [i].Cells [0].Value = false;
+                        else
+                            this.Rows [i].Cells [0].Value = true;
+                    } else
+                        this.Rows [i].Cells [0].Value = tables [0].Rows [i] ["VALUE"];
+                }
+
+                this.CellValueChanged += cell_EndEdit;
+            }
+        }
+
+        public class TreeView_Users : TreeView {
+            #region Переменные
+
+            /// <summary>
+            /// Идентификаторы для типов объектов
+            /// </summary>
+            public enum ID_OBJ : int { Role = 0, User };
+
+            string m_warningReport;
+
+            public struct ID_Comp {
+                public int id_role;
+                public int id_user;
+                public Type_Comp type;
+            }
+
+
+            ID_Comp m_selNode_id;
+
+            public enum Type_Comp : int {
+                Role, User
+            }
+
+            /// <summary>
+            /// Идентификаторы для типов компонента ТЭЦ
+            /// </summary>
+            public enum ID_Operation : int {
+                Insert = 0, Delete, Update, Select
+            }
+
+            /// <summary>
+            /// Возвратить наименование операции
+            /// </summary>
+            /// <param name="indx">Индекс режима</param>
+            /// <returns>Строка - наименование режима</returns>
+            protected static string getNameOperation (Int16 indx)
+            {
+                string [] nameModes = { "Insert", "Delete", "Update", "Select" };
+
+                return nameModes [indx];
+            }
+
+            /// <summary>
+            /// Идентификаторы для типов компонента ТЭЦ
+            /// </summary>
+            public enum ID_Menu : int {
+                AddRole = 0, AddUser, Delete
+            }
+
+
+            List<string> m_open_node = new List<string> ();
+            string selected_user = string.Empty;
+
+            #endregion
+
+            private System.Windows.Forms.ContextMenuStrip contextMenu_TreeView;
+
+            private void InitializeComponent ()
+            {
+                this.Dock = DockStyle.Fill;
+
+                System.Windows.Forms.ToolStripMenuItem добавитьРольToolStripMenuItem;
+
+                contextMenu_TreeView = new System.Windows.Forms.ContextMenuStrip ();
+                добавитьРольToolStripMenuItem = new System.Windows.Forms.ToolStripMenuItem ();
+                this.ContextMenuStrip = contextMenu_TreeView;
+
+                #region Context add TEC
+                // 
+                // contextMenu_TreeView
+                // 
+                this.contextMenu_TreeView.Items.AddRange (new System.Windows.Forms.ToolStripItem [] {
+            добавитьРольToolStripMenuItem});
+                this.contextMenu_TreeView.Name = "contextMenu_TreeView";
+                // 
+                // добавитьТЭЦToolStripMenuItem
+                // 
+                добавитьРольToolStripMenuItem.Name = "добавитьРольToolStripMenuItem";
+                добавитьРольToolStripMenuItem.Text = "Добавить роль";
+                #endregion
+
+                this.HideSelection = false;
+            }
+
+            public TreeView_Users ()
+                : base ()
+            {
+                InitializeComponent ();
+
+                this.NodeMouseClick += new TreeNodeMouseClickEventHandler (this.tree_NodeClick);
+                this.ContextMenuStrip.ItemClicked += new ToolStripItemClickedEventHandler (this.add_New_Role);
+
+                this.AfterSelect += new TreeViewEventHandler (this.tree_NodeSelect);
+            }
+
+            /// <summary>
+            /// Возвратить наименование компонента контекстного меню
+            /// </summary>
+            /// <param name="indx">Индекс режима</param>
+            /// <returns>Строка - наименование режима</returns>
+            protected static string getNameMode (int indx)
+            {
+                string [] nameModes = { "Добавить роль", "Добавить пользователя", "Удалить" };
+
+                return nameModes [indx];
+            }
+
+            /// <summary>
+            /// Для возвращения имена по умолчанию для компонентов
+            /// </summary>
+            /// <param name="indx">Идентификатор типа компонента</param>
+            /// <returns>Имя по умолчанию</returns>
+            public static string Mass_NewVal_Comp (int indx)
+            {
+                String [] arPREFIX_COMPONENT = { "Новая роль", "Новый пользователь" };
+
+                return arPREFIX_COMPONENT [indx];
+            }
+
+            /// <summary>
+            /// Метод для сохранения открытых элементов дерева при обновлении
+            /// </summary>
+            /// <param name="node">Массив Node с которых нужно начать</param>
+            /// <param name="i">Начальное значение счетчика</param>
+            /// <param name="set_check">Флаг для установки значений</param>
+            private void checked_node (TreeNodeCollection node, int i, bool set_check = false)
+            {
+                if (set_check == false) {
+                    if (this.SelectedNode != null) {
+                        selected_user = this.SelectedNode.Text;
+                    }
+                    foreach (TreeNode n in node) {
+                        if (n.IsExpanded == true) {
+                            m_open_node.Add (n.Name);
+                            if (n.FirstNode != null)
+                                checked_node (n.Nodes, i);
+                        }
+                    }
+                }
+                if (set_check == true) {
+                    foreach (TreeNode n in node) {
+                        if (m_open_node.Count > 0 & i < m_open_node.Count)
+
+                            if (m_open_node [i] == n.Name) {
+                                n.Expand ();
+                                i++;
+                                if (n.FirstNode != null)
+                                    checked_node (n.Nodes, i, true);
+                            }
+
+                        if (n.Text == selected_user) {
+                            this.SelectedNode = n;
+                        }
+                    }
+                }
+            }
+
+            /// <summary>
+            /// Заполнение TreeView компонентами
+            /// </summary>
+            public void Update_tree (DataTable table_users, DataTable table_role)
+            {
+                checked_node (this.Nodes, 0, false);
+
+                this.Nodes.Clear ();
+                int num_node = 0;
+                foreach (DataRow r in table_role.Rows) {
+                    Nodes.Add (r ["DESCRIPTION"].ToString ());
+                    num_node = Nodes.Count - 1;
+                    Nodes [num_node].Name = r ["ID"].ToString ();
+                    DataRow [] rows = table_users.Select ("ID_ROLE=" + r ["ID"].ToString ());
+                    foreach (DataRow r_u in rows) {
+                        Nodes [num_node].Nodes.Add (r_u ["DESCRIPTION"].ToString ());
+                        Nodes [num_node].Nodes [Nodes [num_node].Nodes.Count - 1].Name = Nodes [num_node].Name + ":" + r_u ["ID"].ToString ();
+                    }
+                }
+
+                checked_node (this.Nodes, 0, true);
+
+                //foreach (TreeNode n in this.Nodes)
+                //{
+                //    if (n.IsExpanded == true)
+                //    {
+                //        this.SelectedNode = n;
+                //    }
+                //}
+            }
+
+            /// <summary>
+            /// Обработчик события выбора элемента в TreeView
+            /// </summary>
+            private void tree_NodeSelect (object sender, TreeViewEventArgs e)
+            {
+                int idComp = 0;
+                m_selNode_id = get_m_id_list (e.Node.Name);
+
+                if (m_selNode_id.type == Type_Comp.Role)
+                    idComp = m_selNode_id.id_role;
+                if (m_selNode_id.type == Type_Comp.User)
+                    idComp = m_selNode_id.id_user;
+
+                if (EditNode != null)
+                    EditNode (this, new EditNodeEventArgs (m_selNode_id, ID_Operation.Select, idComp));
+            }
+
+            /// <summary>
+            /// Метод для переименования ноды
+            /// </summary>
+            /// <param name="id_comp"></param>
+            /// <param name="name"></param>
+            public void Rename_Node (ID_Comp id_comp, string name)
+            {
+                if (id_comp.id_user.Equals (-1) == true & id_comp.id_role.Equals (-1) == false) {
+                    foreach (TreeNode n in this.Nodes) {
+                        if (get_m_id_list (n.Name).id_role == id_comp.id_role) {
+                            n.Text = name;
+                        }
+                    }
+                }
+                if (id_comp.id_user.Equals (-1) == false) {
+                    foreach (TreeNode n in this.Nodes) {
+                        if (get_m_id_list (n.Name).id_role == id_comp.id_role) {
+                            foreach (TreeNode u in n.Nodes) {
+                                if (get_m_id_list (u.Name).id_user == id_comp.id_user) {
+                                    u.Text = name;
+                                }
+                            }
+                        }
+                    }
+                }
+            }
+
+            /// <summary>
+            /// Метод для запроса ID компонента в TreeView
+            /// </summary>
+            /// <param name="id_string">Строка с идентификаторами</param>
+            /// <returns>Список с ID</returns>
+            private ID_Comp get_m_id_list (string id_string)
+            {
+                ID_Comp id_comp = new ID_Comp ();
+                id_comp.id_role = -1;
+                id_comp.id_user = -1;
+
+                if (id_string != "") {
+                    string [] path = id_string.Split (':');
+                    if (path.Length == 2) {
+                        id_comp.id_user = Convert.ToInt32 (path [1].Trim ());
+                        id_comp.type = Type_Comp.User;
+                    } else {
+                        id_comp.id_user = -1;
+                        id_comp.type = Type_Comp.Role;
+                    }
+
+                    id_comp.id_role = Convert.ToInt32 (path [0].Trim ());
+
+                }
+                return id_comp;
+            }
+
+            /// <summary>
+            /// Обработчик добавления новой роли
+            /// </summary>
+            private void add_New_Role (object sender, ToolStripItemClickedEventArgs e)
+            {
+                if (Report != null)
+                    Report (this, new ReportEventArgs (string.Empty, string.Empty, string.Empty, true));
+
+                int id_newRole = 0;
+                if (e.ClickedItem.Text == (string)getNameMode ((int)ID_Menu.AddRole)) {
+                    this.Nodes.Add (Mass_NewVal_Comp ((int)ID_OBJ.Role));
+
+                    if (GetID != null)
+                        id_newRole = GetID (this, new GetIDEventArgs (m_selNode_id, (int)ID_OBJ.Role));
+
+                    Nodes [Nodes.Count - 1].Name = Convert.ToString (id_newRole);
+
+                    ID_Comp id = new ID_Comp ();
+
+                    id.id_role = -1;
+                    id.id_user = -1;
+
+                    id.id_role = id_newRole;
+
+                    if (EditNode != null)
+                        EditNode (this, new EditNodeEventArgs (id, ID_Operation.Insert, id.id_role));
+                }
+            }
+
+            /// <summary>
+            /// Обработчик добавления нового пользователя
+            /// </summary>
+            private void add_New_User (object sender, ToolStripItemClickedEventArgs e)
+            {
+                if (Report != null)
+                    Report (this, new ReportEventArgs (string.Empty, string.Empty, string.Empty, true));
+
+                if (e.ClickedItem.Text == (string)getNameMode ((int)ID_Menu.AddUser))//Добавление нового пользователя
+                {
+                    int id_newUser = 0;
+
+                    ID_Comp id = new ID_Comp ();
+
+                    id.id_role = -1;
+                    id.id_user = -1;
+
+                    if (GetID != null)
+                        id_newUser = GetID (this, new GetIDEventArgs (m_selNode_id, (int)ID_OBJ.User));
+
+                    id.id_role = m_selNode_id.id_role;
+                    id.id_user = id_newUser;
+
+                    if (EditNode != null)
+                        EditNode (this, new EditNodeEventArgs (id, ID_Operation.Insert, id.id_user));
+
+                    foreach (TreeNode role in Nodes) {
+                        if (Convert.ToInt32 (role.Name) == m_selNode_id.id_role) {
+                            role.Nodes.Add (Mass_NewVal_Comp ((int)ID_OBJ.User));
+                            role.Nodes [role.Nodes.Count - 1].Name = Convert.ToString (id.id_role) + ":" + Convert.ToString (id_newUser);
+                        }
+                    }
+                } else {
+                    if (e.ClickedItem.Text == (string)getNameMode ((int)ID_Menu.Delete))//Удаление роли
+                    {
+                        bool del = false;
+
+
+                        if (SelectedNode.FirstNode == null) {
+                            del = true;
+                        }
+                        if (del == true) {
+                            if (EditNode != null)
+                                EditNode (this, new EditNodeEventArgs (m_selNode_id, ID_Operation.Delete, m_selNode_id.id_role));
+
+                            SelectedNode.Remove ();
+                        } else {
+                            m_warningReport = "У роли " + SelectedNode.Text + " имеются пользователи!";
+                            if (Report != null)
+                                Report (this, new ReportEventArgs (string.Empty, string.Empty, m_warningReport, false));
+                            //MessageBox.Show("Имеются не выведенные из состава компоненты в " + SelectedNode.Text,"Внимание!",MessageBoxButtons.OK,MessageBoxIcon.Warning);
+                        }
+                    }
+                }
+            }
+
+            /// <summary>
+            /// Обработчик удаления пользователя
+            /// </summary>
+            private void del_user (object sender, ToolStripItemClickedEventArgs e)
+            {
+                if (Report != null)
+                    Report (this, new ReportEventArgs (string.Empty, string.Empty, string.Empty, true));
+
+                if (e.ClickedItem.Text == (string)getNameMode ((int)ID_Menu.Delete))//Удаление роли
+                {
+                    if (EditNode != null)
+                        EditNode (this, new EditNodeEventArgs (m_selNode_id, ID_Operation.Delete, m_selNode_id.id_user));
+
+                    SelectedNode.Remove ();
+                }
+            }
+
+            /// <summary>
+            /// Обработчик события нажатия на элемент в TreeView
+            /// </summary>
+            private void tree_NodeClick (object sender, TreeNodeMouseClickEventArgs e)
+            {
+                System.Windows.Forms.ContextMenuStrip contextMenu_TreeNode = new System.Windows.Forms.ContextMenuStrip ();
+
+                System.Windows.Forms.ToolStripMenuItem УдалитьToolStripMenuItem = new System.Windows.Forms.ToolStripMenuItem ();
+                System.Windows.Forms.ToolStripMenuItem добавитьПользователяToolStripMenuItem = new System.Windows.Forms.ToolStripMenuItem ();
+
+                #region Нажатие правой кнопкой мыши
+
+                if (e.Button == System.Windows.Forms.MouseButtons.Right) {
+                    this.SelectedNode = e.Node;//Выбор компонента при нажатии на него правой кнопкой мыши
+
+                    #region Добавление компонентов
+
+                    if (m_selNode_id.id_user != -1)//выбран ли элемент пользователь
+                    {
+                        #region Context delete TG
+                        // 
+                        // contextMenu_TreeNode
+                        // 
+                        contextMenu_TreeNode.Items.AddRange (new System.Windows.Forms.ToolStripItem [] {
+                            УдалитьToolStripMenuItem});
+                        contextMenu_TreeNode.Name = "contextMenu_TreeNode";
+                        // 
+                        // УдалитьToolStripMenuItem
+                        //
+                        УдалитьToolStripMenuItem.Name = "УдалитьToolStripMenuItem";
+                        УдалитьToolStripMenuItem.Text = "Удалить";
+                        #endregion
+
+                        this.SelectedNode.ContextMenuStrip = contextMenu_TreeNode;
+                        this.SelectedNode.ContextMenuStrip.ItemClicked += new ToolStripItemClickedEventHandler (this.del_user);
+                    }
+
+                    if (m_selNode_id.id_user == -1 & m_selNode_id.id_role != -1)//Выбрана ли роль
+                    {
+                        #region Добавление в ТЭЦ компонентов
+
+                        #region Context TEC
+                        // 
+                        // contextMenu_TreeView_TEC
+                        // 
+                        contextMenu_TreeNode.Items.AddRange (new System.Windows.Forms.ToolStripItem [] {
+                            добавитьПользователяToolStripMenuItem
+                            , УдалитьToolStripMenuItem});
+                        contextMenu_TreeNode.Name = "contextMenu_TreeNode";
+                        // 
+                        // добавитьПользователяToolStripMenuItem
+                        // 
+                        добавитьПользователяToolStripMenuItem.Name = "добавитьПользователяToolStripMenuItem";
+                        добавитьПользователяToolStripMenuItem.Text = "Добавить пользователя";
+                        // 
+                        // УдалитьToolStripMenuItem
+                        // 
+                        УдалитьToolStripMenuItem.Name = "УдалитьToolStripMenuItem";
+                        УдалитьToolStripMenuItem.Text = "Удалить";
+                        #endregion
+
+                        this.SelectedNode.ContextMenuStrip = contextMenu_TreeNode;
+
+                        this.SelectedNode.ContextMenuStrip.ItemClicked += new ToolStripItemClickedEventHandler (this.add_New_User);
+
+                        #endregion
+                    }
+
+                    #endregion
+                }
+
+                #endregion
+            }
+
+            /// <summary>
+            /// Класс для описания аргумента события - изменения компонента
+            /// </summary>
+            public class EditNodeEventArgs : EventArgs {
+                /// <summary>
+                /// Список ID компонента
+                /// </summary>
+                public ID_Comp PathComp;
+
+                /// <summary>
+                /// Тип производимой операции
+                /// </summary>
+                public ID_Operation Operation;
+
+                public int IdComp;
+
+                /// <summary>
+                /// Значение изменяемого параметра
+                /// </summary>
+                public string Value;
+
+                public EditNodeEventArgs (ID_Comp pathComp, ID_Operation operation, int idComp, string value = null)
+                {
+                    PathComp = pathComp;
+                    IdComp = idComp;
+                    Operation = operation;
+                    Value = value;
+                }
+            }
+
+            /// <summary>
+            /// Тип делегата для обработки события - изменение компонента
+            /// </summary>
+            public delegate void EditNodeEventHandler (object obj, EditNodeEventArgs e);
+
+            /// <summary>
+            /// Событие - редактирование компонента
+            /// </summary>
+            public event EditNodeEventHandler EditNode;
+
+            /// <summary>
+            /// Класс для описания аргумента события - получение ID компонента
+            /// </summary>
+            public class GetIDEventArgs : EventArgs {
+                /// <summary>
+                /// Список ID компонента
+                /// </summary>
+                public ID_Comp PathComp;
+
+                /// <summary>
+                /// ID компонента
+                /// </summary>
+                public int IdComp;
+
+                public GetIDEventArgs (ID_Comp path, int id_comp)
+                {
+                    PathComp = path;
+                    IdComp = id_comp;
+                }
+            }
+
+            /// <summary>
+            /// Тип делегата для обработки события - получение ID компонента
+            /// </summary>
+            public delegate int intGetID (object obj, GetIDEventArgs e);
+
+            /// <summary>
+            /// Событие - получение ID компонента
+            /// </summary>
+            public intGetID GetID;
+
+            /// <summary>
+            /// Класс для описания аргумента события - передачи сообщения для строки состояния
+            /// </summary>
+            public class ReportEventArgs : EventArgs {
+                /// <summary>
+                /// ID компонента
+                /// </summary>
+                public string Action;
+
+                public string Error;
+
+                public string Warning;
+
+                public bool Clear;
+
+                public ReportEventArgs (string action, string error, string warning, bool clear)
+                {
+                    Action = action;
+                    Error = error;
+                    Warning = warning;
+                    Clear = clear;
+                }
+            }
+
+            /// <summary>
+            /// Тип делегата для обработки события - получение репорта
+            /// </summary>
+            public delegate void ReportEventHandler (object obj, ReportEventArgs e);
+
+            /// <summary>
+            /// Событие - получение репорта
+            /// </summary>
+            public ReportEventHandler Report;
+        }
+        #endregion
+
+        public PanelUser ()
+            : base(MODE_UPDATE_VALUES.ACTION, FormMain.formGraphicsSettings.BackgroundColor)
+        {
             m_arr_origTable = new DataTable[(int)ID_Table.Count];
             m_arr_editTable = new DataTable[(int)ID_Table.Count];
-            db_sostav = new DB_Sostav_TEC();
+            //db_sostav = new DB_Sostav_TEC();
             
             InitializeComponent();
 
@@ -137,9 +955,9 @@ namespace Statistic
             dgvProfile.Dock = DockStyle.Fill;
             this.Controls.Add(this.dgvProfile, 7, 6); this.SetColumnSpan(this.dgvProfile, 13); this.SetRowSpan(this.dgvProfile, 13);
 
-            dgvProp.EventCellValueChanged += new StatisticCommon.DataGridView_Prop_ComboBoxCell.DataGridView_Prop_ValuesCellValueChangedEventHandler(this.dgvProp_EndCellEdit);
+            dgvProp.EventCellValueChanged += new DataGridView_Prop_ComboBoxCell.DataGridView_Prop_ValuesCellValueChangedEventHandler(this.dgvProp_EndCellEdit);
 
-            dgvProfile.EventCellValueChanged += new StatisticCommon.DataGridView_Prop_Text_Check.DataGridView_Prop_ValuesCellValueChangedEventHandler(this.dgvProfile_EndCellEdit);
+            dgvProfile.EventCellValueChanged += new DataGridView_Prop_Text_Check.DataGridView_Prop_ValuesCellValueChangedEventHandler(this.dgvProfile_EndCellEdit);
 
             fillDataTable();
             resetDataTable();
@@ -242,7 +1060,7 @@ namespace Statistic
         /// Активировать/деактивировать панель
         /// </summary>
         /// <param name="active">Признак активации/деактивации</param>
-        /// <returns></returns>
+        /// <returns>Результат выполнения метода (изменено состояние панели/не изменено)</returns>
         public override bool Activate(bool activated)
         {
             bool bRes = base.Activate(activated);
@@ -286,10 +1104,13 @@ namespace Statistic
         {
             if (e.Action != string.Empty)
                 delegateActionReport(e.Action);
+
             if (e.Warning != string.Empty)
                 delegateWarningReport(e.Warning);
+
             if (e.Error != string.Empty)
                 delegateErrorReport(e.Error);
+
             if (e.Clear != false)
                 delegateReportClear(e.Clear);
         }
@@ -298,7 +1119,7 @@ namespace Statistic
         /// Регистрация ID
         /// </summary>
         /// <param name="err">Ошибка в процессе регистрации</param>
-        /// <returns>Возвращает ID</returns>
+        /// <returns>Идентификатор подписчика на события получения данных от объекта обращения к БД</returns>
         protected int register_idListenerConfDB(out int err)
         {
             err = -1;
@@ -625,32 +1446,54 @@ namespace Statistic
             string[] warning;
             string keys = string.Empty;
 
-            if (validate_saving(m_arr_editTable, out warning) == false)
+            ConnectionSettings connSett;
+            int idListener = -1;
+            DbConnection dbConn;
+
+            if (validate_saving (m_arr_editTable, out warning) == false)
             {
-                for (ID_Table i = ID_Table.Unknown + 1; i < ID_Table.Count; i++)
-                {
-                    switch (i)
+                connSett = FormMainBaseWithStatusStrip.s_listFormConnectionSettings [(int)CONN_SETT_TYPE.CONFIG_DB].getConnSett ();
+                idListener = DbSources.Sources ().Register (connSett, false, CONN_SETT_TYPE.CONFIG_DB.ToString ());
+                dbConn = DbSources.Sources ().GetConnection (idListener, out err);
+
+                if (err == 0) {
+                    for (ID_Table i = ID_Table.Unknown + 1; i < ID_Table.Count; i++)
                     {
-                        case ID_Table.Role:
-                        case ID_Table.User:
-                            keys = @"ID";
-                            break;
-                        case ID_Table.Profiles:
-                            keys = "ID_EXT,IS_ROLE,ID_UNIT";
-                            break;
-                        default:
-                            break;
+                        switch (i)
+                        {
+                            case ID_Table.Role:
+                            case ID_Table.User:
+                                keys = @"ID";
+                                break;
+                            case ID_Table.Profiles:
+                                keys = "ID_EXT,IS_ROLE,ID_UNIT";
+                                break;
+                            default:
+                                break;
+                        }
+
+                        //db_sostav.Edit(getTableName(i), keys, m_arr_origTable[(int)i], m_arr_editTable[(int)i], out err);                    
+                        DbTSQLInterface.RecUpdateInsertDelete (ref dbConn, getTableName (i), keys, string.Empty, m_arr_origTable [(int)i], m_arr_editTable [(int)i], out err);
+
+                        if (!(err == 0))
+                            Logging.Logg ().Error (string.Format ("PanelUser::buttonOK_click () - не сохранены данные для {0} [ключевые_поля={1}]..."
+                                    , getTableName (i), keys)
+                                , Logging.INDEX_MESSAGE.NOT_SET);
+                        else
+                            ;
                     }
 
-                    db_sostav.Edit(getNameMode(i), keys, m_arr_origTable[(int)i], m_arr_editTable[(int)i], out err);
-                }
+                    fillDataTable ();
+                    resetDataTable();
 
-                fillDataTable();
-                resetDataTable();
-                treeView_Users.Update_tree(m_arr_editTable[(int)ID_Table.User], m_arr_editTable[(int)ID_Table.Role]);
-                btnOK.Enabled = false;
-                btnBreak.Enabled = false;
+                    treeView_Users.Update_tree(m_arr_editTable[(int)ID_Table.User], m_arr_editTable[(int)ID_Table.Role]);
 
+                    btnOK.Enabled = false;
+                    btnBreak.Enabled = false;
+                } else
+                    Logging.Logg().Error(string.Format("PanelUser::buttonOK_click () - данные не сохранены..."), Logging.INDEX_MESSAGE.NOT_SET);
+
+                DbSources.Sources ().UnRegister (idListener);
             }
             else
             {
@@ -722,6 +1565,45 @@ namespace Statistic
             }
 
             return ID;
+        }
+
+        public override void UpdateGraphicsCurrent (int type)
+        {
+            //??? ничего не надо делать
+        }
+
+        public override Color BackColor
+        {
+            get
+            {
+                return base.BackColor;
+            }
+
+            set
+            {
+                base.BackColor = value;
+
+                Color backColor = value == SystemColors.Control ? SystemColors.Window : value;
+
+                if (Equals (treeView_Users, null) == false)
+                    treeView_Users.BackColor = backColor;
+                else
+                    ;
+
+                if (Equals (dgvProfile, null) == false)
+                    for (int j = 0; j < dgvProfile.ColumnCount; j++)
+                        for (int i = 0; i < dgvProfile.RowCount; i++)
+                            dgvProfile.Rows [i].Cells [j].Style.BackColor = backColor;
+                else
+                    ;
+
+                if (Equals (dgvProp, null) == false)
+                    for (int j = 0; j < dgvProp.ColumnCount; j++)
+                        for (int i = 0; i < dgvProp.RowCount; i++)
+                            dgvProp.Rows [i].Cells [j].Style.BackColor = backColor;
+                else
+                    ;
+            }
         }
     }
 
@@ -831,7 +1713,7 @@ namespace Statistic
             /// </summary>
             /// <param name="id">ИД типа</param>
             /// <param name="bIsRole"></param>
-            /// <returns></returns>
+            /// <returns>Строка таблицы со значениями прав доступа (или др. параметров конфигурации)</returns>
             private DataRow GetRowAllowed(int id)
             {
                 DataRow objRes = null;
@@ -870,6 +1752,7 @@ namespace Statistic
 
                 query = @"SELECT * FROM " + m_nameTableProfilesData;
                 m_allProfile = DbTSQLInterface.Select(ref dbConn, query, null, null, out err);
+
                 return m_allProfile;
             }
         }
@@ -877,8 +1760,8 @@ namespace Statistic
         /// <summary>
         /// Метод для получения таблицы со всеми профайлами
         /// </summary>
-        /// <param name="dbConn"></param>
-        /// <returns></returns>
+        /// <param name="dbConn">Объект для соединения с БД</param>
+        /// <returns>??? Таблица с профилями всех пользователей</returns>
         public static DataTable GetTableAllProfile(DbConnection dbConn) 
         {
             return Profile.GetAllProfile(dbConn);

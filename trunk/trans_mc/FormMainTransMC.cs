@@ -159,8 +159,7 @@ namespace trans_mc
         }
 
         protected override void buttonSaveSourceSett_Click(object sender, EventArgs e)
-        {
-            
+        {            
         }
 
         protected override void comboBoxTECComponent_SelectedIndexChanged(object sender, EventArgs ev)

@@ -20,6 +20,10 @@ namespace Statistic
 { 
     public abstract class PanelTecViewStandard : PanelTecViewBase
     {
+        /// <summary>
+        /// Метод непосредственного применения параметров графического представления данных
+        /// </summary>
+        /// <param name="type">Тип изменившихся параметров</param>
         public override void UpdateGraphicsCurrent(int type)
         {
             base.UpdateGraphicsCurrent(type);
@@ -35,6 +39,7 @@ namespace Statistic
                 , m_tecView.m_arTypeSourceData[(int)HDateTime.INTERVAL.HOURS] == CONN_SETT_TYPE.DATA_AISKUE
                 , m_tecView.serverTime);
             }
+
             PanelQuickData.UpdateColorPbr();
         }
 
@@ -59,7 +64,7 @@ namespace Statistic
             {
                 InitializeComponents();
 
-                Name = "m_dgwTableMins";
+                Name = "dgwTableMins";
                 RowHeadersVisible = false;
                 RowTemplate.Resizable = DataGridViewTriState.False;
 
@@ -91,9 +96,15 @@ namespace Statistic
                     else
                         ;
 
-                    Rows[i].Cells[(int)DataGridViewStandardHours.INDEX_COLUMNS.PBR].Value = values[i].valuesPBR.ToString("F2");
-                    Rows[i].Cells[(int)DataGridViewStandardHours.INDEX_COLUMNS.PBRe].Value = values[i].valuesPBRe.ToString("F2");
-                    Rows[i].Cells[(int)DataGridViewStandardHours.INDEX_COLUMNS.UDGe].Value = values[i].valuesUDGe.ToString("F2");
+                    Rows [i].Cells [(int)DataGridViewStandardHours.INDEX_COLUMNS.PART_TIME].Style = s_dgvCellStyles [(int)INDEX_CELL_STYLE.COMMON];
+                    Rows [i].Cells [(int)DataGridViewStandardHours.INDEX_COLUMNS.FACT].Style = s_dgvCellStyles [(int)INDEX_CELL_STYLE.COMMON];
+
+                    Rows [i].Cells[(int)DataGridViewStandardHours.INDEX_COLUMNS.PBR].Value = values[i].valuesPBR.ToString("F2");
+                    Rows [i].Cells [(int)DataGridViewStandardHours.INDEX_COLUMNS.PBR].Style = s_dgvCellStyles [(int)INDEX_CELL_STYLE.COMMON];
+                    Rows [i].Cells[(int)DataGridViewStandardHours.INDEX_COLUMNS.PBRe].Value = values[i].valuesPBRe.ToString("F2");
+                    Rows [i].Cells [(int)DataGridViewStandardHours.INDEX_COLUMNS.PBRe].Style = s_dgvCellStyles [(int)INDEX_CELL_STYLE.COMMON];
+                    Rows [i].Cells[(int)DataGridViewStandardHours.INDEX_COLUMNS.UDGe].Value = values[i].valuesUDGe.ToString("F2");
+                    Rows [i].Cells [(int)DataGridViewStandardHours.INDEX_COLUMNS.UDGe].Style = s_dgvCellStyles [(int)INDEX_CELL_STYLE.COMMON];
                     sumUDGe += values[i].valuesUDGe;
                     if ((i < min) && (!(values[i].valuesUDGe == 0)))
                     {
@@ -103,22 +114,24 @@ namespace Statistic
                         //    && values.valuesDiviation[i] != 0)
                         //    Rows[i].Cells[5].Style = dgvCellStyleError;
                         //else
-                        Rows[i].Cells[(int)DataGridViewStandardHours.INDEX_COLUMNS.DEVIATION].Style = s_dgvCellStyleCommon;
+                        Rows[i].Cells[(int)DataGridViewStandardHours.INDEX_COLUMNS.DEVIATION].Style = s_dgvCellStyles [(int)INDEX_CELL_STYLE.COMMON];
 
                         sumDiviation += (values[i + 1].valuesFact - values[i].valuesUDGe)/* / cnt*/;
                     }
                     else
                     {
                         Rows[i].Cells[(int)DataGridViewStandardHours.INDEX_COLUMNS.DEVIATION].Value = 0.ToString("F2");
-                        Rows[i].Cells[(int)DataGridViewStandardHours.INDEX_COLUMNS.DEVIATION].Style = s_dgvCellStyleCommon;
+                        Rows[i].Cells[(int)DataGridViewStandardHours.INDEX_COLUMNS.DEVIATION].Style = s_dgvCellStyles [(int)INDEX_CELL_STYLE.COMMON];
                     }
                 }
 
+                // итоговая строка
                 if (!(min > 0))
                 {
-                    Rows[cnt].Cells[(int)DataGridViewStandardHours.INDEX_COLUMNS.FACT].Value = 0.ToString("F2");
-                    Rows[cnt].Cells[(int)DataGridViewStandardHours.INDEX_COLUMNS.UDGe].Value = 0.ToString("F2");
-                    Rows[cnt].Cells[(int)DataGridViewStandardHours.INDEX_COLUMNS.DEVIATION].Value = 0.ToString("F2");
+                    Rows [cnt].Cells[(int)DataGridViewStandardHours.INDEX_COLUMNS.FACT].Value =
+                    Rows [cnt].Cells[(int)DataGridViewStandardHours.INDEX_COLUMNS.UDGe].Value =
+                    Rows [cnt].Cells[(int)DataGridViewStandardHours.INDEX_COLUMNS.DEVIATION].Value =
+                        0.ToString("F2");                    
                 }
                 else
                 {
@@ -127,10 +140,18 @@ namespace Statistic
                     else
                         ;
 
-                    Rows[cnt].Cells[(int)DataGridViewStandardHours.INDEX_COLUMNS.FACT].Value = (sumFact / min).ToString("F2");
-                    Rows[cnt].Cells[(int)DataGridViewStandardHours.INDEX_COLUMNS.UDGe].Value = values[0].valuesUDGe.ToString("F2");
-                    Rows[cnt].Cells[(int)DataGridViewStandardHours.INDEX_COLUMNS.DEVIATION].Value = (sumDiviation / min).ToString("F2");
+                    Rows [cnt].Cells[(int)DataGridViewStandardHours.INDEX_COLUMNS.FACT].Value = (sumFact / min).ToString("F2");
+                    Rows [cnt].Cells[(int)DataGridViewStandardHours.INDEX_COLUMNS.UDGe].Value = values[0].valuesUDGe.ToString("F2");
+                    Rows [cnt].Cells[(int)DataGridViewStandardHours.INDEX_COLUMNS.DEVIATION].Value = (sumDiviation / min).ToString("F2");
                 }
+
+                Rows [cnt].Cells [(int)DataGridViewStandardHours.INDEX_COLUMNS.PART_TIME].Style =
+                Rows [cnt].Cells [(int)DataGridViewStandardHours.INDEX_COLUMNS.FACT].Style =
+                Rows [cnt].Cells [(int)DataGridViewStandardHours.INDEX_COLUMNS.PBR].Style =
+                Rows [cnt].Cells [(int)DataGridViewStandardHours.INDEX_COLUMNS.PBRe].Style =                
+                Rows [cnt].Cells [(int)DataGridViewStandardHours.INDEX_COLUMNS.UDGe].Style =
+                Rows [cnt].Cells [(int)DataGridViewStandardHours.INDEX_COLUMNS.DEVIATION].Style =
+                    s_dgvCellStyles [(int)INDEX_CELL_STYLE.COMMON];
 
                 ////Назначить крайней видимой строкой - строку с крайним полученным значением
                 //setFirstDisplayedScrollingRowIndex(m_dgwMins, m_tecView.lastMin);
@@ -297,13 +318,14 @@ namespace Statistic
                 getColorZedGraph(typeConnSett, out colorChart, out colorPCurve);
 
                 GraphPane.Chart.Fill = new Fill(colorChart);
+                GraphPane.Fill = new Fill (BackColor);
 
                 //LineItem
                 GraphPane.AddCurve("УДГэ", null, valuesUDGe, FormMain.formGraphicsSettings.COLOR(FormGraphicsSettings.INDEX_COLOR.UDG));
                 //LineItem
-                GraphPane.AddCurve("", null, valuesODiviation, FormMain.formGraphicsSettings.COLOR(FormGraphicsSettings.INDEX_COLOR.DIVIATION));
+                GraphPane.AddCurve("", null, valuesODiviation, HDataGridViewTables.s_dgvCellStyles [(int)HDataGridViewTables.INDEX_CELL_STYLE.ERROR].BackColor);
                 //LineItem
-                GraphPane.AddCurve("Возможное отклонение", null, valuesPDiviation, FormMain.formGraphicsSettings.COLOR(FormGraphicsSettings.INDEX_COLOR.DIVIATION));
+                GraphPane.AddCurve("Возможное отклонение", null, valuesPDiviation, HDataGridViewTables.s_dgvCellStyles [(int)HDataGridViewTables.INDEX_CELL_STYLE.ERROR].BackColor);
 
                 if (FormMain.formGraphicsSettings.m_graphTypes == FormGraphicsSettings.GraphTypes.Bar)
                 {
@@ -627,7 +649,9 @@ namespace Statistic
                 Color colorChart = Color.Empty
                     , colorPCurve = Color.Empty;
                 getColorZedGraph(typeConnSett, out colorChart, out colorPCurve);
+
                 GraphPane.Chart.Fill = new Fill(colorChart);
+                GraphPane.Fill = new Fill (BackColor);
 
                 LineItem curve2 = GraphPane.AddCurve("УДГэ", null, valuesUDGe, FormMain.formGraphicsSettings.COLOR(FormGraphicsSettings.INDEX_COLOR.UDG));
                 //LineItem curve4 = GraphPane.AddCurve("", null, valuesODiviation, graphSettings.divColor);
@@ -898,7 +922,7 @@ namespace Statistic
 
         protected override void createPanelQuickData()
         {
-            this._pnlQuickData = new PanelQuickDataStandard();
+            this._pnlQuickData = new PanelQuickDataStandard(BackColor);
         }
 
         protected PanelQuickDataStandard PanelQuickData { get { return _pnlQuickData as PanelQuickDataStandard; } }

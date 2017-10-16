@@ -38,7 +38,7 @@ namespace StatisticDiagnostic
             /// Элемент интерфейса пользователя - представление для отображения значений
             ///  , контролируемых параметров
             /// </summary>
-            private DataGridView m_dgvValues;
+            private DataGridViewDiagnostic m_dgvValues;
             /// <summary>
             /// Элементт интерфейса пользователя - описание(наименование) панели
             /// </summary>
@@ -158,7 +158,7 @@ namespace StatisticDiagnostic
             {
                 //this.CellBorderStyle = TableLayoutPanelCellBorderStyle.Outset;
 
-                m_dgvValues = new System.Windows.Forms.DataGridView(); this.Controls.Add(m_dgvValues, 0, 1); this.SetRowSpan(m_dgvValues, COUNT_LAYOUT_ROW - 1);
+                m_dgvValues = new DataGridViewDiagnostic(); this.Controls.Add(m_dgvValues, 0, 1); this.SetRowSpan(m_dgvValues, COUNT_LAYOUT_ROW - 1);
                 m_labelDescription = new Label(); this.Controls.Add(m_labelDescription, 0, 0);
 
                 this.SuspendLayout();
@@ -370,8 +370,7 @@ namespace StatisticDiagnostic
                 {
                     object value;
                     Color clrCell = Color.Empty;
-                    bool enableValuePrevious = Enabled
-                        , enableValueCurrrent = false;
+                    bool enableValuePrevious = Enabled;
                     float mm = -1 // минуты
                         , ss = -1; // секунды - среднее время выполнения задачи
 
@@ -382,12 +381,16 @@ namespace StatisticDiagnostic
                                 //&& (string.IsNullOrEmpty((string)values[(int)i]) == false)
                                 ) {
                                 m_cell_states[(int)i] = INDEX_CELL_STATE.ERROR;
-                                clrCell = Color.Empty;
+                                clrCell = s_CellState[(int)INDEX_CELL_STATE.OK].m_Color;
 
                                 switch (i) {
-                                    case INDEX_CELL.NAME:
                                     case INDEX_CELL.COUNT:
+                                    // пропустить индекс
                                         continue;
+                                    case INDEX_CELL.NAME:
+                                    // пропустить применение значения к ячейке, т.к. значение(наименование источника данных) постоянное
+                                        m_cell_states [(int)i] = INDEX_CELL_STATE.OK;
+                                        value = null;
                                         break;
                                     case INDEX_CELL.STATE:
                                         m_cell_states[(int)i] = ((string)values[(int)i])?.Equals(1.ToString()) == true ?
@@ -416,7 +419,10 @@ namespace StatisticDiagnostic
                                         break;
                                 }
 
-                                Cells[(int)i].Value = value;
+                                if (!(value == null))
+                                    Cells [(int)i].Value = value;
+                                else
+                                    ;
                                 // изменить цвет ячейки ~ от состояния
                                 Cells[(int)i].Style.BackColor = s_CellState[(int)m_cell_states[(int)i]].m_Color;
 
@@ -530,6 +536,10 @@ namespace StatisticDiagnostic
                                 foreach (KeyValuePair<KEY_DIAGNOSTIC_PARAMETER, Values> pair in pairTask.Value) {
                                     switch (pair.Key.m_id_unit) {
                                         case KEY_DIAGNOSTIC_PARAMETER.ID_UNIT.FLOAT:
+                                            // Хряпин А.Н. 12.10.2017 - начало (для возможности изменения цвета фона ячеек с наименованием)
+                                            rowValues [(int)INDEX_CELL.NAME] =
+                                                 Convert.ChangeType (pair.Value.m_name_shr, typeof (string));
+                                            // Хряпин А.Н. 12.10.2017 - окончание блока
                                             if (string.IsNullOrEmpty((string)pair.Value.m_value) == true)
                                             // признак отсутствия значения
                                                 rowValues[(int)INDEX_CELL.VALUE] = -1;

@@ -314,6 +314,8 @@ namespace StatisticDiagnostic
                         , iTec = -1;
                     TECComponent gtp;
 
+                    m_dgvValues = new DataGridViewDiagnostic ();
+
                     //Tag = listTEC;
                     // идентификатор ТЭЦ (??? еще один, надо было использовать в [techsite_cfg-2.X.X]...[DIAGNOSTIC_SOURCES] из [techsite_cfg-2.X.X]...[TEC_LIST])
                     //  (можно взять любой элемент списка, например [0])
@@ -388,8 +390,9 @@ namespace StatisticDiagnostic
                 /// Обязательный метод для поддержки конструктора - не изменяйте
                 /// содержимое данного метода при помощи редактора кода.
                 /// </summary>
-                public DataGridView m_dgvValues = new DataGridView();
-                public Label m_labelDescription = new Label();
+                private DataGridViewDiagnostic m_dgvValues;
+
+                private Label m_labelDescription = new Label();
                 /// <summary>
                 /// Перечисление параметров (источник данных,крайнее время, крайнее значение,время проверки, связь, количество параметров)
                 /// </summary>
@@ -483,16 +486,16 @@ namespace StatisticDiagnostic
                     /// <summary>
                     /// Установить значения в ячейках
                     /// </summary>
-                    /// <param name="values">значения</param>
+                    /// <param name="values">Значения</param>
                     public void SetValueCells(object[] values)
                     {
                         object value;
                         INDEX_CELL_STATE indxState = INDEX_CELL_STATE.ERROR;
                         Color clrCell = Color.Empty;
-                            // Доступно предыдущее значение
+                        //Доступно предыдущее значение
                         bool enableValuePrevious = Enabled
-                            // Не доступно текущее значение
-                            , enableValueCurrrent = false;
+                        // Признак необходимости замены значения в ячейке
+                            , bCellValueChanged;
 
                         //Для каждого параметра (столбца) в перечислении INDEX_CELL
                         foreach (INDEX_CELL i in Enum.GetValues(typeof(INDEX_CELL))) {
@@ -501,14 +504,16 @@ namespace StatisticDiagnostic
                                     && (!(values[(int)i] == null))
                                     //&& (string.IsNullOrEmpty((string)values[(int)i]) == false)
                                     ) {
+                                    bCellValueChanged = true;
                                     //Связь=ошибка, цвет ячейки=пусто
                                     indxState = INDEX_CELL_STATE.ERROR;
-                                    clrCell = Color.Empty;
+                                    clrCell = s_CellState[(int)INDEX_CELL_STATE.OK].m_Color;
 
                                     switch (i) {
                                         case INDEX_CELL.NAME_GTP:
                                         case INDEX_CELL.COUNT:
-                                            continue;
+                                            bCellValueChanged = false;
+                                            value = null;
                                             break;
                                         case INDEX_CELL.STATE:
                                         // ???Если значение равно строковому типу, то статус ОК, иначе ERROR
@@ -537,7 +542,10 @@ namespace StatisticDiagnostic
                                             break;
                                     }
 
-                                    Cells[(int)i].Value = value;
+                                    if (bCellValueChanged == true)
+                                        Cells [(int)i].Value = value;
+                                    else
+                                        ;
                                     // изменить цвет ячейки
                                     Cells[(int)i].Style.BackColor = clrCell;
                                 } else
@@ -630,7 +638,11 @@ namespace StatisticDiagnostic
                                     && (string.IsNullOrEmpty((string)pair.Value.m_value) == false)) {
                                     switch (pair.Key.m_id_unit) {
                                         case KEY_DIAGNOSTIC_PARAMETER.ID_UNIT.PBR:
-                                            rowValues[(int)INDEX_CELL.VALUE] =
+                                            // Хряпин А.Н. 12.10.2017 - начало (для возможности изменения цвета фона ячеек с наименованием)
+                                            rowValues [(int)INDEX_CELL.NAME_GTP] =
+                                                Convert.ChangeType (pair.Value.m_name_shr, typeof (string));
+                                            // Хряпин А.Н. 12.10.2017 - окончание блока
+                                            rowValues [(int)INDEX_CELL.VALUE] =
                                                 Convert.ChangeType(pair.Value.m_value, KEY_DIAGNOSTIC_PARAMETER.TypeOf[pair.Key.m_id_unit]);
                                             rowValues[(int)INDEX_CELL.DATETIME_VERIFICATION] =
                                                 Convert.ChangeType(pair.Value.m_dtValue, typeof(DateTime));

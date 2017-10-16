@@ -25,12 +25,14 @@ namespace Statistic
             /// <summary>
             /// Конструктор
             /// </summary>
-            public HPanelTableLayout()
+            public HPanelTableLayout(Color backColor)
             {
                 //Свойство возвращает или задает язык и региональные параметры для текущего потока
                 Thread.CurrentThread.CurrentCulture =
                 Thread.CurrentThread.CurrentUICulture =
                     ProgramBase.ss_MainCultureInfo;
+
+                BackColor = backColor;
 
                 InitializeComponent();
             }
@@ -343,12 +345,14 @@ namespace Statistic
             protected Dictionary<int, System.Windows.Forms.Label[]> m_tgLabels;
             protected Dictionary<int, System.Windows.Forms.ToolTip[]> m_tgToolTips;
 
-            public HPanelQuickData()
+            public HPanelQuickData(Color backColor)
+                : base (backColor)
             {
                 InitializeComponent();
             }
 
-            public HPanelQuickData(IContainer container)
+            public HPanelQuickData(IContainer container, Color backColor)
+                : base (backColor)
             {
                 container.Add(this);
 
@@ -1102,13 +1106,14 @@ namespace Statistic
             //    }
             //};
 
-            public PanelQuickDataStandard() : base()
+            public PanelQuickDataStandard(Color backColor)
+                : base(backColor)
             {
                 InitializeComponent();
             }
 
-            public PanelQuickDataStandard(IContainer container)
-                : base(container)
+            public PanelQuickDataStandard(IContainer container, Color backColor)
+                : base (container, backColor)
             {
                 container.Add(this);
 
@@ -1486,7 +1491,9 @@ namespace Statistic
                             ;
                     }
                     lblPBRNumber.Text = m_parent.m_tecView.lastLayout;
-                    lblPBRNumber.BackColor = PBRState == TecViewStandard.PBR_STATE.NORM ? Color.Empty : FormMain.formGraphicsSettings.COLOR(FormGraphicsSettings.INDEX_COLOR.DIVIATION);
+                    lblPBRNumber.BackColor = PBRState == TecViewStandard.PBR_STATE.NORM
+                        ? Color.Empty
+                            : HDataGridViewTables.s_dgvCellStyles[(int)HDataGridViewTables.INDEX_CELL_STYLE.ERROR].BackColor;
 
                     //ShowTGValue
                     i = 0;
@@ -1558,11 +1565,23 @@ namespace Statistic
                 RestructControl();
             }
 
-            private TecViewStandard.PBR_STATE PBRState { get { return (m_parent.m_tecView as TecViewStandard).PBRState; } }
+            private TecViewStandard.PBR_STATE PBRState
+            {
+                get
+                {
+                    return ((Equals(m_parent, null) == false)
+                            && (Equals (m_parent.m_tecView, null) == false)
+                            && (Equals (m_parent.m_tecView.GetType(), typeof(TecViewStandard)) == true))
+                        ? (m_parent.m_tecView as TecViewStandard).PBRState
+                            : TecViewStandard.PBR_STATE.NORM;
+                }
+            }
 
             public void UpdateColorPbr()
             {
-                lblPBRNumber.BackColor = PBRState == TecViewStandard.PBR_STATE.NORM ? Color.Empty : FormMain.formGraphicsSettings.COLOR(FormGraphicsSettings.INDEX_COLOR.DIVIATION);
+                lblPBRNumber.BackColor = PBRState == TecViewStandard.PBR_STATE.NORM
+                    ? Color.Empty
+                        : HDataGridViewTables.s_dgvCellStyles [(int)HDataGridViewTables.INDEX_CELL_STYLE.ERROR].BackColor;
             }
         }
     }

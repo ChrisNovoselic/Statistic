@@ -10,6 +10,7 @@ using System.Data; //DataTable
 using System.Data.Common; //DbConnection
 using HClassLibrary;
 using StatisticCommon;
+using System.Drawing;
 
 namespace StatisticTimeSync
 {
@@ -567,7 +568,8 @@ namespace StatisticTimeSync
 
         HandlerSourceData HSD = null;
 
-        public PanelSourceData()
+        public PanelSourceData(Color backColor)
+            : base(MODE_UPDATE_VALUES.AUTO, backColor)
         {
             
             m_delAddPan = new DelAddPan(addPanel);
@@ -580,7 +582,8 @@ namespace StatisticTimeSync
 
         }
 
-        public PanelSourceData(IContainer container)
+        public PanelSourceData(IContainer container, Color backColor)
+            : base (MODE_UPDATE_VALUES.AUTO, backColor)
         {
             container.Add(this);
 
@@ -646,6 +649,11 @@ namespace StatisticTimeSync
             this.ResumeLayout();
 
             HSD.StartPan(ar_pan);
+        }
+
+        public override void UpdateGraphicsCurrent (int type)
+        {
+            throw new NotImplementedException ();
         }
 
         public partial class HandlerSourceData : HHandlerQueue

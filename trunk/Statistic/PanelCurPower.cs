@@ -98,6 +98,7 @@ namespace Statistic
         }
 
         public PanelCurPower(List<StatisticCommon.TEC> listTec/*, DelegateStringFunc fErrRep, DelegateStringFunc fWarRep, DelegateStringFunc fActRep, DelegateBoolFunc fRepClr*/)
+            : base (MODE_UPDATE_VALUES.AUTO, FormMain.formGraphicsSettings.BackgroundColor)
         {
             InitializeComponent();
 
@@ -202,6 +203,13 @@ namespace Statistic
 
         protected override void initTableHourRows () {
             //Ничего не делаем, т.к. нет таблиц с часовыми значениями
+        }
+
+        public override void UpdateGraphicsCurrent (int type)
+        {
+            getTypedControls(this, new Type [] { typeof(PanelTecCurPower) }).Cast<PanelTecCurPower> ().ToList().ForEach(panel => {
+                panel.UpdateGraphicsCurrent ();
+            });
         }
 
         partial class PanelTecCurPower
@@ -539,6 +547,7 @@ namespace Statistic
 
                 setTextToLabelDateTime(m_tecView.m_dtLastChangedAt_TM_SN, (int)INDEX_LABEL.DATETIME_TM_SN);
             }
+            
             /// <summary>
             /// Отобразить значение аналог 'PanelQuickData::showTMValue'
             /// </summary>
@@ -559,6 +568,7 @@ namespace Statistic
 
                 return 0;
             }
+            
             /// <summary>
             /// Отобразить значение дату/время (копия в PanelTMSNPower.PanelTecTMSNPower)
             /// </summary>
@@ -621,6 +631,12 @@ namespace Statistic
                 }
                 else
                     ;
+            }
+
+            public void UpdateGraphicsCurrent ()
+            {
+                showTMGenPower ();
+                showTMSNPower ();
             }
         }
     }

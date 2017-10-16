@@ -42,7 +42,7 @@ namespace CommonAux
                 ProgramBase.ss_MainCultureInfo;
 
             formParameters = new FormParameters_DB(s_listFormConnectionSettings[0].ConnectionSettingsEdit);
-            m_panel = new PanelCommonAux(formParameters.m_arParametrSetup[(int)FormParameters.PARAMETR_SETUP.COMMON_AUX_PATH]);
+            m_panel = new PanelCommonAux(SystemColors.Control, formParameters.m_arParametrSetup[(int)FormParameters.PARAMETR_SETUP.COMMON_AUX_PATH]);
             
             m_panel.GetListTEC(tec);
 

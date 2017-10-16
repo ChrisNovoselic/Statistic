@@ -12,11 +12,16 @@ namespace StatisticCommon
 {
     public class HStatisticUsers : HUsers
     {
-        //Идентификаторы из БД
-        public enum ID_ROLES { UNKNOWN, KOM_DISP = 1, ADMIN, USER, NSS = 101, MAJOR_MASHINIST, MASHINIST, LK_DISP = 201, SOURCE_DATA = 501,
-                            COUNT_ID_ROLES = 7};
+        /// <summary>
+        /// Перечисление - идентификаторы групп(ролей) пользователей
+        /// </summary>
+        public enum ID_ROLES { UNKNOWN, KOM_DISP = 1, ADMIN, USER, NSS = 101, MAJOR_MASHINIST, MASHINIST, LK_DISP = 201, SOURCE_DATA = 501
+            , COUNT_ID_ROLES = 7
+        };
 
-        //Идентификаторы из БД
+        /// <summary>
+        /// Перечисление - идентификаторы настраиваемых параметров профиля пользователя
+        /// </summary>
         public enum ID_ALLOWED {
             UNKNOWN = -1
             , SOURCEDATA_CHANGED = 1 //Вкл\выкл группу пунктов меню
@@ -64,6 +69,9 @@ namespace StatisticCommon
             // KhryapinAN, 2017-09
             , EXPORT_PBRVALUES_KOMDISP
             , AUTO_EXPORT_PBRVALUES_KOMDISP
+            //------------------------------39
+            , PROFILE_VIEW_COLOR_SHEMA_CUSTOM = 40
+            , PROFILE_VIEW_COLOR_CHANGESHEMA
         };
 
         public HStatisticUsers(int iListenerId, MODE_REGISTRATION modeRegistration)
@@ -129,5 +137,14 @@ namespace StatisticCommon
         //        return (Role == ID_ROLES.NSS) || (Role == ID_ROLES.MAJOR_MASHINIST) || (Role == ID_ROLES.MASHINIST);
         //    }
         //}
+
+        public static void SetAllowed (ConnectionSettings connSett, ID_ALLOWED id, string value)
+        {
+            int iListenerId = -1;
+
+            iListenerId = DbSources.Sources ().Register (connSett, false, string.Format(@"{0}==HStatisticUsers::SetAllowed(id={1}, value={2})", connSett.name, id.ToString(), value));
+            HUsers.SetAllowed (iListenerId, (int)id, value);
+            DbSources.Sources ().UnRegister (iListenerId);
+        }
     }
 }

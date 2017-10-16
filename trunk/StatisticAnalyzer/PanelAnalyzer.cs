@@ -330,6 +330,7 @@ namespace StatisticAnalyzer
                 this.dgvDatetimeStart.RowTemplate.Resizable = System.Windows.Forms.DataGridViewTriState.False;
                 this.dgvDatetimeStart.SelectionMode = System.Windows.Forms.DataGridViewSelectionMode.FullRowSelect;
                 //this.dgvDatetimeStart.Size = new System.Drawing.Size(170, 164);
+                this.dgvDatetimeStart.BackColor = this.BackColor;
                 this.dgvDatetimeStart.TabIndex = 10;
                 // 
                 // dataGridViewCheckBoxColumnDatetimeStartUse
@@ -885,8 +886,8 @@ namespace StatisticAnalyzer
 
         #endregion
 
-        public PanelAnalyzer(/*int idListener,*/ List<StatisticCommon.TEC> tec)
-            : base()
+        public PanelAnalyzer(/*int idListener,*/ List<StatisticCommon.TEC> tec, Color backColor)
+            : base(MODE_UPDATE_VALUES.ACTION, backColor)
         {
             m_LogParse = newLogParse();
 
@@ -1887,8 +1888,8 @@ namespace StatisticAnalyzer
         /// <summary>
         /// Обработчик выбора Даты/Времени для лог сообщений
         /// </summary>
-        /// <param name="sender"></param>
-        /// <param name="e"></param>
+        /// <param name="sender">Объект, инициировавший событие</param>
+        /// <param name="e">Аргумент события</param>
         protected void dgvDatetimeStart_SelectionChanged(object sender, EventArgs e)
         {
             int rowIndex = dgvDatetimeStart.SelectedRows[0].Index;
@@ -2041,6 +2042,33 @@ namespace StatisticAnalyzer
         protected abstract void fillListBoxTabVisible(List<int> ID_tabs);
 
         #endregion
+
+        public override void UpdateGraphicsCurrent (int type)
+        {
+            //??? ничегно не делаем
+        }
+
+        public override Color BackColor
+        {
+            get
+            {
+                return base.BackColor;
+            }
+
+            set
+            {
+                base.BackColor = value;
+
+                getTypedControls (this, new Type [] { typeof (DataGridView) }).Cast<DataGridView> ().ToList ().ForEach (dgv => {
+                    dgv.DefaultCellStyle.BackColor = BackColor == SystemColors.Control ? SystemColors.Window : BackColor;
+                });
+
+                if (Equals (listTabVisible, null) == false)
+                    listTabVisible.BackColor = BackColor == SystemColors.Control ? SystemColors.Window : BackColor;
+                else
+                    ;
+            }
+        }
 
         public class DataGridView_LogMessageCounter : DataGridView
         {
@@ -2269,26 +2297,17 @@ namespace StatisticAnalyzer
     {
         protected DataTable m_tableTabs;
 
-        //class HLogMsgSource {
-        //public
-        DelegateIntFunc delegateConnect;
-        //public
-        DelegateFunc delegateErrorConnect;
-        //}
-        //HLogMsgSource m_logMsgSource;
+        private DelegateIntFunc delegateConnect;
         
-        ///// <summary>
-        ///// Список ТЭЦ
-        ///// </summary>
-        //List<StatisticCommon.TEC> m_listTEC;
+        private DelegateFunc delegateErrorConnect;
         
         /// <summary>
         /// Идентификатор для получения лога из БД
         /// </summary>
         int m_idListenerLoggingDB;
 
-        public PanelAnalyzer_DB(List<StatisticCommon.TEC> tec)
-            : base(tec)
+        public PanelAnalyzer_DB(List<StatisticCommon.TEC> tec, Color backColor)
+            : base(tec, backColor)
         {
             m_listTEC = tec;
 
@@ -2971,8 +2990,8 @@ namespace StatisticAnalyzer
         TcpClientAsync m_tcpClient;
         List<TcpClientAsync> m_listTCPClientUsers;
 
-        public PanelAnalyzer_TCPIP(List<StatisticCommon.TEC> tec)
-            : base(tec)
+        public PanelAnalyzer_TCPIP(List<StatisticCommon.TEC> tec, Color backColor)
+            : base(tec, backColor)
         {
         }
 

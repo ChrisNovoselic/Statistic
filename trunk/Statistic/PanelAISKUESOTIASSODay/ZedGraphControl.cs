@@ -21,7 +21,7 @@ namespace Statistic
     /// Панель для отображения значений СОТИАССО (телеметрия)
     ///  для контроля
     /// </summary>
-    partial class PanelSOTIASSODay
+    partial class PanelAISKUESOTIASSODay
     {
         /// <summary>
         /// Класс - общий для графического представления значений СОТИАССО на вкладке
@@ -71,6 +71,8 @@ namespace Statistic
                 this.PointValueEvent += new ZedGraph.ZedGraphControl.PointValueHandler(this.onPointValueEvent);
                 this.DoubleClickEvent += new ZedGraph.ZedGraphControl.ZedMouseEventHandler(this.onDoubleClickEvent);
 
+                BackColor = SystemColors.Window; // SystemColors.Window
+
                 GraphPane pane = this.GraphPane;
                 // Подпишемся на событие, которое будет вызываться при выводе каждой отметки на оси
                 pane.XAxis.ScaleFormatEvent += new Axis.ScaleFormatHandler(xAxis_OnScaleFormatEvent);
@@ -100,7 +102,11 @@ namespace Statistic
                 return true;
             }
 
+            /// <summary>
+            /// Константа для настройки отображения сетки по оси X
+            /// </summary>
             private const int DIV_MAJOR_STEP = 4;
+
             /// <summary>
             /// Метод, который вызывается, когда надо отобразить очередную метку по оси
             /// </summary>
@@ -117,17 +123,75 @@ namespace Statistic
                 //    return string.Empty;
             }
 
+            private Color ColorChart
+            {
+                get
+                {
+                    Color clrRes = Color.Empty
+                        , clrNotReq = Color.Empty;
+
+                    getColorZEDGraph (out clrRes, out clrNotReq);
+
+                    return clrRes;
+                }
+            }
+
+            private void getColorZEDGraph (out Color colorChart, out Color colValue)
+            {
+                getColorZEDGraph (Tag == null ? CONN_SETT_TYPE.DATA_AISKUE : (CONN_SETT_TYPE)Tag, out colorChart, out colValue);
+            }
+
+            private void getColorZEDGraph (CONN_SETT_TYPE type, out Color colorChart, out Color colValue)
+            {
+                FormGraphicsSettings.INDEX_COLOR indxBackGround = FormGraphicsSettings.INDEX_COLOR.COUNT_INDEX_COLOR
+                    , indxChart = FormGraphicsSettings.INDEX_COLOR.COUNT_INDEX_COLOR;
+
+                //Значения по умолчанию
+                switch (type) {
+                    default:
+                    case CONN_SETT_TYPE.DATA_AISKUE:
+                        indxBackGround = FormGraphicsSettings.INDEX_COLOR.BG_ASKUE;
+                        indxChart = FormGraphicsSettings.INDEX_COLOR.ASKUE;
+                        break;
+                    case CONN_SETT_TYPE.DATA_SOTIASSO:
+                        indxBackGround = FormGraphicsSettings.INDEX_COLOR.BG_SOTIASSO;
+                        indxChart = FormGraphicsSettings.INDEX_COLOR.SOTIASSO;
+                        break;
+                }
+
+                colorChart = FormMain.formGraphicsSettings.COLOR (indxBackGround);
+                colValue = FormMain.formGraphicsSettings.COLOR (indxChart);
+            }
+
+            public override Color BackColor
+            {
+                get
+                {
+                    return base.BackColor;
+                }
+
+                set
+                {
+                    base.BackColor = value;
+
+                    if (Equals (GraphPane, null) == false) {
+                        GraphPane.Chart.Fill = new ZedGraph.Fill (ColorChart);
+                        GraphPane.Fill = new ZedGraph.Fill (BackColor == SystemColors.Control ? SystemColors.Window : BackColor);
+                    } else
+                        ;
+                }
+            }
+
             /// <summary>
             /// Обновить содержание в графической субобласти "сутки по-часам"
             /// </summary>
             public void Draw(IEnumerable<HandlerSignalQueue.VALUE> srcValues
-                , string textConnSettType, string textDate
-                , Color colorChart
-                , Color colorPCurve)
+                , string textConnSettType, string textDate)
             {
                 double[] values = null;
                 int itemscount = -1;
-                //string[] names = null;
+                Color colorChart
+                    , colorPCurve;
                 double minimum
                     , minimum_scale
                     , maximum
@@ -181,9 +245,13 @@ namespace Statistic
                     }
                 }
 
+                // получить цветовую гамму
+                getColorZEDGraph ((CONN_SETT_TYPE)Tag, out colorChart, out colorPCurve);
+
                 GraphPane pane = GraphPane;
                 pane.CurveList.Clear();
                 pane.Chart.Fill = new Fill(colorChart);
+                pane.Fill = new Fill (BackColor);
 
                 if (FormMain.formGraphicsSettings.m_graphTypes == FormGraphicsSettings.GraphTypes.Bar) {
                     pane.AddBar("Мощность", null, values, colorPCurve);

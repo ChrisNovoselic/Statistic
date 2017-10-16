@@ -11,13 +11,15 @@ using System.Linq;
 using GemBox.Spreadsheet;
 using System.IO;
 
+using Microsoft.Office.Interop.Excel;
+
 namespace Statistic
 {
     /// <summary>
     /// Панель для отображения значений СОТИАССО (телеметрия)
     ///  для контроля
     /// </summary>
-    public partial class PanelSOTIASSODay : PanelStatistic, IDataHost
+    public partial class PanelAISKUESOTIASSODay : PanelStatistic, IDataHost
     {
         private static CONN_SETT_TYPE[] _types = { CONN_SETT_TYPE.DATA_AISKUE, CONN_SETT_TYPE.DATA_SOTIASSO };
         /// <summary>
@@ -120,11 +122,12 @@ namespace Statistic
         /// Панель для активных элементов управления
         /// </summary>
         private PanelManagement m_panelManagement;
+        
         /// <summary>
         /// Конструктор - основной (без параметров)
         /// </summary>
-        public PanelSOTIASSODay(int iListenerConfigId, List<StatisticCommon.TEC> listTec)
-            : base()
+        public PanelAISKUESOTIASSODay(int iListenerConfigId, List<StatisticCommon.TEC> listTec)
+            : base(MODE_UPDATE_VALUES.ACTION, FormMain.formGraphicsSettings.BackgroundColor)
         {
             // фильтр ТЭЦ
             m_listTEC = listTec.FindAll(tec => { return (tec.Type == TEC.TEC_TYPE.COMMON) && (tec.m_id < (int)TECComponent.ID.LK); });
@@ -177,7 +180,7 @@ namespace Statistic
         /// Конструктор - вспомогательный (с параметрами)
         /// </summary>
         /// <param name="container">Владелец текущего объекта</param>
-        public PanelSOTIASSODay(IContainer container, int iListenerConfigId, List<StatisticCommon.TEC> listTec/*, DelegateStringFunc fErrRep, DelegateStringFunc fWarRep, DelegateStringFunc fActRep, DelegateBoolFunc fRepClr*/)
+        public PanelAISKUESOTIASSODay(IContainer container, int iListenerConfigId, List<StatisticCommon.TEC> listTec/*, DelegateStringFunc fErrRep, DelegateStringFunc fWarRep, DelegateStringFunc fActRep, DelegateBoolFunc fRepClr*/)
             : this(iListenerConfigId, listTec)
         {
             container.Add(this);
@@ -189,7 +192,8 @@ namespace Statistic
         //{
         //    m_tecView = null;
         //}
-        /// <summary>
+        
+            /// <summary>
         /// Инициализация панели с установкой кол-ва столбцов, строк
         /// </summary>
         /// <param name="cols">Количество столбцов</param>
@@ -198,6 +202,7 @@ namespace Statistic
         {
             throw new System.NotImplementedException();
         }
+        
         /// <summary>
         /// Инициализация и размещение собственных элементов управления
         /// </summary>
@@ -224,11 +229,13 @@ namespace Statistic
             //Создать, настроить размещение графических панелей
             type = CONN_SETT_TYPE.DATA_AISKUE;
             m_dictZGraphValues.Add(type, new HZedGraphControl()); // графическая панель для отображения АИИСКУЭ-значений
-            m_dictZGraphValues[type].Name = KEY_CONTROLS.ZGRAPH_AIISKUE.ToString();
+            m_dictZGraphValues [type].Tag = type;
+            m_dictZGraphValues [type].Name = KEY_CONTROLS.ZGRAPH_AIISKUE.ToString();
             m_dictZGraphValues[type].Dock = DockStyle.Fill;
             type = CONN_SETT_TYPE.DATA_SOTIASSO;
             m_dictZGraphValues.Add(type, new HZedGraphControl()); // графическая панель для отображения СОТИАССО-значений
-            m_dictZGraphValues[type].Name = KEY_CONTROLS.ZGRAPH_SOTIASSO.ToString();
+            m_dictZGraphValues [type].Tag = type;
+            m_dictZGraphValues [type].Name = KEY_CONTROLS.ZGRAPH_SOTIASSO.ToString();
             m_dictZGraphValues[type].Dock = DockStyle.Fill;
 
             //Создать контейнеры-сплиттеры, настроить размещение 
@@ -323,7 +330,7 @@ namespace Statistic
                 , nameFolderUserTemplate = string.Empty
                 , nameFileTemplate = NAMEFILE_TEMPLATE_SOTIASSO_DAY;
             ExcelFile excel;
-            DataTable tableExportDo;
+            System.Data.DataTable tableExportDo;
             int iColumn = STARTCOLUMN_TEMPLATE_SOTIASSO_DAY
                 , iStartRow = STARTROW_TEMPLATE_SOTIASSO_DAY
                 , i_agregate = I_AGREGATE;
@@ -432,6 +439,7 @@ namespace Statistic
         {
             m_HandlerQueue.SetDelegateReport(ferr, fwar, fact, fclr);
         }
+
         /// <summary>
         /// Переопределение наследуемой функции - запуск объекта
         /// </summary>
@@ -441,6 +449,7 @@ namespace Statistic
 
             m_HandlerQueue.Start();
         }
+        
         /// <summary>
         /// Переопределение наследуемой функции - останов объекта
         /// </summary>
@@ -467,6 +476,7 @@ namespace Statistic
             //Остановить базовый объект
             base.Stop();
         }
+        
         /// <summary>
         /// Переопределение наследуемой функции - активация/деактивация объекта
         /// </summary>
@@ -502,6 +512,7 @@ namespace Statistic
 
             return bRes;
         }
+        
         /// <summary>
         /// Обработчик события - изменения даты/номера часа на панели с управляющими элементами
         /// </summary>
@@ -546,38 +557,14 @@ namespace Statistic
             Color colorChart = Color.Empty
                 , colorPCurve = Color.Empty;
 
-            if (m_HandlerQueue.Values[type].m_valuesHours.Count > 0) {
-                // получить цветовую гамму
-                getColorZEDGraph(type, out colorChart, out colorPCurve);
+            if (m_HandlerQueue.Values[type].m_valuesHours.Count > 0) {                
                 // отобразить
                 m_dictZGraphValues[type].Draw(m_HandlerQueue.Values[type].m_valuesHours
-                    , type == CONN_SETT_TYPE.DATA_AISKUE ? @"АИИСКУЭ" : type == CONN_SETT_TYPE.DATA_SOTIASSO ? @"СОТИАССО" : @"Неизвестный тип", textGraphCurDateTime
-                    , colorChart, colorPCurve);
+                    , type == CONN_SETT_TYPE.DATA_AISKUE ? @"АИИСКУЭ" : type == CONN_SETT_TYPE.DATA_SOTIASSO ? @"СОТИАССО" : @"Неизвестный тип", textGraphCurDateTime);
             } else
                 Logging.Logg().Error(string.Format(@"PanelSOTIASSODay::draw (type={0}) - нет ни одного значения за [{1}]...", type, m_HandlerQueue.UserDate), Logging.INDEX_MESSAGE.NOT_SET);
         }
 
-        private void getColorZEDGraph(CONN_SETT_TYPE type, out Color colorChart, out Color colValue)
-        {
-            FormGraphicsSettings.INDEX_COLOR indxBackGround = FormGraphicsSettings.INDEX_COLOR.COUNT_INDEX_COLOR
-                , indxChart = FormGraphicsSettings.INDEX_COLOR.COUNT_INDEX_COLOR;
-
-            //Значения по умолчанию
-            switch (type) {
-                default:
-                case CONN_SETT_TYPE.DATA_AISKUE:
-                    indxBackGround = FormGraphicsSettings.INDEX_COLOR.BG_ASKUE;
-                    indxChart = FormGraphicsSettings.INDEX_COLOR.ASKUE;
-                    break;
-                case CONN_SETT_TYPE.DATA_SOTIASSO:
-                    indxBackGround = FormGraphicsSettings.INDEX_COLOR.BG_SOTIASSO;
-                    indxChart = FormGraphicsSettings.INDEX_COLOR.SOTIASSO;
-                    break;
-            }
-
-            colorChart = FormMain.formGraphicsSettings.COLOR(indxBackGround);
-            colValue = FormMain.formGraphicsSettings.COLOR(indxChart);
-        }
         /// <summary>
         /// Текст (часть) заголовка для графической субобласти
         /// </summary>
@@ -587,17 +574,19 @@ namespace Statistic
                 return m_panelManagement.CurDateTime.ToShortDateString();
             }
         }
+        
         /// <summary>
         /// Перерисовать объекты с графическим представлением данных
         ///  , в зависимости от типа графического представления (гистограмма, график)
         /// </summary>
         /// <param name="type">Тип изменений, выполненных пользователем</param>
-        public void UpdateGraphicsCurrent(int type)
+        public override void UpdateGraphicsCurrent(int type)
         {
             foreach (CONN_SETT_TYPE conn_sett_type in new CONN_SETT_TYPE[] { CONN_SETT_TYPE.DATA_AISKUE, CONN_SETT_TYPE.DATA_SOTIASSO }) {
                 draw(conn_sett_type);
             }
         }
+        
         /// <summary>
         /// Обработчик события - изменение выбора строки в списке ТЭЦ
         /// </summary>
@@ -685,6 +674,24 @@ namespace Statistic
                     break;
                 default:
                     break;
+            }
+        }
+
+        public override Color BackColor
+        {
+            get
+            {
+                return base.BackColor;
+            }
+
+            set
+            {
+                base.BackColor = value;
+
+                if (Equals (m_panelManagement, null) == false)
+                    m_panelManagement.BackColor = BackColor;
+                else
+                    ;
             }
         }
     }

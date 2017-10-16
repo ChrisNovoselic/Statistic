@@ -22,6 +22,7 @@ namespace StatisticDiagnostic
         {
             initialize();
         }
+
         /// <summary>
         /// Конструктор "Панель Диагностика"
         /// </summary>
@@ -47,9 +48,6 @@ namespace StatisticDiagnostic
 
     public abstract partial class PanelDiagnostic
     {
-        //private Label lblName;
-        //private DataGridView dgvCommon;
-
         private void initialize()
         {
             InitializeComponent();
@@ -179,6 +177,7 @@ namespace StatisticDiagnostic
     {
         //Перечисление "Режим: по умолчанию, только источник"
         public enum Mode : short { DEFAULT, SOURCE_ONLY }
+
         /// <summary>
         /// Перечесления типов источников
         /// </summary>
@@ -188,7 +187,8 @@ namespace StatisticDiagnostic
             SIZEDB = 10,
             MODES = 200,
             TASK = 300
-        }        
+        }       
+ 
         /// <summary>
         /// Структура для хранения получаемых значений из таблицы-результата запроса
         /// </summary>
@@ -199,7 +199,7 @@ namespace StatisticDiagnostic
             /// </summary>
             public DateTime m_dtValue;
             /// <summary>
-            /// Значение одного из дианостических параметров
+            /// Значение одного из диагностических параметров
             /// </summary>
             public object m_value;
 
@@ -256,9 +256,9 @@ namespace StatisticDiagnostic
         private enum INDEX_CELL_STATE : short { OK = 0, WARNING, ERROR, UNKNOWN, DISABLED }
 
         private static CELL_STATE[] s_CellState = new CELL_STATE[] {
-            new CELL_STATE() { m_Text = @"Да", m_Color = Color.White }
-            , new CELL_STATE() { m_Text = string.Empty, m_Color = Color.Yellow, m_Detail = @"Продолжительное выполнение" }
-            , new CELL_STATE() { m_Text = @"Нет", m_Color = Color.Red, m_Detail = @"Превышено ожидание" }
+            new CELL_STATE() { m_Text = @"Да", m_Color = HDataGridViewTables.s_dgvCellStyles == null ? SystemColors.Window : HDataGridViewTables.s_dgvCellStyles[(int)HDataGridViewTables.INDEX_CELL_STYLE.COMMON].BackColor }
+            , new CELL_STATE() { m_Text = string.Empty, m_Color = HDataGridViewTables.s_dgvCellStyles == null ? Color.Yellow : HDataGridViewTables.s_dgvCellStyles[(int)HDataGridViewTables.INDEX_CELL_STYLE.WARNING].BackColor, m_Detail = @"Продолжительное выполнение" }
+            , new CELL_STATE() { m_Text = @"Нет", m_Color = HDataGridViewTables.s_dgvCellStyles == null ? Color.Red : HDataGridViewTables.s_dgvCellStyles[(int)HDataGridViewTables.INDEX_CELL_STYLE.ERROR].BackColor, m_Detail = @"Превышено ожидание" }
             , new CELL_STATE() { m_Text = @"н/д", m_Color = Color.LightGray }
             , new CELL_STATE() { m_Text = string.Empty, m_Color = Color.DarkGray, m_Detail = @"Запрещено" }
         };
@@ -337,6 +337,20 @@ namespace StatisticDiagnostic
         {
             m_DataSource.Command();
         }
+
+        /// <summary>
+        /// Инициировать немедленно событие таймера
+        /// </summary>
+        /// <param name="result">Контекст асинхронного вызова</param>
+        private void updateTimer_StartElapsed (IAsyncResult result)
+        {
+            ElapsedEventHandler handler = result.AsyncState as ElapsedEventHandler;
+            if (Equals (handler, null) == false) {
+                handler.EndInvoke (result);
+            } else
+                ;
+        }
+
 
         /// <summary>
         /// Класс для обращения 
@@ -622,7 +636,7 @@ namespace StatisticDiagnostic
             public event DelegateObjectFunc EvtRecievedActiveSource;
 
             /// <summary>
-            /// Обработка УСЕШНО полученного результата
+            /// Обработка УСПЕШНО полученного результата
             /// </summary>
             /// <param name="state">Состояние для результата</param>
             /// <param name="obj">Значение результата</param>
@@ -692,7 +706,8 @@ namespace StatisticDiagnostic
         /// <summary>
         /// constructor
         /// </summary>
-        public PanelStatisticDiagnostic(Mode mode = Mode.DEFAULT) : base (COUNT_LAYOUT_COLUMN, COUNT_LAYOUT_ROW)
+        public PanelStatisticDiagnostic(Mode mode, Color backColor)
+            : base (MODE_UPDATE_VALUES.AUTO, backColor, COUNT_LAYOUT_COLUMN, COUNT_LAYOUT_ROW)
         {
             m_Mode = mode;
 
@@ -702,8 +717,9 @@ namespace StatisticDiagnostic
         /// <summary>
         /// constructor
         /// </summary>
-        /// <param name="container"></param>
-        public PanelStatisticDiagnostic(IContainer container, Mode mode = Mode.DEFAULT) : base(COUNT_LAYOUT_COLUMN, COUNT_LAYOUT_ROW)
+        /// <param name="container">Контейнер для панели</param>
+        public PanelStatisticDiagnostic(IContainer container, Mode mode, Color backColor)
+            : base(MODE_UPDATE_VALUES.AUTO, backColor , COUNT_LAYOUT_COLUMN, COUNT_LAYOUT_ROW)
         {
             container.Add(this);
 
@@ -716,7 +732,7 @@ namespace StatisticDiagnostic
         /// Инициализация подключения к БД
         /// и компонентов панели.
         /// </summary>
-        /// <returns></returns>
+        /// <returns>Признак результата(успех/ошибка) выполнения метода</returns>
         private int initialize()
         {
             int err = -1; //Признак выполнения метода/функции
@@ -895,8 +911,6 @@ namespace StatisticDiagnostic
             }
         }
 
-        private ListSource m_listSource;
-
         private struct DIAGNOSTIC_PARAMETER
         {
             public int m_id;
@@ -976,10 +990,10 @@ namespace StatisticDiagnostic
         }
 
         /// <summary>
-        /// Функция активация Вкладки
+        /// Функция активация вкладки
         /// </summary>
         /// <param name="activated">параметр</param>
-        /// <returns>результат</returns>
+        /// <returns>Признак результата: изменилось состояние/не_изменилось)</returns>
         public override bool Activate(bool activated)
         {
             bool bRes = base.Activate(activated);
@@ -992,6 +1006,38 @@ namespace StatisticDiagnostic
                 m_timerUpdate.Stop();
 
             return bRes;
+        }
+
+        public override void UpdateGraphicsCurrent (int type)
+        {
+            ElapsedEventHandler handlerTimerElapsed = new ElapsedEventHandler (updateTimer_OnElapsed);
+            handlerTimerElapsed.BeginInvoke (this, null, new AsyncCallback (updateTimer_StartElapsed), handlerTimerElapsed);
+        }
+
+        private class DataGridViewDiagnostic : System.Windows.Forms.DataGridView
+        {
+            public DataGridViewDiagnostic ()
+            {
+            }
+
+            public override Color BackColor
+            {
+                get
+                {
+                    return base.BackColor;
+                }
+
+                set
+                {
+                    base.BackColor = value;
+
+                    s_CellState [(int)INDEX_CELL_STATE.OK].m_Color = value == SystemColors.Control ? SystemColors.Window : value;
+
+                    //for (int j = 0; j < ColumnCount; j++)
+                    //    for (int i = 0; i < RowCount; i++)
+                    //        Rows [i].Cells [j].Style.BackColor = s_CellState [(int)INDEX_CELL_STATE.OK].m_Color;
+                }
+            }
         }
     }
 }

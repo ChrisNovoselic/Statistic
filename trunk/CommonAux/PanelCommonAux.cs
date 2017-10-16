@@ -304,7 +304,8 @@ namespace CommonAux
         /// <summary>
         /// Конструктор панели
         /// </summary>
-        public PanelCommonAux(string pathTemplate)
+        public PanelCommonAux(Color backColor, string pathTemplate)
+            : base (MODE_UPDATE_VALUES.ACTION, backColor)
         {
             m_GetDataFromDB = new GetDataFromDB();
 
@@ -1246,6 +1247,11 @@ namespace CommonAux
                 ;
 
             return iRes;
+        }
+
+        public override void UpdateGraphicsCurrent (int type)
+        {
+            throw new NotImplementedException ();
         }
     }
 }

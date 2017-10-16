@@ -7,19 +7,59 @@ using System.Data;
 using System.Globalization;
 
 using HClassLibrary;
+using System.Drawing;
 
 namespace StatisticCommon
 {
     public class DataGridViewAdminKomDisp : DataGridViewAdmin
     {
-        public enum DESC_INDEX : ushort { DATE_HOUR, PLAN, UDGe, RECOMENDATION, FOREIGN_CMD, DEVIATION_TYPE, DEVIATION, TO_ALL, COUNT_COLUMN };
-        private static string[] arDescStringIndex = { "DateHour", "Plan", @"UDGe", @"ForeignCmd", "Recomendation", "DeviationType", "Deviation", "ToAll" };
-        private static string[] arDescRusStringIndex = { "Дата, час", "План", @"УДГэ", "Рекомендация", @"Внешн. ком-да", "Отклонение в процентах", "Величина максимального отклонения", "Дозаполнить" };
-        private static string[] arDefaultValueIndex = { string.Empty, string.Empty, string.Empty, string.Empty, false.ToString(), false.ToString(), string.Empty };
+        public enum COLUMN_INDEX : ushort { DATE_HOUR, PLAN, UDGe, RECOMENDATION, FOREIGN_CMD, DEVIATION_TYPE, DEVIATION, TO_ALL, COUNT_COLUMN };
+
+        /// <summary>
+        /// Значимые свойства столбца представления для предустановки их значений
+        /// </summary>
+        struct COLUMN_PROPERTIES {
+            /// <summary>
+            /// Тип столбца
+            /// </summary>
+            public Type _type;
+            /// <summary>
+            /// Соответствует стандартному свойству
+            /// </summary>
+            public string _name;
+            /// <summary>
+            /// Соответствует стандартному свойству
+            /// </summary>
+            public string _headerText;
+            /// <summary>
+            /// Значение по умолчанию
+            /// </summary>
+            public string DefaultValue;
+            /// <summary>
+            /// Соответствует стандартному свойству
+            /// </summary>
+            public bool _frozen;
+            /// <summary>
+            /// Соответствует стандартному свойству
+            /// </summary>
+            public bool _readOnly;
+            /// <summary>
+            /// Соответствует стандартному свойству
+            /// </summary>
+            public DataGridViewTriState _resizable;
+            /// <summary>
+            /// Соответствует стандартному свойству
+            /// </summary>
+            public int _width;
+            /// <summary>
+            /// Соответствует стандартному свойству
+            /// </summary>
+            public System.Windows.Forms.DataGridViewColumnSortMode _sortMode;
+        }
 
         public double m_PBR_0;
 
-        public DataGridViewAdminKomDisp()
+        public DataGridViewAdminKomDisp(System.Drawing.Color []colors) : base(colors)
         {
             this.CellMouseMove += new DataGridViewCellMouseEventHandler (dgwAdminTable_CellMouseMove);
         }
@@ -28,73 +68,95 @@ namespace StatisticCommon
         {
             base.InitializeComponents();
 
-            Columns.AddRange(new DataGridViewColumn[(int)DESC_INDEX.COUNT_COLUMN] {new DataGridViewTextBoxColumn (),
-                                                                                    new DataGridViewTextBoxColumn (),
-                                                                                    new DataGridViewTextBoxColumn (),
-                                                                                    new DataGridViewTextBoxColumn (),
-                                                                                    new DataGridViewCheckBoxColumn (),
-                                                                                    new DataGridViewCheckBoxColumn (),
-                                                                                    new DataGridViewTextBoxColumn (),
-                                                                                    new DataGridViewButtonColumn ()});
-            int i = -1;
-            // 
-            // DateHour
-            // 
-            Columns[(int)DESC_INDEX.DATE_HOUR].Frozen = true;
-            Columns[(int)DESC_INDEX.DATE_HOUR].HeaderText = arDescRusStringIndex[(int)DESC_INDEX.DATE_HOUR];
-            Columns[(int)DESC_INDEX.DATE_HOUR].Name = arDescStringIndex[(int)DESC_INDEX.DATE_HOUR];
-            Columns[(int)DESC_INDEX.DATE_HOUR].ReadOnly = true;
-            Columns[(int)DESC_INDEX.DATE_HOUR].SortMode = System.Windows.Forms.DataGridViewColumnSortMode.NotSortable;
-            // 
-            // Plan
-            //
-            i = (int)DESC_INDEX.PLAN;
-            //Columns[(int)DESC_INDEX.PLAN].Frozen = true;
-            Columns[i].HeaderText = arDescRusStringIndex[i];
-            Columns[i].Name = arDescStringIndex[i];
-            Columns[i].SortMode = System.Windows.Forms.DataGridViewColumnSortMode.NotSortable;
-            Columns[i].Width = 56;
-            Columns[i].ReadOnly = true;
-            // 
-            // UDGe
-            // 
-            i = (int)DESC_INDEX.UDGe;
-            //Columns[(int)DESC_INDEX.PLAN].Frozen = true;
-            Columns[i].HeaderText = arDescRusStringIndex[i];
-            Columns[i].Name = arDescStringIndex[i];
-            Columns[i].SortMode = System.Windows.Forms.DataGridViewColumnSortMode.NotSortable;
-            Columns[i].Width = 56;
-            Columns[i].ReadOnly = true;
-            // 
-            // Recommendation
-            // 
-            Columns[(int)DESC_INDEX.RECOMENDATION].HeaderText = arDescRusStringIndex[(int)DESC_INDEX.RECOMENDATION];
-            Columns[(int)DESC_INDEX.RECOMENDATION].Name = arDescStringIndex[(int)DESC_INDEX.RECOMENDATION];
-            Columns[(int)DESC_INDEX.RECOMENDATION].SortMode = System.Windows.Forms.DataGridViewColumnSortMode.NotSortable;
-            // 
-            // ForeignCmd
-            // 
-            Columns[(int)DESC_INDEX.FOREIGN_CMD].HeaderText = arDescRusStringIndex[(int)DESC_INDEX.FOREIGN_CMD];
-            Columns[(int)DESC_INDEX.FOREIGN_CMD].Name = arDescStringIndex[(int)DESC_INDEX.FOREIGN_CMD];
-            Columns[(int)DESC_INDEX.FOREIGN_CMD].SortMode = System.Windows.Forms.DataGridViewColumnSortMode.NotSortable;
-            // 
-            // DeviationType
-            // 
-            Columns[(int)DESC_INDEX.DEVIATION_TYPE].HeaderText = arDescRusStringIndex[(int)DESC_INDEX.DEVIATION_TYPE];
-            Columns[(int)DESC_INDEX.DEVIATION_TYPE].Name = arDescStringIndex[(int)DESC_INDEX.DEVIATION_TYPE];
-            Columns[(int)DESC_INDEX.DEVIATION_TYPE].SortMode = System.Windows.Forms.DataGridViewColumnSortMode.NotSortable;
-            // 
-            // Deviation
-            // 
-            Columns[(int)DESC_INDEX.DEVIATION].HeaderText = arDescRusStringIndex[(int)DESC_INDEX.DEVIATION];
-            Columns[(int)DESC_INDEX.DEVIATION].Name = arDescStringIndex[(int)DESC_INDEX.DEVIATION];
-            Columns[(int)DESC_INDEX.DEVIATION].Resizable = System.Windows.Forms.DataGridViewTriState.True;
-            Columns[(int)DESC_INDEX.DEVIATION].SortMode = System.Windows.Forms.DataGridViewColumnSortMode.NotSortable;
-            // 
-            // ToAll
-            // 
-            Columns[(int)DESC_INDEX.TO_ALL].HeaderText = arDescRusStringIndex[(int)DESC_INDEX.TO_ALL];
-            Columns[(int)DESC_INDEX.TO_ALL].Name = arDescStringIndex[(int)DESC_INDEX.TO_ALL];
+            Columns.AddRange (new DataGridViewColumn [] {
+                new DataGridViewTextBoxColumn () { // DATE_HOUR
+                Name = COLUMN_INDEX.DATE_HOUR.ToString()
+                , HeaderText = "Дата, час"
+                , DefaultCellStyle = new DataGridViewCellStyle() { NullValue = string.Empty }
+                , Frozen = true
+                , ReadOnly = true
+                , Resizable = DataGridViewTriState.False
+                //, Width = -1
+                , SortMode = DataGridViewColumnSortMode.NotSortable
+            }
+            , new DataGridViewTextBoxColumn () { // PLAN
+                Name = COLUMN_INDEX.PLAN.ToString()
+                , HeaderText = "План"
+                , DefaultCellStyle = new DataGridViewCellStyle() { NullValue = string.Empty }
+                , Frozen = false
+                , ReadOnly = true
+                , Resizable = DataGridViewTriState.False
+                , Width = 56
+                , SortMode = DataGridViewColumnSortMode.NotSortable
+            }
+            , new DataGridViewTextBoxColumn() { // UDGe
+                Name = COLUMN_INDEX.UDGe.ToString()
+                , HeaderText = "УДГэ"
+                , DefaultCellStyle = new DataGridViewCellStyle() { NullValue = string.Empty }
+                , Frozen = false
+                , ReadOnly = true
+                , Resizable = DataGridViewTriState.False
+                , Width = 56
+                , SortMode = DataGridViewColumnSortMode.NotSortable
+            }
+            , new DataGridViewTextBoxColumn() { // RECOMENDATION
+                Name = COLUMN_INDEX.RECOMENDATION.ToString()
+                , HeaderText = "Рекомендация"
+                , DefaultCellStyle = new DataGridViewCellStyle() { NullValue = string.Empty }
+                , Frozen = false
+                , ReadOnly = false
+                , Resizable = DataGridViewTriState.False
+                //, Width = -1
+                , SortMode = DataGridViewColumnSortMode.NotSortable
+            }
+            , new DataGridViewCheckBoxColumn() { // FOREIGN_CMD
+                Name = COLUMN_INDEX.FOREIGN_CMD.ToString()
+                , HeaderText = "Внешн. ком-да"
+                , DefaultCellStyle = new DataGridViewCellStyle() { NullValue = false }
+                , Frozen = false
+                , ReadOnly = false
+                , Resizable = DataGridViewTriState.False                
+                //, Width = -1
+                , SortMode = DataGridViewColumnSortMode.NotSortable
+            }
+            , new DataGridViewCheckBoxColumn() { // DEVIATION_TYPE
+                Name = COLUMN_INDEX.DEVIATION_TYPE.ToString()
+                , HeaderText = "Отклонение в процентах"
+                , DefaultCellStyle = new DataGridViewCellStyle() { NullValue = false }
+                , Frozen = false
+                , ReadOnly = false
+                , Resizable = DataGridViewTriState.False
+                //, Width = -1
+                , SortMode = DataGridViewColumnSortMode.NotSortable
+            }
+            , new DataGridViewTextBoxColumn() { // DEVIATION
+                Name = COLUMN_INDEX.DEVIATION.ToString()
+                , HeaderText = "Величина максимального отклонения"
+                , DefaultCellStyle = new DataGridViewCellStyle() { NullValue = string.Empty }
+                , Frozen = false
+                , ReadOnly = false
+                , Resizable = DataGridViewTriState.True
+                //, Width = -1
+                , SortMode = DataGridViewColumnSortMode.NotSortable
+            }
+            , new DataGridViewButtonColumn() { // TO_ALL
+                Name = COLUMN_INDEX.TO_ALL.ToString()
+                , HeaderText = "Дозаполнить"
+                , DefaultCellStyle = new DataGridViewCellStyle() { NullValue = string.Empty }
+                , Frozen = false
+                , ReadOnly = true
+                , Resizable = DataGridViewTriState.False
+                //, Width = -1
+                , SortMode = DataGridViewColumnSortMode.NotSortable
+            }});
+
+            //AutoSizeColumnsMode = DataGridViewAutoSizeColumnsMode.ColumnHeader;
+            
+            Columns [(int)COLUMN_INDEX.FOREIGN_CMD].DefaultCellStyle.Alignment = DataGridViewContentAlignment.MiddleCenter;
+            Columns [(int)COLUMN_INDEX.DEVIATION_TYPE].DefaultCellStyle.Alignment = DataGridViewContentAlignment.MiddleCenter;
+            Columns [(int)COLUMN_INDEX.TO_ALL].DefaultCellStyle.BackColor = SystemColors.Control;
+
+            //BackColor = s_dgvCellStyles[(int)INDEX_CELL_STYLE.COMMON].BackColor;
         }
 
         protected override void dgwAdminTable_CellValidated(object sender, DataGridViewCellEventArgs ev)
@@ -104,52 +166,52 @@ namespace StatisticCommon
 
             switch (ev.ColumnIndex)
             {
-                case (int)DESC_INDEX.PLAN: // План
-                    valid = double.TryParse((string)Rows[ev.RowIndex].Cells[(int)DESC_INDEX.PLAN].Value, out value);
+                case (int)COLUMN_INDEX.PLAN: // План
+                    valid = double.TryParse((string)Rows[ev.RowIndex].Cells[(int)COLUMN_INDEX.PLAN].Value, out value);
                     if ((valid == false) || (value > maxRecomendationValue))
-                        Rows[ev.RowIndex].Cells[(int)DESC_INDEX.PLAN].Value = 0.ToString("F2");
+                        Rows[ev.RowIndex].Cells[(int)COLUMN_INDEX.PLAN].Value = 0.ToString("F2");
                     else
-                        Rows[ev.RowIndex].Cells[(int)DESC_INDEX.PLAN].Value = value.ToString("F2");
+                        Rows[ev.RowIndex].Cells[(int)COLUMN_INDEX.PLAN].Value = value.ToString("F2");
                     break;
-                case (int)DESC_INDEX.UDGe: //Не редактируется
+                case (int)COLUMN_INDEX.UDGe: //Не редактируется
                     break;
-                case (int)DESC_INDEX.RECOMENDATION: // Рекомендация
-                    valid = double.TryParse((string)Rows[ev.RowIndex].Cells[(int)DESC_INDEX.RECOMENDATION].Value, out value);
+                case (int)COLUMN_INDEX.RECOMENDATION: // Рекомендация
+                    valid = double.TryParse((string)Rows[ev.RowIndex].Cells[(int)COLUMN_INDEX.RECOMENDATION].Value, out value);
                     if ((valid == false) || (value > maxRecomendationValue))
-                        Rows[ev.RowIndex].Cells[(int)DESC_INDEX.RECOMENDATION].Value = 0.ToString("F2");
+                        Rows[ev.RowIndex].Cells[(int)COLUMN_INDEX.RECOMENDATION].Value = 0.ToString("F2");
                     else {
-                        Rows[ev.RowIndex].Cells[(int)DESC_INDEX.RECOMENDATION].Value = value.ToString("F2");
+                        Rows[ev.RowIndex].Cells[(int)COLUMN_INDEX.RECOMENDATION].Value = value.ToString("F2");
 
                         double prevPbr
-                            , Pbr = double.Parse(Rows[ev.RowIndex].Cells[(int)DESC_INDEX.PLAN].Value.ToString ());
+                            , Pbr = double.Parse(Rows[ev.RowIndex].Cells[(int)COLUMN_INDEX.PLAN].Value.ToString ());
                         if (ev.RowIndex > 0)
-                            prevPbr = double.Parse(Rows[ev.RowIndex - 1].Cells[(int)DESC_INDEX.PLAN].Value.ToString());
+                            prevPbr = double.Parse(Rows[ev.RowIndex - 1].Cells[(int)COLUMN_INDEX.PLAN].Value.ToString());
                         else
                             prevPbr = m_PBR_0;
 
-                        Rows[ev.RowIndex].Cells[(int)DESC_INDEX.UDGe].Value = (((Pbr + prevPbr) / 2) + value).ToString("F2");
+                        Rows[ev.RowIndex].Cells[(int)COLUMN_INDEX.UDGe].Value = (((Pbr + prevPbr) / 2) + value).ToString("F2");
                     }
                     break;
-                case (int)DESC_INDEX.FOREIGN_CMD:
+                case (int)COLUMN_INDEX.FOREIGN_CMD:
                     bool fCmd = false;
                     try {
-                        fCmd = bool.Parse(Rows[ev.RowIndex].Cells[(int)DESC_INDEX.FOREIGN_CMD].Value.ToString());
+                        fCmd = bool.Parse(Rows[ev.RowIndex].Cells[(int)COLUMN_INDEX.FOREIGN_CMD].Value.ToString());
                     }
                     catch (Exception e) {
                         Logging.Logg().Exception(e, @"DataGridViewAdminKomDisp::CellValidate () - ...", Logging.INDEX_MESSAGE.NOT_SET);
                     }
-                    valid = double.TryParse((string)Rows[ev.RowIndex].Cells[(int)DESC_INDEX.RECOMENDATION].Value, out value);
+                    valid = double.TryParse((string)Rows[ev.RowIndex].Cells[(int)COLUMN_INDEX.RECOMENDATION].Value, out value);
                     if ((valid == false) /*|| (value == 0F)*/ || (value > maxRecomendationValue))
                         fCmd = false;
                     else
                         ;
-                    Rows[ev.RowIndex].Cells[(int)DESC_INDEX.FOREIGN_CMD].Value = fCmd;
+                    Rows[ev.RowIndex].Cells[(int)COLUMN_INDEX.FOREIGN_CMD].Value = fCmd;
                     break;
-                case (int)DESC_INDEX.DEVIATION_TYPE:
+                case (int)COLUMN_INDEX.DEVIATION_TYPE:
                     break;
-                case (int)DESC_INDEX.DEVIATION: // Максимальное отклонение
-                    valid = double.TryParse((string)Rows[ev.RowIndex].Cells[(int)DESC_INDEX.DEVIATION].Value, out value);
-                    bool isPercent = bool.Parse(Rows[ev.RowIndex].Cells[(int)DESC_INDEX.DEVIATION_TYPE].Value.ToString());
+                case (int)COLUMN_INDEX.DEVIATION: // Максимальное отклонение
+                    valid = double.TryParse((string)Rows[ev.RowIndex].Cells[(int)COLUMN_INDEX.DEVIATION].Value, out value);
+                    bool isPercent = bool.Parse(Rows[ev.RowIndex].Cells[(int)COLUMN_INDEX.DEVIATION_TYPE].Value.ToString());
                     double maxValue = -1F;
 
                     if (isPercent == true)
@@ -158,9 +220,9 @@ namespace StatisticCommon
                         maxValue = maxDeviationValue; // вообще эти значения не суммируются, но для максимальной границы нормально
 
                     if ((valid == false) || (value < 0) || (value > maxValue))
-                        Rows[ev.RowIndex].Cells[(int)DESC_INDEX.DEVIATION].Value = 0.ToString("F2");
+                        Rows[ev.RowIndex].Cells[(int)COLUMN_INDEX.DEVIATION].Value = 0.ToString("F2");
                     else
-                        Rows[ev.RowIndex].Cells[(int)DESC_INDEX.DEVIATION].Value = value.ToString("F2");
+                        Rows[ev.RowIndex].Cells[(int)COLUMN_INDEX.DEVIATION].Value = value.ToString("F2");
                     break;
                 default:
                     break;
@@ -169,28 +231,28 @@ namespace StatisticCommon
 
         public override void ClearTables()
         {
-            //for (int i = 0; i < Rows.Count; i++)
-            foreach (DataGridViewRow r in Rows)
-                for (int j = (int)DESC_INDEX.DATE_HOUR; j < ((int)DESC_INDEX.TO_ALL + 0); j++)
-                    r.Cells[j].Value = arDefaultValueIndex[j];
+            ////for (int i = 0; i < Rows.Count; i++)
+            //foreach (DataGridViewRow r in Rows)
+            //    for (int j = (int)COLUMN_INDEX.DATE_HOUR; j < ((int)COLUMN_INDEX.TO_ALL + 0); j++)
+            //        r.Cells[j].Value = _columnProperties[j].DefaultValue;
         }
 
         private void dgwAdminTable_CellMouseMove(object sender, DataGridViewCellMouseEventArgs e)
         {
             switch (e.ColumnIndex)
             {
-                case (int)DESC_INDEX.DATE_HOUR:
-                case (int)DESC_INDEX.PLAN:
-                case (int)DESC_INDEX.UDGe:
+                case (int)COLUMN_INDEX.DATE_HOUR:
+                case (int)COLUMN_INDEX.PLAN:
+                case (int)COLUMN_INDEX.UDGe:
                     Cursor = Cursors.Help;
                     break;
-                case (int)DESC_INDEX.RECOMENDATION:
-                case (int)DESC_INDEX.DEVIATION:
+                case (int)COLUMN_INDEX.RECOMENDATION:
+                case (int)COLUMN_INDEX.DEVIATION:
                     Cursor = Cursors.IBeam;
                     break;
-                case (int)DESC_INDEX.FOREIGN_CMD:
-                case (int)DESC_INDEX.DEVIATION_TYPE:
-                case (int)DESC_INDEX.TO_ALL:
+                case (int)COLUMN_INDEX.FOREIGN_CMD:
+                case (int)COLUMN_INDEX.DEVIATION_TYPE:
+                case (int)COLUMN_INDEX.TO_ALL:
                     Cursor = Cursors.Hand;
                     break;
                 default:

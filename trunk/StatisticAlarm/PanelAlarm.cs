@@ -3,6 +3,7 @@ using System.Collections.Generic;
 using System.ComponentModel;
 using System.Data.Common;
 using System.Diagnostics;
+using System.Drawing;
 using System.Linq;
 using System.Text;
 //using System.Data;
@@ -55,6 +56,7 @@ namespace StatisticAlarm
         private int _widthPanelManagement = 166;
 
         private event DelegateObjectFunc eventFilter;
+
         //public PanelAlarm(MODE mode)
         //{
         //    //Зарегистрировать соединение/получить идентификатор соединения
@@ -62,31 +64,41 @@ namespace StatisticAlarm
 
         //    DbSources.Sources().UnRegister(iListenerId);
         //}
+
         /// <summary>
         /// Конструктор - основной (с параметрами)
         /// </summary>
+        /// <param name="iListenerConfigDB">Идентификатор установленного соединения с БД</param>
+        /// <param name="markQueries">Массив признаков кстановления связи с тем или иным источником данных</param>
         /// <param name="mode">Режим работы панели</param>
-        public PanelAlarm(int iListenerConfigDB, HMark markQueries, MODE mode)
-            : base()
+        /// <param name="backColor">Цвет фона панели и всех дочерних элементов управления</param>
+        public PanelAlarm (int iListenerConfigDB, HMark markQueries, MODE mode, Color backColor)
+            : base(MODE_UPDATE_VALUES.AUTO, backColor)
         {
             //Инициализация собственных значений
             initialize(iListenerConfigDB, markQueries, mode);
         }
+
         /// <summary>
         /// Конструктор - дополнительный (с параметрами)
         /// </summary>
         /// <param name="container">См. документацию на 'Control'</param>
+        /// <param name="iListenerConfigDB">Идентификатор установленного соединения с БД</param>
+        /// <param name="markQueries">Массив признаков кстановления связи с тем или иным источником данных</param>
         /// <param name="mode">Режим работы панели</param>
-        public PanelAlarm(IContainer container, int iListenerConfigDB, HMark markQueries, MODE mode)
-            : base ()
+        public PanelAlarm (IContainer container, int iListenerConfigDB, HMark markQueries, MODE mode, Color backColor)
+            : base (MODE_UPDATE_VALUES.AUTO, backColor)
         {
             container.Add(this);
             //Инициализация собственных значений
             initialize(iListenerConfigDB, markQueries, mode);
         }
+
         /// <summary>
         /// Инициализация собственных параметров
         /// </summary>
+        /// <param name="iListenerConfigDB">Идентификатор установленного соединения с БД</param>
+        /// <param name="markQueries">Массив признаков кстановления связи с тем или иным источником данных</param>
         /// <param name="mode">Режим работы панели</param>
         private int initialize(int iListenerConfigDB, HMark markQueries, MODE mode)
         {
@@ -132,7 +144,7 @@ namespace StatisticAlarm
                 int indx = -1;
                 //Заполнить списки
                 m_listIdTECComponents = new List<int>();
-                ctrl = Find(INDEX_CONTROL.CLB_TECCOMPONENT);
+                ctrl = find(INDEX_CONTROL.CLB_TECCOMPONENT);
                 (ctrl as CheckedListBox).Items.Add(@"Все компоненты", true);
                 foreach (TEC tec in m_list_tec)
                     foreach (TECComponent comp in tec.list_TECComponents)
@@ -151,18 +163,18 @@ namespace StatisticAlarm
                 (ctrl as CheckedListBox).SelectedIndex = 0;
                 (ctrl as CheckedListBox).Enabled = true; //mode == MODE.ADMIN
                 //Запустить на выполнениие (при необходимости) таймер для обновления значений в таблице
-                ctrl = Find(INDEX_CONTROL.CBX_WORK) as CheckBox;
+                ctrl = find(INDEX_CONTROL.CBX_WORK) as CheckBox;
                 (ctrl as CheckBox).Checked = bWorkChecked;
                 (ctrl as CheckBox).Enabled = ! (mode == MODE.VIEW);
                 //Назначить обработчик события изменение даты
-                (Find(INDEX_CONTROL.MCLDR_CURRENT) as MonthCalendar).DateChanged += new DateRangeEventHandler(onEventDateChanged);
+                (find(INDEX_CONTROL.MCLDR_CURRENT) as MonthCalendar).DateChanged += new DateRangeEventHandler(onEventDateChanged);
                 //Назначить обработчик событий при изменении признака "Включено/отключено"
                 (ctrl as CheckBox).CheckedChanged += new EventHandler(cbxWork_OnCheckedChanged);            
                 //Установить доступность элементов управления по изменению коэффициентов ГТП (вычисление пороговых значений при проверке выполнения условий сигнализации "Тек./мощность ГТП")
-                (Find(INDEX_CONTROL.NUD_HOUR_BEGIN) as NumericUpDown).Enabled =
-                (Find(INDEX_CONTROL.NUD_HOUR_END) as NumericUpDown).Enabled =
+                (find(INDEX_CONTROL.NUD_HOUR_BEGIN) as NumericUpDown).Enabled =
+                (find(INDEX_CONTROL.NUD_HOUR_END) as NumericUpDown).Enabled =
                      false; //mode == MODE.ADMIN;
-                ctrl = Find (INDEX_CONTROL.DGV_EVENTS);
+                ctrl = find (INDEX_CONTROL.DGV_EVENTS);
                 //Установить фильтр отображения - идентификаторы компонентов
                 (ctrl as DataGridViewAlarmJournal).SetFilter (INDEX_FILTER.ID, getListIdCheckedIndices ());
                 //Назначить обработчик события при получении из БД списка событий (передать список для отображения)
@@ -173,9 +185,9 @@ namespace StatisticAlarm
                 (ctrl as DataGridViewAlarmJournal).EventSelected += new DelegateObjectFunc (dgvJournal_OnSelectionChanged);
 
                 ////Назначить обработчика для события - очистить таблицу по требованию (при отсутствии строк в основной таблице)
-                //(ctrl as DataGridViewAlarmJournal).EventClearDetail += new DelegateFunc((Find (INDEX_CONTROL.DGV_DETAIL) as DataGridViewAlarmDetail).OnEventClear);
+                //(ctrl as DataGridViewAlarmJournal).EventClearDetail += new DelegateFunc((find (INDEX_CONTROL.DGV_DETAIL) as DataGridViewAlarmDetail).OnEventClear);
 
-                ctrl = Find(INDEX_CONTROL.DGV_DETAIL);
+                ctrl = find(INDEX_CONTROL.DGV_DETAIL);
                 //Установить фильтр отображения - идентификаторы компонентов
                 (ctrl as DataGridViewAlarmDetail).SetFilter(INDEX_FILTER.ID, getListIdCheckedIndices());
                 m_adminAlarm.EvtGetDataDetail += new DelegateObjectFunc((ctrl as DataGridViewAlarmDetail).OnEvtGetData);
@@ -196,6 +208,7 @@ namespace StatisticAlarm
 
             return err;
         }
+        
         /// <summary>
         /// Запустить на выполнение 
         /// </summary>
@@ -212,6 +225,7 @@ namespace StatisticAlarm
         {
             m_adminAlarm.SetDelegateReport(ferr, fwar, fact, fclr);
         }
+
         /// <summary>
         /// Запустить на выполнение объект регистрации выполнения условий сигнализаций
         ///  , чтения/записи/обновления списка событий в БД
@@ -226,6 +240,7 @@ namespace StatisticAlarm
                 else ;
             else ;
         }     
+
         /// <summary>
         /// Остановить панель, и все связанные с ней объекты
         /// </summary>
@@ -252,6 +267,7 @@ namespace StatisticAlarm
             else
                 ;
         }
+
         /// <summary>
         /// Активировать/деактивировать панель
         /// </summary>
@@ -270,6 +286,7 @@ namespace StatisticAlarm
 
             return bRes;
         }
+
         /// <summary>
         /// Инициалировать параметры контэйнеров-столбцов, контэйнеров-строк
         /// </summary>
@@ -285,6 +302,7 @@ namespace StatisticAlarm
 
             this.RowStyles.Add(new RowStyle(SizeType.AutoSize));
         }
+
         /// <summary>
         /// Инициализация объекта регистрации выполнения условий сигнализаций
         /// </summary>
@@ -301,6 +319,7 @@ namespace StatisticAlarm
 
             this.EvtDataAskedHost += new DelegateObjectFunc(m_adminAlarm.OnEvtDataAskedHost);
         }
+
         /// <summary>
         /// Обработчик события - регистрация события сигнализации из БД!!!
         /// </summary>
@@ -316,6 +335,7 @@ namespace StatisticAlarm
             //else
             //    Logging.Logg().Error(@"PanelAlarm::OnViewAlarm_EventAdd () - ... BeginInvoke (...) - ...", Logging.INDEX_MESSAGE.D_001);
         }
+
         /// <summary>
         /// Обработчик события - повтор регистрации события сигнализации из БД!!!
         /// </summary>
@@ -331,6 +351,7 @@ namespace StatisticAlarm
             else
                 Logging.Logg().Error(@"PanelAlarm::OnViewAlarm_EventRetry () - ... BeginInvoke (...) - ...", Logging.INDEX_MESSAGE.D_001);
         }
+
         /// <summary>
         /// Обработчик события - снятие с отображения 'MessageBox'
         ///  информации о событии сигнализаций
@@ -345,6 +366,7 @@ namespace StatisticAlarm
                 }
             });
         }
+
         /// <summary>
         /// Обработчик события - подтверждение события сигнализаций
         /// </summary>
@@ -358,6 +380,7 @@ namespace StatisticAlarm
                 }
             });
         }
+
         /// <summary>
         /// Обработчик события изменения выбора строки в таблице
         ///  со списком событий сигнализаций
@@ -372,6 +395,7 @@ namespace StatisticAlarm
                 }
             });
         }
+
         /// <summary>
         /// Обработчик события снятия признака "использовать компонент ТЭЦ" в списке "Компоненты ТЭЦ"
         /// </summary>
@@ -409,7 +433,7 @@ namespace StatisticAlarm
         private List <int> getListIdCheckedIndices ()
         {
             List <int> listRes = new List<int> ();
-            CheckedListBox ctrl = Find(INDEX_CONTROL.CLB_TECCOMPONENT) as CheckedListBox;
+            CheckedListBox ctrl = find(INDEX_CONTROL.CLB_TECCOMPONENT) as CheckedListBox;
             //Вариант №1
             for (int i = 1; i < ctrl.Items.Count; i++)
                 if (ctrl.GetItemChecked(i) == true)
@@ -430,7 +454,7 @@ namespace StatisticAlarm
         {
             List<int> listRes = new List<int>();
 
-            CheckedListBox ctrl = Find(INDEX_CONTROL.CLB_TECCOMPONENT) as CheckedListBox;
+            CheckedListBox ctrl = find(INDEX_CONTROL.CLB_TECCOMPONENT) as CheckedListBox;
             //Вариант №1
             for (int i = 1; i < ctrl.Items.Count; i++)
                 if (! (i == indx))
@@ -446,6 +470,7 @@ namespace StatisticAlarm
 
             return listRes;
         }
+        
         /// <summary>
         /// Найти объект-'компонент ТЭЦ' по идентификатору в локальном списке компонентов ТЭЦ
         /// </summary>
@@ -462,6 +487,7 @@ namespace StatisticAlarm
 
             return null;
         }
+
         /// <summary>
         /// Обработчик события изменение признака "Включено/отключено"
         /// </summary>
@@ -471,23 +497,24 @@ namespace StatisticAlarm
         {
             CheckBox ctrl =
                 obj
-                //Find(INDEX_CONTROL.CBX_WORK)
+                //find(INDEX_CONTROL.CBX_WORK)
                     as CheckBox;
 
             //??? - Активировать объект регистрации/чтения/записи/обновления списка событий
             delegateWorkCheckedChanged(ctrl.Checked);
         }
+
         /// <summary>
         /// Обработчик события - выбор элемента в списке компонентов ТЭЦ
         /// </summary>
-        /// <param name="obj"></param>
-        /// <param name="ev"></param>
+        /// <param name="obj">Объект, инициировавший событие (CheckListBox)</param>
+        /// <param name="ev">Аргумент события</param>
         private void fTECComponent_OnSelectedIndexChanged(object obj, EventArgs ev)
         {
             //Получить объект со значением коэфициента для выбранного компонента ТЭЦ
-            NumericUpDown ctrl = Find(INDEX_CONTROL.NUD_KOEF) as NumericUpDown;
+            NumericUpDown ctrl = find(INDEX_CONTROL.NUD_KOEF) as NumericUpDown;
             //Проверить индекс выбранного элемента
-            if ((Find(INDEX_CONTROL.CLB_TECCOMPONENT) as CheckedListBox).SelectedIndex > 0)
+            if ((find(INDEX_CONTROL.CLB_TECCOMPONENT) as CheckedListBox).SelectedIndex > 0)
             {//Только для настоящего компонента ТЭЦ, а не виртуального "Все компоненты"
                 //Включить (при необходимости) объект со значением коэфициента
                 if (ctrl.Enabled == false) ctrl.Enabled = m_adminAlarm.Mode == MODE.ADMIN; else ;
@@ -502,14 +529,16 @@ namespace StatisticAlarm
                 setNudnKoeffAlarmCurPowerValue(-1);
             }
         }
+
         /// <summary>
         /// Отобразить значение коэффициента для выбранного элемента в списке "Компоненты ТЭЦ"
         /// </summary>
         private void setNudnKoeffAlarmCurPowerValue()
         {
-            TECComponent comp = findGTPOfID(m_listIdTECComponents[(Find(INDEX_CONTROL.CLB_TECCOMPONENT) as CheckedListBox).SelectedIndex - 1]);
+            TECComponent comp = findGTPOfID(m_listIdTECComponents[(find(INDEX_CONTROL.CLB_TECCOMPONENT) as CheckedListBox).SelectedIndex - 1]);
             setNudnKoeffAlarmCurPowerValue (comp.m_dcKoeffAlarmPcur);
         }
+
         /// <summary>
         /// Отобразить значение коэффициента для выбранного элемента в списке "Компоненты ТЭЦ"
         /// </summary>
@@ -517,7 +546,7 @@ namespace StatisticAlarm
         private void setNudnKoeffAlarmCurPowerValue(decimal value)
         {
             //Получить объект со значением коэффициента для выбранного элемента
-            NumericUpDown ctrl = Find(INDEX_CONTROL.NUD_KOEF) as NumericUpDown;
+            NumericUpDown ctrl = find(INDEX_CONTROL.NUD_KOEF) as NumericUpDown;
             //Отменить обработку события - изменение значения, т.к. изменяем значение программно
             ctrl.ValueChanged -= new EventHandler(NudnKoeffAlarmCurPower_ValueChanged);
             if (value > 0)
@@ -535,6 +564,7 @@ namespace StatisticAlarm
             //Возобновить обработку события
             ctrl.ValueChanged += new EventHandler(NudnKoeffAlarmCurPower_ValueChanged);
         }
+
         /// <summary>
         /// Обработчик события - изменение значения коэффициента для компонента ТЭЦ
         /// </summary>
@@ -542,7 +572,7 @@ namespace StatisticAlarm
         /// <param name="ev">Аргумент события</param>
         private void NudnKoeffAlarmCurPower_ValueChanged(object obj, EventArgs ev)
         {
-            TECComponent comp = findGTPOfID(m_listIdTECComponents[(Find(INDEX_CONTROL.CLB_TECCOMPONENT) as CheckedListBox).SelectedIndex - 1]);
+            TECComponent comp = findGTPOfID(m_listIdTECComponents[(find(INDEX_CONTROL.CLB_TECCOMPONENT) as CheckedListBox).SelectedIndex - 1]);
             // для логгирования
             decimal dcPrevKoeffAlarmPcur = comp.m_dcKoeffAlarmPcur;
             //Запомнить установленное значение "времени выполнения"
@@ -561,27 +591,32 @@ namespace StatisticAlarm
             Logging.Logg().Action(@"PanelAlarm::NudnKoeffAlarmCurPower_ValueChanged () - пред.=" + dcPrevKoeffAlarmPcur + @", текущ.=" + comp.m_dcKoeffAlarmPcur + @" ..."
                 , Logging.INDEX_MESSAGE.NOT_SET);
         }
+
         /// <summary>
         /// Найти дочерний элемент управления по идентификатору
         /// </summary>
         /// <param name="indx">Идентификатор элемента управления</param>
         /// <returns>Дочерний элемент управления</returns>
-        private Control Find (INDEX_CONTROL indx)
+        private Control find (INDEX_CONTROL indx)
         {
-            return Controls.Find (indx.ToString (), true) [0];
+            return findControl(indx.ToString());
         }
+
         /// <summary>
         /// Текущая (выбранная дата) в элементе управления 'MonthCalendar'
         /// </summary>
-        private DateTime DateCurrent { get { return (Find(INDEX_CONTROL.MCLDR_CURRENT) as MonthCalendar).SelectionStart.Date; } }
+        private DateTime DateCurrent { get { return (find(INDEX_CONTROL.MCLDR_CURRENT) as MonthCalendar).SelectionStart.Date; } }
+        
         /// <summary>
         /// Текущий (установленный) индекс часа начала периода в указанные сутки
         /// </summary>
-        private int HourBegin { get { return (int)(Find(INDEX_CONTROL.NUD_HOUR_BEGIN) as NumericUpDown).Value; } }
+        private int HourBegin { get { return (int)(find(INDEX_CONTROL.NUD_HOUR_BEGIN) as NumericUpDown).Value; } }
+        
         /// <summary>
         /// Текущий (установленный) индекс часа окончания периода в указанные сутки
         /// </summary>
-        private int HourEnd { get { return (int)(Find(INDEX_CONTROL.NUD_HOUR_END) as NumericUpDown).Value; } }
+        private int HourEnd { get { return (int)(find(INDEX_CONTROL.NUD_HOUR_END) as NumericUpDown).Value; } }
+        
         /// <summary>
         /// Обработчик события - нажатие на кнопку "Обновить"
         /// </summary>
@@ -599,7 +634,7 @@ namespace StatisticAlarm
         //{
         //    get
         //    {
-        //        return ((Find(INDEX_CONTROL.CBX_WORK) as CheckBox).Checked == true)
+        //        return ((find(INDEX_CONTROL.CBX_WORK) as CheckBox).Checked == true)
         //            && (IsDatetimeToday == true);
         //    }
         //}
@@ -607,13 +642,61 @@ namespace StatisticAlarm
         private void onEventDateChanged(object obj, DateRangeEventArgs ev)
         {
             delegateDatetimeChanged(new AdminAlarm.DatetimeCurrentEventArgs(DateCurrent, HourBegin, HourEnd));
-            //(Find (INDEX_CONTROL.DGV_EVENTS) as DataGridView).Rows.Clear ();
-            (Find(INDEX_CONTROL.DGV_DETAIL) as DataGridView).Rows.Clear();
+            //(find (INDEX_CONTROL.DGV_EVENTS) as DataGridView).Rows.Clear ();
+            (find(INDEX_CONTROL.DGV_DETAIL) as DataGridView).Rows.Clear();
         }
 
-        public enum INDEX_FILTER : uint { NOT, DATETIME_REGISTRED, ID, ALL }
         /// <summary>
-        /// Класс для описания фильтра
+        /// Применить изменения графического оформления
+        /// </summary>
+        /// <param name="type">Тип изменений графического оформления</param>
+        public override void UpdateGraphicsCurrent (int type)
+        {
+            //??? ничего не делать
+        }
+
+        public override Color BackColor
+        {
+            get
+            {
+                return base.BackColor;
+            }
+
+            set
+            {
+                base.BackColor = value;
+
+                Control clbTECComponent;
+
+                clbTECComponent = find (INDEX_CONTROL.CLB_TECCOMPONENT);
+
+                if (Equals (clbTECComponent, null) == false)
+                    clbTECComponent.BackColor = BackColor;
+                else
+                    ;
+            }
+        }
+
+        /// <summary>
+        /// Тип фильтра(ограничений)
+        /// </summary>
+        public enum INDEX_FILTER : uint {
+            /// <summary>
+            /// Ограничения не устновлены
+            /// </summary>
+            NOT
+            /// <summary>
+            /// Ограничения по метке даты/времени регистрации события
+            /// </summary>
+            , DATETIME_REGISTRED
+            /// <summary>
+            /// Ограничения по идентификатору компоненту ТЭЦ
+            /// </summary>
+            , ID
+                , ALL }
+        
+        /// <summary>
+        /// Класс для описания фильтра(ограничений) выбранных компонентов ТЭЦ
         /// </summary>
         private class Filter
         {
@@ -669,6 +752,7 @@ namespace StatisticAlarm
             protected Filter m_filter;
 
             protected static string s_DateTimeFormat = @"HH:mm.ss.fff";
+            
             /// <summary>
             /// Конструктор - основной (без параметров)
             /// </summary>
@@ -681,6 +765,7 @@ namespace StatisticAlarm
 
                 m_filter = new Filter ();
             }
+            
             /// <summary>
             /// Установить параметры визуализации
             /// </summary>
@@ -698,7 +783,10 @@ namespace StatisticAlarm
                 this.SelectionMode = DataGridViewSelectionMode.FullRowSelect;
                 this.RowHeadersVisible = false; //Отменить отображение заголовков для строк
                 this.ReadOnly = true; //Установить режим - 'только чтение'
+
+                BackColor = HDataGridViewTables.s_dgvCellStyles[(int)HDataGridViewTables.INDEX_CELL_STYLE.COMMON].BackColor;
             }
+            
             /// <summary>
             /// Обработчик события "Получение данных для отображения"
             /// </summary>
@@ -715,6 +803,7 @@ namespace StatisticAlarm
                     Logging.Logg().Exception(e, @"DataGridViewAlarmBase::OnEvtGetData () - Invoke (obj.Type=" + obj.GetType().Name + @") ...", Logging.INDEX_MESSAGE.NOT_SET);
                 }
             }
+            
             /// <summary>
             /// Отобразить полученные данные
             /// </summary>
@@ -724,6 +813,7 @@ namespace StatisticAlarm
                 //Очистить содержимое таблицы
                 Rows.Clear();            
             }
+            
             /// <summary>
             /// Обработчик события - применить фильтр для строк в таблице
             /// </summary>
@@ -738,6 +828,7 @@ namespace StatisticAlarm
                 else
                     ;
             }
+            
             /// <summary>
             /// Установить фильтр для отображаемых значений
             /// </summary>
@@ -772,7 +863,29 @@ namespace StatisticAlarm
 
                 return iRes;
             }
+
+            public override Color BackColor
+            {
+                get
+                {
+                    return base.BackColor;
+                }
+
+                set
+                {
+                    base.BackColor = value;
+
+                    for (int j = 0; j < ColumnCount; j++)
+                        for (int i = 0; i < RowCount; i++) {
+                            if (Columns [j].GetType ().Name.Contains ("button") == false)
+                                Rows [i].Cells [j].Style.BackColor = BackColor;
+                            else
+                                ;
+                        }
+                }
+            }
         }
+        
         /// <summary>
         /// Класс для описания события сигнализаций (для отображения в таблице)
         /// </summary>
@@ -784,6 +897,7 @@ namespace StatisticAlarm
             public float m_value;
             public string m_str_name_shr_component;
         }
+        
         /// <summary>
         /// Класс для описания события сигнализаций (для отображения в таблице основной информации о событии)
         /// </summary>
@@ -799,6 +913,7 @@ namespace StatisticAlarm
             public DateTime? m_dt_confirmed;
             public int m_situation;
         }
+        
         /// <summary>
         /// Класс с таблицей отображения списка событий сигнализаций
         /// </summary>
@@ -830,6 +945,7 @@ namespace StatisticAlarm
                 BTN_CONFIRM
                     , COUNT_INDEX_COLUMN
             }
+            
             /// <summary>
             /// Конструктор - основной (без параметров)
             /// </summary>
@@ -838,6 +954,7 @@ namespace StatisticAlarm
             {
                 m_dictView = new Dictionary<long,ViewAlarmJournal> ();
             }
+            
             /// <summary>
             /// Установить параметры визуализации
             /// </summary>
@@ -898,6 +1015,7 @@ namespace StatisticAlarm
                 this.CellClick += new DataGridViewCellEventHandler(onCellClick);
                 this.SelectionChanged += new EventHandler(onSelectionChanged);
             }
+            
             /// <summary>
             /// Возвратить признак доступности кнопки в столбце "Подтверждение"
             /// </summary>
@@ -915,6 +1033,7 @@ namespace StatisticAlarm
                     // 2) событие сигнализации ранее не "подтверждено"
                     && (m_dictView[(long)this.Rows[iRow].Cells[(int)iINDEX_COLUMN.ID_REC].Value].m_dt_confirmed == null);
             }
+            
             /// <summary>
             /// Отобразить полученные данные
             /// </summary>
@@ -948,6 +1067,7 @@ namespace StatisticAlarm
                     (Rows[indxRow].Cells[this.Columns.Count - 1] as DataGridViewDisableButtonCell).Enabled = isRecEnabled((listView as List<ViewAlarmJournal>).IndexOf(r));
 
                     Rows[indxRow].Visible = m_filter.isVisibled (r);
+                    Rows [indxRow].DefaultCellStyle.BackColor = BackColor;
                 }
 
                 this.SelectionChanged += new EventHandler(onSelectionChanged);
@@ -974,6 +1094,7 @@ namespace StatisticAlarm
                 else
                     ;
             }
+            
             /// <summary>
             /// Обработчик события - применить фильтр для строк в таблице
             /// </summary>
@@ -1055,6 +1176,7 @@ namespace StatisticAlarm
                 else
                     ; // нет изменений
             }
+            
             /// <summary>
             /// Поиск индекса строки для указания ее в качестве выбранной
             ///  , единственный критерий - выбранная строка не может имет признак "не отображать"
@@ -1092,6 +1214,7 @@ namespace StatisticAlarm
 
                 return iRes;
             }
+            
             /// <summary>
             /// Метод для обновления значения (дата/время фиксации/подтверждения) одной записи
             /// </summary>
@@ -1123,6 +1246,7 @@ namespace StatisticAlarm
                 else
                     Logging.Logg().Error(@"DataGridViewAlarmJournal::OnUpdate () - не нйдена строка для события с ID=" + (long)pars[1], Logging.INDEX_MESSAGE.NOT_SET);
             }
+            
             /// <summary>
             /// Обработчик события нажатия кнопки в столбце "Подтверждение"
             /// </summary>
@@ -1151,6 +1275,7 @@ namespace StatisticAlarm
                 else
                     ; // остальные столбцы не требуют обработки
             }
+            
             /// <summary>
             /// Обработчик события изменения выбора строки в таблице
             /// </summary>
@@ -1189,6 +1314,7 @@ namespace StatisticAlarm
             //    }
             //}
         }
+
         /// <summary>
         /// Структура для передачи значений для отображения
         ///  в таблицу детализации события сигнализации
@@ -1198,6 +1324,7 @@ namespace StatisticAlarm
             public long m_id_event;           
             public DateTime? m_last_changed_at;
         }
+        
         /// <summary>
         /// Класс для описания таблицы представления списка событий сигнализаций
         /// </summary>
@@ -1289,6 +1416,7 @@ namespace StatisticAlarm
                     });
 
                     Rows[indxRow].Visible = m_filter.isVisibled (r);
+                    Rows [indxRow].DefaultCellStyle.BackColor = BackColor;
                 }
 
                 indxRow = indexOfIdRec ((int)iINDEX_COLUMN.ID_REC, lPrevIdRecSelected);
@@ -1365,7 +1493,7 @@ namespace StatisticAlarm
         /// <summary>
         /// Обработчик события ответа от главной формы
         /// </summary>
-        /// <param name="obj">Объект класса 'EventArgsDataHost' с идентификатором/данными из главной формы</param>
+        /// <param name="res">Объект класса 'EventArgsDataHost' с идентификатором/данными из главной формы</param>
         public void OnEvtDataRecievedHost(object res)
         {
             EventArgsDataHost ev = res as EventArgsDataHost;
@@ -1375,11 +1503,11 @@ namespace StatisticAlarm
             {
                 case AdminAlarm.StatesMachine.Detail:
                     //??? Прямой вызов метода-обработчика
-                    (Find(INDEX_CONTROL.DGV_EVENTS) as DataGridViewAlarmDetail).OnEvtGetData((ev.par as object[])[1]);
+                    (find(INDEX_CONTROL.DGV_EVENTS) as DataGridViewAlarmDetail).OnEvtGetData((ev.par as object[])[1]);
                     break;
                 case AdminAlarm.StatesMachine.Fixed:
                 case AdminAlarm.StatesMachine.Confirm:
-                    (Find(INDEX_CONTROL.DGV_EVENTS) as DataGridViewAlarmJournal).UpdateRec(ev.par);
+                    (find(INDEX_CONTROL.DGV_EVENTS) as DataGridViewAlarmJournal).UpdateRec(ev.par);
                     break;
                 default:
                     break;
@@ -1483,7 +1611,7 @@ namespace StatisticAlarm
             panelManagement.Controls.Add(ctrl);
 
             indxCurrent = INDEX_CONTROL.BTN_REFRESH;
-            ctrlRel = Find(INDEX_CONTROL.NUD_HOUR_END);
+            ctrlRel = find(INDEX_CONTROL.NUD_HOUR_END);
             ctrl = new Button();
             ctrl.Name = indxCurrent.ToString();
             ctrl.Location = new System.Drawing.Point(0, posY = ctrlRel.Location.Y + ctrlRel.Height + Margin.Vertical);
@@ -1493,7 +1621,7 @@ namespace StatisticAlarm
             panelManagement.Controls.Add(ctrl);
 
             indxCurrent = INDEX_CONTROL.CLB_TECCOMPONENT;
-            ctrlRel = Find(INDEX_CONTROL.BTN_REFRESH);
+            ctrlRel = find(INDEX_CONTROL.BTN_REFRESH);
             ctrl = new CheckedListBox ();
             ctrl.Name = indxCurrent.ToString();
             ctrl.Location = new System.Drawing.Point(0, posY = ctrlRel.Location.Y + ctrlRel.Height + Margin.Vertical);
@@ -1502,7 +1630,7 @@ namespace StatisticAlarm
             panelManagement.Controls.Add(ctrl);
 
             indxCurrent = INDEX_CONTROL.UNKNOWN;
-            ctrlRel = Find(INDEX_CONTROL.CLB_TECCOMPONENT);
+            ctrlRel = find(INDEX_CONTROL.CLB_TECCOMPONENT);
             ctrl = new Label();
             ctrl.Location = new System.Drawing.Point(posX = Margin.Horizontal, posY = ctrlRel.Location.Y + ctrlRel.Height);
             ctrl.Size = new System.Drawing.Size(5 * widthRel / 2, ctrl.Height);
@@ -1521,7 +1649,7 @@ namespace StatisticAlarm
             panelManagement.Controls.Add(ctrl);
 
             indxCurrent = INDEX_CONTROL.CBX_WORK;
-            ctrlRel = Find(INDEX_CONTROL.NUD_KOEF);
+            ctrlRel = find(INDEX_CONTROL.NUD_KOEF);
             ctrl = new CheckBox();
             ctrl.Name = indxCurrent.ToString();
             ctrl.Location = new System.Drawing.Point(posX = Margin.Horizontal, posY = ctrlRel.Location.Y + ctrlRel.Height + Margin.Vertical);            

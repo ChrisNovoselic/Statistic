@@ -237,6 +237,7 @@ namespace Statistic
         }
 
         public PanelAdmin(int idListener, HMark markQueries, int [] arTECLimit)
+            : base(MODE_UPDATE_VALUES.ACTION, FormMain.formGraphicsSettings.BackgroundColor)
         {
             createAdmin ();
 
@@ -257,6 +258,7 @@ namespace Statistic
         }
 
         public PanelAdmin(List<StatisticCommon.TEC> tec)
+            : base (MODE_UPDATE_VALUES.ACTION, FormMain.formGraphicsSettings.BackgroundColor)
         {
             createAdmin ();
             
@@ -323,9 +325,21 @@ namespace Statistic
             base.Stop ();
         }
 
+        public override bool Activate (bool active)
+        {
+            bool bRes = base.Activate (active);
+
+            if (bRes == true) {
+                m_admin.Activate (active);
+            } else
+                ;
+
+            return bRes;
+        }
+
         protected virtual void getDataGridViewAdmin() {}
 
-        public virtual void setDataGridViewAdmin(DateTime date) {}
+        public abstract void setDataGridViewAdmin (DateTime date, bool bNewValues);
 
         /// <summary>
         /// Установка значения даты/времени в элементе управления 'календарь' и
@@ -373,15 +387,20 @@ namespace Statistic
         /// <summary>
         /// Приведение кол-ва строк таблицы в соответствие с кол-ом элементов в массиве с данными
         /// решение (по объекту синхронизации 'PanelAdminKomDisp::setDataGridViewAdmin () - ...') далеко не изящное, НО временное ???
+        /// <param name="bSyncReq">Признак необходимости синхронизации</param>
         /// </summary>
-        protected void normalizedTableHourRows () {
+        protected void normalizedTableHourRows (bool bSyncReq)
+        {
             if (!(this.dgwAdminTable.Rows.Count == m_admin.m_curRDGValues.Length))
                 if (this.dgwAdminTable.Rows.Count < m_admin.m_curRDGValues.Length)
                     this.dgwAdminTable.InitRows(m_admin.m_curRDGValues.Length, true);
                 else
                     this.dgwAdminTable.InitRows(m_admin.m_curRDGValues.Length, false);
 
-            m_evtAdminTableRowCount.Set();
+            if (bSyncReq == true)
+                m_evtAdminTableRowCount.Set();
+            else
+                ;
         }
 
         private void mcldrDate_DateSelected(object sender, DateRangeEventArgs e)
@@ -568,20 +587,11 @@ namespace Statistic
             return false;
         }
 
-        public virtual void ClearTables() {}
+        public virtual void ClearTables() { }
 
-        public override bool Activate(bool active)
+        public override void UpdateGraphicsCurrent (int type)
         {
-            bool bRes = base.Activate (active);
-            
-            if (bRes == true)
-            {
-                m_admin.Activate(active);
-            }
-            else
-                ;
-
-            return bRes;
+            setDataGridViewAdmin (mcldrDate.SelectionStart.Date, false);
         }
     }
 }

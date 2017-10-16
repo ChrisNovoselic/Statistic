@@ -53,7 +53,7 @@ namespace Statistic
             this.btnExportExcel.Click += new System.EventHandler(this.btnExportExcel_Click);
             this.btnExportExcel.Enabled = true;
 
-            this.dgwAdminTable = new DataGridViewAdminNSS();
+            this.dgwAdminTable = new DataGridViewAdminNSS(new System.Drawing.Color [] { System.Drawing.SystemColors.Window, System.Drawing.Color.Yellow, FormMain.formGraphicsSettings.COLOR (FormGraphicsSettings.INDEX_COLOR.DIVIATION) });
             this.SuspendLayout();
             ((System.ComponentModel.ISupportInitialize)(this.dgwAdminTable)).BeginInit();
             this.m_panelRDGValues.Controls.Add(this.dgwAdminTable);
@@ -91,6 +91,7 @@ namespace Statistic
 
             return iRes;
         }
+
         /// <summary>
         /// Перенести в ОЗУ значения с формы/панели (почти полная копия 'PanelAdminVyvod')
         /// </summary>
@@ -122,53 +123,68 @@ namespace Statistic
                 else
                     ;
         }
+
         /// <summary>
         /// Добавить текстовый столбец для очередного(динамического) компонента-ТГ
+        ///  + заполнить значенями ячейки столбца
         /// </summary>
-        /// <param name="date"></param>
-        private void addTextBoxColumn (DateTime date) {
-            DataGridViewCellEventArgs ev;
-            int indx = ((AdminTS_NSS)m_admin).m_listTECComponentIndexDetail[this.dgwAdminTable.Columns.Count - 2];
-            ((DataGridViewAdminNSS)this.dgwAdminTable).addTextBoxColumn(m_admin.GetNameTECComponent(indx),
-                                                                        m_admin.GetIdTECComponent (indx),
-                                                                        m_admin.GetIdGTPOwnerTECComponent(indx),
-                                                                        date);
+        /// <param name="date">Дата/время значений, которыми заполняются ячейки столбца</param>
+        /// <param name="bNewValues">Признак наличия новых значений (false - обновление оформления представления при изменении цветовой схемы)</param>
+        /// <param name="bSyncReq">Признак необходимости синхронизации выполнения действий в теле метода</param>        
+        private void addTextBoxColumn (DateTime date, bool bNewValues, bool bSyncReq)
+        {
+            int indx = -1;
 
-            for (int i = 0; i < 24; i++)
-            {
-                if (this.dgwAdminTable.Columns.Count == 3) //Только при добавлении 1-го столбца
-                    this.dgwAdminTable.Rows[i].Cells[0].Value = date.AddHours(i + 1).ToString(@"dd.MM.yyyy-HH", CultureInfo.InvariantCulture);
+            if ((this.dgwAdminTable.Columns.Count - 2) < ((AdminTS_NSS)m_admin).m_listTECComponentIndexDetail.Count) {
+            // в случае добавления столбцов
+                indx = ((AdminTS_NSS)m_admin).m_listTECComponentIndexDetail [this.dgwAdminTable.Columns.Count - 2];
+                ((DataGridViewAdminNSS)this.dgwAdminTable).addTextBoxColumn (m_admin.GetNameTECComponent (indx),
+                                                                            m_admin.GetIdTECComponent (indx),
+                                                                            m_admin.GetIdGTPOwnerTECComponent (indx),
+                                                                            date);
+
+                for (int i = 0; i < 24; i++) {
+                    if (this.dgwAdminTable.Columns.Count == 3) {
+                    //Только при добавлении 1-го столбца задаем метку времени, т.к. для остальных значений(столбцов) она одинакова
+                        this.dgwAdminTable.Rows [i].Cells [0].Value = date.AddHours (i + 1).ToString (@"dd.MM.yyyy-HH", CultureInfo.InvariantCulture);
+                        this.dgwAdminTable.Rows [i].Cells [0].Style.BackColor = this.dgwAdminTable.BackColor;
+                    } else
+                        ;
+
+                    this.dgwAdminTable.Rows [i].Cells [this.dgwAdminTable.Columns.Count - 2].Value = ((AdminTS_NSS)m_admin).m_listCurRDGValues [this.dgwAdminTable.Columns.Count - 3] [i].pbr.ToString ("F2");
+                    this.dgwAdminTable.Rows [i].Cells [this.dgwAdminTable.Columns.Count - 2].Style.BackColor = this.dgwAdminTable.BackColor;
+
+                    ((DataGridViewAdminNSS)this.dgwAdminTable).DataGridViewAdminNSS_CellValueChanged (null
+                        , new DataGridViewCellEventArgs (this.dgwAdminTable.Columns.Count - 2, i));
+                }
+
+                if (bNewValues == true)
+                    m_admin.CopyCurToPrevRDGValues ();
                 else
                     ;
-
-                this.dgwAdminTable.Rows[i].Cells[this.dgwAdminTable.Columns.Count - 2].Value = ((AdminTS_NSS)m_admin).m_listCurRDGValues[this.dgwAdminTable.Columns.Count - 3][i].pbr.ToString("F2");
-                ev = new DataGridViewCellEventArgs(this.dgwAdminTable.Columns.Count - 2, i);
-                ((DataGridViewAdminNSS)this.dgwAdminTable).DataGridViewAdminNSS_CellValueChanged(null, ev);
+            } else {
+            // в случае повторного прохода (изменение цветовой гаммы)
+            // см. реализацию 'overide set BackColor'
             }
-
-            m_admin.CopyCurToPrevRDGValues();
-
-            //this.dgwAdminTable.Invalidate();
         }
 
-        private void updateTextBoxColumn()
+        /// <summary>
+        /// Заполнить представление значениями 
+        ///  , при необходимости переносит выполнение в собственный поток
+        ///  для регулирования доступа к элементам управления
+        /// </summary>
+        /// <param name="date">Дата отображаемых значений</param>
+        /// <param name="bNewValues">Признак наличия новых значений, иначе требуется изменить оформление представления</param>
+        public override void setDataGridViewAdmin(DateTime date, bool bNewValues)
         {
-            for (int i = 0; i < 24; i++)
-            {
-            }
-
-            //m_admin.CopyCurToPrevRDGValues();
-        }
-
-        public override void setDataGridViewAdmin(DateTime date)
-        {
-            //if (this.dgwAdminTable.Columns.Count < ((AdminTS_NSS)m_admin).m_listTECComponentIndexDetail.Count)
-                if (IsHandleCreated/*InvokeRequired*/ == true)
-                    this.BeginInvoke(new DelegateDateFunc(addTextBoxColumn), date);
+            if (IsHandleCreated == true)
+                if (InvokeRequired == true)
+                    this.BeginInvoke (new Action<DateTime, bool, bool> (addTextBoxColumn), date, bNewValues, InvokeRequired);
                 else
-                    Logging.Logg().Error(@"PanelTecCurPower::setDataGridViewAdmin () - ... BeginInvoke (addTextBoxColumn) - ...", Logging.INDEX_MESSAGE.D_001);
-            //else
-            //    this.BeginInvoke(new DelegateFunc(updateTextBoxColumn));
+                    addTextBoxColumn(date, bNewValues, InvokeRequired);
+            else
+                Logging.Logg ().Error (@"PanelTecCurPower::setDataGridViewAdmin () - ... BeginInvoke (addTextBoxColumn) - ...", Logging.INDEX_MESSAGE.D_001);
+                ;
         }
 
         public override void ClearTables()

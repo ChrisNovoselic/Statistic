@@ -921,7 +921,8 @@ namespace StatisticTrans
         /// Заполнение таблицы полученными данными (при [авто]режиме экспорт данных + переход к следующему элементу списка компонентов)
         /// </summary>
         /// <param name="date">дата</param>
-        protected virtual void setDataGridViewAdmin(DateTime date)
+        /// <param name="bNewValues">Признак наличия новых значений, иначе требуется изменить оформление представления</param>
+        protected virtual void setDataGridViewAdmin(DateTime date, bool bNewValues)
         {
             //if (m_IndexDB == (short)CONN_SETT_TYPE.SOURCE) {
             //    string strDatetimeSeason = m_fileINI.GetValueOfKey(@"Season DateTime");
@@ -971,7 +972,7 @@ namespace StatisticTrans
             }
             else
             {
-                updateDataGridViewAdmin(date);
+                updateDataGridViewAdmin(date, bNewValues);
             }
         }
 
@@ -1002,7 +1003,7 @@ namespace StatisticTrans
             else ;
         }
 
-        protected abstract void updateDataGridViewAdmin(DateTime date);
+        protected abstract void updateDataGridViewAdmin(DateTime date, bool bNewValues);
 
         protected void initTableHourRows(/*int indx = индекс для m_arAdmin*/)
         {
@@ -1402,8 +1403,8 @@ namespace StatisticTrans
         /// <summary>
         /// Экспорт данных ихз источника
         /// </summary>
-        /// <param name="sender"></param>
-        /// <param name="e"></param>
+        /// <param name="sender">Объект, инициировавший событие</param>
+        /// <param name="e">Аргумент события</param>
         private void buttonSourceExport_Click(object sender, EventArgs e)
         {
             if (!(comboBoxTECComponent.SelectedIndex < 0))
@@ -1527,8 +1528,8 @@ namespace StatisticTrans
         /// <summary>
         /// обработчи события клика по иконке в трее
         /// </summary>
-        /// <param name="sender"></param>
-        /// <param name="e"></param>
+        /// <param name="sender">Объект, инициировавший событие</param>
+        /// <param name="e">Аргумент события</param>
         private void развернутьToolStripMenuItem_Click(object sender, EventArgs e)
         {
             //if (notifyIconMain.Visible == true)

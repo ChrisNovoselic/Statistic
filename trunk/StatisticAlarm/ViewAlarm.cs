@@ -27,14 +27,27 @@ namespace StatisticAlarm
         /// </summary>
         public class AlarmDbEventArgs : AlarmNotifyEventArgs
         {
+            /// <summary>
+            /// »дентификатор ...
+            /// </summary>
             public long m_id;
+            /// <summary>
+            /// »дентификаторы пользовател€ зарегистрировавшего/подтвердившего/сн€вшего событие с оповещени€
+            /// </summary>
             public int m_id_user_registred
                 , m_id_user_fixed
                 , m_id_user_confirm;
+            /// <summary>
+            /// ƒата/врем€ подтверждени€ и сн€ти€ событи€ с оповещени€
+            /// </summary>
             public DateTime? 
                 m_dtFixed
                 , m_dtConfirm;
 
+            /// <summary>
+            ///  онструктор - основной (с аргументами)
+            /// </summary>
+            /// <param name="rowEvt">—трока таблицы со значен€ми дл€ инициализации полей/свойств</param>
             public AlarmDbEventArgs(DataRow rowEvt)
                 : base((int)rowEvt[@"ID_COMPONENT"]
                     , new AlarmNotifyEventArgs.EventReason () { value = (float)rowEvt[@"value"], UDGe = float.NaN, koeff = decimal.MinusOne }

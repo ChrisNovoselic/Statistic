@@ -92,7 +92,7 @@ namespace StatisticCommon
         public RDGStruct[] m_curRDGValues;
 
         protected DelegateFunc saveComplete = null;
-        protected DelegateDateFunc readyData = null;
+        protected Action<DateTime, bool> readyData = null;
         protected DelegateFunc errorData = null;
 
         protected DelegateDateFunc setDatetime;
@@ -406,7 +406,7 @@ namespace StatisticCommon
             //Logging.Logg().Debug(@"HAdmin::SetDelegateSaveComplete () - saveComplete is set=" + (saveComplete == null ? false.ToString() : true.ToString()) + @" - вЫход", Logging.INDEX_MESSAGE.NOT_SET);
         }
 
-        public void SetDelegateData(DelegateDateFunc s, DelegateFunc e) { readyData = s; errorData = e; }
+        public void SetDelegateData(Action<DateTime, bool> s, DelegateFunc e) { readyData = s; errorData = e; }
 
         //public void SetDelegateTECComponent(DelegateFunc f) { fillTECComponent = f; }
 
@@ -619,14 +619,6 @@ namespace StatisticCommon
                 iRes = iHour + 1;
 
             return iRes;
-        }
-
-        public override void ClearStates()
-        {
-            //lock (m_lockState)
-            //{
-                base.ClearStates();
-            //}
         }
 
         public FormChangeMode.MODE_TECCOMPONENT modeTECComponent(int indx)

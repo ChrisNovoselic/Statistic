@@ -61,7 +61,12 @@ namespace StatisticTransModes
             base.Start();
         }
 
-        protected override void updateDataGridViewAdmin(DateTime date)
+        /// <summary>
+        /// Обновить значения в представлении
+        /// </summary>
+        /// <param name="date">Дата за которую требуется обновить значения</param>
+        /// <param name="bNewValues">Признак наличия новых значений (false - обновление оформления представления со старыми значениями при изменении цветовой схемы)</param>
+        protected override void updateDataGridViewAdmin (DateTime date, bool bNewValues)
         {
             int indxDB = m_IndexDB
                 , offset = 0;
@@ -162,7 +167,7 @@ namespace StatisticTransModes
 
             for (int i = 0; i < 24; i++)
             {
-                for (int j = 0; j < (int)DataGridViewAdminKomDisp.DESC_INDEX.TO_ALL; j++)
+                for (int j = 0; j < (int)DataGridViewAdminKomDisp.COLUMN_INDEX.TO_ALL; j++)
                 {
                     switch (j)
                     {

@@ -70,7 +70,7 @@ namespace Statistic
             this.dtpShedulePeriodExport_PBRValues = new DateTimePicker();
             this.labelPeriodExport_PBRValues = new Label();
             this.gbxDividerChoice = new GroupBoxDividerChoice();
-            this.dgwAdminTable = new DataGridViewAdminKomDisp();
+            this.dgwAdminTable = new DataGridViewAdminKomDisp(new Color [] { SystemColors.Window, Color.Yellow, FormMain.formGraphicsSettings.COLOR (FormGraphicsSettings.INDEX_COLOR.DIVIATION) });
 
             this.SuspendLayout();
             ((System.ComponentModel.ISupportInitialize)(this.dgwAdminTable)).BeginInit();
@@ -333,48 +333,48 @@ namespace Statistic
             {
                 //offset = m_admin.GetSeasonHourOffset(i);
                 
-                for (int j = 0; j < (int)DataGridViewAdminKomDisp.DESC_INDEX.TO_ALL; j++)
+                for (int j = 0; j < (int)DataGridViewAdminKomDisp.COLUMN_INDEX.TO_ALL; j++)
                 {
                     switch (j)
                     {
-                        case (int)DataGridViewAdminKomDisp.DESC_INDEX.PLAN: // План
-                            valid = double.TryParse((string)dgwAdminTable.Rows[i].Cells[(int)DataGridViewAdminKomDisp.DESC_INDEX.PLAN].Value, out value);
+                        case (int)DataGridViewAdminKomDisp.COLUMN_INDEX.PLAN: // План
+                            valid = double.TryParse((string)dgwAdminTable.Rows[i].Cells[(int)DataGridViewAdminKomDisp.COLUMN_INDEX.PLAN].Value, out value);
                             m_admin.m_curRDGValues[i].pbr = value;
                             //m_admin.m_curRDGValues[i].pmin = 0.0;
                             //m_admin.m_curRDGValues[i].pmax = 0.0;
                             break;
-                        case (int)DataGridViewAdminKomDisp.DESC_INDEX.UDGe: // УДГэ
+                        case (int)DataGridViewAdminKomDisp.COLUMN_INDEX.UDGe: // УДГэ
                             //valid = double.TryParse((string)dgwAdminTable.Rows[i].Cells[(int)DataGridViewAdminKomDisp.DESC_INDEX.UDGe].Value, out value);
                             //m_admin.m_curRDGValues[i]. = value;
                             break;
-                        case (int)DataGridViewAdminKomDisp.DESC_INDEX.RECOMENDATION: // Рекомендация
+                        case (int)DataGridViewAdminKomDisp.COLUMN_INDEX.RECOMENDATION: // Рекомендация
                             {
                                 //cellValidated(e.RowIndex, (int)DataGridViewAdminKomDisp.DESC_INDEX.RECOMENDATION);
 
-                                valid = double.TryParse((string)dgwAdminTable.Rows[i].Cells[(int)DataGridViewAdminKomDisp.DESC_INDEX.RECOMENDATION].Value, out value);
+                                valid = double.TryParse((string)dgwAdminTable.Rows[i].Cells[(int)DataGridViewAdminKomDisp.COLUMN_INDEX.RECOMENDATION].Value, out value);
                                 m_admin.m_curRDGValues[i].recomendation = value;
 
                                 break;
                             }
-                        case (int)DataGridViewAdminKomDisp.DESC_INDEX.FOREIGN_CMD:
-                            if (!(this.dgwAdminTable.Rows[i].Cells[(int)DataGridViewAdminKomDisp.DESC_INDEX.FOREIGN_CMD].Value == null))
-                                m_admin.m_curRDGValues[i].fc = bool.Parse(this.dgwAdminTable.Rows[i].Cells[(int)DataGridViewAdminKomDisp.DESC_INDEX.FOREIGN_CMD].Value.ToString());
+                        case (int)DataGridViewAdminKomDisp.COLUMN_INDEX.FOREIGN_CMD:
+                            if (!(this.dgwAdminTable.Rows[i].Cells[(int)DataGridViewAdminKomDisp.COLUMN_INDEX.FOREIGN_CMD].Value == null))
+                                m_admin.m_curRDGValues[i].fc = bool.Parse(this.dgwAdminTable.Rows[i].Cells[(int)DataGridViewAdminKomDisp.COLUMN_INDEX.FOREIGN_CMD].Value.ToString());
                             else
                                 m_admin.m_curRDGValues[i].fc = false;
 
                             break;
-                        case (int)DataGridViewAdminKomDisp.DESC_INDEX.DEVIATION_TYPE:
+                        case (int)DataGridViewAdminKomDisp.COLUMN_INDEX.DEVIATION_TYPE:
                             {
-                                if (!(this.dgwAdminTable.Rows[i].Cells[(int)DataGridViewAdminKomDisp.DESC_INDEX.DEVIATION_TYPE].Value == null))
-                                    m_admin.m_curRDGValues[i].deviationPercent = bool.Parse(this.dgwAdminTable.Rows[i].Cells[(int)DataGridViewAdminKomDisp.DESC_INDEX.DEVIATION_TYPE].Value.ToString());
+                                if (!(this.dgwAdminTable.Rows[i].Cells[(int)DataGridViewAdminKomDisp.COLUMN_INDEX.DEVIATION_TYPE].Value == null))
+                                    m_admin.m_curRDGValues[i].deviationPercent = bool.Parse(this.dgwAdminTable.Rows[i].Cells[(int)DataGridViewAdminKomDisp.COLUMN_INDEX.DEVIATION_TYPE].Value.ToString());
                                 else
                                     m_admin.m_curRDGValues[i].deviationPercent = false;
 
                                 break;
                             }
-                        case (int)DataGridViewAdminKomDisp.DESC_INDEX.DEVIATION: // Максимальное отклонение
+                        case (int)DataGridViewAdminKomDisp.COLUMN_INDEX.DEVIATION: // Максимальное отклонение
                             {
-                                valid = double.TryParse((string)this.dgwAdminTable.Rows[i].Cells[(int)DataGridViewAdminKomDisp.DESC_INDEX.DEVIATION].Value, out value);
+                                valid = double.TryParse((string)this.dgwAdminTable.Rows[i].Cells[(int)DataGridViewAdminKomDisp.COLUMN_INDEX.DEVIATION].Value, out value);
                                 m_admin.m_curRDGValues[i].deviation = value;
 
                                 break;
@@ -388,7 +388,12 @@ namespace Statistic
 
         private AdminTS_KomDisp Admin { get { return m_admin as AdminTS_KomDisp; } }
 
-        public override void setDataGridViewAdmin(DateTime date)
+        /// <summary>
+        /// Отобразить значения в представлении
+        /// </summary>
+        /// <param name="date">Дата, за которую получены значения для отображения</param>
+        /// <param name="bNewValues">Признак наличия новых значений, иначе требуется изменить оформление представления</param>
+        public override void setDataGridViewAdmin(DateTime date, bool bNewValues)
         {
             int offset = -1
                 , nextIndx = -1;
@@ -397,16 +402,20 @@ namespace Statistic
             switch (modeGetRDGValues) {
                 case MODE_GET_RDG_VALUES.DISPLAY:
                     //??? не очень изящное решение
-                    if (IsHandleCreated/*InvokeRequired*/ == true)
+                    if (IsHandleCreated == true)
                     {
-                        m_evtAdminTableRowCount.Reset();
-                        // кол-во строк может быть изменено(нормализовано) только в том потоке,в котором было выполнено создание элемента управления
-                        this.BeginInvoke(new DelegateFunc(normalizedTableHourRows));
-                        //??? ожидать, пока не завершится выполнение предыдущего потока
-                        m_evtAdminTableRowCount.WaitOne(System.Threading.Timeout.Infinite);
+                        if (InvokeRequired == true) {
+                            m_evtAdminTableRowCount.Reset ();
+                            // кол-во строк может быть изменено(нормализовано) только в том потоке,в котором было выполнено создание элемента управления
+                            this.BeginInvoke (new DelegateBoolFunc (normalizedTableHourRows), InvokeRequired);
+                            //??? ожидать, пока не завершится выполнение предыдущего потока
+                            m_evtAdminTableRowCount.WaitOne (System.Threading.Timeout.Infinite);
+                        } else {
+                            normalizedTableHourRows (InvokeRequired);
+                        }
                     }
                     else
-                        Logging.Logg().Error(@"PanelTAdminKomDisp::setDataGridViewAdmin () - ... BeginInvoke (normalizedTableHourRows) - ...", Logging.INDEX_MESSAGE.D_001);
+                        Logging.Logg().Error(@"PanelAdminKomDisp::setDataGridViewAdmin () - ... BeginInvoke (normalizedTableHourRows) - ...", Logging.INDEX_MESSAGE.D_001);
 
                     ((DataGridViewAdminKomDisp)this.dgwAdminTable).m_PBR_0 = m_admin.m_curRDGValues_PBR_0;
 
@@ -416,24 +425,32 @@ namespace Statistic
                         strFmtDatetime = m_admin.GetFmtDatetime(i);
                         offset = m_admin.GetSeasonHourOffset(i + 1);
 
-                        this.dgwAdminTable.Rows[i].Cells[(int)DataGridViewAdminKomDisp.DESC_INDEX.DATE_HOUR].Value = date.AddHours(i + 1 - offset).ToString(strFmtDatetime);
+                        this.dgwAdminTable.Rows[i].Cells[(int)DataGridViewAdminKomDisp.COLUMN_INDEX.DATE_HOUR].Value = date.AddHours(i + 1 - offset).ToString(strFmtDatetime);
+                        this.dgwAdminTable.Rows [i].Cells [(int)DataGridViewAdminKomDisp.COLUMN_INDEX.DATE_HOUR].Style.BackColor = this.dgwAdminTable.BackColor;
 
-                        this.dgwAdminTable.Rows[i].Cells[(int)DataGridViewAdminKomDisp.DESC_INDEX.PLAN].Value = m_admin.m_curRDGValues[i].pbr.ToString("F2");
-                        this.dgwAdminTable.Rows[i].Cells[(int)DataGridViewAdminKomDisp.DESC_INDEX.PLAN].ToolTipText = m_admin.m_curRDGValues[i].pbr_number;
+                        this.dgwAdminTable.Rows[i].Cells[(int)DataGridViewAdminKomDisp.COLUMN_INDEX.PLAN].Value = m_admin.m_curRDGValues[i].pbr.ToString("F2");
+                        this.dgwAdminTable.Rows[i].Cells[(int)DataGridViewAdminKomDisp.COLUMN_INDEX.PLAN].ToolTipText = m_admin.m_curRDGValues[i].pbr_number;
+                        this.dgwAdminTable.Rows [i].Cells [(int)DataGridViewAdminKomDisp.COLUMN_INDEX.PLAN].Style.BackColor = this.dgwAdminTable.BackColor;
                         if (i > 0)
-                            this.dgwAdminTable.Rows[i].Cells[(int)DataGridViewAdminKomDisp.DESC_INDEX.UDGe].Value = (((m_admin.m_curRDGValues[i].pbr + m_admin.m_curRDGValues[i - 1].pbr) / 2) + m_admin.m_curRDGValues[i].recomendation).ToString("F2");
+                            this.dgwAdminTable.Rows[i].Cells[(int)DataGridViewAdminKomDisp.COLUMN_INDEX.UDGe].Value = (((m_admin.m_curRDGValues[i].pbr + m_admin.m_curRDGValues[i - 1].pbr) / 2) + m_admin.m_curRDGValues[i].recomendation).ToString("F2");
                         else
-                            this.dgwAdminTable.Rows[i].Cells[(int)DataGridViewAdminKomDisp.DESC_INDEX.UDGe].Value = (((m_admin.m_curRDGValues[i].pbr + m_admin.m_curRDGValues_PBR_0) / 2) + m_admin.m_curRDGValues[i].recomendation).ToString("F2");
-                        this.dgwAdminTable.Rows[i].Cells[(int)DataGridViewAdminKomDisp.DESC_INDEX.RECOMENDATION].Value = m_admin.m_curRDGValues[i].recomendation.ToString("F2");
-                        this.dgwAdminTable.Rows[i].Cells[(int)DataGridViewAdminKomDisp.DESC_INDEX.RECOMENDATION].ToolTipText = m_admin.m_curRDGValues[i].dtRecUpdate.ToString();
-                        this.dgwAdminTable.Rows[i].Cells[(int)DataGridViewAdminKomDisp.DESC_INDEX.FOREIGN_CMD].Value = m_admin.m_curRDGValues[i].fc.ToString();
-                        this.dgwAdminTable.Rows[i].Cells[(int)DataGridViewAdminKomDisp.DESC_INDEX.DEVIATION_TYPE].Value = m_admin.m_curRDGValues[i].deviationPercent.ToString();
-                        this.dgwAdminTable.Rows[i].Cells[(int)DataGridViewAdminKomDisp.DESC_INDEX.DEVIATION].Value = m_admin.m_curRDGValues[i].deviation.ToString("F2");
+                            this.dgwAdminTable.Rows[i].Cells[(int)DataGridViewAdminKomDisp.COLUMN_INDEX.UDGe].Value = (((m_admin.m_curRDGValues[i].pbr + m_admin.m_curRDGValues_PBR_0) / 2) + m_admin.m_curRDGValues[i].recomendation).ToString("F2");
+                        this.dgwAdminTable.Rows [i].Cells [(int)DataGridViewAdminKomDisp.COLUMN_INDEX.UDGe].Style.BackColor = this.dgwAdminTable.BackColor;
+                        this.dgwAdminTable.Rows[i].Cells[(int)DataGridViewAdminKomDisp.COLUMN_INDEX.RECOMENDATION].Value = m_admin.m_curRDGValues[i].recomendation.ToString("F2");
+                        this.dgwAdminTable.Rows[i].Cells[(int)DataGridViewAdminKomDisp.COLUMN_INDEX.RECOMENDATION].ToolTipText = m_admin.m_curRDGValues[i].dtRecUpdate.ToString();
+                        this.dgwAdminTable.Rows [i].Cells [(int)DataGridViewAdminKomDisp.COLUMN_INDEX.RECOMENDATION].Style.BackColor = this.dgwAdminTable.BackColor;
+                        this.dgwAdminTable.Rows[i].Cells[(int)DataGridViewAdminKomDisp.COLUMN_INDEX.FOREIGN_CMD].Value = m_admin.m_curRDGValues[i].fc.ToString();
+                        this.dgwAdminTable.Rows [i].Cells [(int)DataGridViewAdminKomDisp.COLUMN_INDEX.FOREIGN_CMD].Style.BackColor = this.dgwAdminTable.BackColor;
+                        this.dgwAdminTable.Rows[i].Cells[(int)DataGridViewAdminKomDisp.COLUMN_INDEX.DEVIATION_TYPE].Value = m_admin.m_curRDGValues[i].deviationPercent.ToString();
+                        this.dgwAdminTable.Rows [i].Cells [(int)DataGridViewAdminKomDisp.COLUMN_INDEX.DEVIATION_TYPE].Style.BackColor = this.dgwAdminTable.BackColor;
+                        this.dgwAdminTable.Rows[i].Cells[(int)DataGridViewAdminKomDisp.COLUMN_INDEX.DEVIATION].Value = m_admin.m_curRDGValues[i].deviation.ToString("F2");
+                        this.dgwAdminTable.Rows [i].Cells [(int)DataGridViewAdminKomDisp.COLUMN_INDEX.DEVIATION].Style.BackColor = this.dgwAdminTable.BackColor;
                     }
 
-                    //this.dgwAdminTable.Invalidate();
-
-                    m_admin.CopyCurToPrevRDGValues();
+                    if (bNewValues == true)
+                        m_admin.CopyCurToPrevRDGValues ();
+                    else
+                        ;
                     break;
                 case MODE_GET_RDG_VALUES.EXPORT:
                     nextIndx = Admin.AddValueToExportRDGValues(m_admin.m_curRDGValues, date);

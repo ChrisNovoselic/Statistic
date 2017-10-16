@@ -123,7 +123,14 @@ namespace Statistic
             //m_admin.CopyCurRDGValues();
         }
 
-        public override void setDataGridViewAdmin(DateTime date)
+        /// <summary>
+        /// «аполнить представление значени€ми 
+        ///  , при необходимости переносит выполнение в собственный поток
+        ///  дл€ регулировани€ доступа к элементам управлени€
+        /// </summary>
+        /// <param name="date">ƒата отображаемых значений</param>
+        /// <param name="bNewValues">ѕризнак наличи€ новых значений, иначе требуетс€ изменить оформление представлени€</param>
+        public override void setDataGridViewAdmin(DateTime date, bool bNewValues)
         {
             int hour = -1
                 , offset = -1;
@@ -136,14 +143,17 @@ namespace Statistic
             if ((m_admin as AdminTS_TG).CompletedGetRDGValues == true)
             {
                 //??? не очень из€щное решение
-                if (IsHandleCreated/*InvokeRequired*/ == true)
-                {
-                    m_evtAdminTableRowCount.Reset();
-                    this.BeginInvoke(new DelegateFunc(normalizedTableHourRows));
-                    m_evtAdminTableRowCount.WaitOne(System.Threading.Timeout.Infinite);
+                if (IsHandleCreated == true) {
+                    if (InvokeRequired == true) {
+                        m_evtAdminTableRowCount.Reset ();
+                        this.BeginInvoke (new DelegateBoolFunc (normalizedTableHourRows), InvokeRequired);
+                        m_evtAdminTableRowCount.WaitOne (System.Threading.Timeout.Infinite);
+                    } else
+                        normalizedTableHourRows(InvokeRequired);
                 }
                 else
-                    Logging.Logg().Error(@"PanelTAdminKomDisp::setDataGridViewAdmin () - ... BeginInvoke (normalizedTableHourRows) - ...", Logging.INDEX_MESSAGE.D_001);
+                    Logging.Logg().Error(@"PanelAdminVyvod::setDataGridViewAdmin () - ... BeginInvoke (normalizedTableHourRows) - ...", Logging.INDEX_MESSAGE.D_001);
+
                 // получить значени€ из объекта дл€ обращени€ к данным
                 PBR_0 =
                 (this.dgwAdminTable as DataGridViewAdminVyvod).m_PBR_0 =
@@ -151,28 +161,44 @@ namespace Statistic
                 arSumCurRDGValues = new HAdmin.RDGStruct[(m_admin as AdminTS_Vyvod).m_arSumRDGValues.Length];
                 (m_admin as AdminTS_Vyvod).m_arSumRDGValues.CopyTo(arSumCurRDGValues, 0);
 
+                this.dgwAdminTable.DefaultCellStyle.BackColor = this.dgwAdminTable.BackColor;
+
                 for (hour = 0; hour < arSumCurRDGValues.Length; hour++)
                 {
                     strFmtDatetime = m_admin.GetFmtDatetime(hour);
                     offset = m_admin.GetSeasonHourOffset(hour + 1);
 
                     this.dgwAdminTable.Rows[hour].Cells[(int)DataGridViewAdminVyvod.DESC_INDEX.DATE_HOUR].Value = date.AddHours(hour + 1 - offset).ToString(strFmtDatetime);
+                    //this.dgwAdminTable.Rows [hour].Cells [(int)DataGridViewAdminVyvod.DESC_INDEX.DATE_HOUR].Style.BackColor = this.dgwAdminTable.BackColor;
 
                     this.dgwAdminTable.Rows[hour].Cells[(int)DataGridViewAdminVyvod.DESC_INDEX.PLAN].Value = arSumCurRDGValues[hour].pmin.ToString("F2");
                     this.dgwAdminTable.Rows[hour].Cells[(int)DataGridViewAdminVyvod.DESC_INDEX.PLAN].ToolTipText = arSumCurRDGValues[hour].pbr_number;
+                    //this.dgwAdminTable.Rows [hour].Cells [(int)DataGridViewAdminVyvod.DESC_INDEX.PLAN].Style.BackColor = this.dgwAdminTable.BackColor;
 
                     // UDGt вычисл€етс€ в 'DataGridViewAdminVyvod::onCellValueChanged'
 
                     (this.dgwAdminTable.Rows[hour].Cells[(int)DataGridViewAdminVyvod.DESC_INDEX.RECOMENDATION] as DataGridViewComboBoxCell).Value = (object)(((int)arSumCurRDGValues[hour].recomendation).ToString());
                     this.dgwAdminTable.Rows[hour].Cells[(int)DataGridViewAdminVyvod.DESC_INDEX.RECOMENDATION].ToolTipText = arSumCurRDGValues[hour].dtRecUpdate.ToString();
+                    //this.dgwAdminTable.Rows [hour].Cells [(int)DataGridViewAdminVyvod.DESC_INDEX.RECOMENDATION].Style.BackColor = this.dgwAdminTable.BackColor;
                     this.dgwAdminTable.Rows[hour].Cells[(int)DataGridViewAdminVyvod.DESC_INDEX.DEVIATION_TYPE].Value = arSumCurRDGValues[hour].deviationPercent.ToString();
+                    //this.dgwAdminTable.Rows [hour].Cells [(int)DataGridViewAdminVyvod.DESC_INDEX.DEVIATION_TYPE].Style.BackColor = this.dgwAdminTable.BackColor;
                     this.dgwAdminTable.Rows[hour].Cells[(int)DataGridViewAdminVyvod.DESC_INDEX.DEVIATION].Value = arSumCurRDGValues[hour].deviation.ToString("F2");
+                    //this.dgwAdminTable.Rows [hour].Cells [(int)DataGridViewAdminVyvod.DESC_INDEX.DEVIATION].Style.BackColor = this.dgwAdminTable.BackColor;
+
+                    //if (bNewValues == false) {
+                    //// самосто€тельно измен€ем цвет фона, т.к. в этих столбцах €чейки "обновл€ютс€" при проверке/изменении значений
+                    //    this.dgwAdminTable.Rows [hour].Cells [(int)DataGridViewAdminVyvod.DESC_INDEX.UDGt].Style.BackColor = this.dgwAdminTable.BackColor;
+                    //} else
+                    //    ;
                 }
             }
             else
                 ; // рано отображать, не все компоненнты(параметры) опрошены
 
-            m_admin.CopyCurToPrevRDGValues();
+            if (bNewValues == true)
+                m_admin.CopyCurToPrevRDGValues ();
+            else
+                ;
         }
 
         public override void ClearTables()
@@ -220,6 +246,10 @@ namespace Statistic
             public double m_PBR_0;
 
             protected override int INDEX_COLUMN_BUTTON_TO_ALL { get { return (int)DataGridViewAdminVyvod.DESC_INDEX.TO_ALL; } }
+
+            public DataGridViewAdminVyvod () : base (new Color [] { SystemColors.Window, Color.Yellow, FormMain.formGraphicsSettings.COLOR (FormGraphicsSettings.INDEX_COLOR.DIVIATION) })
+            {
+            }
 
             /// <summary>
             /// »нициализаци€ компонентов DataGridView
@@ -270,6 +300,9 @@ namespace Statistic
                 //dgvCellStyleGTP.BackColor = Color.Yellow;
 
                 this.Dock = DockStyle.Fill;
+
+                //this.BackColor = SystemColors.Window;
+                Columns [INDEX_COLUMN_BUTTON_TO_ALL].DefaultCellStyle.BackColor = SystemColors.Control;
 
                 this.CellValueChanged += new DataGridViewCellEventHandler(onCellValueChanged);
 
@@ -356,6 +389,7 @@ namespace Statistic
                     {
                         //Rows[hour].Cells[(int)DataGridViewAdminVyvod.DESC_INDEX.RECOMENDATION].ToolTipText = HDateTime.ToMoscowTimeZone().ToString();
                         Rows[hour].Cells[(int)DataGridViewAdminVyvod.DESC_INDEX.UDGt].Value = (((valCurPBR + valPrevPBR) / 2) + ((valCurPBR + valPrevPBR) / 2) * (valRec / 100)).ToString("F2");
+                        Rows [hour].Cells [(int)DataGridViewAdminVyvod.DESC_INDEX.UDGt].Style.BackColor = BackColor;
                     }
                     else
                         ;
@@ -370,6 +404,30 @@ namespace Statistic
                 foreach (DataGridViewRow r in Rows)
                     for (int j = (int)DESC_INDEX.DATE_HOUR; j < ((int)DESC_INDEX.TO_ALL + 0); j++)
                         r.Cells[j].Value = arDefaultValueIndex[j];
+            }
+
+            public override Color BackColor
+            {
+                get
+                {
+                    return base.BackColor;
+                }
+
+                set
+                {
+                    base.BackColor = value;
+
+                    if ((INDEX_COLUMN_BUTTON_TO_ALL > 0)
+                        && (RowCount > 0))
+                        for (int col = 0; col < (int)INDEX_COLUMN_BUTTON_TO_ALL; col++)
+                            for (int i = 0; i < 24; i++) {
+                            // ограничений на изменение цвета фона в €чейке нет
+                            // например, сигнализаци€ о выходе за пределы некоторых значений - цвет таких €чеек измен€ть нельз€
+                                Rows [i].Cells [col].Style.BackColor = value == SystemColors.Control ? SystemColors.Window : value;
+                            } else
+                        // нет столбцов/строк - нет действий по изменению цвета фона €чеек
+                        ;
+                }
             }
         }
     }

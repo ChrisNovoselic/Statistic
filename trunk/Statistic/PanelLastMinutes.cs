@@ -255,11 +255,14 @@ namespace Statistic
 
     public partial class PanelLastMinutes : PanelStatisticWithTableHourRows
     {
-        //protected static AdminTS.TYPE_FIELDS s_typeFields = AdminTS.TYPE_FIELDS.DYNAMIC;
-        
-        //private List <Label> m_listLabelDateTime;
+        /// <summary>
+        /// Панель для отображения меток времени (левая часть основной панели)
+        /// </summary>
         private PanelDateTime m_panelDateTime;
-
+        /// <summary>
+        /// Объект синхронизации, является аргументом метода обратного вызова таймера
+        ///  , служит для досрочного(по команде) прерывания этого метода
+        /// </summary>
         private ManualResetEvent m_evTimerCurrent;
         private
             System.Threading.Timer //Вариант №0
@@ -267,18 +270,29 @@ namespace Statistic
                 m_timerCurrent;
 
         enum INDEX_LABEL : int { NAME_TEC, NAME_COMPONENT, VALUE_COMPONENT, DATETIME, COUNT_INDEX_LABEL };
-        static Color s_clrBakColorLabel = Color.FromArgb(212, 208, 200), s_clrBakColorLabelVal = Color.FromArgb(219, 223, 227);
-        static HLabelStyles[] s_arLabelStyles = {new HLabelStyles(Color.Black, s_clrBakColorLabel, 14F, ContentAlignment.MiddleCenter),
+        /// <summary>
+        /// Цвет для отображения заголовков каждого из объектов панелей ТЭЦ(и их компонентов) со значениями
+        /// </summary>
+        private static Color s_clrBakColorLabel = FormGraphicsSettings.DefaultBackColor, s_clrBakColorLabelVal = Color.FromArgb(219, 223, 227);
+        /// <summary>
+        /// Массив со стилями для отображения заголовков каждого из объектов панелей ТЭЦ(и их компонентов) со значениями
+        /// </summary>
+        private static HLabelStyles[] s_arLabelStyles = {new HLabelStyles(Color.Black, s_clrBakColorLabel, 14F, ContentAlignment.MiddleCenter),
                                                 new HLabelStyles(Color.Black, s_clrBakColorLabel, 12F, ContentAlignment.MiddleCenter),
                                                 new HLabelStyles(Color.Black, s_clrBakColorLabelVal, 10F, ContentAlignment.MiddleRight),
                                                 new HLabelStyles(Color.Black, s_clrBakColorLabel, 12F, ContentAlignment.MiddleCenter)};
-        static int COUNT_FIXED_ROWS = (int)INDEX_LABEL.NAME_COMPONENT + 1;
-        //static int COUNT_HOURS = 24;
-
-        static RowStyle fRowStyle () { return new RowStyle(SizeType.Percent, (float)Math.Round((double)100 / (24 + COUNT_FIXED_ROWS), 6)); }
-
-        //AdminTS m_admin;
-
+        /// <summary>
+        /// Количество фиксированных строк в макете (кроме строк с номерами/наименованиями меток времени - часов)
+        /// </summary>
+        private static int COUNT_FIXED_ROWS = (int)INDEX_LABEL.NAME_COMPONENT + 1;
+        /// <summary>
+        /// Возвратить стиль строки в макете размещения элементов на панели
+        /// </summary>
+        /// <returns>Стиль для строки</returns>
+        private static RowStyle fRowStyle () { return new RowStyle(SizeType.Percent, (float)Math.Round((double)100 / (24 + COUNT_FIXED_ROWS), 6)); }
+        /// <summary>
+        /// Перечисление - возможные состояния для объекта обращения к данным
+        /// </summary>
         enum StatesMachine : int
         {
             Init_TM,
@@ -286,17 +300,21 @@ namespace Statistic
             PBRValues,
             AdminValues
         };
-
-        //public DelegateFunc delegateEventUpdate;
-
+        /// <summary>
+        /// Период обновления значений на панел
+        ///  , при этом инициируется обновлне=ение значение и на дочерних панелях(для ТЭЦ и их компонентов)
+        /// </summary>
         public int m_msecPeriodUpdate;
-
         /// <summary>
         /// Событие инициации процедуры изменения состояния
         /// </summary>
         private event DelegateObjectFunc EventChangeDateTime;
-
+        /// <summary>
+        /// Конструктор - основной (с аргументами)
+        /// </summary>
+        /// <param name="listTec">Список ТЭЦ для построения списка дочерних панелей, и, в дальнейшем опроса БД, заполнения их значениями</param>
         public PanelLastMinutes(List<StatisticCommon.TEC> listTec/*, DelegateStringFunc fErrRep, DelegateStringFunc fWarRep, DelegateStringFunc fActRep, DelegateBoolFunc fRepClr*/)
+            : base (MODE_UPDATE_VALUES.AUTO, FormMain.formGraphicsSettings.BackgroundColor)
         {
             InitializeComponent();
 
@@ -306,7 +324,7 @@ namespace Statistic
             float fPercentColDatetime = 8F;
             this.Controls.Add(m_panelDateTime, 0, 0);
             this.ColumnStyles.Add(new ColumnStyle(SizeType.Percent, fPercentColDatetime));
-
+            // кол-во под/столбцов в каждй из панели для ТЭЦ (кол-во компонентов ТЭЦ - ГТП)
             int iCountSubColumns = 0;
 
             for (int i = 0; i < listTec.Count; i ++)
@@ -323,21 +341,46 @@ namespace Statistic
                     ;
 
             initializeLayoutStyle(iCountSubColumns);
-
+            // период обновления = 1 ч
             m_msecPeriodUpdate = 60 * 60 * 1000;
         }
-
-        public PanelLastMinutes(IContainer container, List<StatisticCommon.TEC> listTec/*, DelegateStringFunc fErrRep, DelegateStringFunc fWarRep, DelegateStringFunc fActRep, DelegateBoolFunc fRepClr*/)
+        /// <summary>
+        /// Конструктор - дополнительный (с аргументами)
+        /// </summary>
+        /// <param name="container">Контейнер для панели</param>
+        /// <param name="listTec">Список ТЭЦ для построения списка дочерних панелей</param>
+        public PanelLastMinutes (IContainer container, List<StatisticCommon.TEC> listTec/*, DelegateStringFunc fErrRep, DelegateStringFunc fWarRep, DelegateStringFunc fActRep, DelegateBoolFunc fRepClr*/)
             : this(listTec/*, fErrRep, fWarRep, fActRep, fRepClr*/)
         {
             container.Add(this);
         }
-
+        /// <summary>
+        /// Метод для назначения делегатов (в т.ч. и в подчиненных панелях), для взаимодействия со строкой состояния главного окна приложения
+        /// </summary>
+        /// <param name="ferr">Метод(делегат) для передачи/отображения сообщения об ошибке</param>
+        /// <param name="fwar">Метод(делегат) для передачи/отображения сообщения о предупреждении</param>
+        /// <param name="fact">Метод(делегат) для передачи/отображения сообщения о действии</param>
+        /// <param name="fclr">Метод(делегат) для указания об очтстке строки состояния от предыдущих сообщений</param>
         public override void SetDelegateReport(DelegateStringFunc ferr, DelegateStringFunc fwar, DelegateStringFunc fact, DelegateBoolFunc fclr)
         {
             foreach (Control ptcp in this.Controls)
                 if (ptcp is PanelTecLastMinutes)
                     (ptcp as PanelTecLastMinutes).SetDelegateReport(ferr, fwar, fact, fclr);
+                else
+                    ;
+        }
+        /// <summary>
+        /// Метод обработки события - изменение цвета фона (при изменении цветовой схемы)
+        /// </summary>
+        /// <param name="sender">Объект, инициировавший событие</param>
+        /// <param name="e">Аргумент события(без значения)</param>
+        protected override void formMain_BackColorChanged (object sender, EventArgs e)
+        {
+            base.formMain_BackColorChanged (sender, e);
+
+            foreach (Control ptcp in this.Controls)
+                if (ptcp is PanelTecLastMinutes)
+                    (ptcp as PanelTecLastMinutes).BackColor = BackColor;
                 else
                     ;
         }
@@ -374,15 +417,20 @@ namespace Statistic
 
             //setDatetimePicker(m_panelDateTime.m_dtprDate.Value - HAdmin.GetOffsetOfCurrentTimeZone());
         }
+
         /// <summary>
         /// Милисекунды до первого запуска функции таймера
+        /// <param name="shift">Дополнительное смещение, определяется в ~ от времени потребного для гарантированного получения значений (крайн. мин. часа)</param>
         /// </summary>
-        /// <returns></returns>
+        /// <returns>Кол-во секунд до 1-го выполнения метода обратного вызова таймера
+        ///  , остальные - ежечасно
+        ///  </returns>
         private Int64 getMSecUpdate (Int64 shift)
         {
             Int64 iRes = -1;
             //Милисекунды от начала часа
             iRes = DateTime.Now.Minute * 60 * 1000 + DateTime.Now.Second * 1000;
+            // милисекунды до окончания часа
             iRes = 60 * 60 * 1000 - iRes;
             iRes += shift;
 
@@ -504,6 +552,11 @@ namespace Statistic
                 ;
         }
 
+        public override void UpdateGraphicsCurrent (int type)
+        {
+            getTypedControls (this, new Type [] { typeof (PanelTecLastMinutes) }).Cast<PanelTecLastMinutes> ().ToList ().ForEach (panel => panel.UpdateGraphicsCurrent () );
+        }
+
         partial class PanelDateTime
         {
             /// <summary>
@@ -556,7 +609,8 @@ namespace Statistic
 
             private Button m_btnUpdate;
 
-            public PanelDateTime() : base ()
+            public PanelDateTime()
+                : base (MODE_UPDATE_VALUES.ACTION, FormMain.formGraphicsSettings.BackgroundColor)
             {
                 InitializeComponent();
 
@@ -711,6 +765,19 @@ namespace Statistic
 
                 initTableHourRows();
             }
+
+            protected override void formMain_BackColorChanged (object sender, EventArgs e)
+            {
+                base.formMain_BackColorChanged (sender, e);
+
+                foreach (Label label in m_dictLabelTime.Values)
+                    label.BackColor = BackColor;
+            }
+
+            public override void UpdateGraphicsCurrent (int type)
+            {
+                throw new NotImplementedException ();
+            }
         }
 
         partial class PanelTecLastMinutes
@@ -749,6 +816,8 @@ namespace Statistic
 
         public partial class PanelTecLastMinutes : HPanelCommon
         {
+            private List<Label> m_listLabelNames;
+
             public class TecViewLastMinutes : TecView
             {
                 public TecViewLastMinutes()
@@ -799,6 +868,8 @@ namespace Statistic
             {
                 InitializeComponent();
 
+                m_listLabelNames = new List<Label> ();
+
                 m_tecView = new TecViewLastMinutes();
 
                 //Признаки для регистрации соединения с необходимыми источниками данных
@@ -811,8 +882,15 @@ namespace Statistic
                 //m_tecView.SetDelegateReport(fErrRep, fWarRep, fActRep, fRepClr);
 
                 m_tecView.updateGUI_LastMinutes = new DelegateFunc(showLastMinutesTM);
+                BackColorChanged += onBackColorChanged;
 
                 Initialize();
+            }
+
+            private void onBackColorChanged (object sender, EventArgs e)
+            {
+                foreach (Label label in m_listLabelNames)
+                    label.BackColor = BackColor;
             }
 
             public PanelTecLastMinutes(IContainer container, StatisticCommon.TEC tec/*, DelegateStringFunc fErrRep, DelegateStringFunc fWarRep, DelegateStringFunc fActRep, DelegateBoolFunc frepClr*/)
@@ -841,14 +919,15 @@ namespace Statistic
                 }
 
                 //Добавить наименование станции
-                Label lblNameTEC = HLabel.createLabel(m_tecView.m_tec.name_shr, PanelLastMinutes.s_arLabelStyles[(int)INDEX_LABEL.NAME_TEC]);
-                this.Controls.Add(lblNameTEC, 0, 0);
+                m_listLabelNames.Add(HLabel.createLabel(m_tecView.m_tec.name_shr, PanelLastMinutes.s_arLabelStyles[(int)INDEX_LABEL.NAME_TEC]));
+                this.Controls.Add(m_listLabelNames[m_listLabelNames.Count - 1], 0, 0);
 
                 foreach (TECComponent g in m_tecView.m_tec.list_TECComponents)
                     if (g.IsGTP == true)
                     {
                         //Добавить наименование ГТП
-                        this.Controls.Add(HLabel.createLabel(g.name_shr.Split(' ')[1], PanelLastMinutes.s_arLabelStyles[(int)INDEX_LABEL.NAME_COMPONENT]), CountTECComponent, COUNT_FIXED_ROWS - 1);
+                        m_listLabelNames.Add (HLabel.createLabel (g.name_shr.Split (' ') [1], PanelLastMinutes.s_arLabelStyles [(int)INDEX_LABEL.NAME_COMPONENT]));
+                        this.Controls.Add(m_listLabelNames[m_listLabelNames.Count -1], CountTECComponent, COUNT_FIXED_ROWS - 1);
 
                         //Добавить компонент ТЭЦ (ГТП)
                         m_list_TECComponents.Add(g);
@@ -864,7 +943,8 @@ namespace Statistic
                 }
 
                 if (CountTECComponent > 0)
-                    this.SetColumnSpan(lblNameTEC, CountTECComponent);
+                    // подпись к наименованию ТЭЦ всегда 1-ая
+                    this.SetColumnSpan(m_listLabelNames [0], CountTECComponent);
                 else
                     ;
             }
@@ -1106,6 +1186,11 @@ namespace Statistic
                         m_listDictLabelVal[hour - 1][g.m_id].BackColor = clrBackColor;
                     }
                 }
+            }
+
+            public void UpdateGraphicsCurrent ()
+            {
+                showLastMinutesTM ();
             }
         }
     }
