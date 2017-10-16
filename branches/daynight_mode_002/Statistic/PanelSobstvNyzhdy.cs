@@ -170,14 +170,115 @@ namespace Statistic
             private void InitializeComponent()
             {
                 components = new System.ComponentModel.Container();
-                this.m_zedGraphHours = new HZedGraphControlSNHours(m_tecView.m_lockValue);
-                
-                this.m_zedGraphHours.MouseUpEvent += new ZedGraph.ZedGraphControl.ZedMouseEventHandler(this.zedGraphHours_MouseUpEvent);
-                this.m_zedGraphHours.PointValueEvent += new ZedGraph.ZedGraphControl.PointValueHandler(this.zedGraphHours_PointValueEvent);
-                //this.m_zedGraphHours.DoubleClickEvent += new ZedGraph.ZedGraphControl.ZedMouseEventHandler(this.zedGraphHours_DoubleClickEvent);
-                this.m_zedGraphHours.ContextMenuStrip.Items[(int)StatisticCommon.HZedGraphControl.INDEX_CONTEXTMENU_ITEM.VISIBLE_TABLE].Click += new System.EventHandler(отобразитьВТаблицеToolStripMenuItem_Click);
-                //this.m_zedGraphHours.InitializeEventHandler(this.эксельToolStripMenuItemHours_Click, this.sourceDataHours_Click);
 
+                m_dictLabelVal = new Dictionary<int, System.Windows.Forms.Label> ();
+                dtCurrDate = new DateTimePicker ();
+                m_arLabel = new System.Windows.Forms.Label [(int)INDEX_LABEL.VALUE_TM_SN + 1];
+                dgvSNHour = new HDataGridViewTecSobstvNyzhdy (BackColor);
+
+                this.Dock = DockStyle.Fill;
+
+                this.SuspendLayout ();
+
+                this.m_zedGraphHours = new HZedGraphControlSNHours (m_tecView.m_lockValue);
+                this.m_zedGraphHours.MouseUpEvent += new ZedGraph.ZedGraphControl.ZedMouseEventHandler (this.zedGraphHours_MouseUpEvent);
+                this.m_zedGraphHours.PointValueEvent += new ZedGraph.ZedGraphControl.PointValueHandler (this.zedGraphHours_PointValueEvent);
+                //this.m_zedGraphHours.DoubleClickEvent += new ZedGraph.ZedGraphControl.ZedMouseEventHandler(this.zedGraphHours_DoubleClickEvent);
+                this.m_zedGraphHours.ContextMenuStrip.Items [(int)StatisticCommon.HZedGraphControl.INDEX_CONTEXTMENU_ITEM.VISIBLE_TABLE].Click += new System.EventHandler (отобразитьВТаблицеToolStripMenuItem_Click);
+                //this.m_zedGraphHours.InitializeEventHandler(this.эксельToolStripMenuItemHours_Click, this.sourceDataHours_Click);
+                this.m_zedGraphHours.InitializeEventHandler (this.эксельToolStripMenuItemHours_Click, null);
+
+                dtCurrDate.Value = DateTime.Now;
+                dtCurrDate.Dock = DockStyle.Fill;
+                dtCurrDate.ValueChanged += new EventHandler (dtCurrDate_ChangeValue);
+
+                int i = -1;
+
+                for (i = (int)StatisticCommon.HZedGraphControl.INDEX_CONTEXTMENU_ITEM.AISKUE_PLUS_SOTIASSO; i < (int)StatisticCommon.HZedGraphControl.INDEX_CONTEXTMENU_ITEM.VISIBLE_TABLE; i++) {
+                    m_zedGraphHours.ContextMenuStrip.Items [i].Visible = false;
+                }
+
+                dgvSNHour.Dock = DockStyle.Fill;
+                dgvSNHour.MultiSelect = false;
+                dgvSNHour.SelectionMode = DataGridViewSelectionMode.FullRowSelect;
+                dgvSNHour.ReadOnly = true;
+                dgvSNHour.AllowUserToResizeRows = false;
+                dgvSNHour.AllowUserToResizeColumns = false;
+                dgvSNHour.AllowUserToDeleteRows = false;
+                dgvSNHour.Columns.Add ("Hour", "Час");
+                dgvSNHour.Columns ["Hour"].Width = 45;
+                dgvSNHour.Columns.Add ("Value", "Значение");
+                dgvSNHour.Columns ["Value"].AutoSizeMode = DataGridViewAutoSizeColumnMode.Fill;
+                dgvSNHour.RowHeadersVisible = false;
+                dgvSNHour.AllowUserToAddRows = false;
+                dgvSNHour.MouseUp += new MouseEventHandler (this.dgvSNHour_SelectionChanged);
+
+                //Свойства колонок
+                this.ColumnCount = 6;
+                this.ColumnStyles.Add (new ColumnStyle (SizeType.Percent, 17));
+                this.ColumnStyles.Add (new ColumnStyle (SizeType.Percent, 17));
+                this.ColumnStyles.Add (new ColumnStyle (SizeType.Percent, 17));
+                this.ColumnStyles.Add (new ColumnStyle (SizeType.Percent, 17));
+                this.ColumnStyles.Add (new ColumnStyle (SizeType.Percent, 17));
+                this.ColumnStyles.Add (new ColumnStyle (SizeType.Percent, 17));
+
+                //Видимая граница для отладки
+                this.BorderStyle = BorderStyle.FixedSingle; //BorderStyle.None;
+
+                string text = string.Empty;
+
+                i = (int)INDEX_LABEL.NAME;
+                text = m_tecView.m_tec.name_shr;
+                m_arLabel [i] = HLabel.createLabel (text, PanelSobstvNyzhdy.s_arLabelStyles [i]);
+                ////Предусмотрим обработчик при изменении значения
+                //if (i == (int)INDEX_LABEL.VALUE_TOTAL)
+                //    m_arLabel[i].TextChanged += new EventHandler(PanelTecCurPower_TextChangedValue);
+                //else
+                //    ;
+                //this.Controls.Add(m_arLabel[i], 0, i);
+                //this.SetRowSpan(m_arLabel[i], COUNT_FIXED_ROWS);
+                this.Controls.Add (m_arLabel [i], 0, i);
+                this.SetRowSpan (m_arLabel [i], COUNT_FIXED_ROWS);
+                this.SetColumnSpan (m_arLabel [i], 3);
+
+                //Наименование ТЭЦ, Дата/время, Значение для всех ГТП/ТГ
+                for (i = (int)INDEX_LABEL.DATETIME_TM_SN; i < (int)INDEX_LABEL.VALUE_TM_SN + 1; i++) {
+                    switch (i) {
+                        case (int)INDEX_LABEL.DATETIME_TM_SN:
+                            text = @"--:--:--";
+                            break;
+                        case (int)INDEX_LABEL.VALUE_TM_SN:
+                            text = @"---";
+                            break;
+                        default:
+                            break;
+                    }
+                    m_arLabel [i] = HLabel.createLabel (text, PanelSobstvNyzhdy.s_arLabelStyles [i]);
+                }
+                this.Controls.Add (m_arLabel [(int)INDEX_LABEL.DATETIME_TM_SN], 3, 1);
+                this.SetRowSpan (m_arLabel [(int)INDEX_LABEL.DATETIME_TM_SN], 1);
+                this.SetColumnSpan (m_arLabel [(int)INDEX_LABEL.DATETIME_TM_SN], 2);
+
+                this.Controls.Add (m_arLabel [(int)INDEX_LABEL.VALUE_TM_SN], 5, 1);
+                this.SetRowSpan (m_arLabel [(int)INDEX_LABEL.VALUE_TM_SN], 1);
+                this.SetColumnSpan (m_arLabel [(int)INDEX_LABEL.VALUE_TM_SN], 1);
+
+                this.Controls.Add (dtCurrDate, 3, 0);
+                this.SetRowSpan (dtCurrDate, 1);
+                this.SetColumnSpan (dtCurrDate, 3);
+
+                this.RowCount = COUNT_FIXED_ROWS;
+
+                //Свойства зафиксированных строк
+                for (i = 0; i < COUNT_FIXED_ROWS; i++)
+                    this.RowStyles.Add (new RowStyle (SizeType.Percent, 5));
+
+                this.Controls.Add (m_zedGraphHours, 0, COUNT_FIXED_ROWS);
+                this.SetColumnSpan (m_zedGraphHours, this.ColumnCount);
+                this.RowStyles.Add (new RowStyle (SizeType.Percent, 90));
+
+                this.ResumeLayout (false);
+                this.PerformLayout ();
             }
 
             #endregion
@@ -185,7 +286,38 @@ namespace Statistic
 
         private partial class PanelTecSobstvNyzhdy : PanelStatistic //HPanelCommon
         {
-            public class TecViewSobstvNyzhdy : TecView
+            private class HDataGridViewTecSobstvNyzhdy : DataGridView
+            {
+                public HDataGridViewTecSobstvNyzhdy (Color backColor)
+                    : base ()
+                {
+                    InitializeComponent ();
+
+                    BackColor = backColor;
+                }
+
+                private void InitializeComponent ()
+                {
+
+                }
+
+                public override Color BackColor
+                {
+                    get
+                    {
+                        return base.BackColor;
+                    }
+
+                    set
+                    {
+                        base.BackColor = value;
+
+                        DefaultCellStyle.BackColor = value == SystemColors.Control ? SystemColors.Window : value;
+                    }
+                }
+            }
+
+            private class TecViewSobstvNyzhdy : TecView
             {
                 public TecViewSobstvNyzhdy()
                     : base(/*TecView.TYPE_PANEL.CUR_POWER, */-1, -1, TECComponentBase.TYPE.ELECTRO)
@@ -217,20 +349,22 @@ namespace Statistic
                     AddState((int)TecView.StatesMachine.LastValue_TM_SN);
                 }
             }
-            
-            System.Windows.Forms.Label[] m_arLabel;
-            System.Windows.Forms.DateTimePicker dtCurrDate;
-            Dictionary<int, System.Windows.Forms.Label> m_dictLabelVal;
-            DataGridView dgvSNHour;
 
-            //bool isActive;
+            private System.Windows.Forms.Label[] m_arLabel;
+            private System.Windows.Forms.DateTimePicker dtCurrDate;
+            private Dictionary<int, System.Windows.Forms.Label> m_dictLabelVal;
 
-            public TecViewSobstvNyzhdy m_tecView;
+            private HDataGridViewTecSobstvNyzhdy dgvSNHour;
+
+            private TecViewSobstvNyzhdy m_tecView;
 
             /// <summary>
             /// Текущий индекс компонента из списка 'allTECComponents' (для сохранения между вызовами функций)
             /// </summary>
-            public int indx_TECComponent { get { return m_tecView.indxTECComponents; } }
+            private int indx_TECComponent { get { return m_tecView.indxTECComponents; } }
+
+            private ManualResetEvent m_mnlSetDateTimeResetEvent;
+
             private ManualResetEvent m_evTimerCurrent;
 
             /// <summary>
@@ -243,9 +377,9 @@ namespace Statistic
                     startChangeValue;
 
             /// <summary>
-            /// Экземплят графика
+            /// Экземпляр графика
             /// </summary>
-            StatisticCommon.HZedGraphControl m_zedGraphHours;
+            private StatisticCommon.HZedGraphControl m_zedGraphHours;
 
             /// <summary>
             /// Коструктор - основной (с аргументом)
@@ -258,33 +392,12 @@ namespace Statistic
 
                 m_mnlSetDateTimeResetEvent = new ManualResetEvent(false);
 
-                InitializeComponent();
-
                 HMark markQueries = new HMark(new int[] { (int)CONN_SETT_TYPE.DATA_AISKUE, (int)CONN_SETT_TYPE.DATA_SOTIASSO });
 
                 m_tecView.InitTEC (new List <TEC> () { tec }, markQueries);
-
                 m_tecView.updateGUI_TM_SN = new DelegateFunc(updateGUI_TMSNPower);
 
-                Initialize();
-
-                dtCurrDate.Value = DateTime.Now;
-
-                for (int i = (int)StatisticCommon.HZedGraphControl.INDEX_CONTEXTMENU_ITEM.AISKUE_PLUS_SOTIASSO; i < (int)StatisticCommon.HZedGraphControl.INDEX_CONTEXTMENU_ITEM.VISIBLE_TABLE; i++)
-                {
-                    m_zedGraphHours.ContextMenuStrip.Items[i].Visible = false;
-                }
-
-                dgvSNHour.MultiSelect = false;
-                dgvSNHour.SelectionMode = DataGridViewSelectionMode.FullRowSelect;
-                dgvSNHour.ReadOnly = true;
-                dgvSNHour.AllowUserToResizeRows = false;
-                dgvSNHour.AllowUserToResizeColumns = false;
-                dgvSNHour.AllowUserToDeleteRows = false;
-
-                this.m_zedGraphHours.InitializeEventHandler(this.эксельToolStripMenuItemHours_Click, null);
-
-                dgvSNHour.MouseUp += new MouseEventHandler(this.dgvSNHour_SelectionChanged);
+                InitializeComponent ();
             }
 
             /// <summary>
@@ -313,92 +426,10 @@ namespace Statistic
             /// </summary>
             private void Initialize()
             {
-                int i = -1;
+                this.SuspendLayout ();
 
-                m_dictLabelVal = new Dictionary<int, System.Windows.Forms.Label>();
-                dtCurrDate = new DateTimePicker();
-                m_arLabel = new System.Windows.Forms.Label[(int)INDEX_LABEL.VALUE_TM_SN + 1];
-                dgvSNHour = new DataGridView();
-                
-                this.Dock = DockStyle.Fill;
-                dtCurrDate.Dock = DockStyle.Fill;
-                dgvSNHour.Dock = DockStyle.Fill;
-                dgvSNHour.Columns.Add("Hour", "Час");
-                dgvSNHour.Columns["Hour"].Width = 45;
-                dgvSNHour.Columns.Add("Value", "Значение");
-                dgvSNHour.Columns["Value"].AutoSizeMode = DataGridViewAutoSizeColumnMode.Fill;
-                dgvSNHour.RowHeadersVisible = false;
-                dgvSNHour.AllowUserToAddRows = false;
-
-
-                //Свойства колонок
-                this.ColumnCount = 6;
-                this.ColumnStyles.Add(new ColumnStyle(SizeType.Percent, 17));
-                this.ColumnStyles.Add(new ColumnStyle(SizeType.Percent, 17));
-                this.ColumnStyles.Add(new ColumnStyle(SizeType.Percent, 17));
-                this.ColumnStyles.Add(new ColumnStyle(SizeType.Percent, 17));
-                this.ColumnStyles.Add(new ColumnStyle(SizeType.Percent, 17)); 
-                this.ColumnStyles.Add(new ColumnStyle(SizeType.Percent, 17));
-
-                //Видимая граница для отладки
-                this.BorderStyle = BorderStyle.FixedSingle; //BorderStyle.None;
-
-                string cntnt = string.Empty;
-
-                i = (int)INDEX_LABEL.NAME;
-                cntnt = m_tecView.m_tec.name_shr;
-                m_arLabel[i] = HLabel.createLabel(cntnt, PanelSobstvNyzhdy.s_arLabelStyles[i]);
-                ////Предусмотрим обработчик при изменении значения
-                //if (i == (int)INDEX_LABEL.VALUE_TOTAL)
-                //    m_arLabel[i].TextChanged += new EventHandler(PanelTecCurPower_TextChangedValue);
-                //else
-                //    ;
-                //this.Controls.Add(m_arLabel[i], 0, i);
-                //this.SetRowSpan(m_arLabel[i], COUNT_FIXED_ROWS);
-                this.Controls.Add(m_arLabel[i], 0, i); 
-                this.SetRowSpan(m_arLabel[i], COUNT_FIXED_ROWS); 
-                this.SetColumnSpan(m_arLabel[i], 3);
-
-                //Наименование ТЭЦ, Дата/время, Значение для всех ГТП/ТГ
-                for (i = (int)INDEX_LABEL.DATETIME_TM_SN; i < (int)INDEX_LABEL.VALUE_TM_SN + 1; i++)
-                {
-                    switch (i)
-                    {
-                        case (int)INDEX_LABEL.DATETIME_TM_SN:
-                            cntnt = @"--:--:--";
-                            break;
-                        case (int)INDEX_LABEL.VALUE_TM_SN:
-                            cntnt = @"---";
-                            break;
-                        default:
-                            break;
-                    }
-                    m_arLabel[i] = HLabel.createLabel(cntnt, PanelSobstvNyzhdy.s_arLabelStyles[i]);
-                }
-                this.Controls.Add(m_arLabel[(int)INDEX_LABEL.DATETIME_TM_SN], 3, 1);
-                this.SetRowSpan(m_arLabel[(int)INDEX_LABEL.DATETIME_TM_SN], 1);
-                this.SetColumnSpan(m_arLabel[(int)INDEX_LABEL.DATETIME_TM_SN], 2);
-
-                this.Controls.Add(m_arLabel[(int)INDEX_LABEL.VALUE_TM_SN], 5, 1);
-                this.SetRowSpan(m_arLabel[(int)INDEX_LABEL.VALUE_TM_SN], 1);
-                this.SetColumnSpan(m_arLabel[(int)INDEX_LABEL.VALUE_TM_SN], 1);
-
-                this.Controls.Add(dtCurrDate, 3, 0); this.SetRowSpan(dtCurrDate, 1); this.SetColumnSpan(dtCurrDate, 3);
-                
-                dtCurrDate.ValueChanged += new EventHandler(dtCurrDate_ChangeValue);
-
-                this.RowCount = COUNT_FIXED_ROWS;
-
-                //Свойства зафиксированных строк
-                for (i = 0; i < COUNT_FIXED_ROWS; i++)
-                    this.RowStyles.Add(new RowStyle(SizeType.Percent, 5));
-
-                
-                this.Controls.Add(m_zedGraphHours, 0, COUNT_FIXED_ROWS);
-                this.SetColumnSpan(m_zedGraphHours, this.ColumnCount);
-                this.RowStyles.Add(new RowStyle(SizeType.Percent, 90));
-
-                //isActive = false;
+                this.ResumeLayout (false);
+                this.PerformLayout ();
             }
 
             /// <summary>
@@ -481,8 +512,6 @@ namespace Statistic
                     m_tecView.currHour = false;
                 }
             }
-
-            private ManualResetEvent m_mnlSetDateTimeResetEvent;
 
             /// <summary>
             /// Установить дату/час для объекта обработки запросов к БД
@@ -688,6 +717,9 @@ namespace Statistic
 
             public override void UpdateGraphicsCurrent (int type)
             {
+                dgvSNHour.BackColor = FormMain.formGraphicsSettings.BackgroundColor;
+                //??? одновременное заполнение значениями и табличного и графического представления
+                //??? д.б. реализованы методы dgv.Fill и zedGraph.Draw
                 DrawGraphHours ();
             }
 
@@ -1003,7 +1035,7 @@ namespace Statistic
             /// <summary>
             /// Конструктор
             /// </summary>
-            /// <param name="obj"></param>
+            /// <param name="obj">Объект синхронизации для базового класса</param>
             public HZedGraphControlSNHours(object obj)
                 : base(obj, FormMain.formGraphicsSettings.SetScale)
             {
