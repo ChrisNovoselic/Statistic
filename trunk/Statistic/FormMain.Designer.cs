@@ -37,7 +37,7 @@ namespace Statistic
 
             this.components = new System.ComponentModel.Container();
             System.ComponentModel.ComponentResourceManager resources = new System.ComponentModel.ComponentResourceManager(typeof(FormMain));
-            this.menuStrip = new System.Windows.Forms.MenuStrip();
+            this.MainMenuStrip = new System.Windows.Forms.MenuStrip();
             this.ContextMenuStrip = new System.Windows.Forms.ContextMenuStrip();
             this.файлToolStripMenuItem = new System.Windows.Forms.ToolStripMenuItem();
             this.файлПрофильToolStripMenuItem = new System.Windows.Forms.ToolStripMenuItem();
@@ -92,11 +92,11 @@ namespace Statistic
             this.оПрограммеToolStripMenuItem = new System.Windows.Forms.ToolStripMenuItem();
             this.tclTecViews = new HStatisticTabCtrlEx (); //System.Windows.Forms.TabControl();
             this.lblLabel = new System.Windows.Forms.Label();
-            this.menuStrip.SuspendLayout();
+            this.MainMenuStrip.SuspendLayout();
             //this.m_ContextMenuStripListTecViews.SuspendLayout ();
             this.SuspendLayout();
             // 
-            // menuStrip
+            // MainMenuStrip
             // 
             this.MainMenuStrip.Items.AddRange(new System.Windows.Forms.ToolStripItem[] {
                 this.файлToolStripMenuItem
@@ -476,10 +476,10 @@ namespace Statistic
             this.ClientSize = new System.Drawing.Size(982, 784);
             this.Controls.Add(this.lblLabel);
             this.Controls.Add(this.tclTecViews);
-            this.Controls.Add(this.menuStrip);
+            this.Controls.Add(this.MainMenuStrip);
             //this.Controls.Add(this.m_ContextMenuStripListTecViews);
             this.Icon = ((System.Drawing.Icon)(resources.GetObject("$this.Icon")));
-            this.MainMenuStrip = this.menuStrip;
+            this.MainMenuStrip = this.MainMenuStrip;
             //this.ContextMenuStrip = this.m_ContextMenuStripListTecViews;
             this.MinimumSize = new System.Drawing.Size(800, 600);
             this.Name = "FormMain";
@@ -490,8 +490,8 @@ namespace Statistic
             this.Load += new System.EventHandler(FormMain_FormLoad);
             this.ContextMenuStrip.Opened += new System.EventHandler(menuStrip_MenuActivate);
             this.ContextMenuStrip.Closed += new System.Windows.Forms.ToolStripDropDownClosedEventHandler(contextMenuStrip_Closed);
-            this.menuStrip.ResumeLayout(false);
-            this.menuStrip.PerformLayout();
+            this.MainMenuStrip.ResumeLayout(false);
+            this.MainMenuStrip.PerformLayout();
             this.ContextMenuStrip.ResumeLayout(false);
             this.ContextMenuStrip.PerformLayout();
             this.ResumeLayout(false);
@@ -530,7 +530,6 @@ namespace Statistic
         //}
         #endregion
 
-        private System.Windows.Forms.MenuStrip menuStrip;
         //private System.Windows.Forms.ContextMenuStrip m_ContextMenuStripListTecViews;
         private System.Windows.Forms.ToolStripMenuItem файлToolStripMenuItem;
         private System.Windows.Forms.ToolStripMenuItem файлПрофильToolStripMenuItem;
