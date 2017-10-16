@@ -603,7 +603,6 @@ namespace StatisticTimeSync
 
         public override void SetDelegateReport(DelegateStringFunc ferr, DelegateStringFunc fwar, DelegateStringFunc fact, DelegateBoolFunc fclr)
         {
-            throw new NotImplementedException();
         }
 
         public override void Start()

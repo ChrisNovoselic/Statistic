@@ -2721,11 +2721,11 @@ namespace StatisticAnalyzer
         /// <param name="users">Список пользователей</param>
         protected override void updateCounter(DataGridView_LogMessageCounter dgv, DateTime start_date, DateTime stop_date, string users)
         {
-            delegateActionReport("Обновление статистики сообщений");
+            delegateActionReport?.Invoke("Обновление статистики сообщений");
 
             dgv.UpdateCounter(m_idListenerLoggingDB, start_date, stop_date, users);
 
-            delegateReportClear(true);
+            delegateReportClear?.Invoke (true);
         }
 
         /// <summary>

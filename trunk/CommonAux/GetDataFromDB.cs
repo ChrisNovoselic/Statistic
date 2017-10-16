@@ -43,6 +43,12 @@ namespace CommonAux
         /// </summary>
         private string m_strFullPathTemplate;
         /// <summary>
+        /// Поля таблицы сигналов
+        /// </summary>
+        private enum DB_TABLE_DATA {
+            ID, ID_TEC, GROUP, NAME, DESCRIPTION, USPD, CHANNEL, USE
+        };
+        /// <summary>
         /// Номера столбцовы в шаблоне excel
         /// </summary>
         public enum INDEX_MSEXCEL_COLUMN { APOWER, SNUZHDY }
@@ -153,12 +159,14 @@ namespace CommonAux
             {
                 try
                 {
-                    signal = new SIGNAL(Convert.ToString(list_channels.Rows[i].ItemArray[Convert.ToInt32(PanelCommonAux.DB_TABLE_DATA.DESCRIPTION)]),
-                        Convert.ToInt32(list_channels.Rows[i].ItemArray[Convert.ToInt32(PanelCommonAux.DB_TABLE_DATA.USPD)]),
-                        Convert.ToInt32(list_channels.Rows[i].ItemArray[Convert.ToInt32(PanelCommonAux.DB_TABLE_DATA.CHANNEL)]),
-                        Convert.ToBoolean(list_channels.Rows[i].ItemArray[Convert.ToInt32(PanelCommonAux.DB_TABLE_DATA.USE)])
+                    signal = new SIGNAL(Convert.ToString(list_channels.Rows[i].ItemArray[Convert.ToInt32(DB_TABLE_DATA.DESCRIPTION)]),
+                        Convert.ToInt32(list_channels.Rows[i].ItemArray[Convert.ToInt32(DB_TABLE_DATA.USPD)]),
+                        Convert.ToInt32(list_channels.Rows[i].ItemArray[Convert.ToInt32(DB_TABLE_DATA.CHANNEL)]),
+                        Convert.ToBoolean(list_channels.Rows[i].ItemArray[Convert.ToInt32(DB_TABLE_DATA.USE)])
                     );
-                    m_listTEC[Convert.ToInt32(list_channels.Rows[i].ItemArray[Convert.ToInt32(PanelCommonAux.DB_TABLE_DATA.ID_TEC)]) - 1].m_arListSgnls[Convert.ToInt32(Enum.Parse(typeof(TEC_LOCAL.INDEX_DATA), Convert.ToString(list_channels.Rows[i].ItemArray[Convert.ToInt32(PanelCommonAux.DB_TABLE_DATA.GROUP)])))].Add(signal);
+                    m_listTEC[Convert.ToInt32(list_channels.Rows[i].ItemArray[Convert.ToInt32(DB_TABLE_DATA.ID_TEC)]) - 1]
+                        .m_arListSgnls[Convert.ToInt32(Enum.Parse(typeof(TEC_LOCAL.INDEX_DATA), Convert.ToString(list_channels.Rows[i].ItemArray[Convert.ToInt32(DB_TABLE_DATA.GROUP)])))]
+                            .Add(signal);
                 }
                 catch (Exception e)
                 {
@@ -191,12 +199,12 @@ namespace CommonAux
             if (iRes == 0)
                 foreach (TEC_LOCAL.INDEX_DATA indx in Enum.GetValues(typeof(TEC_LOCAL.INDEX_DATA)))
                 {
-                    ActionReport("Получение значения для " + indx.ToString() + " " + tec.m_strNameShr);
+                    ActionReport($"Получение значения для {indx.ToString ()} {tec.m_strNameShr}");
                     // запросить и обработать результат запроса по получению значений для группы сигналов в указанный диапазон дат
                     iRes = Request(tec, ref dbConn, dtStart, dtEnd, indx);
                     m_markIndxRequestError.Set((int)indx, iRes < 0);
 
-                    ActionReport("Получены значения для " + indx.ToString() + " " + tec.m_strNameShr);
+                    ActionReport($"Получены значения для {indx.ToString()} {tec.m_strNameShr}");
                 }
             else
             {

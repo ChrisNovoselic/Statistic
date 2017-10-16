@@ -153,10 +153,6 @@ namespace CommonAux
     public partial class PanelCommonAux : PanelStatistic
     {
         /// <summary>
-        /// Режим отображения (в составе статистики/самостоятельная вкладка)
-        /// </summary>
-        protected int m_displayMode;
-        /// <summary>
         /// Объект с параметрами соединения с источником данных
         /// </summary>
         protected ConnectionSettings m_connSettAIISKUECentre;
@@ -171,15 +167,10 @@ namespace CommonAux
         protected DbConnection m_connConfigDB;
         protected int _iListenerId;
         private enum INDEX_CONTROL : short { LB_TEC, LB_GROUP_SIGNAL }
-        /// <summary>
-        /// Поля таблицы сигналов
-        /// </summary>
-        public enum DB_TABLE_DATA
-        {
-            ID, ID_TEC, GROUP, NAME, DESCRIPTION, USPD, CHANNEL, USE
-        };
 
         private const string MS_EXCEL_FILTER = @"Книга MS Excel 2010 (*.xls, *.xlsx)|*.xls;*.xlsx";
+
+        private static string FORMAT_VALUE = "F3";
         /// <summary>
         /// Перечисление причин, влияющих на готовность к экспорту значений
         /// </summary>
@@ -187,7 +178,10 @@ namespace CommonAux
         /// <summary>
         /// Объект содержащий признаки готовности к экспорту значений
         /// </summary>
-        HMark m_markReady;
+        private HMark m_markReady;
+        /// <summary>
+        /// Перечисление - возможные правила для включения признака доступности кнопки "Экспорт"
+        /// </summary>
         private enum INDEX_MSEXCEL_PARS
         {
             /// <summary>
@@ -231,25 +225,31 @@ namespace CommonAux
         /// <summary>
         /// Перечисление возможных состояний приложения
         /// </summary>
-        private enum STATE { UNKNOWN = -1, READY, ERROR }
+        private enum STATE { UNKNOWN = -1, READY, WAIT }
 
         private bool m_bVisibleLog;
         /// <summary>
         /// Признак видимости элемента управления с содержанием лог-сообщений
         /// </summary>
         private bool VisibleLog { get { return m_bVisibleLog; } set { m_bVisibleLog = value; } }
-
-        //private STATE m_State;
         /// <summary>
         /// Состояние приложения
         /// </summary>
-        STATE State { get { return (m_markReady.IsMarked((int)INDEX_READY.TEMPLATE) && m_markReady.IsMarked((int)INDEX_READY.DATE)) == true ? STATE.READY : STATE.ERROR; } }
+        private STATE State
+        {
+            get
+            {
+                return ((m_markReady.IsMarked((int)INDEX_READY.TEMPLATE) == true)
+                    && (m_markReady.IsMarked((int)INDEX_READY.DATE) == true))
+                        ? STATE.READY
+                            : STATE.WAIT;
+            }
+        }
 
         private string m_strFullPathTemplate;
         /// <summary>
         /// Строка - полный путь для шаблона MS Excel
         /// </summary>
-        /// 
         private string FullPathTemplate
         {
             get { return m_strFullPathTemplate; }
@@ -295,7 +295,7 @@ namespace CommonAux
         private List<System.Windows.Forms.Label> m_labelsGroup;
 
         private List<DataGridViewValues> m_dgvValues;
-        private DataGridView m_sumValues;
+        private DataGridView m_dgvSummaValues;
         /// <summary>
         /// Требуется переменная конструктора
         /// </summary>
@@ -309,7 +309,7 @@ namespace CommonAux
         {
             m_GetDataFromDB = new GetDataFromDB();
 
-            InitializeComponents();
+            InitializeComponents ();
 
             m_listBoxTEC.Tag = INDEX_CONTROL.LB_TEC;
             m_listBoxTEC.SelectedIndexChanged += listBox_SelectedIndexChanged;
@@ -329,9 +329,9 @@ namespace CommonAux
 
             for (int i = 0; i <= Convert.ToInt32(TEC_LOCAL.INDEX_DATA.GRVIII); i++)
             {
-                m_sumValues.Rows.Add();
-                m_sumValues.Rows[i].Cells[0].Value = "сум " + Enum.GetName(typeof(TEC_LOCAL.INDEX_DATA), i);
-                m_sumValues.Rows[i].Cells[1].Value = "0";
+                m_dgvSummaValues.Rows.Add();
+                m_dgvSummaValues.Rows[i].Cells[0].Value = "сум " + Enum.GetName(typeof(TEC_LOCAL.INDEX_DATA), i);
+                m_dgvSummaValues.Rows[i].Cells[1].Value = "0";
             }
 
             int err = -1;
@@ -498,7 +498,7 @@ namespace CommonAux
             this.m_labelStartDate = new System.Windows.Forms.Label();
             this.m_labelEndDate = new System.Windows.Forms.Label();
 
-            m_sumValues = new DataGridView();
+            m_dgvSummaValues = new DataGridView();
 
             this.m_dgvValues = new List<DataGridViewValues>();
             this.m_labelsGroup = new List<System.Windows.Forms.Label>();
@@ -510,7 +510,7 @@ namespace CommonAux
                 m_labelsGroup.Add(new System.Windows.Forms.Label());
             }
 
-            ((System.ComponentModel.ISupportInitialize)(this.m_sumValues)).BeginInit();
+            ((System.ComponentModel.ISupportInitialize)(this.m_dgvSummaValues)).BeginInit();
 
             #endregion
 
@@ -554,7 +554,7 @@ namespace CommonAux
                 this.Controls.Add(m_dgvValues[i], 1, 1 + i * 4); this.SetColumnSpan(m_dgvValues[i], 11); this.SetRowSpan(m_dgvValues[i], 4);
                 this.Controls.Add(m_labelsGroup[i], 0, 2 + i * 4); this.SetColumnSpan(m_labelsGroup[i], 1); this.SetRowSpan(m_labelsGroup[i], 1);
             }
-            this.Controls.Add(m_sumValues, 12, 15); this.SetColumnSpan(m_sumValues, 8); this.SetRowSpan(m_sumValues, 10);
+            this.Controls.Add(m_dgvSummaValues, 12, 15); this.SetColumnSpan(m_dgvSummaValues, 8); this.SetRowSpan(m_dgvSummaValues, 10);
 
             this.ResumeLayout();
 
@@ -708,17 +708,17 @@ namespace CommonAux
             // 
             // m_sumValues
             // 
-            this.m_sumValues.RowHeadersVisible = false;
-            this.m_sumValues.AllowUserToAddRows = false;
-            this.m_sumValues.AllowUserToDeleteRows = false;
-            this.m_sumValues.AllowUserToOrderColumns = true;
-            this.m_sumValues.AllowUserToResizeColumns = false;
-            this.m_sumValues.AllowUserToResizeRows = false;
-            this.m_sumValues.Anchor = ((System.Windows.Forms.AnchorStyles)((((System.Windows.Forms.AnchorStyles.Top | System.Windows.Forms.AnchorStyles.Bottom)
+            this.m_dgvSummaValues.RowHeadersVisible = false;
+            this.m_dgvSummaValues.AllowUserToAddRows = false;
+            this.m_dgvSummaValues.AllowUserToDeleteRows = false;
+            this.m_dgvSummaValues.AllowUserToOrderColumns = true;
+            this.m_dgvSummaValues.AllowUserToResizeColumns = false;
+            this.m_dgvSummaValues.AllowUserToResizeRows = false;
+            this.m_dgvSummaValues.Anchor = ((System.Windows.Forms.AnchorStyles)((((System.Windows.Forms.AnchorStyles.Top | System.Windows.Forms.AnchorStyles.Bottom)
             | System.Windows.Forms.AnchorStyles.Left)
             | System.Windows.Forms.AnchorStyles.Right)));
-            this.m_sumValues.AutoSizeColumnsMode = System.Windows.Forms.DataGridViewAutoSizeColumnsMode.Fill;
-            this.m_sumValues.AutoSizeRowsMode = System.Windows.Forms.DataGridViewAutoSizeRowsMode.AllCells;
+            this.m_dgvSummaValues.AutoSizeColumnsMode = System.Windows.Forms.DataGridViewAutoSizeColumnsMode.Fill;
+            this.m_dgvSummaValues.AutoSizeRowsMode = System.Windows.Forms.DataGridViewAutoSizeRowsMode.AllCells;
             //this.m_sumValues.ColumnHeadersHeightSizeMode = System.Windows.Forms.DataGridViewColumnHeadersHeightSizeMode.AutoSize;
             dataGridViewCellStyle2.Alignment = System.Windows.Forms.DataGridViewContentAlignment.MiddleRight;
             dataGridViewCellStyle2.BackColor = System.Drawing.SystemColors.Window;
@@ -727,17 +727,15 @@ namespace CommonAux
             dataGridViewCellStyle2.SelectionBackColor = System.Drawing.SystemColors.Highlight;
             dataGridViewCellStyle2.SelectionForeColor = System.Drawing.SystemColors.HighlightText;
             dataGridViewCellStyle2.WrapMode = System.Windows.Forms.DataGridViewTriState.False;
-            this.m_sumValues.DefaultCellStyle = dataGridViewCellStyle2;
-            this.m_sumValues.Name = "m_sumValues";
+            this.m_dgvSummaValues.DefaultCellStyle = dataGridViewCellStyle2;
+            this.m_dgvSummaValues.Name = "m_sumValues";
             //this.m_sumValues.RowHeadersWidthSizeMode = System.Windows.Forms.DataGridViewRowHeadersWidthSizeMode.AutoSizeToAllHeaders;
-            this.m_sumValues.RowTemplate.ReadOnly = true;
-            this.m_sumValues.RowTemplate.Resizable = System.Windows.Forms.DataGridViewTriState.False;
-            this.m_sumValues.SelectionMode = System.Windows.Forms.DataGridViewSelectionMode.FullRowSelect;
-            this.m_sumValues.TabIndex = 4;
-            this.m_sumValues.ColumnCount = 2;
-            this.m_sumValues.ColumnHeadersVisible = false;
-
-
+            this.m_dgvSummaValues.RowTemplate.ReadOnly = true;
+            this.m_dgvSummaValues.RowTemplate.Resizable = System.Windows.Forms.DataGridViewTriState.False;
+            this.m_dgvSummaValues.SelectionMode = System.Windows.Forms.DataGridViewSelectionMode.FullRowSelect;
+            this.m_dgvSummaValues.TabIndex = 4;
+            this.m_dgvSummaValues.ColumnCount = 2;
+            this.m_dgvSummaValues.ColumnHeadersVisible = false;
 
             #endregion
 
@@ -777,16 +775,13 @@ namespace CommonAux
 
             int iRes = validateDates();
 
-            if (iRes == 0)
-            {
-                m_btnStripButtonExcel.Enabled = true;
+            m_markReady.Set ((int)INDEX_READY.DATE, iRes == 0);
+            m_btnStripButtonExcel.Enabled = State == STATE.READY;
+
+            if (iRes == 0)                
                 m_GetDataFromDB.ReportClear(true);
-            }
             else
-            {
-                m_btnStripButtonExcel.Enabled = false;
                 m_GetDataFromDB.ErrorReport("Некорректный временной диапазон");
-            }
         }
 
         private void monthCalendarStart_DateChanged(object sender, DateRangeEventArgs e)
@@ -799,16 +794,13 @@ namespace CommonAux
 
             int iRes = validateDates();
 
+            m_markReady.Set ((int)INDEX_READY.DATE, iRes == 0);
+            m_btnStripButtonExcel.Enabled = State == STATE.READY;
+
             if (iRes == 0)
-            {
-                m_btnStripButtonExcel.Enabled = true;
                 m_GetDataFromDB.ReportClear(true);
-            }
             else
-            {
-                m_btnStripButtonExcel.Enabled = false;
                 m_GetDataFromDB.ErrorReport("Некорректный временной диапазон");
-            }
         }
 
         private void updateRowData()
@@ -828,7 +820,7 @@ namespace CommonAux
         {
             for (int i = 0; i <= Convert.ToInt32(TEC_LOCAL.INDEX_DATA.GRVIII); i++)
             { 
-                m_sumValues.Rows[i].Cells[1].Value = "0";
+                m_dgvSummaValues.Rows[i].Cells[1].Value = "0";
             }
             if ((INDEX_CONTROL)((Control)sender).Tag == INDEX_CONTROL.LB_TEC)
             {
@@ -907,9 +899,11 @@ namespace CommonAux
                 else
                 {
                     m_GetDataFromDB.ActionReport("Проверка шаблона успешно завершена");
-                    m_GetDataFromDB.ReportClear(true);
-                    m_btnStripButtonExcel.Enabled = true;
+                    m_GetDataFromDB.ReportClear(true);                    
                 };
+
+                m_markReady.Set ((int)INDEX_READY.TEMPLATE, iErr == 0);
+                m_btnStripButtonExcel.Enabled = State == STATE.READY;
             }
         }
 
@@ -936,12 +930,15 @@ namespace CommonAux
             {
                 Logging.Logg().Action(msg, Logging.INDEX_MESSAGE.NOT_SET);
 
-                for (indx = 0; indx <= TEC_LOCAL.INDEX_DATA.GRVIII; indx++)
+                for (indx = 0; !(indx > TEC_LOCAL.INDEX_DATA.GRVIII); indx++)
                 {
-                    if (m_listBoxTEC.SelectedIndex != m_listTEC.Count-2 && indx == TEC_LOCAL.INDEX_DATA.GRVIII)
-                    {
-                        indx++; break;
-                    }
+                    if ((m_listBoxTEC.SelectedIndex != m_listTEC.Count - 2)
+                        && (indx == TEC_LOCAL.INDEX_DATA.GRVIII)) {
+                        indx++;
+
+                        break;
+                    } else
+                        ;
 
                     tec.ClearValues(m_monthCalendarStart.SelectionStart.Date, indx);
 
@@ -953,33 +950,10 @@ namespace CommonAux
                     if (!(iRes < 0))
                     {
                         dictIndxValues = tec.m_listValuesDate.Find(item => { return item.m_dataDate == m_monthCalendarStart.SelectionStart.Date; }).m_dictData[indx];
-                        switch (indx)
-                        {
-                            case TEC_LOCAL.INDEX_DATA.TG:
-                                m_dgvValues[Convert.ToInt32(TEC_LOCAL.INDEX_DATA.TG)].Update(dictIndxValues);
-                                m_sumValues.Rows[Convert.ToInt32(indx)].Cells[1].Value = Convert.ToString(m_dgvValues[Convert.ToInt32(TEC_LOCAL.INDEX_DATA.TG)].Rows[m_dgvValues[Convert.ToInt32(TEC_LOCAL.INDEX_DATA.TG)].Rows.Count - 1].Cells[24].Value);
-                                break;
-                            case TEC_LOCAL.INDEX_DATA.TSN:
-                                m_dgvValues[Convert.ToInt32(TEC_LOCAL.INDEX_DATA.TSN)].Update(dictIndxValues);
-                                m_sumValues.Rows[Convert.ToInt32(indx)].Cells[1].Value = Convert.ToString(m_dgvValues[Convert.ToInt32(TEC_LOCAL.INDEX_DATA.TSN)].Rows[m_dgvValues[Convert.ToInt32(TEC_LOCAL.INDEX_DATA.TSN)].Rows.Count - 1].Cells[24].Value);
-                                break;
-                            case TEC_LOCAL.INDEX_DATA.GRII:
-                                m_dgvValues[Convert.ToInt32(TEC_LOCAL.INDEX_DATA.GRII)].Update(dictIndxValues);
-                                m_sumValues.Rows[Convert.ToInt32(indx)].Cells[1].Value = Convert.ToString(m_dgvValues[Convert.ToInt32(TEC_LOCAL.INDEX_DATA.GRII)].Rows[m_dgvValues[Convert.ToInt32(TEC_LOCAL.INDEX_DATA.GRII)].Rows.Count - 1].Cells[24].Value);
-                                break;
-                            case TEC_LOCAL.INDEX_DATA.GRVI:
-                                m_dgvValues[Convert.ToInt32(TEC_LOCAL.INDEX_DATA.GRVI)].Update(dictIndxValues);
-                                m_sumValues.Rows[Convert.ToInt32(indx)].Cells[1].Value = Convert.ToString(m_dgvValues[Convert.ToInt32(TEC_LOCAL.INDEX_DATA.GRVI)].Rows[m_dgvValues[Convert.ToInt32(TEC_LOCAL.INDEX_DATA.GRVI)].Rows.Count - 1].Cells[24].Value);
-                                break;
-                            case TEC_LOCAL.INDEX_DATA.GRVII:
-                                m_dgvValues[Convert.ToInt32(TEC_LOCAL.INDEX_DATA.GRVII)].Update(dictIndxValues);
-                                m_sumValues.Rows[Convert.ToInt32(indx)].Cells[1].Value = Convert.ToString(m_dgvValues[Convert.ToInt32(TEC_LOCAL.INDEX_DATA.GRVII)].Rows[m_dgvValues[Convert.ToInt32(TEC_LOCAL.INDEX_DATA.GRVII)].Rows.Count - 1].Cells[24].Value);
-                                break;
-                            case TEC_LOCAL.INDEX_DATA.GRVIII:
-                                m_dgvValues[Convert.ToInt32(TEC_LOCAL.INDEX_DATA.GRVIII)].Update(dictIndxValues);
-                                m_sumValues.Rows[Convert.ToInt32(indx)].Cells[1].Value = Convert.ToString(m_dgvValues[Convert.ToInt32(TEC_LOCAL.INDEX_DATA.GRVIII)].Rows[m_dgvValues[Convert.ToInt32(TEC_LOCAL.INDEX_DATA.GRVIII)].Rows.Count - 1].Cells[24].Value);
-                                break;
-                        }
+
+                        m_dgvValues[Convert.ToInt32(indx)].Update(dictIndxValues);
+                        m_dgvSummaValues.Rows[Convert.ToInt32(indx)].Cells[1].Value
+                            = Convert.ToSingle(m_dgvValues [Convert.ToInt32 (indx)].Rows [m_dgvValues [Convert.ToInt32 (indx)].Rows.Count - 1].Cells [24].Value).ToString(FORMAT_VALUE);
 
                         if (iRes == 0)
                         {
@@ -1251,7 +1225,7 @@ namespace CommonAux
 
         public override void UpdateGraphicsCurrent (int type)
         {
-            throw new NotImplementedException ();
+            //??? ничего не делать
         }
     }
 }

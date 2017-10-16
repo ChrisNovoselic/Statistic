@@ -77,6 +77,10 @@ namespace StatisticAlarm
         {
             //Инициализация собственных значений
             initialize(iListenerConfigDB, markQueries, mode);
+
+            findControl(INDEX_CONTROL.DGV_EVENTS.ToString()).BackColor =
+            findControl (INDEX_CONTROL.DGV_DETAIL.ToString ()).BackColor =
+                backColor;
         }
 
         /// <summary>
@@ -784,7 +788,7 @@ namespace StatisticAlarm
                 this.RowHeadersVisible = false; //Отменить отображение заголовков для строк
                 this.ReadOnly = true; //Установить режим - 'только чтение'
 
-                BackColor = HDataGridViewTables.s_dgvCellStyles[(int)HDataGridViewTables.INDEX_CELL_STYLE.COMMON].BackColor;
+                //BackColor = HDataGridViewTables.s_dgvCellStyles[(int)HDataGridViewTables.INDEX_CELL_STYLE.COMMON].BackColor;
             }
             
             /// <summary>
@@ -873,7 +877,7 @@ namespace StatisticAlarm
 
                 set
                 {
-                    base.BackColor = value;
+                    base.BackColor = value == SystemColors.Control ? SystemColors.Window : value; ;
 
                     for (int j = 0; j < ColumnCount; j++)
                         for (int i = 0; i < RowCount; i++) {

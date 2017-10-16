@@ -30,7 +30,7 @@ namespace StatisticAnalyzer
         /// </summary>
         private int _state;
 
-        public FormMain(int idListener, List<StatisticCommon.TEC> tec)
+        public FormMain()
         {
             //Создать объект - чтение зашифрованного файла с параметрами соединения
             s_fileConnSett = new FIleConnSett(@"connsett.ini", FIleConnSett.MODE.FILE);
@@ -43,22 +43,7 @@ namespace StatisticAnalyzer
             Thread.CurrentThread.CurrentUICulture =
                 ProgramBase.ss_MainCultureInfo;
 
-            if (this is FormMain_TCPIP)
-                m_panel = new PanelAnalyzer_TCPIP(tec, SystemColors.Control);
-            else
-                if (this is FormMain_DB)
-                    m_panel = new PanelAnalyzer_DB(tec, SystemColors.Control);
-                else
-                    ;
-
-            if (! (m_panel == null))
-            {
-                InitializeComponent();
-            }
-            else
-                ; //???Исключение
-
-            m_panel.SetDelegateReport(ErrorReport, WarningReport, ActionReport, ReportClear);
+            InitializeComponent();            
         }
 
         private void FormMainAnalyzer_OnEvtPanelClose(object sender, EventArgs e)
@@ -99,17 +84,17 @@ namespace StatisticAnalyzer
         /// <param name="ev">Аргумент события</param>
         private void FormMain_Activate(object obj, EventArgs ev)
         {
-            m_panel.Activate(true);
+            m_panel?.Activate(true);
         }
 
         /// <summary>
         /// Деактивация формы
         /// </summary>
-        /// <param name="obj"></param>
-        /// <param name="ev"></param>
+        /// <param name="obj">Объект, инициировавший событие</param>
+        /// <param name="ev">Аргумент события</param>
         private void FormMain_Deactivate(object obj, EventArgs ev)
         {
-            m_panel.Activate(false);
+            m_panel?.Activate(false);
         }
 
         /// <summary>
@@ -119,6 +104,9 @@ namespace StatisticAnalyzer
         {
             bool bRes = true;
             msgError = string.Empty;
+
+            int idListener = -1;
+            List<TEC> listTEC;
 
             if (s_listFormConnectionSettings[(int)CONN_SETT_TYPE.CONFIG_DB].Ready == 0)
             {
@@ -143,7 +131,33 @@ namespace StatisticAnalyzer
                         updateParametersSetup();
                         s_iMainSourceData = Int32.Parse(formParameters.m_arParametrSetup[(int)FormParameters.PARAMETR_SETUP.MAIN_DATASOURCE]);
 
-                        m_panel.Start();
+                        idListener = DbSources.Sources ().Register (s_listFormConnectionSettings [(int)CONN_SETT_TYPE.CONFIG_DB].getConnSett (), false, @"CONFIG_DB");
+                        listTEC = new InitTEC_200 (idListener, true, new int [] { 0, (int)TECComponent.ID.GTP }, false).tec;
+                        DbSources.Sources ().UnRegister (idListener);
+
+                        if (this is FormMain_TCPIP)
+                            m_panel = new PanelAnalyzer_TCPIP (listTEC, SystemColors.Control);
+                        else
+                            if (this is FormMain_DB)
+                            m_panel = new PanelAnalyzer_DB (listTEC, SystemColors.Control);
+                        else
+                            ;
+
+                        m_panel.SetDelegateReport (ErrorReport, WarningReport, ActionReport, ReportClear);
+                        m_panel.Start ();
+
+                        this.SuspendLayout ();
+
+                        Panel _panel = new Panel ();
+                        _panel.Location = new Point (0, this.MainMenuStrip.Height);
+                        _panel.Size = new System.Drawing.Size (this.ClientSize.Width, this.ClientSize.Height - this.MainMenuStrip.Height - this.m_statusStripMain.Height);
+                        _panel.Anchor = (AnchorStyles)(((AnchorStyles.Left | AnchorStyles.Top) | AnchorStyles.Right) | AnchorStyles.Bottom);
+                        _panel.Controls.Add (this.m_panel);
+                        this.Controls.Add (_panel);
+
+                        this.ResumeLayout (false);
+                        this.PerformLayout ();
+
                         break;
                 }
             }
@@ -294,8 +308,8 @@ namespace StatisticAnalyzer
 
     public class FormMain_TCPIP : FormMain
     {
-        public FormMain_TCPIP(int idListener, List<StatisticCommon.TEC> tec)
-            : base(idListener, tec)
+        public FormMain_TCPIP()
+            : base()
         {
         }
 
@@ -323,8 +337,8 @@ namespace StatisticAnalyzer
 
     public class FormMain_DB : FormMain
     {
-        public FormMain_DB(int idListener, List<StatisticCommon.TEC> tec)
-            : base(idListener, tec)
+        public FormMain_DB()
+            : base()
         {
         }
 

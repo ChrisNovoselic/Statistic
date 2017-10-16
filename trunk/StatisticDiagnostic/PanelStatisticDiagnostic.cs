@@ -175,8 +175,16 @@ namespace StatisticDiagnostic
     /// </summary>
     public partial class PanelStatisticDiagnostic : PanelStatistic
     {
-        //Перечисление "Режим: по умолчанию, только источник"
-        public enum Mode : short { DEFAULT, SOURCE_ONLY }
+        /// <summary>
+        /// Перечисление - Режим: по умолчанию (полная информация), только источник
+        /// </summary>
+        public enum Mode : short {
+            /// <summary>
+            /// Полная информация: Источники, Модес, Задачи, БД
+            /// </summary>
+            DEFAULT
+            , SOURCE_ONLY
+        }
 
         /// <summary>
         /// Перечесления типов источников

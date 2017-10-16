@@ -28,7 +28,7 @@ namespace CommonAux
         /// </summary>
         private int _state;
 
-        public FormMain(int idListener, List<StatisticCommon.TEC> tec)
+        public FormMain()
         {
             //Создать объект - чтение зашифрованного файла с параметрами соединения
             s_fileConnSett = new FIleConnSett(@"connsett.ini", FIleConnSett.MODE.FILE);
@@ -41,20 +41,10 @@ namespace CommonAux
             Thread.CurrentThread.CurrentUICulture =
                 ProgramBase.ss_MainCultureInfo;
 
-            formParameters = new FormParameters_DB(s_listFormConnectionSettings[0].ConnectionSettingsEdit);
-            m_panel = new PanelCommonAux(SystemColors.Control, formParameters.m_arParametrSetup[(int)FormParameters.PARAMETR_SETUP.COMMON_AUX_PATH]);
-            
-            m_panel.GetListTEC(tec);
+            formParameters = new FormParameters_DB (s_listFormConnectionSettings [(int)CONN_SETT_TYPE.CONFIG_DB].getConnSett ());
+            s_iMainSourceData = Int32.Parse (formParameters.m_arParametrSetup [(int)FormParameters.PARAMETR_SETUP.MAIN_DATASOURCE]);
 
-            if (!(m_panel == null))
-            {
-                InitializeComponent();
-            }
-            else
-            {
-            } //???Исключение
-
-            m_panel.SetDelegateReport(ErrorReport, WarningReport, ActionReport, ReportClear);
+            InitializeComponent ();
         }
 
         /// <summary>
@@ -81,21 +71,21 @@ namespace CommonAux
         /// <summary>
         /// Активация формы
         /// </summary>
-        /// <param name="obj">Объект, инициировавший событие</param>
+        /// <param name="obj">Объект, инициировавший событие(форма)</param>
         /// <param name="ev">Аргумент события</param>
         private void FormMain_Activate(object obj, EventArgs ev)
         {
-            m_panel.Activate(true);
+            m_panel?.Activate(true);
         }
 
         /// <summary>
         /// Деактивация формы
         /// </summary>
-        /// <param name="obj"></param>
-        /// <param name="ev"></param>
+        /// <param name="obj">Объект, инициировавший событие(форма)</param>
+        /// <param name="ev">Аргумент события</param>
         private void FormMain_Deactivate(object obj, EventArgs ev)
         {
-            m_panel.Activate(false);
+            m_panel?.Activate(false);
         }
 
         /// <summary>
@@ -126,10 +116,24 @@ namespace CommonAux
                         break;
                     default:
                         //Успех... пост-инициализация
-                        formParameters = new FormParameters_DB(s_listFormConnectionSettings[(int)CONN_SETT_TYPE.CONFIG_DB].getConnSett());
-                        s_iMainSourceData = Int32.Parse(formParameters.m_arParametrSetup[(int)FormParameters.PARAMETR_SETUP.MAIN_DATASOURCE]);
+                        m_panel = new PanelCommonAux (SystemColors.Control, formParameters.m_arParametrSetup [(int)StatisticCommon.FormParameters.PARAMETR_SETUP.COMMON_AUX_PATH]);
+                        m_panel.SetDelegateReport (ErrorReport, WarningReport, ActionReport, ReportClear);
+                        m_panel.Start ();
 
-                        m_panel.Start();
+                        (this.MainMenuStrip.Items [1] as ToolStripMenuItem).DropDownItems [0].Enabled = HStatisticUsers.RoleIsAdmin;
+
+                        this.SuspendLayout();
+
+                        Panel _panel = new Panel ();
+                        _panel.Location = new Point (0, this.MainMenuStrip.Height);
+                        _panel.Size = new System.Drawing.Size (this.ClientSize.Width, this.ClientSize.Height - this.MainMenuStrip.Height - this.m_statusStripMain.Height);
+                        _panel.Anchor = (AnchorStyles)(((AnchorStyles.Left | AnchorStyles.Top) | AnchorStyles.Right) | AnchorStyles.Bottom);
+                        _panel.Controls.Add (this.m_panel);
+                        this.Controls.Add (_panel);
+
+                        this.ResumeLayout (false);
+                        this.PerformLayout ();
+
                         break;
                 }
             }
@@ -195,6 +199,9 @@ namespace CommonAux
         /// <param name="ev">Аргумент события</param>
         private void fMenuItemExit_Click(object obj, EventArgs ev)
         {
+            m_panel.Activate (false);
+            m_panel.Stop ();
+
             Close();
         }
 

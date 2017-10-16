@@ -38,7 +38,6 @@ namespace CommonAux
         {
             this.components = new System.ComponentModel.Container();
             this.AutoScaleMode = System.Windows.Forms.AutoScaleMode.Font;
-            this.Text = "Form1";
 
             System.ComponentModel.ComponentResourceManager resources = new System.ComponentModel.ComponentResourceManager(typeof(FormMain));
 
@@ -51,14 +50,14 @@ namespace CommonAux
             this.AutoScaleMode = System.Windows.Forms.AutoScaleMode.Font;
             this.ClientSize = new System.Drawing.Size(1000, 650);
             this.MinimumSize = new System.Drawing.Size(1000, 650);
-            //this.Icon = ((System.Drawing.Icon)(resources.GetObject("Resources/IconApp.ico")));
-            Icon icon = new Icon("../../Resources/IconApp.ico");
-            this.Icon = icon;
+            this.Icon = ((System.Drawing.Icon)(resources.GetObject("IconApp")));
+            //Icon icon = new Icon("../../Resources/IconApp.ico");
+            //this.Icon = icon;
 
             this.MaximizeBox = true;
-            this.Name = "FormMainAnalyzer";
+            this.Name = "FormMainCommonAux";
             this.StartPosition = System.Windows.Forms.FormStartPosition.CenterParent;
-            this.Text = "Просмотр сообщений журнала";
+            this.Text = "Собственные нужды - АИИСКУЭ";
             this.MainMenuStrip = new MenuStrip();
             this.MainMenuStrip.Items.AddRange(
               new ToolStripMenuItem[] {
@@ -74,14 +73,7 @@ namespace CommonAux
             (this.MainMenuStrip.Items[2] as ToolStripMenuItem).Click += new EventHandler(fMenuItemAbout_Click);
 
             this.Controls.Add(MainMenuStrip);
-
-            Panel _m_panel = new Panel();
-            _m_panel.Location = new Point(0, this.MainMenuStrip.Height);
-            _m_panel.Size = new System.Drawing.Size(this.ClientSize.Width, this.ClientSize.Height - this.MainMenuStrip.Height - this.m_statusStripMain.Height);
-            _m_panel.Anchor = (AnchorStyles)(((AnchorStyles.Left | AnchorStyles.Top) | AnchorStyles.Right) | AnchorStyles.Bottom);
-            _m_panel.Controls.Add(this.m_panel);
-            this.Controls.Add(_m_panel);
-
+            
             this.ResumeLayout(false);
             this.PerformLayout();
 

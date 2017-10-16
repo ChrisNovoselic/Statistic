@@ -49,7 +49,7 @@ namespace StatisticAnalyzer
             this.MinimumSize = new System.Drawing.Size(1000, 700);
 
             //this.FormBorderStyle = System.Windows.Forms.FormBorderStyle.FixedDialog;
-            this.Icon = ((System.Drawing.Icon)(resources.GetObject("$this.Icon")));
+            this.Icon = ((System.Drawing.Icon)(resources.GetObject("StatisticAnalyzer")));
             this.MaximizeBox = true;
             this.Name = "FormMainAnalyzer";
             this.StartPosition = System.Windows.Forms.FormStartPosition.CenterParent;
@@ -71,13 +71,6 @@ namespace StatisticAnalyzer
             (this.MainMenuStrip.Items[2] as ToolStripMenuItem).Click += new EventHandler(fMenuItemAbout_Click);
 
             this.Controls.Add(MainMenuStrip);
-
-            Panel _m_panel = new Panel();
-            _m_panel.Location = new Point(0, this.MainMenuStrip.Height);
-            _m_panel.Size = new System.Drawing.Size(this.ClientSize.Width, this.ClientSize.Height - this.MainMenuStrip.Height - this.m_statusStripMain.Height);
-            _m_panel.Anchor = (AnchorStyles)(((AnchorStyles.Left | AnchorStyles.Top) | AnchorStyles.Right) | AnchorStyles.Bottom);
-            _m_panel.Controls.Add(this.m_panel);
-            this.Controls.Add(_m_panel);
 
             this.ResumeLayout(false);
             this.PerformLayout();

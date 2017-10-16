@@ -69,21 +69,21 @@ namespace StatisticTimeSync
         /// <summary>
         /// Активация формы
         /// </summary>
-        /// <param name="obj"></param>
-        /// <param name="ev"></param>
+        /// <param name="obj">Объект, инициировавший событие(форма)</param>
+        /// <param name="ev">Аргумент события</param>
         private void FormStatisticTimeSync_Activate(object obj, EventArgs ev)
         {
-           m_panelMain.Activate(true);
+           m_panelMain?.Activate(true);
         }
 
         /// <summary>
         /// Деактивация формы
         /// </summary>
-        /// <param name="obj"></param>
-        /// <param name="ev"></param>
+        /// <param name="obj">Объект, инициировавший событие(форма)</param>
+        /// <param name="ev">Аргумент события</param>
         private void FormStatisticTimeSync_Deactivate(object obj, EventArgs ev)
         {
-           m_panelMain.Activate(false);  
+           m_panelMain?.Activate(false);  
         }
 
         /// <summary>
@@ -117,7 +117,23 @@ namespace StatisticTimeSync
                         updateParametersSetup();
                         s_iMainSourceData = Int32.Parse(formParameters.m_arParametrSetup[(int)FormParameters.PARAMETR_SETUP.MAIN_DATASOURCE]);
 
-                        m_panelMain.Start();
+                        m_panelMain = new PanelSourceData (SystemColors.Control);
+                        m_panelMain.SetDelegateReport (ErrorReport, WarningReport, ActionReport, ReportClear);
+                        m_panelMain.Start ();
+
+                        this.SuspendLayout ();
+
+                        //Создать панель для размещения "рабочих" панелей
+                        Panel _panelMain = new Panel ();
+                        _panelMain.Location = new Point (0, this.MainMenuStrip.Height);
+                        _panelMain.Size = new System.Drawing.Size (this.ClientSize.Width, this.ClientSize.Height - this.MainMenuStrip.Height - this.m_statusStripMain.Height);
+                        _panelMain.Anchor = (AnchorStyles)(((AnchorStyles.Left | AnchorStyles.Top) | AnchorStyles.Right) | AnchorStyles.Bottom);
+                        _panelMain.Controls.Add (this.m_panelMain);
+                        this.Controls.Add (_panelMain);
+
+                        this.ResumeLayout (false);
+                        this.PerformLayout ();
+                        
                         break;
                 }
             }
