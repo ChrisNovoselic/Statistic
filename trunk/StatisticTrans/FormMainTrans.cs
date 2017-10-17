@@ -24,10 +24,10 @@ namespace StatisticTrans
         /// Модификатор extern используется для объявления метода с внешней реализацией. 
         ///  Метод SendMessage (послать сообщение) импортируется из библиотеки User32.dll. 
         /// </summary>
-        /// <param name="hWnd"></param>
-        /// <param name="Msg">сообщение</param>
-        /// <param name="wParam"></param>
-        /// <param name="lParam"></param>
+        /// <param name="hWnd">Дескриптор окна, которому отрправляется сообщение</param>
+        /// <param name="Msg">Сообщение</param>
+        /// <param name="wParam">Аргумент - 1</param>
+        /// <param name="lParam">Аргумент - 2</param>
         /// <returns></returns>
         static extern IntPtr SendMessage(IntPtr hWnd, int Msg, int wParam, int lParam);
         ComponentTesting CT;//

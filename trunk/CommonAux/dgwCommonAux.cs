@@ -31,14 +31,17 @@ namespace CommonAux
             private string groupRowTag = @"Группа";
 
             /// <summary>
-            /// Конструктор - основной (без параметров)
+            /// Конструктор - основной (с аргументами)
             /// </summary>
-            public DataGridViewValues() : base()
+            /// <param name="backColor">Цвет фона для ячеек по умолчанию</param>
+            public DataGridViewValues (Color backColor)
+                : base()
             {
-                addColumns();
-
                 AutoSizeColumnsMode = DataGridViewAutoSizeColumnsMode.ColumnHeader;
+                DefaultCellStyle.BackColor = backColor;
                 DefaultCellStyle.Alignment = DataGridViewContentAlignment.MiddleRight;
+
+                addColumns ();
             }
 
             /// <summary>
@@ -61,9 +64,16 @@ namespace CommonAux
             /// <summary>
             /// Добавить строки для сигналов
             /// </summary>
-            /// <param name="listSgnls">Срисок сигналов</param>
+            /// <param name="listSgnls">Список сигналов</param>
             public void AddRowData(List<SIGNAL> listSgnls)
             {
+                Color backColor = Color.Empty;
+
+                backColor =
+                    //DefaultCellStyle.BackColor
+                    Color.Empty
+                    ;
+
                 foreach (SIGNAL sgnl in listSgnls)
                 {
                     Rows.Add();
@@ -76,7 +86,7 @@ namespace CommonAux
                     //Rows[RowCount-1].
 
                     Rows[RowCount - 1].DefaultCellStyle.BackColor = sgnl.m_bUse == true ?
-                        System.Drawing.Color.Empty :
+                        backColor :
                             sgnl.m_bUse == false ? System.Drawing.Color.LightGray :
                                 System.Drawing.Color.Gray;
                 }
@@ -150,6 +160,21 @@ namespace CommonAux
                                 string.Format(@"View.DataGridViewValues::Update () - не найден столбец для KEY_SIGNAL=[object={0}, item={1}]"
                                     , ((SIGNAL.KEY)r.Tag).m_object, ((SIGNAL.KEY)r.Tag).m_item)
                                 , Logging.INDEX_MESSAGE.NOT_SET);
+                }
+            }
+
+            public override Color BackColor
+            {
+                get
+                {
+                    return base.BackColor;
+                }
+
+                set
+                {
+                    base.BackColor = value;
+
+                    DefaultCellStyle.BackColor = value == SystemColors.Control ? SystemColors.Window : value;
                 }
             }
         }

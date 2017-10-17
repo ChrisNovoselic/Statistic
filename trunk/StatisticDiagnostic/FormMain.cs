@@ -15,6 +15,11 @@ namespace StatisticDiagnostic
     public partial class FormMain : FormMainStatistic
     {
         /// <summary>
+        /// Панель - единственная дочерняя по отношению к главной форме
+        ///  , и единственная родительская по отношению к рабочей панели
+        /// </summary>
+        private Panel _panelMain;
+        /// <summary>
         /// Объект с параметрами приложения (из БД_конфигурации)
         /// </summary>
         public static FormParameters formParameters;
@@ -44,16 +49,15 @@ namespace StatisticDiagnostic
             CreatefileConnSett(@"connsett.ini");
             Start();
             bAbort = initialize(out msg);
-            this.panelMain = new PanelStatisticDiagnostic(PanelStatisticDiagnostic.Mode.DEFAULT, SystemColors.Control);
-            this.panelMain.SetDelegateReport(ErrorReport, WarningReport, ActionReport, ReportClear);
-            //Создать панель для размещения "рабочих" панелей
-            Panel _panelMain = new Panel();
-            _panelMain.Location = new Point(0, this.MainMenuStrip.Height);
-            _panelMain.Size = new System.Drawing.Size(this.ClientSize.Width, this.ClientSize.Height - this.MainMenuStrip.Height - this.m_statusStripMain.Height);
-            _panelMain.Anchor = (AnchorStyles)(((AnchorStyles.Left | AnchorStyles.Top) | AnchorStyles.Right) | AnchorStyles.Bottom);
-            _panelMain.Controls.Add(this.panelMain);
-            this.Controls.Add(_panelMain);
-            this.panelMain.Start();
+            this.m_panel = new PanelStatisticDiagnostic(PanelStatisticDiagnostic.Mode.DEFAULT, SystemColors.Control);
+            this.m_panel.SetDelegateReport(ErrorReport, WarningReport, ActionReport, ReportClear);
+            #region Добавить рабочую панель на форму
+            this._panelMain.SuspendLayout ();
+            _panelMain.Controls.Add (this.m_panel);
+            this._panelMain.ResumeLayout (false);
+            this._panelMain.PerformLayout ();
+            #endregion
+            this.m_panel.Start();
 
             //Снять с отображения окно для визуализации выполнения длительной операции
             delegateStopWait();
@@ -74,7 +78,7 @@ namespace StatisticDiagnostic
         private void FormDiagnostic_Activate(object obj, EventArgs ev)
         {
             if (_state == 0)
-                panelMain.Activate(true);
+                m_panel.Activate(true);
             else
                 ;
         }
@@ -86,7 +90,7 @@ namespace StatisticDiagnostic
         /// <param name="ev"></param>
         private void FormDiagnostic_Deactivate(object obj, EventArgs ev)
         {
-            panelMain.Activate(false);
+            m_panel.Activate(false);
         }
 
         /// <summary>
@@ -233,7 +237,7 @@ namespace StatisticDiagnostic
                 || (dlgRes == DialogResult.Yes))
             {
                 //??? Остановить панель
-                panelMain.Stop();
+                m_panel.Stop();
 
                 bAbort = initialize(out msg);
             }

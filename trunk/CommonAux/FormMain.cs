@@ -16,8 +16,16 @@ using System.Windows.Forms;
 
 namespace CommonAux
 {
+    /// <summary>
+    /// Класс главнной формы приложения "Собственные нужды - АИИСКУЭ"
+    /// </summary>
     public partial class FormMain : FormMainBaseWithStatusStrip
     {
+        /// <summary>
+        /// Панель - единственная дочерняя по отношению к главной форме
+        ///  , и единственная родительская по отношению к рабочей панели
+        /// </summary>
+        private Panel _panelMain;
         /// <summary>
         /// Объект с параметрами приложения (из БД_конфигурации)
         /// </summary>
@@ -122,17 +130,12 @@ namespace CommonAux
 
                         (this.MainMenuStrip.Items [1] as ToolStripMenuItem).DropDownItems [0].Enabled = HStatisticUsers.RoleIsAdmin;
 
-                        this.SuspendLayout();
-
-                        Panel _panel = new Panel ();
-                        _panel.Location = new Point (0, this.MainMenuStrip.Height);
-                        _panel.Size = new System.Drawing.Size (this.ClientSize.Width, this.ClientSize.Height - this.MainMenuStrip.Height - this.m_statusStripMain.Height);
-                        _panel.Anchor = (AnchorStyles)(((AnchorStyles.Left | AnchorStyles.Top) | AnchorStyles.Right) | AnchorStyles.Bottom);
-                        _panel.Controls.Add (this.m_panel);
-                        this.Controls.Add (_panel);
-
-                        this.ResumeLayout (false);
-                        this.PerformLayout ();
+                        #region Добавить рабочую панель на форму
+                        this._panelMain.SuspendLayout ();
+                        _panelMain.Controls.Add (this.m_panel);
+                        this._panelMain.ResumeLayout (false);
+                        this._panelMain.PerformLayout ();
+                        #endregion
 
                         break;
                 }
@@ -254,10 +257,10 @@ namespace CommonAux
             throw new NotImplementedException();
         }
 
-        protected override int UpdateStatusString()
+        protected override int UpdateStatusString ()
         {
             return 0;
-            throw new NotImplementedException();
+            throw new NotImplementedException ();
         }
 
         protected override void HideGraphicsSettings()

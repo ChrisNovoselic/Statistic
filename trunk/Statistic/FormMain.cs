@@ -2604,23 +2604,26 @@ namespace Statistic
             foreach (Form form in _listFormUtility)
                 form.BackColor = BackColor;
 
-            tclTecViews.TabPages [0].BackColor = BackColor;
+            if (tclTecViews.TabPages.Count > 0)
+                tclTecViews.TabPages [0].BackColor = BackColor;
+            else
+                ;
         }
 
         protected override void UpdateActiveGui(int type)
         {
-            Control ctrl = tclTecViews.TabPages[tclTecViews.SelectedIndex].Controls[0];
+            Control ctrl = null;
 
             #region Режим изменения цветовой гаммы
             if (((FormGraphicsSettings.TYPE_UPDATEGUI)type == FormGraphicsSettings.TYPE_UPDATEGUI.COLOR_SHEMA)
                 || ((FormGraphicsSettings.TYPE_UPDATEGUI)type == FormGraphicsSettings.TYPE_UPDATEGUI.COLOR_CHANGESHEMA)) {
-                    BackColor = formGraphicsSettings.BackgroundColor;
+                BackColor = formGraphicsSettings.BackgroundColor;
 
                 if (((FormGraphicsSettings.TYPE_UPDATEGUI)type == FormGraphicsSettings.TYPE_UPDATEGUI.COLOR_CHANGESHEMA)
                     && (formGraphicsSettings.m_colorShema == FormGraphicsSettings.ColorShemas.Custom)) {
                     HStatisticUsers.SetAllowed (s_listFormConnectionSettings [(int)CONN_SETT_TYPE.CONFIG_DB].getConnSett ()
                         , HStatisticUsers.ID_ALLOWED.PROFILE_VIEW_COLOR_SHEMA_CUSTOM
-                        , (_darkColorTable as CustomColorTable).CustomToString());
+                        , (_darkColorTable as CustomColorTable).CustomToString ());
                 } else
                     ;
             } else
@@ -2633,22 +2636,29 @@ namespace Statistic
                 ;
 
             if ((!(tclTecViews.SelectedIndex < 0))
-                && (tclTecViews.SelectedIndex < tclTecViews.TabCount))
-                if ((ctrl is PanelStatistic)
-                    //|| (ctrl is PanelCustomTecView)
-                    //|| (ctrl is PanelSobstvNyzhdy)
-                    //|| (ctrl is PanelSOTIASSO)
-                    //|| (ctrl is PanelLKView)
-                    )
-                    ((PanelStatistic)ctrl).UpdateGraphicsCurrent(type);
+                && (tclTecViews.TabPages [tclTecViews.SelectedIndex].Controls.Count > 0)) {
+                ctrl = tclTecViews.TabPages [tclTecViews.SelectedIndex].Controls [0];
+
+                if ((!(tclTecViews.SelectedIndex < 0))
+                    && (tclTecViews.SelectedIndex < tclTecViews.TabCount))
+                    if ((ctrl is PanelStatistic)
+                        //|| (ctrl is PanelCustomTecView)
+                        //|| (ctrl is PanelSobstvNyzhdy)
+                        //|| (ctrl is PanelSOTIASSO)
+                        //|| (ctrl is PanelLKView)
+                        )
+                        ((PanelStatistic)ctrl).UpdateGraphicsCurrent (type);
+                    else
+                        ;
                 else
                     ;
-            else
+            } else
+            // нет ни одной вкладки
                 ;
 
             if (!(m_dictFormFloat == null))
                 foreach (KeyValuePair<int, Form> pair in m_dictFormFloat)
-                    (pair.Value as FormMainFloat).UpdateGraphicsCurrent(type);
+                    (pair.Value as FormMainFloat).UpdateGraphicsCurrent (type);
             else
                 ;
         }

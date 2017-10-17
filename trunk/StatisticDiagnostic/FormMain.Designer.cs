@@ -26,7 +26,7 @@ namespace StatisticDiagnostic
 
         #region Код, автоматически созданный конструктором форм Windows
 
-        PanelStatisticDiagnostic panelMain;
+        PanelStatisticDiagnostic m_panel;
 
         /// <summary>
         /// Обязательный метод для поддержки конструктора - не изменяйте
@@ -60,6 +60,15 @@ namespace StatisticDiagnostic
             (this.MainMenuStrip.Items[2] as ToolStripMenuItem).Click += new EventHandler(fMenuItemAbout_Click);
 
             this.Controls.Add(MainMenuStrip);
+
+            #region Добавить панель (родительскую для рабочей панели) на форму
+            _panelMain = new Panel ();
+            _panelMain.Location = new Point (0, this.MainMenuStrip.Height);
+            _panelMain.Size = new System.Drawing.Size (this.ClientSize.Width, this.ClientSize.Height - this.MainMenuStrip.Height - this.m_statusStripMain.Height);
+            _panelMain.Anchor = (AnchorStyles)(((AnchorStyles.Left | AnchorStyles.Top) | AnchorStyles.Right) | AnchorStyles.Bottom);
+            //_panelMain.Controls.Add (this.m_panel); //!!! добавить в OnForm_Load
+            this.Controls.Add (_panelMain);
+            #endregion
 
             this.ResumeLayout(false);
             this.PerformLayout();

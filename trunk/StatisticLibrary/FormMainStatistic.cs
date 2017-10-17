@@ -15,7 +15,7 @@ namespace StatisticCommon
     /// <summary>
     /// 
     /// </summary>
-    public abstract partial class FormMainStatistic : FormMainBaseWithStatusStrip
+    public partial class FormMainStatistic : FormMainBaseWithStatusStrip
     {
         protected static FileINI m_sFileINI;//setup.ini
         protected static FIleConnSett m_sFileCS;//connsett.ini
@@ -43,13 +43,6 @@ namespace StatisticCommon
             createHCmdArg(Environment.GetCommandLineArgs());
         }        
 
-        /// <summary>
-        /// Инициализация при старте таймера на форме
-        /// </summary>
-        protected override void timer_Start()
-        {
-            int i = -1;
-        }
         /// <summary>
         /// Обновить содержание строки состояния
         /// </summary>
@@ -95,14 +88,6 @@ namespace StatisticCommon
             return have_msg;
         }
 
-        protected override void HideGraphicsSettings()
-        {
-        }
-
-        protected override void UpdateActiveGui(int type)
-        {
-        }
-
         /// <summary>
         /// создание ConnSett
         /// </summary>
@@ -114,19 +99,19 @@ namespace StatisticCommon
             s_listFormConnectionSettings.Add(new FormConnectionSettings(-1, m_sFileCS.ReadSettingsFile, m_sFileCS.SaveSettingsFile));
         }
 
-        /// <summary>
-        /// класс исключений
-        /// </summary>
-        public class SingleException : Exception
+        protected override void UpdateActiveGui (int type)
         {
-            /// <summary>
-            /// 
-            /// </summary>
-            /// <param name="msg"></param>
-            public SingleException(string msg)
-                : base(msg)
-            {
-            }
-        }        
+            throw new NotImplementedException ();
+        }
+
+        protected override void HideGraphicsSettings ()
+        {
+            throw new NotImplementedException ();
+        }
+
+        protected override void timer_Start ()
+        {
+            //??? ничего не делать
+        }
     }
 }

@@ -455,6 +455,10 @@ namespace StatisticAlarm
     partial class FormMain
     {
         private PanelAlarm m_panelAlarm;
+        /// <summary>
+        /// Панель - единственная дочерняя по отношению к главной форме
+        ///  , и единственная родительская по отношению к рабочей панели
+        /// </summary>
         private Panel _panelMain;
 
         protected System.Windows.Forms.NotifyIcon notifyIconMain;
@@ -515,7 +519,7 @@ namespace StatisticAlarm
             _panelMain.Location = new Point(0, this.MainMenuStrip.Height);
             _panelMain.Size = new System.Drawing.Size(this.ClientSize.Width, this.ClientSize.Height - this.MainMenuStrip.Height - this.m_statusStripMain.Height);
             _panelMain.Anchor = (AnchorStyles)(((AnchorStyles.Left | AnchorStyles.Top) | AnchorStyles.Right) | AnchorStyles.Bottom);            
-            _panelMain.Controls.Add (m_panelAlarm);
+            //_panelMain.Controls.Add (m_panelAlarm); // здесь добавляется null - панель еще не создана (см. 'Initialize(string )')
 
             this.SuspendLayout ();
             //Добавить элементы управления

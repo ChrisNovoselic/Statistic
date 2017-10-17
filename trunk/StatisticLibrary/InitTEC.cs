@@ -507,6 +507,7 @@ namespace StatisticCommon
             TEC tec = obj as TEC;
             int iListenerId = (ev as TECListUpdateEventArgs).m_iListenerId
                 , err = -1;
+            string strMesError = string.Empty;
             DataTable tableRes;
             DataRow []selRows;
             DbConnection connConfigDB;
@@ -521,30 +522,38 @@ namespace StatisticCommon
 
                     tableRes = getListTECComponent(ref connConfigDB, @"GTP", tec.m_id, out err);
                     // обновление параметров ГТП
-                    if (err == 0)
-                        if (tableRes.Columns.IndexOf("KoeffAlarmPcur") > 0)
+                    if (err == 0) {
+                        err = tableRes.Columns.IndexOf ("KoeffAlarmPcur") > 0 ? 0 : -2; // ранее возвращалось значение "-1"
+
+                        if (err == 0)
                             // поиск ГТП
                             foreach (TECComponent tc in tec.list_TECComponents)
                                 if (tc.IsGTP == true) {
-                                    selRows = tableRes.Select(@"ID=" + tc.m_id);
+                                    selRows = tableRes.Select (@"ID=" + tc.m_id);
                                     // проверить наличие значения
                                     if ((selRows.Length == 1)
-                                        && (!(selRows[0]["KoeffAlarmPcur"] is System.DBNull)))
+                                        && (!(selRows [0] ["KoeffAlarmPcur"] is System.DBNull)))
                                         // обновить значение коэффициента
-                                        tc.m_dcKoeffAlarmPcur = Convert.ToInt32(selRows[0]["KoeffAlarmPcur"]);
+                                        tc.m_dcKoeffAlarmPcur = Convert.ToInt32 (selRows [0] ["KoeffAlarmPcur"]);
                                     else
                                         ;
                                 } else
                                     ;
                         else
-                            ;
-                    else
-                        ;
+                            strMesError = "результ. табл. не содержит поле [KoeffAlarmPcur]";
+                    } else
+                        strMesError = "не удалось получить таблицу - список компонентов ТЭЦ";
                 } else
-                    ;
+                    strMesError = "не удалось получить объект соединения с БД конфигурации";
             } catch (Exception e) {
                 Logging.Logg().Exception(e, string.Format(@"InitTEC_200::OnTECUpdate (ID={0}, NAME={1}) - ...", (obj as TEC).m_id, (obj as TEC).name_shr), Logging.INDEX_MESSAGE.NOT_SET);
             }
+
+            if (err < 0)
+                Logging.Logg ().Error (string.Format (@"InitTEC_200::OnTECUpdate (ID={0}, NAME={1}) - {2} ..."
+                    , (obj as TEC).m_id, (obj as TEC).name_shr, strMesError), Logging.INDEX_MESSAGE.NOT_SET);
+            else
+                ;
         }
 
         #region Дополнительные методы для реализации задачи Расчет теплосети

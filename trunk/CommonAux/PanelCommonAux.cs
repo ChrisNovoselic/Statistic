@@ -107,33 +107,51 @@ namespace CommonAux
         }
     }
 
+    /// <summary>
+    /// Класс для сохраннеия значений в MS Excel (задача экспорта)
+    /// </summary>
     public class MSExcelIO : HClassLibrary.MSExcelIO
     {
+        /// <summary>
+        /// Перечисление - возможные значения для сохраняемых в книгу MS Excel значений
+        ///  (выработанная эл./эн., эл./эн. затраченная на собственные нужды)
+        ///  - индексы в массиве настраиваемых параметров: номера столбцов, в которые размещаются данные
+        /// </summary>
         public enum INDEX_MSEXCEL_COLUMN { APOWER, SNUZHDY }
 
-        public MSExcelIO(string path) : base()
+        /// <summary>
+        /// Конструктор - основной (с аргументом)
+        /// </summary>
+        /// <param name="path">Полный путь к книге MS Excel</param>
+        public MSExcelIO(string path)
+            : base()
         {
             OpenDocument(path);
         }
         /// <summary>
-        /// Записать результат в книгу MS Excel
+        /// Записать значения в ячейки книги MS Excel
         /// </summary>
-        /// <param name="table">Таблица с данными для записи</param>
+        /// <param name="nameSheet">Наименование станицы в книге</param>
         /// <param name="col">Столбец на листе книги</param>
-        public void WriteValues(string nameSheet, int col, int sheeftRow, double[] arValues)
+        /// <param name="sheeftRow">Смещение номера строки с 1-ым значением на листе книги (по сути номер строки)</param>
+        /// <param name="arValues">Массив значений для отображения</param>
+        public void WriteValues(string nameSheet, int col, int sheeftRow, IEnumerable<double> arValues)
         {
             int row = sheeftRow;
 
             SelectWorksheet(nameSheet);
 
             foreach (double val in arValues)
-            {
-                base.WriteValue(nameSheet, col, row, val.ToString(@"F3"));
-                row++;
-            }
+                base.WriteValue(nameSheet, col, row++, val.ToString(@"F3"));
         }
 
-        public void WriteValues(int col, int sheeftRow, double[] arValues)
+        /// <summary>
+        /// Записать значения в ячейки книги MS Excel
+        /// </summary>
+        /// <param name="col">Столбец на листе книги</param>
+        /// <param name="sheeftRow">Смещение номера строки с 1-ым значением на листе книги (по сути номер строки)</param>
+        /// <param name="arValues">Массив значений для отображения</param>
+        public void WriteValues(int col, int sheeftRow, IEnumerable<double> arValues)
         {
             int row = sheeftRow;
 
@@ -144,6 +162,12 @@ namespace CommonAux
             }
         }
 
+        /// <summary>
+        /// Записать значение даты на лист книги MS Excel
+        /// </summary>
+        /// <param name="col">толбец на листе книги</param>
+        /// <param name="sheeftRow">Смещение номера строки с 1-ым значением на листе книги (по сути номер строки)</param>
+        /// <param name="date">Значение записывваемой даты</param>
         public void WriteDate(int col, int sheeftRow, DateTime date)
         {
             base.WriteValue(col, sheeftRow, date.ToShortDateString());
@@ -155,17 +179,17 @@ namespace CommonAux
         /// <summary>
         /// Объект с параметрами соединения с источником данных
         /// </summary>
-        protected ConnectionSettings m_connSettAIISKUECentre;
+        private ConnectionSettings m_connSettAIISKUECentre;
         /// <summary>
         /// Список ТЭЦ с параметрами из файла конфигурации
         /// </summary>
-        protected List<TEC_LOCAL> m_listTEC;
+        private List<TEC_LOCAL> m_listTEC;
         /// <summary>
         /// Объект для инициализации входных параметров
         /// </summary>
-        protected GetDataFromDB m_GetDataFromDB;
-        protected DbConnection m_connConfigDB;
-        protected int _iListenerId;
+        private GetDataFromDB m_GetDataFromDB;
+        private DbConnection m_connConfigDB;
+        private int _iListenerId;
         private enum INDEX_CONTROL : short { LB_TEC, LB_GROUP_SIGNAL }
 
         private const string MS_EXCEL_FILTER = @"Книга MS Excel 2010 (*.xls, *.xlsx)|*.xls;*.xlsx";
@@ -307,12 +331,18 @@ namespace CommonAux
         public PanelCommonAux(Color backColor, string pathTemplate)
             : base (MODE_UPDATE_VALUES.ACTION, backColor)
         {
+            BackColor = backColor;
+
             m_GetDataFromDB = new GetDataFromDB();
 
             InitializeComponents ();
 
-            m_listBoxTEC.Tag = INDEX_CONTROL.LB_TEC;
+            m_listBoxTEC.Tag = INDEX_CONTROL.LB_TEC;            
             m_listBoxTEC.SelectedIndexChanged += listBox_SelectedIndexChanged;
+
+            m_listBoxTEC.BackColor =
+            m_dgvSummaValues.DefaultCellStyle.BackColor =
+                backColor == SystemColors.Control ? SystemColors.Window : backColor;
 
             //Установить обработчики событий
             EventNewPathToTemplate += new DelegateStringFunc(onNewPathToTemplate);
@@ -340,11 +370,9 @@ namespace CommonAux
             m_connConfigDB = DbSources.Sources().GetConnection(_iListenerId, out err);
 
             m_listTEC = GetListTEC(new InitTEC_200(_iListenerId, true, new int[] { 0, (int)TECComponent.ID.GTP }, false).tec);
-
+            
             foreach (TEC_LOCAL tec in m_listTEC)
-            {
                 m_listBoxTEC.Items.Add(tec.m_strNameShr);
-            }
 
             m_labelEndDate.Text = m_monthCalendarEnd.SelectionStart.ToShortDateString();
             m_labelStartDate.Text = m_monthCalendarStart.SelectionStart.ToShortDateString();
@@ -352,7 +380,19 @@ namespace CommonAux
             //Установить начальные признаки готовности к экспорту
             m_markReady = new HMark(0);
 
+            m_listBoxTEC.BackColor =
+            m_dgvSummaValues.DefaultCellStyle.BackColor =
+                BackColor == SystemColors.Control ? SystemColors.Window : BackColor;
+
             FullPathTemplate = string.Empty;
+        }
+
+        public override void Stop ()
+        {
+            m_listTEC.Clear ();
+            m_listBoxTEC.Items.Clear ();
+
+            base.Stop ();
         }
 
         /// <summary>
@@ -365,19 +405,19 @@ namespace CommonAux
             int err = -1; 
             bool bRes = base.Activate(activated);
 
-            if (base.IsFirstActivated == true)
-            {
-                m_GetDataFromDB.InitChannels(m_connConfigDB, m_listTEC);
+            if (base.IsFirstActivated == true) {
+                m_GetDataFromDB.InitChannels (m_connConfigDB, m_listTEC);
 
-                foreach (TEC_LOCAL t in m_listTEC)
-                {
-                    t.InitSensors();
+                foreach (TEC_LOCAL t in m_listTEC) {
+                    t.InitSensors ();
                 }
 
                 //Получить параметры соединения с источником данных
-                m_connSettAIISKUECentre = m_GetDataFromDB.GetConnSettAIISKUECentre(ref _iListenerId, out err);
+                m_connSettAIISKUECentre = m_GetDataFromDB.GetConnSettAIISKUECentre (ref _iListenerId, out err);
                 m_listBoxTEC.SelectedIndex = 0;
-            }
+            } else
+                ;
+
 
             return bRes;
         }
@@ -504,11 +544,12 @@ namespace CommonAux
             this.m_labelsGroup = new List<System.Windows.Forms.Label>();
             for ( int i = 0; i <= Convert.ToInt32(TEC_LOCAL.INDEX_DATA.GRVIII); i++)
             {
-                m_dgvValues.Add(new DataGridViewValues());
+                m_dgvValues.Add(new DataGridViewValues(BackColor == SystemColors.Control ? SystemColors.Window : BackColor));
                 ((System.ComponentModel.ISupportInitialize)(this.m_dgvValues[i])).BeginInit();
 
                 m_labelsGroup.Add(new System.Windows.Forms.Label());
             }
+            m_dgvSummaValues.DefaultCellStyle.BackColor = BackColor == SystemColors.Control ? SystemColors.Window : BackColor;
 
             ((System.ComponentModel.ISupportInitialize)(this.m_dgvSummaValues)).BeginInit();
 
@@ -609,6 +650,7 @@ namespace CommonAux
             this.m_listBoxTEC.TabIndex = 3;
             this.m_listBoxTEC.Width = m_monthCalendarStart.Width;
             this.m_listBoxTEC.Dock = DockStyle.Fill;
+            this.m_listBoxTEC.BackColor = BackColor == SystemColors.Control ? SystemColors.Window : BackColor;
             // 
             // m_listBoxGrpSgnl
             // 
@@ -806,12 +848,13 @@ namespace CommonAux
         private void updateRowData()
         {
             int rowWight = 200;
+
             for (int i = 0; i <= Convert.ToInt32(TEC_LOCAL.INDEX_DATA.GRVIII); i++)
             {
                 m_dgvValues[i].ClearRows();
                 m_dgvValues[i].AddRowData(m_listTEC[m_listBoxTEC.SelectedIndex].m_arListSgnls[i]);
                 m_dgvValues[i].RowHeadersWidthSizeMode =
-                DataGridViewRowHeadersWidthSizeMode.EnableResizing;
+                    DataGridViewRowHeadersWidthSizeMode.EnableResizing;
                 m_dgvValues[i].RowHeadersWidth = rowWight;
             }
         }
@@ -1223,9 +1266,16 @@ namespace CommonAux
             return iRes;
         }
 
+        /// <summary>
+        /// Применение изменений в графическом интерфейсе с пользователем
+        /// </summary>
+        /// <param name="type">Тип изменений для графического интерфейса с пользователем
+        ///  , значение из перечислений 'Statistic.FormGraphicsSettings'</param>
         public override void UpdateGraphicsCurrent (int type)
         {
-            //??? ничего не делать
+            this.m_listBoxTEC.BackColor =
+            m_dgvSummaValues.DefaultCellStyle.BackColor =
+                 BackColor == SystemColors.Control ? SystemColors.Window : BackColor;
         }
     }
 }
