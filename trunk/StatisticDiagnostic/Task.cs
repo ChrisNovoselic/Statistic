@@ -371,7 +371,8 @@ namespace StatisticDiagnostic
                     object value;
                     Color clrCell = Color.Empty;
                     bool enableValuePrevious = Enabled;
-                    float mm = -1 // минуты
+                    float fValie = -1F
+                        , mm = -1 // минуты
                         , ss = -1; // секунды - среднее время выполнения задачи
 
                     foreach (INDEX_CELL i in Enum.GetValues(typeof(INDEX_CELL))) {
@@ -406,10 +407,13 @@ namespace StatisticDiagnostic
                                                 values[(int)i];
                                         break;
                                     case INDEX_CELL.VALUE:
-                                        m_cell_states[(int)i] = isRelevanceValue((float)values[(int)i]);
-                                        ss = (float)values[(int)i];
-                                        mm = ss / 60;
-                                        value = string.Format(@"{0:00}:{1:00}", mm, ss % 60);
+                                        if (float.TryParse (values [(int)i].ToString(), out fValie) == true) {
+                                            m_cell_states [(int)i] = isRelevanceValue (fValie);
+                                            ss = fValie;
+                                            mm = ss / 60;
+                                            value = string.Format (@"{0:00}:{1:00}", mm, ss % 60);
+                                        } else
+                                            value = string.Format (@"не известно");
                                         break;
                                     default:
                                         m_cell_states[(int)i] = /*((string)values[(int)i])?.Equals(EtalonPBR) ==*/ true ?

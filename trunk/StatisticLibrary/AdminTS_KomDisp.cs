@@ -705,7 +705,7 @@ namespace StatisticCommon
                                 _msExcelIOExportPBRValues.Run();
                             }
                         } else
-                            Logging.Logg().Error(string.Format("AdminTS_KomDisp::AddValueToExportRDGValues () - компонент с индексом [{0}] не может быть добавлен (пред. опреация экспрта не завершена)...")
+                            Logging.Logg().Error(string.Format($"AdminTS_KomDisp::AddValueToExportRDGValues () - компонент с индексом [{indxTECComponents}] не может быть добавлен (пред. опреация экспорта не завершена)...")
                                 , Logging.INDEX_MESSAGE.NOT_SET);
                     } else
                     // текущий индекс и 0-ой элемент массива индексов жолжны совпадать
