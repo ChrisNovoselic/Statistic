@@ -972,6 +972,9 @@ namespace StatisticAlarm
                 EventReg(new AlarmDbEventArgs(r));
 
             ev.Result = @"Ok";
+
+            Logging.Logg ().Action (string.Format($"Поток: проверка наличия текущих событий за {HDateTime.ToMoscowTimeZone ().ToShortDateString()}; кол-во_событий={tableRes.Rows.Count}...")
+                , Logging.INDEX_MESSAGE.NOT_SET);
         }
         /// <summary>
         /// Обработчик события - завершения выполнения потоковой функции по обработке

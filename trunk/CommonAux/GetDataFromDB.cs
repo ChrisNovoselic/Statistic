@@ -73,6 +73,9 @@ namespace CommonAux
         {
             ID, VALUE, KEY, LAST_UPDATE, ID_UNIT
         };
+
+        public List<TEC_LOCAL> m_listTEC;
+
         private HMark m_markIndxRequestError;
         /// <summary>
         /// Каталог для размещения шаблонов
@@ -99,6 +102,7 @@ namespace CommonAux
                     ;
             }
         }
+
         /// <summary>
         /// Возвратить строку запроса для получения списка каналов
         /// </summary>
@@ -109,63 +113,87 @@ namespace CommonAux
 
             return strRes;
         }
+
         /// <summary>
         /// Возвратить таблицу [ID_TSN_AISKUE_2017] из БД конфигурации
         /// </summary>
-        /// <param name="connConfigDB">Ссылка на объект с установленным соединением с БД</param>
+        /// <param name="iListenerId">Идентификатор подписчика для обращения к БД</param>
         /// <param name="err">Идентификатор ошибки при выполнении запроса</param>
         /// <returns>Таблица - с данными</returns>
-        public static DataTable getListChannels(ref DbConnection connConfigDB, out int err)
+        public static DataTable getListChannels(int iListenerId, out int err)
         {
-            string req = getQueryListChannels();
+            DataTable tableRes = new DataTable();
 
-            return DbTSQLInterface.Select(ref connConfigDB, req, null, null, out err);
+            DbConnection connConfigDB;
+            string req = string.Empty;
+
+            connConfigDB = DbSources.Sources ().GetConnection (iListenerId, out err);
+
+            if (err == 0) {
+                req = getQueryListChannels ();
+
+                tableRes = DbTSQLInterface.Select (ref connConfigDB, req, null, null, out err);
+            } else
+                ;
+
+            return tableRes;
         }
 
         /// <summary>
         /// Возвратить объект с параметрами соединения
         /// </summary>
-        /// <param name="iListenerId">Ссылка на объект с установленным соединением с БД</param>
+        /// <param name="iListenerId">Идентификатор подписчика к объекту с установленным соединением с БД</param>
         /// <param name="err">Идентификатор ошибки при выполнении запроса</param>
         /// <returns>Объект с параметрами соединения</returns>
-        public ConnectionSettings GetConnSettAIISKUECentre(ref int iListenerId, out int err)
+        public ConnectionSettings GetConnSettAIISKUECentre(int iListenerId, out int err)
         {
             DataTable dataTableRes = new DataTable();
             dataTableRes = InitTEC_200.getConnSettingsOfIdSource(iListenerId, ID_AIISKUE_CONSETT, -1, out err);
 
-            ConnectionSettings connSettRes = new ConnectionSettings(dataTableRes.Rows[dataTableRes.Rows.Count - 1], -1);
+            return new ConnectionSettings(dataTableRes.Rows[dataTableRes.Rows.Count - 1], -1);
+        }
 
-            return connSettRes;
+        /// <summary>
+        /// Инициализировать список ТЭЦ
+        /// </summary>
+        /// <param name="iListenerId">Идентификатор подписчика для обращения к БД</param>
+        public void InitListTEC (int iListenerId)
+        {
+            List<TEC> listTEC;
+
+            listTEC = new InitTEC_200 (iListenerId, true, new int [] { 0, (int)TECComponent.ID.LK }, false).tec;
+
+            m_listTEC = new List<TEC_LOCAL> ();
+            listTEC.ForEach (tec => m_listTEC.Add (new TEC_LOCAL (tec)));
         }
 
         /// <summary>
         /// Загрузка всех каналов из базы данных
         /// </summary>
-        /// <param name="m_connConfigDB">Ссылка на объект с установленным соединением с БД</param>
-        /// <param name="m_listTEC">Список объектов, содержащий перечень каналов каждой ТЭЦ</param>
-        public void InitChannels(DbConnection m_connConfigDB, List<TEC_LOCAL> m_listTEC)
+        /// <param name="iListenerId">Идентификатор подписчика для обращения к БД</param>
+        public void InitChannels(int iListenerId)
         {
             int err = -1;
 
             List<SIGNAL> listRes = new List<SIGNAL>();
             SIGNAL signal;
 
-            DataTable list_channels = null;
+            DataTable table_channels = null;
 
             //Получить список каналов, используя статическую функцию
-            list_channels = getListChannels(ref m_connConfigDB, out err);
+            table_channels = getListChannels(iListenerId, out err);
 
-            for (int i = 0; i < list_channels.Rows.Count; i++)
+            for (int i = 0; i < table_channels.Rows.Count; i++)
             {
                 try
                 {
-                    signal = new SIGNAL(Convert.ToString(list_channels.Rows[i].ItemArray[Convert.ToInt32(DB_TABLE_DATA.DESCRIPTION)]),
-                        Convert.ToInt32(list_channels.Rows[i].ItemArray[Convert.ToInt32(DB_TABLE_DATA.USPD)]),
-                        Convert.ToInt32(list_channels.Rows[i].ItemArray[Convert.ToInt32(DB_TABLE_DATA.CHANNEL)]),
-                        Convert.ToBoolean(list_channels.Rows[i].ItemArray[Convert.ToInt32(DB_TABLE_DATA.USE)])
+                    signal = new SIGNAL(Convert.ToString(table_channels.Rows[i].ItemArray[Convert.ToInt32(DB_TABLE_DATA.DESCRIPTION)]),
+                        Convert.ToInt32(table_channels.Rows[i].ItemArray[Convert.ToInt32(DB_TABLE_DATA.USPD)]),
+                        Convert.ToInt32(table_channels.Rows[i].ItemArray[Convert.ToInt32(DB_TABLE_DATA.CHANNEL)]),
+                        Convert.ToBoolean(table_channels.Rows[i].ItemArray[Convert.ToInt32(DB_TABLE_DATA.USE)])
                     );
-                    m_listTEC[Convert.ToInt32(list_channels.Rows[i].ItemArray[Convert.ToInt32(DB_TABLE_DATA.ID_TEC)]) - 1]
-                        .m_arListSgnls[Convert.ToInt32(Enum.Parse(typeof(TEC_LOCAL.INDEX_DATA), Convert.ToString(list_channels.Rows[i].ItemArray[Convert.ToInt32(DB_TABLE_DATA.GROUP)])))]
+                    m_listTEC[Convert.ToInt32(table_channels.Rows[i].ItemArray[Convert.ToInt32(DB_TABLE_DATA.ID_TEC)]) - 1]
+                        .m_arListSgnls[Convert.ToInt32(Enum.Parse(typeof(TEC_LOCAL.INDEX_DATA), Convert.ToString(table_channels.Rows[i].ItemArray[Convert.ToInt32(DB_TABLE_DATA.GROUP)])))]
                             .Add(signal);
                 }
                 catch (Exception e)
@@ -174,6 +202,13 @@ namespace CommonAux
                 }
             }
         }
+
+        public void InitSensors ()
+        {
+            foreach (TEC_LOCAL t in m_listTEC)
+                t.InitSensors ();
+        }
+
         /// <summary>
         /// Получить все (ТГ, ТСН) значения для станции
         /// </summary>
@@ -334,6 +369,13 @@ namespace CommonAux
             return strRes;
         }
 
+        public override void Stop ()
+        {
+            ClearValues ();
+
+            base.Stop ();
+        }
+
         public override void StartDbInterfaces()
         {
             throw new NotImplementedException();
@@ -341,7 +383,7 @@ namespace CommonAux
 
         public override void ClearValues()
         {
-            throw new NotImplementedException();
+            m_listTEC.Clear ();
         }
 
         protected override int StateCheckResponse(int state, out bool error, out object outobj)

@@ -517,7 +517,7 @@ namespace StatisticCommon
         public const string PBR_PREFIX = @"ПБР";
 
         /// <summary>
-        /// Возратить наименование номера ПБР по номеру часа
+        /// Возвратить наименование номера ПБР по номеру часа
         /// </summary>
         /// <param name="hour">Номер часа</param>
         /// <returns>Наименование ПБР</returns>

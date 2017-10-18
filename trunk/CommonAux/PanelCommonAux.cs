@@ -174,6 +174,9 @@ namespace CommonAux
         }
     }
 
+    /// <summary>
+    /// Класс рабочей панели для взаимодействия с пользователем: задача "Собственные нужды АИИСКУЭ"
+    /// </summary>
     public partial class PanelCommonAux : PanelStatistic
     {
         /// <summary>
@@ -183,13 +186,12 @@ namespace CommonAux
         /// <summary>
         /// Список ТЭЦ с параметрами из файла конфигурации
         /// </summary>
-        private List<TEC_LOCAL> m_listTEC;
+        private List<TEC_LOCAL> ListTEC { get { return m_GetDataFromDB.m_listTEC; } }
         /// <summary>
         /// Объект для инициализации входных параметров
         /// </summary>
         private GetDataFromDB m_GetDataFromDB;
-        private DbConnection m_connConfigDB;
-        private int _iListenerId;
+        
         private enum INDEX_CONTROL : short { LB_TEC, LB_GROUP_SIGNAL }
 
         private const string MS_EXCEL_FILTER = @"Книга MS Excel 2010 (*.xls, *.xlsx)|*.xls;*.xlsx";
@@ -355,6 +357,8 @@ namespace CommonAux
         /// </summary>
         public override void Start()
         {
+            int iListenerId = -1;
+
             base.Start();
 
             for (int i = 0; i <= Convert.ToInt32(TEC_LOCAL.INDEX_DATA.GRVIII); i++)
@@ -366,12 +370,20 @@ namespace CommonAux
 
             int err = -1;
             // зарегистрировать соединение/получить идентификатор соединения
-            _iListenerId = DbSources.Sources().Register(FormMain.s_listFormConnectionSettings[(int)CONN_SETT_TYPE.CONFIG_DB].getConnSett(), false, @"CONFIG_DB");
-            m_connConfigDB = DbSources.Sources().GetConnection(_iListenerId, out err);
+            iListenerId = DbSources.Sources().Register(FormMain.s_listFormConnectionSettings[(int)CONN_SETT_TYPE.CONFIG_DB].getConnSett(), false, @"CONFIG_DB");            
 
-            m_listTEC = GetListTEC(new InitTEC_200(_iListenerId, true, new int[] { 0, (int)TECComponent.ID.GTP }, false).tec);
-            
-            foreach (TEC_LOCAL tec in m_listTEC)
+            m_GetDataFromDB.InitListTEC(iListenerId);
+
+            m_GetDataFromDB.InitChannels (iListenerId);
+
+            m_GetDataFromDB.InitSensors ();
+
+            //Получить параметры соединения с источником данных
+            m_connSettAIISKUECentre = m_GetDataFromDB.GetConnSettAIISKUECentre (iListenerId, out err);
+
+            DbSources.Sources ().UnRegister (iListenerId);
+
+            foreach (TEC_LOCAL tec in m_GetDataFromDB.m_listTEC)
                 m_listBoxTEC.Items.Add(tec.m_strNameShr);
 
             m_labelEndDate.Text = m_monthCalendarEnd.SelectionStart.ToShortDateString();
@@ -387,9 +399,12 @@ namespace CommonAux
             FullPathTemplate = string.Empty;
         }
 
+        /// <summary>
+        /// Остановить все соединения, выполнить
+        /// </summary>
         public override void Stop ()
         {
-            m_listTEC.Clear ();
+            m_GetDataFromDB.Stop ();
             m_listBoxTEC.Items.Clear ();
 
             base.Stop ();
@@ -405,15 +420,7 @@ namespace CommonAux
             int err = -1; 
             bool bRes = base.Activate(activated);
 
-            if (base.IsFirstActivated == true) {
-                m_GetDataFromDB.InitChannels (m_connConfigDB, m_listTEC);
-
-                foreach (TEC_LOCAL t in m_listTEC) {
-                    t.InitSensors ();
-                }
-
-                //Получить параметры соединения с источником данных
-                m_connSettAIISKUECentre = m_GetDataFromDB.GetConnSettAIISKUECentre (ref _iListenerId, out err);
+            if (base.IsFirstActivated == true) {                
                 m_listBoxTEC.SelectedIndex = 0;
             } else
                 ;
@@ -451,42 +458,6 @@ namespace CommonAux
             {
                 m_GetDataFromDB.SetDelegateReport(ferr, fwar, fact, fclr);
             }
-        }
-
-        /// <summary>
-        /// Возвраить список объектов ТЭЦ (без ЛК38)
-        /// </summary>
-        /// <returns>Список объектов ТЭЦ</returns>
-        public List<TEC_LOCAL> GetListTEC(List<TEC> tec)
-        {
-            List<TEC_LOCAL> listRes = new List<TEC_LOCAL>();
-            TEC_LOCAL tec_local;
-
-            for (int i = 0; i < tec.Count - 1; i++)
-            {
-                tec_local = new TEC_LOCAL();
-
-                tec_local.m_Id = tec[i].m_id;
-                tec_local.m_strNameShr = tec[i].name_shr;
-
-                List<int> list_column = new List<int>();
-
-                foreach (string s in tec[i].GetAddingParameter(TEC.ADDING_PARAM_KEY.COLUMN_TSN_EXCEL).ToString().Split(','))
-                {
-                    list_column.Add(Convert.ToInt32(s));
-                }
-
-                tec_local.m_arMSExcelNumColumns = list_column.ToArray();
-
-                for (int j = 0; j < tec_local.m_arListSgnls.Count(); j++)
-                {
-                    tec_local.m_arListSgnls[j] = new List<SIGNAL>();
-                }
-
-                listRes.Add(tec_local);
-            }
-
-            return listRes;
         }
 
         private int setFullPathTemplate(string strFullPathTemplate)
@@ -852,7 +823,7 @@ namespace CommonAux
             for (int i = 0; i <= Convert.ToInt32(TEC_LOCAL.INDEX_DATA.GRVIII); i++)
             {
                 m_dgvValues[i].ClearRows();
-                m_dgvValues[i].AddRowData(m_listTEC[m_listBoxTEC.SelectedIndex].m_arListSgnls[i]);
+                m_dgvValues[i].AddRowData(m_GetDataFromDB.m_listTEC[m_listBoxTEC.SelectedIndex].m_arListSgnls[i]);
                 m_dgvValues[i].RowHeadersWidthSizeMode =
                     DataGridViewRowHeadersWidthSizeMode.EnableResizing;
                 m_dgvValues[i].RowHeadersWidth = rowWight;
@@ -956,7 +927,7 @@ namespace CommonAux
                 , iListenerId = -1;
             string msg = string.Empty;
             TEC_LOCAL.INDEX_DATA indx;
-            TEC_LOCAL tec = m_listTEC[m_listBoxTEC.SelectedIndex];
+            TEC_LOCAL tec_local = m_GetDataFromDB.m_listTEC[m_listBoxTEC.SelectedIndex];
             TEC_LOCAL.VALUES_DATE.VALUES_GROUP dictIndxValues;
             //m_GetDataFromDB = new GetDataFromDB();
 
@@ -975,7 +946,7 @@ namespace CommonAux
 
                 for (indx = 0; !(indx > TEC_LOCAL.INDEX_DATA.GRVIII); indx++)
                 {
-                    if ((m_listBoxTEC.SelectedIndex != m_listTEC.Count - 2)
+                    if ((m_listBoxTEC.SelectedIndex != m_GetDataFromDB.m_listTEC.Count - 2)
                         && (indx == TEC_LOCAL.INDEX_DATA.GRVIII)) {
                         indx++;
 
@@ -983,16 +954,16 @@ namespace CommonAux
                     } else
                         ;
 
-                    tec.ClearValues(m_monthCalendarStart.SelectionStart.Date, indx);
+                    tec_local.ClearValues(m_monthCalendarStart.SelectionStart.Date, indx);
 
-                    iRes = m_GetDataFromDB.Request(tec, iListenerId
+                    iRes = m_GetDataFromDB.Request(tec_local, iListenerId
                         , m_monthCalendarStart.SelectionStart.Date //SelectionStart всегда == SelectionEnd, т.к. MultiSelect = false
                         , m_monthCalendarStart.SelectionEnd.Date.AddDays(1)
                         , indx);
 
                     if (!(iRes < 0))
                     {
-                        dictIndxValues = tec.m_listValuesDate.Find(item => { return item.m_dataDate == m_monthCalendarStart.SelectionStart.Date; }).m_dictData[indx];
+                        dictIndxValues = tec_local.m_listValuesDate.Find(item => { return item.m_dataDate == m_monthCalendarStart.SelectionStart.Date; }).m_dictData[indx];
 
                         m_dgvValues[Convert.ToInt32(indx)].Update(dictIndxValues);
                         m_dgvSummaValues.Rows[Convert.ToInt32(indx)].Cells[1].Value
@@ -1000,12 +971,12 @@ namespace CommonAux
 
                         if (iRes == 0)
                         {
-                            msg = @"Получены значения для: " + tec.m_strNameShr;
+                            msg = @"Получены значения для: " + tec_local.m_strNameShr;
                             Logging.Logg().Debug(msg, Logging.INDEX_MESSAGE.NOT_SET);
                         }
                         else
                         {
-                            msg = @"Ошибка при получении значений для: " + tec.m_strNameShr;
+                            msg = @"Ошибка при получении значений для: " + tec_local.m_strNameShr;
                             Logging.Logg().Error(msg, Logging.INDEX_MESSAGE.NOT_SET);
                         }
                     }
@@ -1061,22 +1032,20 @@ namespace CommonAux
             {
                 Logging.Logg().Debug(msg, Logging.INDEX_MESSAGE.NOT_SET);
 
-                foreach (TEC_LOCAL t in m_listTEC)
-                {
-                    iRes = m_GetDataFromDB.Request(t, iListenerId, m_monthCalendarStart.SelectionStart.Date, m_monthCalendarEnd.SelectionStart.Date.AddDays(1));
+                m_GetDataFromDB.m_listTEC.ForEach (t => {
+                    iRes = m_GetDataFromDB.Request (t, iListenerId, m_monthCalendarStart.SelectionStart.Date, m_monthCalendarEnd.SelectionStart.Date.AddDays (1));
 
-                    if (!(iRes < 0))
-                    {
-                        msg = string.Format(@"Получены значения для: {0}", t.m_strNameShr);
-                        Logging.Logg().Debug(msg, Logging.INDEX_MESSAGE.NOT_SET);
+                    if (!(iRes < 0)) {
+                        msg = string.Format (@"Получены значения для: {0}", t.m_strNameShr);
+
+                        Logging.Logg ().Debug (msg, Logging.INDEX_MESSAGE.NOT_SET);
+                    } else {
+                        msg = @"Ошибка при получении значений для: " + t.m_strNameShr;                        
+                        markErr.Set (m_GetDataFromDB.m_listTEC.IndexOf (t), true);
+
+                        Logging.Logg ().Error (msg, Logging.INDEX_MESSAGE.NOT_SET);
                     }
-                    else
-                    {
-                        msg = @"Ошибка при получении значений для: " + t.m_strNameShr;
-                        Logging.Logg().Error(msg, Logging.INDEX_MESSAGE.NOT_SET);
-                        markErr.Set(m_listTEC.IndexOf(t), true);
-                    }
-                }
+                });
             }
             else
             {
@@ -1126,50 +1095,45 @@ namespace CommonAux
                             , iRowStart;
                         List<DateTime> listWriteDates = new List<DateTime>();
                         // сохранить активную мощность
-                        foreach (TEC_LOCAL t in m_listTEC)
-                            if (markErr.IsMarked(m_listTEC.IndexOf(t)) == false)
-                                foreach (TEC_LOCAL.VALUES_DATE valsDate in t.m_listValuesDate)
-                                {
-                                    try
-                                    {
+                        m_GetDataFromDB.m_listTEC.ForEach (t => {
+                            if (markErr.IsMarked (m_GetDataFromDB.m_listTEC.IndexOf (t)) == false)
+                                foreach (TEC_LOCAL.VALUES_DATE valsDate in t.m_listValuesDate) {
+                                    try {
                                         //Определить начальную строку по дате набора значений
                                         iRowStart = iRowStartMSExcel + (valsDate.m_dataDate.Day - 1) * iRowCountDateMSExcel;
 
-                                        if (listWriteDates.IndexOf(valsDate.m_dataDate) < 0)
-                                        {
-                                            listWriteDates.Add(valsDate.m_dataDate);
+                                        if (listWriteDates.IndexOf (valsDate.m_dataDate) < 0) {
+                                            listWriteDates.Add (valsDate.m_dataDate);
 
-                                            excel.WriteDate(iColDataDate, iRowStart, valsDate.m_dataDate);
-                                        }
-                                        else
+                                            excel.WriteDate (iColDataDate, iRowStart, valsDate.m_dataDate);
+                                        } else
                                             ;
 
                                         //Сохранить набор значений на листе книги MS Excel
-                                        excel.WriteValues(t.m_arMSExcelNumColumns[(int)GetDataFromDB.INDEX_MSEXCEL_COLUMN.APOWER]
+                                        excel.WriteValues (t.m_arMSExcelNumColumns [(int)GetDataFromDB.INDEX_MSEXCEL_COLUMN.APOWER]
                                             , iRowStart
-                                            , valsDate.m_dictData[TEC_LOCAL.INDEX_DATA.TG].m_summaHours);
+                                            , valsDate.m_dictData [TEC_LOCAL.INDEX_DATA.TG].m_summaHours);
                                         // получить набор значений для записи в соответствии с вариантом расчета
-                                        arWriteValues = valsDate.GetValues(out iErr);
+                                        arWriteValues = valsDate.GetValues (out iErr);
                                         if (iErr == 0)
-                                            //Сохранить набор значений на листе книги MS Excel
-                                            excel.WriteValues(t.m_arMSExcelNumColumns[(int)GetDataFromDB.INDEX_MSEXCEL_COLUMN.SNUZHDY]
+                                        //Сохранить набор значений на листе книги MS Excel
+                                            excel.WriteValues (t.m_arMSExcelNumColumns [(int)GetDataFromDB.INDEX_MSEXCEL_COLUMN.SNUZHDY]
                                                 , iRowStart
                                                 , arWriteValues);
                                         else
-                                            Logging.Logg().Error(string.Format(@"FormMain::экспортВMSExcelToolStripMenuItem_Click () - TEC.ИД={0}, дата={1}, отсутствуют необходимые для расчета группы..."
+                                            Logging.Logg ().Error (string.Format (@"FormMain::экспортВMSExcelToolStripMenuItem_Click () - TEC.ИД={0}, дата={1}, отсутствуют необходимые для расчета группы..."
                                                     , t.m_Id, valsDate.m_dataDate)
                                                 , Logging.INDEX_MESSAGE.NOT_SET);
-                                    }
-                                    catch (Exception exc)
-                                    {
-                                        Logging.Logg().Exception(exc
-                                            , string.Format(@"FormMain::экспортВMSExcelToolStripMenuItem_Click () - TEC.ИД={0}, дата={1}"
+                                    } catch (Exception exc) {
+                                        Logging.Logg ().Exception (exc
+                                            , string.Format (@"FormMain::экспортВMSExcelToolStripMenuItem_Click () - TEC.ИД={0}, дата={1}"
                                                 , t.m_Id, valsDate.m_dataDate)
                                             , Logging.INDEX_MESSAGE.NOT_SET);
                                     }
                                 }
                             else
                                 ;
+                        });
 
                         excel.SaveExcel(formChoiseResult.FileName);
 
@@ -1178,7 +1142,6 @@ namespace CommonAux
                         excel = null;
 
                         msg += formChoiseResult.FileName;
-
                     }
                     else
                         ;
@@ -1189,8 +1152,10 @@ namespace CommonAux
                 {
                     msg += @"отменено пользователем...";
                 }
+
                 Logging.Logg().Action(msg, Logging.INDEX_MESSAGE.NOT_SET);
             }
+
             m_GetDataFromDB.ReportClear(true);
         }
 
