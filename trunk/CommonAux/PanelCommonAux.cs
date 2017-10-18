@@ -420,8 +420,18 @@ namespace CommonAux
             int err = -1; 
             bool bRes = base.Activate(activated);
 
-            if (base.IsFirstActivated == true) {                
-                m_listBoxTEC.SelectedIndex = 0;
+            if (bRes == true) {
+                if (activated == true) {
+                    if (base.IsFirstActivated == true) {
+                        m_listBoxTEC.SelectedIndex = 0;
+                    } else
+                        ;
+
+                    m_listBoxTEC.BackColor =
+                    m_dgvSummaValues.DefaultCellStyle.BackColor =
+                        BackColor == SystemColors.Control ? SystemColors.Window : BackColor;
+                } else
+                    ;
             } else
                 ;
 

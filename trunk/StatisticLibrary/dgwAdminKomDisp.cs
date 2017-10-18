@@ -260,5 +260,36 @@ namespace StatisticCommon
                     break;
             }
         }
+
+        public override Color BackColor
+        {
+            get
+            {
+                return base.BackColor;
+            }
+
+            set
+            {
+                base.BackColor = value;
+
+                ////??? вариант є1 - оптимальный
+                //DefaultCellStyle.BackColor = value == SystemColors.Control ? SystemColors.Window : value;
+                //??? вариант є2 - допустимый(не рекомендуемый)
+                if ((INDEX_COLUMN_BUTTON_TO_ALL > 0)
+                    && (RowCount > 0))
+                    for (int col = 0; col < (int)INDEX_COLUMN_BUTTON_TO_ALL; col++)
+                        for (int i = 0; i < 24; i++) {
+                            if ((Rows [i].Cells [col].Style.BackColor.Equals (s_dgvCellStyles[(int)INDEX_CELL_STYLE.ERROR].BackColor) == false)
+                                && (Rows [i].Cells [col].Style.BackColor.Equals (s_dgvCellStyles [(int)INDEX_CELL_STYLE.ERROR].BackColor) == false))
+                                // »меютс€ ограничени€ при назначении фонового цвета дл€ €чеек
+                                Rows [i].Cells [col].Style.BackColor = value == SystemColors.Control ? SystemColors.Window : value;
+                            else
+                                ;
+                        }
+                    else
+                    // нет столбцов/строк - нет действий по изменению цвета фона €чеек
+                        ;
+            }
+        }
     }
 }

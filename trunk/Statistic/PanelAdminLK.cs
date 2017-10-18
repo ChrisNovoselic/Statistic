@@ -333,14 +333,13 @@ namespace Statistic {
         {
             bool bRes = false;
 
-            if (active == true)
-            {
-            }
-            else 
-            {
-            }
+            bRes = base.Activate (active);
 
-            bRes = base.Activate(active);
+            if (bRes == true)
+                if (active == true) {
+                } else {
+                } else
+                ;
 
             return bRes;
         }
@@ -445,18 +444,18 @@ namespace Statistic {
             m_admin = new PanelAdminLK.AdminTS_LK (new bool[] { false, true });                    
         }
 
-
+        /// <summary>
+        /// Класс для представления административных данных ЛК-дисптчера в табличном виде
+        /// </summary>
         public class DataGridViewAdminLK : DataGridViewAdmin {
             /// <summary>
             /// Идентификаторы колонок
             /// </summary>
             public enum DESC_INDEX : ushort { DATE_HOUR, PLAN_TEMPERATURE, PLAN_POWER, DEVIATION_TYPE, DEVIATION, TO_ALL, COUNT_COLUMN };
-
             /// <summary>
             /// Массив имен колонок
             /// </summary>
             private static string [] arDescStringIndex = { "DateHour", @"PLAN_T", "Plan_P", "DEVIATION_TYPE", "DEVIATION", "TO_ALL" };
-
             /// <summary>
             /// Массив заголовков колонок
             /// </summary>

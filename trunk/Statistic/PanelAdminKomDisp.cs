@@ -314,7 +314,20 @@ namespace Statistic
 
         public override bool Activate(bool activate)
         {
-            return base.Activate (activate);
+            bool bRes = base.Activate (activate);
+
+            /*if (bRes == true)
+                if (activate == true) {
+                    dgwAdminTable.DefaultCellStyle.BackColor =
+                        //BackColor == SystemColors.Control ? SystemColors.Window : BackColor
+                        FormMain.formGraphicsSettings.BackgroundColor
+                        ;
+                } else
+                    ;
+            else
+                ;*/
+
+            return bRes;
         }
 
         private TECComponent findTECComponent(int id) { return m_admin.FindTECComponent(id); }
