@@ -101,6 +101,8 @@ namespace StatisticAlarm
         /// Событие регистрации события (случая) сигнализаций из БД
         /// </summary>
         private event AlarmDbEventHandler EventReg;
+
+        //private volatile bool m_bAlarmDbEventUpdated;
         /// <summary>
         /// Признак актуальности зарегистрированных событий сигнализаций из БД
         /// </summary>
@@ -109,15 +111,32 @@ namespace StatisticAlarm
         /// Таймер для запроса актуального перечня событий сигнализаций
         /// </summary>
         private System.Threading.Timer m_timerView;
-
+        /// <summary>
+        /// Тип делегата обработчика события по изменению текущей даты/диапазона_часов опроса событий зарегистрированных в БД
+        /// </summary>
+        /// <param name="ev">Аргумент при вызове метода</param>
         public delegate void DatetimeCurrentEventHandler(DatetimeCurrentEventArgs ev);
+        /// <summary>
+        /// Класс для объекта аргумента события
+        /// </summary>
         public class DatetimeCurrentEventArgs : EventArgs
         {
+            /// <summary>
+            /// Дата, округленная до "полуночи"
+            /// </summary>
             public DateTime Date;
+            /// <summary>
+            /// Номер часа(ов)
+            /// </summary>
             public int HourBegin
                 , HourEnd;
-
-            public DatetimeCurrentEventArgs(DateTime date, int iHourBegin, int iHourEnd)
+            /// <summary>
+            /// Конструктор - основной (с аргументами)
+            /// </summary>
+            /// <param name="date">Дата, округленная до "полуночи"</param>
+            /// <param name="iHourBegin">Номер часа начала</param>
+            /// <param name="iHourEnd">Номер часа окончания</param>
+            public DatetimeCurrentEventArgs (DateTime date, int iHourBegin, int iHourEnd)
             {
                 this.Date = date;
                 this.HourBegin = iHourBegin;
@@ -724,7 +743,8 @@ namespace StatisticAlarm
             m_dictAlarmObject = new DictAlarmObject();
             EventReg += new AlarmDbEventHandler(onEventReg);
 
-            m_mEvtAlarmDbEventUpdated = new ManualResetEvent (false);
+            //m_bAlarmDbEventUpdated = false;
+            m_mEvtAlarmDbEventUpdated = new ManualResetEvent (true);
 
             m_handlerDb = new AdminAlarm.HandlerDb(connSett);
 
@@ -817,24 +837,24 @@ namespace StatisticAlarm
 
         private void activateViewAlarm(bool bChecked)
         {
-            int due = 0;
+            ////??? сброс(несигнальное состояние) только в случае, если таймер не запускается
+            ////??? если таймер не запускается, то и событие 'Notify' не происходит
+            //if (bChecked == false)
+            //{
+            //    //m_bAlarmDbEventUpdated = false;
+            //    m_mEvtAlarmDbEventUpdated.Reset();
+            //}
+            //else
+            //    //m_bAlarmDbEventUpdated = true;
+            //    m_mEvtAlarmDbEventUpdated.Set ();
 
-            if (bChecked == false)
-            {
-                due = System.Threading.Timeout.Infinite;
-                //??? сброс(несигнальное состояние) только в случае, если таймер не запускается
-                //??? если таймер не запускается, то и событие 'Notify' не происходит
-                m_mEvtAlarmDbEventUpdated.Reset();
-            }
-            else
-                ;
-
-            m_timerView.Change(due, System.Threading.Timeout.Infinite);
+            m_timerView.Change(bChecked == true ? 0 : System.Threading.Timeout.Infinite
+                , System.Threading.Timeout.Infinite);
         }
         /// <summary>
         /// Обработчик события изменение признака "Включено/отключено"
         /// </summary>
-        /// <param name="obj">Объект, иницировавший событие</param>
+        /// <param name="bChecked">Новое состояние приложения - выполнять/не_выполнять регистрацию событий</param>
         public void OnWorkCheckedChanged(bool bChecked)
         {
             //if (! (m_bWorkChecked == bChecked)) {
@@ -903,7 +923,6 @@ namespace StatisticAlarm
         /// Метод обратного вызова для таймера обновления значений в таблице
         /// </summary>
         /// <param name="obj">Объект, инициировавший событие</param>
-        /// <param name="ev">Аргумент события</param>
         private void fTimerView_Tick(object obj)
         {
             // поставить в очередь событие получения списка событий сигнализаций
@@ -912,7 +931,8 @@ namespace StatisticAlarm
                 pushList();
             else
                 ;
-            m_mEvtAlarmDbEventUpdated.Reset ();
+            ////m_bAlarmDbEventUpdated = false;
+            //m_mEvtAlarmDbEventUpdated.Reset ();
             // поставить в очередь событие получения списка текущих событий сигнализаций
             pushNotify();
             // для очередного запуска
@@ -969,17 +989,17 @@ namespace StatisticAlarm
                 //Console.WriteLine(@"ViewAlarm::fThreadNotifyResponse_RunWorkerCompleted () - " + ev.Result + @"...")
                 ;
 
+            //m_bAlarmDbEventUpdated = true;
             m_mEvtAlarmDbEventUpdated.Set();
         }
         /// <summary>
         /// Функция обработки результатов запроса по указанной дате/часам
         /// </summary>
+        /// <param name="itemQueue">Объект - аргумент очередного события в очереди обработки событий</param>
         /// <param name="tableRes">Таблица - результат запроса</param>
         private void GetListEventsResponse(ItemQueue itemQueue, DataTable tableRes)
         {
-            Console.WriteLine(@"Событий за " + ((DateTime)itemQueue.Pars[0]).ToShortDateString()
-                + @" (" + ((int)itemQueue.Pars[1]) + @"-" + ((int)itemQueue.Pars[2]) + @" ч): "
-                + tableRes.Rows.Count);
+            Console.WriteLine(string.Format($"Событий за {((DateTime)itemQueue.Pars[0]).ToShortDateString()} ({((int)itemQueue.Pars[1])}-{((int)itemQueue.Pars[2])} ч): {tableRes.Rows.Count}"));
 
             List<PanelAlarm.ViewAlarmJournal> listRes = new List<PanelAlarm.ViewAlarmJournal>(tableRes.Rows.Count);
 
@@ -1021,6 +1041,7 @@ namespace StatisticAlarm
         /// <summary>
         /// Функция обработки результатов запроса текущих!!! событий сигнализаций
         /// </summary>
+        /// <param name="itemQueue">Объект - аргумент очередного события в очереди обработки событий</param>
         /// <param name="tableRes">Таблица - результат запроса</param>
         private void GetNotifyResponse(ItemQueue itemQueue, DataTable tableRes)
         {
@@ -1029,8 +1050,12 @@ namespace StatisticAlarm
             else
                 ;
 
+            // ожидать завершения потока обработки запроса текущих событий
+            //if (m_bAlarmDbEventUpdated == false)
             if (m_mEvtAlarmDbEventUpdated.WaitOne(TIMEOUT_DBEVENT_UPDATE) == true)
                 try {
+                    // установить признак выполнения обработки запроса текущих событий
+                    m_mEvtAlarmDbEventUpdated.Reset ();
                     m_threadNotifyResponse.RunWorkerAsync(tableRes);
                 } catch (Exception e) {
                     Logging.Logg().Exception(e, string.Format(@"AdminAlarm::GetNotifyResponse () - обработка не выполнена ..."), Logging.INDEX_MESSAGE.NOT_SET);

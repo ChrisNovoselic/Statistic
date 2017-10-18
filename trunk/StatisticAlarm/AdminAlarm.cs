@@ -139,7 +139,9 @@ namespace StatisticAlarm
                 //else
                 //    ;
 
-                if (m_mEvtAlarmDbEventUpdated.WaitOne (0) == true)
+                // ожидать завершения потока обработки запроса текущих событий
+                //if (m_bAlarmDbEventUpdated == true)
+                if (m_mEvtAlarmDbEventUpdated.WaitOne (TIMEOUT_DBEVENT_UPDATE) == true)
                     if (IsStarted == true)
                     {
                         changeState();
