@@ -268,7 +268,7 @@ namespace StatisticDiagnostic
             , new CELL_STATE() { m_Text = string.Empty, m_Color = HDataGridViewTables.s_dgvCellStyles == null ? Color.Yellow : HDataGridViewTables.s_dgvCellStyles[(int)HDataGridViewTables.INDEX_CELL_STYLE.WARNING].BackColor, m_Detail = @"Продолжительное выполнение" }
             , new CELL_STATE() { m_Text = @"Нет", m_Color = HDataGridViewTables.s_dgvCellStyles == null ? Color.Red : HDataGridViewTables.s_dgvCellStyles[(int)HDataGridViewTables.INDEX_CELL_STYLE.ERROR].BackColor, m_Detail = @"Превышено ожидание" }
             , new CELL_STATE() { m_Text = @"н/д", m_Color = Color.LightGray }
-            , new CELL_STATE() { m_Text = string.Empty, m_Color = Color.DarkGray, m_Detail = @"Запрещено" }
+            , new CELL_STATE() { m_Text = @"Нет", m_Color = Color.DarkGray, m_Detail = @"Запрещено" }
         };
         /// <summary>
         /// К полям UPDATE_TIME и  VALIDATE_ASKUE_TM обращается несколько потоков

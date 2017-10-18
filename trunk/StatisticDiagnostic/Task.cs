@@ -371,7 +371,7 @@ namespace StatisticDiagnostic
                     object value;
                     Color clrCell = Color.Empty;
                     bool enableValuePrevious = Enabled;
-                    float fValie = -1F
+                    float fValue = -1F
                         , mm = -1 // минуты
                         , ss = -1; // секунды - среднее время выполнения задачи
 
@@ -396,24 +396,29 @@ namespace StatisticDiagnostic
                                     case INDEX_CELL.STATE:
                                         m_cell_states[(int)i] = ((string)values[(int)i])?.Equals(1.ToString()) == true ?
                                             INDEX_CELL_STATE.OK :
-                                                INDEX_CELL_STATE.ERROR;
+                                                INDEX_CELL_STATE.DISABLED;
                                         value = s_CellState[(int)m_cell_states[(int)i]].m_Text;
                                         break;
                                     case INDEX_CELL.DATETIME_VALUE:
                                     case INDEX_CELL.DATETIME_VERIFICATION:
-                                        m_cell_states[(int)i] = isRelevanceDateTime((int)i, (DateTime)values[(int)i]);
+                                        m_cell_states[(int)i] = ((string)values [(int)INDEX_CELL.STATE])?.Equals (1.ToString ()) == true
+                                            ? isRelevanceDateTime ((int)i, (DateTime)values[(int)i])
+                                                : INDEX_CELL_STATE.DISABLED;
                                         value = values[(int)i] is DateTime ?
                                             formatDateTime((DateTime)values[(int)i]) :
                                                 values[(int)i];
                                         break;
                                     case INDEX_CELL.VALUE:
-                                        if (float.TryParse (values [(int)i].ToString(), out fValie) == true) {
-                                            m_cell_states [(int)i] = isRelevanceValue (fValie);
-                                            ss = fValie;
-                                            mm = ss / 60;
-                                            value = string.Format (@"{0:00}:{1:00}", mm, ss % 60);
+                                        if (float.TryParse (values [(int)i].ToString(), out fValue) == true) {
+                                            m_cell_states [(int)i] = isRelevanceValue (fValue);
+                                            if (!(m_cell_states [(int)i] == INDEX_CELL_STATE.DISABLED)) {
+                                                ss = fValue;
+                                                mm = ss / 60;
+                                                value = string.Format (@"{0:00}:{1:00}", mm, ss % 60);
+                                            } else
+                                                value = string.Format (@"--:--");
                                         } else
-                                            value = string.Format (@"не известно");
+                                            value = string.Format (@"--:--");
                                         break;
                                     default:
                                         m_cell_states[(int)i] = /*((string)values[(int)i])?.Equals(EtalonPBR) ==*/ true ?
@@ -466,7 +471,7 @@ namespace StatisticDiagnostic
                 private INDEX_CELL_STATE isRelevanceValue(double value)
                 {
                     return value < 0 ?
-                        INDEX_CELL_STATE.ERROR :
+                        INDEX_CELL_STATE.DISABLED :
                             value < KoefRelevanceValue * 3 ?
                                 INDEX_CELL_STATE.OK :
                                     value < KoefRelevanceValue * 6 ?
