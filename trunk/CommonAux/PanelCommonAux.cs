@@ -12,12 +12,8 @@ using System.Threading;
 using System.Data;
 using System.Globalization;
 
-using ZedGraph;
-using GemBox.Spreadsheet;
-
 using HClassLibrary;
 using StatisticCommon;
-using System.Reflection;
 
 namespace CommonAux
 {
@@ -201,6 +197,8 @@ namespace CommonAux
         /// Перечисление причин, влияющих на готовность к экспорту значений
         /// </summary>
         private enum INDEX_READY { TEMPLATE, DATE }
+
+        private enum INDEX_MONTH_CALENDAR_DATE { START, END }
         /// <summary>
         /// Объект содержащий признаки готовности к экспорту значений
         /// </summary>
@@ -310,8 +308,7 @@ namespace CommonAux
         private System.Windows.Forms.Button m_btnStripButtonExcel;
         private System.Windows.Forms.ListBox m_listBoxTEC;
         private System.Windows.Forms.ListBox m_listBoxGrpSgnl;
-        private System.Windows.Forms.MonthCalendar m_monthCalendarStart;
-        private System.Windows.Forms.MonthCalendar m_monthCalendarEnd;
+        private IEnumerable<System.Windows.Forms.MonthCalendar> m_listMonthCalendar;
         private System.Windows.Forms.Label m_labelTEC;
         private System.Windows.Forms.Label m_labelGrpSgnl;
         private System.Windows.Forms.Label m_labelValues;
@@ -386,8 +383,8 @@ namespace CommonAux
             foreach (TEC_LOCAL tec in m_GetDataFromDB.m_listTEC)
                 m_listBoxTEC.Items.Add(tec.m_strNameShr);
 
-            m_labelEndDate.Text = m_monthCalendarEnd.SelectionStart.ToShortDateString();
-            m_labelStartDate.Text = m_monthCalendarStart.SelectionStart.ToShortDateString();
+            m_labelEndDate.Text = m_listMonthCalendar.ElementAt ((int)INDEX_MONTH_CALENDAR_DATE.END).SelectionStart.ToShortDateString();
+            m_labelStartDate.Text = m_listMonthCalendar.ElementAt ((int)INDEX_MONTH_CALENDAR_DATE.START).SelectionStart.ToShortDateString();
 
             //Установить начальные признаки готовности к экспорту
             m_markReady = new HMark(0);
@@ -501,9 +498,9 @@ namespace CommonAux
 
         protected virtual void InitializeComponents()
         {
-            #region Инициализация переменных
-            System.Windows.Forms.DataGridViewCellStyle dataGridViewCellStyle1 = new System.Windows.Forms.DataGridViewCellStyle();
-            System.Windows.Forms.DataGridViewCellStyle dataGridViewCellStyle2 = new System.Windows.Forms.DataGridViewCellStyle();
+            System.Windows.Forms.DataGridViewCellStyle dataGridViewCellStyle;
+
+            #region Инициализация переменных            
             this.m_btnLoad = new System.Windows.Forms.Button();
             this.m_btnOpen = new System.Windows.Forms.Button();
             this.m_btnExit = new System.Windows.Forms.Button();
@@ -511,8 +508,10 @@ namespace CommonAux
 
             this.m_listBoxTEC = new System.Windows.Forms.ListBox();
             this.m_listBoxGrpSgnl = new System.Windows.Forms.ListBox();
-            this.m_monthCalendarStart = new System.Windows.Forms.MonthCalendar();
-            this.m_monthCalendarEnd = new System.Windows.Forms.MonthCalendar();
+            this.m_listMonthCalendar = new List<System.Windows.Forms.MonthCalendar> () {
+                new System.Windows.Forms.MonthCalendar()
+                , new System.Windows.Forms.MonthCalendar()
+            };
             this.m_labelTEC = new System.Windows.Forms.Label();
             this.m_labelGrpSgnl = new System.Windows.Forms.Label();
             this.m_labelValues = new System.Windows.Forms.Label();
@@ -545,8 +544,8 @@ namespace CommonAux
             //this.Controls.Add(m_btnExit, 81, 94); this.SetColumnSpan(m_btnExit, 18); this.SetRowSpan(m_btnExit, 5);
             //this.Controls.Add(m_btnStripButtonExcel, 81, 52); this.SetColumnSpan(m_btnStripButtonExcel, 18); this.SetRowSpan(m_btnStripButtonExcel, 5);
             //this.Controls.Add(m_listBoxTEC, 61, 40); this.SetColumnSpan(m_listBoxTEC, 18); this.SetRowSpan(m_listBoxTEC, 20);
-            //this.Controls.Add(m_monthCalendarStart, 60, 8); this.SetColumnSpan(m_monthCalendarStart, 15); this.SetRowSpan(m_monthCalendarStart, 15);
-            //this.Controls.Add(m_monthCalendarEnd, 80, 8); this.SetColumnSpan(m_monthCalendarEnd, 15); this.SetRowSpan(m_monthCalendarEnd, 15);
+            //this.Controls.Add(m_listMonthCalendar.ElementAt ((int)INDEX_MONTH_CALENDAR_DATE.START), 60, 8); this.SetColumnSpan(m_listMonthCalendar.ElementAt ((int)INDEX_MONTH_CALENDAR_DATE.START), 15); this.SetRowSpan(m_listMonthCalendar.ElementAt ((int)INDEX_MONTH_CALENDAR_DATE.START), 15);
+            //this.Controls.Add(m_listMonthCalendar.ElementAt ((int)INDEX_MONTH_CALENDAR_DATE.END), 80, 8); this.SetColumnSpan(m_listMonthCalendar.ElementAt ((int)INDEX_MONTH_CALENDAR_DATE.END), 15); this.SetRowSpan(m_listMonthCalendar.ElementAt ((int)INDEX_MONTH_CALENDAR_DATE.END), 15);
             //this.Controls.Add(m_labelTEC, 62, 37); this.SetColumnSpan(m_labelTEC, 11); this.SetRowSpan(m_labelTEC, 2);
             //this.Controls.Add(m_labelValues, 8, 2); this.SetColumnSpan(m_labelValues, 30); this.SetRowSpan(m_labelValues, 2);
             //this.Controls.Add(m_labelStartDate, 65, 6); this.SetColumnSpan(m_labelStartDate, 8); this.SetRowSpan(m_labelStartDate, 2);
@@ -564,8 +563,8 @@ namespace CommonAux
             //this.Controls.Add(m_btnExit, 81, 94); this.SetColumnSpan(m_btnExit, 18); this.SetRowSpan(m_btnExit, 5);
             this.Controls.Add(m_btnStripButtonExcel, 16, 13); this.SetColumnSpan(m_btnStripButtonExcel, 4); this.SetRowSpan(m_btnStripButtonExcel, 2);
             this.Controls.Add(m_listBoxTEC, 12, 9); this.SetColumnSpan(m_listBoxTEC, 4); this.SetRowSpan(m_listBoxTEC, 6);
-            this.Controls.Add(m_monthCalendarStart, 12, 1); this.SetColumnSpan(m_monthCalendarStart, 1); this.SetRowSpan(m_monthCalendarStart, 1);
-            this.Controls.Add(m_monthCalendarEnd, 16, 1); this.SetColumnSpan(m_monthCalendarEnd, 1); this.SetRowSpan(m_monthCalendarEnd, 1);
+            this.Controls.Add(m_listMonthCalendar.ElementAt((int)INDEX_MONTH_CALENDAR_DATE.START), 12, 1); this.SetColumnSpan(m_listMonthCalendar.ElementAt ((int)INDEX_MONTH_CALENDAR_DATE.START), 1); this.SetRowSpan(m_listMonthCalendar.ElementAt ((int)INDEX_MONTH_CALENDAR_DATE.START), 1);
+            this.Controls.Add(m_listMonthCalendar.ElementAt ((int)INDEX_MONTH_CALENDAR_DATE.END), 16, 1); this.SetColumnSpan(m_listMonthCalendar.ElementAt ((int)INDEX_MONTH_CALENDAR_DATE.END), 1); this.SetRowSpan(m_listMonthCalendar.ElementAt ((int)INDEX_MONTH_CALENDAR_DATE.END), 1);
             this.Controls.Add(m_labelTEC, 12, 8); this.SetColumnSpan(m_labelTEC, 2); this.SetRowSpan(m_labelTEC, 1);
             this.Controls.Add(m_labelValues, 2, 0); this.SetColumnSpan(m_labelValues, 5); this.SetRowSpan(m_labelValues, 1);
             this.Controls.Add(m_labelStartDate, 12, 0); this.SetColumnSpan(m_labelStartDate, 3); this.SetRowSpan(m_labelStartDate, 1);
@@ -610,7 +609,7 @@ namespace CommonAux
             this.m_btnExit.Text = "Выход";
             this.m_btnExit.UseVisualStyleBackColor = true;
             this.m_btnExit.Click += new System.EventHandler(this.btnExit_Click);
-            this.m_btnExit.Width = m_monthCalendarStart.Width;
+            this.m_btnExit.Width = m_listMonthCalendar.ElementAt ((int)INDEX_MONTH_CALENDAR_DATE.START).Width;
             this.m_btnExit.Visible = false;
             // 
             // m_btnStripButtonExcel
@@ -629,7 +628,7 @@ namespace CommonAux
             this.m_listBoxTEC.FormattingEnabled = true;
             this.m_listBoxTEC.Name = "m_listBoxTEC";
             this.m_listBoxTEC.TabIndex = 3;
-            this.m_listBoxTEC.Width = m_monthCalendarStart.Width;
+            this.m_listBoxTEC.Width = m_listMonthCalendar.ElementAt ((int)INDEX_MONTH_CALENDAR_DATE.START).Width;
             this.m_listBoxTEC.Dock = DockStyle.Fill;
             this.m_listBoxTEC.BackColor = BackColor == SystemColors.Control ? SystemColors.Window : BackColor;
             // 
@@ -641,13 +640,15 @@ namespace CommonAux
             // 
             // m_monthCalendar
             // 
-            this.m_monthCalendarStart.Name = "m_monthCalendar";
-            this.m_monthCalendarStart.TabIndex = 5;
+            this.m_listMonthCalendar.ElementAt ((int)INDEX_MONTH_CALENDAR_DATE.START).Tag = INDEX_MONTH_CALENDAR_DATE.START;
+            this.m_listMonthCalendar.ElementAt ((int)INDEX_MONTH_CALENDAR_DATE.START).Name = "m_monthCalendar";
+            this.m_listMonthCalendar.ElementAt ((int)INDEX_MONTH_CALENDAR_DATE.START).TabIndex = 5;
             // 
             // monthCalendar2
             // 
-            this.m_monthCalendarEnd.Name = "monthCalendar2";
-            this.m_monthCalendarEnd.TabIndex = 6;
+            this.m_listMonthCalendar.ElementAt ((int)INDEX_MONTH_CALENDAR_DATE.END).Tag = INDEX_MONTH_CALENDAR_DATE.END;
+            this.m_listMonthCalendar.ElementAt ((int)INDEX_MONTH_CALENDAR_DATE.END).Name = "monthCalendar2";
+            this.m_listMonthCalendar.ElementAt ((int)INDEX_MONTH_CALENDAR_DATE.END).TabIndex = 6;
             // 
             // m_labelTEC
             // 
@@ -713,14 +714,15 @@ namespace CommonAux
                 this.m_dgvValues[i].AutoSizeColumnsMode = System.Windows.Forms.DataGridViewAutoSizeColumnsMode.ColumnHeader;
                 this.m_dgvValues[i].AutoSizeRowsMode = System.Windows.Forms.DataGridViewAutoSizeRowsMode.AllHeaders;
                 this.m_dgvValues[i].ColumnHeadersHeightSizeMode = System.Windows.Forms.DataGridViewColumnHeadersHeightSizeMode.AutoSize;
-                dataGridViewCellStyle1.Alignment = System.Windows.Forms.DataGridViewContentAlignment.MiddleRight;
-                dataGridViewCellStyle1.BackColor = System.Drawing.SystemColors.Window;
-                dataGridViewCellStyle1.Font = new System.Drawing.Font("Microsoft Sans Serif", 8.25F, System.Drawing.FontStyle.Regular, System.Drawing.GraphicsUnit.Point, ((byte)(204)));
-                dataGridViewCellStyle1.ForeColor = System.Drawing.SystemColors.ControlText;
-                dataGridViewCellStyle1.SelectionBackColor = System.Drawing.SystemColors.Highlight;
-                dataGridViewCellStyle1.SelectionForeColor = System.Drawing.SystemColors.HighlightText;
-                dataGridViewCellStyle1.WrapMode = System.Windows.Forms.DataGridViewTriState.False;
-                this.m_dgvValues[i].DefaultCellStyle = dataGridViewCellStyle1;
+                dataGridViewCellStyle = new System.Windows.Forms.DataGridViewCellStyle ();
+                dataGridViewCellStyle.Alignment = System.Windows.Forms.DataGridViewContentAlignment.MiddleRight;
+                dataGridViewCellStyle.BackColor = System.Drawing.SystemColors.Window;
+                dataGridViewCellStyle.Font = new System.Drawing.Font("Microsoft Sans Serif", 8.25F, System.Drawing.FontStyle.Regular, System.Drawing.GraphicsUnit.Point, ((byte)(204)));
+                dataGridViewCellStyle.ForeColor = System.Drawing.SystemColors.ControlText;
+                dataGridViewCellStyle.SelectionBackColor = System.Drawing.SystemColors.Highlight;
+                dataGridViewCellStyle.SelectionForeColor = System.Drawing.SystemColors.HighlightText;
+                dataGridViewCellStyle.WrapMode = System.Windows.Forms.DataGridViewTriState.False;
+                this.m_dgvValues[i].DefaultCellStyle = dataGridViewCellStyle;
                 this.m_dgvValues[i].Name = "m_dgvValues" + i.ToString();
                 this.m_dgvValues[i].RowHeadersWidthSizeMode = System.Windows.Forms.DataGridViewRowHeadersWidthSizeMode.AutoSizeToAllHeaders;
                 this.m_dgvValues[i].RowTemplate.ReadOnly = true;
@@ -743,14 +745,15 @@ namespace CommonAux
             this.m_dgvSummaValues.AutoSizeColumnsMode = System.Windows.Forms.DataGridViewAutoSizeColumnsMode.Fill;
             this.m_dgvSummaValues.AutoSizeRowsMode = System.Windows.Forms.DataGridViewAutoSizeRowsMode.AllCells;
             //this.m_sumValues.ColumnHeadersHeightSizeMode = System.Windows.Forms.DataGridViewColumnHeadersHeightSizeMode.AutoSize;
-            dataGridViewCellStyle2.Alignment = System.Windows.Forms.DataGridViewContentAlignment.MiddleRight;
-            dataGridViewCellStyle2.BackColor = System.Drawing.SystemColors.Window;
-            dataGridViewCellStyle2.Font = new System.Drawing.Font("Microsoft Sans Serif", 8.25F, System.Drawing.FontStyle.Regular, System.Drawing.GraphicsUnit.Point, ((byte)(204)));
-            dataGridViewCellStyle2.ForeColor = System.Drawing.SystemColors.ControlText;
-            dataGridViewCellStyle2.SelectionBackColor = System.Drawing.SystemColors.Highlight;
-            dataGridViewCellStyle2.SelectionForeColor = System.Drawing.SystemColors.HighlightText;
-            dataGridViewCellStyle2.WrapMode = System.Windows.Forms.DataGridViewTriState.False;
-            this.m_dgvSummaValues.DefaultCellStyle = dataGridViewCellStyle2;
+            dataGridViewCellStyle = new System.Windows.Forms.DataGridViewCellStyle ();
+            dataGridViewCellStyle.Alignment = System.Windows.Forms.DataGridViewContentAlignment.MiddleRight;
+            dataGridViewCellStyle.BackColor = System.Drawing.SystemColors.Window;
+            dataGridViewCellStyle.Font = new System.Drawing.Font("Microsoft Sans Serif", 8.25F, System.Drawing.FontStyle.Regular, System.Drawing.GraphicsUnit.Point, ((byte)(204)));
+            dataGridViewCellStyle.ForeColor = System.Drawing.SystemColors.ControlText;
+            dataGridViewCellStyle.SelectionBackColor = System.Drawing.SystemColors.Highlight;
+            dataGridViewCellStyle.SelectionForeColor = System.Drawing.SystemColors.HighlightText;
+            dataGridViewCellStyle.WrapMode = System.Windows.Forms.DataGridViewTriState.False;
+            this.m_dgvSummaValues.DefaultCellStyle = dataGridViewCellStyle;
             this.m_dgvSummaValues.Name = "m_sumValues";
             //this.m_sumValues.RowHeadersWidthSizeMode = System.Windows.Forms.DataGridViewRowHeadersWidthSizeMode.AutoSizeToAllHeaders;
             this.m_dgvSummaValues.RowTemplate.ReadOnly = true;
@@ -766,8 +769,8 @@ namespace CommonAux
             m_listBoxTEC.SelectedIndexChanged += listBox_SelectedIndexChanged;
             m_listBoxGrpSgnl.Tag = INDEX_CONTROL.LB_GROUP_SIGNAL;
             m_listBoxGrpSgnl.SelectedIndexChanged += listBox_SelectedIndexChanged;
-            m_monthCalendarStart.DateChanged += monthCalendarStart_DateChanged;
-            m_monthCalendarEnd.DateChanged += monthCalendarEnd_DateChanged;
+            m_listMonthCalendar.ElementAt ((int)INDEX_MONTH_CALENDAR_DATE.START).DateChanged += monthCalendar_DateChanged;
+            m_listMonthCalendar.ElementAt ((int)INDEX_MONTH_CALENDAR_DATE.END).DateChanged += monthCalendar_DateChanged;
         }
 
         /// <summary>
@@ -778,42 +781,31 @@ namespace CommonAux
         {
             int iRes = 0;
 
-            if (!(m_monthCalendarStart.SelectionStart.Year == m_monthCalendarEnd.SelectionStart.Year))
+            if (!(m_listMonthCalendar.ElementAt ((int)INDEX_MONTH_CALENDAR_DATE.START).SelectionStart.Year == m_listMonthCalendar.ElementAt ((int)INDEX_MONTH_CALENDAR_DATE.END).SelectionStart.Year))
                 iRes = -1;
             else
-                if (!(m_monthCalendarStart.SelectionStart.Month == m_monthCalendarEnd.SelectionStart.Month))
-                iRes = -2;
-            else
-                    if (m_monthCalendarStart.SelectionStart.Day > m_monthCalendarEnd.SelectionStart.Day)
-                iRes = 1;
-            else
-                ;
+                if (!(m_listMonthCalendar.ElementAt ((int)INDEX_MONTH_CALENDAR_DATE.START).SelectionStart.Month == m_listMonthCalendar.ElementAt ((int)INDEX_MONTH_CALENDAR_DATE.END).SelectionStart.Month))
+                    iRes = -2;
+                else
+                    if (m_listMonthCalendar.ElementAt ((int)INDEX_MONTH_CALENDAR_DATE.START).SelectionStart.Day > m_listMonthCalendar.ElementAt ((int)INDEX_MONTH_CALENDAR_DATE.END).SelectionStart.Day)
+                        iRes = 1;
+                    else
+                        ;
 
             return iRes;
         }
 
-        private void monthCalendarEnd_DateChanged(object sender, DateRangeEventArgs e)
+        private void monthCalendar_DateChanged(object sender, DateRangeEventArgs e)
         {
-            m_labelEndDate.Text = m_monthCalendarEnd.SelectionStart.ToShortDateString();
+            INDEX_MONTH_CALENDAR_DATE indx = (INDEX_MONTH_CALENDAR_DATE)(sender as Control).Tag;
 
-            int iRes = validateDates();
-
-            m_markReady.Set ((int)INDEX_READY.DATE, iRes == 0);
-            m_btnStripButtonExcel.Enabled = State == STATE.READY;
-
-            if (iRes == 0)                
-                m_GetDataFromDB.ReportClear(true);
+            if (indx == INDEX_MONTH_CALENDAR_DATE.START)
+                for (int i = 0; i <= Convert.ToInt32 (TEC_LOCAL.INDEX_DATA.GRVIII); i++)
+                    m_dgvValues [i].ClearValues ();
             else
-                m_GetDataFromDB.ErrorReport("Некорректный временной диапазон");
-        }
+                ;
 
-        private void monthCalendarStart_DateChanged(object sender, DateRangeEventArgs e)
-        {
-            for (int i = 0; i <= Convert.ToInt32(TEC_LOCAL.INDEX_DATA.GRVIII); i++)
-            {
-                m_dgvValues[i].ClearValues();
-            }
-            m_labelStartDate.Text = m_monthCalendarStart.SelectionStart.ToShortDateString();
+            m_labelStartDate.Text = m_listMonthCalendar.ElementAt ((int)indx).SelectionStart.ToShortDateString();
 
             int iRes = validateDates();
 
@@ -964,16 +956,16 @@ namespace CommonAux
                     } else
                         ;
 
-                    tec_local.ClearValues(m_monthCalendarStart.SelectionStart.Date, indx);
+                    tec_local.ClearValues(m_listMonthCalendar.ElementAt ((int)INDEX_MONTH_CALENDAR_DATE.START).SelectionStart.Date, indx);
 
                     iRes = m_GetDataFromDB.Request(tec_local, iListenerId
-                        , m_monthCalendarStart.SelectionStart.Date //SelectionStart всегда == SelectionEnd, т.к. MultiSelect = false
-                        , m_monthCalendarStart.SelectionEnd.Date.AddDays(1)
+                        , m_listMonthCalendar.ElementAt ((int)INDEX_MONTH_CALENDAR_DATE.START).SelectionStart.Date //SelectionStart всегда == SelectionEnd, т.к. MultiSelect = false
+                        , m_listMonthCalendar.ElementAt ((int)INDEX_MONTH_CALENDAR_DATE.START).SelectionEnd.Date.AddDays(1)
                         , indx);
 
                     if (!(iRes < 0))
                     {
-                        dictIndxValues = tec_local.m_listValuesDate.Find(item => { return item.m_dataDate == m_monthCalendarStart.SelectionStart.Date; }).m_dictData[indx];
+                        dictIndxValues = tec_local.m_listValuesDate.Find(item => { return item.m_dataDate == m_listMonthCalendar.ElementAt ((int)INDEX_MONTH_CALENDAR_DATE.START).SelectionStart.Date; }).m_dictData[indx];
 
                         m_dgvValues[Convert.ToInt32(indx)].Update(dictIndxValues);
                         m_dgvSummaValues.Rows[Convert.ToInt32(indx)].Cells[1].Value
@@ -992,7 +984,7 @@ namespace CommonAux
                     }
                     else
                         Logging.Logg().Warning(string.Format(@"FormMain::btnLoadClick () - нет результата запроса за {0} либо группа сигналов INDEX={1} пустая..."
-                                , m_monthCalendarStart.SelectionStart.Date, indx)
+                                , m_listMonthCalendar.ElementAt ((int)INDEX_MONTH_CALENDAR_DATE.START).SelectionStart.Date, indx)
                             , Logging.INDEX_MESSAGE.NOT_SET);
                 }
             }
@@ -1043,7 +1035,7 @@ namespace CommonAux
                 Logging.Logg().Debug(msg, Logging.INDEX_MESSAGE.NOT_SET);
 
                 m_GetDataFromDB.m_listTEC.ForEach (t => {
-                    iRes = m_GetDataFromDB.Request (t, iListenerId, m_monthCalendarStart.SelectionStart.Date, m_monthCalendarEnd.SelectionStart.Date.AddDays (1));
+                    iRes = m_GetDataFromDB.Request (t, iListenerId, m_listMonthCalendar.ElementAt ((int)INDEX_MONTH_CALENDAR_DATE.START).SelectionStart.Date, m_listMonthCalendar.ElementAt ((int)INDEX_MONTH_CALENDAR_DATE.END).SelectionStart.Date.AddDays (1));
 
                     if (!(iRes < 0)) {
                         msg = string.Format (@"Получены значения для: {0}", t.m_strNameShr);

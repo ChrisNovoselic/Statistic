@@ -6,14 +6,9 @@ using System.Diagnostics;
 using System.IO;
 using System.Linq;
 using System.Text;
-using System.Windows.Forms;
-using System.Drawing;
 using System.Threading;
 using System.Data;
 using System.Globalization;
-
-using ZedGraph;
-using GemBox.Spreadsheet;
 
 using HClassLibrary;
 using StatisticCommon;
@@ -21,7 +16,6 @@ using System.Reflection;
 
 namespace CommonAux
 {
-
     /// <summary>
     /// Класс для описания ТЭЦ с параметрами сигналов
     /// </summary>
@@ -248,17 +242,18 @@ namespace CommonAux
             /// Словарь значений для групп сигналов (ключ - индекс группы сигналов, значение - группа сигналов)
             /// </summary>
             public Dictionary<INDEX_DATA, VALUES_GROUP> m_dictData;
+
             /// <summary>
             /// Конструктор специальный для реализации алгоритма расчета ТСН по ВАРИАНТУ №2
             /// </summary>
             /// <param name="dt">Дата для набора значений нового экземпляра</param>
-            /// <param name="dictValues">Словарь с исходными данными для расчета. KEYS=TG, GRII, GRVI, GRVII</param>
             public VALUES_DATE(DateTime dt)
             {
                 m_dataDate = dt;
 
                 m_dictData = new Dictionary<INDEX_DATA, VALUES_GROUP>();
             }
+
             /// <summary>
             /// Конструктор - дополнительный (с парметрами)
             /// </summary>
@@ -273,6 +268,7 @@ namespace CommonAux
 
                 SetValues(indx, listSgnls, listRecRes);
             }
+
             /// <summary>
             /// Инициализировать список доступных сигналов в группе
             ///  не вызывается при отсутствии сигналов
@@ -293,6 +289,7 @@ namespace CommonAux
                 else
                     m_dictData[indx].InitSignals(listSgnls);
             }
+
             /// <summary>
             /// Установить значения для группы сигналов по индексу группы
             /// </summary>
@@ -305,6 +302,7 @@ namespace CommonAux
 
                 SetValues(indx, listRecRes);
             }
+
             /// <summary>
             /// Установить значения для группы сигналов по индексу группы
             /// </summary>
@@ -342,6 +340,7 @@ namespace CommonAux
                             , errMsg, indx.ToString())
                         , Logging.INDEX_MESSAGE.NOT_SET);
             }
+
             /// <summary>
             /// Установить значение для сигнала группы, по ключу, за указанный час
             /// </summary>
@@ -366,6 +365,7 @@ namespace CommonAux
                             , errMsg, indx.ToString())
                         , Logging.INDEX_MESSAGE.NOT_SET);
             }
+
             /// <summary>
             /// Возвратить значения (одни сутки + все часы) в соответствии с ~ ВАРИАНТом расчета
             /// </summary>
@@ -408,6 +408,7 @@ namespace CommonAux
 
                 return arRes;
             }
+
             /// <summary>
             /// Обязательный для переопределения метод сравнения
             /// </summary>
@@ -417,6 +418,7 @@ namespace CommonAux
             {
                 return this == (VALUES_DATE)obj; ;
             }
+
             /// <summary>
             /// Обязательный для переопределения метод сравнения
             /// </summary>
@@ -556,6 +558,7 @@ namespace CommonAux
             for (int j = 0; j < this.m_arListSgnls.Count (); j++)
                 this.m_arListSgnls [j] = new List<SIGNAL> ();
         }
+
         /// <summary>
         /// Инициализация строки с идентификаторами сигналов
         ///  для использования в запросе при выборке значений
@@ -565,6 +568,7 @@ namespace CommonAux
             foreach (INDEX_DATA indx in Enum.GetValues(typeof(INDEX_DATA)))
                 m_Sensors[(int)indx] = getSensors(m_arListSgnls[(int)indx]);
         }
+
         /// <summary>
         /// Возвратить строку с идентификаторами сигналов для указанного списка
         /// </summary>
@@ -612,6 +616,7 @@ namespace CommonAux
 
             return strRes;
         }
+
         /// <summary>
         /// Привести полученные значения к часовому формату (из полу-часового)
         /// </summary>
@@ -641,6 +646,7 @@ namespace CommonAux
                 }
             }
         }
+
         /// <summary>
         /// Очистить значения
         /// </summary>

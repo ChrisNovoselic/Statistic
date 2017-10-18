@@ -6,14 +6,9 @@ using System.Diagnostics;
 using System.IO;
 using System.Linq;
 using System.Text;
-using System.Windows.Forms;
-using System.Drawing;
 using System.Threading;
 using System.Data;
 using System.Globalization;
-
-using ZedGraph;
-using GemBox.Spreadsheet;
 
 using HClassLibrary;
 using StatisticCommon;
