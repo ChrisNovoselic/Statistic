@@ -123,6 +123,8 @@ namespace Statistic {
             for (int i = 0; i < (int)INDEX_COLOR.COUNT_INDEX_COLOR; i++) {
                 // Cоздать лейбл 
                 this.m_arlblColor [i] = new System.Windows.Forms.Label ();
+
+                this.m_arlblColor [i].Tag = (INDEX_COLOR)i;
                 // Цвет заднего плана (лейбла)
                 this.m_arlblColor [i].BackColor = arLabelColor [i].color;
                 // Цвет переднего плана (надписи)
