@@ -78,7 +78,7 @@ namespace Statistic
                 public DateTime Value;
             }
 
-            public USER_DATE UserDate { get { return UserDate; } set { _handlerDb.UserDate = value; } }
+            public USER_DATE UserDate { get { return _handlerDb.UserDate; } set { _handlerDb.UserDate = value; } }
 
             private HandlerDbSignalValue _handlerDb;
 
