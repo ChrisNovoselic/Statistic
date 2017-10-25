@@ -1,6 +1,4 @@
-﻿using HClassLibrary;
-using StatisticCommon;
-using System;
+﻿using System;
 using System.Collections.Generic;
 using System.ComponentModel;
 using System.Data; //DataTable
@@ -9,6 +7,9 @@ using System.Drawing;
 using System.Linq;
 using System.Timers;
 using System.Windows.Forms; //TableLayoutPanel
+
+using HClassLibrary;
+using StatisticCommon;
 
 namespace StatisticDiagnostic
 {

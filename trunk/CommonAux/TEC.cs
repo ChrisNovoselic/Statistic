@@ -574,7 +574,7 @@ namespace CommonAux
         /// </summary>
         /// <param name="listSgnls">Список сигналов для которых требуется возвратить строку</param>
         /// <returns>Строка с идентификаторами сигналов</returns>
-        private static string getSensors(List<SIGNAL> listSgnls)
+        private string getSensors(List<SIGNAL> listSgnls)
         {
             string strRes = string.Empty;
 
@@ -607,11 +607,11 @@ namespace CommonAux
                 if (strRes.Equals(string.Empty) == false)
                     strRes = strRes.Substring(0, strRes.Length - strOR.Length);
                 else
-                    Logging.Logg().Error(string.Format(@"TEC::getSensors () - не распознан ни один сигнал для ТЭЦ...")
+                    Logging.Logg().Error($"TEC::getSensors () - не распознан ни один сигнал для ТЭЦ ID={m_Id}..."
                         , Logging.INDEX_MESSAGE.NOT_SET);
             }
             else
-                Logging.Logg().Error(string.Format(@"TEC::getSensors () - не определен ни один сигнал для ТЭЦ...")
+                Logging.Logg().Error($"TEC::getSensors () - не определен ни один сигнал для ТЭЦ ID={m_Id}..."
                     , Logging.INDEX_MESSAGE.NOT_SET);
 
             return strRes;

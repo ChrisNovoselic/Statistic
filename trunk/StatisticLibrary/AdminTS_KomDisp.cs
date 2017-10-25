@@ -339,7 +339,7 @@ namespace StatisticCommon
                 ;
 
             //Снять все признаки причин прекращения выполнения обработки событий
-            for (INDEX_WAITHANDLE_REASON i = INDEX_WAITHANDLE_REASON.ERROR; i < (INDEX_WAITHANDLE_REASON.ERROR + 1); i++)
+            for (HHandler.INDEX_WAITHANDLE_REASON i = HHandler.INDEX_WAITHANDLE_REASON.ERROR; i < (HHandler.INDEX_WAITHANDLE_REASON.ERROR + 1); i++)
                 ((ManualResetEvent)m_waitHandleState[(int)i]).Reset();
 
             foreach (TECComponent comp in allTECComponents)

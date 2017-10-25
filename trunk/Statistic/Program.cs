@@ -22,8 +22,6 @@ namespace Statistic
         static void Main()
         {
             int iRes = 0;
-            //Если назначить неизвестный тип логирования - 1-е сообщения б. утеряны
-            Logging.SetMode ();
 
             ////Если в строке Assembly заменить номер Построения на "*", номер Ревизия на "очистить"
             //Version version = Assembly.GetExecutingAssembly().GetName().Version;
@@ -34,7 +32,7 @@ namespace Statistic
             s_mtxApp = new Mutex(true, Logging.AppName, out bRun);  
             if (bRun == true)  
             {
-                try { ProgramBase.Start (); }
+                try { ProgramBase.Start (Logging.LOG_MODE.DB, true); }
                 catch (Exception e) {
                     //MessageBox.Show(null, @"Возможно, повторный запуск приложения" + @".\nили обратитесь к оператору тех./поддержки по тел. 4444 или по тел. 289-03-37.", "Ошибка инициализации!", MessageBoxButtons.OK, MessageBoxIcon.Stop);
                     MessageBox.Show(null, e.Message + "\nили обратитесь к оператору тех./поддержки по тел. 4444 или по тел. 289-03-37.", "Ошибка инициализации!", MessageBoxButtons.OK, MessageBoxIcon.Stop);

@@ -16,7 +16,7 @@ namespace trans_tg
         [STAThread]
         static void Main()
         {
-            ProgramBase.Start();
+            ProgramBase.Start(Logging.LOG_MODE.FILE_EXE, true);
 
             FormMainTransTG formMain = null;
 

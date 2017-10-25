@@ -16,7 +16,7 @@ namespace CommonAux
         [STAThread]
         static void Main()
         {
-            ProgramBase.Start();
+            ProgramBase.Start(Logging.LOG_MODE.FILE_EXE, true);
 
             Application.Run(new FormMain());
             ProgramBase.Exit();

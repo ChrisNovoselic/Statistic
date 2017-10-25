@@ -8,12 +8,10 @@ using System.Threading; //ManualResetEvent
 using System.Drawing; //Color
 using System.Data;
 
-using ZedGraph;
-
-using HClassLibrary;
 using StatisticCommon;
 using System.Linq;
 using System.Data.Common;
+using HClassLibrary;
 
 namespace Statistic
 {
@@ -23,8 +21,7 @@ namespace Statistic
     /// </summary>
     partial class PanelAISKUESOTIASSODay
     {
-        private partial class HandlerSignalQueue : HHandlerQueue
-        {
+        private partial class HandlerSignalQueue : HHandlerQueue {
             public enum EVENT { /*SET_TEC,*/ LIST_SIGNAL = 11, CUR_VALUES, CHECK_VALUES }
             ///// <summary>
             ///// Делегат по окончанию обработки очередного обработанного из очереди события
@@ -75,7 +72,7 @@ namespace Statistic
             {
                 public int UTC_OFFSET;
 
-                public DateTime Value;
+                public System.DateTime Value;
             }
 
             public USER_DATE UserDate { get { return _handlerDb.UserDate; } set { _handlerDb.UserDate = value; } }
@@ -84,7 +81,12 @@ namespace Statistic
 
             public Dictionary<CONN_SETT_TYPE, IList<SIGNAL>> Signals;
 
-            public Dictionary<CONN_SETT_TYPE, VALUES> Values;
+            private Dictionary<CONN_SETT_TYPE, VALUES> _values;
+
+            public IEnumerable<VALUE> Values(CONN_SETT_TYPE type)
+            {
+                return _values.ContainsKey(type) == true ? _values [type].m_valuesHours : new List<VALUE>();
+            }
 
             public Action<DelegateStringFunc, DelegateStringFunc, DelegateStringFunc, DelegateBoolFunc> SetDelegateReport;
             public Action<bool> ReportClear;
@@ -93,7 +95,7 @@ namespace Statistic
                 : base ()
             {
                 Signals = new Dictionary<CONN_SETT_TYPE, IList<SIGNAL>>();
-                Values = new Dictionary<CONN_SETT_TYPE, VALUES>();
+                _values = new Dictionary<CONN_SETT_TYPE, VALUES>();
 
                 _handlerDb = new HandlerDbSignalValue(iListenerConfigDbId, listTEC, _types);                
                 SetDelegateReport += new Action<DelegateStringFunc, DelegateStringFunc, DelegateStringFunc, DelegateBoolFunc>(_handlerDb.SetDelegateReport);
@@ -178,7 +180,14 @@ namespace Statistic
 
             protected override INDEX_WAITHANDLE_REASON StateErrors(int state, int req, int res)
             {
-                throw new NotImplementedException();
+                INDEX_WAITHANDLE_REASON indxReason = INDEX_WAITHANDLE_REASON.SUCCESS;
+
+                ItemQueue itemQueue = Peek;
+
+                Logging.Logg().Error($"HandlerSignalQueue::StateRequest (CONN_SETT_TYPE={(CONN_SETT_TYPE)itemQueue.Pars [1]}, event={(EVENT)state}) - необработанное событие..."
+                    , Logging.INDEX_MESSAGE.NOT_SET);
+
+                return indxReason;
             }
 
             protected override int StateRequest(int state)
@@ -198,10 +207,19 @@ namespace Statistic
                     case EVENT.CHECK_VALUES:
                         type = (CONN_SETT_TYPE)itemQueue.Pars[0];
 
-                        _handlerDb.Request(type, Signals[type].ElementAt((int)itemQueue.Pars[1]).kks_code);
+                        iRes = (Signals.ContainsKey (type) == false) ? -4
+                            : !((int)itemQueue.Pars [1] < Signals [type].Count) ? -3
+                                : (string.IsNullOrEmpty (Signals [type].ElementAt ((int)itemQueue.Pars [1]).kks_code) == true) ? -2
+                                    : 0;
+                        if (!(iRes < 0))
+                            _handlerDb.Request (type, Signals [type].ElementAt ((int)itemQueue.Pars [1]).kks_code);
+                        else
+                            Logging.Logg ().Error ($"HandlerSignalQueue::StateRequest (CONN_SETT_TYPE={type}, event={(EVENT)state}) - запрос не отправлен..."
+                                , Logging.INDEX_MESSAGE.NOT_SET);
                         break;
                     default:
-                        Logging.Logg().Error(string.Format(@"HandlerSignalQueue::StateRequest (CONN_SETT_TYPE={0}, event={1}) - необработанное событие...", type, (EVENT)state), Logging.INDEX_MESSAGE.NOT_SET);
+                        Logging.Logg().Error(string.Format(@"HandlerSignalQueue::StateRequest (CONN_SETT_TYPE={0}, event={1}) - необработанное событие...", type, (EVENT)state)
+                            , Logging.INDEX_MESSAGE.NOT_SET);
 
                         iRes = -1;
                         break;
@@ -233,10 +251,10 @@ namespace Statistic
                     case EVENT.CHECK_VALUES:
                         type = (CONN_SETT_TYPE)itemQueue.Pars[0];
 
-                        if (Values.ContainsKey(type) == false)
-                            Values.Add(type, VALUES.Copy(obj as VALUES));
+                        if (_values.ContainsKey(type) == false)
+                            _values.Add(type, VALUES.Copy(obj as VALUES));
                         else
-                            Values[type] = VALUES.Copy(obj as VALUES);
+                            _values[type] = VALUES.Copy(obj as VALUES);
                         // дополнительно передать ккс-код (для поиска столбца)
                         arg = new EventArgsDataHost(null, new object[] { (EVENT)state, type, Signals[type].ElementAt((int)itemQueue.Pars[1]).kks_code });
                         break;
@@ -252,7 +270,7 @@ namespace Statistic
 
             protected override void StateWarnings(int state, int req, int res)
             {
-                throw new NotImplementedException();
+                throw new System.NotImplementedException ();
             }
         }
     }

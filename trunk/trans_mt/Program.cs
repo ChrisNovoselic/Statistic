@@ -17,9 +17,7 @@ namespace trans_mt
         [STAThread]
         static void Main()
         {
-            Logging.s_mode = Logging.LOG_MODE.FILE_EXE;
-
-            ProgramBase.Start();
+            ProgramBase.Start(Logging.LOG_MODE.FILE_EXE, true);
 
             FormMainTransMT formMain = null;
 

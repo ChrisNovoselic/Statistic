@@ -19,17 +19,6 @@ namespace StatisticTrans
     /// </summary>
     public abstract partial class FormMainTrans : FormMainStatistic
     {
-        [DllImport("user32.dll")]
-        /// <summary>
-        /// Модификатор extern используется для объявления метода с внешней реализацией. 
-        ///  Метод SendMessage (послать сообщение) импортируется из библиотеки User32.dll. 
-        /// </summary>
-        /// <param name="hWnd">Дескриптор окна, которому отрправляется сообщение</param>
-        /// <param name="Msg">Сообщение</param>
-        /// <param name="wParam">Аргумент - 1</param>
-        /// <param name="lParam">Аргумент - 2</param>
-        /// <returns></returns>
-        static extern IntPtr SendMessage(IntPtr hWnd, int Msg, int wParam, int lParam);
         ComponentTesting CT;//
         private const Int32 TIMER_SERVICE_MIN_INTERVAL = 66666;
 
@@ -1432,7 +1421,7 @@ namespace StatisticTrans
                     enabledUIControl(false);
                     m_dgwAdminTable.Enabled = false;
                     InitializeTimerService();
-                    SendMessage(this.Handle, 0x112, 0xF020, 0);
+                    WinApi.SendMessage(this.Handle, 0x112, 0xF020, 0);
                     timerService.Start();
                     //timerService.Change (0, ;
                 }

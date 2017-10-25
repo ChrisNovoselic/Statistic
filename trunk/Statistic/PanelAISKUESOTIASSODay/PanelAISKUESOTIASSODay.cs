@@ -292,8 +292,8 @@ namespace Statistic
                     if (m_dictDataGridViewValues[type].ActionColumn(signal.kks_code
                         , signal.name_shr) == true) {
                         // запросить значения для заполнения нового столбца
-                        //??? оптимизация, сравнение с предыдущим, полученным по 'SELECT', набором значений - должны совпадать => запрос не требуется
-                        m_dictDataGridViewValues[type].Fill(m_HandlerQueue.Values[type].m_valuesHours);
+                        //??? оптимизация, сравнение с предыдущим, полученным по 'SELECT', набором значений - должны совпадать => запрос не требуется                        
+                        m_dictDataGridViewValues [type].Fill (m_HandlerQueue.Values(type));
                     } else
                         // столбец удален - ничего не делаем
                         ;
@@ -557,9 +557,9 @@ namespace Statistic
             Color colorChart = Color.Empty
                 , colorPCurve = Color.Empty;
 
-            if (m_HandlerQueue.Values[type].m_valuesHours.Count > 0) {                
+            if (m_HandlerQueue.Values(type).Count() > 0) {                
                 // отобразить
-                m_dictZGraphValues[type].Draw(m_HandlerQueue.Values[type].m_valuesHours
+                m_dictZGraphValues[type].Draw(m_HandlerQueue.Values(type)
                     , type == CONN_SETT_TYPE.DATA_AISKUE ? @"АИИСКУЭ" : type == CONN_SETT_TYPE.DATA_SOTIASSO ? @"СОТИАССО" : @"Неизвестный тип", textGraphCurDateTime);
             } else
                 Logging.Logg().Error(string.Format(@"PanelSOTIASSODay::draw (type={0}) - нет ни одного значения за [{1}]...", type, m_HandlerQueue.UserDate), Logging.INDEX_MESSAGE.NOT_SET);
@@ -667,7 +667,7 @@ namespace Statistic
                         , signal.name_shr) == true) {
                         // запросить значения для заполнения нового столбца
                         //??? оптимизация, сравнение с предыдущим, полученным по 'SELECT', набором значений - должны совпадать => запрос не требуется
-                        m_dictDataGridViewValues[type].Fill(m_HandlerQueue.Values[type].m_valuesHours);
+                        m_dictDataGridViewValues[type].Fill(m_HandlerQueue.Values(type));
                     } else
                         // столбец удален - ничего не делаем
                         ;

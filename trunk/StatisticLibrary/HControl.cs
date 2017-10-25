@@ -1,6 +1,4 @@
-﻿using HClassLibrary;
-using StatisticCommon;
-using System;
+﻿using System;
 using System.Collections;
 using System.Collections.Generic;
 using System.ComponentModel;
@@ -19,6 +17,7 @@ using System.Timers;
 using System.Windows.Forms;
 using ZedGraph;
 
+using HClassLibrary;
 
 namespace StatisticCommon
 {

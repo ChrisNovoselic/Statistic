@@ -103,16 +103,25 @@ namespace Statistic
             /// <param name="values">Значения для столбца</param>
             private void fill(int iColumn, IEnumerable<HandlerSignalQueue.VALUE> values)
             {
+                float fValue = -1F;
+
                 if (iColumn > 0)
-                    foreach (DataGridViewRow row in Rows)
-                        if (row.Index < values.Count())
-                            try {
-                                row.Cells[iColumn].Value = (from value in values where value.index_stamp == (int)row.Tag select value.value).ElementAt(0);
-                            } catch (Exception e) {
-                                Logging.Logg().Error(string.Format(@"PanelSOTIASSODay.HDataGridView::Fill (iColumn={0}) - не найдено значение для строки Index={1}, Tag={2}", iColumn, row.Index, row.Tag), Logging.INDEX_MESSAGE.NOT_SET);
-                            }
-                        else
-                            row.Cells[iColumn].Value = values.Sum(v => v.value);
+                    if (values.Count () > 0)
+                        foreach (DataGridViewRow row in Rows)
+                            if (row.Index < values.Count())
+                                try {
+                                    fValue = (from value in values where value.index_stamp == (int)row.Tag select value.value).ElementAt (0);
+                                    row.Cells[iColumn].Value = fValue;
+                                    row.Cells [iColumn].ToolTipText = fValue.ToString ();
+                                } catch (Exception e) {
+                                    row.Cells [iColumn].Value = @"-";
+
+                                    Logging.Logg().Warning(string.Format(@"PanelSOTIASSODay.HDataGridView::Fill (iColumn={0}) - не найдено значение для строки Index={1}, Tag={2}", iColumn, row.Index, row.Tag), Logging.INDEX_MESSAGE.NOT_SET);
+                                }
+                            else
+                                row.Cells[iColumn].Value = values.Sum(v => v.value);
+                    else
+                        Logging.Logg ().Error ($"PanelSOTIASSODay.HDataGridView::fill (iColumn={iColumn}) - нет ни одного значения для ...", Logging.INDEX_MESSAGE.NOT_SET);
                 else
                     Logging.Logg().Error(string.Format(@"PanelSOTIASSODay.HDataGridView::fill (iColumn={0}) - номер столбца для значений не корректен...", iColumn), Logging.INDEX_MESSAGE.NOT_SET);
             }
@@ -168,7 +177,7 @@ namespace Statistic
                 if (ColumnCount > 1) {
                     foreach (DataGridViewColumn column in Columns) {
                         if (column.Index > 0)
-                            tableRes.Columns.Add(column.HeaderText, typeof(float));
+                            tableRes.Columns.Add(column.HeaderText, typeof(string));
                         else
                         // служебный, скрытый столбец
                             ;
@@ -183,7 +192,7 @@ namespace Statistic
                                     //if (float.TryParse((string)row.Cells[column.Index].Value, out value) == true)
                                         rowValues[column.Index - 1] =
                                             //value
-                                            row.Cells[column.Index].Value
+                                            row.Cells[column.Index].Value.ToString()
                                                 ;
                                     //else
                                     //    rowValues[column.Index - 1] = 0F;

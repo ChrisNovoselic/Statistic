@@ -69,7 +69,7 @@
   </PropertyGroup>
   <ItemGroup>
     <Reference Include="HClassLibrary">
-      <HintPath>..\..\ExternalDll\HClassLibrary.dll</HintPath>
+      <HintPath>..\..\ExternalDLL\HClassLibrary.dll</HintPath>
     </Reference>
     <Reference Include="Infrastructure, Version=1.4.3.111, Culture=neutral, processorArchitecture=MSIL">
       <SpecificVersion>False</SpecificVersion>

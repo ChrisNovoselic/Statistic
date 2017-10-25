@@ -104,7 +104,7 @@
     </Compile>
     <Compile Include="FormMain.Designer.cs">
       <DependentUpon>FormMain.cs</DependentUpon>
-    </Compile>    
+    </Compile>
     <Compile Include="GetDataFromDB.cs" />
     <Compile Include="PanelCommonAux.cs" />
     <Compile Include="Program.cs" />

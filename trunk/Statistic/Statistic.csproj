@@ -115,8 +115,7 @@
       <SpecificVersion>False</SpecificVersion>
       <HintPath>..\..\ExternalDLL\GemBox.Spreadsheet.dll</HintPath>
     </Reference>
-    <Reference Include="HClassLibrary, Version=2.0.6.23, Culture=neutral, PublicKeyToken=2f5f95fc94cb3397, processorArchitecture=MSIL">
-      <SpecificVersion>False</SpecificVersion>
+    <Reference Include="HClassLibrary">
       <HintPath>..\..\ExternalDLL\HClassLibrary.dll</HintPath>
     </Reference>
     <Reference Include="Microsoft.Office.Interop.Excel, Version=15.0.0.0, Culture=neutral, PublicKeyToken=71e9bce111e9429c, processorArchitecture=MSIL">

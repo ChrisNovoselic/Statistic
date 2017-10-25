@@ -5,7 +5,6 @@ using System.Windows.Forms;
 //using System.ComponentModel;
 using System.Data;
 using System.Data.Common;
-
 using HClassLibrary;
 
 namespace StatisticCommon

@@ -7,8 +7,8 @@ using System.Threading;
 using System.Globalization; //CultureInfo
 using System.ComponentModel;
 
-using HClassLibrary;
 using StatisticCommon;
+using HClassLibrary;
 
 namespace StatisticAlarm
 {
@@ -1473,7 +1473,7 @@ namespace StatisticAlarm
         /// Обработчик запросов на получение данных от 'PanelAlarm'
         ///  в котором реализован интерфейс 'IDataHost'
         /// </summary>
-        /// <param name="obj"></param>
+        /// <param name="obj">Аргумент, детализирующий выполнение запрос</param>
         public void OnEvtDataAskedHost (object obj)
         {
             Push ((obj as EventArgsDataHost).reciever, new object [] { (obj as EventArgsDataHost).par });
