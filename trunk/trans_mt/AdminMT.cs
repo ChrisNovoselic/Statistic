@@ -5,7 +5,7 @@ using System.Text;
 
 using System.Data;
 
-using HClassLibrary;
+
 using StatisticCommon;
 using StatisticTrans;
 using StatisticTransModes;
@@ -32,7 +32,7 @@ namespace trans_mt
         protected override void getPPBRValuesRequest(TEC t, TECComponent comp, DateTime date/*, AdminTS.TYPE_FIELDS mode*/)
         {
             string query = string.Empty;
-            DateTime dtReq = date.Date.Add(-HDateTime.TS_MSK_OFFSET_OF_UTCTIMEZONE);
+            DateTime dtReq = date.Date.Add(-ASUTP.Core.HDateTime.TS_MSK_OFFSET_OF_UTCTIMEZONE);
             int i = -1;
 
             query += @"SELECT [objName], [idFactor], [PBR_NUMBER], [Datetime],"
@@ -48,7 +48,7 @@ namespace trans_mt
                 + @" ORDER BY [Datetime], [PBR_NUMBER]"
                 ;
 
-            DbSources.Sources().Request(m_IdListenerCurrent, query);
+            ASUTP.Database.DbSources.Sources().Request(m_IdListenerCurrent, query);
 
             //Logging.Logg().Debug("AdminMT::GetPPBRValuesRequest (TEC, TECComponent, DateTime, AdminTS.TYPE_FIELDS) - вЫход...: query=" + query, Logging.INDEX_MESSAGE.NOT_SET);
         }
@@ -79,7 +79,7 @@ namespace trans_mt
                         //hourRows = table.Select(@"Datetime='" + date.Date.AddHours(hour + 1 - ts.Hours).ToString(@"yyyyMMdd HH:00:00.000") + @"'");
                         //hourRows = table.Select(@"Datetime='" + date.Date.AddHours(hour + 1 - ts.Hours) + @"'");
                         //hourRows = table.Select(@"Datetime=#" + date.Date.AddHours(hour + 1 - ts.Hours).ToString(@"yyyyMMdd HH:00:00.000") + @"#");
-                        hourRows = table.Select(string.Format(@"objName={0} AND Datetime=#{1}#", MTermId, date.Date.AddHours(hour - HDateTime.TS_MSK_OFFSET_OF_UTCTIMEZONE.Hours).ToString(@"yyyy-MM-dd HH:00:00.000")));
+                        hourRows = table.Select(string.Format(@"objName={0} AND Datetime=#{1}#", MTermId, date.Date.AddHours(hour - ASUTP.Core.HDateTime.TS_MSK_OFFSET_OF_UTCTIMEZONE.Hours).ToString(@"yyyy-MM-dd HH:00:00.000")));
 
                         //Присвоить исходные для часа значения
                         //PBRNumber = -1;
@@ -258,7 +258,7 @@ namespace trans_mt
                     }
                     catch (Exception e)
                     {
-                        Logging.Logg().Exception(e, @"AdminMT::GetPPBRValuesResponse () - ...", Logging.INDEX_MESSAGE.NOT_SET);
+                        ASUTP.Logging.Logg().Exception(e, @"AdminMT::GetPPBRValuesResponse () - ...", ASUTP.Logging.INDEX_MESSAGE.NOT_SET);
                     }
                 } // цикл-окончание по номеру часа 'hour'
             } // цикл-окончание по идентификатору составного элемента (только ГТП3-6 НТЭЦ-5)
@@ -319,7 +319,7 @@ namespace trans_mt
 
             if (m_list_tec.Count > 0)
             {
-                m_IdListenerCurrent = DbSources.Sources().Register(m_list_tec[0].connSetts[(int)StatisticCommon.CONN_SETT_TYPE.MTERM], true, @"Modes-Terminale");
+                m_IdListenerCurrent = ASUTP.Database.DbSources.Sources().Register(m_list_tec[0].connSetts[(int)StatisticCommon.CONN_SETT_TYPE.MTERM], true, @"Modes-Terminale");
 
                 bRes = false;
             }

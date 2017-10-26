@@ -1,4 +1,4 @@
-﻿using HClassLibrary;
+﻿//using HClassLibrary;
 using StatisticCommon;
 using System;
 using System.Collections;
@@ -17,7 +17,11 @@ using System.Text;
 using System.Threading;
 using System.Timers;
 using System.Windows.Forms;
-
+using ASUTP.Core;
+using ASUTP.Database;
+using ASUTP;
+using ASUTP.Network;
+using ASUTP.Helper;
 
 namespace StatisticAnalyzer
 {
@@ -954,7 +958,7 @@ namespace StatisticAnalyzer
             err = -1;
             int idListener = -1;
 
-            ConnectionSettings connSett = FormMainBaseWithStatusStrip.s_listFormConnectionSettings[(int)CONN_SETT_TYPE.CONFIG_DB].getConnSett();
+            ConnectionSettings connSett = ASUTP.Forms.FormMainBaseWithStatusStrip.s_listFormConnectionSettings[(int)CONN_SETT_TYPE.CONFIG_DB].getConnSett();
             idListener = DbSources.Sources().Register(connSett, false, CONN_SETT_TYPE.CONFIG_DB.ToString());
             DbConnection connConfigDB = DbSources.Sources().GetConnection(idListener, out err);
 
@@ -2335,7 +2339,7 @@ namespace StatisticAnalyzer
                 idMainDB = -1,
                 idListener = -1;
 
-            ConnectionSettings connSett = FormMainBaseWithStatusStrip.s_listFormConnectionSettings[(int)CONN_SETT_TYPE.CONFIG_DB].getConnSett();
+            ConnectionSettings connSett = ASUTP.Forms.FormMainBaseWithStatusStrip.s_listFormConnectionSettings[(int)CONN_SETT_TYPE.CONFIG_DB].getConnSett();
             idListener = DbSources.Sources().Register(connSett, false, CONN_SETT_TYPE.CONFIG_DB.ToString());
             DbConnection connConfigDB = DbSources.Sources().GetConnection(idListener, out err);
 

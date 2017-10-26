@@ -7,8 +7,10 @@ using System.Drawing;
 using System.Linq;
 using System.Windows.Forms;
 
-using HClassLibrary;
+
 using StatisticCommon;
+using ASUTP.Core;
+using ASUTP;
 /// <summary>
 /// Пространство имен Statistic 
 /// </summary>

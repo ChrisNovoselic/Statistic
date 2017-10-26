@@ -3,8 +3,10 @@ using System.Collections.Generic;
 using System.Linq;
 using System.Windows.Forms;
 
-using HClassLibrary;
+//using HClassLibrary;
 using StatisticCommon;
+using ASUTP.Helper;
+using ASUTP;
 
 namespace StatisticAnalyzer
 {

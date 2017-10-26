@@ -12,8 +12,11 @@ using System.Threading;
 using System.Data;
 using System.Globalization;
 
-using HClassLibrary;
+//using HClassLibrary;
 using StatisticCommon;
+using ASUTP.Core;
+using ASUTP.Database;
+using ASUTP;
 
 namespace CommonAux
 {
@@ -106,7 +109,7 @@ namespace CommonAux
     /// <summary>
     /// Класс для сохраннеия значений в MS Excel (задача экспорта)
     /// </summary>
-    public class MSExcelIO : HClassLibrary.MSExcelIO
+    public class MSExcelIO : ASUTP.MSExcel.MSExcelIO
     {
         /// <summary>
         /// Перечисление - возможные значения для сохраняемых в книгу MS Excel значений

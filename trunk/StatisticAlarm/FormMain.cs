@@ -9,8 +9,13 @@ using System.Windows.Forms;
 using System.IO; //...File
 using System.Threading; //...Thread
 
-using HClassLibrary;
+//using HClassLibrary;
 using StatisticCommon;
+using ASUTP.Forms;
+using ASUTP.Database;
+using ASUTP.Helper;
+using ASUTP;
+using ASUTP.Core;
 
 namespace StatisticAlarm
 {
@@ -51,8 +56,7 @@ namespace StatisticAlarm
         /// <summary>
         /// Класс обработки "своих" команд
         /// </summary>
-        private class handlerCmd : HCmd_Arg
-        {
+        private class handlerCmd : ASUTP.Helper.HCmd_Arg {
             public static bool s_bMinimize = false;
             /// <summary>
             /// Конструктор - основной (с параметрами)
@@ -204,9 +208,9 @@ namespace StatisticAlarm
             HAdmin.SeasonAction = Int32.Parse(formParameters.m_arParametrSetup[(int)FormParameters.PARAMETR_SETUP.SEASON_ACTION]);
 
             //Параметры обработки запросов к БД...
-            DbInterface.MAX_RETRY = Int32.Parse(formParameters.m_arParametrSetup[(int)FormParameters.PARAMETR_SETUP.MAX_ATTEMPT]);
-            DbInterface.MAX_WAIT_COUNT = Int32.Parse(formParameters.m_arParametrSetup[(int)FormParameters.PARAMETR_SETUP.WAITING_COUNT]);
-            DbInterface.WAIT_TIME_MS = Int32.Parse(formParameters.m_arParametrSetup[(int)FormParameters.PARAMETR_SETUP.WAITING_TIME]);
+            Constants.MAX_RETRY = Int32.Parse(formParameters.m_arParametrSetup[(int)FormParameters.PARAMETR_SETUP.MAX_ATTEMPT]);
+            Constants.MAX_WAIT_COUNT = Int32.Parse(formParameters.m_arParametrSetup[(int)FormParameters.PARAMETR_SETUP.WAITING_COUNT]);
+            Constants.WAIT_TIME_MS = Int32.Parse(formParameters.m_arParametrSetup[(int)FormParameters.PARAMETR_SETUP.WAITING_TIME]);
 
             //Параметры валидности даты/времени получения данных СОТИАССО...
             TecViewAlarm.SEC_VALIDATE_TMVALUE = Int32.Parse(formParameters.m_arParametrSetup[(int)FormParameters.PARAMETR_SETUP.VALIDATE_TM_VALUE]);

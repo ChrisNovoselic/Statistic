@@ -6,16 +6,15 @@ using System.Collections.Generic;
 using System.Data;
 using System.Data.Common;
 
-using HClassLibrary;
 using StatisticTrans;
+using ASUTP.Database;
 
 namespace StatisticCommon
 {
     /// <summary>
     /// Класс для описания объекта управления установленными соединенями
     /// </summary>
-    public class DbMCSources : DbSources
-    {
+    public class DbMCSources : ASUTP.Database.DbSources {
         /// <summary>
         /// Уникальный идентификатор Модес-Центра
         /// </summary>

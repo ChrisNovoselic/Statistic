@@ -10,9 +10,11 @@ using System.Threading;
 using System.Globalization;
 using System.Drawing;
 
-using HClassLibrary;
+
 using StatisticCommon;
 using StatisticAlarm;
+using ASUTP.Core;
+using ASUTP;
 
 namespace Statistic
 {

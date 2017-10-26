@@ -10,9 +10,10 @@ using System.Threading;
 using System.Data;
 using System.Globalization;
 
-using HClassLibrary;
+//using HClassLibrary;
 using StatisticCommon;
 using System.Reflection;
+using ASUTP;
 
 namespace CommonAux
 {

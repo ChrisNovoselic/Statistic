@@ -1,4 +1,7 @@
-﻿using System;
+﻿using ASUTP.Database;
+using ASUTP.Forms;
+using ASUTP.Helper;
+using System;
 using System.Collections.Generic;
 using System.ComponentModel;
 using System.Linq;
@@ -8,7 +11,7 @@ using System.Threading;
 //using System.Runtime.InteropServices;
 using System.Windows.Forms;
 
-using HClassLibrary;
+
 
 namespace StatisticCommon
 {

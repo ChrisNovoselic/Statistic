@@ -10,8 +10,14 @@ using System.Text;
 
 using System.Windows.Forms; //..., CheckBox
 
-using HClassLibrary;
+//using HClassLibrary;
 using StatisticCommon;
+using ASUTP.Core;
+using ASUTP.Database;
+using ASUTP.PlugIn;
+using ASUTP.Control;
+using ASUTP;
+using ASUTP.Forms;
 
 namespace StatisticAlarm
 {
@@ -22,7 +28,7 @@ namespace StatisticAlarm
     /// <summary>
     /// Класс панели для отображения с списка событий
     /// </summary>
-    public partial class PanelAlarm : PanelStatistic, IDataHost, IDisposable
+    public partial class PanelAlarm : PanelStatistic, ASUTP.PlugIn.IDataHost, IDisposable
     {
         /// <summary>
         /// Список объектов ТЭЦ
@@ -72,7 +78,7 @@ namespace StatisticAlarm
         /// <param name="markQueries">Массив признаков кстановления связи с тем или иным источником данных</param>
         /// <param name="mode">Режим работы панели</param>
         /// <param name="backColor">Цвет фона панели и всех дочерних элементов управления</param>
-        public PanelAlarm (int iListenerConfigDB, HMark markQueries, MODE mode, Color backColor)
+        public PanelAlarm (int iListenerConfigDB, ASUTP.Core.HMark markQueries, MODE mode, Color backColor)
             : base(MODE_UPDATE_VALUES.AUTO, backColor)
         {
             //Инициализация собственных значений
@@ -104,7 +110,7 @@ namespace StatisticAlarm
         /// <param name="iListenerConfigDB">Идентификатор установленного соединения с БД</param>
         /// <param name="markQueries">Массив признаков кстановления связи с тем или иным источником данных</param>
         /// <param name="mode">Режим работы панели</param>
-        private int initialize(int iListenerConfigDB, HMark markQueries, MODE mode)
+        private int initialize(int iListenerConfigDB, ASUTP.Core.HMark markQueries, MODE mode)
         {
             int err = -1 //Признак выполнения метода/функции
                          ////Зарегистрировать соединение/получить идентификатор соединения
@@ -310,7 +316,7 @@ namespace StatisticAlarm
         /// <summary>
         /// Инициализация объекта регистрации выполнения условий сигнализаций
         /// </summary>
-        private void initAdminAlarm(ConnectionSettings connSett, MODE mode, HMark markQueries, bool bWorkCheked)
+        private void initAdminAlarm(ConnectionSettings connSett, MODE mode, ASUTP.Core.HMark markQueries, bool bWorkCheked)
         {
             m_adminAlarm = new AdminAlarm(connSett
                 , mode
@@ -1521,8 +1527,7 @@ namespace StatisticAlarm
 
         #region Код, автоматически созданный конструктором компонентов
 
-        private class PanelView : HPanelCommon
-        {
+        private class PanelView : ASUTP.Control.HPanelCommon {
             public PanelView () : base (1, 8)
             {
                 initializeLayoutStyleEvenly ();

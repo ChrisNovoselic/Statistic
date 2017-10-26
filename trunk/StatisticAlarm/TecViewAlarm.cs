@@ -7,8 +7,10 @@ using System.Threading;
 using System.Drawing; //Color
 using System.Globalization; //...CultureInfo
 
-using HClassLibrary;
+//using HClassLibrary;
 using StatisticCommon;
+using ASUTP;
+using ASUTP.Core;
 
 namespace StatisticAlarm
 {
@@ -194,7 +196,7 @@ namespace StatisticAlarm
             //return EventAlarmDetect(m_tec.m_id, curHour, curMinute);
 
             //Признак выполнения функции
-            int iRes = (int)HHandler.INDEX_WAITHANDLE_REASON.SUCCESS
+            int iRes = (int)ASUTP.Helper.HHandler.INDEX_WAITHANDLE_REASON.SUCCESS
                 , iDebug = -1 //-1 - нет отладки, 0 - раб./отладка, 1 - имитирование
                 , cntTGTurnOn = 0 // кол-во вкл. ТГ
                 , cntTGTurnUnknown = allTECComponents[indxTECComponents].m_listLowPointDev.Count // кол-во ТГ с неизвестным состоянием

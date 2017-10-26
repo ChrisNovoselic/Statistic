@@ -3,8 +3,10 @@ using System.Collections.Generic;
 using System.Text;
 using System.Data;
 using System.Data.Common;
+using ASUTP.Database;
+using ASUTP.Core;
 
-using HClassLibrary;
+
 
 namespace StatisticCommon
 {

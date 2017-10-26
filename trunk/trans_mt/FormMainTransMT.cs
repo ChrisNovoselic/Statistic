@@ -7,7 +7,6 @@ using System.Linq;
 using System.Text;
 using System.Windows.Forms;
 
-using HClassLibrary;
 using StatisticCommon;
 using StatisticTrans;
 using StatisticTransModes;
@@ -17,7 +16,7 @@ namespace trans_mt
     public partial class FormMainTransMT : FormMainTransModes
     {
         public FormMainTransMT()
-            : base((int)ProgramBase.ID_APP.TRANS_MODES_TERMINALE)
+            : base((int)ASUTP.Helper.ProgramBase.ID_APP.TRANS_MODES_TERMINALE)
         {
             this.notifyIconMain.Icon =
             this.Icon = trans_mt.Properties.Resources.statistic6;
@@ -59,7 +58,7 @@ namespace trans_mt
             //string strTypeField = m_sFileINI.GetMainValueOfKey(@"РДГФорматТаблицаНазначение");
             int idListener = -1;
 
-            HMark markQueries = new HMark(new int[] { (int)StatisticCommon.CONN_SETT_TYPE.ADMIN, (int)StatisticCommon.CONN_SETT_TYPE.PBR, (int)StatisticCommon.CONN_SETT_TYPE.MTERM });
+            ASUTP.Core.HMark markQueries = new ASUTP.Core.HMark (new int[] { (int)StatisticCommon.CONN_SETT_TYPE.ADMIN, (int)StatisticCommon.CONN_SETT_TYPE.PBR, (int)StatisticCommon.CONN_SETT_TYPE.MTERM });
             //markQueries.Marked((int)StatisticCommon.CONN_SETT_TYPE.ADMIN);
             //markQueries.Marked((int)StatisticCommon.CONN_SETT_TYPE.PBR);
             //markQueries.Marked((int)StatisticCommon.CONN_SETT_TYPE.MTERM);
@@ -88,7 +87,7 @@ namespace trans_mt
                     }
                     catch (Exception e)
                     {
-                        Logging.Logg().Exception(e, "FormMainTransMT::FormMainTransMT ()", Logging.INDEX_MESSAGE.NOT_SET);
+                        ASUTP.Logging.Logg().Exception(e, "FormMainTransMT::FormMainTransMT ()", ASUTP.Logging.INDEX_MESSAGE.NOT_SET);
                         //ErrorReport("Ошибка соединения. Переход в ожидание.");
                         //setUIControlConnectionSettings(i);
                         break;

@@ -9,8 +9,12 @@ using System.IO;
 using System.Threading; //для ManualResetEvent
 using System.Globalization;
 
-using HClassLibrary;
+
 using StatisticCommon;
+using ASUTP.Core;
+using Microsoft.Office.Interop.Excel;
+using ASUTP;
+using  ASUTP.Helper;
 
 namespace Statistic
 {
@@ -406,7 +410,7 @@ namespace Statistic
         private void mcldrDate_DateSelected(object sender, DateRangeEventArgs e)
         {
             DialogResult result;
-            Errors resultSaving;
+            ASUTP.Helper.Errors resultSaving;
 
             bool bRequery = false;
 
@@ -423,13 +427,13 @@ namespace Statistic
             {
                 case DialogResult.Yes:
                     resultSaving = m_admin.SaveChanges();
-                    if (resultSaving == Errors.NoError)
+                    if (resultSaving == ASUTP.Helper.Errors.NoError)
                     {
                         bRequery = true;
                     }
                     else
                     {
-                        if (resultSaving == Errors.InvalidValue)
+                        if (resultSaving == ASUTP.Helper.Errors.InvalidValue)
                             MessageBox.Show(this, "Изменение ретроспективы недопустимо!", "Внимание", MessageBoxButtons.OK, MessageBoxIcon.Asterisk);
                         else
                             MessageBox.Show(this, "Не удалось сохранить изменения, возможно отсутствует связь с базой данных.", "Ошибка сохранения", MessageBoxButtons.OK, MessageBoxIcon.Error);
@@ -467,7 +471,7 @@ namespace Statistic
         protected virtual void comboBoxTecComponent_SelectionChangeCommitted(object sender, EventArgs e)
         {
             DialogResult result;
-            Errors resultSaving;
+            ASUTP.Helper.Errors resultSaving;
 
             bool bRequery = false;
 
@@ -484,13 +488,13 @@ namespace Statistic
             {
                 case DialogResult.Yes:
                     resultSaving = m_admin.SaveChanges();
-                    if (resultSaving == Errors.NoError)
+                    if (resultSaving == ASUTP.Helper.Errors.NoError)
                     {
                         bRequery = true;
                     }
                     else
                     {
-                        if (resultSaving == Errors.InvalidValue)
+                        if (resultSaving == ASUTP.Helper.Errors.InvalidValue)
                             MessageBox.Show(this, "Изменение ретроспективы недопустимо!", "Внимание", MessageBoxButtons.OK, MessageBoxIcon.Asterisk);
                         else
                             MessageBox.Show(this, "Не удалось сохранить изменения, возможно отсутствует связь с базой данных.", "Ошибка сохранения", MessageBoxButtons.OK, MessageBoxIcon.Error);
@@ -521,8 +525,8 @@ namespace Statistic
 
             getDataGridViewAdmin();
 
-            Errors resultSaving = m_admin.SaveChanges();
-            if (resultSaving == Errors.NoError)
+            ASUTP.Helper.Errors resultSaving = m_admin.SaveChanges();
+            if (resultSaving == ASUTP.Helper.Errors.NoError)
             {
                 ClearTables();
 
@@ -530,7 +534,7 @@ namespace Statistic
             }
             else
             {
-                if (resultSaving == Errors.InvalidValue)
+                if (resultSaving == ASUTP.Helper.Errors.InvalidValue)
                     MessageBox.Show(this, "Изменение ретроспективы недопустимо!", "Внимание", MessageBoxButtons.OK, MessageBoxIcon.Asterisk);
                 else
                     MessageBox.Show(this, "Не удалось сохранить изменения, возможно отсутствует связь с базой данных.", "Ошибка сохранения", MessageBoxButtons.OK, MessageBoxIcon.Error);
@@ -549,7 +553,7 @@ namespace Statistic
         public override bool MayToClose()
         {
             DialogResult result;
-            Errors resultSaving;
+            ASUTP.Helper.Errors resultSaving;
 
             getDataGridViewAdmin();
 
@@ -564,11 +568,11 @@ namespace Statistic
             {
                 case DialogResult.Yes:
                     resultSaving = m_admin.SaveChanges();
-                    if (resultSaving == Errors.NoError)
+                    if (resultSaving == ASUTP.Helper.Errors.NoError)
                         return true;
                     else
                     {
-                        if (resultSaving == Errors.InvalidValue)
+                        if (resultSaving == ASUTP.Helper.Errors.InvalidValue)
                             if (MessageBox.Show(this, "Изменение ретроспективы недопустимо!\nПродолжить выход?", "Внимание", MessageBoxButtons.YesNo, MessageBoxIcon.Asterisk) == DialogResult.Yes)
                                 return true;
                             else

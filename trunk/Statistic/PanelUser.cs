@@ -1,5 +1,4 @@
-﻿using HClassLibrary;
-using StatisticCommon;
+﻿using StatisticCommon;
 using System;
 using System.Collections;
 using System.Collections.Generic;
@@ -17,6 +16,9 @@ using System.Text;
 using System.Threading;
 using System.Timers;
 using System.Windows.Forms;
+using ASUTP.Core;
+using ASUTP.Database;
+using ASUTP;
 
 namespace Statistic
 {
@@ -950,7 +952,7 @@ namespace Statistic
             
             InitializeComponent();
 
-            m_AllUnits = HUsers.GetTableProfileUnits;
+            m_AllUnits = ASUTP.Helper.HUsers.GetTableProfileUnits;
             dgvProfile = new DataGridView_Prop_Text_Check(m_AllUnits);
             dgvProfile.Dock = DockStyle.Fill;
             this.Controls.Add(this.dgvProfile, 7, 6); this.SetColumnSpan(this.dgvProfile, 13); this.SetRowSpan(this.dgvProfile, 13);
@@ -1125,7 +1127,7 @@ namespace Statistic
             err = -1;
             int idListener = -1;
 
-            ConnectionSettings connSett = FormMainBaseWithStatusStrip.s_listFormConnectionSettings[(int)CONN_SETT_TYPE.CONFIG_DB].getConnSett();
+            ConnectionSettings connSett = ASUTP.Forms.FormMainBaseWithStatusStrip.s_listFormConnectionSettings[(int)CONN_SETT_TYPE.CONFIG_DB].getConnSett();
             idListener = DbSources.Sources().Register(connSett, false, CONN_SETT_TYPE.CONFIG_DB.ToString());
 
             return idListener;
@@ -1452,7 +1454,7 @@ namespace Statistic
 
             if (validate_saving (m_arr_editTable, out warning) == false)
             {
-                connSett = FormMainBaseWithStatusStrip.s_listFormConnectionSettings [(int)CONN_SETT_TYPE.CONFIG_DB].getConnSett ();
+                connSett = ASUTP.Forms.FormMainBaseWithStatusStrip.s_listFormConnectionSettings [(int)CONN_SETT_TYPE.CONFIG_DB].getConnSett ();
                 idListener = DbSources.Sources ().Register (connSett, false, CONN_SETT_TYPE.CONFIG_DB.ToString ());
                 dbConn = DbSources.Sources ().GetConnection (idListener, out err);
 
@@ -1657,7 +1659,7 @@ namespace Statistic
 
                     Dictionary<int, UNIT_VALUE> dictRes = new Dictionary<int, UNIT_VALUE>();
 
-                    foreach (DataRow r in HUsers.GetTableProfileUnits.Rows)
+                    foreach (DataRow r in ASUTP.Helper.HUsers.GetTableProfileUnits.Rows)
                     {
                         id_unit = (int)r[@"ID"];
 

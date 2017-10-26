@@ -5,8 +5,11 @@ using System.Data;
 using System.Collections.Generic;
 using System.Threading;
 
-using HClassLibrary;
+//using HClassLibrary;
 using StatisticCommon;
+using ASUTP.Core;
+using ASUTP.Database;
+using ASUTP;
 
 namespace StatisticAlarm
 {

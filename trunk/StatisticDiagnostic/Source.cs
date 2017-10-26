@@ -7,9 +7,10 @@ using System.Windows.Forms;
 using System.Data;
 using System.Drawing;
 
-using HClassLibrary;
+//using HClassLibrary;
 using StatisticCommon;
 using System.Threading;
+using ASUTP;
 
 namespace StatisticDiagnostic
 {
@@ -21,7 +22,7 @@ namespace StatisticDiagnostic
         /// <summary>
         /// Панель для размещения подпанелей с отображением диагностических параметров/значений источников данных для ТЭЦ
         /// </summary>
-        private class PanelContainerTec : HPanelCommon, IPanelContainerTec
+        private class PanelContainerTec : ASUTP.Control.HPanelCommon, IPanelContainerTec
         {
             /// <summary>
             /// Количество столбцов, строк в сетке макета
@@ -119,7 +120,7 @@ namespace StatisticDiagnostic
                                                 m_value = r.Field<int>(@"ID")
                                                 , m_strLink = string.Empty
                                                 , m_name_shr = string.Empty
-                                                , m_dtValue = HDateTime.ToMoscowTimeZone()
+                                                , m_dtValue = ASUTP.Core.HDateTime.ToMoscowTimeZone()
                                             }
                                         );
                                         break;
@@ -359,7 +360,7 @@ namespace StatisticDiagnostic
             /// по дианостированию работоспособности 
             /// источников фактических, телеметрических значений (АИИС КУЭ, СОТИАССО) 
             /// </summary>
-            private partial class PanelTec : HPanelCommon, IPanelTec
+            private partial class PanelTec : ASUTP.Control.HPanelCommon, IPanelTec
             {
                 /// <summary>
                 /// Количество столбцов, строк в сетке макета
@@ -436,7 +437,7 @@ namespace StatisticDiagnostic
                     /// <summary>
                     /// Объект с признаками для управления отображением строки
                     /// </summary>
-                    private HMark _markRule;
+                    private ASUTP.Core.HMark _markRule;
                     /// <summary>
                     /// Конструктор - основной (с параметрами)
                     /// </summary>
@@ -447,7 +448,7 @@ namespace StatisticDiagnostic
                         m_source_id = -1;
                         Tag = string.Empty;
 
-                        _markRule = new HMark(0);
+                        _markRule = new ASUTP.Core.HMark (0);
                     }
                     /// <summary>
                     /// Обязательный постфикс в наименовании источника данных
@@ -1100,7 +1101,7 @@ namespace StatisticDiagnostic
                                                     case KEY_DIAGNOSTIC_PARAMETER.ID_VALUE.SOTIASSO_2_TORIS_VALUE:
                                                         switch (pair.Key.m_id_unit) {
                                                             case KEY_DIAGNOSTIC_PARAMETER.ID_UNIT.FLOAT:
-                                                                value = HMath.doubleParse((string)pair.Value.m_value);
+                                                                value = ASUTP.Core.HMath.doubleParse((string)pair.Value.m_value);
                                                                 break;
                                                             default:
                                                                 value = Convert.ChangeType(pair.Value.m_value, KEY_DIAGNOSTIC_PARAMETER.TypeOf[pair.Key.m_id_unit]);

@@ -8,9 +8,14 @@ using System.Threading;
 using System.Windows.Forms; //TableLayoutPanel
 using System.Data; //DataTable
 using System.Data.Common; //DbConnection
-using HClassLibrary;
+//using HClassLibrary;
 using StatisticCommon;
 using System.Drawing;
+using ASUTP.Helper;
+using ASUTP.Database;
+using ASUTP.Core;
+using ASUTP.PlugIn;
+using ASUTP;
 
 namespace StatisticTimeSync
 {
@@ -22,8 +27,7 @@ namespace StatisticTimeSync
         /// <summary>
         /// Работа с компонентами панели
         /// </summary>
-        public partial class PanelGetDate : HPanelCommon
-        {
+        public partial class PanelGetDate : ASUTP.Control.HPanelCommon {
             /// <summary>
             /// Перечисление - идентификаторы сообщений между панелями
             /// </summary>
@@ -796,12 +800,12 @@ namespace StatisticTimeSync
                         m_ar_panels[i] = new PanelSourceData.PanelGetDate();
                     }
 
-                    m_ar_panels[0].DelegateEtalonGetDate = new HClassLibrary.DelegateDateFunc(recievedEtalonDate);
+                    m_ar_panels[0].DelegateEtalonGetDate = new DelegateDateFunc(recievedEtalonDate);
                     //Для панелей с любыми серверами БД
                     for (int i = 0; i < m_ar_panels.Length; i++)
                     {
-                        EvtGetDate += new HClassLibrary.DelegateObjectFunc(m_ar_panels[i].OnEvtGetDate);
-                        EvtEtalonDate += new HClassLibrary.DelegateDateFunc(m_ar_panels[i].OnEvtEtalonDate);
+                        EvtGetDate += new DelegateObjectFunc(m_ar_panels[i].OnEvtGetDate);
+                        EvtEtalonDate += new DelegateDateFunc(m_ar_panels[i].OnEvtEtalonDate);
                     }
 
                     ((PanelSourceData)m_panel).Invoke(((PanelSourceData)m_panel).m_delAddPan,new object[]{m_ar_panels});

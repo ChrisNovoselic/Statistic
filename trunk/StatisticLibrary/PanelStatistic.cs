@@ -5,8 +5,11 @@ using System.Collections;
 using System.Collections.Generic;
 using System.Drawing; //Color..
 
-using HClassLibrary;
+
 using System.Linq;
+using ASUTP.Control;
+using ASUTP.Core;
+using ASUTP.Helper;
 
 namespace StatisticCommon
 {

@@ -8,9 +8,9 @@ using System.Globalization;
 using GemBox.Spreadsheet;
 //using Excel = Microsoft.Office.Interop.Excel;
 
-using HClassLibrary;
-using StatisticCommon;
 
+using StatisticCommon;
+using ASUTP;
 
 namespace Statistic
 {
@@ -35,7 +35,7 @@ namespace Statistic
             public AdminTS_LK(bool[] arMarkPPBRValues)
                 : base(arMarkPPBRValues, TECComponentBase.TYPE.ELECTRO)
             {
-                _tsOffsetToMoscow = HDateTime.TS_NSK_OFFSET_OF_MOSCOWTIMEZONE;
+                _tsOffsetToMoscow = ASUTP.Core.HDateTime.TS_NSK_OFFSET_OF_MOSCOWTIMEZONE;
             }
 
             /// <summary>
@@ -171,10 +171,10 @@ namespace Statistic
             /// Сохранение внесенных изменений
             /// </summary>
             /// <returns>Ошибка выполнения</returns>
-            public override Errors SaveChanges()
+            public override ASUTP.Helper.Errors SaveChanges ()
             {
-                Errors errRes = Errors.NoError,
-                        bErr = Errors.NoError;
+                ASUTP.Helper.Errors errRes = ASUTP.Helper.Errors.NoError,
+                        bErr = ASUTP.Helper.Errors.NoError;
                 int indxEv = -1;
 
                 m_evSaveChangesComplete.Reset();
@@ -188,7 +188,7 @@ namespace Statistic
 
                 foreach (RDGStruct[] curRDGValues in m_listCurRDGValues)
                 {
-                    bErr = Errors.NoError;
+                    bErr = ASUTP.Helper.Errors.NoError;
 
                     for (INDEX_WAITHANDLE_REASON i = INDEX_WAITHANDLE_REASON.ERROR; i < (INDEX_WAITHANDLE_REASON.ERROR + 1); i++)
                         ((ManualResetEvent)m_waitHandleState[(int)i]).Reset();
@@ -228,7 +228,8 @@ namespace Statistic
                     {
                         m_listResSaveChanges.Add(bErr);
 
-                        if (!(bErr == Errors.NoError) && (errRes == Errors.NoError))
+                        if (!(bErr == ASUTP.Helper.Errors.NoError)
+                            && (errRes == ASUTP.Helper.Errors.NoError))
                             errRes = bErr;
                         else
                             ;

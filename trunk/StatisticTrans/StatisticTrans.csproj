@@ -68,8 +68,20 @@
     <ErrorReport>prompt</ErrorReport>
   </PropertyGroup>
   <ItemGroup>
-    <Reference Include="HClassLibrary">
-      <HintPath>..\..\ExternalDLL\HClassLibrary.dll</HintPath>
+    <Reference Include="ASUTP.Core">
+      <HintPath>..\..\ExternalDLL\ASUTP.Core.dll</HintPath>
+    </Reference>
+    <Reference Include="ASUTP.Database">
+      <HintPath>..\..\ExternalDLL\ASUTP.Database.dll</HintPath>
+    </Reference>
+    <Reference Include="ASUTP.Forms">
+      <HintPath>..\..\ExternalDLL\ASUTP.Forms.dll</HintPath>
+    </Reference>
+    <Reference Include="ASUTP.Helper">
+      <HintPath>..\..\ExternalDLL\ASUTP.Helper.dll</HintPath>
+    </Reference>
+    <Reference Include="ASUTP.Logging">
+      <HintPath>..\..\ExternalDLL\ASUTP.Logging.dll</HintPath>
     </Reference>
     <Reference Include="Infrastructure, Version=1.4.3.111, Culture=neutral, processorArchitecture=MSIL">
       <SpecificVersion>False</SpecificVersion>

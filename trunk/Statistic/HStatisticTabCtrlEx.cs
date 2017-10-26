@@ -1,4 +1,4 @@
-﻿using HClassLibrary;
+﻿
 using System;
 using System.Collections.Generic;
 using System.Drawing;
@@ -14,8 +14,7 @@ namespace Statistic
         /// <summary>
         /// Закрытый класс HTabCtrlEx наследуется от HClassLibrary.HTabCtrlEx
         /// </summary>
-        private class HStatisticTabCtrlEx : HClassLibrary.HTabCtrlEx
-        {
+        private class HStatisticTabCtrlEx : ASUTP.Control.HTabCtrlEx {
             private Color _backColor;
 
             private SolidBrush _backBrush;

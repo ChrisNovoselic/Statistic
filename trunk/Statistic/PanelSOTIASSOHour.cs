@@ -9,9 +9,11 @@ using System.Data;
 
 using ZedGraph;
 
-using HClassLibrary;
+//using HClassLibrary;
 using StatisticCommon;
 using System.Linq;
+using ASUTP.Core;
+using ASUTP;
 
 namespace Statistic
 {
@@ -343,8 +345,7 @@ namespace Statistic
         /// <summary>
         /// Класс для размещения активных элементов управления
         /// </summary>
-        private class PanelManagement : HPanelCommon
-        {
+        private class PanelManagement : ASUTP.Control.HPanelCommon {
             private class CheckedListBoxTG : CheckedListBox
             {
                 public class CheckListBoxItem {

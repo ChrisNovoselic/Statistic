@@ -7,8 +7,10 @@ using System.Text;
 using System.Windows.Forms;
 using System.Drawing;
 
-using HClassLibrary;
+//using HClassLibrary;
 using StatisticCommon;
+using ASUTP;
+using ASUTP.Core;
 
 namespace Statistic
 {
@@ -30,7 +32,7 @@ namespace Statistic
                 //Свойство возвращает или задает язык и региональные параметры для текущего потока
                 Thread.CurrentThread.CurrentCulture =
                 Thread.CurrentThread.CurrentUICulture =
-                    ProgramBase.ss_MainCultureInfo;
+                    ASUTP.Helper.ProgramBase.ss_MainCultureInfo;
 
                 BackColor = backColor;
 
@@ -47,7 +49,7 @@ namespace Statistic
                 InitializeComponent();
             }
             //Получить метку шрифта
-            public Font GetFontHLabel(HLabel.TYPE_HLABEL typeLabel)
+            public Font GetFontHLabel(ASUTP.Control.HLabel.TYPE_HLABEL typeLabel)
             {
                 Font fontRes = null;
                 //Максимальная длина текста
@@ -64,27 +66,27 @@ namespace Statistic
                 //Для каждого элемента управления
                 foreach (Control ctrl in this.Controls)
                 {
-                    if (ctrl is HClassLibrary.HLabel)
+                    if (ctrl is ASUTP.Control.HLabel)
                     {
-                        if (typeLabel == (ctrl as HLabel).m_type)
+                        if (typeLabel == (ctrl as ASUTP.Control.HLabel).m_type)
                         {
                             if (textOfMaxLengths.Length < ctrl.Text.Length)
                             {
                                 switch (typeLabel)
                                 {
-                                    case HLabel.TYPE_HLABEL.TG:
+                                    case ASUTP.Control.HLabel.TYPE_HLABEL.TG:
                                         if (ctrl.Text.LongCount(delegate (char ch) { return ch == '-'; }) > 1)
                                             strValue = new string('8', (int)ctrl.Text.LongCount(delegate (char ch) { return ch == '-'; }));
                                         else
                                             strValue = ctrl.Text;
                                         break;
-                                    case HLabel.TYPE_HLABEL.TOTAL:
+                                    case ASUTP.Control.HLabel.TYPE_HLABEL.TOTAL:
                                         if (ctrl.Text.LongCount(delegate (char ch) { return ch == '-'; }) > 1)
                                             strValue = new string('8', ctrl.Text.Length + 3);
                                         else
                                             strValue = ctrl.Text;
                                         break;
-                                    case HLabel.TYPE_HLABEL.TOTAL_ZOOM:
+                                    case ASUTP.Control.HLabel.TYPE_HLABEL.TOTAL_ZOOM:
                                         if (ctrl.Text.LongCount(delegate (char ch) { return ch == '-'; }) > 1)
                                             strValue = new string('8', ctrl.Text.Length + 6);
                                         else
@@ -126,7 +128,7 @@ namespace Statistic
 
                 if ((szLabelOfMinSizes.Height < float.MaxValue) && (szLabelOfMinSizes.Width < float.MaxValue))
                 {
-                    fontRes = HLabel.FitFont(g, textOfMaxLengths, szLabelOfMinSizes, new SizeF(0.85F, 0.85F), 0.1F);
+                    fontRes = ASUTP.Control.HLabel.FitFont(g, textOfMaxLengths, szLabelOfMinSizes, new SizeF(0.85F, 0.85F), 0.1F);
                 }
                 else
                     ;
@@ -136,9 +138,9 @@ namespace Statistic
 
             public Font[] GetFontHLabel()
             {
-                string[] textOfMaxLengths = new string[(int)HLabel.TYPE_HLABEL.COUNT_TYPE_HLABEL] { string.Empty, string.Empty, string.Empty };
+                string[] textOfMaxLengths = new string[(int)ASUTP.Control.HLabel.TYPE_HLABEL.COUNT_TYPE_HLABEL] { string.Empty, string.Empty, string.Empty };
                 string strValue = string.Empty;
-                SizeF[] szLabelOfMinSizes = new SizeF[(int)HLabel.TYPE_HLABEL.COUNT_TYPE_HLABEL]; //(float.MaxValue, float.MaxValue);
+                SizeF[] szLabelOfMinSizes = new SizeF[(int)ASUTP.Control.HLabel.TYPE_HLABEL.COUNT_TYPE_HLABEL]; //(float.MaxValue, float.MaxValue);
 
                 Font[] arFontRes = null;
 
@@ -146,7 +148,7 @@ namespace Statistic
 
                 int indx = -1, i = -1;
 
-                for (i = (int)HLabel.TYPE_HLABEL.TG; i < (int)HLabel.TYPE_HLABEL.COUNT_TYPE_HLABEL; i++)
+                for (i = (int)ASUTP.Control.HLabel.TYPE_HLABEL.TG; i < (int)ASUTP.Control.HLabel.TYPE_HLABEL.COUNT_TYPE_HLABEL; i++)
                 {
                     textOfMaxLengths[i] = string.Empty;
                     szLabelOfMinSizes[i].Height =
@@ -156,28 +158,28 @@ namespace Statistic
 
                 foreach (Control ctrl in this.Controls)
                 {
-                    if (ctrl is HClassLibrary.HLabel)
+                    if (ctrl is ASUTP.Control.HLabel)
                     {
-                        indx = (int)((HLabel)ctrl).m_type;
-                        if (!(indx == (int)HLabel.TYPE_HLABEL.UNKNOWN))
+                        indx = (int)((ASUTP.Control.HLabel)ctrl).m_type;
+                        if (!(indx == (int)ASUTP.Control.HLabel.TYPE_HLABEL.UNKNOWN))
                         {
                             if (textOfMaxLengths[indx].Length < ctrl.Text.Length)
                             {
                                 switch (indx)
                                 {
-                                    case (int)HLabel.TYPE_HLABEL.TG:
+                                    case (int)ASUTP.Control.HLabel.TYPE_HLABEL.TG:
                                         if (ctrl.Text.LongCount(delegate (char ch) { return ch == '-'; }) > 1)
                                             strValue = new string('8', (int)ctrl.Text.LongCount(delegate (char ch) { return ch == '-'; }));
                                         else
                                             strValue = ctrl.Text;
                                         break;
-                                    case (int)HLabel.TYPE_HLABEL.TOTAL:
+                                    case (int)ASUTP.Control.HLabel.TYPE_HLABEL.TOTAL:
                                         if (ctrl.Text.LongCount(delegate (char ch) { return ch == '-'; }) > 1)
                                             strValue = new string('8', ctrl.Text.Length + 3);
                                         else
                                             strValue = ctrl.Text;
                                         break;
-                                    case (int)HLabel.TYPE_HLABEL.TOTAL_ZOOM:
+                                    case (int)ASUTP.Control.HLabel.TYPE_HLABEL.TOTAL_ZOOM:
                                         if (ctrl.Text.LongCount(delegate (char ch) { return ch == '-'; }) > 1)
                                             strValue = new string('8', ctrl.Text.Length + 6);
                                         else
@@ -209,14 +211,14 @@ namespace Statistic
                     }
                 }
 
-                if (!(indx == (int)HLabel.TYPE_HLABEL.UNKNOWN))
+                if (!(indx == (int)ASUTP.Control.HLabel.TYPE_HLABEL.UNKNOWN))
                 {
-                    arFontRes = new Font[(int)HLabel.TYPE_HLABEL.COUNT_TYPE_HLABEL];
+                    arFontRes = new Font[(int)ASUTP.Control.HLabel.TYPE_HLABEL.COUNT_TYPE_HLABEL];
 
-                    for (i = (int)HLabel.TYPE_HLABEL.TG; i < (int)HLabel.TYPE_HLABEL.COUNT_TYPE_HLABEL; i++)
+                    for (i = (int)ASUTP.Control.HLabel.TYPE_HLABEL.TG; i < (int)ASUTP.Control.HLabel.TYPE_HLABEL.COUNT_TYPE_HLABEL; i++)
                         if ((szLabelOfMinSizes[i].Height < float.MaxValue) && (szLabelOfMinSizes[i].Width < float.MaxValue))
                         {
-                            arFontRes[i] = HLabel.FitFont(g, textOfMaxLengths[i], szLabelOfMinSizes[i], new SizeF(0.85F, 0.85F), 0.1F);
+                            arFontRes[i] = ASUTP.Control.HLabel.FitFont(g, textOfMaxLengths[i], szLabelOfMinSizes[i], new SizeF(0.85F, 0.85F), 0.1F);
                         }
                         else
                             ;
@@ -243,11 +245,11 @@ namespace Statistic
 
                 if (!(fonts == null))
                     foreach (Control ctrl in ((TableLayoutPanel)obj).Controls)
-                        if (ctrl is HClassLibrary.HLabel)
-                            if (!(fonts[(int)((HLabel)ctrl).m_type] == null))
-                                ctrl.Font = fonts[(int)((HLabel)ctrl).m_type];
+                        if (ctrl is ASUTP.Control.HLabel)
+                            if (!(fonts[(int)((ASUTP.Control.HLabel)ctrl).m_type] == null))
+                                ctrl.Font = fonts[(int)((ASUTP.Control.HLabel)ctrl).m_type];
                             else
-                                Logging.Logg().Error(@"HPanelTableLayout::OnSizeChanged () - fonts[" + ((HLabel)ctrl).m_type.ToString() + @"]=null", Logging.INDEX_MESSAGE.NOT_SET);
+                                Logging.Logg().Error(@"HPanelTableLayout::OnSizeChanged () - fonts[" + ((ASUTP.Control.HLabel)ctrl).m_type.ToString() + @"]=null", Logging.INDEX_MESSAGE.NOT_SET);
                         else
                             ;
                 else
@@ -422,7 +424,7 @@ namespace Statistic
             {
                 int cnt = -1
                     , id = -1;
-                HLabel hlblValue;
+                ASUTP.Control.HLabel hlblValue;
 
                 id = comp.m_id;
 
@@ -430,21 +432,21 @@ namespace Statistic
                 m_tgToolTips.Add(id, new ToolTip[(int)TG.INDEX_VALUE.COUNT_INDEX_VALUE]);
                 cnt = m_tgLabels.Count;
 
-                m_tgLabels[id][(int)TG.INDEX_VALUE.LABEL_DESC] = HLabel.createLabel(comp.name_shr.Trim(),
-                                                                        new HLabelStyles(/*arPlacement[(int)i].pt, sz,*/new Point(-1, -1), new Size(-1, -1),
+                m_tgLabels[id][(int)TG.INDEX_VALUE.LABEL_DESC] = ASUTP.Control.HLabel.createLabel(comp.name_shr.Trim(),
+                                                                        new ASUTP.Control.HLabelStyles (/*arPlacement[(int)i].pt, sz,*/new Point(-1, -1), new Size(-1, -1),
                                                                         Color.Black, Color.Empty,
                                                                         8F, ContentAlignment.MiddleRight));
 
-                hlblValue = new HLabel(new HLabelStyles(new Point(-1, -1), new Size(-1, -1), Color.LimeGreen, Color.Black, 13F, ContentAlignment.MiddleCenter));
+                hlblValue = new ASUTP.Control.HLabel (new ASUTP.Control.HLabelStyles (new Point(-1, -1), new Size(-1, -1), Color.LimeGreen, Color.Black, 13F, ContentAlignment.MiddleCenter));
                 hlblValue.Text = @"---.--"; //name_shr + @"_Fact";
-                hlblValue.m_type = HLabel.TYPE_HLABEL.TG;
+                hlblValue.m_type = ASUTP.Control.HLabel.TYPE_HLABEL.TG;
                 //m_tgToolTips[id][(int)TG.INDEX_VALUE.FACT].SetToolTip(hlblValue, tg.name_shr + @"[" + tg.m_SensorsStrings_ASKUE[0] + @"]: " + (tg.m_TurnOnOff == TG.INDEX_TURNOnOff.ON ? @"вкл." : @"выкл."));
                 m_tgLabels[id][(int)TG.INDEX_VALUE.FACT] = (Label)hlblValue;
                 m_tgToolTips[id][(int)TG.INDEX_VALUE.FACT] = new ToolTip();
 
-                hlblValue = new HLabel(new HLabelStyles(new Point(-1, -1), new Size(-1, -1), Color.Green, Color.Black, 13F, ContentAlignment.MiddleCenter));
+                hlblValue = new ASUTP.Control.HLabel (new ASUTP.Control.HLabelStyles (new Point(-1, -1), new Size(-1, -1), Color.Green, Color.Black, 13F, ContentAlignment.MiddleCenter));
                 hlblValue.Text = @"---.--"; //name_shr + @"_TM";
-                hlblValue.m_type = HLabel.TYPE_HLABEL.TG;
+                hlblValue.m_type = ASUTP.Control.HLabel.TYPE_HLABEL.TG;
                 m_tgLabels[id][(int)TG.INDEX_VALUE.TM] = (Label)hlblValue;
 
                 m_tgToolTips[id][(int)TG.INDEX_VALUE.TM] = new ToolTip();
@@ -454,20 +456,20 @@ namespace Statistic
             {
                 if (strLabelText.Equals(string.Empty) == false)
                     if (m_arLabelCommon[indx - m_indxStartCommonFirstValueSeries] == null)
-                        m_arLabelCommon[indx - m_indxStartCommonFirstValueSeries] = HLabel.createLabel(strLabelText,
-                                                                                        new HLabelStyles(/*arPlacement[(int)i].pt, sz,*/new Point(-1, -1), new Size(-1, -1),
+                        m_arLabelCommon[indx - m_indxStartCommonFirstValueSeries] = ASUTP.Control.HLabel.createLabel(strLabelText,
+                                                                                        new ASUTP.Control.HLabelStyles (/*arPlacement[(int)i].pt, sz,*/new Point(-1, -1), new Size(-1, -1),
                                                                                         clrLabelFore, clrLabelBackground,
                                                                                         fSzLabelFont, alignLabel));
                     else;
                 else
                     if (m_arLabelCommon[indx - m_indxStartCommonFirstValueSeries] == null)
                 {
-                    m_arLabelCommon[indx - m_indxStartCommonFirstValueSeries] = new HLabel(/*i.ToString(); @"---",*/
-                                                                                    new HLabelStyles(/*arPlacement[(int)i].pt, sz,*/new Point(-1, -1), new Size(-1, -1),
+                    m_arLabelCommon[indx - m_indxStartCommonFirstValueSeries] = new ASUTP.Control.HLabel (/*i.ToString(); @"---",*/
+                                                                                    new ASUTP.Control.HLabelStyles (/*arPlacement[(int)i].pt, sz,*/new Point(-1, -1), new Size(-1, -1),
                                                                                     clrLabelFore, clrLabelBackground,
                                                                                     fSzLabelFont, alignLabel));
                     m_arLabelCommon[indx - m_indxStartCommonFirstValueSeries].Text = @"---";
-                    ((HLabel)m_arLabelCommon[indx - m_indxStartCommonFirstValueSeries]).m_type = HLabel.TYPE_HLABEL.TOTAL;
+                    ((ASUTP.Control.HLabel)m_arLabelCommon[indx - m_indxStartCommonFirstValueSeries]).m_type = ASUTP.Control.HLabel.TYPE_HLABEL.TOTAL;
                 }
                 else;
             }
@@ -921,8 +923,8 @@ namespace Statistic
                 #endregion
 
                 //Создание пассивного эл./упр. "надпись" для увеличенного дублирования знач. Pтек
-                m_lblPowerFactZoom = new HLabel(new Point(-1, -1), new Size(-1, -1), Color.LimeGreen, SystemColors.Control, 12F, ContentAlignment.MiddleCenter);
-                m_lblPowerFactZoom.m_type = HLabel.TYPE_HLABEL.TOTAL_ZOOM;
+                m_lblPowerFactZoom = new ASUTP.Control.HLabel (new Point(-1, -1), new Size(-1, -1), Color.LimeGreen, SystemColors.Control, 12F, ContentAlignment.MiddleCenter);
+                m_lblPowerFactZoom.m_type = ASUTP.Control.HLabel.TYPE_HLABEL.TOTAL_ZOOM;
                 m_lblPowerFactZoom.Text = @"Pтек=----.--";
 
                 //OnSizeChanged(this, EventArgs.Empty);
@@ -946,7 +948,7 @@ namespace Statistic
                 COUNT_CONTROLS
             };
 
-            private HLabel m_lblPowerFactZoom;
+            private ASUTP.Control.HLabel m_lblPowerFactZoom;
             private System.Windows.Forms.Label lblPBRNumber;
 
             public override void RestructControl()

@@ -5,12 +5,13 @@ using System.Windows.Forms;
 //using System.ComponentModel;
 using System.Data;
 using System.Data.Common;
-using HClassLibrary;
+using ASUTP.Database;
+using ASUTP.Helper;
+
 
 namespace StatisticCommon
 {
-    public class HStatisticUsers : HUsers
-    {
+    public class HStatisticUsers : ASUTP.Helper.HUsers {
         /// <summary>
         /// Перечисление - идентификаторы групп(ролей) пользователей
         /// </summary>

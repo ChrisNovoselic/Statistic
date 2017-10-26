@@ -3,7 +3,6 @@ using System.Collections.Generic;
 using System.Linq;
 using System.Windows.Forms;
 
-using HClassLibrary;
 using StatisticCommon;
 
 namespace trans_tg
@@ -16,21 +15,22 @@ namespace trans_tg
         [STAThread]
         static void Main()
         {
-            ProgramBase.Start(Logging.LOG_MODE.FILE_EXE, true);
+            ASUTP.Helper.ProgramBase.Start(ASUTP.Logging.LOG_MODE.FILE_EXE, true);
 
             FormMainTransTG formMain = null;
 
                 try { formMain = new FormMainTransTG(); }
                 catch (Exception e)
                 {
-                    Logging.Logg().Exception(e, "!Ошибка! запуска приложения.", Logging.INDEX_MESSAGE.NOT_SET);
+                    ASUTP.Logging.Logg().Exception(e, "!Ошибка! запуска приложения."
+                        , ASUTP.Logging.INDEX_MESSAGE.NOT_SET);
                 }
 
                 if (!(formMain == null))
                     Application.Run(formMain);
                 else
                     ;
-            ProgramBase.Exit();
+            ASUTP.Helper.ProgramBase.Exit();
         }
     }
 }

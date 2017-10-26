@@ -9,8 +9,10 @@ using System.IO;
 using System.Threading;
 using System.Globalization;
 
-using HClassLibrary;
+
 using StatisticCommon;
+using ASUTP.Helper;
+using ASUTP;
 
 namespace Statistic
 {
@@ -69,7 +71,7 @@ namespace Statistic
             this.ResumeLayout();
         }
 
-        public PanelAdminNSS(int idListener, HMark markQueries)
+        public PanelAdminNSS(int idListener, ASUTP.Core.HMark markQueries)
             : base(idListener, markQueries, new int[] { 0, (int)TECComponent.ID.LK })
         {
             m_admin.SetDelegateSaveComplete(null);

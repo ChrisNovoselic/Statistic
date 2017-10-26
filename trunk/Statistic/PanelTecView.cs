@@ -13,7 +13,7 @@ using System.Globalization;
 using ZedGraph;
 using GemBox.Spreadsheet;
 
-using HClassLibrary;
+//using HClassLibrary;
 using StatisticCommon;
 
 namespace Statistic
@@ -21,7 +21,7 @@ namespace Statistic
     public class PanelTecView : PanelTecViewStandard
     {
         public PanelTecView(StatisticCommon.TEC tec, int num_tec, int num_comp, PanelCustomTecView.HLabelCustomTecView label/*, DelegateStringFunc fErrRep, DelegateStringFunc fWarRep, DelegateStringFunc fActRep, DelegateBoolFunc fRepClr*/)
-            : base(tec, num_tec, num_comp, new HMark(new int[] { (int)CONN_SETT_TYPE.ADMIN, (int)CONN_SETT_TYPE.PBR, (int)CONN_SETT_TYPE.DATA_AISKUE, (int)CONN_SETT_TYPE.DATA_SOTIASSO }))
+            : base(tec, num_tec, num_comp, new ASUTP.Core.HMark (new int[] { (int)CONN_SETT_TYPE.ADMIN, (int)CONN_SETT_TYPE.PBR, (int)CONN_SETT_TYPE.DATA_AISKUE, (int)CONN_SETT_TYPE.DATA_SOTIASSO }))
         {
             m_label = label;
             
@@ -366,7 +366,7 @@ namespace Statistic
                     //m_tecView.lastMin = prevLastMin;
 
                     if (m_tecView.currHour == false)
-                        setRetroTickTime(m_tecView.lastHour, (index + 1) * m_tecView.GetIntervalOfTypeSourceData(HDateTime.INTERVAL.MINUTES));
+                        setRetroTickTime(m_tecView.lastHour, (index + 1) * m_tecView.GetIntervalOfTypeSourceData(ASUTP.Core.HDateTime.INTERVAL.MINUTES));
                     else
                         ;
                 }

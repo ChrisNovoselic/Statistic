@@ -5,10 +5,10 @@ using System.Text;
 
 using System.Data;
 
-using HClassLibrary;
 using StatisticCommon;
 using StatisticTransModes;
 using System.Collections.ObjectModel;
+using ASUTP;
 
 namespace trans_mc
 {

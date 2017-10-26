@@ -7,9 +7,12 @@ using System.Text;
 using System.Windows.Forms;
 using System.ComponentModel;
 
-using HClassLibrary;
+//using HClassLibrary;
 using System.Threading;
 using System.Collections;
+using ASUTP.Control;
+using ASUTP.Core;
+using ASUTP;
 
 namespace StatisticDiagnostic
 {

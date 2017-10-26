@@ -8,7 +8,11 @@ using System.Windows.Forms;
 using System.Threading;
 using System.Diagnostics;
 
-using HClassLibrary;
+
+using ASUTP.Core;
+using ASUTP.Database;
+using ASUTP;
+using ASUTP.Forms;
 
 namespace StatisticCommon
 {
@@ -52,7 +56,7 @@ namespace StatisticCommon
         /// <summary>
         /// Событие для запроса текущего идентификатора источника данных для СОТИАССО
         /// </summary>
-        event HClassLibrary.IntDelegateIntFunc EventGetTECIdLinkSource;
+        event IntDelegateIntFunc EventGetTECIdLinkSource;
         /// <summary>
         /// Найти объект ТГ по идентификатору
         /// </summary>

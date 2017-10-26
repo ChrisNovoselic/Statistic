@@ -1,6 +1,4 @@
-﻿using HClassLibrary;
-using StatisticCommon;
-using System;
+﻿using System;
 using System.Collections;
 using System.Collections.Generic;
 using System.ComponentModel;
@@ -17,6 +15,11 @@ using System.Text;
 using System.Threading;
 using System.Timers;
 using System.Windows.Forms;
+
+using StatisticCommon;
+using ASUTP.Core;
+using ASUTP.Database;
+using ASUTP;
 
 namespace Statistic
 {
@@ -844,7 +847,7 @@ namespace Statistic
                 try {
                     for (int i = 0; i < table_audit.Rows.Count; i++) {
                         table_audit.Rows [i] ["DATETIME_WR"] = HDateTime.ToMoscowTimeZone (DateTime.Now);
-                        table_audit.Rows [i] ["ID_USER"] = HUsers.Id;
+                        table_audit.Rows [i] ["ID_USER"] = ASUTP.Helper.HUsers.Id;
                         table_audit.Rows [i] ["REV"] = Get_LastRevision_Audit () + 1;
                     }
 
@@ -867,7 +870,7 @@ namespace Statistic
                 int idListener = -1;
 
                 try {
-                    ConnectionSettings connSett = FormMainBaseWithStatusStrip.s_listFormConnectionSettings [(int)CONN_SETT_TYPE.CONFIG_DB].getConnSett ();
+                    ConnectionSettings connSett = ASUTP.Forms.FormMainBaseWithStatusStrip.s_listFormConnectionSettings [(int)CONN_SETT_TYPE.CONFIG_DB].getConnSett ();
 
                     idListener = DbSources.Sources ().Register (connSett, false, CONN_SETT_TYPE.CONFIG_DB.ToString ());
 

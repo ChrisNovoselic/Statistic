@@ -5,8 +5,10 @@ using System.Data;
 using System.Globalization;
 using System.Drawing;
 
-using HClassLibrary;
+
 using StatisticCommon;
+using ASUTP;
+using ASUTP.Helper;
 
 namespace Statistic {
     partial class PanelAdminLK : PanelAdmin
@@ -88,7 +90,7 @@ namespace Statistic {
         /// </summary>
         /// <param name="idListener">ИД слушателя</param>
         /// <param name="markQueries"></param>
-        public PanelAdminLK(int idListener, HMark markQueries)
+        public PanelAdminLK(int idListener, ASUTP.Core.HMark markQueries)
             : base(idListener, markQueries, new int[] { (int)TECComponent.ID.LK, (int)TECComponent.ID.GTP })
         {
             m_admin.SetDelegateSaveComplete(null);

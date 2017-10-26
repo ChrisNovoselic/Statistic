@@ -7,7 +7,7 @@ using System.ComponentModel;
 using System.Data;
 using System.Globalization;
 
-using HClassLibrary;
+
 using StatisticCommon;
 
 namespace Statistic
@@ -17,7 +17,7 @@ namespace Statistic
     /// </summary>
     public abstract class HDataGridViewBase : HDataGridViewTables
     {
-        HDateTime.INTERVAL m_IdInterval;
+        ASUTP.Core.HDateTime.INTERVAL m_IdInterval;
 
         public class DataValuesEventArgs : EventArgs
         {
@@ -85,7 +85,7 @@ namespace Statistic
         }
 
         //protected DataGridViewTables (int [] arWidthColiumns) {
-        protected HDataGridViewBase(HDateTime.INTERVAL interval, ColumnProperies[] arColuumns, bool bIsItogo)
+        protected HDataGridViewBase(ASUTP.Core.HDateTime.INTERVAL interval, ColumnProperies[] arColuumns, bool bIsItogo)
             : base (new Color [] { FormMain.formGraphicsSettings.BackgroundColor                                                                    // , иначе установить цвет системной палитры
                     , Color.Yellow
                     , FormMain.formGraphicsSettings.COLOR (FormGraphicsSettings.INDEX_COLOR.DIVIATION) }
@@ -236,10 +236,10 @@ namespace Statistic
         {
             switch (m_IdInterval)
             {
-                case HDateTime.INTERVAL.HOURS:
+                case ASUTP.Core.HDateTime.INTERVAL.HOURS:
                     Rows.Add(24 + (_bIsItogo == true ? 1 : 0));
                     break;
-                case HDateTime.INTERVAL.MINUTES:
+                case ASUTP.Core.HDateTime.INTERVAL.MINUTES:
                     Rows.Add(20 + (_bIsItogo == true ? 1 : 0));
                     break;
                 default:
@@ -264,7 +264,7 @@ namespace Statistic
         public enum INDEX_COLUMNS : int { PART_TIME, FACT, PBR, PBRe, UDGe, DEVIATION, LAST_MINUTES
             , COUNT_INDEX_COLUMNS };
 
-        public HDataGridViewStandard(HDateTime.INTERVAL interval, ColumnProperies[] arColumns, bool bIsItogo)
+        public HDataGridViewStandard(ASUTP.Core.HDateTime.INTERVAL interval, ColumnProperies[] arColumns, bool bIsItogo)
             : base(interval, arColumns, bIsItogo)
         {
         }
@@ -326,7 +326,7 @@ namespace Statistic
         //public DataGridViewHours() : base (new int [] {27, 47, 47, 47, 47, 42, 46})
         public DataGridViewStandardHours()
             //: base(new int[] { 8, 15, 15, 15, 15, 15, 15 })
-            : base(HDateTime.INTERVAL.HOURS
+            : base(ASUTP.Core.HDateTime.INTERVAL.HOURS
                 , new ColumnProperies[] { new ColumnProperies (27, 8, @"Час", @"Hour")
                     , new ColumnProperies (47, 15, @"Факт", @"FactHour")
                     , new ColumnProperies (47, 15, @"ПБР", @"PBRHour")
@@ -409,7 +409,7 @@ namespace Statistic
                     {
                     }
                 else
-                    if (serverTime.Date.Equals(HDateTime.ToMoscowTimeZone(DateTime.Now.Date)) == true)
+                    if (serverTime.Date.Equals(ASUTP.Core.HDateTime.ToMoscowTimeZone(DateTime.Now.Date)) == true)
                         if ((i < (receivedHour + 1)) && (!(values[i].valuesUDGe == 0)) && (values[i].valuesFact > 0))
                         {
                             bDevVal = true;

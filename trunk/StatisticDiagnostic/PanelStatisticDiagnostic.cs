@@ -8,16 +8,18 @@ using System.Linq;
 using System.Timers;
 using System.Windows.Forms; //TableLayoutPanel
 
-using HClassLibrary;
+//using HClassLibrary;
 using StatisticCommon;
+using ASUTP.Database;
+using ASUTP.Core;
+using ASUTP.Forms;
 
 namespace StatisticDiagnostic
 {
     /// <summary>
     /// Абстрактный класс "Панель Диагностика"
     /// </summary>
-    public abstract partial class PanelDiagnostic : HPanelCommon
-    {
+    public abstract partial class PanelDiagnostic : ASUTP.Control.HPanelCommon {
         public PanelDiagnostic(string nameLabel)
             : base(-1, -1)
         {
@@ -365,8 +367,7 @@ namespace StatisticDiagnostic
         /// Класс для обращения 
         /// к БД (чтение значений параметров для отображения)
         /// </summary>
-        private class HDataSource : HHandlerDb
-        {
+        private class HDataSource : ASUTP.Helper.HHandlerDb {
             ConnectionSettings[] m_connSett;
             /// <summary>
             /// Перечисление типов состояний опроса данных

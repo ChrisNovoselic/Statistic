@@ -8,16 +8,17 @@ using System.Text;
 using System.Windows.Forms;
 using System.Threading;
 
-using HClassLibrary;
 using StatisticCommon;
 using StatisticTrans;
+using ASUTP.Core;
+using ASUTP.Database;
 
 namespace trans_tg
 {
     public partial class FormMainTransTG : FormMainTrans
     {
         public FormMainTransTG()
-            : base((int)ProgramBase.ID_APP.TRANS_TG
+            : base((int)ASUTP.Helper.ProgramBase.ID_APP.TRANS_TG
             , new string[] { @"ТипБДКфгНазначение" }
             , new string[] { @"200" })
         {
@@ -113,7 +114,8 @@ namespace trans_tg
                 }
                 catch (Exception e)
                 {
-                    Logging.Logg().Exception(e, "FormMainTransTG::FormMainTransTG ()", Logging.INDEX_MESSAGE.NOT_SET);
+                    ASUTP.Logging.Logg().Exception(e, "FormMainTransTG::FormMainTransTG ()"
+                        , ASUTP.Logging.INDEX_MESSAGE.NOT_SET);
                     //ErrorReport("Ошибка соединения. Перехож в ожидание.");
                     //setUIControlConnectionSettings(i);
                     break;
@@ -131,7 +133,7 @@ namespace trans_tg
                 //m_arAdmin[i].m_ignore_connsett_data = true; //-> в конструктор
             }
 
-            DbSources.Sources().UnRegister(idListener);
+            ASUTP.Database.DbSources.Sources().UnRegister(idListener);
 
             if (!(i < (Int16)CONN_SETT_TYPE.COUNT_CONN_SETT_TYPE))
             {
@@ -397,7 +399,8 @@ namespace trans_tg
                 else
                     addTextBoxColumn(date, true, InvokeRequired);
             else
-                Logging.Logg ().Error (@"FormMainTransTG::updateDataGridViewAdmin () - ... BeginInvoke (addTextBoxColumn) - ...", Logging.INDEX_MESSAGE.D_001);
+                ASUTP.Logging.Logg ().Error (@"FormMainTransTG::updateDataGridViewAdmin () - ... BeginInvoke (addTextBoxColumn) - ..."
+                , ASUTP.Logging.INDEX_MESSAGE.D_001);
         }
 
         protected override void buttonClear_Click(object sender, EventArgs e)
@@ -420,7 +423,8 @@ namespace trans_tg
             //Вариант №2
             bCompletedSaveChanges = WaitHandle.WaitAny(new WaitHandle[] { ((AdminTS_NSS)m_arAdmin[(Int16)CONN_SETT_TYPE.DEST]).m_evSaveChangesComplete }, 0) == 0;
 
-            Logging.Logg().Debug(@"FormMainTransTG::saveDataGridViewAdminComplete () - CompletedSaveChanges=" + bCompletedSaveChanges.ToString(), Logging.INDEX_MESSAGE.NOT_SET);
+            ASUTP.Logging.Logg().Debug(@"FormMainTransTG::saveDataGridViewAdminComplete () - CompletedSaveChanges=" + bCompletedSaveChanges.ToString()
+                , ASUTP.Logging.INDEX_MESSAGE.NOT_SET);
 
             if (bCompletedSaveChanges == true)
             {
@@ -452,9 +456,10 @@ namespace trans_tg
                     m_arAdmin[(int)CONN_SETT_TYPE.DEST].getCurRDGValues(m_arAdmin[(int)CONN_SETT_TYPE.SOURCE]);
 
                     if (IsHandleCreated/*InvokeRequired*/ == true)
-                        this.BeginInvoke(new DelegateBoolFunc(SaveRDGValues), false);
+                        this.BeginInvoke(new ASUTP.Core.DelegateBoolFunc (SaveRDGValues), false);
                     else
-                        Logging.Logg().Error(@"FormMainTransTG::setDataGridViewAdmin () - ... BeginInvoke (SaveRDGValues) - ...", Logging.INDEX_MESSAGE.D_001);
+                        ASUTP.Logging.Logg().Error(@"FormMainTransTG::setDataGridViewAdmin () - ... BeginInvoke (SaveRDGValues) - ..."
+                            , ASUTP.Logging.INDEX_MESSAGE.D_001);
 
                     //this.BeginInvoke(new DelegateFunc(trans_auto_next));
                 }

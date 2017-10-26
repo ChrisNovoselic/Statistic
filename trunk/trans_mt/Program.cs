@@ -3,9 +3,9 @@ using System.Collections.Generic;
 using System.Linq;
 using System.Windows.Forms;
 
-using HClassLibrary;
 using StatisticCommon;
 using StatisticTrans;
+using ASUTP;
 
 namespace trans_mt
 {
@@ -17,7 +17,7 @@ namespace trans_mt
         [STAThread]
         static void Main()
         {
-            ProgramBase.Start(Logging.LOG_MODE.FILE_EXE, true);
+            ASUTP.Helper.ProgramBase.Start(Logging.LOG_MODE.FILE_EXE, true);
 
             FormMainTransMT formMain = null;
 
@@ -38,7 +38,7 @@ namespace trans_mt
                 Logging.Logg().Exception(e, "Ошибка выполнения приложения.", Logging.INDEX_MESSAGE.NOT_SET);
             }
 
-            ProgramBase.Exit();
+            ASUTP.Helper.ProgramBase.Exit();
         }
     }
 }

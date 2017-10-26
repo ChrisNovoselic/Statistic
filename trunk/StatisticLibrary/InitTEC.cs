@@ -4,7 +4,10 @@ using System.Data;
 using System.Data.Common;
 //using MySql.Data.MySqlClient;
 
-using HClassLibrary;
+
+using ASUTP.Core;
+using ASUTP;
+using ASUTP.Database;
 
 namespace StatisticCommon
 {

@@ -6,8 +6,9 @@ using System.Data;
 using System.Globalization;
 using System.Threading;
 
-using HClassLibrary;
 using StatisticCommon;
+using ASUTP.Database;
+using ASUTP.Core;
 
 namespace trans_tg
 {
@@ -46,7 +47,7 @@ namespace trans_tg
             {
                 iTimeZoneOffset =
                     //allTECComponents[indxTECComponents].tec.m_timezone_offset_msc
-                    HDateTime.TS_NSK_OFFSET_OF_MOSCOWTIMEZONE.Hours
+                    ASUTP.Core.HDateTime.TS_NSK_OFFSET_OF_MOSCOWTIMEZONE.Hours
                     ;
                 m_listCurTimezoneOffsetRDGExcelValues.Add(new RDGStruct[iTimeZoneOffset]);
 
@@ -76,7 +77,7 @@ namespace trans_tg
             for (i = 0;
                 i <
                     //allTECComponents[indxTECComponents].tec.m_timezone_offset_msc
-                    HDateTime.TS_NSK_OFFSET_OF_MOSCOWTIMEZONE.Hours
+                    ASUTP.Core.HDateTime.TS_NSK_OFFSET_OF_MOSCOWTIMEZONE.Hours
                     ;
                 i++)
             {
@@ -89,7 +90,7 @@ namespace trans_tg
         {
             DateTime dateTimezoneOffsetRDGExcel = date.AddHours(-1 *
                 //allTECComponents[indxTECComponents].tec.m_timezone_offset_msc
-                HDateTime.TS_NSK_OFFSET_OF_MOSCOWTIMEZONE.Hours
+                ASUTP.Core.HDateTime.TS_NSK_OFFSET_OF_MOSCOWTIMEZONE.Hours
                 );
             //bool bIsHourTimezoneOffsetRDGExcel = false;
 
@@ -258,7 +259,7 @@ namespace trans_tg
                         //    case AdminTS.TYPE_FIELDS.STATIC:
                         //        break;
                         //    case AdminTS.TYPE_FIELDS.DYNAMIC:
-                                resQuery[(int)DbTSQLInterface.QUERY_TYPE.UPDATE] += @"UPDATE " + t.m_strNameTableAdminValues/*[(int)m_typeFields]*/ + " SET " +
+                                resQuery[(int)ASUTP.Database.DbTSQLInterface.QUERY_TYPE.UPDATE] += @"UPDATE " + t.m_strNameTableAdminValues/*[(int)m_typeFields]*/ + " SET " +
                                             @"REC='" + m_listCurTimezoneOffsetRDGExcelValues[indx][i].recomendation.ToString("F2", CultureInfo.InvariantCulture) +
                                             @"', " + @"IS_PER=" + (m_listCurTimezoneOffsetRDGExcelValues[indx][i].deviationPercent ? "1" : "0") +
                                             @", " + "DIVIAT='" + m_listCurTimezoneOffsetRDGExcelValues[indx][i].deviation.ToString("F2", CultureInfo.InvariantCulture) +
@@ -267,7 +268,7 @@ namespace trans_tg
                                             @" WHERE" +
                                             @" DATE = '" + date.AddHours((i + 1) + (-1 *
                                                 //t.m_timezone_offset_msc
-                                                HDateTime.TS_NSK_OFFSET_OF_MOSCOWTIMEZONE.Hours
+                                                ASUTP.Core.HDateTime.TS_NSK_OFFSET_OF_MOSCOWTIMEZONE.Hours
                                                 )).ToString("yyyyMMdd HH:mm:ss") +
                                             @"'" +
                                             @" AND ID_COMPONENT = " + comp.m_id + "; ";
@@ -304,7 +305,8 @@ namespace trans_tg
             }
             else
             {
-                Logging.Logg().Debug("AdminTransTG::setAdminValuesQuery () - m_listCurTimezoneOffsetRDGExcelValues.Count = " + m_listCurTimezoneOffsetRDGExcelValues.Count, Logging.INDEX_MESSAGE.NOT_SET);
+                ASUTP.Logging.Logg().Debug("AdminTransTG::setAdminValuesQuery () - m_listCurTimezoneOffsetRDGExcelValues.Count = " + m_listCurTimezoneOffsetRDGExcelValues.Count
+                    , ASUTP.Logging.INDEX_MESSAGE.NOT_SET);
             }
 
             return resQuery;
@@ -359,14 +361,14 @@ namespace trans_tg
                         //    case AdminTS.TYPE_FIELDS.STATIC:
                         //        break;
                         //    case AdminTS.TYPE_FIELDS.DYNAMIC:
-                                resQuery[(int)DbTSQLInterface.QUERY_TYPE.INSERT] += @" ('" + date.AddHours((i + 1) + (-1 *
+                                resQuery[(int)ASUTP.Database.DbTSQLInterface.QUERY_TYPE.INSERT] += @" ('" + date.AddHours((i + 1) + (-1 *
                                                 //t.m_timezone_offset_msc
-                                                HDateTime.TS_NSK_OFFSET_OF_MOSCOWTIMEZONE.Hours
+                                                ASUTP.Core.HDateTime.TS_NSK_OFFSET_OF_MOSCOWTIMEZONE.Hours
                                                 )).ToString("yyyyMMdd HH:mm:ss") +
                                             @"', '" + serverTime.ToString("yyyyMMdd HH:mm:ss") +
                                             @"', '" + GetPBRNumber((i + 0) + (-1 *
                                                 //t.m_timezone_offset_msc
-                                                HDateTime.TS_NSK_OFFSET_OF_MOSCOWTIMEZONE.Hours
+                                                ASUTP.Core.HDateTime.TS_NSK_OFFSET_OF_MOSCOWTIMEZONE.Hours
                                                 ), out err) +
                                             @"', " + comp.m_id +
                                             @", '" + "0" + "'" +
@@ -382,12 +384,13 @@ namespace trans_tg
                 }
             }
             else {
-                Logging.Logg().Debug("AdminTransTG::setPPBRQuery () - m_listCurTimezoneOffsetRDGExcelValues.Count = " + m_listCurTimezoneOffsetRDGExcelValues.Count, Logging.INDEX_MESSAGE.NOT_SET);
+                ASUTP.Logging.Logg().Debug("AdminTransTG::setPPBRQuery () - m_listCurTimezoneOffsetRDGExcelValues.Count = " + m_listCurTimezoneOffsetRDGExcelValues.Count
+                    , ASUTP.Logging.INDEX_MESSAGE.NOT_SET);
             }
 
-            resQuery[(int)DbTSQLInterface.QUERY_TYPE.DELETE] = @"";
+            resQuery[(int)ASUTP.Database.DbTSQLInterface.QUERY_TYPE.DELETE] = @"";
 
-            Logging.Logg().Debug("AdminTransTG::setPPBRQuery ()", Logging.INDEX_MESSAGE.NOT_SET);
+            ASUTP.Logging.Logg().Debug("AdminTransTG::setPPBRQuery ()", ASUTP.Logging.INDEX_MESSAGE.NOT_SET);
 
             return resQuery;
         }

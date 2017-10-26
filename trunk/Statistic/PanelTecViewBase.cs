@@ -14,8 +14,10 @@ using System.Globalization;
 using ZedGraph;
 using GemBox.Spreadsheet;
 
-using HClassLibrary;
+//using HClassLibrary;
 using StatisticCommon;
+using ASUTP.Core;
+using ASUTP;
 
 namespace Statistic
 {
@@ -975,7 +977,7 @@ namespace Statistic
 
         private int updateGUI_Fact(int hour, int min)
         {
-            int iRes = (int)HClassLibrary.HHandler.INDEX_WAITHANDLE_REASON.SUCCESS;
+            int iRes = (int)ASUTP.Helper.HHandler.INDEX_WAITHANDLE_REASON.SUCCESS;
             
             if (IsHandleCreated/*InvokeRequired*/ == true)
                 this.BeginInvoke(new DelegateIntIntFunc(show_Fact), hour, min);

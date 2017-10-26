@@ -8,13 +8,17 @@ using System.Text;
 using System.Windows.Forms;
 using System.Threading;
 
-using HClassLibrary;
+//using HClassLibrary;
 using StatisticCommon;
+using ASUTP.Database;
+using ASUTP.Forms;
+using ASUTP.Helper;
+using ASUTP.Core;
+using ASUTP;
 
 namespace StatisticTimeSync
 {
-    public partial class FormMain : FormMainBaseWithStatusStrip
-    {
+    public partial class FormMain : ASUTP.Forms.FormMainBaseWithStatusStrip {
         /// <summary>
         /// Панель - единственная дочерняя по отношению к главной форме
         ///  , и единственная родительская по отношению к рабочей панели
@@ -40,10 +44,10 @@ namespace StatisticTimeSync
         }
 
         /// <summary>
-        /// Запуск старта панели
+        /// Обработчик события - загрузка панели завершена (...запуск старта панели...)
         /// </summary>
-        /// <param name="obj"></param>
-        /// <param name="ev"></param>
+        /// <param name="obj">Объект, инициировавший событие</param>
+        /// <param name="ev">Аргумент события</param>
         private void FormStatisticTimeSync_Load(object obj, EventArgs ev)
         {
             string msg = string.Empty;
@@ -208,9 +212,9 @@ namespace StatisticTimeSync
             HAdmin.SeasonAction = Int32.Parse(formParameters.m_arParametrSetup[(int)FormParameters.PARAMETR_SETUP.SEASON_ACTION]);
 
             //Параметры обработки запросов к БД...
-            DbInterface.MAX_RETRY = Int32.Parse(formParameters.m_arParametrSetup[(int)FormParameters.PARAMETR_SETUP.MAX_ATTEMPT]);
-            DbInterface.MAX_WAIT_COUNT = Int32.Parse(formParameters.m_arParametrSetup[(int)FormParameters.PARAMETR_SETUP.WAITING_COUNT]);
-            DbInterface.WAIT_TIME_MS = Int32.Parse(formParameters.m_arParametrSetup[(int)FormParameters.PARAMETR_SETUP.WAITING_TIME]);
+            Constants.MAX_RETRY = Int32.Parse(formParameters.m_arParametrSetup[(int)FormParameters.PARAMETR_SETUP.MAX_ATTEMPT]);
+            Constants.MAX_WAIT_COUNT = Int32.Parse(formParameters.m_arParametrSetup[(int)FormParameters.PARAMETR_SETUP.WAITING_COUNT]);
+            Constants.WAIT_TIME_MS = Int32.Parse(formParameters.m_arParametrSetup[(int)FormParameters.PARAMETR_SETUP.WAITING_TIME]);
 
             //Параметры валидности даты/времени получения данных СОТИАССО...
             TecView.SEC_VALIDATE_TMVALUE = Int32.Parse(formParameters.m_arParametrSetup[(int)FormParameters.PARAMETR_SETUP.VALIDATE_TM_VALUE]);

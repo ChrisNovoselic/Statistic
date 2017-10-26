@@ -9,8 +9,11 @@ using System.Windows.Forms;
 using System.Threading;
 using System.Data;
 
-using HClassLibrary;
+
 using StatisticCommon;
+using ASUTP.Core;
+using ASUTP.Control;
+using ASUTP;
 
 namespace Statistic
 {

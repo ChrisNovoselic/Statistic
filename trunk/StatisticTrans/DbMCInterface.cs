@@ -9,13 +9,11 @@ using System.Data.OleDb;
 
 using Modes;
 using ModesApiExternal;
-
-using HClassLibrary;
+using ASUTP;
 
 namespace StatisticCommon
 {
-    public class DbMCInterface : DbInterface
-    {
+    public class DbMCInterface : ASUTP.Database.DbInterface {
         private IApiExternal m_MCApi;
         private Modes.BusinessLogic.IModesTimeSlice m_MCTimeSlice;
         private IList <PlanFactorItem> m_listPFI;

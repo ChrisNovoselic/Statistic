@@ -10,10 +10,13 @@ using System.Data;
 
 using ZedGraph;
 
-using HClassLibrary;
+
 using StatisticCommon;
 using System.Linq;
 using System.Data.Common;
+using ASUTP.Control;
+using ASUTP.Core;
+using ASUTP;
 
 namespace Statistic
 {
@@ -26,7 +29,7 @@ namespace Statistic
         /// <summary>
         /// Класс для размещения активных элементов управления
         /// </summary>
-        private class PanelManagement : HPanelCommon
+        private class PanelManagement : ASUTP.Control.HPanelCommon
         {
             public event DelegateFunc EvtExportDo;
 

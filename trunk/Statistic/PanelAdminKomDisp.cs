@@ -10,9 +10,11 @@ using System.Threading;
 using System.Globalization;
 using System.Drawing;
 
-using HClassLibrary;
+
 using StatisticCommon;
 using StatisticAlarm;
+using ASUTP;
+using ASUTP.Core;
 
 namespace Statistic
 {
@@ -305,7 +307,7 @@ namespace Statistic
                 (int)new TimeSpan(dtpShedulePeriodExport_PBRValues.Value.Hour, dtpSheduleStartExport_PBRValues.Value.Minute, dtpSheduleStartExport_PBRValues.Value.Second).TotalSeconds;
         }
 
-        public PanelAdminKomDisp(int idListener, HMark markQueries)
+        public PanelAdminKomDisp(int idListener, ASUTP.Core.HMark markQueries)
             : base(idListener, markQueries, new int[] { 0, (int)TECComponent.ID.GTP })
         {
             //??? вызываетс€ из базового класса
@@ -585,7 +587,7 @@ namespace Statistic
 
         private void btnImportCSV_AdminValuesDefault_Click(object sender, EventArgs e)
         {
-            int days = (m_admin.m_curDate.Date - HDateTime.ToMoscowTimeZone(DateTime.Now).Date).Days;
+            int days = (m_admin.m_curDate.Date - ASUTP.Core.HDateTime.ToMoscowTimeZone(DateTime.Now).Date).Days;
             if (days < 0)
             {
                 string strMsg = string.Format(@"¬ыбрана дата ретроспективных данных: {0}.", m_admin.m_curDate.Date.ToString(@"dd.MM.yyyy"));

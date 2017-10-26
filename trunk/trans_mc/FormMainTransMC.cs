@@ -7,17 +7,17 @@ using System.Drawing;
 using System.Text;
 using System.Windows.Forms;
 
-using HClassLibrary;
 using StatisticCommon;
 using StatisticTrans;
 using StatisticTransModes;
+using ASUTP;
 
 namespace trans_mc
 {
     public partial class FormMainTransMC : FormMainTransModes
     {
         public FormMainTransMC()
-            : base((int)ProgramBase.ID_APP.TRANS_MODES_CENTRE_GUI)
+            : base((int)ASUTP.Helper.ProgramBase.ID_APP.TRANS_MODES_CENTRE_GUI)
         {
             this.notifyIconMain.Icon =
             this.Icon = trans_mc.Properties.Resources.statistic5;
@@ -55,7 +55,7 @@ namespace trans_mc
             string strTypeField = m_sFileINI.GetMainValueOfKey(@"РДГФорматТаблицаНазначение");
             int idListener = DbMCSources.Sources().Register(s_listFormConnectionSettings[(int)StatisticCommon.CONN_SETT_TYPE.CONFIG_DB].getConnSett(), false, @"CONFIG_DB");
 
-            HMark markQueries = new HMark(new int [] {(int)StatisticCommon.CONN_SETT_TYPE.ADMIN, (int)StatisticCommon.CONN_SETT_TYPE.PBR});
+            ASUTP.Core.HMark markQueries = new ASUTP.Core.HMark (new int [] {(int)StatisticCommon.CONN_SETT_TYPE.ADMIN, (int)StatisticCommon.CONN_SETT_TYPE.PBR});
 
             for (i = 0; i < (Int16)CONN_SETT_TYPE.COUNT_CONN_SETT_TYPE; i++)
             {

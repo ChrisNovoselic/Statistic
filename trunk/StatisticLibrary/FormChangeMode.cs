@@ -6,7 +6,9 @@ using System.Drawing;
 using System.Text;
 using System.Windows.Forms;
 
-using HClassLibrary;
+
+using ASUTP.Core;
+using ASUTP;
 
 namespace StatisticCommon
 {
@@ -67,7 +69,7 @@ namespace StatisticCommon
         /// <summary>
         /// Совокупность установленных признаков для компонентов станции
         /// </summary>
-        private HMark m_modeTECComponent;
+        private ASUTP.Core.HMark m_modeTECComponent;
         /// <summary>
         /// Совокупность признаков для административных вкладок
         /// </summary>

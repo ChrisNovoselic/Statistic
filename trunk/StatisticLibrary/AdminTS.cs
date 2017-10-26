@@ -7,7 +7,11 @@ using System.Globalization;
 //using MySql.Data.MySqlClient;
 using System.Threading;
 using System.Windows.Forms;
-using HClassLibrary;
+
+using ASUTP.Helper;
+using ASUTP.Database;
+using ASUTP.Core;
+using ASUTP;
 
 namespace StatisticCommon
 {    
@@ -127,7 +131,7 @@ namespace StatisticCommon
 
             //Logging.Logg().Debug("AdminTS::SaveChanges () - delegateStartWait() - Интервал ожидания для semaDBAccess=" + DbInterface.MAX_WATING, Logging.INDEX_MESSAGE.NOT_SET);
 
-            bResSemaDbAccess = semaDBAccess.WaitOne(DbInterface.MAX_WATING);
+            bResSemaDbAccess = semaDBAccess.WaitOne(Constants.MAX_WATING);
             //if (semaDBAccess.WaitOne(6666) == true) {
             if (bResSemaDbAccess == true)
             //if (WaitHandle.WaitAll (new WaitHandle [] {semaState, semaDBAccess}, DbInterface.MAX_WATING) == true)
@@ -163,7 +167,7 @@ namespace StatisticCommon
                     Run(@"AdminTS::SaveChanges ()");
                 }
 
-                bResSemaDbAccess = semaDBAccess.WaitOne(DbInterface.MAX_WATING);
+                bResSemaDbAccess = semaDBAccess.WaitOne(Constants.MAX_WATING);
                 //Logging.Logg().Debug("AdminTS::SaveChanges () - semaDBAccess.WaitOne()=" + bResSemaDbAccess.ToString(), Logging.INDEX_MESSAGE.NOT_SET);
 
                 try
@@ -180,7 +184,7 @@ namespace StatisticCommon
                 if (! (saveComplete == null)) saveComplete(); else ;
             }
             else {
-                Logging.Logg().Debug("AdminTS::SaveChanges () - semaDBAccess.WaitOne(" + DbInterface.MAX_WATING + @")=false", Logging.INDEX_MESSAGE.NOT_SET);
+                Logging.Logg().Debug("AdminTS::SaveChanges () - semaDBAccess.WaitOne(" + Constants.MAX_WATING + @")=false", Logging.INDEX_MESSAGE.NOT_SET);
 
                 saveResult = Errors.NoAccess;
                 saving = true;
@@ -204,7 +208,7 @@ namespace StatisticCommon
             //Logging.Logg().Debug("AdminTS::ClearRDG () - delegateStartWait() - Интервал ожидания для semaDBAccess=" + DbInterface.MAX_WATING, Logging.INDEX_MESSAGE.NOT_SET);
 
             //if (semaDBAccess.WaitOne(6666) == true) {
-            if (semaDBAccess.WaitOne(DbInterface.MAX_WATING) == true)
+            if (semaDBAccess.WaitOne(Constants.MAX_WATING) == true)
             {
                 lock (m_lockState)
                 {
@@ -237,7 +241,7 @@ namespace StatisticCommon
                 }
 
                 //Ожидание окончания записи
-                bool bSemaDBAccessWaitRes = semaDBAccess.WaitOne(DbInterface.MAX_WATING);
+                bool bSemaDBAccessWaitRes = semaDBAccess.WaitOne(Constants.MAX_WATING);
                 //Logging.Logg().Debug("AdminTS::ClearRDG () - semaDBAccess.WaitOne()=" + bSemaDBAccessWaitRes.ToString(), Logging.INDEX_MESSAGE.NOT_SET);
 
                 try
@@ -517,7 +521,7 @@ namespace StatisticCommon
             delegateStartWait();
             //Logging.Logg().Debug("AdminTS::ExpRDGExcelValues () - delegateStartWait() - Интервал ожидания для semaDBAccess=" + DbInterface.MAX_WATING, Logging.INDEX_MESSAGE.NOT_SET);
 
-            bool bSemaDBAccessWaitRes = semaDBAccess.WaitOne(DbInterface.MAX_WATING);
+            bool bSemaDBAccessWaitRes = semaDBAccess.WaitOne(Constants.MAX_WATING);
             //if (semaDBAccess.WaitOne(6666) == true) {
             if (bSemaDBAccessWaitRes == true)
             {
@@ -537,7 +541,7 @@ namespace StatisticCommon
                     Run(@"AdminTS::ExpRDGExcelValues ()");
                 }
 
-                bSemaDBAccessWaitRes = semaDBAccess.WaitOne(DbInterface.MAX_WATING);
+                bSemaDBAccessWaitRes = semaDBAccess.WaitOne(Constants.MAX_WATING);
                 //Logging.Logg().Debug("AdminTS::ExpRDGExcelValues () - semaDBAccess.WaitOne()=" + bSemaDBAccessWaitRes.ToString(), Logging.INDEX_MESSAGE.NOT_SET);
                 try
                 {
@@ -552,7 +556,7 @@ namespace StatisticCommon
             else {
                 lock (m_lockState)
                 {
-                    Logging.Logg().Debug("AdminTS::ExpRDGExcelValues () - semaDBAccess.WaitOne(" + DbInterface.MAX_WATING + @")=" + bSemaDBAccessWaitRes.ToString (), Logging.INDEX_MESSAGE.NOT_SET);
+                    Logging.Logg().Debug("AdminTS::ExpRDGExcelValues () - semaDBAccess.WaitOne(" + Constants.MAX_WATING + @")=" + bSemaDBAccessWaitRes.ToString (), Logging.INDEX_MESSAGE.NOT_SET);
                     
                     saveResult = Errors.NoAccess;
                     saving = true;

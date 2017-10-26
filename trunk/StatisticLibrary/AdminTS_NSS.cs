@@ -5,8 +5,11 @@ using System.Collections.Generic;
 using System.Threading;
 
 using Excel = Microsoft.Office.Interop.Excel;
+using ASUTP.Core;
+using ASUTP;
+using ASUTP.Database;
 
-using HClassLibrary;
+
 
 namespace StatisticCommon
 {

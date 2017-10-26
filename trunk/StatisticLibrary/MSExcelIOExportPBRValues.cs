@@ -5,9 +5,12 @@ using System.Text;
 
 using GemBox.Spreadsheet;
 
-using HClassLibrary;
+
 using System.Threading;
 using System.IO;
+using ASUTP.MSExcel;
+using ASUTP;
+using ASUTP.Core;
 
 namespace StatisticCommon
 {

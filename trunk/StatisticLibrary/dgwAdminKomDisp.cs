@@ -6,8 +6,9 @@ using System.Windows.Forms;
 using System.Data;
 using System.Globalization;
 
-using HClassLibrary;
+
 using System.Drawing;
+using ASUTP;
 
 namespace StatisticCommon
 {

@@ -7,8 +7,9 @@ using System.Windows.Forms;
 using System.Threading; //...Thread
 using System.Media; //...SoundPlayer
 
-using HClassLibrary;
+//using HClassLibrary;
 using StatisticCommon;
+using ASUTP.Core;
 
 namespace StatisticAlarm
 {

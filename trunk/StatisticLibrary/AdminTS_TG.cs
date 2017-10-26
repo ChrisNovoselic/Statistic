@@ -5,8 +5,9 @@ using System.Collections.Generic;
 using System.Threading;
 
 using Excel = Microsoft.Office.Interop.Excel;
+using ASUTP.Helper;
 
-using HClassLibrary;
+
 
 namespace StatisticCommon
 {

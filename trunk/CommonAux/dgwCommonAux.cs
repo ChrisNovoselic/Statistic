@@ -15,9 +15,10 @@ using System.Globalization;
 using ZedGraph;
 using GemBox.Spreadsheet;
 
-using HClassLibrary;
+//using HClassLibrary;
 using StatisticCommon;
 using System.Reflection;
+using ASUTP;
 
 namespace CommonAux
 {

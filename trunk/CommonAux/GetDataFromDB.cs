@@ -10,17 +10,18 @@ using System.Threading;
 using System.Data;
 using System.Globalization;
 
-using HClassLibrary;
+//using HClassLibrary;
 using StatisticCommon;
 using System.Reflection;
+using ASUTP;
+using ASUTP.Database;
 
 namespace CommonAux
 {
     /// <summary>
     /// Класс для взаимодействия с базой данных
     /// </summary>
-    public partial class GetDataFromDB : HHandlerDb
-    {
+    public partial class GetDataFromDB : ASUTP.Helper.HHandlerDb {
         /// <summary>
         /// Строка, содержащая наименование таблицы в БД, хранящей перечень каналов
         /// </summary>
@@ -71,7 +72,7 @@ namespace CommonAux
 
         public List<TEC_LOCAL> m_listTEC;
 
-        private HMark m_markIndxRequestError;
+        private ASUTP.Core.HMark m_markIndxRequestError;
         /// <summary>
         /// Каталог для размещения шаблонов
         /// </summary>
@@ -220,7 +221,7 @@ namespace CommonAux
 
             tec.m_listValuesDate.Clear();
             if (m_markIndxRequestError == null)
-                m_markIndxRequestError = new HMark(0);
+                m_markIndxRequestError = new ASUTP.Core.HMark (0);
             else
                 m_markIndxRequestError.SetOf(0);
 

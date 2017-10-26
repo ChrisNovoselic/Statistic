@@ -10,7 +10,12 @@ using System.Runtime.InteropServices;
 
 using System.Data.Common; //для DbConnection
 
-using HClassLibrary;
+
+using ASUTP.Database;
+using ASUTP.Helper;
+using ASUTP.Forms;
+using ASUTP;
+using ASUTP.Core;
 
 namespace StatisticCommon
 {
@@ -115,7 +120,7 @@ namespace StatisticCommon
             base.buttonCancel_Click(sender, e);
         }
 
-        public int ParamsGetTgId(HDateTime.INTERVAL id_time, int sensor)
+        public int ParamsGetTgId(ASUTP.Core.HDateTime.INTERVAL id_time, int sensor)
         {
             return m_tg_id[(int)id_time, sensor];
         }

@@ -2,9 +2,10 @@
 using System.Collections.Generic;
 using System.Windows.Forms;
 using System.Security;
-using HClassLibrary;
+
 using StatisticCommon;
 using StatisticTrans;
+using ASUTP;
 
 namespace trans_mc
 {
@@ -16,7 +17,7 @@ namespace trans_mc
         [STAThread]
         static void Main()
         {
-            ProgramBase.Start(Logging.LOG_MODE.FILE_EXE, true);
+            ASUTP.Helper.ProgramBase.Start(Logging.LOG_MODE.FILE_EXE, true);
 
             FormMainTransMC formMain = null;
             try
@@ -31,7 +32,7 @@ namespace trans_mc
                 { Logging.Logg().Exception(e, "Ошибка выполнения приложения.", Logging.INDEX_MESSAGE.NOT_SET); }
             else ;
 
-            ProgramBase.Exit();
+            ASUTP.Helper.ProgramBase.Exit();
         }
     }
 }

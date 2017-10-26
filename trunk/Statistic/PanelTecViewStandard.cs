@@ -13,8 +13,10 @@ using System.Globalization;
 using ZedGraph;
 using GemBox.Spreadsheet;
 
-using HClassLibrary;
+//using HClassLibrary;
 using StatisticCommon;
+using ASUTP.Core;
+using ASUTP;
 
 namespace Statistic
 { 

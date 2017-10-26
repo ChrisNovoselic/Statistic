@@ -3,7 +3,11 @@ using System.Collections.Generic;
 using System.Data;
 using System.Globalization;
 using System.Threading;
-using HClassLibrary;
+
+using ASUTP.Helper;
+using ASUTP;
+using ASUTP.Core;
+using ASUTP.Database;
 
 namespace StatisticCommon
 {    
@@ -220,7 +224,7 @@ namespace StatisticCommon
             }
         }
 
-        private void initQueries(HMark markQueries)
+        private void initQueries(ASUTP.Core.HMark markQueries)
         {
             if (m_markQueries == null)
                 m_markQueries = markQueries;
@@ -228,7 +232,7 @@ namespace StatisticCommon
                 m_markQueries.Add(markQueries);
         }
 
-        public virtual void InitTEC(List <StatisticCommon.TEC> listTEC, HMark markQueries)
+        public virtual void InitTEC(List <StatisticCommon.TEC> listTEC, ASUTP.Core.HMark markQueries)
         {
             this.m_list_tec = new InitTECBase.ListTEC ();
             ////Вариант №1

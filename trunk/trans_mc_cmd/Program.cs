@@ -10,8 +10,11 @@ using StatisticTrans;
 using Modes;
 using ModesApiExternal;
 
-using HClassLibrary;
+//
 using StatisticCommon;
+using ASUTP.Database;
+using ASUTP.Helper;
+using ASUTP;
 
 namespace trans_mc_cmd
 {
@@ -28,8 +31,8 @@ namespace trans_mc_cmd
         static DateTime g_dtList;
 
         public static FileINI m_fileINI = new FileINI("setup.ini", false);
-        private static string m_strProgramNameSectionDB_INI = "Параметры соединения с БД (" + Logging.AppName + @".exe" + ")";
-        private static Crypt m_crypt;
+        private static string m_strProgramNameSectionDB_INI = "Параметры соединения с БД (" + ProgramBase.AppName + @".exe" + ")";
+        private static ASUTP.Core.Crypt m_crypt;
 
         static void Main(string[] args)
         {
@@ -162,7 +165,7 @@ namespace trans_mc_cmd
 
         private static string GetNameHostModesCentre()
         {
-            return m_fileINI.ReadString("Параметры соединения с Modes-Centre (" + Logging.AppName + ".exe" + ")", "ИмяСервер", string.Empty);
+            return m_fileINI.ReadString("Параметры соединения с Modes-Centre (" + ProgramBase.AppName + ".exe" + ")", "ИмяСервер", string.Empty);
         }
 
         public static ConnectionSettings ReadConnSettFromFileINI(out int typeConfigDB)
@@ -174,7 +177,7 @@ namespace trans_mc_cmd
             connSettRes.dbName = m_fileINI.ReadString(m_strProgramNameSectionDB_INI, "ИмяБД", string.Empty);
             connSettRes.userName = m_fileINI.ReadString(m_strProgramNameSectionDB_INI, "ИмяПользователь", string.Empty);
             connSettRes.port = Int32.Parse(m_fileINI.ReadString(m_strProgramNameSectionDB_INI, "ПортСУБД", string.Empty));
-            connSettRes.password = m_crypt.Decrypt(m_fileINI.ReadString(m_strProgramNameSectionDB_INI, "ПортСУБД", string.Empty), Crypt.KEY);
+            connSettRes.password = m_crypt.Decrypt(m_fileINI.ReadString(m_strProgramNameSectionDB_INI, "ПортСУБД", string.Empty), ASUTP.Core.Crypt.KEY);
             //connSettRes.ignore = false;
 
             typeConfigDB = m_fileINI.ReadInt(m_strProgramNameSectionDB_INI, "ТипБДКфгНазначение", -1);
@@ -196,13 +199,13 @@ namespace trans_mc_cmd
             false;
 
             string strProgramNameSectionINI = string.Empty;
-            strProgramNameSectionINI = "Main settings (" + Logging.AppName + @".exe" + ")";
+            strProgramNameSectionINI = "Main settings (" + ProgramBase.AppName + @".exe" + ")";
             if (Boolean.TryParse(m_fileINI.ReadString(strProgramNameSectionINI, "СообщениеОтладкаЖурналОС", string.Empty), out g_bWriteToWinEventLog) == false)
                 g_bWriteToWinEventLog = false;
             else
                 ;
 
-            strProgramNameSectionINI = "Параметры записи в БД (" + Logging.AppName + @".exe" + ")";
+            strProgramNameSectionINI = "Параметры записи в БД (" + ProgramBase.AppName + @".exe" + ")";
             if (Boolean.TryParse(m_fileINI.ReadString(strProgramNameSectionINI, "Расчет30минЗначения", string.Empty), out bCalculatedHalfHourValues) == false)
                 bCalculatedHalfHourValues = false;
             else
@@ -241,7 +244,7 @@ namespace trans_mc_cmd
                         {
                             if (args.Length == 2)
                             {
-                                m_fileINI.WriteString(m_strProgramNameSectionDB_INI, @"ПортСУБД", m_crypt.Encrypt (args[1], Crypt.KEY));
+                                m_fileINI.WriteString(m_strProgramNameSectionDB_INI, @"ПортСУБД", m_crypt.Encrypt (args[1], ASUTP.Core.Crypt.KEY));
                             }
                             else
                                 Console.WriteLine("Укажите новый пароль вторым аргументом или аргументов больше, чем необходимо");

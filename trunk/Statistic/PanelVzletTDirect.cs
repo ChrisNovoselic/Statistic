@@ -1,5 +1,6 @@
 ﻿using System;
 using System.Collections;
+using System.Collections.Generic;
 using System.ComponentModel;
 using System.Data; //DataTable
 using System.Data.Common; //DbConnection
@@ -14,9 +15,10 @@ using System.Windows.Forms; //TableLayoutPanel
 
 using ZedGraph;
 
-using HClassLibrary;
+//using HClassLibrary;
 using StatisticCommon;
-using System.Collections.Generic;
+using ASUTP.Core;
+using ASUTP;
 
 namespace Statistic
 {
@@ -926,7 +928,7 @@ namespace Statistic
                 {
                     int cnt = -1
                         , id = -1;
-                    HLabel hlblValue;
+                    ASUTP.Control.HLabel hlblValue;
 
                     id = comp.m_id;
 
@@ -934,21 +936,21 @@ namespace Statistic
                     m_tgToolTips.Add(id, new ToolTip[(int)Vyvod.ParamVyvod.INDEX_VALUE.COUNT]);
                     cnt = m_tgLabels.Count;
 
-                    m_tgLabels[id][(int)Vyvod.ParamVyvod.INDEX_VALUE.LABEL_DESC] = HLabel.createLabel(comp.name_shr.Trim(),
-                                                                            new HLabelStyles(/*arPlacement[(int)i].pt, sz,*/new Point(-1, -1), new Size(-1, -1),
+                    m_tgLabels[id][(int)Vyvod.ParamVyvod.INDEX_VALUE.LABEL_DESC] = ASUTP.Control.HLabel.createLabel(comp.name_shr.Trim(),
+                                                                            new ASUTP.Control.HLabelStyles (/*arPlacement[(int)i].pt, sz,*/new Point(-1, -1), new Size(-1, -1),
                                                                             Color.Black, Color.Empty,
                                                                             8F, ContentAlignment.MiddleLeft));
 
-                    hlblValue = new HLabel(new HLabelStyles(new Point(-1, -1), new Size(-1, -1), Color.LimeGreen, Color.Black, 13F, ContentAlignment.MiddleCenter));
+                    hlblValue = new ASUTP.Control.HLabel (new ASUTP.Control.HLabelStyles (new Point(-1, -1), new Size(-1, -1), Color.LimeGreen, Color.Black, 13F, ContentAlignment.MiddleCenter));
                     hlblValue.Text = @"---.--"; //name_shr + @"_Fact";
-                    hlblValue.m_type = HLabel.TYPE_HLABEL.TG;
+                    hlblValue.m_type = ASUTP.Control.HLabel.TYPE_HLABEL.TG;
                     //m_tgToolTips[id][(int)Vyvod.ParamVyvod.INDEX_VALUE.FACT].SetToolTip(hlblValue, tg.name_shr + @"[" + tg.m_SensorsStrings_ASKUE[0] + @"]: " + (tg.m_TurnOnOff == Vyvod.ParamVyvod.INDEX_TURNOnOff.ON ? @"вкл." : @"выкл."));
                     m_tgLabels[id][(int)Vyvod.ParamVyvod.INDEX_VALUE.FACT] = (System.Windows.Forms.Label)hlblValue;
                     m_tgToolTips[id][(int)Vyvod.ParamVyvod.INDEX_VALUE.FACT] = new ToolTip();
 
-                    hlblValue = new HLabel(new HLabelStyles(new Point(-1, -1), new Size(-1, -1), Color.Green, Color.Black, 13F, ContentAlignment.MiddleCenter));
+                    hlblValue = new ASUTP.Control.HLabel (new ASUTP.Control.HLabelStyles (new Point(-1, -1), new Size(-1, -1), Color.Green, Color.Black, 13F, ContentAlignment.MiddleCenter));
                     hlblValue.Text = @"---.--"; //name_shr + @"_TM";
-                    hlblValue.m_type = HLabel.TYPE_HLABEL.TG;
+                    hlblValue.m_type = ASUTP.Control.HLabel.TYPE_HLABEL.TG;
                     m_tgLabels[id][(int)Vyvod.ParamVyvod.INDEX_VALUE.DEVIAT] = (System.Windows.Forms.Label)hlblValue;
 
                     m_tgToolTips[id][(int)Vyvod.ParamVyvod.INDEX_VALUE.DEVIAT] = new ToolTip();
@@ -1940,7 +1942,7 @@ namespace Statistic
             /// constructor
             /// </summary>
             public PanelTecVzletTDirect(TEC tec, int indx_tec, int indx_comp)
-                : base(tec, indx_tec, indx_comp, new HMark(new int[] { (int)CONN_SETT_TYPE.ADMIN, (int)CONN_SETT_TYPE.PBR, (int)CONN_SETT_TYPE.DATA_VZLET }))
+                : base(tec, indx_tec, indx_comp, new ASUTP.Core.HMark (new int[] { (int)CONN_SETT_TYPE.ADMIN, (int)CONN_SETT_TYPE.PBR, (int)CONN_SETT_TYPE.DATA_VZLET }))
             {
                 initialize();
             }
@@ -1948,7 +1950,7 @@ namespace Statistic
             /// constructor
             /// </summary>
             /// <param name="container">Родительский объект по отношению к создаваемому</param>
-            public PanelTecVzletTDirect(IContainer container, TEC tec, int indx_tec, int indx_comp, HMark markQueries)
+            public PanelTecVzletTDirect(IContainer container, TEC tec, int indx_tec, int indx_comp, ASUTP.Core.HMark markQueries)
                 : base(tec, indx_tec, indx_comp, markQueries)
             {
                 container.Add(this);

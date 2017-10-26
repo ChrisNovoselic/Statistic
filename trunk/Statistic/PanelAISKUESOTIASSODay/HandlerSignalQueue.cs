@@ -11,7 +11,10 @@ using System.Data;
 using StatisticCommon;
 using System.Linq;
 using System.Data.Common;
-using HClassLibrary;
+using ASUTP;
+using ASUTP.PlugIn;
+using ASUTP.Core;
+
 
 namespace Statistic
 {
@@ -21,7 +24,7 @@ namespace Statistic
     /// </summary>
     partial class PanelAISKUESOTIASSODay
     {
-        private partial class HandlerSignalQueue : HHandlerQueue {
+        private partial class HandlerSignalQueue : ASUTP.Helper.HHandlerQueue {
             public enum EVENT { /*SET_TEC,*/ LIST_SIGNAL = 11, CUR_VALUES, CHECK_VALUES }
             ///// <summary>
             ///// Делегат по окончанию обработки очередного обработанного из очереди события

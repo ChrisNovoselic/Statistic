@@ -1,16 +1,17 @@
 ﻿using System;
 
-using HClassLibrary;
 using StatisticCommon;
 using StatisticTrans;
 using System.Drawing;
+using ASUTP;
+using ASUTP.Database;
 
 namespace trans_gtp
 {
     public partial class FormMainTransGTP : FormMainTrans
     {
         public FormMainTransGTP()
-            : base((int)ProgramBase.ID_APP.TRANS_GTP
+            : base((int)ASUTP.Helper.ProgramBase.ID_APP.TRANS_GTP
                     , new string[] { @"ИгнорДатаВремя-techsite"/*, @"ТипБДКфгНазначение", @"РДГФорматТаблицаНазначение"*/ }
                     , new string[] { @"False"/*, @"200", @"DYNAMIC"*/ })
         {
@@ -106,7 +107,7 @@ namespace trans_gtp
 
             m_sFileINI.AddMainPar(@"ТЭЦПараметрыНазначение", @"{}");
 
-            HMark markQueries = new HMark(0);
+            ASUTP.Core.HMark markQueries = new ASUTP.Core.HMark (0);
             markQueries.Set((int)StatisticCommon.CONN_SETT_TYPE.PBR, ОпросППБРToolStripMenuItem.Checked);
             markQueries.Set((int)StatisticCommon.CONN_SETT_TYPE.ADMIN, ОпросАдминЗначенияToolStripMenuItem.Checked);
 
@@ -115,7 +116,7 @@ namespace trans_gtp
             // определить пользователя по 1-ой БД конфигурации
             idListener = DbSources.Sources().Register(s_listFormConnectionSettings[(int)StatisticCommon.CONN_SETT_TYPE.CONFIG_DB].getConnSett(0), false, @"CONFIG_DB");
             try {
-                using (HStatisticUsers users = new HStatisticUsers(idListener, HUsers.MODE_REGISTRATION.MIXED)) {; }
+                using (HStatisticUsers users = new HStatisticUsers(idListener, ASUTP.Helper.HUsers.MODE_REGISTRATION.MIXED)) {; }
             } catch (Exception e) {
                 Logging.Logg().Exception(e, "FormMainTransGTP::FormMainTransGTP ()", Logging.INDEX_MESSAGE.NOT_SET);
             }

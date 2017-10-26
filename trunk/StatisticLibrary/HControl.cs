@@ -16,8 +16,9 @@ using System.Threading;
 using System.Timers;
 using System.Windows.Forms;
 using ZedGraph;
+using ASUTP.Core;
 
-using HClassLibrary;
+
 
 namespace StatisticCommon
 {

@@ -1,4 +1,8 @@
-﻿using HClassLibrary;
+﻿using ASUTP;
+using ASUTP.Core;
+using ASUTP.Database;
+using ASUTP.Helper;
+//using HClassLibrary;
 using StatisticCommon;
 using System;
 using System.Collections.Generic;
@@ -18,8 +22,7 @@ using System.Windows.Forms;
 
 namespace StatisticAnalyzer
 {
-    public abstract partial class FormMain : /*Form //FormMainBase//:*/ FormMainBaseWithStatusStrip
-    {
+    public abstract partial class FormMain : /*Form //FormMainBase//:*/ ASUTP.Forms.FormMainBaseWithStatusStrip {
         /// <summary>
         /// Панель - единственная дочерняя по отношению к главной форме
         ///  , и единственная родительская по отношению к рабочей панели
@@ -39,14 +42,14 @@ namespace StatisticAnalyzer
         {
             //Создать объект - чтение зашифрованного файла с параметрами соединения
             s_fileConnSett = new FIleConnSett(@"connsett.ini", FIleConnSett.MODE.FILE);
-            s_listFormConnectionSettings = new List<FormConnectionSettings>();
+            s_listFormConnectionSettings = new List<ASUTP.Forms.FormConnectionSettings> ();
             //Добавить элемент с параметрами соединения из объекта 'FIleConnSett' 
-            s_listFormConnectionSettings.Add(new FormConnectionSettings(-1, s_fileConnSett.ReadSettingsFile, s_fileConnSett.SaveSettingsFile));
+            s_listFormConnectionSettings.Add(new ASUTP.Forms.FormConnectionSettings (-1, s_fileConnSett.ReadSettingsFile, s_fileConnSett.SaveSettingsFile));
             s_listFormConnectionSettings.Add(null);
 
             Thread.CurrentThread.CurrentCulture =
             Thread.CurrentThread.CurrentUICulture =
-                ProgramBase.ss_MainCultureInfo;
+                ASUTP.Helper.ProgramBase.ss_MainCultureInfo;
 
             InitializeComponent();            
         }
@@ -233,9 +236,9 @@ namespace StatisticAnalyzer
             HAdmin.SeasonAction = Int32.Parse(formParameters.m_arParametrSetup[(int)FormParameters.PARAMETR_SETUP.SEASON_ACTION]);
 
             //Параметры обработки запросов к БД...
-            DbInterface.MAX_RETRY = Int32.Parse(formParameters.m_arParametrSetup[(int)FormParameters.PARAMETR_SETUP.MAX_ATTEMPT]);
-            DbInterface.MAX_WAIT_COUNT = Int32.Parse(formParameters.m_arParametrSetup[(int)FormParameters.PARAMETR_SETUP.WAITING_COUNT]);
-            DbInterface.WAIT_TIME_MS = Int32.Parse(formParameters.m_arParametrSetup[(int)FormParameters.PARAMETR_SETUP.WAITING_TIME]);
+            Constants.MAX_RETRY = Int32.Parse(formParameters.m_arParametrSetup[(int)FormParameters.PARAMETR_SETUP.MAX_ATTEMPT]);
+            Constants.MAX_WAIT_COUNT = Int32.Parse(formParameters.m_arParametrSetup[(int)FormParameters.PARAMETR_SETUP.WAITING_COUNT]);
+            Constants.WAIT_TIME_MS = Int32.Parse(formParameters.m_arParametrSetup[(int)FormParameters.PARAMETR_SETUP.WAITING_TIME]);
 
             //Параметры валидности даты/времени получения данных СОТИАССО...
             TecView.SEC_VALIDATE_TMVALUE = Int32.Parse(formParameters.m_arParametrSetup[(int)FormParameters.PARAMETR_SETUP.VALIDATE_TM_VALUE]);

@@ -5,8 +5,9 @@ using System.Text;
 
 using System.Data;
 
-using HClassLibrary;
 using StatisticCommon;
+using ASUTP.Database;
+using ASUTP;
 
 namespace StatisticTransModes
 {
@@ -22,7 +23,7 @@ namespace StatisticTransModes
             base.Initialize();
         }
 
-        public override Errors SaveChanges()
+        public override ASUTP.Helper.Errors SaveChanges ()
         {
             //Logging.Logg().Debug("AdminTS_Modes::SaveChanges () - вХод...", Logging.INDEX_MESSAGE.NOT_SET);
 
@@ -33,7 +34,7 @@ namespace StatisticTransModes
                 Logging.Logg().Exception(e, @"AdminTS_Modes::SaveChanges () - delegateStartWait() - ...", Logging.INDEX_MESSAGE.NOT_SET);
             }
 
-            int msecWaitSemaDbAccess = DbInterface.MAX_RETRY * DbInterface.MAX_WAIT_COUNT * DbInterface.WAIT_TIME_MS;
+            int msecWaitSemaDbAccess = ASUTP.Core.Constants.MAX_RETRY * ASUTP.Core.Constants.MAX_WAIT_COUNT * ASUTP.Core.Constants.WAIT_TIME_MS;
             //Logging.Logg().Debug("AdminTS_Modes::SaveChanges () - delegateStartWait() - Интервал ожидания для semaDBAccess=" + msecWaitSemaDbAccess, Logging.INDEX_MESSAGE.NOT_SET);
 
             bResSemaDbAccess = semaDBAccess.WaitOne(msecWaitSemaDbAccess);
@@ -44,7 +45,7 @@ namespace StatisticTransModes
                 {
                     ClearStates();
 
-                    saveResult = Errors.NoAccess;
+                    saveResult = ASUTP.Helper.Errors.NoAccess;
                     saving = true;
                     using_date = false;
                     m_curDate = m_prevDate;
@@ -62,7 +63,7 @@ namespace StatisticTransModes
                     Run(@"AdminTS_Modes::SaveChanges ()");
                 }
 
-                bResSemaDbAccess = semaDBAccess.WaitOne(DbInterface.MAX_WATING);
+                bResSemaDbAccess = semaDBAccess.WaitOne(ASUTP.Core.Constants.MAX_WATING);
                 //Logging.Logg().Debug("AdminTS_Modes::SaveChanges () - semaDBAccess.WaitOne(" + DbInterface.MAX_WATING + @")=" + bResSemaDbAccess.ToString(), Logging.INDEX_MESSAGE.NOT_SET);
 
                 try
@@ -81,7 +82,7 @@ namespace StatisticTransModes
             else {
                 Logging.Logg().Debug("AdminTS_Modes::SaveChanges () - semaDBAccess.WaitOne(" + msecWaitSemaDbAccess + @")=false", Logging.INDEX_MESSAGE.NOT_SET);
 
-                saveResult = Errors.NoAccess;
+                saveResult = ASUTP.Helper.Errors.NoAccess;
                 saving = true;
             }
 

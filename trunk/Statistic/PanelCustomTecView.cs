@@ -7,8 +7,10 @@ using System.Text;
 using System.Windows.Forms;
 using System.Drawing;
 
-using HClassLibrary;
+
 using StatisticCommon;
+using ASUTP.Core;
+using ASUTP.Control;
 
 namespace Statistic
 {

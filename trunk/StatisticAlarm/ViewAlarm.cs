@@ -8,7 +8,12 @@ using System.Globalization; //CultureInfo
 using System.ComponentModel;
 
 using StatisticCommon;
-using HClassLibrary;
+using ASUTP.Helper;
+using ASUTP.Database;
+using ASUTP;
+using ASUTP.PlugIn;
+using ASUTP.Core;
+//using HClassLibrary;
 
 namespace StatisticAlarm
 {
@@ -152,7 +157,7 @@ namespace StatisticAlarm
         /// <summary>
         /// Класс для получения данных из БД
         /// </summary>
-        private class HandlerDb : HClassLibrary.HHandlerDb
+        private class HandlerDb : ASUTP.Helper.HHandlerDb
         {
             /// <summary>
             /// Перечисление

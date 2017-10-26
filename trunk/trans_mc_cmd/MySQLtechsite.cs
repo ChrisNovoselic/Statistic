@@ -8,8 +8,8 @@ using System.Data.Common;
 //using System.Data.Odbc;
 using MySql.Data.MySqlClient;
 
-using HClassLibrary;
 using StatisticCommon;
+using ASUTP.Database;
 
 namespace trans_mc_cmd
 {
@@ -111,7 +111,7 @@ namespace trans_mc_cmd
             {
                 m_admin = new AdminTS(new bool [] {false, true}, TECComponentBase.TYPE.ELECTRO);
 
-                HMark markQueries = new HMark(new int[] { (int)StatisticCommon.CONN_SETT_TYPE.ADMIN, (int)StatisticCommon.CONN_SETT_TYPE.PBR });
+                ASUTP.Core.HMark markQueries = new ASUTP.Core.HMark (new int[] { (int)StatisticCommon.CONN_SETT_TYPE.ADMIN, (int)StatisticCommon.CONN_SETT_TYPE.PBR });
                 //markQueries.Marked ((int)StatisticCommon.CONN_SETT_TYPE.ADMIN);
                 //markQueries.Marked((int)StatisticCommon.CONN_SETT_TYPE.PBR);
 
@@ -495,7 +495,7 @@ namespace trans_mc_cmd
             {
                 //Для Win7 надо палочкой махнуть, но не кашерно: Try giving the following registry key Read permission for NETWORK SERVICE: HKEY_LOCAL_MACHINE\SYSTEM\CurrentControlSet\Services\EventLog\Security
                 string sAppName = string.Empty;
-                sAppName = Logging.AppName + ".exe";
+                sAppName = ASUTP.Helper.ProgramBase.AppName + ".exe";
                 //sAppName = "trans_mc_cmd.exe";
                 System.Diagnostics.EventLog.WriteEntry(sAppName, sErrMess, System.Diagnostics.EventLogEntryType.Error);
             }

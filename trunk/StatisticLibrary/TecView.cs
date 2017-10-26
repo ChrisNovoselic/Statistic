@@ -7,8 +7,11 @@ using System.Collections.Generic;
 using System.Threading;
 using System.Drawing; //Color
 
-using HClassLibrary;
+
 using System.Linq;
+using ASUTP.Core;
+using ASUTP;
+using ASUTP.Database;
 
 namespace StatisticCommon
 {
@@ -677,14 +680,14 @@ namespace StatisticCommon
             base.Stop();            
         }
 
-        public override void InitTEC(List<StatisticCommon.TEC> listTEC, HMark markQueries)
+        public override void InitTEC(List<StatisticCommon.TEC> listTEC, ASUTP.Core.HMark markQueries)
         {
             base.InitTEC(listTEC, markQueries);
 
             InitializeTECComponents ();
         }
 
-        public void ReInitTEC(StatisticCommon.TEC tec, int indx_TEC, int indx_components, HMark markQueries)
+        public void ReInitTEC(StatisticCommon.TEC tec, int indx_TEC, int indx_components, ASUTP.Core.HMark markQueries)
         {
             m_indx_TEC = indx_TEC;
             indxTECComponents = indx_components;
@@ -1086,9 +1089,9 @@ namespace StatisticCommon
             return strRes;
         }
 
-        protected override INDEX_WAITHANDLE_REASON StateErrors(int state, int request, int result)
+        protected override ASUTP.Helper.HHandler.INDEX_WAITHANDLE_REASON StateErrors (int state, int request, int result)
         {
-            INDEX_WAITHANDLE_REASON reasonRes = INDEX_WAITHANDLE_REASON.SUCCESS;
+            ASUTP.Helper.HHandler.INDEX_WAITHANDLE_REASON reasonRes = ASUTP.Helper.HHandler.INDEX_WAITHANDLE_REASON.SUCCESS;
             
             string reason = string.Empty,
                     waiting = string.Empty,
@@ -1100,7 +1103,7 @@ namespace StatisticCommon
                     reason = @"получения идентификаторов датчиков";
                     waiting = @"Переход в ожидание";
                     //AbortThreadRDGValues(INDEX_WAITHANDLE_REASON.ERROR);
-                    reasonRes = INDEX_WAITHANDLE_REASON.ERROR;
+                    reasonRes = ASUTP.Helper.HHandler.INDEX_WAITHANDLE_REASON.ERROR;
                     break;
                 case StatesMachine.CurrentTimeAdmin:
                 case StatesMachine.CurrentTimeView:
@@ -1121,7 +1124,7 @@ namespace StatisticCommon
                     reason = @"получасовых значений";
                     waiting = @"Ожидание " + PanelStatistic.POOL_TIME.ToString() + " секунд";
                     //AbortThreadRDGValues(INDEX_WAITHANDLE_REASON.ERROR);
-                    reasonRes = INDEX_WAITHANDLE_REASON.ERROR;
+                    reasonRes = ASUTP.Helper.HHandler.INDEX_WAITHANDLE_REASON.ERROR;
                     break;
                 case StatesMachine.Hour_TM:
                     reason = @"усредн. за час телемеханики";
@@ -1131,13 +1134,13 @@ namespace StatisticCommon
                     reason = @"часовых значений";
                     waiting = @"Ожидание " + PanelStatistic.POOL_TIME.ToString() + " секунд";
                     //AbortThreadRDGValues(INDEX_WAITHANDLE_REASON.ERROR);
-                    reasonRes = INDEX_WAITHANDLE_REASON.ERROR;
+                    reasonRes = ASUTP.Helper.HHandler.INDEX_WAITHANDLE_REASON.ERROR;
                     break;
                 case StatesMachine.CurrentMins_Fact:
                     reason = @"3-х минутных значений";
                     waiting = @"Ожидание " + PanelStatistic.POOL_TIME.ToString() + " секунд";
                     //AbortThreadRDGValues(INDEX_WAITHANDLE_REASON.ERROR);
-                    reasonRes = INDEX_WAITHANDLE_REASON.ERROR;
+                    reasonRes = ASUTP.Helper.HHandler.INDEX_WAITHANDLE_REASON.ERROR;
                     break;
                 case StatesMachine.CurrentMin_TM:
                     reason = @"усредн. за интервал телемеханики";
@@ -1152,7 +1155,7 @@ namespace StatisticCommon
                     reason += getNameInterval () + @"-минутных значений";
                     waiting = @"Ожидание " + PanelStatistic.POOL_TIME.ToString() + " секунд";
                     //AbortThreadRDGValues(INDEX_WAITHANDLE_REASON.ERROR);
-                    reasonRes = INDEX_WAITHANDLE_REASON.ERROR;
+                    reasonRes = ASUTP.Helper.HHandler.INDEX_WAITHANDLE_REASON.ERROR;
                     break;
                 case StatesMachine.CurrentHours_TM_SN_PSUM:
                     reason = @"часовых значений (собств. нужды)";
@@ -1162,7 +1165,7 @@ namespace StatisticCommon
                     reason = @"текущих значений (генерация)";
                     waiting = @"Ожидание " + PanelStatistic.POOL_TIME.ToString() + " секунд";
                     //AbortThreadRDGValues(INDEX_WAITHANDLE_REASON.ERROR);
-                    reasonRes = INDEX_WAITHANDLE_REASON.ERROR;
+                    reasonRes = ASUTP.Helper.HHandler.INDEX_WAITHANDLE_REASON.ERROR;
                     break;
                 case StatesMachine.LastValue_TM_SN:
                     reason = @"текущих значений (собств. нужды)";
@@ -1216,14 +1219,14 @@ namespace StatisticCommon
                 case StatesMachine.PPBRValues:
                     reason = @"данных плана";
                     //AbortThreadRDGValues(INDEX_WAITHANDLE_REASON.ERROR);
-                    reasonRes = INDEX_WAITHANDLE_REASON.ERROR;
+                    reasonRes = ASUTP.Helper.HHandler.INDEX_WAITHANDLE_REASON.ERROR;
                     break;
                 //case StatesMachine.AdminDates:
                 //    break;
                 case StatesMachine.AdminValues:
                     reason = @"административных значений";
                     //AbortThreadRDGValues(INDEX_WAITHANDLE_REASON.ERROR);
-                    reasonRes = INDEX_WAITHANDLE_REASON.ERROR;
+                    reasonRes = ASUTP.Helper.HHandler.INDEX_WAITHANDLE_REASON.ERROR;
                     break;
                 default:
                     msg = @"Неизвестная команда...";

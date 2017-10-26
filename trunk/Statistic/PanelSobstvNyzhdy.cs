@@ -14,8 +14,10 @@ using System.Globalization;
 using ZedGraph;
 using GemBox.Spreadsheet;
 
-using HClassLibrary;
+//using HClassLibrary;
 using StatisticCommon;
+using ASUTP.Core;
+using ASUTP;
 
 namespace Statistic
 {
@@ -79,9 +81,9 @@ namespace Statistic
         /// <summary>
         /// Стили Label'ов
         /// </summary>
-        static HLabelStyles[] s_arLabelStyles = { new HLabelStyles(Color.Black, s_clrBackColorLabel, 15F, ContentAlignment.MiddleCenter),
-                                                new HLabelStyles(Color.Black, s_clrBackColorLabelVal_TM_SN, 11F, ContentAlignment.MiddleCenter),
-                                                new HLabelStyles(Color.Black, s_clrBackColorLabelVal_TM_SN, 11F, ContentAlignment.MiddleCenter)};
+        static ASUTP.Control.HLabelStyles [] s_arLabelStyles = { new ASUTP.Control.HLabelStyles(Color.Black, s_clrBackColorLabel, 15F, ContentAlignment.MiddleCenter),
+                                                new ASUTP.Control.HLabelStyles(Color.Black, s_clrBackColorLabelVal_TM_SN, 11F, ContentAlignment.MiddleCenter),
+                                                new ASUTP.Control.HLabelStyles(Color.Black, s_clrBackColorLabelVal_TM_SN, 11F, ContentAlignment.MiddleCenter)};
         /// <summary>
         /// Конструктор-основной
         /// </summary>
@@ -229,7 +231,7 @@ namespace Statistic
 
                 i = (int)INDEX_LABEL.NAME;
                 text = m_tecView.m_tec.name_shr;
-                m_arLabel [i] = HLabel.createLabel (text, PanelSobstvNyzhdy.s_arLabelStyles [i]);
+                m_arLabel [i] = ASUTP.Control.HLabel.createLabel (text, PanelSobstvNyzhdy.s_arLabelStyles [i]);
                 ////Предусмотрим обработчик при изменении значения
                 //if (i == (int)INDEX_LABEL.VALUE_TOTAL)
                 //    m_arLabel[i].TextChanged += new EventHandler(PanelTecCurPower_TextChangedValue);
@@ -253,7 +255,7 @@ namespace Statistic
                         default:
                             break;
                     }
-                    m_arLabel [i] = HLabel.createLabel (text, PanelSobstvNyzhdy.s_arLabelStyles [i]);
+                    m_arLabel [i] = ASUTP.Control.HLabel.createLabel (text, PanelSobstvNyzhdy.s_arLabelStyles [i]);
                 }
                 this.Controls.Add (m_arLabel [(int)INDEX_LABEL.DATETIME_TM_SN], 3, 1);
                 this.SetRowSpan (m_arLabel [(int)INDEX_LABEL.DATETIME_TM_SN], 1);

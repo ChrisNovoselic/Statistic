@@ -5,9 +5,10 @@ using System.Text;
 using System.Windows.Forms;
 using System.ComponentModel;
 
-using HClassLibrary;
+//using HClassLibrary;
 using System.Data;
 using System.Drawing;
+using ASUTP;
 
 namespace StatisticDiagnostic
 {
@@ -18,8 +19,7 @@ namespace StatisticDiagnostic
         /// отображения значений параметров диагностики 
         /// размера баз данных
         /// </summary>
-        private partial class SizeDb : HPanelCommon
-        {
+        private partial class SizeDb : ASUTP.Control.HPanelCommon {
             /// <summary>
             /// Количество столбцов, строк в сетке макета
             /// </summary>
@@ -395,7 +395,7 @@ namespace StatisticDiagnostic
                                             rowValues [(int)INDEX_CELL.NAME] =
                                                 Convert.ChangeType (pair.Value.m_name_shr, typeof (string));
                                             // Хряпин А.Н. 12.10.2017 - окончание блока
-                                            rowValues [(int)INDEX_CELL.VALUE] = HMath.doubleParse((string)pair.Value.m_value);
+                                            rowValues [(int)INDEX_CELL.VALUE] = ASUTP.Core.HMath.doubleParse((string)pair.Value.m_value);
                                         //    break;
                                         //case KEY_DIAGNOSTIC_PARAMETER.ID_UNIT.DATETIME:
                                             rowValues[(int)INDEX_CELL.DATETIME_VERIFICATION] =

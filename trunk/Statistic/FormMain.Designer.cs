@@ -1,6 +1,6 @@
 ﻿using System.Collections.Generic; //Dictionary
 
-using HClassLibrary;
+
 using StatisticCommon;
 
 namespace Statistic
@@ -56,21 +56,21 @@ namespace Statistic
             m_dictAddingTabs.Add((int)ID_ADDING_TAB.CUSTOM_2X3_2, new ADDING_TAB("выборОбъектывыборОбъекты23-2-ToolStripMenuItem", "Окно 2", HStatisticTabCtrlEx.TYPE_TAB.FLOAT));
             m_dictAddingTabs.Add((int)ID_ADDING_TAB.CUSTOM_2X3_3, new ADDING_TAB("выборОбъектывыборОбъекты23-3-ToolStripMenuItem", "Окно 3", HStatisticTabCtrlEx.TYPE_TAB.FLOAT));
             m_dictAddingTabs.Add((int)ID_ADDING_TAB.CUSTOM_2X3_4, new ADDING_TAB("выборОбъектывыборОбъекты23-4-ToolStripMenuItem", "Окно 4", HStatisticTabCtrlEx.TYPE_TAB.FLOAT));
-            m_dictAddingTabs.Add((int)ID_ADDING_TAB.CUR_POWER, new ADDING_TAB("значенияТекущаяМощностьГТПгТЭЦснToolStripMenuItem", "Значения текущей мощности ГТПг, ТЭЦсн", HClassLibrary.HTabCtrlEx.TYPE_TAB.FLOAT));
-            m_dictAddingTabs.Add((int)ID_ADDING_TAB.TM_SN_POWER, new ADDING_TAB("значенияТекущаяМощностьТЭЦгТЭЦснToolStripMenuItem", "Значения текущей мощности ТЭЦг, ТЭЦсн", HClassLibrary.HTabCtrlEx.TYPE_TAB.FLOAT));
-            m_dictAddingTabs.Add((int)ID_ADDING_TAB.MONITOR_LAST_MINUTES, new ADDING_TAB("мониторингПоследняяМинутаЧасToolStripMenuItem", "Мониторинг - последняя минута часа", HClassLibrary.HTabCtrlEx.TYPE_TAB.FLOAT));
-            m_dictAddingTabs.Add((int)ID_ADDING_TAB.SOBSTV_NYZHDY, new ADDING_TAB("собственныеНуждыToolStripMenuItem", "Собственные нужды СОТИАССО", HClassLibrary.HTabCtrlEx.TYPE_TAB.FLOAT));
-            m_dictAddingTabs.Add((int)ID_ADDING_TAB.SOBSTV_NYZHDY_NEW, new ADDING_TAB("собственныеНуждыНовToolStripMenuItem", "Собственные нужды АИСКУЭ", HClassLibrary.HTabCtrlEx.TYPE_TAB.FLOAT));
-            m_dictAddingTabs.Add((int)ID_ADDING_TAB.DATETIMESYNC_SOURCE_DATA, new ADDING_TAB("рассинхронизацияДатаВремяСерверБДToolStripMenuItem", "Рассинхронизация даты/времени серверов БД", HClassLibrary.HTabCtrlEx.TYPE_TAB.FIXED));
-            m_dictAddingTabs.Add((int)ID_ADDING_TAB.DIAGNOSTIC, new ADDING_TAB("ДиагностикаToolStripMenuItem", "Диагностика", HClassLibrary.HTabCtrlEx.TYPE_TAB.FIXED));
-            m_dictAddingTabs.Add((int)ID_ADDING_TAB.ANALYZER, new ADDING_TAB("ПросмотрЖурналаToolStripMenuItem", "Журнал событий", HClassLibrary.HTabCtrlEx.TYPE_TAB.FIXED));
+            m_dictAddingTabs.Add((int)ID_ADDING_TAB.CUR_POWER, new ADDING_TAB("значенияТекущаяМощностьГТПгТЭЦснToolStripMenuItem", "Значения текущей мощности ГТПг, ТЭЦсн", ASUTP.Control.HTabCtrlEx.TYPE_TAB.FLOAT));
+            m_dictAddingTabs.Add((int)ID_ADDING_TAB.TM_SN_POWER, new ADDING_TAB("значенияТекущаяМощностьТЭЦгТЭЦснToolStripMenuItem", "Значения текущей мощности ТЭЦг, ТЭЦсн", ASUTP.Control.HTabCtrlEx.TYPE_TAB.FLOAT));
+            m_dictAddingTabs.Add((int)ID_ADDING_TAB.MONITOR_LAST_MINUTES, new ADDING_TAB("мониторингПоследняяМинутаЧасToolStripMenuItem", "Мониторинг - последняя минута часа", ASUTP.Control.HTabCtrlEx.TYPE_TAB.FLOAT));
+            m_dictAddingTabs.Add((int)ID_ADDING_TAB.SOBSTV_NYZHDY, new ADDING_TAB("собственныеНуждыToolStripMenuItem", "Собственные нужды СОТИАССО", ASUTP.Control.HTabCtrlEx.TYPE_TAB.FLOAT));
+            m_dictAddingTabs.Add((int)ID_ADDING_TAB.SOBSTV_NYZHDY_NEW, new ADDING_TAB("собственныеНуждыНовToolStripMenuItem", "Собственные нужды АИСКУЭ", ASUTP.Control.HTabCtrlEx.TYPE_TAB.FLOAT));
+            m_dictAddingTabs.Add((int)ID_ADDING_TAB.DATETIMESYNC_SOURCE_DATA, new ADDING_TAB("рассинхронизацияДатаВремяСерверБДToolStripMenuItem", "Рассинхронизация даты/времени серверов БД", ASUTP.Control.HTabCtrlEx.TYPE_TAB.FIXED));
+            m_dictAddingTabs.Add((int)ID_ADDING_TAB.DIAGNOSTIC, new ADDING_TAB("ДиагностикаToolStripMenuItem", "Диагностика", ASUTP.Control.HTabCtrlEx.TYPE_TAB.FIXED));
+            m_dictAddingTabs.Add((int)ID_ADDING_TAB.ANALYZER, new ADDING_TAB("ПросмотрЖурналаToolStripMenuItem", "Журнал событий", ASUTP.Control.HTabCtrlEx.TYPE_TAB.FIXED));
             #region KhryapinAN 2017-06
-            m_dictAddingTabs.Add((int)ID_ADDING_TAB.SOTIASSO_HOUR, new ADDING_TAB("значенияСОТИАССОЧасToolStripMenuItem", "Значения СОТИАССО-час", HClassLibrary.HTabCtrlEx.TYPE_TAB.FIXED));            
-            m_dictAddingTabs.Add((int)ID_ADDING_TAB.AIISKUE_SOTIASSO_DAY, new ADDING_TAB("значенияАИИСКУЭСОТИАССОСуткиToolStripMenuItem", "Значения АИСКУЭ+СОТИАССО-сутки", HClassLibrary.HTabCtrlEx.TYPE_TAB.FIXED));
+            m_dictAddingTabs.Add((int)ID_ADDING_TAB.SOTIASSO_HOUR, new ADDING_TAB("значенияСОТИАССОЧасToolStripMenuItem", "Значения СОТИАССО-час", ASUTP.Control.HTabCtrlEx.TYPE_TAB.FIXED));            
+            m_dictAddingTabs.Add((int)ID_ADDING_TAB.AIISKUE_SOTIASSO_DAY, new ADDING_TAB("значенияАИИСКУЭСОТИАССОСуткиToolStripMenuItem", "Значения АИСКУЭ+СОТИАССО-сутки", ASUTP.Control.HTabCtrlEx.TYPE_TAB.FIXED));
             #endregion
-            m_dictAddingTabs.Add((int)ID_ADDING_TAB.VZLET_TDIRECT, new ADDING_TAB("значенияВзлетТпрямаяToolStripMenuItem", "Расчет теплосети", HClassLibrary.HTabCtrlEx.TYPE_TAB.FLOAT));
-            m_dictAddingTabs.Add((int)ID_ADDING_TAB.TEC_Component, new ADDING_TAB("СоставТЭЦToolStripMenuItem", "Изменить состав ТЭЦ", HClassLibrary.HTabCtrlEx.TYPE_TAB.FIXED));
-            m_dictAddingTabs.Add((int)ID_ADDING_TAB.USERS, new ADDING_TAB("изментьСоставПользовательToolStripMenuItem", "Изменить состав пользователей", HClassLibrary.HTabCtrlEx.TYPE_TAB.FIXED));
+            m_dictAddingTabs.Add((int)ID_ADDING_TAB.VZLET_TDIRECT, new ADDING_TAB("значенияВзлетТпрямаяToolStripMenuItem", "Расчет теплосети", ASUTP.Control.HTabCtrlEx.TYPE_TAB.FLOAT));
+            m_dictAddingTabs.Add((int)ID_ADDING_TAB.TEC_Component, new ADDING_TAB("СоставТЭЦToolStripMenuItem", "Изменить состав ТЭЦ", ASUTP.Control.HTabCtrlEx.TYPE_TAB.FIXED));
+            m_dictAddingTabs.Add((int)ID_ADDING_TAB.USERS, new ADDING_TAB("изментьСоставПользовательToolStripMenuItem", "Изменить состав пользователей", ASUTP.Control.HTabCtrlEx.TYPE_TAB.FIXED));
 
             this.настройкиToolStripMenuItem = new System.Windows.Forms.ToolStripMenuItem();
             this.сменитьРежимToolStripMenuItem = new System.Windows.Forms.ToolStripMenuItem();

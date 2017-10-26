@@ -5,9 +5,11 @@ using System.Windows.Forms;
 using System.Threading; //Mutex
 using System.Reflection; //Assembly
 
-using HClassLibrary;
+//using HClassLibrary;
 using StatisticCommon;
 using System.Linq;
+using ASUTP;
+using ASUTP.Helper;
 
 namespace Statistic
 {
@@ -29,9 +31,10 @@ namespace Statistic
 
             string strHeaderError = string.Empty;
             bool bRun = false;  
-            s_mtxApp = new Mutex(true, Logging.AppName, out bRun);  
+            s_mtxApp = new Mutex(true, ProgramBase.AppName, out bRun);  
             if (bRun == true)  
             {
+                ProgramBase.s_iAppID = 1; //??? 
                 try { ProgramBase.Start (Logging.LOG_MODE.DB, true); }
                 catch (Exception e) {
                     //MessageBox.Show(null, @"Возможно, повторный запуск приложения" + @".\nили обратитесь к оператору тех./поддержки по тел. 4444 или по тел. 289-03-37.", "Ошибка инициализации!", MessageBoxButtons.OK, MessageBoxIcon.Stop);

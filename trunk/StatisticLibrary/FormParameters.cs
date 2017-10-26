@@ -4,7 +4,10 @@ using System.Data;
 using System.Data.Common;
 using System.Windows.Forms; //Application.ProductVersion
 
-using HClassLibrary;
+
+using ASUTP.Database;
+using ASUTP.Forms;
+using ASUTP.Helper;
 
 namespace StatisticCommon
 {

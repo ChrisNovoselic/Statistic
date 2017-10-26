@@ -9,8 +9,10 @@ using System.Diagnostics;
 
 using ZedGraph;
 
-using HClassLibrary;
+//using HClassLibrary;
 using StatisticCommon;
+using ASUTP;
+using ASUTP.Core;
 
 namespace Statistic
 {
@@ -1466,9 +1468,9 @@ namespace Statistic
             this._pnlQuickData = new PanelQuickDataLK (BackColor);
         }
 
-        protected override HMark enabledSourceData_ToolStripMenuItems()
+        protected override ASUTP.Core.HMark enabledSourceData_ToolStripMenuItems ()
         {
-            HMark markRes = new HMark(0);
+            ASUTP.Core.HMark markRes = new ASUTP.Core.HMark (0);
 
             return markRes;
         }

@@ -9,8 +9,11 @@ using System.Windows.Forms;
 using System.Runtime.InteropServices;
 using System.Threading;
 
-using HClassLibrary;
 using StatisticCommon;
+using ASUTP;
+using ASUTP.Core;
+using ASUTP.Database;
+using ASUTP.Helper;
 
 namespace StatisticTrans
 {

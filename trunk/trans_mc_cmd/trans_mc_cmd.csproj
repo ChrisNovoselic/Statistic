@@ -68,9 +68,20 @@
     <CodeAnalysisIgnoreBuiltInRules>false</CodeAnalysisIgnoreBuiltInRules>
   </PropertyGroup>
   <ItemGroup>
-    <Reference Include="HClassLibrary, Version=2.0.6.5, Culture=neutral, PublicKeyToken=2f5f95fc94cb3397, processorArchitecture=MSIL">
-      <SpecificVersion>False</SpecificVersion>
-      <HintPath>..\..\ExternalDLL\HClassLibrary.dll</HintPath>
+    <Reference Include="ASUTP.Core">
+      <HintPath>..\..\ExternalDLL\ASUTP.Core.dll</HintPath>
+    </Reference>
+    <Reference Include="ASUTP.Database">
+      <HintPath>..\..\ExternalDLL\ASUTP.Database.dll</HintPath>
+    </Reference>
+    <Reference Include="ASUTP.Helper">
+      <HintPath>..\..\ExternalDLL\ASUTP.Helper.dll</HintPath>
+    </Reference>
+    <Reference Include="ASUTP.Logging">
+      <HintPath>..\..\ExternalDLL\ASUTP.Logging.dll</HintPath>
+    </Reference>
+    <Reference Include="Infrastructure">
+      <HintPath>..\..\MCApiDLL\Infrastructure.dll</HintPath>
     </Reference>
     <Reference Include="ModesApiExternal, Version=1.4.3.8, Culture=neutral, processorArchitecture=MSIL">
       <SpecificVersion>False</SpecificVersion>

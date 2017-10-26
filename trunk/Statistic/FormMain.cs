@@ -18,21 +18,26 @@ using System.Net;
 //???
 //using System.Security.Cryptography;
 
-using HClassLibrary;
+
 using StatisticCommon;
 using StatisticDiagnostic;
 using StatisticTimeSync;
 using StatisticAlarm;
 using StatisticAnalyzer;
 using CommonAux;
+using ASUTP;
+using ASUTP.Core;
+using ASUTP.Helper;
+using ASUTP.Database;
+using ASUTP.Forms;
+using ASUTP.Control;
 
 namespace Statistic
 {
     /// <summary>
     /// Открытый частичный класс FormMain наследуется от FormMainBaseWithStatusStrip
     /// </summary>
-    public partial class FormMain : FormMainBaseWithStatusStrip
-    {
+    public partial class FormMain : ASUTP.Forms.FormMainBaseWithStatusStrip {
         //10001 = ADMIN_KOM_DISP, 10002 = ADMIN_NSS (FormChangeMode)
         private enum ID_ADDING_TAB
         {
@@ -275,21 +280,13 @@ namespace Statistic
                     //ProgramBase.s_iAppID = Int32.Parse ((string)Properties.Settings.Default [@"AppID"]);
                     ProgramBase.s_iAppID = Int32.Parse((string)Properties.Resources.AppID);
 
-                    //Если ранее тип логирования не был назанчен...
-                    if (Logging.s_mode == Logging.LOG_MODE.UNKNOWN)
-                    {
-                        //назначить тип логирования - БД
-                        Logging.s_mode = Logging.LOG_MODE.DB;
-                    }
-                    else { }
-
                     if (Logging.s_mode == Logging.LOG_MODE.DB)
                     {
                         //Инициализация БД-логирования
                         int err = -1;
-                        HClassLibrary.Logging.ConnSett = new ConnectionSettings(InitTECBase.getConnSettingsOfIdSource(idListenerConfigDB, s_iMainSourceData, -1, out err).Rows[0], 0);
-                    }
-                    else { }
+                        Logging.UserId = HUsers.Id;
+                        Logging.ConnSett = new ConnectionSettings(InitTECBase.getConnSettingsOfIdSource(idListenerConfigDB, s_iMainSourceData, -1, out err).Rows[0], 0);
+                    } else { }
 
                     m_formAlarmEvent = new MessageBoxAlarmEvent(this);
                     m_formAlarmEvent.EventActivateTabPage += new DelegateBoolFunc(activateTabPage);
@@ -472,9 +469,9 @@ namespace Statistic
             HAdmin.SeasonAction = Int32.Parse(formParameters.m_arParametrSetup[(int)FormParameters.PARAMETR_SETUP.SEASON_ACTION]);
 
             //Параметры обработки запросов к БД...
-            DbInterface.MAX_RETRY = Int32.Parse(formParameters.m_arParametrSetup[(int)FormParameters.PARAMETR_SETUP.MAX_ATTEMPT]);
-            DbInterface.MAX_WAIT_COUNT = Int32.Parse(formParameters.m_arParametrSetup[(int)FormParameters.PARAMETR_SETUP.WAITING_COUNT]);
-            DbInterface.WAIT_TIME_MS = Int32.Parse(formParameters.m_arParametrSetup[(int)FormParameters.PARAMETR_SETUP.WAITING_TIME]);
+            Constants.MAX_RETRY = Int32.Parse(formParameters.m_arParametrSetup[(int)FormParameters.PARAMETR_SETUP.MAX_ATTEMPT]);
+            Constants.MAX_WAIT_COUNT = Int32.Parse(formParameters.m_arParametrSetup[(int)FormParameters.PARAMETR_SETUP.WAITING_COUNT]);
+            Constants.WAIT_TIME_MS = Int32.Parse(formParameters.m_arParametrSetup[(int)FormParameters.PARAMETR_SETUP.WAITING_TIME]);
 
             //Параметры валидности даты/времени получения данных СОТИАССО...
             TecView.SEC_VALIDATE_TMVALUE = Int32.Parse(formParameters.m_arParametrSetup[(int)FormParameters.PARAMETR_SETUP.VALIDATE_TM_VALUE]);
@@ -623,7 +620,7 @@ namespace Statistic
 
         #endregion
 
-        void delegateOnCloseTab(object sender, HTabCtrlExEventArgs e)
+        void delegateOnCloseTab(object sender, ASUTP.Control.HTabCtrlExEventArgs e)
         {
             Type typePanel = tclTecViews.TabPages[e.TabIndex].Controls[0].GetType ();
 
@@ -704,7 +701,7 @@ namespace Statistic
                 ;
         }
 
-        void delegateOnFloatTab(object sender, HTabCtrlExEventArgs e)
+        void delegateOnFloatTab(object sender, ASUTP.Control.HTabCtrlExEventArgs e)
         {
             //Проверить создан ли ранее словарь...
             if (m_dictFormFloat == null)
@@ -794,7 +791,7 @@ namespace Statistic
 
         private void showFormFloat(object obj)
         {
-            HTabCtrlExEventArgs ev = obj as HTabCtrlExEventArgs;
+            ASUTP.Control.HTabCtrlExEventArgs ev = obj as ASUTP.Control.HTabCtrlExEventArgs;
 
             ////Тест...
             //Form formFloat = new FormAbout();
@@ -2533,7 +2530,7 @@ namespace Statistic
 
             if (arCheckedStoped[0] == true)
             {
-                if (typeTab == HClassLibrary.HTabCtrlEx.TYPE_TAB.FLOAT)
+                if (typeTab == ASUTP.Control.HTabCtrlEx.TYPE_TAB.FLOAT)
                     if (nameTab.IndexOf(@"Окно") > -1)
                     {
                         indxTab = getIndexCustomTab(nameTab);

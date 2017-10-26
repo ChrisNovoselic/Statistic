@@ -10,10 +10,13 @@ using System.Data;
 
 using ZedGraph;
 
-using HClassLibrary;
+
 using StatisticCommon;
 using System.Linq;
 using System.Data.Common;
+using ASUTP.Helper;
+using ASUTP.Database;
+using ASUTP;
 
 namespace Statistic
 {

@@ -5,13 +5,16 @@ using System.ComponentModel; //IContainer
 using System.Drawing; //Color
 using System.Data;
 
-using HClassLibrary;
+
 using StatisticCommon;
 using System.Linq;
 using GemBox.Spreadsheet;
 using System.IO;
 
 using Microsoft.Office.Interop.Excel;
+using ASUTP.PlugIn;
+using ASUTP.Core;
+using ASUTP;
 
 namespace Statistic
 {

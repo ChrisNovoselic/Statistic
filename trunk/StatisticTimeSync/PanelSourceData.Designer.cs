@@ -2,8 +2,11 @@
 using System;
 using System.Globalization; //DaylightTime
 using System.Data; //DataTable
-using System.Threading; 
-using HClassLibrary; //HHandlerDb
+using System.Threading;
+//using HClassLibrary; //HHandlerDb
+using ASUTP.Core;
+using ASUTP.Database;
+using ASUTP;
 
 namespace StatisticTimeSync
 {    
@@ -12,8 +15,7 @@ namespace StatisticTimeSync
         /// <summary>
         /// Класс для работы с БД
         /// </summary>
-        class HGetDate : HHandlerDb
-        {
+        class HGetDate : ASUTP.Helper.HHandlerDb {
             ConnectionSettings m_ConnSett;
             DateTime m_serverTime;
             DelegateDateFunc delegateGetDate;

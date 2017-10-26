@@ -7,7 +7,7 @@ using System.Data;
 using System.Data.Common;
 //using System.Data.Odbc;
 
-using HClassLibrary;
+
 using StatisticCommon;
 
 namespace trans_mc_cmd
@@ -68,7 +68,7 @@ namespace trans_mc_cmd
 
             DataTable rec;
             //rec = DbTSQLInterface.Select(parent.m_MySQLConnections[(int)MySQLtechsite.CONN_SETT_TYPE.PPBR], "SELECT * FROM " + parent.m_strTableNamePPBR + " WHERE date_time = ?", new DbType[] { DbType.DateTime }, new object[] { DT }, out err);
-            rec = DbTSQLInterface.Select(ref parent.m_connection, "SELECT * FROM " + parent.m_strTableNamePPBR + " WHERE date_time = @0", new DbType[] { DbType.DateTime }, new object[] { DT }, out err);
+            rec = ASUTP.Database.DbTSQLInterface.Select(ref parent.m_connection, "SELECT * FROM " + parent.m_strTableNamePPBR + " WHERE date_time = @0", new DbType[] { DbType.DateTime }, new object[] { DT }, out err);
 
             if ((rec.Rows.Count == 1) && (err == 0))
             {
@@ -288,7 +288,7 @@ namespace trans_mc_cmd
 
             DataTable rdr;
             //rdr = DbTSQLInterface.Select(parent.m_MySQLConnections [(int)MySQLtechsite.CONN_SETT_TYPE.PPBR], "SELECT * FROM PPBRvsPBRnew where date_time = ?", new DbType[] { DbType.DateTime }, new object[] { DT }, out err);
-            rdr = DbTSQLInterface.Select(ref parent.m_connection, "SELECT * FROM PPBRvsPBRnew where date_time = @0", new DbType[] { DbType.DateTime }, new object[] { DT }, out err);
+            rdr = ASUTP.Database.DbTSQLInterface.Select(ref parent.m_connection, "SELECT * FROM PPBRvsPBRnew where date_time = @0", new DbType[] { DbType.DateTime }, new object[] { DT }, out err);
             if (rdr.Rows.Count > 0)
             {
                 BTEC_PBR = (double?)rdr.Rows[0]["BTEC_PBR"];

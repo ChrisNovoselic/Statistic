@@ -4,8 +4,12 @@ using System.Windows.Forms;
 using System.IO;
 using System.Threading;
 using System.Data;
+using ASUTP.Helper;
+using ASUTP;
+using ASUTP.Core;
+using ASUTP.Database;
 
-using HClassLibrary;
+
 
 namespace StatisticCommon
 {
