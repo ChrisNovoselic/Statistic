@@ -525,9 +525,11 @@ namespace StatisticCommon
         /// </summary>
         /// <param name="hour">Номер часа</param>
         /// <returns>Наименование ПБР</returns>
+
         protected string getNamePBRNumber (int hour = -1) {
             return string.Format("{0}{1}", PBR_PREFIX, getPBRNumber (hour));
         }
+
         /// <summary>
         /// Возвратить номер ПБР по наименованию
         /// </summary>
@@ -536,26 +538,32 @@ namespace StatisticCommon
         public static int GetPBRNumber (string pbr, out int err) {
             int iRes = -1;
 
-            err = int.TryParse(pbr.Substring(PBR_PREFIX.Length), out iRes) == true
-                ? err = 0
-                    : err = -1;
+            err = pbr.Length > PBR_PREFIX.Length ? 0 : -1;
 
-            if (err < 0)
-                if (pbr.Equals (string.Format("{0}{1}", "П", PBR_PREFIX)) == true) {
-                    err = 1;
-                    iRes = 0;
-                } else
+            if (err == 0) {
+                err = int.TryParse (pbr.Substring (PBR_PREFIX.Length), out iRes) == true
+                    ? err = 0
+                        : err = -1;
+
+                if (err < 0)
+                    if (pbr.Equals (string.Format ("{0}{1}", "П", PBR_PREFIX)) == true) {
+                        err = 1;
+                        iRes = 0;
+                    } else
+                        ;
+                else
                     ;
-            else
-                ;
+            } else
+                Logging.Logg().Error($"HAdmin::GetPBRNumber () - нельзя извлечь номер {PBR_PREFIX}...", Logging.INDEX_MESSAGE.NOT_SET);
 
             return iRes;
         }
+
         /// <summary>
         /// Возвратить номер ПБР по текущему часу
         /// </summary>
         /// <param name="err">Признак результата выполнения метода</param>
-        /// <returns></returns>
+        /// <returns>Номер ПБР</returns>
         public int GetPBRNumber(out int err)
         {
             return GetPBRNumber(-1, out err);
@@ -591,7 +599,7 @@ namespace StatisticCommon
                 if (m_curDate.Date.CompareTo(serverTime.Date) > 0)
                     if ((!(m_curRDGValues == null))
                         && (!(m_curRDGValues[iIndx].pbr_number == null))
-                        && (m_curRDGValues[iIndx].pbr_number.Length > @"ПБР".Length)) {
+                        && (m_curRDGValues[iIndx].pbr_number.Length > PBR_PREFIX.Length)) {
                         iRes = GetPBRNumber (m_curRDGValues[iIndx].pbr_number, out err);
                     } else
                         iRes = getPBRNumber();                

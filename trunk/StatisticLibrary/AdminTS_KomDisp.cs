@@ -708,16 +708,21 @@ namespace StatisticCommon
 
                                 _msExcelIOExportPBRValues.Run();
                             }
-                        } else
+                        } else {
                             Logging.Logg().Error(string.Format($"AdminTS_KomDisp::AddValueToExportRDGValues () - компонент с индексом [{indxTECComponents}] не может быть добавлен (пред. опреация экспорта не завершена)...")
                                 , Logging.INDEX_MESSAGE.NOT_SET);
+                            // для продолжения работы, необходимо удалить индекс
+                            _lisTECComponentIndex.Remove (indxTECComponents);
+                        }
                     } else
                     // текущий индекс и 0-ой элемент массива индексов жолжны совпадать
-                        ;
+                         Logging.Logg().Error(string.Format($"AdminTS_KomDisp::AddValueToExportRDGValues () - текущий индекс{indxTECComponents} и 0-ой элемент массива индексов{_lisTECComponentIndex [0]} не совпадают...")
+                            , Logging.INDEX_MESSAGE.NOT_SET);
                 } else
                 //??? ошибка, т.к. выполнен запрос и получены значения, а индекс компонента не известен
-                    Logging.Logg().Error(string.Format("AdminTS_KomDisp::AddValueToExportRDGValues () - получены значения для неизвестного компонента...")
-                        , Logging.INDEX_MESSAGE.NOT_SET);
+                    Logging.Logg().Error(string.Format("AdminTS_KomDisp::AddValueToExportRDGValues () - получены значения для неизвестного компонента index={0}..."
+                        , indxTECComponents)
+                            , Logging.INDEX_MESSAGE.NOT_SET);
             } else
             // дата для полученных значений неизвестна
                 ;

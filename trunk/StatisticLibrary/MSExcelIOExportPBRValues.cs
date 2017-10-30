@@ -83,7 +83,8 @@ namespace StatisticCommon
                             for (int iHour = 0; iHour < value.Length; iHour++) {
                                 iNumberPBR = HAdmin.GetPBRNumber (value [iHour].pbr_number, out err);
 
-                                if (m_iNumberPBR < iNumberPBR)
+                                if ((!(err < 0))
+                                    && (m_iNumberPBR < iNumberPBR))
                                     m_iNumberPBR = iNumberPBR;
                                 else
                                     ;
