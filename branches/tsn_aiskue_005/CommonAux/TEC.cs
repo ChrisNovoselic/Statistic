@@ -10,7 +10,6 @@ using System.Threading;
 using System.Data;
 using System.Globalization;
 
-//using HClassLibrary;
 using StatisticCommon;
 using System.Reflection;
 using ASUTP;
@@ -529,7 +528,7 @@ namespace CommonAux
         /// <summary>
         /// Конструктор - дополнительный (без параметров)
         /// </summary>
-        private TEC_LOCAL ()
+        private TEC_LOCAL()
         {
             m_listValuesDate = new List<VALUES_DATE>();
             m_arTableResult = new TableResult[Enum.GetValues(typeof(INDEX_DATA)).Length];
@@ -541,25 +540,24 @@ namespace CommonAux
         /// Когструктор - основной (с аргументом)
         /// </summary>
         /// <param name="tec">Исходный(базовый) объект ТЭЦ</param>
-        public TEC_LOCAL (TEC tec)
+        public TEC_LOCAL(TEC tec)
             : this()
         {
             this.m_Id = tec.m_id;
             this.m_strNameShr = tec.name_shr;
 
-            List<int> list_column = new List<int> ();
+            List<int> list_column = new List<int>();
 
             this.m_arMSExcelNumColumns =
-                tec.GetAddingParameter (TEC.ADDING_PARAM_KEY.COLUMN_TSN_EXCEL).ToString ().Split (new char [] { ',' }, StringSplitOptions.RemoveEmptyEntries)
-                    .Select ((string s) => {
-                        return string.IsNullOrEmpty(s) == false ? Convert.ToInt32 (s) : -1;
+                tec.GetAddingParameter(TEC.ADDING_PARAM_KEY.COLUMN_TSN_EXCEL).ToString().Split(new char[] { ',' }, StringSplitOptions.RemoveEmptyEntries)
+                    .Select((string s) => {
+                        return string.IsNullOrEmpty(s) == false ? Convert.ToInt32(s) : -1;
                     }
                 ).ToArray();
 
-            for (int j = 0; j < this.m_arListSgnls.Count (); j++)
-                this.m_arListSgnls [j] = new List<SIGNAL> ();
+            for (int j = 0; j < this.m_arListSgnls.Count(); j++)
+                this.m_arListSgnls[j] = new List<SIGNAL>();
         }
-
         /// <summary>
         /// Инициализация строки с идентификаторами сигналов
         ///  для использования в запросе при выборке значений

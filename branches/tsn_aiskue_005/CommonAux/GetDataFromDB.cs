@@ -10,7 +10,6 @@ using System.Threading;
 using System.Data;
 using System.Globalization;
 
-//using HClassLibrary;
 using StatisticCommon;
 using System.Reflection;
 using ASUTP;
@@ -42,7 +41,7 @@ namespace CommonAux
         /// Поля таблицы сигналов
         /// </summary>
         private enum DB_TABLE_DATA {
-            ID, ID_TEC, GROUP, NAME, DESCRIPTION, USPD, CHANNEL, USE
+            ID_USPD, ID_CHANNEL, ID_TEC, ID_TG, Description, GROUP, NAME, USE, ID
         };
         /// <summary>
         /// Номера столбцовы в шаблоне excel
@@ -69,7 +68,9 @@ namespace CommonAux
         {
             ID, VALUE, KEY, LAST_UPDATE, ID_UNIT
         };
-
+        /// <summary>
+        /// Список всех каналов для каждой ТЭЦ
+        /// </summary>
         public List<TEC_LOCAL> m_listTEC;
 
         private ASUTP.Core.HMark m_markIndxRequestError;
@@ -105,7 +106,7 @@ namespace CommonAux
         /// <returns>Строка запроса</returns>
         public static string getQueryListChannels()
         {
-            string strRes = "SELECT * FROM " + DB_TABLE;
+            string strRes = "SELECT [ID_USPD], [ID_CHANNEL], [ID_TEC], [ID_TG], [Description], [GROUP], [NAME], [USE] FROM " + DB_TABLE;
 
             return strRes;
         }
@@ -125,12 +126,14 @@ namespace CommonAux
 
             connConfigDB = DbSources.Sources ().GetConnection (iListenerId, out err);
 
-            if (err == 0) {
+            if (err == 0)
+            {
                 req = getQueryListChannels ();
 
                 tableRes = DbTSQLInterface.Select (ref connConfigDB, req, null, null, out err);
-            } else
-                ;
+            }
+            else
+            { }
 
             return tableRes;
         }
@@ -183,9 +186,9 @@ namespace CommonAux
             {
                 try
                 {
-                    signal = new SIGNAL(Convert.ToString(table_channels.Rows[i].ItemArray[Convert.ToInt32(DB_TABLE_DATA.DESCRIPTION)]),
-                        Convert.ToInt32(table_channels.Rows[i].ItemArray[Convert.ToInt32(DB_TABLE_DATA.USPD)]),
-                        Convert.ToInt32(table_channels.Rows[i].ItemArray[Convert.ToInt32(DB_TABLE_DATA.CHANNEL)]),
+                    signal = new SIGNAL(Convert.ToString(table_channels.Rows[i].ItemArray[Convert.ToInt32(DB_TABLE_DATA.Description)]),
+                        Convert.ToInt32(table_channels.Rows[i].ItemArray[Convert.ToInt32(DB_TABLE_DATA.ID_USPD)]),
+                        Convert.ToInt32(table_channels.Rows[i].ItemArray[Convert.ToInt32(DB_TABLE_DATA.ID_CHANNEL)]),
                         Convert.ToBoolean(table_channels.Rows[i].ItemArray[Convert.ToInt32(DB_TABLE_DATA.USE)])
                     );
                     m_listTEC[Convert.ToInt32(table_channels.Rows[i].ItemArray[Convert.ToInt32(DB_TABLE_DATA.ID_TEC)]) - 1]
@@ -216,8 +219,6 @@ namespace CommonAux
         public int Request(TEC_LOCAL tec, int iListenerId, DateTime dtStart, DateTime dtEnd)
         {
             int iRes = 0;
-
-            
 
             tec.m_listValuesDate.Clear();
             if (m_markIndxRequestError == null)

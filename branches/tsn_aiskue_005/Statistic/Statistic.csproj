@@ -112,26 +112,31 @@
   </PropertyGroup>
   <ItemGroup>
     <Reference Include="ASUTP.Control">
-      <HintPath>..\..\ExternalDLL\ASUTP.Control.dll</HintPath>
+      <HintPath>..\..\ASUTP.Library\ASUTP.Control\obj\Debug\ASUTP.Control.dll</HintPath>
     </Reference>
     <Reference Include="ASUTP.Core">
-      <HintPath>..\..\ExternalDLL\ASUTP.Core.dll</HintPath>
+      <HintPath>..\..\ASUTP.Library\ASUTP.Core\obj\Debug\ASUTP.Core.dll</HintPath>
     </Reference>
     <Reference Include="ASUTP.Database">
-      <HintPath>..\..\ExternalDLL\ASUTP.Database.dll</HintPath>
+      <HintPath>..\..\ASUTP.Library\ASUTP.Database\obj\Debug\ASUTP.Database.dll</HintPath>
     </Reference>
     <Reference Include="ASUTP.Forms">
-      <HintPath>..\..\ExternalDLL\ASUTP.Forms.dll</HintPath>
+      <HintPath>..\..\ASUTP.Library\ASUTP.Forms\obj\Debug\ASUTP.Forms.dll</HintPath>
     </Reference>
-    <Reference Include="ASUTP.Helper, Version=1.0.0.0, Culture=neutral, processorArchitecture=MSIL">
-      <SpecificVersion>False</SpecificVersion>
-      <HintPath>..\..\ExternalDLL\ASUTP.Helper.dll</HintPath>
+    <Reference Include="ASUTP.Helper">
+      <HintPath>..\..\ASUTP.Library\ASUTP.Helper\obj\Debug\ASUTP.Helper.dll</HintPath>
     </Reference>
     <Reference Include="ASUTP.Logging">
-      <HintPath>..\..\ExternalDLL\ASUTP.Logging.dll</HintPath>
+      <HintPath>..\..\ASUTP.Library\ASUTP.Logging\obj\Debug\ASUTP.Logging.dll</HintPath>
+    </Reference>
+    <Reference Include="ASUTP.MSExcel">
+      <HintPath>..\..\ASUTP.Library\ASUTP.MSExcel\obj\Debug\ASUTP.MSExcel.dll</HintPath>
+    </Reference>
+    <Reference Include="ASUTP.Network">
+      <HintPath>..\..\ASUTP.Library\ASUTP.Network\obj\Debug\ASUTP.Network.dll</HintPath>
     </Reference>
     <Reference Include="ASUTP.PlugIn">
-      <HintPath>..\..\ExternalDLL\ASUTP.PlugIn.dll</HintPath>
+      <HintPath>..\..\ASUTP.Library\ASUTP.PlugIn\obj\Debug\ASUTP.PlugIn.dll</HintPath>
     </Reference>
     <Reference Include="GemBox.Spreadsheet, Version=33.1.0.1000, Culture=neutral, PublicKeyToken=b1b72c69714d4847, processorArchitecture=MSIL">
       <SpecificVersion>False</SpecificVersion>
