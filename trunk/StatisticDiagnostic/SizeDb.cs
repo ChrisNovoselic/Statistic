@@ -444,6 +444,11 @@ namespace StatisticDiagnostic
                 }
                 catch { }
             }
+
+            public void Clear ()
+            {
+                //m_dgvValues?.Rows.Clear ();
+            }
         }
     }
 }

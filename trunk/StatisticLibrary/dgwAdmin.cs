@@ -26,7 +26,7 @@ namespace StatisticCommon
                                                             System.Windows.Forms.AnchorStyles.Left)));
 
             dataGridViewCellStyle.Alignment = System.Windows.Forms.DataGridViewContentAlignment.MiddleCenter;
-            dataGridViewCellStyle.BackColor = System.Drawing.SystemColors.Control;
+            dataGridViewCellStyle.BackColor = s_dgvCellStyles[(int)INDEX_CELL_STYLE.COMMON].BackColor;
             dataGridViewCellStyle.Font = new System.Drawing.Font("Microsoft Sans Serif", 8.25F, System.Drawing.FontStyle.Regular, System.Drawing.GraphicsUnit.Point, ((byte)(204)));
             dataGridViewCellStyle.ForeColor = System.Drawing.SystemColors.WindowText;
             dataGridViewCellStyle.SelectionBackColor = System.Drawing.SystemColors.Highlight;

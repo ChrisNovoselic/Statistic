@@ -155,7 +155,7 @@ namespace StatisticCommon
             
             Columns [(int)COLUMN_INDEX.FOREIGN_CMD].DefaultCellStyle.Alignment = DataGridViewContentAlignment.MiddleCenter;
             Columns [(int)COLUMN_INDEX.DEVIATION_TYPE].DefaultCellStyle.Alignment = DataGridViewContentAlignment.MiddleCenter;
-            Columns [(int)COLUMN_INDEX.TO_ALL].DefaultCellStyle.BackColor = SystemColors.Control;
+            Columns [(int)COLUMN_INDEX.TO_ALL].DefaultCellStyle.BackColor = s_dgvCellStyles[(int)INDEX_CELL_STYLE.COMMON].BackColor;
 
             //BackColor = s_dgvCellStyles[(int)INDEX_CELL_STYLE.COMMON].BackColor;
         }

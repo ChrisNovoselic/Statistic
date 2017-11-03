@@ -615,10 +615,10 @@ namespace StatisticDiagnostic
                 /// </summary>
                 public void Clear()
                 {
-                    if (m_dgvValues.Rows.Count > 0)
-                        m_dgvValues.Rows.Clear();
-                    else
-                        ;
+                    //if (m_dgvValues.Rows.Count > 0)
+                    //    m_dgvValues.Rows.Clear();
+                    //else
+                    //    ;
                 }
                 /// <summary>
                 /// Обновить значения в представлении

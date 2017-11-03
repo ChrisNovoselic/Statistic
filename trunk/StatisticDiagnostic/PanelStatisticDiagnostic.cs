@@ -714,14 +714,16 @@ namespace StatisticDiagnostic
             , COUNT_LAYOUT_ROW = 16;
 
         /// <summary>
-        /// constructor
+        /// Конструктор - основной (с аргументами)
         /// </summary>
+        /// <param name="mode">Режим работы (администратор или пользователь)</param>
+        /// <param name="backColor">Цвет фона</param>
         public PanelStatisticDiagnostic(Mode mode, Color backColor)
             : base (MODE_UPDATE_VALUES.AUTO, backColor, COUNT_LAYOUT_COLUMN, COUNT_LAYOUT_ROW)
         {
             m_Mode = mode;
 
-            initialize();
+            initialize ();
         }
 
         /// <summary>
@@ -735,7 +737,7 @@ namespace StatisticDiagnostic
 
             m_Mode = mode;
 
-            initialize();
+            initialize ();
         }
 
         /// <summary>
@@ -867,6 +869,7 @@ namespace StatisticDiagnostic
         public override void Start()
         {
             base.Start();
+
             timerUp();
             dbStart();
         }
@@ -962,10 +965,13 @@ namespace StatisticDiagnostic
         private void clear()
         {
             m_tecdb.Clear();
+
             if (m_Mode == Mode.DEFAULT) {
                 m_modesdb.Clear();
+
                 m_taskdb.Clear();
-                //m_sizedb.Clear();
+
+                m_sizedb.Clear();
             } else
                 ;
         }

@@ -602,11 +602,8 @@ namespace StatisticDiagnostic
             /// очистка панелей
             /// </summary>
             public void Clear()
-            {
-                if (!(m_dgvValues == null))
-                    m_dgvValues.Rows.Clear();
-                else
-                    ;
+            {                
+                //m_dgvValues?.Rows.Clear();
             }
 
             /// <summary>

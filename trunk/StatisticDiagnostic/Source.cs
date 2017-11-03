@@ -274,7 +274,7 @@ namespace StatisticDiagnostic
             }
 
             /// <summary>
-            /// очистка панелей
+            /// Очистить панели
             /// </summary>
             public void Clear()
             {
@@ -990,11 +990,7 @@ namespace StatisticDiagnostic
                 /// </summary>
                 public void Clear()
                 {
-                    for (int j = 0; j < m_dgvValues.Rows.Count; j++)
-                        if (m_dgvValues.Rows.Count > 0)
-                            m_dgvValues.Rows.Clear();
-                        else
-                            ;
+                    //m_dgvValues.Rows.Clear ();
                 }
 
                 //private int ActiveSourceIdSOTIASSO {
