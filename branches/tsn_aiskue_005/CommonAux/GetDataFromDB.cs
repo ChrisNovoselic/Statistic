@@ -106,8 +106,13 @@ namespace CommonAux
         /// <returns>Строка запроса</returns>
         public static string getQueryListChannels()
         {
-            string strRes = "SELECT [ID_USPD], [ID_CHANNEL], [ID_TEC], [ID_TG], [Description], [GROUP], [NAME], [USE] FROM " + DB_TABLE;
-
+            string strRes = "SELECT ";
+            foreach (DB_TABLE_DATA indx in Enum.GetValues(typeof(DB_TABLE_DATA)))
+            {
+                strRes += "[" + indx.ToString() + "], ";
+            }
+            strRes = strRes.Remove(strRes.Length-2, 2);
+            strRes += " FROM " + DB_TABLE;
             return strRes;
         }
 
@@ -191,9 +196,18 @@ namespace CommonAux
                         Convert.ToInt32(table_channels.Rows[i].ItemArray[Convert.ToInt32(DB_TABLE_DATA.ID_CHANNEL)]),
                         Convert.ToBoolean(table_channels.Rows[i].ItemArray[Convert.ToInt32(DB_TABLE_DATA.USE)])
                     );
-                    m_listTEC[Convert.ToInt32(table_channels.Rows[i].ItemArray[Convert.ToInt32(DB_TABLE_DATA.ID_TEC)]) - 1]
-                        .m_arListSgnls[Convert.ToInt32(Enum.Parse(typeof(TEC_LOCAL.INDEX_DATA), Convert.ToString(table_channels.Rows[i].ItemArray[Convert.ToInt32(DB_TABLE_DATA.GROUP)])))]
+                    foreach (TEC_LOCAL tec_local in m_listTEC)
+                    {
+                        if (tec_local.m_Id == Convert.ToInt32(table_channels.Rows[i].ItemArray[Convert.ToInt32(DB_TABLE_DATA.ID_TEC)]))
+                        {
+                            tec_local.m_arListSgnls[Convert.ToInt32(Enum.Parse(typeof(TEC_LOCAL.INDEX_DATA), Convert.ToString(table_channels.Rows[i].ItemArray[Convert.ToInt32(DB_TABLE_DATA.GROUP)])))]
                             .Add(signal);
+                        }
+                    }
+                    //m_listTEC[Convert.ToInt32(table_channels.Rows[i].ItemArray[Convert.ToInt32(DB_TABLE_DATA.ID_TEC)]) - 1]
+                    //    .m_arListSgnls[Convert.ToInt32(Enum.Parse(typeof(TEC_LOCAL.INDEX_DATA), Convert.ToString(table_channels.Rows[i].ItemArray[Convert.ToInt32(DB_TABLE_DATA.GROUP)])))]
+                    //        .Add(signal);
+                    //m_listTEC[0].
                 }
                 catch (Exception e)
                 {
@@ -249,6 +263,7 @@ namespace CommonAux
             ReportClear(true);
             return iRes;
         }
+
         /// <summary>
         /// Получить все (ТГ, ТСН) значения для станции
         /// </summary>
@@ -269,6 +284,7 @@ namespace CommonAux
 
             return iRes;
         }
+
         /// <summary>
         /// Получить все (ТГ, ТСН) значения для станции
         /// </summary>

@@ -931,7 +931,7 @@ namespace CommonAux
 
                 for (indx = 0; !(indx > TEC_LOCAL.INDEX_DATA.GRVIII); indx++)
                 {
-                    if ((m_listBoxTEC.SelectedIndex != m_listBoxTEC.FindString("НТЭЦ-5"))
+                    if ((tec_local.m_arListSgnls[Convert.ToInt32(TEC_LOCAL.INDEX_DATA.GRVIII)].Count == 0)
                         && (indx == TEC_LOCAL.INDEX_DATA.GRVIII))
                     {
                         indx++;
