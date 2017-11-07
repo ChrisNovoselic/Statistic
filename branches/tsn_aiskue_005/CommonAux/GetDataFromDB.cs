@@ -172,6 +172,15 @@ namespace CommonAux
         }
 
         /// <summary>
+        /// Инициализировать список ТЭЦ
+        /// </summary>
+        /// <param name="iListenerId">Идентификатор подписчика для обращения к БД</param>
+        public void GetIndexOfListSgnls(int i)
+        {
+
+        }
+
+        /// <summary>
         /// Загрузка всех каналов из базы данных
         /// </summary>
         /// <param name="iListenerId">Идентификатор подписчика для обращения к БД</param>
@@ -183,31 +192,28 @@ namespace CommonAux
             SIGNAL signal;
 
             DataTable table_channels = null;
+            DataRow[] someTECValues;
 
             //Получить список каналов, используя статическую функцию
             table_channels = getListChannels(iListenerId, out err);
 
-            for (int i = 0; i < table_channels.Rows.Count; i++)
+            for (int i = 0; i < m_listTEC.Count; i++)
             {
                 try
                 {
-                    signal = new SIGNAL(Convert.ToString(table_channels.Rows[i].ItemArray[Convert.ToInt32(DB_TABLE_DATA.Description)]),
-                        Convert.ToInt32(table_channels.Rows[i].ItemArray[Convert.ToInt32(DB_TABLE_DATA.ID_USPD)]),
-                        Convert.ToInt32(table_channels.Rows[i].ItemArray[Convert.ToInt32(DB_TABLE_DATA.ID_CHANNEL)]),
-                        Convert.ToBoolean(table_channels.Rows[i].ItemArray[Convert.ToInt32(DB_TABLE_DATA.USE)])
-                    );
-                    foreach (TEC_LOCAL tec_local in m_listTEC)
+                    someTECValues = table_channels.Select(DB_TABLE_DATA.ID_TEC + " = " + m_listTEC[i].m_Id);
+
+                    for (int j = 0; j < someTECValues.Count(); j++)
                     {
-                        if (tec_local.m_Id == Convert.ToInt32(table_channels.Rows[i].ItemArray[Convert.ToInt32(DB_TABLE_DATA.ID_TEC)]))
-                        {
-                            tec_local.m_arListSgnls[Convert.ToInt32(Enum.Parse(typeof(TEC_LOCAL.INDEX_DATA), Convert.ToString(table_channels.Rows[i].ItemArray[Convert.ToInt32(DB_TABLE_DATA.GROUP)])))]
-                            .Add(signal);
-                        }
+                        signal = new SIGNAL(Convert.ToString(someTECValues[j].ItemArray[Convert.ToInt32(DB_TABLE_DATA.Description)]),
+                        Convert.ToInt32(someTECValues[j].ItemArray[Convert.ToInt32(DB_TABLE_DATA.ID_USPD)]),
+                        Convert.ToInt32(someTECValues[j].ItemArray[Convert.ToInt32(DB_TABLE_DATA.ID_CHANNEL)]),
+                        Convert.ToBoolean(someTECValues[j].ItemArray[Convert.ToInt32(DB_TABLE_DATA.USE)])
+                        );
+
+                        int index = Convert.ToInt32(Enum.Parse(typeof(TEC_LOCAL.INDEX_DATA), Convert.ToString(someTECValues[j].ItemArray[Convert.ToInt32(DB_TABLE_DATA.GROUP)])));
+                        m_listTEC[i].m_arListSgnls[index].Add(signal);
                     }
-                    //m_listTEC[Convert.ToInt32(table_channels.Rows[i].ItemArray[Convert.ToInt32(DB_TABLE_DATA.ID_TEC)]) - 1]
-                    //    .m_arListSgnls[Convert.ToInt32(Enum.Parse(typeof(TEC_LOCAL.INDEX_DATA), Convert.ToString(table_channels.Rows[i].ItemArray[Convert.ToInt32(DB_TABLE_DATA.GROUP)])))]
-                    //        .Add(signal);
-                    //m_listTEC[0].
                 }
                 catch (Exception e)
                 {
