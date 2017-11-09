@@ -197,29 +197,28 @@ namespace CommonAux
             //Получить список каналов, используя статическую функцию
             table_channels = getListChannels(iListenerId, out err);
 
-            for (int i = 0; i < m_listTEC.Count; i++)
-            {
-                try
-                {
-                    someTECValues = table_channels.Select(DB_TABLE_DATA.ID_TEC + " = " + m_listTEC[i].m_Id);
-
-                    for (int j = 0; j < someTECValues.Count(); j++)
-                    {
-                        signal = new SIGNAL(Convert.ToString(someTECValues[j].ItemArray[Convert.ToInt32(DB_TABLE_DATA.Description)]),
-                        Convert.ToInt32(someTECValues[j].ItemArray[Convert.ToInt32(DB_TABLE_DATA.ID_USPD)]),
-                        Convert.ToInt32(someTECValues[j].ItemArray[Convert.ToInt32(DB_TABLE_DATA.ID_CHANNEL)]),
-                        Convert.ToBoolean(someTECValues[j].ItemArray[Convert.ToInt32(DB_TABLE_DATA.USE)])
-                        );
-
-                        int index = Convert.ToInt32(Enum.Parse(typeof(TEC_LOCAL.INDEX_DATA), Convert.ToString(someTECValues[j].ItemArray[Convert.ToInt32(DB_TABLE_DATA.GROUP)])));
-                        m_listTEC[i].m_arListSgnls[index].Add(signal);
-                    }
+            m_listTEC.ForEach (tec => {
+                try {
+                    (from DataRow rowSignal
+                        in table_channels.Select ($"{DB_TABLE_DATA.ID_TEC}={tec.m_Id}")
+                        group rowSignal by (TEC_LOCAL.INDEX_DATA)Enum.Parse (typeof (TEC_LOCAL.INDEX_DATA), Convert.ToString (rowSignal.ItemArray [Convert.ToInt32 (DB_TABLE_DATA.GROUP)]))
+                        into listTECSignals
+                            select new {
+                                Index = listTECSignals.Key
+                                , Values = from DataRow row
+                                    in listTECSignals
+                                    select new SIGNAL (Convert.ToString (row.ItemArray [Convert.ToInt32 (DB_TABLE_DATA.Description)]),
+                                        Convert.ToInt32 (row.ItemArray [Convert.ToInt32 (DB_TABLE_DATA.ID_USPD)]),
+                                        Convert.ToInt32 (row.ItemArray [Convert.ToInt32 (DB_TABLE_DATA.ID_CHANNEL)]),
+                                        Convert.ToBoolean (row.ItemArray [Convert.ToInt32 (DB_TABLE_DATA.USE)]))
+                            }
+                        ).ToList().ForEach(grp => {
+                            tec.m_arListSgnls [(int)grp.Index].AddRange (grp.Values);
+                        });
+                } catch (Exception e) {
+                    Logging.Logg().Exception(e, string.Format(@"CommonAux.GetDataFromDB::InitChannels () - получение списка каналов для подразделения: {0}...", tec.m_strNameShr), Logging.INDEX_MESSAGE.NOT_SET);
                 }
-                catch (Exception e)
-                {
-                    Logging.Logg().Exception(e, string.Format(@"Ошибка получения списка каналов"), Logging.INDEX_MESSAGE.NOT_SET);
-                }
-            }
+            });
         }
 
         public void InitSensors ()
