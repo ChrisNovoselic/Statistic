@@ -188,31 +188,30 @@ namespace CommonAux
         {
             int err = -1;
 
-            List<SIGNAL> listRes = new List<SIGNAL>();
-            SIGNAL signal;
-
             DataTable table_channels = null;
-            DataRow[] someTECValues;
 
             //Получить список каналов, используя статическую функцию
             table_channels = getListChannels(iListenerId, out err);
 
             m_listTEC.ForEach (tec => {
                 try {
-                    (from DataRow rowSignal
-                        in table_channels.Select ($"{DB_TABLE_DATA.ID_TEC}={tec.m_Id}")
-                        group rowSignal by (TEC_LOCAL.INDEX_DATA)Enum.Parse (typeof (TEC_LOCAL.INDEX_DATA), Convert.ToString (rowSignal.ItemArray [Convert.ToInt32 (DB_TABLE_DATA.GROUP)]))
-                        into listTECSignals
+                    (from DataRow row1
+                        in table_channels.Select ($"{DB_TABLE_DATA.ID_TEC}={tec.m_Id}") // выбрать сигналы только ТЭЦ по ее идентификатору
+                        group row1 by (TEC_LOCAL.INDEX_DATA)Enum.Parse (typeof (TEC_LOCAL.INDEX_DATA), Convert.ToString (row1.ItemArray [Convert.ToInt32 (DB_TABLE_DATA.GROUP)]))
+                        into groupTECSignals // группа сигналов
                             select new {
-                                Index = listTECSignals.Key
-                                , Values = from DataRow row
-                                    in listTECSignals
-                                    select new SIGNAL (Convert.ToString (row.ItemArray [Convert.ToInt32 (DB_TABLE_DATA.Description)]),
-                                        Convert.ToInt32 (row.ItemArray [Convert.ToInt32 (DB_TABLE_DATA.ID_USPD)]),
-                                        Convert.ToInt32 (row.ItemArray [Convert.ToInt32 (DB_TABLE_DATA.ID_CHANNEL)]),
-                                        Convert.ToBoolean (row.ItemArray [Convert.ToInt32 (DB_TABLE_DATA.USE)]))
-                            }
-                        ).ToList().ForEach(grp => {
+                                // индекс группы (из перечисления 'TEC_LOCAL.INDEX_DATA')
+                                Index = groupTECSignals.Key
+                                // перечень сигналов для группы
+                                , Values = from DataRow row2
+                                    in groupTECSignals
+                                    select new SIGNAL (Convert.ToString (row2.ItemArray [Convert.ToInt32 (DB_TABLE_DATA.Description)]),
+                                        Convert.ToInt32 (row2.ItemArray [Convert.ToInt32 (DB_TABLE_DATA.ID_USPD)]),
+                                        Convert.ToInt32 (row2.ItemArray [Convert.ToInt32 (DB_TABLE_DATA.ID_CHANNEL)]),
+                                        Convert.ToBoolean (row2.ItemArray [Convert.ToInt32 (DB_TABLE_DATA.USE)]))
+                            }).ToList ()
+                        // получен список
+                        .ForEach(grp => {
                             tec.m_arListSgnls [(int)grp.Index].AddRange (grp.Values);
                         });
                 } catch (Exception e) {
