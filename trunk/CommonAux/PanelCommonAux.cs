@@ -12,7 +12,6 @@ using System.Threading;
 using System.Data;
 using System.Globalization;
 
-//using HClassLibrary;
 using StatisticCommon;
 using ASUTP.Core;
 using ASUTP.Database;
@@ -417,7 +416,6 @@ namespace CommonAux
         /// <returns>результат</returns>
         public override bool Activate(bool activated)
         {
-            int err = -1; 
             bool bRes = base.Activate(activated);
 
             if (bRes == true) {
@@ -499,6 +497,9 @@ namespace CommonAux
             //CellBorderStyle = TableLayoutPanelCellBorderStyle.Single;
         }
 
+        /// <summary>
+        /// Инициализация компонентов панели
+        /// </summary>
         protected virtual void InitializeComponents()
         {
             System.Windows.Forms.DataGridViewCellStyle dataGridViewCellStyle;
@@ -542,28 +543,8 @@ namespace CommonAux
 
             this.SuspendLayout();
 
-            //this.Controls.Add(m_btnLoad, 81, 40); this.SetColumnSpan(m_btnLoad, 18); this.SetRowSpan(m_btnLoad, 5);
-            //this.Controls.Add(m_btnOpen, 81, 46); this.SetColumnSpan(m_btnOpen, 18); this.SetRowSpan(m_btnOpen, 5);
-            //this.Controls.Add(m_btnExit, 81, 94); this.SetColumnSpan(m_btnExit, 18); this.SetRowSpan(m_btnExit, 5);
-            //this.Controls.Add(m_btnStripButtonExcel, 81, 52); this.SetColumnSpan(m_btnStripButtonExcel, 18); this.SetRowSpan(m_btnStripButtonExcel, 5);
-            //this.Controls.Add(m_listBoxTEC, 61, 40); this.SetColumnSpan(m_listBoxTEC, 18); this.SetRowSpan(m_listBoxTEC, 20);
-            //this.Controls.Add(m_listMonthCalendar.ElementAt ((int)INDEX_MONTH_CALENDAR_DATE.START), 60, 8); this.SetColumnSpan(m_listMonthCalendar.ElementAt ((int)INDEX_MONTH_CALENDAR_DATE.START), 15); this.SetRowSpan(m_listMonthCalendar.ElementAt ((int)INDEX_MONTH_CALENDAR_DATE.START), 15);
-            //this.Controls.Add(m_listMonthCalendar.ElementAt ((int)INDEX_MONTH_CALENDAR_DATE.END), 80, 8); this.SetColumnSpan(m_listMonthCalendar.ElementAt ((int)INDEX_MONTH_CALENDAR_DATE.END), 15); this.SetRowSpan(m_listMonthCalendar.ElementAt ((int)INDEX_MONTH_CALENDAR_DATE.END), 15);
-            //this.Controls.Add(m_labelTEC, 62, 37); this.SetColumnSpan(m_labelTEC, 11); this.SetRowSpan(m_labelTEC, 2);
-            //this.Controls.Add(m_labelValues, 8, 2); this.SetColumnSpan(m_labelValues, 30); this.SetRowSpan(m_labelValues, 2);
-            //this.Controls.Add(m_labelStartDate, 65, 6); this.SetColumnSpan(m_labelStartDate, 8); this.SetRowSpan(m_labelStartDate, 2);
-            //this.Controls.Add(m_labelEndDate, 85, 6); this.SetColumnSpan(m_labelEndDate, 8); this.SetRowSpan(m_labelEndDate, 2);
-
-            //for (int i = 0; i < m_dgvValues.Count; i++)
-            //{
-            //    this.Controls.Add(m_dgvValues[i], 8, 4 + i * 16); this.SetColumnSpan(m_dgvValues[i], 50); this.SetRowSpan(m_dgvValues[i], 16);
-            //    this.Controls.Add(m_labelsGroup[i], 2, 7 + i * 16); this.SetColumnSpan(m_labelsGroup[i], 5); this.SetRowSpan(m_labelsGroup[i], 2);
-            //}
-            //this.Controls.Add(m_sumValues, 61, 60); this.SetColumnSpan(m_sumValues, 38); this.SetRowSpan(m_sumValues, 40);
-
             this.Controls.Add(m_btnLoad, 16, 9); this.SetColumnSpan(m_btnLoad, 4); this.SetRowSpan(m_btnLoad, 2);
             this.Controls.Add(m_btnOpen, 16, 11); this.SetColumnSpan(m_btnOpen, 4); this.SetRowSpan(m_btnOpen, 2);
-            //this.Controls.Add(m_btnExit, 81, 94); this.SetColumnSpan(m_btnExit, 18); this.SetRowSpan(m_btnExit, 5);
             this.Controls.Add(m_btnStripButtonExcel, 16, 13); this.SetColumnSpan(m_btnStripButtonExcel, 4); this.SetRowSpan(m_btnStripButtonExcel, 2);
             this.Controls.Add(m_listBoxTEC, 12, 9); this.SetColumnSpan(m_listBoxTEC, 4); this.SetRowSpan(m_listBoxTEC, 6);
             this.Controls.Add(m_listMonthCalendar.ElementAt((int)INDEX_MONTH_CALENDAR_DATE.START), 12, 1); this.SetColumnSpan(m_listMonthCalendar.ElementAt ((int)INDEX_MONTH_CALENDAR_DATE.START), 1); this.SetRowSpan(m_listMonthCalendar.ElementAt ((int)INDEX_MONTH_CALENDAR_DATE.START), 1);
@@ -934,7 +915,6 @@ namespace CommonAux
             TEC_LOCAL.INDEX_DATA indx;
             TEC_LOCAL tec_local = m_GetDataFromDB.m_listTEC[m_listBoxTEC.SelectedIndex];
             TEC_LOCAL.VALUES_DATE.VALUES_GROUP dictIndxValues;
-            //m_GetDataFromDB = new GetDataFromDB();
 
             for (int i = 0; i <= Convert.ToInt32(TEC_LOCAL.INDEX_DATA.GRVIII); i++)
             {
@@ -951,13 +931,15 @@ namespace CommonAux
 
                 for (indx = 0; !(indx > TEC_LOCAL.INDEX_DATA.GRVIII); indx++)
                 {
-                    if ((m_listBoxTEC.SelectedIndex != m_GetDataFromDB.m_listTEC.Count - 2)
-                        && (indx == TEC_LOCAL.INDEX_DATA.GRVIII)) {
+                    if ((tec_local.m_arListSgnls[Convert.ToInt32(TEC_LOCAL.INDEX_DATA.GRVIII)].Count == 0)
+                        && (indx == TEC_LOCAL.INDEX_DATA.GRVIII))
+                    {
                         indx++;
 
                         break;
-                    } else
-                        ;
+                    }
+                    else
+                    { }
 
                     tec_local.ClearValues(m_listMonthCalendar.ElementAt ((int)INDEX_MONTH_CALENDAR_DATE.START).SelectionStart.Date, indx);
 
@@ -1070,8 +1052,7 @@ namespace CommonAux
             {
                 msg = @"Сохранить результат в: ";
 
-                //Установить исходные параметры для формы диалога
-                //formChoiseResult.InitialDirectory =                
+                //Установить исходные параметры для формы диалога            
                 formChoiseResult.Title = @"Указать книгу MS Excel-результат";
                 formChoiseResult.CheckPathExists = true;
                 formChoiseResult.CheckFileExists = false;
@@ -1101,43 +1082,45 @@ namespace CommonAux
                         List<DateTime> listWriteDates = new List<DateTime>();
                         // сохранить активную мощность
                         m_GetDataFromDB.m_listTEC.ForEach (t => {
-                            if (markErr.IsMarked (m_GetDataFromDB.m_listTEC.IndexOf (t)) == false)
+                            if (markErr.IsMarked(m_GetDataFromDB.m_listTEC.IndexOf(t)) == false)
                                 foreach (TEC_LOCAL.VALUES_DATE valsDate in t.m_listValuesDate) {
                                     try {
                                         //Определить начальную строку по дате набора значений
                                         iRowStart = iRowStartMSExcel + (valsDate.m_dataDate.Day - 1) * iRowCountDateMSExcel;
 
-                                        if (listWriteDates.IndexOf (valsDate.m_dataDate) < 0) {
-                                            listWriteDates.Add (valsDate.m_dataDate);
+                                        if (listWriteDates.IndexOf(valsDate.m_dataDate) < 0)
+                                        {
+                                            listWriteDates.Add(valsDate.m_dataDate);
 
-                                            excel.WriteDate (iColDataDate, iRowStart, valsDate.m_dataDate);
-                                        } else
-                                            ;
+                                            excel.WriteDate(iColDataDate, iRowStart, valsDate.m_dataDate);
+                                        }
+                                        else
+                                        { }
 
                                         //Сохранить набор значений на листе книги MS Excel
-                                        excel.WriteValues (t.m_arMSExcelNumColumns [(int)GetDataFromDB.INDEX_MSEXCEL_COLUMN.APOWER]
+                                        excel.WriteValues(t.m_arMSExcelNumColumns[(int)GetDataFromDB.INDEX_MSEXCEL_COLUMN.APOWER]
                                             , iRowStart
-                                            , valsDate.m_dictData [TEC_LOCAL.INDEX_DATA.TG].m_summaHours);
+                                            , valsDate.m_dictData[TEC_LOCAL.INDEX_DATA.TG].m_summaHours);
                                         // получить набор значений для записи в соответствии с вариантом расчета
-                                        arWriteValues = valsDate.GetValues (out iErr);
+                                        arWriteValues = valsDate.GetValues(out iErr);
                                         if (iErr == 0)
-                                        //Сохранить набор значений на листе книги MS Excel
-                                            excel.WriteValues (t.m_arMSExcelNumColumns [(int)GetDataFromDB.INDEX_MSEXCEL_COLUMN.SNUZHDY]
+                                            //Сохранить набор значений на листе книги MS Excel
+                                            excel.WriteValues(t.m_arMSExcelNumColumns[(int)GetDataFromDB.INDEX_MSEXCEL_COLUMN.SNUZHDY]
                                                 , iRowStart
                                                 , arWriteValues);
                                         else
-                                            Logging.Logg ().Error (string.Format (@"FormMain::экспортВMSExcelToolStripMenuItem_Click () - TEC.ИД={0}, дата={1}, отсутствуют необходимые для расчета группы..."
+                                            Logging.Logg().Error(string.Format(@"FormMain::экспортВMSExcelToolStripMenuItem_Click () - TEC.ИД={0}, дата={1}, отсутствуют необходимые для расчета группы..."
                                                     , t.m_Id, valsDate.m_dataDate)
                                                 , Logging.INDEX_MESSAGE.NOT_SET);
                                     } catch (Exception exc) {
-                                        Logging.Logg ().Exception (exc
-                                            , string.Format (@"FormMain::экспортВMSExcelToolStripMenuItem_Click () - TEC.ИД={0}, дата={1}"
+                                        Logging.Logg().Exception(exc
+                                            , string.Format(@"FormMain::экспортВMSExcelToolStripMenuItem_Click () - TEC.ИД={0}, дата={1}"
                                                 , t.m_Id, valsDate.m_dataDate)
                                             , Logging.INDEX_MESSAGE.NOT_SET);
                                     }
                                 }
                             else
-                                ;
+                            { }
                         });
 
                         excel.SaveExcel(formChoiseResult.FileName);
@@ -1191,7 +1174,7 @@ namespace CommonAux
                 if (iRes == 0)
                     iRes = validateTemplate(excel as MSExcelIO);
                 else
-                    ;
+                { }
 
                 excel.CloseExcelDoc();
                 excel.Dispose();
@@ -1231,7 +1214,7 @@ namespace CommonAux
                 iRes = ver.Equals(m_arMSEXEL_PARS[(int)INDEX_MSEXCEL_PARS.TEMPLATE_VER]) == true ? 0 : -3;
             }
             else
-                ;
+            { }
 
             return iRes;
         }

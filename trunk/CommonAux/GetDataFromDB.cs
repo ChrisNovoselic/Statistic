@@ -10,7 +10,6 @@ using System.Threading;
 using System.Data;
 using System.Globalization;
 
-//using HClassLibrary;
 using StatisticCommon;
 using System.Reflection;
 using ASUTP;
@@ -42,7 +41,7 @@ namespace CommonAux
         /// Поля таблицы сигналов
         /// </summary>
         private enum DB_TABLE_DATA {
-            ID, ID_TEC, GROUP, NAME, DESCRIPTION, USPD, CHANNEL, USE
+            ID_USPD, ID_CHANNEL, ID_TEC, ID_TG, Description, GROUP, NAME, USE, ID
         };
         /// <summary>
         /// Номера столбцовы в шаблоне excel
@@ -69,7 +68,9 @@ namespace CommonAux
         {
             ID, VALUE, KEY, LAST_UPDATE, ID_UNIT
         };
-
+        /// <summary>
+        /// Список всех каналов для каждой ТЭЦ
+        /// </summary>
         public List<TEC_LOCAL> m_listTEC;
 
         private ASUTP.Core.HMark m_markIndxRequestError;
@@ -105,8 +106,13 @@ namespace CommonAux
         /// <returns>Строка запроса</returns>
         public static string getQueryListChannels()
         {
-            string strRes = "SELECT * FROM " + DB_TABLE;
-
+            string strRes = "SELECT ";
+            foreach (DB_TABLE_DATA indx in Enum.GetValues(typeof(DB_TABLE_DATA)))
+            {
+                strRes += "[" + indx.ToString() + "], ";
+            }
+            strRes = strRes.Remove(strRes.Length-2, 2);
+            strRes += " FROM " + DB_TABLE;
             return strRes;
         }
 
@@ -125,12 +131,14 @@ namespace CommonAux
 
             connConfigDB = DbSources.Sources ().GetConnection (iListenerId, out err);
 
-            if (err == 0) {
+            if (err == 0)
+            {
                 req = getQueryListChannels ();
 
                 tableRes = DbTSQLInterface.Select (ref connConfigDB, req, null, null, out err);
-            } else
-                ;
+            }
+            else
+            { }
 
             return tableRes;
         }
@@ -164,6 +172,15 @@ namespace CommonAux
         }
 
         /// <summary>
+        /// Инициализировать список ТЭЦ
+        /// </summary>
+        /// <param name="iListenerId">Идентификатор подписчика для обращения к БД</param>
+        public void GetIndexOfListSgnls(int i)
+        {
+
+        }
+
+        /// <summary>
         /// Загрузка всех каналов из базы данных
         /// </summary>
         /// <param name="iListenerId">Идентификатор подписчика для обращения к БД</param>
@@ -175,28 +192,33 @@ namespace CommonAux
             SIGNAL signal;
 
             DataTable table_channels = null;
+            DataRow[] someTECValues;
 
             //Получить список каналов, используя статическую функцию
             table_channels = getListChannels(iListenerId, out err);
 
-            for (int i = 0; i < table_channels.Rows.Count; i++)
-            {
-                try
-                {
-                    signal = new SIGNAL(Convert.ToString(table_channels.Rows[i].ItemArray[Convert.ToInt32(DB_TABLE_DATA.DESCRIPTION)]),
-                        Convert.ToInt32(table_channels.Rows[i].ItemArray[Convert.ToInt32(DB_TABLE_DATA.USPD)]),
-                        Convert.ToInt32(table_channels.Rows[i].ItemArray[Convert.ToInt32(DB_TABLE_DATA.CHANNEL)]),
-                        Convert.ToBoolean(table_channels.Rows[i].ItemArray[Convert.ToInt32(DB_TABLE_DATA.USE)])
-                    );
-                    m_listTEC[Convert.ToInt32(table_channels.Rows[i].ItemArray[Convert.ToInt32(DB_TABLE_DATA.ID_TEC)]) - 1]
-                        .m_arListSgnls[Convert.ToInt32(Enum.Parse(typeof(TEC_LOCAL.INDEX_DATA), Convert.ToString(table_channels.Rows[i].ItemArray[Convert.ToInt32(DB_TABLE_DATA.GROUP)])))]
-                            .Add(signal);
+            m_listTEC.ForEach (tec => {
+                try {
+                    (from DataRow rowSignal
+                        in table_channels.Select ($"{DB_TABLE_DATA.ID_TEC}={tec.m_Id}")
+                        group rowSignal by (TEC_LOCAL.INDEX_DATA)Enum.Parse (typeof (TEC_LOCAL.INDEX_DATA), Convert.ToString (rowSignal.ItemArray [Convert.ToInt32 (DB_TABLE_DATA.GROUP)]))
+                        into listTECSignals
+                            select new {
+                                Index = listTECSignals.Key
+                                , Values = from DataRow row
+                                    in listTECSignals
+                                    select new SIGNAL (Convert.ToString (row.ItemArray [Convert.ToInt32 (DB_TABLE_DATA.Description)]),
+                                        Convert.ToInt32 (row.ItemArray [Convert.ToInt32 (DB_TABLE_DATA.ID_USPD)]),
+                                        Convert.ToInt32 (row.ItemArray [Convert.ToInt32 (DB_TABLE_DATA.ID_CHANNEL)]),
+                                        Convert.ToBoolean (row.ItemArray [Convert.ToInt32 (DB_TABLE_DATA.USE)]))
+                            }
+                        ).ToList().ForEach(grp => {
+                            tec.m_arListSgnls [(int)grp.Index].AddRange (grp.Values);
+                        });
+                } catch (Exception e) {
+                    Logging.Logg().Exception(e, string.Format(@"CommonAux.GetDataFromDB::InitChannels () - получение списка каналов для подразделения: {0}...", tec.m_strNameShr), Logging.INDEX_MESSAGE.NOT_SET);
                 }
-                catch (Exception e)
-                {
-                    Logging.Logg().Exception(e, string.Format(@"Ошибка получения списка каналов"), Logging.INDEX_MESSAGE.NOT_SET);
-                }
-            }
+            });
         }
 
         public void InitSensors ()
@@ -216,8 +238,6 @@ namespace CommonAux
         public int Request(TEC_LOCAL tec, int iListenerId, DateTime dtStart, DateTime dtEnd)
         {
             int iRes = 0;
-
-            
 
             tec.m_listValuesDate.Clear();
             if (m_markIndxRequestError == null)
@@ -248,6 +268,7 @@ namespace CommonAux
             ReportClear(true);
             return iRes;
         }
+
         /// <summary>
         /// Получить все (ТГ, ТСН) значения для станции
         /// </summary>
@@ -268,6 +289,7 @@ namespace CommonAux
 
             return iRes;
         }
+
         /// <summary>
         /// Получить все (ТГ, ТСН) значения для станции
         /// </summary>

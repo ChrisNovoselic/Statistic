@@ -51,8 +51,6 @@ namespace CommonAux
             this.ClientSize = new System.Drawing.Size(1000, 650);
             this.MinimumSize = new System.Drawing.Size(1000, 650);
             this.Icon = ((System.Drawing.Icon)(resources.GetObject("IconApp")));
-            //Icon icon = new Icon("../../Resources/IconApp.ico");
-            //this.Icon = icon;
 
             this.MaximizeBox = true;
             this.Name = "FormMainCommonAux";
