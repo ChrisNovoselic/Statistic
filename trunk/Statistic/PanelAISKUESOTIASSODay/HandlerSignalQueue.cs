@@ -100,7 +100,7 @@ namespace Statistic
                 Signals = new Dictionary<CONN_SETT_TYPE, IList<SIGNAL>>();
                 _values = new Dictionary<CONN_SETT_TYPE, VALUES>();
 
-                _handlerDb = new HandlerDbSignalValue(iListenerConfigDbId, listTEC, _types);                
+                _handlerDb = new HandlerDbSignalValue(iListenerConfigDbId, listTEC, _types, HandlerDbSignalValue.MODE.TRANSIT);                
                 SetDelegateReport += new Action<DelegateStringFunc, DelegateStringFunc, DelegateStringFunc, DelegateBoolFunc>(_handlerDb.SetDelegateReport);
                 ReportClear += new Action<bool>(_handlerDb.ReportClear);
             }

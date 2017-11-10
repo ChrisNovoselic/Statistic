@@ -33,6 +33,8 @@ namespace Statistic
             /// </summary>
             private class HandlerDbSignalValue : HHandlerDb
             {
+                public enum MODE { SOURCE, TRANSIT }
+
                 public struct KEY
                 {
                     public int _current_id_tec;
@@ -73,18 +75,21 @@ namespace Statistic
                 ///  для всех ТЭЦ из списка в аргументе конструктора
                 /// </summary>
                 private Dictionary<int, Dictionary<CONN_SETT_TYPE, ConnectionSettings>> m_dictConnSett;
+
                 /// <summary>
                 /// Конструктор - основной (с аргументами)
                 /// </summary>
                 /// <param name="iListenerConfigDbId">Идентификатор установленного соединения с БД конфигурации</param>
                 /// <param name="listTEC">Список ТЭЦ</param>
-                public HandlerDbSignalValue(int iListenerConfigDbId, IEnumerable<TEC> listTEC, IEnumerable<CONN_SETT_TYPE>types)
+                public HandlerDbSignalValue(int iListenerConfigDbId, IEnumerable<TEC> listTEC, IEnumerable<CONN_SETT_TYPE>types, MODE mode = MODE.SOURCE)
                     : base()
                 {
                     int err = -1
                         , id_tec = -1
                         , id_source = -1;
                     DbConnection dbConn;
+
+                    Mode = mode;
 
                     _key._current_type = CONN_SETT_TYPE.UNKNOWN;
                     _key._current_id_tec = -1;
@@ -103,10 +108,16 @@ namespace Statistic
                                 ;
 
                             foreach (CONN_SETT_TYPE type in types) {
-                                id_source = id_tec * 10
-                                    + (type == CONN_SETT_TYPE.DATA_AISKUE ? 1
-                                        : type == CONN_SETT_TYPE.DATA_SOTIASSO ? 2
-                                            : -1); //??? "-1" - ошибка
+                                switch (Mode) {
+                                    case MODE.TRANSIT:
+                                        id_source = FormMain.s_iMainSourceData;
+                                        break;
+                                    case MODE.SOURCE:
+                                    default:
+                                        id_source = getIdSource (id_tec, type);
+                                        break;
+
+                                }
 
                                 if (m_dictConnSett[id_tec].ContainsKey(type) == false) {
                                     m_dictConnSett[id_tec].Add(type
@@ -159,19 +170,19 @@ namespace Statistic
                     _signals = new List<SIGNAL>();
                 }
 
+                private int getIdSource (int id_tec, CONN_SETT_TYPE type = CONN_SETT_TYPE.DATA_SOTIASSO)
+                {
+                    return id_tec * 10
+                        + (type == CONN_SETT_TYPE.DATA_AISKUE ? 1
+                            : type == CONN_SETT_TYPE.DATA_SOTIASSO ? 2
+                                : -1); //??? "-1" - ошибка
+                }
+
                 private static Dictionary<StatesMachine, Func<string>> request_handlers;
 
                 private static Dictionary<StatesMachine, Func<DataTable, bool>> response_handlers;
 
-                //public class DictionaryValues : Dictionary<CONN_SETT_TYPE, VALUES>
-                //{
-                //    //public void SetServerTime(CONN_SETT_TYPE type, DateTime serverTime)
-                //    //{
-                //    //    this[type].SetServerTime(serverTime);
-                //    //}
-                //}                
-
-                //public IntDelegateIntIntFunc UpdateGUI_Fact;
+                public MODE Mode { get; }
 
                 public VALUES Values;
 
@@ -196,50 +207,6 @@ namespace Statistic
                 /// Объекты синхронизации для обмена данными (результатом) обработки событий
                 /// </summary>
                 public AutoResetEvent[] m_arSyncStateCheckResponse;
-                ///// <summary>
-                ///// Установить идентификатор выбранной в данный момент ТЭЦ
-                ///// </summary>
-                ///// <param name="id">Идентификатор ТЭЦ</param>
-                //public void InitTEC(int id)
-                //{
-                //    if (!(_key._current_id_tec == id)) {
-                //        _key._current_id_tec = id;
-
-                //        ClearValues();
-
-                //        //Поток запроса значений для 
-                //        new Thread(new ParameterizedThreadStart((param) => {
-                //            int indxEv = -1;
-                //            // чтобы в 1-ый проход "пройти" WaitHandle.WaitAny и перейти к выполнению запроса
-                //            ((AutoResetEvent)m_waitHandleState[(int)INDEX_WAITHANDLE_REASON.SUCCESS]).Set();
-
-                //            for (INDEX_WAITHANDLE_REASON i = INDEX_WAITHANDLE_REASON.ERROR; i < INDEX_WAITHANDLE_REASON.COUNT_INDEX_WAITHANDLE_REASON; i++)
-                //                ((ManualResetEvent)m_waitHandleState[(int)i]).Reset();
-
-                //            foreach (CONN_SETT_TYPE type in _types) {
-                //                indxEv = WaitHandle.WaitAny(m_waitHandleState);
-                //                if (indxEv == (int)INDEX_WAITHANDLE_REASON.BREAK)
-                //                    // прекратить выполнение досрочно
-                //                    break;
-                //                else {
-                //                    if (!(indxEv == (int)INDEX_WAITHANDLE_REASON.SUCCESS))
-                //                        // в сигнальное состояние установлен отличный от BREAK, SUCCESS объект синхронизации
-                //                        // восстановить его состояние для очередной итерации
-                //                        ((ManualResetEvent)m_waitHandleState[indxEv]).Reset();
-                //                    else
-                //                        ;
-
-                //                    ClearStates();
-
-                //                    _key._current_type = type;
-
-                //                    getListSignals(); //getvalues();
-                //                }
-                //            }
-                //        })).Start();
-                //    } else
-                //        ;
-                //}
 
                 public void Request()
                 {
@@ -535,11 +502,24 @@ namespace Statistic
 
                 private string getListSignalRequest()
                 {
-                    return _key._current_type == CONN_SETT_TYPE.DATA_AISKUE ? string.Format(@"SELECT *, {3}.[CODE] as [{6}] FROM [{0}] as {1} JOIN [{2}] {3} ON {1}.[{4}] = {3}.[{5}]"
-                            , "SENSORS", "sen", "DEVICES", "dev", "STATIONID", "ID", "USPD_CODE")
-                        : _key._current_type == CONN_SETT_TYPE.DATA_SOTIASSO ? string.Format(@"SELECT * FROM [{0}] WHERE [{1}] LIKE '{2}'"
-                            , "reals_v", "DESCRIPTION", "%Сум%")
-                            : string.Empty;
+                    string strRes = string.Empty;
+
+                    if (Mode == MODE.SOURCE)
+                        strRes = _key._current_type == CONN_SETT_TYPE.DATA_AISKUE ? string.Format (@"SELECT *, {3}.[CODE] as [{6}] FROM [{0}] as {1} JOIN [{2}] {3} ON {1}.[{4}] = {3}.[{5}]"
+                                , "SENSORS", "sen", "DEVICES", "dev", "STATIONID", "ID", "USPD_CODE")
+                            : _key._current_type == CONN_SETT_TYPE.DATA_SOTIASSO ? string.Format (@"SELECT * FROM [{0}] WHERE [{1}] LIKE '{2}'"
+                                , "reals_v", "DESCRIPTION", "%Сум%")
+                                : string.Empty;
+                    else if (Mode == MODE.TRANSIT)
+                        strRes = _key._current_type == CONN_SETT_TYPE.DATA_AISKUE ? string.Format (@"EXECUTE [dbo].[sp_get_list_signal_AIISKUE] {0}"
+                                , getIdSource(_key._current_id_tec, _key._current_type))
+                            : _key._current_type == CONN_SETT_TYPE.DATA_SOTIASSO ? string.Format (@"EXECUTE [dbo].[sp_get_list_signal_SOTIASSO] {0}"
+                                , getIdSource (_key._current_id_tec, _key._current_type))
+                                : string.Empty;
+                    else
+                        ;
+
+                    return strRes;
                 }
 
                 private bool getListSignalResponse(DataTable tableListSignals)
@@ -616,15 +596,21 @@ namespace Statistic
                             sql_datetime_end = sql_datetime_start.AddDays(1F);
                             UTC_OFFSET = 0;
 
-                            strRes = string.Format("SELECT [OBJECT], [ITEM], [DATA_DATE], [VALUE0]" +
-                                " FROM [DATA]" +
-                                " WHERE" +
-                                    " PARNUMBER={2}" +
-                                    " AND [OBJECT]={0}" +
-                                    " AND [ITEM]={1}" +
-                                    " AND [DATA_DATE] > '{3:yyyyMMdd HH:mm:ss}' AND [DATA_DATE] <= '{4:yyyyMMdd HH:mm:ss}'" +
-                                " ORDER BY [DATA_DATE]"
-                                , sensor.id_object, sensor.num_item, parnumber, sql_datetime_start, sql_datetime_end);
+                            if (Mode == MODE.SOURCE)
+                                strRes = string.Format ("SELECT [OBJECT], [ITEM], [DATA_DATE], [VALUE0]" +
+                                    " FROM [DATA]" +
+                                    " WHERE" +
+                                        " PARNUMBER={2}" +
+                                        " AND [OBJECT]={0}" +
+                                        " AND [ITEM]={1}" +
+                                        " AND [DATA_DATE] > '{3:yyyyMMdd HH:mm:ss}' AND [DATA_DATE] <= '{4:yyyyMMdd HH:mm:ss}'" +
+                                    " ORDER BY [DATA_DATE]"
+                                    , sensor.id_object, sensor.num_item, parnumber, sql_datetime_start, sql_datetime_end);
+                            else if (Mode == MODE.TRANSIT) {
+                                strRes = string.Format ("EXECUTE [dbo].[sp_get_day_history_value_AIISKUE_30min] {0}, {1}, {2}, '{3:yyyyMMdd HH:mm:ss}', {4}"
+                                    , getIdSource (_key._current_id_tec, CONN_SETT_TYPE.DATA_AISKUE), sensor.id_object, sensor.num_item, sql_datetime_start, parnumber);
+                            } else
+                                ;
                             break;
                         case CONN_SETT_TYPE.DATA_SOTIASSO:
                             db_table = "states_real_his_0";
@@ -634,26 +620,32 @@ namespace Statistic
                             i_agregate = 30;
                             UTC_OFFSET = 0;
 
-                            // [last_changed_at] переименовывается в [DATA_DATE], [Value] -> [VALUE0] для однообразия при обработке результатов (по аналогии с АИИСКУЭ)
-                            strRes = string.Format("SELECT [id], DATEADD(MINUTE, {5}, dateadd(MINUTE, (datediff(MINUTE, '{2:yyyyMMdd HH:mm:ss}', [last_changed_at]) / {4}) * {4}, '{2:yyyyMMdd HH:mm:ss}')) as [last_changed_at]" + // last_changed_at -> DATA_DATE
-                                ", AVG([Value]) * 1000 AS [Value]" + // Value -> VALUE0
-                                ", COUNT(*)" +
-                                " FROM (" +
-                                    "SELECT [id], dateadd(SECOND, (datediff(SECOND, '{2:yyyyMMdd HH:mm:ss}', [last_changed_at]) / 60) * 60, '{2:yyyyMMdd HH:mm:ss}') as [last_changed_at]" +
-                                        ", CONVERT(DECIMAL(10, 6), (SUM(CONVERT(DECIMAL(10, 6), [Value]) * [tmdelta]) / SUM([tmdelta]))) AS [VALUE]" +
-                                        ", COUNT(*) as [COUNT]" +
-                                        " FROM [dbo].[{0}]" +
-                                        " WHERE ID IN (" +
-                                            "SELECT [ID]" +
-                                                " FROM [dbo].[reals_v]" +
-                                                " WHERE [NAME] LIKE '%{1}%'" +
-                                            ")" +
-                                            " AND [last_changed_at] >= '{2:yyyyMMdd HH:mm:ss}' AND [last_changed_at] < '{3:yyyyMMdd HH:mm:ss}'" +
-                                    " GROUP BY dateadd(SECOND, (datediff(SECOND, '{2:yyyyMMdd HH:mm:ss}', [last_changed_at]) / 60) * 60, '{2:yyyyMMdd HH:mm:ss}'), id" +
-                                ") res" +
-                                " GROUP BY dateadd(MINUTE, (datediff(MINUTE, '{2:yyyyMMdd HH:mm:ss}', [last_changed_at]) / {4}) * {4}, '{2:yyyyMMdd HH:mm:ss}'), id" +
-                                " ORDER BY [last_changed_at], [id]" // last_changed_at -> DATA_DATE
-                                , db_table, kks_code, sql_datetime_start, sql_datetime_end, i_agregate, (UTC_OFFSET * 60 + 30));
+                            if (Mode == MODE.SOURCE)
+                                // [last_changed_at] переименовывается в [DATA_DATE], [Value] -> [VALUE0] для однообразия при обработке результатов (по аналогии с АИИСКУЭ)
+                                strRes = string.Format ("SELECT [id], DATEADD(MINUTE, {5}, dateadd(MINUTE, (datediff(MINUTE, '{2:yyyyMMdd HH:mm:ss}', [last_changed_at]) / {4}) * {4}, '{2:yyyyMMdd HH:mm:ss}')) as [last_changed_at]" + // last_changed_at -> DATA_DATE
+                                    ", AVG([Value]) * 1000 AS [Value]" + // Value -> VALUE0
+                                    ", COUNT(*)" +
+                                    " FROM (" +
+                                        "SELECT [id], dateadd(SECOND, (datediff(SECOND, '{2:yyyyMMdd HH:mm:ss}', [last_changed_at]) / 60) * 60, '{2:yyyyMMdd HH:mm:ss}') as [last_changed_at]" +
+                                            ", CONVERT(DECIMAL(10, 6), (SUM(CONVERT(DECIMAL(10, 6), [Value]) * [tmdelta]) / SUM([tmdelta]))) AS [VALUE]" +
+                                            ", COUNT(*) as [COUNT]" +
+                                            " FROM [dbo].[{0}]" +
+                                            " WHERE ID IN (" +
+                                                "SELECT [ID]" +
+                                                    " FROM [dbo].[reals_v]" +
+                                                    " WHERE [NAME] LIKE '%{1}%'" +
+                                                ")" +
+                                                " AND [last_changed_at] >= '{2:yyyyMMdd HH:mm:ss}' AND [last_changed_at] < '{3:yyyyMMdd HH:mm:ss}'" +
+                                        " GROUP BY dateadd(SECOND, (datediff(SECOND, '{2:yyyyMMdd HH:mm:ss}', [last_changed_at]) / 60) * 60, '{2:yyyyMMdd HH:mm:ss}'), id" +
+                                    ") res" +
+                                    " GROUP BY dateadd(MINUTE, (datediff(MINUTE, '{2:yyyyMMdd HH:mm:ss}', [last_changed_at]) / {4}) * {4}, '{2:yyyyMMdd HH:mm:ss}'), id" +
+                                    " ORDER BY [last_changed_at], [id]" // last_changed_at -> DATA_DATE
+                                    , db_table, kks_code, sql_datetime_start, sql_datetime_end, i_agregate, (UTC_OFFSET * 60 + 30));
+                            else if (Mode == MODE.TRANSIT) {
+                                strRes = string.Format ("EXECUTE [dbo].[sp_get_day_history_value_SOTIASSO_avg30min_KKS] {0}, '{1}', '{2:yyyyMMdd HH:mm:ss}', '{3}', {4}, {5}"
+                                    , getIdSource(_key._current_id_tec), kks_code, sql_datetime_start, db_table, UTC_OFFSET, i_agregate);
+                            } else
+                                ;
                             break;
                         default:
                             break;
