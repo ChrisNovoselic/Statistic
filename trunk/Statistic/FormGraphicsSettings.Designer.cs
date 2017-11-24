@@ -1,4 +1,6 @@
+using System;
 using System.Drawing;
+using System.Windows.Forms;
 /// <summary>
 /// Пространство имен Statistic 
 /// </summary>
@@ -67,14 +69,14 @@ namespace Statistic {
         private void InitializeComponent ()
         {
             // Создание массива лейблов  (УДГэ,Отклонение и т.д.)
-            this.m_arlblColor = new System.Windows.Forms.Label [(int)INDEX_COLOR.COUNT_INDEX_COLOR];
+            this.m_arlblColorValues = new System.Windows.Forms.Label [(int)INDEX_COLOR_VAUES.COUNT_INDEX_COLOR];
             this.gbxColorShema = new System.Windows.Forms.GroupBox ();
             //this.m_arRbtnColorShema = new System.Windows.Forms.RadioButton [] {
             //    new System.Windows.Forms.RadioButton()
             //    , new System.Windows.Forms.RadioButton()
             //};
             this.m_cbUseSystemColors = new System.Windows.Forms.CheckBox ();
-            this.m_labelColorShema = new System.Windows.Forms.Label ();
+            this.m_arlblColorShema = new System.Windows.Forms.Label [Enum.GetValues(typeof(INDEX_COLOR_SHEMA)).Length];
             // Создание GroupBox (ящик: тип графиков)         
             this.gbxTypeGraph = new System.Windows.Forms.GroupBox ();
             // Создание CheckBox (флажка)
@@ -102,8 +104,8 @@ namespace Statistic {
             this.SuspendLayout ();
 
             #region Подписи для выбора цвета элементов
-            // Массив лейблов, состоящий из 10 элементов (УДГэ,Отклонение и т.д.)
-            LABEL_COLOR [] arLabelColor = new LABEL_COLOR [(int)INDEX_COLOR.COUNT_INDEX_COLOR]
+            // Массив подписей, состоящий из 10 элементов (УДГэ,Отклонение и т.д.)
+            LABEL_COLOR [] arLabelColor = new LABEL_COLOR [(int)INDEX_COLOR_VAUES.COUNT_INDEX_COLOR]
             {
                 // LABEL1: Цвет черный,имя "lblUDGcolor",надпись "УДГэ, УДГт",координаты положения (12, 11)
                   new LABEL_COLOR (Color.FromArgb(0, 0, 0), "lblUDGcolor", "УДГэ, УДГт", new System.Drawing.Point(12, 11))
@@ -120,29 +122,29 @@ namespace Statistic {
             };
 
             // Для каждого параметра (УДГ,Отклонение и т.д.)
-            for (int i = 0; i < (int)INDEX_COLOR.COUNT_INDEX_COLOR; i++) {
-                // Cоздать лейбл 
-                this.m_arlblColor [i] = new System.Windows.Forms.Label ();
+            for (int i = 0; i < (int)INDEX_COLOR_VAUES.COUNT_INDEX_COLOR; i++) {
+                // Cоздать подпись 
+                this.m_arlblColorValues [i] = new System.Windows.Forms.Label ();
 
-                this.m_arlblColor [i].Tag = (INDEX_COLOR)i;
-                // Цвет заднего плана (лейбла)
-                this.m_arlblColor [i].BackColor = arLabelColor [i].color;
-                // Цвет переднего плана (надписи)
-                this.m_arlblColor [i].ForeColor = getForeColor (arLabelColor [i].color);
+                this.m_arlblColorValues [i].Tag = (INDEX_COLOR_VAUES)i;
+                // Цвет заднего плана (подписи)
+                this.m_arlblColorValues [i].BackColor = arLabelColor [i].color;
+                // Цвет переднего плана (подписи)
+                this.m_arlblColorValues [i].ForeColor = getForeColor (arLabelColor [i].color);
                 // Стиль рамки 
-                this.m_arlblColor [i].BorderStyle = System.Windows.Forms.BorderStyle.FixedSingle;
+                this.m_arlblColorValues [i].BorderStyle = System.Windows.Forms.BorderStyle.FixedSingle;
                 // Положение
-                this.m_arlblColor [i].Location = arLabelColor [i].pos;
+                this.m_arlblColorValues [i].Location = arLabelColor [i].pos;
                 // Имя
-                this.m_arlblColor [i].Name = arLabelColor [i].name;
+                this.m_arlblColorValues [i].Name = arLabelColor [i].name;
                 // Размер
-                this.m_arlblColor [i].Size = new System.Drawing.Size (195, 26);
+                this.m_arlblColorValues [i].Size = new System.Drawing.Size (195, 26);
                 // Текс надписи
-                this.m_arlblColor [i].Text = arLabelColor [i].text;
+                this.m_arlblColorValues [i].Text = arLabelColor [i].text;
                 // Выравнивание текста
-                this.m_arlblColor [i].TextAlign = System.Drawing.ContentAlignment.MiddleCenter;
+                this.m_arlblColorValues [i].TextAlign = System.Drawing.ContentAlignment.MiddleCenter;
                 // При CLick на лейбл обработчику событий передается событие нажатия 
-                this.m_arlblColor [i].Click += new System.EventHandler (this.lbl_color_Click);
+                this.m_arlblColorValues [i].Click += new System.EventHandler (this.lbl_color_Click);
             }
             #endregion
 
@@ -150,16 +152,11 @@ namespace Statistic {
                 , yPos = -1 //Позиция по оси ординат
                 , yMargin = 22; //Расстояние между элементами управления по оси ординат
 
-            #region Цветовая схема
-            // Добавление в ящик  (коллекцию) элементов "Гистограмма" и "Линейный"
-            this.gbxColorShema.Controls.AddRange (
-                //m_arRbtnColorShema
-                new System.Windows.Forms.Control [] { m_cbUseSystemColors, m_labelColorShema }
-            );
+            #region Цветовая схема            
             // Координаты расположения ящика
             this.gbxColorShema.Location = new System.Drawing.Point (222, 6);
             // Имя ящика
-            this.gbxColorShema.Name = "gbxCoorShema";
+            this.gbxColorShema.Name = "gbxColorShema";
             // Размер 
             this.gbxColorShema.Size = new System.Drawing.Size (173, 60);
             // Последовательность перехода между ссылками при нажатии на кнопку Tab
@@ -172,9 +169,9 @@ namespace Statistic {
             // cbUseSystemColors Элемент "Система"
             // 
             indx = (int)ColorShemas.System;
-            this.m_cbUseSystemColors.AutoSize = true;
+            this.m_cbUseSystemColors.AutoSize = true;            
+            this.m_cbUseSystemColors.Tag = (ColorShemas)indx;
             // Включена проверка нажатия
-            this.m_cbUseSystemColors.Tag = (GraphTypes)indx;
             this.m_cbUseSystemColors.Checked = true;
             this.m_cbUseSystemColors.Location = new System.Drawing.Point (6, yPos = 16);
             this.m_cbUseSystemColors.Name = "cbUseSystemColors";
@@ -186,24 +183,47 @@ namespace Statistic {
             this.m_cbUseSystemColors.CheckedChanged += new System.EventHandler (this.cbUseSystemColors_CheckedChanged);
             this.m_cbUseSystemColors.Enabled = _allowedChangeShema;
             // 
-            // labelColorShema Элемент "Пользователь"
+            // labelColorShema Элемент "Фон"
             // 
-            indx = (int)ColorShemas.Custom;
-            this.m_labelColorShema.Tag = (GraphTypes)indx;
-            //this.m_labelColorShema.AutoSize = true;
-            this.m_labelColorShema.Location = new System.Drawing.Point (6, yPos += (yMargin - 2));
-            this.m_labelColorShema.Name = "labelColorShema";
-            this.m_labelColorShema.Size = new System.Drawing.Size (gbxColorShema.ClientSize.Width - (2 * 6), 17 + 2);
-            this.m_labelColorShema.TabIndex = 0;
-            this.m_labelColorShema.Text = "Пользователь";
-            this.m_labelColorShema.TextAlign = ContentAlignment.MiddleLeft;
-            this.m_labelColorShema.BorderStyle = System.Windows.Forms.BorderStyle.FixedSingle;
-            this.m_labelColorShema.ForeColor = getForeColor (CustomColorTable.BackColor);
-            this.m_labelColorShema.BackColor = CustomColorTable.BackColor;
-            this.m_labelColorShema.Enabled = false;
+            int wLabelColorShema = ((gbxColorShema.ClientSize.Width - (2 * 6)) / 2) - 1; // "1" - расстояние между подписями по горизонтали
+            indx = (int)INDEX_COLOR_SHEMA.BACKGROUND;
+            this.m_arlblColorShema [indx] = new System.Windows.Forms.Label ();
+            this.m_arlblColorShema[indx].Tag = (INDEX_COLOR_SHEMA)indx;
+            //this.m_arlblColorShema [indx].AutoSize = true;
+            this.m_arlblColorShema [indx].Location = new System.Drawing.Point (6, yPos += (yMargin - 2));
+            this.m_arlblColorShema [indx].Name = "labelColorShema";
+            this.m_arlblColorShema [indx].Size = new System.Drawing.Size (wLabelColorShema, 17 + 2);
+            this.m_arlblColorShema [indx].TabIndex = 0;
+            this.m_arlblColorShema [indx].Text = "Фон";
+            this.m_arlblColorShema [indx].TextAlign = ContentAlignment.MiddleLeft;
+            this.m_arlblColorShema [indx].BorderStyle = System.Windows.Forms.BorderStyle.FixedSingle;
+            this.m_arlblColorShema [indx].ForeColor = getForeColor (CustomColorTable.BackColor);
+            this.m_arlblColorShema [indx].BackColor = CustomColorTable.BackColor;
+            this.m_arlblColorShema [indx].Enabled = false;
             // Обработка события "двойной щелчок" - изменение цвета "темной" схемы
-            this.m_labelColorShema.Click += new System.EventHandler (lbl_color_Click);
-            this.m_labelColorShema.BackColorChanged += new System.EventHandler (labelColorShema_BackColorChanged);
+            this.m_arlblColorShema [indx].Click += new System.EventHandler (lbl_color_Click);
+            this.m_arlblColorShema [indx].BackColorChanged += new System.EventHandler (labelColorShema_ValueChanged);
+            // 
+            // labelColorFont Элемент "Шрифт"
+            // 
+            indx = (int)INDEX_COLOR_SHEMA.FONT;
+            this.m_arlblColorShema [indx] = new System.Windows.Forms.Label ();
+            this.m_arlblColorShema [indx].Tag = (INDEX_COLOR_SHEMA)indx;
+            //this.m_arlblColorShema [indx].AutoSize = true;
+            this.m_arlblColorShema [indx].Location = new System.Drawing.Point (6 + wLabelColorShema + 2 * 1, yPos); // "2 * 1" - расстояние между подписями по горизонтали
+            this.m_arlblColorShema [indx].Name = "labelColorShema";
+            this.m_arlblColorShema [indx].Size = new System.Drawing.Size (wLabelColorShema, 17 + 2);
+            this.m_arlblColorShema [indx].TabIndex = 0;
+            this.m_arlblColorShema [indx].Text = "Шрифт";
+            this.m_arlblColorShema [indx].TextAlign = ContentAlignment.MiddleLeft;
+            this.m_arlblColorShema [indx].BorderStyle = System.Windows.Forms.BorderStyle.FixedSingle;
+            //TODO:
+            this.m_arlblColorShema [indx].ForeColor = getForeColor (CustomColorTable.BackColor);
+            this.m_arlblColorShema [indx].BackColor = CustomColorTable.BackColor;
+            this.m_arlblColorShema [indx].Enabled = false;
+            // Обработка события "двойной щелчок" - изменение цвета "темной" схемы
+            this.m_arlblColorShema [indx].Click += new System.EventHandler (lbl_color_Click);
+            this.m_arlblColorShema [indx].BackColorChanged += new System.EventHandler (labelColorShema_ValueChanged);
             #endregion
 
             #region Масштабирование, типы графиков
@@ -380,8 +400,12 @@ namespace Statistic {
             // Размер окна 407*300
             this.ClientSize = new System.Drawing.Size (407, 300);
             // Добавление элементов управления в окно
-            for (int i = 0; i < (int)INDEX_COLOR.COUNT_INDEX_COLOR; i++)
-                this.Controls.Add (this.m_arlblColor [i]);
+            for (int i = 0; i < (int)INDEX_COLOR_VAUES.COUNT_INDEX_COLOR; i++)
+                this.Controls.Add (this.m_arlblColorValues [i]);
+            // Добавление в ящик  (коллекцию) элементов "Фон" и "Шрифт"
+            this.gbxColorShema.Controls.AddRange (
+                new System.Windows.Forms.Control [] { m_cbUseSystemColors, m_arlblColorShema [(int)INDEX_COLOR_SHEMA.BACKGROUND], m_arlblColorShema [(int)INDEX_COLOR_SHEMA.FONT] }
+            );
             this.Controls.Add (this.gbxColorShema);
             this.Controls.Add (this.gbxTypeGraph);
             this.Controls.Add (this.gbxSourceData);
@@ -415,24 +439,13 @@ namespace Statistic {
 
         }
 
-        private void labelColorShema_BackColorChanged (object sender, System.EventArgs e)
-        {
-            CustomColorTable.BackColor = (sender as System.Windows.Forms.Control).BackColor;
-
-            //if (m_cbUseSystemColors.Checked == false)
-            // доступна только при выключенной системной схеме
-            delegateUpdateActiveGui ((int)TYPE_UPDATEGUI.COLOR_CHANGESHEMA);   //обновить активную настройку (цветовая схема)
-            //else
-            //    ;
-        }
-
         #endregion
 
-        private System.Windows.Forms.Label [] m_arlblColor;
+        private System.Windows.Forms.Label [] m_arlblColorValues;
         private System.Windows.Forms.GroupBox gbxColorShema;
         //private System.Windows.Forms.RadioButton [] m_arRbtnColorShema;
         private System.Windows.Forms.CheckBox m_cbUseSystemColors;
-        private System.Windows.Forms.Label m_labelColorShema;
+        private System.Windows.Forms.Label [] m_arlblColorShema;
         private System.Windows.Forms.GroupBox gbxTypeGraph;
         private System.Windows.Forms.CheckBox cbxScale;
         private System.Windows.Forms.RadioButton [] m_arRbtnTypeGraph;

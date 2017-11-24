@@ -55,7 +55,7 @@ namespace Statistic
             this.btnExportExcel.Click += new System.EventHandler(this.btnExportExcel_Click);
             this.btnExportExcel.Enabled = true;
 
-            this.dgwAdminTable = new DataGridViewAdminNSS(new System.Drawing.Color [] { System.Drawing.SystemColors.Window, System.Drawing.Color.Yellow, FormMain.formGraphicsSettings.COLOR (FormGraphicsSettings.INDEX_COLOR.DIVIATION) });
+            this.dgwAdminTable = new DataGridViewAdminNSS(new System.Drawing.Color [] { System.Drawing.SystemColors.Window, System.Drawing.Color.Yellow, FormMain.formGraphicsSettings.COLOR (FormGraphicsSettings.INDEX_COLOR_VAUES.DIVIATION) });
             this.SuspendLayout();
             ((System.ComponentModel.ISupportInitialize)(this.dgwAdminTable)).BeginInit();
             this.m_panelRDGValues.Controls.Add(this.dgwAdminTable);

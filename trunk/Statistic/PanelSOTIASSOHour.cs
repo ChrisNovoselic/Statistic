@@ -928,8 +928,8 @@ namespace Statistic
             protected void getColorZEDGraph (out Color colChart, out Color colP)
             {
                 //Значения по умолчанию
-                colChart = FormMain.formGraphicsSettings.COLOR (FormGraphicsSettings.INDEX_COLOR.BG_SOTIASSO);
-                colP = FormMain.formGraphicsSettings.COLOR (FormGraphicsSettings.INDEX_COLOR.SOTIASSO);
+                colChart = FormMain.formGraphicsSettings.COLOR (FormGraphicsSettings.INDEX_COLOR_VAUES.BG_SOTIASSO);
+                colP = FormMain.formGraphicsSettings.COLOR (FormGraphicsSettings.INDEX_COLOR_VAUES.SOTIASSO);
             }
         }
         
@@ -1095,7 +1095,7 @@ namespace Statistic
                 pane.Fill = new Fill (BackColor);
 
                 //LineItem
-                pane.AddCurve ("УДГэ", null, valsUDGe, FormMain.formGraphicsSettings.COLOR (FormGraphicsSettings.INDEX_COLOR.UDG));
+                pane.AddCurve ("УДГэ", null, valsUDGe, FormMain.formGraphicsSettings.COLOR (FormGraphicsSettings.INDEX_COLOR_VAUES.UDG));
                 //LineItem
                 pane.AddCurve ("", null, valsOAlarm, HDataGridViewTables.s_dgvCellStyles [(int)HDataGridViewTables.INDEX_CELL_STYLE.ERROR].BackColor);
                 //LineItem
@@ -1155,7 +1155,7 @@ namespace Statistic
                 pane.XAxis.MajorGrid.DashOff = 5;
                 // толщина линий
                 pane.XAxis.MajorGrid.PenWidth = 0.1F;
-                pane.XAxis.MajorGrid.Color = FormMain.formGraphicsSettings.COLOR (FormGraphicsSettings.INDEX_COLOR.GRID);
+                pane.XAxis.MajorGrid.Color = FormMain.formGraphicsSettings.COLOR (FormGraphicsSettings.INDEX_COLOR_VAUES.GRID);
 
                 // Включаем отображение сетки напротив крупных рисок по оси Y
                 pane.YAxis.MajorGrid.IsVisible = true;
@@ -1164,7 +1164,7 @@ namespace Statistic
                 pane.YAxis.MajorGrid.DashOff = 5;
                 // толщина линий
                 pane.YAxis.MajorGrid.PenWidth = 0.1F;
-                pane.YAxis.MajorGrid.Color = FormMain.formGraphicsSettings.COLOR (FormGraphicsSettings.INDEX_COLOR.GRID);
+                pane.YAxis.MajorGrid.Color = FormMain.formGraphicsSettings.COLOR (FormGraphicsSettings.INDEX_COLOR_VAUES.GRID);
 
                 // Включаем отображение сетки напротив мелких рисок по оси Y
                 pane.YAxis.MinorGrid.IsVisible = true;
@@ -1173,7 +1173,7 @@ namespace Statistic
                 pane.YAxis.MinorGrid.DashOff = 2;
                 // толщина линий
                 pane.YAxis.MinorGrid.PenWidth = 0.1F;
-                pane.YAxis.MinorGrid.Color = FormMain.formGraphicsSettings.COLOR (FormGraphicsSettings.INDEX_COLOR.GRID);
+                pane.YAxis.MinorGrid.Color = FormMain.formGraphicsSettings.COLOR (FormGraphicsSettings.INDEX_COLOR_VAUES.GRID);
 
                 // Устанавливаем интересующий нас интервал по оси Y
                 pane.YAxis.Scale.Min = minimum_scale;
@@ -1382,7 +1382,7 @@ namespace Statistic
                 pane.XAxis.MajorGrid.DashOff = 5;
                 // толщина линий
                 pane.XAxis.MajorGrid.PenWidth = 0.1F;
-                pane.XAxis.MajorGrid.Color = FormMain.formGraphicsSettings.COLOR (FormGraphicsSettings.INDEX_COLOR.GRID);
+                pane.XAxis.MajorGrid.Color = FormMain.formGraphicsSettings.COLOR (FormGraphicsSettings.INDEX_COLOR_VAUES.GRID);
 
                 // Включаем отображение сетки напротив крупных рисок по оси Y
                 pane.YAxis.MajorGrid.IsVisible = true;
@@ -1391,7 +1391,7 @@ namespace Statistic
                 pane.YAxis.MajorGrid.DashOff = 5;
                 // толщина линий
                 pane.YAxis.MajorGrid.PenWidth = 0.1F;
-                pane.YAxis.MajorGrid.Color = FormMain.formGraphicsSettings.COLOR (FormGraphicsSettings.INDEX_COLOR.GRID);
+                pane.YAxis.MajorGrid.Color = FormMain.formGraphicsSettings.COLOR (FormGraphicsSettings.INDEX_COLOR_VAUES.GRID);
 
                 // Включаем отображение сетки напротив мелких рисок по оси Y
                 pane.YAxis.MinorGrid.IsVisible = true;
@@ -1400,7 +1400,7 @@ namespace Statistic
                 pane.YAxis.MinorGrid.DashOff = 2;
                 // толщина линий
                 pane.YAxis.MinorGrid.PenWidth = 0.1F;
-                pane.YAxis.MinorGrid.Color = FormMain.formGraphicsSettings.COLOR (FormGraphicsSettings.INDEX_COLOR.GRID);
+                pane.YAxis.MinorGrid.Color = FormMain.formGraphicsSettings.COLOR (FormGraphicsSettings.INDEX_COLOR_VAUES.GRID);
 
                 // Устанавливаем интересующий нас интервал по оси Y
                 pane.YAxis.Scale.Min = minimum_scale;

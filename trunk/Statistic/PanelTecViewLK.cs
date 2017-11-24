@@ -810,8 +810,8 @@ namespace Statistic
                 DataGridViewCellStyle regularHourCellStyle = new DataGridViewCellStyle()
                     , mainHourCellStyle = new DataGridViewCellStyle();
 
-                regularHourCellStyle.BackColor = FormMain.formGraphicsSettings.COLOR(FormGraphicsSettings.INDEX_COLOR.ASKUE_LK_REGULAR);
-                mainHourCellStyle.BackColor = FormMain.formGraphicsSettings.COLOR(FormGraphicsSettings.INDEX_COLOR.ASKUE);
+                regularHourCellStyle.BackColor = FormMain.formGraphicsSettings.COLOR(FormGraphicsSettings.INDEX_COLOR_VAUES.ASKUE_LK_REGULAR);
+                mainHourCellStyle.BackColor = FormMain.formGraphicsSettings.COLOR(FormGraphicsSettings.INDEX_COLOR_VAUES.ASKUE);
                 //// полужирный на основе 1-ой ячейки                
                 //mainHourCellStyle.Font = new System.Drawing.Font(RowsDefaultCellStyle.Font, FontStyle.Bold);
 
@@ -1236,7 +1236,7 @@ namespace Statistic
                     //Цвет контрольной кривой
                     , colorPMainCurve = Color.Empty
                     //Цвет обычной кривой
-              , colorPRegularCurve = FormMain.formGraphicsSettings.COLOR(FormGraphicsSettings.INDEX_COLOR.ASKUE_LK_REGULAR);
+              , colorPRegularCurve = FormMain.formGraphicsSettings.COLOR(FormGraphicsSettings.INDEX_COLOR_VAUES.ASKUE_LK_REGULAR);
                
                 //Получить цвет гистограммы
                 getColorZedGraph(typeConnSett, out colorChart, out colorPMainCurve);
@@ -1252,7 +1252,7 @@ namespace Statistic
                 for (i = 0; i < iMainIntervalCount; i++)
                 {
                     //Цвета кривых УДГ, Отклонение
-                    GraphPane.AddCurve(strCurveNamePPlan, /*null,*/ valuesPlan[i], FormMain.formGraphicsSettings.COLOR(FormGraphicsSettings.INDEX_COLOR.UDG));
+                    GraphPane.AddCurve(strCurveNamePPlan, /*null,*/ valuesPlan[i], FormMain.formGraphicsSettings.COLOR(FormGraphicsSettings.INDEX_COLOR_VAUES.UDG));
                     //LineItem
                     GraphPane.AddCurve(string.Empty, /*null,*/ valuesODiviation[i], HDataGridViewTables.s_dgvCellStyles [(int)HDataGridViewTables.INDEX_CELL_STYLE.ERROR].BackColor);
                     //LineItem
@@ -1377,7 +1377,7 @@ namespace Statistic
                 GraphPane.XAxis.MajorGrid.DashOff = 5;
                 // толщина линий
                 GraphPane.XAxis.MajorGrid.PenWidth = 0.1F;
-                GraphPane.XAxis.MajorGrid.Color = FormMain.formGraphicsSettings.COLOR(FormGraphicsSettings.INDEX_COLOR.GRID);
+                GraphPane.XAxis.MajorGrid.Color = FormMain.formGraphicsSettings.COLOR(FormGraphicsSettings.INDEX_COLOR_VAUES.GRID);
 
                 // Включаем отображение сетки напротив крупных рисок по оси Y
                 GraphPane.YAxis.MajorGrid.IsVisible = true;
@@ -1386,7 +1386,7 @@ namespace Statistic
                 GraphPane.YAxis.MajorGrid.DashOff = 5;
                 // толщина линий
                 GraphPane.YAxis.MajorGrid.PenWidth = 0.1F;
-                GraphPane.YAxis.MajorGrid.Color = FormMain.formGraphicsSettings.COLOR(FormGraphicsSettings.INDEX_COLOR.GRID);
+                GraphPane.YAxis.MajorGrid.Color = FormMain.formGraphicsSettings.COLOR(FormGraphicsSettings.INDEX_COLOR_VAUES.GRID);
 
                 // Включаем отображение сетки напротив мелких рисок по оси Y
                 GraphPane.YAxis.MinorGrid.IsVisible = true;
@@ -1395,7 +1395,7 @@ namespace Statistic
                 GraphPane.YAxis.MinorGrid.DashOff = 2;
                 // толщина линий
                 GraphPane.YAxis.MinorGrid.PenWidth = 0.1F;
-                GraphPane.YAxis.MinorGrid.Color = FormMain.formGraphicsSettings.COLOR(FormGraphicsSettings.INDEX_COLOR.GRID);
+                GraphPane.YAxis.MinorGrid.Color = FormMain.formGraphicsSettings.COLOR(FormGraphicsSettings.INDEX_COLOR_VAUES.GRID);
 
                 // Устанавливаем интересующий нас интервал по оси Y
                 GraphPane.YAxis.Scale.Min = minimum_scale;

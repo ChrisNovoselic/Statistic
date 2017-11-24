@@ -249,7 +249,7 @@ namespace Statistic
 
             protected override int INDEX_COLUMN_BUTTON_TO_ALL { get { return (int)DataGridViewAdminVyvod.DESC_INDEX.TO_ALL; } }
 
-            public DataGridViewAdminVyvod () : base (new Color [] { SystemColors.Window, Color.Yellow, FormMain.formGraphicsSettings.COLOR (FormGraphicsSettings.INDEX_COLOR.DIVIATION) })
+            public DataGridViewAdminVyvod () : base (new Color [] { SystemColors.Window, Color.Yellow, FormMain.formGraphicsSettings.COLOR (FormGraphicsSettings.INDEX_COLOR_VAUES.DIVIATION) })
             {
             }
 

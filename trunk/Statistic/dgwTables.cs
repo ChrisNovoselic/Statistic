@@ -88,7 +88,7 @@ namespace Statistic
         protected HDataGridViewBase(ASUTP.Core.HDateTime.INTERVAL interval, ColumnProperies[] arColuumns, bool bIsItogo)
             : base (new Color [] { FormMain.formGraphicsSettings.BackgroundColor                                                                    // , иначе установить цвет системной палитры
                     , Color.Yellow
-                    , FormMain.formGraphicsSettings.COLOR (FormGraphicsSettings.INDEX_COLOR.DIVIATION) }
+                    , FormMain.formGraphicsSettings.COLOR (FormGraphicsSettings.INDEX_COLOR_VAUES.DIVIATION) }
                 , bIsItogo)
         {
             m_IdInterval = interval;

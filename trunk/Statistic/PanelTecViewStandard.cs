@@ -323,7 +323,7 @@ namespace Statistic
                 GraphPane.Fill = new Fill (BackColor);
 
                 //LineItem
-                GraphPane.AddCurve("УДГэ", null, valuesUDGe, FormMain.formGraphicsSettings.COLOR(FormGraphicsSettings.INDEX_COLOR.UDG));
+                GraphPane.AddCurve("УДГэ", null, valuesUDGe, FormMain.formGraphicsSettings.COLOR(FormGraphicsSettings.INDEX_COLOR_VAUES.UDG));
                 //LineItem
                 GraphPane.AddCurve("", null, valuesODiviation, HDataGridViewTables.s_dgvCellStyles [(int)HDataGridViewTables.INDEX_CELL_STYLE.ERROR].BackColor);
                 //LineItem
@@ -365,7 +365,7 @@ namespace Statistic
                         }
 
                         GraphPane.AddBar("Мощность(АИСКУЭ)", null, valuesASKUE, colorPCurve);
-                        GraphPane.AddBar("Мощность(СОТИАССО)", null, valuesSOTIASSO, FormMain.formGraphicsSettings.COLOR(FormGraphicsSettings.INDEX_COLOR.SOTIASSO));
+                        GraphPane.AddBar("Мощность(СОТИАССО)", null, valuesSOTIASSO, FormMain.formGraphicsSettings.COLOR(FormGraphicsSettings.INDEX_COLOR_VAUES.SOTIASSO));
                     }
                 }
                 else
@@ -400,7 +400,7 @@ namespace Statistic
                             //LineItem
                             GraphPane.AddCurve("Мощность(АИСКУЭ)", valuesASKUE, colorPCurve);
                             //LineItem
-                            GraphPane.AddCurve("Мощность(СОТИАССО)", valuesSOTIASSO, FormMain.formGraphicsSettings.COLOR(FormGraphicsSettings.INDEX_COLOR.SOTIASSO));
+                            GraphPane.AddCurve("Мощность(СОТИАССО)", valuesSOTIASSO, FormMain.formGraphicsSettings.COLOR(FormGraphicsSettings.INDEX_COLOR_VAUES.SOTIASSO));
                         }
                     }
 
@@ -440,7 +440,7 @@ namespace Statistic
                 GraphPane.XAxis.MajorGrid.DashOff = 5;
                 // толщина линий
                 GraphPane.XAxis.MajorGrid.PenWidth = 0.1F;
-                GraphPane.XAxis.MajorGrid.Color = FormMain.formGraphicsSettings.COLOR(FormGraphicsSettings.INDEX_COLOR.GRID);
+                GraphPane.XAxis.MajorGrid.Color = FormMain.formGraphicsSettings.COLOR(FormGraphicsSettings.INDEX_COLOR_VAUES.GRID);
 
                 // Включаем отображение сетки напротив крупных рисок по оси Y
                 GraphPane.YAxis.MajorGrid.IsVisible = true;
@@ -449,7 +449,7 @@ namespace Statistic
                 GraphPane.YAxis.MajorGrid.DashOff = 5;
                 // толщина линий
                 GraphPane.YAxis.MajorGrid.PenWidth = 0.1F;
-                GraphPane.YAxis.MajorGrid.Color = FormMain.formGraphicsSettings.COLOR(FormGraphicsSettings.INDEX_COLOR.GRID);
+                GraphPane.YAxis.MajorGrid.Color = FormMain.formGraphicsSettings.COLOR(FormGraphicsSettings.INDEX_COLOR_VAUES.GRID);
 
                 // Включаем отображение сетки напротив мелких рисок по оси Y
                 GraphPane.YAxis.MinorGrid.IsVisible = true;
@@ -458,7 +458,7 @@ namespace Statistic
                 GraphPane.YAxis.MinorGrid.DashOff = 2;
                 // толщина линий
                 GraphPane.YAxis.MinorGrid.PenWidth = 0.1F;
-                GraphPane.YAxis.MinorGrid.Color = FormMain.formGraphicsSettings.COLOR(FormGraphicsSettings.INDEX_COLOR.GRID);
+                GraphPane.YAxis.MinorGrid.Color = FormMain.formGraphicsSettings.COLOR(FormGraphicsSettings.INDEX_COLOR_VAUES.GRID);
 
                 // Устанавливаем интересующий нас интервал по оси Y
                 GraphPane.YAxis.Scale.Min = minimum_scale;
@@ -655,7 +655,7 @@ namespace Statistic
                 GraphPane.Chart.Fill = new Fill(colorChart);
                 GraphPane.Fill = new Fill (BackColor);
 
-                LineItem curve2 = GraphPane.AddCurve("УДГэ", null, valuesUDGe, FormMain.formGraphicsSettings.COLOR(FormGraphicsSettings.INDEX_COLOR.UDG));
+                LineItem curve2 = GraphPane.AddCurve("УДГэ", null, valuesUDGe, FormMain.formGraphicsSettings.COLOR(FormGraphicsSettings.INDEX_COLOR_VAUES.UDG));
                 //LineItem curve4 = GraphPane.AddCurve("", null, valuesODiviation, graphSettings.divColor);
                 //LineItem curve3 = GraphPane.AddCurve("Возможное отклонение", null, valuesPDiviation, graphSettings.divColor);
 
@@ -668,7 +668,7 @@ namespace Statistic
                             //BarItem
                             GraphPane.AddBar("Мощность", null, valuesFact, colorPCurve);
                             //BarItem
-                            GraphPane.AddBar("Рекомендуемая мощность", null, valuesRecommend, FormMain.formGraphicsSettings.COLOR(FormGraphicsSettings.INDEX_COLOR.REC));
+                            GraphPane.AddBar("Рекомендуемая мощность", null, valuesRecommend, FormMain.formGraphicsSettings.COLOR(FormGraphicsSettings.INDEX_COLOR_VAUES.REC));
                         }
                         else
                         {
@@ -714,16 +714,16 @@ namespace Statistic
                             if (order == true)
                             {
                                 //BarItem
-                                GraphPane.AddBar("Мощность(СОТИАССО)", null, valuesSOTIASSO, FormMain.formGraphicsSettings.COLOR(FormGraphicsSettings.INDEX_COLOR.SOTIASSO));
+                                GraphPane.AddBar("Мощность(СОТИАССО)", null, valuesSOTIASSO, FormMain.formGraphicsSettings.COLOR(FormGraphicsSettings.INDEX_COLOR_VAUES.SOTIASSO));
                                 //BarItem
-                                GraphPane.AddBar("Рекомендуемая мощность", null, valuesRecommend, FormMain.formGraphicsSettings.COLOR(FormGraphicsSettings.INDEX_COLOR.REC));
+                                GraphPane.AddBar("Рекомендуемая мощность", null, valuesRecommend, FormMain.formGraphicsSettings.COLOR(FormGraphicsSettings.INDEX_COLOR_VAUES.REC));
                             }
                             else
                             {
                                 //BarItem
-                                GraphPane.AddBar("Рекомендуемая мощность", null, valuesRecommend, FormMain.formGraphicsSettings.COLOR(FormGraphicsSettings.INDEX_COLOR.REC));
+                                GraphPane.AddBar("Рекомендуемая мощность", null, valuesRecommend, FormMain.formGraphicsSettings.COLOR(FormGraphicsSettings.INDEX_COLOR_VAUES.REC));
                                 //BarItem                        
-                                GraphPane.AddBar("Мощность(СОТИАССО)", null, valuesSOTIASSO, FormMain.formGraphicsSettings.COLOR(FormGraphicsSettings.INDEX_COLOR.SOTIASSO));
+                                GraphPane.AddBar("Мощность(СОТИАССО)", null, valuesSOTIASSO, FormMain.formGraphicsSettings.COLOR(FormGraphicsSettings.INDEX_COLOR_VAUES.SOTIASSO));
                             }
                         }
                         break;
@@ -762,7 +762,7 @@ namespace Statistic
                             //LineItem
                             GraphPane.AddCurve("Мощность", listValuesAISKUE, colorPCurve);
                             //LineItem
-                            GraphPane.AddCurve("Рекомендуемая мощность", listValuesRec, FormMain.formGraphicsSettings.COLOR(FormGraphicsSettings.INDEX_COLOR.REC));
+                            GraphPane.AddCurve("Рекомендуемая мощность", listValuesRec, FormMain.formGraphicsSettings.COLOR(FormGraphicsSettings.INDEX_COLOR_VAUES.REC));
                         }
                         else
                         {
@@ -815,8 +815,8 @@ namespace Statistic
                             }
 
                             GraphPane.AddCurve("Мощность(АИСКУЭ)", listValuesAISKUE, colorPCurve);
-                            GraphPane.AddCurve("Мощность(СОТИАССО)", listValuesSOTIASSO, FormMain.formGraphicsSettings.COLOR(FormGraphicsSettings.INDEX_COLOR.SOTIASSO));
-                            GraphPane.AddCurve("Рекомендуемая мощность", listValuesRec, FormMain.formGraphicsSettings.COLOR(FormGraphicsSettings.INDEX_COLOR.REC));
+                            GraphPane.AddCurve("Мощность(СОТИАССО)", listValuesSOTIASSO, FormMain.formGraphicsSettings.COLOR(FormGraphicsSettings.INDEX_COLOR_VAUES.SOTIASSO));
+                            GraphPane.AddCurve("Рекомендуемая мощность", listValuesRec, FormMain.formGraphicsSettings.COLOR(FormGraphicsSettings.INDEX_COLOR_VAUES.REC));
                         }
                         break;
                     default:
@@ -871,7 +871,7 @@ namespace Statistic
                 GraphPane.XAxis.MajorGrid.DashOff = 5;
                 // толщина линий
                 GraphPane.XAxis.MajorGrid.PenWidth = 0.1F;
-                GraphPane.XAxis.MajorGrid.Color = FormMain.formGraphicsSettings.COLOR(FormGraphicsSettings.INDEX_COLOR.GRID);
+                GraphPane.XAxis.MajorGrid.Color = FormMain.formGraphicsSettings.COLOR(FormGraphicsSettings.INDEX_COLOR_VAUES.GRID);
 
                 // Включаем отображение сетки напротив крупных рисок по оси Y
                 GraphPane.YAxis.MajorGrid.IsVisible = true;
@@ -880,7 +880,7 @@ namespace Statistic
                 GraphPane.YAxis.MajorGrid.DashOff = 5;
                 // толщина линий
                 GraphPane.YAxis.MajorGrid.PenWidth = 0.1F;
-                GraphPane.YAxis.MajorGrid.Color = FormMain.formGraphicsSettings.COLOR(FormGraphicsSettings.INDEX_COLOR.GRID);
+                GraphPane.YAxis.MajorGrid.Color = FormMain.formGraphicsSettings.COLOR(FormGraphicsSettings.INDEX_COLOR_VAUES.GRID);
 
                 // Включаем отображение сетки напротив мелких рисок по оси Y
                 GraphPane.YAxis.MinorGrid.IsVisible = true;
@@ -889,7 +889,7 @@ namespace Statistic
                 GraphPane.YAxis.MinorGrid.DashOff = 2;
                 // толщина линий
                 GraphPane.YAxis.MinorGrid.PenWidth = 0.1F;
-                GraphPane.YAxis.MinorGrid.Color = FormMain.formGraphicsSettings.COLOR(FormGraphicsSettings.INDEX_COLOR.GRID);
+                GraphPane.YAxis.MinorGrid.Color = FormMain.formGraphicsSettings.COLOR(FormGraphicsSettings.INDEX_COLOR_VAUES.GRID);
 
                 // Устанавливаем интересующий нас интервал по оси Y
                 GraphPane.YAxis.Scale.Min = minimum_scale;

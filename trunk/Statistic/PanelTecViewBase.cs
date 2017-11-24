@@ -412,8 +412,8 @@ namespace Statistic
             protected void getColorZedGraph(CONN_SETT_TYPE typeConnSett, out Color colChart, out Color colP)
             {
                 //Значения по умолчанию
-                colChart = FormMain.formGraphicsSettings.COLOR(FormGraphicsSettings.INDEX_COLOR.BG_ASKUE);
-                colP = FormMain.formGraphicsSettings.COLOR(FormGraphicsSettings.INDEX_COLOR.ASKUE);
+                colChart = FormMain.formGraphicsSettings.COLOR(FormGraphicsSettings.INDEX_COLOR_VAUES.BG_ASKUE);
+                colP = FormMain.formGraphicsSettings.COLOR(FormGraphicsSettings.INDEX_COLOR_VAUES.ASKUE);
 
                 if ((typeConnSett == CONN_SETT_TYPE.DATA_AISKUE)
                     || (typeConnSett == CONN_SETT_TYPE.DATA_AISKUE_PLUS_SOTIASSO))
@@ -422,8 +422,8 @@ namespace Statistic
                     if ((typeConnSett == CONN_SETT_TYPE.DATA_SOTIASSO_3_MIN)
                         || (typeConnSett == CONN_SETT_TYPE.DATA_SOTIASSO_1_MIN))
                     {
-                        colChart = FormMain.formGraphicsSettings.COLOR(FormGraphicsSettings.INDEX_COLOR.BG_SOTIASSO);
-                        colP = FormMain.formGraphicsSettings.COLOR(FormGraphicsSettings.INDEX_COLOR.SOTIASSO);
+                        colChart = FormMain.formGraphicsSettings.COLOR(FormGraphicsSettings.INDEX_COLOR_VAUES.BG_SOTIASSO);
+                        colP = FormMain.formGraphicsSettings.COLOR(FormGraphicsSettings.INDEX_COLOR_VAUES.SOTIASSO);
                     }
                     else
                         ;

@@ -24,7 +24,7 @@ namespace Statistic {
         /// <summary>
         /// Открытое перечисление INDEX_COLOR (индекс цвета)
         /// </summary>
-        public enum INDEX_COLOR {
+        public enum INDEX_COLOR_VAUES {
             /// <summary>
             /// В перечислении INDEX_COLOR  определены 11 именованных констант, по умолчанию
             /// первому эл-ту присваивается 0, остальным n+1
@@ -33,12 +33,43 @@ namespace Statistic {
             BG_ASKUE, BG_SOTIASSO, BG_ASKUTE, GRID, COUNT_INDEX_COLOR
         }
 
+        public enum INDEX_COLOR_SHEMA {
+            BACKGROUND
+            , FONT
+        }
         /// <summary>
         /// Открытое перечисление  TYPE_UPDATEGUI  (типы пользовательских настроек)   
         /// </summary>
         public enum TYPE_UPDATEGUI {
-
-            SCALE, LINEAR, COLOR, SOURCE_DATA, COLOR_SHEMA, COLOR_CHANGESHEMA
+            UNKNOWN = -1,
+            /// <summary>
+            /// Изменение признака наличия масштабирования
+            /// </summary>
+            SCALE,
+            /// <summary>
+            /// Тип представления значений (линейный - гистограмма)
+            /// </summary>
+            LINEAR,
+            /// <summary>
+            /// Цвет для значений
+            /// </summary>
+            COLOR,
+            /// <summary>
+            /// Тип данных для отображения
+            /// </summary>
+            SOURCE_DATA,
+            /// <summary>
+            /// Переключение между пользовательским и системными настойками
+            /// </summary>
+            COLOR_SHEMA,
+            /// <summary>
+            /// Изменение пользовательского цвета фона
+            /// </summary>
+            COLOR_CHANGESHEMA_BACKGROUND,
+            /// <summary>
+            /// Изменение пользовательского цвета шрифта
+            /// </summary>
+            COLOR_CHANGESHEMA_FONT
                , COUNT_TYPE_UPDATEGUI
         };
 
@@ -115,7 +146,7 @@ namespace Statistic {
             get
             {
                 return m_colorShema == ColorShemas.Custom
-                    ? m_labelColorShema.BackColor
+                    ? m_arlblColorShema [(int)INDEX_COLOR_SHEMA.BACKGROUND].BackColor
                         : m_colorShema == ColorShemas.System
                             ? SystemColors.Control
                                 : SystemColors.Control;
@@ -202,21 +233,21 @@ namespace Statistic {
         /// </summary>
         /// <param name="indx">Индекс цвета в палитре</param>
         /// <returns>Цвет из палитры</returns>
-        public Color COLOR (INDEX_COLOR indx)
+        public Color COLOR (INDEX_COLOR_VAUES indx)
         {
             Color colorRes = Color.Empty;
 
             if (m_colorShema == ColorShemas.System)
-                colorRes = m_arlblColor [(int)indx].BackColor;
+                colorRes = m_arlblColorValues [(int)indx].BackColor;
             else
                 switch (indx) {
-                    case INDEX_COLOR.BG_ASKUE:
-                    case INDEX_COLOR.BG_SOTIASSO:
-                    case INDEX_COLOR.BG_ASKUTE:
-                        colorRes = m_labelColorShema.BackColor;
+                    case INDEX_COLOR_VAUES.BG_ASKUE:
+                    case INDEX_COLOR_VAUES.BG_SOTIASSO:
+                    case INDEX_COLOR_VAUES.BG_ASKUTE:
+                        colorRes = m_arlblColorShema [(int)INDEX_COLOR_SHEMA.BACKGROUND].BackColor;
                         break;
                     default:
-                        colorRes = m_arlblColor [(int)indx].BackColor;
+                        colorRes = m_arlblColorValues [(int)indx].BackColor;
                         break;
                 }
 
@@ -272,30 +303,75 @@ namespace Statistic {
         /// <param name="e">Аргумент события</param>
         private void lbl_color_Click (object sender, EventArgs e)
         {
-            TYPE_UPDATEGUI typeUpdate = ((sender as Control).Tag.GetType ().Equals (typeof (INDEX_COLOR))) == true
-                ? TYPE_UPDATEGUI.COLOR
-                    : TYPE_UPDATEGUI.COLOR_CHANGESHEMA;
+            TYPE_UPDATEGUI typeUpdate = TYPE_UPDATEGUI.UNKNOWN;
+            ColorDialog cd;
 
-            ColorDialog cd = new ColorDialog ();                   // создаем экземпляр cd класса ColorDialog (Диалоговое окно "Цвет")
-            cd.Color = ((Label)sender).BackColor;                 // вызвана структура Color на экземпляре, структуре присвоено значение выбранного цвета
-            if (cd.ShowDialog (this) == DialogResult.OK)           //  , если выбран цвет и нажат ОК, то
-            {
-                // заднему плану присвоить выбранный цвет
-                ((Label)sender).BackColor = cd.Color;
-                // переднему плану (надписи) присвоить зрительно отличный цвет
-                ((Label)sender).ForeColor = getForeColor (cd.Color);
-                // при типе 'TYPE_UPDATEGUI.COLOR_SHEMA' выполнить дополн. действия
-                if (typeUpdate == TYPE_UPDATEGUI.COLOR) {
-                    // обновить активную настройку (цвет)
-                    // для 'TYPE_UPDATEGUI.COLOR_SHEMA' активная настройка обновится в 'BackColorChanged'
-                    delegateUpdateActiveGui ((int)typeUpdate);
+            if (((sender as Control).Tag.GetType ().Equals (typeof (INDEX_COLOR_VAUES))) == true)
+                typeUpdate = TYPE_UPDATEGUI.COLOR;
+            else if (((sender as Control).Tag.GetType ().Equals (typeof (INDEX_COLOR_SHEMA))) == true)
+                switch ((INDEX_COLOR_SHEMA)((sender as Control).Tag)) {
+                    case INDEX_COLOR_SHEMA.BACKGROUND:
+                        typeUpdate = TYPE_UPDATEGUI.COLOR_CHANGESHEMA_BACKGROUND;
+                        break;
+                    case INDEX_COLOR_SHEMA.FONT:
+                        typeUpdate = TYPE_UPDATEGUI.COLOR_CHANGESHEMA_FONT;
+                        break;
+                    default:
+                        break;
+                }
+            else
+                ;
 
+            if (!(typeUpdate == TYPE_UPDATEGUI.UNKNOWN)) {
+                cd = new ColorDialog ();                        // создаем экземпляр cd класса ColorDialog (Диалоговое окно "Цвет")
+                cd.Color = ((Label)sender).BackColor;           // вызвана структура Color на экземпляре, структуре присвоено значение выбранного цвета
+                if (cd.ShowDialog (this) == DialogResult.OK)    //  , если выбран цвет и нажат ОК, то
+                {
+                    // заднему плану присвоить выбранный цвет
+                    ((Label)sender).BackColor = cd.Color;
+                    // переднему плану (надписи) присвоить зрительно отличный цвет
+                    ((Label)sender).ForeColor = getForeColor (cd.Color);
+                    // при типе 'TYPE_UPDATEGUI.COLOR_SHEMA' выполнить дополн. действия
+                    if (typeUpdate == TYPE_UPDATEGUI.COLOR) {
+                        // обновить активную настройку (цвет)
+                        // для 'TYPE_UPDATEGUI.COLOR_SHEMA' активная настройка обновится в 'BackColorChanged'
+                        delegateUpdateActiveGui ((int)typeUpdate);
+                    } else
+                        //// изменить и цвет границы
+                        //((Label)sender).BorderColor = getForeColor (cd.Color)
+                        ;
                 } else
-                    //// изменить и цвет границы
-                    //((Label)sender).BorderColor = getForeColor (cd.Color)
                     ;
             } else
                 ;
+        }
+
+        /// <summary>
+        /// Обработчик события - двойное 
+        /// </summary>
+        /// <param name="sender">Объект, инициировавший событие (подпись)</param>
+        /// <param name="e">Аргумент события</param>
+        private void labelColorShema_ValueChanged (object sender, System.EventArgs e)
+        {
+            TYPE_UPDATEGUI typeUpdate = TYPE_UPDATEGUI.UNKNOWN;
+
+            CustomColorTable.BackColor = (sender as System.Windows.Forms.Control).BackColor;
+ 
+            if ((sender as Control).Tag.GetType().Equals(typeof(INDEX_COLOR_SHEMA)) == true) {
+                typeUpdate = (INDEX_COLOR_SHEMA)((sender as Control).Tag) == INDEX_COLOR_SHEMA.BACKGROUND
+                    ? TYPE_UPDATEGUI.COLOR_CHANGESHEMA_BACKGROUND
+                        : TYPE_UPDATEGUI.COLOR_CHANGESHEMA_FONT;
+
+                if (!(typeUpdate == TYPE_UPDATEGUI.UNKNOWN))
+                    //if (m_cbUseSystemColors.Checked == false)
+                    // доступна только при выключенной системной схеме
+                        delegateUpdateActiveGui ((int)typeUpdate);   //обновить активную настройку (цветовая схема)
+                    //else
+                    //    ;
+                else
+                    Logging.Logg ().Error(string.Format("FormGraphicsSettings::labelColorShema_ValueChanged () - ИНДЕКС={0}", ((INDEX_COLOR_SHEMA)((sender as Control).Tag)).ToString()), Logging.INDEX_MESSAGE.NOT_SET);
+            } else
+                Logging.Logg ().Error (string.Format ("FormGraphicsSettings::labelColorShema_ValueChanged () - ИНДЕКС(значение Tag) неизвестного типа"), Logging.INDEX_MESSAGE.NOT_SET);
         }
 
         /// <summary>
@@ -323,12 +399,14 @@ namespace Statistic {
         {
             m_colorShema = (sender as System.Windows.Forms.CheckBox).Checked == true ? ColorShemas.System : ColorShemas.Custom;
 
-            m_arlblColor [(int)INDEX_COLOR.BG_ASKUE].Enabled =
-            m_arlblColor [(int)INDEX_COLOR.BG_ASKUE].Enabled =
-            m_arlblColor [(int)INDEX_COLOR.BG_ASKUE].Enabled =
+            m_arlblColorValues [(int)INDEX_COLOR_VAUES.BG_ASKUE].Enabled =
+            m_arlblColorValues [(int)INDEX_COLOR_VAUES.BG_ASKUE].Enabled =
+            m_arlblColorValues [(int)INDEX_COLOR_VAUES.BG_ASKUE].Enabled =
                 (sender as System.Windows.Forms.CheckBox).Checked;
 
-            m_labelColorShema.Enabled = !(sender as System.Windows.Forms.CheckBox).Checked;
+            m_arlblColorShema [(int)INDEX_COLOR_SHEMA.BACKGROUND].Enabled =
+            m_arlblColorShema [(int)INDEX_COLOR_SHEMA.FONT].Enabled =
+                !(sender as System.Windows.Forms.CheckBox).Checked;
 
             delegateUpdateActiveGui ((int)TYPE_UPDATEGUI.COLOR_SHEMA);   //обновить активную настройку (цветовая схема)
         }

@@ -557,15 +557,15 @@ namespace Statistic
                         , colorPCurve = Color.Empty;
                     //getColorZedGraph(typeConnSett, out colorChart, out colorPCurve);
 
-                    colorChart = FormMain.formGraphicsSettings.COLOR(FormGraphicsSettings.INDEX_COLOR.BG_ASKUTE);
+                    colorChart = FormMain.formGraphicsSettings.COLOR(FormGraphicsSettings.INDEX_COLOR_VAUES.BG_ASKUTE);
                     GraphPane.Chart.Fill = new Fill(colorChart);
                     GraphPane.Fill = new Fill (BackColor);
-                    colorPCurve = FormMain.formGraphicsSettings.COLOR(FormGraphicsSettings.INDEX_COLOR.TEMP_ASKUTE);
+                    colorPCurve = FormMain.formGraphicsSettings.COLOR(FormGraphicsSettings.INDEX_COLOR_VAUES.TEMP_ASKUTE);
                    
                     //LineItem - план/отклонения
                     string strCurveNamePlan = "Тпр план"
                         , strCurveNameDeviation = "Возможное отклонение";
-                    GraphPane.AddCurve(strCurveNamePlan, /*null,*/ valuesPlan, FormMain.formGraphicsSettings.COLOR(FormGraphicsSettings.INDEX_COLOR.UDG));
+                    GraphPane.AddCurve(strCurveNamePlan, /*null,*/ valuesPlan, FormMain.formGraphicsSettings.COLOR(FormGraphicsSettings.INDEX_COLOR_VAUES.UDG));
                     //LineItem
                     GraphPane.AddCurve(string.Empty, /*null,*/ valuesODiviation, HDataGridViewTables.s_dgvCellStyles [(int)HDataGridViewTables.INDEX_CELL_STYLE.ERROR].BackColor);
                     //LineItem
@@ -646,7 +646,7 @@ namespace Statistic
                     GraphPane.XAxis.MajorGrid.DashOff = 5;
                     // толщина линий
                     GraphPane.XAxis.MajorGrid.PenWidth = 0.1F;
-                    GraphPane.XAxis.MajorGrid.Color = FormMain.formGraphicsSettings.COLOR(FormGraphicsSettings.INDEX_COLOR.GRID);
+                    GraphPane.XAxis.MajorGrid.Color = FormMain.formGraphicsSettings.COLOR(FormGraphicsSettings.INDEX_COLOR_VAUES.GRID);
 
                     // Включаем отображение сетки напротив крупных рисок по оси Y
                     GraphPane.YAxis.MajorGrid.IsVisible = true;
@@ -655,7 +655,7 @@ namespace Statistic
                     GraphPane.YAxis.MajorGrid.DashOff = 5;
                     // толщина линий
                     GraphPane.YAxis.MajorGrid.PenWidth = 0.1F;
-                    GraphPane.YAxis.MajorGrid.Color = FormMain.formGraphicsSettings.COLOR(FormGraphicsSettings.INDEX_COLOR.GRID);
+                    GraphPane.YAxis.MajorGrid.Color = FormMain.formGraphicsSettings.COLOR(FormGraphicsSettings.INDEX_COLOR_VAUES.GRID);
 
                     // Включаем отображение сетки напротив мелких рисок по оси Y
                     GraphPane.YAxis.MinorGrid.IsVisible = true;
@@ -664,7 +664,7 @@ namespace Statistic
                     GraphPane.YAxis.MinorGrid.DashOff = 2;
                     // толщина линий
                     GraphPane.YAxis.MinorGrid.PenWidth = 0.1F;
-                    GraphPane.YAxis.MinorGrid.Color = FormMain.formGraphicsSettings.COLOR(FormGraphicsSettings.INDEX_COLOR.GRID);
+                    GraphPane.YAxis.MinorGrid.Color = FormMain.formGraphicsSettings.COLOR(FormGraphicsSettings.INDEX_COLOR_VAUES.GRID);
 
                     // Устанавливаем интересующий нас интервал по оси Y
                     GraphPane.YAxis.Scale.Min = minimum_scale;

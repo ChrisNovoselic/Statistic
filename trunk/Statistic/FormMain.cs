@@ -2613,11 +2613,11 @@ namespace Statistic
 
             #region Режим изменения цветовой гаммы
             if (((FormGraphicsSettings.TYPE_UPDATEGUI)type == FormGraphicsSettings.TYPE_UPDATEGUI.COLOR_SHEMA)
-                || ((FormGraphicsSettings.TYPE_UPDATEGUI)type == FormGraphicsSettings.TYPE_UPDATEGUI.COLOR_CHANGESHEMA)) {
+                || ((FormGraphicsSettings.TYPE_UPDATEGUI)type == FormGraphicsSettings.TYPE_UPDATEGUI.COLOR_CHANGESHEMA_BACKGROUND)) {
                 BackColor = formGraphicsSettings.BackgroundColor;
 
-                if (((FormGraphicsSettings.TYPE_UPDATEGUI)type == FormGraphicsSettings.TYPE_UPDATEGUI.COLOR_CHANGESHEMA)
-                    && (formGraphicsSettings.m_colorShema == FormGraphicsSettings.ColorShemas.Custom)) {
+                if (((FormGraphicsSettings.TYPE_UPDATEGUI)type == FormGraphicsSettings.TYPE_UPDATEGUI.COLOR_CHANGESHEMA_BACKGROUND)
+                    && (formGraphicsSettings.m_colorShema == FormGraphicsSettings.ColorShemas.Custom)) { //??? обязательно ли проверять 'Custom', т.к. подписи доступны только в этом ('Custom') режиме
                     HStatisticUsers.SetAllowed (s_listFormConnectionSettings [(int)CONN_SETT_TYPE.CONFIG_DB].getConnSett ()
                         , HStatisticUsers.ID_ALLOWED.PROFILE_VIEW_COLOR_SHEMA_CUSTOM
                         , (_darkColorTable as CustomColorTable).CustomToString ());
@@ -2628,7 +2628,7 @@ namespace Statistic
             #endregion
 
             if ((FormGraphicsSettings.TYPE_UPDATEGUI)type == FormGraphicsSettings.TYPE_UPDATEGUI.COLOR) {
-                HDataGridViewTables.s_dgvCellStyles [(int)HDataGridViewTables.INDEX_CELL_STYLE.ERROR].BackColor = formGraphicsSettings.COLOR (FormGraphicsSettings.INDEX_COLOR.DIVIATION);
+                HDataGridViewTables.s_dgvCellStyles [(int)HDataGridViewTables.INDEX_CELL_STYLE.ERROR].BackColor = formGraphicsSettings.COLOR (FormGraphicsSettings.INDEX_COLOR_VAUES.DIVIATION);
             } else
                 ;
 

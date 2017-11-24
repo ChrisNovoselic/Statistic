@@ -72,7 +72,7 @@ namespace Statistic
             this.dtpShedulePeriodExport_PBRValues = new DateTimePicker();
             this.labelPeriodExport_PBRValues = new Label();
             this.gbxDividerChoice = new GroupBoxDividerChoice();
-            this.dgwAdminTable = new DataGridViewAdminKomDisp(new Color [] { SystemColors.Window, Color.Yellow, FormMain.formGraphicsSettings.COLOR (FormGraphicsSettings.INDEX_COLOR.DIVIATION) });
+            this.dgwAdminTable = new DataGridViewAdminKomDisp(new Color [] { SystemColors.Window, Color.Yellow, FormMain.formGraphicsSettings.COLOR (FormGraphicsSettings.INDEX_COLOR_VAUES.DIVIATION) });
 
             this.SuspendLayout();
             ((System.ComponentModel.ISupportInitialize)(this.dgwAdminTable)).BeginInit();
