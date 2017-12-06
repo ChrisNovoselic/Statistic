@@ -395,6 +395,23 @@ namespace Statistic
                 EvtDateTimeChanged?.Invoke(ActionDateTime.TIMEZONE);
             }
 
+            public override Color ForeColor
+            {
+                get
+                {
+                    return base.ForeColor;
+                }
+
+                set
+                {
+                    base.ForeColor = value;
+
+                    findControl (KEY_CONTROLS.CLB_AIISKUE_SIGNAL.ToString ()).ForeColor =
+                    findControl (KEY_CONTROLS.CLB_SOTIASSO_SIGNAL.ToString ()).ForeColor =
+                        value;
+                }
+            }
+
             public override Color BackColor
             {
                 get
@@ -408,7 +425,7 @@ namespace Statistic
 
                     findControl (KEY_CONTROLS.CLB_AIISKUE_SIGNAL.ToString ()).BackColor =
                     findControl (KEY_CONTROLS.CLB_SOTIASSO_SIGNAL.ToString ()).BackColor =
-                        BackColor == SystemColors.Control ? SystemColors.Window : BackColor;
+                        value == SystemColors.Control ? SystemColors.Window : value;
                 }
             }
         }

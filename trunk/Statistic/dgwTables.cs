@@ -86,7 +86,9 @@ namespace Statistic
 
         //protected DataGridViewTables (int [] arWidthColiumns) {
         protected HDataGridViewBase(ASUTP.Core.HDateTime.INTERVAL interval, ColumnProperies[] arColuumns, bool bIsItogo)
-            : base (new Color [] { FormMain.formGraphicsSettings.BackgroundColor                                                                    // , иначе установить цвет системной палитры
+            : base (FormMain.formGraphicsSettings.FontColor
+                , new Color [] {
+                    FormMain.formGraphicsSettings.BackgroundColor    // , иначе установить цвет системной палитры
                     , Color.Yellow
                     , FormMain.formGraphicsSettings.COLOR (FormGraphicsSettings.INDEX_COLOR_VAUES.DIVIATION) }
                 , bIsItogo)
@@ -182,8 +184,8 @@ namespace Statistic
                                                             System.Windows.Forms.AnchorStyles.Left)));
             dataGridViewCellStyle.Alignment = System.Windows.Forms.DataGridViewContentAlignment.MiddleCenter;
             dataGridViewCellStyle.BackColor = s_dgvCellStyles [(int)INDEX_CELL_STYLE.COMMON].BackColor; // System.Drawing.SystemColors.Window;
+            dataGridViewCellStyle.ForeColor = s_dgvCellStyles [(int)INDEX_CELL_STYLE.COMMON].ForeColor;            
             dataGridViewCellStyle.Font = new System.Drawing.Font("Microsoft Sans Serif", 8.25F, System.Drawing.FontStyle.Regular, System.Drawing.GraphicsUnit.Point, ((byte)(204)));
-            dataGridViewCellStyle.ForeColor = System.Drawing.SystemColors.WindowText;
             dataGridViewCellStyle.SelectionBackColor = System.Drawing.SystemColors.Highlight;
             dataGridViewCellStyle.SelectionForeColor = System.Drawing.SystemColors.HighlightText;
             dataGridViewCellStyle.WrapMode = System.Windows.Forms.DataGridViewTriState.True;
@@ -253,8 +255,9 @@ namespace Statistic
         {
             for (int i = 0; i < Rows.Count; i++)
                 for (int c = 0; c < Columns.Count; c++) {
-                    Rows [i].Cells [c].Value = string.Empty;
+                    Rows [i].Cells [c].Value = string.Empty;                    
                     Rows [i].Cells [c].Style.BackColor = s_dgvCellStyles [(int)INDEX_CELL_STYLE.COMMON].BackColor;
+                    Rows [i].Cells [c].Style.ForeColor = s_dgvCellStyles [(int)INDEX_CELL_STYLE.COMMON].ForeColor;
                 }
         }
     }

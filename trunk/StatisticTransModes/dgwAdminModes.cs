@@ -7,6 +7,7 @@ using System.Data;
 using System.Globalization;
 
 using StatisticCommon;
+using System.Drawing;
 
 namespace StatisticTransModes
 {
@@ -16,7 +17,13 @@ namespace StatisticTransModes
         private static string[] arDescStringIndex = { "DateHour", "Plan", "Pmin", "Pmax"/*, "ToAll"*/ };
         private static string[] arDescRusStringIndex = { "Дата, час", "План", "Минимум", "Максимум"/*, "Дозаполнить"*/ };
 
-        public DataGridViewAdminModes() : base(new System.Drawing.Color [] { System.Drawing.SystemColors.Window, System.Drawing.Color.Yellow, System.Drawing.Color.Red })
+        public DataGridViewAdminModes()
+            : base(SystemColors.ControlText
+                  , new System.Drawing.Color [] {
+                      SystemColors.Window
+                      , System.Drawing.Color.Yellow
+                      , System.Drawing.Color.Red
+                  })
         {
         }
 

@@ -27,17 +27,19 @@ namespace Statistic
             /// <summary>
             /// Конструктор
             /// </summary>
-            public HPanelTableLayout(Color backColor)
+            public HPanelTableLayout(Color foreColor, Color backColor)
             {
                 //Свойство возвращает или задает язык и региональные параметры для текущего потока
                 Thread.CurrentThread.CurrentCulture =
                 Thread.CurrentThread.CurrentUICulture =
                     ASUTP.Helper.ProgramBase.ss_MainCultureInfo;
-
+                
                 BackColor = backColor;
+                ForeColor = foreColor;
 
-                InitializeComponent();
+                InitializeComponent ();
             }
+
             /// <summary>
             /// Конструктор
             /// </summary>
@@ -48,7 +50,12 @@ namespace Statistic
 
                 InitializeComponent();
             }
-            //Получить метку шрифта
+
+            /// <summary>
+            /// Возвратить объект "шрифт" для подписи, указанного в аргументе типа
+            /// </summary>
+            /// <param name="typeLabel">Тип подписи</param>
+            /// <returns>Объект "шрифт" для подписи указанного типа</returns>
             public Font GetFontHLabel(ASUTP.Control.HLabel.TYPE_HLABEL typeLabel)
             {
                 Font fontRes = null;
@@ -246,19 +253,16 @@ namespace Statistic
                 if (!(fonts == null))
                     foreach (Control ctrl in ((TableLayoutPanel)obj).Controls)
                         if (ctrl is ASUTP.Control.HLabel)
-                            if (!(fonts[(int)((ASUTP.Control.HLabel)ctrl).m_type] == null))
-                                ctrl.Font = fonts[(int)((ASUTP.Control.HLabel)ctrl).m_type];
-                            else
-                                Logging.Logg().Error(@"HPanelTableLayout::OnSizeChanged () - fonts[" + ((ASUTP.Control.HLabel)ctrl).m_type.ToString() + @"]=null", Logging.INDEX_MESSAGE.NOT_SET);
+                            if (!(fonts [(int)((ASUTP.Control.HLabel)ctrl).m_type] == null)) {
+                                ctrl.Font = fonts [(int)((ASUTP.Control.HLabel)ctrl).m_type];
+                                //ctrl.ForeColor = ForeColor;
+                            } else
+                                Logging.Logg ().Error (@"HPanelTableLayout::OnSizeChanged () - fonts[" + ((ASUTP.Control.HLabel)ctrl).m_type.ToString () + @"]=null", Logging.INDEX_MESSAGE.NOT_SET);
                         else
                             ;
                 else
-                    Logging.Logg().Error(@"HPanelTableLayout::OnSizeChanged () - fonts=null", Logging.INDEX_MESSAGE.NOT_SET);
+                    Logging.Logg ().Error (@"HPanelTableLayout::OnSizeChanged () - fonts=null", Logging.INDEX_MESSAGE.NOT_SET);
             }
-        }
-
-        partial class HPanelTableLayout
-        {
 
             /// <summary>
             /// Требуется переменная конструктора.
@@ -269,13 +273,12 @@ namespace Statistic
             /// Освободить все используемые ресурсы.
             /// </summary>
             /// <param name="disposing">истинно, если управляемый ресурс должен быть удален; иначе ложно.</param>
-            protected override void Dispose(bool disposing)
+            protected override void Dispose (bool disposing)
             {
-                if (disposing && (components != null))
-                {
-                    components.Dispose();
+                if (disposing && (components != null)) {
+                    components.Dispose ();
                 }
-                base.Dispose(disposing);
+                base.Dispose (disposing);
             }
 
             #region Код, автоматически созданный конструктором компонентов
@@ -284,11 +287,11 @@ namespace Statistic
             /// Обязательный метод для поддержки конструктора - не изменяйте
             /// содержимое данного метода при помощи редактора кода.
             /// </summary>
-            private void InitializeComponent()
+            private void InitializeComponent ()
             {
-                components = new System.ComponentModel.Container();
+                components = new System.ComponentModel.Container ();
 
-                this.SizeChanged += new EventHandler(OnSizeChanged);
+                this.SizeChanged += new EventHandler (OnSizeChanged);
             }
 
             #endregion
@@ -347,14 +350,14 @@ namespace Statistic
             protected Dictionary<int, System.Windows.Forms.Label[]> m_tgLabels;
             protected Dictionary<int, System.Windows.Forms.ToolTip[]> m_tgToolTips;
 
-            public HPanelQuickData(Color backColor)
-                : base (backColor)
+            public HPanelQuickData(Color foreColor, Color backColor)
+                : base (foreColor, backColor)
             {
                 InitializeComponent();
             }
 
-            public HPanelQuickData(IContainer container, Color backColor)
-                : base (backColor)
+            public HPanelQuickData(IContainer container, Color foreColor, Color backColor)
+                : base (foreColor, backColor)
             {
                 container.Add(this);
 
@@ -419,6 +422,82 @@ namespace Statistic
                 m_tgToolTips = new Dictionary<int, ToolTip[]>();
             }
 
+            public override Color BackColor
+            {
+                get
+                {
+                    return base.BackColor;
+                }
+
+                set
+                {
+                    base.BackColor = value;
+
+                    if (Equals (m_arLabelCommon, null) == false)
+                        foreach (Label label in m_arLabelCommon)
+                            if ((Equals (label) == false)
+                                && (label.GetType ().Equals (typeof (ASUTP.Control.HLabel)) == false))
+                                label.BackColor = value;
+                            else
+                                ;
+                    else
+                        ;
+
+                    if (Equals (m_tgLabels, null) == false)
+                        foreach (KeyValuePair<int, Label []> pair in m_tgLabels)
+                            foreach (Label label in pair.Value)
+                                if ((Equals (label) == false)
+                                    && (label.GetType ().Equals (typeof (ASUTP.Control.HLabel)) == false))
+                                    label.BackColor = value;
+                                else
+                                    ;
+                    else
+                        ;
+                }
+            }
+
+            public override Color ForeColor
+            {
+                get
+                {
+                    return base.ForeColor;
+                }
+
+                set
+                {
+                    base.ForeColor = value;
+
+                    if ((Equals (btnSetNow, null) == false)
+                        && (Equals (lblServerTime, null) == false))
+                        btnSetNow.ForeColor =
+                        lblServerTime.ForeColor =
+                            value;
+                    else
+                        ;
+
+                    if (Equals (m_arLabelCommon, null) == false)
+                        foreach (Label label in m_arLabelCommon)
+                            if ((Equals (label) == false)
+                                && (label.GetType ().Equals (typeof (ASUTP.Control.HLabel)) == false))
+                                label.ForeColor = value;
+                            else
+                                ;
+                    else
+                        ;
+
+                    if (Equals (m_tgLabels, null) == false)
+                        foreach (KeyValuePair<int, Label []> pair in m_tgLabels)
+                            foreach (Label label in pair.Value)
+                                if ((Equals (label) == false)
+                                    && (label.GetType ().Equals (typeof (ASUTP.Control.HLabel)) == false))
+                                    label.ForeColor = value;
+                                else
+                                    ;
+                    else
+                        ;
+                }
+            }
+
             //public void addTGView(ref string name_shr, /*ref float val,*/ ref int positionXName, ref int positionYName, ref int positionXValue, ref int positionYValue)
             public virtual void AddTGView(TECComponentBase comp)
             {
@@ -432,10 +511,11 @@ namespace Statistic
                 m_tgToolTips.Add(id, new ToolTip[(int)TG.INDEX_VALUE.COUNT_INDEX_VALUE]);
                 cnt = m_tgLabels.Count;
 
-                m_tgLabels[id][(int)TG.INDEX_VALUE.LABEL_DESC] = ASUTP.Control.HLabel.createLabel(comp.name_shr.Trim(),
-                                                                        new ASUTP.Control.HLabelStyles (/*arPlacement[(int)i].pt, sz,*/new Point(-1, -1), new Size(-1, -1),
-                                                                        Color.Black, Color.Empty,
-                                                                        8F, ContentAlignment.MiddleRight));
+                m_tgLabels[id][(int)TG.INDEX_VALUE.LABEL_DESC] = ASUTP.Control.HLabel.createLabel(comp.name_shr.Trim()
+                    , new ASUTP.Control.HLabelStyles (/*arPlacement[(int)i].pt, sz,*/new Point(-1, -1), new Size(-1, -1)
+                    , FormMain.formGraphicsSettings.FontColor, FormMain.formGraphicsSettings.BackgroundColor
+                    , 8F
+                    , ContentAlignment.MiddleRight));
 
                 hlblValue = new ASUTP.Control.HLabel (new ASUTP.Control.HLabelStyles (new Point(-1, -1), new Size(-1, -1), Color.LimeGreen, Color.Black, 13F, ContentAlignment.MiddleCenter));
                 hlblValue.Text = @"---.--"; //name_shr + @"_Fact";
@@ -455,24 +535,27 @@ namespace Statistic
             protected void createLabel(int indx, string strLabelText, Color clrLabelFore, Color clrLabelBackground, float fSzLabelFont, ContentAlignment alignLabel)
             {
                 if (strLabelText.Equals(string.Empty) == false)
+                // итоговые(TOTAL) подписи для значений за компонент
                     if (m_arLabelCommon[indx - m_indxStartCommonFirstValueSeries] == null)
-                        m_arLabelCommon[indx - m_indxStartCommonFirstValueSeries] = ASUTP.Control.HLabel.createLabel(strLabelText,
-                                                                                        new ASUTP.Control.HLabelStyles (/*arPlacement[(int)i].pt, sz,*/new Point(-1, -1), new Size(-1, -1),
-                                                                                        clrLabelFore, clrLabelBackground,
-                                                                                        fSzLabelFont, alignLabel));
-                    else;
+                        m_arLabelCommon[indx - m_indxStartCommonFirstValueSeries] = ASUTP.Control.HLabel.createLabel(strLabelText
+                            , new ASUTP.Control.HLabelStyles (/*arPlacement[(int)i].pt, sz,*/new Point(-1, -1), new Size(-1, -1)
+                            , clrLabelFore, clrLabelBackground
+                            , fSzLabelFont, alignLabel));
+                    else
+                        ;
                 else
-                    if (m_arLabelCommon[indx - m_indxStartCommonFirstValueSeries] == null)
-                {
-                    m_arLabelCommon[indx - m_indxStartCommonFirstValueSeries] = new ASUTP.Control.HLabel (/*i.ToString(); @"---",*/
-                                                                                    new ASUTP.Control.HLabelStyles (/*arPlacement[(int)i].pt, sz,*/new Point(-1, -1), new Size(-1, -1),
-                                                                                    clrLabelFore, clrLabelBackground,
-                                                                                    fSzLabelFont, alignLabel));
-                    m_arLabelCommon[indx - m_indxStartCommonFirstValueSeries].Text = @"---";
-                    ((ASUTP.Control.HLabel)m_arLabelCommon[indx - m_indxStartCommonFirstValueSeries]).m_type = ASUTP.Control.HLabel.TYPE_HLABEL.TOTAL;
-                }
-                else;
+                // итоговые(TOTAL) значения за компонент
+                    if (m_arLabelCommon[indx - m_indxStartCommonFirstValueSeries] == null) {
+                        m_arLabelCommon[indx - m_indxStartCommonFirstValueSeries] = new ASUTP.Control.HLabel (/*i.ToString(); @"---",*/
+                            new ASUTP.Control.HLabelStyles (/*arPlacement[(int)i].pt, sz,*/new Point(-1, -1), new Size(-1, -1)
+                            , clrLabelFore, clrLabelBackground
+                            , fSzLabelFont, alignLabel));
+                        m_arLabelCommon[indx - m_indxStartCommonFirstValueSeries].Text = @"---";
+                        ((ASUTP.Control.HLabel)m_arLabelCommon[indx - m_indxStartCommonFirstValueSeries]).m_type = ASUTP.Control.HLabel.TYPE_HLABEL.TOTAL;
+                    } else
+                        ;
             }
+
             /// <summary>
             /// Удалить 1-ую (по порядку) общую подпись
             /// </summary>
@@ -591,13 +674,15 @@ namespace Statistic
             protected Color getColorValues(TG.INDEX_VALUE indx)
             {
                 Color clrRes = Color.Empty;
-                Color[,] arColorValues = new Color[,] { { Color.OrangeRed, Color.Orange }, { Color.LimeGreen, Color.Green } }; // 0 - ретро-значения, 1 - текущие значения
-                //Color[] arColorRetroValues = new Color[] { Color.OrangeRed, Color.Orange };
+                // 0 - ретро-значения, 1 - текущие значения
+                Color [,] arColorValues = new Color[,] {
+                    { Color.OrangeRed, Color.Orange }
+                    , { Color.LimeGreen, Color.Green }
+                };
 
                 if (!(m_parent == null))
                     //Определить цвет
-                    switch (indx)
-                    {
+                    switch (indx) {
                         case TG.INDEX_VALUE.FACT: // для фактических значений или для значений в 1-ом столбце детализации
                             if (m_parent.m_tecView.currHour == true)
                                 if (m_parent.m_tecView.m_markWarning.IsMarked((int)TecView.INDEX_WARNING.LAST_MIN) == true)
@@ -784,7 +869,7 @@ namespace Statistic
                 this.ColumnStyles.Add(new ColumnStyle(SizeType.Absolute, 100F));
 
                 //Создание ОБЩих элементов управления
-                Color foreColor, backClolor;
+                Color foreColor, backColor;
                 float szFont;
                 ContentAlignment align;
                 //Size sz;
@@ -800,40 +885,40 @@ namespace Statistic
                     {
                         case CONTROLS.lblCommonP:
                         case CONTROLS.lblPBRrec:
-                        case CONTROLS.lblAverP:
-                            foreColor = Color.Black;
-                            backClolor = Color.Empty;
+                        case CONTROLS.lblAverP:                            
+                            backColor = FormMain.formGraphicsSettings.BackgroundColor;
+                            foreColor = FormMain.formGraphicsSettings.FontColor;
                             szFont = 8F;
                             align = ContentAlignment.MiddleLeft;
                             //sz = new Size(-1, -1);
                             //col = 1;
                             break;
                         case CONTROLS.lblCommonPVal_Fact:
-                        case CONTROLS.lblAverPVal:
+                        case CONTROLS.lblAverPVal:                            
+                            backColor = Color.Black;
                             foreColor = Color.LimeGreen;
-                            backClolor = Color.Black;
                             szFont = 15F;
                             align = ContentAlignment.MiddleCenter;
                             //sz = arPlacement[(int)i].sz;
                             //col = 2;
                             break;
-                        case CONTROLS.lblPBRrecVal:
+                        case CONTROLS.lblPBRrecVal:                            
+                            backColor = Color.Black;
                             foreColor = Color.Yellow;
-                            backClolor = Color.Black;
                             szFont = 15F;
                             align = ContentAlignment.MiddleCenter;
                             break;
-                        case CONTROLS.lblCommonPVal_TM:
+                        case CONTROLS.lblCommonPVal_TM:                            
+                            backColor = Color.Black;
                             foreColor = Color.Green;
-                            backClolor = Color.Black;
                             szFont = 15F;
                             align = ContentAlignment.MiddleCenter;
                             //sz = arPlacement[(int)i].sz;
                             //col = 3;
                             break;
-                        default:
+                        default:                            
+                            backColor = Color.Red;
                             foreColor = Color.Yellow;
-                            backClolor = Color.Red;
                             szFont = 6F;
                             align = ContentAlignment.MiddleCenter;
                             //sz = new Size(-1, -1);
@@ -856,7 +941,7 @@ namespace Statistic
                             break;
                     }
 
-                    createLabel((int)i, text, foreColor, backClolor, szFont, align);
+                    createLabel((int)i, text, foreColor, backColor, szFont, align);
                 }
                 #endregion
 
@@ -867,34 +952,34 @@ namespace Statistic
                     {
                         case CONTROLS.lblCurrentE:
                         case CONTROLS.lblHourE:
-                        case CONTROLS.lblDevE:
-                            foreColor = Color.Black;
-                            backClolor = Color.Empty;
+                        case CONTROLS.lblDevE:                            
+                            backColor = FormMain.formGraphicsSettings.BackgroundColor;
+                            foreColor = FormMain.formGraphicsSettings.FontColor;
                             szFont = 8F;
                             align = ContentAlignment.MiddleRight;
                             //sz = new Size(-1, -1);
                             //col = 4;
                             break;
                         case CONTROLS.lblCurrentEVal:
-                        case CONTROLS.lblHourEVal:
+                        case CONTROLS.lblHourEVal:                            
+                            backColor = Color.Black;
                             foreColor = Color.LimeGreen;
-                            backClolor = Color.Black;
                             szFont = 15F;
                             align = ContentAlignment.MiddleCenter;
                             //sz = arPlacement[(int)i].sz;
                             //col = 5;
                             break;
-                        case CONTROLS.lblDevEVal:
+                        case CONTROLS.lblDevEVal:                            
+                            backColor = Color.Black;
                             foreColor = Color.Yellow;
-                            backClolor = Color.Black;
                             szFont = 15F;
                             align = ContentAlignment.MiddleCenter;
                             //sz = arPlacement[(int)i].sz;
                             //col = 5;
                             break;
-                        default:
+                        default:                            
+                            backColor = Color.Yellow;
                             foreColor = Color.Red;
-                            backClolor = Color.Yellow;
                             szFont = 6F;
                             align = ContentAlignment.MiddleCenter;
                             //sz = new Size(-1, -1);
@@ -918,12 +1003,12 @@ namespace Statistic
                             break;
                     }
 
-                    createLabel((int)i, text, foreColor, backClolor, szFont, align);
+                    createLabel((int)i, text, foreColor, backColor, szFont, align);
                 }
                 #endregion
 
                 //Создание пассивного эл./упр. "надпись" для увеличенного дублирования знач. Pтек
-                m_lblPowerFactZoom = new ASUTP.Control.HLabel (new Point(-1, -1), new Size(-1, -1), Color.LimeGreen, SystemColors.Control, 12F, ContentAlignment.MiddleCenter);
+                m_lblPowerFactZoom = new ASUTP.Control.HLabel (new Point(-1, -1), new Size(-1, -1), Color.LimeGreen, FormMain.formGraphicsSettings.BackgroundColor, 12F, ContentAlignment.MiddleCenter);
                 m_lblPowerFactZoom.m_type = ASUTP.Control.HLabel.TYPE_HLABEL.TOTAL_ZOOM;
                 m_lblPowerFactZoom.Text = @"Pтек=----.--";
 
@@ -1093,29 +1178,17 @@ namespace Statistic
                 this.ColumnStyles.Add(new ColumnStyle(SizeType.AutoSize));
             }
         }
-        ///
+        /// Защищенный частичный класс "Стандартная панель Оперативные данные"
         partial class PanelQuickDataStandard : HPanelQuickData
         {
-            ///// <summary>
-            ///// Класс для хранения информации о местоположении элемента управления
-            ///// </summary>
-            //private class HPlacement
-            //{
-            //    public Size sz; public Point pt;
-            //    public HPlacement(int x, int y, int w, int h)
-            //    {
-            //        pt.X = x; pt.Y = y; sz.Width = w; sz.Height = h;
-            //    }
-            //};
-
-            public PanelQuickDataStandard(Color backColor)
-                : base(backColor)
+            public PanelQuickDataStandard(Color foreColor, Color backColor)
+                : base(foreColor, backColor)
             {
                 InitializeComponent();
             }
 
-            public PanelQuickDataStandard(IContainer container, Color backColor)
-                : base (container, backColor)
+            public PanelQuickDataStandard(IContainer container, Color foreColor, Color backColor)
+                : base (container, foreColor, backColor)
             {
                 container.Add(this);
 
@@ -1125,13 +1198,13 @@ namespace Statistic
             private void showTMValue(TG tg, ref double val, int min)
             {
                 showTMValue(ref m_tgLabels[tg.m_id][(int)TG.INDEX_VALUE.TM]
-                                                , tg.m_strKKS_NAME_TM
-                                                , m_parent.m_tecView.m_dictValuesLowPointDev[tg.m_id].m_powerMinutes[min]
-                                                , m_parent.m_tecView.m_dictValuesLowPointDev[tg.m_id].m_powerCurrent_TM
-                                                , m_parent.m_tecView.m_dictValuesLowPointDev[tg.m_id].m_dtCurrent_TM
-                                                , m_parent.m_tecView.serverTime
-                                                , m_tgToolTips[tg.m_id][(int)TG.INDEX_VALUE.TM]
-                                                , ref val);
+                    , tg.m_strKKS_NAME_TM
+                    , m_parent.m_tecView.m_dictValuesLowPointDev[tg.m_id].m_powerMinutes[min]
+                    , m_parent.m_tecView.m_dictValuesLowPointDev[tg.m_id].m_powerCurrent_TM
+                    , m_parent.m_tecView.m_dictValuesLowPointDev[tg.m_id].m_dtCurrent_TM
+                    , m_parent.m_tecView.serverTime
+                    , m_tgToolTips[tg.m_id][(int)TG.INDEX_VALUE.TM]
+                    , ref val);
             }
 
             private void showTMValue(ref Label lbl, string tg_kksname, double tg_val_fact, double tg_val, DateTime dt_val, DateTime dt_srv, ToolTip toolTip, ref double val)
@@ -1329,19 +1402,16 @@ namespace Statistic
                         , true
                         , string.Empty);
 
-                    if ((m_parent.m_tecView.adminValuesReceived == true) && (m_parent.m_tecView.currHour == true))
-                    {
+                    if ((m_parent.m_tecView.adminValuesReceived == true)
+                        && (m_parent.m_tecView.currHour == true))
                         showValue(ref m_arLabelCommon[(int)PanelQuickDataStandard.CONTROLS.lblPBRrecVal - indxStartCommonPVal]
                             , m_parent.m_tecView.recomendation
                             , 2 //round
                             , true
                             , true
                             , string.Empty);
-                    }
                     else
-                    {
                         m_arLabelCommon[(int)PanelQuickDataStandard.CONTROLS.lblPBRrecVal - indxStartCommonPVal].Text = "---";
-                    }
 
                     double summ = 0;
                     //Для возможности восстановления значения
@@ -1553,6 +1623,47 @@ namespace Statistic
                 }
                 else
                     ;
+            }
+
+            public override Color BackColor
+            {
+                get
+                {
+                    return base.BackColor;
+                }
+
+                set
+                {
+                    base.BackColor = value;
+
+                    if (Equals (ContextMenuStrip, null) == false)
+                        ContextMenuStrip.BackColor = value;
+                    else
+                        ;
+
+                    if (Equals (m_lblPowerFactZoom, null) == false)
+                        m_lblPowerFactZoom.BackColor = value;
+                    else
+                        ;
+                }
+            }
+
+            public override Color ForeColor
+            {
+                get
+                {
+                    return base.ForeColor;
+                }
+
+                set
+                {
+                    base.ForeColor = value;
+
+                    if (Equals (ContextMenuStrip, null) == false)
+                        ContextMenuStrip.ForeColor = value;
+                    else
+                        ;
+                }
             }
 
             private void OnItemClick(object obj, EventArgs ev)

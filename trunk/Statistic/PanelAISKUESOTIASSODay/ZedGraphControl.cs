@@ -70,8 +70,9 @@ namespace Statistic
 
                 this.PointValueEvent += new ZedGraph.ZedGraphControl.PointValueHandler(this.onPointValueEvent);
                 this.DoubleClickEvent += new ZedGraph.ZedGraphControl.ZedMouseEventHandler(this.onDoubleClickEvent);
-
-                BackColor = SystemColors.Window; // SystemColors.Window
+                
+                BackColor = FormMain.formGraphicsSettings.BackgroundColor == SystemColors.Control ? SystemColors.Window : FormMain.formGraphicsSettings.BackgroundColor;
+                ForeColor = FormMain.formGraphicsSettings.FontColor;
 
                 GraphPane pane = this.GraphPane;
                 // Подпишемся на событие, которое будет вызываться при выводе каждой отметки на оси
@@ -163,6 +164,35 @@ namespace Statistic
                 colValue = FormMain.formGraphicsSettings.COLOR (indxChart);
             }
 
+            public override Color ForeColor
+            {
+                get
+                {
+                    return base.ForeColor;
+                }
+
+                set
+                {
+                    base.ForeColor = value;
+
+                    if (Equals (GraphPane, null) == false) {
+                        // Установим цвет для подписей рядом с осями
+                        GraphPane.XAxis.Title.FontSpec.FontColor =
+                        GraphPane.YAxis.Title.FontSpec.FontColor =
+                            value;
+
+                        // Установим цвет подписей под метками
+                        GraphPane.XAxis.Scale.FontSpec.FontColor =
+                        GraphPane.YAxis.Scale.FontSpec.FontColor =
+                            value;
+
+                        // Установим цвет заголовка над графиком
+                        GraphPane.Title.FontSpec.FontColor = value;
+                    } else
+                        ;
+                }
+            }
+
             public override Color BackColor
             {
                 get
@@ -174,9 +204,9 @@ namespace Statistic
                 {
                     base.BackColor = value;
 
-                    if (Equals (GraphPane, null) == false) {
-                        GraphPane.Chart.Fill = new ZedGraph.Fill (ColorChart);
-                        GraphPane.Fill = new ZedGraph.Fill (BackColor == SystemColors.Control ? SystemColors.Window : BackColor);
+                    if (Equals (GraphPane, null) == false) {                        
+                        GraphPane.Fill.Color = BackColor == SystemColors.Control ? SystemColors.Window : BackColor;
+                        GraphPane.Chart.Fill.Color = ColorChart;
                     } else
                         ;
                 }
@@ -251,7 +281,7 @@ namespace Statistic
                 GraphPane pane = GraphPane;
                 pane.CurveList.Clear();
                 pane.Chart.Fill = new Fill(colorChart);
-                pane.Fill = new Fill (BackColor);
+                //pane.Fill = new Fill (BackColor);
 
                 if (FormMain.formGraphicsSettings.m_graphTypes == FormGraphicsSettings.GraphTypes.Bar) {
                     pane.AddBar("Мощность", null, values, colorPCurve);

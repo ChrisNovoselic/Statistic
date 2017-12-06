@@ -15,6 +15,7 @@ namespace Statistic
         /// Закрытый класс HTabCtrlEx наследуется от HClassLibrary.HTabCtrlEx
         /// </summary>
         private class HStatisticTabCtrlEx : ASUTP.Control.HTabCtrlEx {
+            private Color _foreColor;
             private Color _backColor;
 
             private SolidBrush _backBrush;
@@ -47,6 +48,14 @@ namespace Statistic
                         ;
 
                 return iRes;
+            }
+
+            public void FormMain_ForeColorChanged (object sender, EventArgs ev)
+            {
+                _foreColor = (sender as Form).ForeColor;
+
+                foreach (TabPage tab in TabPages)
+                    tab.ForeColor = _foreColor;
             }
 
             public void FormMain_BackColorChanged (object sender, EventArgs ev)

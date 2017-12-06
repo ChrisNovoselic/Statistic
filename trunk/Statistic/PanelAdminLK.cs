@@ -492,7 +492,13 @@ namespace Statistic {
             /// <summary>
             /// Конструктор
             /// </summary>
-            public DataGridViewAdminLK () : base (new Color [] { SystemColors.Window, Color.Yellow, FormMain.formGraphicsSettings.COLOR (FormGraphicsSettings.INDEX_COLOR_VAUES.DIVIATION) })
+            public DataGridViewAdminLK ()
+                : base (FormMain.formGraphicsSettings.FontColor
+                      , new Color [] {
+                          SystemColors.Window
+                          , Color.Yellow
+                          , FormMain.formGraphicsSettings.COLOR (FormGraphicsSettings.INDEX_COLOR_VAUES.DIVIATION)
+                      })
             {
                 m_listIds = new List<int []> ();
             }

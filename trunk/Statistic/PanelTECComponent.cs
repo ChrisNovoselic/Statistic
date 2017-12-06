@@ -151,7 +151,7 @@ namespace Statistic
         #endregion
 
         public PanelTECComponent(List<StatisticCommon.TEC> tec)
-            : base(MODE_UPDATE_VALUES.AUTO, FormMain.formGraphicsSettings.BackgroundColor)
+            : base(MODE_UPDATE_VALUES.AUTO, FormMain.formGraphicsSettings.FontColor, FormMain.formGraphicsSettings.BackgroundColor)
         {
             InitializeComponent();
 

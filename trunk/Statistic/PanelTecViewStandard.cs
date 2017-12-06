@@ -320,7 +320,7 @@ namespace Statistic
                 getColorZedGraph(typeConnSett, out colorChart, out colorPCurve);
 
                 GraphPane.Chart.Fill = new Fill(colorChart);
-                GraphPane.Fill = new Fill (BackColor);
+                //GraphPane.Fill = new Fill (BackColor);
 
                 //LineItem
                 GraphPane.AddCurve("ÓÄÃý", null, valuesUDGe, FormMain.formGraphicsSettings.COLOR(FormGraphicsSettings.INDEX_COLOR_VAUES.UDG));
@@ -653,7 +653,7 @@ namespace Statistic
                 getColorZedGraph(typeConnSett, out colorChart, out colorPCurve);
 
                 GraphPane.Chart.Fill = new Fill(colorChart);
-                GraphPane.Fill = new Fill (BackColor);
+                //GraphPane.Fill = new Fill (BackColor);
 
                 LineItem curve2 = GraphPane.AddCurve("ÓÄÃý", null, valuesUDGe, FormMain.formGraphicsSettings.COLOR(FormGraphicsSettings.INDEX_COLOR_VAUES.UDG));
                 //LineItem curve4 = GraphPane.AddCurve("", null, valuesODiviation, graphSettings.divColor);
@@ -924,7 +924,7 @@ namespace Statistic
 
         protected override void createPanelQuickData()
         {
-            this._pnlQuickData = new PanelQuickDataStandard(BackColor);
+            this._pnlQuickData = new PanelQuickDataStandard(ForeColor, BackColor);
         }
 
         protected PanelQuickDataStandard PanelQuickData { get { return _pnlQuickData as PanelQuickDataStandard; } }

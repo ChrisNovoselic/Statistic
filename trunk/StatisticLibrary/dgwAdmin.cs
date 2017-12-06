@@ -25,10 +25,10 @@ namespace StatisticCommon
             Anchor = ((System.Windows.Forms.AnchorStyles)(((System.Windows.Forms.AnchorStyles.Top | System.Windows.Forms.AnchorStyles.Bottom) |
                                                             System.Windows.Forms.AnchorStyles.Left)));
 
-            dataGridViewCellStyle.Alignment = System.Windows.Forms.DataGridViewContentAlignment.MiddleCenter;
+            dataGridViewCellStyle.Alignment = System.Windows.Forms.DataGridViewContentAlignment.MiddleCenter;            
             dataGridViewCellStyle.BackColor = s_dgvCellStyles[(int)INDEX_CELL_STYLE.COMMON].BackColor;
-            dataGridViewCellStyle.Font = new System.Drawing.Font("Microsoft Sans Serif", 8.25F, System.Drawing.FontStyle.Regular, System.Drawing.GraphicsUnit.Point, ((byte)(204)));
-            dataGridViewCellStyle.ForeColor = System.Drawing.SystemColors.WindowText;
+            dataGridViewCellStyle.ForeColor = s_dgvCellStyles [(int)INDEX_CELL_STYLE.COMMON].ForeColor;
+            dataGridViewCellStyle.Font = new System.Drawing.Font("Microsoft Sans Serif", 8.25F, System.Drawing.FontStyle.Regular, System.Drawing.GraphicsUnit.Point, ((byte)(204)));            
             dataGridViewCellStyle.SelectionBackColor = System.Drawing.SystemColors.Highlight;
             dataGridViewCellStyle.SelectionForeColor = System.Drawing.SystemColors.HighlightText;
             dataGridViewCellStyle.WrapMode = System.Windows.Forms.DataGridViewTriState.True;
@@ -37,7 +37,7 @@ namespace StatisticCommon
             ColumnHeadersHeightSizeMode = System.Windows.Forms.DataGridViewColumnHeadersHeightSizeMode.AutoSize;
         }
 
-        public DataGridViewAdmin (Color []colors) : base (colors, false) {
+        public DataGridViewAdmin (Color foreColor, Color []backgroundColors) : base (foreColor, backgroundColors, false) {
             //Thread.CurrentThread.SetApartmentState(ApartmentState.STA);
 
             InitializeComponents ();

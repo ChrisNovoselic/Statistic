@@ -89,7 +89,7 @@ namespace Statistic
         /// </summary>
         /// <param name="listTec">Лист ТЭЦ</param>
         public PanelSobstvNyzhdy(List<StatisticCommon.TEC> listTec)
-            : base(MODE_UPDATE_VALUES.AUTO, FormMain.formGraphicsSettings.BackgroundColor, typeof(PanelTecSobstvNyzhdy))
+            : base(MODE_UPDATE_VALUES.AUTO, FormMain.formGraphicsSettings.FontColor, FormMain.formGraphicsSettings.BackgroundColor, typeof(PanelTecSobstvNyzhdy))
         {
             InitializeComponent();
 
@@ -388,7 +388,7 @@ namespace Statistic
             /// </summary>
             /// <param name="tec">Список с объектами ТЭЦ</param>
             public PanelTecSobstvNyzhdy(StatisticCommon.TEC tec)
-                : base (MODE_UPDATE_VALUES.AUTO, FormMain.formGraphicsSettings.BackgroundColor, -1, -1)
+                : base (MODE_UPDATE_VALUES.AUTO, FormMain.formGraphicsSettings.FontColor, FormMain.formGraphicsSettings.BackgroundColor, -1, -1)
             {
                 m_tecView = new TecViewSobstvNyzhdy();
 
@@ -837,7 +837,7 @@ namespace Statistic
                 }
 
                 pane.Chart.Fill = new Fill(FormMain.formGraphicsSettings.COLOR(FormGraphicsSettings.INDEX_COLOR_VAUES.BG_SOTIASSO));
-                pane.Fill = new Fill (m_zedGraphHours.BackColor);
+                //pane.Fill = new Fill (m_zedGraphHours.BackColor);
 
                 if (FormMain.formGraphicsSettings.m_graphTypes == FormGraphicsSettings.GraphTypes.Bar)
                 {

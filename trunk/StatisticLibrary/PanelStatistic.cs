@@ -42,17 +42,19 @@ namespace StatisticCommon
         /// </summary>
         /// <param name="cCols">Количество столбцов в макете для размещения элементов управления</param>
         /// <param name="cRows">Количество строк в макете для размещения элементов управления</param>
-        public PanelStatistic (MODE_UPDATE_VALUES modeUpdateValues, Color backColor, int cCols = -1, int cRows = -1)
+        public PanelStatistic (MODE_UPDATE_VALUES modeUpdateValues, Color foreColor, Color backColor, int cCols = -1, int cRows = -1)
             : base(cCols, cRows)
         {
             Thread.CurrentThread.CurrentCulture =
             Thread.CurrentThread.CurrentUICulture =
                 ProgramBase.ss_MainCultureInfo;
+            
+            Application.OpenForms [0].BackColorChanged += formMain_BackColorChanged;
+            Application.OpenForms [0].ForeColorChanged += formMain_ForeColorChanged;
 
             BackColor = backColor;
+            ForeColor = foreColor;
             _modeUpdateValues = modeUpdateValues;
-
-            Application.OpenForms[0].BackColorChanged += formMain_BackColorChanged;
         }
 
         /// <summary>
@@ -74,6 +76,17 @@ namespace StatisticCommon
             return listRes;
         }
 
+        protected virtual void formMain_ForeColorChanged (object sender, EventArgs e)
+        {
+            List<Control> listCtrlDoChangeForeColor;
+
+            ForeColor = (sender as Form).ForeColor;
+
+            listCtrlDoChangeForeColor = getTypedControls (this, new List<Type> () { typeof (DataGridView), typeof (ZedGraph.ZedGraphControl) }).ToList ();
+
+            listCtrlDoChangeForeColor.ForEach (ctrl => ctrl.ForeColor = ForeColor.Equals (SystemColors.ControlText) == false ? ForeColor : SystemColors.ControlText);
+        }
+
         /// <summary>
         /// Обработчик события - изменение цветовой схемы отображения
         /// </summary>
@@ -87,7 +100,7 @@ namespace StatisticCommon
 
             listCtrlDoChangeBackColor = getTypedControls (this, new List<Type> () { typeof(DataGridView), typeof(ZedGraph.ZedGraphControl) }).ToList();
 
-            listCtrlDoChangeBackColor.ForEach (ctrl => ctrl.BackColor = BackColor.Equals (SystemColors.Control) == false ? BackColor : SystemColors.Window );
+            listCtrlDoChangeBackColor.ForEach (ctrl => ctrl.BackColor = BackColor.Equals (SystemColors.Control) == false ? BackColor : SystemColors.Control ); //??? SystemColors.Window
         }
 
         public static volatile int POOL_TIME = -1
@@ -114,8 +127,8 @@ namespace StatisticCommon
     {
         private Type _controlType;
 
-        public PanelContainerStatistic(MODE_UPDATE_VALUES modeUpdateValues, Color backColor, Type type)
-            : base(modeUpdateValues, backColor)
+        public PanelContainerStatistic(MODE_UPDATE_VALUES modeUpdateValues, Color foreColor, Color backColor, Type type)
+            : base(modeUpdateValues, foreColor, backColor)
         {
             registredControlType(type);
         }
@@ -206,8 +219,8 @@ namespace StatisticCommon
 
     public abstract class PanelStatisticWithTableHourRows : PanelStatistic
     {
-        public PanelStatisticWithTableHourRows (MODE_UPDATE_VALUES modeUpdateValues, Color backColor)
-            : base (modeUpdateValues, backColor)
+        public PanelStatisticWithTableHourRows (MODE_UPDATE_VALUES modeUpdateValues, Color foreColor, Color backColor)
+            : base (modeUpdateValues, foreColor, backColor)
         {
         }
 

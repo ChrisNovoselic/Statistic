@@ -60,7 +60,7 @@ namespace StatisticCommon
 
         public double m_PBR_0;
 
-        public DataGridViewAdminKomDisp(System.Drawing.Color []colors) : base(colors)
+        public DataGridViewAdminKomDisp(System.Drawing.Color foreColor, System.Drawing.Color []backgroudColors) : base(foreColor, backgroudColors)
         {
             this.CellMouseMove += new DataGridViewCellMouseEventHandler (dgwAdminTable_CellMouseMove);
         }
@@ -154,8 +154,9 @@ namespace StatisticCommon
             //AutoSizeColumnsMode = DataGridViewAutoSizeColumnsMode.ColumnHeader;
             
             Columns [(int)COLUMN_INDEX.FOREIGN_CMD].DefaultCellStyle.Alignment = DataGridViewContentAlignment.MiddleCenter;
-            Columns [(int)COLUMN_INDEX.DEVIATION_TYPE].DefaultCellStyle.Alignment = DataGridViewContentAlignment.MiddleCenter;
+            Columns [(int)COLUMN_INDEX.DEVIATION_TYPE].DefaultCellStyle.Alignment = DataGridViewContentAlignment.MiddleCenter;            
             Columns [(int)COLUMN_INDEX.TO_ALL].DefaultCellStyle.BackColor = s_dgvCellStyles[(int)INDEX_CELL_STYLE.COMMON].BackColor;
+            Columns [(int)COLUMN_INDEX.TO_ALL].DefaultCellStyle.ForeColor = s_dgvCellStyles [(int)INDEX_CELL_STYLE.COMMON].ForeColor;
 
             //BackColor = s_dgvCellStyles[(int)INDEX_CELL_STYLE.COMMON].BackColor;
         }
@@ -282,7 +283,7 @@ namespace StatisticCommon
                         for (int i = 0; i < 24; i++) {
                             if ((Rows [i].Cells [col].Style.BackColor.Equals (s_dgvCellStyles[(int)INDEX_CELL_STYLE.ERROR].BackColor) == false)
                                 && (Rows [i].Cells [col].Style.BackColor.Equals (s_dgvCellStyles [(int)INDEX_CELL_STYLE.ERROR].BackColor) == false))
-                                // »меютс€ ограничени€ при назначении фонового цвета дл€ €чеек
+                            // »меютс€ ограничени€ при назначении фонового цвета дл€ €чеек
                                 Rows [i].Cells [col].Style.BackColor = value == SystemColors.Control ? SystemColors.Window : value;
                             else
                                 ;

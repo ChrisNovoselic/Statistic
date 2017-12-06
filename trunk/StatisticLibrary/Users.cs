@@ -69,9 +69,10 @@ namespace StatisticCommon
             // KhryapinAN, 2017-09
             , EXPORT_PBRVALUES_KOMDISP
             , AUTO_EXPORT_PBRVALUES_KOMDISP
-            //------------------------------39
-            , PROFILE_VIEW_COLOR_SHEMA_CUSTOM = 40
-            , PROFILE_VIEW_COLOR_CHANGESHEMA
+            //---------------------------------------39
+            , PROFILE_VIEW_COLOR_CHANGESHEMA_BACKGROUND = 40 // цвет компонента схемы - фон
+            , PROFILE_VIEW_COLOR_SHEMA // разрешение на изменение цветовой схемы в целом, по сути признак использования системной или пользовательской схемы
+            , PROFILE_VIEW_COLOR_CHANGESHEMA_FONT // цвет компонента схемы - шрифт
         };
 
         public HStatisticUsers(int iListenerId, MODE_REGISTRATION modeRegistration)

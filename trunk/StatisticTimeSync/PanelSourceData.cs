@@ -572,8 +572,8 @@ namespace StatisticTimeSync
 
         HandlerSourceData HSD = null;
 
-        public PanelSourceData(Color backColor)
-            : base(MODE_UPDATE_VALUES.AUTO, backColor)
+        public PanelSourceData(Color foreColor, Color backColor)
+            : base(MODE_UPDATE_VALUES.AUTO, foreColor, backColor)
         {
             
             m_delAddPan = new DelAddPan(addPanel);
@@ -586,8 +586,8 @@ namespace StatisticTimeSync
 
         }
 
-        public PanelSourceData(IContainer container, Color backColor)
-            : base (MODE_UPDATE_VALUES.AUTO, backColor)
+        public PanelSourceData(IContainer container, Color foreColor, Color backColor)
+            : base (MODE_UPDATE_VALUES.AUTO, foreColor, backColor)
         {
             container.Add(this);
 

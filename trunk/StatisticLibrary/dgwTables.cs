@@ -43,7 +43,7 @@ namespace StatisticCommon
         /// Конструктор - основной (с аргументами)
         /// </summary>
         /// <param name="bIsItogo">Признак необходимости строки с итоговыми значенями</param>
-        public HDataGridViewTables(Color[] colors, bool bIsItogo)
+        public HDataGridViewTables(Color foreColor, Color[] backgroundColors, bool bIsItogo)
             : base()
         {
             _bIsItogo = bIsItogo;
@@ -53,12 +53,14 @@ namespace StatisticCommon
                 , new DataGridViewCellStyle(DefaultCellStyle) // WARNING
                 , new DataGridViewCellStyle(DefaultCellStyle) // ERROR
             };
+            
+            s_dgvCellStyles [(int)INDEX_CELL_STYLE.COMMON].BackColor = backgroundColors [(int)INDEX_CELL_STYLE.COMMON];
+            s_dgvCellStyles [(int)INDEX_CELL_STYLE.COMMON].ForeColor = foreColor;
+            s_dgvCellStyles [(int)INDEX_CELL_STYLE.WARNING].BackColor = backgroundColors [(int)INDEX_CELL_STYLE.WARNING];
+            s_dgvCellStyles [(int)INDEX_CELL_STYLE.ERROR].BackColor = backgroundColors [(int)INDEX_CELL_STYLE.ERROR];
 
-            s_dgvCellStyles [(int)INDEX_CELL_STYLE.COMMON].BackColor = colors [(int)INDEX_CELL_STYLE.COMMON];
-            s_dgvCellStyles [(int)INDEX_CELL_STYLE.WARNING].BackColor = colors[(int)INDEX_CELL_STYLE.WARNING];
-            s_dgvCellStyles [(int)INDEX_CELL_STYLE.ERROR].BackColor = colors [(int)INDEX_CELL_STYLE.ERROR];
-
-            BackColor = colors [(int)INDEX_CELL_STYLE.COMMON];
+            BackColor = s_dgvCellStyles [(int)INDEX_CELL_STYLE.COMMON].BackColor;
+            ForeColor = s_dgvCellStyles [(int)INDEX_CELL_STYLE.COMMON].ForeColor;
         }
 
         public void InitRows(int cnt, bool bIns)
@@ -69,6 +71,21 @@ namespace StatisticCommon
             else
                 while (Rows.Count > (cnt + (_bIsItogo == true ? 1 : 0)))
                     Rows.RemoveAt(0);
+        }
+
+        public override Color ForeColor
+        {
+            get
+            {
+                return base.ForeColor;
+            }
+
+            set
+            {
+                base.ForeColor = value;
+
+                s_dgvCellStyles [(int)INDEX_CELL_STYLE.COMMON].ForeColor = value;
+            }
         }
 
         public override Color BackColor

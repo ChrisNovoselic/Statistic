@@ -209,8 +209,8 @@ namespace Statistic
             /// <summary>
             /// Конструктор "Быстрые данные панели ЛК"
             /// </summary>
-            public PanelQuickDataLK(Color backColor)
-                : base (backColor)
+            public PanelQuickDataLK(Color foreColor, Color backColor)
+                : base (foreColor, backColor)
             {
                 InitializeComponent();
             }
@@ -267,11 +267,11 @@ namespace Statistic
                         //лейбл для t пр/ч
                         case CONTROLS.lblTemperatureHour:
                         //лейбл для t пр/сут
-                        case CONTROLS.lblTemperatureDate:
-                            // цвет переднего плана черный
-                            foreColor = Color.Black;
+                        case CONTROLS.lblTemperatureDate:                            
                             // цвет заднего плана пустой
                             backClolor = Color.Empty;
+                            // цвет переднего плана черный
+                            foreColor = Color.Black;
                             szFont = 8F;
                             //Выравнивание надписи слева по центру
                             align = ContentAlignment.MiddleLeft;
@@ -281,17 +281,17 @@ namespace Statistic
                         // значение t пр/ч
                         case CONTROLS.lblTemperatureHourValue:
                         // значение пр/сут
-                        case CONTROLS.lblTemperatureDateValue:
-                            foreColor = Color.LimeGreen;
+                        case CONTROLS.lblTemperatureDateValue:                            
                             backClolor = Color.Black;
+                            foreColor = Color.LimeGreen;
                             szFont = 15F;
                             //Выравнивание значений по середине по центру
                             align = ContentAlignment.MiddleCenter;
                             break;
                             //По умолчанию 
-                        default:
-                            foreColor = Color.Yellow;
+                        default:                            
                             backClolor = Color.Red;
+                            foreColor = Color.Yellow;
                             szFont = 6F;
                             align = ContentAlignment.MiddleCenter;
                             break;
@@ -328,9 +328,9 @@ namespace Statistic
                         case CONTROLS.lblPowerHour:
                         //Лейбл для P сети
                         case CONTROLS.lblPowerDate:
-                            // Цвет переднего плана черный, заднего пустой
+                            // Цвет переднего плана черный, заднего пустой                          
+                            backClolor = Color.Empty;                            
                             foreColor = Color.Black;
-                            backClolor = Color.Empty;
                             szFont = 8F;
                             //Выравнивание по середине слева
                             align = ContentAlignment.MiddleLeft;
@@ -339,16 +339,16 @@ namespace Statistic
                         case CONTROLS.lblPowerCurrentValue:
                         case CONTROLS.lblPowerHourValue:
                         case CONTROLS.lblPowerDateValue:
-                            //Цвета значений
-                            foreColor = Color.LimeGreen;
+                            //Цвета значений                            
                             backClolor = Color.Black;
+                            foreColor = Color.LimeGreen;
                             szFont = 15F;
                             align = ContentAlignment.MiddleCenter;
                             break;
                             //По умолчанию
-                        default:
-                            foreColor = Color.Yellow;
+                        default:                            
                             backClolor = Color.Red;
+                            foreColor = Color.Yellow;
                             szFont = 6F;
                             align = ContentAlignment.MiddleCenter;
                             break;
@@ -1242,7 +1242,7 @@ namespace Statistic
                 getColorZedGraph(typeConnSett, out colorChart, out colorPMainCurve);
 
                 GraphPane.Chart.Fill = new Fill(colorChart);
-                GraphPane.Fill = new Fill (BackColor);
+                //GraphPane.Fill = new Fill (BackColor);
 
                 //LineItem - план/отклонения
                 //Надпись кривой "P план"
@@ -1465,7 +1465,7 @@ namespace Statistic
 
         protected override void createPanelQuickData()
         {
-            this._pnlQuickData = new PanelQuickDataLK (BackColor);
+            this._pnlQuickData = new PanelQuickDataLK (ForeColor, BackColor);
         }
 
         protected override ASUTP.Core.HMark enabledSourceData_ToolStripMenuItems ()

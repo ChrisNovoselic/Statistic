@@ -70,7 +70,7 @@ namespace Statistic
         /// </summary>
         /// <param name="listTec">Лист ТЭЦ</param>
         public PanelVzletTDirect(List<TEC> listTec)
-            : base(MODE_UPDATE_VALUES.AUTO, FormMain.formGraphicsSettings.BackgroundColor, typeof(PanelTecVzletTDirect))
+            : base(MODE_UPDATE_VALUES.AUTO, FormMain.formGraphicsSettings.FontColor, FormMain.formGraphicsSettings.BackgroundColor, typeof(PanelTecVzletTDirect))
         {
             InitializeComponent();
 
@@ -559,7 +559,7 @@ namespace Statistic
 
                     colorChart = FormMain.formGraphicsSettings.COLOR(FormGraphicsSettings.INDEX_COLOR_VAUES.BG_ASKUTE);
                     GraphPane.Chart.Fill = new Fill(colorChart);
-                    GraphPane.Fill = new Fill (BackColor);
+                    //GraphPane.Fill = new Fill (BackColor);
                     colorPCurve = FormMain.formGraphicsSettings.COLOR(FormGraphicsSettings.INDEX_COLOR_VAUES.TEMP_ASKUTE);
                    
                     //LineItem - план/отклонения
@@ -699,8 +699,8 @@ namespace Statistic
             {
                 private enum INDEX_VALUE {  }
                 
-                public PanelQuickDataVzletTDirect(Color backColor)
-                    : base(backColor)
+                public PanelQuickDataVzletTDirect(Color foreColor, Color backColor)
+                    : base(foreColor, backColor)
                 {
                     InitializeComponents();
                 }
@@ -761,23 +761,23 @@ namespace Statistic
                         {
                             case CONTROLS.lblTemperatureCurrent:
                             case CONTROLS.lblTemperatureHour:
-                            case CONTROLS.lblTemperatureDate:
-                                foreColor = Color.Black;
+                            case CONTROLS.lblTemperatureDate:                                
                                 backClolor = Color.Empty;
+                                foreColor = Color.Black;
                                 szFont = 8F;
                                 align = ContentAlignment.MiddleLeft;
                                 break;
                             case CONTROLS.lblTemperatureCurrentValue:
                             case CONTROLS.lblTemperatureHourValue:
-                            case CONTROLS.lblTemperatureDateValue:
-                                foreColor = Color.LimeGreen;
+                            case CONTROLS.lblTemperatureDateValue:                                
                                 backClolor = Color.Black;
+                                foreColor = Color.LimeGreen;
                                 szFont = 15F;
                                 align = ContentAlignment.MiddleCenter;
                                 break;
-                            default:
-                                foreColor = Color.Yellow;
+                            default:                                
                                 backClolor = Color.Red;
+                                foreColor = Color.Yellow;
                                 szFont = 6F;
                                 align = ContentAlignment.MiddleCenter;
                                 break;
@@ -810,23 +810,23 @@ namespace Statistic
                         {
                             case CONTROLS.lblDeviatCurrent:
                             case CONTROLS.lblDeviatHour:
-                            case CONTROLS.lblDeviatDate:
-                                foreColor = Color.Black;
+                            case CONTROLS.lblDeviatDate:                                
                                 backClolor = Color.Empty;
+                                foreColor = Color.Black;
                                 szFont = 8F;
                                 align = ContentAlignment.MiddleLeft;
                                 break;
                             case CONTROLS.lblDeviatCurrentValue:
                             case CONTROLS.lblDeviatHourValue:
-                            case CONTROLS.lblDeviatDateValue:
-                                foreColor = Color.Yellow; //LimeGreen
+                            case CONTROLS.lblDeviatDateValue:                                
                                 backClolor = Color.Black;
+                                foreColor = Color.Yellow; //LimeGreen
                                 szFont = 15F;
                                 align = ContentAlignment.MiddleCenter;
                                 break;
-                            default:
-                                foreColor = Color.Yellow;
+                            default:                                
                                 backClolor = Color.Red;
+                                foreColor = Color.Yellow;
                                 szFont = 6F;
                                 align = ContentAlignment.MiddleCenter;
                                 break;
@@ -2115,7 +2115,8 @@ namespace Statistic
             /// </summary>
             protected override void createPanelQuickData()
             {
-                _pnlQuickData = new PanelQuickDataVzletTDirect(FormMain.formGraphicsSettings.BackgroundColor);
+                _pnlQuickData = new PanelQuickDataVzletTDirect(FormMain.formGraphicsSettings.FontColor
+                    , FormMain.formGraphicsSettings.BackgroundColor);
             }
             /// <summary>
             /// Создать таблицу-представление для отображения значений в разрезе "сутки - час"

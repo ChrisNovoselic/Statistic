@@ -144,10 +144,10 @@ namespace StatisticAnalyzer
                         DbSources.Sources ().UnRegister (idListener);
 
                         if (this is FormMain_TCPIP)
-                            m_panel = new PanelAnalyzer_TCPIP (listTEC, SystemColors.Control);
+                            m_panel = new PanelAnalyzer_TCPIP (listTEC, SystemColors.ControlText, SystemColors.Control);
                         else
                             if (this is FormMain_DB)
-                            m_panel = new PanelAnalyzer_DB (listTEC, SystemColors.Control);
+                            m_panel = new PanelAnalyzer_DB (listTEC, SystemColors.ControlText, SystemColors.Control);
                         else
                             ;
 

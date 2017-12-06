@@ -217,16 +217,16 @@ namespace Statistic
         /// Конструктор - основной (без параметров)
         /// </summary>
         public PanelSOTIASSOHour(List<StatisticCommon.TEC> listTec)
-            : base(MODE_UPDATE_VALUES.AUTO, FormMain.formGraphicsSettings.BackgroundColor)
+            : base(MODE_UPDATE_VALUES.AUTO, FormMain.formGraphicsSettings.FontColor, FormMain.formGraphicsSettings.BackgroundColor)
         {
             //m_listTEC = listTec;
             // фильтр ТЭЦ-ЛК
-            m_listTEC = new List<TEC>();            
+            m_listTEC = new List<TEC>();
             foreach (TEC tec in listTec)
                 if (!(tec.m_id > (int)TECComponent.ID.LK))
-                {
-                    m_listTEC.Add(tec);
-                }
+                    m_listTEC.Add (tec);
+                else
+                    ;
             //Создать объект с признаками обработки тех типов значений
             // , которые будут использоваться фактически
             m_markQueries = new HMark(new int[] { (int)CONN_SETT_TYPE.ADMIN, (int)CONN_SETT_TYPE.PBR, (int)CONN_SETT_TYPE.DATA_SOTIASSO });
@@ -830,6 +830,21 @@ namespace Statistic
                 }
             }
 
+            public override Color ForeColor
+            {
+                get
+                {
+                    return base.ForeColor;
+                }
+
+                set
+                {
+                    base.ForeColor = value;
+
+                    findControl (KEY_CONTROLS.CLB_TG.ToString ()).ForeColor = value;
+                }
+            }
+
             public override Color BackColor
             {
                 get
@@ -841,6 +856,7 @@ namespace Statistic
                 {
                     base.BackColor = value;
 
+                    findControl (KEY_CONTROLS.DGV_TECCOMPONENT_VALUE.ToString ()).BackColor =
                     findControl (KEY_CONTROLS.DGV_TG_VALUE.ToString ()).BackColor =
                     findControl (KEY_CONTROLS.CLB_TG.ToString ()).BackColor =
                          value == SystemColors.Control ? SystemColors.Window : BackColor;
@@ -893,6 +909,7 @@ namespace Statistic
                 this.IsEnableVZoom = false;
                 this.IsShowPointValues = true;
 
+                ForeColor = FormMain.formGraphicsSettings.FontColor;
                 BackColor = FormMain.formGraphicsSettings.BackgroundColor == SystemColors.Control
                     ? SystemColors.Window
                         : FormMain.formGraphicsSettings.BackgroundColor;
@@ -930,6 +947,50 @@ namespace Statistic
                 //Значения по умолчанию
                 colChart = FormMain.formGraphicsSettings.COLOR (FormGraphicsSettings.INDEX_COLOR_VAUES.BG_SOTIASSO);
                 colP = FormMain.formGraphicsSettings.COLOR (FormGraphicsSettings.INDEX_COLOR_VAUES.SOTIASSO);
+            }
+
+            public override Color ForeColor
+            {
+                get
+                {
+                    return base.ForeColor;
+                }
+
+                set
+                {
+                    base.ForeColor = value;
+
+                    if (Equals (GraphPane, null) == false) {
+                        // Установим цвет для подписей рядом с осями
+                        GraphPane.XAxis.Title.FontSpec.FontColor =
+                        GraphPane.YAxis.Title.FontSpec.FontColor =
+                            value;
+
+                        // Установим цвет подписей под метками
+                        GraphPane.XAxis.Scale.FontSpec.FontColor =
+                        GraphPane.YAxis.Scale.FontSpec.FontColor =
+                            value;
+
+                        // Установим цвет заголовка над графиком
+                        GraphPane.Title.FontSpec.FontColor = value;
+                    } else
+                        ;
+                }
+            }
+
+            public override Color BackColor
+            {
+                get
+                {
+                    return base.BackColor;
+                }
+
+                set
+                {
+                    base.BackColor = value;
+
+                    GraphPane.Fill = new Fill (value == SystemColors.Control ? SystemColors.Window : value);
+                }
             }
         }
         
@@ -1092,7 +1153,7 @@ namespace Statistic
                 GraphPane pane = GraphPane;
                 pane.CurveList.Clear ();
                 pane.Chart.Fill = new Fill (colorChart);
-                pane.Fill = new Fill (BackColor);
+                //pane.Fill = new Fill (BackColor);
 
                 //LineItem
                 pane.AddCurve ("УДГэ", null, valsUDGe, FormMain.formGraphicsSettings.COLOR (FormGraphicsSettings.INDEX_COLOR_VAUES.UDG));
@@ -1222,7 +1283,7 @@ namespace Statistic
 
                 getColorZEDGraph (out colorChart, out colorPCurve);
                 pane.Chart.Fill = new Fill (colorChart);
-                pane.Fill = new Fill (BackColor);
+                //pane.Fill = new Fill (BackColor);
 
                 minimum = double.MaxValue;
                 maximum = 0;
@@ -1604,6 +1665,7 @@ namespace Statistic
                 this.SelectionMode = DataGridViewSelectionMode.FullRowSelect;
                 this.Columns[0].Width = 38;
 
+                ForeColor = HDataGridViewTables.s_dgvCellStyles [(int)HDataGridViewTables.INDEX_CELL_STYLE.COMMON].ForeColor;
                 BackColor = HDataGridViewTables.s_dgvCellStyles [(int)HDataGridViewTables.INDEX_CELL_STYLE.COMMON].BackColor;
 
                 //Добавить строки по числу сек. в мин.
@@ -2278,6 +2340,30 @@ namespace Statistic
                     ;
             else
                 ;
+        }
+
+        public override Color ForeColor
+        {
+            get
+            {
+                return base.ForeColor;
+            }
+
+            set
+            {
+                base.ForeColor = value;
+
+                if (Equals (m_panelManagement, null) == false)
+                    m_panelManagement.ForeColor = value;
+                else
+                    ;
+
+                // событие для панели управления ('PanelManagement') для табличной интерпретации значений
+                if (Equals (m_tecView, null) == false)
+                    EvtValuesSecs (m_tecView.m_dictValuesLowPointDev);
+                else
+                    ;
+            }
         }
 
         public override Color BackColor

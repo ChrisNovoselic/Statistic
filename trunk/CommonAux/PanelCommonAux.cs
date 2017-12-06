@@ -329,8 +329,8 @@ namespace CommonAux
         /// <summary>
         /// Конструктор панели
         /// </summary>
-        public PanelCommonAux(Color backColor, string pathTemplate)
-            : base (MODE_UPDATE_VALUES.ACTION, backColor)
+        public PanelCommonAux(Color foreColor, Color backColor, string pathTemplate)
+            : base (MODE_UPDATE_VALUES.ACTION, foreColor, backColor)
         {
             BackColor = backColor;
 
@@ -731,9 +731,9 @@ namespace CommonAux
             //this.m_sumValues.ColumnHeadersHeightSizeMode = System.Windows.Forms.DataGridViewColumnHeadersHeightSizeMode.AutoSize;
             dataGridViewCellStyle = new System.Windows.Forms.DataGridViewCellStyle ();
             dataGridViewCellStyle.Alignment = System.Windows.Forms.DataGridViewContentAlignment.MiddleRight;
-            dataGridViewCellStyle.BackColor = System.Drawing.SystemColors.Window;
+            dataGridViewCellStyle.BackColor = BackColor;
             dataGridViewCellStyle.Font = new System.Drawing.Font("Microsoft Sans Serif", 8.25F, System.Drawing.FontStyle.Regular, System.Drawing.GraphicsUnit.Point, ((byte)(204)));
-            dataGridViewCellStyle.ForeColor = System.Drawing.SystemColors.ControlText;
+            dataGridViewCellStyle.ForeColor = ForeColor;
             dataGridViewCellStyle.SelectionBackColor = System.Drawing.SystemColors.Highlight;
             dataGridViewCellStyle.SelectionForeColor = System.Drawing.SystemColors.HighlightText;
             dataGridViewCellStyle.WrapMode = System.Windows.Forms.DataGridViewTriState.False;

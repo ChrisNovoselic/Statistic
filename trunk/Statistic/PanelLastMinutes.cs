@@ -276,14 +276,16 @@ namespace Statistic
         /// <summary>
         /// Цвет для отображения заголовков каждого из объектов панелей ТЭЦ(и их компонентов) со значениями
         /// </summary>
-        private static Color s_clrBakColorLabel = FormGraphicsSettings.DefaultBackColor, s_clrBakColorLabelVal = Color.FromArgb(219, 223, 227);
+        private static Color s_clrBackColorLabelVal = Color.FromArgb(219, 223, 227);
         /// <summary>
         /// Массив со стилями для отображения заголовков каждого из объектов панелей ТЭЦ(и их компонентов) со значениями
         /// </summary>
-        private static HLabelStyles[] s_arLabelStyles = {new HLabelStyles(Color.Black, s_clrBakColorLabel, 14F, ContentAlignment.MiddleCenter),
-                                                new HLabelStyles(Color.Black, s_clrBakColorLabel, 12F, ContentAlignment.MiddleCenter),
-                                                new HLabelStyles(Color.Black, s_clrBakColorLabelVal, 10F, ContentAlignment.MiddleRight),
-                                                new HLabelStyles(Color.Black, s_clrBakColorLabel, 12F, ContentAlignment.MiddleCenter)};
+        private static HLabelStyles[] s_arLabelStyles = {
+            new HLabelStyles(FormMain.formGraphicsSettings.FontColor, FormMain.formGraphicsSettings.BackgroundColor, 14F, ContentAlignment.MiddleCenter)
+            , new HLabelStyles(FormMain.formGraphicsSettings.FontColor, FormMain.formGraphicsSettings.BackgroundColor, 12F, ContentAlignment.MiddleCenter)
+            , new HLabelStyles(FormMain.formGraphicsSettings.FontColor, s_clrBackColorLabelVal, 10F, ContentAlignment.MiddleRight)
+            , new HLabelStyles(FormMain.formGraphicsSettings.FontColor, FormMain.formGraphicsSettings.BackgroundColor, 12F, ContentAlignment.MiddleCenter)
+        };
         /// <summary>
         /// Количество фиксированных строк в макете (кроме строк с номерами/наименованиями меток времени - часов)
         /// </summary>
@@ -317,7 +319,7 @@ namespace Statistic
         /// </summary>
         /// <param name="listTec">Список ТЭЦ для построения списка дочерних панелей, и, в дальнейшем опроса БД, заполнения их значениями</param>
         public PanelLastMinutes(List<StatisticCommon.TEC> listTec/*, DelegateStringFunc fErrRep, DelegateStringFunc fWarRep, DelegateStringFunc fActRep, DelegateBoolFunc fRepClr*/)
-            : base (MODE_UPDATE_VALUES.AUTO, FormMain.formGraphicsSettings.BackgroundColor)
+            : base (MODE_UPDATE_VALUES.AUTO, FormMain.formGraphicsSettings.FontColor, FormMain.formGraphicsSettings.BackgroundColor)
         {
             InitializeComponent();
 
@@ -372,6 +374,31 @@ namespace Statistic
                 else
                     ;
         }
+
+        protected override void formMain_ForeColorChanged (object sender, EventArgs e)
+        {
+            Color formForeColor = Color.Empty;
+
+            formForeColor = (sender as Form).ForeColor;
+
+            foreach (INDEX_LABEL indx in Enum.GetValues (typeof (INDEX_LABEL))) {
+                if (indx == INDEX_LABEL.COUNT_INDEX_LABEL)
+                    continue;
+                else
+                    ;
+
+                s_arLabelStyles [(int)indx].m_foreColor = formForeColor;
+            }
+
+            base.formMain_ForeColorChanged (sender, e);
+
+            //??? вызывается в базовом методе
+            //foreach (Control ptcp in this.Controls)
+            //    if (ptcp is PanelTecLastMinutes)
+            //        (ptcp as PanelTecLastMinutes).ForeColor = ForeColor;
+            //    else
+            //        ;
+        }
         /// <summary>
         /// Метод обработки события - изменение цвета фона (при изменении цветовой схемы)
         /// </summary>
@@ -379,13 +406,40 @@ namespace Statistic
         /// <param name="e">Аргумент события(без значения)</param>
         protected override void formMain_BackColorChanged (object sender, EventArgs e)
         {
-            base.formMain_BackColorChanged (sender, e);
+            Color formBackColor = Color.Empty
+                , backColor = Color.Empty;
 
-            foreach (Control ptcp in this.Controls)
-                if (ptcp is PanelTecLastMinutes)
-                    (ptcp as PanelTecLastMinutes).BackColor = BackColor;
+            formBackColor = (sender as Form).BackColor;
+
+            foreach (INDEX_LABEL indx in Enum.GetValues (typeof (INDEX_LABEL))) {
+                if (indx == INDEX_LABEL.COUNT_INDEX_LABEL)
+                    continue;
                 else
                     ;
+
+                switch (indx) {
+                    case INDEX_LABEL.VALUE_COMPONENT:
+                        backColor = formBackColor == SystemColors.Control ? s_clrBackColorLabelVal : formBackColor;
+                        break;
+                    case INDEX_LABEL.DATETIME:
+                    case INDEX_LABEL.NAME_TEC:
+                    case INDEX_LABEL.NAME_COMPONENT:
+                    default:
+                        backColor = formBackColor == SystemColors.Control ? FormMain.formGraphicsSettings.BackgroundColor : formBackColor;
+                        break;
+                }
+
+                s_arLabelStyles [(int)indx].m_backColor = backColor;
+            }
+
+            base.formMain_BackColorChanged (sender, e);
+
+            //??? вызывается в базовом методе
+            //foreach (Control ptcp in this.Controls)
+            //    if (ptcp is PanelTecLastMinutes)
+            //        (ptcp as PanelTecLastMinutes).BackColor = BackColor;
+            //    else
+            //        ;
         }
 
         public override void Start()
@@ -613,7 +667,7 @@ namespace Statistic
             private Button m_btnUpdate;
 
             public PanelDateTime()
-                : base (MODE_UPDATE_VALUES.ACTION, FormMain.formGraphicsSettings.BackgroundColor)
+                : base (MODE_UPDATE_VALUES.ACTION, FormMain.formGraphicsSettings.FontColor, FormMain.formGraphicsSettings.BackgroundColor)
             {
                 InitializeComponent();
 
@@ -769,6 +823,14 @@ namespace Statistic
                 initTableHourRows();
             }
 
+            protected override void formMain_ForeColorChanged (object sender, EventArgs e)
+            {
+                base.formMain_ForeColorChanged (sender, e);
+
+                foreach (Label label in m_dictLabelTime.Values)
+                    label.ForeColor = ForeColor;
+            }
+
             protected override void formMain_BackColorChanged (object sender, EventArgs e)
             {
                 base.formMain_BackColorChanged (sender, e);
@@ -885,15 +947,33 @@ namespace Statistic
                 //m_tecView.SetDelegateReport(fErrRep, fWarRep, fActRep, fRepClr);
 
                 m_tecView.updateGUI_LastMinutes = new DelegateFunc(showLastMinutesTM);
+                ForeColorChanged += onForeColorChanged;
                 BackColorChanged += onBackColorChanged;
 
                 Initialize();
+            }
+
+            private void onForeColorChanged (object sender, EventArgs e)
+            {
+                foreach (Label label in m_listLabelNames)
+                    label.ForeColor = ForeColor;
+
+                foreach (Dictionary<int, Label> listLabels in m_listDictLabelVal)
+                    foreach (Label label in listLabels.Values)
+                        if (label.BackColor.Equals (s_arLabelStyles [(int)INDEX_LABEL.VALUE_COMPONENT].m_backColor) == true)
+                            label.ForeColor = s_arLabelStyles [(int)INDEX_LABEL.VALUE_COMPONENT].m_foreColor;
+                        else
+                            ;
             }
 
             private void onBackColorChanged (object sender, EventArgs e)
             {
                 foreach (Label label in m_listLabelNames)
                     label.BackColor = BackColor;
+
+                foreach (Dictionary<int, Label> listLabels in m_listDictLabelVal)
+                    foreach (Label label in listLabels.Values)
+                        label.BackColor = s_arLabelStyles[(int)INDEX_LABEL.VALUE_COMPONENT].m_backColor;
             }
 
             public PanelTecLastMinutes(IContainer container, StatisticCommon.TEC tec/*, DelegateStringFunc fErrRep, DelegateStringFunc fWarRep, DelegateStringFunc fActRep, DelegateBoolFunc frepClr*/)
@@ -1139,27 +1219,29 @@ namespace Statistic
 
             private void ShowLastMinutesTM()
             {
+                Label label = null;
                 Color clrBackColor;
                 int warn = -1
                     , cntWarn = -1
                     ;
                 Hd2PercentControl d2PercentControl = new Hd2PercentControl ();
-                string strToolTip = string.Empty,
-                        strWarn = string.Empty;
+                string strToolTip = string.Empty
+                    , strWarn = string.Empty;
 
                 foreach (TECComponent g in m_list_TECComponents)
                 {
                     cntWarn = 0;
                     for (int hour = 1; hour < m_listDictLabelVal.Count + 1; hour++)
                     {
-                        clrBackColor = s_clrBakColorLabelVal;
+                        label = m_listDictLabelVal [hour - 1] [g.m_id];
+                        clrBackColor = s_arLabelStyles[(int)INDEX_LABEL.VALUE_COMPONENT].m_backColor;
                         strToolTip = string.Empty;
 
                         bool bPmin = false;
                         if (m_tecView.m_tec.m_id == 5) bPmin = true; else ;
                         strToolTip = d2PercentControl.Calculate(m_tecView.m_dictValuesTECComponent[hour - 0][g.m_id], bPmin, out warn);
 
-                        m_listDictToolTip[hour - 1][g.m_id].SetToolTip(m_listDictLabelVal[hour - 1][g.m_id], strToolTip);
+                        m_listDictToolTip[hour - 1][g.m_id].SetToolTip(label, strToolTip);
 
                         if (m_tecView.m_dictValuesTECComponent[hour - 0][g.m_id].valuesLastMinutesTM > 1)
                         {
@@ -1170,7 +1252,7 @@ namespace Statistic
                                 if (cntWarn > 3)
                                     clrBackColor = Color.Red;
                                 else
-                                    clrBackColor = Color.Yellow;                                
+                                    clrBackColor = Color.Yellow;
                             }
                             else
                                 cntWarn = 0;
@@ -1181,12 +1263,18 @@ namespace Statistic
                             else
                                 strWarn = string.Empty;
 
-                            m_listDictLabelVal[hour - 1][g.m_id].Text = strWarn + m_tecView.m_dictValuesTECComponent[hour - 0][g.m_id].valuesLastMinutesTM.ToString(@"F2");
+                            label.Text = strWarn + m_tecView.m_dictValuesTECComponent[hour - 0][g.m_id].valuesLastMinutesTM.ToString(@"F2");
                         }
-                        else
-                            m_listDictLabelVal[hour - 1][g.m_id].Text = 0.ToString(@"F0");
+                        else {
+                            cntWarn = 0;
+                            label.Text = 0.ToString(@"F0");
+                        }
 
-                        m_listDictLabelVal[hour - 1][g.m_id].BackColor = clrBackColor;
+                        if (clrBackColor.Equals (s_arLabelStyles [(int)INDEX_LABEL.VALUE_COMPONENT].m_backColor) == true)
+                            label.ForeColor = s_arLabelStyles [(int)INDEX_LABEL.VALUE_COMPONENT].m_foreColor;
+                        else
+                            label.ForeColor = SystemColors.ControlText;
+                        label.BackColor = clrBackColor;
                     }
                 }
             }

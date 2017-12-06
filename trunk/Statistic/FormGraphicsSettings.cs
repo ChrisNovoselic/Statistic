@@ -139,6 +139,20 @@ namespace Statistic {
         #endregion
 
         /// <summary>
+        /// Текущий установленный цвет шрифта
+        /// </summary>
+        public Color FontColor
+        {
+            get
+            {
+                return m_colorShema == ColorShemas.Custom
+                    ? m_arlblColorShema [(int)INDEX_COLOR_SHEMA.FONT].ForeColor
+                        : m_colorShema == ColorShemas.System
+                            ? SystemColors.ControlText
+                                : SystemColors.ControlText;
+            }
+        }
+        /// <summary>
         /// Текущий установленный цвет фона
         /// </summary>
         public Color BackgroundColor
@@ -324,13 +338,29 @@ namespace Statistic {
 
             if (!(typeUpdate == TYPE_UPDATEGUI.UNKNOWN)) {
                 cd = new ColorDialog ();                        // создаем экземпляр cd класса ColorDialog (Диалоговое окно "Цвет")
-                cd.Color = ((Label)sender).BackColor;           // вызвана структура Color на экземпляре, структуре присвоено значение выбранного цвета
+                cd.Color = typeUpdate == TYPE_UPDATEGUI.COLOR_CHANGESHEMA_FONT
+                    ? ((Label)sender).ForeColor
+                        : ((Label)sender).BackColor;            // вызвана структура Color на экземпляре, структуре присвоено значение выбранного цвета
                 if (cd.ShowDialog (this) == DialogResult.OK)    //  , если выбран цвет и нажат ОК, то
                 {
-                    // заднему плану присвоить выбранный цвет
-                    ((Label)sender).BackColor = cd.Color;
-                    // переднему плану (надписи) присвоить зрительно отличный цвет
-                    ((Label)sender).ForeColor = getForeColor (cd.Color);
+                    if ((typeUpdate == TYPE_UPDATEGUI.COLOR_CHANGESHEMA_FONT)
+                        || (typeUpdate == TYPE_UPDATEGUI.COLOR_CHANGESHEMA_BACKGROUND)) {
+                        if (typeUpdate == TYPE_UPDATEGUI.COLOR_CHANGESHEMA_FONT) {
+                            m_arlblColorShema [(int)INDEX_COLOR_SHEMA.FONT].ForeColor =
+                            m_arlblColorShema [(int)INDEX_COLOR_SHEMA.BACKGROUND].ForeColor =
+                                cd.Color;
+                        } else if (typeUpdate == TYPE_UPDATEGUI.COLOR_CHANGESHEMA_BACKGROUND) {
+                            m_arlblColorShema [(int)INDEX_COLOR_SHEMA.FONT].BackColor =
+                            m_arlblColorShema [(int)INDEX_COLOR_SHEMA.BACKGROUND].BackColor =
+                                cd.Color;
+                        } else
+                            ;
+                    } else {
+                        // заднему плану присвоить выбранный цвет
+                        ((Label)sender).BackColor = cd.Color;
+                        // переднему плану (надписи) присвоить зрительно отличный цвет
+                        ((Label)sender).ForeColor = getForeColor (cd.Color);
+                    }
                     // при типе 'TYPE_UPDATEGUI.COLOR_SHEMA' выполнить дополн. действия
                     if (typeUpdate == TYPE_UPDATEGUI.COLOR) {
                         // обновить активную настройку (цвет)
@@ -355,23 +385,28 @@ namespace Statistic {
         {
             TYPE_UPDATEGUI typeUpdate = TYPE_UPDATEGUI.UNKNOWN;
 
-            CustomColorTable.BackColor = (sender as System.Windows.Forms.Control).BackColor;
- 
-            if ((sender as Control).Tag.GetType().Equals(typeof(INDEX_COLOR_SHEMA)) == true) {
+            if ((sender as Control).Tag.GetType ().Equals (typeof (INDEX_COLOR_SHEMA)) == true) {
                 typeUpdate = (INDEX_COLOR_SHEMA)((sender as Control).Tag) == INDEX_COLOR_SHEMA.BACKGROUND
                     ? TYPE_UPDATEGUI.COLOR_CHANGESHEMA_BACKGROUND
                         : TYPE_UPDATEGUI.COLOR_CHANGESHEMA_FONT;
-
-                if (!(typeUpdate == TYPE_UPDATEGUI.UNKNOWN))
-                    //if (m_cbUseSystemColors.Checked == false)
-                    // доступна только при выключенной системной схеме
-                        delegateUpdateActiveGui ((int)typeUpdate);   //обновить активную настройку (цветовая схема)
-                    //else
-                    //    ;
-                else
-                    Logging.Logg ().Error(string.Format("FormGraphicsSettings::labelColorShema_ValueChanged () - ИНДЕКС={0}", ((INDEX_COLOR_SHEMA)((sender as Control).Tag)).ToString()), Logging.INDEX_MESSAGE.NOT_SET);
             } else
                 Logging.Logg ().Error (string.Format ("FormGraphicsSettings::labelColorShema_ValueChanged () - ИНДЕКС(значение Tag) неизвестного типа"), Logging.INDEX_MESSAGE.NOT_SET);
+ 
+            if (!(typeUpdate == TYPE_UPDATEGUI.UNKNOWN)) {
+                if (typeUpdate == TYPE_UPDATEGUI.COLOR_CHANGESHEMA_FONT)
+                    CustomColorTable.ForeColor = (sender as System.Windows.Forms.Control).ForeColor;
+                else if (typeUpdate == TYPE_UPDATEGUI.COLOR_CHANGESHEMA_BACKGROUND)
+                    CustomColorTable.BackColor = (sender as System.Windows.Forms.Control).BackColor;
+                else
+                    ;
+
+                //if (m_cbUseSystemColors.Checked == false)
+                // доступна только при выключенной системной схеме
+                    delegateUpdateActiveGui ((int)typeUpdate);   //обновить активную настройку (цветовая схема)
+                //else
+                //    ;
+            } else
+                Logging.Logg ().Error(string.Format("FormGraphicsSettings::labelColorShema_ValueChanged () - ИНДЕКС={0}", ((INDEX_COLOR_SHEMA)((sender as Control).Tag)).ToString()), Logging.INDEX_MESSAGE.NOT_SET);            
         }
 
         /// <summary>
@@ -404,9 +439,9 @@ namespace Statistic {
             m_arlblColorValues [(int)INDEX_COLOR_VAUES.BG_ASKUE].Enabled =
                 (sender as System.Windows.Forms.CheckBox).Checked;
 
-            m_arlblColorShema [(int)INDEX_COLOR_SHEMA.BACKGROUND].Enabled =
-            m_arlblColorShema [(int)INDEX_COLOR_SHEMA.FONT].Enabled =
-                !(sender as System.Windows.Forms.CheckBox).Checked;
+            //m_arlblColorShema [(int)INDEX_COLOR_SHEMA.BACKGROUND].Enabled =
+            //m_arlblColorShema [(int)INDEX_COLOR_SHEMA.FONT].Enabled =
+            //    !(sender as System.Windows.Forms.CheckBox).Checked;
 
             delegateUpdateActiveGui ((int)TYPE_UPDATEGUI.COLOR_SHEMA);   //обновить активную настройку (цветовая схема)
         }
@@ -462,13 +497,11 @@ namespace Statistic {
     }
 
     public class CustomColorTable : ProfessionalColorTable {
-        public CustomColorTable (string colorCustom)
+        public CustomColorTable (string foreColorCustom, string backColorCustom)
         {
-            int [] rgb;
-
             try {
-                rgb = Array.ConvertAll<string, int> (colorCustom.Split (','), Convert.ToInt32);
-                BackColor = Color.FromArgb (rgb [0], rgb [1], rgb [2]);
+                ForeColor = RGBStringToColor (foreColorCustom);
+                BackColor = RGBStringToColor(backColorCustom);
             } catch (Exception e) {
                 Logging.Logg ().Exception (e, string.Format ("DarkColorTable::ctor () - ..."), Logging.INDEX_MESSAGE.NOT_SET);
             }
@@ -476,19 +509,33 @@ namespace Statistic {
             //UseSystemColors = true;
         }
 
+        public static Color ForeColor
+        {
+            get; set;
+        }
+
         public static Color BackColor
         {
             get; set;
         }
 
-        public string CustomToString ()
+        public string ColorToRGBString (Color clr)
         {
-            return string.Format ("{0},{1},{2}", BackColor.R, BackColor.G, BackColor.B);
+            return string.Format ("{0},{1},{2}", clr.R, clr.G, clr.B);
+        }
+
+        private Color RGBStringToColor (string clr)
+        {
+            int[] rgb;
+
+            rgb = Array.ConvertAll<string, int> (clr.Split (','), Convert.ToInt32);
+
+            return Color.FromArgb (rgb [0], rgb [1], rgb [2]);
         }
 
         private Color _pressed = Color.FromArgb (255, 52, 68, 84);
 
-        private Color _border = Color.Black;
+        private Color _border = ForeColor == Color.Black ? Color.White : Color.Black;
 
         public override Color ToolStripBorder
         {
@@ -498,10 +545,6 @@ namespace Statistic {
             }
         }
 
-        //public override Color ToolStripGradientBegin { get { return culoare; } }
-
-        //public override Color ToolStripGradientEnd { get { return culoare; } }
-
         public override Color ToolStripDropDownBackground
         {
             get
@@ -509,14 +552,6 @@ namespace Statistic {
                 return BackColor;
             }
         }
-
-        //public override Color MenuItemBorder { get { return _Background; } }
-
-        //public override Color MenuItemSelected { get { return _Background; } }        
-
-        //public override Color MenuItemSelectedGradientBegin { get { return _Background; } }
-
-        //public override Color MenuItemSelectedGradientEnd { get { return _Background; } }
 
         public override Color MenuItemPressedGradientBegin
         {

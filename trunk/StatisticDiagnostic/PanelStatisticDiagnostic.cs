@@ -718,8 +718,8 @@ namespace StatisticDiagnostic
         /// </summary>
         /// <param name="mode">Режим работы (администратор или пользователь)</param>
         /// <param name="backColor">Цвет фона</param>
-        public PanelStatisticDiagnostic(Mode mode, Color backColor)
-            : base (MODE_UPDATE_VALUES.AUTO, backColor, COUNT_LAYOUT_COLUMN, COUNT_LAYOUT_ROW)
+        public PanelStatisticDiagnostic(Mode mode, Color foreColor, Color backColor)
+            : base (MODE_UPDATE_VALUES.AUTO, foreColor, backColor, COUNT_LAYOUT_COLUMN, COUNT_LAYOUT_ROW)
         {
             m_Mode = mode;
 
@@ -730,8 +730,8 @@ namespace StatisticDiagnostic
         /// constructor
         /// </summary>
         /// <param name="container">Контейнер для панели</param>
-        public PanelStatisticDiagnostic(IContainer container, Mode mode, Color backColor)
-            : base(MODE_UPDATE_VALUES.AUTO, backColor , COUNT_LAYOUT_COLUMN, COUNT_LAYOUT_ROW)
+        public PanelStatisticDiagnostic(IContainer container, Mode mode, Color foreColor, Color backColor)
+            : base(MODE_UPDATE_VALUES.AUTO, foreColor, backColor , COUNT_LAYOUT_COLUMN, COUNT_LAYOUT_ROW)
         {
             container.Add(this);
 

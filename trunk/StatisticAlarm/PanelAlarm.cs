@@ -78,8 +78,8 @@ namespace StatisticAlarm
         /// <param name="markQueries">Массив признаков кстановления связи с тем или иным источником данных</param>
         /// <param name="mode">Режим работы панели</param>
         /// <param name="backColor">Цвет фона панели и всех дочерних элементов управления</param>
-        public PanelAlarm (int iListenerConfigDB, ASUTP.Core.HMark markQueries, MODE mode, Color backColor)
-            : base(MODE_UPDATE_VALUES.AUTO, backColor)
+        public PanelAlarm (int iListenerConfigDB, ASUTP.Core.HMark markQueries, MODE mode, Color foreColor, Color backColor)
+            : base(MODE_UPDATE_VALUES.AUTO, foreColor, backColor)
         {
             //Инициализация собственных значений
             initialize(iListenerConfigDB, markQueries, mode);
@@ -96,8 +96,10 @@ namespace StatisticAlarm
         /// <param name="iListenerConfigDB">Идентификатор установленного соединения с БД</param>
         /// <param name="markQueries">Массив признаков кстановления связи с тем или иным источником данных</param>
         /// <param name="mode">Режим работы панели</param>
-        public PanelAlarm (IContainer container, int iListenerConfigDB, HMark markQueries, MODE mode, Color backColor)
-            : base (MODE_UPDATE_VALUES.AUTO, backColor)
+        /// <param name="foreColor">Цвет шрифта</param>
+        /// <param name="backColor">Цвет фона</param>
+        public PanelAlarm (IContainer container, int iListenerConfigDB, HMark markQueries, MODE mode, Color foreColor, Color backColor)
+            : base (MODE_UPDATE_VALUES.AUTO, foreColor, backColor)
         {
             container.Add(this);
             //Инициализация собственных значений
@@ -794,6 +796,7 @@ namespace StatisticAlarm
                 this.RowHeadersVisible = false; //Отменить отображение заголовков для строк
                 this.ReadOnly = true; //Установить режим - 'только чтение'
 
+                //ForeColor = HDataGridViewTables.s_dgvCellStyles [(int)HDataGridViewTables.INDEX_CELL_STYLE.COMMON].ForeColor;
                 //BackColor = HDataGridViewTables.s_dgvCellStyles[(int)HDataGridViewTables.INDEX_CELL_STYLE.COMMON].BackColor;
             }
             

@@ -29,7 +29,8 @@ namespace StatisticCommon
             }
         }
 
-        public DataGridViewAdminNSS(Color []colors) : base(colors)
+        public DataGridViewAdminNSS(Color foreColor, Color []backgroundColors)
+            : base(foreColor, backgroundColors)
         {
             m_listIds = new List<int[]>();
 

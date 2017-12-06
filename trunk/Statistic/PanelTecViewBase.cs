@@ -429,6 +429,35 @@ namespace Statistic
                         ;
             }
 
+            public override Color ForeColor
+            {
+                get
+                {
+                    return base.ForeColor;
+                }
+
+                set
+                {
+                    base.ForeColor = value;
+
+                    if (Equals (GraphPane, null) == false) {
+                        // Установим цвет для подписей рядом с осями
+                        GraphPane.XAxis.Title.FontSpec.FontColor =
+                        GraphPane.YAxis.Title.FontSpec.FontColor =
+                            value;
+
+                        // Установим цвет подписей под метками
+                        GraphPane.XAxis.Scale.FontSpec.FontColor =
+                        GraphPane.YAxis.Scale.FontSpec.FontColor =
+                            value;
+
+                        // Установим цвет заголовка над графиком
+                        GraphPane.Title.FontSpec.FontColor = value;
+                    } else
+                        ;
+                }
+            }
+
             public override Color BackColor
             {
                 get
@@ -635,7 +664,7 @@ namespace Statistic
         protected abstract void createPanelQuickData();
 
         public PanelTecViewBase(/*TecView.TYPE_PANEL type, */TEC tec, int indx_tec, int indx_comp, HMark markQueries)
-            : base (MODE_UPDATE_VALUES.AUTO, FormMain.formGraphicsSettings.BackgroundColor)
+            : base (MODE_UPDATE_VALUES.AUTO, FormMain.formGraphicsSettings.FontColor, FormMain.formGraphicsSettings.BackgroundColor)
         {
             //InitializeComponent();
 
@@ -1406,9 +1435,10 @@ namespace Statistic
             {
                 base.BackColor = value;
 
-                if (Equals (_pnlQuickData, null) == false)
+                if (Equals (_pnlQuickData, null) == false) {
+                    _pnlQuickData.ForeColor = ForeColor;
                     _pnlQuickData.BackColor = BackColor;
-                else
+                } else
                     ;
             }
         }

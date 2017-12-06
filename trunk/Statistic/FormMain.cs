@@ -1,23 +1,22 @@
 ﻿using System;
+using System.Linq;
 using System.Collections.Generic;
 //using System.ComponentModel;
 using System.Data;
 //using System..SqlClient;
 using System.Drawing;
-using System.Text;
 using System.Windows.Forms;
 using System.Threading;
 using System.Runtime.InteropServices;
 using System.Net.Sockets;
-using System.Data.Common; //fTimerAppReset () - ...
 using System.Media;
-using System.IO;
 
-using System.Net;
-
-//???
-//using System.Security.Cryptography;
-
+using ASUTP;
+using ASUTP.Core;
+using ASUTP.Helper;
+using ASUTP.Database;
+using ASUTP.Forms;
+using ASUTP.Control;
 
 using StatisticCommon;
 using StatisticDiagnostic;
@@ -25,12 +24,6 @@ using StatisticTimeSync;
 using StatisticAlarm;
 using StatisticAnalyzer;
 using CommonAux;
-using ASUTP;
-using ASUTP.Core;
-using ASUTP.Helper;
-using ASUTP.Database;
-using ASUTP.Forms;
-using ASUTP.Control;
 
 namespace Statistic
 {
@@ -241,9 +234,12 @@ namespace Statistic
                     s_iMainSourceData = Int32.Parse(formParameters.m_arParametrSetup[(int)FormParameters.PARAMETR_SETUP.MAIN_DATASOURCE]);
 
                     //Режим изменения цветовой гаммы            
-                    _darkColorTable = new CustomColorTable (HStatisticUsers.GetAllowed ((int)HStatisticUsers.ID_ALLOWED.PROFILE_VIEW_COLOR_SHEMA_CUSTOM));
+                    _darkColorTable = new CustomColorTable (HStatisticUsers.GetAllowed ((int)HStatisticUsers.ID_ALLOWED.PROFILE_VIEW_COLOR_CHANGESHEMA_FONT)
+                        , HStatisticUsers.GetAllowed ((int)HStatisticUsers.ID_ALLOWED.PROFILE_VIEW_COLOR_CHANGESHEMA_BACKGROUND));
+                    ForeColorChanged += FormMain_ForeColorChanged;
+                    ForeColorChanged += tclTecViews.FormMain_ForeColorChanged;
                     BackColorChanged += FormMain_BackColorChanged;
-                    BackColorChanged += tclTecViews.FormMain_BackColorChanged;                    
+                    BackColorChanged += tclTecViews.FormMain_BackColorChanged;
 
                     markSett = new HMark(Int32.Parse(HStatisticUsers.GetAllowed((int)HStatisticUsers.ID_ALLOWED.AUTO_LOADSAVE_USERPROFILE)));
                     файлПрофильАвтоЗагрузитьСохранитьToolStripMenuItem.Enabled = markSett.IsMarked(0);
@@ -274,7 +270,7 @@ namespace Statistic
                     formSetPassword = new FormSetPassword (m_passwords);
                     formGraphicsSettings = new FormGraphicsSettings (delegateUpdateActiveGui
                         , delegateHideGraphicsSettings
-                        , bool.Parse(HStatisticUsers.GetAllowed((int)HStatisticUsers.ID_ALLOWED.PROFILE_VIEW_COLOR_CHANGESHEMA)));
+                        , bool.Parse(HStatisticUsers.GetAllowed((int)HStatisticUsers.ID_ALLOWED.PROFILE_VIEW_COLOR_SHEMA)));
                     #endregion
 
                     //ProgramBase.s_iAppID = Int32.Parse ((string)Properties.Settings.Default [@"AppID"]);
@@ -320,6 +316,7 @@ namespace Statistic
                                 m_arPanelAdmin[i] = new PanelAlarm(idListenerConfigDB
                                     , new HMark(new int[] { (int)CONN_SETT_TYPE.ADMIN, (int)CONN_SETT_TYPE.PBR, (int)CONN_SETT_TYPE.DATA_AISKUE, (int)CONN_SETT_TYPE.DATA_SOTIASSO })
                                     , StatisticAlarm.MODE.ADMIN
+                                    , formGraphicsSettings.FontColor
                                     , formGraphicsSettings.BackgroundColor);
                                 (m_arPanelAdmin[i] as PanelAlarm).EventGUIReg += new AlarmNotifyEventHandler(OnPanelAlarmEventGUIReg);
                                 m_formAlarmEvent.EventFixed += new DelegateObjectFunc((m_arPanelAdmin[i] as PanelAlarm).OnEventFixed);
@@ -2305,9 +2302,10 @@ namespace Statistic
         {
             if (m_dictAddingTabs[(int)ID_ADDING_TAB.DIAGNOSTIC].panel == null)
             {
-                m_dictAddingTabs[(int)ID_ADDING_TAB.DIAGNOSTIC].panel = new PanelStatisticDiagnostic(HStatisticUsers.Role == HStatisticUsers.ID_ROLES.ADMIN ?
-                    PanelStatisticDiagnostic.Mode.DEFAULT :
-                        PanelStatisticDiagnostic.Mode.SOURCE_ONLY
+                m_dictAddingTabs[(int)ID_ADDING_TAB.DIAGNOSTIC].panel = new PanelStatisticDiagnostic(HStatisticUsers.Role == HStatisticUsers.ID_ROLES.ADMIN
+                    ? PanelStatisticDiagnostic.Mode.DEFAULT
+                        : PanelStatisticDiagnostic.Mode.SOURCE_ONLY
+                    , formGraphicsSettings.FontColor
                     , formGraphicsSettings.BackgroundColor);
                 m_dictAddingTabs[(int)ID_ADDING_TAB.DIAGNOSTIC].panel.SetDelegateReport (ErrorReport, WarningReport, ActionReport, ReportClear);
             }
@@ -2322,7 +2320,7 @@ namespace Statistic
             if (m_dictAddingTabs[(int)ID_ADDING_TAB.ANALYZER].panel == null)
             {
                 int idListener = DbSources.Sources().Register(s_listFormConnectionSettings[(int)CONN_SETT_TYPE.CONFIG_DB].getConnSett(), false, @"CONFIG_DB");
-                m_dictAddingTabs[(int)ID_ADDING_TAB.ANALYZER].panel = new PanelAnalyzer_DB(PanelKomDisp.m_list_tec, formGraphicsSettings.BackgroundColor);
+                m_dictAddingTabs[(int)ID_ADDING_TAB.ANALYZER].panel = new PanelAnalyzer_DB(PanelKomDisp.m_list_tec, formGraphicsSettings.FontColor, formGraphicsSettings.BackgroundColor);
                 m_dictAddingTabs[(int)ID_ADDING_TAB.ANALYZER].panel.SetDelegateReport(ErrorReport, WarningReport, ActionReport, ReportClear);
             }
             else
@@ -2365,7 +2363,7 @@ namespace Statistic
         {
             if (m_dictAddingTabs[(int)ID_ADDING_TAB.SOBSTV_NYZHDY_NEW].panel == null)
             {
-                m_dictAddingTabs[(int)ID_ADDING_TAB.SOBSTV_NYZHDY_NEW].panel = new PanelCommonAux(formGraphicsSettings.BackgroundColor, formParameters.m_arParametrSetup[(int)FormParameters.PARAMETR_SETUP.COMMON_AUX_PATH]);
+                m_dictAddingTabs[(int)ID_ADDING_TAB.SOBSTV_NYZHDY_NEW].panel = new PanelCommonAux(formGraphicsSettings.FontColor, formGraphicsSettings.BackgroundColor, formParameters.m_arParametrSetup[(int)FormParameters.PARAMETR_SETUP.COMMON_AUX_PATH]);
                 ((PanelCommonAux)m_dictAddingTabs[(int)ID_ADDING_TAB.SOBSTV_NYZHDY_NEW].panel).SetDelegateWait(delegateStartWait, delegateStopWait, delegateEvent);
                 ((PanelCommonAux)m_dictAddingTabs[(int)ID_ADDING_TAB.SOBSTV_NYZHDY_NEW].panel).SetDelegateReport(ErrorReport, WarningReport, ActionReport, ReportClear);
             }
@@ -2447,7 +2445,7 @@ namespace Statistic
         private void рассинхронизацияДатаВремяСерверБДToolStripMenuItem_CheckedChanged(object sender, EventArgs e)
         {
             if (m_dictAddingTabs[(int)ID_ADDING_TAB.DATETIMESYNC_SOURCE_DATA].panel == null)
-                m_dictAddingTabs[(int)ID_ADDING_TAB.DATETIMESYNC_SOURCE_DATA].panel = new PanelSourceData(formGraphicsSettings.BackgroundColor);
+                m_dictAddingTabs[(int)ID_ADDING_TAB.DATETIMESYNC_SOURCE_DATA].panel = new PanelSourceData(formGraphicsSettings.FontColor, formGraphicsSettings.BackgroundColor);
             else
                 ;
 
@@ -2555,6 +2553,7 @@ namespace Statistic
             }
             else
             {//arCheckedStoped[0] == false
+                //??? текст заголовка вкладки НЕ уникальный
                 bRes = tclTecViews.RemoveTabPage(tclTecViews.IndexOfName (nameTab)); //nameTab
                 // проверить необходимость остановки панели
                 if (arCheckedStoped[1] == true)
@@ -2576,6 +2575,47 @@ namespace Statistic
                 ;
         }
 
+        private void setToolStripMenuItemForeColor (ToolStripItemCollection dropDownItems, Color foreColor) {
+            (from ToolStripItem mainItem in dropDownItems.Cast<ToolStripItem> () select mainItem).ToList ().ForEach (mItem => {
+                if (mItem.GetType ().Equals (typeof (ToolStripMenuItem)) == true) {
+                    mItem.ForeColor = foreColor;
+
+                    if ((mItem as ToolStripMenuItem).HasDropDownItems == true)
+                        setToolStripMenuItemForeColor ((mItem as ToolStripMenuItem).DropDownItems, mItem.ForeColor);
+                    else
+                        ;
+                } else
+                    ;
+            });
+        }
+
+        /// <summary>
+        /// Обработчик события - изменение цвета шрифта главной формы
+        /// </summary>
+        /// <param name="sender">Объект, инициировавший событие (главная форма)</param>
+        /// <param name="e">Аргумент события</param>
+        private void FormMain_ForeColorChanged (object sender, EventArgs e)
+        {
+            //главное окно
+            MainMenuStrip.ForeColor =
+            ContextMenuStrip.ForeColor =
+                formGraphicsSettings.FontColor;
+
+            (from ToolStripMenuItem mainItem in MainMenuStrip.Items select mainItem).ToList ().ForEach (mItem => {                
+                setToolStripMenuItemForeColor (mItem.DropDownItems, mItem.ForeColor);
+            });
+
+            // формы-утилиты
+            _listFormUtility.ForEach (form => {
+                if (Equals (form, null) == false) form.ForeColor = ForeColor; else;
+            });
+
+            if (tclTecViews.TabPages.Count > 0)
+                tclTecViews.TabPages [0].ForeColor = ForeColor;
+            else
+                ;
+        }
+
         /// <summary>
         /// Обработчик события - изменение цвета фона главной формы
         /// </summary>
@@ -2584,9 +2624,9 @@ namespace Statistic
         private void FormMain_BackColorChanged (object sender, EventArgs e)
         {
             //главное окно
-            BackColor =
             MainMenuStrip.BackColor =
-                formGraphicsSettings.BackgroundColor;
+            ContextMenuStrip.BackColor =
+                formGraphicsSettings.BackgroundColor;            
 
             if (formGraphicsSettings.m_colorShema == FormGraphicsSettings.ColorShemas.Custom) {
                 MainMenuStrip.RenderMode = ToolStripRenderMode.Professional;
@@ -2598,8 +2638,12 @@ namespace Statistic
                 ;
 
             // формы-утилиты
-            foreach (Form form in _listFormUtility)
-                form.BackColor = BackColor;
+            _listFormUtility.ForEach (form => {
+                if (Equals (form, null) == false)
+                    form.BackColor = BackColor;
+                else
+                    ;
+            });
 
             if (tclTecViews.TabPages.Count > 0)
                 tclTecViews.TabPages [0].BackColor = BackColor;
@@ -2612,15 +2656,32 @@ namespace Statistic
             Control ctrl = null;
 
             #region Режим изменения цветовой гаммы
-            if (((FormGraphicsSettings.TYPE_UPDATEGUI)type == FormGraphicsSettings.TYPE_UPDATEGUI.COLOR_SHEMA)
-                || ((FormGraphicsSettings.TYPE_UPDATEGUI)type == FormGraphicsSettings.TYPE_UPDATEGUI.COLOR_CHANGESHEMA_BACKGROUND)) {
-                BackColor = formGraphicsSettings.BackgroundColor;
+            Dictionary<HStatisticUsers.ID_ALLOWED, Color> dictSetAllowedDo = new Dictionary<HStatisticUsers.ID_ALLOWED, Color> () {
+                { HStatisticUsers.ID_ALLOWED.PROFILE_VIEW_COLOR_CHANGESHEMA_FONT, formGraphicsSettings.FontColor }
+                , { HStatisticUsers.ID_ALLOWED.PROFILE_VIEW_COLOR_CHANGESHEMA_BACKGROUND, formGraphicsSettings.BackgroundColor }
+            };
 
-                if (((FormGraphicsSettings.TYPE_UPDATEGUI)type == FormGraphicsSettings.TYPE_UPDATEGUI.COLOR_CHANGESHEMA_BACKGROUND)
-                    && (formGraphicsSettings.m_colorShema == FormGraphicsSettings.ColorShemas.Custom)) { //??? обязательно ли проверять 'Custom', т.к. подписи доступны только в этом ('Custom') режиме
-                    HStatisticUsers.SetAllowed (s_listFormConnectionSettings [(int)CONN_SETT_TYPE.CONFIG_DB].getConnSett ()
-                        , HStatisticUsers.ID_ALLOWED.PROFILE_VIEW_COLOR_SHEMA_CUSTOM
-                        , (_darkColorTable as CustomColorTable).CustomToString ());
+            if (((FormGraphicsSettings.TYPE_UPDATEGUI)type == FormGraphicsSettings.TYPE_UPDATEGUI.COLOR_SHEMA)
+                || ((FormGraphicsSettings.TYPE_UPDATEGUI)type == FormGraphicsSettings.TYPE_UPDATEGUI.COLOR_CHANGESHEMA_FONT)
+                || ((FormGraphicsSettings.TYPE_UPDATEGUI)type == FormGraphicsSettings.TYPE_UPDATEGUI.COLOR_CHANGESHEMA_BACKGROUND)) {
+                //TODO: произойдет событие "изменение" компонента цветовой схемы
+                if ((FormGraphicsSettings.TYPE_UPDATEGUI)type == FormGraphicsSettings.TYPE_UPDATEGUI.COLOR_SHEMA) {                    
+                    BackColor = formGraphicsSettings.BackgroundColor;
+                    ForeColor = formGraphicsSettings.FontColor;
+                } else if ((FormGraphicsSettings.TYPE_UPDATEGUI)type == FormGraphicsSettings.TYPE_UPDATEGUI.COLOR_CHANGESHEMA_FONT) {
+                    dictSetAllowedDo.Remove (HStatisticUsers.ID_ALLOWED.PROFILE_VIEW_COLOR_CHANGESHEMA_BACKGROUND);
+                    ForeColor = formGraphicsSettings.FontColor;
+                } else if ((FormGraphicsSettings.TYPE_UPDATEGUI)type == FormGraphicsSettings.TYPE_UPDATEGUI.COLOR_CHANGESHEMA_BACKGROUND) {
+                    dictSetAllowedDo.Remove (HStatisticUsers.ID_ALLOWED.PROFILE_VIEW_COLOR_CHANGESHEMA_FONT);
+                    BackColor = formGraphicsSettings.BackgroundColor;
+                } else
+                    ;
+
+                if (formGraphicsSettings.m_colorShema == FormGraphicsSettings.ColorShemas.Custom) { //??? обязательно ли проверять 'Custom', т.к. подписи доступны только в этом ('Custom') режиме
+                    foreach (KeyValuePair<HStatisticUsers.ID_ALLOWED, Color> pair in dictSetAllowedDo)                    
+                        HStatisticUsers.SetAllowed (s_listFormConnectionSettings [(int)CONN_SETT_TYPE.CONFIG_DB].getConnSett ()
+                            , pair.Key
+                            , (_darkColorTable as CustomColorTable).ColorToRGBString (pair.Value));
                 } else
                     ;
             } else
@@ -2996,6 +3057,7 @@ namespace Statistic
             public void UpdateGraphicsCurrent(int type)
             {
                 BackColor = formGraphicsSettings.BackgroundColor;
+                ForeColor = formGraphicsSettings.FontColor;
 
                 Panel panel = GetPanel();
 

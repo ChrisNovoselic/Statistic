@@ -52,7 +52,7 @@ namespace StatisticDiagnostic
             CreatefileConnSett(@"connsett.ini");
             Start();
             bAbort = initialize(out msg);
-            this.m_panel = new PanelStatisticDiagnostic(PanelStatisticDiagnostic.Mode.DEFAULT, SystemColors.Control);
+            this.m_panel = new PanelStatisticDiagnostic(PanelStatisticDiagnostic.Mode.DEFAULT, SystemColors.ControlText, SystemColors.Control);
             this.m_panel.SetDelegateReport(ErrorReport, WarningReport, ActionReport, ReportClear);
             #region Добавить рабочую панель на форму
             this._panelMain.SuspendLayout ();

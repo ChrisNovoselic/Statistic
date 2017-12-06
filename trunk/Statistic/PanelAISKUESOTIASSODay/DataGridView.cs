@@ -86,8 +86,10 @@ namespace Statistic
                     // столбец не найден - добавить
                     SelectionMode = DataGridViewSelectionMode.CellSelect;
 
-                    Columns.Add(name, headerText);
-                    Columns[ColumnCount - 1].DefaultCellStyle.Alignment = DataGridViewContentAlignment.MiddleRight;
+                    Columns.Add(name, headerText);                    
+                    Columns [ColumnCount - 1].DefaultCellStyle.BackColor = BackColor == SystemColors.Control ? SystemColors.Window : BackColor;
+                    Columns [ColumnCount - 1].DefaultCellStyle.ForeColor = ForeColor;
+                    Columns [ColumnCount - 1].DefaultCellStyle.Alignment = DataGridViewContentAlignment.MiddleRight;
                     Columns[ColumnCount - 1].SortMode = DataGridViewColumnSortMode.NotSortable;
 
                     SelectionMode = DataGridViewSelectionMode.FullColumnSelect;
@@ -211,6 +213,23 @@ namespace Statistic
                 return tableRes;
             }
 
+            public override Color ForeColor
+            {
+                get
+                {
+                    return base.ForeColor;
+                }
+
+                set
+                {
+                    base.ForeColor = value;
+
+                    for (int j = 0; j < ColumnCount; j++)
+                        //for (int i = 0; i < RowCount; i++)
+                            Columns [j].DefaultCellStyle.ForeColor = value;
+                }
+            }
+
             public override Color BackColor
             {
                 get
@@ -224,7 +243,7 @@ namespace Statistic
 
                     for (int j = 0; j < ColumnCount; j++)
                         //for (int i = 0; i < RowCount; i++)
-                            Columns[j].DefaultCellStyle.BackColor = BackColor;
+                            Columns[j].DefaultCellStyle.BackColor = value == SystemColors.Control ? SystemColors.Window : value;
                 }
             }
         }

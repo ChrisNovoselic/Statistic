@@ -137,8 +137,9 @@ namespace Statistic
                 //this.SelectionMode = DataGridViewSelectionMode.FullRowSelect;
                 this.MultiSelect = false;
                 this.RowHeadersWidth = 250;
-
-                BackColor = HDataGridViewTables.s_dgvCellStyles[(int)HDataGridViewTables.INDEX_CELL_STYLE.COMMON].BackColor;
+                
+                BackColor = HDataGridViewTables.s_dgvCellStyles [(int)HDataGridViewTables.INDEX_CELL_STYLE.COMMON].BackColor;
+                ForeColor = HDataGridViewTables.s_dgvCellStyles [(int)HDataGridViewTables.INDEX_CELL_STYLE.COMMON].ForeColor;
             }
 
             public DataGridView_Prop ()
@@ -944,7 +945,7 @@ namespace Statistic
         #endregion
 
         public PanelUser ()
-            : base(MODE_UPDATE_VALUES.ACTION, FormMain.formGraphicsSettings.BackgroundColor)
+            : base(MODE_UPDATE_VALUES.ACTION, FormMain.formGraphicsSettings.FontColor, FormMain.formGraphicsSettings.BackgroundColor)
         {
             m_arr_origTable = new DataTable[(int)ID_Table.Count];
             m_arr_editTable = new DataTable[(int)ID_Table.Count];

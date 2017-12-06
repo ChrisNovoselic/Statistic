@@ -126,7 +126,7 @@ namespace StatisticTimeSync
                         updateParametersSetup();
                         s_iMainSourceData = Int32.Parse(formParameters.m_arParametrSetup[(int)FormParameters.PARAMETR_SETUP.MAIN_DATASOURCE]);
 
-                        m_panel = new PanelSourceData (SystemColors.Control);
+                        m_panel = new PanelSourceData (SystemColors.ControlText, SystemColors.Control);
                         m_panel.SetDelegateReport (ErrorReport, WarningReport, ActionReport, ReportClear);
                         m_panel.Start ();
 

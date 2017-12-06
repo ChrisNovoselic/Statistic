@@ -196,10 +196,10 @@ namespace Statistic {
             this.m_arlblColorShema [indx].TabIndex = 0;
             this.m_arlblColorShema [indx].Text = "Фон";
             this.m_arlblColorShema [indx].TextAlign = ContentAlignment.MiddleLeft;
-            this.m_arlblColorShema [indx].BorderStyle = System.Windows.Forms.BorderStyle.FixedSingle;
-            this.m_arlblColorShema [indx].ForeColor = getForeColor (CustomColorTable.BackColor);
+            this.m_arlblColorShema [indx].BorderStyle = System.Windows.Forms.BorderStyle.FixedSingle;            
             this.m_arlblColorShema [indx].BackColor = CustomColorTable.BackColor;
-            this.m_arlblColorShema [indx].Enabled = false;
+            this.m_arlblColorShema [indx].ForeColor = CustomColorTable.ForeColor;
+            //this.m_arlblColorShema [indx].Enabled = false;
             // Обработка события "двойной щелчок" - изменение цвета "темной" схемы
             this.m_arlblColorShema [indx].Click += new System.EventHandler (lbl_color_Click);
             this.m_arlblColorShema [indx].BackColorChanged += new System.EventHandler (labelColorShema_ValueChanged);
@@ -217,13 +217,13 @@ namespace Statistic {
             this.m_arlblColorShema [indx].Text = "Шрифт";
             this.m_arlblColorShema [indx].TextAlign = ContentAlignment.MiddleLeft;
             this.m_arlblColorShema [indx].BorderStyle = System.Windows.Forms.BorderStyle.FixedSingle;
-            //TODO:
-            this.m_arlblColorShema [indx].ForeColor = getForeColor (CustomColorTable.BackColor);
+            //TODO:            
             this.m_arlblColorShema [indx].BackColor = CustomColorTable.BackColor;
-            this.m_arlblColorShema [indx].Enabled = false;
+            this.m_arlblColorShema [indx].ForeColor = CustomColorTable.ForeColor;
+            //this.m_arlblColorShema [indx].Enabled = false;
             // Обработка события "двойной щелчок" - изменение цвета "темной" схемы
             this.m_arlblColorShema [indx].Click += new System.EventHandler (lbl_color_Click);
-            this.m_arlblColorShema [indx].BackColorChanged += new System.EventHandler (labelColorShema_ValueChanged);
+            this.m_arlblColorShema [indx].ForeColorChanged += new System.EventHandler (labelColorShema_ValueChanged);
             #endregion
 
             #region Масштабирование, типы графиков
