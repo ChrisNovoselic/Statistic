@@ -252,12 +252,6 @@ namespace CommonAux
         /// Перечисление возможных состояний приложения
         /// </summary>
         private enum STATE { UNKNOWN = -1, READY, WAIT }
-
-        private bool m_bVisibleLog;
-        /// <summary>
-        /// Признак видимости элемента управления с содержанием лог-сообщений
-        /// </summary>
-        private bool VisibleLog { get { return m_bVisibleLog; } set { m_bVisibleLog = value; } }
         /// <summary>
         /// Состояние приложения
         /// </summary>
@@ -329,7 +323,7 @@ namespace CommonAux
         /// <summary>
         /// Конструктор панели
         /// </summary>
-        public PanelCommonAux(Color foreColor, Color backColor, string pathTemplate)
+        public PanelCommonAux(string pathTemplate, Color foreColor, Color backColor)
             : base (MODE_UPDATE_VALUES.ACTION, foreColor, backColor)
         {
             BackColor = backColor;
@@ -338,12 +332,10 @@ namespace CommonAux
 
             InitializeComponents ();
 
-            m_listBoxTEC.Tag = INDEX_CONTROL.LB_TEC;            
+            m_listBoxTEC.Tag = INDEX_CONTROL.LB_TEC;
             m_listBoxTEC.SelectedIndexChanged += listBox_SelectedIndexChanged;
 
-            m_listBoxTEC.BackColor =
-            m_dgvSummaValues.DefaultCellStyle.BackColor =
-                backColor == SystemColors.Control ? SystemColors.Window : backColor;
+            setShemaColor ();
 
             //Установить обработчики событий
             EventNewPathToTemplate += new DelegateStringFunc(onNewPathToTemplate);
@@ -391,9 +383,10 @@ namespace CommonAux
             //Установить начальные признаки готовности к экспорту
             m_markReady = new HMark(0);
 
-            m_listBoxTEC.BackColor =
-            m_dgvSummaValues.DefaultCellStyle.BackColor =
-                BackColor == SystemColors.Control ? SystemColors.Window : BackColor;
+            //m_listBoxTEC.BackColor =
+            //m_dgvSummaValues.DefaultCellStyle.BackColor =
+            //    BackColor == SystemColors.Control ? SystemColors.Window : BackColor;
+            //m_listBoxTEC.ForeColor = ForeColor;
 
             FullPathTemplate = string.Empty;
         }
@@ -425,9 +418,7 @@ namespace CommonAux
                     } else
                         ;
 
-                    m_listBoxTEC.BackColor =
-                    m_dgvSummaValues.DefaultCellStyle.BackColor =
-                        BackColor == SystemColors.Control ? SystemColors.Window : BackColor;
+                    setShemaColor ();
                 } else
                     ;
             } else
@@ -435,6 +426,18 @@ namespace CommonAux
 
 
             return bRes;
+        }
+
+        private void setShemaColor ()
+        {
+            m_listBoxTEC.BackColor =
+            m_dgvSummaValues.BackColor =
+            m_dgvSummaValues.DefaultCellStyle.BackColor =
+                BackColor == SystemColors.Control ? SystemColors.Window : BackColor;
+            m_listBoxTEC.ForeColor =
+            m_dgvSummaValues.ForeColor =
+            m_dgvSummaValues.DefaultCellStyle.ForeColor =
+                ForeColor;
         }
 
         /// <summary>
@@ -504,7 +507,7 @@ namespace CommonAux
         {
             System.Windows.Forms.DataGridViewCellStyle dataGridViewCellStyle;
 
-            #region Инициализация переменных            
+            #region Инициализация переменных
             this.m_btnLoad = new System.Windows.Forms.Button();
             this.m_btnOpen = new System.Windows.Forms.Button();
             this.m_btnExit = new System.Windows.Forms.Button();
@@ -533,7 +536,6 @@ namespace CommonAux
 
                 m_labelsGroup.Add(new System.Windows.Forms.Label());
             }
-            m_dgvSummaValues.DefaultCellStyle.BackColor = BackColor == SystemColors.Control ? SystemColors.Window : BackColor;
 
             ((System.ComponentModel.ISupportInitialize)(this.m_dgvSummaValues)).BeginInit();
 
@@ -732,8 +734,8 @@ namespace CommonAux
             dataGridViewCellStyle = new System.Windows.Forms.DataGridViewCellStyle ();
             dataGridViewCellStyle.Alignment = System.Windows.Forms.DataGridViewContentAlignment.MiddleRight;
             dataGridViewCellStyle.BackColor = BackColor;
-            dataGridViewCellStyle.Font = new System.Drawing.Font("Microsoft Sans Serif", 8.25F, System.Drawing.FontStyle.Regular, System.Drawing.GraphicsUnit.Point, ((byte)(204)));
             dataGridViewCellStyle.ForeColor = ForeColor;
+            dataGridViewCellStyle.Font = new System.Drawing.Font("Microsoft Sans Serif", 8.25F, System.Drawing.FontStyle.Regular, System.Drawing.GraphicsUnit.Point, ((byte)(204)));            
             dataGridViewCellStyle.SelectionBackColor = System.Drawing.SystemColors.Highlight;
             dataGridViewCellStyle.SelectionForeColor = System.Drawing.SystemColors.HighlightText;
             dataGridViewCellStyle.WrapMode = System.Windows.Forms.DataGridViewTriState.False;
@@ -1226,9 +1228,7 @@ namespace CommonAux
         ///  , значение из перечислений 'Statistic.FormGraphicsSettings'</param>
         public override void UpdateGraphicsCurrent (int type)
         {
-            this.m_listBoxTEC.BackColor =
-            m_dgvSummaValues.DefaultCellStyle.BackColor =
-                 BackColor == SystemColors.Control ? SystemColors.Window : BackColor;
+            setShemaColor ();
         }
     }
 }

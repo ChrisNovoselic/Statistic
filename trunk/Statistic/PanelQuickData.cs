@@ -323,20 +323,35 @@ namespace Statistic
             protected int COUNT_ROWSPAN_LABELCOMMON;
             protected float SZ_COLUMN_LABEL, SZ_COLUMN_LABEL_VALUE
                 , SZ_COLUMN_TG_LABEL, SZ_COLUMN_TG_LABEL_VALUE;
-            //Кнопка "Текущий час"
+            /// <summary>
+            /// Кнопка для установки режима "Текущий час"
+            /// </summary>
             public System.Windows.Forms.Button btnSetNow;
-            //Календарь
+            /// <summary>
+            /// Элемент графического интерфейса - календарь
+            /// </summary>
             public DateTimePicker dtprDate;
-            //Время сервера
+            /// <summary>
+            /// Подпись для отображения времени сервера
+            /// </summary>
             public System.Windows.Forms.Label lblServerTime;
-
+            /// <summary>
+            /// Пустая(вспомогательная) панель для обеспечения корректного выравнивания
+            /// </summary>
             protected Panel m_panelEmpty;
-
+            /// <summary>
+            /// Изменить структуру размещения дочерних элементов управления
+            /// </summary>
             public abstract void RestructControl();
 
             protected abstract TableLayoutPanelCellPosition getPositionCell(int indx);
-
+            /// <summary>
+            /// Отобразить фактические значения
+            /// </summary>
             public abstract void ShowFactValues();
+            /// <summary>
+            /// Отобразить значения телемеханики
+            /// </summary>
             public abstract void ShowTMValues();
 
             protected virtual PanelTecViewBase m_parent { get { return (PanelTecViewBase)Parent; } }
@@ -344,19 +359,36 @@ namespace Statistic
             public /*static*/ int /*s*/m_indxStartCommonFirstValueSeries
                 , /*s*/m_indxStartCommonSecondValueSeries;
             protected int m_iCountCommonLabels;
-
+            /// <summary>
+            /// Словарь массивов подписей для обобщенных значений компонента(ГТП, ЩУ, станция)
+            /// </summary>
             public System.Windows.Forms.Label[] m_arLabelCommon;
-
+            /// <summary>
+            /// Словарь массивов подписей для ТГ; ключ - идентификатор компонента
+            ///  , массив - все подписи для ТГ: описание, факт, телемеханика
+            /// </summary>
             protected Dictionary<int, System.Windows.Forms.Label[]> m_tgLabels;
+            /// <summary>
+            /// СЛоварь массивоов всплывающих подсказок для подписей со значениями телемеханики ТГ
+            /// </summary>
             protected Dictionary<int, System.Windows.Forms.ToolTip[]> m_tgToolTips;
-
+            /// <summary>
+            /// Конструктор - основной (с аргументами)
+            /// </summary>
+            /// <param name="foreColor">Цвет шрифта</param>
+            /// <param name="backColor">Цвет фона</param>
             public HPanelQuickData(Color foreColor, Color backColor)
                 : base (foreColor, backColor)
             {
                 InitializeComponent();
             }
-
-            public HPanelQuickData(IContainer container, Color foreColor, Color backColor)
+            /// <summary>
+            /// Конструктор - дополнительный (с аргументами)
+            /// </summary>
+            /// <param name="container">Объект родительского контейнера</param>
+            /// <param name="foreColor">Цвет шрифта</param>
+            /// <param name="backColor">Цвет фона</param>
+            public HPanelQuickData (IContainer container, Color foreColor, Color backColor)
                 : base (foreColor, backColor)
             {
                 container.Add(this);
@@ -422,40 +454,9 @@ namespace Statistic
                 m_tgToolTips = new Dictionary<int, ToolTip[]>();
             }
 
-            public override Color BackColor
-            {
-                get
-                {
-                    return base.BackColor;
-                }
-
-                set
-                {
-                    base.BackColor = value;
-
-                    if (Equals (m_arLabelCommon, null) == false)
-                        foreach (Label label in m_arLabelCommon)
-                            if ((Equals (label) == false)
-                                && (label.GetType ().Equals (typeof (ASUTP.Control.HLabel)) == false))
-                                label.BackColor = value;
-                            else
-                                ;
-                    else
-                        ;
-
-                    if (Equals (m_tgLabels, null) == false)
-                        foreach (KeyValuePair<int, Label []> pair in m_tgLabels)
-                            foreach (Label label in pair.Value)
-                                if ((Equals (label) == false)
-                                    && (label.GetType ().Equals (typeof (ASUTP.Control.HLabel)) == false))
-                                    label.BackColor = value;
-                                else
-                                    ;
-                    else
-                        ;
-                }
-            }
-
+            /// <summary>
+            /// Цвет шрифта панели
+            /// </summary>
             public override Color ForeColor
             {
                 get
@@ -498,6 +499,43 @@ namespace Statistic
                 }
             }
 
+            /// <summary>
+            /// Цвет фона панели
+            /// </summary>
+            public override Color BackColor
+            {
+                get
+                {
+                    return base.BackColor;
+                }
+
+                set
+                {
+                    base.BackColor = value;
+
+                    if (Equals (m_arLabelCommon, null) == false)
+                        foreach (Label label in m_arLabelCommon)
+                            if ((Equals (label) == false)
+                                && (label.GetType ().Equals (typeof (ASUTP.Control.HLabel)) == false))
+                                label.BackColor = value;
+                            else
+                                ;
+                    else
+                        ;
+
+                    if (Equals (m_tgLabels, null) == false)
+                        foreach (KeyValuePair<int, Label []> pair in m_tgLabels)
+                            foreach (Label label in pair.Value)
+                                if ((Equals (label) == false)
+                                    && (label.GetType ().Equals (typeof (ASUTP.Control.HLabel)) == false))
+                                    label.BackColor = value;
+                                else
+                                    ;
+                    else
+                        ;
+                }
+            }            
+
             //public void addTGView(ref string name_shr, /*ref float val,*/ ref int positionXName, ref int positionYName, ref int positionXValue, ref int positionYValue)
             public virtual void AddTGView(TECComponentBase comp)
             {
@@ -532,6 +570,15 @@ namespace Statistic
                 m_tgToolTips[id][(int)TG.INDEX_VALUE.TM] = new ToolTip();
             }
 
+            /// <summary>
+            /// Создать элемент интерфейса - подпись
+            /// </summary>
+            /// <param name="indx"></param>
+            /// <param name="strLabelText">Текст для отображения</param>
+            /// <param name="clrLabelFore">Цвет текста на подписи</param>
+            /// <param name="clrLabelBackground">Цвет фона подписи</param>
+            /// <param name="fSzLabelFont">Размер шрифта теста подписи</param>
+            /// <param name="alignLabel">Признак выравнивания текста подписи</param>
             protected void createLabel(int indx, string strLabelText, Color clrLabelFore, Color clrLabelBackground, float fSzLabelFont, ContentAlignment alignLabel)
             {
                 if (strLabelText.Equals(string.Empty) == false)
@@ -583,6 +630,10 @@ namespace Statistic
                 }
             }
 
+            /// <summary>
+            /// Добавить подписи для ТГ
+            /// </summary>
+            /// <param name="bIsTM">Признак необходимости добавления подписи для значений телемеханики</param>
             protected void addTGLabels(bool bIsTM)
             {
                 int r = -1, c = -1
@@ -614,6 +665,9 @@ namespace Statistic
                 }
             }
 
+            /// <summary>
+            /// Удалить подписи для ТГ
+            /// </summary>
             protected void removeTGLabels()
             {
                 if (m_tgLabels.Count > 0)

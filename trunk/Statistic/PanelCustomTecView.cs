@@ -31,20 +31,29 @@ namespace Statistic
             /// Событие - инициирует измекнение структуры элемента управления
             /// </summary>
             public event DelegateObjectFunc EventRestruct;
+
             /// <summary>
             /// Метод инициирующий возникновение события из-вне
             /// </summary>
             /// <param name="obj">Аргумент события</param>
-            public void PerformRestruct(object obj) { EventRestruct(obj); }
+            public void PerformRestruct(object obj)
+            {
+                EventRestruct (obj);
+            }
+
             /// <summary>
             /// Метод инициирующий возникновение события из-вне
             /// </summary>
-            /// <param name="obj">Аргумент события</param>
-            public void PerformRestruct() { EventRestruct(m_propView); }
+            public void PerformRestruct()
+            {
+                EventRestruct (m_propView);
+            }
+
             /// <summary>
             /// Значение признака ориентации размещения таблиц, графиков
             /// </summary>
             private int m_prevViewOrientation;
+
             /// <summary>
             /// Конструктор - основной (без параметров)
             /// </summary>
@@ -74,17 +83,21 @@ namespace Statistic
                         arProp.CopyTo(m_propView, 0);
                     }
                     else
-                        throw new Exception(@"HLabelCustomTecView::ctor () - длина массива свойств ...");                
+                        throw new Exception(@"HLabelCustomTecView::ctor () - длина массива свойств ...");
 
                 m_prevViewOrientation = m_propView[(int)INDEX_PROPERTIES_VIEW.ORIENTATION];
 
+                ForeColorChanged += new EventHandler (onForeColorChanged);
+                BackColorChanged += new EventHandler (onBackColorChanged);
+
                 //this.SizeChanged += new EventHandler (onSizeChanged);
             }
+
             /// <summary>
             /// Обработчик события - выбор п. меню
             /// </summary>
-            /// <param name="obj"></param>
-            /// <param name="ev"></param>
+            /// <param name="obj">Объект, инициировавший событие</param>
+            /// <param name="ev">Аргумент события</param>
             private void OnMenuItem_Content(object obj, EventArgs ev)
             {
                 int indx = ((MenuItem)obj).Index;
@@ -100,6 +113,7 @@ namespace Statistic
 
                 ((PanelCustomTecView)Parent.Parent).EventContentChanged ();
             }
+
             /// <summary>
             /// Установить новое значение для свойства
             /// </summary>
@@ -157,6 +171,7 @@ namespace Statistic
                     savePrevViewOrientation ();
                 }
             }
+
             /// <summary>
             /// Запомнить предыдущее стостояние "ориентация сплиттера"
             /// </summary>
@@ -165,6 +180,7 @@ namespace Statistic
                 //Блокировать возможность выбора "ориентация сплиттера"
                 m_propView[(int)INDEX_PROPERTIES_VIEW.ORIENTATION] = -1;
             }
+
             /// <summary>
             /// СОздать массив п. меню, управляющего содержанием элемента управления
             /// </summary>
@@ -197,6 +213,7 @@ namespace Statistic
 
                 return arMenuItems;
             }
+
             /// <summary>
             /// Изменить состояние меню
             /// </summary>
@@ -228,6 +245,7 @@ namespace Statistic
                 }
                 
             }
+
             /// <summary>
             /// Добавить "постоянные" элементы в контекстное меню (Содержание, Очистить)
             /// </summary>
@@ -242,6 +260,25 @@ namespace Statistic
 
                 ContentMenuStateChange ();
             }
+
+            //TODO:
+            public void onForeColorChanged(object obj, EventArgs ev)
+            {
+            //    if (Equals (ContextMenuStrip, null) == false)
+            //        ContextMenu.ForeColor = (obj as Control).ForeColor;
+            //    else
+            //        ;
+            }
+
+            //TODO:
+            public void onBackColorChanged(object obj, EventArgs ev)
+            {
+            //    if (Equals (ContextMenuStrip, null) == false)
+            //        ContextMenu.BackColor = (obj as Control).BackColor;
+            //    else
+            //        ;
+            }
+
             /// <summary>
             /// Состояние элемента управления
             ///  0/1 - нет/есть объекта отображения
@@ -256,6 +293,7 @@ namespace Statistic
             /// Цвет шрифта для подписи элемента управления
             /// </summary>
             Color _color { get { return _state == true ? Color.Red : Color.Black; } }
+
             /// <summary>
             /// Установить признак "Доступность" для п. меню
             /// </summary>
@@ -281,6 +319,7 @@ namespace Statistic
                     else
                         ;
             }
+
             /// <summary>
             /// Установить шрифт и цвет шрифта для подписи
             /// </summary>
@@ -298,6 +337,7 @@ namespace Statistic
 
                 this.ForeColor = color;
             }
+
             /// <summary>
             /// Применить актуальный размер шрифта
             /// </summary>
@@ -312,6 +352,7 @@ namespace Statistic
                 else
                     ;
             }
+
             /// <summary>
             /// Возвратить идентификатор п. меню с установленным признаком "Использовать"
             /// </summary>
@@ -341,6 +382,7 @@ namespace Statistic
 
                 return iRes;
             }
+
             /// <summary>
             /// Изменить содержимое ячейки для объекта отображения 
             /// </summary>
@@ -368,6 +410,7 @@ namespace Statistic
                 else
                     ; //??? Ошибка: не найден
             }
+
             /// <summary>
             /// Возвратить строку с закодированными настройками объекта отображения
             /// </summary>

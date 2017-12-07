@@ -40,9 +40,9 @@ namespace Statistic
         private void InitializeComponent()
         {
             //System.ComponentModel.ComponentResourceManager resources = new System.ComponentModel.ComponentResourceManager(typeof(FormUser));
-           
-            this.treeView_Users = new TreeView_Users();
-            this.dgvProp = new DataGridView_Prop_ComboBoxCell();
+
+            this.treeView_Users = new TreeView_Users(ForeColor, BackColor == SystemColors.Control ? SystemColors.Window : BackColor);
+            this.dgvProp = new DataGridView_Prop_ComboBoxCell(ForeColor, BackColor == SystemColors.Control ? SystemColors.Window : BackColor);
             this.btnOK = new Button();
             this.btnBreak = new Button();
             this.SuspendLayout();
@@ -54,7 +54,7 @@ namespace Statistic
             //OK.AutoSize = true;
             btnOK.Text = "Применить";
             btnOK.MouseClick += new MouseEventHandler(this.buttonOK_click);
-            btnOK.Enabled = false;
+            btnOK.Enabled = false;  
 
             btnBreak.Dock = DockStyle.Fill;
             //Break.AutoSize = true;
@@ -68,7 +68,6 @@ namespace Statistic
             this.Controls.Add(this.dgvProp, 7, 0); this.SetColumnSpan(this.dgvProp, 13); this.SetRowSpan(this.dgvProp, 6);
             this.Controls.Add(this.btnOK, 12, 19); this.SetColumnSpan(this.btnOK, 4); this.SetRowSpan(this.btnOK, 1);
             this.Controls.Add(this.btnBreak, 16, 19); this.SetColumnSpan(this.btnBreak, 4); this.SetRowSpan(this.btnBreak, 1);
-
 
             this.Name = "PanelUser";
 
@@ -138,13 +137,19 @@ namespace Statistic
                 this.MultiSelect = false;
                 this.RowHeadersWidth = 250;
                 
-                BackColor = HDataGridViewTables.s_dgvCellStyles [(int)HDataGridViewTables.INDEX_CELL_STYLE.COMMON].BackColor;
-                ForeColor = HDataGridViewTables.s_dgvCellStyles [(int)HDataGridViewTables.INDEX_CELL_STYLE.COMMON].ForeColor;
+                //BackColor = HDataGridViewTables.s_dgvCellStyles [(int)HDataGridViewTables.INDEX_CELL_STYLE.COMMON].BackColor;
+                //ForeColor = HDataGridViewTables.s_dgvCellStyles [(int)HDataGridViewTables.INDEX_CELL_STYLE.COMMON].ForeColor;
             }
 
-            public DataGridView_Prop ()
+            public DataGridView_Prop (Color foreColor, Color backColor)
                 : base ()
             {
+                BackColor = backColor;
+                ForeColor = foreColor;
+
+                DefaultCellStyle.BackColor = BackColor;
+                DefaultCellStyle.ForeColor = ForeColor;
+
                 InitializeComponent ();//инициализация компонентов
 
                 this.CellValueChanged += new DataGridViewCellEventHandler (this.cell_EndEdit);
@@ -154,7 +159,7 @@ namespace Statistic
             /// Запрос на получение таблицы со свойствами
             /// </summary>
             /// <param name="id_list">Лист с идентификаторами компонентов</param>
-            public virtual void Update_dgv (int id_component, DataTable [] tables)
+            public virtual void Update (int id_component, DataTable [] tables)
             {
                 this.Rows.Clear ();
                 DataRow [] rowsSel = tables [0].Select (@"ID=" + id_component);
@@ -176,7 +181,9 @@ namespace Statistic
             private void cell_ID_Edit_ReadOnly ()
             {
                 for (int i = 0; i < this.Rows.Count; i++) {
-                    if (this.Rows [i].HeaderCell.Value.ToString () [0] == 'I' && this.Rows [i].HeaderCell.Value.ToString () [1] == 'D') {
+                    //TODO: как это? 1-ый элемент = "I", а 2-ой = "D"?
+                    if (this.Rows [i].HeaderCell.Value.ToString () [0] == 'I'
+                        && this.Rows [i].HeaderCell.Value.ToString () [1] == 'D') {
                         this.Rows [i].Cells ["Значение"].ReadOnly = true;
                         this.Rows [i].Cells ["Значение"].ToolTipText = "Только для чтения";
                     }
@@ -252,15 +259,21 @@ namespace Statistic
             public DataGridView_Prop_ValuesCellValueChangedEventHandler EventCellValueChanged;
         }
 
-        public class DataGridView_Prop_ComboBoxCell : DataGridView_Prop {
-            enum INDEX_TABLE {
+        public class DataGridView_Prop_ComboBoxCell : DataGridView_Prop
+        {
+            public DataGridView_Prop_ComboBoxCell (Color foreColor, Color backColor)
+                : base (foreColor, backColor)
+            {
+            }
+
+            private enum INDEX_TABLE {
                 user, role, tec
             }
             /// <summary>
             /// Запрос на получение таблицы со свойствами и ComboBox
             /// </summary>
             /// <param name="id_list">Лист с идентификаторами компонентов</param>
-            public override void Update_dgv (int id_component, DataTable [] tables)
+            public override void Update (int id_component, DataTable [] tables)
             {
                 this.CellValueChanged -= cell_EndEdit;
                 this.Rows.Clear ();
@@ -307,7 +320,7 @@ namespace Statistic
                             this.Rows [this.Rows.Count - 1].HeaderCell.Value = col.ColumnName.ToString ();
                         }
 
-                        this.Rows [this.Rows.Count - 1].Cells [0].Style.BackColor = this.BackColor;
+                        //this.Rows [this.Rows.Count - 1].Cells [0].Style.BackColor = this.BackColor;
                     } else
                         Logging.Logg ().Error (@"Ошибка....", Logging.INDEX_MESSAGE.NOT_SET);
 
@@ -345,15 +358,17 @@ namespace Statistic
             }
         }
 
-        public class DataGridView_Prop_Text_Check : DataGridView_Prop {
-            enum INDEX_TABLE {
+        public class DataGridView_Prop_Text_Check : DataGridView_Prop
+        {
+            private enum INDEX_TABLE {
                 user, role, tec
             }
 
-            public DataGridView_Prop_Text_Check (DataTable tables)
-                : base ()
+            public DataGridView_Prop_Text_Check (DataTable tables, Color foreColor, Color backColor)
+                : base (foreColor, backColor)
             {
-                create_dgv (tables);
+                create (tables);
+
                 this.RowHeadersWidth = 500;
             }
 
@@ -361,7 +376,7 @@ namespace Statistic
             /// Запрос на получение таблицы со свойствами и ComboBox
             /// </summary>
             /// <param name="id_list">Лист с идентификаторами компонентов</param>
-            private void create_dgv (DataTable tables)
+            private void create (DataTable tables)
             {
                 this.CellValueChanged -= cell_EndEdit;
                 this.Rows.Clear ();
@@ -384,7 +399,7 @@ namespace Statistic
                 this.CellValueChanged += cell_EndEdit;
             }
 
-            public override void Update_dgv (int id_component, DataTable [] tables)
+            public override void Update (int id_component, DataTable [] tables)
             {
                 this.CellValueChanged -= cell_EndEdit;
 
@@ -486,7 +501,7 @@ namespace Statistic
                 this.HideSelection = false;
             }
 
-            public TreeView_Users ()
+            public TreeView_Users (Color foreColor, Color backColor)
                 : base ()
             {
                 InitializeComponent ();
@@ -954,7 +969,7 @@ namespace Statistic
             InitializeComponent();
 
             m_AllUnits = ASUTP.Helper.HUsers.GetTableProfileUnits;
-            dgvProfile = new DataGridView_Prop_Text_Check(m_AllUnits);
+            dgvProfile = new DataGridView_Prop_Text_Check(m_AllUnits, ForeColor, BackColor == SystemColors.Control ? SystemColors.Window : BackColor);
             dgvProfile.Dock = DockStyle.Fill;
             this.Controls.Add(this.dgvProfile, 7, 6); this.SetColumnSpan(this.dgvProfile, 13); this.SetRowSpan(this.dgvProfile, 13);
 
@@ -1319,7 +1334,7 @@ namespace Statistic
                 tables[0] = m_arr_editTable[(int)TreeView_Users.Type_Comp.User];
                 tables[1] = m_arr_editTable[(int)TreeView_Users.Type_Comp.Role];
                 tables[2] = table_TEC;
-                dgvProp.Update_dgv(list_id.id_user, tables);
+                dgvProp.Update(list_id.id_user, tables);
                 bIsRole = false;
                 m_type_sel_node = TreeView_Users.Type_Comp.User;
                 
@@ -1328,13 +1343,13 @@ namespace Statistic
             if (list_id.id_user.Equals(-1) == true & list_id.id_role.Equals(-1) == false)
             {
                 tables[0] = m_arr_editTable[(int)TreeView_Users.Type_Comp.Role];
-                dgvProp.Update_dgv(list_id.id_role, tables);
+                dgvProp.Update(list_id.id_role, tables);
                 bIsRole = true;
                 m_type_sel_node = TreeView_Users.Type_Comp.Role;
             }
 
             massTable[0] = getProfileTable(m_arr_editTable[(int)ID_Table.Profiles], list_id.id_role, list_id.id_user, bIsRole);
-            dgvProfile.Update_dgv(IdComp, massTable);
+            dgvProfile.Update(IdComp, massTable);
         }
 
         /// <summary>
@@ -1575,6 +1590,34 @@ namespace Statistic
             //??? ничего не надо делать
         }
 
+        public override Color ForeColor
+        {
+            get
+            {
+                return base.ForeColor;
+            }
+
+            set
+            {
+                base.ForeColor = value;
+
+                if (Equals (treeView_Users, null) == false)
+                    treeView_Users.ForeColor = value;
+                else
+                    ;
+
+                if (Equals (dgvProp, null) == false)
+                    dgvProp.DefaultCellStyle.ForeColor = value;
+                else
+                    ;
+
+                if (Equals (dgvProfile, null) == false)
+                    dgvProfile.DefaultCellStyle.ForeColor = value;
+                else
+                    ;
+            }
+        }
+
         public override Color BackColor
         {
             get
@@ -1593,17 +1636,15 @@ namespace Statistic
                 else
                     ;
 
-                if (Equals (dgvProfile, null) == false)
-                    for (int j = 0; j < dgvProfile.ColumnCount; j++)
-                        for (int i = 0; i < dgvProfile.RowCount; i++)
-                            dgvProfile.Rows [i].Cells [j].Style.BackColor = backColor;
+                if (Equals (dgvProp, null) == false)
+                    dgvProp.BackColor =
+                    dgvProp.DefaultCellStyle.BackColor =
+                        backColor;
                 else
                     ;
 
-                if (Equals (dgvProp, null) == false)
-                    for (int j = 0; j < dgvProp.ColumnCount; j++)
-                        for (int i = 0; i < dgvProp.RowCount; i++)
-                            dgvProp.Rows [i].Cells [j].Style.BackColor = backColor;
+                if (Equals (dgvProfile, null) == false)
+                    dgvProfile.DefaultCellStyle.BackColor = backColor;
                 else
                     ;
             }

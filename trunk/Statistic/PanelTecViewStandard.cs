@@ -194,7 +194,11 @@ namespace Statistic
 
         protected class HZedGraphControlStandardHours : HZedGraphControl
         {
-            public HZedGraphControlStandardHours(object obj) : base(obj, FormMain.formGraphicsSettings.SetScale) { InitializeComponent(); }
+            public HZedGraphControlStandardHours(object obj)
+                : base(obj, FormMain.formGraphicsSettings.SetScale)
+            {
+                InitializeComponent ();
+            }
 
             private void InitializeComponent()
             {

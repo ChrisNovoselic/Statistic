@@ -64,7 +64,7 @@ namespace Statistic
         {        
             this.components = new System.ComponentModel.Container();
             //System.ComponentModel.ComponentResourceManager resources = new System.ComponentModel.ComponentResourceManager(typeof(FormTECComponent));
-            dgvProp = new DataGridView_Prop();
+            dgvProp = new DataGridView_Prop(ForeColor, BackColor == SystemColors.Control ? SystemColors.Window : BackColor);
             btnOK = new Button();
             btnBreak = new Button();
 
@@ -75,7 +75,7 @@ namespace Statistic
             // 
             // treeView_TECComponent
             //
-            treeView_TECComponent = new TreeView_TECComponent();
+            treeView_TECComponent = new TreeView_TECComponent(true, ForeColor, BackColor == SystemColors.Control ? SystemColors.Window : BackColor);
             treeView_TECComponent.Dock = DockStyle.Fill;
             
             // 
@@ -680,6 +680,29 @@ namespace Statistic
             //??? ничего не надо делать
         }
 
+        public override Color ForeColor
+        {
+            get
+            {
+                return base.ForeColor;
+            }
+
+            set
+            {
+                base.ForeColor = value;
+
+                if (Equals (treeView_TECComponent, null) == false)
+                    treeView_TECComponent.ForeColor = value;
+                else
+                    ;
+
+                if (Equals (dgvProp, null) == false)
+                    dgvProp.ForeColor = value;
+                else
+                    ;
+            }
+        }
+
         public override Color BackColor
         {
             get
@@ -691,8 +714,15 @@ namespace Statistic
             {
                 base.BackColor = value;
 
-                if (Equals (treeView_TECComponent, false) == false)
+                if (Equals (treeView_TECComponent, null) == false)
                     treeView_TECComponent.BackColor = value == SystemColors.Control ? SystemColors.Window : value;
+                else
+                    ;
+
+                if (Equals (dgvProp, null) == false)
+                    dgvProp.BackColor =
+                    dgvProp.DefaultCellStyle.BackColor =
+                        value == SystemColors.Control ? SystemColors.Window : value;
                 else
                     ;
             }
@@ -903,8 +933,12 @@ namespace Statistic
                 this.RowHeadersVisible = true;
             }
 
-            public DataGridView_Prop () : base ()
+            public DataGridView_Prop (Color foreColor, Color backColor)
+                : base ()
             {
+                BackColor = backColor;
+                ForeColor = foreColor;
+
                 InitializeComponent ();//инициализация компонентов
 
                 this.CellEndEdit += new DataGridViewCellEventHandler (this.cell_EndEdit);
@@ -1124,9 +1158,12 @@ namespace Statistic
                 //this.ContextMenuStrip.ItemClicked += new ToolStripItemClickedEventHandler(this.add_New_TEC);
             }
 
-            public TreeView_TECComponent (bool contextEnable = true)
+            public TreeView_TECComponent (bool contextEnable, Color foreColor, Color backColor)
                 : base ()
             {
+                BackColor = backColor;
+                ForeColor = foreColor;
+
                 InitializeComponent ();
 
                 m_list_TEC = db_sostav.get_list_tec ();

@@ -191,7 +191,7 @@ namespace Statistic
 
                 Logging.DelegateGetINIParametersOfID = new StringDelegateIntFunc(formParameters.GetINIParametersOfID);
 
-                updateParametersSetup();                
+                updateParametersSetup();
 
                 //Предустановленные в файле/БД конфигурации
                 HUsers.s_REGISTRATION_INI[(int)HUsers.INDEX_REGISTRATION.DOMAIN_NAME] = formParameters.GetINIParametersOfID ((int)FormParameters.PARAMETR_SETUP.USERS_DOMAIN_NAME); //string.Empty; //@"Отладчик";
@@ -2363,7 +2363,9 @@ namespace Statistic
         {
             if (m_dictAddingTabs[(int)ID_ADDING_TAB.SOBSTV_NYZHDY_NEW].panel == null)
             {
-                m_dictAddingTabs[(int)ID_ADDING_TAB.SOBSTV_NYZHDY_NEW].panel = new PanelCommonAux(formGraphicsSettings.FontColor, formGraphicsSettings.BackgroundColor, formParameters.m_arParametrSetup[(int)FormParameters.PARAMETR_SETUP.COMMON_AUX_PATH]);
+                m_dictAddingTabs[(int)ID_ADDING_TAB.SOBSTV_NYZHDY_NEW].panel = new PanelCommonAux(formParameters.m_arParametrSetup[(int)FormParameters.PARAMETR_SETUP.COMMON_AUX_PATH]
+                    , formGraphicsSettings.FontColor
+                    , formGraphicsSettings.BackgroundColor);
                 ((PanelCommonAux)m_dictAddingTabs[(int)ID_ADDING_TAB.SOBSTV_NYZHDY_NEW].panel).SetDelegateWait(delegateStartWait, delegateStopWait, delegateEvent);
                 ((PanelCommonAux)m_dictAddingTabs[(int)ID_ADDING_TAB.SOBSTV_NYZHDY_NEW].panel).SetDelegateReport(ErrorReport, WarningReport, ActionReport, ReportClear);
             }
@@ -2626,7 +2628,7 @@ namespace Statistic
             //главное окно
             MainMenuStrip.BackColor =
             ContextMenuStrip.BackColor =
-                formGraphicsSettings.BackgroundColor;            
+                formGraphicsSettings.BackgroundColor;
 
             if (formGraphicsSettings.m_colorShema == FormGraphicsSettings.ColorShemas.Custom) {
                 MainMenuStrip.RenderMode = ToolStripRenderMode.Professional;
@@ -2744,8 +2746,8 @@ namespace Statistic
             {
                 ShowWindow(formGraphicsSettings.Handle, SW_SHOWNOACTIVATE);
                 SetWindowPos(formGraphicsSettings.Handle.ToInt32(), HWND_TOP,
-                            formGraphicsSettings.Left, formGraphicsSettings.Top, formGraphicsSettings.Width, formGraphicsSettings.Height,
-                            SWP_NOACTIVATE);
+                    formGraphicsSettings.Left, formGraphicsSettings.Top, formGraphicsSettings.Width, formGraphicsSettings.Height,
+                    SWP_NOACTIVATE);
             }
             else
                 ;
@@ -2753,9 +2755,9 @@ namespace Statistic
 
         private void параметрыПриложенияToolStripMenuItem_Click(object sender, EventArgs e)
         {
-            if (s_listFormConnectionSettings[(int)CONN_SETT_TYPE.CONFIG_DB].Ready == 0)
-                formParameters.ShowDialog(this);
-            else
+            if (s_listFormConnectionSettings [(int)CONN_SETT_TYPE.CONFIG_DB].Ready == 0) {
+                formParameters.ShowDialog (this, formGraphicsSettings.FontColor, formGraphicsSettings.BackgroundColor);
+            } else
                 ;
         }
 

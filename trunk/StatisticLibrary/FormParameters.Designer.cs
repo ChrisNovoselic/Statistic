@@ -1,3 +1,4 @@
+using System.Drawing;
 using System.Windows.Forms;
 
 namespace StatisticCommon
@@ -33,9 +34,9 @@ namespace StatisticCommon
             this.SuspendLayout();
             
             this.m_dgvData = new DataGridView ();
-            this.m_dgvData.Columns.AddRange(new System.Windows.Forms.DataGridViewColumn[] {new DataGridViewTextBoxColumn (),
-                                                                                            new DataGridViewTextBoxColumn (),
-                                                                                            new DataGridViewTextBoxColumn ()});
+            this.m_dgvData.Columns.AddRange(new System.Windows.Forms.DataGridViewColumn[] {new DataGridViewTextBoxColumn ()
+                , new DataGridViewTextBoxColumn ()
+                , new DataGridViewTextBoxColumn ()});
             this.m_dgvData.Columns [0].HeaderText = @"Параметр";
             this.m_dgvData.Columns [0].Width = 90;
             this.m_dgvData.Columns [0].ReadOnly = true;
@@ -49,6 +50,8 @@ namespace StatisticCommon
             this.m_dgvData.Columns[2].ReadOnly = true;
             this.m_dgvData.Columns[2].Resizable = DataGridViewTriState.False;
 
+            this.m_dgvData.DefaultCellStyle.BackColor = BackColor == SystemColors.Control ? SystemColors.Window : BackColor;
+            this.m_dgvData.DefaultCellStyle.ForeColor = ForeColor;
             this.m_dgvData.Location = new System.Drawing.Point (6, 6);
             this.m_dgvData.Size = new System.Drawing.Size (238, 278);
 

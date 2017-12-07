@@ -471,8 +471,8 @@ namespace Statistic
                     //this.GraphPane.Fill.Color =
                         value;
 
-                    //this.GraphPane.Chart.Fill = new Fill (value == SystemColors.Control ? SystemColors.Window : value);
                     this.GraphPane.Fill = new Fill (value == SystemColors.Control ? SystemColors.Window : value);
+                    this.GraphPane.Chart.Fill.Color = value == SystemColors.Control ? SystemColors.Window : value;
                 }
             }
 
@@ -1424,6 +1424,24 @@ namespace Statistic
             }
         }
 
+        public override Color ForeColor
+        {
+            get
+            {
+                return base.ForeColor;
+            }
+
+            set
+            {
+                base.ForeColor = value;
+
+                if (Equals (_pnlQuickData, null) == false)
+                    _pnlQuickData.ForeColor = value;
+                else
+                    ;
+            }
+        }
+
         public override Color BackColor
         {
             get
@@ -1435,9 +1453,8 @@ namespace Statistic
             {
                 base.BackColor = value;
 
-                if (Equals (_pnlQuickData, null) == false) {
-                    _pnlQuickData.ForeColor = ForeColor;
-                    _pnlQuickData.BackColor = BackColor;
+                if (Equals (_pnlQuickData, null) == false) {                    
+                    _pnlQuickData.BackColor = value;
                 } else
                     ;
             }

@@ -92,6 +92,7 @@ namespace Statistic
                     Run(@"TecView::getRetroMinDetail ()");
                 }
             }
+
             /// <summary>
             /// Вызов из обработчика события - восстановление исходного состояния кнопки мыши, при нажатии ее над 'ZedGraph'-минуты
             ///  только для 'PanelSOTIASSO' (час-в-минутах, минуты-в-секундах)
@@ -286,14 +287,14 @@ namespace Statistic
         {
             throw new System.NotImplementedException();
         }
-        
+
         /// <summary>
         /// Инициализация и размещение собственных элементов управления
         /// </summary>
         private void initializeComponent()
         {
             //Создать дочерние элементы управления
-            m_panelManagement = new PanelManagement(); // панель для размещения элементов управления
+            m_panelManagement = new PanelManagement(FormMain.formGraphicsSettings.FontColor, FormMain.formGraphicsSettings.BackgroundColor); // панель для размещения элементов управления
             m_panelManagement.EvtDatetimeHourChanged += new DelegateDateFunc(panelManagement_OnEvtDatetimeHourChanged);
             m_panelManagement.EvtGTPSelectionIndexChanged += new DelegateIntFunc(panelManagement_OnEvtTECComponentSelectionIndexChanged);
             m_panelManagement.EvtTGItemChecked += new DelegateIntFunc(panelManagement_OnEvtTGItemChecked);
@@ -419,14 +420,11 @@ namespace Statistic
             /// <summary>
             /// Конструктор - основной (без параметров)
             /// </summary>
-            public PanelManagement()
+            private PanelManagement()
                 : base(6, 24)
             {
-                //Инициализировать равномерные высоту/ширину столбцов/строк
-                initializeLayoutStyleEvenly();
-
-                initializeComponent();
             }
+            
             /// <summary>
             /// Конструктор - вспомогательный (с параметрами)
             /// </summary>
@@ -436,6 +434,24 @@ namespace Statistic
             {
                 container.Add(this);
             }
+
+            public PanelManagement (Color foreColor, Color backColor)
+                : this ()
+            {
+                BackColor = backColor;
+                ForeColor = foreColor;
+
+                //Инициализировать равномерные высоту/ширину столбцов/строк
+                initializeLayoutStyleEvenly ();
+
+                initializeComponent ();
+            }
+
+            public PanelManagement (IContainer container, Color foreColor, Color backColor)
+                : this (container)
+            {
+            }
+
             /// <summary>
             /// Инициализация панели с установкой кол-ва столбцов, строк
             /// </summary>
@@ -445,6 +461,7 @@ namespace Statistic
             {
                 throw new System.NotImplementedException();
             }
+
             /// <summary>
             /// Инициализация, размещения собственных элементов управления
             /// </summary>
@@ -541,7 +558,9 @@ namespace Statistic
                 ctrl.Name = KEY_CONTROLS.DGV_TECCOMPONENT_VALUE.ToString();
                 ctrl.Dock = DockStyle.Fill;
                 //ctrl.Anchor = (AnchorStyles)((AnchorStyles.Left | AnchorStyles.Top) | AnchorStyles.Right);
-                //ctrl.Height = 240; // RowSpan = ...                
+                //ctrl.Height = 240; // RowSpan = ...
+                ctrl.BackColor = BackColor;
+                ctrl.ForeColor = ForeColor;
                 //Добавить к текущей панели таблицу значений ГТП
                 this.Controls.Add(ctrl, 0, 2);
                 this.SetColumnSpan(ctrl, 6); this.SetRowSpan(ctrl, 9);
@@ -560,6 +579,8 @@ namespace Statistic
                 (ctrl as CheckedListBox).CheckOnClick = true;
                 (ctrl as CheckedListBox).ItemCheck += new ItemCheckEventHandler(onTG_ItemCheck);
                 ctrl.Dock = DockStyle.Fill;
+                ctrl.BackColor = BackColor == SystemColors.Control ? SystemColors.Window : BackColor;
+                ctrl.ForeColor = ForeColor;
                 //Добавить к текущей панели список для выбора ТГ
                 this.Controls.Add(ctrl, 0, 12);
                 this.SetColumnSpan(ctrl, 6); this.SetRowSpan(ctrl, 3);
@@ -569,7 +590,9 @@ namespace Statistic
                 ctrl.Name = KEY_CONTROLS.DGV_TG_VALUE.ToString();
                 ctrl.Dock = DockStyle.Fill;
                 //ctrl.Anchor = (AnchorStyles)((AnchorStyles.Left | AnchorStyles.Top) | AnchorStyles.Right);
-                //ctrl.Height = 240; // RowSpan = ...                
+                //ctrl.Height = 240; // RowSpan = ...
+                ctrl.BackColor = BackColor;
+                ctrl.ForeColor = ForeColor;
                 //Добавить к текущей панели таблицу значений ГТП
                 this.Controls.Add(ctrl, 0, 15);
                 this.SetColumnSpan(ctrl, 6); this.SetRowSpan(ctrl, 9);
@@ -587,6 +610,7 @@ namespace Statistic
             {
                 return (this.Controls.Find(KEY_CONTROLS.DTP_CUR_DATE.ToString(), true)[0] as HDateTimePicker).Value;
             }
+
             ///// <summary>
             ///// Присвоить исходные дату/номер часа
             ///// </summary>
@@ -597,6 +621,7 @@ namespace Statistic
             //    curDatetimeHour = curDatetimeHour.AddMilliseconds(-1 * (curDatetimeHour.Minute * 60 * 1000 + curDatetimeHour.Second * 1000 + curDatetimeHour.Millisecond));
             //    dtpCurDatetimeHour.Value = curDatetimeHour;
             //}
+
             /// <summary>
             /// Изменить дату/номер часа
             /// </summary>
@@ -609,6 +634,7 @@ namespace Statistic
 
                 setNumericUpDownValue(dtpCurDatetimeHour.Value.Hour + 1);
             }
+
             /// <summary>
             /// Обработчик события - дескриптор элемента управления создан
             /// </summary>
@@ -618,6 +644,7 @@ namespace Statistic
             {
                 initDatetimeHourValue(HDateTime.ToMoscowTimeZone());
             }
+
             /// <summary>
             /// Заполнение ComboBox данными на основе formChangeMode
             /// </summary>
@@ -744,6 +771,7 @@ namespace Statistic
             {
                 initDatetimeHourValue(HDateTime.ToMoscowTimeZone());
             }
+
             /// <summary>
             /// Обработчик события - отобразить полученные значения
             /// </summary>
@@ -758,6 +786,7 @@ namespace Statistic
                 else
                     ;
             }
+
             /// <summary>
             /// Обработчик события - отобразить значения в разрезе минута-секунды
             /// </summary>
@@ -772,6 +801,7 @@ namespace Statistic
                 else
                     ;
             }
+
             /// <summary>
             /// Отобразить значения в разрезе час-минуты
             /// </summary>
@@ -785,49 +815,16 @@ namespace Statistic
                 DataGridViewTECComponent dgvTECComponent = this.Controls.Find(KEY_CONTROLS.DGV_TECCOMPONENT_VALUE.ToString(), true)[0] as DataGridViewTECComponent;
                 dgvTECComponent.Fill(valuesMins, (int)dcGTPKoeffAlarmPcur, (int)(obj as object[])[2]);                
             }
+
             /// <summary>
             /// Отобразить значения в разрезе минута-секунды
             /// </summary>
             /// <param name="obj">Объект, с данными для отображения</param>
             private void onEvtValuesSecs(object obj)
             {
-                Dictionary<int, TecView.valuesLowPointDev> dictValuesTG = obj as Dictionary<int, TecView.valuesLowPointDev>;
                 DataGridViewTG dgvTG = this.Controls.Find(KEY_CONTROLS.DGV_TG_VALUE.ToString(), true)[0] as DataGridViewTG;
 
-                int i = -1; //Индекс столбца
-                bool bRowVisible = false; //Признак видимости строки
-                for (int j = 0; j < 60; j++)
-                {
-                    i = 0;
-                    // фон ячеек с номером секунды д.б. обновлен
-                    dgvTG.Rows [j].Cells [i].Style.BackColor = dgvTG.BackColor;
-
-                    bRowVisible = false;
-                    foreach (int id in dictValuesTG.Keys)
-                    {
-                        i++; // очередной столбец
-
-                        dgvTG.Rows [j].Cells [i].Style.BackColor = dgvTG.BackColor;
-
-                        //Проверить наличие значения для ТГ за очередную секунду
-                        if (!(dictValuesTG[id].m_powerSeconds[j] < 0))
-                        {//Есть значение
-                            // отобразить
-                            dgvTG.Rows[j].Cells[i].Value = dictValuesTG[id].m_powerSeconds[j].ToString(@"F3");
-                            //При необходимости установить признак видимости строки
-                            if (bRowVisible == false)
-                                bRowVisible = true;
-                            else
-                                ;
-                        }
-                        else
-                            //Нет значения - пустая строка
-                            dgvTG.Rows[j].Cells[i].Value = string.Empty;
-                    }
-                    //Установить признак видимости строки
-                    // в ~ от наличия значения в ней
-                    dgvTG.Rows[j].Visible = bRowVisible;
-                }
+                dgvTG.Fill (obj as Dictionary<int, TecView.valuesLowPointDev>);
             }
 
             public override Color ForeColor
@@ -856,8 +853,8 @@ namespace Statistic
                 {
                     base.BackColor = value;
 
-                    findControl (KEY_CONTROLS.DGV_TECCOMPONENT_VALUE.ToString ()).BackColor =
-                    findControl (KEY_CONTROLS.DGV_TG_VALUE.ToString ()).BackColor =
+                    //findControl (KEY_CONTROLS.DGV_TECCOMPONENT_VALUE.ToString ()).BackColor =
+                    //findControl (KEY_CONTROLS.DGV_TG_VALUE.ToString ()).BackColor =
                     findControl (KEY_CONTROLS.CLB_TG.ToString ()).BackColor =
                          value == SystemColors.Control ? SystemColors.Window : BackColor;
                 }
@@ -877,6 +874,7 @@ namespace Statistic
             {
                 initializeComponent();
             }
+
             /// <summary>
             /// Конструктор - вспомогательный (с параметрами)
             /// </summary>
@@ -886,6 +884,7 @@ namespace Statistic
             {
                 container.Add(this);
             }
+
             /// <summary>
             /// Инициализация собственных компонентов элемента управления
             /// </summary>
@@ -917,6 +916,7 @@ namespace Statistic
                 this.PointValueEvent += new ZedGraph.ZedGraphControl.PointValueHandler(this.onPointValueEvent);
                 this.DoubleClickEvent += new ZedGraph.ZedGraphControl.ZedMouseEventHandler(this.onDoubleClickEvent);
             }
+
             /// <summary>
             /// Обработчик события - отобразить значения точек
             /// </summary>
@@ -929,6 +929,7 @@ namespace Statistic
             {
                 return curve[iPt].Y.ToString("F2");
             }
+
             /// <summary>
             /// Обработчик события - двойной "щелчок" мыши
             /// </summary>
@@ -987,9 +988,14 @@ namespace Statistic
 
                 set
                 {
+                    Color clrChart
+                        , clrCurve;
+
                     base.BackColor = value;
 
                     GraphPane.Fill = new Fill (value == SystemColors.Control ? SystemColors.Window : value);
+                    getColorZEDGraph (out clrChart, out clrCurve);
+                    GraphPane.Chart.Fill.Color = clrChart;
                 }
             }
         }
@@ -1008,6 +1014,7 @@ namespace Statistic
             {
                 initializeComponent();
             }
+
             /// <summary>
             /// Конструктор - вспомогательный (с параметрами)
             /// </summary>
@@ -1017,12 +1024,14 @@ namespace Statistic
             {
                 container.Add(this);
             }
+
             /// <summary>
             /// Инициализация собственных компонентов элемента управления
             /// </summary>
             private void initializeComponent()
             {
             }
+
             ///// <summary>
             ///// Обработчик события - отобразить полученные значения
             ///// </summary>
@@ -1548,6 +1557,36 @@ namespace Statistic
                 this.CurrentCell.Selected = true;
             }
 
+            public override Color ForeColor
+            {
+                get
+                {
+                    return base.ForeColor;
+                }
+
+                set
+                {
+                    base.ForeColor = value;
+
+                    DefaultCellStyle.ForeColor = value;
+                }
+            }
+
+            public override Color BackColor
+            {
+                get
+                {
+                    return base.BackColor;
+                }
+
+                set
+                {
+                    base.BackColor = value;
+
+                    DefaultCellStyle.BackColor = value == SystemColors.Control ? SystemColors.Window : value;
+                }
+            }
+
             /// <summary>
             /// Заполнить значениями элемент управления
             /// </summary>
@@ -1557,23 +1596,23 @@ namespace Statistic
             {
                 DataGridViewCellStyle cellStyle;
                 double diviation = -1F;
+                decimal dcKoeff = (decimal)pars [0]; //dcGTPKoeffAlarmPcur
                 int cntDiviation = 0
-                    , iLastMin = (int)pars[1];
-                decimal dcKoeff = (decimal)pars[0]; //dcGTPKoeffAlarmPcur
+                    , iLastMin = (int)pars[1];                
 
                 int i = -1;
 
                 for (i = 1; i < values.Length; i++)
                 {
-                    // изменяем фон ячеек с неизменяемым значением на случай изменения цветовой схемы "Система - Пользователь"
-                    Rows [i - 1].Cells [(int)INDEX_COLUMN.NUM_MINUTE].Style = HDataGridViewTables.s_dgvCellStyles [(int)HDataGridViewTables.INDEX_CELL_STYLE.COMMON];
+                    //// изменяем фон ячеек с неизменяемым значением на случай изменения цветовой схемы "Система - Пользователь"
+                    //Rows [i - 1].Cells [(int)INDEX_COLUMN.NUM_MINUTE].Style = HDataGridViewTables.s_dgvCellStyles [(int)HDataGridViewTables.INDEX_CELL_STYLE.COMMON];
 
                     //Значения
                     Rows [i - 1].Cells[(int)INDEX_COLUMN.VALUE].Value = values[i].valuesFact.ToString(@"F3");
-                    Rows [i - 1].Cells [(int)INDEX_COLUMN.VALUE].Style = HDataGridViewTables.s_dgvCellStyles [(int)HDataGridViewTables.INDEX_CELL_STYLE.COMMON];
+                    //Rows [i - 1].Cells [(int)INDEX_COLUMN.VALUE].Style = HDataGridViewTables.s_dgvCellStyles [(int)HDataGridViewTables.INDEX_CELL_STYLE.COMMON];
                     //УДГэ
                     Rows [i - 1].Cells[(int)INDEX_COLUMN.UDGe].Value = values[i].valuesUDGe.ToString(@"F3");
-                    Rows [i - 1].Cells [(int)INDEX_COLUMN.UDGe].Style = HDataGridViewTables.s_dgvCellStyles [(int)HDataGridViewTables.INDEX_CELL_STYLE.COMMON];
+                    //Rows [i - 1].Cells [(int)INDEX_COLUMN.UDGe].Style = HDataGridViewTables.s_dgvCellStyles [(int)HDataGridViewTables.INDEX_CELL_STYLE.COMMON];
                     //Отклонения
                     // максимальное отклонение
                     diviation = values[i].valuesUDGe / 100 * (double)dcKoeff;
@@ -1664,13 +1703,77 @@ namespace Statistic
                 this.MultiSelect = false;
                 this.SelectionMode = DataGridViewSelectionMode.FullRowSelect;
                 this.Columns[0].Width = 38;
-
-                ForeColor = HDataGridViewTables.s_dgvCellStyles [(int)HDataGridViewTables.INDEX_CELL_STYLE.COMMON].ForeColor;
+                
                 BackColor = HDataGridViewTables.s_dgvCellStyles [(int)HDataGridViewTables.INDEX_CELL_STYLE.COMMON].BackColor;
+                ForeColor = HDataGridViewTables.s_dgvCellStyles [(int)HDataGridViewTables.INDEX_CELL_STYLE.COMMON].ForeColor;
 
                 //Добавить строки по числу сек. в мин.
                 for (int i = 0; i < 60; i++)
                     this.Rows.Add(new object[] { i + 1 });
+            }
+
+            public override Color ForeColor
+            {
+                get
+                {
+                    return base.ForeColor;
+                }
+
+                set
+                {
+                    base.ForeColor = value;
+
+                    DefaultCellStyle.ForeColor = value;
+                }
+            }
+
+            public override Color BackColor
+            {
+                get
+                {
+                    return base.BackColor;
+                }
+
+                set
+                {
+                    base.BackColor = value;
+
+                    DefaultCellStyle.BackColor = value == SystemColors.Control ? SystemColors.Window : value;
+                }
+            }
+
+            public void Fill (Dictionary<int, TecView.valuesLowPointDev> dictValuesTG)
+            {
+                int i = -1; //Индекс столбца
+                bool bRowVisible = false; //Признак видимости строки
+                for (int j = 0; j < 60; j++) {
+                    i = 0;
+                    //// фон ячеек с номером секунды д.б. обновлен
+                    //Rows [j].Cells [i].Style.BackColor = BackColor;
+
+                    bRowVisible = false;
+                    foreach (int id in dictValuesTG.Keys) {
+                        i++; // очередной столбец
+
+                        //Rows [j].Cells [i].Style.BackColor = BackColor;
+
+                        //Проверить наличие значения для ТГ за очередную секунду
+                        if (!(dictValuesTG [id].m_powerSeconds [j] < 0)) {//Есть значение
+                            // отобразить
+                            Rows [j].Cells [i].Value = dictValuesTG [id].m_powerSeconds [j].ToString (@"F3");
+                            //При необходимости установить признак видимости строки
+                            if (bRowVisible == false)
+                                bRowVisible = true;
+                            else
+                                ;
+                        } else
+                            //Нет значения - пустая строка
+                            Rows [j].Cells [i].Value = string.Empty;
+                    }
+                    //Установить признак видимости строки
+                    // в ~ от наличия значения в ней
+                    Rows [j].Visible = bRowVisible;
+                }
             }
 
             public void Clear ()
@@ -2185,6 +2288,7 @@ namespace Statistic
                     + (CurrDateHour.Hour + 1) + @"-й ч";
             }
         }
+
         /// <summary>
         /// Текст (часть) заголовка для графической субобласти "минута по-секундно"
         /// </summary>
@@ -2358,9 +2462,12 @@ namespace Statistic
                 else
                     ;
 
-                // событие для панели управления ('PanelManagement') для табличной интерпретации значений
-                if (Equals (m_tecView, null) == false)
-                    EvtValuesSecs (m_tecView.m_dictValuesLowPointDev);
+                if (Equals (m_zGraph_TECComponent, null) == false)
+                    m_zGraph_TECComponent.ForeColor = value;
+                else
+                    ;
+                if (Equals (m_zGraph_TG, null) == false)
+                    m_zGraph_TG.ForeColor = value;
                 else
                     ;
             }
@@ -2382,9 +2489,12 @@ namespace Statistic
                 else
                     ;
 
-                // событие для панели управления ('PanelManagement') для табличной интерпретации значений
-                if (Equals (m_tecView, null) == false)
-                    EvtValuesSecs (m_tecView.m_dictValuesLowPointDev);
+                if (Equals (m_zGraph_TECComponent, null) == false)
+                    m_zGraph_TECComponent.BackColor = value;
+                else
+                    ;
+                if (Equals (m_zGraph_TG, null) == false)
+                    m_zGraph_TG.BackColor = value;
                 else
                     ;
             }

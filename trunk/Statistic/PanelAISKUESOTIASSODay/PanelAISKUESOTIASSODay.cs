@@ -106,21 +106,7 @@ namespace Statistic
         /// </summary>
         private Dictionary<CONN_SETT_TYPE, HZedGraphControl> m_dictZGraphValues;
 
-        private List<StatisticCommon.TEC> m_listTEC;
-        ///// <summary>
-        ///// Список индексов компонентов ТЭЦ (ТГ)
-        /////  для отображения в субобласти графической интерпретации значений СОТИАССО "минута - по-секундно"
-        ///// </summary>
-        //private List<int> m_listIdAIISKUEAdvised
-        //    , m_listIdSOTIASSOAdvised;
-        ///// <summary>
-        ///// Событие выбора даты
-        ///// </summary>
-        //private event Action<DateTime> EvtSetDatetimeHour;
-        ///// <summary>
-        ///// Делегат для установки даты на панели управляющих элементов управления
-        ///// </summary>
-        //private Action<DateTime> delegateSetDatetimeHour;
+        private List<StatisticCommon.TEC> m_listTEC;        
         /// <summary>
         /// Панель для активных элементов управления
         /// </summary>
@@ -196,7 +182,7 @@ namespace Statistic
         //    m_tecView = null;
         //}
         
-            /// <summary>
+        /// <summary>
         /// Инициализация панели с установкой кол-ва столбцов, строк
         /// </summary>
         /// <param name="cols">Количество столбцов</param>
@@ -217,7 +203,7 @@ namespace Statistic
                 , stctrAIISKUE, stctrSOTIASSO;
 
             //Создать дочерние элементы управления
-            m_panelManagement = new PanelManagement(); // панель для размещения элементов управления
+            m_panelManagement = new PanelManagement(FormMain.formGraphicsSettings.FontColor, FormMain.formGraphicsSettings.BackgroundColor); // панель для размещения элементов управления
 
             //Создать, настроить размещение таблиц для отображения значений
             type = CONN_SETT_TYPE.DATA_AISKUE;
@@ -479,7 +465,7 @@ namespace Statistic
             //Остановить базовый объект
             base.Stop();
         }
-        
+
         /// <summary>
         /// Переопределение наследуемой функции - активация/деактивация объекта
         /// </summary>

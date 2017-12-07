@@ -128,7 +128,9 @@ namespace CommonAux
                         break;
                     default:
                         //Успех... пост-инициализация
-                        m_panel = new PanelCommonAux (SystemColors.ControlText, SystemColors.Control, formParameters.m_arParametrSetup [(int)StatisticCommon.FormParameters.PARAMETR_SETUP.COMMON_AUX_PATH]);
+                        m_panel = new PanelCommonAux (formParameters.m_arParametrSetup [(int)StatisticCommon.FormParameters.PARAMETR_SETUP.COMMON_AUX_PATH]
+                            , SystemColors.ControlText
+                            , SystemColors.Control);
                         m_panel.SetDelegateReport (ErrorReport, WarningReport, ActionReport, ReportClear);
                         m_panel.Start ();
 

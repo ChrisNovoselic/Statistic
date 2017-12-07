@@ -313,7 +313,7 @@ namespace Statistic
         /// <summary>
         /// Событие инициации процедуры изменения состояния
         /// </summary>
-        private event DelegateObjectFunc EventChangeDateTime;
+        private event Action<DateTime> EventChangeDateTime;
         /// <summary>
         /// Конструктор - основной (с аргументами)
         /// </summary>
@@ -321,6 +321,14 @@ namespace Statistic
         public PanelLastMinutes(List<StatisticCommon.TEC> listTec/*, DelegateStringFunc fErrRep, DelegateStringFunc fWarRep, DelegateStringFunc fActRep, DelegateBoolFunc fRepClr*/)
             : base (MODE_UPDATE_VALUES.AUTO, FormMain.formGraphicsSettings.FontColor, FormMain.formGraphicsSettings.BackgroundColor)
         {
+            for(INDEX_LABEL indx = (INDEX_LABEL)0; indx < INDEX_LABEL.COUNT_INDEX_LABEL; indx ++) {
+                if (indx == INDEX_LABEL.VALUE_COMPONENT)
+                    s_arLabelStyles [(int)indx].m_backColor = BackColor == SystemColors.Control ? s_clrBackColorLabelVal : BackColor;
+                else
+                    s_arLabelStyles [(int)indx].m_backColor = BackColor;
+                s_arLabelStyles [(int)indx].m_foreColor = ForeColor;
+            }
+
             InitializeComponent();
 
             this.ColumnCount = 1;
@@ -337,7 +345,7 @@ namespace Statistic
                 if (!(listTec[i].m_id > (int)TECComponent.ID.LK))
                 {
                     this.Controls.Add(new PanelTecLastMinutes(listTec[i]/*, fErrRep, fWarRep, fActRep, fRepClr*/), i + 1, 0);
-                    EventChangeDateTime += new DelegateObjectFunc(((PanelTecLastMinutes)this.Controls[i + 1]).OnEventChangeDateTime);
+                    EventChangeDateTime += new Action<DateTime>(((PanelTecLastMinutes)this.Controls[i + 1]).OnEventChangeDateTime);
                     iCountSubColumns += ((PanelTecLastMinutes)this.Controls[i + 1]).CountTECComponent; //Слева столбец дата/время
 
                     this.ColumnCount++;
@@ -955,25 +963,37 @@ namespace Statistic
 
             private void onForeColorChanged (object sender, EventArgs e)
             {
-                foreach (Label label in m_listLabelNames)
-                    label.ForeColor = ForeColor;
+                if (Equals (m_listLabelNames, null) == false)
+                    foreach (Label label in m_listLabelNames)
+                        label.ForeColor = ForeColor;
+                else
+                    ;
 
-                foreach (Dictionary<int, Label> listLabels in m_listDictLabelVal)
-                    foreach (Label label in listLabels.Values)
-                        if (label.BackColor.Equals (s_arLabelStyles [(int)INDEX_LABEL.VALUE_COMPONENT].m_backColor) == true)
-                            label.ForeColor = s_arLabelStyles [(int)INDEX_LABEL.VALUE_COMPONENT].m_foreColor;
-                        else
-                            ;
+                if (Equals (m_listDictLabelVal, null) == false)
+                    foreach (Dictionary<int, Label> listLabels in m_listDictLabelVal)
+                        foreach (Label label in listLabels.Values)
+                            if (label.BackColor.Equals (s_arLabelStyles [(int)INDEX_LABEL.VALUE_COMPONENT].m_backColor) == true)
+                                label.ForeColor = s_arLabelStyles [(int)INDEX_LABEL.VALUE_COMPONENT].m_foreColor;
+                            else
+                                ;
+                else
+                    ;
             }
 
             private void onBackColorChanged (object sender, EventArgs e)
             {
-                foreach (Label label in m_listLabelNames)
-                    label.BackColor = BackColor;
+                if (Equals (m_listLabelNames, null) == false)
+                    foreach (Label label in m_listLabelNames)
+                        label.BackColor = BackColor;
+                else
+                    ;
 
-                foreach (Dictionary<int, Label> listLabels in m_listDictLabelVal)
-                    foreach (Label label in listLabels.Values)
-                        label.BackColor = s_arLabelStyles[(int)INDEX_LABEL.VALUE_COMPONENT].m_backColor;
+                if (Equals (m_listDictLabelVal, null) == false)
+                    foreach (Dictionary<int, Label> listLabels in m_listDictLabelVal)
+                        foreach (Label label in listLabels.Values)
+                            label.BackColor = s_arLabelStyles [(int)INDEX_LABEL.VALUE_COMPONENT].m_backColor;
+                else
+                    ;
             }
 
             public PanelTecLastMinutes(IContainer container, StatisticCommon.TEC tec/*, DelegateStringFunc fErrRep, DelegateStringFunc fWarRep, DelegateStringFunc fActRep, DelegateBoolFunc frepClr*/)
@@ -1088,19 +1108,20 @@ namespace Statistic
 
                 return bRes;
             }
+
             /// <summary>
             /// Обработчие события - изменение значения свойства
             /// </summary>
-            /// <param name="obj"></param>
-            public void OnEventChangeDateTime (object obj) {
-                m_tecView.m_curDate = (DateTime)obj;
+            /// <param name="datetimeNew">Новое значение даты/времени</param>
+            public void OnEventChangeDateTime (DateTime datetimeNew) {
+                m_tecView.m_curDate = datetimeNew;
                 //m_tecView.m_curDate = new DateTime(((DateTime)obj).Year
-                //                                    , ((DateTime)obj).Month
-                //                                    , ((DateTime)obj).Day
-                //                                    , ((DateTime)obj).Hour
-                //                                    , ((DateTime)obj).Minute
-                //                                    , ((DateTime)obj).Millisecond
-                //                                    , DateTimeKind.Unspecified);
+                //  , ((DateTime)obj).Month
+                //  , ((DateTime)obj).Day
+                //  , ((DateTime)obj).Hour
+                //  , ((DateTime)obj).Minute
+                //  , ((DateTime)obj).Millisecond
+                //  , DateTimeKind.Unspecified);
 
                 initTableHourRows();
 

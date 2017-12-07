@@ -24,8 +24,18 @@ namespace StatisticCommon
         /// </summary>
         public class Item
         {
+            /// <summary>
+            /// Идентификатор компонента ТЭЦ
+            /// </summary>
             public int id;
+            /// <summary>
+            /// Краткое наименование компонента (для отображения)
+            /// </summary>
             public string name_shr;
+            /// <summary>
+            /// Признак вызова на отображение соответсвующей элементу вкладки
+            ///  , признак отображения самого элемента в списке 
+            /// </summary>
             public bool bChecked
                 , bVisibled;
 
@@ -38,19 +48,31 @@ namespace StatisticCommon
             }
         }
 
+        /// <summary>
+        /// Список ТЭЦ
+        /// </summary>
         public List<TEC> m_list_tec;
+        /// <summary>
+        /// Список элементов для представления во-вне
+        /// </summary>
         public List<Item> m_listItems;
+        /// <summary>
+        /// Список измененных элементов
+        /// </summary>
         private List<Item> m_list_change_items;
         /// <summary>
         /// Список элементов-перключателей для выбора типа режима
         ///  (фильтр для отображения компонентов ТЭЦ)
         /// </summary>
         private List <CheckBox> m_listCheckBoxTECComponent;
-
+        /// <summary>
+        /// Признак - подтверждение необходимости снятия с отображения диалогового окна
+        /// </summary>
         public bool closing;
-
+        /// <summary>
+        /// Контестное меню главного окна приложения
+        /// </summary>
         public System.Windows.Forms.ContextMenuStrip m_MainFormContextMenuStripListTecViews;
-
         /// <summary>
         /// Массив идентификаторов специальных вкладок, редактирование значений оперативным персоналом
         ///  , размещаются как п. списка в окне "Смена режима". Массив индексируется перечислением 'MANAGER'.
@@ -170,11 +192,42 @@ namespace StatisticCommon
             closing = false;
         }
 
+        public override Color ForeColor
+        {
+            get
+            {
+                return base.ForeColor;
+            }
+
+            set
+            {
+                base.ForeColor =
+                clbMode.ForeColor =
+                    value;
+            }
+        }
+
+        public override Color BackColor
+        {
+            get
+            {
+                return base.BackColor;
+            }
+
+            set
+            {
+                base.BackColor = value;
+
+                clbMode.BackColor = value == SystemColors.Control ? SystemColors.Window : value;
+            }
+        }
+
         /// <summary>
         /// Возвращает режим (int), выбранный пользователем
         /// для формирования списка компонентов
         /// </summary>
-        public int getModeTECComponent() {
+        public int getModeTECComponent()
+        {//TODO: заменить на свойство, добавить перечисление с аттрибутом флага
             //int iMode = 0;
 
             //m_modeTECComponent.UnMarked ();
@@ -191,6 +244,11 @@ namespace StatisticCommon
             return m_modeTECComponent.Value;
         }
 
+        /// <summary>
+        /// Проверить наличие признака отображения того или иного типа компонентов ТЭЦ
+        /// </summary>
+        /// <param name="mode">Режим отображения компонентов ТЭЦ</param>
+        /// <returns>Признак отображения типа компонентов</returns>
         public bool IsModeTECComponent (MODE_TECCOMPONENT mode) {
             //bool bRes = false;
             //int offset = 0;

@@ -8,6 +8,7 @@ using System.Windows.Forms; //Application.ProductVersion
 using ASUTP.Database;
 using ASUTP.Forms;
 using ASUTP.Helper;
+using System.Drawing;
 
 namespace StatisticCommon
 {
@@ -180,6 +181,17 @@ namespace StatisticCommon
             }
         }
 
+        public void ShowDialog (Form parent, Color foreColor, Color backColor)
+        {
+            BackColor = backColor;
+            m_dgvData.DefaultCellStyle.BackColor = backColor == SystemColors.Control ? SystemColors.Window : backColor;
+            ForeColor =
+            m_dgvData.DefaultCellStyle.ForeColor =
+                foreColor;
+
+            ShowDialog (parent);
+        }
+
         //protected override void btnOk_Click(object sender, EventArgs e)
         protected void btnOk_Click(object sender, EventArgs e)
         {
@@ -264,6 +276,7 @@ namespace StatisticCommon
             for (PARAMETR_SETUP i = PARAMETR_SETUP.POLL_TIME; i < PARAMETR_SETUP.COUNT_PARAMETR_SETUP; i++)
                 m_FileINI.WriteString(NAME_SECTION_MAIN, NAME_PARAMETR_SETUP[(int)i], m_arParametrSetup[(int)i]);
         }
+
         public override void SaveParamKey(string column, string value)
         {
             throw new NotImplementedException();

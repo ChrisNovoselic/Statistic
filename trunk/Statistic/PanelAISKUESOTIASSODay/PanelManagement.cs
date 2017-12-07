@@ -47,32 +47,50 @@ namespace Statistic
             /// 2 элемента; список использовать нельзя, т.к. значения перечисления 'CONN_SETT_TYPE' м.б. отрицательными
             /// </summary>
             private Dictionary<CONN_SETT_TYPE, int> m_dictPreviousSignalItemSelected;
+
             /// <summary>
-            /// Конструктор - основной (без параметров)
+            /// Конструктор - дополнительный (без параметров)
             /// </summary>
-            public PanelManagement()
+            private PanelManagement()
                 : base(6, 24)
             {
-                //Инициализировать равномерные высоту/ширину столбцов/строк
-                initializeLayoutStyleEvenly();
-
-                m_dictPreviousSignalItemSelected = new Dictionary<CONN_SETT_TYPE, int>() { { CONN_SETT_TYPE.DATA_AISKUE, -1 }, { CONN_SETT_TYPE.DATA_SOTIASSO, -1 } };
-
-                initializeComponent();
-
-                ComboBox ctrl = findControl(KEY_CONTROLS.CBX_TIMEZONE.ToString()) as ComboBox;
-                ctrl.Items.AddRange (new object []{ "UTC", "Москва", "Новосибирск" });
-                ctrl.SelectedIndex = 1;
             }
+
             /// <summary>
             /// Конструктор - вспомогательный (с параметрами)
             /// </summary>
             /// <param name="container">Владелец объекта</param>
-            public PanelManagement(IContainer container)
-                : this()
+            /// <param name="foreColor">Цвет шрифта</param>
+            /// <param name="backColor">Цвет фона</param>
+            public PanelManagement (IContainer container, Color foreColor, Color backColor)
+                : this(foreColor, backColor)
             {
                 container.Add(this);
             }
+
+            /// <summary>
+            /// Конструктор - основной (c параметрами)
+            /// </summary>
+            /// <param name="foreColor">Цвет шрифта</param>
+            /// <param name="backColor">Цвет фона</param>
+            public PanelManagement (Color foreColor, Color backColor)
+                : base (6, 24)
+            {
+                //Инициализировать равномерные высоту/ширину столбцов/строк
+                initializeLayoutStyleEvenly ();
+
+                m_dictPreviousSignalItemSelected = new Dictionary<CONN_SETT_TYPE, int> () { { CONN_SETT_TYPE.DATA_AISKUE, -1 }, { CONN_SETT_TYPE.DATA_SOTIASSO, -1 } };
+
+                BackColor = backColor;
+                ForeColor = foreColor;
+
+                initializeComponent ();
+
+                ComboBox ctrl = findControl (KEY_CONTROLS.CBX_TIMEZONE.ToString ()) as ComboBox;
+                ctrl.Items.AddRange (new object [] { "UTC", "Москва", "Новосибирск" });
+                ctrl.SelectedIndex = 1;
+            }
+
             /// <summary>
             /// Инициализация панели с установкой кол-ва столбцов, строк
             /// </summary>
@@ -82,6 +100,7 @@ namespace Statistic
             {
                 throw new System.NotImplementedException();
             }
+
             /// <summary>
             /// Инициализация, размещения собственных элементов управления
             /// </summary>
@@ -164,6 +183,8 @@ namespace Statistic
                 ctrl = new CheckedListBox();
                 ctrl.Name = KEY_CONTROLS.CLB_AIISKUE_SIGNAL.ToString();
                 ctrl.Dock = DockStyle.Fill;
+                ctrl.BackColor = BackColor == SystemColors.Control ? SystemColors.Window : BackColor;
+                ctrl.ForeColor = ForeColor;
                 ////Добавить к текущей панели список сигналов АИИСКУЭ
                 //this.Controls.Add(ctrl, 0, 2);
                 //this.SetColumnSpan(ctrl, 6);
@@ -178,6 +199,8 @@ namespace Statistic
                 ctrl = new CheckedListBox();
                 ctrl.Name = KEY_CONTROLS.CLB_SOTIASSO_SIGNAL.ToString();
                 ctrl.Dock = DockStyle.Fill;
+                ctrl.BackColor = BackColor == SystemColors.Control ? SystemColors.Window : BackColor;
+                ctrl.ForeColor = ForeColor;
                 ////Добавить к текущей панели список сигналов СОТИАССО
                 //this.Controls.Add(ctrl, 0, 12);
                 //this.SetColumnSpan(ctrl, 6);
@@ -188,23 +211,37 @@ namespace Statistic
                 (ctrl as CheckedListBox).SelectedIndexChanged += new EventHandler(clbSOTIASSOSignal_OnSelectedIndexChanged);
                 (ctrl as CheckedListBox).ItemCheck += new ItemCheckEventHandler(clbSOTIASSOSignal_OnItemChecked);
 
-
                 //Возобновить прорисовку текущей панели
                 this.ResumeLayout(false);
                 //Принудительное применение логики макета
                 this.PerformLayout();
             }
 
+            /// <summary>
+            /// Обработчик события - нажатие кнопки экспорт
+            /// </summary>
+            /// <param name="sender">Объект - инициатор события(кнопка)</param>
+            /// <param name="e">Аргумент события</param>
             private void btnExport_OnClick(object sender, EventArgs e)
             {
                 EvtExportDo?.Invoke();
             }
 
+            /// <summary>
+            /// Обработчик события - изменение состояния "отмечено" элемента списка
+            /// </summary>
+            /// <param name="sender">Объект - инициатор события(список)</param>
+            /// <param name="e">Аргумент события</param>
             private void clbAIISKUESignal_OnItemChecked(object sender, ItemCheckEventArgs e)
             {
                 EvtActionSignalItem?.Invoke(CONN_SETT_TYPE.DATA_AISKUE, ActionSignal.CHECK, (sender as CheckedListBox).SelectedIndex);
             }
 
+            /// <summary>
+            /// Обработчик события - изменение выбранного элемента списка
+            /// </summary>
+            /// <param name="sender">Объект - инициатор события(список)</param>
+            /// <param name="e">Аргумент события</param>
             private void clbAIISKUESignal_OnSelectedIndexChanged(object sender, EventArgs e)
             {
                 CONN_SETT_TYPE type = CONN_SETT_TYPE.DATA_AISKUE;

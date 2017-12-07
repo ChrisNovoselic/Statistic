@@ -656,7 +656,7 @@ namespace StatisticTimeSync
 
         public override void UpdateGraphicsCurrent (int type)
         {
-            throw new NotImplementedException ();
+            return;
         }
 
         public partial class HandlerSourceData : HHandlerQueue

@@ -531,13 +531,14 @@ namespace StatisticDiagnostic
                                                 formatDateTime((DateTime)values[(int)i]) :
                                                     values[(int)i];
                                             clrCell = s_CellState[(int)isRelevanceDateTime((int)i, (DateTime)values[(int)i])].m_Color;
-                                            break;                                            
+                                            break;
                                         case INDEX_CELL.VALUE: //Крайнее значение (ПБРномер)
                                         // Если значение равно эталонному ПБР (на текущее время), то статус ОК, иначе ERROR
                                             value = values[(int)i];
                                             indxState = (TecViewStandard.GetValidatePBR((string)value) == true) ?
                                                 INDEX_CELL_STATE.OK :
                                                     INDEX_CELL_STATE.ERROR;
+                                            clrCell = s_CellState [(int)indxState].m_Color;
                                             break;
                                         default:
                                             value = values[(int)i];
