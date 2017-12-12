@@ -865,105 +865,110 @@ namespace StatisticCommon
                 }
             }
 
-            iRes = CheckNameFieldsOfTable(table, new string[] { @"KKS_NAME", @"value", @"last_changed_at", @"ID_SOURCE" }) == true ? 0 : -1;
-            if (iRes == 0)
-            {
-                for (i = 0; i < table.Rows.Count; i++)
+
+            if (table.Columns.Count > 0) {
+                iRes = CheckNameFieldsOfTable(table, new string[] { @"KKS_NAME", @"value", @"last_changed_at", @"ID_SOURCE" }) == true ? 0 : -1;
+
+                if (iRes == 0)
                 {
-                    kks_name = table.Rows[i]["KKS_NAME"].ToString();
+                    for (i = 0; i < table.Rows.Count; i++)
+                    {
+                        kks_name = table.Rows[i]["KKS_NAME"].ToString();
 
-                    tgTmp = m_tec.FindTGById(kks_name, TG.INDEX_VALUE.TM, (HDateTime.INTERVAL)(-1));
+                        tgTmp = m_tec.FindTGById(kks_name, TG.INDEX_VALUE.TM, (HDateTime.INTERVAL)(-1));
 
-                    if (tgTmp == null)
-                        return -1;
-                    else
-                        ;
-
-                    if (!(table.Rows[i]["value"] is DBNull))
-                        if (float.TryParse(table.Rows[i]["value"].ToString(), out value) == false)
+                        if (tgTmp == null)
                             return -1;
                         else
                             ;
-                    else
-                        value = -1F;
 
-                    //Опрделить дата/время для "нормальных" (>= 1) значений
-                    //if ((!(value < 1)) && (DateTime.TryParse(table.Rows[i]["last_changed_at"].ToString(), out dtLastChangedAt) == false))
-                    if ((!(value < 1)) && (!(table.Rows[i]["last_changed_at"].GetType() == typeof(DateTime))))
-                        //Нельзя определить дата/время для "нормальных" (>= 1) значений
-                        return -1;
-                    else
-                        dtLastChangedAt = (DateTime)table.Rows[i]["last_changed_at"];
+                        if (!(table.Rows[i]["value"] is DBNull))
+                            if (float.TryParse(table.Rows[i]["value"].ToString(), out value) == false)
+                                return -1;
+                            else
+                                ;
+                        else
+                            value = -1F;
 
-                    if ((!(table.Rows[i]["ID_SOURCE"] is DBNull))
-                        && (table.Rows[i]["ID_SOURCE"].GetType () == typeof(int)))
-                        id_tm = (int)table.Rows[i]["ID_SOURCE"];
-                    else
-                        id_tm = -1;
+                        //Опрделить дата/время для "нормальных" (>= 1) значений
+                        //if ((!(value < 1)) && (DateTime.TryParse(table.Rows[i]["last_changed_at"].ToString(), out dtLastChangedAt) == false))
+                        if ((!(value < 1)) && (!(table.Rows[i]["last_changed_at"].GetType() == typeof(DateTime))))
+                            //Нельзя определить дата/время для "нормальных" (>= 1) значений
+                            return -1;
+                        else
+                            dtLastChangedAt = (DateTime)table.Rows[i]["last_changed_at"];
 
-                    if (m_dtLastChangedAt_TM_Gen > dtLastChangedAt) {
-                        m_dtLastChangedAt_TM_Gen = dtLastChangedAt;
+                        if ((!(table.Rows[i]["ID_SOURCE"] is DBNull))
+                            && (table.Rows[i]["ID_SOURCE"].GetType () == typeof(int)))
+                            id_tm = (int)table.Rows[i]["ID_SOURCE"];
+                        else
+                            id_tm = -1;
 
-                        if ((!(value < 1)) && (ValidateDatetimeTMValue(dtServer, m_dtLastChangedAt_TM_Gen) == false)
-                            && (m_markWarning.IsMarked((int)TecView.INDEX_WARNING.CURR_MIN_TM_GEN) == false))
-                        {
-                            m_markWarning.Marked((int)TecView.INDEX_WARNING.CURR_MIN_TM_GEN);
-                            iRes = 1;
+                        if (m_dtLastChangedAt_TM_Gen > dtLastChangedAt) {
+                            m_dtLastChangedAt_TM_Gen = dtLastChangedAt;
 
-                            Logging.Logg().Warning(@"TecView::GetCurrentTMGenResponse (" + m_ID + @") - currentMinuteTM_GenWarning=" + true.ToString (), Logging.INDEX_MESSAGE.W_001);
+                            if ((!(value < 1)) && (ValidateDatetimeTMValue(dtServer, m_dtLastChangedAt_TM_Gen) == false)
+                                && (m_markWarning.IsMarked((int)TecView.INDEX_WARNING.CURR_MIN_TM_GEN) == false))
+                            {
+                                m_markWarning.Marked((int)TecView.INDEX_WARNING.CURR_MIN_TM_GEN);
+                                iRes = 1;
 
-                            //return true;
-                            //break; //bRes по-прежнему == true ???
+                                Logging.Logg().Warning(@"TecView::GetCurrentTMGenResponse (" + m_ID + @") - currentMinuteTM_GenWarning=" + true.ToString (), Logging.INDEX_MESSAGE.W_001);
+
+                                //return true;
+                                //break; //bRes по-прежнему == true ???
+                            }
+                            else
+                                ;
                         }
                         else
                             ;
+
+                        switch (m_tec.Type)
+                        {
+                            case StatisticCommon.TEC.TEC_TYPE.COMMON:
+                                break;
+                            case StatisticCommon.TEC.TEC_TYPE.BIYSK:
+                                //value *= 20;
+                                break;
+                            default:
+                                break;
+                        }
+
+                        if (!(m_dictValuesLowPointDev[tgTmp.m_id].m_powerCurrent_TM == value))
+                            // значения НЕ совпадают
+                            if (! (value < 0))
+                            {// больше ИЛИ = 0
+                                m_dictValuesLowPointDev[tgTmp.m_id].m_dtCurrent_TM = HDateTime.ToMoscowTimeZone(dtLastChangedAt);
+
+                                //if (!(value < 1))
+                                //    // больше ИЛИ = 1
+                                //    ;
+                                //else ; // меньше 1
+
+                                m_dictValuesLowPointDev[tgTmp.m_id].m_powerCurrent_TM = value;
+                                m_dictValuesLowPointDev[tgTmp.m_id].m_id_TM = id_tm;
+                            }
+                            else
+                                ; // меньше 0
+                        else
+                            ; // значения совпадают
                     }
+
+                    if (! (m_dtLastChangedAt_TM_Gen == DateTime.MaxValue))
+                        //Преобразование из UTC в МСК ??? С 26.10.2014 г. в БД записи по МСК !!! Нет оставили "как есть"
+                        try { m_dtLastChangedAt_TM_Gen = HDateTime.ToMoscowTimeZone(m_dtLastChangedAt_TM_Gen); }
+                        catch (Exception e)
+                        {
+                            Logging.Logg().Exception(e, @"TecView::GetCurrentTMGenResponse () - HAdmin.ToCurrentTimeZone () - ...", Logging.INDEX_MESSAGE.NOT_SET);
+                        }
                     else
                         ;
-
-                    switch (m_tec.Type)
-                    {
-                        case StatisticCommon.TEC.TEC_TYPE.COMMON:
-                            break;
-                        case StatisticCommon.TEC.TEC_TYPE.BIYSK:
-                            //value *= 20;
-                            break;
-                        default:
-                            break;
-                    }
-
-                    if (!(m_dictValuesLowPointDev[tgTmp.m_id].m_powerCurrent_TM == value))
-                        // значения НЕ совпадают
-                        if (! (value < 0))
-                        {// больше ИЛИ = 0
-                            m_dictValuesLowPointDev[tgTmp.m_id].m_dtCurrent_TM = HDateTime.ToMoscowTimeZone(dtLastChangedAt);
-
-                            //if (!(value < 1))
-                            //    // больше ИЛИ = 1
-                            //    ;
-                            //else ; // меньше 1
-
-                            m_dictValuesLowPointDev[tgTmp.m_id].m_powerCurrent_TM = value;
-                            m_dictValuesLowPointDev[tgTmp.m_id].m_id_TM = id_tm;
-                        }
-                        else
-                            ; // меньше 0
-                    else
-                        ; // значения совпадают
                 }
-
-                if (! (m_dtLastChangedAt_TM_Gen == DateTime.MaxValue))
-                    //Преобразование из UTC в МСК ??? С 26.10.2014 г. в БД записи по МСК !!! Нет оставили "как есть"
-                    try { m_dtLastChangedAt_TM_Gen = HDateTime.ToMoscowTimeZone(m_dtLastChangedAt_TM_Gen); }
-                    catch (Exception e)
-                    {
-                        Logging.Logg().Exception(e, @"TecView::GetCurrentTMGenResponse () - HAdmin.ToCurrentTimeZone () - ...", Logging.INDEX_MESSAGE.NOT_SET);
-                    }
                 else
-                    ;
-            }
-            else
-                Logging.Logg().Error(@"TecView::GetCurrentTMGenResponse () - не найден один их требуемых столбцов ...", Logging.INDEX_MESSAGE.NOT_SET);
+                    Logging.Logg().Error(@"TecView::GetCurrentTMGenResponse () - не найден один их требуемых столбцов ...", Logging.INDEX_MESSAGE.NOT_SET);
+            } else
+                Logging.Logg().Error(@"TecView::GetCurrentTMGenResponse () - в таблице-результате нет ни одного столбца ...", Logging.INDEX_MESSAGE.NOT_SET);
 
             return iRes;
         }
@@ -1293,7 +1298,7 @@ namespace StatisticCommon
                     break;
                 case StatesMachine.HoursTMTemperatureValues:
                     reason += @"Нет некоторых часовых значений температуры окр.воздуха";
-                    break;                
+                    break;
                 case StatesMachine.HoursVzletTDirectValues:
                     reason += @"Нет некоторых часовых значений температуры прямой подачи";
                     break;
@@ -1318,8 +1323,8 @@ namespace StatisticCommon
                 WarningReport(msg);
             //else ;
 
-            Logging.Logg().Warning(m_tec.name_shr + @"[ID_COMPONENT=" + m_ID + @"] - "
-                                + reason + @". " + waiting + @". ", Logging.INDEX_MESSAGE.NOT_SET);
+            Logging.Logg().Warning($"{reason}: ТЭЦ={m_tec.name_shr}, [ID_COMPONENT]={m_ID} ..."
+                , Logging.INDEX_MESSAGE.NOT_SET);
         }
 
         protected override int StateRequest(int state)
@@ -1534,28 +1539,22 @@ namespace StatisticCommon
                     iRes = getMinsTMResponse(table as System.Data.DataTable);
                     break;
                 case StatesMachine.CurrentHours_TM_SN_PSUM:
-                        iRes = getHoursTMSNPsumResponse(table as System.Data.DataTable);
-                        if (iRes == 0)
-                        {
-                        }
-                        else
-                            ;
+                    iRes = getHoursTMSNPsumResponse(table as System.Data.DataTable);
+                    if (iRes == 0) {
+                    } else
+                        ;
                     break;
                 case StatesMachine.LastValue_TM_Gen:
                     iRes = getCurrentTMGenResponse(table as System.Data.DataTable);
                     if (! (iRes < 0))
-                    {
-                        if (!(updateGUI_TM_Gen == null)) updateGUI_TM_Gen(); else ;
-                    }
+                        updateGUI_TM_Gen?.Invoke ();
                     else
                         ;
                     break;
                 case StatesMachine.LastValue_TM_SN:
                     iRes = getCurrentTMSNResponse(table as System.Data.DataTable);
                     if (iRes == 0)
-                    {
-                        updateGUI_TM_SN ();
-                    }
+                        updateGUI_TM_SN?.Invoke ();
                     else
                         ;
                     break;
@@ -1563,12 +1562,7 @@ namespace StatisticCommon
                     ClearValuesLastMinutesTM ();
                     iRes = getLastMinutesTMResponse(table as System.Data.DataTable, m_curDate);
                     if (iRes == 0)
-                    {
-                        if (! (updateGUI_LastMinutes == null))
-                            updateGUI_LastMinutes();
-                        else
-                            ;
-                    }
+                        updateGUI_LastMinutes?.Invoke();
                     else
                         ;
                     break;

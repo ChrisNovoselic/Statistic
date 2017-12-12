@@ -283,7 +283,10 @@ namespace Statistic
         private static HLabelStyles[] s_arLabelStyles = {
             new HLabelStyles(FormMain.formGraphicsSettings.FontColor, FormMain.formGraphicsSettings.BackgroundColor, 14F, ContentAlignment.MiddleCenter)
             , new HLabelStyles(FormMain.formGraphicsSettings.FontColor, FormMain.formGraphicsSettings.BackgroundColor, 12F, ContentAlignment.MiddleCenter)
-            , new HLabelStyles(FormMain.formGraphicsSettings.FontColor, s_clrBackColorLabelVal, 10F, ContentAlignment.MiddleRight)
+            , new HLabelStyles(FormMain.formGraphicsSettings.FontColor
+                , FormMain.formGraphicsSettings.BackgroundColor == SystemColors.Control ? s_clrBackColorLabelVal : FormMain.formGraphicsSettings.BackgroundColor
+                , 10F
+                , ContentAlignment.MiddleRight)
             , new HLabelStyles(FormMain.formGraphicsSettings.FontColor, FormMain.formGraphicsSettings.BackgroundColor, 12F, ContentAlignment.MiddleCenter)
         };
         /// <summary>

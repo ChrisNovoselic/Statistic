@@ -17,91 +17,6 @@ using ASUTP.Forms;
 namespace StatisticDiagnostic
 {
     /// <summary>
-    /// Абстрактный класс "Панель Диагностика"
-    /// </summary>
-    public abstract partial class PanelDiagnostic : ASUTP.Control.HPanelCommon {
-        public PanelDiagnostic(string nameLabel)
-            : base(-1, -1)
-        {
-            initialize();
-        }
-
-        /// <summary>
-        /// Конструктор "Панель Диагностика"
-        /// </summary>
-        /// <param name="container">контейнер</param>
-        public PanelDiagnostic(IContainer container)
-            : base(container, -1, -1)
-        {
-            container.Add(this);
-
-            initialize();
-        }
-
-        protected abstract void LoadValue();
-
-        protected abstract void Activated(bool activated);
-
-        protected abstract void ClearGrid();
-
-        protected abstract void CreateForm();
-
-        protected abstract string FormatTime(string datetime);
-    }
-
-    public abstract partial class PanelDiagnostic
-    {
-        private void initialize()
-        {
-            InitializeComponent();
-        }
-        /// <summary>
-        /// Метод "Инициализовать стиль макета"
-        /// </summary>
-        /// <param name="cols">столбцы</param>
-        /// <param name="rows">строки</param>
-        protected override void initializeLayoutStyle(int cols = -1, int rows = -1)
-        {
-            initializeLayoutStyleEvenly(cols, rows);
-        }
-
-        /// <summary>
-        /// Требуется переменная конструктора.
-        /// </summary>
-        private System.ComponentModel.IContainer components = null;
-
-        /// <summary> 
-        /// Освободить все используемые ресурсы.
-        /// </summary>
-        /// <param name="disposing">истинно, если управляемый ресурс должен быть удален; иначе ложно.</param>
-        protected override void Dispose(bool disposing)
-        {
-            if (disposing && (components != null))
-            {
-                components.Dispose();
-            }
-            base.Dispose(disposing);
-        }
-
-        #region Код, автоматически созданный конструктором компонентов
-
-        /// <summary>
-        /// Обязательный метод для поддержки конструктора - не изменяйте
-        /// содержимое данного метода при помощи редактора кода.
-        /// </summary>
-        private void InitializeComponent()
-        {
-            this.CellBorderStyle = System.Windows.Forms.TableLayoutPanelCellBorderStyle.Single;
-
-            this.SuspendLayout();
-
-            this.ResumeLayout(false);
-        }
-
-        #endregion
-    }
-
-    /// <summary>
     /// Класс для описания панели с информацией
     ///  по дианостированию состояния ИС
     /// </summary>
@@ -314,6 +229,24 @@ namespace StatisticDiagnostic
 
                 return strRes;
             }
+
+            /// <summary>
+            /// Установить стиль фона-цвета, при необходимости, в ячейке
+            /// </summary>
+            protected void SetStyleCell (int iColumnCell, Color backColorCell)
+            {
+                Cells [iColumnCell].Style.BackColor = backColorCell;
+                // проверить необходимость изменения цвета фона ячейки
+                if ((backColorCell.R.Equals (s_CellState [(int)INDEX_CELL_STATE.OK].m_Color.R) == false)
+                    || (backColorCell.G.Equals (s_CellState [(int)INDEX_CELL_STATE.OK].m_Color.G) == false)
+                    || (backColorCell.B.Equals (s_CellState [(int)INDEX_CELL_STATE.OK].m_Color.B) == false)) { // s_CellState [(int)INDEX_CELL_STATE.OK].m_Color
+                // изменить цвет ячейки
+                    //Cells [iColumnCell].Style.BackColor = backColorCell;
+                    Cells [iColumnCell].Style.ForeColor = SystemColors.ControlText;
+                } else
+                    ;
+            }
+
             /// <summary>
             /// Признак актуальности даты/времени
             /// </summary>
@@ -504,6 +437,7 @@ namespace StatisticDiagnostic
             public static int ListenerId { get { return _iListenerId; } }
 
             public bool IsRegisterConfogDb { get { return ListenerId > 0; } }
+
             /// <summary>
             /// Зарегистрировать(установить) временное соединение с БД конфигурации
             /// </summary>
@@ -515,6 +449,7 @@ namespace StatisticDiagnostic
 
                 _connConfigDb = DbSources.Sources().GetConnection(_iListenerId, out err);
             }
+
             /// <summary>
             /// Отменить регистрацию(разорвать) соединения с БД конфигурации
             /// </summary>
@@ -525,6 +460,7 @@ namespace StatisticDiagnostic
                 _connConfigDb = null;
                 _iListenerId = -1;
             }
+
             /// <summary>
             /// Возвратить таблицу с контролируемыми источниками данных
             /// </summary>
@@ -539,6 +475,7 @@ namespace StatisticDiagnostic
                 else
                     return new DataTable();
             }
+
             /// <summary>
             /// Возвратить таблицу со всеми источниками данных
             /// </summary>
@@ -553,20 +490,7 @@ namespace StatisticDiagnostic
                 else
                     return new DataTable();
             }
-            ///// <summary>
-            ///// Возвратить таблицу с перечнем ГТП
-            ///// </summary>
-            ///// <param name="err">Признак ошибки при выполнении операции</param>
-            ///// <returns>Таблица с данными - результат запроса</returns>
-            //public DataTable GetListGTP(out int err)
-            //{
-            //    err = _connConfigDb == null ? -1 : 0;
 
-            //    if (err == 0)
-            //        return DbTSQLInterface.Select(ref _connConfigDb, "SELECT * FROM GTP_LIST", null, null, out err);
-            //    else
-            //        return new DataTable();
-            //}
             /// <summary>
             /// Возвратить таблицу с перечнем парметров дигностики
             /// </summary>
@@ -581,10 +505,12 @@ namespace StatisticDiagnostic
                 else
                     return new DataTable();
             }
+
             /// <summary>
             /// Фильтр для выборки только ТЭЦ (без ЛК)
             /// </summary>
             private readonly int[] _filterListTEC;
+
             /// <summary>
             /// Возвратить таблицу с перечнем ТЭЦ
             /// </summary>
@@ -599,6 +525,7 @@ namespace StatisticDiagnostic
                 else
                     return new DataTable();
             }
+
             /// <summary>
             /// Возвратить список ТЭЦ
             /// </summary>
@@ -613,6 +540,7 @@ namespace StatisticDiagnostic
                 else
                     return new List<TEC> ();
             }
+
             /// <summary>
             /// Изменить идентификатор активного источника данных (СОТИАССО)
             /// </summary>
@@ -847,7 +775,7 @@ namespace StatisticDiagnostic
                 m_DataSource.EvtRecievedTable += new DelegateObjectFunc(m_taskdb.Update);
                 m_DataSource.EvtRecievedTable += new DelegateObjectFunc(m_sizedb.Update);
             } else
-                ;            
+                ;
         }
 
         /// <summary>
@@ -1036,6 +964,21 @@ namespace StatisticDiagnostic
             {
             }
 
+            public override Color ForeColor
+            {
+                get
+                {
+                    return base.ForeColor;
+                }
+
+                set
+                {
+                    base.ForeColor = value;
+
+                    DefaultCellStyle.ForeColor = value;
+                }
+            }
+
             public override Color BackColor
             {
                 get
@@ -1047,7 +990,9 @@ namespace StatisticDiagnostic
                 {
                     base.BackColor = value;
 
-                    s_CellState [(int)INDEX_CELL_STATE.OK].m_Color = value == SystemColors.Control ? SystemColors.Window : value;
+                    s_CellState [(int)INDEX_CELL_STATE.OK].m_Color =
+                    //DefaultCellStyle.BackColor =
+                         value == SystemColors.Control ? SystemColors.Window : value;
 
                     //for (int j = 0; j < ColumnCount; j++)
                     //    for (int i = 0; i < RowCount; i++)

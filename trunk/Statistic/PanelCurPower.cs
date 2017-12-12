@@ -54,15 +54,15 @@ namespace Statistic
     public partial class PanelCurPower : PanelStatisticWithTableHourRows
     {
         enum INDEX_LABEL : int { NAME
-            , DATETIME_TM
+            , DATETIME_TM_GEN
             , DATETIME_TM_SN
-            , VALUE_TM
+            , VALUE_TM_GEN
             , VALUE_TM_SN
             , NAME_COMPONENT
             , VALUE_COMPONENT
             , NAME_TG
             , VALUE_TG
-            , COUNT_INDEX_LABEL
+                , COUNT_INDEX_LABEL
         };
 
         private const int COUNT_FIXED_ROWS = (int)INDEX_LABEL.VALUE_TM_SN - 1;
@@ -70,20 +70,47 @@ namespace Statistic
         /// 
         /// </summary>
         private static Color s_clrBackColorLabel = Color.FromArgb(212, 208, 200)
-            , s_clrBackColorLabelVal_TM = Color.FromArgb(219, 223, 227)
+            , s_clrBackColorLabelVal_TM_Gen = Color.FromArgb(219, 223, 227)
             , s_clrBackColorLabelVal_TM_SN = Color.FromArgb(219, 223, 247);
         /// <summary>
         /// Стили для элементов интерфейса - подписей к полям с отображаемыми джанными
         /// </summary>
-        private static HLabelStyles[] s_arLabelStyles = { new HLabelStyles(Color.Black, s_clrBackColorLabel, 22F, ContentAlignment.MiddleCenter),
-                                                new HLabelStyles(Color.Black, s_clrBackColorLabelVal_TM, 18F, ContentAlignment.MiddleCenter),
-                                                new HLabelStyles(Color.Black, s_clrBackColorLabelVal_TM_SN, 18F, ContentAlignment.MiddleCenter),
-                                                new HLabelStyles(Color.Black, s_clrBackColorLabelVal_TM, 18F, ContentAlignment.MiddleCenter),
-                                                new HLabelStyles(Color.Black, s_clrBackColorLabelVal_TM_SN, 18F, ContentAlignment.MiddleCenter),
-                                                new HLabelStyles(Color.Black, s_clrBackColorLabel, 14F, ContentAlignment.MiddleCenter),
-                                                new HLabelStyles(Color.Black, s_clrBackColorLabelVal_TM, 14F, ContentAlignment.MiddleRight),
-                                                new HLabelStyles(Color.Black, s_clrBackColorLabel, 14F, ContentAlignment.MiddleCenter),
-                                                new HLabelStyles(Color.Black, s_clrBackColorLabelVal_TM, 14F, ContentAlignment.MiddleRight)};
+        private static HLabelStyles[] s_arLabelStyles = { new HLabelStyles(FormMain.formGraphicsSettings.FontColor // NAME
+                , FormMain.formGraphicsSettings.BackgroundColor == SystemColors.Control ? s_clrBackColorLabel : FormMain.formGraphicsSettings.BackgroundColor
+                , 22F
+                , ContentAlignment.MiddleCenter),
+            new HLabelStyles(FormMain.formGraphicsSettings.FontColor // DATETIME_TM
+                , FormMain.formGraphicsSettings.BackgroundColor == SystemColors.Control ? s_clrBackColorLabelVal_TM_Gen : FormMain.formGraphicsSettings.BackgroundColor
+                , 18F
+                , ContentAlignment.MiddleCenter),
+            new HLabelStyles(FormMain.formGraphicsSettings.FontColor // DATETIME_TM_SN
+                , FormMain.formGraphicsSettings.BackgroundColor == SystemColors.Control ? s_clrBackColorLabelVal_TM_SN : FormMain.formGraphicsSettings.BackgroundColor
+                , 18F
+                , ContentAlignment.MiddleCenter),
+            new HLabelStyles(FormMain.formGraphicsSettings.FontColor // VALUE_TM
+                , FormMain.formGraphicsSettings.BackgroundColor == SystemColors.Control ? s_clrBackColorLabelVal_TM_Gen : FormMain.formGraphicsSettings.BackgroundColor
+                , 18F
+                , ContentAlignment.MiddleCenter),
+            new HLabelStyles(FormMain.formGraphicsSettings.FontColor // VALUE_TM_SN
+                , FormMain.formGraphicsSettings.BackgroundColor == SystemColors.Control ? s_clrBackColorLabelVal_TM_SN : FormMain.formGraphicsSettings.BackgroundColor
+                , 18F
+                , ContentAlignment.MiddleCenter),
+            new HLabelStyles(FormMain.formGraphicsSettings.FontColor // NAME_COMPONENT
+                , FormMain.formGraphicsSettings.BackgroundColor == SystemColors.Control ? s_clrBackColorLabel : FormMain.formGraphicsSettings.BackgroundColor
+                , 14F
+                , ContentAlignment.MiddleCenter),
+            new HLabelStyles(FormMain.formGraphicsSettings.FontColor // VALUE_COMPONENT
+                , FormMain.formGraphicsSettings.BackgroundColor == SystemColors.Control ? s_clrBackColorLabelVal_TM_Gen : FormMain.formGraphicsSettings.BackgroundColor
+                , 14F
+                , ContentAlignment.MiddleRight),
+            new HLabelStyles(FormMain.formGraphicsSettings.FontColor // NAME_TG
+                , FormMain.formGraphicsSettings.BackgroundColor == SystemColors.Control ? s_clrBackColorLabel : FormMain.formGraphicsSettings.BackgroundColor
+                , 14F
+                , ContentAlignment.MiddleCenter),
+            new HLabelStyles(FormMain.formGraphicsSettings.FontColor // VALUE_TG
+                , FormMain.formGraphicsSettings.BackgroundColor == SystemColors.Control ? s_clrBackColorLabelVal_TM_Gen : FormMain.formGraphicsSettings.BackgroundColor
+                , 14F
+                , ContentAlignment.MiddleRight)};
 
         /// <summary>
         /// Инициализация характеристик, стилей макета для размещения дочерних элементов интерфейса
@@ -264,7 +291,11 @@ namespace Statistic
                     m_timerCurrent
                     ;
 
-            //private DelegateFunc delegateUpdateGUI;
+            private struct TAG_LABEL {
+                public INDEX_LABEL m_indexLabel;
+
+                public int m_idTEComponent;
+            }
 
             public PanelTecCurPower(StatisticCommon.TEC tec/*, DelegateStringFunc fErrRep, DelegateStringFunc fWarRep, DelegateStringFunc fActRep, DelegateBoolFunc fRepClr*/)
                 : base (-1, -1)
@@ -283,7 +314,10 @@ namespace Statistic
                 m_tecView.updateGUI_TM_Gen = new DelegateFunc (updateGUI_TM_Gen);
                 m_tecView.updateGUI_TM_SN = new DelegateFunc(updateGUI_TM_SN);
 
-                Initialize();
+                ForeColorChanged += onForeColorChanged;
+                BackColorChanged += onBackColorChanged;
+
+                Initialize ();
             }
 
             public PanelTecCurPower(IContainer container, StatisticCommon.TEC tec/*, DelegateStringFunc fErrRep, DelegateStringFunc fWarRep, DelegateStringFunc fActRep, DelegateBoolFunc fRepClr*/)
@@ -300,13 +334,15 @@ namespace Statistic
             private void Initialize()
             {
                 int i = -1;
+                Label lblNameTECComponent
+                    , lblNameTG;
 
                 m_dictLabelVal = new Dictionary<int, Label>();
                 m_arLabel = new Label[(int)INDEX_LABEL.VALUE_TM_SN + 1];
 
                 this.Dock = DockStyle.Fill;
                 //Свойства колонок
-                this.ColumnCount = 4;                
+                this.ColumnCount = 4;
 
                 //Видимая граница для отладки
                 this.BorderStyle = BorderStyle.None; //BorderStyle.FixedSingle;
@@ -325,15 +361,15 @@ namespace Statistic
                 this.SetColumnSpan(m_arLabel[i], this.ColumnCount);
 
                 //Наименование ТЭЦ, Дата/время, Значение для всех ГТП/ТГ
-                for (i = (int)INDEX_LABEL.DATETIME_TM; i < (int)INDEX_LABEL.NAME_COMPONENT; i++)
+                for (i = (int)INDEX_LABEL.DATETIME_TM_GEN; i < (int)INDEX_LABEL.NAME_COMPONENT; i++)
                 {
                     switch (i)
                     {
-                        case (int)INDEX_LABEL.DATETIME_TM:
+                        case (int)INDEX_LABEL.DATETIME_TM_GEN:
                         case (int)INDEX_LABEL.DATETIME_TM_SN:
                             cntnt = @"--:--:--";
                             break;
-                        case (int)INDEX_LABEL.VALUE_TM:
+                        case (int)INDEX_LABEL.VALUE_TM_GEN:
                         case (int)INDEX_LABEL.VALUE_TM_SN:
                             cntnt = @"---";
                             break;
@@ -341,11 +377,7 @@ namespace Statistic
                             break;
                     }
                     m_arLabel[i] = HLabel.createLabel(cntnt, PanelCurPower.s_arLabelStyles[i]);
-                    ////Предусмотрим обработчик при изменении значения
-                    //if (i == (int)INDEX_LABEL.VALUE_TOTAL)
-                    //    m_arLabel[i].TextChanged += new EventHandler(PanelTecCurPower_TextChangedValue);
-                    //else
-                    //    ;
+
                     this.Controls.Add(m_arLabel[i], (i % 2) * 2, i / 2);
                     this.SetColumnSpan(m_arLabel[i], 2);
                 }
@@ -361,8 +393,9 @@ namespace Statistic
                         //m_list_TECComponents.Add(g);
 
                         //Добавить наименование ГТП
-                        Label lblTECComponent = HLabel.createLabel(g.name_shr, PanelCurPower.s_arLabelStyles[(int)INDEX_LABEL.NAME_COMPONENT]);
-                        this.Controls.Add(lblTECComponent, 0, this.RowCount);
+                        lblNameTECComponent = HLabel.createLabel(g.name_shr, PanelCurPower.s_arLabelStyles[(int)INDEX_LABEL.NAME_COMPONENT]);
+                        lblNameTECComponent.Tag = new TAG_LABEL () { m_indexLabel = INDEX_LABEL.NAME_COMPONENT, m_idTEComponent = g.m_id };
+                        this.Controls.Add(lblNameTECComponent, 0, this.RowCount);
                         m_dictLabelVal.Add(g.m_id, HLabel.createLabel(@"---", PanelCurPower.s_arLabelStyles[(int)INDEX_LABEL.VALUE_TG]));
                         this.Controls.Add(m_dictLabelVal[g.m_id], 1, this.RowCount);
                         //m_dictLabelVal[g.m_id].TextChanged += new EventHandler(PanelTecCurPower_TextChangedValue);
@@ -370,7 +403,9 @@ namespace Statistic
                         foreach (TECComponentBase tc in g.m_listLowPointDev)
                         {
                             //Добавить наименование ТГ
-                            this.Controls.Add(HLabel.createLabel(tc.name_shr, PanelCurPower.s_arLabelStyles[(int)INDEX_LABEL.NAME_TG]), 2, this.RowCount);
+                            lblNameTG = HLabel.createLabel (tc.name_shr, PanelCurPower.s_arLabelStyles [(int)INDEX_LABEL.NAME_TG]);
+                            lblNameTG.Tag = new TAG_LABEL () { m_indexLabel = INDEX_LABEL.NAME_TG, m_idTEComponent = tc.m_id };
+                            this.Controls.Add(lblNameTG, 2, this.RowCount);
                             //Добавить значение ТГ
                             m_dictLabelVal.Add(tc.m_id, HLabel.createLabel(@"---", PanelCurPower.s_arLabelStyles[(int)INDEX_LABEL.VALUE_TG]));
                             this.Controls.Add(m_dictLabelVal[tc.m_id], 3, this.RowCount);
@@ -379,7 +414,7 @@ namespace Statistic
                             this.RowCount++;
                         }
 
-                        this.SetRowSpan(lblTECComponent, g.m_listLowPointDev.Count);
+                        this.SetRowSpan(lblNameTECComponent, g.m_listLowPointDev.Count);
                         this.SetRowSpan(m_dictLabelVal[g.m_id], g.m_listLowPointDev.Count);
                     }
                     else
@@ -415,6 +450,92 @@ namespace Statistic
                 {
                     this.RowStyles.Add(new RowStyle(SizeType.Percent, (float)Math.Round((double)(100 - (10 * COUNT_FIXED_ROWS)) / (this.RowCount - COUNT_FIXED_ROWS), 1)));
                 }
+            }
+
+            private void onForeColorChanged (object sender, EventArgs e)
+            {
+                // общие подписи, общие значения
+                if (Equals (m_arLabel, null) == false)
+                    foreach (Label label in m_arLabel)
+                        label.ForeColor = ForeColor;
+                else
+                    ;
+                // значения
+                if (Equals (m_dictLabelVal, null) == false) {
+                    foreach (Label label in m_dictLabelVal.Values) {
+                        label.ForeColor = ForeColor;
+                    }
+                } else
+                    ;
+                // подписи 
+                //TODO: все остальные подписи реализовать аналогично
+                (from ctrl in this.Controls.Cast<Control> () where Equals (ctrl.Tag, null) == false select ctrl)
+                    .ToList ()
+                        .ForEach (ctrl => {
+                            if (ctrl.Tag is TAG_LABEL) {
+                                ctrl.ForeColor = ForeColor;
+                            } else
+                                ;
+                        });
+            }
+
+            private void onBackColorChanged (object sender, EventArgs e)
+            {
+                // общие подписи, общие значения
+                if (Equals (m_arLabel, null) == false)
+                    for (int i = 0; i < m_arLabel.Length; i++) {
+                        switch ((INDEX_LABEL)i) {
+                            case INDEX_LABEL.DATETIME_TM_SN:
+                            case INDEX_LABEL.VALUE_TM_SN:
+                                s_arLabelStyles [i].m_backColor =
+                                m_arLabel [i].BackColor =
+                                    BackColor == SystemColors.Control
+                                        ? s_clrBackColorLabelVal_TM_SN
+                                            : BackColor;
+                                break;
+                            case INDEX_LABEL.DATETIME_TM_GEN:
+                            case INDEX_LABEL.VALUE_TM_GEN:
+                                s_arLabelStyles [i].m_backColor =
+                                m_arLabel [i].BackColor =
+                                    BackColor == SystemColors.Control
+                                        ? s_clrBackColorLabelVal_TM_Gen
+                                            : BackColor;
+                                break;
+                            case INDEX_LABEL.NAME:
+                            case INDEX_LABEL.NAME_COMPONENT:
+                            case INDEX_LABEL.NAME_TG:
+                                m_arLabel [i].BackColor = BackColor == SystemColors.Control
+                                        ? s_clrBackColorLabel
+                                            : BackColor;
+                                ;
+                                break;
+                        }
+                    }
+                else
+                    ;
+                // значения
+                if (Equals (m_dictLabelVal, null) == false) {
+                    foreach (Label label in m_dictLabelVal.Values) {
+                        label.BackColor =
+                            BackColor == SystemColors.Control
+                                ? s_clrBackColorLabelVal_TM_Gen
+                                    : BackColor;
+                    }
+                } else
+                    ;
+                // подписи 
+                //TODO: все остальные подписи реализовать аналогично
+                (from ctrl in this.Controls.Cast<Control>() where Equals (ctrl.Tag, null) == false select ctrl)
+                    .ToList()
+                        .ForEach(ctrl => {
+                            if (ctrl.Tag is TAG_LABEL) {
+                                ctrl.BackColor =
+                                    BackColor == SystemColors.Control
+                                        ? s_clrBackColorLabel
+                                            : BackColor;
+                            } else
+                                ;
+                        });
             }
 
             public override void Start()
@@ -531,8 +652,8 @@ namespace Statistic
                 }
 
                 //???
-                setTextToLabelVal(m_arLabel[(int)INDEX_LABEL.VALUE_TM], m_tecView.m_dblTotalPower_TM_SN);
-                setTextToLabelVal(m_arLabel[(int)INDEX_LABEL.VALUE_TM], dblTotalPower_TM);
+                setTextToLabelVal(m_arLabel[(int)INDEX_LABEL.VALUE_TM_GEN], m_tecView.m_dblTotalPower_TM_SN);
+                setTextToLabelVal(m_arLabel[(int)INDEX_LABEL.VALUE_TM_GEN], dblTotalPower_TM);
 
                 switch (m_tecView.m_dtLastChangedAt_TM_Gen.Kind) {
                     default:
@@ -541,14 +662,14 @@ namespace Statistic
 
                 //m_tecView.m_dtLastChangedAt_TM_Gen = HDateTime.ToMoscowTimeZone(m_tecView.m_dtLastChangedAt_TM_Gen);
 
-                setTextToLabelDateTime(m_tecView.m_dtLastChangedAt_TM_Gen, (int)INDEX_LABEL.DATETIME_TM);
+                setTextToLabelDateTime(m_arLabel[(int)INDEX_LABEL.DATETIME_TM_GEN], m_tecView.m_dtLastChangedAt_TM_Gen);
             }
 
             private void showTMSNPower()
             {
                 setTextToLabelVal(m_arLabel[(int)INDEX_LABEL.VALUE_TM_SN], m_tecView.m_dblTotalPower_TM_SN);
 
-                setTextToLabelDateTime(m_tecView.m_dtLastChangedAt_TM_SN, (int)INDEX_LABEL.DATETIME_TM_SN);
+                setTextToLabelDateTime(m_arLabel[(int)INDEX_LABEL.DATETIME_TM_SN], m_tecView.m_dtLastChangedAt_TM_SN);
             }
             
             /// <summary>
@@ -571,28 +692,30 @@ namespace Statistic
 
                 return 0;
             }
-            
+
             /// <summary>
             /// Отобразить значение дату/время (копия в PanelTMSNPower.PanelTecTMSNPower)
             /// </summary>
+            /// <param name="dt">элемент управления для отображения значения</param>
             /// <param name="dt">Дата/время для отображения</param>
-            /// <param name="indx">Индекс значения (генерация или СН)</param>
-            private void setTextToLabelDateTime(DateTime dt, int indx)
+            private void setTextToLabelDateTime (Label label, DateTime dtVal)
             {
                 Color clrDatetime = Color.Empty;
                 string strFmtDatetime = @"HH:mm:ss";
 
-                if (TecView.ValidateDatetimeTMValue(m_tecView.serverTime, dt) == true)
-                    // формат даты/времени без изменения (без даты)
-                    clrDatetime = Color.Black;
-                else
-                {
+                if (TecView.ValidateDatetimeTMValue (m_tecView.serverTime, dtVal) == false) {
                     strFmtDatetime = @"dd.MM.yyyy " + strFmtDatetime; // добавить дату
                     clrDatetime = Color.Red;
-                }
+                } else
+                // формат даты/времени без изменения (без даты)
+                // цвет тоже без изменений
+                    ;
 
-                m_arLabel[indx].Text = dt.ToString(strFmtDatetime);
-                m_arLabel[indx].ForeColor = clrDatetime;
+                    label.Text = dtVal.ToString(strFmtDatetime);
+                if (clrDatetime.Equals (Color.Empty) == false)
+                    label.ForeColor = clrDatetime;
+                else
+                    ;
             }
 
             //private void PanelTecCurPower_TextChangedValue (object sender, EventArgs ev) {

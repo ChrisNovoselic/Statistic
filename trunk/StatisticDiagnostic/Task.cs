@@ -436,7 +436,8 @@ namespace StatisticDiagnostic
                                 else
                                     ;
                                 // изменить цвет ячейки ~ от состояния
-                                Cells[(int)i].Style.BackColor = s_CellState[(int)m_cell_states[(int)i]].m_Color;
+                                //Cells[(int)i].Style.BackColor = s_CellState[(int)m_cell_states[(int)i]].m_Color;
+                                SetStyleCell ((int)i, s_CellState [(int)m_cell_states [(int)i]].m_Color);
 
                                 //if (!(m_cell_states[(int)i] == INDEX_CELL_STATE.OK))
                                 //    EventUp?.Invoke((int)Tag);

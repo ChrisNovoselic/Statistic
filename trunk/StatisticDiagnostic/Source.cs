@@ -429,7 +429,7 @@ namespace StatisticDiagnostic
                     /// <summary>
                     /// См. описание типа поля
                     /// </summary>
-                    private CONN_SETT_TYPE m_source_type;                    
+                    private CONN_SETT_TYPE m_source_type;
                     /// <summary>
                     /// Целочисленный идентификатор источника данных
                     /// </summary>
@@ -438,6 +438,7 @@ namespace StatisticDiagnostic
                     /// Объект с признаками для управления отображением строки
                     /// </summary>
                     private ASUTP.Core.HMark _markRule;
+
                     /// <summary>
                     /// Конструктор - основной (с параметрами)
                     /// </summary>
@@ -450,6 +451,7 @@ namespace StatisticDiagnostic
 
                         _markRule = new ASUTP.Core.HMark (0);
                     }
+
                     /// <summary>
                     /// Обязательный постфикс в наименовании источника данных
                     ///  , по нему идентифицируем строку, так же отображающую значения для источника данных
@@ -463,6 +465,7 @@ namespace StatisticDiagnostic
                             // для определения идентфикатора ТЭЦ
                             TEC tec = _tec;
 
+                            //TODO: исправить (??? строковая константа)
                             switch (value)
                             {
                                 case @"(факт.)":
@@ -494,6 +497,7 @@ namespace StatisticDiagnostic
                             Tag = value;
                         }
                     }
+
                     /// <summary>
                     /// Наименование источника - постоянная величина, устанавливается при создании строки
                     /// </summary>
@@ -560,8 +564,8 @@ namespace StatisticDiagnostic
                                     default:
                                         break;
                                 }
-                                // установить цвет ячейки
-                                Cells[(int)i].Style.BackColor = clrCell;
+                                // изменить цвет ячейки
+                                Cells [(int)i].Style.BackColor = clrCell;
                                 // при необходимости, удалить контекстное меню
                                 if ((!(value == false))
                                     && (!(ContextMenuStrip == null)))
@@ -664,9 +668,9 @@ namespace StatisticDiagnostic
                         else
                             ;
 
-                        if (Enabled == true)                            
+                        if (Enabled == true)
                             foreach (INDEX_CELL i in Enum.GetValues (typeof (INDEX_CELL))) {
-                                try {                                
+                                try {
                                     indxState = INDEX_CELL_STATE.ERROR;
                                     clrCell = s_CellState [(int)INDEX_CELL_STATE.OK].m_Color;
 
@@ -704,13 +708,13 @@ namespace StatisticDiagnostic
                                     else
                                         ;
                                     // изменить цвет ячейки
-                                    Cells [(int)i].Style.BackColor = clrCell;
+                                    SetStyleCell ((int)i, clrCell);
                                 } catch (Exception e) {
                                     Logging.Logg ().Exception (e
                                         , string.Format ("PanelContainerTec.PanelTec.DataGridViewDiagnosticSourceRow::SetValueCell () - INDEX_CELL={0}...", i.ToString())
                                         , Logging.INDEX_MESSAGE.NOT_SET);
                                 }
-                            } // INDEX_CELL i in Enum.GetValues(typeof(INDEX_CELL))                        
+                            } // INDEX_CELL i in Enum.GetValues(typeof(INDEX_CELL))
                         else
                             ;
                     }
@@ -1143,6 +1147,7 @@ namespace StatisticDiagnostic
                         Logging.Logg ().Exception (e, string.Format("PanelContainerTec.PanelTec::update(type={0}) - ...", type.ToString()), Logging.INDEX_MESSAGE.NOT_SET);
                     }
                 }
+
                 /// <summary>
                 /// Список идентификаторов  - источников данных СОТИАССО доступных для выбоа
                 ///  (каждый их списка альтернатива друг другу)

@@ -53,24 +53,43 @@ namespace Statistic
 
     public partial class PanelTMSNPower : PanelStatisticWithTableHourRows
     {        
-        enum INDEX_LABEL : int
+        private enum INDEX_LABEL : int
         {
             NAME,
             DATETIME_TM_Gen,
             DATETIME_TM_SN,
             VALUE_TM_Gen,
             VALUE_TM_SN,
-            COUNT_INDEX_LABEL
+                COUNT_INDEX_LABEL
         };
-        const int COUNT_FIXED_ROWS = (int)INDEX_LABEL.VALUE_TM_SN - 1;
 
-        static Color s_clrBackColorLabel = Color.FromArgb(212, 208, 200), s_clrBackColorLabelVal_TM = Color.FromArgb(219, 223, 227), s_clrBackColorLabelVal_TM_SN = Color.FromArgb(219, 223, 247);
-        static HLabelStyles[] s_arLabelStyles = { new HLabelStyles(Color.Black, s_clrBackColorLabel, 22F, ContentAlignment.MiddleCenter),
-                                                new HLabelStyles(Color.Black, s_clrBackColorLabelVal_TM, 18F, ContentAlignment.MiddleCenter),
-                                                new HLabelStyles(Color.Black, s_clrBackColorLabelVal_TM_SN, 18F, ContentAlignment.MiddleCenter),
-                                                new HLabelStyles(Color.Black, s_clrBackColorLabelVal_TM, 18F, ContentAlignment.MiddleCenter),
-                                                new HLabelStyles(Color.Black, s_clrBackColorLabelVal_TM_SN, 18F, ContentAlignment.MiddleCenter)};
-        //HReports m_report;
+        private const int COUNT_FIXED_ROWS = (int)INDEX_LABEL.VALUE_TM_SN - 1;
+
+        private static Color s_clrBackColorLabel = Color.FromArgb(212, 208, 200)
+            , s_clrBackColorLabelVal_TM_Gen = Color.FromArgb(219, 223, 227)
+            , s_clrBackColorLabelVal_TM_SN = Color.FromArgb(219, 223, 247);
+
+        private static HLabelStyles[] s_arLabelStyles = { new HLabelStyles(FormMain.formGraphicsSettings.FontColor // NAME
+                , FormMain.formGraphicsSettings.BackgroundColor == SystemColors.Control ? s_clrBackColorLabel : FormMain.formGraphicsSettings.BackgroundColor
+                , 22F
+                , ContentAlignment.MiddleCenter)
+            , new HLabelStyles(FormMain.formGraphicsSettings.FontColor // DATETIME_TM_Gen
+                , FormMain.formGraphicsSettings.BackgroundColor == SystemColors.Control ? s_clrBackColorLabelVal_TM_Gen : FormMain.formGraphicsSettings.BackgroundColor
+                , 18F
+                , ContentAlignment.MiddleCenter)
+            , new HLabelStyles(FormMain.formGraphicsSettings.FontColor // DATETIME_TM_SN
+                , FormMain.formGraphicsSettings.BackgroundColor == SystemColors.Control ? s_clrBackColorLabelVal_TM_SN : FormMain.formGraphicsSettings.BackgroundColor
+                , 18F
+                , ContentAlignment.MiddleCenter)
+            , new HLabelStyles(FormMain.formGraphicsSettings.FontColor // VALUE_TM_SN
+                , FormMain.formGraphicsSettings.BackgroundColor == SystemColors.Control ? s_clrBackColorLabelVal_TM_Gen : FormMain.formGraphicsSettings.BackgroundColor
+                , 18F
+                , ContentAlignment.MiddleCenter)
+            , new HLabelStyles(FormMain.formGraphicsSettings.FontColor // VALUE_TM_SN
+                , FormMain.formGraphicsSettings.BackgroundColor == SystemColors.Control ? s_clrBackColorLabelVal_TM_SN : FormMain.formGraphicsSettings.BackgroundColor
+                , 18F
+                , ContentAlignment.MiddleCenter)
+        };
 
         public bool m_bIsActive;
 
@@ -95,12 +114,10 @@ namespace Statistic
 
             // фильтр ТЭЦ-ЛК
             for (i = 0; i < listTec.Count; i++)
-                if (!(listTec[i].m_id > (int)TECComponent.ID.LK))
-                {
+                if (!(listTec[i].m_id > (int)TECComponent.ID.LK)) {
                     ptcp = new PanelTecTMSNPower(listTec[i]/*, fErrRep, fWarRep, fActRep, fRepClr*/);
                     this.Controls.Add(ptcp, i % this.ColumnCount, i / this.ColumnCount);
-                }
-                else
+                } else
                     ;
         }
 
@@ -246,7 +263,7 @@ namespace Statistic
         private partial class PanelTecTMSNPower : HPanelCommon
         {
             Label[] m_arLabel;
-            Dictionary<int, Label> m_dictLabelVal;
+            //Dictionary<int, Label> m_dictLabelVal;
 
             //bool isActive;
 
@@ -277,7 +294,10 @@ namespace Statistic
                 m_tecView.updateGUI_TM_Gen = new DelegateFunc(updateGUI_TM_Gen);
                 m_tecView.updateGUI_TM_SN = new DelegateFunc(updateGUI_TM_SN);
 
-                Initialize();
+                ForeColorChanged += onForeColorChanged;
+                BackColorChanged += onBackColorChanged;
+
+                Initialize ();
             }
 
             public PanelTecTMSNPower(IContainer container, StatisticCommon.TEC tec/*, DelegateStringFunc fErrRep, DelegateStringFunc fWarRep, DelegateStringFunc fActRep, DelegateBoolFunc fRepClr*/)
@@ -295,7 +315,6 @@ namespace Statistic
             {
                 int i = -1;
 
-                m_dictLabelVal = new Dictionary<int, Label>();
                 m_arLabel = new Label[(int)INDEX_LABEL.VALUE_TM_SN + 1];
 
                 this.Dock = DockStyle.Fill;
@@ -314,11 +333,7 @@ namespace Statistic
                 i = (int)INDEX_LABEL.NAME;
                 cntnt = m_tecView.m_tec.name_shr;
                 m_arLabel[i] = HLabel.createLabel(cntnt, PanelTMSNPower.s_arLabelStyles[i]);
-                ////Предусмотрим обработчик при изменении значения
-                //if (i == (int)INDEX_LABEL.VALUE_TOTAL)
-                //    m_arLabel[i].TextChanged += new EventHandler(PanelTecCurPower_TextChangedValue);
-                //else
-                //    ;
+
                 this.Controls.Add(m_arLabel[i], 0, i);
                 this.SetColumnSpan(m_arLabel[i], this.ColumnCount);
 
@@ -339,11 +354,7 @@ namespace Statistic
                             break;
                     }
                     m_arLabel[i] = HLabel.createLabel(cntnt, PanelTMSNPower.s_arLabelStyles[i]);
-                    ////Предусмотрим обработчик при изменении значения
-                    //if (i == (int)INDEX_LABEL.VALUE_TOTAL)
-                    //    m_arLabel[i].TextChanged += new EventHandler(PanelTecCurPower_TextChangedValue);
-                    //else
-                    //    ;
+
                     this.Controls.Add(m_arLabel[i], (i % 2) * 2, i / 2);
                     this.SetColumnSpan(m_arLabel[i], 2);
                 }
@@ -355,6 +366,52 @@ namespace Statistic
                     this.RowStyles.Add(new RowStyle(SizeType.Percent, 10));
 
                 //isActive = false;
+            }
+
+            private void onForeColorChanged (object sender, EventArgs e)
+            {
+                if (Equals (m_arLabel, null) == false)
+                    foreach (Label label in m_arLabel)
+                        label.ForeColor = ForeColor;
+                else
+                    ;
+            }
+
+            private void onBackColorChanged (object sender, EventArgs e)
+            {
+                if (Equals (m_arLabel, null) == false)
+                    for (int i = 0; i < m_arLabel.Length; i ++) {
+                        switch ((INDEX_LABEL)i) {
+                            case INDEX_LABEL.DATETIME_TM_SN:
+                            case INDEX_LABEL.VALUE_TM_SN:
+                                s_arLabelStyles [i].m_backColor =
+                                m_arLabel[i].BackColor =
+                                    BackColor == SystemColors.Control
+                                        ? s_clrBackColorLabelVal_TM_SN
+                                            : BackColor;
+                                break;
+                            case INDEX_LABEL.DATETIME_TM_Gen:
+                            case INDEX_LABEL.VALUE_TM_Gen:
+                                s_arLabelStyles [i].m_backColor =
+                                m_arLabel [i].BackColor =
+                                    BackColor == SystemColors.Control
+                                        ? s_clrBackColorLabelVal_TM_Gen
+                                            : BackColor;
+                                break;
+                            case INDEX_LABEL.NAME:
+                                m_arLabel [i].BackColor = BackColor == SystemColors.Control
+                                        ? s_clrBackColorLabel
+                                            : BackColor;
+                                ;
+                                break;
+                            default:
+                                throw new Exception ($"PanelTMSNPower.PanelTecTMSNPower.onBackColorChanged () - неизвестный индекс [{(INDEX_LABEL)i}] подписи...");
+                                break;
+
+                        }
+                    }
+                else
+                    ;
             }
 
             public void SetDelegateReport(DelegateStringFunc fErrRep, DelegateStringFunc fWarRep, DelegateStringFunc fActRep, DelegateBoolFunc fRepClr)
@@ -463,8 +520,8 @@ namespace Statistic
 
             private void showTMGenPower()
             {
-                double dblTotalPower_TM = 0.0
-                        , dblTECComponentPower_TM = 0.0;                
+                double dblTotalPower_TM = 0F
+                    , dblTECComponentPower_TM = 0F;
 
                 foreach (TECComponent g in m_tecView.m_tec.list_TECComponents)
                 {
@@ -479,7 +536,8 @@ namespace Statistic
                                 dblTECComponentPower_TM += setTextToLabelVal(null, m_tecView.m_dictValuesLowPointDev [tg.m_id].m_powerCurrent_TM);
                             }
                             else
-                                m_dictLabelVal[tg.m_id].Text = @"---";
+                            //TODO: setText @"---"
+                                ;
                         }
 
                         dblTotalPower_TM += setTextToLabelVal(null, dblTECComponentPower_TM);
@@ -494,14 +552,14 @@ namespace Statistic
 
                 //m_tecView.m_dtLastChangedAt_TM_Gen = HDateTime.ToMoscowTimeZone(m_tecView.m_dtLastChangedAt_TM_Gen);
 
-                setTextToLabelDateTime(m_tecView.m_dtLastChangedAt_TM_Gen, (int)INDEX_LABEL.DATETIME_TM_Gen);
+                setTextToLabelDateTime(m_arLabel [(int)INDEX_LABEL.DATETIME_TM_Gen], m_tecView.m_dtLastChangedAt_TM_Gen);
             }
 
             private void showTMSNPower()
             {
                 setTextToLabelVal(m_arLabel[(int)INDEX_LABEL.VALUE_TM_SN], m_tecView.m_dblTotalPower_TM_SN);
 
-                setTextToLabelDateTime(m_tecView.m_dtLastChangedAt_TM_SN, (int)INDEX_LABEL.DATETIME_TM_SN);
+                setTextToLabelDateTime(m_arLabel[(int)INDEX_LABEL.DATETIME_TM_SN], m_tecView.m_dtLastChangedAt_TM_SN);
             }
 
             private double setTextToLabelVal(Label lblVal, double val)
@@ -521,22 +579,22 @@ namespace Statistic
             /// </summary>
             /// <param name="dt">Дата/время для отображения</param>
             /// <param name="indx">Индекс значения (генерация или СН)</param>
-            private void setTextToLabelDateTime (DateTime dt, int indx)
+            private void setTextToLabelDateTime (Label lblDatetime, DateTime valDatetime)
             {
                 Color clrDatetime = Color.Empty;
                 string strFmtDatetime = @"HH:mm:ss";
 
-                if (TecView.ValidateDatetimeTMValue(m_tecView.serverTime, dt) == true)
+                if (TecView.ValidateDatetimeTMValue(m_tecView.serverTime, valDatetime) == true)
                     // формат даты/времени без изменения (без даты)
-                    clrDatetime = Color.Black;
+                    clrDatetime = FormMain.formGraphicsSettings.FontColor;
                 else
                 {
                     strFmtDatetime = @"dd.MM.yyyy " + strFmtDatetime; // добавить дату
                     clrDatetime = Color.Red;
                 }
 
-                m_arLabel[indx].Text = dt.ToString(strFmtDatetime);
-                m_arLabel[indx].ForeColor = clrDatetime;
+                lblDatetime.Text = valDatetime.ToString(strFmtDatetime);
+                lblDatetime.ForeColor = clrDatetime;
             }
 
             private void TimerCurrent_Tick(Object stateInfo)

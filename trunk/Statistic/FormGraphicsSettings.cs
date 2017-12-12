@@ -88,9 +88,9 @@ namespace Statistic {
         /// Открытое перечисление GraphTypes  (типы графиков)
         /// </summary>
         public enum GraphTypes {
-            //линейный    
+            //линейный
             Linear,
-            //гистограмма                                                     
+            //гистограмма
             Bar,
         }
 
@@ -113,16 +113,6 @@ namespace Statistic {
         /// Массив признаков использования источников данных
         /// </summary>
         HMark m_markSourceData;
-
-        /// <summary>
-        /// открытые поля типа Color. 
-        /// </summary>
-        //public Color udgColor                                                     
-        //    , divColor
-        //    , pColor_ASKUE, pColor_SOTIASSO
-        //    , recColor
-        //    , m_bgColor_ASKUE, m_bgColor_SOTIASSO
-        //    , gridColor;
 
         #region Поля
         /// <summary>
@@ -204,8 +194,8 @@ namespace Statistic {
 
             InitializeComponent ();
 
-            bool bGroupBoxSourceData = false;                                                            //переменной bGroupBoxSourceData присваиваем false
-            CONN_SETT_TYPE cstGroupBoxSourceData = CONN_SETT_TYPE.AISKUE_3_MIN;                          //переменной cstGroupBoxSourceData присваиваем константу=1 (AISKUE_3_MIN)
+            bool bGroupBoxSourceData = false;                                                           //переменной bGroupBoxSourceData присваиваем false
+            CONN_SETT_TYPE cstGroupBoxSourceData = CONN_SETT_TYPE.AISKUE_3_MIN;                         //переменной cstGroupBoxSourceData присваиваем константу=1 (AISKUE_3_MIN)
             //Проверка условия прав доступа к возможности смены источника данных
             if (HStatisticUsers.IsAllowed ((int)HStatisticUsers.ID_ALLOWED.SOURCEDATA_CHANGED) == true)
             //if (m_formMain.m_users.IsAllowed(HStatisticUsers.ID_ALLOWED.SOURCEDATA_CHANGED) == true)
@@ -220,7 +210,7 @@ namespace Statistic {
             } else
                 ;
 
-            this.gbxSourceData.Enabled = bGroupBoxSourceData;       //??                                 
+            this.gbxSourceData.Enabled = bGroupBoxSourceData;       //??
             m_markSourceData.Marked ((int)cstGroupBoxSourceData);
 
             checkedSourceData ();           // вызов метода проверки источника данных
@@ -435,8 +425,8 @@ namespace Statistic {
             m_colorShema = (sender as System.Windows.Forms.CheckBox).Checked == true ? ColorShemas.System : ColorShemas.Custom;
 
             m_arlblColorValues [(int)INDEX_COLOR_VAUES.BG_ASKUE].Enabled =
-            m_arlblColorValues [(int)INDEX_COLOR_VAUES.BG_ASKUE].Enabled =
-            m_arlblColorValues [(int)INDEX_COLOR_VAUES.BG_ASKUE].Enabled =
+            m_arlblColorValues [(int)INDEX_COLOR_VAUES.BG_SOTIASSO].Enabled =
+            m_arlblColorValues [(int)INDEX_COLOR_VAUES.BG_ASKUTE].Enabled =
                 (sender as System.Windows.Forms.CheckBox).Checked;
 
             //m_arlblColorShema [(int)INDEX_COLOR_SHEMA.BACKGROUND].Enabled =

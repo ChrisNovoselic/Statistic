@@ -56,6 +56,7 @@ namespace StatisticDiagnostic
             /// Массив дочерних панелей для каждой из Модес-источников
             /// </summary>
             private PanelModes[] m_arPanels;
+
             /// <summary>
             /// Конструктор основной (с парметрами)
             /// </summary>
@@ -69,6 +70,7 @@ namespace StatisticDiagnostic
             {
                 initialize(listTEC, listDiagParam, listDiagSource);
             }
+
             /// <summary>
             /// Конструктор дополнительный (с параметрами)
             /// </summary>
@@ -84,6 +86,7 @@ namespace StatisticDiagnostic
             {
                 initialize(listTEC, listDiagnosticParameter, listDiagSource);
             }
+
             /// <summary>
             /// Инициализация (создание/размещение) дочерних элементов управления
             /// </summary>
@@ -94,6 +97,7 @@ namespace StatisticDiagnostic
 
                 initializeLayoutStyle();
             }
+
             /// <summary>
             /// Инициализация характеристик, стилей макета для размещения дочерних элементов интерфейса
             ///  (должна быть вызвана явно)
@@ -292,6 +296,7 @@ namespace StatisticDiagnostic
                 /// </summary>
                 private const int COUNT_LAYOUT_COLUMN = 1
                     , COUNT_LAYOUT_ROW = 7;
+
                 /// <summary>
                 /// Конструктор - основной (с параметрами)
                 /// </summary>
@@ -300,6 +305,7 @@ namespace StatisticDiagnostic
                 {
                     initialize(listTEC, listDiagParam, listDiagSrc);
                 }
+
                 public PanelModes(IContainer container, List<TEC> listTEC, List<DIAGNOSTIC_PARAMETER> listDiagParam, ListDiagnosticSource listDiagSrc)
                     : base(container, COUNT_LAYOUT_COLUMN, COUNT_LAYOUT_ROW)
                 {
@@ -307,6 +313,7 @@ namespace StatisticDiagnostic
 
                     initialize(listTEC, listDiagParam, listDiagSrc);
                 }
+
                 /// <summary>
                 /// Инициализация (создание/размещение) дочерних компонентов
                 /// </summary>
@@ -549,8 +556,9 @@ namespace StatisticDiagnostic
                                         Cells [(int)i].Value = value;
                                     else
                                         ;
+
                                     // изменить цвет ячейки
-                                    Cells[(int)i].Style.BackColor = clrCell;
+                                    SetStyleCell ((int)i, clrCell);
                                 } else
                                     ; // значение == null
                                 //Если возникнет исключение, обработчик исключений установит сообщение "Не установлено"
@@ -656,7 +664,7 @@ namespace StatisticDiagnostic
                                             rowValues[(int)INDEX_CELL.DATETIME_VALUE] =
                                                 Convert.ChangeType(pair.Value.m_value, KEY_DIAGNOSTIC_PARAMETER.TypeOf[pair.Key.m_id_unit]);
                                             break;
-                                        default:                                            
+                                        default:
                                             break;
                                     }
                                 } else

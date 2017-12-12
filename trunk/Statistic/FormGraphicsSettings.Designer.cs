@@ -217,7 +217,7 @@ namespace Statistic {
             this.m_arlblColorShema [indx].Text = "״נטפע";
             this.m_arlblColorShema [indx].TextAlign = ContentAlignment.MiddleLeft;
             this.m_arlblColorShema [indx].BorderStyle = System.Windows.Forms.BorderStyle.FixedSingle;
-            //TODO:            
+            //TODO:
             this.m_arlblColorShema [indx].BackColor = CustomColorTable.BackColor;
             this.m_arlblColorShema [indx].ForeColor = CustomColorTable.ForeColor;
             //this.m_arlblColorShema [indx].Enabled = false;

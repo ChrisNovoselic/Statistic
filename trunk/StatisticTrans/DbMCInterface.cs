@@ -255,7 +255,8 @@ namespace StatisticCommon
             //Вариант №2
             DataRow []ppbr_rows = null;
 
-            string pbr_number = string.Empty;
+            string pbr_number = string.Empty
+                , pbr_indx;
             DateTime date = DateTime.MinValue;
             string[] args = null
                 , idsInner = null;
@@ -351,7 +352,7 @@ namespace StatisticCommon
                                 if (table.Rows.Count > 0)
                                     ppbr_rows = table.Select("DATE_PBR='" + dateCurrent.ToString() + "'");
                                 else
-                                    ;                                
+                                    ;
 
                                 //Обработка получения записи
                                 ////Вариант №1
@@ -369,12 +370,12 @@ namespace StatisticCommon
                                 //else
                                 //    ;
 
-                                //Вариант №2
+                                //Вариант №2, 3
                                 if ((ppbr_rows == null)
                                     || (ppbr_rows.Length == 0))
                                 {
-                                    table.Rows.Add(new object[] { dateCurrent, DateTime.Now, 0.0, 0.0, 0.0, pbr_number/*, igo.IdInner*/});
-                                    ppbr_rows = table.Select("DATE_PBR='" + dateCurrent.ToString() + "'");
+                                    table.Rows.Add(new object[] { dateCurrent, DateTime.Now, 0F, 0F, 0F, pbr_number/*, igo.IdInner*/});
+                                    ppbr_rows = table.Select($"DATE_PBR='{dateCurrent.ToString()}'");
                                 }
                                 else
                                     ;
@@ -385,19 +386,33 @@ namespace StatisticCommon
                                 {
                                     case 0:
                                         //else.ppbr.pbr = pvi.Value; //Вариант №1
-                                        ppbr_rows [0]["PBR"] = (double)ppbr_rows [0]["PBR"] + pvi.Value; //Вариант №2
+                                        //ppbr_rows [0]["PBR"] = (double)ppbr_rows [0]["PBR"] + pvi.Value; //Вариант №2
+                                        pbr_indx = "PBR"; //Вариант №3
                                         break;
                                     case 1:
                                         //ppbr.pmin = pvi.Value; //Вариант №1
-                                        ppbr_rows [0]["PMIN"] = (double)ppbr_rows [0]["PMIN"] + pvi.Value; //Вариант №2
+                                        //ppbr_rows [0]["PMIN"] = (double)ppbr_rows [0]["PMIN"] + pvi.Value; //Вариант №2
+                                        pbr_indx = "PMIN"; //Вариант №3
                                         break;
                                     case 2:
                                         //ppbr.pmax = pvi.Value; //Вариант №1
-                                        ppbr_rows [0]["PMAX"] = (double)ppbr_rows [0]["PMAX"] + pvi.Value; //Вариант №2
+                                        //ppbr_rows [0]["PMAX"] = (double)ppbr_rows [0]["PMAX"] + pvi.Value; //Вариант №2
+                                        pbr_indx = "PMAX"; //Вариант №3
                                         break;
                                     default:
+                                        pbr_indx = string.Empty;
                                         break;
                                 }
+
+                                if (string.IsNullOrWhiteSpace (pbr_indx) == false)
+                                    try {
+                                        ppbr_rows [0] [pbr_indx] = (double)ppbr_rows [0] [pbr_indx] + pvi.Value; //Вариант №3
+                                    } catch (Exception e) {
+                                        Logging.Logg ().Exception (e, $"DbMCInterface::GetData() - тип{ppbr_rows [0] [pbr_indx].GetType().Name} значения по индексу={m_listPFI [pvi.ObjFactor].Id}...", Logging.INDEX_MESSAGE.NOT_SET);
+                                    }
+                                else
+                                    Logging.Logg ().Error (string.Format ("DbMCInterface::GetData() - не найден индекс={0} значения ПБР...", m_listPFI [pvi.ObjFactor].Id)
+                                        , Logging.INDEX_MESSAGE.NOT_SET);
                             }
                         }
                         else

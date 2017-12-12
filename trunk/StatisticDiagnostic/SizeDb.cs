@@ -278,7 +278,7 @@ namespace StatisticDiagnostic
                                 indxState = INDEX_CELL_STATE.ERROR;
                                 clrCell = s_CellState[(int)INDEX_CELL_STATE.OK].m_Color;
 
-                                switch (i) {                                    
+                                switch (i) {
                                     case INDEX_CELL.COUNT:
                                         continue;
                                     case INDEX_CELL.NAME:
@@ -314,8 +314,9 @@ namespace StatisticDiagnostic
                                     Cells [(int)i].Value = value;
                                 else
                                     ;
+
                                 // изменить цвет ячейки
-                                Cells[(int)i].Style.BackColor = clrCell;
+                                SetStyleCell ((int)i, clrCell);
                             }
                             else
                                 ; // значение == null

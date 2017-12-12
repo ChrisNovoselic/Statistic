@@ -297,6 +297,8 @@ namespace StatisticCommon
                 {
                     bRes = false;
 
+                    Logging.Logg ().Error ($"HAdmin::CheckNameFieldsOfTable (גסודמ סעמכבצמג={tbl.Columns.Count}) - םו םאיהום סעמכבוצ: {nameField}", Logging.INDEX_MESSAGE.NOT_SET);
+
                     break;
                 }
                 else
