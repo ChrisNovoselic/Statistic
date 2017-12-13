@@ -944,7 +944,9 @@ namespace StatisticAnalyzer
                     Logging.Logg().Error(strErr, Logging.INDEX_MESSAGE.NOT_SET);
                     throw new Exception(strErr);
                 }
-            }
+            } else
+                ;
+
             unregister_idListenerConfDB(idListener);
         }
 
@@ -2050,6 +2052,28 @@ namespace StatisticAnalyzer
         public override void UpdateGraphicsCurrent (int type)
         {
             //??? ничегно не делаем
+        }
+
+        public override Color ForeColor
+        {
+            get
+            {
+                return base.ForeColor;
+            }
+
+            set
+            {
+                base.ForeColor = value;
+
+                getTypedControls (this, new Type [] { typeof (DataGridView) }).Cast<DataGridView> ().ToList ().ForEach (dgv => {
+                    dgv.DefaultCellStyle.ForeColor = value;
+                });
+
+                if (Equals (listTabVisible, null) == false)
+                    listTabVisible.BackColor = value;
+                else
+                    ;
+            }
         }
 
         public override Color BackColor

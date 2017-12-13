@@ -58,6 +58,7 @@
     </Otherwise>
   </Choose>
   <ItemGroup>
+    <Compile Include="HandlerDbTest.cs" />
     <Compile Include="StatisticCommonAdminTest.cs" />
     <Compile Include="Properties\AssemblyInfo.cs" />
   </ItemGroup>
