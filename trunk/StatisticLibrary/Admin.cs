@@ -556,7 +556,7 @@ namespace StatisticCommon
                 else
                     ;
             } else
-                Logging.Logg().Error($"HAdmin::GetPBRNumber () - нельзя извлечь номер {PBR_PREFIX}...", Logging.INDEX_MESSAGE.NOT_SET);
+                Logging.Logg().Error($"HAdmin::GetPBRNumber (вход={pbr}) - нельзя извлечь №{PBR_PREFIX}...", Logging.INDEX_MESSAGE.NOT_SET);
 
             return iRes;
         }

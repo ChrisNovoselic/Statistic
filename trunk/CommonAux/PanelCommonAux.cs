@@ -882,17 +882,14 @@ namespace CommonAux
                     {
                         case 1: //...отмена действия
                             //labelLog.Text += @"отменено пользователем..." + @"шаблон: " + (FullPathTemplate.Length > 0 ? FullPathTemplate : @"не указан...");
-                            m_GetDataFromDB.ActionReport(@"Отменено пользователем..." + @"шаблон: " + (FullPathTemplate.Length > 0 ? FullPathTemplate : @"не указан..."));
-                            m_GetDataFromDB.ReportClear(true);
+                            m_GetDataFromDB.WarningReport(@"Отменено пользователем..." + @"шаблон: " + (FullPathTemplate.Length > 0 ? FullPathTemplate : @"не указан..."));
+                            //m_GetDataFromDB.ReportClear(true);
                             break;
                         case -1: //...шаблон не прошел проверку
-                            MessageBox.Show("Ошибка при проверке шаблона.\r\nОбратитесь в службу поодержки (тел.: 0-4444, 289-04-37).", @"Ошибка!", MessageBoxButtons.OK, MessageBoxIcon.Error, MessageBoxDefaultButton.Button1);
-                            m_GetDataFromDB.ActionReport("Ошибка при проверке шаблона");
-                            m_GetDataFromDB.ReportClear(true);
+                        case -2: //...???
                             //labelLog.Text += @"ошибка проверки..." + @"шаблон: " + (FullPathTemplate.Length > 0 ? FullPathTemplate : @"не указан...");
-                            break;
-                        case -2:
-                            m_GetDataFromDB.ReportClear(true);
+                            m_GetDataFromDB.ErrorReport("Ошибка при проверке шаблона");
+                            //m_GetDataFromDB.ReportClear(true);
                             break;
                         default:
                             m_GetDataFromDB.ReportClear(true);
@@ -901,7 +898,7 @@ namespace CommonAux
                 else
                 {
                     m_GetDataFromDB.ActionReport("Проверка шаблона успешно завершена");
-                    m_GetDataFromDB.ReportClear(true);                    
+                    m_GetDataFromDB.ReportClear(true);
                 };
 
                 m_markReady.Set ((int)INDEX_READY.TEMPLATE, iErr == 0);
@@ -909,24 +906,26 @@ namespace CommonAux
             }
         }
 
-        private void btnLoad_Click(object sender, EventArgs e)
+        private void btnLoad_Click(object sender, EventArgs ev)
         {
             int iRes = -1
                 , iListenerId = -1;
             string msg = string.Empty;
             TEC_LOCAL.INDEX_DATA indx;
-            TEC_LOCAL tec_local = m_GetDataFromDB.m_listTEC[m_listBoxTEC.SelectedIndex];
+            TEC_LOCAL tec_local;
             TEC_LOCAL.VALUES_DATE.VALUES_GROUP dictIndxValues;
+            DateTime datetimeStart;
 
-            for (int i = 0; i <= Convert.ToInt32(TEC_LOCAL.INDEX_DATA.GRVIII); i++)
-            {
+            tec_local = m_GetDataFromDB.m_listTEC [m_listBoxTEC.SelectedIndex];
+
+            for (int i = 0; i <= Convert.ToInt32(TEC_LOCAL.INDEX_DATA.GRVIII); i++) {
                 m_dgvValues[i].ClearValues();
             }
 
             //delegateStartWait();
 
             //Установить соединение с источником данных
-            iListenerId = DbSources.Sources().Register(m_connSettAIISKUECentre, false, @"");
+            iListenerId = DbSources.Sources().Register(m_connSettAIISKUECentre, false, $"АИИСКУЭ-центр для {tec_local.m_strNameShr}");
             if (!(iListenerId < 0))
             {
                 Logging.Logg().Action(msg, Logging.INDEX_MESSAGE.NOT_SET);
@@ -939,46 +938,49 @@ namespace CommonAux
                         indx++;
 
                         break;
+                    } else {
                     }
-                    else
-                    { }
 
-                    tec_local.ClearValues(m_listMonthCalendar.ElementAt ((int)INDEX_MONTH_CALENDAR_DATE.START).SelectionStart.Date, indx);
+                    datetimeStart = m_listMonthCalendar.ElementAt ((int)INDEX_MONTH_CALENDAR_DATE.START).SelectionStart.Date;
+
+                    tec_local.ClearValues(datetimeStart, indx);
 
                     iRes = m_GetDataFromDB.Request(tec_local, iListenerId
-                        , m_listMonthCalendar.ElementAt ((int)INDEX_MONTH_CALENDAR_DATE.START).SelectionStart.Date //SelectionStart всегда == SelectionEnd, т.к. MultiSelect = false
-                        , m_listMonthCalendar.ElementAt ((int)INDEX_MONTH_CALENDAR_DATE.START).SelectionEnd.Date.AddDays(1)
+                        , datetimeStart //SelectionStart всегда == SelectionEnd, т.к. MultiSelect = false
+                        , datetimeStart.AddDays(1)
                         , indx);
 
                     if (!(iRes < 0))
                     {
-                        dictIndxValues = tec_local.m_listValuesDate.Find(item => { return item.m_dataDate == m_listMonthCalendar.ElementAt ((int)INDEX_MONTH_CALENDAR_DATE.START).SelectionStart.Date; }).m_dictData[indx];
+                        try {
+                            dictIndxValues = tec_local.m_listValuesDate.Find (item => { return item.m_dataDate == datetimeStart; }).m_dictData [indx];
 
-                        m_dgvValues[Convert.ToInt32(indx)].Update(dictIndxValues);
-                        m_dgvSummaValues.Rows[Convert.ToInt32(indx)].Cells[1].Value
-                            = Convert.ToSingle(m_dgvValues [Convert.ToInt32 (indx)].Rows [m_dgvValues [Convert.ToInt32 (indx)].Rows.Count - 1].Cells [24].Value).ToString(FORMAT_VALUE);
+                            m_dgvValues [Convert.ToInt32 (indx)].Update (dictIndxValues);
+                            m_dgvSummaValues.Rows [Convert.ToInt32 (indx)].Cells [1].Value
+                                = Convert.ToSingle (m_dgvValues [Convert.ToInt32 (indx)].Rows [m_dgvValues [Convert.ToInt32 (indx)].Rows.Count - 1].Cells [24].Value).ToString (FORMAT_VALUE);
 
-                        if (iRes == 0)
-                        {
-                            msg = @"Получены значения для: " + tec_local.m_strNameShr;
-                            Logging.Logg().Debug(msg, Logging.INDEX_MESSAGE.NOT_SET);
-                        }
-                        else
-                        {
-                            msg = @"Ошибка при получении значений для: " + tec_local.m_strNameShr;
-                            Logging.Logg().Error(msg, Logging.INDEX_MESSAGE.NOT_SET);
+                            if (iRes == 0)
+                                Logging.Logg ().Action (@"PanelCommonAux::btnLoadClick () - получены значения для: " + tec_local.m_strNameShr, Logging.INDEX_MESSAGE.NOT_SET);
+                            else
+                                Logging.Logg ().Error (@"PanelCommonAux::btnLoadClick () - ошибка при получении значений для: " + tec_local.m_strNameShr, Logging.INDEX_MESSAGE.NOT_SET);
+
+                            
+                        } catch (Exception e) {
+                            Logging.Logg ().Exception (e, $"PanelCommonAux::btnLoad_Click () - получение значений для ТЭЦ ИД={tec_local.m_Id}, за дату(начало интервала)={datetimeStart.ToString()}..."
+                                , Logging.INDEX_MESSAGE.NOT_SET);
                         }
                     }
                     else
-                        Logging.Logg().Warning(string.Format(@"FormMain::btnLoadClick () - нет результата запроса за {0} либо группа сигналов INDEX={1} пустая..."
-                                , m_listMonthCalendar.ElementAt ((int)INDEX_MONTH_CALENDAR_DATE.START).SelectionStart.Date, indx)
+                        Logging.Logg().Warning(string.Format(@"PanelCommonAux::btnLoadClick () - нет результата запроса за дату(начало интервала)={0} либо группа сигналов INDEX={1} пустая..."
+                                , datetimeStart.ToString ()
+                                , indx)
                             , Logging.INDEX_MESSAGE.NOT_SET);
                 }
             }
             else
             {
                 //delegateStopWait();
-                throw new Exception(@"FormMain::btnLoad_Click () - не установлено соединение с источником данных...");
+                throw new Exception(@"PanelCommonAux::btnLoad_Click () - не установлено соединение с источником данных...");
             }
 
             //delegateStopWait();

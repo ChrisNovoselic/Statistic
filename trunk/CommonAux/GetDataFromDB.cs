@@ -24,11 +24,7 @@ namespace CommonAux
         /// <summary>
         /// Строка, содержащая наименование таблицы в БД, хранящей перечень каналов
         /// </summary>
-        public static string DB_TABLE = @"[ID_TSN_ASKUE_2017]";
-        /// <summary>
-        /// Строка, содержащая наименование таблицы в БД, хранящей путь к шаблону excel
-        /// </summary>
-        public static string DB_TABLE_SETUP = @"[setup]";
+        public static string DB_NAME_TABLE = @"[ID_TSN_ASKUE]";
         /// <summary>
         /// Объект, содержащий id записи в таблице, содержащей настройки подключения
         /// </summary>
@@ -47,27 +43,6 @@ namespace CommonAux
         /// Номера столбцовы в шаблоне excel
         /// </summary>
         public enum INDEX_MSEXCEL_COLUMN { APOWER, SNUZHDY }
-        /// <summary>
-        /// Поля таблицы настроек
-        /// </summary>
-        public enum DB_TABLE_AIISKUE
-        {
-            ID, IP, PORT, DB_NAME, UID, NAME_SHR
-        };
-        /// <summary>
-        /// Поля таблицы паролей
-        /// </summary>
-        public enum DB_TABLE_PSW
-        {
-            ID_EXT, ID_ROLE, HASH
-        };
-        /// <summary>
-        /// Поля таблицы setup
-        /// </summary>
-        public enum DB_TABLE_STP
-        {
-            ID, VALUE, KEY, LAST_UPDATE, ID_UNIT
-        };
         /// <summary>
         /// Список всех каналов для каждой ТЭЦ
         /// </summary>
@@ -106,18 +81,21 @@ namespace CommonAux
         /// <returns>Строка запроса</returns>
         public static string getQueryListChannels()
         {
-            string strRes = "SELECT ";
+            string strRes = string.Empty;
+
+            strRes = "SELECT ";
             foreach (DB_TABLE_DATA indx in Enum.GetValues(typeof(DB_TABLE_DATA)))
             {
                 strRes += "[" + indx.ToString() + "], ";
             }
             strRes = strRes.Remove(strRes.Length-2, 2);
-            strRes += " FROM " + DB_TABLE;
+            strRes += " FROM " + DB_NAME_TABLE;
+
             return strRes;
         }
 
         /// <summary>
-        /// Возвратить таблицу [ID_TSN_AISKUE_2017] из БД конфигурации
+        /// Возвратить таблицу [ID_TSN_AISKUE] из БД конфигурации
         /// </summary>
         /// <param name="iListenerId">Идентификатор подписчика для обращения к БД</param>
         /// <param name="err">Идентификатор ошибки при выполнении запроса</param>
@@ -172,15 +150,6 @@ namespace CommonAux
         }
 
         /// <summary>
-        /// Инициализировать список ТЭЦ
-        /// </summary>
-        /// <param name="iListenerId">Идентификатор подписчика для обращения к БД</param>
-        public void GetIndexOfListSgnls(int i)
-        {
-
-        }
-
-        /// <summary>
         /// Загрузка всех каналов из базы данных
         /// </summary>
         /// <param name="iListenerId">Идентификатор подписчика для обращения к БД</param>
@@ -220,6 +189,10 @@ namespace CommonAux
             });
         }
 
+        /// <summary>
+        /// Инициализация строк с идентификаторами сигналов для всех ТЭЦ
+        ///  для использования в запросе при выборке значений
+        /// </summary>
         public void InitSensors ()
         {
             foreach (TEC_LOCAL t in m_listTEC)
@@ -362,15 +335,15 @@ namespace CommonAux
         {
             string strRes = @"SELECT res.[OBJECT], res.[ITEM], SUM(res.[VALUE0]) / COUNT(*)[VALUE0], res.[DATETIME], COUNT(*) as [COUNT]
                             FROM(
-                            SELECT[OBJECT], [ITEM], [VALUE0], 
-                            DATEADD(MINUTE, ceiling(DATEDIFF(MINUTE, DATEADD(DAY, DATEDIFF(DAY, 0, '?DATADATESTART?'), 0), [DATA_DATE]) / 60.) * 60,
-                            DATEADD(DAY, DATEDIFF(DAY, 0, '?DATADATESTART?'), 0)) as [DATETIME]
-                            FROM[DATA]
-                            WHERE[PARNUMBER] = 12 AND[OBJTYPE] = 0 AND([DATA_DATE] > '?DATADATESTART?' AND NOT[DATA_DATE] > '?DATADATEEND?')
-                            AND(?SENSORS?)
-                            GROUP BY[RCVSTAMP], [OBJECT], [OBJTYPE], [ITEM], [VALUE0], [SEASON],
-                            DATEADD(MINUTE, ceiling(DATEDIFF(MINUTE, DATEADD(DAY, DATEDIFF(DAY, 0, '?DATADATESTART?'), 0), [DATA_DATE]) / 60.) * 60,
-                            DATEADD(DAY, DATEDIFF(DAY, 0, '?DATADATESTART?'), 0))) res
+                                SELECT[OBJECT], [ITEM], [VALUE0], 
+                                    DATEADD(MINUTE, ceiling(DATEDIFF(MINUTE, DATEADD(DAY, DATEDIFF(DAY, 0, '?DATADATESTART?'), 0), [DATA_DATE]) / 60.) * 60,
+                                    DATEADD(DAY, DATEDIFF(DAY, 0, '?DATADATESTART?'), 0)) as [DATETIME]
+                                FROM[DATA]
+                                WHERE[PARNUMBER] = 12 AND[OBJTYPE] = 0 AND([DATA_DATE] > '?DATADATESTART?' AND NOT[DATA_DATE] > '?DATADATEEND?')
+                                    AND(?SENSORS?)
+                                GROUP BY[RCVSTAMP], [OBJECT], [OBJTYPE], [ITEM], [VALUE0], [SEASON],
+                                    DATEADD(MINUTE, ceiling(DATEDIFF(MINUTE, DATEADD(DAY, DATEDIFF(DAY, 0, '?DATADATESTART?'), 0), [DATA_DATE]) / 60.) * 60,
+                                    DATEADD(DAY, DATEDIFF(DAY, 0, '?DATADATESTART?'), 0))) res
                             GROUP BY[OBJECT], [ITEM], [DATETIME]
                             ORDER BY[OBJECT], [ITEM], [DATETIME]";
 

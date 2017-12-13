@@ -213,20 +213,20 @@ namespace StatisticCommon
 
         protected enum StatesMachine
         {
-            InitSensors, //Инициализация строк с идентификаторами ГТП (ТГ) для дальнейшего использования в запросах
-            CurrentTimeAdmin, //время сервера, источник данных: сервер с административными значениями
-            CurrentTimeView, //время сервера, источник данных: ...
-            Hour_TM, //текущий час, СОТИАССО
-            Hours_Fact, //указанные сутки, АИСКУЭ
+            InitSensors, //0 - инициализация строк с идентификаторами ГТП (ТГ) для дальнейшего использования в запросах
+            CurrentTimeAdmin, //1 - время сервера, источник данных: сервер с административными значениями
+            CurrentTimeView, //2 - время сервера, источник данных: ...
+            Hour_TM, //3 - текущий час, СОТИАССО
+            Hours_Fact, //4 - указанные сутки, АИСКУЭ
             CurrentMin_TM, //текущий интервальный отрезок (3 или 1мин), СОТИАССО - усредненный
             CurrentMinDetail_TM, //текущий интервальный отрезок (1мин!), СОТИАССО
             RetroMinDetail_TM, //ретроспективный интервальный отрезок (1мин!), СОТИАССО
             CurrentMins_Fact, //текущие сутки/час, АИСКУЭ
             Hours_TM, //указанные сутки, СОТИАССО
-            CurrentMins_TM, //текущие сутки/час, СОТИАССО
-            CurrentHours_TM_SN_PSUM, //текущие сутки для Собственные Нужды, СОТИАССО
-            LastValue_TM_Gen, //крайние значения для ГЕНЕРАЦИЯ, СОТИАССО - панель оперативной информации
-            LastValue_TM_SN, //крайние значения для Собственные Нужды, СОТИАССО
+            CurrentMins_TM, //10 - текущие сутки/час, СОТИАССО
+            CurrentHours_TM_SN_PSUM, //11- текущие сутки для Собственные Нужды, СОТИАССО
+            LastValue_TM_Gen, //12 - крайние значения для ГЕНЕРАЦИЯ, СОТИАССО - панель оперативной информации
+            LastValue_TM_SN, //13 - крайние значения для Собственные Нужды, СОТИАССО
             LastMinutes_TM, //значения крайних минут часа за указанные сутки, СОТИАССО
             //RetroHours,
             RetroMins_Fact, //указанные сутки/час, АИСКУЭ
@@ -244,8 +244,8 @@ namespace StatisticCommon
         public DelegateFunc setDatetimeView;
         public IntDelegateIntIntFunc updateGUI_Fact;
         public DelegateFunc updateGUI_TM_Gen
-                            , updateGUI_TM_SN
-                            , updateGUI_LastMinutes;
+            , updateGUI_TM_SN
+            , updateGUI_LastMinutes;
 
         public double m_dblTotalPower_TM_SN;
         public DateTime m_dtLastChangedAt_TM_Gen;
@@ -837,12 +837,15 @@ namespace StatisticCommon
 
         private void getCurrentTMGenRequest()
         {
-            //Request(allTECComponents[indxTECComponents].tec.m_arIdListeners[(int)CONN_SETT_TYPE.DATA_SOTIASSO_INSTANT], allTECComponents[indxTECComponents].tec.currentTMRequest(sensorsString_TM));
-            Request(m_dictIdListeners[m_tec.m_id][(int)CONN_SETT_TYPE.DATA_SOTIASSO], m_tec.currentTMRequest(m_tec.GetSensorsString(indxTECComponents, CONN_SETT_TYPE.DATA_SOTIASSO)));
+            //Debug.WriteLine ($"::LAST_VALUE_TM_GET_REQUEST (iListenerId={m_dictIdListeners [m_tec.m_id] [(int)CONN_SETT_TYPE.DATA_SOTIASSO]}, id_tec={m_tec.m_id}, indxTECComponent={indxTECComponents}) - ...");
+
+            Request (m_dictIdListeners[m_tec.m_id][(int)CONN_SETT_TYPE.DATA_SOTIASSO], m_tec.currentTMRequest(m_tec.GetSensorsString(indxTECComponents, CONN_SETT_TYPE.DATA_SOTIASSO)));
         }
 
         private int getCurrentTMGenResponse(DataTable table)
         {
+            //Debug.WriteLine ($"::LAST_VALUE_TM_GET_RESPONSE (iListenerId={m_dictIdListeners [m_tec.m_id] [(int)CONN_SETT_TYPE.DATA_SOTIASSO]}, id_tec={m_tec.m_id}, indxTECComponent={indxTECComponents}) - ...");
+
             int iRes = 0;
             int i = -1
                 , id = -1
@@ -985,12 +988,15 @@ namespace StatisticCommon
 
         private void getCurrentTMSNRequest()
         {
-            //m_tec.Request(CONN_SETT_TYPE.DATA_SOTIASSO_INSTANT, m_tec.currentTMSNRequest());
-            Request(m_dictIdListeners[m_tec.m_id][(int)CONN_SETT_TYPE.DATA_SOTIASSO], m_tec.currentTMSNRequest());
+            //Debug.WriteLine ($"::LAST_VALUE_TM_SN_REQUEST (iListenerId={m_dictIdListeners [m_tec.m_id] [(int)CONN_SETT_TYPE.DATA_SOTIASSO]}, id_tec={m_tec.m_id}) - ...");
+
+            Request (m_dictIdListeners[m_tec.m_id][(int)CONN_SETT_TYPE.DATA_SOTIASSO], m_tec.currentTMSNRequest());
         }
 
         private int getCurrentTMSNResponse(DataTable table)
         {
+            //Debug.WriteLine ($"::LAST_VALUE_TM_SN_RESPONSE (iListenerId={m_dictIdListeners [m_tec.m_id] [(int)CONN_SETT_TYPE.DATA_SOTIASSO]}, id_tec={m_tec.m_id}) - ...");
+
             int iRes = 0;
             int id = -1;
 
@@ -5430,33 +5436,6 @@ namespace StatisticCommon
             return iRes;
         }
 
-        private int getNumPBRByName(string l)
-        {
-            int iRes = -1;
-
-            if (l.Length > 3)
-                switch (l)
-                {
-                    case "ППБР": iRes = 0; break;
-                    default:
-                        {
-                            if ((! (l.Substring(0, 3) == HAdmin.PBR_PREFIX))
-                                || (int.TryParse(l.Substring(3), out iRes) == false) ||
-                                (! (iRes > 0)) ||
-                                (iRes > 24))
-                            // iRes оставить "как есть"
-                                ;
-                            else
-                                ;
-                        }
-                        break;
-                }
-            else
-                ;
-
-            return iRes;
-        }
-
         private void getSeason(DateTime date, int db_season, out int season)
         {
             season = db_season - date.Year - date.Year;
@@ -5473,16 +5452,24 @@ namespace StatisticCommon
         {
             int iRes = 0;
 
-            int num1 = getNumPBRByName(l1),
-                num2 = getNumPBRByName(l2);
+            int num1 = -1,
+                num2 = -1;
 
-            if (num1 > num2)
-                iRes = 1;
-            else
-                if (num1 < num2)
-                    iRes = -1;
-                else
+            num1 = GetPBRNumber (l1, out iRes);
+            if (!(iRes < 0)) {
+                num2 = GetPBRNumber (l2, out iRes);
+                if (!(iRes < 0)) {
+                    if (num1 > num2)
+                        iRes = 1;
+                    else
+                        if (num1 < num2)
+                        iRes = -1;
+                    else
+                        ;
+                } else
                     ;
+            } else
+                ;
 
             return iRes;
         }
