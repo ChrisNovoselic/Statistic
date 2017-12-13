@@ -469,16 +469,37 @@ namespace StatisticCommon
 
             return strRes;
         }
+        
+        /// <summary>
+        /// Идентификаторы типа значения в таблице конфигурации (соответсвует таблице [techsite_cfg-2.X.X].[dbo].[units])
+        /// </summary>
+        private enum UNITS { UNKNOWN = -1, BOOL = 8, STRING, INTEGER, FLOAT = 12 }
 
-        private string getWriteStringRequest(string key, string val, bool bInsert)
+        private string getWriteStringRequest (string key, object val, bool bInsert)
         {
             int err = -1;
             string strRes = string.Empty;
+            UNITS id_unit = UNITS.UNKNOWN;
+
+            id_unit = val.GetType ().Equals (typeof (bool)) == true ? UNITS.BOOL
+                : val.GetType ().Equals (typeof (string)) == true ? UNITS.STRING
+                    : val.GetType ().Equals (typeof (int)) == true ? UNITS.INTEGER
+                        : new List<Type> () { typeof (double), typeof (float), typeof (decimal) }.Contains(val.GetType ()) == true ? UNITS.FLOAT
+                            : UNITS.UNKNOWN;
+
             if (bInsert == false)
                 //query = @"UPDATE [dbo].[setup] SET [VALUE] = '" + val + @"' WHERE [KEY]='" + key + @"'";
-                strRes = string.Format(@"UPDATE setup SET [VALUE]='{0}', [LAST_UPDATE]=GETDATE() WHERE [KEY]='{1}'", val, key);
+                strRes = string.Format (@"UPDATE setup SET [VALUE]='{0}', [LAST_UPDATE]=GETDATE() WHERE [KEY]='{1}'", val, key);
             else
-                strRes = string.Format(@"INSERT INTO [setup] ([VALUE],[KEY],[LAST_UPDATE],[ID_UNIT]) VALUES ('{0}','{1}',GETDATE(),{2})", val, key, -1);
+                if (!(id_unit == UNITS.UNKNOWN))
+                    strRes = string.Format (@"INSERT INTO [setup] ([ID], [VALUE],[KEY],[LAST_UPDATE],[ID_UNIT]) VALUES (({0}),'{1}','{2}',GETDATE(),{3})"
+                        , "SELECT MAX([ID]) + 1 FROM [setup]"
+                        , val
+                        , key
+                        , (int)id_unit
+                    );
+                else
+                    ASUTP.Logging.Logg().Error($"FormParametersDB.getWriteStringRequest(KEY={key}, VALUE={val.ToString()}) - не удалось определить тип значения ...", ASUTP.Logging.INDEX_MESSAGE.NOT_SET);
 
             return strRes;
         }
