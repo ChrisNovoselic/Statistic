@@ -21,6 +21,29 @@ using ASUTP;
 
 namespace Statistic
 {
+    //Extension methods must be defined in a static class
+    public static class ZedGraphControlExtension {
+        // This is the extension method.
+        // The first parameter takes the "this" modifier
+        // and specifies the type for which the method is defined.
+        public static void SetFontColor (this ZedGraphControl zCtrl, Color color)
+        {
+            if (Equals (zCtrl.GraphPane, null) == false) {
+                zCtrl.GraphPane.XAxis.Title.FontSpec.FontColor =
+                zCtrl.GraphPane.YAxis.Title.FontSpec.FontColor =
+                    color;
+
+                // Установим цвет подписей под метками
+                zCtrl.GraphPane.XAxis.Scale.FontSpec.FontColor =
+                zCtrl.GraphPane.YAxis.Scale.FontSpec.FontColor =
+                    color;
+
+                // Установим цвет заголовка над графиком
+                zCtrl.GraphPane.Title.FontSpec.FontColor = color;
+            } else
+                ;
+        }
+    }
     /// <summary>
     /// Открытый абстрактный частичный класс PanelTecViewBase наследуется от PanelStatisticWithTableHourRows
     /// </summary>
@@ -303,6 +326,8 @@ namespace Statistic
                     ? SystemColors.Window
                         : FormMain.formGraphicsSettings.BackgroundColor;
 
+                this.SetFontColor (FormMain.formGraphicsSettings.FontColor);
+
                 initializeContextMenuItemStandardEventHandler ();
 
                 this.PointValueEvent += new ZedGraph.ZedGraphControl.PointValueHandler(this.OnPointValueEvent);
@@ -440,21 +465,7 @@ namespace Statistic
                 {
                     base.ForeColor = value;
 
-                    if (Equals (GraphPane, null) == false) {
-                        // Установим цвет для подписей рядом с осями
-                        GraphPane.XAxis.Title.FontSpec.FontColor =
-                        GraphPane.YAxis.Title.FontSpec.FontColor =
-                            value;
-
-                        // Установим цвет подписей под метками
-                        GraphPane.XAxis.Scale.FontSpec.FontColor =
-                        GraphPane.YAxis.Scale.FontSpec.FontColor =
-                            value;
-
-                        // Установим цвет заголовка над графиком
-                        GraphPane.Title.FontSpec.FontColor = value;
-                    } else
-                        ;
+                    this.SetFontColor (value);
                 }
             }
 

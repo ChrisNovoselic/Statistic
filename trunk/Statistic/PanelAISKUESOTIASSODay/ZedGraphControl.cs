@@ -175,21 +175,7 @@ namespace Statistic
                 {
                     base.ForeColor = value;
 
-                    if (Equals (GraphPane, null) == false) {
-                        // Установим цвет для подписей рядом с осями
-                        GraphPane.XAxis.Title.FontSpec.FontColor =
-                        GraphPane.YAxis.Title.FontSpec.FontColor =
-                            value;
-
-                        // Установим цвет подписей под метками
-                        GraphPane.XAxis.Scale.FontSpec.FontColor =
-                        GraphPane.YAxis.Scale.FontSpec.FontColor =
-                            value;
-
-                        // Установим цвет заголовка над графиком
-                        GraphPane.Title.FontSpec.FontColor = value;
-                    } else
-                        ;
+                    this.SetFontColor (value);
                 }
             }
 

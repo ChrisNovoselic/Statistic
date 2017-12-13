@@ -237,9 +237,7 @@
     <Compile Include="PanelTecView.cs">
       <SubType>Component</SubType>
     </Compile>
-    <Compile Include="PanelTecViewBase.cs">
-      <SubType>Component</SubType>
-    </Compile>
+    <Compile Include="PanelTecViewBase.cs" />
     <Compile Include="PanelTecViewLK.cs">
       <SubType>Component</SubType>
     </Compile>
