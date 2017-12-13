@@ -98,8 +98,8 @@ namespace trans_mc
 
                     m_curRDGValues[hour - 1].pbr_number = table.Rows[i][@"PBR_NUMBER"].ToString();
                     // проблема решается ранее, в 'DbMCInterface::GetData'
-                    //if (m_curRDGValues[hour - 1].pbr_number.IndexOf(@"ПБР") < 0)
-                    //    m_curRDGValues[hour - 1].pbr_number = @"ПБР" + m_curRDGValues[hour - 1].pbr_number;
+                    //if (m_curRDGValues[hour - 1].pbr_number.IndexOf(HAdmin.PBR_PREFIX) < 0)
+                    //    m_curRDGValues[hour - 1].pbr_number = HAdmin.PBR_PREFIX + m_curRDGValues[hour - 1].pbr_number;
                     //else
                     //    ;
 

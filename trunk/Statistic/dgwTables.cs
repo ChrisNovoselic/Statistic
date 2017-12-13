@@ -332,8 +332,8 @@ namespace Statistic
             : base(ASUTP.Core.HDateTime.INTERVAL.HOURS
                 , new ColumnProperies[] { new ColumnProperies (27, 8, @"×àñ", @"Hour")
                     , new ColumnProperies (47, 15, @"Ôàêò", @"FactHour")
-                    , new ColumnProperies (47, 15, @"ÏÁÐ", @"PBRHour")
-                    , new ColumnProperies (47, 15, @"ÏÁÐý", @"PBReHour")
+                    , new ColumnProperies (47, 15, HAdmin.PBR_PREFIX, @"PBRHour")
+                    , new ColumnProperies (47, 15, $"{HAdmin.PBR_PREFIX}ý", @"PBReHour")
                     , new ColumnProperies (47, 15, @"ÓÄÃý", @"UDGeHour")
                     , new ColumnProperies (42, 15, @"+/-", @"DeviationHour")
                     , new ColumnProperies (46, 15, @"59ìèí", @"")

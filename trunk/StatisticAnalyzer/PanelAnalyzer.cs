@@ -486,7 +486,7 @@ namespace StatisticAnalyzer
                 this.checkBoxs[(int)FormChangeMode.MODE_TECCOMPONENT.ANY].Name = "checkBoxAdmin";
                 //this.checkBoxs[(int)FormChangeMode.MODE_TECCOMPONENT.ANY].Size = new System.Drawing.Size(48, 17);
                 this.checkBoxs[(int)FormChangeMode.MODE_TECCOMPONENT.ANY].TabIndex = 20;
-                this.checkBoxs[(int)FormChangeMode.MODE_TECCOMPONENT.ANY].Text = "ПБР";
+                this.checkBoxs[(int)FormChangeMode.MODE_TECCOMPONENT.ANY].Text = HAdmin.PBR_PREFIX;
                 this.checkBoxs[(int)FormChangeMode.MODE_TECCOMPONENT.ANY].UseVisualStyleBackColor = true;
                 this.checkBoxs[(int)FormChangeMode.MODE_TECCOMPONENT.ANY].Checked = true;
 

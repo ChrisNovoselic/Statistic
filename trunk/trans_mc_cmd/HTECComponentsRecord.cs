@@ -356,7 +356,7 @@ namespace trans_mc_cmd
             int? iId;
             //byte PBRHour;
 
-            //PBRHour = byte.Parse(PBR_number.Replace("ПБР", ""));
+            //PBRHour = byte.Parse(PBR_number.Replace(HAdmin.PBR_PREFIX, ""));
 
             //if (PBRHour >= date_time.Hour || (PBRHour == 21 && date_time.Hour == 0))
             if (date_time > dtMskNow)       //Московское время

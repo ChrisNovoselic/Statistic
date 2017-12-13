@@ -163,7 +163,7 @@ namespace trans_mt
                             if (arPBRNumber[j] > 0)
                             {
                                 //???при каком индексе присваивать номер набора
-                                //arRDGValues[c, hour - 1].pbr_number = @"ПБР" + PBRNumber;
+                                //arRDGValues[c, hour - 1].pbr_number = HAdmin.PBR_PREFIX + PBRNumber;
                                 //if (iMinPBRNumber > arPBRNumber[j])
                                 if (iMaxPBRNumber < arPBRNumber[j])
                                     //iMinPBRNumber = arPBRNumber[j];
@@ -244,10 +244,7 @@ namespace trans_mt
                             // цикл-окончание hh
                         } // цикл-окончание по индексу типов значений
 
-                        arRDGValues[c, hour - 1].pbr_number = @"ПБР" +
-                            //iMinPBRNumber
-                            iMaxPBRNumber
-                            ;
+                        arRDGValues [c, hour - 1].pbr_number = $"{HAdmin.PBR_PREFIX}{iMaxPBRNumber}";
 
                         arRDGValues[c, hour - 1].dtRecUpdate = DateTime.MinValue;
 

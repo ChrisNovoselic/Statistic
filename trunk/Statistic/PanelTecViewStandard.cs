@@ -57,8 +57,8 @@ namespace Statistic
                         , new ColumnProperies[] {
                             new ColumnProperies (50, 15, @"Ìèí.", @"Min")
                             , new ColumnProperies (50, 16, @"Ôàêò", @"FactMin")
-                            , new ColumnProperies (50, 16, @"ÏÁÐ", @"PBRMin")
-                            , new ColumnProperies (50, 16, @"ÏÁÐý", @"PBReMin")
+                            , new ColumnProperies (50, 16, HAdmin.PBR_PREFIX, @"PBRMin")
+                            , new ColumnProperies (50, 16, $"{HAdmin.PBR_PREFIX}ý", @"PBReMin")
                             , new ColumnProperies (50, 19, @"ÓÄÃý", @"UDGeMin")
                             , new ColumnProperies (50, 16, @"+/-", @"DeviationMin")
                         }

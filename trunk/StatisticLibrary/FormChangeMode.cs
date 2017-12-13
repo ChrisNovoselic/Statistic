@@ -301,9 +301,9 @@ namespace StatisticCommon
         /// <returns>Строка - подпись для элемента списка</returns>
         public string getNameAdminValues (MANAGER modeManager, MODE_TECCOMPONENT modeComponent) {
             string[] arNameAdminValues = { "НСС" /*TEC*/, "Диспетчер" /*GTP*/, "НСС" /*PC*/, "НСС" /*TG*/ };
-            string prefix = ((modeManager == MANAGER.DISP) || (modeManager == MANAGER.NSS) || (modeManager == MANAGER.LK) || (modeManager == MANAGER.TEPLOSET)) ? @"ПБР" :
-                (modeManager == MANAGER.ALARM) ? @"Сигн." :
-                    @"Неизвестно";
+            string prefix = new List<MANAGER>() { MANAGER.NSS, MANAGER.DISP, MANAGER.LK, MANAGER.TEPLOSET }.Contains (modeManager) == true ? HAdmin.PBR_PREFIX
+                : (modeManager == MANAGER.ALARM) ? @"Сигн."
+                    : @"Неизвестно";
 
             switch (modeManager)
             {

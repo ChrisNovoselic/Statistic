@@ -339,7 +339,7 @@ namespace StatisticCommon
                                 //                            m_listPFI[pvi.ObjFactor].Name + " =" + pvi.Value.ToString());
 
                                 dateCurrent = pvi.DT.SystemToLocalHqEx();
-                                pbr_number = pvi.Type.ToString().IndexOf(@"ПБР") < 0 ? @"ПБР" + pvi.Type.ToString() : pvi.Type.ToString();
+                                pbr_number = pvi.Type.ToString().IndexOf(HAdmin.PBR_PREFIX) < 0 ? HAdmin.PBR_PREFIX + pvi.Type.ToString() : pvi.Type.ToString();
 
                                 //Получение записи с другими параметрами за это время
                                 ////Вариант №1

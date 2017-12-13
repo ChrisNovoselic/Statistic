@@ -136,8 +136,8 @@ namespace Statistic
 
                     ws.Cells[2, 0].Value = "ћинута";
                     ws.Cells[2, 1].Value = "‘акт";
-                    ws.Cells[2, 2].Value = "ѕЅ–";
-                    ws.Cells[2, 3].Value = "ѕЅ–э";
+                    ws.Cells[2, 2].Value = HAdmin.PBR_PREFIX;
+                    ws.Cells[2, 3].Value = $"{HAdmin.PBR_PREFIX}э";
                     ws.Cells[2, 4].Value = "”ƒ√э";
                     ws.Cells[2, 5].Value = "+/-";
 
@@ -255,8 +255,8 @@ namespace Statistic
 
                     ws.Cells[2, 0].Value = "„ас";
                     ws.Cells[2, 1].Value = "‘акт";
-                    ws.Cells[2, 2].Value = "ѕЅ–";
-                    ws.Cells[2, 3].Value = "ѕЅ–э";
+                    ws.Cells[2, 2].Value = HAdmin.PBR_PREFIX;
+                    ws.Cells[2, 3].Value = $"{HAdmin.PBR_PREFIX}э";
                     ws.Cells[2, 4].Value = "”ƒ√э";
                     ws.Cells[2, 5].Value = "+/-";
 

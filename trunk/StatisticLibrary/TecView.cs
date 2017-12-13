@@ -5440,10 +5440,11 @@ namespace StatisticCommon
                     case "ППБР": iRes = 0; break;
                     default:
                         {
-                            if ((! (l.Substring(0, 3) == "ПБР")) ||
-                                (int.TryParse(l.Substring(3), out iRes) == false) ||
+                            if ((! (l.Substring(0, 3) == HAdmin.PBR_PREFIX))
+                                || (int.TryParse(l.Substring(3), out iRes) == false) ||
                                 (! (iRes > 0)) ||
                                 (iRes > 24))
+                            // iRes оставить "как есть"
                                 ;
                             else
                                 ;

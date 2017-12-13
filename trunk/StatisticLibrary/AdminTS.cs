@@ -1114,9 +1114,9 @@ namespace StatisticCommon
                     if (type == CONN_SETT_TYPE.PBR)
                     {
                         pbr_number = table.Rows[i][@"PBR_NUMBER"].ToString();
-                        if (pbr_number.Length > @"œ¡–".Length)
+                        if (pbr_number.Length > HAdmin.PBR_PREFIX.Length)
                         {
-                            pbr_number = pbr_number.Substring(@"œ¡–".Length);
+                            pbr_number = pbr_number.Substring(HAdmin.PBR_PREFIX.Length);
 
                             if (Int32.TryParse(pbr_number, out addingVal) == true)
                                 if (m_iHavePBR_Number < addingVal)
@@ -1531,7 +1531,7 @@ namespace StatisticCommon
                 else
                 {
                     string strPBRNumber = string.Empty;
-                    if ((!(m_curRDGValues[i].pbr_number == null)) && (m_curRDGValues[i].pbr_number.Length > @"œ¡–".Length))
+                    if ((!(m_curRDGValues[i].pbr_number == null)) && (m_curRDGValues[i].pbr_number.Length > HAdmin.PBR_PREFIX.Length))
                         strPBRNumber = m_curRDGValues[i].pbr_number;
                     else
                         strPBRNumber = getNamePBRNumber();
