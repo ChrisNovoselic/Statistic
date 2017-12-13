@@ -16,8 +16,8 @@ namespace trans_mt
     {
         protected enum StatesMachine
         {
-            PPBRValues,
-            PPBRDates,
+            PPBRValues
+            ,
         }
 
         public AdminMT()
@@ -70,195 +70,181 @@ namespace trans_mt
             TECComponent comp = allTECComponents[indxTECComponents];
             arRDGValues = new RDGStruct[comp.m_listMTermId.Count, m_curRDGValues.Length];
 
-            for (c = 0; c < comp.m_listMTermId.Count; c ++) {
-                MTermId = comp.m_listMTermId[c];
+            if (CheckNameFieldsOfTable (table, new string [] { "objName", "Datetime" }) == true) {
+                for (c = 0; c < comp.m_listMTermId.Count; c++) {
+                    MTermId = comp.m_listMTermId [c];
 
-                for (hour = 1; hour < 25; hour++) {
-                    try {
-                        //Выбрать строки только для часа 'hour'
-                        //hourRows = table.Select(@"Datetime='" + date.Date.AddHours(hour + 1 - ts.Hours).ToString(@"yyyyMMdd HH:00:00.000") + @"'");
-                        //hourRows = table.Select(@"Datetime='" + date.Date.AddHours(hour + 1 - ts.Hours) + @"'");
-                        //hourRows = table.Select(@"Datetime=#" + date.Date.AddHours(hour + 1 - ts.Hours).ToString(@"yyyyMMdd HH:00:00.000") + @"#");
-                        hourRows = table.Select(string.Format(@"objName={0} AND Datetime=#{1}#", MTermId, date.Date.AddHours(hour - ASUTP.Core.HDateTime.TS_MSK_OFFSET_OF_UTCTIMEZONE.Hours).ToString(@"yyyy-MM-dd HH:00:00.000")));
+                    for (hour = 1; hour < 25; hour++) {
+                        try {
+                            //Выбрать строки только для часа 'hour'
+                            //hourRows = table.Select(@"Datetime='" + date.Date.AddHours(hour + 1 - ts.Hours).ToString(@"yyyyMMdd HH:00:00.000") + @"'");
+                            //hourRows = table.Select(@"Datetime='" + date.Date.AddHours(hour + 1 - ts.Hours) + @"'");
+                            //hourRows = table.Select(@"Datetime=#" + date.Date.AddHours(hour + 1 - ts.Hours).ToString(@"yyyyMMdd HH:00:00.000") + @"#");
+                            hourRows = table.Select (string.Format (@"objName={0} AND Datetime=#{1}#", MTermId, date.Date.AddHours (hour - ASUTP.Core.HDateTime.TS_MSK_OFFSET_OF_UTCTIMEZONE.Hours).ToString (@"yyyy-MM-dd HH:00:00.000")));
 
-                        //Присвоить исходные для часа значения
-                        //PBRNumber = -1;
-                        arPBRNumber[0] =
-                        arPBRNumber[1] =
-                        arPBRNumber[2] =
-                            -1; // номер набора
-                        // значения по типам (0, 1, 2)
-                        arRDGValues[c, hour - 1].pbr = -1.0F;
-                        arRDGValues[c, hour - 1].pmin = -1.0F;
-                        arRDGValues[c, hour - 1].pmax = -1.0F;
-                        //ПБР-номер не известен
-                        arRDGValues[c, hour - 1].pbr_number = string.Empty;
-                        //Проверить количество строк для часа
-                        if (hourRows.Length > 0)
-                            //ТОлько при наличии строк для часа 'hour'
-                            for (i = 0; i < hourRows.Length; i++)
-                            {
-                                //Установить тип значения в строке для часа
-                                indxFactor = Int32.Parse(hourRows[i][@"idFactor"].ToString());
-                                //Сравнить номер набора строки с ранее обработанным номером набора (в предыдущих строках)
-                                if (!(arPBRNumber[indxFactor] > Int32.Parse(hourRows[i][@"PBR_NUMBER"].ToString())))
-                                {//Толькоо, если номер набора в текущей строке больше
-                                    //??? номер ПБР назначается для всех 3-х типов значений (P, Pmin, Pmax)
-                                    // , но номер ПБР индивидуален для КАЖДого из них
-                                    arPBRNumber[indxFactor] = Int32.Parse(hourRows[i][@"PBR_NUMBER"].ToString());
-                                    ////Вывод на консоль отладочной информации
-                                    //for (j = 0; j < hourRows [i].Table.Columns.Count; j ++) {
-                                    //    Console.Write(@"[" + hourRows[i].Table.Columns[j].ColumnName + @"] = " + hourRows[i][hourRows[i].Table.Columns[j].ColumnName] + @"; ");
-                                    //}
-                                    //Console.WriteLine(@"");
-                                    //Присвоить значения в ~ от типа
-                                    switch (indxFactor)
-                                    {
-                                        case 0: //'P'
-                                            if (!(hourRows[i][@"VALUE"] is DBNull))
-                                                arRDGValues[c, hour - 1].pbr = (double)hourRows[i][@"VALUE"];
-                                            else
-                                                arRDGValues[c, hour - 1].pbr = 0;
-                                            break;
-                                        case 1: //'Pmin'
-                                            if (!(hourRows[i][@"VALUE"] is DBNull))
-                                                arRDGValues[c, hour - 1].pmin = (double)hourRows[i][@"VALUE"];
-                                            else
-                                                arRDGValues[c, hour - 1].pmin = 0;
-                                            break;
-                                        case 2: //'Pmax'
-                                            if (!(hourRows[i][@"VALUE"] is DBNull))
-                                                arRDGValues[c, hour - 1].pmax = (double)hourRows[i][@"VALUE"];
-                                            else
-                                                arRDGValues[c, hour - 1].pmax = 0;
-                                            break;
-                                        default:
-                                            break;
-                                    }
-                                }
-                                else
-                                    ;
-                            }
-                        else
-                            //Если не найдено ни одной строки для часа
-                            if (hour > 1) {
-                                //Если не 1-ый час - пролонгация
-                                arRDGValues[c, hour - 1].pbr = arRDGValues[c, hour - 2].pbr;
-                                arRDGValues[c, hour - 1].pmin = arRDGValues[c, hour - 2].pmin;
-                                arRDGValues[c, hour - 1].pmax = arRDGValues[c, hour - 2].pmax;
-
-                                for (j = 0; j < 3; j++)
-                                    arPBRNumber[j] = Int32.Parse(arRDGValues[c, hour - 2].pbr_number.Substring(3));
-
-                                arRDGValues[c, hour - 1].pbr_number = arRDGValues[c, hour - 2].pbr_number;
-                                arRDGValues[c, hour - 1].dtRecUpdate = arRDGValues[c, hour - 2].dtRecUpdate;
-                            }
-                            else
-                                ;
-
-                        //iMinPBRNumber = 25;
-                        iMaxPBRNumber = -1;
-                        for (j = 0; j < 3; j++)
-                        {
-                            if (arPBRNumber[j] > 0)
-                            {
-                                //???при каком индексе присваивать номер набора
-                                //arRDGValues[c, hour - 1].pbr_number = HAdmin.PBR_PREFIX + PBRNumber;
-                                //if (iMinPBRNumber > arPBRNumber[j])
-                                if (iMaxPBRNumber < arPBRNumber[j])
-                                    //iMinPBRNumber = arPBRNumber[j];
-                                    iMaxPBRNumber = arPBRNumber[j];
-                                else
-                                    ;
-
-                                if (hour > 1)
-                                {
-                                    switch (j)
-                                    {
-                                        case 0:
-                                            if (arRDGValues[c, hour - 1].pbr < 0)
-                                                arRDGValues[c, hour - 1].pbr = arRDGValues[c, hour - 2].pbr;
-                                            else
-                                                ;
-                                            break;
-                                        case 1:
-                                            if (arRDGValues[c, hour - 1].pmin < 0)
-                                                arRDGValues[c, hour - 1].pmin = arRDGValues[c, hour - 2].pmin;
-                                            else
-                                                ;
-                                            break;
-                                        case 2:
-                                            if (arRDGValues[c, hour - 1].pmax < 0)
-                                                arRDGValues[c, hour - 1].pmax = arRDGValues[c, hour - 2].pmax;
-                                            else
-                                                ;
-                                            break;
-                                        default:
-                                            break;
-                                    }
-                                }
-                                else
-                                    ;
-                            }
-                            else
-                                ; //arRDGValues[c, hour - 1].pbr_number = GetPBRNumber (hour);
-
-                            int hh = -1;
-                            for (hh = hour; hh > 0; hh--)
-                                //??? Необходима ИНДИВИДуальная проверка номера ПБР
-                                // для каждогоо типа значений (P, Pmin, Pmax)
-                                if (arRDGValues[c, hh - 1].pbr_number.Equals(string.Empty) == false)
-                                    if (arPBRNumber[j] < Int32.Parse(arRDGValues[c, hh - 1].pbr_number.Substring(3)))
-                                    {
-                                        arPBRNumber[j] = Int32.Parse(arRDGValues[c, hh - 1].pbr_number.Substring(3));
-                                        //if (iMinPBRNumber > arPBRNumber[j])
-                                        if (iMaxPBRNumber < arPBRNumber[j])
-                                            //iMinPBRNumber = arPBRNumber[j];
-                                            iMaxPBRNumber = arPBRNumber[j];
-                                        else
-                                            ;
-
-                                        switch (j)
-                                        {
-                                            case 0:
-                                                arRDGValues[c, hour - 1].pbr = arRDGValues[c, hh - 1].pbr;
+                            //Присвоить исходные для часа значения
+                            //PBRNumber = -1;
+                            arPBRNumber [0] =
+                            arPBRNumber [1] =
+                            arPBRNumber [2] =
+                                -1; // номер набора
+                            // значения по типам (0, 1, 2)
+                            arRDGValues [c, hour - 1].pbr = -1.0F;
+                            arRDGValues [c, hour - 1].pmin = -1.0F;
+                            arRDGValues [c, hour - 1].pmax = -1.0F;
+                            //ПБР-номер не известен
+                            arRDGValues [c, hour - 1].pbr_number = string.Empty;
+                            //Проверить количество строк для часа
+                            if (hourRows.Length > 0)
+                                //ТОлько при наличии строк для часа 'hour'
+                                for (i = 0; i < hourRows.Length; i++) {
+                                    //Установить тип значения в строке для часа
+                                    indxFactor = Int32.Parse (hourRows [i] [@"idFactor"].ToString ());
+                                    //Сравнить номер набора строки с ранее обработанным номером набора (в предыдущих строках)
+                                    if (!(arPBRNumber [indxFactor] > Int32.Parse (hourRows [i] [@"PBR_NUMBER"].ToString ()))) {//Толькоо, если номер набора в текущей строке больше
+                                        //??? номер ПБР назначается для всех 3-х типов значений (P, Pmin, Pmax)
+                                        // , но номер ПБР индивидуален для КАЖДого из них
+                                        arPBRNumber [indxFactor] = Int32.Parse (hourRows [i] [@"PBR_NUMBER"].ToString ());
+                                        ////Вывод на консоль отладочной информации
+                                        //for (j = 0; j < hourRows [i].Table.Columns.Count; j ++) {
+                                        //    Console.Write(@"[" + hourRows[i].Table.Columns[j].ColumnName + @"] = " + hourRows[i][hourRows[i].Table.Columns[j].ColumnName] + @"; ");
+                                        //}
+                                        //Console.WriteLine(@"");
+                                        //Присвоить значения в ~ от типа
+                                        switch (indxFactor) {
+                                            case 0: //'P'
+                                                if (!(hourRows [i] [@"VALUE"] is DBNull))
+                                                    arRDGValues [c, hour - 1].pbr = (double)hourRows [i] [@"VALUE"];
+                                                else
+                                                    arRDGValues [c, hour - 1].pbr = 0;
                                                 break;
-                                            case 1:
-                                                arRDGValues[c, hour - 1].pmin = arRDGValues[c, hh - 1].pmin;
+                                            case 1: //'Pmin'
+                                                if (!(hourRows [i] [@"VALUE"] is DBNull))
+                                                    arRDGValues [c, hour - 1].pmin = (double)hourRows [i] [@"VALUE"];
+                                                else
+                                                    arRDGValues [c, hour - 1].pmin = 0;
                                                 break;
-                                            case 2:
-                                                arRDGValues[c, hour - 1].pmax = arRDGValues[c, hh - 1].pmax;
+                                            case 2: //'Pmax'
+                                                if (!(hourRows [i] [@"VALUE"] is DBNull))
+                                                    arRDGValues [c, hour - 1].pmax = (double)hourRows [i] [@"VALUE"];
+                                                else
+                                                    arRDGValues [c, hour - 1].pmax = 0;
                                                 break;
                                             default:
                                                 break;
                                         }
+                                    } else
+                                        ;
+                                } else
+                                //Если не найдено ни одной строки для часа
+                                if (hour > 1) {
+                                //Если не 1-ый час - пролонгация
+                                arRDGValues [c, hour - 1].pbr = arRDGValues [c, hour - 2].pbr;
+                                arRDGValues [c, hour - 1].pmin = arRDGValues [c, hour - 2].pmin;
+                                arRDGValues [c, hour - 1].pmax = arRDGValues [c, hour - 2].pmax;
 
-                                        //arRDGValues[c, hour - 1].pbr_number = arRDGValues[c, hh - 1].pbr_number;
+                                for (j = 0; j < 3; j++)
+                                    arPBRNumber [j] = Int32.Parse (arRDGValues [c, hour - 2].pbr_number.Substring (3));
 
-                                        //break;
-                                    }
+                                arRDGValues [c, hour - 1].pbr_number = arRDGValues [c, hour - 2].pbr_number;
+                                arRDGValues [c, hour - 1].dtRecUpdate = arRDGValues [c, hour - 2].dtRecUpdate;
+                            } else
+                                ;
+
+                            //iMinPBRNumber = 25;
+                            iMaxPBRNumber = -1;
+                            for (j = 0; j < 3; j++) {
+                                if (arPBRNumber [j] > 0) {
+                                    //???при каком индексе присваивать номер набора
+                                    //arRDGValues[c, hour - 1].pbr_number = HAdmin.PBR_PREFIX + PBRNumber;
+                                    //if (iMinPBRNumber > arPBRNumber[j])
+                                    if (iMaxPBRNumber < arPBRNumber [j])
+                                        //iMinPBRNumber = arPBRNumber[j];
+                                        iMaxPBRNumber = arPBRNumber [j];
                                     else
                                         ;
-                                else
-                                    ;
-                            // цикл-окончание hh
-                        } // цикл-окончание по индексу типов значений
 
-                        arRDGValues [c, hour - 1].pbr_number = $"{HAdmin.PBR_PREFIX}{iMaxPBRNumber}";
+                                    if (hour > 1) {
+                                        switch (j) {
+                                            case 0:
+                                                if (arRDGValues [c, hour - 1].pbr < 0)
+                                                    arRDGValues [c, hour - 1].pbr = arRDGValues [c, hour - 2].pbr;
+                                                else
+                                                    ;
+                                                break;
+                                            case 1:
+                                                if (arRDGValues [c, hour - 1].pmin < 0)
+                                                    arRDGValues [c, hour - 1].pmin = arRDGValues [c, hour - 2].pmin;
+                                                else
+                                                    ;
+                                                break;
+                                            case 2:
+                                                if (arRDGValues [c, hour - 1].pmax < 0)
+                                                    arRDGValues [c, hour - 1].pmax = arRDGValues [c, hour - 2].pmax;
+                                                else
+                                                    ;
+                                                break;
+                                            default:
+                                                break;
+                                        }
+                                    } else
+                                        ;
+                                } else
+                                    ; //arRDGValues[c, hour - 1].pbr_number = GetPBRNumber (hour);
 
-                        arRDGValues[c, hour - 1].dtRecUpdate = DateTime.MinValue;
+                                int hh = -1;
+                                for (hh = hour; hh > 0; hh--)
+                                    //??? Необходима ИНДИВИДуальная проверка номера ПБР
+                                    // для каждогоо типа значений (P, Pmin, Pmax)
+                                    if (arRDGValues [c, hh - 1].pbr_number.Equals (string.Empty) == false)
+                                        if (arPBRNumber [j] < Int32.Parse (arRDGValues [c, hh - 1].pbr_number.Substring (3))) {
+                                            arPBRNumber [j] = Int32.Parse (arRDGValues [c, hh - 1].pbr_number.Substring (3));
+                                            //if (iMinPBRNumber > arPBRNumber[j])
+                                            if (iMaxPBRNumber < arPBRNumber [j])
+                                                //iMinPBRNumber = arPBRNumber[j];
+                                                iMaxPBRNumber = arPBRNumber [j];
+                                            else
+                                                ;
 
-                        arRDGValues[c, hour - 1].fc = false;
-                        arRDGValues[c, hour - 1].recomendation = 0;
-                        arRDGValues[c, hour - 1].deviationPercent = false;
-                        arRDGValues[c, hour - 1].deviation = 0;
-                    }
-                    catch (Exception e)
-                    {
-                        ASUTP.Logging.Logg().Exception(e, @"AdminMT::GetPPBRValuesResponse () - ...", ASUTP.Logging.INDEX_MESSAGE.NOT_SET);
-                    }
-                } // цикл-окончание по номеру часа 'hour'
-            } // цикл-окончание по идентификатору составного элемента (только ГТП3-6 НТЭЦ-5)
+                                            switch (j) {
+                                                case 0:
+                                                    arRDGValues [c, hour - 1].pbr = arRDGValues [c, hh - 1].pbr;
+                                                    break;
+                                                case 1:
+                                                    arRDGValues [c, hour - 1].pmin = arRDGValues [c, hh - 1].pmin;
+                                                    break;
+                                                case 2:
+                                                    arRDGValues [c, hour - 1].pmax = arRDGValues [c, hh - 1].pmax;
+                                                    break;
+                                                default:
+                                                    break;
+                                            }
+
+                                            //arRDGValues[c, hour - 1].pbr_number = arRDGValues[c, hh - 1].pbr_number;
+
+                                            //break;
+                                        } else
+                                            ;
+                                    else
+                                        ;
+                                // цикл-окончание hh
+                            } // цикл-окончание по индексу типов значений
+
+                            arRDGValues [c, hour - 1].pbr_number = $"{HAdmin.PBR_PREFIX}{iMaxPBRNumber}";
+
+                            arRDGValues [c, hour - 1].dtRecUpdate = DateTime.MinValue;
+
+                            arRDGValues [c, hour - 1].fc = false;
+                            arRDGValues [c, hour - 1].recomendation = 0;
+                            arRDGValues [c, hour - 1].deviationPercent = false;
+                            arRDGValues [c, hour - 1].deviation = 0;
+                        } catch (Exception e) {
+                            ASUTP.Logging.Logg ().Exception (e, @"AdminMT::GetPPBRValuesResponse () - ...", ASUTP.Logging.INDEX_MESSAGE.NOT_SET);
+                        }
+                    } // цикл-окончание по номеру часа 'hour'
+                } // цикл-окончание по идентификатору составного элемента (только ГТП3-6 НТЭЦ-5)
+            } else
+                ASUTP.Logging.Logg ().Error ($"таблица не содержит необходимый набор полей", ASUTP.Logging.INDEX_MESSAGE.NOT_SET);
 
             for (hour = 1; hour < 25; hour++)
             {
@@ -353,17 +339,6 @@ namespace trans_mt
                     else
                         result = -1;
                     break;
-                case (int)StatesMachine.PPBRDates:
-                    if ((serverTime.Date > m_curDate.Date) && (m_ignore_date == false))
-                    {
-                        result = -1;
-                        break;
-                    }
-                    else
-                        ;
-                    ActionReport("Получение списка сохранённых часовых значений.");
-                    //GetPPBRDatesRequest(m_curDate);
-                    break;
                 default:
                     break;
             }
@@ -383,7 +358,6 @@ namespace trans_mt
             switch (state)
             {
                 case (int)StatesMachine.PPBRValues:
-                case (int)StatesMachine.PPBRDates:
                     //bRes = GetResponse(m_indxDbInterfaceCurrent, m_listListenerIdCurrent[m_indxDbInterfaceCurrent], out error, out table/*, false*/);
                     iRes = response(m_IdListenerCurrent, out error, out table/*, false*/);
                     break;
@@ -406,15 +380,6 @@ namespace trans_mt
                     if (result == 0)
                     {
                         readyData(m_curDate, true);
-                    }
-                    else
-                        ;
-                    break;
-                case (int)StatesMachine.PPBRDates:
-                    clearPPBRDates();
-                    result = getPPBRDatesResponse(table as DataTable, m_curDate);
-                    if (result == 0)
-                    {
                     }
                     else
                         ;
@@ -451,25 +416,6 @@ namespace trans_mt
                         ErrorReport("Ошибка получения данных плана. Переход в ожидание.");
 
                         bClear = true;
-                    }
-                    break;
-                case (int)StatesMachine.PPBRDates:
-                    if (request == 0)
-                    {
-                        ErrorReport("Ошибка разбора сохранённых часовых значений (PPBR). Переход в ожидание.");
-                        //saveResult = Errors.ParseError;
-                    }
-                    else
-                    {
-                        ErrorReport("Ошибка получения сохранённых часовых значений (PPBR). Переход в ожидание.");
-                        //saveResult = Errors.NoAccess;
-                    }
-                    try
-                    {
-                        //semaDBAccess.Release(1);
-                    }
-                    catch
-                    {
                     }
                     break;
                 default:
