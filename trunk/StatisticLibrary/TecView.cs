@@ -969,9 +969,9 @@ namespace StatisticCommon
                         ;
                 }
                 else
-                    Logging.Logg().Error(@"TecView::GetCurrentTMGenResponse () - не найден один их требуемых столбцов ...", Logging.INDEX_MESSAGE.NOT_SET);
+                    Logging.Logg().Error($"TecView::GetCurrentTMGenResponse () - “Ё÷ ID={m_tec.m_id}, не найден один или несколько из требуемых столбцов ...", Logging.INDEX_MESSAGE.NOT_SET);
             } else
-                Logging.Logg().Error(@"TecView::GetCurrentTMGenResponse () - в таблице-результате нет ни одного столбца ...", Logging.INDEX_MESSAGE.NOT_SET);
+                Logging.Logg().Error($"TecView::GetCurrentTMGenResponse () - “Ё÷ ID={m_tec.m_id}, в таблице-результате нет ни одного столбца ...", Logging.INDEX_MESSAGE.NOT_SET);
 
             return iRes;
         }
