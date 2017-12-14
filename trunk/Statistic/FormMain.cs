@@ -1629,7 +1629,7 @@ namespace Statistic
                     ;
                 // в любом случае удалить объект с параметрами соединения списка источников данных
                 // , чтобы при повторном вызове гарантированно назначить актуальный идентификатор соединения с БД конфигурации
-                s_listFormConnectionSettings[(int)(int)CONN_SETT_TYPE.LIST_SOURCE] = null;                
+                s_listFormConnectionSettings[(int)(int)CONN_SETT_TYPE.LIST_SOURCE] = null;
             }
             else
                 ;

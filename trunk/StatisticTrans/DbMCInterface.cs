@@ -467,5 +467,11 @@ namespace StatisticCommon
 
             return bRes;
         }
+
+        protected override void GetDataCancel ()
+        {
+            //TODO: как остановить длительно выполняющийся метод 
+            // m_MCApi.GetPlanValuesActual
+        }
     }
 }

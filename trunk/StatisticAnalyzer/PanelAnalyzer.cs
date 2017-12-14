@@ -784,7 +784,6 @@ namespace StatisticAnalyzer
                 this.panelTabPageTabes.ResumeLayout(false);
                 this.panelTabPageTabes.PerformLayout ();
                 //((System.ComponentModel.ISupportInitialize)(this.listTabVisible)).EndInit();
-                
 
                 this.Dock = System.Windows.Forms.DockStyle.Fill;
 

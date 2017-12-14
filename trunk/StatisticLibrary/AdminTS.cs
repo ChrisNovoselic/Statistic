@@ -1481,14 +1481,15 @@ namespace StatisticCommon
                     //        break;
                     //    case AdminTS.TYPE_FIELDS.DYNAMIC:
                             bool bUpdate = m_ignore_date;
-                            int pbr_number = GetPBRNumber (i, out err);
+                            int pbr_number_calc = GetPBRNumber (i, out err)
+                                , pbr_number_having = -1;
 
                             if (bUpdate == false)
-                                if (m_iHavePBR_Number < pbr_number)
+                                if (m_iHavePBR_Number < pbr_number_calc)
                                     //Обновляемый старше
                                     bUpdate = true;
                                 else
-                                    if (m_iHavePBR_Number == pbr_number)
+                                    if (m_iHavePBR_Number == pbr_number_calc)
                                         if (m_sOwner_PBR == 1)
                                             //ПБР одинаков - требование пользователя
                                             bUpdate = true;
@@ -1501,7 +1502,9 @@ namespace StatisticCommon
                             else
                                 ;
 
-                            Logging.Logg().Debug(@"AdminTS::setPPBRQuery () - [ID_COMPONENT=" + comp.m_id + @"] Час=" + i + @"; БД=" + m_iHavePBR_Number + @"; Модес=" + pbr_number, Logging.INDEX_MESSAGE.D_001);
+                            pbr_number_having = GetPBRNumber (m_curRDGValues [i].pbr_number, out err);
+
+                            Logging.Logg().Debug(@"AdminTS::setPPBRQuery () - [ID_COMPONENT=" + comp.m_id + @"] Час=" + i + @"; БД=" + m_iHavePBR_Number + @"; Модес=" + pbr_number_calc, Logging.INDEX_MESSAGE.D_001);
 
                             if (bUpdate == true) {
                                 resQuery[(int)DbTSQLInterface.QUERY_TYPE.UPDATE] += @"UPDATE [" + t.m_strNameTableUsedPPBRvsPBR/*[(int)m_typeFields]*/ + @"]" +
