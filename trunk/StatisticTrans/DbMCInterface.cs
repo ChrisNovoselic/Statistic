@@ -13,7 +13,8 @@ using ASUTP;
 
 namespace StatisticCommon
 {
-    public class DbMCInterface : ASUTP.Database.DbInterface {
+    public class DbMCInterface : ASUTP.Database.DbInterface
+    {
         private IApiExternal m_MCApi;
         private Modes.BusinessLogic.IModesTimeSlice m_MCTimeSlice;
         private IList <PlanFactorItem> m_listPFI;
@@ -25,6 +26,9 @@ namespace StatisticCommon
         Action<object> delegateMCApiHandler;
 
         List <Modes.BusinessLogic.IGenObject> m_listIGO;
+
+        protected override int Timeout { get; set; }
+
         /// <summary>
         /// Пользовательский конструктор
         /// </summary>

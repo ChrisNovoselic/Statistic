@@ -662,13 +662,13 @@ namespace StatisticCommon
         {
             ClearValues();
 
-            // для проверки отсутствия совпадений при назначении идентификаторов подписки
-            //consoleDebugDbInterfaceIdListeners ("Start");
-            Logging.Logg ().Debug (string.Format ("TecView::Start() - идентификаторы подписки обращения к БД = {0}...", getDbInterfaceIdListeners()), Logging.INDEX_MESSAGE.NOT_SET);
-
             base.Start ();
 
             StartDbInterfaces ();
+
+            // для проверки отсутствия совпадений при назначении идентификаторов подписки
+            //consoleDebugDbInterfaceIdListeners ("Start");
+            Logging.Logg().Debug(string.Format("TecView::Start() - идентификаторы подписки обращения к БД = {0}...", getDbInterfaceIdListeners()), Logging.INDEX_MESSAGE.NOT_SET);
         }
 
         public override void Stop()
@@ -677,7 +677,7 @@ namespace StatisticCommon
             //consoleDebugDbInterfaceIdListeners ("Stop");
             Logging.Logg ().Debug (string.Format ("TecView::Stop() - идентификаторы подписки обращения к БД = {0}...", getDbInterfaceIdListeners ()), Logging.INDEX_MESSAGE.NOT_SET);
 
-            base.Stop();            
+            base.Stop();
         }
 
         public override void InitTEC(List<StatisticCommon.TEC> listTEC, ASUTP.Core.HMark markQueries)
