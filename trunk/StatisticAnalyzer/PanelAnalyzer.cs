@@ -910,6 +910,19 @@ namespace StatisticAnalyzer
 
             dgvFilterTypeMessage.CellClick += new DataGridViewCellEventHandler(dgvFilterTypeMessage_CellClick);
 
+            #region Изменение при создании цвета фона-шрифта
+            getTypedControls (this, new Type [] { typeof (DataGridView) }).Cast<DataGridView> ().ToList ().ForEach (dgv => {
+                dgv.DefaultCellStyle.BackColor = BackColor == SystemColors.Control ? SystemColors.Window : BackColor;
+                dgv.DefaultCellStyle.ForeColor = ForeColor;
+            });
+
+            if (Equals (listTabVisible, null) == false) {
+                listTabVisible.BackColor = BackColor == SystemColors.Control ? SystemColors.Window : BackColor;
+                listTabVisible.ForeColor = ForeColor;
+            } else
+                ;
+            #endregion
+
             int err = -1;
             
             int idListener = register_idListenerConfDB(out err);
@@ -2070,7 +2083,7 @@ namespace StatisticAnalyzer
                 });
 
                 if (Equals (listTabVisible, null) == false)
-                    listTabVisible.BackColor = value;
+                    listTabVisible.ForeColor = value;
                 else
                     ;
             }
