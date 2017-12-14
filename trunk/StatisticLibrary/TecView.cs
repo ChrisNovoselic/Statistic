@@ -5455,21 +5455,13 @@ namespace StatisticCommon
             int num1 = -1,
                 num2 = -1;
 
-            num1 = GetPBRNumber (l1, out iRes);
-            if (!(iRes < 0)) {
-                num2 = GetPBRNumber (l2, out iRes);
-                if (!(iRes < 0)) {
-                    if (num1 > num2)
-                        iRes = 1;
-                    else
-                        if (num1 < num2)
-                        iRes = -1;
-                    else
-                        ;
-                } else
-                    ;
-            } else
-                ;
+            //??? не учитывать результат извленчения номера ПБР
+            num1 = GetPBRNumber (l1, out iRes, false);
+            num2 = GetPBRNumber (l2, out iRes, false);
+
+            iRes = num1 > num2 ? 1
+                : num1 < num2 ? -1
+                    : 0;
 
             return iRes;
         }

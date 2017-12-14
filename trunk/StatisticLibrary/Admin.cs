@@ -536,8 +536,10 @@ namespace StatisticCommon
         /// Возвратить номер ПБР по наименованию
         /// </summary>
         /// <param name="pbr">Наименование ПБР</param>
+        /// <param name="err">Признак ошибки при извлечении номера ПБР</param>
+        /// <param name="bLogging">Признак признак журналирования ошибки</param>
         /// <returns>Номер ПБР</returns>
-        public static int GetPBRNumber (string pbr, out int err) {
+        public static int GetPBRNumber (string pbr, out int err, bool bLogging = true) {
             int iRes = -1;
 
             err = pbr.Length > PBR_PREFIX.Length ? 0 : -1;
@@ -556,7 +558,10 @@ namespace StatisticCommon
                 else
                     ;
             } else
-                Logging.Logg().Error($"HAdmin::GetPBRNumber (вход={pbr}) - нельзя извлечь №{PBR_PREFIX}...", Logging.INDEX_MESSAGE.NOT_SET);
+                if (bLogging == true)
+                    Logging.Logg().Error($"HAdmin::GetPBRNumber (вход={pbr}) - нельзя извлечь №{PBR_PREFIX}...", Logging.INDEX_MESSAGE.NOT_SET);
+                else
+                    ;
 
             return iRes;
         }
