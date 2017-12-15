@@ -1038,37 +1038,39 @@ namespace StatisticCommon
             error = false;
             table = null;
 
-            switch (state)
+            StatesMachine stateMachine = (StatesMachine)state;
+
+            switch (stateMachine)
             {
-                case (int)StatesMachine.InitSensors:
+                case StatesMachine.InitSensors:
                     //Ответ без запроса к БД в 'StateResponse'
                     //Запрос не требуется, т.к. сведеения получены при вызове 'InitTEC'
                     break;
-                case (int)StatesMachine.CurrentTimeAdmin:
-                case (int)StatesMachine.CurrentTimeView:
-                case (int)StatesMachine.Hours_Fact:
-                case (int)StatesMachine.Hour_TM:
-                case (int)StatesMachine.Hours_TM:
-                case (int)StatesMachine.CurrentMins_Fact:
-                case (int)StatesMachine.CurrentMin_TM:
-                case (int)StatesMachine.CurrentMinDetail_TM:
-                case (int)StatesMachine.RetroMinDetail_TM:
-                case (int)StatesMachine.CurrentMins_TM:
-                case (int)StatesMachine.CurrentHours_TM_SN_PSUM:
-                case (int)StatesMachine.LastValue_TM_Gen:
-                case (int)StatesMachine.LastValue_TM_SN:
-                case (int)StatesMachine.LastMinutes_TM:
-                //case (int)StatesMachine.RetroHours:
-                case (int)StatesMachine.RetroMins_Fact:
-                case (int)StatesMachine.RetroMin_TM_Gen:
-                case (int)StatesMachine.RetroMins_TM:
-                case (int)StatesMachine.HoursTMTemperatureValues:
-                case (int)StatesMachine.HoursVzletTDirectValues:
-                case (int)StatesMachine.CurrentVzletTDirectValues:
-                //case (int)StatesMachine.PPBRDates:
-                case (int)StatesMachine.PPBRValues:
-                //case (int)StatesMachine.AdminDates:
-                case (int)StatesMachine.AdminValues:
+                case StatesMachine.CurrentTimeAdmin:
+                case StatesMachine.CurrentTimeView:
+                case StatesMachine.Hours_Fact:
+                case StatesMachine.Hour_TM:
+                case StatesMachine.Hours_TM:
+                case StatesMachine.CurrentMins_Fact:
+                case StatesMachine.CurrentMin_TM:
+                case StatesMachine.CurrentMinDetail_TM:
+                case StatesMachine.RetroMinDetail_TM:
+                case StatesMachine.CurrentMins_TM:
+                case StatesMachine.CurrentHours_TM_SN_PSUM:
+                case StatesMachine.LastValue_TM_Gen:
+                case StatesMachine.LastValue_TM_SN:
+                case StatesMachine.LastMinutes_TM:
+                //case StatesMachine.RetroHours:
+                case StatesMachine.RetroMins_Fact:
+                case StatesMachine.RetroMin_TM_Gen:
+                case StatesMachine.RetroMins_TM:
+                case StatesMachine.HoursTMTemperatureValues:
+                case StatesMachine.HoursVzletTDirectValues:
+                case StatesMachine.CurrentVzletTDirectValues:
+                //case StatesMachine.PPBRDates:
+                case StatesMachine.PPBRValues:
+                //case StatesMachine.AdminDates:
+                case StatesMachine.AdminValues:
                     //bRes = Response(m_IdListenerCurrent, out error, out table);
                     iRes = response(out error, out table);
                     break;

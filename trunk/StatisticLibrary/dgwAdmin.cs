@@ -18,22 +18,22 @@ namespace StatisticCommon
         protected const double maxDeviationPercentValue = 100;
 
         protected virtual void InitializeComponents () {
-            System.Windows.Forms.DataGridViewCellStyle dataGridViewCellStyle = new System.Windows.Forms.DataGridViewCellStyle();
-
             AllowUserToAddRows = false;
             AllowUserToDeleteRows = false;
             Anchor = ((System.Windows.Forms.AnchorStyles)(((System.Windows.Forms.AnchorStyles.Top | System.Windows.Forms.AnchorStyles.Bottom) |
                                                             System.Windows.Forms.AnchorStyles.Left)));
 
-            dataGridViewCellStyle.Alignment = System.Windows.Forms.DataGridViewContentAlignment.MiddleCenter;            
-            dataGridViewCellStyle.BackColor = s_dgvCellStyles[(int)INDEX_CELL_STYLE.COMMON].BackColor;
-            dataGridViewCellStyle.ForeColor = s_dgvCellStyles [(int)INDEX_CELL_STYLE.COMMON].ForeColor;
-            dataGridViewCellStyle.Font = new System.Drawing.Font("Microsoft Sans Serif", 8.25F, System.Drawing.FontStyle.Regular, System.Drawing.GraphicsUnit.Point, ((byte)(204)));            
-            dataGridViewCellStyle.SelectionBackColor = System.Drawing.SystemColors.Highlight;
-            dataGridViewCellStyle.SelectionForeColor = System.Drawing.SystemColors.HighlightText;
-            dataGridViewCellStyle.WrapMode = System.Windows.Forms.DataGridViewTriState.True;
-
-            ColumnHeadersDefaultCellStyle = dataGridViewCellStyle;
+            ColumnHeadersDefaultCellStyle.Alignment = System.Windows.Forms.DataGridViewContentAlignment.MiddleCenter;
+            ColumnHeadersDefaultCellStyle.Font = new System.Drawing.Font("Microsoft Sans Serif", 8.25F, System.Drawing.FontStyle.Regular, System.Drawing.GraphicsUnit.Point, ((byte)(204)));
+            ColumnHeadersDefaultCellStyle.BackColor =
+                //s_dgvCellStyles[(int)INDEX_CELL_STYLE.COMMON].BackColor
+                SystemColors.Control
+                ;
+            ColumnHeadersDefaultCellStyle.ForeColor =
+                //s_dgvCellStyles [(int)INDEX_CELL_STYLE.COMMON].ForeColor
+                SystemColors.ControlText
+                ;
+            ColumnHeadersDefaultCellStyle.WrapMode = System.Windows.Forms.DataGridViewTriState.True;
             ColumnHeadersHeightSizeMode = System.Windows.Forms.DataGridViewColumnHeadersHeightSizeMode.AutoSize;
         }
 
@@ -56,29 +56,22 @@ namespace StatisticCommon
 
         protected void RowsAdd () { Rows.Add(24); }
 
-        /*
-        private void cellValidated(int rowIndx, int colIndx)
-        {
-            double value;
-            bool valid;
-
-            valid = double.TryParse((string)this.dgwAdminTable.Rows[rowIndx].Cells[colIndx].Value, out value);
-            if (!valid || value > maxRecomendationValue)
-            {
-                m_curRDGValues.recommendations[rowIndx] = 0;
-                this.dgwAdminTable.Rows[rowIndx].Cells[colIndx].Value = 0.ToString("F2");
-            }
-            else
-            {
-                m_curRDGValues.recommendations[rowIndx] = value;
-                this.dgwAdminTable.Rows[rowIndx].Cells[colIndx].Value = value.ToString("F2");
-            }
-        }
-        */
-
         protected abstract void dgwAdminTable_CellValidated(object sender, DataGridViewCellEventArgs e);
 
-        protected virtual int INDEX_COLUMN_BUTTON_TO_ALL { get { return (int)DataGridViewAdminKomDisp.COLUMN_INDEX.TO_ALL; } }
+        protected abstract int INDEX_COLUMN_BUTTON_TO_ALL { get; }
+
+        /// <summary>
+        /// Инициализация столбца 'TO_ALL' (цвет фона)
+        ///  , вызывать только после добавления столбцов
+        /// </summary>
+        protected void InitializeColumnToAll ()
+        {
+            if ((INDEX_COLUMN_BUTTON_TO_ALL > 0)
+                && (INDEX_COLUMN_BUTTON_TO_ALL < this.ColumnCount))
+                this.Columns [INDEX_COLUMN_BUTTON_TO_ALL].DefaultCellStyle.BackColor = SystemColors.Control;
+            else
+                ;
+        }
 
         protected virtual void dgwAdminTable_CellClick(object sender, DataGridViewCellEventArgs e)
         {

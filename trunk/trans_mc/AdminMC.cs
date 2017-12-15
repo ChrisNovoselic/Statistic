@@ -235,20 +235,22 @@ namespace trans_mc
         protected override int StateRequest(int /*StatesMachine*/ state)
         {
             int result = 0;
-            string msg = string.Empty;
 
-            switch (state)
+            string msg = string.Empty;
+            StatesMachine stateMachine = (StatesMachine)state;
+
+            switch (stateMachine)
             {
-                case (int)StatesMachine.InitIGO:
+                case StatesMachine.InitIGO:
                     msg = @"Инициализация объектов Modes-Centre";
                     ActionReport(msg);
                     Logging.Logg().Debug(@"AdminMC::StateResponse () - " + msg, Logging.INDEX_MESSAGE.NOT_SET);
                     break;
-                case (int)StatesMachine.PPBRValues:
+                case StatesMachine.PPBRValues:
                     ActionReport("Получение данных плана.");
                     getPPBRValuesRequest(allTECComponents[indxTECComponents].tec, allTECComponents[indxTECComponents], m_curDate.Date/*, AdminTS.TYPE_FIELDS.COUNT_TYPE_FIELDS*/);
                     break;
-                case (int)StatesMachine.PPBRDates:
+                case StatesMachine.PPBRDates:
                     if ((serverTime.Date > m_curDate.Date) && (m_ignore_date == false))
                     {
                         result = -1;
@@ -275,11 +277,13 @@ namespace trans_mc
             error = true;
             table = null;
 
-            switch (state)
+            StatesMachine stateMachine = (StatesMachine)state;
+
+            switch (stateMachine)
             {
-                case (int)StatesMachine.InitIGO:
-                case (int)StatesMachine.PPBRValues:
-                case (int)StatesMachine.PPBRDates:
+                case StatesMachine.InitIGO:
+                case StatesMachine.PPBRValues:
+                case StatesMachine.PPBRDates:
                     //bRes = GetResponse(m_indxDbInterfaceCurrent, m_listListenerIdCurrent[m_indxDbInterfaceCurrent], out error, out table/*, false*/);
                     iRes = response(m_IdListenerCurrent, out error, out table/*, false*/);
                     break;
@@ -293,9 +297,12 @@ namespace trans_mc
         protected override int StateResponse(int /*StatesMachine*/ state, object table)
         {
             int result = -1;
-            switch (state)
+
+            StatesMachine stateMachine = (StatesMachine)state;
+
+            switch (stateMachine)
             {
-                case (int)StatesMachine.InitIGO:
+                case StatesMachine.InitIGO:
                     result = 0;
                     if (result == 0)
                     {
@@ -304,7 +311,7 @@ namespace trans_mc
                     else
                         ;
                     break;
-                case (int)StatesMachine.PPBRValues:
+                case StatesMachine.PPBRValues:
                     delegateStopWait();
 
                     result = getPPBRValuesResponse(table as DataTable, m_curDate);
@@ -315,7 +322,7 @@ namespace trans_mc
                     else
                         ;
                     break;
-                case (int)StatesMachine.PPBRDates:
+                case StatesMachine.PPBRDates:
                     clearPPBRDates();
                     result = getPPBRDatesResponse(table as DataTable, m_curDate);
                     if (result == 0)
@@ -344,14 +351,16 @@ namespace trans_mc
 
             bool bClear = false;
 
-            delegateStopWait();
+            StatesMachine stateMachine = (StatesMachine)state;
 
-            switch (state)
+            delegateStopWait ();
+
+            switch (stateMachine)
             {
-                case (int)StatesMachine.InitIGO:
+                case StatesMachine.InitIGO:
                     ErrorReport("Ошибка инициализации объектов Modes-Centre. Переход в ожидание.");
                     break;
-                case (int)StatesMachine.PPBRValues:
+                case StatesMachine.PPBRValues:
                     if (request == 0)
                         ErrorReport("Ошибка разбора данных плана. Переход в ожидание.");
                     else
@@ -361,7 +370,7 @@ namespace trans_mc
                         bClear = true;
                     }
                     break;
-                case (int)StatesMachine.PPBRDates:
+                case StatesMachine.PPBRDates:
                     if (request == 0)
                     {
                         ErrorReport("Ошибка разбора сохранённых часовых значений (PPBR). Переход в ожидание.");

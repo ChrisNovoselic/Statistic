@@ -1510,9 +1510,9 @@ namespace StatisticAlarm
         public void OnEvtDataRecievedHost(object res)
         {
             EventArgsDataHost ev = res as EventArgsDataHost;
-            AdminAlarm.StatesMachine state = (AdminAlarm.StatesMachine)(ev.par as object[])[0];
+            AdminAlarm.StatesMachine stateMachine = (AdminAlarm.StatesMachine)(ev.par as object[])[0];
 
-            switch (state)
+            switch (stateMachine)
             {
                 case AdminAlarm.StatesMachine.Detail:
                     //??? Прямой вызов метода-обработчика

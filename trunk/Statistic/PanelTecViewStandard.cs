@@ -15,8 +15,9 @@ using GemBox.Spreadsheet;
 
 //using HClassLibrary;
 using StatisticCommon;
-using ASUTP.Core;
 using ASUTP;
+using ASUTP.Core;
+using ASUTP.Control;
 
 namespace Statistic
 { 
@@ -941,8 +942,8 @@ namespace Statistic
         //            , m_tecView.m_arTypeSourceData[(int)HDateTime.INTERVAL.HOURS]
         //            , m_tecView.lastHour
         //            , m_tecView.m_curDate.Date.CompareTo(HAdmin.SeasonDateTime.Date) == 0
-        //            , (IntDelegateIntFunc)m_tecView.GetSeasonHourOffset                    
-        //            , m_tecView.serverTime                    
+        //            , (IntDelegateIntFunc)m_tecView.GetSeasonHourOffset
+        //            , m_tecView.serverTime
         //            , _pnlQuickData.dtprDate.Value.ToShortDateString()
         //        }
         //    );

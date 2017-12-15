@@ -53,7 +53,7 @@ namespace StatisticCommon
                 //полю "Настройки соединения" присвоить имя хоста
                 m_connectionSettings = mcHostName;
                 //необходимо повторно подключить
-                needReconnect = true;
+                needReconnect = RECONNECT.SOFT;
             }
 
             SetConnectionSettings();
@@ -94,7 +94,7 @@ namespace StatisticCommon
 
             lock (lockConnectionSettings)
             {
-                if (needReconnect == true) // если перед приходом в данную точку повторно были изменены настройки, то подключения со старыми настройками не делаем
+                if (!(needReconnect == RECONNECT.NOT_REQ)) // если перед приходом в данную точку повторно были изменены настройки, то подключения со старыми настройками не делаем
                     return false;
                 else
                     ;
@@ -319,7 +319,7 @@ namespace StatisticCommon
                                         , igo.Description, igo.IdInner)
                                     , Logging.INDEX_MESSAGE.NOT_SET);
 
-                                needReconnect = true;
+                                getData_OnFillError (m_MCApi, new FillErrorEventArgs (table, new object [] { }));
 
                                 result = false;
                             }

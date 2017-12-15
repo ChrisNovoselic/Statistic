@@ -1,19 +1,14 @@
 ﻿using System;
-using System.IO;
 using System.Data;
 using System.Collections.Generic;
 using System.Threading;
-using System.Globalization;
 
 using GemBox.Spreadsheet;
 //using Excel = Microsoft.Office.Interop.Excel;
 
-
 using StatisticCommon;
-using ASUTP;
 
-namespace Statistic
-{
+namespace Statistic {
     partial class PanelAdminLK : PanelAdmin
     {
         public class AdminTS_LK : AdminTS_TG
@@ -429,7 +424,7 @@ namespace Statistic
                     }
                     catch (Exception e)
                     {
-                        Logging.Logg().Error("PanelAdminLK : getCSV - ошибка при открытии потока" + e.Message, Logging.INDEX_MESSAGE.NOT_SET);
+                        ASUTP.Logging.Logg().Error("PanelAdminLK : getCSV - ошибка при открытии потока" + e.Message, ASUTP.Logging.INDEX_MESSAGE.NOT_SET);
                     }
 
                     return dataTableRes;

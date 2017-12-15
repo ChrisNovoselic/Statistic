@@ -703,9 +703,11 @@ namespace StatisticTimeSync
             {
                 int iRes = 0;
 
-                switch (state)
+                StatesMachine stateMachine = (StatesMachine)state;
+
+                switch (stateMachine)
                 {
-                    case (int)StatesMachine.AddControl:
+                    case StatesMachine.AddControl:
                         addPanels();
                         break;
                 }

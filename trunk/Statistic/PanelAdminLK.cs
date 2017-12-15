@@ -512,11 +512,11 @@ namespace Statistic {
 
                 int col = -1;
                 Columns.AddRange (new DataGridViewColumn [(int)DESC_INDEX.COUNT_COLUMN] { new DataGridViewTextBoxColumn()
-                , new DataGridViewTextBoxColumn()
-                , new DataGridViewTextBoxColumn()
-                , new DataGridViewCheckBoxColumn()
-                , new DataGridViewTextBoxColumn()
-                , new DataGridViewButtonColumn() });
+                    , new DataGridViewTextBoxColumn()
+                    , new DataGridViewTextBoxColumn()
+                    , new DataGridViewCheckBoxColumn()
+                    , new DataGridViewTextBoxColumn()
+                    , new DataGridViewButtonColumn() });
 
                 col = 0;
                 for (col = 0; col < (int)DESC_INDEX.PLAN_POWER; col++) {
@@ -548,8 +548,8 @@ namespace Statistic {
 
                 this.Dock = DockStyle.Fill;
 
-                this.Columns [INDEX_COLUMN_BUTTON_TO_ALL].DefaultCellStyle.BackColor = SystemColors.Control;
                 //this.BackColor = SystemColors.Window;
+                InitializeColumnToAll ();
 
                 this.CellValueChanged += new DataGridViewCellEventHandler (DataGridViewAdminLK_CellValueChanged);
 
@@ -741,16 +741,20 @@ namespace Statistic {
                 {
                     base.BackColor = value;
 
-                    if ((INDEX_COLUMN_BUTTON_TO_ALL > 0)
-                        && (RowCount > 0))
-                        for (int col = 0; col < ColumnCount - 1; col++)
-                            for (int i = 0; i < RowCount; i++) {
-                                // ограничений на изменение цвета фона в ячейке нет
-                                // например, сигнализация о выходе за пределы некоторых значений - цвет таких ячеек изменять нельзя
-                                Rows [i].Cells [col].Style.BackColor = value == SystemColors.Control ? SystemColors.Window : value;
-                            } else
-                        // нет столбцов/строк - нет действий по изменению цвета фона ячеек
-                        ;
+                    //??? вариант №1 - оптимальный
+                    DefaultCellStyle.BackColor = value == SystemColors.Control ? SystemColors.Window : value;
+                    ////??? вариант №2 - допустимый (не рекомендуемый)
+                    //if ((INDEX_COLUMN_BUTTON_TO_ALL > 0)
+                    //    && (RowCount > 0))
+                    //    for (int col = 0; col < ColumnCount - 1; col++)
+                    //        for (int i = 0; i < RowCount; i++) {
+                    //            // ограничений на изменение цвета фона в ячейке нет
+                    //            // например, сигнализация о выходе за пределы некоторых значений - цвет таких ячеек изменять нельзя
+                    //            Rows [i].Cells [col].Style.BackColor = value == SystemColors.Control ? SystemColors.Window : value;
+                    //        }
+                    //else
+                    //// нет столбцов/строк - нет действий по изменению цвета фона ячеек
+                    //    ;
                 }
             }
         }

@@ -15,7 +15,6 @@ using ASUTP;
 using ASUTP.PlugIn;
 using ASUTP.Core;
 
-
 namespace Statistic
 {
     /// <summary>

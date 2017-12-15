@@ -76,6 +76,14 @@ namespace StatisticTransModes
             Columns[(int)DESC_INDEX.TO_ALL].Name = arDescStringIndex[(int)DESC_INDEX.TO_ALL];*/
         }
 
+        protected override int INDEX_COLUMN_BUTTON_TO_ALL
+        {
+            get
+            {
+                return -1;
+            }
+        }
+
         protected override void dgwAdminTable_CellValidated(object sender, DataGridViewCellEventArgs e)
         {
             double value;

@@ -273,7 +273,7 @@ namespace Statistic
                     , new DataGridViewTextBoxColumn()
                     , new DataGridViewComboBoxColumn()
                     , new DataGridViewCheckBoxColumn()
-                    , new DataGridViewTextBoxColumn()                    
+                    , new DataGridViewTextBoxColumn()
                     , new DataGridViewButtonColumn()
                 });
                 col = 0;
@@ -301,20 +301,14 @@ namespace Statistic
                 cellTemplateRec.Value = 0;
                 Columns[(int)DESC_INDEX.RECOMENDATION].CellTemplate = cellTemplateRec;
 
-                //dgvCellStyleError = new DataGridViewCellStyle();
-                //dgvCellStyleError.BackColor = Color.Red;
-
-                //dgvCellStyleGTP = new DataGridViewCellStyle();
-                //dgvCellStyleGTP.BackColor = Color.Yellow;
-
                 this.Dock = DockStyle.Fill;
 
                 //this.BackColor = SystemColors.Window;
-                Columns [INDEX_COLUMN_BUTTON_TO_ALL].DefaultCellStyle.BackColor = SystemColors.Control;
-
                 this.CellValueChanged += new DataGridViewCellEventHandler(onCellValueChanged);
 
                 this.HorizontalScrollBar.Visible = true;
+
+                InitializeColumnToAll ();
             }
 
             protected override void dgwAdminTable_CellValidated(object sender, DataGridViewCellEventArgs ev)
@@ -425,16 +419,20 @@ namespace Statistic
                 {
                     base.BackColor = value;
 
-                    if ((INDEX_COLUMN_BUTTON_TO_ALL > 0)
-                        && (RowCount > 0))
-                        for (int col = 0; col < (int)INDEX_COLUMN_BUTTON_TO_ALL; col++)
-                            for (int i = 0; i < 24; i++) {
-                            // ограничений на изменение цвета фона в €чейке нет
-                            // например, сигнализаци€ о выходе за пределы некоторых значений - цвет таких €чеек измен€ть нельз€
-                                Rows [i].Cells [col].Style.BackColor = value == SystemColors.Control ? SystemColors.Window : value;
-                            } else
-                        // нет столбцов/строк - нет действий по изменению цвета фона €чеек
-                        ;
+                    //??? вариант є1 - оптимальный
+                    DefaultCellStyle.BackColor = value == SystemColors.Control ? SystemColors.Window : value;
+                    ////??? вариант є2 - допустимый (не рекомендуемый)
+                    //if ((INDEX_COLUMN_BUTTON_TO_ALL > 0)
+                    //    && (RowCount > 0))
+                    //    for (int col = 0; col < (int)INDEX_COLUMN_BUTTON_TO_ALL; col++)
+                    //        for (int i = 0; i < 24; i++) {
+                    //        // ограничений на изменение цвета фона в €чейке нет
+                    //        // например, сигнализаци€ о выходе за пределы некоторых значений - цвет таких €чеек измен€ть нельз€
+                    //            Rows [i].Cells [col].Style.BackColor = value == SystemColors.Control ? SystemColors.Window : value;
+                    //        }
+                    //else
+                    //// нет столбцов/строк - нет действий по изменению цвета фона €чеек
+                    //    ;
                 }
             }
         }

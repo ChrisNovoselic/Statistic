@@ -379,17 +379,19 @@ namespace StatisticDiagnostic
             {
                 int iRes = 0;
 
-                switch (state)
+                State stateMachine = (State)state;
+
+                switch (stateMachine)
                 {
-                    case (int)State.ServerTime:
+                    case State.ServerTime:
                         GetCurrentTimeRequest(DbInterface.DB_TSQL_INTERFACE_TYPE.MSSQL, m_dictIdListeners[0][(int)CONN_SETT_TYPE.LIST_SOURCE]);
                         actionReport(@"Получение времени с сервера БД - состояние: " + ((State)state).ToString());
                         break;
-                    case (int)State.Command:
+                    case State.Command:
                         Request(m_dictIdListeners[0][(int)CONN_SETT_TYPE.LIST_SOURCE], @"SELECT * FROM [dbo].[Diagnostic]");
                         actionReport(@"Получение значений из БД - состояние: " + ((State)state).ToString());
                         break;
-                    case (int)State.UpdateSource:
+                    case State.UpdateSource:
                         Request(m_dictIdListeners[0][(int)CONN_SETT_TYPE.LIST_SOURCE], @"SELECT * FROM [dbo].[v_CURR_ID_LINK_SOURCE_DATA_TM]");
                         actionReport(@"Обновление списка активных источников - состояние: " + ((State)state).ToString());
                         break;
@@ -410,18 +412,21 @@ namespace StatisticDiagnostic
             protected override int StateCheckResponse(int state, out bool error, out object table)
             {
                 int iRes = 0;
+
                 error = true;
                 table = null;
 
-                switch (state)
+                State stateMachine = (State)state;
+
+                switch (stateMachine)
                 {
-                    case (int)State.ServerTime:
+                    case State.ServerTime:
                         iRes = response(m_IdListenerCurrent, out error, out table);
                         break;
-                    case (int)State.Command:
+                    case State.Command:
                         iRes = response(m_IdListenerCurrent, out error, out table);
                         break;
-                    case (int)State.UpdateSource:
+                    case State.UpdateSource:
                         iRes = response(m_IdListenerCurrent, out error, out table);
                         break;
                     default:
@@ -583,15 +588,17 @@ namespace StatisticDiagnostic
             {
                 int iRes = 0;
 
-                switch (state)
+                State stateMachine = (State)state;
+
+                switch (stateMachine)
                 {
                     case (int)State.ServerTime:
                         GetTimeServer((DateTime)(table as DataTable).Rows[0][0]);
                         break;
-                    case (int)State.Command:
+                    case State.Command:
                         EvtRecievedTable(table);
                         break;
-                    case (int)State.UpdateSource:
+                    case State.UpdateSource:
                         EvtRecievedActiveSource(table);
                         break;
                     default:

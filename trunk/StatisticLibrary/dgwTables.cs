@@ -84,7 +84,9 @@ namespace StatisticCommon
             {
                 base.ForeColor = value;
 
-                s_dgvCellStyles [(int)INDEX_CELL_STYLE.COMMON].ForeColor = value;
+                s_dgvCellStyles [(int)INDEX_CELL_STYLE.COMMON].ForeColor =
+                DefaultCellStyle.ForeColor =
+                     value;
             }
         }
 
@@ -103,6 +105,8 @@ namespace StatisticCommon
                     value.Equals (SystemColors.Control) == true
                         ? SystemColors.Window :
                             value;
+
+                DefaultCellStyle.BackColor = s_dgvCellStyles [(int)INDEX_CELL_STYLE.COMMON].BackColor;
             }
         }
 

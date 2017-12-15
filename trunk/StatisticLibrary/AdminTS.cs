@@ -1852,15 +1852,17 @@ namespace StatisticCommon
         protected override int StateRequest(int /*StatesMachine*/ state)
         {
             int result = 0;
-            string strRep = string.Empty;
 
-            switch (state)
+            string strRep = string.Empty;
+            StatesMachine stateMachine = (StatesMachine)state;
+
+            switch (stateMachine)
             {
-                case (int)StatesMachine.CurrentTime:
+                case StatesMachine.CurrentTime:
                     strRep = @"Получение текущего времени сервера.";
                     GetCurrentTimeRequest();
                     break;
-                case (int)StatesMachine.PPBRValues:
+                case StatesMachine.PPBRValues:
                     strRep = @"Получение данных плана.";
                     if (indxTECComponents < allTECComponents.Count)
                         getPPBRValuesRequest(allTECComponents[indxTECComponents].tec, allTECComponents[indxTECComponents]
@@ -1868,7 +1870,7 @@ namespace StatisticCommon
                     else
                         ; //result = false;
                     break;
-                case (int)StatesMachine.AdminValues:
+                case StatesMachine.AdminValues:
                     strRep = @"Получение административных данных.";
                     if ((indxTECComponents < allTECComponents.Count) && (m_markQueries.IsMarked ((int)CONN_SETT_TYPE.ADMIN) == true))
                         getAdminValuesRequest(allTECComponents[indxTECComponents].tec, allTECComponents[indxTECComponents]
@@ -1879,20 +1881,20 @@ namespace StatisticCommon
                     //this.BeginInvoke(delegateCalendarSetDate, m_prevDatetime);
                     break;
                 #region Импорт/экспорт значений
-                case (int)StatesMachine.ImpRDGExcelValues:
+                case StatesMachine.ImpRDGExcelValues:
                     strRep = @"Импорт РДГ из Excel.";
                     delegateImportForeignValuesRequuest();
                     break;
-                case (int)StatesMachine.ExpRDGExcelValues:
+                case StatesMachine.ExpRDGExcelValues:
                     strRep = @"Экспорт РДГ в книгу Excel.";
                     delegateExportForeignValuesRequuest();
                     break;
-                 case (int)StatesMachine.CSVValues:
+                 case StatesMachine.CSVValues:
                     strRep = @"Импорт из формата CSV.";
                     delegateImportForeignValuesRequuest();
                     break;
                 #endregion
-                case (int)StatesMachine.PPBRDates:
+                case StatesMachine.PPBRDates:
                     if ((serverTime.Date > m_curDate.Date) && (m_ignore_date == false))
                     {
                         //Останавливаем сохранение
@@ -1908,11 +1910,11 @@ namespace StatisticCommon
                         break;
                     }
                     else
-                        ;                        
+                        ;
                     strRep = @"Получение списка сохранённых часовых значений.";
                     getPPBRDatesRequest(m_curDate);
                     break;
-                case (int)StatesMachine.AdminDates:
+                case StatesMachine.AdminDates:
                     //int offset_days = (m_curDate.Date - serverTime.Date).Days;
                     //if (((offset_days > 0) && (m_ignore_date == false))
                     //    || (((offset_days > 1) && (serverTime.Hour > 0)) && (m_ignore_date == false)))
@@ -1938,14 +1940,14 @@ namespace StatisticCommon
                     else
                         ;
                     break;
-                case (int)StatesMachine.SaveAdminValues:
+                case StatesMachine.SaveAdminValues:
                     strRep = @"Сохранение административных данных.";
                     if ((indxTECComponents < allTECComponents.Count) && (m_markQueries.IsMarked((int)CONN_SETT_TYPE.ADMIN) == true))
                         SetAdminValuesRequest(allTECComponents[indxTECComponents].tec, allTECComponents[indxTECComponents], m_curDate);
                     else
                         ; //result = false;
                     break;
-                case (int)StatesMachine.SavePPBRValues:
+                case StatesMachine.SavePPBRValues:
                     strRep = @"Сохранение ПЛАНА.";
                     if (indxTECComponents < allTECComponents.Count)
                         SetPPBRRequest(allTECComponents[indxTECComponents].tec, allTECComponents[indxTECComponents], m_curDate);
@@ -1960,14 +1962,14 @@ namespace StatisticCommon
                 //    ActionReport("Сохранение административных данных макета.");
                 //    SetLayoutRequest(m_curDate);
                 //    break;
-                case (int)StatesMachine.ClearAdminValues:
+                case StatesMachine.ClearAdminValues:
                     strRep = @"Сохранение административных данных.";
                     if (indxTECComponents < allTECComponents.Count)
                         ClearAdminValuesRequest(allTECComponents[indxTECComponents].tec, allTECComponents[indxTECComponents], m_curDate);
                     else
                         ; //result = false;
                     break;
-                case (int)StatesMachine.ClearPPBRValues:
+                case StatesMachine.ClearPPBRValues:
                     strRep = @"Сохранение ПЛАНА.";
                     if (indxTECComponents < allTECComponents.Count)
                         ClearPPBRRequest(allTECComponents[indxTECComponents].tec, allTECComponents[indxTECComponents], m_curDate);
@@ -1997,14 +1999,16 @@ namespace StatisticCommon
             error = true;
             table = null;
 
+            StatesMachine stateMachine = (StatesMachine)state;
+
             if (((state == (int)StatesMachine.ImpRDGExcelValues) || (state == (int)StatesMachine.ExpRDGExcelValues)) ||
                 (state == (int)StatesMachine.CSVValues) ||
                 /*((!(m_indxDbInterfaceCurrent < 0)) && (m_listListenerIdCurrent.Count > 0))*/
                 (!(m_IdListenerCurrent < 0)))
             {
-                switch (state)
+                switch (stateMachine)
                 {
-                    case (int)StatesMachine.ImpRDGExcelValues:
+                    case StatesMachine.ImpRDGExcelValues:
                         if ((!(m_tableRDGExcelValuesResponse == null)) && (m_tableRDGExcelValuesResponse.Rows.Count > 24))
                         {
                             error = false;
@@ -2015,12 +2019,12 @@ namespace StatisticCommon
                         else
                             ;
                         break;
-                    case (int)StatesMachine.ExpRDGExcelValues:
+                    case StatesMachine.ExpRDGExcelValues:
                             //??? Всегда успех ???
                             error = false;
                             iRes = 0;
                         break;
-                     case (int)StatesMachine.CSVValues:
+                     case StatesMachine.CSVValues:
                         if ((!(m_tableValuesResponse == null)) && (m_tableValuesResponse.Rows.Count > 0))
                         {
                             error = false;
@@ -2030,7 +2034,7 @@ namespace StatisticCommon
                         else
                             ;
                         break;
-                    case (int)StatesMachine.AdminDates:
+                    case StatesMachine.AdminDates:
                         if (m_markQueries.IsMarked ((int)CONN_SETT_TYPE.ADMIN) == true)
                             iRes = response(m_IdListenerCurrent, out error, out table/*, false*/);
                         else {
@@ -2040,20 +2044,20 @@ namespace StatisticCommon
                             iRes = 0;
                         }
                         break;
-                    case (int)StatesMachine.CurrentTime:
-                    case (int)StatesMachine.PPBRValues:
-                    case (int)StatesMachine.AdminValues:
-                    case (int)StatesMachine.PPBRDates:
-                    case (int)StatesMachine.SaveAdminValues:
-                    case (int)StatesMachine.SavePPBRValues:
-                    //case (int)StatesMachine.UpdateValuesPPBR:
-                    case (int)StatesMachine.ClearAdminValues:
-                    case (int)StatesMachine.ClearPPBRValues:
-                    //case (int)StatesMachine.GetPass:
+                    case StatesMachine.CurrentTime:
+                    case StatesMachine.PPBRValues:
+                    case StatesMachine.AdminValues:
+                    case StatesMachine.PPBRDates:
+                    case StatesMachine.SaveAdminValues:
+                    case StatesMachine.SavePPBRValues:
+                    //case StatesMachine.UpdateValuesPPBR:
+                    case StatesMachine.ClearAdminValues:
+                    case StatesMachine.ClearPPBRValues:
+                    //case StatesMachine.GetPass:
                         iRes = response(m_IdListenerCurrent, out error, out table/*, false*/);
                         break;
-                    //case (int)StatesMachine.LayoutGet:
-                    //case (int)StatesMachine.LayoutSet:
+                    //case StatesMachine.LayoutGet:
+                    //case StatesMachine.LayoutSet:
                         //bRes = GetResponse(m_indxDbInterfaceCurrent, m_listListenerIdCurrent[m_indxDbInterfaceCurrent], out error, out table/*, true*/);
                         //break;
                     default:
@@ -2081,11 +2085,13 @@ namespace StatisticCommon
         protected override int StateResponse(int /*StatesMachine*/ state, object table)
         {
             int result = -1;
-            string strRep = string.Empty;
 
-            switch (state)
+            string strRep = string.Empty;
+            StatesMachine stateMachine = (StatesMachine)state;
+
+            switch (stateMachine)
             {
-                case (int)StatesMachine.CurrentTime:
+                case StatesMachine.CurrentTime:
                     result = GetCurrentTimeResponse(table as DataTable);
                     if (result == 0)
                     {
@@ -2101,7 +2107,7 @@ namespace StatisticCommon
                     else
                         ;
                     break;
-                case (int)StatesMachine.PPBRValues:
+                case StatesMachine.PPBRValues:
                     result = getPPBRValuesResponse(table as DataTable, m_curDate);
                     if (result == 0)
                     {
@@ -2117,12 +2123,12 @@ namespace StatisticCommon
                                 ;
                         }
                         else
-                            ;                        
+                            ;
                     }
                     else
                         ;
                     break;
-                case (int)StatesMachine.AdminValues:
+                case StatesMachine.AdminValues:
                     if (m_markQueries.IsMarked((int)CONN_SETT_TYPE.ADMIN) == true)
                     {
                         result = GetAdminValuesResponse(table as System.Data.DataTable, m_curDate);
@@ -2145,7 +2151,7 @@ namespace StatisticCommon
                         ;
                     break;
                 #region Импорт/экспорт значений
-                case (int)StatesMachine.ImpRDGExcelValues:
+                case StatesMachine.ImpRDGExcelValues:
                     ActionReport("Импорт РДГ из Excel.");
                     //result = GetRDGExcelValuesResponse(table, m_curDate);
                     result = delegateImportForeignValuesResponse();
@@ -2156,7 +2162,7 @@ namespace StatisticCommon
                     else
                         ;
                     break;
-                case (int)StatesMachine.ExpRDGExcelValues:
+                case StatesMachine.ExpRDGExcelValues:
                     ActionReport("Экспорт РДГ в книгу Excel.");
                     //??? Всегда успех ???
                     saveResult = Errors.NoError;
@@ -2169,7 +2175,7 @@ namespace StatisticCommon
                     }
                     result = 0;
                     break;
-                case (int)StatesMachine.CSVValues:
+                case StatesMachine.CSVValues:
                     ActionReport("Импорт значений из формата CSV.");
                     //result = GetRDGExcelValuesResponse(table, m_curDate);
                     result = delegateImportForeignValuesResponse();
@@ -2181,7 +2187,7 @@ namespace StatisticCommon
                         ;
                     break;
                 #endregion
-                case (int)StatesMachine.PPBRDates:
+                case StatesMachine.PPBRDates:
                     clearPPBRDates();
                     result = getPPBRDatesResponse(table as System.Data.DataTable, m_curDate);
                     if (result == 0)
@@ -2190,7 +2196,7 @@ namespace StatisticCommon
                     else
                         ;
                     break;
-                case (int)StatesMachine.AdminDates:
+                case StatesMachine.AdminDates:
                     clearAdminDates();
                     if (m_markQueries.IsMarked((int)CONN_SETT_TYPE.ADMIN) == true)
                         result = getAdminDatesResponse(table as System.Data.DataTable, m_curDate);
@@ -2203,7 +2209,7 @@ namespace StatisticCommon
                     else
                         ;
                     break;
-                case (int)StatesMachine.SaveAdminValues:
+                case StatesMachine.SaveAdminValues:
                     saveResult = Errors.NoError;
                     //Если состояние крайнее, то освободить доступ к БД
                     if (isLastState (state) == true)
@@ -2215,7 +2221,7 @@ namespace StatisticCommon
                     if (result == 0) { }
                     else ;
                     break;
-                case (int)StatesMachine.SavePPBRValues:
+                case StatesMachine.SavePPBRValues:
                     saveResult = Errors.NoError;
                     //Если состояние крайнее, то освободить доступ к БД
                     if (isLastState(state) == true)
@@ -2236,7 +2242,7 @@ namespace StatisticCommon
                     else
                         ;
                     break;
-                //case (int)StatesMachine.LayoutGet:
+                //case StatesMachine.LayoutGet:
                 //    result = GetLayoutResponse(table, m_curDate);
                 //    if (result == true)
                 //    {
@@ -2250,7 +2256,7 @@ namespace StatisticCommon
                 //        }
                 //    }
                 //    break;
-                //case (int)StatesMachine.LayoutSet:
+                //case StatesMachine.LayoutSet:
                 //    loadLayoutResult = Errors.NoError;
                 //    try
                 //    {
@@ -2266,12 +2272,12 @@ namespace StatisticCommon
                 //    else
                 //        ;
                 //    break;
-                case (int)StatesMachine.ClearAdminValues:
+                case StatesMachine.ClearAdminValues:
                     result = 0;
                     if (result == 0) { }
                     else ;
                     break;
-                case (int)StatesMachine.ClearPPBRValues:
+                case StatesMachine.ClearPPBRValues:
                     try
                     {
                         semaDBAccess.Release(1);
@@ -2308,9 +2314,11 @@ namespace StatisticCommon
                 reason = string.Empty,
                 waiting = string.Empty;
 
-            switch (state)
+            StatesMachine stateMachine = (StatesMachine)state;
+
+            switch (stateMachine)
             {
-                case (int)StatesMachine.CurrentTime:
+                case StatesMachine.CurrentTime:
                     if (request == 0)
                     {
                         reason = @"разбора";
@@ -2347,7 +2355,7 @@ namespace StatisticCommon
                     else
                         ;
                     break;
-                case (int)StatesMachine.PPBRValues:
+                case StatesMachine.PPBRValues:
                     if (request == 0)
                         reason = @"разбора";
                     else {
@@ -2359,7 +2367,7 @@ namespace StatisticCommon
                     waiting = @"Переход в ожидание";
 
                     break;
-                case (int)StatesMachine.AdminValues:
+                case StatesMachine.AdminValues:
                     if (request == 0)
                         reason = @"разбора";
                     else {
@@ -2371,13 +2379,13 @@ namespace StatisticCommon
                     waiting = @"Переход в ожидание";
 
                     break;
-                case (int)StatesMachine.ImpRDGExcelValues:
+                case StatesMachine.ImpRDGExcelValues:
                     reason = @"импорта РДГ из книги Excel";
                     waiting = @"Переход в ожидание";
 
                     // ???
                     break;
-                case (int)StatesMachine.ExpRDGExcelValues:
+                case StatesMachine.ExpRDGExcelValues:
                     reason = @"экспорта РДГ из книги Excel";
                     waiting = @"Переход в ожидание";
                     // ???
@@ -2390,13 +2398,13 @@ namespace StatisticCommon
                     {
                     }
                     break;
-                case (int)StatesMachine.CSVValues:
+                case StatesMachine.CSVValues:
                     reason = @"импорта из формата CSV";
                     waiting = @"Переход в ожидание";
 
                     // ???
                     break;
-                case (int)StatesMachine.PPBRDates:
+                case StatesMachine.PPBRDates:
                     if (request == 0)
                     {
                         reason = @"разбора";
@@ -2420,7 +2428,7 @@ namespace StatisticCommon
                     waiting = @"Переход в ожидание";
 
                     break;
-                case (int)StatesMachine.AdminDates:
+                case StatesMachine.AdminDates:
                     if (request == 0)
                     {
                         reason = @"разбора";
@@ -2444,7 +2452,7 @@ namespace StatisticCommon
                     waiting = @"Переход в ожидание";
 
                     break;
-                case (int)StatesMachine.SaveAdminValues:
+                case StatesMachine.SaveAdminValues:
                     saveResult = Errors.NoAccess;
                     try
                     {
@@ -2458,7 +2466,7 @@ namespace StatisticCommon
                     reason = @"сохранения административных данных";
                     waiting = @"Переход в ожидание";
                     break;
-                case (int)StatesMachine.SavePPBRValues:
+                case StatesMachine.SavePPBRValues:
                     saveResult = Errors.NoAccess;
                     try
                     {
@@ -2472,7 +2480,7 @@ namespace StatisticCommon
                     waiting = @"Переход в ожидание";
 
                     break;
-                //case (int)StatesMachine.LayoutGet:
+                //case StatesMachine.LayoutGet:
                 //    if (response)
                 //    {
                 //        ErrorReport("Ошибка разбора административных данных макета. Переход в ожидание.");
@@ -2491,7 +2499,7 @@ namespace StatisticCommon
                 //    {
                 //    }
                 //    break;
-                //case (int)StatesMachine.LayoutSet:
+                //case StatesMachine.LayoutSet:
                 //    ErrorReport("Ошибка сохранения административных данных макета. Переход в ожидание.");
                 //    loadLayoutResult = Errors.NoAccess;
                 //    try
@@ -2502,11 +2510,11 @@ namespace StatisticCommon
                 //    {
                 //    }
                 //    break;
-                case (int)StatesMachine.ClearAdminValues:
+                case StatesMachine.ClearAdminValues:
                     reason = @"удаления административных данных";
                     waiting = @"Переход в ожидание";
                     break;
-                case (int)StatesMachine.ClearPPBRValues:
+                case StatesMachine.ClearPPBRValues:
                     reason = @"удаления данных ПЛАНа";
                     waiting = @"Переход в ожидание";
                     break;

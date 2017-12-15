@@ -445,25 +445,25 @@ namespace Statistic
                         offset = m_admin.GetSeasonHourOffset(i + 1);
 
                         this.dgwAdminTable.Rows[i].Cells[(int)DataGridViewAdminKomDisp.COLUMN_INDEX.DATE_HOUR].Value = date.AddHours(i + 1 - offset).ToString(strFmtDatetime);
-                        this.dgwAdminTable.Rows [i].Cells [(int)DataGridViewAdminKomDisp.COLUMN_INDEX.DATE_HOUR].Style.BackColor = this.dgwAdminTable.BackColor;
+                        //this.dgwAdminTable.Rows [i].Cells [(int)DataGridViewAdminKomDisp.COLUMN_INDEX.DATE_HOUR].Style.BackColor = this.dgwAdminTable.BackColor;
 
                         this.dgwAdminTable.Rows[i].Cells[(int)DataGridViewAdminKomDisp.COLUMN_INDEX.PLAN].Value = m_admin.m_curRDGValues[i].pbr.ToString("F2");
                         this.dgwAdminTable.Rows[i].Cells[(int)DataGridViewAdminKomDisp.COLUMN_INDEX.PLAN].ToolTipText = m_admin.m_curRDGValues[i].pbr_number;
-                        this.dgwAdminTable.Rows [i].Cells [(int)DataGridViewAdminKomDisp.COLUMN_INDEX.PLAN].Style.BackColor = this.dgwAdminTable.BackColor;
+                        //this.dgwAdminTable.Rows [i].Cells [(int)DataGridViewAdminKomDisp.COLUMN_INDEX.PLAN].Style.BackColor = this.dgwAdminTable.BackColor;
                         if (i > 0)
                             this.dgwAdminTable.Rows[i].Cells[(int)DataGridViewAdminKomDisp.COLUMN_INDEX.UDGe].Value = (((m_admin.m_curRDGValues[i].pbr + m_admin.m_curRDGValues[i - 1].pbr) / 2) + m_admin.m_curRDGValues[i].recomendation).ToString("F2");
                         else
                             this.dgwAdminTable.Rows[i].Cells[(int)DataGridViewAdminKomDisp.COLUMN_INDEX.UDGe].Value = (((m_admin.m_curRDGValues[i].pbr + m_admin.m_curRDGValues_PBR_0) / 2) + m_admin.m_curRDGValues[i].recomendation).ToString("F2");
-                        this.dgwAdminTable.Rows [i].Cells [(int)DataGridViewAdminKomDisp.COLUMN_INDEX.UDGe].Style.BackColor = this.dgwAdminTable.BackColor;
+                        //this.dgwAdminTable.Rows [i].Cells [(int)DataGridViewAdminKomDisp.COLUMN_INDEX.UDGe].Style.BackColor = this.dgwAdminTable.BackColor;
                         this.dgwAdminTable.Rows[i].Cells[(int)DataGridViewAdminKomDisp.COLUMN_INDEX.RECOMENDATION].Value = m_admin.m_curRDGValues[i].recomendation.ToString("F2");
                         this.dgwAdminTable.Rows[i].Cells[(int)DataGridViewAdminKomDisp.COLUMN_INDEX.RECOMENDATION].ToolTipText = m_admin.m_curRDGValues[i].dtRecUpdate.ToString();
-                        this.dgwAdminTable.Rows [i].Cells [(int)DataGridViewAdminKomDisp.COLUMN_INDEX.RECOMENDATION].Style.BackColor = this.dgwAdminTable.BackColor;
+                        //this.dgwAdminTable.Rows [i].Cells [(int)DataGridViewAdminKomDisp.COLUMN_INDEX.RECOMENDATION].Style.BackColor = this.dgwAdminTable.BackColor;
                         this.dgwAdminTable.Rows[i].Cells[(int)DataGridViewAdminKomDisp.COLUMN_INDEX.FOREIGN_CMD].Value = m_admin.m_curRDGValues[i].fc.ToString();
-                        this.dgwAdminTable.Rows [i].Cells [(int)DataGridViewAdminKomDisp.COLUMN_INDEX.FOREIGN_CMD].Style.BackColor = this.dgwAdminTable.BackColor;
+                        //this.dgwAdminTable.Rows [i].Cells [(int)DataGridViewAdminKomDisp.COLUMN_INDEX.FOREIGN_CMD].Style.BackColor = this.dgwAdminTable.BackColor;
                         this.dgwAdminTable.Rows[i].Cells[(int)DataGridViewAdminKomDisp.COLUMN_INDEX.DEVIATION_TYPE].Value = m_admin.m_curRDGValues[i].deviationPercent.ToString();
-                        this.dgwAdminTable.Rows [i].Cells [(int)DataGridViewAdminKomDisp.COLUMN_INDEX.DEVIATION_TYPE].Style.BackColor = this.dgwAdminTable.BackColor;
+                        //this.dgwAdminTable.Rows [i].Cells [(int)DataGridViewAdminKomDisp.COLUMN_INDEX.DEVIATION_TYPE].Style.BackColor = this.dgwAdminTable.BackColor;
                         this.dgwAdminTable.Rows[i].Cells[(int)DataGridViewAdminKomDisp.COLUMN_INDEX.DEVIATION].Value = m_admin.m_curRDGValues[i].deviation.ToString("F2");
-                        this.dgwAdminTable.Rows [i].Cells [(int)DataGridViewAdminKomDisp.COLUMN_INDEX.DEVIATION].Style.BackColor = this.dgwAdminTable.BackColor;
+                        //this.dgwAdminTable.Rows [i].Cells [(int)DataGridViewAdminKomDisp.COLUMN_INDEX.DEVIATION].Style.BackColor = this.dgwAdminTable.BackColor;
                     }
 
                     if (bNewValues == true)

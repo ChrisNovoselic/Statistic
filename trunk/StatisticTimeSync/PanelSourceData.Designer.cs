@@ -48,9 +48,11 @@ namespace StatisticTimeSync
             {
                 int iRes = 0;
 
-                switch (state)
+                StatesMachine stateMachine = (StatesMachine)state;
+
+                switch (stateMachine)
                 {
-                    case (int)StatesMachine.CurrentTime:
+                    case StatesMachine.CurrentTime:
                         getDate();
                         break;
                     default:
@@ -66,9 +68,11 @@ namespace StatisticTimeSync
                 error = true;
                 table = null;
 
-                switch (state)
+                StatesMachine stateMachine = (StatesMachine)state;
+
+                switch (stateMachine)
                 {
-                    case (int)StatesMachine.CurrentTime:
+                    case StatesMachine.CurrentTime:
                         iRes = response(m_IdListenerCurrent, out error, out table);
                         break;
                     default:
@@ -82,9 +86,11 @@ namespace StatisticTimeSync
             {
                 int iRes = 0;
 
-                switch (state)
+                StatesMachine stateMachine = (StatesMachine)state;
+
+                switch (stateMachine)
                 {
-                    case (int)StatesMachine.CurrentTime:
+                    case StatesMachine.CurrentTime:
                         iRes = GetCurrentTimeResponse(table as DataTable);
                         break;
                     default:
@@ -102,9 +108,11 @@ namespace StatisticTimeSync
                     reason = string.Empty,
                     waiting = string.Empty;
 
-                switch (state)
+                StatesMachine stateMachine = (StatesMachine)state;
+
+                switch (stateMachine)
                 {
-                    case (int)StatesMachine.CurrentTime:
+                    case StatesMachine.CurrentTime:
                         if (request == 0)
                         {
                             reason = @"разбора";

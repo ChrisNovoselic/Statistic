@@ -328,11 +328,13 @@ namespace trans_mt
         protected override int StateRequest(int /*StatesMachine*/ state)
         {
             int result = 0;
-            string msg = string.Empty;
 
-            switch (state)
+            string msg = string.Empty;
+            StatesMachine stateMachine = (StatesMachine)state;
+
+            switch (stateMachine)
             {
-                case (int)StatesMachine.PPBRValues:
+                case StatesMachine.PPBRValues:
                     ActionReport("Получение данных плана.");
                     if (indxTECComponents < allTECComponents.Count)
                         getPPBRValuesRequest(allTECComponents[indxTECComponents].tec, allTECComponents[indxTECComponents], m_curDate.Date/*, AdminTS.TYPE_FIELDS.COUNT_TYPE_FIELDS*/);
@@ -355,9 +357,11 @@ namespace trans_mt
             error = true;
             table = null;
 
-            switch (state)
+            StatesMachine stateMachine = (StatesMachine)state;
+
+            switch (stateMachine)
             {
-                case (int)StatesMachine.PPBRValues:
+                case StatesMachine.PPBRValues:
                     //bRes = GetResponse(m_indxDbInterfaceCurrent, m_listListenerIdCurrent[m_indxDbInterfaceCurrent], out error, out table/*, false*/);
                     iRes = response(m_IdListenerCurrent, out error, out table/*, false*/);
                     break;
@@ -371,9 +375,12 @@ namespace trans_mt
         protected override int StateResponse(int /*StatesMachine*/ state, object table)
         {
             int result = -1;
-            switch (state)
+
+            StatesMachine stateMachine = (StatesMachine)state;
+
+            switch (stateMachine)
             {
-                case (int)StatesMachine.PPBRValues:
+                case StatesMachine.PPBRValues:
                     delegateStopWait();
 
                     result = getPPBRValuesResponse(table as DataTable, m_curDate);
@@ -404,11 +411,13 @@ namespace trans_mt
 
             bool bClear = false;
 
-            delegateStopWait();
+            StatesMachine stateMachine = (StatesMachine)state;
 
-            switch (state)
+            delegateStopWait ();
+
+            switch (stateMachine)
             {
-                case (int)StatesMachine.PPBRValues:
+                case StatesMachine.PPBRValues:
                     if (request == 0)
                         ErrorReport("Ошибка разбора данных плана. Переход в ожидание.");
                     else

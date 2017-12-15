@@ -58,6 +58,14 @@ namespace StatisticCommon
             public System.Windows.Forms.DataGridViewColumnSortMode _sortMode;
         }
 
+        protected override int INDEX_COLUMN_BUTTON_TO_ALL
+        {
+            get
+            {
+                return (int)COLUMN_INDEX.TO_ALL;
+            }
+        }
+
         public double m_PBR_0;
 
         public DataGridViewAdminKomDisp(System.Drawing.Color foreColor, System.Drawing.Color []backgroudColors) : base(foreColor, backgroudColors)
@@ -154,11 +162,12 @@ namespace StatisticCommon
             //AutoSizeColumnsMode = DataGridViewAutoSizeColumnsMode.ColumnHeader;
             
             Columns [(int)COLUMN_INDEX.FOREIGN_CMD].DefaultCellStyle.Alignment = DataGridViewContentAlignment.MiddleCenter;
-            Columns [(int)COLUMN_INDEX.DEVIATION_TYPE].DefaultCellStyle.Alignment = DataGridViewContentAlignment.MiddleCenter;            
+            Columns [(int)COLUMN_INDEX.DEVIATION_TYPE].DefaultCellStyle.Alignment = DataGridViewContentAlignment.MiddleCenter;
             Columns [(int)COLUMN_INDEX.TO_ALL].DefaultCellStyle.BackColor = s_dgvCellStyles[(int)INDEX_CELL_STYLE.COMMON].BackColor;
             Columns [(int)COLUMN_INDEX.TO_ALL].DefaultCellStyle.ForeColor = s_dgvCellStyles [(int)INDEX_CELL_STYLE.COMMON].ForeColor;
 
             //BackColor = s_dgvCellStyles[(int)INDEX_CELL_STYLE.COMMON].BackColor;
+            InitializeColumnToAll ();
         }
 
         protected override void dgwAdminTable_CellValidated(object sender, DataGridViewCellEventArgs ev)
@@ -274,23 +283,23 @@ namespace StatisticCommon
             {
                 base.BackColor = value;
 
-                ////??? вариант є1 - оптимальный
-                //DefaultCellStyle.BackColor = value == SystemColors.Control ? SystemColors.Window : value;
-                //??? вариант є2 - допустимый(не рекомендуемый)
-                if ((INDEX_COLUMN_BUTTON_TO_ALL > 0)
-                    && (RowCount > 0))
-                    for (int col = 0; col < (int)INDEX_COLUMN_BUTTON_TO_ALL; col++)
-                        for (int i = 0; i < 24; i++) {
-                            if ((Rows [i].Cells [col].Style.BackColor.Equals (s_dgvCellStyles[(int)INDEX_CELL_STYLE.ERROR].BackColor) == false)
-                                && (Rows [i].Cells [col].Style.BackColor.Equals (s_dgvCellStyles [(int)INDEX_CELL_STYLE.ERROR].BackColor) == false))
-                            // »меютс€ ограничени€ при назначении фонового цвета дл€ €чеек
-                                Rows [i].Cells [col].Style.BackColor = value == SystemColors.Control ? SystemColors.Window : value;
-                            else
-                                ;
-                        }
-                    else
-                    // нет столбцов/строк - нет действий по изменению цвета фона €чеек
-                        ;
+                //??? вариант є1 - оптимальный
+                DefaultCellStyle.BackColor = value == SystemColors.Control ? SystemColors.Window : value;
+                ////??? вариант є2 - допустимый(не рекомендуемый)
+                //if ((INDEX_COLUMN_BUTTON_TO_ALL > 0)
+                //    && (RowCount > 0))
+                //    for (int col = 0; col < (int)INDEX_COLUMN_BUTTON_TO_ALL; col++)
+                //        for (int i = 0; i < 24; i++) {
+                //            if ((Rows [i].Cells [col].Style.BackColor.Equals (s_dgvCellStyles[(int)INDEX_CELL_STYLE.ERROR].BackColor) == false)
+                //                && (Rows [i].Cells [col].Style.BackColor.Equals (s_dgvCellStyles [(int)INDEX_CELL_STYLE.ERROR].BackColor) == false))
+                //            // »меютс€ ограничени€ при назначении фонового цвета дл€ €чеек
+                //                Rows [i].Cells [col].Style.BackColor = value == SystemColors.Control ? SystemColors.Window : value;
+                //            else
+                //                ;
+                //        }
+                //else
+                //// нет столбцов/строк - нет действий по изменению цвета фона €чеек
+                //    ;
             }
         }
     }
