@@ -21,6 +21,28 @@ namespace StatisticCommon
             SummerToWinter,
         }
 
+        ///// <summary>
+        ///// Для словаря 'm_dictHaveDates'
+        ///// </summary>
+        //protected struct HAVE_DATES
+        //{
+        //    public int id_rec;
+
+        //    public DateTime date_time;
+
+        //    public string pbr_number;
+
+        //    public int pbr_inumber;
+
+        //    public void Reset()
+        //    {
+        //        id_rec = 0;
+        //        date_time = DateTime.MinValue;
+        //        pbr_number = string.Empty;
+        //        pbr_inumber = -1;
+        //    }
+        //}
+
         protected int GetSeasonValue (int h) {
             int iRes = SEASON_BASE;
 
@@ -141,6 +163,7 @@ namespace StatisticCommon
         /// 1-я размерность - тип значений (ПБР, АДМИН), 2-я - идентификаторы записей
         /// </summary>
         protected int[,] m_arHaveDates;
+        //protected Dictionary<CONN_SETT_TYPE, List<HAVE_DATES>> m_dictHaveDates;
         /// <summary>
         /// Номер ПБР в БД
         /// </summary>
@@ -184,6 +207,10 @@ namespace StatisticCommon
             //m_ignore_connsett_data = false;
 
             m_arHaveDates = new int[(int)CONN_SETT_TYPE.PBR + 1, 24];
+            //m_dictHaveDates = new Dictionary<CONN_SETT_TYPE, List<HAVE_DATES>>() {
+            //    { CONN_SETT_TYPE.ADMIN, new List<HAVE_DATES>(24) }
+            //    , { CONN_SETT_TYPE.PBR, new List<HAVE_DATES>(24) }
+            //};
 
             allTECComponents = new List<TECComponent>();
 
@@ -474,33 +501,36 @@ namespace StatisticCommon
 
         protected virtual void clearDates(CONN_SETT_TYPE type)
         {
-            int i = 1
-                , cntHours = 24
-                , length = m_arHaveDates.Length / m_arHaveDates.Rank;
-
-            if (m_curDate.Date.Equals (HAdmin.SeasonDateTime.Date) == false)
-                if (length > 24)
-                    m_arHaveDates = null;
-                else
-                    ;
-            else
-                if (length < 25)
-                {
-                    m_arHaveDates = null;
-                    cntHours = 25;
-                }
-                else
+            int cntHours = -1
+                , length = -1
                     ;
 
-            if (m_arHaveDates == null)
-                m_arHaveDates = new int[(int)CONN_SETT_TYPE.PBR + 1, cntHours];
-            else
+            cntHours = m_curDate.Date.Equals(HAdmin.SeasonDateTime.Date) == false
+                ? 24
+                    : 25;
+            length =
+                m_arHaveDates.Length / m_arHaveDates.Rank
+                //m_dictHaveDates[type].Count
                 ;
 
-            for (i = 0; i < cntHours; i++)
-            {
-                m_arHaveDates[(int)type, i] = 0; //false;
-            }
+            if (!(length == cntHours)) {
+                if (length < cntHours)
+                    m_arHaveDates = new int[2, cntHours];
+                    //while (m_dictHaveDates[type].Count < cntHours)
+                    //    m_dictHaveDates[type].Add(new HAVE_DATES());
+                else if (length > cntHours)
+                    m_arHaveDates = new int[2, cntHours];
+                    //while (m_dictHaveDates[type].Count > cntHours)
+                    //    m_dictHaveDates[type].RemoveAt(0);
+                else
+                    // недостижимый код
+                    ;
+            } else
+                ;
+
+            for (int i = 0; i < cntHours; i ++)
+                m_arHaveDates[(int)type, i] = 0;
+            //m_dictHaveDates[type].ForEach(date => date.Reset());
         }
 
         protected void clearPPBRDates()
@@ -729,14 +759,18 @@ namespace StatisticCommon
             //return bRes;
         }
 
-        //public virtual void AbortThreadRDGValues(INDEX_WAITHANDLE_REASON reason)
-        //{
-        //    abortThreadGetValues(reason);
-        //}
-
+        /// <summary>
+        /// Возвратить признак наличия значения в БД (PPBR, ADMIN) по индексу часа
+        /// </summary>
+        /// <param name="type">Тип значения (PPBR, ADMIN)</param>
+        /// <param name="indx">Индекс часа</param>
+        /// <returns>Признак г=наличия значения</returns>
         protected bool IsHaveDates(CONN_SETT_TYPE type, int indx)
         {
-            return m_arHaveDates[(int)type, indx] > 0 ? true : false;
+            return
+                m_arHaveDates[(int)type, indx] > 0 ? true : false
+                //m_dictHaveDates[type].Exists(date => { return (date.date_time.Hour - 1) == indx; });
+                ;
         }
 
         public static int GetSeasonHourOffset(DateTime dt, int h)

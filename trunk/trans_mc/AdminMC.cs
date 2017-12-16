@@ -190,7 +190,7 @@ namespace trans_mc
                         , Environment.NewLine, equipments.Count, @"СПИСОК");
 
                 foreach (KeyValuePair<DateTime, List<int>> pair in equipments) {
-                    listEquipment += string.Format(@"[{Дата=0}, список=({1})],", pair.Key.ToString(), string.Join(", ", pair.Value));
+                    listEquipment += string.Format(@"[Дата={0}, список=({1})],", pair.Key.ToString(), string.Join(", ", pair.Value));
                 }
 
                 listEquipment = listEquipment.Remove(listEquipment.Length - 1);

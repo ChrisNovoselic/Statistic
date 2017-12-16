@@ -41,6 +41,20 @@ namespace StatisticCommon
 
             delegateMCApiHandler = mcApiHandler;
         }
+
+        public override bool EqualeConnectionSettings(object cs)
+        {
+            return string.Equals((string)m_connectionSettings, (string)cs);
+        }
+
+        public override bool IsEmptyConnectionSettings
+        {
+            get
+            {
+                return string.IsNullOrWhiteSpace((string)m_connectionSettings);
+            }
+        }
+
         /// <summary>
         /// Реализация абстрактного метода ("Задать настройки подключения") из базового класса
         /// </summary>
@@ -50,13 +64,13 @@ namespace StatisticCommon
         {
             lock (lockConnectionSettings) // изменение настроек подключения и выставление флага для переподключения - атомарная операция
             {
+                //!!! обязательный вызов
+                setConnectionSettings(mcHostName);
                 //полю "Настройки соединения" присвоить имя хоста
                 m_connectionSettings = mcHostName;
-                //необходимо повторно подключить
-                needReconnect = RECONNECT.SOFT;
             }
-
-            SetConnectionSettings();
+            //!!! обязательный вызов
+            setConnectionSettings();
         }
         /// <summary>
         /// Установить соединение с Модес-Центром и подготовить объект соединения к запросам
@@ -94,7 +108,7 @@ namespace StatisticCommon
 
             lock (lockConnectionSettings)
             {
-                if (!(needReconnect == RECONNECT.NOT_REQ)) // если перед приходом в данную точку повторно были изменены настройки, то подключения со старыми настройками не делаем
+                if (IsNeedReconnectNew == true) // если перед приходом в данную точку повторно были изменены настройки, то подключения со старыми настройками не делаем
                     return false;
                 else
                     ;
@@ -130,7 +144,7 @@ namespace StatisticCommon
                     Logging.Logg().Exception(e, string.Format(@"{0} - ...", msgLog), Logging.INDEX_MESSAGE.NOT_SET);
 
                     result = false;
-                }                
+                }
             } else
                 Logging.Logg().Debug(string.Format(@"{0} - {1}...", msgLog, @"ОШИБКА"), Logging.INDEX_MESSAGE.NOT_SET);
 

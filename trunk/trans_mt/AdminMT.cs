@@ -5,7 +5,6 @@ using System.Text;
 
 using System.Data;
 
-
 using StatisticCommon;
 using StatisticTrans;
 using StatisticTransModes;
@@ -50,7 +49,8 @@ namespace trans_mt
 
             ASUTP.Database.DbSources.Sources().Request(m_IdListenerCurrent, query);
 
-            //Logging.Logg().Debug("AdminMT::GetPPBRValuesRequest (TEC, TECComponent, DateTime, AdminTS.TYPE_FIELDS) - вЫход...: query=" + query, Logging.INDEX_MESSAGE.NOT_SET);
+            //ASUTP.Logging.Logg().Debug($"AdminMT::GetPPBRValuesRequest (TEC={allTECComponents[indxTECComponents].tec.name_shr}, TECComponent={allTECComponents[indxTECComponents].name_shr}, DateTime={dtReq.AddDays(1).ToString(@"dd-MM-yyyy HH:00")}) - вЫход...: query=[{query}]"
+            //    , ASUTP.Logging.INDEX_MESSAGE.NOT_SET);
         }
 
         protected override int getPPBRValuesResponse(DataTable table, DateTime date)
