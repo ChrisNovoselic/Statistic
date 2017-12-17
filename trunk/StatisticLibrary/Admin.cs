@@ -773,48 +773,58 @@ namespace StatisticCommon
                 ;
         }
 
+        /// <summary>
+        /// Возвратить смещение индекса часа в ~ от (не)совпадения проверяемой даты-индекса-часа и даты/времени перехода летнего/зимнего исчисления
+        /// </summary>
+        /// <param name="dt">Проверяемая дата</param>
+        /// <param name="h">??? Индекс часа зачем передавать час, если час может содержаться в дате/времени</param>
+        /// <returns>Смещение относительно отображаемого</returns>
         public static int GetSeasonHourOffset(DateTime dt, int h)
         {
             int iRes = 0;
 
-            if (dt.Date.Equals(HAdmin.SeasonDateTime.Date) == true)
-            {
-                //if (! (h < HAdmin.SeasonDateTime.Hour))
-                if (h > HAdmin.SeasonDateTime.Hour)
-                    iRes = 1;
-                else
-                    ;
-            }
-            else
-            {
-            }
+            iRes = dt.Date.Equals(HAdmin.SeasonDateTime.Date) == true
+                ? h > HAdmin.SeasonDateTime.Hour
+                    ? 1
+                        : 0
+                : 0;
 
             return iRes;
-            //return HourSeason < 0 ? 0 : !(h < HourSeason) ? 1 : 0;
         }
 
+        /// <summary>
+        /// Возвратить смещение индекса часа в ~ от (не)совпадения проверяемой-текущей даты-индекса-часа и даты/времени перехода летнего/зимнего исчисления
+        /// </summary>
+        /// <param name="h">??? Индекс часа зачем передавать час, если час может содержаться в текущей дате/времени</param>
+        /// <returns>Смещение относительно отображаемого</returns>
         public int GetSeasonHourOffset(int h)
         {
             return GetSeasonHourOffset(m_curDate, h);
         }
 
+        /// <summary>
+        /// Уточнить индекс часа в ~ от (не)совпадения установленной даты-индекса-часа и даты/времени перехода летнего/зимнего исчисления
+        /// </summary>
+        /// <param name="ssn">Признак перехода между сезонами для уточняемого индекса часа</param>
+        /// <param name="h">Ссылка на уточняемый индекс часа</param>
         protected void GetSeasonHourIndex(int ssn, ref int h) //Это ссылки на ИНДЕКСЫ, НЕ на ЧАСЫ
         {
-            //Проверка перехода сезонов
+            //Проверка даты перехода сезонов
             if (m_curDate.Date.Equals(HAdmin.SeasonDateTime.Date) == true)
+                //??? проверка индекса часа перехода сезонов
                 if (h == HAdmin.SeasonDateTime.Hour)
                     //Проверить сезон
                     if ((ssn - (int)SEASON_BASE) == (int)seasonJumpE.WinterToSummer)
                         h++;
+                    else if ((ssn - (int)SEASON_BASE) == (int)seasonJumpE.SummerToWinter)
+                    //??? ничего не делать
+                        ;
+                    else if ((ssn - (int)SEASON_BASE) == (int)seasonJumpE.None)
+                    //??? ничего не делать
+                        ;
                     else
-                        if ((ssn - (int)SEASON_BASE) == (int)seasonJumpE.SummerToWinter)
-                        {
-                        }
-                        else
-                            if ((ssn - (int)SEASON_BASE) == (int)seasonJumpE.None)
-                                ;
-                            else
-                                ;
+                    //??? недостижимый код
+                        ;
                 else
                     if (h > HAdmin.SeasonDateTime.Hour)
                         h++;
@@ -823,46 +833,6 @@ namespace StatisticCommon
             else
                 ;
         }
-
-        //protected void GetSeasonHours(ref int prev_h, ref int h) //Это ссылки на ИНДЕКСЫ, НЕ на ЧАСЫ
-        //{
-        //    int offset = 0;
-            
-        //    //Проверка перехода сезонов
-        //    if (m_curDate.Date.Equals(HAdmin.SeasonDateTime.Date) == true)
-        //    {
-        //        //Необходимо искать одинаковые часы
-        //        if (prev_h < 0)
-        //            ; //Не было ни одного предыдущего часа                                
-        //        else
-        //        {
-        //            if (prev_h == h)
-        //            {
-        //                //Найден одинаковый
-        //                offset++;
-        //            }
-        //            else
-        //            {
-        //                if (prev_h < h)
-        //                    //Норма
-        //                    //if (HAdmin.SeasonDateTime.Hour < h)
-        //                    if (! (HAdmin.SeasonDateTime.Hour > h))
-        //                        offset ++;
-        //                    else
-        //                        ;
-        //                else
-        //                    ; //Ошибка ???
-        //            }
-        //        }
-        //    }
-        //    else
-        //    {
-        //        //Оставить "как есть"
-        //    }
-
-        //    prev_h = h; //Запомнить текущий
-        //    h += offset;
-        //}
 
         public string GetFmtDatetime(int h)
         {
