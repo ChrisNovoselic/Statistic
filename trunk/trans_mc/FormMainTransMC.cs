@@ -39,18 +39,6 @@ namespace trans_mc
             m_sFileINI.AddMainPar(@"MCServiceHost", string.Empty);
             m_sFileINI.AddMainPar(@"ИгнорДатаВремя-ModesCentre", false.ToString());
 
-            //TYPE_DATABASE_CFG typeConfigDB = TYPE_DATABASE_CFG.UNKNOWN;
-            //for (TYPE_DATABASE_CFG t = TYPE_DATABASE_CFG.CFG_190; t < TYPE_DATABASE_CFG.UNKNOWN; t++)
-            //{
-            //    if (t.ToString().Contains(m_sFileINI.GetMainValueOfKey(@"ТипБДКфгНазначение")) == true)
-            //    {
-            //        typeConfigDB = t;
-            //        break;
-            //    }
-            //    else
-            //        ;
-            //}
-
             bool bIgnoreTECInUse = false;
             string strTypeField = m_sFileINI.GetMainValueOfKey(@"РДГФорматТаблицаНазначение");
             int idListener = DbMCSources.Sources().Register(s_listFormConnectionSettings[(int)StatisticCommon.CONN_SETT_TYPE.CONFIG_DB].getConnSett(), false, @"CONFIG_DB");
