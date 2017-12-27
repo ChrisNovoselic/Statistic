@@ -3510,7 +3510,7 @@ namespace StatisticCommon
                         // ChrjapiAN 27.12.2017 переход на "OBJECT/ITEM"
                         //table.Select($"OBJECT={tg.m_arIds_fact[(int)HDateTime.INTERVAL.HOURS].IdObject} AND ITEM={tg.m_arIds_fact [(int)HDateTime.INTERVAL.HOURS].IdItem}", @"DATA_DATE")
                         (from row in table.Rows.Cast<DataRow> ()
-                         where new TG.PIRAMIDA_KEY () { IdObject = (int)row ["OBJECT"], IdItem = (int)row ["ITEM"] }.Equals (tg.m_arIds_fact [(int)HDateTime.INTERVAL.HOURS])
+                         where new TG.AISKUE_KEY () { IdObject = (int)row ["OBJECT"], IdItem = (int)row ["ITEM"] }.Equals (tg.m_arIds_fact [(int)HDateTime.INTERVAL.HOURS])
                          select row).ToArray ()
                         ;
                 } catch (Exception e) {
@@ -4347,7 +4347,7 @@ namespace StatisticCommon
                 , intervalMin = m_idAISKUEParNumber == ID_AISKUE_PARNUMBER.FACT_03 ? 3 :
                     m_idAISKUEParNumber == ID_AISKUE_PARNUMBER.FACT_30 ? 30 :
                         0;
-            TG.PIRAMIDA_KEY id;
+            TG.AISKUE_KEY id;
             bool jump = false; // признак прехода между сезонами времяисчисления
 
             if (CheckNameFieldsOfTable(table, new string[] { @"ID", @"DATA_DATE", @"SEASON", @"VALUE0", "OBJECT", "ITEM" }) == false)
@@ -4527,7 +4527,7 @@ namespace StatisticCommon
                                 iRes = -1;
                                 break;
                             } else
-                                id = new TG.PIRAMIDA_KEY () { IdObject = id_object, IdItem = id_item };
+                                id = new TG.AISKUE_KEY () { IdObject = id_object, IdItem = id_item };
 
                             tgTmp = m_tec.FindTGById(id, TG.INDEX_VALUE.FACT, HDateTime.INTERVAL.MINUTES);
 

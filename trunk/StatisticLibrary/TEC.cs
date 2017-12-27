@@ -703,7 +703,7 @@ namespace StatisticCommon
                     switch (indxVal)
                     {
                         case TG.INDEX_VALUE.FACT:
-                            if ((list_TECComponents[i].m_listLowPointDev[0] as TG).m_arIds_fact[(int)id_time_type] == (TG.PIRAMIDA_KEY)id)
+                            if ((list_TECComponents[i].m_listLowPointDev[0] as TG).m_arIds_fact[(int)id_time_type] == (TG.AISKUE_KEY)id)
                                 tgRes = list_TECComponents[i].m_listLowPointDev[0] as TG;
                             else
                                 ;

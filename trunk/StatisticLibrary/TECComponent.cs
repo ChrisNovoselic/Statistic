@@ -205,24 +205,24 @@ namespace StatisticCommon
     /// </summary>
     public class TG : TECComponentBase
     {
-        public struct PIRAMIDA_KEY : IEquatable<PIRAMIDA_KEY>
+        public struct AISKUE_KEY : IEquatable<AISKUE_KEY>
         {
             public int IdObject;
 
             public int IdItem;
 
-            public bool Equals (PIRAMIDA_KEY other)
+            public bool Equals (AISKUE_KEY other)
             {
                 return this == other;
             }
 
-            public static bool operator==(PIRAMIDA_KEY pKey1, PIRAMIDA_KEY pKey2)
+            public static bool operator==(AISKUE_KEY pKey1, AISKUE_KEY pKey2)
             {
                 return (pKey1.IdObject == pKey2.IdObject)
                     && (pKey1.IdItem == pKey2.IdItem);
             }
 
-            public static bool operator != (PIRAMIDA_KEY pKey1, PIRAMIDA_KEY pKey2)
+            public static bool operator != (AISKUE_KEY pKey1, AISKUE_KEY pKey2)
             {
                 return (!(pKey1.IdObject == pKey2.IdObject))
                     || (!(pKey1.IdItem == pKey2.IdItem));
@@ -262,7 +262,7 @@ namespace StatisticCommon
         ///  для особенной ТЭЦ (Бийск) различаются 3-х и 30-ти мин идентификаторы
         ///  для остальных - совпадают
         /// </summary>
-        public PIRAMIDA_KEY[] m_arIds_fact;
+        public AISKUE_KEY[] m_arIds_fact;
         /// <summary>
         /// Строковый идентификатор в СОТИАССО
         /// </summary>
@@ -281,7 +281,7 @@ namespace StatisticCommon
         /// </summary>
         public TG()
         {
-            m_arIds_fact = new PIRAMIDA_KEY[(int)HDateTime.INTERVAL.COUNT_ID_TIME];
+            m_arIds_fact = new AISKUE_KEY[(int)HDateTime.INTERVAL.COUNT_ID_TIME];
 
             m_id_owner_gtp =
             m_id_owner_pc =
@@ -312,12 +312,12 @@ namespace StatisticCommon
             m_arIds_fact[(int)HDateTime.INTERVAL.MINUTES] =
                 //Int32.Parse(row_param_tg[@"ID_IN_ASKUE_3"].ToString())
                 // ChrjapinAN, 26.12.2017 переход на составной ключ "OBJECT/ITEM"
-                new PIRAMIDA_KEY () { IdObject = Int32.Parse (row_param_tg [@"PIRAMIDA_OBJECT"].ToString ()), IdItem = Int32.Parse (row_param_tg [@"PIRAMIDA_ITEM"].ToString ()) }
+                new AISKUE_KEY () { IdObject = Int32.Parse (row_param_tg [@"PIRAMIDA_OBJECT"].ToString ()), IdItem = Int32.Parse (row_param_tg [@"PIRAMIDA_ITEM"].ToString ()) }
                 ;
             m_arIds_fact[(int)HDateTime.INTERVAL.HOURS] =
                 //Int32.Parse(row_param_tg[@"ID_IN_ASKUE_30"].ToString())
                 // ChrjapinAN, 26.12.2017 переход на составной ключ "OBJECT/ITEM"
-                new PIRAMIDA_KEY () { IdObject = Int32.Parse (row_param_tg [@"PIRAMIDA_OBJECT"].ToString ()), IdItem = Int32.Parse (row_param_tg [@"PIRAMIDA_ITEM"].ToString ()) }
+                new AISKUE_KEY () { IdObject = Int32.Parse (row_param_tg [@"PIRAMIDA_OBJECT"].ToString ()), IdItem = Int32.Parse (row_param_tg [@"PIRAMIDA_ITEM"].ToString ()) }
                 ;
         }
     }
