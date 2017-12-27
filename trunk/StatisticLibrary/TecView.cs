@@ -3498,12 +3498,25 @@ namespace StatisticCommon
             else
                 ;
 
-            i = 0;            
+            i = 0;
             //Цикл по ТГ 
-            foreach (TECComponentBase tc in ListLowPointDev)
-            {
-                tg = tc as TG;
-                tgRows = table.Select(@"ID=" + tg.m_arIds_fact[(int)HDateTime.INTERVAL.HOURS], @"DATA_DATE");
+            foreach (TECComponentBase tc in ListLowPointDev) {
+                tgRows = new DataRow [] { };
+
+                try {
+                    tg = tc as TG;
+                    tgRows =
+                        //table.Select(@"ID=" + tg.m_arIds_fact[(int)HDateTime.INTERVAL.HOURS], @"DATA_DATE")
+                        // ChrjapiAN 27.12.2017 переход на "OBJECT/ITEM"
+                        //table.Select($"OBJECT={tg.m_arIds_fact[(int)HDateTime.INTERVAL.HOURS].IdObject} AND ITEM={tg.m_arIds_fact [(int)HDateTime.INTERVAL.HOURS].IdItem}", @"DATA_DATE")
+                        (from row in table.Rows.Cast<DataRow> ()
+                         where new TG.PIRAMIDA_KEY () { IdObject = (int)row ["OBJECT"], IdItem = (int)row ["ITEM"] }.Equals (tg.m_arIds_fact [(int)HDateTime.INTERVAL.HOURS])
+                         select row).ToArray ()
+                        ;
+                } catch (Exception e) {
+                    Logging.Logg ().Exception (e, $"TecView::getHoursFactResponse () - найти строки в таблице-результате для ТГ={tg.name_shr}...", Logging.INDEX_MESSAGE.NOT_SET);
+                } finally {
+                }
 
                 hour = -1;
                 offset_season = 0;
@@ -4329,14 +4342,15 @@ namespace StatisticCommon
             DateTime dt
                 , dtNeeded = DateTime.MinValue;
             int i, j = 0, min = 0
-                , id = 0
+                , id_object = -1, id_item = -1
                 , season = 0, need_season = 0, max_season = 0
                 , intervalMin = m_idAISKUEParNumber == ID_AISKUE_PARNUMBER.FACT_03 ? 3 :
                     m_idAISKUEParNumber == ID_AISKUE_PARNUMBER.FACT_30 ? 30 :
                         0;
+            TG.PIRAMIDA_KEY id;
             bool jump = false; // признак прехода между сезонами времяисчисления
 
-            if (CheckNameFieldsOfTable(table, new string[] { @"ID", @"DATA_DATE", @"SEASON", @"VALUE0" }) == false)
+            if (CheckNameFieldsOfTable(table, new string[] { @"ID", @"DATA_DATE", @"SEASON", @"VALUE0", "OBJECT", "ITEM" }) == false)
                 iRes = -1;
             else
                 ;
@@ -4499,13 +4513,21 @@ namespace StatisticCommon
                             else
                                 ;
 
-                            if (!int.TryParse(table.Rows[i][@"ID"].ToString(), out id)) {
+                            //if (!int.TryParse(table.Rows[i][@"ID"].ToString(), out id)) {
+                            //    //return -1;
+                            //    iRes = -1;
+                            //    break;
+                            //}
+                            //else
+                            //    ;
+                            // ChrjapinAN, 26.12.2017 переход на составной ключ "OBJECT/ITEM"
+                            if ((int.TryParse (table.Rows [i] [@"OBJECT"].ToString (), out id_object) == false)
+                                || (int.TryParse (table.Rows [i] [@"ITEM"].ToString (), out id_item) == false)) {
                                 //return -1;
                                 iRes = -1;
                                 break;
-                            }
-                            else
-                                ;
+                            } else
+                                id = new TG.PIRAMIDA_KEY () { IdObject = id_object, IdItem = id_item };
 
                             tgTmp = m_tec.FindTGById(id, TG.INDEX_VALUE.FACT, HDateTime.INTERVAL.MINUTES);
 

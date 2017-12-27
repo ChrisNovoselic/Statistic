@@ -200,81 +200,127 @@ namespace StatisticCommon
     }
 
     //public partial class TEC {
-        /// <summary>
-        /// Класс для описания компонента ТЭЦ - ТГ
-        /// </summary>
-        public class TG : TECComponentBase
+    /// <summary>
+    /// Класс для описания компонента ТЭЦ - ТГ
+    /// </summary>
+    public class TG : TECComponentBase
+    {
+        public struct PIRAMIDA_KEY : IEquatable<PIRAMIDA_KEY>
         {
-            /// <summary>
-            /// Перечисление - индексы элементов интерфейса для отображения значений ТГ
-            /// </summary>
-            public enum INDEX_VALUE : int
-            {
-                FACT //факт.
-                , TM //телемеханика
-                , LABEL_DESC //описание (краткое наименование) ТГ
-                    , COUNT_INDEX_VALUE
-            }; //Количество индексов
-            /// <summary>
-            /// Перечисление - возможные состояния ТГ
-            /// </summary>
-            public enum INDEX_TURNOnOff : int { OFF = -1, UNKNOWN, ON };
-            /// <summary>
-            /// Массив идентификаторов ТГ в АИИС КУЭ (размерность по 'ID_TIME')
-            ///  для особенной ТЭЦ (Бийск) различаются 3-х и 30-ти мин идентификаторы
-            ///  для остальных - совпадают
-            /// </summary>
-            public int[] m_arIds_fact;
-            /// <summary>
-            /// Строковый идентификатор в СОТИАССО
-            /// </summary>
-            public string m_strKKS_NAME_TM;
-            /// <summary>
-            /// Идентификаторы "владельцев" для ТГ (ГТП, Б(Гр)ЩУ)
-            /// </summary>
-            public int m_id_owner_gtp
-                , m_id_owner_pc;
-            /// <summary>
-            /// Признак состояния ТГ
-            /// </summary>
-            public INDEX_TURNOnOff m_TurnOnOff; //Состояние -1 - выкл., 0 - неизвестно, 1 - вкл. (только для AdminAlarm)
-            /// <summary>
-            /// Конструктор - основной (без параметров)
-            /// </summary>
-            public TG()
-            {
-                m_arIds_fact = new int[(int)HDateTime.INTERVAL.COUNT_ID_TIME];
+            public int IdObject;
 
-                m_id_owner_gtp =
-                m_id_owner_pc =
-                    //Неизвестный владелец
-                    -1;
-                m_TurnOnOff = INDEX_TURNOnOff.UNKNOWN; //Неизвестное состояние
-            }
-            /// <summary>
-            /// Конструктор - основной (без параметров)
-            /// </summary>
-            public TG(DataRow row_tg, DataRow row_param_tg)
-                : this()
+            public int IdItem;
+
+            public bool Equals (PIRAMIDA_KEY other)
             {
-                initTG(row_tg, row_param_tg);
+                return this == other;
             }
 
-            private void initTG(DataRow row_tg, DataRow row_param_tg)
+            public static bool operator==(PIRAMIDA_KEY pKey1, PIRAMIDA_KEY pKey2)
             {
-                name_shr = row_tg["NAME_SHR"].ToString();
-                if (DbTSQLInterface.IsNameField(row_tg, "NAME_FUTURE") == true) name_future = row_tg["NAME_FUTURE"].ToString(); else ;
-                m_id = Convert.ToInt32(row_tg["ID"]);
-                if (!(row_tg["INDX_COL_RDG_EXCEL"] is System.DBNull))
-                    m_indx_col_rdg_excel = Convert.ToInt32(row_tg["INDX_COL_RDG_EXCEL"]);
-                else
-                    ;
+                return (pKey1.IdObject == pKey2.IdObject)
+                    && (pKey1.IdItem == pKey2.IdItem);
+            }
 
-                m_strKKS_NAME_TM = row_param_tg[@"KKS_NAME"].ToString();
-                m_arIds_fact[(int)HDateTime.INTERVAL.MINUTES] = Int32.Parse(row_param_tg[@"ID_IN_ASKUE_3"].ToString());
-                m_arIds_fact[(int)HDateTime.INTERVAL.HOURS] = Int32.Parse(row_param_tg[@"ID_IN_ASKUE_30"].ToString());
+            public static bool operator != (PIRAMIDA_KEY pKey1, PIRAMIDA_KEY pKey2)
+            {
+                return (!(pKey1.IdObject == pKey2.IdObject))
+                    || (!(pKey1.IdItem == pKey2.IdItem));
+            }
+
+            public override bool Equals (object obj)
+            {
+                return base.Equals(obj);
+            }
+
+            public override int GetHashCode ()
+            {
+                return base.GetHashCode ();
+            }
+
+            public override string ToString ()
+            {
+                return $"([OBJECT]={IdObject} AND [ITEM]={IdItem})";
             }
         }
+        /// <summary>
+        /// Перечисление - индексы элементов интерфейса для отображения значений ТГ
+        /// </summary>
+        public enum INDEX_VALUE : int
+        {
+            FACT //факт.
+            , TM //телемеханика
+            , LABEL_DESC //описание (краткое наименование) ТГ
+                , COUNT_INDEX_VALUE
+        }; //Количество индексов
+        /// <summary>
+        /// Перечисление - возможные состояния ТГ
+        /// </summary>
+        public enum INDEX_TURNOnOff : int { OFF = -1, UNKNOWN, ON };
+        /// <summary>
+        /// Массив идентификаторов ТГ в АИИС КУЭ (размерность по 'ID_TIME')
+        ///  для особенной ТЭЦ (Бийск) различаются 3-х и 30-ти мин идентификаторы
+        ///  для остальных - совпадают
+        /// </summary>
+        public PIRAMIDA_KEY[] m_arIds_fact;
+        /// <summary>
+        /// Строковый идентификатор в СОТИАССО
+        /// </summary>
+        public string m_strKKS_NAME_TM;
+        /// <summary>
+        /// Идентификаторы "владельцев" для ТГ (ГТП, Б(Гр)ЩУ)
+        /// </summary>
+        public int m_id_owner_gtp
+            , m_id_owner_pc;
+        /// <summary>
+        /// Признак состояния ТГ
+        /// </summary>
+        public INDEX_TURNOnOff m_TurnOnOff; //Состояние -1 - выкл., 0 - неизвестно, 1 - вкл. (только для AdminAlarm)
+        /// <summary>
+        /// Конструктор - основной (без параметров)
+        /// </summary>
+        public TG()
+        {
+            m_arIds_fact = new PIRAMIDA_KEY[(int)HDateTime.INTERVAL.COUNT_ID_TIME];
+
+            m_id_owner_gtp =
+            m_id_owner_pc =
+                //Неизвестный владелец
+                -1;
+            m_TurnOnOff = INDEX_TURNOnOff.UNKNOWN; //Неизвестное состояние
+        }
+        /// <summary>
+        /// Конструктор - основной (без параметров)
+        /// </summary>
+        public TG(DataRow row_tg, DataRow row_param_tg)
+            : this()
+        {
+            initTG(row_tg, row_param_tg);
+        }
+
+        private void initTG(DataRow row_tg, DataRow row_param_tg)
+        {
+            name_shr = row_tg["NAME_SHR"].ToString();
+            if (DbTSQLInterface.IsNameField(row_tg, "NAME_FUTURE") == true) name_future = row_tg["NAME_FUTURE"].ToString(); else ;
+            m_id = Convert.ToInt32(row_tg["ID"]);
+            if (!(row_tg["INDX_COL_RDG_EXCEL"] is System.DBNull))
+                m_indx_col_rdg_excel = Convert.ToInt32(row_tg["INDX_COL_RDG_EXCEL"]);
+            else
+                ;
+
+            m_strKKS_NAME_TM = row_param_tg[@"KKS_NAME"].ToString();
+            m_arIds_fact[(int)HDateTime.INTERVAL.MINUTES] =
+                //Int32.Parse(row_param_tg[@"ID_IN_ASKUE_3"].ToString())
+                // ChrjapinAN, 26.12.2017 переход на составной ключ "OBJECT/ITEM"
+                new PIRAMIDA_KEY () { IdObject = Int32.Parse (row_param_tg [@"PIRAMIDA_OBJECT"].ToString ()), IdItem = Int32.Parse (row_param_tg [@"PIRAMIDA_ITEM"].ToString ()) }
+                ;
+            m_arIds_fact[(int)HDateTime.INTERVAL.HOURS] =
+                //Int32.Parse(row_param_tg[@"ID_IN_ASKUE_30"].ToString())
+                // ChrjapinAN, 26.12.2017 переход на составной ключ "OBJECT/ITEM"
+                new PIRAMIDA_KEY () { IdObject = Int32.Parse (row_param_tg [@"PIRAMIDA_OBJECT"].ToString ()), IdItem = Int32.Parse (row_param_tg [@"PIRAMIDA_ITEM"].ToString ()) }
+                ;
+        }
+    }
     //} partial class TEC
     /// <summary>
     /// Класс для описания компонента ТЭЦ (ГТП, Б(Гр)ЩУ)
@@ -383,7 +429,7 @@ namespace StatisticCommon
         public enum ID_PARAM : short { UNKNOWN = -1
             , G_PV = 1, G_OV
             , T_PV, T_OV
-            , P_PV, P_OV            
+            , P_PV, P_OV
             , G2_PV, G2_OV
             , T2_PV, T2_OV
             , }

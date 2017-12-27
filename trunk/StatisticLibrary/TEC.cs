@@ -350,7 +350,7 @@ namespace StatisticCommon
         /// Массив строк-перечислений (разделитель - запятая) с идентификаторами ТГ в системе АИИС КУЭ
         ///  массив для особенной ТЭЦ (Бийск) - 3-х, 30-ти мин идентификаторы
         /// </summary>
-        protected volatile string[] m_SensorsStrings_ASKUE = { string.Empty, string.Empty };
+        protected volatile string [] m_SensorsStrings_ASKUE;
 
         protected volatile string m_SensorsString_VZLET = string.Empty;
 
@@ -392,11 +392,9 @@ namespace StatisticCommon
         public bool m_bSensorsStrings {
             get {
                 bool bRes = false;
-                if ((m_SensorsString_SOTIASSO.Equals (string.Empty) == false) && (! (m_SensorsStrings_ASKUE == null))) {
-                    if ((m_SensorsStrings_ASKUE[(int)HDateTime.INTERVAL.HOURS].Equals(string.Empty) == false) && (m_SensorsStrings_ASKUE[(int)HDateTime.INTERVAL.MINUTES].Equals(string.Empty) == false))
-                        bRes = true;
-                    else
-                        ;
+                if ((string.IsNullOrEmpty (m_SensorsString_SOTIASSO) == false)
+                    && (Equals(m_SensorsStrings_ASKUE, null) == false)) {
+                    bRes = (string.IsNullOrEmpty (m_SensorsString_VZLET) == false) || Type == TEC_TYPE.BIYSK;
                 }
                 else
                     ;
@@ -404,6 +402,7 @@ namespace StatisticCommon
                 return bRes;
             }
         }
+
         /// <summary>
         /// Возвратить строку-перечисление с идентификаторами
         /// </summary>
@@ -654,7 +653,11 @@ namespace StatisticCommon
         {
             string strRes = prevSensors;
             //Признак необходимости использовать кавычки для строковых идентификаторов
-            string strQuote = sensor.GetType().IsPrimitive == true ? string.Empty : @"'";
+            string strQuote =
+                //sensor.GetType().IsPrimitive == true ? string.Empty : @"'"
+                // ChrjapinAN 26.12.2017 переход "OBJECT/ITEM"
+                sensor.GetType ().Equals(typeof(string)) == true ? @"'" : string.Empty
+                ;
             //Проверить наличие уже добавленных идентификаторов
             if (prevSensors.Equals(string.Empty) == false)
                 //При добавленных - установить перед очередным идентификатором разделитель (запятая, т.к. TSQL)
@@ -662,7 +665,8 @@ namespace StatisticCommon
                 {
                     case TEC.INDEX_TYPE_SOURCE_DATA.EQU_MAIN:
                         //Общий источник для всех ТЭЦ
-                        strRes += @", "; //@" OR ";
+                        // ChrjapinAN 26.12.2017 переход "OBJECT/ITEM"
+                        strRes += sensor.GetType ().Equals (typeof (string)) == true ? @", " : @" OR ";
                         break;
                     default:
                         break;
@@ -673,7 +677,7 @@ namespace StatisticCommon
             switch (typeSourceData)
             {
                 case TEC.INDEX_TYPE_SOURCE_DATA.EQU_MAIN:
-                    //Общий источник для всех ТЭЦ                    
+                    //Общий источник для всех ТЭЦ
                     strRes += strQuote + sensor.ToString() + strQuote;
                     break;
                 default:
@@ -699,7 +703,7 @@ namespace StatisticCommon
                     switch (indxVal)
                     {
                         case TG.INDEX_VALUE.FACT:
-                            if ((list_TECComponents[i].m_listLowPointDev[0] as TG).m_arIds_fact[(int)id_time_type] == (int)id)
+                            if ((list_TECComponents[i].m_listLowPointDev[0] as TG).m_arIds_fact[(int)id_time_type] == (TG.PIRAMIDA_KEY)id)
                                 tgRes = list_TECComponents[i].m_listLowPointDev[0] as TG;
                             else
                                 ;
@@ -739,9 +743,14 @@ namespace StatisticCommon
                 _listTG.Clear ();
 
             if (m_SensorsStrings_ASKUE == null)
-                m_SensorsStrings_ASKUE = new string [(int)HDateTime.INTERVAL.COUNT_ID_TIME];
-            else
-                m_SensorsStrings_ASKUE [(int)HDateTime.INTERVAL.HOURS] = m_SensorsStrings_ASKUE [(int)HDateTime.INTERVAL.MINUTES] = string.Empty;
+            // по размерности '(int)HDateTime.INTERVAL.COUNT_ID_TIME'
+                m_SensorsStrings_ASKUE = new string [] { string.Empty, string.Empty };
+            else {
+            // очистить
+                m_SensorsStrings_ASKUE [(int)HDateTime.INTERVAL.HOURS] =
+                m_SensorsStrings_ASKUE [(int)HDateTime.INTERVAL.MINUTES] =
+                    string.Empty;
+            }
 
             m_SensorsString_VZLET = string.Empty;
 
@@ -1009,15 +1018,12 @@ namespace StatisticCommon
             // при этом 30-ти мин знач. за текущий час не играют роли
             int offsetHoursParNumber = idParNumber == TecView.ID_AISKUE_PARNUMBER.FACT_03 ? 0 : 0;
 
-            return @"SELECT * FROM [dbo].[ft_get_value_askue](" + m_id + @"," +
-                (int)idParNumber + @"," +
-            //usingDate.ToString("yyyy.MM.dd") + @"," +
-                @"'" + dt.AddHours(-offsetHoursParNumber).ToString("yyyyMMdd HH:00:00") + @"'" + @"," +
-            //usingDate.AddDays(1).ToString("yyyy.MM.dd") +
-                @"'" + dt.AddHours(1 - offsetHoursParNumber).ToString("yyyyMMdd HH:00:00") + @"'" +
-                @") WHERE [ID] IN (" +
-                sen +
-                @")" +
+            return $"SELECT * FROM [dbo].[ft_get_value_askue]({m_id},{(int)idParNumber}," +
+                $"'{dt.AddHours(-offsetHoursParNumber).ToString("yyyyMMdd HH:00:00")}'" + @"," +
+                $"'{dt.AddHours(1 - offsetHoursParNumber).ToString("yyyyMMdd HH:00:00")}'" +
+                //$") WHERE IN ({sen})" +
+                // ChrjapinAN 26.12.2017 переход на "OBJECT/ITEM"
+                $") WHERE {sen}" +
                 @" ORDER BY DATA_DATE";
         }
         /// <summary>
@@ -1288,14 +1294,11 @@ namespace StatisticCommon
         }
 
         private string hoursFactCommonRequest (DateTime dt, string sen) {
-            return @"SELECT * FROM [dbo].[ft_get_value_askue](" + m_id + @"," +
-                                12 + @"," +
-                                @"'" + dt.ToString("yyyyMMdd HH:mm:00") + @"'" + @"," +
-                                @"'" + dt.AddDays(1).ToString("yyyyMMdd HH:mm:00") + @"'" +
-                                @") WHERE [ID] IN (" +
-                                sen +
-                                @")" +
-                                @" ORDER BY DATA_DATE";
+            return $"SELECT * FROM [dbo].[ft_get_value_askue]({ m_id},{12},'{dt.ToString("yyyyMMdd HH:mm:00")}','{dt.AddDays(1).ToString("yyyyMMdd HH:mm:00")}')"
+                //+ $" WHERE [ID] IN ({sen})"
+                // ChrjapinAN 26.12.2017 переход на "OBJECT/ITEM"
+                + $" WHERE {sen}"
+                + @" ORDER BY DATA_DATE";
         }
         /// <summary>
         /// Возвратить содержание запроса для получения чпсовых значений АИИС КУЭ

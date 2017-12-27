@@ -570,8 +570,8 @@ namespace Statistic
 
                 m_tecView.Stop();
 
-                m_evTimerCurrent.Reset();
-                m_timerCurrent.Dispose();
+                m_evTimerCurrent?.Reset();
+                m_timerCurrent?.Dispose();
 
                 lock (m_lockRep)
                 {
