@@ -26,6 +26,19 @@ namespace StatisticCommon
         protected System.Windows.Forms.TextBox[,] m_array_tbxTG;
         protected System.Windows.Forms.Label[,] m_array_lblTG;
 
+        // ChrjapinAN, 27.12.2017 для возможности обработки OBJECT/ITEM
+        // значения должны совпадать с значениями в БД
+        // значения для Бийской ТЭЦ виртуальные, поэтому со временем не изменяются
+        protected TG.AISKUE_KEY [] m_tg_aiskue_key_default = {
+            new TG.AISKUE_KEY() { IdObject = 6001, IdItem = 1 }
+            , new TG.AISKUE_KEY() { IdObject = -1, IdItem = -1 } // ТГ-2 выведен из состава
+            , new TG.AISKUE_KEY() { IdObject = 6002, IdItem = 1 }
+            , new TG.AISKUE_KEY() { IdObject = 6002, IdItem = 2 }
+            , new TG.AISKUE_KEY() { IdObject = 6002, IdItem = 3 }
+            , new TG.AISKUE_KEY() { IdObject = 6002, IdItem = 4 }
+            , new TG.AISKUE_KEY() { IdObject = 6002, IdItem = 5 }
+            , new TG.AISKUE_KEY() { IdObject = 6002, IdItem = 6 }
+        };
         protected int[,] m_tg_id_default = { { 9223, -1, 9431, 9430, 9433, 9435, 9434, 9432 }, { 8436, -1, 8878, 8674, 8980, 9150, 6974, 8266 } };
         protected int[,] m_tg_id;
 
@@ -414,20 +427,20 @@ namespace StatisticCommon
             List<TECComponentBase> listTG = m_tec.GetListLowPointDev(TECComponentBase.TYPE.ELECTRO);
             DbConnection conn = DbSources.Sources ().GetConnection (m_idListenerConfigDB, out err);
             
-            string queryInsert = @"INSERT INTO [dbo].[ID_TG_ASKUE_BiTEC] ([ID_TEC],[SENSORS_NAME],[LAST_UPDATE],[ID_TG],[ID_3],[ID_30]) VALUES ";
+            string queryInsert = @"INSERT INTO [dbo].[ID_TG_ASKUE_BiTEC] ([ID_TEC],[SENSORS_NAME],[LAST_UPDATE],[ID_TG],[ID_3],[ID_30],[VPIRAMIDA_OBJECT],[VPIRAMIDA_ITEM]) VALUES ";
 
             for (int j = 0; j < COUNT_TG; j++)
             {
-                if (findElement(indexes_TG_Off, j) == false)
-                {
-                    queryInsert += @"(";
-                    queryInsert += m_tec.m_id + @",";
-                    queryInsert += @"'" + SENSORS_NAME_PREFIX + (j + 1).ToString() + SENSORS_NAME_POSTFIX + @"'" + @",";
+                if (findElement (indexes_TG_Off, j) == false) {
+                    queryInsert += $"({m_tec.m_id},";
+                    queryInsert += $"'{SENSORS_NAME_PREFIX}{(j + 1).ToString ()}{SENSORS_NAME_POSTFIX}',";
                     queryInsert += @"GETDATE(),";
-                    queryInsert += m_tec.GetListLowPointDev(TECComponentBase.TYPE.ELECTRO).Find(x => x.name_shr == SENSORS_NAME_PREFIX + (j + 1).ToString()).m_id + @",";
-                    //queryInsert += m_tec.m_listTG[j].m_id + @",";
-                    queryInsert += m_array_tbxTG[(int)HDateTime.INTERVAL.MINUTES, j].Text + @",";
-                    queryInsert += m_array_tbxTG[(int)HDateTime.INTERVAL.HOURS, j].Text;
+                    queryInsert += $"{m_tec.GetListLowPointDev (TECComponentBase.TYPE.ELECTRO).Find (x => x.name_shr == SENSORS_NAME_PREFIX + (j + 1).ToString ()).m_id},";
+                    queryInsert += $"{m_array_tbxTG [(int)HDateTime.INTERVAL.MINUTES, j].Text.Trim()},";
+                    queryInsert += $"{m_array_tbxTG [(int)HDateTime.INTERVAL.HOURS, j].Text.Trim()},";
+                    // ChrjapiAN, 2712.2017 возможность обработки OBJECT/ITEM
+                    queryInsert += $"{m_tg_aiskue_key_default [j].IdObject},";
+                    queryInsert += m_tg_aiskue_key_default [j].IdItem;
                     queryInsert += @"),";
                 }
             }
