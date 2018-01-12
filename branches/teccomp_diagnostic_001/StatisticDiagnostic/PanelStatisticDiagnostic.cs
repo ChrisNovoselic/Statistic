@@ -295,7 +295,6 @@ namespace StatisticDiagnostic
                 ;
         }
 
-
         /// <summary>
         /// Класс для обращения 
         /// к БД (чтение значений параметров для отображения)
@@ -320,7 +319,7 @@ namespace StatisticDiagnostic
 
                 _filterListTEC = new int[] { 0, 10 };
 
-                ConnectionSettings connSett = new ConnectionSettings(InitTECBase.getConnSettingsOfIdSource(ListenerId, FormMainBase.s_iMainSourceData, -1, out err).Rows[0], -1);
+                ConnectionSettings connSett = new ConnectionSettings(DbTSQLConfigDatabase.GetDataTableConnSettingsOfIdSource (FormMainBase.s_iMainSourceData, -1, out err).Rows[0], -1);
 
                 m_connSett = new ConnectionSettings[2];//??? why number
                 m_connSett[(int)CONN_SETT_TYPE.LIST_SOURCE] = connSett;
@@ -526,7 +525,7 @@ namespace StatisticDiagnostic
                 err = _connConfigDb == null ? -1 : 0;
 
                 if (err == 0)
-                    return InitTEC_200.getListTEC(ref _connConfigDb, false, _filterListTEC, out err);
+                    return InitTEC_200.getListTEC(false, _filterListTEC, out err);
                 else
                     return new DataTable();
             }
@@ -541,7 +540,10 @@ namespace StatisticDiagnostic
                 err = _connConfigDb == null ? -1 : 0;
 
                 if (err == 0)
-                    return new InitTEC_200(_iListenerId, true, _filterListTEC, false).tec; //.getListTEC(ref _connConfigDb, false, _filterListTEC, out err);
+                    return new InitTEC_200(FormMainBaseWithStatusStrip.s_listFormConnectionSettings [(int)CONN_SETT_TYPE.CONFIG_DB].getConnSett ()
+                        , true
+                        , _filterListTEC
+                        , false).tec;
                 else
                     return new List<TEC> ();
             }

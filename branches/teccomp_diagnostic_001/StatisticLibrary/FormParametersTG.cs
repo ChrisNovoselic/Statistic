@@ -172,8 +172,6 @@ namespace StatisticCommon
             Close();
         }
 
-        public override void Update (out int err) { err = -1; }
-
         protected override void loadParam(bool bInit)
         {
             try
@@ -223,6 +221,12 @@ namespace StatisticCommon
             m_FileINI = new FileINI (nameSetupFileINI, false);
 
             loadParam(true);
+        }
+
+        //TODO: удалить
+        public override void Update (out int err)
+        {
+            throw new NotImplementedException ();
         }
 
         protected override void loadParam(bool bInit)
@@ -285,23 +289,18 @@ namespace StatisticCommon
         private string[] NAME_FIELDS_TIME = { "ID_3", "ID_30" };
         private const string SENSORS_NAME_PREFIX = @"ТГ"
             , SENSORS_NAME_POSTFIX = @" Pmanual"; //обязательно с пробелом
-
-        ConnectionSettings m_connSett;
-        int m_idListenerConfigDB;
+        
         TEC m_tec;
 
-        public FormParametersTG_DB(ConnectionSettings connSett, List <TEC> list_tec)
-        {
-            m_connSett = connSett;
-            m_idListenerConfigDB = -1;
-            
+        public FormParametersTG_DB(List <TEC> list_tec)
+        {            
             //Поиск Бийской ТЭЦ
             int indx_tec = -1;
             foreach (TEC t in list_tec) {
                 if (t.Type == TEC.TEC_TYPE.BIYSK)
                 {
                     indx_tec = list_tec.IndexOf (t);
-                } else { }                    
+                } else { }
             }
 
             if (indx_tec < 0)
@@ -313,21 +312,11 @@ namespace StatisticCommon
         }
 
         private void Start () {
-            m_idListenerConfigDB = DbSources.Sources().Register(m_connSett, false, @"CONFIG_DB");
+            DbTSQLConfigDatabase.ModeStaticConnectionLeave = DbTSQLInterface.ModeStaticConnectionLeaving.Yes;
         }
 
         private void Stop () {
-            DbSources.Sources().UnRegister(m_idListenerConfigDB);
-            m_idListenerConfigDB = -1;
-        }
-
-        private string getQueryParam (int ver) {
-            return @"SELECT * FROM [dbo].[ID_TG_ASKUE_BiTEC]
-                            WHERE [LAST_UPDATE] = (SELECT * FROM [dbo].[ft_Date-Versions_ID_TG_ASKUE_Bitec] (" + ver.ToString () + "))";
-        }
-
-        private string getWhereParamTG (int num) {
-            return @"[SENSORS_NAME] LIKE '" + SENSORS_NAME_PREFIX + num.ToString() + SENSORS_NAME_POSTFIX + @"'";
+            DbTSQLConfigDatabase.ModeStaticConnectionLeave = DbTSQLInterface.ModeStaticConnectionLeaving.No;
         }
 
         protected override void loadParam(bool bInit)
@@ -338,9 +327,7 @@ namespace StatisticCommon
 
             Start ();
 
-            DbConnection conn = DbSources.Sources ().GetConnection (m_idListenerConfigDB, out err);
-
-            DataTable tblTGSensors = DbTSQLInterface.Select(ref conn, getQueryParam((int)m_State), null, null, out err);
+            DataTable tblTGSensors = DbTSQLConfigDatabase.GetDataTableParametersBiyskTG ((int)m_State, out err);
             DataRow [] rowsRes;
 
             if (err == 0)
@@ -349,7 +336,7 @@ namespace StatisticCommon
                 {
                     if (findElement(indexes_TG_Off, j) == false)
                     {
-                        rowsRes = tblTGSensors.Select(getWhereParamTG(j + 1));
+                        rowsRes = tblTGSensors.Select(DbTSQLConfigDatabase.GetWhereParameterBiyskTG (j + 1, SENSORS_NAME_PREFIX, SENSORS_NAME_POSTFIX));
                         if (rowsRes.Length == 1)
                             for (int i = (int)HDateTime.INTERVAL.MINUTES; i < (int)HDateTime.INTERVAL.COUNT_ID_TIME; i++)
                                 if (int.TryParse(rowsRes[0][NAME_FIELDS_TIME[i]].ToString(), out tg_id) == true)
@@ -362,7 +349,7 @@ namespace StatisticCommon
 
                 if (! (j < COUNT_TG)) {
                     //tblTGSensors = DbTSQLInterface.Select(ref conn, getQueryParam((int)TYPE_VALUE.PREVIOUS), null, null, out err);
-                    tblTGSensors = DbTSQLInterface.Select(ref conn, getQueryParam(m_State + 1), null, null, out err);
+                    tblTGSensors = DbTSQLConfigDatabase.GetDataTableParametersBiyskTG (m_State + 1, out err);
 
                     if (err == 0) {
                         if (tblTGSensors.Rows.Count < COUNT_TG)
@@ -377,7 +364,7 @@ namespace StatisticCommon
                         {
                             if (findElement(indexes_TG_Off, j) == false)
                             {
-                                rowsRes = tblTGSensors.Select(getWhereParamTG(j + 1));
+                                rowsRes = tblTGSensors.Select(DbTSQLConfigDatabase.GetWhereParameterBiyskTG(j + 1, SENSORS_NAME_PREFIX, SENSORS_NAME_POSTFIX));
                                 if (rowsRes.Length == 1)
                                 {
                                     for (int i = (int)HDateTime.INTERVAL.MINUTES; i < (int)HDateTime.INTERVAL.COUNT_ID_TIME; i++)
@@ -414,43 +401,41 @@ namespace StatisticCommon
             }
             else
                 //Ошибка получения объекта "соединение" с БД конфигурации
-                Logging.Logg().Error(@"FormParametrsTG::loadParam (" + getQueryParam((int)m_State) + @")", Logging.INDEX_MESSAGE.NOT_SET);
+                Logging.Logg().Error(string.Format(@"FormParametrsTG::loadParam ({0}) - запрос: [{1}]..."
+                        , bInit, DbTSQLConfigDatabase.GetParametersBiyskTGQuery (m_State + 1))
+                    , Logging.INDEX_MESSAGE.NOT_SET);
 
             Stop ();
         }
 
+        //TODO: удалить
+        public override void Update (out int err)
+        {
+            throw new NotImplementedException ();
+        }
+
         protected override void saveParam()
         {
-            Start ();
-
             int err = -1;
-            List<TECComponentBase> listTG = m_tec.GetListLowPointDev(TECComponentBase.TYPE.ELECTRO);
-            DbConnection conn = DbSources.Sources ().GetConnection (m_idListenerConfigDB, out err);
-            
-            string queryInsert = @"INSERT INTO [dbo].[ID_TG_ASKUE_BiTEC] ([ID_TEC],[SENSORS_NAME],[LAST_UPDATE],[ID_TG],[ID_3],[ID_30],[VPIRAMIDA_OBJECT],[VPIRAMIDA_ITEM]) VALUES ";
+            string queryInsert = string.Empty;
+            List<TECComponentBase> listTG;
+
+            listTG = m_tec.GetListLowPointDev (TECComponentBase.TYPE.ELECTRO);
 
             for (int j = 0; j < COUNT_TG; j++)
             {
                 if (findElement (indexes_TG_Off, j) == false) {
-                    queryInsert += $"({m_tec.m_id},";
-                    queryInsert += $"'{SENSORS_NAME_PREFIX}{(j + 1).ToString ()}{SENSORS_NAME_POSTFIX}',";
-                    queryInsert += @"GETDATE(),";
-                    queryInsert += $"{m_tec.GetListLowPointDev (TECComponentBase.TYPE.ELECTRO).Find (x => x.name_shr == SENSORS_NAME_PREFIX + (j + 1).ToString ()).m_id},";
-                    queryInsert += $"{m_array_tbxTG [(int)HDateTime.INTERVAL.MINUTES, j].Text.Trim()},";
-                    queryInsert += $"{m_array_tbxTG [(int)HDateTime.INTERVAL.HOURS, j].Text.Trim()},";
-                    // ChrjapiAN, 2712.2017 возможность обработки OBJECT/ITEM
-                    queryInsert += $"{m_tg_aiskue_key_default [j].IdObject},";
-                    queryInsert += m_tg_aiskue_key_default [j].IdItem;
-                    queryInsert += @"),";
+                    queryInsert += DbTSQLConfigDatabase.GetParameterBiyskTGInsertQuery (m_tec.m_id
+                        , $"'{SENSORS_NAME_PREFIX}{(j + 1).ToString ()}{SENSORS_NAME_POSTFIX}',"
+                        , m_tec.GetListLowPointDev (TECComponentBase.TYPE.ELECTRO).Find (x => x.name_shr == SENSORS_NAME_PREFIX + (j + 1).ToString ()).m_id
+                        , int.Parse(m_array_tbxTG [(int)HDateTime.INTERVAL.MINUTES, j].Text.Trim ())
+                        , int.Parse(m_array_tbxTG [(int)HDateTime.INTERVAL.HOURS, j].Text.Trim ())
+                        , m_tg_aiskue_key_default [j].IdObject
+                        , m_tg_aiskue_key_default [j].IdItem);
                 }
             }
 
-            //Удалить лишнюю запятую...
-            queryInsert = queryInsert.Substring (0, queryInsert.Length - 1);
-
-            DbTSQLInterface.ExecNonQuery (ref conn, queryInsert, null, null, out err);
-
-            Stop ();
+            DbTSQLConfigDatabase.ExecNonQuery (queryInsert, out err);
         }
     }
 }

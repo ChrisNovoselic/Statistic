@@ -363,7 +363,7 @@ namespace CommonAux
             // зарегистрировать соединение/получить идентификатор соединения
             iListenerId = DbSources.Sources().Register(FormMain.s_listFormConnectionSettings[(int)CONN_SETT_TYPE.CONFIG_DB].getConnSett(), false, @"CONFIG_DB");            
 
-            m_GetDataFromDB.InitListTEC(iListenerId);
+            m_GetDataFromDB.InitListTEC();
 
             m_GetDataFromDB.InitChannels (iListenerId);
 

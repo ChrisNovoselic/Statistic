@@ -160,15 +160,15 @@ namespace StatisticAlarm
                         break;
                     default:
                         //Успех... пост-инициализация
-                        formParameters = new FormParameters_DB(s_listFormConnectionSettings[(int)CONN_SETT_TYPE.CONFIG_DB].getConnSett());
+                        DbTSQLConfigDatabase.SetConnectionSettings (s_listFormConnectionSettings [(int)CONN_SETT_TYPE.CONFIG_DB].getConnSett ());
+                        formParameters = new FormParameters_DB();
 
                         updateParametersSetup ();
 
                         s_iMainSourceData = Int32.Parse(formParameters.m_arParametrSetup[(int)FormParameters.PARAMETR_SETUP.MAIN_DATASOURCE]);
 
                         //Создать "рабочую" панель
-                        m_panelAlarm = new PanelAlarm(idListenerConfigDB
-                            , new HMark(new int [] {(int)CONN_SETT_TYPE.ADMIN, (int)CONN_SETT_TYPE.PBR, (int)CONN_SETT_TYPE.DATA_AISKUE, (int)CONN_SETT_TYPE.DATA_SOTIASSO})
+                        m_panelAlarm = new PanelAlarm(new HMark(new int [] {(int)CONN_SETT_TYPE.ADMIN, (int)CONN_SETT_TYPE.PBR, (int)CONN_SETT_TYPE.DATA_AISKUE, (int)CONN_SETT_TYPE.DATA_SOTIASSO})
                             , MODE.SERVICE
                             , SystemColors.ControlText
                             , SystemColors.Control);

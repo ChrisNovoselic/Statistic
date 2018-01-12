@@ -19,10 +19,10 @@ namespace StatisticCommon
             , POLL_TIME, ERROR_DELAY, MAX_ATTEMPT, WAITING_TIME, WAITING_COUNT,
             MAIN_DATASOURCE, MAIN_PRIORITY,
             /*ALARM_USE, */ ALARM_TIMER_UPDATE, ALARM_EVENT_RETRY, ALARM_TIMER_BEEP, ALARM_SYSTEMMEDIA_TIMERBEEP
-            , USERS_DOMAIN_NAME, USERS_ID_TEC, USERS_ID_ROLE                                    
+            , USERS_DOMAIN_NAME, USERS_ID_TEC, USERS_ID_ROLE
             , SEASON_DATETIME, SEASON_ACTION
             //, GRINVICH_OFFSET_DATETIME
-            , APP_VERSION, APP_VERSION_QUERY_INTERVAL            
+            , APP_VERSION, APP_VERSION_QUERY_INTERVAL
             , KOMDISP_FOLDER_CSV
             , KOMDISP_SHEDULE_START_EXPORT_PBR, KOMDISP_SHEDULE_PERIOD_EXPORT_PBR /* 19/09/2017 ChrjapinAN */
             , LK_FOLDER_CSV /* 19/09/2017 ChrjapinAN */
@@ -41,6 +41,7 @@ namespace StatisticCommon
             , COMMON_AUX_PATH
             , COUNT_PARAMETR_SETUP
         };
+
         protected static string[] NAME_PARAMETR_SETUP = {
             "Polling period", "Error delay", "Max attempts count", @"Waiting time", @"Waiting count"
             , @"Main DataSource", @"Main Priority"
@@ -67,6 +68,7 @@ namespace StatisticCommon
             , @"Mode Registration"
             , @"COMMON_AUX_PATH"
         };
+
         protected static string[] NAMESI_PARAMETR_SETUP = {
             "сек", "сек", "ед.", @"мсек", @"мсек"
             , @"ном", @"стр",
@@ -93,6 +95,7 @@ namespace StatisticCommon
             , @"стр"
             , @"стр"
         };
+
         protected Dictionary<int, string> m_arParametrSetupDefault;
         public Dictionary<int, string> m_arParametrSetup;
 
@@ -162,6 +165,11 @@ namespace StatisticCommon
             this.btnReset.Click += new System.EventHandler(this.btnReset_Click);
 
             mayClose = false;
+        }
+
+        public override void Update (out int err)
+        {
+            throw new NotImplementedException ();
         }
 
         protected void setDataGUI(bool bInit)
@@ -250,8 +258,6 @@ namespace StatisticCommon
             loadParam(true);
         }
 
-        public override void Update(out int err) { err = -1; }
-
         protected override void loadParam(bool bInit)
         {
             string strDefault = string.Empty;
@@ -277,7 +283,7 @@ namespace StatisticCommon
                 m_FileINI.WriteString(NAME_SECTION_MAIN, NAME_PARAMETR_SETUP[(int)i], m_arParametrSetup[(int)i]);
         }
 
-        public override void SaveParamKey(string column, string value)
+        public override void SaveParamKey(string key, string value)
         {
             throw new NotImplementedException();
         }
@@ -290,64 +296,49 @@ namespace StatisticCommon
 
     public partial class FormParameters_DB : FormParameters
     {
-        private ConnectionSettings m_connSett;
-        private DbConnection m_dbConn;
+        //private ConnectionSettings m_connSett;
+        //private DbConnection m_dbConn;
 
         //public FormParameters_DB(int idListener)
-        public FormParameters_DB(ConnectionSettings connSett)
+        public FormParameters_DB()
             : base()
         {
-            m_connSett = connSett;
-
             int err = -1;
-            int idListener = DbSources.Sources().Register(m_connSett, false, @"CONFIG_DB");
-            m_dbConn = DbSources.Sources().GetConnection(idListener, out err);
 
-            if (err == 0)
-                loadParam(true);
-            else
-                ;
-
-            DbSources.Sources().UnRegister(idListener);
-        }
-
-        public override void Update(out int err)
-        {
-            err = -1;
-            int idListener = DbSources.Sources().Register(m_connSett, false, @"CONFIG_DB");
-
-            Update(idListener, out idListener);
-
-            DbSources.Sources().UnRegister(idListener);
+            loadParam(true, out err);
         }
 
         public void Update(int idListener, out int err)
         {
-            m_dbConn = DbSources.Sources().GetConnection(idListener, out err);
+            loadParam(false, out err);
 
-            if (err == 0)
-            {
-                loadParam(false);
+            //???Прочитать обновляемые параметры для ТЭЦ
 
-                //???Прочитать обновляемые параметры для ТЭЦ
+            //???Прочитать обновляемые параметры ...
 
-                //???Прочитать обновляемые параметры ...
+            //???Куда размещать обновляемые параметры
+        }
 
-                //???Куда размещать обновляемые параметры
-            }
+        protected override void loadParam (bool bInit)
+        {
+            int err = -1;
+
+            loadParam (bInit, out err);
+
+            if (!(err == 0))
+                throw new Exception (@"Загрузка параметров конфигурации...");
             else
                 ;
         }
 
-        protected override void loadParam(bool bInit)
+        private void loadParam(bool bInit, out int err)
         {
-            int err = -1;
+            err = -1;
 
             string query = string.Empty;
-            //query = @"SELECT * FROM [dbo].[setup] WHERE [KEY]='" + key + @"'";
-            query = string.Format(@"SELECT * FROM setup");
-            DataTable table = DbTSQLInterface.Select(ref m_dbConn, query, null, null, out err);
+            DataTable table = DbTSQLConfigDatabase.GetDataTableSetupParameters(out err);
             DataRow[] rowRes;
+
             if (err == (int)DbTSQLInterface.Error.NO_ERROR)
                 if (!(table == null))
                 {
@@ -369,7 +360,7 @@ namespace StatisticCommon
                                 break;
                             case 0:
                                 m_arParametrSetup [(int)indx] = m_arParametrSetupDefault [(int)indx];
-                                query += getWriteStringRequest (NAME_PARAMETR_SETUP [(int)indx], m_arParametrSetup [(int)indx], true) + @";";
+                                query += DbTSQLConfigDatabase.GetSetupParameterQuery (NAME_PARAMETR_SETUP [(int)indx], m_arParametrSetup [(int)indx], DbTSQLInterface.QUERY_TYPE.INSERT) + @";";
                                 break;
                             default:
                                 break;
@@ -379,7 +370,7 @@ namespace StatisticCommon
                     // проверить различия между параметрами в коде и таблице [setup] в БД конфигурации
                     if (query.Equals(string.Empty) == false)
                     // дополнить таблицу в БД конфигурации отсутствующими параметрами и их значениями по умолчанию
-                        DbTSQLInterface.ExecNonQuery(ref m_dbConn, query, null, null, out err);
+                        DbTSQLConfigDatabase.ExecNonQuery(query, out err);
                     else
                         ;
                 }
@@ -394,22 +385,18 @@ namespace StatisticCommon
         protected override void saveParam()
         {
             int err = -1;
-            int idListener = DbSources.Sources().Register(m_connSett, false, @"CONFIG_DB");
             string query = string.Empty;
-            m_dbConn = DbSources.Sources().GetConnection(idListener, out err);
 
             if (err == 0)
                 for (PARAMETR_SETUP i = PARAMETR_SETUP.POLL_TIME; i < PARAMETR_SETUP.COUNT_PARAMETR_SETUP; i++)
-                    query += getWriteStringRequest(NAME_PARAMETR_SETUP[(int)i], m_arParametrSetup[(int)i], false) + @";";
+                    query += DbTSQLConfigDatabase.GetSetupParameterQuery(NAME_PARAMETR_SETUP[(int)i], m_arParametrSetup[(int)i], DbTSQLInterface.QUERY_TYPE.UPDATE) + @";";
             else
                 ;
 
             if (query.Equals(string.Empty) == false)
-                DbTSQLInterface.ExecNonQuery(ref m_dbConn, query, null, null, out err);
+                DbTSQLConfigDatabase.ExecNonQuery(query, out err);
             else
                 ;
-
-            DbSources.Sources().UnRegister(idListener);
         }
 
         public override void IncIGOVersion()
@@ -420,88 +407,31 @@ namespace StatisticCommon
             SaveParamKey("IGO Version",version.ToString());
         }
 
-        public override void SaveParamKey(string column, string value)
+        public override void SaveParamKey(string key, string value)
         {
             int err = -1;
-            int idListener = DbSources.Sources().Register(m_connSett, false, @"CONFIG_DB");
             string query = string.Empty;
-            m_dbConn = DbSources.Sources().GetConnection(idListener, out err);
 
-            query += getWriteStringRequest(column, value, false) + @";";
+            query += DbTSQLConfigDatabase.GetSetupParameterQuery (key, value, DbTSQLInterface.QUERY_TYPE.UPDATE) + @";";
 
             if (query.Equals(string.Empty) == false)
-                DbTSQLInterface.ExecNonQuery(ref m_dbConn, query, null, null, out err);
+                DbTSQLConfigDatabase.ExecNonQuery(query, out err);
             else
                 ;
-
-            DbSources.Sources().UnRegister(idListener);
         }
 
         private string readString (string key, string valDef, out int err) {
-            return ReadString (ref m_dbConn, key, valDef, out err);
+            return ReadString (key, valDef, out err);
         }
 
-        public static string ReadString(ref DbConnection dbConn, int key, string valDef, out int err)
+        public static string ReadString(int key, string valDef, out int err)
         {
-            return ReadString(ref dbConn, NAME_PARAMETR_SETUP[key], valDef, out err);
+            return ReadString(NAME_PARAMETR_SETUP[key], valDef, out err);
         }
 
-        public static string ReadString(ref DbConnection dbConn, string key, string valDef, out int err)
+        public static string ReadString(string key, string valDef, out int err)
         {
-            string strRes = valDef;
-            err = -1;
-            DataTable table = null;
-
-            string query = string.Empty;
-            //query = @"SELECT * FROM [dbo].[setup] WHERE [KEY]='" + key + @"'";
-            query = string.Format(@"SELECT * FROM setup WHERE [KEY]='{0}'", key);
-            table = DbTSQLInterface.Select(ref dbConn, query, null, null, out err);
-            if (err == (int)DbTSQLInterface.Error.NO_ERROR)
-                if (!(table == null))
-                    if (table.Rows.Count == 1)
-                        strRes = table.Rows[0][@"Value"].ToString().Trim();
-                    else
-                        err = (int)DbTSQLInterface.Error.TABLE_ROWS_0;
-                else
-                    err = (int)DbTSQLInterface.Error.TABLE_NULL;
-            else
-                ;
-
-            return strRes;
-        }
-        
-        /// <summary>
-        /// Идентификаторы типа значения в таблице конфигурации (соответсвует таблице [techsite_cfg-2.X.X].[dbo].[units])
-        /// </summary>
-        private enum UNITS { UNKNOWN = -1, BOOL = 8, STRING, INTEGER, FLOAT = 12 }
-
-        private string getWriteStringRequest (string key, object val, bool bInsert)
-        {
-            int err = -1;
-            string strRes = string.Empty;
-            UNITS id_unit = UNITS.UNKNOWN;
-
-            id_unit = val.GetType ().Equals (typeof (bool)) == true ? UNITS.BOOL
-                : val.GetType ().Equals (typeof (string)) == true ? UNITS.STRING
-                    : val.GetType ().Equals (typeof (int)) == true ? UNITS.INTEGER
-                        : new List<Type> () { typeof (double), typeof (float), typeof (decimal) }.Contains(val.GetType ()) == true ? UNITS.FLOAT
-                            : UNITS.UNKNOWN;
-
-            if (bInsert == false)
-                //query = @"UPDATE [dbo].[setup] SET [VALUE] = '" + val + @"' WHERE [KEY]='" + key + @"'";
-                strRes = string.Format (@"UPDATE setup SET [VALUE]='{0}', [LAST_UPDATE]=GETDATE() WHERE [KEY]='{1}'", val, key);
-            else
-                if (!(id_unit == UNITS.UNKNOWN))
-                    strRes = string.Format (@"INSERT INTO [setup] ([ID], [VALUE],[KEY],[LAST_UPDATE],[ID_UNIT]) VALUES (({0}),'{1}','{2}',GETDATE(),{3})"
-                        , "SELECT MAX([ID]) + 1 FROM [setup]"
-                        , val
-                        , key
-                        , (int)id_unit
-                    );
-                else
-                    ASUTP.Logging.Logg().Error($"FormParametersDB.getWriteStringRequest(KEY={key}, VALUE={val.ToString()}) - не удалось определить тип значения ...", ASUTP.Logging.INDEX_MESSAGE.NOT_SET);
-
-            return strRes;
+            return DbTSQLConfigDatabase.ReadSetupParameter (key, valDef, out err);
         }
     }
 }

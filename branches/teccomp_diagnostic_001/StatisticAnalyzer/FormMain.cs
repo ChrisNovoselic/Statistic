@@ -113,7 +113,6 @@ namespace StatisticAnalyzer
             bool bRes = true;
             msgError = string.Empty;
 
-            int idListener = -1;
             List<TEC> listTEC;
 
             if (s_listFormConnectionSettings[(int)CONN_SETT_TYPE.CONFIG_DB].Ready == 0)
@@ -135,13 +134,12 @@ namespace StatisticAnalyzer
                         break;
                     default:
                         //Успех... пост-инициализация
-                        formParameters = new FormParameters_DB(s_listFormConnectionSettings[(int)CONN_SETT_TYPE.CONFIG_DB].getConnSett());
+                        DbTSQLConfigDatabase.SetConnectionSettings (s_listFormConnectionSettings [(int)CONN_SETT_TYPE.CONFIG_DB].getConnSett ());
+                        formParameters = new FormParameters_DB();
                         updateParametersSetup();
                         s_iMainSourceData = Int32.Parse(formParameters.m_arParametrSetup[(int)FormParameters.PARAMETR_SETUP.MAIN_DATASOURCE]);
 
-                        idListener = DbSources.Sources ().Register (s_listFormConnectionSettings [(int)CONN_SETT_TYPE.CONFIG_DB].getConnSett (), false, @"CONFIG_DB");
-                        listTEC = new InitTEC_200 (idListener, true, new int [] { 0, (int)TECComponent.ID.GTP }, false).tec;
-                        DbSources.Sources ().UnRegister (idListener);
+                        listTEC = new InitTEC_200 (true, new int [] { 0, (int)TECComponent.ID.GTP }, false).tec;
 
                         if (this is FormMain_TCPIP)
                             m_panel = new PanelAnalyzer_TCPIP (listTEC, SystemColors.ControlText, SystemColors.Control);

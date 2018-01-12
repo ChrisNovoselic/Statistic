@@ -82,8 +82,10 @@ namespace StatisticCommon
         /// <summary>
         /// Перечисление - тип режима
         /// </summary>
-        public enum MODE_TECCOMPONENT : ushort { TEC, GTP, PC, TG
-            , ANY };
+        public enum MODE_TECCOMPONENT : short { Unknown = -1
+            , TEC, GTP, PC, TG
+                , ANY
+        };
         /// <summary>
         /// Тип вкладки  из инструментария "администратор-диспетчер"
         /// </summary>
@@ -277,21 +279,23 @@ namespace StatisticCommon
             return HMark.IsMarked (checkMode, (int) mode);
         }
 
-        public static string getPrefixMode(int indx)
+        public static string getPrefixMode(MODE_TECCOMPONENT indx)
         {
-            String[] arPREFIX_COMPONENT = { "TEC", "GTP", "PC", "TG" };
-
-            return !(indx < 0) ? arPREFIX_COMPONENT[indx] : @"VYVOD";
+            return !(indx < 0) ? indx.ToString() : @"VYVOD";
         }
         /// <summary>
         /// Возвратить наименование режима компонентов ТЭЦ по индексу
         /// </summary>
         /// <param name="indx">Индекс режима</param>
         /// <returns>Строка - наименование режима</returns>
-        public static string getNameMode (Int16 indx) {
+        public static string getNameMode (MODE_TECCOMPONENT indx) {
             string [] nameModes = {"ТЭЦ", "ГТП", "ЩУ", "Поблочно", "Неизвестно"};
 
-            return !(indx < 0) ? nameModes[indx] : @"Выводы";
+            return !(indx < 0)
+                ? (int)indx < nameModes.Length
+                    ? nameModes[(int)indx]
+                        : nameModes [(int)indx - 1]
+                            : @"Выводы";
         }
         /// <summary>
         /// Возвратить наименование элемента списка (специальная вкладка)

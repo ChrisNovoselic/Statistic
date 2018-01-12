@@ -78,11 +78,11 @@ namespace StatisticAlarm
         /// <param name="markQueries">Массив признаков кстановления связи с тем или иным источником данных</param>
         /// <param name="mode">Режим работы панели</param>
         /// <param name="backColor">Цвет фона панели и всех дочерних элементов управления</param>
-        public PanelAlarm (int iListenerConfigDB, ASUTP.Core.HMark markQueries, MODE mode, Color foreColor, Color backColor)
+        public PanelAlarm (ASUTP.Core.HMark markQueries, MODE mode, Color foreColor, Color backColor)
             : base(MODE_UPDATE_VALUES.AUTO, foreColor, backColor)
         {
             //Инициализация собственных значений
-            initialize(iListenerConfigDB, markQueries, mode);
+            initialize(markQueries, mode);
 
             findControl(INDEX_CONTROL.DGV_EVENTS.ToString()).BackColor =
             findControl (INDEX_CONTROL.DGV_DETAIL.ToString ()).BackColor =
@@ -93,26 +93,24 @@ namespace StatisticAlarm
         /// Конструктор - дополнительный (с параметрами)
         /// </summary>
         /// <param name="container">См. документацию на 'Control'</param>
-        /// <param name="iListenerConfigDB">Идентификатор установленного соединения с БД</param>
         /// <param name="markQueries">Массив признаков кстановления связи с тем или иным источником данных</param>
         /// <param name="mode">Режим работы панели</param>
         /// <param name="foreColor">Цвет шрифта</param>
         /// <param name="backColor">Цвет фона</param>
-        public PanelAlarm (IContainer container, int iListenerConfigDB, HMark markQueries, MODE mode, Color foreColor, Color backColor)
+        public PanelAlarm (IContainer container, HMark markQueries, MODE mode, Color foreColor, Color backColor)
             : base (MODE_UPDATE_VALUES.AUTO, foreColor, backColor)
         {
             container.Add(this);
             //Инициализация собственных значений
-            initialize(iListenerConfigDB, markQueries, mode);
+            initialize(markQueries, mode);
         }
 
         /// <summary>
         /// Инициализация собственных параметров
         /// </summary>
-        /// <param name="iListenerConfigDB">Идентификатор установленного соединения с БД</param>
         /// <param name="markQueries">Массив признаков кстановления связи с тем или иным источником данных</param>
         /// <param name="mode">Режим работы панели</param>
-        private int initialize(int iListenerConfigDB, ASUTP.Core.HMark markQueries, MODE mode)
+        private int initialize(ASUTP.Core.HMark markQueries, MODE mode)
         {
             int err = -1 //Признак выполнения метода/функции
                          ////Зарегистрировать соединение/получить идентификатор соединения
@@ -128,10 +126,9 @@ namespace StatisticAlarm
                 bWorkChecked = (HStatisticUsers.IsAllowed((int)HStatisticUsers.ID_ALLOWED.AUTO_ALARM_KOMDISP)
                     || (mode == MODE.SERVICE)) && (! (mode == MODE.VIEW));
                 //Инициализация списка с ТЭЦ
-                m_list_tec = new InitTEC_200(iListenerConfigDB, true, new int[] { 0, (int)TECComponent.ID.LK }, false).tec;
+                m_list_tec = new InitTEC_200(true, new int[] { 0, (int)TECComponent.ID.LK }, false).tec;
                 //Инициализация
-                connSett = new ConnectionSettings(InitTECBase.getConnSettingsOfIdSource(iListenerConfigDB
-                        , FormMainBase.s_iMainSourceData
+                connSett = new ConnectionSettings(DbTSQLConfigDatabase.GetDataTableConnSettingsOfIdSource (FormMainBase.s_iMainSourceData
                         , -1
                         , out err).Rows[0]
                     , -1);

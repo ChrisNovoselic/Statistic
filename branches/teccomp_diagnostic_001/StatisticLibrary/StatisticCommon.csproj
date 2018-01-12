@@ -132,6 +132,7 @@
     <Compile Include="AdminTS_NSS.cs">
       <SubType>Code</SubType>
     </Compile>
+    <Compile Include="DbTSQLConfigDatabase.cs" />
     <Compile Include="dgwTables.cs">
       <SubType>Component</SubType>
     </Compile>
