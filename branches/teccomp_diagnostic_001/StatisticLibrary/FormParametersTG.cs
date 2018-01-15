@@ -128,7 +128,7 @@ namespace StatisticCommon
         {
             m_State = 0;
             
-            loadParam(false);            
+            loadParam(false);
 
             base.buttonCancel_Click(sender, e);
         }
@@ -311,12 +311,18 @@ namespace StatisticCommon
             loadParam(true);
         }
 
-        private void Start () {
+        private void start () {
+#if MODE_STATIC_CONNECTION_LEAVING
             DbTSQLConfigDatabase.ModeStaticConnectionLeave = DbTSQLInterface.ModeStaticConnectionLeaving.Yes;
+#else
+#endif
         }
 
-        private void Stop () {
+        private void stop () {
+#if MODE_STATIC_CONNECTION_LEAVING
             DbTSQLConfigDatabase.ModeStaticConnectionLeave = DbTSQLInterface.ModeStaticConnectionLeaving.No;
+#else
+#endif
         }
 
         protected override void loadParam(bool bInit)
@@ -325,9 +331,9 @@ namespace StatisticCommon
                 , err = -1
                 , tg_id;
 
-            Start ();
+            start ();
 
-            DataTable tblTGSensors = DbTSQLConfigDatabase.GetDataTableParametersBiyskTG ((int)m_State, out err);
+            DataTable tblTGSensors = DbTSQLConfigDatabase.DbConfig().GetDataTableParametersBiyskTG ((int)m_State, out err);
             DataRow [] rowsRes;
 
             if (err == 0)
@@ -349,7 +355,7 @@ namespace StatisticCommon
 
                 if (! (j < COUNT_TG)) {
                     //tblTGSensors = DbTSQLInterface.Select(ref conn, getQueryParam((int)TYPE_VALUE.PREVIOUS), null, null, out err);
-                    tblTGSensors = DbTSQLConfigDatabase.GetDataTableParametersBiyskTG (m_State + 1, out err);
+                    tblTGSensors = DbTSQLConfigDatabase.DbConfig().GetDataTableParametersBiyskTG (m_State + 1, out err);
 
                     if (err == 0) {
                         if (tblTGSensors.Rows.Count < COUNT_TG)
@@ -405,7 +411,7 @@ namespace StatisticCommon
                         , bInit, DbTSQLConfigDatabase.GetParametersBiyskTGQuery (m_State + 1))
                     , Logging.INDEX_MESSAGE.NOT_SET);
 
-            Stop ();
+            stop ();
         }
 
         //TODO: удалить
@@ -435,7 +441,7 @@ namespace StatisticCommon
                 }
             }
 
-            DbTSQLConfigDatabase.ExecNonQuery (queryInsert, out err);
+            DbTSQLConfigDatabase.DbConfig().ExecNonQuery (queryInsert, out err);
         }
     }
 }

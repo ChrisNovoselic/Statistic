@@ -51,7 +51,7 @@ namespace StatisticAnalyzer
             Thread.CurrentThread.CurrentUICulture =
                 ASUTP.Helper.ProgramBase.ss_MainCultureInfo;
 
-            InitializeComponent();            
+            InitializeComponent();
         }
 
         private void FormMainAnalyzer_OnEvtPanelClose(object sender, EventArgs e)
@@ -134,12 +134,13 @@ namespace StatisticAnalyzer
                         break;
                     default:
                         //Успех... пост-инициализация
-                        DbTSQLConfigDatabase.SetConnectionSettings (s_listFormConnectionSettings [(int)CONN_SETT_TYPE.CONFIG_DB].getConnSett ());
+                        //!!! Один экземпляр для всего приложения на весь срок выполнения
+                        new DbTSQLConfigDatabase (s_listFormConnectionSettings [(int)CONN_SETT_TYPE.CONFIG_DB].getConnSett ());
                         formParameters = new FormParameters_DB();
                         updateParametersSetup();
                         s_iMainSourceData = Int32.Parse(formParameters.m_arParametrSetup[(int)FormParameters.PARAMETR_SETUP.MAIN_DATASOURCE]);
 
-                        listTEC = new InitTEC_200 (true, new int [] { 0, (int)TECComponent.ID.GTP }, false).tec;
+                        listTEC = DbTSQLConfigDatabase.DbConfig().InitTEC (true, new int [] { 0, (int)TECComponent.ID.GTP }, false);
 
                         if (this is FormMain_TCPIP)
                             m_panel = new PanelAnalyzer_TCPIP (listTEC, SystemColors.ControlText, SystemColors.Control);

@@ -10,11 +10,12 @@ using ASUTP.Forms;
 
 namespace StatisticCommon
 {
-    public class InitTECBase : DbTSQLConfigDatabase
+    partial class DbTSQLConfigDatabase
     {
-        public class ListTEC : List <TEC>
+        public class ListTEC : List<TEC>
         {
-            public ListTEC () : base ()
+            public ListTEC ()
+                : base ()
             {
             }
 
@@ -23,39 +24,21 @@ namespace StatisticCommon
             }
         }
 
-        #region Неиспользуемые конструкторы
-        //protected InitTECBase ()
+        //private static ListTEC _tec;
+
+        //public ListTEC CopyTEC
         //{
+        //    get
+        //    {
+        //        ListTEC tecRes = new ListTEC ();
+
+        //        _tec.ForEach (t => {
+        //            tecRes.Add (new TEC(t));
+        //        });
+
+        //        return tecRes;
+        //    }
         //}
-
-        //public InitTECBase(int iListenerId)
-        //{
-        //    int err = -1;
-        //    m_connConfigDB = DbSources.Sources().GetConnection(iListenerId, out err);
-        //}
-        #endregion
-
-        public ListTEC tec;
-
-        public InitTECBase (ConnectionSettings connSett)
-            : base (connSett)
-        {
-        }
-    }
-
-    public class InitTEC_200 : InitTECBase
-    {
-        /// <summary>
-        /// Список ВСЕХ компонентов (ТЭЦ, ГТП, ЩУ, ТГ)
-        /// </summary>
-        /// <param name="bIgnoreTECInUse">Признак использования поля [TEC_LIST].[InUse]</param>
-        /// <param name="arTECLimit">Массив-диапазон допустимых идентификаторов ТЭЦ</param>
-        /// <param name="bUseData">Признак возможности обращения к данным компонентов собираемого списка</param>
-        public InitTEC_200 (bool bIgnoreTECInUse, int [] arTECLimit, bool bUseData)
-            : this (FormMainBaseWithStatusStrip.s_listFormConnectionSettings [(int)CONN_SETT_TYPE.CONFIG_DB].getConnSett ()
-                , bIgnoreTECInUse, arTECLimit, bUseData)
-        {
-        }
 
         /// <summary>
         /// Список ВСЕХ компонентов (ТЭЦ, ГТП, ЩУ, ТГ)
@@ -64,17 +47,37 @@ namespace StatisticCommon
         /// <param name="bIgnoreTECInUse">Признак использования поля [TEC_LIST].[InUse]</param>
         /// <param name="arTECLimit">Массив-диапазон допустимых идентификаторов ТЭЦ</param>
         /// <param name="bUseData">Признак возможности обращения к данным компонентов собираемого списка</param>
-        public InitTEC_200 (ConnectionSettings connSett, bool bIgnoreTECInUse, int [] arTECLimit, bool bUseData)
-            : base (connSett)
+        public List<TEC> InitTEC (ConnectionSettings connSett, bool bIgnoreTECInUse, int [] arTECLimit, bool bUseData)
+        {
+            SetConnectionSettings (connSett);
+
+            return InitTEC (bIgnoreTECInUse, arTECLimit, bUseData);
+        }
+
+        /// <summary>
+        /// Список ВСЕХ компонентов (ТЭЦ, ГТП, ЩУ, ТГ)
+        /// </summary>
+        /// <param name="bIgnoreTECInUse">Признак использования поля [TEC_LIST].[InUse]</param>
+        /// <param name="arTECLimit">Массив-диапазон допустимых идентификаторов ТЭЦ</param>
+        /// <param name="bUseData">Признак возможности обращения к данным компонентов собираемого списка</param>
+        public List<TEC> InitTEC (bool bIgnoreTECInUse, int [] arTECLimit, bool bUseData)
         {
             //Logging.Logg().Debug("InitTEC::InitTEC (3 параметра) - вход...");
 
-            ModeStaticConnectionLeave = ModeStaticConnectionLeaving.Yes;
+            ListTEC tecRes;
 
+#if MODE_STATIC_CONNECTION_LEAVING
+            ModeStaticConnectionLeave = ModeStaticConnectionLeaving.Yes;
+#endif
             int err = -1;
             TEC newTECItem = null;
 
-            tec = new ListTEC ();
+            tecRes = new ListTEC ();
+            //if (Equals(_tec, null) == true)
+            //    _tec = new ListTEC ();
+            //else {
+            //    return CopyTEC;
+            //}
 
             int indx = -1
                 //, indx_tec = -1
@@ -105,19 +108,19 @@ namespace StatisticCommon
                             //if ((HAdmin.DEBUG_ID_TEC == -1) || (HAdmin.DEBUG_ID_TEC == Convert.ToInt32 (list_tec.Rows[i]["ID"]))) {
                             //Создание объекта ТЭЦ
                             newTECItem = new TEC(list_tec.Rows[i], bUseData);
-                            tec.Add(newTECItem);
+                            tecRes.Add(newTECItem);
                             //indx_tec = tec.Count - 1;
 
                             EventTECListUpdate += newTECItem/*tec[indx_tec]*/.PerformUpdate;
 
                             indx = -1;
-                            initTECConnectionSettings(i, list_tec.Rows[i]);
+                            initTECConnectionSettings(newTECItem, list_tec.Rows[i]);
                             // получить перечень ТГ со всеми значениями всех свойств
                             all_PARAM_DETAIL = getALL_PARAM_TG(0, out err);
 
                             if (err == 0)
                             {
-                                #region Добавить ТГ для ТЭЦ
+#region Добавить ТГ для ТЭЦ
                                 try
                                 {
                                     list_lowPointDev = getListTG(newTECItem.m_id, out err);
@@ -142,12 +145,12 @@ namespace StatisticCommon
                                 } catch (Exception e) {
                                     Logging.Logg().Exception(e, @"InitTEC_200.ctor () - ...", Logging.INDEX_MESSAGE.NOT_SET);
                                 }
-                                #endregion
+#endregion
 
-                                #region Добавить компоненты ТЭЦ (ГТП, ЩУ)
+#region Добавить компоненты ТЭЦ (ГТП, ЩУ)
                                 for (FormChangeMode.MODE_TECCOMPONENT c = FormChangeMode.MODE_TECCOMPONENT.GTP; !(c > FormChangeMode.MODE_TECCOMPONENT.PC); c++)
                                 {
-                                    list_TECComponents = getListTECComponent(FormChangeMode.getPrefixMode(c), newTECItem.m_id, out err);
+                                    list_TECComponents = GetListTECComponent(FormChangeMode.getPrefixMode(c), newTECItem.m_id, out err);
 
                                     //Logging.Logg().Debug("InitTEC::InitTEC (3 параметра) - list_TECComponents.Count = " + list_TECComponents.Rows.Count);
 
@@ -182,7 +185,7 @@ namespace StatisticCommon
 
                             if (err == 0)
                             {// ВАЖНО! первоначально добавляются компоненты нижнего уровня
-                                #region Добавить параметры ВЫВОДов для ТЭЦ
+#region Добавить параметры ВЫВОДов для ТЭЦ
                                 list_lowPointDev = getALL_ParamVyvod(newTECItem.m_id, out err);
 
                                 if (err == 0)
@@ -195,10 +198,10 @@ namespace StatisticCommon
                                     }
                                 else
                                     ; //Ошибка получения списка параметров ВЫВОДов
-                                #endregion
+#endregion
 
-                                #region Добавить компоненты ТЭЦ (ВЫВОДы)
-                                list_TECComponents = getListTECComponent(FormChangeMode.getPrefixMode(FormChangeMode.MODE_TECCOMPONENT.Unknown), newTECItem.m_id, out err);
+#region Добавить компоненты ТЭЦ (ВЫВОДы)
+                                list_TECComponents = GetListTECComponent(FormChangeMode.getPrefixMode(FormChangeMode.MODE_TECCOMPONENT.Unknown), newTECItem.m_id, out err);
 
                                 if (err == 0)
                                     foreach (DataRow r in list_TECComponents.Rows)
@@ -225,13 +228,17 @@ namespace StatisticCommon
                 else
                     ; //Ошибка получения списка ТЭЦ
             }
-            catch (Exception e)
-            { Logging.Logg().Exception(e, "Ошибка получения параметров для всех ТГ", Logging.INDEX_MESSAGE.NOT_SET); }
-
+            catch (Exception e) {
+                Logging.Logg().Exception(e, "Ошибка получения параметров для всех ТГ", Logging.INDEX_MESSAGE.NOT_SET);
+            }
+#if MODE_STATIC_CONNECTION_LEAVING
             ModeStaticConnectionLeave = ModeStaticConnectionLeaving.No;
-
+#endif
             //Logging.Logg().Debug("InitTEC::InitTEC (3 параметра) - вЫход...");
+
+            return tecRes;
         }
+
         /// <summary>
         /// Список компонентов (ТЭЦ, ГТП, ЩУ, ТГ) в ~ от индекса компонента
         /// </summary>
@@ -240,12 +247,11 @@ namespace StatisticCommon
         /// <param name="bIgnoreTECInUse">Признак использования поля [TEC_LIST].[InUse]</param>
         /// <param name="arTECLimit">Массив-диапазон допустимых идентификаторов ТЭЦ</param>
         /// <param name="bUseData">Признак возможности обращения к данным компонентов собираемого списка</param>
-        public InitTEC_200(FormChangeMode.MODE_TECCOMPONENT indx, bool bIgnoreTECInUse, int []arTECLimit, bool bUseData) //indx = {GTP или PC}
-            :  base (FormMainBaseWithStatusStrip.s_listFormConnectionSettings [(int)CONN_SETT_TYPE.CONFIG_DB].getConnSett ())
+        public List<TEC> InitTEC(FormChangeMode.MODE_TECCOMPONENT indx, bool bIgnoreTECInUse, int []arTECLimit, bool bUseData) //indx = {GTP или PC}
         {
             //Logging.Logg().Debug("InitTEC::InitTEC (4 параметра) - вход...");
 
-            tec = new ListTEC ();
+            ListTEC tecRes = new ListTEC ();
 
             int err = 0
                 , id_comp = -1
@@ -271,13 +277,13 @@ namespace StatisticCommon
                     //if ((HAdmin.DEBUG_ID_TEC == -1) || (HAdmin.DEBUG_ID_TEC == Convert.ToInt32 (list_tec.Rows[i]["ID"]))) {
 
                         //Создание объекта ТЭЦ
-                        tec.Add(new TEC(list_tec.Rows[i], bUseData));
+                        tecRes.Add(new TEC(list_tec.Rows[i], bUseData));
 
-                        EventTECListUpdate += tec[i].PerformUpdate;
+                        EventTECListUpdate += tecRes[i].PerformUpdate;
 
-                        initTECConnectionSettings(i, list_tec.Rows[i]);
+                        initTECConnectionSettings(tecRes [i], list_tec.Rows[i]);
                         // получить список компонентов, с учетом типа компонентов по 'indx'
-                        list_TECComponents = getListTECComponent(FormChangeMode.getPrefixMode(indx), Convert.ToInt32(list_tec.Rows[i]["ID"]), out err);
+                        list_TECComponents = GetListTECComponent(FormChangeMode.getPrefixMode(indx), Convert.ToInt32(list_tec.Rows[i]["ID"]), out err);
 
                         if (err == 0)
                             if (!(indx < 0))
@@ -285,8 +291,8 @@ namespace StatisticCommon
                                 for (indx_comp = 0; indx_comp < list_TECComponents.Rows.Count; indx_comp++)
                                 {
                                     id_comp = Convert.ToInt32 (list_TECComponents.Rows[indx_comp][@"ID"]);
-                                    tec[i].AddTECComponent(list_TECComponents.Rows[indx_comp]);
-                                    tec[i].InitTG(indx_comp, all_PARAM_DETAIL.Select(@"ID_" + FormChangeMode.getPrefixMode(indx) + @"=" + id_comp));
+                                    tecRes[i].AddTECComponent(list_TECComponents.Rows[indx_comp]);
+                                    tecRes[i].InitTG(indx_comp, all_PARAM_DETAIL.Select(@"ID_" + FormChangeMode.getPrefixMode(indx) + @"=" + id_comp));
                                 }
                             }
                             else
@@ -294,8 +300,8 @@ namespace StatisticCommon
                                 for (indx_comp = 0; indx_comp < list_TECComponents.Rows.Count; indx_comp++)
                                 {
                                     id_comp = Convert.ToInt32(list_TECComponents.Rows[indx_comp][@"ID"]);
-                                    tec[i].AddTECComponent(list_TECComponents.Rows[indx_comp]);
-                                    tec[i].InitParamVyvod(-1, all_PARAM_DETAIL.Select($"ID_{FormChangeMode.getPrefixMode(indx)}={id_comp}"));
+                                    tecRes[i].AddTECComponent(list_TECComponents.Rows[indx_comp]);
+                                    tecRes[i].InitParamVyvod(-1, all_PARAM_DETAIL.Select($"ID_{FormChangeMode.getPrefixMode(indx)}={id_comp}"));
                                 }
                             }
                         else
@@ -305,13 +311,15 @@ namespace StatisticCommon
                 ; //Ошибка получения списка ТЭЦ
 
             //Logging.Logg().Debug("InitTEC::InitTEC (4 параметра) - вЫход...");
+
+            return tecRes;
         }
         /// <summary>
         /// Инициализация параметров для соединения с БД всех источников данных, используемых для сбора отображения
         /// </summary>
         /// <param name="indx_tec">Индекс ТЭЦ в списке текущего объекта</param>
         /// <param name="rTec">Строка таблицы [TEC_LIST], содержащая необходимые значения параметров</param>
-        private void initTECConnectionSettings(int indx_tec, DataRow rTec)
+        private void initTECConnectionSettings(TEC tec, DataRow rTec)
         {
             int err = -1
                 , idConnSett = -1;
@@ -322,11 +330,11 @@ namespace StatisticCommon
                 if ((rTec[pair.Value] is DBNull) == false)
                 {
                     idConnSett = Convert.ToInt32(rTec[pair.Value]);
-                    tableConnSett = DbTSQLConfigDatabase.GetDataTableConnSettingsOfIdSource (idConnSett, -1, out err);
+                    tableConnSett = DbTSQLConfigDatabase.DbConfig().GetDataTableConnSettingsOfIdSource (idConnSett, -1, out err);
 
                     if (err == 0)
                     {
-                        err = tec[indx_tec].connSettings(tableConnSett, (int)pair.Key);
+                        err = tec.connSettings(tableConnSett, (int)pair.Key);
 
                         switch (err)
                         {
@@ -357,11 +365,11 @@ namespace StatisticCommon
                                 ;
                     }
                     else
-                        Logging.Logg().Warning(string.Format(@"InitTEC_200::InitTEC_200 () - " + @"не зарегистрирован источник с идентификатором {0} для ТЭЦ.ID={1}, либо для него не установлен пароль" + @"...", pair.Key, tec[indx_tec].m_id)
+                        Logging.Logg().Warning(string.Format(@"InitTEC_200::InitTEC_200 () - " + @"не зарегистрирован источник с идентификатором {0} для ТЭЦ.ID={1}, либо для него не установлен пароль" + @"...", pair.Key, tec.m_id)
                             , Logging.INDEX_MESSAGE.NOT_SET);
                 }
                 else
-                    Logging.Logg().Warning(string.Format(@"InitTEC_200::InitTEC_200 () - " + @"не установлен идентификатор источника данных {0} для ТЭЦ.ID={1}" + @"...", pair.Key, tec[indx_tec].m_id)
+                    Logging.Logg().Warning(string.Format(@"InitTEC_200::InitTEC_200 () - " + @"не установлен идентификатор источника данных {0} для ТЭЦ.ID={1}" + @"...", pair.Key, tec.m_id)
                         , Logging.INDEX_MESSAGE.NOT_SET);
         }
         /// <summary>
@@ -383,7 +391,7 @@ namespace StatisticCommon
                 ;
         }
 
-        public static void OnTECUpdate (object obj, EventArgs ev)
+        public void OnTECUpdate (object obj, EventArgs ev)
         {
             TEC tec = obj as TEC;
             int iListenerId = (ev as TECListUpdateEventArgs).m_iListenerId
@@ -401,7 +409,7 @@ namespace StatisticCommon
                     ////??? обновление параметров ТЭЦ (например: m_IdSOTIASSOLinkSourceTM)
                     //tec.Update (tableRes);
 
-                    tableRes = getListTECComponent(ref connConfigDB, @"GTP", tec.m_id, out err);
+                    tableRes = GetListTECComponent(ref connConfigDB, @"GTP", tec.m_id, out err);
                     // обновление параметров ГТП
                     if (err == 0) {
                         err = tableRes.Columns.IndexOf ("KoeffAlarmPcur") > 0 ? 0 : -2; // ранее возвращалось значение "-1"

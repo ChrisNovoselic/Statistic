@@ -1006,7 +1006,7 @@ namespace Statistic
                 table_TEC.Columns.AddRange(columns);
             }
 
-            m_list_TEC = new InitTEC_200(true, new int [] { 0, (int)TECComponent.ID.GTP }, false).tec;
+            m_list_TEC = DbTSQLConfigDatabase.DbConfig ().InitTEC (true, new int [] { 0, (int)TECComponent.ID.GTP }, false);
             table_TEC.Rows.Clear();
 
             foreach (TEC t in m_list_TEC)
@@ -1490,7 +1490,7 @@ namespace Statistic
                                 break;
                         }
 
-                        //db_sostav.Edit(getTableName(i), keys, m_arr_origTable[(int)i], m_arr_editTable[(int)i], out err);                    
+                        //db_sostav.Edit(getTableName(i), keys, m_arr_origTable[(int)i], m_arr_editTable[(int)i], out err);
                         DbTSQLInterface.RecUpdateInsertDelete (ref dbConn, getTableName (i), keys, string.Empty, m_arr_origTable [(int)i], m_arr_editTable [(int)i], out err);
 
                         if (!(err == 0))

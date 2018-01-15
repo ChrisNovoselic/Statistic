@@ -106,7 +106,7 @@ namespace Statistic
         /// </summary>
         private Dictionary<CONN_SETT_TYPE, HZedGraphControl> m_dictZGraphValues;
 
-        private List<StatisticCommon.TEC> m_listTEC;        
+        private List<StatisticCommon.TEC> m_listTEC;
         /// <summary>
         /// Панель для активных элементов управления
         /// </summary>
@@ -237,7 +237,7 @@ namespace Statistic
             stctrAIISKUE = new SplitContainer(); // для вспомогательного (таблица + график) контейнера (вертикальный)
             stctrAIISKUE.Dock = DockStyle.Fill;
             stctrAIISKUE.Orientation = Orientation.Vertical;
-            stctrSOTIASSO = new SplitContainer(); // для вспомогательного (таблица + график) контейнера (вертикальный)            
+            stctrSOTIASSO = new SplitContainer(); // для вспомогательного (таблица + график) контейнера (вертикальный)
             stctrSOTIASSO.Dock = DockStyle.Fill;
             stctrSOTIASSO.Orientation = Orientation.Vertical;
 
@@ -646,7 +646,7 @@ namespace Statistic
                     break;
                 case HandlerSignalQueue.EVENT.CUR_VALUES:
                     draw(type);
-                    //m_threadDraw.RunWorkerAsync(type);                    
+                    //m_threadDraw.RunWorkerAsync(type);
                     break;
                 case HandlerSignalQueue.EVENT.CHECK_VALUES:
                     kks_code = (string)ev.par[2];

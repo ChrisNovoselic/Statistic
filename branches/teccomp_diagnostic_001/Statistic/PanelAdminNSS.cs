@@ -310,7 +310,7 @@ namespace Statistic
         protected override void createAdmin ()
         {
             //Возможность редактирования значений ПБР: НЕ разрешено управление (изменение разрешения на запись), запись разрешена
-            m_admin = new AdminTS_NSS (new bool[] { false, true });                    
+            m_admin = new AdminTS_NSS (new bool[] { false, true });
         }
     }
 }

@@ -128,7 +128,7 @@ namespace Statistic
                 this.SetColumnSpan(ctrl, 3);
                 this.SetRowSpan(ctrl, 1);
                 // Обработчики событий
-                (ctrl as DateTimePicker).ValueChanged += new EventHandler(curDatetime_OnValueChanged);                
+                (ctrl as DateTimePicker).ValueChanged += new EventHandler(curDatetime_OnValueChanged);
 
                 // список для выбора ТЭЦ
                 ctrl = new ComboBox();
@@ -140,7 +140,7 @@ namespace Statistic
                 this.SetColumnSpan(ctrl, 3);
                 this.SetRowSpan(ctrl, 1);
                 // Обработчики событий
-                (ctrl as ComboBox).SelectedIndexChanged += new EventHandler(cbxTECList_OnSelectionIndexChanged);                
+                (ctrl as ComboBox).SelectedIndexChanged += new EventHandler(cbxTECList_OnSelectionIndexChanged);
 
                 // список для часовых поясов
                 ctrl = new ComboBox();

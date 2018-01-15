@@ -256,7 +256,7 @@ namespace Statistic {
                 {
                     //Дата/время
                     if (this.dgwAdminTable.Columns.Count == ((int)DataGridViewAdminLK.DESC_INDEX.COUNT_COLUMN + 1)) { //Только при добавлении 1-го столбца
-                        this.dgwAdminTable.Rows [i].Cells [0].Value = date.AddHours (i + 1).ToString (@"dd-MM-yyyy HH:mm", CultureInfo.InvariantCulture);                        
+                        this.dgwAdminTable.Rows [i].Cells [0].Value = date.AddHours (i + 1).ToString (@"dd-MM-yyyy HH:mm", CultureInfo.InvariantCulture);
                     } else
                         ;
                     // цвет 0-го столбца изменяем на случай изменения цветовой гаммы приложения
@@ -301,7 +301,7 @@ namespace Statistic {
         /// </summary>
         public override void ClearTables()
         {
-            ((DataGridViewAdminLK)this.dgwAdminTable).ClearTables();//Очистка DataGridView  
+            ((DataGridViewAdminLK)this.dgwAdminTable).ClearTables();//Очистка DataGridView
 
             if (((AdminTS_LK)m_admin).m_listPrevRDGValues != null)
                 ((AdminTS_LK)m_admin).m_listPrevRDGValues.Clear();//Очистка списка предыдущих значений
@@ -443,7 +443,7 @@ namespace Statistic {
         protected override void createAdmin ()
         {
             //Возможность редактирования значений ПБР: НЕ разрешено управление (изменение разрешения на запись), запись разрешена
-            m_admin = new PanelAdminLK.AdminTS_LK (new bool[] { false, true });                    
+            m_admin = new PanelAdminLK.AdminTS_LK (new bool[] { false, true });
         }
 
         /// <summary>

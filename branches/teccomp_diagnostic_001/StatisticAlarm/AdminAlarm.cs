@@ -43,7 +43,7 @@ namespace StatisticAlarm
         /// Строка - наименование (звукового) файла
         ///  , воспроизводящегося при оповещении пользователя оо событии сигнализации
         /// </summary>
-        public static string FNAME_ALARM_SYSTEMMEDIA_TIMERBEEP = string.Empty;       
+        public static string FNAME_ALARM_SYSTEMMEDIA_TIMERBEEP = string.Empty;
         /// <summary>
         /// Обработчик события - регистрация события сигнализации от 'TecView'
         /// </summary>
@@ -104,7 +104,7 @@ namespace StatisticAlarm
             foreach (StatisticCommon.TEC t in listTEC) {
                 if ((DEBUG_ID_TEC == -1) || (DEBUG_ID_TEC == t.m_id)) {
                     m_listTecView.Add(new StatisticAlarm.TecViewAlarm(/*StatisticCommon.TecView.TYPE_PANEL.ADMIN_ALARM, */-1, -1));
-                    indxTecView = m_listTecView.Count - 1;                    
+                    indxTecView = m_listTecView.Count - 1;
                     m_listTecView[indxTecView].InitTEC(new List<StatisticCommon.TEC> { t }, markQueries);
                     m_listTecView[indxTecView].updateGUI_Fact = new IntDelegateIntIntFunc(m_listTecView[indxTecView].AlarmRegistred);
                     m_listTecView[indxTecView].EventReg += new TecViewAlarm.AlarmTecViewEventHandler(onEventReg);
@@ -155,7 +155,7 @@ namespace StatisticAlarm
                         ;
                 else
                     // повторять, ожидая обработки БД
-                    m_timerAlarm.Change(PanelStatistic.POOL_TIME * 1000, System.Threading.Timeout.Infinite);                    
+                    m_timerAlarm.Change(PanelStatistic.POOL_TIME * 1000, System.Threading.Timeout.Infinite);
             }
         }
 

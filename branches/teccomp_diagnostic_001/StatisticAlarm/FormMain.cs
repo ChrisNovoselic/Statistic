@@ -160,7 +160,8 @@ namespace StatisticAlarm
                         break;
                     default:
                         //Успех... пост-инициализация
-                        DbTSQLConfigDatabase.SetConnectionSettings (s_listFormConnectionSettings [(int)CONN_SETT_TYPE.CONFIG_DB].getConnSett ());
+                        //!!! Один экземпляр для всего приложения на весь срок выполнения
+                        new DbTSQLConfigDatabase (s_listFormConnectionSettings [(int)CONN_SETT_TYPE.CONFIG_DB].getConnSett ());
                         formParameters = new FormParameters_DB();
 
                         updateParametersSetup ();
@@ -497,7 +498,7 @@ namespace StatisticAlarm
         /// </summary>
         private void InitializeComponent()
         {
-            System.ComponentModel.ComponentResourceManager resources = new System.ComponentModel.ComponentResourceManager(typeof(FormMain));            
+            System.ComponentModel.ComponentResourceManager resources = new System.ComponentModel.ComponentResourceManager(typeof(FormMain));
             this.components = new System.ComponentModel.Container();
 
             this.AutoScaleMode = System.Windows.Forms.AutoScaleMode.Font;
@@ -518,12 +519,12 @@ namespace StatisticAlarm
             (this.MainMenuStrip.Items[0] as ToolStripMenuItem).DropDownItems[0].Click += new EventHandler(fMenuItemExit_Click);
             (this.MainMenuStrip.Items[1] as ToolStripMenuItem).DropDownItems.Add(new ToolStripMenuItem(@"БД конфигурации"));
             (this.MainMenuStrip.Items[1] as ToolStripMenuItem).DropDownItems[0].Click += new EventHandler(fMenuItemDBConfig_Click);
-            (this.MainMenuStrip.Items[2] as ToolStripMenuItem).Click += new EventHandler(fMenuItemAbout_Click);            
+            (this.MainMenuStrip.Items[2] as ToolStripMenuItem).Click += new EventHandler(fMenuItemAbout_Click);
             //Создать панель для размещения "рабочих" панелей
             _panelMain = new Panel ();
             _panelMain.Location = new Point(0, this.MainMenuStrip.Height);
             _panelMain.Size = new System.Drawing.Size(this.ClientSize.Width, this.ClientSize.Height - this.MainMenuStrip.Height - this.m_statusStripMain.Height);
-            _panelMain.Anchor = (AnchorStyles)(((AnchorStyles.Left | AnchorStyles.Top) | AnchorStyles.Right) | AnchorStyles.Bottom);            
+            _panelMain.Anchor = (AnchorStyles)(((AnchorStyles.Left | AnchorStyles.Top) | AnchorStyles.Right) | AnchorStyles.Bottom);
             //_panelMain.Controls.Add (m_panelAlarm); // здесь добавляется null - панель еще не создана (см. 'Initialize(string )')
 
             this.SuspendLayout ();
@@ -563,7 +564,7 @@ namespace StatisticAlarm
             new ToolStripSeparator (),
             this.закрытьToolStripMenuItem});
             this.contextMenuStripNotifyIcon.Name = "contextMenuStripNotifyIcon";
-            this.contextMenuStripNotifyIcon.Size = new System.Drawing.Size(153, 76);            
+            this.contextMenuStripNotifyIcon.Size = new System.Drawing.Size(153, 76);
 
             //Добавить обработчики событий
             this.Load += new EventHandler(FormMain_Load);

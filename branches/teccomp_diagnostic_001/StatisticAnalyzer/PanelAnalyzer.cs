@@ -35,7 +35,7 @@ namespace StatisticAnalyzer
             private TableLayoutPanel panelTabPageLogging;
 
             protected System.Windows.Forms.CheckBox[] checkBoxs;
-            protected System.Windows.Forms.ListBox listTabVisible;            
+            protected System.Windows.Forms.ListBox listTabVisible;
 
             private System.Windows.Forms.Button buttonUpdate;
         
@@ -81,7 +81,7 @@ namespace StatisticAnalyzer
                 this.dgvClient = new System.Windows.Forms.DataGridView();
 
                 this.tabPageLogging = new System.Windows.Forms.TabPage();
-                this.panelTabPageLogging = new TableLayoutPanel ();                
+                this.panelTabPageLogging = new TableLayoutPanel ();
                 this.dgvLogMessage = new System.Windows.Forms.DataGridView();
                 this.tabPageTabes = new System.Windows.Forms.TabPage();
                 this.panelTabPageTabes = new TableLayoutPanel();
@@ -776,7 +776,7 @@ namespace StatisticAnalyzer
                 this.tabPageLogging.PerformLayout();
                 this.panelTabPageLogging.ResumeLayout(false);
                 this.panelTabPageLogging.PerformLayout ();
-                ((System.ComponentModel.ISupportInitialize)(this.dgvFilterTypeMessage)).EndInit();                
+                ((System.ComponentModel.ISupportInitialize)(this.dgvFilterTypeMessage)).EndInit();
                 ((System.ComponentModel.ISupportInitialize)(this.dgvDatetimeStart)).EndInit();
                 ((System.ComponentModel.ISupportInitialize)(this.dgvLogMessage)).EndInit();
                 this.tabPageTabes.ResumeLayout(false);
@@ -2505,7 +2505,7 @@ namespace StatisticAnalyzer
 
             #region Фомирование и выполнение запроса для получения списка открытых вкладок у пользователя
 
-            DbConnection connConfigDB = DbSources.Sources().GetConnection(idListener, out err);            
+            DbConnection connConfigDB = DbSources.Sources().GetConnection(idListener, out err);
 
             string query = @"SELECT [ID_EXT],[IS_ROLE],[ID_UNIT],[VALUE] FROM [techsite_cfg-2.X.X].[dbo].[profiles] where ";
 

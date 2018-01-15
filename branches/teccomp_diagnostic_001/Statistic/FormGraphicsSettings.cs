@@ -194,15 +194,15 @@ namespace Statistic {
 
             InitializeComponent ();
 
-            bool bGroupBoxSourceData = false;                                                           //переменной bGroupBoxSourceData присваиваем false
-            CONN_SETT_TYPE cstGroupBoxSourceData = CONN_SETT_TYPE.AISKUE_3_MIN;                         //переменной cstGroupBoxSourceData присваиваем константу=1 (AISKUE_3_MIN)
+            bool bGroupBoxSourceData = false;                                       //переменной bGroupBoxSourceData присваиваем false
+            CONN_SETT_TYPE cstGroupBoxSourceData = CONN_SETT_TYPE.AISKUE_3_MIN;     //переменной cstGroupBoxSourceData присваиваем константу=1 (AISKUE_3_MIN)
             //Проверка условия прав доступа к возможности смены источника данных
             if (HStatisticUsers.IsAllowed ((int)HStatisticUsers.ID_ALLOWED.SOURCEDATA_CHANGED) == true)
             //if (m_formMain.m_users.IsAllowed(HStatisticUsers.ID_ALLOWED.SOURCEDATA_CHANGED) == true)
             //if ((HStatisticUsers.RoleIsAdmin == true) || (HStatisticUsers.RoleIsKomDisp == true))
             {
-                bGroupBoxSourceData = true;                        //переменной bGroupBoxSourceData присваиваем true (групповой источник данных)
-                cstGroupBoxSourceData = CONN_SETT_TYPE.COSTUMIZE;  //переменной cstGroupBoxSourceData присваиваем константу=4 (по умолчанию установлен COSTUMIZE)
+                bGroupBoxSourceData = true;                                         //переменной bGroupBoxSourceData присваиваем true (групповой источник данных)
+                cstGroupBoxSourceData = CONN_SETT_TYPE.COSTUMIZE;                   //переменной cstGroupBoxSourceData присваиваем константу=4 (по умолчанию установлен COSTUMIZE)
 
                 //кнопки АИСКУЭ+СОТИАССО и СОТИАССО(3 мин) становятся активными (да вроде все активные..?)
                 m_arRbtnSourceData [(int)CONN_SETT_TYPE.AISKUE_PLUS_SOTIASSO].Enabled = HStatisticUsers.IsAllowed ((int)HStatisticUsers.ID_ALLOWED.SOURCEDATA_ASKUE_PLUS_SOTIASSO);
@@ -296,7 +296,7 @@ namespace Statistic {
         /// <param name="e">Аргумент события</param>
         private void cbxScale_CheckedChanged (object sender, EventArgs e)
         {
-            scale = cbxScale.Checked;                              //полю присвоить проверенное  значение
+            scale = cbxScale.Checked;                               //полю присвоить проверенное  значение
             delegateUpdateActiveGui ((int)TYPE_UPDATEGUI.SCALE);    //обновить активную настройку (масштаб)
         }
         /// <summary>
@@ -396,7 +396,9 @@ namespace Statistic {
                 //else
                 //    ;
             } else
-                Logging.Logg ().Error(string.Format("FormGraphicsSettings::labelColorShema_ValueChanged () - ИНДЕКС={0}", ((INDEX_COLOR_SHEMA)((sender as Control).Tag)).ToString()), Logging.INDEX_MESSAGE.NOT_SET);            
+                Logging.Logg ().Error(string.Format("FormGraphicsSettings::labelColorShema_ValueChanged () - ИНДЕКС={0}"
+                        , ((INDEX_COLOR_SHEMA)((sender as Control).Tag)).ToString())
+                    , Logging.INDEX_MESSAGE.NOT_SET);
         }
 
         /// <summary>
@@ -407,7 +409,7 @@ namespace Statistic {
         /// <param name="e">Аргумент события</param>
         private void GraphicsSettings_FormClosing (object sender, FormClosingEventArgs e)
         {
-            e.Cancel = true;                   // отмена=true
+            e.Cancel = true;                    // отмена=true
             delegateHideGraphicsSettings ();    //вызов поля?
         }
 
@@ -465,9 +467,9 @@ namespace Statistic {
         /// </summary>
         private void rbtnSourceData_Click ()
         {
-            checkedSourceData ();                //вызов метода-проверить источник данных
+            checkedSourceData ();                                       //вызов метода-проверить источник данных
 
-            delegateUpdateActiveGui ((int)TYPE_UPDATEGUI.SOURCE_DATA); //обновить активную настройку (источник данных)
+            delegateUpdateActiveGui ((int)TYPE_UPDATEGUI.SOURCE_DATA);  //обновить активную настройку (источник данных)
         }
         /// <summary>
         /// Перегруженный метод, принимающий индекс источника информации

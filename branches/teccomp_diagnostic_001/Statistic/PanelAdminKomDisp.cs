@@ -644,7 +644,7 @@ namespace Statistic
         {
             EnabledExportPBRValues = (HStatisticUsers.IsAllowed ((int)HStatisticUsers.ID_ALLOWED.EXPORT_PBRVALUES_KOMDISP));
             //??? тоже следует читать из БД конфигурации
-            AdminTS_KomDisp.ModeDefaultExportPBRValues = AdminTS_KomDisp.MODE_EXPORT_PBRVALUES.MANUAL;            
+            AdminTS_KomDisp.ModeDefaultExportPBRValues = AdminTS_KomDisp.MODE_EXPORT_PBRVALUES.MANUAL;
             AllowUserSetModeExportPBRValues = true & EnabledExportPBRValues;
             AllowUserChangeSheduleStartExportPBRValues = false & EnabledExportPBRValues;
             AllowUserChangeShedulePeriodExportPBRValues = false & EnabledExportPBRValues;

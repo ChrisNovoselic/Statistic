@@ -74,7 +74,6 @@ namespace StatisticAlarm
         /// <summary>
         /// Конструктор - основной (с параметрами)
         /// </summary>
-        /// <param name="iListenerConfigDB">Идентификатор установленного соединения с БД</param>
         /// <param name="markQueries">Массив признаков кстановления связи с тем или иным источником данных</param>
         /// <param name="mode">Режим работы панели</param>
         /// <param name="backColor">Цвет фона панели и всех дочерних элементов управления</param>
@@ -126,9 +125,9 @@ namespace StatisticAlarm
                 bWorkChecked = (HStatisticUsers.IsAllowed((int)HStatisticUsers.ID_ALLOWED.AUTO_ALARM_KOMDISP)
                     || (mode == MODE.SERVICE)) && (! (mode == MODE.VIEW));
                 //Инициализация списка с ТЭЦ
-                m_list_tec = new InitTEC_200(true, new int[] { 0, (int)TECComponent.ID.LK }, false).tec;
+                m_list_tec = DbTSQLConfigDatabase.DbConfig().InitTEC(true, new int[] { 0, (int)TECComponent.ID.LK }, false);
                 //Инициализация
-                connSett = new ConnectionSettings(DbTSQLConfigDatabase.GetDataTableConnSettingsOfIdSource (FormMainBase.s_iMainSourceData
+                connSett = new ConnectionSettings(DbTSQLConfigDatabase.DbConfig().GetDataTableConnSettingsOfIdSource (FormMainBase.s_iMainSourceData
                         , -1
                         , out err).Rows[0]
                     , -1);
@@ -178,7 +177,7 @@ namespace StatisticAlarm
                 //Назначить обработчик события изменение даты
                 (find(INDEX_CONTROL.MCLDR_CURRENT) as MonthCalendar).DateChanged += new DateRangeEventHandler(onEventDateChanged);
                 //Назначить обработчик событий при изменении признака "Включено/отключено"
-                (ctrl as CheckBox).CheckedChanged += new EventHandler(cbxWork_OnCheckedChanged);            
+                (ctrl as CheckBox).CheckedChanged += new EventHandler(cbxWork_OnCheckedChanged);
                 //Установить доступность элементов управления по изменению коэффициентов ГТП (вычисление пороговых значений при проверке выполнения условий сигнализации "Тек./мощность ГТП")
                 (find(INDEX_CONTROL.NUD_HOUR_BEGIN) as NumericUpDown).Enabled =
                 (find(INDEX_CONTROL.NUD_HOUR_END) as NumericUpDown).Enabled =
@@ -187,8 +186,8 @@ namespace StatisticAlarm
                 //Установить фильтр отображения - идентификаторы компонентов
                 (ctrl as DataGridViewAlarmJournal).SetFilter (INDEX_FILTER.ID, getListIdCheckedIndices ());
                 //Назначить обработчик события при получении из БД списка событий (передать список для отображения)
-                m_adminAlarm.EvtGetDataMain += new DelegateObjectFunc((ctrl as DataGridViewAlarmJournal).OnEvtGetData);            
-                eventFilter += new DelegateObjectFunc((ctrl as DataGridViewAlarmJournal).OnEventFilter);            
+                m_adminAlarm.EvtGetDataMain += new DelegateObjectFunc((ctrl as DataGridViewAlarmJournal).OnEvtGetData);
+                eventFilter += new DelegateObjectFunc((ctrl as DataGridViewAlarmJournal).OnEventFilter);
                 (ctrl as DataGridViewAlarmJournal).EventConfirmed += new DelegateObjectFunc(OnEventConfirm);
                 (ctrl as DataGridViewAlarmJournal).EventFixed += new DelegateObjectFunc(OnEventFixed); // только в режиме 'SERVICE'
                 (ctrl as DataGridViewAlarmJournal).EventSelected += new DelegateObjectFunc (dgvJournal_OnSelectionChanged);
@@ -267,12 +266,11 @@ namespace StatisticAlarm
         {
             //Остановить объект "обзор, регистрация событий"
             if (!(m_adminAlarm == null))
-                if (m_adminAlarm.IsStarted == true)
-                {
+                if (m_adminAlarm.IsStarted == true) {
                     m_adminAlarm.Activate(false);
                     m_adminAlarm.Stop();
-                }
-                else ;
+                } else
+                    ;
             else
                 ;
         }
@@ -821,7 +819,7 @@ namespace StatisticAlarm
             protected virtual void onEvtGetData (object obj)
             {
                 //Очистить содержимое таблицы
-                Rows.Clear();            
+                Rows.Clear();
             }
             
             /// <summary>
@@ -914,7 +912,7 @@ namespace StatisticAlarm
         public class ViewAlarmJournal : ViewAlarmBase
         {
             public INDEX_TYPE_ALARM m_type;
-            public string m_str_name_shr_type;                        
+            public string m_str_name_shr_type;
             public int m_id_user_registred;
             public DateTime? m_dt_registred;
             public int m_id_user_fixed;
@@ -1072,7 +1070,7 @@ namespace StatisticAlarm
                         , HDateTime.ToMoscowTimeZone (r.m_dt_registred.GetValueOrDefault()).ToString (s_DateTimeFormat)
                         , (!(r.m_dt_fixed == null)) ? HDateTime.ToMoscowTimeZone (r.m_dt_fixed.GetValueOrDefault()).ToString (s_DateTimeFormat) : string.Empty
                         , (!(r.m_dt_confirmed == null)) ? HDateTime.ToMoscowTimeZone (r.m_dt_confirmed.GetValueOrDefault()).ToString (s_DateTimeFormat) : string.Empty
-                    });                    
+                    });
                     //Установить доступность кнопки "Подтвердить"
                     (Rows[indxRow].Cells[this.Columns.Count - 1] as DataGridViewDisableButtonCell).Enabled = isRecEnabled((listView as List<ViewAlarmJournal>).IndexOf(r));
 
@@ -1126,7 +1124,7 @@ namespace StatisticAlarm
                     lPrevIdRecSelected = (long)Rows[indxPrevRowSelected].Cells[(int)iINDEX_COLUMN.ID_REC].Value;
                 }
                 else
-                    ;                
+                    ;
                 
                 foreach (DataGridViewRow r in Rows)
                 {
@@ -1152,7 +1150,7 @@ namespace StatisticAlarm
                     if (iCountRowsVisibled > 0)
                     {
                         if (!(indxPrevRowSelected < 0))
-                            if (indxPrevRowSelected < iCountRowsVisibled)                        
+                            if (indxPrevRowSelected < iCountRowsVisibled)
                                 indxCurRowSelected = indxPrevRowSelected;
                             else
                                 indxCurRowSelected = iCountRowsVisibled - 1;
@@ -1251,10 +1249,11 @@ namespace StatisticAlarm
                     this.Rows[indxRow].Cells[indxCol].Value = HDateTime.ToMoscowTimeZone((DateTime)pars[2]).ToString(s_DateTimeFormat);
 
                     //Установить доступность кнопки "Подтвердить"
-                    (Rows[indxRow].Cells[this.Columns.Count - 1] as DataGridViewDisableButtonCell).Enabled = isRecEnabled (indxRow);                        
+                    (Rows[indxRow].Cells[this.Columns.Count - 1] as DataGridViewDisableButtonCell).Enabled = isRecEnabled (indxRow);
                 }
                 else
-                    Logging.Logg().Error(@"DataGridViewAlarmJournal::OnUpdate () - не нйдена строка для события с ID=" + (long)pars[1], Logging.INDEX_MESSAGE.NOT_SET);
+                    Logging.Logg().Error(@"DataGridViewAlarmJournal::OnUpdate () - не нйдена строка для события с ID=" + (long)pars[1]
+                        , Logging.INDEX_MESSAGE.NOT_SET);
             }
             
             /// <summary>
@@ -1331,7 +1330,7 @@ namespace StatisticAlarm
         /// </summary>
         public class ViewAlarmDetail : ViewAlarmBase
         {
-            public long m_id_event;           
+            public long m_id_event;
             public DateTime? m_last_changed_at;
         }
         
@@ -1661,12 +1660,12 @@ namespace StatisticAlarm
             ctrlRel = find(INDEX_CONTROL.NUD_KOEF);
             ctrl = new CheckBox();
             ctrl.Name = indxCurrent.ToString();
-            ctrl.Location = new System.Drawing.Point(posX = Margin.Horizontal, posY = ctrlRel.Location.Y + ctrlRel.Height + Margin.Vertical);            
+            ctrl.Location = new System.Drawing.Point(posX = Margin.Horizontal, posY = ctrlRel.Location.Y + ctrlRel.Height + Margin.Vertical);
             ctrl.Text = @"Включено";
             panelManagement.Controls.Add(ctrl);
             ////Вариант №1
             //ctrl = new DataGridViewAlarmJournal();
-            //ctrl.Name = INDEX_CONTROL.DGV_EVENTS.ToString();            
+            //ctrl.Name = INDEX_CONTROL.DGV_EVENTS.ToString();
             //this.Controls.Add(ctrl, 1, 0);
             //Вариант №2
             PanelView panelView = new PanelView();

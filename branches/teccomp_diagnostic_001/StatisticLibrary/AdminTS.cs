@@ -1215,7 +1215,7 @@ namespace StatisticCommon
             //Вариант №2
             if (m_ignore_date == false)
                 //В настройках указано - учитывать дату/время сервера (НЕ игнорировать)
-                if (dt < serverTime.Date)                    
+                if (dt < serverTime.Date)
                 {
                     //При указанной дате раньше, чем дата на сервере (задним числом)
                     int offset_days = (dt - serverTime.Date).Days;

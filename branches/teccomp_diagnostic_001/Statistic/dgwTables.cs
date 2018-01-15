@@ -184,7 +184,7 @@ namespace Statistic
                                                             System.Windows.Forms.AnchorStyles.Left)));
             dataGridViewCellStyle.Alignment = System.Windows.Forms.DataGridViewContentAlignment.MiddleCenter;
             dataGridViewCellStyle.BackColor = s_dgvCellStyles [(int)INDEX_CELL_STYLE.COMMON].BackColor; // System.Drawing.SystemColors.Window;
-            dataGridViewCellStyle.ForeColor = s_dgvCellStyles [(int)INDEX_CELL_STYLE.COMMON].ForeColor;            
+            dataGridViewCellStyle.ForeColor = s_dgvCellStyles [(int)INDEX_CELL_STYLE.COMMON].ForeColor;
             dataGridViewCellStyle.Font = new System.Drawing.Font("Microsoft Sans Serif", 8.25F, System.Drawing.FontStyle.Regular, System.Drawing.GraphicsUnit.Point, ((byte)(204)));
             dataGridViewCellStyle.SelectionBackColor = System.Drawing.SystemColors.Highlight;
             dataGridViewCellStyle.SelectionForeColor = System.Drawing.SystemColors.HighlightText;
@@ -255,7 +255,7 @@ namespace Statistic
         {
             for (int i = 0; i < Rows.Count; i++)
                 for (int c = 0; c < Columns.Count; c++) {
-                    Rows [i].Cells [c].Value = string.Empty;                    
+                    Rows [i].Cells [c].Value = string.Empty;
                     Rows [i].Cells [c].Style.BackColor = s_dgvCellStyles [(int)INDEX_CELL_STYLE.COMMON].BackColor;
                     Rows [i].Cells [c].Style.ForeColor = s_dgvCellStyles [(int)INDEX_CELL_STYLE.COMMON].ForeColor;
                 }
@@ -475,7 +475,7 @@ namespace Statistic
             Rows [itemscount].Cells[(int)DataGridViewStandardHours.INDEX_COLUMNS.UDGe].Value = sumUDGe.ToString("F2");
             Rows [itemscount].Cells [(int)DataGridViewStandardHours.INDEX_COLUMNS.UDGe].Style = s_dgvCellStyles [(int)INDEX_CELL_STYLE.COMMON];
             Rows [itemscount].Cells[(int)DataGridViewStandardHours.INDEX_COLUMNS.DEVIATION].Value = sumDiviation.ToString("F2");
-            Rows [itemscount].Cells [(int)DataGridViewStandardHours.INDEX_COLUMNS.DEVIATION].Style = s_dgvCellStyles [(int)INDEX_CELL_STYLE.COMMON];            
+            Rows [itemscount].Cells [(int)DataGridViewStandardHours.INDEX_COLUMNS.DEVIATION].Style = s_dgvCellStyles [(int)INDEX_CELL_STYLE.COMMON];
 
             setFirstDisplayedScrollingRowIndex (lastHour, !bIsTypeConnSettAISKUEHour);
         }

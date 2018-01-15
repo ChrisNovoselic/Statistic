@@ -750,8 +750,8 @@ namespace Statistic
                     for (h = 0; h < cntHours; h++)
                     {
                         m_dictLabelTime[h] = HLabel.createLabel(@"--:--", PanelLastMinutes.s_arLabelStyles[(int)INDEX_LABEL.DATETIME]);
-                        this.Controls.Add(m_dictLabelTime[h], 0, (h) + COUNT_FIXED_ROWS);                        
-                    }                    
+                        this.Controls.Add(m_dictLabelTime[h], 0, (h) + COUNT_FIXED_ROWS);
+                    }
 
                     bChangedCountRows = true;
                 }

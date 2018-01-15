@@ -460,7 +460,7 @@ namespace StatisticCommon
         public void PerformUpdate (int iListenerId)
         {
             //Установить по запросу текущий идентификатор источника данных в системе СОТИАССО
-            EventUpdate?.Invoke(this, new InitTEC_200.TECListUpdateEventArgs () { m_iListenerId = iListenerId });
+            EventUpdate?.Invoke(this, new DbTSQLConfigDatabase.TECListUpdateEventArgs () { m_iListenerId = iListenerId });
         }
 
         public enum ADDING_PARAM_KEY : short { PREFIX_MODES_TERMINAL
@@ -469,6 +469,22 @@ namespace StatisticCommon
             , COLUMN_TSN_EXCEL
             //, TEMPLATE_NAME_SGN_DATA_TM
             //, TEMPLATE_NAME_SGN_DATA_FACT
+        }
+
+        public TEC (TEC src)
+            : this (src.m_id, src.name_shr, src.name_MC, src.m_strNameTableAdminValues, src.m_strNameTableUsedPPBRvsPBR, false)
+        {
+            setNamesField (@"DATE",
+                @"REC",
+                @"IS_PER",
+                "DIVIAT",
+                "DATE_TIME",
+                "PBR",
+                "PBR_NUMBER");
+
+            m_dictAddingParam = new Dictionary<ADDING_PARAM_KEY, PARAM_ADDING> ();
+            foreach (KeyValuePair<ADDING_PARAM_KEY, PARAM_ADDING> pair in src.m_dictAddingParam)
+                m_dictAddingParam.Add (pair.Key, new PARAM_ADDING (pair.Value));
         }
 
         public TEC(DataRow rTec, bool bUseData)
@@ -489,7 +505,12 @@ namespace StatisticCommon
 
             m_dictAddingParam = new Dictionary<ADDING_PARAM_KEY, PARAM_ADDING>();
             foreach (ADDING_PARAM_KEY key in Enum.GetValues(typeof(ADDING_PARAM_KEY)))
-                m_dictAddingParam.Add(key, new PARAM_ADDING() { m_type = typeof(string), m_value = rTec[key.ToString()] is DBNull ? string.Empty : rTec[key.ToString()].ToString().Trim() });
+                m_dictAddingParam.Add(key, new PARAM_ADDING() {
+                    m_type = typeof(string)
+                    , m_value = !(rTec[key.ToString()] is DBNull)
+                        ? rTec [key.ToString ()].ToString ().Trim ()
+                            : string.Empty
+                });
 
             //string strTest = GetAddingParameter(TEC.ADDING_PARAM_KEY.PATH_RDG_EXCEL).ToString();
         }
@@ -525,7 +546,7 @@ namespace StatisticCommon
             m_strNamesField = new List<string>((int)INDEX_NAME_FIELD.COUNT_INDEX_NAME_FIELD);
             for (int i = 0; i < (int)INDEX_NAME_FIELD.COUNT_INDEX_NAME_FIELD; i++) m_strNamesField.Add(string.Empty);
 
-            EventUpdate += new EventHandler(StatisticCommon.InitTEC_200.OnTECUpdate);
+            EventUpdate += new EventHandler(StatisticCommon.DbTSQLConfigDatabase.DbConfig().OnTECUpdate);
         }
 
         public void AddTECComponent(DataRow r)
@@ -548,8 +569,8 @@ namespace StatisticCommon
         /// <param name="pbr_datetime">Наименование поля с меткой даты/времени значения в таблице с ПБР</param>
         /// <param name="ppbr_vs_pbr">Наименование поля со значениями целевой величины в таблице с ПБР</param>
         /// <param name="pbr_number">Наименование поля со значениями номеров ПБР в таблице с ПБР</param>
-        private void setNamesField(string admin_datetime, string admin_rec, string admin_is_per, string admin_diviat,
-                                    string pbr_datetime, string ppbr_vs_pbr, string pbr_number)
+        private void setNamesField(string admin_datetime, string admin_rec, string admin_is_per, string admin_diviat
+            , string pbr_datetime, string ppbr_vs_pbr, string pbr_number)
         {
             //INDEX_NAME_FIELD.ADMIN_DATETIME
             m_strNamesField[(int)INDEX_NAME_FIELD.ADMIN_DATETIME] = admin_datetime;
@@ -568,6 +589,18 @@ namespace StatisticCommon
             public Type m_type;
 
             public object m_value;
+
+            public PARAM_ADDING (Type type, object value)
+            {
+                m_type = type;
+
+                m_value = value;
+            }
+
+            public PARAM_ADDING (PARAM_ADDING values)
+                : this (values.m_type, values.m_value)
+            {
+            }
         }
 
         private Dictionary<ADDING_PARAM_KEY, PARAM_ADDING> m_dictAddingParam;
@@ -876,7 +909,7 @@ namespace StatisticCommon
                 else
                 {
                     iRes = -1;
-                    connSetts[type] = null;                    
+                    connSetts[type] = null;
                 }
             }
             else
@@ -911,7 +944,7 @@ namespace StatisticCommon
                         });
                         break;
                     case TECComponentBase.TYPE.ELECTRO:
-                        list_TECComponents.ForEach(g => { if (g.IsGTP == true) strRes += @", " + (g.m_id).ToString(); else ; });                        
+                        list_TECComponents.ForEach(g => { if (g.IsGTP == true) strRes += @", " + (g.m_id).ToString(); else ; });
                         break;
                     default:
                         break;
@@ -1907,7 +1940,7 @@ namespace StatisticCommon
                 query = query.Replace(@"DATEPART(n,", @"MINUTE(");
             }
             else
-                ;            
+                ;
 
             return query;
         }
@@ -1938,7 +1971,7 @@ namespace StatisticCommon
             //        break;
             //}
 
-            strRes = adminValueQuery(selectAdmin, dt/*, mode*/);            
+            strRes = adminValueQuery(selectAdmin, dt/*, mode*/);
 
             return strRes;
         }
@@ -2018,7 +2051,7 @@ namespace StatisticCommon
                             + @") AS [GROUP_DATA] INNER JOIN @SETTINGS_TABLE AS [SET] ON ([GROUP_DATA].[KKS_NAME] = [SET].[KKS_NAME])"
                         + @" ORDER BY [GROUP_DATA].[DATETIME];" + NL;
                     //strRes += @"GO";
-                    break;                
+                    break;
                 case TYPE_DBVZLET.GRAFA:
                 default:
                     // формировать расходы и температуры

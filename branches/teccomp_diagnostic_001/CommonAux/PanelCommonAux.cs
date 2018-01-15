@@ -361,7 +361,7 @@ namespace CommonAux
 
             int err = -1;
             // зарегистрировать соединение/получить идентификатор соединения
-            iListenerId = DbSources.Sources().Register(FormMain.s_listFormConnectionSettings[(int)CONN_SETT_TYPE.CONFIG_DB].getConnSett(), false, @"CONFIG_DB");            
+            iListenerId = DbSources.Sources().Register(FormMain.s_listFormConnectionSettings[(int)CONN_SETT_TYPE.CONFIG_DB].getConnSett(), false, @"CONFIG_DB");
 
             m_GetDataFromDB.InitListTEC();
 
@@ -735,7 +735,7 @@ namespace CommonAux
             dataGridViewCellStyle.Alignment = System.Windows.Forms.DataGridViewContentAlignment.MiddleRight;
             dataGridViewCellStyle.BackColor = BackColor;
             dataGridViewCellStyle.ForeColor = ForeColor;
-            dataGridViewCellStyle.Font = new System.Drawing.Font("Microsoft Sans Serif", 8.25F, System.Drawing.FontStyle.Regular, System.Drawing.GraphicsUnit.Point, ((byte)(204)));            
+            dataGridViewCellStyle.Font = new System.Drawing.Font("Microsoft Sans Serif", 8.25F, System.Drawing.FontStyle.Regular, System.Drawing.GraphicsUnit.Point, ((byte)(204)));
             dataGridViewCellStyle.SelectionBackColor = System.Drawing.SystemColors.Highlight;
             dataGridViewCellStyle.SelectionForeColor = System.Drawing.SystemColors.HighlightText;
             dataGridViewCellStyle.WrapMode = System.Windows.Forms.DataGridViewTriState.False;
@@ -1031,7 +1031,7 @@ namespace CommonAux
 
                         Logging.Logg ().Debug (msg, Logging.INDEX_MESSAGE.NOT_SET);
                     } else {
-                        msg = @"Ошибка при получении значений для: " + t.m_strNameShr;                        
+                        msg = @"Ошибка при получении значений для: " + t.m_strNameShr;
                         markErr.Set (m_GetDataFromDB.m_listTEC.IndexOf (t), true);
 
                         Logging.Logg ().Error (msg, Logging.INDEX_MESSAGE.NOT_SET);

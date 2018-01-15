@@ -622,7 +622,7 @@ namespace StatisticTimeSync
 
         public override bool Activate(bool activated)
         {
-            bool bRes = base.Activate(activated);            
+            bool bRes = base.Activate(activated);
 
             return bRes;
         }

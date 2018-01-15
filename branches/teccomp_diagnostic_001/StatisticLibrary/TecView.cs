@@ -534,7 +534,7 @@ namespace StatisticCommon
 
         private void initDictValuesTECComponent(int cnt)
         {
-            //List<TECComponentBase> localTECComponents = getLocalTECComponents();            
+            //List<TECComponentBase> localTECComponents = getLocalTECComponents();
             
             m_dictValuesTECComponent = new Dictionary<int, valuesTECComponent>[cnt];
             
@@ -2369,7 +2369,7 @@ namespace StatisticCommon
             for (i = 0; i < m_tablePPBRValuesResponse.Rows.Count; i++)
                 m_tablePPBRValuesResponse.Rows[i][@"DATE_PBR"] = ((DateTime)m_tablePPBRValuesResponse.Rows[i][@"DATE_PBR"]).Add(m_tsOffsetToMoscow);
             
-            for (i = 0; i < table_in.Rows.Count; i++)                
+            for (i = 0; i < table_in.Rows.Count; i++)
                 table_in.Rows[i][@"DATE_ADMIN"] = ((DateTime)table_in.Rows[i][@"DATE_ADMIN"]).Add(m_tsOffsetToMoscow);
 
             //switch (tec.Type) {
@@ -2749,7 +2749,7 @@ namespace StatisticCommon
                 double[] valuesPmin = new double[lValues];
                 double[] valuesPmax = new double[lValues];
                 bool[] valuesForeignCmd = new bool[lValues];
-                double[] valuesREC = new double[lValues];                
+                double[] valuesREC = new double[lValues];
                 int[] valuesISPER = new int[lValues];
                 double[] valuesDIV = new double[lValues];
 
@@ -4736,13 +4736,13 @@ namespace StatisticCommon
                         tgPrevValues [indx] = val;
                     }
                     else
-                        ;                            
+                        ;
                 }
             }
 
             if (iRes == 0)
             {
-                for (indx = 0; indx < listSensors.Count; indx ++)                                
+                for (indx = 0; indx < listSensors.Count; indx ++)
                     if (tgPrevValues [indx] < 0)
                     {
                         iRes = -7;
@@ -4960,7 +4960,7 @@ namespace StatisticCommon
                             if (TEC.s_SourceSOTIASSO == TEC.SOURCE_SOTIASSO.INSATANT_APP)
                             {
                                 int hour = lastHour - GetSeasonHourOffset(lastHour)
-                                    ;                                
+                                    ;
 
                                 List<string> listSensors = new List<string>(m_tec.GetSensorsString(indxTECComponents, CONN_SETT_TYPE.DATA_SOTIASSO, HDateTime.INTERVAL.MINUTES).Split(','));
                                 m_valuesMins[min].valuesFact = avgInterval(table
@@ -5437,7 +5437,7 @@ namespace StatisticCommon
                                     else
                                         ;
 
-                                    double.TryParse(r[@"VALUE"].ToString(), out m_dictValuesLowPointDev[tgTmp.m_id].m_powerCurrent_TM);                                    
+                                    double.TryParse(r[@"VALUE"].ToString(), out m_dictValuesLowPointDev[tgTmp.m_id].m_powerCurrent_TM);
                                 }
                                 break;
                             case TEC.SOURCE_SOTIASSO.INSATANT_APP:

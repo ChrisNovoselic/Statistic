@@ -130,7 +130,7 @@ namespace CommonAux
         public ConnectionSettings GetConnSettAIISKUECentre(int iListenerId, out int err)
         {
             DataTable dataTableRes = new DataTable();
-            dataTableRes = DbTSQLConfigDatabase.GetDataTableConnSettingsOfIdSource (ID_AIISKUE_CONSETT, -1, out err);
+            dataTableRes = DbTSQLConfigDatabase.DbConfig().GetDataTableConnSettingsOfIdSource (ID_AIISKUE_CONSETT, -1, out err);
 
             return new ConnectionSettings(dataTableRes.Rows[dataTableRes.Rows.Count - 1], -1);
         }
@@ -142,7 +142,7 @@ namespace CommonAux
         {
             List<TEC> listTEC;
 
-            listTEC = new InitTEC_200 (true, new int [] { 0, (int)TECComponent.ID.LK }, false).tec;
+            listTEC = DbTSQLConfigDatabase.DbConfig ().InitTEC (true, new int [] { 0, (int)TECComponent.ID.LK }, false);
 
             m_listTEC = new List<TEC_LOCAL> ();
             listTEC.ForEach (tec => m_listTEC.Add (new TEC_LOCAL (tec)));

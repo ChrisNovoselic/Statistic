@@ -134,7 +134,7 @@ namespace Statistic
                     Rows [cnt].Cells[(int)DataGridViewStandardHours.INDEX_COLUMNS.FACT].Value =
                     Rows [cnt].Cells[(int)DataGridViewStandardHours.INDEX_COLUMNS.UDGe].Value =
                     Rows [cnt].Cells[(int)DataGridViewStandardHours.INDEX_COLUMNS.DEVIATION].Value =
-                        0.ToString("F2");                    
+                        0.ToString("F2");
                 }
                 else
                 {
@@ -151,7 +151,7 @@ namespace Statistic
                 Rows [cnt].Cells [(int)DataGridViewStandardHours.INDEX_COLUMNS.PART_TIME].Style =
                 Rows [cnt].Cells [(int)DataGridViewStandardHours.INDEX_COLUMNS.FACT].Style =
                 Rows [cnt].Cells [(int)DataGridViewStandardHours.INDEX_COLUMNS.PBR].Style =
-                Rows [cnt].Cells [(int)DataGridViewStandardHours.INDEX_COLUMNS.PBRe].Style =                
+                Rows [cnt].Cells [(int)DataGridViewStandardHours.INDEX_COLUMNS.PBRe].Style =
                 Rows [cnt].Cells [(int)DataGridViewStandardHours.INDEX_COLUMNS.UDGe].Style =
                 Rows [cnt].Cells [(int)DataGridViewStandardHours.INDEX_COLUMNS.DEVIATION].Style =
                     s_dgvCellStyles [(int)INDEX_CELL_STYLE.COMMON];
@@ -964,9 +964,9 @@ namespace Statistic
                 ((ToolStripMenuItem)m_ZedGraphHours.ContextMenuStrip.Items[(int)HZedGraphControl.INDEX_CONTEXTMENU_ITEM.SOTIASSO_3_MIN]).Enabled =
                     HStatisticUsers.IsAllowed((int)HStatisticUsers.ID_ALLOWED.SOURCEDATA_SOTIASSO_3_MIN);
 
-                ((ToolStripMenuItem)m_ZedGraphMins.ContextMenuStrip.Items[(int)HZedGraphControl.INDEX_CONTEXTMENU_ITEM.AISKUE]).Enabled =                 
+                ((ToolStripMenuItem)m_ZedGraphMins.ContextMenuStrip.Items[(int)HZedGraphControl.INDEX_CONTEXTMENU_ITEM.AISKUE]).Enabled =
                 ((ToolStripMenuItem)m_ZedGraphMins.ContextMenuStrip.Items[(int)HZedGraphControl.INDEX_CONTEXTMENU_ITEM.SOTIASSO_1_MIN]).Enabled =
-                ((ToolStripMenuItem)m_ZedGraphHours.ContextMenuStrip.Items[(int)HZedGraphControl.INDEX_CONTEXTMENU_ITEM.AISKUE]).Enabled =                
+                ((ToolStripMenuItem)m_ZedGraphHours.ContextMenuStrip.Items[(int)HZedGraphControl.INDEX_CONTEXTMENU_ITEM.AISKUE]).Enabled =
                 ((ToolStripMenuItem)m_ZedGraphHours.ContextMenuStrip.Items[(int)HZedGraphControl.INDEX_CONTEXTMENU_ITEM.SOTIASSO_1_MIN]).Enabled =
                     true;
 

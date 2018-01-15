@@ -159,7 +159,7 @@ namespace StatisticCommon
                                 bChecked = true;
                             else
                                 ;
-                            m_listItems.Add(new Item(g.m_id, t.name_shr + " - " + g.name_shr, bChecked));                         
+                            m_listItems.Add(new Item(g.m_id, t.name_shr + " - " + g.name_shr, bChecked));
                         }
                     }
                     else
@@ -440,7 +440,7 @@ namespace StatisticCommon
                             clbMode.SetItemChecked(clbMode.Items.Count - 1, item.bChecked);
                             item.bVisibled = true;
                         } else
-                            ;                        
+                            ;
                     } else
                         item.bVisibled = false;
                 else

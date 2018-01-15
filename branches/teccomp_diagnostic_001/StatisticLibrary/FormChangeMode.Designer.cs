@@ -168,7 +168,7 @@ namespace StatisticCommon
             this.StartPosition = System.Windows.Forms.FormStartPosition.CenterParent;
             this.HandleCreated += new System.EventHandler(ChangeMode_HandleCreated);
             this.Load += new System.EventHandler(ChangeMode_Load);
-            this.FormClosing += new System.Windows.Forms.FormClosingEventHandler(this.ChangeMode_FormClosing);            
+            this.FormClosing += new System.Windows.Forms.FormClosingEventHandler(this.ChangeMode_FormClosing);
             this.Shown += new System.EventHandler(this.ChangeMode_Shown);
             this.ResumeLayout(false);
             this.PerformLayout();

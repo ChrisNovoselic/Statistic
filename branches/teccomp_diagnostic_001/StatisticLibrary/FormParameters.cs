@@ -336,7 +336,7 @@ namespace StatisticCommon
             err = -1;
 
             string query = string.Empty;
-            DataTable table = DbTSQLConfigDatabase.GetDataTableSetupParameters(out err);
+            DataTable table = DbTSQLConfigDatabase.DbConfig().GetDataTableSetupParameters(out err);
             DataRow[] rowRes;
 
             if (err == (int)DbTSQLInterface.Error.NO_ERROR)
@@ -360,7 +360,7 @@ namespace StatisticCommon
                                 break;
                             case 0:
                                 m_arParametrSetup [(int)indx] = m_arParametrSetupDefault [(int)indx];
-                                query += DbTSQLConfigDatabase.GetSetupParameterQuery (NAME_PARAMETR_SETUP [(int)indx], m_arParametrSetup [(int)indx], DbTSQLInterface.QUERY_TYPE.INSERT) + @";";
+                                query += DbTSQLConfigDatabase.DbConfig().GetSetupParameterQuery (NAME_PARAMETR_SETUP [(int)indx], m_arParametrSetup [(int)indx], DbTSQLInterface.QUERY_TYPE.INSERT) + @";";
                                 break;
                             default:
                                 break;
@@ -370,7 +370,7 @@ namespace StatisticCommon
                     // проверить различия между параметрами в коде и таблице [setup] в БД конфигурации
                     if (query.Equals(string.Empty) == false)
                     // дополнить таблицу в БД конфигурации отсутствующими параметрами и их значениями по умолчанию
-                        DbTSQLConfigDatabase.ExecNonQuery(query, out err);
+                        DbTSQLConfigDatabase.DbConfig().ExecNonQuery(query, out err);
                     else
                         ;
                 }
@@ -389,12 +389,12 @@ namespace StatisticCommon
 
             if (err == 0)
                 for (PARAMETR_SETUP i = PARAMETR_SETUP.POLL_TIME; i < PARAMETR_SETUP.COUNT_PARAMETR_SETUP; i++)
-                    query += DbTSQLConfigDatabase.GetSetupParameterQuery(NAME_PARAMETR_SETUP[(int)i], m_arParametrSetup[(int)i], DbTSQLInterface.QUERY_TYPE.UPDATE) + @";";
+                    query += DbTSQLConfigDatabase.DbConfig().GetSetupParameterQuery (NAME_PARAMETR_SETUP[(int)i], m_arParametrSetup[(int)i], DbTSQLInterface.QUERY_TYPE.UPDATE) + @";";
             else
                 ;
 
             if (query.Equals(string.Empty) == false)
-                DbTSQLConfigDatabase.ExecNonQuery(query, out err);
+                DbTSQLConfigDatabase.DbConfig().ExecNonQuery(query, out err);
             else
                 ;
         }
@@ -412,10 +412,10 @@ namespace StatisticCommon
             int err = -1;
             string query = string.Empty;
 
-            query += DbTSQLConfigDatabase.GetSetupParameterQuery (key, value, DbTSQLInterface.QUERY_TYPE.UPDATE) + @";";
+            query += DbTSQLConfigDatabase.DbConfig().GetSetupParameterQuery (key, value, DbTSQLInterface.QUERY_TYPE.UPDATE) + @";";
 
             if (query.Equals(string.Empty) == false)
-                DbTSQLConfigDatabase.ExecNonQuery(query, out err);
+                DbTSQLConfigDatabase.DbConfig().ExecNonQuery (query, out err);
             else
                 ;
         }
@@ -431,7 +431,7 @@ namespace StatisticCommon
 
         public static string ReadString(string key, string valDef, out int err)
         {
-            return DbTSQLConfigDatabase.ReadSetupParameter (key, valDef, out err);
+            return DbTSQLConfigDatabase.DbConfig().ReadSetupParameter (key, valDef, out err);
         }
     }
 }

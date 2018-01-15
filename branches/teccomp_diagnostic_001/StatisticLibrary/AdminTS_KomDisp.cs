@@ -403,6 +403,7 @@ namespace StatisticCommon
             int hour = -1;
             double val = -1F;
             string name_future = string.Empty;
+            List<DataRow> rowsTECComponent = null;
 
             CONN_SETT_TYPE typeValues = CONN_SETT_TYPE.COUNT_CONN_SETT_TYPE;
             if (pbr_number is string)
@@ -412,14 +413,18 @@ namespace StatisticCommon
                     typeValues = (CONN_SETT_TYPE)pbr_number; //ADMIN
                 else
                     ;
-
-            if ((typeValues == CONN_SETT_TYPE.PBR)
-                || (typeValues == CONN_SETT_TYPE.ADMIN)) {
-                List<DataRow> rowsTECComponent = null;
-                //Получить значения для сохранения
+            // проверить был ли определен тип сохраняемых значений
+            //  и имеет ли таблица соответствующую типу значений структуру (присутствуют ли в таблице необходимые поля)
+            if (((typeValues == CONN_SETT_TYPE.PBR)
+                    || (typeValues == CONN_SETT_TYPE.ADMIN))
+                && (CheckNameFieldsOfTable (m_tableValuesResponse
+                    , typeValues == CONN_SETT_TYPE.PBR ? new string [] { @"GTP_ID", @"SESSION_INTERVAL", @"REC", @"IS_PER", @"DIVIAT", @"FC" }
+                        : typeValues == CONN_SETT_TYPE.ADMIN ? new string [] { @"GTP_ID", @"SESSION_INTERVAL", @"REC", @"IS_PER", @"DIVIAT", @"FC" }
+                            : new string [] { @"GTP_ID", @"SESSION_INTERVAL" }) == true)) {
+                //Получить значения для сохранени
                 name_future = allTECComponents[indx].name_future;
                 rowsTECComponent = new List<DataRow>(m_tableValuesResponse.Select(@"GTP_ID='" + name_future + @"'"));
-                //Вариант №2 - тестовый                
+                //Вариант №2 - тестовый
                 //foreach (DataRow r in m_tableValuesResponse.Rows)
                 //    if (name_future.Equals(r["GTP_ID"]) == true)
                 //        rowsTECComponent.Add(r);
@@ -427,9 +432,9 @@ namespace StatisticCommon
                 //        ;
                 //Проверить наличие записей для ГТП
                 if (rowsTECComponent.Count > 0) {
-                    // добавление недостающих строк путем копирования крайней
+                // добавление недостающих строк путем копирования крайней
                     if (rowsTECComponent.Count < 24) {
-                        // фрагмент кода выполняется при загрузке
+                    // фрагмент кода выполняется при загрузке
                         //while (rowsTECComponent.Count < 24) {
                         //    rowsTECComponent.Add(rowsTECComponent[rowsTECComponent.Count - 1]);
 

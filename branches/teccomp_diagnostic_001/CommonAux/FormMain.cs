@@ -53,7 +53,9 @@ namespace CommonAux
             Thread.CurrentThread.CurrentUICulture =
                 ProgramBase.ss_MainCultureInfo;
 
-            DbTSQLConfigDatabase.SetConnectionSettings (s_listFormConnectionSettings [(int)CONN_SETT_TYPE.CONFIG_DB].getConnSett ());
+            //!!! Один экземпляр для всего приложения, на весь срок выполнения
+            new DbTSQLConfigDatabase (s_listFormConnectionSettings [(int)CONN_SETT_TYPE.CONFIG_DB].getConnSett ());
+
             formParameters = new FormParameters_DB ();
             s_iMainSourceData = Int32.Parse (formParameters.m_arParametrSetup [(int)FormParameters.PARAMETR_SETUP.MAIN_DATASOURCE]);
 

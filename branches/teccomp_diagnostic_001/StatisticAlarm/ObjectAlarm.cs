@@ -56,7 +56,7 @@ namespace StatisticAlarm
 
         public int m_id_comp;
         public EventReason m_reason;
-        public DateTime? m_dtRegistred;        
+        public DateTime? m_dtRegistred;
         public int m_situation;
         public string m_message_shr;
         public string m_messageGUI;
@@ -146,7 +146,7 @@ namespace StatisticAlarm
             Dictionary<
                 KeyValuePair<int, DateTime>
                 //int
-                    , ALARM_OBJECT> _dictAlarmObject;        
+                    , ALARM_OBJECT> _dictAlarmObject;
         /// <summary>
         /// Класс объекта события сигнализации
         /// </summary>
@@ -349,8 +349,8 @@ namespace StatisticAlarm
                     && ! FIXED
                     && ! (_state == INDEX_STATES_ALARM.FIXING);
 
-                ////Установить признак объекту: "находиться на оповещении"                
-                //if (bRes == true)                    
+                ////Установить признак объекту: "находиться на оповещении"
+                //if (bRes == true)
                 //    Fixing();
                 //else
                 //    ;
@@ -393,7 +393,7 @@ namespace StatisticAlarm
                 else
                     ;
 
-                return bRes;                                
+                return bRes;
             }
         }
         /// <summary>

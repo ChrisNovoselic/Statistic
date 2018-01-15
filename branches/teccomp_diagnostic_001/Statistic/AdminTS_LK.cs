@@ -260,7 +260,7 @@ namespace Statistic {
             /// <summary>
             /// Метод получения ТЭЦ компонентов
             /// </summary>
-            protected override void initTEC()
+            protected override void initTECComponents()
             {
                 allTECComponents.Clear();
 

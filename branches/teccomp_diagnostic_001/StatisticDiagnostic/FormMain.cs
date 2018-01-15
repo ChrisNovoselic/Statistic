@@ -124,7 +124,8 @@ namespace StatisticDiagnostic
                         break;
                     default:
                         //Успех... пост-инициализация
-                        DbTSQLConfigDatabase.SetConnectionSettings (s_listFormConnectionSettings [(int)CONN_SETT_TYPE.CONFIG_DB].getConnSett ());
+                        //!!! Один экземпляр для всего приложения на весь срок выполнения
+                        new DbTSQLConfigDatabase (s_listFormConnectionSettings [(int)CONN_SETT_TYPE.CONFIG_DB].getConnSett ());
                         formParameters = new FormParameters_DB();
                         updateParametersSetup();
                         s_iMainSourceData = Int32.Parse(formParameters.m_arParametrSetup[(int)FormParameters.PARAMETR_SETUP.MAIN_DATASOURCE]);

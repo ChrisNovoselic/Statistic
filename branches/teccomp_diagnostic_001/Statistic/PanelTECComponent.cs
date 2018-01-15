@@ -220,13 +220,16 @@ namespace Statistic
             int err = -1;
 
             // установить режим "удержание соединения" при нескольких подряд вызовах статических методов 'DbTSQLInterface::Select'
+#if MODE_STATIC_CONNECTION_LEAVING
             DbTSQLInterface.ModeStaticConnectionLeave = DbTSQLInterface.ModeStaticConnectionLeaving.Yes;
+#endif
             // несколько подряд вызовов статических методов 'DbTSQLInterface::Select'
             for (FormChangeMode.MODE_TECCOMPONENT i = (FormChangeMode.MODE_TECCOMPONENT)0; i < FormChangeMode.MODE_TECCOMPONENT.ANY; i++)
                 m_arr_originalTable[(short)i] = db_sostav.GetTableTECComponent(i, out err);
             // возвратить режим "удержание соединения - обычный" (разрыв соединения после каждого вызова статического метода 'DbTSQLInterface::Select')
+#if MODE_STATIC_CONNECTION_LEAVING
             DbTSQLInterface.ModeStaticConnectionLeave = DbTSQLInterface.ModeStaticConnectionLeaving.No;
-
+#endif
             reset_DataTable_ComponentsTEC ();
         }
 
@@ -751,10 +754,9 @@ namespace Statistic
             {
                 int err = -1;
 
-                List<TEC> listTECRes = new InitTEC_200 (ASUTP.Forms.FormMainBaseWithStatusStrip.s_listFormConnectionSettings [(int)CONN_SETT_TYPE.CONFIG_DB].getConnSett ()
-                    , true
+                List<TEC> listTECRes = DbTSQLConfigDatabase.DbConfig().InitTEC(true
                     , new int [] { 0, (int)TECComponent.ID.GTP }
-                    , false).tec;
+                    , false);
                 //Инициализация объектов ТГ в каждой ТЭЦ из полученного списка
                 foreach (StatisticCommon.TEC t in listTECRes)
                     t.InitSensorsTEC ();
@@ -770,8 +772,7 @@ namespace Statistic
             /// <returns>Возвращает таблицу с результатом</returns>
             public DataTable Request (string query, out int err)
             {
-                return DbTSQLInterface.Select (ASUTP.Forms.FormMainBaseWithStatusStrip.s_listFormConnectionSettings [(int)CONN_SETT_TYPE.CONFIG_DB].getConnSett ()
-                    , query
+                return DbTSQLConfigDatabase.DbConfig().Select (query
                     , out err);
             }
 
@@ -821,7 +822,7 @@ namespace Statistic
                 return Request ($"SELECT * FROM [dbo].[{FormChangeMode.getPrefixMode (mode_TecComp)}_LIST]", out err);
             }
 
-            #region Audit
+#region Audit
 
             /// <summary>
             /// Получение последней ревизии аудита
@@ -864,7 +865,7 @@ namespace Statistic
                 }
             }
 
-            #endregion
+#endregion
 
             ///// <summary>
             ///// Регистрация ID
@@ -1030,7 +1031,7 @@ namespace Statistic
         }
 
         private class TreeView_TECComponent : TreeView {
-            #region Переменные
+#region Переменные
 
             string m_warningReport;
 
@@ -1149,7 +1150,7 @@ namespace Statistic
 
             List<string> m_open_node = new List<string> ();
 
-            #endregion
+#endregion
 
             private void InitializeComponent ()
             {
@@ -1159,7 +1160,7 @@ namespace Statistic
                 добавитьТЭЦToolStripMenuItem = new System.Windows.Forms.ToolStripMenuItem ();
                 this.Dock = DockStyle.Fill;
 
-                #region Context add TEC
+#region Context add TEC
                 // 
                 // contextMenu_TreeView
                 // 
@@ -1171,7 +1172,7 @@ namespace Statistic
                 // 
                 добавитьТЭЦToolStripMenuItem.Name = "добавитьТЭЦToolStripMenuItem";
                 добавитьТЭЦToolStripMenuItem.Text = "Добавить ТЭЦ";
-                #endregion
+#endregion
 
                 //this.ContextMenuStrip.ItemClicked += new ToolStripItemClickedEventHandler(this.add_New_TEC);
             }
@@ -1402,16 +1403,16 @@ namespace Statistic
                 System.Windows.Forms.ToolStripMenuItem добавитьЩУToolStripMenuItem = new System.Windows.Forms.ToolStripMenuItem ();
                 System.Windows.Forms.ToolStripMenuItem добавитьТГToolStripMenuItem = new System.Windows.Forms.ToolStripMenuItem ();
 
-                #region Нажатие правой кнопкой мыши
+#region Нажатие правой кнопкой мыши
 
                 if (e.Button == System.Windows.Forms.MouseButtons.Right) {
                     this.SelectedNode = e.Node;//Выбор компонента при нажатии на него правой кнопкой мыши
 
                     if (!(m_selNode_idComp[TECComponent.ID.TG] < 0))//выбран ли элемент ТГ
                     {
-                        #region Не введенные
+#region Не введенные
                         if (this.SelectedNode.Parent.Text == TreeView_TECComponent.NOT_RESOLVED) {
-                            #region Context add TG from PC or GTP
+#region Context add TG from PC or GTP
                             // 
                             // contextMenu_TreeView_TG_PC
                             // 
@@ -1424,7 +1425,7 @@ namespace Statistic
                             //
                             ввестиВСоставToolStripMenuItem.Name = "ввестиВСоставToolStripMenuItem";
                             ввестиВСоставToolStripMenuItem.Text = "Ввести в состав";
-                            #endregion
+#endregion
 
                             this.SelectedNode.ContextMenuStrip = contextMenu_TreeNode;
 
@@ -1439,13 +1440,13 @@ namespace Statistic
 
                             (this.SelectedNode.ContextMenuStrip.Items ["ввестиВСоставToolStripMenuItem"] as ToolStripDropDownItem).DropDownItemClicked += new ToolStripItemClickedEventHandler (add_TG_PC_GTP);
                         }
-                        #endregion
+#endregion
 
-                        #region Введенные в состав
+#region Введенные в состав
 
                         if (this.SelectedNode.Parent.Text != TreeView_TECComponent.NOT_RESOLVED) {
                             if (m_selNode_idComp[TECComponent.ID.TG] > (int)TECComponent.ID.TG) {
-                                #region Context delete TG
+#region Context delete TG
                                 // 
                                 // contextMenu_TreeNode
                                 // 
@@ -1457,17 +1458,17 @@ namespace Statistic
                                 //
                                 вывестиИзСоставаToolStripMenuItem.Name = "вывыстиИзСоставаToolStripMenuItem";
                                 вывестиИзСоставаToolStripMenuItem.Text = "Вывести из состава";
-                                #endregion
+#endregion
 
                                 this.SelectedNode.ContextMenuStrip = contextMenu_TreeNode;
                                 this.SelectedNode.ContextMenuStrip.ItemClicked += new ToolStripItemClickedEventHandler (this.del_TG);
                             }
                         }
 
-                        #endregion
+#endregion
                     }
 
-                    #region Добавление компонентов
+#region Добавление компонентов
 
                     if (m_selNode_idComp[TECComponent.ID.TG] == -1
                         & m_selNode_idComp[TECComponent.ID.PC] == -1
@@ -1475,9 +1476,9 @@ namespace Statistic
                         & (!(m_selNode_idComp[TECComponent.ID.TEC] < -1)))
                     {
                     //Выбрана ли ТЭЦ
-                        #region Добавление в ТЭЦ компонентов
+#region Добавление в ТЭЦ компонентов
 
-                        #region Context TEC
+#region Context TEC
                         // 
                         // contextMenu_TreeView_TEC
                         // 
@@ -1507,18 +1508,18 @@ namespace Statistic
                         // 
                         вывестиИзСоставаToolStripMenuItem.Name = "вывыстиИзСоставаToolStripMenuItem";
                         вывестиИзСоставаToolStripMenuItem.Text = "Вывести из состава";
-                        #endregion
+#endregion
 
                         this.SelectedNode.ContextMenuStrip = contextMenu_TreeNode;
 
                         this.SelectedNode.ContextMenuStrip.ItemClicked += new ToolStripItemClickedEventHandler (this.add_New_TEC_COMP);
 
-                        #endregion
+#endregion
                     }
 
                     if (m_selNode_idComp[TECComponent.ID.GTP] == (int)TECComponent.ID.GTP)//Выбран корень ГТП
                     {
-                        #region Context add GTP
+#region Context add GTP
                         //
                         // contextMenu_TreeNode
                         //
@@ -1530,7 +1531,7 @@ namespace Statistic
                         // 
                         добавитьГТПToolStripMenuItem.Name = "добавитьГТПToolStripMenuItem";
                         добавитьГТПToolStripMenuItem.Text = "Добавить ГТП";
-                        #endregion
+#endregion
 
                         this.SelectedNode.ContextMenuStrip = contextMenu_TreeNode;
                         this.SelectedNode.ContextMenuStrip.ItemClicked += new ToolStripItemClickedEventHandler (this.add_New_TEC_COMP);
@@ -1538,7 +1539,7 @@ namespace Statistic
 
                     if (m_selNode_idComp[TECComponent.ID.PC] == (int)TECComponent.ID.PC)//Выбран корень ЩУ
                     {
-                        #region Context add PC
+#region Context add PC
                         // 
                         // contextMenu_TreeNode
                         // 
@@ -1550,7 +1551,7 @@ namespace Statistic
                         // 
                         добавитьЩУToolStripMenuItem.Name = "добавитьЩУToolStripMenuItem";
                         добавитьЩУToolStripMenuItem.Text = "Добавить ЩУ";
-                        #endregion
+#endregion
 
                         this.SelectedNode.ContextMenuStrip = contextMenu_TreeNode;
                         this.SelectedNode.ContextMenuStrip.ItemClicked += new ToolStripItemClickedEventHandler (this.add_New_TEC_COMP);
@@ -1566,13 +1567,13 @@ namespace Statistic
                         this.SelectedNode.ContextMenuStrip = contextMenu_TreeNode;
                     }
 
-                    #endregion
+#endregion
 
-                    #region Удаление из состава
+#region Удаление из состава
 
                     if ((m_selNode_idComp[TECComponent.ID.GTP] > (int)TECComponent.ID.GTP & m_selNode_idComp[TECComponent.ID.GTP] < (int)TECComponent.ID.PC & m_selNode_idComp[TECComponent.ID.TG] == -1) || (m_selNode_idComp[TECComponent.ID.PC] > (int)TECComponent.ID.PC & m_selNode_idComp[TECComponent.ID.PC] < (int)TECComponent.ID.TG & m_selNode_idComp[TECComponent.ID.TG] == -1))//Выбран конкретный ЩУ или ГТП
                     {
-                        #region Context delete PC,GTP
+#region Context delete PC,GTP
                         // 
                         // contextMenu_TreeNode
                         // 
@@ -1584,16 +1585,16 @@ namespace Statistic
                         //
                         вывестиИзСоставаToolStripMenuItem.Name = "вывыстиИзСоставаToolStripMenuItem";
                         вывестиИзСоставаToolStripMenuItem.Text = "Вывести из состава";
-                        #endregion
+#endregion
 
                         this.SelectedNode.ContextMenuStrip = contextMenu_TreeNode;
                         this.SelectedNode.ContextMenuStrip.ItemClicked += new ToolStripItemClickedEventHandler (this.del_Comp);
                     }
 
-                    #endregion
+#endregion
                 }
 
-                #endregion
+#endregion
             }
 
             /// <summary>

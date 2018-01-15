@@ -52,7 +52,7 @@ namespace Statistic
             m_dictAddingTabs.Add((int)ID_ADDING_TAB.CUSTOM_2X2_2, new ADDING_TAB("выборОбъектывыборОбъекты22-2-ToolStripMenuItem", "Окно 2", HStatisticTabCtrlEx.TYPE_TAB.FLOAT));
             m_dictAddingTabs.Add((int)ID_ADDING_TAB.CUSTOM_2X2_3, new ADDING_TAB("выборОбъектывыборОбъекты22-3-ToolStripMenuItem", "Окно 3", HStatisticTabCtrlEx.TYPE_TAB.FLOAT));
             m_dictAddingTabs.Add((int)ID_ADDING_TAB.CUSTOM_2X2_4, new ADDING_TAB("выборОбъектывыборОбъекты22-4-ToolStripMenuItem", "Окно 4", HStatisticTabCtrlEx.TYPE_TAB.FLOAT));
-            m_dictAddingTabs.Add((int)ID_ADDING_TAB.CUSTOM_2X3_1, new ADDING_TAB("выборОбъектывыборОбъекты23-1-ToolStripMenuItem", "Окно 1", HStatisticTabCtrlEx.TYPE_TAB.FLOAT));            
+            m_dictAddingTabs.Add((int)ID_ADDING_TAB.CUSTOM_2X3_1, new ADDING_TAB("выборОбъектывыборОбъекты23-1-ToolStripMenuItem", "Окно 1", HStatisticTabCtrlEx.TYPE_TAB.FLOAT));
             m_dictAddingTabs.Add((int)ID_ADDING_TAB.CUSTOM_2X3_2, new ADDING_TAB("выборОбъектывыборОбъекты23-2-ToolStripMenuItem", "Окно 2", HStatisticTabCtrlEx.TYPE_TAB.FLOAT));
             m_dictAddingTabs.Add((int)ID_ADDING_TAB.CUSTOM_2X3_3, new ADDING_TAB("выборОбъектывыборОбъекты23-3-ToolStripMenuItem", "Окно 3", HStatisticTabCtrlEx.TYPE_TAB.FLOAT));
             m_dictAddingTabs.Add((int)ID_ADDING_TAB.CUSTOM_2X3_4, new ADDING_TAB("выборОбъектывыборОбъекты23-4-ToolStripMenuItem", "Окно 4", HStatisticTabCtrlEx.TYPE_TAB.FLOAT));
@@ -65,7 +65,7 @@ namespace Statistic
             m_dictAddingTabs.Add((int)ID_ADDING_TAB.DIAGNOSTIC, new ADDING_TAB("ДиагностикаToolStripMenuItem", "Диагностика", ASUTP.Control.HTabCtrlEx.TYPE_TAB.FIXED));
             m_dictAddingTabs.Add((int)ID_ADDING_TAB.ANALYZER, new ADDING_TAB("ПросмотрЖурналаToolStripMenuItem", "Журнал событий", ASUTP.Control.HTabCtrlEx.TYPE_TAB.FIXED));
             #region KhryapinAN 2017-06
-            m_dictAddingTabs.Add((int)ID_ADDING_TAB.SOTIASSO_HOUR, new ADDING_TAB("значенияСОТИАССОЧасToolStripMenuItem", "Значения СОТИАССО-час", ASUTP.Control.HTabCtrlEx.TYPE_TAB.FIXED));            
+            m_dictAddingTabs.Add((int)ID_ADDING_TAB.SOTIASSO_HOUR, new ADDING_TAB("значенияСОТИАССОЧасToolStripMenuItem", "Значения СОТИАССО-час", ASUTP.Control.HTabCtrlEx.TYPE_TAB.FIXED));
             m_dictAddingTabs.Add((int)ID_ADDING_TAB.AIISKUE_SOTIASSO_DAY, new ADDING_TAB("значенияАИИСКУЭСОТИАССОСуткиToolStripMenuItem", "Значения АИСКУЭ+СОТИАССО-сутки", ASUTP.Control.HTabCtrlEx.TYPE_TAB.FIXED));
             #endregion
             m_dictAddingTabs.Add((int)ID_ADDING_TAB.VZLET_TDIRECT, new ADDING_TAB("значенияВзлетТпрямаяToolStripMenuItem", "Расчет теплосети", ASUTP.Control.HTabCtrlEx.TYPE_TAB.FLOAT));
@@ -299,7 +299,7 @@ namespace Statistic
             // 
             // значенияСОТИАССОЧасToolStripMenuItem
             // 
-            this.m_dictAddingTabs[(int)ID_ADDING_TAB.SOTIASSO_HOUR].menuItem.CheckedChanged += new System.EventHandler(this.значенияСОТИАССОЧасToolStripMenuItem_CheckedChanged);            
+            this.m_dictAddingTabs[(int)ID_ADDING_TAB.SOTIASSO_HOUR].menuItem.CheckedChanged += new System.EventHandler(this.значенияСОТИАССОЧасToolStripMenuItem_CheckedChanged);
             // 
             // значенияСОТИАССОСуткиToolStripMenuItem
             // 
@@ -308,7 +308,7 @@ namespace Statistic
             // 
             // значенияВзлетТпрямаяToolStripMenuItem
             // 
-            this.m_dictAddingTabs[(int)ID_ADDING_TAB.VZLET_TDIRECT].menuItem.CheckedChanged += new System.EventHandler(this.значенияВзлетТпрямаяToolStripMenuItem_CheckedChanged);            
+            this.m_dictAddingTabs[(int)ID_ADDING_TAB.VZLET_TDIRECT].menuItem.CheckedChanged += new System.EventHandler(this.значенияВзлетТпрямаяToolStripMenuItem_CheckedChanged);
 
             // 
             // настройкиToolStripMenuItem
@@ -399,7 +399,7 @@ namespace Statistic
             this.изменитьПарольЛКДиспетчераToolStripMenuItem.Size = new System.Drawing.Size(303, 22);
             this.изменитьПарольЛКДиспетчераToolStripMenuItem.Text = "Изменить пароль ЛК-диспетчера...";
             this.изменитьПарольЛКДиспетчераToolStripMenuItem.Click += new System.EventHandler(this.изменитьПарольЛКДиспетчераToolStripMenuItem_Click);
-            изменитьПарольЛКДиспетчераToolStripMenuItem.Enabled = false;            
+            изменитьПарольЛКДиспетчераToolStripMenuItem.Enabled = false;
             
             // 
             // изментьСоставТЭЦГТПЩУToolStripMenuItem
@@ -505,7 +505,7 @@ namespace Statistic
         ///// <param name="e">Аргумент события</param>
         //private void mainMenuStrip_BackColorChanged (object sender, System.EventArgs e)
         //{
-        //    for (int i = 0; i < (sender as MenuStrip).Items.Count; i++)                
+        //    for (int i = 0; i < (sender as MenuStrip).Items.Count; i++)
         //        changeColorToolStripMenuItem ((sender as MenuStrip).Items [i] as ToolStripMenuItem);
         //}
 

@@ -203,7 +203,10 @@ namespace Statistic
                 arMenuItems[indx] = new MenuItem(s_arContentMenuItems[indx], this.OnMenuItem_Content);
 
                 indx = (int)INDEX_PROPERTIES_VIEW.ORIENTATION;
-                arMenuItems [indx] = new MenuItem (s_arContentMenuItems[indx], new MenuItem[] { new MenuItem (@"Вертикально", this.OnMenuItem_Content), new MenuItem (@"Горизонтально", this.OnMenuItem_Content) });                
+                arMenuItems [indx] = new MenuItem (s_arContentMenuItems[indx], new MenuItem[] {
+                    new MenuItem (@"Вертикально", this.OnMenuItem_Content)
+                    , new MenuItem (@"Горизонтально", this.OnMenuItem_Content)
+                });
 
                 indx = (int)INDEX_PROPERTIES_VIEW.QUICK_PANEL;
                 arMenuItems [indx] = new MenuItem (s_arContentMenuItems[indx], this.OnMenuItem_Content);
