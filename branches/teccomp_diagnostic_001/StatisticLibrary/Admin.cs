@@ -380,7 +380,8 @@ namespace StatisticCommon
                                 ;
                         }
 
-                        if ((bInitSensorsStrings == true) && (t.m_bSensorsStrings == false))
+                        if ((bInitSensorsStrings == true)
+                            && (t.m_bSensorsStrings == false))
                             t.InitSensorsTEC();
                         else
                             ;

@@ -939,7 +939,7 @@ namespace Statistic
                     {
                         case CONTROLS.lblCommonP:
                         case CONTROLS.lblPBRrec:
-                        case CONTROLS.lblAverP:                            
+                        case CONTROLS.lblAverP:
                             backColor = FormMain.formGraphicsSettings.BackgroundColor;
                             foreColor = FormMain.formGraphicsSettings.FontColor;
                             szFont = 8F;
@@ -948,7 +948,7 @@ namespace Statistic
                             //col = 1;
                             break;
                         case CONTROLS.lblCommonPVal_Fact:
-                        case CONTROLS.lblAverPVal:                            
+                        case CONTROLS.lblAverPVal:
                             backColor = Color.Black;
                             foreColor = Color.LimeGreen;
                             szFont = 15F;
@@ -956,13 +956,13 @@ namespace Statistic
                             //sz = arPlacement[(int)i].sz;
                             //col = 2;
                             break;
-                        case CONTROLS.lblPBRrecVal:                            
+                        case CONTROLS.lblPBRrecVal:
                             backColor = Color.Black;
                             foreColor = Color.Yellow;
                             szFont = 15F;
                             align = ContentAlignment.MiddleCenter;
                             break;
-                        case CONTROLS.lblCommonPVal_TM:                            
+                        case CONTROLS.lblCommonPVal_TM:
                             backColor = Color.Black;
                             foreColor = Color.Green;
                             szFont = 15F;
@@ -970,7 +970,7 @@ namespace Statistic
                             //sz = arPlacement[(int)i].sz;
                             //col = 3;
                             break;
-                        default:                            
+                        default:
                             backColor = Color.Red;
                             foreColor = Color.Yellow;
                             szFont = 6F;
@@ -1006,7 +1006,7 @@ namespace Statistic
                     {
                         case CONTROLS.lblCurrentE:
                         case CONTROLS.lblHourE:
-                        case CONTROLS.lblDevE:                            
+                        case CONTROLS.lblDevE:
                             backColor = FormMain.formGraphicsSettings.BackgroundColor;
                             foreColor = FormMain.formGraphicsSettings.FontColor;
                             szFont = 8F;
@@ -1015,7 +1015,7 @@ namespace Statistic
                             //col = 4;
                             break;
                         case CONTROLS.lblCurrentEVal:
-                        case CONTROLS.lblHourEVal:                            
+                        case CONTROLS.lblHourEVal:
                             backColor = Color.Black;
                             foreColor = Color.LimeGreen;
                             szFont = 15F;
@@ -1023,7 +1023,7 @@ namespace Statistic
                             //sz = arPlacement[(int)i].sz;
                             //col = 5;
                             break;
-                        case CONTROLS.lblDevEVal:                            
+                        case CONTROLS.lblDevEVal:
                             backColor = Color.Black;
                             foreColor = Color.Yellow;
                             szFont = 15F;
@@ -1031,7 +1031,7 @@ namespace Statistic
                             //sz = arPlacement[(int)i].sz;
                             //col = 5;
                             break;
-                        default:                            
+                        default:
                             backColor = Color.Yellow;
                             foreColor = Color.Red;
                             szFont = 6F;

@@ -267,7 +267,7 @@ namespace Statistic
                         //лейбл для t пр/ч
                         case CONTROLS.lblTemperatureHour:
                         //лейбл для t пр/сут
-                        case CONTROLS.lblTemperatureDate:                            
+                        case CONTROLS.lblTemperatureDate:
                             // цвет заднего плана пустой
                             backClolor = Color.Empty;
                             // цвет переднего плана черный
@@ -281,7 +281,7 @@ namespace Statistic
                         // значение t пр/ч
                         case CONTROLS.lblTemperatureHourValue:
                         // значение пр/сут
-                        case CONTROLS.lblTemperatureDateValue:                            
+                        case CONTROLS.lblTemperatureDateValue:
                             backClolor = Color.Black;
                             foreColor = Color.LimeGreen;
                             szFont = 15F;
@@ -289,7 +289,7 @@ namespace Statistic
                             align = ContentAlignment.MiddleCenter;
                             break;
                             //По умолчанию 
-                        default:                            
+                        default:
                             backClolor = Color.Red;
                             foreColor = Color.Yellow;
                             szFont = 6F;
@@ -770,7 +770,7 @@ namespace Statistic
                     switch ((INDEX_COLUMNS)c)
                     {
                         case INDEX_COLUMNS.TEMPERATURE_FACT:
-                        case INDEX_COLUMNS.POWER_FACT_SUM:                        
+                        case INDEX_COLUMNS.POWER_FACT_SUM:
                         case INDEX_COLUMNS.TEMPERATURE_DEVIATION:
                         case INDEX_COLUMNS.POWER_DEVIATION:
                             Rows[i].Cells[c].Value = @"-".ToString();

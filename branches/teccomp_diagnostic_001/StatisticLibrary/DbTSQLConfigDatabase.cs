@@ -13,16 +13,16 @@ namespace StatisticCommon
     {
         protected static string s_Name = $"{CONN_SETT_TYPE.CONFIG_DB.ToString ()}";
 
-        private static DbTSQLConfigDatabase __this;
+        private static DbTSQLConfigDatabase _this;
 
-        private ConnectionSettings __connSett;
+        private ConnectionSettings _connSett;
 
         public static DbTSQLConfigDatabase DbConfig()
         {
             DbTSQLConfigDatabase dbInterfaceRes = null;
 
-            if (Equals (__this, null) == false)
-                dbInterfaceRes = __this;
+            if (Equals (_this, null) == false)
+                dbInterfaceRes = _this;
             else
                 throw new NullReferenceException("DbTSQLConfigDatabase::ctor () - не был вызван...");
 
@@ -35,8 +35,8 @@ namespace StatisticCommon
             {
                 ConnectionSettings connSettRes;
 
-                if (Equals (__connSett, null) == false)
-                    connSettRes = __connSett;
+                if (Equals (_connSett, null) == false)
+                    connSettRes = _connSett;
                 else
                     throw new NullReferenceException ("DbTSQLConfigDatabase::ConnSett.get () - параметры соединения не были инициализированы...");
 
@@ -55,19 +55,19 @@ namespace StatisticCommon
         public DbTSQLConfigDatabase (ConnectionSettings connSett)
             : base(getTypeDB(connSett), s_Name)
         {
-            __connSett = connSett;
+            SetConnectionSettings (connSett);
 
-            __this = this;
+            _this = this;
         }
 
         public void SetConnectionSettings (ConnectionSettings connSett)
         {
-            __connSett = connSett;
+            _connSett = connSett;
         }
 
         private int register ()
         {
-            return DbSources.Sources ().Register (__connSett, false, s_Name);
+            return DbSources.Sources ().Register (_connSett, false, s_Name);
         }
 
         private void unregister (int iListenerId)
@@ -82,7 +82,7 @@ namespace StatisticCommon
             int iListenerId = -1;
             DbConnection dbConnection;
 
-            if (Equals (__connSett, null) == false) {
+            if (Equals (ConnSett, null) == false) {
                 iListenerId = register ();
 
                 dbConnection = DbSources.Sources ().GetConnection (iListenerId, out error);
@@ -106,7 +106,7 @@ namespace StatisticCommon
             int iListenerId = -1;
             DbConnection dbConnection;
 
-            if (Equals (__connSett, null) == false) {
+            if (Equals (ConnSett, null) == false) {
                 iListenerId = register ();
 
                 dbConnection = DbSources.Sources ().GetConnection(iListenerId, out error);

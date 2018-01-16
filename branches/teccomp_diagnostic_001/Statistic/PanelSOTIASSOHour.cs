@@ -1388,7 +1388,7 @@ namespace Statistic
                         //        else
                         //            b = colorPCurve.B;
                         //        break;
-                        //    case 2:                            
+                        //    case 2:
                         //        g = colorPCurve.G;
                         //        b = colorPCurve.B + diffRGB;
                         //        if (b > 255)

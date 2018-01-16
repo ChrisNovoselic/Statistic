@@ -270,7 +270,7 @@ namespace StatisticAlarm
                     case StatesMachine.RetryEvent:
                         iRes = response(out error, out table);
                         break;
-                    case StatesMachine.InsertEventDetail:                    
+                    case StatesMachine.InsertEventDetail:
                         break;
                     default:
                         iRes = -1;
@@ -1446,7 +1446,7 @@ namespace StatisticAlarm
                 case StatesMachine.Confirm:
                     GetUpdateConfirmResponse(itemQueue, tableRes);
                     break;
-                case StatesMachine.Insert:                
+                case StatesMachine.Insert:
                     //Результата нет (рез-т вставленные/обновленные записи)
                     break;
                 default:

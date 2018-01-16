@@ -472,7 +472,8 @@ namespace StatisticCommon
                         {
                             if (tc.Type == TECComponentBase.TYPE.ELECTRO)
                             {// только для электро-компонентов
-                                if (tc.IsGTP == true)
+                                if ((tc.IsGTP == true)
+                                    || (tc.IsGTP_LK == true))
                                 {
                                     _localTECComponents.Add(tc);
 
@@ -1196,11 +1197,11 @@ namespace StatisticCommon
                     reason = @"3-х минутных значений";
                     waiting = @"Переход в ожидание";
                     break;
-                case StatesMachine.RetroMin_TM_Gen:                    
+                case StatesMachine.RetroMin_TM_Gen:
                     reason += getNameInterval () + @"-минутных значений";
                     waiting = @"Переход в ожидание";
                     break;
-                case StatesMachine.RetroMins_TM:                    
+                case StatesMachine.RetroMins_TM:
                     reason += getNameInterval () + @"-минутных значений";
                     waiting = @"Переход в ожидание";
                     break;
@@ -1353,7 +1354,7 @@ namespace StatisticCommon
                     GetCurrentTimeRequest();
                     break;
                 case StatesMachine.Hours_Fact:
-                    msg = @"получасовых значений";
+                    msg = @"(полу-)часовых значений";
                     getHoursFactRequest(m_curDate.Date.Add(-m_tsOffsetToMoscow));
                     break;
                 case StatesMachine.Hour_TM:
@@ -1365,7 +1366,7 @@ namespace StatisticCommon
                     getHoursTMRequest(m_curDate.Date);
                     break;
                 case StatesMachine.CurrentMins_Fact:
-                    msg = @"трёхминутных значений";
+                    msg = $"{getNameInterval ()}-минутных значений";
                     getMinsFactRequest(lastHour);
                     break;
                 case StatesMachine.CurrentMin_TM:
@@ -1378,7 +1379,7 @@ namespace StatisticCommon
                     getMinDetailTMRequest(m_curDate.Date, lastHour, lastMin);
                     break;
                 case StatesMachine.CurrentMins_TM:
-                    msg = getNameInterval() + @"-минутных значений";
+                    msg = $"{getNameInterval ()}-минутных значений";
                     getMinsTMRequest(lastHour);
                     break;
                 case StatesMachine.CurrentHours_TM_SN_PSUM:
@@ -1403,7 +1404,7 @@ namespace StatisticCommon
                 //    GetHoursRequest(m_curDate.Date);
                 //    break;
                 case StatesMachine.RetroMins_Fact:
-                    msg = @"трёхминутных значений";
+                    msg = $"{getNameInterval ()}-минутных ретроспективных значений";
                     getMinsFactRequest(lastHour);
                     break;
                 case StatesMachine.RetroMin_TM_Gen:
@@ -1411,7 +1412,7 @@ namespace StatisticCommon
                     getMinTMGenRequest(m_curDate.Date, lastHour, lastMin - 1);
                     break;
                 case StatesMachine.RetroMins_TM:
-                    msg = getNameInterval () + @"-минутных значений";
+                    msg = $"{getNameInterval ()}-минутных значений";
                     getMinsTMRequest(lastHour);
                     break;
                 case StatesMachine.HoursTMTemperatureValues:
@@ -2279,7 +2280,7 @@ namespace StatisticCommon
 
             switch (idComp)
             {
-                case TECComponentBase.ID.GTP:                    
+                case TECComponentBase.ID.GTP:
                     break;
                 case TECComponentBase.ID.MAX:
                     for (int i = 0; i < m_valuesHours.Length; i++) //??? m_valuesHours.Length == m_dictValuesTECComponent.Length + 1
@@ -4069,7 +4070,7 @@ namespace StatisticCommon
                                             lastHour = 0;
                                             m_valuesHours[lastHour + 1].valuesFact = 0F;
                                             break;
-                                        default:                                    
+                                        default:
                                             lastHour = hour - 2;
                                             m_valuesHours[lastHour + 1].valuesFact =
                                             m_valuesHours[lastHour + 2].valuesFact = 0F;
@@ -5209,7 +5210,7 @@ namespace StatisticCommon
                                 ;
                             break;
                         case TEC.SOURCE_SOTIASSO.AVERAGE:
-                        case TEC.SOURCE_SOTIASSO.INSATANT_TSQL:                        
+                        case TEC.SOURCE_SOTIASSO.INSATANT_TSQL:
                             string kks_name = string.Empty;
                             int[] cntRecievedValues = new int[m_valuesMins.Length + 1];
                             TG tgTmp = null;
@@ -5300,7 +5301,7 @@ namespace StatisticCommon
                             break;
                     }
                 else
-                    ; //Кол-во строк == 0                
+                    ; //Кол-во строк == 0
             }
             else
                 ;
@@ -5605,7 +5606,7 @@ namespace StatisticCommon
                         else
                             ;
                     break;
-                case CONN_SETT_TYPE.DATA_SOTIASSO_3_MIN:                    
+                case CONN_SETT_TYPE.DATA_SOTIASSO_3_MIN:
                 case CONN_SETT_TYPE.DATA_SOTIASSO: //...для AdminAlarm???
                     iRes = 3;
                     break;

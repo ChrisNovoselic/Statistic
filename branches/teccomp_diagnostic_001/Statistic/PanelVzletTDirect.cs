@@ -761,7 +761,7 @@ namespace Statistic
                         {
                             case CONTROLS.lblTemperatureCurrent:
                             case CONTROLS.lblTemperatureHour:
-                            case CONTROLS.lblTemperatureDate:                                
+                            case CONTROLS.lblTemperatureDate:
                                 backClolor = Color.Empty;
                                 foreColor = Color.Black;
                                 szFont = 8F;
@@ -769,13 +769,13 @@ namespace Statistic
                                 break;
                             case CONTROLS.lblTemperatureCurrentValue:
                             case CONTROLS.lblTemperatureHourValue:
-                            case CONTROLS.lblTemperatureDateValue:                                
+                            case CONTROLS.lblTemperatureDateValue:
                                 backClolor = Color.Black;
                                 foreColor = Color.LimeGreen;
                                 szFont = 15F;
                                 align = ContentAlignment.MiddleCenter;
                                 break;
-                            default:                                
+                            default:
                                 backClolor = Color.Red;
                                 foreColor = Color.Yellow;
                                 szFont = 6F;
@@ -810,7 +810,7 @@ namespace Statistic
                         {
                             case CONTROLS.lblDeviatCurrent:
                             case CONTROLS.lblDeviatHour:
-                            case CONTROLS.lblDeviatDate:                                
+                            case CONTROLS.lblDeviatDate:
                                 backClolor = Color.Empty;
                                 foreColor = Color.Black;
                                 szFont = 8F;
@@ -818,13 +818,13 @@ namespace Statistic
                                 break;
                             case CONTROLS.lblDeviatCurrentValue:
                             case CONTROLS.lblDeviatHourValue:
-                            case CONTROLS.lblDeviatDateValue:                                
+                            case CONTROLS.lblDeviatDateValue:
                                 backClolor = Color.Black;
                                 foreColor = Color.Yellow; //LimeGreen
                                 szFont = 15F;
                                 align = ContentAlignment.MiddleCenter;
                                 break;
-                            default:                                
+                            default:
                                 backClolor = Color.Red;
                                 foreColor = Color.Yellow;
                                 szFont = 6F;

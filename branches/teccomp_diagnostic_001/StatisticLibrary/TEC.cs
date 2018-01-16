@@ -394,7 +394,9 @@ namespace StatisticCommon
                 bool bRes = false;
                 if ((string.IsNullOrEmpty (m_SensorsString_SOTIASSO) == false)
                     && (Equals(m_SensorsStrings_ASKUE, null) == false)) {
-                    bRes = (string.IsNullOrEmpty (m_SensorsString_VZLET) == false) || Type == TEC_TYPE.BIYSK;
+                    bRes = (string.IsNullOrEmpty (m_SensorsString_VZLET) == false)
+                        || Type == TEC_TYPE.BIYSK
+                        || m_id > (int)TECComponentBase.ID.LK;
                 }
                 else
                     ;
@@ -424,8 +426,8 @@ namespace StatisticCommon
                         strRes = m_SensorsStrings_ASKUE[(int)indxTime];
                         break;
                     default:
-                        Logging.Logg().Error(@"TEC::GetSensorsString (CONN_SETT_TYPE=" + connSettType.ToString ()
-                                        + @"; HDateTime.INTERVAL=" + indxTime.ToString() + @")", Logging.INDEX_MESSAGE.NOT_SET);
+                        Logging.Logg().Error($"TEC::GetSensorsString (CONN_SETT_TYPE={connSettType.ToString ()}; HDateTime.INTERVAL={indxTime.ToString()})"
+                            , Logging.INDEX_MESSAGE.NOT_SET);
                         break;
                 }
             }
@@ -779,15 +781,15 @@ namespace StatisticCommon
             // по размерности '(int)HDateTime.INTERVAL.COUNT_ID_TIME'
                 m_SensorsStrings_ASKUE = new string [] { string.Empty, string.Empty };
             else {
-            // очистить
+            // очистить - АИИСКУЭ
                 m_SensorsStrings_ASKUE [(int)HDateTime.INTERVAL.HOURS] =
                 m_SensorsStrings_ASKUE [(int)HDateTime.INTERVAL.MINUTES] =
                     string.Empty;
             }
-
-            m_SensorsString_VZLET = string.Empty;
-
+            // очистить - СОТИАССО
             m_SensorsString_SOTIASSO = string.Empty;
+            // очистить - Взлет
+            m_SensorsString_VZLET = string.Empty;
             //Цикл по всем компонентам ТЭЦ
             for (i = 0; i < list_TECComponents.Count; i++)
                 // в ~ от вида оборудования
@@ -928,7 +930,7 @@ namespace StatisticCommon
         /// Возвратить строку-перечисление с идентификаторами для ТЭЦ в целом или ее компонентов
         /// </summary>
         /// <param name="num_comp">Номер (индекс) компонента (для ТЭЦ = -1)</param>
-        /// <returns></returns>
+        /// <returns>Строка-перечисление с идентификаторами</returns>
         private string idComponentValueQuery (int num_comp, TECComponentBase.TYPE type) {
             string strRes = string.Empty;
 
@@ -944,7 +946,7 @@ namespace StatisticCommon
                         });
                         break;
                     case TECComponentBase.TYPE.ELECTRO:
-                        list_TECComponents.ForEach(g => { if (g.IsGTP == true) strRes += @", " + (g.m_id).ToString(); else ; });
+                        list_TECComponents.ForEach(g => { if ((g.IsGTP == true) || (g.IsGTP_LK == true)) strRes += @", " + (g.m_id).ToString(); else ; });
                         break;
                     default:
                         break;
@@ -988,7 +990,7 @@ namespace StatisticCommon
 
             //switch (mode)
             //{
-            //    case AdminTS.TYPE_FIELDS.STATIC:                    
+            //    case AdminTS.TYPE_FIELDS.STATIC:
             //        break;
             //    case AdminTS.TYPE_FIELDS.DYNAMIC:
                     strRes = @"SELECT " +
