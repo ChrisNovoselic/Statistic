@@ -812,7 +812,7 @@ namespace Statistic
 
                 regularHourCellStyle.BackColor = FormMain.formGraphicsSettings.COLOR(FormGraphicsSettings.INDEX_COLOR_VAUES.ASKUE_LK_REGULAR);
                 mainHourCellStyle.BackColor = FormMain.formGraphicsSettings.COLOR(FormGraphicsSettings.INDEX_COLOR_VAUES.ASKUE);
-                //// полужирный на основе 1-ой ячейки                
+                //// полужирный на основе 1-ой ячейки
                 //mainHourCellStyle.Font = new System.Drawing.Font(RowsDefaultCellStyle.Font, FontStyle.Bold);
 
                 //cntWarn = 0;
@@ -1486,13 +1486,13 @@ namespace Statistic
             lock (m_tecView.m_lockValue)
             {
                 m_dgwHours.Fill(m_tecView.m_valuesHours
-                , m_tecView.lastHour
-                , m_tecView.lastReceivedHour
-                , m_tecView.m_valuesHours.Length
-                , m_tecView.m_tec.m_id
-                , m_tecView.currHour
-                , m_tecView.m_arTypeSourceData[(int)HDateTime.INTERVAL.HOURS] == CONN_SETT_TYPE.DATA_AISKUE
-                , m_tecView.serverTime);
+                    , m_tecView.lastHour
+                    , m_tecView.lastReceivedHour
+                    , m_tecView.m_valuesHours.Length
+                    , m_tecView.m_tec.m_id
+                    , m_tecView.currHour
+                    , m_tecView.m_arTypeSourceData[(int)HDateTime.INTERVAL.HOURS] == CONN_SETT_TYPE.DATA_AISKUE
+                    , m_tecView.serverTime);
             }
         }
 
