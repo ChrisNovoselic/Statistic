@@ -276,17 +276,14 @@ namespace StatisticCommon
             initTECComponents();
         }
 
-        public void InitTEC(int idListener, FormChangeMode.MODE_TECCOMPONENT mode, /*TYPE_DATABASE_CFG typeCfg, */HMark markQueries, bool bIgnoreTECInUse, int[] arTECLimit, bool bUseData = false)
+        public void InitTEC(FormChangeMode.MODE_TECCOMPONENT mode, /*TYPE_DATABASE_CFG typeCfg, */HMark markQueries, bool bIgnoreTECInUse, int[] arTECLimit, bool bUseData = false)
         {
             //Logging.Logg().Debug("Admin::InitTEC () - вход...");
 
-            if (!(idListener < 0))
-                if (mode == FormChangeMode.MODE_TECCOMPONENT.ANY)
-                    this.m_list_tec = DbTSQLConfigDatabase.DbConfig().InitTEC(bIgnoreTECInUse, arTECLimit, bUseData) as DbTSQLConfigDatabase.ListTEC;
-                else
-                    this.m_list_tec = DbTSQLConfigDatabase.DbConfig().InitTEC(mode, bIgnoreTECInUse, arTECLimit, bUseData) as DbTSQLConfigDatabase.ListTEC;
+            if (mode == FormChangeMode.MODE_TECCOMPONENT.ANY)
+                this.m_list_tec = DbTSQLConfigDatabase.DbConfig().InitTEC(bIgnoreTECInUse, arTECLimit, bUseData) as DbTSQLConfigDatabase.ListTEC;
             else
-                this.m_list_tec = new DbTSQLConfigDatabase.ListTEC ();
+                this.m_list_tec = DbTSQLConfigDatabase.DbConfig ().InitTEC(mode, bIgnoreTECInUse, arTECLimit, bUseData) as DbTSQLConfigDatabase.ListTEC;
 
             initQueries(markQueries);
             initTECComponents();

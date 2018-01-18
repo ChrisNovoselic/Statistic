@@ -38,25 +38,7 @@ namespace trans_mt
             int[] arConfigDB = new int[(Int16)CONN_SETT_TYPE.COUNT_CONN_SETT_TYPE];
             string[] arKeyTypeConfigDB = new string[(Int16)CONN_SETT_TYPE.COUNT_CONN_SETT_TYPE] { @"ТипБДКфгИсточник", @"ТипБДКфгНазначение" };
 
-            //TYPE_DATABASE_CFG[] arTypeConfigDB = new TYPE_DATABASE_CFG[(Int16)CONN_SETT_TYPE.COUNT_CONN_SETT_TYPE] { TYPE_DATABASE_CFG.UNKNOWN, TYPE_DATABASE_CFG.UNKNOWN };
-            //for (i = 0; i < (Int16)CONN_SETT_TYPE.COUNT_CONN_SETT_TYPE; i++)
-            //{
-            //    arConfigDB[i] = Int32.Parse(m_sFileINI.GetMainValueOfKey(arKeyTypeConfigDB[i]));
-            //    for (TYPE_DATABASE_CFG t = TYPE_DATABASE_CFG.CFG_190; t < TYPE_DATABASE_CFG.UNKNOWN; t++)
-            //    {
-            //        if (t.ToString().Contains(arConfigDB[i].ToString()) == true)
-            //        {
-            //            arTypeConfigDB[i] = t;
-            //            break;
-            //        }
-            //        else
-            //            ;
-            //    }
-            //}
-
             bool bIgnoreTECInUse = false;
-            //string strTypeField = m_sFileINI.GetMainValueOfKey(@"РДГФорматТаблицаНазначение");
-            int idListener = -1;
 
             ASUTP.Core.HMark markQueries = new ASUTP.Core.HMark (new int[] { (int)StatisticCommon.CONN_SETT_TYPE.ADMIN, (int)StatisticCommon.CONN_SETT_TYPE.PBR, (int)StatisticCommon.CONN_SETT_TYPE.MTERM });
             //markQueries.Marked((int)StatisticCommon.CONN_SETT_TYPE.ADMIN);
@@ -65,9 +47,10 @@ namespace trans_mt
 
             for (i = 0; i < (Int16)CONN_SETT_TYPE.COUNT_CONN_SETT_TYPE; i++)
             {
-                idListener = DbMCSources.Sources().Register(s_listFormConnectionSettings[(int)StatisticCommon.CONN_SETT_TYPE.CONFIG_DB].getConnSett(i), false, @"CONFIG_DB");
+                DbTSQLConfigDatabase.DbConfig ().SetConnectionSettings (s_listFormConnectionSettings [(int)StatisticCommon.CONN_SETT_TYPE.CONFIG_DB].getConnSett (i));
+                DbTSQLConfigDatabase.DbConfig ().Register();
 
-                if (! (idListener < 0))
+                if (! (DbTSQLConfigDatabase.DbConfig ().ListenerId < 0))
                 {
                     switch (i)
                     {
@@ -82,7 +65,7 @@ namespace trans_mt
                     }
                     try
                     {
-                        m_arAdmin[i].InitTEC(idListener, m_modeTECComponent, /*arTypeConfigDB [i], */markQueries, bIgnoreTECInUse, new int[] { 0, (int)TECComponent.ID.LK });
+                        m_arAdmin[i].InitTEC(m_modeTECComponent, /*arTypeConfigDB [i], */markQueries, bIgnoreTECInUse, new int[] { 0, (int)TECComponent.ID.LK });
                         RemoveTEC(m_arAdmin[i]);
                     }
                     catch (Exception e)
@@ -112,7 +95,7 @@ namespace trans_mt
 
                     //m_arAdmin[i].m_ignore_connsett_data = true; //-> в конструктор
 
-                    DbMCSources.Sources().UnRegister(idListener);
+                    DbTSQLConfigDatabase.DbConfig ().UnRegister();
                 }
                 else
                     ;

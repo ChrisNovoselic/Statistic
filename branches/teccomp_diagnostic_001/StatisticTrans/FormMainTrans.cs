@@ -858,7 +858,6 @@ namespace StatisticTrans
         {
             CreatefileConnSett(connSettFileName);
 
-
             bool bShowFormConnSett = false;
 
             if (s_listFormConnectionSettings[(int)StatisticCommon.CONN_SETT_TYPE.CONFIG_DB].Ready == 0)
@@ -884,7 +883,8 @@ namespace StatisticTrans
 
             if (bShowFormConnSett == true)
                 конфигурацияБДToolStripMenuItem.PerformClick();
-
+            else
+                ;
         }
 
         /// <summary>

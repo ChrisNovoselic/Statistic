@@ -9,22 +9,20 @@ using System.Data.Common;
 
 namespace StatisticCommon
 {
-    public partial class DbTSQLConfigDatabase : DbTSQLInterface
+    public class DbTSQLDataSource : DbTSQLInterface
     {
-        protected static string s_Name = $"{CONN_SETT_TYPE.CONFIG_DB.ToString ()}";
-
-        private static DbTSQLConfigDatabase _this;
+        private static DbTSQLDataSource _this;
 
         private ConnectionSettings _connSett;
 
-        public static DbTSQLConfigDatabase DbConfig()
+        public static DbTSQLDataSource DataSource ()
         {
-            DbTSQLConfigDatabase dbInterfaceRes = null;
+            DbTSQLDataSource dbInterfaceRes = null;
 
             if (Equals (_this, null) == false)
                 dbInterfaceRes = _this;
             else
-                throw new NullReferenceException("DbTSQLConfigDatabase::ctor () - не был вызван...");
+                throw new NullReferenceException ("DbTSQLDataSource::ctor () - не был вызван...");
 
             return dbInterfaceRes;
         }
@@ -38,23 +36,23 @@ namespace StatisticCommon
                 if (Equals (_connSett, null) == false)
                     connSettRes = _connSett;
                 else
-                    throw new NullReferenceException ("DbTSQLConfigDatabase::ConnSett.get () - параметры соединения не были инициализированы...");
+                    throw new NullReferenceException ("DbTSQLDataSource::ConnSett.get () - параметры соединения не были инициализированы...");
 
                 return connSettRes;
             }
         }
 
-        //protected /*static*/ DbConnection m_connConfigDB;
-
-        private DbTSQLConfigDatabase ()
-            : this (new ConnectionSettings())
+        private DbTSQLDataSource (string name)
+            : this (new ConnectionSettings(), name)
         {
             throw new Exception (@"Нельзя создать объект для обмена данными с БД конфигурации без параметров соединения с ней...");
         }
 
-        public DbTSQLConfigDatabase (ConnectionSettings connSett)
-            : base(getTypeDB(connSett), s_Name)
+        public DbTSQLDataSource (ConnectionSettings connSett, string name)
+            : base(getTypeDB(connSett), name, false)
         {
+            _iListenerId = -1;
+            _counterRegistred = -1;
             SetConnectionSettings (connSett);
 
             _this = this;
@@ -62,17 +60,108 @@ namespace StatisticCommon
 
         public void SetConnectionSettings (ConnectionSettings connSett)
         {
-            _connSett = connSett;
+            if (IsModeConnectionLeaving == false) {
+                _connSett = connSett;
+                // при вызове из конструктора повторная инициализация
+                _iListenerId = -1;
+                _counterRegistred = -1;
+            } else
+                throw new InvalidOperationException($"DbTSQLDataSource::ListenerId - IsModeConnectionLeaving={IsModeConnectionLeaving}...");
         }
 
-        private int register ()
+        public bool IsModeConnectionLeaving
         {
-            return DbSources.Sources ().Register (_connSett, false, s_Name);
+            get
+            {
+                return _iListenerId > 0;
+            }
         }
 
-        private void unregister (int iListenerId)
+        private int _iListenerId;
+
+        private int _counterRegistred;
+
+        public int ListenerId
         {
-            DbSources.Sources ().UnRegister (iListenerId);
+            get
+            {
+                if (IsModeConnectionLeaving == true)
+                    return _iListenerId;
+                else
+                    throw new InvalidOperationException ($"DbTSQLDataSource::ListenerId - IsModeConnectionLeaving={IsModeConnectionLeaving}...");
+            }
+        }
+
+        public void Register (string name)
+        {
+            _iListenerId = register (name);
+
+            _counterRegistred += _counterRegistred < 0 ? 2 : 1;
+        }
+
+        public void UnRegister ()
+        {
+            if (unregister (_iListenerId, true) == true)
+                _iListenerId = -1;
+            else
+                ;
+
+            _counterRegistred--;
+        }
+
+        protected int register ()
+        {
+            return register (Name);
+        }
+
+        protected int register (string name)
+        {
+            string mesThrow = string.Empty;
+
+            if ((IsModeConnectionLeaving == false)
+                && (Equals (_connSett, null) == false)
+                && (_connSett.Validate () == ConnectionSettings.ConnectionSettingsError.NoError))
+                return DbSources.Sources ().Register (_connSett, false, name);
+            else {
+                ASUTP.Logging.Logg ().Warning ($"DbTSQLDataSource::register () - повторная регистрация для {Name}..."
+                    , ASUTP.Logging.INDEX_MESSAGE.NOT_SET);
+
+                return ListenerId;
+            }
+        }
+
+        protected bool unregister (int iListenerId, bool bIsLeaving = false)
+        {
+            bool bRes = false;
+
+            string mesThrow = string.Empty;
+
+            if (bIsLeaving == false) {
+                bRes = true;
+            } else {
+                if (IsModeConnectionLeaving == true)
+                    if (_counterRegistred == 1)
+                        bRes = true;
+                    else if (_counterRegistred == 0)
+                        mesThrow = Equals (_connSett, null) == false ? _connSett.Validate ().ToString () : "null";
+                    else
+                        ;
+                else
+                    mesThrow = Equals (_connSett, null) == false ? _connSett.Validate ().ToString () : "null";
+            }
+
+            if (bRes == true)
+                DbSources.Sources ().UnRegister (iListenerId);
+            else {
+                if (string.IsNullOrEmpty (mesThrow) == false) {
+                    mesThrow = $"DbTSQLDataSource::unregister () - IsModeConnectionLeaving={IsModeConnectionLeaving}, ConnectionSettings::Validate={mesThrow}...";
+
+                    throw new InvalidOperationException (mesThrow);
+                } else
+                    ;
+            }
+
+            return bRes;
         }
 
         public void ExecNonQuery (string query, out int error)
@@ -83,7 +172,10 @@ namespace StatisticCommon
             DbConnection dbConnection;
 
             if (Equals (ConnSett, null) == false) {
-                iListenerId = register ();
+                if (IsModeConnectionLeaving == false)
+                    iListenerId = register (Name);
+                else
+                    iListenerId = _iListenerId;
 
                 dbConnection = DbSources.Sources ().GetConnection (iListenerId, out error);
 
@@ -93,7 +185,13 @@ namespace StatisticCommon
                     ;
                 }
 
-                unregister (iListenerId);
+                if (IsModeConnectionLeaving == false)
+                    if (unregister (iListenerId) == false)
+                        throw new Exception ("::ExecNonQuery () - Не разорвано временное соединения с БД...");
+                    else
+                        ;
+                else
+                    ;
             } else
                 throw new Exception ("Не установлены параметры для соединения с БД...");
         }
@@ -107,9 +205,12 @@ namespace StatisticCommon
             DbConnection dbConnection;
 
             if (Equals (ConnSett, null) == false) {
-                iListenerId = register ();
+                if (IsModeConnectionLeaving == false)
+                    iListenerId = register (Name);
+                else
+                    iListenerId = _iListenerId;
 
-                dbConnection = DbSources.Sources ().GetConnection(iListenerId, out error);
+                dbConnection = DbSources.Sources ().GetConnection (iListenerId, out error);
 
                 if (error == 0)
                     tableRes = Select (ref dbConnection, query, null, null, out error);
@@ -117,17 +218,49 @@ namespace StatisticCommon
                     tableRes = new DataTable ();
                 }
 
-                unregister (iListenerId);
+                if (IsModeConnectionLeaving == false)
+                    if (unregister (iListenerId) == false)
+                        throw new Exception ("::ExecNonQuery () - Не разорвано временное соединения с БД...");
+                    else
+                        ;
+                else
+                    ;
 
                 return tableRes;
             } else
                 throw new Exception ("Не установлены параметры для соединения с БД...");
         }
 
-        //public static DataTable Select (string query, DbType[]types, object[]paramValues, out int error)
-        //{
-        //    return Select (_connSett, query, types, paramValues, out error);
-        //}
+        public DataTable Select (string query, DbType [] types, object [] paramValues, out int error)
+        {
+            return Select (query, out error);
+        }
+
+        public void ExecNonQuery (string query, DbType [] types, object [] paramValues, out int error)
+        {
+            ExecNonQuery (query, out error);
+        }
+    }
+
+    public partial class DbTSQLConfigDatabase : DbTSQLDataSource 
+    {
+        private static DbTSQLConfigDatabase _this;
+
+        public DbTSQLConfigDatabase (ConnectionSettings connSett)
+            : base (connSett, $"{CONN_SETT_TYPE.CONFIG_DB.ToString ()}")
+        {
+            _this = this;
+        }
+
+        public static DbTSQLConfigDatabase DbConfig ()
+        {
+            return _this;
+        }
+
+        public void Register ()
+        {
+            Register (Name);
+        }
 
         /// <summary>
         /// Возвратить строку запроса для получения списка ТЭЦ
@@ -171,7 +304,7 @@ namespace StatisticCommon
         /// <param name="arIdLimits">Диапазон идентификаторов ТЭЦ</param>
         /// <param name="err">Идентификатор ошибки при выполнении запроса</param>
         /// <returns>Таблица - с данными</returns>
-        public DataTable getListTEC (bool bIgnoreTECInUse, int [] arIdLimits, out int err)
+        public DataTable GetListTEC (bool bIgnoreTECInUse, int [] arIdLimits, out int err)
         {
             string req = getQueryListTEC (bIgnoreTECInUse, arIdLimits);
 
@@ -196,21 +329,30 @@ namespace StatisticCommon
         public DataTable GetDataTableConnSettingsOfIdSource (int id_ext, int id_role, out int err)
         {
             DataTable tableRes;
-
             DbConnection dbConn;
-            int iListenerId;
 
-            iListenerId = register();
-            dbConn = DbSources.Sources ().GetConnection (iListenerId, out err);
+            if (IsModeConnectionLeaving == true) {
+                //!!! Перед вызовом д.б. выполнена регистрация
+                dbConn = DbSources.Sources ().GetConnection (ListenerId, out err);
 
-            if (err == 0)
-                tableRes = ConnectionSettingsSource.GetConnectionSettings (ref dbConn, id_ext, id_role, out err);
-            else
-                tableRes = new DataTable ();
-
-            unregister (iListenerId);
+                if (err == 0)
+                    tableRes = ConnectionSettingsSource.GetConnectionSettings (ref dbConn, id_ext, id_role, out err);
+                else
+                    tableRes = new DataTable ();
+            } else
+                throw new InvalidOperationException ($"DbTSQLConfigDatabase::GetDataTableConnSettingsOfIdSource () - объект не переведен в режим удержания соединения...");
 
             return tableRes;
+        }
+
+        /// <summary>
+        /// Возвратить таблицу со всеми источниками данных
+        /// </summary>
+        /// <param name="err">Признак ошибки при выполнении операции</param>
+        /// <returns>Таблица с данными - результат запроса</returns>
+        public DataTable GetDataTableSource (out int err)
+        {
+            return Select ("SELECT * FROM SOURCE", out err);
         }
 
         public DataTable GetDataTableConnSettingsOfIdSource (int id, out int err)

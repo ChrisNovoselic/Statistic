@@ -548,7 +548,7 @@ namespace StatisticCommon
             m_strNamesField = new List<string>((int)INDEX_NAME_FIELD.COUNT_INDEX_NAME_FIELD);
             for (int i = 0; i < (int)INDEX_NAME_FIELD.COUNT_INDEX_NAME_FIELD; i++) m_strNamesField.Add(string.Empty);
 
-            EventUpdate += new EventHandler(StatisticCommon.DbTSQLConfigDatabase.DbConfig().OnTECUpdate);
+            EventUpdate += new EventHandler(StatisticCommon.DbTSQLConfigDatabase.DbConfig ().OnTECUpdate);
         }
 
         public void AddTECComponent(DataRow r)

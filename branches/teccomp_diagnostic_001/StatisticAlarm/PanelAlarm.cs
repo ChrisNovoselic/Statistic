@@ -125,9 +125,9 @@ namespace StatisticAlarm
                 bWorkChecked = (HStatisticUsers.IsAllowed((int)HStatisticUsers.ID_ALLOWED.AUTO_ALARM_KOMDISP)
                     || (mode == MODE.SERVICE)) && (! (mode == MODE.VIEW));
                 //Инициализация списка с ТЭЦ
-                m_list_tec = DbTSQLConfigDatabase.DbConfig().InitTEC(true, new int[] { 0, (int)TECComponent.ID.LK }, false);
+                m_list_tec = DbTSQLConfigDatabase.DbConfig ().InitTEC(true, new int[] { 0, (int)TECComponent.ID.LK }, false);
                 //Инициализация
-                connSett = new ConnectionSettings(DbTSQLConfigDatabase.DbConfig().GetDataTableConnSettingsOfIdSource (FormMainBase.s_iMainSourceData
+                connSett = new ConnectionSettings(DbTSQLConfigDatabase.DbConfig ().GetDataTableConnSettingsOfIdSource (FormMainBase.s_iMainSourceData
                         , -1
                         , out err).Rows[0]
                     , -1);
@@ -210,7 +210,7 @@ namespace StatisticAlarm
                 ;
 
             if (err < 0)
-                throw new Exception("PanelAlarm::initialize () - объект не был создан...");
+                throw new InvalidOperationException("PanelAlarm::initialize () - объект не был создан...");
             else
                 ;
 
@@ -585,15 +585,9 @@ namespace StatisticAlarm
             //Запомнить установленное значение "времени выполнения"
             comp.m_dcKoeffAlarmPcur = (obj as NumericUpDown).Value;
 
-            int err = -1
-                //Зарегистрировать соединение с БД_конфигарации
-                , idListenerConfigDB = DbSources.Sources().Register(FormMain.s_listFormConnectionSettings[(int)CONN_SETT_TYPE.CONFIG_DB].getConnSett(), false, @"CONFIG_DB");
-            //Получить объект соединения с БД_конфигурации
-            System.Data.Common.DbConnection dbConn = DbSources.Sources().GetConnection(idListenerConfigDB, out err);
+            int err = -1;
             //Сохранить установленное значение в БД_конфигурации
-            DbTSQLInterface.ExecNonQuery(ref dbConn, @"UPDATE [dbo].[GTP_LIST] SET [KoeffAlarmPcur] = " + comp.m_dcKoeffAlarmPcur + @" WHERE [ID] = " + comp.m_id, null, null, out err);
-            //Отменить регистрацию соединения
-            DbSources.Sources().UnRegister(idListenerConfigDB);
+            DbTSQLConfigDatabase.DbConfig().ExecNonQuery(@"UPDATE [dbo].[GTP_LIST] SET [KoeffAlarmPcur] = " + comp.m_dcKoeffAlarmPcur + @" WHERE [ID] = " + comp.m_id, null, null, out err);
 
             Logging.Logg().Action(@"PanelAlarm::NudnKoeffAlarmCurPower_ValueChanged () - пред.=" + dcPrevKoeffAlarmPcur + @", текущ.=" + comp.m_dcKoeffAlarmPcur + @" ..."
                 , Logging.INDEX_MESSAGE.NOT_SET);

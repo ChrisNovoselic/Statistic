@@ -993,13 +993,12 @@ namespace Statistic
         /// </summary>
         private void fillDataTable()
         {
-            int idListener;
             DbConnection connConfigDB;
 
             int err = -1;
 
-            idListener = register_idListenerConfDB(out err);
-            connConfigDB = DbSources.Sources().GetConnection(idListener, out err);
+            DbTSQLConfigDatabase.DbConfig ().Register ();
+            connConfigDB = DbSources.Sources().GetConnection(DbTSQLConfigDatabase.DbConfig ().ListenerId, out err);
             if (table_TEC.Columns.Count == 0)
             {
                 DataColumn[] columns = { new DataColumn("ID"), new DataColumn("DESCRIPTION") };
@@ -1024,7 +1023,7 @@ namespace Statistic
 
             m_arr_origTable[(int)ID_Table.Profiles] = User.GetTableAllProfile(connConfigDB);
 
-            unregister_idListenerConfDB(idListener);
+            DbTSQLConfigDatabase.DbConfig ().UnRegister();
         }
 
         /// <summary>
@@ -1051,16 +1050,15 @@ namespace Statistic
             profileTable.Columns.Add("VALUE");
             profileTable.Columns.Add("ID_UNIT");
             DbConnection connConfigDB;
-            int idListener
-                , err;
+            int err;
             Dictionary<int, User.UNIT_VALUE> profile = null;
 
-            idListener = register_idListenerConfDB(out err);
-            connConfigDB = DbSources.Sources().GetConnection(idListener, out err);
+            DbTSQLConfigDatabase.DbConfig ().Register ();
+            connConfigDB = DbSources.Sources().GetConnection(DbTSQLConfigDatabase.DbConfig ().ListenerId, out err);
 
             profile = User.GetDictProfileItem(connConfigDB, id_role, id_user, bIsRole, tableAllProfiles);
 
-            unregister_idListenerConfDB(idListener);
+            DbTSQLConfigDatabase.DbConfig ().UnRegister ();
 
             for (int i = 0; i < profile.Count; i++)
             {
@@ -1131,31 +1129,6 @@ namespace Statistic
 
             if (e.Clear != false)
                 delegateReportClear(e.Clear);
-        }
-
-        /// <summary>
-        /// Регистрация ID
-        /// </summary>
-        /// <param name="err">Ошибка в процессе регистрации</param>
-        /// <returns>Идентификатор подписчика на события получения данных от объекта обращения к БД</returns>
-        protected int register_idListenerConfDB(out int err)
-        {
-            err = -1;
-            int idListener = -1;
-
-            ConnectionSettings connSett = ASUTP.Forms.FormMainBaseWithStatusStrip.s_listFormConnectionSettings[(int)CONN_SETT_TYPE.CONFIG_DB].getConnSett();
-            idListener = DbSources.Sources().Register(connSett, false, CONN_SETT_TYPE.CONFIG_DB.ToString());
-
-            return idListener;
-        }
-
-        /// <summary>
-        /// Отмена регистрации ID
-        /// </summary>
-        /// <param name="idListener">ID</param>
-        protected void unregister_idListenerConfDB(int idListener)
-        {
-            DbSources.Sources().UnRegister(idListener);
         }
 
         /// <summary>
@@ -1464,15 +1437,12 @@ namespace Statistic
             string[] warning;
             string keys = string.Empty;
 
-            ConnectionSettings connSett;
-            int idListener = -1;
             DbConnection dbConn;
 
             if (validate_saving (m_arr_editTable, out warning) == false)
             {
-                connSett = ASUTP.Forms.FormMainBaseWithStatusStrip.s_listFormConnectionSettings [(int)CONN_SETT_TYPE.CONFIG_DB].getConnSett ();
-                idListener = DbSources.Sources ().Register (connSett, false, CONN_SETT_TYPE.CONFIG_DB.ToString ());
-                dbConn = DbSources.Sources ().GetConnection (idListener, out err);
+                DbTSQLConfigDatabase.DbConfig ().Register ();
+                dbConn = DbSources.Sources ().GetConnection (DbTSQLConfigDatabase.DbConfig ().ListenerId, out err);
 
                 if (err == 0) {
                     for (ID_Table i = ID_Table.Unknown + 1; i < ID_Table.Count; i++)
@@ -1511,7 +1481,7 @@ namespace Statistic
                 } else
                     Logging.Logg().Error(string.Format("PanelUser::buttonOK_click () - данные не сохранены..."), Logging.INDEX_MESSAGE.NOT_SET);
 
-                DbSources.Sources ().UnRegister (idListener);
+                DbTSQLConfigDatabase.DbConfig ().UnRegister ();
             }
             else
             {

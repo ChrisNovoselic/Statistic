@@ -77,8 +77,8 @@ namespace Statistic
             this.ResumeLayout();
         }
 
-        public PanelAdminNSS(int idListener, ASUTP.Core.HMark markQueries)
-            : base(idListener, markQueries, new int[] { 0, (int)TECComponent.ID.LK })
+        public PanelAdminNSS(ASUTP.Core.HMark markQueries)
+            : base(markQueries, new int[] { 0, (int)TECComponent.ID.LK })
         {
             m_admin.SetDelegateSaveComplete(null);
         }

@@ -117,7 +117,11 @@ namespace StatisticAnalyzer
 
             if (s_listFormConnectionSettings[(int)CONN_SETT_TYPE.CONFIG_DB].Ready == 0)
             {
-                _state = InitializeConfigDB(out msgError);
+                //!!! Один экземпляр для всего приложения на весь срок выполнения
+                new DbTSQLConfigDatabase (s_listFormConnectionSettings [(int)CONN_SETT_TYPE.CONFIG_DB].getConnSett ());
+                DbTSQLConfigDatabase.DbConfig ().Register ();
+
+                _state = validateUser(out msgError);
                 switch (_state)
                 {
                     case -1:
@@ -134,8 +138,6 @@ namespace StatisticAnalyzer
                         break;
                     default:
                         //Успех... пост-инициализация
-                        //!!! Один экземпляр для всего приложения на весь срок выполнения
-                        new DbTSQLConfigDatabase (s_listFormConnectionSettings [(int)CONN_SETT_TYPE.CONFIG_DB].getConnSett ());
                         formParameters = new FormParameters_DB();
                         updateParametersSetup();
                         s_iMainSourceData = Int32.Parse(formParameters.m_arParametrSetup[(int)FormParameters.PARAMETR_SETUP.MAIN_DATASOURCE]);
@@ -162,6 +164,8 @@ namespace StatisticAnalyzer
 
                         break;
                 }
+
+                DbTSQLConfigDatabase.DbConfig ().UnRegister ();
             }
             else
             {//Файла с параметрами соединения нет совсем или считанные параметры соединения не валидны
@@ -178,18 +182,16 @@ namespace StatisticAnalyzer
         /// </summary>
         /// <param name="msgError">Сообщение об ошибке (при наличии)</param>
         /// <returns>Признак выполнения функции</returns>
-        private int InitializeConfigDB(out string msgError)
+        private int validateUser(out string msgError)
         {
             int iRes = 0;
             msgError = string.Empty;
-            //Идентификатор соединения с БД_конфигурации
-            int idListenerConfigDB = DbSources.Sources().Register(s_listFormConnectionSettings[(int)CONN_SETT_TYPE.CONFIG_DB].getConnSett(), false, @"CONFIG_DB");
 
             //Проверить наличие пользователя в БД_конфигурации
             try
             {
                 //Создать И удалить объект с пользовательскими настройками (заполнить статические члены)
-                using (HStatisticUsers users = new HStatisticUsers(idListenerConfigDB, HUsers.MODE_REGISTRATION.MIXED)) { ; }
+                using (HStatisticUsers users = new HStatisticUsers(DbTSQLConfigDatabase.DbConfig().ListenerId, HUsers.MODE_REGISTRATION.MIXED)) { ; }
             }
             catch (Exception e)
             {
@@ -212,8 +214,6 @@ namespace StatisticAnalyzer
                     ;
             else
                 ;
-            //Отменить регистрацию соединения с БД_конфигурации
-            DbSources.Sources().UnRegister(idListenerConfigDB);
 
             return iRes;
         }

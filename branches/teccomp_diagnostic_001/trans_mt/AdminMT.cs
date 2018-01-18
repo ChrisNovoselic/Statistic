@@ -34,17 +34,19 @@ namespace trans_mt
             DateTime dtReq = date.Date.Add(-ASUTP.Core.HDateTime.TS_MSK_OFFSET_OF_UTCTIMEZONE);
             int i = -1;
 
-            query += @"SELECT [objName], [idFactor], [PBR_NUMBER], [Datetime],"
-                    //+ @" SUM([Value_MBT]) as VALUE"
-                    + @" [Value_MBT] as VALUE"
-                + @" FROM [dbo].[v_ALL_PARAM_MODES_" + t.GetAddingParameter(TEC.ADDING_PARAM_KEY.PREFIX_MODES_TERMINAL).ToString() + @"]" +
-                @" WHERE [ID_Type_Data] = 3" +
-                @" AND [objName] IN (" + string.Join (@",", comp.m_listMTermId.ToArray()) + @")" +
-                @" AND [Datetime] > " + @"'" + dtReq.ToString(@"yyyyMMdd HH:00:00.000") + @"'"
-                    + @" AND [Datetime] <= " + @"'" + dtReq.AddDays(1).ToString(@"yyyyMMdd HH:00:00.000") + @"'"
-                + @" AND [PBR_NUMBER] > 0"
-                //+ @" GROUP BY [idFactor], [PBR_NUMBER], [Datetime]"
-                + @" ORDER BY [Datetime], [PBR_NUMBER]"
+            query +=
+                //@"SELECT [objName], [idFactor], [PBR_NUMBER], [Datetime],"
+                //    //+ @" SUM([Value_MBT]) as VALUE"
+                //    + @" [Value_MBT] as VALUE"
+                //+ @" FROM [dbo].[v_ALL_PARAM_MODES_" + t.GetAddingParameter(TEC.ADDING_PARAM_KEY.PREFIX_MODES_TERMINAL).ToString() + @"]" +
+                //@" WHERE [ID_Type_Data] = 3" +
+                //@" AND [objName] IN (" + string.Join (@",", comp.m_listMTermId.ToArray()) + @")" +
+                //@" AND [Datetime] > " + @"'" + dtReq.ToString(@"yyyyMMdd HH:00:00.000") + @"'"
+                //    + @" AND [Datetime] <= " + @"'" + dtReq.AddDays(1).ToString(@"yyyyMMdd HH:00:00.000") + @"'"
+                //+ @" AND [PBR_NUMBER] > 0"
+                ////+ @" GROUP BY [idFactor], [PBR_NUMBER], [Datetime]"
+                //+ @" ORDER BY [Datetime], [PBR_NUMBER]"
+                $"EXECUTE [dbo].[sp_get_term_modes_values] {t.m_id},'{string.Join (@",", comp.m_listMTermId.ToArray ())}','{dtReq.ToString (@"yyyyMMdd HH:00:00.000")}','{dtReq.AddDays (1).ToString (@"yyyyMMdd HH:00:00.000")}'"
                 ;
 
             ASUTP.Database.DbSources.Sources().Request(m_IdListenerCurrent, query);
@@ -70,7 +72,7 @@ namespace trans_mt
             TECComponent comp = allTECComponents[indxTECComponents];
             arRDGValues = new RDGStruct[comp.m_listMTermId.Count, m_curRDGValues.Length];
 
-            if (CheckNameFieldsOfTable (table, new string [] { "objName", "Datetime" }) == true) {
+            if (CheckNameFieldsOfTable (table, new string [] { "objName", "idFactor", "Datetime", "Value_MBT" }) == true) {
                 for (c = 0; c < comp.m_listMTermId.Count; c++) {
                     MTermId = comp.m_listMTermId [c];
 
@@ -113,20 +115,20 @@ namespace trans_mt
                                         //Присвоить значения в ~ от типа
                                         switch (indxFactor) {
                                             case 0: //'P'
-                                                if (!(hourRows [i] [@"VALUE"] is DBNull))
-                                                    arRDGValues [c, hour - 1].pbr = (double)hourRows [i] [@"VALUE"];
+                                                if (!(hourRows [i] [@"Value_MBT"] is DBNull))
+                                                    arRDGValues [c, hour - 1].pbr = (double)hourRows [i] [@"Value_MBT"];
                                                 else
                                                     arRDGValues [c, hour - 1].pbr = 0;
                                                 break;
                                             case 1: //'Pmin'
-                                                if (!(hourRows [i] [@"VALUE"] is DBNull))
-                                                    arRDGValues [c, hour - 1].pmin = (double)hourRows [i] [@"VALUE"];
+                                                if (!(hourRows [i] [@"Value_MBT"] is DBNull))
+                                                    arRDGValues [c, hour - 1].pmin = (double)hourRows [i] [@"Value_MBT"];
                                                 else
                                                     arRDGValues [c, hour - 1].pmin = 0;
                                                 break;
                                             case 2: //'Pmax'
-                                                if (!(hourRows [i] [@"VALUE"] is DBNull))
-                                                    arRDGValues [c, hour - 1].pmax = (double)hourRows [i] [@"VALUE"];
+                                                if (!(hourRows [i] [@"Value_MBT"] is DBNull))
+                                                    arRDGValues [c, hour - 1].pmax = (double)hourRows [i] [@"Value_MBT"];
                                                 else
                                                     arRDGValues [c, hour - 1].pmax = 0;
                                                 break;

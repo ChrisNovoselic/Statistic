@@ -333,7 +333,7 @@ namespace StatisticCommon
 
             start ();
 
-            DataTable tblTGSensors = DbTSQLConfigDatabase.DbConfig().GetDataTableParametersBiyskTG ((int)m_State, out err);
+            DataTable tblTGSensors = DbTSQLConfigDatabase.DbConfig ().GetDataTableParametersBiyskTG ((int)m_State, out err);
             DataRow [] rowsRes;
 
             if (err == 0)
@@ -355,7 +355,7 @@ namespace StatisticCommon
 
                 if (! (j < COUNT_TG)) {
                     //tblTGSensors = DbTSQLInterface.Select(ref conn, getQueryParam((int)TYPE_VALUE.PREVIOUS), null, null, out err);
-                    tblTGSensors = DbTSQLConfigDatabase.DbConfig().GetDataTableParametersBiyskTG (m_State + 1, out err);
+                    tblTGSensors = DbTSQLConfigDatabase.DbConfig ().GetDataTableParametersBiyskTG (m_State + 1, out err);
 
                     if (err == 0) {
                         if (tblTGSensors.Rows.Count < COUNT_TG)
@@ -441,7 +441,7 @@ namespace StatisticCommon
                 }
             }
 
-            DbTSQLConfigDatabase.DbConfig().ExecNonQuery (queryInsert, out err);
+            DbTSQLConfigDatabase.DataSource().ExecNonQuery (queryInsert, out err);
         }
     }
 }

@@ -60,7 +60,7 @@ namespace trans_mc
                 }
                 try
                 {
-                    m_arAdmin[i].InitTEC(idListener, m_modeTECComponent, /*typeConfigDB, */markQueries, bIgnoreTECInUse, new int[] { 0, (int)TECComponent.ID.LK });
+                    m_arAdmin[i].InitTEC(m_modeTECComponent, /*typeConfigDB, */markQueries, bIgnoreTECInUse, new int[] { 0, (int)TECComponent.ID.LK });
                     RemoveTEC(m_arAdmin[i]);
                 }
                 catch (Exception e)

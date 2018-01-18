@@ -651,7 +651,7 @@ namespace StatisticTimeSync
             }
             this.ResumeLayout();
 
-            HSD.StartPan(ar_pan);
+            HSD.StartPanel(ar_pan);
         }
 
         public override void UpdateGraphicsCurrent (int type)
@@ -817,44 +817,35 @@ namespace StatisticTimeSync
                 }
             }
 
-            public void StartPan(PanelSourceData.PanelGetDate[] ar_panels)
+            public void StartPanel(PanelSourceData.PanelGetDate[] ar_panels)
             {
                 int err = -1; //Признак выполнения метода/функции
                 //Зарегистрировать соединение/получить идентификатор соединения
-                int iListenerId = DbSources.Sources().Register(FormMain.s_listFormConnectionSettings[(int)CONN_SETT_TYPE.CONFIG_DB].getConnSett(), false, @"CONFIG_DB");
+                DbTSQLConfigDatabase.DbConfig ().Register();
 
-                DbConnection dbConn = null;
-                dbConn = DbSources.Sources().GetConnection(iListenerId, out err);
+                //DbConnection dbConn = null;
+                //dbConn = DbSources.Sources().GetConnection(iListenerId, out err);
 
-                if ((err == 0) && (!(dbConn == null)))
+                m_tableSourceData = DbTSQLConfigDatabase.DbConfig ().GetDataTableSource(out err);
+
+                if ((!(err < 0))
+                    && m_tableSourceData.Rows.Count > 0)
                 {
-                    m_tableSourceData = DbTSQLInterface.Select(ref dbConn, @"SELECT * FROM source", null, null, out err);
-
-                    if (err == 0)
+                    int i = -1
+                        , j = -1;
+                    for (i = 0; i < INDEX_SOURCE_GETDATE.Length; i++)
                     {
-                        if (m_tableSourceData.Rows.Count > 0)
+                        ar_panels[i].EvtAskedData += new DelegateObjectFunc(onEvtQueryAskedData);
+                        for (j = 0; j < m_tableSourceData.Rows.Count; j++)
                         {
-                            int i = -1
-                                , j = -1;
-                            for (i = 0; i < INDEX_SOURCE_GETDATE.Length; i++)
-                            {
-                                ar_panels[i].EvtAskedData += new DelegateObjectFunc(onEvtQueryAskedData);
-                                for (j = 0; j < m_tableSourceData.Rows.Count; j++)
-                                {
-                                    ar_panels[i].AddSourceData(m_tableSourceData.Rows[j][@"NAME_SHR"].ToString());
-                                }
-                            }
+                            ar_panels[i].AddSourceData(m_tableSourceData.Rows[j][@"NAME_SHR"].ToString());
                         }
-                        else
-                            ;
                     }
-                    else
-                        ;
                 }
                 else
-                    throw new Exception(@"Нет соединения с БД");
+                    ;
 
-                DbSources.Sources().UnRegister(iListenerId);
+                DbTSQLConfigDatabase.DbConfig ().UnRegister();
 
                 for (int i = 0; i < INDEX_SOURCE_GETDATE.Length; i++)
                 {
@@ -916,8 +907,7 @@ namespace StatisticTimeSync
             /// <param name="ev"></param>
             private void onEvtQueryAskedData(object ev)
             {
-                int iListenerId = -1
-                    , id = -1
+                int id = -1
                     , err = -1;
                 string nameShrSourceData = string.Empty;
                 DataRow rowConnSett;
@@ -927,15 +917,15 @@ namespace StatisticTimeSync
                     switch (((EventArgsDataHost)ev).id_detail)
                     {
                         case (int)PanelSourceData.PanelGetDate.ID_ASKED_DATAHOST.CONN_SETT: // запрошены параметры соединения
-                            iListenerId = DbSources.Sources().Register(FormMain.s_listFormConnectionSettings[(int)CONN_SETT_TYPE.CONFIG_DB].getConnSett(), false, @"CONFIG_DB");
+                            DbTSQLConfigDatabase.DbConfig().Register();
                             nameShrSourceData = ((PanelSourceData.PanelGetDate)((EventArgsDataHost)ev).par[0]).GetNameShrSelectedSourceData();
                             id = Int32.Parse(m_tableSourceData.Select(@"NAME_SHR = '" + nameShrSourceData + @"'")[0][@"ID"].ToString());
-                            rowConnSett = ConnectionSettingsSource.GetConnectionSettings(/*TYPE_DATABASE_CFG.CFG_200,*/ iListenerId, id, 501, out err).Rows[0];
+                            rowConnSett = ConnectionSettingsSource.GetConnectionSettings(/*TYPE_DATABASE_CFG.CFG_200,*/ DbTSQLConfigDatabase.DbConfig ().ListenerId, id, 501, out err).Rows[0];
                             // создать объект с параметрами соединения
                             ConnectionSettings connSett = new ConnectionSettings(rowConnSett, -1);
                             // отправить запрашиваемые данные
                             ((PanelSourceData.PanelGetDate)((EventArgsDataHost)ev).par[0]).OnEvtDataRecievedHost(new EventArgsDataHost(-1, ((EventArgsDataHost)ev).id_detail, new object[] { connSett }));
-                            DbSources.Sources().UnRegister(iListenerId);
+                            DbTSQLConfigDatabase.DbConfig ().UnRegister();
                             break;
                         default:
                             break;

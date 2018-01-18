@@ -130,7 +130,7 @@ namespace CommonAux
         public ConnectionSettings GetConnSettAIISKUECentre(int iListenerId, out int err)
         {
             DataTable dataTableRes = new DataTable();
-            dataTableRes = DbTSQLConfigDatabase.DbConfig().GetDataTableConnSettingsOfIdSource (ID_AIISKUE_CONSETT, -1, out err);
+            dataTableRes = DbTSQLConfigDatabase.DbConfig ().GetDataTableConnSettingsOfIdSource (ID_AIISKUE_CONSETT, -1, out err);
 
             return new ConnectionSettings(dataTableRes.Rows[dataTableRes.Rows.Count - 1], -1);
         }
@@ -275,12 +275,12 @@ namespace CommonAux
             int iRes = 0
                 , err = -1;
             string query = string.Empty;
-            DateTime dtQuery;
-            TimeSpan tsQuery;
+            //DateTime dtQuery;
+            //TimeSpan tsQuery;
 
             ActionReport("Получение значения для " + indx.ToString() + " " + tec.m_strNameShr);
 
-            dtQuery = DateTime.Now;
+            //dtQuery = DateTime.Now;
 
             tec.m_arTableResult[(int)indx] = null;
             query = getQuery(tec, indx, dtStart, dtEnd);
@@ -289,11 +289,11 @@ namespace CommonAux
             {
                 tec.m_arTableResult[(int)indx] = new TEC_LOCAL.TableResult(DbTSQLInterface.Select(ref dbConn, query, null, null, out err));
 
-                tsQuery = DateTime.Now - dtQuery;
+                //tsQuery = DateTime.Now - dtQuery;
 
-                Logging.Logg().Action(string.Format(@"TEC.ID={0}, ИНДЕКС={1}, время={4}{2}запрос={3} сек"
-                        , tec.m_Id, indx.ToString(), Environment.NewLine, query, tsQuery.TotalSeconds)
-                    , Logging.INDEX_MESSAGE.NOT_SET);
+                //Logging.Logg().Action(string.Format(@"TEC.ID={0}, ИНДЕКС={1}, время={4}{2}запрос={3} сек"
+                //        , tec.m_Id, indx.ToString(), Environment.NewLine, query, tsQuery.TotalSeconds)
+                //    , Logging.INDEX_MESSAGE.NOT_SET);
 
                 if (err == 0)
                 {

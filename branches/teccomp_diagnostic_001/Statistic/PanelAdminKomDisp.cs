@@ -311,8 +311,8 @@ namespace Statistic
                 (int)new TimeSpan(dtpShedulePeriodExport_PBRValues.Value.Hour, dtpSheduleStartExport_PBRValues.Value.Minute, dtpSheduleStartExport_PBRValues.Value.Second).TotalSeconds;
         }
 
-        public PanelAdminKomDisp(int idListener, ASUTP.Core.HMark markQueries)
-            : base(idListener, markQueries, new int[] { 0, (int)TECComponent.ID.GTP })
+        public PanelAdminKomDisp(ASUTP.Core.HMark markQueries)
+            : base(markQueries, new int[] { 0, (int)TECComponent.ID.GTP })
         {
             //??? вызывается из базового класса
             //InitializeComponents ();

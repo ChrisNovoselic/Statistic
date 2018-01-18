@@ -117,14 +117,17 @@ namespace StatisticAlarm
             }
         }
 
-        private void changeState () {
-            int iListenerId = DbSources.Sources().Register (FormMain.s_listFormConnectionSettings[(int)StatisticCommon.CONN_SETT_TYPE.CONFIG_DB].getConnSett (), false, @"CONFIG_DB");
-            foreach (TecViewAlarm tv in m_listTecView)
-            {
-                tv.m_tec.PerformUpdate (iListenerId);
+        private void changeState ()
+        {
+            DbTSQLConfigDatabase.DbConfig ().Register ();
+
+            foreach (TecViewAlarm tv in m_listTecView) {
+                tv.m_tec.PerformUpdate (DbTSQLConfigDatabase.DbConfig ().ListenerId);
                 tv.ChangeState ();
             }
-            DbSources.Sources().UnRegister (iListenerId);
+
+
+            DbTSQLConfigDatabase.DbConfig ().UnRegister ();
         }
 
         private void TimerAlarm_Tick(Object stateInfo)

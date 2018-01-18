@@ -92,7 +92,7 @@ namespace StatisticCommon
             try
             {
                 //Получить список ТЭЦ, используя статическую функцию
-                list_tec = getListTEC(bIgnoreTECInUse, arTECLimit, out err);
+                list_tec = GetListTEC(bIgnoreTECInUse, arTECLimit, out err);
 
                 if (err == 0)
                 {
@@ -262,7 +262,7 @@ namespace StatisticCommon
                 , all_PARAM_DETAIL = null;
 
             //Использование статической функции
-            list_tec = getListTEC(bIgnoreTECInUse, arTECLimit, out err);
+            list_tec = GetListTEC(bIgnoreTECInUse, arTECLimit, out err);
 
             if (!(indx < 0))
                 all_PARAM_DETAIL = getALL_PARAM_TG (0, out err); // самый новый набор

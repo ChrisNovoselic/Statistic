@@ -121,7 +121,7 @@ namespace Statistic
 
                                 if (m_dictConnSett[id_tec].ContainsKey(type) == false) {
                                     m_dictConnSett[id_tec].Add(type
-                                        , new ConnectionSettings(DbTSQLConfigDatabase.DbConfig().GetDataTableConnSettingsOfIdSource (id_source, -1, out err)?.Rows[0], -1));
+                                        , new ConnectionSettings(DbTSQLConfigDatabase.DbConfig ().GetDataTableConnSettingsOfIdSource (id_source, -1, out err)?.Rows[0], -1));
 
                                     if (!(err == 0)) {
                                         Logging.Logg().Error(string.Format(@"HandlerDbSignalValue::ctor () - ошибка инициализации источника данных {0} для ТЭЦ.ID={1}, идентификатор источника данных={2}..."

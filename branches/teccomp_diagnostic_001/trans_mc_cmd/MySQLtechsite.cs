@@ -93,8 +93,9 @@ namespace trans_mc_cmd
             Console.WriteLine("DB parametrs: IP=" + connSett.server + ", port=" + connSett.port + ", DBName=" + connSett.dbName + ", UID=" + connSett.userName + Environment.NewLine);
 
             //Соединение дл я БД конфигурации
-            m_idListener = DbSources.Sources().Register(connSett, false, @"CONFIG_DB");
-            m_connection = DbSources.Sources ().GetConnection (m_idListener, out iRes);
+            new DbTSQLConfigDatabase (connSett);
+            DbTSQLConfigDatabase.DbConfig().Register();
+            m_connection = DbSources.Sources ().GetConnection (m_idListener = DbTSQLConfigDatabase.DbConfig ().ListenerId, out iRes);
 
             //TYPE_DATABASE_CFG typeConfigDB = TYPE_DATABASE_CFG.UNKNOWN;
             //for (TYPE_DATABASE_CFG t = TYPE_DATABASE_CFG.CFG_190; t < TYPE_DATABASE_CFG.UNKNOWN; t ++) {
@@ -115,7 +116,7 @@ namespace trans_mc_cmd
                 //markQueries.Marked ((int)StatisticCommon.CONN_SETT_TYPE.ADMIN);
                 //markQueries.Marked((int)StatisticCommon.CONN_SETT_TYPE.PBR);
 
-                m_admin.InitTEC(m_idListener, FormChangeMode.MODE_TECCOMPONENT.GTP, /*typeConfigDB, */markQueries, true, new int [] { 0, (int)TECComponent.ID.LK });
+                m_admin.InitTEC(FormChangeMode.MODE_TECCOMPONENT.GTP, /*typeConfigDB, */markQueries, true, new int [] { 0, (int)TECComponent.ID.LK });
                 m_listIndexTECComponent = m_admin.GetListIndexTECComponent(FormChangeMode.MODE_TECCOMPONENT.GTP, true);
 
                 m_listIdMCTECComponent = new List<int>();
@@ -143,12 +144,12 @@ namespace trans_mc_cmd
                 }
             }
             else
-                ;
-
             {
                 //itssAUX.PrintErrorMessage("Ошибка! MySQLtechsite::MySQLtechsite () - чтение файла с шифрованными параметрами соединения (" + m_strFileNameConnSett + ")...");
                 itssAUX.PrintErrorMessage("Проверте параметры соединения (" + Program.m_fileINI.m_NameFileINI + "). Затем запустите программу с аргументом /setmysqlpassword..." + Environment.NewLine);
             }
+
+            DbTSQLConfigDatabase.DbConfig ().UnRegister ();
         }
 
         public string TestRead()

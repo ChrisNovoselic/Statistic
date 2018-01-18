@@ -240,12 +240,12 @@ namespace Statistic
             this.ResumeLayout();
         }
 
-        public PanelAdmin(int idListener, HMark markQueries, int [] arTECLimit)
+        public PanelAdmin(HMark markQueries, int [] arTECLimit)
             : base(MODE_UPDATE_VALUES.ACTION, FormMain.formGraphicsSettings.FontColor, FormMain.formGraphicsSettings.BackgroundColor)
         {
             createAdmin ();
 
-            try { m_admin.InitTEC(idListener, FormChangeMode.MODE_TECCOMPONENT.ANY, /*TYPE_DATABASE_CFG.CFG_200, */markQueries, false, arTECLimit); }
+            try { m_admin.InitTEC(FormChangeMode.MODE_TECCOMPONENT.ANY, /*TYPE_DATABASE_CFG.CFG_200, */markQueries, false, arTECLimit); }
             catch (Exception e)
             {
                 Logging.Logg().Exception(e, "PanelAdmin::Initialize () - m_admin.InitTEC ()...", Logging.INDEX_MESSAGE.NOT_SET);

@@ -54,8 +54,8 @@ namespace Statistic
             this.ResumeLayout();
         }
 
-        public PanelAdminVyvod(int idListener, HMark markQueries)
-            : base(idListener, markQueries, new int[] { 0, (int)TECComponent.ID.LK })
+        public PanelAdminVyvod(HMark markQueries)
+            : base(markQueries, new int[] { 0, (int)TECComponent.ID.LK })
         {
         }
 

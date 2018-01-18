@@ -924,9 +924,9 @@ namespace StatisticAnalyzer
 
             int err = -1;
             
-            int idListener = register_idListenerConfDB(out err);
+            DbTSQLConfigDatabase.DbConfig().Register();
 
-            DbConnection connConfigDB = DbSources.Sources().GetConnection(idListener,out err);
+            DbConnection connConfigDB = DbSources.Sources().GetConnection(DbTSQLConfigDatabase.DbConfig ().ListenerId,out err);
 
             if ((!(connConfigDB == null)) && (err == 0))
             {
@@ -959,33 +959,7 @@ namespace StatisticAnalyzer
             } else
                 ;
 
-            unregister_idListenerConfDB(idListener);
-        }
-
-        /// <summary>
-        /// Регистрация ID
-        /// </summary>
-        /// <param name="err">Ошибка в процессе регистрации</param>
-        /// <returns>Возвращает ID</returns>
-        protected int register_idListenerConfDB(out int err)
-        {
-            err = -1;
-            int idListener = -1;
-
-            ConnectionSettings connSett = ASUTP.Forms.FormMainBaseWithStatusStrip.s_listFormConnectionSettings[(int)CONN_SETT_TYPE.CONFIG_DB].getConnSett();
-            idListener = DbSources.Sources().Register(connSett, false, CONN_SETT_TYPE.CONFIG_DB.ToString());
-            DbConnection connConfigDB = DbSources.Sources().GetConnection(idListener, out err);
-
-            return idListener;
-        }
-
-        /// <summary>
-        /// Отмена регистрации ID
-        /// </summary>
-        /// <param name="idListener">ID</param>
-        protected void unregister_idListenerConfDB(int idListener)
-        {
-            DbSources.Sources().UnRegister(idListener);
+            DbTSQLConfigDatabase.DbConfig ().UnRegister ();
         }
 
         /// <summary>
@@ -2340,11 +2314,6 @@ namespace StatisticAnalyzer
         private DelegateIntFunc delegateConnect;
         
         private DelegateFunc delegateErrorConnect;
-        
-        /// <summary>
-        /// Идентификатор для получения лога из БД
-        /// </summary>
-        int m_idListenerLoggingDB;
 
         public PanelAnalyzer_DB(List<StatisticCommon.TEC> tec, Color foreColor, Color backColor)
             : base(tec, foreColor, backColor)
@@ -2372,27 +2341,29 @@ namespace StatisticAnalyzer
         public override void Start()
         {
             int err = -1, 
-                idMainDB = -1,
-                idListener = -1;
+                idMainDB = -1;
 
             ConnectionSettings connSett = ASUTP.Forms.FormMainBaseWithStatusStrip.s_listFormConnectionSettings[(int)CONN_SETT_TYPE.CONFIG_DB].getConnSett();
-            idListener = DbSources.Sources().Register(connSett, false, CONN_SETT_TYPE.CONFIG_DB.ToString());
-            DbConnection connConfigDB = DbSources.Sources().GetConnection(idListener, out err);
+            DbTSQLConfigDatabase.DbConfig().Register();
+            DbConnection connConfigDB = DbSources.Sources().GetConnection(DbTSQLConfigDatabase.DbConfig ().ListenerId, out err);
 
             if ((!(connConfigDB == null)) && (err == 0))
             {
                 idMainDB = Int32.Parse(DbTSQLInterface.Select(ref connConfigDB, @"SELECT [VALUE] FROM [setup] WHERE [KEY]='" + @"Main DataSource" + @"'", null, null, out err).Rows[0][@"VALUE"].ToString());
                 DataTable tblConnSettMainDB = ConnectionSettingsSource.GetConnectionSettings(ref connConfigDB, idMainDB, -1, out err);
                 ConnectionSettings connSettMainDB = new ConnectionSettings(tblConnSettMainDB.Rows[0], 1);
-                m_idListenerLoggingDB = DbSources.Sources().Register(connSettMainDB, false, @"MAIN_DB", false);
+                new DbTSQLDataSource (connSettMainDB, @"MAIN_DB");
+                DbTSQLDataSource.DataSource().Register(@"MAIN_DB");
 
                 base.Start();
             }
             else
                 throw new Exception(@"PanelAnalyzer_DB::Start () - нет соединения с БД конфигурации...");
-            
+
+            DbTSQLConfigDatabase.DbConfig ().UnRegister ();
+
             //dgvFilterTypeMessage.UpdateCounter(m_idListenerLoggingDB, DateTime.MinValue, DateTime.MaxValue, "");
-            
+
             //dgvMessage.UpdateCounter(m_idListenerLoggingDB, StartCalendar.Value.Date, StopCalendar.Value.Date, get_users(m_tableUsers_stat, dgvUser, true));
 
         }
@@ -2402,7 +2373,7 @@ namespace StatisticAnalyzer
         /// </summary>
         public override void Stop()
         {
-            DbSources.Sources().UnRegister(m_idListenerLoggingDB);
+            DbTSQLDataSource.DataSource ().UnRegister ();
 
             base.Stop();
         }
@@ -2420,7 +2391,7 @@ namespace StatisticAnalyzer
             arbActives = null;
             int i = -1;
 
-            DbConnection connLoggingDB = DbSources.Sources().GetConnection(m_idListenerLoggingDB, out err);
+            DbConnection connLoggingDB = DbSources.Sources().GetConnection(DbTSQLDataSource.DataSource().ListenerId, out err);
             if (!(connLoggingDB == null) && (err == 0))
             {
                 DataTable tblMaxDatetimeWR = DbTSQLInterface.Select(ref connLoggingDB, @"SELECT [ID_USER], MAX([DATETIME_WR]) as MAX_DATETIME_WR FROM logging GROUP BY [ID_USER] ORDER BY [ID_USER]", null, null, out err);
@@ -2496,16 +2467,12 @@ namespace StatisticAnalyzer
         {
             delegateActionReport("Получение активных вкладок пользователя");
             int err = -1;
-            int idListener = -1;
             int iRes = -1;
             string[] us ;
             string where = string.Empty;
             List<int> ID_tabs = new List<int>();
-            idListener = register_idListenerConfDB(out err);
 
             #region Фомирование и выполнение запроса для получения списка открытых вкладок у пользователя
-
-            DbConnection connConfigDB = DbSources.Sources().GetConnection(idListener, out err);
 
             string query = @"SELECT [ID_EXT],[IS_ROLE],[ID_UNIT],[VALUE] FROM [techsite_cfg-2.X.X].[dbo].[profiles] where ";
 
@@ -2515,7 +2482,7 @@ namespace StatisticAnalyzer
                 where = "((ID_EXT = " + (int)user + " and [IS_ROLE] =0) or (id_ext=(select [ID_ROLE] from dbo.[users] where id=" + user + ") and is_role=1)) AND ID_UNIT IN(" + (int)HStatisticUsers.ID_ALLOWED.PROFILE_SETTINGS_CHANGEMODE + ", " + (int)HStatisticUsers.ID_ALLOWED.PROFILE_VIEW_ADDINGTABS + ")";
                 query += where;
 
-                m_tableTabs = DbTSQLInterface.Select(ref connConfigDB, query, null, null, out iRes);
+                m_tableTabs = DbTSQLConfigDatabase.DbConfig().Select(query, out iRes);
 
                 if (m_tableTabs.Rows.Count > 0)
                 {
@@ -2607,9 +2574,7 @@ namespace StatisticAnalyzer
 
             #endregion
 
-            unregister_idListenerConfDB(idListener);
-
-            delegateReportClear(true);
+            delegateReportClear (true);
         }
 
         /// <summary>
@@ -2681,7 +2646,7 @@ namespace StatisticAnalyzer
 
             m_LogParse.Start(m_chDelimeters[(int)INDEX_DELIMETER.PART].Length
                     + m_chDelimeters[(int)INDEX_DELIMETER.PART]
-                    + m_idListenerLoggingDB.ToString()
+                    + DbTSQLDataSource.DataSource().ListenerId.ToString()
                     + m_chDelimeters[(int)INDEX_DELIMETER.PART] + id);
             int a = 1;
         }
@@ -2696,7 +2661,7 @@ namespace StatisticAnalyzer
         /// <returns>Возвращает количество строк в выборке</returns>
         protected override int selectLogMessage(string type, DateTime beg, DateTime end, ref DataRow[] rows)
         {
-            return (m_LogParse as LogParse_DB).Select(m_idListenerLoggingDB, type, beg, end, ref rows);
+            return (m_LogParse as LogParse_DB).Select(DbTSQLDataSource.DataSource ().ListenerId, type, beg, end, ref rows);
         }
 
         /// <summary>
@@ -2746,7 +2711,7 @@ namespace StatisticAnalyzer
         /// <param name="indxRowUser">Индекс строки с данными пользователя</param>
         private void getLogMsg(DataRow rowUser, int indxRowUser)
         {
-            if (!(m_idListenerLoggingDB < 0))
+            if (!(DbTSQLDataSource.DataSource ().ListenerId < 0))
                 delegateConnect(Int32.Parse(rowUser[@"ID"].ToString()));
             else
                 delegateErrorConnect();
@@ -2763,7 +2728,7 @@ namespace StatisticAnalyzer
         {
             delegateActionReport?.Invoke("Обновление статистики сообщений");
 
-            dgv.UpdateCounter(m_idListenerLoggingDB, start_date, stop_date, users);
+            dgv.UpdateCounter(DbTSQLDataSource.DataSource ().ListenerId, start_date, stop_date, users);
 
             delegateReportClear?.Invoke (true);
         }

@@ -754,7 +754,7 @@ namespace Statistic
             {
                 int err = -1;
 
-                List<TEC> listTECRes = DbTSQLConfigDatabase.DbConfig().InitTEC(true
+                List<TEC> listTECRes = DbTSQLConfigDatabase.DbConfig ().InitTEC(true
                     , new int [] { 0, (int)TECComponent.ID.GTP }
                     , false);
                 //Инициализация объектов ТГ в каждой ТЭЦ из полученного списка
@@ -772,7 +772,7 @@ namespace Statistic
             /// <returns>Возвращает таблицу с результатом</returns>
             public DataTable Request (string query, out int err)
             {
-                return DbTSQLConfigDatabase.DbConfig().Select (query
+                return DbTSQLConfigDatabase.DataSource().Select (query
                     , out err);
             }
 
@@ -787,27 +787,24 @@ namespace Statistic
             public void Edit (string nameTable, string keyField, DataTable table_origin, DataTable table_edit, out int err)
             {
                 err = -1;
-                int idListener = -1;
                 DbConnection dbConn;
 
                 try {
-                    idListener = DbSources.Sources ().Register (ASUTP.Forms.FormMainBaseWithStatusStrip.s_listFormConnectionSettings [(int)CONN_SETT_TYPE.CONFIG_DB].getConnSett ()
-                        , false
-                        , CONN_SETT_TYPE.CONFIG_DB.ToString ());
+                    DbTSQLConfigDatabase.DbConfig ().Register ();
                     err = 0;
                 } catch (Exception e) {
                     Logging.Logg ().Exception (e, "PanelTECComponent.DB_Sostav_TEC::Edit () - получение идентификатора ...", Logging.INDEX_MESSAGE.NOT_SET);
                 }
 
                 if (err == 0) {
-                    dbConn = DbSources.Sources ().GetConnection (idListener, out err);
+                    dbConn = DbSources.Sources ().GetConnection (DbTSQLConfigDatabase.DbConfig ().ListenerId, out err);
 
                     if (err == 0)
                         DbTSQLInterface.RecUpdateInsertDelete (ref dbConn, nameTable, keyField, string.Empty, table_origin, table_edit, out err);
                     else
                         Logging.Logg().Error($"DB_Sostav_TEC::Edit () - получение объекта соединения с БД...", Logging.INDEX_MESSAGE.NOT_SET);
 
-                    DbSources.Sources ().UnRegister (idListener);
+                    DbTSQLConfigDatabase.DbConfig ().UnRegister ();
                 } else
                     ;
             }
