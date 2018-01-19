@@ -40,6 +40,8 @@ namespace StatisticCommon
         //    }
         //}
 
+        private ListTEC _listTEC;
+
         /// <summary>
         /// Список ВСЕХ компонентов (ТЭЦ, ГТП, ЩУ, ТГ)
         /// </summary>

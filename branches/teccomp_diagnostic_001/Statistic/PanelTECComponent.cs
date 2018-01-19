@@ -249,7 +249,7 @@ namespace Statistic
         /// <summary>
         /// Событие для оповещения внешних клиентов при добавлении/удалении ГТП
         /// </summary>
-        public event Action<int> EventConfigGTPChanged;
+        public event Action<int, DbTSQLInterface.QUERY_TYPE> EventConfigGTPChanged;
 
         /// <summary>
         /// Обработчик получения данных от TreeView
@@ -280,7 +280,7 @@ namespace Statistic
             if (e.m_IdComp.ID == TECComponentBase.ID.GTP)
                 if ((e.m_Operation == DbTSQLInterface.QUERY_TYPE.INSERT)
                     || (e.m_Operation == DbTSQLInterface.QUERY_TYPE.DELETE))
-                    EventConfigGTPChanged?.Invoke (e.m_IdComp[TECComponentBase.ID.GTP]);
+                    EventConfigGTPChanged?.Invoke (e.m_IdComp[TECComponentBase.ID.GTP], e.m_Operation);
                 else
                     ;
             else
@@ -1629,27 +1629,28 @@ namespace Statistic
 
                     EditNode (this, new EditNodeEventArgs (id, DbTSQLInterface.QUERY_TYPE.INSERT));
 
-                    foreach (TreeNode tec in Nodes) {
-                        if (Convert.ToInt32 (tec.Name) == m_selNode_idComp[TECComponent.ID.TEC]) {
-                            if (tec.FirstNode == null) {
-                                tec.Nodes.Add (FormChangeMode.getNameMode (FormChangeMode.MODE_TECCOMPONENT.GTP));
-                                tec.Nodes [tec.Nodes.Count - 1].Name = $"{tec.Name}:{(int)TECComponent.ID.GTP}";
-                                tec.Nodes [tec.Nodes.Count - 1].Nodes.Add (NOT_RESOLVED);
-                                tec.Nodes [tec.Nodes.Count - 1].Nodes [0].Name = $"{tec.Name}:{0}";
+                    foreach (TreeNode ownerNode in Nodes) {
+                        if (Convert.ToInt32 (ownerNode.Name) == m_selNode_idComp[TECComponent.ID.TEC]) {
+                            if (ownerNode.FirstNode == null) {
+                                ownerNode.Nodes.Add (FormChangeMode.getNameMode (FormChangeMode.MODE_TECCOMPONENT.GTP));
+                                ownerNode.Nodes [ownerNode.Nodes.Count - 1].Name = $"{ownerNode.Name}:{(int)TECComponent.ID.GTP}";
+                                ownerNode.Nodes [ownerNode.Nodes.Count - 1].Nodes.Add (NOT_RESOLVED);
+                                ownerNode.Nodes [ownerNode.Nodes.Count - 1].Nodes [0].Name = $"{ownerNode.Name}:{0}";
 
-                                tec.Nodes.Add (FormChangeMode.getNameMode (FormChangeMode.MODE_TECCOMPONENT.PC));
-                                tec.Nodes [tec.Nodes.Count - 1].Name = tec.Name + ':' + (int)TECComponent.ID.PC;
-                                tec.Nodes [tec.Nodes.Count - 1].Nodes.Add (NOT_RESOLVED);
-                                tec.Nodes [tec.Nodes.Count - 1].Nodes [0].Name = $"{tec.Name}:{0}";
+                                ownerNode.Nodes.Add (FormChangeMode.getNameMode (FormChangeMode.MODE_TECCOMPONENT.PC));
+                                ownerNode.Nodes [ownerNode.Nodes.Count - 1].Name = ownerNode.Name + ':' + (int)TECComponent.ID.PC;
+                                ownerNode.Nodes [ownerNode.Nodes.Count - 1].Nodes.Add (NOT_RESOLVED);
+                                ownerNode.Nodes [ownerNode.Nodes.Count - 1].Nodes [0].Name = $"{ownerNode.Name}:{0}";
 
-                                tec.Nodes.Add (FormChangeMode.getNameMode (FormChangeMode.MODE_TECCOMPONENT.TG));
-                                tec.Nodes [tec.Nodes.Count - 1].Name = $"{tec.Name}:{(int)TECComponent.ID.TG}";
+                                ownerNode.Nodes.Add (FormChangeMode.getNameMode (FormChangeMode.MODE_TECCOMPONENT.TG));
+                                ownerNode.Nodes [ownerNode.Nodes.Count - 1].Name = $"{ownerNode.Name}:{(int)TECComponent.ID.TG}";
                             }
 
-                            foreach (TreeNode com in tec.Nodes) {
-                                if (com.Text == FormChangeMode.getNameMode (FormChangeMode.MODE_TECCOMPONENT.GTP)) {
-                                    com.Nodes.Add (Mass_NewVal_Comp (FormChangeMode.MODE_TECCOMPONENT.GTP));
-                                    com.Nodes [com.Nodes.Count - 1].Name = $"{tec.Name}:{id[TECComponent.ID.GTP]}";
+                            foreach (TreeNode comp in ownerNode.Nodes) {
+                                //TODO: по тексту определяется тип узла
+                                if (comp.Text == FormChangeMode.getNameMode (FormChangeMode.MODE_TECCOMPONENT.GTP)) {
+                                    comp.Nodes.Add (Mass_NewVal_Comp (FormChangeMode.MODE_TECCOMPONENT.GTP));
+                                    comp.Nodes [comp.Nodes.Count - 1].Name = $"{ownerNode.Name}:{id[TECComponent.ID.GTP]}";
                                 }
                             }
                         }

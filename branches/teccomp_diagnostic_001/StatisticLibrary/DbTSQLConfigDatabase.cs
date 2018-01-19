@@ -415,8 +415,34 @@ namespace StatisticCommon
             return string.Format(@"[SENSORS_NAME] LIKE '{1}{0}{2}'", num.ToString (), prefix, postfix);
         }
 
-        public void UpadteDiagnosticSource (int id_gtp)
+        public void UpadteDiagnosticSource (int id_gtp, DbTSQLInterface.QUERY_TYPE queryType)
         {
+            int err = -1;
+
+            string query = string.Empty;
+            int id_rec = -1;
+            string tec_name_shr = string.Empty;
+
+            switch (queryType) {
+                case QUERY_TYPE.DELETE:
+                    query = $"DELETE FROM [dbo].[DIAGNOSTIC_SOURCES] WHERE [Component]={id_gtp}";
+                    break;
+                case QUERY_TYPE.INSERT:
+                    //TODO: id_rec ~ от ТЭЦ, если ГТП не единственный (> 200)
+                    //id_rec = 
+                    //TODO: name_shr ~ от ТЭЦ, требуется наименование
+                    //name_shr = 
+                    query = $"INSERT INTO [dbo].[DIAGNOSTIC_SOURCES] ([ID],[DESCRIPTION],[NAME_SHR],[Component]) VALUES ({id_rec},{"Modes-Centre"},MT-{tec_name_shr},{id_gtp})";
+                    break;
+                default:
+                    break;
+            }
+
+            if (string.IsNullOrEmpty (query) == false)
+                //ExecNonQuery (query, out err)
+                    ;
+            else
+                ASUTP.Logging.Logg ().Warning ($"DbTSQLConfigureDatabase::UpadteDiagnosticSource (ID_GTP={id_gtp}, QUERY_TYPE={queryType}) - тип запроса не обрабатывается...", ASUTP.Logging.INDEX_MESSAGE.NOT_SET);
         }
 
         public DataTable GetDataTableSetupParameters (out int err)
