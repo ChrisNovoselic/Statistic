@@ -10,7 +10,7 @@ using ASUTP.Forms;
 
 namespace StatisticCommon
 {
-    partial class DbTSQLConfigDatabase
+    public partial class DbTSQLConfigDatabase
     {
         public class ListTEC : List<TEC>
         {
