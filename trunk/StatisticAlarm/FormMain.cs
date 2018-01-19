@@ -139,11 +139,14 @@ namespace StatisticAlarm
         {
             bool bRes = true;
             msgError = string.Empty;
-            int idListenerConfigDB = -1;
 
             if (s_listFormConnectionSettings[(int)CONN_SETT_TYPE.CONFIG_DB].Ready == 0)
             {
-                _state = InitializeConfigDB(out msgError, out idListenerConfigDB);
+                //!!! Один экземпляр для всего приложения на весь срок выполнения
+                new DbTSQLConfigDatabase (s_listFormConnectionSettings [(int)CONN_SETT_TYPE.CONFIG_DB].getConnSett ());
+                DbTSQLConfigDatabase.DbConfig ().Register ();
+
+                _state = validateUser(out msgError);
                 switch (_state)
                 {
                     case -1:
@@ -160,15 +163,14 @@ namespace StatisticAlarm
                         break;
                     default:
                         //Успех... пост-инициализация
-                        formParameters = new FormParameters_DB(s_listFormConnectionSettings[(int)CONN_SETT_TYPE.CONFIG_DB].getConnSett());
+                        formParameters = new FormParameters_DB();
 
                         updateParametersSetup ();
 
                         s_iMainSourceData = Int32.Parse(formParameters.m_arParametrSetup[(int)FormParameters.PARAMETR_SETUP.MAIN_DATASOURCE]);
 
                         //Создать "рабочую" панель
-                        m_panelAlarm = new PanelAlarm(idListenerConfigDB
-                            , new HMark(new int [] {(int)CONN_SETT_TYPE.ADMIN, (int)CONN_SETT_TYPE.PBR, (int)CONN_SETT_TYPE.DATA_AISKUE, (int)CONN_SETT_TYPE.DATA_SOTIASSO})
+                        m_panelAlarm = new PanelAlarm(new HMark(new int [] {(int)CONN_SETT_TYPE.ADMIN, (int)CONN_SETT_TYPE.PBR, (int)CONN_SETT_TYPE.DATA_AISKUE, (int)CONN_SETT_TYPE.DATA_SOTIASSO})
                             , MODE.SERVICE
                             , SystemColors.ControlText
                             , SystemColors.Control);
@@ -183,7 +185,7 @@ namespace StatisticAlarm
                         break;
                 }
                 //Отменить регистрацию соединения с БД_конфигурации
-                DbSources.Sources().UnRegister(idListenerConfigDB);
+                DbSources.Sources().UnRegister();
             }
             else
             {//Файла с параметрами соединения нет совсем или считанные параметры соединения не валидны
@@ -236,25 +238,26 @@ namespace StatisticAlarm
         /// </summary>
         /// <param name="msgError">Сообщение об ошибке (при наличии)</param>
         /// <returns>Признак выполнения функции</returns>
-        private int InitializeConfigDB (out string msgError, out int iListenerId)
+        private int validateUser (out string msgError)
         {
-            int iRes = 0;
+            int iRes = -1;
             msgError = string.Empty;
-            //Идентификатор соединения с БД_конфигурации
-            iListenerId = DbSources.Sources().Register(s_listFormConnectionSettings[(int)CONN_SETT_TYPE.CONFIG_DB].getConnSett(), false, @"CONFIG_DB");
 
             //Проверить наличие пользователя в БД_конфигурации
             try
             {
                 //Создать И удалить объект с пользовательскими настройками (заполнить статические члены)
-                using (HStatisticUsers users = new HStatisticUsers(iListenerId, HUsers.MODE_REGISTRATION.MIXED)) { ; }
+                using (HStatisticUsers users = new HStatisticUsers(DbTSQLConfigDatabase.DbConfig().ListenerId, HUsers.MODE_REGISTRATION.MIXED)) { ; }
+
+                iRes = 0;
             }
             catch (Exception e)
             {
                 if (e is HException)
                     iRes = ((HException)e).m_code; //-2, -3, -4
                 else
-                    iRes = -1; // общая (неизвестная) ошибка
+                // общая (неизвестная) ошибка
+                    ;
 
                 msgError = e.Message;
             }
@@ -270,8 +273,6 @@ namespace StatisticAlarm
                     ;
             else
                 ;
-            ////Отменить регистрацию соединения с БД_конфигурации
-            //DbSources.Sources().UnRegister(idListenerConfigDB);
 
             return iRes;
         }
@@ -497,7 +498,7 @@ namespace StatisticAlarm
         /// </summary>
         private void InitializeComponent()
         {
-            System.ComponentModel.ComponentResourceManager resources = new System.ComponentModel.ComponentResourceManager(typeof(FormMain));            
+            System.ComponentModel.ComponentResourceManager resources = new System.ComponentModel.ComponentResourceManager(typeof(FormMain));
             this.components = new System.ComponentModel.Container();
 
             this.AutoScaleMode = System.Windows.Forms.AutoScaleMode.Font;
@@ -518,12 +519,12 @@ namespace StatisticAlarm
             (this.MainMenuStrip.Items[0] as ToolStripMenuItem).DropDownItems[0].Click += new EventHandler(fMenuItemExit_Click);
             (this.MainMenuStrip.Items[1] as ToolStripMenuItem).DropDownItems.Add(new ToolStripMenuItem(@"БД конфигурации"));
             (this.MainMenuStrip.Items[1] as ToolStripMenuItem).DropDownItems[0].Click += new EventHandler(fMenuItemDBConfig_Click);
-            (this.MainMenuStrip.Items[2] as ToolStripMenuItem).Click += new EventHandler(fMenuItemAbout_Click);            
+            (this.MainMenuStrip.Items[2] as ToolStripMenuItem).Click += new EventHandler(fMenuItemAbout_Click);
             //Создать панель для размещения "рабочих" панелей
             _panelMain = new Panel ();
             _panelMain.Location = new Point(0, this.MainMenuStrip.Height);
             _panelMain.Size = new System.Drawing.Size(this.ClientSize.Width, this.ClientSize.Height - this.MainMenuStrip.Height - this.m_statusStripMain.Height);
-            _panelMain.Anchor = (AnchorStyles)(((AnchorStyles.Left | AnchorStyles.Top) | AnchorStyles.Right) | AnchorStyles.Bottom);            
+            _panelMain.Anchor = (AnchorStyles)(((AnchorStyles.Left | AnchorStyles.Top) | AnchorStyles.Right) | AnchorStyles.Bottom);
             //_panelMain.Controls.Add (m_panelAlarm); // здесь добавляется null - панель еще не создана (см. 'Initialize(string )')
 
             this.SuspendLayout ();
@@ -563,7 +564,7 @@ namespace StatisticAlarm
             new ToolStripSeparator (),
             this.закрытьToolStripMenuItem});
             this.contextMenuStripNotifyIcon.Name = "contextMenuStripNotifyIcon";
-            this.contextMenuStripNotifyIcon.Size = new System.Drawing.Size(153, 76);            
+            this.contextMenuStripNotifyIcon.Size = new System.Drawing.Size(153, 76);
 
             //Добавить обработчики событий
             this.Load += new EventHandler(FormMain_Load);

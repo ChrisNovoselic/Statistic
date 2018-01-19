@@ -86,7 +86,7 @@ namespace Statistic
                     // столбец не найден - добавить
                     SelectionMode = DataGridViewSelectionMode.CellSelect;
 
-                    Columns.Add(name, headerText);                    
+                    Columns.Add(name, headerText);
                     Columns [ColumnCount - 1].DefaultCellStyle.BackColor = BackColor == SystemColors.Control ? SystemColors.Window : BackColor;
                     Columns [ColumnCount - 1].DefaultCellStyle.ForeColor = ForeColor;
                     Columns [ColumnCount - 1].DefaultCellStyle.Alignment = DataGridViewContentAlignment.MiddleRight;

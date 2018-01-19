@@ -135,7 +135,7 @@ namespace StatisticCommon
         /// <summary>
         /// Список объектов 'TEC'
         /// </summary>
-        public volatile StatisticCommon.InitTECBase.ListTEC m_list_tec;
+        public volatile StatisticCommon.DbTSQLConfigDatabase.ListTEC m_list_tec;
         /// <summary>
         /// Список 
         /// </summary>
@@ -261,7 +261,7 @@ namespace StatisticCommon
 
         public virtual void InitTEC(List <StatisticCommon.TEC> listTEC, ASUTP.Core.HMark markQueries)
         {
-            this.m_list_tec = new InitTECBase.ListTEC ();
+            this.m_list_tec = new DbTSQLConfigDatabase.ListTEC ();
             ////Вариант №1
             //this.m_list_tec.AddRange(listTEC);
             ////Вариант №2
@@ -273,28 +273,25 @@ namespace StatisticCommon
                 //else ;
 
             initQueries(markQueries);
-            initTEC();
+            initTECComponents();
         }
 
-        public void InitTEC(int idListener, FormChangeMode.MODE_TECCOMPONENT mode, /*TYPE_DATABASE_CFG typeCfg, */HMark markQueries, bool bIgnoreTECInUse, int[] arTECLimit, bool bUseData = false)
+        public void InitTEC(FormChangeMode.MODE_TECCOMPONENT mode, /*TYPE_DATABASE_CFG typeCfg, */HMark markQueries, bool bIgnoreTECInUse, int[] arTECLimit, bool bUseData = false)
         {
             //Logging.Logg().Debug("Admin::InitTEC () - вход...");
 
-            if (!(idListener < 0))
-                if (mode == FormChangeMode.MODE_TECCOMPONENT.ANY)
-                    this.m_list_tec = new InitTEC_200(idListener, bIgnoreTECInUse, arTECLimit, bUseData).tec;
-                else
-                    this.m_list_tec = new InitTEC_200(idListener, (short)mode, bIgnoreTECInUse, arTECLimit, bUseData).tec;
+            if (mode == FormChangeMode.MODE_TECCOMPONENT.ANY)
+                this.m_list_tec = DbTSQLConfigDatabase.DbConfig().InitTEC(bIgnoreTECInUse, arTECLimit, bUseData) as DbTSQLConfigDatabase.ListTEC;
             else
-                this.m_list_tec = new InitTECBase.ListTEC ();
+                this.m_list_tec = DbTSQLConfigDatabase.DbConfig ().InitTEC(mode, bIgnoreTECInUse, arTECLimit, bUseData) as DbTSQLConfigDatabase.ListTEC;
 
             initQueries(markQueries);
-            initTEC();
+            initTECComponents();
         }
         /// <summary>
         /// Инициализация списка со всеми компонентами ТЭЦ
         /// </summary>
-        protected virtual void initTEC()
+        protected virtual void initTECComponents()
         {
             allTECComponents.Clear();
 
@@ -380,7 +377,8 @@ namespace StatisticCommon
                                 ;
                         }
 
-                        if ((bInitSensorsStrings == true) && (t.m_bSensorsStrings == false))
+                        if ((bInitSensorsStrings == true)
+                            && (t.m_bSensorsStrings == false))
                             t.InitSensorsTEC();
                         else
                             ;
@@ -639,7 +637,7 @@ namespace StatisticCommon
                         && (m_curRDGValues[iIndx].pbr_number.Length > PBR_PREFIX.Length)) {
                         iRes = GetPBRNumber (m_curRDGValues[iIndx].pbr_number, out err);
                     } else
-                        iRes = getPBRNumber();                
+                        iRes = getPBRNumber();
                 else
                     ;
 

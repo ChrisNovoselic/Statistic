@@ -141,7 +141,7 @@ namespace StatisticTrans
                     (!(Iters == null))
                     && (!(currentIter < 0))
                     && (currentIter < CountIter)
-                    && (!(Iters[currentIter] == null))                    
+                    && (!(Iters[currentIter] == null))
                     );
             }
         }

@@ -101,7 +101,7 @@ namespace Statistic
             /// <returns>Признак - является ли значение ретроспективным</returns>
             public void IsIndexRetroValues(int indx)
             {
-                string strRetro = string.Empty;                
+                string strRetro = string.Empty;
 
                 m_markRetroValues.Set((int)REASON_RETROVALUES.DATE, !(m_curDate.Date.Equals(serverTime.Date) == true));
                 if (m_markRetroValues.IsMarked((int)REASON_RETROVALUES.DATE) == true)
@@ -208,7 +208,7 @@ namespace Statistic
         /// <summary>
         /// Значение коэффициента (для проверки выполнения условий сигнализации "Текущая мощность ГТП")
         /// </summary>
-        private decimal m_dcGTPKoeffAlarmPcur;        
+        private decimal m_dcGTPKoeffAlarmPcur;
         /// <summary>
         /// Панель для активных элементов управления
         /// </summary>
@@ -813,7 +813,7 @@ namespace Statistic
                 int lastMin = (int)(obj as object[])[2];
 
                 DataGridViewTECComponent dgvTECComponent = this.Controls.Find(KEY_CONTROLS.DGV_TECCOMPONENT_VALUE.ToString(), true)[0] as DataGridViewTECComponent;
-                dgvTECComponent.Fill(valuesMins, (int)dcGTPKoeffAlarmPcur, (int)(obj as object[])[2]);                
+                dgvTECComponent.Fill(valuesMins, (int)dcGTPKoeffAlarmPcur, (int)(obj as object[])[2]);
             }
 
             /// <summary>
@@ -1388,7 +1388,7 @@ namespace Statistic
                         //        else
                         //            b = colorPCurve.B;
                         //        break;
-                        //    case 2:                            
+                        //    case 2:
                         //        g = colorPCurve.G;
                         //        b = colorPCurve.B + diffRGB;
                         //        if (b > 255)
@@ -1584,7 +1584,7 @@ namespace Statistic
                 double diviation = -1F;
                 decimal dcKoeff = (decimal)pars [0]; //dcGTPKoeffAlarmPcur
                 int cntDiviation = 0
-                    , iLastMin = (int)pars[1];                
+                    , iLastMin = (int)pars[1];
 
                 int i = -1;
 
@@ -1887,7 +1887,7 @@ namespace Statistic
                 cbxGTP.SelectedIndex = -1;
                 cbxGTP.SelectedIndex = 0;
             } else
-                ;            
+                ;
 
             return bRes;
         }

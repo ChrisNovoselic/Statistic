@@ -450,6 +450,14 @@ namespace CommonAux
             TG, TSN, GRII, GRVI, GRVII, GRVIII
         };
         /// <summary>
+        /// Признаки обязательного наличия хотя бы одного сигнала в группе (INDEX_DATA)
+        ///  , для всех станций, кроме НТЭЦ-5, список сигналов для 'INDEX_DATA.GRVIII' НЕ обязательно
+        /// </summary>
+        private static bool [] _requiredSignals =
+        {
+            true, true, true, true, true, false
+        };
+        /// <summary>
         /// Таблица - список записей результирующего набора
         /// </summary>
         public class TableResult : List<RecordResult>
@@ -565,7 +573,7 @@ namespace CommonAux
         public void InitSensors()
         {
             foreach (INDEX_DATA indx in Enum.GetValues(typeof(INDEX_DATA)))
-                m_Sensors[(int)indx] = getSensors(m_arListSgnls[(int)indx]);
+                m_Sensors[(int)indx] = getSensors(indx, m_arListSgnls[(int)indx]);
         }
 
         /// <summary>
@@ -573,13 +581,14 @@ namespace CommonAux
         /// </summary>
         /// <param name="listSgnls">Список сигналов для которых требуется возвратить строку</param>
         /// <returns>Строка с идентификаторами сигналов</returns>
-        private string getSensors(List<SIGNAL> listSgnls)
+        private string getSensors(INDEX_DATA indx, List<SIGNAL> listSgnls)
         {
             string strRes = string.Empty;
 
             List<int> listIdUSPD = new List<int>();
             List<string> sensorsUSPD = new List<string>();
             string strOR = @" OR ";
+            Action<string, Logging.INDEX_MESSAGE, bool> delegateLogging;
 
             if ((!(listSgnls == null))
                 && (listSgnls.Count > 0))
@@ -606,12 +615,20 @@ namespace CommonAux
                 if (strRes.Equals(string.Empty) == false)
                     strRes = strRes.Substring(0, strRes.Length - strOR.Length);
                 else
-                    Logging.Logg().Error($"TEC::getSensors () - не распознан ни один сигнал для ТЭЦ ID={m_Id}..."
+                    Logging.Logg().Error($"TEC::getSensors () - не распознан ни один сигнал для ТЭЦ ID={m_Id}, группа={indx.ToString ()}..."
                         , Logging.INDEX_MESSAGE.NOT_SET);
             }
-            else
-                Logging.Logg().Error($"TEC::getSensors () - не определен ни один сигнал для ТЭЦ ID={m_Id}..."
-                    , Logging.INDEX_MESSAGE.NOT_SET);
+            else {
+                if (_requiredSignals[(int)indx] == true)
+                // ошибка только в случае обязательного наличия сигналов
+                    delegateLogging = Logging.Logg ().Error;
+                else
+                // иначе - предупреждение
+                    delegateLogging = Logging.Logg ().Warning;
+
+                delegateLogging?.Invoke ($"TEC::getSensors () - не определен ни один сигнал для ТЭЦ ID={m_Id}, группа={indx.ToString()}..."
+                    , Logging.INDEX_MESSAGE.NOT_SET, true);
+            }
 
             return strRes;
         }

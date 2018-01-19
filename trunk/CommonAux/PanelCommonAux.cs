@@ -348,8 +348,6 @@ namespace CommonAux
         /// </summary>
         public override void Start()
         {
-            int iListenerId = -1;
-
             base.Start();
 
             for (int i = 0; i <= Convert.ToInt32(TEC_LOCAL.INDEX_DATA.GRVIII); i++)
@@ -361,18 +359,18 @@ namespace CommonAux
 
             int err = -1;
             // зарегистрировать соединение/получить идентификатор соединения
-            iListenerId = DbSources.Sources().Register(FormMain.s_listFormConnectionSettings[(int)CONN_SETT_TYPE.CONFIG_DB].getConnSett(), false, @"CONFIG_DB");            
+            DbTSQLConfigDatabase.DbConfig ().Register ();
 
-            m_GetDataFromDB.InitListTEC(iListenerId);
+            m_GetDataFromDB.InitListTEC();
 
-            m_GetDataFromDB.InitChannels (iListenerId);
+            m_GetDataFromDB.InitChannels (DbTSQLConfigDatabase.DataSource ().ListenerId);
 
             m_GetDataFromDB.InitSensors ();
 
             //Получить параметры соединения с источником данных
-            m_connSettAIISKUECentre = m_GetDataFromDB.GetConnSettAIISKUECentre (iListenerId, out err);
+            m_connSettAIISKUECentre = m_GetDataFromDB.GetConnSettAIISKUECentre (DbTSQLConfigDatabase.DataSource ().ListenerId, out err);
 
-            DbSources.Sources ().UnRegister (iListenerId);
+            DbTSQLConfigDatabase.DbConfig ().UnRegister ();
 
             foreach (TEC_LOCAL tec in m_GetDataFromDB.m_listTEC)
                 m_listBoxTEC.Items.Add(tec.m_strNameShr);
@@ -735,7 +733,7 @@ namespace CommonAux
             dataGridViewCellStyle.Alignment = System.Windows.Forms.DataGridViewContentAlignment.MiddleRight;
             dataGridViewCellStyle.BackColor = BackColor;
             dataGridViewCellStyle.ForeColor = ForeColor;
-            dataGridViewCellStyle.Font = new System.Drawing.Font("Microsoft Sans Serif", 8.25F, System.Drawing.FontStyle.Regular, System.Drawing.GraphicsUnit.Point, ((byte)(204)));            
+            dataGridViewCellStyle.Font = new System.Drawing.Font("Microsoft Sans Serif", 8.25F, System.Drawing.FontStyle.Regular, System.Drawing.GraphicsUnit.Point, ((byte)(204)));
             dataGridViewCellStyle.SelectionBackColor = System.Drawing.SystemColors.Highlight;
             dataGridViewCellStyle.SelectionForeColor = System.Drawing.SystemColors.HighlightText;
             dataGridViewCellStyle.WrapMode = System.Windows.Forms.DataGridViewTriState.False;
@@ -760,25 +758,43 @@ namespace CommonAux
         }
 
         /// <summary>
+        /// Перечисление - возможные результаты при проверке значений дат, устанвовленных в "каледарях"
+        /// </summary>
+        private enum ResultValidateDatetime
+        {
+            /// <summary>
+            /// Ошибка, по крайнем мере, в части даты "месяц"
+            /// </summary>
+            ErrorWithMonth = -2
+            /// <summary>
+            /// Ошибка, по крайнем мере, в части даты "год"
+            /// </summary>
+            , ErrorWithYear
+            , Ok
+            /// <summary>
+            /// Предупреждение, только в части даты "номер дня(число)"
+            /// </summary>
+            , WarningWithDay
+        }
+
+        /// <summary>
         /// Проверка допустимости выбранного диапазона дат
         /// </summary>
         /// <returns>Результат проверки</returns>
-        private int validateDates()
+        private ResultValidateDatetime validateDates ()
         {
-            int iRes = 0;
+            ResultValidateDatetime res = ResultValidateDatetime.Ok;
 
             if (!(m_listMonthCalendar.ElementAt ((int)INDEX_MONTH_CALENDAR_DATE.START).SelectionStart.Year == m_listMonthCalendar.ElementAt ((int)INDEX_MONTH_CALENDAR_DATE.END).SelectionStart.Year))
-                iRes = -1;
+                res = ResultValidateDatetime.ErrorWithYear;
+            else if (!(m_listMonthCalendar.ElementAt ((int)INDEX_MONTH_CALENDAR_DATE.START).SelectionStart.Month == m_listMonthCalendar.ElementAt ((int)INDEX_MONTH_CALENDAR_DATE.END).SelectionStart.Month))
+                res = ResultValidateDatetime.ErrorWithMonth;
+            else if (m_listMonthCalendar.ElementAt ((int)INDEX_MONTH_CALENDAR_DATE.START).SelectionStart.Day > m_listMonthCalendar.ElementAt ((int)INDEX_MONTH_CALENDAR_DATE.END).SelectionStart.Day)
+                res = ResultValidateDatetime.WarningWithDay;
             else
-                if (!(m_listMonthCalendar.ElementAt ((int)INDEX_MONTH_CALENDAR_DATE.START).SelectionStart.Month == m_listMonthCalendar.ElementAt ((int)INDEX_MONTH_CALENDAR_DATE.END).SelectionStart.Month))
-                    iRes = -2;
-                else
-                    if (m_listMonthCalendar.ElementAt ((int)INDEX_MONTH_CALENDAR_DATE.START).SelectionStart.Day > m_listMonthCalendar.ElementAt ((int)INDEX_MONTH_CALENDAR_DATE.END).SelectionStart.Day)
-                        iRes = 1;
-                    else
-                        ;
+                ;
 
-            return iRes;
+            return res;
         }
 
         private void monthCalendar_DateChanged(object sender, DateRangeEventArgs e)
@@ -793,15 +809,15 @@ namespace CommonAux
 
             m_labelStartDate.Text = m_listMonthCalendar.ElementAt ((int)indx).SelectionStart.ToShortDateString();
 
-            int iRes = validateDates();
+            ResultValidateDatetime res = validateDates();
 
-            m_markReady.Set ((int)INDEX_READY.DATE, iRes == 0);
+            m_markReady.Set ((int)INDEX_READY.DATE, res == ResultValidateDatetime.Ok);
             m_btnStripButtonExcel.Enabled = State == STATE.READY;
 
-            if (iRes == 0)
+            if (res == ResultValidateDatetime.Ok)
                 m_GetDataFromDB.ReportClear(true);
             else
-                m_GetDataFromDB.ErrorReport("Некорректный временной диапазон");
+                m_GetDataFromDB.ErrorReport($"Некорректный временной диапазон: {res.ToString()}");
         }
 
         private void updateRowData()
@@ -908,8 +924,7 @@ namespace CommonAux
 
         private void btnLoad_Click(object sender, EventArgs ev)
         {
-            int iRes = -1
-                , iListenerId = -1;
+            int iRes = -1;
             string msg = string.Empty;
             TEC_LOCAL.INDEX_DATA indx;
             TEC_LOCAL tec_local;
@@ -925,8 +940,9 @@ namespace CommonAux
             //delegateStartWait();
 
             //Установить соединение с источником данных
-            iListenerId = DbSources.Sources().Register(m_connSettAIISKUECentre, false, $"АИИСКУЭ-центр для {tec_local.m_strNameShr}");
-            if (!(iListenerId < 0))
+            DbTSQLDataSource.DataSource ().SetConnectionSettings(m_connSettAIISKUECentre);
+            DbTSQLDataSource.DataSource ().Register ($"АИИСКУЭ-центр для {tec_local.m_strNameShr}");
+            if (!(DbTSQLDataSource.DataSource ().ListenerId < 0))
             {
                 Logging.Logg().Action(msg, Logging.INDEX_MESSAGE.NOT_SET);
 
@@ -945,7 +961,7 @@ namespace CommonAux
 
                     tec_local.ClearValues(datetimeStart, indx);
 
-                    iRes = m_GetDataFromDB.Request(tec_local, iListenerId
+                    iRes = m_GetDataFromDB.Request(tec_local, DbTSQLDataSource.DataSource ().ListenerId
                         , datetimeStart //SelectionStart всегда == SelectionEnd, т.к. MultiSelect = false
                         , datetimeStart.AddDays(1)
                         , indx);
@@ -960,9 +976,11 @@ namespace CommonAux
                                 = Convert.ToSingle (m_dgvValues [Convert.ToInt32 (indx)].Rows [m_dgvValues [Convert.ToInt32 (indx)].Rows.Count - 1].Cells [24].Value).ToString (FORMAT_VALUE);
 
                             if (iRes == 0)
-                                Logging.Logg ().Action (@"PanelCommonAux::btnLoadClick () - получены значения для: " + tec_local.m_strNameShr, Logging.INDEX_MESSAGE.NOT_SET);
+                                Logging.Logg ().Action ($"PanelCommonAux::btnLoadClick () - получены значения для: {tec_local.m_strNameShr}, группа={((TEC_LOCAL.INDEX_DATA)indx).ToString ()}"
+                                    , Logging.INDEX_MESSAGE.NOT_SET);
                             else
-                                Logging.Logg ().Error (@"PanelCommonAux::btnLoadClick () - ошибка при получении значений для: " + tec_local.m_strNameShr, Logging.INDEX_MESSAGE.NOT_SET);
+                                Logging.Logg ().Error ($"PanelCommonAux::btnLoadClick () - ошибка при получении значений для: ТЭЦ={tec_local.m_strNameShr}, группа={((TEC_LOCAL.INDEX_DATA)indx).ToString()}..."
+                                    , Logging.INDEX_MESSAGE.NOT_SET);
 
                             
                         } catch (Exception e) {
@@ -986,7 +1004,7 @@ namespace CommonAux
             //delegateStopWait();
 
             //Разорвать соединение с источником данных
-            DbSources.Sources().UnRegister(iListenerId);
+            DbTSQLDataSource.DataSource().UnRegister();
             Logging.Logg().Action(msg, Logging.INDEX_MESSAGE.NOT_SET);
         }
 
@@ -1002,8 +1020,7 @@ namespace CommonAux
         /// <param name="e">Аргумент события</param>
         private void btnStripButtonExcel_Click(object sender, EventArgs e)
         {
-            int iRes = -1, iErr = -1
-                , iListenerId = -1;
+            int iRes = -1, iErr = -1;
             double[] arWriteValues;
             HMark markErr = new HMark(0);
             string msg = string.Empty;
@@ -1018,20 +1035,21 @@ namespace CommonAux
             //delegateStartWait();
 
             //Установить соединение с источником данных
-            iListenerId = DbSources.Sources().Register(m_connSettAIISKUECentre, false, @"");
-            if (!(iListenerId < 0))
+            DbTSQLDataSource.DataSource ().SetConnectionSettings (m_connSettAIISKUECentre);
+            DbTSQLDataSource.DataSource ().Register ($"АИИСКУЭ-центр для ТЭЦ");
+            if (!(DbTSQLDataSource.DataSource ().ListenerId < 0))
             {
                 Logging.Logg().Debug(msg, Logging.INDEX_MESSAGE.NOT_SET);
 
                 m_GetDataFromDB.m_listTEC.ForEach (t => {
-                    iRes = m_GetDataFromDB.Request (t, iListenerId, m_listMonthCalendar.ElementAt ((int)INDEX_MONTH_CALENDAR_DATE.START).SelectionStart.Date, m_listMonthCalendar.ElementAt ((int)INDEX_MONTH_CALENDAR_DATE.END).SelectionStart.Date.AddDays (1));
+                    iRes = m_GetDataFromDB.Request (t, DbTSQLDataSource.DataSource ().ListenerId, m_listMonthCalendar.ElementAt ((int)INDEX_MONTH_CALENDAR_DATE.START).SelectionStart.Date, m_listMonthCalendar.ElementAt ((int)INDEX_MONTH_CALENDAR_DATE.END).SelectionStart.Date.AddDays (1));
 
                     if (!(iRes < 0)) {
                         msg = string.Format (@"Получены значения для: {0}", t.m_strNameShr);
 
                         Logging.Logg ().Debug (msg, Logging.INDEX_MESSAGE.NOT_SET);
                     } else {
-                        msg = @"Ошибка при получении значений для: " + t.m_strNameShr;                        
+                        msg = @"Ошибка при получении значений для: " + t.m_strNameShr;
                         markErr.Set (m_GetDataFromDB.m_listTEC.IndexOf (t), true);
 
                         Logging.Logg ().Error (msg, Logging.INDEX_MESSAGE.NOT_SET);
@@ -1047,7 +1065,7 @@ namespace CommonAux
             //delegateStopWait();
 
             //Разорвать соединение с источником данных
-            DbSources.Sources().UnRegister(iListenerId);
+            DbTSQLDataSource.DataSource ().UnRegister();
 
             m_GetDataFromDB.ActionReport("Экспорт в MS Excel - запись данных");
 
@@ -1056,7 +1074,7 @@ namespace CommonAux
             {
                 msg = @"Сохранить результат в: ";
 
-                //Установить исходные параметры для формы диалога            
+                //Установить исходные параметры для формы диалога
                 formChoiseResult.Title = @"Указать книгу MS Excel-результат";
                 formChoiseResult.CheckPathExists = true;
                 formChoiseResult.CheckFileExists = false;

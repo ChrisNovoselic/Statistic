@@ -761,7 +761,7 @@ namespace Statistic
             _pnlQuickData.dtprDate.Value = HDateTime.ToMoscowTimeZone ();
 
             //initTableMinRows ();
-            initTableHourRows ();            
+            initTableHourRows ();
 
             ////??? Перенос в 'Activate'
             ////В зависимости от установленных признаков в контекстном меню
@@ -802,7 +802,7 @@ namespace Statistic
 
             if (m_tecView.m_curDate.Date.Equals(HAdmin.SeasonDateTime.Date) == false)
             {
-                m_dgwHours.InitRows(24, false);                
+                m_dgwHours.InitRows(24, false);
             }
             else
             {
@@ -846,7 +846,7 @@ namespace Statistic
 
             int iRow = 0
                 , iPercTotal = 100
-                , iPercItem = -1;            
+                , iPercItem = -1;
             bool bUseLabel = !(m_label == null);
 
             if (bUseLabel == true)
@@ -1209,7 +1209,7 @@ namespace Statistic
                 //} else ;
             }
             else
-                ;         
+                ;
         }
 
         protected bool timerCurrentStarted
@@ -1378,14 +1378,14 @@ namespace Statistic
                     , m_tecView.m_arTypeSourceData[(int)HDateTime.INTERVAL.HOURS]
                     , m_tecView.lastHour
                     , m_tecView.m_curDate.Date.CompareTo(HAdmin.SeasonDateTime.Date) == 0
-                    , (IntDelegateIntFunc)m_tecView.GetSeasonHourOffset                    
-                    , m_tecView.serverTime.Add (m_tecView.m_tsOffsetToMoscow)                    
+                    , (IntDelegateIntFunc)m_tecView.GetSeasonHourOffset
+                    , m_tecView.serverTime.Add (m_tecView.m_tsOffsetToMoscow)
                     , _pnlQuickData.dtprDate.Value.ToShortDateString()
                 }
-            );            
+            );
         }
 
-        protected abstract HMark enabledSourceData_ToolStripMenuItems();        
+        protected abstract HMark enabledSourceData_ToolStripMenuItems();
         
         /// <summary>
         /// Обновление компонентов вкладки с проверкой изменения источника данных

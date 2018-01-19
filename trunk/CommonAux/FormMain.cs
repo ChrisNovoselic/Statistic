@@ -53,7 +53,7 @@ namespace CommonAux
             Thread.CurrentThread.CurrentUICulture =
                 ProgramBase.ss_MainCultureInfo;
 
-            formParameters = new FormParameters_DB (s_listFormConnectionSettings [(int)CONN_SETT_TYPE.CONFIG_DB].getConnSett ());
+            formParameters = new FormParameters_DB ();
             s_iMainSourceData = Int32.Parse (formParameters.m_arParametrSetup [(int)FormParameters.PARAMETR_SETUP.MAIN_DATASOURCE]);
 
             InitializeComponent ();
@@ -111,7 +111,12 @@ namespace CommonAux
 
             if (s_listFormConnectionSettings[(int)CONN_SETT_TYPE.CONFIG_DB].Ready == 0)
             {
-                _state = InitializeConfigDB(out msgError);
+                //!!! Один экземпляр для всего приложения, на весь срок выполнения
+                new DbTSQLConfigDatabase (s_listFormConnectionSettings [(int)CONN_SETT_TYPE.CONFIG_DB].getConnSett ());
+                //Идентификатор соединения с БД_конфигурации
+                DbTSQLConfigDatabase.DbConfig ().Register ();
+
+                _state = validateUser(out msgError);
                 switch (_state)
                 {
                     case -1:
@@ -145,6 +150,8 @@ namespace CommonAux
 
                         break;
                 }
+                //Отменить регистрацию соединения с БД_конфигурации
+                DbTSQLConfigDatabase.DataSource ().UnRegister ();
             }
             else
             {//Файла с параметрами соединения нет совсем или считанные параметры соединения не валидны
@@ -161,18 +168,16 @@ namespace CommonAux
         /// </summary>
         /// <param name="msgError">Сообщение об ошибке (при наличии)</param>
         /// <returns>Признак выполнения функции</returns>
-        private int InitializeConfigDB(out string msgError)
+        private int validateUser(out string msgError)
         {
             int iRes = 0;
             msgError = string.Empty;
-            //Идентификатор соединения с БД_конфигурации
-            int idListenerConfigDB = DbSources.Sources().Register(s_listFormConnectionSettings[(int)CONN_SETT_TYPE.CONFIG_DB].getConnSett(), false, @"CONFIG_DB");
 
             //Проверить наличие пользователя в БД_конфигурации
             try
             {
                 //Создать И удалить объект с пользовательскими настройками (заполнить статические члены)
-                using (HStatisticUsers users = new HStatisticUsers(idListenerConfigDB, HUsers.MODE_REGISTRATION.MIXED)) {; }
+                using (HStatisticUsers users = new HStatisticUsers (DbTSQLConfigDatabase.DataSource ().ListenerId, HUsers.MODE_REGISTRATION.MIXED)) {; }
             }
             catch (Exception e)
             {
@@ -195,8 +200,6 @@ namespace CommonAux
                     ;
             else
                 ;
-            //Отменить регистрацию соединения с БД_конфигурации
-            DbSources.Sources().UnRegister(idListenerConfigDB);
 
             return iRes;
         }

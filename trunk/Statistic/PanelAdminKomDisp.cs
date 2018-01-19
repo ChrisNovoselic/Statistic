@@ -311,8 +311,8 @@ namespace Statistic
                 (int)new TimeSpan(dtpShedulePeriodExport_PBRValues.Value.Hour, dtpSheduleStartExport_PBRValues.Value.Minute, dtpSheduleStartExport_PBRValues.Value.Second).TotalSeconds;
         }
 
-        public PanelAdminKomDisp(int idListener, ASUTP.Core.HMark markQueries)
-            : base(idListener, markQueries, new int[] { 0, (int)TECComponent.ID.GTP })
+        public PanelAdminKomDisp(ASUTP.Core.HMark markQueries)
+            : base(markQueries, new int[] { 0, (int)TECComponent.ID.GTP })
         {
             //??? вызывается из базового класса
             //InitializeComponents ();
@@ -644,7 +644,7 @@ namespace Statistic
         {
             EnabledExportPBRValues = (HStatisticUsers.IsAllowed ((int)HStatisticUsers.ID_ALLOWED.EXPORT_PBRVALUES_KOMDISP));
             //??? тоже следует читать из БД конфигурации
-            AdminTS_KomDisp.ModeDefaultExportPBRValues = AdminTS_KomDisp.MODE_EXPORT_PBRVALUES.MANUAL;            
+            AdminTS_KomDisp.ModeDefaultExportPBRValues = AdminTS_KomDisp.MODE_EXPORT_PBRVALUES.MANUAL;
             AllowUserSetModeExportPBRValues = true & EnabledExportPBRValues;
             AllowUserChangeSheduleStartExportPBRValues = false & EnabledExportPBRValues;
             AllowUserChangeShedulePeriodExportPBRValues = false & EnabledExportPBRValues;

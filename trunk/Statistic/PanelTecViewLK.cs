@@ -131,10 +131,10 @@ namespace Statistic
                     adminValuesReceived = false;
 
                     //Часы...
-                    AddState((int)StatesMachine.Hours_Fact);                    
+                    AddState((int)StatesMachine.Hours_Fact);
 
-                    //Минуты...                    
-                    AddState((int)StatesMachine.RetroMins_Fact);                    
+                    //Минуты...
+                    AddState((int)StatesMachine.RetroMins_Fact);
                     AddState((int)StatesMachine.HoursTMTemperatureValues);
 
                     AddState((int)StatesMachine.PPBRValues);
@@ -267,7 +267,7 @@ namespace Statistic
                         //лейбл для t пр/ч
                         case CONTROLS.lblTemperatureHour:
                         //лейбл для t пр/сут
-                        case CONTROLS.lblTemperatureDate:                            
+                        case CONTROLS.lblTemperatureDate:
                             // цвет заднего плана пустой
                             backClolor = Color.Empty;
                             // цвет переднего плана черный
@@ -281,7 +281,7 @@ namespace Statistic
                         // значение t пр/ч
                         case CONTROLS.lblTemperatureHourValue:
                         // значение пр/сут
-                        case CONTROLS.lblTemperatureDateValue:                            
+                        case CONTROLS.lblTemperatureDateValue:
                             backClolor = Color.Black;
                             foreColor = Color.LimeGreen;
                             szFont = 15F;
@@ -289,7 +289,7 @@ namespace Statistic
                             align = ContentAlignment.MiddleCenter;
                             break;
                             //По умолчанию 
-                        default:                            
+                        default:
                             backClolor = Color.Red;
                             foreColor = Color.Yellow;
                             szFont = 6F;
@@ -328,8 +328,8 @@ namespace Statistic
                         case CONTROLS.lblPowerHour:
                         //Лейбл для P сети
                         case CONTROLS.lblPowerDate:
-                            // Цвет переднего плана черный, заднего пустой                          
-                            backClolor = Color.Empty;                            
+                            // Цвет переднего плана черный, заднего пустой
+                            backClolor = Color.Empty;
                             foreColor = Color.Black;
                             szFont = 8F;
                             //Выравнивание по середине слева
@@ -339,14 +339,14 @@ namespace Statistic
                         case CONTROLS.lblPowerCurrentValue:
                         case CONTROLS.lblPowerHourValue:
                         case CONTROLS.lblPowerDateValue:
-                            //Цвета значений                            
+                            //Цвета значений
                             backClolor = Color.Black;
                             foreColor = Color.LimeGreen;
                             szFont = 15F;
                             align = ContentAlignment.MiddleCenter;
                             break;
                             //По умолчанию
-                        default:                            
+                        default:
                             backClolor = Color.Red;
                             foreColor = Color.Yellow;
                             szFont = 6F;
@@ -517,7 +517,7 @@ namespace Statistic
                 for (int i = 0; i < cntCols; i++)
                 {
                     this.ColumnStyles.Add(new ColumnStyle(SizeType.Absolute, SZ_COLUMN_TG_LABEL));
-                    this.ColumnStyles.Add(new ColumnStyle(SizeType.Absolute, SZ_COLUMN_TG_LABEL_VALUE));                    
+                    this.ColumnStyles.Add(new ColumnStyle(SizeType.Absolute, SZ_COLUMN_TG_LABEL_VALUE));
                 }
 
                 if (m_tgLabels.Count > 0)
@@ -770,7 +770,7 @@ namespace Statistic
                     switch ((INDEX_COLUMNS)c)
                     {
                         case INDEX_COLUMNS.TEMPERATURE_FACT:
-                        case INDEX_COLUMNS.POWER_FACT_SUM:                        
+                        case INDEX_COLUMNS.POWER_FACT_SUM:
                         case INDEX_COLUMNS.TEMPERATURE_DEVIATION:
                         case INDEX_COLUMNS.POWER_DEVIATION:
                             Rows[i].Cells[c].Value = @"-".ToString();
@@ -812,7 +812,7 @@ namespace Statistic
 
                 regularHourCellStyle.BackColor = FormMain.formGraphicsSettings.COLOR(FormGraphicsSettings.INDEX_COLOR_VAUES.ASKUE_LK_REGULAR);
                 mainHourCellStyle.BackColor = FormMain.formGraphicsSettings.COLOR(FormGraphicsSettings.INDEX_COLOR_VAUES.ASKUE);
-                //// полужирный на основе 1-ой ячейки                
+                //// полужирный на основе 1-ой ячейки
                 //mainHourCellStyle.Font = new System.Drawing.Font(RowsDefaultCellStyle.Font, FontStyle.Bold);
 
                 //cntWarn = 0;
@@ -849,15 +849,15 @@ namespace Statistic
                         // - Температура
                         if ((!(values[i].valuesLastMinutesTM == 0))
                             || (!(values[i].valuesPmin == 0)))
-                            Rows[i].Cells[(int)INDEX_COLUMNS.TEMPERATURE_DEVIATION].Value = (values[i].valuesPmin - values[i].valuesLastMinutesTM).ToString(@"F2");                            
+                            Rows[i].Cells[(int)INDEX_COLUMNS.TEMPERATURE_DEVIATION].Value = (values[i].valuesPmin - values[i].valuesLastMinutesTM).ToString(@"F2");
                         else
-                            Rows[i].Cells[(int)INDEX_COLUMNS.TEMPERATURE_DEVIATION].Value = @"-";                        
+                            Rows[i].Cells[(int)INDEX_COLUMNS.TEMPERATURE_DEVIATION].Value = @"-";
                         // - Мощность
                         if ((values[i].valuesFact > 0)
                             && (values[i].valuesPBR > 0))
                             Rows[i].Cells[(int)INDEX_COLUMNS.POWER_DEVIATION].Value = (values[i].valuesPBR - values[i].valuesFact * 1000).ToString(@"F2");
                         else
-                            Rows[i].Cells[(int)INDEX_COLUMNS.POWER_DEVIATION].Value = @"-";                        
+                            Rows[i].Cells[(int)INDEX_COLUMNS.POWER_DEVIATION].Value = @"-";
                     }
                     else
                     {
@@ -1062,7 +1062,7 @@ namespace Statistic
                     valuesMainFact = new PointPairList[iMainIntervalCount];
                     //Для каждого контрольного часа создать пару точек 
                     for (i = 0; i < valuesMainFact.Length; i++)
-                        valuesMainFact[i] = new PointPairList();                    
+                        valuesMainFact[i] = new PointPairList();
                     
                     valuesPlan = new PointPairList[iMainIntervalCount];
                     valuesPDiviation = new PointPairList[iMainIntervalCount];
@@ -1486,13 +1486,13 @@ namespace Statistic
             lock (m_tecView.m_lockValue)
             {
                 m_dgwHours.Fill(m_tecView.m_valuesHours
-                , m_tecView.lastHour
-                , m_tecView.lastReceivedHour
-                , m_tecView.m_valuesHours.Length
-                , m_tecView.m_tec.m_id
-                , m_tecView.currHour
-                , m_tecView.m_arTypeSourceData[(int)HDateTime.INTERVAL.HOURS] == CONN_SETT_TYPE.DATA_AISKUE
-                , m_tecView.serverTime);
+                    , m_tecView.lastHour
+                    , m_tecView.lastReceivedHour
+                    , m_tecView.m_valuesHours.Length
+                    , m_tecView.m_tec.m_id
+                    , m_tecView.currHour
+                    , m_tecView.m_arTypeSourceData[(int)HDateTime.INTERVAL.HOURS] == CONN_SETT_TYPE.DATA_AISKUE
+                    , m_tecView.serverTime);
             }
         }
 

@@ -75,7 +75,7 @@ namespace StatisticDiagnostic
 
             this.Load += new System.EventHandler(this.FormDiagnostic_Load); 
             this.Activated += new System.EventHandler(this.FormDiagnostic_Activate);
-            this.Deactivate += new System.EventHandler(this.FormDiagnostic_Deactivate);          
+            this.Deactivate += new System.EventHandler(this.FormDiagnostic_Deactivate);
         }
 
         #endregion      

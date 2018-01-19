@@ -54,8 +54,8 @@ namespace Statistic
             this.ResumeLayout();
         }
 
-        public PanelAdminVyvod(int idListener, HMark markQueries)
-            : base(idListener, markQueries, new int[] { 0, (int)TECComponent.ID.TG })
+        public PanelAdminVyvod(HMark markQueries)
+            : base(markQueries, new int[] { 0, (int)TECComponent.ID.LK })
         {
         }
 
@@ -89,7 +89,7 @@ namespace Statistic
                             if (valid == true)
                                 m_admin.m_curRDGValues[hour].pmin = value;
                             else
-                                ; //m_admin.m_curRDGValues[hour].pmin = 0F;                            
+                                ; //m_admin.m_curRDGValues[hour].pmin = 0F;
                             break;
                         case DataGridViewAdminVyvod.DESC_INDEX.UDGt: // УДГэ
                             break;
@@ -235,7 +235,7 @@ namespace Statistic
         protected override void createAdmin ()
         {
             //Возможность редактирования значений ПБР: разрешено управление (изменение разрешения на запись), запись НЕ разрешена
-            m_admin = new PanelAdminVyvod.AdminTS_Vyvod (new bool[] { true, false });                    
+            m_admin = new PanelAdminVyvod.AdminTS_Vyvod (new bool[] { true, false });
         }
 
         private class DataGridViewAdminVyvod : DataGridViewAdmin

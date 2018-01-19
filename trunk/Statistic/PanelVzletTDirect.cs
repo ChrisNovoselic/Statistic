@@ -295,7 +295,7 @@ namespace Statistic
                             && (values[i].valuesUDGe > 0))
                         {
                             // разность
-                            hourDev = values[i].valuesFact - values[i].valuesUDGe;                            
+                            hourDev = values[i].valuesFact - values[i].valuesUDGe;
                             
                             if (!(i > lh))
                             {
@@ -310,7 +310,7 @@ namespace Statistic
                                 strVal = strNotValue;
                         }
                         else
-                            strVal = strNotValue;                        
+                            strVal = strNotValue;
                         Rows[i].Cells[(int)INDEX_COLUMNS.TEMPERATURE_DEVIATION].Value = strVal;
                         
                         // визуализация выхода за пределы диапазона
@@ -488,7 +488,7 @@ namespace Statistic
                                 noValues = false;
                             }
                             else
-                                ;                            
+                                ;
                         }
                         else
                             ;
@@ -569,7 +569,7 @@ namespace Statistic
                     //LineItem
                     GraphPane.AddCurve(string.Empty, /*null,*/ valuesODiviation, HDataGridViewTables.s_dgvCellStyles [(int)HDataGridViewTables.INDEX_CELL_STYLE.ERROR].BackColor);
                     //LineItem
-                    GraphPane.AddCurve(strCurveNameDeviation, /*null,*/ valuesPDiviation, HDataGridViewTables.s_dgvCellStyles [(int)HDataGridViewTables.INDEX_CELL_STYLE.ERROR].BackColor);                    
+                    GraphPane.AddCurve(strCurveNameDeviation, /*null,*/ valuesPDiviation, HDataGridViewTables.s_dgvCellStyles [(int)HDataGridViewTables.INDEX_CELL_STYLE.ERROR].BackColor);
 
                     //Значения
                     string strCurveNameValue = "Температура";
@@ -587,7 +587,7 @@ namespace Statistic
                         {
                             if (typeConnSett == CONN_SETT_TYPE.DATA_VZLET)
                             //LineItem
-                                GraphPane.AddCurve(strCurveNameValue, valuesFact, colorPCurve);                                
+                                GraphPane.AddCurve(strCurveNameValue, valuesFact, colorPCurve);
                             else
                                 // других типов данных для ЛК не предусмотрено
                                 ;
@@ -761,7 +761,7 @@ namespace Statistic
                         {
                             case CONTROLS.lblTemperatureCurrent:
                             case CONTROLS.lblTemperatureHour:
-                            case CONTROLS.lblTemperatureDate:                                
+                            case CONTROLS.lblTemperatureDate:
                                 backClolor = Color.Empty;
                                 foreColor = Color.Black;
                                 szFont = 8F;
@@ -769,13 +769,13 @@ namespace Statistic
                                 break;
                             case CONTROLS.lblTemperatureCurrentValue:
                             case CONTROLS.lblTemperatureHourValue:
-                            case CONTROLS.lblTemperatureDateValue:                                
+                            case CONTROLS.lblTemperatureDateValue:
                                 backClolor = Color.Black;
                                 foreColor = Color.LimeGreen;
                                 szFont = 15F;
                                 align = ContentAlignment.MiddleCenter;
                                 break;
-                            default:                                
+                            default:
                                 backClolor = Color.Red;
                                 foreColor = Color.Yellow;
                                 szFont = 6F;
@@ -810,7 +810,7 @@ namespace Statistic
                         {
                             case CONTROLS.lblDeviatCurrent:
                             case CONTROLS.lblDeviatHour:
-                            case CONTROLS.lblDeviatDate:                                
+                            case CONTROLS.lblDeviatDate:
                                 backClolor = Color.Empty;
                                 foreColor = Color.Black;
                                 szFont = 8F;
@@ -818,13 +818,13 @@ namespace Statistic
                                 break;
                             case CONTROLS.lblDeviatCurrentValue:
                             case CONTROLS.lblDeviatHourValue:
-                            case CONTROLS.lblDeviatDateValue:                                
+                            case CONTROLS.lblDeviatDateValue:
                                 backClolor = Color.Black;
                                 foreColor = Color.Yellow; //LimeGreen
                                 szFont = 15F;
                                 align = ContentAlignment.MiddleCenter;
                                 break;
-                            default:                                
+                            default:
                                 backClolor = Color.Red;
                                 foreColor = Color.Yellow;
                                 szFont = 6F;
@@ -1355,7 +1355,7 @@ namespace Statistic
             {
                 public DataSource(int indx_tec, int indx_comp = -1) : base (indx_tec, indx_comp, TECComponentBase.TYPE.TEPLO)
                 {
-                    m_idAISKUEParNumber = ID_AISKUE_PARNUMBER.FACT_30;                    
+                    m_idAISKUEParNumber = ID_AISKUE_PARNUMBER.FACT_30;
                     //_tsOffsetToMoscow = HDateTime.TS_NSK_OFFSET_OF_MOSCOWTIMEZONE;
                 }
 
@@ -1831,7 +1831,7 @@ namespace Statistic
                                 }
                                 else
                                     iRes = -2;
-                                break;                            
+                                break;
                         }
                     }
                     catch (Exception e)

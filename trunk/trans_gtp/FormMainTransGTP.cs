@@ -111,12 +111,10 @@ namespace trans_gtp
             markQueries.Set((int)StatisticCommon.CONN_SETT_TYPE.PBR, ОпросППБРToolStripMenuItem.Checked);
             markQueries.Set((int)StatisticCommon.CONN_SETT_TYPE.ADMIN, ОпросАдминЗначенияToolStripMenuItem.Checked);
 
-            int idListener = -1;
-
             // определить пользователя по 1-ой БД конфигурации
-            idListener = DbSources.Sources().Register(s_listFormConnectionSettings[(int)StatisticCommon.CONN_SETT_TYPE.CONFIG_DB].getConnSett(0), false, @"CONFIG_DB");
+            DbTSQLConfigDatabase.DbConfig().Register ();
             try {
-                using (HStatisticUsers users = new HStatisticUsers(idListener, ASUTP.Helper.HUsers.MODE_REGISTRATION.MIXED)) {; }
+                using (HStatisticUsers users = new HStatisticUsers(DbTSQLConfigDatabase.DataSource ().ListenerId, ASUTP.Helper.HUsers.MODE_REGISTRATION.MIXED)) {; }
             } catch (Exception e) {
                 Logging.Logg().Exception(e, "FormMainTransGTP::FormMainTransGTP ()", Logging.INDEX_MESSAGE.NOT_SET);
             }
@@ -130,11 +128,11 @@ namespace trans_gtp
                 else
                     ;
                 m_arAdmin[i] = new AdminTS_KomDisp(new bool[] { false, bPPBRSavedValues });
-                idListener = DbSources.Sources().Register(s_listFormConnectionSettings[(int)StatisticCommon.CONN_SETT_TYPE.CONFIG_DB].getConnSett(i), false, @"CONFIG_DB");
+                
                 try
                 {
                     //((AdminTS_KomDisp)m_arAdmin[i]).InitTEC(m_formConnectionSettingsConfigDB.getConnSett((Int16)CONN_SETT_TYPE.DEST), m_modeTECComponent, true, false);
-                    m_arAdmin[i].InitTEC(idListener, m_modeTECComponent, /*arTypeConfigDB[i], */markQueries, true, new int[] { 0, (int)TECComponent.ID.GTP });
+                    m_arAdmin[i].InitTEC(m_modeTECComponent, /*arTypeConfigDB[i], */markQueries, true, new int[] { 0, (int)TECComponent.ID.GTP });
                     RemoveTEC(m_arAdmin[i]);
                 }
                 catch (Exception e)
@@ -231,7 +229,12 @@ namespace trans_gtp
 
                 m_arAdmin[i].Start();
 
-                DbSources.Sources().UnRegister(idListener);
+                DbTSQLConfigDatabase.DataSource ().UnRegister ();
+                if (i + 1 < (int)CONN_SETT_TYPE.COUNT_CONN_SETT_TYPE) {
+                    DbTSQLConfigDatabase.DbConfig ().SetConnectionSettings (s_listFormConnectionSettings [(int)StatisticCommon.CONN_SETT_TYPE.CONFIG_DB].getConnSett (i + 1));
+                    DbTSQLConfigDatabase.DbConfig ().Register ();
+                } else
+                    ;
             }
 
             if (!(i < (Int16)CONN_SETT_TYPE.COUNT_CONN_SETT_TYPE))

@@ -102,56 +102,66 @@ namespace StatisticDiagnostic
                     // рез-т м.б. 2-х типов: 1) активные источники данных СОТИАССО; 2) крайние значения для всех источников данных
                         if (!(type == TYPE.UNKNOWN))
                             foreach (DataRow r in tableRecieved.Rows)
-                                switch (type) {
-                                    case TYPE.ACTIVE_SOURCE_SOTIASSO:
-                                        id = r.Field<int>(@"ID_TEC");
+                                try {
+                                    switch (type) {
+                                        case TYPE.ACTIVE_SOURCE_SOTIASSO:
+                                            if (!(r [@"ID_TEC"] is DBNull)) {
+                                                id = r.Field<int>(@"ID_TEC");
 
-                                        if (this.Keys.Contains(id) == false)
-                                            Add(id, new Dictionary<KEY_DIAGNOSTIC_PARAMETER, Values>());
-                                        else
-                                            ;
+                                                if (this.Keys.Contains(id) == false)
+                                                    Add(id, new Dictionary<KEY_DIAGNOSTIC_PARAMETER, Values>());
+                                                else
+                                                    ;
 
-                                        this[id].Add(
-                                            new KEY_DIAGNOSTIC_PARAMETER() {
-                                                m_id_unit = KEY_DIAGNOSTIC_PARAMETER.ID_UNIT.UNKNOWN
-                                                , m_id_value = KEY_DIAGNOSTIC_PARAMETER.ID_VALUE.UNKNOWN
-                                            }
-                                            , new Values() {
-                                                m_value = r.Field<int>(@"ID")
-                                                , m_strLink = string.Empty
-                                                , m_name_shr = string.Empty
-                                                , m_dtValue = ASUTP.Core.HDateTime.ToMoscowTimeZone()
-                                            }
-                                        );
-                                        break;
-                                    case TYPE.DATA:
-                                        id = r.Field<int>(@"ID_EXT"); // читать как ИД ТЭЦ
+                                                this[id].Add(
+                                                    new KEY_DIAGNOSTIC_PARAMETER() {
+                                                        m_id_unit = KEY_DIAGNOSTIC_PARAMETER.ID_UNIT.UNKNOWN
+                                                        , m_id_value = KEY_DIAGNOSTIC_PARAMETER.ID_VALUE.UNKNOWN
+                                                    }
+                                                    , new Values() {
+                                                        m_value = r.Field<int>(@"ID")
+                                                        , m_strLink = string.Empty
+                                                        , m_name_shr = string.Empty
+                                                        , m_dtValue = ASUTP.Core.HDateTime.ToMoscowTimeZone()
+                                                    }
+                                                );
+                                            } else
+                                                Logging.Logg ().Error (@"PanelContainerTec.DictionaryTecValues::ctor () - не определено значение для поля [ID_TEC]...", Logging.INDEX_MESSAGE.NOT_SET);
+                                            break;
+                                        case TYPE.DATA:
+                                            if (!(r[@"ID_EXT"] is DBNull)) {
+                                                id = r.Field<int>(@"ID_EXT"); // читать как ИД ТЭЦ
 
-                                        if (id < (int)INDEX_SOURCE.SIZEDB) {
-                                            if (this.Keys.Contains(id) == false)
-                                                Add(id, new Dictionary<KEY_DIAGNOSTIC_PARAMETER, Values>());
-                                            else
-                                                ;
+                                                if (id < (int)INDEX_SOURCE.SIZEDB) {
+                                                    if (this.Keys.Contains(id) == false)
+                                                        Add(id, new Dictionary<KEY_DIAGNOSTIC_PARAMETER, Values>());
+                                                    else
+                                                        ;
 
-                                            this[id].Add(
-                                                new KEY_DIAGNOSTIC_PARAMETER() {
-                                                    m_id_unit = (KEY_DIAGNOSTIC_PARAMETER.ID_UNIT)r.Field<int>(@"ID_Units")
-                                                    , m_id_value = (KEY_DIAGNOSTIC_PARAMETER.ID_VALUE)Convert.ToInt32(r.Field<string>(@"ID_Value"))
-                                                }
-                                                , new Values() {
-                                                    m_value = r.Field<string>(@"Value")
-                                                    , m_strLink = r.Field<string>(@"Link")
-                                                    , m_name_shr = r.Field<string>(@"NAME_SHR")
-                                                    , m_dtValue = r.Field<DateTime>(@"UPDATE_DATETIME")
-                                                }
-                                            );
-                                        } else
-                                        // 'INDEX_SOURCE.SIZEDB' - минимальное значение
-                                        // идентификатор ТЭЦ в диапазоне 1 - 10 
-                                            ;
-                                        break;
-                                    default:
-                                        break;
+                                                    this[id].Add(
+                                                        new KEY_DIAGNOSTIC_PARAMETER() {
+                                                            m_id_unit = (KEY_DIAGNOSTIC_PARAMETER.ID_UNIT)r.Field<int>(@"ID_Units")
+                                                            , m_id_value = (KEY_DIAGNOSTIC_PARAMETER.ID_VALUE)Convert.ToInt32(r.Field<string>(@"ID_Value"))
+                                                        }
+                                                        , new Values() {
+                                                            m_value = r.Field<string>(@"Value")
+                                                            , m_strLink = r.Field<string>(@"Link")
+                                                            , m_name_shr = r.Field<string>(@"NAME_SHR")
+                                                            , m_dtValue = r.Field<DateTime>(@"UPDATE_DATETIME")
+                                                        }
+                                                    );
+                                                } else
+                                                // 'INDEX_SOURCE.SIZEDB' - минимальное значение
+                                                // идентификатор ТЭЦ в диапазоне 1 - 10 
+                                                    ;
+                                            } else
+                                                Logging.Logg ().Error (@"PanelContainerTec.DictionaryTecValues::ctor () - не определено значение для поля [ID_EXT]...", Logging.INDEX_MESSAGE.NOT_SET);
+                                            break;
+                                        default:
+                                            break;
+                                    }
+                                } catch (Exception e) {
+                                    Logging.Logg ().Exception (e, @"PanelContainerTec.DictionaryTecValues::ctor () - ...", Logging.INDEX_MESSAGE.NOT_SET);
                                 }
                         else
                             Logging.Logg().Error(@"PanelContainerTec.DictionaryTecValues::ctor () - неизвестный тип набора значений...", Logging.INDEX_MESSAGE.NOT_SET);

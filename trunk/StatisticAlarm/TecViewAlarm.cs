@@ -290,7 +290,7 @@ namespace StatisticAlarm
                             Console.Write(Environment.NewLine + @"Отладка:: "
                                 + tg.m_id_owner_gtp + @":" + tg.m_id + @"="
                                 + m_dictValuesLowPointDev[tg.m_id].m_powerCurrent_TM
-                                + Environment.NewLine);                            
+                                + Environment.NewLine);
                         }
                         else
                             ;

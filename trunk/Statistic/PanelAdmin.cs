@@ -56,7 +56,7 @@ namespace Statistic
 
             public void Initialize(int posY)
             {
-                Location = new System.Drawing.Point(10, posY + 2 * (m_iSizeY + m_iMarginY));                
+                Location = new System.Drawing.Point(10, posY + 2 * (m_iSizeY + m_iMarginY));
             }
         }
 
@@ -125,7 +125,7 @@ namespace Statistic
         protected override void initializeLayoutStyle(int cols = -1, int rows = -1)
         {
             this.ColumnCount = cols;
-            this.RowCount = rows;            
+            this.RowCount = rows;
 
             this.ColumnStyles.Add(new ColumnStyle(SizeType.Absolute, 172));
             this.ColumnStyles.Add(new ColumnStyle(SizeType.AutoSize));
@@ -163,7 +163,7 @@ namespace Statistic
             this.m_panelRDGValues.Dock = DockStyle.Fill;
 
             this.Controls.Add (m_panelManagement, 0, 0);
-            this.Controls.Add(m_panelRDGValues, 1, 0);            
+            this.Controls.Add(m_panelRDGValues, 1, 0);
 
             this.m_panelManagement.Controls.Add(this.mcldrDate);
             this.m_panelManagement.Controls.Add(this.comboBoxTecComponent);
@@ -240,12 +240,12 @@ namespace Statistic
             this.ResumeLayout();
         }
 
-        public PanelAdmin(int idListener, HMark markQueries, int [] arTECLimit)
+        public PanelAdmin(HMark markQueries, int [] arTECLimit)
             : base(MODE_UPDATE_VALUES.ACTION, FormMain.formGraphicsSettings.FontColor, FormMain.formGraphicsSettings.BackgroundColor)
         {
             createAdmin ();
 
-            try { m_admin.InitTEC(idListener, FormChangeMode.MODE_TECCOMPONENT.ANY, /*TYPE_DATABASE_CFG.CFG_200, */markQueries, false, arTECLimit); }
+            try { m_admin.InitTEC(FormChangeMode.MODE_TECCOMPONENT.ANY, /*TYPE_DATABASE_CFG.CFG_200, */markQueries, false, arTECLimit); }
             catch (Exception e)
             {
                 Logging.Logg().Exception(e, "PanelAdmin::Initialize () - m_admin.InitTEC ()...", Logging.INDEX_MESSAGE.NOT_SET);
@@ -384,7 +384,7 @@ namespace Statistic
                 dgwAdminTable.InitRows(24, false);
             }
             else {
-                dgwAdminTable.InitRows(25, true);                
+                dgwAdminTable.InitRows(25, true);
             }
         }
 

@@ -270,7 +270,7 @@ namespace StatisticAlarm
                     case StatesMachine.RetryEvent:
                         iRes = response(out error, out table);
                         break;
-                    case StatesMachine.InsertEventDetail:                    
+                    case StatesMachine.InsertEventDetail:
                         break;
                     default:
                         iRes = -1;
@@ -329,7 +329,7 @@ namespace StatisticAlarm
                 {
                     case StatesMachine.CurrentTime:
                         GetCurrentTimeResponse(obj as DataTable);
-                        break;                    
+                        break;
                     case StatesMachine.InsertEventMain:
                         GetInsertEventMainResponse(obj as DataTable);
                         break;
@@ -338,7 +338,7 @@ namespace StatisticAlarm
                     case StatesMachine.InsertEventDetail:
                     case StatesMachine.UpdateEventFixed:
                     case StatesMachine.UpdateEventConfirm:
-                    case StatesMachine.RetryEvent:                    
+                    case StatesMachine.RetryEvent:
                         // обработки ответа не требуется
                         break;
                     default:
@@ -610,7 +610,7 @@ namespace StatisticAlarm
                 lock (this)
                 {
                     ClearValues();
-                    ClearStates();                    
+                    ClearStates();
 
                     states.Add((int)StatesMachine.CurrentTime);
                     states.Add((int)StatesMachine.ListEvents);
@@ -648,7 +648,7 @@ namespace StatisticAlarm
                 lock (this)
                 {
                     ClearValues();
-                    ClearStates();                    
+                    ClearStates();
 
                     m_objArgument = ev;
 
@@ -837,7 +837,7 @@ namespace StatisticAlarm
             foreach (TecViewAlarm tv in m_listTecView)
                 tv.Activate(bChecked);
 
-            m_timerAlarm.Change(bChecked == true ? 0 : System.Threading.Timeout.Infinite, System.Threading.Timeout.Infinite);            
+            m_timerAlarm.Change(bChecked == true ? 0 : System.Threading.Timeout.Infinite, System.Threading.Timeout.Infinite);
         }
 
         private void activateViewAlarm(bool bChecked)
@@ -932,7 +932,7 @@ namespace StatisticAlarm
         {
             // поставить в очередь событие получения списка событий сигнализаций
             //  за указанную дату/часы только, если дата текущая
-            if (isToday == true)                
+            if (isToday == true)
                 pushList();
             else
                 ;
@@ -1446,7 +1446,7 @@ namespace StatisticAlarm
                 case StatesMachine.Confirm:
                     GetUpdateConfirmResponse(itemQueue, tableRes);
                     break;
-                case StatesMachine.Insert:                
+                case StatesMachine.Insert:
                     //Результата нет (рез-т вставленные/обновленные записи)
                     break;
                 default:

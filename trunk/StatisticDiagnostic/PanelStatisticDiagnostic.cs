@@ -295,13 +295,13 @@ namespace StatisticDiagnostic
                 ;
         }
 
-
         /// <summary>
         /// Класс для обращения 
         /// к БД (чтение значений параметров для отображения)
         /// </summary>
-        private class HDataSource : ASUTP.Helper.HHandlerDb {
-            ConnectionSettings[] m_connSett;
+        private class HDataSource : ASUTP.Helper.HHandlerDb
+        {
+            ConnectionSettings m_connSett;
             /// <summary>
             /// Перечисление типов состояний опроса данных
             /// </summary>
@@ -311,6 +311,7 @@ namespace StatisticDiagnostic
                 Command,
                 UpdateSource
             }
+
             /// <summary>
             /// Конструктор основной (без параметров)
             /// </summary>
@@ -318,20 +319,25 @@ namespace StatisticDiagnostic
             {
                 int err = -1;
 
-                _filterListTEC = new int[] { 0, 10 };
+                // фильтр - все станции кроме до ЛК включительно
+                _filterListTEC = new int[] { 0, (int)TECComponent.ID.LK };
 
-                ConnectionSettings connSett = new ConnectionSettings(InitTECBase.getConnSettingsOfIdSource(ListenerId, FormMainBase.s_iMainSourceData, -1, out err).Rows[0], -1);
-
-                m_connSett = new ConnectionSettings[2];//??? why number
-                m_connSett[(int)CONN_SETT_TYPE.LIST_SOURCE] = connSett;
-                m_connSett[(int)CONN_SETT_TYPE.CONFIG_DB] = FormMain.s_listFormConnectionSettings[(int)CONN_SETT_TYPE.CONFIG_DB].getConnSett();
-                m_connSett[(int)CONN_SETT_TYPE.CONFIG_DB].id = ConnectionSettings.UN_ENUMERABLE_ID - 6;
+                m_connSett =
+                    new ConnectionSettings(DbTSQLConfigDatabase.DbConfig ().GetDataTableConnSettingsOfIdSource (FormMainBase.s_iMainSourceData, -1, out err).Rows[0], -1);
 
                 //??? разбор err
                 if (err < 0)
                     throw new Exception(@"PanelStatisticDiagnostic::HDataSource () - ctor () - ...");
                 else
                     ;
+            }
+
+            private int DataListenerId
+            {
+                get
+                {
+                    return m_dictIdListeners [0][(int)CONN_SETT_TYPE.LIST_SOURCE];
+                }
             }
 
             /// <summary>
@@ -344,8 +350,7 @@ namespace StatisticDiagnostic
                 else
                     ;
 
-                register(0, (int)CONN_SETT_TYPE.LIST_SOURCE, m_connSett[(int)CONN_SETT_TYPE.LIST_SOURCE], m_connSett[(int)CONN_SETT_TYPE.LIST_SOURCE].name);
-                //register(0, (int)CONN_SETT_TYPE.CONFIG_DB, m_connSett[(int)CONN_SETT_TYPE.CONFIG_DB], m_connSett[(int)CONN_SETT_TYPE.CONFIG_DB].name);
+                register(0, (int)CONN_SETT_TYPE.LIST_SOURCE, m_connSett, m_connSett.name);
             }
 
             public override void ClearValues()
@@ -384,15 +389,15 @@ namespace StatisticDiagnostic
                 switch (stateMachine)
                 {
                     case State.ServerTime:
-                        GetCurrentTimeRequest(DbInterface.DB_TSQL_INTERFACE_TYPE.MSSQL, m_dictIdListeners[0][(int)CONN_SETT_TYPE.LIST_SOURCE]);
+                        GetCurrentTimeRequest(DbInterface.DB_TSQL_INTERFACE_TYPE.MSSQL, DataListenerId);
                         actionReport(@"Получение времени с сервера БД - состояние: " + ((State)state).ToString());
                         break;
                     case State.Command:
-                        Request(m_dictIdListeners[0][(int)CONN_SETT_TYPE.LIST_SOURCE], @"SELECT * FROM [dbo].[Diagnostic]");
+                        Request(DataListenerId, @"SELECT * FROM [dbo].[Diagnostic]");
                         actionReport(@"Получение значений из БД - состояние: " + ((State)state).ToString());
                         break;
                     case State.UpdateSource:
-                        Request(m_dictIdListeners[0][(int)CONN_SETT_TYPE.LIST_SOURCE], @"SELECT * FROM [dbo].[v_CURR_ID_LINK_SOURCE_DATA_TM]");
+                        Request(DataListenerId, @"SELECT * FROM [dbo].[v_CURR_ID_LINK_SOURCE_DATA_TM]");
                         actionReport(@"Обновление списка активных источников - состояние: " + ((State)state).ToString());
                         break;
                     default:
@@ -435,65 +440,14 @@ namespace StatisticDiagnostic
                 return iRes;
             }
 
-            private static int _iListenerId;
-
-            private static DbConnection _connConfigDb;
-
-            public static int ListenerId { get { return _iListenerId; } }
-
-            public bool IsRegisterConfogDb { get { return ListenerId > 0; } }
-
-            /// <summary>
-            /// Зарегистрировать(установить) временное соединение с БД конфигурации
-            /// </summary>
-            /// <param name="err">Признак ошибки при выполнении операции</param>
-            public static void RegisterConfigDb(out int err)
-            {
-                // зарегистрировать соединение/получить идентификатор соединения
-                _iListenerId = DbSources.Sources().Register(FormMain.s_listFormConnectionSettings[(int)CONN_SETT_TYPE.CONFIG_DB].getConnSett(), false, @"CONFIG_DB");
-
-                _connConfigDb = DbSources.Sources().GetConnection(_iListenerId, out err);
-            }
-
-            /// <summary>
-            /// Отменить регистрацию(разорвать) соединения с БД конфигурации
-            /// </summary>
-            public static void UnregisterConfigDb()
-            {
-                DbSources.Sources().UnRegister(ListenerId);
-
-                _connConfigDb = null;
-                _iListenerId = -1;
-            }
-
             /// <summary>
             /// Возвратить таблицу с контролируемыми источниками данных
             /// </summary>
             /// <param name="err">Признак ошибки при выполнении операции</param>
             /// <returns>Таблица с данными - результат запроса</returns>
-            public DataTable GetDiagnosticSource(out int err)
+            public DataTable GetDiagnosticSources(out int err)
             {
-                err = _connConfigDb == null ? -1 : 0;
-
-                if (err == 0)
-                    return DbTSQLInterface.Select(ref _connConfigDb, "SELECT * FROM DIAGNOSTIC_SOURCES", null, null, out err);
-                else
-                    return new DataTable();
-            }
-
-            /// <summary>
-            /// Возвратить таблицу со всеми источниками данных
-            /// </summary>
-            /// <param name="err">Признак ошибки при выполнении операции</param>
-            /// <returns>Таблица с данными - результат запроса</returns>
-            public DataTable GetSource(out int err)
-            {
-                err = _connConfigDb == null ? -1 : 0;
-
-                if (err == 0)
-                    return DbTSQLInterface.Select(ref _connConfigDb, "SELECT * FROM SOURCE", null, null, out err);
-                else
-                    return new DataTable();
+                return DbTSQLConfigDatabase.DbConfig().Select("SELECT * FROM DIAGNOSTIC_SOURCES", null, null, out err);
             }
 
             /// <summary>
@@ -503,12 +457,7 @@ namespace StatisticDiagnostic
             /// <returns>Таблица с данными - результат запроса</returns>
             public DataTable GetDiagnosticParameter(out int err)
             {
-                err = _connConfigDb == null ? -1 : 0;
-
-                if (err == 0)
-                    return DbTSQLInterface.Select(ref _connConfigDb, "SELECT * FROM DIAGNOSTIC_PARAM", null, null, out err);
-                else
-                    return new DataTable();
+                return DbTSQLConfigDatabase.DbConfig ().Select("SELECT * FROM DIAGNOSTIC_PARAM", null, null, out err);
             }
 
             /// <summary>
@@ -523,12 +472,7 @@ namespace StatisticDiagnostic
             /// <returns>Таблица с данными - результат запроса</returns>
             public DataTable GetDataTableTEC(out int err)
             {
-                err = _connConfigDb == null ? -1 : 0;
-
-                if (err == 0)
-                    return InitTEC_200.getListTEC(ref _connConfigDb, false, _filterListTEC, out err);
-                else
-                    return new DataTable();
+                return DbTSQLConfigDatabase.DbConfig ().GetListTEC(false, _filterListTEC, out err);
             }
 
             /// <summary>
@@ -538,12 +482,12 @@ namespace StatisticDiagnostic
             /// <returns>Список ТЭЦ - результат обработки запроса</returns>
             public List<TEC> GetListTEC(out int err)
             {
-                err = _connConfigDb == null ? -1 : 0;
+                err = 0;
 
-                if (err == 0)
-                    return new InitTEC_200(_iListenerId, true, _filterListTEC, false).tec; //.getListTEC(ref _connConfigDb, false, _filterListTEC, out err);
-                else
-                    return new List<TEC> ();
+                return DbTSQLConfigDatabase.DbConfig ().InitTEC(true
+                        , _filterListTEC
+                        , false);
+                
             }
 
             /// <summary>
@@ -554,19 +498,13 @@ namespace StatisticDiagnostic
             {
                 int err = -1;
 
-                RegisterConfigDb(out err);
+                DbTSQLConfigDatabase.DbConfig ().Register ();
 
-                err = _connConfigDb == null ? -1 : 0;
+                DbTSQLConfigDatabase.DbConfig().ExecNonQuery(string.Format("UPDATE [TEC_LIST] SET  [ID_LINK_SOURCE_DATA_TM] = {0} WHERE [ID] = {1}", ev.m_iNewSourceId, ev.m_tec.m_id)
+                    , null, null, 
+                    out err);
 
-                if (err == 0)
-                    DbTSQLInterface.ExecNonQuery(ref _connConfigDb
-                        , string.Format("UPDATE [TEC_LIST] SET  [ID_LINK_SOURCE_DATA_TM] = {0} WHERE [ID] = {1}", ev.m_iNewSourceId, ev.m_tec.m_id)
-                        , null, null, 
-                        out err);
-                else
-                    ;
-
-                UnregisterConfigDb();
+                DbTSQLConfigDatabase.DbConfig ().UnRegister ();
             }
 
             /// <summary>
@@ -687,14 +625,14 @@ namespace StatisticDiagnostic
             ListDiagnosticParameter listDiagnosticParameter;
             ListDiagnosticSource listDiagnosticSource;
 
-            HDataSource.RegisterConfigDb(out err);
+            DbTSQLConfigDatabase.DbConfig().Register();
 
             // зарегистрировать синхронное соединение с БД_конфигурации
             m_DataSource = new HDataSource();
 
             listTEC = m_DataSource.GetListTEC(out err);
 
-            listDiagnosticSource = new ListDiagnosticSource(m_DataSource.GetDiagnosticSource(out err));
+            listDiagnosticSource = new ListDiagnosticSource(m_DataSource.GetDiagnosticSources(out err));
 
             listDiagnosticParameter = new ListDiagnosticParameter(m_DataSource.GetDiagnosticParameter(out err));
 
@@ -714,9 +652,9 @@ namespace StatisticDiagnostic
             } else
                 ;
 
-            HDataSource.UnregisterConfigDb();
+            DbTSQLConfigDatabase.DbConfig ().UnRegister ();
 
-            InitializeComponent();
+            InitializeComponent ();
 
             return err;
         }
@@ -836,7 +774,7 @@ namespace StatisticDiagnostic
             public ListDiagnosticSource() : base() { }
         }
 
-        //private ListDiagnosticSource m_listDiagnosticSource;        
+        //private ListDiagnosticSource m_listDiagnosticSource;
 
         private struct SOURCE
         {
@@ -920,7 +858,7 @@ namespace StatisticDiagnostic
             {
                 clear();
 
-                stop();                
+                stop();
 
                 base.Stop();
             }

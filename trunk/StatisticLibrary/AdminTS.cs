@@ -1215,7 +1215,7 @@ namespace StatisticCommon
             //Вариант №2
             if (m_ignore_date == false)
                 //В настройках указано - учитывать дату/время сервера (НЕ игнорировать)
-                if (dt < serverTime.Date)                    
+                if (dt < serverTime.Date)
                 {
                     //При указанной дате раньше, чем дата на сервере (задним числом)
                     int offset_days = (dt - serverTime.Date).Days;
@@ -2689,30 +2689,6 @@ namespace StatisticCommon
             else
             {
                 MessageBox("Не удалось удалить значения РДГ, возможно отсутствует связь с базой данных.");
-            }
-        }
-
-        public void ReConnSettingsRDGSource(int idListener, int [] arIdSource)
-        {
-            int err = -1;
-
-            for (int i = 0; i < m_list_tec.Count; i ++) {
-                if (m_list_tec[i].Type == TEC.TEC_TYPE.COMMON) {
-                    //TYPE_DATABASE_CFG.CFG_200 = ???
-                    m_list_tec[i].connSettings(StatisticCommon.InitTECBase.getConnSettingsOfIdSource(idListener, arIdSource[(int)TEC.TEC_TYPE.COMMON], -1, out err), (int)CONN_SETT_TYPE.ADMIN);
-                    m_list_tec[i].connSettings(StatisticCommon.InitTECBase.getConnSettingsOfIdSource(idListener, arIdSource[(int)TEC.TEC_TYPE.COMMON], -1, out err), (int)CONN_SETT_TYPE.PBR);
-                }
-                else {
-                    if (m_list_tec[i].Type == TEC.TEC_TYPE.BIYSK)
-                    {
-                        //TYPE_DATABASE_CFG.CFG_200 = ???
-                        m_list_tec[i].connSettings(StatisticCommon.InitTECBase.getConnSettingsOfIdSource(idListener, arIdSource[(int)TEC.TEC_TYPE.BIYSK], -1, out err), (int)CONN_SETT_TYPE.ADMIN);
-                        m_list_tec[i].connSettings(StatisticCommon.InitTECBase.getConnSettingsOfIdSource(idListener, arIdSource[(int)TEC.TEC_TYPE.BIYSK], -1, out err), (int)CONN_SETT_TYPE.PBR);
-                    }
-                    else
-                    {
-                    }
-                }
             }
         }
 

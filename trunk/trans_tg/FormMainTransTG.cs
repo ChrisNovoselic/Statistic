@@ -97,7 +97,8 @@ namespace trans_tg
             //markQueries.Marked((int)StatisticCommon.CONN_SETT_TYPE.ADMIN);
             //markQueries.Marked((int)StatisticCommon.CONN_SETT_TYPE.PBR);
 
-            int idListener = DbSources.Sources().Register(s_listFormConnectionSettings[(int)StatisticCommon.CONN_SETT_TYPE.CONFIG_DB].getConnSett(), false, @"CONFIG_DB");
+            DbTSQLConfigDatabase.DbConfig ().SetConnectionSettings (s_listFormConnectionSettings [(int)StatisticCommon.CONN_SETT_TYPE.CONFIG_DB].getConnSett ());
+            DbTSQLConfigDatabase.DbConfig ().Register();
             for (i = 0; i < (Int16)CONN_SETT_TYPE.COUNT_CONN_SETT_TYPE; i++)
             {
                 if (i == (Int16)CONN_SETT_TYPE.SOURCE)
@@ -109,7 +110,7 @@ namespace trans_tg
                         ;
 
                 try {
-                    ((AdminTS)m_arAdmin[i]).InitTEC(idListener, FormChangeMode.MODE_TECCOMPONENT.ANY, /*iTypeConfigDB, */markQueries, bIgnoreTECInUse, new int[] { 0, (int)TECComponent.ID.LK });
+                    ((AdminTS)m_arAdmin[i]).InitTEC(FormChangeMode.MODE_TECCOMPONENT.ANY, /*iTypeConfigDB, */markQueries, bIgnoreTECInUse, new int[] { 0, (int)TECComponent.ID.LK });
                     RemoveTEC(m_arAdmin[i]);
                 }
                 catch (Exception e)
@@ -133,7 +134,7 @@ namespace trans_tg
                 //m_arAdmin[i].m_ignore_connsett_data = true; //-> в конструктор
             }
 
-            ASUTP.Database.DbSources.Sources().UnRegister(idListener);
+            DbTSQLConfigDatabase.DbConfig ().UnRegister();
 
             if (!(i < (Int16)CONN_SETT_TYPE.COUNT_CONN_SETT_TYPE))
             {

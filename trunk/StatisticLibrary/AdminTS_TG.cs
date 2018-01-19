@@ -95,7 +95,7 @@ namespace StatisticCommon
         {
             int iRes = base.GetAdminValuesResponse(tableAdminValuesResponse, date);
 
-            RDGStruct []curRDGValues = new RDGStruct [m_curRDGValues.Length];            
+            RDGStruct []curRDGValues = new RDGStruct [m_curRDGValues.Length];
 
             m_curRDGValues.CopyTo(curRDGValues, 0);
 

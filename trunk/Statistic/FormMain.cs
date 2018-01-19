@@ -91,7 +91,7 @@ namespace Statistic
 
         private FormPassword formPassword;
         private FormSetPassword formSetPassword;
-        private FormChangeMode formChangeMode;        
+        private FormChangeMode formChangeMode;
         public static FormGraphicsSettings formGraphicsSettings;
         public static FormParameters formParameters;
         private FormParametersTG formParametersTG;
@@ -174,13 +174,13 @@ namespace Statistic
 
             m_listStandardTabs = new ListPanelTecViewBase ();
 
-            int idListenerConfigDB = DbSources.Sources().Register(s_listFormConnectionSettings[(int)CONN_SETT_TYPE.CONFIG_DB].getConnSett(), false, @"CONFIG_DB");
-            //MessageBox.Show((IWin32Window)null, @"FormMain::Initialize () - DbSources.Sources().Register (...)", @"Отладка!");
-
             try
             {
+                //!!! Один экземпляр для всего приложения на весь срок выполнения
+                new DbTSQLConfigDatabase (s_listFormConnectionSettings [(int)CONN_SETT_TYPE.CONFIG_DB].getConnSett ());
+                DbTSQLConfigDatabase.DbConfig ().Register ();
                 //formParameters = new FormParameters_FIleINI("setup.ini");
-                formParameters = new FormParameters_DB(s_listFormConnectionSettings[(int)CONN_SETT_TYPE.CONFIG_DB].getConnSett());
+                formParameters = new FormParameters_DB();
 
                 Logging.LinkId(Logging.INDEX_MESSAGE.D_002, (int)FormParameters.PARAMETR_SETUP.MAINFORMBASE_SETPBRQUERY_LOGPBRNUMBER);
                 Logging.LinkId(Logging.INDEX_MESSAGE.D_003, (int)FormParameters.PARAMETR_SETUP.TECVIEW_LOGRECOMENDATIONVAL);
@@ -213,7 +213,7 @@ namespace Statistic
                 try
                 {
                     //Т.к. все используемые члены-данные СТАТИЧЕСКИЕ
-                    using (new HStatisticUsers(idListenerConfigDB, formParameters.GetINIParametersOfID (FormParameters.PARAMETR_SETUP.MODE_REGISTRATION))) { ; }
+                    using (new HStatisticUsers(DbTSQLConfigDatabase.DbConfig().ListenerId, formParameters.GetINIParametersOfID (FormParameters.PARAMETR_SETUP.MODE_REGISTRATION))) { ; }
                 }
                 catch (Exception e)
                 {
@@ -233,7 +233,7 @@ namespace Statistic
                 {
                     s_iMainSourceData = Int32.Parse(formParameters.m_arParametrSetup[(int)FormParameters.PARAMETR_SETUP.MAIN_DATASOURCE]);
 
-                    //Режим изменения цветовой гаммы            
+                    //Режим изменения цветовой гаммы
                     _darkColorTable = new CustomColorTable (HStatisticUsers.GetAllowed ((int)HStatisticUsers.ID_ALLOWED.PROFILE_VIEW_COLOR_CHANGESHEMA_FONT)
                         , HStatisticUsers.GetAllowed ((int)HStatisticUsers.ID_ALLOWED.PROFILE_VIEW_COLOR_CHANGESHEMA_BACKGROUND));
                     ForeColorChanged += FormMain_ForeColorChanged;
@@ -281,7 +281,7 @@ namespace Statistic
                         //Инициализация БД-логирования
                         int err = -1;
                         Logging.UserId = HUsers.Id;
-                        Logging.ConnSett = new ConnectionSettings(InitTECBase.getConnSettingsOfIdSource(idListenerConfigDB, s_iMainSourceData, -1, out err).Rows[0], 0);
+                        Logging.ConnSett = new ConnectionSettings(DbTSQLConfigDatabase.DbConfig ().GetDataTableConnSettingsOfIdSource (s_iMainSourceData, -1, out err).Rows[0], 0);
                     } else { }
 
                     m_formAlarmEvent = new MessageBoxAlarmEvent(this);
@@ -299,27 +299,29 @@ namespace Statistic
                         switch ((FormChangeMode.MANAGER)i)
                         {
                             case FormChangeMode.MANAGER.DISP:
-                                m_arPanelAdmin[i] = new PanelAdminKomDisp(idListenerConfigDB, markQueries);
+                                m_arPanelAdmin[i] = new PanelAdminKomDisp(markQueries);
                                 ////((PanelAdminKomDisp)m_arPanelAdmin[i]).EventGUIReg += OnPanelAdminKomDispEventGUIReg;
                                 //((PanelAdminKomDisp)m_arPanelAdmin[i]).EventGUIReg = new DelegateStringFunc(OnPanelAdminKomDispEventGUIReg);
                                 break;
                             case FormChangeMode.MANAGER.LK:
-                                m_arPanelAdmin[i] = new PanelAdminLK(idListenerConfigDB, markQueries);
+                                m_arPanelAdmin[i] = new PanelAdminLK(markQueries);
                                 break;
                             case FormChangeMode.MANAGER.TEPLOSET:
-                                m_arPanelAdmin[i] = new PanelAdminVyvod(idListenerConfigDB, markQueries);
+                                m_arPanelAdmin[i] = new PanelAdminVyvod(markQueries);
                                 break;
                             case FormChangeMode.MANAGER.NSS:
-                                m_arPanelAdmin[i] = new PanelAdminNSS(idListenerConfigDB, markQueries);
+                                m_arPanelAdmin[i] = new PanelAdminNSS(markQueries);
                                 break;
                             case FormChangeMode.MANAGER.ALARM:
-                                m_arPanelAdmin[i] = new PanelAlarm(idListenerConfigDB
-                                    , new HMark(new int[] { (int)CONN_SETT_TYPE.ADMIN, (int)CONN_SETT_TYPE.PBR, (int)CONN_SETT_TYPE.DATA_AISKUE, (int)CONN_SETT_TYPE.DATA_SOTIASSO })
+                                m_arPanelAdmin[i] = new PanelAlarm(new HMark(new int[] { (int)CONN_SETT_TYPE.ADMIN, (int)CONN_SETT_TYPE.PBR, (int)CONN_SETT_TYPE.DATA_AISKUE, (int)CONN_SETT_TYPE.DATA_SOTIASSO })
                                     , StatisticAlarm.MODE.ADMIN
                                     , formGraphicsSettings.FontColor
                                     , formGraphicsSettings.BackgroundColor);
                                 (m_arPanelAdmin[i] as PanelAlarm).EventGUIReg += new AlarmNotifyEventHandler(OnPanelAlarmEventGUIReg);
                                 m_formAlarmEvent.EventFixed += new DelegateObjectFunc((m_arPanelAdmin[i] as PanelAlarm).OnEventFixed);
+                                ////!!! автоматический старт
+                                ////??? m_markPrevStatePanelAdmin - признак вызова на отображение
+                                //m_markPrevStatePanelAdmin.Set ((int)i, true);
                                 break;
                             default:
                                 break;
@@ -339,7 +341,7 @@ namespace Statistic
                     listIDs = new List<int>();
 
                     for (i = 0; i < FormChangeMode.ID_SPECIAL_TAB.Length; i++)
-                        if (HStatisticUsers.IsAllowed(listIdProfilesUnit[i]) == true) listIDs.Add(FormChangeMode.ID_SPECIAL_TAB[i]); else ;                    
+                        if (HStatisticUsers.IsAllowed(listIdProfilesUnit[i]) == true) listIDs.Add(FormChangeMode.ID_SPECIAL_TAB[i]); else ;
 
                     //Добавить закладки автоматически...
                     //listIDs.Add(5); listIDs.Add(111);
@@ -415,7 +417,7 @@ namespace Statistic
             {
             }
 
-            DbSources.Sources().UnRegister(idListenerConfigDB);
+            DbTSQLConfigDatabase.DbConfig ().UnRegister();
 
             delegateStopWait();
 
@@ -502,21 +504,22 @@ namespace Statistic
                 else
                     ;
 
-                int err = -1
-                    , idListenerConfigDB = DbSources.Sources().Register(s_listFormConnectionSettings[(int)CONN_SETT_TYPE.CONFIG_DB].getConnSett(), false, @"CONFIG_DB");
+                int err = -1;
+
+                DbTSQLConfigDatabase.DbConfig().Register();
 
                 // прочитать актуальные значения из [setup]
-                (formParameters as FormParameters_DB).Update(idListenerConfigDB, out err);
+                (formParameters as FormParameters_DB).Update(DbTSQLConfigDatabase.DbConfig ().ListenerId, out err);
                 // прочитать и обновить актуальные индивидуальные групповые (пользовательские) параметры
-                HStatisticUsers.Update (idListenerConfigDB);
-                InitTEC_200.PerformTECListUpdate(idListenerConfigDB);
+                HStatisticUsers.Update (DbTSQLConfigDatabase.DbConfig ().ListenerId);
+                DbTSQLConfigDatabase.PerformTECListUpdate(DbTSQLConfigDatabase.DbConfig ().ListenerId);
 
-                DbSources.Sources().UnRegister(idListenerConfigDB);
+                DbTSQLConfigDatabase.DbConfig ().UnRegister();
 
                 if (err == 0)
                 {
                     //Динамическое обновление - применение актуальных параметров
-                    updateParametersSetup();                
+                    updateParametersSetup();
 
                     if (HStatisticUsers.IsAllowed((int)HStatisticUsers.ID_ALLOWED.APP_AUTO_RESET) == true)
                         if (formParameters.m_arParametrSetup[(int)FormParameters.PARAMETR_SETUP.APP_VERSION].Equals(string.Empty) == false)
@@ -869,7 +872,7 @@ namespace Statistic
                     throw new Exception(@"FormMain::FormMain_OnFormFloat_Load () - невозможно назначить делегаты обновления строки статуса...");
             //"Стартовать", активировать "панель"...
             //m_dictAddingTabs[(int)m_arIdCustomTabs[(int)indxTab, indxItem]].panel.Start();
-            //m_dictAddingTabs[(int)m_arIdCustomTabs[(int)indxTab, indxItem]].panel.Activate(true);            
+            //m_dictAddingTabs[(int)m_arIdCustomTabs[(int)indxTab, indxItem]].panel.Activate(true);
             ((PanelStatistic)panel).Activate(true);
         }
 
@@ -1003,9 +1006,9 @@ namespace Statistic
 
         private void fileProfileSaveStandardTab()
         {
-            int iListenerId = DbSources.Sources().Register(s_listFormConnectionSettings[(int)CONN_SETT_TYPE.CONFIG_DB].getConnSett(), false, CONN_SETT_TYPE.CONFIG_DB.ToString());
-            fileProfileSaveStandardTab(iListenerId);
-            DbSources.Sources().UnRegister(iListenerId);
+            DbTSQLConfigDatabase.DbConfig().Register();
+            fileProfileSaveStandardTab(DbTSQLConfigDatabase.DbConfig ().ListenerId);
+            DbTSQLConfigDatabase.DbConfig ().UnRegister();
         }
 
         private void fileProfileSaveStandardTab(int idListener)
@@ -1016,9 +1019,9 @@ namespace Statistic
 
         private void fileProfileSaveAddingTab()
         {
-            int iListenerId = DbSources.Sources().Register(s_listFormConnectionSettings[(int)CONN_SETT_TYPE.CONFIG_DB].getConnSett(), false, CONN_SETT_TYPE.CONFIG_DB.ToString());
-            fileProfileSaveAddingTab(iListenerId);
-            DbSources.Sources().UnRegister(iListenerId);
+            DbTSQLConfigDatabase.DbConfig().Register();
+            fileProfileSaveAddingTab(DbTSQLConfigDatabase.DbConfig ().ListenerId);
+            DbTSQLConfigDatabase.DbConfig ().UnRegister();
         }
 
         private void fileProfileSaveAddingTab(int idListener)
@@ -1060,15 +1063,15 @@ namespace Statistic
 
         private void файлПрофильСохранитьToolStripMenuItem_Click(object sender, EventArgs e)
         {
-            int idListener = DbSources.Sources().Register(s_listFormConnectionSettings[(int)CONN_SETT_TYPE.CONFIG_DB].getConnSett(), false, CONN_SETT_TYPE.CONFIG_DB.ToString());
+            DbTSQLConfigDatabase.DbConfig ().Register();
 
             //Сохранить список основных вкладок...
-            fileProfileSaveStandardTab(idListener);
+            fileProfileSaveStandardTab(DbTSQLConfigDatabase.DbConfig ().ListenerId);
 
             //Сохранить список "дополнительных" вкладок...
-            fileProfileSaveAddingTab(idListener);
+            fileProfileSaveAddingTab(DbTSQLConfigDatabase.DbConfig ().ListenerId);
 
-            DbSources.Sources().UnRegister(idListener);
+            DbTSQLConfigDatabase.DbConfig ().UnRegister();
         }
 
         private void выходToolStripMenuItem_Click(object sender, EventArgs e)
@@ -1083,47 +1086,43 @@ namespace Statistic
 
         private void Stop(FormClosingEventArgs ev)
         {
-            int i = -1;
+            List<FormChangeMode.MANAGER> indexes = new List<FormChangeMode.MANAGER> { FormChangeMode.MANAGER.DISP
+                , FormChangeMode.MANAGER.NSS
+                , FormChangeMode.MANAGER.ALARM
+                , FormChangeMode.MANAGER.LK
+                , FormChangeMode.MANAGER.TEPLOSET
+            };
 
             m_bAutoActionTabs = true;
 
-            if ((!(formChangeMode == null))
-                && ((m_markPrevStatePanelAdmin.IsMarked((int)FormChangeMode.MANAGER.DISP) == true)
-                    || (m_markPrevStatePanelAdmin.IsMarked((int)FormChangeMode.MANAGER.NSS) == true)
-                    || (m_markPrevStatePanelAdmin.IsMarked((int)FormChangeMode.MANAGER.ALARM) == true)
-                    || (m_markPrevStatePanelAdmin.IsMarked ((int)FormChangeMode.MANAGER.LK) == true)
-                    || (m_markPrevStatePanelAdmin.IsMarked ((int)FormChangeMode.MANAGER.TEPLOSET) == true)))
-            //if ((!(formChangeMode == null)) && (formChangeMode.admin_was_checked[(int)FormChangeMode.MANAGER.DISP] || formChangeMode.admin_was_checked[(int)FormChangeMode.MANAGER.NSS]))
-            {
-                if (!(m_arPanelAdmin == null))
-                {
-                    for (i = 0; i < (int)FormChangeMode.MANAGER.COUNT_MANAGER; i++)
-                        if (!(m_arPanelAdmin[i] == null))
-                            if (m_arPanelAdmin[i].MayToClose() == false)
-                                if (!(ev == null))
-                                {
-                                    ev.Cancel = true;
-                                    break;
-                                }
+            if ((Equals (formChangeMode) == false)
+                && Equals(m_arPanelAdmin, null) == false)
+                foreach (int indx in indexes) {
+                    if (Equals (m_arPanelAdmin [indx], null) == false) {
+                        if ((m_markPrevStatePanelAdmin.IsMarked ((int)indx) == true)
+                            // вкладку PanelAlarm обязательно останавливаем, т.к. даже будучи снятой с отображения, выполняется в фоновом режиме
+                            || ((FormChangeMode.MANAGER)indx == FormChangeMode.MANAGER.ALARM))
+                            if (m_arPanelAdmin [indx].MayToClose () == true) {
+                                m_arPanelAdmin [indx].Stop ();
+
+                                //!!! из-за автоматического старта - особенное разрушение
+                                if ((FormChangeMode.MANAGER)indx == FormChangeMode.MANAGER.ALARM)
+                                    m_arPanelAdmin [indx].Dispose ();
                                 else
                                     ;
-                            else
-                            {
-                                //if (i == (int)FormChangeMode.MANAGER.DISP) stopAdminAlarm(); else ;
-
-                                m_arPanelAdmin[i].Stop();
-                                m_arPanelAdmin[i] = null;
+                            } else {
+                                if (!(ev == null)) {
+                                    ev.Cancel = true;
+                                    break;
+                                } else
+                                    ;
                             }
-                        else
-                            ;
 
-                    m_arPanelAdmin = null;
+                        m_arPanelAdmin [indx] = null;
+                    } else
+                        ;
                 }
-                else
-                    ;
-            }
             else
-                //stopAdminAlarm()
                 ;
 
             Stop();
@@ -1371,6 +1370,9 @@ namespace Statistic
 
             if (s_listFormConnectionSettings[(int)CONN_SETT_TYPE.CONFIG_DB].Ready == 0)
             {
+#if MODE_STATIC_CONNECTION_LEAVING
+                DbTSQLConfigDatabase.ModeStaticConnectionLeave = DbTSQLInterface.ModeStaticConnectionLeaving.Yes;
+#endif
                 switch (Initialize(out msg))
                 {
                     case -1:
@@ -1391,6 +1393,9 @@ namespace Statistic
                         //Успех...
                         break;
                 }
+#if MODE_STATIC_CONNECTION_LEAVING
+                DbTSQLConfigDatabase.ModeStaticConnectionLeave = DbTSQLInterface.ModeStaticConnectionLeaving.No;
+#endif
             }
             else
             {//Файла с параметрами соединения нет совсем или считанные параметры соединения не валидны
@@ -1557,7 +1562,6 @@ namespace Statistic
                 //byte[] hash = md5.ComputeHash(Encoding.ASCII.GetBytes(strPassword));
 
                 bool bShowFormConnectionSettings = false;
-                int idListener = -1;
                 ConnectionSettingsSource connSettSource;
                 if (formPassword == null)
                 {
@@ -1579,11 +1583,9 @@ namespace Statistic
                                 delegateSave = s_fileConnSett.SaveSettingsFile;
                                 break;
                             case CONN_SETT_TYPE.LIST_SOURCE:
-                                idListener = DbSources.Sources().Register(s_listFormConnectionSettings[(int)CONN_SETT_TYPE.CONFIG_DB].getConnSett(), false, @"CONFIG_DB");
-                                //if (m_connSettSource == null)
-                                    connSettSource = new ConnectionSettingsSource(idListener);
-                                //else
-                                //    ;
+                                DbTSQLConfigDatabase.DbConfig().Register();
+
+                                connSettSource = new ConnectionSettingsSource();
 
                                 delegateRead = connSettSource.Read;
                                 delegateSave = connSettSource.Save;
@@ -1592,8 +1594,9 @@ namespace Statistic
                                 break;
                         }
 
-                        if ((!(delegateRead == null)) && (!(delegateSave == null)))
-                            s_listFormConnectionSettings[(int)type] = new FormConnectionSettings(idListener, delegateRead, delegateSave);
+                        if ((!(delegateRead == null))
+                            && (!(delegateSave == null)))
+                            s_listFormConnectionSettings[(int)type] = new FormConnectionSettings(DbTSQLConfigDatabase.DbConfig ().ListenerId, delegateRead, delegateSave);
                         else
                             Abort(@"параметры соединения с БД конфигурации", false);
                     }
@@ -1607,8 +1610,11 @@ namespace Statistic
                     }
                     else
                     {
-                        if (idListener < 0) idListener = DbSources.Sources().Register(s_listFormConnectionSettings[(int)CONN_SETT_TYPE.CONFIG_DB].getConnSett(), false, @"CONFIG_DB"); else ;
-                        formPassword.SetIdPass(idListener, 0, Passwords.INDEX_ROLES.ADMIN);
+                        if (type == CONN_SETT_TYPE.CONFIG_DB)
+                            DbTSQLConfigDatabase.DbConfig ().Register ();
+                        else
+                            ;
+                        formPassword.SetIdPass(DbTSQLConfigDatabase.DbConfig ().ListenerId, 0, Passwords.INDEX_ROLES.ADMIN);
                         DialogResult dlgRes = formPassword.ShowDialog(this);
                         if ((dlgRes == DialogResult.Yes) || (dlgRes == DialogResult.Abort))
                             bShowFormConnectionSettings = true;
@@ -1620,16 +1626,21 @@ namespace Statistic
                 // , иначе идентификаторы старого и нового наборов парметров соединения с БД совпадут
                 // , но только для БД_конфигурации, для списка БД 'idListener' сохранен в форме
                 if (type == CONN_SETT_TYPE.CONFIG_DB)
-                    DbSources.Sources().UnRegister(idListener);
+                    DbTSQLConfigDatabase.DbConfig ().UnRegister();
                 else
                     ;
                 if (bShowFormConnectionSettings == true)
                     connectionSettings(type);
                 else
                     ;
+                // отменить регистрацию подписчика, сохраненного в форме
+                if (type == CONN_SETT_TYPE.LIST_SOURCE)
+                    DbTSQLConfigDatabase.DbConfig ().UnRegister ();
+                else
+                    ;
                 // в любом случае удалить объект с параметрами соединения списка источников данных
                 // , чтобы при повторном вызове гарантированно назначить актуальный идентификатор соединения с БД конфигурации
-                s_listFormConnectionSettings[(int)(int)CONN_SETT_TYPE.LIST_SOURCE] = null;
+                s_listFormConnectionSettings [(int)(int)CONN_SETT_TYPE.LIST_SOURCE] = null;
             }
             else
                 ;
@@ -1695,7 +1706,7 @@ namespace Statistic
             List<PANEL_TO_STANDARD_TAB> list_tecView_toAddinng = new List<PANEL_TO_STANDARD_TAB>();
             List<int> list_id_toAdding = new List<int>();
 
-            // отображаем вкладки ТЭЦ - аналог PanelCustomTecView::MenuItem_OnClick
+            #region отображаем вкладки ТЭЦ - аналог PanelCustomTecView::MenuItem_OnClick
             for (i = 0; i < formChangeMode.m_listItems.Count; i++) //или TECComponent_index.Count
             {
                 //Только если элемент в списке имеет признак видимости 'true' и имеет признак 'выбран'
@@ -1709,7 +1720,7 @@ namespace Statistic
                     // поиск панели для вкладки начать с обнуления объекта
                     panel_tecView_ToAdding = null;
                     //Найти индекс панели в списке для стандартных вкладок
-                    tecView_index = m_listStandardTabs.IndexOfID(formChangeMode.m_listItems[i].id);                    
+                    tecView_index = m_listStandardTabs.IndexOfID(formChangeMode.m_listItems[i].id);
 
                     if (tecView_index < 0)
                     {//Не найден элемент - создаем, добавляем
@@ -1793,7 +1804,7 @@ namespace Statistic
                     //Перед добавлением вкладки проверить индекс добавляемой панели
                     if (!(panel_tecView_ToAdding == null))
                     {
-                        list_id_toAdding.Add(panel_tecView_ToAdding.GetValueOrDefault().id);                        
+                        list_id_toAdding.Add(panel_tecView_ToAdding.GetValueOrDefault().id);
                     }
                     else
                         ;
@@ -1801,8 +1812,9 @@ namespace Statistic
                 else
                     ; // элемент в списке имеет признак видимости 'false' или не имеет признак 'выбран'
             }
+            #endregion
 
-            clearTabPages(list_id_toAdding, true);
+            clearTabPages (list_id_toAdding, true);
 
             foreach (PANEL_TO_STANDARD_TAB panel_tecView in list_tecView_toAddinng)
             {
@@ -1844,8 +1856,7 @@ namespace Statistic
                 параметрыТГБийскToolStripMenuItem.Visible = parametrsTGBiysk > 0;
 
                 //m_formParametersTG = new FormParametersTG_FileINI(@"setup.ini");
-                formParametersTG = new FormParametersTG_DB(s_listFormConnectionSettings[(int)CONN_SETT_TYPE.CONFIG_DB].getConnSett()
-                    , PanelKomDisp.m_list_tec);
+                formParametersTG = new FormParametersTG_DB(PanelKomDisp.m_list_tec);
             }
             else
                 ;
@@ -1883,7 +1894,7 @@ namespace Statistic
             {
                 видToolStripMenuItem.Enabled = bCurEnabled;
 
-                настройкиСоединенияБДКонфToolStripMenuItem.Enabled =                
+                настройкиСоединенияБДКонфToolStripMenuItem.Enabled =
                 настройкиСоединенияБДИсточникToolStripMenuItem.Enabled =
                     bCurEnabled && (HStatisticUsers.RoleIsAdmin == true);
                 ////Вариант №1 - индивидуальные пароли - установить индивидуально
@@ -2059,17 +2070,17 @@ namespace Statistic
                 , FormChangeMode.MANAGER.TEPLOSET
             };
 
-            int idListener = DbSources.Sources ().Register (s_listFormConnectionSettings [(int)CONN_SETT_TYPE.CONFIG_DB].getConnSett (), false, @"CONFIG_DB");
+            DbTSQLConfigDatabase.DbConfig ().Register ();
 
             indexes.ForEach (indx => {
                 if ((formChangeMode.m_markTabAdminChecked.IsMarked ((int)indx) == true)
                     && (m_markPrevStatePanelAdmin.IsMarked ((int)indx) == false))
-                    addTabPageAdmin (idListener, indx);
+                    addTabPageAdmin (DbTSQLConfigDatabase.DbConfig ().ListenerId, indx);
                 else
                     ;
             });
 
-            DbSources.Sources ().UnRegister (idListener);
+            DbTSQLConfigDatabase.DbConfig ().UnRegister ();
         }
         /// <summary>
         /// Добавить вкладку(и) из интрументария 'администратор-диспетчер'
@@ -2227,6 +2238,19 @@ namespace Statistic
  	        int i = -1;
         }
 
+        /// <summary>
+        /// Создать панель с диагностической информацией
+        /// </summary>
+        private void createPanelStatisticDiagnostic ()
+        {
+            m_dictAddingTabs [(int)ID_ADDING_TAB.DIAGNOSTIC].panel = new PanelStatisticDiagnostic (HStatisticUsers.Role == HStatisticUsers.ID_ROLES.ADMIN
+                    ? PanelStatisticDiagnostic.Mode.DEFAULT
+                        : PanelStatisticDiagnostic.Mode.SOURCE_ONLY
+                    , formGraphicsSettings.FontColor
+                    , formGraphicsSettings.BackgroundColor);
+            m_dictAddingTabs [(int)ID_ADDING_TAB.DIAGNOSTIC].panel.SetDelegateReport (ErrorReport, WarningReport, ActionReport, ReportClear);
+        }
+
         private void оПрограммеToolStripMenuItem_Click(object sender, EventArgs e)
         {
             using (FormAbout formAbout = new FormAbout(this.Icon.ToBitmap() as Image))
@@ -2301,14 +2325,7 @@ namespace Statistic
         private void ДиагностикаToolStripMenuItem_CheckedChanged(object sender, EventArgs e)
         {
             if (m_dictAddingTabs[(int)ID_ADDING_TAB.DIAGNOSTIC].panel == null)
-            {
-                m_dictAddingTabs[(int)ID_ADDING_TAB.DIAGNOSTIC].panel = new PanelStatisticDiagnostic(HStatisticUsers.Role == HStatisticUsers.ID_ROLES.ADMIN
-                    ? PanelStatisticDiagnostic.Mode.DEFAULT
-                        : PanelStatisticDiagnostic.Mode.SOURCE_ONLY
-                    , formGraphicsSettings.FontColor
-                    , formGraphicsSettings.BackgroundColor);
-                m_dictAddingTabs[(int)ID_ADDING_TAB.DIAGNOSTIC].panel.SetDelegateReport (ErrorReport, WarningReport, ActionReport, ReportClear);
-            }
+                createPanelStatisticDiagnostic ();
             else
                 ;
             видSubToolStripMenuItem_CheckedChanged(ID_ADDING_TAB.DIAGNOSTIC, (sender as ToolStripMenuItem).Text //"Диагностика"
@@ -2319,9 +2336,10 @@ namespace Statistic
         {
             if (m_dictAddingTabs[(int)ID_ADDING_TAB.ANALYZER].panel == null)
             {
-                int idListener = DbSources.Sources().Register(s_listFormConnectionSettings[(int)CONN_SETT_TYPE.CONFIG_DB].getConnSett(), false, @"CONFIG_DB");
+                DbTSQLConfigDatabase.DbConfig ().Register();
                 m_dictAddingTabs[(int)ID_ADDING_TAB.ANALYZER].panel = new PanelAnalyzer_DB(PanelKomDisp.m_list_tec, formGraphicsSettings.FontColor, formGraphicsSettings.BackgroundColor);
                 m_dictAddingTabs[(int)ID_ADDING_TAB.ANALYZER].panel.SetDelegateReport(ErrorReport, WarningReport, ActionReport, ReportClear);
+                DbTSQLConfigDatabase.DbConfig ().UnRegister ();
             }
             else
                 ;
@@ -2333,16 +2351,20 @@ namespace Statistic
         {
             if (m_dictAddingTabs[(int)ID_ADDING_TAB.TEC_Component].panel == null)
             {
-                int idListener = DbSources.Sources().Register(s_listFormConnectionSettings[(int)CONN_SETT_TYPE.CONFIG_DB].getConnSett(), false, @"CONFIG_DB");
+                DbTSQLConfigDatabase.DbConfig ().Register();
                 m_dictAddingTabs[(int)ID_ADDING_TAB.TEC_Component].panel = new PanelTECComponent(PanelKomDisp.m_list_tec);
                 m_dictAddingTabs[(int)ID_ADDING_TAB.TEC_Component].panel.SetDelegateReport(ErrorReport, WarningReport, ActionReport, ReportClear);
+                DbTSQLConfigDatabase.DbConfig ().UnRegister ();
+
+                (m_dictAddingTabs [(int)ID_ADDING_TAB.TEC_Component].panel as PanelTECComponent).EventConfigGTPChanged +=
+                    DbTSQLConfigDatabase.DbConfig ().UpadteDiagnosticSource;
             }
             else
                 ;
             видSubToolStripMenuItem_CheckedChanged(ID_ADDING_TAB.TEC_Component, (sender as ToolStripMenuItem).Text //"Состав ТЭЦ"
                 , new bool[] { ((ToolStripMenuItem)sender).Checked, true });
         }
-       
+
         private void собственныеНуждыToolStripMenuItem_CheckedChanged(object sender, EventArgs e)
         {
             if (m_dictAddingTabs[(int)ID_ADDING_TAB.SOBSTV_NYZHDY].panel == null)
@@ -2474,27 +2496,25 @@ namespace Statistic
                 , new bool[] { ((ToolStripMenuItem)sender).Checked, true });
         }
 
-        #region // KhryapinAN, 2017-06
+#region // KhryapinAN, 2017-06
         private void значенияАИИСКУЭСОТИАССОСуткиToolStripMenuItem_CheckedChanged (object sender, EventArgs e)
         {
             ID_ADDING_TAB keyTab = ID_ADDING_TAB.AIISKUE_SOTIASSO_DAY;
 
-            int iListenerConfigId = -1;
-
             if (m_dictAddingTabs[(int)keyTab].panel == null) {
-                iListenerConfigId = DbSources.Sources().Register(s_listFormConnectionSettings[(int)CONN_SETT_TYPE.CONFIG_DB].getConnSett(), false, @"CONFIG_DB");
+                DbTSQLConfigDatabase.DbConfig ().Register();
 
-                m_dictAddingTabs[(int)keyTab].panel = new PanelAISKUESOTIASSODay(iListenerConfigId, PanelKomDisp.m_list_tec);
+                m_dictAddingTabs[(int)keyTab].panel = new PanelAISKUESOTIASSODay(DbTSQLConfigDatabase.DbConfig ().ListenerId, PanelKomDisp.m_list_tec);
                 m_dictAddingTabs[(int)keyTab].panel.SetDelegateReport(ErrorReport, WarningReport, ActionReport, ReportClear);
 
-                DbSources.Sources().UnRegister(iListenerConfigId);
+                DbTSQLConfigDatabase.DbConfig ().UnRegister();
             } else
                 ;
 
             видSubToolStripMenuItem_CheckedChanged(keyTab,  (sender as ToolStripMenuItem).Text //"Значения СОТИАССО-сутки"
                 , new bool[] { ((ToolStripMenuItem)sender).Checked, true });
         }
-        #endregion
+#endregion
 
         private void значенияВзлетТпрямаяToolStripMenuItem_CheckedChanged(object sender, EventArgs e)
         {
@@ -2657,7 +2677,7 @@ namespace Statistic
         {
             Control ctrl = null;
 
-            #region Режим изменения цветовой гаммы
+#region Режим изменения цветовой гаммы
             Dictionary<HStatisticUsers.ID_ALLOWED, Color> dictSetAllowedDo = new Dictionary<HStatisticUsers.ID_ALLOWED, Color> () {
                 { HStatisticUsers.ID_ALLOWED.PROFILE_VIEW_COLOR_CHANGESHEMA_FONT, formGraphicsSettings.FontColor }
                 , { HStatisticUsers.ID_ALLOWED.PROFILE_VIEW_COLOR_CHANGESHEMA_BACKGROUND, formGraphicsSettings.BackgroundColor }
@@ -2680,7 +2700,7 @@ namespace Statistic
                     ;
 
                 if (formGraphicsSettings.m_colorShema == FormGraphicsSettings.ColorShemas.Custom) { //??? обязательно ли проверять 'Custom', т.к. подписи доступны только в этом ('Custom') режиме
-                    foreach (KeyValuePair<HStatisticUsers.ID_ALLOWED, Color> pair in dictSetAllowedDo)                    
+                    foreach (KeyValuePair<HStatisticUsers.ID_ALLOWED, Color> pair in dictSetAllowedDo)
                         HStatisticUsers.SetAllowed (s_listFormConnectionSettings [(int)CONN_SETT_TYPE.CONFIG_DB].getConnSett ()
                             , pair.Key
                             , (_darkColorTable as CustomColorTable).ColorToRGBString (pair.Value));
@@ -2688,7 +2708,7 @@ namespace Statistic
                     ;
             } else
                 ;
-            #endregion
+#endregion
 
             if ((FormGraphicsSettings.TYPE_UPDATEGUI)type == FormGraphicsSettings.TYPE_UPDATEGUI.COLOR) {
                 HDataGridViewTables.s_dgvCellStyles [(int)HDataGridViewTables.INDEX_CELL_STYLE.ERROR].BackColor = formGraphicsSettings.COLOR (FormGraphicsSettings.INDEX_COLOR_VAUES.DIVIATION);
@@ -2730,13 +2750,13 @@ namespace Statistic
         static extern bool ShowWindow(IntPtr hWnd, int nCmdShow);
         [DllImport("user32.dll", EntryPoint = "SetWindowPos")]
         static extern bool SetWindowPos(
-             int hWnd,           // window handle
-             int hWndInsertAfter,    // placement-order handle
-             int X,          // horizontal position
-             int Y,          // vertical position
-             int cx,         // width
-             int cy,         // height
-             uint uFlags);       // window positioning flags
+             int hWnd,      // window handle
+             int hWndInsertAfter,   // placement-order handle
+             int X,         // horizontal position
+             int Y,         // vertical position
+             int cx,        // width
+             int cy,        // height
+             uint uFlags);  // window positioning flags
 
         private void FormMain_Activated(object sender, EventArgs e)
         {
@@ -2783,48 +2803,6 @@ namespace Statistic
                 ;
         }
 
-        //private void изментьСоставТЭЦГТПЩУToolStripMenuItem_Click(object sender, EventArgs e)
-        //{
-        //    if (m_dictAddingTabs[(int)ID_ADDING_TAB.TEC_Component].panel == null)
-        //    {
-        //        int idListener = DbSources.Sources().Register(s_listFormConnectionSettings[(int)CONN_SETT_TYPE.CONFIG_DB].getConnSett(), false, @"CONFIG_DB");
-        //        m_dictAddingTabs[(int)ID_ADDING_TAB.TEC_Component].panel = new PanelTECComponent(s_listFormConnectionSettings[(int)CONN_SETT_TYPE.CONFIG_DB].getConnSett());
-        //        m_dictAddingTabs[(int)ID_ADDING_TAB.TEC_Component].panel.SetDelegateReport(ErrorReport, WarningReport, ActionReport, ReportClear);
-        //    }
-        //    else
-        //        ;
-        //    видSubToolStripMenuItem_CheckedChanged(m_dictAddingTabs[(int)ID_ADDING_TAB.TEC_Component].panel, "Состав ТЭЦ"
-        //        , new bool[] { ((ToolStripMenuItem)sender).Checked, true });
-
-        //    //int idListener = DbSources.Sources().Register(s_listFormConnectionSettings[(int)CONN_SETT_TYPE.CONFIG_DB].getConnSett(), false, @"CONFIG_DB");
-        //    //formPassword.SetIdPass(idListener, 0, Passwords.INDEX_ROLES.ADMIN);
-        //    //formPassword.ShowDialog(this);
-        //    //DialogResult dlgRes = formPassword.DialogResult;
-        //    //if (dlgRes == DialogResult.Yes)
-        //    //{
-        //    //    FormTECComponent tecComponent = new FormTECComponent(s_listFormConnectionSettings[(int)CONN_SETT_TYPE.CONFIG_DB].getConnSett());
-        //    //    if (tecComponent.ShowDialog(this) == DialogResult.Yes)
-        //    //    {
-        //    //        MessageBox.Show(this, "В БД конфигурации внесены изменения.\n\rНеобходим останов/запуск приложения.\n\r", "Внимание", MessageBoxButtons.OK, MessageBoxIcon.Stop);
-        //    //        выходToolStripMenuItem.PerformClick();
-        //    //        //Stop (new FormClosingEventArgs (CloseReason.UserClosing, true));
-        //    //        //MainForm_FormClosing (this, new FormClosingEventArgs (CloseReason.UserClosing, true));
-        //    //    }
-        //    //    else
-        //    //        ;
-        //    //}
-        //    //else
-        //    //    if (dlgRes == DialogResult.Abort)
-        //    //    {
-        //    //        //Errors.NoAccess
-        //    //        connectionSettings(CONN_SETT_TYPE.CONFIG_DB);
-        //    //    }
-        //    //    else
-        //    //        ;
-
-        //    //DbSources.Sources().UnRegister(idListener);
-        //}
-
         private void изментьСоставПользовательToolStripMenuItem_CheckedChanged(object sender, EventArgs e)
         {
             if (m_dictAddingTabs[(int)ID_ADDING_TAB.USERS].panel == null)
@@ -2848,57 +2826,6 @@ namespace Statistic
             изменитьПарольToolStripMenuItem_Click(sender, e, 0, Passwords.INDEX_ROLES.LK_DISP);
         }
 
-        //private void диагностикаToolStripMenuItem_Click(object sender, EventArgs e)
-        //{
-        //    if (m_dictAddingTabs[(int)ID_ADDING_TAB.DIAGNOSTIC].panel == null)
-        //    {
-        //        m_dictAddingTabs[(int)ID_ADDING_TAB.DIAGNOSTIC].panel = new PanelStatisticDiagnostic();
-        //    }
-        //    else
-        //        ;
-        //    if (ДиагностикаToolStripMenuItem.Checked == true)
-        //    {
-        //        ((ToolStripMenuItem)sender).Checked = true;
-        //    }
-        //    else ((ToolStripMenuItem)sender).Checked = false;
-
-        //    видSubToolStripMenuItem_CheckedChanged(m_dictAddingTabs[(int)ID_ADDING_TAB.DIAGNOSTIC].panel, "Диагностика"
-        //        , new bool[] { ((ToolStripMenuItem)sender).Checked, true });
-        //}
-
-        //private void рассинхронизацияДатаВремяСерверБДToolStripMenuItem_Click(object sender, EventArgs e)
-        //{
-        //    if (m_dictAddingTabs[(int)ID_ADDING_TAB.DATETIMESYNC_SOURCE_DATA].panel == null)
-        //        m_dictAddingTabs[(int)ID_ADDING_TAB.DATETIMESYNC_SOURCE_DATA].panel = new PanelSourceData();
-        //    else
-        //        ;
-        //    if (рассинхронизацияДатаВремяСерверБДToolStripMenuItem.Checked == true)
-        //    {
-        //        ((ToolStripMenuItem)sender).Checked = true;
-        //    }
-        //    else ((ToolStripMenuItem)sender).Checked = false;
-
-        //    видSubToolStripMenuItem_CheckedChanged(m_dictAddingTabs[(int)ID_ADDING_TAB.DATETIMESYNC_SOURCE_DATA].panel, "Дата/время серверов БД"
-        //        , new bool[] { ((ToolStripMenuItem)sender).Checked, true });
-        //}
-        ///// <summary>
-        ///// Закрыть вкладку с указанным именем, объектом
-        ///// </summary>
-        ///// <param name="nameTab">Строка - заголовок вкладки</param>
-        ///// <param name="obj">Объект вкладки</param>
-        ///// <param name="check">Признак закрытия</param>
-        //private void closeTabMenu(string nameTab, PanelStatistic obj, bool check)
-        //{
-        //    bool bRes = tclTecViews.RemoveTabPage(nameTab);
-        //    if (check == true)
-        //    {
-        //        obj.Activate(false);
-        //        obj.Stop();
-        //    }
-        //    else
-        //        ;
-        //}
-
         private void изменитьПарольКоммерческогоДиспетчераToolStripMenuItem_Click(object sender, EventArgs e)
         {
             изменитьПарольToolStripMenuItem_Click(sender, e, 0, Passwords.INDEX_ROLES.COM_DISP);
@@ -2913,12 +2840,12 @@ namespace Statistic
         {
             if (s_listFormConnectionSettings[(int)CONN_SETT_TYPE.CONFIG_DB].Ready == 0)
             {
-                int idListener = DbSources.Sources().Register(s_listFormConnectionSettings[(int)CONN_SETT_TYPE.CONFIG_DB].getConnSett(), false, @"CONFIG_DB");
-                formPassword.SetIdPass(idListener, id_ext, indx_role);
+                DbTSQLConfigDatabase.DbConfig ().Register();
+                formPassword.SetIdPass(DbTSQLConfigDatabase.DbConfig ().ListenerId, id_ext, indx_role);
                 DialogResult dlgRes = formPassword.ShowDialog(this);
                 if (dlgRes == DialogResult.Yes)
                 {
-                    formSetPassword.SetIdPass(idListener, 0, formPassword.GetIdRolePassword());
+                    formSetPassword.SetIdPass(DbTSQLConfigDatabase.DbConfig ().ListenerId, 0, formPassword.GetIdRolePassword());
                     formSetPassword.ShowDialog(this);
                 }
                 else
@@ -2927,7 +2854,7 @@ namespace Statistic
                     else
                         ;
 
-                DbSources.Sources().UnRegister(idListener);
+                DbTSQLConfigDatabase.DbConfig ().UnRegister();
             }
             else
                 ;

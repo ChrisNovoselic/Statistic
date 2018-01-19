@@ -99,7 +99,7 @@ namespace StatisticCommon
         /// <summary>
         /// Индекс столбца в книге Excel со значениями РДГ для компонента (в настоящее время только для НТЭЦ-5)
         /// </summary>
-        public int m_indx_col_rdg_excel;        
+        public int m_indx_col_rdg_excel;
         /// <summary>
         /// Коэффициент для тонкой настройки алгоритма сигнализации
         /// </summary>

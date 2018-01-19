@@ -43,7 +43,7 @@ namespace Statistic {
         /// </summary>                                                       //Код в файле конструктора гарантирует, что эти компоненты будут удалены, когда форма будет удалена. 
         private System.ComponentModel.IContainer components = null;          //Если вы не добавили такие компоненты в форму во время разработки, компоненты будут нулевыми.         
 
-        /// <summary>                                                                                  
+        /// <summary>
         /// Clean up any resources being used.
         /// </summary>
         /// <param name="disposing">true if managed resources should be disposed; otherwise, false.</param>
@@ -77,16 +77,16 @@ namespace Statistic {
             //};
             this.m_cbUseSystemColors = new System.Windows.Forms.CheckBox ();
             this.m_arlblColorShema = new System.Windows.Forms.Label [Enum.GetValues(typeof(INDEX_COLOR_SHEMA)).Length];
-            // Создание GroupBox (ящик: тип графиков)         
+            // Создание GroupBox (ящик: тип графиков)
             this.gbxTypeGraph = new System.Windows.Forms.GroupBox ();
             // Создание CheckBox (флажка)
             this.cbxScale = new System.Windows.Forms.CheckBox ();
-            // Создание RadioButton (переключатель:гистограмма, линейный)      
+            // Создание RadioButton (переключатель:гистограмма, линейный)
             this.m_arRbtnTypeGraph = new System.Windows.Forms.RadioButton [] {
                 new System.Windows.Forms.RadioButton()
                 , new System.Windows.Forms.RadioButton()
             };
-            // Создание GroupBox (ящик: типы значений графиков)      
+            // Создание GroupBox (ящик: типы значений графиков)
             this.gbxSourceData = new System.Windows.Forms.GroupBox ();
             // Создание массива переключателей "Типы значений графиков"
             this.m_arRbtnSourceData = new System.Windows.Forms.RadioButton [] {
@@ -169,7 +169,7 @@ namespace Statistic {
             // cbUseSystemColors Элемент "Система"
             // 
             indx = (int)ColorShemas.System;
-            this.m_cbUseSystemColors.AutoSize = true;            
+            this.m_cbUseSystemColors.AutoSize = true;
             this.m_cbUseSystemColors.Tag = (ColorShemas)indx;
             // Включена проверка нажатия
             this.m_cbUseSystemColors.Checked = true;
@@ -196,7 +196,7 @@ namespace Statistic {
             this.m_arlblColorShema [indx].TabIndex = 0;
             this.m_arlblColorShema [indx].Text = "Фон";
             this.m_arlblColorShema [indx].TextAlign = ContentAlignment.MiddleLeft;
-            this.m_arlblColorShema [indx].BorderStyle = System.Windows.Forms.BorderStyle.FixedSingle;            
+            this.m_arlblColorShema [indx].BorderStyle = System.Windows.Forms.BorderStyle.FixedSingle;
             this.m_arlblColorShema [indx].BackColor = CustomColorTable.BackColor;
             this.m_arlblColorShema [indx].ForeColor = CustomColorTable.ForeColor;
             //this.m_arlblColorShema [indx].Enabled = false;

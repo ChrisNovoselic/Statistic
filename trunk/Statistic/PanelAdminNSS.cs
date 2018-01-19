@@ -77,8 +77,8 @@ namespace Statistic
             this.ResumeLayout();
         }
 
-        public PanelAdminNSS(int idListener, ASUTP.Core.HMark markQueries)
-            : base(idListener, markQueries, new int[] { 0, (int)TECComponent.ID.LK })
+        public PanelAdminNSS(ASUTP.Core.HMark markQueries)
+            : base(markQueries, new int[] { 0, (int)TECComponent.ID.LK })
         {
             m_admin.SetDelegateSaveComplete(null);
         }
@@ -310,7 +310,7 @@ namespace Statistic
         protected override void createAdmin ()
         {
             //Возможность редактирования значений ПБР: НЕ разрешено управление (изменение разрешения на запись), запись разрешена
-            m_admin = new AdminTS_NSS (new bool[] { false, true });                    
+            m_admin = new AdminTS_NSS (new bool[] { false, true });
         }
     }
 }
