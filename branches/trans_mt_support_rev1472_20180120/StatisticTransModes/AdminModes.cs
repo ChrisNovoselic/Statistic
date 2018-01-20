@@ -28,7 +28,7 @@ namespace StatisticTransModes
         {
             int iRes = -1;
             DataTable table = null;
-            iRes = DbMCSources.Sources().Response(idListener, out error, out table);
+            iRes = ASUTP.Database.DbSources.Sources().Response(idListener, out error, out table);
             outobj = table as DataTable;
 
             return iRes;
@@ -111,7 +111,7 @@ namespace StatisticTransModes
         {
             base.Stop();
 
-            DbMCSources.Sources().UnRegister(m_IdListenerCurrent);
+            ASUTP.Database.DbSources.Sources().UnRegister(m_IdListenerCurrent);
         }
     }
 }

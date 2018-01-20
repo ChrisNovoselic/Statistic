@@ -65,7 +65,7 @@ namespace trans_mt
 
             for (i = 0; i < (Int16)CONN_SETT_TYPE.COUNT_CONN_SETT_TYPE; i++)
             {
-                idListener = DbMCSources.Sources().Register(s_listFormConnectionSettings[(int)StatisticCommon.CONN_SETT_TYPE.CONFIG_DB].getConnSett(i), false, @"CONFIG_DB");
+                idListener = ASUTP.Database.DbSources.Sources().Register(s_listFormConnectionSettings[(int)StatisticCommon.CONN_SETT_TYPE.CONFIG_DB].getConnSett(i), false, @"CONFIG_DB");
 
                 if (! (idListener < 0))
                 {
@@ -112,7 +112,7 @@ namespace trans_mt
 
                     //m_arAdmin[i].m_ignore_connsett_data = true; //-> в конструктор
 
-                    DbMCSources.Sources().UnRegister(idListener);
+                    ASUTP.Database.DbSources.Sources().UnRegister(idListener);
                 }
                 else
                     ;
