@@ -2790,9 +2790,9 @@ namespace StatisticCommon
             for (int i = 0; i < m_curRDGValues.Length; i++)
             {
                 m_prevRDGValues[i].From(m_curRDGValues[i]);
-                m_prevRDGValues[i].pbr = Math.Round(m_prevRDGValues[i].pbr, 2);
-                m_prevRDGValues[i].pmin = Math.Round(m_prevRDGValues[i].pmin, 2);
-                m_prevRDGValues[i].pmax = Math.Round(m_prevRDGValues[i].pmax, 2);
+                m_prevRDGValues[i].pbr = Math.Round(float.Parse(m_prevRDGValues[i].pbr.ToString("F2")), 2);
+                m_prevRDGValues[i].pmin = Math.Round (float.Parse (m_prevRDGValues [i].pmin.ToString ("F2")), 2);
+                m_prevRDGValues [i].pmax = Math.Round (float.Parse (m_prevRDGValues [i].pmax.ToString ("F2")), 2);
             }
         }
 
@@ -2832,8 +2832,11 @@ namespace StatisticCommon
             for (int i = 0; i < m_curRDGValues.Length; i++)
             {
                 m_curRDGValues[i].pbr =
-                m_curRDGValues[i].pmin = m_curRDGValues[i].pmax = 
-                m_curRDGValues[i].recomendation = m_curRDGValues[i].deviation = 0;
+                m_curRDGValues[i].pmin =
+                m_curRDGValues[i].pmax = 
+                m_curRDGValues[i].recomendation =
+                m_curRDGValues[i].deviation =
+                    0;
                 m_curRDGValues[i].deviationPercent = false;
 
                 m_curRDGValues[i].pbr_number = string.Empty;
@@ -2849,27 +2852,12 @@ namespace StatisticCommon
         /// <returns>Наличие изменений</returns>
         public override bool WasChanged()
         {
-            for (int i = 0; i < m_curRDGValues.Length; i++)
-            {
-                if (m_prevRDGValues[i].pbr != m_curRDGValues[i].pbr /*double.Parse(this.dgwAdminTable.Rows[i].Cells[(int)DataGridViewAdmin.DESC_INDEX.PLAN].Value.ToString())*/)
-                    return true;
-                else
-                    ;
-                if (m_prevRDGValues[i].recomendation != m_curRDGValues[i].recomendation /*double.Parse(this.dgwAdminTable.Rows[i].Cells[(int)DataGridViewAdmin.DESC_INDEX.RECOMENDATION].Value.ToString())*/)
-                    return true;
-                else
-                    ;
-                if (m_prevRDGValues[i].deviationPercent != m_curRDGValues[i].deviationPercent /*bool.Parse(this.dgwAdminTable.Rows[i].Cells[(int)DataGridViewAdmin.DESC_INDEX.DEVIATION_TYPE].Value.ToString())*/)
-                    return true;
-                else
-                    ;
-                if (m_prevRDGValues[i].deviation != m_curRDGValues[i].deviation /*double.Parse(this.dgwAdminTable.Rows[i].Cells[(int)DataGridViewAdmin.DESC_INDEX.DEVIATION].Value.ToString())*/)
-                    return true;
-                else
-                    ;
-            }
+            bool bRes = false;
 
-            return false;
+            for (int i = 0; (i < m_curRDGValues.Length) && (bRes == false); i++)
+                bRes = !(m_prevRDGValues [i] == m_curRDGValues [i]);
+
+            return bRes;
         }
     }
 }

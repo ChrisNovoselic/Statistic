@@ -8,6 +8,7 @@ using ASUTP.Helper;
 using ASUTP;
 using ASUTP.Core;
 using ASUTP.Database;
+using System.Linq;
 
 namespace StatisticCommon
 {    
@@ -105,6 +106,32 @@ namespace StatisticCommon
                 oRes.From(this, bPBRNumberEmptyChecked);
 
                 return oRes;
+            }
+
+            public static bool operator == (RDGStruct s1, RDGStruct s2)
+            {
+                bool bRes = false;
+
+                bRes = (s1.pbr == s2.pbr)
+                    && (s1.recomendation == s2.recomendation)
+                    && (s1.fc == s2.fc)
+                    && ((s1.deviation == s2.deviation)
+                        && (s1.deviationPercent == s2.deviationPercent));
+
+                return bRes;
+            }
+
+            public static bool operator != (RDGStruct s1, RDGStruct s2)
+            {
+                bool bRes = true;
+
+                bRes = !(s1.pbr == s2.pbr)
+                    || !(s1.recomendation == s2.recomendation)
+                    || !(s1.fc == s2.fc)
+                    || (!(s1.deviation == s2.deviation)
+                        || !(s1.deviationPercent == s2.deviationPercent));
+
+                return bRes;
             }
         }
 

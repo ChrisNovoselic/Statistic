@@ -53,9 +53,6 @@ namespace CommonAux
             Thread.CurrentThread.CurrentUICulture =
                 ProgramBase.ss_MainCultureInfo;
 
-            formParameters = new FormParameters_DB ();
-            s_iMainSourceData = Int32.Parse (formParameters.m_arParametrSetup [(int)FormParameters.PARAMETR_SETUP.MAIN_DATASOURCE]);
-
             InitializeComponent ();
         }
 
@@ -133,6 +130,9 @@ namespace CommonAux
                         break;
                     default:
                         //Успех... пост-инициализация
+                        formParameters = new FormParameters_DB ();
+                        s_iMainSourceData = Int32.Parse (formParameters.m_arParametrSetup [(int)FormParameters.PARAMETR_SETUP.MAIN_DATASOURCE]);
+
                         m_panel = new PanelCommonAux (formParameters.m_arParametrSetup [(int)StatisticCommon.FormParameters.PARAMETR_SETUP.COMMON_AUX_PATH]
                             , SystemColors.ControlText
                             , SystemColors.Control);

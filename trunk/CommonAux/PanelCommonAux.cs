@@ -944,8 +944,6 @@ namespace CommonAux
             DbTSQLDataSource.DataSource ().Register ($"АИИСКУЭ-центр для {tec_local.m_strNameShr}");
             if (!(DbTSQLDataSource.DataSource ().ListenerId < 0))
             {
-                Logging.Logg().Action(msg, Logging.INDEX_MESSAGE.NOT_SET);
-
                 for (indx = 0; !(indx > TEC_LOCAL.INDEX_DATA.GRVIII); indx++)
                 {
                     if ((tec_local.m_arListSgnls[Convert.ToInt32(TEC_LOCAL.INDEX_DATA.GRVIII)].Count == 0)
@@ -1164,7 +1162,10 @@ namespace CommonAux
                     msg += @"отменено пользователем...";
                 }
 
-                Logging.Logg().Action(msg, Logging.INDEX_MESSAGE.NOT_SET);
+                if (string.IsNullOrEmpty (msg) == false)
+                    Logging.Logg ().Action (msg, Logging.INDEX_MESSAGE.NOT_SET);
+                else
+                    ;
             }
 
             m_GetDataFromDB.ReportClear(true);

@@ -1007,6 +1007,7 @@ namespace Statistic
 
         private void fileProfileSaveStandardTab()
         {
+            DbTSQLConfigDatabase.DbConfig ().SetConnectionSettings ();
             DbTSQLConfigDatabase.DbConfig().Register();
             fileProfileSaveStandardTab(DbTSQLConfigDatabase.DbConfig ().ListenerId);
             DbTSQLConfigDatabase.DbConfig ().UnRegister();
@@ -1020,6 +1021,7 @@ namespace Statistic
 
         private void fileProfileSaveAddingTab()
         {
+            DbTSQLConfigDatabase.DbConfig ().SetConnectionSettings ();
             DbTSQLConfigDatabase.DbConfig().Register();
             fileProfileSaveAddingTab(DbTSQLConfigDatabase.DbConfig ().ListenerId);
             DbTSQLConfigDatabase.DbConfig ().UnRegister();
@@ -1210,7 +1212,9 @@ namespace Statistic
             {
                 bToRemove = false;
 
-                if (((tab.Controls[0] is PanelTecViewStandard) || (tab.Controls[0] is PanelLKView))
+                if ((tab.Controls.Count > 0)
+                    && ((tab.Controls[0] is PanelTecViewStandard)
+                        || (tab.Controls[0] is PanelLKView))
                     && (listTabKeep.IndexOf(((PanelTecViewBase)tab.Controls[0]).m_ID) < 0))
                 {
                     bToRemove = true;
@@ -1562,7 +1566,8 @@ namespace Statistic
                 //StringBuilder strPasswordHashed = new StringBuilder ();
                 //byte[] hash = md5.ComputeHash(Encoding.ASCII.GetBytes(strPassword));
 
-                bool bShowFormConnectionSettings = false;
+                bool bShowFormConnectionSettings = false
+                    , bConfigDbRegistred = false;
                 ConnectionSettingsSource connSettSource;
                 if (formPassword == null)
                 {
@@ -1611,7 +1616,8 @@ namespace Statistic
                     }
                     else
                     {
-                        if (type == CONN_SETT_TYPE.CONFIG_DB)
+                        bConfigDbRegistred = type == CONN_SETT_TYPE.CONFIG_DB;
+                        if (bConfigDbRegistred == true)
                             DbTSQLConfigDatabase.DbConfig ().Register ();
                         else
                             ;
@@ -1626,7 +1632,7 @@ namespace Statistic
                 // отменять регистрацию именно ДО вызова 'connectionSettings'
                 // , иначе идентификаторы старого и нового наборов парметров соединения с БД совпадут
                 // , но только для БД_конфигурации, для списка БД 'idListener' сохранен в форме
-                if (type == CONN_SETT_TYPE.CONFIG_DB)
+                if (bConfigDbRegistred == true)
                     DbTSQLConfigDatabase.DbConfig ().UnRegister();
                 else
                     ;
