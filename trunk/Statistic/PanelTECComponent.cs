@@ -219,17 +219,31 @@ namespace Statistic
         {
             int err = -1;
 
+            FormChangeMode.MODE_TECCOMPONENT i = FormChangeMode.MODE_TECCOMPONENT.Unknown;
+
             // установить режим "удержание соединения" при нескольких подряд вызовах статических методов 'DbTSQLInterface::Select'
 #if MODE_STATIC_CONNECTION_LEAVING
             DbTSQLInterface.ModeStaticConnectionLeave = DbTSQLInterface.ModeStaticConnectionLeaving.Yes;
 #endif
             // несколько подряд вызовов статических методов 'DbTSQLInterface::Select'
-            for (FormChangeMode.MODE_TECCOMPONENT i = (FormChangeMode.MODE_TECCOMPONENT)0; i < FormChangeMode.MODE_TECCOMPONENT.ANY; i++)
-                m_arr_originalTable[(short)i] = db_sostav.GetTableTECComponent(i, out err);
+            for (i = (FormChangeMode.MODE_TECCOMPONENT)0; i < FormChangeMode.MODE_TECCOMPONENT.ANY; i++) {
+                m_arr_originalTable [(short)i] = db_sostav.GetTableTECComponent (i, out err);
+
+                if ((!(err == 0))
+                    || (m_arr_originalTable [(short)i].Columns.Count == 0))
+                    break;
+                else
+                    ;
+            }
             // возвратить режим "удержание соединения - обычный" (разрыв соединения после каждого вызова статического метода 'DbTSQLInterface::Select')
 #if MODE_STATIC_CONNECTION_LEAVING
             DbTSQLInterface.ModeStaticConnectionLeave = DbTSQLInterface.ModeStaticConnectionLeaving.No;
 #endif
+            if (i < FormChangeMode.MODE_TECCOMPONENT.ANY)
+                throw new InvalidOperationException ($"PanelTECComponent::fill_DataTable_ComponentsTEC () - ошибка приполучении данных для {i.ToString()}...");
+            else
+                ;
+
             reset_DataTable_ComponentsTEC ();
         }
 
@@ -790,6 +804,7 @@ namespace Statistic
                 DbConnection dbConn;
 
                 try {
+                    DbTSQLConfigDatabase.DbConfig ().SetConnectionSettings ();
                     DbTSQLConfigDatabase.DbConfig ().Register ();
                     err = 0;
                 } catch (Exception e) {
@@ -1204,9 +1219,9 @@ namespace Statistic
             /// <returns>Имя по умолчанию</returns>
             public static string Mass_NewVal_Comp (FormChangeMode.MODE_TECCOMPONENT indx)
             {
-                String [] arPREFIX_COMPONENT = { "Новая ТЭЦ", "Новая ГТП", "Новый ЩУ", "Новая ТГ" };
-
-                return arPREFIX_COMPONENT [(int)indx];
+                return new String []{
+                        "Новая ТЭЦ", "Новая ГТП", "Новый ЩУ", "Новая ТГ"
+                    } [(int)indx];
             }
 
             /// <summary>

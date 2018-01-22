@@ -23,9 +23,9 @@ namespace StatisticCommon
         /// <summary>
         /// Делегат для ретрансляции событий Модес-Центр
         /// </summary>
-        Action<object> delegateMCApiHandler;
+        private Action<object> delegateMCApiHandler;
 
-        List <Modes.BusinessLogic.IGenObject> m_listIGO;
+        private List <Modes.BusinessLogic.IGenObject> m_listIGO;
 
         protected override int Timeout { get; set; }
 
@@ -147,6 +147,8 @@ namespace StatisticCommon
                 }
             } else
                 Logging.Logg().Debug(string.Format(@"{0} - {1}...", msgLog, @"ОШИБКА"), Logging.INDEX_MESSAGE.NOT_SET);
+
+            delegateMCApiHandler?.Invoke (bRes);
 
             return result;
         }

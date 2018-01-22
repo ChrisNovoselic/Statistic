@@ -42,19 +42,19 @@ namespace StatisticCommon
 
         private ListTEC _listTEC;
 
-        /// <summary>
-        /// Список ВСЕХ компонентов (ТЭЦ, ГТП, ЩУ, ТГ)
-        /// </summary>
-        /// <param name="connSett">Параметры соединения с БД концигурации</param>
-        /// <param name="bIgnoreTECInUse">Признак использования поля [TEC_LIST].[InUse]</param>
-        /// <param name="arTECLimit">Массив-диапазон допустимых идентификаторов ТЭЦ</param>
-        /// <param name="bUseData">Признак возможности обращения к данным компонентов собираемого списка</param>
-        public List<TEC> InitTEC (ConnectionSettings connSett, bool bIgnoreTECInUse, int [] arTECLimit, bool bUseData)
-        {
-            SetConnectionSettings (connSett);
+        ///// <summary>
+        ///// Список ВСЕХ компонентов (ТЭЦ, ГТП, ЩУ, ТГ)
+        ///// </summary>
+        ///// <param name="connSett">Параметры соединения с БД концигурации</param>
+        ///// <param name="bIgnoreTECInUse">Признак использования поля [TEC_LIST].[InUse]</param>
+        ///// <param name="arTECLimit">Массив-диапазон допустимых идентификаторов ТЭЦ</param>
+        ///// <param name="bUseData">Признак возможности обращения к данным компонентов собираемого списка</param>
+        //public List<TEC> InitTEC (ConnectionSettings connSett, bool bIgnoreTECInUse, int [] arTECLimit, bool bUseData)
+        //{
+        //    SetConnectionSettings (connSett);
 
-            return InitTEC (bIgnoreTECInUse, arTECLimit, bUseData);
-        }
+        //    return InitTEC (bIgnoreTECInUse, arTECLimit, bUseData);
+        //}
 
         /// <summary>
         /// Список ВСЕХ компонентов (ТЭЦ, ГТП, ЩУ, ТГ)
@@ -359,19 +359,19 @@ namespace StatisticCommon
                         }
 
                         if (err > 0)
-                            Logging.Logg().Warning(@"InitTEC_200::InitTEC_200 () - " + strLog + @"...", Logging.INDEX_MESSAGE.NOT_SET);
+                            Logging.Logg().Warning(@"DbTSQLConfigureDatabase::initTECConnectionSettings () - " + strLog + @"...", Logging.INDEX_MESSAGE.NOT_SET);
                         else
                             if (strLog.Equals(string.Empty) == false)
-                                Logging.Logg().Error(@"InitTEC_200::InitTEC_200 () - " + strLog + @"...", Logging.INDEX_MESSAGE.NOT_SET);
+                                Logging.Logg().Error(@"DbTSQLConfigureDatabase::initTECConnectionSettings () - " + strLog + @"...", Logging.INDEX_MESSAGE.NOT_SET);
                             else
                                 ;
                     }
                     else
-                        Logging.Logg().Warning(string.Format(@"InitTEC_200::InitTEC_200 () - " + @"не зарегистрирован источник с идентификатором {0} для ТЭЦ.ID={1}, либо для него не установлен пароль" + @"...", pair.Key, tec.m_id)
+                        Logging.Logg().Warning(string.Format(@"DbTSQLConfigureDatabase::initTECConnectionSettings () - " + @"не зарегистрирован источник с идентификатором {0} для ТЭЦ.ID={1}, либо для него не установлен пароль" + @"...", pair.Key, tec.m_id)
                             , Logging.INDEX_MESSAGE.NOT_SET);
                 }
                 else
-                    Logging.Logg().Warning(string.Format(@"InitTEC_200::InitTEC_200 () - " + @"не установлен идентификатор источника данных {0} для ТЭЦ.ID={1}" + @"...", pair.Key, tec.m_id)
+                    Logging.Logg().Warning(string.Format(@"DbTSQLConfigureDatabase::initTECConnectionSettings () - " + @"не установлен идентификатор источника данных {0} для ТЭЦ.ID={1}" + @"...", pair.Key, tec.m_id)
                         , Logging.INDEX_MESSAGE.NOT_SET);
         }
         /// <summary>
@@ -433,15 +433,18 @@ namespace StatisticCommon
                         else
                             strMesError = "результ. табл. не содержит поле [KoeffAlarmPcur]";
                     } else
-                        strMesError = "не удалось получить таблицу - список компонентов ТЭЦ";
+                        //strMesError = "не удалось получить таблицу - список компонентов ТЭЦ"
+                        throw new InvalidOperationException (string.Format (@"DbTSQLConfigureDatabase::OnTECUpdate (ID={0}, NAME={1}) - {2} ..."
+                            , (obj as TEC).m_id, (obj as TEC).name_shr, @"не удалось получить таблицу - список компонентов ТЭЦ"))
+                            ;
                 } else
                     strMesError = "не удалось получить объект соединения с БД конфигурации";
             } catch (Exception e) {
-                Logging.Logg().Exception(e, string.Format(@"InitTEC_200::OnTECUpdate (ID={0}, NAME={1}) - ...", (obj as TEC).m_id, (obj as TEC).name_shr), Logging.INDEX_MESSAGE.NOT_SET);
+                Logging.Logg().Exception(e, string.Format(@"DbTSQLConfigureDatabase::OnTECUpdate (ID={0}, NAME={1}) - ...", (obj as TEC).m_id, (obj as TEC).name_shr), Logging.INDEX_MESSAGE.NOT_SET);
             }
 
             if (err < 0)
-                Logging.Logg ().Error (string.Format (@"InitTEC_200::OnTECUpdate (ID={0}, NAME={1}) - {2} ..."
+                Logging.Logg ().Error (string.Format (@"DbTSQLConfigureDatabase::OnTECUpdate (ID={0}, NAME={1}) - {2} ..."
                     , (obj as TEC).m_id, (obj as TEC).name_shr, strMesError), Logging.INDEX_MESSAGE.NOT_SET);
             else
                 ;

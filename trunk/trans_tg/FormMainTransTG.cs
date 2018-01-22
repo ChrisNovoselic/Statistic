@@ -99,6 +99,7 @@ namespace trans_tg
 
             DbTSQLConfigDatabase.DbConfig ().SetConnectionSettings (s_listFormConnectionSettings [(int)StatisticCommon.CONN_SETT_TYPE.CONFIG_DB].getConnSett ());
             DbTSQLConfigDatabase.DbConfig ().Register();
+
             for (i = 0; i < (Int16)CONN_SETT_TYPE.COUNT_CONN_SETT_TYPE; i++)
             {
                 if (i == (Int16)CONN_SETT_TYPE.SOURCE)

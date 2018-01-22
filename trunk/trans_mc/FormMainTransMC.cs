@@ -41,7 +41,11 @@ namespace trans_mc
 
             bool bIgnoreTECInUse = false;
             string strTypeField = m_sFileINI.GetMainValueOfKey(@"РДГФорматТаблицаНазначение");
-            int idListener = DbMCSources.Sources().Register(s_listFormConnectionSettings[(int)StatisticCommon.CONN_SETT_TYPE.CONFIG_DB].getConnSett(), false, @"CONFIG_DB");
+
+            //??? для создания статического 'DbMCSources' = 'DbSources'
+            DbMCSources.Sources();
+            DbTSQLConfigDatabase.DbConfig ().SetConnectionSettings ();
+            DbTSQLConfigDatabase.DbConfig ().Register();
 
             ASUTP.Core.HMark markQueries = new ASUTP.Core.HMark (new int [] {(int)StatisticCommon.CONN_SETT_TYPE.ADMIN, (int)StatisticCommon.CONN_SETT_TYPE.PBR});
 
@@ -91,7 +95,7 @@ namespace trans_mc
                 //m_arAdmin[i].m_ignore_connsett_data = true; //-> в конструктор
             }
 
-            DbMCSources.Sources().UnRegister(idListener);
+            DbTSQLConfigDatabase.DbConfig().UnRegister();
 
             if (!(i < (Int16)CONN_SETT_TYPE.COUNT_CONN_SETT_TYPE))
             {
@@ -166,7 +170,7 @@ namespace trans_mc
         protected override void timer_Start()
         {
             m_listTECComponentIndex = ((AdminTS)m_arAdmin[(Int16)CONN_SETT_TYPE.DEST]).GetListIndexTECComponent(m_modeTECComponent, true);
-
+            
             base.timer_Start();
         }
     }

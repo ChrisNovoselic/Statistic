@@ -119,6 +119,7 @@ namespace StatisticAlarm
 
         private void changeState ()
         {
+            DbTSQLConfigDatabase.DbConfig ().SetConnectionSettings ();
             DbTSQLConfigDatabase.DbConfig ().Register ();
 
             foreach (TecViewAlarm tv in m_listTecView) {

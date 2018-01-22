@@ -923,32 +923,29 @@ namespace StatisticAnalyzer
             #endregion
 
             int err = -1;
-            
-            DbTSQLConfigDatabase.DbConfig().Register();
 
             DbConnection connConfigDB = DbSources.Sources().GetConnection(DbTSQLConfigDatabase.DbConfig ().ListenerId,out err);
 
-            if ((!(connConfigDB == null)) && (err == 0))
+            if ((!(connConfigDB == null))
+                && (err == 0))
             {
                 HStatisticUsers.GetRoles(ref connConfigDB, string.Empty, string.Empty, out m_tableRoles, out err);
                 FillDataGridViews(ref dgvFilterRoles, m_tableRoles, @"DESCRIPTION", err, true);
-
                 FillDataGridViews(ref dgvRole, m_tableRoles, @"DESCRIPTION", err, true);
 
                 HStatisticUsers.GetUsers(ref connConfigDB, string.Empty, c_list_sorted, out m_tableUsers, out err);
                 FillDataGridViews(ref dgvClient, m_tableUsers, @"DESCRIPTION", err);
+                FillDataGridViews (ref dgvUser, m_tableUsers, @"DESCRIPTION", err, true);
 
-                m_tableUsers_stat=m_tableUsers.Copy();
+                m_tableUsers_stat = m_tableUsers.Copy();
                 m_tableUsers_unfiltered = m_tableUsers.Copy();
-                m_tableUsers_stat_unfiltered = m_tableUsers_stat.Copy();
-
-                FillDataGridViews(ref dgvUser, m_tableUsers_stat, @"DESCRIPTION", err, true);
+                m_tableUsers_stat_unfiltered = m_tableUsers.Copy ();
                 
                 if (!(m_LogParse == null))
                 {
                     m_LogParse.Exit = LogParseExit;
 
-                    Start();
+                    //Start();
                 }
                 else
                 {
@@ -958,8 +955,6 @@ namespace StatisticAnalyzer
                 }
             } else
                 ;
-
-            DbTSQLConfigDatabase.DbConfig ().UnRegister ();
         }
 
         /// <summary>
@@ -1376,7 +1371,9 @@ namespace StatisticAnalyzer
             //DateTime [] arDT = (DateTime [])data;
             object[] pars = (object[])data;
             DataRow[] rows = new DataRow[] { };
-            int cntRow = selectLogMessage(((string)pars[0]), ((DateTime)pars[1]), ((DateTime)pars[1]).AddDays(1), ref rows);
+            int cntRow = -1;
+
+            cntRow = selectLogMessage(((string)pars[0]), ((DateTime)pars[1]), ((DateTime)pars[1]).AddDays(1), ref rows);
 
             filldgvLogMessages(rows);
         }
@@ -1499,7 +1496,6 @@ namespace StatisticAnalyzer
                 dtEnd = DateTime.Parse(dgvDatetimeStart.Rows[m_prevDatetimeRowIndex + 1].Cells[1].Value.ToString());
             else
                 ;
-
 
             Thread threadFilldgvLogMessages = new Thread(new ParameterizedThreadStart(filldgvLogMessages));
             threadFilldgvLogMessages.IsBackground = true;
@@ -2204,9 +2200,12 @@ namespace StatisticAnalyzer
                         where += "group by([ID_LOGMSG]) ORDER BY ID_LOGMSG";
                         query += where;
 
-                        DbConnection connLoggingDBn = DbSources.Sources().GetConnection(iListenerId, out iRes);
+                        //DbConnection connLoggingDBn = DbSources.Sources().GetConnection(iListenerId, out iRes);
 
-                        table_statMessage = DbTSQLInterface.Select(ref connLoggingDBn, query, null, null, out iRes);
+                        table_statMessage =
+                            //DbTSQLInterface.Select(ref connLoggingDBn, query, null, null, out iRes)
+                            DbTSQLDataSource.DataSource().Select (query, null, null, out iRes)
+                            ;
 
                         if (table_statMessage.Rows.Count == 0)
                         {
@@ -2309,7 +2308,9 @@ namespace StatisticAnalyzer
 
     public class PanelAnalyzer_DB : PanelAnalyzer
     {
-        protected DataTable m_tableTabs;
+        private static string _nameShrMainDB = "MAIN_DB";
+
+        private ConnectionSettings _connSettMainDB;
 
         private DelegateIntFunc delegateConnect;
         
@@ -2343,22 +2344,25 @@ namespace StatisticAnalyzer
             int err = -1, 
                 idMainDB = -1;
 
-            ConnectionSettings connSett = ASUTP.Forms.FormMainBaseWithStatusStrip.s_listFormConnectionSettings[(int)CONN_SETT_TYPE.CONFIG_DB].getConnSett();
+            base.Start ();
+
+            DbTSQLConfigDatabase.DbConfig ().SetConnectionSettings ();
             DbTSQLConfigDatabase.DbConfig().Register();
-            DbConnection connConfigDB = DbSources.Sources().GetConnection(DbTSQLConfigDatabase.DbConfig ().ListenerId, out err);
 
-            if ((!(connConfigDB == null)) && (err == 0))
-            {
-                idMainDB = Int32.Parse(DbTSQLInterface.Select(ref connConfigDB, @"SELECT [VALUE] FROM [setup] WHERE [KEY]='" + @"Main DataSource" + @"'", null, null, out err).Rows[0][@"VALUE"].ToString());
-                DataTable tblConnSettMainDB = ConnectionSettingsSource.GetConnectionSettings(ref connConfigDB, idMainDB, -1, out err);
-                ConnectionSettings connSettMainDB = new ConnectionSettings(tblConnSettMainDB.Rows[0], 1);
-                new DbTSQLDataSource (connSettMainDB, @"MAIN_DB");
-                DbTSQLDataSource.DataSource().Register(@"MAIN_DB");
+            if (DbTSQLConfigDatabase.DbConfig ().ListenerId > 0) {
+                idMainDB = Int32.Parse (DbTSQLConfigDatabase.DbConfig().Select (@"SELECT [VALUE] FROM [setup] WHERE [KEY]='" + @"Main DataSource" + @"'", null, null, out err).Rows [0] [@"VALUE"].ToString ());
+                DataTable tblConnSettMainDB = ConnectionSettingsSource.GetConnectionSettings (DbTSQLConfigDatabase.DbConfig ().ListenerId, idMainDB, -1, out err);
 
-                base.Start();
-            }
-            else
-                throw new Exception(@"PanelAnalyzer_DB::Start () - нет соединения с БД конфигурации...");
+                if ((tblConnSettMainDB.Columns.Count > 0)
+                    && (tblConnSettMainDB.Rows.Count > 0))
+                // "-1" - значит будет назначени идентификатор из БД
+                    _connSettMainDB = new ConnectionSettings (tblConnSettMainDB.Rows [0], -1);
+                else
+                    throw new Exception ($"PanelAnalyzer_DB::Start () - нет параметров соединения с БД значений ID={idMainDB}...");
+
+                base.Start ();
+            } else
+                throw new Exception (@"PanelAnalyzer_DB::Start () - нет соединения с БД конфигурации...");
 
             DbTSQLConfigDatabase.DbConfig ().UnRegister ();
 
@@ -2368,15 +2372,15 @@ namespace StatisticAnalyzer
 
         }
 
-        /// <summary>
-        /// Остановка таймера обновления данных
-        /// </summary>
-        public override void Stop()
-        {
-            DbTSQLDataSource.DataSource ().UnRegister ();
+        ///// <summary>
+        ///// Остановка таймера обновления данных
+        ///// </summary>
+        //public override void Stop()
+        //{
+        //    DbTSQLDataSource.DataSource ().UnRegister ();
 
-            base.Stop();
-        }
+        //    base.Stop();
+        //}
 
         /// <summary>
         /// Проверка запуска пользователем ПО
@@ -2391,10 +2395,11 @@ namespace StatisticAnalyzer
             arbActives = null;
             int i = -1;
 
-            DbConnection connLoggingDB = DbSources.Sources().GetConnection(DbTSQLDataSource.DataSource().ListenerId, out err);
-            if (!(connLoggingDB == null) && (err == 0))
+            DbTSQLDataSource.DataSource ().SetConnectionSettings (_connSettMainDB);
+            DbTSQLDataSource.DataSource().Register(_nameShrMainDB);
+            if (err == 0)
             {
-                DataTable tblMaxDatetimeWR = DbTSQLInterface.Select(ref connLoggingDB, @"SELECT [ID_USER], MAX([DATETIME_WR]) as MAX_DATETIME_WR FROM logging GROUP BY [ID_USER] ORDER BY [ID_USER]", null, null, out err);
+                DataTable tblMaxDatetimeWR = DbTSQLDataSource.DataSource().Select(@"SELECT [ID_USER], MAX([DATETIME_WR]) as MAX_DATETIME_WR FROM logging GROUP BY [ID_USER] ORDER BY [ID_USER]", null, null, out err);
                 DataRow[] rowsMaxDatetimeWR;
                 if (err == 0)
                 {
@@ -2427,7 +2432,9 @@ namespace StatisticAnalyzer
             else
                 err = -1; //Нет соединения с БД...
 
-            delegateReportClear(true);
+            DbTSQLDataSource.DataSource ().UnRegister ();
+
+            delegateReportClear (true);
         }
 
         /// <summary>
@@ -2465,12 +2472,14 @@ namespace StatisticAnalyzer
         /// <param name="user">Пользователь для выборки</param>
         protected override void fill_active_tabs(int user)
         {
-            delegateActionReport("Получение активных вкладок пользователя");
             int err = -1;
             int iRes = -1;
             string[] us ;
             string where = string.Empty;
             List<int> ID_tabs = new List<int>();
+            DataTable tableProfileTabs;
+
+            delegateActionReport ("Получение активных вкладок пользователя");
 
             #region Фомирование и выполнение запроса для получения списка открытых вкладок у пользователя
 
@@ -2482,16 +2491,16 @@ namespace StatisticAnalyzer
                 where = "((ID_EXT = " + (int)user + " and [IS_ROLE] =0) or (id_ext=(select [ID_ROLE] from dbo.[users] where id=" + user + ") and is_role=1)) AND ID_UNIT IN(" + (int)HStatisticUsers.ID_ALLOWED.PROFILE_SETTINGS_CHANGEMODE + ", " + (int)HStatisticUsers.ID_ALLOWED.PROFILE_VIEW_ADDINGTABS + ")";
                 query += where;
 
-                m_tableTabs = DbTSQLConfigDatabase.DbConfig().Select(query, out iRes);
+                tableProfileTabs = DbTSQLConfigDatabase.DbConfig().Select(query, out iRes);
 
-                if (m_tableTabs.Rows.Count > 0)
+                if (tableProfileTabs.Rows.Count > 0)
                 {
                     //Список строк с используемыми вкладками
-                    DataRow[] table_role0 = m_tableTabs.Select("IS_ROLE=0 and ID_UNIT in (" + (int)HStatisticUsers.ID_ALLOWED.PROFILE_SETTINGS_CHANGEMODE + ", " + (int)HStatisticUsers.ID_ALLOWED.PROFILE_VIEW_ADDINGTABS + ")");
+                    DataRow[] table_role0 = tableProfileTabs.Select("IS_ROLE=0 and ID_UNIT in (" + (int)HStatisticUsers.ID_ALLOWED.PROFILE_SETTINGS_CHANGEMODE + ", " + (int)HStatisticUsers.ID_ALLOWED.PROFILE_VIEW_ADDINGTABS + ")");
                     string role0 = string.Empty;
 
                     //Список строк с вкладками по умолчанию
-                    DataRow[] table_role1 = m_tableTabs.Select("IS_ROLE=1 and ID_UNIT in (" + (int)HStatisticUsers.ID_ALLOWED.PROFILE_SETTINGS_CHANGEMODE + ", " + (int)HStatisticUsers.ID_ALLOWED.PROFILE_VIEW_ADDINGTABS + ")");
+                    DataRow[] table_role1 = tableProfileTabs.Select("IS_ROLE=1 and ID_UNIT in (" + (int)HStatisticUsers.ID_ALLOWED.PROFILE_SETTINGS_CHANGEMODE + ", " + (int)HStatisticUsers.ID_ALLOWED.PROFILE_VIEW_ADDINGTABS + ")");
                     string role1 = string.Empty;
 
                     string tabs = string.Empty;
@@ -2644,11 +2653,14 @@ namespace StatisticAnalyzer
         {
             dgvDatetimeStart.SelectionChanged -= dgvDatetimeStart_SelectionChanged;
 
+            // завершается по выполнении потоковой ф-и 'm_LogParse::thread_Proc'
+            DbTSQLDataSource.DataSource ().SetConnectionSettings (_connSettMainDB);
+            DbTSQLDataSource.DataSource ().Register (_nameShrMainDB);
+
             m_LogParse.Start(m_chDelimeters[(int)INDEX_DELIMETER.PART].Length
                     + m_chDelimeters[(int)INDEX_DELIMETER.PART]
                     + DbTSQLDataSource.DataSource().ListenerId.ToString()
                     + m_chDelimeters[(int)INDEX_DELIMETER.PART] + id);
-            int a = 1;
         }
 
         /// <summary>
@@ -2661,7 +2673,16 @@ namespace StatisticAnalyzer
         /// <returns>Возвращает количество строк в выборке</returns>
         protected override int selectLogMessage(string type, DateTime beg, DateTime end, ref DataRow[] rows)
         {
-            return (m_LogParse as LogParse_DB).Select(DbTSQLDataSource.DataSource ().ListenerId, type, beg, end, ref rows);
+            int iRes = -1;
+
+            DbTSQLDataSource.DataSource ().SetConnectionSettings (_connSettMainDB);
+            DbTSQLDataSource.DataSource ().Register (_nameShrMainDB);
+
+            iRes = (m_LogParse as LogParse_DB).Select (DbTSQLDataSource.DataSource ().ListenerId, type, beg, end, ref rows);
+
+            DbTSQLDataSource.DataSource ().UnRegister ();
+
+            return iRes;
         }
 
         /// <summary>
@@ -2731,6 +2752,11 @@ namespace StatisticAnalyzer
             dgv.UpdateCounter(DbTSQLDataSource.DataSource ().ListenerId, start_date, stop_date, users);
 
             delegateReportClear?.Invoke (true);
+        }
+
+        private void logParse_OnThreadProcSelectCompleted ()
+        {
+            DbTSQLDataSource.DataSource ().UnRegister ();
         }
 
         /// <summary>
@@ -2825,13 +2851,23 @@ namespace StatisticAnalyzer
 
                     delegateErrorConnect = errorConnect;
 
-                    getLogMsg(m_tableUsers.Rows[dgvClient.SelectedRows[0].Index], dgvClient.SelectedRows[0].Index);
+                    DbTSQLDataSource.DataSource ().SetConnectionSettings (_connSettMainDB);
+                    DbTSQLDataSource.DataSource ().Register (_nameShrMainDB);
+
+                    getLogMsg (m_tableUsers.Rows[dgvClient.SelectedRows[0].Index], dgvClient.SelectedRows[0].Index);
 
                     updateCounter(dgvFilterTypeMessage, DateTime.Today, DateTime.Today.AddDays(1), get_users(m_tableUsers, dgvClient, false));
-                    
+
+                    DbTSQLDataSource.DataSource ().UnRegister ();
+
                     listTabVisible.Items.Clear();//очистка списка активных вкладок
-                    
-                    fill_active_tabs((int)m_tableUsers.Rows[dgvClient.SelectedRows[0].Index][0]);
+
+                    DbTSQLConfigDatabase.DbConfig ().SetConnectionSettings ();
+                    DbTSQLConfigDatabase.DbConfig ().Register ();
+
+                    fill_active_tabs ((int)m_tableUsers.Rows[dgvClient.SelectedRows[0].Index][0]);
+
+                    DbTSQLConfigDatabase.DbConfig ().UnRegister ();
 
                 }
                 else
@@ -2888,6 +2924,8 @@ namespace StatisticAnalyzer
                 
             }
 
+            private event Action EventThreadProcSelectCompleted;
+
             /// <summary>
             /// Потоковый метод опроса БД для выборки лог-сообщений
             /// </summary>
@@ -2896,12 +2934,20 @@ namespace StatisticAnalyzer
             {
                 int err = -1
                     , lDelimeter = 0;
+                string strDelimeter
+                    , text;
+                //DbConnection connLoggingDB;
+                string [] parameters;
+                DataTable tblDatetimeStart;
+                DateTime dtStart;
 
-                while (Char.IsDigit((data as string).ToCharArray()[lDelimeter]) == true) lDelimeter++;
-                string strDelimeter = (data as string).Substring(lDelimeter, Int32.Parse((data as string).Substring(0, lDelimeter)));
-                string text = (data as string).Substring(lDelimeter + strDelimeter.Length, (data as string).Length - (lDelimeter + strDelimeter.Length));
-                DbConnection connLoggingDB = DbSources.Sources().GetConnection(Int32.Parse(text.Split(new string[] { strDelimeter }, StringSplitOptions.None)[0]), out err);
-                m_idUser = Int32.Parse(text.Split(new string[] { strDelimeter }, StringSplitOptions.None)[1]);
+                while (Char.IsDigit((data as string).ToCharArray()[lDelimeter]) == true)
+                    lDelimeter++;
+                strDelimeter = (data as string).Substring(lDelimeter, Int32.Parse((data as string).Substring(0, lDelimeter)));
+                text = (data as string).Substring(lDelimeter + strDelimeter.Length, (data as string).Length - (lDelimeter + strDelimeter.Length));
+                parameters = text.Split (new string [] { strDelimeter }, StringSplitOptions.None);
+                //connLoggingDB = DbSources.Sources().GetConnection(Int32.Parse(parameters [0]), out err);
+                m_idUser = Int32.Parse(parameters [1]);
 
                 string query = @"SELECT DATEPART (DD, [DATETIME_WR]) as DD, DATEPART (MM, [DATETIME_WR]) as MM, DATEPART (YYYY, [DATETIME_WR]) as [YYYY], COUNT(*) as CNT"
                         + @" FROM [dbo].[logging]"
@@ -2909,8 +2955,9 @@ namespace StatisticAnalyzer
                         + @" GROUP BY DATEPART (DD, [DATETIME_WR]), DATEPART (MM, [DATETIME_WR]), DATEPART (YYYY, [DATETIME_WR])"
                         + @" ORDER BY [DD]";
 
-                DataTable tblDatetimeStart = DbTSQLInterface.Select(ref connLoggingDB, query, null, null, out err);
-                DateTime dtStart;
+                tblDatetimeStart = DbTSQLDataSource.DataSource().Select(query, null, null, out err);
+
+                EventThreadProcSelectCompleted?.Invoke ();
 
                 int cnt = 0;
                 for (int i = 0; i < tblDatetimeStart.Rows.Count; i++)//перебор значений и добовление их в строку

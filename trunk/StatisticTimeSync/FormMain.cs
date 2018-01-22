@@ -166,6 +166,7 @@ namespace StatisticTimeSync
             int iRes = 0;
             msgError = string.Empty;
             //Идентификатор соединения с БД_конфигурации
+            DbTSQLConfigDatabase.DbConfig ().SetConnectionSettings ();
             DbTSQLConfigDatabase.DbConfig().Register();
 
             //Проверить наличие пользователя в БД_конфигурации

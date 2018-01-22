@@ -9,22 +9,79 @@ using System.Data.Common;
 
 namespace StatisticCommon
 {
-    public class DbTSQLDataSource : DbTSQLInterface
+    public class DbTSQLDataSource : DbTSQLInterface//, IDictionary<int, object>
     {
-        private static DbTSQLDataSource _this;
+        protected enum STATE { OBJECT = -3
+            , ID
+            , KEY
+            , Ok
+        }
 
-        private ConnectionSettings _connSett;
+        protected class SOURCE
+        {
+            public ConnectionSettings _connSett;
+
+            public object _object;
+
+            public int _iListenerId;
+
+            public int _counterRegistred;
+
+            public bool IsModeConnectionLeaving
+            {
+                get
+                {
+                    return _iListenerId > 0;
+                }
+            }
+        }
+
+        protected static Dictionary<int, SOURCE> _this;
+
+        protected static Stack<int> _prevIdThis;
+
+        protected static int _currentIdThis;
+
+        private DbTSQLDataSource (string name)
+            : this (new ConnectionSettings (), name)
+        {
+            throw new Exception (@"Нельзя создать объект для обмена данными с БД конфигурации без параметров соединения с ней...");
+        }
 
         public static DbTSQLDataSource DataSource ()
         {
             DbTSQLDataSource dbInterfaceRes = null;
 
-            if (Equals (_this, null) == false)
-                dbInterfaceRes = _this;
+            if ((Equals (_this, null) == false)
+                 && (!(_currentIdThis == 0))
+                 && (_this.ContainsKey(_currentIdThis) == true))
+                dbInterfaceRes = (DbTSQLDataSource)_this[_currentIdThis]._object;
             else
                 throw new NullReferenceException ("DbTSQLDataSource::ctor () - не был вызван...");
 
             return dbInterfaceRes;
+        }
+
+        public DbTSQLDataSource (ConnectionSettings connSett, string name)
+            : base(getTypeDB(connSett), name, false)
+        {
+            _prevIdThis = new Stack<int> ();
+
+            if (Equals (_this, null) == true)
+                _this = new Dictionary<int, SOURCE> ();
+            else
+                ;
+
+            if (_this.ContainsKey (connSett.id) == false) {
+                _this.Add (connSett.id
+                    ,
+                        //createThis ()
+                        new SOURCE () { _connSett = connSett, _object = this, _iListenerId = -1, _counterRegistred = -1 }
+                );
+            } else
+                ;
+
+            _currentIdThis = connSett.id;
         }
 
         private ConnectionSettings ConnSett
@@ -33,8 +90,10 @@ namespace StatisticCommon
             {
                 ConnectionSettings connSettRes;
 
-                if (Equals (_connSett, null) == false)
-                    connSettRes = _connSett;
+                if ((Equals (_this, null) == false)
+                    && (!(_currentIdThis == 0))
+                    && (_this.ContainsKey (_currentIdThis) == true))
+                    connSettRes = _this [_currentIdThis]._connSett;
                 else
                     throw new NullReferenceException ("DbTSQLDataSource::ConnSett.get () - параметры соединения не были инициализированы...");
 
@@ -42,51 +101,123 @@ namespace StatisticCommon
             }
         }
 
-        private DbTSQLDataSource (string name)
-            : this (new ConnectionSettings(), name)
+        private STATE Ready
         {
-            throw new Exception (@"Нельзя создать объект для обмена данными с БД конфигурации без параметров соединения с ней...");
+            get
+            {
+                return (Equals (_this, null) == true) ? STATE.OBJECT
+                    : _currentIdThis == 0 ? STATE.ID
+                        : (_this.ContainsKey (_currentIdThis) == false) ? STATE.KEY
+                            : STATE.Ok;
+            }
         }
 
-        public DbTSQLDataSource (ConnectionSettings connSett, string name)
-            : base(getTypeDB(connSett), name, false)
-        {
-            _iListenerId = -1;
-            _counterRegistred = -1;
-            SetConnectionSettings (connSett);
+        //protected virtual SOURCE createThis ()
+        //{
+        //    return new SOURCE () { _object = this, _iListenerId = -1, _counterRegistred = -1 };
+        //}
 
-            _this = this;
+        protected static SOURCE This
+        {
+            get
+            {
+                return _this [_currentIdThis];
+            }
+        }
+
+        ///// <summary>
+        ///// Установить актуальные параметры соединения (активный источник данных) по умолчанию: БД конфигурации
+        ///// </summary>
+        //public void SetConnectionSettings ()
+        //{
+        //    SetConnectionSettings (FormMainStatistic.s_listFormConnectionSettings[(int)CONN_SETT_TYPE.CONFIG_DB].getConnSett());
+        //}
+
+        private void pushConnectionsettings (ConnectionSettings connSett)
+        {
+            int prevId = _prevIdThis.Count > 0 ? _prevIdThis.Peek () : 0;
+
+            if (!(_currentIdThis == 0))
+            // текущий источник данных - уже назначен
+                if ((!(prevId == 0))
+                    && (prevId.Equals (_currentIdThis) == false))
+                // в стеке есть ранее назначенный источник, и он не вновь назначаемый
+                    _prevIdThis.Push (_currentIdThis);
+                else
+                // в стеке либо нет ранее назначенного источника, либо он совпадает с вновь назначаемым
+                    if (prevId.Equals (_currentIdThis) == true)
+                    // предупрежедние - совпадает с вновь назначаемым
+                        ASUTP.Logging.Logg ().Warning ($"DbTSQLDataSource::PushConnectionSettings () - повторный вызов для ID={_currentIdThis}..."
+                            , ASUTP.Logging.INDEX_MESSAGE.NOT_SET);
+                    else
+                    // Ок - штатная ветвь - нет ранее назначенного (стек пуст)
+                        ;
+            else
+            //??? 1-ый вызов
+                ;
         }
 
         public void SetConnectionSettings (ConnectionSettings connSett)
         {
-            if (IsModeConnectionLeaving == false) {
-                _connSett = connSett;
-                // при вызове из конструктора повторная инициализация
-                _iListenerId = -1;
-                _counterRegistred = -1;
-            } else
-                throw new InvalidOperationException($"DbTSQLDataSource::ListenerId - IsModeConnectionLeaving={IsModeConnectionLeaving}...");
+            pushConnectionsettings (connSett);
+
+            setConnectionSettings (connSett);
+        }
+
+        private void popConnectionSettings ()
+        {
+            int prevId = _prevIdThis.Count > 0 ? _prevIdThis.Pop () : 0;
+
+            if (!(prevId == 0))
+                if (_this.ContainsKey (prevId) == true) {
+                    setConnectionSettings (_this [prevId]);
+                } else
+                    throw new InvalidOperationException ($"DbTSQLDataSource::PopConnectionSettings () - ошибочный вызов для ID={prevId}...");
+            else
+                ;
+        }
+
+        //public void SetConnectionSettings (ConnectionSettings connSett)
+        //{
+        //    setConnectionSettings (connSett);
+        //}
+
+        private void setConnectionSettings (ConnectionSettings connSett)
+        {
+            if (_this.ContainsKey (connSett.id) == false) {
+                _this.Add (connSett.id
+                    ,
+                        //createThis ()
+                        new SOURCE () { _connSett = connSett, _object = this, _iListenerId = -1, _counterRegistred = -1 }
+                );
+            } else {
+                ASUTP.Logging.Logg ().Warning ($"DbTSQLDataSource::SetConnectionSettings() - повторная попытка установления параметров соединения для {((DbTSQLDataSource)_this [connSett.id]._object).Name}..."
+                    , ASUTP.Logging.INDEX_MESSAGE.NOT_SET);
+            }
+
+            if (!(_currentIdThis == connSett.id))
+                _currentIdThis = connSett.id;
+            else
+                ;
         }
 
         public bool IsModeConnectionLeaving
         {
             get
             {
-                return _iListenerId > 0;
+                if (Ready == STATE.Ok)
+                    return This.IsModeConnectionLeaving;
+                else
+                    throw new InvalidOperationException ($"::IsModeConnectionLeaving - Ready={Ready.ToString()}...");
             }
         }
-
-        private int _iListenerId;
-
-        private int _counterRegistred;
 
         public int ListenerId
         {
             get
             {
                 if (IsModeConnectionLeaving == true)
-                    return _iListenerId;
+                    return This._iListenerId;
                 else
                     throw new InvalidOperationException ($"DbTSQLDataSource::ListenerId - IsModeConnectionLeaving={IsModeConnectionLeaving}...");
             }
@@ -94,19 +225,27 @@ namespace StatisticCommon
 
         public void Register (string name)
         {
-            _iListenerId = register (name);
+            if (Ready == STATE.Ok) {
+               This._iListenerId = register (name);
 
-            _counterRegistred += _counterRegistred < 0 ? 2 : 1;
+                This._counterRegistred += _this [_currentIdThis]._counterRegistred < 0 ? 2 : 1;
+            } else
+                throw new InvalidOperationException ($"DbTSQLDataSource::Register () - Ready={Ready.ToString()}...");
         }
 
         public void UnRegister ()
         {
-            if (unregister (_iListenerId, true) == true)
-                _iListenerId = -1;
-            else
-                ;
+            if (Ready == STATE.Ok) {
+                if (unregister (This._iListenerId, true) == true)
+                    This._iListenerId = -1;
+                else
+                    ;
 
-            _counterRegistred--;
+                This._counterRegistred--;
+
+                popConnectionSettings ();
+            } else
+                throw new InvalidOperationException ($"DbTSQLDataSource::UnRegister () - Ready={Ready.ToString ()}...");
         }
 
         protected int register ()
@@ -119,11 +258,11 @@ namespace StatisticCommon
             string mesThrow = string.Empty;
 
             if ((IsModeConnectionLeaving == false)
-                && (Equals (_connSett, null) == false)
-                && (_connSett.Validate () == ConnectionSettings.ConnectionSettingsError.NoError))
-                return DbSources.Sources ().Register (_connSett, false, name);
+                && (Equals (This._connSett, null) == false)
+                && (This._connSett.Validate () == ConnectionSettings.ConnectionSettingsError.NoError))
+                return DbSources.Sources ().Register (This._connSett, false, name);
             else {
-                ASUTP.Logging.Logg ().Warning ($"DbTSQLDataSource::register () - повторная регистрация для {Name}..."
+                ASUTP.Logging.Logg ().Warning ($"DbTSQLDataSource::register () - повторная регистрация для {((DbTSQLDataSource)This._object).Name}..."
                     , ASUTP.Logging.INDEX_MESSAGE.NOT_SET);
 
                 return ListenerId;
@@ -140,14 +279,14 @@ namespace StatisticCommon
                 bRes = true;
             } else {
                 if (IsModeConnectionLeaving == true)
-                    if (_counterRegistred == 1)
+                    if (This._counterRegistred == 1)
                         bRes = true;
-                    else if (_counterRegistred == 0)
-                        mesThrow = Equals (_connSett, null) == false ? _connSett.Validate ().ToString () : "null";
+                    else if (This._counterRegistred == 0)
+                        mesThrow = Equals (This._connSett, null) == false ? This._connSett.Validate ().ToString () : "null";
                     else
                         ;
                 else
-                    mesThrow = Equals (_connSett, null) == false ? _connSett.Validate ().ToString () : "null";
+                    mesThrow = Equals (This._connSett, null) == false ? This._connSett.Validate ().ToString () : "null";
             }
 
             if (bRes == true)
@@ -175,7 +314,7 @@ namespace StatisticCommon
                 if (IsModeConnectionLeaving == false)
                     iListenerId = register (Name);
                 else
-                    iListenerId = _iListenerId;
+                    iListenerId = This._iListenerId;
 
                 dbConnection = DbSources.Sources ().GetConnection (iListenerId, out error);
 
@@ -208,7 +347,7 @@ namespace StatisticCommon
                 if (IsModeConnectionLeaving == false)
                     iListenerId = register (Name);
                 else
-                    iListenerId = _iListenerId;
+                    iListenerId = This._iListenerId;
 
                 dbConnection = DbSources.Sources ().GetConnection (iListenerId, out error);
 
@@ -244,22 +383,24 @@ namespace StatisticCommon
 
     public partial class DbTSQLConfigDatabase : DbTSQLDataSource 
     {
-        private static DbTSQLConfigDatabase _this;
-
         public DbTSQLConfigDatabase (ConnectionSettings connSett)
             : base (connSett, $"{CONN_SETT_TYPE.CONFIG_DB.ToString ()}")
         {
-            _this = this;
         }
 
         public static DbTSQLConfigDatabase DbConfig ()
         {
-            return _this;
+            return (DbTSQLConfigDatabase)This._object;
         }
 
         public void Register ()
         {
             Register (Name);
+        }
+
+        public void SetConnectionSettings ()
+        {
+            base.SetConnectionSettings (ASUTP.Forms.FormMainBaseWithStatusStrip.s_listFormConnectionSettings [(int)CONN_SETT_TYPE.CONFIG_DB].getConnSett());
         }
 
         /// <summary>

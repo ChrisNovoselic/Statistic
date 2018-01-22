@@ -997,6 +997,7 @@ namespace Statistic
 
             int err = -1;
 
+            DbTSQLConfigDatabase.DbConfig ().SetConnectionSettings ();
             DbTSQLConfigDatabase.DbConfig ().Register ();
             connConfigDB = DbSources.Sources().GetConnection(DbTSQLConfigDatabase.DbConfig ().ListenerId, out err);
             if (table_TEC.Columns.Count == 0)
@@ -1021,7 +1022,10 @@ namespace Statistic
             HStatisticUsers.GetRoles(ref connConfigDB, @"", @"DESCRIPTION", out m_arr_origTable[(int)ID_Table.Role], out err);
             m_arr_origTable[(int)ID_Table.Role].DefaultView.Sort = "ID";
 
-            m_arr_origTable[(int)ID_Table.Profiles] = User.GetTableAllProfile(connConfigDB);
+            m_arr_origTable[(int)ID_Table.Profiles] =
+                //User.GetTableAllProfile(connConfigDB)
+                User.GetTableAllProfile ()
+                ;
 
             DbTSQLConfigDatabase.DbConfig ().UnRegister();
         }
@@ -1053,6 +1057,7 @@ namespace Statistic
             int err;
             Dictionary<int, User.UNIT_VALUE> profile = null;
 
+            DbTSQLConfigDatabase.DbConfig ().SetConnectionSettings ();
             DbTSQLConfigDatabase.DbConfig ().Register ();
             connConfigDB = DbSources.Sources().GetConnection(DbTSQLConfigDatabase.DbConfig ().ListenerId, out err);
 
@@ -1441,6 +1446,7 @@ namespace Statistic
 
             if (validate_saving (m_arr_editTable, out warning) == false)
             {
+                DbTSQLConfigDatabase.DbConfig ().SetConnectionSettings ();
                 DbTSQLConfigDatabase.DbConfig ().Register ();
                 dbConn = DbSources.Sources ().GetConnection (DbTSQLConfigDatabase.DbConfig ().ListenerId, out err);
 
@@ -1758,27 +1764,42 @@ namespace Statistic
                 return objRes;
             }
 
-            public static DataTable GetAllProfile(DbConnection dbConn)
+            //public static DataTable GetAllProfile(DbConnection dbConn)
+            //{
+            //    int err = -1;
+            //    string query = string.Empty
+            //        , errMsg = string.Empty;
+
+            //    query = @"SELECT * FROM " + m_nameTableProfilesData;
+            //    m_allProfile = DbTSQLInterface.Select(ref dbConn, query, null, null, out err);
+
+            //    return m_allProfile;
+            //}
+
+            public static DataTable GetAllProfile ()
             {
                 int err = -1;
-                string query = string.Empty
-                    , errMsg = string.Empty;
+                string errMsg = string.Empty;
 
-                query = @"SELECT * FROM " + m_nameTableProfilesData;
-                m_allProfile = DbTSQLInterface.Select(ref dbConn, query, null, null, out err);
+                m_allProfile = DbTSQLConfigDatabase.DbConfig().Select ($"SELECT * FROM [{m_nameTableProfilesData}]", null, null, out err);
 
                 return m_allProfile;
             }
         }
 
-        /// <summary>
-        /// Метод для получения таблицы со всеми профайлами
-        /// </summary>
-        /// <param name="dbConn">Объект для соединения с БД</param>
-        /// <returns>??? Таблица с профилями всех пользователей</returns>
-        public static DataTable GetTableAllProfile(DbConnection dbConn) 
+        ///// <summary>
+        ///// Метод для получения таблицы со всеми профайлами
+        ///// </summary>
+        ///// <param name="dbConn">Объект для соединения с БД</param>
+        ///// <returns>??? Таблица с профилями всех пользователей</returns>
+        //public static DataTable GetTableAllProfile(DbConnection dbConn) 
+        //{
+        //    return Profile.GetAllProfile(dbConn);
+        //}
+
+        public static DataTable GetTableAllProfile ()
         {
-            return Profile.GetAllProfile(dbConn);
+            return Profile.GetAllProfile ();
         }
 
         /// <summary>

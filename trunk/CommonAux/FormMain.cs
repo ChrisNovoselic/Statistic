@@ -151,7 +151,7 @@ namespace CommonAux
                         break;
                 }
                 //Отменить регистрацию соединения с БД_конфигурации
-                DbTSQLConfigDatabase.DataSource ().UnRegister ();
+                DbTSQLConfigDatabase.DbConfig ().UnRegister ();
             }
             else
             {//Файла с параметрами соединения нет совсем или считанные параметры соединения не валидны

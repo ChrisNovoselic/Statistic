@@ -2,13 +2,13 @@
 using System.Collections.Generic;
 using System.Linq;
 using System.Text;
-
 using System.Data;
-
 using StatisticCommon;
 using StatisticTransModes;
 using System.Collections.ObjectModel;
+
 using ASUTP;
+
 
 namespace trans_mc
 {
@@ -16,12 +16,10 @@ namespace trans_mc
     {
         string m_strMCServiceHost;
 
-
-        //TransPBR tPBR = new TransPBR();
+        private System.Threading.ManualResetEvent _eventConnected;
 
         protected enum StatesMachine
         {
-            InitIGO,
             PPBRValues,
             PPBRDates,
         }
@@ -30,6 +28,8 @@ namespace trans_mc
             : base()
         {
             m_strMCServiceHost = strMCServiceHost;
+
+            _eventConnected = new System.Threading.ManualResetEvent (false);
         }
 
         protected override void getPPBRDatesRequest(DateTime date)
@@ -156,80 +156,88 @@ namespace trans_mc
             int i = -1;
 
             DbMCSources.Sources().SetMCApiHandler(dbMCSources_OnEventHandler);
-            m_IdListenerCurrent = DbMCSources.Sources().Register(m_strMCServiceHost, true, @"Modes-Centre");
-
-            //for (i = 0; i < allTECComponents.Count; i ++)
-            //{
-            //    if (modeTECComponent (i) == FormChangeMode.MODE_TECCOMPONENT.GTP)
-            //    {
-            //        m_listMCId.Add (allTECComponents [i].m_MCId.ToString ());
-            //        //m_listDbInterfaces[0].ListenerRegister();
-            //    }
-            //    else
-            //        ;
-            //}
-
-            //List <Modes.BusinessLogic.IGenObject> listIGO = (((DbMCInterface)m_listDbInterfaces[0]).GetListIGO(listMCId));
+            m_IdListenerCurrent = ASUTP.Database.DbSources.Sources().Register(m_strMCServiceHost, true, @"Modes-Centre");
 
             return bRes;
         }
 
         private void dbMCSources_OnEventHandler(object obj)
         {
-            DbMCInterface.ID_MC_EVENT id_event = (DbMCInterface.ID_MC_EVENT)(obj as object[])[0];
+            DbMCInterface.ID_MC_EVENT id_event;
 
-            if (id_event == DbMCInterface.ID_MC_EVENT.GENOBJECT_MODIFIED) {
-                Dictionary<DateTime, List<int>> equipments;
+            if (obj is Array) {
+                id_event = (DbMCInterface.ID_MC_EVENT)(obj as object []) [0];
 
-                string msg = string.Empty
-                    , listEquipment = string.Empty;
+                if (id_event == DbMCInterface.ID_MC_EVENT.GENOBJECT_MODIFIED) {
+                    Dictionary<DateTime, List<int>> equipments;
 
-                equipments = (obj as object[])[1] as Dictionary<DateTime, List<int>>;
+                    string msg = string.Empty
+                        , listEquipment = string.Empty;
 
-                msg = string.Format(@"::mcApi_OnData53500Modified() - обработчик события - изменения[кол-во={1}]{0}для оборудования {2}..."
-                        , Environment.NewLine, equipments.Count, @"СПИСОК");
+                    equipments = (obj as object []) [1] as Dictionary<DateTime, List<int>>;
 
-                foreach (KeyValuePair<DateTime, List<int>> pair in equipments) {
-                    listEquipment += string.Format(@"[Дата={0}, список=({1})],", pair.Key.ToString(), string.Join(", ", pair.Value));
-                }
+                    msg = string.Format (@"::mcApi_OnData53500Modified() - обработчик события - изменения[кол-во={1}]{0}для оборудования {2}..."
+                            , Environment.NewLine, equipments.Count, @"СПИСОК");
 
-                listEquipment = listEquipment.Remove(listEquipment.Length - 1);
+                    foreach (KeyValuePair<DateTime, List<int>> pair in equipments) {
+                        listEquipment += string.Format (@"[Дата={0}, список=({1})],", pair.Key.ToString (), string.Join (", ", pair.Value));
+                    }
 
-                msg = msg.Replace(@"СПИСОК", listEquipment);
+                    listEquipment = listEquipment.Remove (listEquipment.Length - 1);
 
-                Logging.Logg().Action(msg, Logging.INDEX_MESSAGE.NOT_SET);
-            } else if (id_event == DbMCInterface.ID_MC_EVENT.RELOAD_PLAN_VALUES) {
-                DateTime dateTarget;
-                ReadOnlyCollection<Guid>  makets;
-                string abbr = string.Empty
-                    , taskModes = string.Empty;
+                    msg = msg.Replace (@"СПИСОК", listEquipment);
 
-                dateTarget = (DateTime)(obj as object[])[1];
-                makets = (obj as object[])[2] as ReadOnlyCollection<Guid>;
-                abbr = (string)(obj as object[])[3];
-                taskModes = (string)(obj as object[])[4];
+                    Logging.Logg ().Action (msg, Logging.INDEX_MESSAGE.NOT_SET);
+                } else if (id_event == DbMCInterface.ID_MC_EVENT.RELOAD_PLAN_VALUES) {
+                    DateTime dateTarget;
+                    ReadOnlyCollection<Guid> makets;
+                    string abbr = string.Empty
+                        , taskModes = string.Empty;
 
-                Logging.Logg().Action(string.Format(@"::mcApi_OnMaket53500Changed() - обработчик события - переопубликация[на дату={0}, кол-во макетов={1}], Аббр={2}, описание={3}..."
-                    , dateTarget.ToString(), makets.Count, abbr, taskModes)
-                , Logging.INDEX_MESSAGE.NOT_SET);
-            } else if (id_event == DbMCInterface.ID_MC_EVENT.NEW_PLAN_VALUES) {
-                DateTime day
-                    , version;
-                string pbr_number = string.Empty
-                    , id_mc_tec = string.Empty;
-                int id_gate = -1;
+                    dateTarget = (DateTime)(obj as object []) [1];
+                    makets = (obj as object []) [2] as ReadOnlyCollection<Guid>;
+                    abbr = (string)(obj as object []) [3];
+                    taskModes = (string)(obj as object []) [4];
 
-                day = (DateTime)(obj as object[])[1];
-                pbr_number = (string)(obj as object[])[2];
-                version = (DateTime)(obj as object[])[3];
-                id_mc_tec = (string)(obj as object[])[4];
-                id_gate = (int)(obj as object[])[5];
+                    Logging.Logg ().Action (string.Format (@"::mcApi_OnMaket53500Changed() - обработчик события - переопубликация[на дату={0}, кол-во макетов={1}], Аббр={2}, описание={3}..."
+                        , dateTarget.ToString (), makets.Count, abbr, taskModes)
+                    , Logging.INDEX_MESSAGE.NOT_SET);
+                } else if (id_event == DbMCInterface.ID_MC_EVENT.NEW_PLAN_VALUES) {
+                    DateTime day
+                        , version;
+                    string pbr_number = string.Empty
+                        , id_mc_tec = string.Empty;
+                    int id_gate = -1;
 
-                Logging.Logg().Action(string.Format(@"::mcApi_OnPlanDataChanged() - обработчик события - новый план[на дату={0}, номер={1}, от={2}, для подразделения={3}, IdGate={4}]..."
-                    , day.ToString(), pbr_number, version.ToString(), id_mc_tec, id_gate)
-                , Logging.INDEX_MESSAGE.NOT_SET);
-            } else
-                ;
+                    day = (DateTime)(obj as object []) [1];
+                    pbr_number = (string)(obj as object []) [2];
+                    version = (DateTime)(obj as object []) [3];
+                    id_mc_tec = (string)(obj as object []) [4];
+                    id_gate = (int)(obj as object []) [5];
+
+                    Logging.Logg ().Action (string.Format (@"::mcApi_OnPlanDataChanged() - обработчик события - новый план[на дату={0}, номер={1}, от={2}, для подразделения={3}, IdGate={4}]..."
+                        , day.ToString (), pbr_number, version.ToString (), id_mc_tec, id_gate)
+                    , Logging.INDEX_MESSAGE.NOT_SET);
+                } else
+                    ;
+            } else {
+                id_event = DbMCInterface.ID_MC_EVENT.Unknown;
+
+                _eventConnected.Set ();
+            }
+        }
+
+        private bool isConnected
+        {
+            get
+            {
+                return _eventConnected.WaitOne(0);
+            }
+        }
+
+        private bool waitConnected (int msec = System.Threading.Timeout.Infinite)
+        {
+            return _eventConnected.WaitOne (!(msec == System.Threading.Timeout.Infinite) ? msec : ASUTP.Core.Constants.MAX_WATING);
         }
 
         protected override int StateRequest(int /*StatesMachine*/ state)
@@ -241,11 +249,6 @@ namespace trans_mc
 
             switch (stateMachine)
             {
-                case StatesMachine.InitIGO:
-                    msg = @"Инициализация объектов Modes-Centre";
-                    ActionReport(msg);
-                    Logging.Logg().Debug(@"AdminMC::StateResponse () - " + msg, Logging.INDEX_MESSAGE.NOT_SET);
-                    break;
                 case StatesMachine.PPBRValues:
                     ActionReport("Получение данных плана.");
                     getPPBRValuesRequest(allTECComponents[indxTECComponents].tec, allTECComponents[indxTECComponents], m_curDate.Date/*, AdminTS.TYPE_FIELDS.COUNT_TYPE_FIELDS*/);
@@ -281,7 +284,6 @@ namespace trans_mc
 
             switch (stateMachine)
             {
-                case StatesMachine.InitIGO:
                 case StatesMachine.PPBRValues:
                 case StatesMachine.PPBRDates:
                     //bRes = GetResponse(m_indxDbInterfaceCurrent, m_listListenerIdCurrent[m_indxDbInterfaceCurrent], out error, out table/*, false*/);
@@ -302,15 +304,6 @@ namespace trans_mc
 
             switch (stateMachine)
             {
-                case StatesMachine.InitIGO:
-                    result = 0;
-                    if (result == 0)
-                    {
-                        Logging.Logg().Debug(@"AdminMC::StateResponse () - Инициализация объектов Modes-Centre", Logging.INDEX_MESSAGE.NOT_SET);
-                    }
-                    else
-                        ;
-                    break;
                 case StatesMachine.PPBRValues:
                     delegateStopWait();
 
@@ -357,9 +350,6 @@ namespace trans_mc
 
             switch (stateMachine)
             {
-                case StatesMachine.InitIGO:
-                    ErrorReport("Ошибка инициализации объектов Modes-Centre. Переход в ожидание.");
-                    break;
                 case StatesMachine.PPBRValues:
                     if (request == 0)
                         ErrorReport("Ошибка разбора данных плана. Переход в ожидание.");
@@ -406,32 +396,15 @@ namespace trans_mc
         {
         }
 
-        private bool InitIGO()
-        {
-            bool bRes = false;
-
-            string query = "InitIGO;";
-
-            int i = -1;
-            for (i = 0; i < m_listModesId.Count; i++)
-            {
-                query += m_listModesId[i];
-
-                if ((i + 1) < m_listModesId.Count)
-                    query += ", ";
-                else
-                    ;
-            }
-
-            DbMCSources.Sources().Request(m_IdListenerCurrent, query); //List IGO FROM Modfes-Centre
-
-            bRes = true;
-            return bRes;
-        }
-
         public override void GetRDGValues(/*int TYPE_FIELDS mode,*/ int indx, DateTime date)
         {
             delegateStartWait();
+
+            if (isConnected == false)
+                waitConnected ();
+            else
+                ;
+
             lock (m_lockState)
             {
                 ClearStates();

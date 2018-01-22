@@ -506,6 +506,7 @@ namespace Statistic
 
                 int err = -1;
 
+                DbTSQLConfigDatabase.DbConfig ().SetConnectionSettings ();
                 DbTSQLConfigDatabase.DbConfig().Register();
 
                 // прочитать актуальные значения из [setup]
@@ -2840,6 +2841,7 @@ namespace Statistic
         {
             if (s_listFormConnectionSettings[(int)CONN_SETT_TYPE.CONFIG_DB].Ready == 0)
             {
+                DbTSQLConfigDatabase.DbConfig ().SetConnectionSettings ();
                 DbTSQLConfigDatabase.DbConfig ().Register();
                 formPassword.SetIdPass(DbTSQLConfigDatabase.DbConfig ().ListenerId, id_ext, indx_role);
                 DialogResult dlgRes = formPassword.ShowDialog(this);

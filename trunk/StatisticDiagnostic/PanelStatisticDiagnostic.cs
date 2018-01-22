@@ -498,6 +498,7 @@ namespace StatisticDiagnostic
             {
                 int err = -1;
 
+                DbTSQLConfigDatabase.DbConfig ().SetConnectionSettings ();
                 DbTSQLConfigDatabase.DbConfig ().Register ();
 
                 DbTSQLConfigDatabase.DbConfig().ExecNonQuery(string.Format("UPDATE [TEC_LIST] SET  [ID_LINK_SOURCE_DATA_TM] = {0} WHERE [ID] = {1}", ev.m_iNewSourceId, ev.m_tec.m_id)
@@ -625,6 +626,7 @@ namespace StatisticDiagnostic
             ListDiagnosticParameter listDiagnosticParameter;
             ListDiagnosticSource listDiagnosticSource;
 
+            DbTSQLConfigDatabase.DbConfig ().SetConnectionSettings ();
             DbTSQLConfigDatabase.DbConfig().Register();
 
             // зарегистрировать синхронное соединение с БД_конфигурации

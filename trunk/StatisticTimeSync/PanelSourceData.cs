@@ -821,6 +821,7 @@ namespace StatisticTimeSync
             {
                 int err = -1; //Признак выполнения метода/функции
                 //Зарегистрировать соединение/получить идентификатор соединения
+                DbTSQLConfigDatabase.DbConfig ().SetConnectionSettings ();
                 DbTSQLConfigDatabase.DbConfig ().Register();
 
                 //DbConnection dbConn = null;
@@ -917,6 +918,7 @@ namespace StatisticTimeSync
                     switch (((EventArgsDataHost)ev).id_detail)
                     {
                         case (int)PanelSourceData.PanelGetDate.ID_ASKED_DATAHOST.CONN_SETT: // запрошены параметры соединения
+                            DbTSQLConfigDatabase.DbConfig ().SetConnectionSettings ();
                             DbTSQLConfigDatabase.DbConfig().Register();
                             nameShrSourceData = ((PanelSourceData.PanelGetDate)((EventArgsDataHost)ev).par[0]).GetNameShrSelectedSourceData();
                             id = Int32.Parse(m_tableSourceData.Select(@"NAME_SHR = '" + nameShrSourceData + @"'")[0][@"ID"].ToString());

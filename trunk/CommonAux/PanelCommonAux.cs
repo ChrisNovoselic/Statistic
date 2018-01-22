@@ -1005,6 +1005,7 @@ namespace CommonAux
 
             //Разорвать соединение с источником данных
             DbTSQLDataSource.DataSource().UnRegister();
+
             Logging.Logg().Action(msg, Logging.INDEX_MESSAGE.NOT_SET);
         }
 
