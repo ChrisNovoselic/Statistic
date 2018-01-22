@@ -1179,7 +1179,7 @@ namespace Statistic
         /// <summary>
         /// Закрыть (очистить) все вкладки (стандартные + административные)
         /// </summary>
-        /// <param name="bAttachSelIndxChanged">Признак присоединения оьработчика события по изменению выбранной вкладки</param>
+        /// <param name="bAttachSelIndxChanged">Признак присоединения обработчика события по изменению выбранной вкладки</param>
         private void clearTabPages(List<int>listTabKeep, bool bAttachSelIndxChanged)
         {
             //Logging.Logg().Debug(@"FormMain::clearTabPages () - вХод...", Logging.INDEX_MESSAGE.NOT_SET);
@@ -1189,7 +1189,7 @@ namespace Statistic
             activateTabPage(tclTecViews.SelectedIndex, false);
 
             int i = -1;
-            bool bToRemove = false;
+            bool bStopped = false;
             List<int> listToRemove = new List<int>();
 
             listToRemove.Clear();
@@ -1210,47 +1210,47 @@ namespace Statistic
             listToRemove.Clear();
             foreach (TabPage tab in tclTecViews.TabPages)
             {
-                bToRemove = false;
+                listToRemove.Add(tclTecViews.TabPages.IndexOf(tab));
+                bStopped = false;
 
-                if ((tab.Controls.Count > 0)
-                    && ((tab.Controls[0] is PanelTecViewStandard)
-                        || (tab.Controls[0] is PanelLKView))
-                    && (listTabKeep.IndexOf(((PanelTecViewBase)tab.Controls[0]).m_ID) < 0))
-                {
-                    bToRemove = true;
-                }
-                else
-                {
-                    bToRemove = !bAttachSelIndxChanged;
-
-                    if (bToRemove == false)
+                if (tab.Controls.Count > 0) {
+                    if (((tab.Controls[0] is PanelTecViewStandard)
+                            || (tab.Controls[0] is PanelLKView))
+                        && (listTabKeep.IndexOf(((PanelTecViewBase)tab.Controls[0]).m_ID) < 0))
                     {
-                        indxManager = tab.Controls[0] is PanelAdminKomDisp ? FormChangeMode.MANAGER.DISP :
-                            tab.Controls[0] is PanelAdminNSS ? FormChangeMode.MANAGER.NSS :
-                            tab.Controls[0] is PanelAlarm ? FormChangeMode.MANAGER.ALARM :
-                            tab.Controls[0] is PanelAdminLK ? FormChangeMode.MANAGER.LK :
-                            tab.Controls[0] is PanelAdminVyvod ? FormChangeMode.MANAGER.TEPLOSET :
-                                FormChangeMode.MANAGER.UNKNOWN;
-
-                        if ((!(indxManager == FormChangeMode.MANAGER.UNKNOWN))
-                            && (formChangeMode.m_markTabAdminChecked.IsMarked ((int)indxManager) == false)) {
-                            bToRemove = true;
-                            m_markPrevStatePanelAdmin.UnMarked ((int)indxManager);
-                        } else
-                            ;
+                        bStopped = true;
                     }
                     else
-                        ;
-                }
-                //??? могут быть и др. типы вкладок
+                    {
+                        bStopped = !bAttachSelIndxChanged;
 
-                if (bToRemove == true)
-                {
-                    listToRemove.Add(tclTecViews.TabPages.IndexOf(tab));
-                    ((PanelStatistic)tab.Controls[0]).Stop();
-                }
-                else
-                    ;
+                        if (bStopped == false)
+                        {
+                            indxManager = tab.Controls[0] is PanelAdminKomDisp ? FormChangeMode.MANAGER.DISP :
+                                tab.Controls[0] is PanelAdminNSS ? FormChangeMode.MANAGER.NSS :
+                                tab.Controls[0] is PanelAlarm ? FormChangeMode.MANAGER.ALARM :
+                                tab.Controls[0] is PanelAdminLK ? FormChangeMode.MANAGER.LK :
+                                tab.Controls[0] is PanelAdminVyvod ? FormChangeMode.MANAGER.TEPLOSET :
+                                    FormChangeMode.MANAGER.UNKNOWN;
+
+                            if ((!(indxManager == FormChangeMode.MANAGER.UNKNOWN))
+                                && (formChangeMode.m_markTabAdminChecked.IsMarked ((int)indxManager) == false)) {
+                                bStopped = true;
+                                m_markPrevStatePanelAdmin.UnMarked ((int)indxManager);
+                            } else
+                                ;
+                        }
+                        else
+                            ;
+                    }
+                    //??? могут быть и др. типы вкладок
+
+                    if (bStopped == true)
+                        ((PanelStatistic)tab.Controls[0]).Stop();
+                    else
+                        ;
+                } else
+                    Logging.Logg().Warning($"FormMain::clearTabPages () - вкладка Text={tab.Text} не имеет дочерних элементов...", Logging.INDEX_MESSAGE.NOT_SET);
             }
 
             tclTecViews.SelectedIndexChanged -= tclTecViews_SelectedIndexChanged;
