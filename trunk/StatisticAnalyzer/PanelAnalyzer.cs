@@ -2277,9 +2277,13 @@ namespace StatisticAnalyzer
     {
         private static string _nameShrMainDB = "MAIN_DB";
 
-        private ConnectionSettings _connSettMainDB;
+        /// <summary>
+        /// Экземпляр класса 
+        ///  для подключения/отправления/получения запросов к БД
+        /// </summary>
+        private HLoggingReadHandlerDb m_loggingReadHandlerDb;
 
-        public PanelAnalyzer_DB(List<StatisticCommon.TEC> tec, Color foreColor, Color backColor)
+        public PanelAnalyzer_DB (List<StatisticCommon.TEC> tec, Color foreColor, Color backColor)
             : base(tec, foreColor, backColor)
         {
             m_listTEC = tec;
@@ -2289,6 +2293,9 @@ namespace StatisticAnalyzer
             checkBoxs[(int)FormChangeMode.MODE_TECCOMPONENT.TEC].CheckedChanged += new EventHandler(checkBox_click);
             checkBoxs[(int)FormChangeMode.MODE_TECCOMPONENT.TG].CheckedChanged += new EventHandler(checkBox_click);
             checkBoxs[(int)FormChangeMode.MODE_TECCOMPONENT.ANY].CheckedChanged += new EventHandler(checkBox_click);
+
+            // зарегистрировать асинхронное соединение с БД_конфигурации
+            m_loggingReadHandlerDb = new HLoggingReadHandlerDb ();
         }
 
         #region Наследуемые методы
@@ -2317,10 +2324,11 @@ namespace StatisticAnalyzer
                 DataTable tblConnSettMainDB = ConnectionSettingsSource.GetConnectionSettings (DbTSQLConfigDatabase.DbConfig ().ListenerId, idMainDB, -1, out err);
 
                 if ((tblConnSettMainDB.Columns.Count > 0)
-                    && (tblConnSettMainDB.Rows.Count > 0))
+                    && (tblConnSettMainDB.Rows.Count > 0)) {
                 // "-1" - значит будет назначени идентификатор из БД
-                    _connSettMainDB = new ConnectionSettings (tblConnSettMainDB.Rows [0], -1);
-                else
+                    m_loggingReadHandlerDb.SetConnectionSettings(new ConnectionSettings (tblConnSettMainDB.Rows [0], -1));
+                    m_loggingReadHandlerDb.Start ();
+                } else
                     throw new Exception ($"PanelAnalyzer_DB::Start () - нет параметров соединения с БД значений ID={idMainDB}...");
 
                 base.Start ();
@@ -2354,44 +2362,32 @@ namespace StatisticAnalyzer
         {
             delegateActionReport("Получаем список активных пользователей");
 
-            arbActives = null;
-            int i = -1;
+            m_loggingReadHandlerDb.Command (HLoggingReadHandlerDb.StatesMachine.ProcChecked);
+        }
 
-            DataTable tableMaxDatetimeWR;
-            DataRow [] rowsUserMaxDatetimeWR;
-
-            DbTSQLDataSource.DataSource ().SetConnectionSettings (_connSettMainDB);
-            DbTSQLDataSource.DataSource().Register(_nameShrMainDB);
-            err = DbTSQLDataSource.DataSource ().ListenerId > 0 ? 0 : -1;
-
-            if (err == 0)
-                tableMaxDatetimeWR = DbTSQLDataSource.DataSource ().Select (@"SELECT [ID_USER], MAX([DATETIME_WR]) as MAX_DATETIME_WR FROM logging GROUP BY [ID_USER] ORDER BY [ID_USER]", null, null, out err);
-            else
-            //Нет соединения с БД...
-                tableMaxDatetimeWR = new DataTable();
-
-            DbTSQLDataSource.DataSource ().UnRegister ();
+        private void handlerComandProcChecked ()
+        {
+            bool [] arbActives;
 
             if (err == 0) {
-                arbActives = new bool[m_tableUsers.Rows.Count];
+                arbActives = new bool [m_tableUsers.Rows.Count];
 
                 for (i = 0; (i < m_tableUsers.Rows.Count) && (m_bThreadTimerCheckedAllowed == true); i++) {
                     //Проверка активности
-                    rowsUserMaxDatetimeWR = tableMaxDatetimeWR.Select(@"[ID_USER]=" + m_tableUsers.Rows[i][@"ID"]);
+                    rowsUserMaxDatetimeWR = tableMaxDatetimeWR.Select (@"[ID_USER]=" + m_tableUsers.Rows [i] [@"ID"]);
 
                     if (rowsUserMaxDatetimeWR.Length == 0) {
-                    //В течении 2-х недель нет ни одного запуска на выполнение ППО
+                        //В течении 2-х недель нет ни одного запуска на выполнение ППО
                     } else {
                         if (rowsUserMaxDatetimeWR.Length > 1) {
-                        //Ошибка
+                            //Ошибка
                         } else {
-                        //Обрабатываем...
-                            arbActives[i] = (HDateTime.ToMoscowTimeZone(DateTime.Now) - DateTime.Parse(rowsUserMaxDatetimeWR[0][@"MAX_DATETIME_WR"].ToString())).TotalSeconds < 66;
+                            //Обрабатываем...
+                            arbActives [i] = (HDateTime.ToMoscowTimeZone (DateTime.Now) - DateTime.Parse (rowsUserMaxDatetimeWR [0] [@"MAX_DATETIME_WR"].ToString ())).TotalSeconds < 66;
                         }
                     }
                 }
-            }
-            else
+            } else
                 err = -2; //Ошибка при выборке данных...
 
             delegateReportClear (true);
@@ -2975,6 +2971,37 @@ namespace StatisticAnalyzer
 
         private class HLoggingReadHandlerDb : HHandlerDb
         {
+            private ConnectionSettings m_connSett;
+
+            private DateTime m_serverTime;
+
+            public enum StatesMachine {
+                ServerTime
+                , ProcChecked
+                , ToUserAndDate
+            }
+
+            public event Action<StatesMachine, object, int> EventComandCompleted;
+
+            public HLoggingReadHandlerDb ()
+            {
+                m_connSett = new ConnectionSettings();
+                m_serverTime = DateTime.MinValue;
+            }
+
+            public void SetConnectionSettings (ConnectionSettings connSett)
+            {
+                m_connSett = connSett;
+            }
+
+            private int ListenerId
+            {
+                get
+                {
+                    return m_dictIdListeners [0] [(int)CONN_SETT_TYPE.LIST_SOURCE];
+                }
+            }
+
             public override void ClearValues ()
             {
                 throw new NotImplementedException ();
@@ -2982,27 +3009,137 @@ namespace StatisticAnalyzer
 
             public override void StartDbInterfaces ()
             {
-                throw new NotImplementedException ();
+                if (m_dictIdListeners.ContainsKey (0) == false)
+                    m_dictIdListeners.Add (0, new int [] { -1, -1 });
+                else
+                    ;
+
+                register (0, (int)CONN_SETT_TYPE.LIST_SOURCE, m_connSett, m_connSett.name);
             }
 
+            /// <summary>
+            /// Добавить состояния в набор для обработки
+            /// данных 
+            /// </summary>
+            public void Command (StatesMachine state)
+            {
+                lock (m_lockState) {
+                    ClearStates ();
+
+                    AddState ((int)StatesMachine.ServerTime);
+                    AddState ((int)state);
+
+                    Run (@"PanelAnalyzer.HLoggingReadHandlerDb::Command () - run...");
+                }
+            }
+
+            /// <summary>
+            /// Получить результат обработки события
+            /// </summary>
+            /// <param name="state">Событие для получения результата</param>
+            /// <param name="error">Признак ошибки при получении результата</param>
+            /// <param name="outobj">Результат запроса</param>
+            /// <returns>Признак получения результата</returns>
             protected override int StateCheckResponse (int state, out bool error, out object outobj)
             {
-                throw new NotImplementedException ();
+                int iRes = 0;
+
+                error = false;
+                outobj = new DataTable();
+
+                StatesMachine statesMachine = (StatesMachine)state;
+
+                switch (statesMachine) {
+                    case StatesMachine.ServerTime:
+                    case StatesMachine.ProcChecked:
+                    case StatesMachine.ToUserAndDate:
+                        iRes = response (m_IdListenerCurrent, out error, out outobj);
+                        break;
+                    default:
+                        error = true;
+                        outobj = null;
+                        break;
+                }
+
+                return iRes;
             }
 
+            /// <summary>
+            /// Функция обратного вызова при возникновения ситуации "ошибка"
+            ///  при обработке списка состояний
+            /// </summary>
+            /// <param name="state">Состояние при котором возникла ситуация</param>
+            /// <param name="req">Признак результата выполнения запроса</param>
+            /// <param name="res">Признак возвращения результата при запросе</param>
+            /// <returns>Индекс массива объектов синхронизации</returns>
             protected override INDEX_WAITHANDLE_REASON StateErrors (int state, int req, int res)
             {
-                throw new NotImplementedException ();
+                INDEX_WAITHANDLE_REASON iRes = INDEX_WAITHANDLE_REASON.SUCCESS;
+
+                EventComandCompleted?.Invoke ((StatesMachine)state, new DataTable(), res);
+
+                errorReport (@"Получение значений из БД - состояние: " + ((StatesMachine)state).ToString ());
+
+                return iRes;
             }
 
             protected override int StateRequest (int state)
             {
-                throw new NotImplementedException ();
+                int iRes = 0;
+
+                StatesMachine stateMachine = (StatesMachine)state;
+
+                switch (stateMachine) {
+                    case StatesMachine.ServerTime:
+                        GetCurrentTimeRequest (DbInterface.DB_TSQL_INTERFACE_TYPE.MSSQL, ListenerId);
+                        actionReport (@"Получение времени с сервера БД - состояние: " + ((StatesMachine)state).ToString ());
+                        break;
+                    case StatesMachine.ProcChecked:
+                        Request (ListenerId, @"SELECT [ID_USER], MAX ([DATETIME_WR]) as MAX_DATETIME_WR FROM logging GROUP BY [ID_USER] ORDER BY [ID_USER]");
+                        actionReport (@"Получение значений из БД - состояние: " + ((StatesMachine)state).ToString ());
+                        break;
+                    case StatesMachine.ToUserAndDate:
+                        Request (ListenerId, @"");
+                        actionReport (@"Получение значений из БД - состояние: " + ((StatesMachine)state).ToString ());
+                        break;
+                    default:
+                        break;
+                }
+
+                return iRes;
             }
 
-            protected override int StateResponse (int state, object obj)
+            /// <summary>
+            /// Обработка УСПЕШНО полученного результата
+            /// </summary>
+            /// <param name="state">Состояние для результата</param>
+            /// <param name="table">Значение результата</param>
+            /// <returns>Признак обработки результата</returns>
+            protected override int StateResponse (int state, object table)
             {
-                throw new NotImplementedException ();
+                int iRes = 0;
+
+                StatesMachine stateMachine = (StatesMachine)state;
+
+                switch (stateMachine) {
+                    case (int)StatesMachine.ServerTime:
+                        m_serverTime = ((DateTime)(table as DataTable).Rows [0] [0]);
+                        break;
+                    case StatesMachine.ToUserAndDate:
+                        break;
+                    default:
+                        break;
+                }
+
+                //Проверить признак крайнего в наборе состояний для обработки
+                if (isLastState (state) == true) {
+                    EventComandCompleted?.Invoke ((StatesMachine)state, table, iRes);
+                    //Удалить все сообщения в строке статуса
+                    ReportClear (true);
+                } else
+                    ;
+
+                return iRes;
             }
 
             protected override void StateWarnings (int state, int req, int res)

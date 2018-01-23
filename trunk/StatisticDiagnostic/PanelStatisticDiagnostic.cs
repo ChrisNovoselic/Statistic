@@ -437,6 +437,7 @@ namespace StatisticDiagnostic
                     default:
                         break;
                 }
+
                 return iRes;
             }
 
@@ -521,7 +522,7 @@ namespace StatisticDiagnostic
             /// Обработка УСПЕШНО полученного результата
             /// </summary>
             /// <param name="state">Состояние для результата</param>
-            /// <param name="obj">Значение результата</param>
+            /// <param name="table">Значение результата</param>
             /// <returns>Признак обработки результата</returns>
             protected override int StateResponse(int state, object table)
             {
@@ -629,7 +630,7 @@ namespace StatisticDiagnostic
             DbTSQLConfigDatabase.DbConfig ().SetConnectionSettings ();
             DbTSQLConfigDatabase.DbConfig().Register();
 
-            // зарегистрировать синхронное соединение с БД_конфигурации
+            // зарегистрировать асинхронное соединение с БД_конфигурации
             m_DataSource = new HDataSource();
 
             listTEC = m_DataSource.GetListTEC(out err);
