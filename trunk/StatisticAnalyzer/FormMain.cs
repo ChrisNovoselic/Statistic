@@ -60,8 +60,8 @@ namespace StatisticAnalyzer
         }
 
         private void FormMainAnalyzer_FormClosed(object sender, FormClosingEventArgs e)
-        {            
-            m_panel.Stop ();
+        {
+            m_panel?.Stop ();
         }
 
         /// <summary>
