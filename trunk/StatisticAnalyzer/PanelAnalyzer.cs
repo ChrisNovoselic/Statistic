@@ -997,12 +997,13 @@ namespace StatisticAnalyzer
         /// <summary>
         /// Выборка лог-сообщений по параметрам
         /// </summary>
+        /// <param name="id_user">Идентификатор пользователя</param>
         /// <param name="type">Тип сообщений</param>
         /// <param name="beg">Начало периода</param>
         /// <param name="end">Окончание периода</param>
         /// <param name="rows">Массив сообщений</param>
         /// <returns></returns>
-        protected abstract int selectLogMessage(string type, DateTime beg, DateTime end, ref DataRow[] rows);
+        protected abstract int selectLogMessage(int id_user, string type, DateTime beg, DateTime end, ref DataRow[] rows);
 
         /// <summary>
         /// Получение первой строки лог-сообщений
@@ -1054,17 +1055,6 @@ namespace StatisticAnalyzer
         {
             m_bThreadTimerCheckedAllowed = false;
 
-            if (!(m_timerChecked == null))
-            {
-                //Вариант №0
-                m_timerChecked.Change(System.Threading.Timeout.Infinite, System.Threading.Timeout.Infinite);
-                ////Вариант №1
-                //m_timerChecked.Stop ();
-                //m_timerChecked.Dispose();
-                //m_timerChecked = null;
-            }
-            else
-                ;
             base.Stop();
         }
 
@@ -1077,21 +1067,14 @@ namespace StatisticAnalyzer
         {
             bool bRes = base.Activate(activated);
 
-            if (activated == true)
-            {
-                //Start();
-                m_timerChecked.Change(0, System.Threading.Timeout.Infinite);
-            }
-
-            else
-            {
-                if (!(m_timerChecked == null))
-                {
-                    m_timerChecked.Change(System.Threading.Timeout.Infinite, System.Threading.Timeout.Infinite);
-                }
-            }
+            activateTimerChecked (activated);
 
             return bRes;
+        }
+
+        private void activateTimerChecked (bool activated)
+        {
+            m_timerChecked?.Change (activated == true ? 0 : System.Threading.Timeout.Infinite, System.Threading.Timeout.Infinite);
         }
 
         /// <summary>
@@ -1121,13 +1104,17 @@ namespace StatisticAnalyzer
         /// <param name="checkDefault">CheckBox по умолчанию вкл/выкл</param>
         public void FillDataGridViews(ref DataGridView ctrl, DataTable src, string nameField, int run, bool checkDefault = false)
         {
+            bool bCheckedItem = false
+                , bSetTag = false; ;
+
             if (run == 0)
             {
-                bool bCheckedItem = checkDefault;
+                bCheckedItem = checkDefault;
                 ctrl.Rows.Clear();
 
                 if (src.Rows.Count > 0)
                 {
+                    bSetTag = src.Columns.Contains ("ID");
                     ctrl.Rows.Add(src.Rows.Count);
 
                     for (int i = 0; i < src.Rows.Count; i++)
@@ -1139,6 +1126,11 @@ namespace StatisticAnalyzer
 
                         ctrl.Rows[i].Cells[0].Value = bCheckedItem;
                         ctrl.Rows[i].Cells[1].Value = src.Rows[i][nameField].ToString();
+
+                        if (bSetTag == true)
+                            ctrl.Rows [i].Tag = int.Parse (src.Rows [i] ["ID"].ToString ());
+                        else
+                            ;
                     }
                 }
                 else
@@ -1308,7 +1300,7 @@ namespace StatisticAnalyzer
         /// <summary>
         /// Получение списка дата/время запуска приложения
         /// </summary>
-        public void LogParseExit()
+        public virtual void LogParseExit()
         {
             int i = -1;
             DataRow[] rows = new DataRow[] { };
@@ -1350,7 +1342,6 @@ namespace StatisticAnalyzer
                 //dgvFilterTypeMessage.UpdateCounter(m_idListenerLoggingDB, DateTime.Today, DateTime.Today.AddDays(1), " ");
                 updateCounter(dgvFilterTypeMessage, DateTime.Today, DateTime.Today.AddDays(1), "");
             }
-                ;
         }
 
         /// <summary>
@@ -1373,7 +1364,12 @@ namespace StatisticAnalyzer
             DataRow[] rows = new DataRow[] { };
             int cntRow = -1;
 
-            cntRow = selectLogMessage(((string)pars[0]), ((DateTime)pars[1]), ((DateTime)pars[1]).AddDays(1), ref rows);
+            // 0 - тип сообщение
+            // 1 - дата/время - начало
+            // 2 - дата/время - окончание
+            // 3 - 
+            // 4 - идентификатор пользователя
+            cntRow = selectLogMessage((int)pars[4], ((string)pars[0]), ((DateTime)pars[1]), ((DateTime)pars[1]).AddDays(1), ref rows);
 
             filldgvLogMessages(rows);
         }
@@ -1499,7 +1495,7 @@ namespace StatisticAnalyzer
 
             Thread threadFilldgvLogMessages = new Thread(new ParameterizedThreadStart(filldgvLogMessages));
             threadFilldgvLogMessages.IsBackground = true;
-            threadFilldgvLogMessages.Start(new object[] { getIndexTypeMessages(), dtBegin, dtEnd, bClearTypeMessageCounter });
+            threadFilldgvLogMessages.Start(new object[] { getIndexTypeMessages(), dtBegin, dtEnd, bClearTypeMessageCounter, dgvClient.SelectedRows [0].Tag });
         }
         
         /// <summary>
@@ -1556,7 +1552,7 @@ namespace StatisticAnalyzer
             /// <summary>
             /// Инициализация потока разбора лог-файла
             /// </summary>
-            public void Start(object text)
+            public void Start(object param)
             {
                 m_semAllowed.WaitOne();
 
@@ -1570,7 +1566,7 @@ namespace StatisticAnalyzer
 
                 m_tableLog.Clear();
 
-                m_thread.Start(text);
+                m_thread.Start(param);
             }
 
             /// <summary>
@@ -1767,7 +1763,7 @@ namespace StatisticAnalyzer
 
             string where = string.Empty;
 
-            m_timerChecked.Change(System.Threading.Timeout.Infinite, System.Threading.Timeout.Infinite);
+            activateTimerChecked (false);
 
             for (i = 0; i < m_tableRoles.Rows.Count; i++)
             {
@@ -1847,7 +1843,7 @@ namespace StatisticAnalyzer
 
             FillDataGridViews(ref dgvClient, m_tableUsers, c_list_sorted, err);
 
-            m_timerChecked.Change(0, System.Threading.Timeout.Infinite);
+            activateTimerChecked (true);
         }
 
         /// <summary>
@@ -2165,60 +2161,31 @@ namespace StatisticAnalyzer
             /// <summary>
             /// Обновление списка со статистикой сообщений 
             /// </summary>
+            /// <param name="table_statMessage">таблица с количествами сообщений каждого типа</param>
             /// <param name="beg">Начальная дата</param>
             /// <param name="end">Конечая дата</param>
             /// <param name="users">Список пользователей</param>
-            public void UpdateCounter(object objSrcMessages, DateTime beg, DateTime end, string users)
+            public void UpdateCounter(DataTable table_statMessage, DateTime beg, DateTime end, string users)
             {
                 int iRes = -1;
-                string where = string.Empty;
-                int iListenerId = (int)objSrcMessages;
-                DataTable table_statMessage;//таблица с количествами сообщений каждого типа
 
-                if (users != "")
+                if (string.IsNullOrEmpty(users) == false)
                 {
                     updateTypeMessage(LogParse.s_DESC_LOGMESSAGE);//Обнуление счётчиков сообщений на панели статистики
 
                     #region Фомирование и выполнение запроса для получения количества сообщений разного типа
 
-                    string query = @"SELECT ([ID_LOGMSG]),COUNT (*) as [COUNT] FROM [dbo].[logging] where ";
-
-                    if (beg.Equals(DateTime.MaxValue) == false)
-                    {
-                        //диапазон даты/времени
-                        where = "DATETIME_WR BETWEEN'" + beg.ToString("yyyyMMdd HH:mm:ss") + "'";
-                        if (end.Equals(DateTime.MaxValue) == false)
-                        {
-                            where += " AND '" + end.ToString("yyyyMMdd HH:mm:ss") + "'";
-                        }
-                    }
-
-                    if (users.Equals(string.Empty) == false)
-                    {
-                        //добавление идентификаторов пользователей к условиям выборки
-                        where += "AND ID_USER in (" + users + ")";
-                        where += "group by([ID_LOGMSG]) ORDER BY ID_LOGMSG";
-                        query += where;
-
-                        //DbConnection connLoggingDBn = DbSources.Sources().GetConnection(iListenerId, out iRes);
-
-                        table_statMessage =
-                            //DbTSQLInterface.Select(ref connLoggingDBn, query, null, null, out iRes)
-                            DbTSQLDataSource.DataSource().Select (query, null, null, out iRes)
+                    if (users.Equals(string.Empty) == false) {
+                        if (table_statMessage.Rows.Count == 0)
+                            updateTypeMessage (LogParse.s_DESC_LOGMESSAGE);//Обнуление счётчиков сообщений на панели статистики
+                        else
                             ;
 
-                        if (table_statMessage.Rows.Count == 0)
-                        {
-                            updateTypeMessage(LogParse.s_DESC_LOGMESSAGE);//Обнуление счётчиков сообщений на панели статистики
-                        }
                         fillDataGridViewsMessage(table_statMessage, @"COUNT", 0, true);//Заполнение таблицы со счётчиками на панели статистики
 
-                    }
-                    else
-                    {
+                    } else {
                         updateTypeMessage(LogParse.s_DESC_LOGMESSAGE);//Обнуление счётчиков сообщений на панели статистики
                     }
-                    ;
 
                     #endregion
                 }
@@ -2312,10 +2279,6 @@ namespace StatisticAnalyzer
 
         private ConnectionSettings _connSettMainDB;
 
-        private DelegateIntFunc delegateConnect;
-        
-        private DelegateFunc delegateErrorConnect;
-
         public PanelAnalyzer_DB(List<StatisticCommon.TEC> tec, Color foreColor, Color backColor)
             : base(tec, foreColor, backColor)
         {
@@ -2391,48 +2354,45 @@ namespace StatisticAnalyzer
         {
             delegateActionReport("Получаем список активных пользователей");
 
-            err = 0;
             arbActives = null;
             int i = -1;
 
+            DataTable tableMaxDatetimeWR;
+            DataRow [] rowsUserMaxDatetimeWR;
+
             DbTSQLDataSource.DataSource ().SetConnectionSettings (_connSettMainDB);
             DbTSQLDataSource.DataSource().Register(_nameShrMainDB);
+            err = DbTSQLDataSource.DataSource ().ListenerId > 0 ? 0 : -1;
+
             if (err == 0)
-            {
-                DataTable tblMaxDatetimeWR = DbTSQLDataSource.DataSource().Select(@"SELECT [ID_USER], MAX([DATETIME_WR]) as MAX_DATETIME_WR FROM logging GROUP BY [ID_USER] ORDER BY [ID_USER]", null, null, out err);
-                DataRow[] rowsMaxDatetimeWR;
-                if (err == 0)
-                {
-                    arbActives = new bool[m_tableUsers.Rows.Count];
+                tableMaxDatetimeWR = DbTSQLDataSource.DataSource ().Select (@"SELECT [ID_USER], MAX([DATETIME_WR]) as MAX_DATETIME_WR FROM logging GROUP BY [ID_USER] ORDER BY [ID_USER]", null, null, out err);
+            else
+            //Нет соединения с БД...
+                tableMaxDatetimeWR = new DataTable();
 
-                    for (i = 0; (i < m_tableUsers.Rows.Count) && (m_bThreadTimerCheckedAllowed == true); i++)
-                    {
-                        //Проверка активности
-                        rowsMaxDatetimeWR = tblMaxDatetimeWR.Select(@"[ID_USER]=" + m_tableUsers.Rows[i][@"ID"]);
+            DbTSQLDataSource.DataSource ().UnRegister ();
 
-                        if (rowsMaxDatetimeWR.Length == 0)
-                        { //В течении 2-х недель нет ни одного запуска на выполнение ППО
-                        }
-                        else
-                        {
-                            if (rowsMaxDatetimeWR.Length > 1)
-                            { //Ошибка
-                            }
-                            else
-                            {
-                                //Обрабатываем...
-                                arbActives[i] = (HDateTime.ToMoscowTimeZone(DateTime.Now) - DateTime.Parse(rowsMaxDatetimeWR[0][@"MAX_DATETIME_WR"].ToString())).TotalSeconds < 66;
-                            }
+            if (err == 0) {
+                arbActives = new bool[m_tableUsers.Rows.Count];
+
+                for (i = 0; (i < m_tableUsers.Rows.Count) && (m_bThreadTimerCheckedAllowed == true); i++) {
+                    //Проверка активности
+                    rowsUserMaxDatetimeWR = tableMaxDatetimeWR.Select(@"[ID_USER]=" + m_tableUsers.Rows[i][@"ID"]);
+
+                    if (rowsUserMaxDatetimeWR.Length == 0) {
+                    //В течении 2-х недель нет ни одного запуска на выполнение ППО
+                    } else {
+                        if (rowsUserMaxDatetimeWR.Length > 1) {
+                        //Ошибка
+                        } else {
+                        //Обрабатываем...
+                            arbActives[i] = (HDateTime.ToMoscowTimeZone(DateTime.Now) - DateTime.Parse(rowsUserMaxDatetimeWR[0][@"MAX_DATETIME_WR"].ToString())).TotalSeconds < 66;
                         }
                     }
                 }
-                else
-                    err = -2; //Ошибка при выборке данных...
             }
             else
-                err = -1; //Нет соединения с БД...
-
-            DbTSQLDataSource.DataSource ().UnRegister ();
+                err = -2; //Ошибка при выборке данных...
 
             delegateReportClear (true);
         }
@@ -2440,7 +2400,7 @@ namespace StatisticAnalyzer
         /// <summary>
         /// Запись значений активности в CheckBox на DataGridView с пользователями
         /// </summary>
-        /// <param name="obj"></param>
+        /// <param name="obj">???</param>
         protected override void procChecked(object obj)
         {
             int err = -1
@@ -2645,42 +2605,90 @@ namespace StatisticAnalyzer
         /// </summary>
         protected override void disconnect() { }
 
+        struct PARAM_THREAD_PROC
+        {
+            public string Delimeter;
+
+            public DataTable TableLogging;
+        }
+
         /// <summary>
         /// Старт разбора лог-сообщений
         /// </summary>
         /// <param name="id">ID пользователя</param>
         protected override void startLogParse(string id)
         {
+            int err = -1;
+
+            string query = string.Empty;
+                
+            query = @"SELECT DATEPART (DD, [DATETIME_WR]) as DD, DATEPART (MM, [DATETIME_WR]) as MM, DATEPART (YYYY, [DATETIME_WR]) as [YYYY], COUNT(*) as CNT"
+                + @" FROM [dbo].[logging]"
+                + @" WHERE [ID_USER]=" + id
+                + @" GROUP BY DATEPART (DD, [DATETIME_WR]), DATEPART (MM, [DATETIME_WR]), DATEPART (YYYY, [DATETIME_WR])"
+                + @" ORDER BY [DD]";
+
             dgvDatetimeStart.SelectionChanged -= dgvDatetimeStart_SelectionChanged;
 
-            // завершается по выполнении потоковой ф-и 'm_LogParse::thread_Proc'
-            DbTSQLDataSource.DataSource ().SetConnectionSettings (_connSettMainDB);
-            DbTSQLDataSource.DataSource ().Register (_nameShrMainDB);
-
-            m_LogParse.Start(m_chDelimeters[(int)INDEX_DELIMETER.PART].Length
-                    + m_chDelimeters[(int)INDEX_DELIMETER.PART]
-                    + DbTSQLDataSource.DataSource().ListenerId.ToString()
-                    + m_chDelimeters[(int)INDEX_DELIMETER.PART] + id);
+            m_LogParse.Start (new PARAM_THREAD_PROC { Delimeter = m_chDelimeters [(int)INDEX_DELIMETER.PART] , TableLogging = DbTSQLDataSource.DataSource ().Select (query, null, null, out err) });
         }
 
         /// <summary>
         /// Выборка лог-сообщений по параметрам
         /// </summary>
+        /// <param name="id_user">Идентификатор пользователя</param>
         /// <param name="type">Тип сообщений</param>
         /// <param name="beg">Начало периода</param>
         /// <param name="end">Окончание периода</param>
         /// <param name="rows">Массив сообщений</param>
         /// <returns>Возвращает количество строк в выборке</returns>
-        protected override int selectLogMessage(string type, DateTime beg, DateTime end, ref DataRow[] rows)
+        protected override int selectLogMessage(int id_user, string type, DateTime beg, DateTime end, ref DataRow[] rows)
         {
             int iRes = -1;
+
+            DataTable tableLogging;
+            string query = string.Empty
+                , where = string.Empty;
 
             DbTSQLDataSource.DataSource ().SetConnectionSettings (_connSettMainDB);
             DbTSQLDataSource.DataSource ().Register (_nameShrMainDB);
 
-            iRes = (m_LogParse as LogParse_DB).Select (DbTSQLDataSource.DataSource ().ListenerId, type, beg, end, ref rows);
+            query = @"SELECT DATETIME_WR as DATE_TIME, ID_LOGMSG as TYPE, MESSAGE FROM logging WHERE ID_USER=" + id_user;
+
+            if (beg.Equals (DateTime.MaxValue) == false) {
+                //Вариан №1 диапазон даты/времени
+                where = "DATETIME_WR>='" + beg.ToString ("yyyyMMdd HH:mm:ss") + "'";
+                if (end.Equals (DateTime.MaxValue) == false)
+                    where += " AND DATETIME_WR<'" + end.ToString ("yyyyMMdd HH:mm:ss") + "'";
+                else
+                    ;
+                ////Вариан №2 указанные сутки
+                //where = "DATETIME_WR='" + beg.ToString("yyyyMMdd") + "'";
+            } else
+                ;
+
+            if (where.Equals (string.Empty) == false)
+                query += @" AND " + where;
+            else
+                ;
+
+            //where = addingWhereTypeMessage(@"ID_LOGMSG", strIndxType);
+            //if (where.Equals(string.Empty) == false)
+            //    query += " AND " + where;
+            //else
+            //    ;
+
+            tableLogging = DbTSQLDataSource.DataSource ().Select (query, null, null, out iRes);
 
             DbTSQLDataSource.DataSource ().UnRegister ();
+
+            if (iRes == 0) {
+                iRes = tableLogging.Rows.Count;
+                rows = tableLogging.Select (string.Empty, @"DATE_TIME");
+            } else
+                ;
+
+            (m_LogParse as LogParse_DB).SetDataTable (tableLogging);
 
             return iRes;
         }
@@ -2717,46 +2725,50 @@ namespace StatisticAnalyzer
         #endregion
 
         /// <summary>
-        /// Соединение для чтения лог-сообщений
-        /// </summary>
-        /// <param name="id">ID пользователя</param>
-        private void connectToLogRead(int id)
-        {
-            startLogParse(id.ToString());
-        }
-
-        /// <summary>
-        /// Вызов делегата для начала чтения лог-сообщений
-        /// </summary>
-        /// <param name="rowUser">Строка с данными пользователя</param>
-        /// <param name="indxRowUser">Индекс строки с данными пользователя</param>
-        private void getLogMsg(DataRow rowUser, int indxRowUser)
-        {
-            if (!(DbTSQLDataSource.DataSource ().ListenerId < 0))
-                delegateConnect(Int32.Parse(rowUser[@"ID"].ToString()));
-            else
-                delegateErrorConnect();
-        }
-
-        /// <summary>
         /// Обновление счетчика типов сообщений
         /// </summary>
         /// <param name="dgv">DataGridView в которую поместить результаты</param>
         /// <param name="start_date">Начало периода</param>
-        /// <param name="stop_date">Окончание периода</param>
+        /// <param name="end_date">Окончание периода</param>
         /// <param name="users">Список пользователей</param>
-        protected override void updateCounter(DataGridView_LogMessageCounter dgv, DateTime start_date, DateTime stop_date, string users)
+        protected override void updateCounter(DataGridView_LogMessageCounter dgv, DateTime start_date, DateTime end_date, string users)
         {
+            int iRes = -1;
+
+            string query = string.Empty
+                , where = string.Empty;
+            DataTable table_statMessage;
+
             delegateActionReport?.Invoke("Обновление статистики сообщений");
 
-            dgv.UpdateCounter(DbTSQLDataSource.DataSource ().ListenerId, start_date, stop_date, users);
+            query = @"SELECT ([ID_LOGMSG]),COUNT (*) as [COUNT] FROM [dbo].[logging] where ";
+
+            if (start_date.Equals (DateTime.MaxValue) == false) {
+                //диапазон даты/времени
+                where = "DATETIME_WR BETWEEN'" + start_date.ToString ("yyyyMMdd HH:mm:ss") + "'";
+                if (end_date.Equals (DateTime.MaxValue) == false) {
+                    where += " AND '" + end_date.ToString ("yyyyMMdd HH:mm:ss") + "'";
+                }
+            }
+
+            if (users.Equals (string.Empty) == false) {
+                //добавление идентификаторов пользователей к условиям выборки
+                where += "AND ID_USER in (" + users + ")";
+                where += "group by([ID_LOGMSG]) ORDER BY ID_LOGMSG";
+                query += where;
+
+                //DbConnection connLoggingDBn = DbSources.Sources().GetConnection(iListenerId, out iRes);
+
+                table_statMessage =
+                    //DbTSQLInterface.Select(ref connLoggingDBn, query, null, null, out iRes)
+                    DbTSQLDataSource.DataSource ().Select (query, null, null, out iRes)
+                    ;
+            } else
+                table_statMessage = new DataTable();
+
+            dgv.UpdateCounter(table_statMessage, start_date, end_date, users);
 
             delegateReportClear?.Invoke (true);
-        }
-
-        private void logParse_OnThreadProcSelectCompleted ()
-        {
-            DbTSQLDataSource.DataSource ().UnRegister ();
         }
 
         /// <summary>
@@ -2770,7 +2782,7 @@ namespace StatisticAnalyzer
         /// <summary>
         /// Ошибка подключения
         /// </summary>
-        private void errorConnect()
+        private void errorReadLogging()
         {
         }
 
@@ -2847,14 +2859,10 @@ namespace StatisticAnalyzer
                     else
                         Logging.Logg().Error(@"FormMainAnalyzer_DB::dgvClient_SelectionChanged () - ... BeginInvoke (TabLoggingClearDatetimeStart, TabLoggingClearText) - ...", Logging.INDEX_MESSAGE.D_001);
 
-                    delegateConnect = connectToLogRead;
-
-                    delegateErrorConnect = errorConnect;
-
                     DbTSQLDataSource.DataSource ().SetConnectionSettings (_connSettMainDB);
                     DbTSQLDataSource.DataSource ().Register (_nameShrMainDB);
 
-                    getLogMsg (m_tableUsers.Rows[dgvClient.SelectedRows[0].Index], dgvClient.SelectedRows[0].Index);
+                    startLogParse (m_tableUsers.Rows [dgvClient.SelectedRows [0].Index] ["ID"].ToString ().Trim ());
 
                     updateCounter(dgvFilterTypeMessage, DateTime.Today, DateTime.Today.AddDays(1), get_users(m_tableUsers, dgvClient, false));
 
@@ -2868,7 +2876,6 @@ namespace StatisticAnalyzer
                     fill_active_tabs ((int)m_tableUsers.Rows[dgvClient.SelectedRows[0].Index][0]);
 
                     DbTSQLConfigDatabase.DbConfig ().UnRegister ();
-
                 }
                 else
                     ;
@@ -2887,22 +2894,22 @@ namespace StatisticAnalyzer
             fill_active_tabs((int)m_tableUsers.Rows[dgvClient.SelectedRows[0].Index][0]);
         }
 
+        public override void LogParseExit ()
+        {
+            base.LogParseExit ();
+        }
+
         #endregion
 
         /// <summary>
         /// Класс для получения лог сообщений из БД
         /// </summary>
-        class LogParse_DB : LogParse
+        private class LogParse_DB : LogParse
         {
             /// <summary>
             /// Список идентификаторов типов сообщений
             /// </summary>
             public enum TYPE_LOGMESSAGE { START = LogParse.INDEX_START_MESSAGE, STOP, ACTION, DEBUG, EXCEPTION, EXCEPTION_DB, ERROR, WARNING, UNKNOWN, COUNT_TYPE_LOGMESSAGE };
-            
-            /// <summary>
-            /// ID порльзователя
-            /// </summary>
-            private int m_idUser;
 
             public LogParse_DB()
                 : base()
@@ -2913,7 +2920,6 @@ namespace StatisticAnalyzer
                                                     "Ошибка",
                                                     "Предупреждение",
                                                     "Неопределенный тип" };
-                m_idUser = -1;
 
                 //ID типов сообщений
                 s_IdTypeMessages = new int[] {
@@ -2924,47 +2930,25 @@ namespace StatisticAnalyzer
                 
             }
 
-            private event Action EventThreadProcSelectCompleted;
-
             /// <summary>
             /// Потоковый метод опроса БД для выборки лог-сообщений
             /// </summary>
             /// <param name="data">Объект с данными для разборки методом</param>
             protected override void thread_Proc(object data)
             {
-                int err = -1
-                    , lDelimeter = 0;
-                string strDelimeter
-                    , text;
-                //DbConnection connLoggingDB;
-                string [] parameters;
+                int err = -1;
+                string text;
                 DataTable tblDatetimeStart;
                 DateTime dtStart;
 
-                while (Char.IsDigit((data as string).ToCharArray()[lDelimeter]) == true)
-                    lDelimeter++;
-                strDelimeter = (data as string).Substring(lDelimeter, Int32.Parse((data as string).Substring(0, lDelimeter)));
-                text = (data as string).Substring(lDelimeter + strDelimeter.Length, (data as string).Length - (lDelimeter + strDelimeter.Length));
-                parameters = text.Split (new string [] { strDelimeter }, StringSplitOptions.None);
-                //connLoggingDB = DbSources.Sources().GetConnection(Int32.Parse(parameters [0]), out err);
-                m_idUser = Int32.Parse(parameters [1]);
-
-                string query = @"SELECT DATEPART (DD, [DATETIME_WR]) as DD, DATEPART (MM, [DATETIME_WR]) as MM, DATEPART (YYYY, [DATETIME_WR]) as [YYYY], COUNT(*) as CNT"
-                        + @" FROM [dbo].[logging]"
-                        + @" WHERE [ID_USER]=" + m_idUser
-                        + @" GROUP BY DATEPART (DD, [DATETIME_WR]), DATEPART (MM, [DATETIME_WR]), DATEPART (YYYY, [DATETIME_WR])"
-                        + @" ORDER BY [DD]";
-
-                tblDatetimeStart = DbTSQLDataSource.DataSource().Select(query, null, null, out err);
-
-                EventThreadProcSelectCompleted?.Invoke ();
+                tblDatetimeStart = ((PARAM_THREAD_PROC)data).TableLogging;
 
                 int cnt = 0;
                 for (int i = 0; i < tblDatetimeStart.Rows.Count; i++)//перебор значений и добовление их в строку
                 {
                     dtStart = new DateTime(Int32.Parse(tblDatetimeStart.Rows[i][@"YYYY"].ToString())
-                                                    , Int32.Parse(tblDatetimeStart.Rows[i][@"MM"].ToString())
-                                                    , Int32.Parse(tblDatetimeStart.Rows[i][@"DD"].ToString()));
+                        , Int32.Parse(tblDatetimeStart.Rows[i][@"MM"].ToString())
+                        , Int32.Parse(tblDatetimeStart.Rows[i][@"DD"].ToString()));
                     m_tableLog.Rows.Add(new object[] { dtStart, s_IdTypeMessages[(int)TYPE_LOGMESSAGE.START], ProgramBase.MessageWellcome });
 
                     cnt += Int32.Parse(tblDatetimeStart.Rows[i][@"CNT"].ToString());
@@ -2982,57 +2966,48 @@ namespace StatisticAnalyzer
             /// <param name="end">Оончание периода</param>
             /// <param name="res">Массив строк лог-сообщений</param>
             /// <returns></returns>
-            public int Select(int iListenerId, string strIndxType, DateTime beg, DateTime end, ref DataRow[] res)
+            public void SetDataTable(DataTable tableLogging)
             {
-                int iRes = -1;
-                string where = string.Empty;
-
                 m_tableLog.Clear();//очистка таблицы с лог-сообщениями
+                m_tableLog = tableLogging.Copy ();
+            }
+        }
 
-                DbConnection connLoggingDB = DbSources.Sources().GetConnection(iListenerId, out iRes);
+        private class HLoggingReadHandlerDb : HHandlerDb
+        {
+            public override void ClearValues ()
+            {
+                throw new NotImplementedException ();
+            }
 
-                if (iRes == 0)
-                {
-                    string query = @"SELECT DATETIME_WR as DATE_TIME, ID_LOGMSG as TYPE, MESSAGE FROM logging WHERE ID_USER=" + m_idUser;
+            public override void StartDbInterfaces ()
+            {
+                throw new NotImplementedException ();
+            }
 
-                    if (beg.Equals(DateTime.MaxValue) == false)
-                    {
-                        //Вариан №1 диапазон даты/времени
-                        where = "DATETIME_WR>='" + beg.ToString("yyyyMMdd HH:mm:ss") + "'";
-                        if (end.Equals(DateTime.MaxValue) == false)
-                            where += " AND DATETIME_WR<'" + end.ToString("yyyyMMdd HH:mm:ss") + "'";
-                        else ;
-                        ////Вариан №2 указанные сутки
-                        //where = "DATETIME_WR='" + beg.ToString("yyyyMMdd") + "'";
-                    }
-                    else
-                        ;
+            protected override int StateCheckResponse (int state, out bool error, out object outobj)
+            {
+                throw new NotImplementedException ();
+            }
 
-                    if (where.Equals(string.Empty) == false)
-                        query += @" AND " + where;
-                    else
-                        ;
+            protected override INDEX_WAITHANDLE_REASON StateErrors (int state, int req, int res)
+            {
+                throw new NotImplementedException ();
+            }
 
-                    //where = addingWhereTypeMessage(@"ID_LOGMSG", strIndxType);
-                    //if (where.Equals(string.Empty) == false)
-                    //    query += " AND " + where;
-                    //else
-                    //    ;
+            protected override int StateRequest (int state)
+            {
+                throw new NotImplementedException ();
+            }
 
-                    m_tableLog = DbTSQLInterface.Select(ref connLoggingDB, query, null, null, out iRes);
-                }
-                else
-                    ;
+            protected override int StateResponse (int state, object obj)
+            {
+                throw new NotImplementedException ();
+            }
 
-                if (iRes == 0)
-                {
-                    iRes = m_tableLog.Rows.Count;
-                    res = m_tableLog.Select(string.Empty, @"DATE_TIME");
-                }
-                else
-                    ;
-
-                return iRes;
+            protected override void StateWarnings (int state, int req, int res)
+            {
+                throw new NotImplementedException ();
             }
         }
     }
@@ -3308,8 +3283,16 @@ namespace StatisticAnalyzer
             sr.Close();
         }
 
-        //protected override int SelectLogMessage(int type, DateTime beg, DateTime end, ref DataRow[] rows)
-        protected override int selectLogMessage(string type, DateTime beg, DateTime end, ref DataRow[] rows)
+        /// <summary>
+        /// Выборка лог-сообщений по параметрам
+        /// </summary>
+        /// <param name="id_user">Идентификатор пользователя</param>
+        /// <param name="type">Тип сообщений</param>
+        /// <param name="beg">Начало периода</param>
+        /// <param name="end">Окончание периода</param>
+        /// <param name="rows">Массив сообщений</param>
+        /// <returns>Возвращает количество строк в выборке</returns>
+        protected override int selectLogMessage (int id_user, string type, DateTime beg, DateTime end, ref DataRow [] rows)
         {
             return m_LogParse.Select(string.Empty, beg, end, ref rows);
         }

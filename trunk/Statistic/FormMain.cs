@@ -1147,35 +1147,14 @@ namespace Statistic
             stopTimerAppReset();
         }
 
-        //private void stopAdminAlarm()
-        //{
-        //    if ((!(m_arPanelAdmin == null)) && (!(m_arPanelAdmin[(int)FormChangeMode.MANAGER.DISP] == null)) && (m_arPanelAdmin[(int)FormChangeMode.MANAGER.DISP] is PanelAdminKomDisp)
-        //    //if (i == (int)FormChangeMode.MANAGER.DISP)
-        //    && (PanelAdminKomDisp.ALARM_USE == true)
-        //    && (!(((PanelAdminKomDisp)m_arPanelAdmin[(int)FormChangeMode.MANAGER.DISP]).m_adminAlarm == null)))
-        //    {
-        //        ((PanelAdminKomDisp)m_arPanelAdmin[(int)FormChangeMode.MANAGER.DISP]).m_adminAlarm.Activate(false);
-        //        ((PanelAdminKomDisp)m_arPanelAdmin[(int)FormChangeMode.MANAGER.DISP]).m_adminAlarm.Stop();
-        //    }
-        //    else
-        //        ;
-        //}
-
         private void StopTabPages()
         {
             if (!(m_listStandardTabs == null))
-            {
                 clearTabPages(new List<int> (), false);
-            }
             else
                 ;
-
-            //foreach (ADDING_TAB tab in m_dictAddingTabs.Values)
-            //{
-            //    tab.menuItem.Checked = false;
-            //    if (!(tab.panel == null)) tab.panel.Stop(); else ;
-            //}
         }
+
         /// <summary>
         /// Закрыть (очистить) все вкладки (стандартные + административные)
         /// </summary>
@@ -1210,10 +1189,10 @@ namespace Statistic
             listToRemove.Clear();
             foreach (TabPage tab in tclTecViews.TabPages)
             {
-                listToRemove.Add(tclTecViews.TabPages.IndexOf(tab));
                 bStopped = false;
 
-                if (tab.Controls.Count > 0) {
+                if ((tab.IsDisposed == false)
+                    && (tab.Controls.Count > 0)) {
                     if (((tab.Controls[0] is PanelTecViewStandard)
                             || (tab.Controls[0] is PanelLKView))
                         && (listTabKeep.IndexOf(((PanelTecViewBase)tab.Controls[0]).m_ID) < 0))
@@ -1236,7 +1215,8 @@ namespace Statistic
                             if ((!(indxManager == FormChangeMode.MANAGER.UNKNOWN))
                                 && (formChangeMode.m_markTabAdminChecked.IsMarked ((int)indxManager) == false)) {
                                 bStopped = true;
-                                m_markPrevStatePanelAdmin.UnMarked ((int)indxManager);
+                                ////??? зачем снимать признак, если он не установлен
+                                //m_markPrevStatePanelAdmin.UnMarked ((int)indxManager);
                             } else
                                 ;
                         }
@@ -1245,12 +1225,13 @@ namespace Statistic
                     }
                     //??? могут быть и др. типы вкладок
 
-                    if (bStopped == true)
-                        ((PanelStatistic)tab.Controls[0]).Stop();
-                    else
+                    if (bStopped == true) {
+                        ((PanelStatistic)tab.Controls [0]).Stop ();
+                        listToRemove.Add (tclTecViews.TabPages.IndexOf (tab));
+                    } else
                         ;
                 } else
-                    Logging.Logg().Warning($"FormMain::clearTabPages () - вкладка Text={tab.Text} не имеет дочерних элементов...", Logging.INDEX_MESSAGE.NOT_SET);
+                    Logging.Logg().Warning($"FormMain::clearTabPages () - вкладка Text={tab.Text} дочерние элементs удалены ранее (???-IDisposable)...", Logging.INDEX_MESSAGE.NOT_SET);
             }
 
             tclTecViews.SelectedIndexChanged -= tclTecViews_SelectedIndexChanged;

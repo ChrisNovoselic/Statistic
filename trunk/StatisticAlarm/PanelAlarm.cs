@@ -28,7 +28,7 @@ namespace StatisticAlarm
     /// <summary>
     /// Класс панели для отображения с списка событий
     /// </summary>
-    public partial class PanelAlarm : PanelStatistic, ASUTP.PlugIn.IDataHost//, IDisposable
+    public partial class PanelAlarm : PanelStatistic, ASUTP.PlugIn.IDataHost, IDisposable
     {
         /// <summary>
         /// Список объектов ТЭЦ
