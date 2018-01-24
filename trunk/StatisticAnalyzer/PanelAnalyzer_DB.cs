@@ -12,7 +12,7 @@ using System.Text;
 
 namespace StatisticAnalyzer
 {
-    public class PanelAnalyzer_DB : PanelAnalyzer
+    public partial class PanelAnalyzer_DB : PanelAnalyzer
     {
         //private static string _nameShrMainDB = "MAIN_DB";
 
@@ -20,7 +20,7 @@ namespace StatisticAnalyzer
         /// Экземпляр класса 
         ///  для подключения/отправления/получения запросов к БД
         /// </summary>
-        private HLoggingReadHandlerDb m_loggingReadHandlerDb;
+        private HLoggingReadHandlerQueue m_loggingReadHandlerQueue;
 
         public PanelAnalyzer_DB (List<StatisticCommon.TEC> tec, Color foreColor, Color backColor)
             : base(tec, foreColor, backColor)
@@ -33,11 +33,12 @@ namespace StatisticAnalyzer
             checkBoxs[(int)FormChangeMode.MODE_TECCOMPONENT.TG].CheckedChanged += new EventHandler(checkBox_click);
             checkBoxs[(int)FormChangeMode.MODE_TECCOMPONENT.ANY].CheckedChanged += new EventHandler(checkBox_click);
 
-            m_loggingReadHandlerDb = new HLoggingReadHandlerDb ();
+            m_loggingReadHandlerDb = new HLoggingReadHandlerQueue ();
 
             _handlers = new Dictionary<HLoggingReadHandlerDb.StatesMachine, Action<HLoggingReadHandlerDb.REQUEST, DataTable>> () {
-                { HLoggingReadHandlerDb.StatesMachine.ProcChecked, handlerCommandProcChecked }
-                , { HLoggingReadHandlerDb.StatesMachine.ToUserByDate, handlerCommandUserByType }
+                { HLoggingReadHandlerDb.StatesMachine.ProcCheckedState, handlerCommandProcChecked }
+                , { HLoggingReadHandlerDb.StatesMachine.ProcCheckedFilter, handlerCommandProcChecked }
+                , { HLoggingReadHandlerDb.StatesMachine.ToUserByDate, handlerCommandToUserByDate }
                 , { HLoggingReadHandlerDb.StatesMachine.ToUserGroupDate, handlerCommandToUserGroupDate }
                 , { HLoggingReadHandlerDb.StatesMachine.UserByType, handlerCommandUserByType }
             };
@@ -98,20 +99,21 @@ namespace StatisticAnalyzer
         /// </summary>
         public override void Stop ()
         {
-            m_loggingReadHandlerDb.Activate (false); m_loggingReadHandlerDb.Stop ();
+            m_loggingReadHandlerQueue.Activate (false); m_loggingReadHandlerQueue.Stop ();
 
             base.Stop ();
         }
 
-        private Dictionary<HLoggingReadHandlerDb.StatesMachine, Action<HLoggingReadHandlerDb.REQUEST , DataTable >> _handlers;
+        private Dictionary<HLoggingReadHandlerQueue.States, Action<HLoggingReadHandlerQueue.REQUEST , DataTable >> _handlers;
 
         private void loggingReadHandlerDb_onCommandCompleted (HLoggingReadHandlerDb.REQUEST req, DataTable tableRes)
         {
             switch (req.Key) {
-                case HLoggingReadHandlerDb.StatesMachine.ProcChecked:
-                case HLoggingReadHandlerDb.StatesMachine.ToUserByDate:
-                case HLoggingReadHandlerDb.StatesMachine.ToUserGroupDate:
-                case HLoggingReadHandlerDb.StatesMachine.UserByType:
+                case HLoggingReadHandlerQueue.StatesMachine.ProcCheckedState:
+                case HLoggingReadHandlerQueue.StatesMachine.ProcCheckedFilter:
+                case HLoggingReadHandlerQueue.StatesMachine.ToUserByDate:
+                case HLoggingReadHandlerQueue.StatesMachine.ToUserGroupDate:
+                case HLoggingReadHandlerQueue.StatesMachine.UserByType:
                     _handlers [req.Key](req, tableRes);
                     break;
                 default:
@@ -130,7 +132,7 @@ namespace StatisticAnalyzer
         private void handlerCommandToUserByDate(HLoggingReadHandlerDb.REQUEST req, DataTable tableLogging)
         {
             if (req.State == HLoggingReadHandlerDb.REQUEST.STATE.Ok) {
-                filldgvLogMessages(tableLogging.Select(string.Empty, @"DATE_TIME"));
+                filldgvLogMessages(tableLogging.Select(string.Empty, @"DATE_TIME") as DataRow[]);
             } else
                 ;
 
@@ -176,8 +178,13 @@ namespace StatisticAnalyzer
                 }
 
                 if (!(arbActives == null)) {
-                    for (i = 0; (i < m_tableUsers.Rows.Count) && (m_bThreadTimerCheckedAllowed == true) && (i < arbActives.Length); i++)
-                        dgvClient.Rows[i].Cells[0].Value = arbActives[i];
+                    if (req.Key == HLoggingReadHandlerDb.StatesMachine.ProcCheckedState)
+                        updatedgvClientState (arbActives);
+                    else if (req.Key == HLoggingReadHandlerDb.StatesMachine.ProcCheckedFilter) {
+                        tableUserFiltered (arbActives);
+                        FillDataGridViews (ref dgvClient, m_tableUsers, c_list_sorted, 0);
+                    } else
+                        ;
 
                     msecSleep = MSEC_TIMERCHECKED_STANDARD;
                 } else
@@ -203,7 +210,7 @@ namespace StatisticAnalyzer
         {
             delegateActionReport("Получаем список активных пользователей");
 
-            m_loggingReadHandlerDb.Command(HLoggingReadHandlerDb.StatesMachine.ProcChecked/*, handlerCommandProcChecked*/);
+            m_loggingReadHandlerDb.Command(HLoggingReadHandlerDb.StatesMachine.ProcCheckedState);
         }
 
         /// <summary>
@@ -406,11 +413,7 @@ namespace StatisticAnalyzer
         {
             dgvDatetimeStart.SelectionChanged -= dgvDatetimeStart_SelectionChanged;
 
-            m_loggingReadHandlerDb.Command(HLoggingReadHandlerDb.StatesMachine.ToUserGroupDate, new object [] { int.Parse(id) }/*,  delegate (object obj, int err) {
-                m_LogParse.Start(new PARAM_THREAD_PROC {
-                    Delimeter = m_chDelimeters[(int)INDEX_DELIMETER.PART]
-                    , TableLogging = obj as DataTable });
-            }*/);
+            m_loggingReadHandlerDb.Command(HLoggingReadHandlerDb.StatesMachine.ToUserGroupDate, new object [] { int.Parse(id) }, true);
         }
 
         /// <summary>
@@ -431,17 +434,7 @@ namespace StatisticAnalyzer
             //else
             //    ;
 
-            m_loggingReadHandlerDb.Command(HLoggingReadHandlerDb.StatesMachine.ToUserByDate, new object [] { id_user, type, beg, end }/*, delegate (object obj, int err) {
-                tableLogging = obj as DataTable;
-
-                if (iRes == 0) {
-                    iRes = tableLogging.Rows.Count;
-                    funcResult(tableLogging.Select(string.Empty, @"DATE_TIME"));
-                } else
-                    ;
-
-                (m_LogParse as LogParse_DB).SetDataTable(tableLogging);
-            }*/);
+            m_loggingReadHandlerDb.Command(HLoggingReadHandlerDb.StatesMachine.ToUserByDate, new object [] { id_user, type, beg, end }, false);
         }
 
         /// <summary>
@@ -484,7 +477,7 @@ namespace StatisticAnalyzer
         /// <param name="users">Список пользователей</param>
         protected override void updateCounter(DATAGRIDVIEW_LOGCOUNTER tag, DateTime start_date, DateTime end_date, string users)
         {
-            m_loggingReadHandlerDb.Command (HLoggingReadHandlerDb.StatesMachine.UserByType, new object [] { tag, start_date, end_date, users });
+            m_loggingReadHandlerDb.Command (HLoggingReadHandlerDb.StatesMachine.UserByType, new object [] { tag, start_date, end_date, users }, false);
         }
 
         /// <summary>
@@ -610,9 +603,11 @@ namespace StatisticAnalyzer
             base.LogParseExit ();
         }
 
-        protected override void procChecked(out bool[] arbActives, out int err)
+        protected override bool [] procChecked ()
         {
-            throw new NotImplementedException();
+            m_loggingReadHandlerDb.Command (HLoggingReadHandlerDb.StatesMachine.ProcCheckedFilter);
+            // фиктивный результат для совместимости с синхронным вариантом
+            return new bool [] { };
         }
 
         #endregion
@@ -686,359 +681,6 @@ namespace StatisticAnalyzer
             {
                 m_tableLog.Clear();//очистка таблицы с лог-сообщениями
                 m_tableLog = tableLogging.Copy ();
-            }
-        }
-
-        private class HLoggingReadHandlerDb : HHandlerDb
-        {
-            private ConnectionSettings m_connSett;
-
-            private DateTime m_serverTime;
-
-            private List<REQUEST> _requests;
-
-            public enum StatesMachine {
-                ServerTime
-                , ProcChecked
-                , ToUserByDate
-                , ToUserGroupDate
-                , UserByType
-            }
-
-            public class REQUEST
-            {
-                public enum STATE { Unknown, Ready, Ok, Error }
-
-                public StatesMachine Key;
-
-                public object[] Args;
-
-                //public Action<object, int> Function;
-
-                #region Запрос
-
-                public string Query
-                {
-                    get
-                    {
-                        string strRes = string.Empty
-                            , where = string.Empty;
-
-                        switch (Key) {
-                            case StatesMachine.ProcChecked:
-                                strRes = @"SELECT [ID_USER], MAX ([DATETIME_WR]) as MAX_DATETIME_WR FROM logging GROUP BY [ID_USER] ORDER BY [ID_USER]";
-                                break;
-                            case StatesMachine.ToUserByDate:
-                                strRes = @"SELECT DATETIME_WR as DATE_TIME, ID_LOGMSG as TYPE, MESSAGE FROM logging WHERE ID_USER=" + (int)Args [0];
-
-                                if (((DateTime)Args[2]).Equals (DateTime.MaxValue) == false) {
-                                    //Вариан №1 диапазон даты/времени
-                                    where = $"DATETIME_WR>='{((DateTime)Args [2]).ToString ("yyyyMMdd HH:mm:ss")}'";
-                                    if (((DateTime)Args [3]).Equals (DateTime.MaxValue) == false)
-                                        where += $" AND DATETIME_WR<'{((DateTime)Args [3]).ToString ("yyyyMMdd HH:mm:ss")}'";
-                                    else
-                                        ;
-                                    ////Вариан №2 указанные сутки
-                                    //where = "DATETIME_WR='" + beg.ToString("yyyyMMdd") + "'";
-                                } else
-                                    ;
-
-                                if (where.Equals (string.Empty) == false)
-                                    strRes += @" AND " + where;
-                                else
-                                    ;
-                                break;
-                            case StatesMachine.ToUserGroupDate:
-                                strRes = @"SELECT DATEPART (DD, [DATETIME_WR]) as DD, DATEPART (MM, [DATETIME_WR]) as MM, DATEPART (YYYY, [DATETIME_WR]) as [YYYY], COUNT(*) as CNT"
-                                    + @" FROM [dbo].[logging]"
-                                    + @" WHERE [ID_USER]=" + (int)Args[0]
-                                    + @" GROUP BY DATEPART (DD, [DATETIME_WR]), DATEPART (MM, [DATETIME_WR]), DATEPART (YYYY, [DATETIME_WR])"
-                                    + @" ORDER BY [DD]";
-                                break;
-                            case StatesMachine.UserByType:
-                                bool byDate = !((DateTime)Args [1]).Equals (DateTime.MaxValue)
-                                    , byUser = !string.IsNullOrEmpty(((string)Args [3]).Trim());
-
-                                if (byDate == true) {
-                                //диапазон даты/времени
-                                    where = "WHERE DATETIME_WR BETWEEN '" + ((DateTime)Args [1]).ToString ("yyyyMMdd HH:mm:ss") + "'";
-                                    if (((DateTime)Args [2]).Equals (DateTime.MaxValue) == false) {
-                                        where += " AND '" + ((DateTime)Args [2]).ToString ("yyyyMMdd HH:mm:ss") + "'";
-                                    } else
-                                        ;
-                                } else
-                                    ;
-
-                                if (byUser == true) {
-                                //добавление идентификаторов пользователей к условиям выборки
-                                    if (string.IsNullOrEmpty(where) == true)
-                                        where += "WHERE";
-                                    else
-                                        where += " AND";
-                                    where += " ID_USER in (" + ((string)Args [3]) + ")";
-                                    strRes += where;
-                                } else
-                                    ;
-
-                                strRes = $"SELECT [ID_LOGMSG], COUNT (*) as [COUNT] FROM [dbo].[logging] {where} GROUP BY [ID_LOGMSG] ORDER BY [ID_LOGMSG]";
-                                break;
-                            default:
-                                break;
-                        }
-
-                        return strRes;
-                    }
-                }
-
-                #endregion
-
-                public STATE State;
-
-                public REQUEST (StatesMachine key, object arg)
-                {
-                    Key = key;
-
-                    if (Equals (arg, null) == false)
-                        if (arg is Array) {
-                            Args = new object [(arg as object []).Length];
-
-                            for (int i = 0; i < Args.Length; i++)
-                                Args [i] = (arg as object []) [i];
-                        } else
-                            Args = new object [] { arg };
-                    else
-                        Args = new object [] { };
-
-                    State = STATE.Ready;
-                }
-
-                public bool IsEmpty
-                {
-                    get
-                    {
-                        return Args == null;
-                    }
-                }
-            }
-
-            public event Action<REQUEST, DataTable> EventCommandCompleted;
-
-            public HLoggingReadHandlerDb ()
-            {
-                m_connSett = new ConnectionSettings();
-                m_serverTime = DateTime.MinValue;
-                _requests = new List<REQUEST>();
-            }
-
-            public void SetConnectionSettings (ConnectionSettings connSett)
-            {
-                m_connSett = connSett;
-            }
-
-            private int ListenerIdConfigDb
-            {
-                get
-                {
-                    return m_dictIdListeners[0][(int)CONN_SETT_TYPE.CONFIG_DB];
-                }
-            }
-
-            private int ListenerIdMainDb
-            {
-                get
-                {
-                    return m_dictIdListeners [0] [(int)CONN_SETT_TYPE.LIST_SOURCE];
-                }
-            }
-
-            public override void ClearValues ()
-            {
-                throw new NotImplementedException ();
-            }
-
-            public override void StartDbInterfaces ()
-            {
-                if (m_connSett.IsEmpty == false) {
-                    if (m_dictIdListeners.ContainsKey(0) == false)
-                        m_dictIdListeners.Add(0, new int[] { -1, -1 });
-                    else
-                        ;
-
-                    //register(0, (int)CONN_SETT_TYPE.CONFIG_DB, FormMain.s_listFormConnectionSettings[(int)CONN_SETT_TYPE.CONFIG_DB].getConnSett(), m_connSett.name);
-                    register(0, (int)CONN_SETT_TYPE.LIST_SOURCE, m_connSett, m_connSett.name);
-                } else
-                    throw new InvalidOperationException("PanelAnalyzer_DB.HLoggingReadHandlerDb::StartDbInterfaces () - ");
-            }
-
-            /// <summary>
-            /// Добавить состояния в набор для обработки
-            /// данных 
-            /// </summary>
-            public void Command (StatesMachine state/*, Action <object, int> handlerCommand*/)
-            {
-                Command(state, null/*, handlerCommand*/);
-            }
-
-            public void Command(StatesMachine state, object args/*, Action<object, int> handlerCommand*/)
-            {
-                lock (m_lockState) {
-                    //ClearStates();
-
-                    AddState((int)StatesMachine.ServerTime);
-                    AddState((int)state);
-
-                    Logging.Logg().Debug($"PanelAnalyzer.HLoggingReadHandlerDb::Command () - добавлено {state}...", Logging.INDEX_MESSAGE.NOT_SET);
-                    _requests.Add(new REQUEST (state, args));
-
-                    Run(@"PanelAnalyzer.HLoggingReadHandlerDb::Command () - run...");
-                }
-            }
-
-            /// <summary>
-            /// Получить результат обработки события
-            /// </summary>
-            /// <param name="state">Событие для получения результата</param>
-            /// <param name="error">Признак ошибки при получении результата</param>
-            /// <param name="outobj">Результат запроса</param>
-            /// <returns>Признак получения результата</returns>
-            protected override int StateCheckResponse (int state, out bool error, out object outobj)
-            {
-                int iRes = 0;
-
-                error = false;
-                outobj = new DataTable();
-
-                StatesMachine statesMachine = (StatesMachine)state;
-
-                switch (statesMachine) {
-                    case StatesMachine.ServerTime:
-                    case StatesMachine.ProcChecked:
-                    case StatesMachine.ToUserByDate:
-                    case StatesMachine.ToUserGroupDate:
-                    case StatesMachine.UserByType:
-                        iRes = response (m_IdListenerCurrent, out error, out outobj);
-                        break;
-                    default:
-                        error = true;
-                        outobj = null;
-                        break;
-                }
-
-                return iRes;
-            }
-
-            /// <summary>
-            /// Функция обратного вызова при возникновения ситуации "ошибка"
-            ///  при обработке списка состояний
-            /// </summary>
-            /// <param name="state">Состояние при котором возникла ситуация</param>
-            /// <param name="req">Признак результата выполнения запроса</param>
-            /// <param name="res">Признак возвращения результата при запросе</param>
-            /// <returns>Индекс массива объектов синхронизации</returns>
-            protected override INDEX_WAITHANDLE_REASON StateErrors (int state, int req, int res)
-            {
-                INDEX_WAITHANDLE_REASON iRes = INDEX_WAITHANDLE_REASON.SUCCESS;
-
-                func_Completed("StateErrors", (StatesMachine)state, new DataTable(), res);
-
-                errorReport (@"Получение значений из БД - состояние: " + ((StatesMachine)state).ToString ());
-
-                return iRes;
-            }
-
-            protected override int StateRequest (int state)
-            {
-                int iRes = 0;
-
-                REQUEST req;
-                StatesMachine stateMachine = (StatesMachine)state;
-
-                switch (stateMachine) {
-                    case StatesMachine.ServerTime:
-                        GetCurrentTimeRequest (DbInterface.DB_TSQL_INTERFACE_TYPE.MSSQL, ListenerIdMainDb);
-                        actionReport (@"Получение времени с сервера БД - состояние: " + ((StatesMachine)state).ToString ());
-                        break;
-                    case StatesMachine.ProcChecked:
-                    case StatesMachine.ToUserByDate:
-                    case StatesMachine.ToUserGroupDate:
-                    case StatesMachine.UserByType:
-                        req = getFirstRequst (stateMachine);
-                        if (req.IsEmpty == false) {
-                            Request (ListenerIdMainDb, req.Query);
-                        } else
-                            ;
-                        actionReport (@"Получение значений из БД - состояние: " + ((StatesMachine)state).ToString ());
-                        break;
-                    default:
-                        break;
-                }
-
-                return iRes;
-            }
-
-            /// <summary>
-            /// Обработка УСПЕШНО полученного результата
-            /// </summary>
-            /// <param name="state">Состояние для результата</param>
-            /// <param name="table">Значение результата</param>
-            /// <returns>Признак обработки результата</returns>
-            protected override int StateResponse (int state, object table)
-            {
-                int iRes = 0;
-
-                StatesMachine stateMachine = (StatesMachine)state;
-
-                switch (stateMachine) {
-                    case (int)StatesMachine.ServerTime:
-                        m_serverTime = ((DateTime)(table as DataTable).Rows [0] [0]);
-                        break;
-                    case StatesMachine.ProcChecked:
-                    case StatesMachine.ToUserByDate:
-                    case StatesMachine.ToUserGroupDate:
-                    case StatesMachine.UserByType:
-                        func_Completed("StateResponse", (StatesMachine)state, table, iRes);
-                        break;
-                    default:
-                        break;
-                }
-
-                //Проверить признак крайнего в наборе состояний для обработки
-                if (isLastState (state) == true) {
-                    //Удалить все сообщения в строке статуса
-                    ReportClear(true);
-                } else
-                    ;
-
-                return iRes;
-            }
-
-            protected override void StateWarnings (int state, int req, int res)
-            {
-                throw new NotImplementedException ();
-            }
-
-            private REQUEST getFirstRequst(StatesMachine state)
-            {
-                if (_requests.Select(h => h.Key).Contains<StatesMachine>(state) == true)
-                    return _requests.First(h => { return h.Key == state; });
-                else
-                    return new REQUEST(state, null);
-            }
-
-            private void func_Completed(string nameFunc, StatesMachine state, object obj, int err)
-            {
-                REQUEST req =
-                    getFirstRequst(state)
-                    //_handlers.Pop()
-                    ;
-
-                req.State = err == 0 ? REQUEST.STATE.Ok : REQUEST.STATE.Error;
-
-                //handler.Function.Invoke(obj, err);
-                EventCommandCompleted(req, obj as DataTable);
-
-                Logging.Logg().Debug($"PanelAnalyzer.HLoggingReadHandlerDb::Command () - удалено {state}...", Logging.INDEX_MESSAGE.NOT_SET);
-                _requests.Remove(req);
             }
         }
     }

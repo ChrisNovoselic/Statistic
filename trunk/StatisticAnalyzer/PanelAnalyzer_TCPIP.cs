@@ -173,7 +173,7 @@ namespace StatisticAnalyzer
             base.Start();
         }
 
-        protected override void procChecked(out bool[] arbActives, out int err)
+        protected override bool [] procChecked ()
         {
             throw new NotImplementedException();
         }

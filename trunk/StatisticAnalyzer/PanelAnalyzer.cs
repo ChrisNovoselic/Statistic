@@ -963,9 +963,8 @@ namespace StatisticAnalyzer
         /// <summary>
         /// Проверка запуска пользователем ПО
         /// </summary>
-        /// <param name="arbActives">Массив занчений активности каждого пользователя</param>
-        /// <param name="err">Ошибка</param>
-        protected abstract void procChecked(out bool[] arbActives, out int err);
+        /// <return>Массив занчений активности каждого пользователя</return>
+        protected abstract bool [] procChecked();
 
         /// <summary>
         /// Запись значений активности в CheckBox на DataGridView с пользователями
@@ -1099,7 +1098,7 @@ namespace StatisticAnalyzer
         public void FillDataGridViews(ref DataGridView ctrl, DataTable src, string nameField, int run, bool checkDefault = false)
         {
             bool bCheckedItem = false
-                , bSetTag = false; ;
+                , bSetTag = false;
 
             if (run == 0)
             {
@@ -1369,14 +1368,14 @@ namespace StatisticAnalyzer
             // 2 - дата/время - окончание
             // 3 - 
             // 4 - идентификатор пользователя
-            selectLogMessage((int)pars[4], ((string)pars[0]), ((DateTime)pars[1]), ((DateTime)pars[1]).AddDays(1), filldgvLogMessages);
+            selectLogMessage((int)pars[4], ((string)pars[0]), ((DateTime)pars[1]), ((DateTime)pars[1]).AddDays(1), null);
         }
 
         /// <summary>
         /// Вызов метода заполнения таблицы с лог-сообщениями
         /// </summary>
-        /// <param name="rows"></param>
-        private void filldgvLogMessages(DataRow[] rows)
+        /// <param name="rows">Перечень строк с  сообщениями журнала</param>
+        protected void filldgvLogMessages (DataRow[] rows)
         {
             DelegateObjectFunc delegateAppendText = new DelegateObjectFunc(TabLoggingAppendText);
             string strRowsTodgvLogMessages = string.Empty;
@@ -1399,7 +1398,6 @@ namespace StatisticAnalyzer
                         try
                         {
                             strRowsTodgvLogMessages += getTabLoggingTextRow(rows[i]) + m_chDelimeters[(int)INDEX_DELIMETER.ROW];
-
                         }
                         catch (Exception e)
                         {
@@ -1799,44 +1797,51 @@ namespace StatisticAnalyzer
                 }
             else
             {
-                bool[] arbActives;
-                procChecked(out arbActives, out err);
-
-                if ((!(arbActives == null)) && (err == 0))
-                {
-                    List<int> listIndexToRemoveUsers = new List<int>();
-
-                    for (i = 0; (i < m_tableUsers.Rows.Count) && (i < arbActives.Length); i++)
-                    {
-                        if (((arbActives[i] == true) && (bool.Parse(dgvFilterActives.Rows[0].Cells[0].Value.ToString()) == false))
-                            || ((arbActives[i] == false) && (bool.Parse(dgvFilterActives.Rows[1].Cells[0].Value.ToString()) == false)))
-                        {
-                            listIndexToRemoveUsers.Add(i);
-                        }
-                        else
-                            ;
-                    }
-
-                    if (listIndexToRemoveUsers.Count > 0)
-                    {
-                        listIndexToRemoveUsers.Sort(delegate(int i1, int i2) { return i1 > i2 ? -1 : 1; });
-
-                        //Удалить обработанные сообщения
-                        foreach (int indx in listIndexToRemoveUsers)
-                            m_tableUsers.Rows.RemoveAt(indx);
-
-                        m_tableUsers.AcceptChanges();
-                    }
-                    else
-                        ;
-                }
-                else
-                    ;
+                tableUserFiltered (procChecked ());
             }
 
             FillDataGridViews(ref dgvClient, m_tableUsers, c_list_sorted, err);
 
             activateTimerChecked (true);
+        }
+
+        protected void updatedgvClientState (bool []arbActives)
+        {
+            for (int i = 0; (i < m_tableUsers.Rows.Count)
+                    && (m_bThreadTimerCheckedAllowed == true)
+                    && (i < arbActives.Length);
+                i++)
+                dgvClient.Rows [i].Cells [0].Value = arbActives [i];
+        }
+
+        protected void tableUserFiltered (bool [] arbActives)
+        {
+            if ((!(arbActives == null))
+                && (arbActives.Length > 0)) {
+                List<int> listIndexToRemoveUsers = new List<int> ();
+
+                for (int i = 0; (i < m_tableUsers.Rows.Count) && (i < arbActives.Length); i++) {
+                    if (((arbActives [i] == true) && (bool.Parse (dgvFilterActives.Rows [0].Cells [0].Value.ToString ()) == false))
+                        || ((arbActives [i] == false) && (bool.Parse (dgvFilterActives.Rows [1].Cells [0].Value.ToString ()) == false))) {
+                        listIndexToRemoveUsers.Add (i);
+                    } else
+                        ;
+                }
+
+                if (listIndexToRemoveUsers.Count > 0) {
+                    listIndexToRemoveUsers.Sort (delegate (int i1, int i2) {
+                        return i1 > i2 ? -1 : 1;
+                    });
+
+                    //Удалить строки с неактивными пользователями
+                    foreach (int indx in listIndexToRemoveUsers)
+                        m_tableUsers.Rows.RemoveAt (indx);
+
+                    m_tableUsers.AcceptChanges ();
+                } else
+                    ;
+            } else
+                ;
         }
 
         /// <summary>

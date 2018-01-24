@@ -124,6 +124,12 @@
     <Compile Include="FormMain.designer.cs">
       <DependentUpon>FormMain.cs</DependentUpon>
     </Compile>
+    <Compile Include="LoggingReadHandlerDb.cs">
+      <SubType>Component</SubType>
+    </Compile>
+    <Compile Include="LoggingReadHandlerQueue.cs">
+      <SubType>Component</SubType>
+    </Compile>
     <Compile Include="PanelAnalyzer.cs">
       <SubType>Component</SubType>
     </Compile>
