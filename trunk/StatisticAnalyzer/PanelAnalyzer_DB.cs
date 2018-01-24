@@ -20,7 +20,7 @@ namespace StatisticAnalyzer
         /// Экземпляр класса 
         ///  для подключения/отправления/получения запросов к БД
         /// </summary>
-        private HLoggingReadHandlerQueue m_loggingReadHandlerQueue;
+        private HLoggingReadHandlerDb m_loggingReadHandlerDb;
 
         public PanelAnalyzer_DB (List<StatisticCommon.TEC> tec, Color foreColor, Color backColor)
             : base(tec, foreColor, backColor)
@@ -33,7 +33,7 @@ namespace StatisticAnalyzer
             checkBoxs[(int)FormChangeMode.MODE_TECCOMPONENT.TG].CheckedChanged += new EventHandler(checkBox_click);
             checkBoxs[(int)FormChangeMode.MODE_TECCOMPONENT.ANY].CheckedChanged += new EventHandler(checkBox_click);
 
-            m_loggingReadHandlerDb = new HLoggingReadHandlerQueue ();
+            m_loggingReadHandlerDb = new HLoggingReadHandlerDb ();
 
             _handlers = new Dictionary<HLoggingReadHandlerDb.StatesMachine, Action<HLoggingReadHandlerDb.REQUEST, DataTable>> () {
                 { HLoggingReadHandlerDb.StatesMachine.ProcCheckedState, handlerCommandProcChecked }
@@ -99,21 +99,21 @@ namespace StatisticAnalyzer
         /// </summary>
         public override void Stop ()
         {
-            m_loggingReadHandlerQueue.Activate (false); m_loggingReadHandlerQueue.Stop ();
+            m_loggingReadHandlerDb.Activate (false); m_loggingReadHandlerDb.Stop ();
 
             base.Stop ();
         }
 
-        private Dictionary<HLoggingReadHandlerQueue.States, Action<HLoggingReadHandlerQueue.REQUEST , DataTable >> _handlers;
+        private Dictionary<HLoggingReadHandlerDb.StatesMachine, Action<HLoggingReadHandlerDb.REQUEST , DataTable >> _handlers;
 
         private void loggingReadHandlerDb_onCommandCompleted (HLoggingReadHandlerDb.REQUEST req, DataTable tableRes)
         {
             switch (req.Key) {
-                case HLoggingReadHandlerQueue.StatesMachine.ProcCheckedState:
-                case HLoggingReadHandlerQueue.StatesMachine.ProcCheckedFilter:
-                case HLoggingReadHandlerQueue.StatesMachine.ToUserByDate:
-                case HLoggingReadHandlerQueue.StatesMachine.ToUserGroupDate:
-                case HLoggingReadHandlerQueue.StatesMachine.UserByType:
+                case HLoggingReadHandlerDb.StatesMachine.ProcCheckedState:
+                case HLoggingReadHandlerDb.StatesMachine.ProcCheckedFilter:
+                case HLoggingReadHandlerDb.StatesMachine.ToUserByDate:
+                case HLoggingReadHandlerDb.StatesMachine.ToUserGroupDate:
+                case HLoggingReadHandlerDb.StatesMachine.UserByType:
                     _handlers [req.Key](req, tableRes);
                     break;
                 default:

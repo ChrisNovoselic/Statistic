@@ -1938,11 +1938,13 @@ namespace StatisticAnalyzer
         /// </summary>
         private void dgvUser_CellClick(object sender, DataGridViewCellEventArgs e)
         {
-            dgvUser.Rows[e.RowIndex].Cells[0].Value = !bool.Parse(dgvUser.Rows[e.RowIndex].Cells[0].Value.ToString());//фиксация положения
-
-
-
-            updateCounter(DATAGRIDVIEW_LOGCOUNTER.MESSAGES, HDateTime.ToMoscowTimeZone(StartCalendar.Value.Date), HDateTime.ToMoscowTimeZone(StopCalendar.Value.Date), get_users(m_tableUsers_stat, dgvUser, true));//обновление списка со статистикой сообщений
+            //фиксация положения
+            dgvUser.Rows[e.RowIndex].Cells[0].Value = !bool.Parse(dgvUser.Rows[e.RowIndex].Cells[0].Value.ToString());
+            //обновление списка со статистикой сообщений
+            updateCounter(DATAGRIDVIEW_LOGCOUNTER.MESSAGES
+                , HDateTime.ToMoscowTimeZone(StartCalendar.Value.Date)
+                , HDateTime.ToMoscowTimeZone(StopCalendar.Value.Date)
+                , get_users(m_tableUsers_stat, dgvUser, true));
         }
         
         /// <summary>

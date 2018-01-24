@@ -7,13 +7,14 @@ using System.Collections.Generic;
 using System.Data;
 using System.Linq;
 using System.Text;
+using System.Collections;
 
 namespace StatisticAnalyzer
 {
     partial class PanelAnalyzer_DB
     {
-        private partial class HLoggingReadHandlerQueue
-        {
+        //private partial class HLoggingReadHandlerQueue
+        //{
             private class HLoggingReadHandlerDb : HHandlerDb
             {
                 private ConnectionSettings m_connSett;
@@ -39,8 +40,6 @@ namespace StatisticAnalyzer
 
                     public object[] Args;
 
-                    //public Action<object, int> Function;
-
                     #region Запрос
 
                     public string Query
@@ -50,12 +49,12 @@ namespace StatisticAnalyzer
                             string strRes = string.Empty
                                 , where = string.Empty;
 
-                            if (((Key == StatesMachine.ProcCheckedState)
-                                    || (Key == StatesMachine.ProcCheckedFilter))
+                            if (((Key == StatesMachine.ProcCheckedFilter)
+                                    || (Key == StatesMachine.ProcCheckedState))
                                 || (Args.Length > 0))
                                 switch (Key) {
-                                    case StatesMachine.ProcCheckedState:
                                     case StatesMachine.ProcCheckedFilter:
+                                    case StatesMachine.ProcCheckedState:
                                         strRes = @"SELECT [ID_USER], MAX ([DATETIME_WR]) as MAX_DATETIME_WR FROM logging GROUP BY [ID_USER] ORDER BY [ID_USER]";
                                         break;
                                     case StatesMachine.ToUserByDate:
@@ -132,7 +131,7 @@ namespace StatisticAnalyzer
 
                         if (Equals (arg, null) == false)
                             if (arg is Array) {
-                                Args = new object [(arg as object []).Length];
+                                Args = new object[(arg as object []).Length];
 
                                 for (int i = 0; i < Args.Length; i++)
                                     Args [i] = (arg as object []) [i];
@@ -142,14 +141,41 @@ namespace StatisticAnalyzer
                             Args = new object [] { };
 
                         State = STATE.Ready;
+
+                        Logging.Logg().Debug($"PanelAnalyzer.HLoggingReadHandlerDb.REQUEST::ctor (Key={Key}) - новое args:{toString()}...", Logging.INDEX_MESSAGE.NOT_SET);
                     }
 
                     public bool IsEmpty
                     {
                         get
                         {
-                            return Args == null;
+                            return Equals(Args, null) == true ? true : Args.Length == 0;
                         }
+                    }
+
+                    private string toString()
+                    {
+                        string strRes = string.Empty;
+
+                        switch(Key) {
+                            case StatesMachine.ProcCheckedFilter:
+                            case StatesMachine.ProcCheckedState:
+                                strRes = $"не требуется";
+                                break;
+                            case StatesMachine.ToUserByDate:
+                                strRes = $"IdUser={Args[0]}, Type={Args[1]}, Period=[{(DateTime)Args[2]}, {(DateTime)Args[3]}]";
+                                break;
+                            case StatesMachine.ToUserGroupDate:
+                                strRes = $"IdUser={Args[0]}";
+                                break;
+                            case StatesMachine.UserByType:
+                                strRes = $"Tag={((DATAGRIDVIEW_LOGCOUNTER)Args[0]).ToString()}, Period=[{(DateTime)Args[1]}, {(DateTime)Args[2]}], Users={Args[3]}";
+                                break;
+                            default:
+                                break;
+                        }
+
+                        return strRes;
                     }
                 }
 
@@ -229,7 +255,6 @@ namespace StatisticAnalyzer
                             ;
                         AddState((int)state);
 
-                        Logging.Logg().Debug($"PanelAnalyzer.HLoggingReadHandlerDb::Command () - добавлено {state}...", Logging.INDEX_MESSAGE.NOT_SET);
                         _requests.Add(new REQUEST (state, args));
 
                         Run(@"PanelAnalyzer.HLoggingReadHandlerDb::Command () - run...");
@@ -254,8 +279,8 @@ namespace StatisticAnalyzer
 
                     switch (statesMachine) {
                         case StatesMachine.ServerTime:
-                        case StatesMachine.ProcCheckedState:
                         case StatesMachine.ProcCheckedFilter:
+                        case StatesMachine.ProcCheckedState:
                         case StatesMachine.ToUserByDate:
                         case StatesMachine.ToUserGroupDate:
                         case StatesMachine.UserByType:
@@ -301,8 +326,8 @@ namespace StatisticAnalyzer
                             GetCurrentTimeRequest (DbInterface.DB_TSQL_INTERFACE_TYPE.MSSQL, ListenerIdMainDb);
                             actionReport (@"Получение времени с сервера БД - состояние: " + ((StatesMachine)state).ToString ());
                             break;
-                        case StatesMachine.ProcCheckedState:
                         case StatesMachine.ProcCheckedFilter:
+                        case StatesMachine.ProcCheckedState:
                         case StatesMachine.ToUserByDate:
                         case StatesMachine.ToUserGroupDate:
                         case StatesMachine.UserByType:
@@ -339,8 +364,8 @@ namespace StatisticAnalyzer
                         case (int)StatesMachine.ServerTime:
                             m_serverTime = ((DateTime)(table as DataTable).Rows [0] [0]);
                             break;
-                        case StatesMachine.ProcCheckedState:
                         case StatesMachine.ProcCheckedFilter:
+                        case StatesMachine.ProcCheckedState:
                         case StatesMachine.ToUserByDate:
                         case StatesMachine.ToUserGroupDate:
                         case StatesMachine.UserByType:
@@ -362,7 +387,7 @@ namespace StatisticAnalyzer
 
                 protected override void StateWarnings (int state, int req, int res)
                 {
-                    throw new NotImplementedException ();
+                    warningReport (@"Получение значений из БД - состояние: " + ((StatesMachine)state).ToString ());
                 }
 
                 private REQUEST getFirstRequst(StatesMachine state)
@@ -403,6 +428,6 @@ namespace StatisticAnalyzer
                         ;
                 }
             }
-        }
+        //}
     }
 }
