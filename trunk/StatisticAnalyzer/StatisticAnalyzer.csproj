@@ -127,6 +127,12 @@
     <Compile Include="PanelAnalyzer.cs">
       <SubType>Component</SubType>
     </Compile>
+    <Compile Include="PanelAnalyzer_DB.cs">
+      <SubType>Component</SubType>
+    </Compile>
+    <Compile Include="PanelAnalyzer_TCPIP.cs">
+      <SubType>Component</SubType>
+    </Compile>
     <Compile Include="Program.cs" />
     <Compile Include="Properties\AssemblyInfo.cs" />
     <EmbeddedResource Include="FormMain.resx">

@@ -1295,8 +1295,10 @@ namespace Statistic
                 //                            else
                 //                                ;
 
-
-                ((HPanelCommon)tclTecViews.TabPages[indx].Controls[0]).Activate(active);
+                if (tclTecViews.TabPages [indx].Controls.Count > 0)
+                    ((HPanelCommon)tclTecViews.TabPages [indx].Controls [0]).Activate (active);
+                else
+                    strMsgDebug = $"FormMain::activateTabPage () - indx={indx}, active={active.ToString ()} не применено: для вкладка вызван 'Dispose'";
             }
             else
                 strMsgDebug = @"FormMain::activateTabPage () - indx=" + indx + @", active=" + active.ToString();
