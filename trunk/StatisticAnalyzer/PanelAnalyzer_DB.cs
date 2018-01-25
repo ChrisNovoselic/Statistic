@@ -14,14 +14,6 @@ namespace StatisticAnalyzer
 {
     public partial class PanelAnalyzer_DB : PanelAnalyzer
     {
-        //private static string _nameShrMainDB = "MAIN_DB";
-
-        /// <summary>
-        /// Экземпляр класса 
-        ///  для подключения/отправления/получения запросов к БД
-        /// </summary>
-        private HLoggingReadHandlerDb m_loggingReadHandlerDb;
-
         public PanelAnalyzer_DB (List<StatisticCommon.TEC> tec, Color foreColor, Color backColor)
             : base(tec, foreColor, backColor)
         {
@@ -32,18 +24,6 @@ namespace StatisticAnalyzer
             checkBoxs[(int)FormChangeMode.MODE_TECCOMPONENT.TEC].CheckedChanged += new EventHandler(checkBox_click);
             checkBoxs[(int)FormChangeMode.MODE_TECCOMPONENT.TG].CheckedChanged += new EventHandler(checkBox_click);
             checkBoxs[(int)FormChangeMode.MODE_TECCOMPONENT.ANY].CheckedChanged += new EventHandler(checkBox_click);
-
-            m_loggingReadHandlerDb = new HLoggingReadHandlerDb ();
-
-            _handlers = new Dictionary<HLoggingReadHandlerDb.StatesMachine, Action<HLoggingReadHandlerDb.REQUEST, DataTable>> () {
-                { HLoggingReadHandlerDb.StatesMachine.ProcCheckedState, handlerCommandProcChecked }
-                , { HLoggingReadHandlerDb.StatesMachine.ProcCheckedFilter, handlerCommandProcChecked }
-                , { HLoggingReadHandlerDb.StatesMachine.ToUserByDate, handlerCommandToUserByDate }
-                , { HLoggingReadHandlerDb.StatesMachine.ToUserGroupDate, handlerCommandToUserGroupDate }
-                , { HLoggingReadHandlerDb.StatesMachine.UserByType, handlerCommandUserByType }
-            };
-            // зарегистрировать асинхронное соединение с БД_конфигурации
-            m_loggingReadHandlerDb.EventCommandCompleted += loggingReadHandlerDb_onCommandCompleted;
         }
 
         #region Наследуемые методы
@@ -62,8 +42,6 @@ namespace StatisticAnalyzer
             int err = -1, 
                 idMainDB = -1;
 
-            base.Start ();
-
             DbTSQLConfigDatabase.DbConfig ().SetConnectionSettings ();
             DbTSQLConfigDatabase.DbConfig().Register();
 
@@ -74,64 +52,32 @@ namespace StatisticAnalyzer
                 if ((tblConnSettMainDB.Columns.Count > 0)
                     && (tblConnSettMainDB.Rows.Count > 0)) {
                 // "-1" - значит будет назначени идентификатор из БД
-                    m_loggingReadHandlerDb.SetConnectionSettings(new ConnectionSettings (tblConnSettMainDB.Rows [0], -1));
-                    m_loggingReadHandlerDb.SetDelegateReport(delegateErrorReport, delegateWarningReport, delegateActionReport, delegateReportClear);
-                    m_loggingReadHandlerDb.SetDelegateWait(delegateStartWait, delegateStopWait, delegate () { });
-                    m_loggingReadHandlerDb.StartDbInterfaces();
-                    m_loggingReadHandlerDb.Start ();
+                    LoggingReadHandler.SetConnectionSettings(new ConnectionSettings (tblConnSettMainDB.Rows [0], -1));
+                    LoggingReadHandler.SetDelegateReport(delegateErrorReport, delegateWarningReport, delegateActionReport, delegateReportClear);
+                    LoggingReadHandler.SetDelegateWait(delegateStartWait, delegateStopWait, delegate () { });
+                    LoggingReadHandler.StartDbInterfaces();
+                    LoggingReadHandler.Start ();
+
+                    //!!! только после 'старта' handler-а
+                    base.Start ();
                 } else
                     throw new Exception ($"PanelAnalyzer_DB::Start () - нет параметров соединения с БД значений ID={idMainDB}...");
-
-                base.Start ();
             } else
                 throw new Exception (@"PanelAnalyzer_DB::Start () - нет соединения с БД конфигурации...");
 
             DbTSQLConfigDatabase.DbConfig ().UnRegister ();
-
-            //dgvFilterTypeMessage.UpdateCounter(m_idListenerLoggingDB, DateTime.MinValue, DateTime.MaxValue, "");
-
-            //dgvMessage.UpdateCounter(m_idListenerLoggingDB, StartCalendar.Value.Date, StopCalendar.Value.Date, get_users(m_tableUsers_stat, dgvUser, true));
-
         }
 
-        /// <summary>
-        /// Остановка таймера обновления данных
-        /// </summary>
-        public override void Stop ()
+        protected override void handlerCommandCounterToTypeByFilter (PanelAnalyzer.REQUEST req, DataTable tableRes)
         {
-            m_loggingReadHandlerDb.Activate (false); m_loggingReadHandlerDb.Stop ();
+            m_dictDataGridViewLogCounter [(DATAGRIDVIEW_LOGCOUNTER)req.Args [0]].UpdateCounter (tableRes, (DateTime)req.Args [1], (DateTime)req.Args [2], (string)req.Args [3]);
 
-            base.Stop ();
+            delegateReportClear?.Invoke (true);
         }
 
-        private Dictionary<HLoggingReadHandlerDb.StatesMachine, Action<HLoggingReadHandlerDb.REQUEST , DataTable >> _handlers;
-
-        private void loggingReadHandlerDb_onCommandCompleted (HLoggingReadHandlerDb.REQUEST req, DataTable tableRes)
+        protected override void handlerCommandListMessageToUserByDate (PanelAnalyzer.REQUEST req, DataTable tableLogging)
         {
-            switch (req.Key) {
-                case HLoggingReadHandlerDb.StatesMachine.ProcCheckedState:
-                case HLoggingReadHandlerDb.StatesMachine.ProcCheckedFilter:
-                case HLoggingReadHandlerDb.StatesMachine.ToUserByDate:
-                case HLoggingReadHandlerDb.StatesMachine.ToUserGroupDate:
-                case HLoggingReadHandlerDb.StatesMachine.UserByType:
-                    _handlers [req.Key](req, tableRes);
-                    break;
-                default:
-                    throw new InvalidOperationException ("PanelAnalyzer_DB::loggingReadHandlerDb_onCommandCompleted () - неизвестный тип запроса...");
-                    break;
-            }
-        }
-
-        private void handlerCommandUserByType(HLoggingReadHandlerDb.REQUEST req, DataTable tableRes)
-        {
-            m_dictDataGridViewLogCounter[(DATAGRIDVIEW_LOGCOUNTER)req.Args[0]].UpdateCounter(tableRes, (DateTime)req.Args[1], (DateTime)req.Args [2], (string)req.Args[3]);
-
-            delegateReportClear?.Invoke(true);
-        }
-
-        private void handlerCommandToUserByDate(HLoggingReadHandlerDb.REQUEST req, DataTable tableLogging)
-        {
-            if (req.State == HLoggingReadHandlerDb.REQUEST.STATE.Ok) {
+            if (req.State == PanelAnalyzer.REQUEST.STATE.Ok) {
                 filldgvLogMessages(tableLogging.Select(string.Empty, @"DATE_TIME") as DataRow[]);
             } else
                 ;
@@ -139,22 +85,22 @@ namespace StatisticAnalyzer
             (m_LogParse as LogParse_DB).SetDataTable(tableLogging);
         }
 
-        private void handlerCommandToUserGroupDate(HLoggingReadHandlerDb.REQUEST req, DataTable tableRes)
+        protected override void handlerCommandListDateByUser (PanelAnalyzer.REQUEST req, DataTable tableRes)
         {
             m_LogParse.Start(new PARAM_THREAD_PROC {
-                Delimeter = m_chDelimeters[(int)INDEX_DELIMETER.PART]
+                Delimeter = s_chDelimeters[(int)INDEX_DELIMETER.PART]
                 , TableLogging = tableRes
             });
         }
 
-        private void handlerCommandProcChecked (HLoggingReadHandlerDb.REQUEST req, DataTable tableRes)
+        protected override void handlerCommandProcChecked (PanelAnalyzer.REQUEST req, DataTable tableRes)
         {
             int i = -1
                 , msecSleep = System.Threading.Timeout.Infinite;
             bool[] arbActives;
             DataRow[] rowsUserMaxDatetimeWR;
 
-            if (req.State == HLoggingReadHandlerDb.REQUEST.STATE.Ok) {
+            if (req.State == PanelAnalyzer.REQUEST.STATE.Ok) {
                 arbActives = new bool [m_tableUsers.Rows.Count];
 
                 for (i = 0;
@@ -178,11 +124,11 @@ namespace StatisticAnalyzer
                 }
 
                 if (!(arbActives == null)) {
-                    if (req.Key == HLoggingReadHandlerDb.StatesMachine.ProcCheckedState)
+                    if (req.Key == StatesMachine.ProcCheckedState)
                         updatedgvClientState (arbActives);
-                    else if (req.Key == HLoggingReadHandlerDb.StatesMachine.ProcCheckedFilter) {
+                    else if (req.Key == StatesMachine.ProcCheckedFilter) {
                         tableUserFiltered (arbActives);
-                        FillDataGridViews (ref dgvClient, m_tableUsers, c_list_sorted, 0);
+                        dgvUserView.Fill (m_tableUsers, c_list_sorted, 0);
                     } else
                         ;
 
@@ -210,20 +156,21 @@ namespace StatisticAnalyzer
         {
             delegateActionReport("Получаем список активных пользователей");
 
-            m_loggingReadHandlerDb.Command(HLoggingReadHandlerDb.StatesMachine.ProcCheckedState);
+            LoggingReadHandler.Command(StatesMachine.ProcCheckedState);
         }
 
         /// <summary>
         /// Метод для получения из БД списка активных вкладок для выбранного пользователя
         /// </summary>
         /// <param name="user">Пользователь для выборки</param>
-        protected override void fill_active_tabs(int user)
+        protected override IEnumerable<int> fill_active_tabs(int user)
         {
+            List<int> listRes = new List<int> ();
+
             int err = -1;
             int iRes = -1;
             string[] us ;
             string where = string.Empty;
-            List<int> ID_tabs = new List<int>();
             DataTable tableProfileTabs;
 
             delegateActionReport ("Получение активных вкладок пользователя");
@@ -310,19 +257,17 @@ namespace StatisticAnalyzer
                         {
                             string[] count;
                             count = us[i].Split('=');
-                            ID_tabs.Add(Convert.ToInt32(count[0]));//добавление идентификатора в список
+                            listRes.Add(Convert.ToInt32(count[0]));//добавление идентификатора в список
                         }
                         else
                         {
                             if (us[i] != "" & us[i] != " ")//фильтрация пустых идентификаторов
                             {
                                 if (IsNumberContains(us[i])==true)
-                                ID_tabs.Add(Convert.ToInt32(us[i]));//добавление идентификатора в список
+                                listRes.Add(Convert.ToInt32(us[i]));//добавление идентификатора в список
                             }
                         }
                     }
-
-                    fillListBoxTabVisible(ID_tabs);//Заполнение ListBox'а активными вкладками
                 }
             }
             else
@@ -331,6 +276,8 @@ namespace StatisticAnalyzer
             #endregion
 
             delegateReportClear (true);
+
+            return listRes;
         }
 
         /// <summary>
@@ -363,7 +310,7 @@ namespace StatisticAnalyzer
 
                             if (t.m_id.ToString() == ID_tabs[i].ToString() & tec_component == FormChangeMode.MODE_TECCOMPONENT.TEC)
                             //добавление ТЭЦ в ListBox
-                                listTabVisible.Items.Add(t.name_shr);
+                                listBoxTabVisible.Items.Add(t.name_shr);
                             else
                                 ;
 
@@ -379,7 +326,7 @@ namespace StatisticAnalyzer
 
                                     if (g.m_id.ToString() == ID_tabs[i].ToString())
                                     //Добавление вкладки в ListBox
-                                        listTabVisible.Items.Add($"{t.name_shr} - {g.name_shr}");
+                                        listBoxTabVisible.Items.Add($"{t.name_shr} - {g.name_shr}");
                                     else
                                         ;
                                 }
@@ -390,6 +337,14 @@ namespace StatisticAnalyzer
                     else
                         ;
                 }
+            }
+        }
+
+        private HLoggingReadHandlerDb LoggingReadHandler
+        {
+            get
+            {
+                return m_loggingReadHandler as HLoggingReadHandlerDb;
             }
         }
 
@@ -411,9 +366,9 @@ namespace StatisticAnalyzer
         /// <param name="id">ID пользователя</param>
         protected override void startLogParse(string id)
         {
-            dgvDatetimeStart.SelectionChanged -= dgvDatetimeStart_SelectionChanged;
+            dgvListDatetView.SelectionChanged -= dgvDatetimeStart_SelectionChanged;
 
-            m_loggingReadHandlerDb.Command(HLoggingReadHandlerDb.StatesMachine.ToUserGroupDate, new object [] { int.Parse(id) }, true);
+            LoggingReadHandler.Command(StatesMachine.ListDateByUser, new object [] { int.Parse(id) }, true);
         }
 
         /// <summary>
@@ -434,7 +389,7 @@ namespace StatisticAnalyzer
             //else
             //    ;
 
-            m_loggingReadHandlerDb.Command(HLoggingReadHandlerDb.StatesMachine.ToUserByDate, new object [] { id_user, type, beg, end }, false);
+            LoggingReadHandler.Command(StatesMachine.ListMessageToUserByDate, new object [] { id_user, type, beg, end }, false);
         }
 
         /// <summary>
@@ -453,7 +408,7 @@ namespace StatisticAnalyzer
                 dtVal = r["DATE_TIME"] as DateTime?;
 
 
-                strRes = string.Join(m_chDelimeters[(int)INDEX_DELIMETER.PART].ToString()
+                strRes = string.Join(s_chDelimeters[(int)INDEX_DELIMETER.PART].ToString()
                                     , new string[] {
                                             ((DateTime)dtVal).ToString (@"HH:mm:ss.fff")
                                             , r["TYPE"].ToString ()
@@ -477,7 +432,7 @@ namespace StatisticAnalyzer
         /// <param name="users">Список пользователей</param>
         protected override void updateCounter(DATAGRIDVIEW_LOGCOUNTER tag, DateTime start_date, DateTime end_date, string users)
         {
-            m_loggingReadHandlerDb.Command (HLoggingReadHandlerDb.StatesMachine.UserByType, new object [] { tag, start_date, end_date, users }, false);
+            LoggingReadHandler.Command (StatesMachine.CounterToTypeByFilter, new object [] { tag, start_date, end_date, users }, false);
         }
 
         /// <summary>
@@ -532,13 +487,15 @@ namespace StatisticAnalyzer
         /// <summary>
         /// Обработчик события выбора пользователя 
         /// </summary>
-        protected override void dgvClient_SelectionChanged(object sender, EventArgs e)
+        protected override void dgvUserView_SelectionChanged(object sender, EventArgs e)
         {
-            if ((dgvClient.SelectedRows.Count > 0) && (!(dgvClient.SelectedRows[0].Index < 0)))
+            if ((dgvUserView.SelectedRows.Count > 0)
+                && (!(dgvUserView.SelectedRows[0].Index < 0)))
             {
                 bool bUpdate = true;
 
-                if ((dgvDatetimeStart.Rows.Count > 0) && (dgvDatetimeStart.SelectedRows[0].Index < (dgvDatetimeStart.Rows.Count - 1)))
+                if ((dgvListDatetView.Rows.Count > 0)
+                    && (dgvListDatetView.SelectedRows[0].Index < (dgvListDatetView.Rows.Count - 1)))
                     if (e == null)
                         bUpdate = false;
                     else
@@ -546,12 +503,11 @@ namespace StatisticAnalyzer
                 else
                     ;
 
-                if (bUpdate == true)
-                {
+                if (bUpdate == true) {
                     //Останов потока разбора лог-файла пред. пользователя
                     m_LogParse.Stop();
 
-                    dgvDatetimeStart.SelectionChanged -= dgvDatetimeStart_SelectionChanged;
+                    dgvListDatetView.SelectionChanged -= dgvDatetimeStart_SelectionChanged;
 
                     //Очистить элементы управления с данными от пред. лог-файла
                     if (IsHandleCreated == true)
@@ -566,18 +522,20 @@ namespace StatisticAnalyzer
                             tabLoggingClearText(true);
                         }
                     else
-                        Logging.Logg().Error(@"FormMainAnalyzer_DB::dgvClient_SelectionChanged () - ... BeginInvoke (TabLoggingClearDatetimeStart, TabLoggingClearText) - ...", Logging.INDEX_MESSAGE.D_001);
+                        Logging.Logg().Error(@"FormMainAnalyzer_DB::dgvUserStatistic_SelectionChanged () - ... BeginInvoke (TabLoggingClearDatetimeStart, TabLoggingClearText) - ...", Logging.INDEX_MESSAGE.D_001);
 
-                    startLogParse (m_tableUsers.Rows [dgvClient.SelectedRows [0].Index] ["ID"].ToString ().Trim ());
+                    startLogParse (m_tableUsers.Rows [dgvUserView.SelectedRows [0].Index] ["ID"].ToString ().Trim ());
 
-                    updateCounter(DATAGRIDVIEW_LOGCOUNTER.FILTER_TYPE_MESSAGE, DateTime.Today, DateTime.Today.AddDays(1), get_users(m_tableUsers, dgvClient, false));
+                    //updateCounter(DATAGRIDVIEW_LOGCOUNTER.TYPE_TO_VIEW, DateTime.Today, DateTime.Today.AddDays(1), get_users(m_tableUsers, dgvUserView, false));
 
-                    listTabVisible.Items.Clear();//очистка списка активных вкладок
+                    listBoxTabVisible.Items.Clear();//очистка списка активных вкладок
 
                     DbTSQLConfigDatabase.DbConfig ().SetConnectionSettings ();
                     DbTSQLConfigDatabase.DbConfig ().Register ();
-
-                    fill_active_tabs ((int)m_tableUsers.Rows[dgvClient.SelectedRows[0].Index][0]);
+                    //Заполнение ListBox'а активными вкладками
+                    fillListBoxTabVisible (
+                        fill_active_tabs ((int)m_tableUsers.Rows [dgvUserView.SelectedRows [0].Index] [0]).ToList()
+                    );
 
                     DbTSQLConfigDatabase.DbConfig ().UnRegister ();
                 }
@@ -593,9 +551,11 @@ namespace StatisticAnalyzer
         /// </summary>
         protected void checkBox_click(object sender, EventArgs e)
         {
-            listTabVisible.Items.Clear();
+            listBoxTabVisible.Items.Clear();
 
-            fill_active_tabs((int)m_tableUsers.Rows[dgvClient.SelectedRows[0].Index][0]);
+            fillListBoxTabVisible (
+                fill_active_tabs ((int)m_tableUsers.Rows [dgvUserView.SelectedRows [0].Index] [0]).ToList ()
+            );
         }
 
         public override void LogParseExit ()
@@ -605,9 +565,19 @@ namespace StatisticAnalyzer
 
         protected override bool [] procChecked ()
         {
-            m_loggingReadHandlerDb.Command (HLoggingReadHandlerDb.StatesMachine.ProcCheckedFilter);
+            LoggingReadHandler.Command (StatesMachine.ProcCheckedFilter);
             // фиктивный результат для совместимости с синхронным вариантом
             return new bool [] { };
+        }
+
+        protected override ILoggingReadHandler newLoggingRead ()
+        {
+            return new HLoggingReadHandlerDb();
+        }
+
+        protected override void dgvUserStatistic_SelectionChanged (object sender, EventArgs e)
+        {
+            // throw new NotImplementedException ();
         }
 
         #endregion

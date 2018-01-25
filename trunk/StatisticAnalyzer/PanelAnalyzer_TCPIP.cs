@@ -29,7 +29,7 @@ namespace StatisticAnalyzer
             throw new NotImplementedException();
         }
 
-        protected override void fill_active_tabs(int user)
+        protected override IEnumerable<int> fill_active_tabs(int user)
         {
             throw new NotImplementedException();
         }
@@ -60,7 +60,7 @@ namespace StatisticAnalyzer
 
                         if (indxTcpClient < m_listTCPClientUsers.Count)
                         {
-                            dgvClient.Rows[indxTcpClient].Cells[0].Value = true;
+                            dgvUserView.Rows[indxTcpClient].Cells[0].Value = true;
                             m_listTCPClientUsers[indxTcpClient].Write(@"DISCONNECT");
 
                             m_listTCPClientUsers[indxTcpClient].Disconnect();
@@ -217,7 +217,7 @@ namespace StatisticAnalyzer
                 ;
         }
 
-        protected override void dgvClient_SelectionChanged(object sender, EventArgs e)
+        protected override void dgvUserStatistic_SelectionChanged(object sender, EventArgs e)
         {
             if (!(m_tcpClient == null))
             {
@@ -226,10 +226,10 @@ namespace StatisticAnalyzer
             else
                 ;
 
-            if ((dgvClient.SelectedRows.Count > 0) && (!(dgvClient.SelectedRows[0].Index < 0)))
+            if ((dgvUserView.SelectedRows.Count > 0) && (!(dgvUserView.SelectedRows[0].Index < 0)))
             {
                 bool bUpdate = true;
-                if ((dgvDatetimeStart.Rows.Count > 0) && (dgvDatetimeStart.SelectedRows[0].Index < (dgvDatetimeStart.Rows.Count - 1)))
+                if ((dgvListDatetView.Rows.Count > 0) && (dgvListDatetView.SelectedRows[0].Index < (dgvListDatetView.Rows.Count - 1)))
                     if (e == null)
                         bUpdate = false;
                     else
@@ -246,7 +246,7 @@ namespace StatisticAnalyzer
                     //Останов потока разбора лог-файла пред. пользователя
                     m_LogParse.Stop();
 
-                    dgvDatetimeStart.SelectionChanged -= dgvDatetimeStart_SelectionChanged;
+                    dgvListDatetView.SelectionChanged -= dgvDatetimeStart_SelectionChanged;
 
                     //Очистить элементы управления с данными от пред. лог-файла
                     if (IsHandleCreated/*InvokeRequired*/ == true)
@@ -263,7 +263,7 @@ namespace StatisticAnalyzer
                     m_tcpClient.delegateErrorConnect = errorConnect;
 
                     //m_tcpClient.Connect("localhost", 6666);
-                    m_tcpClient.Connect(m_tableUsers.Rows[dgvClient.SelectedRows[0].Index][c_NameFieldToConnect].ToString() + ";" + dgvClient.SelectedRows[0].Index, 6666);
+                    m_tcpClient.Connect(m_tableUsers.Rows[dgvUserView.SelectedRows[0].Index][c_NameFieldToConnect].ToString() + ";" + dgvUserView.SelectedRows[0].Index, 6666);
                 }
                 else
                     ; //Обновлять нет необходимости
@@ -278,7 +278,7 @@ namespace StatisticAnalyzer
             FileStream fs = fi.Open(FileMode.Open, FileAccess.Read, FileShare.Read);
             StreamReader sr = new StreamReader(fs, Encoding.GetEncoding("windows-1251"));
 
-            dgvDatetimeStart.SelectionChanged -= dgvDatetimeStart_SelectionChanged;
+            dgvListDatetView.SelectionChanged -= dgvDatetimeStart_SelectionChanged;
 
             m_LogParse.Start(sr.ReadToEnd());
 
@@ -295,7 +295,7 @@ namespace StatisticAnalyzer
         /// <param name="funcResult">Функция обратного вызова с массивом сообщений</param>
         protected override void selectLogMessage(int id_user, string type, DateTime beg, DateTime end, Action<DataRow[]> funcResult)
         {
-            funcResult (m_LogParse.Select(string.Empty, beg, end));
+            funcResult (m_LogParse.ByDate(string.Empty, beg, end));
         }
 
         protected override string getTabLoggingTextRow(DataRow r)
@@ -308,6 +308,36 @@ namespace StatisticAnalyzer
                 strRes = "[" + r["DATE_TIME"] + "]: " + r["MESSAGE"].ToString() + Environment.NewLine;
 
             return strRes;
+        }
+
+        protected override ILoggingReadHandler newLoggingRead ()
+        {
+            throw new NotImplementedException ();
+        }
+
+        protected override void handlerCommandCounterToTypeByFilter (REQUEST req, DataTable tableRes)
+        {
+            throw new NotImplementedException ();
+        }
+
+        protected override void handlerCommandListMessageToUserByDate (REQUEST req, DataTable tableLogging)
+        {
+            throw new NotImplementedException ();
+        }
+
+        protected override void handlerCommandListDateByUser (REQUEST req, DataTable tableRes)
+        {
+            throw new NotImplementedException ();
+        }
+
+        protected override void handlerCommandProcChecked (REQUEST req, DataTable tableRes)
+        {
+            throw new NotImplementedException ();
+        }
+
+        protected override void dgvUserView_SelectionChanged (object sender, EventArgs e)
+        {
+            throw new NotImplementedException ();
         }
 
         class LogParse_File : LogParse
