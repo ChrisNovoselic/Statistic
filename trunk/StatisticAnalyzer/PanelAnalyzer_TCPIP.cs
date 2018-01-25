@@ -179,17 +179,17 @@ namespace StatisticAnalyzer
         }
 
         protected override void procChecked(object obj)
-        //protected override void ProcChecked(object obj, EventArgs ev)
         {
             int i = -1;
-            for (i = 0; (i < m_tableUsers.Rows.Count) && (m_bThreadTimerCheckedAllowed == true); i++)
-            {
+            for (i = 0;
+                (i < m_tableUsers.Rows.Count)
+                    && (m_bThreadTimerCheckedAllowed == true);
+                i++)
                 //Проверка активности
                 m_listTCPClientUsers[i].Connect(m_tableUsers.Rows[i][c_NameFieldToConnect].ToString() + ";" + i, 6666);
-            }
 
             //Вариант №0
-            m_timerChecked.Change(MSEC_TIMERCHECKED_STANDARD, System.Threading.Timeout.Infinite);
+            m_timerProcChecked.Change(MSEC_TIMERCHECKED_STANDARD, System.Threading.Timeout.Infinite);
             ////Вариант №1
             //if (! (m_timerChecked.Interval == MSEC_TIMERCHECKED_STANDARD)) m_timerChecked.Interval = MSEC_TIMERCHECKED_STANDARD; else ;
         }
@@ -368,7 +368,7 @@ namespace StatisticAnalyzer
 
             public LogParse_File()
             {
-                s_IdTypeMessages = new int[] {
+                s_ID_LOGMESSAGES = new int[] {
                         0, 1
                         , 2, 3, 4
                         , 5, 6

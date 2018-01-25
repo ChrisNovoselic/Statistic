@@ -19,11 +19,11 @@ namespace StatisticAnalyzer
         {
             m_listTEC = tec;
 
-            checkBoxs[(int)FormChangeMode.MODE_TECCOMPONENT.GTP].CheckedChanged += new EventHandler(checkBox_click);
-            checkBoxs[(int)FormChangeMode.MODE_TECCOMPONENT.PC].CheckedChanged += new EventHandler(checkBox_click);
-            checkBoxs[(int)FormChangeMode.MODE_TECCOMPONENT.TEC].CheckedChanged += new EventHandler(checkBox_click);
-            checkBoxs[(int)FormChangeMode.MODE_TECCOMPONENT.TG].CheckedChanged += new EventHandler(checkBox_click);
-            checkBoxs[(int)FormChangeMode.MODE_TECCOMPONENT.ANY].CheckedChanged += new EventHandler(checkBox_click);
+            arrayCheckBoxModeTECComponent[(int)FormChangeMode.MODE_TECCOMPONENT.GTP].CheckedChanged += new EventHandler(checkBox_click);
+            arrayCheckBoxModeTECComponent[(int)FormChangeMode.MODE_TECCOMPONENT.PC].CheckedChanged += new EventHandler(checkBox_click);
+            arrayCheckBoxModeTECComponent[(int)FormChangeMode.MODE_TECCOMPONENT.TEC].CheckedChanged += new EventHandler(checkBox_click);
+            arrayCheckBoxModeTECComponent[(int)FormChangeMode.MODE_TECCOMPONENT.TG].CheckedChanged += new EventHandler(checkBox_click);
+            arrayCheckBoxModeTECComponent[(int)FormChangeMode.MODE_TECCOMPONENT.ANY].CheckedChanged += new EventHandler(checkBox_click);
         }
 
         #region Наследуемые методы
@@ -70,7 +70,7 @@ namespace StatisticAnalyzer
 
         protected override void handlerCommandCounterToTypeByFilter (PanelAnalyzer.REQUEST req, DataTable tableRes)
         {
-            m_dictDataGridViewLogCounter [(DATAGRIDVIEW_LOGCOUNTER)req.Args [0]].UpdateCounter (tableRes, (DateTime)req.Args [1], (DateTime)req.Args [2], (string)req.Args [3]);
+            m_dictDataGridViewLogCounter [(DATAGRIDVIEW_LOGCOUNTER)req.Args [0]].Fill (tableRes);
 
             delegateReportClear?.Invoke (true);
         }
@@ -97,16 +97,19 @@ namespace StatisticAnalyzer
         {
             int i = -1
                 , msecSleep = System.Threading.Timeout.Infinite;
+            int[] ariTags;
             bool[] arbActives;
             DataRow[] rowsUserMaxDatetimeWR;
 
             if (req.State == PanelAnalyzer.REQUEST.STATE.Ok) {
+                ariTags = new int[m_tableUsers.Rows.Count];
                 arbActives = new bool [m_tableUsers.Rows.Count];
 
                 for (i = 0;
                     (i < m_tableUsers.Rows.Count)
                         && (m_bThreadTimerCheckedAllowed == true);
                     i++) {
+                    ariTags[i] = -1;
                     //Проверка активности
                     rowsUserMaxDatetimeWR = tableRes.Select (@"[ID_USER]=" + m_tableUsers.Rows [i] [@"ID"]);
 
@@ -118,32 +121,30 @@ namespace StatisticAnalyzer
                             //Ошибка
                         } else {
                             //Обрабатываем...
+                            ariTags[i] = int.Parse(m_tableUsers.Rows[i][@"ID"].ToString().Trim());
                             arbActives [i] = (HDateTime.ToMoscowTimeZone (DateTime.Now) - DateTime.Parse (rowsUserMaxDatetimeWR [0] [@"MAX_DATETIME_WR"].ToString ())).TotalSeconds < 66;
                         }
                     }
                 }
 
-                if (!(arbActives == null)) {
+                if (Equals(arbActives, null) == false) {
                     if (req.Key == StatesMachine.ProcCheckedState)
-                        updatedgvClientState (arbActives);
+                        dgvUserView.Update(ariTags, arbActives);
                     else if (req.Key == StatesMachine.ProcCheckedFilter) {
-                        tableUserFiltered (arbActives);
+                        filterActived (arbActives);
                         dgvUserView.Fill (m_tableUsers, c_list_sorted, 0);
                     } else
                         ;
 
                     msecSleep = MSEC_TIMERCHECKED_STANDARD;
                 } else
-                    msecSleep = MSEC_TIMERCHECKED_FORCE; //Нет соединения с БД...
-
-                //Вариант №0
-                m_timerChecked.Change(msecSleep, System.Threading.Timeout.Infinite);
-                ////Вариант №1
-                //if (! (m_timerChecked.Interval == msecSleep)) m_timerChecked.Interval = msecSleep; else ;
-                //Debug.WriteLine("procChecked () - date/time:" + DateTime.Now.ToString());
+                //Нет соединения с БД...
+                    msecSleep = MSEC_TIMERCHECKED_FORCE;
             } else
             //Ошибка при выборке данных...
-                ;
+                msecSleep = MSEC_TIMERCHECKED_FORCE;
+
+            m_timerProcChecked.Change(msecSleep, System.Threading.Timeout.Infinite);
 
             delegateReportClear (true);
         }
@@ -170,107 +171,113 @@ namespace StatisticAnalyzer
             int err = -1;
             int iRes = -1;
             string[] us ;
-            string where = string.Empty;
+            string query = string.Empty
+                , where = string.Empty
+                , tabs = string.Empty
+                , role0 = string.Empty, role1 = string.Empty;
             DataTable tableProfileTabs;
 
             delegateActionReport ("Получение активных вкладок пользователя");
 
             #region Фомирование и выполнение запроса для получения списка открытых вкладок у пользователя
 
-            string query = @"SELECT [ID_EXT],[IS_ROLE],[ID_UNIT],[VALUE] FROM [techsite_cfg-2.X.X].[dbo].[profiles] where ";
-
-            if (user.Equals(null) == false)
-            {
+            if (Equals(user, null) == false) {
+                query = @"SELECT [ID_EXT],[IS_ROLE],[ID_UNIT],[VALUE] FROM [dbo].[profiles] WHERE ";
                 //Условие для поиска вкладок
-                where = "((ID_EXT = " + (int)user + " and [IS_ROLE] =0) or (id_ext=(select [ID_ROLE] from dbo.[users] where id=" + user + ") and is_role=1)) AND ID_UNIT IN(" + (int)HStatisticUsers.ID_ALLOWED.PROFILE_SETTINGS_CHANGEMODE + ", " + (int)HStatisticUsers.ID_ALLOWED.PROFILE_VIEW_ADDINGTABS + ")";
+                where = $"((ID_EXT={user} AND [IS_ROLE]=0) OR ([ID_EXT]=(SELECT [ID_ROLE] FROM dbo.[users] WHERE [ID]={user}) AND [IS_ROLE]=1)) AND ID_UNIT IN({(int)HStatisticUsers.ID_ALLOWED.PROFILE_SETTINGS_CHANGEMODE}, {(int)HStatisticUsers.ID_ALLOWED.PROFILE_VIEW_ADDINGTABS})";
                 query += where;
 
                 tableProfileTabs = DbTSQLConfigDatabase.DbConfig().Select(query, out iRes);
 
-                if (tableProfileTabs.Rows.Count > 0)
-                {
+                if (tableProfileTabs.Rows.Count > 0) {
                     //Список строк с используемыми вкладками
-                    DataRow[] table_role0 = tableProfileTabs.Select("IS_ROLE=0 and ID_UNIT in (" + (int)HStatisticUsers.ID_ALLOWED.PROFILE_SETTINGS_CHANGEMODE + ", " + (int)HStatisticUsers.ID_ALLOWED.PROFILE_VIEW_ADDINGTABS + ")");
-                    string role0 = string.Empty;
+                    DataRow[] table_role0 = tableProfileTabs.Select($"IS_ROLE=0 AND [ID_UNIT] IN ({(int)HStatisticUsers.ID_ALLOWED.PROFILE_SETTINGS_CHANGEMODE}, {(int)HStatisticUsers.ID_ALLOWED.PROFILE_VIEW_ADDINGTABS})");
 
                     //Список строк с вкладками по умолчанию
-                    DataRow[] table_role1 = tableProfileTabs.Select("IS_ROLE=1 and ID_UNIT in (" + (int)HStatisticUsers.ID_ALLOWED.PROFILE_SETTINGS_CHANGEMODE + ", " + (int)HStatisticUsers.ID_ALLOWED.PROFILE_VIEW_ADDINGTABS + ")");
-                    string role1 = string.Empty;
+                    DataRow[] table_role1 = tableProfileTabs.Select($"IS_ROLE=1 AND [ID_UNIT] IN ({(int)HStatisticUsers.ID_ALLOWED.PROFILE_SETTINGS_CHANGEMODE}, {(int)HStatisticUsers.ID_ALLOWED.PROFILE_VIEW_ADDINGTABS})");
 
-                    string tabs = string.Empty;
-
-                    if (table_role0.Length <= 2 & table_role0.Length >= 1)//проверка выборки для используемых вкладок
-                    {
+                    //проверка выборки для используемых вкладок
+                    if ((!(table_role0.Length > 2))
+                        && (!(table_role0.Length < 1))) {
                         for (int i = 0; i < table_role0.Length; i++)
                         {
                             if ((int)table_role0[i]["ID_UNIT"] == (int)HStatisticUsers.ID_ALLOWED.PROFILE_SETTINGS_CHANGEMODE)
-                            {
                                 if (IsNumberContains(table_role0[i]["VALUE"].ToString()) == true)
-                                {
                                     tabs += table_role0[i]["VALUE"].ToString();
-                                }
-                            }
-                            if ((int)table_role0[i]["ID_UNIT"] == (int)HStatisticUsers.ID_ALLOWED.PROFILE_VIEW_ADDINGTABS)
-                            {
+                                else
+                                    ;
+                            else
+                                ;
+
+                            if ((int)table_role0[i]["ID_UNIT"] == (int)HStatisticUsers.ID_ALLOWED.PROFILE_VIEW_ADDINGTABS) {
                                 if (tabs.Equals(string.Empty) == false)
-                                {
                                     tabs += ";";
-                                }
+                                else
+                                    ;
+
                                 if (IsNumberContains(table_role0[i]["VALUE"].ToString()) == true)
-                                {
                                     tabs += table_role0[i]["VALUE"].ToString();
-                                }
-                            }
+                                else
+                                    ;
+                            } else
+                                ;
                         }
                     }
                     else
-                        if (table_role1.Length <= 2 & table_role1.Length >= 1)//проверка выборки для вкладок по умолчанию
-                        {
+                        //проверка выборки для вкладок по умолчанию
+                        if ((!(table_role1.Length > 2))
+                            && (!(table_role1.Length < 1))) {
                             for (int i = 0; i < table_role1.Length; i++)
                             {
                                 if ((int)table_role1[i]["ID_UNIT"] == (int)HStatisticUsers.ID_ALLOWED.PROFILE_SETTINGS_CHANGEMODE)
-                                {
                                     if (IsNumberContains(table_role1[i]["VALUE"].ToString()) == true)
-                                    {
                                         tabs += table_role1[i]["VALUE"].ToString();
-                                    }
-                                }
+                                    else
+                                        ;
+                                else
+                                    ;
+
                                 if ((int)table_role1[i]["ID_UNIT"] == (int)HStatisticUsers.ID_ALLOWED.PROFILE_VIEW_ADDINGTABS)
-                                {
                                     if (IsNumberContains(table_role1[i]["VALUE"].ToString()) == true)
-                                    {
                                         tabs += table_role1[i]["VALUE"].ToString();
-                                    }
-                                }
+                                    else
+                                        ;
+                                else
+                                    ;
                             }
                         }
                         else
-                        {
-                            Logging.Logg().Error(@"PanelAnalyzer::PanelAnalyzer_DB () - нет данных по вкладкам для выбранного пользователя с ID = " + user, Logging.INDEX_MESSAGE.NOT_SET);
-                        }
+                            Logging.Logg().Error(@"PanelAnalyzer::PanelAnalyzer_DB () - нет данных по вкладкам для выбранного пользователя с ID = " + user
+                                , Logging.INDEX_MESSAGE.NOT_SET);
 
-                    us = tabs.Split(';');//создание массива с ID вкладок
+                    //создание массива с ID вкладок
+                    us = tabs.Split(';');
 
                     for (int i = 0; i < us.Length; i++)
                     {
-                        if (IsPunctuationContains(us[i]) == true)//разбор в случае составного идентификатора
-                        {
+                        if (IsPunctuationContains(us[i]) == true) {
+                        //разбор в случае составного идентификатора
                             string[] count;
                             count = us[i].Split('=');
-                            listRes.Add(Convert.ToInt32(count[0]));//добавление идентификатора в список
-                        }
-                        else
-                        {
-                            if (us[i] != "" & us[i] != " ")//фильтрация пустых идентификаторов
-                            {
-                                if (IsNumberContains(us[i])==true)
-                                listRes.Add(Convert.ToInt32(us[i]));//добавление идентификатора в список
-                            }
-                        }
+                            //добавление идентификатора в список
+                            listRes.Add(Convert.ToInt32(count[0]));
+                        } else
+                            //фильтрация пустых идентификаторов
+                            if (string.IsNullOrEmpty(us[i].Trim()) == false)
+                                if (IsNumberContains(us[i]) == true)
+                                //добавление идентификатора в список
+                                    listRes.Add(Convert.ToInt32(us[i]));
+                                else
+                                    ;
+                            else
+                                ;
+                        
                     }
-                }
-            }
-            else
+                } else
+                // нет записей в БД с информацией о вкладках, автоматически загружаемых при запуске для пользователя
+                    ;
+            } else
+            // идентификатор пользователя не указан
                 ;
 
             #endregion
@@ -295,7 +302,7 @@ namespace StatisticAnalyzer
             {
                 FormChangeMode.MODE_TECCOMPONENT tec_component = TECComponentBase.Mode(ID_tabs[i]);//получение типа вкладки
 
-                if (checkBoxs[(int)tec_component].Checked == true)//проверка состояния фильтра для вкладки
+                if (arrayCheckBoxModeTECComponent[(int)tec_component].Checked == true)//проверка состояния фильтра для вкладки
                     start = true;
                 else
                     start = false;
@@ -485,68 +492,6 @@ namespace StatisticAnalyzer
         #region Обработчики событий
 
         /// <summary>
-        /// Обработчик события выбора пользователя 
-        /// </summary>
-        protected override void dgvUserView_SelectionChanged(object sender, EventArgs e)
-        {
-            if ((dgvUserView.SelectedRows.Count > 0)
-                && (!(dgvUserView.SelectedRows[0].Index < 0)))
-            {
-                bool bUpdate = true;
-
-                if ((dgvListDatetView.Rows.Count > 0)
-                    && (dgvListDatetView.SelectedRows[0].Index < (dgvListDatetView.Rows.Count - 1)))
-                    if (e == null)
-                        bUpdate = false;
-                    else
-                        ;
-                else
-                    ;
-
-                if (bUpdate == true) {
-                    //Останов потока разбора лог-файла пред. пользователя
-                    m_LogParse.Stop();
-
-                    dgvListDatetView.SelectionChanged -= dgvDatetimeStart_SelectionChanged;
-
-                    //Очистить элементы управления с данными от пред. лог-файла
-                    if (IsHandleCreated == true)
-                        if (InvokeRequired == true)
-                        {
-                            BeginInvoke(new DelegateFunc(tabLoggingClearDatetimeStart));
-                            BeginInvoke(new DelegateBoolFunc(tabLoggingClearText), true);
-                        }
-                        else
-                        {
-                            tabLoggingClearDatetimeStart();
-                            tabLoggingClearText(true);
-                        }
-                    else
-                        Logging.Logg().Error(@"FormMainAnalyzer_DB::dgvUserStatistic_SelectionChanged () - ... BeginInvoke (TabLoggingClearDatetimeStart, TabLoggingClearText) - ...", Logging.INDEX_MESSAGE.D_001);
-
-                    startLogParse (m_tableUsers.Rows [dgvUserView.SelectedRows [0].Index] ["ID"].ToString ().Trim ());
-
-                    //updateCounter(DATAGRIDVIEW_LOGCOUNTER.TYPE_TO_VIEW, DateTime.Today, DateTime.Today.AddDays(1), get_users(m_tableUsers, dgvUserView, false));
-
-                    listBoxTabVisible.Items.Clear();//очистка списка активных вкладок
-
-                    DbTSQLConfigDatabase.DbConfig ().SetConnectionSettings ();
-                    DbTSQLConfigDatabase.DbConfig ().Register ();
-                    //Заполнение ListBox'а активными вкладками
-                    fillListBoxTabVisible (
-                        fill_active_tabs ((int)m_tableUsers.Rows [dgvUserView.SelectedRows [0].Index] [0]).ToList()
-                    );
-
-                    DbTSQLConfigDatabase.DbConfig ().UnRegister ();
-                }
-                else
-                    ;
-            }
-            else
-                ;
-        }
-
-        /// <summary>
         /// Обработчик события изменения состояния CheckBox'ов
         /// </summary>
         protected void checkBox_click(object sender, EventArgs e)
@@ -590,7 +535,14 @@ namespace StatisticAnalyzer
             /// <summary>
             /// Список идентификаторов типов сообщений
             /// </summary>
-            public enum TYPE_LOGMESSAGE { START = LogParse.INDEX_START_MESSAGE, STOP, ACTION, DEBUG, EXCEPTION, EXCEPTION_DB, ERROR, WARNING, UNKNOWN, COUNT_TYPE_LOGMESSAGE };
+            public enum INDEX_LOGMSG { START = LogParse.INDEX_START_MESSAGE, STOP
+                , ACTION, DEBUG, EXCEPTION
+                , EXCEPTION_DB
+                , ERROR
+                , WARNING
+                , UNKNOWN
+                    , COUNT_TYPE_LOGMESSAGE
+            };
 
             public LogParse_DB()
                 : base()
@@ -603,10 +555,10 @@ namespace StatisticAnalyzer
                                                     "Неопределенный тип" };
 
                 //ID типов сообщений
-                s_IdTypeMessages = new int[] {
-                         1, 2, 3, 4, 5, 6, 7, 8, 9
+                s_ID_LOGMESSAGES = new int[] {
+                    1, 2, 3, 4, 5, 6, 7, 8, 9
                         , 10
-                    };
+                };
                 
                 
             }
@@ -631,7 +583,7 @@ namespace StatisticAnalyzer
                     dtStart = new DateTime(Int32.Parse(tblDatetimeStart.Rows[i][@"YYYY"].ToString())
                         , Int32.Parse(tblDatetimeStart.Rows[i][@"MM"].ToString())
                         , Int32.Parse(tblDatetimeStart.Rows[i][@"DD"].ToString()));
-                    m_tableLog.Rows.Add(new object[] { dtStart, s_IdTypeMessages[(int)TYPE_LOGMESSAGE.START], ProgramBase.MessageWellcome });
+                    m_tableLog.Rows.Add(new object[] { dtStart, s_ID_LOGMESSAGES[(int)INDEX_LOGMSG.START], ProgramBase.MessageWellcome });
 
                     cnt += Int32.Parse(tblDatetimeStart.Rows[i][@"CNT"].ToString());
                 }

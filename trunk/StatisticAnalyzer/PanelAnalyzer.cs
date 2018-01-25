@@ -142,772 +142,772 @@ namespace StatisticAnalyzer
         #region Design
 
         private System.Windows.Forms.TabPage tabPageLogging;
-            private System.Windows.Forms.TabPage tabPageTabes;
-            private TableLayoutPanel panelTabPageTabes;
-            private TableLayoutPanel panelTabPageLogging;
+        private System.Windows.Forms.TabPage tabPageTabes;
+        private TableLayoutPanel panelTabPageTabes;
+        private TableLayoutPanel panelTabPageLogging;
 
-            protected System.Windows.Forms.CheckBox[] checkBoxs;
-            protected System.Windows.Forms.ListBox listBoxTabVisible;
+        protected System.Windows.Forms.CheckBox[] arrayCheckBoxModeTECComponent;
+        protected System.Windows.Forms.ListBox listBoxTabVisible;
 
-            private System.Windows.Forms.Button buttonUpdate;
+        private System.Windows.Forms.Button buttonUpdate;
 
-            private System.Windows.Forms.DataGridView dgvFilterActiveView;
-            protected DataGridView_LogMessageCounter dgvTypeToView;
+        private System.Windows.Forms.DataGridView dgvFilterActiveView;
+        private System.Windows.Forms.DataGridView dgvFilterRoleView;
+        private System.Windows.Forms.DataGridView dgvListDateView;
+        private DataGridView_LogMessageCounter dgvTypeToView;
+        private System.Windows.Forms.DataGridView dgvMessageView;
+        private System.Windows.Forms.DataGridView dgvUserView;
+        // Групповая статистика
+        private System.Windows.Forms.DateTimePicker StartCalendar;
+        private System.Windows.Forms.DateTimePicker EndCalendar;
+        private System.Windows.Forms.DataGridView dgvFilterRoleStatistic;
+        private DataGridView_LogMessageCounter dgvTypeToStatistic;
+        private System.Windows.Forms.DataGridView dgvUserStatistic;
 
-            protected System.Windows.Forms.DataGridView dgvFilterRoleView;
-            protected System.Windows.Forms.DataGridView dgvListDatetView;
-            private System.Windows.Forms.DataGridView dgvMessageView;
-            protected System.Windows.Forms.DateTimePicker StartCalendar;
-            protected System.Windows.Forms.DateTimePicker EndCalendar;
-            protected System.Windows.Forms.DataGridView dgvUserView;
-            private System.Windows.Forms.DataGridView dgvFilterRoleStatistic;
-            protected DataGridView_LogMessageCounter dgvTypeToStatistic;
-            protected System.Windows.Forms.DataGridView dgvUserStatistic;
+        //protected abstract DataGridView_LogMessageCounter create_LogMessageCounter(DataGridView_LogMessageCounter.TYPE type);
 
-            //protected abstract DataGridView_LogMessageCounter create_LogMessageCounter(DataGridView_LogMessageCounter.TYPE type);
+        private void InitializeComponent()
+        {
+            this.dgvTypeToStatistic = new DataGridView_LogMessageCounter (DataGridView_LogMessageCounter.TYPE.WITHOUT_CHECKBOX);
+            System.Windows.Forms.GroupBox groupUser = new System.Windows.Forms.GroupBox();
+            System.Windows.Forms.GroupBox groupMessage = new System.Windows.Forms.GroupBox();
+            System.Windows.Forms.GroupBox groupTabs = new System.Windows.Forms.GroupBox();
+            TableLayoutPanel  panelUser = new TableLayoutPanel();
+            TableLayoutPanel  panelMessage = new TableLayoutPanel();
+            TableLayoutPanel  panelTabs = new TableLayoutPanel();
+            System.Windows.Forms.Label labelMessage = new Label();
+            System.Windows.Forms.Label labelStartCalendar = new Label();
+            System.Windows.Forms.Label labelStopCalendar = new Label();
+            System.Windows.Forms.Label labelRole = new Label();
+            System.Windows.Forms.Label labelUser = new Label();
+            this.StartCalendar = new DateTimePicker();
+            this.EndCalendar = new DateTimePicker();
+            this.dgvFilterRoleView = new DataGridView();
+            this.dgvUserStatistic = new DataGridView();
 
-            private void InitializeComponent()
-            {
-                this.dgvTypeToStatistic = new DataGridView_LogMessageCounter (DataGridView_LogMessageCounter.TYPE.WITHOUT_CHECKBOX);
-                System.Windows.Forms.GroupBox groupUser = new System.Windows.Forms.GroupBox();
-                System.Windows.Forms.GroupBox groupMessage = new System.Windows.Forms.GroupBox();
-                System.Windows.Forms.GroupBox groupTabs = new System.Windows.Forms.GroupBox();
-                TableLayoutPanel  panelUser = new TableLayoutPanel();
-                TableLayoutPanel  panelMessage = new TableLayoutPanel();
-                TableLayoutPanel  panelTabs = new TableLayoutPanel();
-                System.Windows.Forms.Label labelMessage = new Label();
-                System.Windows.Forms.Label labelStartCalendar = new Label();
-                System.Windows.Forms.Label labelStopCalendar = new Label();
-                System.Windows.Forms.Label labelRole = new Label();
-                System.Windows.Forms.Label labelUser = new Label();
-                this.StartCalendar = new DateTimePicker();
-                this.EndCalendar = new DateTimePicker();
-                this.dgvFilterRoleView = new DataGridView();
-                this.dgvUserStatistic = new DataGridView();
+            System.Windows.Forms.Label labelFilterActives = new System.Windows.Forms.Label();
+            this.dgvFilterActiveView = new System.Windows.Forms.DataGridView();
 
-                System.Windows.Forms.Label labelFilterActives = new System.Windows.Forms.Label();
-                this.dgvFilterActiveView = new System.Windows.Forms.DataGridView();
+            System.Windows.Forms.Label labelFilterRoles = new System.Windows.Forms.Label();
+            this.dgvFilterRoleStatistic = new System.Windows.Forms.DataGridView();
 
-                System.Windows.Forms.Label labelFilterRoles = new System.Windows.Forms.Label();
-                this.dgvFilterRoleStatistic = new System.Windows.Forms.DataGridView();
+            this.dgvUserView = new System.Windows.Forms.DataGridView();
 
-                this.dgvUserView = new System.Windows.Forms.DataGridView();
+            this.tabPageLogging = new System.Windows.Forms.TabPage();
+            this.panelTabPageLogging = new TableLayoutPanel ();
+            this.dgvMessageView = new System.Windows.Forms.DataGridView();
+            this.tabPageTabes = new System.Windows.Forms.TabPage();
+            this.panelTabPageTabes = new TableLayoutPanel();
+            this.listBoxTabVisible = new System.Windows.Forms.ListBox();
+            this.arrayCheckBoxModeTECComponent=new CheckBox[(int)FormChangeMode.MODE_TECCOMPONENT.ANY +1];
+            this.arrayCheckBoxModeTECComponent[(int)FormChangeMode.MODE_TECCOMPONENT.TEC] = new CheckBox();
+            this.arrayCheckBoxModeTECComponent[(int)FormChangeMode.MODE_TECCOMPONENT.TG] = new CheckBox();
+            this.arrayCheckBoxModeTECComponent[(int)FormChangeMode.MODE_TECCOMPONENT.GTP] = new CheckBox();
+            this.arrayCheckBoxModeTECComponent[(int)FormChangeMode.MODE_TECCOMPONENT.PC] = new CheckBox();
+            this.arrayCheckBoxModeTECComponent[(int)FormChangeMode.MODE_TECCOMPONENT.ANY] = new CheckBox();
 
-                this.tabPageLogging = new System.Windows.Forms.TabPage();
-                this.panelTabPageLogging = new TableLayoutPanel ();
-                this.dgvMessageView = new System.Windows.Forms.DataGridView();
-                this.tabPageTabes = new System.Windows.Forms.TabPage();
-                this.panelTabPageTabes = new TableLayoutPanel();
-                this.listBoxTabVisible = new System.Windows.Forms.ListBox();
-                this.checkBoxs=new CheckBox[(int)FormChangeMode.MODE_TECCOMPONENT.ANY +1];
-                this.checkBoxs[(int)FormChangeMode.MODE_TECCOMPONENT.TEC] = new CheckBox();
-                this.checkBoxs[(int)FormChangeMode.MODE_TECCOMPONENT.TG] = new CheckBox();
-                this.checkBoxs[(int)FormChangeMode.MODE_TECCOMPONENT.GTP] = new CheckBox();
-                this.checkBoxs[(int)FormChangeMode.MODE_TECCOMPONENT.PC] = new CheckBox();
-                this.checkBoxs[(int)FormChangeMode.MODE_TECCOMPONENT.ANY] = new CheckBox();
+            System.Windows.Forms.Label labelDatetimeStart = new System.Windows.Forms.Label();
+            this.dgvListDateView = new System.Windows.Forms.DataGridView();
 
-                System.Windows.Forms.Label labelDatetimeStart = new System.Windows.Forms.Label();
-                this.dgvListDatetView = new System.Windows.Forms.DataGridView();
+            System.Windows.Forms.Label labelFilterTypeMessage = new System.Windows.Forms.Label();
+            this.dgvTypeToView = new DataGridView_LogMessageCounter(DataGridView_LogMessageCounter.TYPE.WITH_CHECKBOX);
 
-                System.Windows.Forms.Label labelFilterTypeMessage = new System.Windows.Forms.Label();
-                this.dgvTypeToView = new DataGridView_LogMessageCounter(DataGridView_LogMessageCounter.TYPE.WITH_CHECKBOX);
+            this.buttonUpdate = new System.Windows.Forms.Button();
 
-                this.buttonUpdate = new System.Windows.Forms.Button();
+            ((System.ComponentModel.ISupportInitialize)(this.dgvFilterActiveView)).BeginInit();
+            ((System.ComponentModel.ISupportInitialize)(this.dgvFilterRoleStatistic)).BeginInit();
+            ((System.ComponentModel.ISupportInitialize)(this.dgvUserView)).BeginInit();
 
-                ((System.ComponentModel.ISupportInitialize)(this.dgvFilterActiveView)).BeginInit();
-                ((System.ComponentModel.ISupportInitialize)(this.dgvFilterRoleStatistic)).BeginInit();
-                ((System.ComponentModel.ISupportInitialize)(this.dgvUserView)).BeginInit();
+            this.tabPageLogging.SuspendLayout();
+            this.panelTabPageLogging.SuspendLayout ();
+            ((System.ComponentModel.ISupportInitialize)(this.dgvTypeToView)).BeginInit();
+            ((System.ComponentModel.ISupportInitialize)(this.dgvListDateView)).BeginInit();
+            ((System.ComponentModel.ISupportInitialize)(this.dgvMessageView)).BeginInit();
+            this.tabPageTabes.SuspendLayout();
+            this.panelTabPageTabes.SuspendLayout ();
+            //((System.ComponentModel.ISupportInitialize)(this.listTabVisible)).BeginInit();
+            this.SuspendLayout();
 
-                this.tabPageLogging.SuspendLayout();
-                this.panelTabPageLogging.SuspendLayout ();
-                ((System.ComponentModel.ISupportInitialize)(this.dgvTypeToView)).BeginInit();
-                ((System.ComponentModel.ISupportInitialize)(this.dgvListDatetView)).BeginInit();
-                ((System.ComponentModel.ISupportInitialize)(this.dgvMessageView)).BeginInit();
-                this.tabPageTabes.SuspendLayout();
-                this.panelTabPageTabes.SuspendLayout ();
-                //((System.ComponentModel.ISupportInitialize)(this.listTabVisible)).BeginInit();
-                this.SuspendLayout();
+            //this.CellBorderStyle = TableLayoutPanelCellBorderStyle.Single;
+            initializeLayoutStyle (12, 24);
+            // 
+            // groupUser
+            //
+            groupUser.Dock = DockStyle.Fill;
+            // 
+            // groupMessage
+            //
+            groupMessage.Dock = DockStyle.Fill;
+            // 
+            // groupTabs
+            //
+            groupTabs.Dock = DockStyle.Fill;
+            // 
+            // labelFilterActives
+            // 
+            labelFilterActives.AutoSize = true;
+            //this.labelFilterActives.Location = new System.Drawing.Point(9, 12);
+            labelFilterActives.Name = "labelFilterActives";
+            //this.labelFilterActives.Size = new System.Drawing.Size(111, 13);
+            labelFilterActives.TabIndex = 4;
+            labelFilterActives.Text = "Фильтр: активность";
+            // 
+            // dgvFilterActives
+            // 
+            this.dgvFilterActiveView.AllowUserToAddRows = false;
+            this.dgvFilterActiveView.AllowUserToDeleteRows = false;
+            this.dgvFilterActiveView.ColumnHeadersHeightSizeMode = System.Windows.Forms.DataGridViewColumnHeadersHeightSizeMode.AutoSize;
+            this.dgvFilterActiveView.ColumnHeadersVisible = false;
+            this.dgvFilterActiveView.Columns.AddRange(new System.Windows.Forms.DataGridViewColumn[] {
+                new DataGridViewCheckBoxColumn (),
+                new DataGridViewTextBoxColumn ()});
+            //this.dgvFilterActives.Location = new System.Drawing.Point(12, 28);
+            this.dgvFilterActiveView.Dock = DockStyle.Fill;
+            //this.dgvFilterActives.Anchor = ((System.Windows.Forms.AnchorStyles)(System.Windows.Forms.AnchorStyles.Left | System.Windows.Forms.AnchorStyles.Top));
+            this.dgvFilterActiveView.MultiSelect = false;
+            this.dgvFilterActiveView.Name = "dgvFilterActives";
+            this.dgvFilterActiveView.ReadOnly = true;
+            this.dgvFilterActiveView.RowHeadersVisible = false;
+            this.dgvFilterActiveView.RowTemplate.Height = 18;
+            this.dgvFilterActiveView.RowTemplate.Resizable = System.Windows.Forms.DataGridViewTriState.False;
+            this.dgvFilterActiveView.SelectionMode = System.Windows.Forms.DataGridViewSelectionMode.FullRowSelect;
+            //this.dgvFilterActives.Size = new System.Drawing.Size(190, 39);
+            this.dgvFilterActiveView.TabIndex = 8;
+            // 
+            // dataGridViewActivesCheckBoxColumnUse
+            // 
+            int i = 0;
+            this.dgvFilterActiveView.Columns[i].Frozen = true;
+            this.dgvFilterActiveView.Columns[i].HeaderText = "Use";
+            this.dgvFilterActiveView.Columns[i].Name = "dataGridViewActivesCheckBoxColumnUse";
+            this.dgvFilterActiveView.Columns[i].ReadOnly = true;
+            this.dgvFilterActiveView.Columns[i].Resizable = System.Windows.Forms.DataGridViewTriState.False;
+            this.dgvFilterActiveView.Columns[i].Width = 25;
+            // 
+            // dataGridViewActivesTextBoxColumnDesc
+            // 
+            i = 1;
+            //this.dgvFilterActives.Columns[i].Frozen = true;
+            this.dgvFilterActiveView.Columns[i].HeaderText = "Desc";
+            this.dgvFilterActiveView.Columns[i].Name = "dataGridViewActivesTextBoxColumnDesc";
+            this.dgvFilterActiveView.Columns[i].ReadOnly = true;
+            this.dgvFilterActiveView.Columns[i].Resizable = System.Windows.Forms.DataGridViewTriState.False;
+            this.dgvFilterActiveView.Columns[i].Width = 165;
+            this.dgvFilterActiveView.Columns[i].AutoSizeMode = DataGridViewAutoSizeColumnMode.Fill;
 
-                //this.CellBorderStyle = TableLayoutPanelCellBorderStyle.Single;
-                initializeLayoutStyle (12, 24);
-                // 
-                // groupUser
-                //
-                groupUser.Dock = DockStyle.Fill;
-                // 
-                // groupMessage
-                //
-                groupMessage.Dock = DockStyle.Fill;
-                // 
-                // groupTabs
-                //
-                groupTabs.Dock = DockStyle.Fill;
-                // 
-                // labelFilterActives
-                // 
-                labelFilterActives.AutoSize = true;
-                //this.labelFilterActives.Location = new System.Drawing.Point(9, 12);
-                labelFilterActives.Name = "labelFilterActives";
-                //this.labelFilterActives.Size = new System.Drawing.Size(111, 13);
-                labelFilterActives.TabIndex = 4;
-                labelFilterActives.Text = "Фильтр: активность";
-                // 
-                // dgvFilterActives
-                // 
-                this.dgvFilterActiveView.AllowUserToAddRows = false;
-                this.dgvFilterActiveView.AllowUserToDeleteRows = false;
-                this.dgvFilterActiveView.ColumnHeadersHeightSizeMode = System.Windows.Forms.DataGridViewColumnHeadersHeightSizeMode.AutoSize;
-                this.dgvFilterActiveView.ColumnHeadersVisible = false;
-                this.dgvFilterActiveView.Columns.AddRange(new System.Windows.Forms.DataGridViewColumn[] {
-                    new DataGridViewCheckBoxColumn (),
-                    new DataGridViewTextBoxColumn ()});
-                //this.dgvFilterActives.Location = new System.Drawing.Point(12, 28);
-                this.dgvFilterActiveView.Dock = DockStyle.Fill;
-                //this.dgvFilterActives.Anchor = ((System.Windows.Forms.AnchorStyles)(System.Windows.Forms.AnchorStyles.Left | System.Windows.Forms.AnchorStyles.Top));
-                this.dgvFilterActiveView.MultiSelect = false;
-                this.dgvFilterActiveView.Name = "dgvFilterActives";
-                this.dgvFilterActiveView.ReadOnly = true;
-                this.dgvFilterActiveView.RowHeadersVisible = false;
-                this.dgvFilterActiveView.RowTemplate.Height = 18;
-                this.dgvFilterActiveView.RowTemplate.Resizable = System.Windows.Forms.DataGridViewTriState.False;
-                this.dgvFilterActiveView.SelectionMode = System.Windows.Forms.DataGridViewSelectionMode.FullRowSelect;
-                //this.dgvFilterActives.Size = new System.Drawing.Size(190, 39);
-                this.dgvFilterActiveView.TabIndex = 8;
-                // 
-                // dataGridViewActivesCheckBoxColumnUse
-                // 
-                int i = 0;
-                this.dgvFilterActiveView.Columns[i].Frozen = true;
-                this.dgvFilterActiveView.Columns[i].HeaderText = "Use";
-                this.dgvFilterActiveView.Columns[i].Name = "dataGridViewActivesCheckBoxColumnUse";
-                this.dgvFilterActiveView.Columns[i].ReadOnly = true;
-                this.dgvFilterActiveView.Columns[i].Resizable = System.Windows.Forms.DataGridViewTriState.False;
-                this.dgvFilterActiveView.Columns[i].Width = 25;
-                // 
-                // dataGridViewActivesTextBoxColumnDesc
-                // 
-                i = 1;
-                //this.dgvFilterActives.Columns[i].Frozen = true;
-                this.dgvFilterActiveView.Columns[i].HeaderText = "Desc";
-                this.dgvFilterActiveView.Columns[i].Name = "dataGridViewActivesTextBoxColumnDesc";
-                this.dgvFilterActiveView.Columns[i].ReadOnly = true;
-                this.dgvFilterActiveView.Columns[i].Resizable = System.Windows.Forms.DataGridViewTriState.False;
-                this.dgvFilterActiveView.Columns[i].Width = 165;
-                this.dgvFilterActiveView.Columns[i].AutoSizeMode = DataGridViewAutoSizeColumnMode.Fill;
+            // 
+            // labelFilterRoles
+            // 
+            labelFilterRoles.AutoSize = true;
+            //this.labelFilterRoles.Anchor = ((System.Windows.Forms.AnchorStyles)(System.Windows.Forms.AnchorStyles.Left | System.Windows.Forms.AnchorStyles.Top));
+            //this.labelFilterRoles.Location = new System.Drawing.Point(9, 50);
+            labelFilterRoles.Name = "labelFilterRoles";
+            //this.labelFilterRoles.Size = new System.Drawing.Size(77, 13);
+            labelFilterRoles.TabIndex = 5;
+            labelFilterRoles.Text = "Фильтр: роли";
+            // 
+            // dgvFilterRoles
+            // 
+            this.dgvFilterRoleStatistic.AllowUserToAddRows = false;
+            this.dgvFilterRoleStatistic.AllowUserToDeleteRows = false;
+            this.dgvFilterRoleStatistic.ColumnHeadersHeightSizeMode = System.Windows.Forms.DataGridViewColumnHeadersHeightSizeMode.AutoSize;
+            this.dgvFilterRoleStatistic.ColumnHeadersVisible = false;
+            this.dgvFilterRoleStatistic.Columns.AddRange(new System.Windows.Forms.DataGridViewColumn[] {
+                new DataGridViewCheckBoxColumn (),
+                new DataGridViewTextBoxColumn ()});
+            //this.dgvFilterRoles.Location = new System.Drawing.Point(12, 88);
+            this.dgvFilterRoleStatistic.Dock = DockStyle.Fill;
+            this.dgvFilterRoleStatistic.MultiSelect = false;
+            this.dgvFilterRoleStatistic.Name = "dgvFilterRoles";
+            this.dgvFilterRoleStatistic.ReadOnly = true;
+            this.dgvFilterRoleStatistic.RowHeadersVisible = false;
+            this.dgvFilterRoleStatistic.RowTemplate.Height = 18;
+            this.dgvFilterRoleStatistic.RowTemplate.Resizable = System.Windows.Forms.DataGridViewTriState.False;
+            this.dgvFilterRoleStatistic.SelectionMode = System.Windows.Forms.DataGridViewSelectionMode.FullRowSelect;
+            //this.dgvFilterRoles.Size = new System.Drawing.Size(190, 111);
+            this.dgvFilterRoleStatistic.TabIndex = 9;
+            this.dgvFilterRoleStatistic.CellClick += new System.Windows.Forms.DataGridViewCellEventHandler(this.dgvFilterRoleStatistic_CellClick);
+            // 
+            // dataGridViewRolesCheckBoxColumnUse
+            // 
+            i = 0;
+            this.dgvFilterRoleStatistic.Columns[i].Frozen = true;
+            this.dgvFilterRoleStatistic.Columns[i].HeaderText = "Use";
+            this.dgvFilterRoleStatistic.Columns[i].Name = "dataGridViewRolesCheckBoxColumnUse";
+            this.dgvFilterRoleStatistic.Columns[i].ReadOnly = true;
+            this.dgvFilterRoleStatistic.Columns[i].Resizable = System.Windows.Forms.DataGridViewTriState.False;
+            this.dgvFilterRoleStatistic.Columns[i].Width = 25;
+            // 
+            // dataGridViewRolesTextBoxColumnDesc
+            // 
+            i = 1;
+            //this.dgvFilterRoles.Columns[i].Frozen = true;
+            this.dgvFilterRoleStatistic.Columns[i].HeaderText = "Desc";
+            this.dgvFilterRoleStatistic.Columns[i].Name = "dataGridViewRolesTextBoxColumnDesc";
+            this.dgvFilterRoleStatistic.Columns[i].ReadOnly = true;
+            this.dgvFilterRoleStatistic.Columns[i].Resizable = System.Windows.Forms.DataGridViewTriState.False;
+            this.dgvFilterRoleStatistic.Columns[i].Width = 145;
+            this.dgvFilterRoleStatistic.Columns[i].AutoSizeMode = DataGridViewAutoSizeColumnMode.Fill;
+            // 
+            // dgvClient
+            // 
+            this.dgvUserView.AllowUserToAddRows = false;
+            this.dgvUserView.AllowUserToDeleteRows = false;
+            this.dgvUserView.ColumnHeadersHeightSizeMode = System.Windows.Forms.DataGridViewColumnHeadersHeightSizeMode.AutoSize;
+            this.dgvUserView.ColumnHeadersVisible = false;
+            this.dgvUserView.Columns.AddRange(new System.Windows.Forms.DataGridViewColumn[] {
+                new DataGridViewCheckBoxColumn (),
+                new DataGridViewTextBoxColumn ()});
+            //this.dgvClient.Location = new System.Drawing.Point(12, 150);
+            this.dgvUserView.Dock = DockStyle.Fill;
+            this.dgvUserView.MultiSelect = false;
+            this.dgvUserView.Name = "dgvClient";
+            this.dgvUserView.ReadOnly = true;
+            this.dgvUserView.RowHeadersVisible = false;
+            this.dgvUserView.RowTemplate.Height = 18;
+            this.dgvUserView.RowTemplate.Resizable = System.Windows.Forms.DataGridViewTriState.False;
+            this.dgvUserView.SelectionMode = System.Windows.Forms.DataGridViewSelectionMode.FullRowSelect;
+            //this.dgvClient.Size = new System.Drawing.Size(190, 400);
+            this.dgvUserView.TabIndex = 10;
+            this.dgvUserView.SelectionChanged += new System.EventHandler(this.dgvUserView_SelectionChanged);
+            // 
+            // dataGridViewClientCheckBoxColumnActive
+            // 
+            i = 0;
+            this.dgvUserView.Columns[i].Frozen = true;
+            this.dgvUserView.Columns[i].HeaderText = "Active";
+            this.dgvUserView.Columns[i].Name = "dataGridViewClientCheckBoxColumnActive";
+            this.dgvUserView.Columns[i].ReadOnly = true;
+            this.dgvUserView.Columns[i].Resizable = System.Windows.Forms.DataGridViewTriState.False;
+            this.dgvUserView.Columns[i].Width = 25;
+            // 
+            // dataGridViewClientTextBoxColumnDesc
+            // 
+            i = 1;
+            //this.dgvClient.Columns[i].Frozen = true;
+            this.dgvUserView.Columns[i].HeaderText = "Desc";
+            this.dgvUserView.Columns[i].Name = "dataGridViewClientTextBoxColumnDesc";
+            this.dgvUserView.Columns[i].ReadOnly = true;
+            this.dgvUserView.Columns[i].Resizable = System.Windows.Forms.DataGridViewTriState.False;
+            this.dgvUserView.Columns[i].Width = 145;
+            this.dgvUserView.Columns[i].AutoSizeMode = DataGridViewAutoSizeColumnMode.Fill;
 
-                // 
-                // labelFilterRoles
-                // 
-                labelFilterRoles.AutoSize = true;
-                //this.labelFilterRoles.Anchor = ((System.Windows.Forms.AnchorStyles)(System.Windows.Forms.AnchorStyles.Left | System.Windows.Forms.AnchorStyles.Top));
-                //this.labelFilterRoles.Location = new System.Drawing.Point(9, 50);
-                labelFilterRoles.Name = "labelFilterRoles";
-                //this.labelFilterRoles.Size = new System.Drawing.Size(77, 13);
-                labelFilterRoles.TabIndex = 5;
-                labelFilterRoles.Text = "Фильтр: роли";
-                // 
-                // dgvFilterRoles
-                // 
-                this.dgvFilterRoleStatistic.AllowUserToAddRows = false;
-                this.dgvFilterRoleStatistic.AllowUserToDeleteRows = false;
-                this.dgvFilterRoleStatistic.ColumnHeadersHeightSizeMode = System.Windows.Forms.DataGridViewColumnHeadersHeightSizeMode.AutoSize;
-                this.dgvFilterRoleStatistic.ColumnHeadersVisible = false;
-                this.dgvFilterRoleStatistic.Columns.AddRange(new System.Windows.Forms.DataGridViewColumn[] {
-                    new DataGridViewCheckBoxColumn (),
-                    new DataGridViewTextBoxColumn ()});
-                //this.dgvFilterRoles.Location = new System.Drawing.Point(12, 88);
-                this.dgvFilterRoleStatistic.Dock = DockStyle.Fill;
-                this.dgvFilterRoleStatistic.MultiSelect = false;
-                this.dgvFilterRoleStatistic.Name = "dgvFilterRoles";
-                this.dgvFilterRoleStatistic.ReadOnly = true;
-                this.dgvFilterRoleStatistic.RowHeadersVisible = false;
-                this.dgvFilterRoleStatistic.RowTemplate.Height = 18;
-                this.dgvFilterRoleStatistic.RowTemplate.Resizable = System.Windows.Forms.DataGridViewTriState.False;
-                this.dgvFilterRoleStatistic.SelectionMode = System.Windows.Forms.DataGridViewSelectionMode.FullRowSelect;
-                //this.dgvFilterRoles.Size = new System.Drawing.Size(190, 111);
-                this.dgvFilterRoleStatistic.TabIndex = 9;
-                this.dgvFilterRoleStatistic.CellClick += new System.Windows.Forms.DataGridViewCellEventHandler(this.dgvFilterRoleStatistic_CellClick);
-                // 
-                // dataGridViewRolesCheckBoxColumnUse
-                // 
-                i = 0;
-                this.dgvFilterRoleStatistic.Columns[i].Frozen = true;
-                this.dgvFilterRoleStatistic.Columns[i].HeaderText = "Use";
-                this.dgvFilterRoleStatistic.Columns[i].Name = "dataGridViewRolesCheckBoxColumnUse";
-                this.dgvFilterRoleStatistic.Columns[i].ReadOnly = true;
-                this.dgvFilterRoleStatistic.Columns[i].Resizable = System.Windows.Forms.DataGridViewTriState.False;
-                this.dgvFilterRoleStatistic.Columns[i].Width = 25;
-                // 
-                // dataGridViewRolesTextBoxColumnDesc
-                // 
-                i = 1;
-                //this.dgvFilterRoles.Columns[i].Frozen = true;
-                this.dgvFilterRoleStatistic.Columns[i].HeaderText = "Desc";
-                this.dgvFilterRoleStatistic.Columns[i].Name = "dataGridViewRolesTextBoxColumnDesc";
-                this.dgvFilterRoleStatistic.Columns[i].ReadOnly = true;
-                this.dgvFilterRoleStatistic.Columns[i].Resizable = System.Windows.Forms.DataGridViewTriState.False;
-                this.dgvFilterRoleStatistic.Columns[i].Width = 145;
-                this.dgvFilterRoleStatistic.Columns[i].AutoSizeMode = DataGridViewAutoSizeColumnMode.Fill;
-                // 
-                // dgvClient
-                // 
-                this.dgvUserView.AllowUserToAddRows = false;
-                this.dgvUserView.AllowUserToDeleteRows = false;
-                this.dgvUserView.ColumnHeadersHeightSizeMode = System.Windows.Forms.DataGridViewColumnHeadersHeightSizeMode.AutoSize;
-                this.dgvUserView.ColumnHeadersVisible = false;
-                this.dgvUserView.Columns.AddRange(new System.Windows.Forms.DataGridViewColumn[] {
-                    new DataGridViewCheckBoxColumn (),
-                    new DataGridViewTextBoxColumn ()});
-                //this.dgvClient.Location = new System.Drawing.Point(12, 150);
-                this.dgvUserView.Dock = DockStyle.Fill;
-                this.dgvUserView.MultiSelect = false;
-                this.dgvUserView.Name = "dgvClient";
-                this.dgvUserView.ReadOnly = true;
-                this.dgvUserView.RowHeadersVisible = false;
-                this.dgvUserView.RowTemplate.Height = 18;
-                this.dgvUserView.RowTemplate.Resizable = System.Windows.Forms.DataGridViewTriState.False;
-                this.dgvUserView.SelectionMode = System.Windows.Forms.DataGridViewSelectionMode.FullRowSelect;
-                //this.dgvClient.Size = new System.Drawing.Size(190, 400);
-                this.dgvUserView.TabIndex = 10;
-                this.dgvUserView.SelectionChanged += new System.EventHandler(this.dgvUserView_SelectionChanged);
-                // 
-                // dataGridViewClientCheckBoxColumnActive
-                // 
-                i = 0;
-                this.dgvUserView.Columns[i].Frozen = true;
-                this.dgvUserView.Columns[i].HeaderText = "Active";
-                this.dgvUserView.Columns[i].Name = "dataGridViewClientCheckBoxColumnActive";
-                this.dgvUserView.Columns[i].ReadOnly = true;
-                this.dgvUserView.Columns[i].Resizable = System.Windows.Forms.DataGridViewTriState.False;
-                this.dgvUserView.Columns[i].Width = 25;
-                // 
-                // dataGridViewClientTextBoxColumnDesc
-                // 
-                i = 1;
-                //this.dgvClient.Columns[i].Frozen = true;
-                this.dgvUserView.Columns[i].HeaderText = "Desc";
-                this.dgvUserView.Columns[i].Name = "dataGridViewClientTextBoxColumnDesc";
-                this.dgvUserView.Columns[i].ReadOnly = true;
-                this.dgvUserView.Columns[i].Resizable = System.Windows.Forms.DataGridViewTriState.False;
-                this.dgvUserView.Columns[i].Width = 145;
-                this.dgvUserView.Columns[i].AutoSizeMode = DataGridViewAutoSizeColumnMode.Fill;
+            // 
+            // tabPageLogging
+            // 
+            //this.tabPageLogging.Location = new System.Drawing.Point(4, 22);
+            this.tabPageLogging.Controls.Add (this.panelTabPageLogging);
+            this.tabPageLogging.Name = "tabPageLogging";
+            this.tabPageLogging.Padding = new System.Windows.Forms.Padding(3);
+            //this.tabPageLogging.Size = new System.Drawing.Size(553, 298);
+            this.tabPageLogging.TabIndex = 0;
+            this.tabPageLogging.Text = "Лог-файл";
+            this.tabPageLogging.ToolTipText = "Лог-файл пользователя";
+            this.tabPageLogging.UseVisualStyleBackColor = true;
+            // panelPageLogging
+            //panelTabPageLogging.CellBorderStyle = TableLayoutPanelCellBorderStyle.Single;
+            this.panelTabPageLogging.ColumnCount = 6; this.panelTabPageLogging.RowCount = 24;
+            for (i = 0; i < this.panelTabPageLogging.ColumnCount; i++)
+                this.panelTabPageLogging.ColumnStyles.Add(new ColumnStyle(SizeType.Percent, 100F / this.panelTabPageLogging.ColumnCount));
+            for (i = 0; i < this.panelTabPageLogging.RowCount; i++)
+                this.panelTabPageLogging.RowStyles.Add(new RowStyle(SizeType.Percent, 100F / this.panelTabPageLogging.RowCount));
+            this.panelTabPageLogging.Dock = DockStyle.Fill;
+            this.panelTabPageLogging.Controls.Add(labelDatetimeStart, 0, 0); this.SetColumnSpan(labelDatetimeStart, 2);
+            this.panelTabPageLogging.Controls.Add(this.dgvListDateView, 0, 1); this.SetColumnSpan(this.dgvListDateView, 2); this.SetRowSpan(this.dgvListDateView, 11);
+            this.panelTabPageLogging.Controls.Add(labelFilterTypeMessage, 0, 12); this.SetColumnSpan(labelFilterTypeMessage, 2);
+            this.panelTabPageLogging.Controls.Add(this.dgvTypeToView, 0, 13); this.SetColumnSpan(this.dgvTypeToView, 2); this.SetRowSpan(this.dgvTypeToView, 11);
+            this.panelTabPageLogging.Controls.Add(this.dgvMessageView, 2, 0); this.SetColumnSpan(this.dgvMessageView, 4); this.SetRowSpan(this.dgvMessageView, 24);
 
-                // 
-                // tabPageLogging
-                // 
-                //this.tabPageLogging.Location = new System.Drawing.Point(4, 22);
-                this.tabPageLogging.Controls.Add (this.panelTabPageLogging);
-                this.tabPageLogging.Name = "tabPageLogging";
-                this.tabPageLogging.Padding = new System.Windows.Forms.Padding(3);
-                //this.tabPageLogging.Size = new System.Drawing.Size(553, 298);
-                this.tabPageLogging.TabIndex = 0;
-                this.tabPageLogging.Text = "Лог-файл";
-                this.tabPageLogging.ToolTipText = "Лог-файл пользователя";
-                this.tabPageLogging.UseVisualStyleBackColor = true;
-                // panelPageLogging
-                //panelTabPageLogging.CellBorderStyle = TableLayoutPanelCellBorderStyle.Single;
-                this.panelTabPageLogging.ColumnCount = 6; this.panelTabPageLogging.RowCount = 24;
-                for (i = 0; i < this.panelTabPageLogging.ColumnCount; i++)
-                    this.panelTabPageLogging.ColumnStyles.Add(new ColumnStyle(SizeType.Percent, 100F / this.panelTabPageLogging.ColumnCount));
-                for (i = 0; i < this.panelTabPageLogging.RowCount; i++)
-                    this.panelTabPageLogging.RowStyles.Add(new RowStyle(SizeType.Percent, 100F / this.panelTabPageLogging.RowCount));
-                this.panelTabPageLogging.Dock = DockStyle.Fill;
-                this.panelTabPageLogging.Controls.Add(labelDatetimeStart, 0, 0); this.SetColumnSpan(labelDatetimeStart, 2);
-                this.panelTabPageLogging.Controls.Add(this.dgvListDatetView, 0, 1); this.SetColumnSpan(this.dgvListDatetView, 2); this.SetRowSpan(this.dgvListDatetView, 11);
-                this.panelTabPageLogging.Controls.Add(labelFilterTypeMessage, 0, 12); this.SetColumnSpan(labelFilterTypeMessage, 2);
-                this.panelTabPageLogging.Controls.Add(this.dgvTypeToView, 0, 13); this.SetColumnSpan(this.dgvTypeToView, 2); this.SetRowSpan(this.dgvTypeToView, 11);
-                this.panelTabPageLogging.Controls.Add(this.dgvMessageView, 2, 0); this.SetColumnSpan(this.dgvMessageView, 4); this.SetRowSpan(this.dgvMessageView, 24);
+            // 
+            // labelDatetimeStart
+            // 
+            labelDatetimeStart.AutoSize = true;
+            //this.labelDatetimeStart.Location = new System.Drawing.Point(3, 7);
+            labelDatetimeStart.Name = "labelDatetimeStart";
+            //this.labelDatetimeStart.Size = new System.Drawing.Size(157, 13);
+            labelDatetimeStart.TabIndex = 11;
+            labelDatetimeStart.Text = "Фильтр: дата/время запуска";
+            // 
+            // dgvDatetimeStart
+            // 
+            this.dgvListDateView.Dock = DockStyle.Fill;
+            this.dgvListDateView.AllowUserToAddRows = false;
+            this.dgvListDateView.AllowUserToDeleteRows = false;
+            this.dgvListDateView.ColumnHeadersHeightSizeMode = System.Windows.Forms.DataGridViewColumnHeadersHeightSizeMode.AutoSize;
+            this.dgvListDateView.ColumnHeadersVisible = false;
+            this.dgvListDateView.Columns.AddRange(new System.Windows.Forms.DataGridViewColumn[] {
+                new DataGridViewCheckBoxColumn (),
+                new DataGridViewTextBoxColumn ()});
+            //this.dgvDatetimeStart.Location = new System.Drawing.Point(6, 23);
+            this.dgvListDateView.MultiSelect = false;
+            this.dgvListDateView.Name = "dgvDatetimeStart";
+            this.dgvListDateView.ReadOnly = true;
+            this.dgvListDateView.RowHeadersVisible = false;
+            this.dgvListDateView.RowTemplate.Height = 18;
+            this.dgvListDateView.RowTemplate.Resizable = System.Windows.Forms.DataGridViewTriState.False;
+            this.dgvListDateView.SelectionMode = System.Windows.Forms.DataGridViewSelectionMode.FullRowSelect;
+            //this.dgvDatetimeStart.Size = new System.Drawing.Size(170, 164);
+            this.dgvListDateView.BackColor = this.BackColor;
+            this.dgvListDateView.TabIndex = 10;
+            // 
+            // dataGridViewCheckBoxColumnDatetimeStartUse
+            // 
+            i = 0;
+            this.dgvListDateView.Columns[i].Frozen = true;
+            this.dgvListDateView.Columns[i].HeaderText = "Use";
+            this.dgvListDateView.Columns[i].Name = "dataGridViewCheckBoxColumn1";
+            this.dgvListDateView.Columns[i].ReadOnly = true;
+            this.dgvListDateView.Columns[i].Resizable = System.Windows.Forms.DataGridViewTriState.False;
+            this.dgvListDateView.Columns[i].Width = 25;
+            // 
+            // dataGridViewTextBoxColumnDatetimeStartDesc
+            // 
+            i = 1;
+            //this.dgvDatetimeStart.Columns[i].Frozen = true;
+            this.dgvListDateView.Columns[i].HeaderText = "Desc";
+            this.dgvListDateView.Columns[i].Name = "dataGridViewTextBoxColumnDatetimeStartDesc";
+            this.dgvListDateView.Columns[i].ReadOnly = true;
+            this.dgvListDateView.Columns[i].Resizable = System.Windows.Forms.DataGridViewTriState.False;
+            this.dgvListDateView.Columns[i].Width = 145;
+            this.dgvListDateView.Columns[i].AutoSizeMode = DataGridViewAutoSizeColumnMode.Fill;
+            // 
+            // labelFilterTypeMessage
+            // 
+            labelFilterTypeMessage.AutoSize = true;
+            //this.labelFilterTypeMessage.Location = new System.Drawing.Point(3, 190);
+            labelFilterTypeMessage.Name = "labelFilterTypeMessage";
+            //this.labelFilterTypeMessage.Size = new System.Drawing.Size(130, 13);
+            labelFilterTypeMessage.TabIndex = 13;
+            labelFilterTypeMessage.Text = "Фильтр: тип сообщения";
 
-                // 
-                // labelDatetimeStart
-                // 
-                labelDatetimeStart.AutoSize = true;
-                //this.labelDatetimeStart.Location = new System.Drawing.Point(3, 7);
-                labelDatetimeStart.Name = "labelDatetimeStart";
-                //this.labelDatetimeStart.Size = new System.Drawing.Size(157, 13);
-                labelDatetimeStart.TabIndex = 11;
-                labelDatetimeStart.Text = "Фильтр: дата/время запуска";
-                // 
-                // dgvDatetimeStart
-                // 
-                this.dgvListDatetView.Dock = DockStyle.Fill;
-                this.dgvListDatetView.AllowUserToAddRows = false;
-                this.dgvListDatetView.AllowUserToDeleteRows = false;
-                this.dgvListDatetView.ColumnHeadersHeightSizeMode = System.Windows.Forms.DataGridViewColumnHeadersHeightSizeMode.AutoSize;
-                this.dgvListDatetView.ColumnHeadersVisible = false;
-                this.dgvListDatetView.Columns.AddRange(new System.Windows.Forms.DataGridViewColumn[] {
-                    new DataGridViewCheckBoxColumn (),
-                    new DataGridViewTextBoxColumn ()});
-                //this.dgvDatetimeStart.Location = new System.Drawing.Point(6, 23);
-                this.dgvListDatetView.MultiSelect = false;
-                this.dgvListDatetView.Name = "dgvDatetimeStart";
-                this.dgvListDatetView.ReadOnly = true;
-                this.dgvListDatetView.RowHeadersVisible = false;
-                this.dgvListDatetView.RowTemplate.Height = 18;
-                this.dgvListDatetView.RowTemplate.Resizable = System.Windows.Forms.DataGridViewTriState.False;
-                this.dgvListDatetView.SelectionMode = System.Windows.Forms.DataGridViewSelectionMode.FullRowSelect;
-                //this.dgvDatetimeStart.Size = new System.Drawing.Size(170, 164);
-                this.dgvListDatetView.BackColor = this.BackColor;
-                this.dgvListDatetView.TabIndex = 10;
-                // 
-                // dataGridViewCheckBoxColumnDatetimeStartUse
-                // 
-                i = 0;
-                this.dgvListDatetView.Columns[i].Frozen = true;
-                this.dgvListDatetView.Columns[i].HeaderText = "Use";
-                this.dgvListDatetView.Columns[i].Name = "dataGridViewCheckBoxColumn1";
-                this.dgvListDatetView.Columns[i].ReadOnly = true;
-                this.dgvListDatetView.Columns[i].Resizable = System.Windows.Forms.DataGridViewTriState.False;
-                this.dgvListDatetView.Columns[i].Width = 25;
-                // 
-                // dataGridViewTextBoxColumnDatetimeStartDesc
-                // 
-                i = 1;
-                //this.dgvDatetimeStart.Columns[i].Frozen = true;
-                this.dgvListDatetView.Columns[i].HeaderText = "Desc";
-                this.dgvListDatetView.Columns[i].Name = "dataGridViewTextBoxColumnDatetimeStartDesc";
-                this.dgvListDatetView.Columns[i].ReadOnly = true;
-                this.dgvListDatetView.Columns[i].Resizable = System.Windows.Forms.DataGridViewTriState.False;
-                this.dgvListDatetView.Columns[i].Width = 145;
-                this.dgvListDatetView.Columns[i].AutoSizeMode = DataGridViewAutoSizeColumnMode.Fill;
-                // 
-                // labelFilterTypeMessage
-                // 
-                labelFilterTypeMessage.AutoSize = true;
-                //this.labelFilterTypeMessage.Location = new System.Drawing.Point(3, 190);
-                labelFilterTypeMessage.Name = "labelFilterTypeMessage";
-                //this.labelFilterTypeMessage.Size = new System.Drawing.Size(130, 13);
-                labelFilterTypeMessage.TabIndex = 13;
-                labelFilterTypeMessage.Text = "Фильтр: тип сообщения";
-
-                // 
-                // dgvLogMessage
-                //                 
-                this.dgvMessageView.Dock = DockStyle.Fill;
-                this.dgvMessageView.MultiSelect = false;
-                this.dgvMessageView.Name = "dgvLogMessage";
-                this.dgvMessageView.ReadOnly = true;
-                this.dgvMessageView.ScrollBars = System.Windows.Forms.ScrollBars.Both;
-                //this.dgvLogMessage.Size = new System.Drawing.Size(371, 292);
-                this.dgvMessageView.TabIndex = 15;
-                this.dgvMessageView.Columns.AddRange(new System.Windows.Forms.DataGridViewColumn[] {
-                new System.Windows.Forms.DataGridViewTextBoxColumn ()
-                    , new System.Windows.Forms.DataGridViewTextBoxColumn ()
-                    , new System.Windows.Forms.DataGridViewTextBoxColumn ()
-                });
-                this.dgvMessageView.AllowUserToAddRows =
-                this.dgvMessageView.AllowUserToDeleteRows =
-                    false;
-                this.dgvMessageView.ColumnHeadersVisible = false;
-                this.dgvMessageView.RowHeadersVisible = false;
-                this.dgvMessageView.RowTemplate.Resizable = System.Windows.Forms.DataGridViewTriState.False;
-                this.dgvMessageView.SelectionMode = System.Windows.Forms.DataGridViewSelectionMode.FullRowSelect;
-                this.dgvMessageView.Columns[0].Width = 85; this.dgvMessageView.Columns[0].Resizable = System.Windows.Forms.DataGridViewTriState.False;
-                this.dgvMessageView.Columns[1].Width = 30; this.dgvMessageView.Columns[1].Resizable = System.Windows.Forms.DataGridViewTriState.False;
-                this.dgvMessageView.Columns[2].Width = 254; this.dgvMessageView.Columns[2].Resizable = System.Windows.Forms.DataGridViewTriState.False;
-                this.dgvMessageView.Columns[2].AutoSizeMode = DataGridViewAutoSizeColumnMode.Fill;
-                // 
-                // tabPageTabes
-                // 
-                this.tabPageTabes.Controls.Add(this.panelTabPageTabes);
-                //this.tabPageTabes.Location = new System.Drawing.Point(4, 22);
-                this.tabPageTabes.Name = "tabPageTabes";
-                this.tabPageTabes.Padding = new System.Windows.Forms.Padding(3);
-                //this.tabPageTabes.Size = new System.Drawing.Size(553, 298);
-                this.tabPageTabes.TabIndex = 1;
-                this.tabPageTabes.Text = "Вкладки";
-                this.tabPageTabes.ToolTipText = "Отображаемые вкладки";
-                this.tabPageTabes.UseVisualStyleBackColor = true;
-                // panelTabPageTabes
-                //panelTabPageTabes.CellBorderStyle = TableLayoutPanelCellBorderStyle.Single;
-                this.panelTabPageTabes.Dock = DockStyle.Fill;
-                this.panelTabPageTabes.ColumnCount = 6; this.panelTabPageTabes.RowCount = 24;
-                for (i = 0; i < this.panelTabPageTabes.ColumnCount; i++)
-                    this.panelTabPageTabes.ColumnStyles.Add(new ColumnStyle(SizeType.Percent, 100F / this.panelTabPageTabes.ColumnCount));
-                for (i = 0; i < this.panelTabPageTabes.RowCount; i++)
-                    this.panelTabPageTabes.RowStyles.Add(new RowStyle(SizeType.Percent, 100F / this.panelTabPageTabes.RowCount));
-                this.panelTabPageTabes.Controls.Add(this.checkBoxs[(int)FormChangeMode.MODE_TECCOMPONENT.ANY], 0, 0); this.SetRowSpan(this.checkBoxs[(int)FormChangeMode.MODE_TECCOMPONENT.ANY], 2);
-                this.panelTabPageTabes.Controls.Add(this.checkBoxs[(int)FormChangeMode.MODE_TECCOMPONENT.PC], 1, 0); this.SetRowSpan(this.checkBoxs[(int)FormChangeMode.MODE_TECCOMPONENT.PC], 2);
-                this.panelTabPageTabes.Controls.Add(this.checkBoxs[(int)FormChangeMode.MODE_TECCOMPONENT.GTP], 1, 2); this.SetRowSpan(this.checkBoxs[(int)FormChangeMode.MODE_TECCOMPONENT.GTP], 2);
-                this.panelTabPageTabes.Controls.Add(this.checkBoxs[(int)FormChangeMode.MODE_TECCOMPONENT.TG], 2, 0); this.SetRowSpan(this.checkBoxs[(int)FormChangeMode.MODE_TECCOMPONENT.TG], 2);
-                this.panelTabPageTabes.Controls.Add(this.checkBoxs[(int)FormChangeMode.MODE_TECCOMPONENT.TEC], 2, 2); this.SetRowSpan(this.checkBoxs[(int)FormChangeMode.MODE_TECCOMPONENT.TEC], 2);
-                this.panelTabPageTabes.Controls.Add(this.listBoxTabVisible, 0, 4); this.SetColumnSpan(this.listBoxTabVisible, 6); this.SetRowSpan(this.listBoxTabVisible, 20);
-                // 
-                // listTabVisible
-                // 
-                this.listBoxTabVisible.Dock = DockStyle.Fill;
+            // 
+            // dgvLogMessage
+            //                 
+            this.dgvMessageView.Dock = DockStyle.Fill;
+            this.dgvMessageView.MultiSelect = false;
+            this.dgvMessageView.Name = "dgvLogMessage";
+            this.dgvMessageView.ReadOnly = true;
+            this.dgvMessageView.ScrollBars = System.Windows.Forms.ScrollBars.Both;
+            //this.dgvLogMessage.Size = new System.Drawing.Size(371, 292);
+            this.dgvMessageView.TabIndex = 15;
+            this.dgvMessageView.Columns.AddRange(new System.Windows.Forms.DataGridViewColumn[] {
+            new System.Windows.Forms.DataGridViewTextBoxColumn ()
+                , new System.Windows.Forms.DataGridViewTextBoxColumn ()
+                , new System.Windows.Forms.DataGridViewTextBoxColumn ()
+            });
+            this.dgvMessageView.AllowUserToAddRows =
+            this.dgvMessageView.AllowUserToDeleteRows =
+                false;
+            this.dgvMessageView.ColumnHeadersVisible = false;
+            this.dgvMessageView.RowHeadersVisible = false;
+            this.dgvMessageView.RowTemplate.Resizable = System.Windows.Forms.DataGridViewTriState.False;
+            this.dgvMessageView.SelectionMode = System.Windows.Forms.DataGridViewSelectionMode.FullRowSelect;
+            this.dgvMessageView.Columns[0].Width = 85; this.dgvMessageView.Columns[0].Resizable = System.Windows.Forms.DataGridViewTriState.False;
+            this.dgvMessageView.Columns[1].Width = 30; this.dgvMessageView.Columns[1].Resizable = System.Windows.Forms.DataGridViewTriState.False;
+            this.dgvMessageView.Columns[2].Width = 254; this.dgvMessageView.Columns[2].Resizable = System.Windows.Forms.DataGridViewTriState.False;
+            this.dgvMessageView.Columns[2].AutoSizeMode = DataGridViewAutoSizeColumnMode.Fill;
+            // 
+            // tabPageTabes
+            // 
+            this.tabPageTabes.Controls.Add(this.panelTabPageTabes);
+            //this.tabPageTabes.Location = new System.Drawing.Point(4, 22);
+            this.tabPageTabes.Name = "tabPageTabes";
+            this.tabPageTabes.Padding = new System.Windows.Forms.Padding(3);
+            //this.tabPageTabes.Size = new System.Drawing.Size(553, 298);
+            this.tabPageTabes.TabIndex = 1;
+            this.tabPageTabes.Text = "Вкладки";
+            this.tabPageTabes.ToolTipText = "Отображаемые вкладки";
+            this.tabPageTabes.UseVisualStyleBackColor = true;
+            // panelTabPageTabes
+            //panelTabPageTabes.CellBorderStyle = TableLayoutPanelCellBorderStyle.Single;
+            this.panelTabPageTabes.Dock = DockStyle.Fill;
+            this.panelTabPageTabes.ColumnCount = 6; this.panelTabPageTabes.RowCount = 24;
+            for (i = 0; i < this.panelTabPageTabes.ColumnCount; i++)
+                this.panelTabPageTabes.ColumnStyles.Add(new ColumnStyle(SizeType.Percent, 100F / this.panelTabPageTabes.ColumnCount));
+            for (i = 0; i < this.panelTabPageTabes.RowCount; i++)
+                this.panelTabPageTabes.RowStyles.Add(new RowStyle(SizeType.Percent, 100F / this.panelTabPageTabes.RowCount));
+            this.panelTabPageTabes.Controls.Add(this.arrayCheckBoxModeTECComponent[(int)FormChangeMode.MODE_TECCOMPONENT.ANY], 0, 0); this.SetRowSpan(this.arrayCheckBoxModeTECComponent[(int)FormChangeMode.MODE_TECCOMPONENT.ANY], 2);
+            this.panelTabPageTabes.Controls.Add(this.arrayCheckBoxModeTECComponent[(int)FormChangeMode.MODE_TECCOMPONENT.PC], 1, 0); this.SetRowSpan(this.arrayCheckBoxModeTECComponent[(int)FormChangeMode.MODE_TECCOMPONENT.PC], 2);
+            this.panelTabPageTabes.Controls.Add(this.arrayCheckBoxModeTECComponent[(int)FormChangeMode.MODE_TECCOMPONENT.GTP], 1, 2); this.SetRowSpan(this.arrayCheckBoxModeTECComponent[(int)FormChangeMode.MODE_TECCOMPONENT.GTP], 2);
+            this.panelTabPageTabes.Controls.Add(this.arrayCheckBoxModeTECComponent[(int)FormChangeMode.MODE_TECCOMPONENT.TG], 2, 0); this.SetRowSpan(this.arrayCheckBoxModeTECComponent[(int)FormChangeMode.MODE_TECCOMPONENT.TG], 2);
+            this.panelTabPageTabes.Controls.Add(this.arrayCheckBoxModeTECComponent[(int)FormChangeMode.MODE_TECCOMPONENT.TEC], 2, 2); this.SetRowSpan(this.arrayCheckBoxModeTECComponent[(int)FormChangeMode.MODE_TECCOMPONENT.TEC], 2);
+            this.panelTabPageTabes.Controls.Add(this.listBoxTabVisible, 0, 4); this.SetColumnSpan(this.listBoxTabVisible, 6); this.SetRowSpan(this.listBoxTabVisible, 20);
+            // 
+            // listTabVisible
+            // 
+            this.listBoxTabVisible.Dock = DockStyle.Fill;
                 
-                //this.dgvTabVisible.Anchor = ((System.Windows.Forms.AnchorStyles)((System.Windows.Forms.AnchorStyles.Bottom | System.Windows.Forms.AnchorStyles.Left)));
-                //this.dgvTabVisible.Location = new System.Drawing.Point(6, 54);
-                this.listBoxTabVisible.Name = "listTabVisible";
-                //this.dgvTabVisible.Size = new System.Drawing.Size(547, 211);
-                this.listBoxTabVisible.TabIndex = 15;
-                // 
-                // checkBoxs[(int)FormChangeMode.MODE_TECCOMPONENT.TEC]
-                // 
-                this.checkBoxs[(int)FormChangeMode.MODE_TECCOMPONENT.TEC].AutoSize = true;
-                this.checkBoxs[(int)FormChangeMode.MODE_TECCOMPONENT.TEC].Enabled = true;
-                //this.checkBoxs[(int)FormChangeMode.MODE_TECCOMPONENT.TEC].Location = new System.Drawing.Point(6, 6);
-                this.checkBoxs[(int)FormChangeMode.MODE_TECCOMPONENT.TEC].Name = "checkBoxs[(int)FormChangeMode.MODE_TECCOMPONENT.TEC]";
-                //this.checkBoxs[(int)FormChangeMode.MODE_TECCOMPONENT.TEC].Size = new System.Drawing.Size(48, 17);
-                this.checkBoxs[(int)FormChangeMode.MODE_TECCOMPONENT.TEC].TabIndex = 16;
-                this.checkBoxs[(int)FormChangeMode.MODE_TECCOMPONENT.TEC].Text = "ТЭЦ";
-                this.checkBoxs[(int)FormChangeMode.MODE_TECCOMPONENT.TEC].UseVisualStyleBackColor = true;
-                this.checkBoxs[(int)FormChangeMode.MODE_TECCOMPONENT.TEC].Checked = true;
-                // 
-                // checkBoxs[(int)FormChangeMode.MODE_TECCOMPONENT.TG]
-                // 
-                this.checkBoxs[(int)FormChangeMode.MODE_TECCOMPONENT.TG].AutoSize = true;
-                this.checkBoxs[(int)FormChangeMode.MODE_TECCOMPONENT.TG].Enabled = true;
-                //this.checkBoxs[(int)FormChangeMode.MODE_TECCOMPONENT.TG].Location = new System.Drawing.Point(6, 29);
-                this.checkBoxs[(int)FormChangeMode.MODE_TECCOMPONENT.TG].Name = "checkBoxs[(int)FormChangeMode.MODE_TECCOMPONENT.TG]";
-                //this.checkBoxs[(int)FormChangeMode.MODE_TECCOMPONENT.TG].Size = new System.Drawing.Size(39, 17);
-                this.checkBoxs[(int)FormChangeMode.MODE_TECCOMPONENT.TG].TabIndex = 17;
-                this.checkBoxs[(int)FormChangeMode.MODE_TECCOMPONENT.TG].Text = "ТГ";
-                this.checkBoxs[(int)FormChangeMode.MODE_TECCOMPONENT.TG].UseVisualStyleBackColor = true;
-                this.checkBoxs[(int)FormChangeMode.MODE_TECCOMPONENT.TG].Checked = true;
-                // 
-                // checkBoxs[(int)FormChangeMode.MODE_TECCOMPONENT.GTP]
-                // 
-                this.checkBoxs[(int)FormChangeMode.MODE_TECCOMPONENT.GTP].AutoSize = true;
-                this.checkBoxs[(int)FormChangeMode.MODE_TECCOMPONENT.GTP].Enabled = true;
-                //this.checkBoxs[(int)FormChangeMode.MODE_TECCOMPONENT.GTP].Location = new System.Drawing.Point(112, 6);
-                this.checkBoxs[(int)FormChangeMode.MODE_TECCOMPONENT.GTP].Name = "checkBoxs[(int)FormChangeMode.MODE_TECCOMPONENT.GTP]";
-                //this.checkBoxs[(int)FormChangeMode.MODE_TECCOMPONENT.GTP].Size = new System.Drawing.Size(47, 17);
-                this.checkBoxs[(int)FormChangeMode.MODE_TECCOMPONENT.GTP].TabIndex = 18;
-                this.checkBoxs[(int)FormChangeMode.MODE_TECCOMPONENT.GTP].Text = "ГТП";
-                this.checkBoxs[(int)FormChangeMode.MODE_TECCOMPONENT.GTP].UseVisualStyleBackColor = true;
-                this.checkBoxs[(int)FormChangeMode.MODE_TECCOMPONENT.GTP].Checked = true;
-                // 
-                // checkBoxs[(int)FormChangeMode.MODE_TECCOMPONENT.PC]
-                // 
-                this.checkBoxs[(int)FormChangeMode.MODE_TECCOMPONENT.PC].AutoSize = true;
-                this.checkBoxs[(int)FormChangeMode.MODE_TECCOMPONENT.PC].Enabled = true;
-                //this.checkBoxs[(int)FormChangeMode.MODE_TECCOMPONENT.PC].Location = new System.Drawing.Point(112, 29);
-                this.checkBoxs[(int)FormChangeMode.MODE_TECCOMPONENT.PC].Name = "checkBoxs[(int)FormChangeMode.MODE_TECCOMPONENT.PC]";
-                //this.checkBoxs[(int)FormChangeMode.MODE_TECCOMPONENT.PC].Size = new System.Drawing.Size(44, 17);
-                this.checkBoxs[(int)FormChangeMode.MODE_TECCOMPONENT.PC].TabIndex = 19;
-                this.checkBoxs[(int)FormChangeMode.MODE_TECCOMPONENT.PC].Text = "ЩУ";
-                this.checkBoxs[(int)FormChangeMode.MODE_TECCOMPONENT.PC].UseVisualStyleBackColor = true;
-                this.checkBoxs[(int)FormChangeMode.MODE_TECCOMPONENT.PC].Checked = true;
-                // 
-                // checkBoxAdmin
-                // 
-                this.checkBoxs[(int)FormChangeMode.MODE_TECCOMPONENT.ANY].AutoSize = true;
-                this.checkBoxs[(int)FormChangeMode.MODE_TECCOMPONENT.ANY].Enabled = true;
-                //this.checkBoxs[(int)FormChangeMode.MODE_TECCOMPONENT.ANY].Location = new System.Drawing.Point(6, 275);
-                this.checkBoxs[(int)FormChangeMode.MODE_TECCOMPONENT.ANY].Name = "checkBoxAdmin";
-                //this.checkBoxs[(int)FormChangeMode.MODE_TECCOMPONENT.ANY].Size = new System.Drawing.Size(48, 17);
-                this.checkBoxs[(int)FormChangeMode.MODE_TECCOMPONENT.ANY].TabIndex = 20;
-                this.checkBoxs[(int)FormChangeMode.MODE_TECCOMPONENT.ANY].Text = HAdmin.PBR_PREFIX;
-                this.checkBoxs[(int)FormChangeMode.MODE_TECCOMPONENT.ANY].UseVisualStyleBackColor = true;
-                this.checkBoxs[(int)FormChangeMode.MODE_TECCOMPONENT.ANY].Checked = true;
+            //this.dgvTabVisible.Anchor = ((System.Windows.Forms.AnchorStyles)((System.Windows.Forms.AnchorStyles.Bottom | System.Windows.Forms.AnchorStyles.Left)));
+            //this.dgvTabVisible.Location = new System.Drawing.Point(6, 54);
+            this.listBoxTabVisible.Name = "listTabVisible";
+            //this.dgvTabVisible.Size = new System.Drawing.Size(547, 211);
+            this.listBoxTabVisible.TabIndex = 15;
+            // 
+            // checkBoxs[(int)FormChangeMode.MODE_TECCOMPONENT.TEC]
+            // 
+            this.arrayCheckBoxModeTECComponent[(int)FormChangeMode.MODE_TECCOMPONENT.TEC].AutoSize = true;
+            this.arrayCheckBoxModeTECComponent[(int)FormChangeMode.MODE_TECCOMPONENT.TEC].Enabled = true;
+            //this.checkBoxs[(int)FormChangeMode.MODE_TECCOMPONENT.TEC].Location = new System.Drawing.Point(6, 6);
+            this.arrayCheckBoxModeTECComponent[(int)FormChangeMode.MODE_TECCOMPONENT.TEC].Name = "checkBoxs[(int)FormChangeMode.MODE_TECCOMPONENT.TEC]";
+            //this.checkBoxs[(int)FormChangeMode.MODE_TECCOMPONENT.TEC].Size = new System.Drawing.Size(48, 17);
+            this.arrayCheckBoxModeTECComponent[(int)FormChangeMode.MODE_TECCOMPONENT.TEC].TabIndex = 16;
+            this.arrayCheckBoxModeTECComponent[(int)FormChangeMode.MODE_TECCOMPONENT.TEC].Text = "ТЭЦ";
+            this.arrayCheckBoxModeTECComponent[(int)FormChangeMode.MODE_TECCOMPONENT.TEC].UseVisualStyleBackColor = true;
+            this.arrayCheckBoxModeTECComponent[(int)FormChangeMode.MODE_TECCOMPONENT.TEC].Checked = true;
+            // 
+            // checkBoxs[(int)FormChangeMode.MODE_TECCOMPONENT.TG]
+            // 
+            this.arrayCheckBoxModeTECComponent[(int)FormChangeMode.MODE_TECCOMPONENT.TG].AutoSize = true;
+            this.arrayCheckBoxModeTECComponent[(int)FormChangeMode.MODE_TECCOMPONENT.TG].Enabled = true;
+            //this.checkBoxs[(int)FormChangeMode.MODE_TECCOMPONENT.TG].Location = new System.Drawing.Point(6, 29);
+            this.arrayCheckBoxModeTECComponent[(int)FormChangeMode.MODE_TECCOMPONENT.TG].Name = "checkBoxs[(int)FormChangeMode.MODE_TECCOMPONENT.TG]";
+            //this.checkBoxs[(int)FormChangeMode.MODE_TECCOMPONENT.TG].Size = new System.Drawing.Size(39, 17);
+            this.arrayCheckBoxModeTECComponent[(int)FormChangeMode.MODE_TECCOMPONENT.TG].TabIndex = 17;
+            this.arrayCheckBoxModeTECComponent[(int)FormChangeMode.MODE_TECCOMPONENT.TG].Text = "ТГ";
+            this.arrayCheckBoxModeTECComponent[(int)FormChangeMode.MODE_TECCOMPONENT.TG].UseVisualStyleBackColor = true;
+            this.arrayCheckBoxModeTECComponent[(int)FormChangeMode.MODE_TECCOMPONENT.TG].Checked = true;
+            // 
+            // checkBoxs[(int)FormChangeMode.MODE_TECCOMPONENT.GTP]
+            // 
+            this.arrayCheckBoxModeTECComponent[(int)FormChangeMode.MODE_TECCOMPONENT.GTP].AutoSize = true;
+            this.arrayCheckBoxModeTECComponent[(int)FormChangeMode.MODE_TECCOMPONENT.GTP].Enabled = true;
+            //this.checkBoxs[(int)FormChangeMode.MODE_TECCOMPONENT.GTP].Location = new System.Drawing.Point(112, 6);
+            this.arrayCheckBoxModeTECComponent[(int)FormChangeMode.MODE_TECCOMPONENT.GTP].Name = "checkBoxs[(int)FormChangeMode.MODE_TECCOMPONENT.GTP]";
+            //this.checkBoxs[(int)FormChangeMode.MODE_TECCOMPONENT.GTP].Size = new System.Drawing.Size(47, 17);
+            this.arrayCheckBoxModeTECComponent[(int)FormChangeMode.MODE_TECCOMPONENT.GTP].TabIndex = 18;
+            this.arrayCheckBoxModeTECComponent[(int)FormChangeMode.MODE_TECCOMPONENT.GTP].Text = "ГТП";
+            this.arrayCheckBoxModeTECComponent[(int)FormChangeMode.MODE_TECCOMPONENT.GTP].UseVisualStyleBackColor = true;
+            this.arrayCheckBoxModeTECComponent[(int)FormChangeMode.MODE_TECCOMPONENT.GTP].Checked = true;
+            // 
+            // checkBoxs[(int)FormChangeMode.MODE_TECCOMPONENT.PC]
+            // 
+            this.arrayCheckBoxModeTECComponent[(int)FormChangeMode.MODE_TECCOMPONENT.PC].AutoSize = true;
+            this.arrayCheckBoxModeTECComponent[(int)FormChangeMode.MODE_TECCOMPONENT.PC].Enabled = true;
+            //this.checkBoxs[(int)FormChangeMode.MODE_TECCOMPONENT.PC].Location = new System.Drawing.Point(112, 29);
+            this.arrayCheckBoxModeTECComponent[(int)FormChangeMode.MODE_TECCOMPONENT.PC].Name = "checkBoxs[(int)FormChangeMode.MODE_TECCOMPONENT.PC]";
+            //this.checkBoxs[(int)FormChangeMode.MODE_TECCOMPONENT.PC].Size = new System.Drawing.Size(44, 17);
+            this.arrayCheckBoxModeTECComponent[(int)FormChangeMode.MODE_TECCOMPONENT.PC].TabIndex = 19;
+            this.arrayCheckBoxModeTECComponent[(int)FormChangeMode.MODE_TECCOMPONENT.PC].Text = "ЩУ";
+            this.arrayCheckBoxModeTECComponent[(int)FormChangeMode.MODE_TECCOMPONENT.PC].UseVisualStyleBackColor = true;
+            this.arrayCheckBoxModeTECComponent[(int)FormChangeMode.MODE_TECCOMPONENT.PC].Checked = true;
+            // 
+            // checkBoxAdmin
+            // 
+            this.arrayCheckBoxModeTECComponent[(int)FormChangeMode.MODE_TECCOMPONENT.ANY].AutoSize = true;
+            this.arrayCheckBoxModeTECComponent[(int)FormChangeMode.MODE_TECCOMPONENT.ANY].Enabled = true;
+            //this.checkBoxs[(int)FormChangeMode.MODE_TECCOMPONENT.ANY].Location = new System.Drawing.Point(6, 275);
+            this.arrayCheckBoxModeTECComponent[(int)FormChangeMode.MODE_TECCOMPONENT.ANY].Name = "checkBoxAdmin";
+            //this.checkBoxs[(int)FormChangeMode.MODE_TECCOMPONENT.ANY].Size = new System.Drawing.Size(48, 17);
+            this.arrayCheckBoxModeTECComponent[(int)FormChangeMode.MODE_TECCOMPONENT.ANY].TabIndex = 20;
+            this.arrayCheckBoxModeTECComponent[(int)FormChangeMode.MODE_TECCOMPONENT.ANY].Text = HAdmin.PBR_PREFIX;
+            this.arrayCheckBoxModeTECComponent[(int)FormChangeMode.MODE_TECCOMPONENT.ANY].UseVisualStyleBackColor = true;
+            this.arrayCheckBoxModeTECComponent[(int)FormChangeMode.MODE_TECCOMPONENT.ANY].Checked = true;
 
-                // 
-                // buttonUpdate
-                // 
-                //this.buttonUpdate.Anchor = ((System.Windows.Forms.AnchorStyles)((System.Windows.Forms.AnchorStyles.Bottom | System.Windows.Forms.AnchorStyles.Right)));
-                this.buttonUpdate.Dock = DockStyle.Fill;
-                this.buttonUpdate.Location = new System.Drawing.Point(656, 351);
-                this.buttonUpdate.Name = "buttonUpdate";
-                //this.buttonUpdate.Size = new System.Drawing.Size(100, 26);
-                this.buttonUpdate.TabIndex = 6;
-                this.buttonUpdate.Text = "Обновить";
-                this.buttonUpdate.UseVisualStyleBackColor = true;
-                this.buttonUpdate.Click += new System.EventHandler(this.buttonUpdate_Click);
+            // 
+            // buttonUpdate
+            // 
+            //this.buttonUpdate.Anchor = ((System.Windows.Forms.AnchorStyles)((System.Windows.Forms.AnchorStyles.Bottom | System.Windows.Forms.AnchorStyles.Right)));
+            this.buttonUpdate.Dock = DockStyle.Fill;
+            this.buttonUpdate.Location = new System.Drawing.Point(656, 351);
+            this.buttonUpdate.Name = "buttonUpdate";
+            //this.buttonUpdate.Size = new System.Drawing.Size(100, 26);
+            this.buttonUpdate.TabIndex = 6;
+            this.buttonUpdate.Text = "Обновить";
+            this.buttonUpdate.UseVisualStyleBackColor = true;
+            this.buttonUpdate.Click += new System.EventHandler(this.buttonUpdate_Click);
                 
-                #region TypeMessage
-                // 
-                // labelMessage
-                // 
-                labelMessage.AutoSize = true;
-                //this.labelFilterRoles.Anchor = ((System.Windows.Forms.AnchorStyles)(System.Windows.Forms.AnchorStyles.Left | System.Windows.Forms.AnchorStyles.Top));
-                //this.labelFilterRoles.Location = new System.Drawing.Point(9, 50);
-                labelMessage.Name = "labelMessage";
-                //this.labelFilterRoles.Size = new System.Drawing.Size(77, 13);
-                //this.labelMessage.TabIndex = 5;
-                labelMessage.Text = "Статистика сообщений";
+            #region TypeMessage
+            // 
+            // labelMessage
+            // 
+            labelMessage.AutoSize = true;
+            //this.labelFilterRoles.Anchor = ((System.Windows.Forms.AnchorStyles)(System.Windows.Forms.AnchorStyles.Left | System.Windows.Forms.AnchorStyles.Top));
+            //this.labelFilterRoles.Location = new System.Drawing.Point(9, 50);
+            labelMessage.Name = "labelMessage";
+            //this.labelFilterRoles.Size = new System.Drawing.Size(77, 13);
+            //this.labelMessage.TabIndex = 5;
+            labelMessage.Text = "Статистика сообщений";
                 
-                #endregion
+            #endregion
 
-                #region User
+            #region User
 
-                // 
-                // labelUser
-                // 
-                labelUser.AutoSize = true;
-                //this.labelFilterRoles.Anchor = ((System.Windows.Forms.AnchorStyles)(System.Windows.Forms.AnchorStyles.Left | System.Windows.Forms.AnchorStyles.Top));
-                //this.labelFilterRoles.Location = new System.Drawing.Point(9, 50);
-                labelUser.Name = "labelUser";
-                //this.labelFilterRoles.Size = new System.Drawing.Size(77, 13);
-                //this.labelMessage.TabIndex = 5;
-                labelUser.Text = "Фильтр: пользователи";
+            // 
+            // labelUser
+            // 
+            labelUser.AutoSize = true;
+            //this.labelFilterRoles.Anchor = ((System.Windows.Forms.AnchorStyles)(System.Windows.Forms.AnchorStyles.Left | System.Windows.Forms.AnchorStyles.Top));
+            //this.labelFilterRoles.Location = new System.Drawing.Point(9, 50);
+            labelUser.Name = "labelUser";
+            //this.labelFilterRoles.Size = new System.Drawing.Size(77, 13);
+            //this.labelMessage.TabIndex = 5;
+            labelUser.Text = "Фильтр: пользователи";
 
-                // 
-                // dgvUser
-                //
-                this.dgvUserStatistic.Name = "dgvUser";
-                this.dgvUserStatistic.Dock = DockStyle.Fill;
-                //this.listUser.TabIndex = 4;
+            // 
+            // dgvUser
+            //
+            this.dgvUserStatistic.Name = "dgvUser";
+            this.dgvUserStatistic.Dock = DockStyle.Fill;
+            //this.listUser.TabIndex = 4;
 
-                this.dgvUserStatistic.AllowUserToAddRows = false;
-                this.dgvUserStatistic.AllowUserToDeleteRows = false;
-                this.dgvUserStatistic.ColumnHeadersHeightSizeMode = System.Windows.Forms.DataGridViewColumnHeadersHeightSizeMode.AutoSize;
-                this.dgvUserStatistic.ColumnHeadersVisible = false;
-                this.dgvUserStatistic.Columns.AddRange(new System.Windows.Forms.DataGridViewColumn[] {
-                    new DataGridViewCheckBoxColumn (),
-                    new DataGridViewTextBoxColumn ()});
-                this.dgvUserStatistic.MultiSelect = false;
-                this.dgvUserStatistic.ReadOnly = true;
-                this.dgvUserStatistic.RowHeadersVisible = false;
-                this.dgvUserStatistic.RowTemplate.Height = 18;
-                this.dgvUserStatistic.RowTemplate.Resizable = System.Windows.Forms.DataGridViewTriState.False;
-                this.dgvUserStatistic.SelectionMode = System.Windows.Forms.DataGridViewSelectionMode.FullRowSelect;
-                ////this.dgvFilterRoles.Size = new System.Drawing.Size(190, 111);
-                this.dgvUserStatistic.SelectionChanged += new EventHandler(this.dgvUserStatistic_SelectionChanged);
+            this.dgvUserStatistic.AllowUserToAddRows = false;
+            this.dgvUserStatistic.AllowUserToDeleteRows = false;
+            this.dgvUserStatistic.ColumnHeadersHeightSizeMode = System.Windows.Forms.DataGridViewColumnHeadersHeightSizeMode.AutoSize;
+            this.dgvUserStatistic.ColumnHeadersVisible = false;
+            this.dgvUserStatistic.Columns.AddRange(new System.Windows.Forms.DataGridViewColumn[] {
+                new DataGridViewCheckBoxColumn (),
+                new DataGridViewTextBoxColumn ()});
+            this.dgvUserStatistic.MultiSelect = false;
+            this.dgvUserStatistic.ReadOnly = true;
+            this.dgvUserStatistic.RowHeadersVisible = false;
+            this.dgvUserStatistic.RowTemplate.Height = 18;
+            this.dgvUserStatistic.RowTemplate.Resizable = System.Windows.Forms.DataGridViewTriState.False;
+            this.dgvUserStatistic.SelectionMode = System.Windows.Forms.DataGridViewSelectionMode.FullRowSelect;
+            ////this.dgvFilterRoles.Size = new System.Drawing.Size(190, 111);
+            this.dgvUserStatistic.SelectionChanged += new EventHandler(this.dgvUserStatistic_SelectionChanged);
 
-                i = 0;
-                this.dgvUserStatistic.Columns[i].Frozen = true;
-                this.dgvUserStatistic.Columns[i].Resizable = System.Windows.Forms.DataGridViewTriState.False;
-                this.dgvUserStatistic.Columns[i].Width = 20;
-                // 
-                // dataGridViewTextBoxColumnCounter
-                // 
-                i = 1;
-                this.dgvUserStatistic.Columns[i].AutoSizeMode = DataGridViewAutoSizeColumnMode.Fill;
-                this.dgvUserStatistic.Columns[i].Width = 140;
+            i = 0;
+            this.dgvUserStatistic.Columns[i].Frozen = true;
+            this.dgvUserStatistic.Columns[i].Resizable = System.Windows.Forms.DataGridViewTriState.False;
+            this.dgvUserStatistic.Columns[i].Width = 20;
+            // 
+            // dataGridViewTextBoxColumnCounter
+            // 
+            i = 1;
+            this.dgvUserStatistic.Columns[i].AutoSizeMode = DataGridViewAutoSizeColumnMode.Fill;
+            this.dgvUserStatistic.Columns[i].Width = 140;
 
-                #endregion
+            #endregion
 
-                #region Role
+            #region Role
 
-                // 
-                // labelRole
-                // 
-                labelRole.AutoSize = true;
-                //this.labelFilterRoles.Anchor = ((System.Windows.Forms.AnchorStyles)(System.Windows.Forms.AnchorStyles.Left | System.Windows.Forms.AnchorStyles.Top));
-                //this.labelFilterRoles.Location = new System.Drawing.Point(9, 50);
-                labelRole.Name = "labelRole";
-                //this.labelFilterRoles.Size = new System.Drawing.Size(77, 13);
-                //this.labelMessage.TabIndex = 5;
-                labelRole.Text = "Фильтр: роли";
-
-
-                // 
-                // listRole
-                //
-                this.dgvFilterRoleView.Name = "dgvRole";
-                this.dgvFilterRoleView.Dock = DockStyle.Fill;
-                //this.listUser.TabIndex = 4;
-
-                this.dgvFilterRoleView.AllowUserToAddRows = false;
-                this.dgvFilterRoleView.AllowUserToDeleteRows = false;
-                this.dgvFilterRoleView.ColumnHeadersHeightSizeMode = System.Windows.Forms.DataGridViewColumnHeadersHeightSizeMode.AutoSize;
-                this.dgvFilterRoleView.ColumnHeadersVisible = false;
-                this.dgvFilterRoleView.Columns.AddRange(new System.Windows.Forms.DataGridViewColumn[] {
-                    new DataGridViewCheckBoxColumn (),
-                    new DataGridViewTextBoxColumn ()});
-                this.dgvFilterRoleView.MultiSelect = false;
-                this.dgvFilterRoleView.ReadOnly = true;
-                this.dgvFilterRoleView.RowHeadersVisible = false;
-                this.dgvFilterRoleView.RowTemplate.Height = 18;
-                this.dgvFilterRoleView.RowTemplate.Resizable = System.Windows.Forms.DataGridViewTriState.False;
-                this.dgvFilterRoleView.SelectionMode = System.Windows.Forms.DataGridViewSelectionMode.FullRowSelect;
-                //this.dgvFilterRoles.Size = new System.Drawing.Size(190, 111);
-                this.dgvFilterRoleView.CellClick += new System.Windows.Forms.DataGridViewCellEventHandler(this.dgvFilterRoleView_CellClick);
-
-                i = 0;
-                this.dgvFilterRoleView.Columns[i].Frozen = true;
-                this.dgvFilterRoleView.Columns[i].Resizable = System.Windows.Forms.DataGridViewTriState.False;
-                this.dgvFilterRoleView.Columns[i].Width = 20;
-                // 
-                // dataGridViewTextBoxColumnCounter
-                // 
-                i = 1;
-                this.dgvFilterRoleView.Columns[i].AutoSizeMode = DataGridViewAutoSizeColumnMode.Fill;
-                this.dgvFilterRoleView.Columns[i].Width = 140;
-
-                #endregion
-
-                #region StartCalendar
-
-                // 
-                // labelStartCalendar
-                // 
-                labelStartCalendar.AutoSize = true;
-                //this.labelFilterRoles.Anchor = ((System.Windows.Forms.AnchorStyles)(System.Windows.Forms.AnchorStyles.Left | System.Windows.Forms.AnchorStyles.Top));
-                //this.labelFilterRoles.Location = new System.Drawing.Point(9, 50);
-                labelStartCalendar.Name = "labelStartCalendar";
-                //this.labelFilterRoles.Size = new System.Drawing.Size(77, 13);
-                //this.labelMessage.TabIndex = 5;
-                labelStartCalendar.Text = "Начало периода";
+            // 
+            // labelRole
+            // 
+            labelRole.AutoSize = true;
+            //this.labelFilterRoles.Anchor = ((System.Windows.Forms.AnchorStyles)(System.Windows.Forms.AnchorStyles.Left | System.Windows.Forms.AnchorStyles.Top));
+            //this.labelFilterRoles.Location = new System.Drawing.Point(9, 50);
+            labelRole.Name = "labelRole";
+            //this.labelFilterRoles.Size = new System.Drawing.Size(77, 13);
+            //this.labelMessage.TabIndex = 5;
+            labelRole.Text = "Фильтр: роли";
 
 
-                // 
-                // StartCalendar
-                //
-                this.StartCalendar.Name = "StartCalendar";
-                this.StartCalendar.Dock = DockStyle.Fill;
-                //this.listUser.TabIndex = 4;
-                this.StartCalendar.ValueChanged += new System.EventHandler(this.startCalendar_ChangeValue);
+            // 
+            // listRole
+            //
+            this.dgvFilterRoleView.Name = "dgvRole";
+            this.dgvFilterRoleView.Dock = DockStyle.Fill;
+            //this.listUser.TabIndex = 4;
 
-                #endregion
+            this.dgvFilterRoleView.AllowUserToAddRows = false;
+            this.dgvFilterRoleView.AllowUserToDeleteRows = false;
+            this.dgvFilterRoleView.ColumnHeadersHeightSizeMode = System.Windows.Forms.DataGridViewColumnHeadersHeightSizeMode.AutoSize;
+            this.dgvFilterRoleView.ColumnHeadersVisible = false;
+            this.dgvFilterRoleView.Columns.AddRange(new System.Windows.Forms.DataGridViewColumn[] {
+                new DataGridViewCheckBoxColumn (),
+                new DataGridViewTextBoxColumn ()});
+            this.dgvFilterRoleView.MultiSelect = false;
+            this.dgvFilterRoleView.ReadOnly = true;
+            this.dgvFilterRoleView.RowHeadersVisible = false;
+            this.dgvFilterRoleView.RowTemplate.Height = 18;
+            this.dgvFilterRoleView.RowTemplate.Resizable = System.Windows.Forms.DataGridViewTriState.False;
+            this.dgvFilterRoleView.SelectionMode = System.Windows.Forms.DataGridViewSelectionMode.FullRowSelect;
+            //this.dgvFilterRoles.Size = new System.Drawing.Size(190, 111);
+            this.dgvFilterRoleView.CellClick += new System.Windows.Forms.DataGridViewCellEventHandler(this.dgvFilterRoleView_CellClick);
 
-                #region StopCalendar
+            i = 0;
+            this.dgvFilterRoleView.Columns[i].Frozen = true;
+            this.dgvFilterRoleView.Columns[i].Resizable = System.Windows.Forms.DataGridViewTriState.False;
+            this.dgvFilterRoleView.Columns[i].Width = 20;
+            // 
+            // dataGridViewTextBoxColumnCounter
+            // 
+            i = 1;
+            this.dgvFilterRoleView.Columns[i].AutoSizeMode = DataGridViewAutoSizeColumnMode.Fill;
+            this.dgvFilterRoleView.Columns[i].Width = 140;
 
-                // 
-                // labelStopCalendar
-                // 
-                labelStopCalendar.AutoSize = true;
-                //this.labelFilterRoles.Anchor = ((System.Windows.Forms.AnchorStyles)(System.Windows.Forms.AnchorStyles.Left | System.Windows.Forms.AnchorStyles.Top));
-                //this.labelFilterRoles.Location = new System.Drawing.Point(9, 50);
-                labelStopCalendar.Name = "labelStopCalendar";
-                //this.labelFilterRoles.Size = new System.Drawing.Size(77, 13);
-                //this.labelMessage.TabIndex = 5;
-                labelStopCalendar.Text = "Окончание периода";
+            #endregion
 
-                // 
-                // StartCalendar
-                //
-                this.EndCalendar.Name = "StopCalendar";
-                this.EndCalendar.Dock = DockStyle.Fill;
-                //this.listUser.TabIndex = 4;
-                this.EndCalendar.ValueChanged += new System.EventHandler(this.stopCalendar_ChangeValue);
+            #region StartCalendar
 
-                #endregion
+            // 
+            // labelStartCalendar
+            // 
+            labelStartCalendar.AutoSize = true;
+            //this.labelFilterRoles.Anchor = ((System.Windows.Forms.AnchorStyles)(System.Windows.Forms.AnchorStyles.Left | System.Windows.Forms.AnchorStyles.Top));
+            //this.labelFilterRoles.Location = new System.Drawing.Point(9, 50);
+            labelStartCalendar.Name = "labelStartCalendar";
+            //this.labelFilterRoles.Size = new System.Drawing.Size(77, 13);
+            //this.labelMessage.TabIndex = 5;
+            labelStartCalendar.Text = "Начало периода";
 
-                #region panelUser
-                // 
-                // panelUser
-                //
-                panelUser.ColumnCount = 12; panelUser.RowCount = 24;
-                for (i = 0; i < panelUser.ColumnCount; i++)
-                    panelUser.ColumnStyles.Add(new ColumnStyle(SizeType.Percent, 100F / panelUser.ColumnCount));
-                for (i = 0; i < panelUser.RowCount; i++)
-                    panelUser.RowStyles.Add(new RowStyle(SizeType.Percent, 100F / panelUser.RowCount));
-                panelUser.Dock = DockStyle.Fill;
 
-                panelUser.Controls.Add(labelFilterActives, 0, 0); panelUser.SetColumnSpan(labelFilterActives, 2);
-                panelUser.Controls.Add(this.dgvFilterActiveView, 0, 1); panelUser.SetColumnSpan(this.dgvFilterActiveView, 3); panelUser.SetRowSpan(this.dgvFilterActiveView, 3);
+            // 
+            // StartCalendar
+            //
+            this.StartCalendar.Name = "StartCalendar";
+            this.StartCalendar.Dock = DockStyle.Fill;
+            //this.listUser.TabIndex = 4;
+            this.StartCalendar.ValueChanged += new System.EventHandler(this.startCalendar_ChangeValue);
 
-                panelUser.Controls.Add(labelFilterRoles, 0, 4); panelUser.SetColumnSpan(labelFilterRoles, 3);
-                panelUser.Controls.Add(this.dgvFilterRoleStatistic, 0, 5); panelUser.SetColumnSpan(this.dgvFilterRoleStatistic, 3); panelUser.SetRowSpan(this.dgvFilterRoleStatistic, 6);
+            #endregion
 
-                panelUser.Controls.Add(this.dgvUserView, 0, 11); panelUser.SetColumnSpan(this.dgvUserView, 3); panelUser.SetRowSpan(this.dgvUserView, 13);
+            #region StopCalendar
+
+            // 
+            // labelStopCalendar
+            // 
+            labelStopCalendar.AutoSize = true;
+            //this.labelFilterRoles.Anchor = ((System.Windows.Forms.AnchorStyles)(System.Windows.Forms.AnchorStyles.Left | System.Windows.Forms.AnchorStyles.Top));
+            //this.labelFilterRoles.Location = new System.Drawing.Point(9, 50);
+            labelStopCalendar.Name = "labelStopCalendar";
+            //this.labelFilterRoles.Size = new System.Drawing.Size(77, 13);
+            //this.labelMessage.TabIndex = 5;
+            labelStopCalendar.Text = "Окончание периода";
+
+            // 
+            // StartCalendar
+            //
+            this.EndCalendar.Name = "StopCalendar";
+            this.EndCalendar.Dock = DockStyle.Fill;
+            //this.listUser.TabIndex = 4;
+            this.EndCalendar.ValueChanged += new System.EventHandler(this.stopCalendar_ChangeValue);
+
+            #endregion
+
+            #region panelUser
+            // 
+            // panelUser
+            //
+            panelUser.ColumnCount = 12; panelUser.RowCount = 24;
+            for (i = 0; i < panelUser.ColumnCount; i++)
+                panelUser.ColumnStyles.Add(new ColumnStyle(SizeType.Percent, 100F / panelUser.ColumnCount));
+            for (i = 0; i < panelUser.RowCount; i++)
+                panelUser.RowStyles.Add(new RowStyle(SizeType.Percent, 100F / panelUser.RowCount));
+            panelUser.Dock = DockStyle.Fill;
+
+            panelUser.Controls.Add(labelFilterActives, 0, 0); panelUser.SetColumnSpan(labelFilterActives, 2);
+            panelUser.Controls.Add(this.dgvFilterActiveView, 0, 1); panelUser.SetColumnSpan(this.dgvFilterActiveView, 3); panelUser.SetRowSpan(this.dgvFilterActiveView, 3);
+
+            panelUser.Controls.Add(labelFilterRoles, 0, 4); panelUser.SetColumnSpan(labelFilterRoles, 3);
+            panelUser.Controls.Add(this.dgvFilterRoleStatistic, 0, 5); panelUser.SetColumnSpan(this.dgvFilterRoleStatistic, 3); panelUser.SetRowSpan(this.dgvFilterRoleStatistic, 6);
+
+            panelUser.Controls.Add(this.dgvUserView, 0, 11); panelUser.SetColumnSpan(this.dgvUserView, 3); panelUser.SetRowSpan(this.dgvUserView, 13);
                 
-                panelUser.Controls.Add(labelDatetimeStart, 3, 0); this.SetColumnSpan(labelDatetimeStart, 3);
-                panelUser.Controls.Add(this.dgvListDatetView, 3, 1); this.SetColumnSpan(this.dgvListDatetView, 3); this.SetRowSpan(this.dgvListDatetView, 11);
-                panelUser.Controls.Add(labelFilterTypeMessage, 3, 12); this.SetColumnSpan(labelFilterTypeMessage, 3);
-                panelUser.Controls.Add(this.dgvTypeToView, 3, 13); this.SetColumnSpan(this.dgvTypeToView, 3); this.SetRowSpan(this.dgvTypeToView, 9);
-                panelUser.Controls.Add(this.dgvMessageView, 6, 0); this.SetColumnSpan(this.dgvMessageView, 6); this.SetRowSpan(this.dgvMessageView, 24);
-                //this.panelUser.Controls.Add(this.buttonUpdate, 10, 23); this.SetColumnSpan(this.buttonUpdate, 2); this.SetRowSpan(this.buttonUpdate, 2);
+            panelUser.Controls.Add(labelDatetimeStart, 3, 0); this.SetColumnSpan(labelDatetimeStart, 3);
+            panelUser.Controls.Add(this.dgvListDateView, 3, 1); this.SetColumnSpan(this.dgvListDateView, 3); this.SetRowSpan(this.dgvListDateView, 11);
+            panelUser.Controls.Add(labelFilterTypeMessage, 3, 12); this.SetColumnSpan(labelFilterTypeMessage, 3);
+            panelUser.Controls.Add(this.dgvTypeToView, 3, 13); this.SetColumnSpan(this.dgvTypeToView, 3); this.SetRowSpan(this.dgvTypeToView, 9);
+            panelUser.Controls.Add(this.dgvMessageView, 6, 0); this.SetColumnSpan(this.dgvMessageView, 6); this.SetRowSpan(this.dgvMessageView, 24);
+            //this.panelUser.Controls.Add(this.buttonUpdate, 10, 23); this.SetColumnSpan(this.buttonUpdate, 2); this.SetRowSpan(this.buttonUpdate, 2);
 
-                panelUser.ResumeLayout(false);
-                panelUser.PerformLayout();
+            panelUser.ResumeLayout(false);
+            panelUser.PerformLayout();
 
-                groupUser.Controls.Add(panelUser);
-                groupUser.Text = "События";
-
-
-                #endregion
-
-                #region panelTabs
-                // 
-                // panelTabs
-                //
-                panelTabs.ColumnCount = 12; panelUser.RowCount = 12;
-                for (i = 0; i < panelTabs.ColumnCount; i++)
-                    panelTabs.ColumnStyles.Add(new ColumnStyle(SizeType.Percent, 100F / panelTabs.ColumnCount));
-                for (i = 0; i < panelTabs.RowCount; i++)
-                    panelTabs.RowStyles.Add(new RowStyle(SizeType.Percent, 100F / panelTabs.RowCount));
-                panelTabs.Dock = DockStyle.Fill;
-
-                panelTabs.Controls.Add(this.checkBoxs[(int)FormChangeMode.MODE_TECCOMPONENT.ANY], 0, 8); this.SetRowSpan(this.checkBoxs[(int)FormChangeMode.MODE_TECCOMPONENT.ANY], 2);
-                panelTabs.Controls.Add(this.checkBoxs[(int)FormChangeMode.MODE_TECCOMPONENT.PC], 0,6); this.SetRowSpan(this.checkBoxs[(int)FormChangeMode.MODE_TECCOMPONENT.PC], 2);
-                panelTabs.Controls.Add(this.checkBoxs[(int)FormChangeMode.MODE_TECCOMPONENT.GTP], 0, 4); this.SetRowSpan(this.checkBoxs[(int)FormChangeMode.MODE_TECCOMPONENT.GTP], 2);
-                panelTabs.Controls.Add(this.checkBoxs[(int)FormChangeMode.MODE_TECCOMPONENT.TG], 0, 2); this.SetRowSpan(this.checkBoxs[(int)FormChangeMode.MODE_TECCOMPONENT.TG], 2);
-                panelTabs.Controls.Add(this.checkBoxs[(int)FormChangeMode.MODE_TECCOMPONENT.TEC], 0, 0); this.SetRowSpan(this.checkBoxs[(int)FormChangeMode.MODE_TECCOMPONENT.TEC], 2);
-                panelTabs.Controls.Add(this.listBoxTabVisible, 2, 0); this.SetColumnSpan(this.listBoxTabVisible, 10); this.SetRowSpan(this.listBoxTabVisible, 12);
-                panelTabs.Controls.Add(this.buttonUpdate, 0, 10); this.SetColumnSpan(this.buttonUpdate, 2); this.SetRowSpan(this.buttonUpdate, 2);
-
-                panelTabs.ResumeLayout(false);
-                panelTabs.PerformLayout();
-
-                groupTabs.Controls.Add(panelTabs);
-                groupTabs.Text = "Отображаемые вкладки";
-
-                #endregion
-
-                #region panelMessage
-                // 
-                // panelMessage
-                //
-                panelMessage.ColumnCount = 1; panelMessage.RowCount = 36;
-                for (i = 0; i < panelMessage.ColumnCount; i++)
-                    panelMessage.ColumnStyles.Add(new ColumnStyle(SizeType.Percent, 100F / panelMessage.ColumnCount));
-                for (i = 0; i < panelMessage.RowCount; i++)
-                    panelMessage.RowStyles.Add(new RowStyle(SizeType.Percent, 100F / panelMessage.RowCount));
-                panelMessage.Dock = DockStyle.Fill;
-
-                panelMessage.Controls.Add(labelStartCalendar, 0, 0); this.SetColumnSpan(labelStartCalendar, 1); this.SetRowSpan(labelStartCalendar, 1);
-                panelMessage.Controls.Add(this.StartCalendar, 0, 1); this.SetColumnSpan(this.StartCalendar, 1); this.SetRowSpan(this.StartCalendar, 2);
-
-                panelMessage.Controls.Add(labelStopCalendar, 0, 3); this.SetColumnSpan(labelStopCalendar, 1); this.SetRowSpan(labelStopCalendar, 1);
-                panelMessage.Controls.Add(this.EndCalendar, 0, 4); this.SetColumnSpan(this.EndCalendar, 1); this.SetRowSpan(this.EndCalendar, 2);
+            groupUser.Controls.Add(panelUser);
+            groupUser.Text = "События";
 
 
-                panelMessage.Controls.Add(labelRole, 0, 6); this.SetColumnSpan(labelRole, 1); this.SetRowSpan(labelRole, 1);
-                panelMessage.Controls.Add(this.dgvFilterRoleView, 0, 7); this.SetColumnSpan(this.dgvFilterRoleView, 1); this.SetRowSpan(this.dgvFilterRoleView, 7);
+            #endregion
 
-                panelMessage.Controls.Add(labelUser, 0, 14); this.SetColumnSpan(labelUser, 1); this.SetRowSpan(labelUser, 1);
-                panelMessage.Controls.Add(this.dgvUserStatistic, 0, 15); this.SetColumnSpan(this.dgvUserStatistic, 1); this.SetRowSpan(this.dgvUserStatistic, 12);
+            #region panelTabs
+            // 
+            // panelTabs
+            //
+            panelTabs.ColumnCount = 12; panelUser.RowCount = 12;
+            for (i = 0; i < panelTabs.ColumnCount; i++)
+                panelTabs.ColumnStyles.Add(new ColumnStyle(SizeType.Percent, 100F / panelTabs.ColumnCount));
+            for (i = 0; i < panelTabs.RowCount; i++)
+                panelTabs.RowStyles.Add(new RowStyle(SizeType.Percent, 100F / panelTabs.RowCount));
+            panelTabs.Dock = DockStyle.Fill;
 
-                panelMessage.Controls.Add(labelMessage, 0, 27); this.SetColumnSpan(labelMessage, 1); this.SetRowSpan(labelMessage, 1);
-                panelMessage.Controls.Add(this.dgvTypeToStatistic, 0, 28); this.SetColumnSpan(this.dgvTypeToStatistic, 1); this.SetRowSpan(this.dgvTypeToStatistic, 8);
+            panelTabs.Controls.Add(this.arrayCheckBoxModeTECComponent[(int)FormChangeMode.MODE_TECCOMPONENT.ANY], 0, 8); this.SetRowSpan(this.arrayCheckBoxModeTECComponent[(int)FormChangeMode.MODE_TECCOMPONENT.ANY], 2);
+            panelTabs.Controls.Add(this.arrayCheckBoxModeTECComponent[(int)FormChangeMode.MODE_TECCOMPONENT.PC], 0,6); this.SetRowSpan(this.arrayCheckBoxModeTECComponent[(int)FormChangeMode.MODE_TECCOMPONENT.PC], 2);
+            panelTabs.Controls.Add(this.arrayCheckBoxModeTECComponent[(int)FormChangeMode.MODE_TECCOMPONENT.GTP], 0, 4); this.SetRowSpan(this.arrayCheckBoxModeTECComponent[(int)FormChangeMode.MODE_TECCOMPONENT.GTP], 2);
+            panelTabs.Controls.Add(this.arrayCheckBoxModeTECComponent[(int)FormChangeMode.MODE_TECCOMPONENT.TG], 0, 2); this.SetRowSpan(this.arrayCheckBoxModeTECComponent[(int)FormChangeMode.MODE_TECCOMPONENT.TG], 2);
+            panelTabs.Controls.Add(this.arrayCheckBoxModeTECComponent[(int)FormChangeMode.MODE_TECCOMPONENT.TEC], 0, 0); this.SetRowSpan(this.arrayCheckBoxModeTECComponent[(int)FormChangeMode.MODE_TECCOMPONENT.TEC], 2);
+            panelTabs.Controls.Add(this.listBoxTabVisible, 2, 0); this.SetColumnSpan(this.listBoxTabVisible, 10); this.SetRowSpan(this.listBoxTabVisible, 12);
+            panelTabs.Controls.Add(this.buttonUpdate, 0, 10); this.SetColumnSpan(this.buttonUpdate, 2); this.SetRowSpan(this.buttonUpdate, 2);
 
-                panelMessage.ResumeLayout(false);
-                panelMessage.PerformLayout();
-                //this.panelMessage.
+            panelTabs.ResumeLayout(false);
+            panelTabs.PerformLayout();
 
-                groupMessage.Controls.Add(panelMessage);
-                groupMessage.Text = "Статистика";
+            groupTabs.Controls.Add(panelTabs);
+            groupTabs.Text = "Отображаемые вкладки";
 
-                #endregion
+            #endregion
+
+            #region panelMessage
+            // 
+            // panelMessage
+            //
+            panelMessage.ColumnCount = 1; panelMessage.RowCount = 36;
+            for (i = 0; i < panelMessage.ColumnCount; i++)
+                panelMessage.ColumnStyles.Add(new ColumnStyle(SizeType.Percent, 100F / panelMessage.ColumnCount));
+            for (i = 0; i < panelMessage.RowCount; i++)
+                panelMessage.RowStyles.Add(new RowStyle(SizeType.Percent, 100F / panelMessage.RowCount));
+            panelMessage.Dock = DockStyle.Fill;
+
+            panelMessage.Controls.Add(labelStartCalendar, 0, 0); this.SetColumnSpan(labelStartCalendar, 1); this.SetRowSpan(labelStartCalendar, 1);
+            panelMessage.Controls.Add(this.StartCalendar, 0, 1); this.SetColumnSpan(this.StartCalendar, 1); this.SetRowSpan(this.StartCalendar, 2);
+
+            panelMessage.Controls.Add(labelStopCalendar, 0, 3); this.SetColumnSpan(labelStopCalendar, 1); this.SetRowSpan(labelStopCalendar, 1);
+            panelMessage.Controls.Add(this.EndCalendar, 0, 4); this.SetColumnSpan(this.EndCalendar, 1); this.SetRowSpan(this.EndCalendar, 2);
 
 
-                this.Controls.Add(groupMessage, 9, 0); this.SetColumnSpan(groupMessage, 3); this.SetRowSpan(groupMessage, 24);
+            panelMessage.Controls.Add(labelRole, 0, 6); this.SetColumnSpan(labelRole, 1); this.SetRowSpan(labelRole, 1);
+            panelMessage.Controls.Add(this.dgvFilterRoleView, 0, 7); this.SetColumnSpan(this.dgvFilterRoleView, 1); this.SetRowSpan(this.dgvFilterRoleView, 7);
+
+            panelMessage.Controls.Add(labelUser, 0, 14); this.SetColumnSpan(labelUser, 1); this.SetRowSpan(labelUser, 1);
+            panelMessage.Controls.Add(this.dgvUserStatistic, 0, 15); this.SetColumnSpan(this.dgvUserStatistic, 1); this.SetRowSpan(this.dgvUserStatistic, 12);
+
+            panelMessage.Controls.Add(labelMessage, 0, 27); this.SetColumnSpan(labelMessage, 1); this.SetRowSpan(labelMessage, 1);
+            panelMessage.Controls.Add(this.dgvTypeToStatistic, 0, 28); this.SetColumnSpan(this.dgvTypeToStatistic, 1); this.SetRowSpan(this.dgvTypeToStatistic, 8);
+
+            panelMessage.ResumeLayout(false);
+            panelMessage.PerformLayout();
+            //this.panelMessage.
+
+            groupMessage.Controls.Add(panelMessage);
+            groupMessage.Text = "Статистика";
+
+            #endregion
+
+
+            this.Controls.Add(groupMessage, 9, 0); this.SetColumnSpan(groupMessage, 3); this.SetRowSpan(groupMessage, 24);
                 
-                this.Controls.Add(groupUser, 0, 0); this.SetColumnSpan(groupUser, 9); this.SetRowSpan(groupUser, 18);
+            this.Controls.Add(groupUser, 0, 0); this.SetColumnSpan(groupUser, 9); this.SetRowSpan(groupUser, 18);
 
-                this.Controls.Add(groupTabs, 0, 18); this.SetColumnSpan(groupTabs, 9); this.SetRowSpan(groupTabs, 6);
+            this.Controls.Add(groupTabs, 0, 18); this.SetColumnSpan(groupTabs, 9); this.SetRowSpan(groupTabs, 6);
 
-                ((System.ComponentModel.ISupportInitialize)(this.dgvFilterActiveView)).EndInit();
-                ((System.ComponentModel.ISupportInitialize)(this.dgvFilterRoleStatistic)).EndInit();
-                ((System.ComponentModel.ISupportInitialize)(this.dgvUserView)).EndInit();
+            ((System.ComponentModel.ISupportInitialize)(this.dgvFilterActiveView)).EndInit();
+            ((System.ComponentModel.ISupportInitialize)(this.dgvFilterRoleStatistic)).EndInit();
+            ((System.ComponentModel.ISupportInitialize)(this.dgvUserView)).EndInit();
                 
-                this.tabPageLogging.ResumeLayout(false);
-                this.tabPageLogging.PerformLayout();
-                this.panelTabPageLogging.ResumeLayout(false);
-                this.panelTabPageLogging.PerformLayout ();
-                ((System.ComponentModel.ISupportInitialize)(this.dgvTypeToView)).EndInit();
-                ((System.ComponentModel.ISupportInitialize)(this.dgvListDatetView)).EndInit();
-                ((System.ComponentModel.ISupportInitialize)(this.dgvMessageView)).EndInit();
-                this.tabPageTabes.ResumeLayout(false);
-                this.tabPageTabes.PerformLayout();
-                this.panelTabPageTabes.ResumeLayout(false);
-                this.panelTabPageTabes.PerformLayout ();
-                //((System.ComponentModel.ISupportInitialize)(this.listTabVisible)).EndInit();
+            this.tabPageLogging.ResumeLayout(false);
+            this.tabPageLogging.PerformLayout();
+            this.panelTabPageLogging.ResumeLayout(false);
+            this.panelTabPageLogging.PerformLayout ();
+            ((System.ComponentModel.ISupportInitialize)(this.dgvTypeToView)).EndInit();
+            ((System.ComponentModel.ISupportInitialize)(this.dgvListDateView)).EndInit();
+            ((System.ComponentModel.ISupportInitialize)(this.dgvMessageView)).EndInit();
+            this.tabPageTabes.ResumeLayout(false);
+            this.tabPageTabes.PerformLayout();
+            this.panelTabPageTabes.ResumeLayout(false);
+            this.panelTabPageTabes.PerformLayout ();
+            //((System.ComponentModel.ISupportInitialize)(this.listTabVisible)).EndInit();
 
-                this.Dock = System.Windows.Forms.DockStyle.Fill;
+            this.Dock = System.Windows.Forms.DockStyle.Fill;
 
-                this.ResumeLayout(false);
-                this.PerformLayout();
-            }
+            this.ResumeLayout(false);
+            this.PerformLayout();
+        }
 
-            protected override void initializeLayoutStyle(int cols = -1, int rows = -1)
-            {
-                initializeLayoutStyleEvenly (cols, rows);
-            }
+        protected override void initializeLayoutStyle(int cols = -1, int rows = -1)
+        {
+            initializeLayoutStyleEvenly (cols, rows);
+        }
 
         #endregion
 
@@ -932,9 +932,9 @@ namespace StatisticAnalyzer
         /// <summary>
         /// Таймер
         /// </summary>
-        protected
+        private
             System.Threading.Timer
-                m_timerChecked;
+                m_timerProcChecked;
 
         protected bool m_bThreadTimerCheckedAllowed;
         /// <summary>
@@ -1022,7 +1022,7 @@ namespace StatisticAnalyzer
                 , { DATAGRIDVIEW_LOGCOUNTER.TYPE_TO_VIEW, this.dgvTypeToView }
             };
 
-            m_arCheckBoxMode = new CheckBox[] { checkBoxs[(int)FormChangeMode.MODE_TECCOMPONENT.TEC], checkBoxs[(int)FormChangeMode.MODE_TECCOMPONENT.GTP], checkBoxs[(int)FormChangeMode.MODE_TECCOMPONENT.PC], checkBoxs[(int)FormChangeMode.MODE_TECCOMPONENT.TG] };
+            m_arCheckBoxMode = new CheckBox[] { arrayCheckBoxModeTECComponent[(int)FormChangeMode.MODE_TECCOMPONENT.TEC], arrayCheckBoxModeTECComponent[(int)FormChangeMode.MODE_TECCOMPONENT.GTP], arrayCheckBoxModeTECComponent[(int)FormChangeMode.MODE_TECCOMPONENT.PC], arrayCheckBoxModeTECComponent[(int)FormChangeMode.MODE_TECCOMPONENT.TG] };
 
             m_listTEC = tec;
 
@@ -1158,7 +1158,7 @@ namespace StatisticAnalyzer
 
             m_bThreadTimerCheckedAllowed = true;
 
-            m_timerChecked =
+            m_timerProcChecked =
                 new System.Threading.Timer(new TimerCallback(procChecked), null, System.Threading.Timeout.Infinite, System.Threading.Timeout.Infinite)
                 //new System.Windows.Forms.Timer()
                 ;
@@ -1185,7 +1185,7 @@ namespace StatisticAnalyzer
         /// Активировать/деактивировать панель
         /// </summary>
         /// <param name="active">Признак активации/деактивации</param>
-        /// <returns></returns>
+        /// <returns>Признак ошибки/успеха выполнения</returns>
         public override bool Activate(bool activated)
         {
             bool bRes = base.Activate(activated);
@@ -1197,7 +1197,7 @@ namespace StatisticAnalyzer
 
         private void activateTimerChecked (bool activated)
         {
-            m_timerChecked?.Change (activated == true ? 0 : System.Threading.Timeout.Infinite, System.Threading.Timeout.Infinite);
+            m_timerProcChecked?.Change (activated == true ? 0 : System.Threading.Timeout.Infinite, System.Threading.Timeout.Infinite);
         }
 
         /// <summary>
@@ -1222,7 +1222,7 @@ namespace StatisticAnalyzer
         /// <summary>
         /// Очистка таблицы с датами
         /// </summary>
-        protected void tabLoggingClearDatetimeStart() { dgvListDatetView.Rows.Clear(); }
+        protected void tabLoggingClearDatetimeStart() { dgvListDateView.Rows.Clear(); }
 
         /// <summary>
         /// Очистка таблицы с лог-сообщениями
@@ -1303,13 +1303,13 @@ namespace StatisticAnalyzer
                 }
                 else
                 {
-                    //int[] arTypeLogMsgCounter = new int[dgvFilterTypeMessage.Rows.Count];
-                    List<int> listIdTypeMessages = LogParse.s_IdTypeMessages.ToList();//создание списка с идентификаторами типов сообщений
+                    //создание списка с идентификаторами типов сообщений
+                    List<int> listIdTypeMessages = LogParse.s_ID_LOGMESSAGES.ToList();
 
                     //Получение массива состояний CheckBox'ов на DataGridView с типами сообщений
                     bool[] arCheckedTypeMessages = new bool[dgvTypeToView.Rows.Count];
                     List<bool> check = new List<bool>();
-                    dgvTypeToView.Checked(ref check);
+                    check = dgvTypeToView.Checked();
                     for (int i = 0; i < dgvTypeToView.Rows.Count; i++)
                     {
                         arCheckedTypeMessages[i] = check[i];
@@ -1320,8 +1320,7 @@ namespace StatisticAnalyzer
                     int indxTypeMessage = -1;
 
                     //Помещение массива строк с сообщениями в DataGridView с сообщениями
-                    foreach (string text in messages)
-                    {
+                    foreach (string text in messages) {
                         parts = text.Split(new string[] { s_chDelimeters[(int)INDEX_DELIMETER.PART] }, StringSplitOptions.None);
                         indxTypeMessage = listIdTypeMessages.IndexOf(Int32.Parse(parts[1]));
 
@@ -1332,17 +1331,15 @@ namespace StatisticAnalyzer
                             ;
                     }
 
-                    start_date = DateTime.Parse(dgvListDatetView.Rows[m_prevDatetimeRowIndex].Cells[1].Value.ToString());
+                    start_date = DateTime.Parse(dgvListDateView.Rows[m_prevDatetimeRowIndex].Cells[1].Value.ToString());
                     end_date = start_date.AddDays(1);
                     check.Clear();
                     updateCounter(DATAGRIDVIEW_LOGCOUNTER.TYPE_TO_VIEW, start_date, end_date, get_users(m_tableUsers, dgvUserView, false));
                 }
 
                 delegateReportClear(true);
-            }
-            catch (Exception E)
-            {
-                Logging.Logg().Exception(E, "PanelAnalyzer:TabLoggingAppendText () - ...", Logging.INDEX_MESSAGE.NOT_SET);
+            } catch (Exception e) {
+                Logging.Logg().Exception(e, "PanelAnalyzer:TabLoggingAppendText () - ...", Logging.INDEX_MESSAGE.NOT_SET);
             }
         }
 
@@ -1361,19 +1358,19 @@ namespace StatisticAnalyzer
 
                 if (bRowChecked == true)
                 {
-                    dgvListDatetView.SelectionChanged += dgvDatetimeStart_SelectionChanged;
-                    m_prevDatetimeRowIndex = dgvListDatetView.Rows.Count;
+                    dgvListDateView.SelectionChanged += dgvDatetimeStart_SelectionChanged;
+                    m_prevDatetimeRowIndex = dgvListDateView.Rows.Count;
                 }
                 else
                     ;
 
-                dgvListDatetView.Rows.Add(new object[] { bRowChecked, row.Split(new string[] { s_chDelimeters[(int)INDEX_DELIMETER.PART] }, StringSplitOptions.None)[1] });
+                dgvListDateView.Rows.Add(new object[] { bRowChecked, row.Split(new string[] { s_chDelimeters[(int)INDEX_DELIMETER.PART] }, StringSplitOptions.None)[1] });
             }
 
             if (bRowChecked == true)
             {
-                dgvListDatetView.Rows[dgvListDatetView.Rows.Count - 1].Selected = bRowChecked;
-                dgvListDatetView.FirstDisplayedScrollingRowIndex = dgvListDatetView.Rows.Count - 1;
+                dgvListDateView.Rows[dgvListDateView.Rows.Count - 1].Selected = bRowChecked;
+                dgvListDateView.FirstDisplayedScrollingRowIndex = dgvListDateView.Rows.Count - 1;
             }
             else
                 ;
@@ -1395,7 +1392,7 @@ namespace StatisticAnalyzer
             //Получение списка дата/время запуска приложения
             bool rowChecked = false;
             string strDatetimeStart = string.Empty;
-            //Нюанс для 'LogParse_File' и 'LogParse_DB' - "0" индекс в массиве типов сообщений (зрезервирован для "СТАРТ")
+            //Нюанс для 'LogParse_File' и 'LogParse_DB' - "0" индекс в массиве типов сообщений (зарезервирован для "СТАРТ")
             //...для 'LogParse_File': m_tblLog содержит ВСЕ записи в файле
             //...для 'LogParse_DB': m_tblLog содержит ТОЛЛЬКО записи из БД с датами, за которые найдено хотя бы одно сообщение
             //      тип сообщения "СТАРТ" устанавливается "программно" (метод 'LogParse_DB::Thread_Proc')
@@ -1566,10 +1563,10 @@ namespace StatisticAnalyzer
         {
             tabLoggingClearText(bClearTypeMessageCounter);
 
-            DateTime dtBegin = DateTime.Parse(dgvListDatetView.Rows[m_prevDatetimeRowIndex].Cells[1].Value.ToString())
+            DateTime dtBegin = DateTime.Parse(dgvListDateView.Rows[m_prevDatetimeRowIndex].Cells[1].Value.ToString())
                 , dtEnd = DateTime.MaxValue;
-            if ((m_prevDatetimeRowIndex + 1) < dgvListDatetView.Rows.Count)
-                dtEnd = DateTime.Parse(dgvListDatetView.Rows[m_prevDatetimeRowIndex + 1].Cells[1].Value.ToString());
+            if ((m_prevDatetimeRowIndex + 1) < dgvListDateView.Rows.Count)
+                dtEnd = DateTime.Parse(dgvListDateView.Rows[m_prevDatetimeRowIndex + 1].Cells[1].Value.ToString());
             else
                 ;
 
@@ -1601,7 +1598,7 @@ namespace StatisticAnalyzer
             /// <summary>
             /// Массив с идентификаторами типов сообщений
             /// </summary>
-            public static int[] s_IdTypeMessages;
+            public static int[] s_ID_LOGMESSAGES;
 
             /// <summary>
             /// Список типов сообщений
@@ -1610,9 +1607,7 @@ namespace StatisticAnalyzer
 
             private Thread m_thread;
             protected DataTable m_tableLog;
-            protected DataTable m_tableStatMessage;
             Semaphore m_semAllowed;
-            //bool m_bAllowed;
 
             public DelegateFunc Exit;
 
@@ -1621,9 +1616,11 @@ namespace StatisticAnalyzer
                 m_semAllowed = new Semaphore(1, 1);
 
                 m_tableLog = new DataTable("ContentLog");
-                DataColumn[] cols = new DataColumn[] { new DataColumn("DATE_TIME", typeof(DateTime)),
-                                                    new DataColumn("TYPE", typeof(Int32)),
-                                                    new DataColumn ("MESSAGE", typeof (string)) };
+                DataColumn[] cols = new DataColumn[] {
+                    new DataColumn("DATE_TIME", typeof(DateTime)),
+                    new DataColumn("TYPE", typeof(Int32)),
+                    new DataColumn ("MESSAGE", typeof (string))
+                };
                 m_tableLog.Columns.AddRange(cols);
 
                 m_thread = null;
@@ -1741,7 +1738,7 @@ namespace StatisticAnalyzer
                                 strRes += @"IN (";
 
                                 foreach (int indx in listIndxType)
-                                    strRes += s_IdTypeMessages[indx] + @",";
+                                    strRes += s_ID_LOGMESSAGES[indx] + @",";
 
                                 strRes = strRes.Substring(0, strRes.Length - 1);
 
@@ -1847,9 +1844,7 @@ namespace StatisticAnalyzer
                 if (bool.Parse(dgvFilterRoleStatistic.Rows[i].Cells[0].Value.ToString()) == false)
                 {
                     if (where.Equals(string.Empty) == true)
-                    {
                         where = "ID_ROLE NOT IN (";
-                    }
                     else
                         where += ",";
 
@@ -1882,33 +1877,29 @@ namespace StatisticAnalyzer
                     m_tableUsers.Clear();
                 }
             else
-            {
-                tableUserFiltered (procChecked ());
-            }
+                filterActived (
+                    procChecked ()
+                );
 
             dgvUserView.Fill (m_tableUsers, c_list_sorted, err);
 
             activateTimerChecked (true);
         }
 
-        protected void updatedgvClientState (bool []arbActives)
-        {
-            for (int i = 0; (i < m_tableUsers.Rows.Count)
-                    && (m_bThreadTimerCheckedAllowed == true)
-                    && (i < arbActives.Length);
-                i++)
-                dgvUserView.Rows [i].Cells [0].Value = arbActives [i];
-        }
-
-        protected void tableUserFiltered (bool [] arbActives)
+        protected void filterActived (bool [] arbActives)
         {
             if ((!(arbActives == null))
                 && (arbActives.Length > 0)) {
                 List<int> listIndexToRemoveUsers = new List<int> ();
 
-                for (int i = 0; (i < m_tableUsers.Rows.Count) && (i < arbActives.Length); i++) {
-                    if (((arbActives [i] == true) && (bool.Parse (dgvFilterActiveView.Rows [0].Cells [0].Value.ToString ()) == false))
-                        || ((arbActives [i] == false) && (bool.Parse (dgvFilterActiveView.Rows [1].Cells [0].Value.ToString ()) == false))) {
+                for (int i = 0;
+                    (i < m_tableUsers.Rows.Count)
+                        && (i < arbActives.Length);
+                        i++) {
+                    if (((arbActives [i] == true)
+                            && (bool.Parse (dgvFilterActiveView.Rows [0].Cells [0].Value.ToString ()) == false))
+                        || ((arbActives [i] == false)
+                            && (bool.Parse (dgvFilterActiveView.Rows [1].Cells [0].Value.ToString ()) == false))) {
                         listIndexToRemoveUsers.Add (i);
                     } else
                         ;
@@ -1960,10 +1951,10 @@ namespace StatisticAnalyzer
         /// <param name="e">Аргумент события</param>
         protected void dgvDatetimeStart_SelectionChanged(object sender, EventArgs e)
         {
-            int rowIndex = dgvListDatetView.SelectedRows[0].Index;
+            int rowIndex = dgvListDateView.SelectedRows[0].Index;
 
-            dgvListDatetView.Rows[m_prevDatetimeRowIndex].Cells[0].Value = false;
-            dgvListDatetView.Rows[rowIndex].Cells[0].Value = true;
+            dgvListDateView.Rows[m_prevDatetimeRowIndex].Cells[0].Value = false;
+            dgvListDateView.Rows[rowIndex].Cells[0].Value = true;
             m_prevDatetimeRowIndex = rowIndex;
 
             startFilldgvLogMessages(true);
@@ -2026,7 +2017,49 @@ namespace StatisticAnalyzer
         /// <summary>
         /// Обновление статистики сообщений из лога за выбранный период
         /// </summary>
-        protected abstract void dgvUserView_SelectionChanged (object sender, EventArgs e);
+        protected virtual void dgvUserView_SelectionChanged (object sender, EventArgs e)
+        {
+            bool bUpdate = false;
+
+            bUpdate = (dgvUserView.SelectedRows.Count > 0)
+                && (!(dgvUserView.SelectedRows[0].Index < 0));
+
+            bUpdate = (dgvListDateView.Rows.Count > 0)
+                && (dgvListDateView.SelectedRows[0].Index < (dgvListDateView.Rows.Count - 1))
+                && !Equals(e, null);
+
+            if (bUpdate == true) {
+                //Останов потока разбора лог-файла пред. пользователя
+                m_LogParse.Stop();
+
+                dgvListDateView.SelectionChanged -= dgvDatetimeStart_SelectionChanged;
+
+                //Очистить элементы управления с данными от пред. лог-файла
+                if (IsHandleCreated == true)
+                    if (InvokeRequired == true) {
+                        BeginInvoke(new DelegateFunc(tabLoggingClearDatetimeStart));
+                        BeginInvoke(new DelegateBoolFunc(tabLoggingClearText), true);
+                    } else {
+                        tabLoggingClearDatetimeStart();
+                        tabLoggingClearText(true);
+                    } else
+                    Logging.Logg().Error(@"FormMainAnalyzer::dgvUserStatistic_SelectionChanged () - ... BeginInvoke (TabLoggingClearDatetimeStart, TabLoggingClearText) - ...", Logging.INDEX_MESSAGE.D_001);
+
+                startLogParse(((int)dgvUserView.SelectedRows[0].Tag).ToString().Trim());
+
+                listBoxTabVisible.Items.Clear();//очистка списка активных вкладок
+
+                DbTSQLConfigDatabase.DbConfig().SetConnectionSettings();
+                DbTSQLConfigDatabase.DbConfig().Register();
+                //Заполнение ListBox'а активными вкладками
+                fillListBoxTabVisible(
+                    fill_active_tabs((int)m_tableUsers.Rows[dgvUserView.SelectedRows[0].Index][0]).ToList()
+                );
+
+                DbTSQLConfigDatabase.DbConfig().UnRegister();
+            } else
+                ;
+        }
 
         /// <summary>
         /// Обновление списка пользователей при выборе ролей
@@ -2239,7 +2272,7 @@ namespace StatisticAnalyzer
                 count_message.Name = "ColumnCount";
                 count_message.Width = 20;
                 //заполнение DataGridView типами сообщений
-                initialize (LogParse.s_DESC_LOGMESSAGE);
+                initialize (LogParse.s_ID_LOGMESSAGES, LogParse.s_DESC_LOGMESSAGE);
             }
 
             /// <summary>
@@ -2251,86 +2284,59 @@ namespace StatisticAnalyzer
             /// Обновление списка со статистикой сообщений 
             /// </summary>
             /// <param name="table_statMessage">таблица с количествами сообщений каждого типа</param>
-            /// <param name="beg">Начальная дата</param>
-            /// <param name="end">Конечая дата</param>
-            /// <param name="users">Список пользователей</param>
-            public void UpdateCounter(DataTable table_statMessage, DateTime beg, DateTime end, string users)
+            public void Fill(DataTable table_statMessage)
             {
+                string strCount = string.Empty;
+
                 //Обнуление счётчиков сообщений на панели статистики
                 clearValues ();
 
-                if (string.IsNullOrEmpty(users) == false)
-                    #region Фомирование и выполнение запроса для получения количества сообщений разного типа
-
-                    if (users.Equals(string.Empty) == false)
-                    //Заполнение таблицы со счётчиками на панели статистики
-                        fill (table_statMessage, @"COUNT", 0, true);
-                    else
-                        ;
-
-                    #endregion
-                else
+                if (table_statMessage.Rows.Count > 0) {
+                    foreach (DataGridViewRow r in this.Rows) {
+                        try {
+                            strCount = (from DataRow dataRow in table_statMessage.Rows
+                                where (int)dataRow["ID_LOGMSG"] == (int)r.Tag
+                                select dataRow)
+                                    .ToArray()[0][@"COUNT"].ToString();
+                        } catch {
+                            strCount = 0.ToString();
+                        } finally {
+                            r.Cells[lastIndex].Value = strCount;
+                        }
+                    }
+                } else
                     ;
             }
 
             /// <summary>
             /// Возвращает список состояния CheckBox'ов
             /// </summary>
-            /// <param name="Check">Возвращает список состояния CheckBox'ов</param>
-            public void Checked(ref List<bool> Check)
+            /// <return>Возвращает список состояния CheckBox'ов</return>
+            public List<bool> Checked()
             {
-                if (_type == TYPE.WITH_CHECKBOX)
-                {
-                    for (int i = 0; i < this.Rows.Count; i++)
-                    {
-                        Check.Add((bool)this.Rows[i].Cells[lastIndex - 2].Value);//добавление состояния CheckBox'а в список
-                    }
-                }
-            }
+                List<bool> listRes = new List<bool>();
 
-            /// <summary>
-            /// Обновление списка со статистикой сообщений 
-            /// </summary>
-            /// <param name="src">Таблица с количеством сообщений каждого типа</param>
-            /// <param name="nameField">Наименование колонки из которой брать данные</param>
-            /// <param name="run">Для выполнения установить 0</param>
-            /// <param name="checkDefault">Значения CheckBox'ов по умолчанию</param>
-            private void fill(DataTable src, string nameField, int run, bool checkDefault = false)
-            {
-                if (run == 0)
-                {
-                    if (src.Rows.Count > 0)
-                    {
-                        int b = 0;
-                        for (int i = 0; i < this.Rows.Count; i++)//Перебор строк DataGridView
-                        {
-                            if (b < src.Rows.Count)
-                            {
-                                if (Convert.ToInt32(src.Rows[b]["ID_LOGMSG"].ToString()) - 1 == i)
-                                {
-                                    this.Rows[i].Cells[lastIndex].Value = src.Rows[b][nameField].ToString();
-                                    b++;
-                                }
-                            }
-                            else
-                            {
-                                this.Rows[i].Cells[lastIndex].Value = "0";
-                            }
-                        }
-                    }
-                }
+                if (_type == TYPE.WITH_CHECKBOX)
+                    for (int i = 0; i < this.Rows.Count; i++)
+                    //добавление состояния CheckBox'а в список
+                        listRes.Add((bool)this.Rows[i].Cells[lastIndex - 2].Value);
+                else
+                    ;
+
+                return listRes;
             }
 
             /// <summary>
             /// Заполнение DataGridView типами сообщений
             /// </summary>
             /// <param name="strTypeMessages">Массив с типами сообщений</param>
-            protected void initialize(string[] strTypeMessages)
+            protected void initialize(int []idTypeMessages,  string[] strTypeMessages)
             {
                 this.Rows.Add(strTypeMessages.Length);
 
-                for (int i = 0; i < strTypeMessages.Length; i++)
-                {
+                for (int i = 0; i < strTypeMessages.Length; i++) {
+                    this.Rows[i].Tag = idTypeMessages[i];
+
                     if (_type == TYPE.WITH_CHECKBOX)
                         this.Rows [i].Cells [lastIndex - 2].Value = true;
                     else
@@ -2387,6 +2393,25 @@ namespace StatisticAnalyzer
                     ;
             } else
                 ;
+        }
+
+        public static void Update(this DataGridView ctrl, IList<int>tags, IList<bool> arbActives)
+        {
+            int indx = -1;
+            bool active = false;
+
+            foreach (DataGridViewRow r in ctrl.Rows) {
+                //TODO: проверять 'm_bThreadTimerCheckedAllowed' для возможности прерывания
+
+                indx = tags.IndexOf((int)r.Tag);
+
+                if (!(indx < 0))
+                    active = arbActives[indx];
+                else
+                    active = false;
+
+                r.Cells[0].Value = active;
+            }
         }
     }
 }
