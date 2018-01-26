@@ -961,15 +961,20 @@ namespace Statistic
 
         private void fileProfileLoadAddingTab()
         {
-            string ids = HStatisticUsers.GetAllowed((int)HStatisticUsers.ID_ALLOWED.PROFILE_VIEW_ADDINGTABS);
+            string ids = string.Empty;
+            int id = -1;
+            string [] arProfie;
+
             Logging.Logg().Action(@"Загрузка профайла (" + HStatisticUsers.ID_ALLOWED.PROFILE_VIEW_ADDINGTABS.ToString() + @"): ids=" + ids, Logging.INDEX_MESSAGE.NOT_SET);
+
+            ids = HStatisticUsers.GetAllowed ((int)HStatisticUsers.ID_ALLOWED.PROFILE_VIEW_ADDINGTABS);
 
             if (ids.Equals(string.Empty) == false)
             {
-                string[] arProfie = ids.Split(';');
+                arProfie = ids.Split(';');
                 foreach (string profile in arProfie)
                 {
-                    int id = -1;
+                    id = -1;
                     if (profile.IndexOf('=') < 0)
                         id = Int32.Parse(profile);
                     else
@@ -1029,13 +1034,13 @@ namespace Statistic
 
         private void fileProfileSaveAddingTab(int idListener)
         {
-            string ids = string.Empty;
-            ids = string.Empty;
+            string ids = string.Empty
+                , recTab = string.Empty;
 
             foreach (int key in m_dictAddingTabs.Keys)
                 if (m_dictAddingTabs[key].menuItem.Checked == true)
                 {
-                    string recTab = string.Empty;
+                    recTab = string.Empty;
                     switch (key)
                     {
                         case (int)ID_ADDING_TAB.CUSTOM_2X2_1:

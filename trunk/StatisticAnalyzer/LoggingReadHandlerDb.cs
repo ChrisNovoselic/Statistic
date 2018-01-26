@@ -34,7 +34,7 @@ namespace StatisticAnalyzer
 
                 #region Запрос
 
-                public override string Query
+                public string Query
                 {
                     get
                     {
@@ -120,6 +120,11 @@ namespace StatisticAnalyzer
                 m_connSett = new ConnectionSettings();
                 m_serverTime = DateTime.MinValue;
                 _requests = new List<REQUEST>();
+            }
+
+            public void PerformCommandCompleted (PanelAnalyzer.REQUEST req, DataTable tableRes)
+            {
+                EventCommandCompleted?.Invoke (req, tableRes);
             }
 
             public void SetConnectionSettings (ConnectionSettings connSett)

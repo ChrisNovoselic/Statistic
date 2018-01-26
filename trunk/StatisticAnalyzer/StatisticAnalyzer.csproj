@@ -130,6 +130,9 @@
     <Compile Include="LoggingReadHandlerQueue.cs">
       <SubType>Component</SubType>
     </Compile>
+    <Compile Include="LogParse.cs">
+      <SubType>Component</SubType>
+    </Compile>
     <Compile Include="PanelAnalyzer.cs">
       <SubType>Component</SubType>
     </Compile>

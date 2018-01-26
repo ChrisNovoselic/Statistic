@@ -29,20 +29,46 @@ namespace StatisticAnalyzer
     public abstract partial class PanelAnalyzer : PanelStatistic
     {
         protected enum StatesMachine {
-            ServerTime
+            Unknown = -1
+            , ServerTime
             , ProcCheckedState
             , ProcCheckedFilter
             , ListMessageToUserByDate
             , ListDateByUser
             , CounterToTypeByFilter
+            , TODO
         }
 
+        /// <summary>
+        /// Интерфейс для взаимодействия с объектом чтения сообщений журнала
+        /// </summary>
         protected interface ILoggingReadHandler : ASUTP.Helper.IHHandler
         {
+            /// <summary>
+            /// Запросить асинхронное выплнение команды
+            /// </summary>
+            /// <param name="state">Состояние(идентификатор), определяющее команду</param>
+            /// <param name="args">Аргументы для выполнения команды</param>
+            /// <param name="bNewState">Признак принудительного прекращения всех уже выполняющихся команд</param>
+            void Command (StatesMachine state, object args, bool bNewState);
+
+            /// <summary>
+            /// Событие завершения выполнения команды-заппроса
+            /// </summary>
             event Action<REQUEST, DataTable> EventCommandCompleted;
+
+            /// <summary>
+            /// Инициировать событие из-вне "выполнение команды-заппроса завершено"
+            /// </summary>
+            /// <param name="req">Объект выполненной команды-запроса</param>
+            /// <param name="tableRes">Результат запроса</param>
+            void PerformCommandCompleted(REQUEST req, DataTable tableRes);
         }
 
-        protected abstract class REQUEST
+        /// <summary>
+        /// Класс для формирования запроса к журналу с сообщениями
+        /// </summary>
+        protected class REQUEST
         {
             public enum STATE {
                 Unknown, Ready, Ok, Error
@@ -54,15 +80,16 @@ namespace StatisticAnalyzer
 
             public STATE State;
 
-            public abstract string Query
+            private REQUEST ()
             {
-                get;
+                Key = StatesMachine.Unknown;
             }
 
             public REQUEST (StatesMachine key, object arg)
             {
                 Key = key;
 
+                // копировать аргументы
                 if (Equals (arg, null) == false)
                     if (arg is Array) {
                         Args = new object [(arg as object []).Length];
@@ -79,6 +106,10 @@ namespace StatisticAnalyzer
                 Logging.Logg ().Debug ($"PanelAnalyzer.HLoggingReadHandlerDb.REQUEST::ctor (Key={Key}) - новое args:{toString ()}...", Logging.INDEX_MESSAGE.NOT_SET);
             }
 
+            /// <summary>
+            /// Признак наличия аргументов команды-запроса
+            /// , отсутствие показывает, что был вызван конструктор по умолчанию
+            /// </summary>
             public bool IsEmpty
             {
                 get
@@ -137,7 +168,60 @@ namespace StatisticAnalyzer
 
         protected abstract void handlerCommandListDateByUser(PanelAnalyzer.REQUEST req, DataTable tableRes);
 
-        protected abstract void handlerCommandProcChecked (PanelAnalyzer.REQUEST req, DataTable tableRes);
+        protected virtual void handlerCommandProcChecked (PanelAnalyzer.REQUEST req, DataTable tableRes)
+        {
+            int i = -1
+                , msecSleep = System.Threading.Timeout.Infinite;
+            int [] ariTags;
+            bool [] arbActives;
+            DataRow [] rowsUserMaxDatetimeWR;
+
+            if (req.State == PanelAnalyzer.REQUEST.STATE.Ok) {
+                ariTags = new int [m_tableUsers.Rows.Count];
+                arbActives = new bool [m_tableUsers.Rows.Count];
+
+                for (i = 0;
+                    (i < m_tableUsers.Rows.Count)
+                        && (m_bThreadTimerCheckedAllowed == true);
+                    i++) {
+                    ariTags [i] = int.Parse (m_tableUsers.Rows [i] [@"ID"].ToString ().Trim ());
+                    //Проверка активности
+                    rowsUserMaxDatetimeWR = tableRes.Select (@"[ID_USER]=" + m_tableUsers.Rows [i] [@"ID"]);
+
+                    if (rowsUserMaxDatetimeWR.Length == 0)
+                        //В течении 2-х недель нет ни одного запуска на выполнение ППО
+                        ;
+                    else
+                        if (rowsUserMaxDatetimeWR.Length > 1)
+                        //Ошибка
+                            ;
+                        else
+                        //Обрабатываем...
+                            arbActives [i] = (HDateTime.ToMoscowTimeZone (DateTime.Now) - DateTime.Parse (rowsUserMaxDatetimeWR [0] [@"MAX_DATETIME_WR"].ToString ())).TotalSeconds < 66;
+                }
+
+                if (Equals (arbActives, null) == false) {
+                    if (req.Key == StatesMachine.ProcCheckedState)
+                        dgvUserView.Update (ariTags, arbActives);
+                    else if (req.Key == StatesMachine.ProcCheckedFilter) {
+                        applyFilterRoleViewToTableUsers ();
+                        applyFilterActivedViewToTableUsers (ariTags, arbActives);
+                        dgvUserView.Fill (m_tableUsers, @"DESCRIPTION", 0);
+                    } else
+                        ;
+
+                    msecSleep = MSEC_TIMERCHECKED_STANDARD;
+                } else
+                    //Нет соединения с БД...
+                    msecSleep = MSEC_TIMERCHECKED_FORCE;
+            } else
+                //Ошибка при выборке данных...
+                msecSleep = MSEC_TIMERCHECKED_FORCE;
+
+            m_timerProcChecked.Change (msecSleep, System.Threading.Timeout.Infinite);
+
+            delegateReportClear (true);
+        }
 
         #region Design
 
@@ -146,8 +230,8 @@ namespace StatisticAnalyzer
         private TableLayoutPanel panelTabPageTabes;
         private TableLayoutPanel panelTabPageLogging;
 
-        protected System.Windows.Forms.CheckBox[] arrayCheckBoxModeTECComponent;
-        protected System.Windows.Forms.ListBox listBoxTabVisible;
+        private System.Windows.Forms.CheckBox[] arrayCheckBoxModeTECComponent;
+        private System.Windows.Forms.ListBox listBoxTabVisible;
 
         private System.Windows.Forms.Button buttonUpdate;
 
@@ -182,14 +266,14 @@ namespace StatisticAnalyzer
             System.Windows.Forms.Label labelUser = new Label();
             this.StartCalendar = new DateTimePicker();
             this.EndCalendar = new DateTimePicker();
-            this.dgvFilterRoleView = new DataGridView();
+            this.dgvFilterRoleStatistic = new DataGridView();
             this.dgvUserStatistic = new DataGridView();
 
             System.Windows.Forms.Label labelFilterActives = new System.Windows.Forms.Label();
             this.dgvFilterActiveView = new System.Windows.Forms.DataGridView();
 
             System.Windows.Forms.Label labelFilterRoles = new System.Windows.Forms.Label();
-            this.dgvFilterRoleStatistic = new System.Windows.Forms.DataGridView();
+            this.dgvFilterRoleView = new System.Windows.Forms.DataGridView();
 
             this.dgvUserView = new System.Windows.Forms.DataGridView();
 
@@ -215,7 +299,7 @@ namespace StatisticAnalyzer
             this.buttonUpdate = new System.Windows.Forms.Button();
 
             ((System.ComponentModel.ISupportInitialize)(this.dgvFilterActiveView)).BeginInit();
-            ((System.ComponentModel.ISupportInitialize)(this.dgvFilterRoleStatistic)).BeginInit();
+            ((System.ComponentModel.ISupportInitialize)(this.dgvFilterRoleView)).BeginInit();
             ((System.ComponentModel.ISupportInitialize)(this.dgvUserView)).BeginInit();
 
             this.tabPageLogging.SuspendLayout();
@@ -308,46 +392,46 @@ namespace StatisticAnalyzer
             // 
             // dgvFilterRoles
             // 
-            this.dgvFilterRoleStatistic.AllowUserToAddRows = false;
-            this.dgvFilterRoleStatistic.AllowUserToDeleteRows = false;
-            this.dgvFilterRoleStatistic.ColumnHeadersHeightSizeMode = System.Windows.Forms.DataGridViewColumnHeadersHeightSizeMode.AutoSize;
-            this.dgvFilterRoleStatistic.ColumnHeadersVisible = false;
-            this.dgvFilterRoleStatistic.Columns.AddRange(new System.Windows.Forms.DataGridViewColumn[] {
+            this.dgvFilterRoleView.AllowUserToAddRows = false;
+            this.dgvFilterRoleView.AllowUserToDeleteRows = false;
+            this.dgvFilterRoleView.ColumnHeadersHeightSizeMode = System.Windows.Forms.DataGridViewColumnHeadersHeightSizeMode.AutoSize;
+            this.dgvFilterRoleView.ColumnHeadersVisible = false;
+            this.dgvFilterRoleView.Columns.AddRange(new System.Windows.Forms.DataGridViewColumn[] {
                 new DataGridViewCheckBoxColumn (),
                 new DataGridViewTextBoxColumn ()});
             //this.dgvFilterRoles.Location = new System.Drawing.Point(12, 88);
-            this.dgvFilterRoleStatistic.Dock = DockStyle.Fill;
-            this.dgvFilterRoleStatistic.MultiSelect = false;
-            this.dgvFilterRoleStatistic.Name = "dgvFilterRoles";
-            this.dgvFilterRoleStatistic.ReadOnly = true;
-            this.dgvFilterRoleStatistic.RowHeadersVisible = false;
-            this.dgvFilterRoleStatistic.RowTemplate.Height = 18;
-            this.dgvFilterRoleStatistic.RowTemplate.Resizable = System.Windows.Forms.DataGridViewTriState.False;
-            this.dgvFilterRoleStatistic.SelectionMode = System.Windows.Forms.DataGridViewSelectionMode.FullRowSelect;
+            this.dgvFilterRoleView.Dock = DockStyle.Fill;
+            this.dgvFilterRoleView.MultiSelect = false;
+            this.dgvFilterRoleView.Name = "dgvFilterRoles";
+            this.dgvFilterRoleView.ReadOnly = true;
+            this.dgvFilterRoleView.RowHeadersVisible = false;
+            this.dgvFilterRoleView.RowTemplate.Height = 18;
+            this.dgvFilterRoleView.RowTemplate.Resizable = System.Windows.Forms.DataGridViewTriState.False;
+            this.dgvFilterRoleView.SelectionMode = System.Windows.Forms.DataGridViewSelectionMode.FullRowSelect;
             //this.dgvFilterRoles.Size = new System.Drawing.Size(190, 111);
-            this.dgvFilterRoleStatistic.TabIndex = 9;
-            this.dgvFilterRoleStatistic.CellClick += new System.Windows.Forms.DataGridViewCellEventHandler(this.dgvFilterRoleStatistic_CellClick);
+            this.dgvFilterRoleView.TabIndex = 9;
+            this.dgvFilterRoleView.CellClick += new System.Windows.Forms.DataGridViewCellEventHandler(this.dgvFilterRoleView_CellClick);
             // 
             // dataGridViewRolesCheckBoxColumnUse
             // 
             i = 0;
-            this.dgvFilterRoleStatistic.Columns[i].Frozen = true;
-            this.dgvFilterRoleStatistic.Columns[i].HeaderText = "Use";
-            this.dgvFilterRoleStatistic.Columns[i].Name = "dataGridViewRolesCheckBoxColumnUse";
-            this.dgvFilterRoleStatistic.Columns[i].ReadOnly = true;
-            this.dgvFilterRoleStatistic.Columns[i].Resizable = System.Windows.Forms.DataGridViewTriState.False;
-            this.dgvFilterRoleStatistic.Columns[i].Width = 25;
+            this.dgvFilterRoleView.Columns[i].Frozen = true;
+            this.dgvFilterRoleView.Columns[i].HeaderText = "Use";
+            this.dgvFilterRoleView.Columns[i].Name = "dataGridViewRolesCheckBoxColumnUse";
+            this.dgvFilterRoleView.Columns[i].ReadOnly = true;
+            this.dgvFilterRoleView.Columns[i].Resizable = System.Windows.Forms.DataGridViewTriState.False;
+            this.dgvFilterRoleView.Columns[i].Width = 25;
             // 
             // dataGridViewRolesTextBoxColumnDesc
             // 
             i = 1;
             //this.dgvFilterRoles.Columns[i].Frozen = true;
-            this.dgvFilterRoleStatistic.Columns[i].HeaderText = "Desc";
-            this.dgvFilterRoleStatistic.Columns[i].Name = "dataGridViewRolesTextBoxColumnDesc";
-            this.dgvFilterRoleStatistic.Columns[i].ReadOnly = true;
-            this.dgvFilterRoleStatistic.Columns[i].Resizable = System.Windows.Forms.DataGridViewTriState.False;
-            this.dgvFilterRoleStatistic.Columns[i].Width = 145;
-            this.dgvFilterRoleStatistic.Columns[i].AutoSizeMode = DataGridViewAutoSizeColumnMode.Fill;
+            this.dgvFilterRoleView.Columns[i].HeaderText = "Desc";
+            this.dgvFilterRoleView.Columns[i].Name = "dataGridViewRolesTextBoxColumnDesc";
+            this.dgvFilterRoleView.Columns[i].ReadOnly = true;
+            this.dgvFilterRoleView.Columns[i].Resizable = System.Windows.Forms.DataGridViewTriState.False;
+            this.dgvFilterRoleView.Columns[i].Width = 145;
+            this.dgvFilterRoleView.Columns[i].AutoSizeMode = DataGridViewAutoSizeColumnMode.Fill;
             // 
             // dgvClient
             // 
@@ -664,7 +748,7 @@ namespace StatisticAnalyzer
             this.dgvUserStatistic.RowTemplate.Resizable = System.Windows.Forms.DataGridViewTriState.False;
             this.dgvUserStatistic.SelectionMode = System.Windows.Forms.DataGridViewSelectionMode.FullRowSelect;
             ////this.dgvFilterRoles.Size = new System.Drawing.Size(190, 111);
-            this.dgvUserStatistic.SelectionChanged += new EventHandler(this.dgvUserStatistic_SelectionChanged);
+            //this.dgvUserStatistic.SelectionChanged += new EventHandler(this.dgvUserStatistic_SelectionChanged);
 
             i = 0;
             this.dgvUserStatistic.Columns[i].Frozen = true;
@@ -696,36 +780,36 @@ namespace StatisticAnalyzer
             // 
             // listRole
             //
-            this.dgvFilterRoleView.Name = "dgvRole";
-            this.dgvFilterRoleView.Dock = DockStyle.Fill;
+            this.dgvFilterRoleStatistic.Name = "dgvRole";
+            this.dgvFilterRoleStatistic.Dock = DockStyle.Fill;
             //this.listUser.TabIndex = 4;
 
-            this.dgvFilterRoleView.AllowUserToAddRows = false;
-            this.dgvFilterRoleView.AllowUserToDeleteRows = false;
-            this.dgvFilterRoleView.ColumnHeadersHeightSizeMode = System.Windows.Forms.DataGridViewColumnHeadersHeightSizeMode.AutoSize;
-            this.dgvFilterRoleView.ColumnHeadersVisible = false;
-            this.dgvFilterRoleView.Columns.AddRange(new System.Windows.Forms.DataGridViewColumn[] {
+            this.dgvFilterRoleStatistic.AllowUserToAddRows = false;
+            this.dgvFilterRoleStatistic.AllowUserToDeleteRows = false;
+            this.dgvFilterRoleStatistic.ColumnHeadersHeightSizeMode = System.Windows.Forms.DataGridViewColumnHeadersHeightSizeMode.AutoSize;
+            this.dgvFilterRoleStatistic.ColumnHeadersVisible = false;
+            this.dgvFilterRoleStatistic.Columns.AddRange(new System.Windows.Forms.DataGridViewColumn[] {
                 new DataGridViewCheckBoxColumn (),
                 new DataGridViewTextBoxColumn ()});
-            this.dgvFilterRoleView.MultiSelect = false;
-            this.dgvFilterRoleView.ReadOnly = true;
-            this.dgvFilterRoleView.RowHeadersVisible = false;
-            this.dgvFilterRoleView.RowTemplate.Height = 18;
-            this.dgvFilterRoleView.RowTemplate.Resizable = System.Windows.Forms.DataGridViewTriState.False;
-            this.dgvFilterRoleView.SelectionMode = System.Windows.Forms.DataGridViewSelectionMode.FullRowSelect;
+            this.dgvFilterRoleStatistic.MultiSelect = false;
+            this.dgvFilterRoleStatistic.ReadOnly = true;
+            this.dgvFilterRoleStatistic.RowHeadersVisible = false;
+            this.dgvFilterRoleStatistic.RowTemplate.Height = 18;
+            this.dgvFilterRoleStatistic.RowTemplate.Resizable = System.Windows.Forms.DataGridViewTriState.False;
+            this.dgvFilterRoleStatistic.SelectionMode = System.Windows.Forms.DataGridViewSelectionMode.FullRowSelect;
             //this.dgvFilterRoles.Size = new System.Drawing.Size(190, 111);
-            this.dgvFilterRoleView.CellClick += new System.Windows.Forms.DataGridViewCellEventHandler(this.dgvFilterRoleView_CellClick);
+            this.dgvFilterRoleStatistic.CellClick += new System.Windows.Forms.DataGridViewCellEventHandler(this.dgvFilterRoleView_CellClick);
 
             i = 0;
-            this.dgvFilterRoleView.Columns[i].Frozen = true;
-            this.dgvFilterRoleView.Columns[i].Resizable = System.Windows.Forms.DataGridViewTriState.False;
-            this.dgvFilterRoleView.Columns[i].Width = 20;
+            this.dgvFilterRoleStatistic.Columns[i].Frozen = true;
+            this.dgvFilterRoleStatistic.Columns[i].Resizable = System.Windows.Forms.DataGridViewTriState.False;
+            this.dgvFilterRoleStatistic.Columns[i].Width = 20;
             // 
             // dataGridViewTextBoxColumnCounter
             // 
             i = 1;
-            this.dgvFilterRoleView.Columns[i].AutoSizeMode = DataGridViewAutoSizeColumnMode.Fill;
-            this.dgvFilterRoleView.Columns[i].Width = 140;
+            this.dgvFilterRoleStatistic.Columns[i].AutoSizeMode = DataGridViewAutoSizeColumnMode.Fill;
+            this.dgvFilterRoleStatistic.Columns[i].Width = 140;
 
             #endregion
 
@@ -791,7 +875,7 @@ namespace StatisticAnalyzer
             panelUser.Controls.Add(this.dgvFilterActiveView, 0, 1); panelUser.SetColumnSpan(this.dgvFilterActiveView, 3); panelUser.SetRowSpan(this.dgvFilterActiveView, 3);
 
             panelUser.Controls.Add(labelFilterRoles, 0, 4); panelUser.SetColumnSpan(labelFilterRoles, 3);
-            panelUser.Controls.Add(this.dgvFilterRoleStatistic, 0, 5); panelUser.SetColumnSpan(this.dgvFilterRoleStatistic, 3); panelUser.SetRowSpan(this.dgvFilterRoleStatistic, 6);
+            panelUser.Controls.Add(this.dgvFilterRoleView, 0, 5); panelUser.SetColumnSpan(this.dgvFilterRoleView, 3); panelUser.SetRowSpan(this.dgvFilterRoleView, 6);
 
             panelUser.Controls.Add(this.dgvUserView, 0, 11); panelUser.SetColumnSpan(this.dgvUserView, 3); panelUser.SetRowSpan(this.dgvUserView, 13);
                 
@@ -857,7 +941,7 @@ namespace StatisticAnalyzer
 
 
             panelMessage.Controls.Add(labelRole, 0, 6); this.SetColumnSpan(labelRole, 1); this.SetRowSpan(labelRole, 1);
-            panelMessage.Controls.Add(this.dgvFilterRoleView, 0, 7); this.SetColumnSpan(this.dgvFilterRoleView, 1); this.SetRowSpan(this.dgvFilterRoleView, 7);
+            panelMessage.Controls.Add(this.dgvFilterRoleStatistic, 0, 7); this.SetColumnSpan(this.dgvFilterRoleStatistic, 1); this.SetRowSpan(this.dgvFilterRoleStatistic, 7);
 
             panelMessage.Controls.Add(labelUser, 0, 14); this.SetColumnSpan(labelUser, 1); this.SetRowSpan(labelUser, 1);
             panelMessage.Controls.Add(this.dgvUserStatistic, 0, 15); this.SetColumnSpan(this.dgvUserStatistic, 1); this.SetRowSpan(this.dgvUserStatistic, 12);
@@ -882,7 +966,7 @@ namespace StatisticAnalyzer
             this.Controls.Add(groupTabs, 0, 18); this.SetColumnSpan(groupTabs, 9); this.SetRowSpan(groupTabs, 6);
 
             ((System.ComponentModel.ISupportInitialize)(this.dgvFilterActiveView)).EndInit();
-            ((System.ComponentModel.ISupportInitialize)(this.dgvFilterRoleStatistic)).EndInit();
+            ((System.ComponentModel.ISupportInitialize)(this.dgvFilterRoleView)).EndInit();
             ((System.ComponentModel.ISupportInitialize)(this.dgvUserView)).EndInit();
                 
             this.tabPageLogging.ResumeLayout(false);
@@ -1009,11 +1093,19 @@ namespace StatisticAnalyzer
                 , { StatesMachine.CounterToTypeByFilter, handlerCommandCounterToTypeByFilter }
             };
 
+            m_filterView = new Filter ();
+            m_filterView.Changed += new Action (filterView_Changed);
+
+            m_listTEC = tec;
+
             m_loggingReadHandler = newLoggingRead ();
             m_loggingReadHandler.EventCommandCompleted += new Action<REQUEST, DataTable> (loggingReadHandler_onCommandCompleted);
             m_LogParse = newLogParse();
 
             InitializeComponent();
+
+            arrayCheckBoxModeTECComponent.ToList ()
+                .ForEach (checkBoxMode => checkBoxMode.CheckedChanged += new EventHandler (checkBoxModeTECComponent_CheckedChanged));
 
             this.dgvTypeToStatistic.Tag = DATAGRIDVIEW_LOGCOUNTER.TYPE_TO_STATISTIC;
             this.dgvTypeToView.Tag = DATAGRIDVIEW_LOGCOUNTER.TYPE_TO_VIEW;
@@ -1058,15 +1150,78 @@ namespace StatisticAnalyzer
             }
         }
 
+        private class Filter
+        {
+            private Dictionary<HStatisticUsers.ID_ROLES, bool> _roles;
+
+            public event Action Changed;
+
+            public void Set (HStatisticUsers.ID_ROLES key, bool value)
+            {
+                if (_roles.ContainsKey (key) == true)
+                    _roles [key] = value;
+                else
+                    throw new InvalidOperationException ($"PanelAnalyzer.Filter::Set (Key={key.ToString()}, Value={value.ToString()}) - ключ отсутствует в словаре");
+
+                Changed?.Invoke ();
+            }
+
+            public List<HStatisticUsers.ID_ROLES> IsAllowedRoles
+            {
+                get
+                {
+                    return (from role in _roles where role.Value == true select role.Key).ToList ();
+                }
+            }
+
+            private CheckState? _actived;
+
+            public CheckState? Actived
+            {
+                get
+                {
+                    return _actived;
+                }
+
+                set
+                {
+                    _actived = value;
+
+                    Changed?.Invoke ();
+                }
+            }
+
+            public Filter ()
+            {
+                _roles = new Dictionary<HStatisticUsers.ID_ROLES, bool> {
+                    { HStatisticUsers.ID_ROLES.KOM_DISP, true }
+                    , { HStatisticUsers.ID_ROLES.ADMIN, true }
+                    , { HStatisticUsers.ID_ROLES.USER, true }
+                    , { HStatisticUsers.ID_ROLES.NSS, true }
+                    , { HStatisticUsers.ID_ROLES.MAJOR_MASHINIST, true }
+                    , { HStatisticUsers.ID_ROLES.MASHINIST, true }
+                    , { HStatisticUsers.ID_ROLES.LK_DISP, true }
+                };
+
+                Actived = CheckState.Indeterminate;
+            }
+        }
+
+        private Filter m_filterView;
+
+        #region Объявление абстрактных методов
+
+        /// <summary>
+        /// Создать объект для чтения сообщений журнала
+        /// </summary>
+        /// <returns></returns>
         protected abstract ILoggingReadHandler newLoggingRead ();
 
         /// <summary>
         /// Метод для разбора строки с лог сообщениями
         /// </summary>
         /// <returns>Возвращает строку</returns>
-        protected abstract LogParse newLogParse();
-
-        #region Объявление абстрактных методов
+        protected abstract LogParse newLogParse ();
 
         /// <summary>
         /// Проверка запуска пользователем ПО
@@ -1078,7 +1233,12 @@ namespace StatisticAnalyzer
         /// Запись значений активности в CheckBox на DataGridView с пользователями
         /// </summary>
         /// <param name="obj">???</param>
-        protected abstract void procChecked(object obj);
+        protected void procChecked (object obj)
+        {
+            delegateActionReport ("Получаем список активных пользователей");
+
+            m_loggingReadHandler.Command (StatesMachine.ProcCheckedState, null, false);
+        }
 
         /// <summary>
         /// ???
@@ -1086,10 +1246,15 @@ namespace StatisticAnalyzer
         protected abstract void disconnect();
 
         /// <summary>
-        /// Начало разбора строки с логом
+        /// Старт разбора лог-сообщений
         /// </summary>
-        /// <param name="par">Строка для разбора</param>
-        protected abstract void startLogParse(string par);
+        /// <param name="id">ID пользователя</param>
+        protected virtual void startLogParse (string id)
+        {
+            dgvListDateView.SelectionChanged -= dgvDateView_SelectionChanged;
+
+            m_loggingReadHandler.Command (StatesMachine.ListDateByUser, new object [] { int.Parse (id) }, true);
+        }
 
         /// <summary>
         /// Выборка лог-сообщений по параметрам
@@ -1139,15 +1304,11 @@ namespace StatisticAnalyzer
             if ((!(connConfigDB == null))
                 && (err == 0)) {
                 HStatisticUsers.GetRoles (ref connConfigDB, string.Empty, string.Empty, out m_tableRoles, out err);
-                dgvFilterRoleView.Fill (m_tableRoles, @"DESCRIPTION", err, true);
                 dgvFilterRoleStatistic.Fill (m_tableRoles, @"DESCRIPTION", err, true);
+                dgvFilterRoleView.Fill (m_tableRoles, @"DESCRIPTION", err, true);
 
                 HStatisticUsers.GetUsers (ref connConfigDB, string.Empty, c_list_sorted, out m_tableUsers, out err);
-                dgvUserStatistic.SelectionChanged -= dgvUserStatistic_SelectionChanged;
                 dgvUserStatistic.Fill (m_tableUsers, @"DESCRIPTION", err, true);
-                dgvUserStatistic.SelectionChanged += dgvUserStatistic_SelectionChanged;
-                dgvUserStatistic.Rows [0].Selected = true;
-
                 dgvUserView.Fill (m_tableUsers, @"DESCRIPTION", err);
 
                 m_tableUsers_stat = m_tableUsers.Copy ();
@@ -1334,6 +1495,7 @@ namespace StatisticAnalyzer
                     start_date = DateTime.Parse(dgvListDateView.Rows[m_prevDatetimeRowIndex].Cells[1].Value.ToString());
                     end_date = start_date.AddDays(1);
                     check.Clear();
+
                     updateCounter(DATAGRIDVIEW_LOGCOUNTER.TYPE_TO_VIEW, start_date, end_date, get_users(m_tableUsers, dgvUserView, false));
                 }
 
@@ -1358,7 +1520,7 @@ namespace StatisticAnalyzer
 
                 if (bRowChecked == true)
                 {
-                    dgvListDateView.SelectionChanged += dgvDatetimeStart_SelectionChanged;
+                    dgvListDateView.SelectionChanged += dgvDateView_SelectionChanged;
                     m_prevDatetimeRowIndex = dgvListDateView.Rows.Count;
                 }
                 else
@@ -1424,35 +1586,6 @@ namespace StatisticAnalyzer
         }
 
         /// <summary>
-        /// Обновление списка лог-сообщений
-        /// </summary>
-        private void updatedgvLogMessages(object data)
-        {
-            DataRow[] rows = new DataRow[] { };
-            //получение количества строк лог-сообщений
-            rows = m_LogParse.Select();
-
-            filldgvLogMessages(rows);
-        }
-
-        /// <summary>
-        /// Формирование списка лог-сообщений
-        /// </summary>
-        protected void filldgvLogMessages(object data)
-        {
-            //DateTime [] arDT = (DateTime [])data;
-            object[] pars = (object[])data;
-            DataRow[] rows = new DataRow[] { };
-
-            // 0 - тип сообщение
-            // 1 - дата/время - начало
-            // 2 - дата/время - окончание
-            // 3 - 
-            // 4 - идентификатор пользователя
-            selectLogMessage((int)pars[4], ((string)pars[0]), ((DateTime)pars[1]), ((DateTime)pars[1]).AddDays(1), null);
-        }
-
-        /// <summary>
         /// Вызов метода заполнения таблицы с лог-сообщениями
         /// </summary>
         /// <param name="rows">Перечень строк с  сообщениями журнала</param>
@@ -1465,39 +1598,31 @@ namespace StatisticAnalyzer
             {
                 for (int i = 0; i < rows.Length; i++)
                 {
-                    if (((i % 1000) == 0) && (strRowsTodgvLogMessages.Length > s_chDelimeters[(int)INDEX_DELIMETER.ROW].Length))
-                    {
+                    if (((i % 1000) == 0)
+                        && (strRowsTodgvLogMessages.Length > s_chDelimeters[(int)INDEX_DELIMETER.ROW].Length)) {
                         //Сбор строки из лог-сообщений
                         strRowsTodgvLogMessages = strRowsTodgvLogMessages.Substring(0, strRowsTodgvLogMessages.Length - s_chDelimeters[(int)INDEX_DELIMETER.ROW].Length);
                         //Асинхронное выполнение метода заполнения DataGridView с лог-сообщениями
                         this.BeginInvoke(delegateAppendText, new HTabLoggingAppendTextPars(strRowsTodgvLogMessages));
                         //this.BeginInvoke(new DelegateObjectFunc(TabLoggingAppendText), strRowsTodgvLogMessages);
                         strRowsTodgvLogMessages = string.Empty;
-                    }
-                    else
-
-                        try
-                        {
+                    } else
+                        try {
                             strRowsTodgvLogMessages += getTabLoggingTextRow(rows[i]) + s_chDelimeters[(int)INDEX_DELIMETER.ROW];
-                        }
-                        catch (Exception e)
-                        {
+                        } catch (Exception e) {
                             Logging.Logg().Exception(e, "PanelAnalyzer:filldgvLogMessages () - ...", Logging.INDEX_MESSAGE.NOT_SET);
                         }
                 }
 
-                if (strRowsTodgvLogMessages.Length > s_chDelimeters[(int)INDEX_DELIMETER.ROW].Length)
-                {
-                    //Остаток...                    
+                if (strRowsTodgvLogMessages.Length > s_chDelimeters[(int)INDEX_DELIMETER.ROW].Length) {
+                    //Остаток...
                     strRowsTodgvLogMessages = strRowsTodgvLogMessages.Substring(0, strRowsTodgvLogMessages.Length - s_chDelimeters[(int)INDEX_DELIMETER.ROW].Length);
                     this.BeginInvoke(delegateAppendText, new HTabLoggingAppendTextPars(strRowsTodgvLogMessages));
                     //this.BeginInvoke(new DelegateObjectFunc(TabLoggingAppendText), strRowsTodgvLogMessages);
                     strRowsTodgvLogMessages = string.Empty;
-                }
-                else
+                } else
                     ;
-            }
-            else
+            } else
                 ;
 
             //Крайняя строка...
@@ -1559,7 +1684,7 @@ namespace StatisticAnalyzer
         /// Старт формирования DataGridView с лог-сообщениями 
         /// </summary>
         /// <param name="bClearTypeMessageCounter">Флаг очистки DataGridView с лог-сообщениями </param>
-        private void startFilldgvLogMessages(bool bClearTypeMessageCounter)
+        private void startSelectdgvLogMessages(bool bClearTypeMessageCounter)
         {
             tabLoggingClearText(bClearTypeMessageCounter);
 
@@ -1570,241 +1695,34 @@ namespace StatisticAnalyzer
             else
                 ;
 
-            Thread threadFilldgvLogMessages = new Thread(new ParameterizedThreadStart(filldgvLogMessages));
-            threadFilldgvLogMessages.IsBackground = true;
-            threadFilldgvLogMessages.Start(new object[] { getIndexTypeMessages(), dtBegin, dtEnd, bClearTypeMessageCounter, dgvUserView.SelectedRows [0].Tag });
+            Thread threadSelectdgvLogMessages = new Thread(new ParameterizedThreadStart((obj) => {
+                object [] pars = obj as object [];
+                // 0 - тип сообщение
+                // 1 - дата/время - начало
+                // 2 - дата/время - окончание
+                // 3 - 
+                // 4 - идентификатор пользователя
+                selectLogMessage (((HStatisticUser)pars [4]).Id, ((string)pars [0]), ((DateTime)pars [1]), ((DateTime)pars [1]).AddDays (1), null);
+            }));
+            threadSelectdgvLogMessages.IsBackground = true;
+            threadSelectdgvLogMessages.Start(new object[] { getIndexTypeMessages(), dtBegin, dtEnd, bClearTypeMessageCounter, dgvUserView.SelectedRows [0].Tag });
         }
         
         /// <summary>
         /// Старт обновления DataGridView с лог-сообщениями 
         /// </summary>
         /// <param name="bClearTypeMessageCounter">Флаг очистки DataGridView с лог-сообщениями </param>
-        private void startUpdatedgvLogMessages(bool bClearTypeMessageCounter)
+        private void startFilldgvLogMessages(bool bClearTypeMessageCounter)
         {
             tabLoggingClearText(bClearTypeMessageCounter);
 
-            Thread threadFilldgvLogMessages = new Thread(new ParameterizedThreadStart(updatedgvLogMessages));
+            Thread threadFilldgvLogMessages = new Thread(new ParameterizedThreadStart ((obj) => {
+                filldgvLogMessages (m_LogParse.Sort ("DATE_TIME"));
+            }));
             threadFilldgvLogMessages.IsBackground = true;
             threadFilldgvLogMessages.Start();
         }
 
-        /// <summary>
-        /// Класс для работы со строкой лог сообщений
-        /// </summary>
-        protected abstract class LogParse
-        {
-            public const int INDEX_START_MESSAGE = 0;
-
-            /// <summary>
-            /// Массив с идентификаторами типов сообщений
-            /// </summary>
-            public static int[] s_ID_LOGMESSAGES;
-
-            /// <summary>
-            /// Список типов сообщений
-            /// </summary>
-            public static string[] s_DESC_LOGMESSAGE;
-
-            private Thread m_thread;
-            protected DataTable m_tableLog;
-            Semaphore m_semAllowed;
-
-            public DelegateFunc Exit;
-
-            public LogParse()
-            {
-                m_semAllowed = new Semaphore(1, 1);
-
-                m_tableLog = new DataTable("ContentLog");
-                DataColumn[] cols = new DataColumn[] {
-                    new DataColumn("DATE_TIME", typeof(DateTime)),
-                    new DataColumn("TYPE", typeof(Int32)),
-                    new DataColumn ("MESSAGE", typeof (string))
-                };
-                m_tableLog.Columns.AddRange(cols);
-
-                m_thread = null;
-            }
-
-            /// <summary>
-            /// Инициализация потока разбора лог-файла
-            /// </summary>
-            public void Start(object param)
-            {
-                m_semAllowed.WaitOne();
-
-                m_thread = new Thread(new ParameterizedThreadStart(thread_Proc));
-                m_thread.IsBackground = true;
-                m_thread.Name = "Разбор лог-файла";
-
-                m_thread.CurrentCulture =
-                m_thread.CurrentUICulture =
-                    ProgramBase.ss_MainCultureInfo;
-
-                m_tableLog.Clear();
-
-                m_thread.Start(param);
-            }
-
-            /// <summary>
-            /// Остановка потока разбора лог-файла
-            /// </summary>
-            public void Stop()
-            {
-                //if (m_bAllowed == false)
-                //    return;
-                //else
-                //    ;
-
-                bool joined = false;
-                if ((!(m_thread == null)))
-                {
-                    if (m_thread.IsAlive == true)
-                    {
-                        //m_bAllowed = false;
-                        joined = m_thread.Join(6666);
-                        if (joined == false)
-                            m_thread.Abort();
-                        else
-                            ;
-                    }
-                    else
-                        ;
-
-                    try { m_semAllowed.Release(); }
-                    catch (Exception e)
-                    {
-                        Console.WriteLine("LogParse::Stop () - m_semAllowed.Release() - поток не был запущен или штатно завршился");
-                    }
-                }
-                else
-                    ;
-
-                //m_bAllowed = true;
-            }
-
-            /// <summary>
-            /// Метод для разбора лог-сообщений в потоке
-            /// </summary>
-            protected virtual void thread_Proc(object data)
-            {
-                Console.WriteLine("Окончание обработки лог-файла. Обработано строк: {0}", (int)data);
-               
-                Exit();
-            }
-
-            /// <summary>
-            /// Очистка
-            /// </summary>
-            public void Clear()
-            {
-                //m_tableLog.Clear();
-            }
-
-            /// <summary>
-            /// Добавление типов сообщений
-            /// </summary>
-            /// <param name="nameFieldTypeMessage">Наименование колонки типов сообщений</param>
-            /// <param name="strIndxType">Стартовы индекс</param>
-            /// <returns>Строка для условия выборки сообщений по их типам</returns>
-            protected string addingWhereTypeMessage(string nameFieldTypeMessage, string strIndxType)
-            {
-                string strRes = string.Empty;
-
-                //if (!(indxType < 0))
-                if (strIndxType.Equals(string.Empty) == false)
-                {
-                    List<int> listIndxType;
-                    //listIndxType = strIndxType.Split(new string[] { m_chDelimeters[(int)INDEX_DELIMETER.ROW] }, StringSplitOptions.None)[1].Split(new string[] { m_chDelimeters[(int)INDEX_DELIMETER.PART] }, StringSplitOptions.None).ToList().ConvertAll<int>(new Converter<string, int>(delegate(string strIn) { return Int32.Parse(strIn); }));
-                    string[] pars = strIndxType.Split(new string[] { s_chDelimeters[(int)INDEX_DELIMETER.ROW] }, StringSplitOptions.None);
-
-                    if (pars.Length == 2)
-                    {
-                        bool bUse = false;
-                        //if ((pars[0].Equals(true.ToString()) == true) || (pars[0].Equals(false.ToString()) == true))
-                        if (bool.TryParse(pars[0], out bUse) == true)
-                        {
-                            if (pars[1].Length > 0)
-                            {
-                                listIndxType = pars[1].Split(new string[] { s_chDelimeters[(int)INDEX_DELIMETER.PART] }, StringSplitOptions.None).ToList().ConvertAll<int>(new Converter<string, int>(delegate(string strIn) { return Int32.Parse(strIn); }));
-
-                                strRes += nameFieldTypeMessage + @" ";
-
-                                if (bUse == false)
-                                    strRes += @"NOT ";
-                                else
-                                    ;
-
-                                strRes += @"IN (";
-
-                                foreach (int indx in listIndxType)
-                                    strRes += s_ID_LOGMESSAGES[indx] + @",";
-
-                                strRes = strRes.Substring(0, strRes.Length - 1);
-
-                                strRes += @")";
-                            }
-                            else
-                                ;
-                        }
-                        else
-                            ;
-                    }
-                    else
-                        ;
-                }
-                else
-                    ;
-
-                return strRes;
-            }
-
-            /// <summary>
-            /// Сортировка выборки по дате
-            /// </summary>
-            public DataRow[] Select()
-            {
-                return m_tableLog.Select(string.Empty, "DATE_TIME");
-            }
-
-            //public int Select(int indxType, DateTime beg, DateTime end, ref DataRow[] res)
-            /// <summary>
-            /// Выборка лог-сообщений
-            /// </summary>
-            /// <param name="strIndxType">Индекс типа сообщения</param>
-            /// <param name="beg">Начало периода</param>
-            /// <param name="end">Оончание периода</param>
-            /// <returns>Массив строк с сообщениями за период</returns>
-            public DataRow[] ByDate(string strIndxType, DateTime beg, DateTime end)
-            {
-                string where = string.Empty;
-
-                //m_tableLog.Clear();
-
-                if (beg.Equals(DateTime.MaxValue) == false)
-                {
-                    where = $"DATE_TIME>='{beg.ToString("yyyyMMdd HH:mm:ss")}'";
-                    if (end.Equals(DateTime.MaxValue) == false)
-                        where += $" AND DATE_TIME<'{end.ToString("yyyyMMdd HH:mm:ss")}'";
-                    else
-                        ;
-                }
-                else
-                    ;
-
-                if (where.Equals(string.Empty) == false)
-                    where += @" AND ";
-                else
-                    ;
-                where += addingWhereTypeMessage(@"TYPE", strIndxType);
-
-                return
-                    //(from DataRow row in m_tableLog.Rows where ((DateTime)row ["DATE_TIME"]) >= beg && ((DateTime)row ["DATE_TIME"]) < end select row).ToArray()
-                    m_tableLog.Select (where);
-                    ;
-            }
-        }
-        
         #endregion
 
         #region Обработчики событий для элементов панели лог-сообщений
@@ -1814,23 +1732,45 @@ namespace StatisticAnalyzer
         /// </summary>
         private void dgvFilterActiveView_CellClick(object sender, DataGridViewCellEventArgs e)
         {
+            CheckState? checkStateActived = null;
+
             dgvFilterActiveView.Rows[e.RowIndex].Cells[0].Value = !bool.Parse(dgvFilterActiveView.Rows[e.RowIndex].Cells[0].Value.ToString());
-            get_FilteredUsers();
+
+            if (((bool)dgvFilterActiveView.Rows [0].Cells [0].Value == true)
+                && ((bool)dgvFilterActiveView.Rows [1].Cells [0].Value == true))
+            // все
+                checkStateActived = CheckState.Checked;
+            else if (((bool)dgvFilterActiveView.Rows [0].Cells [0].Value == true)
+                && ((bool)dgvFilterActiveView.Rows [1].Cells [0].Value == false))
+            // только активные
+                checkStateActived = CheckState.Indeterminate;
+            else if (((bool)dgvFilterActiveView.Rows [0].Cells [0].Value == false)
+                && ((bool)dgvFilterActiveView.Rows [1].Cells [0].Value == true))
+            // только не активные
+                checkStateActived = CheckState.Unchecked;
+            else
+            // оставить "как есть" - ничего не отображать
+                ;
+
+            m_filterView.Actived = checkStateActived;
+            //!!! обработка события 
         }
 
         /// <summary>
         /// Обработчик выбора ролей пользователей
         /// </summary>
-        private void dgvFilterRoleStatistic_CellClick(object sender, DataGridViewCellEventArgs e)
+        private void dgvFilterRoleView_CellClick(object sender, DataGridViewCellEventArgs e)
         {
-            dgvFilterRoleStatistic.Rows[e.RowIndex].Cells[0].Value = !bool.Parse(dgvFilterRoleStatistic.Rows[e.RowIndex].Cells[0].Value.ToString());
-            get_FilteredUsers();
+            dgvFilterRoleView.Rows[e.RowIndex].Cells[0].Value = !bool.Parse(dgvFilterRoleView.Rows[e.RowIndex].Cells[0].Value.ToString());
+
+            m_filterView.Set ((HStatisticUsers.ID_ROLES)dgvFilterRoleView.Rows [e.RowIndex].Tag, (bool)dgvFilterRoleView.Rows [e.RowIndex].Cells [0].Value);
+            //!!! обработка события 
         }
 
         /// <summary>
         /// Метод формирования списка пользователей согласно выбранным фильтрам
         /// </summary>
-        private void get_FilteredUsers()
+        private void applyFilterRoleViewToTableUsers ()
         {
             m_tableUsers = m_tableUsers_unfiltered.Copy();
             int i = -1, err = 0;
@@ -1841,7 +1781,7 @@ namespace StatisticAnalyzer
 
             for (i = 0; i < m_tableRoles.Rows.Count; i++)
             {
-                if (bool.Parse(dgvFilterRoleStatistic.Rows[i].Cells[0].Value.ToString()) == false)
+                if (bool.Parse(dgvFilterRoleView.Rows[i].Cells[0].Value.ToString()) == false)
                 {
                     if (where.Equals(string.Empty) == true)
                         where = "ID_ROLE NOT IN (";
@@ -1859,66 +1799,64 @@ namespace StatisticAnalyzer
             else
                 ;
 
-            m_tableUsers.Rows.Clear();
-
-            if (m_tableUsers_unfiltered.Select(where, c_list_sorted).Length != 0)
-                m_tableUsers = m_tableUsers_unfiltered.Select(where, c_list_sorted).CopyToDataTable();
-            else
-                m_tableUsers.Rows.Clear();
-
-            if (dgvFilterActiveView.Rows[0].Cells[0].Value == dgvFilterActiveView.Rows[1].Cells[0].Value)
-                if (bool.Parse(dgvFilterActiveView.Rows[0].Cells[0].Value.ToString()) == true)
-                //Отображать всех...
-                {
-                }
-                else
-                //Пустой список...
-                {
-                    m_tableUsers.Clear();
-                }
-            else
-                filterActived (
-                    procChecked ()
-                );
-
-            dgvUserView.Fill (m_tableUsers, c_list_sorted, err);
-
-            activateTimerChecked (true);
+            m_tableUsers = m_tableUsers_unfiltered.Select(where, c_list_sorted).CopyToDataTable();
         }
 
-        protected void filterActived (bool [] arbActives)
+        protected void applyFilterActivedViewToTableUsers (int []ariTags, bool [] arbActives)
         {
-            if ((!(arbActives == null))
-                && (arbActives.Length > 0)) {
-                List<int> listIndexToRemoveUsers = new List<int> ();
+            //CheckState.Checked - все
+            //CheckState.Indeterminate - только активные
+            //CheckState.Unchecked - только не активные
 
-                for (int i = 0;
-                    (i < m_tableUsers.Rows.Count)
-                        && (i < arbActives.Length);
-                        i++) {
-                    if (((arbActives [i] == true)
-                            && (bool.Parse (dgvFilterActiveView.Rows [0].Cells [0].Value.ToString ()) == false))
-                        || ((arbActives [i] == false)
-                            && (bool.Parse (dgvFilterActiveView.Rows [1].Cells [0].Value.ToString ()) == false))) {
-                        listIndexToRemoveUsers.Add (i);
+            List<int> listIdToRemoveUsers = new List<int> ();
+
+            if (Equals (m_filterView.Actived, null) == false)
+                if ((!(arbActives == null))
+                    && (arbActives.Length > 0)) {
+                    for (int i = 0;
+                        (i < m_tableUsers.Rows.Count)
+                            && (i < ariTags.Length)
+                            && (i < arbActives.Length);
+                            i++) {
+                        if (((arbActives [i] == true)
+                                && (m_filterView.Actived == CheckState.Unchecked))
+                            || ((arbActives [i] == false)
+                                && (!(m_filterView.Actived == CheckState.Unchecked)))) {
+                            listIdToRemoveUsers.Add (ariTags [i]);
+                        } else
+                            ;
+                    }
+
+                    if (listIdToRemoveUsers.Count > 0) {
+                        //Удалить строки с неактивными пользователями
+                        foreach (int id in listIdToRemoveUsers)
+                            m_tableUsers.Rows.Remove (m_tableUsers.Select($"ID={id}")[0]);
+
+                        m_tableUsers.AcceptChanges ();
                     } else
                         ;
-                }
-
-                if (listIndexToRemoveUsers.Count > 0) {
-                    listIndexToRemoveUsers.Sort (delegate (int i1, int i2) {
-                        return i1 > i2 ? -1 : 1;
-                    });
-
-                    //Удалить строки с неактивными пользователями
-                    foreach (int indx in listIndexToRemoveUsers)
-                        m_tableUsers.Rows.RemoveAt (indx);
-
-                    m_tableUsers.AcceptChanges ();
                 } else
                     ;
-            } else
-                ;
+            else
+                m_tableUsers.Rows.Clear();
+        }
+
+        private void filterView_Changed ()
+        {
+            // при этом инициируется выполнение команды ProcCheck
+            if (Equals (m_filterView.Actived, null) == false)
+            // асинхронный вызов 'procChecked ()' - возвращает фиктивный/пустой список
+                procChecked ();
+            else {
+            // синхронно - пустой список пользователей
+                m_tableUsers.Rows.Clear ();
+                if (InvokeRequired == true)
+                    Invoke(delegate () {
+                        dgvUserView.Fill (m_tableUsers, "DESCRIPTION", 0);
+                    });
+                else
+                    dgvUserView.Fill (m_tableUsers, "DESCRIPTION", 0);
+            }
         }
 
         /// <summary>
@@ -1930,7 +1868,7 @@ namespace StatisticAnalyzer
             {
                 dgvTypeToView.Rows[e.RowIndex].Cells[0].Value = !bool.Parse(dgvTypeToView.Rows[e.RowIndex].Cells[0].Value.ToString());
 
-                startUpdatedgvLogMessages(false);
+                startFilldgvLogMessages(false);
             }
             else
                 ;
@@ -1941,7 +1879,7 @@ namespace StatisticAnalyzer
         /// </summary>
         private void buttonUpdate_Click(object sender, EventArgs e)
         {
-            dgvUserStatistic_SelectionChanged(null, null);
+            dgvUserView_SelectionChanged(null, null);
         }
 
         /// <summary>
@@ -1949,7 +1887,7 @@ namespace StatisticAnalyzer
         /// </summary>
         /// <param name="sender">Объект, инициировавший событие</param>
         /// <param name="e">Аргумент события</param>
-        protected void dgvDatetimeStart_SelectionChanged(object sender, EventArgs e)
+        protected void dgvDateView_SelectionChanged(object sender, EventArgs e)
         {
             int rowIndex = dgvListDateView.SelectedRows[0].Index;
 
@@ -1957,7 +1895,7 @@ namespace StatisticAnalyzer
             dgvListDateView.Rows[rowIndex].Cells[0].Value = true;
             m_prevDatetimeRowIndex = rowIndex;
 
-            startFilldgvLogMessages(true);
+            startSelectdgvLogMessages(true);
         }
 
         #endregion
@@ -1981,26 +1919,21 @@ namespace StatisticAnalyzer
             #region Получение строки со списком идентификаторов пользователей, выбранных в списке
 
             if (multi_select == true)
-            {
-                for (i = 0; i < table_user.Rows.Count; i++)//перебор строк таблицы
-                {
-                    if (bool.Parse(dgv_user.Rows[i].Cells[0].Value.ToString()) == true)//сравнение состояния CheckBox'а
-                    {
-                        if (list_user.Equals(string.Empty) == true)
-                        {
+                //перебор строк таблицы
+                for (i = 0; i < table_user.Rows.Count; i++)
+                    //сравнение состояния CheckBox'а
+                    if (bool.Parse (dgv_user.Rows [i].Cells [0].Value.ToString ()) == true) {
+                        if (list_user.Equals (string.Empty) == true)
                             list_user = " ";
-                        }
                         else
                             list_user += ",";
-
-                        list_user += table_user.Rows[i]["ID"];//добавление пользователя в список
-                    }
-                }
-            }
+                        //добавление пользователя в список
+                        list_user += table_user.Rows [i] ["ID"];
+                    } else
+                        ;
             else
-            {
-                list_user += table_user.Rows[dgv_user.SelectedRows[0].Index]["ID"];//добавление одного пользователя
-            }
+            //добавление одного пользователя
+                list_user += table_user.Rows[dgv_user.SelectedRows[0].Index]["ID"];
 
             #endregion
 
@@ -2010,61 +1943,75 @@ namespace StatisticAnalyzer
         }
 
         /// <summary>
-        /// Обработчик события выбора пользователя для формирования списка сообщений
-        /// </summary>
-        protected abstract void dgvUserStatistic_SelectionChanged (object sender, EventArgs e);
-
-        /// <summary>
         /// Обновление статистики сообщений из лога за выбранный период
         /// </summary>
         protected virtual void dgvUserView_SelectionChanged (object sender, EventArgs e)
         {
             bool bUpdate = false;
 
-            bUpdate = (dgvUserView.SelectedRows.Count > 0)
-                && (!(dgvUserView.SelectedRows[0].Index < 0));
+            bUpdate = !(IdCurrentUserView < 0);
 
             bUpdate = (dgvListDateView.Rows.Count > 0)
-                && (dgvListDateView.SelectedRows[0].Index < (dgvListDateView.Rows.Count - 1))
-                && !Equals(e, null);
+                && (dgvListDateView.SelectedRows [0].Index < (dgvListDateView.Rows.Count))
+                && !Equals (e, null);
 
             if (bUpdate == true) {
                 //Останов потока разбора лог-файла пред. пользователя
-                m_LogParse.Stop();
+                m_LogParse.Stop ();
 
-                dgvListDateView.SelectionChanged -= dgvDatetimeStart_SelectionChanged;
-
-                //Очистить элементы управления с данными от пред. лог-файла
-                if (IsHandleCreated == true)
-                    if (InvokeRequired == true) {
-                        BeginInvoke(new DelegateFunc(tabLoggingClearDatetimeStart));
-                        BeginInvoke(new DelegateBoolFunc(tabLoggingClearText), true);
-                    } else {
-                        tabLoggingClearDatetimeStart();
-                        tabLoggingClearText(true);
-                    } else
-                    Logging.Logg().Error(@"FormMainAnalyzer::dgvUserStatistic_SelectionChanged () - ... BeginInvoke (TabLoggingClearDatetimeStart, TabLoggingClearText) - ...", Logging.INDEX_MESSAGE.D_001);
-
-                startLogParse(((int)dgvUserView.SelectedRows[0].Tag).ToString().Trim());
-
-                listBoxTabVisible.Items.Clear();//очистка списка активных вкладок
-
-                DbTSQLConfigDatabase.DbConfig().SetConnectionSettings();
-                DbTSQLConfigDatabase.DbConfig().Register();
-                //Заполнение ListBox'а активными вкладками
-                fillListBoxTabVisible(
-                    fill_active_tabs((int)m_tableUsers.Rows[dgvUserView.SelectedRows[0].Index][0]).ToList()
-                );
-
-                DbTSQLConfigDatabase.DbConfig().UnRegister();
+                dgvListDateView.SelectionChanged -= dgvDateView_SelectionChanged;
+                //очистка списка активных вкладок
+                listBoxTabVisible.Items.Clear ();
+                //Обнуление счётчиков сообщений на панели статистики
+                dgvTypeToView.ClearValues ();
             } else
                 ;
+        }
+
+        protected int IdCurrentUserView
+        {
+            get
+            {
+                return dgvUserView.RowCount > 0
+                    ? dgvUserView.SelectedRows.Count > 0
+                        ? ((HStatisticUser)dgvUserView.SelectedRows [0].Tag).Id
+                            : -1
+                                : -1;
+            }
+        }
+
+        /// <summary>
+        /// Индекс выбранной/текущей строки в списке с пользователями
+        /// </summary>
+        [System.Obsolete ("Использовать IdCurrentUserView вместо", false)]
+        protected int IndexCurrentUserView
+        {
+            get
+            {
+                return dgvUserView.RowCount > 0
+                    ? dgvUserView.SelectedRows.Count > 0
+                        ? dgvUserView.SelectedRows [0].Index
+                            : -1
+                                : -1;
+            }
+        }
+
+        /// <summary>
+        /// Обработчик события изменения состояния CheckBox'ов
+        /// </summary>
+        private void checkBoxModeTECComponent_CheckedChanged (object sender, EventArgs e)
+        {
+            listBoxTabVisible.Items.Clear ();
+
+            fillListBoxTabVisible (
+                getTabActived (IdCurrentUserView).ToList ()
+            );
         }
 
         /// <summary>
         /// Обновление списка пользователей при выборе ролей
         /// </summary>
-        private void dgvFilterRoleView_CellClick (object sender, DataGridViewCellEventArgs e)
+        private void dgvFilterRoleStatistic_CellClick (object sender, DataGridViewCellEventArgs e)
         {
             m_tableUsers_stat = m_tableUsers_stat_unfiltered.Copy();
 
@@ -2073,11 +2020,11 @@ namespace StatisticAnalyzer
 
             if (e.ColumnIndex == 0)
             {
-                dgvFilterRoleView.Rows[e.RowIndex].Cells[0].Value = !bool.Parse(dgvFilterRoleView.Rows[e.RowIndex].Cells[0].Value.ToString());//фиксация значения
+                dgvFilterRoleStatistic.Rows[e.RowIndex].Cells[0].Value = !bool.Parse(dgvFilterRoleStatistic.Rows[e.RowIndex].Cells[0].Value.ToString());//фиксация значения
 
                 for (i = 0; i < m_tableRoles.Rows.Count; i++)//перебор строк таблицы
                 {
-                    if (bool.Parse(dgvFilterRoleView.Rows[i].Cells[0].Value.ToString()) == false)
+                    if (bool.Parse(dgvFilterRoleStatistic.Rows[i].Cells[0].Value.ToString()) == false)
                     {
                         if (where.Equals(string.Empty) == true)
                         {
@@ -2139,13 +2086,46 @@ namespace StatisticAnalyzer
         /// Абстрактный метод для получения из БД списка активных вкладок для выбранного пользователя
         /// </summary>
         /// <param name="user">Идентификатор пользователя для выборки</param>
-        protected abstract IEnumerable<int> fill_active_tabs(int user);
+        protected abstract IEnumerable<int> getTabActived(int user);
 
         /// <summary>
         /// Заполнение ListBox активными вкладками
         /// </summary>
-        /// <param name="ID_tabs">Список активных вкладок</param>
-        protected abstract void fillListBoxTabVisible(List<int> ID_tabs);
+        /// <param name="arIdTabs">Список активных вкладок</param>
+        protected virtual void fillListBoxTabVisible (List<int> arIdTabs)
+        {
+            FormChangeMode.MODE_TECCOMPONENT modeTECComponent;
+
+            for (int i = 0; i < arIdTabs.Count; i++) {
+                //получение типа вкладки
+                modeTECComponent = TECComponentBase.Mode (arIdTabs [i]);
+                //проверка состояния фильтра для вкладки
+                if (arrayCheckBoxModeTECComponent [(int)modeTECComponent].Checked == true) {
+                    if (Equals (m_listTEC, null) == false)
+                        foreach (StatisticCommon.TEC t in m_listTEC) {
+                            if (t.m_id == arIdTabs [i]
+                                && (modeTECComponent == FormChangeMode.MODE_TECCOMPONENT.TEC)) {
+                                //добавление ТЭЦ в ListBox
+                                listBoxTabVisible.Items.Add (t.name_shr);
+
+                                break;
+                            } else
+                                ;
+
+                            if (t.list_TECComponents.Count > 0)
+                                foreach (StatisticCommon.TECComponent g in t.list_TECComponents)
+                                    if (g.m_id == arIdTabs [i])
+                                        //Добавление вкладки в ListBox
+                                        listBoxTabVisible.Items.Add ($"{t.name_shr} - {g.name_shr}");
+                                    else
+                                        ;
+                            else
+                                ;
+                        } else
+                        ;
+                }
+            }
+        }
 
         #endregion
 
@@ -2288,9 +2268,6 @@ namespace StatisticAnalyzer
             {
                 string strCount = string.Empty;
 
-                //Обнуление счётчиков сообщений на панели статистики
-                clearValues ();
-
                 if (table_statMessage.Rows.Count > 0) {
                     foreach (DataGridViewRow r in this.Rows) {
                         try {
@@ -2350,7 +2327,7 @@ namespace StatisticAnalyzer
             /// <summary>
             /// Обнуление статистики типов сообщений в DataGridView 
             /// </summary>
-            protected void clearValues()
+            public void ClearValues()
             {
                 foreach (DataGridViewRow r in this.Rows)
                     r.Cells [lastIndex].Value = 0; 
@@ -2372,21 +2349,29 @@ namespace StatisticAnalyzer
         {
             bool bCheckedItem = false;
             int iNewRow = -1
-                , indxFieldTag = -1;
+                , indxFieldRole = -1, indxFieldId = -1;
 
             if (run == 0) {
                 bCheckedItem = checkDefault;
                 ctrl.Rows.Clear ();
 
                 if (src.Rows.Count > 0) {
-                    indxFieldTag = src.Columns.IndexOf ("ID");
+                    indxFieldRole = src.Columns.IndexOf ("ID_ROLE");
+                    indxFieldId = src.Columns.IndexOf ("ID");
 
-                    foreach(DataRow r in src.Rows) {
+                    foreach (DataRow r in src.Rows) {
                         iNewRow = ctrl.Rows.Add (new object [] { bCheckedItem, r [nameField].ToString () });
 
-                        if (!(indxFieldTag < 0))
-                            ctrl.Rows[iNewRow].Tag = int.Parse (r [indxFieldTag].ToString ());
+                        if ((!(indxFieldRole < 0))
+                            && (!(indxFieldId < 0)))
+                            ctrl.Rows [iNewRow].Tag = new HStatisticUser {
+                                Role = (HStatisticUsers.ID_ROLES)int.Parse (r [indxFieldRole].ToString ())
+                                , Id = int.Parse (r [indxFieldId].ToString ())
+                            };
+                        else if (!(indxFieldId < 0))
+                            ctrl.Rows [iNewRow].Tag = int.Parse (r [indxFieldId].ToString ());
                         else
+                        // такой вариант не рассматривается
                             ;
                     }
                 } else
@@ -2403,7 +2388,7 @@ namespace StatisticAnalyzer
             foreach (DataGridViewRow r in ctrl.Rows) {
                 //TODO: проверять 'm_bThreadTimerCheckedAllowed' для возможности прерывания
 
-                indx = tags.IndexOf((int)r.Tag);
+                indx = tags.IndexOf(r.Tag.GetType().Equals(typeof(HStatisticUser)) == true ? ((HStatisticUser)r.Tag).Id : (int)r.Tag);
 
                 if (!(indx < 0))
                     active = arbActives[indx];

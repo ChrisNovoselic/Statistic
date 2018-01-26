@@ -29,12 +29,7 @@ namespace StatisticAnalyzer
             throw new NotImplementedException();
         }
 
-        protected override IEnumerable<int> fill_active_tabs(int user)
-        {
-            throw new NotImplementedException();
-        }
-
-        protected override void fillListBoxTabVisible(List<int> ID_tabs)
+        protected override IEnumerable<int> getTabActived(int user)
         {
             throw new NotImplementedException();
         }
@@ -58,14 +53,13 @@ namespace StatisticAnalyzer
                     case "INIT":
                         int indxTcpClient = getIndexTcpClient(res);
 
-                        if (indxTcpClient < m_listTCPClientUsers.Count)
-                        {
-                            dgvUserView.Rows[indxTcpClient].Cells[0].Value = true;
-                            m_listTCPClientUsers[indxTcpClient].Write(@"DISCONNECT");
+                        if (indxTcpClient < m_listTCPClientUsers.Count) {
+                            //TODO: в таблицу разместить строку с индексом??? пользователя и результатом (успешным: true) соединения
+                            m_loggingReadHandler.PerformCommandCompleted (new REQUEST (StatesMachine.TODO, null), new DataTable ());
+                            m_listTCPClientUsers [indxTcpClient].Write(@"DISCONNECT");
 
                             m_listTCPClientUsers[indxTcpClient].Disconnect();
-                        }
-                        else
+                        } else
                             ;
                         break;
                     case "LOG_LOCK":
@@ -178,20 +172,20 @@ namespace StatisticAnalyzer
             throw new NotImplementedException();
         }
 
-        protected override void procChecked(object obj)
+        /// <summary>
+        /// Запись значений активности в CheckBox на DataGridView с пользователями
+        /// </summary>
+        /// <param name="obj">???</param>
+        protected void onCommand_ProcCheckState(object obj)
         {
             int i = -1;
+
             for (i = 0;
                 (i < m_tableUsers.Rows.Count)
                     && (m_bThreadTimerCheckedAllowed == true);
                 i++)
                 //Проверка активности
                 m_listTCPClientUsers[i].Connect(m_tableUsers.Rows[i][c_NameFieldToConnect].ToString() + ";" + i, 6666);
-
-            //Вариант №0
-            m_timerProcChecked.Change(MSEC_TIMERCHECKED_STANDARD, System.Threading.Timeout.Infinite);
-            ////Вариант №1
-            //if (! (m_timerChecked.Interval == MSEC_TIMERCHECKED_STANDARD)) m_timerChecked.Interval = MSEC_TIMERCHECKED_STANDARD; else ;
         }
 
         public override void Stop()
@@ -217,72 +211,44 @@ namespace StatisticAnalyzer
                 ;
         }
 
-        protected override void dgvUserStatistic_SelectionChanged(object sender, EventArgs e)
-        {
-            if (!(m_tcpClient == null))
-            {
-                disconnect();
-            }
-            else
-                ;
-
-            if ((dgvUserView.SelectedRows.Count > 0) && (!(dgvUserView.SelectedRows[0].Index < 0)))
-            {
-                bool bUpdate = true;
-                if ((dgvListDatetView.Rows.Count > 0) && (dgvListDatetView.SelectedRows[0].Index < (dgvListDatetView.Rows.Count - 1)))
-                    if (e == null)
-                        bUpdate = false;
-                    else
-                        ;
-                else
-                    ;
-
-                if (bUpdate == true)
-                {
-                    m_tcpClient = new TcpClientAsync();
-                    m_tcpClient.delegateRead = Read;
-
-
-                    //Останов потока разбора лог-файла пред. пользователя
-                    m_LogParse.Stop();
-
-                    dgvListDatetView.SelectionChanged -= dgvDatetimeStart_SelectionChanged;
-
-                    //Очистить элементы управления с данными от пред. лог-файла
-                    if (IsHandleCreated/*InvokeRequired*/ == true)
-                    {
-                        BeginInvoke(new DelegateFunc(tabLoggingClearDatetimeStart));
-                        BeginInvoke(new DelegateBoolFunc(tabLoggingClearText), true);
-                    }
-                    else
-                        Logging.Logg().Error(@"FormMainAnalyzer::dgvClient_SelectionChanged () - ... BeginInvoke (TabLoggingClearDatetimeStart, TabLoggingClearText) - ...", Logging.INDEX_MESSAGE.D_001);
-
-                    //Если активна 0-я вкладка (лог-файл)
-                    m_tcpClient.delegateConnect = ConnectToLogRead;
-
-                    m_tcpClient.delegateErrorConnect = errorConnect;
-
-                    //m_tcpClient.Connect("localhost", 6666);
-                    m_tcpClient.Connect(m_tableUsers.Rows[dgvUserView.SelectedRows[0].Index][c_NameFieldToConnect].ToString() + ";" + dgvUserView.SelectedRows[0].Index, 6666);
-                }
-                else
-                    ; //Обновлять нет необходимости
-            }
-            else
-                ;
-        }
-
-        protected override void startLogParse(string full_path)
+        protected void onCommand_ListDateByUser(string full_path)
         {
             FileInfo fi = new FileInfo(full_path);
             FileStream fs = fi.Open(FileMode.Open, FileAccess.Read, FileShare.Read);
             StreamReader sr = new StreamReader(fs, Encoding.GetEncoding("windows-1251"));
-
-            dgvListDatetView.SelectionChanged -= dgvDatetimeStart_SelectionChanged;
-
-            m_LogParse.Start(sr.ReadToEnd());
+            
+            m_loggingReadHandler.PerformCommandCompleted(new REQUEST(StatesMachine.ListDateByUser, null), fileToTable(sr.ReadToEnd()));
 
             sr.Close();
+        }
+
+        private DataTable fileToTable (string reader)
+        {
+            DataTable tableRes;
+            DataRow newRow;
+            string [] values;
+
+            string [] columns = { "Index", "Content" };
+
+            tableRes = new DataTable ();
+            values = reader.Split (new [] { Environment.NewLine }, StringSplitOptions.None);
+
+            for (int i = 0; i < values.Count (); i++) {
+                if (tableRes.Columns.Count == 0)
+                    columns.ToList ().ForEach (column => tableRes.Columns.Add (column, typeof (string)));
+                else
+                    ;
+
+                newRow = tableRes.NewRow ();
+                newRow.SetField (0, i);
+                newRow.SetField (1, values[i]);
+
+                tableRes.Rows.Add (newRow);
+            }
+
+            tableRes.AcceptChanges ();
+
+            return tableRes;
         }
 
         /// <summary>
@@ -335,9 +301,42 @@ namespace StatisticAnalyzer
             throw new NotImplementedException ();
         }
 
+        /// <summary>
+        /// Обработчик события выбора пользователя для формирования списка сообщений
+        /// </summary>
         protected override void dgvUserView_SelectionChanged (object sender, EventArgs e)
         {
-            throw new NotImplementedException ();
+            bool bUpdate = false;
+
+            if (!(m_tcpClient == null)) {
+                disconnect ();
+            } else
+                ;
+
+            base.dgvUserView_SelectionChanged (sender, e);
+
+            bUpdate = !(IdCurrentUserView < 0);
+
+            if (bUpdate == true) {
+                m_tcpClient = new TcpClientAsync ();
+                m_tcpClient.delegateRead = Read;
+
+                //Очистить элементы управления с данными от пред. лог-файла
+                if (IsHandleCreated/*InvokeRequired*/ == true) {
+                    BeginInvoke (new DelegateFunc (tabLoggingClearDatetimeStart));
+                    BeginInvoke (new DelegateBoolFunc (tabLoggingClearText), true);
+                } else
+                    Logging.Logg ().Error (@"PanelAnalyzer::dgvUserView_SelectionChanged () - ... BeginInvoke (TabLoggingClearDatetimeStart, TabLoggingClearText) - ...", Logging.INDEX_MESSAGE.D_001);
+
+                //Если активна 0-я вкладка (лог-файл)
+                m_tcpClient.delegateConnect = ConnectToLogRead;
+
+                m_tcpClient.delegateErrorConnect = errorConnect;
+
+                //m_tcpClient.Connect("localhost", 6666);
+                m_tcpClient.Connect ($"{m_tableUsers.Rows [IndexCurrentUserView] [c_NameFieldToConnect].ToString ()};{IndexCurrentUserView}", 6666);
+            } else
+                ;
         }
 
         class LogParse_File : LogParse

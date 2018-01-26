@@ -11,7 +11,15 @@ using ASUTP.Helper;
 
 namespace StatisticCommon
 {
-    public class HStatisticUsers : ASUTP.Helper.HUsers {
+    public struct HStatisticUser
+    {
+        public HStatisticUsers.ID_ROLES Role;
+
+        public int Id;
+    }
+
+    public class HStatisticUsers : ASUTP.Helper.HUsers
+    {
         /// <summary>
         /// Перечисление - идентификаторы групп(ролей) пользователей
         /// </summary>

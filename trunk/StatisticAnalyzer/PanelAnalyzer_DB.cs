@@ -17,13 +17,6 @@ namespace StatisticAnalyzer
         public PanelAnalyzer_DB (List<StatisticCommon.TEC> tec, Color foreColor, Color backColor)
             : base(tec, foreColor, backColor)
         {
-            m_listTEC = tec;
-
-            arrayCheckBoxModeTECComponent[(int)FormChangeMode.MODE_TECCOMPONENT.GTP].CheckedChanged += new EventHandler(checkBox_click);
-            arrayCheckBoxModeTECComponent[(int)FormChangeMode.MODE_TECCOMPONENT.PC].CheckedChanged += new EventHandler(checkBox_click);
-            arrayCheckBoxModeTECComponent[(int)FormChangeMode.MODE_TECCOMPONENT.TEC].CheckedChanged += new EventHandler(checkBox_click);
-            arrayCheckBoxModeTECComponent[(int)FormChangeMode.MODE_TECCOMPONENT.TG].CheckedChanged += new EventHandler(checkBox_click);
-            arrayCheckBoxModeTECComponent[(int)FormChangeMode.MODE_TECCOMPONENT.ANY].CheckedChanged += new EventHandler(checkBox_click);
         }
 
         #region Наследуемые методы
@@ -93,84 +86,17 @@ namespace StatisticAnalyzer
             });
         }
 
-        protected override void handlerCommandProcChecked (PanelAnalyzer.REQUEST req, DataTable tableRes)
-        {
-            int i = -1
-                , msecSleep = System.Threading.Timeout.Infinite;
-            int[] ariTags;
-            bool[] arbActives;
-            DataRow[] rowsUserMaxDatetimeWR;
-
-            if (req.State == PanelAnalyzer.REQUEST.STATE.Ok) {
-                ariTags = new int[m_tableUsers.Rows.Count];
-                arbActives = new bool [m_tableUsers.Rows.Count];
-
-                for (i = 0;
-                    (i < m_tableUsers.Rows.Count)
-                        && (m_bThreadTimerCheckedAllowed == true);
-                    i++) {
-                    ariTags[i] = -1;
-                    //Проверка активности
-                    rowsUserMaxDatetimeWR = tableRes.Select (@"[ID_USER]=" + m_tableUsers.Rows [i] [@"ID"]);
-
-                    if (rowsUserMaxDatetimeWR.Length == 0)
-                    //В течении 2-х недель нет ни одного запуска на выполнение ППО
-                        ;
-                    else {
-                        if (rowsUserMaxDatetimeWR.Length > 1) {
-                            //Ошибка
-                        } else {
-                            //Обрабатываем...
-                            ariTags[i] = int.Parse(m_tableUsers.Rows[i][@"ID"].ToString().Trim());
-                            arbActives [i] = (HDateTime.ToMoscowTimeZone (DateTime.Now) - DateTime.Parse (rowsUserMaxDatetimeWR [0] [@"MAX_DATETIME_WR"].ToString ())).TotalSeconds < 66;
-                        }
-                    }
-                }
-
-                if (Equals(arbActives, null) == false) {
-                    if (req.Key == StatesMachine.ProcCheckedState)
-                        dgvUserView.Update(ariTags, arbActives);
-                    else if (req.Key == StatesMachine.ProcCheckedFilter) {
-                        filterActived (arbActives);
-                        dgvUserView.Fill (m_tableUsers, c_list_sorted, 0);
-                    } else
-                        ;
-
-                    msecSleep = MSEC_TIMERCHECKED_STANDARD;
-                } else
-                //Нет соединения с БД...
-                    msecSleep = MSEC_TIMERCHECKED_FORCE;
-            } else
-            //Ошибка при выборке данных...
-                msecSleep = MSEC_TIMERCHECKED_FORCE;
-
-            m_timerProcChecked.Change(msecSleep, System.Threading.Timeout.Infinite);
-
-            delegateReportClear (true);
-        }
-
-        /// <summary>
-        /// Запись значений активности в CheckBox на DataGridView с пользователями
-        /// </summary>
-        /// <param name="obj">???</param>
-        protected override void procChecked(object obj)
-        {
-            delegateActionReport("Получаем список активных пользователей");
-
-            LoggingReadHandler.Command(StatesMachine.ProcCheckedState);
-        }
-
         /// <summary>
         /// Метод для получения из БД списка активных вкладок для выбранного пользователя
         /// </summary>
         /// <param name="user">Пользователь для выборки</param>
-        protected override IEnumerable<int> fill_active_tabs(int user)
+        protected override IEnumerable<int> getTabActived(int user)
         {
             List<int> listRes = new List<int> ();
 
             int err = -1;
             int iRes = -1;
-            string[] us ;
+            string[] idTabs ;
             string query = string.Empty
                 , where = string.Empty
                 , tabs = string.Empty
@@ -202,7 +128,7 @@ namespace StatisticAnalyzer
                         for (int i = 0; i < table_role0.Length; i++)
                         {
                             if ((int)table_role0[i]["ID_UNIT"] == (int)HStatisticUsers.ID_ALLOWED.PROFILE_SETTINGS_CHANGEMODE)
-                                if (IsNumberContains(table_role0[i]["VALUE"].ToString()) == true)
+                                if (!(IsNumberContains(table_role0[i]["VALUE"].ToString()) < 0))
                                     tabs += table_role0[i]["VALUE"].ToString();
                                 else
                                     ;
@@ -215,7 +141,7 @@ namespace StatisticAnalyzer
                                 else
                                     ;
 
-                                if (IsNumberContains(table_role0[i]["VALUE"].ToString()) == true)
+                                if (!(IsNumberContains(table_role0[i]["VALUE"].ToString()) < 0))
                                     tabs += table_role0[i]["VALUE"].ToString();
                                 else
                                     ;
@@ -230,7 +156,7 @@ namespace StatisticAnalyzer
                             for (int i = 0; i < table_role1.Length; i++)
                             {
                                 if ((int)table_role1[i]["ID_UNIT"] == (int)HStatisticUsers.ID_ALLOWED.PROFILE_SETTINGS_CHANGEMODE)
-                                    if (IsNumberContains(table_role1[i]["VALUE"].ToString()) == true)
+                                    if (!(IsNumberContains(table_role1[i]["VALUE"].ToString()) < 0))
                                         tabs += table_role1[i]["VALUE"].ToString();
                                     else
                                         ;
@@ -238,7 +164,7 @@ namespace StatisticAnalyzer
                                     ;
 
                                 if ((int)table_role1[i]["ID_UNIT"] == (int)HStatisticUsers.ID_ALLOWED.PROFILE_VIEW_ADDINGTABS)
-                                    if (IsNumberContains(table_role1[i]["VALUE"].ToString()) == true)
+                                    if (!(IsNumberContains(table_role1[i]["VALUE"].ToString()) < 0))
                                         tabs += table_role1[i]["VALUE"].ToString();
                                     else
                                         ;
@@ -251,28 +177,25 @@ namespace StatisticAnalyzer
                                 , Logging.INDEX_MESSAGE.NOT_SET);
 
                     //создание массива с ID вкладок
-                    us = tabs.Split(';');
+                    idTabs = tabs.Split(';');
 
-                    for (int i = 0; i < us.Length; i++)
-                    {
-                        if (IsPunctuationContains(us[i]) == true) {
+                    for (int i = 0; i < idTabs.Length; i++)
+                        if (IsPunctuationContains(idTabs[i]) == true) {
                         //разбор в случае составного идентификатора
                             string[] count;
-                            count = us[i].Split('=');
+                            count = idTabs[i].Split('=');
                             //добавление идентификатора в список
                             listRes.Add(Convert.ToInt32(count[0]));
                         } else
                             //фильтрация пустых идентификаторов
-                            if (string.IsNullOrEmpty(us[i].Trim()) == false)
-                                if (IsNumberContains(us[i]) == true)
+                            if (string.IsNullOrEmpty(idTabs[i].Trim()) == false)
+                                if (!(IsNumberContains(idTabs[i]) < 0))
                                 //добавление идентификатора в список
-                                    listRes.Add(Convert.ToInt32(us[i]));
+                                    listRes.Add(Convert.ToInt32(idTabs[i]));
                                 else
                                     ;
                             else
                                 ;
-                        
-                    }
                 } else
                 // нет записей в БД с информацией о вкладках, автоматически загружаемых при запуске для пользователя
                     ;
@@ -285,66 +208,6 @@ namespace StatisticAnalyzer
             delegateReportClear (true);
 
             return listRes;
-        }
-
-        /// <summary>
-        /// Заполнение ListBox активными вкладками
-        /// </summary>
-        /// <param name="ID_tabs">Список активных вкладок</param>
-        protected override void fillListBoxTabVisible(List<int> ID_tabs)
-        {
-            int tec_indx = 0,
-               comp_indx = 0,
-               across_indx = -1;
-            bool start = false;
-
-            for (int i = 0; i < ID_tabs.Count; i++)
-            {
-                FormChangeMode.MODE_TECCOMPONENT tec_component = TECComponentBase.Mode(ID_tabs[i]);//получение типа вкладки
-
-                if (arrayCheckBoxModeTECComponent[(int)tec_component].Checked == true)//проверка состояния фильтра для вкладки
-                    start = true;
-                else
-                    start = false;
-
-                if (start == true)
-                {
-                    if (!(m_listTEC == null))
-                        foreach (StatisticCommon.TEC t in m_listTEC)
-                        {
-                            tec_indx++;
-                            comp_indx = 0;
-
-                            if (t.m_id.ToString() == ID_tabs[i].ToString() & tec_component == FormChangeMode.MODE_TECCOMPONENT.TEC)
-                            //добавление ТЭЦ в ListBox
-                                listBoxTabVisible.Items.Add(t.name_shr);
-                            else
-                                ;
-
-                            across_indx++;
-
-                            if (t.list_TECComponents.Count > 0)
-                            {
-                                foreach (StatisticCommon.TECComponent g in t.list_TECComponents)
-                                {
-                                    comp_indx++;
-
-                                    across_indx++;
-
-                                    if (g.m_id.ToString() == ID_tabs[i].ToString())
-                                    //Добавление вкладки в ListBox
-                                        listBoxTabVisible.Items.Add($"{t.name_shr} - {g.name_shr}");
-                                    else
-                                        ;
-                                }
-                            }
-                            else
-                                ;
-                        }
-                    else
-                        ;
-                }
-            }
         }
 
         private HLoggingReadHandlerDb LoggingReadHandler
@@ -365,17 +228,6 @@ namespace StatisticAnalyzer
             public string Delimeter;
 
             public DataTable TableLogging;
-        }
-
-        /// <summary>
-        /// Старт разбора лог-сообщений
-        /// </summary>
-        /// <param name="id">ID пользователя</param>
-        protected override void startLogParse(string id)
-        {
-            dgvListDatetView.SelectionChanged -= dgvDatetimeStart_SelectionChanged;
-
-            LoggingReadHandler.Command(StatesMachine.ListDateByUser, new object [] { int.Parse(id) }, true);
         }
 
         /// <summary>
@@ -477,31 +329,28 @@ namespace StatisticAnalyzer
         /// Наличие цифр в строке
         /// </summary>
         /// <param name="input">Входная строка</param>
-        /// <returns>true-если есть</returns>
-        static bool IsNumberContains(string input)
+        /// <returns>-1 - нет, 0 - все цифры, 1 - есть, но не все</returns>
+        static int IsNumberContains(string input)
         {
-            bool bRes = false;
+            int iRes = -1;
 
-            foreach (char c in input)
-                if (Char.IsNumber(c))
-                    bRes = true;
+            int iInput = -1;
 
-            return bRes;
+            if (int.TryParse (input, out iInput) == true)
+                iRes = 0;
+            else
+                foreach (char c in input)
+                    if (Char.IsNumber (c) == true) {
+                        iRes = 1;
+
+                        break;
+                    } else
+                        ;
+
+            return iRes;
         }
 
         #region Обработчики событий
-
-        /// <summary>
-        /// Обработчик события изменения состояния CheckBox'ов
-        /// </summary>
-        protected void checkBox_click(object sender, EventArgs e)
-        {
-            listBoxTabVisible.Items.Clear();
-
-            fillListBoxTabVisible (
-                fill_active_tabs ((int)m_tableUsers.Rows [dgvUserView.SelectedRows [0].Index] [0]).ToList ()
-            );
-        }
 
         public override void LogParseExit ()
         {
@@ -520,9 +369,41 @@ namespace StatisticAnalyzer
             return new HLoggingReadHandlerDb();
         }
 
-        protected override void dgvUserStatistic_SelectionChanged (object sender, EventArgs e)
+        /// <summary>
+        /// Обновление статистики сообщений из лога за выбранный период
+        /// </summary>
+        protected override void dgvUserView_SelectionChanged (object sender, EventArgs e)
         {
-            // throw new NotImplementedException ();
+            bool bUpdate = false;
+
+            base.dgvUserView_SelectionChanged (sender, e);
+
+            bUpdate = !(IdCurrentUserView < 0);
+
+            if (bUpdate == true) {
+                //Очистить элементы управления с данными от пред. лог-файла
+                if (IsHandleCreated == true)
+                    if (InvokeRequired == true) {
+                        BeginInvoke (new DelegateFunc (tabLoggingClearDatetimeStart));
+                        BeginInvoke (new DelegateBoolFunc (tabLoggingClearText), true);
+                    } else {
+                        tabLoggingClearDatetimeStart ();
+                        tabLoggingClearText (true);
+                    } else
+                    Logging.Logg ().Error (@"FormMainAnalyzer::dgvUserStatistic_SelectionChanged () - ... BeginInvoke (TabLoggingClearDatetimeStart, TabLoggingClearText) - ...", Logging.INDEX_MESSAGE.D_001);
+
+                startLogParse (IdCurrentUserView.ToString());
+
+                DbTSQLConfigDatabase.DbConfig ().SetConnectionSettings ();
+                DbTSQLConfigDatabase.DbConfig ().Register ();
+                //Заполнение ListBox'а активными вкладками
+                fillListBoxTabVisible (
+                    getTabActived (IdCurrentUserView).ToList ()
+                );
+
+                DbTSQLConfigDatabase.DbConfig ().UnRegister ();
+            } else
+                ;
         }
 
         #endregion
