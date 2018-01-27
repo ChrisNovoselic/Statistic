@@ -14,7 +14,7 @@ namespace StatisticAnalyzer
         /// <summary>
         /// Класс для работы со строкой лог сообщений
         /// </summary>
-        protected abstract class LogParse
+        protected abstract class LogCounter
         {
             public const int INDEX_START_MESSAGE = 0;
 
@@ -34,15 +34,15 @@ namespace StatisticAnalyzer
 
             public DelegateFunc Exit;
 
-            public LogParse ()
+            public LogCounter ()
             {
                 m_semAllowed = new Semaphore (1, 1);
 
-                m_tableLog = new DataTable ("ContentLog");
+                m_tableLog = new DataTable ("LogCounter");
                 DataColumn [] cols = new DataColumn [] {
                         new DataColumn("DATE_TIME", typeof(DateTime)),
                         new DataColumn("TYPE", typeof(Int32)),
-                        new DataColumn ("MESSAGE", typeof (string))
+                        new DataColumn ("COUNT_MESSAGE", typeof (string))
                     };
                 m_tableLog.Columns.AddRange (cols);
 
@@ -105,16 +105,9 @@ namespace StatisticAnalyzer
             /// </summary>
             protected virtual void thread_Proc (object data)
             {
-                Console.WriteLine ("Окончание обработки лог-файла. Обработано строк: {0}", (int)data);
+                Console.WriteLine ("Окончание подсчета сообщений каждого из типов. Обработано типов: {0}", (int)data);
 
                 Exit ();
-            }
-
-            /// <summary>
-            /// Очистка
-            /// </summary>
-            public void Clear ()
-            {//TODO:
             }
 
             /// <summary>

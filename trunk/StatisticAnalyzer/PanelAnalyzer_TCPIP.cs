@@ -34,7 +34,7 @@ namespace StatisticAnalyzer
             throw new NotImplementedException();
         }
 
-        protected override LogParse newLogParse() { return new LogParse_File(); }
+        protected override LogCounter newLogCounter() { return new LogParse_File(); }
 
         /// <summary>
         /// Обмен данными (чтение) с приложением "Статистика" пользователя
@@ -151,20 +151,24 @@ namespace StatisticAnalyzer
             m_tcpClient.Write("TAB_VISIBLE=?");
         }
 
-        public override void Start()
+        private void onListUserReceived(DataTable tableUsers)
         {
+            int i = -1;
+
+            base.Start();
+
             m_listTCPClientUsers = new List<TcpClientAsync>();
-            for (int i = 0; i < m_tableUsers.Rows.Count; i++)
-            {
+
+            tableUsers.Rows.Cast<DataRow>().ToList().ForEach(r => {
                 //Проверка активности
                 m_listTCPClientUsers.Add(new TcpClientAsync());
+                i = m_listTCPClientUsers.Count - 1;
+
                 m_listTCPClientUsers[i].delegateConnect = ConnectToChecked;
                 m_listTCPClientUsers[i].delegateErrorConnect = errorConnect;
                 m_listTCPClientUsers[i].delegateRead = Read;
                 //m_listTCPClientUsers[i].Connect (m_tableUsers.Rows[i][NameFieldToConnect].ToString(), 6666);
-            }
-
-            base.Start();
+            });
         }
 
         protected override bool [] procChecked ()
@@ -178,14 +182,19 @@ namespace StatisticAnalyzer
         /// <param name="obj">???</param>
         protected void onCommand_ProcCheckState(object obj)
         {
-            int i = -1;
+            int i = -1
+                , indx = -1;
+            string name_pc = string.Empty;
 
             for (i = 0;
-                (i < m_tableUsers.Rows.Count)
+                (i < m_listTCPClientUsers.Count)
                     && (m_bThreadTimerCheckedAllowed == true);
-                i++)
+                i++) {
+                //name_pc = 
+                //indx = 
                 //Проверка активности
-                m_listTCPClientUsers[i].Connect(m_tableUsers.Rows[i][c_NameFieldToConnect].ToString() + ";" + i, 6666);
+                m_listTCPClientUsers[i].Connect($"{name_pc};{indx}", 6666);
+            }
         }
 
         public override void Stop()
@@ -251,25 +260,12 @@ namespace StatisticAnalyzer
             return tableRes;
         }
 
-        /// <summary>
-        /// Выборка лог-сообщений по параметрам
-        /// </summary>
-        /// <param name="id_user">Идентификатор пользователя</param>
-        /// <param name="type">Тип сообщений</param>
-        /// <param name="beg">Начало периода</param>
-        /// <param name="end">Окончание периода</param>
-        /// <param name="funcResult">Функция обратного вызова с массивом сообщений</param>
-        protected override void selectLogMessage(int id_user, string type, DateTime beg, DateTime end, Action<DataRow[]> funcResult)
-        {
-            funcResult (m_LogParse.ByDate(string.Empty, beg, end));
-        }
-
         protected override string getTabLoggingTextRow(DataRow r)
         {
             string strRes = string.Empty;
 
             if (Convert.ToInt32(r["TYPE"]) == (int)LogParse_File.TYPE_LOGMESSAGE.DETAIL)
-                strRes = "    " + r["MESSAGE"].ToString() + Environment.NewLine;
+                strRes = string.Empty.PadLeft(4) + r["MESSAGE"].ToString() + Environment.NewLine;
             else
                 strRes = "[" + r["DATE_TIME"] + "]: " + r["MESSAGE"].ToString() + Environment.NewLine;
 
@@ -307,6 +303,7 @@ namespace StatisticAnalyzer
         protected override void dgvUserView_SelectionChanged (object sender, EventArgs e)
         {
             bool bUpdate = false;
+            string name_pc = string.Empty;
 
             if (!(m_tcpClient == null)) {
                 disconnect ();
@@ -323,8 +320,8 @@ namespace StatisticAnalyzer
 
                 //Очистить элементы управления с данными от пред. лог-файла
                 if (IsHandleCreated/*InvokeRequired*/ == true) {
-                    BeginInvoke (new DelegateFunc (tabLoggingClearDatetimeStart));
-                    BeginInvoke (new DelegateBoolFunc (tabLoggingClearText), true);
+                    BeginInvoke (new DelegateFunc (clearListDateView));
+                    BeginInvoke (new DelegateBoolFunc (clearMessageView), true);
                 } else
                     Logging.Logg ().Error (@"PanelAnalyzer::dgvUserView_SelectionChanged () - ... BeginInvoke (TabLoggingClearDatetimeStart, TabLoggingClearText) - ...", Logging.INDEX_MESSAGE.D_001);
 
@@ -333,13 +330,14 @@ namespace StatisticAnalyzer
 
                 m_tcpClient.delegateErrorConnect = errorConnect;
 
-                //m_tcpClient.Connect("localhost", 6666);
-                m_tcpClient.Connect ($"{m_tableUsers.Rows [IndexCurrentUserView] [c_NameFieldToConnect].ToString ()};{IndexCurrentUserView}", 6666);
+                //name_pc = "localhost"; //??? c_NameFieldToConnect
+                //m_tcpClient.Connect(name_pc, 6666);
+                m_tcpClient.Connect ($"{name_pc};{IndexCurrentUserView}", 6666);
             } else
                 ;
         }
 
-        class LogParse_File : LogParse
+        class LogParse_File : LogCounter
         {
             public enum TYPE_LOGMESSAGE
             {

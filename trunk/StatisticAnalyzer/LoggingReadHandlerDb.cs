@@ -70,11 +70,11 @@ namespace StatisticAnalyzer
                                         ;
                                     break;
                                 case StatesMachine.ListDateByUser:
-                                    strRes = @"SELECT DATEPART (DD, [DATETIME_WR]) as DD, DATEPART (MM, [DATETIME_WR]) as MM, DATEPART (YYYY, [DATETIME_WR]) as [YYYY], COUNT(*) as CNT"
+                                    strRes = @"SELECT DATEADD(DAY, DATEDIFF(DAY, 0, [DATETIME_WR]), 0) as [DATE_TIME], COUNT(*) as [CNT]" // DATEPART (DD, [DATETIME_WR]) as DD, DATEPART (MM, [DATETIME_WR]) as MM, DATEPART (YYYY, [DATETIME_WR]) as [YYYY]
                                         + @" FROM [dbo].[logging]"
                                         + @" WHERE [ID_USER]=" + (int)Args [0]
-                                        + @" GROUP BY DATEPART (DD, [DATETIME_WR]), DATEPART (MM, [DATETIME_WR]), DATEPART (YYYY, [DATETIME_WR])"
-                                        + @" ORDER BY [DD]";
+                                        + @" GROUP BY DATEADD(DAY, DATEDIFF(DAY, 0, [DATETIME_WR]), 0)" // DATEPART (DD, [DATETIME_WR]), DATEPART (MM, [DATETIME_WR]), DATEPART (YYYY, [DATETIME_WR])
+                                        + @" ORDER BY [DATE_TIME]";
                                     break;
                                 case StatesMachine.CounterToTypeByFilter:
                                     bool byDate = !((DateTime)Args [1]).Equals (DateTime.MaxValue)

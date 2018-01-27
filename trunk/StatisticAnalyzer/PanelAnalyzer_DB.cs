@@ -25,7 +25,7 @@ namespace StatisticAnalyzer
         /// Метод для получения лога
         /// </summary>
         /// <returns>Возвращает лог сообщений</returns>
-        protected override LogParse newLogParse() { return new LogParse_DB(); }
+        protected override LogCounter newLogCounter() { return new LogCounter_DB(); }
 
         /// <summary>
         /// Запуск таймера обновления данных
@@ -47,7 +47,7 @@ namespace StatisticAnalyzer
                 // "-1" - значит будет назначени идентификатор из БД
                     LoggingReadHandler.SetConnectionSettings(new ConnectionSettings (tblConnSettMainDB.Rows [0], -1));
                     LoggingReadHandler.SetDelegateReport(delegateErrorReport, delegateWarningReport, delegateActionReport, delegateReportClear);
-                    LoggingReadHandler.SetDelegateWait(delegateStartWait, delegateStopWait, delegate () { });
+                    LoggingReadHandler.SetDelegateWait(delegateStartWait, delegateStopWait, delegate () { /* ничего не делаем */ });
                     LoggingReadHandler.StartDbInterfaces();
                     LoggingReadHandler.Start ();
 
@@ -74,13 +74,11 @@ namespace StatisticAnalyzer
                 filldgvLogMessages(tableLogging.Select(string.Empty, @"DATE_TIME") as DataRow[]);
             } else
                 ;
-
-            (m_LogParse as LogParse_DB).SetDataTable(tableLogging);
         }
 
         protected override void handlerCommandListDateByUser (PanelAnalyzer.REQUEST req, DataTable tableRes)
         {
-            m_LogParse.Start(new PARAM_THREAD_PROC {
+            m_LogCounter.Start(new PARAM_THREAD_PROC {
                 Delimeter = s_chDelimeters[(int)INDEX_DELIMETER.PART]
                 , TableLogging = tableRes
             });
@@ -223,32 +221,11 @@ namespace StatisticAnalyzer
         /// </summary>
         protected override void disconnect() { }
 
-        struct PARAM_THREAD_PROC
+        private struct PARAM_THREAD_PROC
         {
             public string Delimeter;
 
             public DataTable TableLogging;
-        }
-
-        /// <summary>
-        /// Выборка лог-сообщений по параметрам
-        /// </summary>
-        /// <param name="id_user">Идентификатор пользователя</param>
-        /// <param name="type">Тип сообщений</param>
-        /// <param name="beg">Начало периода</param>
-        /// <param name="end">Окончание периода</param>
-        /// <returns>Массив сообщений</returns>
-        protected override void selectLogMessage(int id_user, string type, DateTime beg, DateTime end, Action<DataRow[]>funcResult)
-        {
-            int iRes = -1;
-
-            //where = addingWhereTypeMessage(@"ID_LOGMSG", strIndxType);
-            //if (where.Equals(string.Empty) == false)
-            //    query += " AND " + where;
-            //else
-            //    ;
-
-            LoggingReadHandler.Command(StatesMachine.ListMessageToUserByDate, new object [] { id_user, type, beg, end }, false);
         }
 
         /// <summary>
@@ -295,21 +272,6 @@ namespace StatisticAnalyzer
         }
 
         /// <summary>
-        /// Подключение к вкладке
-        /// </summary>
-        /// <param name="id">ID пользователя</param>
-        private void connectToTab(int id)
-        {
-        }
-
-        /// <summary>
-        /// Ошибка подключения
-        /// </summary>
-        private void errorReadLogging()
-        {
-        }
-
-        /// <summary>
         /// Наличие пунктуации в строке
         /// </summary>
         /// <param name="input">Входная строка</param>
@@ -352,9 +314,9 @@ namespace StatisticAnalyzer
 
         #region Обработчики событий
 
-        public override void LogParseExit ()
+        public override void LogCounter_ThreadExit ()
         {
-            base.LogParseExit ();
+            base.LogCounter_ThreadExit ();
         }
 
         protected override bool [] procChecked ()
@@ -384,11 +346,11 @@ namespace StatisticAnalyzer
                 //Очистить элементы управления с данными от пред. лог-файла
                 if (IsHandleCreated == true)
                     if (InvokeRequired == true) {
-                        BeginInvoke (new DelegateFunc (tabLoggingClearDatetimeStart));
-                        BeginInvoke (new DelegateBoolFunc (tabLoggingClearText), true);
+                        BeginInvoke (new Action (clearListDateView));
+                        BeginInvoke (new Action<bool> (clearMessageView), true);
                     } else {
-                        tabLoggingClearDatetimeStart ();
-                        tabLoggingClearText (true);
+                        clearListDateView ();
+                        clearMessageView (true);
                     } else
                     Logging.Logg ().Error (@"FormMainAnalyzer::dgvUserStatistic_SelectionChanged () - ... BeginInvoke (TabLoggingClearDatetimeStart, TabLoggingClearText) - ...", Logging.INDEX_MESSAGE.D_001);
 
@@ -411,12 +373,12 @@ namespace StatisticAnalyzer
         /// <summary>
         /// Класс для получения лог сообщений из БД
         /// </summary>
-        private class LogParse_DB : LogParse
+        private class LogCounter_DB : LogCounter
         {
             /// <summary>
             /// Список идентификаторов типов сообщений
             /// </summary>
-            public enum INDEX_LOGMSG { START = LogParse.INDEX_START_MESSAGE, STOP
+            public enum INDEX_LOGMSG { START = LogCounter.INDEX_START_MESSAGE, STOP
                 , ACTION, DEBUG, EXCEPTION
                 , EXCEPTION_DB
                 , ERROR
@@ -425,7 +387,7 @@ namespace StatisticAnalyzer
                     , COUNT_TYPE_LOGMESSAGE
             };
 
-            public LogParse_DB()
+            public LogCounter_DB()
                 : base()
             {
                 s_DESC_LOGMESSAGE = new string[] { "Запуск", "Выход",
@@ -450,40 +412,19 @@ namespace StatisticAnalyzer
             /// <param name="data">Объект с данными для разборки методом</param>
             protected override void thread_Proc(object data)
             {
-                int err = -1;
-                string text;
-                DataTable tblDatetimeStart;
-                DateTime dtStart;
+                DataTable tableListDate;
+                DateTime dateStart;
 
-                tblDatetimeStart = ((PARAM_THREAD_PROC)data).TableLogging;
+                tableListDate = ((PARAM_THREAD_PROC)data).TableLogging;
 
-                int cnt = 0;
                 //перебор значений и добовление их в строку
-                for (int i = 0; i < tblDatetimeStart.Rows.Count; i++)
+                for (int i = 0; i < tableListDate.Rows.Count; i++)
                 {
-                    dtStart = new DateTime(Int32.Parse(tblDatetimeStart.Rows[i][@"YYYY"].ToString())
-                        , Int32.Parse(tblDatetimeStart.Rows[i][@"MM"].ToString())
-                        , Int32.Parse(tblDatetimeStart.Rows[i][@"DD"].ToString()));
-                    m_tableLog.Rows.Add(new object[] { dtStart, s_ID_LOGMESSAGES[(int)INDEX_LOGMSG.START], ProgramBase.MessageWellcome });
-
-                    cnt += Int32.Parse(tblDatetimeStart.Rows[i][@"CNT"].ToString());
+                    dateStart = (DateTime)tableListDate.Rows[i]["DATE_TIME"];
+                    m_tableLog.Rows.Add(new object[] { dateStart, s_ID_LOGMESSAGES[(int)INDEX_LOGMSG.START], ProgramBase.MessageWellcome });
                 }
                 //запрос разбора строки с лог-сообщениями
-                base.thread_Proc(cnt);
-            }
-
-            /// <summary>
-            /// Выборка лог-сообщений
-            /// </summary>
-            /// <param name="iListenerId"></param>
-            /// <param name="strIndxType">Индекс типа сообщения</param>
-            /// <param name="beg">Начало периода</param>
-            /// <param name="end">Оончание периода</param>
-            /// <param name="res">Массив строк лог-сообщений</param>
-            public void SetDataTable(DataTable tableLogging)
-            {
-                m_tableLog.Clear();//очистка таблицы с лог-сообщениями
-                m_tableLog = tableLogging.Copy ();
+                base.thread_Proc(tableListDate.Rows.Count);
             }
         }
     }
