@@ -277,7 +277,7 @@ namespace StatisticAnalyzer
             throw new NotImplementedException ();
         }
 
-        protected override void handlerCommandCounterToTypeByFilter (REQUEST req, DataTable tableRes)
+        protected override void handlerCommandCounterToTypeMessageByDate(REQUEST req, DataTable tableRes)
         {
             throw new NotImplementedException ();
         }

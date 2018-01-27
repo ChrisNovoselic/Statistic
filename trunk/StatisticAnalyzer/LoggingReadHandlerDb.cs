@@ -76,7 +76,7 @@ namespace StatisticAnalyzer
                                         + @" GROUP BY DATEADD(DAY, DATEDIFF(DAY, 0, [DATETIME_WR]), 0)" // DATEPART (DD, [DATETIME_WR]), DATEPART (MM, [DATETIME_WR]), DATEPART (YYYY, [DATETIME_WR])
                                         + @" ORDER BY [DATE_TIME]";
                                     break;
-                                case StatesMachine.CounterToTypeByFilter:
+                                case StatesMachine.CounterToTypeMessageByDate:
                                     bool byDate = !((DateTime)Args [1]).Equals (DateTime.MaxValue)
                                         , byUser = !string.IsNullOrEmpty (((string)Args [3]).Trim ());
 
@@ -222,7 +222,7 @@ namespace StatisticAnalyzer
                     case StatesMachine.ProcCheckedState:
                     case StatesMachine.ListMessageToUserByDate:
                     case StatesMachine.ListDateByUser:
-                    case StatesMachine.CounterToTypeByFilter:
+                    case StatesMachine.CounterToTypeMessageByDate:
                         iRes = response (m_IdListenerCurrent, out error, out outobj);
                         break;
                     default:
@@ -269,7 +269,7 @@ namespace StatisticAnalyzer
                     case StatesMachine.ProcCheckedState:
                     case StatesMachine.ListMessageToUserByDate:
                     case StatesMachine.ListDateByUser:
-                    case StatesMachine.CounterToTypeByFilter:
+                    case StatesMachine.CounterToTypeMessageByDate:
                         req = getFirstRequst (stateMachine);
                         if (req.IsEmpty == false) {
                             Request (ListenerIdMainDb, req.Query);
@@ -307,7 +307,7 @@ namespace StatisticAnalyzer
                     case StatesMachine.ProcCheckedState:
                     case StatesMachine.ListMessageToUserByDate:
                     case StatesMachine.ListDateByUser:
-                    case StatesMachine.CounterToTypeByFilter:
+                    case StatesMachine.CounterToTypeMessageByDate:
                         func_Completed("StateResponse", (StatesMachine)state, table, iRes);
                         break;
                     default:

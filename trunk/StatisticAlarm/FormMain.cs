@@ -185,7 +185,7 @@ namespace StatisticAlarm
                         break;
                 }
                 //Отменить регистрацию соединения с БД_конфигурации
-                DbSources.Sources().UnRegister();
+                DbTSQLConfigDatabase.DbConfig().UnRegister();
             }
             else
             {//Файла с параметрами соединения нет совсем или считанные параметры соединения не валидны
@@ -388,7 +388,7 @@ namespace StatisticAlarm
                 || (dlgRes == DialogResult.Yes))
             {
                 //??? Остановить панель
-                m_panelAlarm.Stop();
+                m_panelAlarm?.Stop();
 
                 bAbort = Initialize(out msg);
             }

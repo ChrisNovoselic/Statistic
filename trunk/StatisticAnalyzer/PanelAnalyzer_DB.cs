@@ -61,7 +61,7 @@ namespace StatisticAnalyzer
             DbTSQLConfigDatabase.DbConfig ().UnRegister ();
         }
 
-        protected override void handlerCommandCounterToTypeByFilter (PanelAnalyzer.REQUEST req, DataTable tableRes)
+        protected override void handlerCommandCounterToTypeMessageByDate(PanelAnalyzer.REQUEST req, DataTable tableRes)
         {
             m_dictDataGridViewLogCounter [(DATAGRIDVIEW_LOGCOUNTER)req.Args [0]].Fill (tableRes);
 
@@ -268,7 +268,7 @@ namespace StatisticAnalyzer
         /// <param name="users">Список пользователей</param>
         protected override void updateCounter(DATAGRIDVIEW_LOGCOUNTER tag, DateTime start_date, DateTime end_date, string users)
         {
-            LoggingReadHandler.Command (StatesMachine.CounterToTypeByFilter, new object [] { tag, start_date, end_date, users }, false);
+            LoggingReadHandler.Command (StatesMachine.CounterToTypeMessageByDate, new object [] { tag, start_date, end_date, users }, false);
         }
 
         /// <summary>

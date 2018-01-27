@@ -233,7 +233,7 @@ namespace CommonAux
                 || (dlgRes == DialogResult.Yes))
             {
                 //??? Остановить панель
-                m_panel.Stop();
+                m_panel?.Stop();
 
                 bAbort = InitializePanel(out msg);
             }

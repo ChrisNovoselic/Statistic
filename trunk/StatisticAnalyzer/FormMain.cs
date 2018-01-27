@@ -18,11 +18,9 @@ using System.Text;
 using System.Threading;
 using System.Windows.Forms;
 
-
-
 namespace StatisticAnalyzer
 {
-    public abstract partial class FormMain : /*Form //FormMainBase//:*/ ASUTP.Forms.FormMainBaseWithStatusStrip {
+    public abstract partial class FormMain : /*Form //FormMainBase// ASUTP.Forms.FormMainBaseWithStatusStrip// */ FormMainStatistic {
         /// <summary>
         /// Панель - единственная дочерняя по отношению к главной форме
         ///  , и единственная родительская по отношению к рабочей панели
@@ -271,7 +269,7 @@ namespace StatisticAnalyzer
                 || (dlgRes == DialogResult.Yes))
             {
                 //??? Остановить панель
-                m_panel.Stop();
+                m_panel?.Stop();
 
                 bAbort = initialize(out msg);
             }

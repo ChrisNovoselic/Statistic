@@ -36,7 +36,7 @@ namespace StatisticAnalyzer
             , ProcCheckedFilter
             , ListMessageToUserByDate
             , ListDateByUser
-            , CounterToTypeByFilter
+            , CounterToTypeMessageByDate
             , TODO
         }
 
@@ -134,7 +134,7 @@ namespace StatisticAnalyzer
                     case StatesMachine.ListDateByUser:
                         strRes = $"IdUser={Args [0]}";
                         break;
-                    case StatesMachine.CounterToTypeByFilter:
+                    case StatesMachine.CounterToTypeMessageByDate:
                         strRes = $"Tag={((DATAGRIDVIEW_LOGCOUNTER)Args [0]).ToString ()}, Period=[{(DateTime)Args [1]}, {(DateTime)Args [2]}], Users={Args [3]}";
                         break;
                     default:
@@ -154,7 +154,7 @@ namespace StatisticAnalyzer
                 case StatesMachine.ProcCheckedFilter:
                 case StatesMachine.ListMessageToUserByDate:
                 case StatesMachine.ListDateByUser:
-                case StatesMachine.CounterToTypeByFilter:
+                case StatesMachine.CounterToTypeMessageByDate:
                     _handlers [req.Key] (req, tableRes);
                     break;
                 default:
@@ -163,7 +163,7 @@ namespace StatisticAnalyzer
             }
         }
 
-        protected abstract void handlerCommandCounterToTypeByFilter (PanelAnalyzer.REQUEST req, DataTable tableRes);
+        protected abstract void handlerCommandCounterToTypeMessageByDate(PanelAnalyzer.REQUEST req, DataTable tableRes);
 
         protected abstract void handlerCommandListMessageToUserByDate (PanelAnalyzer.REQUEST req, DataTable tableLogging);
 
@@ -805,7 +805,7 @@ namespace StatisticAnalyzer
             this.dgvFilterRoleStatistic.RowTemplate.Resizable = System.Windows.Forms.DataGridViewTriState.False;
             this.dgvFilterRoleStatistic.SelectionMode = System.Windows.Forms.DataGridViewSelectionMode.FullRowSelect;
             //this.dgvFilterRoles.Size = new System.Drawing.Size(190, 111);
-            this.dgvFilterRoleStatistic.CellClick += new System.Windows.Forms.DataGridViewCellEventHandler(this.dgvFilterRoleView_CellClick);
+            this.dgvFilterRoleStatistic.CellClick += new System.Windows.Forms.DataGridViewCellEventHandler(this.dgvFilterRoleStatistic_CellClick);
 
             i = 0;
             this.dgvFilterRoleStatistic.Columns[i].Frozen = true;
@@ -840,6 +840,7 @@ namespace StatisticAnalyzer
             this.StartCalendar.Name = "StartCalendar";
             this.StartCalendar.Dock = DockStyle.Fill;
             //this.listUser.TabIndex = 4;
+            //this.StartCalendar.Value = DateTime.Now.Date.AddDays(-1);
             this.StartCalendar.ValueChanged += new System.EventHandler(this.startCalendar_ChangeValue);
 
             #endregion
@@ -1097,7 +1098,7 @@ namespace StatisticAnalyzer
                 , { StatesMachine.ProcCheckedFilter, handlerCommandProcChecked }
                 , { StatesMachine.ListMessageToUserByDate, handlerCommandListMessageToUserByDate }
                 , { StatesMachine.ListDateByUser, handlerCommandListDateByUser }
-                , { StatesMachine.CounterToTypeByFilter, handlerCommandCounterToTypeByFilter }
+                , { StatesMachine.CounterToTypeMessageByDate, handlerCommandCounterToTypeMessageByDate }
             };
 
             m_filterView = new Filter ();
@@ -1211,8 +1212,8 @@ namespace StatisticAnalyzer
                     , { HStatisticUsers.ID_ROLES.MASHINIST, true }
                     , { HStatisticUsers.ID_ROLES.LK_DISP, true }
                 };
-
-                Actived = CheckState.Indeterminate;
+                // отображать все
+                Actived = CheckState.Checked;
             }
         }
 
@@ -1312,9 +1313,7 @@ namespace StatisticAnalyzer
                 dgvUserStatistic.Fill (tableOut, @"DESCRIPTION", err, true);
                 dgvUserView.Fill (tableOut, @"DESCRIPTION", err);
 
-                //m_tableUsers_stat = m_tableUsers.Copy ();
-                //m_tableUsers_unfiltered = m_tableUsers.Copy ();
-                //m_tableUsers_stat_unfiltered = m_tableUsers.Copy ();
+                //this.StartCalendar.Value = DateTime.Now.Date.AddDays(-1);
             } else
                 throw new Exception("PanelAnalyzer::Start () - нет соединения с БД конфигурации...");
 
@@ -1441,8 +1440,11 @@ namespace StatisticAnalyzer
         void TabLoggingAppendText(object data)
         {
             HTabLoggingAppendTextPars tlatPars;
-            DateTime start_date
-                , end_date;
+            int idTypeMessage = -1
+                , iNewRow = -1;
+            Dictionary<int, bool> dictTypeChecked;
+            //DateTime start_date
+            //    , end_date;
 
             try
             {
@@ -1458,17 +1460,8 @@ namespace StatisticAnalyzer
                 }
                 else
                 {
-                    //создание списка с идентификаторами типов сообщений
-                    List<int> listIdTypeMessages = LogCounter.s_ID_LOGMESSAGES.ToList();
-
                     //Получение массива состояний CheckBox'ов на DataGridView с типами сообщений
-                    bool[] arCheckedTypeMessages = new bool[dgvTypeToView.Rows.Count];
-                    List<bool> check = new List<bool>();
-                    check = dgvTypeToView.Checked();
-                    for (int i = 0; i < dgvTypeToView.Rows.Count; i++)
-                    {
-                        arCheckedTypeMessages[i] = check[i];
-                    }
+                    dictTypeChecked = dgvTypeToView.Checked();
                     //Преобразование строки в массив строк с сообщениями
                     string[] messages = tlatPars.rows.Split(new string[] { s_chDelimeters[(int)INDEX_DELIMETER.ROW] }, StringSplitOptions.None);
                     string[] parts;
@@ -1477,20 +1470,18 @@ namespace StatisticAnalyzer
                     //Помещение массива строк с сообщениями в DataGridView с сообщениями
                     foreach (string text in messages) {
                         parts = text.Split(new string[] { s_chDelimeters[(int)INDEX_DELIMETER.PART] }, StringSplitOptions.None);
-                        indxTypeMessage = listIdTypeMessages.IndexOf(Int32.Parse(parts[1]));
+                        idTypeMessage = Int32.Parse(parts[1]);
 
+                        iNewRow = dgvMessageView.Rows.Add(parts);
+                        dgvMessageView.Rows[iNewRow].Tag = idTypeMessage;
                         //Фильтрация сообщений в зависимости от включенных CheckBox'ов в DataGridView с типами сообщений
-                        if (arCheckedTypeMessages[indxTypeMessage] == true)
-                            dgvMessageView.Rows.Add(parts);
-                        else
-                            ;
+                        dgvMessageView.Rows[iNewRow].Visible = dictTypeChecked[idTypeMessage];
                     }
 
-                    start_date = DateTime.Parse(dgvListDateView.Rows[m_prevListDateViewRowIndex].Cells[1].Value.ToString());
-                    end_date = start_date.AddDays(1);
-                    check.Clear();
+                    //start_date = DateTime.Parse(dgvListDateView.Rows[m_prevListDateViewRowIndex].Cells[1].Value.ToString());
+                    //end_date = start_date.AddDays(1);
 
-                    updateCounter(DATAGRIDVIEW_LOGCOUNTER.TYPE_TO_VIEW, start_date, end_date, get_users(dgvUserView, false));
+                    //updateCounter(DATAGRIDVIEW_LOGCOUNTER.TYPE_TO_VIEW, start_date, end_date, get_users(dgvUserView, false));
                 }
 
                 delegateReportClear(true);
@@ -1708,15 +1699,18 @@ namespace StatisticAnalyzer
         /// Старт обновления DataGridView с лог-сообщениями 
         /// </summary>
         /// <param name="bClearTypeMessageCounter">Флаг очистки DataGridView с лог-сообщениями </param>
-        private void startFilldgvLogMessages(bool bClearTypeMessageCounter)
+        private void applyFilterLogMessages()
         {
-            clearMessageView(bClearTypeMessageCounter);
+            //Thread threadApplyFilterLogMessage = new Thread(new ParameterizedThreadStart ((obj) => {
+                Dictionary<int, bool> dictChecked;
 
-            Thread threadFilldgvLogMessages = new Thread(new ParameterizedThreadStart ((obj) => {
-                filldgvLogMessages (m_LogCounter.Sort ("DATE_TIME"));
-            }));
-            threadFilldgvLogMessages.IsBackground = true;
-            threadFilldgvLogMessages.Start();
+                dictChecked = dgvTypeToView.Checked();
+                dgvMessageView.Rows.Cast<DataGridViewRow>().ToList().ForEach(r => {
+                    r.Visible = dictChecked[(int)r.Tag];
+                });
+            //}));
+            //threadApplyFilterLogMessage.IsBackground = true;
+            //threadApplyFilterLogMessage.Start();
         }
 
         #endregion
@@ -1839,7 +1833,7 @@ namespace StatisticAnalyzer
             {
                 dgvTypeToView.Rows[e.RowIndex].Cells[0].Value = !bool.Parse(dgvTypeToView.Rows[e.RowIndex].Cells[0].Value.ToString());
 
-                startFilldgvLogMessages(false);
+                applyFilterLogMessages();
             }
             else
                 ;
@@ -1871,6 +1865,11 @@ namespace StatisticAnalyzer
                 m_prevListDateViewRowIndex = rowIndex;
 
                 startSelectdgvLogMessages(true);
+
+                updateCounter(DATAGRIDVIEW_LOGCOUNTER.TYPE_TO_VIEW
+                    , (DateTime)dgvListDateView.Rows[rowIndex].Cells[1].Value
+                    , ((DateTime)dgvListDateView.Rows[rowIndex].Cells[1].Value).AddDays(1)
+                    , IdCurrentUserView.ToString());
             } else
                 m_prevListDateViewRowIndex = -1;
         }
@@ -1898,7 +1897,8 @@ namespace StatisticAnalyzer
                 //перебор строк таблицы
                 for (i = 0; i < dgv_user.Rows.Count; i++)
                     //сравнение состояния CheckBox'а
-                    if (bool.Parse (dgv_user.Rows [i].Cells [0].Value.ToString ()) == true) {
+                    if ((dgv_user.Rows[i].Visible == true)
+                        && (bool.Parse(dgv_user.Rows[i].Cells[0].Value.ToString()) == true)) {
                         if (list_user.Equals (string.Empty) == true)
                             list_user = " ";
                         else
@@ -1997,9 +1997,20 @@ namespace StatisticAnalyzer
         /// </summary>
         private void dgvFilterRoleStatistic_CellClick (object sender, DataGridViewCellEventArgs e)
         {
-            (sender as DataGridView).Rows.Cast<DataGridViewRow>().ToList().ForEach(r => {
+            (sender as DataGridView).Rows[e.RowIndex].Cells[0].Value =
+                !(bool)(sender as DataGridView).Rows[e.RowIndex].Cells[0].Value;
+            m_filterStatistic.Set((HStatisticUsers.ID_ROLES)(sender as DataGridView).Rows[e.RowIndex].Tag
+                , (bool)(sender as DataGridView).Rows[e.RowIndex].Cells[0].Value);
+
+            (dgvUserStatistic as DataGridView).Rows.Cast<DataGridViewRow>().ToList().ForEach(r => {
                 r.Visible = m_filterStatistic.IsAllowedRoles.Contains(((HStatisticUser)r.Tag).Role);
             });
+
+            //TODO: обновить статистику
+            updateCounter(DATAGRIDVIEW_LOGCOUNTER.TYPE_TO_STATISTIC
+                , HDateTime.ToMoscowTimeZone(StartCalendar.Value.Date)
+                , HDateTime.ToMoscowTimeZone(EndCalendar.Value.Date)
+                , get_users(dgvUserStatistic, true));
         }
 
         /// <summary>
@@ -2240,21 +2251,21 @@ namespace StatisticAnalyzer
             }
 
             /// <summary>
-            /// Возвращает список состояния CheckBox'ов
+            /// Возвращает словарь с парами значений: идентификатор типа сообщений, признак для учета в фильтре
             /// </summary>
             /// <return>Возвращает список состояния CheckBox'ов</return>
-            public List<bool> Checked()
+            public Dictionary<int, bool> Checked()
             {
-                List<bool> listRes = new List<bool>();
+                Dictionary<int, bool> dictRes = new Dictionary<int, bool>();
 
                 if (_type == TYPE.WITH_CHECKBOX)
                     for (int i = 0; i < this.Rows.Count; i++)
                     //добавление состояния CheckBox'а в список
-                        listRes.Add((bool)this.Rows[i].Cells[lastIndex - 2].Value);
+                        dictRes.Add((int)Rows[i].Tag, (bool)this.Rows[i].Cells[lastIndex - 2].Value);
                 else
                     ;
 
-                return listRes;
+                return dictRes;
             }
 
             /// <summary>

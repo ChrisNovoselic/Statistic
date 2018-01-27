@@ -242,7 +242,7 @@ namespace StatisticDiagnostic
                 || (dlgRes == DialogResult.Yes))
             {
                 //??? Остановить панель
-                m_panel.Stop();
+                m_panel?.Stop();
 
                 bAbort = initialize(out msg);
             }

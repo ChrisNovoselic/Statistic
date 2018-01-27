@@ -612,8 +612,8 @@ namespace StatisticAlarm
                     ClearValues();
                     ClearStates();
 
-                    states.Add((int)StatesMachine.CurrentTime);
-                    states.Add((int)StatesMachine.ListEvents);
+                    AddState((int)StatesMachine.CurrentTime);
+                    AddState((int)StatesMachine.ListEvents);
 
                     Run(@"ViewAlarm.HHandlerDb::Refresh");
                 }
@@ -632,8 +632,8 @@ namespace StatisticAlarm
 
                     m_objArgument = id;
 
-                    states.Add((int)StatesMachine.CurrentTime);
-                    states.Add((int)StatesMachine.EventDetail);
+                    AddState((int)StatesMachine.CurrentTime);
+                    AddState((int)StatesMachine.EventDetail);
 
                     Run(@"ViewAlarm::Detail");
                 }
@@ -652,9 +652,9 @@ namespace StatisticAlarm
 
                     m_objArgument = ev;
 
-                    states.Add((int)StatesMachine.CurrentTime);
-                    states.Add((int)StatesMachine.InsertEventMain);
-                    states.Add((int)StatesMachine.InsertEventDetail);
+                    AddState((int)StatesMachine.CurrentTime);
+                    AddState((int)StatesMachine.InsertEventMain);
+                    AddState((int)StatesMachine.InsertEventDetail);
 
                     Run(@"ViewAlarm::Insert");
                 }
@@ -669,8 +669,8 @@ namespace StatisticAlarm
 
                     m_objArgument = ev;
 
-                    states.Add((int)StatesMachine.CurrentTime);
-                    states.Add((int)StatesMachine.RetryEvent);
+                    AddState((int)StatesMachine.CurrentTime);
+                    AddState((int)StatesMachine.RetryEvent);
 
                     Run(@"ViewAlarm::Retry");
                 }
@@ -689,8 +689,8 @@ namespace StatisticAlarm
 
                     m_objArgument = ev;
 
-                    states.Add((int)StatesMachine.CurrentTime);
-                    states.Add((int)StatesMachine.UpdateEventFixed);
+                    AddState((int)StatesMachine.CurrentTime);
+                    AddState((int)StatesMachine.UpdateEventFixed);
 
                     Run(@"AdminAlarm::Fixed");
                 }
@@ -709,8 +709,8 @@ namespace StatisticAlarm
 
                     m_objArgument = id;
 
-                    states.Add((int)StatesMachine.CurrentTime);
-                    states.Add((int)StatesMachine.UpdateEventConfirm);
+                    AddState((int)StatesMachine.CurrentTime);
+                    AddState((int)StatesMachine.UpdateEventConfirm);
 
                     Run(@"ViewAlarm::Fixed");
                 }
