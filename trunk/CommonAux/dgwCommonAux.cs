@@ -1,27 +1,11 @@
-﻿using System;
-using System.Data.Common;
-using System.Collections.Generic;
-using System.ComponentModel;
-using System.Diagnostics;
-using System.IO;
-using System.Linq;
-using System.Text;
-using System.Windows.Forms;
-using System.Drawing;
-using System.Threading;
-using System.Data;
-using System.Globalization;
-
-using ZedGraph;
-using GemBox.Spreadsheet;
-
-//using HClassLibrary;
-using StatisticCommon;
-using System.Reflection;
+﻿//using HClassLibrary;
 using ASUTP;
+using System.Collections.Generic;
+using System.Drawing;
+using System.Linq;
+using System.Windows.Forms;
 
-namespace CommonAux
-{
+namespace CommonAux {
     partial class PanelCommonAux
     {
         private class DataGridViewValues : DataGridView

@@ -115,9 +115,9 @@ namespace StatisticCommon
 
         public abstract void SetDelegateReport(DelegateStringFunc ferr, DelegateStringFunc fwar, DelegateStringFunc fact, DelegateBoolFunc fclr);
 
-        public virtual bool MayToClose()
+        public virtual int MayToClose()
         {
-            return true;
+            return 0;
         }
 
         public abstract void UpdateGraphicsCurrent (int type);

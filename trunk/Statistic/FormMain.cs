@@ -1110,7 +1110,7 @@ namespace Statistic
                         if ((m_markPrevStatePanelAdmin.IsMarked ((int)indx) == true)
                             // вкладку PanelAlarm обязательно останавливаем, т.к. даже будучи снятой с отображения, выполняется в фоновом режиме
                             || ((FormChangeMode.MANAGER)indx == FormChangeMode.MANAGER.ALARM))
-                            if (m_arPanelAdmin [indx].MayToClose () == true) {
+                            if (!(m_arPanelAdmin [indx].MayToClose () < 0)) {
                                 m_arPanelAdmin [indx].Stop ();
 
                                 //!!! из-за автоматического старта - особенное разрушение

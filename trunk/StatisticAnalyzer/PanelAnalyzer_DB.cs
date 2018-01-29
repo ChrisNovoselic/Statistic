@@ -25,7 +25,7 @@ namespace StatisticAnalyzer
         /// Метод для получения лога
         /// </summary>
         /// <returns>Возвращает лог сообщений</returns>
-        protected override LogCounter newLogCounter() { return new LogCounter_DB(); }
+        protected override LogParse newLogParse() { return new LogParse_DB(); }
 
         /// <summary>
         /// Запуск таймера обновления данных
@@ -71,16 +71,17 @@ namespace StatisticAnalyzer
         protected override void handlerCommandListMessageToUserByDate (PanelAnalyzer.REQUEST req, DataTable tableLogging)
         {
             if (req.State == PanelAnalyzer.REQUEST.STATE.Ok) {
-                filldgvLogMessages(tableLogging.Select(string.Empty, @"DATE_TIME") as DataRow[]);
+                m_LogParse.Start (new LogParse.PARAM_THREAD_PROC { Mode = LogParse.MODE.MESSAGE, Delimeter = string.Empty, Table = tableLogging });
             } else
                 ;
         }
 
         protected override void handlerCommandListDateByUser (PanelAnalyzer.REQUEST req, DataTable tableRes)
         {
-            m_LogCounter.Start(new PARAM_THREAD_PROC {
-                Delimeter = s_chDelimeters[(int)INDEX_DELIMETER.PART]
-                , TableLogging = tableRes
+            m_LogParse.Start(new PanelAnalyzer.LogParse.PARAM_THREAD_PROC {
+                Mode = LogParse.MODE.LIST_DATE
+                , Delimeter = s_chDelimeters[(int)INDEX_DELIMETER.PART]
+                , Table = tableRes
             });
         }
 
@@ -221,13 +222,6 @@ namespace StatisticAnalyzer
         /// </summary>
         protected override void disconnect() { }
 
-        private struct PARAM_THREAD_PROC
-        {
-            public string Delimeter;
-
-            public DataTable TableLogging;
-        }
-
         /// <summary>
         /// Получение первой строки лог-сообщений
         /// </summary>
@@ -266,9 +260,9 @@ namespace StatisticAnalyzer
         /// <param name="start_date">Начало периода</param>
         /// <param name="end_date">Окончание периода</param>
         /// <param name="users">Список пользователей</param>
-        protected override void updateCounter(DATAGRIDVIEW_LOGCOUNTER tag, DateTime start_date, DateTime end_date, string users)
+        protected override void updateCounter (DATAGRIDVIEW_LOGCOUNTER tag, DateTime start_date, DateTime end_date, string users)
         {
-            LoggingReadHandler.Command (StatesMachine.CounterToTypeMessageByDate, new object [] { tag, start_date, end_date, users }, false);
+            //LoggingReadHandler.Command (StatesMachine.CounterToTypeMessageByDate, new object [] { tag, start_date, end_date, users }, false);
         }
 
         /// <summary>
@@ -314,9 +308,9 @@ namespace StatisticAnalyzer
 
         #region Обработчики событий
 
-        public override void LogCounter_ThreadExit ()
+        protected override void LogParse_ThreadExit (LogParse.PARAM_THREAD_PROC param)
         {
-            base.LogCounter_ThreadExit ();
+            base.LogParse_ThreadExit (param);
         }
 
         protected override bool [] procChecked ()
@@ -369,63 +363,5 @@ namespace StatisticAnalyzer
         }
 
         #endregion
-
-        /// <summary>
-        /// Класс для получения лог сообщений из БД
-        /// </summary>
-        private class LogCounter_DB : LogCounter
-        {
-            /// <summary>
-            /// Список идентификаторов типов сообщений
-            /// </summary>
-            public enum INDEX_LOGMSG { START = LogCounter.INDEX_START_MESSAGE, STOP
-                , ACTION, DEBUG, EXCEPTION
-                , EXCEPTION_DB
-                , ERROR
-                , WARNING
-                , UNKNOWN
-                    , COUNT_TYPE_LOGMESSAGE
-            };
-
-            public LogCounter_DB()
-                : base()
-            {
-                s_DESC_LOGMESSAGE = new string[] { "Запуск", "Выход",
-                                                    "Действие", "Отладка", "Исключение",
-                                                    "Исключение БД",
-                                                    "Ошибка",
-                                                    "Предупреждение",
-                                                    "Неопределенный тип" };
-
-                //ID типов сообщений
-                s_ID_LOGMESSAGES = new int[] {
-                    1, 2, 3, 4, 5, 6, 7, 8, 9
-                        , 10
-                };
-                
-                
-            }
-
-            /// <summary>
-            /// Потоковый метод опроса БД для выборки лог-сообщений
-            /// </summary>
-            /// <param name="data">Объект с данными для разборки методом</param>
-            protected override void thread_Proc(object data)
-            {
-                DataTable tableListDate;
-                DateTime dateStart;
-
-                tableListDate = ((PARAM_THREAD_PROC)data).TableLogging;
-
-                //перебор значений и добовление их в строку
-                for (int i = 0; i < tableListDate.Rows.Count; i++)
-                {
-                    dateStart = (DateTime)tableListDate.Rows[i]["DATE_TIME"];
-                    m_tableLog.Rows.Add(new object[] { dateStart, s_ID_LOGMESSAGES[(int)INDEX_LOGMSG.START], ProgramBase.MessageWellcome });
-                }
-                //запрос разбора строки с лог-сообщениями
-                base.thread_Proc(tableListDate.Rows.Count);
-            }
-        }
     }
 }

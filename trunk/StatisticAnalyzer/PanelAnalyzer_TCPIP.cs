@@ -14,7 +14,7 @@ using System.Text;
 
 namespace StatisticAnalyzer
 {
-    public class PanelAnalyzer_TCPIP : PanelAnalyzer
+    public partial class PanelAnalyzer_TCPIP : PanelAnalyzer
     {
         TcpClientAsync m_tcpClient;
         List<TcpClientAsync> m_listTCPClientUsers;
@@ -34,7 +34,7 @@ namespace StatisticAnalyzer
             throw new NotImplementedException();
         }
 
-        protected override LogCounter newLogCounter() { return new LogParse_File(); }
+        protected override LogParse newLogParse() { return new LogParse_File(); }
 
         /// <summary>
         /// Обмен данными (чтение) с приложением "Статистика" пользователя
@@ -220,13 +220,13 @@ namespace StatisticAnalyzer
                 ;
         }
 
-        protected void onCommand_ListDateByUser(string full_path)
+        protected void onCommand_ListDateByUser(string full_path, string users)
         {
             FileInfo fi = new FileInfo(full_path);
             FileStream fs = fi.Open(FileMode.Open, FileAccess.Read, FileShare.Read);
             StreamReader sr = new StreamReader(fs, Encoding.GetEncoding("windows-1251"));
             
-            m_loggingReadHandler.PerformCommandCompleted(new REQUEST(StatesMachine.ListDateByUser, null), fileToTable(sr.ReadToEnd()));
+            m_loggingReadHandler.PerformCommandCompleted(new REQUEST(StatesMachine.ListMessageToUserByDate, null), fileToTable(sr.ReadToEnd()));
 
             sr.Close();
         }
@@ -335,190 +335,6 @@ namespace StatisticAnalyzer
                 m_tcpClient.Connect ($"{name_pc};{IndexCurrentUserView}", 6666);
             } else
                 ;
-        }
-
-        class LogParse_File : LogCounter
-        {
-            public enum TYPE_LOGMESSAGE
-            {
-                START, STOP,
-                DBOPEN, DBCLOSE, DBEXCEPTION,
-                ERROR, DEBUG,
-                DETAIL,
-                SEPARATOR, SEPARATOR_DATETIME,
-                UNKNOWN, COUNT_TYPE_LOGMESSAGE
-            };
-
-            public static string[] DESC_LOGMESSAGE = { "Запуск", "Выход",
-                "БД открыть", "БД закрыть", "БД исключение",
-                "Ошибка", "Отладка",
-                "Детализация",
-                "Раздел./сообщ.", "Раздел./дата/время",
-                "Неопределенный тип" };
-
-            protected string[] SIGNATURE_LOGMESSAGE = { ProgramBase.MessageWellcome, ProgramBase.MessageExit,
-                DbTSQLInterface.MessageDbOpen, DbTSQLInterface.MessageDbClose, DbTSQLInterface.MessageDbException,
-                "!Ошибка!", "!Отладка!",
-                string.Empty,
-                Logging.MessageSeparator, Logging.DatetimeStampSeparator,
-                string.Empty, "Неопределенный тип" };
-
-            public LogParse_File()
-            {
-                s_ID_LOGMESSAGES = new int[] {
-                        0, 1
-                        , 2, 3, 4
-                        , 5, 6
-                        , 7
-                        , 8, 9
-                        , 10
-                        , 11
-                    };
-            }
-
-            protected override void thread_Proc(object text)
-            {
-                string line;
-                TYPE_LOGMESSAGE typeMsg;
-                DateTime dtMsg;
-                bool bValid = false;
-
-                line = string.Empty;
-
-                typeMsg = TYPE_LOGMESSAGE.UNKNOWN;
-
-                StringReader content = new StringReader(text as string);
-
-                Console.WriteLine("Начало обработки лог-файла. Размер: {0}", (text as string).Length);
-
-                //Чтение 1-ой строки лог-файла
-                line = content.ReadLine();
-
-                while (!(line == null))
-                {
-                    //Проверка на разделитель сообщение-сообщение
-                    if (line.Contains(SIGNATURE_LOGMESSAGE[(int)TYPE_LOGMESSAGE.SEPARATOR]) == true)
-                    {
-                        //Следующая строка - дата/время
-                        line = content.ReadLine();
-
-                        //Попытка разбора дата/время
-                        bValid = DateTime.TryParse(line, out dtMsg);
-                        if (bValid == true)
-                        {
-                            //Следующая строка - разделитель дата/время-сообщение
-                            content.ReadLine();
-                            //Следующая строка - сообщение
-                            line = content.ReadLine();
-                        }
-                        else
-                        {
-                            //Установка дата/время предыдущего сообщения
-                            if (m_tableLog.Rows.Count > 0)
-                                dtMsg = (DateTime)m_tableLog.Rows[m_tableLog.Rows.Count - 1]["DATE_TIME"];
-                            else
-                                ; //dtMsg = new DateTime(1666, 06, 06, 06, 06, 06);
-                        }
-                    }
-                    else
-                    {
-                        //Попытка разбора дата/время
-                        bValid = DateTime.TryParse(line, out dtMsg);
-                        if (bValid == true)
-                        {
-                            //Следующая строка - разделитель дата/время-сообщение
-                            content.ReadLine();
-                            //Следующая строка - сообщение
-                            line = content.ReadLine();
-                        }
-                        else
-                        {
-                            //Установка дата/время предыдущего сообщения
-                            //dtMsg = new DateTime(1666, 06, 06, 06, 06, 06);
-                            dtMsg = (DateTime)m_tableLog.Rows[m_tableLog.Rows.Count - 1]["DATE_TIME"];
-
-                            if (line.Contains(SIGNATURE_LOGMESSAGE[(int)TYPE_LOGMESSAGE.SEPARATOR_DATETIME]) == true)
-                            {
-                                //Следующая строка - сообщение
-                                line = content.ReadLine();
-                            }
-                            else
-                            {
-                                //Строка содержит сообщение/детализация сообщения
-                            }
-                        }
-                    }
-
-                    if (line == null)
-                    {
-                        break;
-                    }
-                    else
-                        ;
-
-                    //Проверка на разделитель сообщение-сообщение
-                    if (line.Contains(SIGNATURE_LOGMESSAGE[(int)TYPE_LOGMESSAGE.SEPARATOR]) == true)
-                    {
-                        continue;
-                    }
-                    else
-                    {
-                        if (line.Contains(SIGNATURE_LOGMESSAGE[(int)TYPE_LOGMESSAGE.START]) == true)
-                        {
-                            typeMsg = TYPE_LOGMESSAGE.START;
-                        }
-                        else
-                            if (line.Contains(SIGNATURE_LOGMESSAGE[(int)TYPE_LOGMESSAGE.STOP]) == true)
-                            {
-                                typeMsg = TYPE_LOGMESSAGE.STOP;
-                            }
-                            else
-                                if (line.Contains(SIGNATURE_LOGMESSAGE[(int)TYPE_LOGMESSAGE.DBOPEN]) == true)
-                                {
-                                    typeMsg = TYPE_LOGMESSAGE.DBOPEN;
-                                }
-                                else
-                                    if (line.Contains(SIGNATURE_LOGMESSAGE[(int)TYPE_LOGMESSAGE.DBCLOSE]) == true)
-                                    {
-                                        typeMsg = TYPE_LOGMESSAGE.DBCLOSE;
-                                    }
-                                    else
-                                        if (line.Contains(SIGNATURE_LOGMESSAGE[(int)TYPE_LOGMESSAGE.DBEXCEPTION]) == true)
-                                        {
-                                            typeMsg = TYPE_LOGMESSAGE.DBEXCEPTION;
-                                        }
-                                        else
-                                            if (line.Contains(SIGNATURE_LOGMESSAGE[(int)TYPE_LOGMESSAGE.ERROR]) == true)
-                                            {
-                                                typeMsg = TYPE_LOGMESSAGE.ERROR;
-                                            }
-                                            else
-                                                if (line.Contains(SIGNATURE_LOGMESSAGE[(int)TYPE_LOGMESSAGE.DEBUG]) == true)
-                                                {
-                                                    typeMsg = TYPE_LOGMESSAGE.DEBUG;
-                                                }
-                                                else
-                                                    typeMsg = TYPE_LOGMESSAGE.DETAIL;
-
-                        //Добавление строки в таблицу с собщениями
-                        m_tableLog.Rows.Add(new object[] { dtMsg, (int)typeMsg, line });
-
-                        //Чтение строки сообщения
-                        line = content.ReadLine();
-
-                        while ((!(line == null)) && (line.Contains(SIGNATURE_LOGMESSAGE[(int)TYPE_LOGMESSAGE.SEPARATOR]) == false))
-                        {
-                            //Добавление строки в таблицу с собщениями
-                            m_tableLog.Rows.Add(new object[] { dtMsg, (int)TYPE_LOGMESSAGE.DETAIL, line });
-
-                            //Чтение строки сообщения
-                            line = content.ReadLine();
-                        }
-                    }
-                }
-
-                base.thread_Proc(m_tableLog.Rows.Count);
-            }
         }
     }
 }

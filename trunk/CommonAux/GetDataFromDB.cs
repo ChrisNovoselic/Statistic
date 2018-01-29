@@ -1,22 +1,14 @@
-﻿using System;
-using System.Data.Common;
+﻿using ASUTP;
+using ASUTP.Database;
+using StatisticCommon;
+using System;
 using System.Collections.Generic;
-using System.ComponentModel;
-using System.Diagnostics;
+using System.Data;
+using System.Data.Common;
 using System.IO;
 using System.Linq;
-using System.Text;
-using System.Threading;
-using System.Data;
-using System.Globalization;
 
-using StatisticCommon;
-using System.Reflection;
-using ASUTP;
-using ASUTP.Database;
-
-namespace CommonAux
-{
+namespace CommonAux {
     /// <summary>
     /// Класс для взаимодействия с базой данных
     /// </summary>

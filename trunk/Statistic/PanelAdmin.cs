@@ -550,10 +550,15 @@ namespace Statistic
             m_admin.GetRDGValues(/*(int)m_admin.m_typeFields,*/ m_listTECComponentIndex[comboBoxTecComponent.SelectedIndex], mcldrDate.SelectionStart);
         }
 
-        public override bool MayToClose()
+        public override int MayToClose()
         {
             DialogResult result;
             ASUTP.Helper.Errors resultSaving;
+
+            if ((Equals(m_admin, null) == false)
+                && (m_admin.IsStarted == false))
+            // был остановлен ранее
+                return 1;
 
             getDataGridViewAdmin();
 
@@ -569,26 +574,27 @@ namespace Statistic
                 case DialogResult.Yes:
                     resultSaving = m_admin.SaveChanges();
                     if (resultSaving == ASUTP.Helper.Errors.NoError)
-                        return true;
+                        return 0;
                     else
                     {
                         if (resultSaving == ASUTP.Helper.Errors.InvalidValue)
                             if (MessageBox.Show(this, "Изменение ретроспективы недопустимо!\nПродолжить выход?", "Внимание", MessageBoxButtons.YesNo, MessageBoxIcon.Asterisk) == DialogResult.Yes)
-                                return true;
+                                return 0;
                             else
-                                return false;
+                                return -1;
                         else
                             if (MessageBox.Show(this, "Не удалось сохранить изменения, возможно отсутствует связь с базой данных.\nВыйти без сохранения?", "Ошибка сохранения", MessageBoxButtons.YesNo, MessageBoxIcon.Error) == DialogResult.Yes)
-                                return true;
+                                return 0;
                             else
-                                return false;
+                                return -1;
                     }
                 case DialogResult.No:
-                    return true;
+                    return 0;
                 case DialogResult.Cancel:
-                    return false;
+                    return -1;
             }
-            return false;
+
+            return -1;
         }
 
         public virtual void ClearTables() { }

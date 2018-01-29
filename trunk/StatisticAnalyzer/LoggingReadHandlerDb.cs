@@ -308,7 +308,7 @@ namespace StatisticAnalyzer
                     case StatesMachine.ListMessageToUserByDate:
                     case StatesMachine.ListDateByUser:
                     case StatesMachine.CounterToTypeMessageByDate:
-                        func_Completed("StateResponse", (StatesMachine)state, table, iRes);
+                        func_Completed ("StateResponse", (StatesMachine)state, table, iRes);
                         break;
                     default:
                         break;

@@ -1,24 +1,16 @@
-﻿using System;
-using System.Data.Common;
-using System.Collections.Generic;
-using System.ComponentModel;
-using System.Diagnostics;
-using System.IO;
-using System.Linq;
-using System.Text;
-using System.Windows.Forms;
-using System.Drawing;
-using System.Threading;
-using System.Data;
-using System.Globalization;
-
-using StatisticCommon;
+﻿using ASUTP;
 using ASUTP.Core;
 using ASUTP.Database;
-using ASUTP;
+using StatisticCommon;
+using System;
+using System.Collections.Generic;
+using System.ComponentModel;
+using System.Drawing;
+using System.IO;
+using System.Linq;
+using System.Windows.Forms;
 
-namespace CommonAux
-{
+namespace CommonAux {
     /// <summary>
     /// Класс для описания параметров сигнала
     /// </summary>

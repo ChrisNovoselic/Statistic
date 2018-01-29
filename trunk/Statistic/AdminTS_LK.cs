@@ -136,9 +136,16 @@ namespace Statistic {
             {
                 bool bRes = false;
 
-                for (int a = 0; a < m_listCurRDGValues.Count; a++)
+                for (int a = 0;
+                    (a < m_listCurRDGValues.Count)
+                        && (a < m_listPrevRDGValues.Count);
+                    a++)
                 {
-                    for (int i = 0; i < 24; i++)
+                    for (int i = 0;
+                        (i < 24)
+                            && (i < m_listCurRDGValues [a].Length)
+                            && (i < m_listPrevRDGValues [a].Length);
+                        i++)
                     {
                         if (m_listPrevRDGValues[a][i].pbr.Equals(m_listCurRDGValues[a][i].pbr) /*double.Parse(this.dgwAdminTable.Rows[i].Cells[(int)DataGridViewAdmin.DESC_INDEX.PLAN].Value.ToString())*/  == false)
                             return true;

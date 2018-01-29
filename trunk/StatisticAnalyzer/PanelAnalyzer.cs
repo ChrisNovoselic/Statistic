@@ -104,7 +104,7 @@ namespace StatisticAnalyzer
 
                 State = STATE.Ready;
 
-                Logging.Logg ().Debug ($"PanelAnalyzer.HLoggingReadHandlerDb.REQUEST::ctor (Key={Key}) - новое args:{toString ()}...", Logging.INDEX_MESSAGE.NOT_SET);
+                Logging.Logg ().Debug ($"PanelAnalyzer.HLoggingReadHandlerDb.REQUEST::ctor (Key={Key}) - новое; <args>:{toString ()}...", Logging.INDEX_MESSAGE.NOT_SET);
             }
 
             /// <summary>
@@ -1032,7 +1032,7 @@ namespace StatisticAnalyzer
         /// <summary>
         /// Класс для работы с логом сообщений
         /// </summary>
-        protected LogCounter m_LogCounter;
+        protected LogParse m_LogParse;
         ///// <summary>
         ///// Таблицы пользователей для лога сообщений и таблица с ролями 
         ///// </summary>
@@ -1110,7 +1110,7 @@ namespace StatisticAnalyzer
 
             m_loggingReadHandler = newLoggingRead ();
             m_loggingReadHandler.EventCommandCompleted += new Action<REQUEST, DataTable> (loggingReadHandler_onCommandCompleted);
-            m_LogCounter = newLogCounter();
+            m_LogParse = newLogParse();
 
             InitializeComponent();
 
@@ -1152,8 +1152,8 @@ namespace StatisticAnalyzer
 
             int err = -1;
 
-            if (!(m_LogCounter == null))
-                m_LogCounter.Exit = LogCounter_ThreadExit;
+            if (!(m_LogParse == null))
+                m_LogParse.Exit = LogParse_ThreadExit;
             else {
                 string strErr = @"Не создан объект разбора сообщений (класс 'LogParse')...";
                 throw new Exception(strErr);
@@ -1232,7 +1232,7 @@ namespace StatisticAnalyzer
         /// Метод для разбора строки с лог сообщениями
         /// </summary>
         /// <returns>Возвращает строку</returns>
-        protected abstract LogCounter newLogCounter ();
+        protected abstract LogParse newLogParse ();
 
         /// <summary>
         /// Проверка запуска пользователем ПО
@@ -1244,7 +1244,7 @@ namespace StatisticAnalyzer
         /// Запись значений активности в CheckBox на DataGridView с пользователями
         /// </summary>
         /// <param name="obj">???</param>
-        protected void procChecked (object obj)
+        private void procChecked (object obj)
         {
             delegateActionReport ("Получаем список активных пользователей");
 
@@ -1265,6 +1265,7 @@ namespace StatisticAnalyzer
             dgvListDateView.SelectionChanged -= dgvListDateView_SelectionChanged;
 
             m_loggingReadHandler.Command (StatesMachine.ListDateByUser, new object [] { int.Parse (id) }, true);
+            //m_loggingReadHandler.Command (StatesMachine.ListMessageToUserByDate, new object [] { int.Parse (id) }, true);
         }
 
         /// <summary>
@@ -1509,22 +1510,16 @@ namespace StatisticAnalyzer
             }
         }
 
-        private struct DateLogMessage
-        {
-            public DateTime Stump;
-
-            public bool Checked;
-        }
-
         /// <summary>
         /// Метод заполнения таблицы с датой для фильтрации лог-сообщений
         /// </summary>
-        void TabLoggingAppendDate(List<DateLogMessage> listDate)
+        void TabLoggingAppendDate(List<DateTime> listDate)
         {
+            int iNewRow = -1;
             bool bRowChecked = false;
 
-            foreach (DateLogMessage date in listDate) {
-                bRowChecked = date.Checked;
+            foreach (DateTime date in listDate) {
+                bRowChecked = listDate.IndexOf(date) == listDate.Count - 1;
 
                 if (bRowChecked == true) {
                     dgvListDateView.SelectionChanged += dgvListDateView_SelectionChanged;
@@ -1532,7 +1527,8 @@ namespace StatisticAnalyzer
                 } else
                     ;
 
-                dgvListDateView.Rows.Add(new object[] { bRowChecked, date.Stump });
+                iNewRow  = dgvListDateView.Rows.Add(new object[] { bRowChecked, date });
+                dgvListDateView.Rows [iNewRow].Tag = date;
             }
 
             if (bRowChecked == true) {
@@ -1542,37 +1538,57 @@ namespace StatisticAnalyzer
                 ;
         }
 
+        private DateTime LogMessageViewDate
+        {
+            get
+            {
+                return
+                    // (DateTime)dgvListDateView.Rows [dgvListDateView.SelectedRows [0].Index].Cells [1].Value
+                    (DateTime)dgvListDateView.SelectedRows [0].Tag
+                    ;
+            }
+        }
+
         /// <summary>
         /// Получение списка дата/время запуска приложения
         /// </summary>
-        public virtual void LogCounter_ThreadExit()
+        protected virtual void LogParse_ThreadExit(LogParse.PARAM_THREAD_PROC param)
         {
             int i = -1;
             DataRow[] rows = new DataRow[] { };
 
-            //DelegateObjectFunc delegateAppendText = TabLoggingAppendText;
-            //DelegateStringFunc delegateAppendDatetimeStart = TabLoggingAppendDatetimeStart;
-            BeginInvoke(new DelegateFunc(clearListDateView));
-            BeginInvoke(new DelegateBoolFunc(clearMessageView), true);
+            switch (param.Mode) {
+                case LogParse.MODE.LIST_DATE:
+                    if (m_LogParse.ListDate.Count > 0) {
+                        BeginInvoke (new Action<List<DateTime>> (TabLoggingAppendDate), m_LogParse.ListDate);
+                    } else {
+                        Logging.Logg ().Warning ($"PanalAnalyzer::LogParseExit () - сообщения отсутствуют...", Logging.INDEX_MESSAGE.NOT_SET);
+                    }
+                    break;
+                case LogParse.MODE.MESSAGE:
+                    //Нюанс для 'LogParse_File' и 'LogParse_DB' - "0" индекс в массиве типов сообщений (зарезервирован для "СТАРТ")
+                    //...для 'LogParse_File': m_tblLog содержит ВСЕ записи в файле
+                    //...для 'LogParse_DB': m_tblLog содержит ТОЛЛЬКО записи из БД с датами, за которые найдено хотя бы одно сообщение
+                    //      тип сообщения "СТАРТ" устанавливается "программно" (метод 'LogParse_DB::Thread_Proc')
+                    //0 - индекс в массиве идентификаторов зарезервирован для сообщений типа "СТАРТ"
+                    rows = m_LogParse.ByDate (@"true" + s_chDelimeters [(int)INDEX_DELIMETER.ROW] + ((int)LogParse.INDEX_START_MESSAGE).ToString (), DateTime.MaxValue, DateTime.MaxValue);
 
-            //Получение списка дата/время запуска приложения
-            List<DateLogMessage> listDate = new List<DateLogMessage>();
-            //Нюанс для 'LogParse_File' и 'LogParse_DB' - "0" индекс в массиве типов сообщений (зарезервирован для "СТАРТ")
-            //...для 'LogParse_File': m_tblLog содержит ВСЕ записи в файле
-            //...для 'LogParse_DB': m_tblLog содержит ТОЛЛЬКО записи из БД с датами, за которые найдено хотя бы одно сообщение
-            //      тип сообщения "СТАРТ" устанавливается "программно" (метод 'LogParse_DB::Thread_Proc')
-            //0 - индекс в массиве идентификаторов зарезервирован для сообщений типа "СТАРТ"
-            rows = m_LogCounter.ByDate(@"true" + s_chDelimeters[(int)INDEX_DELIMETER.ROW] + ((int)LogCounter.INDEX_START_MESSAGE).ToString(), DateTime.MaxValue, DateTime.MaxValue);
-            for (i = 0; i < rows.Length; i++)
-                listDate.Add (new DateLogMessage { Stump = (DateTime)rows [i] ["DATE_TIME"], Checked = i == (rows.Length - 1) });
+                    filldgvLogMessages (m_LogParse.Sort (@"DATE_TIME"));
 
-            if (listDate.Count > 0) {
-                BeginInvoke (new Action<List<DateLogMessage>> (TabLoggingAppendDate), listDate);
-            } else {
-                Logging.Logg ().Warning ($"PanalAnalyzer::LogParseExit () - сообщения отсутствуют...", Logging.INDEX_MESSAGE.NOT_SET);
+                    updateCounter (DATAGRIDVIEW_LOGCOUNTER.TYPE_TO_VIEW
+                        , LogMessageViewDate 
+                        , LogMessageViewDate.AddDays (1)
+                        , IdCurrentUserView.ToString ());
+
+                    // немедленно обновить состояния активности пользователей
+                    activateTimerChecked (CheckState.Checked);
+                    break;
+                case LogParse.MODE.COUNTER:
+                    break;
+                default:
+                //TODO: проверка на неизвестный режим уже была выполнена
+                    break;
             }
-            // немедленно обновить состояния активности пользователей
-            activateTimerChecked (CheckState.Checked);
         }
 
         /// <summary>
@@ -1686,21 +1702,16 @@ namespace StatisticAnalyzer
             else
                 ;
 
-            Thread threadSelectdgvLogMessages = new Thread(new ParameterizedThreadStart((obj) => {
-                object [] pars = obj as object [];
-                // 0 - идентификатор пользователя
-                // 1 - тип сообщение
-                // 2 - дата/время - начало
-                // 3 - дата/время - окончание
-                // 4 - признак
-                m_loggingReadHandler.Command(StatesMachine.ListMessageToUserByDate
-                    , new object[] {
-                        ((int)pars [0]), ((string)pars [1]), ((DateTime)pars [2]), ((DateTime)pars [2]).AddDays (1)
-                    }
-                    , false);
-            }));
-            threadSelectdgvLogMessages.IsBackground = true;
-            threadSelectdgvLogMessages.Start(new object[] { IdCurrentUserView, getIndexTypeMessages(), dtBegin, dtEnd, bClearTypeMessageCounter });
+            // 0 - идентификатор пользователя
+            // 1 - тип сообщение
+            // 2 - дата/время - начало
+            // 3 - дата/время - окончание
+            // 4 - признак
+            m_loggingReadHandler.Command(StatesMachine.ListMessageToUserByDate
+                , new object[] {
+                    IdCurrentUserView, getIndexTypeMessages(), dtBegin, /*dtEnd*/ dtBegin.AddDays(1), bClearTypeMessageCounter
+                }
+                , false);
         }
         
         /// <summary>
@@ -1873,11 +1884,6 @@ namespace StatisticAnalyzer
                 m_prevListDateViewRowIndex = rowIndex;
 
                 startSelectdgvLogMessages(true);
-
-                updateCounter(DATAGRIDVIEW_LOGCOUNTER.TYPE_TO_VIEW
-                    , (DateTime)dgvListDateView.Rows[rowIndex].Cells[1].Value
-                    , ((DateTime)dgvListDateView.Rows[rowIndex].Cells[1].Value).AddDays(1)
-                    , IdCurrentUserView.ToString());
             } else
                 m_prevListDateViewRowIndex = -1;
         }
@@ -1945,10 +1951,10 @@ namespace StatisticAnalyzer
 
             if (bUpdate == true) {
                 dgvListDateView.SelectionChanged -= dgvListDateView_SelectionChanged;
-                dgvListDateView.Rows.Clear();
+                clearListDateView ();
                 //dgvListDateView.SelectionChanged += dgvDateView_SelectionChanged;
                 //Останов потока разбора лог-файла пред. пользователя
-                m_LogCounter.Stop();
+                m_LogParse.Stop();
                 //очистка списка активных вкладок
                 listBoxTabVisible.Items.Clear();
                 //Обнуление счётчиков сообщений на панели статистики
@@ -2217,7 +2223,7 @@ namespace StatisticAnalyzer
                 count_message.Name = "ColumnCount";
                 count_message.Width = 20;
                 //заполнение DataGridView типами сообщений
-                initialize (LogCounter.s_ID_LOGMESSAGES, LogCounter.s_DESC_LOGMESSAGE);
+                initialize (LogParse.s_ID_LOGMESSAGES, LogParse.s_DESC_LOGMESSAGE);
             }
 
             /// <summary>
