@@ -171,8 +171,8 @@ namespace StatisticAnalyzer
 
         protected virtual void handlerCommandProcChecked (PanelAnalyzer.REQUEST req, DataTable tableRes)
         {
-            int i = -1
-                , msecSleep = System.Threading.Timeout.Infinite;
+            int i = -1;
+            CheckState? modeDueTime = null; // System.Threading.Timeout.Infinite
             int [] ariTags;
             bool [] arbActives;
             IAsyncResult iar;
@@ -217,15 +217,15 @@ namespace StatisticAnalyzer
                     } else
                         ;
 
-                    msecSleep = MSEC_TIMERCHECKED_STANDARD;
+                    modeDueTime = CheckState.Unchecked; // MSEC_TIMERCHECKED_STANDARD;
                 } else
-                    //Нет соединения с БД...
-                    msecSleep = MSEC_TIMERCHECKED_FORCE;
+                //Нет соединения с БД...
+                    modeDueTime = CheckState.Indeterminate; // MSEC_TIMERCHECKED_FORCE;
             } else
-                //Ошибка при выборке данных...
-                msecSleep = MSEC_TIMERCHECKED_FORCE;
+            //Ошибка при выборке данных...
+                modeDueTime = CheckState.Indeterminate;
 
-            m_timerProcChecked.Change (msecSleep, System.Threading.Timeout.Infinite);
+            activateTimerChecked(modeDueTime);
 
             delegateReportClear (true);
         }
@@ -1313,20 +1313,19 @@ namespace StatisticAnalyzer
                 dgvUserStatistic.Fill (tableOut, @"DESCRIPTION", err, true);
                 dgvUserView.Fill (tableOut, @"DESCRIPTION", err);
 
-                //this.StartCalendar.Value = DateTime.Now.Date.AddDays(-1);
+                m_bThreadTimerCheckedAllowed = true;
+
+                //Вариант №2
+                m_timerProcChecked =
+                    new System.Threading.Timer (new TimerCallback (procChecked), null, System.Threading.Timeout.Infinite, System.Threading.Timeout.Infinite)
+                    //new System.Windows.Forms.Timer()
+                    ;
+                ////Вариант №1
+                //m_timerChecked.Interval = MSEC_TIMERCHECKED_STANDARD;
+                //m_timerChecked.Tick += new EventHandler(ProcChecked);
+                //m_timerChecked.Start ();
             } else
                 throw new Exception("PanelAnalyzer::Start () - нет соединения с БД конфигурации...");
-
-            m_bThreadTimerCheckedAllowed = true;
-
-            m_timerProcChecked =
-                new System.Threading.Timer(new TimerCallback(procChecked), null, System.Threading.Timeout.Infinite, System.Threading.Timeout.Infinite)
-                //new System.Windows.Forms.Timer()
-                ;
-            ////Вариант №1
-            //m_timerChecked.Interval = MSEC_TIMERCHECKED_STANDARD;
-            //m_timerChecked.Tick += new EventHandler(ProcChecked);
-            //m_timerChecked.Start ();
         }
 
         /// <summary>
@@ -1351,14 +1350,34 @@ namespace StatisticAnalyzer
         {
             bool bRes = base.Activate(activated);
 
-            activateTimerChecked (activated);
+            activateTimerChecked (CheckState.Checked);
 
             return bRes;
         }
 
-        private void activateTimerChecked (bool activated)
+        private void activateTimerChecked (CheckState? modeDueTime)
         {
-            m_timerProcChecked?.Change (activated == true ? 0 : System.Threading.Timeout.Infinite, System.Threading.Timeout.Infinite);
+            int iDueTime = System.Threading.Timeout.Infinite;
+
+            if (Equals(modeDueTime, null) == false)
+                switch (modeDueTime) {
+                    case CheckState.Checked:
+                    // немедленно
+                        iDueTime = 0;
+                        break;
+                    case CheckState.Unchecked:
+                        iDueTime = MSEC_TIMERCHECKED_STANDARD;
+                        break;
+                    case CheckState.Indeterminate:
+                        iDueTime = MSEC_TIMERCHECKED_FORCE;
+                        break;
+                    default:
+                        break;
+                }
+            else
+                ;
+
+            m_timerProcChecked?.Change (iDueTime, System.Threading.Timeout.Infinite);
         }
 
         /// <summary>
@@ -1490,38 +1509,36 @@ namespace StatisticAnalyzer
             }
         }
 
+        private struct DateLogMessage
+        {
+            public DateTime Stump;
+
+            public bool Checked;
+        }
+
         /// <summary>
         /// Метод заполнения таблицы с датой для фильтрации лог-сообщений
         /// </summary>
-        void TabLoggingAppendDatetimeStart(string rows)
+        void TabLoggingAppendDate(List<DateLogMessage> listDate)
         {
-            string[] strDatetimeStartRows = rows.Split(new string[] { s_chDelimeters[(int)INDEX_DELIMETER.ROW] }, StringSplitOptions.None);
-
             bool bRowChecked = false;
-            DateTime dateRow;
 
-            foreach (string row in strDatetimeStartRows)
-            {
-                bRowChecked = bool.Parse(row.Split(new string[] { s_chDelimeters[(int)INDEX_DELIMETER.PART] }, StringSplitOptions.None)[0]);
-                dateRow = DateTime.Parse(row.Split(new string[] { s_chDelimeters[(int)INDEX_DELIMETER.PART] }, StringSplitOptions.None)[1]);
+            foreach (DateLogMessage date in listDate) {
+                bRowChecked = date.Checked;
 
-                if (bRowChecked == true)
-                {
+                if (bRowChecked == true) {
                     dgvListDateView.SelectionChanged += dgvListDateView_SelectionChanged;
                     m_prevListDateViewRowIndex = dgvListDateView.Rows.Count;
-                }
-                else
+                } else
                     ;
 
-                dgvListDateView.Rows.Add(new object[] { bRowChecked, dateRow });
+                dgvListDateView.Rows.Add(new object[] { bRowChecked, date.Stump });
             }
 
-            if (bRowChecked == true)
-            {
+            if (bRowChecked == true) {
                 dgvListDateView.Rows[dgvListDateView.Rows.Count - 1].Selected = bRowChecked;
                 dgvListDateView.FirstDisplayedScrollingRowIndex = dgvListDateView.Rows.Count - 1;
-            }
-            else
+            } else
                 ;
         }
 
@@ -1539,8 +1556,7 @@ namespace StatisticAnalyzer
             BeginInvoke(new DelegateBoolFunc(clearMessageView), true);
 
             //Получение списка дата/время запуска приложения
-            bool rowChecked = false;
-            string strDatetimeStart = string.Empty;
+            List<DateLogMessage> listDate = new List<DateLogMessage>();
             //Нюанс для 'LogParse_File' и 'LogParse_DB' - "0" индекс в массиве типов сообщений (зарезервирован для "СТАРТ")
             //...для 'LogParse_File': m_tblLog содержит ВСЕ записи в файле
             //...для 'LogParse_DB': m_tblLog содержит ТОЛЛЬКО записи из БД с датами, за которые найдено хотя бы одно сообщение
@@ -1548,23 +1564,15 @@ namespace StatisticAnalyzer
             //0 - индекс в массиве идентификаторов зарезервирован для сообщений типа "СТАРТ"
             rows = m_LogCounter.ByDate(@"true" + s_chDelimeters[(int)INDEX_DELIMETER.ROW] + ((int)LogCounter.INDEX_START_MESSAGE).ToString(), DateTime.MaxValue, DateTime.MaxValue);
             for (i = 0; i < rows.Length; i++)
-            {
-                if (i == (rows.Length - 1))
-                    rowChecked = true;
-                else
-                    ;
+                listDate.Add (new DateLogMessage { Stump = (DateTime)rows [i] ["DATE_TIME"], Checked = i == (rows.Length - 1) });
 
-                strDatetimeStart += rowChecked.ToString()
-                        + s_chDelimeters[(int)INDEX_DELIMETER.PART]
-                        + rows[i]["DATE_TIME"].ToString()
-                        + s_chDelimeters[(int)INDEX_DELIMETER.ROW];
+            if (listDate.Count > 0) {
+                BeginInvoke (new Action<List<DateLogMessage>> (TabLoggingAppendDate), listDate);
+            } else {
+                Logging.Logg ().Warning ($"PanalAnalyzer::LogParseExit () - сообщения отсутствуют...", Logging.INDEX_MESSAGE.NOT_SET);
             }
-
-            if (strDatetimeStart.Length > 0) {
-                strDatetimeStart = strDatetimeStart.Substring(0, strDatetimeStart.Length - s_chDelimeters[(int)INDEX_DELIMETER.ROW].Length);
-                BeginInvoke(new DelegateStringFunc(TabLoggingAppendDatetimeStart), strDatetimeStart);
-            } else
-                Logging.Logg().Warning($"PanalAnalyzer::LogParseExit () - сообщения отсутствуют...", Logging.INDEX_MESSAGE.NOT_SET);
+            // немедленно обновить состояния активности пользователей
+            activateTimerChecked (CheckState.Checked);
         }
 
         /// <summary>
