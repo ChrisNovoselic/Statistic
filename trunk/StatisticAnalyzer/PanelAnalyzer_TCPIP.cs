@@ -24,7 +24,12 @@ namespace StatisticAnalyzer
         {
         }
 
-        protected override IEnumerable<int> getTabActived(int user)
+        /// <summary>
+        /// Возвратить список активных вкладок для выбранного пользователя
+        /// </summary>
+        /// <param name="role">Идентификатор роли(группы) пользователя</param>
+        /// <param name="user">Идентификатор пользователя для выборки</param>
+        protected override IEnumerable<int> getTabActived(int role, int user)
         {
             throw new NotImplementedException();
         }

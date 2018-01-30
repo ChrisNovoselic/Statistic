@@ -56,7 +56,7 @@
     <DefineConstants>DEBUG;TRACE</DefineConstants>
     <DocumentationFile>bin\Debug\CommonAux.XML</DocumentationFile>
     <DebugType>full</DebugType>
-    <PlatformTarget>AnyCPU</PlatformTarget>
+    <PlatformTarget>x86</PlatformTarget>
     <ErrorReport>prompt</ErrorReport>
     <CodeAnalysisRuleSet>MinimumRecommendedRules.ruleset</CodeAnalysisRuleSet>
     <Prefer32Bit>true</Prefer32Bit>

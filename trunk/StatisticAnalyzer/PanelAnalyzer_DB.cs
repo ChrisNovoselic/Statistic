@@ -72,8 +72,9 @@ namespace StatisticAnalyzer
         /// <summary>
         /// Метод для получения из БД списка активных вкладок для выбранного пользователя
         /// </summary>
-        /// <param name="user">Пользователь для выборки</param>
-        protected override IEnumerable<int> getTabActived(int user)
+        /// <param name="role">Идентификатор роли(группы) пользователя</param>
+        /// <param name="user">Идентификатор пользователя для выборки</param>
+        protected override IEnumerable<int> getTabActived(int role, int user)
         {
             List<int> listRes = new List<int> ();
 
@@ -81,17 +82,17 @@ namespace StatisticAnalyzer
             string tabs;
             string[] idTabs;
 
-            IDbConnection dbConn;
-
             delegateActionReport ("Получение активных вкладок пользователя");
 
             #region Фомирование и выполнение запроса для получения списка открытых вкладок у пользователя
 
-            tabs = HUsers.GetAllowed(ref dbConn, -1, -1, (int)HStatisticUsers.ID_ALLOWED.PROFILE_SETTINGS_CHANGEMODE);
+            tabs = HUsers.GetAllowed(DbTSQLConfigDatabase.DbConfig().ListenerId
+                , role
+                , user
+                , (int)HStatisticUsers.ID_ALLOWED.PROFILE_SETTINGS_CHANGEMODE);
             //tabs = HUsers.GetAllowed((int)HStatisticUsers.ID_ALLOWED.PROFILE_VIEW_ADDINGTABS);
 
             if (Equals(user, null) == false) {
-
                 if (tabs.Length > 0) {
                     //создание массива с ID вкладок
                     idTabs = tabs.Split(new char[] { ';' }, StringSplitOptions.RemoveEmptyEntries);
@@ -237,7 +238,7 @@ namespace StatisticAnalyzer
             DbTSQLConfigDatabase.DbConfig ().Register ();
             //Заполнение ListBox'а активными вкладками
             fillListBoxTabVisible (
-                getTabActived (IdCurrentUserView).ToList ()
+                getTabActived ((int)RoleCurrentUserView, IdCurrentUserView).ToList ()
             );
             DbTSQLConfigDatabase.DbConfig ().UnRegister ();
         }

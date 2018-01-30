@@ -1990,6 +1990,21 @@ namespace StatisticAnalyzer
             }
         }
 
+        protected HStatisticUsers.ID_ROLES RoleCurrentUserView
+        {
+            get
+            {
+                if (Equals(dgvUserView, null) == false)
+                    return dgvUserView.RowCount > 0
+                        ? dgvUserView.SelectedRows.Count > 0
+                            ? ((HStatisticUser)dgvUserView.SelectedRows[0].Tag).Role
+                                : HStatisticUsers.ID_ROLES.UNKNOWN
+                                    : HStatisticUsers.ID_ROLES.UNKNOWN;
+                else
+                    throw new InvalidOperationException($"PanelAnalyzer.IdCurrentUserView::get - [dgvUserView] is null...");
+            }
+        }
+
         /// <summary>
         /// Индекс выбранной/текущей строки в списке с пользователями
         /// </summary>
@@ -2013,9 +2028,13 @@ namespace StatisticAnalyzer
         {
             listBoxTabVisible.Items.Clear ();
 
-            fillListBoxTabVisible (
-                getTabActived (IdCurrentUserView).ToList ()
+            DbTSQLConfigDatabase.DbConfig().SetConnectionSettings();
+            DbTSQLConfigDatabase.DbConfig().Register();
+            //Заполнение ListBox'а активными вкладками
+            fillListBoxTabVisible(
+                getTabActived ((int)RoleCurrentUserView, IdCurrentUserView).ToList ()
             );
+            DbTSQLConfigDatabase.DbConfig().UnRegister();
         }
 
         /// <summary>
@@ -2068,8 +2087,9 @@ namespace StatisticAnalyzer
         /// <summary>
         /// Абстрактный метод для получения из БД списка активных вкладок для выбранного пользователя
         /// </summary>
+        /// <param name="role">Идентификатор роли(группы) пользователя</param>
         /// <param name="user">Идентификатор пользователя для выборки</param>
-        protected abstract IEnumerable<int> getTabActived(int user);
+        protected abstract IEnumerable<int> getTabActived(int role, int user);
 
         /// <summary>
         /// Заполнение ListBox активными вкладками
