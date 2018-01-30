@@ -139,6 +139,7 @@ namespace Statistic
             string strFmtDatetime = string.Empty;
             double PBR_0 = 0F;
             HAdmin.RDGStruct[] arSumCurRDGValues = null;
+            IAsyncResult iar;
 
             (m_admin as AdminTS_Vyvod).SummatorRDGValues();
 
@@ -147,9 +148,11 @@ namespace Statistic
                 //??? не очень изящное решение
                 if (IsHandleCreated == true) {
                     if (InvokeRequired == true) {
-                        m_evtAdminTableRowCount.Reset ();
-                        this.BeginInvoke (new DelegateBoolFunc (normalizedTableHourRows), InvokeRequired);
-                        m_evtAdminTableRowCount.WaitOne (System.Threading.Timeout.Infinite);
+                        //m_evtAdminTableRowCount.Reset ();
+                        iar = this.BeginInvoke (new DelegateBoolFunc (normalizedTableHourRows), InvokeRequired);
+                        //m_evtAdminTableRowCount.WaitOne (System.Threading.Timeout.Infinite);
+                        WaitHandle.WaitAny (new WaitHandle [] { iar.AsyncWaitHandle }, System.Threading.Timeout.Infinite);
+                        this.EndInvoke (iar);
                     } else
                         normalizedTableHourRows(InvokeRequired);
                 }

@@ -1,4 +1,4 @@
-﻿using HClassLibrary;
+﻿using ASUTP.Database;
 using System;
 using System.Collections.Generic;
 using System.ComponentModel;
@@ -31,14 +31,14 @@ namespace TestFunc {
                 arThreadDbConn [i].RunWorkerAsync (arConnSett [i]);
             }
 
-            HClassLibrary.DbSources.Sources ().UnRegister ();
+            ASUTP.Database.DbSources.Sources ().UnRegister ();
         }
 
         private void fThreadProc (object obj, DoWorkEventArgs ev)
         {
             int iListenerId = -1;
             for (int j = 0; j < 16; j++) {
-                iListenerId = HClassLibrary.DbSources.Sources ().Register (ev.Argument as ConnectionSettings, true, (ev.Argument as ConnectionSettings).name + @"-DbInterface");
+                iListenerId = ASUTP.Database.DbSources.Sources ().Register (ev.Argument as ConnectionSettings, true, (ev.Argument as ConnectionSettings).name + @"-DbInterface");
                 //listListenerId.Add(iListenerId);
                 m_semaConsole.WaitOne ();
                 Console.WriteLine (@"ConnectionSettings.ID=" + (ev.Argument as ConnectionSettings).id + @", подписка.ID=" + iListenerId);

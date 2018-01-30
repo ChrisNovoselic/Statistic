@@ -45,12 +45,24 @@ namespace StatisticCommon
         public PanelStatistic (MODE_UPDATE_VALUES modeUpdateValues, Color foreColor, Color backColor, int cCols = -1, int cRows = -1)
             : base(cCols, cRows)
         {
+            Control formMain = null;
+
             Thread.CurrentThread.CurrentCulture =
             Thread.CurrentThread.CurrentUICulture =
                 ProgramBase.ss_MainCultureInfo;
-            
-            Application.OpenForms [0].BackColorChanged += formMain_BackColorChanged;
-            Application.OpenForms [0].ForeColorChanged += formMain_ForeColorChanged;
+
+            while ((!(formMain is Form))
+                && (Equals(Parent, null) == false))
+                formMain = Equals(formMain, null) == true ? Parent.Parent : formMain.Parent;
+
+            if (Equals (formMain, null) == false) {
+                formMain.BackColorChanged += formMain_BackColorChanged;
+                formMain.ForeColorChanged += formMain_ForeColorChanged;
+            } else if (Application.OpenForms.Count > 0) {
+                Application.OpenForms [0].BackColorChanged += formMain_BackColorChanged;
+                Application.OpenForms [0].ForeColorChanged += formMain_ForeColorChanged;
+            } else
+                ;
 
             BackColor = backColor;
             ForeColor = foreColor;

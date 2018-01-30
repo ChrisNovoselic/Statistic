@@ -417,6 +417,7 @@ namespace Statistic
             int offset = -1
                 , nextIndx = -1;
             string strFmtDatetime = string.Empty;
+            IAsyncResult iar;
 
             switch (modeGetRDGValues) {
                 case MODE_GET_RDG_VALUES.DISPLAY:
@@ -424,11 +425,13 @@ namespace Statistic
                     if (IsHandleCreated == true)
                     {
                         if (InvokeRequired == true) {
-                            m_evtAdminTableRowCount.Reset ();
+                            //m_evtAdminTableRowCount.Reset ();
                             // кол-во строк может быть изменено(нормализовано) только в том потоке,в котором было выполнено создание элемента управления
-                            this.BeginInvoke (new DelegateBoolFunc (normalizedTableHourRows), InvokeRequired);
+                            iar = this.BeginInvoke (new DelegateBoolFunc (normalizedTableHourRows), InvokeRequired);
                             //??? ожидать, пока не завершится выполнение предыдущего потока
-                            m_evtAdminTableRowCount.WaitOne (System.Threading.Timeout.Infinite);
+                            //m_evtAdminTableRowCount.WaitOne (System.Threading.Timeout.Infinite);
+                            WaitHandle.WaitAny (new WaitHandle [] { iar.AsyncWaitHandle }, System.Threading.Timeout.Infinite);
+                            this.EndInvoke (iar);
                         } else {
                             normalizedTableHourRows (InvokeRequired);
                         }
@@ -656,11 +659,16 @@ namespace Statistic
             AdminTS_KomDisp.ConstantExportPBRValues.NumberColumn_Date = 1;
             AdminTS_KomDisp.ConstantExportPBRValues.NumberRow_Date = 5;
 
-            AdminTS_KomDisp.SEC_SHEDULE_START_EXPORT_PBR = int.Parse (FormMain.formParameters.m_arParametrSetup[(int)FormParameters.PARAMETR_SETUP.KOMDISP_SHEDULE_START_EXPORT_PBR]);
-            AdminTS_KomDisp.SEC_SHEDULE_PERIOD_EXPORT_PBR = int.Parse (FormMain.formParameters.m_arParametrSetup[(int)FormParameters.PARAMETR_SETUP.KOMDISP_SHEDULE_PERIOD_EXPORT_PBR]);
-            //AdminTS_KomDisp.MS_WAIT_EXPORT_PBR_MAX = 6666; установлен при объявлении/определении
-            //AdminTS_KomDisp.MS_WAIT_EXPORT_PBR_ABORT = 666; установлен при объявлении/определении
-            AdminTS_KomDisp.Folder_CSV = FormMain.formParameters.m_arParametrSetup[(int)FormParameters.PARAMETR_SETUP.KOMDISP_FOLDER_CSV]; //@"\\ne2844\2.X.X\ПБР-csv"; //@"E:\Temp\ПБР-csv";
+            if ((Equals (FormMain.formParameters, null) == false)
+                && (Equals (FormMain.formParameters.m_arParametrSetup, null) == false)
+                && (FormMain.formParameters.m_arParametrSetup.Count > 0)) {
+                AdminTS_KomDisp.SEC_SHEDULE_START_EXPORT_PBR = int.Parse (FormMain.formParameters.m_arParametrSetup [(int)FormParameters.PARAMETR_SETUP.KOMDISP_SHEDULE_START_EXPORT_PBR]);
+                AdminTS_KomDisp.SEC_SHEDULE_PERIOD_EXPORT_PBR = int.Parse (FormMain.formParameters.m_arParametrSetup [(int)FormParameters.PARAMETR_SETUP.KOMDISP_SHEDULE_PERIOD_EXPORT_PBR]);
+                //AdminTS_KomDisp.MS_WAIT_EXPORT_PBR_MAX = 6666; установлен при объявлении/определении
+                //AdminTS_KomDisp.MS_WAIT_EXPORT_PBR_ABORT = 666; установлен при объявлении/определении
+                AdminTS_KomDisp.Folder_CSV = FormMain.formParameters.m_arParametrSetup [(int)FormParameters.PARAMETR_SETUP.KOMDISP_FOLDER_CSV]; //@"\\ne2844\2.X.X\ПБР-csv"; //@"E:\Temp\ПБР-csv";
+            } else
+                ;
             //Возможность редактирования значений ПБР: разрешено управление (изменение разрешения на запись), запись НЕ разрешена
             m_admin = new AdminTS_KomDisp (new bool[] { true, false });
             Admin.EventExportPBRValues += new Action<AdminTS_KomDisp.MSExcelIOExportPBRValues.EventResultArgs> (admin_onEventExportPBRValues);

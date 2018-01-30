@@ -14,7 +14,8 @@ using StatisticCommon;
 using ASUTP.Core;
 using Microsoft.Office.Interop.Excel;
 using ASUTP;
-using  ASUTP.Helper;
+using ASUTP.Helper;
+using Microsoft.VisualStudio.TestTools.UnitTesting;
 
 namespace Statistic
 {
@@ -70,10 +71,11 @@ namespace Statistic
         /// Календарь для выбора даты, за котору. требуется прочитать(отобразить/экспортировать) значения из БД
         /// </summary>
         protected System.Windows.Forms.MonthCalendar mcldrDate;
-        /// <summary>
-        /// Объект синхронизации при изменении кол-ва сторок в представлении для отображения значений
-        /// </summary>
-        protected ManualResetEvent m_evtAdminTableRowCount;
+        ///// <summary>
+        ///// Объект синхронизации при изменении кол-ва сторок в представлении для отображения значений
+        //!!! Заменен на IAsyncResult; KhryapinAN, 2018-01-30
+        ///// </summary>
+        //protected ManualResetEvent m_evtAdminTableRowCount;
         /// <summary>
         /// Элемент управления(представление) для отображения значений
         /// </summary>
@@ -290,7 +292,7 @@ namespace Statistic
         protected abstract void createAdmin ();
 
         private void initialize () {
-            m_evtAdminTableRowCount = new ManualResetEvent (false);
+            //m_evtAdminTableRowCount = new ManualResetEvent (false);
 
             m_admin.SetDelegateData(this.setDataGridViewAdmin, null);
             m_admin.SetDelegateDatetime(this.CalendarSetDate);
@@ -401,10 +403,10 @@ namespace Statistic
                 else
                     this.dgwAdminTable.InitRows(m_admin.m_curRDGValues.Length, false);
 
-            if (bSyncReq == true)
-                m_evtAdminTableRowCount.Set();
-            else
-                ;
+            //if (bSyncReq == true)
+            //    m_evtAdminTableRowCount.Set();
+            //else
+            //    ;
         }
 
         private void mcldrDate_DateSelected(object sender, DateRangeEventArgs e)
@@ -517,6 +519,12 @@ namespace Statistic
             }
             else
                 ;
+        }
+
+        [TestMethod]
+        public void PerformButtonSetClick ()
+        {
+            btnSet_Click (this, EventArgs.Empty);
         }
 
         private void btnSet_Click(object sender, EventArgs e)

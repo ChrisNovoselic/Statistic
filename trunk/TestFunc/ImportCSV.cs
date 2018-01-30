@@ -1,5 +1,4 @@
-﻿using HClassLibrary;
-using StatisticCommon;
+﻿using StatisticCommon;
 using System;
 using System.Collections.Generic;
 using System.Data;
@@ -51,7 +50,7 @@ namespace TestFunc {
                 ;
 
             if (strPPBRCSVNameFileTemp.Length > 0)
-                m_tablePPBRValuesResponse = DbTSQLInterface.Select (@"CSV_DATASOURCE=" + Path.GetDirectoryName (strPPBRCSVNameFileTemp),
+                m_tablePPBRValuesResponse = ASUTP.Database.DbTSQLInterface.Select (@"CSV_DATASOURCE=" + Path.GetDirectoryName (strPPBRCSVNameFileTemp),
                                                                         @"SELECT * FROM ["
                                                                         //+ @"Sheet1$"
                                                                         + Path.GetFileName (strPPBRCSVNameFileTemp)
