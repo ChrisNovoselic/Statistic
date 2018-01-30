@@ -24,11 +24,6 @@ namespace StatisticAnalyzer
         {
         }
 
-        protected override void updateCounter(DATAGRIDVIEW_LOGCOUNTER tag, DateTime start_date, DateTime end_date, string users)
-        {
-            throw new NotImplementedException();
-        }
-
         protected override IEnumerable<int> getTabActived(int user)
         {
             throw new NotImplementedException();
@@ -171,11 +166,6 @@ namespace StatisticAnalyzer
             });
         }
 
-        protected override bool [] procChecked ()
-        {
-            throw new NotImplementedException();
-        }
-
         /// <summary>
         /// Запись значений активности в CheckBox на DataGridView с пользователями
         /// </summary>
@@ -277,32 +267,11 @@ namespace StatisticAnalyzer
             throw new NotImplementedException ();
         }
 
-        protected override void handlerCommandCounterToTypeMessageByDate(REQUEST req, DataTable tableRes)
-        {
-            throw new NotImplementedException ();
-        }
-
-        protected override void handlerCommandListMessageToUserByDate (REQUEST req, DataTable tableLogging)
-        {
-            throw new NotImplementedException ();
-        }
-
-        protected override void handlerCommandListDateByUser (REQUEST req, DataTable tableRes)
-        {
-            throw new NotImplementedException ();
-        }
-
-        protected override void handlerCommandProcChecked (REQUEST req, DataTable tableRes)
-        {
-            throw new NotImplementedException ();
-        }
-
         /// <summary>
         /// Обработчик события выбора пользователя для формирования списка сообщений
         /// </summary>
         protected override void dgvUserView_SelectionChanged (object sender, EventArgs e)
         {
-            bool bUpdate = false;
             string name_pc = string.Empty;
 
             if (!(m_tcpClient == null)) {
@@ -312,29 +281,24 @@ namespace StatisticAnalyzer
 
             base.dgvUserView_SelectionChanged (sender, e);
 
-            bUpdate = !(IdCurrentUserView < 0);
+            m_tcpClient = new TcpClientAsync ();
+            m_tcpClient.delegateRead = Read;
 
-            if (bUpdate == true) {
-                m_tcpClient = new TcpClientAsync ();
-                m_tcpClient.delegateRead = Read;
-
-                //Очистить элементы управления с данными от пред. лог-файла
-                if (IsHandleCreated/*InvokeRequired*/ == true) {
-                    BeginInvoke (new DelegateFunc (clearListDateView));
-                    BeginInvoke (new DelegateBoolFunc (clearMessageView), true);
-                } else
-                    Logging.Logg ().Error (@"PanelAnalyzer::dgvUserView_SelectionChanged () - ... BeginInvoke (TabLoggingClearDatetimeStart, TabLoggingClearText) - ...", Logging.INDEX_MESSAGE.D_001);
-
-                //Если активна 0-я вкладка (лог-файл)
-                m_tcpClient.delegateConnect = ConnectToLogRead;
-
-                m_tcpClient.delegateErrorConnect = errorConnect;
-
-                //name_pc = "localhost"; //??? c_NameFieldToConnect
-                //m_tcpClient.Connect(name_pc, 6666);
-                m_tcpClient.Connect ($"{name_pc};{IndexCurrentUserView}", 6666);
+            //Очистить элементы управления с данными от пред. лог-файла
+            if (IsHandleCreated/*InvokeRequired*/ == true) {
+                BeginInvoke (new DelegateFunc (clearListDateView));
+                BeginInvoke (new DelegateBoolFunc (clearMessageView), true);
             } else
-                ;
+                Logging.Logg ().Error (@"PanelAnalyzer::dgvUserView_SelectionChanged () - ... BeginInvoke (TabLoggingClearDatetimeStart, TabLoggingClearText) - ...", Logging.INDEX_MESSAGE.D_001);
+
+            //Если активна 0-я вкладка (лог-файл)
+            m_tcpClient.delegateConnect = ConnectToLogRead;
+
+            m_tcpClient.delegateErrorConnect = errorConnect;
+
+            //name_pc = "localhost"; //??? c_NameFieldToConnect
+            //m_tcpClient.Connect(name_pc, 6666);
+            m_tcpClient.Connect ($"{name_pc};{IndexCurrentUserView}", 6666);
         }
     }
 }

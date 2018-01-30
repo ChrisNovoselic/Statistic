@@ -955,7 +955,8 @@ namespace Statistic
         private void fileProfileLoadStandatdTab()
         {
             string ids = HStatisticUsers.GetAllowed((int)HStatisticUsers.ID_ALLOWED.PROFILE_SETTINGS_CHANGEMODE);
-            Logging.Logg().Action(@"Загрузка профайла (" + HStatisticUsers.ID_ALLOWED.PROFILE_SETTINGS_CHANGEMODE.ToString() + @"): ids=" + ids, Logging.INDEX_MESSAGE.NOT_SET);
+            Logging.Logg().Action(@"Загрузка профайла (" + HStatisticUsers.ID_ALLOWED.PROFILE_SETTINGS_CHANGEMODE.ToString() + @"): ids=" + ids
+                , Logging.INDEX_MESSAGE.NOT_SET);
             formChangeMode.LoadProfile(ids);
         }
 
@@ -965,9 +966,10 @@ namespace Statistic
             int id = -1;
             string [] arProfie;
 
-            Logging.Logg().Action(@"Загрузка профайла (" + HStatisticUsers.ID_ALLOWED.PROFILE_VIEW_ADDINGTABS.ToString() + @"): ids=" + ids, Logging.INDEX_MESSAGE.NOT_SET);
+            ids = HStatisticUsers.GetAllowed((int)HStatisticUsers.ID_ALLOWED.PROFILE_VIEW_ADDINGTABS);
 
-            ids = HStatisticUsers.GetAllowed ((int)HStatisticUsers.ID_ALLOWED.PROFILE_VIEW_ADDINGTABS);
+            Logging.Logg().Action(@"Загрузка профайла (" + HStatisticUsers.ID_ALLOWED.PROFILE_VIEW_ADDINGTABS.ToString() + @"): ids=" + ids
+                , Logging.INDEX_MESSAGE.NOT_SET);
 
             if (ids.Equals(string.Empty) == false)
             {
@@ -980,12 +982,11 @@ namespace Statistic
                     else
                         id = Int32.Parse(profile.Substring(0, profile.IndexOf('=')));
 
-                    if (m_dictAddingTabs.ContainsKey(id) == true)
-                    {
+                    if (m_dictAddingTabs.ContainsKey(id) == true) {
+                        // создание панели
                         m_dictAddingTabs[id].menuItem.PerformClick();
-
-                        switch (id)
-                        {
+                        // для сложных вкладок сформировать внешний вид
+                        switch (id) {
                             case (int)ID_ADDING_TAB.CUSTOM_2X2_1:
                             case (int)ID_ADDING_TAB.CUSTOM_2X2_2:
                             case (int)ID_ADDING_TAB.CUSTOM_2X2_3:
@@ -999,11 +1000,9 @@ namespace Statistic
                             default: //CUR_POWER, TM_SN_POWER...
                                 break;
                         }
-                    }
-                    else
-                    {
-                        Logging.Logg().Error(@"FormMain::fileProfileLoadAddingTab () - m_dictAddingTabs не содержит ключ=" + id, Logging.INDEX_MESSAGE.NOT_SET);
-                    }
+                    } else
+                        Logging.Logg().Error(@"FormMain::fileProfileLoadAddingTab () - m_dictAddingTabs не содержит ключ=" + id
+                            , Logging.INDEX_MESSAGE.NOT_SET);
                 }
             }
             else

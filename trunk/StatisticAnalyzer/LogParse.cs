@@ -89,7 +89,18 @@ namespace StatisticAnalyzer
                 m_thread.CurrentUICulture =
                     ProgramBase.ss_MainCultureInfo;
 
-                m_tableLog.Clear ();
+                switch (((PARAM_THREAD_PROC)param).Mode) {
+                    case MODE.LIST_DATE:
+                        m_listDate.Clear();
+                        break;
+                    case MODE.MESSAGE:
+                        m_tableLog.Clear ();
+                        break;
+                    case MODE.COUNTER:
+                        break;
+                    default:
+                        break;
+                }
 
                 m_thread.Start (param);
             }

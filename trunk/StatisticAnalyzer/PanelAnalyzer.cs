@@ -1,29 +1,16 @@
 ﻿//using HClassLibrary;
-using StatisticCommon;
-using System;
-using System.Collections;
-using System.Collections.Generic;
-using System.ComponentModel;
-using System.Data;
-using System.Data.Common; //DbConnection
-using System.Diagnostics;
-using System.Drawing;
-using System.IO;
-using System.Linq;
-using System.Net;
-using System.Net.Sockets;
-using System.Net.NetworkInformation;
-using System.Text;
-using System.Threading;
-using System.Timers;
-using System.Windows.Forms;
+using ASUTP;
 using ASUTP.Core;
 using ASUTP.Database;
-using ASUTP;
-using ASUTP.Network;
-using ASUTP.Helper;
-using StatisticAnalyzer;
-using System.Reflection;
+using StatisticCommon;
+using System;
+using System.Collections.Generic;
+using System.Data;
+using System.Data.Common; //DbConnection
+using System.Drawing;
+using System.Linq;
+using System.Threading;
+using System.Windows.Forms;
 
 namespace StatisticAnalyzer
 {
@@ -163,11 +150,31 @@ namespace StatisticAnalyzer
             }
         }
 
-        protected abstract void handlerCommandCounterToTypeMessageByDate(PanelAnalyzer.REQUEST req, DataTable tableRes);
+        protected virtual void handlerCommandCounterToTypeMessageByDate(PanelAnalyzer.REQUEST req, DataTable tableRes)
+        {
+            m_dictDataGridViewLogCounter[(DATAGRIDVIEW_LOGCOUNTER)req.Args[0]].Fill(tableRes);
 
-        protected abstract void handlerCommandListMessageToUserByDate (PanelAnalyzer.REQUEST req, DataTable tableLogging);
+            delegateReportClear?.Invoke(true);
+        }
 
-        protected abstract void handlerCommandListDateByUser(PanelAnalyzer.REQUEST req, DataTable tableRes);
+        protected virtual void handlerCommandListMessageToUserByDate(PanelAnalyzer.REQUEST req, DataTable tableLogging)
+        {
+            if (req.State == PanelAnalyzer.REQUEST.STATE.Ok) {
+                m_LogParse.Start(new LogParse.PARAM_THREAD_PROC { Mode = LogParse.MODE.MESSAGE, Delimeter = string.Empty, Table = tableLogging });
+            } else
+                ;
+        }
+
+        protected virtual void handlerCommandListDateByUser(PanelAnalyzer.REQUEST req, DataTable tableRes)
+        {
+            m_LogParse.Start(new PanelAnalyzer.LogParse.PARAM_THREAD_PROC {
+                Mode = LogParse.MODE.LIST_DATE
+                ,
+                Delimeter = s_chDelimeters[(int)INDEX_DELIMETER.PART] //??? зачем передавать статическую величину
+                ,
+                Table = tableRes
+            });
+        }
 
         protected virtual void handlerCommandProcChecked (PanelAnalyzer.REQUEST req, DataTable tableRes)
         {
@@ -1238,7 +1245,12 @@ namespace StatisticAnalyzer
         /// Проверка запуска пользователем ПО
         /// </summary>
         /// <return>Массив занчений активности каждого пользователя</return>
-        protected abstract bool [] procChecked();
+        private void procChecked()
+        {
+            m_loggingReadHandler.Command(StatesMachine.ProcCheckedFilter, null, false);
+            //// фиктивный результат для совместимости с синхронным вариантом
+            //return new bool[] { };
+        }
 
         /// <summary>
         /// Запись значений активности в CheckBox на DataGridView с пользователями
@@ -1351,7 +1363,10 @@ namespace StatisticAnalyzer
         {
             bool bRes = base.Activate(activated);
 
-            activateTimerChecked (CheckState.Checked);
+            if (IsFirstActivated == false)
+                activateTimerChecked(CheckState.Checked);
+            else
+                ;
 
             return bRes;
         }
@@ -1445,14 +1460,18 @@ namespace StatisticAnalyzer
             }
         }
 
+
         /// <summary>
         /// Обновление счетчика типов сообщений
         /// </summary>
         /// <param name="dgv">DataGridView в которую поместить результаты</param>
         /// <param name="start_date">Начало периода</param>
-        /// <param name="stop_date">Окончание периода</param>
+        /// <param name="end_date">Окончание периода</param>
         /// <param name="users">Список пользователей</param>
-        protected abstract void updateCounter(DATAGRIDVIEW_LOGCOUNTER tag, DateTime start_date, DateTime end_date, string users);
+        protected void updateCounter(DATAGRIDVIEW_LOGCOUNTER tag, DateTime start_date, DateTime end_date, string users)
+        {
+            m_loggingReadHandler.Command(StatesMachine.CounterToTypeMessageByDate, new object[] { tag, start_date, end_date, users }, false);
+        }
 
         /// <summary>
         /// Метод заполнения таблиц с типами сообщений и лог-сообщениями
@@ -1463,8 +1482,8 @@ namespace StatisticAnalyzer
             int idTypeMessage = -1
                 , iNewRow = -1;
             Dictionary<int, bool> dictTypeChecked;
-            //DateTime start_date
-            //    , end_date;
+            string[] messages
+                , parts;
 
             try
             {
@@ -1483,9 +1502,7 @@ namespace StatisticAnalyzer
                     //Получение массива состояний CheckBox'ов на DataGridView с типами сообщений
                     dictTypeChecked = dgvTypeToView.Checked();
                     //Преобразование строки в массив строк с сообщениями
-                    string[] messages = tlatPars.rows.Split(new string[] { s_chDelimeters[(int)INDEX_DELIMETER.ROW] }, StringSplitOptions.None);
-                    string[] parts;
-                    int indxTypeMessage = -1;
+                    messages = tlatPars.rows.Split(new string[] { s_chDelimeters[(int)INDEX_DELIMETER.ROW] }, StringSplitOptions.None);
 
                     //Помещение массива строк с сообщениями в DataGridView с сообщениями
                     foreach (string text in messages) {
@@ -1497,11 +1514,6 @@ namespace StatisticAnalyzer
                         //Фильтрация сообщений в зависимости от включенных CheckBox'ов в DataGridView с типами сообщений
                         dgvMessageView.Rows[iNewRow].Visible = dictTypeChecked[idTypeMessage];
                     }
-
-                    //start_date = DateTime.Parse(dgvListDateView.Rows[m_prevListDateViewRowIndex].Cells[1].Value.ToString());
-                    //end_date = start_date.AddDays(1);
-
-                    //updateCounter(DATAGRIDVIEW_LOGCOUNTER.TYPE_TO_VIEW, start_date, end_date, get_users(dgvUserView, false));
                 }
 
                 delegateReportClear(true);
@@ -1543,7 +1555,7 @@ namespace StatisticAnalyzer
             get
             {
                 return
-                    // (DateTime)dgvListDateView.Rows [dgvListDateView.SelectedRows [0].Index].Cells [1].Value
+                    // (DateTime)dgvListDateView.Rows [dgvListDateView.SelectedRows [0].Index].Tag
                     (DateTime)dgvListDateView.SelectedRows [0].Tag
                     ;
             }
@@ -1694,11 +1706,11 @@ namespace StatisticAnalyzer
         {
             clearMessageView(bClearTypeMessageCounter);
 
-            DateTime dtBegin = DateTime.Parse(dgvListDateView.Rows[m_prevListDateViewRowIndex].Cells[1].Value.ToString())
+            DateTime dtBegin = (DateTime)dgvListDateView.Rows[m_prevListDateViewRowIndex].Tag
                 , dtEnd = DateTime.MaxValue;
             //TODO: возможно указание периода более, чем одни сутки
             if ((m_prevListDateViewRowIndex + 1) < dgvListDateView.Rows.Count)
-                dtEnd = DateTime.Parse(dgvListDateView.Rows[m_prevListDateViewRowIndex + 1].Cells[1].Value.ToString());
+                dtEnd = (DateTime)dgvListDateView.Rows[m_prevListDateViewRowIndex + 1].Tag;
             else
                 ;
 
@@ -1960,7 +1972,7 @@ namespace StatisticAnalyzer
                 //Обнуление счётчиков сообщений на панели статистики
                 dgvTypeToView.ClearValues();
             } else
-                ;
+                throw new InvalidOperationException ("PanelAnalyzer::dgvUserView_SelectionChanged () - не удается получить идентификатор пользователя...");
         }
 
         protected int IdCurrentUserView

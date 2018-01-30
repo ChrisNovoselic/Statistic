@@ -19,6 +19,14 @@ namespace StatisticAnalyzer
         {
         }
 
+        private HLoggingReadHandlerDb LoggingReadHandler
+        {
+            get
+            {
+                return m_loggingReadHandler as HLoggingReadHandlerDb;
+            }
+        }
+
         #region Наследуемые методы
 
         /// <summary>
@@ -61,30 +69,6 @@ namespace StatisticAnalyzer
             DbTSQLConfigDatabase.DbConfig ().UnRegister ();
         }
 
-        protected override void handlerCommandCounterToTypeMessageByDate(PanelAnalyzer.REQUEST req, DataTable tableRes)
-        {
-            m_dictDataGridViewLogCounter [(DATAGRIDVIEW_LOGCOUNTER)req.Args [0]].Fill (tableRes);
-
-            delegateReportClear?.Invoke (true);
-        }
-
-        protected override void handlerCommandListMessageToUserByDate (PanelAnalyzer.REQUEST req, DataTable tableLogging)
-        {
-            if (req.State == PanelAnalyzer.REQUEST.STATE.Ok) {
-                m_LogParse.Start (new LogParse.PARAM_THREAD_PROC { Mode = LogParse.MODE.MESSAGE, Delimeter = string.Empty, Table = tableLogging });
-            } else
-                ;
-        }
-
-        protected override void handlerCommandListDateByUser (PanelAnalyzer.REQUEST req, DataTable tableRes)
-        {
-            m_LogParse.Start(new PanelAnalyzer.LogParse.PARAM_THREAD_PROC {
-                Mode = LogParse.MODE.LIST_DATE
-                , Delimeter = s_chDelimeters[(int)INDEX_DELIMETER.PART]
-                , Table = tableRes
-            });
-        }
-
         /// <summary>
         /// Метод для получения из БД списка активных вкладок для выбранного пользователя
         /// </summary>
@@ -93,90 +77,24 @@ namespace StatisticAnalyzer
         {
             List<int> listRes = new List<int> ();
 
-            int err = -1;
             int iRes = -1;
-            string[] idTabs ;
-            string query = string.Empty
-                , where = string.Empty
-                , tabs = string.Empty
-                , role0 = string.Empty, role1 = string.Empty;
-            DataTable tableProfileTabs;
+            string tabs;
+            string[] idTabs;
+
+            IDbConnection dbConn;
 
             delegateActionReport ("Получение активных вкладок пользователя");
 
             #region Фомирование и выполнение запроса для получения списка открытых вкладок у пользователя
 
+            tabs = HUsers.GetAllowed(ref dbConn, -1, -1, (int)HStatisticUsers.ID_ALLOWED.PROFILE_SETTINGS_CHANGEMODE);
+            //tabs = HUsers.GetAllowed((int)HStatisticUsers.ID_ALLOWED.PROFILE_VIEW_ADDINGTABS);
+
             if (Equals(user, null) == false) {
-                query = @"SELECT [ID_EXT],[IS_ROLE],[ID_UNIT],[VALUE] FROM [dbo].[profiles] WHERE ";
-                //Условие для поиска вкладок
-                where = $"((ID_EXT={user} AND [IS_ROLE]=0) OR ([ID_EXT]=(SELECT [ID_ROLE] FROM dbo.[users] WHERE [ID]={user}) AND [IS_ROLE]=1)) AND ID_UNIT IN({(int)HStatisticUsers.ID_ALLOWED.PROFILE_SETTINGS_CHANGEMODE}, {(int)HStatisticUsers.ID_ALLOWED.PROFILE_VIEW_ADDINGTABS})";
-                query += where;
 
-                tableProfileTabs = DbTSQLConfigDatabase.DbConfig().Select(query, out iRes);
-
-                if (tableProfileTabs.Rows.Count > 0) {
-                    //Список строк с используемыми вкладками
-                    DataRow[] table_role0 = tableProfileTabs.Select($"IS_ROLE=0 AND [ID_UNIT] IN ({(int)HStatisticUsers.ID_ALLOWED.PROFILE_SETTINGS_CHANGEMODE}, {(int)HStatisticUsers.ID_ALLOWED.PROFILE_VIEW_ADDINGTABS})");
-
-                    //Список строк с вкладками по умолчанию
-                    DataRow[] table_role1 = tableProfileTabs.Select($"IS_ROLE=1 AND [ID_UNIT] IN ({(int)HStatisticUsers.ID_ALLOWED.PROFILE_SETTINGS_CHANGEMODE}, {(int)HStatisticUsers.ID_ALLOWED.PROFILE_VIEW_ADDINGTABS})");
-
-                    //проверка выборки для используемых вкладок
-                    if ((!(table_role0.Length > 2))
-                        && (!(table_role0.Length < 1))) {
-                        for (int i = 0; i < table_role0.Length; i++)
-                        {
-                            if ((int)table_role0[i]["ID_UNIT"] == (int)HStatisticUsers.ID_ALLOWED.PROFILE_SETTINGS_CHANGEMODE)
-                                if (!(IsNumberContains(table_role0[i]["VALUE"].ToString()) < 0))
-                                    tabs += table_role0[i]["VALUE"].ToString();
-                                else
-                                    ;
-                            else
-                                ;
-
-                            if ((int)table_role0[i]["ID_UNIT"] == (int)HStatisticUsers.ID_ALLOWED.PROFILE_VIEW_ADDINGTABS) {
-                                if (tabs.Equals(string.Empty) == false)
-                                    tabs += ";";
-                                else
-                                    ;
-
-                                if (!(IsNumberContains(table_role0[i]["VALUE"].ToString()) < 0))
-                                    tabs += table_role0[i]["VALUE"].ToString();
-                                else
-                                    ;
-                            } else
-                                ;
-                        }
-                    }
-                    else
-                        //проверка выборки для вкладок по умолчанию
-                        if ((!(table_role1.Length > 2))
-                            && (!(table_role1.Length < 1))) {
-                            for (int i = 0; i < table_role1.Length; i++)
-                            {
-                                if ((int)table_role1[i]["ID_UNIT"] == (int)HStatisticUsers.ID_ALLOWED.PROFILE_SETTINGS_CHANGEMODE)
-                                    if (!(IsNumberContains(table_role1[i]["VALUE"].ToString()) < 0))
-                                        tabs += table_role1[i]["VALUE"].ToString();
-                                    else
-                                        ;
-                                else
-                                    ;
-
-                                if ((int)table_role1[i]["ID_UNIT"] == (int)HStatisticUsers.ID_ALLOWED.PROFILE_VIEW_ADDINGTABS)
-                                    if (!(IsNumberContains(table_role1[i]["VALUE"].ToString()) < 0))
-                                        tabs += table_role1[i]["VALUE"].ToString();
-                                    else
-                                        ;
-                                else
-                                    ;
-                            }
-                        }
-                        else
-                            Logging.Logg().Error(@"PanelAnalyzer::PanelAnalyzer_DB () - нет данных по вкладкам для выбранного пользователя с ID = " + user
-                                , Logging.INDEX_MESSAGE.NOT_SET);
-
+                if (tabs.Length > 0) {
                     //создание массива с ID вкладок
-                    idTabs = tabs.Split(';');
+                    idTabs = tabs.Split(new char[] { ';' }, StringSplitOptions.RemoveEmptyEntries);
 
                     for (int i = 0; i < idTabs.Length; i++)
                         if (IsPunctuationContains(idTabs[i]) == true) {
@@ -209,18 +127,12 @@ namespace StatisticAnalyzer
             return listRes;
         }
 
-        private HLoggingReadHandlerDb LoggingReadHandler
-        {
-            get
-            {
-                return m_loggingReadHandler as HLoggingReadHandlerDb;
-            }
-        }
-
         /// <summary>
         /// Разорвть соединение с БД
         /// </summary>
-        protected override void disconnect() { }
+        protected override void disconnect()
+        {
+        }
 
         /// <summary>
         /// Получение первой строки лог-сообщений
@@ -231,20 +143,14 @@ namespace StatisticAnalyzer
         {
             string strRes = string.Empty;
 
-            DateTime? dtVal = null;
-
-            if (r["DATE_TIME"] is DateTime)
-            {
-                dtVal = r["DATE_TIME"] as DateTime?;
-
-
+            if ((!(r["DATE_TIME"] is DBNull))
+                && (r["DATE_TIME"] is DateTime))
                 strRes = string.Join(s_chDelimeters[(int)INDEX_DELIMETER.PART].ToString()
-                                    , new string[] {
-                                            ((DateTime)dtVal).ToString (@"HH:mm:ss.fff")
-                                            , r["TYPE"].ToString ()
-                                            , r["MESSAGE"].ToString()
-                                        });
-            }
+                    , new string[] {
+                            ((DateTime)r["DATE_TIME"]).ToString (@"HH:mm:ss.fff")
+                            , r["TYPE"].ToString ()
+                            , r["MESSAGE"].ToString()
+                        });
             else
                 ;
 
@@ -252,18 +158,6 @@ namespace StatisticAnalyzer
         }
 
         #endregion
-
-        /// <summary>
-        /// Обновление счетчика типов сообщений
-        /// </summary>
-        /// <param name="dgv">DataGridView в которую поместить результаты</param>
-        /// <param name="start_date">Начало периода</param>
-        /// <param name="end_date">Окончание периода</param>
-        /// <param name="users">Список пользователей</param>
-        protected override void updateCounter (DATAGRIDVIEW_LOGCOUNTER tag, DateTime start_date, DateTime end_date, string users)
-        {
-            //LoggingReadHandler.Command (StatesMachine.CounterToTypeMessageByDate, new object [] { tag, start_date, end_date, users }, false);
-        }
 
         /// <summary>
         /// Наличие пунктуации в строке
@@ -313,13 +207,6 @@ namespace StatisticAnalyzer
             base.LogParse_ThreadExit (param);
         }
 
-        protected override bool [] procChecked ()
-        {
-            LoggingReadHandler.Command (StatesMachine.ProcCheckedFilter);
-            // фиктивный результат для совместимости с синхронным вариантом
-            return new bool [] { };
-        }
-
         protected override ILoggingReadHandler newLoggingRead ()
         {
             return new HLoggingReadHandlerDb();
@@ -330,36 +217,29 @@ namespace StatisticAnalyzer
         /// </summary>
         protected override void dgvUserView_SelectionChanged (object sender, EventArgs e)
         {
-            bool bUpdate = false;
-
             base.dgvUserView_SelectionChanged (sender, e);
 
-            bUpdate = !(IdCurrentUserView < 0);
+            //Очистить элементы управления с данными от пред. лог-файла
+            if (IsHandleCreated == true)
+                if (InvokeRequired == true) {
+                    BeginInvoke (new Action (clearListDateView));
+                    BeginInvoke (new Action<bool> (clearMessageView), true);
+                } else {
+                    clearListDateView ();
+                    clearMessageView (true);
+                }
+            else
+                Logging.Logg ().Error (@"FormMainAnalyzer::dgvUserStatistic_SelectionChanged () - ... BeginInvoke (TabLoggingClearDatetimeStart, TabLoggingClearText) - ...", Logging.INDEX_MESSAGE.D_001);
 
-            if (bUpdate == true) {
-                //Очистить элементы управления с данными от пред. лог-файла
-                if (IsHandleCreated == true)
-                    if (InvokeRequired == true) {
-                        BeginInvoke (new Action (clearListDateView));
-                        BeginInvoke (new Action<bool> (clearMessageView), true);
-                    } else {
-                        clearListDateView ();
-                        clearMessageView (true);
-                    } else
-                    Logging.Logg ().Error (@"FormMainAnalyzer::dgvUserStatistic_SelectionChanged () - ... BeginInvoke (TabLoggingClearDatetimeStart, TabLoggingClearText) - ...", Logging.INDEX_MESSAGE.D_001);
+            startLogParse (IdCurrentUserView.ToString());
 
-                startLogParse (IdCurrentUserView.ToString());
-
-                DbTSQLConfigDatabase.DbConfig ().SetConnectionSettings ();
-                DbTSQLConfigDatabase.DbConfig ().Register ();
-                //Заполнение ListBox'а активными вкладками
-                fillListBoxTabVisible (
-                    getTabActived (IdCurrentUserView).ToList ()
-                );
-
-                DbTSQLConfigDatabase.DbConfig ().UnRegister ();
-            } else
-                ;
+            DbTSQLConfigDatabase.DbConfig ().SetConnectionSettings ();
+            DbTSQLConfigDatabase.DbConfig ().Register ();
+            //Заполнение ListBox'а активными вкладками
+            fillListBoxTabVisible (
+                getTabActived (IdCurrentUserView).ToList ()
+            );
+            DbTSQLConfigDatabase.DbConfig ().UnRegister ();
         }
 
         #endregion
