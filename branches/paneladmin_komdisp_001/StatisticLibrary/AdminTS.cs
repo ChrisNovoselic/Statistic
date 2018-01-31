@@ -17,25 +17,9 @@ namespace StatisticCommon
 {    
     public class AdminTS : HAdmin
     {
-        //public enum TYPE_FIELDS : uint {STATIC, DYNAMIC, COUNT_TYPE_FIELDS};
-
-        //public AdminTS.TYPE_FIELDS m_typeFields;
-
         protected Semaphore semaDBAccess;
         protected volatile Errors saveResult;
         protected volatile bool saving;
-
-        /* Passwords
-        private Semaphore semaGetPass;
-        private Semaphore semaSetPass;
-        private volatile Errors passResult;
-        private volatile string passReceive;
-        private volatile uint m_idPass;
-        */
-
-        //private Semaphore semaLoadLayout;
-        //private volatile Errors loadLayoutResult;
-        //private LayoutData layoutForLoading;
 
         public static int m_sOwner_PBR = 0;
 
@@ -91,9 +75,56 @@ namespace StatisticCommon
         public enum INDEX_MARK_PPBRVALUES { PBR_ENABLED, PBR_SAVED, ADMIN_ENABLED, ADMIN_SAVED };
         protected HMark m_markSavedValues;
 
+        /// <summary>
+        /// Перечисление - значения для режимов чтения данных (админ. + ПБР) БД
+        ///  , режим изменяется при инициировании операции обращения к БД
+        /// </summary>
+        [Flags]
+        public enum MODE_GET_RDG_VALUES {
+            NOT_SET, DISPLAY = 0x1, EXPORT = 0x2, UNIT_TEST = 0x4
+        }
+
+        private MODE_GET_RDG_VALUES _modeGetRDGValues;
+
+        /// <summary>
+        /// Режим чтения данных (админ. + ПБР) БД
+        ///  , для отображения значений одного из ГТП
+        ///  , всех ГТП при экспорте значений в файл для ком./дисп с целью сравнения значений ПБР с аналогичными значениями из других источников
+        /// </summary>
+        public MODE_GET_RDG_VALUES ModeGetRDGValues
+        {
+            get
+            {
+                return _modeGetRDGValues;
+            }
+
+            set
+            {
+                if (((value & MODE_GET_RDG_VALUES.DISPLAY) == MODE_GET_RDG_VALUES.DISPLAY)
+                    && (((value & MODE_GET_RDG_VALUES.EXPORT) == MODE_GET_RDG_VALUES.EXPORT)))
+                    throw new InvalidOperationException ("AdminTS.ModeGetRDGValues::set - взаимоисключающие значения...");
+                else if (((value & MODE_GET_RDG_VALUES.DISPLAY) == MODE_GET_RDG_VALUES.DISPLAY)
+                    && ((_modeGetRDGValues & MODE_GET_RDG_VALUES.EXPORT) == MODE_GET_RDG_VALUES.EXPORT)) {
+                    // взаимоисключающие значения
+                    _modeGetRDGValues &= ~MODE_GET_RDG_VALUES.EXPORT;
+                } else if (((value & MODE_GET_RDG_VALUES.EXPORT) == MODE_GET_RDG_VALUES.EXPORT)
+                    && ((_modeGetRDGValues & MODE_GET_RDG_VALUES.DISPLAY) == MODE_GET_RDG_VALUES.DISPLAY)) {
+                    // взаимоисключающие значения
+                    _modeGetRDGValues &= ~MODE_GET_RDG_VALUES.DISPLAY;
+                } else
+                    ;
+
+                if ((_modeGetRDGValues & MODE_GET_RDG_VALUES.UNIT_TEST) == MODE_GET_RDG_VALUES.UNIT_TEST)
+                    _modeGetRDGValues |= value;
+                else
+                    _modeGetRDGValues = value;
+            }
+        }
+
         public AdminTS(bool[] arMarkSavePPBRValues, TECComponentBase.TYPE type)
             : base(type)
         {
+            _modeGetRDGValues = MODE_GET_RDG_VALUES.DISPLAY;
             m_markSavedValues = new HMark(0);
 
             if (!(arMarkSavePPBRValues == null))
@@ -127,7 +158,7 @@ namespace StatisticCommon
 
             bool bResSemaDbAccess = false;
             
-            delegateStartWait();
+            delegateStartWait?.Invoke();
 
             //Logging.Logg().Debug("AdminTS::SaveChanges () - delegateStartWait() - Интервал ожидания для semaDBAccess=" + DbInterface.MAX_WATING, Logging.INDEX_MESSAGE.NOT_SET);
 
@@ -190,7 +221,7 @@ namespace StatisticCommon
                 saving = true;
             }
 
-            delegateStopWait();
+            delegateStopWait?.Invoke();
 
             return saveResult;
         }
@@ -992,7 +1023,7 @@ namespace StatisticCommon
         /// </summary>
         protected void GetCurrentTimeRequest()
         {
-            if (IsCanUseTECComponents())
+            if (IsCanUseTECComponents == true)
             {
                 TEC tec = allTECComponents[indxTECComponents].tec;
                 int indx = -1;
@@ -1009,7 +1040,7 @@ namespace StatisticCommon
                     ;
             }
             else
-                ;
+                throw new InvalidOperationException ("AdminTS::GetCurrentTimeRequest () - нет компонентов ТЭЦ...");
         }
 
         /// <summary>
@@ -1025,13 +1056,13 @@ namespace StatisticCommon
             else
                 ;
 
-            if (IsCanUseTECComponents ())
+            if (IsCanUseTECComponents == true)
                 //Request(m_indxDbInterfaceCommon, m_listenerIdCommon, allTECComponents[indxTECComponents].tec.GetAdminDatesQuery(date));
                 Request(m_dictIdListeners[allTECComponents[indxTECComponents].tec.m_id][(int)CONN_SETT_TYPE.ADMIN]
                     , allTECComponents[indxTECComponents].tec.GetAdminDatesQuery(allTECComponents[indxTECComponents]/*, m_typeFields*/
                         , date.Add(-m_tsOffsetToMoscow)));
             else
-                ;
+                throw new InvalidOperationException ("AdminTS::GetAdminDatesRequest () - нет компонентов ТЭЦ...");
         }
 
         /// <summary>
@@ -1049,13 +1080,13 @@ namespace StatisticCommon
 
             m_iHavePBR_Number = -1;
 
-            if (IsCanUseTECComponents () == true)
+            if (IsCanUseTECComponents == true)
                 //Request(m_indxDbInterfaceCommon, m_listenerIdCommon, allTECComponents[indxTECComponents].tec.GetPBRDatesQuery(date));
                 Request(m_dictIdListeners[allTECComponents[indxTECComponents].tec.m_id][(int)CONN_SETT_TYPE.PBR],
                     allTECComponents[indxTECComponents].tec.GetPBRDatesQuery(allTECComponents[indxTECComponents]/*, m_typeFields*/
                         , date.Add(-m_tsOffsetToMoscow)));
             else
-                ;
+                throw new InvalidOperationException("AdminTS::getPPBRDatesRequest () - нет компонентов ТЭЦ...");
         }
 
         /// <summary>
@@ -1362,6 +1393,8 @@ namespace StatisticCommon
 
             return resQuery;
         }
+
+        public event Action<TEC, TECComponent, DateTime, string []> EventUnitTestSetValuesRequest;
         
         /// <summary>
         /// Получение и выполнение запросов для обновления, добавления административных значений
@@ -1401,7 +1434,13 @@ namespace StatisticCommon
             else
                 ;
 
-            Request(m_dictIdListeners[t.m_id][(int)CONN_SETT_TYPE.ADMIN], query[(int)DbTSQLInterface.QUERY_TYPE.UPDATE] + query[(int)DbTSQLInterface.QUERY_TYPE.INSERT] + query[(int)DbTSQLInterface.QUERY_TYPE.DELETE]);
+            if (!((ModeGetRDGValues & MODE_GET_RDG_VALUES.UNIT_TEST) == MODE_GET_RDG_VALUES.UNIT_TEST))
+                Request (m_dictIdListeners [t.m_id] [(int)CONN_SETT_TYPE.ADMIN], query [(int)DbTSQLInterface.QUERY_TYPE.UPDATE] + query [(int)DbTSQLInterface.QUERY_TYPE.INSERT] + query [(int)DbTSQLInterface.QUERY_TYPE.DELETE]);
+            else {
+                Request (m_dictIdListeners [t.m_id] [(int)CONN_SETT_TYPE.ADMIN], GetCurrentTimeQuery(DbInterface.DB_TSQL_INTERFACE_TYPE.MSSQL));
+
+                EventUnitTestSetValuesRequest?.Invoke (t, comp, date, query);
+            }
         }
 
         /// <summary>

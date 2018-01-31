@@ -777,11 +777,12 @@ namespace StatisticCommon
                 ;
         }
 
-        protected virtual bool IsCanUseTECComponents()
+        protected virtual bool IsCanUseTECComponents
         {
-            //bool bRes = false;
-            return (!(indxTECComponents < 0)) && (indxTECComponents < allTECComponents.Count);
-            //return bRes;
+            get
+            {
+                return (!(indxTECComponents < 0)) && (indxTECComponents < allTECComponents.Count);
+            }
         }
 
         /// <summary>

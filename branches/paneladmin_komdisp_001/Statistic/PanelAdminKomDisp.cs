@@ -240,7 +240,7 @@ namespace Statistic
             DateTime date; // дата дл€ экспорта значений 
 
             // по завершению операции эксопрта требуетс€ восстановить режим в исходный(DISPLAY - по умолчанию)
-            ModeGetRDGValues = MODE_GET_RDG_VALUES.EXPORT;
+            ModeGetRDGValues = AdminTS.MODE_GET_RDG_VALUES.EXPORT;
 
             (m_admin as AdminTS_KomDisp).PrepareExportRDGValues (m_listTECComponentIndex);
 
@@ -407,19 +407,21 @@ namespace Statistic
 
         private AdminTS_KomDisp Admin { get { return m_admin as AdminTS_KomDisp; } }
 
+        public event Action EventUnitTestSetDataGridViewAdminComleted;
+
         /// <summary>
         /// ќтобразить значени€ в представлении
         /// </summary>
         /// <param name="date">ƒата, за которую получены значени€ дл€ отображени€</param>
         /// <param name="bNewValues">ѕризнак наличи€ новых значений, иначе требуетс€ изменить оформление представлени€</param>
-        public override void setDataGridViewAdmin(DateTime date, bool bNewValues)
+        public override void SetDataGridViewAdmin(DateTime date, bool bNewValues)
         {
             int offset = -1
                 , nextIndx = -1;
             string strFmtDatetime = string.Empty;
             IAsyncResult iar;
 
-            if ((ModeGetRDGValues & MODE_GET_RDG_VALUES.DISPLAY) == MODE_GET_RDG_VALUES.DISPLAY) {
+            if ((ModeGetRDGValues & AdminTS.MODE_GET_RDG_VALUES.DISPLAY) == AdminTS.MODE_GET_RDG_VALUES.DISPLAY) {
                 //??? не очень из€щное решение
                 if (IsHandleCreated == true)
                 {
@@ -435,8 +437,11 @@ namespace Statistic
                         normalizedTableHourRows (InvokeRequired);
                     }
                 }
-                else
+                else {
+                    normalizedTableHourRows (false);
+
                     Logging.Logg().Error(@"PanelAdminKomDisp::setDataGridViewAdmin () - ... BeginInvoke (normalizedTableHourRows) - ...", Logging.INDEX_MESSAGE.D_001);
+                }
 
                 ((DataGridViewAdminKomDisp)this.dgwAdminTable).m_PBR_0 = m_admin.m_curRDGValues_PBR_0;
 
@@ -472,7 +477,9 @@ namespace Statistic
                     m_admin.CopyCurToPrevRDGValues ();
                 else
                     ;
-            } else if ((ModeGetRDGValues & MODE_GET_RDG_VALUES.EXPORT) == MODE_GET_RDG_VALUES.EXPORT) {
+
+                EventUnitTestSetDataGridViewAdminComleted?.Invoke ();
+            } else if ((ModeGetRDGValues & AdminTS.MODE_GET_RDG_VALUES.EXPORT) == AdminTS.MODE_GET_RDG_VALUES.EXPORT) {
                 nextIndx = Admin.AddValueToExportRDGValues(m_admin.m_curRDGValues, date);
 
                 if (nextIndx < 0)

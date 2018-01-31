@@ -185,7 +185,7 @@ namespace Statistic {
         /// </summary>
         /// <param name="date">Дата отображаемых значений</param>
         /// <param name="bNewValues">Признак наличия новых значений, иначе требуется изменить оформление представления</param>
-        public override void setDataGridViewAdmin(DateTime date, bool bNewValues)
+        public override void SetDataGridViewAdmin(DateTime date, bool bNewValues)
         {
             if (IsHandleCreated == true)
             {

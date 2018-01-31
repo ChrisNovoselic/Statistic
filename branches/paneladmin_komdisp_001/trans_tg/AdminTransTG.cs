@@ -39,7 +39,7 @@ namespace trans_tg
         {
             int iRes = -1;
 
-            iRes = IsCanUseTECComponents() == true ? 0 : -1;
+            iRes = IsCanUseTECComponents == true ? 0 : -1;
             int i = -1
                 , iTimeZoneOffset = -1;
 
@@ -60,7 +60,7 @@ namespace trans_tg
                     ;
             }
             else
-                ;
+                throw new InvalidOperationException ("AdminTransTG::impRDGExcelValuesResponse () - нет компонентов ТЭЦ...");
 
             iRes = base.impRDGExcelValuesResponse();
 
@@ -131,11 +131,11 @@ namespace trans_tg
             else
                 ;
 
-            if (IsCanUseTECComponents())
+            if (IsCanUseTECComponents == true)
                 //Request(m_indxDbInterfaceCommon, m_listenerIdCommon, allTECComponents[indxTECComponents].tec.GetAdminDatesQuery(date));
                 Request(m_dictIdListeners[allTECComponents[indxTECComponents].tec.m_id][(int)StatisticCommon.CONN_SETT_TYPE.ADMIN], getAdminDatesQuery(date/*, m_typeFields*/, allTECComponents[indxTECComponents]));
             else
-                ;
+                throw new InvalidOperationException ("AdminTransTG::impRDGExcelValuesResponse () - нет компонентов ТЭЦ...");
         }
 
         protected override void getPPBRDatesRequest(DateTime date)
@@ -147,11 +147,11 @@ namespace trans_tg
             else
                 ;
 
-            if (IsCanUseTECComponents () == true)
+            if (IsCanUseTECComponents == true)
                 //Request(m_indxDbInterfaceCommon, m_listenerIdCommon, allTECComponents[indxTECComponents].tec.GetPBRDatesQuery(date));
                 Request(m_dictIdListeners[allTECComponents[indxTECComponents].tec.m_id][(int)StatisticCommon.CONN_SETT_TYPE.ADMIN], getPBRDatesQuery(date/*, m_typeFields*/, allTECComponents[indxTECComponents]));
             else
-                ;
+                throw new InvalidOperationException ("AdminTransTG::impRDGExcelValuesResponse () - нет компонентов ТЭЦ...");
         }
 
         //Из 'TEC.cs'

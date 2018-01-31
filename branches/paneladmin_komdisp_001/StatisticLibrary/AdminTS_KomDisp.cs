@@ -211,7 +211,8 @@ namespace StatisticCommon
                 if (File.Exists(m_fullPathCSVValues) == true) {
                     string strCSVNameFileTemp = Path.GetFileNameWithoutExtension(m_fullPathCSVValues);
 
-                    if ((IsCanUseTECComponents() == true) && (strCSVNameFileTemp.Length > 0)) {
+                    if ((IsCanUseTECComponents == true)
+                        && (strCSVNameFileTemp.Length > 0)) {
                         m_tableValuesResponse = DbTSQLInterface.CSVImport(m_fullPathCSVValues
                                                                             , @"*"
                                                                             , out err);
