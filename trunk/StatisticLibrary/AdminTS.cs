@@ -1384,13 +1384,15 @@ namespace StatisticCommon
                 //        ;
                 //        break;
                 //    case AdminTS.TYPE_FIELDS.DYNAMIC:
-                        query[(int)DbTSQLInterface.QUERY_TYPE.INSERT] = @"INSERT INTO " + t.m_strNameTableAdminValues/*[(int)m_typeFields]*/ + " (DATE, " + @"REC" +
+                        query[(int)DbTSQLInterface.QUERY_TYPE.INSERT] = $@"INSERT INTO {t.m_strNameTableAdminValues/*[(int)m_typeFields]*/} (" +
+                            @"DATE " +
+                            @", " + @"REC" +
                             @", " + "IS_PER" +
                             @", " + "DIVIAT" +
                             @", " + "ID_COMPONENT" +
                             @", " + "SEASON" +
                             @", " + "FC" +
-                            @") VALUES" + query[(int)DbTSQLInterface.QUERY_TYPE.INSERT].Substring(0, query[(int)DbTSQLInterface.QUERY_TYPE.INSERT].Length - 1) + ";";
+                            $@") VALUES {query[(int)DbTSQLInterface.QUERY_TYPE.INSERT].Substring(0, query[(int)DbTSQLInterface.QUERY_TYPE.INSERT].Length - 1)};";
                 //        break;
                 //    default:
                 //        break;

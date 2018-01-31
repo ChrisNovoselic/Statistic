@@ -9,70 +9,18 @@ using System.Threading.Tasks;
 
 namespace UnitTest {
     [TestClass]
-    public class StatisticCommonAdminTest {
-        struct ASSERT {
-            public string input;
-            public int expected_err;
-            public int expected_ret;
-            public int actual;
-        }
+    public class StatisticCommonAdminTest
+    {
+        private static PanelAdminKomDisp panel;
 
-        [TestMethod]
-        public void Test_GetPBRNumber ()
+        #region Дополнительные атрибуты тестирования
+
+        //При написании тестов можно использовать следующие дополнительные атрибуты:
+
+        //ClassInitialize используется для выполнения кода до запуска первого теста в классе
+        [ClassInitialize ()]
+        public static void StatisticCommonAdminTestInitialize (TestContext testContext)
         {
-            int err = -1
-                , iRes = -1;
-            ;
-
-            string [] input = {
-                ""
-                , $"{HAdmin.PBR_PREFIX}"
-                , $"П{HAdmin.PBR_PREFIX}"
-                , $"ПП{HAdmin.PBR_PREFIX}89"
-                , $"ПП12{HAdmin.PBR_PREFIX}"
-                , $"П{HAdmin.PBR_PREFIX}-1"
-                , $"{HAdmin.PBR_PREFIX}2"
-                , $"-4{HAdmin.PBR_PREFIX}"
-                , $"{HAdmin.PBR_PREFIX}24"
-            };
-
-            int [] expected_err = {
-                -1
-                , -1
-                , 1
-                , -1
-                , -1
-                , -1
-                , 0
-                , -1
-                , 0
-            };
-
-            int [] expected_ret = {
-                -1
-                , -1
-                , 0
-                , 0
-                , 0
-                , 0
-                , 2
-                , 0
-                , 24
-            };
-
-            int [] actual = new int[expected_ret.Length];
-
-            for (int i = 0; i < input.Length; i++) {
-                Assert.AreEqual (expected_ret [i], HAdmin.GetPBRNumber (input [i], out err));
-                Assert.AreEqual (expected_err [i], err);
-            }
-        }
-
-        [TestMethod]
-        public void Test_SaveGTP_REC ()
-        {
-            PanelAdminKomDisp panel;
-
             int errCode = -1;
             string errMess = string.Empty;
             ASUTP.Database.FIleConnSett fileCS;
@@ -83,32 +31,99 @@ namespace UnitTest {
             fileCS.ReadSettingsFile (-1, out listConnSett, out errCode, out errMess);
             new DbTSQLConfigDatabase (
                 //new ASUTP.Database.ConnectionSettings("CONFIG_DB", "10.100.104.18", "", 1433, "techsite_cfg-2.X.X", "Stat_user", "5tat_u%ser")
-                listConnSett[0]
+                listConnSett [0]
                 );
             DbTSQLConfigDatabase.DbConfig ().Register ();
 
-            using (new HStatisticUsers (DbTSQLConfigDatabase.DbConfig ().ListenerId, ASUTP.Helper.HUsers.MODE_REGISTRATION.USER_DOMAINNAME)) { ; }
-            FormMain.formGraphicsSettings = new FormGraphicsSettings (delegate (int arg) { }
-                , delegate () { }
+            using (new HStatisticUsers (DbTSQLConfigDatabase.DbConfig ().ListenerId, ASUTP.Helper.HUsers.MODE_REGISTRATION.USER_DOMAINNAME)) {
+                ;
+            }
+            FormMain.formGraphicsSettings = new FormGraphicsSettings (delegate (int arg) {
+            }
+                , delegate () {
+                }
                 , false
             );
 
             DbTSQLConfigDatabase.DbConfig ().UnRegister ();
 
             panel = new PanelAdminKomDisp (new HMark (new int [] { (int)CONN_SETT_TYPE.ADMIN, (int)CONN_SETT_TYPE.PBR }));
+            Assert.IsNotNull (panel);
+
             panel.Start ();
             panel.Activate (true);
+            Assert.IsTrue (panel.Actived);
+        }
 
-            Task.Factory.StartNew (() => {
-                System.Threading.Thread.Sleep (6000);
-            });
-
-            panel.PerformButtonSetClick ();
-
+        //ClassCleanup используется для выполнения кода после завершения работы всех тестов в классе
+        [ClassCleanup ()]
+        public static void StatisticCommonAdminTestCleanup ()
+        {
             panel.Activate (false);
             panel.Stop ();
 
-            Assert.AreNotEqual (panel, null);
+            Assert.IsFalse (panel.Actived);
+        }
+
+        ////TestInitialize используется для выполнения кода перед запуском каждого теста
+        //[TestInitialize ()]
+        //public void MyTestInitialize ()
+        //{
+        //}
+
+        ////TestCleanup используется для выполнения кода после завершения каждого теста
+        //[TestCleanup ()]
+        //public void MyTestCleanup ()
+        //{
+        //}
+
+        #endregion
+
+        [TestMethod]
+        public void Test_SaveGTP_REC ()
+        {
+            try {
+                panel.ModeGetRDGValues = PanelAdmin.MODE_GET_RDG_VALUES.DISPLAY | PanelAdmin.MODE_GET_RDG_VALUES.UNIT_TEST;
+                Assert.IsTrue ((panel.ModeGetRDGValues & PanelAdmin.MODE_GET_RDG_VALUES.DISPLAY) == PanelAdmin.MODE_GET_RDG_VALUES.DISPLAY);
+                Assert.IsTrue ((panel.ModeGetRDGValues & PanelAdmin.MODE_GET_RDG_VALUES.UNIT_TEST) == PanelAdmin.MODE_GET_RDG_VALUES.UNIT_TEST);
+                Assert.IsFalse ((panel.ModeGetRDGValues & PanelAdmin.MODE_GET_RDG_VALUES.EXPORT) == PanelAdmin.MODE_GET_RDG_VALUES.EXPORT);
+
+                panel.ModeGetRDGValues = PanelAdmin.MODE_GET_RDG_VALUES.EXPORT;
+                Assert.IsTrue ((panel.ModeGetRDGValues & PanelAdmin.MODE_GET_RDG_VALUES.EXPORT) == PanelAdmin.MODE_GET_RDG_VALUES.EXPORT);
+                Assert.IsTrue ((panel.ModeGetRDGValues & PanelAdmin.MODE_GET_RDG_VALUES.UNIT_TEST) == PanelAdmin.MODE_GET_RDG_VALUES.UNIT_TEST);
+                Assert.IsFalse ((panel.ModeGetRDGValues & PanelAdmin.MODE_GET_RDG_VALUES.DISPLAY) == PanelAdmin.MODE_GET_RDG_VALUES.DISPLAY);
+
+                panel.ModeGetRDGValues |= PanelAdmin.MODE_GET_RDG_VALUES.UNIT_TEST;
+                Assert.IsTrue ((panel.ModeGetRDGValues & PanelAdmin.MODE_GET_RDG_VALUES.EXPORT) == PanelAdmin.MODE_GET_RDG_VALUES.EXPORT);
+                Assert.IsTrue ((panel.ModeGetRDGValues & PanelAdmin.MODE_GET_RDG_VALUES.UNIT_TEST) == PanelAdmin.MODE_GET_RDG_VALUES.UNIT_TEST);
+
+                //??? на практике исключение этого флага не потребуется
+                //panel.ModeGetRDGValues &= ~PanelAdmin.MODE_GET_RDG_VALUES.UNIT_TEST;
+                //Assert.IsTrue ((panel.ModeGetRDGValues & PanelAdmin.MODE_GET_RDG_VALUES.EXPORT) == PanelAdmin.MODE_GET_RDG_VALUES.EXPORT);
+                //Assert.IsFalse ((panel.ModeGetRDGValues & PanelAdmin.MODE_GET_RDG_VALUES.UNIT_TEST) == PanelAdmin.MODE_GET_RDG_VALUES.UNIT_TEST);
+
+                panel.ModeGetRDGValues = PanelAdmin.MODE_GET_RDG_VALUES.EXPORT;
+                Assert.IsTrue ((panel.ModeGetRDGValues & PanelAdmin.MODE_GET_RDG_VALUES.EXPORT) == PanelAdmin.MODE_GET_RDG_VALUES.EXPORT);
+                Assert.IsFalse ((panel.ModeGetRDGValues & PanelAdmin.MODE_GET_RDG_VALUES.DISPLAY) == PanelAdmin.MODE_GET_RDG_VALUES.DISPLAY);
+
+                panel.ModeGetRDGValues = PanelAdmin.MODE_GET_RDG_VALUES.DISPLAY;
+                Assert.IsTrue ((panel.ModeGetRDGValues & PanelAdmin.MODE_GET_RDG_VALUES.DISPLAY) == PanelAdmin.MODE_GET_RDG_VALUES.DISPLAY);
+                Assert.IsFalse ((panel.ModeGetRDGValues & PanelAdmin.MODE_GET_RDG_VALUES.EXPORT) == PanelAdmin.MODE_GET_RDG_VALUES.EXPORT);
+
+                panel.ModeGetRDGValues |= PanelAdmin.MODE_GET_RDG_VALUES.UNIT_TEST;
+                panel.ModeGetRDGValues = PanelAdmin.MODE_GET_RDG_VALUES.DISPLAY;
+                Assert.IsTrue ((panel.ModeGetRDGValues & PanelAdmin.MODE_GET_RDG_VALUES.DISPLAY) == PanelAdmin.MODE_GET_RDG_VALUES.DISPLAY);
+                Assert.IsTrue ((panel.ModeGetRDGValues & PanelAdmin.MODE_GET_RDG_VALUES.UNIT_TEST) == PanelAdmin.MODE_GET_RDG_VALUES.UNIT_TEST);
+                Assert.IsFalse ((panel.ModeGetRDGValues & PanelAdmin.MODE_GET_RDG_VALUES.EXPORT) == PanelAdmin.MODE_GET_RDG_VALUES.EXPORT);
+
+                Task.Factory.StartNew (() => {
+                    System.Threading.Thread.Sleep (6000);
+                });
+            } catch (InvalidOperationException ioe) {
+                Assert.IsTrue (string.Equals (ioe.Message, "PanelAdmin.ModeGetRDGValues::set - взаимоисключающие значения..."));
+            }
+
+            //panel.PerformButtonSetClick ();
         }
     }
 }

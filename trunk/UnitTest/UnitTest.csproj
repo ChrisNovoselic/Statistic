@@ -56,12 +56,16 @@
     <CodeAnalysisRuleSet>MinimumRecommendedRules.ruleset</CodeAnalysisRuleSet>
   </PropertyGroup>
   <ItemGroup>
-    <Reference Include="ASUTP.Control, Version=1.1.1.1, Culture=neutral, PublicKeyToken=null" />
+    <Reference Include="ASUTP.Control, Version=1.1.1.1, Culture=neutral, processorArchitecture=MSIL">
+      <SpecificVersion>False</SpecificVersion>
+    </Reference>
     <Reference Include="ASUTP.Core, Version=1.1.1.1, Culture=neutral, processorArchitecture=MSIL">
       <SpecificVersion>False</SpecificVersion>
       <HintPath>..\..\ExternalDLL\ASUTP.Core.dll</HintPath>
     </Reference>
-    <Reference Include="ASUTP.Database, Version=1.1.5.19, Culture=neutral, PublicKeyToken=null" />
+    <Reference Include="ASUTP.Database, Version=1.1.5.19, Culture=neutral, processorArchitecture=MSIL">
+      <SpecificVersion>False</SpecificVersion>
+    </Reference>
     <Reference Include="ASUTP.Helper">
       <HintPath>..\..\ExternalDLL\ASUTP.Helper.dll</HintPath>
     </Reference>
@@ -87,6 +91,7 @@
   </Choose>
   <ItemGroup>
     <Compile Include="HandlerDbTest.cs" />
+    <Compile Include="PBREvualation.cs" />
     <Compile Include="StatisticCommonAdminTest.cs" />
     <Compile Include="Properties\AssemblyInfo.cs" />
   </ItemGroup>

@@ -16,6 +16,50 @@ namespace StatisticCommon
     public partial class AdminTS_KomDisp : AdminTS
     {
         /// <summary>
+        /// Перечисление - значения для режимов чтения данных (админ. + ПБР) БД
+        ///  , режим изменяется при инициировании операции обращения к БД
+        /// </summary>
+        [Flags]
+        public enum MODE_GET_RDG_VALUES {
+            NOT_SET, DISPLAY = 0x1, EXPORT = 0x2, UNIT_TEST = 0x4
+        }
+
+        private MODE_GET_RDG_VALUES _modeGetRDGValues;
+        /// <summary>
+        /// Режим чтения данных (админ. + ПБР) БД
+        ///  , для отображения значений одного из ГТП
+        ///  , всех ГТП при экспорте значений в файл для ком./дисп с целью сравнения значений ПБР с аналогичными значениями из других источников
+        /// </summary>
+        public MODE_GET_RDG_VALUES ModeGetRDGValues
+        {
+            get
+            {
+                return _modeGetRDGValues;
+            }
+
+            set
+            {
+                if (((value & MODE_GET_RDG_VALUES.DISPLAY) == MODE_GET_RDG_VALUES.DISPLAY)
+                    && (((value & MODE_GET_RDG_VALUES.EXPORT) == MODE_GET_RDG_VALUES.EXPORT)))
+                    throw new InvalidOperationException ("PanelAdmin.ModeGetRDGValues::set - взаимоисключающие значения...");
+                else if (((value & MODE_GET_RDG_VALUES.DISPLAY) == MODE_GET_RDG_VALUES.DISPLAY)
+                    && ((_modeGetRDGValues & MODE_GET_RDG_VALUES.EXPORT) == MODE_GET_RDG_VALUES.EXPORT)) {
+                    // взаимоисключающие значения
+                    _modeGetRDGValues &= ~MODE_GET_RDG_VALUES.EXPORT;
+                } else if (((value & MODE_GET_RDG_VALUES.EXPORT) == MODE_GET_RDG_VALUES.EXPORT)
+                    && ((_modeGetRDGValues & MODE_GET_RDG_VALUES.DISPLAY) == MODE_GET_RDG_VALUES.DISPLAY)) {
+                    // взаимоисключающие значения
+                    _modeGetRDGValues &= ~MODE_GET_RDG_VALUES.DISPLAY;
+                } else
+                    ;
+
+                if ((_modeGetRDGValues & MODE_GET_RDG_VALUES.UNIT_TEST) == MODE_GET_RDG_VALUES.UNIT_TEST)
+                    _modeGetRDGValues |= value;
+                else
+                    _modeGetRDGValues = value;
+            }
+        }
+        /// <summary>
         /// Полный путь для файла CSV-макета при импорте ПБР из *.csv
         /// </summary>
         private string m_fullPathCSVValues;
