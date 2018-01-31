@@ -56,15 +56,15 @@
     <CodeAnalysisRuleSet>MinimumRecommendedRules.ruleset</CodeAnalysisRuleSet>
   </PropertyGroup>
   <ItemGroup>
-    <Reference Include="ASUTP.Control, Version=1.1.1.1, Culture=neutral, processorArchitecture=MSIL">
-      <SpecificVersion>False</SpecificVersion>
+    <Reference Include="ASUTP.Control">
+      <HintPath>..\..\ASUTP.Library\ASUTP.Control\obj\Debug\ASUTP.Control.dll</HintPath>
     </Reference>
     <Reference Include="ASUTP.Core, Version=1.1.1.1, Culture=neutral, processorArchitecture=MSIL">
       <SpecificVersion>False</SpecificVersion>
       <HintPath>..\..\ExternalDLL\ASUTP.Core.dll</HintPath>
     </Reference>
-    <Reference Include="ASUTP.Database, Version=1.1.5.19, Culture=neutral, processorArchitecture=MSIL">
-      <SpecificVersion>False</SpecificVersion>
+    <Reference Include="ASUTP.Database">
+      <HintPath>..\..\ASUTP.Library\ASUTP.Database\obj\Debug\ASUTP.Database.dll</HintPath>
     </Reference>
     <Reference Include="ASUTP.Helper">
       <HintPath>..\..\ExternalDLL\ASUTP.Helper.dll</HintPath>
