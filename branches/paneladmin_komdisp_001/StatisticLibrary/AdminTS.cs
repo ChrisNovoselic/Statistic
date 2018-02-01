@@ -394,25 +394,25 @@ namespace StatisticCommon
             }
         }
 
-        /// <summary>
-        /// Постановка в очередь для возвращения времени
-        /// </summary>
-        /// <param name="indx">Индекс компонента</param>
-        public void GetCurrentTime(int indx)
-        {
-            lock (m_lockState)
-            {
-                ClearStates();
+        ///// <summary>
+        ///// Постановка в очередь для возвращения времени
+        ///// </summary>
+        ///// <param name="indx">Индекс компонента</param>
+        //public void GetCurrentTime(int indx)
+        //{
+        //    lock (m_lockState)
+        //    {
+        //        ClearStates();
 
-                indxTECComponents = indx;
+        //        indxTECComponents = indx;
 
-                //Logging.Logg().Debug("AdminTS::GetCurrentTime () - states.Clear() - ...", Logging.INDEX_MESSAGE.NOT_SET);
+        //        //Logging.Logg().Debug("AdminTS::GetCurrentTime () - states.Clear() - ...", Logging.INDEX_MESSAGE.NOT_SET);
 
-                AddState((int)StatesMachine.CurrentTime);
+        //        AddState((int)StatesMachine.CurrentTime);
 
-                Run(@"AdminTS::GetCurrentTime ()");
-            }
-        }
+        //        Run(@"AdminTS::GetCurrentTime ()");
+        //    }
+        //}
 
         /// <summary>
         /// Запретить запись ПБР-значений
@@ -433,10 +433,9 @@ namespace StatisticCommon
             lock (m_lockState)
             {
                 ClearStates();
+                ClearValues ();
 
                 indxTECComponents = indx;
-                
-                ClearValues();
 
                 using_date = true;
                 //comboBoxTecComponent.SelectedIndex = indxTECComponents;
@@ -1391,6 +1390,11 @@ namespace StatisticCommon
             //@"' AND DATE <= '" + date.AddHours(1).ToString("yyyyMMdd HH:mm:ss") +
             //@"';";
 
+            if ((ModeGetRDGValues & MODE_GET_RDG_VALUES.UNIT_TEST) == MODE_GET_RDG_VALUES.UNIT_TEST)
+                EventUnitTestSetValuesRequest?.Invoke (t, comp, date, new string [] { });
+            else
+                ;
+
             return resQuery;
         }
 
@@ -1438,8 +1442,8 @@ namespace StatisticCommon
                 Request (m_dictIdListeners [t.m_id] [(int)CONN_SETT_TYPE.ADMIN], query [(int)DbTSQLInterface.QUERY_TYPE.UPDATE] + query [(int)DbTSQLInterface.QUERY_TYPE.INSERT] + query [(int)DbTSQLInterface.QUERY_TYPE.DELETE]);
             else {
                 Request (m_dictIdListeners [t.m_id] [(int)CONN_SETT_TYPE.ADMIN], GetCurrentTimeQuery(DbInterface.DB_TSQL_INTERFACE_TYPE.MSSQL));
-
-                EventUnitTestSetValuesRequest?.Invoke (t, comp, date, query);
+                // отправить непосредственно из метода формирования запроса
+                //EventUnitTestSetValuesRequest?.Invoke (t, comp, date, query);
             }
         }
 
@@ -2608,6 +2612,7 @@ namespace StatisticCommon
             if (resultSaving == Errors.NoError)
             {
                 if (bCallback == true)
+                //??? по сути 'GetRDGValues' внутри 'SaveRDGValues'
                     lock (m_lockState)
                     {
                         ClearStates();
@@ -2622,13 +2627,10 @@ namespace StatisticCommon
                         //AddState((int)StatesMachine.CurrentTime);
                         if (m_markQueries.IsMarked((int)CONN_SETT_TYPE.PBR) == true)
                             AddState((int)StatesMachine.PPBRValues);
-                        else
-                            ;
-
+                        else ;
                         if (m_markQueries.IsMarked((int)CONN_SETT_TYPE.ADMIN) == true)
                             AddState((int)StatesMachine.AdminValues);
-                        else
-                            ;
+                        else ;
 
                         Run(@"AdminTS::SaveRDGValues ()");
                     }

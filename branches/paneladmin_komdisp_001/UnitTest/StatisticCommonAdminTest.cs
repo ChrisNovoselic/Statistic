@@ -9,6 +9,7 @@ using System.Threading.Tasks;
 using ASUTP;
 using System.Windows.Forms;
 using System.Threading;
+using System.Diagnostics;
 
 namespace UnitTest {
     [TestClass]
@@ -69,6 +70,7 @@ namespace UnitTest {
             Assert.IsNotNull (panel);
 
             panel.Start ();
+            panel.InitializeComboBoxTecComponent (FormChangeMode.MODE_TECCOMPONENT.GTP);
             panel.Activate (true);
             Assert.IsTrue (panel.Actived);
 
@@ -104,6 +106,7 @@ namespace UnitTest {
         [TestMethod]
         public void Test_SaveGTP_REC ()
         {
+            #region Проверка переключения режимов работы
             try {
                 panel.ModeGetRDGValues = AdminTS.MODE_GET_RDG_VALUES.DISPLAY | AdminTS.MODE_GET_RDG_VALUES.UNIT_TEST;
                 Assert.IsTrue ((panel.ModeGetRDGValues & AdminTS.MODE_GET_RDG_VALUES.DISPLAY) == AdminTS.MODE_GET_RDG_VALUES.DISPLAY);
@@ -140,26 +143,69 @@ namespace UnitTest {
             } catch (InvalidOperationException ioe) {
                 Assert.IsTrue (string.Equals (ioe.Message, "PanelAdmin.ModeGetRDGValues::set - взаимоисключающие значения..."));
             }
+            #endregion
+
+            Action onEventUnitTestSetDataGridViewAdminCompleted
+                , taskPerformButtonSetClick;
+            Task task;
+            TaskStatus taskStatus;
+            CancellationTokenSource cancelTokenSource;
+
+            onEventUnitTestSetDataGridViewAdminCompleted = null;
+            taskPerformButtonSetClick = null;
+
+            task = null;
+
+            cancelTokenSource = new CancellationTokenSource ();
+
+            taskPerformButtonSetClick = delegate () {
+                panel.PerformButtonSetClick ((TEC t, TECComponent comp, DateTime date, string [] query) => {
+                    Assert.IsNotNull (query);
+
+                    System.Diagnostics.Debug.WriteLine ($"ТЭЦ={t.name_shr}; комп.={comp.name_shr};{Environment.NewLine}([{ASUTP.Database.DbTSQLInterface.QUERY_TYPE.INSERT.ToString ()}]: [{query [(int)ASUTP.Database.DbTSQLInterface.QUERY_TYPE.INSERT]}])"
+                        + $"{Environment.NewLine}([{ASUTP.Database.DbTSQLInterface.QUERY_TYPE.UPDATE.ToString ()}]: [{query [(int)ASUTP.Database.DbTSQLInterface.QUERY_TYPE.UPDATE]}]");
+                });
+            };
+
+            onEventUnitTestSetDataGridViewAdminCompleted = delegate () {
+                System.Diagnostics.Debug.WriteLine ("Handler On 'EventUnitTestSetDataGridViewAdminCompleted'...");
+                // отменить регистрацию, чтобы исключить повторный вызов
+                // повторный вызов произойдет при обновлении информации на панели, который обязательно произойдет при сохранении значений
+                if (Equals (onEventUnitTestSetDataGridViewAdminCompleted, null) == false)
+                    panel.EventUnitTestSetDataGridViewAdminCompleted -= onEventUnitTestSetDataGridViewAdminCompleted;
+                else
+                    System.Diagnostics.Debug.WriteLine (string.Format ("Обработчик события 'Panel::EventUnitTestSetDataGridViewAdminCompleted' не определен..."));
+
+                if (Equals (task, null) == true)
+                    task = Task.Factory.StartNew (taskPerformButtonSetClick);
+                else
+                    System.Diagnostics.Debug.WriteLine (string.Format ("Пропустить старт задачи..."));
+            };
 
             try {
                 Assert.IsTrue ((panel.ModeGetRDGValues & AdminTS.MODE_GET_RDG_VALUES.DISPLAY) == AdminTS.MODE_GET_RDG_VALUES.DISPLAY);
                 Assert.IsTrue ((panel.ModeGetRDGValues & AdminTS.MODE_GET_RDG_VALUES.UNIT_TEST) == AdminTS.MODE_GET_RDG_VALUES.UNIT_TEST);
 
-                panel.EventUnitTestSetDataGridViewAdminComleted += delegate () {
-                    panel.PerformButtonSetClick ((TEC t, TECComponent comp, DateTime date, string [] query) => {
-                        Assert.IsNotNull (query);
+                panel.EventUnitTestSetDataGridViewAdminCompleted += onEventUnitTestSetDataGridViewAdminCompleted;
 
-                        System.Diagnostics.Debug.WriteLine ($"Запрос({ASUTP.Database.DbTSQLInterface.QUERY_TYPE.INSERT.ToString()}; ТЭЦ={t.name_shr}; комп.={comp.name_shr}): [{query[(int)ASUTP.Database.DbTSQLInterface.QUERY_TYPE.INSERT]}]...");
-                    });
-                };
+                //task.ContinueWith (t => {
+                //}
+                //, cancelTokenSource.Token);
 
                 int cnt = 0
                     , cnt_max = 26;
-                while (cnt++ < cnt_max) {
+                taskStatus = Equals (task, null) == false ? task.Status : TaskStatus.WaitingForActivation;
+                while ((cnt++ < cnt_max)
+                    && ((!(taskStatus == TaskStatus.Canceled))
+                    && (!(taskStatus == TaskStatus.Faulted))
+                    && (!(taskStatus == TaskStatus.RanToCompletion)))) {
                     Thread.Sleep (1000);
+                    taskStatus = Equals (task, null) == false ? task.Status : taskStatus;
                     System.Diagnostics.Debug.WriteLine ($"Ожидание: счетчик <{cnt}> из <{cnt_max}>...");
                 }
-                System.Diagnostics.Debug.WriteLine ($"Окончание ожидания <{cnt}>...");
+                System.Diagnostics.Debug.WriteLine (string.Format("Окончание ожидания <{0}>, задача <{1}>..."
+                    , cnt
+                    , Equals (task, null) == false ? task.Status.ToString () : "не создана"));
             } catch (Exception e) {
                 System.Diagnostics.Debug.WriteLine (e.Message);
 

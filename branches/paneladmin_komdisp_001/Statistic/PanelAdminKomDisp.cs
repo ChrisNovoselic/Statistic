@@ -407,7 +407,7 @@ namespace Statistic
 
         private AdminTS_KomDisp Admin { get { return m_admin as AdminTS_KomDisp; } }
 
-        public event Action EventUnitTestSetDataGridViewAdminComleted;
+        public event Action EventUnitTestSetDataGridViewAdminCompleted;
 
         /// <summary>
         /// Отобразить значения в представлении
@@ -478,7 +478,7 @@ namespace Statistic
                 else
                     ;
 
-                EventUnitTestSetDataGridViewAdminComleted?.Invoke ();
+                EventUnitTestSetDataGridViewAdminCompleted?.Invoke ();
             } else if ((ModeGetRDGValues & AdminTS.MODE_GET_RDG_VALUES.EXPORT) == AdminTS.MODE_GET_RDG_VALUES.EXPORT) {
                 nextIndx = Admin.AddValueToExportRDGValues(m_admin.m_curRDGValues, date);
 
