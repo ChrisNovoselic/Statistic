@@ -1821,7 +1821,7 @@ namespace StatisticCommon
             DbInterface.DB_TSQL_INTERFACE_TYPE typeDB = DbInterface.DB_TSQL_INTERFACE_TYPE.UNKNOWN;
             int iListenerId = -1;
 
-            if (IsCanUseTECComponents())
+            if (IsCanUseTECComponents == true)
             {
                 typeDB = DbTSQLInterface.getTypeDB(allTECComponents[indxTECComponents].tec.connSetts[(int)CONN_SETT_TYPE.ADMIN].port);
                 iListenerId = m_dictIdListeners[allTECComponents[indxTECComponents].tec.m_id][(int)CONN_SETT_TYPE.ADMIN];

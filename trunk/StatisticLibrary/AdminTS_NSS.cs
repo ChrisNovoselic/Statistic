@@ -23,7 +23,7 @@ namespace StatisticCommon
         protected override /*override*/ int impRDGExcelValuesResponse()
         {
             //bool bRes = base.ImpRDGExcelValuesResponse();
-            int iRes = IsCanUseTECComponents() == true ? 0 : -1;
+            int iRes = IsCanUseTECComponents == true ? 0 : -1;
             int rowOffsetData = 0;
 
             if (iRes == 0)
@@ -59,9 +59,9 @@ namespace StatisticCommon
                     ;
             }
             else
-                ;
+                throw new InvalidOperationException ("AdminTS_NSS::impRDGExcelValuesResponse () - нет компонентов ТЭЦ...");
 
-            RDGStruct[] curRDGValues = new RDGStruct[m_curRDGValues.Length];
+            RDGStruct [] curRDGValues = new RDGStruct[m_curRDGValues.Length];
 
             m_curRDGValues.CopyTo(curRDGValues, 0);
 
@@ -92,7 +92,8 @@ namespace StatisticCommon
             Logging.Logg().Debug(@"AdminTS_NSS::ImpRDGExcelValuesRequest () - path_rdg_excel=" + path_rdg_excel + @", nameFileRDGExcel=" + nameFileRDGExcel(m_curDate.Date), Logging.INDEX_MESSAGE.NOT_SET);
 
             delegateStartWait();
-            if ((IsCanUseTECComponents() == true) && (path_rdg_excel.Length > 0))
+            if ((IsCanUseTECComponents == true)
+                && (path_rdg_excel.Length > 0))
             {
                 try { m_tableRDGExcelValuesResponse = DbTSQLInterface.Select(path_rdg_excel + "\\" + nameFileRDGExcel(m_curDate.Date) + ".xls", strSelect, out err); }
                 catch (Exception e)
@@ -145,13 +146,13 @@ namespace StatisticCommon
                     Logging.Logg().Debug(@"AdminTS_NSS::ImpRDGExcelValuesRequest () - m_tableRDGExcelValuesResponse=null", Logging.INDEX_MESSAGE.NOT_SET);
             }
             else
-                ;
+                throw new InvalidOperationException ("AdminTS::impRDGExcelValuesRequest () - нет компонентов ТЭЦ путь импорта не указан...");
 
             //Logging.Logg ().LogLock ();
             //Logging.Logg().Send("Admin.cs - GetRDGExcelValuesRequest () - (path_rdg_excel = " + path_rdg_excel + ")", false, false, false);
             //Logging.Logg().LogUnlock();
 
-            delegateStopWait();
+            delegateStopWait ();
 
             Logging.Logg().Debug(@"AdminTS_NSS::ImpRDGExcelValuesRequest () - вЫход...", Logging.INDEX_MESSAGE.NOT_SET);
 
@@ -175,7 +176,8 @@ namespace StatisticCommon
                 strUpdate = string.Empty;
             TECComponentBase comp;
 
-            if ((IsCanUseTECComponents() == true) && (path_rdg_excel.Length > 0))
+            if ((IsCanUseTECComponents == true)
+                && (path_rdg_excel.Length > 0))
             {
                 Excel.Application excelApp = new Excel.Application();
                 Excel.Workbook excelAppWorkbook;
@@ -338,7 +340,7 @@ namespace StatisticCommon
                 //base.ExpRDGExcelValuesRequest();
             }
             else
-                ;
+                throw new InvalidOperationException ("AdminTS::expRDGExcelValuesRequest () - нет компонентов ТЭЦ путь экспорта не указан...");
 
             //return bRes;
         }

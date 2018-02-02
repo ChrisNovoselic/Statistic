@@ -22,45 +22,20 @@ namespace Statistic
     public abstract class PanelAdmin : PanelStatisticWithTableHourRows
     {
         /// <summary>
-        /// Перечисление - значения для режимов чтения данных (админ. + ПБР) БД
-        ///  , режим изменяется при инициировании операции обращения к БД
-        /// </summary>
-        [Flags]
-        public enum MODE_GET_RDG_VALUES { NOT_SET, DISPLAY = 0x1, EXPORT = 0x2, UNIT_TEST = 0x4 }
-
-        private MODE_GET_RDG_VALUES _modeGetRDGValues;
-        /// <summary>
         /// Режим чтения данных (админ. + ПБР) БД
         ///  , для отображения значений одного из ГТП
         ///  , всех ГТП при экспорте значений в файл для ком./дисп с целью сравнения значений ПБР с аналогичными значениями из других источников
         /// </summary>
-        public MODE_GET_RDG_VALUES ModeGetRDGValues
+        public AdminTS.MODE_GET_RDG_VALUES ModeGetRDGValues
         {
             get
             {
-                return _modeGetRDGValues;
+                return m_admin.ModeGetRDGValues;
             }
 
             set
             {
-                if (((value & MODE_GET_RDG_VALUES.DISPLAY) == MODE_GET_RDG_VALUES.DISPLAY)
-                    && (((value & MODE_GET_RDG_VALUES.EXPORT) == MODE_GET_RDG_VALUES.EXPORT)))
-                    throw new InvalidOperationException("PanelAdmin.ModeGetRDGValues::set - взаимоисключающие значения...");
-                else if (((value & MODE_GET_RDG_VALUES.DISPLAY) == MODE_GET_RDG_VALUES.DISPLAY)
-                    && ((_modeGetRDGValues & MODE_GET_RDG_VALUES.EXPORT) == MODE_GET_RDG_VALUES.EXPORT)) {
-                // взаимоисключающие значения
-                    _modeGetRDGValues &= ~MODE_GET_RDG_VALUES.EXPORT;
-                } else if (((value & MODE_GET_RDG_VALUES.EXPORT) == MODE_GET_RDG_VALUES.EXPORT)
-                    && ((_modeGetRDGValues & MODE_GET_RDG_VALUES.DISPLAY) == MODE_GET_RDG_VALUES.DISPLAY)) {
-                // взаимоисключающие значения
-                    _modeGetRDGValues &= ~MODE_GET_RDG_VALUES.DISPLAY;
-                } else
-                    ;
-
-                if ((_modeGetRDGValues & MODE_GET_RDG_VALUES.UNIT_TEST) == MODE_GET_RDG_VALUES.UNIT_TEST)
-                    _modeGetRDGValues |= value;
-                else
-                    _modeGetRDGValues = value;
+                m_admin.ModeGetRDGValues = value;
             }
         }
         /// <summary>
@@ -325,7 +300,7 @@ namespace Statistic
         private void initialize () {
             //m_evtAdminTableRowCount = new ManualResetEvent (false);
 
-            m_admin.SetDelegateData(this.setDataGridViewAdmin, null);
+            m_admin.SetDelegateData(this.SetDataGridViewAdmin, null);
             m_admin.SetDelegateDatetime(this.CalendarSetDate);
 
             //m_admin.m_typeFields = s_typeFields;
@@ -376,7 +351,7 @@ namespace Statistic
 
         protected virtual void getDataGridViewAdmin() {}
 
-        public abstract void setDataGridViewAdmin (DateTime date, bool bNewValues);
+        public abstract void SetDataGridViewAdmin (DateTime date, bool bNewValues);
 
         /// <summary>
         /// Установка значения даты/времени в элементе управления 'календарь' и
@@ -553,14 +528,16 @@ namespace Statistic
         }
 
         [TestMethod]
-        public void PerformButtonSetClick ()
+        public void PerformButtonSetClick (Action<TEC, TECComponent, DateTime, string []> fUnitTestSetValuesRequest)
         {
+            m_admin.EventUnitTestSetValuesRequest += new Action<TEC, TECComponent, DateTime, string []> (fUnitTestSetValuesRequest);
+
             btnSet_Click (this, EventArgs.Empty);
         }
 
         private void btnSet_Click(object sender, EventArgs e)
         {
-            ModeGetRDGValues = MODE_GET_RDG_VALUES.DISPLAY;
+            ModeGetRDGValues = AdminTS.MODE_GET_RDG_VALUES.DISPLAY;
 
             getDataGridViewAdmin();
 
@@ -582,7 +559,7 @@ namespace Statistic
 
         private void btnRefresh_Click(object sender, EventArgs e)
         {
-            ModeGetRDGValues = MODE_GET_RDG_VALUES.DISPLAY;
+            ModeGetRDGValues = AdminTS.MODE_GET_RDG_VALUES.DISPLAY;
 
             ClearTables();
 
@@ -640,7 +617,7 @@ namespace Statistic
 
         public override void UpdateGraphicsCurrent (int type)
         {
-            setDataGridViewAdmin (mcldrDate.SelectionStart.Date, false);
+            SetDataGridViewAdmin (mcldrDate.SelectionStart.Date, false);
         }
     }
 }

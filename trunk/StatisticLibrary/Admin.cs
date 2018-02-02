@@ -167,10 +167,23 @@ namespace StatisticCommon
         /// Список 
         /// </summary>
         public volatile List<TECComponent> allTECComponents;
+
+        private int _indxTECComponents;
         /// <summary>
         /// Текущий индекс компонента из списка 'allTECComponents' (для сохранения между вызовами функций)
         /// </summary>
-        public int indxTECComponents;
+        public int indxTECComponents
+        {
+            get
+            {
+                return _indxTECComponents;
+            }
+
+            set
+            {
+                _indxTECComponents = value;
+            }
+        }
         /// <summary>
         /// Хранения значений дыты/времени
         /// </summary>
@@ -777,11 +790,12 @@ namespace StatisticCommon
                 ;
         }
 
-        protected virtual bool IsCanUseTECComponents()
+        protected virtual bool IsCanUseTECComponents
         {
-            //bool bRes = false;
-            return (!(indxTECComponents < 0)) && (indxTECComponents < allTECComponents.Count);
-            //return bRes;
+            get
+            {
+                return (!(indxTECComponents < 0)) && (indxTECComponents < allTECComponents.Count);
+            }
         }
 
         /// <summary>

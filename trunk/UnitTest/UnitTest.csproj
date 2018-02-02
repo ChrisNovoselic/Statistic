@@ -69,6 +69,10 @@
     <Reference Include="ASUTP.Helper">
       <HintPath>..\..\ExternalDLL\ASUTP.Helper.dll</HintPath>
     </Reference>
+    <Reference Include="ASUTP.Logging, Version=1.1.1.1, Culture=neutral, processorArchitecture=MSIL">
+      <SpecificVersion>False</SpecificVersion>
+      <HintPath>..\..\ExternalDLL\ASUTP.Logging.dll</HintPath>
+    </Reference>
     <Reference Include="System" />
     <Reference Include="System.Core">
       <RequiredTargetFramework>3.5</RequiredTargetFramework>
