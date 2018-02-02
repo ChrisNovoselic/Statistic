@@ -440,7 +440,10 @@ namespace Statistic
                 else {
                     normalizedTableHourRows (false);
 
-                    Logging.Logg().Error(@"PanelAdminKomDisp::setDataGridViewAdmin () - ... BeginInvoke (normalizedTableHourRows) - ...", Logging.INDEX_MESSAGE.D_001);
+                    if (!((ModeGetRDGValues & AdminTS.MODE_GET_RDG_VALUES.UNIT_TEST) == AdminTS.MODE_GET_RDG_VALUES.UNIT_TEST))
+                        Logging.Logg().Error(@"PanelAdminKomDisp::setDataGridViewAdmin () - ... BeginInvoke (normalizedTableHourRows) - ...", Logging.INDEX_MESSAGE.D_001);
+                    else
+                        ;
                 }
 
                 ((DataGridViewAdminKomDisp)this.dgwAdminTable).m_PBR_0 = m_admin.m_curRDGValues_PBR_0;

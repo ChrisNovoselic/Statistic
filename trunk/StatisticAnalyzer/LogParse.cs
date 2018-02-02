@@ -120,18 +120,18 @@ namespace StatisticAnalyzer
                     if (m_thread.IsAlive == true) {
                         //m_bAllowed = false;
                         joined = m_thread.Join (6666);
-                        if (joined == false)
+                        if (joined == false) {
                             m_thread.Abort ();
-                        else
+
+                            try {
+                                m_semAllowed.Release();
+                            } catch (Exception e) {
+                                Console.WriteLine("LogParse::Stop () - m_semAllowed.Release() - поток не был запущен или штатно завершился");
+                            }
+                        } else
                             ;
                     } else
                         ;
-
-                    try {
-                        m_semAllowed.Release ();
-                    } catch (Exception e) {
-                        Console.WriteLine ("LogParse::Stop () - m_semAllowed.Release() - поток не был запущен или штатно завршился");
-                    }
                 } else
                     ;
             }
@@ -160,7 +160,7 @@ namespace StatisticAnalyzer
                 try {
                     m_semAllowed.Release ();
                 } catch (Exception e) {
-                    Console.WriteLine ("LogParse::Stop () - m_semAllowed.Release() - поток не был запущен или штатно завршился");
+                    Console.WriteLine ("LogParse::thread_Proc () - m_semAllowed.Release() - поток не был запущен или штатно завершился");
                 }
 
                 Exit ((PARAM_THREAD_PROC)data);

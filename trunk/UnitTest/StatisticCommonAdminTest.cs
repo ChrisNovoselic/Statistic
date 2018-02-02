@@ -7,9 +7,10 @@ using Statistic;
 using ASUTP.Core;
 using System.Threading.Tasks;
 using ASUTP;
-using System.Windows.Forms;
+using System.Linq;
 using System.Threading;
 using System.Diagnostics;
+using ASUTP.Forms;
 
 namespace UnitTest {
     [TestClass]
@@ -25,7 +26,14 @@ namespace UnitTest {
         [ClassInitialize ()]
         public static void StatisticCommonAdminTestInitialize (TestContext testContext)
         {
+            //Application.ThreadException += new ThreadExceptionEventHandler(Application_ThreadException);
+            AppDomain.CurrentDomain.UnhandledException += new UnhandledExceptionEventHandler(CurrentDomain_UnhandledException);
+
+            FormMainBase.s_iMainSourceData = 671;
+
             Logging.SetMode (Logging.LOG_MODE.FILE_EXE);
+
+            Logging.Logg().PostStart(ASUTP.Helper.ProgramBase.MessageWellcome);
 
             int errCode = -1;
             string errMess = string.Empty;
@@ -83,8 +91,14 @@ namespace UnitTest {
         [ClassCleanup ()]
         public static void StatisticCommonAdminTestCleanup ()
         {
-            panel.Activate (false);
-            panel.Stop ();
+            try {
+                panel.Activate (false);
+                panel.Stop ();
+
+                Logging.Logg().PostStop(ASUTP.Helper.ProgramBase.MessageExit);
+            } catch (Exception e) {
+                System.Diagnostics.Debug.WriteLine(e.Message);
+            }
 
             Assert.IsFalse (panel.Actived);
         }
@@ -145,41 +159,66 @@ namespace UnitTest {
             }
             #endregion
 
-            Action onEventUnitTestSetDataGridViewAdminCompleted
-                , taskPerformButtonSetClick;
-            Task task;
-            TaskStatus taskStatus;
+            string mesDebug = string.Empty;
+
+            int prevIndex = 0
+                , nextIndex = 0;
+            Action onEventUnitTestSetDataGridViewAdminCompleted;
+            PanelAdmin.DelegateUnitTestNextIndexSetValuesRequest delegateNextIndexSetValuesRequest;
+            Task taskPerformButtonSetClick
+                , taskPerformComboBoxTECComponentSelectedIndex;
+            TaskStatus taskStatusPerformButtonSetClick
+                , taskStatusPerformComboBoxTECComponentSelectedIndex;
             CancellationTokenSource cancelTokenSource;
 
             onEventUnitTestSetDataGridViewAdminCompleted = null;
-            taskPerformButtonSetClick = null;
 
-            task = null;
+            taskPerformButtonSetClick =
+            taskPerformComboBoxTECComponentSelectedIndex =
+                null;
 
             cancelTokenSource = new CancellationTokenSource ();
+            // вызывается при ретрансляции панелью события имитации отправления запроса на обновление значений
+            delegateNextIndexSetValuesRequest = delegate (int next_index, TEC t, TECComponent comp, DateTime date, CONN_SETT_TYPE type, IEnumerable<int> list_id_rec, string[]queries) {
+                Assert.IsNotNull(list_id_rec);
+                Assert.IsFalse(list_id_rec.ToArray().Length < 24);
+                //TODO: проверка значений массива на истинность (сравнить с идентификаторами из таблицы БД)
 
-            taskPerformButtonSetClick = delegate () {
-                panel.PerformButtonSetClick ((TEC t, TECComponent comp, DateTime date, string [] query) => {
-                    Assert.IsNotNull (query);
+                nextIndex = next_index;
 
-                    System.Diagnostics.Debug.WriteLine ($"ТЭЦ={t.name_shr}; комп.={comp.name_shr};{Environment.NewLine}([{ASUTP.Database.DbTSQLInterface.QUERY_TYPE.INSERT.ToString ()}]: [{query [(int)ASUTP.Database.DbTSQLInterface.QUERY_TYPE.INSERT]}])"
-                        + $"{Environment.NewLine}([{ASUTP.Database.DbTSQLInterface.QUERY_TYPE.UPDATE.ToString ()}]: [{query [(int)ASUTP.Database.DbTSQLInterface.QUERY_TYPE.UPDATE]}]");
-                });
+                mesDebug = $"ТЭЦ={t.name_shr}; комп.={comp.name_shr};{Environment.NewLine}([{ASUTP.Database.DbTSQLInterface.QUERY_TYPE.INSERT.ToString()}]: [{queries[(int)ASUTP.Database.DbTSQLInterface.QUERY_TYPE.INSERT]}])"
+                    + $"{Environment.NewLine}([{ASUTP.Database.DbTSQLInterface.QUERY_TYPE.UPDATE.ToString()}]: [{queries[(int)ASUTP.Database.DbTSQLInterface.QUERY_TYPE.UPDATE]}]"
+                    + $"{Environment.NewLine}(идентификаторы: [{string.Join(";", list_id_rec.Select(id => id.ToString()).ToArray())}]";
+
+                Logging.Logg().Debug(mesDebug, Logging.INDEX_MESSAGE.NOT_SET);
+                System.Diagnostics.Debug.WriteLine(mesDebug);
             };
-
+            // вызывается при завершении заполнения 'DatagridView' значениями
             onEventUnitTestSetDataGridViewAdminCompleted = delegate () {
-                System.Diagnostics.Debug.WriteLine ("Handler On 'EventUnitTestSetDataGridViewAdminCompleted'...");
-                // отменить регистрацию, чтобы исключить повторный вызов
-                // повторный вызов произойдет при обновлении информации на панели, который обязательно произойдет при сохранении значений
-                if (Equals (onEventUnitTestSetDataGridViewAdminCompleted, null) == false)
-                    panel.EventUnitTestSetDataGridViewAdminCompleted -= onEventUnitTestSetDataGridViewAdminCompleted;
-                else
-                    System.Diagnostics.Debug.WriteLine (string.Format ("Обработчик события 'Panel::EventUnitTestSetDataGridViewAdminCompleted' не определен..."));
+                mesDebug = "Handler On 'EventUnitTestSetDataGridViewAdminCompleted'...";
 
-                if (Equals (task, null) == true)
-                    task = Task.Factory.StartNew (taskPerformButtonSetClick);
+                Logging.Logg().Debug(mesDebug, Logging.INDEX_MESSAGE.NOT_SET);
+                System.Diagnostics.Debug.WriteLine (mesDebug);
+                //// отменить регистрацию, чтобы исключить повторный вызов
+                //// повторный вызов произойдет при обновлении информации на панели, который обязательно произойдет при сохранении значений
+                //if (Equals (onEventUnitTestSetDataGridViewAdminCompleted, null) == false)
+                //    panel.EventUnitTestSetDataGridViewAdminCompleted -= onEventUnitTestSetDataGridViewAdminCompleted;
+                //else
+                //    System.Diagnostics.Debug.WriteLine (string.Format ("Обработчик события 'Panel::EventUnitTestSetDataGridViewAdminCompleted' не определен..."));
+
+                if (prevIndex.Equals(nextIndex) == true)
+                    // старт задачи сохранения значений
+                    taskPerformButtonSetClick = Task.Factory.StartNew (delegate () {
+                        panel.PerformButtonSetClick(delegateNextIndexSetValuesRequest);
+                    });
                 else
-                    System.Diagnostics.Debug.WriteLine (string.Format ("Пропустить старт задачи..."));
+                    if (!(nextIndex < 0))
+                        taskPerformComboBoxTECComponentSelectedIndex = Task.Factory.StartNew(delegate () {
+                            // установить новый индекс (назначить новый компонент-объект)
+                            panel.PerformComboBoxTECComponentSelectedIndex(prevIndex = nextIndex);
+                        });
+                    else
+                        ;
             };
 
             try {
@@ -194,18 +233,28 @@ namespace UnitTest {
 
                 int cnt = 0
                     , cnt_max = 26;
-                taskStatus = Equals (task, null) == false ? task.Status : TaskStatus.WaitingForActivation;
+                // исходные состояния задач
+                taskStatusPerformButtonSetClick =
+                    Equals (taskPerformButtonSetClick, null) == false ? taskPerformButtonSetClick.Status : TaskStatus.WaitingForActivation;
+                taskStatusPerformComboBoxTECComponentSelectedIndex =
+                    Equals(taskPerformComboBoxTECComponentSelectedIndex, null) == false ? taskPerformComboBoxTECComponentSelectedIndex.Status : TaskStatus.WaitingForActivation;
                 while ((cnt++ < cnt_max)
-                    && ((!(taskStatus == TaskStatus.Canceled))
-                    && (!(taskStatus == TaskStatus.Faulted))
-                    && (!(taskStatus == TaskStatus.RanToCompletion)))) {
+                    && (!(nextIndex < 0))) {
+                    // ожидать
                     Thread.Sleep (1000);
-                    taskStatus = Equals (task, null) == false ? task.Status : taskStatus;
+                    // сообщение для индикации ожидания
                     System.Diagnostics.Debug.WriteLine ($"Ожидание: счетчик <{cnt}> из <{cnt_max}>...");
                 }
-                System.Diagnostics.Debug.WriteLine (string.Format("Окончание ожидания <{0}>, задача <{1}>..."
+                // состояния задач по завершению цикла
+                taskStatusPerformButtonSetClick =
+                    Equals(taskPerformButtonSetClick, null) == false ? taskPerformButtonSetClick.Status : taskStatusPerformButtonSetClick;
+                taskStatusPerformComboBoxTECComponentSelectedIndex =
+                    Equals(taskPerformComboBoxTECComponentSelectedIndex, null) == false ? taskPerformComboBoxTECComponentSelectedIndex.Status : TaskStatus.WaitingForActivation;
+                System.Diagnostics.Debug.WriteLine (string.Format("Окончание ожидания <{0}>, задача-Click is <{1}>, задача-Selected is <{2}>, nextIndex={3}..."
                     , cnt
-                    , Equals (task, null) == false ? task.Status.ToString () : "не создана"));
+                    , Equals (taskPerformButtonSetClick, null) == false ? taskPerformButtonSetClick.Status.ToString () : "не создана"
+                    , Equals(taskPerformComboBoxTECComponentSelectedIndex, null) == false ? taskPerformComboBoxTECComponentSelectedIndex.Status.ToString() : "не создана"
+                    , nextIndex));
             } catch (Exception e) {
                 System.Diagnostics.Debug.WriteLine (e.Message);
 
@@ -213,8 +262,22 @@ namespace UnitTest {
             }
         }
 
-        private void onSetDataGridViewAdminComleted ()
+        /// <summary>
+        /// Оброботчик исключений в потоках и запись их в лог
+        /// </summary>
+        static void Application_ThreadException(object sender, ThreadExceptionEventArgs e)
         {
+            // here you can log the exception ...
+            Logging.Logg().Exception(e.Exception, "::Application_ThreadException () - ...", Logging.INDEX_MESSAGE.NOT_SET);
+        }
+
+        /// <summary>
+        /// Оборботчик не перехваченного исключения в текущем домене и запись их в лог
+        /// </summary>
+        static void CurrentDomain_UnhandledException(object sender, UnhandledExceptionEventArgs e)
+        {
+            // here you can log the exception ...
+            Logging.Logg().Exception((Exception)e.ExceptionObject, "::AppDomain_UnhandledException () - ...", Logging.INDEX_MESSAGE.NOT_SET);
         }
     }
 }

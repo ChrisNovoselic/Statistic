@@ -341,7 +341,7 @@ namespace StatisticCommon
                         switch (err)
                         {
                             case 1:
-                                strLog = string.Format(@"идентификтор {0} источника данных для типа с индексом {1} не совпадает с базовым"
+                                strLog = string.Format(@"идентификтор <{0}> источника данных для типа с индексом <{1}> не совпадает с базовым"
                                     , idConnSett
                                     , pair.Key);
                                 break;
