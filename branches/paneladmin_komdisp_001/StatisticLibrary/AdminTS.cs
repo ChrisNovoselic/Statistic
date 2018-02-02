@@ -3,7 +3,7 @@ using System.Collections.Generic;
 //using System.ComponentModel;
 using System.Data;
 using System.Globalization;
-//using System.Data.SqlClient;
+using System.Linq;
 //using MySql.Data.MySqlClient;
 using System.Threading;
 using System.Windows.Forms;
@@ -12,6 +12,7 @@ using ASUTP.Helper;
 using ASUTP.Database;
 using ASUTP.Core;
 using ASUTP;
+using Microsoft.VisualStudio.TestTools.UnitTesting;
 
 namespace StatisticCommon
 {    
@@ -1390,16 +1391,53 @@ namespace StatisticCommon
             //@"' AND DATE <= '" + date.AddHours(1).ToString("yyyyMMdd HH:mm:ss") +
             //@"';";
 
-            if ((ModeGetRDGValues & MODE_GET_RDG_VALUES.UNIT_TEST) == MODE_GET_RDG_VALUES.UNIT_TEST)
-                EventUnitTestSetValuesRequest?.Invoke (t, comp, date, new string [] { });
-            else
-                ;
-
             return resQuery;
         }
 
-        public event Action<TEC, TECComponent, DateTime, string []> EventUnitTestSetValuesRequest;
+        /// <summary>
+        /// Тип делегата только для использования в модульных тестах
+        /// </summary>
+        /// <param name="nextIndex">Очередной индекс</param>
+        /// <param name="t">Объект ТЭЦ - владелец выбранного компонента-объекта в списке (или, собственно, сам объект, тогда компонент = null)</param>
+        /// <param name="comp">Компонент-объект выбранный в списке</param>
+        /// <param name="date">Дата, за которую требуется обновить/сохранить значения</param>
+        /// <param name="listIdRec">Список идентификаторов записей в таблице БД для обновления</param>
+        public delegate void DelegateUnitTestSetValuesRequest(TEC t, TECComponent comp, DateTime date, CONN_SETT_TYPE type, string[]queries, IEnumerable<int>listIdRec);
+
+        private DelegateUnitTestSetValuesRequest _eventUnitTestSetValuesRequest;
+
+        public event DelegateUnitTestSetValuesRequest EventUnitTestSetValuesRequest
+        {
+            add
+            {
+                if (Equals(_eventUnitTestSetValuesRequest, null) == true)
+                    _eventUnitTestSetValuesRequest += value;
+                else
+                    ;
+            }
+
+            remove
+            {
+                if (Equals(_eventUnitTestSetValuesRequest, null) == false) {
+                    _eventUnitTestSetValuesRequest -= value;
+                    _eventUnitTestSetValuesRequest = null;
+                } else
+                    ;
+            }
+        }
         
+        private IEnumerable<int> getHaveDates(CONN_SETT_TYPE type)
+        {
+            List<int> listRes;
+
+            listRes = new List<int>();
+
+            for (int i = 0; i < m_arHaveDates.GetLength(m_arHaveDates.Rank - 1); i++)
+                listRes.Add(m_arHaveDates[(int)type, i]);
+
+            return listRes;
+        }
+
         /// <summary>
         /// Получение и выполнение запросов для обновления, добавления административных значений
         /// </summary>
@@ -1442,8 +1480,8 @@ namespace StatisticCommon
                 Request (m_dictIdListeners [t.m_id] [(int)CONN_SETT_TYPE.ADMIN], query [(int)DbTSQLInterface.QUERY_TYPE.UPDATE] + query [(int)DbTSQLInterface.QUERY_TYPE.INSERT] + query [(int)DbTSQLInterface.QUERY_TYPE.DELETE]);
             else {
                 Request (m_dictIdListeners [t.m_id] [(int)CONN_SETT_TYPE.ADMIN], GetCurrentTimeQuery(DbInterface.DB_TSQL_INTERFACE_TYPE.MSSQL));
-                // отправить непосредственно из метода формирования запроса
-                //EventUnitTestSetValuesRequest?.Invoke (t, comp, date, query);
+                // отправить на панель, для ретрансляции модульному тесту
+                _eventUnitTestSetValuesRequest?.Invoke (t, comp, date, CONN_SETT_TYPE.ADMIN, query, getHaveDates(CONN_SETT_TYPE.ADMIN));
             }
         }
 

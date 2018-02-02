@@ -95,7 +95,7 @@ namespace Statistic
         /// </summary>
         protected System.Windows.Forms.Button btnRefresh;
         /// <summary>
-        /// Элемент управления(управляющий) для выбора компонента ТЭЦ(ГТП), для кторого требуется
+        /// Элемент управления(управляющий) для выбора компонента ТЭЦ(ГТП), для которого требуется
         /// </summary>
         protected System.Windows.Forms.ComboBox comboBoxTecComponent;
         /// <summary>
@@ -476,6 +476,14 @@ namespace Statistic
             comboBoxTecComponent.Items.Clear ();
         }
 
+        [TestMethod]
+        public void PerformComboBoxTECComponentSelectedIndex(int newIndex)
+        {
+            comboBoxTecComponent.SelectedIndex = newIndex;
+
+            comboBoxTecComponent_SelectionChangeCommitted(this, EventArgs.Empty);
+        }
+
         protected virtual void comboBoxTecComponent_SelectionChangeCommitted(object sender, EventArgs e)
         {
             DialogResult result;
@@ -527,12 +535,51 @@ namespace Statistic
                 ;
         }
 
-        [TestMethod]
-        public void PerformButtonSetClick (Action<TEC, TECComponent, DateTime, string []> fUnitTestSetValuesRequest)
+        /// <summary>
+        /// Тип делегата только для использования в модульных тестах
+        /// </summary>
+        /// <param name="nextIndex">Очередной индекс</param>
+        /// <param name="t">Объект ТЭЦ - владелец выбранного компонента-объекта в списке (или, собственно, сам объект, тогда компонент = null)</param>
+        /// <param name="comp">Компонент-объект выбранный в списке</param>
+        /// <param name="date">Дата, за которую требуется обновить/сохранить значения</param>
+        /// <param name="listIdRec">Список идентификаторов записей в таблице БД для обновления</param>
+        /// <param name="nextIndex">Очередной индекс из списка объектов-компонентов</param>
+        public delegate void DelegateUnitTestNextIndexSetValuesRequest(int nextIndex, TEC t, TECComponent comp, DateTime date, CONN_SETT_TYPE type, IEnumerable<int> listIdRec, string[]queries);
+
+        private DelegateUnitTestNextIndexSetValuesRequest _eventUnitTestNextIndexSetValuesRequest;
+
+        public event DelegateUnitTestNextIndexSetValuesRequest EventUnitTestNextIndexSetValuesRequest
         {
-            m_admin.EventUnitTestSetValuesRequest += new Action<TEC, TECComponent, DateTime, string []> (fUnitTestSetValuesRequest);
+            add
+            {
+                if (Equals(_eventUnitTestNextIndexSetValuesRequest, null) == true)
+                    _eventUnitTestNextIndexSetValuesRequest += value;
+                else
+                    ;
+            }
+
+            remove
+            {
+                if (Equals(_eventUnitTestNextIndexSetValuesRequest, null) == false) {
+                    _eventUnitTestNextIndexSetValuesRequest -= value;
+                    _eventUnitTestNextIndexSetValuesRequest = null;
+                } else
+                    ;
+            }
+        }
+
+        [TestMethod]
+        public void PerformButtonSetClick (DelegateUnitTestNextIndexSetValuesRequest fUnitTestNextIndexSetValuesRequest)
+        {
+            m_admin.EventUnitTestSetValuesRequest += new AdminTS.DelegateUnitTestSetValuesRequest(admin_onEventUnitTestSetValuesRequest);
+            EventUnitTestNextIndexSetValuesRequest += new DelegateUnitTestNextIndexSetValuesRequest (fUnitTestNextIndexSetValuesRequest);
 
             btnSet_Click (this, EventArgs.Empty);
+        }
+
+        private void admin_onEventUnitTestSetValuesRequest(TEC t, TECComponent comp, DateTime date, CONN_SETT_TYPE type, string[]queries, IEnumerable<int> listIdRec)
+        {
+            _eventUnitTestNextIndexSetValuesRequest?.Invoke(comboBoxTecComponent.SelectedIndex + 1 < comboBoxTecComponent.Items.Count ? comboBoxTecComponent.SelectedIndex + 1 : -1, t, comp, date, type, listIdRec, queries);
         }
 
         private void btnSet_Click(object sender, EventArgs e)

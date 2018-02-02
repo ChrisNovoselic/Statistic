@@ -901,7 +901,7 @@ namespace StatisticCommon
                         if (FormMainBase.s_iMainSourceData == connSetts[(int)type].id)
                             // 
                             m_arTypeSourceData[type - (int)CONN_SETT_TYPE.DATA_AISKUE] = TEC.INDEX_TYPE_SOURCE_DATA.EQU_MAIN;
-                        else                            
+                        else
                             iRes = 1; //??? throw new Exception(@"TEC::connSettings () - неизвестный тип источника данных...")
                     else
                         ;
