@@ -451,7 +451,6 @@ namespace StatisticCommon
             return strRes;
         }
 
-        private volatile int m_IdSOTIASSOLinkSourceTM;
         /// <summary>
         /// Событие для запроса текущего идентификатора источника данных для СОТИАССО
         /// </summary>
@@ -642,6 +641,7 @@ namespace StatisticCommon
                     ; // ТГ не найден
             }
         }
+
         /// <summary>
         /// Инициализация всех параметров для всех ВЫВОДов
         /// </summary>
@@ -676,6 +676,7 @@ namespace StatisticCommon
                     ;
             }
         }
+
         /// <summary>
         /// Добавить идентификатор ТГ к уже имеющейся строке-перечислению (разделитель - запятая) с идентификаторами ТГ
         /// </summary>
@@ -721,6 +722,7 @@ namespace StatisticCommon
 
             return strRes;
         }
+
         /// <summary>
         /// Найти объект ТГ по идентификатору
         /// </summary>
@@ -759,6 +761,7 @@ namespace StatisticCommon
 
             return tgRes;
         }
+
         /// <summary>
         /// Инициализировать все строки-перечисления с идентификаторами ТЭЦ
         /// </summary>
@@ -880,6 +883,7 @@ namespace StatisticCommon
                 }
             // - Цикл по всем компонентам ТЭЦ
         }
+
         /// <summary>
         /// Присвоить значения параметров соединения с источником данных
         /// </summary>
@@ -926,6 +930,7 @@ namespace StatisticCommon
 
             return iRes;
         }
+
         /// <summary>
         /// Возвратить строку-перечисление с идентификаторами для ТЭЦ в целом или ее компонентов
         /// </summary>
@@ -977,6 +982,7 @@ namespace StatisticCommon
 
             return strRes;
         }
+
         /// <summary>
         /// Возврвтить содержание запроса для получения ПБР
         /// </summary>
@@ -1042,6 +1048,7 @@ namespace StatisticCommon
 
             return strRes;
         }
+
         /// <summary>
         /// Возвратить содержание запроса к общему(центральному) источнику данных для получения 3-х мин значений в АИИС КУЭ
         /// </summary>
@@ -1061,6 +1068,7 @@ namespace StatisticCommon
                 $") WHERE {sen}" +
                 @" ORDER BY DATA_DATE";
         }
+
         /// <summary>
         /// Возвратить содержание запроса к источнику данных для получения 3-х мин значений в АИИС КУЭ
         /// </summary>
@@ -1110,6 +1118,7 @@ namespace StatisticCommon
 
             return request;
         }
+
         /// <summary>
         /// Возвратить содержание запроса для получения усредненных минутных значений СОТИАССО за указанный час и номер интервала усреднения
         ///  , усреденнеие производится СУБД
@@ -1140,6 +1149,7 @@ namespace StatisticCommon
                                             + @" AND DATEADD (HH, DATEDIFF (HH, GETDATE (), GETUTCDATE()), '" + dtReq.AddMinutes(interval).AddMilliseconds(-2).ToString(@"yyyyMMdd HH:mm:ss.fff") + @"')"
                                     + @" GROUP BY [KKS_NAME]";
         }
+
         /// <summary>
         /// Возвратить содержание запроса для получения усредненных минутных значений СОТИАССО за указанный час и номер интервала усреднения
         ///  , усреднение производится в ~ от установленного режима
@@ -1241,6 +1251,7 @@ namespace StatisticCommon
 
             return request;
         }
+
         /// <summary>
         /// Возвратить содержание запроса для получения минутных значений СОТИАССО за указанный час
         /// </summary>
@@ -1335,6 +1346,7 @@ namespace StatisticCommon
                 + $" WHERE {sen}"
                 + @" ORDER BY DATA_DATE";
         }
+
         /// <summary>
         /// Возвратить содержание запроса для получения чпсовых значений АИИС КУЭ
         /// </summary>
@@ -1420,6 +1432,7 @@ namespace StatisticCommon
                 + @" GROUP BY [HOUR]"
                 ;
         }
+
         /// <summary>
         /// Возвратить содержание запроса для получения минутных значений СОТИАССО за указанный час
         /// </summary>
@@ -1497,6 +1510,7 @@ namespace StatisticCommon
 
             return req;
         }
+
         /// <summary>
         /// Возвратить содержание запроса для получения часовых значений СОТИАССО
         /// </summary>
@@ -1618,6 +1632,7 @@ namespace StatisticCommon
 
             return strRes;
         }
+
         /// <summary>
         /// Возвратить содержание запроса для получения значений ПБР
         /// </summary>
@@ -1646,6 +1661,7 @@ namespace StatisticCommon
 
             return strRes;
         }
+
         /// <summary>
         /// Возвратить содержание запроса для получения значений ПБР
         /// </summary>
@@ -1768,6 +1784,7 @@ namespace StatisticCommon
 
             return strRes;
         }
+
         /// <summary>
         /// Возвратить содержание запроса для получения административных значений
         /// </summary>
@@ -1807,6 +1824,7 @@ namespace StatisticCommon
 
             return strRes;
         }
+
         /// <summary>
         /// Возвратить содержание запроса к общему(центральному) источнику данных для получения текущих значений ТМ (собственные нужды)
         /// </summary>
@@ -1827,6 +1845,7 @@ namespace StatisticCommon
 
             return query;
         }
+
         /// <summary>
         /// Возвратить содержание запроса для получения часовых значений СОТИАССО (собственные нужды)
         /// </summary>
@@ -1853,6 +1872,7 @@ namespace StatisticCommon
 
             return query;
         }
+
         /// <summary>
         /// Возвратить содержание запроса к общему(центральному) источнику данных для получения текущих значений ТМ
         /// </summary>
@@ -1878,6 +1898,7 @@ namespace StatisticCommon
 
             return query;
         }
+
         /// <summary>
         /// Возвратить содержание запроса для получения крайних усредненных значений СОТИАССО за каждый час в указанных сутках
         /// </summary>
@@ -1904,7 +1925,7 @@ namespace StatisticCommon
                                         + @" AND DATEADD (HH, DATEDIFF (HH, GETDATE (), GETUTCDATE()), '" + dt.AddHours(cntHours).ToString(@"yyyyMMdd HH:mm:ss") + @"')"
                                     //-- только крайние минуты часа
                                     + @" AND DATEPART(MINUTE, [last_changed_at]) = 59"
-                                + @"ORDER BY [KKS_NAME],[last_changed_at]"
+                                + @" ORDER BY [KKS_NAME],[last_changed_at]"
 
                         ////Ваоиант №3.б (из усредненной таблицы)
                         //query = @"SELECT SUM([Value]) as [VALUE], DATEPART (HOUR, DATEADD (HH, DATEDIFF (HH, GETUTCDATE (), GETDATE()), [last_changed_at])) as [HOUR], COUNT (*) as [CNT]"
@@ -1979,7 +2000,14 @@ namespace StatisticCommon
         }
 
         public enum TYPE_DBVZLET : short { UNKNOWN = -1, GRAFA = 0, KKS_NAME }
-        public static TYPE_DBVZLET TypeDbVzlet { get { return TYPE_DBVZLET.KKS_NAME; } }
+
+        public static TYPE_DBVZLET TypeDbVzlet
+        {
+            get
+            {
+                return TYPE_DBVZLET.KKS_NAME;
+            }
+        }
 
         private string getVzletSensorsParamVyvod ()
         {
@@ -2171,6 +2199,7 @@ namespace StatisticCommon
 
             return strRes;
         }
+
         /// <summary>
         /// Возвратить содержание запроса для получения уже имеющихся административных значений
         ///  (меток даты/времени для этих значений)
@@ -2201,6 +2230,7 @@ namespace StatisticCommon
 
             return strRes;
         }
+
         /// <summary>
         /// Возвратить содержание запроса для получения уже имеющихся значений ПБР
         ///  (меток даты/времени для этих значений)
