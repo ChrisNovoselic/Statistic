@@ -209,9 +209,9 @@ namespace Statistic {
             int indx = ((AdminTS_LK)m_admin).indxTECComponents;
             //((AdminTS_LK)m_admin).set_CurComponent(0, m_admin.m_curDate);
             //indx = ((AdminTS_LK)m_admin).m_listTECComponentIndexDetail[this.dgwAdminTable.Columns.Count - ((int)DataGridViewAdminLK.DESC_INDEX.COUNT_COLUMN)];
-            Color dgwBackColor;
+            //Color dgwBackColor;
 
-            dgwBackColor = this.dgwAdminTable.BackColor;
+            //dgwBackColor = this.dgwAdminTable.BackColor;
 
             if (m_admin.GetIdTECComponent(indx) > (int)TECComponent.ID.TG) {
             // новый столбец
@@ -227,13 +227,13 @@ namespace Statistic {
                         this.dgwAdminTable.Rows[i].Cells[0].Value = date.AddHours(i + 1).ToString(@"dd-MM-yyyy HH:mm", CultureInfo.InvariantCulture);
                     else
                         ;
-                    // цвет 0-го столбца изменяем всегда, на случай изменения цветовой гаммы приложения
-                    this.dgwAdminTable.Rows [i].Cells [0].Style.BackColor = dgwBackColor;
+                    //// цвет 0-го столбца изменяем всегда, на случай изменения цветовой гаммы приложения
+                    //this.dgwAdminTable.Rows [i].Cells [0].Style.BackColor = dgwBackColor;
 
                     try
                     {
                         this.dgwAdminTable.Rows[i].Cells[this.dgwAdminTable.Columns.Count - 4].Value = ((AdminTS_LK)m_admin).m_listCurRDGValues[indx][i].pbr.ToString("F2");
-                        this.dgwAdminTable.Rows [i].Cells [this.dgwAdminTable.Columns.Count - 4].Style.BackColor = dgwBackColor;
+                        //this.dgwAdminTable.Rows [i].Cells [this.dgwAdminTable.Columns.Count - 4].Style.BackColor = dgwBackColor;
                     }
                     catch (Exception e)
                     {
@@ -259,19 +259,19 @@ namespace Statistic {
                         this.dgwAdminTable.Rows [i].Cells [0].Value = date.AddHours (i + 1).ToString (@"dd-MM-yyyy HH:mm", CultureInfo.InvariantCulture);
                     } else
                         ;
-                    // цвет 0-го столбца изменяем на случай изменения цветовой гаммы приложения
-                    this.dgwAdminTable.Rows [i].Cells [0].Style.BackColor = dgwBackColor;
+                    //// цвет 0-го столбца изменяем на случай изменения цветовой гаммы приложения
+                    //this.dgwAdminTable.Rows [i].Cells [0].Style.BackColor = dgwBackColor;
 
                     try
                     {
                         this.dgwAdminTable.Rows[i].Cells[(int)DataGridViewAdminLK.DESC_INDEX.PLAN_POWER].Value = ((AdminTS_LK)m_admin).m_listCurRDGValues[indx][i].pbr.ToString("F2");
-                        this.dgwAdminTable.Rows [i].Cells [(int)DataGridViewAdminLK.DESC_INDEX.PLAN_POWER].Style.BackColor = dgwBackColor;
+                        //this.dgwAdminTable.Rows [i].Cells [(int)DataGridViewAdminLK.DESC_INDEX.PLAN_POWER].Style.BackColor = dgwBackColor;
                         this.dgwAdminTable.Rows[i].Cells[(int)DataGridViewAdminLK.DESC_INDEX.PLAN_TEMPERATURE].Value = ((AdminTS_LK)m_admin).m_listCurRDGValues[indx][i].pmin.ToString("F2");
-                        this.dgwAdminTable.Rows [i].Cells [(int)DataGridViewAdminLK.DESC_INDEX.PLAN_TEMPERATURE].Style.BackColor = dgwBackColor;
+                        //this.dgwAdminTable.Rows [i].Cells [(int)DataGridViewAdminLK.DESC_INDEX.PLAN_TEMPERATURE].Style.BackColor = dgwBackColor;
                         this.dgwAdminTable.Rows[i].Cells[dgwAdminTable.Columns.Count - 3].Value = (bool)(((AdminTS_LK)m_admin).m_listCurRDGValues[indx][i].deviationPercent);
-                        this.dgwAdminTable.Rows [i].Cells [dgwAdminTable.Columns.Count - 3].Style.BackColor = dgwBackColor;
+                        //this.dgwAdminTable.Rows [i].Cells [dgwAdminTable.Columns.Count - 3].Style.BackColor = dgwBackColor;
                         this.dgwAdminTable.Rows[i].Cells[dgwAdminTable.Columns.Count - 2].Value = ((AdminTS_LK)m_admin).m_listCurRDGValues[indx][i].deviation.ToString("F2");
-                        this.dgwAdminTable.Rows [i].Cells [dgwAdminTable.Columns.Count - 2].Style.BackColor = dgwBackColor;
+                        //this.dgwAdminTable.Rows [i].Cells [dgwAdminTable.Columns.Count - 2].Style.BackColor = dgwBackColor;
                     }
                     catch (Exception e)
                     {
@@ -281,7 +281,7 @@ namespace Statistic {
 
                     ((DataGridViewAdminLK)this.dgwAdminTable).DataGridViewAdminLK_CellValueChanged(null
                         , new DataGridViewCellEventArgs (this.dgwAdminTable.Columns.Count - 4, i));
-                }                
+                }
             }
 
             if (bNewValues == true) {

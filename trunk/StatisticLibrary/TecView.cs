@@ -649,11 +649,17 @@ namespace StatisticCommon
         private string getDbInterfaceIdListeners (/*string func*/)
         {
             string dbgMes = string.Empty;
-            dbgMes += "[ ";
-            foreach (int iConnSett in m_dictIdListeners.Keys)
-                dbgMes += string.Format ("[{0}], ", string.Join (", ", Array.ConvertAll (m_dictIdListeners [iConnSett], i => i.ToString ())));
-            dbgMes = dbgMes.Remove (dbgMes.Length - 2, 2); // лишние запятая + пробел
-            dbgMes += " ]";
+
+            if (m_dictIdListeners.Count > 0) {
+                dbgMes += "[ ";
+
+                foreach (int iConnSett in m_dictIdListeners.Keys)
+                    dbgMes += string.Format ("[{0}], ", string.Join (", ", Array.ConvertAll (m_dictIdListeners [iConnSett], i => i.ToString ())));
+
+                dbgMes = dbgMes.Remove (dbgMes.Length - 2, 2); // лишние запятая + пробел
+                dbgMes += " ]";
+            } else
+                dbgMes = "не незначены";
 
             //Console.WriteLine (string.Format ("TecView.{0}() - {1}...", func, dbgMes));
             return dbgMes;

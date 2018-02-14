@@ -487,7 +487,8 @@ namespace Statistic
                 //foreach (ToolStripItem tsi in m_formChangeMode.m_MainFormContextMenuStripListTecViews.Items)
                 foreach (FormChangeMode.Item item in m_formChangeMode.m_listItems)
                 {
-                    if ((item.bVisibled == true) && (item.id < FormChangeMode.ID_SPECIAL_TAB [(int)FormChangeMode.MANAGER.DISP]))
+                    if ((item.bVisibled == true)
+                        && (item.id < FormChangeMode.ID_SPECIAL_TAB [(int)FormChangeMode.MANAGER.DISP]))
                     {
                         m_arLabelEmpty[i].ContextMenu.MenuItems.Add(createMenuItem(item.name_shr));
                         m_arLabelEmpty[i].m_listIdContextMenuItems.Add(item.id);

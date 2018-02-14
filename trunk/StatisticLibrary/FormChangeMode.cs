@@ -6,9 +6,9 @@ using System.Drawing;
 using System.Text;
 using System.Windows.Forms;
 
-
 using ASUTP.Core;
 using ASUTP;
+using System.Linq;
 
 namespace StatisticCommon
 {
@@ -89,7 +89,7 @@ namespace StatisticCommon
         /// <summary>
         /// Тип вкладки  из инструментария "администратор-диспетчер"
         /// </summary>
-        public enum MANAGER : ushort { DISP, NSS, ALARM, LK, TEPLOSET, COUNT_MANAGER, UNKNOWN };
+        public enum MANAGER : short { UNKNOWN = -1, DISP, NSS, ALARM, LK, TEPLOSET, COUNT_MANAGER, };
         /// <summary>
         /// Совокупность установленных признаков для компонентов станции
         /// </summary>
@@ -362,26 +362,20 @@ namespace StatisticCommon
         {
             bool bRes = false;
 
+            int idAllowed = -1;
+            //!!! последовательность строго по аналогии 'ID_SPECIAL_TAB'
+            HStatisticUsers.ID_ALLOWED [] alloweds = {
+                HStatisticUsers.ID_ALLOWED.TAB_PBR_KOMDISP
+                , HStatisticUsers.ID_ALLOWED.TAB_PBR_NSS
+                , HStatisticUsers.ID_ALLOWED.ALARM_KOMDISP
+                , HStatisticUsers.ID_ALLOWED.TAB_LK_ADMIN
+                , HStatisticUsers.ID_ALLOWED.TAB_TEPLOSET_ADMIN
+                ,
+            };
+
             if ((idMinVal == -1) || (idMaxVal == -1))
             {
-                int idAllowed = -1;
-                if (item.id == ID_SPECIAL_TAB[(int)MANAGER.DISP])
-                    idAllowed = (int)HStatisticUsers.ID_ALLOWED.TAB_PBR_KOMDISP;
-                else
-                    if (item.id == ID_SPECIAL_TAB[(int)MANAGER.NSS])
-                        idAllowed = (int)HStatisticUsers.ID_ALLOWED.TAB_PBR_NSS;
-                    else
-                        if (item.id == ID_SPECIAL_TAB[(int)MANAGER.ALARM])
-                            idAllowed = (int)HStatisticUsers.ID_ALLOWED.ALARM_KOMDISP;
-                        else
-                            if (item.id == ID_SPECIAL_TAB[(int)MANAGER.LK])
-                                idAllowed = (int)HStatisticUsers.ID_ALLOWED.TAB_LK_ADMIN;
-                            else
-                                if (item.id == ID_SPECIAL_TAB[(int)MANAGER.TEPLOSET])
-                                    idAllowed = (int)HStatisticUsers.ID_ALLOWED.TAB_TEPLOSET_ADMIN;
-                                else
-                                    ;
-
+                idAllowed = (int)alloweds [ID_SPECIAL_TAB.ToList ().IndexOf (item.id)];
 
                 bRes = !(idAllowed < 0);
                 if (bRes == true)
@@ -509,29 +503,20 @@ namespace StatisticCommon
 
         private void btnOk_Click(object sender, EventArgs ev)
         {
-            int i;
+            int i = -1
+                , iManagerMode = -1;
             Item item = null;
 
             for (i = 0; i < clbMode.Items.Count; i++) {
                 item = findItemOfText(clbMode.GetItemText(clbMode.Items[i]));
                 item.bChecked = ! (clbMode.CheckedIndices.IndexOf(i) < 0);
 
-                if (item.id == ID_SPECIAL_TAB[(int)MANAGER.DISP])
-                    m_markTabAdminChecked.Set((int)MANAGER.DISP, item.bChecked);
+                iManagerMode = ID_SPECIAL_TAB.ToList ().IndexOf (item.id);
+
+                if (!(iManagerMode < 0))
+                    m_markTabAdminChecked.Set(iManagerMode, item.bChecked);
                 else
-                    if (item.id == ID_SPECIAL_TAB[(int)MANAGER.NSS])
-                        m_markTabAdminChecked.Set((int)MANAGER.NSS, item.bChecked);
-                    else
-                        if (item.id == ID_SPECIAL_TAB[(int)MANAGER.ALARM])
-                            m_markTabAdminChecked.Set((int)MANAGER.ALARM, item.bChecked);
-                        else
-                            if (item.id == ID_SPECIAL_TAB[(int)MANAGER.LK])
-                                m_markTabAdminChecked.Set((int)MANAGER.LK, item.bChecked);
-                            else
-                                if (item.id == ID_SPECIAL_TAB[(int)MANAGER.TEPLOSET])
-                                    m_markTabAdminChecked.Set((int)MANAGER.TEPLOSET, item.bChecked);
-                                else
-                                    ;
+                    ;
             }
 
             try {
@@ -630,7 +615,9 @@ namespace StatisticCommon
         {
             int indx = -1;
 
-            if ((clbMode.CheckedIndices.Count > 0) && (!(indxCheckedIndicies < 0)) && (indxCheckedIndicies < clbMode.CheckedIndices.Count)) {
+            if ((clbMode.CheckedIndices.Count > 0)
+                && (!(indxCheckedIndicies < 0))
+                && (indxCheckedIndicies < clbMode.CheckedIndices.Count)) {
                 indx = clbMode.CheckedIndices[indxCheckedIndicies];
             }
             else {
@@ -657,7 +644,8 @@ namespace StatisticCommon
                 }
             }
 
-            if ((!(indx < 0)) && (indx < clbMode.Items.Count))
+            if ((!(indx < 0))
+                && (indx < clbMode.Items.Count))
             {
                 clbMode.SetItemChecked(indx, bChecked);
                 btnOk_Click(null, EventArgs.Empty);
