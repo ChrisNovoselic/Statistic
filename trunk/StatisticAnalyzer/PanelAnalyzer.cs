@@ -2359,6 +2359,8 @@ namespace StatisticAnalyzer
         public static void Fill (this DataGridView ctrl, DataTable src, string nameField, int run, bool checkDefault = false)
         {
             bool bCheckedItem = false;
+            object tagNewRow = null;
+            DataGridViewRow newRow;
             int iNewRow = -1
                 , indxFieldRole = -1, indxFieldId = -1;
 
@@ -2370,21 +2372,31 @@ namespace StatisticAnalyzer
                     indxFieldRole = src.Columns.IndexOf ("ID_ROLE");
                     indxFieldId = src.Columns.IndexOf ("ID");
 
+                    //ctrl.RowsAdded += delegate (object sender, DataGridViewRowsAddedEventArgs e) {
+                    //    for (int i = 0; i < e.RowCount; i++) {
+                    //        (sender as DataGridView).Rows[i + e.RowIndex].Tag = 
+                    //    }
+                    //};
+
                     foreach (DataRow r in src.Rows) {
                         try {
-                            iNewRow = ctrl.Rows.Add (new object [] { bCheckedItem, r [nameField].ToString () });
+                            newRow = ctrl.RowTemplate.Clone () as DataGridViewRow;
 
                             if ((!(indxFieldRole < 0))
                                 && (!(indxFieldId < 0)))
-                                ctrl.Rows [iNewRow].Tag = new HStatisticUser {
+                                tagNewRow = new HStatisticUser {
                                     Role = (HStatisticUsers.ID_ROLES)int.Parse (r [indxFieldRole].ToString ())
                                     , Id = int.Parse (r [indxFieldId].ToString ())
                                 };
                             else if (!(indxFieldId < 0))
-                                ctrl.Rows [iNewRow].Tag = int.Parse (r [indxFieldId].ToString ());
+                                tagNewRow = int.Parse (r [indxFieldId].ToString ());
                             else
                             // такой вариант не рассматривается
                                 ;
+
+                            newRow.Tag = tagNewRow;
+                            iNewRow = ctrl.Rows.Add (newRow);
+                            ctrl.Rows[iNewRow].SetValues (new object [] { bCheckedItem, r [nameField].ToString () });
                         } catch (Exception e) {
                             Logging.Logg().Exception(e, $"DataGridViewExcensions::Fill () - ...", Logging.INDEX_MESSAGE.NOT_SET);
                         }
@@ -2402,15 +2414,21 @@ namespace StatisticAnalyzer
 
             foreach (DataGridViewRow r in ctrl.Rows) {
                 //TODO: проверять 'm_bThreadTimerCheckedAllowed' для возможности прерывания
+                try {
+                    if (Equals (r.Tag, null) == false) {
+                        indx = tags.IndexOf (r.Tag.GetType ().Equals (typeof (HStatisticUser)) == true ? ((HStatisticUser)r.Tag).Id : (int)r.Tag);
 
-                indx = tags.IndexOf(r.Tag.GetType().Equals(typeof(HStatisticUser)) == true ? ((HStatisticUser)r.Tag).Id : (int)r.Tag);
+                        if (!(indx < 0))
+                            active = arbActives [indx];
+                        else
+                            active = false;
 
-                if (!(indx < 0))
-                    active = arbActives[indx];
-                else
-                    active = false;
-
-                r.Cells[0].Value = active;
+                        r.Cells [0].Value = active;
+                    } else
+                        Logging.Logg().Error($@"StatisticAnalyzer.DataGridViewExtensions::Update () - для строки не установлен идентификатор(Tag)...", Logging.INDEX_MESSAGE.NOT_SET);
+                } catch (Exception e) {
+                    Logging.Logg ().Exception (e, $@"StatisticAnalyzer.DataGridViewExtensions::Update () - ...", Logging.INDEX_MESSAGE.NOT_SET);
+                }
             }
         }
     }
