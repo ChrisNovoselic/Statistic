@@ -30,9 +30,10 @@
     <MapFileExtensions>false</MapFileExtensions>
     <TargetCulture>ru</TargetCulture>
     <PublisherName>ЗАО Информационные технологии и связь</PublisherName>
-    <ApplicationRevision>5</ApplicationRevision>
-    <ApplicationVersion>2.0.9.5</ApplicationVersion>
+    <ApplicationRevision>7</ApplicationRevision>
+    <ApplicationVersion>2.0.9.7</ApplicationVersion>
     <UseApplicationTrust>false</UseApplicationTrust>
+    <CreateDesktopShortcut>true</CreateDesktopShortcut>
     <PublishWizardCompleted>true</PublishWizardCompleted>
     <BootstrapperEnabled>true</BootstrapperEnabled>
   </PropertyGroup>
@@ -110,9 +111,7 @@
   </PropertyGroup>
   <PropertyGroup />
   <PropertyGroup />
-  <PropertyGroup>
-    <NoWin32Manifest>true</NoWin32Manifest>
-  </PropertyGroup>
+  <PropertyGroup />
   <ItemGroup>
     <Reference Include="ASUTP.Control">
       <HintPath>..\..\ExternalDLL\ASUTP.Control.dll</HintPath>
@@ -353,37 +352,37 @@
     <PublishFile Include="HClassLibrary.pdb">
       <Visible>False</Visible>
       <Group>Отладка</Group>
-      <TargetPath>
-      </TargetPath>
       <PublishState>Auto</PublishState>
       <IncludeHash>False</IncludeHash>
+      <TargetPath>
+      </TargetPath>
       <FileType>File</FileType>
     </PublishFile>
     <PublishFile Include="Statistic.pdb">
       <Visible>False</Visible>
       <Group>Отладка</Group>
-      <TargetPath>
-      </TargetPath>
       <PublishState>Include</PublishState>
       <IncludeHash>True</IncludeHash>
+      <TargetPath>
+      </TargetPath>
       <FileType>File</FileType>
     </PublishFile>
     <PublishFile Include="StatisticCommon.pdb">
       <Visible>False</Visible>
       <Group>Отладка</Group>
-      <TargetPath>
-      </TargetPath>
       <PublishState>Include</PublishState>
       <IncludeHash>True</IncludeHash>
+      <TargetPath>
+      </TargetPath>
       <FileType>File</FileType>
     </PublishFile>
     <PublishFile Include="StatisticTimeSync.pdb">
       <Visible>False</Visible>
       <Group>Отладка</Group>
-      <TargetPath>
-      </TargetPath>
       <PublishState>Include</PublishState>
       <IncludeHash>True</IncludeHash>
+      <TargetPath>
+      </TargetPath>
       <FileType>File</FileType>
     </PublishFile>
   </ItemGroup>
