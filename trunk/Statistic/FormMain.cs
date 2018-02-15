@@ -188,6 +188,8 @@ namespace Statistic
                 Logging.LinkId(Logging.INDEX_MESSAGE.D_005, (int)FormParameters.PARAMETR_SETUP.MAINFORMBASE_SETPBRQUERY_LOGQUERY);
                 Logging.LinkId(Logging.INDEX_MESSAGE.W_001, (int)FormParameters.PARAMETR_SETUP.TECVIEW_GETCURRENTTMGEN_LOGWARNING);
                 Logging.LinkId(Logging.INDEX_MESSAGE.D_001, (int)FormParameters.PARAMETR_SETUP.MAINFORMBASE_CONTROLHANDLE_LOGERRORCREATE);
+                // KhryapinAN 2018-02-14
+                Logging.LinkId (Logging.INDEX_MESSAGE.D_006, (int)FormParameters.PARAMETR_SETUP.MAINFORMBASE_SETADMINQUERY_LOGQUERY);
 
                 Logging.DelegateGetINIParametersOfID = new StringDelegateIntFunc(formParameters.GetINIParametersOfID);
 
@@ -487,7 +489,6 @@ namespace Statistic
 
             PanelStatisticDiagnostic.UPDATE_TIME = Int32.Parse(formParameters.m_arParametrSetup[(int)FormParameters.PARAMETR_SETUP.DIAGNOSTIC_TIMER_UPDATE]);
             PanelStatisticDiagnostic.VALIDATE_ASKUE_TM = Int32.Parse(formParameters.m_arParametrSetup[(int)FormParameters.PARAMETR_SETUP.VALIDATE_ASKUE_VALUE]);
-           
 
             //Параметрвы для ALARM...
             StatisticAlarm.AdminAlarm.MSEC_ALARM_TIMERUPDATE = Int32.Parse(formParameters.m_arParametrSetup[(int)FormParameters.PARAMETR_SETUP.ALARM_TIMER_UPDATE]) * 1000;

@@ -29,6 +29,8 @@ namespace StatisticCommon
             //Логгирование
             , MAINFORMBASE_CONTROLHANDLE_LOGERRORCREATE
             , MAINFORMBASE_SETPBRQUERY_LOGPBRNUMBER, MAINFORMBASE_SETPBRQUERY_LOGQUERY
+            // KryapinAN 2018-02-14
+            , MAINFORMBASE_SETADMINQUERY_LOGQUERY
             , TECVIEW_LOGRECOMENDATIONVAL, TECVIEW_GETCURRENTTMGEN_LOGWARNING
             , PANELQUICKDATA_LOGDEVIATIONEVAL
             //Продолжение параметров...
@@ -56,6 +58,8 @@ namespace StatisticCommon
             //Логгирование
             , @"ControlHandle LogErrorCreate"
             , @"SetPBRQuery LogPBRNumber", @"SetPBRQuery LogQuery"
+            // KryapinAN 2018-02-14
+            , @"SetAdminQuery LogQuery"
             , @"TecView LogRecomendation", @"GetCurrentTMGenResponse LogWarning"
             , @"ShowFactValues LogDevEVal"
             //Продолжение параметров...
@@ -83,6 +87,8 @@ namespace StatisticCommon
             //Логгирование
             , @"стр-лог"
             , @"стр-лог", @"стр-лог"
+            // KryapinAN 2018-02-14
+            , @"стр-лог"
             , @"стр-лог", @"стр-лог"
             , @"стр-лог"
             //Продолжение параметров...
@@ -139,10 +145,12 @@ namespace StatisticCommon
             m_arParametrSetup.Add ((int)PARAMETR_SETUP.KOMDISP_SHEDULE_START_EXPORT_PBR, @"2760");
             m_arParametrSetup.Add ((int)PARAMETR_SETUP.KOMDISP_SHEDULE_PERIOD_EXPORT_PBR, @"3600");
             m_arParametrSetup.Add ((int)PARAMETR_SETUP.LK_FOLDER_CSV, @"\\ne2844\2.X.X\ПБР-csv");
-
+            //Логгирование
             m_arParametrSetup.Add((int)PARAMETR_SETUP.MAINFORMBASE_CONTROLHANDLE_LOGERRORCREATE, false.ToString());
             m_arParametrSetup.Add((int)PARAMETR_SETUP.MAINFORMBASE_SETPBRQUERY_LOGPBRNUMBER, false.ToString());
             m_arParametrSetup.Add((int)PARAMETR_SETUP.MAINFORMBASE_SETPBRQUERY_LOGQUERY, false.ToString());
+            // KryapinAN 2018-02-14
+            m_arParametrSetup.Add ((int)PARAMETR_SETUP.MAINFORMBASE_SETADMINQUERY_LOGQUERY, false.ToString ());
             m_arParametrSetup.Add((int)PARAMETR_SETUP.TECVIEW_LOGRECOMENDATIONVAL, false.ToString());
             m_arParametrSetup.Add((int)PARAMETR_SETUP.TECVIEW_GETCURRENTTMGEN_LOGWARNING, false.ToString());
             m_arParametrSetup.Add((int)PARAMETR_SETUP.PANELQUICKDATA_LOGDEVIATIONEVAL, false.ToString());

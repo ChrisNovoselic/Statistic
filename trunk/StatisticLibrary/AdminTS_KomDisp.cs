@@ -477,21 +477,13 @@ namespace StatisticCommon
                 //        ;
                 //Проверить наличие записей для ГТП
                 if (rowsTECComponent.Count > 0) {
-                // добавление недостающих строк путем копирования крайней
+                //!!! должно быть 24 записи (обеспечивается дополнением при загрузке)
                     if (rowsTECComponent.Count < 24) {
-                    // фрагмент кода выполняется при загрузке
-                        //while (rowsTECComponent.Count < 24) {
-                        //    rowsTECComponent.Add(rowsTECComponent[rowsTECComponent.Count - 1]);
-
-                        //    if (m_tableValuesResponse.Columns.Contains(@"SESSION_INTERVAL") == true)
-                        //        rowsTECComponent[rowsTECComponent.Count - 1][@"SESSION_INTERVAL"] = rowsTECComponent.Count - 1;
-                        //    else
-                        //        ;
-                        //}
-                    } else
-                        Logging.Logg().Error(string.Format(@"AdminTS_KomDisp::saveCSVValues () - для ГТП(ИД={0}) количество записей={1} ..."
+                        Logging.Logg ().Error (string.Format (@"AdminTS_KomDisp::saveCSVValues () - для ГТП(ИД={0}) количество записей={1} ..."
                             , name_future, rowsTECComponent.Count)
                                 , Logging.INDEX_MESSAGE.NOT_SET);
+                    } else
+                        ;
 
                     foreach (DataRow r in rowsTECComponent) {
                         hour = int.Parse(r[@"SESSION_INTERVAL"].ToString());
@@ -719,6 +711,7 @@ namespace StatisticCommon
                     Logging.Logg().Error(string.Format("AdminTS_KomDisp::PrepareExportRDGValues () - добавление повторяющегося индекса {0}...", indx), Logging.INDEX_MESSAGE.NOT_SET);
             });
         }
+
         /// <summary>
         ///  Добавить значения для экспорта
         /// </summary>

@@ -220,7 +220,7 @@ namespace Statistic {
                                                                     m_admin.GetIdGTPOwnerTECComponent(indx),
                                                                     date);
 
-                for (int i = 0; i < 24; i++)
+                for (int i = 0; i < 24; i++)    
                 {
                     //Дата/время
                     if (this.dgwAdminTable.Columns.Count == ((int)DataGridViewAdminLK.DESC_INDEX.COUNT_COLUMN + 1)) //Только при добавлении 1-го столбца
@@ -251,7 +251,7 @@ namespace Statistic {
 
             if ((m_admin.GetIdTECComponent(indx) > (int)TECComponent.ID.GTP)
                 && (m_admin.GetIdTECComponent(indx) < (int)TECComponent.ID.PC))
-            {                
+            {
                 for (int i = 0; i < 24; i++)
                 {
                     //Дата/время
@@ -565,21 +565,21 @@ namespace Statistic {
             {
                 int CNT_FIXED_COLUMNS = -1;
 
-                CNT_FIXED_COLUMNS = 3; // за счт столбца "Дата, время", "План t", "План P"
+                CNT_FIXED_COLUMNS = 3; // за счет столбцов "Дата, время", "План t", "План P"
 
                 if (Columns.Count == INDEX_COLUMN_BUTTON_TO_ALL + m_listIds.Count + 1) {
-                    // повторный проход, когда все столбцы добавлены
-                    for (int col = 0; col < m_listIds.Count; col++)
-                        if ((Rows [e.RowIndex].Cells [col + CNT_FIXED_COLUMNS].Style.Equals (s_dgvCellStyles [(int)INDEX_CELL_STYLE.ERROR]) == false)
-                            && (Rows [e.RowIndex].Cells [col + CNT_FIXED_COLUMNS].Style.Equals (dgvCellStyleReadOnly) == false))
-                            Rows [e.RowIndex].Cells [col + CNT_FIXED_COLUMNS].Style.BackColor = BackColor;
-                        else
-                            ;
+                // повторный проход, когда все столбцы добавлены
+                    //for (int col = 0; col < m_listIds.Count; col++)
+                    //    if ((Rows [e.RowIndex].Cells [col + CNT_FIXED_COLUMNS].Style.Equals (s_dgvCellStyles [(int)INDEX_CELL_STYLE.ERROR]) == false)
+                    //        && (Rows [e.RowIndex].Cells [col + CNT_FIXED_COLUMNS].Style.Equals (dgvCellStyleReadOnly) == false))
+                    //        Rows [e.RowIndex].Cells [col + CNT_FIXED_COLUMNS].Style.BackColor = BackColor;
+                    //    else
+                    //        ;
                 } else if ((m_listIds.Count == Columns.Count - 4)
                     && (Columns [e.ColumnIndex].ReadOnly == false)
                     && (e.ColumnIndex > 0)
                     && (e.ColumnIndex < Columns.Count - CNT_FIXED_COLUMNS)) {
-                    // 1-ый проход при добавлении столбца
+                // 1-ый проход при добавлении столбца
                     int id_gtp = m_listIds [e.ColumnIndex - CNT_FIXED_COLUMNS] [(int)ID_TYPE.ID_OWNER],
                         col_gtp = -1;
                     List<int> list_col_tg = new List<int> ();
@@ -610,7 +610,8 @@ namespace Statistic {
                         else if (Rows [e.RowIndex].Cells [col_gtp].Style.BackColor == s_dgvCellStyles [(int)INDEX_CELL_STYLE.ERROR].BackColor)
                             Rows [e.RowIndex].Cells [col_gtp].Style = dgvCellStyleReadOnly;
                         else
-                            Rows [e.RowIndex].Cells [col_gtp].Style.BackColor = BackColor;
+                            //Rows [e.RowIndex].Cells [col_gtp].Style.BackColor = BackColor
+                                ;
                     } else
                         ;
                 } else

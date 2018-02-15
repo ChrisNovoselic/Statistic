@@ -1476,9 +1476,14 @@ namespace StatisticCommon
             else
                 ;
 
-            if (!((ModeGetRDGValues & MODE_GET_RDG_VALUES.UNIT_TEST) == MODE_GET_RDG_VALUES.UNIT_TEST))
+            if (!((ModeGetRDGValues & MODE_GET_RDG_VALUES.UNIT_TEST) == MODE_GET_RDG_VALUES.UNIT_TEST)) {
                 Request (m_dictIdListeners [t.m_id] [(int)CONN_SETT_TYPE.ADMIN], query [(int)DbTSQLInterface.QUERY_TYPE.UPDATE] + query [(int)DbTSQLInterface.QUERY_TYPE.INSERT] + query [(int)DbTSQLInterface.QUERY_TYPE.DELETE]);
-            else {
+
+                Logging.Logg ().Action ($@"AdminTS::SetAdminValuesRequest () - UPDATE=[{query [(int)DbTSQLInterface.QUERY_TYPE.UPDATE]}];{Environment.NewLine}"
+                        + $@"INSERT=[{query [(int)DbTSQLInterface.QUERY_TYPE.INSERT]}];{Environment.NewLine}"
+                        + $@"DELETE=[{query [(int)DbTSQLInterface.QUERY_TYPE.DELETE]}]"
+                    , Logging.INDEX_MESSAGE.D_006);
+            } else {
                 Request (m_dictIdListeners [t.m_id] [(int)CONN_SETT_TYPE.ADMIN], GetCurrentTimeQuery(DbInterface.DB_TSQL_INTERFACE_TYPE.MSSQL));
                 // отправить на панель, дл€ ретрансл€ции модульному тесту
                 _eventUnitTestSetValuesRequest?.Invoke (t, comp, date, CONN_SETT_TYPE.ADMIN, query, getHaveDates(CONN_SETT_TYPE.ADMIN));

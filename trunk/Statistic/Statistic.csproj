@@ -30,8 +30,8 @@
     <MapFileExtensions>false</MapFileExtensions>
     <TargetCulture>ru</TargetCulture>
     <PublisherName>ЗАО Информационные технологии и связь</PublisherName>
-    <ApplicationRevision>9</ApplicationRevision>
-    <ApplicationVersion>2.0.9.9</ApplicationVersion>
+    <ApplicationRevision>11</ApplicationRevision>
+    <ApplicationVersion>2.0.9.11</ApplicationVersion>
     <UseApplicationTrust>false</UseApplicationTrust>
     <CreateDesktopShortcut>true</CreateDesktopShortcut>
     <PublishWizardCompleted>true</PublishWizardCompleted>
