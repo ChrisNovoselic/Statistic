@@ -1529,6 +1529,7 @@ namespace StatisticAnalyzer
         {
             int iNewRow = -1;
             bool bRowChecked = false;
+            DataGridViewRow newRow;
 
             foreach (DateTime date in listDate) {
                 bRowChecked = listDate.IndexOf(date) == listDate.Count - 1;
@@ -1539,8 +1540,10 @@ namespace StatisticAnalyzer
                 } else
                     ;
 
-                iNewRow  = dgvListDateView.Rows.Add(new object[] { bRowChecked, date });
-                dgvListDateView.Rows [iNewRow].Tag = date;
+                newRow = dgvListDateView.RowTemplate.Clone () as DataGridViewRow;
+                newRow.Tag = date;
+                iNewRow  = dgvListDateView.Rows.Add(newRow);
+                dgvListDateView.Rows[iNewRow].SetValues (new object [] { bRowChecked, date });
             }
 
             if (bRowChecked == true) {
@@ -1706,24 +1709,38 @@ namespace StatisticAnalyzer
         {
             clearMessageView(bClearTypeMessageCounter);
 
-            DateTime dtBegin = (DateTime)dgvListDateView.Rows[m_prevListDateViewRowIndex].Tag
-                , dtEnd = DateTime.MaxValue;
-            //TODO: возможно указание периода более, чем одни сутки
-            if ((m_prevListDateViewRowIndex + 1) < dgvListDateView.Rows.Count)
-                dtEnd = (DateTime)dgvListDateView.Rows[m_prevListDateViewRowIndex + 1].Tag;
-            else
+            DateTime dtBegin = DateTime.MaxValue
+                //, dtEnd = DateTime.MaxValue
                 ;
+            if ((!(m_prevListDateViewRowIndex < 0))
+                && (m_prevListDateViewRowIndex < dgvListDateView.Rows.Count)) {
+                dtBegin = (DateTime)dgvListDateView.Rows [m_prevListDateViewRowIndex].Tag;
+            } else
+                ;
+            ////TODO: возможно указание периода более, чем одни сутки
+            //if ((!(m_prevListDateViewRowIndex < 0))
+            //    && ((m_prevListDateViewRowIndex + 1) < dgvListDateView.Rows.Count)) {
+            //    dtEnd = (DateTime)dgvListDateView.Rows [m_prevListDateViewRowIndex + 1].Tag;
+            //} else
+            //    ;
 
+            if (dtBegin.Equals(DateTime.MaxValue) == false)
             // 0 - идентификатор пользователя
             // 1 - тип сообщение
             // 2 - дата/время - начало
             // 3 - дата/время - окончание
             // 4 - признак
-            m_loggingReadHandler.Command(StatesMachine.ListMessageToUserByDate
-                , new object[] {
-                    IdCurrentUserView, getIndexTypeMessages(), dtBegin, /*dtEnd*/ dtBegin.AddDays(1), bClearTypeMessageCounter
-                }
-                , false);
+                m_loggingReadHandler.Command(StatesMachine.ListMessageToUserByDate
+                    , new object[] {
+                        IdCurrentUserView
+                        , getIndexTypeMessages()
+                        , dtBegin
+                        , /*dtEnd*/ dtBegin.AddDays(1)
+                        , bClearTypeMessageCounter
+                    }
+                    , false);
+            else
+                ;
         }
         
         /// <summary>
