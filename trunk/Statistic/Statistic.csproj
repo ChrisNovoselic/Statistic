@@ -30,8 +30,8 @@
     <MapFileExtensions>false</MapFileExtensions>
     <TargetCulture>ru</TargetCulture>
     <PublisherName>ЗАО Информационные технологии и связь</PublisherName>
-    <ApplicationRevision>13</ApplicationRevision>
-    <ApplicationVersion>2.0.9.13</ApplicationVersion>
+    <ApplicationRevision>15</ApplicationRevision>
+    <ApplicationVersion>2.0.9.15</ApplicationVersion>
     <UseApplicationTrust>false</UseApplicationTrust>
     <CreateDesktopShortcut>true</CreateDesktopShortcut>
     <PublishWizardCompleted>true</PublishWizardCompleted>
@@ -302,9 +302,9 @@
       <DesignTimeSharedInput>True</DesignTimeSharedInput>
     </Compile>
     <EmbeddedResource Include="Resources\statistic2.ico" />
-    <None Include="Template\Отчет по подинтервальной мощности_TEC_DATE.xls">
+    <Content Include="Template\Отчет по подинтервальной мощности_TEC_DATE.xls">
       <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
-    </None>
+    </Content>
   </ItemGroup>
   <ItemGroup>
     <BootstrapperPackage Include="Microsoft.Net.Client.3.5">
