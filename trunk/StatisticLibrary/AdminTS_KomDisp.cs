@@ -671,9 +671,9 @@ namespace StatisticCommon
         MSExcelIOExportPBRValues _msExcelIOExportPBRValues;
         /// <summary>
         /// Очередь индексов компонентов ТЭЦ для последоват. экспорта ПБР-значений
-        ///  , копия '_lisTECComponentIndex'
+        ///  , копия '_listTECComponentIndex'
         /// </summary>
-        List<int> _lisTECComponentIndex;
+        List<int> _listTECComponentIndex;
 
         /// <summary>
         /// Дата для экспорта ТОЛЬКО в режиме 'AUTO'
@@ -698,15 +698,15 @@ namespace StatisticCommon
 
         public void PrepareExportRDGValues(List<int> listIndex)
         {
-            if (_lisTECComponentIndex == null)
-                _lisTECComponentIndex = new List<int>();
+            if (_listTECComponentIndex == null)
+                _listTECComponentIndex = new List<int>();
             else
                 ;
 
-            _lisTECComponentIndex.Clear();
+            _listTECComponentIndex.Clear();
             listIndex.ForEach((indx) => {
-                if (_lisTECComponentIndex.Contains(indx) == false)
-                    _lisTECComponentIndex.Add(indx);
+                if (_listTECComponentIndex.Contains(indx) == false)
+                    _listTECComponentIndex.Add(indx);
                 else
                     Logging.Logg().Error(string.Format("AdminTS_KomDisp::PrepareExportRDGValues () - добавление повторяющегося индекса {0}...", indx), Logging.INDEX_MESSAGE.NOT_SET);
             });
@@ -723,17 +723,17 @@ namespace StatisticCommon
             int iRes = -1;
 
             if ((date - DateTime.MinValue.Date).Days > 0) {
-                if ((_lisTECComponentIndex.Count > 0)
+                if ((_listTECComponentIndex.Count > 0)
                     && (!(indxTECComponents < 0))
-                    && (!(_lisTECComponentIndex[0] < 0))) {
-                    if (indxTECComponents - _lisTECComponentIndex[0] == 0) {
-                        Logging.Logg().Debug(string.Format("AdminTS_KomDisp::AddValueToExportRDGValues () - получены значения для [ID={0}, Index={1}, за дату={2}, кол-во={3}] компонента..."
-                                , allTECComponents[_lisTECComponentIndex[0]].m_id, _lisTECComponentIndex[0], _lisTECComponentIndex[0], date, compValues.Length)
+                    && (!(_listTECComponentIndex[0] < 0))) {
+                    if (indxTECComponents - _listTECComponentIndex[0] == 0) {
+                        Logging.Logg().Action(string.Format("AdminTS_KomDisp::AddValueToExportRDGValues () - получены значения для [ID={0}, Index={1}, за дату={2}, кол-во={3}] компонента..."
+                                , allTECComponents[_listTECComponentIndex[0]].m_id, _listTECComponentIndex[0], _listTECComponentIndex[0], date, compValues.Length)
                             , Logging.INDEX_MESSAGE.NOT_SET);
 
                         if ((_msExcelIOExportPBRValues.AddTECComponent(allTECComponents[indxTECComponents]) == 0)
                             && (_msExcelIOExportPBRValues.SetDate(date) == true)) {
-                            _lisTECComponentIndex.Remove(indxTECComponents); // дубликатов быть не должно (см. добавление элементов)
+                            _listTECComponentIndex.Remove(indxTECComponents); // дубликатов быть не должно (см. добавление элементов)
 
                             //Console.WriteLine(@"AdminTS_KomDisp::AddValueToExportRDGValues () - обработка элемента=[{0}], остатолось элементов={1}", indxTECComponents, _lisTECComponentIndex.Count);
 
@@ -741,9 +741,9 @@ namespace StatisticCommon
                             _msExcelIOExportPBRValues.AddPBRValues(allTECComponents[indxTECComponents].m_id, compValues);
 
                             // проверить повторно после удаления элемента
-                            if (_lisTECComponentIndex.Count > 0) {
+                            if (_listTECComponentIndex.Count > 0) {
                             // очередной индекс компонента для запрооса
-                                iRes = _lisTECComponentIndex[0];
+                                iRes = _listTECComponentIndex[0];
                             } else {
                             // все значения по всем компонентам получены/добавлены
                                 Logging.Logg().Debug(string.Format("AdminTS_KomDisp::AddValueToExportRDGValues () - получены все значения для всех компонентов...")
@@ -755,11 +755,11 @@ namespace StatisticCommon
                             Logging.Logg().Error(string.Format($"AdminTS_KomDisp::AddValueToExportRDGValues () - компонент с индексом [{indxTECComponents}] не может быть добавлен (пред. опреация экспорта не завершена)...")
                                 , Logging.INDEX_MESSAGE.NOT_SET);
                             // для продолжения работы, необходимо удалить индекс
-                            _lisTECComponentIndex.Remove (indxTECComponents);
+                            _listTECComponentIndex.Remove (indxTECComponents);
                         }
                     } else
                     // текущий индекс и 0-ой элемент массива индексов жолжны совпадать
-                         Logging.Logg().Error(string.Format($"AdminTS_KomDisp::AddValueToExportRDGValues () - текущий индекс{indxTECComponents} и 0-ой элемент массива индексов{_lisTECComponentIndex [0]} не совпадают...")
+                         Logging.Logg().Error(string.Format($"AdminTS_KomDisp::AddValueToExportRDGValues () - текущий индекс <{indxTECComponents}> и 0-ой <{_listTECComponentIndex [0]}> элемент массива индексов не совпадают...")
                             , Logging.INDEX_MESSAGE.NOT_SET);
                 } else
                 //??? ошибка, т.к. выполнен запрос и получены значения, а индекс компонента не известен
