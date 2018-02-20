@@ -758,7 +758,7 @@ namespace StatisticCommon
                             _listTECComponentIndex.Remove (indxTECComponents);
                         }
                     } else
-                    // текущий индекс и 0-ой элемент массива индексов жолжны совпадать
+                    // текущий индекс и 0-ой элемент массива индексов должны совпадать
                          Logging.Logg().Error(string.Format($"AdminTS_KomDisp::AddValueToExportRDGValues () - текущий индекс <{indxTECComponents}> и 0-ой <{_listTECComponentIndex [0]}> элемент массива индексов не совпадают...")
                             , Logging.INDEX_MESSAGE.NOT_SET);
                 } else
