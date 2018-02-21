@@ -407,18 +407,21 @@ namespace Statistic
                         m_timerAppReset.Tick += new EventHandler(fTimerAppReset);
                         m_timerAppReset.Start();
 
-                        if (m_bAutoActionTabs == true)
-                            fileProfileLoadAddingTab();
-                        else
-                            ;
-
-                        //сменитьРежимToolStripMenuItem_Click();
-                        //formChangeMode.LoadProfile(@"116");
+                        //TODO: почему не вызвать 'fileProfileLoadStandardTab'
+                        // , или еще проще выбрать п.меню  'файлПрофильЗагрузитьToolStripMenuItem.PerformClick()'
+                        // очень непрозрачное открытие вкладок по профилю пользователя: почему идентификаторы собираются выше по коду?
+                        //!!! трудность в возможном переходе от одной БД конфигурации к другой
+                        // , поэтому идентификаторы собираются до закрытия соединения со предыдущей БД
                         string strIDsToLog = string.Empty;
                         listIDs.ForEach(id => strIDsToLog += id.ToString() + ';');
                         Logging.Logg().Action(@"АвтоЗагрузка профайла (" + HStatisticUsers.ID_ALLOWED.PROFILE_SETTINGS_CHANGEMODE.ToString() + @"): ids=" + strIDsToLog, Logging.INDEX_MESSAGE.NOT_SET);
                         //С пустой строкой имитация нажатия "Ок"...
                         formChangeMode.LoadProfile(string.Empty);
+                        //!!! только после стандартных вкладок
+                        if (m_bAutoActionTabs == true)
+                            fileProfileLoadAddingTab ();
+                        else
+                            ;
 
                         m_bAutoActionTabs = false;
                     }
@@ -936,14 +939,14 @@ namespace Statistic
         {
             m_bAutoActionTabs = true;
 
-            fileProfileLoadStandatdTab();
+            fileProfileLoadStandardTab();
 
             fileProfileLoadAddingTab();
 
             m_bAutoActionTabs = false;
         }
 
-        private void fileProfileLoadStandatdTab()
+        private void fileProfileLoadStandardTab()
         {
             string ids = HStatisticUsers.GetAllowed((int)HStatisticUsers.ID_ALLOWED.PROFILE_SETTINGS_CHANGEMODE);
             Logging.Logg().Action(@"Загрузка профайла (" + HStatisticUsers.ID_ALLOWED.PROFILE_SETTINGS_CHANGEMODE.ToString() + @"): ids=" + ids
@@ -1182,29 +1185,34 @@ namespace Statistic
             int i = -1;
             TabPage tab;
             int idAddingTab = -1;
-            bool bStopped = false
-                , bPerformClick = false;
+            bool bStopped = false // для стандартных вкладок
+                , bPerformClick = false; // закрывать дополнительные/сервисные вкладки имитацией выбора п.меню
             List<int> listToRemove = new List<int>();
             List<ID_ADDING_TAB> listToPerformClick = new List<ID_ADDING_TAB> ();
 
             listToRemove.Clear();
             if (!(m_dictFormFloat == null))
                 foreach (KeyValuePair<int, Form> pair in m_dictFormFloat)
-                    // закрывать "плавающие" окна только со стандартными объектами отображения
-                    if ((pair.Key < (int)TECComponent.ID.MAX)
-                        && (listTabKeep.IndexOf (pair.Key) < 0))
+                    if (
+                        //(pair.Key < (int)TECComponent.ID.MAX) && // закрывать "плавающие" окна только со стандартными объектами отображения
+                        (listTabKeep.IndexOf (pair.Key) < 0) // удерживать полученные в аргументе
+                        )
                         listToRemove.Add(pair.Key);
                     else
-                        if (Enum.IsDefined(typeof(ID_ADDING_TAB), pair.Key) == true)
-                            listToPerformClick.Add((ID_ADDING_TAB)pair.Key);
-                        else
-                        //??? throw
+                        //if (Enum.IsDefined(typeof(ID_ADDING_TAB), pair.Key) == true)
+                        //    listToPerformClick.Add((ID_ADDING_TAB)pair.Key);
+                        //else
+                        ////??? throw
                             ;
             else
                 ;
 
+            // возвратить плавающие окна в главное окно
             for (i = listToRemove.Count - 1; !(i < 0); i--)
-                m_dictFormFloat[listToRemove[i]].Close();
+                if (m_dictFormFloat.ContainsKey (listToRemove [i]) == true)
+                    m_dictFormFloat [listToRemove [i]].Close ();
+                else
+                    ;
 
             listToRemove.Clear();
             for (i = 0; i < tclTecViews.TabCount; i ++)

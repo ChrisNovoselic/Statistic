@@ -226,6 +226,9 @@ namespace Statistic
 
         private void admin_onEventExportPBRValues (AdminTS_KomDisp.MSExcelIOExportPBRValues.EventResultArgs ev)
         {
+            Logging.Logg ().Action ($@"PanelAdminKomDisp::admin_onEventExportPBRValues (тип={ev.Result}) - обработка события <EventExportPBRValues>..."
+                , Logging.INDEX_MESSAGE.NOT_SET);
+
             switch (ev.Result) {
                 case AdminTS_KomDisp.MSExcelIOExportPBRValues.RESULT.SHEDULE:
                     doExportPBRValues ();
@@ -518,6 +521,9 @@ namespace Statistic
         {
             int err = -1; // признак ошибки при определении номера ПБР
 
+            // DISPLAY - по умолчанию
+            ModeGetRDGValues = AdminTS.MODE_GET_RDG_VALUES.DISPLAY;
+
             //Вариант №1 (каталог)
             //FolderBrowserDialog folders = new FolderBrowserDialog();
             //folders.ShowNewFolderButton = false;
@@ -599,6 +605,9 @@ namespace Statistic
 
         private void btnImportCSV_AdminValuesDefault_Click(object sender, EventArgs e)
         {
+            // DISPLAY - по умолчанию
+            ModeGetRDGValues = AdminTS.MODE_GET_RDG_VALUES.DISPLAY;
+
             int days = (m_admin.m_curDate.Date - ASUTP.Core.HDateTime.ToMoscowTimeZone(DateTime.Now).Date).Days;
             if (days < 0)
             {

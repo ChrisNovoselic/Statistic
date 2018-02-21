@@ -119,6 +119,8 @@ namespace StatisticCommon
                     _modeGetRDGValues |= value;
                 else
                     _modeGetRDGValues = value;
+
+                Logging.Logg ().Action ($@"AdminTSModeGetRDGValues::set - <{_modeGetRDGValues.ToString()}>...", Logging.INDEX_MESSAGE.D_006);
             }
         }
 
