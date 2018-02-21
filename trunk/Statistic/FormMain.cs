@@ -676,20 +676,26 @@ namespace Statistic
 
                 typePanel = tclTecViews.TabPages [e.TabIndex].Controls [0].GetType ();
 
-                actionClosingTab = (from action in listActionClosingTab where action.TypePanel.Equals (typePanel) select action).ElementAt (0);
+                actionClosingTab = (from action in listActionClosingTab
+                    where (action.TypePanel.IsAssignableFrom (typePanel) == true)
+                        || (action.TypePanel.Equals(typePanel) == true)
+                    select action).FirstOrDefault();
 
-                if (actionClosingTab.IdAction < 0) {
-                    formChangeMode.SetItemChecked (actionClosingTab.IdAction, false);
-                } else if (actionClosingTab.IdAction == 0) {
-                    formChangeMode.SetItemChecked (e.TabHeaderText, false);
-                } else if (actionClosingTab.IdAction > 0) {
-                    if ((Enum.IsDefined(typeof(ID_ADDING_TAB), actionClosingTab.IdAction) == true)
-                        && (m_dictAddingTabs.ContainsKey ((ID_ADDING_TAB)actionClosingTab.IdAction) == true))
-                        m_dictAddingTabs [(ID_ADDING_TAB)actionClosingTab.IdAction].menuItem.Checked = false;
-                    else
-                    //??? throw
-                        ;
-                }
+                if (Equals(actionClosingTab, null) == false)
+                    if (actionClosingTab.IdAction < 0) {
+                        formChangeMode.SetItemChecked (actionClosingTab.IdAction, false);
+                    } else if (actionClosingTab.IdAction == 0) {
+                        formChangeMode.SetItemChecked (e.TabHeaderText, false);
+                    } else if (actionClosingTab.IdAction > 0) {
+                        if ((Enum.IsDefined(typeof(ID_ADDING_TAB), actionClosingTab.IdAction) == true)
+                            && (m_dictAddingTabs.ContainsKey ((ID_ADDING_TAB)actionClosingTab.IdAction) == true))
+                            m_dictAddingTabs [(ID_ADDING_TAB)actionClosingTab.IdAction].menuItem.Checked = false;
+                        else
+                        //??? throw
+                            ;
+                    }
+                else
+                    Logging.Logg().Error($@"FormMain::delegateOnCloseTab () - неизвестный тип панели на вкладке; индекс={e.TabIndex}, текст={e.TabHeaderText}, тип={e.TabType.ToString ()}...", Logging.INDEX_MESSAGE.NOT_SET);
             } else
                 throw new Exception ($@"FormMain::delegateOnCloseTab () - нет панели на вкладке; индекс={e.TabIndex}, текст={e.TabHeaderText}, тип={e.TabType.ToString()}...");
         }

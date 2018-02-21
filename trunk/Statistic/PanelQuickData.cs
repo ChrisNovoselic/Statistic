@@ -573,7 +573,7 @@ namespace Statistic
             /// <summary>
             /// Создать элемент интерфейса - подпись
             /// </summary>
-            /// <param name="indx"></param>
+            /// <param name="indx">Индекс подписи в массиве</param>
             /// <param name="strLabelText">Текст для отображения</param>
             /// <param name="clrLabelFore">Цвет текста на подписи</param>
             /// <param name="clrLabelBackground">Цвет фона подписи</param>

@@ -26,7 +26,7 @@ namespace Statistic {
             /// <summary>
             /// Конструктор
             /// </summary>
-            /// <param name="arMarkPPBRValues"></param>
+            /// <param name="arMarkPPBRValues">Массив признаков, определяющих необходимость использования тех или иных типов источников данных</param>
             public AdminTS_LK(bool[] arMarkPPBRValues)
                 : base(arMarkPPBRValues, TECComponentBase.TYPE.ELECTRO)
             {

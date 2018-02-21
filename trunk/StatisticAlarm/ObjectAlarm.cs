@@ -209,7 +209,7 @@ namespace StatisticAlarm
             /// <summary>
             /// Установить состояние объекта в "подтвержден"
             /// </summary>
-            /// <param name="dt"></param>
+            /// <param name="dt">Дата/время подтвердждения</param>
             public void Confirmed(DateTime? dt)
             {
                 //if (!(_state == INDEX_STATES_ALARM.FIXING)) {
@@ -286,7 +286,7 @@ namespace StatisticAlarm
             ///// Обновить значения объекта события сигнализаций таким образом
             /////  , чтобы он предсавлял собой "новый" объект
             ///// </summary>
-            ///// <param name="ev"></param>
+            ///// <param name="ev">Аргумент события</param>
             //public void New(TecViewAlarm.AlarmTecViewEventArgs ev)
             //{
             //    init (ev.m_dtRegistred.GetValueOrDefault());

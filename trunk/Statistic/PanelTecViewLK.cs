@@ -400,8 +400,8 @@ namespace Statistic
             /// <summary>
             /// Метод "Расположение  в ячейках таблицы"
             /// </summary>
-            /// <param name="indx"></param>
-            /// <returns></returns>
+            /// <param name="indx">Индекс ячейки в layout</param>
+            /// <returns>Объект-адрес размещения</returns>
             protected override TableLayoutPanelCellPosition getPositionCell(int indx)
             {   //ряд
                 int row = -1,

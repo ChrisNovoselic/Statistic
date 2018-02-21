@@ -1912,7 +1912,7 @@ namespace Statistic
         /// <summary>
         /// Установить значение даты/времени на дочерней панели с активными элементами управления
         /// </summary>
-        /// <param name="val"></param>
+        /// <param name="val">Новое значение даты/времени</param>
         private void setDatetimeHour(DateTime val)
         {
             EvtSetDatetimeHour(val);
@@ -1958,7 +1958,7 @@ namespace Statistic
         /// <summary>
         /// Установить текущие дату/час для объекта обработки запросов к БД
         /// </summary>
-        /// <param name="dtNew"></param>
+        /// <param name="dtNew">Новое значение даты/времени</param>
         private void setCurrDateHour(DateTime dtNew)
         {
             m_tecView.m_curDate = dtNew;

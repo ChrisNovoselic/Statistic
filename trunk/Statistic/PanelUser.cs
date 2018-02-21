@@ -623,10 +623,10 @@ namespace Statistic
             }
 
             /// <summary>
-            /// Метод для переименования ноды
+            /// Метод для переименования элемента древовидного списка
             /// </summary>
-            /// <param name="id_comp"></param>
-            /// <param name="name"></param>
+            /// <param name="id_comp">Идентификатор элемента</param>
+            /// <param name="name">Наименование элемента</param>
             public void Rename_Node (ID_Comp id_comp, string name)
             {
                 if (id_comp.id_user.Equals (-1) == true & id_comp.id_role.Equals (-1) == false) {
@@ -1215,7 +1215,6 @@ namespace Statistic
         /// Метод добавления нового компонента
         /// </summary>
         /// <param name="list_id">Идентификатор нового компонента</param>
-        /// <param name="obj"></param>
         private void insert(TreeView_Users.ID_Comp list_id)
         {
             int iRes = 0;
@@ -1732,7 +1731,7 @@ namespace Statistic
             /// Метод получения строки со значениями прав доступа
             /// </summary>
             /// <param name="id">ИД типа</param>
-            /// <param name="bIsRole"></param>
+            /// <param name="bIsRole">Признак принадлежности идентификатора к идентификаторам роли, иначе идентификатор пользователя</param>
             /// <returns>Строка таблицы со значениями прав доступа (или др. параметров конфигурации)</returns>
             private DataRow GetRowAllowed(int id)
             {

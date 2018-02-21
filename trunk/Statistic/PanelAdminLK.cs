@@ -88,7 +88,6 @@ namespace Statistic {
         /// <summary>
         /// Конструктор класса
         /// </summary>
-        /// <param name="idListener">ИД слушателя</param>
         /// <param name="markQueries"></param>
         public PanelAdminLK(ASUTP.Core.HMark markQueries)
             : base(markQueries, new int[] { (int)TECComponent.ID.LK, (int)TECComponent.ID.GTP })

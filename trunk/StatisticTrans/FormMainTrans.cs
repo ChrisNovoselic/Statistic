@@ -138,9 +138,8 @@ namespace StatisticTrans
             }
 
             /// <summary>
-            /// обработка "своих" команд
+            /// Выполнить "свои" команды из командной строки
             /// </summary>
-            /// <param name="command"></param>
             private void RunCmd()
             {
                 foreach (KeyValuePair<string, string> pair in m_dictCmdArgs)
@@ -1488,7 +1487,7 @@ namespace StatisticTrans
         /// <summary>
         /// Оброботчик сообщений формы
         /// </summary>
-        /// <param name="m"></param>
+        /// <param name="m">Сообщение ОС</param>
         protected override void WndProc(ref Message m)
         {
             switch (m.Msg)
@@ -1571,7 +1570,7 @@ namespace StatisticTrans
         ///// <summary>
         ///// Перехват нажатия на кнопку свернуть
         ///// </summary>
-        ///// <param name="m"></param>
+        ///// <param name="m">Сообщение ОС</param>
         //protected override void WndProc(ref Message m)
         //{
         //    if (m.Msg == 0x112)

@@ -82,8 +82,14 @@ namespace StatisticAnalyzer
                     if (arg is Array) {
                         Args = new object [(arg as object []).Length];
 
-                        for (int i = 0; i < Args.Length; i++)
-                            Args [i] = (arg as object []) [i];
+                        for (int i = 0; i < Args.Length; i++) {
+                            if (((arg as object []) [i] is string)
+                                && (!(((string)(arg as object []) [i]).IndexOf (s_chDelimeters [(int)INDEX_DELIMETER.PART]) < 0))) {
+                                Args [i] = ((string)(arg as object []) [i]).Split (s_chDelimeters, StringSplitOptions.RemoveEmptyEntries);
+                            } else {
+                                Args [i] = (arg as object []) [i];
+                            }
+                        }
                     } else
                         Args = new object [] { arg };
                 else
@@ -106,6 +112,24 @@ namespace StatisticAnalyzer
                 }
             }
 
+            private string getTypeMessages ()
+            {
+                string strRes = string.Empty;
+
+                string [] args;
+
+                if ((Key == StatesMachine.ListMessageToUserByDate)
+                    && (Args [1] is string [])) {
+                    args = Args [1] as string [];
+
+                    strRes = $@"[{args[0]}:<{string.Join(",", args, 1, args.Length - 1)}>]";
+                } else
+                //TODO: некорректный вызов
+                    ;
+
+                return strRes;
+            }
+
             private string toString ()
             {
                 string strRes = string.Empty;
@@ -116,7 +140,7 @@ namespace StatisticAnalyzer
                         strRes = $"не требуется";
                         break;
                     case StatesMachine.ListMessageToUserByDate:
-                        strRes = $"IdUser={Args [0]}, Type={Args [1]}, Period=[{(DateTime)Args [2]}, {(DateTime)Args [3]}]";
+                        strRes = $"IdUser={Args [0]}, Type={getTypeMessages()}, Period=[{(DateTime)Args [2]}, {(DateTime)Args [3]}]";
                         break;
                     case StatesMachine.ListDateByUser:
                         strRes = $"IdUser={Args [0]}";
@@ -1439,8 +1463,8 @@ namespace StatisticAnalyzer
         /// </summary>
         void TabLoggingPositionText()
         {
-            if (dgvMessageView.Rows.Count > 0)
-                dgvMessageView.FirstDisplayedScrollingRowIndex = 0;
+            if (dgvMessageView.Rows.GetRowCount (DataGridViewElementStates.Visible) > 0)
+                dgvMessageView.FirstDisplayedScrollingRowIndex = dgvMessageView.Rows.GetFirstRow(DataGridViewElementStates.Visible);
             else
                 ;
         }
@@ -1548,7 +1572,7 @@ namespace StatisticAnalyzer
 
             if (bRowChecked == true) {
                 dgvListDateView.Rows[dgvListDateView.Rows.Count - 1].Selected = bRowChecked;
-                dgvListDateView.FirstDisplayedScrollingRowIndex = dgvListDateView.Rows.Count - 1;
+                dgvListDateView.FirstDisplayedScrollingRowIndex = 0;
             } else
                 ;
         }

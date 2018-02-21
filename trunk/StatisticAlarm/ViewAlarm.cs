@@ -406,7 +406,7 @@ namespace StatisticAlarm
             /// <summary>
             /// Обработать рез-т получения даты/времени на сервере
             /// </summary>
-            /// <param name="tableRes"></param>
+            /// <param name="tableRes">Результат запроса - значение даты/времени</param>
             private void GetCurrentTimeResponse(DataTable tableRes)
             {
                 if (tableRes.Rows.Count == 1)
@@ -484,7 +484,7 @@ namespace StatisticAlarm
             /// Обработать (промежуточный) рез-т запроса вставки записи - основная информация о событии сигнализации
             ///  , получить идентификатор вставленной записи
             /// </summary>
-            /// <param name="obj"></param>
+            /// <param name="obj">Идентификатор вставленной записи</param>
             private void GetInsertEventMainResponse(object obj)
             {
                 // сохранить значени в промежуточную переменную
@@ -946,7 +946,7 @@ namespace StatisticAlarm
         /// <summary>
         /// Обработчик события - изменение даты, номера часа начала и окончания
         /// </summary>
-        /// <param name="ev"></param>
+        /// <param name="ev">Аргумент события</param>
         public void OnEventDatetimeChanged(DatetimeCurrentEventArgs ev)
         {
             m_dtCurrent = ev;

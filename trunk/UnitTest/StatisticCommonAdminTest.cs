@@ -118,6 +118,42 @@ namespace UnitTest {
         #endregion
 
         [TestMethod]
+        public void Test_Export_PBRValues ()
+        {
+            panel.ModeGetRDGValues |= AdminTS.MODE_GET_RDG_VALUES.UNIT_TEST;
+            panel.ModeGetRDGValues = AdminTS.MODE_GET_RDG_VALUES.EXPORT;
+            Assert.IsFalse ((panel.ModeGetRDGValues & AdminTS.MODE_GET_RDG_VALUES.DISPLAY) == AdminTS.MODE_GET_RDG_VALUES.DISPLAY);
+            Assert.IsTrue ((panel.ModeGetRDGValues & AdminTS.MODE_GET_RDG_VALUES.UNIT_TEST) == AdminTS.MODE_GET_RDG_VALUES.UNIT_TEST);
+            Assert.IsTrue ((panel.ModeGetRDGValues & AdminTS.MODE_GET_RDG_VALUES.EXPORT) == AdminTS.MODE_GET_RDG_VALUES.EXPORT);
+
+            string mesDebug = string.Empty;
+
+            int prevIndex = 0
+                , nextIndex = 0;
+            Action onEventUnitTestSetDataGridViewAdminCompleted;
+            PanelAdminKomDisp.DelegateUnitTestNextIndexExportPBRValuesRequest delegateNextIndexExportPBRValuesRequest;
+            Task taskPerformButtonExportPBRClick
+                , taskPerformComboBoxTECComponentSelectedIndex;
+            TaskStatus taskStatusPerformButtonExportPBRClick
+                , taskStatusPerformComboBoxTECComponentSelectedIndex;
+            CancellationTokenSource cancelTokenSource;
+
+            onEventUnitTestSetDataGridViewAdminCompleted = null;
+
+            taskPerformButtonExportPBRClick =
+            taskPerformComboBoxTECComponentSelectedIndex =
+                null;
+
+            cancelTokenSource = new CancellationTokenSource ();
+            // вызывается при ретрансляции панелью события имитации отправления запроса на обновление значений
+            delegateNextIndexExportPBRValuesRequest = delegate (int next_index, TEC t, TECComponent comp, DateTime date, CONN_SETT_TYPE type, IEnumerable<int> list_id_rec, string [] queries) {
+                Assert.IsNotNull (list_id_rec);
+                Assert.IsFalse (list_id_rec.ToArray ().Length < 24);
+                //TODO: проверка значений массива на истинность (сравнить с идентификаторами из таблицы БД)
+            };
+        }
+
+        [TestMethod]
         public void Test_SaveGTP_REC ()
         {
             #region Проверка переключения режимов работы

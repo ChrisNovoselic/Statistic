@@ -113,9 +113,9 @@ namespace Statistic
         /// <summary>
         /// Конструктор
         /// </summary>
-        /// <param name="container"></param>
+        /// <param name="container">Контейнер для текущего объекта</param>
         /// <param name="listTec">Лист ТЭЦ</param>
-        public PanelSobstvNyzhdy(IContainer container, List<StatisticCommon.TEC> listTec)
+        public PanelSobstvNyzhdy (IContainer container, List<StatisticCommon.TEC> listTec)
             : this(listTec)
         {
             container.Add(this);
@@ -405,7 +405,7 @@ namespace Statistic
             /// <summary>
             /// Конструктор
             /// </summary>
-            /// <param name="container"></param>
+            /// <param name="container">Контейнер для текущего объекта</param>
             /// <param name="tec">Лист ТЭЦ</param>
             public PanelTecSobstvNyzhdy(IContainer container, StatisticCommon.TEC tec)
                 : this(tec)

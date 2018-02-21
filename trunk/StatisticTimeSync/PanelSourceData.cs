@@ -206,7 +206,7 @@ namespace StatisticTimeSync
             /// <summary>
             /// Обновляет разницу времени сервера с БД
             /// </summary>
-            /// <param name="date"></param>
+            /// <param name="date">Дата/время эталонное (на одном из серверов)</param>
             private void recievedEtalonDate(DateTime date)
             {
                 m_arDateTime[(int)INDEX_DATETME.ETALON] = date;
@@ -905,7 +905,7 @@ namespace StatisticTimeSync
             /// <summary>
             /// Обработчик запросов на получение информации
             /// </summary>
-            /// <param name="ev"></param>
+            /// <param name="ev">Аргумент, детализирующий запрос и отклик</param>
             private void onEvtQueryAskedData(object ev)
             {
                 int id = -1

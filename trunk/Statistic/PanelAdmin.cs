@@ -535,6 +535,7 @@ namespace Statistic
                 ;
         }
 
+        #region ћодульный тест сохранени€ административных значений
         /// <summary>
         /// “ип делегата только дл€ использовани€ в модульных тестах
         /// </summary>
@@ -581,6 +582,7 @@ namespace Statistic
         {
             _eventUnitTestNextIndexSetValuesRequest?.Invoke(comboBoxTecComponent.SelectedIndex + 1 < comboBoxTecComponent.Items.Count ? comboBoxTecComponent.SelectedIndex + 1 : -1, t, comp, date, type, listIdRec, queries);
         }
+        #endregion
 
         private void btnSet_Click(object sender, EventArgs e)
         {

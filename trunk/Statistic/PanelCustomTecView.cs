@@ -811,7 +811,7 @@ namespace Statistic
         /// Разбор строки с настройками всех панелей (отображаемые объекты, состав отображаемой информации)
         ///  для восстановления
         /// </summary>
-        /// <param name="profile"></param>
+        /// <param name="profile">Строка с настройками всех панелей</param>
         public void LoadProfile(string profile)
         {
             string[] arLabel = profile.Split(CHAR_DELIM_LABEL);

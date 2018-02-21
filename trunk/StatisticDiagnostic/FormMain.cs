@@ -74,10 +74,10 @@ namespace StatisticDiagnostic
         }
 
         /// <summary>
-        /// 
+        /// Обработчик события - активация главного окна приложения
         /// </summary>
-        /// <param name="obj"></param>
-        /// <param name="ev"></param>
+        /// <param name="obj">Инициатор события - окно</param>
+        /// <param name="ev">Аргумент события</param>
         private void FormDiagnostic_Activate(object obj, EventArgs ev)
         {
             if (_state == 0)
@@ -87,10 +87,10 @@ namespace StatisticDiagnostic
         }
 
         /// <summary>
-        /// 
+        /// Обработчик события - деактивация главного окна приложения
         /// </summary>
-        /// <param name="obj"></param>
-        /// <param name="ev"></param>
+        /// <param name="obj">Инициатор события - окно</param>
+        /// <param name="ev">Аргумент события</param>
         private void FormDiagnostic_Deactivate(object obj, EventArgs ev)
         {
             m_panel.Activate(false);

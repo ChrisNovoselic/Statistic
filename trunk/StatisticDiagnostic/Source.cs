@@ -1079,8 +1079,8 @@ namespace StatisticDiagnostic
                 /// <summary>
                 /// Метод заполнения данными элементов ТЭЦ
                 /// </summary>
-                /// <param name="type"></param>
-                /// <param name="values"></param>
+                /// <param name="type">Тип обновляемых значений</param>
+                /// <param name="values">Значения для отображения</param>
                 private void update(DictionaryTecValues.TYPE type, Dictionary<KEY_DIAGNOSTIC_PARAMETER, Values> values/*, out int err*/)
                 {
                     //err = 0; // ошибок нет

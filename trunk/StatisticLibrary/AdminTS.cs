@@ -461,7 +461,7 @@ namespace StatisticCommon
         /// Постановка в очередь получения административных и ПБР значений
         /// </summary>
         /// <param name="indx">Индекс компонента</param>
-        /// <param name="date"></param>
+        /// <param name="date">Дата запрашиваемых значений</param>
         public override void GetRDGValues(/*int /*TYPE_FIELDS mode,*/ int indx, DateTime date)
         {
             //Запретить запись ПБР-значений
@@ -2783,8 +2783,8 @@ namespace StatisticCommon
         /// <summary>
         /// Получение идентификатора компонента
         /// </summary>
-        /// <param name="selfMode"></param>
-        /// <param name="ownerMode"></param>
+        /// <param name="selfMode">Режим текущего объекта</param>
+        /// <param name="ownerMode">Режим объекта-владельца</param>
         /// <param name="indx">Индекс компонента</param>
         /// <returns>Идентификатор компонента</returns>
         public int GetIdOwnerTECComponent(FormChangeMode.MODE_TECCOMPONENT selfMode, FormChangeMode.MODE_TECCOMPONENT ownerMode, int indx = -1)
