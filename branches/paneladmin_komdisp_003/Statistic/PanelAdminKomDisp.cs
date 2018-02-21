@@ -450,13 +450,13 @@ namespace Statistic
         [TestMethod]
         public void PerformButtonExportPBRValuesClick (DelegateUnitTestNextIndexExportPBRValuesRequest fUnitTestNextIndexExportPBRValuesRequest)
         {
-            m_admin.EventUnitTestSetValuesRequest += new AdminTS.DelegateUnitTestSetValuesRequest (adminKomDisp_onEventUnitTestExportPBRValuesRequest);
-            EventUnitTestNextIndexSetValuesRequest += new DelegateUnitTestNextIndexSetValuesRequest (fUnitTestNextIndexExportPBRValuesRequest);
+            Admin.EventUnitTestExportPBRValuesRequest += new AdminTS_KomDisp.DelegateUnitTestExportPBRValuesRequest (adminKomDisp_onEventUnitTestExportPBRValuesRequest);
+            EventUnitTestNextIndexExportPBRValuesRequest += new DelegateUnitTestNextIndexExportPBRValuesRequest (fUnitTestNextIndexExportPBRValuesRequest);
 
             btnExport_PBRValues_Click (this, EventArgs.Empty);
         }
 
-        private void adminKomDisp_onEventUnitTestExportPBRValuesRequest (TEC t, TECComponent comp, DateTime date, CONN_SETT_TYPE type, string [] queries, IEnumerable<int> listIdRec)
+        private void adminKomDisp_onEventUnitTestExportPBRValuesRequest (int nextIndex, TEC t, TECComponent comp, DateTime date, CONN_SETT_TYPE type, IEnumerable<int> listIdRec, string [] queries)
         {
             _eventUnitTestNextIndexExportPBRValuesRequest?.Invoke (comboBoxTecComponent.SelectedIndex + 1 < comboBoxTecComponent.Items.Count ? comboBoxTecComponent.SelectedIndex + 1 : -1, t, comp, date, type, listIdRec, queries);
         }

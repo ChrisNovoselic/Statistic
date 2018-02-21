@@ -674,6 +674,41 @@ namespace StatisticCommon
             ;
         }
 
+        #region Модульный тест экспорта ПБР-значений
+        /// <summary>
+        /// Тип делегата только для использования в модульных тестах
+        /// </summary>
+        /// <param name="nextIndex">Очередной индекс</param>
+        /// <param name="t">Объект ТЭЦ - владелец выбранного компонента-объекта в списке (или, собственно, сам объект, тогда компонент = null)</param>
+        /// <param name="comp">Компонент-объект выбранный в списке</param>
+        /// <param name="date">Дата, за которую требуется обновить/сохранить значения</param>
+        /// <param name="listIdRec">Список идентификаторов записей в таблице БД для обновления</param>
+        /// <param name="nextIndex">Очередной индекс из списка объектов-компонентов</param>
+        public delegate void DelegateUnitTestExportPBRValuesRequest (int nextIndex, TEC t, TECComponent comp, DateTime date, CONN_SETT_TYPE type, IEnumerable<int> listIdRec, string [] queries);
+
+        private DelegateUnitTestExportPBRValuesRequest _eventUnitTestExportPBRValuesRequest;
+
+        public event DelegateUnitTestExportPBRValuesRequest EventUnitTestExportPBRValuesRequest
+        {
+            add
+            {
+                if (Equals (_eventUnitTestExportPBRValuesRequest, null) == true)
+                    _eventUnitTestExportPBRValuesRequest += value;
+                else
+                    ;
+            }
+
+            remove
+            {
+                if (Equals (_eventUnitTestExportPBRValuesRequest, null) == false) {
+                    _eventUnitTestExportPBRValuesRequest -= value;
+                    _eventUnitTestExportPBRValuesRequest = null;
+                } else
+                    ;
+            }
+        }
+        #endregion
+
         /// <summary>
         ///  Добавить значения для экспорта
         /// </summary>

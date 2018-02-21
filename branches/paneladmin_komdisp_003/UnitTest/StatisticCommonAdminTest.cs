@@ -132,15 +132,15 @@ namespace UnitTest {
                 , nextIndex = 0;
             Action onEventUnitTestSetDataGridViewAdminCompleted;
             PanelAdminKomDisp.DelegateUnitTestNextIndexExportPBRValuesRequest delegateNextIndexExportPBRValuesRequest;
-            Task taskPerformButtonExportPBRClick
+            Task taskPerformButtonExportPBRValuesClick
                 , taskPerformComboBoxTECComponentSelectedIndex;
-            TaskStatus taskStatusPerformButtonExportPBRClick
+            TaskStatus taskStatusPerformButtonExportPBRValuesClick
                 , taskStatusPerformComboBoxTECComponentSelectedIndex;
             CancellationTokenSource cancelTokenSource;
 
             onEventUnitTestSetDataGridViewAdminCompleted = null;
 
-            taskPerformButtonExportPBRClick =
+            taskPerformButtonExportPBRValuesClick =
             taskPerformComboBoxTECComponentSelectedIndex =
                 null;
 
@@ -151,6 +151,31 @@ namespace UnitTest {
                 Assert.IsFalse (list_id_rec.ToArray ().Length < 24);
                 //TODO: проверка значений массива на истинность (сравнить с идентификаторами из таблицы БД)
             };
+            // вызывается при завершении заполнения 'DatagridView' значениями
+            onEventUnitTestSetDataGridViewAdminCompleted = delegate () {
+                mesDebug = "Handler On 'EventUnitTestSetDataGridViewAdminCompleted'...";
+
+                Logging.Logg ().Debug (mesDebug, Logging.INDEX_MESSAGE.NOT_SET);
+                System.Diagnostics.Debug.WriteLine (mesDebug);
+
+                if (prevIndex.Equals (nextIndex) == true)
+                    // старт задачи сохранения значений
+                    taskPerformButtonExportPBRValuesClick = Task.Factory.StartNew (delegate () {
+                        panel.PerformButtonExportPBRValuesClick (delegateNextIndexExportPBRValuesRequest);
+                    });
+                else
+                    if (!(nextIndex < 0))
+                    taskPerformComboBoxTECComponentSelectedIndex = Task.Factory.StartNew (delegate () {
+                        // установить новый индекс (назначить новый компонент-объект)
+                        panel.PerformComboBoxTECComponentSelectedIndex (prevIndex = nextIndex);
+                    });
+                else
+                    ;
+            };
+
+            try {
+            } catch (Exception e) {
+            }
         }
 
         [TestMethod]

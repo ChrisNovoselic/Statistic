@@ -1396,6 +1396,7 @@ namespace StatisticCommon
             return resQuery;
         }
 
+        #region ћодульный тест сохранени€ административных значений
         /// <summary>
         /// “ип делегата только дл€ использовани€ в модульных тестах
         /// </summary>
@@ -1427,7 +1428,8 @@ namespace StatisticCommon
                     ;
             }
         }
-        
+        #endregion
+
         private IEnumerable<int> getHaveDates(CONN_SETT_TYPE type)
         {
             List<int> listRes;
