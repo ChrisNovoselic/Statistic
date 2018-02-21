@@ -246,7 +246,7 @@ namespace Statistic
             // по завершению операции эксопрта требуется восстановить режим в исходный(DISPLAY - по умолчанию)
             ModeGetRDGValues = AdminTS.MODE_GET_RDG_VALUES.EXPORT;
 
-            (m_admin as AdminTS_KomDisp).PrepareExportRDGValues (m_listTECComponentIndex);
+            Admin.PrepareExportRDGValues (m_listTECComponentIndex);
 
             if (m_listTECComponentIndex.Count > 0) {
                 date = Admin.DateDoExportPBRValues;
@@ -414,51 +414,12 @@ namespace Statistic
         public event Action EventUnitTestSetDataGridViewAdminCompleted;
 
         #region Модульный тест экспорта ПБР-значений
-        /// <summary>
-        /// Тип делегата только для использования в модульных тестах
-        /// </summary>
-        /// <param name="nextIndex">Очередной индекс</param>
-        /// <param name="t">Объект ТЭЦ - владелец выбранного компонента-объекта в списке (или, собственно, сам объект, тогда компонент = null)</param>
-        /// <param name="comp">Компонент-объект выбранный в списке</param>
-        /// <param name="date">Дата, за которую требуется обновить/сохранить значения</param>
-        /// <param name="listIdRec">Список идентификаторов записей в таблице БД для обновления</param>
-        /// <param name="nextIndex">Очередной индекс из списка объектов-компонентов</param>
-        public delegate void DelegateUnitTestNextIndexExportPBRValuesRequest (int nextIndex, TEC t, TECComponent comp, DateTime date, CONN_SETT_TYPE type, IEnumerable<int> listIdRec, string [] queries);
-
-        private DelegateUnitTestNextIndexExportPBRValuesRequest _eventUnitTestNextIndexExportPBRValuesRequest;
-
-        public event DelegateUnitTestNextIndexExportPBRValuesRequest EventUnitTestNextIndexExportPBRValuesRequest
-        {
-            add
-            {
-                if (Equals (_eventUnitTestNextIndexExportPBRValuesRequest, null) == true)
-                    _eventUnitTestNextIndexExportPBRValuesRequest += value;
-                else
-                    ;
-            }
-
-            remove
-            {
-                if (Equals (_eventUnitTestNextIndexExportPBRValuesRequest, null) == false) {
-                    _eventUnitTestNextIndexExportPBRValuesRequest -= value;
-                    _eventUnitTestNextIndexExportPBRValuesRequest = null;
-                } else
-                    ;
-            }
-        }
-
         [TestMethod]
-        public void PerformButtonExportPBRValuesClick (DelegateUnitTestNextIndexExportPBRValuesRequest fUnitTestNextIndexExportPBRValuesRequest)
+        public void PerformButtonExportPBRValuesClick (AdminTS_KomDisp.DelegateUnitTestExportPBRValuesRequest fUnitTestNextIndexExportPBRValuesRequest)
         {
-            Admin.EventUnitTestExportPBRValuesRequest += new AdminTS_KomDisp.DelegateUnitTestExportPBRValuesRequest (adminKomDisp_onEventUnitTestExportPBRValuesRequest);
-            EventUnitTestNextIndexExportPBRValuesRequest += new DelegateUnitTestNextIndexExportPBRValuesRequest (fUnitTestNextIndexExportPBRValuesRequest);
+            Admin.EventUnitTestExportPBRValuesRequest += new AdminTS_KomDisp.DelegateUnitTestExportPBRValuesRequest (fUnitTestNextIndexExportPBRValuesRequest);
 
-            btnExport_PBRValues_Click (this, EventArgs.Empty);
-        }
-
-        private void adminKomDisp_onEventUnitTestExportPBRValuesRequest (int nextIndex, TEC t, TECComponent comp, DateTime date, CONN_SETT_TYPE type, IEnumerable<int> listIdRec, string [] queries)
-        {
-            _eventUnitTestNextIndexExportPBRValuesRequest?.Invoke (comboBoxTecComponent.SelectedIndex + 1 < comboBoxTecComponent.Items.Count ? comboBoxTecComponent.SelectedIndex + 1 : -1, t, comp, date, type, listIdRec, queries);
+            btnExport_PBRValues.PerformClick();
         }
         #endregion
 
@@ -530,18 +491,21 @@ namespace Statistic
                     m_admin.CopyCurToPrevRDGValues ();
                 else
                     ;
-
-                EventUnitTestSetDataGridViewAdminCompleted?.Invoke ();
             } else if ((ModeGetRDGValues & AdminTS.MODE_GET_RDG_VALUES.EXPORT) == AdminTS.MODE_GET_RDG_VALUES.EXPORT) {
                 nextIndx = Admin.AddValueToExportRDGValues (m_admin.m_curRDGValues, date);
 
                 if (nextIndx < 0)
-                    Invoke ((MethodInvoker)delegate () {
+                    if (InvokeRequired == true)
+                        Invoke ((MethodInvoker)delegate () {
+                            btnRefresh.PerformClick ();
+                        });
+                    else
                         btnRefresh.PerformClick ();
-                    });
                 else
-                    Admin.GetRDGValues(nextIndx, date);
+                    Admin.GetRDGValues (nextIndx, date);
             }
+            // сообщить в модульный тест о завершении очередной итерации
+            EventUnitTestSetDataGridViewAdminCompleted?.Invoke ();
         }
 
         public override void ClearTables()
@@ -646,8 +610,10 @@ namespace Statistic
                 Logging.Logg().Action(string.Format(@"PanelAdminKomDisp::btnImportCSV_PBRValues_Click () - отмена выбора CSV-макета..."), Logging.INDEX_MESSAGE.NOT_SET);
         }
 
-        private string SharedFolderRun {
-            get {
+        private string SharedFolderRun
+        {
+            get
+            {
                 return Path.GetPathRoot(Application.ExecutablePath);
             }
         }

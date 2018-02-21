@@ -640,7 +640,7 @@ namespace StatisticCommon
             get
             {
                 DateTime datetimeRes
-                , datetimeMsc;
+                    , datetimeMsc;
 
                 if (_msExcelIOExportPBRValues.Mode == MODE_EXPORT_PBRVALUES.AUTO) {
                     datetimeMsc = HDateTime.ToMoscowTimeZone();
@@ -679,12 +679,10 @@ namespace StatisticCommon
         /// Тип делегата только для использования в модульных тестах
         /// </summary>
         /// <param name="nextIndex">Очередной индекс</param>
-        /// <param name="t">Объект ТЭЦ - владелец выбранного компонента-объекта в списке (или, собственно, сам объект, тогда компонент = null)</param>
-        /// <param name="comp">Компонент-объект выбранный в списке</param>
         /// <param name="date">Дата, за которую требуется обновить/сохранить значения</param>
-        /// <param name="listIdRec">Список идентификаторов записей в таблице БД для обновления</param>
-        /// <param name="nextIndex">Очередной индекс из списка объектов-компонентов</param>
-        public delegate void DelegateUnitTestExportPBRValuesRequest (int nextIndex, TEC t, TECComponent comp, DateTime date, CONN_SETT_TYPE type, IEnumerable<int> listIdRec, string [] queries);
+        /// <param name="currentIndex">Текущий индекс из списка объектов-компонентов (д.б. == listTECComponentIndex[0])</param>
+        /// <param name="listTECComponentIndex">Список индексов оставшихся к обработке</param>
+        public delegate void DelegateUnitTestExportPBRValuesRequest (int nextIndex, DateTime date, int currentIndex, IEnumerable<int> listTECComponentIndex);
 
         private DelegateUnitTestExportPBRValuesRequest _eventUnitTestExportPBRValuesRequest;
 
@@ -725,7 +723,7 @@ namespace StatisticCommon
                     && (!(_listTECComponentIndex[0] < 0))) {
                     if (indxTECComponents - _listTECComponentIndex[0] == 0) {
                         Logging.Logg().Action(string.Format("AdminTS_KomDisp::AddValueToExportRDGValues () - получены значения для [ID={0}, Index={1}, за дату={2}, кол-во={3}] компонента..."
-                                , allTECComponents[_listTECComponentIndex[0]].m_id, _listTECComponentIndex[0], _listTECComponentIndex[0], date, compValues.Length)
+                                , allTECComponents[_listTECComponentIndex[0]].m_id, _listTECComponentIndex[0], date, compValues.Length)
                             , Logging.INDEX_MESSAGE.NOT_SET);
 
                         if ((_msExcelIOExportPBRValues.AddTECComponent(allTECComponents[indxTECComponents]) == 0)
@@ -766,6 +764,8 @@ namespace StatisticCommon
             } else
             // дата для полученных значений неизвестна
                 ;
+
+            _eventUnitTestExportPBRValuesRequest?.Invoke (iRes, date, indxTECComponents, _listTECComponentIndex);
 
             return iRes;
         }

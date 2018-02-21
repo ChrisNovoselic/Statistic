@@ -575,7 +575,7 @@ namespace Statistic
             m_admin.EventUnitTestSetValuesRequest += new AdminTS.DelegateUnitTestSetValuesRequest(admin_onEventUnitTestSetValuesRequest);
             EventUnitTestNextIndexSetValuesRequest += new DelegateUnitTestNextIndexSetValuesRequest (fUnitTestNextIndexSetValuesRequest);
 
-            btnSet_Click (this, EventArgs.Empty);
+            btnSet.PerformClick();
         }
 
         private void admin_onEventUnitTestSetValuesRequest(TEC t, TECComponent comp, DateTime date, CONN_SETT_TYPE type, string[]queries, IEnumerable<int> listIdRec)
