@@ -225,6 +225,31 @@ namespace Statistic
                 & (HStatisticUsers.IsAllowed ((int)HStatisticUsers.ID_ALLOWED.AUTO_EXPORT_PBRVALUES_KOMDISP));
         }
 
+        /// <summary>
+        /// Режим чтения данных (админ. + ПБР) БД
+        ///  , для отображения значений одного из ГТП
+        ///  , всех ГТП при экспорте значений в файл для ком./дисп с целью сравнения значений ПБР с аналогичными значениями из других источников
+        /// </summary>
+        public override AdminTS.MODE_GET_RDG_VALUES ModeGetRDGValues
+        {
+            get
+            {
+                return base.ModeGetRDGValues;
+            }
+
+            set
+            {
+                if (!(m_admin.ModeGetRDGValues == value)) {
+                    btnImportCSV_PBRValues.Enabled =
+                    btnImportCSV_AdminDefaultValues.Enabled =
+                        (value & AdminTS.MODE_GET_RDG_VALUES.DISPLAY) == AdminTS.MODE_GET_RDG_VALUES.DISPLAY;
+                } else
+                    ;
+
+                base.ModeGetRDGValues = value;
+            }
+        }
+
         private void admin_onEventExportPBRValues (AdminTS_KomDisp.MSExcelIOExportPBRValues.EventResultArgs ev)
         {
             Logging.Logg ().Action ($@"PanelAdminKomDisp::admin_onEventExportPBRValues (тип={ev.Result}) - обработка события <EventExportPBRValues>..."
@@ -246,7 +271,7 @@ namespace Statistic
             // по завершению операции эксопрта требуется восстановить режим в исходный(DISPLAY - по умолчанию)
             ModeGetRDGValues = AdminTS.MODE_GET_RDG_VALUES.EXPORT;
 
-            (m_admin as AdminTS_KomDisp).PrepareExportRDGValues (m_listTECComponentIndex);
+            Admin.PrepareExportRDGValues (m_listTECComponentIndex);
 
             if (m_listTECComponentIndex.Count > 0) {
                 date = Admin.DateDoExportPBRValues;
@@ -414,51 +439,12 @@ namespace Statistic
         public event Action EventUnitTestSetDataGridViewAdminCompleted;
 
         #region Модульный тест экспорта ПБР-значений
-        /// <summary>
-        /// Тип делегата только для использования в модульных тестах
-        /// </summary>
-        /// <param name="nextIndex">Очередной индекс</param>
-        /// <param name="t">Объект ТЭЦ - владелец выбранного компонента-объекта в списке (или, собственно, сам объект, тогда компонент = null)</param>
-        /// <param name="comp">Компонент-объект выбранный в списке</param>
-        /// <param name="date">Дата, за которую требуется обновить/сохранить значения</param>
-        /// <param name="listIdRec">Список идентификаторов записей в таблице БД для обновления</param>
-        /// <param name="nextIndex">Очередной индекс из списка объектов-компонентов</param>
-        public delegate void DelegateUnitTestNextIndexExportPBRValuesRequest (int nextIndex, TEC t, TECComponent comp, DateTime date, CONN_SETT_TYPE type, IEnumerable<int> listIdRec, string [] queries);
-
-        private DelegateUnitTestNextIndexExportPBRValuesRequest _eventUnitTestNextIndexExportPBRValuesRequest;
-
-        public event DelegateUnitTestNextIndexExportPBRValuesRequest EventUnitTestNextIndexExportPBRValuesRequest
-        {
-            add
-            {
-                if (Equals (_eventUnitTestNextIndexExportPBRValuesRequest, null) == true)
-                    _eventUnitTestNextIndexExportPBRValuesRequest += value;
-                else
-                    ;
-            }
-
-            remove
-            {
-                if (Equals (_eventUnitTestNextIndexExportPBRValuesRequest, null) == false) {
-                    _eventUnitTestNextIndexExportPBRValuesRequest -= value;
-                    _eventUnitTestNextIndexExportPBRValuesRequest = null;
-                } else
-                    ;
-            }
-        }
-
         [TestMethod]
-        public void PerformButtonExportPBRValuesClick (DelegateUnitTestNextIndexExportPBRValuesRequest fUnitTestNextIndexExportPBRValuesRequest)
+        public void PerformButtonExportPBRValuesClick (AdminTS_KomDisp.DelegateUnitTestExportPBRValuesRequest fUnitTestNextIndexExportPBRValuesRequest)
         {
-            m_admin.EventUnitTestSetValuesRequest += new AdminTS.DelegateUnitTestSetValuesRequest (adminKomDisp_onEventUnitTestExportPBRValuesRequest);
-            EventUnitTestNextIndexSetValuesRequest += new DelegateUnitTestNextIndexSetValuesRequest (fUnitTestNextIndexExportPBRValuesRequest);
+            Admin.EventUnitTestExportPBRValuesRequest += new AdminTS_KomDisp.DelegateUnitTestExportPBRValuesRequest (fUnitTestNextIndexExportPBRValuesRequest);
 
-            btnExport_PBRValues_Click (this, EventArgs.Empty);
-        }
-
-        private void adminKomDisp_onEventUnitTestExportPBRValuesRequest (TEC t, TECComponent comp, DateTime date, CONN_SETT_TYPE type, string [] queries, IEnumerable<int> listIdRec)
-        {
-            _eventUnitTestNextIndexExportPBRValuesRequest?.Invoke (comboBoxTecComponent.SelectedIndex + 1 < comboBoxTecComponent.Items.Count ? comboBoxTecComponent.SelectedIndex + 1 : -1, t, comp, date, type, listIdRec, queries);
+            btnExport_PBRValues.PerformClick();
         }
         #endregion
 
@@ -466,82 +452,93 @@ namespace Statistic
         /// Отобразить значения в представлении
         /// </summary>
         /// <param name="date">Дата, за которую получены значения для отображения</param>
-        /// <param name="bNewValues">Признак наличия новых значений, иначе требуется изменить оформление представления</param>
-        public override void SetDataGridViewAdmin(DateTime date, bool bNewValues)
+        /// <param name="bResult">Признак наличия новых значений, иначе требуется изменить оформление представления</param>
+        public override void SetDataGridViewAdmin(DateTime date, bool bResult)
         {
             int offset = -1
                 , nextIndx = -1;
             string strFmtDatetime = string.Empty;
             IAsyncResult iar;
 
+            Action exportPBRValuesEnded = delegate () {
+                ModeGetRDGValues = AdminTS.MODE_GET_RDG_VALUES.DISPLAY;
+                btnRefresh.PerformClick ();
+            };
+
             if ((ModeGetRDGValues & AdminTS.MODE_GET_RDG_VALUES.DISPLAY) == AdminTS.MODE_GET_RDG_VALUES.DISPLAY) {
-                //??? не очень изящное решение
-                if (IsHandleCreated == true) {
-                    if (InvokeRequired == true) {
-                        //m_evtAdminTableRowCount.Reset ();
-                        // кол-во строк может быть изменено(нормализовано) только в том потоке,в котором было выполнено создание элемента управления
-                        iar = this.BeginInvoke (new DelegateBoolFunc (normalizedTableHourRows), InvokeRequired);
-                        //??? ожидать, пока не завершится выполнение предыдущего потока
-                        //m_evtAdminTableRowCount.WaitOne (System.Threading.Timeout.Infinite);
-                        WaitHandle.WaitAny (new WaitHandle [] { iar.AsyncWaitHandle }, System.Threading.Timeout.Infinite);
-                        this.EndInvoke (iar);
+                if (bResult == true) {
+                    //??? не очень изящное решение
+                    if (IsHandleCreated == true) {
+                        if (InvokeRequired == true) {
+                            //m_evtAdminTableRowCount.Reset ();
+                            // кол-во строк может быть изменено(нормализовано) только в том потоке,в котором было выполнено создание элемента управления
+                            iar = this.BeginInvoke (new DelegateBoolFunc (normalizedTableHourRows), InvokeRequired);
+                            //??? ожидать, пока не завершится выполнение предыдущего потока
+                            //m_evtAdminTableRowCount.WaitOne (System.Threading.Timeout.Infinite);
+                            WaitHandle.WaitAny (new WaitHandle [] { iar.AsyncWaitHandle }, System.Threading.Timeout.Infinite);
+                            this.EndInvoke (iar);
+                        } else {
+                            normalizedTableHourRows (InvokeRequired);
+                        }
                     } else {
-                        normalizedTableHourRows (InvokeRequired);
+                        normalizedTableHourRows (false);
+
+                        if (!((ModeGetRDGValues & AdminTS.MODE_GET_RDG_VALUES.UNIT_TEST) == AdminTS.MODE_GET_RDG_VALUES.UNIT_TEST))
+                            Logging.Logg ().Error (@"PanelAdminKomDisp::setDataGridViewAdmin () - ... BeginInvoke (normalizedTableHourRows) - ...", Logging.INDEX_MESSAGE.D_001);
+                        else
+                            ;
                     }
-                } else {
-                    normalizedTableHourRows (false);
 
-                    if (!((ModeGetRDGValues & AdminTS.MODE_GET_RDG_VALUES.UNIT_TEST) == AdminTS.MODE_GET_RDG_VALUES.UNIT_TEST))
-                        Logging.Logg ().Error (@"PanelAdminKomDisp::setDataGridViewAdmin () - ... BeginInvoke (normalizedTableHourRows) - ...", Logging.INDEX_MESSAGE.D_001);
-                    else
-                        ;
-                }
+                    ((DataGridViewAdminKomDisp)this.dgwAdminTable).m_PBR_0 = m_admin.m_curRDGValues_PBR_0;
 
-                ((DataGridViewAdminKomDisp)this.dgwAdminTable).m_PBR_0 = m_admin.m_curRDGValues_PBR_0;
+                    //??? отобразить значения - почему не внутри класса-объекта представления
+                    for (int i = 0; i < m_admin.m_curRDGValues.Length; i++) {
+                        strFmtDatetime = m_admin.GetFmtDatetime (i);
+                        offset = m_admin.GetSeasonHourOffset (i + 1);
 
-                //??? отобразить значения - почему не внутри класса-объекта представления
-                for (int i = 0; i < m_admin.m_curRDGValues.Length; i++) {
-                    strFmtDatetime = m_admin.GetFmtDatetime (i);
-                    offset = m_admin.GetSeasonHourOffset (i + 1);
+                        this.dgwAdminTable.Rows [i].Cells [(int)DataGridViewAdminKomDisp.COLUMN_INDEX.DATE_HOUR].Value = date.AddHours (i + 1 - offset).ToString (strFmtDatetime);
+                        //this.dgwAdminTable.Rows [i].Cells [(int)DataGridViewAdminKomDisp.COLUMN_INDEX.DATE_HOUR].Style.BackColor = this.dgwAdminTable.BackColor;
 
-                    this.dgwAdminTable.Rows [i].Cells [(int)DataGridViewAdminKomDisp.COLUMN_INDEX.DATE_HOUR].Value = date.AddHours (i + 1 - offset).ToString (strFmtDatetime);
-                    //this.dgwAdminTable.Rows [i].Cells [(int)DataGridViewAdminKomDisp.COLUMN_INDEX.DATE_HOUR].Style.BackColor = this.dgwAdminTable.BackColor;
+                        this.dgwAdminTable.Rows [i].Cells [(int)DataGridViewAdminKomDisp.COLUMN_INDEX.PLAN].Value = m_admin.m_curRDGValues [i].pbr.ToString ("F2");
+                        this.dgwAdminTable.Rows [i].Cells [(int)DataGridViewAdminKomDisp.COLUMN_INDEX.PLAN].ToolTipText = m_admin.m_curRDGValues [i].pbr_number;
+                        //this.dgwAdminTable.Rows [i].Cells [(int)DataGridViewAdminKomDisp.COLUMN_INDEX.PLAN].Style.BackColor = this.dgwAdminTable.BackColor;
+                        if (i > 0)
+                            this.dgwAdminTable.Rows [i].Cells [(int)DataGridViewAdminKomDisp.COLUMN_INDEX.UDGe].Value = (((m_admin.m_curRDGValues [i].pbr + m_admin.m_curRDGValues [i - 1].pbr) / 2) + m_admin.m_curRDGValues [i].recomendation).ToString ("F2");
+                        else
+                            this.dgwAdminTable.Rows [i].Cells [(int)DataGridViewAdminKomDisp.COLUMN_INDEX.UDGe].Value = (((m_admin.m_curRDGValues [i].pbr + m_admin.m_curRDGValues_PBR_0) / 2) + m_admin.m_curRDGValues [i].recomendation).ToString ("F2");
+                        //this.dgwAdminTable.Rows [i].Cells [(int)DataGridViewAdminKomDisp.COLUMN_INDEX.UDGe].Style.BackColor = this.dgwAdminTable.BackColor;
+                        this.dgwAdminTable.Rows [i].Cells [(int)DataGridViewAdminKomDisp.COLUMN_INDEX.RECOMENDATION].Value = m_admin.m_curRDGValues [i].recomendation.ToString ("F2");
+                        this.dgwAdminTable.Rows [i].Cells [(int)DataGridViewAdminKomDisp.COLUMN_INDEX.RECOMENDATION].ToolTipText = m_admin.m_curRDGValues [i].dtRecUpdate.ToString ();
+                        //this.dgwAdminTable.Rows [i].Cells [(int)DataGridViewAdminKomDisp.COLUMN_INDEX.RECOMENDATION].Style.BackColor = this.dgwAdminTable.BackColor;
+                        this.dgwAdminTable.Rows [i].Cells [(int)DataGridViewAdminKomDisp.COLUMN_INDEX.FOREIGN_CMD].Value = m_admin.m_curRDGValues [i].fc.ToString ();
+                        //this.dgwAdminTable.Rows [i].Cells [(int)DataGridViewAdminKomDisp.COLUMN_INDEX.FOREIGN_CMD].Style.BackColor = this.dgwAdminTable.BackColor;
+                        this.dgwAdminTable.Rows [i].Cells [(int)DataGridViewAdminKomDisp.COLUMN_INDEX.DEVIATION_TYPE].Value = m_admin.m_curRDGValues [i].deviationPercent.ToString ();
+                        //this.dgwAdminTable.Rows [i].Cells [(int)DataGridViewAdminKomDisp.COLUMN_INDEX.DEVIATION_TYPE].Style.BackColor = this.dgwAdminTable.BackColor;
+                        this.dgwAdminTable.Rows [i].Cells [(int)DataGridViewAdminKomDisp.COLUMN_INDEX.DEVIATION].Value = m_admin.m_curRDGValues [i].deviation.ToString ("F2");
+                        //this.dgwAdminTable.Rows [i].Cells [(int)DataGridViewAdminKomDisp.COLUMN_INDEX.DEVIATION].Style.BackColor = this.dgwAdminTable.BackColor;
+                    }
 
-                    this.dgwAdminTable.Rows [i].Cells [(int)DataGridViewAdminKomDisp.COLUMN_INDEX.PLAN].Value = m_admin.m_curRDGValues [i].pbr.ToString ("F2");
-                    this.dgwAdminTable.Rows [i].Cells [(int)DataGridViewAdminKomDisp.COLUMN_INDEX.PLAN].ToolTipText = m_admin.m_curRDGValues [i].pbr_number;
-                    //this.dgwAdminTable.Rows [i].Cells [(int)DataGridViewAdminKomDisp.COLUMN_INDEX.PLAN].Style.BackColor = this.dgwAdminTable.BackColor;
-                    if (i > 0)
-                        this.dgwAdminTable.Rows [i].Cells [(int)DataGridViewAdminKomDisp.COLUMN_INDEX.UDGe].Value = (((m_admin.m_curRDGValues [i].pbr + m_admin.m_curRDGValues [i - 1].pbr) / 2) + m_admin.m_curRDGValues [i].recomendation).ToString ("F2");
-                    else
-                        this.dgwAdminTable.Rows [i].Cells [(int)DataGridViewAdminKomDisp.COLUMN_INDEX.UDGe].Value = (((m_admin.m_curRDGValues [i].pbr + m_admin.m_curRDGValues_PBR_0) / 2) + m_admin.m_curRDGValues [i].recomendation).ToString ("F2");
-                    //this.dgwAdminTable.Rows [i].Cells [(int)DataGridViewAdminKomDisp.COLUMN_INDEX.UDGe].Style.BackColor = this.dgwAdminTable.BackColor;
-                    this.dgwAdminTable.Rows [i].Cells [(int)DataGridViewAdminKomDisp.COLUMN_INDEX.RECOMENDATION].Value = m_admin.m_curRDGValues [i].recomendation.ToString ("F2");
-                    this.dgwAdminTable.Rows [i].Cells [(int)DataGridViewAdminKomDisp.COLUMN_INDEX.RECOMENDATION].ToolTipText = m_admin.m_curRDGValues [i].dtRecUpdate.ToString ();
-                    //this.dgwAdminTable.Rows [i].Cells [(int)DataGridViewAdminKomDisp.COLUMN_INDEX.RECOMENDATION].Style.BackColor = this.dgwAdminTable.BackColor;
-                    this.dgwAdminTable.Rows [i].Cells [(int)DataGridViewAdminKomDisp.COLUMN_INDEX.FOREIGN_CMD].Value = m_admin.m_curRDGValues [i].fc.ToString ();
-                    //this.dgwAdminTable.Rows [i].Cells [(int)DataGridViewAdminKomDisp.COLUMN_INDEX.FOREIGN_CMD].Style.BackColor = this.dgwAdminTable.BackColor;
-                    this.dgwAdminTable.Rows [i].Cells [(int)DataGridViewAdminKomDisp.COLUMN_INDEX.DEVIATION_TYPE].Value = m_admin.m_curRDGValues [i].deviationPercent.ToString ();
-                    //this.dgwAdminTable.Rows [i].Cells [(int)DataGridViewAdminKomDisp.COLUMN_INDEX.DEVIATION_TYPE].Style.BackColor = this.dgwAdminTable.BackColor;
-                    this.dgwAdminTable.Rows [i].Cells [(int)DataGridViewAdminKomDisp.COLUMN_INDEX.DEVIATION].Value = m_admin.m_curRDGValues [i].deviation.ToString ("F2");
-                    //this.dgwAdminTable.Rows [i].Cells [(int)DataGridViewAdminKomDisp.COLUMN_INDEX.DEVIATION].Style.BackColor = this.dgwAdminTable.BackColor;
-                }
-
-                if (bNewValues == true)
                     m_admin.CopyCurToPrevRDGValues ();
-                else
+                } else
                     ;
-
-                EventUnitTestSetDataGridViewAdminCompleted?.Invoke ();
             } else if ((ModeGetRDGValues & AdminTS.MODE_GET_RDG_VALUES.EXPORT) == AdminTS.MODE_GET_RDG_VALUES.EXPORT) {
-                nextIndx = Admin.AddValueToExportRDGValues (m_admin.m_curRDGValues, date);
+                nextIndx = bResult == true
+                    ? Admin.AddValueToExportRDGValues (m_admin.m_curRDGValues, date)
+                        : -1;
 
-                if (nextIndx < 0)
-                    Invoke ((MethodInvoker)delegate () {
-                        btnRefresh.PerformClick ();
-                    });
-                else
-                    Admin.GetRDGValues(nextIndx, date);
+                if (!(nextIndx > 0)) {
+                    if (InvokeRequired == true)
+                        Invoke ((MethodInvoker)delegate () {
+                            exportPBRValuesEnded ();
+                        });
+                    else {
+                        exportPBRValuesEnded ();
+                    }
+                } else
+                    Admin.GetRDGValues (nextIndx, date);
             }
+            // сообщить в модульный тест о завершении очередной итерации
+            EventUnitTestSetDataGridViewAdminCompleted?.Invoke ();
         }
 
         public override void ClearTables()
@@ -571,7 +568,8 @@ namespace Statistic
             int err = -1; // признак ошибки при определении номера ПБР
 
             // DISPLAY - по умолчанию
-            ModeGetRDGValues = AdminTS.MODE_GET_RDG_VALUES.DISPLAY;
+            //??? кнопка доступна только в этом режиме
+            //ModeGetRDGValues = AdminTS.MODE_GET_RDG_VALUES.DISPLAY;
 
             //Вариант №1 (каталог)
             //FolderBrowserDialog folders = new FolderBrowserDialog();
@@ -646,8 +644,10 @@ namespace Statistic
                 Logging.Logg().Action(string.Format(@"PanelAdminKomDisp::btnImportCSV_PBRValues_Click () - отмена выбора CSV-макета..."), Logging.INDEX_MESSAGE.NOT_SET);
         }
 
-        private string SharedFolderRun {
-            get {
+        private string SharedFolderRun
+        {
+            get
+            {
                 return Path.GetPathRoot(Application.ExecutablePath);
             }
         }
@@ -655,7 +655,8 @@ namespace Statistic
         private void btnImportCSV_AdminValuesDefault_Click(object sender, EventArgs e)
         {
             // DISPLAY - по умолчанию
-            ModeGetRDGValues = AdminTS.MODE_GET_RDG_VALUES.DISPLAY;
+            //??? кнопка доступна только в этом режиме
+            //ModeGetRDGValues = AdminTS.MODE_GET_RDG_VALUES.DISPLAY;
 
             int days = (m_admin.m_curDate.Date - ASUTP.Core.HDateTime.ToMoscowTimeZone(DateTime.Now).Date).Days;
             if (days < 0)

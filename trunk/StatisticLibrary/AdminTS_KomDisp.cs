@@ -640,7 +640,7 @@ namespace StatisticCommon
             get
             {
                 DateTime datetimeRes
-                , datetimeMsc;
+                    , datetimeMsc;
 
                 if (_msExcelIOExportPBRValues.Mode == MODE_EXPORT_PBRVALUES.AUTO) {
                     datetimeMsc = HDateTime.ToMoscowTimeZone();
@@ -674,6 +674,39 @@ namespace StatisticCommon
             ;
         }
 
+        #region Модульный тест экспорта ПБР-значений
+        /// <summary>
+        /// Тип делегата только для использования в модульных тестах
+        /// </summary>
+        /// <param name="nextIndex">Очередной индекс</param>
+        /// <param name="date">Дата, за которую требуется обновить/сохранить значения</param>
+        /// <param name="currentIndex">Текущий индекс из списка объектов-компонентов (д.б. == listTECComponentIndex[0])</param>
+        /// <param name="listTECComponentIndex">Список индексов оставшихся к обработке</param>
+        public delegate void DelegateUnitTestExportPBRValuesRequest (int nextIndex, DateTime date, int currentIndex, IEnumerable<int> listTECComponentIndex);
+
+        private DelegateUnitTestExportPBRValuesRequest _eventUnitTestExportPBRValuesRequest;
+
+        public event DelegateUnitTestExportPBRValuesRequest EventUnitTestExportPBRValuesRequest
+        {
+            add
+            {
+                if (Equals (_eventUnitTestExportPBRValuesRequest, null) == true)
+                    _eventUnitTestExportPBRValuesRequest += value;
+                else
+                    ;
+            }
+
+            remove
+            {
+                if (Equals (_eventUnitTestExportPBRValuesRequest, null) == false) {
+                    _eventUnitTestExportPBRValuesRequest -= value;
+                    _eventUnitTestExportPBRValuesRequest = null;
+                } else
+                    ;
+            }
+        }
+        #endregion
+
         /// <summary>
         ///  Добавить значения для экспорта
         /// </summary>
@@ -690,7 +723,7 @@ namespace StatisticCommon
                     && (!(_listTECComponentIndex[0] < 0))) {
                     if (indxTECComponents - _listTECComponentIndex[0] == 0) {
                         Logging.Logg().Action(string.Format("AdminTS_KomDisp::AddValueToExportRDGValues () - получены значения для [ID={0}, Index={1}, за дату={2}, кол-во={3}] компонента..."
-                                , allTECComponents[_listTECComponentIndex[0]].m_id, _listTECComponentIndex[0], _listTECComponentIndex[0], date, compValues.Length)
+                                , allTECComponents[_listTECComponentIndex[0]].m_id, _listTECComponentIndex[0], date, compValues.Length)
                             , Logging.INDEX_MESSAGE.NOT_SET);
 
                         if ((_msExcelIOExportPBRValues.AddTECComponent(allTECComponents[indxTECComponents]) == 0)
@@ -712,6 +745,8 @@ namespace StatisticCommon
                                     , Logging.INDEX_MESSAGE.NOT_SET);
 
                                 _msExcelIOExportPBRValues.Run();
+                                // установить признак завершения
+                                iRes = 0;
                             }
                         } else {
                             Logging.Logg().Error(string.Format($"AdminTS_KomDisp::AddValueToExportRDGValues () - компонент с индексом [{indxTECComponents}] не может быть добавлен (пред. опреация экспорта не завершена)...")
@@ -731,6 +766,8 @@ namespace StatisticCommon
             } else
             // дата для полученных значений неизвестна
                 ;
+
+            _eventUnitTestExportPBRValuesRequest?.Invoke (iRes, date, indxTECComponents, _listTECComponentIndex);
 
             return iRes;
         }

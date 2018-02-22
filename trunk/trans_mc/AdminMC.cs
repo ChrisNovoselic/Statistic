@@ -387,7 +387,7 @@ namespace trans_mc
                 ClearValues();
 
 
-            if (!(errorData == null)) errorData(); else ;
+            errorData?.Invoke();
 
             return reasonRes;
         }

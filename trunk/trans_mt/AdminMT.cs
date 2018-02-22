@@ -441,7 +441,7 @@ namespace trans_mt
             else
                 ;
 
-            if (!(errorData == null)) errorData(); else ;
+            errorData?.Invoke ();
 
             return reasonRes;
         }

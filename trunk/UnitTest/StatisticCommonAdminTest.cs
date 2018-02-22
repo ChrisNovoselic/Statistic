@@ -16,7 +16,25 @@ namespace UnitTest {
     [TestClass]
     public class StatisticCommonAdminTest
     {
+        [Flags]
+        private enum FormRequired {
+            No
+            , GraphicsSettings
+            , Parameters
+            ,
+        }
+
+        private class Counter
+        {
+            public Counter(int cnt, int cnt_max, IComparable comparator)
+            {
+                
+            }
+        }
+
         private static PanelAdminKomDisp panel;
+
+        private static FormRequired _formRequired = FormRequired.GraphicsSettings;
 
         #region Дополнительные атрибуты тестирования
 
@@ -26,6 +44,11 @@ namespace UnitTest {
         [ClassInitialize ()]
         public static void StatisticCommonAdminTestInitialize (TestContext testContext)
         {
+            if (!(testContext.TestName.IndexOf ("Export_PBR") < 0))
+                _formRequired |= FormRequired.Parameters;
+            else
+                ;
+
             //Application.ThreadException += new ThreadExceptionEventHandler(Application_ThreadException);
             AppDomain.CurrentDomain.UnhandledException += new UnhandledExceptionEventHandler(CurrentDomain_UnhandledException);
 
@@ -52,12 +75,29 @@ namespace UnitTest {
             using (new HStatisticUsers (DbTSQLConfigDatabase.DbConfig ().ListenerId, ASUTP.Helper.HUsers.MODE_REGISTRATION.USER_DOMAINNAME)) {
                 ;
             }
-            FormMain.formGraphicsSettings = new FormGraphicsSettings (delegate (int arg) {
-            }
-                , delegate () {
-                }
-                , false
-            );
+
+            foreach (FormRequired req in Enum.GetValues((typeof(FormRequired))))
+                if ((_formRequired & req) == req)
+                    switch (req) {
+                        case FormRequired.No:
+                            continue;
+                        case FormRequired.GraphicsSettings:
+                            FormMain.formGraphicsSettings = new FormGraphicsSettings (delegate (int arg) {
+                                }
+                                , delegate () {
+                                }
+                                , false
+                            );
+                            break;
+                        case FormRequired.Parameters:
+                            FormMain.formParameters = new FormParameters_DB ();
+                            break;
+                        default:
+                            Assert.Fail($"{req} не обрабатывается...");
+                            break;
+                    }
+                else
+                    ;
 
             panel = new PanelAdminKomDisp (new HMark (new int [] { (int)CONN_SETT_TYPE.ADMIN, (int)CONN_SETT_TYPE.PBR }));
             panel.SetDelegateReport (delegate (string mes) {
@@ -121,40 +161,119 @@ namespace UnitTest {
         public void Test_Export_PBRValues ()
         {
             panel.ModeGetRDGValues |= AdminTS.MODE_GET_RDG_VALUES.UNIT_TEST;
-            panel.ModeGetRDGValues = AdminTS.MODE_GET_RDG_VALUES.EXPORT;
-            Assert.IsFalse ((panel.ModeGetRDGValues & AdminTS.MODE_GET_RDG_VALUES.DISPLAY) == AdminTS.MODE_GET_RDG_VALUES.DISPLAY);
+            panel.ModeGetRDGValues = AdminTS.MODE_GET_RDG_VALUES.DISPLAY;
+            Assert.IsTrue ((panel.ModeGetRDGValues & AdminTS.MODE_GET_RDG_VALUES.DISPLAY) == AdminTS.MODE_GET_RDG_VALUES.DISPLAY);
             Assert.IsTrue ((panel.ModeGetRDGValues & AdminTS.MODE_GET_RDG_VALUES.UNIT_TEST) == AdminTS.MODE_GET_RDG_VALUES.UNIT_TEST);
-            Assert.IsTrue ((panel.ModeGetRDGValues & AdminTS.MODE_GET_RDG_VALUES.EXPORT) == AdminTS.MODE_GET_RDG_VALUES.EXPORT);
+            Assert.IsFalse ((panel.ModeGetRDGValues & AdminTS.MODE_GET_RDG_VALUES.EXPORT) == AdminTS.MODE_GET_RDG_VALUES.EXPORT);
+            // проверка наличия необходимых "статических" форм
+            Assert.IsNotNull (FormMain.formGraphicsSettings);
+            Assert.IsNotNull (FormMain.formParameters);
 
             string mesDebug = string.Empty;
 
             int prevIndex = 0
                 , nextIndex = 0;
             Action onEventUnitTestSetDataGridViewAdminCompleted;
-            PanelAdminKomDisp.DelegateUnitTestNextIndexExportPBRValuesRequest delegateNextIndexExportPBRValuesRequest;
-            Task taskPerformButtonExportPBRClick
-                , taskPerformComboBoxTECComponentSelectedIndex;
-            TaskStatus taskStatusPerformButtonExportPBRClick
-                , taskStatusPerformComboBoxTECComponentSelectedIndex;
+            AdminTS_KomDisp.DelegateUnitTestExportPBRValuesRequest delegateExportPBRValuesRequest;
+            Task taskPerformButtonExportPBRValuesClick;
+            TaskStatus taskStatusPerformButtonExportPBRValuesClick;
             CancellationTokenSource cancelTokenSource;
 
             onEventUnitTestSetDataGridViewAdminCompleted = null;
 
-            taskPerformButtonExportPBRClick =
-            taskPerformComboBoxTECComponentSelectedIndex =
+            taskPerformButtonExportPBRValuesClick =
                 null;
 
             cancelTokenSource = new CancellationTokenSource ();
             // вызывается при ретрансляции панелью события имитации отправления запроса на обновление значений
-            delegateNextIndexExportPBRValuesRequest = delegate (int next_index, TEC t, TECComponent comp, DateTime date, CONN_SETT_TYPE type, IEnumerable<int> list_id_rec, string [] queries) {
-                Assert.IsNotNull (list_id_rec);
-                Assert.IsFalse (list_id_rec.ToArray ().Length < 24);
-                //TODO: проверка значений массива на истинность (сравнить с идентификаторами из таблицы БД)
+            delegateExportPBRValuesRequest = delegate (int next_index, DateTime date, int currentIndex, IEnumerable<int> listTECComponentIndex) {
+                Assert.IsNotNull (listTECComponentIndex);
+
+                mesDebug = string.Format ("Handler On 'EventUnitTestExportPBRValuesRequest': NextIndex={0}, Date={1}, CurrentIndex={2}, ListIndex=<Count={3}, List={4}>..."
+                    , next_index
+                    , date.ToShortDateString()
+                    , currentIndex
+                    , listTECComponentIndex.Count ()
+                    , string.Join(",", listTECComponentIndex));
+
+                Logging.Logg ().Debug (mesDebug, Logging.INDEX_MESSAGE.NOT_SET);
+                System.Diagnostics.Debug.WriteLine (mesDebug);
+
+                prevIndex = nextIndex;
+                nextIndex = next_index;
+
+                //TODO: проверка значений аргументов на истинность
+                if (nextIndex > 0) {
+                    Assert.AreNotEqual (DateTime.MinValue, date);
+                    Assert.IsTrue (listTECComponentIndex.Count () > 0);
+                    Assert.AreEqual (nextIndex, listTECComponentIndex.ToArray () [0]);
+                } else
+                // ожидать (в 'onEventUnitTestSetDataGridViewAdminCompleted') штатное завершение
+                    ;
             };
+            // вызывается при завершении заполнения 'DatagridView' значениями
+            onEventUnitTestSetDataGridViewAdminCompleted = delegate () {
+                mesDebug = string.Format("Handler On 'EventUnitTestSetDataGridViewAdminCompleted': PrevIndex={0}, NextIndex={1}..."
+                    , prevIndex, nextIndex);
+
+                if (prevIndex.Equals (nextIndex) == true) {
+                    // старт задачи сохранения значений
+                    taskPerformButtonExportPBRValuesClick = Task.Factory.StartNew (delegate () {
+                        panel.PerformButtonExportPBRValuesClick (delegateExportPBRValuesRequest);
+                    });
+                } else if (nextIndex == 0) {
+                    Assert.IsTrue ((panel.ModeGetRDGValues & AdminTS.MODE_GET_RDG_VALUES.DISPLAY) == AdminTS.MODE_GET_RDG_VALUES.DISPLAY);
+                    Assert.IsFalse ((panel.ModeGetRDGValues & AdminTS.MODE_GET_RDG_VALUES.EXPORT) == AdminTS.MODE_GET_RDG_VALUES.EXPORT);
+                    // штатное завершение
+                    nextIndex = -1;
+                } else
+                    ;
+
+                Logging.Logg ().Debug (mesDebug, Logging.INDEX_MESSAGE.NOT_SET);
+                System.Diagnostics.Debug.WriteLine (mesDebug);
+            };
+
+            try {
+                Assert.IsFalse ((panel.ModeGetRDGValues & AdminTS.MODE_GET_RDG_VALUES.EXPORT) == AdminTS.MODE_GET_RDG_VALUES.EXPORT);
+                Assert.IsTrue ((panel.ModeGetRDGValues & AdminTS.MODE_GET_RDG_VALUES.UNIT_TEST) == AdminTS.MODE_GET_RDG_VALUES.UNIT_TEST);
+
+                panel.EventUnitTestSetDataGridViewAdminCompleted += onEventUnitTestSetDataGridViewAdminCompleted;
+
+                // исходные состояния задач
+                taskStatusPerformButtonExportPBRValuesClick =
+                    Equals (taskPerformButtonExportPBRValuesClick, null) == false ? taskPerformButtonExportPBRValuesClick.Status : TaskStatus.WaitingForActivation;
+
+                int cnt = 0
+                    , cnt_max = 26;
+                while ((cnt++ < cnt_max)
+                    && (!(nextIndex < 0))) {
+                    // ожидать
+                    Thread.Sleep (1000);
+                    // сообщение для индикации ожидания
+                    System.Diagnostics.Debug.WriteLine ($"Ожидание: счетчик <{cnt}> из <{cnt_max}>...");
+                }
+
+                // состояния задач по завершению цикла
+                taskStatusPerformButtonExportPBRValuesClick =
+                    Equals (taskPerformButtonExportPBRValuesClick, null) == false ? taskPerformButtonExportPBRValuesClick.Status : taskStatusPerformButtonExportPBRValuesClick;
+                System.Diagnostics.Debug.WriteLine (string.Format ("Окончание ожидания <{0}>, задача-Click is <{1}>, nextIndex={2}..."
+                    , cnt
+                    , Equals (taskPerformButtonExportPBRValuesClick, null) == false ? taskPerformButtonExportPBRValuesClick.Status.ToString () : "не создана"                    
+                    , nextIndex));
+
+                Assert.IsFalse (cnt > cnt_max);
+                Assert.IsFalse ((panel.ModeGetRDGValues & AdminTS.MODE_GET_RDG_VALUES.EXPORT) == AdminTS.MODE_GET_RDG_VALUES.EXPORT);
+                Assert.IsTrue ((panel.ModeGetRDGValues & AdminTS.MODE_GET_RDG_VALUES.UNIT_TEST) == AdminTS.MODE_GET_RDG_VALUES.UNIT_TEST);
+                Assert.IsTrue ((panel.ModeGetRDGValues & AdminTS.MODE_GET_RDG_VALUES.DISPLAY) == AdminTS.MODE_GET_RDG_VALUES.DISPLAY);
+            } catch (Exception e) {
+                System.Diagnostics.Debug.WriteLine (e.Message);
+
+                Assert.Fail(e.Message);
+            }
         }
 
         [TestMethod]
-        public void Test_SaveGTP_REC ()
+        public void Test_SetAdminValues ()
         {
             #region Проверка переключения режимов работы
             try {
@@ -194,6 +313,9 @@ namespace UnitTest {
                 Assert.IsTrue (string.Equals (ioe.Message, "PanelAdmin.ModeGetRDGValues::set - взаимоисключающие значения..."));
             }
             #endregion
+
+            // проверка наличия необходимых "статических" форм
+            Assert.IsNotNull (FormMain.formGraphicsSettings);
 
             string mesDebug = string.Empty;
 
@@ -235,15 +357,9 @@ namespace UnitTest {
 
                 Logging.Logg().Debug(mesDebug, Logging.INDEX_MESSAGE.NOT_SET);
                 System.Diagnostics.Debug.WriteLine (mesDebug);
-                //// отменить регистрацию, чтобы исключить повторный вызов
-                //// повторный вызов произойдет при обновлении информации на панели, который обязательно произойдет при сохранении значений
-                //if (Equals (onEventUnitTestSetDataGridViewAdminCompleted, null) == false)
-                //    panel.EventUnitTestSetDataGridViewAdminCompleted -= onEventUnitTestSetDataGridViewAdminCompleted;
-                //else
-                //    System.Diagnostics.Debug.WriteLine (string.Format ("Обработчик события 'Panel::EventUnitTestSetDataGridViewAdminCompleted' не определен..."));
 
                 if (prevIndex.Equals(nextIndex) == true)
-                    // старт задачи сохранения значений
+                // старт задачи сохранения значений
                     taskPerformButtonSetClick = Task.Factory.StartNew (delegate () {
                         panel.PerformButtonSetClick(delegateNextIndexSetValuesRequest);
                     });
@@ -274,6 +390,7 @@ namespace UnitTest {
                     Equals (taskPerformButtonSetClick, null) == false ? taskPerformButtonSetClick.Status : TaskStatus.WaitingForActivation;
                 taskStatusPerformComboBoxTECComponentSelectedIndex =
                     Equals(taskPerformComboBoxTECComponentSelectedIndex, null) == false ? taskPerformComboBoxTECComponentSelectedIndex.Status : TaskStatus.WaitingForActivation;
+
                 while ((cnt++ < cnt_max)
                     && (!(nextIndex < 0))) {
                     // ожидать
@@ -281,6 +398,7 @@ namespace UnitTest {
                     // сообщение для индикации ожидания
                     System.Diagnostics.Debug.WriteLine ($"Ожидание: счетчик <{cnt}> из <{cnt_max}>...");
                 }
+
                 // состояния задач по завершению цикла
                 taskStatusPerformButtonSetClick =
                     Equals(taskPerformButtonSetClick, null) == false ? taskPerformButtonSetClick.Status : taskStatusPerformButtonSetClick;
@@ -294,7 +412,7 @@ namespace UnitTest {
             } catch (Exception e) {
                 System.Diagnostics.Debug.WriteLine (e.Message);
 
-                Assert.IsTrue (false);
+                Assert.Fail (e.Message);
             }
         }
 
