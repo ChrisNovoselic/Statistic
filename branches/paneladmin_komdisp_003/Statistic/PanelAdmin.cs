@@ -26,7 +26,7 @@ namespace Statistic
         ///  , для отображения значений одного из ГТП
         ///  , всех ГТП при экспорте значений в файл для ком./дисп с целью сравнения значений ПБР с аналогичными значениями из других источников
         /// </summary>
-        public AdminTS.MODE_GET_RDG_VALUES ModeGetRDGValues
+        public virtual AdminTS.MODE_GET_RDG_VALUES ModeGetRDGValues
         {
             get
             {
@@ -35,7 +35,16 @@ namespace Statistic
 
             set
             {
-                m_admin.ModeGetRDGValues = value;
+                if (!(m_admin.ModeGetRDGValues == value)) {
+                    comboBoxTecComponent.Enabled =
+                    mcldrDate.Enabled =
+                    btnSet.Enabled =
+                    btnRefresh.Enabled =
+                        (value & AdminTS.MODE_GET_RDG_VALUES.DISPLAY) == AdminTS.MODE_GET_RDG_VALUES.DISPLAY;
+
+                    m_admin.ModeGetRDGValues = value;
+                } else
+                    ;
             }
         }
         /// <summary>
@@ -586,7 +595,8 @@ namespace Statistic
 
         private void btnSet_Click(object sender, EventArgs e)
         {
-            ModeGetRDGValues = AdminTS.MODE_GET_RDG_VALUES.DISPLAY;
+            //??? кнопка доступна только в этом режиме
+            //ModeGetRDGValues = AdminTS.MODE_GET_RDG_VALUES.DISPLAY;
 
             getDataGridViewAdmin();
 
@@ -608,9 +618,10 @@ namespace Statistic
 
         private void btnRefresh_Click(object sender, EventArgs e)
         {
-            ModeGetRDGValues = AdminTS.MODE_GET_RDG_VALUES.DISPLAY;
+            //??? кнопка доступна только в этом режиме
+            //ModeGetRDGValues = AdminTS.MODE_GET_RDG_VALUES.DISPLAY;
 
-            ClearTables();
+            ClearTables ();
 
             m_admin.GetRDGValues(/*(int)m_admin.m_typeFields,*/ m_listTECComponentIndex[comboBoxTecComponent.SelectedIndex], mcldrDate.SelectionStart);
         }

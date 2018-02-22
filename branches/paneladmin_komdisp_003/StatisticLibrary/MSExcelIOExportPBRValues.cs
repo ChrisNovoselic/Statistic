@@ -350,6 +350,7 @@ namespace StatisticCommon
             {
                 List<FileInfo> listFileInfoDest;
                 EventResultArgs arg;
+                string pattern = string.Empty;
                 int iTemplate = 0 // признак продолжения выполнения операции - наличие шаблона
                     , err = 0; // по умолчанию ошибок нет
 
@@ -361,7 +362,13 @@ namespace StatisticCommon
                         ;
 #else
 #endif
-                    listFileInfoDest = new List<FileInfo> (Directory.GetFiles (Folder_CSV, string.Format ("*{0}*.{1}", ConstantExportPBRValues.MaskDocument, ConstantExportPBRValues.MaskExtension), SearchOption.TopDirectoryOnly).ToList ()
+                    // получить шаблон поиска документа
+                    pattern = string.Format ("*{0}*.{1}", ConstantExportPBRValues.MaskDocument, ConstantExportPBRValues.MaskExtension);
+
+                    Logging.Logg ().Action (string.Format ("AdminTS_KomDisp.MSExcelIOExportPBRValues::Run () - поиск документа: каталог=<{0}>, шаблон=<{1}>...", Folder_CSV, pattern)
+                        , Logging.INDEX_MESSAGE.NOT_SET);
+
+                    listFileInfoDest = new List<FileInfo> (Directory.GetFiles (Folder_CSV, pattern, SearchOption.TopDirectoryOnly).ToList ()
                         .ConvertAll<FileInfo> (name => new FileInfo (string.Format (@"{0}", name))));
 
                     if (listFileInfoDest.Count > 1) {
@@ -437,12 +444,13 @@ namespace StatisticCommon
                                     , Logging.INDEX_MESSAGE.NOT_SET);
 
                                 try {
-                                    if ((listFileInfoDest.Count > 0)
-                                        && (_previousNameDocument.Equals (listFileInfoDest [0].FullName) == false)
-                                        && (TemplateDocument.Equals (listFileInfoDest [0].FullName) == false))
-                                        listFileInfoDest [0].Delete ();
-                                    else
-                                        ;
+                                    listFileInfoDest.ForEach (fi => {
+                                        if ((_previousNameDocument.Equals (fi.FullName) == false)
+                                            && (TemplateDocument.Equals (fi.FullName) == false))
+                                            fi.Delete ();
+                                        else
+                                            ;
+                                    });
                                 } catch (Exception e) {
                                     Logging.Logg ().Error (string.Format("AdminTS_KomDisp.MSExcelIOExportPBRValues::Run () - ошибка удаления '{0}', причина={1}..."
                                             , listFileInfoDest [0].FullName, e.Message)

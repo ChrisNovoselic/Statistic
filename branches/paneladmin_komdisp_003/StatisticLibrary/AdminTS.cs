@@ -2191,7 +2191,7 @@ namespace StatisticCommon
                             m_prevDate = serverTime.Date;
                             m_curDate = m_prevDate;
 
-                            if (!(setDatetime == null)) setDatetime(m_curDate); else;
+                            setDatetime?.Invoke(m_curDate);
                         }
                         else
                             ;
@@ -2207,12 +2207,7 @@ namespace StatisticCommon
                         {
                             result = GetAdminValuesResponse(null, m_curDate);
 
-                            if (result == 0)
-                            {
-                                readyData(m_prevDate, true);
-                            }
-                            else
-                                ;
+                            readyData (m_prevDate, result == 0);
                         }
                         else
                             ;
@@ -2235,24 +2230,15 @@ namespace StatisticCommon
                             result = -1;
                     }
 
-                    if (result == 0)
-                    {
-                        readyData(m_prevDate, true);
-                    }
-                    else
-                        ;
+                    readyData(m_prevDate, result == 0);
                     break;
                 #region Импорт/экспорт значений
                 case StatesMachine.ImpRDGExcelValues:
                     ActionReport("Импорт РДГ из Excel.");
                     //result = GetRDGExcelValuesResponse(table, m_curDate);
                     result = delegateImportForeignValuesResponse();
-                    if (result == 0)
-                    {
-                        readyData(m_prevDate, true);
-                    }
-                    else
-                        ;
+
+                    readyData (m_prevDate, result == 0);
                     break;
                 case StatesMachine.ExpRDGExcelValues:
                     ActionReport("Экспорт РДГ в книгу Excel.");
@@ -2271,12 +2257,8 @@ namespace StatisticCommon
                     ActionReport("Импорт значений из формата CSV.");
                     //result = GetRDGExcelValuesResponse(table, m_curDate);
                     result = delegateImportForeignValuesResponse();
-                    if (result == 0)
-                    {
-                        readyData(m_prevDate, true);
-                    }
-                    else
-                        ;
+
+                    readyData(m_prevDate, result == 0);
                     break;
                 #endregion
                 case StatesMachine.PPBRDates:
@@ -2630,7 +2612,7 @@ namespace StatisticCommon
 
             ErrorReport(error);
 
-            if (! (errorData == null)) errorData (); else ;
+            errorData?.Invoke ();
 
             Logging.Logg().Error(@"AdminTS::StateErrors () - error=" + error + @" - вЫход...", Logging.INDEX_MESSAGE.NOT_SET);
 

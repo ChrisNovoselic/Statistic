@@ -16,6 +16,14 @@ namespace UnitTest {
     [TestClass]
     public class StatisticCommonAdminTest
     {
+        [Flags]
+        private enum FormRequired {
+            No
+            , GraphicsSettings
+            , Parameters
+            ,
+        }
+
         private class Counter
         {
             public Counter(int cnt, int cnt_max, IComparable comparator)
@@ -26,6 +34,8 @@ namespace UnitTest {
 
         private static PanelAdminKomDisp panel;
 
+        private static FormRequired _formRequired = FormRequired.GraphicsSettings;
+
         #region Дополнительные атрибуты тестирования
 
         //При написании тестов можно использовать следующие дополнительные атрибуты:
@@ -34,6 +44,11 @@ namespace UnitTest {
         [ClassInitialize ()]
         public static void StatisticCommonAdminTestInitialize (TestContext testContext)
         {
+            if (!(testContext.TestName.IndexOf ("Export_PBR") < 0))
+                _formRequired |= FormRequired.Parameters;
+            else
+                ;
+
             //Application.ThreadException += new ThreadExceptionEventHandler(Application_ThreadException);
             AppDomain.CurrentDomain.UnhandledException += new UnhandledExceptionEventHandler(CurrentDomain_UnhandledException);
 
@@ -60,12 +75,29 @@ namespace UnitTest {
             using (new HStatisticUsers (DbTSQLConfigDatabase.DbConfig ().ListenerId, ASUTP.Helper.HUsers.MODE_REGISTRATION.USER_DOMAINNAME)) {
                 ;
             }
-            FormMain.formGraphicsSettings = new FormGraphicsSettings (delegate (int arg) {
-            }
-                , delegate () {
-                }
-                , false
-            );
+
+            foreach (FormRequired req in Enum.GetValues((typeof(FormRequired))))
+                if ((_formRequired & req) == req)
+                    switch (req) {
+                        case FormRequired.No:
+                            continue;
+                        case FormRequired.GraphicsSettings:
+                            FormMain.formGraphicsSettings = new FormGraphicsSettings (delegate (int arg) {
+                                }
+                                , delegate () {
+                                }
+                                , false
+                            );
+                            break;
+                        case FormRequired.Parameters:
+                            FormMain.formParameters = new FormParameters_DB ();
+                            break;
+                        default:
+                            Assert.Fail($"{req} не обрабатывается...");
+                            break;
+                    }
+                else
+                    ;
 
             panel = new PanelAdminKomDisp (new HMark (new int [] { (int)CONN_SETT_TYPE.ADMIN, (int)CONN_SETT_TYPE.PBR }));
             panel.SetDelegateReport (delegate (string mes) {
@@ -133,6 +165,9 @@ namespace UnitTest {
             Assert.IsTrue ((panel.ModeGetRDGValues & AdminTS.MODE_GET_RDG_VALUES.DISPLAY) == AdminTS.MODE_GET_RDG_VALUES.DISPLAY);
             Assert.IsTrue ((panel.ModeGetRDGValues & AdminTS.MODE_GET_RDG_VALUES.UNIT_TEST) == AdminTS.MODE_GET_RDG_VALUES.UNIT_TEST);
             Assert.IsFalse ((panel.ModeGetRDGValues & AdminTS.MODE_GET_RDG_VALUES.EXPORT) == AdminTS.MODE_GET_RDG_VALUES.EXPORT);
+            // проверка наличия необходимых "статических" форм
+            Assert.IsNotNull (FormMain.formGraphicsSettings);
+            Assert.IsNotNull (FormMain.formParameters);
 
             string mesDebug = string.Empty;
 
@@ -168,13 +203,13 @@ namespace UnitTest {
                 nextIndex = next_index;
 
                 //TODO: проверка значений аргументов на истинность
-                if (!(nextIndex < 0)) {
+                if (nextIndex > 0) {
                     Assert.AreNotEqual (DateTime.MinValue, date);
                     Assert.IsTrue (listTECComponentIndex.Count () > 0);
                     Assert.AreEqual (nextIndex, listTECComponentIndex.ToArray () [0]);
                 } else
-                // ожидать штатное завершение
-                    nextIndex = 0;
+                // ожидать (в 'onEventUnitTestSetDataGridViewAdminCompleted') штатное завершение
+                    ;
             };
             // вызывается при завершении заполнения 'DatagridView' значениями
             onEventUnitTestSetDataGridViewAdminCompleted = delegate () {
@@ -233,7 +268,7 @@ namespace UnitTest {
             } catch (Exception e) {
                 System.Diagnostics.Debug.WriteLine (e.Message);
 
-                Assert.IsTrue (false);
+                Assert.Fail(e.Message);
             }
         }
 
@@ -278,6 +313,9 @@ namespace UnitTest {
                 Assert.IsTrue (string.Equals (ioe.Message, "PanelAdmin.ModeGetRDGValues::set - взаимоисключающие значения..."));
             }
             #endregion
+
+            // проверка наличия необходимых "статических" форм
+            Assert.IsNotNull (FormMain.formGraphicsSettings);
 
             string mesDebug = string.Empty;
 
@@ -374,7 +412,7 @@ namespace UnitTest {
             } catch (Exception e) {
                 System.Diagnostics.Debug.WriteLine (e.Message);
 
-                Assert.IsTrue (false);
+                Assert.Fail (e.Message);
             }
         }
 

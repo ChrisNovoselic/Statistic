@@ -745,6 +745,8 @@ namespace StatisticCommon
                                     , Logging.INDEX_MESSAGE.NOT_SET);
 
                                 _msExcelIOExportPBRValues.Run();
+                                // установить признак завершения
+                                iRes = 0;
                             }
                         } else {
                             Logging.Logg().Error(string.Format($"AdminTS_KomDisp::AddValueToExportRDGValues () - компонент с индексом [{indxTECComponents}] не может быть добавлен (пред. опреация экспорта не завершена)...")
