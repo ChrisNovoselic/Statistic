@@ -358,7 +358,7 @@ namespace Statistic
             return bRes;
         }
 
-        protected virtual void getDataGridViewAdmin() {}
+        protected virtual void getDataGridViewAdmin() { }
 
         public abstract void SetDataGridViewAdmin (DateTime date, bool bNewValues);
 
@@ -465,13 +465,8 @@ namespace Statistic
                     break;
             }
 
-            if (bRequery == true) {
-                ClearTables();
-
-                initTableHourRows();
-
-                m_admin.GetRDGValues(/*(int)m_admin.m_typeFields,*/ m_listTECComponentIndex[comboBoxTecComponent.SelectedIndex], mcldrDate.SelectionStart);
-            }
+            if (bRequery == true)
+                refresh (true);
             else
                 ;
         }
@@ -536,9 +531,7 @@ namespace Statistic
             }
 
             if (bRequery == true) {
-                ClearTables();
-
-                m_admin.GetRDGValues(/*(int)m_admin.m_typeFields,*/ m_listTECComponentIndex[comboBoxTecComponent.SelectedIndex], mcldrDate.SelectionStart);
+                refresh (false);
             }
             else
                 ;
@@ -595,35 +588,58 @@ namespace Statistic
 
         private void btnSet_Click(object sender, EventArgs e)
         {
+            string mesTitle = string.Empty
+                , mesText = string.Empty;
+            MessageBoxIcon mesIcon;
+
             //??? кнопка доступна только в этом режиме
-            //ModeGetRDGValues = AdminTS.MODE_GET_RDG_VALUES.DISPLAY;
+            if (!((ModeGetRDGValues & AdminTS.MODE_GET_RDG_VALUES.DISPLAY) == AdminTS.MODE_GET_RDG_VALUES.DISPLAY))
+                throw new Exception ($"PanelAdmin::btnSet_Click () - установлен некорректный режим <{ModeGetRDGValues.ToString()}>...");
+            else
+                ;
 
             getDataGridViewAdmin();
 
             ASUTP.Helper.Errors resultSaving = m_admin.SaveChanges();
             if (resultSaving == ASUTP.Helper.Errors.NoError)
-            {
-                ClearTables();
-
-                m_admin.GetRDGValues(/*(int)m_admin.m_typeFields,*/ m_listTECComponentIndex[comboBoxTecComponent.SelectedIndex], mcldrDate.SelectionStart);
-            }
+                refresh(false);
             else
             {
-                if (resultSaving == ASUTP.Helper.Errors.InvalidValue)
-                    MessageBox.Show(this, "Изменение ретроспективы недопустимо!", "Внимание", MessageBoxButtons.OK, MessageBoxIcon.Asterisk);
-                else
-                    MessageBox.Show(this, "Не удалось сохранить изменения, возможно отсутствует связь с базой данных.", "Ошибка сохранения", MessageBoxButtons.OK, MessageBoxIcon.Error);
+                if (resultSaving == ASUTP.Helper.Errors.InvalidValue) {
+                    mesText = "Изменение ретроспективы недопустимо!";
+                    mesTitle = "Внимание";
+                    mesIcon = MessageBoxIcon.Asterisk;
+                } else {
+                    mesText = "Не удалось сохранить изменения, возможно отсутствует связь с базой данных.";
+                    mesTitle = "Ошибка сохранения";
+                    mesIcon = MessageBoxIcon.Error;
+                }
+
+                MessageBox.Show (this, mesText, mesTitle, MessageBoxButtons.OK, mesIcon);
             }
         }
 
         private void btnRefresh_Click(object sender, EventArgs e)
         {
             //??? кнопка доступна только в этом режиме
-            //ModeGetRDGValues = AdminTS.MODE_GET_RDG_VALUES.DISPLAY;
+            if (!((ModeGetRDGValues & AdminTS.MODE_GET_RDG_VALUES.DISPLAY) == AdminTS.MODE_GET_RDG_VALUES.DISPLAY))
+                throw new Exception ($"PanelAdmin::btnRefresh_Click () - установлен некорректный режим <{ModeGetRDGValues.ToString ()}>...");
+            else
+                ;
 
+            refresh (false);
+        }
+
+        private void refresh(bool bDateChanged)
+        {
             ClearTables ();
 
-            m_admin.GetRDGValues(/*(int)m_admin.m_typeFields,*/ m_listTECComponentIndex[comboBoxTecComponent.SelectedIndex], mcldrDate.SelectionStart);
+            if (bDateChanged == true)
+                initTableHourRows ();
+            else
+                ;
+
+            m_admin.GetRDGValues (/*(int)m_admin.m_typeFields,*/ m_listTECComponentIndex [comboBoxTecComponent.SelectedIndex], mcldrDate.SelectionStart);
         }
 
         public override int MayToClose()

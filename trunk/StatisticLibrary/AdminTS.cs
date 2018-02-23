@@ -157,7 +157,8 @@ namespace StatisticCommon
         /// <returns>¬озвращает ошибки</returns>
         public virtual Errors SaveChanges()
         {
-            //Logging.Logg().Debug("AdminTS::SaveChanges () - в’од...", Logging.INDEX_MESSAGE.NOT_SET);
+            Logging.Logg().Debug($"AdminTS::SaveChanges () - в’од ...{Environment.NewLine}StackTrace: {new System.Diagnostics.StackTrace()}"
+                , Logging.INDEX_MESSAGE.D_006);
 
             bool bResSemaDbAccess = false;
             

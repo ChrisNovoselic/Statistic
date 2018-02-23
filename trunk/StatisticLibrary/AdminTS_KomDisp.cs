@@ -34,6 +34,11 @@ namespace StatisticCommon
             delegateImportForeignValuesRequuest = impCSVValuesRequest;
             delegateImportForeignValuesResponse = impCSVValuesResponse;
 
+            _listCSVValuesFields = new List<string []> () {
+                new string [] { @"GTP_ID", @"SESSION_INTERVAL", @"REC", @"IS_PER", @"DIVIAT", @"FC" } // CONN_SETT_TYPE.ADMIN
+                , new string [] { @"GTP_ID", @"SESSION_INTERVAL", @"TotalBR", @"PminBR", @"PmaxBR" } // CONN_SETT_TYPE.PBR
+            };
+
             ////ќтладка 'HMath.doubleParse'
             //string strVal = @"456,890";
             //double val = -1F;
@@ -285,26 +290,26 @@ namespace StatisticCommon
             delegateStopWait();
         }
 
+        private static List<string []> _listCSVValuesFields;
+
         private int impCSVValuesResponse()
         {
             int iRes = -1;
 
+            //??? провер€етс€ 3-е(2-ой индекс) поле, т.к. 1-ые 2 пол€ совпадают ("GTP_ID", "SESSION_INTERVAL")
             int indxFieldtypeValues = 2;
-            List <string []> listFields = new List <string[]> ();
-            listFields.Add ( new string [] { @"GTP_ID", @"SESSION_INTERVAL", @"REC", @"IS_PER", @"DIVIAT", @"FC" } );
-            listFields.Add(new string[] { @"GTP_ID", @"SESSION_INTERVAL", @"TotalBR", @"PminBR", @"PmaxBR" });
 
             //ќпределить тип загружаемых значений
-            // по наличию в загруженной таблице пол€ с индексом [1]
+            // по наличию в загруженной таблице пол€ с индексом <indxFieldtypeValues>
             CONN_SETT_TYPE typeValues = CONN_SETT_TYPE.COUNT_CONN_SETT_TYPE;
             for (typeValues = CONN_SETT_TYPE.ADMIN; typeValues < (CONN_SETT_TYPE.PBR + 1); typeValues ++)
-                if (m_tableValuesResponse.Columns.Contains(listFields[(int)typeValues][indxFieldtypeValues]) == true)
+                if (m_tableValuesResponse.Columns.Contains(_listCSVValuesFields [(int)typeValues][indxFieldtypeValues]) == true)
                     break;
                 else
                     ;
-
+            // в ~ от типа значений (ADMIN | PBR) проверить наличие всех необходимых столбцов
             if (typeValues < (CONN_SETT_TYPE.PBR + 1))
-                iRes = CheckNameFieldsOfTable(m_tableValuesResponse, listFields[(int)typeValues]) == true ? 0 : -1;
+                iRes = CheckNameFieldsOfTable(m_tableValuesResponse, _listCSVValuesFields [(int)typeValues]) == true ? 0 : -1;
             else;
 
             if (iRes == 0)
@@ -409,20 +414,17 @@ namespace StatisticCommon
 
             CONN_SETT_TYPE typeValues = CONN_SETT_TYPE.COUNT_CONN_SETT_TYPE;
             if (pbr_number is string)
+            // если строка, то импортируетс€ указанный номер ѕЅ–
                 typeValues = CONN_SETT_TYPE.PBR;
+            else if (pbr_number is CONN_SETT_TYPE)
+            //!!! только CONN_SETT_TYPE.ADMIN
+                typeValues = (CONN_SETT_TYPE)pbr_number;
             else
-                if (pbr_number is CONN_SETT_TYPE)
-                    typeValues = (CONN_SETT_TYPE)pbr_number; //ADMIN
-                else
-                    ;
+                ;
             // проверить был ли определен тип сохран€емых значений
             //  и имеет ли таблица соответствующую типу значений структуру (присутствуют ли в таблице необходимые пол€)
-            if (((typeValues == CONN_SETT_TYPE.PBR)
-                    || (typeValues == CONN_SETT_TYPE.ADMIN))
-                && (CheckNameFieldsOfTable (m_tableValuesResponse
-                    , typeValues == CONN_SETT_TYPE.PBR ? new string [] { @"GTP_ID", @"SESSION_INTERVAL", @"REC", @"IS_PER", @"DIVIAT", @"FC" }
-                        : typeValues == CONN_SETT_TYPE.ADMIN ? new string [] { @"GTP_ID", @"SESSION_INTERVAL", @"REC", @"IS_PER", @"DIVIAT", @"FC" }
-                            : new string [] { @"GTP_ID", @"SESSION_INTERVAL" }) == true)) {
+            if ((!(typeValues == CONN_SETT_TYPE.COUNT_CONN_SETT_TYPE))
+                && (CheckNameFieldsOfTable (m_tableValuesResponse, _listCSVValuesFields[(int)typeValues]) == true)) {
                 //ѕолучить значени€ дл€ сохранени
                 name_future = allTECComponents[indx].name_future;
                 rowsTECComponent = new List<DataRow>(m_tableValuesResponse.Select(@"GTP_ID='" + name_future + @"'"));
@@ -724,7 +726,7 @@ namespace StatisticCommon
                     if (indxTECComponents - _listTECComponentIndex[0] == 0) {
                         Logging.Logg().Action(string.Format("AdminTS_KomDisp::AddValueToExportRDGValues () - получены значени€ дл€ [ID={0}, Index={1}, за дату={2}, кол-во={3}] компонента..."
                                 , allTECComponents[_listTECComponentIndex[0]].m_id, _listTECComponentIndex[0], date, compValues.Length)
-                            , Logging.INDEX_MESSAGE.NOT_SET);
+                            , Logging.INDEX_MESSAGE.D_006);
 
                         if ((_msExcelIOExportPBRValues.AddTECComponent(allTECComponents[indxTECComponents]) == 0)
                             && (_msExcelIOExportPBRValues.SetDate(date) == true)) {
@@ -741,7 +743,7 @@ namespace StatisticCommon
                                 iRes = _listTECComponentIndex[0];
                             } else {
                             // все значени€ по всем компонентам получены/добавлены
-                                Logging.Logg().Debug(string.Format("AdminTS_KomDisp::AddValueToExportRDGValues () - получены все значени€ дл€ всех компонентов...")
+                                Logging.Logg().Action(string.Format("AdminTS_KomDisp::AddValueToExportRDGValues () - получены все значени€ дл€ всех компонентов...")
                                     , Logging.INDEX_MESSAGE.NOT_SET);
 
                                 _msExcelIOExportPBRValues.Run();

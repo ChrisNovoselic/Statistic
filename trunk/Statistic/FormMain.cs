@@ -1171,8 +1171,8 @@ namespace Statistic
         /// <summary>
         /// Закрыть (очистить) все вкладки (стандартные + административные)
         /// </summary>
-        /// <param name="bAttachSelIndxChanged">Признак присоединения обработчика события по изменению выбранной вкладки</param>
-        private void clearTabPages(List<int>listTabKeep, bool bAttachSelIndxChanged)
+        /// <param name="bAfterRunning">Признак присоединения обработчика события по изменению выбранной вкладки</param>
+        private void clearTabPages(List<int>listTabKeep, bool bAfterRunning)
         {
             //Logging.Logg().Debug(@"FormMain::clearTabPages () - вХод...", Logging.INDEX_MESSAGE.NOT_SET);
 
@@ -1239,7 +1239,7 @@ namespace Statistic
                         }
                         else if (tab.Controls[0] is PanelAdmin)
                         {
-                            bStopped = !bAttachSelIndxChanged;
+                            bStopped = !bAfterRunning;
 
                             if (bStopped == false)
                             {
@@ -1259,7 +1259,8 @@ namespace Statistic
                             idAddingTab = tclTecViews.GetTabPageId (i);
                             if ((Enum.IsDefined (typeof (ID_ADDING_TAB), idAddingTab) == true)
                                 && (m_dictAddingTabs.ContainsKey ((ID_ADDING_TAB)idAddingTab) == true))
-                                bPerformClick = true;
+                            // если предполагется дальнейшее выполнение, вкладку с отображения НЕ снимать
+                                bPerformClick = true && !bAfterRunning;
                             else
                             //??? throw
                                 ; 
@@ -1291,7 +1292,8 @@ namespace Statistic
 
             listToPerformClick.ForEach (keyTab => m_dictAddingTabs [keyTab].menuItem.PerformClick ());
 
-            if (bAttachSelIndxChanged == true)
+            if (bAfterRunning == true)
+            // для дальнейшего продолжения работы - присоединить обработчик
                 tclTecViews.SelectedIndexChanged += tclTecViews_SelectedIndexChanged;
             else
                 ;
