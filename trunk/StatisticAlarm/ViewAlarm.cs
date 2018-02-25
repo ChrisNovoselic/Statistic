@@ -978,8 +978,11 @@ namespace StatisticAlarm
 
             ev.Result = @"Ok";
 
-            Logging.Logg ().Action (string.Format($"ѕоток: проверка наличи€ текущих событий за {HDateTime.ToMoscowTimeZone ().ToShortDateString()}; кол-во_событий={tableRes.Rows.Count}...")
-                , Logging.INDEX_MESSAGE.NOT_SET);
+            //??? каждые 6 сек фиксировать факт проверки
+            // , требуетс€ дополнительна€ настройка 'D001..D006'
+            // , тем более 'Debug' а не 'Action'
+            //Logging.Logg ().Debug (string.Format($"ѕоток: проверка наличи€ текущих событий за {HDateTime.ToMoscowTimeZone ().ToShortDateString()}; кол-во_событий={tableRes.Rows.Count}...")
+            //    , Logging.INDEX_MESSAGE.NOT_SET);
         }
         /// <summary>
         /// ќбработчик событи€ - завершени€ выполнени€ потоковой функции по обработке

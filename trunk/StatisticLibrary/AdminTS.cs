@@ -120,7 +120,8 @@ namespace StatisticCommon
                 else
                     _modeGetRDGValues = value;
 
-                Logging.Logg ().Action ($@"AdminTSModeGetRDGValues::set - <{_modeGetRDGValues.ToString()}>...", Logging.INDEX_MESSAGE.D_006);
+                Logging.Logg ().Action ($@"AdminTS.ModeGetRDGValues::set - <{_modeGetRDGValues.ToString()}>..."
+                    , Logging.INDEX_MESSAGE.D_006);
             }
         }
 

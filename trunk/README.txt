@@ -274,3 +274,9 @@ to avoid corrupting the repository.
 3) !!! AdminTS_KomDisp добавлен массив списков полей '_listCSVValuesFields'
 4) добавлено логгирование "вХод в 'AdminTS::SaveChanges'"
 5) FormMain - устранен эффект (непреднамеренного) снятия с отображения доп./вкладок при изменении режима отображения вкладок
+
+2.0.9.21 25-02-2018 (нов.-2.0.9.23)
+Только космметические изменении в журналировании
+1) objectalarm.cs - 'error' на 'warning'
+2) viewalarm.cs - remark action every pool_time seconds
+3) AdminTS.cs - разделитель + нова строка 

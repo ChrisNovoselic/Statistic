@@ -424,7 +424,10 @@ namespace StatisticAlarm
                 objRes = _dictAlarmObject[cKey];
             }
             else
-                Logging.Logg().Error(@"DictAlarmObject::find (id_comp=" + id_comp + @", dtReg=" + dtReg.ToString(@"dd.MM.yyyy HH:mm:ss.fffffff", CultureInfo.InvariantCulture) + @") - НЕ НАЙДЕН!", Logging.INDEX_MESSAGE.NOT_SET);
+            //!!! Предупреждение, т.к. ситуация  возникает при вкл./выкл. оповещения
+            // , а в этот моммент словарь не может содержать никаких событий
+                Logging.Logg().Warning(@"DictAlarmObject::find (id_comp=" + id_comp + @", dtReg=" + dtReg.ToString(@"dd.MM.yyyy HH:mm:ss.fffffff", CultureInfo.InvariantCulture) + @") - НЕ НАЙДЕН!"
+                    , Logging.INDEX_MESSAGE.NOT_SET);
 
             //Console.WriteLine(@"DictAlarmObject::find (id_comp=" + id_comp + @", dtReg=" + dtReg.ToString(@"dd.MM.yyyy HH:mm:ss.fffffff", CultureInfo.InvariantCulture) + @") - " + (objRes == null ? @"НЕ НАЙДЕН!" : @"Ok..."));
 
