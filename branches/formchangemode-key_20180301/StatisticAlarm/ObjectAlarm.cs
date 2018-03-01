@@ -61,7 +61,7 @@ namespace StatisticAlarm
         public string m_message_shr;
         public string m_messageGUI;
 
-        public StatisticCommon.FormChangeMode.MODE_TECCOMPONENT Mode { get { return StatisticCommon.TECComponent.Mode(m_id_comp); } } 
+        public StatisticCommon.FormChangeMode.MODE_TECCOMPONENT Mode { get { return StatisticCommon.TECComponent.GetMode(m_id_comp); } } 
         /// <summary>
         /// Индекс типа сигнализации
         /// </summary>
@@ -104,7 +104,7 @@ namespace StatisticAlarm
         public static string GetMessage(int id_comp, int situation)
         {
             string strRes = string.Empty;
-            StatisticCommon.FormChangeMode.MODE_TECCOMPONENT mode = StatisticCommon.TECComponent.Mode(id_comp);
+            StatisticCommon.FormChangeMode.MODE_TECCOMPONENT mode = StatisticCommon.TECComponent.GetMode(id_comp);
 
             if (mode == StatisticCommon.FormChangeMode.MODE_TECCOMPONENT.GTP)
                 if (situation == 1)
@@ -720,7 +720,7 @@ namespace StatisticAlarm
                                     iRes = INDEX_ACTION.AUTO_CONFIRMING;
                                 else
                                     if ((alarmObj.IsAutoFixing(ALARM_OBJECT.INDEX_DATETIME_REGISTRED.LAST) == true)
-                                        || ((TECComponent.Mode(ev.m_id_comp) == FormChangeMode.MODE_TECCOMPONENT.TG)
+                                        || ((TECComponent.GetMode(ev.m_id_comp) == FormChangeMode.MODE_TECCOMPONENT.TG)
                                             && (alarmObj.IsAutoFixing(ALARM_OBJECT.INDEX_DATETIME_REGISTRED.FIRST) == true)))
                                         // если объект не зафиксирован длительное время
                                         iRes = INDEX_ACTION.AUTO_FIXING;

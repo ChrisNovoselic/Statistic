@@ -18,18 +18,18 @@ namespace StatisticCommon
     public class TecViewTMPower : TecView
     {
         public TecViewTMPower()
-            : base(/*TecView.TYPE_PANEL.CUR_POWER, */-1, -1, TECComponentBase.TYPE.ELECTRO)
+            : base(new FormChangeMode.KeyTECComponent () { Id = -1, Mode = FormChangeMode.MODE_TECCOMPONENT.Unknown }, TECComponentBase.TYPE.ELECTRO)
         {
         }
 
         public override void ChangeState()
         {
-            lock (m_lockState) { GetRDGValues(-1, DateTime.MinValue); }
+            lock (m_lockState) { GetRDGValues(FormChangeMode.KeyTECComponentEmpty, DateTime.MinValue); }
 
             base.ChangeState();
         }
 
-        public override void GetRDGValues(int indx, DateTime date)
+        public override void GetRDGValues(FormChangeMode.KeyTECComponent key, DateTime date)
         {
             ClearStates();
 
@@ -45,19 +45,19 @@ namespace StatisticCommon
 
     public class TecViewStandard : TecView
     {
-        public TecViewStandard(int indx_tec, int indx_comp)
-            : base(indx_tec, indx_comp, TECComponentBase.TYPE.ELECTRO)
+        public TecViewStandard(FormChangeMode.KeyTECComponent key)
+            : base(key, TECComponentBase.TYPE.ELECTRO)
         {
         }
 
         public override void ChangeState()
         {
-            lock (m_lockState) { GetRDGValues(-1, DateTime.MinValue); }
+            lock (m_lockState) { GetRDGValues(FormChangeMode.KeyTECComponentEmpty, DateTime.MinValue); }
 
             base.ChangeState(); //Run
         }
 
-        public override void GetRDGValues(int indx, DateTime date)
+        public override void GetRDGValues(FormChangeMode.KeyTECComponent key, DateTime date)
         {
             ClearStates();
 
@@ -350,7 +350,7 @@ namespace StatisticCommon
         public volatile valuesTEC[] m_valuesMins;
         public volatile valuesTEC[] m_valuesHours;
 
-        public volatile int m_indx_TEC;
+        //public volatile int m_indx_TEC;
         //public volatile int m_indx_TECComponent;
 
         /// <summary>
@@ -368,7 +368,7 @@ namespace StatisticCommon
         /// Идентификатор объекта (ТЭЦ, ГТП, ЩУ, ТГ)
         ///  , которому принадлежит текущий объект 'TecView'
         /// </summary>
-        public int m_ID { get { return indxTECComponents < 0 ? m_tec.m_id : m_tec.list_TECComponents[indxTECComponents].m_id; } }
+        public int m_ID { get { return CurrentKey.Id; } }
         public volatile Dictionary<int, TecView.valuesTECComponent> [] m_dictValuesTECComponent;
         public volatile Dictionary<int, TecView.valuesLowPointDev>m_dictValuesLowPointDev;
 
@@ -395,10 +395,10 @@ namespace StatisticCommon
         {
             get
             {
-                if (indxTECComponents < 0)
+                if (CurrentKey.Mode == FormChangeMode.MODE_TECCOMPONENT.TEC)
                     return m_tec.GetListLowPointDev (_type);
                 else
-                    return m_tec.list_TECComponents[indxTECComponents].m_listLowPointDev;
+                    return m_tec.list_TECComponents.FirstOrDefault(comp => comp.m_id == CurrentKey.Id).m_listLowPointDev;
             }
         }
 
@@ -406,10 +406,7 @@ namespace StatisticCommon
         {
             get
             {
-                if (indxTECComponents < 0)
-                    return ListLowPointDev.Count;
-                else
-                    return allTECComponents[indxTECComponents].m_listLowPointDev.Count;
+                return ListLowPointDev.Count;
             }
         }
 
@@ -454,7 +451,7 @@ namespace StatisticCommon
             _localTECComponents.Clear ();
             m_dictValuesLowPointDev.Clear ();
 
-            if (indxTECComponents < 0) // значит этот view будет суммарным для всех ГТП
+            if (CurrentKey.Mode == FormChangeMode.MODE_TECCOMPONENT.TEC) // значит этот view будет суммарным для всех ГТП
             {
                 switch (_type)
                 {
@@ -493,7 +490,7 @@ namespace StatisticCommon
                 }
             }
             else
-                foreach (TG tg in m_tec.list_TECComponents[indxTECComponents].m_listLowPointDev)
+                foreach (TG tg in ListLowPointDev)
                     foreach (TECComponent c in m_tec.list_TECComponents)
                         if (tg.m_id == c.m_id) {
                             _localTECComponents.Add(c);
@@ -566,13 +563,12 @@ namespace StatisticCommon
         //}
 
         //public TecView(bool[] arMarkSavePPBRValues, TYPE_PANEL type, int indx_tec, int indx_comp)
-        public TecView(/*TYPE_PANEL type, */int indx_tec, int indx_comp, TECComponentBase.TYPE type)
+        public TecView(FormChangeMode.KeyTECComponent key, TECComponentBase.TYPE type)
             : base(type)
         {
             m_idAISKUEParNumber = ID_AISKUE_PARNUMBER.FACT_03;
 
-            m_indx_TEC = indx_tec;
-            indxTECComponents = indx_comp;
+            CurrentKey = key;
 
             m_arIdListeners = new int[(int)CONN_SETT_TYPE.COUNT_CONN_SETT_TYPE];
 
@@ -582,7 +578,7 @@ namespace StatisticCommon
             }
         }        
 
-        public TECComponent TECComponentCurrent { get { return allTECComponents[indxTECComponents]; } }
+        public TECComponent TECComponentCurrent { get { return allTECComponents.FirstOrDefault(comp => comp.m_id == CurrentKey.Id); } }
         /// <summary>
         /// Возвратить признак наличия значений за указанный час
         /// </summary>
@@ -694,10 +690,9 @@ namespace StatisticCommon
             InitializeTECComponents ();
         }
 
-        public void ReInitTEC(StatisticCommon.TEC tec, int indx_TEC, int indx_components, ASUTP.Core.HMark markQueries)
+        public void ReInitTEC(StatisticCommon.TEC tec, FormChangeMode.KeyTECComponent key, ASUTP.Core.HMark markQueries)
         {
-            m_indx_TEC = indx_TEC;
-            indxTECComponents = indx_components;
+            CurrentKey = key;
 
             InitTEC (new List<TEC> () { tec }, markQueries);
         }
@@ -846,7 +841,7 @@ namespace StatisticCommon
         {
             //Debug.WriteLine ($"::LAST_VALUE_TM_GET_REQUEST (iListenerId={m_dictIdListeners [m_tec.m_id] [(int)CONN_SETT_TYPE.DATA_SOTIASSO]}, id_tec={m_tec.m_id}, indxTECComponent={indxTECComponents}) - ...");
 
-            Request (m_dictIdListeners[m_tec.m_id][(int)CONN_SETT_TYPE.DATA_SOTIASSO], m_tec.currentTMRequest(m_tec.GetSensorsString(indxTECComponents, CONN_SETT_TYPE.DATA_SOTIASSO)));
+            Request (m_dictIdListeners[m_tec.m_id][(int)CONN_SETT_TYPE.DATA_SOTIASSO], m_tec.currentTMRequest(m_tec.GetSensorsString(CurrentKey, CONN_SETT_TYPE.DATA_SOTIASSO)));
         }
 
         private int getCurrentTMGenResponse(DataTable table)
@@ -1829,8 +1824,8 @@ namespace StatisticCommon
 
             if (IsCanUseTECComponents == true)
             {
-                typeDB = DbTSQLInterface.getTypeDB(allTECComponents[indxTECComponents].tec.connSetts[(int)CONN_SETT_TYPE.ADMIN].port);
-                iListenerId = m_dictIdListeners[allTECComponents[indxTECComponents].tec.m_id][(int)CONN_SETT_TYPE.ADMIN];
+                typeDB = DbTSQLInterface.getTypeDB(CurrentTECComponent.tec.connSetts[(int)CONN_SETT_TYPE.ADMIN].port);
+                iListenerId = m_dictIdListeners[CurrentTECComponent.tec.m_id][(int)CONN_SETT_TYPE.ADMIN];
             }
             else
             {
@@ -2379,14 +2374,7 @@ namespace StatisticCommon
             for (i = 0; i < table_in.Rows.Count; i++)
                 table_in.Rows[i][@"DATE_ADMIN"] = ((DateTime)table_in.Rows[i][@"DATE_ADMIN"]).Add(m_tsOffsetToMoscow);
 
-            //switch (tec.Type) {
-            //    case TEC.TEC_TYPE.COMMON:
-            //        offsetPrev = -1;
-
-            if ((indxTECComponents < 0) //ТЭЦ
-                || ((!(indxTECComponents < 0))
-                    && ((m_tec.list_TECComponents[indxTECComponents].IsPC == true) //компонент ЩУ
-                        || (m_tec.list_TECComponents[indxTECComponents].IsTG == true)))) //компонент ТГ
+            if (!(CurrentKey.Mode == FormChangeMode.MODE_TECCOMPONENT.GTP))
             {
             #region Для ТЭЦ, и комопнентов ЩУ, ТГ
                 offsetUDG = 1;
@@ -2399,7 +2387,7 @@ namespace StatisticCommon
                     , _type
                     , _type == TECComponentBase.TYPE.TEPLO ? m_tec.list_TECComponents :
                         _type == TECComponentBase.TYPE.ELECTRO ? m_tec.list_TECComponents : null
-                    , indxTECComponents
+                    , CurrentKey
                     , m_tsOffsetToMoscow);
                 offsetLayout = (!(m_tablePPBRValuesResponse.Columns.IndexOf("PBR_NUMBER") < 0)) ?
                     (offsetPlan + localTECComponents.Count * 3) :
@@ -2415,7 +2403,7 @@ namespace StatisticCommon
                     , _type
                     , _type == TECComponentBase.TYPE.TEPLO ? m_tec.list_TECComponents :
                         _type == TECComponentBase.TYPE.ELECTRO ? m_tec.list_TECComponents : null
-                    , indxTECComponents
+                    , CurrentKey
                     , m_tsOffsetToMoscow);
 
                 // поиск в таблице записи по предыдущим суткам (мало ли, вдруг нету)
@@ -3134,7 +3122,7 @@ namespace StatisticCommon
                                 + @") [" + hour + @", " + lastMin + @"]", Logging.INDEX_MESSAGE.D_003);
         }
 
-        public static DataTable restruct_table_pbrValues(DataTable table_in, TECComponentBase.TYPE type,List<TECComponent> listTECComp, int num_comp, TimeSpan tsOffsetToMoscow)
+        public static DataTable restruct_table_pbrValues(DataTable table_in, TECComponentBase.TYPE type, List<TECComponent> listTECComp, FormChangeMode.KeyTECComponent key, TimeSpan tsOffsetToMoscow)
         {
             DataTable table_in_restruct = new DataTable();
             List<DataColumn> cols_data = new List<DataColumn>();
@@ -3163,7 +3151,7 @@ namespace StatisticCommon
             {
                 count_comp = -1;
 
-                if (num_comp < 0)
+                if (key.Mode == FormChangeMode.MODE_TECCOMPONENT.TEC)
                 {
                     list_TECComponents = new List<TECComponentBase>();
                     for (i = 0; i < listTECComp.Count; i++)
@@ -3182,7 +3170,7 @@ namespace StatisticCommon
                 }
                 else
                     //list_LowPointDev = listTECComp[num_comp].m_listLowPointDev
-                    list_TECComponents = listTECComp[num_comp].m_listLowPointDev
+                    list_TECComponents = listTECComp.FirstOrDefault(comp => comp.m_id == key.Id).m_listLowPointDev
                     ;
 
                 //Преобразование таблицы
@@ -3292,7 +3280,7 @@ namespace StatisticCommon
             return table_in_restruct;
         }
 
-        public static DataTable restruct_table_adminValues(DataTable table_in, TECComponentBase.TYPE type, List<TECComponent> listTECComp, int num_comp, TimeSpan tsOffsetToMoscow)
+        public static DataTable restruct_table_adminValues(DataTable table_in, TECComponentBase.TYPE type, List<TECComponent> listTECComp, FormChangeMode.KeyTECComponent key, TimeSpan tsOffsetToMoscow)
         {
             DataTable table_in_restruct = new DataTable();
             List<DataColumn> cols_data = new List<DataColumn>();
@@ -3318,7 +3306,7 @@ namespace StatisticCommon
             {
                 int count_comp = -1;
 
-                if (num_comp < 0)
+                if (key.Mode == FormChangeMode.MODE_TECCOMPONENT.TEC)
                 {
                     list_TECComponents = new List<TECComponentBase>();
                     for (i = 0; i < listTECComp.Count; i++)
@@ -3337,7 +3325,7 @@ namespace StatisticCommon
                 }
                 else
                     //list_LowPointDev = listTECComp[num_comp].m_listLowPointDev
-                    list_TECComponents = listTECComp[num_comp].m_listLowPointDev
+                    list_TECComponents = listTECComp.FirstOrDefault(comp => comp.m_id == key.Id).m_listLowPointDev
                     ;
 
                 //Преобразование таблицы
@@ -3844,7 +3832,7 @@ namespace StatisticCommon
                         case TEC.SOURCE_SOTIASSO.INSATANT_APP:
                             hour = lastHour;
 
-                            List<string> listSensors = new List<string>(m_tec.GetSensorsString(indxTECComponents, CONN_SETT_TYPE.DATA_SOTIASSO, HDateTime.INTERVAL.MINUTES).Split(','));
+                            List<string> listSensors = new List<string>(m_tec.GetSensorsString(CurrentKey, CONN_SETT_TYPE.DATA_SOTIASSO, HDateTime.INTERVAL.MINUTES).Split(','));
                             double[] valHours = new double[listSensors.Count + 1];
                             //60 мин * 60 сек = 1 час
                             valHours = avgInterval(table
@@ -3964,7 +3952,7 @@ namespace StatisticCommon
                     switch (TEC.s_SourceSOTIASSO)
                     {
                         case TEC.SOURCE_SOTIASSO.INSATANT_APP:
-                            List <string> listSensors = new List <string> (m_tec.GetSensorsString(indxTECComponents, CONN_SETT_TYPE.DATA_SOTIASSO, HDateTime.INTERVAL.MINUTES).Split (','));
+                            List <string> listSensors = new List <string> (m_tec.GetSensorsString(CurrentKey, CONN_SETT_TYPE.DATA_SOTIASSO, HDateTime.INTERVAL.MINUTES).Split (','));
                             double[] valHours = new double[listSensors.Count];
                             for (hour = 0; (hour < (m_valuesHours.Length + 0)) && (iRes == 0); hour ++)
                             {
@@ -4163,7 +4151,8 @@ namespace StatisticCommon
                 {
                     DataRow []tgRows = null;
 
-                    if (indxTECComponents < 0)
+                    if (CurrentKey.Mode == FormChangeMode.MODE_TECCOMPONENT.TEC)
+                    #region ТЭЦ
                     {
                         foreach (TECComponent g in _localTECComponents)
                         {
@@ -4217,7 +4206,9 @@ namespace StatisticCommon
                             }
                         }
                     }
+                    #endregion
                     else
+                    #region Компоненты ТЭЦ
                     {
                         foreach (TECComponent comp in _localTECComponents)
                         {
@@ -4269,12 +4260,12 @@ namespace StatisticCommon
                             }
                         }
                     }
-                }
-                else {
+                    #endregion
+                } else {
                     if (TEC.s_SourceSOTIASSO == TEC.SOURCE_SOTIASSO.INSATANT_APP)
                     {
                         dtVal = dtReq.Date.AddMinutes(59);
-                        List<string> listSensors = new List<string>(m_tec.GetSensorsString(indxTECComponents, CONN_SETT_TYPE.DATA_SOTIASSO, HDateTime.INTERVAL.MINUTES).Split(','));
+                        List<string> listSensors = new List<string>(m_tec.GetSensorsString(CurrentKey, CONN_SETT_TYPE.DATA_SOTIASSO, HDateTime.INTERVAL.MINUTES).Split(','));
                         int[] arIds = new int[listSensors.Count]
                             , arOwnerGTPIds = new int[listSensors.Count];
                         double[] valLastMins = new double[listSensors.Count + 1];
@@ -4304,7 +4295,7 @@ namespace StatisticCommon
                                 {
                                     int indx = listSensors.IndexOf(strId);
                                     m_dictValuesLowPointDev[arIds[indx]].m_power_LastMinutesTM[hour + 1] = valLastMins[indx];
-                                    if (indxTECComponents < 0)
+                                    if (CurrentKey.Mode == FormChangeMode.MODE_TECCOMPONENT.TEC)
                                         m_dictValuesTECComponent[hour + 1][arOwnerGTPIds[indx]].valuesLastMinutesTM += valLastMins[indx];
                                     else
                                         ;
@@ -4969,7 +4960,7 @@ namespace StatisticCommon
                                 int hour = lastHour - GetSeasonHourOffset(lastHour)
                                     ;
 
-                                List<string> listSensors = new List<string>(m_tec.GetSensorsString(indxTECComponents, CONN_SETT_TYPE.DATA_SOTIASSO, HDateTime.INTERVAL.MINUTES).Split(','));
+                                List<string> listSensors = new List<string>(m_tec.GetSensorsString(CurrentKey, CONN_SETT_TYPE.DATA_SOTIASSO, HDateTime.INTERVAL.MINUTES).Split(','));
                                 m_valuesMins[min].valuesFact = avgInterval(table
                                                                     , m_curDate.Date.AddHours(hour).AddSeconds(180 * (min - 1))
                                                                     , 180
@@ -5172,7 +5163,7 @@ namespace StatisticCommon
                             int [] arIds = null;
 
                             DateTime dtReq = m_curDate.Date.AddHours(lastHour);
-                            List<string> listSensors = new List<string>(m_tec.GetSensorsString(indxTECComponents, CONN_SETT_TYPE.DATA_SOTIASSO, HDateTime.INTERVAL.MINUTES).Split(','));
+                            List<string> listSensors = new List<string>(m_tec.GetSensorsString(CurrentKey, CONN_SETT_TYPE.DATA_SOTIASSO, HDateTime.INTERVAL.MINUTES).Split(','));
                             arIds = new int[listSensors.Count];
                             double[] valMins = new double[listSensors.Count + 1];
 
@@ -5513,7 +5504,7 @@ namespace StatisticCommon
         {
             //m_tec.Request(CONN_SETT_TYPE.DATA_ASKUE, m_tec.hoursRequest(date, m_tec.GetSensorsString(indx_TEC, CONN_SETT_TYPE.DATA_ASKUE, HDateTime.INTERVAL.HOURS)));
             //m_tec.Request(CONN_SETT_TYPE.DATA_ASKUE, m_tec.hoursRequest(date, m_tec.GetSensorsString(m_indx_TECComponent, CONN_SETT_TYPE.DATA_ASKUE, HDateTime.INTERVAL.HOURS)));
-            Request(m_dictIdListeners[m_tec.m_id][(int)CONN_SETT_TYPE.DATA_AISKUE], m_tec.hoursFactRequest(date, m_tec.GetSensorsString(indxTECComponents, CONN_SETT_TYPE.DATA_AISKUE, HDateTime.INTERVAL.HOURS)));
+            Request(m_dictIdListeners[m_tec.m_id][(int)CONN_SETT_TYPE.DATA_AISKUE], m_tec.hoursFactRequest(date, m_tec.GetSensorsString(CurrentKey, CONN_SETT_TYPE.DATA_AISKUE, HDateTime.INTERVAL.HOURS)));
 
             //Debug.WriteLine(@"TecView::GetHoursFactRequest () - DATE=" + date.ToString());
         }
@@ -5523,7 +5514,7 @@ namespace StatisticCommon
             int interval = GetIntervalOfTypeSourceData(HDateTime.INTERVAL.HOURS);
 
             if (interval > 0)
-                Request(m_dictIdListeners[m_tec.m_id][(int)CONN_SETT_TYPE.DATA_SOTIASSO], m_tec.hourTMRequest(date, lh, m_tec.GetSensorsString(indxTECComponents, CONN_SETT_TYPE.DATA_SOTIASSO, HDateTime.INTERVAL.HOURS), interval));
+                Request(m_dictIdListeners[m_tec.m_id][(int)CONN_SETT_TYPE.DATA_SOTIASSO], m_tec.hourTMRequest(date, lh, m_tec.GetSensorsString(CurrentKey, CONN_SETT_TYPE.DATA_SOTIASSO, HDateTime.INTERVAL.HOURS), interval));
             else
                 ;
         }
@@ -5533,7 +5524,7 @@ namespace StatisticCommon
             int interval = GetIntervalOfTypeSourceData(HDateTime.INTERVAL.HOURS);
 
             if (interval > 0)
-                Request(m_dictIdListeners[m_tec.m_id][(int)CONN_SETT_TYPE.DATA_SOTIASSO], m_tec.hoursTMRequest(date, m_tec.GetSensorsString(indxTECComponents, CONN_SETT_TYPE.DATA_SOTIASSO, HDateTime.INTERVAL.HOURS), interval));
+                Request(m_dictIdListeners[m_tec.m_id][(int)CONN_SETT_TYPE.DATA_SOTIASSO], m_tec.hoursTMRequest(date, m_tec.GetSensorsString(CurrentKey, CONN_SETT_TYPE.DATA_SOTIASSO, HDateTime.INTERVAL.HOURS), interval));
             else
                 ;
         }
@@ -5547,7 +5538,7 @@ namespace StatisticCommon
             Request(m_dictIdListeners[m_tec.m_id][(int)CONN_SETT_TYPE.DATA_AISKUE]
                 , m_tec.minsFactRequest(m_curDate.Date.Add(-m_tsOffsetToMoscow)
                     , hour - GetSeasonHourOffset(hour)
-                    , m_tec.GetSensorsString(indxTECComponents, CONN_SETT_TYPE.DATA_AISKUE, HDateTime.INTERVAL.MINUTES)
+                    , m_tec.GetSensorsString(CurrentKey, CONN_SETT_TYPE.DATA_AISKUE, HDateTime.INTERVAL.MINUTES)
                     , m_idAISKUEParNumber
                 )
             );
@@ -5558,7 +5549,7 @@ namespace StatisticCommon
             int interval = GetIntervalOfTypeSourceData(HDateTime.INTERVAL.MINUTES);
 
             if (interval > 0)
-                Request(m_dictIdListeners[m_tec.m_id][(int)CONN_SETT_TYPE.DATA_SOTIASSO], m_tec.minTMRequest(m_curDate, lh - GetSeasonHourOffset(lh), lm, m_tec.GetSensorsString(indxTECComponents, CONN_SETT_TYPE.DATA_SOTIASSO, HDateTime.INTERVAL.MINUTES), interval));
+                Request(m_dictIdListeners[m_tec.m_id][(int)CONN_SETT_TYPE.DATA_SOTIASSO], m_tec.minTMRequest(m_curDate, lh - GetSeasonHourOffset(lh), lm, m_tec.GetSensorsString(CurrentKey, CONN_SETT_TYPE.DATA_SOTIASSO, HDateTime.INTERVAL.MINUTES), interval));
             else ;
         }
 
@@ -5571,7 +5562,7 @@ namespace StatisticCommon
                     , m_tec.minTMDetailRequest(m_curDate, lh - GetSeasonHourOffset(lh)
                     //, lm > 60 ? 60 : lm
                     , lm
-                    , m_tec.GetSensorsString(indxTECComponents, CONN_SETT_TYPE.DATA_SOTIASSO, HDateTime.INTERVAL.MINUTES)
+                    , m_tec.GetSensorsString(CurrentKey, CONN_SETT_TYPE.DATA_SOTIASSO, HDateTime.INTERVAL.MINUTES)
                     , interval));
             else ;
         }
@@ -5581,7 +5572,7 @@ namespace StatisticCommon
             int interval = GetIntervalOfTypeSourceData(HDateTime.INTERVAL.MINUTES);
 
             if (interval > 0)
-                Request(m_dictIdListeners[m_tec.m_id][(int)CONN_SETT_TYPE.DATA_SOTIASSO], m_tec.minTMAverageRequest(m_curDate, lh - GetSeasonHourOffset(lh), lm, m_tec.GetSensorsString(indxTECComponents, CONN_SETT_TYPE.DATA_SOTIASSO, HDateTime.INTERVAL.MINUTES), interval));
+                Request(m_dictIdListeners[m_tec.m_id][(int)CONN_SETT_TYPE.DATA_SOTIASSO], m_tec.minTMAverageRequest(m_curDate, lh - GetSeasonHourOffset(lh), lm, m_tec.GetSensorsString(CurrentKey, CONN_SETT_TYPE.DATA_SOTIASSO, HDateTime.INTERVAL.MINUTES), interval));
             else ;
         }
 
@@ -5631,7 +5622,7 @@ namespace StatisticCommon
             int interval = GetIntervalOfTypeSourceData(HDateTime.INTERVAL.MINUTES);
 
             if (interval > 0)
-                Request(m_dictIdListeners[m_tec.m_id][(int)CONN_SETT_TYPE.DATA_SOTIASSO], m_tec.minsTMRequest(m_curDate, hour - GetSeasonHourOffset(hour), m_tec.GetSensorsString(indxTECComponents, CONN_SETT_TYPE.DATA_SOTIASSO, HDateTime.INTERVAL.MINUTES), interval));
+                Request(m_dictIdListeners[m_tec.m_id][(int)CONN_SETT_TYPE.DATA_SOTIASSO], m_tec.minsTMRequest(m_curDate, hour - GetSeasonHourOffset(hour), m_tec.GetSensorsString(CurrentKey, CONN_SETT_TYPE.DATA_SOTIASSO, HDateTime.INTERVAL.MINUTES), interval));
             else
                 Logging.Logg().Error(@"TecView::GetMinsTMRequest (hour=" + hour + @") - не выбран интервал для запроса...", Logging.INDEX_MESSAGE.NOT_SET);
         }
@@ -5684,13 +5675,13 @@ namespace StatisticCommon
             DateTime dtReq = m_curDate.Date;
             int cnt = HAdmin.CountHoursOfDate (dtReq);
 
-            Request(m_dictIdListeners[m_tec.m_id][(int)CONN_SETT_TYPE.DATA_SOTIASSO], m_tec.lastMinutesTMRequest(dtReq.Date, m_tec.GetSensorsString(indxTECComponents, CONN_SETT_TYPE.DATA_SOTIASSO), cnt));
+            Request(m_dictIdListeners[m_tec.m_id][(int)CONN_SETT_TYPE.DATA_SOTIASSO], m_tec.lastMinutesTMRequest(dtReq.Date, m_tec.GetSensorsString(CurrentKey, CONN_SETT_TYPE.DATA_SOTIASSO), cnt));
         }
 
         protected virtual void getPPBRValuesRequest()
         {
             if (m_curDate.Equals(DateTime.MinValue) == false)
-                Request(m_dictIdListeners[m_tec.m_id][(int)CONN_SETT_TYPE.PBR], m_tec.GetPBRValueQuery(indxTECComponents, m_curDate.Date.Add(-m_tsOffsetToMoscow), _type));
+                Request(m_dictIdListeners[m_tec.m_id][(int)CONN_SETT_TYPE.PBR], m_tec.GetPBRValueQuery(CurrentKey, m_curDate.Date.Add(-m_tsOffsetToMoscow), _type));
             else
                 ;
         }
@@ -5698,7 +5689,7 @@ namespace StatisticCommon
         protected virtual void getAdminValuesRequest()
         {
             if (m_curDate.Equals(DateTime.MinValue) == false)
-                Request(m_dictIdListeners[m_tec.m_id][(int)CONN_SETT_TYPE.ADMIN], m_tec.GetAdminValueQuery(indxTECComponents, m_curDate.Date.Add(-m_tsOffsetToMoscow), _type));
+                Request(m_dictIdListeners[m_tec.m_id][(int)CONN_SETT_TYPE.ADMIN], m_tec.GetAdminValueQuery(CurrentKey, m_curDate.Date.Add(-m_tsOffsetToMoscow), _type));
             else
                 ;
         }

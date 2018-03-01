@@ -88,7 +88,7 @@ namespace Statistic
                 if ((!(listTec[i].m_id > (int)TECComponent.ID.LK))
                     && (!(listTec[i].Type == TEC.TEC_TYPE.BIYSK)))
                 {
-                    ptvtd = new PanelTecVzletTDirect(listTec[i], i, -1);
+                    ptvtd = new PanelTecVzletTDirect(listTec[i], new FormChangeMode.KeyTECComponent () { Id =listTec[i].m_id, Mode = FormChangeMode.MODE_TECCOMPONENT.TEC });
                     this.Controls.Add(ptvtd, i % this.ColumnCount, i / this.ColumnCount);
                 }
                 else
@@ -1353,7 +1353,8 @@ namespace Statistic
             /// </summary>
             private class DataSource : TecView
             {
-                public DataSource(int indx_tec, int indx_comp = -1) : base (indx_tec, indx_comp, TECComponentBase.TYPE.TEPLO)
+                public DataSource(FormChangeMode.KeyTECComponent key)
+                    : base (key, TECComponentBase.TYPE.TEPLO)
                 {
                     m_idAISKUEParNumber = ID_AISKUE_PARNUMBER.FACT_30;
                     //_tsOffsetToMoscow = HDateTime.TS_NSK_OFFSET_OF_MOSCOWTIMEZONE;
@@ -1369,34 +1370,9 @@ namespace Statistic
                     m_dictCurrValuesLowPointDev = new Dictionary<int, valuesLowPointDev>();
                 }
 
-                //protected override int StateCheckResponse(int state, out bool error, out object outobj)
-                //{
-                //    throw new NotImplementedException();
-                //}
-
-                //protected override int StateRequest(int state)
-                //{
-                //    throw new NotImplementedException();
-                //}
-
-                //protected override int StateResponse(int state, object obj)
-                //{
-                //    throw new NotImplementedException();
-                //}
-
-                //protected override void StateWarnings(int state, int req, int res)
-                //{
-                //    throw new NotImplementedException();
-                //}
-
-                //protected override HHandler.INDEX_WAITHANDLE_REASON StateErrors(int state, int req, int res)
-                //{
-                //    throw new NotImplementedException();
-                //}
-
                 public override void ChangeState()
                 {
-                    lock (m_lockState) { GetRDGValues(-1, DateTime.MinValue); }
+                    lock (m_lockState) { GetRDGValues(FormChangeMode.KeyTECComponentEmpty, DateTime.MinValue); }
 
                     base.ChangeState(); //Run
                 }
@@ -1844,7 +1820,7 @@ namespace Statistic
                     return iRes;
                 }
 
-                public override void GetRDGValues(int indx, DateTime date)
+                public override void GetRDGValues(FormChangeMode.KeyTECComponent key, DateTime date)
                 {
                     ClearStates();
 
@@ -1941,8 +1917,8 @@ namespace Statistic
             /// <summary>
             /// constructor
             /// </summary>
-            public PanelTecVzletTDirect(TEC tec, int indx_tec, int indx_comp)
-                : base(tec, indx_tec, indx_comp, new ASUTP.Core.HMark (new int[] { (int)CONN_SETT_TYPE.ADMIN, (int)CONN_SETT_TYPE.PBR, (int)CONN_SETT_TYPE.DATA_VZLET }))
+            public PanelTecVzletTDirect(TEC tec, FormChangeMode.KeyTECComponent key)
+                : base(tec, key, new ASUTP.Core.HMark (new int[] { (int)CONN_SETT_TYPE.ADMIN, (int)CONN_SETT_TYPE.PBR, (int)CONN_SETT_TYPE.DATA_VZLET }))
             {
                 initialize();
             }
@@ -1950,8 +1926,8 @@ namespace Statistic
             /// constructor
             /// </summary>
             /// <param name="container">Родительский объект по отношению к создаваемому</param>
-            public PanelTecVzletTDirect(IContainer container, TEC tec, int indx_tec, int indx_comp, ASUTP.Core.HMark markQueries)
-                : base(tec, indx_tec, indx_comp, markQueries)
+            public PanelTecVzletTDirect(IContainer container, TEC tec, FormChangeMode.KeyTECComponent key, ASUTP.Core.HMark markQueries)
+                : base(tec, key, markQueries)
             {
                 container.Add(this);
                 initialize();
@@ -1999,9 +1975,9 @@ namespace Statistic
             /// </summary>
             /// <param name="indx_tec">Индекс ТЭЦ в глобальном списке</param>
             /// <param name="indx_comp">Индекс компонента ТЭЦ (внутренний для ТЭЦ), если -1, то ТЭЦ в целом</param>
-            protected override void createTecView(int indx_tec, int indx_comp)
+            protected override void createTecView(FormChangeMode.KeyTECComponent key)
             {
-                m_tecView = new DataSource(indx_tec, indx_comp);
+                m_tecView = new DataSource(key);
             }
             /// <summary>
             /// Создать объекты панели оперативной информации для отображения значений

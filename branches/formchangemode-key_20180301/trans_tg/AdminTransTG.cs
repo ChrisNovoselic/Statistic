@@ -220,7 +220,7 @@ namespace trans_tg
             get  {
                 int iRes = 0;
 
-                foreach (int indx in m_listTECComponentIndexDetail)
+                foreach (int indx in m_listKeyTECComponentDetail)
                 {
                     if (modeTECComponent(indx) == FormChangeMode.MODE_TECCOMPONENT.GTP)
                         iRes++;
@@ -243,7 +243,7 @@ namespace trans_tg
 
             currentHour = 0;
 
-            int indx = m_listTECComponentIndexDetail.IndexOf (GetIndexTECComponent (t.m_id, comp.m_id)) - CountGTP;
+            int indx = m_listKeyTECComponentDetail.IndexOf (GetIndexTECComponent (t.m_id, comp.m_id)) - CountGTP;
 
             if (indx < m_listCurTimezoneOffsetRDGExcelValues.Count)
             {
@@ -323,7 +323,7 @@ namespace trans_tg
 
             currentHour = 0;
 
-            int indx = m_listTECComponentIndexDetail.IndexOf(GetIndexTECComponent(t.m_id, comp.m_id)) - CountGTP;
+            int indx = m_listKeyTECComponentDetail.IndexOf(GetIndexTECComponent(t.m_id, comp.m_id)) - CountGTP;
             if (indx < m_listCurTimezoneOffsetRDGExcelValues.Count)
             {
                 for (int i = currentHour; i < m_listTimezoneOffsetHaveDates[(int)CONN_SETT_TYPE.PBR].Count; i++)
@@ -409,9 +409,9 @@ namespace trans_tg
         {
             m_listCurRDGValues = new List<RDGStruct[]>();
 
-            foreach (int indx in m_listTECComponentIndexDetail)
+            foreach (int indx in m_listKeyTECComponentDetail)
             {
-                int j = m_listTECComponentIndexDetail.IndexOf(indx);
+                int j = m_listKeyTECComponentDetail.IndexOf(indx);
 
                 m_listCurRDGValues.Add(new RDGStruct[((AdminTS_NSS)source).m_listCurRDGValues[j].Length]);
                 ((AdminTS_NSS)source).m_listCurRDGValues[j].CopyTo(m_listCurRDGValues[j], 0);
@@ -430,7 +430,7 @@ namespace trans_tg
         public override void ClearRDGValues(DateTime date) {
             m_prevDate = date.Date;
             
-            foreach (int indx in m_listTECComponentIndexDetail)
+            foreach (int indx in m_listKeyTECComponentDetail)
             {
                 if (modeTECComponent (indx) == FormChangeMode.MODE_TECCOMPONENT.TG)
                 {

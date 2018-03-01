@@ -47,6 +47,7 @@ namespace Statistic
                     ;
             }
         }
+        
         /// <summary>
         /// Класс для разделителя(сепаратора) групп элементов интерфейса на панели с управляющими элементами интерфейса
         /// </summary>
@@ -115,10 +116,26 @@ namespace Statistic
         /// Объект для обращения к БД
         /// </summary>
         protected AdminTS m_admin;
-        /// <summary>
-        /// Список индексов в списке идентификаторов компонентов ТЭЦ, 
-        /// </summary>
-        protected List <int>m_listTECComponentIndex;
+        ///// <summary>
+        ///// Список индексов в списке идентификаторов компонентов ТЭЦ, 
+        ///// </summary>
+        //protected List <int>m_listTECComponentIndex;
+
+        protected FormChangeMode.KeyTECComponent InitItemKey
+        {
+            get
+            {
+                return ((ComboBoxItem)comboBoxTecComponent.Items[0]).Tag;
+            }
+        }
+
+        protected FormChangeMode.KeyTECComponent SelectedItemKey
+        {
+            get
+            {
+                return ((ComboBoxItem)comboBoxTecComponent.SelectedItem).Tag;
+            }
+        }
         /// <summary>
         /// Индекс
         /// </summary>
@@ -133,6 +150,7 @@ namespace Statistic
         /// </summary>
         protected static int m_iSizeY = 22
             , m_iMarginY = 3;
+        
         /// <summary>
         /// Инициализация характеристик, стилей макета для размещения дочерних элементов интерфейса
         ///  (должна быть вызвана явно)
@@ -306,7 +324,8 @@ namespace Statistic
 
         protected abstract void createAdmin ();
 
-        private void initialize () {
+        private void initialize ()
+        {
             //m_evtAdminTableRowCount = new ManualResetEvent (false);
 
             m_admin.SetDelegateData(this.SetDataGridViewAdmin, null);
@@ -329,7 +348,8 @@ namespace Statistic
             m_admin.SetDelegateReport(ferr, fwar, fact, fclr);
         }
 
-        public override void Start () {
+        public override void Start ()
+        {
             base.Start ();
 
             initTableHourRows();
@@ -471,13 +491,30 @@ namespace Statistic
                 ;
         }
 
-        public virtual void InitializeComboBoxTecComponent (FormChangeMode.MODE_TECCOMPONENT mode) 
+        /// <summary>
+        /// Заполнение ComboBox значениями-наименованиями
+        /// </summary>
+        /// <param name="mode">Переменная типа отображаемых значений</param>
+        public void InitializeComboBoxTecComponent (FormChangeMode.MODE_TECCOMPONENT mode, bool bWithNameTECOwner) 
         {
-            m_listTECComponentIndex = m_admin.GetListIndexTECComponent(mode, !(this is PanelAdminLK));
-
-            //m_admin.m_typeFields = AdminTS.TYPE_FIELDS.DYNAMIC;
-
             comboBoxTecComponent.Items.Clear ();
+
+            List<FormChangeMode.KeyTECComponent> listKey;
+            List<object> listItems = new List<object> ();
+
+            listKey = m_admin.GetListKeyTECComponent (mode, true);
+            listKey.ForEach (key => listItems.Add (new ComboBoxItem () { Tag = key, Text = m_admin.GetNameTECComponent (key, bWithNameTECOwner) }));
+
+            if (listItems.Count > 0) {
+                comboBoxTecComponent.Items.AddRange (listItems.ToArray () as object []);
+
+                if (comboBoxTecComponent.Items.Count > 0) {
+                    m_admin.CurrentKey = InitItemKey;
+                    comboBoxTecComponent.SelectedIndex = 0;
+                } else
+                    ;
+            } else
+                ;
         }
 
         [TestMethod]
@@ -547,7 +584,7 @@ namespace Statistic
         /// <param name="date">Дата, за которую требуется обновить/сохранить значения</param>
         /// <param name="listIdRec">Список идентификаторов записей в таблице БД для обновления</param>
         /// <param name="nextIndex">Очередной индекс из списка объектов-компонентов</param>
-        public delegate void DelegateUnitTestNextIndexSetValuesRequest(int nextIndex, TEC t, TECComponent comp, DateTime date, CONN_SETT_TYPE type, IEnumerable<int> listIdRec, string[]queries);
+        public delegate void DelegateUnitTestNextIndexSetValuesRequest(int nextIndex, TECComponent comp, DateTime date, CONN_SETT_TYPE type, IEnumerable<int> listIdRec, string[]queries);
 
         private DelegateUnitTestNextIndexSetValuesRequest _eventUnitTestNextIndexSetValuesRequest;
 
@@ -580,9 +617,9 @@ namespace Statistic
             btnSet.PerformClick();
         }
 
-        private void admin_onEventUnitTestSetValuesRequest(TEC t, TECComponent comp, DateTime date, CONN_SETT_TYPE type, string[]queries, IEnumerable<int> listIdRec)
+        private void admin_onEventUnitTestSetValuesRequest(TECComponent comp, DateTime date, CONN_SETT_TYPE type, string[]queries, IEnumerable<int> listIdRec)
         {
-            _eventUnitTestNextIndexSetValuesRequest?.Invoke(comboBoxTecComponent.SelectedIndex + 1 < comboBoxTecComponent.Items.Count ? comboBoxTecComponent.SelectedIndex + 1 : -1, t, comp, date, type, listIdRec, queries);
+            _eventUnitTestNextIndexSetValuesRequest?.Invoke(comboBoxTecComponent.SelectedIndex + 1 < comboBoxTecComponent.Items.Count ? comboBoxTecComponent.SelectedIndex + 1 : -1, comp, date, type, listIdRec, queries);
         }
         #endregion
 
@@ -639,7 +676,7 @@ namespace Statistic
             else
                 ;
 
-            m_admin.GetRDGValues (/*(int)m_admin.m_typeFields,*/ m_listTECComponentIndex [comboBoxTecComponent.SelectedIndex], mcldrDate.SelectionStart);
+            m_admin.GetRDGValues (SelectedItemKey, mcldrDate.SelectionStart);
         }
 
         public override int MayToClose()

@@ -34,20 +34,20 @@ namespace Statistic
 
             public HMark m_markRetroValues;
 
-            public TecViewSOTIASSOHour(int indx_tec, int indx_comp)
-                : base(/*TecView.TYPE_PANEL.SOTIASSO, */indx_tec, indx_comp, TECComponentBase.TYPE.ELECTRO)
+            public TecViewSOTIASSOHour(FormChangeMode.KeyTECComponent key)
+                : base(key, TECComponentBase.TYPE.ELECTRO)
             {
                 m_markRetroValues = new HMark(0);
             }
 
             public override void ChangeState()
             {
-                lock (m_lockState) { GetRDGValues(-1, DateTime.MinValue); }
+                lock (m_lockState) { GetRDGValues(FormChangeMode.KeyTECComponentEmpty, DateTime.MinValue); }
 
                 base.ChangeState(); //Run
             }
 
-            public override void GetRDGValues(int indx, DateTime date)
+            public override void GetRDGValues(FormChangeMode.KeyTECComponent key, DateTime date)
             {
                 ClearStates();
 
@@ -235,7 +235,7 @@ namespace Statistic
             //m_markQueries.Marked((int)CONN_SETT_TYPE.PBR); //Для получения даты/времени
             //m_markQueries.Marked((int)CONN_SETT_TYPE.DATA_SOTIASSO);
             //Создать объект обработки запросов - установить первоначальные индексы для ТЭЦ, компонента
-            m_tecView = new TecViewSOTIASSOHour(0, -1);
+            m_tecView = new TecViewSOTIASSOHour(new FormChangeMode.KeyTECComponent () { Id = 1, Mode = FormChangeMode.MODE_TECCOMPONENT.TEC });
             //Инициализировать список ТЭЦ для 'TecView' - указать ТЭЦ в соответствии с указанным ранее индексом (0)
             m_tecView.InitTEC(new List<StatisticCommon.TEC>() { m_listTEC[0] }, m_markQueries);
             //Установить тип значений
@@ -2013,64 +2013,11 @@ namespace Statistic
         {
             if (this.Actived == true)
             {
-                //Передать информацию 'PanelManagement' для заполнения списка ТГ
-                //List<string> listTGNameShr = new List<string>();
-                int indxTEC = -1 //Индекс ТЭЦ в списке из БД конфигурации
-                    , indxTECComponent = -1 //Индекс компонента ТЭЦ (ГТП) - локальный в пределах ТЭЦ
-                    ;
+                TEC tec = null;
+                FormChangeMode.KeyTECComponent key = FormChangeMode.KeyTECComponentEmpty;
                 List<TECComponentBase> listTG_Comp = new List<TECComponentBase>();
 
-                indxTEC =
-                    0;
-                #region Хряпин А.Н. - Заполнение списка наименований ТГ
-
-                //foreach (TEC t in m_listTEC)
-                //{
-                //    //В каждой ТЭЦ индекс локальный - обнулить
-                //    indxTECComponent = 0;
-                //    //Цикл для поиска выбранного пользователем компонента ТЭЦ (ГТП)
-                //    // заполнения списка наименований подчиненных (ТГ) элементов
-                //    foreach (TECComponent tc in t.list_TECComponents)
-                //    {
-                //        //Определить тип компонента (по диапазону идентификатора)
-                //        if (tc.IsGTP == true)
-                //        {//Только ГТП
-                //            if (indxGTP == indx)
-                //            {
-                //                foreach (TG tg in tc.m_listLowPointDev)
-                //                    listTGNameShr.Add(/*tc.name_shr + @" " + */tg.name_shr);
-
-                //                m_dcGTPKoeffAlarmPcur = tc.m_dcKoeffAlarmPcur;
-                //                indxGTP = -1; //Признак завершения внешнего цикла
-                //                break;
-                //            }
-                //            else
-                //                ;
-                //            //Увеличить индекс ГТП сквозной
-                //            indxGTP++;
-                //        }
-                //        else
-                //            ; // не ГТП
-
-                //        //Увеличить индекс компонента ТЭЦ локальный
-                //        indxTECComponent++;
-                //    }
-                //    //Проверить признак прекращения выполнения цикла
-                //    if (indxGTP < 0)
-                //    {
-                //        indxGTP = indx; //Возвратить найденное значение
-                //        // прекратить выполнение цикла
-                //        break;
-                //    }
-                //    else
-                //        ;
-                //    //Увеличить индекс ТЭЦ
-                //    indxTEC++;
-                //}
-
-                #endregion
-
-                #region Апельганс А.В. - поиск минимального коэффициента
+                #region Апельганс А.В. - Поиск минимального коэффициента
 
                 // комментарий Хряпин А.Н.
                 //!!! не объявлять переменные в середине  кода, тем более внутри цикла
@@ -2088,8 +2035,8 @@ namespace Statistic
                     // проверить идентификатор ТЭЦ
                     if (t.m_id == id)
                     {
-                        indxTEC = m_listTEC.IndexOf(t);
-                        indxTECComponent = -1;
+                        tec = t;
+                        key = new FormChangeMode.KeyTECComponent () { Id = t.m_id, Mode = FormChangeMode.MODE_TECCOMPONENT.TEC };
 
                         foreach (TG tg in t.GetListLowPointDev(TECComponentBase.TYPE.ELECTRO))
                             listTG_Comp.Add(tg);
@@ -2114,8 +2061,8 @@ namespace Statistic
                             {
                                 if (tc.IsGTP == true)
                                 {
-                                    indxTECComponent = t.list_TECComponents.IndexOf(tc);
-                                    indxTEC = m_listTEC.IndexOf(t);
+                                    tec = t;
+                                    key = new FormChangeMode.KeyTECComponent () { Id = tc.m_id, Mode = FormChangeMode.MODE_TECCOMPONENT.GTP };
                                     m_dcGTPKoeffAlarmPcur = tc.m_dcKoeffAlarmPcur;
 
                                     foreach (TG tg in tc.m_listLowPointDev)
@@ -2127,8 +2074,8 @@ namespace Statistic
                                 {
                                     if (tc.IsPC == true)
                                     {
-                                        indxTECComponent = t.list_TECComponents.IndexOf(tc);
-                                        indxTEC = m_listTEC.IndexOf(t);
+                                        tec = t;
+                                        key = new FormChangeMode.KeyTECComponent () { Id = tc.m_id, Mode = FormChangeMode.MODE_TECCOMPONENT.PC };
 
                                         foreach (TG tg in tc.m_listLowPointDev)
                                             listTG_Comp.Add(tg);
@@ -2170,15 +2117,14 @@ namespace Statistic
                 //Проверить актуальность объекта обработки запросов
                 if (!(m_tecView == null))
                     //Проверить наличие изменений при новом выборе компонента ТЭЦ
-                    if ((!(m_tecView.m_indx_TEC == indxTEC))
-                        || (!(m_tecView.indxTECComponents == indxTECComponent)))
+                    if (!(m_tecView.CurrentKey == key))
                     {//Только, если есть изменения
                         //Деактивация/останов объекта обработки запросов
                         m_tecView.Activate(false);
                         m_tecView.Stop();
 
                         //m_tecView = null;
-                        m_tecView.ReInitTEC(m_listTEC[indxTEC], indxTEC, indxTECComponent, m_markQueries);
+                        m_tecView.ReInitTEC(tec, key, m_markQueries);
 
                         //Запуск/активация объекта обработки запросов
                         m_tecView.Start();

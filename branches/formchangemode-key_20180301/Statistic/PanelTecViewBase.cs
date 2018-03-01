@@ -536,18 +536,26 @@ namespace Statistic
         ///  , используется для
         /// </summary>
         private int _currValuesPeriod;
-        /// <summary>
-        /// Индекс ТЭЦ, в интересах которой создан текущий объект, в глобальном списке ТЭЦ
-        /// </summary>
-        public int indx_TEC { get { return m_tecView.m_indx_TEC; } }
-        /// <summary>
-        /// Индекс компонента ТЭЦ, в интересах которого создан текущий объект, в глобальном списке компонентов ТЭЦ
-        /// </summary>
-        public int indx_TECComponent { get { return m_tecView.indxTECComponents; } }
+        ///// <summary>
+        ///// Индекс ТЭЦ, в интересах которой создан текущий объект, в глобальном списке ТЭЦ
+        ///// </summary>
+        //public int indx_TEC { get { return m_tecView.m_indx_TEC; } }
+        ///// <summary>
+        ///// Индекс компонента ТЭЦ, в интересах которого создан текущий объект, в глобальном списке компонентов ТЭЦ
+        ///// </summary>
+        //public int indx_TECComponent { get { return m_tecView.indxTECComponents; } }
         /// <summary>
         /// Идентификатор объекта (ТЭЦ/компонент ТЭЦ), в интересах которого создан текущий объект
         /// </summary>
         public int m_ID { get { return m_tecView.m_ID; } }
+
+        public FormChangeMode.MODE_TECCOMPONENT Mode
+        {
+            get
+            {
+                return m_tecView.CurrentKey.Mode;
+            }
+        }
         /// <summary>
         /// Признак текущего состояния панели (обновлена/не_обновлена)
         /// </summary>
@@ -652,8 +660,8 @@ namespace Statistic
             if (!(m_label == null))
             {
                 m_label.Text = m_tecView.m_tec.name_shr;
-                if (!(indx_TECComponent < 0))
-                    m_label.Text += @" - " + m_tecView.m_tec.list_TECComponents[indx_TECComponent].name_shr;
+                if (!(m_tecView.CurrentKey.Mode == FormChangeMode.MODE_TECCOMPONENT.TEC))
+                    m_label.Text += @" - " + m_tecView.m_tec.list_TECComponents.Find(comp => comp.m_id == m_tecView.CurrentKey.Id).name_shr;
                 else
                     ;
 
@@ -664,7 +672,7 @@ namespace Statistic
                 ;
         }
 
-        protected abstract void createTecView(int indx_tec, int indx_comp);
+        protected abstract void createTecView(FormChangeMode.KeyTECComponent key);
 
         protected abstract void createDataGridViewHours();
         protected abstract void createDataGridViewMins();
@@ -674,14 +682,14 @@ namespace Statistic
 
         protected abstract void createPanelQuickData();
 
-        public PanelTecViewBase(/*TecView.TYPE_PANEL type, */TEC tec, int indx_tec, int indx_comp, HMark markQueries)
+        public PanelTecViewBase(/*TecView.TYPE_PANEL type, */TEC tec, FormChangeMode.KeyTECComponent key, HMark markQueries)
             : base (MODE_UPDATE_VALUES.AUTO, FormMain.formGraphicsSettings.FontColor, FormMain.formGraphicsSettings.BackgroundColor)
         {
             //InitializeComponent();
 
             SPLITTER_PERCENT_VERTICAL = 50;
 
-            createTecView(indx_tec, indx_comp); //m_tecView = new TecView(type, indx_tec, indx_comp);
+            createTecView(key); //m_tecView = new TecView(type, indx_tec, indx_comp);
 
             //HMark markQueries = new HMark(new int []{(int)CONN_SETT_TYPE.ADMIN, (int)CONN_SETT_TYPE.PBR, (int)CONN_SETT_TYPE.DATA_AISKUE, (int)CONN_SETT_TYPE.DATA_SOTIASSO});
 

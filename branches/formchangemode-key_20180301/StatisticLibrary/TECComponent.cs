@@ -115,13 +115,21 @@ namespace StatisticCommon
         public TECComponentBase()
         {
             m_dcKoeffAlarmPcur = -1;
-        }        
+        }
+
+        public FormChangeMode.MODE_TECCOMPONENT Mode
+        {
+            get
+            {
+                return GetMode (m_id);
+            }
+        }
         /// <summary>
         /// Возвратить тип (режим) компонента по указанному идентификатору
         /// </summary>
         /// <param name="id">Идентификатор компонента</param>
         /// <returns>Тип (режим) компонента</returns>
-        public static FormChangeMode.MODE_TECCOMPONENT Mode(int id)
+        public static FormChangeMode.MODE_TECCOMPONENT GetMode(int id)
         {
             return (id < (int)ID.GTP) == true ? FormChangeMode.MODE_TECCOMPONENT.TEC :
                 ((id > (int)ID.GTP) && (id < (int)ID.PC)) == true ? FormChangeMode.MODE_TECCOMPONENT.GTP :

@@ -103,7 +103,7 @@ namespace StatisticAlarm
                 , DEBUG_ID_TEC = -1;
             foreach (StatisticCommon.TEC t in listTEC) {
                 if ((DEBUG_ID_TEC == -1) || (DEBUG_ID_TEC == t.m_id)) {
-                    m_listTecView.Add(new StatisticAlarm.TecViewAlarm(/*StatisticCommon.TecView.TYPE_PANEL.ADMIN_ALARM, */-1, -1));
+                    m_listTecView.Add(new StatisticAlarm.TecViewAlarm(new FormChangeMode.KeyTECComponent () { Id = -1, Mode = FormChangeMode.MODE_TECCOMPONENT.Unknown }));
                     indxTecView = m_listTecView.Count - 1;
                     m_listTecView[indxTecView].InitTEC(new List<StatisticCommon.TEC> { t }, markQueries);
                     m_listTecView[indxTecView].updateGUI_Fact = new IntDelegateIntIntFunc(m_listTecView[indxTecView].AlarmRegistred);

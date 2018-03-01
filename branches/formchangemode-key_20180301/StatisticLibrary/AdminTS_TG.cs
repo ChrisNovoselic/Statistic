@@ -16,7 +16,7 @@ namespace StatisticCommon
         /// <summary>
         /// Список индексов дочерних для выбранного сложного элемента (детализация сложного элемента)
         /// </summary>
-        public List<int> m_listTECComponentIndexDetail;
+        public List<FormChangeMode.KeyTECComponent> m_listKeyTECComponentDetail;
         public List<RDGStruct[]> m_listPrevRDGValues
             , m_listCurRDGValues;
 
@@ -31,7 +31,7 @@ namespace StatisticCommon
             get {
                 lock (m_lockSuccessGetData)
                 {
-                    return (! (m_listCurRDGValues.Count < m_listTECComponentIndexDetail.Count)) ? true : false;
+                    return (! (m_listCurRDGValues.Count < m_listKeyTECComponentDetail.Count)) ? true : false;
                 }
             }
         }
@@ -42,7 +42,7 @@ namespace StatisticCommon
                 
                 lock (m_lockResSaveChanges)
                 {
-                    bRes = ! ((m_listResSaveChanges.Count) < m_listTECComponentIndexDetail.Count);
+                    bRes = ! ((m_listResSaveChanges.Count) < m_listKeyTECComponentDetail.Count);
                 }
 
                 return bRes;
@@ -55,7 +55,7 @@ namespace StatisticCommon
 
                 lock (m_lockResSaveChanges)
                 {
-                    if ((m_listResSaveChanges.Count + 1) == m_listTECComponentIndexDetail.Count)
+                    if ((m_listResSaveChanges.Count + 1) == m_listKeyTECComponentDetail.Count)
                         foreach (Errors err in m_listResSaveChanges)
                         {
                             if (!(err == Errors.NoError)) {
@@ -84,7 +84,7 @@ namespace StatisticCommon
 
             m_listPrevRDGValues = new List<RDGStruct[]>();
             m_listCurRDGValues = new List<RDGStruct[]> ();
-            m_listTECComponentIndexDetail = new List<int> ();
+            m_listKeyTECComponentDetail = new List<FormChangeMode.KeyTECComponent> ();
             m_listResSaveChanges = new List <Errors> ();
 
             m_lockSuccessGetData = new object();
@@ -114,35 +114,30 @@ namespace StatisticCommon
             return iRes;
         }
 
-        public virtual void FillListIndexTECComponent (int id) {
+        /// <summary>
+        /// 
+        /// </summary>
+        /// <param name="id">Заполнить список дочерними для 'id' комопонентами</param>
+        public virtual void FillListKeyTECComponentDetail (int id)
+        {
             lock (m_lockSuccessGetData)
             {
-                m_listTECComponentIndexDetail.Clear();
+                m_listKeyTECComponentDetail.Clear();
                 //Сначала - ГТП
                 foreach (TECComponent comp in allTECComponents)
-                {
-                    if ((comp.tec.m_id == id) && //Принадлежит ТЭЦ
-                        ((comp.IsGTP == true) /*|| //Является ГТП
-                        ((comp.m_id > 1000) && (comp.m_id < 10000))*/)) //Является ТГ
-                    {                    
-                        m_listTECComponentIndexDetail.Add(allTECComponents.IndexOf(comp));
-                    }
+                    if ((comp.tec.m_id == id) //Принадлежит ТЭЦ
+                        && (comp.IsGTP == true)) //Является ГТП
+                        m_listKeyTECComponentDetail.Add(new FormChangeMode.KeyTECComponent () { Id = comp.m_id, Mode = comp.Mode });
                     else
                         ;
-                }
 
                 //Потом - ТГ
                 foreach (TECComponent comp in allTECComponents)
-                {
                     if ((comp.tec.m_id == id) && //Принадлежит ТЭЦ
-                        (/*((comp.m_id > 100) && (comp.m_id < 500)) ||*/ //Является ГТП
-                        (comp.IsTG == true))) //Является ТГ
-                    {                    
-                        m_listTECComponentIndexDetail.Add(allTECComponents.IndexOf(comp));
-                    }
+                        (comp.IsTG == true)) //Является ТГ
+                        m_listKeyTECComponentDetail.Add(new FormChangeMode.KeyTECComponent () { Id = comp.m_id, Mode = comp.Mode });
                     else
                         ;
-                }
 
                 ClearListRDGValues();
             }
@@ -154,11 +149,11 @@ namespace StatisticCommon
 
             //lock (m_lockSuccessGetData)
             //{
-                foreach (int indx in m_listTECComponentIndexDetail)
+                foreach (FormChangeMode.KeyTECComponent key in m_listKeyTECComponentDetail)
                 {
                     indxEv = WaitHandle.WaitAny (m_waitHandleState);
                     if (indxEv == 0)
-                        base.GetRDGValues(/*m_typeFields,*/ indx);
+                        base.GetRDGValues(key);
                     else
                         break;
                 }
@@ -167,18 +162,18 @@ namespace StatisticCommon
             //m_bSavePPBRValues = true;
         }
 
-        public void BaseGetRDGValue(int indx, DateTime date)
+        public void BaseGetRDGValue(FormChangeMode.KeyTECComponent key, DateTime date)
         {
-            if(date!=DateTime.MinValue)
-                base.GetRDGValues(/*(int)m_typeFields,*/ indx, (DateTime)date);
+            if(!(date == DateTime.MinValue))
+                base.GetRDGValues(key, (DateTime)date);
             else
-                base.GetRDGValues(/*(int)m_typeFields,*/ indx);
+                base.GetRDGValues(key);
         }
 
-        public override void GetRDGValues(/*TYPE_FIELDS mode,*/ int id)
+        public override void GetRDGValues(FormChangeMode.KeyTECComponent key)
         {
             //delegateStartWait ();
-            FillListIndexTECComponent(id);
+            FillListKeyTECComponentDetail(key.Id);
 
             new Thread (new ParameterizedThreadStart(threadGetRDGValuesWithoutDate)).Start ();
             //threadGetRDGValuesWithoutDate (null);
@@ -194,11 +189,11 @@ namespace StatisticCommon
 
             //lock (m_lockSuccessGetData)
             //{
-                foreach (int indx in m_listTECComponentIndexDetail)
+                foreach (FormChangeMode.KeyTECComponent key in m_listKeyTECComponentDetail)
                 {
                     indxEv = WaitHandle.WaitAny(m_waitHandleState);
                     if (indxEv == 0)
-                        base.GetRDGValues(/*(int)m_typeFields,*/ indx, (DateTime)date);
+                        base.GetRDGValues(key, (DateTime)date);
                     else
                         break;
                 }
@@ -207,10 +202,10 @@ namespace StatisticCommon
             //m_bSavePPBRValues = true;
         }
 
-        public override void GetRDGValues(/*int /*TYPE_FIELDS mode,*/ int id, DateTime date)
+        public override void GetRDGValues(FormChangeMode.KeyTECComponent key, DateTime date)
         {
             //delegateStartWait ();
-            FillListIndexTECComponent (id);
+            FillListKeyTECComponentDetail (key.Id);
 
             new Thread (new ParameterizedThreadStart(threadGetRDGValuesWithDate)).Start (date);
             //threadGetRDGValuesWithDate (date);
@@ -225,15 +220,15 @@ namespace StatisticCommon
 
             //lock (m_lockSuccessGetData)
             //{
-                foreach (int indx in m_listTECComponentIndexDetail)
+                foreach (FormChangeMode.KeyTECComponent key in m_listKeyTECComponentDetail)
                 {
                     indxEv = WaitHandle.WaitAny(m_waitHandleState);
                     if (indxEv == 0)
-                        if (modeTECComponent(indx) == FormChangeMode.MODE_TECCOMPONENT.GTP)
-                            base.GetRDGValues(/*(int)m_typeFields,*/ indx, (DateTime)date);
+                        if (key.Mode == FormChangeMode.MODE_TECCOMPONENT.GTP)
+                            base.GetRDGValues(key, (DateTime)date);
                         else
-                            if (modeTECComponent(indx) == FormChangeMode.MODE_TECCOMPONENT.TG)
-                                base.ImpRDGExcelValues(indx, (DateTime)date);
+                            if (key.Mode == FormChangeMode.MODE_TECCOMPONENT.TG)
+                                base.ImpRDGExcelValues(key, (DateTime)date);
                             else
                                 ;
                     else
@@ -244,26 +239,26 @@ namespace StatisticCommon
             //m_bSavePPBRValues = true;
         }
 
-        public string [] GetListNameTEC()
-        {
-            int indx = -1;
-            List<string> listRes = new List<string> ();
-            List<int> listIdTEC = new List<int>();
+        //public string [] GetListNameTEC()
+        //{
+        //    int indx = -1;
+        //    List<string> listRes = new List<string> ();
+        //    List<int> listIdTEC = new List<int>();
 
-            foreach (TECComponent comp in allTECComponents)
-            {
-                indx = comp.tec.m_id;
-                if (listIdTEC.IndexOf(indx) < 0) {
-                    listIdTEC.Add (indx);
+        //    foreach (TECComponent comp in allTECComponents)
+        //    {
+        //        indx = comp.tec.m_id;
+        //        if (listIdTEC.IndexOf(indx) < 0) {
+        //            listIdTEC.Add (indx);
                     
-                    listRes.Add(comp.tec.name_shr);
-                }
-                else
-                    ;
-            }
+        //            listRes.Add(comp.tec.name_shr);
+        //        }
+        //        else
+        //            ;
+        //    }
 
-            return listRes.ToArray ();
-        }
+        //    return listRes.ToArray ();
+        //}
         /// <summary>
         /// Возвратить признак выполненых пользователем изменений
         /// </summary>
@@ -309,12 +304,12 @@ namespace StatisticCommon
             return bRes;
         }
 
-        public override bool IsRDGExcel(int id_tec)
+        public override bool IsRDGExcel(FormChangeMode.KeyTECComponent key_tec)
         {
             bool bRes = false;
 
             foreach (TECComponent comp in allTECComponents) {
-                if (comp.tec.m_id == id_tec) {
+                if (comp.tec.m_id == key_tec.Id) {
                     if (comp.tec.GetAddingParameter(TEC.ADDING_PARAM_KEY.PATH_RDG_EXCEL).ToString().Length > 0) {
                         bRes = true;
 
@@ -352,7 +347,7 @@ namespace StatisticCommon
                 m_listResSaveChanges.Clear ();
             }
 
-            int prevIndxTECComponent = indxTECComponents;
+            FormChangeMode.KeyTECComponent prevKeyTECComponent = CurrentKey;
 
             foreach (RDGStruct [] curRDGValues in m_listCurRDGValues) {
                 bErr = Errors.NoError;
@@ -360,11 +355,11 @@ namespace StatisticCommon
                 for (INDEX_WAITHANDLE_REASON i = INDEX_WAITHANDLE_REASON.ERROR; i < (INDEX_WAITHANDLE_REASON.ERROR + 1); i++)
                     ((ManualResetEvent)m_waitHandleState[(int)i]).Reset();
 
-                if (modeTECComponent(m_listTECComponentIndexDetail[m_listCurRDGValues.IndexOf(curRDGValues)]) == FormChangeMode.MODE_TECCOMPONENT.TG) {
+                if (m_listKeyTECComponentDetail[m_listCurRDGValues.IndexOf(curRDGValues)].Mode == FormChangeMode.MODE_TECCOMPONENT.TG) {
                     indxEv = WaitHandle.WaitAny(m_waitHandleState);
                     if (indxEv == 0)
-                    {                        
-                        indxTECComponents = m_listTECComponentIndexDetail[m_listCurRDGValues.IndexOf(curRDGValues)];
+                    {
+                        CurrentKey = m_listKeyTECComponentDetail[m_listCurRDGValues.IndexOf(curRDGValues)];
 
                         curRDGValues.CopyTo(m_curRDGValues, 0);
 
@@ -387,7 +382,7 @@ namespace StatisticCommon
                 }
             }
 
-            indxTECComponents = prevIndxTECComponent;
+            CurrentKey = prevKeyTECComponent;
 
             //if (indxEv == 0)
             //if (errRes == Errors.NoError)
@@ -416,7 +411,7 @@ namespace StatisticCommon
             }
         }
 
-        public override void ImpRDGExcelValues(int id, DateTime date)
+        public override void ImpRDGExcelValues(FormChangeMode.KeyTECComponent key, DateTime date)
         {
             //delegateStartWait();
 

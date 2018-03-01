@@ -332,8 +332,8 @@ namespace StatisticCommon
             //Определить тип загружаемых значений
             CONN_SETT_TYPE typeValues = (CONN_SETT_TYPE)type;
 
-            int indxEv = -1
-                , prevIndxTECComponents = indxTECComponents;
+            int indxEv = -1;
+            FormChangeMode.KeyTECComponent prevKeyTECComponents = CurrentKey;
             string strPBRNumber = string.Empty; // ...только для ПБР
 
             if (typeValues == CONN_SETT_TYPE.PBR)
@@ -361,10 +361,10 @@ namespace StatisticCommon
                     {
                         switch (typeValues) {
                             case CONN_SETT_TYPE.ADMIN:
-                                errRes = saveCSVValues(allTECComponents.IndexOf(comp), typeValues);
+                                errRes = saveCSVValues(new FormChangeMode.KeyTECComponent () { Id = comp.m_id, Mode = comp.Mode }, typeValues);
                                 break;
                             case CONN_SETT_TYPE.PBR:
-                                errRes = saveCSVValues(allTECComponents.IndexOf(comp), strPBRNumber);
+                                errRes = saveCSVValues(new FormChangeMode.KeyTECComponent () { Id = comp.m_id, Mode = comp.Mode }, strPBRNumber);
                                 break;
                             default:
                                 break;
@@ -400,10 +400,10 @@ namespace StatisticCommon
                 ;
 
             //Обновить значения на вкладке
-            GetRDGValues (/*m_typeFields,*/ prevIndxTECComponents);
+            GetRDGValues (prevKeyTECComponents);
         }
 
-        private Errors saveCSVValues (int indx, object pbr_number) {
+        private Errors saveCSVValues (FormChangeMode.KeyTECComponent key, object pbr_number) {
             Errors errRes = Errors.NoSet;
 
             RDGStruct[] curRDGValues = new RDGStruct[m_curRDGValues.Length];
@@ -426,7 +426,7 @@ namespace StatisticCommon
             if ((!(typeValues == CONN_SETT_TYPE.COUNT_CONN_SETT_TYPE))
                 && (CheckNameFieldsOfTable (m_tableValuesResponse, _listCSVValuesFields[(int)typeValues]) == true)) {
                 //Получить значения для сохранени
-                name_future = allTECComponents[indx].name_future;
+                name_future = allTECComponents.Find(comp => comp.m_id == key.Id).name_future;
                 rowsTECComponent = new List<DataRow>(m_tableValuesResponse.Select(@"GTP_ID='" + name_future + @"'"));
                 //Вариант №2 - тестовый
                 //foreach (DataRow r in m_tableValuesResponse.Rows)
@@ -471,7 +471,7 @@ namespace StatisticCommon
                         }
                         catch (Exception e) {
                             Logging.Logg().Exception(e
-                                , @"AdminTS_KomDisp::saveCSVValues () - GTP_ID=" + allTECComponents[indx].name_future + @"(" + hour + @")"
+                                , @"AdminTS_KomDisp::saveCSVValues () - GTP_ID=" + FindTECComponent(key).name_future + @"(" + hour + @")"
                                 , Logging.INDEX_MESSAGE.NOT_SET);
 
                             errRes = Errors.ParseError;
@@ -491,7 +491,7 @@ namespace StatisticCommon
                         //Копировать полученные значения в "текущий массив"
                         curRDGValues.CopyTo(m_curRDGValues, 0);
 
-                        indxTECComponents = indx;
+                        CurrentKey = key;
 
                         errRes =
                             SaveChanges()
@@ -627,12 +627,12 @@ namespace StatisticCommon
         /// Объект для заполнения/сохранения книги MS Excel значениями
         ///  , накоплением входных значений для всех ГТП последовательно (по факту их получения из БД) 
         /// </summary>
-        MSExcelIOExportPBRValues _msExcelIOExportPBRValues;
+        private MSExcelIOExportPBRValues _msExcelIOExportPBRValues;
         /// <summary>
         /// Очередь индексов компонентов ТЭЦ для последоват. экспорта ПБР-значений
         ///  , копия '_listTECComponentIndex'
         /// </summary>
-        List<int> _listTECComponentIndex;
+        private List<FormChangeMode.KeyTECComponent> _listTECComponentKey;
 
         /// <summary>
         /// Дата для экспорта ТОЛЬКО в режиме 'AUTO'
@@ -655,23 +655,25 @@ namespace StatisticCommon
             }
         }
 
-        public void PrepareExportRDGValues(List<int> listIndex)
+        public void PrepareExportRDGValues()
         {
-            if (_listTECComponentIndex == null)
-                _listTECComponentIndex = new List<int>();
+            List<FormChangeMode.KeyTECComponent> listKey = GetListKeyTECComponent (FormChangeMode.MODE_TECCOMPONENT.GTP, true);
+
+            if (_listTECComponentKey == null)
+                _listTECComponentKey = new List<FormChangeMode.KeyTECComponent>();
             else
                 ;
 
-            if (listIndex.Count - listIndex.Distinct ().Count () == 0) {
-                _listTECComponentIndex.Clear ();
-                listIndex.ForEach ((indx) => {
-                    if (_listTECComponentIndex.Contains (indx) == false)
-                        _listTECComponentIndex.Add (indx);
+            if (listKey.Count - listKey.Distinct ().Count () == 0) {
+                _listTECComponentKey.Clear ();
+                listKey.ForEach ((key) => {
+                    if (_listTECComponentKey.Contains (key) == false)
+                        _listTECComponentKey.Add (key);
                     else
-                        Logging.Logg ().Error (string.Format ("AdminTS_KomDisp::PrepareExportRDGValues () - добавление повторяющегося индекса {0}...", indx), Logging.INDEX_MESSAGE.NOT_SET);
+                        Logging.Logg ().Error (string.Format ("AdminTS_KomDisp::PrepareExportRDGValues () - добавление повторяющегося индекса {0}...", key), Logging.INDEX_MESSAGE.NOT_SET);
                 });
             } else
-                Logging.Logg ().Error (string.Format ("AdminTS_KomDisp::PrepareExportRDGValues () - в переданном списке <{0}> есть дубликаты...", string.Join(",", listIndex.Select(indx => indx.ToString()).ToArray()))
+                Logging.Logg ().Error (string.Format ("AdminTS_KomDisp::PrepareExportRDGValues () - в переданном списке <{0}> есть дубликаты...", string.Join(",", listKey.Select(key => key.ToString()).ToArray()))
                     , Logging.INDEX_MESSAGE.NOT_SET);
             ;
         }
@@ -684,7 +686,7 @@ namespace StatisticCommon
         /// <param name="date">Дата, за которую требуется обновить/сохранить значения</param>
         /// <param name="currentIndex">Текущий индекс из списка объектов-компонентов (д.б. == listTECComponentIndex[0])</param>
         /// <param name="listTECComponentIndex">Список индексов оставшихся к обработке</param>
-        public delegate void DelegateUnitTestExportPBRValuesRequest (int nextIndex, DateTime date, int currentIndex, IEnumerable<int> listTECComponentIndex);
+        public delegate void DelegateUnitTestExportPBRValuesRequest (FormChangeMode.KeyTECComponent nextKey, DateTime date, FormChangeMode.KeyTECComponent currentKey, IEnumerable<FormChangeMode.KeyTECComponent> listTECComponentKey);
 
         private DelegateUnitTestExportPBRValuesRequest _eventUnitTestExportPBRValuesRequest;
 
@@ -715,32 +717,33 @@ namespace StatisticCommon
         /// <param name="compValues">Значения (админ. + ПБР) для одного из компонентов ТЭЦ</param>
         /// <param name="date">Дата, за которую получены значения</param>
         /// <returns>Очередной индекс для запроса значений из БД</returns>
-        public int AddValueToExportRDGValues(RDGStruct[]compValues, DateTime date)
+        public FormChangeMode.KeyTECComponent AddValueToExportRDGValues(RDGStruct[]compValues, DateTime date)
         {
-            int iRes = -1;
+            FormChangeMode.KeyTECComponent keyRes = new FormChangeMode.KeyTECComponent();
 
             if ((date - DateTime.MinValue.Date).Days > 0) {
-                if ((_listTECComponentIndex.Count > 0)
-                    && (!(indxTECComponents < 0))
-                    && (!(_listTECComponentIndex[0] < 0))) {
-                    if (indxTECComponents - _listTECComponentIndex[0] == 0) {
-                        Logging.Logg().Action(string.Format("AdminTS_KomDisp::AddValueToExportRDGValues () - получены значения для [ID={0}, Index={1}, за дату={2}, кол-во={3}] компонента..."
-                                , allTECComponents[_listTECComponentIndex[0]].m_id, _listTECComponentIndex[0], date, compValues.Length)
-                            , Logging.INDEX_MESSAGE.D_006);
+                if ((_listTECComponentKey.Count > 0)
+                    && (!(CurrentKey.Id < 0))
+                    && (!(_listTECComponentKey [0].Id < 0))) {
+                    if (CurrentKey.Id - _listTECComponentKey[0].Id == 0) {
+                        //??? ошибка не в этом методе
+                        //Logging.Logg().Action(string.Format("AdminTS_KomDisp::AddValueToExportRDGValues () - получены значения для [ID={0}, Index={1}, за дату={2}, кол-во={3}] компонента..."
+                        //        , _listTECComponentKey[0].Id, _listTECComponentKey[0], date, compValues.Length)
+                        //    , Logging.INDEX_MESSAGE.D_006);
 
-                        if ((_msExcelIOExportPBRValues.AddTECComponent(allTECComponents[indxTECComponents]) == 0)
+                        if ((_msExcelIOExportPBRValues.AddTECComponent(allTECComponents.Find(comp => comp.m_id == CurrentKey.Id)) == 0)
                             && (_msExcelIOExportPBRValues.SetDate(date) == true)) {
-                            _listTECComponentIndex.Remove(indxTECComponents); // дубликатов быть не должно (см. добавление элементов)
+                            _listTECComponentKey.Remove(_listTECComponentKey[0]); // дубликатов быть не должно (см. добавление элементов)
 
                             //Console.WriteLine(@"AdminTS_KomDisp::AddValueToExportRDGValues () - обработка элемента=[{0}], остатолось элементов={1}", indxTECComponents, _lisTECComponentIndex.Count);
 
                             // добавить значения по составному ключу: [DateTime, Index]
-                            _msExcelIOExportPBRValues.AddPBRValues(allTECComponents[indxTECComponents].m_id, compValues);
+                            _msExcelIOExportPBRValues.AddPBRValues(CurrentKey.Id, compValues);
 
                             // проверить повторно после удаления элемента
-                            if (_listTECComponentIndex.Count > 0) {
+                            if (_listTECComponentKey.Count > 0) {
                             // очередной индекс компонента для запрооса
-                                iRes = _listTECComponentIndex[0];
+                                keyRes = _listTECComponentKey[0];
                             } else {
                             // все значения по всем компонентам получены/добавлены
                                 Logging.Logg().Action(string.Format("AdminTS_KomDisp::AddValueToExportRDGValues () - получены все значения для всех компонентов...")
@@ -748,30 +751,30 @@ namespace StatisticCommon
 
                                 _msExcelIOExportPBRValues.Run();
                                 // установить признак завершения
-                                iRes = 0;
+                                keyRes.Id = -1;
                             }
                         } else {
-                            Logging.Logg().Error(string.Format($"AdminTS_KomDisp::AddValueToExportRDGValues () - компонент с индексом [{indxTECComponents}] не может быть добавлен (пред. опреация экспорта не завершена)...")
+                            Logging.Logg().Error(string.Format($"AdminTS_KomDisp::AddValueToExportRDGValues () - компонент с ключом [{CurrentKey.ToString ()}] не может быть добавлен (пред. опреация экспорта не завершена)...")
                                 , Logging.INDEX_MESSAGE.NOT_SET);
                             // для продолжения работы, необходимо удалить индекс
-                            _listTECComponentIndex.Remove (indxTECComponents);
+                            _listTECComponentKey.Remove (CurrentKey);
                         }
                     } else
                     // текущий индекс и 0-ой элемент массива индексов должны совпадать
-                         Logging.Logg().Error(string.Format($"AdminTS_KomDisp::AddValueToExportRDGValues () - текущий индекс <{indxTECComponents}> и 0-ой <{_listTECComponentIndex [0]}> элемент массива индексов не совпадают...")
+                         Logging.Logg().Error(string.Format($"AdminTS_KomDisp::AddValueToExportRDGValues () - текущий ключ <{CurrentKey.ToString ()}> и 0-ой <{_listTECComponentKey [0].ToString()}> элемент массива индексов не совпадают...")
                             , Logging.INDEX_MESSAGE.NOT_SET);
                 } else
                 //??? ошибка, т.к. выполнен запрос и получены значения, а индекс компонента не известен
-                    Logging.Logg().Error(string.Format("AdminTS_KomDisp::AddValueToExportRDGValues () - получены значения для неизвестного компонента index={0}..."
-                        , indxTECComponents)
+                    Logging.Logg().Error(string.Format("AdminTS_KomDisp::AddValueToExportRDGValues () - получены значения для неизвестного компонента ключ={0}..."
+                        , CurrentKey.ToString())
                             , Logging.INDEX_MESSAGE.NOT_SET);
             } else
             // дата для полученных значений неизвестна
                 ;
 
-            _eventUnitTestExportPBRValuesRequest?.Invoke (iRes, date, indxTECComponents, _listTECComponentIndex);
+            _eventUnitTestExportPBRValuesRequest?.Invoke (keyRes, date, CurrentKey, _listTECComponentKey);
 
-            return iRes;
+            return keyRes;
         }
         #endregion
     }

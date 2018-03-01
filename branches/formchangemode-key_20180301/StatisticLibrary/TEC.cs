@@ -412,10 +412,10 @@ namespace StatisticCommon
         /// <param name="connSettType">Тип соединения с БД</param>
         /// <param name="indxTime">Индекс интервала времени</param>
         /// <returns>Строка-перечисление с идентификаторами</returns>
-        public string GetSensorsString (int indx, CONN_SETT_TYPE connSettType, HDateTime.INTERVAL indxTime = HDateTime.INTERVAL.UNKNOWN) {
+        public string GetSensorsString (FormChangeMode.KeyTECComponent key, CONN_SETT_TYPE connSettType, HDateTime.INTERVAL indxTime = HDateTime.INTERVAL.UNKNOWN) {
             string strRes = string.Empty;
 
-            if (indx < 0) { // для ТЭЦ
+            if (key.Mode == FormChangeMode.MODE_TECCOMPONENT.TEC) { // для ТЭЦ
                 switch ((int)connSettType) {
                     case (int)CONN_SETT_TYPE.DATA_SOTIASSO:
                     case (int)CONN_SETT_TYPE.DATA_SOTIASSO_3_MIN:
@@ -436,10 +436,10 @@ namespace StatisticCommon
                     case (int)CONN_SETT_TYPE.DATA_SOTIASSO:
                     case (int)CONN_SETT_TYPE.DATA_SOTIASSO_3_MIN:
                     case (int)CONN_SETT_TYPE.DATA_SOTIASSO_1_MIN:
-                        strRes = list_TECComponents [indx].m_SensorsString_SOTIASSO;
+                        strRes = list_TECComponents.Find(comp => comp.m_id == key.Id).m_SensorsString_SOTIASSO;
                         break;
                     case (int)CONN_SETT_TYPE.DATA_AISKUE:
-                        strRes = list_TECComponents[indx].m_SensorsStrings_ASKUE[(int)indxTime];
+                        strRes = list_TECComponents.Find (comp => comp.m_id == key.Id).m_SensorsStrings_ASKUE[(int)indxTime];
                         break;
                     default:
                         Logging.Logg().Error(@"TEC::GetSensorsString (CONN_SETT_TYPE=" + connSettType.ToString()
@@ -936,10 +936,10 @@ namespace StatisticCommon
         /// </summary>
         /// <param name="num_comp">Номер (индекс) компонента (для ТЭЦ = -1)</param>
         /// <returns>Строка-перечисление с идентификаторами</returns>
-        private string idComponentValueQuery (int num_comp, TECComponentBase.TYPE type) {
+        private string idComponentValueQuery (FormChangeMode.KeyTECComponent key, TECComponentBase.TYPE type) {
             string strRes = string.Empty;
 
-            if (num_comp < 0) {
+            if (key.Mode == FormChangeMode.MODE_TECCOMPONENT.TEC) {
                 switch (type) {
                     case TECComponentBase.TYPE.TEPLO:
                         //m_list_Vyvod.ForEach(v => { strRes += @", " + (v as Vyvod).m_listParam[0].m_id.ToString(); });
@@ -965,12 +965,13 @@ namespace StatisticCommon
                         //??? пока по-комопонентно запрос не требуется - только для ТЭЦ в целом
                         break;
                     case TECComponentBase.TYPE.ELECTRO:
-                        if ((list_TECComponents[num_comp].IsGTP == true)
-                            || (list_TECComponents[num_comp].IsPC == true)
+                        if ((key.Mode == FormChangeMode.MODE_TECCOMPONENT.GTP)
+                            || (key.Mode == FormChangeMode.MODE_TECCOMPONENT.PC)
                             )
-                            strRes += (list_TECComponents[num_comp].m_id).ToString();
+                            strRes += key.Id.ToString();
                         else {
-                            list_TECComponents[num_comp].m_listLowPointDev.ForEach(tc => { strRes += @", " + (tc.m_id).ToString(); });
+                            list_TECComponents.Find(comp => comp.m_id == key.Id)
+                                .m_listLowPointDev.ForEach(tc => { strRes += @", " + (tc.m_id).ToString(); });
                             // вырезать лишние запятую с пробелом
                             strRes = strRes.Substring(2);
                         }
@@ -1640,7 +1641,7 @@ namespace StatisticCommon
         /// <param name="dt">Дата/время - начало интервала, запрашиваемых данных</param>
         /// <param name="mode">Режим полей в таблице (в наст./время не актуально - используется 'AdminTS.TYPE_FIELDS.DYNAMIC')</param>
         /// <returns>Строка запроса</returns>
-        public string GetPBRValueQuery(int num_comp, DateTime dt, TECComponentBase.TYPE type)
+        public string GetPBRValueQuery(FormChangeMode.KeyTECComponent key, DateTime dt, TECComponentBase.TYPE type)
         {
             string strRes = string.Empty,
                     selectPBR = string.Empty;
@@ -1651,7 +1652,7 @@ namespace StatisticCommon
             //        ;
             //        break;
             //    case AdminTS.TYPE_FIELDS.DYNAMIC:
-                    selectPBR = "PBR, Pmin, Pmax" + /*Не используется m_strNamesField[(int)INDEX_NAME_FIELD.PBR]*/";" + idComponentValueQuery(num_comp, type);
+                    selectPBR = "PBR, Pmin, Pmax" + /*Не используется m_strNamesField[(int)INDEX_NAME_FIELD.PBR]*/";" + idComponentValueQuery(key, type);
             //        break;
             //    default:
             //        break;
@@ -1968,7 +1969,7 @@ namespace StatisticCommon
             return query;
         }
 
-        public string GetAdminValueQuery(int num_comp, DateTime dt, TECComponentBase.TYPE type)
+        public string GetAdminValueQuery(FormChangeMode.KeyTECComponent key, DateTime dt, TECComponentBase.TYPE type)
         {
             string strRes = string.Empty,
                 selectAdmin = string.Empty;
@@ -1979,7 +1980,7 @@ namespace StatisticCommon
             //        ;
             //        break;
             //    case AdminTS.TYPE_FIELDS.DYNAMIC:
-                    selectAdmin = idComponentValueQuery (num_comp, type);
+                    selectAdmin = idComponentValueQuery (key, type);
 
                     selectAdmin = m_strNamesField[(int)INDEX_NAME_FIELD.REC]
                                 + ", " + m_strNamesField[(int)INDEX_NAME_FIELD.IS_PER]

@@ -40,7 +40,7 @@ namespace Statistic
                 throw new NotImplementedException();
             }
 
-            public override void FillListIndexTECComponent(int id)
+            public override void FillListKeyTECComponentDetail(int id)
             {
                 TEC tec = null;
 
@@ -49,7 +49,7 @@ namespace Statistic
                     m_SumRDGValues_PBR_0 = 0F;
                     m_arSumRDGValues = null;
 
-                    m_listTECComponentIndexDetail.Clear();
+                    m_listKeyTECComponentDetail.Clear();
                     // найти ТЭЦ по 'id'
                     tec = m_list_tec.Find(t => { return t.m_id == id; });
 
@@ -61,7 +61,7 @@ namespace Statistic
                                 foreach (Vyvod.ParamVyvod pv in v.m_listLowPointDev)
                                     if (pv.m_id_param == Vyvod.ID_PARAM.T_PV) // является параметром - температура прямая (для которого есть плановые значения)
                                                                               //m_listTECComponentIndexDetail.Add(pv.m_id);
-                                        m_listTECComponentIndexDetail.Add(allTECComponents.IndexOf(v));
+                                        m_listKeyTECComponentDetail.Add(new FormChangeMode.KeyTECComponent () { Id = v.m_id, Mode = FormChangeMode.MODE_TECCOMPONENT.TG });
                                     else
                                         ;
                             else
@@ -78,11 +78,11 @@ namespace Statistic
 
             public void SummatorRDGValues()
             {
-                int i = m_listTECComponentIndexDetail.IndexOf(indxTECComponents)
+                int i = m_listKeyTECComponentDetail.IndexOf(CurrentKey)
                     , hour = 1
                     , iDiv = -1; // ' = i == 0 ? 1 : 2' общий делитель для усреднения невозможно определить, т.к. зависит от условия "> 0"
 
-                TECComponent tc = allTECComponents[m_listTECComponentIndexDetail[i]]; // компонент - параметр вывода
+                TECComponent tc = allTECComponents.Find(comp => comp.m_id == CurrentKey.Id); // компонент - параметр вывода
 
                 if ((i < m_listCurRDGValues.Count)
                     && (m_listCurRDGValues[i].Length > 0)) {
@@ -129,8 +129,8 @@ namespace Statistic
                             ;
                     }
                 } else
-                    Logging.Logg().Error(string.Format(@"PanelAdminVyvod.AdminTS_Vyvod::SummatorRDGValues (комп.ID={0}, комп.индекс={1}, комп.индекс_детальный={2}) - суммирование (кол-во часов={3}) не выполнено..."
-                        , tc.m_id, indxTECComponents, i, m_listCurRDGValues[i].Length)
+                    Logging.Logg().Error(string.Format(@"PanelAdminVyvod.AdminTS_Vyvod::SummatorRDGValues (комп.ID={0}, комп.индекс={1}) - суммирование (кол-во часов={2}) не выполнено..."
+                        , tc.m_id, i, m_listCurRDGValues[i].Length)
                         , Logging.INDEX_MESSAGE.NOT_SET);
             }
 
@@ -180,7 +180,7 @@ namespace Statistic
 
                 indx = 0;
                 foreach (HAdmin.RDGStruct[] arRDGValues in m_listCurRDGValues) {
-                    tc = allTECComponents[m_listTECComponentIndexDetail[indx]];
+                    tc = allTECComponents.Find(comp => comp.m_id == m_listKeyTECComponentDetail[indx].Id);
 
                     if ((tc.IsParamVyvod == true)
                         && ((tc.m_listLowPointDev[0] as Vyvod.ParamVyvod).m_id_param == Vyvod.ID_PARAM.T_PV)

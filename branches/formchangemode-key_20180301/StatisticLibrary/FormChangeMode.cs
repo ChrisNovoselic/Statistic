@@ -73,12 +73,14 @@ namespace StatisticCommon
         ///  онтестное меню главного окна приложени€
         /// </summary>
         public System.Windows.Forms.ContextMenuStrip m_MainFormContextMenuStripListTecViews;
+
+        public enum ID_ADMIN_TAB { DISP = 10001, NSS, ALARM = 10011, LK, TEPLOSET = 10021 }
         /// <summary>
         /// ћассив идентификаторов специальных вкладок, редактирование значений оперативным персоналом
         ///  , размещаютс€ как п. списка в окне "—мена режима". ћассив индексируетс€ перечислением 'MANAGER'.
         ///   орректное название 'ID_MANAGER_TAB'
         /// </summary>
-        public static int [] ID_SPECIAL_TAB = { 10001, 10002, 10011, 10012, 10021 };
+        public static int [] ID_ADMIN_TABS = { (int)ID_ADMIN_TAB.DISP, (int)ID_ADMIN_TAB.NSS, (int)ID_ADMIN_TAB.ALARM, (int)ID_ADMIN_TAB.LK, (int)ID_ADMIN_TAB.TEPLOSET };
         /// <summary>
         /// ѕеречисление - тип режима
         /// </summary>
@@ -86,6 +88,43 @@ namespace StatisticCommon
             , TEC, GTP, PC, TG
                 , ANY
         };
+
+        public struct KeyTECComponent
+        {
+            public int Id { get; set; }
+
+            public FormChangeMode.MODE_TECCOMPONENT Mode { get; set; }
+
+            public override string ToString ()
+            {
+                return string.Format ("KeyTECComponent=[Id={0}, Mode={1}]", Id, Mode);
+            }
+
+            public static bool operator == (KeyTECComponent key1, KeyTECComponent key2)
+            {
+                return (key1.Id == key2.Id)
+                    && (key1.Mode == key2.Mode);
+            }
+
+            public static bool operator != (KeyTECComponent key1, KeyTECComponent key2)
+            {
+                return (!(key1.Id == key2.Id))
+                    || (!(key1.Mode == key2.Mode));
+            }
+
+            public override bool Equals (object obj)
+            {
+                return (obj is KeyTECComponent) ? this == (KeyTECComponent)obj : false;
+            }
+
+
+            public override int GetHashCode ()
+            {
+                return base.GetHashCode ();
+            }
+        }
+
+        public static KeyTECComponent KeyTECComponentEmpty;
         /// <summary>
         /// “ип вкладки  из инструментари€ "администратор-диспетчер"
         /// </summary>
@@ -166,23 +205,23 @@ namespace StatisticCommon
                         ;
                 }
 
-                bChecked = listIDsProfileCheckedIndices.IndexOf(ID_SPECIAL_TAB[(int)MANAGER.DISP]) > -1;
-                m_listItems.Add(new Item(ID_SPECIAL_TAB[(int)MANAGER.DISP], getNameAdminValues(MANAGER.DISP, MODE_TECCOMPONENT.GTP), bChecked));
+                bChecked = listIDsProfileCheckedIndices.IndexOf(ID_ADMIN_TABS[(int)MANAGER.DISP]) > -1;
+                m_listItems.Add(new Item(ID_ADMIN_TABS[(int)MANAGER.DISP], getNameAdminValues(MANAGER.DISP, MODE_TECCOMPONENT.GTP), bChecked));
                 //m_markTabAdminChecked.Set ((int)MANAGER.DISP, bChecked);
 
-                bChecked = listIDsProfileCheckedIndices.IndexOf(ID_SPECIAL_TAB[(int)MANAGER.NSS]) > -1;
-                m_listItems.Add(new Item(ID_SPECIAL_TAB[(int)MANAGER.NSS], getNameAdminValues(MANAGER.NSS, MODE_TECCOMPONENT.TEC), bChecked)); //TEC, TG, PC - не имеет значени€...
+                bChecked = listIDsProfileCheckedIndices.IndexOf(ID_ADMIN_TABS[(int)MANAGER.NSS]) > -1;
+                m_listItems.Add(new Item(ID_ADMIN_TABS[(int)MANAGER.NSS], getNameAdminValues(MANAGER.NSS, MODE_TECCOMPONENT.TEC), bChecked)); //TEC, TG, PC - не имеет значени€...
                 //m_markTabAdminChecked.Set((int)MANAGER.NSS, bChecked);
 
-                bChecked = listIDsProfileCheckedIndices.IndexOf(ID_SPECIAL_TAB[(int)MANAGER.ALARM]) > -1;
-                m_listItems.Add(new Item(ID_SPECIAL_TAB[(int)MANAGER.ALARM], getNameAdminValues(MANAGER.ALARM, MODE_TECCOMPONENT.GTP), bChecked));
+                bChecked = listIDsProfileCheckedIndices.IndexOf(ID_ADMIN_TABS[(int)MANAGER.ALARM]) > -1;
+                m_listItems.Add(new Item(ID_ADMIN_TABS[(int)MANAGER.ALARM], getNameAdminValues(MANAGER.ALARM, MODE_TECCOMPONENT.GTP), bChecked));
                 //m_markTabAdminChecked.Set((int)MANAGER.ALARM, bChecked);
 
-                bChecked = listIDsProfileCheckedIndices.IndexOf(ID_SPECIAL_TAB[(int)MANAGER.LK]) > -1;
-                m_listItems.Add(new Item(ID_SPECIAL_TAB[(int)MANAGER.LK], getNameAdminValues(MANAGER.LK, MODE_TECCOMPONENT.TEC), bChecked)); //TEC, TG, PC - не имеет значени€...
+                bChecked = listIDsProfileCheckedIndices.IndexOf(ID_ADMIN_TABS[(int)MANAGER.LK]) > -1;
+                m_listItems.Add(new Item(ID_ADMIN_TABS[(int)MANAGER.LK], getNameAdminValues(MANAGER.LK, MODE_TECCOMPONENT.TEC), bChecked)); //TEC, TG, PC - не имеет значени€...
 
-                bChecked = listIDsProfileCheckedIndices.IndexOf(ID_SPECIAL_TAB[(int)MANAGER.TEPLOSET]) > -1;
-                m_listItems.Add(new Item(ID_SPECIAL_TAB[(int)MANAGER.TEPLOSET], getNameAdminValues(MANAGER.TEPLOSET, MODE_TECCOMPONENT.TEC), bChecked)); //TEC, TG, PC - не имеет значени€...
+                bChecked = listIDsProfileCheckedIndices.IndexOf(ID_ADMIN_TABS[(int)MANAGER.TEPLOSET]) > -1;
+                m_listItems.Add(new Item(ID_ADMIN_TABS[(int)MANAGER.TEPLOSET], getNameAdminValues(MANAGER.TEPLOSET, MODE_TECCOMPONENT.TEC), bChecked)); //TEC, TG, PC - не имеет значени€...
 
             }
             else {
@@ -375,7 +414,7 @@ namespace StatisticCommon
 
             if ((idMinVal == -1) || (idMaxVal == -1))
             {
-                idAllowed = (int)alloweds [ID_SPECIAL_TAB.ToList ().IndexOf (item.id)];
+                idAllowed = (int)alloweds [ID_ADMIN_TABS.ToList ().IndexOf (item.id)];
 
                 bRes = !(idAllowed < 0);
                 if (bRes == true)
@@ -511,7 +550,7 @@ namespace StatisticCommon
                 item = findItemOfText(clbMode.GetItemText(clbMode.Items[i]));
                 item.bChecked = ! (clbMode.CheckedIndices.IndexOf(i) < 0);
 
-                iManagerMode = ID_SPECIAL_TAB.ToList ().IndexOf (item.id);
+                iManagerMode = ID_ADMIN_TABS.ToList ().IndexOf (item.id);
 
                 if (!(iManagerMode < 0))
                     m_markTabAdminChecked.Set(iManagerMode, item.bChecked);
@@ -562,7 +601,7 @@ namespace StatisticCommon
             string ids = string.Empty;
 
             foreach (Item item in m_listItems)
-                if ((item.bChecked == true) && (item.id < ID_SPECIAL_TAB [0]))
+                if ((item.bChecked == true) && (item.id < ID_ADMIN_TABS [0]))
                     ids += item.id + @";";
                 else
                     ;
@@ -659,65 +698,65 @@ namespace StatisticCommon
             SetItemChecked (clbMode.CheckedItems.IndexOf (textItem), bChecked);
         }
 
-        public int GetTECIndex(int id)
-        {
-            int indxRes = -1;
+        //public int GetTECIndex(int id)
+        //{
+        //    int indxRes = -1;
 
-            foreach (TEC t in m_list_tec)
-            {
-                if (id > 100)
-                {
-                    foreach (TECComponent c in t.list_TECComponents)
-                    {
-                        if (id == c.m_id)
-                        {
-                            indxRes = m_list_tec.IndexOf(t);
-                            break;
-                        }
-                        else
-                            ;
-                    }
-                }
-                else
-                {
-                    if (id == t.m_id)
-                    {
-                        indxRes = m_list_tec.IndexOf(t);
-                        break;
-                    }
-                    else
-                        ;
-                }
-            }
+        //    foreach (TEC t in m_list_tec)
+        //    {
+        //        if (id > (int)TECComponent.ID.GTP)
+        //        {
+        //            foreach (TECComponent c in t.list_TECComponents)
+        //            {
+        //                if (id == c.m_id)
+        //                {
+        //                    indxRes = m_list_tec.IndexOf(t);
+        //                    break;
+        //                }
+        //                else
+        //                    ;
+        //            }
+        //        }
+        //        else
+        //        {
+        //            if (id == t.m_id)
+        //            {
+        //                indxRes = m_list_tec.IndexOf(t);
+        //                break;
+        //            }
+        //            else
+        //                ;
+        //        }
+        //    }
 
-            return indxRes;
-        }
+        //    return indxRes;
+        //}
 
-        public int GetTECComponentIndex(int id, int TECIndex = -1)
-        {
-            int indxRes = -1;
+        //public int GetTECComponentIndex(int id, int TECIndex = -1)
+        //{
+        //    int indxRes = -1;
 
-            if (id > 100)
-            {
-                foreach (TEC t in m_list_tec)
-                {
-                    foreach (TECComponent c in t.list_TECComponents)
-                    {
-                        if (id == c.m_id)
-                        {
-                            indxRes = t.list_TECComponents.IndexOf(c);
-                            break;
-                        }
-                        else
-                            ;
-                    }
-                }
-            }
-            else
-                ;
+        //    if (id > 100)
+        //    {
+        //        foreach (TEC t in m_list_tec)
+        //        {
+        //            foreach (TECComponent c in t.list_TECComponents)
+        //            {
+        //                if (id == c.m_id)
+        //                {
+        //                    indxRes = t.list_TECComponents.IndexOf(c);
+        //                    break;
+        //                }
+        //                else
+        //                    ;
+        //            }
+        //        }
+        //    }
+        //    else
+        //        ;
 
-            return indxRes;
-        }
+        //    return indxRes;
+        //}
 
         private void btnCancel_Click(object sender, EventArgs e)
         {

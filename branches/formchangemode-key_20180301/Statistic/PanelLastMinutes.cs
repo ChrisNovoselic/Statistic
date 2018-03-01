@@ -897,18 +897,18 @@ namespace Statistic
             public class TecViewLastMinutes : TecView
             {
                 public TecViewLastMinutes()
-                    : base(/*TecView.TYPE_PANEL.CUR_POWER, */-1, -1, TECComponentBase.TYPE.ELECTRO)
+                    : base(new FormChangeMode.KeyTECComponent () { Id = -1, Mode = FormChangeMode.MODE_TECCOMPONENT.Unknown }, TECComponentBase.TYPE.ELECTRO)
                 {
                 }
 
                 public override void ChangeState()
                 {
-                    lock (m_lockState) { GetRDGValues(-1, DateTime.MinValue); }
+                    lock (m_lockState) { GetRDGValues(FormChangeMode.KeyTECComponentEmpty, DateTime.MinValue); }
 
                     base.ChangeState(); //Run
                 }
 
-                public override void GetRDGValues(int indx, DateTime date)
+                public override void GetRDGValues(FormChangeMode.KeyTECComponent key, DateTime date)
                 {
                     ClearStates();
 

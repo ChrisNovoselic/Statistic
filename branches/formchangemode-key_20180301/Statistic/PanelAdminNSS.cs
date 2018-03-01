@@ -83,19 +83,21 @@ namespace Statistic
             m_admin.SetDelegateSaveComplete(null);
         }
 
+        /// <summary>
+        /// ??? (такой ж есть в ЛК) Возвратить идентификатор (m_id) родительской ГТП для ТГ
+        /// </summary>
+        /// <param name="indx_tg">Идентификатор ТГ</param>
+        /// <returns>Идентификатор ГТП</returns>
         private int getIndexGTPOwner(int indx_tg)
         {
             int iRes = -1
                 , id_gtp_owner = ((DataGridViewAdminNSS)dgwAdminTable).GetIdGTPOwner(indx_tg);
             
-            foreach (int indx in ((AdminTS_NSS)m_admin).m_listTECComponentIndexDetail)
-            {
-                if (m_admin.allTECComponents[indx].m_id == id_gtp_owner) {
-                    return ((AdminTS_NSS)m_admin).m_listTECComponentIndexDetail.IndexOf(indx);
-                }
+            foreach (FormChangeMode.KeyTECComponent key in ((AdminTS_NSS)m_admin).m_listKeyTECComponentDetail)
+                if (key.Id == id_gtp_owner)
+                    return ((AdminTS_NSS)m_admin).m_listKeyTECComponentDetail.IndexOf(key);
                 else
                     ;
-            }
 
             return iRes;
         }
@@ -108,13 +110,14 @@ namespace Statistic
             //double value = 0.0;
             //bool valid = false;
 
-            foreach (int indx in ((AdminTS_TG)m_admin).m_listTECComponentIndexDetail)
-                if (m_admin.modeTECComponent(indx) == FormChangeMode.MODE_TECCOMPONENT.TG)
+            foreach (FormChangeMode.KeyTECComponent key in ((AdminTS_TG)m_admin).m_listKeyTECComponentDetail)
+                if (key.Mode == FormChangeMode.MODE_TECCOMPONENT.TG)
                 {
-                    int indx_tg = ((AdminTS_NSS)m_admin).m_listTECComponentIndexDetail.IndexOf(indx),
+                    int indx_tg = ((AdminTS_NSS)m_admin).m_listKeyTECComponentDetail.IndexOf(key),
                         indx_gtp = getIndexGTPOwner(indx_tg);
 
-                    if ((!(indx_tg < 0)) && (!(indx_gtp < 0)))
+                    if ((!(indx_tg < 0))
+                        && (!(indx_gtp < 0)))
                         for (int i = 0; i < 24; i++)
                         {
                             ((AdminTS_NSS)m_admin).m_listCurRDGValues[indx_tg][i].pbr = Convert.ToDouble(dgwAdminTable.Rows[i].Cells[indx_tg + 1].Value); // '+ 1' за счет DateTime
@@ -138,18 +141,17 @@ namespace Statistic
         /// </summary>
         /// <param name="date">Дата/время значений, которыми заполняются ячейки столбца</param>
         /// <param name="bNewValues">Признак наличия новых значений (false - обновление оформления представления при изменении цветовой схемы)</param>
-        /// <param name="bSyncReq">Признак необходимости синхронизации выполнения действий в теле метода</param>        
+        /// <param name="bSyncReq">Признак необходимости синхронизации выполнения действий в теле метода</param>
         private void addTextBoxColumn (DateTime date, bool bNewValues, bool bSyncReq)
         {
-            int indx = -1;
+            FormChangeMode.KeyTECComponent key;
 
-            if ((this.dgwAdminTable.Columns.Count - 2) < ((AdminTS_NSS)m_admin).m_listTECComponentIndexDetail.Count) {
+            if ((this.dgwAdminTable.Columns.Count - 2) < ((AdminTS_NSS)m_admin).m_listKeyTECComponentDetail.Count) {
             // в случае добавления столбцов
-                indx = ((AdminTS_NSS)m_admin).m_listTECComponentIndexDetail [this.dgwAdminTable.Columns.Count - 2];
-                ((DataGridViewAdminNSS)this.dgwAdminTable).addTextBoxColumn (m_admin.GetNameTECComponent (indx),
-                                                                            m_admin.GetIdTECComponent (indx),
-                                                                            m_admin.GetIdGTPOwnerTECComponent (indx),
-                                                                            date);
+                key = ((AdminTS_NSS)m_admin).m_listKeyTECComponentDetail [this.dgwAdminTable.Columns.Count - 2];
+                ((DataGridViewAdminNSS)this.dgwAdminTable).addTextBoxColumn (m_admin.GetNameTECComponent (key, false),
+                                                                            key.Id,
+                                                                            m_admin.GetIdGTPOwnerTECComponent (key));
 
                 for (int i = 0; i < 24; i++) {
                     if (this.dgwAdminTable.Columns.Count == 3) {
@@ -200,25 +202,6 @@ namespace Statistic
             ((DataGridViewAdminNSS)this.dgwAdminTable).ClearTables();
         }
 
-        public override void InitializeComboBoxTecComponent(FormChangeMode.MODE_TECCOMPONENT mode)
-        {
-            base.InitializeComboBoxTecComponent (mode);
-
-            if (m_listTECComponentIndex.Count > 0) {
-                comboBoxTecComponent.Items.AddRange (((AdminTS_TG)m_admin).GetListNameTEC ());
-
-                if (comboBoxTecComponent.Items.Count > 0)
-                {
-                    m_admin.indxTECComponents = m_listTECComponentIndex[0];
-                    comboBoxTecComponent.SelectedIndex = 0;
-                }
-                else
-                    ;
-            }
-            else
-                ;
-        }
-
         public override bool Activate(bool active)
         {
             bool bRes = false;
@@ -264,10 +247,8 @@ namespace Statistic
         private void visibleControlRDGExcel()
         {
             bool bImpExpButtonVisible = false;
-            if ((!(m_listTECComponentIndex == null))
-                && (m_listTECComponentIndex.Count > 0)
-                && (!(comboBoxTecComponent.SelectedIndex < 0))
-                && (m_admin.IsRDGExcel(m_listTECComponentIndex[comboBoxTecComponent.SelectedIndex]) == true))
+            if ((!(comboBoxTecComponent.SelectedIndex < 0))
+                && (m_admin.IsRDGExcel(SelectedItemKey) == true))
                 bImpExpButtonVisible = true;
             else
                 ;
@@ -281,7 +262,7 @@ namespace Statistic
         {
             ClearTables();
 
-            m_admin.ImpRDGExcelValues(m_listTECComponentIndex[comboBoxTecComponent.SelectedIndex], mcldrDate.SelectionStart);
+            m_admin.ImpRDGExcelValues(SelectedItemKey, mcldrDate.SelectionStart);
         }
 
         private void btnExportExcel_Click(object sender, EventArgs e)
@@ -292,7 +273,7 @@ namespace Statistic
             //if (exportFolder.SelectedPath.Length > 0) {
                 getDataGridViewAdmin();
 
-                Errors resultSaving = m_admin.ExpRDGExcelValues(m_listTECComponentIndex[comboBoxTecComponent.SelectedIndex], mcldrDate.SelectionStart);
+                Errors resultSaving = m_admin.ExpRDGExcelValues(SelectedItemKey, mcldrDate.SelectionStart);
                 if (resultSaving == Errors.NoError)
                 {
                     btnRefresh.PerformClick ();

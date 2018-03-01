@@ -721,10 +721,10 @@ namespace StatisticAlarm
 
                 if (m_mark.IsMarked((int)INDEX_FILTER.ID) == true)
                 {
-                    if (TECComponent.Mode(vaj.m_id_component) == FormChangeMode.MODE_TECCOMPONENT.GTP)
+                    if (TECComponent.GetMode(vaj.m_id_component) == FormChangeMode.MODE_TECCOMPONENT.GTP)
                         id_comp = vaj.m_id_component;
                     else
-                        if (TECComponent.Mode(vaj.m_id_component) == FormChangeMode.MODE_TECCOMPONENT.TG)
+                        if (TECComponent.GetMode(vaj.m_id_component) == FormChangeMode.MODE_TECCOMPONENT.TG)
                             id_comp = vaj.m_id_owner;
                         else
                             ;

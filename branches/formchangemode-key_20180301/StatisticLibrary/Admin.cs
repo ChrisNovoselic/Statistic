@@ -133,6 +133,16 @@ namespace StatisticCommon
 
                 return bRes;
             }
+
+            public override bool Equals (object obj)
+            {
+                return (obj is RDGStruct) ? this == (RDGStruct)obj : false;
+            }
+
+            public override int GetHashCode ()
+            {
+                return base.GetHashCode();
+            }
         }
 
         protected TimeSpan _tsOffsetToMoscow;
@@ -166,22 +176,37 @@ namespace StatisticCommon
         /// <summary>
         /// Список 
         /// </summary>
-        public volatile List<TECComponent> allTECComponents;
+        protected volatile List<TECComponent> allTECComponents;
 
-        private int _indxTECComponents;
-        /// <summary>
-        /// Текущий индекс компонента из списка 'allTECComponents' (для сохранения между вызовами функций)
-        /// </summary>
-        public int indxTECComponents
+        //private int _indxTECComponents;
+        ///// <summary>
+        ///// Текущий индекс компонента из списка 'allTECComponents' (для сохранения между вызовами функций)
+        ///// </summary>
+        //public int indxTECComponents
+        //{
+        //    get
+        //    {
+        //        return _indxTECComponents;
+        //    }
+
+        //    set
+        //    {
+        //        _indxTECComponents = value;
+        //    }
+        //}
+
+        public FormChangeMode.KeyTECComponent CurrentKey
+        {
+            get;
+
+            set;
+        }
+
+        protected TECComponent CurrentTECComponent
         {
             get
             {
-                return _indxTECComponents;
-            }
-
-            set
-            {
-                _indxTECComponents = value;
+                return FindTECComponent (CurrentKey);
             }
         }
         /// <summary>
@@ -527,7 +552,7 @@ namespace StatisticCommon
                 ;
         }
 
-        public abstract void GetRDGValues(/*int /*TYPE_FIELDS mode,*/ int indx, DateTime date);
+        public abstract void GetRDGValues(FormChangeMode.KeyTECComponent key, DateTime date);
 
         protected abstract void getPPBRDatesRequest(DateTime date);
 
@@ -578,14 +603,12 @@ namespace StatisticCommon
 
         public TECComponent FindTECComponent(int id)
         {
-            foreach (TECComponent tc in allTECComponents)
-            {
-                if (tc.m_id == id)
-                    return tc;
-                else ;
-            }
+            return allTECComponents.FirstOrDefault (tc => tc.m_id == id);
+        }
 
-            return null;
+        public TECComponent FindTECComponent (FormChangeMode.KeyTECComponent key)
+        {
+            return FindTECComponent(key.Id);
         }
 
         public const string PBR_PREFIX = @"ПБР";
@@ -727,7 +750,7 @@ namespace StatisticCommon
             //            else
             //                ;
             //Вариант №2
-            modeRes = TECComponent.Mode(allTECComponents[indx].m_id);
+            modeRes = TECComponent.GetMode(allTECComponents[indx].m_id);
 
             return modeRes;
         }
@@ -794,7 +817,7 @@ namespace StatisticCommon
         {
             get
             {
-                return (!(indxTECComponents < 0)) && (indxTECComponents < allTECComponents.Count);
+                return CurrentKey.Id > 0;
             }
         }
 

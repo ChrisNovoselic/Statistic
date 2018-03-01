@@ -2142,7 +2142,7 @@ namespace StatisticAnalyzer
 
             for (int i = 0; i < arIdTabs.Count; i++) {
                 //получение типа вкладки
-                modeTECComponent = TECComponentBase.Mode (arIdTabs [i]);
+                modeTECComponent = TECComponentBase.GetMode (arIdTabs [i]);
                 //проверка состояния фильтра для вкладки
                 if (arrayCheckBoxModeTECComponent [(int)modeTECComponent].Checked == true) {
                     if (Equals (m_listTEC, null) == false)

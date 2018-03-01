@@ -1140,7 +1140,7 @@ namespace StatisticAlarm
         private int getIdOwner(int id_comp)
         {
             int iRes = -1;
-            FormChangeMode.MODE_TECCOMPONENT mode = TECComponent.Mode (id_comp);
+            FormChangeMode.MODE_TECCOMPONENT mode = TECComponent.GetMode (id_comp);
             bool bContinue = true;
 
             foreach (TecView tv in m_listTecView)
@@ -1392,7 +1392,7 @@ namespace StatisticAlarm
                     break;
                 case StatesMachine.Fixed:
                     AlarmNotifyEventArgs ev = itemQueue.Pars[0] as AlarmNotifyEventArgs;
-                    if (TECComponent.Mode(ev.m_id_comp) == FormChangeMode.MODE_TECCOMPONENT.TG)
+                    if (TECComponent.GetMode(ev.m_id_comp) == FormChangeMode.MODE_TECCOMPONENT.TG)
                         tgConfirm(ev.m_id_comp, (TG.INDEX_TURNOnOff)ev.m_situation);
                     else
                         ;

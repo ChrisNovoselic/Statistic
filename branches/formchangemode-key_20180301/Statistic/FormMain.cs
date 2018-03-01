@@ -355,8 +355,8 @@ namespace Statistic
                         , (int)HStatisticUsers.ID_ALLOWED.AUTO_TAB_TEPLOSET_ADMIN };
                     listIDs = new List<int>();
 
-                    for (i = 0; i < FormChangeMode.ID_SPECIAL_TAB.Length; i++)
-                        if (HStatisticUsers.IsAllowed(listIdProfilesUnit[i]) == true) listIDs.Add(FormChangeMode.ID_SPECIAL_TAB[i]); else ;
+                    for (i = 0; i < FormChangeMode.ID_ADMIN_TABS.Length; i++)
+                        if (HStatisticUsers.IsAllowed(listIdProfilesUnit[i]) == true) listIDs.Add(FormChangeMode.ID_ADMIN_TABS[i]); else ;
 
                     //Добавить закладки автоматически...
                     //listIDs.Add(5); listIDs.Add(111);
@@ -1685,14 +1685,10 @@ namespace Statistic
             /// <summary>
             /// Индекс ТЭЦ в списке ТЭЦ
             /// </summary>
-            public int indxTEC;
-            /// <summary>
-            /// Индекс компонента ТЭЦ в списке компонентов ТЭЦ
-            /// </summary>
-            public int indxTECComponent;
+            public FormChangeMode.KeyTECComponent key;
         }
 
-        private void addPanelTecView(TEC tec, int ti, int ci)
+        private void addPanelTecView(TEC tec, FormChangeMode.KeyTECComponent key)
         {
             PanelTecViewBase panelTecView = null;
 
@@ -1702,9 +1698,9 @@ namespace Statistic
                 ;
 
             if (tec.m_id > (int)TECComponent.ID.LK)
-                panelTecView = new PanelLKView(tec, ti, ci);
+                panelTecView = new PanelLKView(tec, key);
             else
-                panelTecView = new PanelTecView(tec, ti, ci, null/*, ErrorReport, WarningReport, ActionReport, ReportClear*/);
+                panelTecView = new PanelTecView(tec, key, null/*, ErrorReport, WarningReport, ActionReport, ReportClear*/);
 
             panelTecView.SetDelegateWait(delegateStartWait, delegateStopWait, delegateEvent);
             panelTecView.SetDelegateReport(ErrorReport, WarningReport, ActionReport, ReportClear);
@@ -1745,7 +1741,7 @@ namespace Statistic
                             if (t.m_id == formChangeMode.m_listItems[i].id)
                             {
                                 // добавить панель
-                                addPanelTecView(t, formChangeMode.m_list_tec.IndexOf(t), -1);
+                                addPanelTecView(t, new FormChangeMode.KeyTECComponent () { Id = t.m_id, Mode = FormChangeMode.MODE_TECCOMPONENT.TEC });
                                 // сохранить индекс добавленной панели
                                 tecView_index = m_listStandardTabs.Count - 1;
                                 panel_tecView_ToAdding = new PANEL_TO_STANDARD_TAB()
@@ -1754,8 +1750,7 @@ namespace Statistic
                                     , indx_itemChangeMode = i
                                     , indx_tecView = m_listStandardTabs.Count - 1
                                     , tec = t
-                                    , indxTEC = formChangeMode.m_list_tec.IndexOf(t)
-                                    , indxTECComponent = -1
+                                    , key = new FormChangeMode.KeyTECComponent () { Id = t.m_id, Mode = FormChangeMode.MODE_TECCOMPONENT.TEC }
                                 };
                                 list_tecView_toAddinng.Add(panel_tecView_ToAdding.GetValueOrDefault());
 
@@ -1771,7 +1766,7 @@ namespace Statistic
                                     if (g.m_id == formChangeMode.m_listItems[i].id)
                                     {
                                         // добавить панель
-                                        addPanelTecView(t, formChangeMode.m_list_tec.IndexOf(t), t.list_TECComponents.IndexOf(g));
+                                        addPanelTecView(t, new FormChangeMode.KeyTECComponent () { Id =g.m_id, Mode = g.Mode });
                                         // сохранить индекс добавленной панели
                                         // и одновременно признак досрочного завершения внешнего цикла
                                         tecView_index = m_listStandardTabs.Count - 1;
@@ -1781,8 +1776,7 @@ namespace Statistic
                                             , indx_itemChangeMode = i
                                             , indx_tecView = m_listStandardTabs.Count - 1
                                             , tec = t
-                                            , indxTEC = formChangeMode.m_list_tec.IndexOf(t)
-                                            , indxTECComponent = t.list_TECComponents.IndexOf(g)
+                                            , key = new FormChangeMode.KeyTECComponent () { Id = g.m_id, Mode = g.Mode }
                                         };
                                         list_tecView_toAddinng.Add(panel_tecView_ToAdding.GetValueOrDefault());
 
@@ -1818,7 +1812,7 @@ namespace Statistic
                     }
 
                     //Перед добавлением вкладки проверить индекс добавляемой панели
-                    if (!(panel_tecView_ToAdding == null))
+                    if (Equals(panel_tecView_ToAdding, null) == false)
                     {
                         list_id_toAdding.Add(panel_tecView_ToAdding.GetValueOrDefault().id);
                     }
@@ -2191,7 +2185,7 @@ namespace Statistic
                             case FormChangeMode.MANAGER.NSS:
                             case FormChangeMode.MANAGER.LK:
                             case FormChangeMode.MANAGER.TEPLOSET:
-                                (m_arPanelAdmin[(int)modeAdmin] as PanelAdmin).InitializeComboBoxTecComponent(mode);
+                                (m_arPanelAdmin[(int)modeAdmin] as PanelAdmin).InitializeComboBoxTecComponent(mode, true);
                                 break;
                             case FormChangeMode.MANAGER.ALARM:
                                 break;

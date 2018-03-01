@@ -24,15 +24,14 @@ namespace Statistic
         /// <summary>
         /// Конструктор класса "Вид панели ЛК"
         /// </summary>
-        /// <param name="tec"> ТЭЦ</param>
-        /// <param name="num_tec">номер ТЭЦ</param>
-        /// <param name="num_comp">номер компонента</param>
+        /// <param name="tec">ТЭЦ</param>
+        /// <param name="key">Ключ компонента</param>
         /// <param name="label">лейбл панели пользовательского вида ТЭЦ</param>
-        public PanelLKView(StatisticCommon.TEC tec, int num_tec, int num_comp, PanelCustomTecView.HLabelCustomTecView label = null)
+        public PanelLKView(StatisticCommon.TEC tec, FormChangeMode.KeyTECComponent key, PanelCustomTecView.HLabelCustomTecView label = null)
             // В АИИС КУЭ читаем "мощность", в СОТИАССО - температуру окр.воздуха
             //Вызов конструктора из базового класса PanelTecViewBase, передаем параметры: ТЭЦ, номер ТЭЦ,номер компонента,
             //экземпляр класса HMark (источник данных) с массивом аргументов: администратор, ПБР, данные АИИСКУЭ и СОТИАССО
-            : base(tec, num_tec, num_comp, new HMark(new int[] { (int)CONN_SETT_TYPE.ADMIN, (int)CONN_SETT_TYPE.PBR, (int)CONN_SETT_TYPE.DATA_AISKUE, (int)CONN_SETT_TYPE.DATA_SOTIASSO }))
+            : base(tec, key, new HMark(new int[] { (int)CONN_SETT_TYPE.ADMIN, (int)CONN_SETT_TYPE.PBR, (int)CONN_SETT_TYPE.DATA_AISKUE, (int)CONN_SETT_TYPE.DATA_SOTIASSO }))
         {
             //Лейбл= null
             m_label = label;
@@ -71,10 +70,10 @@ namespace Statistic
             /// </summary>
             /// <param name="indx_tec">индекс тэц</param>
             /// <param name="indx_comp">индекс компонента</param>
-            public TecViewLK (int indx_tec, int indx_comp)
+            public TecViewLK (FormChangeMode.KeyTECComponent key)
                 //Вызов конструктора из базового класса TecView, передаем параметры: индекс тэц, индекс компонента,
                 //компонент принадлежащий электрической части тэц
-                : base (indx_tec, indx_comp, TECComponentBase.TYPE.ELECTRO) 
+                : base (key, TECComponentBase.TYPE.ELECTRO) 
             {
                 m_idAISKUEParNumber = ID_AISKUE_PARNUMBER.FACT_30;
                 _tsOffsetToMoscow = HDateTime.TS_NSK_OFFSET_OF_MOSCOWTIMEZONE;
@@ -84,12 +83,12 @@ namespace Statistic
             /// </summary>
             public override void ChangeState()
             {
-                lock (m_lockState) { GetRDGValues(-1, DateTime.MinValue); }
+                lock (m_lockState) { GetRDGValues(FormChangeMode.KeyTECComponentEmpty, DateTime.MinValue); }
 
                 base.ChangeState(); //Run
             }
 
-            public override void GetRDGValues(int indx, DateTime date)
+            public override void GetRDGValues(FormChangeMode.KeyTECComponent key, DateTime date)
             {
                 ClearStates();
 
@@ -639,7 +638,7 @@ namespace Statistic
                         getColorValues(TG.INDEX_VALUE.FACT);
                     // текущее значение мощности для компонентов-ТГ-фидеров (час)
                     //ShowTGValue
-                    if (m_parent.indx_TECComponent < 0) // значит этот view будет суммарным для всех ГТП
+                    if (m_parent.Mode == FormChangeMode.MODE_TECCOMPONENT.TEC) // значит этот view будет суммарным для всех ГТП
                     {
                         foreach (TECComponent g in m_parent.m_tecView.LocalTECComponents)
                             if (g.IsGTP == true)
@@ -1441,9 +1440,9 @@ namespace Statistic
         //    m_tecView.SetDelegateReport(fErr, fWar, fAct, fClear);
         //}
 
-        protected override void createTecView(int indx_tec, int indx_comp)
+        protected override void createTecView(FormChangeMode.KeyTECComponent key)
         {
-            m_tecView = new TecViewLK(indx_tec, indx_comp);
+            m_tecView = new TecViewLK(key);
         }
 
         protected override void createDataGridViewMins() { } // заглушка

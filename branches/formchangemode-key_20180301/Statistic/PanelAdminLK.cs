@@ -96,7 +96,7 @@ namespace Statistic {
         }
 
         /// <summary>
-        /// Возврв=атить идентификатор (m_id) родительской ГТП для ТГ
+        /// ??? (такой ж есть в НСС) Возвратить идентификатор (m_id) родительской ГТП для ТГ
         /// </summary>
         /// <param name="indx_tg">Идентификатор ТГ</param>
         /// <returns>Идентификатор ГТП</returns>
@@ -105,10 +105,9 @@ namespace Statistic {
             int iRes = -1
                 , id_gtp_owner = ((DataGridViewAdminLK)dgwAdminTable).GetIdGTPOwner(indx_tg);
 
-            foreach (int indx in ((AdminTS_LK)m_admin).m_listTECComponentIndexDetail)
-                if (m_admin.allTECComponents[indx].m_id == id_gtp_owner) {
-                    return ((AdminTS_LK)m_admin).m_listTECComponentIndexDetail.IndexOf(indx);
-                }
+            foreach (FormChangeMode.KeyTECComponent key in ((AdminTS_LK)m_admin).m_listKeyTECComponentDetail)
+                if (key.Id == id_gtp_owner)
+                    return ((AdminTS_LK)m_admin).m_listKeyTECComponentDetail.IndexOf(key);
                 else
                     ;
 
@@ -123,18 +122,18 @@ namespace Statistic {
             double value = -1F;
             bool valid = false;
             
-            foreach (int indx in ((AdminTS_LK)m_admin).m_listTECComponentIndexDetail) //Перебор компонентов
+            foreach (FormChangeMode.KeyTECComponent key in ((AdminTS_LK)m_admin).m_listKeyTECComponentDetail) //Перебор компонентов
             {
-                if (m_admin.modeTECComponent(indx) == FormChangeMode.MODE_TECCOMPONENT.TG) {
+                if (key.Mode == FormChangeMode.MODE_TECCOMPONENT.TG) {
                 //Если ТГ, то
-                    int indx_tg = ((AdminTS_LK)m_admin).m_listTECComponentIndexDetail.IndexOf(indx),
+                    int indx_tg = ((AdminTS_LK)m_admin).m_listKeyTECComponentDetail.IndexOf(key),
                         indx_gtp = getIndexGTPOwner(indx_tg);
 
                     if ((!(indx_tg < 0)) && (!(indx_gtp < 0)))
                         for (int i = 0; i < 24; i++)//Перебор часовых значений ТГ
                         {
                             foreach (DataGridViewColumn col in dgwAdminTable.Columns) //Перебор колонок DataGridView
-                                if (m_admin.GetNameTECComponent(indx) == col.HeaderText) //Если имя ТГ соответствует имени колонки
+                                if (m_admin.GetNameTECComponent(key, false) == col.HeaderText) //Если имя ТГ соответствует имени колонки
                                     if (dgwAdminTable.Rows[i].Cells[col.Index].Value == null) // , то проверка на пустое поле и запись значения
                                         ((AdminTS_LK)m_admin).m_listCurRDGValues[indx_tg][i].pbr = Convert.ToDouble(0.ToString("F2"));
                                     else
@@ -144,9 +143,9 @@ namespace Statistic {
                         }
                     else
                         ;
-                }  else if (m_admin.modeTECComponent(indx) == FormChangeMode.MODE_TECCOMPONENT.GTP) {
+                }  else if (key.Mode == FormChangeMode.MODE_TECCOMPONENT.GTP) {
                 //Если ГТП то
-                    int indx_gtp = ((AdminTS_LK)m_admin).m_listTECComponentIndexDetail.IndexOf(indx);
+                    int indx_gtp = ((AdminTS_LK)m_admin).m_listKeyTECComponentDetail.IndexOf(key);
 
                     if (!(indx_gtp < 0))
                         for (int i = 0; i < 24; i++)//Перебор часовых значений ГТП
@@ -202,22 +201,18 @@ namespace Statistic {
         /// </summary>
         /// <param name="date">Дата отображаемых значений</param>
         /// <param name="bNewValues">Признак наличия новых значений (false - обновление оформления представления при изменении цветовой схемы)</param>
-        /// <param name="bSyncReq">Признак необходимости синхронизации по окончании выполнения метода</param>        
+        /// <param name="bSyncReq">Признак необходимости синхронизации по окончании выполнения метода</param>
         private void addTextBoxColumn(DateTime date, bool bNewValues, bool bSyncReq)
         {
-            int indx = ((AdminTS_LK)m_admin).indxTECComponents;
-            //((AdminTS_LK)m_admin).set_CurComponent(0, m_admin.m_curDate);
-            //indx = ((AdminTS_LK)m_admin).m_listTECComponentIndexDetail[this.dgwAdminTable.Columns.Count - ((int)DataGridViewAdminLK.DESC_INDEX.COUNT_COLUMN)];
-            //Color dgwBackColor;
+            FormChangeMode.KeyTECComponent key = ((AdminTS_LK)m_admin).CurrentKey;
+            int indx = ((AdminTS_LK)m_admin).GetCurrentIndexTECComponent ();
 
-            //dgwBackColor = this.dgwAdminTable.BackColor;
-
-            if (m_admin.GetIdTECComponent(indx) > (int)TECComponent.ID.TG) {
+            if (key.Id > (int)TECComponent.ID.TG) {
             // новый столбец
-                ((DataGridViewAdminLK)this.dgwAdminTable).AddTextBoxColumn(m_admin.GetNameTECComponent(indx),
-                                                                    m_admin.GetIdTECComponent(indx),
-                                                                    m_admin.GetIdGTPOwnerTECComponent(indx),
-                                                                    date);
+                ((DataGridViewAdminLK)this.dgwAdminTable).AddTextBoxColumn(m_admin.GetNameTECComponent(key, false),
+                    key.Id,
+                    m_admin.GetIdGTPOwnerTECComponent(key),
+                    date);
 
                 for (int i = 0; i < 24; i++)    
                 {
@@ -307,25 +302,6 @@ namespace Statistic {
         }
 
         /// <summary>
-        /// Заполнение ComboBox значениями ГТП
-        /// </summary>
-        /// <param name="mode">Переменная типа отображаемых значений</param>
-        public override void InitializeComboBoxTecComponent(FormChangeMode.MODE_TECCOMPONENT mode)
-        {
-            base.InitializeComboBoxTecComponent(mode);
-
-            for (int i = 0; i < m_listTECComponentIndex.Count; i++)
-                comboBoxTecComponent.Items.Add(m_admin.allTECComponents[m_listTECComponentIndex[i]].tec.name_shr + " - " + m_admin.GetNameTECComponent(m_listTECComponentIndex[i]));
-
-            if (comboBoxTecComponent.Items.Count > 0)
-            {
-                m_admin.indxTECComponents = m_listTECComponentIndex[0];
-                comboBoxTecComponent.SelectedIndex = 0;
-            }
-            else ;
-        }
-
-        /// <summary>
         /// Метод активации панели
         /// </summary>
         /// <param name="active">Флаг активности панели</param>
@@ -363,10 +339,8 @@ namespace Statistic {
         {
             bool bImpExpButtonVisible = false;
 
-            if ((!(m_listTECComponentIndex == null))
-                && (m_listTECComponentIndex.Count > 0)
-                && (!(comboBoxTecComponent.SelectedIndex < 0))
-                && (m_admin.IsRDGExcel(id_tec /*m_listTECComponentIndex[comboBoxTecComponent.SelectedIndex]*/) == true))
+            if ((!(comboBoxTecComponent.SelectedIndex < 0))
+                && (m_admin.IsRDGExcel(SelectedItemKey) == true))
                 bImpExpButtonVisible = true;
             else
                 ;
@@ -424,7 +398,7 @@ namespace Statistic {
             //if (exportFolder.SelectedPath.Length > 0) {
                 getDataGridViewAdmin();
 
-                Errors resultSaving = m_admin.ExpRDGExcelValues(m_listTECComponentIndex[comboBoxTecComponent.SelectedIndex], mcldrDate.SelectionStart);
+                Errors resultSaving = m_admin.ExpRDGExcelValues(SelectedItemKey, mcldrDate.SelectionStart);
                 if (resultSaving == Errors.NoError)
                 {
                     btnRefresh.PerformClick ();
