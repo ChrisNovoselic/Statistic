@@ -194,15 +194,21 @@ namespace StatisticCommon
         //        _indxTECComponents = value;
         //    }
         //}
-
-        public FormChangeMode.KeyTECComponent CurrentKey
+        private FormChangeMode.KeyDevice _currentKey;
+        public FormChangeMode.KeyDevice CurrentKey
         {
-            get;
+            get
+            {
+                return _currentKey;
+            }
 
-            set;
+            set
+            {
+                _currentKey = value;
+            }
         }
 
-        protected TECComponent CurrentTECComponent
+        public IDevice CurrentDevice
         {
             get
             {
@@ -345,13 +351,16 @@ namespace StatisticCommon
         {
             //Logging.Logg().Debug("Admin::InitTEC () - вход...");
 
-            if (mode == FormChangeMode.MODE_TECCOMPONENT.ANY)
+            if ((mode == FormChangeMode.MODE_TECCOMPONENT.TEC)
+                || (mode == FormChangeMode.MODE_TECCOMPONENT.ANY)) //??? зачем '.ANY'
                 this.m_list_tec = DbTSQLConfigDatabase.DbConfig().InitTEC(bIgnoreTECInUse, arTECLimit, bUseData) as DbTSQLConfigDatabase.ListTEC;
             else
                 this.m_list_tec = DbTSQLConfigDatabase.DbConfig ().InitTEC(mode, bIgnoreTECInUse, arTECLimit, bUseData) as DbTSQLConfigDatabase.ListTEC;
 
             initQueries(markQueries);
             initTECComponents();
+
+            CurrentKey = new FormChangeMode.KeyDevice () { Id = allTECComponents.First(comp => comp.Mode == mode).m_id, Mode = mode };
         }
         /// <summary>
         /// Инициализация списка со всеми компонентами ТЭЦ
@@ -552,13 +561,13 @@ namespace StatisticCommon
                 ;
         }
 
-        public abstract void GetRDGValues(FormChangeMode.KeyTECComponent key, DateTime date);
+        public abstract void GetRDGValues(FormChangeMode.KeyDevice key, DateTime date);
 
         protected abstract void getPPBRDatesRequest(DateTime date);
 
         protected abstract int getPPBRDatesResponse(DataTable table, DateTime date);
 
-        protected abstract void getPPBRValuesRequest(TEC t, TECComponent comp, DateTime date/*, AdminTS.TYPE_FIELDS mode*/);
+        protected abstract void getPPBRValuesRequest(TEC t, IDevice comp, DateTime date/*, AdminTS.TYPE_FIELDS mode*/);
 
         protected abstract int getPPBRValuesResponse(DataTable table, DateTime date);
 
@@ -606,9 +615,17 @@ namespace StatisticCommon
             return allTECComponents.FirstOrDefault (tc => tc.m_id == id);
         }
 
-        public TECComponent FindTECComponent (FormChangeMode.KeyTECComponent key)
+        public IDevice FindTECComponent (FormChangeMode.KeyDevice key)
         {
-            return FindTECComponent(key.Id);
+            IDevice dev;
+
+            if ((key.Mode == FormChangeMode.MODE_TECCOMPONENT.TEC)
+                || (key.Mode == FormChangeMode.MODE_TECCOMPONENT.ANY))
+                dev = m_list_tec.FirstOrDefault(tec => tec.m_id == key.Id);
+            else
+                dev = FindTECComponent (key.Id);
+
+            return dev;
         }
 
         public const string PBR_PREFIX = @"ПБР";

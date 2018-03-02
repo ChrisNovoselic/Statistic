@@ -893,7 +893,7 @@ namespace StatisticTrans
         /// </summary>
         protected virtual void FillComboBoxTECComponent(FormChangeMode.MODE_TECCOMPONENT mode, bool bWithNameTECOwner)
         {
-            List<FormChangeMode.KeyTECComponent> listKey;
+            List<FormChangeMode.KeyDevice> listKey;
 
             comboBoxTECComponent.Items.Clear();
 
@@ -1465,11 +1465,11 @@ namespace StatisticTrans
 
         private struct PARAMToSaveRDGValues
         {
-            public FormChangeMode.KeyTECComponent key;
+            public FormChangeMode.KeyDevice key;
             public DateTime date;
             public bool bCallback;
 
-            public PARAMToSaveRDGValues(FormChangeMode.KeyTECComponent k, DateTime dt, bool cb)
+            public PARAMToSaveRDGValues(FormChangeMode.KeyDevice k, DateTime dt, bool cb)
             {
                 key = k;
                 date = dt;
@@ -1510,7 +1510,7 @@ namespace StatisticTrans
             base.WndProc(ref m);
         }
 
-        public FormChangeMode.KeyTECComponent SelectedItemKey
+        public FormChangeMode.KeyDevice SelectedItemKey
         {
             get
             {

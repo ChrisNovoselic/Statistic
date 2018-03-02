@@ -55,7 +55,7 @@ namespace Statistic
         }
 
         public PanelAdminVyvod(HMark markQueries)
-            : base(markQueries, new int[] { 0, (int)TECComponent.ID.LK })
+            : base(FormChangeMode.MODE_TECCOMPONENT.TEC, markQueries, new int[] { 0, (int)TECComponent.ID.LK })
         {
         }
 

@@ -34,7 +34,7 @@ namespace Statistic
 
             public HMark m_markRetroValues;
 
-            public TecViewSOTIASSOHour(FormChangeMode.KeyTECComponent key)
+            public TecViewSOTIASSOHour(FormChangeMode.KeyDevice key)
                 : base(key, TECComponentBase.TYPE.ELECTRO)
             {
                 m_markRetroValues = new HMark(0);
@@ -47,7 +47,7 @@ namespace Statistic
                 base.ChangeState(); //Run
             }
 
-            public override void GetRDGValues(FormChangeMode.KeyTECComponent key, DateTime date)
+            public override void GetRDGValues(FormChangeMode.KeyDevice key, DateTime date)
             {
                 ClearStates();
 
@@ -235,7 +235,7 @@ namespace Statistic
             //m_markQueries.Marked((int)CONN_SETT_TYPE.PBR); //Для получения даты/времени
             //m_markQueries.Marked((int)CONN_SETT_TYPE.DATA_SOTIASSO);
             //Создать объект обработки запросов - установить первоначальные индексы для ТЭЦ, компонента
-            m_tecView = new TecViewSOTIASSOHour(new FormChangeMode.KeyTECComponent () { Id = 1, Mode = FormChangeMode.MODE_TECCOMPONENT.TEC });
+            m_tecView = new TecViewSOTIASSOHour(new FormChangeMode.KeyDevice () { Id = 1, Mode = FormChangeMode.MODE_TECCOMPONENT.TEC });
             //Инициализировать список ТЭЦ для 'TecView' - указать ТЭЦ в соответствии с указанным ранее индексом (0)
             m_tecView.InitTEC(new List<StatisticCommon.TEC>() { m_listTEC[0] }, m_markQueries);
             //Установить тип значений
@@ -2014,7 +2014,7 @@ namespace Statistic
             if (this.Actived == true)
             {
                 TEC tec = null;
-                FormChangeMode.KeyTECComponent key = FormChangeMode.KeyTECComponentEmpty;
+                FormChangeMode.KeyDevice key = FormChangeMode.KeyTECComponentEmpty;
                 List<TECComponentBase> listTG_Comp = new List<TECComponentBase>();
 
                 #region Апельганс А.В. - Поиск минимального коэффициента
@@ -2036,7 +2036,7 @@ namespace Statistic
                     if (t.m_id == id)
                     {
                         tec = t;
-                        key = new FormChangeMode.KeyTECComponent () { Id = t.m_id, Mode = FormChangeMode.MODE_TECCOMPONENT.TEC };
+                        key = new FormChangeMode.KeyDevice () { Id = t.m_id, Mode = FormChangeMode.MODE_TECCOMPONENT.TEC };
 
                         foreach (TG tg in t.GetListLowPointDev(TECComponentBase.TYPE.ELECTRO))
                             listTG_Comp.Add(tg);
@@ -2062,7 +2062,7 @@ namespace Statistic
                                 if (tc.IsGTP == true)
                                 {
                                     tec = t;
-                                    key = new FormChangeMode.KeyTECComponent () { Id = tc.m_id, Mode = FormChangeMode.MODE_TECCOMPONENT.GTP };
+                                    key = new FormChangeMode.KeyDevice () { Id = tc.m_id, Mode = FormChangeMode.MODE_TECCOMPONENT.GTP };
                                     m_dcGTPKoeffAlarmPcur = tc.m_dcKoeffAlarmPcur;
 
                                     foreach (TG tg in tc.m_listLowPointDev)
@@ -2075,7 +2075,7 @@ namespace Statistic
                                     if (tc.IsPC == true)
                                     {
                                         tec = t;
-                                        key = new FormChangeMode.KeyTECComponent () { Id = tc.m_id, Mode = FormChangeMode.MODE_TECCOMPONENT.PC };
+                                        key = new FormChangeMode.KeyDevice () { Id = tc.m_id, Mode = FormChangeMode.MODE_TECCOMPONENT.PC };
 
                                         foreach (TG tg in tc.m_listLowPointDev)
                                             listTG_Comp.Add(tg);

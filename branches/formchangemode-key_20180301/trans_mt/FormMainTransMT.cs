@@ -162,8 +162,6 @@ namespace trans_mt
 
         protected override void timer_Start()
         {
-            m_listTECComponentIndex = ((AdminTS)m_arAdmin[(Int16)CONN_SETT_TYPE.DEST]).GetListIndexTECComponent(m_modeTECComponent, true);
-
             base.timer_Start();
         }
     }

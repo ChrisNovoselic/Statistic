@@ -341,7 +341,7 @@ namespace Statistic
         }
 
         public PanelAdminKomDisp(ASUTP.Core.HMark markQueries)
-            : base(markQueries, new int[] { 0, (int)TECComponent.ID.GTP })
+            : base(FormChangeMode.MODE_TECCOMPONENT.GTP, markQueries, new int[] { 0, (int)TECComponent.ID.GTP })
         {
             //??? вызывается из базового класса
             //InitializeComponents ();
@@ -456,7 +456,7 @@ namespace Statistic
         public override void SetDataGridViewAdmin(DateTime date, bool bResult)
         {
             int offset = -1;
-            FormChangeMode.KeyTECComponent nextKey;
+            FormChangeMode.KeyDevice nextKey;
             string strFmtDatetime = string.Empty;
             IAsyncResult iar;
 
@@ -524,7 +524,7 @@ namespace Statistic
             } else if ((ModeGetRDGValues & AdminTS.MODE_GET_RDG_VALUES.EXPORT) == AdminTS.MODE_GET_RDG_VALUES.EXPORT) {
                 nextKey = bResult == true
                     ? Admin.AddValueToExportRDGValues (m_admin.m_curRDGValues, date)
-                        : new FormChangeMode.KeyTECComponent();
+                        : new FormChangeMode.KeyDevice();
 
                 if (!(nextKey.Id > 0)) {
                     if (InvokeRequired == true)

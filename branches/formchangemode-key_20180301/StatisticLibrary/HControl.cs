@@ -327,7 +327,7 @@ namespace StatisticCommon
     {
         public string Text;
 
-        public FormChangeMode.KeyTECComponent Tag;
+        public FormChangeMode.KeyDevice Tag;
 
         public override string ToString ()
         {

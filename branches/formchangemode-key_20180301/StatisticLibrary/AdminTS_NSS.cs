@@ -82,7 +82,7 @@ namespace StatisticCommon
                     //allTECComponents[indxTECComponents].tec.m_timezone_offset_msc
                     HDateTime.TS_NSK_OFFSET_OF_MOSCOWTIMEZONE.Hours
                     ;
-            string path_rdg_excel = CurrentTECComponent.tec.GetAddingParameter(TEC.ADDING_PARAM_KEY.PATH_RDG_EXCEL).ToString(),
+            string path_rdg_excel = CurrentDevice.tec.GetAddingParameter(TEC.ADDING_PARAM_KEY.PATH_RDG_EXCEL).ToString(),
                 strSelect = @"SELECT * FROM [Лист1$]";
             object[] dataRowAddIn = null;
 
@@ -273,13 +273,13 @@ namespace StatisticCommon
                         if (m_listKeyTECComponentDetail[m_listCurRDGValues.IndexOf(curRDGValues)].Mode == FormChangeMode.MODE_TECCOMPONENT.GTP)
                         {
                             //strUpdate += allTECComponents[indxTECComponents].m_indx_col_rdg_excel;
-                            comp = CurrentTECComponent;
+                            comp = CurrentDevice;
                         }
                         else
                             if (m_listKeyTECComponentDetail[m_listCurRDGValues.IndexOf(curRDGValues)].Mode == FormChangeMode.MODE_TECCOMPONENT.TG)
                             {
                                 //strUpdate += allTECComponents[indxTECComponents].TG [0].m_indx_col_rdg_excel;
-                                comp = CurrentTECComponent.m_listLowPointDev[0];
+                                comp = CurrentDevice.m_listLowPointDev[0];
                             }
                             else ;
 

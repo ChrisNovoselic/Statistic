@@ -89,7 +89,7 @@ namespace StatisticCommon
                 , ANY
         };
 
-        public struct KeyTECComponent
+        public struct KeyDevice
         {
             public int Id { get; set; }
 
@@ -100,13 +100,13 @@ namespace StatisticCommon
                 return string.Format ("KeyTECComponent=[Id={0}, Mode={1}]", Id, Mode);
             }
 
-            public static bool operator == (KeyTECComponent key1, KeyTECComponent key2)
+            public static bool operator == (KeyDevice key1, KeyDevice key2)
             {
                 return (key1.Id == key2.Id)
                     && (key1.Mode == key2.Mode);
             }
 
-            public static bool operator != (KeyTECComponent key1, KeyTECComponent key2)
+            public static bool operator != (KeyDevice key1, KeyDevice key2)
             {
                 return (!(key1.Id == key2.Id))
                     || (!(key1.Mode == key2.Mode));
@@ -114,7 +114,7 @@ namespace StatisticCommon
 
             public override bool Equals (object obj)
             {
-                return (obj is KeyTECComponent) ? this == (KeyTECComponent)obj : false;
+                return (obj is KeyDevice) ? this == (KeyDevice)obj : false;
             }
 
 
@@ -124,7 +124,7 @@ namespace StatisticCommon
             }
         }
 
-        public static KeyTECComponent KeyTECComponentEmpty;
+        public static KeyDevice KeyTECComponentEmpty;
         /// <summary>
         /// Тип вкладки  из инструментария "администратор-диспетчер"
         /// </summary>

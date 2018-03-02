@@ -20,9 +20,16 @@ namespace trans_mc_cmd
     {
         public enum CONN_SETT_TYPE { CONFIG, PPBR, COUNT_CONN_SETT_TYPE };
 
+        private struct KeyTECComponent
+        {
+            public FormChangeMode.KeyDevice Key;
+
+            public List<int> MCentreId;
+        }
+
         AdminTS m_admin;
-        List<int> m_listIndexTECComponent;
-        List<int> m_listIdMCTECComponent;
+
+        List<KeyTECComponent> m_listKeyTECComponent;
 
         public int Initialized
         {
@@ -48,7 +55,7 @@ namespace trans_mc_cmd
                 //    ;
 
                 if (iRes == 0)
-                    if (!(m_listIdMCTECComponent.Count > 0))
+                    if (!(m_listKeyTECComponent.Count > 0))
                         iRes = -1;
                     else
                         ;
@@ -86,6 +93,7 @@ namespace trans_mc_cmd
 
             m_bCalculatedHalfHourValues = bCalculatedHalfHourValues;
 
+            TECComponent comp;
             int iConfigDB = -1;
             ConnectionSettings connSett = Program.ReadConnSettFromFileINI(out iConfigDB);
             connSett.id = ConnectionSettings.UN_ENUMERABLE_ID;
@@ -117,27 +125,19 @@ namespace trans_mc_cmd
                 //markQueries.Marked((int)StatisticCommon.CONN_SETT_TYPE.PBR);
 
                 m_admin.InitTEC(FormChangeMode.MODE_TECCOMPONENT.GTP, /*typeConfigDB, */markQueries, true, new int [] { 0, (int)TECComponent.ID.LK });
-                m_listIndexTECComponent = m_admin.GetListIndexTECComponent(FormChangeMode.MODE_TECCOMPONENT.GTP, true);
-
-                m_listIdMCTECComponent = new List<int>();
-
-                int i = -1, j = -1;
-                for (i = 0; i < m_listIndexTECComponent.Count; i++)
-                {
-                    for (j = 0; j < m_admin.allTECComponents[m_listIndexTECComponent[i]].m_listMCentreId.Count; j++)
-                    {
-                        m_listIdMCTECComponent.Add(m_admin.allTECComponents[m_listIndexTECComponent[i]].m_listMCentreId[j]);
-                    }
-                }
+                m_admin.GetListKeyTECComponent(FormChangeMode.MODE_TECCOMPONENT.GTP, true).ForEach(key =>
+                    m_listKeyTECComponent.Add(new KeyTECComponent () { Key = key, MCentreId = new List<int>((m_admin.FindTECComponent(key) as TECComponent).m_listMCentreId) }));
 
                 //Пересоединение для таблиц ПБР
-                if ((DbTSQLInterface.IsConnected(ref m_connection) == true) && (m_listIdMCTECComponent.Count > 0))
+                if ((DbTSQLInterface.IsConnected(ref m_connection) == true)
+                    && (m_listKeyTECComponent.Count > 0))
                 {
                     DbSources.Sources ().UnRegister (m_idListener);
 
-                    m_idListener = DbSources.Sources().Register(m_admin.allTECComponents[m_listIndexTECComponent[0]].tec.connSetts[(int)StatisticCommon.CONN_SETT_TYPE.PBR], false, @"PBR");
+                    comp = m_admin.FindTECComponent (m_listKeyTECComponent [0].Key) as TECComponent;
+                    m_idListener = DbSources.Sources().Register(comp.tec.connSetts[(int)StatisticCommon.CONN_SETT_TYPE.PBR], false, @"PBR");
                     m_connection = DbSources.Sources().GetConnection (m_idListener, out iRes);
-                    m_strTableNamePPBR = m_admin.allTECComponents[m_listIndexTECComponent[0]].tec.m_strNameTableUsedPPBRvsPBR/*[(int)AdminTS.TYPE_FIELDS.STATIC]*/;
+                    m_strTableNamePPBR = comp.tec.m_strNameTableUsedPPBRvsPBR/*[(int)AdminTS.TYPE_FIELDS.STATIC]*/;
                 }
                 else
                 {
@@ -165,76 +165,15 @@ namespace trans_mc_cmd
                 return string.Empty;
         }
 
-        /*public int GetIdOwnerTECComponentOfIdMC (int id_mc)
-        {
-            int iRes = -1;
-            
-            int indxTECComponent = GetIndexTECComponentOfIdMC(id_mc);
-
-            if (!(indxTECComponent < 0))
-            {
-                iRes = m_admin.allTECComponents[indxTECComponent].tec.m_id;
-            }
-            else
-                ;
-
-            return iRes;
-        }*/
-
-        private int getIndexTECComponentOfIdMC(int id_mc)
-        {
-            int iRes = -1;
-
-            int i = -1, j = -1;
-            for (i = 0; i < m_listIndexTECComponent.Count; i++)
-            {
-                for (j = 0; j < m_admin.allTECComponents[m_listIndexTECComponent[i]].m_listMCentreId.Count; j++)
-                {
-                    if (id_mc == m_admin.allTECComponents[m_listIndexTECComponent[i]].m_listMCentreId[j])
-                        break;
-                    else
-                        ;
-                }
-
-                if (j < m_admin.allTECComponents[m_listIndexTECComponent[i]].m_listMCentreId.Count)
-                    break;
-                else
-                    ;
-            }
-
-            if (i < m_listIndexTECComponent.Count)
-            {
-                iRes = m_listIndexTECComponent[i];
-            }
-            else
-                ;
-
-            return iRes;
-        }
-
-        public TECComponent GetTECComponentOfIdMC(int id_mc)
-        {
-            TECComponent compRes = null;
-
-            int indxTECComponent = getIndexTECComponentOfIdMC(id_mc);
-
-            if (!(indxTECComponent < 0))
-            {
-                compRes = m_admin.allTECComponents[indxTECComponent];
-            }
-            else
-                ;
-
-            return compRes;
-        }
-
         /// <summary>
         /// Пишем в коллекцию с экземплярами класса OneRecord. А потом за раз коллекцию превратим в апдейты таблицы базы и выполним.
         /// Привязка к id станции! Если в API id поменяют - будет неверно работать!
         /// </summary>
         public void WritePlanValue(int iStationId, DateTime DT, string sPBRnum, Params PAR, double dGenValue)
         {
-            if (!(m_listIdMCTECComponent.IndexOf(iStationId) < 0))
+            KeyTECComponent key = m_listKeyTECComponent.Find (k => !(k.MCentreId.IndexOf (iStationId) < 0));
+
+            if (Equals(key, null) == false)
             {
                 //OneRecord HVCrecord = null;
                 HTECComponentsRecord HVCrecord = null;
@@ -257,7 +196,7 @@ namespace trans_mc_cmd
                 if (HVCrecord == null)
                 {
                     //HVCrecord = new OneRecord();
-                    HVCrecord = new HTECComponentsRecord(m_listIdMCTECComponent);
+                    HVCrecord = new HTECComponentsRecord(key.MCentreId);
                     HVCrecord.date_time = DT;
                     HVCrecord.parent = this;
                     HourlyValuesCollection.Add(DT, HVCrecord);      //После добавления можно продолжать модифицировать экземпляр класса - в коллекции та же самая ссылка хранится.
@@ -472,6 +411,16 @@ namespace trans_mc_cmd
             //    mysqlConn.Close();
             //else
             //    ;
+        }
+
+        /// <summary>
+        /// Возвратить компонент ТЭЦ с указанным в аргументе ИГО
+        /// </summary>
+        /// <param name="id_mc">Идентификатор ГО</param>
+        /// <returns>Компонент ТЭЦ</returns>
+        public TECComponent GetTECComponentOfIdMC (int id_mc)
+        {
+            return m_admin.GetTECComponentOfIdMC(id_mc);
         }
     }
 

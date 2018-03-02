@@ -12,13 +12,14 @@ using System.Linq;
 using ASUTP.Core;
 using ASUTP;
 using ASUTP.Database;
+using static ASUTP.Control.HTabCtrlEx;
 
 namespace StatisticCommon
 {
     public class TecViewTMPower : TecView
     {
         public TecViewTMPower()
-            : base(new FormChangeMode.KeyTECComponent () { Id = -1, Mode = FormChangeMode.MODE_TECCOMPONENT.Unknown }, TECComponentBase.TYPE.ELECTRO)
+            : base(new FormChangeMode.KeyDevice () { Id = -1, Mode = FormChangeMode.MODE_TECCOMPONENT.Unknown }, TECComponentBase.TYPE.ELECTRO)
         {
         }
 
@@ -29,7 +30,7 @@ namespace StatisticCommon
             base.ChangeState();
         }
 
-        public override void GetRDGValues(FormChangeMode.KeyTECComponent key, DateTime date)
+        public override void GetRDGValues(FormChangeMode.KeyDevice key, DateTime date)
         {
             ClearStates();
 
@@ -45,7 +46,7 @@ namespace StatisticCommon
 
     public class TecViewStandard : TecView
     {
-        public TecViewStandard(FormChangeMode.KeyTECComponent key)
+        public TecViewStandard(FormChangeMode.KeyDevice key)
             : base(key, TECComponentBase.TYPE.ELECTRO)
         {
         }
@@ -57,7 +58,7 @@ namespace StatisticCommon
             base.ChangeState(); //Run
         }
 
-        public override void GetRDGValues(FormChangeMode.KeyTECComponent key, DateTime date)
+        public override void GetRDGValues(FormChangeMode.KeyDevice key, DateTime date)
         {
             ClearStates();
 
@@ -208,6 +209,14 @@ namespace StatisticCommon
             get {
                 return m_idAISKUEParNumber == ID_AISKUE_PARNUMBER.FACT_03 ? 1 :
                     m_idAISKUEParNumber == ID_AISKUE_PARNUMBER.FACT_30 ? 10 : -1;
+            }
+        }
+
+        public TEC.TEC_TYPE TecType
+        {
+            get
+            {
+                return m_tec.Type;
             }
         }
 
@@ -364,11 +373,6 @@ namespace StatisticCommon
                     ;
             }
         }
-        /// <summary>
-        /// Идентификатор объекта (ТЭЦ, ГТП, ЩУ, ТГ)
-        ///  , которому принадлежит текущий объект 'TecView'
-        /// </summary>
-        public int m_ID { get { return CurrentKey.Id; } }
         public volatile Dictionary<int, TecView.valuesTECComponent> [] m_dictValuesTECComponent;
         public volatile Dictionary<int, TecView.valuesLowPointDev>m_dictValuesLowPointDev;
 
@@ -389,6 +393,18 @@ namespace StatisticCommon
 
         public StatisticCommon.TEC m_tec {
             get { return m_list_tec [0]; }
+        }
+
+        public string NameShr
+        {
+            get
+            {
+                return ((CurrentKey.Mode == FormChangeMode.MODE_TECCOMPONENT.Unknown) || (CurrentKey.Mode == FormChangeMode.MODE_TECCOMPONENT.ANY))
+                    ? $"Ошибка, режим=<{CurrentKey.Mode}>"
+                        : (CurrentKey.Mode == FormChangeMode.MODE_TECCOMPONENT.TEC)
+                            ? m_tec.name_shr
+                                : $"{m_tec.name_shr} - {m_tec.list_TECComponents.Find(comp => comp.m_id == CurrentKey.Id).name_shr}";
+            }
         }
 
         public List<TECComponentBase> ListLowPointDev
@@ -563,7 +579,7 @@ namespace StatisticCommon
         //}
 
         //public TecView(bool[] arMarkSavePPBRValues, TYPE_PANEL type, int indx_tec, int indx_comp)
-        public TecView(FormChangeMode.KeyTECComponent key, TECComponentBase.TYPE type)
+        public TecView(FormChangeMode.KeyDevice key, TECComponentBase.TYPE type)
             : base(type)
         {
             m_idAISKUEParNumber = ID_AISKUE_PARNUMBER.FACT_03;
@@ -690,7 +706,7 @@ namespace StatisticCommon
             InitializeTECComponents ();
         }
 
-        public void ReInitTEC(StatisticCommon.TEC tec, FormChangeMode.KeyTECComponent key, ASUTP.Core.HMark markQueries)
+        public void ReInitTEC(StatisticCommon.TEC tec, FormChangeMode.KeyDevice key, ASUTP.Core.HMark markQueries)
         {
             CurrentKey = key;
 
@@ -807,7 +823,7 @@ namespace StatisticCommon
         {//!!! не используется            
         }
 
-        protected override void getPPBRValuesRequest(StatisticCommon.TEC t, TECComponent comp, DateTime date/*, AdminTS.TYPE_FIELDS mode*/)
+        protected override void getPPBRValuesRequest(StatisticCommon.TEC t, IDevice comp, DateTime date/*, AdminTS.TYPE_FIELDS mode*/)
         {//!!! не используется
         }
 
@@ -918,7 +934,8 @@ namespace StatisticCommon
                                 m_markWarning.Marked((int)TecView.INDEX_WARNING.CURR_MIN_TM_GEN);
                                 iRes = 1;
 
-                                Logging.Logg().Warning(@"TecView::GetCurrentTMGenResponse (" + m_ID + @") - currentMinuteTM_GenWarning=" + true.ToString (), Logging.INDEX_MESSAGE.W_001);
+                                Logging.Logg().Warning(@"TecView::GetCurrentTMGenResponse (" + CurrentKey + @") - currentMinuteTM_GenWarning=" + true.ToString ()
+                                    , Logging.INDEX_MESSAGE.W_001);
 
                                 //return true;
                                 //break; //bRes по-прежнему == true ???
@@ -1270,8 +1287,8 @@ namespace StatisticCommon
             else
                 ;
 
-            Logging.Logg().Error(@"TecView::StateErrors (" + m_tec.name_shr + @"[ID_COMPONENT=" + m_ID + @"]" + @")"
-                                + @" - ошибка " + reason + @". " + waiting + @".", Logging.INDEX_MESSAGE.NOT_SET);
+            Logging.Logg().Error($@"TecView::StateErrors ({m_tec.name_shr}, [KeyComponent={CurrentKey}])"
+                + $@" - ошибка {reason}. {waiting}", Logging.INDEX_MESSAGE.NOT_SET);
 
             return reasonRes;
         }
@@ -1333,7 +1350,7 @@ namespace StatisticCommon
                 WarningReport(msg);
             //else ;
 
-            Logging.Logg().Warning($"{reason}: ТЭЦ={m_tec.name_shr}, [ID_COMPONENT]={m_ID} ..."
+            Logging.Logg().Warning($"{reason}: ТЭЦ={m_tec.name_shr}, [KeyComponent]={CurrentKey} ..."
                 , Logging.INDEX_MESSAGE.NOT_SET);
         }
 
@@ -1824,8 +1841,8 @@ namespace StatisticCommon
 
             if (IsCanUseTECComponents == true)
             {
-                typeDB = DbTSQLInterface.getTypeDB(CurrentTECComponent.tec.connSetts[(int)CONN_SETT_TYPE.ADMIN].port);
-                iListenerId = m_dictIdListeners[CurrentTECComponent.tec.m_id][(int)CONN_SETT_TYPE.ADMIN];
+                typeDB = DbTSQLInterface.getTypeDB(CurrentDevice.tec.connSetts[(int)CONN_SETT_TYPE.ADMIN].port);
+                iListenerId = m_dictIdListeners[CurrentDevice.tec.m_id][(int)CONN_SETT_TYPE.ADMIN];
             }
             else
             {
@@ -3122,7 +3139,7 @@ namespace StatisticCommon
                                 + @") [" + hour + @", " + lastMin + @"]", Logging.INDEX_MESSAGE.D_003);
         }
 
-        public static DataTable restruct_table_pbrValues(DataTable table_in, TECComponentBase.TYPE type, List<TECComponent> listTECComp, FormChangeMode.KeyTECComponent key, TimeSpan tsOffsetToMoscow)
+        public static DataTable restruct_table_pbrValues(DataTable table_in, TECComponentBase.TYPE type, List<TECComponent> listTECComp, FormChangeMode.KeyDevice key, TimeSpan tsOffsetToMoscow)
         {
             DataTable table_in_restruct = new DataTable();
             List<DataColumn> cols_data = new List<DataColumn>();
@@ -3280,7 +3297,7 @@ namespace StatisticCommon
             return table_in_restruct;
         }
 
-        public static DataTable restruct_table_adminValues(DataTable table_in, TECComponentBase.TYPE type, List<TECComponent> listTECComp, FormChangeMode.KeyTECComponent key, TimeSpan tsOffsetToMoscow)
+        public static DataTable restruct_table_adminValues(DataTable table_in, TECComponentBase.TYPE type, List<TECComponent> listTECComp, FormChangeMode.KeyDevice key, TimeSpan tsOffsetToMoscow)
         {
             DataTable table_in_restruct = new DataTable();
             List<DataColumn> cols_data = new List<DataColumn>();

@@ -28,7 +28,7 @@ namespace trans_mt
 
         protected override int getPPBRDatesResponse(DataTable table, DateTime date) { int iRes = 0; return iRes; }
 
-        protected override void getPPBRValuesRequest(TEC t, TECComponent comp, DateTime date/*, AdminTS.TYPE_FIELDS mode*/)
+        protected override void getPPBRValuesRequest(TEC t, IDevice comp, DateTime date/*, AdminTS.TYPE_FIELDS mode*/)
         {
             string query = string.Empty;
             DateTime dtReq = date.Date.Add(-ASUTP.Core.HDateTime.TS_MSK_OFFSET_OF_UTCTIMEZONE);
@@ -69,7 +69,7 @@ namespace trans_mt
             DataRow[] hourRows;
             RDGStruct[,] arRDGValues = null;
 
-            TECComponent comp = allTECComponents[indxTECComponents];
+            TECComponent comp = FindTECComponent(CurrentKey) as TECComponent;
             arRDGValues = new RDGStruct[comp.m_listMTermId.Count, m_curRDGValues.Length];
 
             if (CheckNameFieldsOfTable (table, new string [] { "objName", "idFactor", "Datetime", "Value_MBT" }) == true) {
@@ -333,13 +333,16 @@ namespace trans_mt
 
             string msg = string.Empty;
             StatesMachine stateMachine = (StatesMachine)state;
+            TECComponent comp;
+
+            comp = FindTECComponent (CurrentKey) as TECComponent;
 
             switch (stateMachine)
             {
                 case StatesMachine.PPBRValues:
                     ActionReport("Получение данных плана.");
-                    if (indxTECComponents < allTECComponents.Count)
-                        getPPBRValuesRequest(allTECComponents[indxTECComponents].tec, allTECComponents[indxTECComponents], m_curDate.Date/*, AdminTS.TYPE_FIELDS.COUNT_TYPE_FIELDS*/);
+                    if (IsCanUseTECComponents == true)
+                        getPPBRValuesRequest(comp.tec, comp, m_curDate.Date/*, AdminTS.TYPE_FIELDS.COUNT_TYPE_FIELDS*/);
                     else
                         result = -1;
                     break;
@@ -450,14 +453,14 @@ namespace trans_mt
         {
         }
 
-        public override void GetRDGValues(/*int /*TYPE_FIELDS mode,*/ int indx, DateTime date)
+        public override void GetRDGValues(FormChangeMode.KeyDevice key, DateTime date)
         {
             delegateStartWait();
             lock (m_lockState)
             {
                 ClearStates();
 
-                indxTECComponents = indx;
+                CurrentKey = key;
 
                 ClearValues();
 

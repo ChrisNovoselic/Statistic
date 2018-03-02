@@ -61,7 +61,7 @@ namespace Statistic
                                 foreach (Vyvod.ParamVyvod pv in v.m_listLowPointDev)
                                     if (pv.m_id_param == Vyvod.ID_PARAM.T_PV) // является параметром - температура прямая (для которого есть плановые значения)
                                                                               //m_listTECComponentIndexDetail.Add(pv.m_id);
-                                        m_listKeyTECComponentDetail.Add(new FormChangeMode.KeyTECComponent () { Id = v.m_id, Mode = FormChangeMode.MODE_TECCOMPONENT.TG });
+                                        m_listKeyTECComponentDetail.Add(new FormChangeMode.KeyDevice () { Id = v.m_id, Mode = FormChangeMode.MODE_TECCOMPONENT.TG });
                                     else
                                         ;
                             else

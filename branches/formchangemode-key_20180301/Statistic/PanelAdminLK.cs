@@ -90,7 +90,7 @@ namespace Statistic {
         /// </summary>
         /// <param name="markQueries"></param>
         public PanelAdminLK(ASUTP.Core.HMark markQueries)
-            : base(markQueries, new int[] { (int)TECComponent.ID.LK, (int)TECComponent.ID.GTP })
+            : base(FormChangeMode.MODE_TECCOMPONENT.TEC, markQueries, new int[] { (int)TECComponent.ID.LK, (int)TECComponent.ID.GTP })
         {
             m_admin.SetDelegateSaveComplete(null);
         }
@@ -105,7 +105,7 @@ namespace Statistic {
             int iRes = -1
                 , id_gtp_owner = ((DataGridViewAdminLK)dgwAdminTable).GetIdGTPOwner(indx_tg);
 
-            foreach (FormChangeMode.KeyTECComponent key in ((AdminTS_LK)m_admin).m_listKeyTECComponentDetail)
+            foreach (FormChangeMode.KeyDevice key in ((AdminTS_LK)m_admin).m_listKeyTECComponentDetail)
                 if (key.Id == id_gtp_owner)
                     return ((AdminTS_LK)m_admin).m_listKeyTECComponentDetail.IndexOf(key);
                 else
@@ -122,7 +122,7 @@ namespace Statistic {
             double value = -1F;
             bool valid = false;
             
-            foreach (FormChangeMode.KeyTECComponent key in ((AdminTS_LK)m_admin).m_listKeyTECComponentDetail) //Перебор компонентов
+            foreach (FormChangeMode.KeyDevice key in ((AdminTS_LK)m_admin).m_listKeyTECComponentDetail) //Перебор компонентов
             {
                 if (key.Mode == FormChangeMode.MODE_TECCOMPONENT.TG) {
                 //Если ТГ, то
@@ -204,7 +204,7 @@ namespace Statistic {
         /// <param name="bSyncReq">Признак необходимости синхронизации по окончании выполнения метода</param>
         private void addTextBoxColumn(DateTime date, bool bNewValues, bool bSyncReq)
         {
-            FormChangeMode.KeyTECComponent key = ((AdminTS_LK)m_admin).CurrentKey;
+            FormChangeMode.KeyDevice key = ((AdminTS_LK)m_admin).CurrentKey;
             int indx = ((AdminTS_LK)m_admin).GetCurrentIndexTECComponent ();
 
             if (key.Id > (int)TECComponent.ID.TG) {

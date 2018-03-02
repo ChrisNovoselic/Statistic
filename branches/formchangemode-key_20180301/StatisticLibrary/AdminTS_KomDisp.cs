@@ -333,7 +333,7 @@ namespace StatisticCommon
             CONN_SETT_TYPE typeValues = (CONN_SETT_TYPE)type;
 
             int indxEv = -1;
-            FormChangeMode.KeyTECComponent prevKeyTECComponents = CurrentKey;
+            FormChangeMode.KeyDevice prevKeyTECComponents = CurrentKey;
             string strPBRNumber = string.Empty; // ...только для ПБР
 
             if (typeValues == CONN_SETT_TYPE.PBR)
@@ -361,10 +361,10 @@ namespace StatisticCommon
                     {
                         switch (typeValues) {
                             case CONN_SETT_TYPE.ADMIN:
-                                errRes = saveCSVValues(new FormChangeMode.KeyTECComponent () { Id = comp.m_id, Mode = comp.Mode }, typeValues);
+                                errRes = saveCSVValues(new FormChangeMode.KeyDevice () { Id = comp.m_id, Mode = comp.Mode }, typeValues);
                                 break;
                             case CONN_SETT_TYPE.PBR:
-                                errRes = saveCSVValues(new FormChangeMode.KeyTECComponent () { Id = comp.m_id, Mode = comp.Mode }, strPBRNumber);
+                                errRes = saveCSVValues(new FormChangeMode.KeyDevice () { Id = comp.m_id, Mode = comp.Mode }, strPBRNumber);
                                 break;
                             default:
                                 break;
@@ -403,7 +403,7 @@ namespace StatisticCommon
             GetRDGValues (prevKeyTECComponents);
         }
 
-        private Errors saveCSVValues (FormChangeMode.KeyTECComponent key, object pbr_number) {
+        private Errors saveCSVValues (FormChangeMode.KeyDevice key, object pbr_number) {
             Errors errRes = Errors.NoSet;
 
             RDGStruct[] curRDGValues = new RDGStruct[m_curRDGValues.Length];
@@ -632,7 +632,7 @@ namespace StatisticCommon
         /// Очередь индексов компонентов ТЭЦ для последоват. экспорта ПБР-значений
         ///  , копия '_listTECComponentIndex'
         /// </summary>
-        private List<FormChangeMode.KeyTECComponent> _listTECComponentKey;
+        private List<FormChangeMode.KeyDevice> _listTECComponentKey;
 
         /// <summary>
         /// Дата для экспорта ТОЛЬКО в режиме 'AUTO'
@@ -657,10 +657,10 @@ namespace StatisticCommon
 
         public void PrepareExportRDGValues()
         {
-            List<FormChangeMode.KeyTECComponent> listKey = GetListKeyTECComponent (FormChangeMode.MODE_TECCOMPONENT.GTP, true);
+            List<FormChangeMode.KeyDevice> listKey = GetListKeyTECComponent (FormChangeMode.MODE_TECCOMPONENT.GTP, true);
 
             if (_listTECComponentKey == null)
-                _listTECComponentKey = new List<FormChangeMode.KeyTECComponent>();
+                _listTECComponentKey = new List<FormChangeMode.KeyDevice>();
             else
                 ;
 
@@ -686,7 +686,7 @@ namespace StatisticCommon
         /// <param name="date">Дата, за которую требуется обновить/сохранить значения</param>
         /// <param name="currentIndex">Текущий индекс из списка объектов-компонентов (д.б. == listTECComponentIndex[0])</param>
         /// <param name="listTECComponentIndex">Список индексов оставшихся к обработке</param>
-        public delegate void DelegateUnitTestExportPBRValuesRequest (FormChangeMode.KeyTECComponent nextKey, DateTime date, FormChangeMode.KeyTECComponent currentKey, IEnumerable<FormChangeMode.KeyTECComponent> listTECComponentKey);
+        public delegate void DelegateUnitTestExportPBRValuesRequest (FormChangeMode.KeyDevice nextKey, DateTime date, FormChangeMode.KeyDevice currentKey, IEnumerable<FormChangeMode.KeyDevice> listTECComponentKey);
 
         private DelegateUnitTestExportPBRValuesRequest _eventUnitTestExportPBRValuesRequest;
 
@@ -717,9 +717,9 @@ namespace StatisticCommon
         /// <param name="compValues">Значения (админ. + ПБР) для одного из компонентов ТЭЦ</param>
         /// <param name="date">Дата, за которую получены значения</param>
         /// <returns>Очередной индекс для запроса значений из БД</returns>
-        public FormChangeMode.KeyTECComponent AddValueToExportRDGValues(RDGStruct[]compValues, DateTime date)
+        public FormChangeMode.KeyDevice AddValueToExportRDGValues(RDGStruct[]compValues, DateTime date)
         {
-            FormChangeMode.KeyTECComponent keyRes = new FormChangeMode.KeyTECComponent();
+            FormChangeMode.KeyDevice keyRes = new FormChangeMode.KeyDevice();
 
             if ((date - DateTime.MinValue.Date).Days > 0) {
                 if ((_listTECComponentKey.Count > 0)

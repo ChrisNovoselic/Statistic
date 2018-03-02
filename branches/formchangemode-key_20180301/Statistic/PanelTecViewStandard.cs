@@ -906,7 +906,7 @@ namespace Statistic
             }
         }
 
-        public PanelTecViewStandard(TEC tec, FormChangeMode.KeyTECComponent key, HMark markQueries)
+        public PanelTecViewStandard(TEC tec, FormChangeMode.KeyDevice key, HMark markQueries)
             : base(tec, key, markQueries)
         {
             m_arPercRows = new int [] { 5, 71 };

@@ -242,7 +242,7 @@ namespace StatisticCommon
     /// <summary>
     /// Класс описания ТЭЦ
     /// </summary>
-    public partial class TEC //: StatisticCommon.ITEC
+    public partial class TEC : IDevice
     {
         /// <summary>
         /// Перечисление - индексы типов источников данных (общий-централизованный источник данных, индивидуальный для каждой ТЭЦ - не поддерживается)
@@ -271,13 +271,20 @@ namespace StatisticCommon
         /// </summary>
         public enum TEC_TYPE { UNKNOWN = -1, COMMON, BIYSK };
         /// <summary>
+        /// Идентификатор особенной ТЭЦ
+        ///  (д. совпадать с идентификатором в БД конфигурации)
+        /// </summary>
+        public static int ID_TEC_BIYSK = 6;
+
+        public TEC tec { get { return this; } }
+        /// <summary>
         /// Идентификатор ТЭЦ (из БД конфигурации)
         /// </summary>
-        public int m_id;
+        public int m_id { get; set; }
         /// <summary>
         /// Краткое наименование
         /// </summary>
-        public string name_shr;
+        public string name_shr  { get; set; }
         /// <summary>
         /// Наименование-идентификатор в Модес-Центр
         /// </summary>
@@ -412,7 +419,7 @@ namespace StatisticCommon
         /// <param name="connSettType">Тип соединения с БД</param>
         /// <param name="indxTime">Индекс интервала времени</param>
         /// <returns>Строка-перечисление с идентификаторами</returns>
-        public string GetSensorsString (FormChangeMode.KeyTECComponent key, CONN_SETT_TYPE connSettType, HDateTime.INTERVAL indxTime = HDateTime.INTERVAL.UNKNOWN) {
+        public string GetSensorsString (FormChangeMode.KeyDevice key, CONN_SETT_TYPE connSettType, HDateTime.INTERVAL indxTime = HDateTime.INTERVAL.UNKNOWN) {
             string strRes = string.Empty;
 
             if (key.Mode == FormChangeMode.MODE_TECCOMPONENT.TEC) { // для ТЭЦ
@@ -936,7 +943,7 @@ namespace StatisticCommon
         /// </summary>
         /// <param name="num_comp">Номер (индекс) компонента (для ТЭЦ = -1)</param>
         /// <returns>Строка-перечисление с идентификаторами</returns>
-        private string idComponentValueQuery (FormChangeMode.KeyTECComponent key, TECComponentBase.TYPE type) {
+        private string idComponentValueQuery (FormChangeMode.KeyDevice key, TECComponentBase.TYPE type) {
             string strRes = string.Empty;
 
             if (key.Mode == FormChangeMode.MODE_TECCOMPONENT.TEC) {
@@ -1641,7 +1648,7 @@ namespace StatisticCommon
         /// <param name="dt">Дата/время - начало интервала, запрашиваемых данных</param>
         /// <param name="mode">Режим полей в таблице (в наст./время не актуально - используется 'AdminTS.TYPE_FIELDS.DYNAMIC')</param>
         /// <returns>Строка запроса</returns>
-        public string GetPBRValueQuery(FormChangeMode.KeyTECComponent key, DateTime dt, TECComponentBase.TYPE type)
+        public string GetPBRValueQuery(FormChangeMode.KeyDevice key, DateTime dt, TECComponentBase.TYPE type)
         {
             string strRes = string.Empty,
                     selectPBR = string.Empty;
@@ -1670,7 +1677,7 @@ namespace StatisticCommon
         /// <param name="dt">Дата/время - начало интервала, запрашиваемых данных</param>
         /// <param name="mode">Режим полей в таблице (в наст./время не актуально - используется 'AdminTS.TYPE_FIELDS.DYNAMIC')</param>
         /// <returns>Строка запроса</returns>
-        public string GetPBRValueQuery(TECComponent comp, DateTime dt)
+        public string GetPBRValueQuery(IDevice comp, DateTime dt)
         {
             string strRes = string.Empty,
                     selectPBR = string.Empty;
@@ -1969,7 +1976,7 @@ namespace StatisticCommon
             return query;
         }
 
-        public string GetAdminValueQuery(FormChangeMode.KeyTECComponent key, DateTime dt, TECComponentBase.TYPE type)
+        public string GetAdminValueQuery(FormChangeMode.KeyDevice key, DateTime dt, TECComponentBase.TYPE type)
         {
             string strRes = string.Empty,
                 selectAdmin = string.Empty;
@@ -2209,7 +2216,7 @@ namespace StatisticCommon
         /// <param name="mode">Режим полей в таблице (в наст./время не актуально - используется 'AdminTS.TYPE_FIELDS.DYNAMIC')</param>
         /// <param name="comp">Объект компонента ТЭЦ для которого запрашиваются данные</param>
         /// <returns>Строка запроса</returns>
-        public string GetAdminDatesQuery(TECComponent comp, DateTime dt/*, AdminTS.TYPE_FIELDS mode*/)
+        public string GetAdminDatesQuery(IDevice comp, DateTime dt/*, AdminTS.TYPE_FIELDS mode*/)
         {
             string strRes = string.Empty;
 

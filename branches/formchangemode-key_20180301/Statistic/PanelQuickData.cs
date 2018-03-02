@@ -1356,7 +1356,7 @@ namespace Statistic
                     }
                     else
                     {
-                        foreach (TG tg in m_parent.m_tecView.m_tec.list_TECComponents[m_parent.TecViewKey].m_listLowPointDev)
+                        foreach (TG tg in m_parent.m_tecView.m_tec.list_TECComponents.Find(comp => comp.m_id == m_parent.TecViewKey.Id).m_listLowPointDev)
                             showTMValue(tg, ref value_TM, min);
                     }
                 }

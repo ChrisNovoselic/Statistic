@@ -897,7 +897,7 @@ namespace Statistic
             public class TecViewLastMinutes : TecView
             {
                 public TecViewLastMinutes()
-                    : base(new FormChangeMode.KeyTECComponent () { Id = -1, Mode = FormChangeMode.MODE_TECCOMPONENT.Unknown }, TECComponentBase.TYPE.ELECTRO)
+                    : base(new FormChangeMode.KeyDevice () { Id = -1, Mode = FormChangeMode.MODE_TECCOMPONENT.Unknown }, TECComponentBase.TYPE.ELECTRO)
                 {
                 }
 
@@ -908,7 +908,7 @@ namespace Statistic
                     base.ChangeState(); //Run
                 }
 
-                public override void GetRDGValues(FormChangeMode.KeyTECComponent key, DateTime date)
+                public override void GetRDGValues(FormChangeMode.KeyDevice key, DateTime date)
                 {
                     ClearStates();
 

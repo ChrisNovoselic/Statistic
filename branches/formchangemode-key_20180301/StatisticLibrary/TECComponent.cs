@@ -10,6 +10,14 @@ using ASUTP.Core;
 
 namespace StatisticCommon
 {
+    public interface IDevice
+    {
+        string name_shr { get; set; }
+
+        int m_id { get; set; }
+
+        TEC tec { get; }
+    }
     /// <summary>
     /// Класс для описания основного компонента ТЭЦ
     /// </summary>
@@ -83,7 +91,7 @@ namespace StatisticCommon
         /// <summary>
         /// Краткое наименовнаие компонента
         /// </summary>
-        public string name_shr;
+        public string name_shr { get; set; }
         /// <summary>
         /// Нименование для использования в будущем (при расширении)
         /// </summary>
@@ -91,7 +99,7 @@ namespace StatisticCommon
         /// <summary>
         /// Идентификатор компонента (из БД конфигурации)
         /// </summary>
-        public int m_id;
+        public int m_id { get; set; }
         /// <summary>
         /// Индекс столбца в книге Excel со значениями ПБР для экспорта значений (подзадача сравнения ПБР-значений с аналогичными значениями из-вне, только для ГТП)
         /// </summary>
@@ -333,7 +341,7 @@ namespace StatisticCommon
     /// <summary>
     /// Класс для описания компонента ТЭЦ (ГТП, Б(Гр)ЩУ)
     /// </summary>
-    public class TECComponent : TECComponentBase
+    public class TECComponent : TECComponentBase,  IDevice
     {
         /// <summary>
         /// Список идентификаторов в Модес-Центр
@@ -350,7 +358,7 @@ namespace StatisticCommon
         /// <summary>
         /// Объект ТЭЦ - "владелец" компонента
         /// </summary>
-        public TEC tec;
+        public TEC tec { get; }
 
         public bool m_bKomUchet;
         /// <summary>

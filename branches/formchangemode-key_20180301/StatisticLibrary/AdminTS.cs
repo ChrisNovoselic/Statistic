@@ -300,8 +300,9 @@ namespace StatisticCommon
         /// <param name="mode">Модификатор типа компонентов</param>
         /// <param name="bLimitLK">Признак учета лимита ЛК при формировании списка</param>
         /// <returns>Возвращает список ключей, по которым возможен поиск компонента</returns>
-        public List <FormChangeMode.KeyTECComponent>GetListKeyTECComponent (FormChangeMode.MODE_TECCOMPONENT mode, bool bLimitLK) {
-            List <FormChangeMode.KeyTECComponent> listRes = new List <FormChangeMode.KeyTECComponent> ();
+        public virtual List <FormChangeMode.KeyDevice>GetListKeyTECComponent (FormChangeMode.MODE_TECCOMPONENT mode, bool bLimitLK)
+        {
+            List <FormChangeMode.KeyDevice> listRes = new List <FormChangeMode.KeyDevice> ();
 
             int iLimitIdTec = bLimitLK == true ? (int)TECComponent.ID.LK : (int)TECComponent.ID.GTP;
 
@@ -309,7 +310,7 @@ namespace StatisticCommon
                 case FormChangeMode.MODE_TECCOMPONENT.TEC:
                     foreach (TEC tec in m_list_tec) {
                         if (! (tec.m_id > iLimitIdTec))
-                            listRes.Add(new FormChangeMode.KeyTECComponent () { Id = tec.m_id, Mode = mode });
+                            listRes.Add(new FormChangeMode.KeyDevice () { Id = tec.m_id, Mode = mode });
                         else
                             ;
                     }
@@ -320,7 +321,7 @@ namespace StatisticCommon
                     foreach (TECComponent comp in allTECComponents) {
                         if ((!(comp.tec.m_id > iLimitIdTec))
                             && (mode == comp.Mode))
-                            listRes.Add(new FormChangeMode.KeyTECComponent () { Id = comp.m_id, Mode = mode });
+                            listRes.Add(new FormChangeMode.KeyDevice () { Id = comp.m_id, Mode = mode });
                         else
                             ;
                     }
@@ -356,7 +357,7 @@ namespace StatisticCommon
         /// </summary>
         /// <param name="indx">Идентификатор ТЭЦ(ЛК)</param>
         /// <returns>Возвращает флаг доступности</returns>
-        public virtual bool IsRDGExcel (FormChangeMode.KeyTECComponent key) {
+        public virtual bool IsRDGExcel (FormChangeMode.KeyDevice key) {
             bool bRes = false;
 
             bRes =  FindTECComponent(key).tec.GetAddingParameter(TEC.ADDING_PARAM_KEY.PATH_RDG_EXCEL).ToString().Length > 0;
@@ -401,7 +402,7 @@ namespace StatisticCommon
         /// Постановка в очередь получения административных и ПБР значений
         /// </summary>
         /// <param name="indx">Индекс компонента</param>
-        public virtual void GetRDGValues (FormChangeMode.KeyTECComponent key) {
+        public virtual void GetRDGValues (FormChangeMode.KeyDevice key) {
             //Запретить запись ПБР-значений
             protectSavedPPBRValues();
 
@@ -434,7 +435,7 @@ namespace StatisticCommon
         /// </summary>
         /// <param name="indx">Индекс компонента</param>
         /// <param name="date">Дата запрашиваемых значений</param>
-        public override void GetRDGValues(FormChangeMode.KeyTECComponent key, DateTime date)
+        public override void GetRDGValues(FormChangeMode.KeyDevice key, DateTime date)
         {
             //Запретить запись ПБР-значений
             protectSavedPPBRValues();
@@ -473,7 +474,7 @@ namespace StatisticCommon
         /// <param name="t">ТЭЦ</param>
         /// <param name="comp">Компонент ТЭЦ</param>
         /// <param name="date">Дата за которую необходимо получить значения</param>
-        protected override void getPPBRValuesRequest(TEC t, TECComponent comp, DateTime date/*, AdminTS.TYPE_FIELDS mode*/)
+        protected override void getPPBRValuesRequest(TEC t, IDevice comp, DateTime date/*, AdminTS.TYPE_FIELDS mode*/)
         {
             Request(m_dictIdListeners [t.m_id][(int)CONN_SETT_TYPE.PBR], t.GetPBRValueQuery(comp, date/*, mode*/));
         }
@@ -484,7 +485,7 @@ namespace StatisticCommon
         /// <param name="t">ТЭЦ</param>
         /// <param name="comp">Компонент ТЭЦ</param>
         /// <param name="date">Дата за которую необходимо получить значения</param>
-        protected void getAdminValuesRequest(TEC t, TECComponent comp, DateTime date/*, AdminTS.TYPE_FIELDS mode*/)
+        protected void getAdminValuesRequest(TEC t, IDevice comp, DateTime date/*, AdminTS.TYPE_FIELDS mode*/)
         {
             Request(m_dictIdListeners[t.m_id][(int)CONN_SETT_TYPE.ADMIN], t.GetAdminValueQuery(comp, date/*, mode*/));
         }
@@ -494,7 +495,7 @@ namespace StatisticCommon
         /// </summary>
         /// <param name="indx">Индекс компонента</param>
         /// <param name="date">Дата за которую необходимо получить значения</param>
-        public virtual void ImpRDGExcelValues(FormChangeMode.KeyTECComponent key, DateTime date)
+        public virtual void ImpRDGExcelValues(FormChangeMode.KeyDevice key, DateTime date)
         {
             lock (m_lockState)
             {
@@ -522,7 +523,7 @@ namespace StatisticCommon
         /// <param name="indx">Индекс компонента</param>
         /// <param name="date">Дата за которую необходимо выгрузить значения</param>
         /// <returns>Возвращает ошибки</returns>
-        public virtual Errors ExpRDGExcelValues(FormChangeMode.KeyTECComponent key, DateTime date)
+        public virtual Errors ExpRDGExcelValues(FormChangeMode.KeyDevice key, DateTime date)
         {
             delegateStartWait();
             //Logging.Logg().Debug("AdminTS::ExpRDGExcelValues () - delegateStartWait() - Интервал ожидания для semaDBAccess=" + DbInterface.MAX_WATING, Logging.INDEX_MESSAGE.NOT_SET);
@@ -967,10 +968,10 @@ namespace StatisticCommon
             item = new RDGStruct();
             double val = -1F;
 
-            TECComponent curTECComp = CurrentTECComponent;
+            IDevice curDev = CurrentDevice;
 
-            for (j = 0; j < curTECComp.m_listLowPointDev.Count; j++) {
-                indx_col = curTECComp.m_listLowPointDev[j].m_indx_col_rdg_excel;
+            for (j = 0; j < curDev.m_listLowPointDev.Count; j++) {
+                indx_col = curDev.m_listLowPointDev[j].m_indx_col_rdg_excel;
                 if (indx_col > 1)
                     if (!(m_tableRDGExcelValuesResponse.Rows[iRows][indx_col - 1] is DBNull) &&
                         (double.TryParse(m_tableRDGExcelValuesResponse.Rows[iRows][indx_col - 1].ToString(), out val) == true))
@@ -1002,7 +1003,7 @@ namespace StatisticCommon
         {
             if (IsCanUseTECComponents == true)
             {
-                TEC tec = CurrentTECComponent.tec;
+                TEC tec = CurrentDevice.tec;
                 int indx = -1;
                 if (m_markQueries.IsMarked ((int)CONN_SETT_TYPE.ADMIN) == true)
                     indx = (int)CONN_SETT_TYPE.ADMIN;
@@ -1026,7 +1027,7 @@ namespace StatisticCommon
         /// <param name="date">Дата за которую проводится выборка</param>
         protected virtual void GetAdminDatesRequest(DateTime date)
         {
-            TECComponent curTECComp;
+            IDevice curDev;
 
             if (m_curDate.Date > date.Date)
             {
@@ -1036,11 +1037,11 @@ namespace StatisticCommon
                 ;
 
             if (IsCanUseTECComponents == true) {
-                curTECComp = CurrentTECComponent;
+                curDev = CurrentDevice;
 
                 //Request(m_indxDbInterfaceCommon, m_listenerIdCommon, allTECComponents[indxTECComponents].tec.GetAdminDatesQuery(date));
-                Request (m_dictIdListeners [curTECComp.tec.m_id] [(int)CONN_SETT_TYPE.ADMIN]
-                    , curTECComp.tec.GetAdminDatesQuery (curTECComp, date.Add (-m_tsOffsetToMoscow)));
+                Request (m_dictIdListeners [curDev.tec.m_id] [(int)CONN_SETT_TYPE.ADMIN]
+                    , curDev.tec.GetAdminDatesQuery (curDev, date.Add (-m_tsOffsetToMoscow)));
             } else
                 throw new InvalidOperationException ("AdminTS::GetAdminDatesRequest () - нет компонентов ТЭЦ...");
         }
@@ -1051,7 +1052,7 @@ namespace StatisticCommon
         /// <param name="date">Дата за которую проводится выборка</param>
         protected override void getPPBRDatesRequest(DateTime date)
         {
-            TECComponent curTECComp;
+            IDevice curDev;
 
             if (m_curDate.Date > date.Date)
             {
@@ -1063,11 +1064,11 @@ namespace StatisticCommon
             m_iHavePBR_Number = -1;
 
             if (IsCanUseTECComponents == true) {
-                curTECComp = CurrentTECComponent;
+                curDev = CurrentDevice;
 
                 //Request(m_indxDbInterfaceCommon, m_listenerIdCommon, allTECComponents[indxTECComponents].tec.GetPBRDatesQuery(date));
-                Request (m_dictIdListeners [curTECComp.tec.m_id] [(int)CONN_SETT_TYPE.PBR],
-                    curTECComp.tec.GetPBRDatesQuery (curTECComp, date.Add (-m_tsOffsetToMoscow)));
+                Request (m_dictIdListeners [curDev.tec.m_id] [(int)CONN_SETT_TYPE.PBR],
+                    curDev.tec.GetPBRDatesQuery (curDev, date.Add (-m_tsOffsetToMoscow)));
             } else
                 throw new InvalidOperationException ("AdminTS::getPPBRDatesRequest () - нет компонентов ТЭЦ...");
         }
@@ -1767,27 +1768,27 @@ namespace StatisticCommon
             Request(m_dictIdListeners[comp.tec.m_id][(int)CONN_SETT_TYPE.PBR], query[(int)DbTSQLInterface.QUERY_TYPE.UPDATE] + query[(int)DbTSQLInterface.QUERY_TYPE.INSERT] + query[(int)DbTSQLInterface.QUERY_TYPE.DELETE]);
         }
 
-        /// <summary>
-        /// Получение индекса компонента ТЭЦ
-        /// </summary>
-        /// <param name="idTEC">ИД ТЭЦ</param>
-        /// <param name="idComp">ИД компонента</param>
-        /// <returns>Возвращает индекс</returns>
-        public int GetIndexTECComponent (int idTEC, int idComp) {
-            int iRes = -1;
+        ///// <summary>
+        ///// Получение индекса компонента ТЭЦ
+        ///// </summary>
+        ///// <param name="idTEC">ИД ТЭЦ</param>
+        ///// <param name="idComp">ИД компонента</param>
+        ///// <returns>Возвращает индекс</returns>
+        //public int GetIndexTECComponent (int idTEC, int idComp) {
+        //    int iRes = -1;
 
-            foreach (TECComponent comp in allTECComponents)
-            {
-                if ((comp.tec.m_id == idTEC) && (comp.m_id == idComp)) {
-                    iRes = allTECComponents.IndexOf (comp);
-                    break;
-                }
-                else
-                    ;
-            }
+        //    foreach (TECComponent comp in allTECComponents)
+        //    {
+        //        if ((comp.tec.m_id == idTEC) && (comp.m_id == idComp)) {
+        //            iRes = allTECComponents.IndexOf (comp);
+        //            break;
+        //        }
+        //        else
+        //            ;
+        //    }
 
-            return iRes;
-        }
+        //    return iRes;
+        //}
 
         /*protected override bool InitDbInterfaces()
         {
@@ -1926,9 +1927,9 @@ namespace StatisticCommon
 
             string strRep = string.Empty;
             StatesMachine stateMachine = (StatesMachine)state;
-            TECComponent comp;
+            IDevice comp;
 
-            comp = CurrentTECComponent;
+            comp = CurrentDevice;
 
             switch (stateMachine)
             {
@@ -1939,7 +1940,7 @@ namespace StatisticCommon
                 case StatesMachine.PPBRValues:
                     strRep = @"Получение данных плана.";
                     if (CurrentKey.Id > 0)
-                        getPPBRValuesRequest(comp.tec, comp
+                        getPPBRValuesRequest(comp.tec, comp as TECComponent
                             , m_curDate.Date.Add(-m_tsOffsetToMoscow)/*, m_typeFields*/);
                     else
                         ; //result = false;
@@ -1947,7 +1948,7 @@ namespace StatisticCommon
                 case StatesMachine.AdminValues:
                     strRep = @"Получение административных данных.";
                     if (m_markQueries.IsMarked ((int)CONN_SETT_TYPE.ADMIN) == true)
-                        getAdminValuesRequest(comp.tec, comp
+                        getAdminValuesRequest(comp.tec, comp as TECComponent
                             , m_curDate.Date.Add(-m_tsOffsetToMoscow)/*, m_typeFields*/);
                     else
                         ;
@@ -2015,13 +2016,13 @@ namespace StatisticCommon
                 case StatesMachine.SaveAdminValues:
                     strRep = @"Сохранение административных данных.";
                     if (m_markQueries.IsMarked((int)CONN_SETT_TYPE.ADMIN) == true)
-                        SetAdminValuesRequest(comp, m_curDate);
+                        SetAdminValuesRequest(comp as TECComponent, m_curDate);
                     else
                         ; //result = false;
                     break;
                 case StatesMachine.SavePPBRValues:
                     strRep = @"Сохранение ПЛАНА.";
-                    SetPPBRRequest(comp, m_curDate);
+                    SetPPBRRequest(comp as TECComponent, m_curDate);
                     break;
                 //case StatesMachine.LayoutGet:
                 //    ActionReport("Получение административных данных макета.");
@@ -2033,11 +2034,11 @@ namespace StatisticCommon
                 //    break;
                 case StatesMachine.ClearAdminValues:
                     strRep = @"Сохранение административных данных.";
-                    ClearAdminValuesRequest (comp, m_curDate);
+                    ClearAdminValuesRequest (comp as TECComponent, m_curDate);
                     break;
                 case StatesMachine.ClearPPBRValues:
                     strRep = @"Сохранение ПЛАНА.";
-                    ClearPPBRRequest(comp, m_curDate);
+                    ClearPPBRRequest(comp as TECComponent, m_curDate);
                     break;
                 default:
                     break;
@@ -2600,7 +2601,7 @@ namespace StatisticCommon
         /// <param name="indx">Индекс элемента в глобальном списке, значения для которого требуется сохранить</param>
         /// <param name="date">Дата, значения за которую требуется сохранить</param>
         /// <param name="bCallback">Признак необходимости сообщения о результате выполнения метода</param>
-        public virtual void SaveRDGValues(FormChangeMode.KeyTECComponent key, DateTime date, bool bCallback)
+        public virtual void SaveRDGValues(FormChangeMode.KeyDevice key, DateTime date, bool bCallback)
         {
             lock (m_lockState) //???
             {
@@ -2741,7 +2742,7 @@ namespace StatisticCommon
         /// <param name="ownerMode">Режим объекта-владельца</param>
         /// <param name="indx">Индекс компонента</param>
         /// <returns>Идентификатор компонента</returns>
-        public int GetIdOwnerTECComponent(FormChangeMode.MODE_TECCOMPONENT ownerMode, FormChangeMode.KeyTECComponent key)
+        public int GetIdOwnerTECComponent(FormChangeMode.MODE_TECCOMPONENT ownerMode, FormChangeMode.KeyDevice key)
         {
             int id_tec = -1;
 
@@ -2774,7 +2775,7 @@ namespace StatisticCommon
         /// </summary>
         /// <param name="indx">Индекс компонента</param>
         /// <returns>ИД компонента</returns>
-        public int GetIdPCOwnerTECComponent(FormChangeMode.KeyTECComponent key)
+        public int GetIdPCOwnerTECComponent(FormChangeMode.KeyDevice key)
         {
             return GetIdOwnerTECComponent(FormChangeMode.MODE_TECCOMPONENT.PC, key);
         }
@@ -2784,12 +2785,12 @@ namespace StatisticCommon
         /// </summary>
         /// <param name="indx">Индекс компонента</param>
         /// <returns>ИД компонента</returns>
-        public int GetIdGTPOwnerTECComponent(FormChangeMode.KeyTECComponent key)
+        public int GetIdGTPOwnerTECComponent(FormChangeMode.KeyDevice key)
         {
             return GetIdOwnerTECComponent(FormChangeMode.MODE_TECCOMPONENT.GTP, key);
         }
 
-        private int getIndexTECComponent(FormChangeMode.KeyTECComponent key)
+        private int getIndexTECComponent(FormChangeMode.KeyDevice key)
         {
             int iRes = -1;
 
@@ -2858,23 +2859,22 @@ namespace StatisticCommon
         /// <param name="key">Ключ компонента</param>
         /// <param name="bWithNameTECOwner">Признак включения в наименование наименования родительской ТЭЦ</param>
         /// <returns>Наименование</returns>
-        public string GetNameTECComponent (FormChangeMode.KeyTECComponent key, bool bWithNameTECOwner)
+        public string GetNameTECComponent (FormChangeMode.KeyDevice key, bool bWithNameTECOwner)
         {
             string strRes = string.Empty;
 
-            int indx = -1;
+            IDevice dev;
 
-            indx = currentIndexTECComponent;
+            if (allTECComponents.Count > 0) {
+                dev = FindTECComponent (key);
 
-            if ((!(indx < 0))
-                && (indx < allTECComponents.Count))
                 if (key.Mode == FormChangeMode.MODE_TECCOMPONENT.TEC)
-                    strRes = allTECComponents [indx].name_shr;
+                    strRes = dev.name_shr;
                 else
                     strRes = bWithNameTECOwner == true
-                        ? string.Format("{0} - {1}", allTECComponents [indx].tec.name_shr, allTECComponents [indx].name_shr )
-                            : allTECComponents [indx].name_shr;
-            else
+                        ? string.Format ("{0} - {1}", dev.tec.name_shr, dev.name_shr)
+                            : dev.name_shr;
+            } else
                 ;
 
             return strRes;
@@ -2957,6 +2957,17 @@ namespace StatisticCommon
                 bRes = !(m_prevRDGValues [i] == m_curRDGValues [i]);
 
             return bRes;
+        }
+
+        /// <summary>
+        /// Возвратить компонент ТЭЦ с указанным в аргументе ИГО
+        ///  , только для 'trans_mc_cmd'
+        /// </summary>
+        /// <param name="id_mc">Идентификатор ГО</param>
+        /// <returns>Компонент ТЭЦ</returns>
+        public TECComponent GetTECComponentOfIdMC (int id_mc)
+        {
+            return allTECComponents.Find (comp => !(comp.m_listMCentreId.IndexOf (id_mc) < 0));
         }
     }
 }

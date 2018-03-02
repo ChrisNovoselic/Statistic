@@ -321,7 +321,7 @@ namespace Statistic
             private class TecViewSobstvNyzhdy : TecView
             {
                 public TecViewSobstvNyzhdy()
-                    : base(new FormChangeMode.KeyTECComponent () { Id = -1, Mode = FormChangeMode.MODE_TECCOMPONENT.Unknown }, TECComponentBase.TYPE.ELECTRO)
+                    : base(new FormChangeMode.KeyDevice () { Id = -1, Mode = FormChangeMode.MODE_TECCOMPONENT.Unknown }, TECComponentBase.TYPE.ELECTRO)
                 {
                 }
 
@@ -332,7 +332,7 @@ namespace Statistic
                     base.ChangeState();
                 }
 
-                public override void GetRDGValues(FormChangeMode.KeyTECComponent key, DateTime date)
+                public override void GetRDGValues(FormChangeMode.KeyDevice key, DateTime date)
                 {
                     ClearStates();
 
@@ -363,7 +363,7 @@ namespace Statistic
             /// <summary>
             /// Текущий индекс компонента из списка 'allTECComponents' (для сохранения между вызовами функций)
             /// </summary>
-            private FormChangeMode.KeyTECComponent TecViewKey
+            private FormChangeMode.KeyDevice TecViewKey
             {
                 get
                 {
@@ -969,19 +969,8 @@ namespace Statistic
                         ExcelFile ef = new ExcelFile();
                         ef.Worksheets.Add(strSheetName);
                         ExcelWorksheet ws = ef.Worksheets[0];
-                        if (Mode == FormChangeMode.MODE_TECCOMPONENT.TEC)
-                        {
-                            ws.Cells[0, 0].Value = "Собственные нужды " + m_tecView.m_tec.name_shr;
-                            if (m_tecView.m_tec.list_TECComponents.Count != 1)
-                            {
-                                //foreach (TECComponent g in m_tecView.m_tec.list_TECComponents)
-                                //    ws.Cells[0, 0].Value += ", " + g.name_shr;
-                            }
-                        }
-                        else
-                        {
-                            ws.Cells[0, 0].Value = "Собственные нужды " + m_tecView.m_tec.name_shr + ", " + m_tecView.m_tec.list_TECComponents[indx_TECComponent].name_shr;
-                        }
+
+                        ws.Cells[0, 0].Value = "Собственные нужды " + m_tecView.NameShr;
 
                         ws.Cells[1, 0].Value = "Мощность на " + m_arLabel[(int)INDEX_LABEL.DATETIME_TM_SN].Text;
 

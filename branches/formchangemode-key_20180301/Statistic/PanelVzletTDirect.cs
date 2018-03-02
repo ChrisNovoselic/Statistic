@@ -88,7 +88,7 @@ namespace Statistic
                 if ((!(listTec[i].m_id > (int)TECComponent.ID.LK))
                     && (!(listTec[i].Type == TEC.TEC_TYPE.BIYSK)))
                 {
-                    ptvtd = new PanelTecVzletTDirect(listTec[i], new FormChangeMode.KeyTECComponent () { Id =listTec[i].m_id, Mode = FormChangeMode.MODE_TECCOMPONENT.TEC });
+                    ptvtd = new PanelTecVzletTDirect(listTec[i], new FormChangeMode.KeyDevice () { Id =listTec[i].m_id, Mode = FormChangeMode.MODE_TECCOMPONENT.TEC });
                     this.Controls.Add(ptvtd, i % this.ColumnCount, i / this.ColumnCount);
                 }
                 else
@@ -1353,7 +1353,7 @@ namespace Statistic
             /// </summary>
             private class DataSource : TecView
             {
-                public DataSource(FormChangeMode.KeyTECComponent key)
+                public DataSource(FormChangeMode.KeyDevice key)
                     : base (key, TECComponentBase.TYPE.TEPLO)
                 {
                     m_idAISKUEParNumber = ID_AISKUE_PARNUMBER.FACT_30;
@@ -1820,7 +1820,7 @@ namespace Statistic
                     return iRes;
                 }
 
-                public override void GetRDGValues(FormChangeMode.KeyTECComponent key, DateTime date)
+                public override void GetRDGValues(FormChangeMode.KeyDevice key, DateTime date)
                 {
                     ClearStates();
 
@@ -1917,7 +1917,7 @@ namespace Statistic
             /// <summary>
             /// constructor
             /// </summary>
-            public PanelTecVzletTDirect(TEC tec, FormChangeMode.KeyTECComponent key)
+            public PanelTecVzletTDirect(TEC tec, FormChangeMode.KeyDevice key)
                 : base(tec, key, new ASUTP.Core.HMark (new int[] { (int)CONN_SETT_TYPE.ADMIN, (int)CONN_SETT_TYPE.PBR, (int)CONN_SETT_TYPE.DATA_VZLET }))
             {
                 initialize();
@@ -1926,7 +1926,7 @@ namespace Statistic
             /// constructor
             /// </summary>
             /// <param name="container">Родительский объект по отношению к создаваемому</param>
-            public PanelTecVzletTDirect(IContainer container, TEC tec, FormChangeMode.KeyTECComponent key, ASUTP.Core.HMark markQueries)
+            public PanelTecVzletTDirect(IContainer container, TEC tec, FormChangeMode.KeyDevice key, ASUTP.Core.HMark markQueries)
                 : base(tec, key, markQueries)
             {
                 container.Add(this);
@@ -1975,7 +1975,7 @@ namespace Statistic
             /// </summary>
             /// <param name="indx_tec">Индекс ТЭЦ в глобальном списке</param>
             /// <param name="indx_comp">Индекс компонента ТЭЦ (внутренний для ТЭЦ), если -1, то ТЭЦ в целом</param>
-            protected override void createTecView(FormChangeMode.KeyTECComponent key)
+            protected override void createTecView(FormChangeMode.KeyDevice key)
             {
                 m_tecView = new DataSource(key);
             }

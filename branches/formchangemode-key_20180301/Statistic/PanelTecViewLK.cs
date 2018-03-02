@@ -27,7 +27,7 @@ namespace Statistic
         /// <param name="tec">ТЭЦ</param>
         /// <param name="key">Ключ компонента</param>
         /// <param name="label">лейбл панели пользовательского вида ТЭЦ</param>
-        public PanelLKView(StatisticCommon.TEC tec, FormChangeMode.KeyTECComponent key, PanelCustomTecView.HLabelCustomTecView label = null)
+        public PanelLKView(StatisticCommon.TEC tec, FormChangeMode.KeyDevice key, PanelCustomTecView.HLabelCustomTecView label = null)
             // В АИИС КУЭ читаем "мощность", в СОТИАССО - температуру окр.воздуха
             //Вызов конструктора из базового класса PanelTecViewBase, передаем параметры: ТЭЦ, номер ТЭЦ,номер компонента,
             //экземпляр класса HMark (источник данных) с массивом аргументов: администратор, ПБР, данные АИИСКУЭ и СОТИАССО
@@ -70,7 +70,7 @@ namespace Statistic
             /// </summary>
             /// <param name="indx_tec">индекс тэц</param>
             /// <param name="indx_comp">индекс компонента</param>
-            public TecViewLK (FormChangeMode.KeyTECComponent key)
+            public TecViewLK (FormChangeMode.KeyDevice key)
                 //Вызов конструктора из базового класса TecView, передаем параметры: индекс тэц, индекс компонента,
                 //компонент принадлежащий электрической части тэц
                 : base (key, TECComponentBase.TYPE.ELECTRO) 
@@ -88,7 +88,7 @@ namespace Statistic
                 base.ChangeState(); //Run
             }
 
-            public override void GetRDGValues(FormChangeMode.KeyTECComponent key, DateTime date)
+            public override void GetRDGValues(FormChangeMode.KeyDevice key, DateTime date)
             {
                 ClearStates();
 
@@ -1440,7 +1440,7 @@ namespace Statistic
         //    m_tecView.SetDelegateReport(fErr, fWar, fAct, fClear);
         //}
 
-        protected override void createTecView(FormChangeMode.KeyTECComponent key)
+        protected override void createTecView(FormChangeMode.KeyDevice key)
         {
             m_tecView = new TecViewLK(key);
         }

@@ -133,7 +133,7 @@ namespace trans_tg
 
             if (IsCanUseTECComponents == true)
                 //Request(m_indxDbInterfaceCommon, m_listenerIdCommon, allTECComponents[indxTECComponents].tec.GetAdminDatesQuery(date));
-                Request(m_dictIdListeners[allTECComponents[indxTECComponents].tec.m_id][(int)StatisticCommon.CONN_SETT_TYPE.ADMIN], getAdminDatesQuery(date/*, m_typeFields*/, allTECComponents[indxTECComponents]));
+                Request(m_dictIdListeners[CurrentDevice.tec.m_id][(int)StatisticCommon.CONN_SETT_TYPE.ADMIN], getAdminDatesQuery(date/*, m_typeFields*/, CurrentDevice));
             else
                 throw new InvalidOperationException ("AdminTransTG::impRDGExcelValuesResponse () - нет компонентов ТЭЦ...");
         }
@@ -149,7 +149,7 @@ namespace trans_tg
 
             if (IsCanUseTECComponents == true)
                 //Request(m_indxDbInterfaceCommon, m_listenerIdCommon, allTECComponents[indxTECComponents].tec.GetPBRDatesQuery(date));
-                Request(m_dictIdListeners[allTECComponents[indxTECComponents].tec.m_id][(int)StatisticCommon.CONN_SETT_TYPE.ADMIN], getPBRDatesQuery(date/*, m_typeFields*/, allTECComponents[indxTECComponents]));
+                Request(m_dictIdListeners[CurrentDevice.tec.m_id][(int)StatisticCommon.CONN_SETT_TYPE.ADMIN], getPBRDatesQuery(date/*, m_typeFields*/, CurrentDevice));
             else
                 throw new InvalidOperationException ("AdminTransTG::impRDGExcelValuesResponse () - нет компонентов ТЭЦ...");
         }
@@ -168,7 +168,7 @@ namespace trans_tg
             //              @"' ORDER BY DATE ASC";
             //        break;
             //    case AdminTS.TYPE_FIELDS.DYNAMIC:
-                    strRes = @"SELECT DATE, ID FROM " + allTECComponents[indxTECComponents].tec.m_strNameTableAdminValues/*[(int)mode]*/ + " WHERE" +
+                    strRes = @"SELECT DATE, ID FROM " + FindTECComponent(CurrentKey).tec.m_strNameTableAdminValues/*[(int)mode]*/ + " WHERE" +
                             @" ID_COMPONENT = " + comp.m_id +
                           @" AND DATE > '" + dt.AddHours(-1 *
                             //allTECComponents[indxTECComponents].tec.m_timezone_offset_msc
@@ -199,7 +199,7 @@ namespace trans_tg
             //                @"' ORDER BY DATE_TIME ASC";
             //        break;
             //    case AdminTS.TYPE_FIELDS.DYNAMIC:
-                    strRes = @"SELECT DATE_TIME, ID FROM " + @"[" + allTECComponents[indxTECComponents].tec.m_strNameTableUsedPPBRvsPBR/*[(int)mode]*/ + @"]" +
+                    strRes = @"SELECT DATE_TIME, ID FROM " + @"[" + FindTECComponent(CurrentKey).tec.m_strNameTableUsedPPBRvsPBR/*[(int)mode]*/ + @"]" +
                             @" WHERE" +
                             @" ID_COMPONENT = " + comp.m_id + "" +
                             @" AND DATE_TIME > '" + dt.AddHours(-1 *
@@ -220,9 +220,9 @@ namespace trans_tg
             get  {
                 int iRes = 0;
 
-                foreach (int indx in m_listKeyTECComponentDetail)
+                foreach (FormChangeMode.KeyDevice key in m_listKeyTECComponentDetail)
                 {
-                    if (modeTECComponent(indx) == FormChangeMode.MODE_TECCOMPONENT.GTP)
+                    if (key.Mode == FormChangeMode.MODE_TECCOMPONENT.GTP)
                         iRes++;
                     else
                         ;
@@ -232,18 +232,19 @@ namespace trans_tg
             }
         }
 
-        protected override string [] setAdminValuesQuery(TEC t, TECComponent comp, DateTime date)
+        protected override string [] setAdminValuesQuery(TECComponent comp, DateTime date)
         {
-            string [] resQuery = base.setAdminValuesQuery(t, comp, date);
+            string [] resQuery = base.setAdminValuesQuery(comp, date);
 
+            RDGStruct [] values;
             int currentHour = -1
-                , offset = -1;
+                , offset = -1
+                , indx = -1;
 
+            indx = m_listKeyTECComponentDetail.IndexOf (new FormChangeMode.KeyDevice () { Id = comp.m_id, Mode = comp.Mode }) - CountGTP;
+            values = m_listCurTimezoneOffsetRDGExcelValues [indx];
             date = date.Date;
-
             currentHour = 0;
-
-            int indx = m_listKeyTECComponentDetail.IndexOf (GetIndexTECComponent (t.m_id, comp.m_id)) - CountGTP;
 
             if (indx < m_listCurTimezoneOffsetRDGExcelValues.Count)
             {
@@ -259,10 +260,10 @@ namespace trans_tg
                         //    case AdminTS.TYPE_FIELDS.STATIC:
                         //        break;
                         //    case AdminTS.TYPE_FIELDS.DYNAMIC:
-                                resQuery[(int)ASUTP.Database.DbTSQLInterface.QUERY_TYPE.UPDATE] += @"UPDATE " + t.m_strNameTableAdminValues/*[(int)m_typeFields]*/ + " SET " +
-                                            @"REC='" + m_listCurTimezoneOffsetRDGExcelValues[indx][i].recomendation.ToString("F2", CultureInfo.InvariantCulture) +
-                                            @"', " + @"IS_PER=" + (m_listCurTimezoneOffsetRDGExcelValues[indx][i].deviationPercent ? "1" : "0") +
-                                            @", " + "DIVIAT='" + m_listCurTimezoneOffsetRDGExcelValues[indx][i].deviation.ToString("F2", CultureInfo.InvariantCulture) +
+                                resQuery[(int)ASUTP.Database.DbTSQLInterface.QUERY_TYPE.UPDATE] += @"UPDATE " + comp.tec.m_strNameTableAdminValues/*[(int)m_typeFields]*/ + " SET " +
+                                            @"REC='" + values [i].recomendation.ToString("F2", CultureInfo.InvariantCulture) +
+                                            @"', " + @"IS_PER=" + (values[i].deviationPercent ? "1" : "0") +
+                                            @", " + "DIVIAT='" + values[i].deviation.ToString("F2", CultureInfo.InvariantCulture) +
                                             @"', " + "SEASON=" + (offset > 0 ? (SEASON_BASE + (int)HAdmin.seasonJumpE.WinterToSummer) : (SEASON_BASE + (int)HAdmin.seasonJumpE.SummerToWinter)) +
                                             @", " + "FC=" + (m_curRDGValues[i].fc ? 1 : 0) +
                                             @" WHERE" +
@@ -289,9 +290,9 @@ namespace trans_tg
                                                 //t.m_timezone_offset_msc
                                                 HDateTime.TS_NSK_OFFSET_OF_MOSCOWTIMEZONE.Hours
                                                 )).ToString("yyyyMMdd HH:mm:ss") +
-                                            @"', '" + m_listCurTimezoneOffsetRDGExcelValues[indx][i].recomendation.ToString("F2", CultureInfo.InvariantCulture) +
-                                            @"', " + (m_listCurTimezoneOffsetRDGExcelValues[indx][i].deviationPercent ? "1" : "0") +
-                                            @", '" + m_listCurTimezoneOffsetRDGExcelValues[indx][i].deviation.ToString("F2", CultureInfo.InvariantCulture) +
+                                            @"', '" + values[i].recomendation.ToString("F2", CultureInfo.InvariantCulture) +
+                                            @"', " + (values[i].deviationPercent ? "1" : "0") +
+                                            @", '" + values[i].deviation.ToString("F2", CultureInfo.InvariantCulture) +
                                             @"', " + (comp.m_id) +
                                             @", " + (offset > 0 ? (SEASON_BASE + (int)HAdmin.seasonJumpE.WinterToSummer) : (SEASON_BASE + (int)HAdmin.seasonJumpE.SummerToWinter)) +
                                             @", " + (m_curRDGValues[i].fc ? 1 : 0) +
@@ -312,18 +313,20 @@ namespace trans_tg
             return resQuery;
         }
 
-        protected override string [] setPPBRQuery(TEC t, TECComponent comp, DateTime date)
+        protected override string [] setPPBRQuery(TECComponent comp, DateTime date)
         {
             int err = -1; // признак ошибки при определении номера ПБР
 
-            string [] resQuery = base.setPPBRQuery(t, comp, date);
-            int currentHour = -1;
+            RDGStruct [] values;
+            string [] resQuery = base.setPPBRQuery(comp, date);
+            int currentHour = -1
+                , indx = -1;
 
+            indx = m_listKeyTECComponentDetail.IndexOf (new FormChangeMode.KeyDevice () { Id = comp.m_id, Mode = comp.Mode }) - CountGTP;
+            values = m_listCurTimezoneOffsetRDGExcelValues [indx];
             date = date.Date;
-
             currentHour = 0;
 
-            int indx = m_listKeyTECComponentDetail.IndexOf(GetIndexTECComponent(t.m_id, comp.m_id)) - CountGTP;
             if (indx < m_listCurTimezoneOffsetRDGExcelValues.Count)
             {
                 for (int i = currentHour; i < m_listTimezoneOffsetHaveDates[(int)CONN_SETT_TYPE.PBR].Count; i++)
@@ -336,13 +339,13 @@ namespace trans_tg
                         //    case AdminTS.TYPE_FIELDS.STATIC:
                         //        break;
                         //    case AdminTS.TYPE_FIELDS.DYNAMIC:
-                                resQuery[(int)DbTSQLInterface.QUERY_TYPE.UPDATE] += @"UPDATE " + @"[" + t.m_strNameTableUsedPPBRvsPBR/*[(int)m_typeFields]*/ + @"]" +
+                                resQuery[(int)DbTSQLInterface.QUERY_TYPE.UPDATE] += @"UPDATE " + @"[" + comp.tec.m_strNameTableUsedPPBRvsPBR/*[(int)m_typeFields]*/ + @"]" +
                                             " SET " +
-                                            @"PBR='" + m_listCurTimezoneOffsetRDGExcelValues[indx][i].pbr.ToString("F2", CultureInfo.InvariantCulture) + "'" +
-                                            @", Pmin='" + m_listCurTimezoneOffsetRDGExcelValues[indx][i].pmin.ToString("F2", CultureInfo.InvariantCulture) + "'" +
-                                            @", Pmax='" + m_listCurTimezoneOffsetRDGExcelValues[indx][i].pbr.ToString("F2", CultureInfo.InvariantCulture) + "'" +
+                                            @"PBR='" + values[i].pbr.ToString("F2", CultureInfo.InvariantCulture) + "'" +
+                                            @", Pmin='" + values[i].pmin.ToString("F2", CultureInfo.InvariantCulture) + "'" +
+                                            @", Pmax='" + values[i].pbr.ToString("F2", CultureInfo.InvariantCulture) + "'" +
                                             @" WHERE " +
-                                            t.m_strNamesField [(int)TEC.INDEX_NAME_FIELD.PBR_DATETIME] + @" = '" + date.AddHours((i + 1) + (-1 *
+                                            comp.tec.m_strNamesField [(int)TEC.INDEX_NAME_FIELD.PBR_DATETIME] + @" = '" + date.AddHours((i + 1) + (-1 *
                                                 //t.m_timezone_offset_msc
                                                 HDateTime.TS_NSK_OFFSET_OF_MOSCOWTIMEZONE.Hours
                                                 )).ToString("yyyyMMdd HH:mm:ss") +
@@ -372,9 +375,9 @@ namespace trans_tg
                                                 ), out err) +
                                             @"', " + comp.m_id +
                                             @", '" + "0" + "'" +
-                                            @", '" + m_listCurTimezoneOffsetRDGExcelValues[indx][i].pbr.ToString("F1", CultureInfo.InvariantCulture) + "'" +
-                                            @", '" + m_listCurTimezoneOffsetRDGExcelValues[indx][i].pmin.ToString("F1", CultureInfo.InvariantCulture) + "'" +
-                                            @", '" + m_listCurTimezoneOffsetRDGExcelValues[indx][i].pmax.ToString("F1", CultureInfo.InvariantCulture) + "'" +
+                                            @", '" + values[i].pbr.ToString("F1", CultureInfo.InvariantCulture) + "'" +
+                                            @", '" + values[i].pmin.ToString("F1", CultureInfo.InvariantCulture) + "'" +
+                                            @", '" + values[i].pmax.ToString("F1", CultureInfo.InvariantCulture) + "'" +
                                             @"),";
                         //        break;
                         //    default:
@@ -409,9 +412,9 @@ namespace trans_tg
         {
             m_listCurRDGValues = new List<RDGStruct[]>();
 
-            foreach (int indx in m_listKeyTECComponentDetail)
+            foreach (FormChangeMode.KeyDevice key in m_listKeyTECComponentDetail)
             {
-                int j = m_listKeyTECComponentDetail.IndexOf(indx);
+                int j = m_listKeyTECComponentDetail.IndexOf(key);
 
                 m_listCurRDGValues.Add(new RDGStruct[((AdminTS_NSS)source).m_listCurRDGValues[j].Length]);
                 ((AdminTS_NSS)source).m_listCurRDGValues[j].CopyTo(m_listCurRDGValues[j], 0);
@@ -420,7 +423,7 @@ namespace trans_tg
             getCurTimezoneOffsetRDGExcelValues((AdminTransTG)source);
         }
 
-        public override void SaveRDGValues(int id, DateTime date, bool bCallback)
+        public override void SaveRDGValues(FormChangeMode.KeyDevice key, DateTime date, bool bCallback)
         {
             m_prevDate = date.Date;
 
@@ -430,11 +433,11 @@ namespace trans_tg
         public override void ClearRDGValues(DateTime date) {
             m_prevDate = date.Date;
             
-            foreach (int indx in m_listKeyTECComponentDetail)
+            foreach (FormChangeMode.KeyDevice key in m_listKeyTECComponentDetail)
             {
-                if (modeTECComponent (indx) == FormChangeMode.MODE_TECCOMPONENT.TG)
+                if (key.Mode == FormChangeMode.MODE_TECCOMPONENT.TG)
                 {
-                    indxTECComponents = indx;
+                    CurrentKey = key;
 
                     base.ClearRDG();
                 }

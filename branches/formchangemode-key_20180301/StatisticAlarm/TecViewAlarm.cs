@@ -70,9 +70,10 @@ namespace StatisticAlarm
         /// Конструктор - основной (параметры - базового класа)
         /// </summary>
         /// <param name="key">Ключ элемента</param>
-        public TecViewAlarm (FormChangeMode.KeyTECComponent key)
+        public TecViewAlarm (FormChangeMode.KeyDevice key)
             : base(key, TECComponentBase.TYPE.ELECTRO)
         {
+            updateGUI_Fact = new IntDelegateIntIntFunc (AlarmRegistred);
         }
 
         public override void ChangeState()
@@ -111,7 +112,7 @@ namespace StatisticAlarm
                         else
                             ;
 
-                        CurrentKey = new FormChangeMode.KeyTECComponent () { Id = tc.m_id, Mode = tc.Mode };
+                        CurrentKey = new FormChangeMode.KeyDevice () { Id = tc.m_id, Mode = tc.Mode };
 
                         getRDGValues();
                     }
@@ -134,7 +135,7 @@ namespace StatisticAlarm
         /// </summary>
         /// <param name="key">Ключ компонента</param>
         /// <param name="date">Дата запрашиваемых значений</param>
-        public override void GetRDGValues(FormChangeMode.KeyTECComponent key, DateTime date)
+        public override void GetRDGValues(FormChangeMode.KeyDevice key, DateTime date)
         {
             m_prevDate = m_curDate;
             m_curDate = date.Date;
@@ -219,7 +220,7 @@ namespace StatisticAlarm
             if (((curHour == 24) || (m_markWarning.IsMarked((int)INDEX_WARNING.LAST_HOUR) == true))
                 || ((curMinute == 0) || (m_markWarning.IsMarked((int)INDEX_WARNING.LAST_MIN) == true)))
             {
-                Logging.Logg().Error(@"TecView::AlarmEventRegistred (" + m_tec.name_shr + @"[ID_COMPONENT=" + m_ID + @"])"
+                Logging.Logg().Error(@"TecView::AlarmEventRegistred (" + m_tec.name_shr + @"[KeyComponent=" + CurrentKey + @"])"
                         + @" - curHour=" + curHour + @"; curMinute=" + curMinute
                     , Logging.INDEX_MESSAGE.NOT_SET);
             }
@@ -395,7 +396,7 @@ namespace StatisticAlarm
                             }
                             else
                                 // обработаны не все значения тек./мощности ТГ_в_работе из состава ГТП
-                                Logging.Logg().Warning(@"TecViewAlarm::AlarmRegistred (id=" + m_ID + @") - обработаны не все значения тек./мощности ТГ_в_работе из состава ГТП", Logging.INDEX_MESSAGE.NOT_SET);
+                                Logging.Logg().Warning(@"TecViewAlarm::AlarmRegistred (id=" + CurrentKey.Id + @") - обработаны не все значения тек./мощности ТГ_в_работе из состава ГТП", Logging.INDEX_MESSAGE.NOT_SET);
                         }
                     }
                     else

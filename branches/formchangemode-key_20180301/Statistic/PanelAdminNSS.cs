@@ -78,7 +78,7 @@ namespace Statistic
         }
 
         public PanelAdminNSS(ASUTP.Core.HMark markQueries)
-            : base(markQueries, new int[] { 0, (int)TECComponent.ID.LK })
+            : base(FormChangeMode.MODE_TECCOMPONENT.TEC, markQueries, new int[] { 0, (int)TECComponent.ID.LK })
         {
             m_admin.SetDelegateSaveComplete(null);
         }
@@ -93,7 +93,7 @@ namespace Statistic
             int iRes = -1
                 , id_gtp_owner = ((DataGridViewAdminNSS)dgwAdminTable).GetIdGTPOwner(indx_tg);
             
-            foreach (FormChangeMode.KeyTECComponent key in ((AdminTS_NSS)m_admin).m_listKeyTECComponentDetail)
+            foreach (FormChangeMode.KeyDevice key in ((AdminTS_NSS)m_admin).m_listKeyTECComponentDetail)
                 if (key.Id == id_gtp_owner)
                     return ((AdminTS_NSS)m_admin).m_listKeyTECComponentDetail.IndexOf(key);
                 else
@@ -110,7 +110,7 @@ namespace Statistic
             //double value = 0.0;
             //bool valid = false;
 
-            foreach (FormChangeMode.KeyTECComponent key in ((AdminTS_TG)m_admin).m_listKeyTECComponentDetail)
+            foreach (FormChangeMode.KeyDevice key in ((AdminTS_TG)m_admin).m_listKeyTECComponentDetail)
                 if (key.Mode == FormChangeMode.MODE_TECCOMPONENT.TG)
                 {
                     int indx_tg = ((AdminTS_NSS)m_admin).m_listKeyTECComponentDetail.IndexOf(key),
@@ -144,7 +144,7 @@ namespace Statistic
         /// <param name="bSyncReq">Признак необходимости синхронизации выполнения действий в теле метода</param>
         private void addTextBoxColumn (DateTime date, bool bNewValues, bool bSyncReq)
         {
-            FormChangeMode.KeyTECComponent key;
+            FormChangeMode.KeyDevice key;
 
             if ((this.dgwAdminTable.Columns.Count - 2) < ((AdminTS_NSS)m_admin).m_listKeyTECComponentDetail.Count) {
             // в случае добавления столбцов

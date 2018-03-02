@@ -20,7 +20,7 @@ namespace Statistic
 {
     public class PanelTecView : PanelTecViewStandard
     {
-        public PanelTecView(StatisticCommon.TEC tec, FormChangeMode.KeyTECComponent key, PanelCustomTecView.HLabelCustomTecView label/*, DelegateStringFunc fErrRep, DelegateStringFunc fWarRep, DelegateStringFunc fActRep, DelegateBoolFunc fRepClr*/)
+        public PanelTecView(StatisticCommon.TEC tec, FormChangeMode.KeyDevice key, PanelCustomTecView.HLabelCustomTecView label/*, DelegateStringFunc fErrRep, DelegateStringFunc fWarRep, DelegateStringFunc fActRep, DelegateBoolFunc fRepClr*/)
             : base(tec, key, new ASUTP.Core.HMark (new int[] { (int)CONN_SETT_TYPE.ADMIN, (int)CONN_SETT_TYPE.PBR, (int)CONN_SETT_TYPE.DATA_AISKUE, (int)CONN_SETT_TYPE.DATA_SOTIASSO }))
         {
             m_label = label;
@@ -67,7 +67,7 @@ namespace Statistic
             this.m_ZedGraphHours.InitializeContextMenuItemAddingEventHandler(this.ýêñåëüToolStripMenuItemHours_Click, this.sourceDataHours_Click);
         }
 
-        protected override void createTecView(FormChangeMode.KeyTECComponent key)
+        protected override void createTecView(FormChangeMode.KeyDevice key)
         {
             m_tecView = new TecViewStandard(key);
         }

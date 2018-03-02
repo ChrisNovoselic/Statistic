@@ -137,7 +137,9 @@ namespace trans_mc
 
         protected override void setUIControlSourceState()
         {
-            if (((AdminTS)m_arAdmin[(Int16)CONN_SETT_TYPE.DEST]).allTECComponents[m_listTECComponentIndex[comboBoxTECComponent.SelectedIndex]].m_listMCentreId.Count > 0)
+            TECComponent comp = ((AdminTS)m_arAdmin [(Int16)CONN_SETT_TYPE.DEST]).CurrentDevice;
+
+            if (comp.m_listMCentreId.Count > 0)
             {
                 //Properties.Settings sett = new Properties.Settings();
                 //tbxSourceServerMC.Text = sett.Modes_Centre_Service_Host_Name;
@@ -169,8 +171,6 @@ namespace trans_mc
 
         protected override void timer_Start()
         {
-            m_listTECComponentIndex = ((AdminTS)m_arAdmin[(Int16)CONN_SETT_TYPE.DEST]).GetListIndexTECComponent(m_modeTECComponent, true);
-            
             base.timer_Start();
         }
     }

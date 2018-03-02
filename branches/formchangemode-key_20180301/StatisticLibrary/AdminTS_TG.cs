@@ -16,7 +16,7 @@ namespace StatisticCommon
         /// <summary>
         /// Список индексов дочерних для выбранного сложного элемента (детализация сложного элемента)
         /// </summary>
-        public List<FormChangeMode.KeyTECComponent> m_listKeyTECComponentDetail;
+        public List<FormChangeMode.KeyDevice> m_listKeyTECComponentDetail;
         public List<RDGStruct[]> m_listPrevRDGValues
             , m_listCurRDGValues;
 
@@ -84,7 +84,7 @@ namespace StatisticCommon
 
             m_listPrevRDGValues = new List<RDGStruct[]>();
             m_listCurRDGValues = new List<RDGStruct[]> ();
-            m_listKeyTECComponentDetail = new List<FormChangeMode.KeyTECComponent> ();
+            m_listKeyTECComponentDetail = new List<FormChangeMode.KeyDevice> ();
             m_listResSaveChanges = new List <Errors> ();
 
             m_lockSuccessGetData = new object();
@@ -127,7 +127,7 @@ namespace StatisticCommon
                 foreach (TECComponent comp in allTECComponents)
                     if ((comp.tec.m_id == id) //Принадлежит ТЭЦ
                         && (comp.IsGTP == true)) //Является ГТП
-                        m_listKeyTECComponentDetail.Add(new FormChangeMode.KeyTECComponent () { Id = comp.m_id, Mode = comp.Mode });
+                        m_listKeyTECComponentDetail.Add(new FormChangeMode.KeyDevice () { Id = comp.m_id, Mode = comp.Mode });
                     else
                         ;
 
@@ -135,7 +135,7 @@ namespace StatisticCommon
                 foreach (TECComponent comp in allTECComponents)
                     if ((comp.tec.m_id == id) && //Принадлежит ТЭЦ
                         (comp.IsTG == true)) //Является ТГ
-                        m_listKeyTECComponentDetail.Add(new FormChangeMode.KeyTECComponent () { Id = comp.m_id, Mode = comp.Mode });
+                        m_listKeyTECComponentDetail.Add(new FormChangeMode.KeyDevice () { Id = comp.m_id, Mode = comp.Mode });
                     else
                         ;
 
@@ -149,7 +149,7 @@ namespace StatisticCommon
 
             //lock (m_lockSuccessGetData)
             //{
-                foreach (FormChangeMode.KeyTECComponent key in m_listKeyTECComponentDetail)
+                foreach (FormChangeMode.KeyDevice key in m_listKeyTECComponentDetail)
                 {
                     indxEv = WaitHandle.WaitAny (m_waitHandleState);
                     if (indxEv == 0)
@@ -162,7 +162,7 @@ namespace StatisticCommon
             //m_bSavePPBRValues = true;
         }
 
-        public void BaseGetRDGValue(FormChangeMode.KeyTECComponent key, DateTime date)
+        public void BaseGetRDGValue(FormChangeMode.KeyDevice key, DateTime date)
         {
             if(!(date == DateTime.MinValue))
                 base.GetRDGValues(key, (DateTime)date);
@@ -170,7 +170,7 @@ namespace StatisticCommon
                 base.GetRDGValues(key);
         }
 
-        public override void GetRDGValues(FormChangeMode.KeyTECComponent key)
+        public override void GetRDGValues(FormChangeMode.KeyDevice key)
         {
             //delegateStartWait ();
             FillListKeyTECComponentDetail(key.Id);
@@ -189,7 +189,7 @@ namespace StatisticCommon
 
             //lock (m_lockSuccessGetData)
             //{
-                foreach (FormChangeMode.KeyTECComponent key in m_listKeyTECComponentDetail)
+                foreach (FormChangeMode.KeyDevice key in m_listKeyTECComponentDetail)
                 {
                     indxEv = WaitHandle.WaitAny(m_waitHandleState);
                     if (indxEv == 0)
@@ -202,7 +202,7 @@ namespace StatisticCommon
             //m_bSavePPBRValues = true;
         }
 
-        public override void GetRDGValues(FormChangeMode.KeyTECComponent key, DateTime date)
+        public override void GetRDGValues(FormChangeMode.KeyDevice key, DateTime date)
         {
             //delegateStartWait ();
             FillListKeyTECComponentDetail (key.Id);
@@ -220,7 +220,7 @@ namespace StatisticCommon
 
             //lock (m_lockSuccessGetData)
             //{
-                foreach (FormChangeMode.KeyTECComponent key in m_listKeyTECComponentDetail)
+                foreach (FormChangeMode.KeyDevice key in m_listKeyTECComponentDetail)
                 {
                     indxEv = WaitHandle.WaitAny(m_waitHandleState);
                     if (indxEv == 0)
@@ -304,7 +304,7 @@ namespace StatisticCommon
             return bRes;
         }
 
-        public override bool IsRDGExcel(FormChangeMode.KeyTECComponent key_tec)
+        public override bool IsRDGExcel(FormChangeMode.KeyDevice key_tec)
         {
             bool bRes = false;
 
@@ -347,7 +347,7 @@ namespace StatisticCommon
                 m_listResSaveChanges.Clear ();
             }
 
-            FormChangeMode.KeyTECComponent prevKeyTECComponent = CurrentKey;
+            FormChangeMode.KeyDevice prevKeyTECComponent = CurrentKey;
 
             foreach (RDGStruct [] curRDGValues in m_listCurRDGValues) {
                 bErr = Errors.NoError;
@@ -411,7 +411,7 @@ namespace StatisticCommon
             }
         }
 
-        public override void ImpRDGExcelValues(FormChangeMode.KeyTECComponent key, DateTime date)
+        public override void ImpRDGExcelValues(FormChangeMode.KeyDevice key, DateTime date)
         {
             //delegateStartWait();
 

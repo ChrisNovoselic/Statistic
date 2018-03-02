@@ -258,8 +258,11 @@ namespace trans_tg
 
         protected override void setUIControlSourceState()
         {
+            // tec получить у любого, в т.ч. "0"-го элемента
+            TEC tec = ((AdminTS)m_arAdmin [(Int16)CONN_SETT_TYPE.DEST]).FindTECComponent (((AdminTS_NSS)m_arAdmin [(Int16)CONN_SETT_TYPE.DEST]).m_listKeyTECComponentDetail [0]).tec;
+
             m_arUIControls [(Int16)CONN_SETT_TYPE.SOURCE, (Int16)INDX_UICONTROLS.SERVER_IP].Text =
-                ((AdminTS)m_arAdmin[(Int16)CONN_SETT_TYPE.DEST]).allTECComponents[((AdminTS_NSS)m_arAdmin[(Int16)CONN_SETT_TYPE.DEST]).m_listKeyTECComponentDetail[0]].tec.GetAddingParameter(TEC.ADDING_PARAM_KEY.PATH_RDG_EXCEL).ToString();
+                tec.GetAddingParameter(TEC.ADDING_PARAM_KEY.PATH_RDG_EXCEL).ToString();
             enabledButtonSourceExport(m_arUIControls[(Int16)CONN_SETT_TYPE.SOURCE, (Int16)INDX_UICONTROLS.SERVER_IP].Text.Length > 0 ? true : false);
         }
 
@@ -268,7 +271,7 @@ namespace trans_tg
             int indxDB = m_IndexDB,
                 id_gtp_owner = ((DataGridViewAdminNSS)m_dgwAdminTable).GetIdGTPOwner(indx_tg);
 
-            foreach (FormChangeMode.KeyTECComponent key in ((AdminTransTG)m_arAdmin[indxDB]).m_listKeyTECComponentDetail)
+            foreach (FormChangeMode.KeyDevice key in ((AdminTransTG)m_arAdmin[indxDB]).m_listKeyTECComponentDetail)
                 if (((AdminTransTG)m_arAdmin[indxDB]).allTECComponents[indx].m_id == id_gtp_owner)
                     return ((AdminTransTG)m_arAdmin[indxDB]).m_listKeyTECComponentDetail.IndexOf(key);
                 else
@@ -284,7 +287,7 @@ namespace trans_tg
 
             ((AdminTS_TG)m_arAdmin[indxDB]).ClearListRDGValues();
 
-            foreach (FormChangeMode.KeyTECComponent key in ((AdminTransTG)m_arAdmin[indxDB]).m_listKeyTECComponentDetail)
+            foreach (FormChangeMode.KeyDevice key in ((AdminTransTG)m_arAdmin[indxDB]).m_listKeyTECComponentDetail)
             {
                 int indx_comp = ((AdminTransTG)m_arAdmin[indxDB]).m_listKeyTECComponentDetail.IndexOf(key),
                     indx_owner = getIndexGTPOwner(indx_comp);
@@ -332,7 +335,7 @@ namespace trans_tg
         private void addTextBoxColumn (DateTime date, bool bNewValues, bool bSyncReq)
         {
             int indxDB = m_IndexDB;
-            FormChangeMode.KeyTECComponent key = ((AdminTS_NSS)m_arAdmin[indxDB]).m_listKeyTECComponentDetail[m_dgwAdminTable.Columns.Count - 2];
+            FormChangeMode.KeyDevice key = ((AdminTS_NSS)m_arAdmin[indxDB]).m_listKeyTECComponentDetail[m_dgwAdminTable.Columns.Count - 2];
             ((DataGridViewAdminNSS)m_dgwAdminTable).addTextBoxColumn(((AdminTS_NSS)m_arAdmin[indxDB]).GetNameTECComponent(key, false)
                 , key.Id
                 , ((AdminTS_NSS)m_arAdmin[indxDB]).GetIdGTPOwnerTECComponent(key));

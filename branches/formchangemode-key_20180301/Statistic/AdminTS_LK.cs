@@ -49,12 +49,12 @@ namespace Statistic {
                             if ((comp.m_id == GetIdTECComponent(id)) //Принадлежит ТЭЦ
                                 && (comp.IsGTP_LK == true)) //Является ГТП_ЛК
                             {
-                                m_listKeyTECComponentDetail.Add(new FormChangeMode.KeyTECComponent () { Id = comp.m_id, Mode = FormChangeMode.MODE_TECCOMPONENT.GTP });
+                                m_listKeyTECComponentDetail.Add(new FormChangeMode.KeyDevice () { Id = comp.m_id, Mode = FormChangeMode.MODE_TECCOMPONENT.GTP });
 
                                 foreach (TG tg in comp.m_listLowPointDev)
                                     foreach (TECComponent comp_tg in allTECComponents)
                                         if (comp_tg.m_id == tg.m_id)
-                                            m_listKeyTECComponentDetail.Add(new FormChangeMode.KeyTECComponent () { Id = comp.m_id, Mode = FormChangeMode.MODE_TECCOMPONENT.TG });
+                                            m_listKeyTECComponentDetail.Add(new FormChangeMode.KeyDevice () { Id = comp.m_id, Mode = FormChangeMode.MODE_TECCOMPONENT.TG });
                             }
                             else
                                 ;
@@ -76,7 +76,7 @@ namespace Statistic {
 
                 //lock (m_lockSuccessGetData)
                 //{
-                foreach (FormChangeMode.KeyTECComponent key in m_listKeyTECComponentDetail)
+                foreach (FormChangeMode.KeyDevice key in m_listKeyTECComponentDetail)
                 {
                     indxEv = WaitHandle.WaitAny(m_waitHandleState);
 
@@ -108,7 +108,7 @@ namespace Statistic {
 
                 //lock (m_lockSuccessGetData)
                 //{
-                foreach (FormChangeMode.KeyTECComponent key in m_listKeyTECComponentDetail)
+                foreach (FormChangeMode.KeyDevice key in m_listKeyTECComponentDetail)
                 {
                     indxEv = WaitHandle.WaitAny(m_waitHandleState);
                     if (indxEv == 0)
@@ -185,7 +185,7 @@ namespace Statistic {
                     m_listResSaveChanges.Clear();
                 }
 
-                FormChangeMode.KeyTECComponent prevKeyTECComponent = CurrentKey;
+                FormChangeMode.KeyDevice prevKeyTECComponent = CurrentKey;
 
                 foreach (RDGStruct[] curRDGValues in m_listCurRDGValues)
                 {

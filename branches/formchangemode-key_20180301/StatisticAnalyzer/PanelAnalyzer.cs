@@ -1494,7 +1494,10 @@ namespace StatisticAnalyzer
         /// <param name="users">Список пользователей</param>
         protected void updateCounter(DATAGRIDVIEW_LOGCOUNTER tag, DateTime start_date, DateTime end_date, string users)
         {
-            m_loggingReadHandler.Command(StatesMachine.CounterToTypeMessageByDate, new object[] { tag, start_date, end_date, users }, false);
+            if (start_date.Equals(DateTime.MinValue) == false)
+                m_loggingReadHandler.Command(StatesMachine.CounterToTypeMessageByDate, new object[] { tag, start_date, end_date, users }, false);
+            else
+                ;
         }
 
         /// <summary>
@@ -1582,8 +1585,9 @@ namespace StatisticAnalyzer
             get
             {
                 return
-                    // (DateTime)dgvListDateView.Rows [dgvListDateView.SelectedRows [0].Index].Tag
-                    (DateTime)dgvListDateView.SelectedRows [0].Tag
+                    dgvListDateView.SelectedRows.Count > 0
+                        ? (DateTime)dgvListDateView.SelectedRows [0].Tag
+                            : DateTime.MinValue
                     ;
             }
         }
@@ -1615,7 +1619,7 @@ namespace StatisticAnalyzer
                     filldgvLogMessages (m_LogParse.Sort (@"DATE_TIME"));
 
                     updateCounter (DATAGRIDVIEW_LOGCOUNTER.TYPE_TO_VIEW
-                        , LogMessageViewDate 
+                        , LogMessageViewDate
                         , LogMessageViewDate.AddDays (1)
                         , IdCurrentUserView.ToString ());
 

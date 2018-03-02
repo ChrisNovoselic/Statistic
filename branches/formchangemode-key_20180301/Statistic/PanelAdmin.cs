@@ -1,6 +1,6 @@
 using System;
 using System.Collections.Generic;
-using System.Text;
+using System.Linq;
 using System.Windows.Forms;
 //using System.ComponentModel;
 using System.Data;
@@ -121,7 +121,7 @@ namespace Statistic
         ///// </summary>
         //protected List <int>m_listTECComponentIndex;
 
-        protected FormChangeMode.KeyTECComponent InitItemKey
+        protected FormChangeMode.KeyDevice InitItemKey
         {
             get
             {
@@ -129,7 +129,7 @@ namespace Statistic
             }
         }
 
-        protected FormChangeMode.KeyTECComponent SelectedItemKey
+        protected FormChangeMode.KeyDevice SelectedItemKey
         {
             get
             {
@@ -275,12 +275,12 @@ namespace Statistic
             this.ResumeLayout();
         }
 
-        public PanelAdmin(HMark markQueries, int [] arTECLimit)
+        public PanelAdmin(FormChangeMode.MODE_TECCOMPONENT mode, HMark markQueries, int [] arTECLimit)
             : base(MODE_UPDATE_VALUES.ACTION, FormMain.formGraphicsSettings.FontColor, FormMain.formGraphicsSettings.BackgroundColor)
         {
             createAdmin ();
 
-            try { m_admin.InitTEC(FormChangeMode.MODE_TECCOMPONENT.ANY, /*TYPE_DATABASE_CFG.CFG_200, */markQueries, false, arTECLimit); }
+            try { m_admin.InitTEC(mode, markQueries, false, arTECLimit); }
             catch (Exception e)
             {
                 Logging.Logg().Exception(e, "PanelAdmin::Initialize () - m_admin.InitTEC ()...", Logging.INDEX_MESSAGE.NOT_SET);
@@ -499,7 +499,7 @@ namespace Statistic
         {
             comboBoxTecComponent.Items.Clear ();
 
-            List<FormChangeMode.KeyTECComponent> listKey;
+            List<FormChangeMode.KeyDevice> listKey;
             List<object> listItems = new List<object> ();
 
             listKey = m_admin.GetListKeyTECComponent (mode, true);
@@ -523,6 +523,12 @@ namespace Statistic
             comboBoxTecComponent.SelectedIndex = newIndex;
 
             comboBoxTecComponent_SelectionChangeCommitted(this, EventArgs.Empty);
+        }
+
+        [TestMethod]
+        public void PerformComboBoxTECComponentSelectedKey (FormChangeMode.KeyDevice newKey)
+        {
+            comboBoxTecComponent.SelectedItem = comboBoxTecComponent.Items.Cast<ComboBoxItem>().FirstOrDefault(item => item.Tag == newKey);
         }
 
         protected virtual void comboBoxTecComponent_SelectionChangeCommitted(object sender, EventArgs e)
@@ -584,7 +590,7 @@ namespace Statistic
         /// <param name="date">Дата, за которую требуется обновить/сохранить значения</param>
         /// <param name="listIdRec">Список идентификаторов записей в таблице БД для обновления</param>
         /// <param name="nextIndex">Очередной индекс из списка объектов-компонентов</param>
-        public delegate void DelegateUnitTestNextIndexSetValuesRequest(int nextIndex, TECComponent comp, DateTime date, CONN_SETT_TYPE type, IEnumerable<int> listIdRec, string[]queries);
+        public delegate void DelegateUnitTestNextIndexSetValuesRequest(FormChangeMode.KeyDevice nextKey, TECComponent comp, DateTime date, CONN_SETT_TYPE type, IEnumerable<int> listIdRec, string[]queries);
 
         private DelegateUnitTestNextIndexSetValuesRequest _eventUnitTestNextIndexSetValuesRequest;
 
@@ -619,7 +625,14 @@ namespace Statistic
 
         private void admin_onEventUnitTestSetValuesRequest(TECComponent comp, DateTime date, CONN_SETT_TYPE type, string[]queries, IEnumerable<int> listIdRec)
         {
-            _eventUnitTestNextIndexSetValuesRequest?.Invoke(comboBoxTecComponent.SelectedIndex + 1 < comboBoxTecComponent.Items.Count ? comboBoxTecComponent.SelectedIndex + 1 : -1, comp, date, type, listIdRec, queries);
+            FormChangeMode.KeyDevice key = FormChangeMode.KeyTECComponentEmpty;
+
+            if (comboBoxTecComponent.SelectedIndex + 1 < comboBoxTecComponent.Items.Count)
+                key = comboBoxTecComponent.Items.Cast<ComboBoxItem>().ToArray()[comboBoxTecComponent.SelectedIndex + 1].Tag;
+            else
+                ;
+
+            _eventUnitTestNextIndexSetValuesRequest?.Invoke(key, comp, date, type, listIdRec, queries);
         }
         #endregion
 
