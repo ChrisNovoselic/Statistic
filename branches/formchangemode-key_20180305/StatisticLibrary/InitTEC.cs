@@ -63,6 +63,7 @@ namespace StatisticCommon
 
             int indx = -1;
             DataTable list_lowPointDev = getListTG(tec.m_id, out err);
+            list_lowPointDev linq where in allParamDetail
 
             if (err == 0)
                 for (int k = 0; k < list_lowPointDev.Rows.Count; k++) {
@@ -303,13 +304,21 @@ namespace StatisticCommon
                         //??? что значит < 0, mode.Unknown < 0!!!
                             if (!(mode < 0))
                             {// инициализация "обычных" компонентов ТЭЦ
-                                //initTG (tecRes [i], all_PARAM_DETAIL.Select($"ID_TEC={tecRes [i].m_id}"));
-
                                 for (indx_comp = 0; indx_comp < list_TECComponents.Rows.Count; indx_comp++)
                                 {
                                     id_comp = Convert.ToInt32 (list_TECComponents.Rows[indx_comp][@"ID"]);
+
+                                    #region Добавить ТГ для ТЭЦ
+                                    try
+                                    {
+                                        initTG (tecRes [i], all_PARAM_DETAIL.Select ($@"ID_TEC={tecRes [i].m_id} AND ID_{FormChangeMode.getPrefixMode (mode)}={id_comp}"), out err);
+                                    } catch (Exception e) {
+                                        Logging.Logg().Exception(e, @"InitTEC_200.ctor () - ...", Logging.INDEX_MESSAGE.NOT_SET);
+                                    }
+                                    #endregion
+
                                     tecRes[i].AddTECComponent(list_TECComponents.Rows[indx_comp]);
-                                    tecRes[i].InitTG(indx_comp, all_PARAM_DETAIL.Select(@"ID_" + FormChangeMode.getPrefixMode(mode) + @"=" + id_comp));
+                                    tecRes[i].InitTG(indx_comp, all_PARAM_DETAIL.Select($@"ID_{FormChangeMode.getPrefixMode(mode)}={id_comp}"));
                                 }
                             }
                             else

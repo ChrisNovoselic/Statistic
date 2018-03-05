@@ -286,7 +286,8 @@ namespace Statistic
                 Logging.Logg().Exception(e, "PanelAdmin::Initialize () - m_admin.InitTEC ()...", Logging.INDEX_MESSAGE.NOT_SET);
             }
 
-            if (!(m_admin.m_list_tec.Count > 0))
+            if ((Equals(m_admin.m_list_tec, null) == true)
+                || (!(m_admin.m_list_tec.Count > 0)))
             {
                 Logging.Logg().Error(@"PanelAdmin::PanelAdmin () - список ТЭЦ пуст...", Logging.INDEX_MESSAGE.NOT_SET);
             }
