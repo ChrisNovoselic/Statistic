@@ -82,7 +82,7 @@ namespace Statistic
                     lastMin = indxMin + 1;
 
                     foreach (TECComponent comp in _localTECComponents)
-                        foreach (TG tg in comp.m_listLowPointDev)
+                        foreach (TG tg in comp.ListLowPointDev)
                             clearLowPointDevValuesSecs(m_dictValuesLowPointDev[tg.m_id]);
 
                     ClearStates();
@@ -2029,7 +2029,7 @@ namespace Statistic
                 foreach (TEC t in m_listTEC)
                 {
                     // есть специальное свойство для проверки 't.m_bSensorsStrings'
-                    //if (t.m_listLowPointDev == null)
+                    //if (t.ListLowPointDev == null)
                     if (t.m_bSensorsStrings == false)
                         t.InitSensorsTEC();
                     // проверить идентификатор ТЭЦ
@@ -2065,7 +2065,7 @@ namespace Statistic
                                     key = new FormChangeMode.KeyDevice () { Id = tc.m_id, Mode = FormChangeMode.MODE_TECCOMPONENT.GTP };
                                     m_dcGTPKoeffAlarmPcur = tc.m_dcKoeffAlarmPcur;
 
-                                    foreach (TG tg in tc.m_listLowPointDev)
+                                    foreach (TG tg in tc.ListLowPointDev)
                                         listTG_Comp.Add(tg);
                                     
                                     break;
@@ -2077,7 +2077,7 @@ namespace Statistic
                                         tec = t;
                                         key = new FormChangeMode.KeyDevice () { Id = tc.m_id, Mode = FormChangeMode.MODE_TECCOMPONENT.PC };
 
-                                        foreach (TG tg in tc.m_listLowPointDev)
+                                        foreach (TG tg in tc.ListLowPointDev)
                                             listTG_Comp.Add(tg);
 
                                         foreach (TECComponent tcc in t.list_TECComponents)

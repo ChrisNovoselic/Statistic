@@ -414,7 +414,7 @@ namespace StatisticCommon
                 if (CurrentKey.Mode == FormChangeMode.MODE_TECCOMPONENT.TEC)
                     return m_tec.GetListLowPointDev (_type);
                 else
-                    return m_tec.list_TECComponents.FirstOrDefault(comp => comp.m_id == CurrentKey.Id).m_listLowPointDev;
+                    return m_tec.list_TECComponents.FirstOrDefault(comp => comp.m_id == CurrentKey.Id).ListLowPointDev;
             }
         }
 
@@ -528,7 +528,7 @@ namespace StatisticCommon
         //        case TECComponentBase.TYPE.TEPLO:
         //            //listRes = new List<TECComponentBase>();
         //            //foreach (TECComponent tc in m_tec.list_TECComponents)
-        //            //    foreach (TECComponentBase tcb in tc.m_listLowPointDev)
+        //            //    foreach (TECComponentBase tcb in tc.ListLowPointDev)
         //            //        if ((tc.IsVyvod == true)
         //            //            && ((tcb as Vyvod.ParamVyvod).m_id_param == Vyvod.ID_PARAM.T_PV))
         //            //            listRes.Add(tcb);
@@ -561,7 +561,7 @@ namespace StatisticCommon
 
         protected virtual void initDictValuesLowPointDev(TECComponent comp)
         {
-            foreach (TECComponentBase dev in comp.m_listLowPointDev)
+            foreach (TECComponentBase dev in comp.ListLowPointDev)
                 if (m_dictValuesLowPointDev.ContainsKey(dev.m_id) == false)
                     m_dictValuesLowPointDev.Add(dev.m_id, new valuesLowPointDev());
                 else
@@ -571,7 +571,7 @@ namespace StatisticCommon
         //private void initDictValuesParamVyvod(TECComponent v)
         //{
         //    //foreach (Vyvod.ParamVyvod pv in v.m_listParam)
-        //    foreach (Vyvod.ParamVyvod pv in v.m_listLowPointDev)
+        //    foreach (Vyvod.ParamVyvod pv in v.ListLowPointDev)
         //        if (m_dictValuesLowPointDev.ContainsKey(pv.m_id) == false)
         //            m_dictValuesLowPointDev.Add(pv.m_id, new valuesLowPointDev());
         //        else
@@ -763,7 +763,7 @@ namespace StatisticCommon
                 //localTECComponents.ForEach(g =>
                 {
                     //if (g is TECComponent)
-                        foreach (TECComponentBase tc in (g as TECComponent).m_listLowPointDev)
+                        foreach (TECComponentBase tc in (g as TECComponent).ListLowPointDev)
                         {
                             id = tc.m_id;
 
@@ -876,7 +876,7 @@ namespace StatisticCommon
 
             foreach (TECComponent g in _localTECComponents)
             {
-                foreach (TECComponentBase tc in g.m_listLowPointDev)
+                foreach (TECComponentBase tc in g.ListLowPointDev)
                 {
                     id = tc.m_id;
 
@@ -2087,7 +2087,7 @@ namespace StatisticCommon
                 //Следовательно и для ТГ требуется изменить размер массива
                 foreach (TECComponent g in _localTECComponents)
                 {
-                    foreach (TECComponentBase tc in g.m_listLowPointDev)
+                    foreach (TECComponentBase tc in g.ListLowPointDev)
                     {
                         this.m_dictValuesLowPointDev[tc.m_id].m_powerMinutes = null;
                         this.m_dictValuesLowPointDev[tc.m_id].m_powerMinutes = new double[cnt];
@@ -2120,7 +2120,7 @@ namespace StatisticCommon
             //foreach (TECComponent g in m_tec.list_TECComponents)
             foreach (TECComponent comp in _localTECComponents)
             {
-                foreach (TECComponentBase tc in comp.m_listLowPointDev)
+                foreach (TECComponentBase tc in comp.ListLowPointDev)
                 {
                     id = tc.m_id;
 
@@ -2534,7 +2534,7 @@ namespace StatisticCommon
                                 try
                                 {
                                     id_comp = localTECComponents[j].m_id;
-                                    id_part_field = _type == TECComponentBase.TYPE.TEPLO ? (localTECComponents[j] as TECComponent).m_listLowPointDev.Find(tcb => { return (tcb as Vyvod.ParamVyvod).m_id_param == Vyvod.ID_PARAM.T_PV; }).m_id :
+                                    id_part_field = _type == TECComponentBase.TYPE.TEPLO ? (localTECComponents[j] as TECComponent).ListLowPointDev.Find(tcb => { return (tcb as Vyvod.ParamVyvod).m_id_param == Vyvod.ID_PARAM.T_PV; }).m_id :
                                         _type == TECComponentBase.TYPE.ELECTRO ? localTECComponents[j].m_id :
                                             -1;
 
@@ -3180,14 +3180,14 @@ namespace StatisticCommon
                             if ((type == TECComponentBase.TYPE.TEPLO)
                                 && (listTECComp[i].IsVyvod == true))
                                 //list_TECComponents.Add((listTECComp[i] as Vyvod).m_listParam[0]);
-                                list_TECComponents.Add(listTECComp[i].m_listLowPointDev.Find(dev => { return (dev as Vyvod.ParamVyvod).m_id_param == Vyvod.ID_PARAM.T_PV; }));
+                                list_TECComponents.Add(listTECComp[i].ListLowPointDev.Find(dev => { return (dev as Vyvod.ParamVyvod).m_id_param == Vyvod.ID_PARAM.T_PV; }));
                             else
                                 ;
                     }
                 }
                 else
-                    //list_LowPointDev = listTECComp[num_comp].m_listLowPointDev
-                    list_TECComponents = listTECComp.FirstOrDefault(comp => comp.m_id == key.Id).m_listLowPointDev
+                    //list_LowPointDev = listTECComp[num_comp].ListLowPointDev
+                    list_TECComponents = listTECComp.FirstOrDefault(comp => comp.m_id == key.Id).ListLowPointDev
                     ;
 
                 //Преобразование таблицы
@@ -3335,15 +3335,14 @@ namespace StatisticCommon
                             if ((type == TECComponentBase.TYPE.TEPLO)
                                 && (listTECComp[i].IsVyvod == true))
                                 //list_TECComponents.Add((listTECComp[i] as Vyvod).m_listParam[0]);
-                                list_TECComponents.Add(listTECComp[i].m_listLowPointDev.Find(dev => { return (dev as Vyvod.ParamVyvod).m_id_param == Vyvod.ID_PARAM.T_PV; }));
+                                list_TECComponents.Add(listTECComp[i].ListLowPointDev.Find(dev => { return (dev as Vyvod.ParamVyvod).m_id_param == Vyvod.ID_PARAM.T_PV; }));
                             else
                                 ;
                     }
                 }
                 else
-                    //list_LowPointDev = listTECComp[num_comp].m_listLowPointDev
-                    list_TECComponents = listTECComp.FirstOrDefault(comp => comp.m_id == key.Id).m_listLowPointDev
-                    ;
+                    //list_LowPointDev = listTECComp[num_comp].ListLowPointDev
+                    list_TECComponents = listTECComp.FirstOrDefault(comp => comp.m_id == key.Id).ListLowPointDev;
 
                 //Преобразование таблицы
                 for (i = 0; i < table_in.Columns.Count; i++)
@@ -4173,7 +4172,7 @@ namespace StatisticCommon
                     {
                         foreach (TECComponent g in _localTECComponents)
                         {
-                            foreach (TECComponentBase tc in g.m_listLowPointDev)
+                            foreach (TECComponentBase tc in g.ListLowPointDev)
                             {
                                 tg = tc as TG;
 
@@ -4229,12 +4228,12 @@ namespace StatisticCommon
                     {
                         foreach (TECComponent comp in _localTECComponents)
                         {
-                            //for (i = 0; i < comp.m_listLowPointDev [0].m_power_LastMinutesTM.Length; i++)
+                            //for (i = 0; i < comp.ListLowPointDev [0].m_power_LastMinutesTM.Length; i++)
                             //{
-                            //    comp.m_listLowPointDev[0].m_power_LastMinutesTM[i] = 0;
+                            //    comp.ListLowPointDev[0].m_power_LastMinutesTM[i] = 0;
                             //}
 
-                            tgRows = table_in.Select(@"[KKS_NAME]='" + (comp.m_listLowPointDev[0] as TG).m_strKKS_NAME_TM + @"'");
+                            tgRows = table_in.Select(@"[KKS_NAME]='" + (comp.ListLowPointDev[0] as TG).m_strKKS_NAME_TM + @"'");
 
                             for (i = 0; i < tgRows.Length; i++)
                             {
@@ -4267,7 +4266,7 @@ namespace StatisticCommon
                                 hour = dtVal.Hour + 1;
                                 if ((hour > 0) && (! (hour > m_valuesHours.Length)))
                                 {
-                                    m_dictValuesLowPointDev[comp.m_listLowPointDev[0].m_id].m_power_LastMinutesTM[hour - 0] = val;
+                                    m_dictValuesLowPointDev[comp.ListLowPointDev[0].m_id].m_power_LastMinutesTM[hour - 0] = val;
 
                                     if (val > 1)
                                         m_valuesHours[hour - 1].valuesLastMinutesTM += val;
@@ -5397,7 +5396,7 @@ namespace StatisticCommon
 
             foreach (TECComponent g in _localTECComponents)
             {
-                foreach (TECComponentBase tc in g.m_listLowPointDev)
+                foreach (TECComponentBase tc in g.ListLowPointDev)
                 {
                     m_dictValuesLowPointDev[tc.m_id].m_powerCurrent_TM = -1F;
                     m_dictValuesLowPointDev[tc.m_id].m_dtCurrent_TM = DateTime.MinValue;

@@ -360,7 +360,11 @@ namespace StatisticCommon
             initQueries(markQueries);
             initTECComponents();
 
-            CurrentKey = new FormChangeMode.KeyDevice () { Id = allTECComponents.First(comp => comp.Mode == mode).m_id, Mode = mode };
+            try {
+                CurrentKey = new FormChangeMode.KeyDevice () { Id = allTECComponents.First (comp => comp.Mode == mode).m_id, Mode = mode };
+            } catch (Exception e) {
+                Logging.Logg ().Exception (e, $"HADmin::InitTEC (mode={mode}) - не найден 1-ый элемент для инициализации списка", Logging.INDEX_MESSAGE.NOT_SET);
+            }
         }
         /// <summary>
         /// Инициализация списка со всеми компонентами ТЭЦ

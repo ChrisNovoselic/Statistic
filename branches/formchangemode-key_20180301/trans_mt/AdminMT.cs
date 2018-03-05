@@ -46,7 +46,7 @@ namespace trans_mt
                 //+ @" AND [PBR_NUMBER] > 0"
                 ////+ @" GROUP BY [idFactor], [PBR_NUMBER], [Datetime]"
                 //+ @" ORDER BY [Datetime], [PBR_NUMBER]"
-                $"EXECUTE [dbo].[sp_get_term_modes_values] {t.m_id},'{string.Join (@",", comp.m_listMTermId.ToArray ())}','{dtReq.ToString (@"yyyyMMdd HH:00:00.000")}','{dtReq.AddDays (1).ToString (@"yyyyMMdd HH:00:00.000")}'"
+                $"EXECUTE [dbo].[sp_get_term_modes_values] {t.m_id},'{string.Join (@",", comp.ListMTermId.ToArray ())}','{dtReq.ToString (@"yyyyMMdd HH:00:00.000")}','{dtReq.AddDays (1).ToString (@"yyyyMMdd HH:00:00.000")}'"
                 ;
 
             ASUTP.Database.DbSources.Sources().Request(m_IdListenerCurrent, query);

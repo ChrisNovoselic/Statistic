@@ -17,6 +17,12 @@ namespace StatisticCommon
         int m_id { get; set; }
 
         TEC tec { get; }
+
+        List<TECComponentBase> ListLowPointDev { get; }
+
+        List<int> ListMCentreId { get; }
+
+        List<int> ListMTermId { get; }
     }
     /// <summary>
     /// Класс для описания основного компонента ТЭЦ
@@ -354,11 +360,35 @@ namespace StatisticCommon
         /// <summary>
         /// Список ТГ
         /// </summary>
-        public List<TECComponentBase> m_listLowPointDev;
+        private List<TECComponentBase> m_listLowPointDev;
+
+        public List<TECComponentBase> ListLowPointDev
+        {
+            get
+            {
+                return m_listLowPointDev;
+            }
+        }
         /// <summary>
         /// Объект ТЭЦ - "владелец" компонента
         /// </summary>
         public TEC tec { get; }
+
+        public List<int> ListMCentreId
+        {
+            get
+            {
+                return m_listMCentreId;
+            }
+        }
+
+        public List<int> ListMTermId
+        {
+            get
+            {
+                return m_listMTermId;
+            }
+        }
 
         public bool m_bKomUchet;
         /// <summary>

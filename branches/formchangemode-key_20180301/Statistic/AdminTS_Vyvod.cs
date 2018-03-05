@@ -58,7 +58,7 @@ namespace Statistic
                         foreach (TECComponent v in tec.list_TECComponents)
                             if (v.IsParamVyvod == true)
                                 // параметры выводов
-                                foreach (Vyvod.ParamVyvod pv in v.m_listLowPointDev)
+                                foreach (Vyvod.ParamVyvod pv in v.ListLowPointDev)
                                     if (pv.m_id_param == Vyvod.ID_PARAM.T_PV) // является параметром - температура прямая (для которого есть плановые значения)
                                                                               //m_listTECComponentIndexDetail.Add(pv.m_id);
                                         m_listKeyTECComponentDetail.Add(new FormChangeMode.KeyDevice () { Id = v.m_id, Mode = FormChangeMode.MODE_TECCOMPONENT.TG });
@@ -183,7 +183,7 @@ namespace Statistic
                     tc = allTECComponents.Find(comp => comp.m_id == m_listKeyTECComponentDetail[indx].Id);
 
                     if ((tc.IsParamVyvod == true)
-                        && ((tc.m_listLowPointDev[0] as Vyvod.ParamVyvod).m_id_param == Vyvod.ID_PARAM.T_PV)
+                        && ((tc.ListLowPointDev[0] as Vyvod.ParamVyvod).m_id_param == Vyvod.ID_PARAM.T_PV)
                         //&& (tc.m_bKomUchet == true)
                         )
                         for (h = 0; h < m_curRDGValues.Length; h++)

@@ -643,7 +643,7 @@ namespace Statistic
                         foreach (TECComponent g in m_parent.m_tecView.LocalTECComponents)
                             if (g.IsGTP == true)
                             //Только ГТП
-                                foreach (TG tg in g.m_listLowPointDev) {
+                                foreach (TG tg in g.ListLowPointDev) {
                                 //Цикл по списку с ТГ
                                     powerLastHourMinutes = m_parent.m_tecView.m_dictValuesLowPointDev[tg.m_id].m_powerMinutes;
                                     //Проверить возможность получения значения
@@ -658,10 +658,10 @@ namespace Statistic
                     else
                         foreach (TECComponent comp in m_parent.m_tecView.LocalTECComponents) {
                         //Цикл по списку ТГ в компоненте ТЭЦ (ГТП, ЩУ)
-                            powerLastHourMinutes = m_parent.m_tecView.m_dictValuesLowPointDev[comp.m_listLowPointDev[0].m_id].m_powerMinutes;
+                            powerLastHourMinutes = m_parent.m_tecView.m_dictValuesLowPointDev[comp.ListLowPointDev[0].m_id].m_powerMinutes;
                             //Проверить возможность получения значения
                             if (!(powerLastHourMinutes == null))
-                                showFactTGValue (comp.m_listLowPointDev[0].m_id, powerLastHourMinutes);
+                                showFactTGValue (comp.ListLowPointDev[0].m_id, powerLastHourMinutes);
                             else
                                 ;
                         }

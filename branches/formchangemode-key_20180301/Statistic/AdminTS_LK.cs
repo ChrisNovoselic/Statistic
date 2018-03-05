@@ -51,7 +51,7 @@ namespace Statistic {
                             {
                                 m_listKeyTECComponentDetail.Add(new FormChangeMode.KeyDevice () { Id = comp.m_id, Mode = FormChangeMode.MODE_TECCOMPONENT.GTP });
 
-                                foreach (TG tg in comp.m_listLowPointDev)
+                                foreach (TG tg in comp.ListLowPointDev)
                                     foreach (TECComponent comp_tg in allTECComponents)
                                         if (comp_tg.m_id == tg.m_id)
                                             m_listKeyTECComponentDetail.Add(new FormChangeMode.KeyDevice () { Id = comp.m_id, Mode = FormChangeMode.MODE_TECCOMPONENT.TG });

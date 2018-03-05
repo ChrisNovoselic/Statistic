@@ -471,7 +471,7 @@ namespace StatisticCommon
                         }
                         catch (Exception e) {
                             Logging.Logg().Exception(e
-                                , @"AdminTS_KomDisp::saveCSVValues () - GTP_ID=" + FindTECComponent(key).name_future + @"(" + hour + @")"
+                                , $@"AdminTS_KomDisp::saveCSVValues () - GTP_ID={FindTECComponent(key).name_shr}, час ({hour})..."
                                 , Logging.INDEX_MESSAGE.NOT_SET);
 
                             errRes = Errors.ParseError;
@@ -479,7 +479,9 @@ namespace StatisticCommon
 
                         if (errRes == Errors.ParseError)
                             break;
-                        else
+                        else {
+                                
+                        }
                             ;
                     }
 

@@ -137,9 +137,9 @@ namespace trans_mc
 
         protected override void setUIControlSourceState()
         {
-            TECComponent comp = ((AdminTS)m_arAdmin [(Int16)CONN_SETT_TYPE.DEST]).CurrentDevice;
+            IDevice comp = ((AdminTS)m_arAdmin [(Int16)CONN_SETT_TYPE.DEST]).CurrentDevice;
 
-            if (comp.m_listMCentreId.Count > 0)
+            if (comp.ListMCentreId.Count > 0)
             {
                 //Properties.Settings sett = new Properties.Settings();
                 //tbxSourceServerMC.Text = sett.Modes_Centre_Service_Host_Name;

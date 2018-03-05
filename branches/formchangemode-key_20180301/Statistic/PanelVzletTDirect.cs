@@ -1149,7 +1149,7 @@ namespace Statistic
                                 arValues[(int)TG.INDEX_VALUE.TM] =
                                     -1F;
                                 // получить значения для параметров ВЫВОДа
-                                foreach (Vyvod.ParamVyvod pv in g.m_listLowPointDev)
+                                foreach (Vyvod.ParamVyvod pv in g.ListLowPointDev)
                                 {//Цикл по списку с парметрами ВЫВОДа
                                     if (!(m_parent.m_tecView.m_dictValuesLowPointDev[pv.m_id].m_power_LastMinutesTM == null))
                                     {
@@ -1476,7 +1476,7 @@ namespace Statistic
                                 foreach (TECComponent tc in _localTECComponents)
                                     if ((tc.IsVyvod == true)
                                         && (tc.m_bKomUchet == true)) {
-                                        foreach (TECComponentBase lpd in tc.m_listLowPointDev) {
+                                        foreach (TECComponentBase lpd in tc.ListLowPointDev) {
                                             // получить идентификатор параметра ВЫВОДа
                                             id = lpd.m_id;
                                             // получить все строки со значениями для параметра ВЫВОДа
@@ -1521,7 +1521,7 @@ namespace Statistic
                                                 Tpv =
                                                     0F;
 
-                                                foreach (TECComponentBase lpd in tc.m_listLowPointDev)
+                                                foreach (TECComponentBase lpd in tc.ListLowPointDev)
                                                 {// цикл по всем конечным устройствам ВЫВОДа
                                                     id = lpd.m_id;
                                                     // получить значение для формулы в ~ от типа параметра
@@ -1663,7 +1663,7 @@ namespace Statistic
                 {
                     base.initDictValuesLowPointDev(comp);
 
-                    foreach (TECComponentBase dev in comp.m_listLowPointDev)
+                    foreach (TECComponentBase dev in comp.ListLowPointDev)
                         if (m_dictCurrValuesLowPointDev.ContainsKey(dev.m_id) == false)
                             m_dictCurrValuesLowPointDev.Add(dev.m_id, new valuesLowPointDev ());
                         else
@@ -1691,7 +1691,7 @@ namespace Statistic
                                     if ((tc.IsVyvod == true)
                                         && (tc.m_bKomUchet == true))
                                     {
-                                        foreach (TECComponentBase lpd in tc.m_listLowPointDev)
+                                        foreach (TECComponentBase lpd in tc.ListLowPointDev)
                                         {
                                             // получить идентификатор параметра ВЫВОДа
                                             id = lpd.m_id;
@@ -1732,7 +1732,7 @@ namespace Statistic
                                             Tpv =
                                                 0F;
 
-                                            foreach (TECComponentBase lpd in tc.m_listLowPointDev)
+                                            foreach (TECComponentBase lpd in tc.ListLowPointDev)
                                             {
                                                 // получить идентификатор параметра ВЫВОДа
                                                 id = lpd.m_id;
@@ -1990,7 +1990,7 @@ namespace Statistic
                     m_tecView.m_tec.list_TECComponents.ForEach(c =>
                     {
                         //if ((c.IsParamVyvod == true)
-                        //    && ((c.m_listLowPointDev[0] as Vyvod.ParamVyvod).m_id_param == Vyvod.ID_PARAM.T_PV))
+                        //    && ((c.ListLowPointDev[0] as Vyvod.ParamVyvod).m_id_param == Vyvod.ID_PARAM.T_PV))
                         if (c.IsVyvod == true)
                             // добавить элементы управления для отображения значений указанного ВЫВОДа
                             _pnlQuickData.AddTGView(c);

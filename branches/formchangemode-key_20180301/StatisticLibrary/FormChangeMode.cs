@@ -95,6 +95,8 @@ namespace StatisticCommon
 
             public FormChangeMode.MODE_TECCOMPONENT Mode { get; set; }
 
+            //public TECComponentBase.TYPE 
+
             public override string ToString ()
             {
                 return string.Format ("KeyTECComponent=[Id={0}, Mode={1}]", Id, Mode);

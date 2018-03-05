@@ -445,7 +445,7 @@ namespace StatisticCommon
                 ClearStates();
 
                 CurrentKey = key;
-                
+
                 ClearValues();
 
                 using_date = false;
@@ -970,8 +970,8 @@ namespace StatisticCommon
 
             IDevice curDev = CurrentDevice;
 
-            for (j = 0; j < curDev.m_listLowPointDev.Count; j++) {
-                indx_col = curDev.m_listLowPointDev[j].m_indx_col_rdg_excel;
+            for (j = 0; j < curDev.ListLowPointDev.Count; j++) {
+                indx_col = curDev.ListLowPointDev[j].m_indx_col_rdg_excel;
                 if (indx_col > 1)
                     if (!(m_tableRDGExcelValuesResponse.Rows[iRows][indx_col - 1] is DBNull) &&
                         (double.TryParse(m_tableRDGExcelValuesResponse.Rows[iRows][indx_col - 1].ToString(), out val) == true))
@@ -2753,7 +2753,7 @@ namespace StatisticCommon
                 if ((comp.tec.m_id == id_tec)
                     && (comp.Mode == ownerMode))
                 {
-                    foreach (TECComponentBase tc in comp.m_listLowPointDev)
+                    foreach (TECComponentBase tc in comp.ListLowPointDev)
                     {
                         if (tc.m_id == key.Id)
                         {

@@ -44,11 +44,11 @@ namespace trans_mc
             //Logging.Logg().Debug("AdminMC::GetPPBRValuesRequest (TEC, TECComponent, DateTime, AdminTS.TYPE_FIELDS) - вХод...: query=" + query, Logging.INDEX_MESSAGE.NOT_SET);
 
             query += ";";
-            for (i = 0; i < comp.m_listMCentreId.Count; i++)
+            for (i = 0; i < comp.ListMCentreId.Count; i++)
             {
-                query += comp.m_listMCentreId[i];
+                query += comp.ListMCentreId[i];
 
-                if ((i + 1) < comp.m_listMCentreId.Count) query += ","; else ;
+                if ((i + 1) < comp.ListMCentreId.Count) query += ","; else ;
             }
 
             //tPBR.GetComp(str, "MC");

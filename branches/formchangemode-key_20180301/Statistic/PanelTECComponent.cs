@@ -1323,20 +1323,20 @@ namespace Statistic
                                     tg_path += ':' + g.m_id.ToString ();
                                     this.Nodes [tec_indx].Nodes [(int)FormChangeMode.MODE_TECCOMPONENT.TG - 1].Nodes [node_indx].Name = tg_path;
 
-                                    if ((g.m_listLowPointDev [0] as TG).m_id_owner_pc == -1) {
+                                    if ((g.ListLowPointDev [0] as TG).m_id_owner_pc == -1) {
                                         string pc_tg_path = path;
 
                                         pc_node_null_indx++;
-                                        this.Nodes [tec_indx].Nodes [(int)FormChangeMode.MODE_TECCOMPONENT.PC - 1].Nodes [0].Nodes.Add (g.m_listLowPointDev [0].name_shr);
-                                        pc_tg_path += ":" + g.m_listLowPointDev [0].m_id.ToString ();
+                                        this.Nodes [tec_indx].Nodes [(int)FormChangeMode.MODE_TECCOMPONENT.PC - 1].Nodes [0].Nodes.Add (g.ListLowPointDev [0].name_shr);
+                                        pc_tg_path += ":" + g.ListLowPointDev [0].m_id.ToString ();
                                         this.Nodes [tec_indx].Nodes [(int)FormChangeMode.MODE_TECCOMPONENT.PC - 1].Nodes [0].Nodes [pc_node_null_indx].Name = pc_tg_path;
                                     }
-                                    if ((g.m_listLowPointDev [0] as TG).m_id_owner_gtp == -1) {
+                                    if ((g.ListLowPointDev [0] as TG).m_id_owner_gtp == -1) {
                                         string gtp_tg_path = path;
 
                                         gtp_node_null_indx++;
-                                        this.Nodes [tec_indx].Nodes [(int)FormChangeMode.MODE_TECCOMPONENT.GTP - 1].Nodes [0].Nodes.Add (g.m_listLowPointDev [0].name_shr);
-                                        gtp_tg_path += ":" + g.m_listLowPointDev [0].m_id.ToString ();
+                                        this.Nodes [tec_indx].Nodes [(int)FormChangeMode.MODE_TECCOMPONENT.GTP - 1].Nodes [0].Nodes.Add (g.ListLowPointDev [0].name_shr);
+                                        gtp_tg_path += ":" + g.ListLowPointDev [0].m_id.ToString ();
                                         this.Nodes [tec_indx].Nodes [(int)FormChangeMode.MODE_TECCOMPONENT.GTP - 1].Nodes [0].Nodes [gtp_node_null_indx].Name = gtp_tg_path;
                                     }
 
@@ -1352,7 +1352,7 @@ namespace Statistic
                                     gtp_path += ':' + g.m_id.ToString ();
                                     this.Nodes [tec_indx].Nodes [(int)FormChangeMode.MODE_TECCOMPONENT.GTP - 1].Nodes [gtp_indx].Name = gtp_path;
 
-                                    foreach (StatisticCommon.TG h in g.m_listLowPointDev) {
+                                    foreach (StatisticCommon.TG h in g.ListLowPointDev) {
                                         string gtp_tg_path = gtp_path;
 
                                         if (h.m_id_owner_gtp == g.m_id) {
@@ -1376,7 +1376,7 @@ namespace Statistic
                                     pc_path += ':' + g.m_id.ToString ();
                                     this.Nodes [tec_indx].Nodes [(int)FormChangeMode.MODE_TECCOMPONENT.PC - 1].Nodes [pc_indx].Name = pc_path;
 
-                                    foreach (StatisticCommon.TG h in g.m_listLowPointDev) {
+                                    foreach (StatisticCommon.TG h in g.ListLowPointDev) {
                                         string pc_tg_path = pc_path;
 
                                         if (h.m_id_owner_pc == g.m_id) {

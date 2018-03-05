@@ -198,7 +198,7 @@ namespace StatisticAlarm
             int iRes = (int)ASUTP.Helper.HHandler.INDEX_WAITHANDLE_REASON.SUCCESS
                 , iDebug = -1 //-1 - нет отладки, 0 - раб./отладка, 1 - имитирование
                 , cntTGTurnOn = 0 // кол-во вкл. ТГ
-                , cntTGTurnUnknown = allTECComponents.Find(comp => comp.m_id == CurrentKey.Id).m_listLowPointDev.Count // кол-во ТГ с неизвестным состоянием
+                , cntTGTurnUnknown = allTECComponents.Find(comp => comp.m_id == CurrentKey.Id).ListLowPointDev.Count // кол-во ТГ с неизвестным состоянием
                 , cntPower_TMValues = 0; //Счетчик кол-ва значений тек./мощн. ТГ в общем значении мощности для ГТП
             //Константы
             double TGTURNONOFF_VALUE = -1F //Значения для сигнализации "ТГ вкл./откл."
@@ -226,7 +226,7 @@ namespace StatisticAlarm
             }
             else
             {
-                foreach (StatisticCommon.TG tg in allTECComponents.Find(comp => comp.m_id == CurrentKey.Id).m_listLowPointDev)
+                foreach (StatisticCommon.TG tg in allTECComponents.Find(comp => comp.m_id == CurrentKey.Id).ListLowPointDev)
                 {
                     curTurnOnOff = StatisticCommon.TG.INDEX_TURNOnOff.UNKNOWN;
 
@@ -340,7 +340,7 @@ namespace StatisticAlarm
 
                     #region Код для отладки
                     if (!(iDebug < 0))
-                        if ((TECComponentCurrent.m_listLowPointDev.IndexOf(tg) + 1) < TECComponentCurrent.m_listLowPointDev.Count)
+                        if ((TECComponentCurrent.ListLowPointDev.IndexOf(tg) + 1) < TECComponentCurrent.ListLowPointDev.Count)
                             Console.Write(@", ");
                         else
                             ;

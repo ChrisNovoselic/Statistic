@@ -272,7 +272,7 @@ namespace trans_tg
                 id_gtp_owner = ((DataGridViewAdminNSS)m_dgwAdminTable).GetIdGTPOwner(indx_tg);
 
             foreach (FormChangeMode.KeyDevice key in ((AdminTransTG)m_arAdmin[indxDB]).m_listKeyTECComponentDetail)
-                if (((AdminTransTG)m_arAdmin[indxDB]).allTECComponents[indx].m_id == id_gtp_owner)
+                if (((AdminTransTG)m_arAdmin[indxDB]).FindTECComponent(key).m_id == id_gtp_owner)
                     return ((AdminTransTG)m_arAdmin[indxDB]).m_listKeyTECComponentDetail.IndexOf(key);
                 else
                     ;

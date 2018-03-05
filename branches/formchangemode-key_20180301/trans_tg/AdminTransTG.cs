@@ -133,7 +133,7 @@ namespace trans_tg
 
             if (IsCanUseTECComponents == true)
                 //Request(m_indxDbInterfaceCommon, m_listenerIdCommon, allTECComponents[indxTECComponents].tec.GetAdminDatesQuery(date));
-                Request(m_dictIdListeners[CurrentDevice.tec.m_id][(int)StatisticCommon.CONN_SETT_TYPE.ADMIN], getAdminDatesQuery(date/*, m_typeFields*/, CurrentDevice));
+                Request(m_dictIdListeners[CurrentDevice.tec.m_id][(int)StatisticCommon.CONN_SETT_TYPE.ADMIN], getAdminDatesQuery(date/*, m_typeFields*/, CurrentDevice as TECComponent));
             else
                 throw new InvalidOperationException ("AdminTransTG::impRDGExcelValuesResponse () - нет компонентов ТЭЦ...");
         }
@@ -149,7 +149,7 @@ namespace trans_tg
 
             if (IsCanUseTECComponents == true)
                 //Request(m_indxDbInterfaceCommon, m_listenerIdCommon, allTECComponents[indxTECComponents].tec.GetPBRDatesQuery(date));
-                Request(m_dictIdListeners[CurrentDevice.tec.m_id][(int)StatisticCommon.CONN_SETT_TYPE.ADMIN], getPBRDatesQuery(date/*, m_typeFields*/, CurrentDevice));
+                Request(m_dictIdListeners[CurrentDevice.tec.m_id][(int)StatisticCommon.CONN_SETT_TYPE.ADMIN], getPBRDatesQuery(date/*, m_typeFields*/, CurrentDevice as TECComponent));
             else
                 throw new InvalidOperationException ("AdminTransTG::impRDGExcelValuesResponse () - нет компонентов ТЭЦ...");
         }

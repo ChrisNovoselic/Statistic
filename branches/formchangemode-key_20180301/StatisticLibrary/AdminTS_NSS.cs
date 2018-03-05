@@ -272,14 +272,17 @@ namespace StatisticCommon
                         //strUpdate += @"A";
                         if (m_listKeyTECComponentDetail[m_listCurRDGValues.IndexOf(curRDGValues)].Mode == FormChangeMode.MODE_TECCOMPONENT.GTP)
                         {
-                            //strUpdate += allTECComponents[indxTECComponents].m_indx_col_rdg_excel;
-                            comp = CurrentDevice;
+                            try {
+                                comp = CurrentDevice as TECComponentBase;
+                            } catch (Exception e) {
+                                Logging.Logg ().Exception (e, "преобразование IDevice -> TECComponentBase...", Logging.INDEX_MESSAGE.NOT_SET);
+                            }
                         }
                         else
                             if (m_listKeyTECComponentDetail[m_listCurRDGValues.IndexOf(curRDGValues)].Mode == FormChangeMode.MODE_TECCOMPONENT.TG)
                             {
                                 //strUpdate += allTECComponents[indxTECComponents].TG [0].m_indx_col_rdg_excel;
-                                comp = CurrentDevice.m_listLowPointDev[0];
+                                comp = CurrentDevice.ListLowPointDev[0];
                             }
                             else ;
 
