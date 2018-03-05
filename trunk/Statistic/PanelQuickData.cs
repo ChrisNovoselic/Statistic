@@ -1342,13 +1342,13 @@ namespace Statistic
 
                     int min = m_parent.m_tecView.lastMin < m_parent.m_tecView.m_valuesMins.Length ? m_parent.m_tecView.lastMin : m_parent.m_tecView.m_valuesMins.Length - 1;
 
-                    if (m_parent.indx_TECComponent < 0) // значит этот view будет суммарным для всех ГТП
+                    if (m_parent.Mode == FormChangeMode.MODE_TECCOMPONENT.TEC) // значит этот view будет суммарным для всех ГТП
                     {
                         foreach (TECComponent g in m_parent.m_tecView.m_tec.list_TECComponents)
                         {
                             if (g.IsGTP == true)
                                 //Только ГТП
-                                foreach (TG tg in g.m_listLowPointDev)
+                                foreach (TG tg in g.ListLowPointDev)
                                     showTMValue(tg, ref value_TM, min);
                             else
                                 ;
@@ -1356,7 +1356,7 @@ namespace Statistic
                     }
                     else
                     {
-                        foreach (TG tg in m_parent.m_tecView.m_tec.list_TECComponents[m_parent.indx_TECComponent].m_listLowPointDev)
+                        foreach (TG tg in m_parent.m_tecView.m_tec.list_TECComponents.Find(comp => comp.m_id == m_parent.TecViewKey.Id).ListLowPointDev)
                             showTMValue(tg, ref value_TM, min);
                     }
                 }
@@ -1623,13 +1623,13 @@ namespace Statistic
 
                     //ShowTGValue
                     i = 0;
-                    if (m_parent.indx_TECComponent < 0) // значит этот view будет суммарным для всех ГТП
+                    if (m_parent.Mode == FormChangeMode.MODE_TECCOMPONENT.TEC) // значит этот view будет суммарным для всех ГТП
                     {
                         foreach (TECComponent g in m_parent.m_tecView.LocalTECComponents)
                         {
                             if (g.IsGTP == true)
                                 //Только ГТП
-                                foreach (TG tg in g.m_listLowPointDev)
+                                foreach (TG tg in g.ListLowPointDev)
                                 {//Цикл по списку с ТГ
                                     //Отобразить значение
                                     if ((!(m_parent.m_tecView.m_dictValuesLowPointDev[tg.m_id].m_powerMinutes == null))
@@ -1658,16 +1658,16 @@ namespace Statistic
                     {
                         foreach (TECComponent comp in m_parent.m_tecView.LocalTECComponents)
                         {
-                            if ((!(m_parent.m_tecView.m_dictValuesLowPointDev[comp.m_listLowPointDev[0].m_id].m_powerMinutes == null))
-                                && (!(m_parent.m_tecView.m_dictValuesLowPointDev[comp.m_listLowPointDev[0].m_id].m_powerMinutes[min] < 0)))
-                                showValue(m_tgLabels[comp.m_listLowPointDev[0].m_id][(int)TG.INDEX_VALUE.FACT]
-                                    , m_parent.m_tecView.m_dictValuesLowPointDev[comp.m_listLowPointDev[0].m_id].m_powerMinutes[min]
+                            if ((!(m_parent.m_tecView.m_dictValuesLowPointDev[comp.ListLowPointDev[0].m_id].m_powerMinutes == null))
+                                && (!(m_parent.m_tecView.m_dictValuesLowPointDev[comp.ListLowPointDev[0].m_id].m_powerMinutes[min] < 0)))
+                                showValue(m_tgLabels[comp.ListLowPointDev[0].m_id][(int)TG.INDEX_VALUE.FACT]
+                                    , m_parent.m_tecView.m_dictValuesLowPointDev[comp.ListLowPointDev[0].m_id].m_powerMinutes[min]
                                     , 2 //round
                                     , true);
                             else
-                                m_tgLabels[comp.m_listLowPointDev[0].m_id][(int)TG.INDEX_VALUE.FACT].Text = "---";
+                                m_tgLabels[comp.ListLowPointDev[0].m_id][(int)TG.INDEX_VALUE.FACT].Text = "---";
 
-                            m_tgLabels[comp.m_listLowPointDev[0].m_id][(int)TG.INDEX_VALUE.FACT].ForeColor = getColorValues(TG.INDEX_VALUE.FACT);
+                            m_tgLabels[comp.ListLowPointDev[0].m_id][(int)TG.INDEX_VALUE.FACT].ForeColor = getColorValues(TG.INDEX_VALUE.FACT);
 
                             i++;
                         }

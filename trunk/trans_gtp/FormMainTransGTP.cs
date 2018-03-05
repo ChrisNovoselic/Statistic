@@ -346,7 +346,7 @@ namespace trans_gtp
                 switch (m_modeTECComponent)
                 {
                     case FormChangeMode.MODE_TECCOMPONENT.GTP:
-                        ((AdminTS)m_arAdmin[indexDB]).GetRDGValues(/*(int)((AdminTS)m_arAdmin[indexDB]).m_typeFields,*/ m_listTECComponentIndex[comboBoxTECComponent.SelectedIndex], dateTimePickerMain.Value.Date);
+                        ((AdminTS)m_arAdmin[indexDB]).GetRDGValues(SelectedItemKey, dateTimePickerMain.Value.Date);
                         break;
                     case FormChangeMode.MODE_TECCOMPONENT.TG:
                         break;
@@ -365,8 +365,6 @@ namespace trans_gtp
 
         protected override void timer_Start()
         {
-            m_listTECComponentIndex = ((AdminTS)m_arAdmin[(Int16)CONN_SETT_TYPE.DEST]).GetListIndexTECComponent(m_modeTECComponent, false);
-
             base.timer_Start();
         }
 

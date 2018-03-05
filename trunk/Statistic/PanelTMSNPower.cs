@@ -529,7 +529,7 @@ namespace Statistic
                     {
                         dblTECComponentPower_TM = 0.0;
 
-                        foreach (TG tg in g.m_listLowPointDev)
+                        foreach (TG tg in g.ListLowPointDev)
                         {
                             if (tg.m_strKKS_NAME_TM.Length > 0)
                             {

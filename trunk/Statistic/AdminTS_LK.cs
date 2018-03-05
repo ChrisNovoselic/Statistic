@@ -37,32 +37,31 @@ namespace Statistic {
             /// Формирование списка компонентов в зависимости от выбранного в ComboBox
             /// </summary>
             /// <param name="id">ИД компонента в ComboBox</param>
-            public override void FillListIndexTECComponent(int id)
+            public override void FillListKeyTECComponentDetail(int id)
             {
                 lock (m_lockSuccessGetData)
                 {
-                    m_listTECComponentIndexDetail.Clear();
+                    m_listKeyTECComponentDetail.Clear();
 
                     //Сначала - ГТП
                     foreach (TECComponent comp in allTECComponents)
                         if (comp.tec.m_id > (int)TECComponent.ID.LK)
-                            if ((comp.m_id == GetIdTECComponent(id)) && //Принадлежит ТЭЦ
-                                ((comp.IsGTP_LK == true) /*|| //Является ГТП_ЛК
-                            ((comp.m_id > 1000) && (comp.m_id < 10000))*/)) //Является ТГ
+                            if ((comp.m_id == GetIdTECComponent(id)) //Принадлежит ТЭЦ
+                                && (comp.IsGTP_LK == true)) //Является ГТП_ЛК
                             {
-                                m_listTECComponentIndexDetail.Add(allTECComponents.IndexOf(comp));
+                                m_listKeyTECComponentDetail.Add(new FormChangeMode.KeyDevice () { Id = comp.m_id, Mode = FormChangeMode.MODE_TECCOMPONENT.GTP });
 
-                                foreach (TG tg in comp.m_listLowPointDev)
+                                foreach (TG tg in comp.ListLowPointDev)
                                     foreach (TECComponent comp_tg in allTECComponents)
                                         if (comp_tg.m_id == tg.m_id)
-                                            m_listTECComponentIndexDetail.Add(allTECComponents.IndexOf(comp_tg));
+                                            m_listKeyTECComponentDetail.Add(new FormChangeMode.KeyDevice () { Id = comp.m_id, Mode = FormChangeMode.MODE_TECCOMPONENT.TG });
                             }
                             else
                                 ;
                         else
                             ;
 
-                    m_listTECComponentIndexDetail.Sort();
+                    m_listKeyTECComponentDetail.Sort();
                     ClearListRDGValues();
                 }
             }
@@ -77,7 +76,7 @@ namespace Statistic {
 
                 //lock (m_lockSuccessGetData)
                 //{
-                foreach (int indx in m_listTECComponentIndexDetail)
+                foreach (FormChangeMode.KeyDevice key in m_listKeyTECComponentDetail)
                 {
                     indxEv = WaitHandle.WaitAny(m_waitHandleState);
 
@@ -85,7 +84,7 @@ namespace Statistic {
                     {
                         m_semaIndxTECComponents.WaitOne();
 
-                        base.BaseGetRDGValue(/*m_typeFields,*/ indx, DateTime.MinValue);
+                        base.BaseGetRDGValue(key, DateTime.MinValue);
                         m_listPrevRDGValues = new List<RDGStruct[]>(m_listCurRDGValues);
                     }
                     else
@@ -109,14 +108,14 @@ namespace Statistic {
 
                 //lock (m_lockSuccessGetData)
                 //{
-                foreach (int indx in m_listTECComponentIndexDetail)
+                foreach (FormChangeMode.KeyDevice key in m_listKeyTECComponentDetail)
                 {
                     indxEv = WaitHandle.WaitAny(m_waitHandleState);
                     if (indxEv == 0)
                     {
                         m_semaIndxTECComponents.WaitOne();//Ожидание изменения состояния семафора
 
-                        base.BaseGetRDGValue(indx, (DateTime)date);
+                        base.BaseGetRDGValue(key, (DateTime)date);
 
                         m_listPrevRDGValues = new List<RDGStruct[]>(m_listCurRDGValues);
                     }
@@ -186,7 +185,7 @@ namespace Statistic {
                     m_listResSaveChanges.Clear();
                 }
 
-                int prevIndxTECComponent = indxTECComponents;
+                FormChangeMode.KeyDevice prevKeyTECComponent = CurrentKey;
 
                 foreach (RDGStruct[] curRDGValues in m_listCurRDGValues)
                 {
@@ -195,12 +194,12 @@ namespace Statistic {
                     for (INDEX_WAITHANDLE_REASON i = INDEX_WAITHANDLE_REASON.ERROR; i < (INDEX_WAITHANDLE_REASON.ERROR + 1); i++)
                         ((ManualResetEvent)m_waitHandleState[(int)i]).Reset();
 
-                    if (modeTECComponent(m_listTECComponentIndexDetail[m_listCurRDGValues.IndexOf(curRDGValues)]) == FormChangeMode.MODE_TECCOMPONENT.TG)
+                    if (m_listKeyTECComponentDetail[m_listCurRDGValues.IndexOf(curRDGValues)].Mode == FormChangeMode.MODE_TECCOMPONENT.TG)
                     {
                         indxEv = WaitHandle.WaitAny(m_waitHandleState);
                         if (indxEv == 0)
                         {
-                            indxTECComponents = m_listTECComponentIndexDetail[m_listCurRDGValues.IndexOf(curRDGValues)];
+                            CurrentKey = m_listKeyTECComponentDetail[m_listCurRDGValues.IndexOf(curRDGValues)];
 
                             curRDGValues.CopyTo(m_curRDGValues, 0);
 
@@ -210,12 +209,12 @@ namespace Statistic {
                             break;
                     }
                     else
-                        if (modeTECComponent(m_listTECComponentIndexDetail[m_listCurRDGValues.IndexOf(curRDGValues)]) == FormChangeMode.MODE_TECCOMPONENT.GTP)
+                        if (m_listKeyTECComponentDetail[m_listCurRDGValues.IndexOf(curRDGValues)].Mode == FormChangeMode.MODE_TECCOMPONENT.GTP)
                         {
                             indxEv = WaitHandle.WaitAny(m_waitHandleState);
                             if (indxEv == 0)
                             {
-                                indxTECComponents = m_listTECComponentIndexDetail[m_listCurRDGValues.IndexOf(curRDGValues)];
+                                CurrentKey = m_listKeyTECComponentDetail[m_listCurRDGValues.IndexOf(curRDGValues)];
 
                                 curRDGValues.CopyTo(m_curRDGValues, 0);
 
@@ -238,7 +237,7 @@ namespace Statistic {
                     }
                 }
 
-                indxTECComponents = prevIndxTECComponent;
+                CurrentKey = prevKeyTECComponent;
 
                 //if (indxEv == 0)
                 //if (errRes == Errors.NoError)
@@ -279,6 +278,11 @@ namespace Statistic {
                                 allTECComponents.Add(g);
                         else
                             allTECComponents.Add(t.list_TECComponents[0]);
+            }
+
+            public int GetCurrentIndexTECComponent ()
+            {
+                return m_listKeyTECComponentDetail.IndexOf(CurrentKey);
             }
 
             /// <summary>

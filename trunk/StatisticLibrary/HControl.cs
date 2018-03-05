@@ -322,4 +322,36 @@ namespace StatisticCommon
         //    }
         //}
     }
+
+    public struct ComboBoxItem
+    {
+        public string Text;
+
+        public FormChangeMode.KeyDevice Tag;
+
+        public override string ToString ()
+        {
+            return Text;
+        }
+
+        public static bool operator == (ComboBoxItem item1, ComboBoxItem item2)
+        {
+            return item1.Tag == item2.Tag;
+        }
+
+        public static bool operator != (ComboBoxItem item1, ComboBoxItem item2)
+        {
+            return !(item1.Tag == item2.Tag);
+        }
+
+        public override bool Equals (object obj)
+        {
+            return (obj is ComboBoxItem) ? this == (ComboBoxItem)obj : false;
+        }
+
+        public override int GetHashCode ()
+        {
+            return base.GetHashCode ();
+        }
+    }
 }

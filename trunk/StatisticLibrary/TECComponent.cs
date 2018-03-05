@@ -10,6 +10,20 @@ using ASUTP.Core;
 
 namespace StatisticCommon
 {
+    public interface IDevice
+    {
+        string name_shr { get; set; }
+
+        int m_id { get; set; }
+
+        TEC tec { get; }
+
+        List<TECComponentBase> ListLowPointDev { get; }
+
+        List<int> ListMCentreId { get; }
+
+        List<int> ListMTermId { get; }
+    }
     /// <summary>
     /// Класс для описания основного компонента ТЭЦ
     /// </summary>
@@ -83,7 +97,7 @@ namespace StatisticCommon
         /// <summary>
         /// Краткое наименовнаие компонента
         /// </summary>
-        public string name_shr;
+        public string name_shr { get; set; }
         /// <summary>
         /// Нименование для использования в будущем (при расширении)
         /// </summary>
@@ -91,7 +105,7 @@ namespace StatisticCommon
         /// <summary>
         /// Идентификатор компонента (из БД конфигурации)
         /// </summary>
-        public int m_id;
+        public int m_id { get; set; }
         /// <summary>
         /// Индекс столбца в книге Excel со значениями ПБР для экспорта значений (подзадача сравнения ПБР-значений с аналогичными значениями из-вне, только для ГТП)
         /// </summary>
@@ -115,13 +129,21 @@ namespace StatisticCommon
         public TECComponentBase()
         {
             m_dcKoeffAlarmPcur = -1;
-        }        
+        }
+
+        public FormChangeMode.MODE_TECCOMPONENT Mode
+        {
+            get
+            {
+                return GetMode (m_id);
+            }
+        }
         /// <summary>
         /// Возвратить тип (режим) компонента по указанному идентификатору
         /// </summary>
         /// <param name="id">Идентификатор компонента</param>
         /// <returns>Тип (режим) компонента</returns>
-        public static FormChangeMode.MODE_TECCOMPONENT Mode(int id)
+        public static FormChangeMode.MODE_TECCOMPONENT GetMode(int id)
         {
             return (id < (int)ID.GTP) == true ? FormChangeMode.MODE_TECCOMPONENT.TEC :
                 ((id > (int)ID.GTP) && (id < (int)ID.PC)) == true ? FormChangeMode.MODE_TECCOMPONENT.GTP :
@@ -325,7 +347,7 @@ namespace StatisticCommon
     /// <summary>
     /// Класс для описания компонента ТЭЦ (ГТП, Б(Гр)ЩУ)
     /// </summary>
-    public class TECComponent : TECComponentBase
+    public class TECComponent : TECComponentBase,  IDevice
     {
         /// <summary>
         /// Список идентификаторов в Модес-Центр
@@ -338,11 +360,35 @@ namespace StatisticCommon
         /// <summary>
         /// Список ТГ
         /// </summary>
-        public List<TECComponentBase> m_listLowPointDev;
+        private List<TECComponentBase> m_listLowPointDev;
+
+        public List<TECComponentBase> ListLowPointDev
+        {
+            get
+            {
+                return m_listLowPointDev;
+            }
+        }
         /// <summary>
         /// Объект ТЭЦ - "владелец" компонента
         /// </summary>
-        public TEC tec;
+        public TEC tec { get; }
+
+        public List<int> ListMCentreId
+        {
+            get
+            {
+                return m_listMCentreId;
+            }
+        }
+
+        public List<int> ListMTermId
+        {
+            get
+            {
+                return m_listMTermId;
+            }
+        }
 
         public bool m_bKomUchet;
         /// <summary>

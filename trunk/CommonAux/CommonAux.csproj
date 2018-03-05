@@ -31,7 +31,7 @@
     <BootstrapperEnabled>true</BootstrapperEnabled>
   </PropertyGroup>
   <PropertyGroup Condition=" '$(Configuration)|$(Platform)' == 'Debug|AnyCPU' ">
-    <PlatformTarget>AnyCPU</PlatformTarget>
+    <PlatformTarget>x86</PlatformTarget>
     <DebugSymbols>true</DebugSymbols>
     <DebugType>full</DebugType>
     <Optimize>false</Optimize>
@@ -52,7 +52,7 @@
   </PropertyGroup>
   <PropertyGroup Condition="'$(Configuration)|$(Platform)' == 'Debug|x86'">
     <DebugSymbols>true</DebugSymbols>
-    <OutputPath>..\Statistic\bin\Debug\</OutputPath>
+    <OutputPath>bin\Debug\</OutputPath>
     <DefineConstants>DEBUG;TRACE</DefineConstants>
     <DocumentationFile>bin\Debug\CommonAux.XML</DocumentationFile>
     <DebugType>full</DebugType>
@@ -93,28 +93,35 @@
   </PropertyGroup>
   <ItemGroup>
     <Reference Include="ASUTP.Control">
-      <HintPath>..\..\ASUTP.Library\ASUTP.Control\obj\Debug\ASUTP.Control.dll</HintPath>
+      <HintPath>..\..\ExternalDLL\ASUTP.Control.dll</HintPath>
     </Reference>
-    <Reference Include="ASUTP.Core">
-      <HintPath>..\..\ASUTP.Library\ASUTP.Core\obj\Debug\ASUTP.Core.dll</HintPath>
+    <Reference Include="ASUTP.Core, Version=1.1.1.1, Culture=neutral, processorArchitecture=MSIL">
+      <SpecificVersion>False</SpecificVersion>
+      <HintPath>..\..\ExternalDLL\ASUTP.Core.dll</HintPath>
     </Reference>
-    <Reference Include="ASUTP.Database">
-      <HintPath>..\..\ASUTP.Library\ASUTP.Database\obj\Debug\ASUTP.Database.dll</HintPath>
+    <Reference Include="ASUTP.Database, Version=1.1.5.23, Culture=neutral, processorArchitecture=MSIL">
+      <SpecificVersion>False</SpecificVersion>
+      <HintPath>..\..\ExternalDLL\ASUTP.Database.dll</HintPath>
     </Reference>
-    <Reference Include="ASUTP.Forms">
-      <HintPath>..\..\ASUTP.Library\ASUTP.Forms\obj\Debug\ASUTP.Forms.dll</HintPath>
+    <Reference Include="ASUTP.Forms, Version=1.1.2.1, Culture=neutral, processorArchitecture=MSIL">
+      <SpecificVersion>False</SpecificVersion>
+      <HintPath>..\..\ExternalDLL\ASUTP.Forms.dll</HintPath>
     </Reference>
-    <Reference Include="ASUTP.Helper">
-      <HintPath>..\..\ASUTP.Library\ASUTP.Helper\obj\Debug\ASUTP.Helper.dll</HintPath>
+    <Reference Include="ASUTP.Helper, Version=1.1.4.5, Culture=neutral, processorArchitecture=MSIL">
+      <SpecificVersion>False</SpecificVersion>
+      <HintPath>..\..\ExternalDLL\ASUTP.Helper.dll</HintPath>
     </Reference>
-    <Reference Include="ASUTP.Logging">
-      <HintPath>..\..\ASUTP.Library\ASUTP.Logging\obj\Debug\ASUTP.Logging.dll</HintPath>
+    <Reference Include="ASUTP.Logging, Version=1.1.1.1, Culture=neutral, processorArchitecture=MSIL">
+      <SpecificVersion>False</SpecificVersion>
+      <HintPath>..\..\ExternalDLL\ASUTP.Logging.dll</HintPath>
     </Reference>
-    <Reference Include="ASUTP.MSExcel">
-      <HintPath>..\..\ASUTP.Library\ASUTP.MSExcel\obj\Debug\ASUTP.MSExcel.dll</HintPath>
+    <Reference Include="ASUTP.MSExcel, Version=1.1.1.1, Culture=neutral, processorArchitecture=MSIL">
+      <SpecificVersion>False</SpecificVersion>
+      <HintPath>..\..\ExternalDLL\ASUTP.MSExcel.dll</HintPath>
     </Reference>
-    <Reference Include="ASUTP.PlugIn">
-      <HintPath>..\..\ASUTP.Library\ASUTP.PlugIn\obj\Debug\ASUTP.PlugIn.dll</HintPath>
+    <Reference Include="ASUTP.PlugIn, Version=1.1.1.3, Culture=neutral, processorArchitecture=MSIL">
+      <SpecificVersion>False</SpecificVersion>
+      <HintPath>..\..\ExternalDLL\ASUTP.PlugIn.dll</HintPath>
     </Reference>
     <Reference Include="GemBox.Spreadsheet, Version=33.1.0.1000, Culture=neutral, PublicKeyToken=b1b72c69714d4847, processorArchitecture=MSIL">
       <SpecificVersion>False</SpecificVersion>

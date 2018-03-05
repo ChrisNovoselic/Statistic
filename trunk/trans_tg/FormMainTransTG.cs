@@ -206,19 +206,17 @@ namespace trans_tg
                             case (int)CONN_SETT_TYPE.SOURCE:
                                 m_arAdmin[(int)CONN_SETT_TYPE.SOURCE].ResetRDGExcelValues();
 
-                                ((AdminTS_NSS)m_arAdmin[(int)CONN_SETT_TYPE.SOURCE]).FillListIndexTECComponent(m_listTECComponentIndex[comboBoxTECComponent.SelectedIndex]);
-                                ((AdminTS_NSS)m_arAdmin[(int)CONN_SETT_TYPE.DEST]).FillListIndexTECComponent(m_listTECComponentIndex[comboBoxTECComponent.SelectedIndex]);
-                                int countComp = ((AdminTS_NSS)m_arAdmin[(int)CONN_SETT_TYPE.SOURCE]).m_listTECComponentIndexDetail.Count;
+                                int countComp = ((AdminTS_NSS)m_arAdmin[(int)CONN_SETT_TYPE.SOURCE]).m_listKeyTECComponentDetail.Count;
 
                                 //if (m_arAdmin[(Int16)CONN_SETT_TYPE.DEST].allTECComponents[m_listTECComponentIndex[comboBoxTECComponent.SelectedIndex]].tec.m_path_rdg_excel.Length > 0)
                                 //{
-                                ((AdminTS)m_arAdmin[(int)CONN_SETT_TYPE.SOURCE]).ImpRDGExcelValues(m_listTECComponentIndex[comboBoxTECComponent.SelectedIndex], dateTimePickerMain.Value.Date);
+                                ((AdminTS)m_arAdmin[(int)CONN_SETT_TYPE.SOURCE]).ImpRDGExcelValues(SelectedItemKey, dateTimePickerMain.Value.Date);
                                 //}
                                 //else
                                 //    ;
                                 break;
                             case (int)CONN_SETT_TYPE.DEST:
-                                ((AdminTS)m_arAdmin[m_IndexDB]).GetRDGValues(/*(int)((AdminTS)m_arAdmin[(int)CONN_SETT_TYPE.DEST]).m_typeFields,*/ m_listTECComponentIndex[comboBoxTECComponent.SelectedIndex], dateTimePickerMain.Value.Date);
+                                ((AdminTS)m_arAdmin[m_IndexDB]).GetRDGValues(SelectedItemKey, dateTimePickerMain.Value.Date);
                                 break;
                             default:
                                 break;
@@ -260,7 +258,11 @@ namespace trans_tg
 
         protected override void setUIControlSourceState()
         {
-            m_arUIControls [(Int16)CONN_SETT_TYPE.SOURCE, (Int16)INDX_UICONTROLS.SERVER_IP].Text = ((AdminTS)m_arAdmin[(Int16)CONN_SETT_TYPE.DEST]).allTECComponents[((AdminTS_NSS)m_arAdmin[(Int16)CONN_SETT_TYPE.DEST]).m_listTECComponentIndexDetail[0]].tec.GetAddingParameter(TEC.ADDING_PARAM_KEY.PATH_RDG_EXCEL).ToString();
+            // tec получить у любого, в т.ч. "0"-го элемента
+            TEC tec = ((AdminTS)m_arAdmin [(Int16)CONN_SETT_TYPE.DEST]).FindTECComponent (((AdminTS_NSS)m_arAdmin [(Int16)CONN_SETT_TYPE.DEST]).m_listKeyTECComponentDetail [0]).tec;
+
+            m_arUIControls [(Int16)CONN_SETT_TYPE.SOURCE, (Int16)INDX_UICONTROLS.SERVER_IP].Text =
+                tec.GetAddingParameter(TEC.ADDING_PARAM_KEY.PATH_RDG_EXCEL).ToString();
             enabledButtonSourceExport(m_arUIControls[(Int16)CONN_SETT_TYPE.SOURCE, (Int16)INDX_UICONTROLS.SERVER_IP].Text.Length > 0 ? true : false);
         }
 
@@ -269,15 +271,11 @@ namespace trans_tg
             int indxDB = m_IndexDB,
                 id_gtp_owner = ((DataGridViewAdminNSS)m_dgwAdminTable).GetIdGTPOwner(indx_tg);
 
-            foreach (int indx in ((AdminTransTG)m_arAdmin[indxDB]).m_listTECComponentIndexDetail)
-            {
-                if (((AdminTransTG)m_arAdmin[indxDB]).allTECComponents[indx].m_id == id_gtp_owner)
-                {
-                    return ((AdminTransTG)m_arAdmin[indxDB]).m_listTECComponentIndexDetail.IndexOf(indx);
-                }
+            foreach (FormChangeMode.KeyDevice key in ((AdminTransTG)m_arAdmin[indxDB]).m_listKeyTECComponentDetail)
+                if (((AdminTransTG)m_arAdmin[indxDB]).FindTECComponent(key).m_id == id_gtp_owner)
+                    return ((AdminTransTG)m_arAdmin[indxDB]).m_listKeyTECComponentDetail.IndexOf(key);
                 else
                     ;
-            }
 
             return -1;
         }
@@ -289,21 +287,21 @@ namespace trans_tg
 
             ((AdminTS_TG)m_arAdmin[indxDB]).ClearListRDGValues();
 
-            foreach (int indx in ((AdminTransTG)m_arAdmin[indxDB]).m_listTECComponentIndexDetail)
+            foreach (FormChangeMode.KeyDevice key in ((AdminTransTG)m_arAdmin[indxDB]).m_listKeyTECComponentDetail)
             {
-                int indx_comp = ((AdminTransTG)m_arAdmin[indxDB]).m_listTECComponentIndexDetail.IndexOf(indx),
+                int indx_comp = ((AdminTransTG)m_arAdmin[indxDB]).m_listKeyTECComponentDetail.IndexOf(key),
                     indx_owner = getIndexGTPOwner(indx_comp);
 
                 if (!(indx_comp < 0))
                 {
                     ((AdminTransTG)m_arAdmin[indxDB]).m_listCurRDGValues.Add(new AdminTS.RDGStruct[24]);
 
-                    if (((AdminTransTG)m_arAdmin[indxDB]).modeTECComponent(indx) == FormChangeMode.MODE_TECCOMPONENT.GTP)
+                    if (key.Mode == FormChangeMode.MODE_TECCOMPONENT.GTP)
                     {
                         ((AdminTransTG)m_arAdmin[(int)CONN_SETT_TYPE.SOURCE]).m_listCurRDGValues[indx_comp].CopyTo(((AdminTransTG)m_arAdmin[indxDB]).m_listCurRDGValues[indx_comp], 0);
                     }
                     else
-                        if (((AdminTransTG)m_arAdmin[indxDB]).modeTECComponent(indx) == FormChangeMode.MODE_TECCOMPONENT.TG)
+                        if (key.Mode == FormChangeMode.MODE_TECCOMPONENT.TG)
                         {
                             if (!(indx_owner < 0))
                                 for (int i = 0; i < 24; i++)
@@ -328,25 +326,6 @@ namespace trans_tg
             ((AdminTransTG)m_arAdmin[(int)CONN_SETT_TYPE.DEST]).getCurTimezoneOffsetRDGExcelValues(((AdminTransTG)m_arAdmin[(int)CONN_SETT_TYPE.SOURCE]));
         }
 
-        protected override void FillComboBoxTECComponent()
-        {
-            comboBoxTECComponent.Items.Clear();
-
-            if (m_listTECComponentIndex.Count > 0) {
-                comboBoxTECComponent.Items.AddRange(((AdminTS_NSS)m_arAdmin[(int)CONN_SETT_TYPE.DEST]).GetListNameTEC());
-
-                if (comboBoxTECComponent.Items.Count > 0)
-                {
-                    ((AdminTS)m_arAdmin[(int)CONN_SETT_TYPE.DEST]).indxTECComponents = m_listTECComponentIndex[0];
-                    comboBoxTECComponent.SelectedIndex = 0;
-                }
-                else
-                    ;
-            }
-            else
-                ;
-        }
-
         /// <summary>
         /// Добавить столбец в DataGridView + заполнение значениями ячеек
         /// </summary>
@@ -355,12 +334,11 @@ namespace trans_tg
         /// <param name="bSyncReq">Признак необходимости синхронизации по окончании выполнения метода</param>        
         private void addTextBoxColumn (DateTime date, bool bNewValues, bool bSyncReq)
         {
-            int indxDB = m_IndexDB,
-                indx = ((AdminTS_NSS)m_arAdmin[indxDB]).m_listTECComponentIndexDetail[m_dgwAdminTable.Columns.Count - 2];
-            ((DataGridViewAdminNSS)m_dgwAdminTable).addTextBoxColumn(((AdminTS_NSS)m_arAdmin[indxDB]).GetNameTECComponent(indx),
-                                                                        ((AdminTS_NSS)m_arAdmin[indxDB]).GetIdTECComponent(indx),
-                                                                        ((AdminTS_NSS)m_arAdmin[indxDB]).GetIdGTPOwnerTECComponent(indx),
-                                                                        date);
+            int indxDB = m_IndexDB;
+            FormChangeMode.KeyDevice key = ((AdminTS_NSS)m_arAdmin[indxDB]).m_listKeyTECComponentDetail[m_dgwAdminTable.Columns.Count - 2];
+            ((DataGridViewAdminNSS)m_dgwAdminTable).addTextBoxColumn(((AdminTS_NSS)m_arAdmin[indxDB]).GetNameTECComponent(key, false)
+                , key.Id
+                , ((AdminTS_NSS)m_arAdmin[indxDB]).GetIdGTPOwnerTECComponent(key));
 
             DataGridViewCellEventArgs ev;
 
@@ -389,7 +367,7 @@ namespace trans_tg
 
         protected override void SaveRDGValues(bool bCallback)
         {
-            ((AdminTS)m_arAdmin[(int)(Int16)CONN_SETT_TYPE.DEST]).SaveRDGValues(m_listTECComponentIndex[comboBoxTECComponent.SelectedIndex], dateTimePickerMain.Value, bCallback);
+            ((AdminTS)m_arAdmin[(int)(Int16)CONN_SETT_TYPE.DEST]).SaveRDGValues(SelectedItemKey, dateTimePickerMain.Value, bCallback);
             //((AdminTS_NSS)m_arAdmin[(int)CONN_SETT_TYPE.DEST]).SaveChanges();
         }
 
@@ -412,7 +390,7 @@ namespace trans_tg
             
             m_dgwAdminTable.ClearTables ();
 
-            ((AdminTS)m_arAdmin[(int)CONN_SETT_TYPE.DEST]).GetRDGValues(/*(int)((AdminTS)m_arAdmin[(int)CONN_SETT_TYPE.DEST]).m_typeFields,*/ m_listTECComponentIndex[comboBoxTECComponent.SelectedIndex], dateTimePickerMain.Value.Date);
+            ((AdminTS)m_arAdmin[(int)CONN_SETT_TYPE.DEST]).GetRDGValues(SelectedItemKey, dateTimePickerMain.Value.Date);
         }
 
         protected override void saveDataGridViewAdminComplete()
@@ -481,8 +459,6 @@ namespace trans_tg
 
         protected override void timer_Start()
         {
-            m_listTECComponentIndex = ((AdminTS)m_arAdmin[(Int16)CONN_SETT_TYPE.DEST]).GetListIndexTECComponent(m_modeTECComponent, true);
-
             base.timer_Start();
         }
     }

@@ -488,7 +488,7 @@ namespace Statistic
                 foreach (FormChangeMode.Item item in m_formChangeMode.m_listItems)
                 {
                     if ((item.bVisibled == true)
-                        && (item.id < FormChangeMode.ID_SPECIAL_TAB [(int)FormChangeMode.MANAGER.DISP]))
+                        && (item.id < FormChangeMode.ID_ADMIN_TABS [(int)FormChangeMode.MANAGER.DISP]))
                     {
                         m_arLabelEmpty[i].ContextMenu.MenuItems.Add(createMenuItem(item.name_shr));
                         m_arLabelEmpty[i].m_listIdContextMenuItems.Add(item.id);
@@ -697,7 +697,8 @@ namespace Statistic
                 else
                     indxLabel ++;
 
-            if ((indxLabel < 0) || (! (indxLabel < m_arLabelEmpty.Length)))
+            if ((indxLabel < 0)
+                || (! (indxLabel < m_arLabelEmpty.Length)))
                 return;
             else
                 ;
@@ -741,16 +742,21 @@ namespace Statistic
                     //Вызвать на отображение
                     ((MenuItem)obj).Checked = true;
                     // отображаем вкладки ТЭЦ - аналог FormMain::сменитьРежим...
-                    int tec_index = m_formChangeMode.GetTECIndex (m_arLabelEmpty [indxLabel].m_listIdContextMenuItems [m_arLabelEmpty[indxLabel].ContextMenu.MenuItems.IndexOf (obj as MenuItem)])
-                        , TECComponent_index = m_formChangeMode.GetTECComponentIndex (m_arLabelEmpty [indxLabel].m_listIdContextMenuItems [m_arLabelEmpty[indxLabel].ContextMenu.MenuItems.IndexOf (obj as MenuItem)]);
+                    int tec_id = m_arLabelEmpty [indxLabel].m_listIdContextMenuItems [m_arLabelEmpty[indxLabel].ContextMenu.MenuItems.IndexOf (obj as MenuItem)]
+                        , TECComponent_id = m_arLabelEmpty [indxLabel].m_listIdContextMenuItems [m_arLabelEmpty[indxLabel].ContextMenu.MenuItems.IndexOf (obj as MenuItem)];
                     Point ptAddress = getAddress(indxLabel);
+                    TEC tec = m_formChangeMode.m_list_tec.Find (t => t.m_id == tec_id);
+                    TECComponent tec_comp = tec.list_TECComponents.Find (comp => comp.m_id == TECComponent_id);
+                    FormChangeMode.KeyDevice key = new FormChangeMode.KeyDevice () {
+                        Id = Equals (tec_comp, null) == true ? tec.m_id : tec_comp.m_id
+                        , Mode = Equals (tec_comp, null) == true ? FormChangeMode.MODE_TECCOMPONENT.TEC : tec_comp.Mode };
 
                     PanelTecViewBase panelTecView = null;
-                    if (m_formChangeMode.m_list_tec[tec_index].m_id > (int)TECComponent.ID.LK)
-                        panelTecView = new PanelLKView(m_formChangeMode.m_list_tec[tec_index], tec_index, TECComponent_index, m_arLabelEmpty[indxLabel]);
+                    if (tec.m_id > (int)TECComponent.ID.LK)
+                        panelTecView = new PanelLKView(tec, key, m_arLabelEmpty[indxLabel]);
                     else
-                        panelTecView = new PanelTecView(m_formChangeMode.m_list_tec[tec_index], tec_index, TECComponent_index, m_arLabelEmpty[indxLabel]);
-                    //= new PanelTecView(m_formChangeMode.m_list_tec[tec_index], tec_index, TECComponent_index, m_arLabelEmpty[indxLabel]/*, m_fErrorReport, m_fWarningReport, m_fActionReport, m_fReportClear*/);
+                        panelTecView = new PanelTecView(tec, key, m_arLabelEmpty[indxLabel]);
+                    //        new PanelTecView(m_formChangeMode.m_list_tec[tec_index], tec_index, TECComponent_index, m_arLabelEmpty[indxLabel]/*, m_fErrorReport, m_fWarningReport, m_fActionReport, m_fReportClear*/);
                     panelTecView.SetDelegateReport(m_fErrorReport, m_fWarningReport, m_fActionReport, m_fReportClear);
                     this.Controls.Add (panelTecView, ptAddress.Y, ptAddress.X);
                     this.Controls.SetChildIndex(panelTecView, indxLabel);

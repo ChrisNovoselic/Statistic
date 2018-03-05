@@ -118,7 +118,7 @@ namespace UnitTest {
             Assert.IsNotNull (panel);
 
             panel.Start ();
-            panel.InitializeComboBoxTecComponent (FormChangeMode.MODE_TECCOMPONENT.GTP);
+            panel.InitializeComboBoxTecComponent (FormChangeMode.MODE_TECCOMPONENT.GTP, true);
             panel.Activate (true);
             Assert.IsTrue (panel.Actived);
 
@@ -171,8 +171,8 @@ namespace UnitTest {
 
             string mesDebug = string.Empty;
 
-            int prevIndex = 0
-                , nextIndex = 0;
+            FormChangeMode.KeyDevice prevKey = FormChangeMode.KeyTECComponentEmpty
+                , nextKey = FormChangeMode.KeyTECComponentEmpty;
             Action onEventUnitTestSetDataGridViewAdminCompleted;
             AdminTS_KomDisp.DelegateUnitTestExportPBRValuesRequest delegateExportPBRValuesRequest;
             Task taskPerformButtonExportPBRValuesClick;
@@ -186,27 +186,27 @@ namespace UnitTest {
 
             cancelTokenSource = new CancellationTokenSource ();
             // вызывается при ретрансляции панелью события имитации отправления запроса на обновление значений
-            delegateExportPBRValuesRequest = delegate (int next_index, DateTime date, int currentIndex, IEnumerable<int> listTECComponentIndex) {
-                Assert.IsNotNull (listTECComponentIndex);
+            delegateExportPBRValuesRequest = delegate (FormChangeMode.KeyDevice next_key, DateTime date, FormChangeMode.KeyDevice current_key, IEnumerable<FormChangeMode.KeyDevice> listTECComponentKey) {
+                Assert.IsNotNull (listTECComponentKey);
 
-                mesDebug = string.Format ("Handler On 'EventUnitTestExportPBRValuesRequest': NextIndex={0}, Date={1}, CurrentIndex={2}, ListIndex=<Count={3}, List={4}>..."
-                    , next_index
+                mesDebug = string.Format ("Handler On 'EventUnitTestExportPBRValuesRequest': NextKey={0}, Date={1}, CurrentKey={2}, ListKey=<Count={3}, List={4}>..."
+                    , next_key
                     , date.ToShortDateString()
-                    , currentIndex
-                    , listTECComponentIndex.Count ()
-                    , string.Join(",", listTECComponentIndex));
+                    , current_key
+                    , listTECComponentKey.Count ()
+                    , string.Join(",", listTECComponentKey));
 
                 Logging.Logg ().Debug (mesDebug, Logging.INDEX_MESSAGE.NOT_SET);
                 System.Diagnostics.Debug.WriteLine (mesDebug);
 
-                prevIndex = nextIndex;
-                nextIndex = next_index;
+                prevKey = nextKey;
+                nextKey = next_key;
 
                 //TODO: проверка значений аргументов на истинность
-                if (nextIndex > 0) {
+                if (nextKey.Id > 0) {
                     Assert.AreNotEqual (DateTime.MinValue, date);
-                    Assert.IsTrue (listTECComponentIndex.Count () > 0);
-                    Assert.AreEqual (nextIndex, listTECComponentIndex.ToArray () [0]);
+                    Assert.IsTrue (listTECComponentKey.Count () > 0);
+                    Assert.AreEqual (nextKey, listTECComponentKey.ToArray () [0]);
                 } else
                 // ожидать (в 'onEventUnitTestSetDataGridViewAdminCompleted') штатное завершение
                     ;
@@ -214,18 +214,18 @@ namespace UnitTest {
             // вызывается при завершении заполнения 'DatagridView' значениями
             onEventUnitTestSetDataGridViewAdminCompleted = delegate () {
                 mesDebug = string.Format("Handler On 'EventUnitTestSetDataGridViewAdminCompleted': PrevIndex={0}, NextIndex={1}..."
-                    , prevIndex, nextIndex);
+                    , prevKey, nextKey);
 
-                if (prevIndex.Equals (nextIndex) == true) {
+                if (prevKey.Equals (nextKey) == true) {
                     // старт задачи сохранения значений
                     taskPerformButtonExportPBRValuesClick = Task.Factory.StartNew (delegate () {
                         panel.PerformButtonExportPBRValuesClick (delegateExportPBRValuesRequest);
                     });
-                } else if (nextIndex == 0) {
+                } else if (nextKey.Id == 0) {
                     Assert.IsTrue ((panel.ModeGetRDGValues & AdminTS.MODE_GET_RDG_VALUES.DISPLAY) == AdminTS.MODE_GET_RDG_VALUES.DISPLAY);
                     Assert.IsFalse ((panel.ModeGetRDGValues & AdminTS.MODE_GET_RDG_VALUES.EXPORT) == AdminTS.MODE_GET_RDG_VALUES.EXPORT);
                     // штатное завершение
-                    nextIndex = -1;
+                    nextKey.Id = -1;
                 } else
                     ;
 
@@ -246,7 +246,7 @@ namespace UnitTest {
                 int cnt = 0
                     , cnt_max = 26;
                 while ((cnt++ < cnt_max)
-                    && (!(nextIndex < 0))) {
+                    && (!(nextKey.Id < 0))) {
                     // ожидать
                     Thread.Sleep (1000);
                     // сообщение для индикации ожидания
@@ -259,7 +259,7 @@ namespace UnitTest {
                 System.Diagnostics.Debug.WriteLine (string.Format ("Окончание ожидания <{0}>, задача-Click is <{1}>, nextIndex={2}..."
                     , cnt
                     , Equals (taskPerformButtonExportPBRValuesClick, null) == false ? taskPerformButtonExportPBRValuesClick.Status.ToString () : "не создана"                    
-                    , nextIndex));
+                    , nextKey));
 
                 Assert.IsFalse (cnt > cnt_max);
                 Assert.IsFalse ((panel.ModeGetRDGValues & AdminTS.MODE_GET_RDG_VALUES.EXPORT) == AdminTS.MODE_GET_RDG_VALUES.EXPORT);
@@ -319,8 +319,8 @@ namespace UnitTest {
 
             string mesDebug = string.Empty;
 
-            int prevIndex = 0
-                , nextIndex = 0;
+            FormChangeMode.KeyDevice prevKey = FormChangeMode.KeyTECComponentEmpty
+                , nextKey = FormChangeMode.KeyTECComponentEmpty;
             Action onEventUnitTestSetDataGridViewAdminCompleted;
             PanelAdmin.DelegateUnitTestNextIndexSetValuesRequest delegateNextIndexSetValuesRequest;
             Task taskPerformButtonSetClick
@@ -337,14 +337,14 @@ namespace UnitTest {
 
             cancelTokenSource = new CancellationTokenSource ();
             // вызывается при ретрансляции панелью события имитации отправления запроса на обновление значений
-            delegateNextIndexSetValuesRequest = delegate (int next_index, TEC t, TECComponent comp, DateTime date, CONN_SETT_TYPE type, IEnumerable<int> list_id_rec, string[]queries) {
+            delegateNextIndexSetValuesRequest = delegate (FormChangeMode.KeyDevice next_key, TECComponent comp, DateTime date, CONN_SETT_TYPE type, IEnumerable<int> list_id_rec, string [] queries) {
                 Assert.IsNotNull(list_id_rec);
                 Assert.IsFalse(list_id_rec.ToArray().Length < 24);
                 //TODO: проверка значений массива на истинность (сравнить с идентификаторами из таблицы БД)
 
-                nextIndex = next_index;
+                nextKey = next_key;
 
-                mesDebug = $"ТЭЦ={t.name_shr}; комп.={comp.name_shr};{Environment.NewLine}([{ASUTP.Database.DbTSQLInterface.QUERY_TYPE.INSERT.ToString()}]: [{queries[(int)ASUTP.Database.DbTSQLInterface.QUERY_TYPE.INSERT]}])"
+                mesDebug = $"ТЭЦ={comp.tec.name_shr}; комп.={comp.name_shr};{Environment.NewLine}([{ASUTP.Database.DbTSQLInterface.QUERY_TYPE.INSERT.ToString()}]: [{queries[(int)ASUTP.Database.DbTSQLInterface.QUERY_TYPE.INSERT]}])"
                     + $"{Environment.NewLine}([{ASUTP.Database.DbTSQLInterface.QUERY_TYPE.UPDATE.ToString()}]: [{queries[(int)ASUTP.Database.DbTSQLInterface.QUERY_TYPE.UPDATE]}]"
                     + $"{Environment.NewLine}(идентификаторы: [{string.Join(";", list_id_rec.Select(id => id.ToString()).ToArray())}]";
 
@@ -358,16 +358,16 @@ namespace UnitTest {
                 Logging.Logg().Debug(mesDebug, Logging.INDEX_MESSAGE.NOT_SET);
                 System.Diagnostics.Debug.WriteLine (mesDebug);
 
-                if (prevIndex.Equals(nextIndex) == true)
+                if (prevKey.Equals(nextKey) == true)
                 // старт задачи сохранения значений
                     taskPerformButtonSetClick = Task.Factory.StartNew (delegate () {
                         panel.PerformButtonSetClick(delegateNextIndexSetValuesRequest);
                     });
                 else
-                    if (!(nextIndex < 0))
+                    if (!(nextKey.Id < 0))
                         taskPerformComboBoxTECComponentSelectedIndex = Task.Factory.StartNew(delegate () {
                             // установить новый индекс (назначить новый компонент-объект)
-                            panel.PerformComboBoxTECComponentSelectedIndex(prevIndex = nextIndex);
+                            panel.PerformComboBoxTECComponentSelectedKey(prevKey = nextKey);
                         });
                     else
                         ;
@@ -392,7 +392,7 @@ namespace UnitTest {
                     Equals(taskPerformComboBoxTECComponentSelectedIndex, null) == false ? taskPerformComboBoxTECComponentSelectedIndex.Status : TaskStatus.WaitingForActivation;
 
                 while ((cnt++ < cnt_max)
-                    && (!(nextIndex < 0))) {
+                    && (!(nextKey == FormChangeMode.KeyTECComponentEmpty))) {
                     // ожидать
                     Thread.Sleep (1000);
                     // сообщение для индикации ожидания
@@ -408,7 +408,7 @@ namespace UnitTest {
                     , cnt
                     , Equals (taskPerformButtonSetClick, null) == false ? taskPerformButtonSetClick.Status.ToString () : "не создана"
                     , Equals(taskPerformComboBoxTECComponentSelectedIndex, null) == false ? taskPerformComboBoxTECComponentSelectedIndex.Status.ToString() : "не создана"
-                    , nextIndex));
+                    , nextKey));
             } catch (Exception e) {
                 System.Diagnostics.Debug.WriteLine (e.Message);
 

@@ -82,7 +82,7 @@ namespace StatisticCommon
                     //allTECComponents[indxTECComponents].tec.m_timezone_offset_msc
                     HDateTime.TS_NSK_OFFSET_OF_MOSCOWTIMEZONE.Hours
                     ;
-            string path_rdg_excel = allTECComponents[indxTECComponents].tec.GetAddingParameter(TEC.ADDING_PARAM_KEY.PATH_RDG_EXCEL).ToString(),
+            string path_rdg_excel = CurrentDevice.tec.GetAddingParameter(TEC.ADDING_PARAM_KEY.PATH_RDG_EXCEL).ToString(),
                 strSelect = @"SELECT * FROM [Лист1$]";
             object[] dataRowAddIn = null;
 
@@ -172,7 +172,7 @@ namespace StatisticCommon
                     //allTECComponents[m_listTECComponentIndexDetail[0/*любой из индексов, т.к. они принадлежат одной ТЭЦ*/]].tec.m_timezone_offset_msc
                     HDateTime.TS_NSK_OFFSET_OF_MOSCOWTIMEZONE.Hours
                     ;
-            string path_rdg_excel = allTECComponents[m_listTECComponentIndexDetail[0/*любой из индексов, т.к. они принадлежат одной ТЭЦ*/]].tec.GetAddingParameter(TEC.ADDING_PARAM_KEY.PATH_RDG_EXCEL).ToString(),
+            string path_rdg_excel = allTECComponents.Find(c => c.m_id == m_listKeyTECComponentDetail [0/*любой из индексов, т.к. они принадлежат одной ТЭЦ*/].Id).tec.GetAddingParameter(TEC.ADDING_PARAM_KEY.PATH_RDG_EXCEL).ToString(),
                 strUpdate = string.Empty;
             TECComponentBase comp;
 
@@ -265,21 +265,24 @@ namespace StatisticCommon
 
                     foreach (RDGStruct[] curRDGValues in m_listCurRDGValues)
                     {
-                        indxTECComponents = m_listTECComponentIndexDetail[m_listCurRDGValues.IndexOf(curRDGValues)];
+                        CurrentKey = m_listKeyTECComponentDetail[m_listCurRDGValues.IndexOf(curRDGValues)];
                         comp = null;
 
                         //strUpdate += @"'A";
                         //strUpdate += @"A";
-                        if (modeTECComponent(m_listTECComponentIndexDetail[m_listCurRDGValues.IndexOf(curRDGValues)]) == FormChangeMode.MODE_TECCOMPONENT.GTP)
+                        if (m_listKeyTECComponentDetail[m_listCurRDGValues.IndexOf(curRDGValues)].Mode == FormChangeMode.MODE_TECCOMPONENT.GTP)
                         {
-                            //strUpdate += allTECComponents[indxTECComponents].m_indx_col_rdg_excel;
-                            comp = allTECComponents[indxTECComponents];
+                            try {
+                                comp = CurrentDevice as TECComponentBase;
+                            } catch (Exception e) {
+                                Logging.Logg ().Exception (e, "преобразование IDevice -> TECComponentBase...", Logging.INDEX_MESSAGE.NOT_SET);
+                            }
                         }
                         else
-                            if (modeTECComponent(m_listTECComponentIndexDetail[m_listCurRDGValues.IndexOf(curRDGValues)]) == FormChangeMode.MODE_TECCOMPONENT.TG)
+                            if (m_listKeyTECComponentDetail[m_listCurRDGValues.IndexOf(curRDGValues)].Mode == FormChangeMode.MODE_TECCOMPONENT.TG)
                             {
                                 //strUpdate += allTECComponents[indxTECComponents].TG [0].m_indx_col_rdg_excel;
-                                comp = allTECComponents[indxTECComponents].m_listLowPointDev[0];
+                                comp = CurrentDevice.ListLowPointDev[0];
                             }
                             else ;
 

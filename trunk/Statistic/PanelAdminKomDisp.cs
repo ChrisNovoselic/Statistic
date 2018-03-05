@@ -271,9 +271,9 @@ namespace Statistic
             // по завершению операции эксопрта требуется восстановить режим в исходный(DISPLAY - по умолчанию)
             ModeGetRDGValues = AdminTS.MODE_GET_RDG_VALUES.EXPORT;
 
-            Admin.PrepareExportRDGValues (m_listTECComponentIndex);
+            Admin.PrepareExportRDGValues ();
 
-            if (m_listTECComponentIndex.Count > 0) {
+            if (SelectedItemKey.Id > 0) {
                 date = Admin.DateDoExportPBRValues;
 
                 if (date.Equals(DateTime.MinValue) == true)
@@ -283,7 +283,7 @@ namespace Statistic
                 else
                     ;
 
-                m_admin.GetRDGValues(m_listTECComponentIndex[0], date);
+                m_admin.GetRDGValues(SelectedItemKey, date);
             } else
                 Logging.Logg().Error(string.Format("PanelAdin_KomDisp::doExportPBRValues () - не найдено ГТП для экспорта..."), Logging.INDEX_MESSAGE.NOT_SET);
             ;
@@ -341,7 +341,7 @@ namespace Statistic
         }
 
         public PanelAdminKomDisp(ASUTP.Core.HMark markQueries)
-            : base(markQueries, new int[] { 0, (int)TECComponent.ID.GTP })
+            : base(FormChangeMode.MODE_TECCOMPONENT.GTP, markQueries, new int[] { 0, (int)TECComponent.ID.GTP })
         {
             //??? вызывается из базового класса
             //InitializeComponents ();
@@ -455,8 +455,8 @@ namespace Statistic
         /// <param name="bResult">Признак наличия новых значений, иначе требуется изменить оформление представления</param>
         public override void SetDataGridViewAdmin(DateTime date, bool bResult)
         {
-            int offset = -1
-                , nextIndx = -1;
+            int offset = -1;
+            FormChangeMode.KeyDevice nextKey;
             string strFmtDatetime = string.Empty;
             IAsyncResult iar;
 
@@ -522,11 +522,11 @@ namespace Statistic
                 } else
                     ;
             } else if ((ModeGetRDGValues & AdminTS.MODE_GET_RDG_VALUES.EXPORT) == AdminTS.MODE_GET_RDG_VALUES.EXPORT) {
-                nextIndx = bResult == true
+                nextKey = bResult == true
                     ? Admin.AddValueToExportRDGValues (m_admin.m_curRDGValues, date)
-                        : -1;
+                        : new FormChangeMode.KeyDevice();
 
-                if (!(nextIndx > 0)) {
+                if (!(nextKey.Id > 0)) {
                     if (InvokeRequired == true)
                         Invoke ((MethodInvoker)delegate () {
                             exportPBRValuesEnded ();
@@ -535,7 +535,7 @@ namespace Statistic
                         exportPBRValuesEnded ();
                     }
                 } else
-                    Admin.GetRDGValues (nextIndx, date);
+                    Admin.GetRDGValues (nextKey, date);
             }
             // сообщить в модульный тест о завершении очередной итерации
             EventUnitTestSetDataGridViewAdminCompleted?.Invoke ();
@@ -544,23 +544,6 @@ namespace Statistic
         public override void ClearTables()
         {
             this.dgwAdminTable.ClearTables();
-        }
-
-        public override void InitializeComboBoxTecComponent(FormChangeMode.MODE_TECCOMPONENT mode)
-        {
-            base.InitializeComboBoxTecComponent(mode);
-
-            m_listTECComponentIndex.ForEach(indx => comboBoxTecComponent.Items.Add(m_admin.allTECComponents[indx].tec.name_shr + " - " + m_admin.GetNameTECComponent(indx)));
-            //for (int i = 0; i < m_listTECComponentIndex.Count; i++)
-            //    comboBoxTecComponent.Items.Add(m_admin.allTECComponents[m_listTECComponentIndex[i]].tec.name_shr + " - " + m_admin.GetNameTECComponent(m_listTECComponentIndex[i]));
-
-            if (comboBoxTecComponent.Items.Count > 0)
-            {
-                m_admin.indxTECComponents = m_listTECComponentIndex[0];
-                comboBoxTecComponent.SelectedIndex = 0;
-            }
-            else
-                ;
         }
 
         private void btnImportCSV_PBRValues_Click(object sender, EventArgs e)

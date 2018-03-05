@@ -55,7 +55,7 @@ namespace Statistic
         }
 
         public PanelAdminVyvod(HMark markQueries)
-            : base(markQueries, new int[] { 0, (int)TECComponent.ID.LK })
+            : base(FormChangeMode.MODE_TECCOMPONENT.TEC, markQueries, new int[] { 0, (int)TECComponent.ID.LK })
         {
         }
 
@@ -210,25 +210,6 @@ namespace Statistic
         {
             this.dgwAdminTable.ClearTables();
         }
-
-        public override void InitializeComboBoxTecComponent(FormChangeMode.MODE_TECCOMPONENT mode)
-        {//??? копия 'AdminTS_NSS'
-            base.InitializeComboBoxTecComponent (mode);
-
-            if (m_listTECComponentIndex.Count > 0) {
-                comboBoxTecComponent.Items.AddRange (((AdminTS_TG)m_admin).GetListNameTEC ());
-
-                if (comboBoxTecComponent.Items.Count > 0)
-                {
-                    m_admin.indxTECComponents = m_listTECComponentIndex[0];
-                    comboBoxTecComponent.SelectedIndex = 0;
-                }
-                else
-                    ;
-            }
-            else
-                ;
-        }      
 
         protected override void comboBoxTecComponent_SelectionChangeCommitted(object sender, EventArgs e)
         {

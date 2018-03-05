@@ -321,18 +321,18 @@ namespace Statistic
             private class TecViewSobstvNyzhdy : TecView
             {
                 public TecViewSobstvNyzhdy()
-                    : base( /*TecView.TYPE_PANEL.CUR_POWER, */-1, -1, TECComponentBase.TYPE.ELECTRO)
+                    : base(new FormChangeMode.KeyDevice () { Id = -1, Mode = FormChangeMode.MODE_TECCOMPONENT.Unknown }, TECComponentBase.TYPE.ELECTRO)
                 {
                 }
 
                 public override void ChangeState()
                 {
-                    lock (m_lockState) { GetRDGValues(-1, DateTime.MinValue); }
+                    lock (m_lockState) { GetRDGValues(FormChangeMode.KeyTECComponentEmpty, DateTime.MinValue); }
 
                     base.ChangeState();
                 }
 
-                public override void GetRDGValues(int indx, DateTime date)
+                public override void GetRDGValues(FormChangeMode.KeyDevice key, DateTime date)
                 {
                     ClearStates();
 
@@ -363,7 +363,13 @@ namespace Statistic
             /// <summary>
             /// Текущий индекс компонента из списка 'allTECComponents' (для сохранения между вызовами функций)
             /// </summary>
-            private int indx_TECComponent { get { return m_tecView.indxTECComponents; } }
+            private FormChangeMode.KeyDevice TecViewKey
+            {
+                get
+                {
+                    return m_tecView.CurrentKey;
+                }
+            }
 
             private ManualResetEvent m_mnlSetDateTimeResetEvent;
 
@@ -959,31 +965,12 @@ namespace Statistic
                     if (sf.ShowDialog() == DialogResult.OK)
                     {
                         string strSheetName = "Часовые_знач";
-                        //int indxItemMenuStrip = -1;
-                        //if (m_tecView.m_arTypeSourceData[(int)HDateTime.INTERVAL.HOURS] == CONN_SETT_TYPE.DATA_ASKUE)
-                        //    indxItemMenuStrip = m_ZedGraphHours.ContextMenuStrip.Items.Count - 2;
-                        //else
-                        //    if (m_tecView.m_arTypeSourceData[(int)HDateTime.INTERVAL.HOURS] == CONN_SETT_TYPE.DATA_SOTIASSO)
-                        //        indxItemMenuStrip = m_ZedGraphHours.ContextMenuStrip.Items.Count - 1;
-                        //    else
-                        //        ;
 
                         ExcelFile ef = new ExcelFile();
                         ef.Worksheets.Add(strSheetName);
                         ExcelWorksheet ws = ef.Worksheets[0];
-                        if (indx_TECComponent < 0)
-                        {
-                            ws.Cells[0, 0].Value = "Собственные нужды " + m_tecView.m_tec.name_shr;
-                            if (m_tecView.m_tec.list_TECComponents.Count != 1)
-                            {
-                                //foreach (TECComponent g in m_tecView.m_tec.list_TECComponents)
-                                //    ws.Cells[0, 0].Value += ", " + g.name_shr;
-                            }
-                        }
-                        else
-                        {
-                            ws.Cells[0, 0].Value = "Собственные нужды " + m_tecView.m_tec.name_shr + ", " + m_tecView.m_tec.list_TECComponents[indx_TECComponent].name_shr;
-                        }
+
+                        ws.Cells[0, 0].Value = "Собственные нужды " + m_tecView.NameShr;
 
                         ws.Cells[1, 0].Value = "Мощность на " + m_arLabel[(int)INDEX_LABEL.DATETIME_TM_SN].Text;
 

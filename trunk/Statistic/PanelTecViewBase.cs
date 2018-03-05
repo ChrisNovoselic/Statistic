@@ -407,6 +407,7 @@ namespace Statistic
             {
                 return curve[iPt].Y.ToString("F2");
             }
+
             /// <summary>
             /// Событие "Двойной клик"-масштабирование
             /// </summary>
@@ -491,7 +492,8 @@ namespace Statistic
             {
                 return GraphPane.FindNearestObject(p, g, out obj, out index);
             }
-        }        
+        }
+
         /// <summary>
         /// Массив для хранения пропорций при размещении элементов управления: подпись, таблицв/гистограммы, панель оперативных данных
         /// </summary>
@@ -531,23 +533,47 @@ namespace Statistic
         /// Объект для работы с БД (отправка/получение/обработка результатов запросов)
         /// </summary>
         public TecView m_tecView;
+
+        public TEC.TEC_TYPE TecViewTecType
+        {
+            get
+            {
+                return m_tecView.TecType;
+            }
+        }
+
+        public string TecViewNameShr
+        {
+            get
+            {
+                return m_tecView.NameShr;
+            }
+        }
         /// <summary>
         /// Количество внутренних отсчетов(внутренний отсчет = 1 сек), произошедших с момента крайнего обновлнения информации
         ///  , используется для
         /// </summary>
         private int _currValuesPeriod;
-        /// <summary>
-        /// Индекс ТЭЦ, в интересах которой создан текущий объект, в глобальном списке ТЭЦ
-        /// </summary>
-        public int indx_TEC { get { return m_tecView.m_indx_TEC; } }
-        /// <summary>
-        /// Индекс компонента ТЭЦ, в интересах которого создан текущий объект, в глобальном списке компонентов ТЭЦ
-        /// </summary>
-        public int indx_TECComponent { get { return m_tecView.indxTECComponents; } }
+        ///// <summary>
+        ///// Индекс ТЭЦ, в интересах которой создан текущий объект, в глобальном списке ТЭЦ
+        ///// </summary>
+        //public int indx_TEC { get { return m_tecView.m_indx_TEC; } }
+        ///// <summary>
+        ///// Индекс компонента ТЭЦ, в интересах которого создан текущий объект, в глобальном списке компонентов ТЭЦ
+        ///// </summary>
+        //public int indx_TECComponent { get { return m_tecView.indxTECComponents; } }
         /// <summary>
         /// Идентификатор объекта (ТЭЦ/компонент ТЭЦ), в интересах которого создан текущий объект
         /// </summary>
-        public int m_ID { get { return m_tecView.m_ID; } }
+        public FormChangeMode.KeyDevice TecViewKey { get { return m_tecView.CurrentKey; } }
+
+        public FormChangeMode.MODE_TECCOMPONENT Mode
+        {
+            get
+            {
+                return m_tecView.CurrentKey.Mode;
+            }
+        }
         /// <summary>
         /// Признак текущего состояния панели (обновлена/не_обновлена)
         /// </summary>
@@ -652,8 +678,8 @@ namespace Statistic
             if (!(m_label == null))
             {
                 m_label.Text = m_tecView.m_tec.name_shr;
-                if (!(indx_TECComponent < 0))
-                    m_label.Text += @" - " + m_tecView.m_tec.list_TECComponents[indx_TECComponent].name_shr;
+                if (!(m_tecView.CurrentKey.Mode == FormChangeMode.MODE_TECCOMPONENT.TEC))
+                    m_label.Text += @" - " + m_tecView.m_tec.list_TECComponents.Find(comp => comp.m_id == m_tecView.CurrentKey.Id).name_shr;
                 else
                     ;
 
@@ -664,7 +690,7 @@ namespace Statistic
                 ;
         }
 
-        protected abstract void createTecView(int indx_tec, int indx_comp);
+        protected abstract void createTecView(FormChangeMode.KeyDevice key);
 
         protected abstract void createDataGridViewHours();
         protected abstract void createDataGridViewMins();
@@ -674,14 +700,14 @@ namespace Statistic
 
         protected abstract void createPanelQuickData();
 
-        public PanelTecViewBase(/*TecView.TYPE_PANEL type, */TEC tec, int indx_tec, int indx_comp, HMark markQueries)
+        public PanelTecViewBase(/*TecView.TYPE_PANEL type, */TEC tec, FormChangeMode.KeyDevice key, HMark markQueries)
             : base (MODE_UPDATE_VALUES.AUTO, FormMain.formGraphicsSettings.FontColor, FormMain.formGraphicsSettings.BackgroundColor)
         {
             //InitializeComponent();
 
             SPLITTER_PERCENT_VERTICAL = 50;
 
-            createTecView(indx_tec, indx_comp); //m_tecView = new TecView(type, indx_tec, indx_comp);
+            createTecView(key); //m_tecView = new TecView(type, indx_tec, indx_comp);
 
             //HMark markQueries = new HMark(new int []{(int)CONN_SETT_TYPE.ADMIN, (int)CONN_SETT_TYPE.PBR, (int)CONN_SETT_TYPE.DATA_AISKUE, (int)CONN_SETT_TYPE.DATA_SOTIASSO});
 
@@ -1004,7 +1030,7 @@ namespace Statistic
             if (IsHandleCreated/*InvokeRequired*/ == true)
                 this.BeginInvoke(new DelegateFunc(showTM_Gen));
             else
-                Logging.Logg().Error(@"PanelTecViewBase::updateGUI_TM_Gen () - ... BeginInvoke (UpdateGUI_TM_Gen) - ... ID = " + m_tecView.m_ID, Logging.INDEX_MESSAGE.D_001);
+                Logging.Logg().Error(@"PanelTecViewBase::updateGUI_TM_Gen () - ... BeginInvoke (UpdateGUI_TM_Gen) - ... ID = " + m_tecView.CurrentKey, Logging.INDEX_MESSAGE.D_001);
         }
 
         private void showTM_Gen()
@@ -1022,7 +1048,7 @@ namespace Statistic
             if (IsHandleCreated/*InvokeRequired*/ == true)
                 this.BeginInvoke(new DelegateIntIntFunc(show_Fact), hour, min);
             else
-                Logging.Logg().Error(@"PanelTecViewBase::updateGUI_Fact () - ... BeginInvoke (UpdateGUI_Fact) - ... ID = " + m_tecView.m_ID, Logging.INDEX_MESSAGE.D_001);
+                Logging.Logg().Error(@"PanelTecViewBase::updateGUI_Fact () - ... BeginInvoke (UpdateGUI_Fact) - ... ID = " + m_tecView.CurrentKey, Logging.INDEX_MESSAGE.D_001);
 
             return iRes;
         }
@@ -1044,7 +1070,7 @@ namespace Statistic
                 }
                 catch (Exception e)
                 {
-                    Logging.Logg().Exception(e, @"PanelTecViewBase::UpdateGUI_Fact () - ... ID = " + m_tecView.m_ID, Logging.INDEX_MESSAGE.NOT_SET);
+                    Logging.Logg().Exception(e, @"PanelTecViewBase::UpdateGUI_Fact () - ... ID = " + m_tecView.CurrentKey, Logging.INDEX_MESSAGE.NOT_SET);
                 }
             }
         }
@@ -1269,7 +1295,7 @@ namespace Statistic
                 err = -1; //???Ошибка
 
                 Logging.Logg().Warning(string.Format(@"PanelTecViewBase::Activate ({0}) - повторная установка признака активности... ID={1}, Started={2}, isActive={3}"
-                        , active, m_ID, Started, Actived)
+                        , active, TecViewKey, Started, Actived)
                     , Logging.INDEX_MESSAGE.NOT_SET);
             }
 

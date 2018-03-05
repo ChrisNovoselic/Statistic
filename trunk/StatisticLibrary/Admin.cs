@@ -133,6 +133,16 @@ namespace StatisticCommon
 
                 return bRes;
             }
+
+            public override bool Equals (object obj)
+            {
+                return (obj is RDGStruct) ? this == (RDGStruct)obj : false;
+            }
+
+            public override int GetHashCode ()
+            {
+                return base.GetHashCode();
+            }
         }
 
         protected TimeSpan _tsOffsetToMoscow;
@@ -166,22 +176,43 @@ namespace StatisticCommon
         /// <summary>
         /// Список 
         /// </summary>
-        public volatile List<TECComponent> allTECComponents;
+        protected volatile List<TECComponent> allTECComponents;
 
-        private int _indxTECComponents;
-        /// <summary>
-        /// Текущий индекс компонента из списка 'allTECComponents' (для сохранения между вызовами функций)
-        /// </summary>
-        public int indxTECComponents
+        //private int _indxTECComponents;
+        ///// <summary>
+        ///// Текущий индекс компонента из списка 'allTECComponents' (для сохранения между вызовами функций)
+        ///// </summary>
+        //public int indxTECComponents
+        //{
+        //    get
+        //    {
+        //        return _indxTECComponents;
+        //    }
+
+        //    set
+        //    {
+        //        _indxTECComponents = value;
+        //    }
+        //}
+        private FormChangeMode.KeyDevice _currentKey;
+        public FormChangeMode.KeyDevice CurrentKey
         {
             get
             {
-                return _indxTECComponents;
+                return _currentKey;
             }
 
             set
             {
-                _indxTECComponents = value;
+                _currentKey = value;
+            }
+        }
+
+        public IDevice CurrentDevice
+        {
+            get
+            {
+                return FindTECComponent (CurrentKey);
             }
         }
         /// <summary>
@@ -320,13 +351,20 @@ namespace StatisticCommon
         {
             //Logging.Logg().Debug("Admin::InitTEC () - вход...");
 
-            if (mode == FormChangeMode.MODE_TECCOMPONENT.ANY)
+            if ((mode == FormChangeMode.MODE_TECCOMPONENT.TEC)
+                || (mode == FormChangeMode.MODE_TECCOMPONENT.ANY)) //??? зачем '.ANY'
                 this.m_list_tec = DbTSQLConfigDatabase.DbConfig().InitTEC(bIgnoreTECInUse, arTECLimit, bUseData) as DbTSQLConfigDatabase.ListTEC;
             else
                 this.m_list_tec = DbTSQLConfigDatabase.DbConfig ().InitTEC(mode, bIgnoreTECInUse, arTECLimit, bUseData) as DbTSQLConfigDatabase.ListTEC;
 
             initQueries(markQueries);
             initTECComponents();
+
+            try {
+                CurrentKey = new FormChangeMode.KeyDevice () { Id = allTECComponents.First (comp => comp.Mode == mode).m_id, Mode = mode };
+            } catch (Exception e) {
+                Logging.Logg ().Exception (e, $"HADmin::InitTEC (mode={mode}) - не найден 1-ый элемент для инициализации списка", Logging.INDEX_MESSAGE.NOT_SET);
+            }
         }
         /// <summary>
         /// Инициализация списка со всеми компонентами ТЭЦ
@@ -527,13 +565,13 @@ namespace StatisticCommon
                 ;
         }
 
-        public abstract void GetRDGValues(/*int /*TYPE_FIELDS mode,*/ int indx, DateTime date);
+        public abstract void GetRDGValues(FormChangeMode.KeyDevice key, DateTime date);
 
         protected abstract void getPPBRDatesRequest(DateTime date);
 
         protected abstract int getPPBRDatesResponse(DataTable table, DateTime date);
 
-        protected abstract void getPPBRValuesRequest(TEC t, TECComponent comp, DateTime date/*, AdminTS.TYPE_FIELDS mode*/);
+        protected abstract void getPPBRValuesRequest(TEC t, IDevice comp, DateTime date/*, AdminTS.TYPE_FIELDS mode*/);
 
         protected abstract int getPPBRValuesResponse(DataTable table, DateTime date);
 
@@ -578,14 +616,20 @@ namespace StatisticCommon
 
         public TECComponent FindTECComponent(int id)
         {
-            foreach (TECComponent tc in allTECComponents)
-            {
-                if (tc.m_id == id)
-                    return tc;
-                else ;
-            }
+            return allTECComponents.FirstOrDefault (tc => tc.m_id == id);
+        }
 
-            return null;
+        public IDevice FindTECComponent (FormChangeMode.KeyDevice key)
+        {
+            IDevice dev;
+
+            if ((key.Mode == FormChangeMode.MODE_TECCOMPONENT.TEC)
+                || (key.Mode == FormChangeMode.MODE_TECCOMPONENT.ANY))
+                dev = m_list_tec.FirstOrDefault(tec => tec.m_id == key.Id);
+            else
+                dev = FindTECComponent (key.Id);
+
+            return dev;
         }
 
         public const string PBR_PREFIX = @"ПБР";
@@ -727,7 +771,7 @@ namespace StatisticCommon
             //            else
             //                ;
             //Вариант №2
-            modeRes = TECComponent.Mode(allTECComponents[indx].m_id);
+            modeRes = TECComponent.GetMode(allTECComponents[indx].m_id);
 
             return modeRes;
         }
@@ -794,7 +838,7 @@ namespace StatisticCommon
         {
             get
             {
-                return (!(indxTECComponents < 0)) && (indxTECComponents < allTECComponents.Count);
+                return CurrentKey.Id > 0;
             }
         }
 

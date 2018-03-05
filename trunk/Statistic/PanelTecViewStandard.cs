@@ -906,8 +906,8 @@ namespace Statistic
             }
         }
 
-        public PanelTecViewStandard(TEC tec, int indx_tec, int indx_comp, HMark markQueries)
-            : base(/*TecView.TYPE_PANEL.VIEW, */tec, indx_tec, indx_comp, markQueries)
+        public PanelTecViewStandard(TEC tec, FormChangeMode.KeyDevice key, HMark markQueries)
+            : base(tec, key, markQueries)
         {
             m_arPercRows = new int [] { 5, 71 };
         }

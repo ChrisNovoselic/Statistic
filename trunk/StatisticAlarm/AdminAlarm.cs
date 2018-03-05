@@ -88,6 +88,7 @@ namespace StatisticAlarm
 
         public void InitTEC(List<StatisticCommon.TEC> listTEC, HMark markQueries)
         {
+            TecViewAlarm tecView;
             m_listTecView = new List<StatisticAlarm.TecViewAlarm> ();
 
             //HMark markQueries = new HMark ();
@@ -99,20 +100,19 @@ namespace StatisticAlarm
             ////markQueries.Marked((int)CONN_SETT_TYPE.DATA_SOTIASSO_1_MIN);
 
             //Отладка ???!!!
-            int indxTecView = -1
-                , DEBUG_ID_TEC = -1;
+            int DEBUG_ID_TEC = -1;
             foreach (StatisticCommon.TEC t in listTEC) {
                 if ((DEBUG_ID_TEC == -1) || (DEBUG_ID_TEC == t.m_id)) {
-                    m_listTecView.Add(new StatisticAlarm.TecViewAlarm(/*StatisticCommon.TecView.TYPE_PANEL.ADMIN_ALARM, */-1, -1));
-                    indxTecView = m_listTecView.Count - 1;
-                    m_listTecView[indxTecView].InitTEC(new List<StatisticCommon.TEC> { t }, markQueries);
-                    m_listTecView[indxTecView].updateGUI_Fact = new IntDelegateIntIntFunc(m_listTecView[indxTecView].AlarmRegistred);
-                    m_listTecView[indxTecView].EventReg += new TecViewAlarm.AlarmTecViewEventHandler(onEventReg);
+                    tecView = new StatisticAlarm.TecViewAlarm (new FormChangeMode.KeyDevice () { Id = t.m_id, Mode = FormChangeMode.MODE_TECCOMPONENT.TEC });
+                    m_listTecView.Add(tecView);
+                    //indxTecView = m_listTecView.Count - 1;
+                    tecView.InitTEC(new List<StatisticCommon.TEC> { t }, markQueries);
+                    tecView.EventReg += new TecViewAlarm.AlarmTecViewEventHandler(onEventReg);
 
-                    m_listTecView[indxTecView].m_arTypeSourceData[(int)HDateTime.INTERVAL.MINUTES] = StatisticCommon.CONN_SETT_TYPE.DATA_SOTIASSO;
-                    m_listTecView[indxTecView].m_arTypeSourceData[(int)HDateTime.INTERVAL.HOURS] = StatisticCommon.CONN_SETT_TYPE.DATA_SOTIASSO;
+                    tecView.m_arTypeSourceData[(int)HDateTime.INTERVAL.MINUTES] = StatisticCommon.CONN_SETT_TYPE.DATA_SOTIASSO;
+                    tecView.m_arTypeSourceData[(int)HDateTime.INTERVAL.HOURS] = StatisticCommon.CONN_SETT_TYPE.DATA_SOTIASSO;
 
-                    m_listTecView[m_listTecView.Count - 1].m_bLastValue_TM_Gen = true;
+                    tecView.m_bLastValue_TM_Gen = true;
                 } else ;
             }
         }
@@ -196,9 +196,9 @@ namespace StatisticAlarm
 
                     if ((!(tc == null))
                         && (tc.IsTG == true))
-                        if (!((tc.m_listLowPointDev[0] as TG).m_TurnOnOff == state))
+                        if (!((tc.ListLowPointDev[0] as TG).m_TurnOnOff == state))
                         {
-                            (tc.m_listLowPointDev[0] as TG).m_TurnOnOff = state;
+                            (tc.ListLowPointDev[0] as TG).m_TurnOnOff = state;
                             Logging.Logg().Action(@"AdminAlarm::tgConfirm (id=" + id_tg + @") - ТГ состояние=" + state.ToString (), Logging.INDEX_MESSAGE.NOT_SET);
                         }
                         else

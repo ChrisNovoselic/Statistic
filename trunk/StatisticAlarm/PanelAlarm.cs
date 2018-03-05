@@ -116,7 +116,7 @@ namespace StatisticAlarm
                          //, iListenerId = DbSources.Sources().Register(FormMain.s_listFormConnectionSettings[(int)CONN_SETT_TYPE.CONFIG_DB].getConnSett(), false, @"CONFIG_DB")
                 ;
             bool bWorkChecked = false;
-            ConnectionSettings connSett;
+            ConnectionSettings connSett = null;
 
             //Инициализация визуальных компонентов
             InitializeComponent();
@@ -131,17 +131,17 @@ namespace StatisticAlarm
                         , -1
                         , out err).Rows[0]
                     , -1);
-
-                initAdminAlarm(connSett
-                    , mode
-                    , markQueries
-                    , bWorkChecked);
             } catch (Exception e) {
                 Logging.Logg().Exception(e, string.Format("PanelAlarm::initialize () - отсутствуют строки в результате запроса необходимых значений параметров соединения с БД...")
                     , Logging.INDEX_MESSAGE.NOT_SET);
             }
             
-            if (!(err < 0)) {
+            if ((!(err < 0))
+                && (Equals(connSett, null) == false)) {
+                initAdminAlarm (connSett
+                    , mode
+                    , markQueries
+                    , bWorkChecked);
                 //Назначить делегаты при изменении:
                 // даты, часов начала, окончания для запроса списка событий
                 delegateDatetimeChanged = new AdminAlarm.DatetimeCurrentEventHandler(m_adminAlarm.OnEventDatetimeChanged);
@@ -721,10 +721,10 @@ namespace StatisticAlarm
 
                 if (m_mark.IsMarked((int)INDEX_FILTER.ID) == true)
                 {
-                    if (TECComponent.Mode(vaj.m_id_component) == FormChangeMode.MODE_TECCOMPONENT.GTP)
+                    if (TECComponent.GetMode(vaj.m_id_component) == FormChangeMode.MODE_TECCOMPONENT.GTP)
                         id_comp = vaj.m_id_component;
                     else
-                        if (TECComponent.Mode(vaj.m_id_component) == FormChangeMode.MODE_TECCOMPONENT.TG)
+                        if (TECComponent.GetMode(vaj.m_id_component) == FormChangeMode.MODE_TECCOMPONENT.TG)
                             id_comp = vaj.m_id_owner;
                         else
                             ;

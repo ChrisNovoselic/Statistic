@@ -20,8 +20,8 @@ namespace Statistic
 {
     public class PanelTecView : PanelTecViewStandard
     {
-        public PanelTecView(StatisticCommon.TEC tec, int num_tec, int num_comp, PanelCustomTecView.HLabelCustomTecView label/*, DelegateStringFunc fErrRep, DelegateStringFunc fWarRep, DelegateStringFunc fActRep, DelegateBoolFunc fRepClr*/)
-            : base(tec, num_tec, num_comp, new ASUTP.Core.HMark (new int[] { (int)CONN_SETT_TYPE.ADMIN, (int)CONN_SETT_TYPE.PBR, (int)CONN_SETT_TYPE.DATA_AISKUE, (int)CONN_SETT_TYPE.DATA_SOTIASSO }))
+        public PanelTecView(StatisticCommon.TEC tec, FormChangeMode.KeyDevice key, PanelCustomTecView.HLabelCustomTecView label/*, DelegateStringFunc fErrRep, DelegateStringFunc fWarRep, DelegateStringFunc fActRep, DelegateBoolFunc fRepClr*/)
+            : base(tec, key, new ASUTP.Core.HMark (new int[] { (int)CONN_SETT_TYPE.ADMIN, (int)CONN_SETT_TYPE.PBR, (int)CONN_SETT_TYPE.DATA_AISKUE, (int)CONN_SETT_TYPE.DATA_SOTIASSO }))
         {
             m_label = label;
             
@@ -67,9 +67,9 @@ namespace Statistic
             this.m_ZedGraphHours.InitializeContextMenuItemAddingEventHandler(this.ýêñåëüToolStripMenuItemHours_Click, this.sourceDataHours_Click);
         }
 
-        protected override void createTecView(int indx_tec, int indx_comp)
+        protected override void createTecView(FormChangeMode.KeyDevice key)
         {
-            m_tecView = new TecViewStandard(indx_tec, indx_comp);
+            m_tecView = new TecViewStandard(key);
         }
 
         protected override void createDataGridViewHours()
@@ -113,7 +113,7 @@ namespace Statistic
                     ExcelFile ef = new ExcelFile();
                     ef.Worksheets.Add(strSheetName);
                     ExcelWorksheet ws = ef.Worksheets[0];
-                    if (indx_TECComponent < 0)
+                    if (Mode == FormChangeMode.MODE_TECCOMPONENT.TEC)
                     {
                         if (m_tecView.m_tec.list_TECComponents.Count == 1)
                             ws.Cells[0, 0].Value = m_tecView.m_tec.name_shr;
@@ -126,7 +126,7 @@ namespace Statistic
                     }
                     else
                     {
-                        ws.Cells[0, 0].Value = m_tecView.m_tec.name_shr + ", " + m_tecView.m_tec.list_TECComponents[indx_TECComponent].name_shr;
+                        ws.Cells[0, 0].Value = m_tecView.m_tec.name_shr + ", " + m_tecView.m_tec.list_TECComponents.Find(comp => comp.m_id == m_tecView.CurrentKey.Id).name_shr;
                     }
 
                     //if (m_tecView.m_valuesHours.addonValues && hour == m_tecView.m_valuesHours.hourAddon)
@@ -235,7 +235,7 @@ namespace Statistic
                     ExcelFile ef = new ExcelFile();
                     ef.Worksheets.Add(strSheetName);
                     ExcelWorksheet ws = ef.Worksheets[0];
-                    if (indx_TECComponent < 0)
+                    if (Mode == FormChangeMode.MODE_TECCOMPONENT.TEC)
                     {
                         if (m_tecView.m_tec.list_TECComponents.Count == 1)
                             ws.Cells[0, 0].Value = m_tecView.m_tec.name_shr;
@@ -248,7 +248,7 @@ namespace Statistic
                     }
                     else
                     {
-                        ws.Cells[0, 0].Value = m_tecView.m_tec.name_shr + ", " + m_tecView.m_tec.list_TECComponents[indx_TECComponent].name_shr;
+                        ws.Cells[0, 0].Value = m_tecView.m_tec.name_shr + ", " + m_tecView.m_tec.list_TECComponents.Find(comp => comp.m_id == m_tecView.CurrentKey.Id).name_shr;
                     }
 
                     ws.Cells[1, 0].Value = "Ìîùíîñòü íà " + _pnlQuickData.dtprDate.Value.ToShortDateString();

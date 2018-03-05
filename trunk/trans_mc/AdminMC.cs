@@ -36,7 +36,7 @@ namespace trans_mc
         {
         }
 
-        protected override void getPPBRValuesRequest(TEC t, TECComponent comp, DateTime date/*, AdminTS.TYPE_FIELDS mode*/)
+        protected override void getPPBRValuesRequest(TEC t, IDevice comp, DateTime date/*, AdminTS.TYPE_FIELDS mode*/)
         {
             string query = "PPBR";
             int i = -1;
@@ -44,11 +44,11 @@ namespace trans_mc
             //Logging.Logg().Debug("AdminMC::GetPPBRValuesRequest (TEC, TECComponent, DateTime, AdminTS.TYPE_FIELDS) - вХод...: query=" + query, Logging.INDEX_MESSAGE.NOT_SET);
 
             query += ";";
-            for (i = 0; i < comp.m_listMCentreId.Count; i++)
+            for (i = 0; i < comp.ListMCentreId.Count; i++)
             {
-                query += comp.m_listMCentreId[i];
+                query += comp.ListMCentreId[i];
 
-                if ((i + 1) < comp.m_listMCentreId.Count) query += ","; else ;
+                if ((i + 1) < comp.ListMCentreId.Count) query += ","; else ;
             }
 
             //tPBR.GetComp(str, "MC");
@@ -246,15 +246,17 @@ namespace trans_mc
 
             string msg = string.Empty;
             StatesMachine stateMachine = (StatesMachine)state;
+            TECComponent comp = CurrentDevice as TECComponent;
 
             switch (stateMachine)
             {
                 case StatesMachine.PPBRValues:
                     ActionReport("Получение данных плана.");
-                    getPPBRValuesRequest(allTECComponents[indxTECComponents].tec, allTECComponents[indxTECComponents], m_curDate.Date/*, AdminTS.TYPE_FIELDS.COUNT_TYPE_FIELDS*/);
+                    getPPBRValuesRequest(comp.tec, comp, m_curDate.Date/*, AdminTS.TYPE_FIELDS.COUNT_TYPE_FIELDS*/);
                     break;
                 case StatesMachine.PPBRDates:
-                    if ((serverTime.Date > m_curDate.Date) && (m_ignore_date == false))
+                    if ((serverTime.Date > m_curDate.Date)
+                        && (m_ignore_date == false))
                     {
                         result = -1;
                         break;
@@ -396,7 +398,7 @@ namespace trans_mc
         {
         }
 
-        public override void GetRDGValues(/*int TYPE_FIELDS mode,*/ int indx, DateTime date)
+        public override void GetRDGValues(FormChangeMode.KeyDevice key, DateTime date)
         {
             delegateStartWait();
 
@@ -409,7 +411,7 @@ namespace trans_mc
             {
                 ClearStates();
 
-                indxTECComponents = indx;
+                CurrentKey = key;
 
                 ClearValues();
 

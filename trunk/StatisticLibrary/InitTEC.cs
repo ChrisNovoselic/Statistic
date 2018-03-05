@@ -133,7 +133,7 @@ namespace StatisticCommon
                                             indx = newTECItem/*tec[indx_tec]*/.list_TECComponents.Count - 1;
 
                                             try {
-                                                newTECItem/*tec[indx_tec]*/.list_TECComponents[indx].m_listLowPointDev.Add(
+                                                newTECItem/*tec[indx_tec]*/.list_TECComponents[indx].ListLowPointDev.Add(
                                                     new TG(list_lowPointDev.Rows[k]
                                                         , all_PARAM_DETAIL.Select(@"ID_TG=" + newTECItem/*tec[indx_tec]*/.list_TECComponents[indx].m_id)[0])
                                                     );
@@ -196,7 +196,7 @@ namespace StatisticCommon
                                         newTECItem/*tec[indx_tec]*/.list_TECComponents.Add(new TECComponent(newTECItem/*tec[indx_tec]*/, list_lowPointDev.Rows[k]));
                                         indx = newTECItem/*tec[indx_tec]*/.list_TECComponents.Count - 1;
 
-                                        newTECItem/*tec[indx_tec]*/.list_TECComponents[indx].m_listLowPointDev.Add(new Vyvod.ParamVyvod(all_PARAM_DETAIL.Select($"ID={newTECItem/*tec[indx_tec]*/.list_TECComponents[indx].m_id}") [0]));
+                                        newTECItem/*tec[indx_tec]*/.list_TECComponents[indx].ListLowPointDev.Add(new Vyvod.ParamVyvod(all_PARAM_DETAIL.Select($"ID={newTECItem/*tec[indx_tec]*/.list_TECComponents[indx].m_id}") [0]));
                                     }
                                 else
                                     ; //Ошибка получения списка параметров ВЫВОДов

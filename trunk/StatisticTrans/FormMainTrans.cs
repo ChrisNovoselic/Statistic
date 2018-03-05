@@ -20,7 +20,7 @@ namespace StatisticTrans
     /// <summary>
     /// Класс "Главная форма Trans (Передача?)"
     /// </summary>
-    public abstract partial class FormMainTrans : FormMainStatistic
+    public abstract partial class       FormMainTrans : FormMainStatistic
     {
         ComponentTesting CT;//
         private const Int32 TIMER_SERVICE_MIN_INTERVAL = 66666;
@@ -56,9 +56,10 @@ namespace StatisticTrans
         protected HAdmin[] m_arAdmin;
         protected GroupBox[] m_arGroupBox;
 
+
         protected DataGridViewAdmin m_dgwAdminTable;
         protected static string msg_throw;
-        protected List<int> m_listTECComponentIndex;
+        //protected List<int> m_listTECComponentIndex;
 
         protected static DateTime m_arg_date;
         protected static Int32 m_arg_interval;
@@ -808,10 +809,10 @@ namespace StatisticTrans
 
         protected void setUIControlConnectionSettings(int i)
         {
-            if (!(comboBoxTECComponent.SelectedIndex < 0) &&
-                (m_listTECComponentIndex[comboBoxTECComponent.SelectedIndex] < m_arAdmin[i].allTECComponents.Count))
+            if (!(comboBoxTECComponent.SelectedIndex < 0)
+                && (SelectedItemKey.Id > 0))
             {
-                ConnectionSettings connSett = m_arAdmin[i].allTECComponents[m_listTECComponentIndex[comboBoxTECComponent.SelectedIndex]].tec.connSetts[(int)StatisticCommon.CONN_SETT_TYPE.PBR];
+                ConnectionSettings connSett = m_arAdmin[i].FindTECComponent(SelectedItemKey).tec.connSetts[(int)StatisticCommon.CONN_SETT_TYPE.PBR];
                 for (int j = 0; j < (Int16)INDX_UICONTROLS.COUNT_INDX_UICONTROLS; j++)
                 {
                     switch (j)
@@ -890,23 +891,21 @@ namespace StatisticTrans
         /// <summary>
         /// Заполнение списка компонентов
         /// </summary>
-        protected virtual void FillComboBoxTECComponent()
+        protected virtual void FillComboBoxTECComponent(FormChangeMode.MODE_TECCOMPONENT mode, bool bWithNameTECOwner)
         {
-            if (!(comboBoxTECComponent.Items.Count == m_listTECComponentIndex.Count))
-            {
-                comboBoxTECComponent.Items.Clear();
+            List<FormChangeMode.KeyDevice> listKey;
 
-                for (int i = 0; i < m_listTECComponentIndex.Count; i++)
-                    comboBoxTECComponent.Items.Add(((AdminTS)m_arAdmin[(Int16)CONN_SETT_TYPE.DEST]).allTECComponents[m_listTECComponentIndex[i]].tec.name_shr + " - " + ((AdminTS)m_arAdmin[(Int16)CONN_SETT_TYPE.DEST]).allTECComponents[m_listTECComponentIndex[i]].name_shr);
+            comboBoxTECComponent.Items.Clear();
 
-                if (comboBoxTECComponent.Items.Count > 0)
-                    comboBoxTECComponent.SelectedIndex = 0;
-                else
-                    ;
-            }
+            listKey = ((AdminTS)m_arAdmin [(Int16)CONN_SETT_TYPE.DEST]).GetListKeyTECComponent (mode, true);
+
+            listKey.ForEach(key =>
+                comboBoxTECComponent.Items.Add(new ComboBoxItem () { Tag = key, Text = ((AdminTS)m_arAdmin [(Int16)CONN_SETT_TYPE.DEST]).GetNameTECComponent(key, bWithNameTECOwner) }));
+
+            if (comboBoxTECComponent.Items.Count > 0)
+                comboBoxTECComponent.SelectedIndex = 0;
             else
                 ;
-
         }
 
         /// <summary>
@@ -951,7 +950,7 @@ namespace StatisticTrans
                     m_arAdmin[(int)CONN_SETT_TYPE.DEST].getCurRDGValues(m_arAdmin[(int)CONN_SETT_TYPE.SOURCE]);
                     //((AdminTS)m_arAdmin[(int)CONN_SETT_TYPE.DEST]).m_bSavePPBRValues = true;
                 } catch (Exception e) {
-                    Logging.Logg().Exception(e, string.Format(@"FormMainTrans::setDataGridView () - ...", m_arAdmin[(int)CONN_SETT_TYPE.SOURCE].indxTECComponents), Logging.INDEX_MESSAGE.NOT_SET);
+                    Logging.Logg().Exception(e, string.Format(@"FormMainTrans::setDataGridView (CurrentKey={0}) - ...", m_arAdmin[(int)CONN_SETT_TYPE.SOURCE].CurrentKey.ToString()), Logging.INDEX_MESSAGE.NOT_SET);
                 }
 
                 //SaveRDGValues (false);
@@ -1278,9 +1277,11 @@ namespace StatisticTrans
             keyPar = @"Season Action";
             HAdmin.SeasonAction = Int32.Parse(m_sFileINI.GetMainValueOfKey(keyPar));
 
+            FormChangeMode.MODE_TECCOMPONENT mode = FormChangeMode.MODE_TECCOMPONENT.GTP;
+
             if (m_modeMashine == MODE_MASHINE.TO_DATE)
             {
-                FillComboBoxTECComponent();
+                FillComboBoxTECComponent(mode, true);
                 CT = new ComponentTesting(comboBoxTECComponent.Items.Count);
                 trans_auto_start();
             }
@@ -1289,13 +1290,15 @@ namespace StatisticTrans
                     m_checkboxModeMashine.Checked = true;
                 else
                 {
-                    FillComboBoxTECComponent();
+                    FillComboBoxTECComponent(mode, true);
                     CT = new ComponentTesting(comboBoxTECComponent.Items.Count);
                 }
         }
 
         private void timerService_Tick(object sender, EventArgs e)
         {
+            FormChangeMode.MODE_TECCOMPONENT mode = FormChangeMode.MODE_TECCOMPONENT.GTP;
+
             if (!(m_modeMashine == MODE_MASHINE.TO_DATE))
                 switch (m_modeMashine)
                 {
@@ -1306,7 +1309,7 @@ namespace StatisticTrans
                             if (m_arg_interval == timerService.Interval) m_arg_interval++; else ; //??? случайное совпадение...
                             timerService.Interval = m_arg_interval;
 
-                            FillComboBoxTECComponent();
+                            FillComboBoxTECComponent(mode, true);
                             CT = new ComponentTesting(comboBoxTECComponent.Items.Count);
                             //DateUpdate(m_arg_interval);
                         }
@@ -1368,8 +1371,10 @@ namespace StatisticTrans
         {
             bool bRes = false;
 
-            if ((!(m_arAdmin == null)) && (!(m_arAdmin[m_IndexDB] == null)) && (!(m_listTECComponentIndex == null)) &&
-                (m_listTECComponentIndex.Count > 0) && (!(comboBoxTECComponent.SelectedIndex < 0)))
+            if ((!(m_arAdmin == null))
+                    && (!(m_arAdmin[m_IndexDB] == null)
+                    && (m_arAdmin[m_IndexDB].CurrentKey.Id > 0))
+                && (!(comboBoxTECComponent.SelectedIndex < 0)))
                 bRes = true;
             else
                 ;
@@ -1460,13 +1465,13 @@ namespace StatisticTrans
 
         private struct PARAMToSaveRDGValues
         {
-            public int listIndex;
+            public FormChangeMode.KeyDevice key;
             public DateTime date;
             public bool bCallback;
 
-            public PARAMToSaveRDGValues(int li, DateTime dt, bool cb)
+            public PARAMToSaveRDGValues(FormChangeMode.KeyDevice k, DateTime dt, bool cb)
             {
-                listIndex = li;
+                key = k;
                 date = dt;
                 bCallback = cb;
             }
@@ -1476,7 +1481,7 @@ namespace StatisticTrans
         {
             try
             {
-                ((AdminTS)m_arAdmin[(int)(Int16)CONN_SETT_TYPE.DEST]).SaveRDGValues(((PARAMToSaveRDGValues)bCallback).listIndex, ((PARAMToSaveRDGValues)bCallback).date, ((PARAMToSaveRDGValues)bCallback).bCallback);
+                ((AdminTS)m_arAdmin[(int)(Int16)CONN_SETT_TYPE.DEST]).SaveRDGValues(((PARAMToSaveRDGValues)bCallback).key, ((PARAMToSaveRDGValues)bCallback).date, ((PARAMToSaveRDGValues)bCallback).bCallback);
             }
             catch (Exception e)
             {
@@ -1505,10 +1510,18 @@ namespace StatisticTrans
             base.WndProc(ref m);
         }
 
+        public FormChangeMode.KeyDevice SelectedItemKey
+        {
+            get
+            {
+                return ((ComboBoxItem)comboBoxTECComponent.SelectedItem).Tag;
+            }
+        }
+
         protected virtual void SaveRDGValues(bool bCallback)
         {
             //((AdminTS)m_arAdmin[(int)(Int16)CONN_SETT_TYPE.DEST]).SaveRDGValues(m_listTECComponentIndex[comboBoxTECComponent.SelectedIndex], dateTimePickerMain.Value, bCallback);
-            PARAMToSaveRDGValues paramToSaveRDGValues = new PARAMToSaveRDGValues(m_listTECComponentIndex[comboBoxTECComponent.SelectedIndex], dateTimePickerMain.Value, bCallback);
+            PARAMToSaveRDGValues paramToSaveRDGValues = new PARAMToSaveRDGValues(SelectedItemKey, dateTimePickerMain.Value, bCallback);
             new Thread(new ParameterizedThreadStart(saveRDGValues)).Start(paramToSaveRDGValues);
         }
 

@@ -400,7 +400,7 @@ namespace Statistic
                         this.Controls.Add(m_dictLabelVal[g.m_id], 1, this.RowCount);
                         //m_dictLabelVal[g.m_id].TextChanged += new EventHandler(PanelTecCurPower_TextChangedValue);
 
-                        foreach (TECComponentBase tc in g.m_listLowPointDev)
+                        foreach (TECComponentBase tc in g.ListLowPointDev)
                         {
                             //Добавить наименование ТГ
                             lblNameTG = HLabel.createLabel (tc.name_shr, PanelCurPower.s_arLabelStyles [(int)INDEX_LABEL.NAME_TG]);
@@ -414,8 +414,8 @@ namespace Statistic
                             this.RowCount++;
                         }
 
-                        this.SetRowSpan(lblNameTECComponent, g.m_listLowPointDev.Count);
-                        this.SetRowSpan(m_dictLabelVal[g.m_id], g.m_listLowPointDev.Count);
+                        this.SetRowSpan(lblNameTECComponent, g.ListLowPointDev.Count);
+                        this.SetRowSpan(m_dictLabelVal[g.m_id], g.ListLowPointDev.Count);
                     }
                     else
                         ;
@@ -636,7 +636,7 @@ namespace Statistic
                     {
                         dblTECComponentPower_TM = 0.0;
 
-                        foreach (TG tg in g.m_listLowPointDev)
+                        foreach (TG tg in g.ListLowPointDev)
                         {
                             if (tg.m_strKKS_NAME_TM.Length > 0) {
                                 dblTECComponentPower_TM += setTextToLabelVal(m_dictLabelVal[tg.m_id], m_tecView.m_dictValuesLowPointDev[tg.m_id].m_powerCurrent_TM);

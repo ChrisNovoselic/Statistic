@@ -242,7 +242,7 @@ namespace StatisticCommon
     /// <summary>
     /// Класс описания ТЭЦ
     /// </summary>
-    public partial class TEC //: StatisticCommon.ITEC
+    public partial class TEC : IDevice
     {
         /// <summary>
         /// Перечисление - индексы типов источников данных (общий-централизованный источник данных, индивидуальный для каждой ТЭЦ - не поддерживается)
@@ -271,13 +271,20 @@ namespace StatisticCommon
         /// </summary>
         public enum TEC_TYPE { UNKNOWN = -1, COMMON, BIYSK };
         /// <summary>
+        /// Идентификатор особенной ТЭЦ
+        ///  (д. совпадать с идентификатором в БД конфигурации)
+        /// </summary>
+        public static int ID_TEC_BIYSK = 6;
+
+        public TEC tec { get { return this; } }
+        /// <summary>
         /// Идентификатор ТЭЦ (из БД конфигурации)
         /// </summary>
-        public int m_id;
+        public int m_id { get; set; }
         /// <summary>
         /// Краткое наименование
         /// </summary>
-        public string name_shr;
+        public string name_shr  { get; set; }
         /// <summary>
         /// Наименование-идентификатор в Модес-Центр
         /// </summary>
@@ -341,6 +348,30 @@ namespace StatisticCommon
             }
 
             return listRes;
+        }
+
+        public List<TECComponentBase> ListLowPointDev
+        {
+            get
+            {
+                throw new NotImplementedException ();
+            }
+        }
+
+        public List<int> ListMCentreId
+        {
+            get
+            {
+                throw new NotImplementedException ();
+            }
+        }
+
+        public List<int> ListMTermId
+        {
+            get
+            {
+                throw new NotImplementedException ();
+            }
         }
         /// <summary>
         /// Строка-перечисление (разделитель - запятая) с идентификаторами ТГ в системе СОТИАССО
@@ -412,10 +443,10 @@ namespace StatisticCommon
         /// <param name="connSettType">Тип соединения с БД</param>
         /// <param name="indxTime">Индекс интервала времени</param>
         /// <returns>Строка-перечисление с идентификаторами</returns>
-        public string GetSensorsString (int indx, CONN_SETT_TYPE connSettType, HDateTime.INTERVAL indxTime = HDateTime.INTERVAL.UNKNOWN) {
+        public string GetSensorsString (FormChangeMode.KeyDevice key, CONN_SETT_TYPE connSettType, HDateTime.INTERVAL indxTime = HDateTime.INTERVAL.UNKNOWN) {
             string strRes = string.Empty;
 
-            if (indx < 0) { // для ТЭЦ
+            if (key.Mode == FormChangeMode.MODE_TECCOMPONENT.TEC) { // для ТЭЦ
                 switch ((int)connSettType) {
                     case (int)CONN_SETT_TYPE.DATA_SOTIASSO:
                     case (int)CONN_SETT_TYPE.DATA_SOTIASSO_3_MIN:
@@ -436,10 +467,10 @@ namespace StatisticCommon
                     case (int)CONN_SETT_TYPE.DATA_SOTIASSO:
                     case (int)CONN_SETT_TYPE.DATA_SOTIASSO_3_MIN:
                     case (int)CONN_SETT_TYPE.DATA_SOTIASSO_1_MIN:
-                        strRes = list_TECComponents [indx].m_SensorsString_SOTIASSO;
+                        strRes = list_TECComponents.Find(comp => comp.m_id == key.Id).m_SensorsString_SOTIASSO;
                         break;
                     case (int)CONN_SETT_TYPE.DATA_AISKUE:
-                        strRes = list_TECComponents[indx].m_SensorsStrings_ASKUE[(int)indxTime];
+                        strRes = list_TECComponents.Find (comp => comp.m_id == key.Id).m_SensorsStrings_ASKUE[(int)indxTime];
                         break;
                     default:
                         Logging.Logg().Error(@"TEC::GetSensorsString (CONN_SETT_TYPE=" + connSettType.ToString()
@@ -628,12 +659,12 @@ namespace StatisticCommon
                 // проверить найден ли ТГ
                 if (k < list_TECComponents.Count)
                 {// ТГ найден
-                    list_TECComponents[indx].m_listLowPointDev.Add(list_TECComponents[k].m_listLowPointDev[0]);
+                    list_TECComponents[indx].ListLowPointDev.Add(list_TECComponents[k].ListLowPointDev[0]);
                     if (list_TECComponents[indx].IsGTP == true)
-                        (list_TECComponents[k].m_listLowPointDev[0] as TG).m_id_owner_gtp = list_TECComponents[indx].m_id;
+                        (list_TECComponents[k].ListLowPointDev[0] as TG).m_id_owner_gtp = list_TECComponents[indx].m_id;
                     else
                         if (list_TECComponents[indx].IsPC == true)
-                            (list_TECComponents[k].m_listLowPointDev[0] as TG).m_id_owner_pc = list_TECComponents[indx].m_id;
+                            (list_TECComponents[k].ListLowPointDev[0] as TG).m_id_owner_pc = list_TECComponents[indx].m_id;
                         else
                             ;
                 }
@@ -668,10 +699,10 @@ namespace StatisticCommon
                 else
                     ; // ошибка ИЛИ параметр уже добавлен
 
-                list_TECComponents[indx].m_listLowPointDev.Add(pv.m_listLowPointDev[0]);
+                list_TECComponents[indx].ListLowPointDev.Add(pv.ListLowPointDev[0]);
                 if ((bNewParamVyvod == true)
                     && (list_TECComponents[indx].IsVyvod == true))
-                    (pv.m_listLowPointDev[0] as Vyvod.ParamVyvod).m_owner_vyvod = list_TECComponents[indx].m_id;
+                    (pv.ListLowPointDev[0] as Vyvod.ParamVyvod).m_owner_vyvod = list_TECComponents[indx].m_id;
                 else
                     ;
             }
@@ -740,14 +771,14 @@ namespace StatisticCommon
                     switch (indxVal)
                     {
                         case TG.INDEX_VALUE.FACT:
-                            if ((list_TECComponents[i].m_listLowPointDev[0] as TG).m_arIds_fact[(int)id_time_type] == (TG.AISKUE_KEY)id)
-                                tgRes = list_TECComponents[i].m_listLowPointDev[0] as TG;
+                            if ((list_TECComponents[i].ListLowPointDev[0] as TG).m_arIds_fact[(int)id_time_type] == (TG.AISKUE_KEY)id)
+                                tgRes = list_TECComponents[i].ListLowPointDev[0] as TG;
                             else
                                 ;
                             break;
                         case TG.INDEX_VALUE.TM:
-                            if ((list_TECComponents[i].m_listLowPointDev[0] as TG).m_strKKS_NAME_TM.Equals((string)id) == true)
-                                tgRes = list_TECComponents[i].m_listLowPointDev[0] as TG;
+                            if ((list_TECComponents[i].ListLowPointDev[0] as TG).m_strKKS_NAME_TM.Equals((string)id) == true)
+                                tgRes = list_TECComponents[i].ListLowPointDev[0] as TG;
                             else
                                 ;
                             break;
@@ -806,7 +837,7 @@ namespace StatisticCommon
                             list_TECComponents[i].m_SensorsString_VZLET = string.Empty;
 
                             //foreach (Vyvod.ParamVyvod pv in v.m_listParam)
-                            foreach (Vyvod.ParamVyvod pv in list_TECComponents[i].m_listLowPointDev)
+                            foreach (Vyvod.ParamVyvod pv in list_TECComponents[i].ListLowPointDev)
                             {
                                 m_SensorsString_VZLET = addSensor(m_SensorsString_VZLET
                                     , pv.m_SensorsString_VZLET //.name_future
@@ -823,56 +854,56 @@ namespace StatisticCommon
                         if (list_TECComponents[i].IsTG == true)
                         {
                             //Только для ТГ
-                            _listTG.Add(list_TECComponents[i].m_listLowPointDev[0] as TG);
+                            _listTG.Add(list_TECComponents[i].ListLowPointDev[0] as TG);
                             //Формировать строку-перечисление с иджентификаторами для ТЭЦ в целом (АИИС КУЭ - час)
                             m_SensorsStrings_ASKUE[(int)HDateTime.INTERVAL.HOURS] = addSensor(m_SensorsStrings_ASKUE[(int)HDateTime.INTERVAL.HOURS]
-                                                                            , (list_TECComponents[i].m_listLowPointDev[0] as TG).m_arIds_fact[(int)HDateTime.INTERVAL.HOURS]
+                                                                            , (list_TECComponents[i].ListLowPointDev[0] as TG).m_arIds_fact[(int)HDateTime.INTERVAL.HOURS]
                                 /*, type*/
                                                                             , m_arTypeSourceData[(int)CONN_SETT_TYPE.DATA_AISKUE - (int)CONN_SETT_TYPE.DATA_AISKUE]);
                             //Формировать строку-перечисление с иджентификаторами для ТЭЦ в целом (АИИС КУЭ - минуты)
                             m_SensorsStrings_ASKUE[(int)HDateTime.INTERVAL.MINUTES] = addSensor(m_SensorsStrings_ASKUE[(int)HDateTime.INTERVAL.MINUTES]
-                                                                            , (list_TECComponents[i].m_listLowPointDev[0] as TG).m_arIds_fact[(int)HDateTime.INTERVAL.MINUTES]
+                                                                            , (list_TECComponents[i].ListLowPointDev[0] as TG).m_arIds_fact[(int)HDateTime.INTERVAL.MINUTES]
                                 /*, type*/
                                                                             , m_arTypeSourceData[(int)CONN_SETT_TYPE.DATA_AISKUE - (int)CONN_SETT_TYPE.DATA_AISKUE]);
                             //Формировать строку-перечисление с иджентификаторами для ТЭЦ в целом (СОТИАССО)
                             m_SensorsString_SOTIASSO = addSensor(m_SensorsString_SOTIASSO
-                                                                , (list_TECComponents[i].m_listLowPointDev[0] as TG).m_strKKS_NAME_TM
+                                                                , (list_TECComponents[i].ListLowPointDev[0] as TG).m_strKKS_NAME_TM
                                 /*, type*/
                                                                 , m_arTypeSourceData[(int)CONN_SETT_TYPE.DATA_SOTIASSO - (int)CONN_SETT_TYPE.DATA_AISKUE]);
                             //Одновременно присвоить идентификаторы для ТГ  (АИИС КУЭ - час)
                             list_TECComponents[i].m_SensorsStrings_ASKUE[(int)HDateTime.INTERVAL.HOURS] = addSensor(list_TECComponents[i].m_SensorsStrings_ASKUE[(int)HDateTime.INTERVAL.HOURS]
-                                                                                                        , (list_TECComponents[i].m_listLowPointDev[0] as TG).m_arIds_fact[(int)HDateTime.INTERVAL.HOURS]
+                                                                                                        , (list_TECComponents[i].ListLowPointDev[0] as TG).m_arIds_fact[(int)HDateTime.INTERVAL.HOURS]
                                 /*, type*/
                                                                                                         , m_arTypeSourceData[(int)CONN_SETT_TYPE.DATA_AISKUE - (int)CONN_SETT_TYPE.DATA_AISKUE]);
                             //Одновременно присвоить идентификаторы для ТГ  (АИИС КУЭ - минута)
                             list_TECComponents[i].m_SensorsStrings_ASKUE[(int)HDateTime.INTERVAL.MINUTES] = addSensor(list_TECComponents[i].m_SensorsStrings_ASKUE[(int)HDateTime.INTERVAL.MINUTES]
-                                                                                                        , (list_TECComponents[i].m_listLowPointDev[0] as TG).m_arIds_fact[(int)HDateTime.INTERVAL.MINUTES]
+                                                                                                        , (list_TECComponents[i].ListLowPointDev[0] as TG).m_arIds_fact[(int)HDateTime.INTERVAL.MINUTES]
                                 /*, type*/
                                                                                                         , m_arTypeSourceData[(int)CONN_SETT_TYPE.DATA_AISKUE - (int)CONN_SETT_TYPE.DATA_AISKUE]);
                             //Одновременно присвоить идентификаторы для ТГ  (СОТИАССО)
                             list_TECComponents[i].m_SensorsString_SOTIASSO = addSensor(list_TECComponents[i].m_SensorsString_SOTIASSO
-                                                                                        , (list_TECComponents[i].m_listLowPointDev[0] as TG).m_strKKS_NAME_TM
+                                                                                        , (list_TECComponents[i].ListLowPointDev[0] as TG).m_strKKS_NAME_TM
                                 /*, type*/
                                                                                         , m_arTypeSourceData[(int)CONN_SETT_TYPE.DATA_SOTIASSO - (int)CONN_SETT_TYPE.DATA_AISKUE]);
                         }
                         else
                         {//Для остальных (ГТП, Б(Гр)ЩУ) компонентов
                             //Цикл по ТГ компонента
-                            for (j = 0; j < list_TECComponents[i].m_listLowPointDev.Count; j++)
+                            for (j = 0; j < list_TECComponents[i].ListLowPointDev.Count; j++)
                             {
                                 //Формировать строку-перечисление с иджентификаторами для компонента ТЭЦ в целом (АИИС КУЭ - час)
                                 list_TECComponents[i].m_SensorsStrings_ASKUE[(int)HDateTime.INTERVAL.HOURS] = addSensor(list_TECComponents[i].m_SensorsStrings_ASKUE[(int)HDateTime.INTERVAL.HOURS]
-                                                                                                                , (list_TECComponents[i].m_listLowPointDev[j] as TG).m_arIds_fact[(int)HDateTime.INTERVAL.HOURS]
+                                                                                                                , (list_TECComponents[i].ListLowPointDev[j] as TG).m_arIds_fact[(int)HDateTime.INTERVAL.HOURS]
                                     /*, type*/
                                                                                                                 , m_arTypeSourceData[(int)CONN_SETT_TYPE.DATA_AISKUE - (int)CONN_SETT_TYPE.DATA_AISKUE]);
                                 //Формировать строку-перечисление с иджентификаторами для компонента ТЭЦ в целом (АИИС КУЭ - минута)
                                 list_TECComponents[i].m_SensorsStrings_ASKUE[(int)HDateTime.INTERVAL.MINUTES] = addSensor(list_TECComponents[i].m_SensorsStrings_ASKUE[(int)HDateTime.INTERVAL.MINUTES]
-                                                                                                                , (list_TECComponents[i].m_listLowPointDev[j] as TG).m_arIds_fact[(int)HDateTime.INTERVAL.MINUTES]
+                                                                                                                , (list_TECComponents[i].ListLowPointDev[j] as TG).m_arIds_fact[(int)HDateTime.INTERVAL.MINUTES]
                                     /*, type*/
                                                                                                                 , m_arTypeSourceData[(int)CONN_SETT_TYPE.DATA_AISKUE - (int)CONN_SETT_TYPE.DATA_AISKUE]);
                                 //Формировать строку-перечисление с иджентификаторами для компонента ТЭЦ в целом (АСОТИАССО)
                                 list_TECComponents[i].m_SensorsString_SOTIASSO = addSensor(list_TECComponents[i].m_SensorsString_SOTIASSO
-                                                                                        , (list_TECComponents[i].m_listLowPointDev[j] as TG).m_strKKS_NAME_TM
+                                                                                        , (list_TECComponents[i].ListLowPointDev[j] as TG).m_strKKS_NAME_TM
                                     /*, type*/
                                                                                         , m_arTypeSourceData[(int)CONN_SETT_TYPE.DATA_SOTIASSO - (int)CONN_SETT_TYPE.DATA_AISKUE]);
                             } // - Цикл по ТГ компонента
@@ -936,17 +967,17 @@ namespace StatisticCommon
         /// </summary>
         /// <param name="num_comp">Номер (индекс) компонента (для ТЭЦ = -1)</param>
         /// <returns>Строка-перечисление с идентификаторами</returns>
-        private string idComponentValueQuery (int num_comp, TECComponentBase.TYPE type) {
+        private string idComponentValueQuery (FormChangeMode.KeyDevice key, TECComponentBase.TYPE type) {
             string strRes = string.Empty;
 
-            if (num_comp < 0) {
+            if (key.Mode == FormChangeMode.MODE_TECCOMPONENT.TEC) {
                 switch (type) {
                     case TECComponentBase.TYPE.TEPLO:
                         //m_list_Vyvod.ForEach(v => { strRes += @", " + (v as Vyvod).m_listParam[0].m_id.ToString(); });
                         list_TECComponents.ForEach(v => {
                             if ((v.IsParamVyvod == true)
-                                && ((v.m_listLowPointDev[0] as Vyvod.ParamVyvod).m_id_param == Vyvod.ID_PARAM.T_PV))
-                                strRes += @", " + v.m_listLowPointDev[0].m_id.ToString();
+                                && ((v.ListLowPointDev[0] as Vyvod.ParamVyvod).m_id_param == Vyvod.ID_PARAM.T_PV))
+                                strRes += @", " + v.ListLowPointDev[0].m_id.ToString();
                             else ;
                         });
                         break;
@@ -965,12 +996,13 @@ namespace StatisticCommon
                         //??? пока по-комопонентно запрос не требуется - только для ТЭЦ в целом
                         break;
                     case TECComponentBase.TYPE.ELECTRO:
-                        if ((list_TECComponents[num_comp].IsGTP == true)
-                            || (list_TECComponents[num_comp].IsPC == true)
+                        if ((key.Mode == FormChangeMode.MODE_TECCOMPONENT.GTP)
+                            || (key.Mode == FormChangeMode.MODE_TECCOMPONENT.PC)
                             )
-                            strRes += (list_TECComponents[num_comp].m_id).ToString();
+                            strRes += key.Id.ToString();
                         else {
-                            list_TECComponents[num_comp].m_listLowPointDev.ForEach(tc => { strRes += @", " + (tc.m_id).ToString(); });
+                            list_TECComponents.Find(comp => comp.m_id == key.Id)
+                                .ListLowPointDev.ForEach(tc => { strRes += @", " + (tc.m_id).ToString(); });
                             // вырезать лишние запятую с пробелом
                             strRes = strRes.Substring(2);
                         }
@@ -1640,7 +1672,7 @@ namespace StatisticCommon
         /// <param name="dt">Дата/время - начало интервала, запрашиваемых данных</param>
         /// <param name="mode">Режим полей в таблице (в наст./время не актуально - используется 'AdminTS.TYPE_FIELDS.DYNAMIC')</param>
         /// <returns>Строка запроса</returns>
-        public string GetPBRValueQuery(int num_comp, DateTime dt, TECComponentBase.TYPE type)
+        public string GetPBRValueQuery(FormChangeMode.KeyDevice key, DateTime dt, TECComponentBase.TYPE type)
         {
             string strRes = string.Empty,
                     selectPBR = string.Empty;
@@ -1651,7 +1683,7 @@ namespace StatisticCommon
             //        ;
             //        break;
             //    case AdminTS.TYPE_FIELDS.DYNAMIC:
-                    selectPBR = "PBR, Pmin, Pmax" + /*Не используется m_strNamesField[(int)INDEX_NAME_FIELD.PBR]*/";" + idComponentValueQuery(num_comp, type);
+                    selectPBR = "PBR, Pmin, Pmax" + /*Не используется m_strNamesField[(int)INDEX_NAME_FIELD.PBR]*/";" + idComponentValueQuery(key, type);
             //        break;
             //    default:
             //        break;
@@ -1669,7 +1701,7 @@ namespace StatisticCommon
         /// <param name="dt">Дата/время - начало интервала, запрашиваемых данных</param>
         /// <param name="mode">Режим полей в таблице (в наст./время не актуально - используется 'AdminTS.TYPE_FIELDS.DYNAMIC')</param>
         /// <returns>Строка запроса</returns>
-        public string GetPBRValueQuery(TECComponent comp, DateTime dt)
+        public string GetPBRValueQuery(IDevice comp, DateTime dt)
         {
             string strRes = string.Empty,
                     selectPBR = string.Empty;
@@ -1791,8 +1823,8 @@ namespace StatisticCommon
         /// <param name="comp">Объект компонента ТЭЦ для которого запрашиваются данные</param>
         /// <param name="dt">Дата/время - начало интервала, запрашиваемых данных</param>
         /// <param name="mode">Режим полей в таблице (в наст./время не актуально - используется 'AdminTS.TYPE_FIELDS.DYNAMIC')</param>        
-        /// <returns></returns>
-        public string GetAdminValueQuery(TECComponent comp, DateTime dt/*, AdminTS.TYPE_FIELDS mode*/)
+        /// <returns>Строка с содержанием запроса</returns>
+        public string GetAdminValueQuery(IDevice comp, DateTime dt/*, AdminTS.TYPE_FIELDS mode*/)
         {
             string strRes = string.Empty,
                     selectAdmin = string.Empty;
@@ -1968,7 +2000,7 @@ namespace StatisticCommon
             return query;
         }
 
-        public string GetAdminValueQuery(int num_comp, DateTime dt, TECComponentBase.TYPE type)
+        public string GetAdminValueQuery(FormChangeMode.KeyDevice key, DateTime dt, TECComponentBase.TYPE type)
         {
             string strRes = string.Empty,
                 selectAdmin = string.Empty;
@@ -1979,7 +2011,7 @@ namespace StatisticCommon
             //        ;
             //        break;
             //    case AdminTS.TYPE_FIELDS.DYNAMIC:
-                    selectAdmin = idComponentValueQuery (num_comp, type);
+                    selectAdmin = idComponentValueQuery (key, type);
 
                     selectAdmin = m_strNamesField[(int)INDEX_NAME_FIELD.REC]
                                 + ", " + m_strNamesField[(int)INDEX_NAME_FIELD.IS_PER]
@@ -2019,7 +2051,7 @@ namespace StatisticCommon
             foreach (TECComponent tc in list_TECComponents)
                 if (tc.IsParamVyvod == true)
                 {
-                    pv = tc.m_listLowPointDev[0] as Vyvod.ParamVyvod;
+                    pv = tc.ListLowPointDev[0] as Vyvod.ParamVyvod;
 
                     if (((pv.m_id_param == Vyvod.ID_PARAM.G_PV) || (pv.m_id_param == Vyvod.ID_PARAM.T_PV)
                             || (pv.m_id_param == Vyvod.ID_PARAM.G2_PV) || (pv.m_id_param == Vyvod.ID_PARAM.T2_PV))
@@ -2088,7 +2120,7 @@ namespace StatisticCommon
                     foreach (TECComponent tc in list_TECComponents)
                         if (tc.IsParamVyvod == true)
                         {
-                            pv = tc.m_listLowPointDev[0] as Vyvod.ParamVyvod;
+                            pv = tc.ListLowPointDev[0] as Vyvod.ParamVyvod;
 
                             if (((pv.m_id_param == Vyvod.ID_PARAM.G_PV) || (pv.m_id_param == Vyvod.ID_PARAM.T_PV)
                                     || (pv.m_id_param == Vyvod.ID_PARAM.G2_PV) || (pv.m_id_param == Vyvod.ID_PARAM.T2_PV))
@@ -2169,7 +2201,7 @@ namespace StatisticCommon
                     foreach (TECComponent tc in list_TECComponents)
                         if (tc.IsParamVyvod == true)
                         {
-                            pv = tc.m_listLowPointDev[0] as Vyvod.ParamVyvod;
+                            pv = tc.ListLowPointDev[0] as Vyvod.ParamVyvod;
 
                             if (((pv.m_id_param == Vyvod.ID_PARAM.G_PV) || (pv.m_id_param == Vyvod.ID_PARAM.T_PV)
                                 || (pv.m_id_param == Vyvod.ID_PARAM.G2_PV) || (pv.m_id_param == Vyvod.ID_PARAM.T2_PV))
@@ -2208,7 +2240,7 @@ namespace StatisticCommon
         /// <param name="mode">Режим полей в таблице (в наст./время не актуально - используется 'AdminTS.TYPE_FIELDS.DYNAMIC')</param>
         /// <param name="comp">Объект компонента ТЭЦ для которого запрашиваются данные</param>
         /// <returns>Строка запроса</returns>
-        public string GetAdminDatesQuery(TECComponent comp, DateTime dt/*, AdminTS.TYPE_FIELDS mode*/)
+        public string GetAdminDatesQuery(IDevice comp, DateTime dt/*, AdminTS.TYPE_FIELDS mode*/)
         {
             string strRes = string.Empty;
 
@@ -2239,7 +2271,7 @@ namespace StatisticCommon
         /// <param name="mode">Режим полей в таблице (в наст./время не актуально - используется 'AdminTS.TYPE_FIELDS.DYNAMIC')</param>
         /// <param name="comp">Объект компонента ТЭЦ для которого запрашиваются данные</param>
         /// <returns>Строка запроса</returns>
-        public string GetPBRDatesQuery(TECComponent comp, DateTime dt/*, AdminTS.TYPE_FIELDS mode*/)
+        public string GetPBRDatesQuery(IDevice comp, DateTime dt/*, AdminTS.TYPE_FIELDS mode*/)
         {
             string strRes = string.Empty,
                 strNameFieldDateTime = m_strNamesField[(int)INDEX_NAME_FIELD.PBR_DATETIME];

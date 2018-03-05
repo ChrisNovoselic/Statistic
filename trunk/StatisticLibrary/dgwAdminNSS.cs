@@ -1,6 +1,6 @@
 using System;
 using System.Collections.Generic;
-using System.Text;
+using System.Linq;
 using System.Windows.Forms;
 //using System.ComponentModel;
 using System.Data;
@@ -14,9 +14,9 @@ namespace StatisticCommon
 {
     public class DataGridViewAdminNSS : DataGridViewAdmin
     {
-        private enum ID_TYPE : ushort { ID, ID_OWNER, COUNT_ID_TYPE };
+        private enum INDEX_ID : ushort { ID, ID_OWNER, COUNT_ID_TYPE };
 
-        private List <int []> m_listIds;
+        //private List <int []> m_listIds;
 
         DataGridViewCellStyle dgvCellStyleError,
                              dgvCellStyleGTP;
@@ -32,7 +32,7 @@ namespace StatisticCommon
         public DataGridViewAdminNSS(Color foreColor, Color []backgroundColors)
             : base(foreColor, backgroundColors)
         {
-            m_listIds = new List<int[]>();
+            //m_listIds = new List<int[]>();
 
             dgvCellStyleError = new DataGridViewCellStyle();
             dgvCellStyleError.BackColor = Color.Red;
@@ -76,26 +76,35 @@ namespace StatisticCommon
 
         public void DataGridViewAdminNSS_CellValueChanged(object sender, DataGridViewCellEventArgs e)
         {
-            if ((m_listIds.Count == Columns.Count - 2)
+            List<int []> listIds = new List<int []> ();
+
+            Columns.Cast<DataGridViewColumn> ().ToList ().ForEach (col => {
+                if (col.Tag is int [])
+                    listIds.Add (col.Tag as int []);
+                else
+                    ;
+            });
+
+            if ((listIds.Count == Columns.Count - 2)
                 && (Columns[e.ColumnIndex].ReadOnly == false)
                 && (e.ColumnIndex > 0)
                 && (e.ColumnIndex < Columns.Count - 1))
             {
-                int id_gtp = m_listIds [e.ColumnIndex - 1][(int)ID_TYPE.ID_OWNER],
+                int id_gtp = listIds [e.ColumnIndex - 1][(int)INDEX_ID.ID_OWNER],
                     col_gtp = -1;
                 List<int> list_col_tg = new List<int>();
 
-                foreach (int [] ids in m_listIds) {
+                foreach (int [] ids in listIds) {
                     //Поиск номера столбца ГТП (только ОДИН раз)
                     if ((col_gtp < 0)
-                        && (id_gtp == ids[(int)ID_TYPE.ID]) && (ids[(int)ID_TYPE.ID_OWNER] < 0))
-                        col_gtp = m_listIds.IndexOf(ids) + 1; // '+ 1' за счт столбца "Дата, время"
+                        && (id_gtp == ids[(int)INDEX_ID.ID]) && (ids[(int)INDEX_ID.ID_OWNER] < 0))
+                        col_gtp = listIds.IndexOf(ids) + 1; // '+ 1' за счт столбца "Дата, время"
                     else
                         ;
 
                     //Все столбцы для ГТП с id_gtp == ...
-                    if (id_gtp == ids [(int)ID_TYPE.ID_OWNER])
-                        list_col_tg.Add(m_listIds.IndexOf(ids) + 1); // '+ 1' за счт столбца "Дата, время"
+                    if (id_gtp == ids [(int)INDEX_ID.ID_OWNER])
+                        list_col_tg.Add(listIds.IndexOf(ids) + 1); // '+ 1' за счт столбца "Дата, время"
                     else
                         ;
                 }
@@ -174,7 +183,14 @@ namespace StatisticCommon
                 ;
         }
 
-        public void addTextBoxColumn(string name, int id, int id_owner, DateTime date)
+        private struct ColumnTag
+        {
+            public int Id;
+
+            public int IdOwner;
+        }
+
+        public void addTextBoxColumn(string name, int id, int id_owner)
         {
             DataGridViewTextBoxColumn insColumn = new DataGridViewTextBoxColumn ();
             insColumn.Frozen = false;
@@ -185,10 +201,10 @@ namespace StatisticCommon
             insColumn.SortMode = System.Windows.Forms.DataGridViewColumnSortMode.NotSortable;
             try { Columns.Insert(Columns.Count - 1, insColumn); }
             catch (Exception e) {
-                Logging.Logg().Exception(e, "dgwAdminNSS - addTextBoxColumn () - Columns.Insert", Logging.INDEX_MESSAGE.NOT_SET);
+                Logging.Logg().Exception(e, string.Format("DataGridViewAdminNSS::addTextBoxColumn (name={0}, id={1}, id_owner={2}) - Columns.Insert", name, id, id_owner), Logging.INDEX_MESSAGE.NOT_SET);
             }
 
-            m_listIds.Add (new int [(int)ID_TYPE.COUNT_ID_TYPE] {id, id_owner});
+            insColumn.Tag = new int [(int)INDEX_ID.COUNT_ID_TYPE] {id, id_owner};
 
             if (id_owner < 0) {
                 Columns[Columns.Count - 1 - 1].Frozen = true;
@@ -201,30 +217,17 @@ namespace StatisticCommon
 
         public override void ClearTables () {
             int i = -1;
-
-            m_listIds.Clear ();
             
             while (Columns.Count > 2)
-            {
                 Columns.RemoveAt(Columns.Count - 1 - 1);
-            }            
             
             for (i = 0; i < 24; i++)
-            {
                 Rows[i].Cells[0].Value = string.Empty;
-            }
         }
 
         public int GetIdGTPOwner(int i)
         {
-            int iRes = -1;
-
-            if ((i < m_listIds.Count) && ((int)ID_TYPE.ID_OWNER < m_listIds[i].Length))
-                iRes = m_listIds [i][(int)ID_TYPE.ID_OWNER];
-            else
-                ;
-
-            return iRes;
+            return (Columns[i].Tag as int[])[(int)INDEX_ID.ID_OWNER];
         }
 
         public override Color BackColor

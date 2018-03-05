@@ -88,7 +88,7 @@ namespace Statistic
                 if ((!(listTec[i].m_id > (int)TECComponent.ID.LK))
                     && (!(listTec[i].Type == TEC.TEC_TYPE.BIYSK)))
                 {
-                    ptvtd = new PanelTecVzletTDirect(listTec[i], i, -1);
+                    ptvtd = new PanelTecVzletTDirect(listTec[i], new FormChangeMode.KeyDevice () { Id =listTec[i].m_id, Mode = FormChangeMode.MODE_TECCOMPONENT.TEC });
                     this.Controls.Add(ptvtd, i % this.ColumnCount, i / this.ColumnCount);
                 }
                 else
@@ -1149,7 +1149,7 @@ namespace Statistic
                                 arValues[(int)TG.INDEX_VALUE.TM] =
                                     -1F;
                                 // получить значения для параметров ВЫВОДа
-                                foreach (Vyvod.ParamVyvod pv in g.m_listLowPointDev)
+                                foreach (Vyvod.ParamVyvod pv in g.ListLowPointDev)
                                 {//Цикл по списку с парметрами ВЫВОДа
                                     if (!(m_parent.m_tecView.m_dictValuesLowPointDev[pv.m_id].m_power_LastMinutesTM == null))
                                     {
@@ -1353,7 +1353,8 @@ namespace Statistic
             /// </summary>
             private class DataSource : TecView
             {
-                public DataSource(int indx_tec, int indx_comp = -1) : base (indx_tec, indx_comp, TECComponentBase.TYPE.TEPLO)
+                public DataSource(FormChangeMode.KeyDevice key)
+                    : base (key, TECComponentBase.TYPE.TEPLO)
                 {
                     m_idAISKUEParNumber = ID_AISKUE_PARNUMBER.FACT_30;
                     //_tsOffsetToMoscow = HDateTime.TS_NSK_OFFSET_OF_MOSCOWTIMEZONE;
@@ -1369,34 +1370,9 @@ namespace Statistic
                     m_dictCurrValuesLowPointDev = new Dictionary<int, valuesLowPointDev>();
                 }
 
-                //protected override int StateCheckResponse(int state, out bool error, out object outobj)
-                //{
-                //    throw new NotImplementedException();
-                //}
-
-                //protected override int StateRequest(int state)
-                //{
-                //    throw new NotImplementedException();
-                //}
-
-                //protected override int StateResponse(int state, object obj)
-                //{
-                //    throw new NotImplementedException();
-                //}
-
-                //protected override void StateWarnings(int state, int req, int res)
-                //{
-                //    throw new NotImplementedException();
-                //}
-
-                //protected override HHandler.INDEX_WAITHANDLE_REASON StateErrors(int state, int req, int res)
-                //{
-                //    throw new NotImplementedException();
-                //}
-
                 public override void ChangeState()
                 {
-                    lock (m_lockState) { GetRDGValues(-1, DateTime.MinValue); }
+                    lock (m_lockState) { GetRDGValues(FormChangeMode.KeyTECComponentEmpty, DateTime.MinValue); }
 
                     base.ChangeState(); //Run
                 }
@@ -1500,7 +1476,7 @@ namespace Statistic
                                 foreach (TECComponent tc in _localTECComponents)
                                     if ((tc.IsVyvod == true)
                                         && (tc.m_bKomUchet == true)) {
-                                        foreach (TECComponentBase lpd in tc.m_listLowPointDev) {
+                                        foreach (TECComponentBase lpd in tc.ListLowPointDev) {
                                             // получить идентификатор параметра ВЫВОДа
                                             id = lpd.m_id;
                                             // получить все строки со значениями для параметра ВЫВОДа
@@ -1545,7 +1521,7 @@ namespace Statistic
                                                 Tpv =
                                                     0F;
 
-                                                foreach (TECComponentBase lpd in tc.m_listLowPointDev)
+                                                foreach (TECComponentBase lpd in tc.ListLowPointDev)
                                                 {// цикл по всем конечным устройствам ВЫВОДа
                                                     id = lpd.m_id;
                                                     // получить значение для формулы в ~ от типа параметра
@@ -1687,7 +1663,7 @@ namespace Statistic
                 {
                     base.initDictValuesLowPointDev(comp);
 
-                    foreach (TECComponentBase dev in comp.m_listLowPointDev)
+                    foreach (TECComponentBase dev in comp.ListLowPointDev)
                         if (m_dictCurrValuesLowPointDev.ContainsKey(dev.m_id) == false)
                             m_dictCurrValuesLowPointDev.Add(dev.m_id, new valuesLowPointDev ());
                         else
@@ -1715,7 +1691,7 @@ namespace Statistic
                                     if ((tc.IsVyvod == true)
                                         && (tc.m_bKomUchet == true))
                                     {
-                                        foreach (TECComponentBase lpd in tc.m_listLowPointDev)
+                                        foreach (TECComponentBase lpd in tc.ListLowPointDev)
                                         {
                                             // получить идентификатор параметра ВЫВОДа
                                             id = lpd.m_id;
@@ -1756,7 +1732,7 @@ namespace Statistic
                                             Tpv =
                                                 0F;
 
-                                            foreach (TECComponentBase lpd in tc.m_listLowPointDev)
+                                            foreach (TECComponentBase lpd in tc.ListLowPointDev)
                                             {
                                                 // получить идентификатор параметра ВЫВОДа
                                                 id = lpd.m_id;
@@ -1844,7 +1820,7 @@ namespace Statistic
                     return iRes;
                 }
 
-                public override void GetRDGValues(int indx, DateTime date)
+                public override void GetRDGValues(FormChangeMode.KeyDevice key, DateTime date)
                 {
                     ClearStates();
 
@@ -1941,8 +1917,8 @@ namespace Statistic
             /// <summary>
             /// constructor
             /// </summary>
-            public PanelTecVzletTDirect(TEC tec, int indx_tec, int indx_comp)
-                : base(tec, indx_tec, indx_comp, new ASUTP.Core.HMark (new int[] { (int)CONN_SETT_TYPE.ADMIN, (int)CONN_SETT_TYPE.PBR, (int)CONN_SETT_TYPE.DATA_VZLET }))
+            public PanelTecVzletTDirect(TEC tec, FormChangeMode.KeyDevice key)
+                : base(tec, key, new ASUTP.Core.HMark (new int[] { (int)CONN_SETT_TYPE.ADMIN, (int)CONN_SETT_TYPE.PBR, (int)CONN_SETT_TYPE.DATA_VZLET }))
             {
                 initialize();
             }
@@ -1950,8 +1926,8 @@ namespace Statistic
             /// constructor
             /// </summary>
             /// <param name="container">Родительский объект по отношению к создаваемому</param>
-            public PanelTecVzletTDirect(IContainer container, TEC tec, int indx_tec, int indx_comp, ASUTP.Core.HMark markQueries)
-                : base(tec, indx_tec, indx_comp, markQueries)
+            public PanelTecVzletTDirect(IContainer container, TEC tec, FormChangeMode.KeyDevice key, ASUTP.Core.HMark markQueries)
+                : base(tec, key, markQueries)
             {
                 container.Add(this);
                 initialize();
@@ -1999,9 +1975,9 @@ namespace Statistic
             /// </summary>
             /// <param name="indx_tec">Индекс ТЭЦ в глобальном списке</param>
             /// <param name="indx_comp">Индекс компонента ТЭЦ (внутренний для ТЭЦ), если -1, то ТЭЦ в целом</param>
-            protected override void createTecView(int indx_tec, int indx_comp)
+            protected override void createTecView(FormChangeMode.KeyDevice key)
             {
-                m_tecView = new DataSource(indx_tec, indx_comp);
+                m_tecView = new DataSource(key);
             }
             /// <summary>
             /// Создать объекты панели оперативной информации для отображения значений
@@ -2014,7 +1990,7 @@ namespace Statistic
                     m_tecView.m_tec.list_TECComponents.ForEach(c =>
                     {
                         //if ((c.IsParamVyvod == true)
-                        //    && ((c.m_listLowPointDev[0] as Vyvod.ParamVyvod).m_id_param == Vyvod.ID_PARAM.T_PV))
+                        //    && ((c.ListLowPointDev[0] as Vyvod.ParamVyvod).m_id_param == Vyvod.ID_PARAM.T_PV))
                         if (c.IsVyvod == true)
                             // добавить элементы управления для отображения значений указанного ВЫВОДа
                             _pnlQuickData.AddTGView(c);

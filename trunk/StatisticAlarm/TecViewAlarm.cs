@@ -69,12 +69,11 @@ namespace StatisticAlarm
         /// <summary>
         /// Конструктор - основной (параметры - базового класа)
         /// </summary>
-        /// <param name="typePanel">Тип панели к которой принадлежит объект класс</param>
-        /// <param name="indxTEC">Индекс ТЭЦ в списке</param>
-        /// <param name="indx_comp">??? Индекс компонента</param>
-        public TecViewAlarm(/*StatisticCommon.TecView.TYPE_PANEL typePanel, */int indxTEC, int indx_comp)
-            : base(/*typePanel, */indxTEC, indx_comp, TECComponentBase.TYPE.ELECTRO)
+        /// <param name="key">Ключ элемента</param>
+        public TecViewAlarm (FormChangeMode.KeyDevice key)
+            : base(key, TECComponentBase.TYPE.ELECTRO)
         {
+            updateGUI_Fact = new IntDelegateIntIntFunc (AlarmRegistred);
         }
 
         public override void ChangeState()
@@ -113,7 +112,7 @@ namespace StatisticAlarm
                         else
                             ;
 
-                        indxTECComponents = allTECComponents.IndexOf(tc);
+                        CurrentKey = new FormChangeMode.KeyDevice () { Id = tc.m_id, Mode = tc.Mode };
 
                         getRDGValues();
                     }
@@ -127,16 +126,16 @@ namespace StatisticAlarm
         /// </summary>
         private void getRDGValues()
         {
-            GetRDGValues(/*(int)s_typeFields,*/ indxTECComponents, DateTime.Now);
+            GetRDGValues(CurrentKey, DateTime.Now);
 
             Run(@"TecView::GetRDGValues () - ...");
         }
         /// <summary>
         /// Добавить состояния для запроса получения значений 'TecViewAlarm'
         /// </summary>
-        /// <param name="indx">Индекс компонента</param>
+        /// <param name="key">Ключ компонента</param>
         /// <param name="date">Дата запрашиваемых значений</param>
-        public override void GetRDGValues(/*int mode,*/ int indx, DateTime date)
+        public override void GetRDGValues(FormChangeMode.KeyDevice key, DateTime date)
         {
             m_prevDate = m_curDate;
             m_curDate = date.Date;
@@ -199,7 +198,7 @@ namespace StatisticAlarm
             int iRes = (int)ASUTP.Helper.HHandler.INDEX_WAITHANDLE_REASON.SUCCESS
                 , iDebug = -1 //-1 - нет отладки, 0 - раб./отладка, 1 - имитирование
                 , cntTGTurnOn = 0 // кол-во вкл. ТГ
-                , cntTGTurnUnknown = allTECComponents[indxTECComponents].m_listLowPointDev.Count // кол-во ТГ с неизвестным состоянием
+                , cntTGTurnUnknown = allTECComponents.Find(comp => comp.m_id == CurrentKey.Id).ListLowPointDev.Count // кол-во ТГ с неизвестным состоянием
                 , cntPower_TMValues = 0; //Счетчик кол-ва значений тек./мощн. ТГ в общем значении мощности для ГТП
             //Константы
             double TGTURNONOFF_VALUE = -1F //Значения для сигнализации "ТГ вкл./откл."
@@ -221,12 +220,13 @@ namespace StatisticAlarm
             if (((curHour == 24) || (m_markWarning.IsMarked((int)INDEX_WARNING.LAST_HOUR) == true))
                 || ((curMinute == 0) || (m_markWarning.IsMarked((int)INDEX_WARNING.LAST_MIN) == true)))
             {
-                Logging.Logg().Error(@"TecView::AlarmEventRegistred (" + m_tec.name_shr + @"[ID_COMPONENT=" + m_ID + @"])"
-                                    + @" - curHour=" + curHour + @"; curMinute=" + curMinute, Logging.INDEX_MESSAGE.NOT_SET);
+                Logging.Logg().Error(@"TecView::AlarmEventRegistred (" + m_tec.name_shr + @"[KeyComponent=" + CurrentKey + @"])"
+                        + @" - curHour=" + curHour + @"; curMinute=" + curMinute
+                    , Logging.INDEX_MESSAGE.NOT_SET);
             }
             else
             {
-                foreach (StatisticCommon.TG tg in allTECComponents[indxTECComponents].m_listLowPointDev)
+                foreach (StatisticCommon.TG tg in allTECComponents.Find(comp => comp.m_id == CurrentKey.Id).ListLowPointDev)
                 {
                     curTurnOnOff = StatisticCommon.TG.INDEX_TURNOnOff.UNKNOWN;
 
@@ -340,7 +340,7 @@ namespace StatisticAlarm
 
                     #region Код для отладки
                     if (!(iDebug < 0))
-                        if ((TECComponentCurrent.m_listLowPointDev.IndexOf(tg) + 1) < TECComponentCurrent.m_listLowPointDev.Count)
+                        if ((TECComponentCurrent.ListLowPointDev.IndexOf(tg) + 1) < TECComponentCurrent.ListLowPointDev.Count)
                             Console.Write(@", ");
                         else
                             ;
@@ -396,7 +396,7 @@ namespace StatisticAlarm
                             }
                             else
                                 // обработаны не все значения тек./мощности ТГ_в_работе из состава ГТП
-                                Logging.Logg().Warning(@"TecViewAlarm::AlarmRegistred (id=" + m_ID + @") - обработаны не все значения тек./мощности ТГ_в_работе из состава ГТП", Logging.INDEX_MESSAGE.NOT_SET);
+                                Logging.Logg().Warning(@"TecViewAlarm::AlarmRegistred (id=" + CurrentKey.Id + @") - обработаны не все значения тек./мощности ТГ_в_работе из состава ГТП", Logging.INDEX_MESSAGE.NOT_SET);
                         }
                     }
                     else
