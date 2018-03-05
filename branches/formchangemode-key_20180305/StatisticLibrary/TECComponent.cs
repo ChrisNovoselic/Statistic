@@ -464,6 +464,21 @@ namespace StatisticCommon
         {
             return getModesId(r, @"ID_MT");
         }
+
+        public int AddLowPointDev (TECComponentBase comp)
+        {
+            int iRes = 0;
+
+            try {
+                m_listLowPointDev.Add (comp);
+
+                iRes = m_listLowPointDev.Count;
+            } catch {
+                iRes = -1;
+            }
+
+            return iRes;
+        }
     }
 
     public class Vyvod : TECComponent

@@ -83,7 +83,7 @@ namespace Statistic
             /// </summary>
             public override void ChangeState()
             {
-                lock (m_lockState) { GetRDGValues(FormChangeMode.KeyTECComponentEmpty, DateTime.MinValue); }
+                lock (m_lockState) { GetRDGValues(FormChangeMode.KeyDeviceEmpty, DateTime.MinValue); }
 
                 base.ChangeState(); //Run
             }

@@ -90,7 +90,7 @@ namespace Statistic {
         /// </summary>
         /// <param name="markQueries"></param>
         public PanelAdminLK(ASUTP.Core.HMark markQueries)
-            : base(FormChangeMode.MODE_TECCOMPONENT.TEC, markQueries, new int[] { (int)TECComponent.ID.LK, (int)TECComponent.ID.GTP })
+            : base(FormChangeMode.MODE_TECCOMPONENT.GTP, markQueries, new int[] { (int)TECComponent.ID.LK, (int)TECComponent.ID.GTP })
         {
             m_admin.SetDelegateSaveComplete(null);
         }
@@ -196,6 +196,14 @@ namespace Statistic {
                 Logging.Logg().Error(@"PanelTecCurPower::setDataGridViewAdmin () - ... BeginInvoke (addTextBoxColumn) - ...", Logging.INDEX_MESSAGE.D_001);
         }
 
+        private AdminTS_LK Admin
+        {
+            get
+            {
+                return m_admin as AdminTS_LK;
+            }
+        }
+
         /// <summary>
         /// Метод добавления колонок в DataGridView + заполнение значениями ячеек
         /// </summary>
@@ -243,8 +251,8 @@ namespace Statistic {
             } else
                 ;
 
-            if ((m_admin.GetIdTECComponent(indx) > (int)TECComponent.ID.GTP)
-                && (m_admin.GetIdTECComponent(indx) < (int)TECComponent.ID.PC))
+            if ((Admin.GetIdTECComponent(indx) > (int)TECComponent.ID.GTP)
+                && (Admin.GetIdTECComponent(indx) < (int)TECComponent.ID.PC))
             {
                 for (int i = 0; i < 24; i++)
                 {

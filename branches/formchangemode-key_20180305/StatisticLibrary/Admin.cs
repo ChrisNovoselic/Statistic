@@ -361,7 +361,11 @@ namespace StatisticCommon
             initTECComponents();
 
             try {
-                CurrentKey = new FormChangeMode.KeyDevice () { Id = allTECComponents.First (comp => comp.Mode == mode).m_id, Mode = mode };
+                if ((mode == FormChangeMode.MODE_TECCOMPONENT.TEC)
+                    || (mode == FormChangeMode.MODE_TECCOMPONENT.ANY)) //??? зачем '.ANY'
+                    CurrentKey = new FormChangeMode.KeyDevice () { Id = this.m_list_tec[0].m_id, Mode = mode };
+                else
+                    CurrentKey = new FormChangeMode.KeyDevice () { Id = allTECComponents.First (comp => comp.Mode == mode).m_id, Mode = mode };
             } catch (Exception e) {
                 Logging.Logg ().Exception (e, $"HADmin::InitTEC (mode={mode}) - не найден 1-ый элемент для инициализации списка", Logging.INDEX_MESSAGE.NOT_SET);
             }

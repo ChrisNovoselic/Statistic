@@ -2790,48 +2790,6 @@ namespace StatisticCommon
             return GetIdOwnerTECComponent(FormChangeMode.MODE_TECCOMPONENT.GTP, key);
         }
 
-        private int getIndexTECComponent(FormChangeMode.KeyDevice key)
-        {
-            int iRes = -1;
-
-            try {
-                iRes = allTECComponents.IndexOf (allTECComponents.Find (comp => comp.m_id == key.Id));
-            } catch (Exception e) {
-                Logging.Logg ().Exception (e, $@"AdminTS::getIndexTECComponent (key={key.Id}) - компонент не найден...", Logging.INDEX_MESSAGE.NOT_SET);
-            }
-
-            return iRes;
-        }
-
-        private int currentIndexTECComponent
-        {
-            get
-            {
-                return getIndexTECComponent(CurrentKey);
-            }
-        }
-
-        /// <summary>
-        /// Идентификатор компонента ТЭЦ
-        /// </summary>
-        /// <param name="indx">индекс в массиве 'все компоненты'</param>
-        /// <returns>идентификатор</returns>
-        public int GetIdTECComponent(int indx = -1)
-        {
-            int iRes = -1;
-
-            if (indx < 0)
-                indx = currentIndexTECComponent;
-            else ;
-
-            if ((!(indx < 0))
-                && (indx < allTECComponents.Count))
-                iRes = allTECComponents[indx].m_id;
-            else ;
-
-            return iRes;
-        }
-
         ///// <summary>
         ///// Наименование (краткое) компонента ТЭЦ
         ///// </summary>

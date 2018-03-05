@@ -25,7 +25,7 @@ namespace StatisticCommon
 
         public override void ChangeState()
         {
-            lock (m_lockState) { GetRDGValues(FormChangeMode.KeyTECComponentEmpty, DateTime.MinValue); }
+            lock (m_lockState) { GetRDGValues(FormChangeMode.KeyDeviceEmpty, DateTime.MinValue); }
 
             base.ChangeState();
         }
@@ -53,7 +53,7 @@ namespace StatisticCommon
 
         public override void ChangeState()
         {
-            lock (m_lockState) { GetRDGValues(FormChangeMode.KeyTECComponentEmpty, DateTime.MinValue); }
+            lock (m_lockState) { GetRDGValues(CurrentKey, DateTime.MinValue); }
 
             base.ChangeState(); //Run
         }
@@ -399,7 +399,8 @@ namespace StatisticCommon
         {
             get
             {
-                return ((CurrentKey.Mode == FormChangeMode.MODE_TECCOMPONENT.Unknown) || (CurrentKey.Mode == FormChangeMode.MODE_TECCOMPONENT.ANY))
+                return ((CurrentKey.Mode == FormChangeMode.MODE_TECCOMPONENT.Unknown)
+                    || (CurrentKey.Mode == FormChangeMode.MODE_TECCOMPONENT.ANY))
                     ? $"Ошибка, режим=<{CurrentKey.Mode}>"
                         : (CurrentKey.Mode == FormChangeMode.MODE_TECCOMPONENT.TEC)
                             ? m_tec.name_shr

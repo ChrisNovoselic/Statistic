@@ -495,14 +495,14 @@ namespace Statistic
         /// «аполнение ComboBox значени€ми-наименовани€ми
         /// </summary>
         /// <param name="mode">ѕеременна€ типа отображаемых значений</param>
-        public void InitializeComboBoxTecComponent (FormChangeMode.MODE_TECCOMPONENT mode, bool bWithNameTECOwner) 
+        public void InitializeComboBoxTecComponent (FormChangeMode.MODE_TECCOMPONENT mode, bool bWithNameTECOwner, bool bLimitLK) 
         {
             comboBoxTecComponent.Items.Clear ();
 
             List<FormChangeMode.KeyDevice> listKey;
             List<object> listItems = new List<object> ();
 
-            listKey = m_admin.GetListKeyTECComponent (mode, true);
+            listKey = m_admin.GetListKeyTECComponent (mode, bLimitLK);
             listKey.ForEach (key => listItems.Add (new ComboBoxItem () { Tag = key, Text = m_admin.GetNameTECComponent (key, bWithNameTECOwner) }));
 
             if (listItems.Count > 0) {
@@ -625,7 +625,7 @@ namespace Statistic
 
         private void admin_onEventUnitTestSetValuesRequest(TECComponent comp, DateTime date, CONN_SETT_TYPE type, string[]queries, IEnumerable<int> listIdRec)
         {
-            FormChangeMode.KeyDevice key = FormChangeMode.KeyTECComponentEmpty;
+            FormChangeMode.KeyDevice key = FormChangeMode.KeyDeviceEmpty;
 
             if (comboBoxTecComponent.SelectedIndex + 1 < comboBoxTecComponent.Items.Count)
                 key = comboBoxTecComponent.Items.Cast<ComboBoxItem>().ToArray()[comboBoxTecComponent.SelectedIndex + 1].Tag;

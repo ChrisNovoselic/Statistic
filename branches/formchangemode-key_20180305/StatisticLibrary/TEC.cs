@@ -657,19 +657,22 @@ namespace StatisticCommon
                     else
                         ;
                 // проверить найден ли ТГ
-                if (k < list_TECComponents.Count)
-                {// ТГ найден
-                    list_TECComponents[indx].ListLowPointDev.Add(list_TECComponents[k].ListLowPointDev[0]);
-                    if (list_TECComponents[indx].IsGTP == true)
-                        (list_TECComponents[k].ListLowPointDev[0] as TG).m_id_owner_gtp = list_TECComponents[indx].m_id;
-                    else
-                        if (list_TECComponents[indx].IsPC == true)
-                            (list_TECComponents[k].ListLowPointDev[0] as TG).m_id_owner_pc = list_TECComponents[indx].m_id;
-                        else
-                            ;
+                if (!(k < list_TECComponents.Count))
+                {// ТГ не найден
+                    list_TECComponents.Add (new TECComponent);
                 }
                 else
-                    ; // ТГ не найден
+                // ТГ найден
+                    ;
+
+                list_TECComponents [indx].AddLowPointDev (list_TECComponents [k].ListLowPointDev [0]);
+                if (list_TECComponents [indx].IsGTP == true)
+                    (list_TECComponents [k].ListLowPointDev [0] as TG).m_id_owner_gtp = list_TECComponents [indx].m_id;
+                else
+                    if (list_TECComponents [indx].IsPC == true)
+                    (list_TECComponents [k].ListLowPointDev [0] as TG).m_id_owner_pc = list_TECComponents [indx].m_id;
+                else
+                    ;
             }
         }
 
@@ -699,7 +702,7 @@ namespace StatisticCommon
                 else
                     ; // ошибка ИЛИ параметр уже добавлен
 
-                list_TECComponents[indx].ListLowPointDev.Add(pv.ListLowPointDev[0]);
+                list_TECComponents[indx].AddLowPointDev(pv.ListLowPointDev[0]);
                 if ((bNewParamVyvod == true)
                     && (list_TECComponents[indx].IsVyvod == true))
                     (pv.ListLowPointDev[0] as Vyvod.ParamVyvod).m_owner_vyvod = list_TECComponents[indx].m_id;

@@ -1163,7 +1163,7 @@ namespace Statistic
         private void StopTabPages()
         {
             if (!(m_listStandardTabs == null))
-                clearTabPages(new List<int> (), false);
+                clearTabPages(new List<FormChangeMode.KeyDevice> (), false);
             else
                 ;
         }
@@ -1172,7 +1172,7 @@ namespace Statistic
         /// Закрыть (очистить) все вкладки (стандартные + административные)
         /// </summary>
         /// <param name="bAfterRunning">Признак присоединения обработчика события по изменению выбранной вкладки</param>
-        private void clearTabPages(List<int>listTabKeep, bool bAfterRunning)
+        private void clearTabPages(List<FormChangeMode.KeyDevice>listKeyTabKeep, bool bAfterRunning)
         {
             //Logging.Logg().Debug(@"FormMain::clearTabPages () - вХод...", Logging.INDEX_MESSAGE.NOT_SET);
 
@@ -1201,8 +1201,8 @@ namespace Statistic
                 foreach (KeyValuePair<int, Form> pair in m_dictFormFloat)
                     if (
                         //(pair.Key < (int)TECComponent.ID.MAX) && // закрывать "плавающие" окна только со стандартными объектами отображения
-                        (listTabKeep.IndexOf (pair.Key) < 0) // удерживать полученные в аргументе
-                        )
+                        (listKeyTabKeep.Any (key => key.Id == pair.Key) == true) // удерживать полученные в аргументе
+                    )
                         listToRemove.Add(pair.Key);
                     else
                         //if (Enum.IsDefined(typeof(ID_ADDING_TAB), pair.Key) == true)
@@ -1233,7 +1233,7 @@ namespace Statistic
                         && (tab.Controls.Count > 0)) {
                         if (((tab.Controls[0] is PanelTecViewStandard)
                                 || (tab.Controls[0] is PanelLKView))
-                            && (listTabKeep.IndexOf(((PanelTecViewBase)tab.Controls[0]).TecViewKey.Id) < 0))
+                            && (listKeyTabKeep.Any(key => key.Id == ((PanelTecViewBase)tab.Controls[0]).TecViewKey.Id) == false))
                         {
                             bStopped = true;
                         }
@@ -1713,13 +1713,14 @@ namespace Statistic
             PanelTecViewBase panel;
             FormChangeMode.KeyDevice keyToAdding;
             List<FormChangeMode.KeyDevice> listKeyToAdding = new List<FormChangeMode.KeyDevice> ();
-            List<int> list_id_toAdding = new List<int>();
+            List<FormChangeMode.KeyDevice> listKeyToKeep = new List<FormChangeMode.KeyDevice> ();
 
             #region отображаем вкладки ТЭЦ - аналог PanelCustomTecView::MenuItem_OnClick
             for (i = 0; i < formChangeMode.m_listItems.Count; i++) //или TECComponent_index.Count
             {
                 //Только если элемент в списке имеет признак видимости 'true' и имеет признак 'выбран'
-                if ((formChangeMode.m_listItems[i].bVisibled == true) && (formChangeMode.m_listItems[i].bChecked == true))
+                if ((formChangeMode.m_listItems[i].bVisibled == true)
+                    && (formChangeMode.m_listItems[i].bChecked == true))
                 {
                     // не рассматривать не стандартные вкладки, наприммер 'ПБР-диспетчер', 'Сигн.-диспетчер', 'ПБР-НСС'
                     if (formChangeMode.m_listItems[i].id > (int)TECComponent.ID.MAX)
@@ -1727,17 +1728,17 @@ namespace Statistic
                     else
                         ;
                     // поиск панели для вкладки начать с обнуления объекта
-                    keyToAdding = FormChangeMode.KeyTECComponentEmpty;
+                    keyToAdding = FormChangeMode.KeyDeviceEmpty;
                     //Найти индекс панели в списке для стандартных вкладок
                     panel = m_listStandardTabs.Find(p => p.m_tecView.CurrentKey.Id == formChangeMode.m_listItems[i].id);
 
-                    if (Equals(panel, null) == false)
+                    if (Equals(panel, null) == true)
                     {//Не найден элемент - создаем, добавляем
                         foreach (StatisticCommon.TEC t in formChangeMode.m_list_tec)
                         {
                             if (t.m_id == formChangeMode.m_listItems[i].id)
                             {
-                                keyToAdding = new FormChangeMode.KeyDevice () { Id = t.m_id, Mode = FormChangeMode.MODE_TECCOMPONENT.TEC };
+                                keyToAdding = new FormChangeMode.KeyDevice () { Id = formChangeMode.m_listItems [i].id, Mode = TECComponent.GetMode (formChangeMode.m_listItems [i].id) };
                                 // добавить панель
                                 addPanelTecView (t, keyToAdding);
                                 // сохранить индекс добавленной панели
@@ -1754,7 +1755,7 @@ namespace Statistic
                                 {
                                     if (g.m_id == formChangeMode.m_listItems[i].id)
                                     {
-                                        keyToAdding = new FormChangeMode.KeyDevice () { Id = g.m_id, Mode = g.Mode };
+                                        keyToAdding = new FormChangeMode.KeyDevice () { Id = formChangeMode.m_listItems [i].id, Mode = TECComponent.GetMode (formChangeMode.m_listItems [i].id) };
                                         // добавить панель
                                         addPanelTecView (t, keyToAdding);
                                         // сохранить индекс добавленной панели
@@ -1780,14 +1781,12 @@ namespace Statistic
                     else
                     {
                         //Панель ранее уже была добавлена в список
-                        listKeyToAdding.Add(keyToAdding);
+                        listKeyToAdding.Add (panel.TecViewKey);
                     }
-
-                    //Перед добавлением вкладки проверить индекс добавляемой панели
-                    if (Equals(keyToAdding, FormChangeMode.KeyTECComponentEmpty) == false)
-                    {
-                        list_id_toAdding.Add(keyToAdding.Id);
-                    }
+                    // все ранее(предыдущие вызовы метода) добавленные в список, и необходимые к отображению сейчас
+                    //  разместить в особый список - для удержания в текущем состоянии
+                    if (keyToAdding.Equals (FormChangeMode.KeyDeviceEmpty) == true)
+                        listKeyToKeep.Add (panel.TecViewKey);
                     else
                         ;
                 }
@@ -1797,7 +1796,7 @@ namespace Statistic
             }
             #endregion
 
-            clearTabPages (list_id_toAdding, true);
+            clearTabPages (listKeyToKeep, true);
 
             foreach (FormChangeMode.KeyDevice key in listKeyToAdding)
             {
@@ -2162,7 +2161,7 @@ namespace Statistic
                             case FormChangeMode.MANAGER.NSS:
                             case FormChangeMode.MANAGER.LK:
                             case FormChangeMode.MANAGER.TEPLOSET:
-                                (m_arPanelAdmin[(int)modeAdmin] as PanelAdmin).InitializeComboBoxTecComponent(mode, true);
+                                (m_arPanelAdmin[(int)modeAdmin] as PanelAdmin).InitializeComboBoxTecComponent(mode, true, !(modeAdmin == FormChangeMode.MANAGER.LK));
                                 break;
                             case FormChangeMode.MANAGER.ALARM:
                                 break;

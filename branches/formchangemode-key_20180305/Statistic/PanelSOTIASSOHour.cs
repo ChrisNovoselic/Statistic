@@ -42,7 +42,7 @@ namespace Statistic
 
             public override void ChangeState()
             {
-                lock (m_lockState) { GetRDGValues(FormChangeMode.KeyTECComponentEmpty, DateTime.MinValue); }
+                lock (m_lockState) { GetRDGValues(FormChangeMode.KeyDeviceEmpty, DateTime.MinValue); }
 
                 base.ChangeState(); //Run
             }
@@ -2014,7 +2014,7 @@ namespace Statistic
             if (this.Actived == true)
             {
                 TEC tec = null;
-                FormChangeMode.KeyDevice key = FormChangeMode.KeyTECComponentEmpty;
+                FormChangeMode.KeyDevice key = FormChangeMode.KeyDeviceEmpty;
                 List<TECComponentBase> listTG_Comp = new List<TECComponentBase>();
 
                 #region Апельганс А.В. - Поиск минимального коэффициента

@@ -33,6 +33,50 @@ namespace Statistic {
                 _tsOffsetToMoscow = ASUTP.Core.HDateTime.TS_NSK_OFFSET_OF_MOSCOWTIMEZONE;
             }
 
+            private int currentIndexTECComponent
+            {
+                get
+                {
+                    return getIndexTECComponent (CurrentKey);
+                }
+            }
+
+            private int getIndexTECComponent (FormChangeMode.KeyDevice key)
+            {
+                int iRes = -1;
+
+                try {
+                    iRes = allTECComponents.IndexOf (allTECComponents.Find (comp => comp.m_id == key.Id));
+                } catch (Exception e) {
+                    ASUTP.Logging.Logg ().Exception (e, $@"AdminTS::getIndexTECComponent (key={key.Id}) - компонент не найден...", ASUTP.Logging.INDEX_MESSAGE.NOT_SET);
+                }
+
+                return iRes;
+            }
+
+            /// <summary>
+            /// Идентификатор компонента ТЭЦ
+            /// </summary>
+            /// <param name="indx">индекс в массиве 'все компоненты'</param>
+            /// <returns>идентификатор</returns>
+            public int GetIdTECComponent (int indx = -1)
+            {
+                int iRes = -1;
+
+                if (indx < 0)
+                    indx = currentIndexTECComponent;
+                else
+                    ;
+
+                if ((!(indx < 0))
+                    && (indx < allTECComponents.Count))
+                    iRes = allTECComponents [indx].m_id;
+                else
+                    ;
+
+                return iRes;
+            }
+
             /// <summary>
             /// Формирование списка компонентов в зависимости от выбранного в ComboBox
             /// </summary>
@@ -46,7 +90,7 @@ namespace Statistic {
                     //Сначала - ГТП
                     foreach (TECComponent comp in allTECComponents)
                         if (comp.tec.m_id > (int)TECComponent.ID.LK)
-                            if ((comp.m_id == GetIdTECComponent(id)) //Принадлежит ТЭЦ
+                            if ((comp.m_id == id) //Принадлежит ТЭЦ
                                 && (comp.IsGTP_LK == true)) //Является ГТП_ЛК
                             {
                                 m_listKeyTECComponentDetail.Add(new FormChangeMode.KeyDevice () { Id = comp.m_id, Mode = FormChangeMode.MODE_TECCOMPONENT.GTP });

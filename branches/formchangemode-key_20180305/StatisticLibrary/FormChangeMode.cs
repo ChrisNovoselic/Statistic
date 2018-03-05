@@ -84,7 +84,8 @@ namespace StatisticCommon
         /// <summary>
         /// Перечисление - тип режима
         /// </summary>
-        public enum MODE_TECCOMPONENT : short { Unknown = -1
+        public enum MODE_TECCOMPONENT : short { Unknown = -2
+            , VYVOD = -1
             , TEC, GTP, PC, TG
                 , ANY
         };
@@ -126,7 +127,7 @@ namespace StatisticCommon
             }
         }
 
-        public static KeyDevice KeyTECComponentEmpty;
+        public static KeyDevice KeyDeviceEmpty;
         /// <summary>
         /// Тип вкладки  из инструментария "администратор-диспетчер"
         /// </summary>
@@ -314,28 +315,29 @@ namespace StatisticCommon
         /// </summary>
         /// <param name="checkMode">Режим для проверки</param>
         /// <param name="mode">Тип для режима</param>
-        /// <returns></returns>
+        /// <returns>Результат проверки</returns>
         public static bool IsModeTECComponent(int checkMode, MODE_TECCOMPONENT mode)
         {
             return HMark.IsMarked (checkMode, (int) mode);
         }
 
-        public static string getPrefixMode(MODE_TECCOMPONENT indx)
+        public static string getPrefixMode(MODE_TECCOMPONENT mode)
         {
-            return !(indx < 0) ? indx.ToString() : @"VYVOD";
+            //??? где отрицательный mode, только 'Unknown'!!!
+            return !(mode < 0) ? mode.ToString() : @"VYVOD";
         }
         /// <summary>
         /// Возвратить наименование режима компонентов ТЭЦ по индексу
         /// </summary>
-        /// <param name="indx">Индекс режима</param>
+        /// <param name="mode">Индекс режима</param>
         /// <returns>Строка - наименование режима</returns>
-        public static string getNameMode (MODE_TECCOMPONENT indx) {
+        public static string getNameMode (MODE_TECCOMPONENT mode) {
             string [] nameModes = {"ТЭЦ", "ГТП", "ЩУ", "Поблочно", "Неизвестно"};
 
-            return !(indx < 0)
-                ? (int)indx < nameModes.Length
-                    ? nameModes[(int)indx]
-                        : nameModes [(int)indx - 1]
+            return !(mode < 0)
+                ? (int)mode < nameModes.Length
+                    ? nameModes[(int)mode]
+                        : nameModes [(int)mode - 1]
                             : @"Выводы";
         }
         /// <summary>
