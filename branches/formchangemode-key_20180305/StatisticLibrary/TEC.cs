@@ -743,6 +743,7 @@ namespace StatisticCommon
                     pv = new Vyvod.ParamVyvod (rows_param [j]);
                     v = new TECComponent (this, pv);
                     v.AddLowPointDev (pv);
+                    _list_TECComponents.Add (v);
                 } else
                     pv = v.ListLowPointDev [0] as Vyvod.ParamVyvod;
 
@@ -2249,24 +2250,28 @@ namespace StatisticCommon
                     strRes = @"SELECT TOP 1 [Дата]";
                     // формировать расходы и температуры
                     foreach (TECComponent tc in _list_TECComponents)
-                        if (tc.IsParamVyvod == true)
+                        if (tc.IsVyvod == true)
                         {
-                            pv = tc.ListLowPointDev[0] as Vyvod.ParamVyvod;
+                            foreach (TECComponentBase tcb in tc.ListLowPointDev)
+                                if (tcb.IsParamVyvod == true) {
+                                    pv = tcb as Vyvod.ParamVyvod;
 
-                            if (((pv.m_id_param == Vyvod.ID_PARAM.G_PV) || (pv.m_id_param == Vyvod.ID_PARAM.T_PV)
-                                || (pv.m_id_param == Vyvod.ID_PARAM.G2_PV) || (pv.m_id_param == Vyvod.ID_PARAM.T2_PV))
-                                && (pv.m_SensorsString_VZLET.Equals(string.Empty) == false))
-                            {
-                                strParamVyvod += ", [" + pv.m_SensorsString_VZLET + @"] as [" + pv.m_Symbol + @"_" + pv.m_id + @"]";
+                                    if (((pv.m_id_param == Vyvod.ID_PARAM.G_PV) || (pv.m_id_param == Vyvod.ID_PARAM.T_PV)
+                                        || (pv.m_id_param == Vyvod.ID_PARAM.G2_PV) || (pv.m_id_param == Vyvod.ID_PARAM.T2_PV))
+                                        && (pv.m_SensorsString_VZLET.Equals(string.Empty) == false))
+                                    {
+                                        strParamVyvod += ", [" + pv.m_SensorsString_VZLET + @"] as [" + pv.m_Symbol + @"_" + pv.m_id + @"]";
 
-                                if ((pv.m_id_param == Vyvod.ID_PARAM.G_PV)
-                                    || (pv.m_id_param == Vyvod.ID_PARAM.G2_PV))
-                                    strSummaGpr += @"[" + pv.m_SensorsString_VZLET + @"]+";
-                                else
+                                        if ((pv.m_id_param == Vyvod.ID_PARAM.G_PV)
+                                            || (pv.m_id_param == Vyvod.ID_PARAM.G2_PV))
+                                            strSummaGpr += @"[" + pv.m_SensorsString_VZLET + @"]+";
+                                        else
+                                            ;
+                                    }
+                                    else
+                                        ;
+                                } else
                                     ;
-                            }
-                            else
-                                ;
                         }
                         else
                             ;

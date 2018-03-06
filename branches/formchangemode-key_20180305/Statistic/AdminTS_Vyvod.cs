@@ -56,12 +56,12 @@ namespace Statistic
                     if (!(tec == null))
                         //ВСЕ компоненты
                         foreach (TECComponent v in tec.ListTECComponents)
-                            if (v.IsParamVyvod == true)
+                            if (v.IsVyvod == true)
                                 // параметры выводов
                                 foreach (Vyvod.ParamVyvod pv in v.ListLowPointDev)
                                     if (pv.m_id_param == Vyvod.ID_PARAM.T_PV) // является параметром - температура прямая (для которого есть плановые значения)
                                                                               //m_listTECComponentIndexDetail.Add(pv.m_id);
-                                        m_listKeyTECComponentDetail.Add(new FormChangeMode.KeyDevice () { Id = v.m_id, Mode = FormChangeMode.MODE_TECCOMPONENT.TG });
+                                        m_listKeyTECComponentDetail.Add(new FormChangeMode.KeyDevice () { Id = pv.m_id, Mode = FormChangeMode.MODE_TECCOMPONENT.TG });
                                     else
                                         ;
                             else

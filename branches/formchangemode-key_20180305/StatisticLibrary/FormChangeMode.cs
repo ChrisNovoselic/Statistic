@@ -90,7 +90,7 @@ namespace StatisticCommon
                 , ANY
         };
 
-        public struct KeyDevice
+        public struct KeyDevice : IComparable<KeyDevice>
         {
             public int Id { get; set; }
 
@@ -132,6 +132,11 @@ namespace StatisticCommon
             public override int GetHashCode ()
             {
                 return base.GetHashCode ();
+            }
+
+            public int CompareTo (KeyDevice key)
+            {
+                return Id.CompareTo (key.Id);
             }
         }
 

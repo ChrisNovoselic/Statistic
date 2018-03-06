@@ -2500,8 +2500,17 @@ namespace Statistic
 
             if (m_dictAddingTabs[keyTab].panel == null)
             {
-                m_dictAddingTabs[keyTab].panel = new PanelSOTIASSOHour(PanelKomDisp.m_list_tec);
-                m_dictAddingTabs[keyTab].panel.SetDelegateReport(ErrorReport, WarningReport, ActionReport, ReportClear);
+                DbTSQLConfigDatabase.DbConfig ().Register ();
+
+                m_dictAddingTabs [keyTab].panel = new PanelSOTIASSOHour(DbTSQLConfigDatabase.DbConfig ().InitTEC (
+                    FormChangeMode.MODE_TECCOMPONENT.GTP
+                    , true
+                    , new int [] { (int)TECComponent.ID.TEC, (int)TECComponent.ID.GTP }
+                    , true));
+
+                DbTSQLConfigDatabase.DbConfig ().UnRegister ();
+
+                m_dictAddingTabs [keyTab].panel.SetDelegateReport(ErrorReport, WarningReport, ActionReport, ReportClear);
                 formChangeMode.EventChangeMode += ((PanelSOTIASSOHour)(m_dictAddingTabs[keyTab].panel)).ChangeMode;
                 formChangeMode.PerformChangeMode();
             }
@@ -2536,13 +2545,18 @@ namespace Statistic
         {
             if (m_dictAddingTabs[ID_ADDING_TAB.VZLET_TDIRECT].panel == null)
             {
+                DbTSQLConfigDatabase.DbConfig ().Register ();
+
                 m_dictAddingTabs[ID_ADDING_TAB.VZLET_TDIRECT].panel = new PanelVzletTDirect(DbTSQLConfigDatabase.DbConfig().InitTEC(
                     FormChangeMode.MODE_TECCOMPONENT.VYVOD
                     , true
                     , new int [] { (int)TECComponent.ID.TEC, (int)TECComponent.ID.LK }
                     , true
                 ));
-                m_dictAddingTabs[ID_ADDING_TAB.VZLET_TDIRECT].panel.SetDelegateReport(ErrorReport, WarningReport, ActionReport, ReportClear);
+
+                DbTSQLConfigDatabase.DbConfig ().UnRegister ();
+
+                m_dictAddingTabs [ID_ADDING_TAB.VZLET_TDIRECT].panel.SetDelegateReport(ErrorReport, WarningReport, ActionReport, ReportClear);
             }
             else
                 ;

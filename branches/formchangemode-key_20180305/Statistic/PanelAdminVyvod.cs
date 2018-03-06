@@ -55,7 +55,8 @@ namespace Statistic
         }
 
         public PanelAdminVyvod(HMark markQueries)
-            : base(FormChangeMode.MODE_TECCOMPONENT.TEC, markQueries, new int[] { 0, (int)TECComponent.ID.LK })
+            // 2-ое значение в массиве ограничение - ¬ Ћё„»“≈Ћ№Ќќ, поэтому вычитаем "1"
+            : base(FormChangeMode.MODE_TECCOMPONENT.TEC, markQueries, new int[] { 0, (int)TEC.ID_TEC_BIYSK - 1 })
         {
         }
 

@@ -88,7 +88,7 @@ namespace Statistic {
         /// <summary>
         /// Конструктор класса
         /// </summary>
-        /// <param name="markQueries"></param>
+        /// <param name="markQueries">Признак(b) необходимости выполнения запросов того или иного типа</param>
         public PanelAdminLK(ASUTP.Core.HMark markQueries)
             : base(FormChangeMode.MODE_TECCOMPONENT.GTP, markQueries, new int[] { (int)TECComponent.ID.LK, (int)TECComponent.ID.GTP })
         {

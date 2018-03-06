@@ -74,7 +74,6 @@ namespace StatisticCommon
 #endif
             int err = -1;
             TEC newTECItem = null;
-            TECComponent newTECComp;
 
             tecRes = new ListTEC ();
             //if (Equals(_tec, null) == true)
@@ -83,14 +82,10 @@ namespace StatisticCommon
             //    return CopyTEC;
             //}
 
-            int indx = -1
-                //, indx_tec = -1
-                ;
             string strLog = string.Empty;
             // подключиться к бд, инициализировать глобальные переменные, выбрать режим работы
             DataTable list_tec = null // = DbTSQLInterface.Select(connSett, "SELECT * FROM TEC_LIST"),
                 , list_TECComponents = null
-                , list_lowPointDev = null
                 , all_PARAM_DETAIL = null; // ТГ не аналог "вывода". "Вывод" аналог ГТП(ЩУ), Параметр "вывода" аналог ТГ.
 
             try
@@ -119,7 +114,6 @@ namespace StatisticCommon
 
                             EventTECListUpdate += newTECItem/*tec[indx_tec]*/.PerformUpdate;
 
-                            indx = -1;
                             initTECConnectionSettings(newTECItem, list_tec.Rows[indx_tec]);
                             // получить перечень ТГ со всеми значениями всех свойств
                             all_PARAM_DETAIL = getALL_PARAM_TG(0, out err);

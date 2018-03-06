@@ -896,8 +896,12 @@ namespace Statistic
 
             public class TecViewLastMinutes : TecView
             {
-                public TecViewLastMinutes()
-                    : base(new FormChangeMode.KeyDevice () { Id = -1, Mode = FormChangeMode.MODE_TECCOMPONENT.Unknown }, TECComponentBase.TYPE.ELECTRO)
+                /// <summary>
+                /// Конструктор - основной (с аргументом)
+                /// </summary>
+                /// <param name="id_tec">Иденификатор ТЭЦ</param>
+                public TecViewLastMinutes(int id_tec)
+                    : base(new FormChangeMode.KeyDevice () { Id = id_tec, Mode = FormChangeMode.MODE_TECCOMPONENT.TEC }, TECComponentBase.TYPE.ELECTRO)
                 {
                 }
 
@@ -946,7 +950,7 @@ namespace Statistic
 
                 m_listLabelNames = new List<Label> ();
 
-                m_tecView = new TecViewLastMinutes();
+                m_tecView = new TecViewLastMinutes(tec.m_id);
 
                 //Признаки для регистрации соединения с необходимыми источниками данных
                 HMark markQueries = new HMark(new int[] { (int)CONN_SETT_TYPE.ADMIN, (int)CONN_SETT_TYPE.PBR, (int)CONN_SETT_TYPE.DATA_SOTIASSO });
