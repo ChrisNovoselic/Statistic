@@ -96,7 +96,7 @@ namespace Statistic
 
                 using_date = false;
 
-                if (m_tec.GetReadySensorsStrings(key.Mode) == true)
+                if (m_tec.GetReadySensorsStrings(_type) == true)
                     if (currHour == true)
                         AddState((int)StatesMachine.CurrentTimeView);
                     else

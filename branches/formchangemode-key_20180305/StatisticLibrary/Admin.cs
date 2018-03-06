@@ -460,7 +460,7 @@ namespace StatisticCommon
                         }
 
                         if ((bInitSensorsStrings == true)
-                            && (t.GetReadySensorsStrings (CurrentKey.Mode) == false))
+                            && (t.GetReadySensorsStrings (_type) == false))
                             t.InitSensorsTEC();
                         else
                             ;

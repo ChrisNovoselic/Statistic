@@ -53,7 +53,7 @@ namespace Statistic
 
                 ClearValues();
 
-                if (m_tec.GetReadySensorsStrings (TECComponent.TYPE.ELECTRO) == false)
+                if (m_tec.GetReadySensorsStrings (_type) == false)
                     AddState((int)StatesMachine.InitSensors);
                 else ;
 
@@ -649,14 +649,14 @@ namespace Statistic
             /// Заполнение ComboBox данными на основе formChangeMode
             /// </summary>
             /// <param name="listTECComponentNameShr">Таблица с данными из formChangeMode</param>
-            public void InitializeTECComponentList(List<FormChangeMode.Item> listTECComponentNameShr)
+            public void InitializeTECComponentList(List<FormChangeMode.ListBoxItem> listTECComponentNameShr)
             {
                 //??? способ заполнения, конечно, оригинальный, но не коррелирует с исторически сложившимися способами
                 DataTable tableTECComponentNameShr = new DataTable();
                 tableTECComponentNameShr.Columns.Add("name_shr");
                 tableTECComponentNameShr.Columns.Add("id");
 
-                foreach (FormChangeMode.Item item in listTECComponentNameShr) {
+                foreach (FormChangeMode.ListBoxItem item in listTECComponentNameShr) {
                     tableTECComponentNameShr.Rows.Add(item.name_shr, item.id);
                 }
 
@@ -1899,7 +1899,7 @@ namespace Statistic
         public void ChangeMode(object obj)
         {
             //Добавить строки на дочернюю панель
-            m_panelManagement.InitializeTECComponentList((List<FormChangeMode.Item>)obj);
+            m_panelManagement.InitializeTECComponentList((List<FormChangeMode.ListBoxItem>)obj);
 
             EvtValuesMins += new DelegateObjectFunc(m_panelManagement.Parent_OnEvtValuesMins);
             EvtValuesSecs += new DelegateObjectFunc(m_panelManagement.Parent_OnEvtValuesSecs);

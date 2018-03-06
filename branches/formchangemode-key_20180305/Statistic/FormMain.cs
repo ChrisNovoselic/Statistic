@@ -1654,7 +1654,7 @@ namespace Statistic
         {
             PanelTecViewBase panelTecView = null;
 
-            if (tec.GetReadySensorsStrings (key.Mode) == false)
+            if (tec.GetReadySensorsStrings (TECComponent.TYPE.ELECTRO) == false)
                 tec.InitSensorsTEC();
             else
                 ;
@@ -1808,7 +1808,7 @@ namespace Statistic
                 параметрыТГБийскToolStripMenuItem.Visible = parametrsTGBiysk > 0;
 
                 //m_formParametersTG = new FormParametersTG_FileINI(@"setup.ini");
-                formParametersTG = new FormParametersTG_DB(PanelKomDisp.m_list_tec);
+                formParametersTG = new FormParametersTG_DB(formChangeMode.m_list_tec);
             }
             else
                 ;
@@ -2536,7 +2536,12 @@ namespace Statistic
         {
             if (m_dictAddingTabs[ID_ADDING_TAB.VZLET_TDIRECT].panel == null)
             {
-                m_dictAddingTabs[ID_ADDING_TAB.VZLET_TDIRECT].panel = new PanelVzletTDirect(PanelKomDisp.m_list_tec);
+                m_dictAddingTabs[ID_ADDING_TAB.VZLET_TDIRECT].panel = new PanelVzletTDirect(DbTSQLConfigDatabase.DbConfig().InitTEC(
+                    FormChangeMode.MODE_TECCOMPONENT.VYVOD
+                    , true
+                    , new int [] { (int)TECComponent.ID.TEC, (int)TECComponent.ID.LK }
+                    , true
+                ));
                 m_dictAddingTabs[ID_ADDING_TAB.VZLET_TDIRECT].panel.SetDelegateReport(ErrorReport, WarningReport, ActionReport, ReportClear);
             }
             else

@@ -1252,7 +1252,7 @@ namespace Statistic
             private void showTMValue(TG tg, ref double val, int min)
             {
                 showTMValue(ref m_tgLabels[tg.m_id][(int)TG.INDEX_VALUE.TM]
-                    , tg.m_strKKS_NAME_TM
+                    , tg.m_SensorsString_SOTIASSO
                     , m_parent.m_tecView.m_dictValuesLowPointDev[tg.m_id].m_powerMinutes[min]
                     , m_parent.m_tecView.m_dictValuesLowPointDev[tg.m_id].m_powerCurrent_TM
                     , m_parent.m_tecView.m_dictValuesLowPointDev[tg.m_id].m_dtCurrent_TM

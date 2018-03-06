@@ -485,7 +485,7 @@ namespace Statistic
 
                 m_arLabelEmpty [i].ContextMenu = new ContextMenu ();
                 //foreach (ToolStripItem tsi in m_formChangeMode.m_MainFormContextMenuStripListTecViews.Items)
-                foreach (FormChangeMode.Item item in m_formChangeMode.m_listItems)
+                foreach (FormChangeMode.ListBoxItem item in m_formChangeMode.m_listItems)
                 {
                     if ((item.bVisibled == true)
                         && (item.id < FormChangeMode.ID_ADMIN_TABS [(int)FormChangeMode.MANAGER.DISP]))

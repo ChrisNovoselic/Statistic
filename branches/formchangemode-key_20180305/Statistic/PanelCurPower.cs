@@ -638,7 +638,7 @@ namespace Statistic
 
                         foreach (TG tg in g.ListLowPointDev)
                         {
-                            if (tg.m_strKKS_NAME_TM.Length > 0) {
+                            if (tg.m_SensorsString_SOTIASSO.Length > 0) {
                                 dblTECComponentPower_TM += setTextToLabelVal(m_dictLabelVal[tg.m_id], m_tecView.m_dictValuesLowPointDev[tg.m_id].m_powerCurrent_TM);
                             }
                             else

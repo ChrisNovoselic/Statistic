@@ -144,7 +144,7 @@ namespace StatisticAlarm
 
             adminValuesReceived = false;
 
-            if ((m_tec.GetReadySensorsStrings (key.Mode) == false))
+            if ((m_tec.GetReadySensorsStrings (_type) == false))
             {
                 AddState((int)StatesMachine.InitSensors);
             }

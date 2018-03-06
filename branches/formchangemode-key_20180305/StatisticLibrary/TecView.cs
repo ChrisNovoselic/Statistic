@@ -34,7 +34,7 @@ namespace StatisticCommon
         {
             ClearStates();
 
-            if (m_tec.GetReadySensorsStrings(key.Mode) == false)
+            if (m_tec.GetReadySensorsStrings(_type) == false)
                 AddState((int)StatesMachine.InitSensors);
             else ;
 
@@ -64,7 +64,7 @@ namespace StatisticCommon
 
             adminValuesReceived = false;
 
-            if (m_tec.GetReadySensorsStrings(key.TECComponentType) == true)
+            if (m_tec.GetReadySensorsStrings(_type) == true)
             {
                 if (currHour == true)
                 {
@@ -845,13 +845,16 @@ namespace StatisticCommon
 
         private bool GetSensorsTEC()
         {
-            if (m_tec.GetReadySensorsStrings(CurrentKey.Mode) == false) {
+            if (m_tec.GetReadySensorsStrings(_type) == false) {
                 m_tec.InitSensorsTEC ();
             }
             else
                 ;
 
-            return m_tec.GetReadySensorsStrings(CurrentKey.TECComponentType);
+            return m_tec.GetReadySensorsStrings(
+                //??? CurrentKey.TECComponentType 'Unknown' для TEC
+                _type
+            );
         }
 
         private void getCurrentTMGenRequest()
@@ -3385,11 +3388,11 @@ namespace StatisticCommon
                         // ChrjapiAN 27.12.2017 переход на "OBJECT/ITEM"
                         //table.Select($"OBJECT={tg.m_arIds_fact[(int)HDateTime.INTERVAL.HOURS].IdObject} AND ITEM={tg.m_arIds_fact [(int)HDateTime.INTERVAL.HOURS].IdItem}", @"DATA_DATE")
                         (from row in table.Rows.Cast<DataRow> ()
-                         where new TG.AISKUE_KEY () { IdObject = (int)row ["OBJECT"], IdItem = (int)row ["ITEM"] }.Equals (tg.m_arIds_fact [(int)HDateTime.INTERVAL.HOURS])
+                         where new TG.AISKUE_KEY () { IdObject = (int)row ["OBJECT"], IdItem = (int)row ["ITEM"] }.Equals (tg.m_aiskue_keys [(int)HDateTime.INTERVAL.HOURS])
                          select row).ToArray ()
                         ;
                 } catch (Exception e) {
-                    Logging.Logg ().Exception (e, $"TecView::getHoursFactResponse () - найти строки в таблице-результате для ТГ={tg.name_shr}...", Logging.INDEX_MESSAGE.NOT_SET);
+                    Logging.Logg ().Exception (e, $"TecView::getHoursFactResponse () - найти строки в таблице-результате для ТГ={tc.name_shr}...", Logging.INDEX_MESSAGE.NOT_SET);
                 } finally {
                 }
 
@@ -4045,7 +4048,7 @@ namespace StatisticCommon
                                 //    tg.m_power_LastMinutesTM[i] = 0;
                                 //}
 
-                                tgRows = table_in.Select(@"[KKS_NAME]='" + tg.m_strKKS_NAME_TM + @"'");
+                                tgRows = table_in.Select(@"[KKS_NAME]='" + tg.m_SensorsString_SOTIASSO + @"'");
 
                                 for (i = 0; i < tgRows.Length; i++)
                                 {
@@ -4097,7 +4100,7 @@ namespace StatisticCommon
                             //    comp.ListLowPointDev[0].m_power_LastMinutesTM[i] = 0;
                             //}
 
-                            tgRows = table_in.Select(@"[KKS_NAME]='" + (comp.ListLowPointDev[0] as TG).m_strKKS_NAME_TM + @"'");
+                            tgRows = table_in.Select(@"[KKS_NAME]='" + (comp.ListLowPointDev[0] as TG).m_SensorsString_SOTIASSO + @"'");
 
                             for (i = 0; i < tgRows.Length; i++)
                             {

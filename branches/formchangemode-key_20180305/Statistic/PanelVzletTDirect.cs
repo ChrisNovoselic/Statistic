@@ -1372,7 +1372,7 @@ namespace Statistic
 
                 public override void ChangeState()
                 {
-                    lock (m_lockState) { GetRDGValues(FormChangeMode.KeyDeviceEmpty, DateTime.MinValue); }
+                    lock (m_lockState) { GetRDGValues(CurrentKey, DateTime.MinValue); }
 
                     base.ChangeState(); //Run
                 }
@@ -1718,7 +1718,7 @@ namespace Statistic
                                                 }
                                             }
                                             else
-                                                throw new Exception(string.Format(@"PanelTecVzletTDirect.DataSource::getCurrentVzletTDirectResponse () - для параметра ID={0} строк ...", id));
+                                                throw new Exception(string.Format(@"PanelTecVzletTDirect.DataSource::getCurrentVzletTDirectResponse () - для параметра ID={0} строк <{1}>...", id, arDataParamVyvod.Length));
                                         }
                                     }
                                     else
@@ -1828,7 +1828,7 @@ namespace Statistic
 
                     using_date = false;
 
-                    if (m_tec.GetReadySensorsStrings (key.Mode) == true)
+                    if (m_tec.GetReadySensorsStrings (_type) == true)
                         if (currHour == true)
                             AddState((int)StatesMachine.CurrentTimeView);
                         else

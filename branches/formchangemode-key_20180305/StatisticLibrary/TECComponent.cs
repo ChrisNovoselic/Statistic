@@ -95,6 +95,10 @@ namespace StatisticCommon
             , { ID.PARAM_VYVOD, VerifyParamVyvod }
         };
         /// <summary>
+        /// Идентификаторы "владельцев" для ТГ (ГТП, Б(Гр)ЩУ)
+        /// </summary>
+        public List<FormChangeMode.KeyDevice> m_keys_owner;
+        /// <summary>
         /// Краткое наименовнаие компонента
         /// </summary>
         public string name_shr { get; set; }
@@ -129,6 +133,10 @@ namespace StatisticCommon
         public TECComponentBase()
         {
             m_dcKoeffAlarmPcur = -1;
+
+            m_keys_owner =
+            //Нет ни одного владельца
+                new List<FormChangeMode.KeyDevice> ();
         }
 
         public FormChangeMode.MODE_TECCOMPONENT Mode
@@ -293,15 +301,7 @@ namespace StatisticCommon
         ///  для особенной ТЭЦ (Бийск) различаются 3-х и 30-ти мин идентификаторы
         ///  для остальных - совпадают
         /// </summary>
-        public AISKUE_KEY[] m_arIds_fact;
-        /// <summary>
-        /// Строковый идентификатор в СОТИАССО
-        /// </summary>
-        public string m_strKKS_NAME_TM;
-        /// <summary>
-        /// Идентификаторы "владельцев" для ТГ (ГТП, Б(Гр)ЩУ)
-        /// </summary>
-        public List<FormChangeMode.KeyDevice> m_keys_owner;
+        public AISKUE_KEY[] m_aiskue_keys;        
         /// <summary>
         /// Признак состояния ТГ
         /// </summary>
@@ -310,12 +310,10 @@ namespace StatisticCommon
         /// Конструктор - основной (без параметров)
         /// </summary>
         public TG()
+            : base()
         {
-            m_arIds_fact = new AISKUE_KEY[(int)HDateTime.INTERVAL.COUNT_ID_TIME];
+            m_aiskue_keys = new AISKUE_KEY[(int)HDateTime.INTERVAL.COUNT_ID_TIME];
 
-            m_keys_owner =
-                //Неизвестный владелец
-                new List<FormChangeMode.KeyDevice>();
             m_TurnOnOff = INDEX_TURNOnOff.UNKNOWN; //Неизвестное состояние
         }
 
@@ -388,17 +386,19 @@ namespace StatisticCommon
             else
                 ;
 
-            m_strKKS_NAME_TM = row_param_tg [@"KKS_NAME"].ToString ();
-            m_arIds_fact [(int)HDateTime.INTERVAL.MINUTES] =
+            m_SensorsString_SOTIASSO = row_param_tg [@"KKS_NAME"].ToString ();
+            m_aiskue_keys [(int)HDateTime.INTERVAL.MINUTES] =
                 //Int32.Parse(row_param_tg[@"ID_IN_ASKUE_3"].ToString())
                 // ChrjapinAN, 26.12.2017 переход на составной ключ "OBJECT/ITEM"
                 new AISKUE_KEY () { IdObject = Int32.Parse (row_param_tg [@"PIRAMIDA_OBJECT"].ToString ()), IdItem = Int32.Parse (row_param_tg [@"PIRAMIDA_ITEM"].ToString ()) }
                 ;
-            m_arIds_fact [(int)HDateTime.INTERVAL.HOURS] =
+            m_SensorsStrings_ASKUE [(int)HDateTime.INTERVAL.MINUTES] = m_aiskue_keys [(int)HDateTime.INTERVAL.MINUTES].ToString ();
+            m_aiskue_keys [(int)HDateTime.INTERVAL.HOURS] =
                 //Int32.Parse(row_param_tg[@"ID_IN_ASKUE_30"].ToString())
                 // ChrjapinAN, 26.12.2017 переход на составной ключ "OBJECT/ITEM"
                 new AISKUE_KEY () { IdObject = Int32.Parse (row_param_tg [@"PIRAMIDA_OBJECT"].ToString ()), IdItem = Int32.Parse (row_param_tg [@"PIRAMIDA_ITEM"].ToString ()) }
                 ;
+            m_SensorsStrings_ASKUE [(int)HDateTime.INTERVAL.HOURS] = m_aiskue_keys [(int)HDateTime.INTERVAL.HOURS].ToString ();
         }
     }
     //} partial class TEC
@@ -491,6 +491,20 @@ namespace StatisticCommon
 
             m_dcKoeffAlarmPcur = tg.m_dcKoeffAlarmPcur;
         }
+
+        public TECComponent (TEC tec, Vyvod.ParamVyvod pv)
+            : this (tec)
+        {
+            name_shr = pv.name_shr;
+            m_id = pv.m_id;
+
+            name_future = pv.name_future;
+
+            m_indx_col_export_pbr_excel = pv.m_indx_col_export_pbr_excel;
+            m_indx_col_rdg_excel = pv.m_indx_col_rdg_excel;
+
+            m_dcKoeffAlarmPcur = pv.m_dcKoeffAlarmPcur;
+        }
         /// <summary>
         /// Конструктор - дополнительный
         /// </summary>
@@ -576,13 +590,15 @@ namespace StatisticCommon
                     , COUNT
             }; //Количество индексов
 
-            public int m_owner_vyvod;
+            //public int m_owner_vyvod;
 
             public ID_PARAM m_id_param;
             public string m_Symbol;
             public int m_typeAgregate;
 
-            public ParamVyvod(DataRow r) : base () {
+            public ParamVyvod(DataRow r)
+                : base ()
+            {
                 m_id = Convert.ToInt32(r[@"ID"]);
 
                 Initialize(r);
@@ -592,7 +608,7 @@ namespace StatisticCommon
             {
                 int iVzletGrafa = -1;
 
-                m_owner_vyvod = Convert.ToInt32(r[@"ID_VYVOD"]);
+                m_keys_owner.Add(new FormChangeMode.KeyDevice () { Id = Convert.ToInt32 (r [@"ID_VYVOD"]), Mode = FormChangeMode.MODE_TECCOMPONENT.VYVOD });
 
                 m_id_param = (ID_PARAM)Convert.ToInt16(r[@"ID_PARAM"]);
                 iVzletGrafa = (int)r[@"VZLET_GRAFA"];
@@ -624,46 +640,5 @@ namespace StatisticCommon
             : base(tec, rows_param[0])
         {
         }
-        /// <summary>
-        /// Инициализировать вывод значениями свойств всех параметров (по аналогии с ГТП добавить все ТГ)
-        /// </summary>
-        /// <param name="r">Строки таблицы со значенями свойств всех параметров</param>
-        public void Initialize(DataRow[] rows_param)
-        {
-        }
-        ///// <summary>
-        ///// Игициализировать значения свойства параметра
-        ///// </summary>
-        ///// <param name="r">Строка объекта-таблицы со значенями свойств параметра</param>
-        ///// <returns>Признак результата инициализации</returns>
-        //public int InitParam(DataRow r)
-        //{
-        //    int iRes = 0; // ошибрк нет - параметр добавлен
-
-        //    ParamVyvod pv = null;
-        //    int iIdParam = -1;
-
-        //    iIdParam = Convert.ToInt32(r[@"ID"]);
-        //    pv =
-        //        //m_listParam.Find(p => { return p.m_id == iIdParam; })
-        //        m_listLowPointDev.Find(p => { return p.m_id == iIdParam; }) as ParamVyvod
-        //        ;
-
-        //    if (pv == null)
-        //    {
-        //        pv = new ParamVyvod(r);
-        //        //m_listParam.Add(pv);
-        //        m_listLowPointDev.Add(pv);
-        //    }
-        //    else
-        //    {
-        //        iRes = 1;
-        //        // такой параметр уже существует
-        //        // инициализация новыми значенями свойств (кроме ID)
-        //        pv.Initialize(r);
-        //    }
-
-        //    return iRes;
-        //}
     }
 }
