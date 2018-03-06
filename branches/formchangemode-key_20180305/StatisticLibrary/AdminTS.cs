@@ -2742,32 +2742,29 @@ namespace StatisticCommon
         /// <param name="ownerMode">Режим объекта-владельца</param>
         /// <param name="indx">Индекс компонента</param>
         /// <returns>Идентификатор компонента</returns>
-        public int GetIdOwnerTECComponent(FormChangeMode.MODE_TECCOMPONENT ownerMode, FormChangeMode.KeyDevice key)
+        public FormChangeMode.KeyDevice GetIdOwnerTECComponent (FormChangeMode.MODE_TECCOMPONENT ownerMode, FormChangeMode.KeyDevice key)
         {
             int id_tec = -1;
 
             id_tec = allTECComponents.Find(comp => comp.m_id == key.Id).tec.m_id;
 
-            foreach (TECComponent comp in allTECComponents)
-            {
-                if ((comp.tec.m_id == id_tec)
-                    && (comp.Mode == ownerMode))
-                {
-                    foreach (TECComponentBase tc in comp.ListLowPointDev)
-                    {
-                        if (tc.m_id == key.Id)
-                        {
-                            return comp.m_id;
+            if (ownerMode == FormChangeMode.MODE_TECCOMPONENT.TEC)
+                return new FormChangeMode.KeyDevice () { Id = id_tec, Mode = ownerMode };
+            else
+                foreach (TECComponent comp in allTECComponents) {
+                    if ((comp.tec.m_id == id_tec)
+                        && (comp.Mode == ownerMode)) {
+                        foreach (TECComponentBase tc in comp.ListLowPointDev) {
+                            if (tc.m_id == key.Id) {
+                                return new FormChangeMode.KeyDevice() { Id = comp.m_id, Mode = ownerMode };
+                            } else
+                                ;
                         }
-                        else
-                            ;
-                    }
+                    } else
+                        ;
                 }
-                else
-                    ;
-            }
 
-            return -1;
+            return FormChangeMode.KeyDeviceEmpty;
         }
 
         /// <summary>
@@ -2775,7 +2772,7 @@ namespace StatisticCommon
         /// </summary>
         /// <param name="indx">Индекс компонента</param>
         /// <returns>ИД компонента</returns>
-        public int GetIdPCOwnerTECComponent(FormChangeMode.KeyDevice key)
+        public FormChangeMode.KeyDevice GetIdPCOwnerTECComponent (FormChangeMode.KeyDevice key)
         {
             return GetIdOwnerTECComponent(FormChangeMode.MODE_TECCOMPONENT.PC, key);
         }
@@ -2785,7 +2782,7 @@ namespace StatisticCommon
         /// </summary>
         /// <param name="indx">Индекс компонента</param>
         /// <returns>ИД компонента</returns>
-        public int GetIdGTPOwnerTECComponent(FormChangeMode.KeyDevice key)
+        public FormChangeMode.KeyDevice GetIdGTPOwnerTECComponent (FormChangeMode.KeyDevice key)
         {
             return GetIdOwnerTECComponent(FormChangeMode.MODE_TECCOMPONENT.GTP, key);
         }

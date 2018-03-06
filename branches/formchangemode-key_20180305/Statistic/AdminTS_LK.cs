@@ -93,14 +93,17 @@ namespace Statistic {
                             if ((comp.m_id == id) //Принадлежит ТЭЦ
                                 && (comp.IsGTP_LK == true)) //Является ГТП_ЛК
                             {
-                                m_listKeyTECComponentDetail.Add(new FormChangeMode.KeyDevice () { Id = comp.m_id, Mode = FormChangeMode.MODE_TECCOMPONENT.GTP });
-
-                                foreach (TG tg in comp.ListLowPointDev)
-                                    foreach (TECComponent comp_tg in allTECComponents)
-                                        if (comp_tg.m_id == tg.m_id)
-                                            m_listKeyTECComponentDetail.Add(new FormChangeMode.KeyDevice () { Id = comp.m_id, Mode = FormChangeMode.MODE_TECCOMPONENT.TG });
-                            }
-                            else
+                                foreach (TECComponentBase tg in comp.ListLowPointDev)
+                                    m_listKeyTECComponentDetail.Add (new FormChangeMode.KeyDevice () {
+                                        Id = tg.m_id
+                                        , Mode = FormChangeMode.MODE_TECCOMPONENT.TG
+                                    });
+                                //??? зачем в список детализации помещать компонент верхнего(родительского) уровня
+                                //m_listKeyTECComponentDetail.Add (new FormChangeMode.KeyDevice () {
+                                //    Id = comp.m_id
+                                //    , Mode = FormChangeMode.MODE_TECCOMPONENT.GTP
+                                //});
+                            } else
                                 ;
                         else
                             ;

@@ -219,7 +219,7 @@ namespace Statistic {
             // новый столбец
                 ((DataGridViewAdminLK)this.dgwAdminTable).AddTextBoxColumn(m_admin.GetNameTECComponent(key, false),
                     key.Id,
-                    m_admin.GetIdGTPOwnerTECComponent(key),
+                    m_admin.GetIdOwnerTECComponent(key.Mode == FormChangeMode.MODE_TECCOMPONENT.GTP ? FormChangeMode.MODE_TECCOMPONENT.TEC : FormChangeMode.MODE_TECCOMPONENT.GTP, key).Id,
                     date);
 
                 for (int i = 0; i < 24; i++)    
@@ -246,8 +246,6 @@ namespace Statistic {
                     ((DataGridViewAdminLK)this.dgwAdminTable).DataGridViewAdminLK_CellValueChanged(null
                         , new DataGridViewCellEventArgs(this.dgwAdminTable.Columns.Count - 4, i));
                 }
-                
-                visibleControlRDGExcel(((AdminTS_LK)m_admin).GetIdTECOwnerTECComponent(indx));
             } else
                 ;
 
@@ -322,6 +320,9 @@ namespace Statistic {
 
             if (bRes == true)
                 if (active == true) {
+                    //TODO: так же требуется вызвать метод при изменении выбора GTP в списке
+                    //  , но GTP для ЛК только одна!!!
+                    visibleControlRDGExcel ();
                 } else {
                 } else
                 ;
@@ -342,14 +343,12 @@ namespace Statistic {
         /// <summary>
         /// Метод для активации отображения кнопок импорта и экспорта
         /// </summary>
-        /// <param name="id_tec">ID ТЭЦ</param>
-        private void visibleControlRDGExcel(int id_tec)
+        private void visibleControlRDGExcel()
         {
             bool bImpExpButtonVisible = false;
 
-            if ((!(comboBoxTecComponent.SelectedIndex < 0))
-                && (m_admin.IsRDGExcel(SelectedItemKey) == true))
-                bImpExpButtonVisible = true;
+            if (!(comboBoxTecComponent.SelectedIndex < 0))
+                bImpExpButtonVisible = m_admin.IsRDGExcel (m_admin.GetIdOwnerTECComponent(FormChangeMode.MODE_TECCOMPONENT.TEC, SelectedItemKey));
             else
                 ;
 

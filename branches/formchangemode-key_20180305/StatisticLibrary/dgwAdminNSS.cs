@@ -76,6 +76,8 @@ namespace StatisticCommon
 
         public void DataGridViewAdminNSS_CellValueChanged(object sender, DataGridViewCellEventArgs e)
         {
+            int id_gtp = -1,
+                    col_gtp = -1;
             List<int []> listIds = new List<int []> ();
 
             Columns.Cast<DataGridViewColumn> ().ToList ().ForEach (col => {
@@ -90,14 +92,15 @@ namespace StatisticCommon
                 && (e.ColumnIndex > 0)
                 && (e.ColumnIndex < Columns.Count - 1))
             {
-                int id_gtp = listIds [e.ColumnIndex - 1][(int)INDEX_ID.ID_OWNER],
-                    col_gtp = -1;
+                id_gtp = listIds [e.ColumnIndex - 1] [(int)INDEX_ID.ID_OWNER]; // (int)(Equals (sender, null) == true ? INDEX_ID.ID : INDEX_ID.ID_OWNER)
+                col_gtp = -1;
                 List<int> list_col_tg = new List<int>();
 
                 foreach (int [] ids in listIds) {
                     //Поиск номера столбца ГТП (только ОДИН раз)
                     if ((col_gtp < 0)
-                        && (id_gtp == ids[(int)INDEX_ID.ID]) && (ids[(int)INDEX_ID.ID_OWNER] < 0))
+                        && (id_gtp == ids[(int)INDEX_ID.ID])
+                        && (TECComponent.GetMode(ids[(int)INDEX_ID.ID_OWNER]) == FormChangeMode.MODE_TECCOMPONENT.TEC))
                         col_gtp = listIds.IndexOf(ids) + 1; // '+ 1' за счт столбца "Дата, время"
                     else
                         ;
@@ -206,7 +209,7 @@ namespace StatisticCommon
 
             insColumn.Tag = new int [(int)INDEX_ID.COUNT_ID_TYPE] {id, id_owner};
 
-            if (id_owner < 0) {
+            if (TECComponent.GetMode(id_owner) == FormChangeMode.MODE_TECCOMPONENT.TEC) {
                 Columns[Columns.Count - 1 - 1].Frozen = true;
                 Columns [Columns.Count - 1 - 1].ReadOnly = true;
                 Columns [Columns.Count - 1 - 1].DefaultCellStyle = dgvCellStyleGTP;
