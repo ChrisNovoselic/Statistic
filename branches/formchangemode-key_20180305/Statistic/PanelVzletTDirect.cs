@@ -1828,7 +1828,7 @@ namespace Statistic
 
                     using_date = false;
 
-                    if (m_tec.m_bSensorsStrings == true)
+                    if (m_tec.GetReadySensorsStrings (key.Mode) == true)
                         if (currHour == true)
                             AddState((int)StatesMachine.CurrentTimeView);
                         else
@@ -1987,7 +1987,7 @@ namespace Statistic
             {
                 if (IndexCustomTecView == INDEX_CUSTOM_TECVIEW.SINGLE)
                     // цикл по всем ВЫВОДам
-                    m_tecView.m_tec.list_TECComponents.ForEach(c =>
+                    m_tecView.m_tec.ListTECComponents.ForEach(c =>
                     {
                         //if ((c.IsParamVyvod == true)
                         //    && ((c.ListLowPointDev[0] as Vyvod.ParamVyvod).m_id_param == Vyvod.ID_PARAM.T_PV))

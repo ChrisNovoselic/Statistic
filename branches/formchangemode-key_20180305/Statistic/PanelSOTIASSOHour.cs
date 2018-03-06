@@ -53,7 +53,7 @@ namespace Statistic
 
                 ClearValues();
 
-                if (m_tec.m_bSensorsStrings == false)
+                if (m_tec.GetReadySensorsStrings (TECComponent.TYPE.ELECTRO) == false)
                     AddState((int)StatesMachine.InitSensors);
                 else ;
 
@@ -2030,7 +2030,7 @@ namespace Statistic
                 {
                     // есть специальное свойство для проверки 't.m_bSensorsStrings'
                     //if (t.ListLowPointDev == null)
-                    if (t.m_bSensorsStrings == false)
+                    if (t.GetReadySensorsStrings (TECComponent.TYPE.ELECTRO) == false)
                         t.InitSensorsTEC();
                     // проверить идентификатор ТЭЦ
                     if (t.m_id == id)
@@ -2041,7 +2041,7 @@ namespace Statistic
                         foreach (TG tg in t.GetListLowPointDev(TECComponentBase.TYPE.ELECTRO))
                             listTG_Comp.Add(tg);
 
-                        foreach (TECComponent tc in t.list_TECComponents)
+                        foreach (TECComponent tc in t.ListTECComponents)
                             if (tc.IsGTP == true)
                             {
                                 if (m_dcGTPKoeffAlarmPcur > tc.m_dcKoeffAlarmPcur)
@@ -2055,7 +2055,7 @@ namespace Statistic
                     }
                     else
                     {// идентификатор ТЭЦ не удовлетворяет условию - искать среди компонентов
-                        foreach (TECComponent tc in t.list_TECComponents)
+                        foreach (TECComponent tc in t.ListTECComponents)
                         {
                             if (tc.m_id == id)
                             {
@@ -2080,7 +2080,7 @@ namespace Statistic
                                         foreach (TG tg in tc.ListLowPointDev)
                                             listTG_Comp.Add(tg);
 
-                                        foreach (TECComponent tcc in t.list_TECComponents)
+                                        foreach (TECComponent tcc in t.ListTECComponents)
                                             if ((tcc.IsGTP == true)
                                                 && (tcc.tec.m_id == tc.tec.m_id))
                                                 if (m_dcGTPKoeffAlarmPcur > tcc.m_dcKoeffAlarmPcur)

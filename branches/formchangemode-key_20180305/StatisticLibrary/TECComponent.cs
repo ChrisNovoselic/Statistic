@@ -219,6 +219,15 @@ namespace StatisticCommon
         public static bool VerifyVyvod(int id) { return (id > (int)ID.VYVOD) && (id < (int)ID.TG); }
 
         public static bool VerifyParamVyvod(int id) { return (id > (int)ID.PARAM_VYVOD) && (id < (int)ID.MAX); }
+
+        public static TYPE GetType (int id)
+        {
+            return (VerifyGTP (id) == true) || (VerifyLK (id) == true) || (VerifyGTP_LK (id) == true) || (VerifyPC (id) == true) || (VerifyTG (id) == true)
+                ? TYPE.ELECTRO
+                    : (VerifyVyvod (id) == true) || (VerifyParamVyvod (id) == true)
+                        ? TYPE.TEPLO
+                            : TYPE.UNKNOWN;
+        }
     }
 
     //public partial class TEC {
@@ -292,8 +301,7 @@ namespace StatisticCommon
         /// <summary>
         /// Идентификаторы "владельцев" для ТГ (ГТП, Б(Гр)ЩУ)
         /// </summary>
-        public int m_id_owner_gtp
-            , m_id_owner_pc;
+        public List<FormChangeMode.KeyDevice> m_keys_owner;
         /// <summary>
         /// Признак состояния ТГ
         /// </summary>
@@ -305,38 +313,88 @@ namespace StatisticCommon
         {
             m_arIds_fact = new AISKUE_KEY[(int)HDateTime.INTERVAL.COUNT_ID_TIME];
 
-            m_id_owner_gtp =
-            m_id_owner_pc =
+            m_keys_owner =
                 //Неизвестный владелец
-                -1;
+                new List<FormChangeMode.KeyDevice>();
             m_TurnOnOff = INDEX_TURNOnOff.UNKNOWN; //Неизвестное состояние
         }
+
         /// <summary>
-        /// Конструктор - основной (без параметров)
+        /// Конструктор - основной (с параметрами)
+        /// <param name="row_param_tg">Строка из набора - результата запроса к представлению БД [ALL_PARAM_TG]</param>
         /// </summary>
-        public TG(DataRow row_tg, DataRow row_param_tg)
-            : this()
+        public TG (DataRow row_param_tg)
+            : this ()
         {
-            initTG(row_tg, row_param_tg);
+            initTG (row_param_tg);
         }
 
-        private void initTG(DataRow row_tg, DataRow row_param_tg)
+        ///// <summary>
+        ///// Конструктор - дополнительный (с параметрами)
+        ///// </summary>
+        //public TG(DataRow row_tg, DataRow row_param_tg)
+        //    // передавать только строку из представления
+        //    : this (row_param_tg)
+        //{
+        //    //initTG(row_tg, row_param_tg);
+        //}
+
+        //private void initTG(DataRow row_tg, DataRow row_param_tg)
+        //{
+        //    #region Здесь столбцы из старой таблицы [LIST_TG]
+        //    // row_tg: NAME_SHR, NAME_FUTURE, ID, INDX_COL_RDG_EXCEL
+        //    // , теперь используется строки из представления [ALL_PARAM_TG]
+        //    // , к наименованиям полей добавлен префикс "_TG"
+        //    name_shr = row_param_tg ["NAME_SHR_TG"].ToString();
+        //    if (DbTSQLInterface.IsNameField(row_param_tg, "NAME_FUTURE_TG") == true) name_future = row_param_tg ["NAME_FUTURE_TG"].ToString(); else ;
+        //    m_id = Convert.ToInt32(row_param_tg ["ID_TG"]);
+        //    if (!(row_param_tg ["INDX_COL_RDG_EXCEL_TG"] is System.DBNull))
+        //        m_indx_col_rdg_excel = Convert.ToInt32(row_param_tg ["INDX_COL_RDG_EXCEL_TG"]);
+        //    else
+        //        ;
+        //    #endregion
+
+        //    #region Здесь столбцы из нового представления [ALL_PARAM_TG]
+        //    m_strKKS_NAME_TM = row_param_tg[@"KKS_NAME"].ToString();
+        //    m_arIds_fact[(int)HDateTime.INTERVAL.MINUTES] =
+        //        //Int32.Parse(row_param_tg[@"ID_IN_ASKUE_3"].ToString())
+        //        // ChrjapinAN, 26.12.2017 переход на составной ключ "OBJECT/ITEM"
+        //        new AISKUE_KEY () { IdObject = Int32.Parse (row_param_tg [@"PIRAMIDA_OBJECT"].ToString ()), IdItem = Int32.Parse (row_param_tg [@"PIRAMIDA_ITEM"].ToString ()) }
+        //        ;
+        //    m_arIds_fact[(int)HDateTime.INTERVAL.HOURS] =
+        //        //Int32.Parse(row_param_tg[@"ID_IN_ASKUE_30"].ToString())
+        //        // ChrjapinAN, 26.12.2017 переход на составной ключ "OBJECT/ITEM"
+        //        new AISKUE_KEY () { IdObject = Int32.Parse (row_param_tg [@"PIRAMIDA_OBJECT"].ToString ()), IdItem = Int32.Parse (row_param_tg [@"PIRAMIDA_ITEM"].ToString ()) }
+        //        ;
+        //    #endregion
+        //}
+
+        /// <summary>
+        /// Инициализировать значения полей свойств объекта из строки представления БД
+        /// </summary>
+        /// <param name="row_param_tg">Строка из набора - результата запроса к представлению БД [ALL_PARAM_TG]</param>
+        private void initTG (DataRow row_param_tg)
         {
-            name_shr = row_tg["NAME_SHR"].ToString();
-            if (DbTSQLInterface.IsNameField(row_tg, "NAME_FUTURE") == true) name_future = row_tg["NAME_FUTURE"].ToString(); else ;
-            m_id = Convert.ToInt32(row_tg["ID"]);
-            if (!(row_tg["INDX_COL_RDG_EXCEL"] is System.DBNull))
-                m_indx_col_rdg_excel = Convert.ToInt32(row_tg["INDX_COL_RDG_EXCEL"]);
+            // , теперь используется строки из представления [ALL_PARAM_TG]
+            // , к наименованиям полей добавлен префикс "_TG"
+            name_shr = row_param_tg ["NAME_SHR_TG"].ToString ();
+            if (DbTSQLInterface.IsNameField (row_param_tg, "NAME_FUTURE_TG") == true)
+                name_future = row_param_tg ["NAME_FUTURE_TG"].ToString ();
+            else
+                ;
+            m_id = Convert.ToInt32 (row_param_tg ["ID_TG"]);
+            if (!(row_param_tg ["INDX_COL_RDG_EXCEL_TG"] is System.DBNull))
+                m_indx_col_rdg_excel = Convert.ToInt32 (row_param_tg ["INDX_COL_RDG_EXCEL_TG"]);
             else
                 ;
 
-            m_strKKS_NAME_TM = row_param_tg[@"KKS_NAME"].ToString();
-            m_arIds_fact[(int)HDateTime.INTERVAL.MINUTES] =
+            m_strKKS_NAME_TM = row_param_tg [@"KKS_NAME"].ToString ();
+            m_arIds_fact [(int)HDateTime.INTERVAL.MINUTES] =
                 //Int32.Parse(row_param_tg[@"ID_IN_ASKUE_3"].ToString())
                 // ChrjapinAN, 26.12.2017 переход на составной ключ "OBJECT/ITEM"
                 new AISKUE_KEY () { IdObject = Int32.Parse (row_param_tg [@"PIRAMIDA_OBJECT"].ToString ()), IdItem = Int32.Parse (row_param_tg [@"PIRAMIDA_ITEM"].ToString ()) }
                 ;
-            m_arIds_fact[(int)HDateTime.INTERVAL.HOURS] =
+            m_arIds_fact [(int)HDateTime.INTERVAL.HOURS] =
                 //Int32.Parse(row_param_tg[@"ID_IN_ASKUE_30"].ToString())
                 // ChrjapinAN, 26.12.2017 переход на составной ключ "OBJECT/ITEM"
                 new AISKUE_KEY () { IdObject = Int32.Parse (row_param_tg [@"PIRAMIDA_OBJECT"].ToString ()), IdItem = Int32.Parse (row_param_tg [@"PIRAMIDA_ITEM"].ToString ()) }
@@ -418,6 +476,20 @@ namespace StatisticCommon
                 m_bKomUchet = Convert.ToByte(rComp[@"KOM_UCHET"]) == 1 ? true : false;
             else
                 m_bKomUchet = true;
+        }
+
+        public TECComponent (TEC tec, TG tg)
+            : this (tec)
+        {
+            name_shr = tg.name_shr;
+            m_id = tg.m_id;
+
+            name_future = tg.name_future;
+
+            m_indx_col_export_pbr_excel = tg.m_indx_col_export_pbr_excel;
+            m_indx_col_rdg_excel = tg.m_indx_col_rdg_excel;
+
+            m_dcKoeffAlarmPcur = tg.m_dcKoeffAlarmPcur;
         }
         /// <summary>
         /// Конструктор - дополнительный

@@ -1344,7 +1344,7 @@ namespace Statistic
 
                     if (m_parent.Mode == FormChangeMode.MODE_TECCOMPONENT.TEC) // значит этот view будет суммарным для всех ГТП
                     {
-                        foreach (TECComponent g in m_parent.m_tecView.m_tec.list_TECComponents)
+                        foreach (TECComponent g in m_parent.m_tecView.m_tec.ListTECComponents)
                         {
                             if (g.IsGTP == true)
                                 //Только ГТП
@@ -1356,7 +1356,7 @@ namespace Statistic
                     }
                     else
                     {
-                        foreach (TG tg in m_parent.m_tecView.m_tec.list_TECComponents.Find(comp => comp.m_id == m_parent.TecViewKey.Id).ListLowPointDev)
+                        foreach (TG tg in m_parent.m_tecView.m_tec.ListTECComponents.Find(comp => comp.m_id == m_parent.TecViewKey.Id).ListLowPointDev)
                             showTMValue(tg, ref value_TM, min);
                     }
                 }

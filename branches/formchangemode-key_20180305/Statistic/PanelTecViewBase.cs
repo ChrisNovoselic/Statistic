@@ -1,6 +1,6 @@
 using System;
 using System.Collections.Generic;
-using System.Text;
+using System.Linq;
 using System.IO;
 using System.Windows.Forms;
 //using System.ComponentModel;
@@ -679,7 +679,7 @@ namespace Statistic
             {
                 m_label.Text = m_tecView.m_tec.name_shr;
                 if (!(m_tecView.CurrentKey.Mode == FormChangeMode.MODE_TECCOMPONENT.TEC))
-                    m_label.Text += @" - " + m_tecView.m_tec.list_TECComponents.Find(comp => comp.m_id == m_tecView.CurrentKey.Id).name_shr;
+                    m_label.Text += @" - " + m_tecView.m_tec.ListTECComponents.Find(comp => comp.m_id == m_tecView.CurrentKey.Id).name_shr;
                 else
                     ;
 
@@ -853,7 +853,7 @@ namespace Statistic
 
         public virtual void AddTGView()
         {
-            foreach (TG tg in m_tecView.ListLowPointDev)
+            foreach (TECComponentBase tg in m_tecView.ListLowPointDev)
                 _pnlQuickData.AddTGView(tg);
         }
 

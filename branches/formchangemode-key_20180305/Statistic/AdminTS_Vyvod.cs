@@ -55,7 +55,7 @@ namespace Statistic
 
                     if (!(tec == null))
                         //ВСЕ компоненты
-                        foreach (TECComponent v in tec.list_TECComponents)
+                        foreach (TECComponent v in tec.ListTECComponents)
                             if (v.IsParamVyvod == true)
                                 // параметры выводов
                                 foreach (Vyvod.ParamVyvod pv in v.ListLowPointDev)

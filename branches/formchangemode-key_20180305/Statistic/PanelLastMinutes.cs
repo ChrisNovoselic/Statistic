@@ -914,7 +914,7 @@ namespace Statistic
 
                     ClearValues();
 
-                    if (m_tec.m_bSensorsStrings == false)
+                    if (m_tec.GetReadySensorsStrings (key.Mode) == false)
                         AddState((int)StatesMachine.InitSensors);
                     else ;
 
@@ -1028,7 +1028,7 @@ namespace Statistic
                 m_listLabelNames.Add(HLabel.createLabel(m_tecView.m_tec.name_shr, PanelLastMinutes.s_arLabelStyles[(int)INDEX_LABEL.NAME_TEC]));
                 this.Controls.Add(m_listLabelNames[m_listLabelNames.Count - 1], 0, 0);
 
-                foreach (TECComponent g in m_tecView.m_tec.list_TECComponents)
+                foreach (TECComponent g in m_tecView.m_tec.ListTECComponents)
                     if (g.IsGTP == true)
                     {
                         //Добавить наименование ГТП
@@ -1138,7 +1138,7 @@ namespace Statistic
                 m_listDictToolTip.Add(new Dictionary<int, ToolTip>());
 
                 int col = 0;
-                foreach (TECComponent g in m_tecView.m_tec.list_TECComponents)
+                foreach (TECComponent g in m_tecView.m_tec.ListTECComponents)
                 {
                     if (g.IsGTP == true)
                     {

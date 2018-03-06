@@ -96,6 +96,14 @@ namespace StatisticCommon
 
             public FormChangeMode.MODE_TECCOMPONENT Mode { get; set; }
 
+            public TECComponentBase.TYPE TECComponentType
+            {
+                get
+                {
+                    return TECComponent.GetType (Id);
+                }
+            }
+
             //public TECComponentBase.TYPE 
 
             public override string ToString ()
@@ -192,9 +200,9 @@ namespace StatisticCommon
                         ;
                     m_listItems.Add(new Item(t.m_id, t.name_shr, bChecked));
 
-                    if (t.list_TECComponents.Count > 0)
+                    if (t.ListTECComponents.Count > 0)
                     {
-                        foreach (TECComponent g in t.list_TECComponents)
+                        foreach (TECComponent g in t.ListTECComponents)
                         {
                             bChecked = false;
                             if (listIDsProfileCheckedIndices.IndexOf(g.m_id) > -1)
@@ -451,7 +459,7 @@ namespace StatisticCommon
                                         if (t.m_id == item.id)
                                             m_list_change_items.Add(item);
                                         else
-                                            foreach (TECComponent tc in t.list_TECComponents)
+                                            foreach (TECComponent tc in t.ListTECComponents)
                                                 if (tc.m_id == item.id)
                                                     if (tc.tec.m_id >= (int)TECComponent.ID.LK & tc.tec.m_id < (int)TECComponent.ID.GTP)
                                                         ;

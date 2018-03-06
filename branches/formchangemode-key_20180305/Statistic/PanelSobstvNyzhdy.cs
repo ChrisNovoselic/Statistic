@@ -338,7 +338,7 @@ namespace Statistic
 
                     ClearValues();
 
-                    if (m_tec.m_bSensorsStrings == false)
+                    if (m_tec.GetReadySensorsStrings (key.Mode) == false)
                         AddState((int)StatesMachine.InitSensors);
                     else
                         ;

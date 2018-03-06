@@ -317,11 +317,11 @@ namespace Statistic {
                 foreach (StatisticCommon.TEC t in this.m_list_tec)
                     //Logging.Logg().Debug("Admin::InitTEC () - формирование компонентов для ТЭЦ:" + t.name);
                     if (t.m_id > (int)TECComponent.ID.LK)
-                        if (t.list_TECComponents.Count > 0)
-                            foreach (TECComponent g in t.list_TECComponents)
+                        if (t.ListTECComponents.Count > 0)
+                            foreach (TECComponent g in t.ListTECComponents)
                                 allTECComponents.Add(g);
                         else
-                            allTECComponents.Add(t.list_TECComponents[0]);
+                            allTECComponents.Add(t.ListTECComponents[0]);
             }
 
             public int GetCurrentIndexTECComponent ()

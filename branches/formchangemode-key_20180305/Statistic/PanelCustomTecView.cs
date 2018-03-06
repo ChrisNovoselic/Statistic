@@ -746,7 +746,7 @@ namespace Statistic
                         , TECComponent_id = m_arLabelEmpty [indxLabel].m_listIdContextMenuItems [m_arLabelEmpty[indxLabel].ContextMenu.MenuItems.IndexOf (obj as MenuItem)];
                     Point ptAddress = getAddress(indxLabel);
                     TEC tec = m_formChangeMode.m_list_tec.Find (t => t.m_id == tec_id);
-                    TECComponent tec_comp = tec.list_TECComponents.Find (comp => comp.m_id == TECComponent_id);
+                    TECComponent tec_comp = tec.ListTECComponents.Find (comp => comp.m_id == TECComponent_id);
                     FormChangeMode.KeyDevice key = new FormChangeMode.KeyDevice () {
                         Id = Equals (tec_comp, null) == true ? tec.m_id : tec_comp.m_id
                         , Mode = Equals (tec_comp, null) == true ? FormChangeMode.MODE_TECCOMPONENT.TEC : tec_comp.Mode };

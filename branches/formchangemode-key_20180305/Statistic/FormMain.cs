@@ -305,49 +305,8 @@ namespace Statistic
                     //m_arAdmin = new AdminTS[(int)FormChangeMode.MANAGER.COUNT_MANAGER];
                     m_arPanelAdmin = new PanelStatistic[(int)FormChangeMode.MANAGER.COUNT_MANAGER];
 
-                    markQueries = new HMark(new int [] {(int)CONN_SETT_TYPE.ADMIN, (int)CONN_SETT_TYPE.PBR});
-                    //markQueries.Marked((int)CONN_SETT_TYPE.ADMIN);
-                    //markQueries.Marked((int)CONN_SETT_TYPE.PBR);
-
-                    for (i = 0; i < (int)FormChangeMode.MANAGER.COUNT_MANAGER; i++)
-                    {
-                        switch ((FormChangeMode.MANAGER)i)
-                        {
-                            case FormChangeMode.MANAGER.DISP:
-                                m_arPanelAdmin[i] = new PanelAdminKomDisp(markQueries);
-                                ////((PanelAdminKomDisp)m_arPanelAdmin[i]).EventGUIReg += OnPanelAdminKomDispEventGUIReg;
-                                //((PanelAdminKomDisp)m_arPanelAdmin[i]).EventGUIReg = new DelegateStringFunc(OnPanelAdminKomDispEventGUIReg);
-                                break;
-                            case FormChangeMode.MANAGER.LK:
-                                m_arPanelAdmin[i] = new PanelAdminLK(markQueries);
-                                break;
-                            case FormChangeMode.MANAGER.TEPLOSET:
-                                m_arPanelAdmin[i] = new PanelAdminVyvod(markQueries);
-                                break;
-                            case FormChangeMode.MANAGER.NSS:
-                                m_arPanelAdmin[i] = new PanelAdminNSS(markQueries);
-                                break;
-                            case FormChangeMode.MANAGER.ALARM:
-                                m_arPanelAdmin[i] = new PanelAlarm(new HMark(new int[] { (int)CONN_SETT_TYPE.ADMIN, (int)CONN_SETT_TYPE.PBR, (int)CONN_SETT_TYPE.DATA_AISKUE, (int)CONN_SETT_TYPE.DATA_SOTIASSO })
-                                    , StatisticAlarm.MODE.ADMIN
-                                    , formGraphicsSettings.FontColor
-                                    , formGraphicsSettings.BackgroundColor);
-                                (m_arPanelAdmin[i] as PanelAlarm).EventGUIReg += new AlarmNotifyEventHandler(OnPanelAlarmEventGUIReg);
-                                m_formAlarmEvent.EventFixed += new DelegateObjectFunc((m_arPanelAdmin[i] as PanelAlarm).OnEventFixed);
-                                ////!!! автоматический старт
-                                ////??? m_markPrevStatePanelAdmin - признак вызова на отображение
-                                //m_markPrevStatePanelAdmin.Set ((int)i, true);
-                                break;
-                            default:
-                                break;
-                        }
-
-                        m_arPanelAdmin[i].SetDelegateWait(delegateStartWait, delegateStopWait, delegateEvent);
-                        m_arPanelAdmin[i].SetDelegateReport(ErrorReport, WarningReport, ActionReport, ReportClear);
-                    }
-
                     m_bAutoActionTabs = файлПрофильАвтоЗагрузитьСохранитьToolStripMenuItem.Checked;
-                    // определить признаки автоматического отображения специальных вкладок
+                    // определить признаки автоматического отображения административных вкладок
                     listIdProfilesUnit = new List<int> { (int)HStatisticUsers.ID_ALLOWED.AUTO_TAB_PBR_KOMDISP
                         , (int)HStatisticUsers.ID_ALLOWED.AUTO_TAB_PBR_NSS
                         , (int)HStatisticUsers.ID_ALLOWED.AUTO_TAB_ALARM
@@ -356,7 +315,9 @@ namespace Statistic
                     listIDs = new List<int>();
 
                     for (i = 0; i < FormChangeMode.ID_ADMIN_TABS.Length; i++)
-                        if (HStatisticUsers.IsAllowed(listIdProfilesUnit[i]) == true) listIDs.Add(FormChangeMode.ID_ADMIN_TABS[i]); else ;
+                        if (HStatisticUsers.IsAllowed(listIdProfilesUnit[i]) == true)
+                            listIDs.Add(FormChangeMode.ID_ADMIN_TABS[i]);
+                        else ;
 
                     //Добавить закладки автоматически...
                     //listIDs.Add(5); listIDs.Add(111);
@@ -383,7 +344,12 @@ namespace Statistic
                     else
                         ;
 
-                    formChangeMode = new FormChangeMode(PanelKomDisp.m_list_tec, listIDs, this.ContextMenuStrip);
+                    formChangeMode = new FormChangeMode(DbTSQLConfigDatabase.DbConfig().InitTEC(FormChangeMode.MODE_TECCOMPONENT.GTP
+                            , false
+                            , new int [] { 0, (int)TECComponent.ID.GTP }
+                            , false)
+                        , listIDs
+                        , this.ContextMenuStrip);
                     formChangeMode.ev_сменитьРежим += сменитьРежимToolStripMenuItem_Click;
                     if (сменитьРежимToolStripMenuItem.Enabled == false) сменитьРежимToolStripMenuItem.Enabled = true; else ;
 
@@ -1688,7 +1654,7 @@ namespace Statistic
         {
             PanelTecViewBase panelTecView = null;
 
-            if (tec.m_bSensorsStrings == false)
+            if (tec.GetReadySensorsStrings (key.Mode) == false)
                 tec.InitSensorsTEC();
             else
                 ;
@@ -1749,9 +1715,9 @@ namespace Statistic
                             else
                                 ;
                             // проверить наличие компонентов станции
-                            if (t.list_TECComponents.Count > 0)
+                            if (t.ListTECComponents.Count > 0)
                             {
-                                foreach (TECComponent g in t.list_TECComponents)
+                                foreach (TECComponent g in t.ListTECComponents)
                                 {
                                     if (g.m_id == formChangeMode.m_listItems[i].id)
                                     {
@@ -2136,6 +2102,10 @@ namespace Statistic
                         //StartWait();
                         delegateStartWait();
 
+                        if (Equals (m_arPanelAdmin [(int)modeAdmin], null) == true)
+                            createPanelAdmin (modeAdmin);
+                        else
+                            ;
                         m_arPanelAdmin[(int)modeAdmin].Start();
 
                         switch (modeAdmin)
@@ -2239,6 +2209,50 @@ namespace Statistic
         protected override void  timer_Start()
         {
  	        int i = -1;
+        }
+
+        void createPanelAdmin (FormChangeMode.MANAGER manager)
+        {
+            PanelStatistic panelAdmin = null;
+            HMark markQueries;
+
+            markQueries = new HMark (new int [] { (int)CONN_SETT_TYPE.ADMIN, (int)CONN_SETT_TYPE.PBR });
+
+            switch (manager) {
+                case FormChangeMode.MANAGER.DISP:
+                    panelAdmin = new PanelAdminKomDisp (markQueries);
+                    break;
+                case FormChangeMode.MANAGER.LK:
+                    panelAdmin = new PanelAdminLK (markQueries);
+                    break;
+                case FormChangeMode.MANAGER.TEPLOSET:
+                    panelAdmin = new PanelAdminVyvod (markQueries);
+                    break;
+                case FormChangeMode.MANAGER.NSS:
+                    panelAdmin = new PanelAdminNSS (markQueries);
+                    break;
+                case FormChangeMode.MANAGER.ALARM:
+                    panelAdmin = new PanelAlarm (new HMark (new int [] { (int)CONN_SETT_TYPE.ADMIN, (int)CONN_SETT_TYPE.PBR, (int)CONN_SETT_TYPE.DATA_AISKUE, (int)CONN_SETT_TYPE.DATA_SOTIASSO })
+                        , StatisticAlarm.MODE.ADMIN
+                        , formGraphicsSettings.FontColor
+                        , formGraphicsSettings.BackgroundColor);
+                    (panelAdmin as PanelAlarm).EventGUIReg += new AlarmNotifyEventHandler (OnPanelAlarmEventGUIReg);
+                    m_formAlarmEvent.EventFixed += new DelegateObjectFunc ((panelAdmin as PanelAlarm).OnEventFixed);
+                    ////!!! автоматический старт
+                    ////??? m_markPrevStatePanelAdmin - признак вызова на отображение
+                    //m_markPrevStatePanelAdmin.Set ((int)i, true);
+                    break;
+                default:
+                    break;
+            }
+
+            if (Equals (panelAdmin, null) == false) {
+                panelAdmin.SetDelegateWait (delegateStartWait, delegateStopWait, delegateEvent);
+                panelAdmin.SetDelegateReport (ErrorReport, WarningReport, ActionReport, ReportClear);
+
+                m_arPanelAdmin [(int)manager] = panelAdmin;
+            } else
+                throw new Exception ($"не создана административная панель: {manager}");
         }
 
         /// <summary>

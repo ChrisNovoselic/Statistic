@@ -57,34 +57,6 @@ namespace StatisticCommon
         //    return InitTEC (bIgnoreTECInUse, arTECLimit, bUseData);
         //}
 
-        private void initTG (TEC tec, IEnumerable<DataRow> allParamDetail, out int err)
-        {
-            err = -1;
-
-            int indx = -1;
-            DataTable list_lowPointDev = getListTG(tec.m_id, out err);
-            list_lowPointDev linq where in allParamDetail
-
-            if (err == 0)
-                for (int k = 0; k < list_lowPointDev.Rows.Count; k++) {
-                    tec.list_TECComponents.Add(new TECComponent(tec, list_lowPointDev.Rows[k]));
-                    indx = tec.list_TECComponents.Count - 1;
-
-                    try {
-                        tec.list_TECComponents[indx].AddLowPointDev(
-                            new TG(list_lowPointDev.Rows[k]
-                                , allParamDetail.Where<DataRow>(row => int.Parse(row["ID_TG"].ToString()) == tec.list_TECComponents [indx].m_id).ElementAt(0)
-                            )
-                        );
-                    } catch (Exception e) {
-                        Logging.Logg().Exception(e, @"InitTEC_200.ctor () - ...", Logging.INDEX_MESSAGE.NOT_SET);
-                    }
-
-                }
-            else
-                ; //Ошибка получения списка ТГ
-        }
-
         /// <summary>
         /// Список ВСЕХ компонентов (ТЭЦ, ГТП, ЩУ, ТГ)
         /// </summary>
@@ -102,6 +74,7 @@ namespace StatisticCommon
 #endif
             int err = -1;
             TEC newTECItem = null;
+            TECComponent newTECComp;
 
             tecRes = new ListTEC ();
             //if (Equals(_tec, null) == true)
@@ -156,7 +129,7 @@ namespace StatisticCommon
 #region Добавить ТГ для ТЭЦ
                                 try
                                 {
-                                    initTG (newTECItem, all_PARAM_DETAIL.Select (@"ID_TEC=" + newTECItem.m_id), out err);
+                                    newTECItem.InitTG (all_PARAM_DETAIL.Select (@"ID_TEC=" + newTECItem.m_id), out err);
                                 } catch (Exception e) {
                                     Logging.Logg().Exception(e, @"InitTEC_200.ctor () - ...", Logging.INDEX_MESSAGE.NOT_SET);
                                 }
@@ -176,11 +149,13 @@ namespace StatisticCommon
                                             {
                                                 //Logging.Logg().Debug("InitTEC::InitTEC (3 параметра) - ...tec[indx_tec].list_TECComponents.Add(new TECComponent...");
 
-                                                newTECItem/*tec[indx_tec]*/.list_TECComponents.Add(new TECComponent(newTECItem/*tec[indx_tec]*/, list_TECComponents.Rows[j]));
-                                                indx = newTECItem/*tec[indx_tec]*/.list_TECComponents.Count - 1;
+                                                newTECComp = new TECComponent (newTECItem, list_TECComponents.Rows [j]);
 
-                                                newTECItem/*tec[indx_tec]*/.InitTG(indx
-                                                    , all_PARAM_DETAIL.Select(@"ID_" + FormChangeMode.getPrefixMode(c) + @"=" + newTECItem/*tec[indx_tec]*/.list_TECComponents[indx].m_id));
+                                                newTECItem.AddTECComponent(newTECComp);
+                                                indx = newTECItem.ListTECComponents.Count - 1;
+
+                                                newTECItem.InitTG(newTECComp.m_id
+                                                    , all_PARAM_DETAIL.Select(@"ID_" + FormChangeMode.getPrefixMode(c) + @"=" + newTECComp.m_id));
                                             }
                                         }
                                         catch (Exception e)
@@ -206,10 +181,10 @@ namespace StatisticCommon
                                 if (err == 0)
                                     for (int k = 0; k < list_lowPointDev.Rows.Count; k++)
                                     {
-                                        newTECItem/*tec[indx_tec]*/.list_TECComponents.Add(new TECComponent(newTECItem/*tec[indx_tec]*/, list_lowPointDev.Rows[k]));
-                                        indx = newTECItem/*tec[indx_tec]*/.list_TECComponents.Count - 1;
+                                        newTECItem.AddTECComponent (new TECComponent(newTECItem/*tec[indx_tec]*/, list_lowPointDev.Rows[k]));
+                                        indx = newTECItem.ListTECComponents.Count - 1;
 
-                                        newTECItem/*tec[indx_tec]*/.list_TECComponents[indx].AddLowPointDev(new Vyvod.ParamVyvod(all_PARAM_DETAIL.Select($"ID={newTECItem/*tec[indx_tec]*/.list_TECComponents[indx].m_id}") [0]));
+                                        newTECItem.ListTECComponents[indx].AddLowPointDev(new Vyvod.ParamVyvod(all_PARAM_DETAIL.Select($"ID={newTECItem.ListTECComponents[indx].m_id}") [0]));
                                     }
                                 else
                                     ; //Ошибка получения списка параметров ВЫВОДов
@@ -221,11 +196,11 @@ namespace StatisticCommon
                                 if (err == 0)
                                     foreach (DataRow r in list_TECComponents.Rows)
                                     {
-                                        newTECItem/*tec[indx_tec]*/.list_TECComponents.Add(new TECComponent(newTECItem/*tec[indx_tec]*/, r));
-                                        indx = newTECItem/*tec[indx_tec]*/.list_TECComponents.Count - 1;
+                                        newTECItem.AddTECComponent (new TECComponent(newTECItem, r));
+                                        indx = newTECItem.ListTECComponents.Count - 1;
 
                                         //???
-                                        newTECItem/*tec[indx_tec]*/.InitParamVyvod(-1, all_PARAM_DETAIL.Select($"ID_{FormChangeMode.getPrefixMode(FormChangeMode.MODE_TECCOMPONENT.VYVOD)}={newTECItem/*tec[indx_tec]*/.list_TECComponents[indx].m_id}"));
+                                        newTECItem.InitParamVyvod(-1, all_PARAM_DETAIL.Select($"ID_{FormChangeMode.getPrefixMode(FormChangeMode.MODE_TECCOMPONENT.VYVOD)}={newTECItem.ListTECComponents[indx].m_id}"));
                                     }
                                 else
                                     ; // ошибка получения перечня выводов
@@ -279,7 +254,8 @@ namespace StatisticCommon
             //Использование статической функции
             list_tec = GetListTEC(bIgnoreTECInUse, arTECLimit, out err);
             //??? что значит < 0, mode.Unknown < 0!!!
-            if (!(mode < 0))
+            if ((!(mode == FormChangeMode.MODE_TECCOMPONENT.VYVOD))
+                && (!(mode == FormChangeMode.MODE_TECCOMPONENT.Unknown)))
                 all_PARAM_DETAIL = getALL_PARAM_TG (0, out err); // самый новый набор
             else
                 all_PARAM_DETAIL = getALL_ParamVyvod(-1, out err); // для всех ТЭЦ
@@ -309,16 +285,16 @@ namespace StatisticCommon
                                     id_comp = Convert.ToInt32 (list_TECComponents.Rows[indx_comp][@"ID"]);
 
                                     #region Добавить ТГ для ТЭЦ
-                                    try
-                                    {
-                                        initTG (tecRes [i], all_PARAM_DETAIL.Select ($@"ID_TEC={tecRes [i].m_id} AND ID_{FormChangeMode.getPrefixMode (mode)}={id_comp}"), out err);
-                                    } catch (Exception e) {
-                                        Logging.Logg().Exception(e, @"InitTEC_200.ctor () - ...", Logging.INDEX_MESSAGE.NOT_SET);
-                                    }
+                                    //try
+                                    //{
+                                    //    initTG (tecRes [i], all_PARAM_DETAIL.Select ($@"ID_TEC={tecRes [i].m_id} AND ID_{FormChangeMode.getPrefixMode (mode)}={id_comp}"), out err);
+                                    //} catch (Exception e) {
+                                    //    Logging.Logg().Exception(e, @"InitTEC_200.ctor () - ...", Logging.INDEX_MESSAGE.NOT_SET);
+                                    //}
                                     #endregion
 
                                     tecRes[i].AddTECComponent(list_TECComponents.Rows[indx_comp]);
-                                    tecRes[i].InitTG(indx_comp, all_PARAM_DETAIL.Select($@"ID_{FormChangeMode.getPrefixMode(mode)}={id_comp}"));
+                                    tecRes[i].InitTG(id_comp, all_PARAM_DETAIL.Select($@"ID_{FormChangeMode.getPrefixMode(mode)}={id_comp}"));
                                 }
                             }
                             else
@@ -442,7 +418,7 @@ namespace StatisticCommon
 
                         if (err == 0)
                             // поиск ГТП
-                            foreach (TECComponent tc in tec.list_TECComponents)
+                            foreach (TECComponent tc in tec.ListTECComponents)
                                 if (tc.IsGTP == true) {
                                     selRows = tableRes.Select (@"ID=" + tc.m_id);
                                     // проверить наличие значения

@@ -385,7 +385,7 @@ namespace Statistic
                 this.RowCount = COUNT_FIXED_ROWS;
 
                 //m_list_TECComponents = new List <TECComponentBase> ();
-                foreach (TECComponent g in m_tecView.m_tec.list_TECComponents)
+                foreach (TECComponent g in m_tecView.m_tec.ListTECComponents)
                 {
                     if (g.IsGTP == true)
                     {
@@ -630,7 +630,7 @@ namespace Statistic
             private void showTMGenPower () {
                 double dblTotalPower_TM = 0.0
                         , dblTECComponentPower_TM = 0.0;
-                foreach (TECComponent g in m_tecView.m_tec.list_TECComponents)
+                foreach (TECComponent g in m_tecView.m_tec.ListTECComponents)
                 {
                     if (g.IsGTP == true)
                     {

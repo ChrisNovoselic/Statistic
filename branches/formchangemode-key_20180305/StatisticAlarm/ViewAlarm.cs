@@ -1145,7 +1145,7 @@ namespace StatisticAlarm
 
             foreach (TecView tv in m_listTecView)
             {
-                foreach (TECComponent tc in tv.m_tec.list_TECComponents)
+                foreach (TECComponent tc in tv.m_tec.ListTECComponents)
                 {
                     if (mode == FormChangeMode.MODE_TECCOMPONENT.GTP)
                         if (tc.m_id == id_comp)
@@ -1195,7 +1195,7 @@ namespace StatisticAlarm
 
             foreach (TecView tv in m_listTecView)
             {
-                foreach (TECComponent tc in tv.m_tec.list_TECComponents)
+                foreach (TECComponent tc in tv.m_tec.ListTECComponents)
                     if (tc.m_id == id_comp)
                     {
                         strRes += tv.m_tec.name_shr;

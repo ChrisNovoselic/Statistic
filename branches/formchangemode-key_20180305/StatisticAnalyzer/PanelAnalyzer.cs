@@ -2160,8 +2160,8 @@ namespace StatisticAnalyzer
                             } else
                                 ;
 
-                            if (t.list_TECComponents.Count > 0)
-                                foreach (StatisticCommon.TECComponent g in t.list_TECComponents)
+                            if (t.ListTECComponents.Count > 0)
+                                foreach (StatisticCommon.TECComponent g in t.ListTECComponents)
                                     if (g.m_id == arIdTabs [i])
                                         //Добавление вкладки в ListBox
                                         listBoxTabVisible.Items.Add ($"{t.name_shr} - {g.name_shr}");

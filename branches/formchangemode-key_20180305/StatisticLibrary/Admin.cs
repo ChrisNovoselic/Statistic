@@ -382,7 +382,7 @@ namespace StatisticCommon
                 //Logging.Logg().Debug("Admin::InitTEC () - формирование компонентов для ТЭЦ:" + t.name);
 
                 //if (t.list_TECComponents.Count > 0)
-                    foreach (TECComponent g in t.list_TECComponents)
+                    foreach (TECComponent g in t.ListTECComponents)
                         if (g.Type == _type)
                             allTECComponents.Add(g);
                         else
@@ -460,7 +460,7 @@ namespace StatisticCommon
                         }
 
                         if ((bInitSensorsStrings == true)
-                            && (t.m_bSensorsStrings == false))
+                            && (t.GetReadySensorsStrings (CurrentKey.Mode) == false))
                             t.InitSensorsTEC();
                         else
                             ;

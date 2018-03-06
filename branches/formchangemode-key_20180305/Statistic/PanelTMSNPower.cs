@@ -523,7 +523,7 @@ namespace Statistic
                 double dblTotalPower_TM = 0F
                     , dblTECComponentPower_TM = 0F;
 
-                foreach (TECComponent g in m_tecView.m_tec.list_TECComponents)
+                foreach (TECComponent g in m_tecView.m_tec.ListTECComponents)
                 {
                     if (g.IsGTP == true)
                     {
