@@ -678,59 +678,6 @@ namespace Statistic
             this.BeginInvoke(new DelegateObjectFunc(showFormFloat), e);
         }
 
-        /// <summary>
-        /// Возвратить индекс типа настраиваемой вкладки по наименованию п. меню ИЛИ наименования вкладки
-        /// </summary>
-        /// <param name="text">Наименование п. меню или вкладки</param>
-        /// <returns>Индекс (номер) типа</returns>
-        private INDEX_CUSTOM_TAB getIndexCustomTab(string text)
-        {
-            INDEX_CUSTOM_TAB indxRes = INDEX_CUSTOM_TAB.TAB_2X2; //e.TabHeaderText.Contains(@"2X2") == true
-            if (text.Contains(@"2X3") == true)
-                indxRes = INDEX_CUSTOM_TAB.TAB_2X3;
-            else
-                ;
-
-            return indxRes;
-        }
-
-        /// <summary>
-        /// Возвратить индекс (номер окна) по наименованию п. меню ИЛИ наименования вкладки
-        /// </summary>
-        /// <param name="text">Наименование п. меню или вкладки</param>
-        /// <returns>Индекс (номер)</returns>
-        int getIndexItemCustomTab(string text)
-        {
-            return Int32.Parse(text.Substring(text.Length - 1, 1)) - 1;
-        }
-
-        //private int getKeyOfPanel (Panel panel)
-        //{
-        //    int iRes = -1;
-
-        //    if (panel is PanelCustomTecView)
-        //    {
-        //        //Определить индексы в массиве
-        //        string text = tclTecViews.NameOfItemControl(panel);
-        //        INDEX_CUSTOM_TAB indxTab = getIndexCustomTab(text);
-        //        int indxItem = getIndexItemCustomTab(text);
-        //        iRes = (int)m_arIdCustomTabs[(int)indxTab, indxItem];
-        //    }
-        //    else
-        //    {
-        //        if (panel is PanelTecViewBase)
-        //        {
-        //            iRes = (panel as PanelTecViewBase).m_ID;
-        //        }
-        //        else
-        //        {
-        //            throw new Exception(@"FormMain::getKeyOfPanel () - невозможно определить идентификатор панали - неизвестный тип панели...");
-        //        }
-        //    }
-
-        //    return iRes;
-        //}
-
         private int getKeyFormFloat(Form f)
         {
             int iRes = -1;
@@ -1197,18 +1144,13 @@ namespace Statistic
                 try {
                     if ((tab.IsDisposed == false)
                         && (tab.Controls.Count > 0)) {
-                        if (((tab.Controls[0] is PanelTecViewStandard)
-                                || (tab.Controls[0] is PanelLKView))
-                            && (listKeyTabKeep.Any(key => key.Id == ((PanelTecViewBase)tab.Controls[0]).TecViewKey.Id) == false))
-                        {
-                            bStopped = true;
-                        }
-                        else if (tab.Controls[0] is PanelAdmin)
-                        {
+                        if (typeof (PanelTecViewBase).IsAssignableFrom (tab.Controls [0].GetType ()) == true) { // в т.ч. 'PanelLKView'
+                            bStopped = !(listKeyTabKeep.Any (key => key.Id == ((PanelTecViewBase)tab.Controls [0]).TecViewKey.Id));
+                        } else if ((typeof(PanelAdmin).IsAssignableFrom(tab.Controls[0].GetType()) == true)
+                            || (typeof (PanelAlarm).IsAssignableFrom (tab.Controls [0].GetType ()) == true)) {
                             bStopped = !bAfterRunning;
 
-                            if (bStopped == false)
-                            {
+                            if (bStopped == false) {
                                 indxManager = (FormChangeMode.MANAGER)listPanelAdminTypes.IndexOf(tab.Controls[0].GetType());
 
                                 bStopped = (!(indxManager == FormChangeMode.MANAGER.UNKNOWN))
@@ -1218,18 +1160,21 @@ namespace Statistic
                                     m_markPrevStatePanelAdmin.UnMarked ((int)indxManager);
                                 else
                                     ;
-                            }
-                            else
+                            } else
                                 ;
-                        } else if (tab.Controls[0] is PanelStatistic) {
+                        } else if (typeof (PanelStatistic).IsAssignableFrom (tab.Controls [0].GetType ()) == true) {
                             idAddingTab = tclTecViews.GetTabPageId (i);
-                            if ((Enum.IsDefined (typeof (ID_ADDING_TAB), idAddingTab) == true)
-                                && (m_dictAddingTabs.ContainsKey ((ID_ADDING_TAB)idAddingTab) == true))
-                            // если предполагется дальнейшее выполнение, вкладку с отображения НЕ снимать
-                                bPerformClick = true && !bAfterRunning;
-                            else
-                            //??? throw
-                                ; 
+
+                            if (listKeyTabKeep.Any (key => key.Id == idAddingTab) == false) {
+                                if ((Enum.IsDefined (typeof (ID_ADDING_TAB), idAddingTab) == true)
+                                    && (m_dictAddingTabs.ContainsKey ((ID_ADDING_TAB)idAddingTab) == true))
+                                // если предполагется дальнейшее выполнение, вкладку с отображения НЕ снимать
+                                    bPerformClick = true && !bAfterRunning;
+                                else
+                                //??? throw
+                                    ;
+                            } else
+                                ;
                         } else
                         //??? могут быть и др. типы вкладок
                             throw new Exception($"FormMain::clearTabPages () - вкладка <{tab.Controls [0].GetType().Name}> не обрабатывается...");
@@ -1305,7 +1250,9 @@ namespace Statistic
                 ;
 
             //Деактивация
-            if ((!(m_prevSelectedIndex < 0)) && (!(m_prevSelectedIndex == tclTecViews.SelectedIndex)) && (m_prevSelectedIndex < tclTecViews.TabCount))
+            if ((!(m_prevSelectedIndex < 0))
+                && (!(m_prevSelectedIndex == tclTecViews.SelectedIndex))
+                && (m_prevSelectedIndex < tclTecViews.TabCount))
             {
                 activateTabPage(m_prevSelectedIndex, false);
             }
@@ -2123,7 +2070,10 @@ namespace Statistic
                                 break;
                         }
 
-                        tclTecViews.AddTabPage(m_arPanelAdmin[(int)modeAdmin], formChangeMode.getNameAdminValues(modeAdmin, mode), -1, HStatisticTabCtrlEx.TYPE_TAB.FIXED);
+                        tclTecViews.AddTabPage(m_arPanelAdmin[(int)modeAdmin]
+                            , formChangeMode.getNameAdminValues(modeAdmin, mode)
+                            , FormChangeMode.ID_ADMIN_TABS[(int)modeAdmin]
+                            , HStatisticTabCtrlEx.TYPE_TAB.FIXED);
 
                         switch (modeAdmin)
                         {
@@ -2298,7 +2248,7 @@ namespace Statistic
         {
             if (m_dictAddingTabs[ID_ADDING_TAB.CUR_POWER].panel == null)
             {
-                m_dictAddingTabs[ID_ADDING_TAB.CUR_POWER].panel = new PanelCurPower(PanelKomDisp.m_list_tec);
+                m_dictAddingTabs[ID_ADDING_TAB.CUR_POWER].panel = new PanelCurPower(formChangeMode.m_list_tec);
                 ((PanelStatistic)m_dictAddingTabs[ID_ADDING_TAB.CUR_POWER].panel).SetDelegateWait(null, null, delegateEvent);
                 m_dictAddingTabs[ID_ADDING_TAB.CUR_POWER].panel.SetDelegateReport (ErrorReport, WarningReport, ActionReport, ReportClear);
             }
@@ -2313,7 +2263,7 @@ namespace Statistic
         {
             if (m_dictAddingTabs[ID_ADDING_TAB.TM_SN_POWER].panel == null)
             {
-                m_dictAddingTabs[ID_ADDING_TAB.TM_SN_POWER].panel = new PanelTMSNPower(PanelKomDisp.m_list_tec);
+                m_dictAddingTabs[ID_ADDING_TAB.TM_SN_POWER].panel = new PanelTMSNPower(formChangeMode.m_list_tec);
                 ((PanelStatistic)m_dictAddingTabs[ID_ADDING_TAB.TM_SN_POWER].panel).SetDelegateWait(null, null, delegateEvent);
                 ((PanelStatistic)m_dictAddingTabs[ID_ADDING_TAB.TM_SN_POWER].panel).SetDelegateReport(ErrorReport, WarningReport, ActionReport, ReportClear);
             }
@@ -2328,7 +2278,7 @@ namespace Statistic
         {
             if (m_dictAddingTabs[ID_ADDING_TAB.MONITOR_LAST_MINUTES].panel == null)
             {
-                m_dictAddingTabs[ID_ADDING_TAB.MONITOR_LAST_MINUTES].panel = new PanelLastMinutes(PanelKomDisp.m_list_tec);
+                m_dictAddingTabs[ID_ADDING_TAB.MONITOR_LAST_MINUTES].panel = new PanelLastMinutes(formChangeMode.m_list_tec);
                 ((PanelStatistic)m_dictAddingTabs[ID_ADDING_TAB.MONITOR_LAST_MINUTES].panel).SetDelegateWait(null, null, delegateEvent);
                 ((PanelStatistic)m_dictAddingTabs[ID_ADDING_TAB.MONITOR_LAST_MINUTES].panel).SetDelegateReport(ErrorReport, WarningReport, ActionReport, ReportClear);
             }
@@ -2354,7 +2304,7 @@ namespace Statistic
             if (m_dictAddingTabs[ID_ADDING_TAB.ANALYZER].panel == null)
             {
                 DbTSQLConfigDatabase.DbConfig ().Register();
-                m_dictAddingTabs[ID_ADDING_TAB.ANALYZER].panel = new PanelAnalyzer_DB(PanelKomDisp.m_list_tec, formGraphicsSettings.FontColor, formGraphicsSettings.BackgroundColor);
+                m_dictAddingTabs[ID_ADDING_TAB.ANALYZER].panel = new PanelAnalyzer_DB(formChangeMode.m_list_tec, formGraphicsSettings.FontColor, formGraphicsSettings.BackgroundColor);
                 m_dictAddingTabs[ID_ADDING_TAB.ANALYZER].panel.SetDelegateReport(ErrorReport, WarningReport, ActionReport, ReportClear);
                 DbTSQLConfigDatabase.DbConfig ().UnRegister ();
             }
@@ -2369,7 +2319,7 @@ namespace Statistic
             if (m_dictAddingTabs[ID_ADDING_TAB.TEC_Component].panel == null)
             {
                 DbTSQLConfigDatabase.DbConfig ().Register();
-                m_dictAddingTabs[ID_ADDING_TAB.TEC_Component].panel = new PanelTECComponent(PanelKomDisp.m_list_tec);
+                m_dictAddingTabs[ID_ADDING_TAB.TEC_Component].panel = new PanelTECComponent(formChangeMode.m_list_tec);
                 m_dictAddingTabs[ID_ADDING_TAB.TEC_Component].panel.SetDelegateReport(ErrorReport, WarningReport, ActionReport, ReportClear);
                 DbTSQLConfigDatabase.DbConfig ().UnRegister ();
 
@@ -2386,7 +2336,7 @@ namespace Statistic
         {
             if (m_dictAddingTabs[ID_ADDING_TAB.SOBSTV_NYZHDY].panel == null)
             {
-                m_dictAddingTabs[ID_ADDING_TAB.SOBSTV_NYZHDY].panel = new PanelSobstvNyzhdy(PanelKomDisp.m_list_tec/*, ErrorReport, WarningReport, ActionReport, ReportClear*/);
+                m_dictAddingTabs[ID_ADDING_TAB.SOBSTV_NYZHDY].panel = new PanelSobstvNyzhdy(formChangeMode.m_list_tec/*, ErrorReport, WarningReport, ActionReport, ReportClear*/);
                 ((PanelSobstvNyzhdy)m_dictAddingTabs[ID_ADDING_TAB.SOBSTV_NYZHDY].panel).SetDelegateWait(null, null, delegateEvent);
                 ((PanelSobstvNyzhdy)m_dictAddingTabs[ID_ADDING_TAB.SOBSTV_NYZHDY].panel).SetDelegateReport(ErrorReport, WarningReport, ActionReport, ReportClear);
             }
@@ -2529,7 +2479,7 @@ namespace Statistic
             if (m_dictAddingTabs[keyTab].panel == null) {
                 DbTSQLConfigDatabase.DbConfig ().Register();
 
-                m_dictAddingTabs[keyTab].panel = new PanelAISKUESOTIASSODay(DbTSQLConfigDatabase.DbConfig ().ListenerId, PanelKomDisp.m_list_tec);
+                m_dictAddingTabs[keyTab].panel = new PanelAISKUESOTIASSODay(DbTSQLConfigDatabase.DbConfig ().ListenerId, formChangeMode.m_list_tec);
                 m_dictAddingTabs[keyTab].panel.SetDelegateReport(ErrorReport, WarningReport, ActionReport, ReportClear);
 
                 DbTSQLConfigDatabase.DbConfig ().UnRegister();
@@ -2584,6 +2534,30 @@ namespace Statistic
                 , indxItem = -1;
             INDEX_CUSTOM_TAB indxTab = INDEX_CUSTOM_TAB.TAB_2X2;
 
+            /// <summary>
+            /// Возвратить индекс типа настраиваемой вкладки по наименованию п. меню ИЛИ наименования вкладки
+            /// </summary>
+            /// <param name="text">Наименование п. меню или вкладки</param>
+            /// <returns>Индекс (номер) типа</returns>
+            Func<string, INDEX_CUSTOM_TAB> getIndexCustomTab = delegate (string name_tab) {
+                INDEX_CUSTOM_TAB indxRes = INDEX_CUSTOM_TAB.TAB_2X2; //e.TabHeaderText.Contains(@"2X2") == true
+                if (name_tab.Contains (@"2X3") == true)
+                    indxRes = INDEX_CUSTOM_TAB.TAB_2X3;
+                else
+                    ;
+
+                return indxRes;
+            };
+
+            /// <summary>
+            /// Возвратить индекс (номер окна) по наименованию п. меню ИЛИ наименования вкладки
+            /// </summary>
+            /// <param name="text">Наименование п. меню или вкладки</param>
+            /// <returns>Индекс (номер)</returns>
+            Func<string, int> getIndexItemCustomTab = delegate (string text) {
+                return Int32.Parse (text.Substring (text.Length - 1, 1)) - 1;
+            };
+
             if (arCheckedStoped[0] == true)
             {
                 if (typeTab == ASUTP.Control.HTabCtrlEx.TYPE_TAB.FLOAT)
@@ -2604,7 +2578,12 @@ namespace Statistic
                 tclTecViews.AddTabPage(panel, nameTab, key, typeTab);
 
                 panel.Start();
-                if (m_bAutoActionTabs == false)
+                // вкладку активируем только, если не выполняется 'm_bAutoActionTabs == false' автоматическая загрузка профиля пользователя
+                // ИЛИ в случае 1-ой добавленной вкладки при автоматической загрузке профиля  пользователя
+                if ((m_bAutoActionTabs == false)
+                    || ((m_bAutoActionTabs == true)
+                        && (tclTecViews.TabCount == 1))
+                    )
                     ActivateTabPage();
                 else
                     ;
@@ -2612,7 +2591,7 @@ namespace Statistic
             else
             {//arCheckedStoped[0] == false
                 //??? текст заголовка вкладки НЕ уникальный
-                indxItem = tclTecViews.IndexOfName (nameTab);
+                indxItem = tclTecViews.IndexOfID ((int)idAddingPanel);
 
                 if (!(indxItem < 0)) {
                     bRes = tclTecViews.RemoveTabPage(indxItem); //nameTab

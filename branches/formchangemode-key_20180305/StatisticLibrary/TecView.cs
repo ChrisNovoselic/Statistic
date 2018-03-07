@@ -18,8 +18,8 @@ namespace StatisticCommon
 {
     public class TecViewTMPower : TecView
     {
-        public TecViewTMPower()
-            : base(new FormChangeMode.KeyDevice () { Id = -1, Mode = FormChangeMode.MODE_TECCOMPONENT.Unknown }, TECComponentBase.TYPE.ELECTRO)
+        public TecViewTMPower(FormChangeMode.KeyDevice key)
+            : base(key, TECComponentBase.TYPE.ELECTRO)
         {
         }
 

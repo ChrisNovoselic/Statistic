@@ -14,12 +14,8 @@ namespace StatisticCommon
 {
     public class DataGridViewAdminNSS : DataGridViewAdmin
     {
-        private enum INDEX_ID : ushort { ID, ID_OWNER, COUNT_ID_TYPE };
-
-        //private List <int []> m_listIds;
-
-        DataGridViewCellStyle dgvCellStyleError,
-                             dgvCellStyleGTP;
+        DataGridViewCellStyle dgvCellStyleError
+            , dgvCellStyleGTP;
 
         protected override int INDEX_COLUMN_BUTTON_TO_ALL
         {
@@ -78,36 +74,36 @@ namespace StatisticCommon
         {
             int id_gtp = -1,
                     col_gtp = -1;
-            List<int []> listIds = new List<int []> ();
+            List<ColumnTag> keys = new List<ColumnTag> ();
 
             Columns.Cast<DataGridViewColumn> ().ToList ().ForEach (col => {
-                if (col.Tag is int [])
-                    listIds.Add (col.Tag as int []);
+                if (col.Tag is ColumnTag)
+                    keys.Add ((ColumnTag)col.Tag);
                 else
                     ;
             });
 
-            if ((listIds.Count == Columns.Count - 2)
+            if ((keys.Count == Columns.Count - 2)
                 && (Columns[e.ColumnIndex].ReadOnly == false)
                 && (e.ColumnIndex > 0)
                 && (e.ColumnIndex < Columns.Count - 1))
             {
-                id_gtp = listIds [e.ColumnIndex - 1] [(int)INDEX_ID.ID_OWNER]; // (int)(Equals (sender, null) == true ? INDEX_ID.ID : INDEX_ID.ID_OWNER)
+                id_gtp = keys [e.ColumnIndex - 1].KeyOwner.Id;
                 col_gtp = -1;
                 List<int> list_col_tg = new List<int>();
 
-                foreach (int [] ids in listIds) {
+                foreach (ColumnTag key in keys) {
                     //Поиск номера столбца ГТП (только ОДИН раз)
                     if ((col_gtp < 0)
-                        && (id_gtp == ids[(int)INDEX_ID.ID])
-                        && (TECComponent.GetMode(ids[(int)INDEX_ID.ID_OWNER]) == FormChangeMode.MODE_TECCOMPONENT.TEC))
-                        col_gtp = listIds.IndexOf(ids) + 1; // '+ 1' за счт столбца "Дата, время"
+                        && (id_gtp == key.KeyMain.Id)
+                        && (key.KeyOwner.Mode == FormChangeMode.MODE_TECCOMPONENT.TEC))
+                        col_gtp = keys.IndexOf(key) + 1; // '+ 1' за счт столбца "Дата, время"
                     else
                         ;
 
                     //Все столбцы для ГТП с id_gtp == ...
-                    if (id_gtp == ids [(int)INDEX_ID.ID_OWNER])
-                        list_col_tg.Add(listIds.IndexOf(ids) + 1); // '+ 1' за счт столбца "Дата, время"
+                    if (id_gtp == key.KeyOwner.Id)
+                        list_col_tg.Add(keys.IndexOf(key) + 1); // '+ 1' за счт столбца "Дата, время"
                     else
                         ;
                 }
@@ -188,12 +184,12 @@ namespace StatisticCommon
 
         private struct ColumnTag
         {
-            public int Id;
+            public FormChangeMode.KeyDevice KeyMain;
 
-            public int IdOwner;
+            public FormChangeMode.KeyDevice KeyOwner;
         }
 
-        public void addTextBoxColumn(string name, int id, int id_owner)
+        public void addTextBoxColumn(string name, FormChangeMode.KeyDevice key_main, FormChangeMode.KeyDevice key_owner)
         {
             DataGridViewTextBoxColumn insColumn = new DataGridViewTextBoxColumn ();
             insColumn.Frozen = false;
@@ -204,12 +200,12 @@ namespace StatisticCommon
             insColumn.SortMode = System.Windows.Forms.DataGridViewColumnSortMode.NotSortable;
             try { Columns.Insert(Columns.Count - 1, insColumn); }
             catch (Exception e) {
-                Logging.Logg().Exception(e, string.Format("DataGridViewAdminNSS::addTextBoxColumn (name={0}, id={1}, id_owner={2}) - Columns.Insert", name, id, id_owner), Logging.INDEX_MESSAGE.NOT_SET);
+                Logging.Logg().Exception(e, string.Format("DataGridViewAdminNSS::addTextBoxColumn (name={0}, id={1}, id_owner={2}) - Columns.Insert", name, key_main.Id, key_owner.Id), Logging.INDEX_MESSAGE.NOT_SET);
             }
 
-            insColumn.Tag = new int [(int)INDEX_ID.COUNT_ID_TYPE] {id, id_owner};
+            insColumn.Tag = new ColumnTag () { KeyMain = key_main, KeyOwner = key_owner };
 
-            if (TECComponent.GetMode(id_owner) == FormChangeMode.MODE_TECCOMPONENT.TEC) {
+            if (key_owner.Mode == FormChangeMode.MODE_TECCOMPONENT.TEC) {
                 Columns[Columns.Count - 1 - 1].Frozen = true;
                 Columns [Columns.Count - 1 - 1].ReadOnly = true;
                 Columns [Columns.Count - 1 - 1].DefaultCellStyle = dgvCellStyleGTP;
@@ -230,7 +226,7 @@ namespace StatisticCommon
 
         public int GetIdGTPOwner(int i)
         {
-            return (Columns[i].Tag as int[])[(int)INDEX_ID.ID_OWNER];
+            return ((ColumnTag)Columns[i].Tag).KeyOwner.Id;
         }
 
         public override Color BackColor

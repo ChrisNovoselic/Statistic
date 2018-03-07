@@ -1632,7 +1632,7 @@ namespace Statistic
                                 break;
                             default:
                                 break;
-                        }                    
+                        }
 
                         if (bInitTableMinRows == true)
                             initTableMinRows();

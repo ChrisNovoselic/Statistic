@@ -150,8 +150,8 @@ namespace Statistic
             // в случае добавления столбцов
                 key = ((AdminTS_NSS)m_admin).m_listKeyTECComponentDetail [this.dgwAdminTable.Columns.Count - 2];
                 ((DataGridViewAdminNSS)this.dgwAdminTable).addTextBoxColumn (m_admin.GetNameTECComponent (key, false),
-                    key.Id,
-                    m_admin.GetIdOwnerTECComponent (key.Mode == FormChangeMode.MODE_TECCOMPONENT.GTP ? FormChangeMode.MODE_TECCOMPONENT.TEC : FormChangeMode.MODE_TECCOMPONENT.GTP, key).Id);
+                    key,
+                    m_admin.GetIdOwnerTECComponent (key.Mode == FormChangeMode.MODE_TECCOMPONENT.GTP ? FormChangeMode.MODE_TECCOMPONENT.TEC : FormChangeMode.MODE_TECCOMPONENT.GTP, key));
 
                 for (int i = 0; i < 24; i++) {
                     if (this.dgwAdminTable.Columns.Count == 3) {

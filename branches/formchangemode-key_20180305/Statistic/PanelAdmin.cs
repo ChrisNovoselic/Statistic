@@ -141,11 +141,6 @@ namespace Statistic
         /// </summary>
         protected volatile int prevSelectedIndex;
         /// <summary>
-        /// Список ТЭЦ, собирается автоматически при запуске приложения
-        ///  , передается в панель при создании объекта панели
-        /// </summary>
-        public List <StatisticCommon.TEC> m_list_tec { get { return m_admin.m_list_tec; } }
-        /// <summary>
         /// Значения для позиционирования элементов управления
         /// </summary>
         protected static int m_iSizeY = 22

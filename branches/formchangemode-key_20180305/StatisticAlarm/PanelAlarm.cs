@@ -76,6 +76,7 @@ namespace StatisticAlarm
         /// </summary>
         /// <param name="markQueries">Массив признаков кстановления связи с тем или иным источником данных</param>
         /// <param name="mode">Режим работы панели</param>
+        /// <param name="foreColor">Цвет шрифта панели и всех дочерних элементов управления</param>
         /// <param name="backColor">Цвет фона панели и всех дочерних элементов управления</param>
         public PanelAlarm (ASUTP.Core.HMark markQueries, MODE mode, Color foreColor, Color backColor)
             : base(MODE_UPDATE_VALUES.AUTO, foreColor, backColor)

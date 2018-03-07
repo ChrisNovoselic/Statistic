@@ -1936,7 +1936,7 @@ namespace Statistic
             /// Инициализация подключения к БД
             /// и компонентов панели.
             /// </summary>
-            /// <returns></returns>
+            /// <returns>Признак успешности/ошибки выполнения метода</returns>
             private int initialize()
             {
                 int iRes = 0;

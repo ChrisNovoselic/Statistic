@@ -337,8 +337,8 @@ namespace trans_tg
             int indxDB = m_IndexDB;
             FormChangeMode.KeyDevice key = ((AdminTS_NSS)m_arAdmin[indxDB]).m_listKeyTECComponentDetail[m_dgwAdminTable.Columns.Count - 2];
             ((DataGridViewAdminNSS)m_dgwAdminTable).addTextBoxColumn(((AdminTS_NSS)m_arAdmin[indxDB]).GetNameTECComponent(key, false)
-                , key.Id
-                , ((AdminTS_NSS)m_arAdmin[indxDB]).GetIdGTPOwnerTECComponent(key).Id);
+                , key
+                , ((AdminTS_NSS)m_arAdmin[indxDB]).GetIdGTPOwnerTECComponent(key));
 
             DataGridViewCellEventArgs ev;
 

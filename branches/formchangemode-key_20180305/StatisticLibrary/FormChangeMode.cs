@@ -49,7 +49,8 @@ namespace StatisticCommon
         }
 
         /// <summary>
-        /// Список ТЭЦ
+        /// Список ТЭЦ, собирается автоматически при запуске приложения
+        ///  , передается в панель при создании объекта панели
         /// </summary>
         public List<TEC> m_list_tec;
         /// <summary>

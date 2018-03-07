@@ -282,7 +282,7 @@ namespace Statistic
             {
                 InitializeComponent();
 
-                m_tecView = new TecViewTMPower();
+                m_tecView = new TecViewTMPower(new FormChangeMode.KeyDevice () { Id = tec.m_id, Mode = FormChangeMode.MODE_TECCOMPONENT.TEC });
 
                 HMark markQueries = new HMark(new int[] { (int)CONN_SETT_TYPE.ADMIN, (int)CONN_SETT_TYPE.DATA_SOTIASSO });
                 //markQueries.Marked((int)CONN_SETT_TYPE.ADMIN); //Для получения даты/времени
