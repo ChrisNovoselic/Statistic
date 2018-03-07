@@ -118,7 +118,7 @@ namespace UnitTest {
             Assert.IsNotNull (panel);
 
             panel.Start ();
-            panel.InitializeComboBoxTecComponent (FormChangeMode.MODE_TECCOMPONENT.GTP, true);
+            panel.InitializeComboBoxTecComponent (FormChangeMode.MODE_TECCOMPONENT.GTP, true, true);
             panel.Activate (true);
             Assert.IsTrue (panel.Actived);
 
@@ -171,8 +171,8 @@ namespace UnitTest {
 
             string mesDebug = string.Empty;
 
-            FormChangeMode.KeyDevice prevKey = FormChangeMode.KeyTECComponentEmpty
-                , nextKey = FormChangeMode.KeyTECComponentEmpty;
+            FormChangeMode.KeyDevice prevKey = FormChangeMode.KeyDeviceEmpty
+                , nextKey = FormChangeMode.KeyDeviceEmpty;
             Action onEventUnitTestSetDataGridViewAdminCompleted;
             AdminTS_KomDisp.DelegateUnitTestExportPBRValuesRequest delegateExportPBRValuesRequest;
             Task taskPerformButtonExportPBRValuesClick;
@@ -319,8 +319,8 @@ namespace UnitTest {
 
             string mesDebug = string.Empty;
 
-            FormChangeMode.KeyDevice prevKey = FormChangeMode.KeyTECComponentEmpty
-                , nextKey = FormChangeMode.KeyTECComponentEmpty;
+            FormChangeMode.KeyDevice prevKey = FormChangeMode.KeyDeviceEmpty
+                , nextKey = FormChangeMode.KeyDeviceEmpty;
             Action onEventUnitTestSetDataGridViewAdminCompleted;
             PanelAdmin.DelegateUnitTestNextIndexSetValuesRequest delegateNextIndexSetValuesRequest;
             Task taskPerformButtonSetClick
@@ -392,7 +392,7 @@ namespace UnitTest {
                     Equals(taskPerformComboBoxTECComponentSelectedIndex, null) == false ? taskPerformComboBoxTECComponentSelectedIndex.Status : TaskStatus.WaitingForActivation;
 
                 while ((cnt++ < cnt_max)
-                    && (!(nextKey == FormChangeMode.KeyTECComponentEmpty))) {
+                    && (!(nextKey == FormChangeMode.KeyDeviceEmpty))) {
                     // ожидать
                     Thread.Sleep (1000);
                     // сообщение для индикации ожидания

@@ -88,9 +88,9 @@ namespace Statistic {
         /// <summary>
         /// Конструктор класса
         /// </summary>
-        /// <param name="markQueries"></param>
+        /// <param name="markQueries">Признак(b) необходимости выполнения запросов того или иного типа</param>
         public PanelAdminLK(ASUTP.Core.HMark markQueries)
-            : base(FormChangeMode.MODE_TECCOMPONENT.TEC, markQueries, new int[] { (int)TECComponent.ID.LK, (int)TECComponent.ID.GTP })
+            : base(FormChangeMode.MODE_TECCOMPONENT.GTP, markQueries, new int[] { (int)TECComponent.ID.LK, (int)TECComponent.ID.GTP })
         {
             m_admin.SetDelegateSaveComplete(null);
         }
@@ -196,6 +196,14 @@ namespace Statistic {
                 Logging.Logg().Error(@"PanelTecCurPower::setDataGridViewAdmin () - ... BeginInvoke (addTextBoxColumn) - ...", Logging.INDEX_MESSAGE.D_001);
         }
 
+        private AdminTS_LK Admin
+        {
+            get
+            {
+                return m_admin as AdminTS_LK;
+            }
+        }
+
         /// <summary>
         /// Метод добавления колонок в DataGridView + заполнение значениями ячеек
         /// </summary>
@@ -211,7 +219,7 @@ namespace Statistic {
             // новый столбец
                 ((DataGridViewAdminLK)this.dgwAdminTable).AddTextBoxColumn(m_admin.GetNameTECComponent(key, false),
                     key.Id,
-                    m_admin.GetIdGTPOwnerTECComponent(key),
+                    m_admin.GetIdOwnerTECComponent(key.Mode == FormChangeMode.MODE_TECCOMPONENT.GTP ? FormChangeMode.MODE_TECCOMPONENT.TEC : FormChangeMode.MODE_TECCOMPONENT.GTP, key).Id,
                     date);
 
                 for (int i = 0; i < 24; i++)    
@@ -238,13 +246,11 @@ namespace Statistic {
                     ((DataGridViewAdminLK)this.dgwAdminTable).DataGridViewAdminLK_CellValueChanged(null
                         , new DataGridViewCellEventArgs(this.dgwAdminTable.Columns.Count - 4, i));
                 }
-                
-                visibleControlRDGExcel(((AdminTS_LK)m_admin).GetIdTECOwnerTECComponent(indx));
             } else
                 ;
 
-            if ((m_admin.GetIdTECComponent(indx) > (int)TECComponent.ID.GTP)
-                && (m_admin.GetIdTECComponent(indx) < (int)TECComponent.ID.PC))
+            if ((Admin.GetIdTECComponent(indx) > (int)TECComponent.ID.GTP)
+                && (Admin.GetIdTECComponent(indx) < (int)TECComponent.ID.PC))
             {
                 for (int i = 0; i < 24; i++)
                 {
@@ -314,6 +320,9 @@ namespace Statistic {
 
             if (bRes == true)
                 if (active == true) {
+                    //TODO: так же требуется вызвать метод при изменении выбора GTP в списке
+                    //  , но GTP для ЛК только одна!!!
+                    visibleControlRDGExcel ();
                 } else {
                 } else
                 ;
@@ -334,14 +343,12 @@ namespace Statistic {
         /// <summary>
         /// Метод для активации отображения кнопок импорта и экспорта
         /// </summary>
-        /// <param name="id_tec">ID ТЭЦ</param>
-        private void visibleControlRDGExcel(int id_tec)
+        private void visibleControlRDGExcel()
         {
             bool bImpExpButtonVisible = false;
 
-            if ((!(comboBoxTecComponent.SelectedIndex < 0))
-                && (m_admin.IsRDGExcel(SelectedItemKey) == true))
-                bImpExpButtonVisible = true;
+            if (!(comboBoxTecComponent.SelectedIndex < 0))
+                bImpExpButtonVisible = m_admin.IsRDGExcel (m_admin.GetIdOwnerTECComponent(FormChangeMode.MODE_TECCOMPONENT.TEC, SelectedItemKey));
             else
                 ;
 

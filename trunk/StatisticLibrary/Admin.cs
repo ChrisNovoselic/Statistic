@@ -361,7 +361,11 @@ namespace StatisticCommon
             initTECComponents();
 
             try {
-                CurrentKey = new FormChangeMode.KeyDevice () { Id = allTECComponents.First (comp => comp.Mode == mode).m_id, Mode = mode };
+                if ((mode == FormChangeMode.MODE_TECCOMPONENT.TEC)
+                    || (mode == FormChangeMode.MODE_TECCOMPONENT.ANY)) //??? зачем '.ANY'
+                    CurrentKey = new FormChangeMode.KeyDevice () { Id = this.m_list_tec[0].m_id, Mode = mode };
+                else
+                    CurrentKey = new FormChangeMode.KeyDevice () { Id = allTECComponents.First (comp => comp.Mode == mode).m_id, Mode = mode };
             } catch (Exception e) {
                 Logging.Logg ().Exception (e, $"HADmin::InitTEC (mode={mode}) - не найден 1-ый элемент для инициализации списка", Logging.INDEX_MESSAGE.NOT_SET);
             }
@@ -378,7 +382,7 @@ namespace StatisticCommon
                 //Logging.Logg().Debug("Admin::InitTEC () - формирование компонентов для ТЭЦ:" + t.name);
 
                 //if (t.list_TECComponents.Count > 0)
-                    foreach (TECComponent g in t.list_TECComponents)
+                    foreach (TECComponent g in t.ListTECComponents)
                         if (g.Type == _type)
                             allTECComponents.Add(g);
                         else
@@ -456,7 +460,7 @@ namespace StatisticCommon
                         }
 
                         if ((bInitSensorsStrings == true)
-                            && (t.m_bSensorsStrings == false))
+                            && (t.GetReadySensorsStrings (_type) == false))
                             t.InitSensorsTEC();
                         else
                             ;

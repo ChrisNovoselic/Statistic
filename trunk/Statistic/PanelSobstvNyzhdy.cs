@@ -320,14 +320,14 @@ namespace Statistic
 
             private class TecViewSobstvNyzhdy : TecView
             {
-                public TecViewSobstvNyzhdy()
-                    : base(new FormChangeMode.KeyDevice () { Id = -1, Mode = FormChangeMode.MODE_TECCOMPONENT.Unknown }, TECComponentBase.TYPE.ELECTRO)
+                public TecViewSobstvNyzhdy(FormChangeMode.KeyDevice key)
+                    : base(key, TECComponentBase.TYPE.ELECTRO)
                 {
                 }
 
                 public override void ChangeState()
                 {
-                    lock (m_lockState) { GetRDGValues(FormChangeMode.KeyTECComponentEmpty, DateTime.MinValue); }
+                    lock (m_lockState) { GetRDGValues(FormChangeMode.KeyDeviceEmpty, DateTime.MinValue); }
 
                     base.ChangeState();
                 }
@@ -338,7 +338,7 @@ namespace Statistic
 
                     ClearValues();
 
-                    if (m_tec.m_bSensorsStrings == false)
+                    if (m_tec.GetReadySensorsStrings (_type) == false)
                         AddState((int)StatesMachine.InitSensors);
                     else
                         ;
@@ -396,7 +396,7 @@ namespace Statistic
             public PanelTecSobstvNyzhdy(StatisticCommon.TEC tec)
                 : base (MODE_UPDATE_VALUES.AUTO, FormMain.formGraphicsSettings.FontColor, FormMain.formGraphicsSettings.BackgroundColor, -1, -1)
             {
-                m_tecView = new TecViewSobstvNyzhdy();
+                m_tecView = new TecViewSobstvNyzhdy(new FormChangeMode.KeyDevice () { Id = tec.m_id, Mode = FormChangeMode.MODE_TECCOMPONENT.TEC });
 
                 m_mnlSetDateTimeResetEvent = new ManualResetEvent(false);
 

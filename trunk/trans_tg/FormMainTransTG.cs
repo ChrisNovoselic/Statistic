@@ -331,13 +331,13 @@ namespace trans_tg
         /// </summary>
         /// <param name="date">Дата отображаемых значений</param>
         /// <param name="bNewValues">Признак наличия новых значений (false - обновление оформления представления при изменении цветовой схемы)</param>
-        /// <param name="bSyncReq">Признак необходимости синхронизации по окончании выполнения метода</param>        
+        /// <param name="bSyncReq">Признак необходимости синхронизации по окончании выполнения метода</param>
         private void addTextBoxColumn (DateTime date, bool bNewValues, bool bSyncReq)
         {
             int indxDB = m_IndexDB;
             FormChangeMode.KeyDevice key = ((AdminTS_NSS)m_arAdmin[indxDB]).m_listKeyTECComponentDetail[m_dgwAdminTable.Columns.Count - 2];
             ((DataGridViewAdminNSS)m_dgwAdminTable).addTextBoxColumn(((AdminTS_NSS)m_arAdmin[indxDB]).GetNameTECComponent(key, false)
-                , key.Id
+                , key
                 , ((AdminTS_NSS)m_arAdmin[indxDB]).GetIdGTPOwnerTECComponent(key));
 
             DataGridViewCellEventArgs ev;

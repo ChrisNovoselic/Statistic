@@ -76,6 +76,7 @@ namespace StatisticAlarm
         /// </summary>
         /// <param name="markQueries">Массив признаков кстановления связи с тем или иным источником данных</param>
         /// <param name="mode">Режим работы панели</param>
+        /// <param name="foreColor">Цвет шрифта панели и всех дочерних элементов управления</param>
         /// <param name="backColor">Цвет фона панели и всех дочерних элементов управления</param>
         public PanelAlarm (ASUTP.Core.HMark markQueries, MODE mode, Color foreColor, Color backColor)
             : base(MODE_UPDATE_VALUES.AUTO, foreColor, backColor)
@@ -155,7 +156,7 @@ namespace StatisticAlarm
                 ctrl = find(INDEX_CONTROL.CLB_TECCOMPONENT);
                 (ctrl as CheckedListBox).Items.Add(@"Все компоненты", true);
                 foreach (TEC tec in m_list_tec)
-                    foreach (TECComponent comp in tec.list_TECComponents)
+                    foreach (TECComponent comp in tec.ListTECComponents)
                         if (comp.IsGTP == true)
                         {
                             indx = (ctrl as CheckedListBox).Items.Add(tec.name_shr + @" - " + comp.name_shr, true);
@@ -486,7 +487,7 @@ namespace StatisticAlarm
         private TECComponent findGTPOfID (int id)
         {
             foreach  (TEC tec in m_list_tec)
-                foreach (TECComponent comp in tec.list_TECComponents)
+                foreach (TECComponent comp in tec.ListTECComponents)
                     if ((comp.IsGTP == true) && (comp.m_id == id))
                         return comp;
                     else

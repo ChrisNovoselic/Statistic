@@ -42,7 +42,7 @@ namespace Statistic
 
             public override void ChangeState()
             {
-                lock (m_lockState) { GetRDGValues(FormChangeMode.KeyTECComponentEmpty, DateTime.MinValue); }
+                lock (m_lockState) { GetRDGValues(FormChangeMode.KeyDeviceEmpty, DateTime.MinValue); }
 
                 base.ChangeState(); //Run
             }
@@ -53,7 +53,7 @@ namespace Statistic
 
                 ClearValues();
 
-                if (m_tec.m_bSensorsStrings == false)
+                if (m_tec.GetReadySensorsStrings (_type) == false)
                     AddState((int)StatesMachine.InitSensors);
                 else ;
 
@@ -649,14 +649,14 @@ namespace Statistic
             /// Заполнение ComboBox данными на основе formChangeMode
             /// </summary>
             /// <param name="listTECComponentNameShr">Таблица с данными из formChangeMode</param>
-            public void InitializeTECComponentList(List<FormChangeMode.Item> listTECComponentNameShr)
+            public void InitializeTECComponentList(List<FormChangeMode.ListBoxItem> listTECComponentNameShr)
             {
                 //??? способ заполнения, конечно, оригинальный, но не коррелирует с исторически сложившимися способами
                 DataTable tableTECComponentNameShr = new DataTable();
                 tableTECComponentNameShr.Columns.Add("name_shr");
                 tableTECComponentNameShr.Columns.Add("id");
 
-                foreach (FormChangeMode.Item item in listTECComponentNameShr) {
+                foreach (FormChangeMode.ListBoxItem item in listTECComponentNameShr) {
                     tableTECComponentNameShr.Rows.Add(item.name_shr, item.id);
                 }
 
@@ -1899,7 +1899,7 @@ namespace Statistic
         public void ChangeMode(object obj)
         {
             //Добавить строки на дочернюю панель
-            m_panelManagement.InitializeTECComponentList((List<FormChangeMode.Item>)obj);
+            m_panelManagement.InitializeTECComponentList((List<FormChangeMode.ListBoxItem>)obj);
 
             EvtValuesMins += new DelegateObjectFunc(m_panelManagement.Parent_OnEvtValuesMins);
             EvtValuesSecs += new DelegateObjectFunc(m_panelManagement.Parent_OnEvtValuesSecs);
@@ -2014,7 +2014,7 @@ namespace Statistic
             if (this.Actived == true)
             {
                 TEC tec = null;
-                FormChangeMode.KeyDevice key = FormChangeMode.KeyTECComponentEmpty;
+                FormChangeMode.KeyDevice key = FormChangeMode.KeyDeviceEmpty;
                 List<TECComponentBase> listTG_Comp = new List<TECComponentBase>();
 
                 #region Апельганс А.В. - Поиск минимального коэффициента
@@ -2030,7 +2030,7 @@ namespace Statistic
                 {
                     // есть специальное свойство для проверки 't.m_bSensorsStrings'
                     //if (t.ListLowPointDev == null)
-                    if (t.m_bSensorsStrings == false)
+                    if (t.GetReadySensorsStrings (TECComponent.TYPE.ELECTRO) == false)
                         t.InitSensorsTEC();
                     // проверить идентификатор ТЭЦ
                     if (t.m_id == id)
@@ -2041,7 +2041,7 @@ namespace Statistic
                         foreach (TG tg in t.GetListLowPointDev(TECComponentBase.TYPE.ELECTRO))
                             listTG_Comp.Add(tg);
 
-                        foreach (TECComponent tc in t.list_TECComponents)
+                        foreach (TECComponent tc in t.ListTECComponents)
                             if (tc.IsGTP == true)
                             {
                                 if (m_dcGTPKoeffAlarmPcur > tc.m_dcKoeffAlarmPcur)
@@ -2055,7 +2055,7 @@ namespace Statistic
                     }
                     else
                     {// идентификатор ТЭЦ не удовлетворяет условию - искать среди компонентов
-                        foreach (TECComponent tc in t.list_TECComponents)
+                        foreach (TECComponent tc in t.ListTECComponents)
                         {
                             if (tc.m_id == id)
                             {
@@ -2080,7 +2080,7 @@ namespace Statistic
                                         foreach (TG tg in tc.ListLowPointDev)
                                             listTG_Comp.Add(tg);
 
-                                        foreach (TECComponent tcc in t.list_TECComponents)
+                                        foreach (TECComponent tcc in t.ListTECComponents)
                                             if ((tcc.IsGTP == true)
                                                 && (tcc.tec.m_id == tc.tec.m_id))
                                                 if (m_dcGTPKoeffAlarmPcur > tcc.m_dcKoeffAlarmPcur)

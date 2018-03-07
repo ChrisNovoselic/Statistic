@@ -83,7 +83,7 @@ namespace Statistic
             /// </summary>
             public override void ChangeState()
             {
-                lock (m_lockState) { GetRDGValues(FormChangeMode.KeyTECComponentEmpty, DateTime.MinValue); }
+                lock (m_lockState) { GetRDGValues(FormChangeMode.KeyDeviceEmpty, DateTime.MinValue); }
 
                 base.ChangeState(); //Run
             }
@@ -96,7 +96,7 @@ namespace Statistic
 
                 using_date = false;
 
-                if (m_tec.m_bSensorsStrings == true)
+                if (m_tec.GetReadySensorsStrings(_type) == true)
                     if (currHour == true)
                         AddState((int)StatesMachine.CurrentTimeView);
                     else

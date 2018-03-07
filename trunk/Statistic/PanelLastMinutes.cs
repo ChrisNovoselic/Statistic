@@ -896,14 +896,18 @@ namespace Statistic
 
             public class TecViewLastMinutes : TecView
             {
-                public TecViewLastMinutes()
-                    : base(new FormChangeMode.KeyDevice () { Id = -1, Mode = FormChangeMode.MODE_TECCOMPONENT.Unknown }, TECComponentBase.TYPE.ELECTRO)
+                /// <summary>
+                /// Конструктор - основной (с аргументом)
+                /// </summary>
+                /// <param name="id_tec">Иденификатор ТЭЦ</param>
+                public TecViewLastMinutes(int id_tec)
+                    : base(new FormChangeMode.KeyDevice () { Id = id_tec, Mode = FormChangeMode.MODE_TECCOMPONENT.TEC }, TECComponentBase.TYPE.ELECTRO)
                 {
                 }
 
                 public override void ChangeState()
                 {
-                    lock (m_lockState) { GetRDGValues(FormChangeMode.KeyTECComponentEmpty, DateTime.MinValue); }
+                    lock (m_lockState) { GetRDGValues(FormChangeMode.KeyDeviceEmpty, DateTime.MinValue); }
 
                     base.ChangeState(); //Run
                 }
@@ -914,7 +918,7 @@ namespace Statistic
 
                     ClearValues();
 
-                    if (m_tec.m_bSensorsStrings == false)
+                    if (m_tec.GetReadySensorsStrings (_type) == false)
                         AddState((int)StatesMachine.InitSensors);
                     else ;
 
@@ -946,7 +950,7 @@ namespace Statistic
 
                 m_listLabelNames = new List<Label> ();
 
-                m_tecView = new TecViewLastMinutes();
+                m_tecView = new TecViewLastMinutes(tec.m_id);
 
                 //Признаки для регистрации соединения с необходимыми источниками данных
                 HMark markQueries = new HMark(new int[] { (int)CONN_SETT_TYPE.ADMIN, (int)CONN_SETT_TYPE.PBR, (int)CONN_SETT_TYPE.DATA_SOTIASSO });
@@ -1028,7 +1032,7 @@ namespace Statistic
                 m_listLabelNames.Add(HLabel.createLabel(m_tecView.m_tec.name_shr, PanelLastMinutes.s_arLabelStyles[(int)INDEX_LABEL.NAME_TEC]));
                 this.Controls.Add(m_listLabelNames[m_listLabelNames.Count - 1], 0, 0);
 
-                foreach (TECComponent g in m_tecView.m_tec.list_TECComponents)
+                foreach (TECComponent g in m_tecView.m_tec.ListTECComponents)
                     if (g.IsGTP == true)
                     {
                         //Добавить наименование ГТП
@@ -1138,7 +1142,7 @@ namespace Statistic
                 m_listDictToolTip.Add(new Dictionary<int, ToolTip>());
 
                 int col = 0;
-                foreach (TECComponent g in m_tecView.m_tec.list_TECComponents)
+                foreach (TECComponent g in m_tecView.m_tec.ListTECComponents)
                 {
                     if (g.IsGTP == true)
                     {

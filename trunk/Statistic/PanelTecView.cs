@@ -115,7 +115,7 @@ namespace Statistic
                     ExcelWorksheet ws = ef.Worksheets[0];
                     if (Mode == FormChangeMode.MODE_TECCOMPONENT.TEC)
                     {
-                        if (m_tecView.m_tec.list_TECComponents.Count == 1)
+                        if (m_tecView.m_tec.ListTECComponents.Count == 1)
                             ws.Cells[0, 0].Value = m_tecView.m_tec.name_shr;
                         else
                         {
@@ -126,7 +126,7 @@ namespace Statistic
                     }
                     else
                     {
-                        ws.Cells[0, 0].Value = m_tecView.m_tec.name_shr + ", " + m_tecView.m_tec.list_TECComponents.Find(comp => comp.m_id == m_tecView.CurrentKey.Id).name_shr;
+                        ws.Cells[0, 0].Value = m_tecView.m_tec.name_shr + ", " + m_tecView.m_tec.ListTECComponents.Find(comp => comp.m_id == m_tecView.CurrentKey.Id).name_shr;
                     }
 
                     //if (m_tecView.m_valuesHours.addonValues && hour == m_tecView.m_valuesHours.hourAddon)
@@ -237,7 +237,7 @@ namespace Statistic
                     ExcelWorksheet ws = ef.Worksheets[0];
                     if (Mode == FormChangeMode.MODE_TECCOMPONENT.TEC)
                     {
-                        if (m_tecView.m_tec.list_TECComponents.Count == 1)
+                        if (m_tecView.m_tec.ListTECComponents.Count == 1)
                             ws.Cells[0, 0].Value = m_tecView.m_tec.name_shr;
                         else
                         {
@@ -248,7 +248,7 @@ namespace Statistic
                     }
                     else
                     {
-                        ws.Cells[0, 0].Value = m_tecView.m_tec.name_shr + ", " + m_tecView.m_tec.list_TECComponents.Find(comp => comp.m_id == m_tecView.CurrentKey.Id).name_shr;
+                        ws.Cells[0, 0].Value = m_tecView.m_tec.name_shr + ", " + m_tecView.m_tec.ListTECComponents.Find(comp => comp.m_id == m_tecView.CurrentKey.Id).name_shr;
                     }
 
                     ws.Cells[1, 0].Value = "Мощность на " + _pnlQuickData.dtprDate.Value.ToShortDateString();

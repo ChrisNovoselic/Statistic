@@ -146,7 +146,7 @@ namespace StatisticDiagnostic
                         listDiagSrc = new ListDiagnosticSource();
                         foreach (DIAGNOSTIC_SOURCE diagSrc in listDiagnosticSource)
                             // "-1", т.к. начинали с "1"
-                            foreach (TECComponent comp in listTEC[i - 1].list_TECComponents)
+                            foreach (TECComponent comp in listTEC[i - 1].ListTECComponents)
                                 if ((comp.IsGTP == true)
                                     && (diagSrc.m_id_component == comp.m_id))
                                     listDiagSrc.Add(diagSrc);
@@ -350,7 +350,7 @@ namespace StatisticDiagnostic
                             iTec = 0; gtp = null;
                             while ((gtp == null)
                                 && (iTec < listTEC.Count)) {
-                                gtp = listTEC[iTec].list_TECComponents.Find(comp => { return comp.m_id == src.m_id_component; });
+                                gtp = listTEC[iTec].ListTECComponents.Find(comp => { return comp.m_id == src.m_id_component; });
 
                                 iTec++;
                             }

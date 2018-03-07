@@ -1252,7 +1252,7 @@ namespace Statistic
             private void showTMValue(TG tg, ref double val, int min)
             {
                 showTMValue(ref m_tgLabels[tg.m_id][(int)TG.INDEX_VALUE.TM]
-                    , tg.m_strKKS_NAME_TM
+                    , tg.m_SensorsString_SOTIASSO
                     , m_parent.m_tecView.m_dictValuesLowPointDev[tg.m_id].m_powerMinutes[min]
                     , m_parent.m_tecView.m_dictValuesLowPointDev[tg.m_id].m_powerCurrent_TM
                     , m_parent.m_tecView.m_dictValuesLowPointDev[tg.m_id].m_dtCurrent_TM
@@ -1344,7 +1344,7 @@ namespace Statistic
 
                     if (m_parent.Mode == FormChangeMode.MODE_TECCOMPONENT.TEC) // значит этот view будет суммарным для всех ГТП
                     {
-                        foreach (TECComponent g in m_parent.m_tecView.m_tec.list_TECComponents)
+                        foreach (TECComponent g in m_parent.m_tecView.m_tec.ListTECComponents)
                         {
                             if (g.IsGTP == true)
                                 //Только ГТП
@@ -1356,7 +1356,7 @@ namespace Statistic
                     }
                     else
                     {
-                        foreach (TG tg in m_parent.m_tecView.m_tec.list_TECComponents.Find(comp => comp.m_id == m_parent.TecViewKey.Id).ListLowPointDev)
+                        foreach (TG tg in m_parent.m_tecView.m_tec.ListTECComponents.Find(comp => comp.m_id == m_parent.TecViewKey.Id).ListLowPointDev)
                             showTMValue(tg, ref value_TM, min);
                     }
                 }

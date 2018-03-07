@@ -18,14 +18,14 @@ namespace StatisticCommon
 {
     public class TecViewTMPower : TecView
     {
-        public TecViewTMPower()
-            : base(new FormChangeMode.KeyDevice () { Id = -1, Mode = FormChangeMode.MODE_TECCOMPONENT.Unknown }, TECComponentBase.TYPE.ELECTRO)
+        public TecViewTMPower(FormChangeMode.KeyDevice key)
+            : base(key, TECComponentBase.TYPE.ELECTRO)
         {
         }
 
         public override void ChangeState()
         {
-            lock (m_lockState) { GetRDGValues(FormChangeMode.KeyTECComponentEmpty, DateTime.MinValue); }
+            lock (m_lockState) { GetRDGValues(FormChangeMode.KeyDeviceEmpty, DateTime.MinValue); }
 
             base.ChangeState();
         }
@@ -34,7 +34,7 @@ namespace StatisticCommon
         {
             ClearStates();
 
-            if (m_tec.m_bSensorsStrings == false)
+            if (m_tec.GetReadySensorsStrings(_type) == false)
                 AddState((int)StatesMachine.InitSensors);
             else ;
 
@@ -53,7 +53,7 @@ namespace StatisticCommon
 
         public override void ChangeState()
         {
-            lock (m_lockState) { GetRDGValues(FormChangeMode.KeyTECComponentEmpty, DateTime.MinValue); }
+            lock (m_lockState) { GetRDGValues(CurrentKey, DateTime.MinValue); }
 
             base.ChangeState(); //Run
         }
@@ -64,7 +64,7 @@ namespace StatisticCommon
 
             adminValuesReceived = false;
 
-            if (m_tec.m_bSensorsStrings == true)
+            if (m_tec.GetReadySensorsStrings(_type) == true)
             {
                 if (currHour == true)
                 {
@@ -399,11 +399,12 @@ namespace StatisticCommon
         {
             get
             {
-                return ((CurrentKey.Mode == FormChangeMode.MODE_TECCOMPONENT.Unknown) || (CurrentKey.Mode == FormChangeMode.MODE_TECCOMPONENT.ANY))
+                return ((CurrentKey.Mode == FormChangeMode.MODE_TECCOMPONENT.Unknown)
+                    || (CurrentKey.Mode == FormChangeMode.MODE_TECCOMPONENT.ANY))
                     ? $"Ошибка, режим=<{CurrentKey.Mode}>"
                         : (CurrentKey.Mode == FormChangeMode.MODE_TECCOMPONENT.TEC)
                             ? m_tec.name_shr
-                                : $"{m_tec.name_shr} - {m_tec.list_TECComponents.Find(comp => comp.m_id == CurrentKey.Id).name_shr}";
+                                : $"{m_tec.name_shr} - {m_tec.ListTECComponents.Find(comp => comp.m_id == CurrentKey.Id).name_shr}";
             }
         }
 
@@ -414,7 +415,7 @@ namespace StatisticCommon
                 if (CurrentKey.Mode == FormChangeMode.MODE_TECCOMPONENT.TEC)
                     return m_tec.GetListLowPointDev (_type);
                 else
-                    return m_tec.list_TECComponents.FirstOrDefault(comp => comp.m_id == CurrentKey.Id).ListLowPointDev;
+                    return m_tec.ListTECComponents.FirstOrDefault(comp => comp.m_id == CurrentKey.Id).ListLowPointDev;
             }
         }
 
@@ -472,7 +473,7 @@ namespace StatisticCommon
                 switch (_type)
                 {
                     case TECComponentBase.TYPE.TEPLO:
-                        m_tec.list_TECComponents.ForEach(v => {
+                        m_tec.ListTECComponents.ForEach(v => {
                             if (v.IsVyvod == true) {
                                 _localTECComponents.Add(v);
                                 initDictValuesLowPointDev(v);
@@ -481,7 +482,7 @@ namespace StatisticCommon
                         });
                         break;
                     case TECComponentBase.TYPE.ELECTRO:
-                        foreach (TECComponent tc in m_tec.list_TECComponents)
+                        foreach (TECComponent tc in m_tec.ListTECComponents)
                         {
                             if (tc.Type == TECComponentBase.TYPE.ELECTRO)
                             {// только для электро-компонентов
@@ -507,7 +508,7 @@ namespace StatisticCommon
             }
             else
                 foreach (TG tg in ListLowPointDev)
-                    foreach (TECComponent c in m_tec.list_TECComponents)
+                    foreach (TECComponent c in m_tec.ListTECComponents)
                         if (tg.m_id == c.m_id) {
                             _localTECComponents.Add(c);
 
@@ -844,13 +845,16 @@ namespace StatisticCommon
 
         private bool GetSensorsTEC()
         {
-            if (m_tec.m_bSensorsStrings == false) {
+            if (m_tec.GetReadySensorsStrings(_type) == false) {
                 m_tec.InitSensorsTEC ();
             }
             else
                 ;
 
-            return m_tec.m_bSensorsStrings;
+            return m_tec.GetReadySensorsStrings(
+                //??? CurrentKey.TECComponentType 'Unknown' для TEC
+                _type
+            );
         }
 
         private void getCurrentTMGenRequest()
@@ -1692,146 +1696,9 @@ namespace StatisticCommon
             return iRes;
         }
 
-        //private void ChangeState_CurPower () {
-        //    ClearStates ();
-
-        //    if (m_tec.m_bSensorsStrings == false)
-        //        AddState((int)StatesMachine.InitSensors);
-        //    else ;
-
-        //    AddState((int)TecView.StatesMachine.CurrentTimeView);
-        //    AddState((int)TecView.StatesMachine.LastValue_TM_Gen);
-        //    AddState((int)TecView.StatesMachine.LastValue_TM_SN);
-        //}
-
-        //private void ChangeState_LastMinutes () {
-        //    ClearStates ();
-
-        //    ClearValues();
-
-        //    if (m_tec.m_bSensorsStrings == false)
-        //        AddState((int)StatesMachine.InitSensors);
-        //    else ;
-
-        //    adminValuesReceived = false;
-            
-        //    AddState((int)StatesMachine.PPBRValues);
-        //    AddState((int)StatesMachine.AdminValues);
-        //    //AddState((int)StatesMachine.CurrentTimeView);
-        //    AddState((int)StatesMachine.LastMinutes_TM);
-        //}
-
-        //private void ChangeState_View () {
-        //    ClearStates ();
-
-        //    adminValuesReceived = false;
-
-        //    if (m_tec.m_bSensorsStrings == true)
-        //    {
-        //        if (currHour == true)
-        //        {
-        //            AddState((int)StatesMachine.CurrentTimeView);
-        //        }
-        //        else
-        //        {
-        //            //selectedTime = m_pnlQuickData.dtprDate.Value.Date;
-        //        }
-        //    }
-        //    else
-        //    {
-        //        AddState((int)StatesMachine.InitSensors);
-        //        AddState((int)StatesMachine.CurrentTimeView);
-        //    }
-
-        //    //Часы...
-        //    if (m_arTypeSourceData[(int)HDateTime.INTERVAL.HOURS] == CONN_SETT_TYPE.DATA_AISKUE_PLUS_SOTIASSO)
-        //    {
-        //        AddState((int)StatesMachine.Hours_Fact);
-        //        if (currHour == true)
-        //            AddState((int)StatesMachine.Hour_TM);
-        //        else
-        //            ;
-        //    }
-        //    else
-        //        if (m_arTypeSourceData[(int)HDateTime.INTERVAL.HOURS] == CONN_SETT_TYPE.DATA_AISKUE)
-        //            AddState((int)StatesMachine.Hours_Fact);
-        //        else
-        //            if ((m_arTypeSourceData[(int)HDateTime.INTERVAL.HOURS] == CONN_SETT_TYPE.DATA_SOTIASSO_3_MIN)
-        //                ||(m_arTypeSourceData[(int)HDateTime.INTERVAL.HOURS] == CONN_SETT_TYPE.DATA_SOTIASSO_1_MIN))
-        //                AddState((int)StatesMachine.Hours_TM);
-        //            else
-        //                ;
-        //    //Минуты...
-        //    if (m_arTypeSourceData[(int)HDateTime.INTERVAL.MINUTES] == CONN_SETT_TYPE.DATA_AISKUE_PLUS_SOTIASSO)
-        //    {
-        //        AddState((int)StatesMachine.CurrentMins_Fact);
-        //        if (currHour == true)
-        //            AddState((int)StatesMachine.CurrentMin_TM);
-        //        else
-        //            ;
-        //    }
-        //    else
-        //        if (m_arTypeSourceData[(int)HDateTime.INTERVAL.MINUTES] == CONN_SETT_TYPE.DATA_AISKUE)
-        //            AddState((int)StatesMachine.CurrentMins_Fact);
-        //        else
-        //            if ((m_arTypeSourceData[(int)HDateTime.INTERVAL.MINUTES] == CONN_SETT_TYPE.DATA_SOTIASSO_3_MIN)
-        //                || (m_arTypeSourceData[(int)HDateTime.INTERVAL.MINUTES] == CONN_SETT_TYPE.DATA_SOTIASSO_1_MIN))
-        //                AddState((int)StatesMachine.CurrentMins_TM);
-        //            else
-        //                ;
-        //    if (m_bLastValue_TM_Gen == true)
-        //        AddState((int)StatesMachine.LastValue_TM_Gen);
-        //    else
-        //        ;
-        //    AddState((int)StatesMachine.LastMinutes_TM);
-        //    AddState((int)StatesMachine.PPBRValues);
-        //    AddState((int)StatesMachine.AdminValues);
-        //}
-
-        //private void ChangeState_TMSNPower () {
-        //    ClearStates ();
-
-        //    if (m_tec.m_bSensorsStrings == false)
-        //        AddState((int)StatesMachine.InitSensors);
-        //    else ;
-
-        //    AddState((int)StatesMachine.LastValue_TM_Gen);
-        //    AddState((int)StatesMachine.LastValue_TM_SN);
-        //}
-
         public virtual void ChangeState()
         {
-            //lock (m_lockState) {
-                //switch (m_typePanel) {
-                    //case TecView.TYPE_PANEL.VIEW:
-                    //    ChangeState_View ();
-                    //    break;
-                    //case TecView.TYPE_PANEL.CUR_POWER:
-                    //    ChangeState_CurPower ();
-                    //    break;
-                    //case TecView.TYPE_PANEL.LAST_MINUTES:
-                    //    ChangeState_LastMinutes ();
-                    //    break;
-                    //case TecView.TYPE_PANEL.ADMIN_ALARM:
-                    //    ChangeState_AdminAlarm();
-                    //    break;
-                    //case TecView.TYPE_PANEL.SOBSTV_NYZHDY:
-                    //    ChangeState_SobstvNyzhdy();
-                    //    break;
-                    //case TYPE_PANEL.SOTIASSO:
-                    //    ChangeState_SOTIASSO();
-                    //    break;
-                    //case TYPE_PANEL.LK:
-                    //    ChangeState_LK();
-                    //    break;
-                //    default:
-                //        break;
-                //}
-            //}
-
-            //if (!(m_typePanel == TecView.TYPE_PANEL.ADMIN_ALARM))
-                Run(@"TecView::ChangeState () - ...");
-            //else ;
+            Run(@"TecView::ChangeState () - ...");
         }
 
         protected void GetCurrentTimeRequest()
@@ -2402,8 +2269,8 @@ namespace StatisticCommon
 
                 m_tablePPBRValuesResponse = restruct_table_pbrValues(m_tablePPBRValuesResponse
                     , _type
-                    , _type == TECComponentBase.TYPE.TEPLO ? m_tec.list_TECComponents :
-                        _type == TECComponentBase.TYPE.ELECTRO ? m_tec.list_TECComponents : null
+                    , _type == TECComponentBase.TYPE.TEPLO ? m_tec.ListTECComponents :
+                        _type == TECComponentBase.TYPE.ELECTRO ? m_tec.ListTECComponents : null
                     , CurrentKey
                     , m_tsOffsetToMoscow);
                 offsetLayout = (!(m_tablePPBRValuesResponse.Columns.IndexOf("PBR_NUMBER") < 0)) ?
@@ -2418,8 +2285,8 @@ namespace StatisticCommon
                     ;
                 table_in = restruct_table_adminValues(table_in
                     , _type
-                    , _type == TECComponentBase.TYPE.TEPLO ? m_tec.list_TECComponents :
-                        _type == TECComponentBase.TYPE.ELECTRO ? m_tec.list_TECComponents : null
+                    , _type == TECComponentBase.TYPE.TEPLO ? m_tec.ListTECComponents :
+                        _type == TECComponentBase.TYPE.ELECTRO ? m_tec.ListTECComponents : null
                     , CurrentKey
                     , m_tsOffsetToMoscow);
 
@@ -3521,11 +3388,11 @@ namespace StatisticCommon
                         // ChrjapiAN 27.12.2017 переход на "OBJECT/ITEM"
                         //table.Select($"OBJECT={tg.m_arIds_fact[(int)HDateTime.INTERVAL.HOURS].IdObject} AND ITEM={tg.m_arIds_fact [(int)HDateTime.INTERVAL.HOURS].IdItem}", @"DATA_DATE")
                         (from row in table.Rows.Cast<DataRow> ()
-                         where new TG.AISKUE_KEY () { IdObject = (int)row ["OBJECT"], IdItem = (int)row ["ITEM"] }.Equals (tg.m_arIds_fact [(int)HDateTime.INTERVAL.HOURS])
+                         where new TG.AISKUE_KEY () { IdObject = (int)row ["OBJECT"], IdItem = (int)row ["ITEM"] }.Equals (tg.m_aiskue_keys [(int)HDateTime.INTERVAL.HOURS])
                          select row).ToArray ()
                         ;
                 } catch (Exception e) {
-                    Logging.Logg ().Exception (e, $"TecView::getHoursFactResponse () - найти строки в таблице-результате для ТГ={tg.name_shr}...", Logging.INDEX_MESSAGE.NOT_SET);
+                    Logging.Logg ().Exception (e, $"TecView::getHoursFactResponse () - найти строки в таблице-результате для ТГ={tc.name_shr}...", Logging.INDEX_MESSAGE.NOT_SET);
                 } finally {
                 }
 
@@ -4181,7 +4048,7 @@ namespace StatisticCommon
                                 //    tg.m_power_LastMinutesTM[i] = 0;
                                 //}
 
-                                tgRows = table_in.Select(@"[KKS_NAME]='" + tg.m_strKKS_NAME_TM + @"'");
+                                tgRows = table_in.Select(@"[KKS_NAME]='" + tg.m_SensorsString_SOTIASSO + @"'");
 
                                 for (i = 0; i < tgRows.Length; i++)
                                 {
@@ -4211,7 +4078,7 @@ namespace StatisticCommon
                                         if (val > 1)
                                         {
                                             m_valuesHours[hour - 1].valuesLastMinutesTM += val;
-                                            m_dictValuesTECComponent[hour - 0][tg.m_id_owner_gtp].valuesLastMinutesTM += val;
+                                            m_dictValuesTECComponent[hour - 0][tg.m_keys_owner.Find(key => key.Mode == FormChangeMode.MODE_TECCOMPONENT.GTP).Id].valuesLastMinutesTM += val;
                                         }
                                         else
                                             ;
@@ -4233,7 +4100,7 @@ namespace StatisticCommon
                             //    comp.ListLowPointDev[0].m_power_LastMinutesTM[i] = 0;
                             //}
 
-                            tgRows = table_in.Select(@"[KKS_NAME]='" + (comp.ListLowPointDev[0] as TG).m_strKKS_NAME_TM + @"'");
+                            tgRows = table_in.Select(@"[KKS_NAME]='" + (comp.ListLowPointDev[0] as TG).m_SensorsString_SOTIASSO + @"'");
 
                             for (i = 0; i < tgRows.Length; i++)
                             {
@@ -4294,7 +4161,7 @@ namespace StatisticCommon
                                 ;
 
                             arIds[listSensors.IndexOf(strId)] = tg.m_id;
-                            arOwnerGTPIds[listSensors.IndexOf(strId)] = tg.m_id_owner_gtp;
+                            arOwnerGTPIds[listSensors.IndexOf(strId)] = tg.m_keys_owner.Find (key => key.Mode == FormChangeMode.MODE_TECCOMPONENT.GTP).Id;
                         }
 
                         for (hour = 0; (hour < m_valuesHours.Length) && (iRes == 0); hour++, dtVal = dtVal.AddHours(1))

@@ -141,11 +141,6 @@ namespace Statistic
         /// </summary>
         protected volatile int prevSelectedIndex;
         /// <summary>
-        /// Список ТЭЦ, собирается автоматически при запуске приложения
-        ///  , передается в панель при создании объекта панели
-        /// </summary>
-        public List <StatisticCommon.TEC> m_list_tec { get { return m_admin.m_list_tec; } }
-        /// <summary>
         /// Значения для позиционирования элементов управления
         /// </summary>
         protected static int m_iSizeY = 22
@@ -286,7 +281,8 @@ namespace Statistic
                 Logging.Logg().Exception(e, "PanelAdmin::Initialize () - m_admin.InitTEC ()...", Logging.INDEX_MESSAGE.NOT_SET);
             }
 
-            if (!(m_admin.m_list_tec.Count > 0))
+            if ((Equals(m_admin.m_list_tec, null) == true)
+                || (!(m_admin.m_list_tec.Count > 0)))
             {
                 Logging.Logg().Error(@"PanelAdmin::PanelAdmin () - список ТЭЦ пуст...", Logging.INDEX_MESSAGE.NOT_SET);
             }
@@ -495,14 +491,14 @@ namespace Statistic
         /// Заполнение ComboBox значениями-наименованиями
         /// </summary>
         /// <param name="mode">Переменная типа отображаемых значений</param>
-        public void InitializeComboBoxTecComponent (FormChangeMode.MODE_TECCOMPONENT mode, bool bWithNameTECOwner) 
+        public void InitializeComboBoxTecComponent (FormChangeMode.MODE_TECCOMPONENT mode, bool bWithNameTECOwner, bool bLimitLK) 
         {
             comboBoxTecComponent.Items.Clear ();
 
             List<FormChangeMode.KeyDevice> listKey;
             List<object> listItems = new List<object> ();
 
-            listKey = m_admin.GetListKeyTECComponent (mode, true);
+            listKey = m_admin.GetListKeyTECComponent (mode, bLimitLK);
             listKey.ForEach (key => listItems.Add (new ComboBoxItem () { Tag = key, Text = m_admin.GetNameTECComponent (key, bWithNameTECOwner) }));
 
             if (listItems.Count > 0) {
@@ -625,7 +621,7 @@ namespace Statistic
 
         private void admin_onEventUnitTestSetValuesRequest(TECComponent comp, DateTime date, CONN_SETT_TYPE type, string[]queries, IEnumerable<int> listIdRec)
         {
-            FormChangeMode.KeyDevice key = FormChangeMode.KeyTECComponentEmpty;
+            FormChangeMode.KeyDevice key = FormChangeMode.KeyDeviceEmpty;
 
             if (comboBoxTecComponent.SelectedIndex + 1 < comboBoxTecComponent.Items.Count)
                 key = comboBoxTecComponent.Items.Cast<ComboBoxItem>().ToArray()[comboBoxTecComponent.SelectedIndex + 1].Tag;

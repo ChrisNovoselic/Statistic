@@ -144,7 +144,7 @@ namespace StatisticAlarm
 
             adminValuesReceived = false;
 
-            if ((m_tec.m_bSensorsStrings == false))
+            if ((m_tec.GetReadySensorsStrings (_type) == false))
             {
                 AddState((int)StatesMachine.InitSensors);
             }
@@ -232,7 +232,7 @@ namespace StatisticAlarm
 
                     #region Код для отладки
                     if (!(iDebug < 0))
-                        Console.Write(tg.m_id_owner_gtp + @":" + tg.m_id + @"=" + m_dictValuesLowPointDev[tg.m_id].m_powerCurrent_TM);
+                        Console.Write($"{tg.m_keys_owner.Find (key => key.Mode == FormChangeMode.MODE_TECCOMPONENT.GTP).Id}:{tg.m_id}={m_dictValuesLowPointDev[tg.m_id].m_powerCurrent_TM}");
                     else
                         ;
                     #endregion Окончание блока кода для отладки
@@ -288,7 +288,7 @@ namespace StatisticAlarm
                                     ;
 
                             Console.Write(Environment.NewLine + @"Отладка:: "
-                                + tg.m_id_owner_gtp + @":" + tg.m_id + @"="
+                                + tg.m_keys_owner.Find (key => key.Mode == FormChangeMode.MODE_TECCOMPONENT.GTP).Id + @":" + tg.m_id + @"="
                                 + m_dictValuesLowPointDev[tg.m_id].m_powerCurrent_TM
                                 + Environment.NewLine);
                         }

@@ -33,6 +33,50 @@ namespace Statistic {
                 _tsOffsetToMoscow = ASUTP.Core.HDateTime.TS_NSK_OFFSET_OF_MOSCOWTIMEZONE;
             }
 
+            private int currentIndexTECComponent
+            {
+                get
+                {
+                    return getIndexTECComponent (CurrentKey);
+                }
+            }
+
+            private int getIndexTECComponent (FormChangeMode.KeyDevice key)
+            {
+                int iRes = -1;
+
+                try {
+                    iRes = allTECComponents.IndexOf (allTECComponents.Find (comp => comp.m_id == key.Id));
+                } catch (Exception e) {
+                    ASUTP.Logging.Logg ().Exception (e, $@"AdminTS::getIndexTECComponent (key={key.Id}) - компонент не найден...", ASUTP.Logging.INDEX_MESSAGE.NOT_SET);
+                }
+
+                return iRes;
+            }
+
+            /// <summary>
+            /// Идентификатор компонента ТЭЦ
+            /// </summary>
+            /// <param name="indx">индекс в массиве 'все компоненты'</param>
+            /// <returns>идентификатор</returns>
+            public int GetIdTECComponent (int indx = -1)
+            {
+                int iRes = -1;
+
+                if (indx < 0)
+                    indx = currentIndexTECComponent;
+                else
+                    ;
+
+                if ((!(indx < 0))
+                    && (indx < allTECComponents.Count))
+                    iRes = allTECComponents [indx].m_id;
+                else
+                    ;
+
+                return iRes;
+            }
+
             /// <summary>
             /// Формирование списка компонентов в зависимости от выбранного в ComboBox
             /// </summary>
@@ -46,17 +90,20 @@ namespace Statistic {
                     //Сначала - ГТП
                     foreach (TECComponent comp in allTECComponents)
                         if (comp.tec.m_id > (int)TECComponent.ID.LK)
-                            if ((comp.m_id == GetIdTECComponent(id)) //Принадлежит ТЭЦ
+                            if ((comp.m_id == id) //Принадлежит ТЭЦ
                                 && (comp.IsGTP_LK == true)) //Является ГТП_ЛК
                             {
-                                m_listKeyTECComponentDetail.Add(new FormChangeMode.KeyDevice () { Id = comp.m_id, Mode = FormChangeMode.MODE_TECCOMPONENT.GTP });
-
-                                foreach (TG tg in comp.ListLowPointDev)
-                                    foreach (TECComponent comp_tg in allTECComponents)
-                                        if (comp_tg.m_id == tg.m_id)
-                                            m_listKeyTECComponentDetail.Add(new FormChangeMode.KeyDevice () { Id = comp.m_id, Mode = FormChangeMode.MODE_TECCOMPONENT.TG });
-                            }
-                            else
+                                foreach (TECComponentBase tg in comp.ListLowPointDev)
+                                    m_listKeyTECComponentDetail.Add (new FormChangeMode.KeyDevice () {
+                                        Id = tg.m_id
+                                        , Mode = FormChangeMode.MODE_TECCOMPONENT.TG
+                                    });
+                                //??? зачем в список детализации помещать компонент верхнего(родительского) уровня
+                                //m_listKeyTECComponentDetail.Add (new FormChangeMode.KeyDevice () {
+                                //    Id = comp.m_id
+                                //    , Mode = FormChangeMode.MODE_TECCOMPONENT.GTP
+                                //});
+                            } else
                                 ;
                         else
                             ;
@@ -273,11 +320,11 @@ namespace Statistic {
                 foreach (StatisticCommon.TEC t in this.m_list_tec)
                     //Logging.Logg().Debug("Admin::InitTEC () - формирование компонентов для ТЭЦ:" + t.name);
                     if (t.m_id > (int)TECComponent.ID.LK)
-                        if (t.list_TECComponents.Count > 0)
-                            foreach (TECComponent g in t.list_TECComponents)
+                        if (t.ListTECComponents.Count > 0)
+                            foreach (TECComponent g in t.ListTECComponents)
                                 allTECComponents.Add(g);
                         else
-                            allTECComponents.Add(t.list_TECComponents[0]);
+                            allTECComponents.Add(t.ListTECComponents[0]);
             }
 
             public int GetCurrentIndexTECComponent ()

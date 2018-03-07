@@ -18,8 +18,6 @@ using System.Windows.Forms;
 using ZedGraph;
 using ASUTP.Core;
 
-
-
 namespace StatisticCommon
 {
     /// <summary>

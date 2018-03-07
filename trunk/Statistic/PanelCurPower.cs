@@ -302,7 +302,7 @@ namespace Statistic
             {
                 InitializeComponent();
 
-                m_tecView = new TecViewTMPower();
+                m_tecView = new TecViewTMPower(new FormChangeMode.KeyDevice () { Id = tec.m_id, Mode = FormChangeMode.MODE_TECCOMPONENT.TEC });
 
                 HMark markQueries = new HMark(new int [] {(int)CONN_SETT_TYPE.ADMIN, (int)CONN_SETT_TYPE.DATA_SOTIASSO});
                 markQueries.Marked((int)CONN_SETT_TYPE.ADMIN); //Для получения даты/времени
@@ -385,7 +385,7 @@ namespace Statistic
                 this.RowCount = COUNT_FIXED_ROWS;
 
                 //m_list_TECComponents = new List <TECComponentBase> ();
-                foreach (TECComponent g in m_tecView.m_tec.list_TECComponents)
+                foreach (TECComponent g in m_tecView.m_tec.ListTECComponents)
                 {
                     if (g.IsGTP == true)
                     {
@@ -630,7 +630,7 @@ namespace Statistic
             private void showTMGenPower () {
                 double dblTotalPower_TM = 0.0
                         , dblTECComponentPower_TM = 0.0;
-                foreach (TECComponent g in m_tecView.m_tec.list_TECComponents)
+                foreach (TECComponent g in m_tecView.m_tec.ListTECComponents)
                 {
                     if (g.IsGTP == true)
                     {
@@ -638,7 +638,7 @@ namespace Statistic
 
                         foreach (TG tg in g.ListLowPointDev)
                         {
-                            if (tg.m_strKKS_NAME_TM.Length > 0) {
+                            if (tg.m_SensorsString_SOTIASSO.Length > 0) {
                                 dblTECComponentPower_TM += setTextToLabelVal(m_dictLabelVal[tg.m_id], m_tecView.m_dictValuesLowPointDev[tg.m_id].m_powerCurrent_TM);
                             }
                             else
