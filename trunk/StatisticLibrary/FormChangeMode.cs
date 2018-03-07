@@ -139,9 +139,9 @@ namespace StatisticCommon
             {
                 return Id.CompareTo (key.Id);
             }
-        }
 
-        public static KeyDevice KeyDeviceEmpty;
+            public static KeyDevice Empty = new KeyDevice() { Id = -1, Mode = MODE_TECCOMPONENT.Unknown };
+        }
         /// <summary>
         /// Тип вкладки  из инструментария "администратор-диспетчер"
         /// </summary>

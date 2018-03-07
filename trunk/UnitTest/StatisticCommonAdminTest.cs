@@ -171,8 +171,8 @@ namespace UnitTest {
 
             string mesDebug = string.Empty;
 
-            FormChangeMode.KeyDevice prevKey = FormChangeMode.KeyDeviceEmpty
-                , nextKey = FormChangeMode.KeyDeviceEmpty;
+            FormChangeMode.KeyDevice prevKey = FormChangeMode.KeyDevice.Empty
+                , nextKey = FormChangeMode.KeyDevice.Empty;
             Action onEventUnitTestSetDataGridViewAdminCompleted;
             AdminTS_KomDisp.DelegateUnitTestExportPBRValuesRequest delegateExportPBRValuesRequest;
             Task taskPerformButtonExportPBRValuesClick;
@@ -319,8 +319,8 @@ namespace UnitTest {
 
             string mesDebug = string.Empty;
 
-            FormChangeMode.KeyDevice prevKey = FormChangeMode.KeyDeviceEmpty
-                , nextKey = FormChangeMode.KeyDeviceEmpty;
+            FormChangeMode.KeyDevice prevKey = FormChangeMode.KeyDevice.Empty
+                , nextKey = FormChangeMode.KeyDevice.Empty;
             Action onEventUnitTestSetDataGridViewAdminCompleted;
             PanelAdmin.DelegateUnitTestNextIndexSetValuesRequest delegateNextIndexSetValuesRequest;
             Task taskPerformButtonSetClick
@@ -392,7 +392,7 @@ namespace UnitTest {
                     Equals(taskPerformComboBoxTECComponentSelectedIndex, null) == false ? taskPerformComboBoxTECComponentSelectedIndex.Status : TaskStatus.WaitingForActivation;
 
                 while ((cnt++ < cnt_max)
-                    && (!(nextKey == FormChangeMode.KeyDeviceEmpty))) {
+                    && (!(nextKey == FormChangeMode.KeyDevice.Empty))) {
                     // ожидать
                     Thread.Sleep (1000);
                     // сообщение для индикации ожидания

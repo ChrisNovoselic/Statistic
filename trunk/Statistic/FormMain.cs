@@ -1641,7 +1641,7 @@ namespace Statistic
                     else
                         ;
                     // поиск панели для вкладки начать с обнуления объекта
-                    keyToAdding = FormChangeMode.KeyDeviceEmpty;
+                    keyToAdding = FormChangeMode.KeyDevice.Empty;
                     //Найти индекс панели в списке для стандартных вкладок
                     panel = m_listStandardTabs.Find(p => p.m_tecView.CurrentKey.Id == formChangeMode.m_listItems[i].id);
 
@@ -1698,7 +1698,7 @@ namespace Statistic
                     }
                     // все ранее(предыдущие вызовы метода) добавленные в список, и необходимые к отображению сейчас
                     //  разместить в особый список - для удержания в текущем состоянии
-                    if (keyToAdding.Equals (FormChangeMode.KeyDeviceEmpty) == true)
+                    if (keyToAdding.Equals (FormChangeMode.KeyDevice.Empty) == true)
                         listKeyToKeep.Add (panel.TecViewKey);
                     else
                         ;

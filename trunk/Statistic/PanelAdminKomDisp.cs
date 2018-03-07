@@ -266,14 +266,15 @@ namespace Statistic
 
         private void doExportPBRValues ()
         {
+            FormChangeMode.KeyDevice key; // 1-ый элемент для экспорта
             DateTime date; // дата для экспорта значений 
 
             // по завершению операции эксопрта требуется восстановить режим в исходный(DISPLAY - по умолчанию)
             ModeGetRDGValues = AdminTS.MODE_GET_RDG_VALUES.EXPORT;
 
-            Admin.PrepareExportRDGValues ();
+            key = Admin.PrepareExportRDGValues ();
 
-            if (SelectedItemKey.Id > 0) {
+            if (key.Id > 0) {
                 date = Admin.DateDoExportPBRValues;
 
                 if (date.Equals(DateTime.MinValue) == true)
@@ -283,7 +284,7 @@ namespace Statistic
                 else
                     ;
 
-                m_admin.GetRDGValues(SelectedItemKey, date);
+                m_admin.GetRDGValues(key, date);
             } else
                 Logging.Logg().Error(string.Format("PanelAdin_KomDisp::doExportPBRValues () - не найдено ГТП для экспорта..."), Logging.INDEX_MESSAGE.NOT_SET);
             ;
@@ -460,9 +461,14 @@ namespace Statistic
             string strFmtDatetime = string.Empty;
             IAsyncResult iar;
 
-            Action exportPBRValuesEnded = delegate () {
+            Action<bool> exportPBRValuesEnded = delegate (bool error) {
                 ModeGetRDGValues = AdminTS.MODE_GET_RDG_VALUES.DISPLAY;
                 btnRefresh.PerformClick ();
+
+                if (error == true)
+                    MessageBox.Show (this, $"Произошла ошибка.{Environment.NewLine}Попробуйте выполнить операцию позднее.", "", MessageBoxButtons.OK, MessageBoxIcon.Error);
+                else
+                    ;
             };
 
             if ((ModeGetRDGValues & AdminTS.MODE_GET_RDG_VALUES.DISPLAY) == AdminTS.MODE_GET_RDG_VALUES.DISPLAY) {
@@ -524,15 +530,15 @@ namespace Statistic
             } else if ((ModeGetRDGValues & AdminTS.MODE_GET_RDG_VALUES.EXPORT) == AdminTS.MODE_GET_RDG_VALUES.EXPORT) {
                 nextKey = bResult == true
                     ? Admin.AddValueToExportRDGValues (m_admin.m_curRDGValues, date)
-                        : new FormChangeMode.KeyDevice();
+                        : FormChangeMode.KeyDevice.Empty;
 
                 if (!(nextKey.Id > 0)) {
                     if (InvokeRequired == true)
                         Invoke ((MethodInvoker)delegate () {
-                            exportPBRValuesEnded ();
+                            exportPBRValuesEnded (nextKey.Id < 0);
                         });
                     else {
-                        exportPBRValuesEnded ();
+                        exportPBRValuesEnded (nextKey.Id < 0);
                     }
                 } else
                     Admin.GetRDGValues (nextKey, date);

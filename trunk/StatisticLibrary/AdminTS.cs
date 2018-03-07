@@ -2764,7 +2764,7 @@ namespace StatisticCommon
                         ;
                 }
 
-            return FormChangeMode.KeyDeviceEmpty;
+            return FormChangeMode.KeyDevice.Empty;
         }
 
         /// <summary>

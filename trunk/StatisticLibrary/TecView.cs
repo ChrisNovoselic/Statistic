@@ -25,7 +25,7 @@ namespace StatisticCommon
 
         public override void ChangeState()
         {
-            lock (m_lockState) { GetRDGValues(FormChangeMode.KeyDeviceEmpty, DateTime.MinValue); }
+            lock (m_lockState) { GetRDGValues(FormChangeMode.KeyDevice.Empty, DateTime.MinValue); }
 
             base.ChangeState();
         }

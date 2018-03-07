@@ -621,7 +621,7 @@ namespace Statistic
 
         private void admin_onEventUnitTestSetValuesRequest(TECComponent comp, DateTime date, CONN_SETT_TYPE type, string[]queries, IEnumerable<int> listIdRec)
         {
-            FormChangeMode.KeyDevice key = FormChangeMode.KeyDeviceEmpty;
+            FormChangeMode.KeyDevice key = FormChangeMode.KeyDevice.Empty;
 
             if (comboBoxTecComponent.SelectedIndex + 1 < comboBoxTecComponent.Items.Count)
                 key = comboBoxTecComponent.Items.Cast<ComboBoxItem>().ToArray()[comboBoxTecComponent.SelectedIndex + 1].Tag;

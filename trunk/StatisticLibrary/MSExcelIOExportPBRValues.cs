@@ -625,6 +625,9 @@ namespace StatisticCommon
 
                 _date = DateTime.MinValue;
 
+                Logging.Logg ().Action (string.Format ($"AdminTS_KomDisp.MSExcelIOExportPBRValues::clearContext () - очистили словарь для значений <{string.Join(", ", _dictValues.Keys.ToList().ConvertAll<string>(id => id.ToString()).ToArray())}>...")
+                    , Logging.INDEX_MESSAGE.D_006);
+
                 _dictValues.Clear ();
             }
 
