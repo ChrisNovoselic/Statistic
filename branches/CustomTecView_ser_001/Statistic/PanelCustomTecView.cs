@@ -6,11 +6,14 @@ using System.Linq;
 using System.Text;
 using System.Windows.Forms;
 using System.Drawing;
+using System.Xml.Serialization;
+using System.Xml;
 
 
 using StatisticCommon;
 using ASUTP.Core;
 using ASUTP.Control;
+using System.IO;
 
 namespace Statistic
 {
@@ -440,6 +443,20 @@ namespace Statistic
             }
         }
 
+
+        /// <summary>
+        /// Класс для сложных объектов настройки элементов интерфейса
+        /// </summary>
+        [Serializable]
+        public class element
+        {
+            public element()
+            {
+            }
+
+            public string str;
+        }
+
         int m_indxContentMenuItem;
         /// <summary>
         /// Количество фиксированных п.п.  контекстного меню
@@ -820,7 +837,11 @@ namespace Statistic
         /// <param name="profile">Строка с настройками всех панелей</param>
         public void LoadProfile(string profile)
         {
-            string[] arLabel = profile.Split(CHAR_DELIM_LABEL);
+            element elem = new element();
+            elem = LoadListFromXml(profile);
+            string[] arLabel = elem.str.Split(CHAR_DELIM_LABEL);
+
+            //string[] arLabel = profile.Split(CHAR_DELIM_LABEL);
             foreach (string label in arLabel)
             {
                 string[] arProp = label.Split(CHAR_DELIM_PROP);
@@ -838,6 +859,7 @@ namespace Statistic
                                 m_arLabelEmpty[Int32.Parse(arProp [0])].LoadProfile (arProp);
             }
         }
+
         /// <summary>
         /// Возвратить строку с настройками всех панелей (отображаемые объекты, состав отображаемой информации)
         ///  для их автоматического восстановления при очередном запуске на выполнение приложения
@@ -861,7 +883,63 @@ namespace Statistic
             //Обрезать лишний символ-разделитель 'CHAR_DELIM_LABEL'
             strRes = strRes.Substring(0, strRes.Length - 1);
 
+            element elem = new element();
+            elem.str = strRes;
+            strRes = SaveListToXml(elem);
+
             return strRes;
+        }
+
+        /// <summary>
+        /// Произвести сериализацию объекта в формат Xml
+        /// </summary>
+        public static string SaveListToXml(element elem)
+        {
+            //element elem = new element();
+            //Console.WriteLine("Объект создан");
+
+            //// передаем в конструктор тип класса
+            //XmlSerializer formatter = new XmlSerializer(typeof(element));
+            //XmlElement xmlElem = null;
+
+            // создаем сериалайзер
+            XmlSerializer sr = new XmlSerializer(elem.GetType());
+            // создаем writer, в который будет происходить сериализация
+            StringBuilder sb = new StringBuilder();
+            StringWriter w = new StringWriter(sb, System.Globalization.CultureInfo.InvariantCulture);
+            // сериализуем
+            sr.Serialize(w, elem);
+            // получаем строку Xml
+            string xml = sb.ToString();
+
+            return xml;
+            //formatter.Serialize((xmlElem, elem);
+
+            //// получаем поток, куда будем записывать сериализованный объект 
+            //using (FileStream fs = new FileStream("persons.xml", FileMode.OpenOrCreate))
+            //{
+            //    formatter.Serialize(fs, elem);
+
+            //    Console.WriteLine("Объект сериализован");
+            //}
+        }
+
+        /// <summary>
+        /// Произвести десериализацию объекта из формата Xml
+        /// </summary>
+        public static element LoadListFromXml(string list)
+        {
+            element elem = new element();
+
+            // создаем сериалайзер
+            XmlSerializer sr = new XmlSerializer(elem.GetType());
+
+            using (TextReader reader = new StringReader(list))
+            {
+                elem = (element)sr.Deserialize(reader);
+            }
+
+            return elem;
         }
     }
 }
