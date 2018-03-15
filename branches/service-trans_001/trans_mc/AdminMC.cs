@@ -14,7 +14,7 @@ namespace trans_mc
 {
     public class AdminMC : AdminModes
     {
-        string m_strMCServiceHost;
+        private string m_strMCServiceHost;
 
         private System.Threading.ManualResetEvent _eventConnected;
 
@@ -177,7 +177,7 @@ namespace trans_mc
                     equipments = (obj as object []) [1] as Dictionary<DateTime, List<int>>;
 
                     msg = string.Format (@"::mcApi_OnData53500Modified() - обработчик события - изменения[кол-во={1}]{0}для оборудования {2}..."
-                            , Environment.NewLine, equipments.Count, @"СПИСОК");
+                        , Environment.NewLine, equipments.Count, @"СПИСОК");
 
                     foreach (KeyValuePair<DateTime, List<int>> pair in equipments) {
                         listEquipment += string.Format (@"[Дата={0}, список=({1})],", pair.Key.ToString (), string.Join (", ", pair.Value));
@@ -218,6 +218,9 @@ namespace trans_mc
                     Logging.Logg ().Action (string.Format (@"::mcApi_OnPlanDataChanged() - обработчик события - новый план[на дату={0}, номер={1}, от={2}, для подразделения={3}, IdGate={4}]..."
                         , day.ToString (), pbr_number, version.ToString (), id_mc_tec, id_gate)
                     , Logging.INDEX_MESSAGE.NOT_SET);
+
+                    if ((day - ASUTP.Core.HDateTime.ToMoscowTimeZone()).TotalDays > 0)
+                        auto_
                 } else
                     ;
             } else {
