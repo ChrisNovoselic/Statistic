@@ -945,34 +945,8 @@ namespace StatisticTrans
         /// <param name="bNewValues">Признак наличия новых значений, иначе требуется изменить оформление представления</param>
         protected virtual void setDataGridViewAdmin(DateTime date, bool bNewValues)
         {
-            //if (m_IndexDB == (short)CONN_SETT_TYPE.SOURCE) {
-            //    string strDatetimeSeason = m_fileINI.GetValueOfKey(@"Season DateTime");
-            //    if (strDatetimeSeason.Equals(string.Empty) == false)
-            //    {
-            //        DateTime dtSeason = DateTime.Parse(strDatetimeSeason);
-
-            //        if ((date == dtSeason.Date))
-            //        {
-            //            //Преобразовать массивы m_arAdmin
-            //            for (CONN_SETT_TYPE type = (CONN_SETT_TYPE)0; type < CONN_SETT_TYPE.COUNT_CONN_SETT_TYPE; type++)
-            //            {
-            //                m_arAdmin[(int)type].ToSummerWinter(dtSeason.Hour - 1);
-            //            }
-            //        }
-            //        else
-            //        {
-            //        }
-            //    }
-            //    else
-            //    {
-            //    }
-            //} else {
-            //}
-
-            //if (WindowState == FormWindowState.Minimized)
-            //if (m_bTransAuto == true)
-            //if (m_modeMashine == MODE_MASHINE.AUTO || m_modeMashine == MODE_MASHINE.SERVICE)
-            if ((m_bTransAuto == true) && (m_bEnabledUIControl == false))
+            if ((m_bTransAuto == true)
+                && (m_bEnabledUIControl == false))
             {
                 try
                 {
@@ -1011,7 +985,8 @@ namespace StatisticTrans
         /// </summary>
         protected virtual void errorDataGridViewAdmin()
         {
-            if ((m_bTransAuto == true) && (m_bEnabledUIControl == false))
+            if ((m_bTransAuto == true)
+                && (m_bEnabledUIControl == false))
             {
                 CT.ErrorIter();
 
@@ -1048,7 +1023,8 @@ namespace StatisticTrans
         {
             //Logging.Logg().Debug(@"FormMainTrans::saveDataGridViewAdminComplete () - m_bTransAuto=" + m_bTransAuto + @", m_modeMashine=" + m_modeMashine.ToString () + @", - вХод...", Logging.INDEX_MESSAGE.NOT_SET);
 
-            if ((m_bTransAuto == true) && (m_bEnabledUIControl == false))
+            if ((m_bTransAuto == true)
+                && (m_bEnabledUIControl == false))
             {
                 //??? зачем нужен '.NextDay'
                 CT.NextDay = IsTomorrow();

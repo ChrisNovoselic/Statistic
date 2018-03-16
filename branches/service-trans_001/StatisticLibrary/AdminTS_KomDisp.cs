@@ -666,25 +666,29 @@ namespace StatisticCommon
             else
                 ;
 
-            if (listKey.Count - listKey.Distinct ().Count () == 0) {
-                _listTECComponentKey.Clear ();
-                listKey.ForEach ((key) => {
-                    if (_listTECComponentKey.Contains (key) == false)
-                        _listTECComponentKey.Add (key);
+            try {
+                if (listKey.Count - listKey.Distinct ().Count () == 0) {
+                    _listTECComponentKey.Clear ();
+                    listKey.ForEach ((key) => {
+                        if (_listTECComponentKey.Contains (key) == false)
+                            _listTECComponentKey.Add (key);
+                        else
+                            Logging.Logg ().Error (string.Format ("AdminTS_KomDisp::PrepareExportRDGValues () - добавление повторяющегося индекса {0}...", key.ToString ()), Logging.INDEX_MESSAGE.NOT_SET);
+                    });
+
+                    if (_msExcelIOExportPBRValues.Busy == true)
+                        _msExcelIOExportPBRValues.Abort ();
                     else
-                        Logging.Logg ().Error (string.Format ("AdminTS_KomDisp::PrepareExportRDGValues () - добавление повторяющегося индекса {0}...", key), Logging.INDEX_MESSAGE.NOT_SET);
-                });
+                        ;
+                } else
+                    Logging.Logg ().Error (string.Format ("AdminTS_KomDisp::PrepareExportRDGValues () - в переданном списке <{0}> есть дубликаты...", string.Join (",", listKey.Select (key => key.ToString ()).ToArray ()))
+                        , Logging.INDEX_MESSAGE.NOT_SET);
 
-                if (_msExcelIOExportPBRValues.Busy == true)
-                    _msExcelIOExportPBRValues.Abort ();
-                else
-                    ;
-            } else
-                Logging.Logg ().Error (string.Format ("AdminTS_KomDisp::PrepareExportRDGValues () - в переданном списке <{0}> есть дубликаты...", string.Join(",", listKey.Select(key => key.ToString()).ToArray()))
-                    , Logging.INDEX_MESSAGE.NOT_SET);
-
-            Logging.Logg ().Action ($"AdminTS_KomDisp::PrepareExportRDGValues () - подготовлен список для экспорта: <{string.Join(", ", _listTECComponentKey.ConvertAll<string>(key => key.Id.ToString()).ToArray())}>"
-                , Logging.INDEX_MESSAGE.D_006);
+                Logging.Logg ().Action ($"AdminTS_KomDisp::PrepareExportRDGValues () - подготовлен список для экспорта: <{string.Join (", ", _listTECComponentKey.ConvertAll<string> (key => key.Id.ToString ()).ToArray ())}>..."
+                    , Logging.INDEX_MESSAGE.D_006);
+            } catch (Exception e) {
+                Logging.Logg ().Exception (e, string.Format("AdminTS_KomDisp::PrepareExportRDGValues () - ..."), Logging.INDEX_MESSAGE.NOT_SET);
+            }
 
             return _listTECComponentKey.Count > 0 ? _listTECComponentKey [0] : FormChangeMode.KeyDevice.Empty;
         }

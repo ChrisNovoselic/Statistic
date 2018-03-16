@@ -161,9 +161,28 @@ namespace trans_mc
             return bRes;
         }
 
+        public class EventArgs<T> : System.EventArgs
+        {
+            public DbMCInterface.ID_MC_EVENT m_id;
+
+            ReadOnlyCollection<T> m_listKeyIGO;
+
+            public EventArgs (DbMCInterface.ID_MC_EVENT id, ReadOnlyCollection<T> listKeyIGO)
+            {
+                m_id = id;
+
+                m_listKeyIGO = new ReadOnlyCollection<T> (listKeyIGO);
+            }
+        }
+
+        public event EventHandler EventPlanDataChanged
+            , EventMaketChanged;
+
         private void dbMCSources_OnEventHandler(object obj)
         {
             DbMCInterface.ID_MC_EVENT id_event;
+            List<object> argEventChanged; // оборудование для которого произошло событие
+            TEC tec; // для оборудования которой произошло событие
 
             if (obj is Array) {
                 id_event = (DbMCInterface.ID_MC_EVENT)(obj as object []) [0];
@@ -200,8 +219,10 @@ namespace trans_mc
                     taskModes = (string)(obj as object []) [4];
 
                     Logging.Logg ().Action (string.Format (@"::mcApi_OnMaket53500Changed() - обработчик события - переопубликация[на дату={0}, кол-во макетов={1}], Аббр={2}, описание={3}..."
-                        , dateTarget.ToString (), makets.Count, abbr, taskModes)
-                    , Logging.INDEX_MESSAGE.NOT_SET);
+                            , dateTarget.ToString (), makets.Count, abbr, taskModes)
+                        , Logging.INDEX_MESSAGE.NOT_SET);
+
+                    EventMaketChanged?.Invoke (this, new EventArgs<Guid> (id_event, makets));
                 } else if (id_event == DbMCInterface.ID_MC_EVENT.NEW_PLAN_VALUES) {
                     DateTime day
                         , version;
@@ -216,11 +237,23 @@ namespace trans_mc
                     id_gate = (int)(obj as object []) [5];
 
                     Logging.Logg ().Action (string.Format (@"::mcApi_OnPlanDataChanged() - обработчик события - новый план[на дату={0}, номер={1}, от={2}, для подразделения={3}, IdGate={4}]..."
-                        , day.ToString (), pbr_number, version.ToString (), id_mc_tec, id_gate)
-                    , Logging.INDEX_MESSAGE.NOT_SET);
+                            , day.ToString (), pbr_number, version.ToString (), id_mc_tec, id_gate)
+                        , Logging.INDEX_MESSAGE.NOT_SET);
 
-                    if ((day - ASUTP.Core.HDateTime.ToMoscowTimeZone()).TotalDays > 0)
-                        auto_
+                    // проверить дату за которую получен новый план
+                    if (!((day - ASUTP.Core.HDateTime.ToMoscowTimeZone ()).TotalDays < 0)) {
+                        tec = m_list_tec.Find (t => {
+                            return t.name_MC.Trim ().Equals (id_mc_tec.ToString());
+                        });
+
+                        EventPlanDataChanged?.Invoke (this, new EventArgs<FormChangeMode.KeyDevice> (id_event, new ReadOnlyCollection<FormChangeMode.KeyDevice> (
+                            allTECComponents.FindAll (comp => {
+                                return (comp.IsGTP == true)
+                                    && (comp.tec.m_id == tec.m_id);
+                            }).ConvertAll (comp => new FormChangeMode.KeyDevice () { Id = comp.m_id, Mode = FormChangeMode.MODE_TECCOMPONENT.GTP })
+                        )));
+                    } else
+                        ;
                 } else
                     ;
             } else {
