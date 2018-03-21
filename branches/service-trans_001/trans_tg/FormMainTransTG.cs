@@ -393,7 +393,7 @@ namespace trans_tg
             ((AdminTS)m_arAdmin[(int)CONN_SETT_TYPE.DEST]).GetRDGValues(SelectedItemKey, dateTimePickerMain.Value.Date);
         }
 
-        protected override void saveDataGridViewAdminComplete()
+        protected override void saveDataGridViewAdminComplete(int state)
         {
             bool bCompletedSaveChanges = false;
 
@@ -410,7 +410,7 @@ namespace trans_tg
             {
                 //Logging.Logg().Debug(@"FormMainTransTG::saveDataGridViewAdminComplete () - SuccessSaveChanges=" + ((AdminTS_NSS)m_arAdmin[(int)CONN_SETT_TYPE.DEST]).SuccessSaveChanges.ToString());
                 //if (((AdminTS_NSS)m_arAdmin[(int)CONN_SETT_TYPE.DEST]).SuccessSaveChanges == true) {
-                    base.saveDataGridViewAdminComplete();
+                    base.saveDataGridViewAdminComplete(state);
                 //} else ;
             }
             else

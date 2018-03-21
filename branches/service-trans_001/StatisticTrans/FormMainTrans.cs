@@ -3,8 +3,7 @@ using System.Collections.Generic;
 //using System.ComponentModel;
 using System.Data;
 using System.Drawing;
-//using System.Linq;
-using System.Text;
+using System.Linq;
 using System.Windows.Forms;
 using System.Runtime.InteropServices;
 using System.Threading;
@@ -166,7 +165,10 @@ namespace StatisticTrans
             public handlerCmd(string[] args)
                 : base(args)
             {
+                int timerInterval = -1;
+
                 _modeMashine = MODE_MASHINE.INTERACTIVE;
+                _date = DateTime.Now.Date;
                 _timerInterval = TIMER_SERVICE_MIN_INTERVAL; //Милисекунды
 
                 foreach (KeyValuePair<string, string> pair in m_dictCmdArgs)
@@ -187,13 +189,12 @@ namespace StatisticTrans
                             _modeMashine = s_modeServiceMashineDefault;
 
                             if ((pair.Value.Equals(string.Empty) == true)
-                                || (pair.Value.Equals(@"default") == true)
-                                || (pair.Value.Equals (@"period") == true))
+                                || (pair.Value.Equals(@"default") == true))
                             // оставить значение 'm_arg_interval' по умолчанию
                                 ;
-                            else if(Int32.TryParse(pair.Value, out _timerInterval) == true)
+                            else if(Int32.TryParse(pair.Value, out timerInterval) == true)
                             // указано и распознано значение интервала
-                                ;
+                                _timerInterval = timerInterval;
                             else if (pair.Value.Equals (@"mc_event") == true)
                             // режим работы по событиям Модес-Центр
                                 _modeMashine = MODE_MASHINE.SERVICE_MC_EVENT;
@@ -202,7 +203,8 @@ namespace StatisticTrans
                                 _modeMashine = MODE_MASHINE.UNKNOWN;
                             }
 
-                            if (_timerInterval < TIMER_SERVICE_MIN_INTERVAL) {
+                            if ((_modeMashine == s_modeServiceMashineDefault)
+                                && (_timerInterval < TIMER_SERVICE_MIN_INTERVAL)) {
                                 _throwMessage = "Интервал задан меньше необходимого значения";
                                 _modeMashine = MODE_MASHINE.UNKNOWN;
                             }
@@ -368,7 +370,7 @@ namespace StatisticTrans
             this.m_checkboxModeMashine.Size = new System.Drawing.Size(123, 23);
             //this.m_checkboxModeMashine.CheckAlign = ContentAlignment.;
             this.m_checkboxModeMashine.TextAlign = ContentAlignment.MiddleLeft;
-            this.m_checkboxModeMashine.CheckedChanged += new EventHandler(m_checkboxModeMashine_CheckedChanged);
+            this.m_checkboxModeMashine.CheckedChanged += new EventHandler(checkboxModeMashine_CheckedChanged);
             this.Controls.Add(this.m_checkboxModeMashine);
             //Пока переходить из режима в режим пользователь НЕ может (нестабильная работа trans_tg.exe) ???
             this.m_checkboxModeMashine.Enabled = false; ;
@@ -983,18 +985,26 @@ namespace StatisticTrans
         /// <summary>
         /// При [авто]режиме переход к следующему элементу списка компонентов
         /// </summary>
-        protected virtual void errorDataGridViewAdmin()
+        protected virtual void errorDataGridViewAdmin(int state)
         {
             if ((m_bTransAuto == true)
                 && (m_bEnabledUIControl == false))
             {
+                m_arAdmin [(int)CONN_SETT_TYPE.SOURCE].TECComponentComplete (state, false);
+
                 CT.ErrorIter();
 
                 IAsyncResult asyncRes;
-                if (IsHandleCreated/*InvokeRequired*/ == true)
-                    asyncRes = this.BeginInvoke(new DelegateFunc(trans_auto_next));
+                if (!(handlerCmd.ModeMashine == MODE_MASHINE.SERVICE_MC_EVENT))
+                    if (InvokeRequired == true)
+                        if (IsHandleCreated == true)
+                            asyncRes = this.BeginInvoke (new DelegateFunc (trans_auto_next));
+                        else
+                            Logging.Logg ().Error (@"FormMainTrans::errorDataGridViewAdmin () - ... BeginInvoke (trans_auto_next) - ...", Logging.INDEX_MESSAGE.D_001);
+                    else
+                        trans_auto_next ();
                 else
-                    Logging.Logg().Error(@"FormMainTrans::errorDataGridViewAdmin () - ... BeginInvoke (trans_auto_next) - ...", Logging.INDEX_MESSAGE.D_001);
+                    ;
             }
             else ;
         }
@@ -1019,13 +1029,15 @@ namespace StatisticTrans
         /// <summary>
         /// При [авто]режиме переход к следующему элементу списка компонентов
         /// </summary>
-        protected virtual void saveDataGridViewAdminComplete()
+        protected virtual void saveDataGridViewAdminComplete(int state)
         {
             //Logging.Logg().Debug(@"FormMainTrans::saveDataGridViewAdminComplete () - m_bTransAuto=" + m_bTransAuto + @", m_modeMashine=" + m_modeMashine.ToString () + @", - вХод...", Logging.INDEX_MESSAGE.NOT_SET);
 
             if ((m_bTransAuto == true)
                 && (m_bEnabledUIControl == false))
             {
+                 m_arAdmin[(int)CONN_SETT_TYPE.SOURCE].TECComponentComplete (state, true);
+
                 //??? зачем нужен '.NextDay'
                 CT.NextDay = IsTomorrow();
                 if (comboBoxTECComponent.InvokeRequired)
@@ -1034,12 +1046,13 @@ namespace StatisticTrans
                     CT.SuccessIter(/*(string)comboBoxTECComponent.Items[comboBoxTECComponent.SelectedIndex]*/);
                 
                 IAsyncResult asyncRes;
-                //if (IsHandleCreated/*InvokeRequired*/ == true)
-                asyncRes = this.BeginInvoke(new DelegateFunc(trans_auto_next));
-                //else
-                //Logging.Logg().Error(@"FormMainTrans::saveDataGridViewAdminComplete () - ... BeginInvoke (trans_auto_next) - ...");
-                ////this.EndInvoke (asynchRes);
-                //////trans_auto_next ();
+                if (!(handlerCmd.ModeMashine == MODE_MASHINE.SERVICE_MC_EVENT))
+                    if (InvokeRequired == true)
+                        asyncRes = this.BeginInvoke (new DelegateFunc (trans_auto_next));
+                    else
+                        trans_auto_next ();
+                else
+                    ;
             }
             else
                 ;
@@ -1214,12 +1227,14 @@ namespace StatisticTrans
             return have_msg;
         }
 
-        private void trans_auto_start()
+        protected void trans_auto_start()
         {
             ////Таймер больше не нужен (сообщения в "строке статуса")
             //timerMain.Stop();
             //timerMain.Interval = TIMER_START_INTERVAL;
             ////timerMain.Enabled = false;
+
+            m_arAdmin [(int)CONN_SETT_TYPE.SOURCE].PrepareActionRDGValues ();
 
             if (!(comboBoxTECComponent.SelectedIndex < 0)) {
                 comboBoxTECComponent.SelectedIndex = -1;
@@ -1233,18 +1248,38 @@ namespace StatisticTrans
 
         protected void trans_auto_next()
         {
-            Logging.Logg().Debug(@"FormMainTrans::trans_auto_next () - comboBoxTECComponent.SelectedIndex=" + comboBoxTECComponent.SelectedIndex, Logging.INDEX_MESSAGE.NOT_SET);
+            FormChangeMode.KeyDevice  currentTECComponentKey
+                , nextTECComponentKey;
+            ComboBoxItem nextItem;
+            int iNextIndex = -1;
 
-            if (comboBoxTECComponent.SelectedIndex + 1 < comboBoxTECComponent.Items.Count)
+            currentTECComponentKey = !(comboBoxTECComponent.SelectedIndex < 0)
+                ? ((ComboBoxItem)comboBoxTECComponent.SelectedItem).Tag
+                    : FormChangeMode.KeyDevice.Empty;
+
+            nextTECComponentKey = m_arAdmin [(int)CONN_SETT_TYPE.SOURCE].FirstTECComponentKey;
+            if (nextTECComponentKey.Equals (FormChangeMode.KeyDevice.Empty) == false) {
+                nextItem = comboBoxTECComponent.Items.Cast<ComboBoxItem> ().First (item => {
+                    return item.Tag.Equals (nextTECComponentKey) == true;
+                });
+                iNextIndex = comboBoxTECComponent.Items.IndexOf (nextItem);
+            } else
+                ;
+
+            Logging.Logg ().Debug ($@"FormMainTrans::trans_auto_next () - SelectedItem=[Index: {comboBoxTECComponent.SelectedIndex}, Key: {currentTECComponentKey.ToString ()}], NextItem=[Index: {iNextIndex}, Key: {nextTECComponentKey.ToString()}]..."
+                , Logging.INDEX_MESSAGE.NOT_SET);
+
+            if ((!(iNextIndex < 0))
+                && (iNextIndex < comboBoxTECComponent.Items.Count))
             {
-                comboBoxTECComponent.SelectedIndex++;
+                comboBoxTECComponent.SelectedIndex = iNextIndex;
                 //??? зачем нужен '.NextDay'
                 CT.NextDay = IsTomorrow();
                 //// в этом контексте вызов 'comboBoxTECComponent.InvokeRequired' не требуется
                 //if (comboBoxTECComponent.InvokeRequired)
                 //    comboBoxTECComponent.Invoke(new Action(() => CT.AttemptIter((string)comboBoxTECComponent.Items[comboBoxTECComponent.SelectedIndex])));
                 //else
-                    CT.AttemptIter((string)comboBoxTECComponent.Items[comboBoxTECComponent.SelectedIndex]);
+                    CT.AttemptIter(((ComboBoxItem)comboBoxTECComponent.SelectedItem).Tag);
 
                 //Обработчик отключен - вызов "программно"
                 comboBoxTECComponent_SelectedIndexChanged(null, EventArgs.Empty);
@@ -1253,19 +1288,28 @@ namespace StatisticTrans
                 if (handlerCmd.ModeMashine == MODE_MASHINE.TO_DATE)
                     buttonClose.PerformClick();
                 else
-                {
-                    if (IsTomorrow() == false)
-                    {
-                        dateTimePickerMain.Value = DateTime.Now;
-                        //enabledUIControl(true);
-                    }
+                // режим работы "сервис" (??? по таймеру | событиям)
+                    if (handlerCmd.ModeMashine == MODE_MASHINE.SERVICE_PERIOD)
+                        if (IsTomorrow() == true)
+                        {
+                            dateTimePickerMain.Value = dateTimePickerMain.Value.AddDays (1);
+                            comboBoxTECComponent.SelectedIndex = 0;
+                            comboBoxTECComponent_SelectedIndexChanged (null, EventArgs.Empty);
+                        }
+                        else
+                        {//??? завершение выполнения очередной итерации
+                            trans_auto_stop ();
+                        }
+                    else if (handlerCmd.ModeMashine == MODE_MASHINE.SERVICE_MC_EVENT)
+                        trans_auto_stop();
                     else
-                    {
-                        dateTimePickerMain.Value = dateTimePickerMain.Value.AddDays(1);
-                        comboBoxTECComponent.SelectedIndex = 0;
-                        comboBoxTECComponent_SelectedIndexChanged(null, EventArgs.Empty);
-                    }
-                }
+                        throw new Exception($"FormMainTrans::trans_auto_next () - неизвестный сервисный режим <{handlerCmd.ModeMashine.ToString ()}> работы...");
+        }
+
+        protected virtual void trans_auto_stop ()
+        {
+            dateTimePickerMain.Value = DateTime.Now;
+            //enabledUIControl(true);
         }
 
         protected virtual bool IsTomorrow()
@@ -1314,8 +1358,9 @@ namespace StatisticTrans
                             else ; //??? случайное совпадение...
                             timerService.Interval = handlerCmd.TimerInterval;
 
-                            FillComboBoxTECComponent(mode, true);
-                            CT = new ComponentTesting(comboBoxTECComponent.Items.Count);
+                            FillComboBoxTECComponent (mode, true);
+                            CT = new ComponentTesting (comboBoxTECComponent.Items.Count);
+
                             //DateUpdate(m_arg_interval);
                         }
                         else
@@ -1328,6 +1373,10 @@ namespace StatisticTrans
                         break;
                     case MODE_MASHINE.SERVICE_MC_EVENT:
                     //??? ничего не делать; m_admin уже "подписался" на события Модес-Центр
+                        stopTimerService ();
+
+                        FillComboBoxTECComponent (mode, true);
+                        CT = new ComponentTesting (comboBoxTECComponent.Items.Count);
                         break;
                     case MODE_MASHINE.TO_DATE:
                     //    if (timerService.Interval == ProgramBase.TIMER_START_INTERVAL)
@@ -1425,7 +1474,14 @@ namespace StatisticTrans
                 ;
         }
 
-        private void m_checkboxModeMashine_CheckedChanged(object sender, EventArgs e)
+        protected void  stopTimerService ()
+        {
+            timerService.Stop ();
+            //timerService.Interval = TIMER_START_INTERVAL;
+            timerService = null;
+        }
+
+        private void checkboxModeMashine_CheckedChanged(object sender, EventArgs e)
         {
             if (!(handlerCmd.ModeMashine == MODE_MASHINE.TO_DATE))
                 if (m_checkboxModeMashine.Checked == true)
@@ -1450,9 +1506,7 @@ namespace StatisticTrans
                         handlerCmd.SetModeMashine(MODE_MASHINE.INTERACTIVE);
                     else ;
 
-                    timerService.Stop();
-                    //timerService.Interval = TIMER_START_INTERVAL;
-                    timerService = null;
+                    stopTimerService ();
                 }
             else
             {

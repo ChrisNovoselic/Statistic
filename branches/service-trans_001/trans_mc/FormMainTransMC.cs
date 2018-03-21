@@ -11,6 +11,7 @@ using StatisticCommon;
 using StatisticTrans;
 using StatisticTransModes;
 using ASUTP;
+using System.Threading;
 
 namespace trans_mc
 {
@@ -55,6 +56,11 @@ namespace trans_mc
                 {
                     case (Int16)CONN_SETT_TYPE.SOURCE:
                         m_arAdmin[i] = new AdminMC(m_sFileINI.GetMainValueOfKey(@"MCServiceHost"));
+                        if (handlerCmd.ModeMashine == MODE_MASHINE.SERVICE_MC_EVENT) {
+                            (m_arAdmin [i] as AdminMC).AddEventHandler(DbMCInterface.ID_MC_EVENT.RELOAD_PLAN_VALUES, FormMainTransMC_EventMaketChanged);
+                            (m_arAdmin [i] as AdminMC).AddEventHandler (DbMCInterface.ID_MC_EVENT.NEW_PLAN_VALUES, FormMainTransMC_EventPlanDataChanged);
+                        } else
+                            ;
                         break;
                     case (Int16)CONN_SETT_TYPE.DEST:
                         m_arAdmin[i] = new AdminTS_Modes(new bool[] { false, true });
@@ -135,6 +141,36 @@ namespace trans_mc
                 ;
         }
 
+        private void FormMainTransMC_EventMaketChanged (object sender, EventArgs e)
+        {
+            IAsyncResult iar;
+            object res;
+
+            iar = BeginInvoke ((MethodInvoker)delegate () {
+                AdminMC adminMC = m_arAdmin [(int)CONN_SETT_TYPE.SOURCE] as AdminMC;
+                
+                adminMC.GetMaketEquipment (FormChangeMode.KeyDevice.Service, e as AdminMC.EventArgs<Guid>, (e as AdminMC.IEventArgs).m_Date);
+            });
+
+            //iar.AsyncWaitHandle.WaitOne ();
+            //res = EndInvoke (iar);
+
+            Logging.Logg ().Action (@"::FormMainTransMC_EventMaketChanged () - ...", Logging.INDEX_MESSAGE.NOT_SET);
+        }
+
+        private void FormMainTransMC_EventPlanDataChanged (object sender, EventArgs e)
+        {
+            IAsyncResult iar;
+            object res;
+
+            iar = BeginInvoke ((MethodInvoker)delegate () { trans_auto_start (); });
+
+            //iar.AsyncWaitHandle.WaitOne();
+            //res = EndInvoke (iar);
+
+            Logging.Logg ().Action (@"::FormMainTransMC_EventPlanDataChanged () - ...", Logging.INDEX_MESSAGE.NOT_SET);
+        }
+
         protected override void setUIControlSourceState()
         {
             IDevice comp = ((AdminTS)m_arAdmin [(Int16)CONN_SETT_TYPE.DEST]).CurrentDevice;
@@ -154,6 +190,16 @@ namespace trans_mc
 
         protected override void buttonSaveSourceSett_Click(object sender, EventArgs e)
         {            
+        }
+
+        protected override void trans_auto_stop ()
+        {
+            AdminMC adminMC = m_arAdmin [(int)CONN_SETT_TYPE.SOURCE] as AdminMC;
+
+            if (adminMC.IsServiceModesCentre == true)
+                adminMC.FetchEvent ();
+            else
+                base.trans_auto_stop ();
         }
 
         protected override void comboBoxTECComponent_SelectedIndexChanged(object sender, EventArgs ev)

@@ -141,6 +141,8 @@ namespace StatisticCommon
             }
 
             public static KeyDevice Empty = new KeyDevice() { Id = -1, Mode = MODE_TECCOMPONENT.Unknown };
+
+            public static KeyDevice Service = new KeyDevice () { Id = -666, Mode = MODE_TECCOMPONENT.ANY };
         }
         /// <summary>
         /// Тип вкладки  из инструментария "администратор-диспетчер"

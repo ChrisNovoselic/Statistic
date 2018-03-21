@@ -1,5 +1,5 @@
 ﻿using System;
-using System.Text;
+using System.Linq;
 using System.Collections.Generic;
 using Microsoft.VisualStudio.TestTools.UnitTesting;
 using StatisticCommon;
@@ -9,7 +9,8 @@ namespace UnitTest {
     /// Сводное описание для PBREvualation
     /// </summary>
     [TestClass]
-    public class PBREvualation {
+    public class PBREvualation
+    {
         public PBREvualation ()
         {
             //
@@ -57,7 +58,8 @@ namespace UnitTest {
         //
         #endregion
 
-        struct ASSERT {
+        struct ASSERT
+        {
             public string input;
             public int expected_err;
             public int expected_ret;
@@ -113,6 +115,62 @@ namespace UnitTest {
                 Assert.AreEqual (expected_ret [i], HAdmin.GetPBRNumber (input [i], out err));
                 Assert.AreEqual (expected_err [i], err);
             }
+        }
+
+        [TestMethod]
+        public void Test_CastGuidToString ()
+        {
+            int []array_a;
+            short [] array_b
+                , array_c;
+            byte []array_d;
+            List<Guid> listGuid;
+            List<string> listRes = null;
+
+            array_a = new int[]  { 1, 2, 3 };
+            array_b = new short [] { 4, 5, 6 }; array_c = new short [] { 7, 8, 9 };
+            array_d = new byte [] { Convert.ToByte('d')
+                , Convert.ToByte ('e')
+                , Convert.ToByte ('f')
+                , Convert.ToByte('g')
+                , Convert.ToByte('h')
+                , Convert.ToByte('i')
+                , Convert.ToByte('j')
+                , Convert.ToByte('k')
+            };
+
+            listGuid = new List<Guid> ();
+
+            foreach (int a in array_a)
+                foreach (short b in array_b)
+                    foreach (short c in array_c)
+                        listGuid.Add(new Guid(a, b, c, array_d));
+
+            try {
+                listRes = Array.ConvertAll<Guid, string>(listGuid.ToArray(), delegate (Guid guid) {
+                    return guid.ToString();
+                }).ToList();
+            } catch (Exception e) {
+                Assert.Fail (e.Message);
+            }
+
+            Assert.IsNotNull (listRes);
+            if (Equals (listRes, null) == false)
+                Assert.IsTrue (listRes.Count == listGuid.Count);
+            else
+                ;
+
+            listGuid.Clear ();
+
+            try {
+                listGuid = Array.ConvertAll<string, Guid> (listRes.ToArray (), delegate (string guid) {
+                    return Guid.Parse(guid);
+                }).ToList ();
+            } catch (Exception e) {
+                Assert.Fail (e.Message);
+            }
+
+            Assert.IsTrue (listRes.Count == listGuid.Count);
         }
     }
 }

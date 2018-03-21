@@ -389,7 +389,8 @@ namespace StatisticCommon
                 m_evSaveChangesComplete.Set();
             //else ;
 
-            if (!(saveComplete == null)) saveComplete(); else ;
+            //??? почему AdminValues
+            saveComplete?.Invoke((m_markSavedValues.IsMarked ((int)INDEX_MARK_PPBRVALUES.PBR_SAVED) == true) ? (int)StatesMachine.SavePPBRValues : (int)StatesMachine.SaveAdminValues);
 
             return errRes;
         }

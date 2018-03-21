@@ -3,6 +3,7 @@ using System.Collections.Generic;
 using System.Linq;
 using System.Text;
 using StatisticTrans;
+using StatisticCommon;
 
 namespace StatisticTrans
 {
@@ -27,7 +28,7 @@ namespace StatisticTrans
         /// <summary>
         /// Кол-во компонентов
         /// </summary>
-        private string[] Iters;
+        private FormChangeMode.KeyDevice [] Iters;
 
         /// <summary>
         /// Счетчик нового дня
@@ -40,7 +41,7 @@ namespace StatisticTrans
         /// <param name="size">размер массива</param>
         public ComponentTesting(int size)
         {
-            Iters = new string[size];
+            Iters = new FormChangeMode.KeyDevice [size];
             currentIter =
             commonSuccessIter =
             commonTotalIter =
@@ -51,14 +52,14 @@ namespace StatisticTrans
         /// Попытка итерации
         /// </summary>
         /// <param name="nameElem">имя опрашеваемого компонента</param>
-        public void AttemptIter(string nameElem)
+        public void AttemptIter(FormChangeMode.KeyDevice key)
         {
             if (currentIter == CountIter)
                 ClearCounter();
             else
                 ;
 
-            Iters[currentIter] = nameElem;
+            Iters[currentIter] = key;
             currentIter++;
             commonTotalIter++;
 
@@ -152,7 +153,7 @@ namespace StatisticTrans
         private string getTextReportErrorIter()
         {
             return getTextReportSuccessIter ()
-                + string.Format("; Ошибка на компоненте: {0}, индекс={1}", (IsValidateIters ? Iters[currentIter] : @"не известно"), currentIter);
+                + string.Format("; Ошибка на компоненте: {0}, индекс={1}", (IsValidateIters ? Iters[currentIter].ToString() : @"не известно"), currentIter);
         }
     }
 }

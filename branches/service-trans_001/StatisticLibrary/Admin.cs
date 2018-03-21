@@ -22,27 +22,75 @@ namespace StatisticCommon
             SummerToWinter,
         }
 
-        ///// <summary>
-        ///// Для словаря 'm_dictHaveDates'
-        ///// </summary>
-        //protected struct HAVE_DATES
-        //{
-        //    public int id_rec;
+        /// <summary>
+        /// Очередь индексов компонентов ТЭЦ для последоват. экспорта ПБР-значений
+        ///  , копия '_listTECComponentIndex'
+        /// </summary>
+        protected List<FormChangeMode.KeyDevice> _listTECComponentKey;
 
-        //    public DateTime date_time;
+        public FormChangeMode.KeyDevice FirstTECComponentKey
+        {
+            get
+            {
+                return (Equals (_listTECComponentKey, null) == false)
+                    && (_listTECComponentKey.Count > 0)
+                        ? _listTECComponentKey [0]
+                            : FormChangeMode.KeyDevice.Empty;
+            }
+        }
 
-        //    public string pbr_number;
+        /// <summary>
+        /// Получение списка компонентов ТЭЦ в зависимости от типа компонента
+        /// </summary>
+        /// <param name="mode">Модификатор типа компонентов</param>
+        /// <param name="bLimitLK">Признак учета лимита ЛК при формировании списка</param>
+        /// <returns>Возвращает список ключей, по которым возможен поиск компонента</returns>
+        public virtual List<FormChangeMode.KeyDevice> GetListKeyTECComponent (FormChangeMode.MODE_TECCOMPONENT mode, bool bLimitLK)
+        {
+            List<FormChangeMode.KeyDevice> listRes = new List<FormChangeMode.KeyDevice> ();
 
-        //    public int pbr_inumber;
+            int iLimitIdTec = bLimitLK == true ? (int)TECComponent.ID.LK : (int)TECComponent.ID.GTP;
 
-        //    public void Reset()
-        //    {
-        //        id_rec = 0;
-        //        date_time = DateTime.MinValue;
-        //        pbr_number = string.Empty;
-        //        pbr_inumber = -1;
-        //    }
-        //}
+            switch (mode) {
+                case FormChangeMode.MODE_TECCOMPONENT.TEC:
+                    foreach (TEC tec in m_list_tec) {
+                        if (!(tec.m_id > iLimitIdTec))
+                            listRes.Add (new FormChangeMode.KeyDevice () { Id = tec.m_id, Mode = mode });
+                        else
+                            ;
+                    }
+                    break;
+                case FormChangeMode.MODE_TECCOMPONENT.GTP:
+                case FormChangeMode.MODE_TECCOMPONENT.PC:
+                case FormChangeMode.MODE_TECCOMPONENT.TG:
+                    foreach (TECComponent comp in allTECComponents) {
+                        if ((!(comp.tec.m_id > iLimitIdTec))
+                            && (mode == comp.Mode))
+                            listRes.Add (new FormChangeMode.KeyDevice () { Id = comp.m_id, Mode = mode });
+                        else
+                            ;
+                    }
+                    break;
+                default:
+                    break;
+            }
+
+            return listRes;
+        }
+
+        public virtual FormChangeMode.KeyDevice PrepareActionRDGValues ()
+        {
+            return FirstTECComponentKey;
+        }
+
+        public virtual void TECComponentComplete (int state, bool bResult)
+        {
+            //??? а если выполняется не save - обрабатываем в наследуемом классе
+            if (_listTECComponentKey.Count > 0)
+                _listTECComponentKey.RemoveAt (0);
+            else
+                ;
+        }
 
         protected int GetSeasonValue (int h) {
             int iRes = SEASON_BASE;
@@ -154,9 +202,9 @@ namespace StatisticCommon
         public volatile RDGStruct[] m_prevRDGValues;
         public RDGStruct[] m_curRDGValues;
 
-        protected DelegateFunc saveComplete = null;
+        protected DelegateIntFunc saveComplete = null;
         protected Action<DateTime, bool> readyData = null;
-        protected DelegateFunc errorData = null;
+        protected DelegateIntFunc errorData = null;
 
         protected DelegateDateFunc setDatetime;
 
@@ -512,14 +560,14 @@ namespace StatisticCommon
         //        ;
         //}
 
-        public void SetDelegateSaveComplete(DelegateFunc f) 
+        public void SetDelegateSaveComplete(DelegateIntFunc f) 
         {            
             saveComplete = f;
 
             //Logging.Logg().Debug(@"HAdmin::SetDelegateSaveComplete () - saveComplete is set=" + (saveComplete == null ? false.ToString() : true.ToString()) + @" - вЫход", Logging.INDEX_MESSAGE.NOT_SET);
         }
 
-        public void SetDelegateData(Action<DateTime, bool> s, DelegateFunc e) { readyData = s; errorData = e; }
+        public void SetDelegateData(Action<DateTime, bool> s, DelegateIntFunc e) { readyData = s; errorData = e; }
 
         //public void SetDelegateTECComponent(DelegateFunc f) { fillTECComponent = f; }
 

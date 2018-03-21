@@ -104,6 +104,8 @@
     <Compile Include="AdminMC.cs">
       <SubType>Code</SubType>
     </Compile>
+    <Compile Include="DbMCInterface.cs" />
+    <Compile Include="DbMCSources.cs" />
     <Compile Include="IServiceModesCentre.cs" />
     <Compile Include="Properties\AssemblyInfo.cs" />
     <Compile Include="FormMainTransMC.cs">
@@ -146,7 +148,15 @@
     <Reference Include="ASUTP.Logging">
       <HintPath>..\..\ExternalDLL\ASUTP.Logging.dll</HintPath>
     </Reference>
+    <Reference Include="Infrastructure, Version=1.4.5.126, Culture=neutral, processorArchitecture=MSIL">
+      <SpecificVersion>False</SpecificVersion>
+      <HintPath>..\..\MCApiDLL\Infrastructure.dll</HintPath>
+    </Reference>
     <Reference Include="Microsoft.CSharp" />
+    <Reference Include="ModesApiExternal, Version=1.4.5.9, Culture=neutral, processorArchitecture=MSIL">
+      <SpecificVersion>False</SpecificVersion>
+      <HintPath>..\..\MCApiDLL\ModesApiExternal.dll</HintPath>
+    </Reference>
     <Reference Include="System" />
     <Reference Include="System.Data" />
     <Reference Include="System.Data.DataSetExtensions" />

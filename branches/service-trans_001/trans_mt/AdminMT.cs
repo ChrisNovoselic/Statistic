@@ -444,7 +444,7 @@ namespace trans_mt
             else
                 ;
 
-            errorData?.Invoke ();
+            errorData?.Invoke (state);
 
             return reasonRes;
         }

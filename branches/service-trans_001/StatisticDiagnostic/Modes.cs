@@ -687,7 +687,7 @@ namespace StatisticDiagnostic
                 }
 
                 /// <summary>
-                /// Функция изменения заголовков грида Modes
+                /// Функция изменения заголовков представления Modes
                 /// </summary>
                 private void setTextDescription(string name_shr)
                 {

@@ -83,14 +83,6 @@
     <Reference Include="ASUTP.Logging">
       <HintPath>..\..\ExternalDLL\ASUTP.Logging.dll</HintPath>
     </Reference>
-    <Reference Include="Infrastructure, Version=1.4.3.111, Culture=neutral, processorArchitecture=MSIL">
-      <SpecificVersion>False</SpecificVersion>
-      <HintPath>..\..\MCApiDLL\Infrastructure.dll</HintPath>
-    </Reference>
-    <Reference Include="ModesApiExternal, Version=1.4.3.8, Culture=neutral, processorArchitecture=MSIL">
-      <SpecificVersion>False</SpecificVersion>
-      <HintPath>..\..\MCApiDLL\ModesApiExternal.dll</HintPath>
-    </Reference>
     <Reference Include="System" />
     <Reference Include="System.Core" />
     <Reference Include="System.Drawing" />
@@ -102,8 +94,6 @@
   </ItemGroup>
   <ItemGroup>
     <Compile Include="ComponentTesting.cs" />
-    <Compile Include="DbMCInterface.cs" />
-    <Compile Include="DbMCSources.cs" />
     <Compile Include="FormMainTrans.cs">
       <SubType>Form</SubType>
     </Compile>

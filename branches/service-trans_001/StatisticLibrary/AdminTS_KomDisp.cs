@@ -630,12 +630,7 @@ namespace StatisticCommon
         ///  , накоплением входных значений для всех ГТП последовательно (по факту их получения из БД) 
         /// </summary>
         private MSExcelIOExportPBRValues _msExcelIOExportPBRValues;
-        /// <summary>
-        /// Очередь индексов компонентов ТЭЦ для последоват. экспорта ПБР-значений
-        ///  , копия '_listTECComponentIndex'
-        /// </summary>
-        private List<FormChangeMode.KeyDevice> _listTECComponentKey;
-
+        
         /// <summary>
         /// Дата для экспорта ТОЛЬКО в режиме 'AUTO'
         /// </summary>
@@ -657,7 +652,7 @@ namespace StatisticCommon
             }
         }
 
-        public FormChangeMode.KeyDevice PrepareExportRDGValues()
+        public override FormChangeMode.KeyDevice PrepareActionRDGValues()
         {
             List<FormChangeMode.KeyDevice> listKey = GetListKeyTECComponent (FormChangeMode.MODE_TECCOMPONENT.GTP, true);
 
@@ -667,6 +662,7 @@ namespace StatisticCommon
                 ;
 
             try {
+                // проверить на наличие дубликатов
                 if (listKey.Count - listKey.Distinct ().Count () == 0) {
                     _listTECComponentKey.Clear ();
                     listKey.ForEach ((key) => {
@@ -690,7 +686,7 @@ namespace StatisticCommon
                 Logging.Logg ().Exception (e, string.Format("AdminTS_KomDisp::PrepareExportRDGValues () - ..."), Logging.INDEX_MESSAGE.NOT_SET);
             }
 
-            return _listTECComponentKey.Count > 0 ? _listTECComponentKey [0] : FormChangeMode.KeyDevice.Empty;
+            return base.PrepareActionRDGValues();
         }
 
         #region Модульный тест экспорта ПБР-значений
