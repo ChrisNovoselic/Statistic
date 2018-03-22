@@ -21,7 +21,7 @@ namespace trans_mc
         private Modes.BusinessLogic.IModesTimeSlice m_MCTimeSlice;
         private IList <PlanFactorItem> m_listPFI;
 
-        public enum ID_MC_EVENT : short { Unknown = -1, GENOBJECT_MODIFIED, NEW_PLAN_VALUES, RELOAD_PLAN_VALUES }
+        public enum ID_EVENT : short { Unknown = -1, GENOBJECT_MODIFIED, NEW_PLAN_VALUES, RELOAD_PLAN_VALUES }
 
         public enum Operation : short { Unknown = -1, InitIGO, MaketEquipment, PPBR }
         /// <summary>
@@ -166,25 +166,25 @@ namespace trans_mc
                 Modes.NetAccess.EventRefreshData53500 ev = e as Modes.NetAccess.EventRefreshData53500;
 
                 sendToTrans = new object[] {
-                    ID_MC_EVENT.GENOBJECT_MODIFIED
+                    ID_EVENT.GENOBJECT_MODIFIED
                     , ev
                 };
             } else if (e.GetType().Equals(typeof(Modes.NetAccess.EventRefreshJournalMaket53500)) == true) {
                 Modes.NetAccess.EventRefreshJournalMaket53500 ev = e as Modes.NetAccess.EventRefreshJournalMaket53500;
 
                 sendToTrans = new object[] {
-                    ID_MC_EVENT.RELOAD_PLAN_VALUES
+                    ID_EVENT.RELOAD_PLAN_VALUES
                     , ev
                 };
             } else if (e.GetType().Equals(typeof(Modes.NetAccess.EventPlanDataChanged)) == true) {
                 Modes.NetAccess.EventPlanDataChanged ev = e as Modes.NetAccess.EventPlanDataChanged;
 
                 sendToTrans = new object[] {
-                    ID_MC_EVENT.NEW_PLAN_VALUES
+                    ID_EVENT.NEW_PLAN_VALUES
                     , ev
                 };
             } else
-                sendToTrans = new object[] { ID_MC_EVENT.Unknown };
+                sendToTrans = new object[] { ID_EVENT.Unknown };
 
             // проста€ ретрансл€ци€
             delegateMCApiHandler(sendToTrans);

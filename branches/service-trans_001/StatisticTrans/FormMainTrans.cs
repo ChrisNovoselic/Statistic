@@ -31,7 +31,7 @@ namespace StatisticTrans
         /// <summary>
         /// //Перечисление "Режим машины" (интерактивный,дата, сервис,неизвестный)
         /// </summary>
-        protected enum MODE_MASHINE : ushort { INTERACTIVE, TO_DATE, SERVICE_PERIOD, SERVICE_MC_EVENT, UNKNOWN };
+        protected enum MODE_MASHINE : ushort { INTERACTIVE, SERVICE_TO_DATE, SERVICE_PERIOD, SERVICE_ON_EVENT, UNKNOWN };
         /// <summary>
         ///Перечисление "Типы настроек"
         /// </summary>
@@ -68,7 +68,7 @@ namespace StatisticTrans
 
         //protected HMark m_markQueries;
 
-        protected bool m_bTransAuto
+        protected bool IsService
         {
             get
             {
@@ -77,9 +77,9 @@ namespace StatisticTrans
 
                 //return !timerMain.Enabled;
 
-                return ((handlerCmd.ModeMashine == MODE_MASHINE.TO_DATE)
+                return ((handlerCmd.ModeMashine == MODE_MASHINE.SERVICE_TO_DATE)
                     || (handlerCmd.ModeMashine == MODE_MASHINE.SERVICE_PERIOD)
-                    || (handlerCmd.ModeMashine == MODE_MASHINE.SERVICE_MC_EVENT))
+                    || (handlerCmd.ModeMashine == MODE_MASHINE.SERVICE_ON_EVENT))
                         ? true
                             : false;
             }
@@ -175,7 +175,7 @@ namespace StatisticTrans
                     switch (pair.Key)
                     {
                         case "date":
-                            _modeMashine = MODE_MASHINE.TO_DATE;
+                            _modeMashine = MODE_MASHINE.SERVICE_TO_DATE;
 
                             if (pair.Value == "default")
                                 _date = DateTime.Now.AddDays(1);
@@ -195,9 +195,9 @@ namespace StatisticTrans
                             else if(Int32.TryParse(pair.Value, out timerInterval) == true)
                             // указано и распознано значение интервала
                                 _timerInterval = timerInterval;
-                            else if (pair.Value.Equals (@"mc_event") == true)
+                            else if (pair.Value.Equals (@"on_event") == true)
                             // режим работы по событиям Модес-Центр
-                                _modeMashine = MODE_MASHINE.SERVICE_MC_EVENT;
+                                _modeMashine = MODE_MASHINE.SERVICE_ON_EVENT;
                             else {
                                 _throwMessage = $"FormMain::RunCmd() - неизвестный сервисный режим <{pair.Value}> работы...";
                                 _modeMashine = MODE_MASHINE.UNKNOWN;
@@ -396,14 +396,14 @@ namespace StatisticTrans
             if (handlerCmd.ModeMashine == MODE_MASHINE.UNKNOWN)
                 throw new Exception(handlerCmd.ThrowMessage);
             else
-                if (handlerCmd.ModeMashine == MODE_MASHINE.TO_DATE)
+                if (handlerCmd.ModeMashine == MODE_MASHINE.SERVICE_TO_DATE)
                     enabledUIControl(false);
                 else
                 {
                     enabledUIControl(true);
 
                     if ((handlerCmd.ModeMashine == MODE_MASHINE.SERVICE_PERIOD)
-                        || (handlerCmd.ModeMashine == MODE_MASHINE.SERVICE_MC_EVENT)) {
+                        || (handlerCmd.ModeMashine == MODE_MASHINE.SERVICE_ON_EVENT)) {
                         this.WindowState = FormWindowState.Minimized;
                         this.ShowInTaskbar = false;
                         this.notifyIconMain.Visible = true;
@@ -947,7 +947,7 @@ namespace StatisticTrans
         /// <param name="bNewValues">Признак наличия новых значений, иначе требуется изменить оформление представления</param>
         protected virtual void setDataGridViewAdmin(DateTime date, bool bNewValues)
         {
-            if ((m_bTransAuto == true)
+            if ((IsService == true)
                 && (m_bEnabledUIControl == false))
             {
                 try
@@ -987,7 +987,7 @@ namespace StatisticTrans
         /// </summary>
         protected virtual void errorDataGridViewAdmin(int state)
         {
-            if ((m_bTransAuto == true)
+            if ((IsService == true)
                 && (m_bEnabledUIControl == false))
             {
                 m_arAdmin [(int)CONN_SETT_TYPE.SOURCE].TECComponentComplete (state, false);
@@ -995,7 +995,7 @@ namespace StatisticTrans
                 CT.ErrorIter();
 
                 IAsyncResult asyncRes;
-                if (!(handlerCmd.ModeMashine == MODE_MASHINE.SERVICE_MC_EVENT))
+                if (IsService == true)
                     if (InvokeRequired == true)
                         if (IsHandleCreated == true)
                             asyncRes = this.BeginInvoke (new DelegateFunc (trans_auto_next));
@@ -1033,7 +1033,7 @@ namespace StatisticTrans
         {
             //Logging.Logg().Debug(@"FormMainTrans::saveDataGridViewAdminComplete () - m_bTransAuto=" + m_bTransAuto + @", m_modeMashine=" + m_modeMashine.ToString () + @", - вХод...", Logging.INDEX_MESSAGE.NOT_SET);
 
-            if ((m_bTransAuto == true)
+            if ((IsService == true)
                 && (m_bEnabledUIControl == false))
             {
                  m_arAdmin[(int)CONN_SETT_TYPE.SOURCE].TECComponentComplete (state, true);
@@ -1046,13 +1046,13 @@ namespace StatisticTrans
                     CT.SuccessIter(/*(string)comboBoxTECComponent.Items[comboBoxTECComponent.SelectedIndex]*/);
                 
                 IAsyncResult asyncRes;
-                if (!(handlerCmd.ModeMashine == MODE_MASHINE.SERVICE_MC_EVENT))
+                //if (IsService == true) проверка уже выполнена выше
                     if (InvokeRequired == true)
                         asyncRes = this.BeginInvoke (new DelegateFunc (trans_auto_next));
                     else
                         trans_auto_next ();
-                else
-                    ;
+                //else
+                //    ;
             }
             else
                 ;
@@ -1240,7 +1240,7 @@ namespace StatisticTrans
                 comboBoxTECComponent.SelectedIndex = -1;
 
                 trans_auto_next();
-            } else if (handlerCmd.ModeMashine == MODE_MASHINE.TO_DATE)
+            } else if (handlerCmd.ModeMashine == MODE_MASHINE.SERVICE_TO_DATE)
                 buttonClose.PerformClick();
             else
                 enabledUIControl (true);
@@ -1285,7 +1285,7 @@ namespace StatisticTrans
                 comboBoxTECComponent_SelectedIndexChanged(null, EventArgs.Empty);
             }
             else
-                if (handlerCmd.ModeMashine == MODE_MASHINE.TO_DATE)
+                if (handlerCmd.ModeMashine == MODE_MASHINE.SERVICE_TO_DATE)
                     buttonClose.PerformClick();
                 else
                 // режим работы "сервис" (??? по таймеру | событиям)
@@ -1300,7 +1300,7 @@ namespace StatisticTrans
                         {//??? завершение выполнения очередной итерации
                             trans_auto_stop ();
                         }
-                    else if (handlerCmd.ModeMashine == MODE_MASHINE.SERVICE_MC_EVENT)
+                    else if (handlerCmd.ModeMashine == MODE_MASHINE.SERVICE_ON_EVENT)
                         trans_auto_stop();
                     else
                         throw new Exception($"FormMainTrans::trans_auto_next () - неизвестный сервисный режим <{handlerCmd.ModeMashine.ToString ()}> работы...");
@@ -1329,12 +1329,12 @@ namespace StatisticTrans
 
             FormChangeMode.MODE_TECCOMPONENT mode = FormChangeMode.MODE_TECCOMPONENT.GTP;
 
-            if (handlerCmd.ModeMashine == MODE_MASHINE.TO_DATE) {
+            if (handlerCmd.ModeMashine == MODE_MASHINE.SERVICE_TO_DATE) {
                 FillComboBoxTECComponent(mode, true);
                 CT = new ComponentTesting(comboBoxTECComponent.Items.Count);
                 trans_auto_start();
             } else if ((handlerCmd.ModeMashine == MODE_MASHINE.SERVICE_PERIOD)
-                || (handlerCmd.ModeMashine == MODE_MASHINE.SERVICE_MC_EVENT))
+                || (handlerCmd.ModeMashine == MODE_MASHINE.SERVICE_ON_EVENT))
                 m_checkboxModeMashine.Checked = true;
             else {
                 FillComboBoxTECComponent(mode, true);
@@ -1346,7 +1346,7 @@ namespace StatisticTrans
         {
             FormChangeMode.MODE_TECCOMPONENT mode = FormChangeMode.MODE_TECCOMPONENT.GTP;
 
-            if (!(handlerCmd.ModeMashine == MODE_MASHINE.TO_DATE))
+            if (!(handlerCmd.ModeMashine == MODE_MASHINE.SERVICE_TO_DATE))
                 switch (handlerCmd.ModeMashine)
                 {
                     case MODE_MASHINE.SERVICE_PERIOD:
@@ -1371,14 +1371,14 @@ namespace StatisticTrans
                         //DateUpdate(m_arg_interval);
                         trans_auto_start();
                         break;
-                    case MODE_MASHINE.SERVICE_MC_EVENT:
+                    case MODE_MASHINE.SERVICE_ON_EVENT:
                     //??? ничего не делать; m_admin уже "подписался" на события Модес-Центр
                         stopTimerService ();
 
                         FillComboBoxTECComponent (mode, true);
                         CT = new ComponentTesting (comboBoxTECComponent.Items.Count);
                         break;
-                    case MODE_MASHINE.TO_DATE:
+                    case MODE_MASHINE.SERVICE_TO_DATE:
                     //    if (timerService.Interval == ProgramBase.TIMER_START_INTERVAL)
                     //    {
                     //        //Первый запуск
@@ -1483,13 +1483,13 @@ namespace StatisticTrans
 
         private void checkboxModeMashine_CheckedChanged(object sender, EventArgs e)
         {
-            if (!(handlerCmd.ModeMashine == MODE_MASHINE.TO_DATE))
+            if (!(handlerCmd.ModeMashine == MODE_MASHINE.SERVICE_TO_DATE))
                 if (m_checkboxModeMashine.Checked == true)
                 {
                     //if (m_modeMashine == MODE_MASHINE.INTERACTIVE) m_modeMashine = MODE_MASHINE.SERVICE; else ;
                     //То же самое
                     if ((!(handlerCmd.ModeMashine == MODE_MASHINE.SERVICE_PERIOD))
-                        && (!(handlerCmd.ModeMashine == MODE_MASHINE.SERVICE_MC_EVENT)))
+                        && (!(handlerCmd.ModeMashine == MODE_MASHINE.SERVICE_ON_EVENT)))
                         handlerCmd.SetModeServiceMashineDefault();
                     else ;
 

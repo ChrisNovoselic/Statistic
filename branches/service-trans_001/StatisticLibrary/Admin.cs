@@ -83,13 +83,19 @@ namespace StatisticCommon
             return FirstTECComponentKey;
         }
 
-        public virtual void TECComponentComplete (int state, bool bResult)
+        public void TECComponentComplete (int state, bool bResult)
         {
+            string mesLog = string.Empty;
+            int prevCount = -1;
+
+            prevCount = _listTECComponentKey.Count;
             //??? а если выполняется не save - обрабатываем в наследуемом классе
             if (_listTECComponentKey.Count > 0)
                 _listTECComponentKey.RemoveAt (0);
             else
                 ;
+
+            Logging.Logg ().Debug ($@"AdminMS::TECComponentComplete () - было.Count={prevCount}, осталось.Count={_listTECComponentKey.Count}...", Logging.INDEX_MESSAGE.NOT_SET);
         }
 
         protected int GetSeasonValue (int h) {

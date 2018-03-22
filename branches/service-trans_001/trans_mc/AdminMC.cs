@@ -12,6 +12,7 @@ using ModesApiExternal;
 
 using ASUTP;
 using ModesApiExternal;
+using System.Threading;
 
 namespace trans_mc
 {
@@ -19,7 +20,7 @@ namespace trans_mc
     {
         public interface IEventArgs
         {
-            DbMCInterface.ID_MC_EVENT m_id { get; }
+            DbMCInterface.ID_EVENT m_id { get; }
 
             DateTime m_Date
             {
@@ -31,7 +32,7 @@ namespace trans_mc
 
         public class EventArgs<T> : System.EventArgs, IEventArgs
         {
-            public DbMCInterface.ID_MC_EVENT m_id { get; }
+            public DbMCInterface.ID_EVENT m_id { get; }
 
             public DateTime m_Date { get; }
 
@@ -39,7 +40,7 @@ namespace trans_mc
 
             public ReadOnlyCollection<T> m_listParameters;
 
-            public EventArgs (DbMCInterface.ID_MC_EVENT id, DateTime date, ReadOnlyCollection<T> listParameters)
+            public EventArgs (DbMCInterface.ID_EVENT id, DateTime date, ReadOnlyCollection<T> listParameters)
                 : base ()
             {
                 m_id = id;
@@ -72,7 +73,7 @@ namespace trans_mc
         public AdminMC(string strMCServiceHost)
             : base()
         {
-            _dictNotify = new Dictionary<DbMCInterface.ID_MC_EVENT, EventHandler> ();
+            _dictNotify = new Dictionary<DbMCInterface.ID_EVENT, EventHandler> ();
 
             m_strMCServiceHost = strMCServiceHost;
 
@@ -87,7 +88,7 @@ namespace trans_mc
         /// </summary>
         /// <param name="idMCEvent">Тип события Модес-Центр</param>
         /// <returns>Признак наличия обработчика</returns>
-        private bool isHandlerMCEvent(DbMCInterface.ID_MC_EVENT idMCEvent)
+        private bool isHandlerMCEvent(DbMCInterface.ID_EVENT idMCEvent)
         {
             return (_dictNotify.ContainsKey(idMCEvent) == true)
                 ? (Equals (_dictNotify[idMCEvent], null) == false)
@@ -97,12 +98,12 @@ namespace trans_mc
         /// <summary>
         /// Словарь событий 
         /// </summary>
-        private static Dictionary<DbMCInterface.ID_MC_EVENT, EventHandler> _dictNotify;
+        private static Dictionary<DbMCInterface.ID_EVENT, EventHandler> _dictNotify;
 
         /// <summary>
         /// Признак, что родительская форма выполняется в режиме "обработка событий Модес-Центр"
         /// </summary>
-        public bool IsServiceModesCentre
+        public bool IsServiceOnEvent
         {
             get
             {
@@ -110,7 +111,7 @@ namespace trans_mc
             }
         }
 
-        public void AddEventHandler (DbMCInterface.ID_MC_EVENT id_event, EventHandler handler)
+        public void AddEventHandler (DbMCInterface.ID_EVENT id_event, EventHandler handler)
         {
             _dictNotify.Add (id_event, handler);
         }
@@ -118,19 +119,22 @@ namespace trans_mc
         private void listMCEventArgs_CollectionChanged (object sender, System.Collections.Specialized.NotifyCollectionChangedEventArgs e)
         {
             IEventArgs arg = null;
-            DbMCInterface.ID_MC_EVENT id = trans_mc.DbMCInterface.ID_MC_EVENT.Unknown;
+            DbMCInterface.ID_EVENT id = trans_mc.DbMCInterface.ID_EVENT.Unknown;
+            string mesLog = string.Empty;
 
-            Func<IEventArgs, DbMCInterface.ID_MC_EVENT> doWork = delegate (IEventArgs ev) {
-                DbMCInterface.ID_MC_EVENT iRes = DbMCInterface.ID_MC_EVENT.Unknown;
+            mesLog = $"AdminMC::listMCEventArgs_CollectionChanged (Act.={e.Action}";
+
+            Func<IEventArgs, DbMCInterface.ID_EVENT> doWork = delegate (IEventArgs ev) {
+                DbMCInterface.ID_EVENT iRes = DbMCInterface.ID_EVENT.Unknown;
 
                 if (typeof (Guid).IsAssignableFrom(ev.m_type) == true)
-                    iRes = DbMCInterface.ID_MC_EVENT.RELOAD_PLAN_VALUES;
+                    iRes = DbMCInterface.ID_EVENT.RELOAD_PLAN_VALUES;
                 else if (typeof (FormChangeMode.KeyDevice).IsAssignableFrom(ev.m_type) == true)
-                    iRes = DbMCInterface.ID_MC_EVENT.NEW_PLAN_VALUES;
+                    iRes = DbMCInterface.ID_EVENT.NEW_PLAN_VALUES;
                 else
                     ;
 
-                if (!(iRes == DbMCInterface.ID_MC_EVENT.Unknown))
+                if (!(iRes == DbMCInterface.ID_EVENT.Unknown))
                     _dictNotify [iRes]?.Invoke (this, (ev as EventArgs));
                 else
                     ;
@@ -159,11 +163,19 @@ namespace trans_mc
             if (Equals (arg, null) == false) {
                 id = doWork (arg);
 
-                Logging.Logg ().Debug ($"AdminMC::listMCEventArgs_CollectionChanged (Act.={e.Action}, ID_EVENT={id}) - Count={_listMCEventArgs.Count}, NewIndex={e.NewStartingIndex}, OldIndex={e.OldStartingIndex}..."
-                    , Logging.INDEX_MESSAGE.NOT_SET);
-            } else
-                Logging.Logg ().Debug ($"AdminMC::listMCEventArgs_CollectionChanged (Act.={e.Action}) - из коллекции удален крайний элемент ..."
-                    , Logging.INDEX_MESSAGE.NOT_SET);
+                mesLog = $"{mesLog} ID_EVENT={id}) - Count={_listMCEventArgs.Count}, NewIndex={e.NewStartingIndex}, OldIndex={e.OldStartingIndex}...";
+            } else {
+                if ((e.Action == System.Collections.Specialized.NotifyCollectionChangedAction.Add)
+                    && (e.NewStartingIndex > 0))
+                    mesLog = $@"{mesLog}) - ожидание обработки(1-ый в списке): {((IEventArgs)(sender as ObservableCollection<EventArgs>) [e.NewStartingIndex]).m_id.ToString()}...";
+                else if ((e.Action == System.Collections.Specialized.NotifyCollectionChangedAction.Remove)
+                    && ((sender as ObservableCollection<EventArgs>).Count == 0))
+                    mesLog = $@"{mesLog}) - из коллекции удален крайний элемент ...";
+                else
+                    ;
+            }
+
+            Logging.Logg ().Debug (mesLog, Logging.INDEX_MESSAGE.NOT_SET);
         }
 
         public void FetchEvent ()
@@ -182,7 +194,7 @@ namespace trans_mc
         {
             List<FormChangeMode.KeyDevice> listKey;
 
-            if (IsServiceModesCentre == true)
+            if (IsServiceOnEvent == true)
                 listKey = new List<FormChangeMode.KeyDevice> ((_listMCEventArgs [0] as EventArgs<FormChangeMode.KeyDevice>).m_listParameters);
             else
                 listKey = GetListKeyTECComponent (FormChangeMode.MODE_TECCOMPONENT.GTP, true);
@@ -366,7 +378,7 @@ namespace trans_mc
             FetchEvent ();
 
             if (listKeyDevice.Count > 0)
-                _listMCEventArgs.Add (new EventArgs<FormChangeMode.KeyDevice> (DbMCInterface.ID_MC_EVENT.NEW_PLAN_VALUES, date, listKeyDevice));
+                _listMCEventArgs.Add (new EventArgs<FormChangeMode.KeyDevice> (DbMCInterface.ID_EVENT.NEW_PLAN_VALUES, date, listKeyDevice));
             else
                 Logging.Logg().Warning($@"AdminMC::getMaketEquipmentResponse () - получен пустой список с оборудованием...", Logging.INDEX_MESSAGE.NOT_SET);
 
@@ -386,7 +398,7 @@ namespace trans_mc
 
         private void dbMCSources_OnEventHandler(object obj)
         {
-            DbMCInterface.ID_MC_EVENT id_event;
+            DbMCInterface.ID_EVENT id_event;
             EventArgs argEventChanged = null; // оборудование для которого произошло событие
             TEC tec; // для оборудования которой произошло событие
 
@@ -404,9 +416,9 @@ namespace trans_mc
             };
 
             if (obj is Array) {
-                id_event = (DbMCInterface.ID_MC_EVENT)(obj as object []) [0];
+                id_event = (DbMCInterface.ID_EVENT)(obj as object []) [0];
 
-                if (id_event == DbMCInterface.ID_MC_EVENT.GENOBJECT_MODIFIED) {
+                if (id_event == DbMCInterface.ID_EVENT.GENOBJECT_MODIFIED) {
                     Modes.NetAccess.EventRefreshData53500 ev = (obj as object []) [1] as Modes.NetAccess.EventRefreshData53500;
 
                     #region Подготовка текста сообщения в журнал о событии
@@ -421,7 +433,7 @@ namespace trans_mc
                     #endregion
 
                     Logging.Logg ().Action (msg, Logging.INDEX_MESSAGE.NOT_SET);
-                } else if (id_event == DbMCInterface.ID_MC_EVENT.RELOAD_PLAN_VALUES) {
+                } else if (id_event == DbMCInterface.ID_EVENT.RELOAD_PLAN_VALUES) {
                     Modes.NetAccess.EventRefreshJournalMaket53500 ev = (obj as object []) [1] as Modes.NetAccess.EventRefreshJournalMaket53500;
 
                     DateTime dateTarget;
@@ -443,7 +455,7 @@ namespace trans_mc
                     else
                         Logging.Logg ().Debug ($"AdminMC::dbMCSources_OnEventHandler(ID_MC_EVENT={id_event.ToString ()}) - дата нового не актуальна; Day=[{dateTarget}], разн.(сутки)=[{difference (dateTarget).TotalDays}]..."
                            , Logging.INDEX_MESSAGE.NOT_SET);
-                } else if (id_event == DbMCInterface.ID_MC_EVENT.NEW_PLAN_VALUES) {
+                } else if (id_event == DbMCInterface.ID_EVENT.NEW_PLAN_VALUES) {
                     Modes.NetAccess.EventPlanDataChanged ev = (obj as object []) [1] as Modes.NetAccess.EventPlanDataChanged;
 
                     DateTime day
@@ -452,7 +464,7 @@ namespace trans_mc
                         , id_mc_tec = string.Empty;
                     int id_gate = -1;
 
-                    day = ev.Day.SystemToLocalHqEx ();
+                    day = ev.Day; //.SystemToLocalHqEx ();
                     pbr_number = ev.Type.PlanTypeToString ();
                     version = ev.Version.SystemToLocalHqEx ();
                     id_mc_tec = ev.ClientId;
@@ -488,7 +500,7 @@ namespace trans_mc
                 else
                     ;
             } else {
-                id_event = DbMCInterface.ID_MC_EVENT.Unknown;
+                id_event = DbMCInterface.ID_EVENT.Unknown;
 
                 //TODO: проверить результат попытки установки соединения
                 Logging.Logg ().Action ("", Logging.INDEX_MESSAGE.NOT_SET);
@@ -701,15 +713,33 @@ namespace trans_mc
             base.ClearValues ();
         }
 
-        public override void TECComponentComplete (int state, bool bResult)
+        public void DebugEventReloadPlanValues (object arg)
         {
-            base.TECComponentComplete (state, bResult);
+            Thread.Sleep (4567);
 
-            if ((_listTECComponentKey.Count == 0)
-                && (IsServiceModesCentre == true))
-                FetchEvent ();
-            else
-                ;
+            dbMCSources_OnEventHandler (new object [] { DbMCInterface.ID_EVENT.RELOAD_PLAN_VALUES
+                , new Modes.NetAccess.EventRefreshJournalMaket53500(new Guid()
+                    , ASUTP.Core.HDateTime.ToMoscowTimeZone().Date
+                    , ModesTaskType.OU
+                    , -1)
+            });
+        }
+
+        public void DebugEventNewPlanValues (object arg)
+        {
+            Thread.Sleep (4567);
+
+            foreach (TEC t in m_list_tec) {
+                Thread.Sleep (567);
+
+                dbMCSources_OnEventHandler (new object [] { DbMCInterface.ID_EVENT.NEW_PLAN_VALUES
+                    , new Modes.NetAccess.EventPlanDataChanged((PlanType)Enum.Parse(typeof(PlanType), getNamePBRNumber(ASUTP.Core.HDateTime.ToMoscowTimeZone().Hour))
+                        , DateTime.Now.Date
+                        , DateTime.Now
+                        , 0
+                        , t.name_MC)
+                });
+            }
         }
 
         public void GetMaketEquipment (FormChangeMode.KeyDevice key, EventArgs<Guid>identifiers, DateTime date)

@@ -56,9 +56,9 @@ namespace trans_mc
                 {
                     case (Int16)CONN_SETT_TYPE.SOURCE:
                         m_arAdmin[i] = new AdminMC(m_sFileINI.GetMainValueOfKey(@"MCServiceHost"));
-                        if (handlerCmd.ModeMashine == MODE_MASHINE.SERVICE_MC_EVENT) {
-                            (m_arAdmin [i] as AdminMC).AddEventHandler(DbMCInterface.ID_MC_EVENT.RELOAD_PLAN_VALUES, FormMainTransMC_EventMaketChanged);
-                            (m_arAdmin [i] as AdminMC).AddEventHandler (DbMCInterface.ID_MC_EVENT.NEW_PLAN_VALUES, FormMainTransMC_EventPlanDataChanged);
+                        if (handlerCmd.ModeMashine == MODE_MASHINE.SERVICE_ON_EVENT) {
+                            (m_arAdmin [i] as AdminMC).AddEventHandler(DbMCInterface.ID_EVENT.RELOAD_PLAN_VALUES, FormMainTransMC_EventMaketChanged);
+                            (m_arAdmin [i] as AdminMC).AddEventHandler (DbMCInterface.ID_EVENT.NEW_PLAN_VALUES, FormMainTransMC_EventPlanDataChanged);
                         } else
                             ;
                         break;
@@ -139,6 +139,9 @@ namespace trans_mc
             }
             else
                 ;
+
+            //new Thread (new ParameterizedThreadStart ((m_arAdmin [(int)CONN_SETT_TYPE.SOURCE] as AdminMC).DebugEventNewPlanValues))
+            //    .Start();
         }
 
         private void FormMainTransMC_EventMaketChanged (object sender, EventArgs e)
@@ -196,7 +199,7 @@ namespace trans_mc
         {
             AdminMC adminMC = m_arAdmin [(int)CONN_SETT_TYPE.SOURCE] as AdminMC;
 
-            if (adminMC.IsServiceModesCentre == true)
+            if (adminMC.IsServiceOnEvent == true)
                 adminMC.FetchEvent ();
             else
                 base.trans_auto_stop ();
