@@ -37,6 +37,7 @@ namespace StatisticAnalyzer
         private int _state;
 
         public FormMain()
+            : base()
         {
             //Создать объект - чтение зашифрованного файла с параметрами соединения
             s_fileConnSett = new FIleConnSett(@"connsett.ini", FIleConnSett.MODE.FILE);

@@ -128,7 +128,7 @@ namespace StatisticTrans
         {
             private static string _throwMessage;
 
-            private static MODE_MASHINE s_modeServiceMashineDefault = MODE_MASHINE.SERVICE_PERIOD;
+            private static MODE_MASHINE s_modeServiceMashineDefault = MODE_MASHINE.SERVICE_ON_EVENT;
             private static MODE_MASHINE _modeMashine;
 
             private static DateTime _date;
@@ -162,10 +162,11 @@ namespace StatisticTrans
             /// Конструктор - основной (с параметрами)
             /// </summary>
             /// <param name="args">Массив аргументов командной строки</param>
-            public handlerCmd(string[] args)
+            public handlerCmd(string [] args)
                 : base(args)
             {
                 int timerInterval = -1;
+                //s_modeServiceMashineDefault = modeServiceMachineDefault;
 
                 _modeMashine = MODE_MASHINE.INTERACTIVE;
                 _date = DateTime.Now.Date;
@@ -227,7 +228,7 @@ namespace StatisticTrans
         /// <param name="id_app">Идентификатор приложения из файла конфигурации</param>
         /// <param name="par">Наименования-ключи параметров для файла конфигурации</param>
         /// <param name="val">Значения для параметров в файле конфигурации</param>
-        public FormMainTrans(int id_app, string[] par, string[] val)
+        public FormMainTrans(int id_app, string [] par, string[] val)
             : base()
         {
             Thread.CurrentThread.CurrentCulture =
@@ -417,7 +418,7 @@ namespace StatisticTrans
         /// </summary>
         /// <param name="args">Массив аргументов командной строки</param>
         /// <returns>Объект-обработчик аргументов командной строки</returns>
-        protected override HCmd_Arg createHCmdArg(string[] args)
+        protected override HCmd_Arg createHCmdArg(string [] args)
         {
             return new handlerCmd(args);
         }

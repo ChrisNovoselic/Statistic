@@ -140,8 +140,12 @@ namespace trans_mc
             else
                 ;
 
+            //// отладка плана на очередной час
             //new Thread (new ParameterizedThreadStart ((m_arAdmin [(int)CONN_SETT_TYPE.SOURCE] as AdminMC).DebugEventNewPlanValues))
             //    .Start();
+            // отладка переопубликации плана
+            new Thread (new ParameterizedThreadStart ((m_arAdmin [(int)CONN_SETT_TYPE.SOURCE] as AdminMC).DebugEventReloadPlanValues))
+                .Start ();
         }
 
         private void FormMainTransMC_EventMaketChanged (object sender, EventArgs e)

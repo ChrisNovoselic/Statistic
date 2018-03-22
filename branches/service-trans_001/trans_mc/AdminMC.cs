@@ -398,6 +398,7 @@ namespace trans_mc
 
         private void dbMCSources_OnEventHandler(object obj)
         {
+            bool bDebug = false;
             DbMCInterface.ID_EVENT id_event;
             EventArgs argEventChanged = null; // оборудование для которого произошло событие
             TEC tec; // для оборудования которой произошло событие
@@ -416,6 +417,8 @@ namespace trans_mc
             };
 
             if (obj is Array) {
+                bDebug = (obj as object []).Length > 2 ? true : false;
+
                 id_event = (DbMCInterface.ID_EVENT)(obj as object []) [0];
 
                 if (id_event == DbMCInterface.ID_EVENT.GENOBJECT_MODIFIED) {
@@ -464,7 +467,7 @@ namespace trans_mc
                         , id_mc_tec = string.Empty;
                     int id_gate = -1;
 
-                    day = ev.Day; //.SystemToLocalHqEx ();
+                    day = bDebug == true ? ev.Day : ev.Day.SystemToLocalHqEx ();
                     pbr_number = ev.Type.PlanTypeToString ();
                     version = ev.Version.SystemToLocalHqEx ();
                     id_mc_tec = ev.ClientId;
@@ -503,7 +506,7 @@ namespace trans_mc
                 id_event = DbMCInterface.ID_EVENT.Unknown;
 
                 //TODO: проверить результат попытки установки соединения
-                Logging.Logg ().Action ("", Logging.INDEX_MESSAGE.NOT_SET);
+                Logging.Logg ().Action ($"AdminMC::dbMCSources_OnEventHandler(ID_MC_EVENT={id_event.ToString ()}) - соединение установлено (проверить результат установления соединения = {"???"})...", Logging.INDEX_MESSAGE.NOT_SET);
 
                 _eventConnected.Set ();
             }
@@ -718,10 +721,11 @@ namespace trans_mc
             Thread.Sleep (4567);
 
             dbMCSources_OnEventHandler (new object [] { DbMCInterface.ID_EVENT.RELOAD_PLAN_VALUES
-                , new Modes.NetAccess.EventRefreshJournalMaket53500(new Guid()
+                , new Modes.NetAccess.EventRefreshJournalMaket53500(new Guid("99e88333-7197-4c51-bef6-fc646520fb7e")
                     , ASUTP.Core.HDateTime.ToMoscowTimeZone().Date
                     , ModesTaskType.OU
                     , -1)
+                , true // debug
             });
         }
 
@@ -738,6 +742,7 @@ namespace trans_mc
                         , DateTime.Now
                         , 0
                         , t.name_MC)
+                    , true // debug
                 });
             }
         }

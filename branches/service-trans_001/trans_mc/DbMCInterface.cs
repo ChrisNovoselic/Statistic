@@ -309,25 +309,37 @@ namespace trans_mc
                     listEquip = m_MCApi.GetMaket53500Equipment (Array.ConvertAll<string, Guid>(idsInner, Guid.Parse));
 
                     listEquip.ToList ().ForEach (equip => {
+                        string mesDebug = string.Empty;
+
+                        mesDebug = $@"DbMCInterface::GetData () - equip=[{equip.Mrid}], children.Count={equip.GenTree.Count}";
+
                         equip.GenTree.ToList ().ForEach (item => {
-                            igo = findIGO (item.IdInner);
+                            mesDebug = $"{mesDebug}{Environment.NewLine}, item.IdIner ={item.IdInner}, item.GenObjType.Id={item.GenObjType.Id}, item.Name={item.Name}, item.children.Count={item.Children.Count}...";
 
-                            Logging.Logg ().Debug ($@"DbMCInterface::GetData () - equip=[{equip.Mrid}], item.IdIner={item.IdInner}, item.GenObjType.Id={item.GenObjType.Id}...", Logging.INDEX_MESSAGE.NOT_SET);
+                            item.Children.ToList ().ForEach (child => {
+                                mesDebug = $"{mesDebug}{Environment.NewLine}, children.IdIner ={child.IdInner}, child.GenObjType.Id={child.GenObjType.Id}, child.Name={child.Name}, child.children.Count={child.Children.Count}...";
+                            });
 
-                            if (Equals (igo, null) == false)
-                                if (item.GenObjType.Id == 3)
-                                    m_listIGO.Add (item);
-                                else
-                                    ;
-                            else
-                                ;
+                            igo = null;
+                            //igo = findIGO (item.IdInner);
+                            //if (Equals (igo, null) == false)
+                            //    if (item.GenObjType.Id == 3)
+                            //        m_listIGO.Add (item);
+                            //    else
+                            //        ;
+                            //else
+                            //    ;
 
                             if (Equals (igo, null) == false)
                                 table.Rows.Add (new object [] { igo.Id, igo.IdInner, HDateTime.ToMoscowTimeZone () });
                             else
                                 ;
                         });
+
+                        Logging.Logg ().Debug (mesDebug, Logging.INDEX_MESSAGE.NOT_SET);
                     });
+
+                    result = true;
                     break;
                 case Operation.PPBR:
                     table.Columns.Add("DATE_PBR", typeof (DateTime));

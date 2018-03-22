@@ -33,7 +33,7 @@ namespace StatisticCommon
         /// </summary>
         /// <param name="args">параметры командной строки</param>
         /// <returns>класс</returns>
-        protected virtual HCmd_Arg createHCmdArg(string[] args)
+        protected virtual HCmd_Arg createHCmdArg(string [] args)
         {
             return new HCmd_Arg(args);
         }
