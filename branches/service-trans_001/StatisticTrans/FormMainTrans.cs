@@ -21,13 +21,9 @@ namespace StatisticTrans
     /// </summary>
     public abstract partial class FormMainTrans : FormMainStatistic
     {
-        ComponentTesting CT;//
-        private const Int32 TIMER_SERVICE_MIN_INTERVAL = 66666;
+        protected ComponentTesting CT;
 
-        /// <summary>
-        /// счетчик иттераций ошибок
-        /// </summary>
-        public int IndexCount;
+        private const Int32 TIMER_SERVICE_MIN_INTERVAL = 66666;
         /// <summary>
         /// //Перечисление "Режим машины" (интерактивный,дата, сервис,неизвестный)
         /// </summary>
@@ -161,12 +157,15 @@ namespace StatisticTrans
             /// <summary>
             /// Конструктор - основной (с параметрами)
             /// </summary>
+            /// <param name="id_app">Идентификатор приложения из файла конфигурации</param>
             /// <param name="args">Массив аргументов командной строки</param>
-            public handlerCmd(string [] args)
+            public handlerCmd (ID_APPLICATION id_app, string [] args)
                 : base(args)
             {
                 int timerInterval = -1;
-                //s_modeServiceMashineDefault = modeServiceMachineDefault;
+                s_modeServiceMashineDefault = id_app == ID_APPLICATION.TRANS_MC
+                    ? MODE_MASHINE.SERVICE_ON_EVENT
+                        : MODE_MASHINE.SERVICE_PERIOD;
 
                 _modeMashine = MODE_MASHINE.INTERACTIVE;
                 _date = DateTime.Now.Date;
@@ -228,8 +227,8 @@ namespace StatisticTrans
         /// <param name="id_app">Идентификатор приложения из файла конфигурации</param>
         /// <param name="par">Наименования-ключи параметров для файла конфигурации</param>
         /// <param name="val">Значения для параметров в файле конфигурации</param>
-        public FormMainTrans(int id_app, string [] par, string[] val)
-            : base()
+        public FormMainTrans(ID_APPLICATION id_app, KeyValuePair<string, string>[]config)
+            : base(id_app)
         {
             Thread.CurrentThread.CurrentCulture =
             Thread.CurrentThread.CurrentUICulture =
@@ -242,7 +241,7 @@ namespace StatisticTrans
             //DelegateGetINIParametersOfID = new StringDelegateIntFunc(GetINIParametersOfID);
             Logging.DelegateGetINIParametersOfID = new StringDelegateIntFunc(getINIParametersOfID);
 
-            m_sFileINI = new FileINI(@"setup.ini", false, par, val);
+            m_sFileINI = new FileINI(@"setup.ini", false, (from pair in config select pair.Key).ToArray(), (from pair in config select pair.Value).ToArray());
 
             string keyPar = string.Empty
                 , valDefPar = string.Empty;
@@ -416,11 +415,12 @@ namespace StatisticTrans
         /// <summary>
         /// Создание объекта-обработчика аргументов командной строки
         /// </summary>
+        /// <param name="id_app">Идентификатор приложения из файла конфигурации</param>
         /// <param name="args">Массив аргументов командной строки</param>
         /// <returns>Объект-обработчик аргументов командной строки</returns>
-        protected override HCmd_Arg createHCmdArg(string [] args)
+        protected override HCmd_Arg createHCmdArg(ID_APPLICATION id_app, string [] args)
         {
-            return new handlerCmd(args);
+            return new handlerCmd(id_app, args);
         }
 
         private void InitializeComponentTrans()
@@ -1343,57 +1343,43 @@ namespace StatisticTrans
             }
         }
 
-        private void timerService_Tick(object sender, EventArgs e)
+        protected virtual void timerService_Tick(object sender, EventArgs e)
         {
             FormChangeMode.MODE_TECCOMPONENT mode = FormChangeMode.MODE_TECCOMPONENT.GTP;
 
-            if (!(handlerCmd.ModeMashine == MODE_MASHINE.SERVICE_TO_DATE))
-                switch (handlerCmd.ModeMashine)
-                {
-                    case MODE_MASHINE.SERVICE_PERIOD:
-                        if (timerService.Interval == ProgramBase.TIMER_START_INTERVAL)
-                        {
-                            //Первый запуск
-                            if (handlerCmd.TimerInterval == timerService.Interval)
-                                handlerCmd.IncTimerInterval();
-                            else ; //??? случайное совпадение...
-                            timerService.Interval = handlerCmd.TimerInterval;
-
-                            FillComboBoxTECComponent (mode, true);
-                            CT = new ComponentTesting (comboBoxTECComponent.Items.Count);
-
-                            //DateUpdate(m_arg_interval);
-                        }
-                        else
-                            ;
-
-                        dateTimePickerMain.Value = DateTime.Now;
-
-                        //DateUpdate(m_arg_interval);
-                        trans_auto_start();
-                        break;
-                    case MODE_MASHINE.SERVICE_ON_EVENT:
-                    //??? ничего не делать; m_admin уже "подписался" на события Модес-Центр
-                        stopTimerService ();
+            switch (handlerCmd.ModeMashine)
+            {
+                case MODE_MASHINE.SERVICE_TO_DATE:
+                // никаких действий не предпринимается
+                    break;
+                case MODE_MASHINE.SERVICE_PERIOD:
+                    if (timerService.Interval == ProgramBase.TIMER_START_INTERVAL)
+                    {
+                        //Первый запуск
+                        if (handlerCmd.TimerInterval == timerService.Interval)
+                            handlerCmd.IncTimerInterval();
+                        else ; //??? случайное совпадение...
+                        timerService.Interval = handlerCmd.TimerInterval;
 
                         FillComboBoxTECComponent (mode, true);
                         CT = new ComponentTesting (comboBoxTECComponent.Items.Count);
-                        break;
-                    case MODE_MASHINE.SERVICE_TO_DATE:
-                    //    if (timerService.Interval == ProgramBase.TIMER_START_INTERVAL)
-                    //    {
-                    //        //Первый запуск
-                    //        if (m_arg_interval == timerService.Interval) m_arg_interval++; else ; //??? случайное совпадение...
-                    //        timerService.Interval = m_arg_interval;
-                    //    }
-                    //    else
-                    //        выходToolStripMenuItem.PerformClick ();
-                        break;
-                    default:
-                        break;
-                }
-            else
-                ;
+
+                        //DateUpdate(m_arg_interval);
+                    }
+                    else
+                        ;
+
+                    dateTimePickerMain.Value = DateTime.Now;
+
+                    //DateUpdate(m_arg_interval);
+                    trans_auto_start();
+                    break;
+                //// только 'trans_mc.exe' может выполняться в таком режиме - см. 'FormMainTransMC::timerService_Tick'
+                //case MODE_MASHINE.SERVICE_ON_EVENT:
+                //    break;
+                default:
+                    break;
+            }
         }
 
         protected virtual void buttonClear_Click(object sender, EventArgs e)

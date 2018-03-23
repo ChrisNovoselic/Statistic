@@ -11,9 +11,11 @@ namespace trans_gtp
     public partial class FormMainTransGTP : FormMainTrans
     {
         public FormMainTransGTP()
-            : base((int)ASUTP.Helper.ProgramBase.ID_APP.TRANS_GTP
-                    , new string[] { @"ИгнорДатаВремя-techsite"/*, @"ТипБДКфгНазначение", @"РДГФорматТаблицаНазначение"*/ }
-                    , new string[] { @"False"/*, @"200", @"DYNAMIC"*/ })
+            : base(ID_APPLICATION.TRANS_GTP_NSK
+                    , new System.Collections.Generic.KeyValuePair<string, string> [] { new System.Collections.Generic.KeyValuePair<string, string> (@"ИгнорДатаВремя-techsite", false.ToString())
+                        , new System.Collections.Generic.KeyValuePair<string, string> (@"ТипБДКфгНазначение", "200")
+                        , new System.Collections.Generic.KeyValuePair<string, string> (@"РДГФорматТаблицаНазначение", "DYNAMIC") }
+            )
         {
             InitializeComponentTransDB();
 

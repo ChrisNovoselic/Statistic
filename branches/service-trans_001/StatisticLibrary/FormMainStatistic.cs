@@ -20,7 +20,22 @@ namespace StatisticCommon
     /// </summary>
     public partial class FormMainStatistic : FormMainBaseWithStatusStrip
     {
+        public enum ID_APPLICATION : short {
+            UNKNOWN = -1
+            , MAIN
+            , ANALYZER, TIME_SYNC, COMMON_AUX, DIAGNOSTIC, ALARM
+            , TRANS_MC, TRANS_MT
+            , TRANS_GTP_NSK, TRANS_GTP_BIYSK, TRANS_GTP_LK
+            , TRANS_TG
+        }
+
+        /// <summary>
+        /// Объект для чтения/хранения параметров конфигурации приложения
+        /// </summary>
         protected static FileINI m_sFileINI; //setup.ini
+        /// <summary>
+        /// Объект для (де)шифрации файла конфигурации с параметрами для соединения с БД
+        /// </summary>
         protected static FIleConnSett m_sFileCS; //connsett.ini
 
         //TODO: а где описание остальных ошибок
@@ -29,11 +44,11 @@ namespace StatisticCommon
         public static string[] MSG_ERROR_INIT = { @"Неизвестная причина" };
 
         /// <summary>
-        /// вызов класса работы с командной строкой
+        /// Создание объекта для разбора параметров командной строки
         /// </summary>
-        /// <param name="args">параметры командной строки</param>
+        /// <param name="args">Значения аргументов командной строки</param>
         /// <returns>класс</returns>
-        protected virtual HCmd_Arg createHCmdArg(string [] args)
+        protected virtual HCmd_Arg createHCmdArg(ID_APPLICATION id_app, string [] args)
         {
             return new HCmd_Arg(args);
         }
@@ -41,10 +56,10 @@ namespace StatisticCommon
         /// <summary>
         /// Контруктор класса
         /// </summary>
-        public FormMainStatistic()
+        public FormMainStatistic(ID_APPLICATION id_app)
         {
             //string str = Environment.CommandLine;
-            createHCmdArg(Environment.GetCommandLineArgs());
+            createHCmdArg(id_app, Environment.GetCommandLineArgs());
         }        
 
         /// <summary>

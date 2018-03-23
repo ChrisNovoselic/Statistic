@@ -18,9 +18,8 @@ namespace trans_tg
     public partial class FormMainTransTG : FormMainTrans
     {
         public FormMainTransTG()
-            : base((int)ASUTP.Helper.ProgramBase.ID_APP.TRANS_TG
-            , new string[] { @"ТипБДКфгНазначение" }
-            , new string[] { @"200" })
+            : base(ID_APPLICATION.TRANS_TG
+            , new KeyValuePair<string, string>[] { })
         {
             InitializeComponentTransSrc(@"Путь РДГ (Excel)");
 

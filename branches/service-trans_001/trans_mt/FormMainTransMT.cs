@@ -16,7 +16,7 @@ namespace trans_mt
     public partial class FormMainTransMT : FormMainTransModes
     {
         public FormMainTransMT()
-            : base((int)ASUTP.Helper.ProgramBase.ID_APP.TRANS_MODES_TERMINALE)
+            : base(ID_APPLICATION.TRANS_MT)
         {
             this.notifyIconMain.Icon =
             this.Icon = trans_mt.Properties.Resources.statistic6;

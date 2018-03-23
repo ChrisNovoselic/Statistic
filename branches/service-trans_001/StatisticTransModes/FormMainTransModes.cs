@@ -15,10 +15,11 @@ namespace StatisticTransModes
 {
     public abstract class FormMainTransModes : FormMainTrans
     {
-        public FormMainTransModes(int id_app)
+        public FormMainTransModes(ID_APPLICATION id_app)
             : base(id_app
-                    , new string[] { @"ИгнорДатаВремя-techsite"/*, @"РДГФорматТаблицаНазначение", @"ТипБДКфгНазначение"*/ }
-                    , new string[] { false.ToString()/*, AdminTS.TYPE_FIELDS.DYNAMIC.ToString(), @"200"*/ })
+                    , new System.Collections.Generic.KeyValuePair<string, string> [] { new System.Collections.Generic.KeyValuePair<string, string> (@"ИгнорДатаВремя-techsite", false.ToString())
+                    , new System.Collections.Generic.KeyValuePair<string, string> (@"ТипБДКфгНазначение", "200")
+                    , new System.Collections.Generic.KeyValuePair<string, string> (@"РДГФорматТаблицаНазначение", "DYNAMIC") })
         {
             InitializeComponentTransModes();
 

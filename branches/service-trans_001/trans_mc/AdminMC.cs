@@ -122,28 +122,39 @@ namespace trans_mc
             DbMCInterface.ID_EVENT id = trans_mc.DbMCInterface.ID_EVENT.Unknown;
             string mesLog = string.Empty;
 
-            mesLog = $"AdminMC::listMCEventArgs_CollectionChanged (Act.={e.Action}";
+            Func<IEventArgs, DbMCInterface.ID_EVENT> contextId = delegate (IEventArgs ev) {
+                DbMCInterface.ID_EVENT id_event = DbMCInterface.ID_EVENT.Unknown;
 
-            Func<IEventArgs, DbMCInterface.ID_EVENT> doWork = delegate (IEventArgs ev) {
-                DbMCInterface.ID_EVENT iRes = DbMCInterface.ID_EVENT.Unknown;
-
-                if (typeof (Guid).IsAssignableFrom(ev.m_type) == true)
-                    iRes = DbMCInterface.ID_EVENT.RELOAD_PLAN_VALUES;
-                else if (typeof (FormChangeMode.KeyDevice).IsAssignableFrom(ev.m_type) == true)
-                    iRes = DbMCInterface.ID_EVENT.NEW_PLAN_VALUES;
+                if (typeof (Guid).IsAssignableFrom (ev.m_type) == true)
+                    id_event = DbMCInterface.ID_EVENT.RELOAD_PLAN_VALUES;
+                else if (typeof (FormChangeMode.KeyDevice).IsAssignableFrom (ev.m_type) == true)
+                    id_event = DbMCInterface.ID_EVENT.NEW_PLAN_VALUES;
                 else
                     ;
 
-                if (!(iRes == DbMCInterface.ID_EVENT.Unknown))
-                    _dictNotify [iRes]?.Invoke (this, (ev as EventArgs));
-                else
-                    ;
-
-                return iRes;
+                return id_event;
             };
+
+            Func<IEventArgs, DbMCInterface.ID_EVENT, bool> doWork = delegate (IEventArgs ev, DbMCInterface.ID_EVENT id_event) {
+                bool bRes = false;
+
+                bRes = (!(id_event == DbMCInterface.ID_EVENT.Unknown))
+                    && (_dictNotify.ContainsKey (id_event) == true)
+                    && (Equals (_dictNotify [id_event], null) == false);
+                if (bRes == true)
+                    // "?" на всякий случай, т.к. проверка уже выполнена
+                    _dictNotify [id_event]?.Invoke (this, (ev as EventArgs));
+                else
+                    ;
+
+                return bRes;
+            }
+            , delegateDoWork = null;
 
             switch (e.Action) {
                 case System.Collections.Specialized.NotifyCollectionChangedAction.Add:
+                    id = contextId ((IEventArgs)e.NewItems[0]);
+
                     if (e.NewStartingIndex == 0) {
                         arg = (IEventArgs)e.NewItems [0];
                     } else
@@ -153,29 +164,34 @@ namespace trans_mc
                 case System.Collections.Specialized.NotifyCollectionChangedAction.Remove:
                     if ((sender as ObservableCollection<EventArgs>).Count > 0) {
                         arg = (IEventArgs)(sender as ObservableCollection<EventArgs>) [0];
+                        id = contextId (arg);
                     } else
-                        ;
+                        id = contextId ((IEventArgs)e.OldItems [0]);
                     break;
                 default:
                     break;
             }
 
-            if (Equals (arg, null) == false) {
-                id = doWork (arg);
+            mesLog = $"AdminMC::listMCEventArgs_CollectionChanged (Act.={e.Action}, ID_EVENT={id}) - ";
 
-                mesLog = $"{mesLog} ID_EVENT={id}) - Count={_listMCEventArgs.Count}, NewIndex={e.NewStartingIndex}, OldIndex={e.OldStartingIndex}...";
+            if (Equals (arg, null) == false) {
+                delegateDoWork = doWork;
+
+                mesLog = $"{mesLog}Count={_listMCEventArgs.Count}, NewIndex={e.NewStartingIndex}, OldIndex={e.OldStartingIndex}...";
             } else {
                 if ((e.Action == System.Collections.Specialized.NotifyCollectionChangedAction.Add)
                     && (e.NewStartingIndex > 0))
-                    mesLog = $@"{mesLog}) - ожидание обработки(1-ый в списке): {((IEventArgs)(sender as ObservableCollection<EventArgs>) [e.NewStartingIndex]).m_id.ToString()}...";
+                    mesLog = $@"{mesLog}ожидание обработки({e.NewStartingIndex}-й в списке): {((IEventArgs)(sender as ObservableCollection<EventArgs>) [e.NewStartingIndex]).m_id.ToString()}...";
                 else if ((e.Action == System.Collections.Specialized.NotifyCollectionChangedAction.Remove)
                     && ((sender as ObservableCollection<EventArgs>).Count == 0))
-                    mesLog = $@"{mesLog}) - из коллекции удален крайний элемент ...";
+                    mesLog = $@"{mesLog}из коллекции удален крайний элемент ...";
                 else
                     ;
             }
 
             Logging.Logg ().Debug (mesLog, Logging.INDEX_MESSAGE.NOT_SET);
+
+            delegateDoWork?.Invoke (arg, id);
         }
 
         public void FetchEvent ()
@@ -194,9 +210,11 @@ namespace trans_mc
         {
             List<FormChangeMode.KeyDevice> listKey;
 
-            if (IsServiceOnEvent == true)
+            if ((IsServiceOnEvent == true)
+                && (_listMCEventArgs.Count > 0))
                 listKey = new List<FormChangeMode.KeyDevice> ((_listMCEventArgs [0] as EventArgs<FormChangeMode.KeyDevice>).m_listParameters);
             else
+            // даже и при режиме 'ON_EVENT', при  отсутствии MC-аргумента выполним опрос по полному списку оборудования
                 listKey = GetListKeyTECComponent (FormChangeMode.MODE_TECCOMPONENT.GTP, true);
 
             if (_listTECComponentKey == null)
@@ -375,12 +393,12 @@ namespace trans_mc
                     , Mode = FormChangeMode.MODE_TECCOMPONENT.GTP })
                 .ToList());
 
-            FetchEvent ();
-
             if (listKeyDevice.Count > 0)
                 _listMCEventArgs.Add (new EventArgs<FormChangeMode.KeyDevice> (DbMCInterface.ID_EVENT.NEW_PLAN_VALUES, date, listKeyDevice));
             else
                 Logging.Logg().Warning($@"AdminMC::getMaketEquipmentResponse () - получен пустой список с оборудованием...", Logging.INDEX_MESSAGE.NOT_SET);
+
+            FetchEvent ();
 
             return iRes;
         }
@@ -444,7 +462,7 @@ namespace trans_mc
                     string abbr = string.Empty
                         , taskModes = string.Empty;
 
-                    dateTarget = (DateTime)ev.dtTarget.GetValueOrDefault ().SystemToLocalHqEx ();
+                    dateTarget = ev.dtTarget.GetValueOrDefault ();
                     makets = ev.makets as ReadOnlyCollection<Guid>;
                     abbr = ev.Task.GetAbbr();
                     taskModes = ev.Task.ModesTaskToString();
@@ -467,9 +485,9 @@ namespace trans_mc
                         , id_mc_tec = string.Empty;
                     int id_gate = -1;
 
-                    day = bDebug == true ? ev.Day : ev.Day.SystemToLocalHqEx ();
+                    day = ev.Day;
                     pbr_number = ev.Type.PlanTypeToString ();
-                    version = ev.Version.SystemToLocalHqEx ();
+                    version = ev.Version;
                     id_mc_tec = ev.ClientId;
                     id_gate = ev.IdGate;
 
@@ -716,35 +734,57 @@ namespace trans_mc
             base.ClearValues ();
         }
 
-        public void DebugEventReloadPlanValues (object arg)
+        public void DebugEventReloadPlanValues ()
         {
-            Thread.Sleep (4567);
+            Action doWork = delegate () {
+                List<Guid> identifiers = new List<Guid> () {
+                    new Guid("9fa9a66e-0b49-4c1f-82ee-535992be2f88")
+                    , new Guid("81c5dc9c-432a-47b9-9118-655052a55cf1")
+                    , new Guid("83d4f3f5-021a-489c-8618-70b8b21ea7c0")
+                    , new Guid("f9279a73-8fc7-4adf-b19b-7a1a97c28fe7")
+                    , new Guid("65ea4ad6-d9dd-4a40-9f50-7e967c39c8c1")
+                    , new Guid("a1946f77-d006-4250-b925-90ff1b5a8b30")
+                    , new Guid("dfc38950-91e0-43b4-98cb-9b2acf5cfc06")
+                    , new Guid("99fc4980-1509-43b9-87e3-bec1830f4a25")
+                    , new Guid("615cd82e-66b0-4dfb-9aa8-bf7dc967cd0d")
+                };
 
-            dbMCSources_OnEventHandler (new object [] { DbMCInterface.ID_EVENT.RELOAD_PLAN_VALUES
-                , new Modes.NetAccess.EventRefreshJournalMaket53500(new Guid("99e88333-7197-4c51-bef6-fc646520fb7e")
-                    , ASUTP.Core.HDateTime.ToMoscowTimeZone().Date
-                    , ModesTaskType.OU
-                    , -1)
-                , true // debug
-            });
+                identifiers.ForEach (guid => {
+                    Thread.Sleep (4567);
+
+                    dbMCSources_OnEventHandler (new object [] { DbMCInterface.ID_EVENT.RELOAD_PLAN_VALUES
+                        , new Modes.NetAccess.EventRefreshJournalMaket53500(guid
+                            , ASUTP.Core.HDateTime.ToMoscowTimeZone().Date
+                            , ModesTaskType.OU
+                            , -1)
+                        , true // debug
+                    });
+                });
+            };
+
+            new Thread (new ThreadStart (doWork)).Start ();
         }
 
-        public void DebugEventNewPlanValues (object arg)
+        public void ToDateRequest (DateTime date, int ms_sleep = 567)
         {
-            Thread.Sleep (4567);
+            Action doWork = delegate () {
 
-            foreach (TEC t in m_list_tec) {
-                Thread.Sleep (567);
 
-                dbMCSources_OnEventHandler (new object [] { DbMCInterface.ID_EVENT.NEW_PLAN_VALUES
-                    , new Modes.NetAccess.EventPlanDataChanged((PlanType)Enum.Parse(typeof(PlanType), getNamePBRNumber(ASUTP.Core.HDateTime.ToMoscowTimeZone().Hour))
-                        , DateTime.Now.Date
-                        , DateTime.Now
-                        , 0
-                        , t.name_MC)
-                    , true // debug
-                });
-            }
+                foreach (TEC t in m_list_tec) {
+                    Thread.Sleep (ms_sleep);
+
+                    dbMCSources_OnEventHandler (new object [] { DbMCInterface.ID_EVENT.NEW_PLAN_VALUES
+                        , new Modes.NetAccess.EventPlanDataChanged((PlanType)Enum.Parse(typeof(PlanType), getNamePBRNumber(ASUTP.Core.HDateTime.ToMoscowTimeZone().Hour))
+                            , ASUTP.Core.HDateTime.ToMoscowTimeZone().Date
+                            , ASUTP.Core.HDateTime.ToMoscowTimeZone()
+                            , 0
+                            , t.name_MC)
+                        , true // debug
+                    });
+                }
+            };
+
+            new Thread (new ThreadStart (doWork)).Start ();
         }
 
         public void GetMaketEquipment (FormChangeMode.KeyDevice key, EventArgs<Guid>identifiers, DateTime date)

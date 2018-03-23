@@ -18,7 +18,7 @@ namespace trans_mc
     public partial class FormMainTransMC : FormMainTransModes
     {
         public FormMainTransMC()
-            : base((int)ASUTP.Helper.ProgramBase.ID_APP.TRANS_MODES_CENTRE_GUI)
+            : base(ID_APPLICATION.TRANS_MC)
         {
             this.notifyIconMain.Icon =
             this.Icon = trans_mc.Properties.Resources.statistic5;
@@ -141,11 +141,11 @@ namespace trans_mc
                 ;
 
             //// отладка плана на очередной час
-            //new Thread (new ParameterizedThreadStart ((m_arAdmin [(int)CONN_SETT_TYPE.SOURCE] as AdminMC).DebugEventNewPlanValues))
-            //    .Start();
+            //(m_arAdmin [(int)CONN_SETT_TYPE.SOURCE] as AdminMC).DebugEventNewPlanValues();
             // отладка переопубликации плана
-            new Thread (new ParameterizedThreadStart ((m_arAdmin [(int)CONN_SETT_TYPE.SOURCE] as AdminMC).DebugEventReloadPlanValues))
-                .Start ();
+            (m_arAdmin [(int)CONN_SETT_TYPE.SOURCE] as AdminMC).DebugEventReloadPlanValues ();
+
+            (m_arAdmin [(int)CONN_SETT_TYPE.SOURCE] as AdminMC).ToDateRequest (ASUTP.Core.HDateTime.ToMoscowTimeZone().Date);
         }
 
         private void FormMainTransMC_EventMaketChanged (object sender, EventArgs e)
@@ -197,6 +197,28 @@ namespace trans_mc
 
         protected override void buttonSaveSourceSett_Click(object sender, EventArgs e)
         {            
+        }
+
+        protected override void timerService_Tick (object sender, EventArgs e)
+        {
+            FormChangeMode.MODE_TECCOMPONENT mode = FormChangeMode.MODE_TECCOMPONENT.GTP;
+
+            // только 'trans_mc.exe' может выполняться в таком режиме
+            switch (handlerCmd.ModeMashine) {
+                case MODE_MASHINE.SERVICE_ON_EVENT:
+                    stopTimerService ();
+
+                    FillComboBoxTECComponent (mode, true);
+                    CT = new ComponentTesting (comboBoxTECComponent.Items.Count);
+
+                    dateTimePickerMain.Value = DateTime.Now;
+
+                    (m_arAdmin [(int)CONN_SETT_TYPE.SOURCE] as AdminMC).ToDateRequest (ASUTP.Core.HDateTime.ToMoscowTimeZone().Date);
+                    break;
+                default:
+                    base.timerService_Tick (sender, e);
+                    break;
+            }
         }
 
         protected override void trans_auto_stop ()
