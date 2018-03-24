@@ -172,9 +172,10 @@ namespace trans_mc
                     break;
             }
 
-            mesLog = $"AdminMC::listMCEventArgs_CollectionChanged (Act.={e.Action}, ID_EVENT={id}) - ";
+            mesLog = $"AdminMC::listMCEventArgs_CollectionChanged (Act.={e.Action}, ID_EVENT={id}) - Actived={Actived}, ";
 
-            if (Equals (arg, null) == false) {
+            if ((Equals (arg, null) == false)
+                && Actived == true) {
                 delegateDoWork = doWork;
 
                 mesLog = $"{mesLog}Count={_listMCEventArgs.Count}, NewIndex={e.NewStartingIndex}, OldIndex={e.OldStartingIndex}...";
@@ -727,6 +728,21 @@ namespace trans_mc
 
         protected override void StateWarnings(int state, int request, int result)
         {
+        }
+
+        public override bool Activate (bool active)
+        {
+            bool bRes = base.Activate (active);
+
+            if (bRes == true)
+                if (active == true)
+                    FetchEvent ();
+                else
+                    ;
+            else
+                ;
+
+            return bRes;
         }
 
         public override void ClearValues ()

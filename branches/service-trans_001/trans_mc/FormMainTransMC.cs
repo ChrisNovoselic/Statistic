@@ -139,13 +139,6 @@ namespace trans_mc
             }
             else
                 ;
-
-            //// отладка плана на очередной час
-            //(m_arAdmin [(int)CONN_SETT_TYPE.SOURCE] as AdminMC).DebugEventNewPlanValues();
-            // отладка переопубликации плана
-            (m_arAdmin [(int)CONN_SETT_TYPE.SOURCE] as AdminMC).DebugEventReloadPlanValues ();
-
-            (m_arAdmin [(int)CONN_SETT_TYPE.SOURCE] as AdminMC).ToDateRequest (ASUTP.Core.HDateTime.ToMoscowTimeZone().Date);
         }
 
         private void FormMainTransMC_EventMaketChanged (object sender, EventArgs e)
@@ -199,31 +192,12 @@ namespace trans_mc
         {            
         }
 
-        protected override void timerService_Tick (object sender, EventArgs e)
-        {
-            FormChangeMode.MODE_TECCOMPONENT mode = FormChangeMode.MODE_TECCOMPONENT.GTP;
-
-            // только 'trans_mc.exe' может выполняться в таком режиме
-            switch (handlerCmd.ModeMashine) {
-                case MODE_MASHINE.SERVICE_ON_EVENT:
-                    stopTimerService ();
-
-                    FillComboBoxTECComponent (mode, true);
-                    CT = new ComponentTesting (comboBoxTECComponent.Items.Count);
-
-                    dateTimePickerMain.Value = DateTime.Now;
-
-                    (m_arAdmin [(int)CONN_SETT_TYPE.SOURCE] as AdminMC).ToDateRequest (ASUTP.Core.HDateTime.ToMoscowTimeZone().Date);
-                    break;
-                default:
-                    base.timerService_Tick (sender, e);
-                    break;
-            }
-        }
-
         protected override void trans_auto_stop ()
         {
             AdminMC adminMC = m_arAdmin [(int)CONN_SETT_TYPE.SOURCE] as AdminMC;
+
+            Logging.Logg ().Debug ($"FormMainTransMS::trans_auto_stop () IsServiceOnEvent={adminMC.IsServiceOnEvent}..."
+                , Logging.INDEX_MESSAGE.NOT_SET);
 
             if (adminMC.IsServiceOnEvent == true)
                 adminMC.FetchEvent ();
@@ -233,20 +207,59 @@ namespace trans_mc
 
         protected override void comboBoxTECComponent_SelectedIndexChanged(object sender, EventArgs ev)
         {
-            if (IsCanSelectedIndexChanged() == true)
+            Logging.Logg ().Debug (string.Format(@"FormMainTransMC::comboBoxTECComponent_SelectedIndexChanged () - IsCanSelectedIndexChanged={0}, IndexDB={1}, <AdminMC.CurrentKey.Id={2} >> SelectedIndex={3}, SelectedKey.Id={4}> ..."
+                    , IsCanSelectedIndexChanged
+                    , m_IndexDB
+                    , m_arAdmin [m_IndexDB].CurrentKey.Id
+                    , comboBoxTECComponent.SelectedIndex
+                    , !(comboBoxTECComponent.SelectedIndex < 0) ? ((ComboBoxItem)comboBoxTECComponent.SelectedItem).Tag.Id : -1)
+                , Logging.INDEX_MESSAGE.NOT_SET);
+
+            if (IsCanSelectedIndexChanged == true)
             {
                 base.comboBoxTECComponent_SelectedIndexChanged(sender, ev);
 
                 setUIControlConnectionSettings((Int16)CONN_SETT_TYPE.DEST);
                 setUIControlSourceState();
             }
-            else
-                ;
+            else {
+                m_arAdmin [m_IndexDB].TECComponentComplete (-1, false);
+
+                //??? как переходить к следующей итерации
+                //??? 
+            }
         }
 
-        protected override void timer_Start()
+        protected override void timerService_Tick (object sender, EventArgs e)
         {
-            base.timer_Start();
+            FormChangeMode.MODE_TECCOMPONENT mode = FormChangeMode.MODE_TECCOMPONENT.GTP;
+
+            switch (handlerCmd.ModeMashine) {
+                case MODE_MASHINE.SERVICE_ON_EVENT:
+                    stopTimerService ();
+
+                    FillComboBoxTECComponent (mode, true);
+                    CT = new ComponentTesting (comboBoxTECComponent.Items.Count);
+
+                    dateTimePickerMain.Value = DateTime.Now;
+
+                    m_arAdmin [(int)CONN_SETT_TYPE.SOURCE].Activate (true);
+
+                    (m_arAdmin [(int)CONN_SETT_TYPE.SOURCE] as AdminMC).ToDateRequest (ASUTP.Core.HDateTime.ToMoscowTimeZone ().Date);
+
+                    //// отладка 
+                    //if (handlerCmd.ModeMashine == MODE_MASHINE.SERVICE_ON_EVENT) {
+                    //    // отладка переопубликации плана
+                    //    (m_arAdmin [(int)CONN_SETT_TYPE.SOURCE] as AdminMC).DebugEventReloadPlanValues ();
+                    //    // отладка плана на очередной час
+                    //    (m_arAdmin [(int)CONN_SETT_TYPE.SOURCE] as AdminMC).ToDateRequest (ASUTP.Core.HDateTime.ToMoscowTimeZone ().Date);
+                    //} else
+                    //    ;
+                    break;
+                default:
+                    base.timerService_Tick (sender, e);
+                    break;
+            }
         }
     }
 }

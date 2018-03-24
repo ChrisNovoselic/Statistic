@@ -192,24 +192,24 @@ namespace StatisticTrans
                                 || (pair.Value.Equals(@"default") == true))
                             // оставить значение 'm_arg_interval' по умолчанию
                                 ;
-                            else if(Int32.TryParse(pair.Value, out timerInterval) == true)
+                            else if(Int32.TryParse(pair.Value, out timerInterval) == true) {
                             // указано и распознано значение интервала
-                                _timerInterval = timerInterval;
-                            else if (pair.Value.Equals (@"on_event") == true)
+                                // указать корректное значение итнтервала
+                                if (!(timerInterval < TIMER_SERVICE_MIN_INTERVAL)) {
+                                    _modeMashine = MODE_MASHINE.SERVICE_PERIOD;
+                                    _timerInterval = timerInterval;
+                                } else {
+                                    _modeMashine = MODE_MASHINE.UNKNOWN;
+                                    _throwMessage = "Интервал задан меньше необходимого значения";
+                                }
+                            } else if (pair.Value.Equals (@"on_event") == true) {
                             // режим работы по событиям Модес-Центр
                                 _modeMashine = MODE_MASHINE.SERVICE_ON_EVENT;
-                            else {
+                                _timerInterval = TIMER_SERVICE_MIN_INTERVAL;
+                            } else {
                                 _throwMessage = $"FormMain::RunCmd() - неизвестный сервисный режим <{pair.Value}> работы...";
                                 _modeMashine = MODE_MASHINE.UNKNOWN;
                             }
-
-                            if ((_modeMashine == s_modeServiceMashineDefault)
-                                && (_timerInterval < TIMER_SERVICE_MIN_INTERVAL)) {
-                                _throwMessage = "Интервал задан меньше необходимого значения";
-                                _modeMashine = MODE_MASHINE.UNKNOWN;
-                            }
-                            else
-                                ;
                             break;
                         case "start":
                             _modeMashine = s_modeServiceMashineDefault;
@@ -1343,6 +1343,14 @@ namespace StatisticTrans
             }
         }
 
+        //protected bool isFirstTimerTick
+        //{
+        //    get
+        //    {
+        //        return timerService.Interval == ProgramBase.TIMER_START_INTERVAL;
+        //    }
+        //}
+
         protected virtual void timerService_Tick(object sender, EventArgs e)
         {
             FormChangeMode.MODE_TECCOMPONENT mode = FormChangeMode.MODE_TECCOMPONENT.GTP;
@@ -1353,7 +1361,7 @@ namespace StatisticTrans
                 // никаких действий не предпринимается
                     break;
                 case MODE_MASHINE.SERVICE_PERIOD:
-                    if (timerService.Interval == ProgramBase.TIMER_START_INTERVAL)
+                    if (timerService.Interval == ProgramBase.TIMER_START_INTERVAL) // isFirstTimerTick == true
                     {
                         //Первый запуск
                         if (handlerCmd.TimerInterval == timerService.Interval)
@@ -1363,15 +1371,12 @@ namespace StatisticTrans
 
                         FillComboBoxTECComponent (mode, true);
                         CT = new ComponentTesting (comboBoxTECComponent.Items.Count);
-
-                        //DateUpdate(m_arg_interval);
                     }
                     else
                         ;
 
                     dateTimePickerMain.Value = DateTime.Now;
 
-                    //DateUpdate(m_arg_interval);
                     trans_auto_start();
                     break;
                 //// только 'trans_mc.exe' может выполняться в таком режиме - см. 'FormMainTransMC::timerService_Tick'
@@ -1411,19 +1416,22 @@ namespace StatisticTrans
             */
         }
 
-        protected bool IsCanSelectedIndexChanged()
+        protected bool IsCanSelectedIndexChanged
         {
-            bool bRes = false;
+            get
+            {
+                bool bRes = false;
 
-            if ((!(m_arAdmin == null))
-                    && (!(m_arAdmin[m_IndexDB] == null)
-                    && (m_arAdmin[m_IndexDB].CurrentKey.Id > 0))
-                && (!(comboBoxTECComponent.SelectedIndex < 0)))
-                bRes = true;
-            else
-                ;
+                if (((!(comboBoxTECComponent.SelectedIndex < 0))
+                        && (((ComboBoxItem)comboBoxTECComponent.SelectedItem).Tag.Id > 0))
+                    && (!(m_arAdmin == null))
+                        && (!(m_arAdmin [m_IndexDB] == null)))
+                    bRes = true;
+                else
+                    ;
 
-            return bRes;
+                return bRes;
+            }
         }
 
         protected abstract void comboBoxTECComponent_SelectedIndexChanged(object cbx, EventArgs ev);

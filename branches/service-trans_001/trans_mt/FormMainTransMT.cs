@@ -149,7 +149,7 @@ namespace trans_mt
 
         protected override void comboBoxTECComponent_SelectedIndexChanged(object sender, EventArgs ev)
         {
-            if (IsCanSelectedIndexChanged() == true)
+            if (IsCanSelectedIndexChanged == true)
             {
                 base.comboBoxTECComponent_SelectedIndexChanged(sender, ev);
 

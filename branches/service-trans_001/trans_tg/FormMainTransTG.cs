@@ -189,7 +189,7 @@ namespace trans_tg
 
         protected override void comboBoxTECComponent_SelectedIndexChanged(object cbx, EventArgs ev)
         {
-            if (IsCanSelectedIndexChanged () == true)
+            if (IsCanSelectedIndexChanged == true)
             {
                 ClearTables();
 

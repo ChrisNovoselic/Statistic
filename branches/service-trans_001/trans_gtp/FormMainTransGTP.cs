@@ -339,7 +339,7 @@ namespace trans_gtp
 
         protected override void comboBoxTECComponent_SelectedIndexChanged(object cbx, EventArgs ev)
         {
-            if (IsCanSelectedIndexChanged() == true)
+            if (IsCanSelectedIndexChanged == true)
             {
                 ClearTables();
 

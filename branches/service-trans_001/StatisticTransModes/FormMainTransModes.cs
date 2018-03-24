@@ -119,7 +119,10 @@ namespace StatisticTransModes
 
         protected override void comboBoxTECComponent_SelectedIndexChanged(object cbx, EventArgs ev)
         {
-            ClearTables();
+            ASUTP.Logging.Logg ().Debug ($"FormMainTransModes::comboBoxTECComponent_SelectedIndexChanged () - m_IndexDB={m_IndexDB}, ModeTECComponent={m_modeTECComponent.ToString()}..."
+                , ASUTP.Logging.INDEX_MESSAGE.NOT_SET);
+
+            ClearTables ();
 
             switch (m_modeTECComponent)
             {

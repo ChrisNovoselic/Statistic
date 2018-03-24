@@ -747,18 +747,16 @@ namespace StatisticCommon
 
                         if ((_msExcelIOExportPBRValues.AddTECComponent(allTECComponents.Find(comp => comp.m_id == CurrentKey.Id)) == 0)
                             && (_msExcelIOExportPBRValues.SetDate(date) == true)) {
-                            _listTECComponentKey.Remove(_listTECComponentKey[0]); // дубликатов быть не должно (см. добавление элементов)
+                            TECComponentComplete(-1, true); // дубликатов быть не должно (см. добавление элементов)
 
                             //Console.WriteLine(@"AdminTS_KomDisp::AddValueToExportRDGValues () - обработка элемента=[{0}], остатолось элементов={1}", indxTECComponents, _lisTECComponentIndex.Count);
 
                             // добавить значения по составному ключу: [DateTime, Index]
                             _msExcelIOExportPBRValues.AddPBRValues(CurrentKey.Id, compValues);
 
+                            keyRes = FirstTECComponentKey;
                             // проверить повторно после удаления элемента
-                            if (_listTECComponentKey.Count > 0) {
-                            // очередной индекс компонента для запрооса
-                                keyRes = _listTECComponentKey[0];
-                            } else {
+                            if (keyRes == FormChangeMode.KeyDevice.Empty) {
                             // все значения по всем компонентам получены/добавлены
                                 Logging.Logg().Action(string.Format("AdminTS_KomDisp::AddValueToExportRDGValues () - получены все значения для всех компонентов...")
                                     , Logging.INDEX_MESSAGE.NOT_SET);
@@ -768,7 +766,9 @@ namespace StatisticCommon
                                 _msExcelIOExportPBRValues.Run();
                                 // установить штатного признак завершения
                                 keyRes.Id = 0;
-                            }
+                            } else
+                            // очередной индекс компонента для запрооса
+                                ;
                         } else {
                             Logging.Logg().Error(string.Format($"AdminTS_KomDisp::AddValueToExportRDGValues () - компонент с ключом [{CurrentKey.ToString ()}] не может быть добавлен (пред. опреация экспорта не завершена)...")
                                 , Logging.INDEX_MESSAGE.NOT_SET);
