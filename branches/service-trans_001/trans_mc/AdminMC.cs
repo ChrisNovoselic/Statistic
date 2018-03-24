@@ -78,9 +78,18 @@ namespace trans_mc
             m_strMCServiceHost = strMCServiceHost;
 
             _eventConnected = new System.Threading.ManualResetEvent (false);
+        }
 
-            _listMCEventArgs = new ObservableCollection<EventArgs> ();
-            _listMCEventArgs.CollectionChanged += listMCEventArgs_CollectionChanged;
+        public override void Start ()
+        {
+            base.Start ();
+
+            if (IsServiceOnEvent == true) {
+                _autoResetEvent_MCArgs_CollectionChanged = new AutoResetEvent (true);
+                _listMCEventArgs = new ObservableCollection<EventArgs> ();
+                _listMCEventArgs.CollectionChanged += listMCEventArgs_CollectionChanged;
+            } else
+                ;
         }
 
         /// <summary>
@@ -115,6 +124,8 @@ namespace trans_mc
         {
             _dictNotify.Add (id_event, handler);
         }
+
+        private AutoResetEvent _autoResetEvent_MCArgs_CollectionChanged;
 
         private void listMCEventArgs_CollectionChanged (object sender, System.Collections.Specialized.NotifyCollectionChangedEventArgs e)
         {
@@ -172,10 +183,10 @@ namespace trans_mc
                     break;
             }
 
-            mesLog = $"AdminMC::listMCEventArgs_CollectionChanged (Act.={e.Action}, ID_EVENT={id}) - Actived={Actived}, ";
+            mesLog = $"AdminMC::listMCEventArgs_CollectionChanged (Act.={e.Action}, ID_EVENT={id}) - Connected={isConnected}, ";
 
             if ((Equals (arg, null) == false)
-                && Actived == true) {
+                && isConnected == true) {
                 delegateDoWork = doWork;
 
                 mesLog = $"{mesLog}Count={_listMCEventArgs.Count}, NewIndex={e.NewStartingIndex}, OldIndex={e.OldStartingIndex}...";
@@ -193,14 +204,25 @@ namespace trans_mc
             Logging.Logg ().Debug (mesLog, Logging.INDEX_MESSAGE.NOT_SET);
 
             delegateDoWork?.Invoke (arg, id);
+
+            _autoResetEvent_MCArgs_CollectionChanged.Set ();
+        }
+
+        public void AddEvent (EventArgs arg)
+        {
+            _autoResetEvent_MCArgs_CollectionChanged.WaitOne ();
+
+            _listMCEventArgs.Add (arg);
         }
 
         public void FetchEvent ()
         {
             try {
-                if (_listMCEventArgs.Count > 0)
+                if (_listMCEventArgs.Count > 0) {
+                    _autoResetEvent_MCArgs_CollectionChanged.WaitOne ();
+
                     _listMCEventArgs?.RemoveAt (0);
-                else
+                } else
                     Logging.Logg ().Warning ($@"trans_mc.AdminMC::FetchEvent () - удаление невозможно, исходный размер = 0...{Environment.NewLine}Стэк={Environment.StackTrace}", Logging.INDEX_MESSAGE.NOT_SET);
             } catch (Exception e) {
                 Logging.Logg ().Exception (e, $@"trans_mc.AdminMC::FetchEvent () - ...", Logging.INDEX_MESSAGE.NOT_SET);
@@ -394,9 +416,9 @@ namespace trans_mc
                     , Mode = FormChangeMode.MODE_TECCOMPONENT.GTP })
                 .ToList());
 
-            if (listKeyDevice.Count > 0)
-                _listMCEventArgs.Add (new EventArgs<FormChangeMode.KeyDevice> (DbMCInterface.ID_EVENT.NEW_PLAN_VALUES, date, listKeyDevice));
-            else
+            if (listKeyDevice.Count > 0) {
+                AddEvent (new EventArgs<FormChangeMode.KeyDevice> (DbMCInterface.ID_EVENT.NEW_PLAN_VALUES, date, listKeyDevice));
+            } else
                 Logging.Logg().Warning($@"AdminMC::getMaketEquipmentResponse () - получен пустой список с оборудованием...", Logging.INDEX_MESSAGE.NOT_SET);
 
             FetchEvent ();
@@ -409,7 +431,10 @@ namespace trans_mc
             bool bRes = true;
             int i = -1;
 
-            DbMCSources.Sources().SetMCApiHandler(dbMCSources_OnEventHandler);
+            if (IsServiceOnEvent == true)
+                DbMCSources.Sources ().SetMCApiHandler (dbMCSources_OnEventHandler);
+            else
+                ;
             m_IdListenerCurrent = ASUTP.Database.DbSources.Sources().Register(m_strMCServiceHost, true, @"Modes-Centre");
 
             return bRes;
@@ -517,17 +542,27 @@ namespace trans_mc
                 // , имеется ли обработчик; иначе из коллекции не смогут быть удалены элементы(удаление только из-вне)
                 // , а значит коллекция увеличивается без ограничений, а элементы никаким образом не обрабатываются
                 if ((Equals (argEventChanged, null) == false)
-                    && (isHandlerMCEvent(id_event) == true))
-                    _listMCEventArgs.Add (argEventChanged);
-                else
+                    && (isHandlerMCEvent(id_event) == true)) {
+                    AddEvent (argEventChanged);
+                } else
                     ;
             } else {
                 id_event = DbMCInterface.ID_EVENT.Unknown;
 
                 //TODO: проверить результат попытки установки соединения
-                Logging.Logg ().Action ($"AdminMC::dbMCSources_OnEventHandler(ID_MC_EVENT={id_event.ToString ()}) - соединение установлено (проверить результат установления соединения = {"???"})...", Logging.INDEX_MESSAGE.NOT_SET);
+                Logging.Logg ().Action ($"AdminMC::dbMCSources_OnEventHandler(ID_MC_EVENT={id_event.ToString ()}) - изменение состояния соединения УСТАНОВЛЕНО = {(bool)obj})...", Logging.INDEX_MESSAGE.NOT_SET);
 
-                _eventConnected.Set ();
+                switch ((bool)obj == true ? 1 : 0) {
+                    case 0:
+                        _eventConnected.Reset ();
+                        break;
+                    case 1:
+                        _eventConnected.Set ();
+                        FetchEvent ();
+                        break;
+                    default:
+                        break;
+                }
             }
         }
 

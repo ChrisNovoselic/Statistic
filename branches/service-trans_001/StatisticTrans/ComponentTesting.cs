@@ -36,11 +36,6 @@ namespace StatisticTrans
             private FormChangeMode.KeyDevice [] Iters;
 
             /// <summary>
-            /// Счетчик нового дня
-            /// </summary>
-            public bool NextDay = false;
-
-            /// <summary>
             /// Конструктор класса
             /// </summary>
             /// <param name="size">размер массива</param>

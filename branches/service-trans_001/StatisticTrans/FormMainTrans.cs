@@ -1037,15 +1037,10 @@ namespace StatisticTrans
             if ((IsService == true)
                 && (m_bEnabledUIControl == false))
             {
-                 m_arAdmin[(int)CONN_SETT_TYPE.SOURCE].TECComponentComplete (state, true);
+                m_arAdmin[(int)CONN_SETT_TYPE.SOURCE].TECComponentComplete (state, true);
 
-                //??? зачем нужен '.NextDay'
-                CT.NextDay = IsTomorrow();
-                if (comboBoxTECComponent.InvokeRequired)
-                    comboBoxTECComponent.Invoke(new Action(() => CT.SuccessIter(/*(string)comboBoxTECComponent.Items[comboBoxTECComponent.SelectedIndex]*/)));
-                else
-                    CT.SuccessIter(/*(string)comboBoxTECComponent.Items[comboBoxTECComponent.SelectedIndex]*/);
-                
+                CT.SuccessIter();
+
                 IAsyncResult asyncRes;
                 //if (IsService == true) проверка уже выполнена выше
                     if (InvokeRequired == true)
@@ -1274,13 +1269,8 @@ namespace StatisticTrans
                 && (iNextIndex < comboBoxTECComponent.Items.Count))
             {
                 comboBoxTECComponent.SelectedIndex = iNextIndex;
-                //??? зачем нужен '.NextDay'
-                CT.NextDay = IsTomorrow();
-                //// в этом контексте вызов 'comboBoxTECComponent.InvokeRequired' не требуется
-                //if (comboBoxTECComponent.InvokeRequired)
-                //    comboBoxTECComponent.Invoke(new Action(() => CT.AttemptIter((string)comboBoxTECComponent.Items[comboBoxTECComponent.SelectedIndex])));
-                //else
-                    CT.AttemptIter(((ComboBoxItem)comboBoxTECComponent.SelectedItem).Tag);
+
+                CT.AttemptIter(((ComboBoxItem)comboBoxTECComponent.SelectedItem).Tag);
 
                 //Обработчик отключен - вызов "программно"
                 comboBoxTECComponent_SelectedIndexChanged(null, EventArgs.Empty);

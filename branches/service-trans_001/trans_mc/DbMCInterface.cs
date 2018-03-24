@@ -12,6 +12,9 @@ using ModesApiExternal;
 using ASUTP;
 using ASUTP.Core;
 using System.Collections.ObjectModel;
+using System.Reflection;
+using System.ComponentModel;
+using System.Reflection.Emit;
 
 namespace trans_mc
 {
@@ -44,6 +47,15 @@ namespace trans_mc
             m_listIGO = new List<Modes.BusinessLogic.IGenObject> ();
 
             delegateMCApiHandler = mcApiHandler;
+
+            mcApiEventLocked = new object();
+        }
+
+        private void mcApi_OnClose (object sender, EventArgs e)
+        {
+            lock (mcApiEventLocked) {
+                delegateMCApiHandler?.Invoke (false);
+            }
         }
 
         public override bool EqualeConnectionSettings(object cs)
@@ -75,6 +87,73 @@ namespace trans_mc
             }
             //!!! обязательный вызов
             setConnectionSettings();
+        }
+
+        static private IEnumerable<Delegate/*MethodInfo*/> getHandlerExists (object classInstanse)
+        {
+            IEnumerable<Delegate/*MethodInfo*/> listRes;
+
+            Func<EventInfo, FieldInfo> ei2fi =
+                ei => classInstanse.GetType ().GetField (ei.Name,
+                    BindingFlags.NonPublic |
+                    BindingFlags.Instance |
+                    BindingFlags.GetField);
+
+            listRes = from eventInfo in classInstanse.GetType ().GetEvents ()
+                let eventFieldInfo = ei2fi (eventInfo)
+                let eventFieldValue = (System.Delegate)eventFieldInfo?.GetValue (classInstanse)
+                    where (Equals(eventFieldInfo, null) == false)
+                        && (Equals (eventFieldValue, null) == false)
+                        from subscribedDelegate in eventFieldValue?.GetInvocationList ()
+                            select subscribedDelegate/*?.Method*/;
+
+            //// безопасный вариант 
+            //IEnumerable<FieldInfo> infoFields;
+            //IEnumerable<Delegate> valueFields;
+
+            //infoFields = from eventInfo in classInstanse.GetType ().GetEvents ()
+            //    select ei2fi (eventInfo);
+
+            //if (Equals (infoFields, null) == false) {
+            //    valueFields = from fieldInfo in infoFields
+            //        where Equals(fieldInfo, null) == false
+            //        select (System.Delegate)fieldInfo?.GetValue (classInstanse);
+
+            //    if (Equals (valueFields, null) == false) {
+            //        listRes = from fieldValue in valueFields
+            //            where Equals(fieldValue, null) == false
+            //            let listMethodInfo = fieldValue.GetInvocationList ()
+            //                from methodInfo in listMethodInfo
+            //                where Equals (methodInfo, null) == false
+            //                    select methodInfo.Method;
+            //    } else
+            //        listRes = new List<MethodInfo>();
+            //} else
+            //    listRes = new List<MethodInfo> ();
+
+            return listRes;
+        }
+
+        static private IEnumerable<Delegate/*MethodInfo*/> getHandlerExists (object classInstance, string eventName)
+        {
+            IEnumerable<Delegate/*MethodInfo*/> listRes;
+
+            Type classType = classInstance.GetType ();
+
+            FieldInfo eventField = classType.GetField (eventName, BindingFlags.GetField
+                | BindingFlags.NonPublic
+                | BindingFlags.Instance);
+
+            Delegate eventDelegate = (Delegate)eventField.GetValue (classInstance);
+
+            // eventDelegate will be null if no listeners are attached to the event
+            if (Equals (eventDelegate, null) == false) {
+                listRes = (from method in eventDelegate.GetInvocationList ()
+                    select method/*.Method*/);
+            } else
+                listRes = new List<Delegate/*MethodInfo*/> ();
+
+            return listRes;
         }
 
         /// <summary>
@@ -132,7 +211,9 @@ namespace trans_mc
             bRes = 
             result =
                 ModesApiFactory.IsInitilized;
-            
+
+            IEnumerable<Delegate/*MethodInfo*/> handlers;
+
             if (bRes == true) {
                 // на случай перезагрузки сервера Модес-центр
                 try {
@@ -140,9 +221,73 @@ namespace trans_mc
                     m_MCTimeSlice = m_MCApi.GetModesTimeSlice(DateTime.Now.Date.LocalHqToSystemEx(), SyncZone.First, TreeContent.PGObjects, true);
                     m_listPFI = m_MCApi.GetPlanFactors();
 
-                    m_MCApi.OnData53500Modified += mcApi_OnEventHandler;
-                    m_MCApi.OnPlanDataChanged += mcApi_OnEventHandler;
+                    #region добавить обработчики для проверки возможности их удаления
+                    //m_MCApi.OnClose += mcApi_OnClose;
+                    //m_MCApi.OnData53500Modified += new EventHandler<Modes.NetAccess.EventRefreshData53500> (mcApi_OnEventHandler);
+                    //m_MCApi.OnMaket53500Changed += mcApi_OnEventHandler;
+                    //m_MCApi.OnPlanDataChanged += mcApi_OnEventHandler;
+                    #endregion
+
+                    #region Отмена регистрация неуниверсальных обработчиков
+                    //List<ParameterInfo> handlerParameters;
+                    //handlers = getHandlerExists (m_MCApi);
+
+                    //foreach (Delegate handler in handlers.ToList ()) {
+                    //    handlerParameters = handler.Method.GetParameters ().ToList();
+                    //    if (handlerParameters.Count () == 2)
+                    //        if (typeof (Modes.NetAccess.EventRefreshData53500).IsAssignableFrom (handlerParameters [1].GetType ()) == true)
+                    //            m_MCApi.OnData53500Modified -= (EventHandler<Modes.NetAccess.EventRefreshData53500>)handler;
+                    //        else if (typeof (Modes.NetAccess.EventRefreshJournalMaket53500).IsAssignableFrom (handlerParameters [1].GetType ()) == true)
+                    //            m_MCApi.OnMaket53500Changed -= (EventHandler<Modes.NetAccess.EventRefreshJournalMaket53500>)handler;
+                    //        else if (typeof (Modes.NetAccess.EventPlanDataChanged).IsAssignableFrom (handlerParameters [1].GetType ()) == true)
+                    //            m_MCApi.OnPlanDataChanged -= (EventHandler<Modes.NetAccess.EventPlanDataChanged>)handler;
+                    //        else
+                    //            ;
+                    //    else if (handlerParameters.Count () == 0)
+                    //        m_MCApi.OnClose -= (EventHandler)handler;
+                    //    else
+                    //        ;
+                    //}
+                    //// проверить
+                    //handlers = getHandlerExists (m_MCApi);
+                    #endregion
+
+                    #region Отмена регистрации универсального обработчика
+                    List<string> eventNames = new List<string> () { "OnClose"
+                        , "OnData53500Modified", "OnMaket53500Changed", "OnPlanDataChanged"
+                    };
+
+                    foreach (string eventName in eventNames) {
+                        foreach (Delegate handler in getHandlerExists (m_MCApi, eventName)) {
+                            switch (eventNames.IndexOf(eventName)) {
+                                case 0:
+                                    m_MCApi.OnClose -= (EventHandler)handler;
+                                    break;
+                                case 1:
+                                    m_MCApi.OnData53500Modified -= (EventHandler<Modes.NetAccess.EventRefreshData53500>)handler;
+                                    break;
+                                case 2:
+                                    m_MCApi.OnMaket53500Changed -= (EventHandler<Modes.NetAccess.EventRefreshJournalMaket53500>)handler;
+                                    break;
+                                case 3:
+                                    m_MCApi.OnPlanDataChanged -= (EventHandler<Modes.NetAccess.EventPlanDataChanged>)handler;
+                                    break;
+                                default:
+                                    break;
+                            }
+                        }
+                    }
+                    // проверить
+                    handlers = getHandlerExists (m_MCApi);
+                    #endregion
+
+                    // добавить обработчики
+                    m_MCApi.OnClose += mcApi_OnClose;
+                    m_MCApi.OnData53500Modified += new EventHandler<Modes.NetAccess.EventRefreshData53500> (mcApi_OnEventHandler);
                     m_MCApi.OnMaket53500Changed += mcApi_OnEventHandler;
+                    m_MCApi.OnPlanDataChanged += mcApi_OnEventHandler;
+                    // проверить
+                    handlers = getHandlerExists (m_MCApi);
 
                     Logging.Logg().Debug(string.Format(@"{0} - {1}...", msgLog, @"УСПЕХ"), Logging.INDEX_MESSAGE.NOT_SET);
                 } catch (Exception e) {
@@ -153,10 +298,14 @@ namespace trans_mc
             } else
                 Logging.Logg().Debug(string.Format(@"{0} - {1}...", msgLog, @"ОШИБКА"), Logging.INDEX_MESSAGE.NOT_SET);
 
-            delegateMCApiHandler?.Invoke (bRes);
+            lock (mcApiEventLocked) {
+                delegateMCApiHandler?.Invoke (bRes);
+            }
 
             return result;
         }
+
+        private object mcApiEventLocked;
 
         private void mcApi_OnEventHandler(object obj, EventArgs e)
         {
@@ -186,8 +335,10 @@ namespace trans_mc
             } else
                 sendToTrans = new object[] { ID_EVENT.Unknown };
 
+            lock (mcApiEventLocked) {
             // простая ретрансляция
-            delegateMCApiHandler(sendToTrans);
+                delegateMCApiHandler?.Invoke(sendToTrans);
+            }
         }
 
         protected override bool Disconnect()
