@@ -49,10 +49,11 @@ namespace trans_mc
             }
         }
 
-        //public event EventHandler EventMaketChanged
-        //    , EventPlanDataChanged;
-
         private ObservableCollection<EventArgs> _listMCEventArgs;
+
+        private AutoResetEvent _autoResetEvent_MCArgs_CollectionChanged;
+
+        private event Action<object, System.Collections.Specialized.NotifyCollectionChangedEventArgs> _eventFetch_listMCEventArgs;
 
         private IEnumerable<Guid> _maketIdentifiers;
 
@@ -88,6 +89,7 @@ namespace trans_mc
                 _autoResetEvent_MCArgs_CollectionChanged = new AutoResetEvent (true);
                 _listMCEventArgs = new ObservableCollection<EventArgs> ();
                 _listMCEventArgs.CollectionChanged += listMCEventArgs_CollectionChanged;
+                _eventFetch_listMCEventArgs += listMCEventArgs_CollectionChanged;
             } else
                 ;
         }
@@ -124,8 +126,6 @@ namespace trans_mc
         {
             _dictNotify.Add (id_event, handler);
         }
-
-        private AutoResetEvent _autoResetEvent_MCArgs_CollectionChanged;
 
         private void listMCEventArgs_CollectionChanged (object sender, System.Collections.Specialized.NotifyCollectionChangedEventArgs e)
         {
@@ -172,11 +172,13 @@ namespace trans_mc
                     // новые элементы будут ожидать обработки
                         ;
                     break;
+                case System.Collections.Specialized.NotifyCollectionChangedAction.Reset:
                 case System.Collections.Specialized.NotifyCollectionChangedAction.Remove:
                     if ((sender as ObservableCollection<EventArgs>).Count > 0) {
                         arg = (IEventArgs)(sender as ObservableCollection<EventArgs>) [0];
                         id = contextId (arg);
                     } else
+                    //??? в случае 'Reset' - исключение, т.к. 'e.OldItems' = NullReference
                         id = contextId ((IEventArgs)e.OldItems [0]);
                     break;
                 default:
@@ -191,8 +193,7 @@ namespace trans_mc
 
                 mesLog = $"{mesLog}Count={_listMCEventArgs.Count}, NewIndex={e.NewStartingIndex}, OldIndex={e.OldStartingIndex}...";
             } else {
-                if ((e.Action == System.Collections.Specialized.NotifyCollectionChangedAction.Add)
-                    && (e.NewStartingIndex > 0))
+                if (e.Action == System.Collections.Specialized.NotifyCollectionChangedAction.Add)
                     mesLog = $@"{mesLog}ожидание обработки({e.NewStartingIndex}-й в списке): {((IEventArgs)(sender as ObservableCollection<EventArgs>) [e.NewStartingIndex]).m_id.ToString()}...";
                 else if ((e.Action == System.Collections.Specialized.NotifyCollectionChangedAction.Remove)
                     && ((sender as ObservableCollection<EventArgs>).Count == 0))
@@ -215,13 +216,16 @@ namespace trans_mc
             _listMCEventArgs.Add (arg);
         }
 
-        public void FetchEvent ()
+        public void FetchEvent (bool bRemove)
         {
             try {
                 if (_listMCEventArgs.Count > 0) {
                     _autoResetEvent_MCArgs_CollectionChanged.WaitOne ();
 
-                    _listMCEventArgs?.RemoveAt (0);
+                    if (bRemove == true)
+                        _listMCEventArgs?.RemoveAt (0);
+                    else
+                        _eventFetch_listMCEventArgs (_listMCEventArgs, new System.Collections.Specialized.NotifyCollectionChangedEventArgs(System.Collections.Specialized.NotifyCollectionChangedAction.Reset));
                 } else
                     Logging.Logg ().Warning ($@"trans_mc.AdminMC::FetchEvent () - удаление невозможно, исходный размер = 0...{Environment.NewLine}Стэк={Environment.StackTrace}", Logging.INDEX_MESSAGE.NOT_SET);
             } catch (Exception e) {
@@ -421,7 +425,7 @@ namespace trans_mc
             } else
                 Logging.Logg().Warning($@"AdminMC::getMaketEquipmentResponse () - получен пустой список с оборудованием...", Logging.INDEX_MESSAGE.NOT_SET);
 
-            FetchEvent ();
+            FetchEvent (true);
 
             return iRes;
         }
@@ -558,7 +562,7 @@ namespace trans_mc
                         break;
                     case 1:
                         _eventConnected.Set ();
-                        FetchEvent ();
+                        FetchEvent (false);
                         break;
                     default:
                         break;
@@ -771,7 +775,7 @@ namespace trans_mc
 
             if (bRes == true)
                 if (active == true)
-                    FetchEvent ();
+                    FetchEvent (false);
                 else
                     ;
             else

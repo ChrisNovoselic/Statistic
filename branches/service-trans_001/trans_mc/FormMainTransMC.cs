@@ -200,7 +200,7 @@ namespace trans_mc
                 , Logging.INDEX_MESSAGE.NOT_SET);
 
             if (adminMC.IsServiceOnEvent == true)
-                adminMC.FetchEvent ();
+                adminMC.FetchEvent (true);
             else
                 base.trans_auto_stop ();
         }
