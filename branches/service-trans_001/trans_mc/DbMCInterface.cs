@@ -55,18 +55,9 @@ namespace trans_mc
             mcApiEventLocked = new object();
         }
 
-        private void abort()
-        {
-            lock (mcApiEventLocked) {
-                delegateMCApiHandler?.Invoke (false);
-            }
-
-            Logging.Logg ().Error ($"DbMCInterface::abort () - Host={(string)m_connectionSettings}, соединение разорвано...", Logging.INDEX_MESSAGE.NOT_SET);
-        }
-
         private void mcApi_OnClose (object sender, EventArgs e)
         {
-            abort ();
+            Disconnect();
         }
 
         public override bool EqualeConnectionSettings(object cs)
@@ -364,6 +355,12 @@ namespace trans_mc
             bool result = true
                 , bRes = false;
 
+            lock (mcApiEventLocked) {
+                delegateMCApiHandler?.Invoke (false);
+            }
+
+            Logging.Logg ().Error ($"DbMCInterface::Disconnect () - Host={(string)m_connectionSettings}, соединение разорвано...", Logging.INDEX_MESSAGE.NOT_SET);
+
             return result;
         }
 
@@ -425,14 +422,6 @@ namespace trans_mc
         protected override bool GetData (DataTable table, object query)
         {
             bool result = false;
-
-            if (ModesApiFactory.IsInitilized == false) {
-                abort ();
-
-                return result;
-            } else
-            // выполняем получение/распознование данных
-                ;
 
             table.Reset();
             table.Locale = System.Globalization.CultureInfo.CurrentCulture;

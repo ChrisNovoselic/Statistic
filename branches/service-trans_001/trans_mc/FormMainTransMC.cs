@@ -167,7 +167,11 @@ namespace trans_mc
             IAsyncResult iar;
             object res;
 
-            iar = BeginInvoke ((MethodInvoker)delegate () { trans_auto_start (); });
+            iar = BeginInvoke ((MethodInvoker)delegate () {
+                dateTimePickerMain.Value = (e as AdminMC.IEventArgs).m_Date.Date;
+
+                trans_auto_start ();
+            });
 
             //iar.AsyncWaitHandle.WaitOne();
             //res = EndInvoke (iar);
@@ -240,6 +244,7 @@ namespace trans_mc
 
             switch (handlerCmd.ModeMashine) {
                 case MODE_MASHINE.SERVICE_ON_EVENT:
+                    // остановить таймер; это первый  вызов (можно обрабытывать также в 'timer_Start')
                     stopTimerService ();
 
                     FillComboBoxTECComponent (mode, true);
@@ -249,16 +254,15 @@ namespace trans_mc
 
                     m_arAdmin [(int)CONN_SETT_TYPE.SOURCE].Activate (true);
 
-                    (m_arAdmin [(int)CONN_SETT_TYPE.SOURCE] as AdminMC).ToDateRequest (ASUTP.Core.HDateTime.ToMoscowTimeZone ().Date);
 
-                    //// отладка 
-                    //if (handlerCmd.ModeMashine == MODE_MASHINE.SERVICE_ON_EVENT) {
-                    //    // отладка переопубликации плана
-                    //    (m_arAdmin [(int)CONN_SETT_TYPE.SOURCE] as AdminMC).DebugEventReloadPlanValues ();
-                    //    // отладка плана на очередной час
-                    //    (m_arAdmin [(int)CONN_SETT_TYPE.SOURCE] as AdminMC).ToDateRequest (ASUTP.Core.HDateTime.ToMoscowTimeZone ().Date);
-                    //} else
-                    //    ;
+                    if ((handlerCmd.DebugTurn == true)
+                        && (handlerCmd.ModeMashine == MODE_MASHINE.SERVICE_ON_EVENT))
+                    // отладка переопубликации плана
+                        (m_arAdmin [(int)CONN_SETT_TYPE.SOURCE] as AdminMC).DebugEventReloadPlanValues ();
+                    else
+                        ;
+                    // обязательный запрос актуального плана для всех подразделений
+                    (m_arAdmin [(int)CONN_SETT_TYPE.SOURCE] as AdminMC).ToDateRequest (ASUTP.Core.HDateTime.ToMoscowTimeZone ().Date);
                     break;
                 default:
                     base.timerService_Tick (sender, e);

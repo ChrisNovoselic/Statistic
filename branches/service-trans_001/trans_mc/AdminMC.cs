@@ -45,6 +45,8 @@ namespace trans_mc
             {
                 m_id = id;
 
+                m_Date = date;
+
                 m_listParameters = new ReadOnlyCollection<T> (listParameters);
             }
         }
@@ -485,6 +487,14 @@ namespace trans_mc
                     && diff.TotalDays < 0;
             };
 
+            Func<DbMCInterface.ID_EVENT, DateTime, DateTime> translate = delegate (DbMCInterface.ID_EVENT id, DateTime datetime) {
+                return ((id == DbMCInterface.ID_EVENT.RELOAD_PLAN_VALUES) || (id == DbMCInterface.ID_EVENT.NEW_PLAN_VALUES))
+                    ? datetime.SystemToLocalHqEx ()
+                        : ((id == DbMCInterface.ID_EVENT.PHANTOM_RELOAD_PLAN_VALUES) || (id == DbMCInterface.ID_EVENT.REQUEST_PLAN_VALUES))
+                            ? datetime
+                                : datetime;
+            };
+
             if (obj is Array) {
                 bDebug = (obj as object []).Length > 2 ? true : false;
 
@@ -514,7 +524,7 @@ namespace trans_mc
                     string abbr = string.Empty
                         , taskModes = string.Empty;
 
-                    dateTarget = ev.dtTarget.GetValueOrDefault ();
+                    dateTarget = translate (id_event, ev.dtTarget.GetValueOrDefault ());
                     makets = ev.makets as ReadOnlyCollection<Guid>;
                     abbr = ev.Task.GetAbbr();
                     taskModes = ev.Task.ModesTaskToString();
@@ -538,13 +548,13 @@ namespace trans_mc
                         , id_mc_tec = string.Empty;
                     int id_gate = -1;
 
-                    day = ev.Day;
+                    day = translate(id_event, ev.Day);
                     pbr_number = ev.Type.PlanTypeToString ();
-                    version = ev.Version;
+                    version = translate (id_event, ev.Version);
                     id_mc_tec = ev.ClientId;
                     id_gate = ev.IdGate;
 
-                    Logging.Logg ().Action (string.Format (@"AdminMC::dbMCSources_OnEventHandler(ID_MC_EVENT={0}) - обработчик события - {6} план[на дату={1}, номер={2}, от={3}, для подразделения={4}, IdGate={5}]..."
+                    Logging.Logg ().Action (string.Format (@"AdminMC::dbMCSources_OnEventHandler(ID_MC_EVENT={0}) - обработчик события - {6} план[на дату={1}, номер={2}, версия={3}, для подразделения={4}, IdGate={5}]..."
                             , id_event.ToString(), day.ToString (), pbr_number, version.ToString (), id_mc_tec, id_gate
                                 , id_event == DbMCInterface.ID_EVENT.NEW_PLAN_VALUES ? "новый" : id_event == DbMCInterface.ID_EVENT.REQUEST_PLAN_VALUES ? "<запрос>" : "НЕ ИЗВЕСТНО")
                         , Logging.INDEX_MESSAGE.NOT_SET);
@@ -816,6 +826,12 @@ namespace trans_mc
         public void DebugEventReloadPlanValues ()
         {
             Action doWork = delegate () {
+                DateTime datetimeReq =
+                    //new DateTime (DateTime.UtcNow.Ticks, DateTimeKind.Unspecified)
+                    //new DateTime (2018, 3, 24, 21, 0, 0, 0)
+                    ASUTP.Core.HDateTime.ToMoscowTimeZone ()
+                    ;
+
                 List<Guid> identifiers = new List<Guid> () {
                     new Guid("9fa9a66e-0b49-4c1f-82ee-535992be2f88")
                     , new Guid("81c5dc9c-432a-47b9-9118-655052a55cf1")
@@ -833,7 +849,7 @@ namespace trans_mc
 
                     dbMCSources_OnEventHandler (new object [] { DbMCInterface.ID_EVENT.PHANTOM_RELOAD_PLAN_VALUES
                         , new Modes.NetAccess.EventRefreshJournalMaket53500(guid
-                            , ASUTP.Core.HDateTime.ToMoscowTimeZone().Date
+                            , datetimeReq
                             , ModesTaskType.OU
                             , -1)
                         , true // debug
@@ -847,15 +863,19 @@ namespace trans_mc
         public void ToDateRequest (DateTime date, int ms_sleep = 567)
         {
             Action doWork = delegate () {
-
+                DateTime datetimeReq =
+                    //new DateTime (DateTime.UtcNow.Ticks, DateTimeKind.Unspecified)
+                    //new DateTime (2018, 3, 24, 21, 0, 0, 0)
+                    ASUTP.Core.HDateTime.ToMoscowTimeZone()
+                    ;
 
                 foreach (TEC t in m_list_tec) {
                     Thread.Sleep (ms_sleep);
 
                     dbMCSources_OnEventHandler (new object [] { DbMCInterface.ID_EVENT.REQUEST_PLAN_VALUES
                         , new Modes.NetAccess.EventPlanDataChanged((PlanType)Enum.Parse(typeof(PlanType), getNamePBRNumber(ASUTP.Core.HDateTime.ToMoscowTimeZone().Hour))
-                            , ASUTP.Core.HDateTime.ToMoscowTimeZone().Date
-                            , ASUTP.Core.HDateTime.ToMoscowTimeZone()
+                            , datetimeReq.Date
+                            , datetimeReq
                             , 0
                             , t.name_MC)
                         , true // debug

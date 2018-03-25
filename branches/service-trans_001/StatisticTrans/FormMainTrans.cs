@@ -122,6 +122,10 @@ namespace StatisticTrans
         /// </summary>
         protected class handlerCmd : HCmd_Arg
         {
+            private enum CMD_PARAMETER { unknown = -1, start, stop, service, date, debug }
+
+            private Dictionary<CMD_PARAMETER, Func<string, bool>> _dictCommandParameterHandler;
+
             private static string _throwMessage;
 
             private static MODE_MASHINE s_modeServiceMashineDefault = MODE_MASHINE.SERVICE_ON_EVENT;
@@ -131,6 +135,8 @@ namespace StatisticTrans
 
             private static int _timerInterval;
 
+            protected static bool _debugTurn;
+
             public static string ThrowMessage { get { return _throwMessage; } }
 
             public static MODE_MASHINE ModeMashine { get { return _modeMashine; } }
@@ -138,6 +144,8 @@ namespace StatisticTrans
             public static DateTime Date { get { return _date; } }
 
             public static int TimerInterval { get { return _timerInterval; } }
+
+            public static bool DebugTurn { get { return _debugTurn; } }
 
             public static void IncTimerInterval ()
             {
@@ -162,6 +170,7 @@ namespace StatisticTrans
             public handlerCmd (ID_APPLICATION id_app, string [] args)
                 : base(args)
             {
+                CMD_PARAMETER cmdKey = CMD_PARAMETER.unknown;
                 int timerInterval = -1;
                 s_modeServiceMashineDefault = id_app == ID_APPLICATION.TRANS_MC
                     ? MODE_MASHINE.SERVICE_ON_EVENT
@@ -171,53 +180,83 @@ namespace StatisticTrans
                 _date = DateTime.Now.Date;
                 _timerInterval = TIMER_SERVICE_MIN_INTERVAL; //Милисекунды
 
-                foreach (KeyValuePair<string, string> pair in m_dictCmdArgs)
-                    switch (pair.Key)
-                    {
-                        case "date":
-                            _modeMashine = MODE_MASHINE.SERVICE_TO_DATE;
+                _dictCommandParameterHandler = new Dictionary<CMD_PARAMETER, Func<string, bool>> {
+                    // 'start', 'stop' обрабытываютяс в родительском классе
+                    { CMD_PARAMETER.start, delegate (string arg) {
+                        bool bRes = true;
 
-                            if (pair.Value == "default")
-                                _date = DateTime.Now.AddDays(1);
-                            else
-                                if (pair.Value == "now")
-                                    _date = DateTime.Now;
-                                else
-                                    _date = DateTime.Parse(pair.Value);
-                            break;
-                        case "service":
-                            _modeMashine = s_modeServiceMashineDefault;
+                        _modeMashine = s_modeServiceMashineDefault;
+                        _timerInterval = TIMER_SERVICE_MIN_INTERVAL;
 
-                            if ((pair.Value.Equals(string.Empty) == true)
-                                || (pair.Value.Equals(@"default") == true))
-                            // оставить значение 'm_arg_interval' по умолчанию
-                                ;
-                            else if(Int32.TryParse(pair.Value, out timerInterval) == true) {
-                            // указано и распознано значение интервала
-                                // указать корректное значение итнтервала
-                                if (!(timerInterval < TIMER_SERVICE_MIN_INTERVAL)) {
-                                    _modeMashine = MODE_MASHINE.SERVICE_PERIOD;
-                                    _timerInterval = timerInterval;
-                                } else {
-                                    _modeMashine = MODE_MASHINE.UNKNOWN;
-                                    _throwMessage = "Интервал задан меньше необходимого значения";
-                                }
-                            } else if (pair.Value.Equals (@"on_event") == true) {
-                            // режим работы по событиям Модес-Центр
-                                _modeMashine = MODE_MASHINE.SERVICE_ON_EVENT;
-                                _timerInterval = TIMER_SERVICE_MIN_INTERVAL;
+                        return bRes;
+                    } }
+                    // обработка параметра 'service'
+                    , { CMD_PARAMETER.service, delegate (string arg) {
+                        bool bRes = true;
+
+                        _modeMashine = s_modeServiceMashineDefault;
+
+                        if ((arg.Equals(string.Empty) == true)
+                            || (arg.Equals(@"default") == true))
+                        // оставить значение 'm_arg_interval' по умолчанию
+                            ;
+                        else if(Int32.TryParse(arg, out timerInterval) == true) {
+                        // указано и распознано значение интервала
+                            // указать корректное значение итнтервала
+                            if (!(timerInterval < TIMER_SERVICE_MIN_INTERVAL)) {
+                                _modeMashine = MODE_MASHINE.SERVICE_PERIOD;
+                                _timerInterval = timerInterval;
                             } else {
-                                _throwMessage = $"FormMain::RunCmd() - неизвестный сервисный режим <{pair.Value}> работы...";
                                 _modeMashine = MODE_MASHINE.UNKNOWN;
+                                _throwMessage = "Интервал задан меньше необходимого значения";
                             }
-                            break;
-                        case "start":
-                            _modeMashine = s_modeServiceMashineDefault;
+                        } else if (arg.Equals (@"on_event") == true) {
+                        // режим работы по событиям Модес-Центр
+                            _modeMashine = MODE_MASHINE.SERVICE_ON_EVENT;
                             _timerInterval = TIMER_SERVICE_MIN_INTERVAL;
-                            break;
-                        default:
-                            break;
-                    }
+                        } else {
+                            _throwMessage = $"FormMain::RunCmd() - неизвестный сервисный режим <{arg}> работы...";
+                            _modeMashine = MODE_MASHINE.UNKNOWN;
+                        }
+
+                        return bRes;
+                    } }
+                    // обработка параметра 'date'
+                    , { CMD_PARAMETER.date, delegate (string arg) {
+                        bool bRes = true;
+
+                        _modeMashine = MODE_MASHINE.SERVICE_TO_DATE;
+
+                        if (arg == "default")
+                            _date = DateTime.Now.AddDays(1);
+                        else if (arg == "now")
+                            _date = DateTime.Now;
+                        else if (DateTime.TryParse(arg, out _date) == false)
+                            _date = DateTime.Now;
+                        else
+                            ;
+
+                        return bRes;
+                    } }
+                    , { CMD_PARAMETER.debug, delegate (string arg) {
+                        bool bRes = true;
+
+                        if (bool.TryParse (arg, out _debugTurn) == false)
+                            _debugTurn = false;
+                        else
+                            ;
+
+                        return bRes;
+                    } }
+                };
+
+                foreach (KeyValuePair<string, string> pair in m_dictCmdArgs) {
+                    if ((Enum.TryParse<CMD_PARAMETER> (pair.Key, out cmdKey) == true)
+                        && (_dictCommandParameterHandler.ContainsKey (cmdKey) == true))
+                        _dictCommandParameterHandler[cmdKey](pair.Value);
+                    else
+                        ;
+                }
             }
         }
 
@@ -241,7 +280,10 @@ namespace StatisticTrans
             //DelegateGetINIParametersOfID = new StringDelegateIntFunc(GetINIParametersOfID);
             Logging.DelegateGetINIParametersOfID = new StringDelegateIntFunc(getINIParametersOfID);
 
-            m_sFileINI = new FileINI(@"setup.ini", false, (from pair in config select pair.Key).ToArray(), (from pair in config select pair.Value).ToArray());
+            m_sFileINI = new FileINI(@"setup.ini"
+                , false
+                , (from pair in config select pair.Key).ToArray()
+                , (from pair in config select pair.Value).ToArray());
 
             string keyPar = string.Empty
                 , valDefPar = string.Empty;
