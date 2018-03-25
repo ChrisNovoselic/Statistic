@@ -149,9 +149,7 @@ namespace trans_mc
             Func<IEventArgs, bool> doWork = delegate (IEventArgs ev) {
                 bool bRes = false;
 
-                bRes = (!(ev.m_id == DbMCInterface.ID_EVENT.Unknown))
-                    && (_dictNotify.ContainsKey (ev.m_id) == true)
-                    && (Equals (_dictNotify [ev.m_id], null) == false);
+                bRes = isHandlerMCEvent(ev.m_id);
 
                 if (bRes == true)
                     // "?" на всякий случай, т.к. проверка уже выполнена
@@ -220,6 +218,10 @@ namespace trans_mc
             _autoResetEvent_MCArgs_CollectionChanged.Set ();
         }
 
+        /// <summary>
+        /// Добавить аргумент в список для последующей обработки
+        /// </summary>
+        /// <param name="arg">Аргумент для постановки в очередь для обработки</param>
         public void AddEvent (EventArgs arg)
         {
             _autoResetEvent_MCArgs_CollectionChanged.WaitOne ();
@@ -227,6 +229,10 @@ namespace trans_mc
             _listMCEventArgs.Add (arg);
         }
 
+        /// <summary>
+        /// Инициировать обработку очередного аргумента
+        /// </summary>
+        /// <param name="bRemove">Признак удаления 0-го из списка (как выполненного)</param>
         public void FetchEvent (bool bRemove)
         {
             try {
@@ -244,6 +250,10 @@ namespace trans_mc
             }
         }
 
+        /// <summary>
+        /// Подготовить список идентификаторов ГТП для формирования запроса на получение данных
+        /// </summary>
+        /// <returns>Ключ 0-го оборудования из списка</returns>
         public override FormChangeMode.KeyDevice PrepareActionRDGValues ()
         {
             List<FormChangeMode.KeyDevice> listKey;

@@ -9,6 +9,8 @@ using StatisticCommon;
 
 namespace StatisticTransModes
 {
+    public enum INDEX_PLAN_FACTOR { Unknown = -1, PBR, Pmin, Pmax, COUNT }
+
     public abstract class AdminModes : HAdmin
     {
         protected List<string> m_listModesId;

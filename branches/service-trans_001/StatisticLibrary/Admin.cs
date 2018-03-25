@@ -78,6 +78,10 @@ namespace StatisticCommon
             return listRes;
         }
 
+        /// <summary>
+        /// Подготовить список идентификаторов ГТП для формирования запроса на получение данных
+        /// </summary>
+        /// <returns>Ключ 0-го оборудования из списка</returns>
         public virtual FormChangeMode.KeyDevice PrepareActionRDGValues ()
         {
             return FirstTECComponentKey;

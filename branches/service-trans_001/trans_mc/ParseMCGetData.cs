@@ -8,6 +8,7 @@ using System.Text;
 using ModesApiExternal;
 using ASUTP.Core;
 using Modes;
+using StatisticTransModes;
 
 namespace trans_mc
 {
@@ -139,13 +140,13 @@ namespace trans_mc
             string pbr_number = string.Empty
                 , pbr_indx;
             DateTime dateCurrent;
-            DbMCInterface.INDEX_PLAN_FACTOR indx_plan_factor = DbMCInterface.INDEX_PLAN_FACTOR.Unknown;
+            INDEX_PLAN_FACTOR indx_plan_factor = INDEX_PLAN_FACTOR.Unknown;
 
             table.Columns.Add ("DATE_PBR", typeof (DateTime));
             table.Columns.Add ("WR_DATE_TIME", typeof (DateTime));
-            table.Columns.Add (DbMCInterface.INDEX_PLAN_FACTOR.PBR.ToString(), typeof (double));
-            table.Columns.Add (DbMCInterface.INDEX_PLAN_FACTOR.Pmin.ToString (), typeof (double));
-            table.Columns.Add (DbMCInterface.INDEX_PLAN_FACTOR.Pmax.ToString (), typeof (double));
+            table.Columns.Add (INDEX_PLAN_FACTOR.PBR.ToString(), typeof (double));
+            table.Columns.Add (INDEX_PLAN_FACTOR.Pmin.ToString (), typeof (double));
+            table.Columns.Add (INDEX_PLAN_FACTOR.Pmax.ToString (), typeof (double));
             table.Columns.Add ("PBR_NUMBER", typeof (string));
             //table.Columns.Add("ID_COMPONENT", typeof(Int32));
 
@@ -239,13 +240,13 @@ namespace trans_mc
                             ;
 
                         ppbr_rows [0] ["PBR_NUMBER"] = pbr_number;
-                        indx_plan_factor = (DbMCInterface.INDEX_PLAN_FACTOR)_mcListPFI [pvi.ObjFactor].Id;
+                        indx_plan_factor = (INDEX_PLAN_FACTOR)_mcListPFI [pvi.ObjFactor].Id;
 
                         switch (indx_plan_factor) {
-                            case DbMCInterface.INDEX_PLAN_FACTOR.PBR:
-                            case DbMCInterface.INDEX_PLAN_FACTOR.Pmin:
-                            case DbMCInterface.INDEX_PLAN_FACTOR.Pmax:
-                                pbr_indx = ((DbMCInterface.INDEX_PLAN_FACTOR)_mcListPFI [pvi.ObjFactor].Id).ToString();
+                            case INDEX_PLAN_FACTOR.PBR:
+                            case INDEX_PLAN_FACTOR.Pmin:
+                            case INDEX_PLAN_FACTOR.Pmax:
+                                pbr_indx = ((INDEX_PLAN_FACTOR)_mcListPFI [pvi.ObjFactor].Id).ToString();
                                 break;
                             default:
                                 pbr_indx = string.Empty;

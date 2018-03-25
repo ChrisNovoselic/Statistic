@@ -58,14 +58,15 @@ namespace trans_mt
         protected override int getPPBRValuesResponse(DataTable table, DateTime date)
         {
             int iRes = 0;
-            int i = -1, j = -1, c = -1 //Переменаые цикла
+            int i = -1, c = -1 //Переменаые цикла
                 , MTermId = -1 //Идентификатор компонента ТЭЦ в системе Модес-Терминал
                 , hour = -1 //Переменаая цикла (номер часа)
                 , indxFactor = -1 //Индекс типа значения (0 - P, 1 - Pmin, 2 - Pmax)
                 //, iMinPBRNumber = -1
                 , iMaxPBRNumber = -1;
+            INDEX_PLAN_FACTOR j = INDEX_PLAN_FACTOR.Unknown;
             //Номер ПБР для всех типов (P, Pmin, Pmax) значений
-            int[] arPBRNumber = new int[3];
+            int[] arPBRNumber = new int[(int)INDEX_PLAN_FACTOR.COUNT];
             DataRow[] hourRows;
             RDGStruct[,] arRDGValues = null;
 
@@ -86,9 +87,9 @@ namespace trans_mt
 
                             //Присвоить исходные для часа значения
                             //PBRNumber = -1;
-                            arPBRNumber [0] =
-                            arPBRNumber [1] =
-                            arPBRNumber [2] =
+                            arPBRNumber [(int)INDEX_PLAN_FACTOR.PBR] =
+                            arPBRNumber [(int)INDEX_PLAN_FACTOR.Pmin] =
+                            arPBRNumber [(int)INDEX_PLAN_FACTOR.Pmax] =
                                 -1; // номер набора
                             // значения по типам (0, 1, 2)
                             arRDGValues [c, hour - 1].pbr = -1.0F;
@@ -145,8 +146,8 @@ namespace trans_mt
                                 arRDGValues [c, hour - 1].pmin = arRDGValues [c, hour - 2].pmin;
                                 arRDGValues [c, hour - 1].pmax = arRDGValues [c, hour - 2].pmax;
 
-                                for (j = 0; j < 3; j++)
-                                    arPBRNumber [j] = Int32.Parse (arRDGValues [c, hour - 2].pbr_number.Substring (3));
+                                for (j = INDEX_PLAN_FACTOR.PBR; j < INDEX_PLAN_FACTOR.COUNT; j++)
+                                    arPBRNumber [(int)j] = Int32.Parse (arRDGValues [c, hour - 2].pbr_number.Substring (PBR_PREFIX.Length));
 
                                 arRDGValues [c, hour - 1].pbr_number = arRDGValues [c, hour - 2].pbr_number;
                                 arRDGValues [c, hour - 1].dtRecUpdate = arRDGValues [c, hour - 2].dtRecUpdate;
@@ -155,32 +156,32 @@ namespace trans_mt
 
                             //iMinPBRNumber = 25;
                             iMaxPBRNumber = -1;
-                            for (j = 0; j < 3; j++) {
-                                if (arPBRNumber [j] > 0) {
+                            for (j = INDEX_PLAN_FACTOR.PBR; j < INDEX_PLAN_FACTOR.COUNT; j++) {
+                                if (arPBRNumber [(int)j] > 0) {
                                     //???при каком индексе присваивать номер набора
                                     //arRDGValues[c, hour - 1].pbr_number = HAdmin.PBR_PREFIX + PBRNumber;
-                                    //if (iMinPBRNumber > arPBRNumber[j])
-                                    if (iMaxPBRNumber < arPBRNumber [j])
-                                        //iMinPBRNumber = arPBRNumber[j];
-                                        iMaxPBRNumber = arPBRNumber [j];
+                                    //if (iMinPBRNumber > arPBRNumber[(int)j])
+                                    if (iMaxPBRNumber < arPBRNumber [(int)j])
+                                        //iMinPBRNumber = arPBRNumber[(int)j];
+                                        iMaxPBRNumber = arPBRNumber [(int)j];
                                     else
                                         ;
 
                                     if (hour > 1) {
                                         switch (j) {
-                                            case 0:
+                                            case INDEX_PLAN_FACTOR.PBR:
                                                 if (arRDGValues [c, hour - 1].pbr < 0)
                                                     arRDGValues [c, hour - 1].pbr = arRDGValues [c, hour - 2].pbr;
                                                 else
                                                     ;
                                                 break;
-                                            case 1:
+                                            case INDEX_PLAN_FACTOR.Pmin:
                                                 if (arRDGValues [c, hour - 1].pmin < 0)
                                                     arRDGValues [c, hour - 1].pmin = arRDGValues [c, hour - 2].pmin;
                                                 else
                                                     ;
                                                 break;
-                                            case 2:
+                                            case INDEX_PLAN_FACTOR.Pmax:
                                                 if (arRDGValues [c, hour - 1].pmax < 0)
                                                     arRDGValues [c, hour - 1].pmax = arRDGValues [c, hour - 2].pmax;
                                                 else
@@ -199,23 +200,23 @@ namespace trans_mt
                                     //??? Необходима ИНДИВИДуальная проверка номера ПБР
                                     // для каждогоо типа значений (P, Pmin, Pmax)
                                     if (arRDGValues [c, hh - 1].pbr_number.Equals (string.Empty) == false)
-                                        if (arPBRNumber [j] < Int32.Parse (arRDGValues [c, hh - 1].pbr_number.Substring (3))) {
-                                            arPBRNumber [j] = Int32.Parse (arRDGValues [c, hh - 1].pbr_number.Substring (3));
-                                            //if (iMinPBRNumber > arPBRNumber[j])
-                                            if (iMaxPBRNumber < arPBRNumber [j])
-                                                //iMinPBRNumber = arPBRNumber[j];
-                                                iMaxPBRNumber = arPBRNumber [j];
+                                        if (arPBRNumber [(int)j] < Int32.Parse (arRDGValues [c, hh - 1].pbr_number.Substring (PBR_PREFIX.Length))) {
+                                            arPBRNumber [(int)j] = Int32.Parse (arRDGValues [c, hh - 1].pbr_number.Substring (PBR_PREFIX.Length));
+                                            //if (iMinPBRNumber > arPBRNumber[(int)j])
+                                            if (iMaxPBRNumber < arPBRNumber [(int)j])
+                                                //iMinPBRNumber = arPBRNumber[(int)j];
+                                                iMaxPBRNumber = arPBRNumber [(int)j];
                                             else
                                                 ;
 
                                             switch (j) {
-                                                case 0:
+                                                case INDEX_PLAN_FACTOR.PBR:
                                                     arRDGValues [c, hour - 1].pbr = arRDGValues [c, hh - 1].pbr;
                                                     break;
-                                                case 1:
+                                                case INDEX_PLAN_FACTOR.Pmin:
                                                     arRDGValues [c, hour - 1].pmin = arRDGValues [c, hh - 1].pmin;
                                                     break;
-                                                case 2:
+                                                case INDEX_PLAN_FACTOR.Pmax:
                                                     arRDGValues [c, hour - 1].pmax = arRDGValues [c, hh - 1].pmax;
                                                     break;
                                                 default:

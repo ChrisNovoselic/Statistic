@@ -652,6 +652,10 @@ namespace StatisticCommon
             }
         }
 
+        /// <summary>
+        /// Подготовить список идентификаторов ГТП для формирования запроса на получение данных
+        /// </summary>
+        /// <returns>Ключ 0-го оборудования из списка</returns>
         public override FormChangeMode.KeyDevice PrepareActionRDGValues()
         {
             List<FormChangeMode.KeyDevice> listKey = GetListKeyTECComponent (FormChangeMode.MODE_TECCOMPONENT.GTP, true);

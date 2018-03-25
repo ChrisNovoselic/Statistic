@@ -28,8 +28,6 @@ namespace trans_mc
             , RELOAD_PLAN_VALUES, NEW_PLAN_VALUES
             , PHANTOM_RELOAD_PLAN_VALUES, REQUEST_PLAN_VALUES }
 
-        public enum INDEX_PLAN_FACTOR { Unknown = -1, PBR, Pmin, Pmax }
-
         public enum ID_GEN_OBJECT_TYPE { GOU = 15, TEC = 1, RGE = 3 }
 
         public enum Operation : short { Unknown = -1, InitIGO, MaketEquipment, PPBR }
