@@ -58,7 +58,11 @@ namespace trans_mc
                         m_arAdmin[i] = new AdminMC(m_sFileINI.GetMainValueOfKey(@"MCServiceHost"));
                         if (handlerCmd.ModeMashine == MODE_MASHINE.SERVICE_ON_EVENT) {
                             (m_arAdmin [i] as AdminMC).AddEventHandler(DbMCInterface.ID_EVENT.RELOAD_PLAN_VALUES, FormMainTransMC_EventMaketChanged);
+                            //!!! дубликат для отладки
+                            (m_arAdmin [i] as AdminMC).AddEventHandler (DbMCInterface.ID_EVENT.PHANTOM_RELOAD_PLAN_VALUES, FormMainTransMC_EventMaketChanged);
                             (m_arAdmin [i] as AdminMC).AddEventHandler (DbMCInterface.ID_EVENT.NEW_PLAN_VALUES, FormMainTransMC_EventPlanDataChanged);
+                            //!!! дубликат для выполнения внеочередного запроса (например, при запуске)
+                            (m_arAdmin [i] as AdminMC).AddEventHandler (DbMCInterface.ID_EVENT.REQUEST_PLAN_VALUES, FormMainTransMC_EventPlanDataChanged);
                         } else
                             ;
                         break;

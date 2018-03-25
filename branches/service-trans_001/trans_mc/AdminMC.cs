@@ -133,28 +133,29 @@ namespace trans_mc
             DbMCInterface.ID_EVENT id = trans_mc.DbMCInterface.ID_EVENT.Unknown;
             string mesLog = string.Empty;
 
-            Func<IEventArgs, DbMCInterface.ID_EVENT> contextId = delegate (IEventArgs ev) {
-                DbMCInterface.ID_EVENT id_event = DbMCInterface.ID_EVENT.Unknown;
+            //Func<IEventArgs, DbMCInterface.ID_EVENT> contextId = delegate (IEventArgs ev) {
+            //    DbMCInterface.ID_EVENT id_event = DbMCInterface.ID_EVENT.Unknown;
 
-                if (typeof (Guid).IsAssignableFrom (ev.m_type) == true)
-                    id_event = DbMCInterface.ID_EVENT.RELOAD_PLAN_VALUES;
-                else if (typeof (FormChangeMode.KeyDevice).IsAssignableFrom (ev.m_type) == true)
-                    id_event = DbMCInterface.ID_EVENT.NEW_PLAN_VALUES;
-                else
-                    ;
+            //    if (typeof (Guid).IsAssignableFrom (ev.) == true)
+            //        id_event = DbMCInterface.ID_EVENT.RELOAD_PLAN_VALUES;
+            //    else if (typeof (FormChangeMode.KeyDevice).IsAssignableFrom (ev.m_type) == true)
+            //        id_event = DbMCInterface.ID_EVENT.NEW_PLAN_VALUES;
+            //    else
+            //        ;
 
-                return id_event;
-            };
+            //    return id_event;
+            //};
 
-            Func<IEventArgs, DbMCInterface.ID_EVENT, bool> doWork = delegate (IEventArgs ev, DbMCInterface.ID_EVENT id_event) {
+            Func<IEventArgs, bool> doWork = delegate (IEventArgs ev) {
                 bool bRes = false;
 
-                bRes = (!(id_event == DbMCInterface.ID_EVENT.Unknown))
-                    && (_dictNotify.ContainsKey (id_event) == true)
-                    && (Equals (_dictNotify [id_event], null) == false);
+                bRes = (!(ev.m_id == DbMCInterface.ID_EVENT.Unknown))
+                    && (_dictNotify.ContainsKey (ev.m_id) == true)
+                    && (Equals (_dictNotify [ev.m_id], null) == false);
+
                 if (bRes == true)
                     // "?" на всякий случай, т.к. проверка уже выполнена
-                    _dictNotify [id_event]?.Invoke (this, (ev as EventArgs));
+                    _dictNotify [ev.m_id]?.Invoke (this, (ev as EventArgs));
                 else
                     ;
 
@@ -164,7 +165,10 @@ namespace trans_mc
 
             switch (e.Action) {
                 case System.Collections.Specialized.NotifyCollectionChangedAction.Add:
-                    id = contextId ((IEventArgs)e.NewItems[0]);
+                    id =
+                        //contextId ((IEventArgs)e.NewItems[0])
+                        ((IEventArgs)e.NewItems [0]).m_id
+                        ;
 
                     if (e.NewStartingIndex == 0) {
                         arg = (IEventArgs)e.NewItems [0];
@@ -176,10 +180,16 @@ namespace trans_mc
                 case System.Collections.Specialized.NotifyCollectionChangedAction.Remove:
                     if ((sender as ObservableCollection<EventArgs>).Count > 0) {
                         arg = (IEventArgs)(sender as ObservableCollection<EventArgs>) [0];
-                        id = contextId (arg);
+                        id =
+                            //contextId (arg)
+                            arg.m_id
+                            ;
                     } else
                     //??? в случае 'Reset' - исключение, т.к. 'e.OldItems' = NullReference
-                        id = contextId ((IEventArgs)e.OldItems [0]);
+                        id =
+                            //contextId ((IEventArgs)e.OldItems [0])
+                            ((IEventArgs)e.OldItems [0]).m_id
+                            ;
                     break;
                 default:
                     break;
@@ -204,7 +214,8 @@ namespace trans_mc
 
             Logging.Logg ().Debug (mesLog, Logging.INDEX_MESSAGE.NOT_SET);
 
-            delegateDoWork?.Invoke (arg, id);
+            // не выпполнять, если 'delegateDoWork' = null (при 'arg' = null)
+            delegateDoWork?.Invoke (arg);
 
             _autoResetEvent_MCArgs_CollectionChanged.Set ();
         }
@@ -227,7 +238,7 @@ namespace trans_mc
                     else
                         _eventFetch_listMCEventArgs (_listMCEventArgs, new System.Collections.Specialized.NotifyCollectionChangedEventArgs(System.Collections.Specialized.NotifyCollectionChangedAction.Reset));
                 } else
-                    Logging.Logg ().Warning ($@"trans_mc.AdminMC::FetchEvent () - удаление невозможно, исходный размер = 0...{Environment.NewLine}Стэк={Environment.StackTrace}", Logging.INDEX_MESSAGE.NOT_SET);
+                    Logging.Logg ().Warning ($@"trans_mc.AdminMC::FetchEvent (REMOVE={bRemove}) - исходный размер = 0...{Environment.NewLine}Стэк={Environment.StackTrace}", Logging.INDEX_MESSAGE.NOT_SET);
             } catch (Exception e) {
                 Logging.Logg ().Exception (e, $@"trans_mc.AdminMC::FetchEvent () - ...", Logging.INDEX_MESSAGE.NOT_SET);
             }
@@ -484,7 +495,8 @@ namespace trans_mc
                     #endregion
 
                     Logging.Logg ().Action (msg, Logging.INDEX_MESSAGE.NOT_SET);
-                } else if (id_event == DbMCInterface.ID_EVENT.RELOAD_PLAN_VALUES) {
+                } else if ((id_event == DbMCInterface.ID_EVENT.RELOAD_PLAN_VALUES)
+                    || (id_event == DbMCInterface.ID_EVENT.PHANTOM_RELOAD_PLAN_VALUES)) {
                     Modes.NetAccess.EventRefreshJournalMaket53500 ev = (obj as object []) [1] as Modes.NetAccess.EventRefreshJournalMaket53500;
 
                     DateTime dateTarget;
@@ -506,7 +518,8 @@ namespace trans_mc
                     else
                         Logging.Logg ().Debug ($"AdminMC::dbMCSources_OnEventHandler(ID_MC_EVENT={id_event.ToString ()}) - дата нового не актуальна; Day=[{dateTarget}], разн.(сутки)=[{difference (dateTarget).TotalDays}]..."
                            , Logging.INDEX_MESSAGE.NOT_SET);
-                } else if (id_event == DbMCInterface.ID_EVENT.NEW_PLAN_VALUES) {
+                } else if ((id_event == DbMCInterface.ID_EVENT.NEW_PLAN_VALUES)
+                    || (id_event == DbMCInterface.ID_EVENT.REQUEST_PLAN_VALUES)) {
                     Modes.NetAccess.EventPlanDataChanged ev = (obj as object []) [1] as Modes.NetAccess.EventPlanDataChanged;
 
                     DateTime day
@@ -521,8 +534,9 @@ namespace trans_mc
                     id_mc_tec = ev.ClientId;
                     id_gate = ev.IdGate;
 
-                    Logging.Logg ().Action (string.Format (@"AdminMC::dbMCSources_OnEventHandler(ID_MC_EVENT={0}) - обработчик события - новый план[на дату={1}, номер={2}, от={3}, для подразделения={4}, IdGate={5}]..."
-                            , id_event.ToString(), day.ToString (), pbr_number, version.ToString (), id_mc_tec, id_gate)
+                    Logging.Logg ().Action (string.Format (@"AdminMC::dbMCSources_OnEventHandler(ID_MC_EVENT={0}) - обработчик события - {6} план[на дату={1}, номер={2}, от={3}, для подразделения={4}, IdGate={5}]..."
+                            , id_event.ToString(), day.ToString (), pbr_number, version.ToString (), id_mc_tec, id_gate
+                                , id_event == DbMCInterface.ID_EVENT.NEW_PLAN_VALUES ? "новый" : id_event == DbMCInterface.ID_EVENT.REQUEST_PLAN_VALUES ? "<запрос>" : "НЕ ИЗВЕСТНО")
                         , Logging.INDEX_MESSAGE.NOT_SET);
 
                     // проверить дату за которую получен новый план: только сегодняшние и следующие сутки сутки
@@ -538,7 +552,7 @@ namespace trans_mc
                             }).ConvertAll (comp => new FormChangeMode.KeyDevice () { Id = comp.m_id, Mode = FormChangeMode.MODE_TECCOMPONENT.GTP })
                         ));
                     } else
-                        Logging.Logg().Debug($"AdminMC::dbMCSources_OnEventHandler(ID_MC_EVENT={id_event.ToString ()}) - дата нового не актуальна; Day=[{day}], разн.(сутки)=[{difference(day).TotalDays}]..."
+                        Logging.Logg().Debug($"AdminMC::dbMCSources_OnEventHandler(ID_MC_EVENT={id_event.ToString ()}) - дата не актуальная; Day=[{day}], разн.(сутки)=[{difference(day).TotalDays}]..."
                             , Logging.INDEX_MESSAGE.NOT_SET);
                 } else
                     ;
@@ -807,7 +821,7 @@ namespace trans_mc
                 identifiers.ForEach (guid => {
                     Thread.Sleep (4567);
 
-                    dbMCSources_OnEventHandler (new object [] { DbMCInterface.ID_EVENT.RELOAD_PLAN_VALUES
+                    dbMCSources_OnEventHandler (new object [] { DbMCInterface.ID_EVENT.PHANTOM_RELOAD_PLAN_VALUES
                         , new Modes.NetAccess.EventRefreshJournalMaket53500(guid
                             , ASUTP.Core.HDateTime.ToMoscowTimeZone().Date
                             , ModesTaskType.OU
@@ -828,7 +842,7 @@ namespace trans_mc
                 foreach (TEC t in m_list_tec) {
                     Thread.Sleep (ms_sleep);
 
-                    dbMCSources_OnEventHandler (new object [] { DbMCInterface.ID_EVENT.NEW_PLAN_VALUES
+                    dbMCSources_OnEventHandler (new object [] { DbMCInterface.ID_EVENT.REQUEST_PLAN_VALUES
                         , new Modes.NetAccess.EventPlanDataChanged((PlanType)Enum.Parse(typeof(PlanType), getNamePBRNumber(ASUTP.Core.HDateTime.ToMoscowTimeZone().Hour))
                             , ASUTP.Core.HDateTime.ToMoscowTimeZone().Date
                             , ASUTP.Core.HDateTime.ToMoscowTimeZone()

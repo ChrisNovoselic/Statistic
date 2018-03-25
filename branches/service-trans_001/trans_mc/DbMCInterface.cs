@@ -21,10 +21,16 @@ namespace trans_mc
     public class DbMCInterface : ASUTP.Database.DbInterface
     {
         private IApiExternal m_MCApi;
-        private Modes.BusinessLogic.IModesTimeSlice m_MCTimeSlice;
+        private Modes.BusinessLogic.IModesTimeSlice m_modesTimeSlice;
         private IList <PlanFactorItem> m_listPFI;
 
-        public enum ID_EVENT : short { Unknown = -1, GENOBJECT_MODIFIED, NEW_PLAN_VALUES, RELOAD_PLAN_VALUES }
+        public enum ID_EVENT : short { Unknown = -1, GENOBJECT_MODIFIED
+            , RELOAD_PLAN_VALUES, NEW_PLAN_VALUES
+            , PHANTOM_RELOAD_PLAN_VALUES, REQUEST_PLAN_VALUES }
+
+        public enum INDEX_PLAN_FACTOR { Unknown = -1, PBR, Pmin, Pmax }
+
+        public enum ID_GEN_OBJECT_TYPE { GOU = 15, TEC = 1, RGE = 3 }
 
         public enum Operation : short { Unknown = -1, InitIGO, MaketEquipment, PPBR }
         /// <summary>
@@ -51,11 +57,18 @@ namespace trans_mc
             mcApiEventLocked = new object();
         }
 
-        private void mcApi_OnClose (object sender, EventArgs e)
+        private void abort()
         {
             lock (mcApiEventLocked) {
                 delegateMCApiHandler?.Invoke (false);
             }
+
+            Logging.Logg ().Error ($"DbMCInterface::abort () - Host={(string)m_connectionSettings}, соединение разорвано...", Logging.INDEX_MESSAGE.NOT_SET);
+        }
+
+        private void mcApi_OnClose (object sender, EventArgs e)
+        {
+            abort ();
         }
 
         public override bool EqualeConnectionSettings(object cs)
@@ -218,7 +231,7 @@ namespace trans_mc
                 // на случай перезагрузки сервера Модес-центр
                 try {
                     m_MCApi = ModesApiFactory.GetModesApi();
-                    m_MCTimeSlice = m_MCApi.GetModesTimeSlice(DateTime.Now.Date.LocalHqToSystemEx(), SyncZone.First, TreeContent.PGObjects, true);
+                    m_modesTimeSlice = m_MCApi.GetModesTimeSlice(DateTime.Now.Date.LocalHqToSystemEx(), SyncZone.First, TreeContent.PGObjects, true);
                     m_listPFI = m_MCApi.GetPlanFactors();
 
                     #region добавить обработчики для проверки возможности их удаления
@@ -282,6 +295,7 @@ namespace trans_mc
                     #endregion
 
                     // добавить обработчики
+                    m_MCApi.OnModesEvent += mcApi_OnModesEvent;
                     m_MCApi.OnClose += mcApi_OnClose;
                     m_MCApi.OnData53500Modified += new EventHandler<Modes.NetAccess.EventRefreshData53500> (mcApi_OnEventHandler);
                     m_MCApi.OnMaket53500Changed += mcApi_OnEventHandler;
@@ -303,6 +317,12 @@ namespace trans_mc
             }
 
             return result;
+        }
+
+        private void mcApi_OnModesEvent (object sender, Modes.NetAccess.MEvent e)
+        {
+            Logging.Logg ().Action ($"::mcApi_OnModesEvent () - Id={e.Id}, Message=[{e.Message}]{Environment.NewLine}Detail: [Host={e.Host}, Date={e.Date}, User={e.User}, UserGuid={e.UserUid}]..."
+                , Logging.INDEX_MESSAGE.NOT_SET);
         }
 
         private object mcApiEventLocked;
@@ -354,334 +374,87 @@ namespace trans_mc
             err = 0;
         }
 
+        private Modes.BusinessLogic.IGenObject addIGO (int idInner)
+        {
+            return addIGO (m_modesTimeSlice.GenTree, idInner);
+        }
+
         private Modes.BusinessLogic.IGenObject addIGO (ReadOnlyCollection<Modes.BusinessLogic.IGenObject>tree, int idInnner)
         {
             foreach (Modes.BusinessLogic.IGenObject igo in tree)
             {
                 //Console.WriteLine(igo.Description + " [" + igo.GenObjType.Description + "]");
                 //ProcessParams(IGO);
-                ProcessChilds(igo, 1, idInnner);
+                addIGO(igo, 1, idInnner, delegate (Modes.BusinessLogic.IGenObject newIGO) { m_listIGO.Add (newIGO); });
             }
 
-            if ((m_listIGO.Count > 0) && (m_listIGO[m_listIGO.Count - 1].IdInner == idInnner))
-                return m_listIGO[m_listIGO.Count - 1];
-            else
-                return null;
+            return findIGO(idInnner);
+        }
+
+        void addIGO (Modes.BusinessLogic.IGenObject igo, int Level, int idInner, Action<Modes.BusinessLogic.IGenObject> fAdd)
+        {
+            foreach (Modes.BusinessLogic.IGenObject child in igo.Children) {
+                if (!((ID_GEN_OBJECT_TYPE)child.GenObjType.Id == ID_GEN_OBJECT_TYPE.GOU)) 
+                {
+                    //Console.WriteLine(new System.String('-', Level) + IGOch.Description + " [" + IGOch.GenObjType.Description + "]  P:" + IGOch.VarParams.Count.ToString() + " Id:" + IGOch.Id.ToString() + " IdInner:" + IGOch.IdInner.ToString());
+                    //ProcessParams(IGOch);
+                    if (((ID_GEN_OBJECT_TYPE)child.GenObjType.Id == ID_GEN_OBJECT_TYPE.RGE)
+                        && (child.IdInner == idInner)) {
+                        fAdd(child);
+
+                        break;
+                    } else
+                    //У оборудования типа Электростанция (id = 1) нет параметров - только дочерние элементы
+                        ;
+
+                    addIGO (child, Level + 1, idInner, fAdd);
+                } else
+                //Оборудование типа ГОУ исключаем - по ним нет ни параметров, ни дочерних элементов
+                    ;
+            }
         }
 
         private Modes.BusinessLogic.IGenObject findIGO(int idInnner)
         {
-            foreach (Modes.BusinessLogic.IGenObject igo in m_listIGO)
-            {
-                if (igo.IdInner == idInnner)
-                    return igo;
-                else
-                    ;
-            }
-
-            return null;
+            return (from igo in m_listIGO where igo.IdInner == idInnner  select igo).ElementAtOrDefault(0);
         }
 
-        //public class PPBR_Record
-        //{
-        //    public DateTime date_time,
-        //                    wr_date_time;
-        //    public string PBR_number;
+        private void getData_OnFillError(FillErrorEventArgs arg)
+        {
+            getData_OnFillError (m_MCApi, arg);
+        }
 
-        //    public double? pbr;
-        //    public double? pmin;
-        //    public double? pmax;
-
-        //    //public int? idInner; //??? Для TEC5_TG36 2 объекта (TG34 + TG56), т.е. 2 IGO
-
-        //    public PPBR_Record()
-        //    {
-        //    }
-        //}
-        ///// <summary>
-        ///// Событие - получено извещение от Модес-Центр о наличии нового плана
-        ///// </summary>
-        //public event EventHandler NewPlanValues;
-        ///// <summary>
-        ///// Событие - получено извещение от Модес-Центр об изменении значений текущего(актуального) плана
-        ///// </summary>
-        //public event EventHandler ReloadPlanValues;
-        ///// <summary>
-        ///// Событие - получено извещение от Модес-Центр об изменении состава оборудования
-        ///// </summary>
-        //public event EventHandler GenObjectModified;
-
-        protected override bool GetData(DataTable table, object query)
+        protected override bool GetData (DataTable table, object query)
         {
             bool result = false;
 
-            int i = -1;
-            Modes.BusinessLogic.IGenObject igo;
-            Operation oper = Operation.Unknown;
+            if (ModesApiFactory.IsInitilized == false) {
+                abort ();
 
-            ////Вариант №1
-            //PPBR_Record ppbr = null;
-            //SortedList<DateTime, PPBR_Record> srtListPPBR = new SortedList<DateTime,PPBR_Record> ();
-            //Вариант №2
-            DataRow []ppbr_rows = null;
-
-            string pbr_number = string.Empty
-                , pbr_indx;
-            DateTime date = DateTime.MinValue;
-            string[] args = null
-                , idsInner = null;
-            bool valid = false;
-            int idInner = -1;
-            IList<PlanValueItem> listPVI = null;
-            IList<Modes.BusinessLogic.IMaketEquipment> listEquip;
-            DateTime dateCurrent;
+                return result;
+            } else
+            // выполняем получение/распознование данных
+                ;
 
             table.Reset();
             table.Locale = System.Globalization.CultureInfo.CurrentCulture;
 
-            args = ((string)query).Split (';');
-            Enum.TryParse<Operation> (args [0], out oper);
+            try {
+                using (ParseMCGetData getData = new ParseMCGetData (m_MCApi
+                        //, m_MCTimeSlice
+                        , m_listPFI
+                        , query
+                        , findIGO
+                        , addIGO
+                        , getData_OnFillError))
+                    result = getData.Result (table);
+            } catch (Exception e) {
+                Logging.Logg ().Exception (e, $"DbMCInterface::GetData () - query={query}...", Logging.INDEX_MESSAGE.NOT_SET);
+            }
 
             //Logging.Logg().Debug("DbMCInterface::GetData () - " + query + "...", Logging.INDEX_MESSAGE.NOT_SET);
 
-            switch (oper)
-            {
-                case Operation.InitIGO:
-                    //InitIGO (arg);
-                    break;
-                case Operation.MaketEquipment:
-                    table.Columns.Add ("ID", typeof (int));
-                    table.Columns.Add ("ID_INNER", typeof (int));
-                    table.Columns.Add ("WR_DATE_TIME", typeof (DateTime));
-
-                    date = DateTime.FromOADate (Double.Parse (args [2]));
-                    idsInner = args [1].Split (',');
-
-                    listEquip = m_MCApi.GetMaket53500Equipment (Array.ConvertAll<string, Guid>(idsInner, Guid.Parse));
-
-                    listEquip.ToList ().ForEach (equip => {
-                        string mesDebug = string.Empty;
-
-                        mesDebug = $@"DbMCInterface::GetData () - equip=[{equip.Mrid}], children.Count={equip.GenTree.Count}";
-
-                        equip.GenTree.ToList ().ForEach (item => {
-                            mesDebug = $"{mesDebug}{Environment.NewLine}, item.IdIner ={item.IdInner}, item.GenObjType.Id={item.GenObjType.Id}, item.Name={item.Name}, item.children.Count={item.Children.Count}...";
-
-                            item.Children.ToList ().ForEach (child => {
-                                mesDebug = $"{mesDebug}{Environment.NewLine}, children.IdIner ={child.IdInner}, child.GenObjType.Id={child.GenObjType.Id}, child.Name={child.Name}, child.children.Count={child.Children.Count}...";
-                            });
-
-                            igo = null;
-                            //igo = findIGO (item.IdInner);
-                            //if (Equals (igo, null) == false)
-                            //    if (item.GenObjType.Id == 3)
-                            //        m_listIGO.Add (item);
-                            //    else
-                            //        ;
-                            //else
-                            //    ;
-
-                            if (Equals (igo, null) == false)
-                                table.Rows.Add (new object [] { igo.Id, igo.IdInner, HDateTime.ToMoscowTimeZone () });
-                            else
-                                ;
-                        });
-
-                        Logging.Logg ().Debug (mesDebug, Logging.INDEX_MESSAGE.NOT_SET);
-                    });
-
-                    result = true;
-                    break;
-                case Operation.PPBR:
-                    table.Columns.Add("DATE_PBR", typeof (DateTime));
-                    table.Columns.Add("WR_DATE_TIME", typeof(DateTime));
-                    table.Columns.Add("PBR", typeof(double));
-                    table.Columns.Add("Pmin", typeof(double));
-                    table.Columns.Add("Pmax", typeof(double));
-                    table.Columns.Add("PBR_NUMBER", typeof(string));
-                    //table.Columns.Add("ID_COMPONENT", typeof(Int32));
-
-                    date = DateTime.FromOADate(Double.Parse(args[2]));
-                    idsInner = args[1].Split(',');
-
-                    for (i = 0; i < idsInner.Length; i ++)
-                    {
-                        valid = Int32.TryParse(idsInner[i], out idInner);
-                        
-                        if (valid == false)
-                            continue;
-                        else
-                            ;
-
-                        igo = findIGO(idInner);
-
-                        if (igo == null)
-                            igo = addIGO (m_MCTimeSlice.GenTree, idInner);
-                        else
-                            ;
-
-                        if (!(igo == null)) {
-                            try {
-                                listPVI = m_MCApi.GetPlanValuesActual(date.LocalHqToSystemEx(), date.AddDays(1).LocalHqToSystemEx(), igo);
-
-                                result = true;
-                            } catch (Exception e) {
-                                Logging.Logg().Exception(e, string.Format(@"DbMCInterface::GetData () - GetPlanValuesActual () - получение значений для '{0}', [IdInner={1}]..."
-                                        , igo.Description, igo.IdInner)
-                                    , Logging.INDEX_MESSAGE.NOT_SET);
-
-                                getData_OnFillError (m_MCApi, new FillErrorEventArgs (table, new object [] { }));
-
-                                result = false;
-                            }
-
-                            if (result == true)
-                                if (listPVI.Count == 0)
-                                    Logging.Logg ().Warning(string.Format("DbMCInterface::GetData () - GetPlanValuesActual () - нет параметров генерации для '{0}', [ID={1}]..."
-                                            , igo.Description, igo.IdInner)
-                                        , Logging.INDEX_MESSAGE.NOT_SET);
-                                else
-                                    ;
-                            else
-                                //ОШИБКА получения значений!
-                                break;
-
-                            foreach (PlanValueItem pvi in listPVI.OrderBy(RRR => RRR.DT))
-                            {
-                                //Console.WriteLine("    " + pvi.DT.SystemToLocalHqEx().ToString() + " " +
-                                //                            pvi.Type.ToString() + " [" + m_listPFI[pvi.ObjFactor].Description + "] " +
-                                //                            /*it.ObjName это id генерирующего объекта*/
-                                //                            m_listPFI[pvi.ObjFactor].Name + " =" + pvi.Value.ToString());
-
-                                dateCurrent = pvi.DT.SystemToLocalHqEx();
-                                pbr_number = pvi.Type.ToString().IndexOf(StatisticCommon.HAdmin.PBR_PREFIX) < 0 ? StatisticCommon.HAdmin.PBR_PREFIX + pvi.Type.ToString() : pvi.Type.ToString();
-
-                                //Получение записи с другими параметрами за это время
-                                ////Вариант №1
-                                //if (srtListPPBR.ContainsKey(dateCurrent))
-                                //    ppbr = srtListPPBR.First(item => item.Key == dateCurrent).Value;
-                                //else
-                                //    ;
-
-                                //Вариант №2
-                                if (table.Rows.Count > 0)
-                                    ppbr_rows = table.Select("DATE_PBR='" + dateCurrent.ToString() + "'");
-                                else
-                                    ;
-
-                                //Обработка получения записи
-                                ////Вариант №1
-                                //if (ppbr == null)
-                                //{
-                                //    ppbr = new PPBR_Record();
-                                //    ppbr.date_time = dateCurrent;
-                                //    ppbr.wr_date_time = DateTime.Now;
-                                //    ppbr.PBR_number = pvi.Type.ToString();
-                                //    //ppbr.idInner = igo.IdInner; //??? Для TEC5_TG36 2 объекта (TG34 + TG56), т.е. 2 IGO
-
-                                //    //После добавления можно продолжать модифицировать экземпляр класса - в коллекции та же самая ссылка хранится.
-                                //    srtListPPBR.Add(dateCurrent, ppbr);
-                                //}
-                                //else
-                                //    ;
-
-                                //Вариант №2, 3
-                                if ((ppbr_rows == null)
-                                    || (ppbr_rows.Length == 0))
-                                {
-                                    table.Rows.Add(new object[] { dateCurrent, DateTime.Now, 0F, 0F, 0F, pbr_number/*, igo.IdInner*/});
-                                    ppbr_rows = table.Select($"DATE_PBR='{dateCurrent.ToString()}'");
-                                }
-                                else
-                                    ;
-
-                                ppbr_rows[0]["PBR_NUMBER"] = pbr_number;
-
-                                switch (m_listPFI[pvi.ObjFactor].Id)
-                                {
-                                    case 0:
-                                        //else.ppbr.pbr = pvi.Value; //Вариант №1
-                                        //ppbr_rows [0]["PBR"] = (double)ppbr_rows [0]["PBR"] + pvi.Value; //Вариант №2
-                                        pbr_indx = "PBR"; //Вариант №3
-                                        break;
-                                    case 1:
-                                        //ppbr.pmin = pvi.Value; //Вариант №1
-                                        //ppbr_rows [0]["PMIN"] = (double)ppbr_rows [0]["PMIN"] + pvi.Value; //Вариант №2
-                                        pbr_indx = "PMIN"; //Вариант №3
-                                        break;
-                                    case 2:
-                                        //ppbr.pmax = pvi.Value; //Вариант №1
-                                        //ppbr_rows [0]["PMAX"] = (double)ppbr_rows [0]["PMAX"] + pvi.Value; //Вариант №2
-                                        pbr_indx = "PMAX"; //Вариант №3
-                                        break;
-                                    default:
-                                        pbr_indx = string.Empty;
-                                        break;
-                                }
-
-                                if (string.IsNullOrWhiteSpace (pbr_indx) == false)
-                                    try {
-                                        ppbr_rows [0] [pbr_indx] = (double)ppbr_rows [0] [pbr_indx] + pvi.Value; //Вариант №3
-                                    } catch (Exception e) {
-                                        Logging.Logg ().Exception (e, $"DbMCInterface::GetData() - тип{ppbr_rows [0] [pbr_indx].GetType().Name} значения по индексу={m_listPFI [pvi.ObjFactor].Id}...", Logging.INDEX_MESSAGE.NOT_SET);
-                                    }
-                                else
-                                    Logging.Logg ().Error (string.Format ("DbMCInterface::GetData() - не найден индекс={0} значения ПБР...", m_listPFI [pvi.ObjFactor].Id)
-                                        , Logging.INDEX_MESSAGE.NOT_SET);
-                            }
-                        }
-                        else
-                            result = false; //igo == null
-                    }
-                    break;
-                default:
-                    break;
-            }
-
             return result;
-        }
-
-        void ProcessChilds(Modes.BusinessLogic.IGenObject IGO, int Level, int idInner)
-        {
-            foreach (Modes.BusinessLogic.IGenObject IGOch in IGO.Children)
-            {
-                if (!(IGOch.GenObjType.Id == 15))      //Оборудование типа ГОУ исключаем - по ним нет ни параметров, ни дочерних элементов
-                {
-                    //Console.WriteLine(new System.String('-', Level) + IGOch.Description + " [" + IGOch.GenObjType.Description + "]  P:" + IGOch.VarParams.Count.ToString() + " Id:" + IGOch.Id.ToString() + " IdInner:" + IGOch.IdInner.ToString());
-                    //ProcessParams(IGOch);
-                    if ((IGOch.GenObjType.Id == 3)
-                        && (IGOch.IdInner == idInner))
-                    {
-                        //У оборудования типа Электростанция (id=1) нет параметров - только дочерние элементы
-                        m_listIGO.Add (IGOch);
-                    }
-                    else
-                        ;
-
-                    ProcessChilds(IGOch, Level + 1, idInner);
-                }
-                else
-                    ;
-            }
-        }
-
-        private bool InitIGO (string ids)
-        {
-            bool bRes = false;
-
-            string [] arId = ids.Split (',');
-
-            foreach (string id in arId)
-            {
-                foreach (Modes.BusinessLogic.IGenObject IGO in m_MCTimeSlice.GenTree)
-                {
-                    Console.WriteLine(IGO.Description + " [" + IGO.GenObjType.Description + "]");
-                    //ProcessParams(IGO);
-                    ProcessChilds(IGO, 1, Convert.ToInt32 (id));
-                }
-            }
-
-            return bRes;
         }
 
         protected override void GetDataCancel ()
