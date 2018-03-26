@@ -458,7 +458,10 @@ namespace trans_mc
             bool bRes = true;
             int i = -1;
 
-            DbMCSources.Sources ().SetMCApiHandler (dbMCSources_OnEventHandler, IsServiceOnEvent);
+            DbMCSources.Sources ().SetMCApiHandler (dbMCSources_OnEventHandler
+                , IsServiceOnEvent == true
+                    ? Newtonsoft.Json.JsonConvert.DeserializeObject<Newtonsoft.Json.Linq.JObject> (StatisticTrans.FileAppSettings.This().GetValue("JEventListener"))
+                        : new Newtonsoft.Json.Linq.JObject ());
             m_IdListenerCurrent = ASUTP.Database.DbSources.Sources().Register(m_strMCServiceHost, true, @"Modes-Centre");
 
             return bRes;

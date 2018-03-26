@@ -146,7 +146,6 @@
     <Compile Include="dgwAdminNSS.cs">
       <SubType>Component</SubType>
     </Compile>
-    <Compile Include="FileAppSettings.cs" />
     <Compile Include="FormAbout.cs">
       <SubType>Form</SubType>
     </Compile>
@@ -180,6 +179,7 @@
     <Compile Include="HControl.cs">
       <SubType>UserControl</SubType>
     </Compile>
+    <Compile Include="IFileAppSettings.cs" />
     <Compile Include="InitTEC.cs">
       <SubType>Code</SubType>
     </Compile>

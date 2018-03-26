@@ -17,7 +17,9 @@ namespace StatisticTransModes
     {
         public FormMainTransModes(ASUTP.Helper.ProgramBase.ID_APP id_app, KeyValuePair<string, string> [] config)
             : base(id_app
-                    , new System.Collections.Generic.KeyValuePair<string, string> [] { new System.Collections.Generic.KeyValuePair<string, string> (@"ИгнорДатаВремя-techsite", false.ToString()) })
+                , new System.Collections.Generic.KeyValuePair<string, string> [] {
+                    new System.Collections.Generic.KeyValuePair<string, string> (@"ИгнорДатаВремя-techsite", false.ToString())
+                }.Concat(config).ToArray())
         {
             InitializeComponentTransModes();
 

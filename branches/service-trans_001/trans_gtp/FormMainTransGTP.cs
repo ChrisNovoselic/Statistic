@@ -12,7 +12,10 @@ namespace trans_gtp
     {
         public FormMainTransGTP()
             : base(FileAppSettings.This().GetIdApplication
-                    , new System.Collections.Generic.KeyValuePair<string, string> [] { new System.Collections.Generic.KeyValuePair<string, string> (@"ИгнорДатаВремя-techsite", false.ToString ()) }
+                    , new System.Collections.Generic.KeyValuePair<string, string> [] {
+                        new System.Collections.Generic.KeyValuePair<string, string> (@"ИгнорДатаВремя-techsite", false.ToString ())
+                        , new System.Collections.Generic.KeyValuePair<string, string> (@"ТЭЦПараметрыНазначение", @"{}")
+                    }
             )
         {
             InitializeComponentTransDB();
@@ -55,57 +58,11 @@ namespace trans_gtp
 
             EditFormConnectionSettings("connsett_gtp.ini", true);
 
-            //Добавление необходимого кол-ва элементов настроек для соединения с БД конфигурации
-            //if (m_formConnectionSettingsConfigDB.Count < 2)
-            //{
-            //    while (!(m_formConnectionSettingsConfigDB.Count < 2))
-            //        m_formConnectionSettingsConfigDB.addConnSett(m_formConnectionSettingsConfigDB.Count);
-            //    конфигурацияБДToolStripMenuItem.PerformClick();
-
-            //    return;
-            //}
-            //else
-            //    ;
-
-            //m_sFileINI.AddMainPar(@"ТипБДКфгИсточник", @"190");
-            //m_sFileINI.AddMainPar(@"РДГФорматТаблицаИсточник", @"STATIC");
-
-            ////Для переназначения идентификаторов источников данных БийскТЭЦ
-            //m_fileINI.Add(@"ID_БДНазначение_ASKUE", @"6,");
-            //m_fileINI.Add(@"ID_БДНазначение_SOTIASSO", @"6,");
-            //m_fileINI.Add(@"ID_БДНазначение_PPBR_PBR", @"6,103");
-            //m_fileINI.Add(@"ID_БДНазначение_PPBR_ADMIN", @"6,");
-
-            //int[] arConfigDB = new int[(Int16)CONN_SETT_TYPE.COUNT_CONN_SETT_TYPE];
-            //string[] arKeyTypeConfigDB = new string[(Int16)CONN_SETT_TYPE.COUNT_CONN_SETT_TYPE] { @"ТипБДКфгИсточник", @"ТипБДКфгНазначение" };
-
-            //TYPE_DATABASE_CFG[] arTypeConfigDB = new TYPE_DATABASE_CFG[(Int16)CONN_SETT_TYPE.COUNT_CONN_SETT_TYPE] { TYPE_DATABASE_CFG.UNKNOWN, TYPE_DATABASE_CFG.UNKNOWN };
-            //for (i = 0; i < (Int16)CONN_SETT_TYPE.COUNT_CONN_SETT_TYPE; i++)
-            //{
-            //    arConfigDB[i] = Int32.Parse(m_sFileINI.GetMainValueOfKey(arKeyTypeConfigDB[i]));
-            //    for (TYPE_DATABASE_CFG t = TYPE_DATABASE_CFG.CFG_190; t < TYPE_DATABASE_CFG.UNKNOWN; t++)
-            //    {
-            //        if (t.ToString().Contains(arConfigDB[i].ToString()) == true)
-            //        {
-            //            arTypeConfigDB[i] = t;
-            //            break;
-            //        }
-            //        else
-            //            ;
-            //    }
-            //}
-
-            //string[] arStrTypeField = new string[(Int16)CONN_SETT_TYPE.COUNT_CONN_SETT_TYPE];
-            //arStrTypeField[(int)CONN_SETT_TYPE.SOURCE] = m_sFileINI.GetMainValueOfKey(@"РДГФорматТаблицаИсточник");
-            //arStrTypeField[(int)CONN_SETT_TYPE.DEST] = m_sFileINI.GetMainValueOfKey(@"РДГФорматТаблицаНазначение");
-
             bool bIgnoreDateTime = false;
             if (Boolean.TryParse(FileAppSettings.This().GetValue(@"ИгнорДатаВремя-techsite"), out bIgnoreDateTime) == false)
                 bIgnoreDateTime = false;
             else
                 ;
-
-            FileAppSettings.This ().AddRequired(@"ТЭЦПараметрыНазначение", @"{}");
 
             ASUTP.Core.HMark markQueries = new ASUTP.Core.HMark (0);
             markQueries.Set((int)StatisticCommon.CONN_SETT_TYPE.PBR, ОпросППБРToolStripMenuItem.Checked);
@@ -116,7 +73,7 @@ namespace trans_gtp
             try {
                 using (HStatisticUsers users = new HStatisticUsers(DbTSQLConfigDatabase.DbConfig ().ListenerId, ASUTP.Helper.HUsers.MODE_REGISTRATION.MIXED)) {; }
             } catch (Exception e) {
-                Logging.Logg().Exception(e, "FormMainTransGTP::FormMainTransGTP ()", Logging.INDEX_MESSAGE.NOT_SET);
+                Logging.Logg().Exception(e, "FormMainTransGTP::Start () - HStatisticUser initialize...", Logging.INDEX_MESSAGE.NOT_SET);
             }
 
             //Инициализация объектов получения данных

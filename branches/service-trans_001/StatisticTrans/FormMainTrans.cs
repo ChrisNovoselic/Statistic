@@ -246,6 +246,7 @@ namespace StatisticTrans
 
                         return bRes;
                     } }
+                    // обработка
                     , { CMD_PARAMETER.debug, delegate (string arg) {
                         bool bRes = true;
 
@@ -271,7 +272,7 @@ namespace StatisticTrans
                             _dictCommandParameterHandler [parameter] (m_dictCmdArgs[parameter.ToString()]);
                         else
                         // проверить наличие ключа в файле конфигурации
-                            if (FileAppSettings.This ().IsContainKey(parameter.ToString ()) == true)
+                            if (FileAppSettings.This ().IsNotNullOrEmpty(parameter.ToString ()) == true)
                             // прочитать из файла конфигурации - вызвать метод
                                 _dictCommandParameterHandler [parameter] (FileAppSettings.This().GetValue(parameter.ToString()));
                             else
@@ -329,11 +330,6 @@ namespace StatisticTrans
                 , valDefPar = string.Empty;
 
             s_iMainSourceData = Int32.Parse(FileAppSettings.This ().GetValueOfMainIndexParameter(FormParameters.PARAMETR_SETUP.MAIN_DATASOURCE));
-
-            //keyPar = @"Season DateTime"; valDefPar = @"21.10.2014 03:00";
-            //m_fileINI.Add(keyPar, valDefPar);
-            //keyPar = @"Season Action"; valDefPar = @"-1";
-            //m_fileINI.Add(keyPar, valDefPar);
 
             //Вариант №1
             keyPar = @"iapp"; valDefPar = id_app.ToString();

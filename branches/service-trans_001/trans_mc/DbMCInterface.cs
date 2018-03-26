@@ -40,20 +40,20 @@ namespace trans_mc
 
         protected override int Timeout { get; set; }
 
-        private bool _eventListener;
+        private Newtonsoft.Json.Linq.JObject _jsonEventListener;
 
         /// <summary>
         /// Пользовательский конструктор
         /// </summary>
         /// <param name="name">имя</param>
-        public DbMCInterface(string name, Action<object>mcApiHandler, bool bEventListener)
+        public DbMCInterface(string name, Action<object>mcApiHandler, Newtonsoft.Json.Linq.JObject jsonEventListener)
             //Вызов конструктора из базового класса DbInterface
             : base(name)
         {
             m_listIGO = new List<Modes.BusinessLogic.IGenObject> ();
 
             delegateMCApiHandler = mcApiHandler;
-            _eventListener = bEventListener;
+            _jsonEventListener = jsonEventListener;
 
             mcApiEventLocked = new object();
         }
@@ -161,6 +161,8 @@ namespace trans_mc
             return listRes;
         }
 
+        public enum EVENTS { OnData53500Modified, OnMaket53500Changed, OnPlanDataChanged, OnModesEvent }
+
         /// <summary>
         /// Установить соединение с Модес-Центром и подготовить объект соединения к запросам
         /// </summary>
@@ -217,6 +219,7 @@ namespace trans_mc
             result =
                 ModesApiFactory.IsInitilized;
 
+            EVENTS keyEvent;
             IEnumerable<Delegate/*MethodInfo*/> handlers;
 
             if (bRes == true) {
@@ -288,15 +291,29 @@ namespace trans_mc
 
                     m_MCApi.OnClose += mcApi_OnClose;
 
-                    if (_eventListener == true) {
-                    // добавить обработчики
-                        m_MCApi.OnModesEvent += mcApi_OnModesEvent;
-                    
-                        m_MCApi.OnData53500Modified += new EventHandler<Modes.NetAccess.EventRefreshData53500> (mcApi_OnEventHandler);
-                        m_MCApi.OnMaket53500Changed += mcApi_OnEventHandler;
-                        m_MCApi.OnPlanDataChanged += mcApi_OnEventHandler;
-                    } else
-                        ;
+                    // добавить обработчики в соответствии с конфигурацией
+                    foreach (string nameEvent in _jsonEventListener.SelectTokens("")) {
+                        if ((Enum.TryParse (nameEvent, out keyEvent) == true)
+                            && (bool.Parse(_jsonEventListener.GetValue(nameEvent).ToObject<string>()) == true)) {
+                            switch (keyEvent) {
+                                case EVENTS.OnData53500Modified:
+                                    m_MCApi.OnData53500Modified += mcApi_OnEventHandler;
+                                    break;
+                                case EVENTS.OnMaket53500Changed:
+                                    m_MCApi.OnMaket53500Changed += mcApi_OnEventHandler;
+                                    break;
+                                case EVENTS.OnPlanDataChanged:
+                                    m_MCApi.OnPlanDataChanged += mcApi_OnEventHandler;
+                                    break;
+                                case EVENTS.OnModesEvent:
+                                    m_MCApi.OnModesEvent += mcApi_OnModesEvent;
+                                    break;
+                                default:
+                                    break;
+                            }
+                        } else
+                            ;
+                    }
 
                     //// проверить
                     //handlers = getHandlerExists (m_MCApi);

@@ -41,12 +41,12 @@ namespace trans_mc
             return (DbMCSources) m_this;
         }
 
-        private bool _eventListener;
+        private Newtonsoft.Json.Linq.JObject _jsonEentListener;
 
-        public void SetMCApiHandler(Action<object> mcApiHandler, bool bEventListener)
+        public void SetMCApiHandler(Action<object> mcApiHandler, Newtonsoft.Json.Linq.JObject jsonEventListener)
         {
             delegateMCApiHandler = mcApiHandler;
-            _eventListener = bEventListener;
+            _jsonEentListener = jsonEventListener;
         }
         /// <summary>
         /// Регистриует клиента соединения, активным или нет, при необходимости принудительно отдельный экземпляр
@@ -76,7 +76,7 @@ namespace trans_mc
                 dbNameType = dbType.ToString();
 
                 if (Equals(delegateMCApiHandler, null) == false)
-                    m_dictDbInterfaces.Add(MC_ID, new DbMCInterface((string)connSett, delegateMCApiHandler, _eventListener));
+                    m_dictDbInterfaces.Add(MC_ID, new DbMCInterface((string)connSett, delegateMCApiHandler, _jsonEentListener));
                 else
                     throw new Exception(string.Format(@"DbMCSources::Register () - не назначен делегат обработчика извещений от Модес-Центр..."));
                 

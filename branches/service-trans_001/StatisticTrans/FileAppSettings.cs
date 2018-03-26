@@ -10,12 +10,18 @@ using ASUTP.Helper;
 
 namespace StatisticTrans
 {
+    /// <summary>
+    /// Реализация интерфейса взаимодействия с файлом конфигурации 'app.config'
+    /// </summary>
     public class FileAppSettings : IFileAppSettings
     {
         private static FileAppSettings _this;
 
         private KeyValueConfigurationCollection _config;
 
+        /// <summary>
+        /// Возвратить строку-идентификатор приложения 'ASUTP.Helper.ProgramBase.ID_APP'
+        /// </summary>
         public ProgramBase.ID_APP GetIdApplication
         {
             get
@@ -24,6 +30,9 @@ namespace StatisticTrans
             }
         }
 
+        /// <summary>
+        /// Конструктор по умолчанию: шаблон 'Singleton'
+        /// </summary>
         private FileAppSettings ()
             //: base ()
         {
@@ -46,6 +55,10 @@ namespace StatisticTrans
             }.ToList().ForEach(elem => addRequired(elem.Item1, elem.Item2));
         }
 
+        /// <summary>
+        /// Возвратить объект класса для доступа к его методам/свойствам
+        /// </summary>
+        /// <returns>Объект класса</returns>
         public static FileAppSettings This ()
         {
             if (Equals (_this, null) == true)
@@ -58,7 +71,7 @@ namespace StatisticTrans
 
         private void addRequired (string key, string value)
         {
-            if (IsContainKey(key) == false)
+            if (IsContainsKey(key) == false)
                 setValue(key, value);
             else {
             // это обязательные элементы, при наличии - перезаписывать не требуется
@@ -68,31 +81,67 @@ namespace StatisticTrans
             }
         }
 
-        public bool IsContainKey (string key)
+        /// <summary>
+        /// Признак наличия ключа в файле конфигурации
+        /// </summary>
+        /// <param name="key">Ключ в файле конфигурации</param>
+        /// <returns>Признак наличия ключа</returns>
+        public bool IsContainsKey (string key)
         {
             return _config.AllKeys.Contains (key);
         }
 
+        /// <summary>
+        /// Признак наличия значения по ключу и отличиия значения от 'null' и пустого
+        /// </summary>
+        /// <param name="key">Ключ в файле конфигурации</param>
+        /// <returns>Признак соответствия предъявляемым требованиям</returns>
+        public bool IsNotNullOrEmpty (string key)
+        {
+            return IsContainsKey (key)
+                && string.IsNullOrEmpty(getValue(key)) == false;
+        }
+
+        /// <summary>
+        /// Добавить необходимую пару ключ + значение в секцию конфигурации приложения
+        /// </summary>
+        /// <param name="range">Пара ключ + значение для добавления</param>
         public void AddRequired (string key, string value)
         {
             addRequired (key, value);
         }
 
+        /// <summary>
+        /// Добавить необходимую пару ключ + значение в секцию конфигурации приложения
+        /// </summary>
+        /// <param name="range">Пара ключ + значение для добавления</param>
         public void AddRequired (string key, object value)
         {
             addRequired (key, value.ToString());
         }
 
+        /// <summary>
+        /// Добавить массив необходимых пар ключ + значение в секцию конфигурации приложения
+        /// </summary>
+        /// <param name="range">Массив пар ключ + значение для добавления</param>
         public void AddRequired (IEnumerable<KeyValuePair<string, string>> range)
         {
             range.ToList ().ForEach (pair => AddRequired (pair.Key, pair.Value));
         }
 
+        /// <summary>
+        /// Добавить массив необходимых пар ключ + значение в секцию конфигурации приложения
+        /// </summary>
+        /// <param name="range">Массив пар ключ + значение для добавления</param>
         public void AddRequired (IEnumerable<Tuple<string, string>> range)
         {
             range.ToList ().ForEach (pair => AddRequired (pair.Item1, pair.Item2));
         }
 
+        /// <summary>
+        /// Добавить массив необходимых пар ключ + значение в секцию конфигурации приложения
+        /// </summary>
+        /// <param name="range">Массив пар ключ + значение для добавления</param>
         public void AddRequired (IEnumerable<KeyValuePair<string, object>> range)
         {
             range.ToList ().ForEach (pair => AddRequired(pair.Key, pair.Value));
@@ -105,16 +154,34 @@ namespace StatisticTrans
                     : valueDefault;
         }
 
+        /// <summary>
+        /// Возвратить значение по ключу
+        /// </summary>
+        /// <param name="key">Ключ параметра</param>
+        /// <param name="valueDefault">Значение по умолчанию при отсутствии ключа</param>
+        /// <returns>Значение параметра или значение по умолчанию</returns>
         public string GetValue (string key, string valueDefault = "")
         {
             return getValue(key, valueDefault);
         }
 
+        /// <summary>
+        /// Возвратить значение по ключу в соответствии с индексом из формы с параметрами приложения
+        /// </summary>
+        /// <param name="indx">Индекс параметра из формы</param>
+        /// <param name="value">Значение по умолчанию при отсутствии ключа</param>
+        /// <returns>Значение параметра или значение по умолчанию</returns>
         public string GetValueOfMainIndexParameter (FormParameters.PARAMETR_SETUP indx, string valueDefault = "")
         {
             return getValue (FormParameters.GetNameParametersOfIndex ((int)indx), valueDefault);
         }
 
+        /// <summary>
+        /// Возвратить значение по ключу в соответствии с индексом из формы с параметрами приложения
+        /// </summary>
+        /// <param name="indx">Индекс параметра из формы</param>
+        /// <param name="value">Значение по умолчанию при отсутствии ключа</param>
+        /// <returns>Значение параметра или значение по умолчанию</returns>
         public string GetValueOfMainIndexParameter (int indx, string valueDefault = "")
         {
             return GetValueOfMainIndexParameter ((FormParameters.PARAMETR_SETUP)indx, valueDefault);
@@ -122,7 +189,7 @@ namespace StatisticTrans
 
         private void setValue (string key, string value)
         {
-            if (IsContainKey(key) == false)
+            if (IsContainsKey(key) == false)
                 _config.Add (key, value);
             else
                 _config [key].Value = value;
@@ -131,11 +198,21 @@ namespace StatisticTrans
             ConfigurationManager.RefreshSection ("appSettings");
         }
 
+        /// <summary>
+        /// Установить значения для ключа
+        /// </summary>
+        /// <param name="key">Ключ в файле конфигурации</param>
+        /// <param name="value">Устанавливаемое значение</param>
         public void SetValue (string key, string value)
         {
             setValue (key, value);
         }
 
+        /// <summary>
+        /// Установить значения для ключа
+        /// </summary>
+        /// <param name="key">Ключ в файле конфигурации</param>
+        /// <param name="value">Устанавливаемое значение</param>
         public void SetValue (string key, object value)
         {
             setValue (key, value.ToString());

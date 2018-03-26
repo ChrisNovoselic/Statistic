@@ -1,17 +1,15 @@
 ﻿using System;
+using System.Linq;
 using System.Collections.Generic;
-//using System.ComponentModel;
-//using System.Data;
-using System.Drawing;
-//using System.Linq;
-using System.Text;
 using System.Windows.Forms;
+
+using Newtonsoft.Json;
+using Newtonsoft.Json.Linq;
 
 using StatisticCommon;
 using StatisticTrans;
 using StatisticTransModes;
 using ASUTP;
-using System.Threading;
 
 namespace trans_mc
 {
@@ -19,7 +17,17 @@ namespace trans_mc
     {
         public FormMainTransMC()
             : base(ASUTP.Helper.ProgramBase.ID_APP.TRANS_MODES_CENTRE
-                  , new KeyValuePair<string, string> [] { new System.Collections.Generic.KeyValuePair<string, string> ("service", "on_event") })
+                  , new KeyValuePair<string, string> [] {
+                      new System.Collections.Generic.KeyValuePair<string, string> ("MCServiceHost", "ne1843.ne.ru")
+                      , new System.Collections.Generic.KeyValuePair<string, string> (@"ИгнорДатаВремя-ModesCentre", false.ToString())
+                      , new System.Collections.Generic.KeyValuePair<string, string> ("service", "on_event")
+                      , new System.Collections.Generic.KeyValuePair<string, string> ("JEventListener", JsonConvert.SerializeObject (new JObject {
+                          { DbMCInterface.EVENTS.OnData53500Modified.ToString(), false }
+                          , { DbMCInterface.EVENTS.OnMaket53500Changed.ToString(), false }
+                          , { DbMCInterface.EVENTS.OnPlanDataChanged.ToString(), true }
+                          , { DbMCInterface.EVENTS.OnModesEvent.ToString(), false }
+                      }) )
+                  })
         {
             this.notifyIconMain.Icon =
             this.Icon = trans_mc.Properties.Resources.statistic5;
@@ -37,9 +45,6 @@ namespace trans_mc
             int i = -1;
 
             EditFormConnectionSettings("connsett_mc.ini", false);
-
-            FileAppSettings.This().AddRequired(@"MCServiceHost", "ne1843.ne.ru");
-            FileAppSettings.This ().AddRequired (@"ИгнорДатаВремя-ModesCentre", false.ToString());
 
             bool bIgnoreTECInUse = false;
 

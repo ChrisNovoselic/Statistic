@@ -16,7 +16,9 @@ namespace trans_mt
     public partial class FormMainTransMT : FormMainTransModes
     {
         public FormMainTransMT()
-            : base(ASUTP.Helper.ProgramBase.ID_APP.TRANS_MODES_TERMINALE, new KeyValuePair<string, string> [] { })
+            : base(ASUTP.Helper.ProgramBase.ID_APP.TRANS_MODES_TERMINALE, new KeyValuePair<string, string> [] {
+                new KeyValuePair<string, string> (@"ИгнорДатаВремя-ModesTerminale", false.ToString())
+            })
         {
             this.notifyIconMain.Icon =
             this.Icon = trans_mt.Properties.Resources.statistic6;
@@ -31,8 +33,6 @@ namespace trans_mt
             int i = -1;
 
             EditFormConnectionSettings("connsett_mt.ini", true);
-
-            FileAppSettings.This ().AddRequired(@"ИгнорДатаВремя-ModesTerminale", false.ToString());
 
             bool bIgnoreTECInUse = false;
 
