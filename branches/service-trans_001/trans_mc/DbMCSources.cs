@@ -41,9 +41,12 @@ namespace trans_mc
             return (DbMCSources) m_this;
         }
 
-        public void SetMCApiHandler(Action<object> mcApiHandler)
+        private bool _eventListener;
+
+        public void SetMCApiHandler(Action<object> mcApiHandler, bool bEventListener)
         {
             delegateMCApiHandler = mcApiHandler;
+            _eventListener = bEventListener;
         }
         /// <summary>
         /// Регистриует клиента соединения, активным или нет, при необходимости принудительно отдельный экземпляр
@@ -73,7 +76,7 @@ namespace trans_mc
                 dbNameType = dbType.ToString();
 
                 if (Equals(delegateMCApiHandler, null) == false)
-                    m_dictDbInterfaces.Add(MC_ID, new DbMCInterface((string)connSett, delegateMCApiHandler));
+                    m_dictDbInterfaces.Add(MC_ID, new DbMCInterface((string)connSett, delegateMCApiHandler, _eventListener));
                 else
                     throw new Exception(string.Format(@"DbMCSources::Register () - не назначен делегат обработчика извещений от Модес-Центр..."));
                 

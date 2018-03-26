@@ -18,7 +18,8 @@ namespace trans_mc
     public partial class FormMainTransMC : FormMainTransModes
     {
         public FormMainTransMC()
-            : base(ID_APPLICATION.TRANS_MC)
+            : base(ASUTP.Helper.ProgramBase.ID_APP.TRANS_MODES_CENTRE
+                  , new KeyValuePair<string, string> [] { new System.Collections.Generic.KeyValuePair<string, string> ("service", "on_event") })
         {
             this.notifyIconMain.Icon =
             this.Icon = trans_mc.Properties.Resources.statistic5;
@@ -37,11 +38,10 @@ namespace trans_mc
 
             EditFormConnectionSettings("connsett_mc.ini", false);
 
-            m_sFileINI.AddMainPar(@"MCServiceHost", string.Empty);
-            m_sFileINI.AddMainPar(@"ИгнорДатаВремя-ModesCentre", false.ToString());
+            FileAppSettings.This().AddRequired(@"MCServiceHost", "ne1843.ne.ru");
+            FileAppSettings.This ().AddRequired (@"ИгнорДатаВремя-ModesCentre", false.ToString());
 
             bool bIgnoreTECInUse = false;
-            string strTypeField = m_sFileINI.GetMainValueOfKey(@"РДГФорматТаблицаНазначение");
 
             //??? для создания статического 'DbMCSources' = 'DbSources'
             DbMCSources.Sources();
@@ -55,7 +55,7 @@ namespace trans_mc
                 switch (i)
                 {
                     case (Int16)CONN_SETT_TYPE.SOURCE:
-                        m_arAdmin[i] = new AdminMC(m_sFileINI.GetMainValueOfKey(@"MCServiceHost"));
+                        m_arAdmin[i] = new AdminMC(FileAppSettings.This ().GetValue(@"MCServiceHost"));
                         if (handlerCmd.ModeMashine == MODE_MASHINE.SERVICE_ON_EVENT) {
                             (m_arAdmin [i] as AdminMC).AddEventHandler(DbMCInterface.ID_EVENT.RELOAD_PLAN_VALUES, FormMainTransMC_EventMaketChanged);
                             //!!! дубликат для отладки
@@ -87,7 +87,7 @@ namespace trans_mc
                 switch (i)
                 {
                     case (Int16)CONN_SETT_TYPE.SOURCE:
-                        m_arAdmin[i].m_ignore_date = bool.Parse(m_sFileINI.GetMainValueOfKey(@"ИгнорДатаВремя-ModesCentre"));
+                        m_arAdmin[i].m_ignore_date = bool.Parse (FileAppSettings.This ().GetValue(@"ИгнорДатаВремя-ModesCentre"));
                         break;
                     case (Int16)CONN_SETT_TYPE.DEST:
                         //if (strTypeField.Equals(AdminTS.TYPE_FIELDS.DYNAMIC.ToString()) == true)
@@ -96,7 +96,7 @@ namespace trans_mc
                         //    ((AdminTS)m_arAdmin[i]).m_typeFields = AdminTS.TYPE_FIELDS.STATIC;
                         //else
                         //    ;
-                        m_arAdmin[i].m_ignore_date = bool.Parse(m_sFileINI.GetMainValueOfKey(@"ИгнорДатаВремя-techsite"));
+                        m_arAdmin[i].m_ignore_date = bool.Parse (FileAppSettings.This ().GetValue(@"ИгнорДатаВремя-techsite"));
                         break;
                     default:
                         break;
@@ -188,7 +188,7 @@ namespace trans_mc
                 //Properties.Settings sett = new Properties.Settings();
                 //tbxSourceServerMC.Text = sett.Modes_Centre_Service_Host_Name;
 
-                m_arUIControls[(Int16)CONN_SETT_TYPE.SOURCE, (Int16)INDX_UICONTROLS.SERVER_IP].Text = m_sFileINI.GetMainValueOfKey(@"MCServiceHost");
+                m_arUIControls[(Int16)CONN_SETT_TYPE.SOURCE, (Int16)INDX_UICONTROLS.SERVER_IP].Text = FileAppSettings.This ().GetValue(@"MCServiceHost");
             }
             else
                 m_arUIControls[(Int16)CONN_SETT_TYPE.SOURCE, (Int16)INDX_UICONTROLS.SERVER_IP].Text = string.Empty;

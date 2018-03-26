@@ -20,19 +20,14 @@ namespace StatisticCommon
     /// </summary>
     public partial class FormMainStatistic : FormMainBaseWithStatusStrip
     {
-        public enum ID_APPLICATION : short {
-            UNKNOWN = -1
-            , MAIN
-            , ANALYZER, TIME_SYNC, COMMON_AUX, DIAGNOSTIC, ALARM
-            , TRANS_MC, TRANS_MT
-            , TRANS_GTP_NSK, TRANS_GTP_BIYSK, TRANS_GTP_LK
-            , TRANS_TG
-        }
-
-        /// <summary>
-        /// Объект для чтения/хранения параметров конфигурации приложения
-        /// </summary>
-        protected static FileINI m_sFileINI; //setup.ini
+        //public enum ProgramBase.ID_APP : short {
+        //    UNKNOWN = -1
+        //    , MAIN
+        //    , ANALYZER, TIME_SYNC, COMMON_AUX, DIAGNOSTIC, ALARM
+        //    , TRANS_MC, TRANS_MT
+        //    , TRANS_GTP_NSK, TRANS_GTP_BIYSK, TRANS_GTP_LK
+        //    , TRANS_TG
+        //}
         /// <summary>
         /// Объект для (де)шифрации файла конфигурации с параметрами для соединения с БД
         /// </summary>
@@ -48,7 +43,7 @@ namespace StatisticCommon
         /// </summary>
         /// <param name="args">Значения аргументов командной строки</param>
         /// <returns>класс</returns>
-        protected virtual HCmd_Arg createHCmdArg(ID_APPLICATION id_app, string [] args)
+        protected virtual HCmd_Arg createHCmdArg(ProgramBase.ID_APP id_app, string [] args)
         {
             return new HCmd_Arg(args);
         }
@@ -56,11 +51,23 @@ namespace StatisticCommon
         /// <summary>
         /// Контруктор класса
         /// </summary>
-        public FormMainStatistic(ID_APPLICATION id_app)
+        public FormMainStatistic(ProgramBase.ID_APP id_app)
+        {
+            ProgramBase.ID_APP id = id_app;
+
+            if (id == ProgramBase.ID_APP.UNKNOWN)
+                throw new Exception ("FormMainStatistic::ctor () - не определен идентификатор приложения...");
+            else
+                ;
+            //string str = Environment.CommandLine;
+            createHCmdArg(id, Environment.GetCommandLineArgs());
+        }
+
+        public FormMainStatistic (Func<ProgramBase.ID_APP> fGettingIdApplication)
         {
             //string str = Environment.CommandLine;
-            createHCmdArg(id_app, Environment.GetCommandLineArgs());
-        }        
+            createHCmdArg (fGettingIdApplication (), Environment.GetCommandLineArgs ());
+        }
 
         /// <summary>
         /// Обновить содержание строки состояния

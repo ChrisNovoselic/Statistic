@@ -16,7 +16,7 @@ namespace trans_mt
     public partial class FormMainTransMT : FormMainTransModes
     {
         public FormMainTransMT()
-            : base(ID_APPLICATION.TRANS_MT)
+            : base(ASUTP.Helper.ProgramBase.ID_APP.TRANS_MODES_TERMINALE, new KeyValuePair<string, string> [] { })
         {
             this.notifyIconMain.Icon =
             this.Icon = trans_mt.Properties.Resources.statistic6;
@@ -32,11 +32,7 @@ namespace trans_mt
 
             EditFormConnectionSettings("connsett_mt.ini", true);
 
-            m_sFileINI.AddMainPar(@"ТипБДКфгИсточник", @"200");
-            m_sFileINI.AddMainPar(@"ИгнорДатаВремя-ModesTerminale", false.ToString());
-
-            int[] arConfigDB = new int[(Int16)CONN_SETT_TYPE.COUNT_CONN_SETT_TYPE];
-            string[] arKeyTypeConfigDB = new string[(Int16)CONN_SETT_TYPE.COUNT_CONN_SETT_TYPE] { @"ТипБДКфгИсточник", @"ТипБДКфгНазначение" };
+            FileAppSettings.This ().AddRequired(@"ИгнорДатаВремя-ModesTerminale", false.ToString());
 
             bool bIgnoreTECInUse = false;
 
@@ -78,7 +74,7 @@ namespace trans_mt
                     switch (i)
                     {
                         case (Int16)CONN_SETT_TYPE.SOURCE:
-                            m_arAdmin[i].m_ignore_date = bool.Parse(m_sFileINI.GetMainValueOfKey(@"ИгнорДатаВремя-ModesTerminale"));
+                            m_arAdmin[i].m_ignore_date = bool.Parse (FileAppSettings.This ().GetValue(@"ИгнорДатаВремя-ModesTerminale"));
                             break;
                         case (Int16)CONN_SETT_TYPE.DEST:
                             //if (strTypeField.Equals(AdminTS.TYPE_FIELDS.DYNAMIC.ToString()) == true)
@@ -87,7 +83,7 @@ namespace trans_mt
                             //    ((AdminTS)m_arAdmin[i]).m_typeFields = AdminTS.TYPE_FIELDS.STATIC;
                             //else
                             //    ;
-                            m_arAdmin[i].m_ignore_date = bool.Parse(m_sFileINI.GetMainValueOfKey(@"ИгнорДатаВремя-techsite"));
+                            m_arAdmin[i].m_ignore_date = bool.Parse (FileAppSettings.This ().GetValue(@"ИгнорДатаВремя-techsite"));
                             break;
                         default:
                             break;

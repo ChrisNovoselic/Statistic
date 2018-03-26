@@ -40,17 +40,20 @@ namespace trans_mc
 
         protected override int Timeout { get; set; }
 
+        private bool _eventListener;
+
         /// <summary>
         /// Пользовательский конструктор
         /// </summary>
         /// <param name="name">имя</param>
-        public DbMCInterface(string name, Action<object>mcApiHandler)
+        public DbMCInterface(string name, Action<object>mcApiHandler, bool bEventListener)
             //Вызов конструктора из базового класса DbInterface
             : base(name)
         {
             m_listIGO = new List<Modes.BusinessLogic.IGenObject> ();
 
             delegateMCApiHandler = mcApiHandler;
+            _eventListener = bEventListener;
 
             mcApiEventLocked = new object();
         }
@@ -283,14 +286,20 @@ namespace trans_mc
                     handlers = getHandlerExists (m_MCApi);
                     #endregion
 
-                    // добавить обработчики
-                    m_MCApi.OnModesEvent += mcApi_OnModesEvent;
                     m_MCApi.OnClose += mcApi_OnClose;
-                    m_MCApi.OnData53500Modified += new EventHandler<Modes.NetAccess.EventRefreshData53500> (mcApi_OnEventHandler);
-                    m_MCApi.OnMaket53500Changed += mcApi_OnEventHandler;
-                    m_MCApi.OnPlanDataChanged += mcApi_OnEventHandler;
-                    // проверить
-                    handlers = getHandlerExists (m_MCApi);
+
+                    if (_eventListener == true) {
+                    // добавить обработчики
+                        m_MCApi.OnModesEvent += mcApi_OnModesEvent;
+                    
+                        m_MCApi.OnData53500Modified += new EventHandler<Modes.NetAccess.EventRefreshData53500> (mcApi_OnEventHandler);
+                        m_MCApi.OnMaket53500Changed += mcApi_OnEventHandler;
+                        m_MCApi.OnPlanDataChanged += mcApi_OnEventHandler;
+                    } else
+                        ;
+
+                    //// проверить
+                    //handlers = getHandlerExists (m_MCApi);
 
                     Logging.Logg().Debug(string.Format(@"{0} - {1}...", msgLog, @"УСПЕХ"), Logging.INDEX_MESSAGE.NOT_SET);
                 } catch (Exception e) {

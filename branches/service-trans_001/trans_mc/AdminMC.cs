@@ -11,7 +11,6 @@ using Modes;
 using ModesApiExternal;
 
 using ASUTP;
-using ModesApiExternal;
 using System.Threading;
 
 namespace trans_mc
@@ -238,7 +237,8 @@ namespace trans_mc
         public void FetchEvent (bool bRemove)
         {
             try {
-                if (_listMCEventArgs.Count > 0) {
+                if ((Equals(_listMCEventArgs, null) == false)
+                    && (_listMCEventArgs.Count > 0)) {
                     _autoResetEvent_MCArgs_CollectionChanged.WaitOne ();
 
                     if (bRemove == true)
@@ -458,10 +458,7 @@ namespace trans_mc
             bool bRes = true;
             int i = -1;
 
-            if (IsServiceOnEvent == true)
-                DbMCSources.Sources ().SetMCApiHandler (dbMCSources_OnEventHandler);
-            else
-                ;
+            DbMCSources.Sources ().SetMCApiHandler (dbMCSources_OnEventHandler, IsServiceOnEvent);
             m_IdListenerCurrent = ASUTP.Database.DbSources.Sources().Register(m_strMCServiceHost, true, @"Modes-Centre");
 
             return bRes;

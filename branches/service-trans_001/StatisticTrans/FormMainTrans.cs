@@ -21,6 +21,11 @@ namespace StatisticTrans
     /// </summary>
     public abstract partial class FormMainTrans : FormMainStatistic
     {
+        /// <summary>
+        /// Объект для чтения/хранения параметров конфигурации приложения
+        /// </summary>
+        //protected static FileINI m_sFileINI; // setup.ini
+
         protected ComponentTesting CT;
 
         private const Int32 TIMER_SERVICE_MIN_INTERVAL = 66666;
@@ -114,7 +119,10 @@ namespace StatisticTrans
 
         private string getINIParametersOfID(int id)
         {
-            return m_sFileINI.GetMainValueOfKey(FormParameters.GetNameParametersOfIndex(id));
+            return
+                //m_sFileINI.GetMainValueOfKey(FormParameters.GetNameParametersOfIndex(id))
+                FileAppSettings.This ().GetValueOfMainIndexParameter(id);
+                ;
         }
 
         /// <summary>
@@ -167,12 +175,12 @@ namespace StatisticTrans
             /// </summary>
             /// <param name="id_app">Идентификатор приложения из файла конфигурации</param>
             /// <param name="args">Массив аргументов командной строки</param>
-            public handlerCmd (ID_APPLICATION id_app, string [] args)
+            public handlerCmd (ProgramBase.ID_APP id_app, string [] args)
                 : base(args)
             {
                 CMD_PARAMETER cmdKey = CMD_PARAMETER.unknown;
                 int timerInterval = -1;
-                s_modeServiceMashineDefault = id_app == ID_APPLICATION.TRANS_MC
+                s_modeServiceMashineDefault = id_app == ProgramBase.ID_APP.TRANS_MODES_CENTRE
                     ? MODE_MASHINE.SERVICE_ON_EVENT
                         : MODE_MASHINE.SERVICE_PERIOD;
 
@@ -250,14 +258,45 @@ namespace StatisticTrans
                     } }
                 };
 
+                foreach (CMD_PARAMETER parameter in Enum.GetValues (typeof (CMD_PARAMETER))) {
+                    if ((parameter == CMD_PARAMETER.unknown)
+                        || (parameter == CMD_PARAMETER.start)
+                        || (parameter == CMD_PARAMETER.stop))
+                    // обработан ранее в родительском классе
+                        continue;
+                    else if (_dictCommandParameterHandler.ContainsKey (parameter) == true)
+                    // словарь обработчиков содержит требуемый метод
+                        if (m_dictCmdArgs.ContainsKey (parameter.ToString()) == true)
+                        // указан в командной строке - вызвать метод
+                            _dictCommandParameterHandler [parameter] (m_dictCmdArgs[parameter.ToString()]);
+                        else
+                        // проверить наличие ключа в файле конфигурации
+                            if (FileAppSettings.This ().IsContainKey(parameter.ToString ()) == true)
+                            // прочитать из файла конфигурации - вызвать метод
+                                _dictCommandParameterHandler [parameter] (FileAppSettings.This().GetValue(parameter.ToString()));
+                            else
+                            // в файле конфигурации параметр тоже не указан
+                                ;
+                    else
+                    // для параметра не указан обработчик
+                        Logging.Logg ().Warning ($"FormMainTrans.handlerCmd::ctor () - для параметра <{parameter}> не указан обработчик..."
+                            , Logging.INDEX_MESSAGE.NOT_SET);
+                }
+
                 foreach (KeyValuePair<string, string> pair in m_dictCmdArgs) {
-                    if ((Enum.TryParse<CMD_PARAMETER> (pair.Key, out cmdKey) == true)
-                        && (_dictCommandParameterHandler.ContainsKey (cmdKey) == true))
-                        _dictCommandParameterHandler[cmdKey](pair.Value);
+                    if (Enum.TryParse<CMD_PARAMETER> (pair.Key, out cmdKey) == false)
+                    // параметр не распознан как известный к обработке
+                        Logging.Logg ().Warning ($"FormMainTrans.handlerCmd::ctor () - не известный параметр <{pair.Key}>, значение=<{pair.Value}>..."
+                            , Logging.INDEX_MESSAGE.NOT_SET);
                     else
                         ;
                 }
             }
+        }
+
+        public FormMainTrans (Func<ProgramBase.ID_APP> fGettingIdApplication, KeyValuePair<string, string> [] config)
+            : this (fGettingIdApplication(), config)
+        {
         }
 
         /// <summary>
@@ -266,7 +305,7 @@ namespace StatisticTrans
         /// <param name="id_app">Идентификатор приложения из файла конфигурации</param>
         /// <param name="par">Наименования-ключи параметров для файла конфигурации</param>
         /// <param name="val">Значения для параметров в файле конфигурации</param>
-        public FormMainTrans(ID_APPLICATION id_app, KeyValuePair<string, string>[]config)
+        public FormMainTrans(ProgramBase.ID_APP id_app, KeyValuePair<string, string>[]config)
             : base(id_app)
         {
             Thread.CurrentThread.CurrentCulture =
@@ -280,17 +319,16 @@ namespace StatisticTrans
             //DelegateGetINIParametersOfID = new StringDelegateIntFunc(GetINIParametersOfID);
             Logging.DelegateGetINIParametersOfID = new StringDelegateIntFunc(getINIParametersOfID);
 
-            m_sFileINI = new FileINI(@"setup.ini"
-                , false
-                , (from pair in config select pair.Key).ToArray()
-                , (from pair in config select pair.Value).ToArray());
+            //m_sFileINI = new FileINI(@"setup.ini"
+            //    , false
+            //    , (from pair in config select pair.Key).ToArray()
+            //    , (from pair in config select pair.Value).ToArray());
+            FileAppSettings.This ().AddRequired (config);
 
             string keyPar = string.Empty
                 , valDefPar = string.Empty;
 
-            keyPar = @"Main DataSource"; valDefPar = @"671";
-            m_sFileINI.AddMainPar(keyPar, valDefPar);
-            s_iMainSourceData = Int32.Parse(m_sFileINI.GetMainValueOfKey(keyPar));
+            s_iMainSourceData = Int32.Parse(FileAppSettings.This ().GetValueOfMainIndexParameter(FormParameters.PARAMETR_SETUP.MAIN_DATASOURCE));
 
             //keyPar = @"Season DateTime"; valDefPar = @"21.10.2014 03:00";
             //m_fileINI.Add(keyPar, valDefPar);
@@ -299,8 +337,7 @@ namespace StatisticTrans
 
             //Вариант №1
             keyPar = @"iapp"; valDefPar = id_app.ToString();
-            m_sFileINI.AddMainPar(keyPar, valDefPar);
-            ProgramBase.s_iAppID = Int32.Parse(m_sFileINI.GetMainValueOfKey(keyPar));
+            ProgramBase.s_iAppID = id_app; // FileAppSettings.This ().GetValue(keyPar)
             //Вариант №2
             //ProgramBase.s_iAppID = id_app;
 
@@ -320,28 +357,11 @@ namespace StatisticTrans
             //}
             //else { }
 
-            m_sFileINI.AddMainPar(@"ОкноНазначение", @"Конвертер (...)");
-            m_sFileINI.AddMainPar(@"ID_TECNotUse", string.Empty);
-
-            m_sFileINI.AddMainPar(@"ОпросСохранениеППБР", false.ToString() + @"," + false.ToString());
-            m_sFileINI.AddMainPar(@"ОпросСохранениеАдминЗнач", false.ToString() + @"," + false.ToString());
-
-            keyPar = @"Season DateTime";
-            m_sFileINI.AddMainPar(keyPar, @"26.10.2014 02:00");
-            keyPar = @"Season Action";
-            m_sFileINI.AddMainPar(keyPar, @"-1");
-
-            keyPar = @"SetPBRQuery LogPBRNumber";
-            m_sFileINI.AddMainPar(keyPar, false.ToString());
-
-            keyPar = @"SetPBRQuery LogQuery";
-            m_sFileINI.AddMainPar(keyPar, false.ToString());
-
             this.Text =
-            this.notifyIconMain.Text = @"Статистика: " + m_sFileINI.GetMainValueOfKey(@"ОкноНазначение");
+            this.notifyIconMain.Text = @"Статистика: " + FileAppSettings.This ().GetValue(@"ОкноНазначение");
 
             m_listID_TECNotUse = new List<int>();
-            string[] arStrID_TECNotUse = m_sFileINI.GetMainValueOfKey(@"ID_TECNotUse").Split(',');
+            string[] arStrID_TECNotUse = FileAppSettings.This ().GetValue(@"ID_TECNotUse").Split(',');
 
             foreach (string str in arStrID_TECNotUse)
             {
@@ -355,7 +375,7 @@ namespace StatisticTrans
                 string strChecked = string.Empty;
                 bool bRes = false
                     , bChecked = false;
-                strChecked = m_sFileINI.GetMainValueOfKey(@"ОпросСохранениеППБР");
+                strChecked = FileAppSettings.This ().GetValue (@"ОпросСохранениеППБР");
                 if (bool.TryParse(strChecked.Split(',')[0], out bChecked) == true)
                     ОпросППБРToolStripMenuItem.Checked = bChecked;
                 else
@@ -368,7 +388,7 @@ namespace StatisticTrans
                 bRes =
                 bChecked =
                     false;
-                strChecked = m_sFileINI.GetMainValueOfKey(@"ОпросСохранениеАдминЗнач");
+                strChecked = FileAppSettings.This ().GetValue (@"ОпросСохранениеАдминЗнач");
                 if (bool.TryParse(strChecked.Split(',')[0], out bChecked) == true)
                     ОпросАдминЗначенияToolStripMenuItem.Checked = bChecked;
                 else
@@ -386,7 +406,7 @@ namespace StatisticTrans
             if ((ОпросАдминЗначенияToolStripMenuItem.Checked == false) &&
                 (ОпросППБРToolStripMenuItem.Checked == false))
             {
-                throw new Exception(@"FormMainTrans::не определн перечень опрашиваемых/сохранямых параметров...");
+                throw new Exception(@"FormMainTrans::не определен перечень опрашиваемых/сохранямых параметров...");
             }
             else
                 ;
@@ -460,7 +480,7 @@ namespace StatisticTrans
         /// <param name="id_app">Идентификатор приложения из файла конфигурации</param>
         /// <param name="args">Массив аргументов командной строки</param>
         /// <returns>Объект-обработчик аргументов командной строки</returns>
-        protected override HCmd_Arg createHCmdArg(ID_APPLICATION id_app, string [] args)
+        protected override HCmd_Arg createHCmdArg(ProgramBase.ID_APP id_app, string [] args)
         {
             return new handlerCmd(id_app, args);
         }
@@ -1355,10 +1375,8 @@ namespace StatisticTrans
 
         protected override void timer_Start()
         {
-            string keyPar = @"Season DateTime";
-            HAdmin.SeasonDateTime = DateTime.Parse(m_sFileINI.GetMainValueOfKey(keyPar));
-            keyPar = @"Season Action";
-            HAdmin.SeasonAction = Int32.Parse(m_sFileINI.GetMainValueOfKey(keyPar));
+            HAdmin.SeasonDateTime = DateTime.Parse(FileAppSettings.This ().GetValueOfMainIndexParameter(FormParameters.PARAMETR_SETUP.SEASON_DATETIME));
+            HAdmin.SeasonAction = Int32.Parse(FileAppSettings.This ().GetValueOfMainIndexParameter (FormParameters.PARAMETR_SETUP.SEASON_ACTION));
 
             FormChangeMode.MODE_TECCOMPONENT mode = FormChangeMode.MODE_TECCOMPONENT.GTP;
 

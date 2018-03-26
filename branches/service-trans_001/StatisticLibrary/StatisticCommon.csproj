@@ -146,6 +146,7 @@
     <Compile Include="dgwAdminNSS.cs">
       <SubType>Component</SubType>
     </Compile>
+    <Compile Include="FileAppSettings.cs" />
     <Compile Include="FormAbout.cs">
       <SubType>Form</SubType>
     </Compile>

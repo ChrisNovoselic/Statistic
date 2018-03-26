@@ -11,10 +11,8 @@ namespace trans_gtp
     public partial class FormMainTransGTP : FormMainTrans
     {
         public FormMainTransGTP()
-            : base(ID_APPLICATION.TRANS_GTP_NSK
-                    , new System.Collections.Generic.KeyValuePair<string, string> [] { new System.Collections.Generic.KeyValuePair<string, string> (@"ИгнорДатаВремя-techsite", false.ToString())
-                        , new System.Collections.Generic.KeyValuePair<string, string> (@"ТипБДКфгНазначение", "200")
-                        , new System.Collections.Generic.KeyValuePair<string, string> (@"РДГФорматТаблицаНазначение", "DYNAMIC") }
+            : base(FileAppSettings.This().GetIdApplication
+                    , new System.Collections.Generic.KeyValuePair<string, string> [] { new System.Collections.Generic.KeyValuePair<string, string> (@"ИгнорДатаВремя-techsite", false.ToString ()) }
             )
         {
             InitializeComponentTransDB();
@@ -102,12 +100,12 @@ namespace trans_gtp
             //arStrTypeField[(int)CONN_SETT_TYPE.DEST] = m_sFileINI.GetMainValueOfKey(@"РДГФорматТаблицаНазначение");
 
             bool bIgnoreDateTime = false;
-            if (Boolean.TryParse(m_sFileINI.GetMainValueOfKey(@"ИгнорДатаВремя-techsite"), out bIgnoreDateTime) == false)
+            if (Boolean.TryParse(FileAppSettings.This().GetValue(@"ИгнорДатаВремя-techsite"), out bIgnoreDateTime) == false)
                 bIgnoreDateTime = false;
             else
                 ;
 
-            m_sFileINI.AddMainPar(@"ТЭЦПараметрыНазначение", @"{}");
+            FileAppSettings.This ().AddRequired(@"ТЭЦПараметрыНазначение", @"{}");
 
             ASUTP.Core.HMark markQueries = new ASUTP.Core.HMark (0);
             markQueries.Set((int)StatisticCommon.CONN_SETT_TYPE.PBR, ОпросППБРToolStripMenuItem.Checked);
@@ -164,7 +162,7 @@ namespace trans_gtp
                     /*&& (arTypeConfigDB[(int)CONN_SETT_TYPE.DEST] == TYPE_DATABASE_CFG.CFG_190)*/
                     )
                 {
-                    string strTECParametersDest = m_sFileINI.GetMainValueOfKey(@"ТЭЦПараметрыНазначение");
+                    string strTECParametersDest = FileAppSettings.This ().GetValue(@"ТЭЦПараметрыНазначение");
                     if (strTECParametersDest.Equals (string.Empty) == false) {
                         ////if ((HAdmin.DEBUG_ID_TEC == -1) || (HAdmin.DEBUG_ID_TEC == Convert.ToInt32 (list_tec.Rows[i]["ID"]))) {
                         //    int err = -1

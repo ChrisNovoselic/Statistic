@@ -3,7 +3,7 @@ using System.Collections.Generic;
 //using System.ComponentModel;
 using System.Data;
 using System.Drawing;
-//using System.Linq;
+using System.Linq;
 using System.Text;
 using System.Windows.Forms;
 using System.Runtime.InteropServices;
@@ -15,11 +15,9 @@ namespace StatisticTransModes
 {
     public abstract class FormMainTransModes : FormMainTrans
     {
-        public FormMainTransModes(ID_APPLICATION id_app)
+        public FormMainTransModes(ASUTP.Helper.ProgramBase.ID_APP id_app, KeyValuePair<string, string> [] config)
             : base(id_app
-                    , new System.Collections.Generic.KeyValuePair<string, string> [] { new System.Collections.Generic.KeyValuePair<string, string> (@"ИгнорДатаВремя-techsite", false.ToString())
-                    , new System.Collections.Generic.KeyValuePair<string, string> (@"ТипБДКфгНазначение", "200")
-                    , new System.Collections.Generic.KeyValuePair<string, string> (@"РДГФорматТаблицаНазначение", "DYNAMIC") })
+                    , new System.Collections.Generic.KeyValuePair<string, string> [] { new System.Collections.Generic.KeyValuePair<string, string> (@"ИгнорДатаВремя-techsite", false.ToString()) })
         {
             InitializeComponentTransModes();
 

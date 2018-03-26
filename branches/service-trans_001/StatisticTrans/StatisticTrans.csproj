@@ -84,6 +84,7 @@
       <HintPath>..\..\ExternalDLL\ASUTP.Logging.dll</HintPath>
     </Reference>
     <Reference Include="System" />
+    <Reference Include="System.Configuration" />
     <Reference Include="System.Core" />
     <Reference Include="System.Drawing" />
     <Reference Include="System.Windows.Forms" />
@@ -96,6 +97,7 @@
     <Compile Include="ComponentTesting.cs">
       <SubType>Form</SubType>
     </Compile>
+    <Compile Include="FileAppSettings.cs" />
     <Compile Include="FormMainTrans.cs">
       <SubType>Form</SubType>
     </Compile>
