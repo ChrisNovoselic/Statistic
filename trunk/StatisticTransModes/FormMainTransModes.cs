@@ -3,7 +3,7 @@ using System.Collections.Generic;
 //using System.ComponentModel;
 using System.Data;
 using System.Drawing;
-//using System.Linq;
+using System.Linq;
 using System.Text;
 using System.Windows.Forms;
 using System.Runtime.InteropServices;
@@ -15,10 +15,11 @@ namespace StatisticTransModes
 {
     public abstract class FormMainTransModes : FormMainTrans
     {
-        public FormMainTransModes(int id_app)
+        public FormMainTransModes(ASUTP.Helper.ProgramBase.ID_APP id_app, KeyValuePair<string, string> [] config)
             : base(id_app
-                    , new string[] { @"ИгнорДатаВремя-techsite"/*, @"РДГФорматТаблицаНазначение", @"ТипБДКфгНазначение"*/ }
-                    , new string[] { false.ToString()/*, AdminTS.TYPE_FIELDS.DYNAMIC.ToString(), @"200"*/ })
+                , new System.Collections.Generic.KeyValuePair<string, string> [] {
+                    new System.Collections.Generic.KeyValuePair<string, string> (@"ИгнорДатаВремя-techsite", false.ToString())
+                }.Concat(config).ToArray())
         {
             InitializeComponentTransModes();
 
@@ -118,7 +119,10 @@ namespace StatisticTransModes
 
         protected override void comboBoxTECComponent_SelectedIndexChanged(object cbx, EventArgs ev)
         {
-            ClearTables();
+            ASUTP.Logging.Logg ().Debug ($"FormMainTransModes::comboBoxTECComponent_SelectedIndexChanged () - m_IndexDB={m_IndexDB}, ModeTECComponent={m_modeTECComponent.ToString()}..."
+                , ASUTP.Logging.INDEX_MESSAGE.NOT_SET);
+
+            ClearTables ();
 
             switch (m_modeTECComponent)
             {

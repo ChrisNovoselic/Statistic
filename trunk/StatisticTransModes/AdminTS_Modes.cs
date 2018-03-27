@@ -77,7 +77,8 @@ namespace StatisticTransModes
 
                 saving = false;
 
-                if (!(saveComplete == null)) saveComplete(); else ;
+                //??? почему SavePPBRValues, а не SaveAdminValues
+                saveComplete?.Invoke ((int)StatesMachine.SavePPBRValues);
             }
             else {
                 Logging.Logg().Debug("AdminTS_Modes::SaveChanges () - semaDBAccess.WaitOne(" + msecWaitSemaDbAccess + @")=false", Logging.INDEX_MESSAGE.NOT_SET);

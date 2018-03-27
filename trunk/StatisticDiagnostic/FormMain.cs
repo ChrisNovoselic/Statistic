@@ -33,6 +33,7 @@ namespace StatisticDiagnostic
         private int _state;
 
         public FormMain()
+            : base (ASUTP.Helper.ProgramBase.ID_APP.DIAGNOSTIC)
         {
             System.ComponentModel.ComponentResourceManager resources = new System.ComponentModel.ComponentResourceManager(typeof(FormMain));
             //this.notifyIconMain.Icon =

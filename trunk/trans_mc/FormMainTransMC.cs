@@ -1,11 +1,10 @@
 ﻿using System;
+using System.Linq;
 using System.Collections.Generic;
-//using System.ComponentModel;
-//using System.Data;
-using System.Drawing;
-//using System.Linq;
-using System.Text;
 using System.Windows.Forms;
+
+using Newtonsoft.Json;
+using Newtonsoft.Json.Linq;
 
 using StatisticCommon;
 using StatisticTrans;
@@ -17,8 +16,21 @@ namespace trans_mc
     public partial class FormMainTransMC : FormMainTransModes
     {
         public FormMainTransMC()
-            : base((int)ASUTP.Helper.ProgramBase.ID_APP.TRANS_MODES_CENTRE_GUI)
+            : base(ASUTP.Helper.ProgramBase.ID_APP.TRANS_MODES_CENTRE
+                  , new KeyValuePair<string, string> [] {
+                      new System.Collections.Generic.KeyValuePair<string, string> ("MCServiceHost", "ne1843.ne.ru")
+                      , new System.Collections.Generic.KeyValuePair<string, string> (@"ИгнорДатаВремя-ModesCentre", false.ToString())
+                      //, new System.Collections.Generic.KeyValuePair<string, string> ("service", "on_event") перенесено в 'FormMainTrans'
+                      , new System.Collections.Generic.KeyValuePair<string, string> ("JEventListener", JsonConvert.SerializeObject (new JObject {
+                          { DbMCInterface.EVENT.OnData53500Modified.ToString(), false }
+                          , { DbMCInterface.EVENT.OnMaket53500Changed.ToString(), false }
+                          , { DbMCInterface.EVENT.OnPlanDataChanged.ToString(), true }
+                          , { DbMCInterface.EVENT.OnModesEvent.ToString(), false }
+                      }) )
+                  })
         {
+            InitializeComponent ();
+
             this.notifyIconMain.Icon =
             this.Icon = trans_mc.Properties.Resources.statistic5;
             InitializeComponentTransSrc (@"Сервер Модес-Центр");
@@ -36,11 +48,7 @@ namespace trans_mc
 
             EditFormConnectionSettings("connsett_mc.ini", false);
 
-            m_sFileINI.AddMainPar(@"MCServiceHost", string.Empty);
-            m_sFileINI.AddMainPar(@"ИгнорДатаВремя-ModesCentre", false.ToString());
-
             bool bIgnoreTECInUse = false;
-            string strTypeField = m_sFileINI.GetMainValueOfKey(@"РДГФорматТаблицаНазначение");
 
             //??? для создания статического 'DbMCSources' = 'DbSources'
             DbMCSources.Sources();
@@ -54,7 +62,18 @@ namespace trans_mc
                 switch (i)
                 {
                     case (Int16)CONN_SETT_TYPE.SOURCE:
-                        m_arAdmin[i] = new AdminMC(m_sFileINI.GetMainValueOfKey(@"MCServiceHost"));
+                        m_arAdmin[i] = new AdminMC(FileAppSettings.This ().GetValue(@"MCServiceHost"));
+                        if (handlerCmd.ModeMashine == MODE_MASHINE.SERVICE_ON_EVENT) {
+                            (m_arAdmin [i] as AdminMC).AddEventHandler (DbMCInterface.ID_EVENT.HANDLER_CONNECT, FormMainTransMC_EventHandlerConnect);
+
+                            (m_arAdmin [i] as AdminMC).AddEventHandler(DbMCInterface.ID_EVENT.RELOAD_PLAN_VALUES, FormMainTransMC_EventMaketChanged);
+                            //!!! дубликат для отладки
+                            (m_arAdmin [i] as AdminMC).AddEventHandler (DbMCInterface.ID_EVENT.PHANTOM_RELOAD_PLAN_VALUES, FormMainTransMC_EventMaketChanged);
+                            (m_arAdmin [i] as AdminMC).AddEventHandler (DbMCInterface.ID_EVENT.NEW_PLAN_VALUES, FormMainTransMC_EventPlanDataChanged);
+                            //!!! дубликат для выполнения внеочередного запроса (например, при запуске)
+                            (m_arAdmin [i] as AdminMC).AddEventHandler (DbMCInterface.ID_EVENT.REQUEST_PLAN_VALUES, FormMainTransMC_EventPlanDataChanged);
+                        } else
+                            ;
                         break;
                     case (Int16)CONN_SETT_TYPE.DEST:
                         m_arAdmin[i] = new AdminTS_Modes(new bool[] { false, true });
@@ -77,22 +96,14 @@ namespace trans_mc
                 switch (i)
                 {
                     case (Int16)CONN_SETT_TYPE.SOURCE:
-                        m_arAdmin[i].m_ignore_date = bool.Parse(m_sFileINI.GetMainValueOfKey(@"ИгнорДатаВремя-ModesCentre"));
+                        m_arAdmin[i].m_ignore_date = bool.Parse (FileAppSettings.This ().GetValue(@"ИгнорДатаВремя-ModesCentre"));
                         break;
                     case (Int16)CONN_SETT_TYPE.DEST:
-                        //if (strTypeField.Equals(AdminTS.TYPE_FIELDS.DYNAMIC.ToString()) == true)
-                        //    ((AdminTS)m_arAdmin[i]).m_typeFields = AdminTS.TYPE_FIELDS.DYNAMIC;
-                        //else if (strTypeField.Equals(AdminTS.TYPE_FIELDS.STATIC.ToString()) == true)
-                        //    ((AdminTS)m_arAdmin[i]).m_typeFields = AdminTS.TYPE_FIELDS.STATIC;
-                        //else
-                        //    ;
-                        m_arAdmin[i].m_ignore_date = bool.Parse(m_sFileINI.GetMainValueOfKey(@"ИгнорДатаВремя-techsite"));
+                        m_arAdmin[i].m_ignore_date = bool.Parse (FileAppSettings.This ().GetValue(@"ИгнорДатаВремя-techsite"));
                         break;
                     default:
                         break;
                 }
-
-                //m_arAdmin[i].m_ignore_connsett_data = true; //-> в конструктор
             }
 
             DbTSQLConfigDatabase.DbConfig().UnRegister();
@@ -135,6 +146,40 @@ namespace trans_mc
                 ;
         }
 
+        private void FormMainTransMC_EventMaketChanged (object sender, EventArgs e)
+        {
+            IAsyncResult iar;
+            object res;
+
+            iar = BeginInvoke ((MethodInvoker)delegate () {
+                AdminMC adminMC = m_arAdmin [(int)CONN_SETT_TYPE.SOURCE] as AdminMC;
+                
+                adminMC.GetMaketEquipment (FormChangeMode.KeyDevice.Service, e as AdminMC.EventArgs<Guid>, (e as AdminMC.IEventArgs).m_Date);
+            });
+
+            //iar.AsyncWaitHandle.WaitOne ();
+            //res = EndInvoke (iar);
+
+            Logging.Logg ().Action (@"::FormMainTransMC_EventMaketChanged () - ...", Logging.INDEX_MESSAGE.NOT_SET);
+        }
+
+        private void FormMainTransMC_EventPlanDataChanged (object sender, EventArgs e)
+        {
+            IAsyncResult iar;
+            object res;
+
+            iar = BeginInvoke ((MethodInvoker)delegate () {
+                dateTimePickerMain.Value = (e as AdminMC.IEventArgs).m_Date.Date;
+
+                trans_auto_start ();
+            });
+
+            //iar.AsyncWaitHandle.WaitOne();
+            //res = EndInvoke (iar);
+
+            Logging.Logg ().Action (@"::FormMainTransMC_EventPlanDataChanged () - ...", Logging.INDEX_MESSAGE.NOT_SET);
+        }
+
         protected override void setUIControlSourceState()
         {
             IDevice comp = ((AdminTS)m_arAdmin [(Int16)CONN_SETT_TYPE.DEST]).CurrentDevice;
@@ -144,7 +189,7 @@ namespace trans_mc
                 //Properties.Settings sett = new Properties.Settings();
                 //tbxSourceServerMC.Text = sett.Modes_Centre_Service_Host_Name;
 
-                m_arUIControls[(Int16)CONN_SETT_TYPE.SOURCE, (Int16)INDX_UICONTROLS.SERVER_IP].Text = m_sFileINI.GetMainValueOfKey(@"MCServiceHost");
+                m_arUIControls[(Int16)CONN_SETT_TYPE.SOURCE, (Int16)INDX_UICONTROLS.SERVER_IP].Text = FileAppSettings.This ().GetValue(@"MCServiceHost");
             }
             else
                 m_arUIControls[(Int16)CONN_SETT_TYPE.SOURCE, (Int16)INDX_UICONTROLS.SERVER_IP].Text = string.Empty;
@@ -153,25 +198,178 @@ namespace trans_mc
         }
 
         protected override void buttonSaveSourceSett_Click(object sender, EventArgs e)
-        {            
+        {
+            //base.buttonSaveSourceSett_Click (sender, e);
+        }
+
+        protected override void trans_auto_stop ()
+        {
+            AdminMC adminMC = m_arAdmin [(int)CONN_SETT_TYPE.SOURCE] as AdminMC;
+
+            Logging.Logg ().Debug ($"FormMainTransMS::trans_auto_stop () IsServiceOnEvent={adminMC.IsServiceOnEvent}..."
+                , Logging.INDEX_MESSAGE.NOT_SET);
+
+            if (adminMC.IsServiceOnEvent == true)
+                adminMC.FetchEvent (true);
+            else
+                base.trans_auto_stop ();
         }
 
         protected override void comboBoxTECComponent_SelectedIndexChanged(object sender, EventArgs ev)
         {
-            if (IsCanSelectedIndexChanged() == true)
+            Logging.Logg ().Debug (string.Format(@"FormMainTransMC::comboBoxTECComponent_SelectedIndexChanged () - IsCanSelectedIndexChanged={0}, IndexDB={1}, <AdminMC.CurrentKey.Id={2} >> SelectedIndex={3}, SelectedKey.Id={4}> ..."
+                    , IsCanSelectedIndexChanged
+                    , m_IndexDB
+                    , m_arAdmin [m_IndexDB].CurrentKey.Id
+                    , comboBoxTECComponent.SelectedIndex
+                    , !(comboBoxTECComponent.SelectedIndex < 0) ? ((ComboBoxItem)comboBoxTECComponent.SelectedItem).Tag.Id : -1)
+                , Logging.INDEX_MESSAGE.NOT_SET);
+
+            if (IsCanSelectedIndexChanged == true)
             {
                 base.comboBoxTECComponent_SelectedIndexChanged(sender, ev);
 
                 setUIControlConnectionSettings((Int16)CONN_SETT_TYPE.DEST);
                 setUIControlSourceState();
             }
-            else
-                ;
+            else {
+                m_arAdmin [m_IndexDB].TECComponentComplete (-1, false);
+
+                //??? как переходить к следующей итерации
+                //??? 
+            }
         }
 
-        protected override void timer_Start()
+        protected override void timerService_Tick (object sender, EventArgs e)
         {
-            base.timer_Start();
+            FormChangeMode.MODE_TECCOMPONENT mode = FormChangeMode.MODE_TECCOMPONENT.GTP;
+
+            switch (handlerCmd.ModeMashine) {
+                case MODE_MASHINE.SERVICE_ON_EVENT:
+                    // остановить таймер; это первый  вызов (можно обрабытывать также в 'timer_Start')
+                    stopTimerService ();
+
+                    FillComboBoxTECComponent (mode, true);
+                    CT = new ComponentTesting (comboBoxTECComponent.Items.Count);
+
+                    dateTimePickerMain.Value = DateTime.Now;
+
+                    m_arAdmin [(int)CONN_SETT_TYPE.SOURCE].Activate (true);
+
+
+                    if ((handlerCmd.DebugTurn == true)
+                        && (handlerCmd.ModeMashine == MODE_MASHINE.SERVICE_ON_EVENT))
+                    // отладка переопубликации плана
+                        (m_arAdmin [(int)CONN_SETT_TYPE.SOURCE] as AdminMC).DebugEventReloadPlanValues ();
+                    else
+                        ;
+                    // обязательный запрос актуального плана для всех подразделений
+                    (m_arAdmin [(int)CONN_SETT_TYPE.SOURCE] as AdminMC).ToDateRequest (ASUTP.Core.HDateTime.ToMoscowTimeZone ().Date);
+                    break;
+                default:
+                    base.timerService_Tick (sender, e);
+                    break;
+            }
         }
+
+        #region Код, автоматически созданный конструктором форм Windows
+
+        private void FormMainTransMC_EventHandlerConnect (object obj, EventArgs ev)
+        {
+            Action checkStateChanged = delegate () {
+                trans_mc.AdminMC.EventArgs<bool> arg = ev as trans_mc.AdminMC.EventArgs<bool>;
+
+                ((ToolStripMenuItem)this.СобытияМодесЦентрToolStripMenuItem.DropDownItems.Find (getNameSubToolStripMenuItem (DbMCInterface.TranslateEvent (arg.m_id)), true) [0])
+                    .Checked = arg.m_listParameters [0];
+
+                this.СобытияМодесЦентрToolStripMenuItem.Enabled = this.СобытияМодесЦентрToolStripMenuItem.DropDownItems.Cast<ToolStripMenuItem> ().Any (item => item.Checked == true);
+            };
+
+            try {
+                if (InvokeRequired == true)
+                    Invoke (checkStateChanged);
+                else
+                    checkStateChanged ();
+                
+            } catch (Exception e) {
+                Logging.Logg ().Exception (e, $"::FormMainTransMC_EventHandlerConnect () - ...", Logging.INDEX_MESSAGE.NOT_SET);
+            }
+        }
+
+        private static string getNameSubToolStripMenuItem (DbMCInterface.EVENT nameEvent)
+        {
+            return $"{nameEvent.ToString ()}СобытияМодесЦентрToolStripMenuItem";
+        }
+
+        /// <summary>
+        /// Обязательный метод для поддержки конструктора - не изменяйте
+        /// содержимое данного метода при помощи редактора кода.
+        /// </summary>
+        private void InitializeComponent ()
+        {
+            ToolStripMenuItem subToolStripMenuItem;
+            List<Tuple<DbMCInterface.EVENT, string>> listTextToolStripMenuItem;
+            //JObject jsonEventListener;
+
+            listTextToolStripMenuItem = new List<Tuple<DbMCInterface.EVENT, string>> {
+                Tuple.Create (DbMCInterface.EVENT.OnData53500Modified, "Оборудование")
+                , Tuple.Create (DbMCInterface.EVENT.OnMaket53500Changed, "Макет")
+                , Tuple.Create (DbMCInterface.EVENT.OnPlanDataChanged, "План")
+                , Tuple.Create (DbMCInterface.EVENT.OnModesEvent, "Служебное")
+            };
+
+            СобытияМодесЦентрToolStripMenuItem = new ToolStripMenuItem ();
+            m_listSubEventModesCentreToolStripMenuItem = new List<ToolStripMenuItem> ();
+            foreach (DbMCInterface.EVENT nameEvent in Enum.GetValues (typeof (DbMCInterface.EVENT))) {
+                if (nameEvent == DbMCInterface.EVENT.Unknown)
+                    continue;
+                else
+                    ;
+
+                m_listSubEventModesCentreToolStripMenuItem.Add (new ToolStripMenuItem ());
+                m_listSubEventModesCentreToolStripMenuItem [m_listSubEventModesCentreToolStripMenuItem.Count - 1].Tag = nameEvent;
+            }
+
+            // 
+            // СобытияМодесЦентрToolStripMenuItem
+            // 
+            this.СобытияМодесЦентрToolStripMenuItem.Name = "СобытияМодесЦентрToolStripMenuItem";
+            this.СобытияМодесЦентрToolStripMenuItem.Size = new System.Drawing.Size (118, 22);
+            this.СобытияМодесЦентрToolStripMenuItem.Text = "События Модес-Центр";
+            this.СобытияМодесЦентрToolStripMenuItem.Enabled = false;
+
+            //jsonEventListener = JsonConvert.DeserializeObject<JObject> (StatisticTrans.FileAppSettings.This ().GetValue ("JEventListener"));
+
+            foreach (DbMCInterface.EVENT nameEvent in Enum.GetValues (typeof (DbMCInterface.EVENT))) {
+                if (nameEvent == DbMCInterface.EVENT.Unknown)
+                    continue;
+                else
+                    ;
+
+                subToolStripMenuItem = m_listSubEventModesCentreToolStripMenuItem.Single (item => (DbMCInterface.EVENT)item.Tag == nameEvent);
+                // 
+                // подпункт для СобытияМодесЦентрToolStripMenuItem
+                // 
+                subToolStripMenuItem.Tag = nameEvent;
+                subToolStripMenuItem.Name = getNameSubToolStripMenuItem (nameEvent);
+                subToolStripMenuItem.Size = new System.Drawing.Size (118, 22);
+                subToolStripMenuItem.Text = listTextToolStripMenuItem.Single (desc => desc.Item1 == nameEvent).Item2;
+                subToolStripMenuItem.Enabled =
+                    //bool.Parse(jsonEventListener.Value<string>(eventName.ToString()))
+                    false
+                    ;
+
+                this.СобытияМодесЦентрToolStripMenuItem.DropDownItems.Add (subToolStripMenuItem);
+            }
+
+            //this.СобытияМодесЦентрToolStripMenuItem.Enabled = handlerCmd.ModeMashine == MODE_MASHINE.SERVICE_ON_EVENT;
+
+            this.настройкиToolStripMenuItem.DropDownItems.Add (this.СобытияМодесЦентрToolStripMenuItem);
+        }
+
+        protected System.Windows.Forms.ToolStripMenuItem СобытияМодесЦентрToolStripMenuItem;
+        protected IList<System.Windows.Forms.ToolStripMenuItem> m_listSubEventModesCentreToolStripMenuItem;
+
+        #endregion
     }
 }

@@ -3,8 +3,7 @@ using System.Collections.Generic;
 //using System.ComponentModel;
 using System.Data;
 using System.Drawing;
-//using System.Linq;
-using System.Text;
+using System.Linq;
 using System.Windows.Forms;
 using System.Runtime.InteropServices;
 using System.Threading;
@@ -20,19 +19,20 @@ namespace StatisticTrans
     /// <summary>
     /// Класс "Главная форма Trans (Передача?)"
     /// </summary>
-    public abstract partial class       FormMainTrans : FormMainStatistic
+    public abstract partial class FormMainTrans : FormMainStatistic
     {
-        ComponentTesting CT;//
-        private const Int32 TIMER_SERVICE_MIN_INTERVAL = 66666;
-
         /// <summary>
-        /// счетчик иттераций ошибок
+        /// Объект для чтения/хранения параметров конфигурации приложения
         /// </summary>
-        public int IndexCount;
+        //protected static FileINI m_sFileINI; // setup.ini
+
+        protected ComponentTesting CT;
+
+        private const Int32 TIMER_SERVICE_MIN_INTERVAL = 66666;
         /// <summary>
         /// //Перечисление "Режим машины" (интерактивный,дата, сервис,неизвестный)
         /// </summary>
-        protected enum MODE_MASHINE : ushort { INTERACTIVE, TO_DATE, SERVICE, UNKNOWN };
+        protected enum MODE_MASHINE : ushort { INTERACTIVE, SERVICE_TO_DATE, SERVICE_PERIOD, SERVICE_ON_EVENT, UNKNOWN };
         /// <summary>
         ///Перечисление "Типы настроек"
         /// </summary>
@@ -56,17 +56,11 @@ namespace StatisticTrans
         protected HAdmin[] m_arAdmin;
         protected GroupBox[] m_arGroupBox;
 
-
         protected DataGridViewAdmin m_dgwAdminTable;
-        protected static string msg_throw;
-        //protected List<int> m_listTECComponentIndex;
-
-        protected static DateTime m_arg_date;
-        protected static Int32 m_arg_interval;
 
         protected FormChangeMode.MODE_TECCOMPONENT m_modeTECComponent;
 
-        protected static MODE_MASHINE m_modeMashine = MODE_MASHINE.INTERACTIVE;
+        //protected MODE_MASHINE s_modeMashine = MODE_MASHINE.INTERACTIVE;
 
         protected CheckBox m_checkboxModeMashine;
 
@@ -74,7 +68,7 @@ namespace StatisticTrans
 
         //protected HMark m_markQueries;
 
-        protected bool m_bTransAuto
+        protected bool IsService
         {
             get
             {
@@ -83,7 +77,11 @@ namespace StatisticTrans
 
                 //return !timerMain.Enabled;
 
-                return ((m_modeMashine == MODE_MASHINE.TO_DATE) || (m_modeMashine == MODE_MASHINE.SERVICE)) ? true : false;
+                return ((handlerCmd.ModeMashine == MODE_MASHINE.SERVICE_TO_DATE)
+                    || (handlerCmd.ModeMashine == MODE_MASHINE.SERVICE_PERIOD)
+                    || (handlerCmd.ModeMashine == MODE_MASHINE.SERVICE_ON_EVENT))
+                        ? true
+                            : false;
             }
         }
         /// <summary>
@@ -120,71 +118,185 @@ namespace StatisticTrans
 
         private string getINIParametersOfID(int id)
         {
-            return m_sFileINI.GetMainValueOfKey(FormParameters.GetNameParametersOfIndex(id));
+            return
+                //m_sFileINI.GetMainValueOfKey(FormParameters.GetNameParametersOfIndex(id))
+                FileAppSettings.This ().GetValueOfMainIndexParameter(id);
+                ;
         }
 
         /// <summary>
         /// Класс обработки "своих" команд
         /// </summary>
-        public class handlerCmd : HCmd_Arg
+        protected class handlerCmd : HCmd_Arg
         {
+            private enum CMD_PARAMETER { unknown = -1, start, stop, service, date, debug }
+
+            private Dictionary<CMD_PARAMETER, Func<string, bool>> _dictCommandParameterHandler;
+
+            private static string _throwMessage;
+
+            private static MODE_MASHINE s_modeServiceMashineDefault = MODE_MASHINE.SERVICE_ON_EVENT;
+            private static MODE_MASHINE _modeMashine;
+
+            private static DateTime _date;
+
+            private static int _timerInterval;
+
+            protected static bool _debugTurn;
+
+            public static string ThrowMessage { get { return _throwMessage; } }
+
+            public static MODE_MASHINE ModeMashine { get { return _modeMashine; } }
+
+            public static DateTime Date { get { return _date; } }
+
+            public static int TimerInterval { get { return _timerInterval; } }
+
+            public static bool DebugTurn { get { return _debugTurn; } }
+
+            public static void IncTimerInterval ()
+            {
+                _timerInterval++;
+            }
+
+            public static void SetModeMashine (MODE_MASHINE newMode)
+            {
+                _modeMashine = newMode;
+            }
+
+            public static void SetModeServiceMashineDefault ()
+            {
+                SetModeMashine(s_modeServiceMashineDefault);
+            }
+
             /// <summary>
             /// Конструктор - основной (с параметрами)
             /// </summary>
+            /// <param name="id_app">Идентификатор приложения из файла конфигурации</param>
             /// <param name="args">Массив аргументов командной строки</param>
-            public handlerCmd(string[] args)
+            public handlerCmd (ProgramBase.ID_APP id_app, string [] args)
                 : base(args)
             {
-                RunCmd();
-            }
+                CMD_PARAMETER cmdKey = CMD_PARAMETER.unknown;
+                int timerInterval = -1;
+                s_modeServiceMashineDefault = id_app == ProgramBase.ID_APP.TRANS_MODES_CENTRE
+                    ? MODE_MASHINE.SERVICE_ON_EVENT
+                        : MODE_MASHINE.SERVICE_PERIOD;
 
-            /// <summary>
-            /// Выполнить "свои" команды из командной строки
-            /// </summary>
-            private void RunCmd()
-            {
-                foreach (KeyValuePair<string, string> pair in m_dictCmdArgs)
-                    switch (pair.Key)
-                    {
-                        case "date":
-                            m_modeMashine = MODE_MASHINE.TO_DATE;
+                _modeMashine = MODE_MASHINE.INTERACTIVE;
+                _date = DateTime.Now.Date;
+                _timerInterval = TIMER_SERVICE_MIN_INTERVAL; //Милисекунды
 
-                            if (pair.Value == "default")
-                                m_arg_date = DateTime.Now.AddDays(1);
-                            else
-                                if (pair.Value == "now")
-                                    ; //Уже присвоено значение
-                                else
-                                    m_arg_date = DateTime.Parse(pair.Value);
-                            break;
+                _dictCommandParameterHandler = new Dictionary<CMD_PARAMETER, Func<string, bool>> {
+                    // 'start', 'stop' обрабытываютяс в родительском классе
+                    { CMD_PARAMETER.start, delegate (string arg) {
+                        bool bRes = true;
 
-                        case "service":
-                            m_modeMashine = MODE_MASHINE.SERVICE;
+                        _modeMashine = s_modeServiceMashineDefault;
+                        _timerInterval = TIMER_SERVICE_MIN_INTERVAL;
 
-                            if ((pair.Value.Equals(string.Empty) == true)
-                                || (pair.Value.Equals(@"default") == true))
-                                ;
-                            else
-                                Int32.TryParse(pair.Value, out m_arg_interval);
+                        return bRes;
+                    } }
+                    // обработка параметра 'service'
+                    , { CMD_PARAMETER.service, delegate (string arg) {
+                        bool bRes = true;
 
-                            if (m_arg_interval < TIMER_SERVICE_MIN_INTERVAL)
-                            {
-                                msg_throw = "Интервал задан меньше необходимого значения";
-                                m_modeMashine = MODE_MASHINE.UNKNOWN;
+                        _modeMashine = s_modeServiceMashineDefault;
+
+                        if ((arg.Equals(string.Empty) == true)
+                            || (arg.Equals(@"default") == true))
+                        // оставить значение 'm_arg_interval' по умолчанию
+                            ;
+                        else if(Int32.TryParse(arg, out timerInterval) == true) {
+                        // указано и распознано значение интервала
+                            // указать корректное значение итнтервала
+                            if (!(timerInterval < TIMER_SERVICE_MIN_INTERVAL)) {
+                                _modeMashine = MODE_MASHINE.SERVICE_PERIOD;
+                                _timerInterval = timerInterval;
+                            } else {
+                                _modeMashine = MODE_MASHINE.UNKNOWN;
+                                _throwMessage = "Интервал задан меньше необходимого значения";
                             }
-                            else
-                                ;
-                            int argt = m_arg_interval;
-                            break;
+                        } else if (arg.Equals (@"on_event") == true) {
+                        // режим работы по событиям Модес-Центр
+                            _modeMashine = MODE_MASHINE.SERVICE_ON_EVENT;
+                            _timerInterval = TIMER_SERVICE_MIN_INTERVAL;
+                        } else {
+                            _throwMessage = $"FormMain::RunCmd() - неизвестный сервисный режим <{arg}> работы...";
+                            _modeMashine = MODE_MASHINE.UNKNOWN;
+                        }
 
-                        case "start":
-                            m_modeMashine = MODE_MASHINE.SERVICE;
-                            m_arg_interval = TIMER_SERVICE_MIN_INTERVAL;
-                            break;
-                        default:
-                            break;
-                    }
+                        return bRes;
+                    } }
+                    // обработка параметра 'date'
+                    , { CMD_PARAMETER.date, delegate (string arg) {
+                        bool bRes = true;
+
+                        _modeMashine = MODE_MASHINE.SERVICE_TO_DATE;
+
+                        if (arg == "default")
+                            _date = DateTime.Now.AddDays(1);
+                        else if (arg == "now")
+                            _date = DateTime.Now;
+                        else if (DateTime.TryParse(arg, out _date) == false)
+                            _date = DateTime.Now;
+                        else
+                            ;
+
+                        return bRes;
+                    } }
+                    // обработка
+                    , { CMD_PARAMETER.debug, delegate (string arg) {
+                        bool bRes = true;
+
+                        if (bool.TryParse (arg, out _debugTurn) == false)
+                            _debugTurn = false;
+                        else
+                            ;
+
+                        return bRes;
+                    } }
+                };
+
+                foreach (CMD_PARAMETER parameter in Enum.GetValues (typeof (CMD_PARAMETER))) {
+                    if ((parameter == CMD_PARAMETER.unknown)
+                        //|| (parameter == CMD_PARAMETER.start) обработано, но назначается режим работы по умолчанию
+                        || (parameter == CMD_PARAMETER.stop))
+                    // обработан ранее в родительском классе
+                        continue;
+                    else if (_dictCommandParameterHandler.ContainsKey (parameter) == true)
+                    // словарь обработчиков содержит требуемый метод
+                        if (m_dictCmdArgs.ContainsKey (parameter.ToString()) == true)
+                        // указан в командной строке - вызвать метод
+                            _dictCommandParameterHandler [parameter] (m_dictCmdArgs[parameter.ToString()]);
+                        else
+                        // проверить наличие ключа в файле конфигурации
+                            if (FileAppSettings.This ().IsNotNullOrEmpty(parameter.ToString ()) == true)
+                            // прочитать из файла конфигурации - вызвать метод
+                                _dictCommandParameterHandler [parameter] (FileAppSettings.This().GetValue(parameter.ToString()));
+                            else
+                            // в файле конфигурации параметр тоже не указан
+                                ;
+                    else
+                    // для параметра не указан обработчик
+                        Logging.Logg ().Warning ($"FormMainTrans.handlerCmd::ctor () - для параметра <{parameter}> не указан обработчик..."
+                            , Logging.INDEX_MESSAGE.NOT_SET);
+                }
+
+                foreach (KeyValuePair<string, string> pair in m_dictCmdArgs) {
+                    if (Enum.TryParse<CMD_PARAMETER> (pair.Key, out cmdKey) == false)
+                    // параметр не распознан как известный к обработке
+                        Logging.Logg ().Warning ($"FormMainTrans.handlerCmd::ctor () - не известный параметр <{pair.Key}>, значение=<{pair.Value}>..."
+                            , Logging.INDEX_MESSAGE.NOT_SET);
+                    else
+                        ;
+                }
             }
+        }
+
+        public FormMainTrans (Func<ProgramBase.ID_APP> fGettingIdApplication, KeyValuePair<string, string> [] config)
+            : this (fGettingIdApplication(), config)
+        {
         }
 
         /// <summary>
@@ -193,7 +305,8 @@ namespace StatisticTrans
         /// <param name="id_app">Идентификатор приложения из файла конфигурации</param>
         /// <param name="par">Наименования-ключи параметров для файла конфигурации</param>
         /// <param name="val">Значения для параметров в файле конфигурации</param>
-        public FormMainTrans(int id_app, string[] par, string[] val)
+        public FormMainTrans(ProgramBase.ID_APP id_app, KeyValuePair<string, string>[]config)
+            : base(id_app)
         {
             Thread.CurrentThread.CurrentCulture =
             Thread.CurrentThread.CurrentUICulture =
@@ -206,24 +319,22 @@ namespace StatisticTrans
             //DelegateGetINIParametersOfID = new StringDelegateIntFunc(GetINIParametersOfID);
             Logging.DelegateGetINIParametersOfID = new StringDelegateIntFunc(getINIParametersOfID);
 
-            m_sFileINI = new FileINI(@"setup.ini", false, par, val);
+            //m_sFileINI = new FileINI(@"setup.ini"
+            //    , false
+            //    , (from pair in config select pair.Key).ToArray()
+            //    , (from pair in config select pair.Value).ToArray());
+            FileAppSettings.This ().AddRequired (config
+                //.Concat(new KeyValuePair<string, string> [] { new KeyValuePair<string, string> (@"service", "126667") }) ??? сервис указывается только в командной строке
+            );
 
             string keyPar = string.Empty
                 , valDefPar = string.Empty;
 
-            keyPar = @"Main DataSource"; valDefPar = @"671";
-            m_sFileINI.AddMainPar(keyPar, valDefPar);
-            s_iMainSourceData = Int32.Parse(m_sFileINI.GetMainValueOfKey(keyPar));
-
-            //keyPar = @"Season DateTime"; valDefPar = @"21.10.2014 03:00";
-            //m_fileINI.Add(keyPar, valDefPar);
-            //keyPar = @"Season Action"; valDefPar = @"-1";
-            //m_fileINI.Add(keyPar, valDefPar);
+            s_iMainSourceData = Int32.Parse(FileAppSettings.This ().GetValueOfMainIndexParameter(FormParameters.PARAMETR_SETUP.MAIN_DATASOURCE));
 
             //Вариант №1
             keyPar = @"iapp"; valDefPar = id_app.ToString();
-            m_sFileINI.AddMainPar(keyPar, valDefPar);
-            ProgramBase.s_iAppID = Int32.Parse(m_sFileINI.GetMainValueOfKey(keyPar));
+            ProgramBase.s_iAppID = id_app; // FileAppSettings.This ().GetValue(keyPar)
             //Вариант №2
             //ProgramBase.s_iAppID = id_app;
 
@@ -243,28 +354,11 @@ namespace StatisticTrans
             //}
             //else { }
 
-            m_sFileINI.AddMainPar(@"ОкноНазначение", @"Конвертер (...)");
-            m_sFileINI.AddMainPar(@"ID_TECNotUse", string.Empty);
-
-            m_sFileINI.AddMainPar(@"ОпросСохранениеППБР", false.ToString() + @"," + false.ToString());
-            m_sFileINI.AddMainPar(@"ОпросСохранениеАдминЗнач", false.ToString() + @"," + false.ToString());
-
-            keyPar = @"Season DateTime";
-            m_sFileINI.AddMainPar(keyPar, @"26.10.2014 02:00");
-            keyPar = @"Season Action";
-            m_sFileINI.AddMainPar(keyPar, @"-1");
-
-            keyPar = @"SetPBRQuery LogPBRNumber";
-            m_sFileINI.AddMainPar(keyPar, false.ToString());
-
-            keyPar = @"SetPBRQuery LogQuery";
-            m_sFileINI.AddMainPar(keyPar, false.ToString());
-
             this.Text =
-            this.notifyIconMain.Text = @"Статистика: " + m_sFileINI.GetMainValueOfKey(@"ОкноНазначение");
+            this.notifyIconMain.Text = @"Статистика: " + FileAppSettings.This ().GetValue(@"ОкноНазначение");
 
             m_listID_TECNotUse = new List<int>();
-            string[] arStrID_TECNotUse = m_sFileINI.GetMainValueOfKey(@"ID_TECNotUse").Split(',');
+            string[] arStrID_TECNotUse = FileAppSettings.This ().GetValue(@"ID_TECNotUse").Split(',');
 
             foreach (string str in arStrID_TECNotUse)
             {
@@ -278,7 +372,7 @@ namespace StatisticTrans
                 string strChecked = string.Empty;
                 bool bRes = false
                     , bChecked = false;
-                strChecked = m_sFileINI.GetMainValueOfKey(@"ОпросСохранениеППБР");
+                strChecked = FileAppSettings.This ().GetValue (@"ОпросСохранениеППБР");
                 if (bool.TryParse(strChecked.Split(',')[0], out bChecked) == true)
                     ОпросППБРToolStripMenuItem.Checked = bChecked;
                 else
@@ -291,7 +385,7 @@ namespace StatisticTrans
                 bRes =
                 bChecked =
                     false;
-                strChecked = m_sFileINI.GetMainValueOfKey(@"ОпросСохранениеАдминЗнач");
+                strChecked = FileAppSettings.This ().GetValue (@"ОпросСохранениеАдминЗнач");
                 if (bool.TryParse(strChecked.Split(',')[0], out bChecked) == true)
                     ОпросАдминЗначенияToolStripMenuItem.Checked = bChecked;
                 else
@@ -309,7 +403,7 @@ namespace StatisticTrans
             if ((ОпросАдминЗначенияToolStripMenuItem.Checked == false) &&
                 (ОпросППБРToolStripMenuItem.Checked == false))
             {
-                throw new Exception(@"FormMainTrans::не определн перечень опрашиваемых/сохранямых параметров...");
+                throw new Exception(@"FormMainTrans::не определен перечень опрашиваемых/сохранямых параметров...");
             }
             else
                 ;
@@ -335,7 +429,7 @@ namespace StatisticTrans
             this.m_checkboxModeMashine.Size = new System.Drawing.Size(123, 23);
             //this.m_checkboxModeMashine.CheckAlign = ContentAlignment.;
             this.m_checkboxModeMashine.TextAlign = ContentAlignment.MiddleLeft;
-            this.m_checkboxModeMashine.CheckedChanged += new EventHandler(m_checkboxModeMashine_CheckedChanged);
+            this.m_checkboxModeMashine.CheckedChanged += new EventHandler(checkboxModeMashine_CheckedChanged);
             this.Controls.Add(this.m_checkboxModeMashine);
             //Пока переходить из режима в режим пользователь НЕ может (нестабильная работа trans_tg.exe) ???
             this.m_checkboxModeMashine.Enabled = false; ;
@@ -348,34 +442,31 @@ namespace StatisticTrans
             Controls.Add(m_labelTime);
             m_labelTime.Visible = true;
 
-            //Значения аргументов по умолчанию
-            m_arg_date = DateTime.Now;
-            m_arg_interval = TIMER_SERVICE_MIN_INTERVAL; //Милисекунды
+            //Значения аргументов 'Date', 'TimerInterval' по умолчанию в 'handlerCmd'
 
             //экземпляр класса обработки командной строки
             //createHCmdArg(Environment.GetCommandLineArgs());
 
-            dateTimePickerMain.Value = m_arg_date.Date;
+            dateTimePickerMain.Value = handlerCmd.Date;
 
             m_arGroupBox = new GroupBox[(Int16)CONN_SETT_TYPE.COUNT_CONN_SETT_TYPE] { groupBoxSource, groupBoxDest };
             delegateEvent = new DelegateFunc(EventRaised);
 
-            if (m_modeMashine == MODE_MASHINE.UNKNOWN)
-                throw new Exception(msg_throw);
+            if (handlerCmd.ModeMashine == MODE_MASHINE.UNKNOWN)
+                throw new Exception(handlerCmd.ThrowMessage);
             else
-                if (m_modeMashine == MODE_MASHINE.TO_DATE)
+                if (handlerCmd.ModeMashine == MODE_MASHINE.SERVICE_TO_DATE)
                     enabledUIControl(false);
                 else
                 {
                     enabledUIControl(true);
 
-                    if (m_modeMashine == MODE_MASHINE.SERVICE)
-                    {
+                    if ((handlerCmd.ModeMashine == MODE_MASHINE.SERVICE_PERIOD)
+                        || (handlerCmd.ModeMashine == MODE_MASHINE.SERVICE_ON_EVENT)) {
                         this.WindowState = FormWindowState.Minimized;
                         this.ShowInTaskbar = false;
                         this.notifyIconMain.Visible = true;
-                    }
-                    else
+                    } else
                         ;
                 }
         }
@@ -383,11 +474,12 @@ namespace StatisticTrans
         /// <summary>
         /// Создание объекта-обработчика аргументов командной строки
         /// </summary>
+        /// <param name="id_app">Идентификатор приложения из файла конфигурации</param>
         /// <param name="args">Массив аргументов командной строки</param>
         /// <returns>Объект-обработчик аргументов командной строки</returns>
-        protected override HCmd_Arg createHCmdArg(string[] args)
+        protected override HCmd_Arg createHCmdArg(ProgramBase.ID_APP id_app, string [] args)
         {
-            return new handlerCmd(args);
+            return new handlerCmd(id_app, args);
         }
 
         private void InitializeComponentTrans()
@@ -915,34 +1007,8 @@ namespace StatisticTrans
         /// <param name="bNewValues">Признак наличия новых значений, иначе требуется изменить оформление представления</param>
         protected virtual void setDataGridViewAdmin(DateTime date, bool bNewValues)
         {
-            //if (m_IndexDB == (short)CONN_SETT_TYPE.SOURCE) {
-            //    string strDatetimeSeason = m_fileINI.GetValueOfKey(@"Season DateTime");
-            //    if (strDatetimeSeason.Equals(string.Empty) == false)
-            //    {
-            //        DateTime dtSeason = DateTime.Parse(strDatetimeSeason);
-
-            //        if ((date == dtSeason.Date))
-            //        {
-            //            //Преобразовать массивы m_arAdmin
-            //            for (CONN_SETT_TYPE type = (CONN_SETT_TYPE)0; type < CONN_SETT_TYPE.COUNT_CONN_SETT_TYPE; type++)
-            //            {
-            //                m_arAdmin[(int)type].ToSummerWinter(dtSeason.Hour - 1);
-            //            }
-            //        }
-            //        else
-            //        {
-            //        }
-            //    }
-            //    else
-            //    {
-            //    }
-            //} else {
-            //}
-
-            //if (WindowState == FormWindowState.Minimized)
-            //if (m_bTransAuto == true)
-            //if (m_modeMashine == MODE_MASHINE.AUTO || m_modeMashine == MODE_MASHINE.SERVICE)
-            if ((m_bTransAuto == true) && (m_bEnabledUIControl == false))
+            if ((IsService == true)
+                && (m_bEnabledUIControl == false))
             {
                 try
                 {
@@ -979,17 +1045,26 @@ namespace StatisticTrans
         /// <summary>
         /// При [авто]режиме переход к следующему элементу списка компонентов
         /// </summary>
-        protected virtual void errorDataGridViewAdmin()
+        protected virtual void errorDataGridViewAdmin(int state)
         {
-            if ((m_bTransAuto == true) && (m_bEnabledUIControl == false))
+            if ((IsService == true)
+                && (m_bEnabledUIControl == false))
             {
+                m_arAdmin [(int)CONN_SETT_TYPE.SOURCE].TECComponentComplete (state, false);
+
                 CT.ErrorIter();
 
                 IAsyncResult asyncRes;
-                if (IsHandleCreated/*InvokeRequired*/ == true)
-                    asyncRes = this.BeginInvoke(new DelegateFunc(trans_auto_next));
+                if (IsService == true)
+                    if (InvokeRequired == true)
+                        if (IsHandleCreated == true)
+                            asyncRes = this.BeginInvoke (new DelegateFunc (trans_auto_next));
+                        else
+                            Logging.Logg ().Error (@"FormMainTrans::errorDataGridViewAdmin () - ... BeginInvoke (trans_auto_next) - ...", Logging.INDEX_MESSAGE.D_001);
+                    else
+                        trans_auto_next ();
                 else
-                    Logging.Logg().Error(@"FormMainTrans::errorDataGridViewAdmin () - ... BeginInvoke (trans_auto_next) - ...", Logging.INDEX_MESSAGE.D_001);
+                    ;
             }
             else ;
         }
@@ -1014,26 +1089,25 @@ namespace StatisticTrans
         /// <summary>
         /// При [авто]режиме переход к следующему элементу списка компонентов
         /// </summary>
-        protected virtual void saveDataGridViewAdminComplete()
+        protected virtual void saveDataGridViewAdminComplete(int state)
         {
             //Logging.Logg().Debug(@"FormMainTrans::saveDataGridViewAdminComplete () - m_bTransAuto=" + m_bTransAuto + @", m_modeMashine=" + m_modeMashine.ToString () + @", - вХод...", Logging.INDEX_MESSAGE.NOT_SET);
 
-            if ((m_bTransAuto == true) && (m_bEnabledUIControl == false))
+            if ((IsService == true)
+                && (m_bEnabledUIControl == false))
             {
-                //??? зачем нужен '.NextDay'
-                CT.NextDay = IsTomorrow();
-                if (comboBoxTECComponent.InvokeRequired)
-                    comboBoxTECComponent.Invoke(new Action(() => CT.SuccessIter(/*(string)comboBoxTECComponent.Items[comboBoxTECComponent.SelectedIndex]*/)));
-                else
-                    CT.SuccessIter(/*(string)comboBoxTECComponent.Items[comboBoxTECComponent.SelectedIndex]*/);
-                
+                m_arAdmin[(int)CONN_SETT_TYPE.SOURCE].TECComponentComplete (state, true);
+
+                CT.SuccessIter();
+
                 IAsyncResult asyncRes;
-                //if (IsHandleCreated/*InvokeRequired*/ == true)
-                asyncRes = this.BeginInvoke(new DelegateFunc(trans_auto_next));
+                //if (IsService == true) проверка уже выполнена выше
+                    if (InvokeRequired == true)
+                        asyncRes = this.BeginInvoke (new DelegateFunc (trans_auto_next));
+                    else
+                        trans_auto_next ();
                 //else
-                //Logging.Logg().Error(@"FormMainTrans::saveDataGridViewAdminComplete () - ... BeginInvoke (trans_auto_next) - ...");
-                ////this.EndInvoke (asynchRes);
-                //////trans_auto_next ();
+                //    ;
             }
             else
                 ;
@@ -1193,7 +1267,7 @@ namespace StatisticTrans
         /// <summary>
         /// Обновление статусной строки
         /// </summary>
-        /// <returns></returns>
+        /// <returns>Признак наличия сообщения в строке с сообщениями</returns>
         protected override int UpdateStatusString()
         {
             int have_msg = -1;
@@ -1208,58 +1282,84 @@ namespace StatisticTrans
             return have_msg;
         }
 
-        private void trans_auto_start()
+        protected void trans_auto_start()
         {
             ////Таймер больше не нужен (сообщения в "строке статуса")
             //timerMain.Stop();
             //timerMain.Interval = TIMER_START_INTERVAL;
             ////timerMain.Enabled = false;
 
-            if (!(comboBoxTECComponent.SelectedIndex < 0))
-            {
+            m_arAdmin [(int)CONN_SETT_TYPE.SOURCE].PrepareActionRDGValues ();
+
+            if (!(comboBoxTECComponent.SelectedIndex < 0)) {
                 comboBoxTECComponent.SelectedIndex = -1;
 
                 trans_auto_next();
-            }
+            } else if (handlerCmd.ModeMashine == MODE_MASHINE.SERVICE_TO_DATE)
+                buttonClose.PerformClick();
             else
-                if (m_modeMashine == MODE_MASHINE.TO_DATE) buttonClose.PerformClick(); else enabledUIControl(true);
+                enabledUIControl (true);
         }
 
         protected void trans_auto_next()
         {
-            Logging.Logg().Debug(@"FormMainTrans::trans_auto_next () - comboBoxTECComponent.SelectedIndex=" + comboBoxTECComponent.SelectedIndex, Logging.INDEX_MESSAGE.NOT_SET);
+            FormChangeMode.KeyDevice  currentTECComponentKey
+                , nextTECComponentKey;
+            ComboBoxItem nextItem;
+            int iNextIndex = -1;
 
-            if (comboBoxTECComponent.SelectedIndex + 1 < comboBoxTECComponent.Items.Count)
+            currentTECComponentKey = !(comboBoxTECComponent.SelectedIndex < 0)
+                ? ((ComboBoxItem)comboBoxTECComponent.SelectedItem).Tag
+                    : FormChangeMode.KeyDevice.Empty;
+
+            nextTECComponentKey = m_arAdmin [(int)CONN_SETT_TYPE.SOURCE].FirstTECComponentKey;
+            if (nextTECComponentKey.Equals (FormChangeMode.KeyDevice.Empty) == false) {
+                nextItem = comboBoxTECComponent.Items.Cast<ComboBoxItem> ().First (item => {
+                    return item.Tag.Equals (nextTECComponentKey) == true;
+                });
+                iNextIndex = comboBoxTECComponent.Items.IndexOf (nextItem);
+            } else
+                ;
+
+            Logging.Logg ().Debug ($@"FormMainTrans::trans_auto_next () - SelectedItem=[Index: {comboBoxTECComponent.SelectedIndex}, Key: {currentTECComponentKey.ToString ()}], NextItem=[Index: {iNextIndex}, Key: {nextTECComponentKey.ToString()}]..."
+                , Logging.INDEX_MESSAGE.NOT_SET);
+
+            if ((!(iNextIndex < 0))
+                && (iNextIndex < comboBoxTECComponent.Items.Count))
             {
-                comboBoxTECComponent.SelectedIndex++;
-                //??? зачем нужен '.NextDay'
-                CT.NextDay = IsTomorrow();
-                //// в этом контексте вызов 'comboBoxTECComponent.InvokeRequired' не требуется
-                //if (comboBoxTECComponent.InvokeRequired)
-                //    comboBoxTECComponent.Invoke(new Action(() => CT.AttemptIter((string)comboBoxTECComponent.Items[comboBoxTECComponent.SelectedIndex])));
-                //else
-                    CT.AttemptIter((string)comboBoxTECComponent.Items[comboBoxTECComponent.SelectedIndex]);
+                comboBoxTECComponent.SelectedIndex = iNextIndex;
+
+                CT.AttemptIter(((ComboBoxItem)comboBoxTECComponent.SelectedItem).Tag);
 
                 //Обработчик отключен - вызов "программно"
                 comboBoxTECComponent_SelectedIndexChanged(null, EventArgs.Empty);
             }
             else
-                if (m_modeMashine == MODE_MASHINE.TO_DATE)
+                if (handlerCmd.ModeMashine == MODE_MASHINE.SERVICE_TO_DATE)
                     buttonClose.PerformClick();
                 else
-                {
-                    if (IsTomorrow() == false)
-                    {
-                        dateTimePickerMain.Value = DateTime.Now;
-                        //enabledUIControl(true);
-                    }
+                // режим работы "сервис" (??? по таймеру | событиям)
+                    if (handlerCmd.ModeMashine == MODE_MASHINE.SERVICE_PERIOD)
+                        if (IsTomorrow() == true)
+                        {
+                            dateTimePickerMain.Value = dateTimePickerMain.Value.AddDays (1);
+                            comboBoxTECComponent.SelectedIndex = 0;
+                            comboBoxTECComponent_SelectedIndexChanged (null, EventArgs.Empty);
+                        }
+                        else
+                        {//??? завершение выполнения очередной итерации
+                            trans_auto_stop ();
+                        }
+                    else if (handlerCmd.ModeMashine == MODE_MASHINE.SERVICE_ON_EVENT)
+                        trans_auto_stop();
                     else
-                    {
-                        dateTimePickerMain.Value = dateTimePickerMain.Value.AddDays(1);
-                        comboBoxTECComponent.SelectedIndex = 0;
-                        comboBoxTECComponent_SelectedIndexChanged(null, EventArgs.Empty);
-                    }
-                }
+                        throw new Exception($"FormMainTrans::trans_auto_next () - неизвестный сервисный режим <{handlerCmd.ModeMashine.ToString ()}> работы...");
+        }
+
+        protected virtual void trans_auto_stop ()
+        {
+            dateTimePickerMain.Value = DateTime.Now;
+            //enabledUIControl(true);
         }
 
         protected virtual bool IsTomorrow()
@@ -1272,70 +1372,66 @@ namespace StatisticTrans
 
         protected override void timer_Start()
         {
-            string keyPar = @"Season DateTime";
-            HAdmin.SeasonDateTime = DateTime.Parse(m_sFileINI.GetMainValueOfKey(keyPar));
-            keyPar = @"Season Action";
-            HAdmin.SeasonAction = Int32.Parse(m_sFileINI.GetMainValueOfKey(keyPar));
+            HAdmin.SeasonDateTime = DateTime.Parse(FileAppSettings.This ().GetValueOfMainIndexParameter(FormParameters.PARAMETR_SETUP.SEASON_DATETIME));
+            HAdmin.SeasonAction = Int32.Parse(FileAppSettings.This ().GetValueOfMainIndexParameter (FormParameters.PARAMETR_SETUP.SEASON_ACTION));
 
             FormChangeMode.MODE_TECCOMPONENT mode = FormChangeMode.MODE_TECCOMPONENT.GTP;
 
-            if (m_modeMashine == MODE_MASHINE.TO_DATE)
-            {
+            if (handlerCmd.ModeMashine == MODE_MASHINE.SERVICE_TO_DATE) {
                 FillComboBoxTECComponent(mode, true);
                 CT = new ComponentTesting(comboBoxTECComponent.Items.Count);
                 trans_auto_start();
+            } else if ((handlerCmd.ModeMashine == MODE_MASHINE.SERVICE_PERIOD)
+                || (handlerCmd.ModeMashine == MODE_MASHINE.SERVICE_ON_EVENT))
+                m_checkboxModeMashine.Checked = true;
+            else {
+                FillComboBoxTECComponent(mode, true);
+                CT = new ComponentTesting(comboBoxTECComponent.Items.Count);
             }
-            else
-                if (m_modeMashine == MODE_MASHINE.SERVICE)
-                    m_checkboxModeMashine.Checked = true;
-                else
-                {
-                    FillComboBoxTECComponent(mode, true);
-                    CT = new ComponentTesting(comboBoxTECComponent.Items.Count);
-                }
         }
 
-        private void timerService_Tick(object sender, EventArgs e)
+        //protected bool isFirstTimerTick
+        //{
+        //    get
+        //    {
+        //        return timerService.Interval == ProgramBase.TIMER_START_INTERVAL;
+        //    }
+        //}
+
+        protected virtual void timerService_Tick(object sender, EventArgs e)
         {
             FormChangeMode.MODE_TECCOMPONENT mode = FormChangeMode.MODE_TECCOMPONENT.GTP;
 
-            if (!(m_modeMashine == MODE_MASHINE.TO_DATE))
-                switch (m_modeMashine)
-                {
-                    case MODE_MASHINE.SERVICE:
-                        if (timerService.Interval == ProgramBase.TIMER_START_INTERVAL)
-                        {
-                            //Первый запуск
-                            if (m_arg_interval == timerService.Interval) m_arg_interval++; else ; //??? случайное совпадение...
-                            timerService.Interval = m_arg_interval;
+            switch (handlerCmd.ModeMashine)
+            {
+                case MODE_MASHINE.SERVICE_TO_DATE:
+                // никаких действий не предпринимается
+                    break;
+                case MODE_MASHINE.SERVICE_PERIOD:
+                    if (timerService.Interval == ProgramBase.TIMER_START_INTERVAL) // isFirstTimerTick == true
+                    {
+                        //Первый запуск
+                        if (handlerCmd.TimerInterval == timerService.Interval)
+                            handlerCmd.IncTimerInterval();
+                        else ; //??? случайное совпадение...
+                        timerService.Interval = handlerCmd.TimerInterval;
 
-                            FillComboBoxTECComponent(mode, true);
-                            CT = new ComponentTesting(comboBoxTECComponent.Items.Count);
-                            //DateUpdate(m_arg_interval);
-                        }
-                        else
-                            ;
+                        FillComboBoxTECComponent (mode, true);
+                        CT = new ComponentTesting (comboBoxTECComponent.Items.Count);
+                    }
+                    else
+                        ;
 
-                        dateTimePickerMain.Value = DateTime.Now;
+                    dateTimePickerMain.Value = DateTime.Now;
 
-                        //DateUpdate(m_arg_interval);
-                        trans_auto_start();
-                        break;
-                    //case MODE_MASHINE.TO_DATE:
-                    //    if (timerService.Interval == ProgramBase.TIMER_START_INTERVAL)
-                    //    {
-                    //        //Первый запуск
-                    //        if (m_arg_interval == timerService.Interval) m_arg_interval++; else ; //??? случайное совпадение...
-                    //        timerService.Interval = m_arg_interval;
-                    //    }
-                    //    else
-                    //        выходToolStripMenuItem.PerformClick ();
-                    //    break;
-                    default:
-                        break;
-                }
-            else
-                ;
+                    trans_auto_start();
+                    break;
+                //// только 'trans_mc.exe' может выполняться в таком режиме - см. 'FormMainTransMC::timerService_Tick'
+                //case MODE_MASHINE.SERVICE_ON_EVENT:
+                //    break;
+                default:
+                    break;
+            }
         }
 
         protected virtual void buttonClear_Click(object sender, EventArgs e)
@@ -1367,19 +1463,22 @@ namespace StatisticTrans
             */
         }
 
-        protected bool IsCanSelectedIndexChanged()
+        protected bool IsCanSelectedIndexChanged
         {
-            bool bRes = false;
+            get
+            {
+                bool bRes = false;
 
-            if ((!(m_arAdmin == null))
-                    && (!(m_arAdmin[m_IndexDB] == null)
-                    && (m_arAdmin[m_IndexDB].CurrentKey.Id > 0))
-                && (!(comboBoxTECComponent.SelectedIndex < 0)))
-                bRes = true;
-            else
-                ;
+                if (((!(comboBoxTECComponent.SelectedIndex < 0))
+                        && (((ComboBoxItem)comboBoxTECComponent.SelectedItem).Tag.Id > 0))
+                    && (!(m_arAdmin == null))
+                        && (!(m_arAdmin [m_IndexDB] == null)))
+                    bRes = true;
+                else
+                    ;
 
-            return bRes;
+                return bRes;
+            }
         }
 
         protected abstract void comboBoxTECComponent_SelectedIndexChanged(object cbx, EventArgs ev);
@@ -1417,14 +1516,24 @@ namespace StatisticTrans
                 ;
         }
 
-        private void m_checkboxModeMashine_CheckedChanged(object sender, EventArgs e)
+        protected void  stopTimerService ()
         {
-            if (!(m_modeMashine == MODE_MASHINE.TO_DATE))
+            timerService.Stop ();
+            //timerService.Interval = TIMER_START_INTERVAL;
+            timerService = null;
+        }
+
+        private void checkboxModeMashine_CheckedChanged(object sender, EventArgs e)
+        {
+            if (!(handlerCmd.ModeMashine == MODE_MASHINE.SERVICE_TO_DATE))
                 if (m_checkboxModeMashine.Checked == true)
                 {
                     //if (m_modeMashine == MODE_MASHINE.INTERACTIVE) m_modeMashine = MODE_MASHINE.SERVICE; else ;
                     //То же самое
-                    if (!(m_modeMashine == MODE_MASHINE.SERVICE)) m_modeMashine = MODE_MASHINE.SERVICE; else ;
+                    if ((!(handlerCmd.ModeMashine == MODE_MASHINE.SERVICE_PERIOD))
+                        && (!(handlerCmd.ModeMashine == MODE_MASHINE.SERVICE_ON_EVENT)))
+                        handlerCmd.SetModeServiceMashineDefault();
+                    else ;
 
                     enabledUIControl(false);
                     m_dgwAdminTable.Enabled = false;
@@ -1435,11 +1544,11 @@ namespace StatisticTrans
                 }
                 else
                 {
-                    if (!(m_modeMashine == MODE_MASHINE.INTERACTIVE)) m_modeMashine = MODE_MASHINE.INTERACTIVE; else ;
+                    if (!(handlerCmd.ModeMashine == MODE_MASHINE.INTERACTIVE))
+                        handlerCmd.SetModeMashine(MODE_MASHINE.INTERACTIVE);
+                    else ;
 
-                    timerService.Stop();
-                    //timerService.Interval = TIMER_START_INTERVAL;
-                    timerService = null;
+                    stopTimerService ();
                 }
             else
             {

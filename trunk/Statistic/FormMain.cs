@@ -288,9 +288,6 @@ namespace Statistic
                         , bool.Parse(HStatisticUsers.GetAllowed((int)HStatisticUsers.ID_ALLOWED.PROFILE_VIEW_COLOR_SHEMA)));
                     #endregion
 
-                    //ProgramBase.s_iAppID = Int32.Parse ((string)Properties.Settings.Default [@"AppID"]);
-                    ProgramBase.s_iAppID = Int32.Parse((string)Properties.Resources.AppID);
-
                     if (Logging.s_mode == Logging.LOG_MODE.DB)
                     {
                         //Инициализация БД-логирования

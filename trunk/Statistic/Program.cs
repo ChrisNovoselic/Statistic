@@ -34,7 +34,9 @@ namespace Statistic
             s_mtxApp = new Mutex(true, ProgramBase.AppName, out bRun);  
             if (bRun == true)  
             {
-                ProgramBase.s_iAppID = 1; //??? 
+                ProgramBase.s_iAppID = ProgramBase.ID_APP.STATISTIC; //??? 
+                //ProgramBase.s_iAppID = Int32.Parse ((string)Properties.Settings.Default [@"AppID"]);
+
                 try { ProgramBase.Start (Logging.LOG_MODE.DB, true); }
                 catch (Exception e) {
                     //MessageBox.Show(null, @"Возможно, повторный запуск приложения" + @".\nили обратитесь к оператору тех./поддержки по тел. 4444 или по тел. 289-03-37.", "Ошибка инициализации!", MessageBoxButtons.OK, MessageBoxIcon.Stop);

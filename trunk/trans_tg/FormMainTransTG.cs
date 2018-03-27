@@ -18,9 +18,8 @@ namespace trans_tg
     public partial class FormMainTransTG : FormMainTrans
     {
         public FormMainTransTG()
-            : base((int)ASUTP.Helper.ProgramBase.ID_APP.TRANS_TG
-            , new string[] { @"ТипБДКфгНазначение" }
-            , new string[] { @"200" })
+            : base(ASUTP.Helper.ProgramBase.ID_APP.TRANS_TG
+            , new KeyValuePair<string, string>[] { })
         {
             InitializeComponentTransSrc(@"Путь РДГ (Excel)");
 
@@ -71,25 +70,6 @@ namespace trans_tg
             int i = -1;
 
             EditFormConnectionSettings("connsett_tg.ini", true);
-
-            int iConfigDB = -1;
-            string keyTypeConfigDB = @"ТипБДКфгНазначение";
-            //FileINI fileINI = new FileINI(@"setup.ini");
-            //string sec = "Main (" + ProgramBase.AppName + ")";
-            iConfigDB = Int32.Parse(m_sFileINI.GetMainValueOfKey(keyTypeConfigDB));
-
-            //TYPE_DATABASE_CFG iTypeConfigDB = TYPE_DATABASE_CFG.UNKNOWN;
-
-            //for (TYPE_DATABASE_CFG t = TYPE_DATABASE_CFG.CFG_190; t < TYPE_DATABASE_CFG.UNKNOWN; t++)
-            //{
-            //    if (t.ToString().Contains(iConfigDB.ToString()) == true)
-            //    {
-            //        iTypeConfigDB = t;
-            //        break;
-            //    }
-            //    else
-            //        ;
-            //}
 
             bool bIgnoreTECInUse = false;
 
@@ -190,7 +170,7 @@ namespace trans_tg
 
         protected override void comboBoxTECComponent_SelectedIndexChanged(object cbx, EventArgs ev)
         {
-            if (IsCanSelectedIndexChanged () == true)
+            if (IsCanSelectedIndexChanged == true)
             {
                 ClearTables();
 
@@ -393,7 +373,7 @@ namespace trans_tg
             ((AdminTS)m_arAdmin[(int)CONN_SETT_TYPE.DEST]).GetRDGValues(SelectedItemKey, dateTimePickerMain.Value.Date);
         }
 
-        protected override void saveDataGridViewAdminComplete()
+        protected override void saveDataGridViewAdminComplete(int state)
         {
             bool bCompletedSaveChanges = false;
 
@@ -410,7 +390,7 @@ namespace trans_tg
             {
                 //Logging.Logg().Debug(@"FormMainTransTG::saveDataGridViewAdminComplete () - SuccessSaveChanges=" + ((AdminTS_NSS)m_arAdmin[(int)CONN_SETT_TYPE.DEST]).SuccessSaveChanges.ToString());
                 //if (((AdminTS_NSS)m_arAdmin[(int)CONN_SETT_TYPE.DEST]).SuccessSaveChanges == true) {
-                    base.saveDataGridViewAdminComplete();
+                    base.saveDataGridViewAdminComplete(state);
                 //} else ;
             }
             else
@@ -428,7 +408,7 @@ namespace trans_tg
             //if (WindowState == FormWindowState.Minimized)
             //if (m_bTransAuto == true)
             //if (m_modeMashine == MODE_MASHINE.AUTO || m_modeMashine == MODE_MASHINE.SERVICE)
-            if ((m_bTransAuto == true)
+            if ((IsService == true)
                 && (m_bEnabledUIControl == false))
             {
                 if (((AdminTS_NSS)m_arAdmin[(int)CONN_SETT_TYPE.SOURCE]).CompletedGetRDGValues == true)

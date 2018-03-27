@@ -272,7 +272,7 @@ namespace Statistic
             // по завершению операции эксопрта требуется восстановить режим в исходный(DISPLAY - по умолчанию)
             ModeGetRDGValues = AdminTS.MODE_GET_RDG_VALUES.EXPORT;
 
-            key = Admin.PrepareExportRDGValues ();
+            key = Admin.PrepareActionRDGValues ();
 
             if (key.Id > 0) {
                 date = Admin.DateDoExportPBRValues;
@@ -365,8 +365,6 @@ namespace Statistic
 
             return bRes;
         }
-
-        private TECComponent findTECComponent(int id) { return m_admin.FindTECComponent(id); }
 
         private void panelAdminKomDisp_HandleCreated (object obj, EventArgs ev)
         {

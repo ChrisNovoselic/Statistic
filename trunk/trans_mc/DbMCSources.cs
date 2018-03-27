@@ -9,7 +9,7 @@ using System.Data.Common;
 using StatisticTrans;
 using ASUTP.Database;
 
-namespace StatisticCommon
+namespace trans_mc
 {
     /// <summary>
     /// Класс для описания объекта управления установленными соединенями
@@ -41,9 +41,12 @@ namespace StatisticCommon
             return (DbMCSources) m_this;
         }
 
-        public void SetMCApiHandler(Action<object> mcApiHandler)
+        private Newtonsoft.Json.Linq.JObject _jsonEentListener;
+
+        public void SetMCApiHandler(Action<object> mcApiHandler, Newtonsoft.Json.Linq.JObject jsonEventListener)
         {
             delegateMCApiHandler = mcApiHandler;
+            _jsonEentListener = jsonEventListener;
         }
         /// <summary>
         /// Регистриует клиента соединения, активным или нет, при необходимости принудительно отдельный экземпляр
@@ -73,7 +76,7 @@ namespace StatisticCommon
                 dbNameType = dbType.ToString();
 
                 if (Equals(delegateMCApiHandler, null) == false)
-                    m_dictDbInterfaces.Add(MC_ID, new DbMCInterface((string)connSett, delegateMCApiHandler));
+                    m_dictDbInterfaces.Add(MC_ID, new DbMCInterface((string)connSett, delegateMCApiHandler, _jsonEentListener));
                 else
                     throw new Exception(string.Format(@"DbMCSources::Register () - не назначен делегат обработчика извещений от Модес-Центр..."));
                 

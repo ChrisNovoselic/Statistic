@@ -212,7 +212,8 @@ namespace StatisticCommon
 
                 saving = false;
 
-                if (! (saveComplete == null)) saveComplete(); else ;
+                //??? почему SavePPBRValues
+                saveComplete?.Invoke((int)StatesMachine.SavePPBRValues);
             }
             else {
                 Logging.Logg().Debug("AdminTS::SaveChanges () - semaDBAccess.WaitOne(" + Constants.MAX_WATING + @")=false", Logging.INDEX_MESSAGE.NOT_SET);
@@ -292,45 +293,6 @@ namespace StatisticCommon
             delegateStopWait();
 
             return errClearResult;
-        }
-
-        /// <summary>
-        /// Получение списка компонентов ТЭЦ в зависимости от типа компонента
-        /// </summary>
-        /// <param name="mode">Модификатор типа компонентов</param>
-        /// <param name="bLimitLK">Признак учета лимита ЛК при формировании списка</param>
-        /// <returns>Возвращает список ключей, по которым возможен поиск компонента</returns>
-        public virtual List <FormChangeMode.KeyDevice>GetListKeyTECComponent (FormChangeMode.MODE_TECCOMPONENT mode, bool bLimitLK)
-        {
-            List <FormChangeMode.KeyDevice> listRes = new List <FormChangeMode.KeyDevice> ();
-
-            int iLimitIdTec = bLimitLK == true ? (int)TECComponent.ID.LK : (int)TECComponent.ID.GTP;
-
-            switch (mode) {
-                case FormChangeMode.MODE_TECCOMPONENT.TEC:
-                    foreach (TEC tec in m_list_tec) {
-                        if (! (tec.m_id > iLimitIdTec))
-                            listRes.Add(new FormChangeMode.KeyDevice () { Id = tec.m_id, Mode = mode });
-                        else
-                            ;
-                    }
-                    break;
-                case FormChangeMode.MODE_TECCOMPONENT.GTP:
-                case FormChangeMode.MODE_TECCOMPONENT.PC:
-                case FormChangeMode.MODE_TECCOMPONENT.TG:
-                    foreach (TECComponent comp in allTECComponents) {
-                        if ((!(comp.tec.m_id > iLimitIdTec))
-                            && (mode == comp.Mode))
-                            listRes.Add(new FormChangeMode.KeyDevice () { Id = comp.m_id, Mode = mode });
-                        else
-                            ;
-                    }
-                    break;
-                default:
-                    break;
-            }
-
-            return listRes;
         }
 
         /// <summary>
@@ -2584,7 +2546,7 @@ namespace StatisticCommon
 
             ErrorReport(error);
 
-            errorData?.Invoke ();
+            errorData?.Invoke ((int)stateMachine);
 
             Logging.Logg().Error(@"AdminTS::StateErrors () - error=" + error + @" - вЫход...", Logging.INDEX_MESSAGE.NOT_SET);
 
