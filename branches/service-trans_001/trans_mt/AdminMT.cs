@@ -8,6 +8,7 @@ using System.Data;
 using StatisticCommon;
 using StatisticTrans;
 using StatisticTransModes;
+using ASUTP;
 
 namespace trans_mt
 {
@@ -482,6 +483,48 @@ namespace trans_mt
 
                 Run(@"AdminMC::GetRDGValues ()");
             }
+        }
+
+        /// <summary>
+        /// Подготовить список идентификаторов ГТП для формирования запроса на получение данных
+        ///  , ??? копия AdminTS_KomDisp
+        /// </summary>
+        /// <returns>Ключ 0-го оборудования из списка</returns>
+        public override FormChangeMode.KeyDevice PrepareActionRDGValues ()
+        {
+            List<FormChangeMode.KeyDevice> listKey;
+
+            listKey = GetListKeyTECComponent (FormChangeMode.MODE_TECCOMPONENT.GTP, true);
+
+            if (_listTECComponentKey == null)
+                _listTECComponentKey = new List<FormChangeMode.KeyDevice> ();
+            else
+                ;
+
+            try {
+                // проверить на наличие дубликатов
+                if (listKey.Count - listKey.Distinct ().Count () == 0) {
+                    _listTECComponentKey.Clear ();
+                    listKey.ForEach ((key) => {
+                        if (_listTECComponentKey.Contains (key) == false)
+                            _listTECComponentKey.Add (key);
+                        else
+                            Logging.Logg ().Error (string.Format ("trans_mc.AdminMC::PrepareExportRDGValues () - добавление повторяющегося индекса {0}...", key.ToString ()), Logging.INDEX_MESSAGE.NOT_SET);
+                    });
+
+                    //TODO:
+                    // аварийно прекратить выполнение предыдущей операции сохранения ПБР-значений
+                } else
+                    Logging.Logg ().Error (string.Format ("trans_mc.AdminMC::PrepareExportRDGValues () - в переданном списке <{0}> есть дубликаты...", string.Join (",", listKey.Select (key => key.ToString ()).ToArray ()))
+                        , Logging.INDEX_MESSAGE.NOT_SET);
+
+                Logging.Logg ().Action ($"trans_mc.AdminMC::PrepareExportRDGValues () - подготовлен список для опроса: <{string.Join (", ", _listTECComponentKey.ConvertAll<string> (key => key.Id.ToString ()).ToArray ())}>..."
+                    , Logging.INDEX_MESSAGE.NOT_SET);
+            } catch (Exception e) {
+                Logging.Logg ().Exception (e, string.Format ("trans_mc.AdminMC::PrepareExportRDGValues () - ..."), Logging.INDEX_MESSAGE.NOT_SET);
+            }
+
+            return base.PrepareActionRDGValues ();
         }
     }
 }

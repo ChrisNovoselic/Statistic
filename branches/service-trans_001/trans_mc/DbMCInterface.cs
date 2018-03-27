@@ -362,36 +362,40 @@ namespace trans_mc
                     m_MCApi.OnClose += mcApi_OnClose;
 
                     // добавить обработчики в соответствии с конфигурацией
-                    foreach (DbMCInterface.EVENT nameEvent in Enum.GetValues (typeof (DbMCInterface.EVENT))) {
-                        if (nameEvent == DbMCInterface.EVENT.Unknown)
-                            continue;
-                        else
-                            ;
+                    if (_jsonEventListener.Count > 0)
+                        foreach (DbMCInterface.EVENT nameEvent in Enum.GetValues (typeof (DbMCInterface.EVENT))) {
+                            if (nameEvent == DbMCInterface.EVENT.Unknown)
+                                continue;
+                            else
+                                ;
 
-                        bEventHandler = bool.Parse (_jsonEventListener.Value<string> (nameEvent.ToString ()));
+                            bEventHandler = bool.Parse (_jsonEventListener.Value<string> (nameEvent.ToString ()));
 
-                        delegateMCApiHandler (Tuple.Create<EVENT, bool>(nameEvent, bEventHandler));
+                            delegateMCApiHandler (Tuple.Create<EVENT, bool> (nameEvent, bEventHandler));
 
-                        if (bEventHandler == true) {
-                            switch (nameEvent) {
-                                case EVENT.OnData53500Modified:
-                                    m_MCApi.OnData53500Modified += mcApi_OnEventHandler;
-                                    break;
-                                case EVENT.OnMaket53500Changed:
-                                    m_MCApi.OnMaket53500Changed += mcApi_OnEventHandler;
-                                    break;
-                                case EVENT.OnPlanDataChanged:
-                                    m_MCApi.OnPlanDataChanged += mcApi_OnEventHandler;
-                                    break;
-                                case EVENT.OnModesEvent:
-                                    m_MCApi.OnModesEvent += mcApi_OnModesEvent;
-                                    break;
-                                default:
-                                    break;
-                            }
-                        } else
-                            ;
-                    }
+                            if (bEventHandler == true) {
+                                switch (nameEvent) {
+                                    case EVENT.OnData53500Modified:
+                                        m_MCApi.OnData53500Modified += mcApi_OnEventHandler;
+                                        break;
+                                    case EVENT.OnMaket53500Changed:
+                                        m_MCApi.OnMaket53500Changed += mcApi_OnEventHandler;
+                                        break;
+                                    case EVENT.OnPlanDataChanged:
+                                        m_MCApi.OnPlanDataChanged += mcApi_OnEventHandler;
+                                        break;
+                                    case EVENT.OnModesEvent:
+                                        m_MCApi.OnModesEvent += mcApi_OnModesEvent;
+                                        break;
+                                    default:
+                                        break;
+                                }
+                            } else
+                                ;
+                        }
+                    else
+                    // нет ни одного правила для (отмены)регистрации события
+                        ;
 
                     //// проверить
                     //handlers = getHandlerExists (m_MCApi);

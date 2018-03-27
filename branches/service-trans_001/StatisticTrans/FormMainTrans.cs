@@ -323,7 +323,9 @@ namespace StatisticTrans
             //    , false
             //    , (from pair in config select pair.Key).ToArray()
             //    , (from pair in config select pair.Value).ToArray());
-            FileAppSettings.This ().AddRequired (config);
+            FileAppSettings.This ().AddRequired (config
+                //.Concat(new KeyValuePair<string, string> [] { new KeyValuePair<string, string> (@"service", "126667") }) ??? сервис указывается только в командной строке
+            );
 
             string keyPar = string.Empty
                 , valDefPar = string.Empty;

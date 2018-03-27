@@ -20,7 +20,7 @@ namespace trans_mc
                   , new KeyValuePair<string, string> [] {
                       new System.Collections.Generic.KeyValuePair<string, string> ("MCServiceHost", "ne1843.ne.ru")
                       , new System.Collections.Generic.KeyValuePair<string, string> (@"ИгнорДатаВремя-ModesCentre", false.ToString())
-                      , new System.Collections.Generic.KeyValuePair<string, string> ("service", "on_event")
+                      //, new System.Collections.Generic.KeyValuePair<string, string> ("service", "on_event") перенесено в 'FormMainTrans'
                       , new System.Collections.Generic.KeyValuePair<string, string> ("JEventListener", JsonConvert.SerializeObject (new JObject {
                           { DbMCInterface.EVENT.OnData53500Modified.ToString(), false }
                           , { DbMCInterface.EVENT.OnMaket53500Changed.ToString(), false }

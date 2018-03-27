@@ -493,7 +493,7 @@ namespace trans_mc
 
         private void dbMCSources_OnEventHandler(object obj)
         {
-            DbMCInterface.ID_EVENT id_event;
+            DbMCInterface.ID_EVENT id_event = DbMCInterface.ID_EVENT.Unknown;
             EventArgs argEventChanged = null; // оборудование для которого произошло событие
             TEC tec; // для оборудования которой произошло событие
             Tuple<DbMCInterface.EVENT, bool> tupleConnectHandler;
