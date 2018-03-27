@@ -350,13 +350,12 @@ namespace StatisticCommon
                 ;
 
             //—н€ть все признаки причин прекращени€ выполнени€ обработки событий
-            for (HHandler.INDEX_WAITHANDLE_REASON i = HHandler.INDEX_WAITHANDLE_REASON.ERROR; i < (HHandler.INDEX_WAITHANDLE_REASON.ERROR + 1); i++)
-                ((ManualResetEvent)m_waitHandleState[(int)i]).Reset();
+            Reset ();
 
             foreach (TECComponent comp in allTECComponents)
                 if (comp.IsGTP == true) //явл€етс€ √“ѕ
                 {
-                    indxEv = WaitHandle.WaitAny(m_waitHandleState);
+                    indxEv = WaitAny(Thread.);
                     if (indxEv == 0)
                     {
                         switch (typeValues) {
@@ -520,14 +519,11 @@ namespace StatisticCommon
             return errRes;
         }
 
-        protected override void InitializeSyncState()
+        protected override void InitializeSyncState(int capacity = 1)
         {
-            m_waitHandleState = new WaitHandle[(int)INDEX_WAITHANDLE_REASON.ERROR + 1];
-            base.InitializeSyncState();
-            for (int i = (int)INDEX_WAITHANDLE_REASON.SUCCESS + 1; i < (int)(INDEX_WAITHANDLE_REASON.ERROR + 1); i++)
-            {
-                m_waitHandleState[i] = new ManualResetEvent(false);
-            }
+            base.InitializeSyncState((int)INDEX_WAITHANDLE_REASON.ERROR + 1);
+
+            AddSyncState (INDEX_WAITHANDLE_REASON.ERROR, typeof (ManualResetEvent), false);
         }
 
         public static object[] GetPropertiesOfNameFilePPBRCSVValues(string nameFile)
