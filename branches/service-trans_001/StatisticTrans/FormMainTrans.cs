@@ -260,7 +260,7 @@ namespace StatisticTrans
 
                 foreach (CMD_PARAMETER parameter in Enum.GetValues (typeof (CMD_PARAMETER))) {
                     if ((parameter == CMD_PARAMETER.unknown)
-                        || (parameter == CMD_PARAMETER.start)
+                        //|| (parameter == CMD_PARAMETER.start) обработано, но назначается режим работы по умолчанию
                         || (parameter == CMD_PARAMETER.stop))
                     // обработан ранее в родительском классе
                         continue;
