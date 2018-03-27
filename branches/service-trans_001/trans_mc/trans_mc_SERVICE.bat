@@ -1,2 +1,2 @@
 @ECHO off
-start trans_mc.exe /service=121667
+start trans_mc.exe /service=on_event
