@@ -56,7 +56,6 @@ namespace StatisticTrans
         protected HAdmin[] m_arAdmin;
         protected GroupBox[] m_arGroupBox;
 
-
         protected DataGridViewAdmin m_dgwAdminTable;
 
         protected FormChangeMode.MODE_TECCOMPONENT m_modeTECComponent;

@@ -22,13 +22,15 @@ namespace trans_mc
                       , new System.Collections.Generic.KeyValuePair<string, string> (@"ИгнорДатаВремя-ModesCentre", false.ToString())
                       , new System.Collections.Generic.KeyValuePair<string, string> ("service", "on_event")
                       , new System.Collections.Generic.KeyValuePair<string, string> ("JEventListener", JsonConvert.SerializeObject (new JObject {
-                          { DbMCInterface.EVENTS.OnData53500Modified.ToString(), false }
-                          , { DbMCInterface.EVENTS.OnMaket53500Changed.ToString(), false }
-                          , { DbMCInterface.EVENTS.OnPlanDataChanged.ToString(), true }
-                          , { DbMCInterface.EVENTS.OnModesEvent.ToString(), false }
+                          { DbMCInterface.EVENT.OnData53500Modified.ToString(), false }
+                          , { DbMCInterface.EVENT.OnMaket53500Changed.ToString(), false }
+                          , { DbMCInterface.EVENT.OnPlanDataChanged.ToString(), true }
+                          , { DbMCInterface.EVENT.OnModesEvent.ToString(), false }
                       }) )
                   })
         {
+            InitializeComponent ();
+
             this.notifyIconMain.Icon =
             this.Icon = trans_mc.Properties.Resources.statistic5;
             InitializeComponentTransSrc (@"Сервер Модес-Центр");
@@ -62,6 +64,8 @@ namespace trans_mc
                     case (Int16)CONN_SETT_TYPE.SOURCE:
                         m_arAdmin[i] = new AdminMC(FileAppSettings.This ().GetValue(@"MCServiceHost"));
                         if (handlerCmd.ModeMashine == MODE_MASHINE.SERVICE_ON_EVENT) {
+                            (m_arAdmin [i] as AdminMC).AddEventHandler (DbMCInterface.ID_EVENT.HANDLER_CONNECT, FormMainTransMC_EventHandlerConnect);
+
                             (m_arAdmin [i] as AdminMC).AddEventHandler(DbMCInterface.ID_EVENT.RELOAD_PLAN_VALUES, FormMainTransMC_EventMaketChanged);
                             //!!! дубликат для отладки
                             (m_arAdmin [i] as AdminMC).AddEventHandler (DbMCInterface.ID_EVENT.PHANTOM_RELOAD_PLAN_VALUES, FormMainTransMC_EventMaketChanged);
@@ -95,19 +99,11 @@ namespace trans_mc
                         m_arAdmin[i].m_ignore_date = bool.Parse (FileAppSettings.This ().GetValue(@"ИгнорДатаВремя-ModesCentre"));
                         break;
                     case (Int16)CONN_SETT_TYPE.DEST:
-                        //if (strTypeField.Equals(AdminTS.TYPE_FIELDS.DYNAMIC.ToString()) == true)
-                        //    ((AdminTS)m_arAdmin[i]).m_typeFields = AdminTS.TYPE_FIELDS.DYNAMIC;
-                        //else if (strTypeField.Equals(AdminTS.TYPE_FIELDS.STATIC.ToString()) == true)
-                        //    ((AdminTS)m_arAdmin[i]).m_typeFields = AdminTS.TYPE_FIELDS.STATIC;
-                        //else
-                        //    ;
                         m_arAdmin[i].m_ignore_date = bool.Parse (FileAppSettings.This ().GetValue(@"ИгнорДатаВремя-techsite"));
                         break;
                     default:
                         break;
                 }
-
-                //m_arAdmin[i].m_ignore_connsett_data = true; //-> в конструктор
             }
 
             DbTSQLConfigDatabase.DbConfig().UnRegister();
@@ -202,7 +198,8 @@ namespace trans_mc
         }
 
         protected override void buttonSaveSourceSett_Click(object sender, EventArgs e)
-        {            
+        {
+            //base.buttonSaveSourceSett_Click (sender, e);
         }
 
         protected override void trans_auto_stop ()
@@ -274,5 +271,105 @@ namespace trans_mc
                     break;
             }
         }
+
+        #region Код, автоматически созданный конструктором форм Windows
+
+        private void FormMainTransMC_EventHandlerConnect (object obj, EventArgs ev)
+        {
+            Action checkStateChanged = delegate () {
+                trans_mc.AdminMC.EventArgs<bool> arg = ev as trans_mc.AdminMC.EventArgs<bool>;
+
+                ((ToolStripMenuItem)this.СобытияМодесЦентрToolStripMenuItem.DropDownItems.Find (getNameSubToolStripMenuItem (DbMCInterface.TranslateEvent (arg.m_id)), true) [0])
+                    .Checked = arg.m_listParameters [0];
+
+                this.СобытияМодесЦентрToolStripMenuItem.Enabled = this.СобытияМодесЦентрToolStripMenuItem.DropDownItems.Cast<ToolStripMenuItem> ().Any (item => item.Checked == true);
+            };
+
+            try {
+                if (InvokeRequired == true)
+                    Invoke (checkStateChanged);
+                else
+                    checkStateChanged ();
+                
+            } catch (Exception e) {
+                Logging.Logg ().Exception (e, $"::FormMainTransMC_EventHandlerConnect () - ...", Logging.INDEX_MESSAGE.NOT_SET);
+            }
+        }
+
+        private static string getNameSubToolStripMenuItem (DbMCInterface.EVENT nameEvent)
+        {
+            return $"{nameEvent.ToString ()}СобытияМодесЦентрToolStripMenuItem";
+        }
+
+        /// <summary>
+        /// Обязательный метод для поддержки конструктора - не изменяйте
+        /// содержимое данного метода при помощи редактора кода.
+        /// </summary>
+        private void InitializeComponent ()
+        {
+            ToolStripMenuItem subToolStripMenuItem;
+            List<Tuple<DbMCInterface.EVENT, string>> listTextToolStripMenuItem;
+            //JObject jsonEventListener;
+
+            listTextToolStripMenuItem = new List<Tuple<DbMCInterface.EVENT, string>> {
+                Tuple.Create (DbMCInterface.EVENT.OnData53500Modified, "Оборудование")
+                , Tuple.Create (DbMCInterface.EVENT.OnMaket53500Changed, "Макет")
+                , Tuple.Create (DbMCInterface.EVENT.OnPlanDataChanged, "План")
+                , Tuple.Create (DbMCInterface.EVENT.OnModesEvent, "Служебное")
+            };
+
+            СобытияМодесЦентрToolStripMenuItem = new ToolStripMenuItem ();
+            m_listSubEventModesCentreToolStripMenuItem = new List<ToolStripMenuItem> ();
+            foreach (DbMCInterface.EVENT nameEvent in Enum.GetValues (typeof (DbMCInterface.EVENT))) {
+                if (nameEvent == DbMCInterface.EVENT.Unknown)
+                    continue;
+                else
+                    ;
+
+                m_listSubEventModesCentreToolStripMenuItem.Add (new ToolStripMenuItem ());
+                m_listSubEventModesCentreToolStripMenuItem [m_listSubEventModesCentreToolStripMenuItem.Count - 1].Tag = nameEvent;
+            }
+
+            // 
+            // СобытияМодесЦентрToolStripMenuItem
+            // 
+            this.СобытияМодесЦентрToolStripMenuItem.Name = "СобытияМодесЦентрToolStripMenuItem";
+            this.СобытияМодесЦентрToolStripMenuItem.Size = new System.Drawing.Size (118, 22);
+            this.СобытияМодесЦентрToolStripMenuItem.Text = "События Модес-Центр";
+            this.СобытияМодесЦентрToolStripMenuItem.Enabled = false;
+
+            //jsonEventListener = JsonConvert.DeserializeObject<JObject> (StatisticTrans.FileAppSettings.This ().GetValue ("JEventListener"));
+
+            foreach (DbMCInterface.EVENT nameEvent in Enum.GetValues (typeof (DbMCInterface.EVENT))) {
+                if (nameEvent == DbMCInterface.EVENT.Unknown)
+                    continue;
+                else
+                    ;
+
+                subToolStripMenuItem = m_listSubEventModesCentreToolStripMenuItem.Single (item => (DbMCInterface.EVENT)item.Tag == nameEvent);
+                // 
+                // подпункт для СобытияМодесЦентрToolStripMenuItem
+                // 
+                subToolStripMenuItem.Tag = nameEvent;
+                subToolStripMenuItem.Name = getNameSubToolStripMenuItem (nameEvent);
+                subToolStripMenuItem.Size = new System.Drawing.Size (118, 22);
+                subToolStripMenuItem.Text = listTextToolStripMenuItem.Single (desc => desc.Item1 == nameEvent).Item2;
+                subToolStripMenuItem.Enabled =
+                    //bool.Parse(jsonEventListener.Value<string>(eventName.ToString()))
+                    false
+                    ;
+
+                this.СобытияМодесЦентрToolStripMenuItem.DropDownItems.Add (subToolStripMenuItem);
+            }
+
+            //this.СобытияМодесЦентрToolStripMenuItem.Enabled = handlerCmd.ModeMashine == MODE_MASHINE.SERVICE_ON_EVENT;
+
+            this.настройкиToolStripMenuItem.DropDownItems.Add (this.СобытияМодесЦентрToolStripMenuItem);
+        }
+
+        protected System.Windows.Forms.ToolStripMenuItem СобытияМодесЦентрToolStripMenuItem;
+        protected IList<System.Windows.Forms.ToolStripMenuItem> m_listSubEventModesCentreToolStripMenuItem;
+
+        #endregion
     }
 }

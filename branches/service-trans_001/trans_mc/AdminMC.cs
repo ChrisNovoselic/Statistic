@@ -7,6 +7,9 @@ using StatisticCommon;
 using StatisticTransModes;
 using System.Collections.ObjectModel;
 
+using Newtonsoft.Json;
+using Newtonsoft.Json.Linq;
+
 using Modes;
 using ModesApiExternal;
 
@@ -17,24 +20,45 @@ namespace trans_mc
 {
     public class AdminMC : AdminModes
     {
+        /// <summary>
+        /// Интерфейс аргумента события
+        /// </summary>
         public interface IEventArgs
         {
+            /// <summary>
+            /// Идентификатор события, внутренний
+            /// </summary>
             DbMCInterface.ID_EVENT m_id { get; }
-
+            /// <summary>
+            /// Целевая дата/время
+            /// </summary>
             DateTime m_Date
             {
                 get;
             }
-
+            /// <summary>
+            /// Целевой тип аргумента события, ~ от идентификатора события
+            /// </summary>
             Type m_type { get; }
         }
 
+        /// <summary>
+        /// Аргумент события, полученного от Модес-Центра для помещения в очередь обработки
+        /// </summary>
+        /// <typeparam name="T">Тип целевого объекта в аргументе</typeparam>
         public class EventArgs<T> : System.EventArgs, IEventArgs
         {
+            /// <summary>
+            /// Идентификатор события, внутренний
+            /// </summary>
             public DbMCInterface.ID_EVENT m_id { get; }
-
+            /// <summary>
+            /// Целевая дата/время
+            /// </summary>
             public DateTime m_Date { get; }
-
+            /// <summary>
+            /// Целевой тип аргумента события, ~ от идентификатора события
+            /// </summary>
             public Type m_type { get { return typeof(T); } }
 
             public ReadOnlyCollection<T> m_listParameters;
@@ -460,8 +484,8 @@ namespace trans_mc
 
             DbMCSources.Sources ().SetMCApiHandler (dbMCSources_OnEventHandler
                 , IsServiceOnEvent == true
-                    ? Newtonsoft.Json.JsonConvert.DeserializeObject<Newtonsoft.Json.Linq.JObject> (StatisticTrans.FileAppSettings.This().GetValue("JEventListener"))
-                        : new Newtonsoft.Json.Linq.JObject ());
+                    ? JsonConvert.DeserializeObject<JObject> (StatisticTrans.FileAppSettings.This().GetValue("JEventListener"))
+                        : new JObject ());
             m_IdListenerCurrent = ASUTP.Database.DbSources.Sources().Register(m_strMCServiceHost, true, @"Modes-Centre");
 
             return bRes;
@@ -469,10 +493,10 @@ namespace trans_mc
 
         private void dbMCSources_OnEventHandler(object obj)
         {
-            bool bDebug = false;
             DbMCInterface.ID_EVENT id_event;
             EventArgs argEventChanged = null; // оборудование для которого произошло событие
             TEC tec; // для оборудования которой произошло событие
+            Tuple<DbMCInterface.EVENT, bool> tupleConnectHandler;
 
             Func<DateTime, TimeSpan> difference = delegate (DateTime target) {
                 // разница целевой даты объекта события и текущей даты
@@ -496,8 +520,6 @@ namespace trans_mc
             };
 
             if (obj is Array) {
-                bDebug = (obj as object []).Length > 2 ? true : false;
-
                 id_event = (DbMCInterface.ID_EVENT)(obj as object []) [0];
 
                 if (id_event == DbMCInterface.ID_EVENT.GENOBJECT_MODIFIED) {
@@ -526,8 +548,8 @@ namespace trans_mc
 
                     dateTarget = translate (id_event, ev.dtTarget.GetValueOrDefault ());
                     makets = ev.makets as ReadOnlyCollection<Guid>;
-                    abbr = ev.Task.GetAbbr();
-                    taskModes = ev.Task.ModesTaskToString();
+                    abbr = ev.Task.GetAbbr ();
+                    taskModes = ev.Task.ModesTaskToString ();
 
                     Logging.Logg ().Action (string.Format (@"AdminMC::dbMCSources_OnEventHandler(ID_MC_EVENT={0}) - обработчик события - переопубликация[на дату={1}, кол-во макетов={2}], Аббр={3}, описание={4}..."
                             , id_event.ToString (), dateTarget.ToString (), makets.Count, abbr, taskModes)
@@ -548,21 +570,21 @@ namespace trans_mc
                         , id_mc_tec = string.Empty;
                     int id_gate = -1;
 
-                    day = translate(id_event, ev.Day);
+                    day = translate (id_event, ev.Day);
                     pbr_number = ev.Type.PlanTypeToString ();
                     version = translate (id_event, ev.Version);
                     id_mc_tec = ev.ClientId;
                     id_gate = ev.IdGate;
 
                     Logging.Logg ().Action (string.Format (@"AdminMC::dbMCSources_OnEventHandler(ID_MC_EVENT={0}) - обработчик события - {6} план[на дату={1}, номер={2}, версия={3}, для подразделения={4}, IdGate={5}]..."
-                            , id_event.ToString(), day.ToString (), pbr_number, version.ToString (), id_mc_tec, id_gate
+                            , id_event.ToString (), day.ToString (), pbr_number, version.ToString (), id_mc_tec, id_gate
                                 , id_event == DbMCInterface.ID_EVENT.NEW_PLAN_VALUES ? "новый" : id_event == DbMCInterface.ID_EVENT.REQUEST_PLAN_VALUES ? "<запрос>" : "НЕ ИЗВЕСТНО")
                         , Logging.INDEX_MESSAGE.NOT_SET);
 
                     // проверить дату за которую получен новый план: только сегодняшние и следующие сутки сутки
-                    if (isRequired(day) == true) {
+                    if (isRequired (day) == true) {
                         tec = m_list_tec.Find (t => {
-                            return t.name_MC.Trim ().Equals (id_mc_tec.ToString());
+                            return t.name_MC.Trim ().Equals (id_mc_tec.ToString ());
                         });
 
                         argEventChanged = new EventArgs<FormChangeMode.KeyDevice> (id_event, day, new ReadOnlyCollection<FormChangeMode.KeyDevice> (
@@ -572,7 +594,7 @@ namespace trans_mc
                             }).ConvertAll (comp => new FormChangeMode.KeyDevice () { Id = comp.m_id, Mode = FormChangeMode.MODE_TECCOMPONENT.GTP })
                         ));
                     } else
-                        Logging.Logg().Debug($"AdminMC::dbMCSources_OnEventHandler(ID_MC_EVENT={id_event.ToString ()}) - дата не актуальная; Day=[{day}], разн.(сутки)=[{difference(day).TotalDays}]..."
+                        Logging.Logg ().Debug ($"AdminMC::dbMCSources_OnEventHandler(ID_MC_EVENT={id_event.ToString ()}) - дата не актуальная; Day=[{day}], разн.(сутки)=[{difference (day).TotalDays}]..."
                             , Logging.INDEX_MESSAGE.NOT_SET);
                 } else
                     ;
@@ -580,11 +602,16 @@ namespace trans_mc
                 // , имеется ли обработчик; иначе из коллекции не смогут быть удалены элементы(удаление только из-вне)
                 // , а значит коллекция увеличивается без ограничений, а элементы никаким образом не обрабатываются
                 if ((Equals (argEventChanged, null) == false)
-                    && (isHandlerMCEvent(id_event) == true)) {
+                    && (isHandlerMCEvent (id_event) == true)) {
                     AddEvent (argEventChanged);
                 } else
                     ;
-            } else {
+            } else if (typeof (Tuple<DbMCInterface.EVENT, bool>).IsAssignableFrom (obj.GetType ()) == true) {
+                //TODO: ретранслировать для формы произошла подписка/отписка от события Модес-Центра
+                tupleConnectHandler = obj as Tuple<DbMCInterface.EVENT, bool>;
+
+                _dictNotify [DbMCInterface.ID_EVENT.HANDLER_CONNECT]?.Invoke (this, new EventArgs<bool>(DbMCInterface.TranslateEvent(tupleConnectHandler.Item1), DateTime.MinValue, new ReadOnlyCollection<bool> (new List<bool>() { tupleConnectHandler.Item2 })));
+            } else if (typeof (bool).IsAssignableFrom (obj.GetType ()) == true) {
                 id_event = DbMCInterface.ID_EVENT.Unknown;
 
                 //TODO: проверить результат попытки установки соединения
@@ -601,7 +628,8 @@ namespace trans_mc
                     default:
                         break;
                 }
-            }
+            } else
+                throw new Exception (@"AdminMC::dbMCSources_OnEventHandler () - неизвестное событие от DbMCSources...");
         }
 
         private bool isConnected

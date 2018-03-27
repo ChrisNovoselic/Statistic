@@ -399,7 +399,7 @@
         private System.Windows.Forms.MenuStrip menuStripMain;
         private System.Windows.Forms.ToolStripMenuItem файлToolStripMenuItem;
         private System.Windows.Forms.ToolStripMenuItem выходToolStripMenuItem;
-        private System.Windows.Forms.ToolStripMenuItem настройкиToolStripMenuItem;
+        protected System.Windows.Forms.ToolStripMenuItem настройкиToolStripMenuItem;
         protected System.Windows.Forms.ToolStripMenuItem конфигурацияБДToolStripMenuItem;
         protected System.Windows.Forms.ToolStripMenuItem ППБРToolStripMenuItem;
         protected System.Windows.Forms.ToolStripMenuItem ОпросППБРToolStripMenuItem;

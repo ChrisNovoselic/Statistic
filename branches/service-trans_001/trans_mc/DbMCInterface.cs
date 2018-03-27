@@ -24,9 +24,81 @@ namespace trans_mc
         private Modes.BusinessLogic.IModesTimeSlice m_modesTimeSlice;
         private IList <PlanFactorItem> m_listPFI;
 
-        public enum ID_EVENT : short { Unknown = -1, GENOBJECT_MODIFIED
+        public enum EVENT { Unknown = -1
+            , OnData53500Modified, OnMaket53500Changed, OnPlanDataChanged
+            , OnModesEvent
+        }
+
+        public enum ID_EVENT : short { Unknown = -1, HANDLER_CONNECT
+            , GENOBJECT_MODIFIED
             , RELOAD_PLAN_VALUES, NEW_PLAN_VALUES
-            , PHANTOM_RELOAD_PLAN_VALUES, REQUEST_PLAN_VALUES }
+            , PHANTOM_RELOAD_PLAN_VALUES, REQUEST_PLAN_VALUES
+            , MC_SERVICE
+        }
+
+        public static DbMCInterface.ID_EVENT TranslateEvent (DbMCInterface.EVENT ev)
+        {
+            DbMCInterface.ID_EVENT evRes = ID_EVENT.Unknown;
+
+            TranslateEvent (ev, out evRes);
+
+            return evRes;
+        }
+
+        public static DbMCInterface.EVENT TranslateEvent (DbMCInterface.ID_EVENT ev)
+        {
+            DbMCInterface.EVENT evRes = EVENT.Unknown;
+
+            TranslateEvent (ev, out evRes);
+
+            return evRes;
+        }
+
+        public static void TranslateEvent (DbMCInterface.EVENT ev, out DbMCInterface.ID_EVENT evRes)
+        {
+            evRes = ID_EVENT.Unknown;
+
+            switch (ev) {
+                case EVENT.OnData53500Modified:
+                    evRes = ID_EVENT.GENOBJECT_MODIFIED;
+                    break;
+                case EVENT.OnMaket53500Changed:
+                    evRes = ID_EVENT.RELOAD_PLAN_VALUES;
+                    break;
+                case EVENT.OnPlanDataChanged:
+                    evRes = ID_EVENT.NEW_PLAN_VALUES;
+                    break;
+                case EVENT.OnModesEvent:
+                    evRes = ID_EVENT.MC_SERVICE;
+                    break;
+                default:
+                    break;
+            }
+        }
+
+        public static void TranslateEvent (DbMCInterface.ID_EVENT ev, out DbMCInterface.EVENT evRes)
+        {
+            evRes = EVENT.Unknown;
+
+            switch (ev) {
+                case ID_EVENT.GENOBJECT_MODIFIED:
+                    evRes = EVENT.OnData53500Modified;
+                    break;
+                case ID_EVENT.NEW_PLAN_VALUES:
+                case ID_EVENT.REQUEST_PLAN_VALUES:
+                    evRes = EVENT.OnPlanDataChanged;
+                    break;
+                case ID_EVENT.RELOAD_PLAN_VALUES:
+                case ID_EVENT.PHANTOM_RELOAD_PLAN_VALUES:
+                    evRes = EVENT.OnMaket53500Changed;
+                    break;
+                case ID_EVENT.MC_SERVICE:
+                    evRes = EVENT.OnModesEvent;
+                    break;
+                default:
+                    break;
+            }
+        }
 
         public enum ID_GEN_OBJECT_TYPE { GOU = 15, TEC = 1, RGE = 3 }
 
@@ -161,8 +233,6 @@ namespace trans_mc
             return listRes;
         }
 
-        public enum EVENTS { OnData53500Modified, OnMaket53500Changed, OnPlanDataChanged, OnModesEvent }
-
         /// <summary>
         /// Установить соединение с Модес-Центром и подготовить объект соединения к запросам
         /// </summary>
@@ -219,7 +289,7 @@ namespace trans_mc
             result =
                 ModesApiFactory.IsInitilized;
 
-            EVENTS keyEvent;
+            bool bEventHandler = false;
             IEnumerable<Delegate/*MethodInfo*/> handlers;
 
             if (bRes == true) {
@@ -292,20 +362,28 @@ namespace trans_mc
                     m_MCApi.OnClose += mcApi_OnClose;
 
                     // добавить обработчики в соответствии с конфигурацией
-                    foreach (string nameEvent in _jsonEventListener.SelectTokens("")) {
-                        if ((Enum.TryParse (nameEvent, out keyEvent) == true)
-                            && (bool.Parse(_jsonEventListener.GetValue(nameEvent).ToObject<string>()) == true)) {
-                            switch (keyEvent) {
-                                case EVENTS.OnData53500Modified:
+                    foreach (DbMCInterface.EVENT nameEvent in Enum.GetValues (typeof (DbMCInterface.EVENT))) {
+                        if (nameEvent == DbMCInterface.EVENT.Unknown)
+                            continue;
+                        else
+                            ;
+
+                        bEventHandler = bool.Parse (_jsonEventListener.Value<string> (nameEvent.ToString ()));
+
+                        delegateMCApiHandler (Tuple.Create<EVENT, bool>(nameEvent, bEventHandler));
+
+                        if (bEventHandler == true) {
+                            switch (nameEvent) {
+                                case EVENT.OnData53500Modified:
                                     m_MCApi.OnData53500Modified += mcApi_OnEventHandler;
                                     break;
-                                case EVENTS.OnMaket53500Changed:
+                                case EVENT.OnMaket53500Changed:
                                     m_MCApi.OnMaket53500Changed += mcApi_OnEventHandler;
                                     break;
-                                case EVENTS.OnPlanDataChanged:
+                                case EVENT.OnPlanDataChanged:
                                     m_MCApi.OnPlanDataChanged += mcApi_OnEventHandler;
                                     break;
-                                case EVENTS.OnModesEvent:
+                                case EVENT.OnModesEvent:
                                     m_MCApi.OnModesEvent += mcApi_OnModesEvent;
                                     break;
                                 default:
