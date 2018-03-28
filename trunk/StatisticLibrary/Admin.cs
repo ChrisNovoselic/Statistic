@@ -890,10 +890,7 @@ namespace StatisticCommon
 
         public virtual void ResetRDGExcelValues()
         {
-            if (m_waitHandleState.Length > 1)
-                ((ManualResetEvent)m_waitHandleState[(int)INDEX_WAITHANDLE_REASON.ERROR]).Reset();
-            else
-                ;
+            ResetSyncState ();
         }
 
         protected virtual bool IsCanUseTECComponents

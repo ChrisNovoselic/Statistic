@@ -239,15 +239,25 @@ namespace Statistic
 
             set
             {
-                if (!(m_admin.ModeGetRDGValues == value)) {
-                    btnImportCSV_PBRValues.Enabled =
-                    btnImportCSV_AdminDefaultValues.Enabled =
-                        (value & AdminTS.MODE_GET_RDG_VALUES.DISPLAY) == AdminTS.MODE_GET_RDG_VALUES.DISPLAY;
-                } else
-                    ;
-
                 base.ModeGetRDGValues = value;
             }
+        }
+
+        protected override void setEnableUI (bool enabled)
+        {
+            base.setEnableUI (enabled);
+
+            Action act = delegate () {
+                btnImportCSV_PBRValues.Enabled =
+                btnImportCSV_AdminDefaultValues.Enabled =
+                    enabled;
+            };
+
+            if (InvokeRequired == true)
+                Invoke (act);
+            else
+                act ();
+            
         }
 
         private void admin_onEventExportPBRValues (AdminTS_KomDisp.MSExcelIOExportPBRValues.EventResultArgs ev)
@@ -452,7 +462,7 @@ namespace Statistic
         /// </summary>
         /// <param name="date">Дата, за которую получены значения для отображения</param>
         /// <param name="bResult">Признак наличия новых значений, иначе требуется изменить оформление представления</param>
-        public override void SetDataGridViewAdmin(DateTime date, bool bResult)
+        protected override void setDataGridViewAdmin(DateTime date, bool bResult)
         {
             int offset = -1;
             FormChangeMode.KeyDevice nextKey;
@@ -470,6 +480,8 @@ namespace Statistic
             };
 
             if ((ModeGetRDGValues & AdminTS.MODE_GET_RDG_VALUES.DISPLAY) == AdminTS.MODE_GET_RDG_VALUES.DISPLAY) {
+                //setEnableUI (true);
+
                 if (bResult == true) {
                     //??? не очень изящное решение
                     if (IsHandleCreated == true) {
@@ -622,10 +634,12 @@ namespace Statistic
                     ;
 
                 //Еще одна проверка на ошибки (т.к. была возможность ее подтвердить)
-                if (iRes == 0)
-                    ((AdminTS_KomDisp)m_admin).ImpCSVValues(mcldrDate.SelectionStart, files.FileName);
-                else
-                    Logging.Logg().Action(string.Format(@"PanelAdminKomDisp::btnImportCSV_PBRValues_Click () - отмена импорта значений CSV-макета, ошибка={0}...", iRes), Logging.INDEX_MESSAGE.NOT_SET);
+                if (iRes == 0) {
+                    //setEnableUI (false);
+
+                    ((AdminTS_KomDisp)m_admin).ImpCSVValues (mcldrDate.SelectionStart, files.FileName);
+                } else
+                    Logging.Logg ().Action (string.Format (@"PanelAdminKomDisp::btnImportCSV_PBRValues_Click () - отмена импорта значений CSV-макета, ошибка={0}...", iRes), Logging.INDEX_MESSAGE.NOT_SET);
             }
             else
                 Logging.Logg().Action(string.Format(@"PanelAdminKomDisp::btnImportCSV_PBRValues_Click () - отмена выбора CSV-макета..."), Logging.INDEX_MESSAGE.NOT_SET);
@@ -645,6 +659,8 @@ namespace Statistic
             //??? кнопка доступна только в этом режиме
             //ModeGetRDGValues = AdminTS.MODE_GET_RDG_VALUES.DISPLAY;
 
+            OpenFileDialog files;
+
             int days = (m_admin.m_curDate.Date - ASUTP.Core.HDateTime.ToMoscowTimeZone(DateTime.Now).Date).Days;
             if (days < 0)
             {
@@ -653,7 +669,7 @@ namespace Statistic
             }
             else
             {
-                OpenFileDialog files = new OpenFileDialog ();
+                files = new OpenFileDialog ();
                 files.Multiselect = false;
                 //files.InitialDirectory = Environment.GetFolderPath (Environment.SpecialFolder.Desktop);
                 files.InitialDirectory = AdminTS_KomDisp.Folder_CSV;
@@ -681,9 +697,11 @@ namespace Statistic
                             ;
                     }
 
-                    if (iRes == 0)
-                        ((AdminTS_KomDisp)m_admin).ImpCSVValues(mcldrDate.SelectionStart, files.FileName);
-                    else
+                    if (iRes == 0) {
+                        //setEnableUI (false);
+
+                        ((AdminTS_KomDisp)m_admin).ImpCSVValues (mcldrDate.SelectionStart, files.FileName);
+                    } else
                         ;
                 } else { }
             }

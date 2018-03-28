@@ -7,6 +7,7 @@ using GemBox.Spreadsheet;
 //using Excel = Microsoft.Office.Interop.Excel;
 
 using StatisticCommon;
+using ASUTP.Core;
 
 namespace Statistic {
     partial class PanelAdminLK : PanelAdmin
@@ -119,23 +120,26 @@ namespace Statistic {
             /// <param name="obj">Объект, передаваемый в качестве параметра при запуске потока</param>
             protected override void threadGetRDGValuesWithoutDate(object obj)
             {
-                int indxEv = -1;
+                INDEX_WAITHANDLE_REASON indxEv = INDEX_WAITHANDLE_REASON.SUCCESS;
 
                 //lock (m_lockSuccessGetData)
                 //{
                 foreach (FormChangeMode.KeyDevice key in m_listKeyTECComponentDetail)
                 {
-                    indxEv = WaitHandle.WaitAny(m_waitHandleState);
+                    indxEv = WaitAny(System.Threading.Timeout.Infinite, true);
 
-                    if (indxEv == 0)
+                    if (indxEv == INDEX_WAITHANDLE_REASON.SUCCESS)
                     {
                         m_semaIndxTECComponents.WaitOne();
 
                         base.BaseGetRDGValue(key, DateTime.MinValue);
                         m_listPrevRDGValues = new List<RDGStruct[]>(m_listCurRDGValues);
                     }
-                    else
+                    else {
+                        ASUTP.Logging.Logg ().Error ($"AdminTS_LK::threadGetRDGValuesWithoutDate () - <{indxEv}>...", ASUTP.Logging.INDEX_MESSAGE.NOT_SET);
+
                         break;
+                    }
                 }
                 //}
 
@@ -148,26 +152,27 @@ namespace Statistic {
             /// <param name="obj">Объект, передаваемый в качестве параметра при запуске потока</param>
             protected override void threadGetRDGValuesWithDate(object date)
             {
-                int indxEv = -1;
+                INDEX_WAITHANDLE_REASON indxEv = INDEX_WAITHANDLE_REASON.SUCCESS;
 
-                for (INDEX_WAITHANDLE_REASON i = INDEX_WAITHANDLE_REASON.ERROR; i < (INDEX_WAITHANDLE_REASON.ERROR + 1); i++)
-                    ((ManualResetEvent)m_waitHandleState[(int)i]).Reset();
+                ResetSyncState();
 
                 //lock (m_lockSuccessGetData)
                 //{
                 foreach (FormChangeMode.KeyDevice key in m_listKeyTECComponentDetail)
                 {
-                    indxEv = WaitHandle.WaitAny(m_waitHandleState);
-                    if (indxEv == 0)
-                    {
-                        m_semaIndxTECComponents.WaitOne();//Ожидание изменения состояния семафора
+                    indxEv = WaitAny(Constants.MAX_WATING, true);
+                    if (indxEv == INDEX_WAITHANDLE_REASON.SUCCESS) {
+                        //Ожидание изменения состояния семафора
+                        m_semaIndxTECComponents.WaitOne ();
 
-                        base.BaseGetRDGValue(key, (DateTime)date);
+                        base.BaseGetRDGValue (key, (DateTime)date);
 
-                        m_listPrevRDGValues = new List<RDGStruct[]>(m_listCurRDGValues);
-                    }
-                    else
+                        m_listPrevRDGValues = new List<RDGStruct []> (m_listCurRDGValues);
+                    } else {
+                        ASUTP.Logging.Logg ().Error ($"AdminTS_TG::threadGetRDGValuesWithDate () - <{indxEv}>...", ASUTP.Logging.INDEX_MESSAGE.NOT_SET);
+
                         break;
+                    }
                 }
                 //}
 
@@ -223,7 +228,7 @@ namespace Statistic {
             {
                 ASUTP.Helper.Errors errRes = ASUTP.Helper.Errors.NoError,
                         bErr = ASUTP.Helper.Errors.NoError;
-                int indxEv = -1;
+                INDEX_WAITHANDLE_REASON indxEv = INDEX_WAITHANDLE_REASON.SUCCESS;
 
                 m_evSaveChangesComplete.Reset();
 
@@ -238,12 +243,11 @@ namespace Statistic {
                 {
                     bErr = ASUTP.Helper.Errors.NoError;
 
-                    for (INDEX_WAITHANDLE_REASON i = INDEX_WAITHANDLE_REASON.ERROR; i < (INDEX_WAITHANDLE_REASON.ERROR + 1); i++)
-                        ((ManualResetEvent)m_waitHandleState[(int)i]).Reset();
+                    ResetSyncState();
 
                     if (m_listKeyTECComponentDetail[m_listCurRDGValues.IndexOf(curRDGValues)].Mode == FormChangeMode.MODE_TECCOMPONENT.TG)
                     {
-                        indxEv = WaitHandle.WaitAny(m_waitHandleState);
+                        indxEv = WaitAny(Constants.MAX_WATING, true);
                         if (indxEv == 0)
                         {
                             CurrentKey = m_listKeyTECComponentDetail[m_listCurRDGValues.IndexOf(curRDGValues)];
@@ -258,7 +262,7 @@ namespace Statistic {
                     else
                         if (m_listKeyTECComponentDetail[m_listCurRDGValues.IndexOf(curRDGValues)].Mode == FormChangeMode.MODE_TECCOMPONENT.GTP)
                         {
-                            indxEv = WaitHandle.WaitAny(m_waitHandleState);
+                            indxEv = WaitAny(Constants.MAX_WATING, true);
                             if (indxEv == 0)
                             {
                                 CurrentKey = m_listKeyTECComponentDetail[m_listCurRDGValues.IndexOf(curRDGValues)];
@@ -267,8 +271,11 @@ namespace Statistic {
 
                                 bErr = base.BaseSaveChanges();
                             }
-                            else
+                            else {
+                                ASUTP.Logging.Logg ().Error ($"AdminTS_LK::SaveChanges () - <{indxEv}>...", ASUTP.Logging.INDEX_MESSAGE.NOT_SET);
+
                                 break;
+                            }
                         }
                     ;
 
@@ -304,11 +311,11 @@ namespace Statistic {
             /// <summary>
             /// Инициализация синхронизации состояния
             /// </summary>
-            protected override void InitializeSyncState()
+            protected override void InitializeSyncState(int capacity = 1)
             {
                 m_semaIndxTECComponents = new Semaphore(1, 1);
 
-                base.InitializeSyncState();
+                base.InitializeSyncState(capacity);
             }
 
             /// <summary>

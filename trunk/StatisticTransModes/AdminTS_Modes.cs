@@ -39,7 +39,6 @@ namespace StatisticTransModes
 
             bResSemaDbAccess = semaDBAccess.WaitOne(msecWaitSemaDbAccess);
             if (bResSemaDbAccess == true)
-            //if ((semaState.WaitOne(msecWaitSemaDbAccess) == true) && (semaDBAccess.WaitOne(msecWaitSemaDbAccess) == true))
             {
                 lock (m_lockState)
                 {
@@ -63,7 +62,7 @@ namespace StatisticTransModes
                     Run(@"AdminTS_Modes::SaveChanges ()");
                 }
 
-                bResSemaDbAccess = semaDBAccess.WaitOne(ASUTP.Core.Constants.MAX_WATING);
+                bResSemaDbAccess = semaDBAccess.WaitOne(msecWaitSemaDbAccess);
                 //Logging.Logg().Debug("AdminTS_Modes::SaveChanges () - semaDBAccess.WaitOne(" + DbInterface.MAX_WATING + @")=" + bResSemaDbAccess.ToString(), Logging.INDEX_MESSAGE.NOT_SET);
 
                 try

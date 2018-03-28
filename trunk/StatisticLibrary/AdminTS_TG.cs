@@ -6,8 +6,7 @@ using System.Threading;
 
 using Excel = Microsoft.Office.Interop.Excel;
 using ASUTP.Helper;
-
-
+using ASUTP.Core;
 
 namespace StatisticCommon
 {
@@ -77,8 +76,8 @@ namespace StatisticCommon
         public AdminTS_TG(bool[] arMarkPPBRValues, TECComponentBase.TYPE type)
             : base(arMarkPPBRValues, type)
         {
-            delegateImportForeignValuesRequuest = impRDGExcelValuesRequest;
-            delegateExportForeignValuesRequuest = expRDGExcelValuesRequest;
+            delegateImportForeignValuesRequest = impRDGExcelValuesRequest;
+            delegateExportForeignValuesRequest = expRDGExcelValuesRequest;
             delegateImportForeignValuesResponse = impRDGExcelValuesResponse;
             //delegateExportForeignValuesResponse = ExpRDGExcelValuesResponse;
 
@@ -145,17 +144,20 @@ namespace StatisticCommon
 
         protected virtual void threadGetRDGValuesWithoutDate(object obj)
         {
-            int indxEv = -1;
+            INDEX_WAITHANDLE_REASON indxEv = INDEX_WAITHANDLE_REASON.SUCCESS;
 
             //lock (m_lockSuccessGetData)
             //{
                 foreach (FormChangeMode.KeyDevice key in m_listKeyTECComponentDetail)
                 {
-                    indxEv = WaitHandle.WaitAny (m_waitHandleState);
-                    if (indxEv == 0)
+                    indxEv = WaitAny (Constants.MAX_WATING, true);
+                    if (indxEv == INDEX_WAITHANDLE_REASON.SUCCESS)
                         base.GetRDGValues(key);
-                    else
+                    else {
+                        ASUTP.Logging.Logg ().Error ($"AdminTS_TG::threadGetRDGValuesWithoutDate () - <{indxEv}>...", ASUTP.Logging.INDEX_MESSAGE.NOT_SET);
+
                         break;
+                    }
                 }
             //}
 
@@ -182,20 +184,21 @@ namespace StatisticCommon
 
         protected virtual void threadGetRDGValuesWithDate(object date)
         {
-            int indxEv = -1;
+            INDEX_WAITHANDLE_REASON indxEv = INDEX_WAITHANDLE_REASON.SUCCESS;
 
-            for (INDEX_WAITHANDLE_REASON i = INDEX_WAITHANDLE_REASON.ERROR; i < (INDEX_WAITHANDLE_REASON.ERROR + 1); i++)
-                ((ManualResetEvent)m_waitHandleState[(int)i]).Reset();
+            ResetSyncState ();
 
             //lock (m_lockSuccessGetData)
             //{
-                foreach (FormChangeMode.KeyDevice key in m_listKeyTECComponentDetail)
-                {
-                    indxEv = WaitHandle.WaitAny(m_waitHandleState);
-                    if (indxEv == 0)
+                foreach (FormChangeMode.KeyDevice key in m_listKeyTECComponentDetail) {
+                    indxEv = WaitAny(Constants.MAX_WATING, true);
+                    if (indxEv == INDEX_WAITHANDLE_REASON.SUCCESS)
                         base.GetRDGValues(key, (DateTime)date);
-                    else
+                    else {
+                        ASUTP.Logging.Logg ().Error ($"AdminTS_TG::threadGetRDGValuesWithDate () - <{indxEv}>...", ASUTP.Logging.INDEX_MESSAGE.NOT_SET);
+
                         break;
+                    }
                 }
             //}
 
@@ -212,18 +215,17 @@ namespace StatisticCommon
             //delegateStopWait ();
         }
 
-        private void threadImpRDGExcelValues (object date) {
-            int indxEv = -1;
+        private void threadImpRDGExcelValues (object date)
+        {
+            INDEX_WAITHANDLE_REASON indxEv = INDEX_WAITHANDLE_REASON.SUCCESS;
 
-            for (INDEX_WAITHANDLE_REASON i = INDEX_WAITHANDLE_REASON.ERROR; i < (INDEX_WAITHANDLE_REASON.ERROR + 1); i++)
-                ((ManualResetEvent)m_waitHandleState[(int)i]).Reset();
+            ResetSyncState ();
 
             //lock (m_lockSuccessGetData)
             //{
-                foreach (FormChangeMode.KeyDevice key in m_listKeyTECComponentDetail)
-                {
-                    indxEv = WaitHandle.WaitAny(m_waitHandleState);
-                    if (indxEv == 0)
+                foreach (FormChangeMode.KeyDevice key in m_listKeyTECComponentDetail) {
+                    indxEv = WaitAny(Constants.MAX_WATING, true);
+                    if (indxEv == INDEX_WAITHANDLE_REASON.SUCCESS)
                         if (key.Mode == FormChangeMode.MODE_TECCOMPONENT.GTP)
                             base.GetRDGValues(key, (DateTime)date);
                         else
@@ -231,8 +233,10 @@ namespace StatisticCommon
                                 base.ImpRDGExcelValues(key, (DateTime)date);
                             else
                                 ;
-                    else
+                    else {
+                        ASUTP.Logging.Logg ().Error ($"AdminTS_TG::threadImpRDGExcelValues () - <{indxEv}>...", ASUTP.Logging.INDEX_MESSAGE.NOT_SET);
                         break;
+                    }
                 }
             //}
 
@@ -338,7 +342,7 @@ namespace StatisticCommon
         {
             Errors errRes = Errors.NoError,
                     bErr = Errors.NoError;
-            int indxEv = -1;
+            INDEX_WAITHANDLE_REASON indxEv = INDEX_WAITHANDLE_REASON.SUCCESS;
 
             m_evSaveChangesComplete.Reset ();
 
@@ -352,12 +356,11 @@ namespace StatisticCommon
             foreach (RDGStruct [] curRDGValues in m_listCurRDGValues) {
                 bErr = Errors.NoError;
 
-                for (INDEX_WAITHANDLE_REASON i = INDEX_WAITHANDLE_REASON.ERROR; i < (INDEX_WAITHANDLE_REASON.ERROR + 1); i++)
-                    ((ManualResetEvent)m_waitHandleState[(int)i]).Reset();
+                ResetSyncState ();
 
                 if (m_listKeyTECComponentDetail[m_listCurRDGValues.IndexOf(curRDGValues)].Mode == FormChangeMode.MODE_TECCOMPONENT.TG) {
-                    indxEv = WaitHandle.WaitAny(m_waitHandleState);
-                    if (indxEv == 0)
+                    indxEv = WaitAny(Constants.MAX_WATING, true);
+                    if (indxEv == INDEX_WAITHANDLE_REASON.SUCCESS)
                     {
                         CurrentKey = m_listKeyTECComponentDetail[m_listCurRDGValues.IndexOf(curRDGValues)];
 
@@ -365,8 +368,11 @@ namespace StatisticCommon
 
                         bErr = base.SaveChanges();
                     }
-                    else
+                    else {
+                        ASUTP.Logging.Logg ().Error ($"AdminTS_TG::SaveChanges () - <{indxEv}>...", ASUTP.Logging.INDEX_MESSAGE.NOT_SET);
+
                         break;
+                    }
                 }
                 else
                     ;
@@ -400,16 +406,12 @@ namespace StatisticCommon
             return dt.ToString (@"yyyy-MM-dd");
         }
 
-        protected override void InitializeSyncState()
+        protected override void InitializeSyncState(int capacity = 1)
         {
             m_evSaveChangesComplete = new ManualResetEvent(false);
 
-            m_waitHandleState = new WaitHandle[(int)INDEX_WAITHANDLE_REASON.ERROR + 1];
-            base.InitializeSyncState();
-            for (int i = (int)INDEX_WAITHANDLE_REASON.SUCCESS + 1; i < (int)(INDEX_WAITHANDLE_REASON.ERROR + 1); i++)
-            {
-                m_waitHandleState[i] = new ManualResetEvent(false);
-            }
+            base.InitializeSyncState((int)INDEX_WAITHANDLE_REASON.ERROR + 1);
+            AddSyncState(INDEX_WAITHANDLE_REASON.ERROR, typeof (ManualResetEvent), false);
         }
 
         public override void ImpRDGExcelValues(FormChangeMode.KeyDevice key, DateTime date)

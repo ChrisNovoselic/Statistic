@@ -129,7 +129,7 @@ namespace StatisticTrans
         /// </summary>
         protected class handlerCmd : HCmd_Arg
         {
-            private enum CMD_PARAMETER { unknown = -1, start, stop, service, date, debug }
+            private enum CMD_PARAMETER { unknown = -1, start, minimize, stop, service, date, debug }
 
             private Dictionary<CMD_PARAMETER, Func<string, bool>> _dictCommandParameterHandler;
 
@@ -261,6 +261,7 @@ namespace StatisticTrans
                 foreach (CMD_PARAMETER parameter in Enum.GetValues (typeof (CMD_PARAMETER))) {
                     if ((parameter == CMD_PARAMETER.unknown)
                         //|| (parameter == CMD_PARAMETER.start) обработано, но назначается режим работы по умолчанию
+                        || (parameter == CMD_PARAMETER.minimize)
                         || (parameter == CMD_PARAMETER.stop))
                     // обработан ранее в родительском классе
                         continue;

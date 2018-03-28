@@ -31,7 +31,7 @@ namespace StatisticCommon
         public AdminTS_KomDisp(bool[] arMarkSavePPBRValues)
             : base(arMarkSavePPBRValues, TECComponentBase.TYPE.ELECTRO)
         {
-            delegateImportForeignValuesRequuest = impCSVValuesRequest;
+            delegateImportForeignValuesRequest = impCSVValuesRequest;
             delegateImportForeignValuesResponse = impCSVValuesResponse;
 
             _listCSVValuesFields = new List<string []> () {
@@ -329,10 +329,12 @@ namespace StatisticCommon
             Thread.CurrentThread.CurrentUICulture =
                 ProgramBase.ss_MainCultureInfo; //new System.Globalization.CultureInfo(@"en-US")
 
+            FormChangeMode.KeyDevice key;
             //Определить тип загружаемых значений
             CONN_SETT_TYPE typeValues = (CONN_SETT_TYPE)type;
+            object arg;
 
-            int indxEv = -1;
+            INDEX_WAITHANDLE_REASON indxEv = INDEX_WAITHANDLE_REASON.SUCCESS;
             FormChangeMode.KeyDevice prevKeyTECComponents = CurrentKey;
             string strPBRNumber = string.Empty; // ...только для ПБР
 
@@ -350,35 +352,56 @@ namespace StatisticCommon
                 ;
 
             //Снять все признаки причин прекращения выполнения обработки событий
-            Reset ();
+            ResetSyncState ();
 
             foreach (TECComponent comp in allTECComponents)
                 if (comp.IsGTP == true) //Является ГТП
                 {
-                    indxEv = WaitAny(Thread.);
-                    if (indxEv == 0)
-                    {
-                        switch (typeValues) {
-                            case CONN_SETT_TYPE.ADMIN:
-                                errRes = saveCSVValues(new FormChangeMode.KeyDevice () { Id = comp.m_id, Mode = comp.Mode }, typeValues);
-                                break;
-                            case CONN_SETT_TYPE.PBR:
-                                errRes = saveCSVValues(new FormChangeMode.KeyDevice () { Id = comp.m_id, Mode = comp.Mode }, strPBRNumber);
-                                break;
-                            default:
-                                break;
-                        }
+                    arg = null;
+                    key = new FormChangeMode.KeyDevice () { Id = comp.m_id, Mode = comp.Mode };
+                    indxEv = WaitAny(Constants.MAX_WATING, true); // System.Threading.Timeout.Infinite
+                    switch ((INDEX_WAITHANDLE_REASON)indxEv) {
+                        case INDEX_WAITHANDLE_REASON.SUCCESS:
+                            switch (typeValues) {
+                                case CONN_SETT_TYPE.ADMIN:
+                                    arg = typeValues;
+                                    break;
+                                case CONN_SETT_TYPE.PBR:
+                                    arg = strPBRNumber;
+                                    break;
+                                default:
+                                    break;
+                            }
 
-                        //if (! (errRes == Errors.NoError))
-                        //    ; //Ошибка ???
-                        //else
-                        //    ;
+                            if (Equals (arg, null) == false) {
+                                errRes = saveCSVValues (key, arg);
+
+                                //if (! (errRes == Errors.NoError))
+                                //    ; //Ошибка ???
+                                //else
+                                //    ;
+                            } else
+                                ;
+                            break;
+                        case INDEX_WAITHANDLE_REASON.ERROR:
+                            Logging.Logg ().Error ($"AdminTS_KomDisp::threadCSVValues () - ошибка для <{key.ToString ()}>..."
+                                , Logging.INDEX_MESSAGE.NOT_SET);
+                            break;
+                        //case INDEX_WAITHANDLE_REASON.BREAK: в этом объекте не задействован (см. InitSyncState)
+                        //    break;
+                        case INDEX_WAITHANDLE_REASON.TIMEOUT:
+                            Logging.Logg ().Warning ($"AdminTS_KomDisp::threadCSVValues () - время ожидания <{Constants.MAX_WATING} мсек> истекло для <{key.ToString ()}>..."
+                                , Logging.INDEX_MESSAGE.NOT_SET);
+                            break;
+                        default:
+                            //Ошибка ???
+                            //break;
+                            //completeHandleStates();
+
+                            Logging.Logg ().Warning ($"AdminTS_KomDisp::threadCSVValues () - неизвестное состояние объектов синхронизации при ожидании для <{key.ToString ()}>..."
+                                , Logging.INDEX_MESSAGE.NOT_SET);
+                            break;
                     }
-                    else
-                        //Ошибка ???
-                        //break;
-                        //completeHandleStates();
-                        ;
                 }
                 else
                     ;

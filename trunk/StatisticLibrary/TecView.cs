@@ -5577,13 +5577,13 @@ namespace StatisticCommon
                 ;
         }
 
-        protected override void InitializeSyncState()
+        protected override void InitializeSyncState(int capacity = 1)
         {
-            m_waitHandleState = new WaitHandle[(int)INDEX_WAITHANDLE_REASON.COUNT_INDEX_WAITHANDLE_REASON];
-            base.InitializeSyncState ();
-            for (int i = (int)INDEX_WAITHANDLE_REASON.SUCCESS + 1; i < (int)INDEX_WAITHANDLE_REASON.COUNT_INDEX_WAITHANDLE_REASON; i ++ ) {
-                m_waitHandleState [i] = new ManualResetEvent(false);
-            }
+            base.InitializeSyncState ((int)INDEX_WAITHANDLE_REASON.COUNT_INDEX_WAITHANDLE_REASON);
+
+            AddSyncState (new INDEX_WAITHANDLE_REASON [] { INDEX_WAITHANDLE_REASON.ERROR, INDEX_WAITHANDLE_REASON.BREAK }
+                , new Type [] { typeof(ManualResetEvent), typeof (ManualResetEvent) }
+                , new bool [] { false, false });
         }
     }
 }

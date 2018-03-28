@@ -133,7 +133,7 @@ namespace Statistic
         /// </summary>
         /// <param name="date">ƒата отображаемых значений</param>
         /// <param name="bNewValues">ѕризнак наличи€ новых значений, иначе требуетс€ изменить оформление представлени€</param>
-        public override void SetDataGridViewAdmin(DateTime date, bool bNewValues)
+        protected override void setDataGridViewAdmin(DateTime date, bool bNewValues)
         {
             int hour = -1
                 , offset = -1;

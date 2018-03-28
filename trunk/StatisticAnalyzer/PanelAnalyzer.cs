@@ -1387,9 +1387,24 @@ namespace StatisticAnalyzer
         {
             bool bRes = base.Activate(activated);
 
-            if (IsFirstActivated == false)
-                activateTimerChecked(CheckState.Checked);
+            CheckState? timerActivated = null;
+
+            if (bRes == true)
+                if (IsFirstActivated == false) {
+                // последующие за 1-ой активации
+                    if (activated == true)
+                    // немедленно обновить состояния активности пользователей
+                        timerActivated = CheckState.Checked;
+                    else
+                    // приостановить любое обновление -  оставить 'null'
+                        ;
+
+                    activateTimerChecked (timerActivated);
+                } else
+                // 1-ая активация панели (таймер активируется особенным методом - при запуске)
+                    ;
             else
+            // признак активности не изменился
                 ;
 
             return bRes;

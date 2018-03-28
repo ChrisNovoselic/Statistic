@@ -89,26 +89,26 @@ namespace StatisticAlarm
         /// <param name="synch">Объект для синхронизации</param>
         private void threadGetRDGValues(object synch)
         {
-            int indxEv = -1;
+            INDEX_WAITHANDLE_REASON indxEv = INDEX_WAITHANDLE_REASON.SUCCESS;
 
             //if (m_waitHandleState[(int)INDEX_WAITHANDLE_REASON.SUCCESS].WaitOne (0, true) == false)
-            ((AutoResetEvent)m_waitHandleState[(int)INDEX_WAITHANDLE_REASON.SUCCESS]).Set();
+            SetSyncState(INDEX_WAITHANDLE_REASON.SUCCESS);
+
             //else ;
 
-            for (INDEX_WAITHANDLE_REASON i = INDEX_WAITHANDLE_REASON.ERROR; i < INDEX_WAITHANDLE_REASON.COUNT_INDEX_WAITHANDLE_REASON; i++)
-                ((ManualResetEvent)m_waitHandleState[(int)i]).Reset();
+            ResetSyncState ();
 
             foreach (TECComponent tc in allTECComponents)
             {
                 if (tc.IsGTP == true)
                 {
-                    indxEv = WaitHandle.WaitAny(m_waitHandleState);
-                    if (indxEv == (int)INDEX_WAITHANDLE_REASON.BREAK)
+                    indxEv = WaitAny(Constants.MAX_WATING, true);
+                    if (indxEv == INDEX_WAITHANDLE_REASON.BREAK)
                         break;
                     else
                     {
-                        if (!(indxEv == (int)INDEX_WAITHANDLE_REASON.SUCCESS))
-                            ((ManualResetEvent)m_waitHandleState[indxEv]).Reset();
+                        if (!(indxEv == INDEX_WAITHANDLE_REASON.SUCCESS))
+                            ResetSyncState ((INDEX_WAITHANDLE_REASON)indxEv);
                         else
                             ;
 

@@ -26,14 +26,14 @@ namespace StatisticCommon
 
         public double m_curRDGValues_PBR_0;
 
-        protected DelegateFunc delegateImportForeignValuesRequuest,
-                                delegateExportForeignValuesRequuest;
+        protected DelegateFunc delegateImportForeignValuesRequest
+            , delegateExportForeignValuesRequest;
         protected delegate int DelegateFuncInt();
-        protected DelegateFuncInt delegateImportForeignValuesResponse,
-                                    delegateExportForeignValuesResponse;
+        protected DelegateFuncInt delegateImportForeignValuesResponse
+            , delegateExportForeignValuesResponse;
 
-        protected DataTable m_tableValuesResponse,
-                    m_tableRDGExcelValuesResponse;
+        protected DataTable m_tableValuesResponse
+            , m_tableRDGExcelValuesResponse;
 
         protected enum StatesMachine
         {
@@ -1867,11 +1867,19 @@ namespace StatisticCommon
         /// </summary>
         public override void Stop()
         {
+            try {
+                if (semaDBAccess.WaitOne (0, true) == false)
+                    semaDBAccess.Release (1);
+                else
+                    ;
+            } catch (Exception e) {
+                Logging.Logg ().Exception (e, "AdminTS::Stop () -...", Logging.INDEX_MESSAGE.NOT_SET);
+            }
+
             base.Stop();
 
-            if (! (m_list_tec == null))
-                foreach (TEC t in m_list_tec)
-                {
+            if (Equals (m_list_tec, null) == false)
+                foreach (TEC t in m_list_tec) {
                     StopDbInterfaces();
                 }
             else
@@ -1918,15 +1926,15 @@ namespace StatisticCommon
                 #region Импорт/экспорт значений
                 case StatesMachine.ImpRDGExcelValues:
                     strRep = @"Импорт РДГ из Excel.";
-                    delegateImportForeignValuesRequuest();
+                    delegateImportForeignValuesRequest();
                     break;
                 case StatesMachine.ExpRDGExcelValues:
                     strRep = @"Экспорт РДГ в книгу Excel.";
-                    delegateExportForeignValuesRequuest();
+                    delegateExportForeignValuesRequest();
                     break;
                  case StatesMachine.CSVValues:
                     strRep = @"Импорт из формата CSV.";
-                    delegateImportForeignValuesRequuest();
+                    delegateImportForeignValuesRequest();
                     break;
                 #endregion
                 case StatesMachine.PPBRDates:
@@ -2035,7 +2043,8 @@ namespace StatisticCommon
                 switch (stateMachine)
                 {
                     case StatesMachine.ImpRDGExcelValues:
-                        if ((!(m_tableRDGExcelValuesResponse == null)) && (m_tableRDGExcelValuesResponse.Rows.Count > 24))
+                        if ((!(m_tableRDGExcelValuesResponse == null))
+                            && (m_tableRDGExcelValuesResponse.Rows.Count > 24))
                         {
                             error = false;
 
@@ -2051,7 +2060,8 @@ namespace StatisticCommon
                             iRes = 0;
                         break;
                      case StatesMachine.CSVValues:
-                        if ((!(m_tableValuesResponse == null)) && (m_tableValuesResponse.Rows.Count > 0))
+                        if ((!(m_tableValuesResponse == null))
+                            && (m_tableValuesResponse.Rows.Count > 0))
                         {
                             error = false;
 
@@ -2221,9 +2231,9 @@ namespace StatisticCommon
                     saveResult = Errors.NoError;
                     //Если состояние крайнее, то освободить доступ к БД
                     if (isLastState (state) == true)
-                        try { semaDBAccess.Release(1); }
-                        catch { }
-                    else
+                        try { semaDBAccess.Release(1); } catch (Exception e) {
+                            Logging.Logg ().Exception (e, @"AdminTS::StateResponse () - semaDBAccess.Release(1) - StatesMachine.SaveAdminValues...", Logging.INDEX_MESSAGE.NOT_SET);
+                        } else
                         ;
                     result = 0;
                     if (result == 0) { }
@@ -2233,8 +2243,7 @@ namespace StatisticCommon
                     saveResult = Errors.NoError;
                     //Если состояние крайнее, то освободить доступ к БД
                     if (isLastState(state) == true)
-                        try { semaDBAccess.Release(1); }
-                        catch (Exception e) {
+                        try { semaDBAccess.Release(1); } catch (Exception e) {
                             Logging.Logg().Exception(e, @"AdminTS::StateResponse () - semaDBAccess.Release(1) - StatesMachine.SavePPBRValues...", Logging.INDEX_MESSAGE.NOT_SET);
                         }
                     else

@@ -36,16 +36,28 @@ namespace Statistic
             set
             {
                 if (!(m_admin.ModeGetRDGValues == value)) {
-                    comboBoxTecComponent.Enabled =
-                    mcldrDate.Enabled =
-                    btnSet.Enabled =
-                    btnRefresh.Enabled =
-                        (value & AdminTS.MODE_GET_RDG_VALUES.DISPLAY) == AdminTS.MODE_GET_RDG_VALUES.DISPLAY;
+                    setEnableUI ((value & AdminTS.MODE_GET_RDG_VALUES.DISPLAY) == AdminTS.MODE_GET_RDG_VALUES.DISPLAY);
 
                     m_admin.ModeGetRDGValues = value;
                 } else
                     ;
             }
+        }
+
+        protected virtual void setEnableUI (bool enabled)
+        {
+            System.Action act = delegate () {
+                comboBoxTecComponent.Enabled =
+                mcldrDate.Enabled =
+                btnSet.Enabled =
+                btnRefresh.Enabled =
+                    enabled;
+            };
+
+            if (InvokeRequired == true)
+                Invoke (act);
+            else
+                act();
         }
         
         /// <summary>
@@ -324,7 +336,7 @@ namespace Statistic
         {
             //m_evtAdminTableRowCount = new ManualResetEvent (false);
 
-            m_admin.SetDelegateData(this.SetDataGridViewAdmin, null);
+            m_admin.SetDelegateData(this.setDataGridViewAdmin, null);
             m_admin.SetDelegateDatetime(this.CalendarSetDate);
 
             //m_admin.m_typeFields = s_typeFields;
@@ -376,7 +388,12 @@ namespace Statistic
 
         protected virtual void getDataGridViewAdmin() { }
 
-        public abstract void SetDataGridViewAdmin (DateTime date, bool bNewValues);
+        protected abstract void setDataGridViewAdmin (DateTime date, bool bNewValues);
+
+        protected virtual void errorDataGridViewAdmin (int state)
+        {
+            //setEnableUI (true);
+        }
 
         /// <summary>
         /// Установка значения даты/времени в элементе управления 'календарь' и
@@ -739,7 +756,7 @@ namespace Statistic
 
         public override void UpdateGraphicsCurrent (int type)
         {
-            SetDataGridViewAdmin (mcldrDate.SelectionStart.Date, false);
+            setDataGridViewAdmin (mcldrDate.SelectionStart.Date, false);
         }
     }
 }
