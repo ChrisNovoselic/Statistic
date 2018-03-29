@@ -1356,8 +1356,12 @@ namespace StatisticTrans
                         if (IsTomorrow() == true)
                         {
                             setDatetimePicker (dateTimePickerMain.Value.AddDays (1));
-                            comboBoxTECComponent.SelectedIndex = 0;
-                            comboBoxTECComponent_SelectedIndexChanged (null, EventArgs.Empty);
+                            new Thread (new ParameterizedThreadStart (delegate (object obj) {
+                                    trans_auto_start ();
+                                })) {
+                                IsBackground = true
+                                , Name = string.Format ("FormMainTrans::Tomorrow")
+                            }.Start ();
                         }
                         else
                         {//??? завершение выполнения очередной итерации
@@ -1371,6 +1375,11 @@ namespace StatisticTrans
 
         protected virtual void trans_auto_stop ()
         {
+            Logging.Logg ().Debug ($"FormMainTrans::trans_auto_stop () IsService={handlerCmd.ModeMashine.ToString()}..."
+                , Logging.INDEX_MESSAGE.NOT_SET);
+
+
+
             setDatetimePicker (DateTime.Now);
             //enabledUIControl(true);
         }

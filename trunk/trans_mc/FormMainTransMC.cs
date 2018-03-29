@@ -194,7 +194,7 @@ namespace trans_mc
         {
             AdminMC adminMC = m_arAdmin [(int)CONN_SETT_TYPE.SOURCE] as AdminMC;
 
-            Logging.Logg ().Debug ($"FormMainTransMS::trans_auto_stop () IsServiceOnEvent={adminMC.IsServiceOnEvent}..."
+            Logging.Logg ().Debug ($"FormMainTransMC::trans_auto_stop () IsServiceOnEvent={adminMC.IsServiceOnEvent}..."
                 , Logging.INDEX_MESSAGE.NOT_SET);
 
             if (adminMC.IsServiceOnEvent == true)
