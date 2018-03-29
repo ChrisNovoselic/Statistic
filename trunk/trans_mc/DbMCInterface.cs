@@ -538,7 +538,10 @@ namespace trans_mc
 
         private void getData_OnFillError(FillErrorEventArgs arg)
         {
-            getData_OnFillError (m_MCApi, arg);
+            arg.Continue = false;
+
+            //TODO:
+            //getData_OnFillError (m_MCApi, arg);
         }
 
         protected override bool GetData (DataTable table, object query)
@@ -555,7 +558,8 @@ namespace trans_mc
                         , query
                         , findIGO
                         , addIGO
-                        , getData_OnFillError))
+                        , getData_OnFillError
+                    ))
                     result = getData.Result (table);
             } catch (Exception e) {
                 Logging.Logg ().Exception (e, $"DbMCInterface::GetData () - query={query}...", Logging.INDEX_MESSAGE.NOT_SET);

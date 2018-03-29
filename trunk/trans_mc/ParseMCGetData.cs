@@ -34,7 +34,8 @@ namespace trans_mc
             , object query
             , Func<int, Modes.BusinessLogic.IGenObject> fFindIGO
             , Func<int, Modes.BusinessLogic.IGenObject> fAddIGO
-            , Action<FillErrorEventArgs> fGetData_OnFillError)
+            , Action<FillErrorEventArgs> fGetData_OnFillError
+            )
         {
             _operation = DbMCInterface.Operation.Unknown;
 
@@ -151,6 +152,7 @@ namespace trans_mc
             //table.Columns.Add("ID_COMPONENT", typeof(Int32));
 
             for (i = 0; i < idsInner.Length; i++) {
+                bRes = false;
                 valid = Int32.TryParse (idsInner [i], out idInner);
 
                 if (valid == false)
@@ -176,8 +178,6 @@ namespace trans_mc
                             , Logging.INDEX_MESSAGE.NOT_SET);
 
                         delegateGetData_OnFillError (new FillErrorEventArgs (table, new object [] { }));
-
-                        bRes = false;
                     }
 
                     if (bRes == true)
@@ -265,7 +265,7 @@ namespace trans_mc
                                 , Logging.INDEX_MESSAGE.NOT_SET);
                     } // foreach
                 } else
-                    bRes = false; //igo == null
+                    ; //bRes = false, igo == null
             } // for, i
 
             return bRes;
