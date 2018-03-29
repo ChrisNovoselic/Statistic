@@ -35,10 +35,6 @@ namespace trans_mc
             this.Icon = trans_mc.Properties.Resources.statistic5;
             InitializeComponentTransSrc (@"Сервер Модес-Центр");
 
-            Logging.LinkId(Logging.INDEX_MESSAGE.D_001, (int)FormParameters.PARAMETR_SETUP.MAINFORMBASE_SETPBRQUERY_LOGPBRNUMBER);
-            Logging.LinkId(Logging.INDEX_MESSAGE.D_002, (int)FormParameters.PARAMETR_SETUP.MAINFORMBASE_SETPBRQUERY_LOGQUERY);
-            Logging.UpdateMarkDebugLog();
-
             m_dgwAdminTable.Size = new System.Drawing.Size(498, 391);
         }
 
@@ -165,18 +161,10 @@ namespace trans_mc
 
         private void FormMainTransMC_EventPlanDataChanged (object sender, EventArgs e)
         {
-            IAsyncResult iar;
-            object res;
+            setDatetimePicker ((e as AdminMC.IEventArgs).m_Date.Date);
 
-            iar = BeginInvoke ((MethodInvoker)delegate () {
-                dateTimePickerMain.Value = (e as AdminMC.IEventArgs).m_Date.Date;
-
-                trans_auto_start ();
-            });
-
-            //iar.AsyncWaitHandle.WaitOne();
-            //res = EndInvoke (iar);
-
+            trans_auto_start ();
+            
             Logging.Logg ().Action (@"::FormMainTransMC_EventPlanDataChanged () - ...", Logging.INDEX_MESSAGE.NOT_SET);
         }
 
@@ -252,7 +240,7 @@ namespace trans_mc
                     FillComboBoxTECComponent (mode, true);
                     CT = new ComponentTesting (comboBoxTECComponent.Items.Count);
 
-                    dateTimePickerMain.Value = DateTime.Now;
+                    setDatetimePicker (DateTime.Now);
 
                     m_arAdmin [(int)CONN_SETT_TYPE.SOURCE].Activate (true);
 

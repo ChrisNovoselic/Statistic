@@ -105,11 +105,16 @@
     <Compile Include="PBREvualation.cs" />
     <Compile Include="StatisticCommonAdminTest.cs" />
     <Compile Include="Properties\AssemblyInfo.cs" />
+    <Compile Include="StatisticTrans.cs" />
   </ItemGroup>
   <ItemGroup>
     <ProjectReference Include="..\StatisticLibrary\StatisticCommon.csproj">
       <Project>{5D7C7433-8D2F-4C1A-8BD7-B30B7AE7079B}</Project>
       <Name>StatisticCommon</Name>
+    </ProjectReference>
+    <ProjectReference Include="..\StatisticTrans\StatisticTrans.csproj">
+      <Project>{D7F2FA1F-786E-4525-AF90-43B85CAE6DA8}</Project>
+      <Name>StatisticTrans</Name>
     </ProjectReference>
     <ProjectReference Include="..\Statistic\Statistic.csproj">
       <Project>{C9D5A382-D3D2-4529-A757-D4CA5BCEF690}</Project>

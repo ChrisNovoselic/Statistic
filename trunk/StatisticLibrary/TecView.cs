@@ -1508,7 +1508,7 @@ namespace StatisticCommon
                             m_prevDate = serverTime.Date;
                             m_curDate = m_prevDate;
 
-                            if (!(setDatetime == null)) setDatetime(m_curDate); else;
+                            setDatetime?.Invoke(m_curDate);
                         }
                         else
                             ;

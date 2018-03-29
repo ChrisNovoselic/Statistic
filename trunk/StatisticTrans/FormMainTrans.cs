@@ -325,7 +325,10 @@ namespace StatisticTrans
             //    , (from pair in config select pair.Key).ToArray()
             //    , (from pair in config select pair.Value).ToArray());
             FileAppSettings.This ().AddRequired (config
-                //.Concat(new KeyValuePair<string, string> [] { new KeyValuePair<string, string> (@"service", "126667") }) ??? сервис указывается только в командной строке
+                .Concat(new KeyValuePair<string, string> [] {
+                    //new KeyValuePair<string, string> (@"service", "126667") ??? сервис указывается только в командной строке
+                    new KeyValuePair<string, string> ("OverDate", "HH:mm:ss;04:05:06")
+                }) 
             );
 
             string keyPar = string.Empty
@@ -443,12 +446,13 @@ namespace StatisticTrans
             Controls.Add(m_labelTime);
             m_labelTime.Visible = true;
 
+            Logging.LinkId (Logging.INDEX_MESSAGE.D_001, (int)FormParameters.PARAMETR_SETUP.MAINFORMBASE_SETPBRQUERY_LOGPBRNUMBER);
+            Logging.LinkId (Logging.INDEX_MESSAGE.D_002, (int)FormParameters.PARAMETR_SETUP.MAINFORMBASE_SETPBRQUERY_LOGQUERY);
+            Logging.UpdateMarkDebugLog ();
+
             //Значения аргументов 'Date', 'TimerInterval' по умолчанию в 'handlerCmd'
 
-            //экземпляр класса обработки командной строки
-            //createHCmdArg(Environment.GetCommandLineArgs());
-
-            dateTimePickerMain.Value = handlerCmd.Date;
+            setDatetimePicker (handlerCmd.Date);
 
             m_arGroupBox = new GroupBox[(Int16)CONN_SETT_TYPE.COUNT_CONN_SETT_TYPE] { groupBoxSource, groupBoxDest };
             delegateEvent = new DelegateFunc(EventRaised);
@@ -1116,17 +1120,25 @@ namespace StatisticTrans
             //Logging.Logg().Debug(@"FormMainTrans::saveDataGridViewAdminComplete () - вЫход...", Logging.INDEX_MESSAGE.NOT_SET);
         }
 
-        protected void setDatetimePickerMain(DateTime date)
-        {
-            dateTimePickerMain.Value = date;
-        }
-
         protected void setDatetimePicker(DateTime date)
         {
-            if (IsHandleCreated/*InvokeRequired*/ == true)
-                this.BeginInvoke(new DelegateDateFunc(setDatetimePickerMain), date);
-            else
-                Logging.Logg().Error(@"FormMainTrans::setDatetimePicker () - ... BeginInvoke (setDatetimePickerMain) - ...", Logging.INDEX_MESSAGE.D_001);
+            IAsyncResult iar;
+            object result;
+
+            DelegateDateFunc fSetter = delegate (DateTime dateValue) {
+                dateTimePickerMain.Value = dateValue;
+            };
+
+            if (IsHandleCreated/*InvokeRequired*/ == true) {
+                //iar =
+                    BeginInvoke (fSetter, date);
+
+                //result = EndInvoke (iar);
+            } else {
+                fSetter (date);
+
+                Logging.Logg ().Error (@"FormMainTrans::setDatetimePicker () - ... BeginInvoke (setDatetimePickerMain) - ...", Logging.INDEX_MESSAGE.D_001);
+            }
         }
 
         protected override void Stop()
@@ -1343,7 +1355,7 @@ namespace StatisticTrans
                     if (handlerCmd.ModeMashine == MODE_MASHINE.SERVICE_PERIOD)
                         if (IsTomorrow() == true)
                         {
-                            dateTimePickerMain.Value = dateTimePickerMain.Value.AddDays (1);
+                            setDatetimePicker (dateTimePickerMain.Value.AddDays (1));
                             comboBoxTECComponent.SelectedIndex = 0;
                             comboBoxTECComponent_SelectedIndexChanged (null, EventArgs.Empty);
                         }
@@ -1359,16 +1371,21 @@ namespace StatisticTrans
 
         protected virtual void trans_auto_stop ()
         {
-            dateTimePickerMain.Value = DateTime.Now;
+            setDatetimePicker (DateTime.Now);
             //enabledUIControl(true);
         }
 
         protected virtual bool IsTomorrow()
         {
-            TimeSpan timeSpan = new TimeSpan(4, 5, 6);
-            DateTime dateApp = dateTimePickerMain.Value.AddDays(1);
+            return isTomorrow(dateTimePickerMain.Value, DateTime.Now);
+        }
 
-            return (((DateTime)dateApp.Date) - DateTime.Now) > timeSpan ? false : true;
+        public static bool isTomorrow (DateTime picker, DateTime now)
+        {
+            TimeSpan timeSpan = FileAppSettings.This().OverDate();
+            DateTime dateApp = picker.Date.AddDays (1);
+
+            return dateApp.CompareTo (now.Add (timeSpan)) < 0;
         }
 
         protected override void timer_Start()
@@ -1423,7 +1440,7 @@ namespace StatisticTrans
                     else
                         ;
 
-                    dateTimePickerMain.Value = DateTime.Now;
+                    setDatetimePicker (DateTime.Now);
 
                     trans_auto_start();
                     break;

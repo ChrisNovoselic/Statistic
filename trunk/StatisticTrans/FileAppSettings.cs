@@ -81,6 +81,21 @@ namespace StatisticTrans
             }
         }
 
+        public TimeSpan OverDate(string valueDefault = "04:05:06")
+        {
+            TimeSpan tsRes;
+
+            string [] values = GetValue ("OverDate").Split (';');
+
+            if ((!(values.Length == 2))
+                || (TimeSpan.TryParseExact (values [1], values [0], System.Globalization.CultureInfo.InvariantCulture, out tsRes) == false)) {
+                tsRes = TimeSpan.Parse (valueDefault);
+            } else
+                ;
+
+            return tsRes;
+        }
+
         /// <summary>
         /// Признак наличия ключа в файле конфигурации
         /// </summary>

@@ -10,6 +10,7 @@ using System.Runtime.InteropServices;
 
 using StatisticCommon;
 using StatisticTrans;
+using ASUTP;
 
 namespace StatisticTransModes
 {
@@ -50,7 +51,7 @@ namespace StatisticTransModes
 
             m_arAdmin = new HAdmin[(Int16)CONN_SETT_TYPE.COUNT_CONN_SETT_TYPE];
 
-            Start();
+            Start ();
         }
 
         private void InitializeComponentTransModes()
@@ -119,7 +120,7 @@ namespace StatisticTransModes
 
         protected override void comboBoxTECComponent_SelectedIndexChanged(object cbx, EventArgs ev)
         {
-            ASUTP.Logging.Logg ().Debug ($"FormMainTransModes::comboBoxTECComponent_SelectedIndexChanged () - m_IndexDB={m_IndexDB}, ModeTECComponent={m_modeTECComponent.ToString()}..."
+            ASUTP.Logging.Logg ().Debug ($"FormMainTransModes::comboBoxTECComponent_SelectedIndexChanged () - m_IndexDB={m_IndexDB}, ModeTECComponent={m_modeTECComponent.ToString()}, date={dateTimePickerMain.Value.Date.ToShortDateString()}..."
                 , ASUTP.Logging.INDEX_MESSAGE.NOT_SET);
 
             ClearTables ();

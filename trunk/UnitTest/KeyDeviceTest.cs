@@ -3,6 +3,7 @@ using System.Linq;
 using Microsoft.VisualStudio.TestTools.UnitTesting;
 using StatisticCommon;
 using System.Collections.Generic;
+using System;
 
 namespace UnitTest
 {
