@@ -265,7 +265,8 @@ namespace trans_mc
                     && (_listMCEventArgs.Count > 0)) {
                     _autoResetEvent_MCArgs_CollectionChanged.WaitOne ();
 
-                    if (bRemove == true)
+                    if ((bRemove == true)
+                        && (isConnected == true)) // не факт, что событие было обработано должным образом
                         _listMCEventArgs?.RemoveAt (0);
                     else
                         _eventFetch_listMCEventArgs (_listMCEventArgs, new System.Collections.Specialized.NotifyCollectionChangedEventArgs(System.Collections.Specialized.NotifyCollectionChangedAction.Reset));
@@ -508,7 +509,7 @@ namespace trans_mc
                 TimeSpan diff = difference(target);
 
                 return diff.TotalDays > -1
-                    && diff.TotalDays < 0;
+                    && diff.TotalDays < ASUTP.Core.HDateTime.TS_MSK_OFFSET_OF_UTCTIMEZONE.TotalDays;
             };
 
             Func<DbMCInterface.ID_EVENT, DateTime, DateTime> translate = delegate (DbMCInterface.ID_EVENT id, DateTime datetime) {
@@ -642,7 +643,8 @@ namespace trans_mc
 
         private bool waitConnected (int msec = System.Threading.Timeout.Infinite)
         {
-            return _eventConnected.WaitOne (!(msec == System.Threading.Timeout.Infinite) ? msec : ASUTP.Core.Constants.MAX_WATING);
+            // если указана бесконечность, то ожидать 'MAX_WATING'
+            return _eventConnected.WaitOne (msec == System.Threading.Timeout.Infinite ? ASUTP.Core.Constants.MAX_WATING : msec);
         }
 
         protected override int StateRequest(int /*StatesMachine*/ state)

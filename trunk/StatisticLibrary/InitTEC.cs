@@ -266,8 +266,13 @@ namespace StatisticCommon
             string strLog = string.Empty;
             DataTable tableConnSett = null;
 
-            foreach (KeyValuePair<CONN_SETT_TYPE, string> pair in TEC.s_dictIdConfigDataSources)
-                if ((rTec[pair.Value] is DBNull) == false)
+            Action<string, Logging.INDEX_MESSAGE, bool> logging;
+
+            foreach (KeyValuePair<CONN_SETT_TYPE, string> pair in TEC.s_dictIdConfigDataSources) {
+                logging = Logging.Logg ().Warning;
+                err = (rTec [pair.Value] is DBNull) == false ? 0 : -1;
+
+                if (err == 0)
                 {
                     idConnSett = Convert.ToInt32(rTec[pair.Value]);
                     tableConnSett = DbTSQLConfigDatabase.DbConfig().GetDataTableConnSettingsOfIdSource (idConnSett, -1, out err);
@@ -296,21 +301,25 @@ namespace StatisticCommon
                                 break;
                         }
 
-                        if (err > 0)
-                            Logging.Logg().Warning(@"DbTSQLConfigureDatabase::initTECConnectionSettings () - " + strLog + @"...", Logging.INDEX_MESSAGE.NOT_SET);
-                        else
-                            if (strLog.Equals(string.Empty) == false)
-                                Logging.Logg().Error(@"DbTSQLConfigureDatabase::initTECConnectionSettings () - " + strLog + @"...", Logging.INDEX_MESSAGE.NOT_SET);
+                        if (!(err > 0))
+                            if (strLog.Equals (string.Empty) == false)
+                                logging = Logging.Logg ().Error;
                             else
                                 ;
+                        else
+                            ;
                     }
                     else
-                        Logging.Logg().Warning(string.Format(@"DbTSQLConfigureDatabase::initTECConnectionSettings () - " + @"не зарегистрирован источник с идентификатором {0} для ТЭЦ.ID={1}, либо для него не установлен пароль" + @"...", pair.Key, tec.m_id)
-                            , Logging.INDEX_MESSAGE.NOT_SET);
+                        strLog = string.Format(@"не зарегистрирован источник с идентификатором {0} для ТЭЦ.ID={1}, либо для него не установлен пароль" + @"...", pair.Key, tec.m_id);
                 }
                 else
-                    Logging.Logg().Warning(string.Format(@"DbTSQLConfigureDatabase::initTECConnectionSettings () - " + @"не установлен идентификатор источника данных {0} для ТЭЦ.ID={1}" + @"...", pair.Key, tec.m_id)
-                        , Logging.INDEX_MESSAGE.NOT_SET);
+                    strLog = string.Format (@"не установлен идентификатор источника данных {0} для ТЭЦ.ID={1}" + @"...", pair.Key, tec.m_id);
+
+                if (strLog.Equals (string.Empty) == false)
+                    logging ($"DbTSQLConfigureDatabase::initTECConnectionSettings () - {strLog}...", Logging.INDEX_MESSAGE.NOT_SET, true);
+                else
+                    ;
+            }
         }
         /// <summary>
         /// Событие для инициирования обновления параметров ТЭЦ для всех созданных списков (список ТЭЦ)

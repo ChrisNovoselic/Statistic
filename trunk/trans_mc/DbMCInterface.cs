@@ -124,6 +124,9 @@ namespace trans_mc
         {
             m_listIGO = new List<Modes.BusinessLogic.IGenObject> ();
 
+            // нет соединения, соединение ни разу не устанавливалось
+            m_iConnectCounter = -1;
+
             delegateMCApiHandler = mcApiHandler;
             _jsonEventListener = jsonEventListener;
 
@@ -295,6 +298,8 @@ namespace trans_mc
             if (bRes == true) {
                 // на случай перезагрузки сервера Модес-центр
                 try {
+                    m_iConnectCounter++;
+
                     m_MCApi = ModesApiFactory.GetModesApi();
                     m_modesTimeSlice = m_MCApi.GetModesTimeSlice(DateTime.Now.Date.LocalHqToSystemEx(), SyncZone.First, TreeContent.PGObjects, true);
                     m_listPFI = m_MCApi.GetPlanFactors();
@@ -458,16 +463,25 @@ namespace trans_mc
             }
         }
 
+        private int m_iConnectCounter;
+
         protected override bool Disconnect()
         {
             bool result = true
                 , bRes = false;
 
-            lock (mcApiEventLocked) {
-                delegateMCApiHandler?.Invoke (false);
-            }
+            bRes = !(m_iConnectCounter < 0);
 
-            Logging.Logg ().Error ($"DbMCInterface::Disconnect () - Host={(string)m_connectionSettings}, соединение разорвано...", Logging.INDEX_MESSAGE.NOT_SET);
+            if (bRes == true) {
+                lock (mcApiEventLocked) {
+                    delegateMCApiHandler?.Invoke (false);
+                }
+
+                m_iConnectCounter++;
+
+                Logging.Logg ().Error ($"DbMCInterface::Disconnect () - Host={(string)m_connectionSettings}, соединение разорвано...", Logging.INDEX_MESSAGE.NOT_SET);
+            } else
+                ;
 
             return result;
         }
