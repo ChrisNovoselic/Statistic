@@ -15,6 +15,7 @@ using System.Collections.ObjectModel;
 using System.Reflection;
 using System.ComponentModel;
 using System.Reflection.Emit;
+using System.Threading.Tasks;
 
 namespace trans_mc
 {
@@ -236,6 +237,127 @@ namespace trans_mc
             return listRes;
         }
 
+        private bool unregisterHandler ()
+        {
+            bool bRes = false;
+
+            IEnumerable<Delegate/*MethodInfo*/> handlers; ;
+
+            #region добавить обработчики для проверки возможности их удаления
+            //m_MCApi.OnClose += mcApi_OnClose;
+            //m_MCApi.OnData53500Modified += new EventHandler<Modes.NetAccess.EventRefreshData53500> (mcApi_OnEventHandler);
+            //m_MCApi.OnMaket53500Changed += mcApi_OnEventHandler;
+            //m_MCApi.OnPlanDataChanged += mcApi_OnEventHandler;
+            #endregion
+
+            #region Отмена регистрация неуниверсальных обработчиков
+            //List<ParameterInfo> handlerParameters;
+            //handlers = getHandlerExists (m_MCApi);
+
+            //foreach (Delegate handler in handlers.ToList ()) {
+            //    handlerParameters = handler.Method.GetParameters ().ToList();
+            //    if (handlerParameters.Count () == 2)
+            //        if (typeof (Modes.NetAccess.EventRefreshData53500).IsAssignableFrom (handlerParameters [1].GetType ()) == true)
+            //            m_MCApi.OnData53500Modified -= (EventHandler<Modes.NetAccess.EventRefreshData53500>)handler;
+            //        else if (typeof (Modes.NetAccess.EventRefreshJournalMaket53500).IsAssignableFrom (handlerParameters [1].GetType ()) == true)
+            //            m_MCApi.OnMaket53500Changed -= (EventHandler<Modes.NetAccess.EventRefreshJournalMaket53500>)handler;
+            //        else if (typeof (Modes.NetAccess.EventPlanDataChanged).IsAssignableFrom (handlerParameters [1].GetType ()) == true)
+            //            m_MCApi.OnPlanDataChanged -= (EventHandler<Modes.NetAccess.EventPlanDataChanged>)handler;
+            //        else
+            //            ;
+            //    else if (handlerParameters.Count () == 0)
+            //        m_MCApi.OnClose -= (EventHandler)handler;
+            //    else
+            //        ;
+            //}
+            //// проверить
+            //handlers = getHandlerExists (m_MCApi);
+            #endregion
+
+            #region Отмена регистрации универсального обработчика
+            List<string> eventNames = new List<string> () { "OnClose"
+                , "OnData53500Modified", "OnMaket53500Changed", "OnPlanDataChanged"
+            };
+
+            foreach (string eventName in eventNames) {
+                foreach (Delegate handler in getHandlerExists (m_MCApi, eventName)) {
+                    switch (eventNames.IndexOf (eventName)) {
+                        case 0:
+                            m_MCApi.OnClose -= (EventHandler)handler;
+                            break;
+                        case 1:
+                            m_MCApi.OnData53500Modified -= (EventHandler<Modes.NetAccess.EventRefreshData53500>)handler;
+                            break;
+                        case 2:
+                            m_MCApi.OnMaket53500Changed -= (EventHandler<Modes.NetAccess.EventRefreshJournalMaket53500>)handler;
+                            break;
+                        case 3:
+                            m_MCApi.OnPlanDataChanged -= (EventHandler<Modes.NetAccess.EventPlanDataChanged>)handler;
+                            break;
+                        default:
+                            break;
+                    }
+                }
+            }
+            // проверить
+            handlers = getHandlerExists (m_MCApi);
+            #endregion
+
+            return handlers.Count () == 0;
+        }
+
+        private bool registerHandler ()
+        {
+            int counter = -1;
+            bool bEventHandler = false;
+
+            m_MCApi.OnClose += mcApi_OnClose;
+            counter = 1;
+
+            // добавить обработчики в соответствии с конфигурацией
+            if (_jsonEventListener.Count > 0)
+                foreach (DbMCInterface.EVENT nameEvent in Enum.GetValues (typeof (DbMCInterface.EVENT))) {
+                    if (nameEvent == DbMCInterface.EVENT.Unknown)
+                        continue;
+                    else
+                        ;
+
+                    bEventHandler = bool.Parse (_jsonEventListener.Value<string> (nameEvent.ToString ()));
+
+                    delegateMCApiHandler (Tuple.Create<EVENT, bool> (nameEvent, bEventHandler));
+
+                    if (bEventHandler == true) {
+                        counter++;
+
+                        switch (nameEvent) {
+                            case EVENT.OnData53500Modified:
+                                m_MCApi.OnData53500Modified += mcApi_OnEventHandler;
+                                break;
+                            case EVENT.OnMaket53500Changed:
+                                m_MCApi.OnMaket53500Changed += mcApi_OnEventHandler;
+                                break;
+                            case EVENT.OnPlanDataChanged:
+                                m_MCApi.OnPlanDataChanged += mcApi_OnEventHandler;
+                                break;
+                            case EVENT.OnModesEvent:
+                                m_MCApi.OnModesEvent += mcApi_OnModesEvent;
+                                break;
+                            default:
+                                break;
+                        }
+                    } else
+                        ;
+                }
+            else
+            // нет ни одного правила для (отмены)регистрации события
+                ;
+
+            // проверить
+            return getHandlerExists (m_MCApi).Count() == counter;
+        }
+
+        private CancellationTokenSource _cancelTokenSourceInitialized;
+
         /// <summary>
         /// Установить соединение с Модес-Центром и подготовить объект соединения к запросам
         /// </summary>
@@ -243,6 +365,10 @@ namespace trans_mc
         protected override bool Connect()
         {
             string msgLog = string.Empty;
+            bool result = false
+                , bRes = false;
+            //Task<bool> taskInitialized;
+            CancellationToken cancelTokenInitialized;
 
             if (m_connectionSettings == null)
                 return false;
@@ -259,8 +385,11 @@ namespace trans_mc
             else
                 ;
 
-            bool result = false, bRes = false;
+            result =
+            bRes =
+                false;
 
+            //??? 'bRes' не м.б. 'True'
             try {
                 if (bRes == true)
                     return bRes;
@@ -281,19 +410,27 @@ namespace trans_mc
             msgLog = string.Format("Соединение с Modes-Centre ({0})", (string)m_connectionSettings);
 
             try {
-                ModesApiFactory.Initialize((string)m_connectionSettings);
+                Logging.Logg ().Debug (string.Format (@"{0} - ...", msgLog), Logging.INDEX_MESSAGE.NOT_SET);
 
-                Logging.Logg().Debug(string.Format(@"{0} - ...", msgLog), Logging.INDEX_MESSAGE.NOT_SET);
+                _cancelTokenSourceInitialized = new CancellationTokenSource ();
+                cancelTokenInitialized = _cancelTokenSourceInitialized.Token;
+
+                using (Task<bool> taskInitialized = Task<bool>.Factory.StartNew (delegate () {
+                    ModesApiFactory.Initialize ((string)m_connectionSettings);
+
+                    return ModesApiFactory.IsInitilized;
+                }, cancelTokenInitialized)) {
+                    taskInitialized.Wait (cancelTokenInitialized);
+
+                    bRes =
+                    result =
+                        taskInitialized.Status == TaskStatus.RanToCompletion ? taskInitialized.Result : false;
+                }
+
+                _cancelTokenSourceInitialized.Dispose (); _cancelTokenSourceInitialized = null;
             } catch (Exception e) {
                 Logging.Logg().Exception(e, string.Format(@"{0} - ...", msgLog), Logging.INDEX_MESSAGE.NOT_SET);
             }
-
-            bRes = 
-            result =
-                ModesApiFactory.IsInitilized;
-
-            bool bEventHandler = false;
-            IEnumerable<Delegate/*MethodInfo*/> handlers;
 
             if (bRes == true) {
                 // на случай перезагрузки сервера Модес-центр
@@ -304,108 +441,17 @@ namespace trans_mc
                     m_modesTimeSlice = m_MCApi.GetModesTimeSlice(DateTime.Now.Date.LocalHqToSystemEx(), SyncZone.First, TreeContent.PGObjects, true);
                     m_listPFI = m_MCApi.GetPlanFactors();
 
-                    #region добавить обработчики для проверки возможности их удаления
-                    //m_MCApi.OnClose += mcApi_OnClose;
-                    //m_MCApi.OnData53500Modified += new EventHandler<Modes.NetAccess.EventRefreshData53500> (mcApi_OnEventHandler);
-                    //m_MCApi.OnMaket53500Changed += mcApi_OnEventHandler;
-                    //m_MCApi.OnPlanDataChanged += mcApi_OnEventHandler;
-                    #endregion
+                    result = unregisterHandler ();
 
-                    #region Отмена регистрация неуниверсальных обработчиков
-                    //List<ParameterInfo> handlerParameters;
-                    //handlers = getHandlerExists (m_MCApi);
-
-                    //foreach (Delegate handler in handlers.ToList ()) {
-                    //    handlerParameters = handler.Method.GetParameters ().ToList();
-                    //    if (handlerParameters.Count () == 2)
-                    //        if (typeof (Modes.NetAccess.EventRefreshData53500).IsAssignableFrom (handlerParameters [1].GetType ()) == true)
-                    //            m_MCApi.OnData53500Modified -= (EventHandler<Modes.NetAccess.EventRefreshData53500>)handler;
-                    //        else if (typeof (Modes.NetAccess.EventRefreshJournalMaket53500).IsAssignableFrom (handlerParameters [1].GetType ()) == true)
-                    //            m_MCApi.OnMaket53500Changed -= (EventHandler<Modes.NetAccess.EventRefreshJournalMaket53500>)handler;
-                    //        else if (typeof (Modes.NetAccess.EventPlanDataChanged).IsAssignableFrom (handlerParameters [1].GetType ()) == true)
-                    //            m_MCApi.OnPlanDataChanged -= (EventHandler<Modes.NetAccess.EventPlanDataChanged>)handler;
-                    //        else
-                    //            ;
-                    //    else if (handlerParameters.Count () == 0)
-                    //        m_MCApi.OnClose -= (EventHandler)handler;
-                    //    else
-                    //        ;
-                    //}
-                    //// проверить
-                    //handlers = getHandlerExists (m_MCApi);
-                    #endregion
-
-                    #region Отмена регистрации универсального обработчика
-                    List<string> eventNames = new List<string> () { "OnClose"
-                        , "OnData53500Modified", "OnMaket53500Changed", "OnPlanDataChanged"
-                    };
-
-                    foreach (string eventName in eventNames) {
-                        foreach (Delegate handler in getHandlerExists (m_MCApi, eventName)) {
-                            switch (eventNames.IndexOf(eventName)) {
-                                case 0:
-                                    m_MCApi.OnClose -= (EventHandler)handler;
-                                    break;
-                                case 1:
-                                    m_MCApi.OnData53500Modified -= (EventHandler<Modes.NetAccess.EventRefreshData53500>)handler;
-                                    break;
-                                case 2:
-                                    m_MCApi.OnMaket53500Changed -= (EventHandler<Modes.NetAccess.EventRefreshJournalMaket53500>)handler;
-                                    break;
-                                case 3:
-                                    m_MCApi.OnPlanDataChanged -= (EventHandler<Modes.NetAccess.EventPlanDataChanged>)handler;
-                                    break;
-                                default:
-                                    break;
-                            }
-                        }
-                    }
-                    // проверить
-                    handlers = getHandlerExists (m_MCApi);
-                    #endregion
-
-                    m_MCApi.OnClose += mcApi_OnClose;
-
-                    // добавить обработчики в соответствии с конфигурацией
-                    if (_jsonEventListener.Count > 0)
-                        foreach (DbMCInterface.EVENT nameEvent in Enum.GetValues (typeof (DbMCInterface.EVENT))) {
-                            if (nameEvent == DbMCInterface.EVENT.Unknown)
-                                continue;
-                            else
-                                ;
-
-                            bEventHandler = bool.Parse (_jsonEventListener.Value<string> (nameEvent.ToString ()));
-
-                            delegateMCApiHandler (Tuple.Create<EVENT, bool> (nameEvent, bEventHandler));
-
-                            if (bEventHandler == true) {
-                                switch (nameEvent) {
-                                    case EVENT.OnData53500Modified:
-                                        m_MCApi.OnData53500Modified += mcApi_OnEventHandler;
-                                        break;
-                                    case EVENT.OnMaket53500Changed:
-                                        m_MCApi.OnMaket53500Changed += mcApi_OnEventHandler;
-                                        break;
-                                    case EVENT.OnPlanDataChanged:
-                                        m_MCApi.OnPlanDataChanged += mcApi_OnEventHandler;
-                                        break;
-                                    case EVENT.OnModesEvent:
-                                        m_MCApi.OnModesEvent += mcApi_OnModesEvent;
-                                        break;
-                                    default:
-                                        break;
-                                }
-                            } else
-                                ;
-                        }
-                    else
-                    // нет ни одного правила для (отмены)регистрации события
+                    if (result == true) {
+                        result = registerHandler ();
+                    } else
                         ;
 
-                    //// проверить
-                    //handlers = getHandlerExists (m_MCApi);
-
-                    Logging.Logg().Debug(string.Format(@"{0} - {1}...", msgLog, @"УСПЕХ"), Logging.INDEX_MESSAGE.NOT_SET);
+                    if (result == true)
+                        Logging.Logg ().Debug (string.Format (@"{0} - {1}...", msgLog, @"УСПЕХ"), Logging.INDEX_MESSAGE.NOT_SET);
+                    else
+                        Logging.Logg ().Error (string.Format (@"{0} - {1}; не выполнена регистрация/отмена регистрации подписчиков на события...", msgLog, @"ОШИБКА"), Logging.INDEX_MESSAGE.NOT_SET);
                 } catch (Exception e) {
                     Logging.Logg().Exception(e, string.Format(@"{0} - ...", msgLog), Logging.INDEX_MESSAGE.NOT_SET);
 
@@ -473,6 +519,9 @@ namespace trans_mc
             bRes = !(m_iConnectCounter < 0);
 
             if (bRes == true) {
+                // прервать установку соединения, если она выполняется (не 'null')
+                _cancelTokenSourceInitialized?.Cancel();
+
                 lock (mcApiEventLocked) {
                     delegateMCApiHandler?.Invoke (false);
                 }

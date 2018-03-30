@@ -327,7 +327,6 @@ namespace StatisticTrans
             FileAppSettings.This ().AddRequired (config
                 .Concat(new KeyValuePair<string, string> [] {
                     //new KeyValuePair<string, string> (@"service", "126667") ??? сервис указывается только в командной строке
-                    new KeyValuePair<string, string> ("OverDate", "HH:mm:ss;04:05:06")
                 }) 
             );
 
@@ -1353,7 +1352,7 @@ namespace StatisticTrans
                 else
                 // режим работы "сервис" (??? по таймеру | событиям)
                     if (handlerCmd.ModeMashine == MODE_MASHINE.SERVICE_PERIOD)
-                        if (IsTomorrow() == true)
+                        if (isTomorrow() == true)
                         {
                             setDatetimePicker (dateTimePickerMain.Value.AddDays (1));
                             new Thread (new ParameterizedThreadStart (delegate (object obj) {
@@ -1375,26 +1374,27 @@ namespace StatisticTrans
 
         protected virtual void trans_auto_stop ()
         {
-            Logging.Logg ().Debug ($"FormMainTrans::trans_auto_stop () IsService={handlerCmd.ModeMashine.ToString()}..."
+            Logging.Logg ().Debug ($"FormMainTrans::trans_auto_stop () IsService={handlerCmd.ModeMashine.ToString()}, SetDate({DateTime.Now.Date.ToShortDateString()})..."
                 , Logging.INDEX_MESSAGE.NOT_SET);
-
-
 
             setDatetimePicker (DateTime.Now);
             //enabledUIControl(true);
         }
 
-        protected virtual bool IsTomorrow()
+        protected virtual bool isTomorrow()
         {
-            return isTomorrow(dateTimePickerMain.Value, DateTime.Now);
+            return IsTomorrow(dateTimePickerMain.Value, DateTime.Now, FileAppSettings.This ().OverDate ());
         }
 
-        public static bool isTomorrow (DateTime picker, DateTime now)
+        public static bool IsTomorrow (DateTime picker, DateTime now, TimeSpan timeSpan)
         {
-            TimeSpan timeSpan = FileAppSettings.This().OverDate();
-            DateTime dateApp = picker.Date.AddDays (1);
+            DateTime newDateApp = picker.Date.AddDays (1);
+            double diff = 0F;
 
-            return dateApp.CompareTo (now.Add (timeSpan)) < 0;
+            diff = (now.Add (timeSpan) - newDateApp).TotalDays;
+
+            return (diff > 0F)
+                && (diff < timeSpan.TotalDays) ;
         }
 
         protected override void timer_Start()

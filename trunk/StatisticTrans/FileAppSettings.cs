@@ -52,6 +52,7 @@ namespace StatisticTrans
                 , new Tuple<string, string> (@"ОпросСохранениеППБР", string.Join(",", new bool[] { true, false }))
                 , new Tuple<string, string> (@"ОпросСохранениеАдминЗнач", string.Join(",", new bool[] { true, false }))
                 , new Tuple<string, string> (@"ID_TECNotUse", string.Empty)
+                , new Tuple<string, string> ("OverDate", "HH:mm:ss;03:04:05")
             }.ToList().ForEach(elem => addRequired(elem.Item1, elem.Item2));
         }
 
@@ -81,17 +82,31 @@ namespace StatisticTrans
             }
         }
 
-        public TimeSpan OverDate(string valueDefault = "04:05:06")
+        public TimeSpan OverDate(string valueDefault = "03:04:05")
         {
-            TimeSpan tsRes;
+            TimeSpan tsRes = TimeSpan.MinValue;
 
-            string [] values = GetValue ("OverDate").Split (';');
+            string [] values = null;
+            string delim = ";";
 
-            if ((!(values.Length == 2))
-                || (TimeSpan.TryParseExact (values [1], values [0], System.Globalization.CultureInfo.InvariantCulture, out tsRes) == false)) {
-                tsRes = TimeSpan.Parse (valueDefault);
-            } else
-                ;
+            try {
+                values = GetValue ("OverDate").Split (new string [] { delim }, StringSplitOptions.RemoveEmptyEntries);
+
+                if (values.Length == 2) {
+                    tsRes =
+                        //(TimeSpan.ParseExact (values [1], values [0], System.Globalization.CultureInfo.InvariantCulture))
+                        TimeSpan.Parse (values [1])
+                        ;
+                } else
+                    ;
+            } catch (Exception e) {
+                ASUTP.Logging.Logg ().Exception (e, $"FileAppSettings::OverDate() - Length={values.Length}, Values=<{string.Join(delim, values)}>", ASUTP.Logging.INDEX_MESSAGE.NOT_SET);
+            } finally {
+                if (tsRes.Equals (TimeSpan.MinValue) == true)
+                    tsRes = TimeSpan.Parse (valueDefault);
+                else
+                    ;
+            }
 
             return tsRes;
         }

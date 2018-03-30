@@ -163,8 +163,11 @@ namespace trans_mc
         {
             setDatetimePicker ((e as AdminMC.IEventArgs).m_Date.Date);
 
-            trans_auto_start ();
-            
+            if (InvokeRequired == true)
+                Invoke ((MethodInvoker)delegate () { trans_auto_start (); });
+            else
+                trans_auto_start ();
+
             Logging.Logg ().Action (@"::FormMainTransMC_EventPlanDataChanged () - ...", Logging.INDEX_MESSAGE.NOT_SET);
         }
 
