@@ -21,6 +21,7 @@ namespace StatisticTrans
     /// </summary>
     public abstract partial class FormMainTrans : FormMainStatistic
     {
+        public enum INDEX_APP_SETTINS { }
         /// <summary>
         /// Объект для чтения/хранения параметров конфигурации приложения
         /// </summary>
@@ -1123,20 +1124,30 @@ namespace StatisticTrans
         {
             IAsyncResult iar;
             object result;
+            string mesToLog = string.Empty;
 
-            DelegateDateFunc fSetter = delegate (DateTime dateValue) {
+            Action<DateTime, string> fSetter = delegate (DateTime dateValue, string mes) {
                 dateTimePickerMain.Value = dateValue;
+
+                Logging.Logg ().Action (mes, Logging.INDEX_MESSAGE.D_001);
             };
 
-            if (IsHandleCreated/*InvokeRequired*/ == true) {
-                //iar =
-                    BeginInvoke (fSetter, date);
+            try {
+                mesToLog = $"FormMainTrans::setDatetimePicker (Date={date.ToShortDateString ()}) - условия: IsHandleCreated={IsHandleCreated}, InvokeRequired={InvokeRequired}...";
 
-                //result = EndInvoke (iar);
-            } else {
-                fSetter (date);
+                if (IsHandleCreated/*InvokeRequired*/ == true) {
+                    if (InvokeRequired == true)
+                        //iar =
+                            BeginInvoke (fSetter, date, mesToLog);
 
-                Logging.Logg ().Error (@"FormMainTrans::setDatetimePicker () - ... BeginInvoke (setDatetimePickerMain) - ...", Logging.INDEX_MESSAGE.D_001);
+                        //result = EndInvoke (iar);
+                    else
+                        fSetter (date, mesToLog);
+                } else {
+                    fSetter (date, mesToLog);
+                }
+            } catch (Exception e) {
+                Logging.Logg ().Exception (e, $"FormMainTrans::setDatetimePicker (Date={date.ToShortDateString ()}) - ...", Logging.INDEX_MESSAGE.NOT_SET);
             }
         }
 

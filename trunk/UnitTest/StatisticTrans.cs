@@ -24,6 +24,7 @@ namespace UnitTest
                 , Tuple.Create<DateTime, DateTime, bool> (new DateTime(2018, 03, 28), new DateTime (2018, 03, 28, 21, 0, 0), true)
                 , Tuple.Create<DateTime, DateTime, bool> (new DateTime(2018, 03, 28), new DateTime (2018, 03, 28, 23, 0, 0), true)
 
+                , Tuple.Create<DateTime, DateTime, bool> (new DateTime(2018, 03, 28), new DateTime (2018, 03, 28, 23, 46, 0), false)
                 , Tuple.Create<DateTime, DateTime, bool> (new DateTime(2018, 03, 28), new DateTime (2018, 03, 29, 0, 0, 0), false)
                 , Tuple.Create<DateTime, DateTime, bool> (new DateTime(2018, 03, 28), new DateTime (2018, 03, 29, 1, 0, 0), false)
                 , Tuple.Create<DateTime, DateTime, bool> (new DateTime(2018, 03, 28), new DateTime (2018, 03, 29, 21, 0, 0), false)

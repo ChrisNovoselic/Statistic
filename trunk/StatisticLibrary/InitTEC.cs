@@ -310,10 +310,10 @@ namespace StatisticCommon
                             ;
                     }
                     else
-                        strLog = string.Format(@"не зарегистрирован источник с идентификатором {0} для ТЭЦ.ID={1}, либо для него не установлен пароль" + @"...", pair.Key, tec.m_id);
+                        strLog = string.Format(@"не зарегистрирован источник с идентификатором {0} для ТЭЦ.ID={1}, либо для него не установлен пароль", pair.Key, tec.m_id);
                 }
                 else
-                    strLog = string.Format (@"не установлен идентификатор источника данных {0} для ТЭЦ.ID={1}" + @"...", pair.Key, tec.m_id);
+                    strLog = string.Format (@"не установлен идентификатор источника данных {0} для ТЭЦ.ID={1}", pair.Key, tec.m_id);
 
                 if (strLog.Equals (string.Empty) == false)
                     logging ($"DbTSQLConfigureDatabase::initTECConnectionSettings () - {strLog}...", Logging.INDEX_MESSAGE.NOT_SET, true);

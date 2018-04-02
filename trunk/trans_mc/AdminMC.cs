@@ -86,6 +86,13 @@ namespace trans_mc
 
         private System.Threading.ManualResetEvent _eventConnected;
 
+        private System.Threading.Timer _timerFetchWaking;
+        /// <summary>
+        /// Текущий установленный период для таймера ожидания инициирования принудительной обработки аргументов очереди
+        ///  , 'volatile' для использования в признаке 'IsTimerFetchWakingActivated'
+        /// </summary>
+        private volatile int _dueTimerFetchWaking;
+
         protected enum StatesMachine
         {
             Unknown = -1
@@ -104,6 +111,8 @@ namespace trans_mc
             m_strMCServiceHost = strMCServiceHost;
 
             _eventConnected = new System.Threading.ManualResetEvent (false);
+
+            activateTimerFetchWaking(true);
         }
 
         public override void Start ()
@@ -117,6 +126,56 @@ namespace trans_mc
                 _eventFetch_listMCEventArgs += listMCEventArgs_CollectionChanged;
             } else
                 ;
+        }
+
+        /// <summary>
+        /// Метод обратного вызова при истечении интервала для таймера '_timerFetchWaking'
+        ///  , происходит при отсутствии событий от сервиса
+        /// </summary>
+        /// <param name="obj">Аргумент при вызове метода</param>
+        private void fTimerFetchWaking (object obj)
+        {
+            DateTime reqDate = ASUTP.Core.HDateTime.ToMoscowTimeZone ().Date;
+
+            Logging.Logg ().Action ($"AdminMC::fTimerFetchWaking () - Date={reqDate}", Logging.INDEX_MESSAGE.NOT_SET);
+
+            ToDateRequest (reqDate);
+        }
+
+        /// <summary>
+        /// Возобновить/остановить работу таймера для принудительного инициирования обработки событий (при их наличии)
+        ///  , необходимость может возникнуть когда:
+        ///   1) закончилась обработка всех событий
+        ///   2) связь с сервисом Модес-Центр разорвана
+        ///   3) подписчики событий не вызываются, т.к. требуется актуальное соединение с сервисом
+        ///   4) актуальное соединение восстанавливается только при попытке запроса, т.е. вызова подписчика => см. п.3
+        /// </summary>
+        private void activateTimerFetchWaking (bool bActivated)
+        {
+            if (Equals (_timerFetchWaking, null) == true) {
+                _timerFetchWaking = new Timer (fTimerFetchWaking
+                    , null
+                    , System.Threading.Timeout.Infinite
+                    , System.Threading.Timeout.Infinite
+                );
+            } else
+                ;
+
+            _dueTimerFetchWaking = bActivated == true ? (int)StatisticTrans.FileAppSettings.This ().FetchWaking ().TotalMilliseconds : System.Threading.Timeout.Infinite;
+
+            _timerFetchWaking.Change (_dueTimerFetchWaking, System.Threading.Timeout.Infinite);
+        }
+
+        /// <summary>
+        /// Признак ожидания ноых собщений
+        ///  аналогичен проверке количества аргументов в очереди обработки (коллекция аргументов 'IEventArgs')
+        /// </summary>
+        private bool IsTimerFetchWakingActivated
+        {
+            get
+            {
+                return !(_dueTimerFetchWaking == System.Threading.Timeout.Infinite);
+            }
         }
 
         /// <summary>
@@ -195,6 +254,8 @@ namespace trans_mc
 
                     if (e.NewStartingIndex == 0) {
                         arg = (IEventArgs)e.NewItems [0];
+
+                        activateTimerFetchWaking (false);
                     } else
                     // новые элементы будут ожидать обработки
                         ;
@@ -207,12 +268,19 @@ namespace trans_mc
                             //contextId (arg)
                             arg.m_id
                             ;
-                    } else
+                    } else {
                     //??? в случае 'Reset' - исключение, т.к. 'e.OldItems' = NullReference
-                        id =
-                            //contextId ((IEventArgs)e.OldItems [0])
-                            ((IEventArgs)e.OldItems [0]).m_id
-                            ;
+                        try {
+                            id =
+                                //contextId ((IEventArgs)e.OldItems [0])
+                                ((IEventArgs)e.OldItems [0]).m_id
+                                ;
+                        } catch (Exception excp) {
+                            Logging.Logg ().Exception (excp, $"AdminMC::listMCEventArgs_CollectionChanged (Act.={e.Action}) - Connected={isConnected}, ", Logging.INDEX_MESSAGE.NOT_SET);
+                        } finally {
+                            activateTimerFetchWaking (true);
+                        }
+                    }
                     break;
                 default:
                     break;

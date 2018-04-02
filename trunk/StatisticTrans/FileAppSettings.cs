@@ -84,13 +84,23 @@ namespace StatisticTrans
 
         public TimeSpan OverDate(string valueDefault = "03:04:05")
         {
+            return parseTimeSpan ("OverDate", valueDefault);
+        }
+
+        public TimeSpan FetchWaking (string valueDefault = "01:02:03")
+        {
+            return parseTimeSpan ("FetchWaking", valueDefault);
+        }
+
+        private TimeSpan parseTimeSpan (string nameParameter, string valueDefault)
+        {
             TimeSpan tsRes = TimeSpan.MinValue;
 
             string [] values = null;
             string delim = ";";
 
             try {
-                values = GetValue ("OverDate").Split (new string [] { delim }, StringSplitOptions.RemoveEmptyEntries);
+                values = GetValue (nameParameter).Split (new string [] { delim }, StringSplitOptions.RemoveEmptyEntries);
 
                 if (values.Length == 2) {
                     tsRes =
@@ -100,7 +110,7 @@ namespace StatisticTrans
                 } else
                     ;
             } catch (Exception e) {
-                ASUTP.Logging.Logg ().Exception (e, $"FileAppSettings::OverDate() - Length={values.Length}, Values=<{string.Join(delim, values)}>", ASUTP.Logging.INDEX_MESSAGE.NOT_SET);
+                ASUTP.Logging.Logg ().Exception (e, $"FileAppSettings::{nameParameter}() - Length={values.Length}, Values=<{string.Join (delim, values)}>", ASUTP.Logging.INDEX_MESSAGE.NOT_SET);
             } finally {
                 if (tsRes.Equals (TimeSpan.MinValue) == true)
                     tsRes = TimeSpan.Parse (valueDefault);

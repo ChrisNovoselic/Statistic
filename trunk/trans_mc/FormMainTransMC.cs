@@ -17,16 +17,17 @@ namespace trans_mc
     {
         public FormMainTransMC()
             : base(ASUTP.Helper.ProgramBase.ID_APP.TRANS_MODES_CENTRE
-                  , new KeyValuePair<string, string> [] {
-                      new System.Collections.Generic.KeyValuePair<string, string> ("MCServiceHost", "ne1843.ne.ru")
-                      , new System.Collections.Generic.KeyValuePair<string, string> (@"ИгнорДатаВремя-ModesCentre", false.ToString())
-                      //, new System.Collections.Generic.KeyValuePair<string, string> ("service", "on_event") перенесено в 'FormMainTrans'
-                      , new System.Collections.Generic.KeyValuePair<string, string> ("JEventListener", JsonConvert.SerializeObject (new JObject {
-                          { DbMCInterface.EVENT.OnData53500Modified.ToString(), false }
-                          , { DbMCInterface.EVENT.OnMaket53500Changed.ToString(), false }
-                          , { DbMCInterface.EVENT.OnPlanDataChanged.ToString(), true }
-                          , { DbMCInterface.EVENT.OnModesEvent.ToString(), false }
-                      }) )
+                , new KeyValuePair<string, string> [] {
+                    new System.Collections.Generic.KeyValuePair<string, string> ("MCServiceHost", "ne1843.ne.ru")
+                    , new System.Collections.Generic.KeyValuePair<string, string> (@"ИгнорДатаВремя-ModesCentre", false.ToString())
+                    //, new System.Collections.Generic.KeyValuePair<string, string> ("service", "on_event") перенесено в 'FormMainTrans'
+                    , new System.Collections.Generic.KeyValuePair<string, string> ("JEventListener", JsonConvert.SerializeObject (new JObject {
+                        { DbMCInterface.EVENT.OnData53500Modified.ToString(), false }
+                        , { DbMCInterface.EVENT.OnMaket53500Changed.ToString(), false }
+                        , { DbMCInterface.EVENT.OnPlanDataChanged.ToString(), true }
+                        , { DbMCInterface.EVENT.OnModesEvent.ToString(), false }
+                    }))
+                    , new System.Collections.Generic.KeyValuePair<string, string> (@"FetchWaking", @"HH:mm:ss;01:02:03")
                   })
         {
             InitializeComponent ();
